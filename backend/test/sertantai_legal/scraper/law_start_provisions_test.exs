@@ -322,6 +322,61 @@ defmodule SertantaiLegal.Scraper.LawStartProvisionsTest do
     assert got == [{:provision_dated, ~D[2020-10-01], ~w[reg.5]}]
   end
 
+  test "CR-06: a power's condition or description names no provision (2020/7 s.87(4))" do
+    got =
+      assign(
+        [
+          {"s.87(1)",
+           "This Act comes into force on the day on which this Act is passed, subject to subsection (2)."},
+          {"s.87(2)",
+           "The following provisions of this Act come into force on such day as a Minister of the Crown may by regulations appoint— section 8;"},
+          {"s.87(4)",
+           "If the condition in subsection (5) is met, the Welsh Ministers may by regulations provide that a provision of this Act to which subsection (2) applies comes into force, so far as it extends to England and Wales and applies in relation to Wales, on a day appointed by the regulations."},
+          "s.87(5)",
+          "s.8"
+        ],
+        type: "ukpga",
+        made: ~D[2020-03-25]
+      )
+
+    refute Enum.any?(got, fn {_, _, rows} -> "s.87(2)" in rows or "s.87(5)" in rows end)
+  end
+
+  test "CR-06: a qualifier covers only the items after it (uksi 1988/819 reg.1(2); asp 2005/13 s.33)" do
+    got =
+      assign([
+        {"reg.1(1)", "These Regulations may be cited as the Regulations."},
+        {"reg.1(2)",
+         "This regulation, regulations 2, 5, 10 and 11, and, so far as they relate to the provisions of sections 12 to 14, regulations 3, 6 and 7, shall come into force on 6th June 1988."},
+        {"reg.1(3)",
+         "The remainder of these regulations shall come into force on 3rd October 1988."},
+        "reg.2",
+        "reg.3",
+        "reg.10",
+        "reg.12"
+      ])
+
+    # "This regulation" and regs 2, 10 fully on 6 June; reg.3 partly then, fully with the rest
+    assert {:provision_dated, ~D[1988-06-06], ~w[reg.1(1) reg.1(2) reg.1(3) reg.2 reg.10]} in got
+    assert {:provision_dated, ~D[1988-10-03], ~w[reg.3 reg.12]} in got
+
+    asp =
+      assign(
+        [
+          {"s.60(1)",
+           "Except as provided in subsection (2), this Act comes into force on 1st April 2006."},
+          {"s.60(2)",
+           "Sections 33, 34, 41 and (in so far as it relates to section 41) 42 come into force on 5th August 2005."},
+          "s.33",
+          "s.42"
+        ],
+        type: "asp",
+        made: ~D[2005-06-01]
+      )
+
+    assert {:provision_dated, ~D[2005-08-05], ~w[s.33]} in asp
+  end
+
   describe "groups/3: the sentences with their references unexpanded (commencement-rules CR-03)" do
     defp groups(specs, opts \\ []) do
       rs = rows(specs)

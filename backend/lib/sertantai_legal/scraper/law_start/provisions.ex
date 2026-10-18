@@ -132,16 +132,59 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
       |> Enum.reject(&(&1.treatment == :provision_qualified and &1.refs == []))
       |> Enum.reject(&(&1.kind == :unread and plain == [] and qualified != []))
     else
-      {subject_in, subject_out} = split_except(subject)
-      refs = weighted_refs(subject_in, rows, base)
+      case trailing_qualified(subject) do
+        {plain, qualified} ->
+          # "regulations 2, 5, 10 and 11, and, so far as they relate to …,
+          # regulations 3, 6 and 7": the qualifier is only the later items'
+          named = %{g | refs: weighted_refs(plain, rows, base)}
 
-      # "Regulation 26, with the exception of paragraph (4)": relative to
-      # what the subject names
-      excluded =
-        refs(subject_out, rows, relative_base(refs, base))
+          listed = %{
+            g
+            | refs: weighted_refs(qualified, rows, base),
+              treatment: :provision_qualified,
+              date: nil,
+              qualified_date: date
+          }
 
-      [classify(%{g | refs: refs, excluded: excluded}, sentence, subject)]
+          [classify(named, plain <> " " <> tail, plain), listed]
+          |> Enum.reject(&(&1.refs == []))
+
+        nil ->
+          whole_subject(g, sentence, subject, rows, base)
+      end
     end
+  end
+
+  # a subject whose qualifier covers only the items after it: {the plain
+  # items, the qualified items} (CR-06: uksi 1988/819 reg.1(2); asp 2005/13
+  # s.33 "Sections 33, 34, 41 and (in so far as …) 42")
+  defp trailing_qualified(subject) do
+    case Regex.run(
+           ~r/^(.*\d.*?),?\s+and,?\s+(?:in\s+)?so\s+far\s+as\b[^,]*,\s*(.*\d.*)$/is,
+           subject
+         ) ||
+           Regex.run(
+             ~r/^(.*\d.*?),?\s+and\s+\((?:in\s+)?so\s+far\s+as\b[^)]*\)\s*(.*\d.*)$/is,
+             subject
+           ) do
+      [_, plain, qualified] ->
+        if Regex.match?(@qualified, plain), do: nil, else: {plain, qualified}
+
+      nil ->
+        nil
+    end
+  end
+
+  defp whole_subject(g, sentence, subject, rows, base) do
+    {subject_in, subject_out} = split_except(subject)
+    refs = weighted_refs(subject_in, rows, base)
+
+    # "Regulation 26, with the exception of paragraph (4)": relative to
+    # what the subject names
+    excluded =
+      refs(subject_out, rows, relative_base(refs, base))
+
+    [classify(%{g | refs: refs, excluded: excluded}, sentence, subject)]
   end
 
   defp classify(g, qualifiable, subject \\ "") do
@@ -248,9 +291,15 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
           do: "#{law}:pt.#{r.part}"
 
     # "paragraph (4)" / "subsection (6)" alone: within the clause's provision
+    # ("the condition in subsection (5)", "a provision … to which subsection
+    # (2) applies", "referred to in paragraph (3)": a condition or a
+    # description, not what comes into force — CR-06, 2020/7 s.87(4))
     relative =
       for [_, b] <-
-            Regex.scan(~r/\b(?:paragraph|subsection)s?\s+(\([^)]+\)(?:\([^)]+\))*)/i, subject),
+            Regex.scan(
+              ~r/(?<!condition in |to which |referred to in |mentioned in |specified in |under |by virtue of )\b(?:paragraph|subsection)s?\s+(\([^)]+\)(?:\([^)]+\))*)(?!\s+(?:applies|apply|is met|are met))/i,
+              subject
+            ),
           not Regex.match?(@noun, subject),
           do: base <> b
 
