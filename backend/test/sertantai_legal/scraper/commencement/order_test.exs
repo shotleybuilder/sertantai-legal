@@ -225,4 +225,34 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
 
     assert [%Rule{territory: "E"}] = Order.rules(d, @act)
   end
+
+  test "\"in so far as that sub-paragraph is not already in force\" is full (SI 1996/186)" do
+    rules =
+      Order.rules(
+        order(~S"""
+        <P1 id="article-3"><P1para><Text>The following provisions of the Act shall come into force on 1st April 1996—</Text>
+        <UnorderedList><ListItem><Para><Text>section 120(1) in so far as it relates to the following paragraphs of Schedule 22—</Text></Para></ListItem>
+        <ListItem><Para><Text>1, 29(1) in so far as that sub-paragraph is not already in force, 140</Text></Para></ListItem></UnorderedList></P1para></P1>
+        """),
+        @act
+      )
+
+    assert %{full_from: ~D[1996-04-01]} = dated(rules, "schedule-22-paragraph-140")
+  end
+
+  test "a commencement table's subject column is no purpose (SI 1997/1539: \"Minor and consequential amendments\")" do
+    rules =
+      Order.rules(
+        order(~S"""
+        <Schedules><Schedule id="schedule"><TitleBlock><Title>Provisions coming into force on 17th July 1997</Title></TitleBlock><ScheduleBody><Tabular><table><tbody>
+        <tr><td>Schedule 6 so far as it is not already in force</td><td>Minor and consequential amendments</td></tr>
+        <tr><td>Section 8</td><td>For the purposes of making regulations</td></tr>
+        </tbody></table></Tabular></ScheduleBody></Schedule></Schedules>
+        """),
+        @act
+      )
+
+    assert %{full_from: ~D[1997-07-17]} = dated(rules, "schedule-6-paragraph-20")
+    assert %{full_from: nil, partial_from: ~D[1997-07-17]} = dated(rules, "section-8")
+  end
 end
