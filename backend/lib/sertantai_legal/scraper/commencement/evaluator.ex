@@ -193,9 +193,11 @@ defmodule SertantaiLegal.Scraper.Commencement.Evaluator do
     end
   end
 
-  # ranges reach whole provisions (no brackets): by document order, else by number
+  # ranges reach whole provisions (no brackets) — or, for a range of
+  # brackets ("sch.21.para.2(1)..sch.21.para.2(3)"), provisions at that
+  # depth: by document order, else by number
   defp in_range?(el, from, to, ctx) do
-    if String.contains?(el, "(") do
+    if String.contains?(el, "(") != String.contains?(from, "(") do
       false
     else
       case ctx[:order] do
@@ -225,11 +227,12 @@ defmodule SertantaiLegal.Scraper.Commencement.Evaluator do
     end
   end
 
-  # "s.4A" → {"s", {4, "A"}}
+  # by its last number: "s.4A" → {"s.", {4, "A"}}; "sch.10.para.3" →
+  # {"sch.10.para.", {3, ""}}; "sch.21.para.2(3)" → {"sch.21.para.2(", {3, ""}}
   defp key(ref) do
-    case Regex.run(~r/^([a-z]+)\.(\d+)([A-Z]*)$/, ref) do
-      [_, prefix, n, letters] -> {prefix, {String.to_integer(n), letters}}
-      nil -> nil
+    case Regex.run(~r/^(.*?)(\d+)([A-Z]*)\)?$/, ref) do
+      [_, prefix, n, letters] when prefix != "" -> {prefix, {String.to_integer(n), letters}}
+      _ -> nil
     end
   end
 

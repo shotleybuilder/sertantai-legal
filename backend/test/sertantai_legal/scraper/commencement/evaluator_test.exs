@@ -115,6 +115,20 @@ defmodule SertantaiLegal.Scraper.Commencement.EvaluatorTest do
       assert %{full_from: ~D[2024-01-01]} = eval(rules, "s.4A(1)")
       assert %{full_from: nil, entries: []} = eval(rules, "s.6")
 
+      paras = [
+        rule(
+          "L",
+          "L",
+          ["sch.10.para.3..sch.10.para.6", "sch.21.para.2(1)..sch.21.para.2(3)"],
+          {:date, ~D[2024-01-01]}
+        )
+      ]
+
+      assert %{full_from: ~D[2024-01-01]} = eval(paras, "sch.10.para.5(b)")
+      assert %{full_from: nil} = eval(paras, "sch.10.para.7")
+      assert %{full_from: ~D[2024-01-01]} = eval(paras, "sch.21.para.2(2)(a)")
+      assert %{full_from: nil} = eval(paras, "sch.21.para.2(4)")
+
       order = %{order: ["s.1", "s.5", "s.3"]}
       assert %{full_from: nil} = eval(rules, "s.3", order)
     end
