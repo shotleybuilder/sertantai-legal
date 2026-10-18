@@ -13,12 +13,11 @@ The ruleset needs a fixed schema before any reader writes to it: the fields in t
 
 ## Todo
 
-- ⬜ Decide with Jason: retrospective flag; expiry (`ceases_on`) in the ruleset or out (expiry is a repeal-like event: maybe the register's); `when: on_event`; scope modifier `not_already_in_force`; `purposes` fixed set (Gemini: nil / for_making_secondary_legislation / in_relation_to / for_specified_purposes) with verbatim in `source`
+- ✅ Decided (Jason 2026-10-18, CR-00): bringing into force only; four purposes; `when` = date / after / named_day / appointed / with / unread; no retrospective flag, no expiry, no scope modifier
 - ⬜ Rule struct (`@enforce_keys`), scope ref grammar (to subsection / paragraph; ranges; Parts, Chapters, Schedules), `when` variants, treatment catalogue (extends LR-33's)
 - ⬜ `commencement_rules` Ash resource (Ash generates the migration); keyed by the commenced law and the source
 - ⬜ `mix lat.commencement --law X`: the law's rules in the readable form (scope / when / territory / purposes / source)
-- ⬜ Gemini review of the final schema
 
 ## Dependencies
 
-- ⬜ CR-00 meta; LR-44 design draft
+- ✅ CR-00 meta; LR-44 design draft
