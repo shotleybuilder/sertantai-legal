@@ -169,7 +169,7 @@ defmodule SertantaiLegal.Scraper.LawStartProvisionsTest do
     assert got == [{:provision_by_order, nil, ~w[art.1(2) art.2]}]
   end
 
-  test "a list read item by item; inline after \"namely—\"; a qualified item partly in force, the rest by order (EPA 1990 s.164)" do
+  test "a list read item by item; inline after \"namely—\"; a qualified item partly in force, the rest by order: J6 (EPA 1990 s.164)" do
     got =
       assign(
         [
@@ -188,7 +188,7 @@ defmodule SertantaiLegal.Scraper.LawStartProvisionsTest do
       )
 
     assert {:provision_dated, ~D[1991-01-01], ~w[s.79 s.80 s.97]} in got
-    assert {:provision_qualified, nil, ~w[s.105]} in got
+    assert {:provision_by_order, nil, ~w[s.105]} in got
     assert {:provision_by_order, nil, ~w[s.150]} in got
   end
 
