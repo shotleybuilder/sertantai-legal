@@ -15,7 +15,7 @@ decisions:
     result: sample law failures 95 → 27 with fixes 1–4
   - what: When nothing near the instruction names a law, the nearest law named before it decides (its Schedule, the body naming the Schedule, earlier provisions)
     why: Schedule paragraphs and "of that Act" name their law elsewhere; strict rule kept (another law first → no match)
-    result: pairs reaching a record 11 → 47 in the sample (6 dated: commencement is the bottleneck → LR-44)
+    result: 'pairs reaching a record 11 → 47 in the sample (6 dated; commencement is the bottleneck → LR-44)'
   - what: Apply LR-41 and LR-42 together; commencement (LR-44) before block changes (LR-43)
     why: 'Jason 2026-10-18 "Agree 1 and 2"'
     result: relabel 2026-10-18
