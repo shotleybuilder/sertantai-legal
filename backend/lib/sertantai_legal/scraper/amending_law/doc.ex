@@ -38,11 +38,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Doc do
   @spec new(String.t(), [String.t()]) :: t()
   def new(law_name, xmls) do
     roots = Enum.map(xmls, &SweetXml.parse(&1, quiet: true, namespace_conformant: false))
-    # xmerl's `//*[@id]` order (each node's children in turn), as before
-    # LR-31: `between/3` and `pos` read it
+    # document order (LR-41): an instruction's context is what precedes it
+    # in its provision ("In section 10 …—", then "(a) …"); xmerl's `//` order
+    # (each node's children in turn, kept until LR-41 for zero-diff) put a
+    # later subsection's words before an earlier one's paragraphs
     els =
       Enum.flat_map(roots, fn root ->
-        Enum.filter([root | Xml.descendants_xmerl(root)], &Xml.attr_or_nil(&1, :id))
+        Enum.filter([root | Xml.descendants(root)], &Xml.attr_or_nil(&1, :id))
       end)
 
     ids = Enum.map(els, &id/1)

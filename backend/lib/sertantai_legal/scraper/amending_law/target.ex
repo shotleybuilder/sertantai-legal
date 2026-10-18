@@ -5,7 +5,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Target do
 
   - **Law:** the nearest text naming any law decides — the instruction,
     then its context nearest first, then the container's title ("Part II
-    Electricity Act 1989"). It must name the row's law (its title and year,
+    Electricity Act 1989"), then the text before the provision (LR-41: its
+    Schedule's earlier paragraphs and the body's words naming the Schedule,
+    or the body's earlier provisions — "of that Act"). It must name the row's law (its title and year,
     "1989 c. 29", or a defined term meaning it); a nearer text naming only
     another law is no match.
   - **Provision:** "section 25" (or regulation / article / rule) in the
@@ -19,7 +21,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Target do
   Returns `{:ok, section_id}` (the row it targets) or `:no_match`. Pure.
   """
 
-  alias SertantaiLegal.Scraper.AmendingLaw.{RowRef, Text}
+  alias SertantaiLegal.Scraper.AmendingLaw.{Operation, RowRef, Text}
 
   @kind_words %{
     section: "sections?",
@@ -32,19 +34,43 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Target do
   @doc "The row the instruction targets, if it names the row's law and provision."
   @spec match(Text.t() | nil, String.t() | nil, map(), RowRef.t()) ::
           {:ok, String.t()} | :no_match
-  def match(nil, _title, _terms, _row), do: :no_match
-  def match(_text, _title, _terms, %RowRef{kind: :other}), do: :no_match
+  def match(text, title, terms, row) do
+    case explain(text, title, terms, row) do
+      {:ok, sid} -> {:ok, sid}
+      {:no_match, _stage} -> :no_match
+    end
+  end
 
-  def match(%Text{} = text, title, terms, %RowRef{} = row) do
+  @doc """
+  `match/4` with the stage that fails (LR-40: why a row is not reached):
+  `:law` (the nearest law named isn't the row's), `:number` (no provision
+  number named), `:provision_number` (named, not the row's), `:brackets`
+  (the row's brackets not all named) or `:other` (not a provision row).
+  """
+  @spec explain(Text.t() | nil, String.t() | nil, map(), RowRef.t()) ::
+          {:ok, String.t()} | {:no_match, :law | :number | :provision_number | :brackets | :other}
+  def explain(nil, _title, _terms, _row), do: {:no_match, :other}
+  def explain(_text, _title, _terms, %RowRef{kind: :other}), do: {:no_match, :other}
+
+  def explain(%Text{} = text, title, terms, %RowRef{} = row) do
     # quoted old words ("for “Explosives Act 1875” substitute") name nothing
     texts = Enum.map([text.instruction | Enum.reverse(text.context)], &unquote_words/1)
 
-    with true <- law?(texts ++ List.wrap(title), terms, row),
-         {:ok, numbers} <- numbers(texts, row.kind),
-         true <- row.number_ref in numbers or inserted?(text, row.number_ref) do
-      provision(text, row)
+    # LR-41: then the text before the provision (its Schedule, the body
+    # naming the Schedule, earlier provisions: "of that Act"), nearest first
+    before = Stream.map(text.before, &unquote_words/1)
+
+    with {:law, true} <-
+           {:law, law?(Stream.concat(texts ++ List.wrap(title), before), terms, row)},
+         {:number, {:ok, numbers}} <- {:number, numbers(texts, row.kind)},
+         {:provision_number, true} <-
+           {:provision_number, row.number_ref in numbers or inserted?(text, row.number_ref)} do
+      case provision(text, row) do
+        {:ok, sid} -> {:ok, sid}
+        :no_match -> {:no_match, :brackets}
+      end
     else
-      _ -> :no_match
+      {stage, _} -> {:no_match, stage}
     end
   end
 
@@ -65,7 +91,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Target do
 
   defp laws(t, terms) do
     lower = String.downcase(t)
-    defined = for {term, law} <- terms, String.contains?(lower, term), do: law
+    # a defined term names a law only when it means one, and only as whole
+    # words (LR-41: "a", "and", "authority" name no law)
+    defined =
+      for {term, law} <- terms,
+          law.law != nil or law.title != nil,
+          Regex.match?(~r/(?<![\w])#{Regex.escape(term)}(?![\w])/u, lower),
+          do: law
 
     titled =
       for [x] <-
@@ -131,13 +163,39 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Target do
     named = brackets(text)
 
     cond do
-      quoted_path?(text, row) -> {:ok, row.section_id}
-      inserted?(text, row.number_ref) -> :no_match
-      row.subs != [] and Enum.all?(row.subs, &(&1 in named)) -> {:ok, row.section_id}
-      row.subs == [] and named == [] -> {:ok, row.section_id}
-      row.subs == [] -> :no_match
-      named == [] -> {:ok, "#{row.law_name}:#{@prefix[row.kind]}.#{row.number_ref}"}
-      true -> :no_match
+      quoted_path?(text, row) ->
+        {:ok, row.section_id}
+
+      inserted?(text, row.number_ref) ->
+        :no_match
+
+      # a provision inserted into the row (not words) doesn't insert the row:
+      # only its own path in the quote, or its brackets named, do (LR-41:
+      # PIDA 1998 s.15(2) "after subsection (2) insert— (2A)" isn't an
+      # insertion of s.235; 1980/60 s.20(1)(b) "at the end of the subsection
+      # there shall be added the following paragraph" isn't one of s.4)
+      # (a quote numbering what it inserts names it by its own path; a
+      # bracket after "In subsection" is where, not what: 1999/1820 "In
+      # subsection (1) … insert—" isn't an insertion of 1984/26 s.9(1))
+      Operation.of(text) == {"inserted", "inserted"} and
+          (text.inserted != [] or
+             not (row.subs != [] and Enum.all?(row.subs, &(&1 in inserted_named(text))))) ->
+        :no_match
+
+      row.subs != [] and Enum.all?(row.subs, &(&1 in named)) ->
+        {:ok, row.section_id}
+
+      row.subs == [] and named == [] ->
+        {:ok, row.section_id}
+
+      row.subs == [] ->
+        :no_match
+
+      named == [] ->
+        {:ok, "#{row.law_name}:#{@prefix[row.kind]}.#{row.number_ref}"}
+
+      true ->
+        :no_match
     end
   end
 
@@ -153,11 +211,28 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Target do
       )
   end
 
+  # the brackets an insertion names as what it inserts: those after "In
+  # (sub)section / paragraph" are where
+  defp inserted_named(%Text{instruction: i} = text),
+    do:
+      brackets(%{
+        text
+        | instruction:
+            String.replace(
+              i,
+              ~r/\bIn (?:sub)?(?:section|paragraph|regulation|article) \([^)]*\)/i,
+              ""
+            )
+      })
+
   defp brackets(%Text{instruction: i}) do
     plain =
       i
       |> String.replace(~r/[“"][^”"]*[”"]/u, "")
       |> String.replace(~r/\b(?:after|before) (?:sub)?(?:section|paragraph) \([^)]*\)/i, "")
+      # a renumbering aside names no target (2008/32 Sch. 1 para. 8: "after
+      # the existing provision (which becomes subsection (1)) insert—")
+      |> String.replace(~r/\(which becomes [^()]*\([^)]*\)\)/i, "")
 
     own = for [b] <- Regex.scan(~r/\(([0-9A-Za-z]+)\)/, plain, capture: :all_but_first), do: b
 

@@ -29,6 +29,17 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
     assert terms["the 1986 act"] == %{law: nil, title: "Gas Act 1986"}
   end
 
+  test "LR-41: omitting definitions or entries is words-level (SI 2009/2861 reg. 12(a))" do
+    assert Operation.of(%Text{id: "x", instruction: "omit the following definitions—"}) ==
+             {"repealed", "words repealed"}
+
+    assert Operation.of(%Text{
+             id: "x",
+             instruction: "the entry relating to the 1963 Act is omitted."
+           }) ==
+             {"repealed", "words repealed"}
+  end
+
   test "Operation: the drafting verb, words-level when words are quoted or named" do
     op = fn s -> Operation.of(%Text{id: "x", instruction: s}) end
 
@@ -156,12 +167,156 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
     assert RepealTable.reference(d, "schedule-26") == "section-278"
   end
 
-  describe "Target truth guards (benchmark review)" do
-    alias SertantaiLegal.Scraper.AmendingLaw.Text
-
+  describe "LR-41: defined terms name a law only when their definition does" do
     defp tx(instruction, opts \\ []),
-      do: struct!(Text, [id: "x", instruction: instruction, quoted: "", context: []] ++ opts)
+      do:
+        struct!(
+          SertantaiLegal.Scraper.AmendingLaw.Text,
+          [id: "x", instruction: instruction, quoted: "", context: []] ++ opts
+        )
 
+    defp terms_of(text),
+      do:
+        DefinedTerms.of(
+          Doc.new("UK_ukpga_1988_45", [
+            ~s(<Legislation><Primary><Body><P1 id="section-1"><P1para><Text>#{text}</Text></P1para></P1></Body></Primary></Legislation>)
+          ])
+        )
+
+    test "a term defined by apposition to a law's title means that law (1988/45: “the principal Act”)" do
+      terms =
+        terms_of(
+          ~s(Section 5 of the Firearms Act 1968 \(in this Act referred to as “<Term id="t1">the principal Act</Term>”\) shall have effect)
+        )
+
+      assert terms["the principal act"] == %{law: nil, title: "Firearms Act 1968"}
+
+      # PCA 1991 s.1: "(referred to in this Act as …)"
+      assert terms_of(
+               ~s(In the Town and Country Planning Act 1990 \(referred to in this Act as “<Term id="t1">the principal Act</Term>”\) in Part VII)
+             )["the principal act"] == %{law: nil, title: "Town and Country Planning Act 1990"}
+    end
+
+    test "a term whose definition names no law is not a law term (1994/39 “a”, “authority”)" do
+      assert terms_of(~s(“<Term id="t1">authority</Term>” means a local authority;)) == %{}
+    end
+
+    test "only a law term stops the search, and only as whole words" do
+      row = RowRef.new("UK_ukpga_1991_22:s.148(3)", "New Roads and Street Works Act")
+      text = tx("for subsection (3) substitute—.", context: ["In section 148 (sewers)—"])
+      title = "The New Roads and Street Works Act 1991 (c.22)"
+
+      assert Target.match(text, title, %{"a" => %{law: nil, title: nil}}, row) ==
+               {:ok, "UK_ukpga_1991_22:s.148(3)"}
+
+      # "the 1986 act" inside "of the 1986 Actions" is not the term
+      gas = %{"the 1986 act" => %{law: nil, title: "Gas Act 1986"}}
+
+      assert Target.match(
+               tx("In section 148 of the 1986 Actions, for subsection (3) substitute—."),
+               title,
+               gas,
+               row
+             ) ==
+               {:ok, "UK_ukpga_1991_22:s.148(3)"}
+    end
+  end
+
+  describe "LR-41: the law named before the instruction" do
+    defp pipelines(sid), do: RowRef.new("UK_ukpga_1962_58:" <> sid, "Pipe-lines Act")
+
+    test "a Schedule paragraph amends the law the body says the Schedule amends (SI 2000/1937)" do
+      d =
+        Doc.new("UK_uksi_2000_1937", [
+          ~S|<Legislation><Secondary><Body><P1 id="regulation-2"><P1para><Text>The Pipe-lines Act 1962 is amended as set out in Schedule 1 to these Regulations.</Text></P1para></P1></Body><Schedules><Schedule id="schedule-1"><Number>Schedule 1</Number><ScheduleBody><P1 id="schedule-1-paragraph-3"><P1para><Text>In section 10(1), for the words “x” there shall be substituted “y”.</Text></P1para></P1></ScheduleBody></Schedule><Schedule id="schedule-2"><Number>Schedule 2</Number><ScheduleBody><P1 id="schedule-2-paragraph-1"><P1para><Text>In section 10(1), for the words “x” there shall be substituted “y”.</Text></P1para></P1></ScheduleBody></Schedule></Schedules></Secondary></Legislation>|
+        ])
+
+      row = pipelines("s.10(1)")
+
+      assert Target.match(Text.of(d, "schedule-1-paragraph-3"), nil, %{}, row) ==
+               {:ok, row.section_id}
+
+      # Schedule 2: nothing names its law
+      assert Target.match(Text.of(d, "schedule-2-paragraph-1"), nil, %{}, row) == :no_match
+    end
+
+    test "\"that Act\": the law an earlier provision names; a nearer other law stops the search (EReA 1999 s.8)" do
+      d =
+        Doc.new("UK_ukpga_1999_26", [
+          ~S|<Legislation><Primary><Body><P1 id="section-7"><P1para><Text>Part VIII of the Pipe-lines Act 1962 is amended.</Text></P1para></P1><P1 id="section-8"><P1para><Text>In section 10 of that Act, for subsection (1) substitute “y”.</Text></P1para></P1><P1 id="section-9"><P1para><Text>The Gas Act 1986 is amended.</Text></P1para></P1><P1 id="section-10"><P1para><Text>In section 10 of that Act, for subsection (1) substitute “y”.</Text></P1para></P1></Body></Primary></Legislation>|
+        ])
+
+      row = pipelines("s.10(1)")
+      assert Target.match(Text.of(d, "section-8"), nil, %{}, row) == {:ok, row.section_id}
+      assert Target.match(Text.of(d, "section-10"), nil, %{}, row) == :no_match
+    end
+  end
+
+  test "LR-41: inserting subsections into a section doesn't insert the section (PIDA 1998 s.15(2), ERA 1996 s.235)" do
+    text =
+      tx("In section 235 of the Employment Rights Act 1996, after subsection (2) insert—.",
+        inserted: [["2A"], ["2B"]]
+      )
+
+    era = &RowRef.new("UK_ukpga_1996_18:" <> &1, "Employment Rights Act")
+    assert Target.match(text, nil, %{}, era.("s.235")) == :no_match
+    assert Target.match(text, nil, %{}, era.("s.235(2A)")) == {:ok, "UK_ukpga_1996_18:s.235(2A)"}
+    assert Target.match(text, nil, %{}, era.("s.235(2)")) == :no_match
+
+    # a paragraph added at the end of a subsection, no number in the quote (1980/60 s.20(1)(b))
+    added =
+      tx("at the end of the subsection there shall be added the following paragraph—",
+        context: ["In section 4(3) of the Land Compensation Act 1973—"]
+      )
+
+    lca = &RowRef.new("UK_ukpga_1973_26:" <> &1, "Land Compensation Act")
+    assert Target.match(added, nil, %{}, lca.("s.4")) == :no_match
+    assert Target.match(added, nil, %{}, lca.("s.4(3)")) == :no_match
+
+    # a renumbering aside names no target (2008/32 Sch. 1 para. 8)
+    renumbered =
+      tx(
+        "In section 13 of the Land Compensation Act 1973, after the existing provision (which becomes subsection (1)) insert—",
+        inserted: [["2"]]
+      )
+
+    assert Target.match(renumbered, nil, %{}, lca.("s.13(1)")) == :no_match
+
+    assert Target.match(renumbered, nil, %{}, lca.("s.13(2)")) ==
+             {:ok, "UK_ukpga_1973_26:s.13(2)"}
+
+    # "In subsection (1) … insert" is where, not what (1999/1820 → 1984/26 s.9(1))
+    into_sub =
+      tx(
+        "In section 9 of the Land Compensation Act 1973, in subsection (1), after paragraph (b) insert—",
+        inserted: [["c"]]
+      )
+
+    assert Target.match(into_sub, nil, %{}, lca.("s.9(1)")) == :no_match
+
+    assert Target.match(
+             tx(
+               "In subsection (1) of section 9 of the Land Compensation Act 1973 there shall be added the following paragraph—"
+             ),
+             nil,
+             %{},
+             lca.("s.9(1)")
+           ) == :no_match
+
+    # the subsection named as what is inserted, quote unnumbered
+    named_new =
+      tx(
+        "In section 9 of the Land Compensation Act 1973 there shall be inserted the following subsection (5A)—"
+      )
+
+    assert Target.match(named_new, nil, %{}, lca.("s.9(5A)")) == {:ok, "UK_ukpga_1973_26:s.9(5A)"}
+
+    # words inserted into a section still reach it
+    words = tx("In section 4 of the Land Compensation Act 1973, after “x” insert “y”.")
+    assert Target.match(words, nil, %{}, lca.("s.4")) == {:ok, "UK_ukpga_1973_26:s.4"}
+  end
+
+  describe "Target truth guards (benchmark review)" do
     test "inserted words beginning 'a' are not an inserted paragraph (a) (1990/43 s.6(2)(a))" do
       text =
         tx(

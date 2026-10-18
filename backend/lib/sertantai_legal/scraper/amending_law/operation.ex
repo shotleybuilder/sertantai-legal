@@ -5,8 +5,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Operation do
   → substituted; "there is inserted" / "insert" / "added" → inserted;
   "shall cease to have effect" / "omit" / "is repealed" / "revoked" →
   repealed. The effect type is words-level ("words substituted") when the
-  instruction quotes or names the words it changes. nil when no change verb
-  ("The 1989 Act is amended as follows."): no record. Pure.
+  instruction quotes or names the words, definitions or entries it
+  changes. nil when no change verb ("The 1989 Act is amended as
+  follows."): no record. Pure.
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.Text
@@ -29,5 +30,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Operation do
     end
   end
 
-  defp words?(s), do: Regex.match?(~r/[“"][^”"]+[”"]|\bwords?\b/u, s)
+  # quoted or named words, definitions or entries (LR-41: SI 2009/2861 reg.
+  # 12(a) "omit the following definitions—" omits words of reg. 32, not it)
+  defp words?(s),
+    do: Regex.match?(~r/[“"][^”"]+[”"]|\b(?:words?|definitions?|entr(?:y|ies))\b/u, s)
 end

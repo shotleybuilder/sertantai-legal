@@ -5,7 +5,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
   words (InlineAmendment / BlockAmendment: what is inserted or substituted,
   never an instruction), and its `context` — the instructions before it in
   the same top provision, in document order ("The 1989 Act is amended as
-  follows.", "In section 40 …—"), for law names and "that section".
+  follows.", "In section 40 …—"), for law names and "that section"; and
+  `before` (LR-41, lazy): the text before the provision, nearest first —
+  the earlier provisions of its Schedule then the body's words naming that
+  Schedule ("The Pipe-lines Act 1962 is amended as set out in Schedule 1"),
+  or the body's earlier provisions ("… of that Act") — for law names only.
   Notes (Commentary, CommentaryRef), numbers and sub-provisions with their
   own id are left out. Pure.
   """
@@ -13,13 +17,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
 
   @enforce_keys [:id, :instruction]
-  defstruct [:id, :instruction, quoted: "", inserted: [], context: []]
+  defstruct [:id, :instruction, quoted: "", inserted: [], context: [], before: []]
 
   @type t :: %__MODULE__{
           id: String.t(),
           instruction: String.t(),
           quoted: String.t(),
-          context: [String.t()]
+          context: [String.t()],
+          before: Enumerable.t()
         }
 
   @notes ~w(Commentary CommentaryRef)a
@@ -49,7 +54,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
           instruction: words,
           quoted: quoted,
           inserted: inserted(el),
-          context: context
+          context: context,
+          before: before(doc, top)
         }
     end
   end
@@ -103,6 +109,40 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
         nil
     end)
   end
+
+  # the words before the top provision `top`, nearest first (lazy): its
+  # Schedule's earlier provisions then the body's words naming the Schedule;
+  # or the body's earlier provisions
+  defp before(doc, top) do
+    earlier =
+      doc.ids
+      |> Enum.take(Map.get(doc.pos, top, 0))
+      |> Enum.reverse()
+
+    case Regex.run(~r/^schedule-([^-]+)-/, top) do
+      [prefix, n] ->
+        naming = ~r/\bSchedules? (?:[\dA-Z]+(?:,| and| to) )*#{Regex.escape(n)}\b/
+
+        body =
+          doc.ids
+          |> Stream.reject(&String.starts_with?(&1, "schedule-"))
+          |> Stream.map(&words_of(doc, &1))
+          |> Stream.filter(&Regex.match?(naming, &1))
+
+        earlier
+        |> Stream.filter(&String.starts_with?(&1, prefix))
+        |> words_stream(doc)
+        |> Stream.concat(body)
+
+      nil ->
+        earlier
+        |> Stream.reject(&String.starts_with?(&1, "schedule-"))
+        |> words_stream(doc)
+    end
+  end
+
+  defp words_stream(ids, doc),
+    do: ids |> Stream.map(&words_of(doc, &1)) |> Stream.reject(&(&1 == ""))
 
   # the top provision: section-60 for section-60-5, schedule-6-paragraph-33
   # for schedule-6-paragraph-33-c

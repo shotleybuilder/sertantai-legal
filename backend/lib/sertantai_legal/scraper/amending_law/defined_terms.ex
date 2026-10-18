@@ -4,7 +4,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.DefinedTerms do
   "“the 1989 Act” means the Electricity Act 1989" → "the 1989 act" →
   `%{law: "UK_ukpga_1989_29", title: "Electricity Act 1989"}`. The law comes
   from the definition's `Citation` URI when it has one (structure, not
-  prose); the title is the words after "means". Pure.
+  prose); the title is the words after "means", or the law's title the term
+  stands in apposition to ("the Firearms Act 1968 (in this Act referred to
+  as “the principal Act”)"). Only terms meaning a law are kept (LR-41: an
+  Act defining "authority" or "a" names no law by them). Pure.
   """
 
   import SweetXml
@@ -20,10 +23,36 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.DefinedTerms do
         text <- xpath(root, ~x"//*[local-name()='Text'][*[local-name()='Term']]"l),
         term <- xpath(text, ~x"./*[local-name()='Term']"l),
         into: %{} do
-      name = term |> Doc.text() |> String.downcase()
+      raw = Doc.text(term)
+      name = String.downcase(raw)
       words = Doc.text(text)
       uri = text |> xpath(~x"./*[local-name()='Citation']/@URI"s) |> to_string()
-      {name, %{law: law(uri), title: title(words)}}
+      {name, %{law: law(uri), title: title(words) || apposition(words, raw)}}
+    end
+    |> Map.filter(fn {name, t} -> name != "" and (t.law != nil or law_title?(t.title)) end)
+  end
+
+  @law_title ~r/\b(?:Act|Regulations|Order|Rules|Measure)(?: \(Northern Ireland\))? \d{4}$/u
+
+  defp law_title?(nil), do: false
+  defp law_title?(t), do: Regex.match?(@law_title, t)
+
+  # "… the Firearms Act 1968 (in this Act referred to as “the principal Act”)":
+  # the law's title just before the parenthesis holding the term
+  defp apposition(words, term) do
+    with [before | _] <- String.split(words, "“#{term}”", parts: 2),
+         [_, head] <- Regex.run(~r/^(.*)\([^()]*$/su, before),
+         [_, t] <-
+           Regex.run(
+             ~r/([A-Z][\w,'’\-]*(?: (?:[A-Z][\w,'’\-]*|and|of|the|for|\(Northern Ireland\)))* (?:Act|Regulations|Order|Rules|Measure) \d{4})\s*$/u,
+             head
+           ) do
+      # "In the Town and Country Planning Act 1990": the title, not the words before it
+      t
+      |> String.replace(~r/^(?:(?:In|Under|By|For|To|Of|And|The|the|of|and) )+/u, "")
+      |> String.trim()
+    else
+      _ -> nil
     end
   end
 
