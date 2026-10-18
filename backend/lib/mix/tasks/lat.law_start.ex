@@ -145,10 +145,15 @@ defmodule Mix.Tasks.Lat.LawStart do
     s = LawStart.resolve(input)
     explain(law, s.treatment, s.date, s.evidence, s.text)
 
-    for p <- LawStart.Provisions.assign(input.rows, input.made, s),
+    # the provision records the commencement collector would write (CR-06)
+    for {{t, d, ev, text}, recs} <-
+          law
+          |> ChangeCollector.Commencement.records(input)
+          |> Enum.filter(&String.starts_with?(&1.effect_type, "provision_"))
+          |> Enum.group_by(&{&1.effect_type, &1.effective_from, &1.evidence, &1.affected_ref}),
         do:
           Mix.shell().info(
-            "  #{p.treatment} #{p.date || "-"} (#{length(p.section_ids)} rows) #{p.evidence}: #{p.text}"
+            "  #{t} #{d || "-"} (#{Enum.count(recs, & &1.section_id)} rows) #{ev}: #{text}"
           )
   end
 

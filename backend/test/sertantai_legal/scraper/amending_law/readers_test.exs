@@ -2,7 +2,6 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
   use ExUnit.Case, async: true
 
   alias SertantaiLegal.Scraper.AmendingLaw.{
-    Commencement,
     DefinedTerms,
     Doc,
     Operation,
@@ -56,35 +55,6 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
     assert op.("In section 3, omit the words “the public”.") == {"repealed", "words repealed"}
     assert op.("For section 4 substitute—") == {"substituted", "substituted"}
     assert op.("The 1989 Act is amended as follows.") == nil
-  end
-
-  test "Commencement: by order, except the provisions it names; an SI's date; passing" do
-    d = doc()
-    assert Commencement.of(d, "section-60-5") == :by_order
-    assert Commencement.of(d, "schedule-6-paragraph-33-c") == :by_order
-    assert Commencement.of(d, "section-68") == :unknown
-
-    # a provision's own words: "This section shall come into force on the passing of this Act"
-    own =
-      Doc.new("UK_ukpga_2000_27", [
-        ~s|<Legislation xmlns:ukm="m"><ukm:EnactmentDate Date="2000-07-28"/><Primary><Body><P1 id="section-68"><P1para><P2 id="section-68-1"><P2para><Text>After section 15 of the Electricity Act 1989 there is inserted—</Text></P2para></P2><P2 id="section-68-2"><P2para><Text>This section shall come into force on the passing of this Act.</Text></P2para></P2></P1para></P1><P1 id="section-110"><P1para><Text>This Act (apart from this section and section 68) shall come into force on such day as the Secretary of State may by order appoint.</Text></P1para></P1></Body></Primary></Legislation>|
-      ])
-
-    assert Commencement.of(own, "section-68-1") == {:date, ~D[2000-07-28], "section-68-2"}
-
-    si =
-      Doc.new("UK_uksi_2000_1937", [
-        ~s(<Legislation><Secondary><Body><P1 id="regulation-1"><P1para><Text>These Regulations may be cited as the Gas Regulations 2000 and shall come into force on 10th August 2000.</Text></P1para></P1><P1 id="regulation-5"><P1para><Text>Omit regulation 3.</Text></P1para></P1></Body></Secondary></Legislation>)
-      ])
-
-    assert Commencement.of(si, "regulation-5") == {:date, ~D[2000-08-10], "regulation-1"}
-
-    act =
-      Doc.new("UK_ukpga_1995_1", [
-        ~s(<Legislation xmlns:ukm="m"><ukm:EnactmentDate Date="1995-03-01"/><Primary><Body><P1 id="section-9"><P1para><Text>This Act shall come into force at the end of the period of two months beginning with the day on which it is passed.</Text></P1para></P1></Body></Primary></Legislation>)
-      ])
-
-    assert Commencement.of(act, "section-2") == {:date, ~D[1995-05-01], "section-9"}
   end
 
   test "Target: the text names the row's law and provision — else no match" do

@@ -16,6 +16,7 @@ defmodule Mix.Tasks.Lat.Commencement do
       mix lat.commencement --compare --all --tag cr03_cmp   # the evaluator vs today's register, per row
       mix lat.commencement --effects                        # amending Acts: their feed's "coming into force" effects as rules (CR-04)
       mix lat.commencement --read-orders                    # amending Acts before 2002: the rules the orders their notes cite state (where no effect reaches)
+      mix lat.commencement --read-amending                  # amending laws with no LAT: their own clause from the CLML held (CR-06; one hop, no fetch)
 
   `--read` writes only `commencement_rules` (no label changes). `--compare`
   writes `data/reports/commencement-rules/<tag>.csv` — each row whose
@@ -56,6 +57,7 @@ defmodule Mix.Tasks.Lat.Commencement do
           orders: :boolean,
           effects: :boolean,
           read_orders: :boolean,
+          read_amending: :boolean,
           tag: :string,
           workers: :integer
         ]
@@ -79,6 +81,9 @@ defmodule Mix.Tasks.Lat.Commencement do
 
       opts[:read_orders] ->
         read_orders(opts)
+
+      opts[:read_amending] ->
+        read_amending(opts)
 
       opts[:law] ->
         opts[:law] |> Store.for_law() |> print(opts[:law])
@@ -125,8 +130,58 @@ defmodule Mix.Tasks.Lat.Commencement do
         laws,
         fn law ->
           {_rows, input} = input(law)
-          {:ok, n} = Store.write(law, OwnClause.rules(law, input))
+
+          {:ok, n} =
+            Store.write(law, OwnClause.rules(law, input), treatments: OwnClause.treatments())
+
           n
+        end,
+        fn _law, _n -> :ok end,
+        workers: opts[:workers] || LawRunner.default_workers()
+      )
+
+    errors = for {law, {:error, e}} <- results, do: {law, e}
+    rules = results |> Map.values() |> Enum.filter(&is_integer/1) |> Enum.sum()
+
+    Mix.shell().info(
+      "#{map_size(results)} laws read, #{rules} rules written, #{length(errors)} errors"
+    )
+
+    for {law, e} <- Enum.take(errors, 10), do: Mix.shell().info("  #{law}: #{inspect(e)}")
+  end
+
+  # ── --read-amending (CR-06) ─────────────────────────────────────────
+
+  # every law a note on our rows points to (one hop), held in the CLML
+  # store, with no LAT: its own clause from its CLML
+  defp read_amending(opts) do
+    %{rows: rows} =
+      Repo.query!("""
+      SELECT DISTINCT coalesce(a.citation_law, a.changed_by) FROM amendment_annotations a
+      WHERE a.code_type = 'amendment' AND coalesce(a.citation_law, a.changed_by) ~ '^UK_'
+        AND NOT EXISTS (SELECT 1 FROM legal_articles l WHERE l.law_name = coalesce(a.citation_law, a.changed_by))
+      ORDER BY 1
+      """)
+
+    laws = rows |> List.flatten() |> Enum.filter(&held?/1)
+    Mix.shell().info("#{length(laws)} amending laws held with no LAT")
+
+    results =
+      LawRunner.run(
+        laws,
+        fn law ->
+          case doc(law) do
+            nil ->
+              0
+
+            d ->
+              input = ChangeCollector.law_start_input(law, OwnClause.doc_rows(d))
+
+              {:ok, n} =
+                Store.write(law, OwnClause.rules(law, input), treatments: OwnClause.treatments())
+
+              n
+          end
         end,
         fn _law, _n -> :ok end,
         workers: opts[:workers] || LawRunner.default_workers()
@@ -222,6 +277,8 @@ defmodule Mix.Tasks.Lat.Commencement do
   defp read_orders(_opts) do
     cited = cited_orders()
 
+    # every order read is rewritten, with no rules too: a re-read never
+    # leaves a stale one
     by_order =
       for law <- amending_acts(),
           year(law) < 2002,
@@ -229,16 +286,15 @@ defmodule Mix.Tasks.Lat.Commencement do
           order <- Map.get(cited, law, []),
           d = doc(order),
           d != nil,
-          rule <- Order.rules(d, a),
           reduce: %{} do
-        acc -> Map.update(acc, order, [rule], &[rule | &1])
+        acc -> Map.update(acc, order, Order.rules(d, a), &(&1 ++ Order.rules(d, a)))
       end
 
     for {order, rules} <- by_order,
-        do: Store.write(order, Enum.reverse(rules), treatments: [:order_date, :order_schedule])
+        do: Store.write(order, rules, treatments: [:order_date, :order_schedule])
 
     Mix.shell().info(
-      "#{map_size(by_order)} orders with rules, #{by_order |> Map.values() |> List.flatten() |> length()} rules written"
+      "#{map_size(by_order)} orders read, #{by_order |> Map.values() |> List.flatten() |> length()} rules written"
     )
   end
 
@@ -330,8 +386,8 @@ defmodule Mix.Tasks.Lat.Commencement do
     for row <- rows do
       register =
         case Map.get(starts, row.section_id) do
-          {"provision_dated", %Date{} = d} -> d
-          {"provision_by_order", _} -> :by_order
+          {"provision_dated", %Date{} = d, _} -> d
+          {"provision_by_order", _, _} -> :by_order
           _ -> law_start
         end
 

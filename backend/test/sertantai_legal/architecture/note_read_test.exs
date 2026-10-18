@@ -27,6 +27,9 @@ defmodule SertantaiLegal.Architecture.NoteReadTest do
     # the amending law's pointer (law, provisions, commencing SI) in the
     # note's citation tail (LR-08 AmendingLaw.Pointer)
     "sertantai_legal/scraper/change_collector.ex" => :pointer,
+    # the same pointer: which commencing orders a note cites, so their text
+    # is read for rules (commencement-rules CR-04 --read-orders; CR-06)
+    "mix/tasks/lat.commencement.ex" => :pointer,
     # shown to QA agents as the note, beside the row
     "mix/tasks/lat.qa_sample.ex" => :display,
     # exported as the note itself (AI sync)

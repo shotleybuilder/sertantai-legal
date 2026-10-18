@@ -298,6 +298,12 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
       commences == nil ->
         {nil, changes}
 
+      # the clause brings the row in partly first (CR-06): its entries,
+      # whatever else dates the row
+      Map.has_key?(row, :clause_in_force) ->
+        first = row |> clause_entries(own) |> Enum.map(& &1.date)
+        {Enum.min([exists | first], Date), [clause_commencement(law, row, own) | changes]}
+
       # a clause date for the row after the law's start (LR-34)
       own != nil and law_start != nil and Date.compare(own, law_start) == :gt ->
         {exists, [clause_commencement(law, row, own) | changes]}
@@ -348,8 +354,8 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
       operation: "commenced",
       effect_type: "provision_dated",
       affecting_law: law,
-      in_force: [%{date: date, qualification: nil, prospective: false, applied: true}],
-      effective_from: date,
+      in_force: clause_entries(row, date),
+      effective_from: if(Map.has_key?(row, :clause_in_force), do: full_date(row), else: date),
       savings: [],
       via: ["law"],
       prospective: false,
@@ -360,6 +366,31 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
       pointer: nil,
       own: true
     }
+
+  # the clause's entries for the row (CR-06: partial first, then full), else
+  # one entry on its date
+  defp clause_entries(row, date) do
+    case Map.get(row, :clause_in_force) do
+      nil ->
+        [%{date: date, qualification: nil, prospective: false, applied: true}]
+
+      entries ->
+        for e <- entries,
+            do: %{
+              date: Date.from_iso8601!(e["date"]),
+              qualification: e["qualification"],
+              prospective: false,
+              applied: true
+            }
+    end
+  end
+
+  defp full_date(row) do
+    row.clause_in_force
+    |> Enum.filter(&is_nil(&1["qualification"]))
+    |> Enum.map(&Date.from_iso8601!(&1["date"]))
+    |> Enum.min(Date, fn -> nil end)
+  end
 
   # a dated commencement of the row's own
   defp commenced?(changes),

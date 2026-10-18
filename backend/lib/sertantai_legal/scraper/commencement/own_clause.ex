@@ -19,15 +19,23 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
   - **Qualified sentences** ("in relation to Wales", "for the purpose of
     making regulations", "with respect to any tip …"): the territory, else
     one of the four purposes, with their date — partial entries.
+  - **A provision's own words** ("This section shall come into force on the
+    passing of this Act", anywhere in the law): that provision, its date
+    (CR-06: the form the deleted `AmendingLaw.Commencement` read).
   - Sentences the reader can't resolve make no rule.
 
   `context/1` gives the evaluator a law's row structure (containers from
-  `part` / `chapter`, document order). Pure.
+  `part` / `chapter`, document order). `doc_rows/1` gives a law we hold no
+  LAT for (an amending law, one hop from our rows: CR-06) rows from its
+  CLML, in LAT's grammar. `treatments/0`: the treatments this reader
+  writes. Pure.
   """
 
-  alias SertantaiLegal.Scraper.Commencement.Rule
+  alias SertantaiLegal.Scraper.AmendingLaw.Doc
+  alias SertantaiLegal.Scraper.Commencement.{Order, Rule}
+  alias SertantaiLegal.Scraper.LatParser.Xml
   alias SertantaiLegal.Scraper.LawStart
-  alias SertantaiLegal.Scraper.LawStart.Provisions
+  alias SertantaiLegal.Scraper.LawStart.{Clause, Provisions}
 
   @territories %{
     "england" => "E",
@@ -40,19 +48,97 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
 
   @doc "The rules a law's own commencement clause states (`input`: `LawStart.input()`)."
   @spec rules(String.t(), LawStart.input()) :: [Rule.t()]
-  def rules(law_name, input) do
+  def rules(law_name, input), do: read(law_name, input).rules
+
+  @doc """
+  The law's start (`LawStart.resolve/1`), the rules its clause states, and
+  the provision-level sentences it couldn't resolve (`unread`: groups, no
+  rule).
+  """
+  @spec read(String.t(), LawStart.input()) :: %{
+          law: LawStart.t(),
+          rules: [Rule.t()],
+          unread: [map()]
+        }
+  def read(law_name, input) do
     law = LawStart.resolve(input)
     rows = Map.get(input, :rows, [])
-
-    provisions =
-      rows
-      |> Provisions.groups(Map.get(input, :made), law)
-      |> Enum.flat_map(&group_rule(law_name, &1))
+    groups = Provisions.groups(rows, Map.get(input, :made), law)
 
     # a staged clause's law-level rule is LawStart's earliest date (LR-33 P1);
     # whether it should reach rows no sentence names is open (CR-03 question)
-    List.wrap(law_rule(law_name, law)) ++ provisions
+    %{
+      law: law,
+      rules:
+        List.wrap(law_rule(law_name, law)) ++
+          Enum.flat_map(groups, &group_rule(law_name, &1)) ++ own_words(law_name, rows, input),
+      unread: Enum.filter(groups, &(&1.kind == :unread))
+    }
   end
+
+  @this ~r/^(?:\(\w+\)\s*)?This\s+(?:section|regulation|article|rule)\s+(?:shall\s+)?(?:comes?|came)\s+into\s+(?:force|operation)\s+(.+?)\.?$/i
+
+  # "This section shall come into force on the passing of this Act" in any
+  # provision: that provision's date
+  defp own_words(law_name, rows, input) do
+    for row <- rows,
+        s <-
+          (row.text || "")
+          |> String.replace(~r/\s+/, " ")
+          |> String.split(~r/(?<=\.)\s+(?=[A-Z(])/),
+        [_, tail] <- [Regex.run(@this, s)],
+        {_treatment, %Date{} = d} <- [Clause.tail_date(tail, Map.get(input, :made))],
+        uniq: true do
+      Rule.new(
+        commences: law_name,
+        scope: [top(row.section_id)],
+        when: {:date, d},
+        source: source(law_name, row.section_id, s),
+        treatment: :provision_dated
+      )
+    end
+  end
+
+  @doc "The treatments the own-clause reader writes (the law's and its provisions')."
+  @spec treatments() :: [atom()]
+  def treatments,
+    do:
+      Enum.map(LawStart.catalogue(), &elem(&1, 0)) ++
+        Enum.map(LawStart.provision_catalogue(), &elem(&1, 0))
+
+  @doc """
+  A law's body provisions from its CLML as rows (`section_id` in LAT's
+  grammar, the provision's own words: no number, title, quoted text or
+  sub-provisions), in document order — what `LawStart` reads a clause from.
+  """
+  @spec doc_rows(Doc.t()) :: [map()]
+  def doc_rows(%Doc{law_name: law, ids: ids} = doc) do
+    for id <- ids,
+        not String.starts_with?(id, "schedule"),
+        ref = Order.ref(id),
+        ref != nil,
+        text = doc |> Doc.element(id) |> own() |> Doc.text(),
+        do: %{section_id: "#{law}:#{ref}", text: text, part: nil, chapter: nil}
+  end
+
+  @skip [:Pnumber, :Title, :BlockAmendment, :Footnote, :CommentaryRef]
+
+  # the element without its numbered children, number, title or quotes
+  defp own({:xmlElement, _, _, _, _, _, _, _, children, _, _, _} = el) do
+    kept =
+      Enum.reject(children, fn
+        {:xmlElement, name, _, _, _, _, _, _, _, _, _, _} = c ->
+          name in @skip or Xml.attr_or_nil(c, :id) != nil
+
+        _ ->
+          false
+      end)
+
+    put_elem(el, 8, Enum.map(kept, &own_inner/1))
+  end
+
+  defp own_inner({:xmlElement, _, _, _, _, _, _, _, _, _, _, _} = el), do: own(el)
+  defp own_inner(other), do: other
 
   @doc "The evaluator's context for a law's rows: each provision's containers, and document order."
   @spec context([map()]) :: map()

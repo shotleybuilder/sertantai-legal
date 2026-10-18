@@ -220,6 +220,13 @@ defmodule SertantaiLegal.Scraper.Commencement.EffectsTest do
                "E+W"
              )
 
+    # nor a staged clause's earliest stage (GLA Act 1999 s.425: s.420 on
+    # passing, the rest by order)
+    staged = %{ra | treatment: :clause_staged, commences: "UK_ukpga_1999_29"}
+
+    assert %{entries: []} =
+             Amending.evaluate([staged], "schedule-34", "UK_ukpga_1974_37:s.1", "E+W")
+
     repeals =
       Effects.rules("UK_ukpga_1995_25", [
         %Effect{

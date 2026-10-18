@@ -23,9 +23,10 @@ defmodule SertantaiLegal.Scraper.Commencement.Amending do
     ctx = Map.put(Order.context(), :extent, extent)
     {effects, text} = Enum.split_with(rules, &(&1.treatment == :feed_commencement))
 
-    # an Act's Royal Assent where its clause leaves the rest to orders is its
-    # start (LR-33), not evidence of when an amending provision came in
-    text = Enum.reject(text, &(&1.treatment == :act_enactment))
+    # an Act's Royal Assent where its clause leaves the rest to orders, or a
+    # staged clause's earliest stage, is its start (LR-33), not evidence of
+    # when an amending provision came in (CR-06: GLA Act 1999, 85 rows)
+    text = Enum.reject(text, &(&1.treatment in [:act_enactment, :clause_staged]))
 
     by_effects = Evaluator.evaluate(Effects.for_row(effects, section_id), ref, ctx)
 

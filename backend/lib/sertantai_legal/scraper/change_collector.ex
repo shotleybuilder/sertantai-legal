@@ -25,6 +25,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
     Record
   }
 
+  alias SertantaiLegal.Scraper.Commencement.Store, as: CommencementRules
   alias SertantaiLegal.Scraper.LatStatus
   alias SertantaiLegal.Scraper.LatStagedParser
 
@@ -180,7 +181,8 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
             notes,
             ask,
             &amending_doc/1,
-            &law_title/1
+            rules: &CommencementRules.for_law/1,
+            extents: extents(law_name)
           )
         end)
   end
@@ -218,6 +220,17 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
 
     for [code, text, law, sids] <- rows,
         do: %{code: code, text: text, citation_law: law, affected_sections: sids || []}
+  end
+
+  # the rows' extents, for a commencement by territory (CR-06)
+  defp extents(law_name) do
+    %{rows: rows} =
+      Repo.query!(
+        "SELECT section_id, extent_code FROM legal_articles WHERE law_name = $1",
+        [law_name]
+      )
+
+    Map.new(rows, fn [sid, e] -> {sid, e} end)
   end
 
   defp law_title(law_name) do

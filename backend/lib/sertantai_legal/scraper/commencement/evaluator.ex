@@ -85,6 +85,31 @@ defmodule SertantaiLegal.Scraper.Commencement.Evaluator do
     }
   end
 
+  @doc """
+  The result as register in-force entries (CR-06): each partial start
+  before the provision was fully in force, qualified in the changes feed's
+  words (`Rule.qualification/2`; a general rule a partial one completes is
+  "for certain purposes" until both have started), then the full start,
+  unqualified. `[%{date, qualification}]`, date order.
+  """
+  @spec in_force(result()) :: [%{date: Date.t(), qualification: String.t() | nil}]
+  def in_force(%{entries: entries, full_from: full}) do
+    partial =
+      for e <- entries,
+          e.date != nil,
+          full == nil or Date.compare(e.date, full) == :lt,
+          do: %{date: e.date, qualification: partial_words(e)}
+
+    full_entry = if full, do: [%{date: full, qualification: nil}], else: []
+
+    Enum.uniq(partial ++ full_entry)
+  end
+
+  # before the full start every entry is partial: an unqualified one is a
+  # general rule a partial one completes
+  defp partial_words(e),
+    do: Rule.qualification(e.territory, e.purposes) || "for certain purposes"
+
   @doc "The provision's status on `date`: fully or partly in force, prospective (a rule reaches it, not yet), or unknown (none does, or only an unread one)."
   @spec status(result(), Date.t()) :: :in_force | :in_force_partial | :prospective | :unknown
   def status(%{entries: entries, full_from: full, partial_from: partial}, date) do

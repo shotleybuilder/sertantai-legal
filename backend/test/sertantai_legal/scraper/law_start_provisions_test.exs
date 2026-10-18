@@ -24,16 +24,26 @@ defmodule SertantaiLegal.Scraper.LawStartProvisionsTest do
           end
       )
 
+  # the provision records the commencement collector writes (CR-06: the
+  # evaluator over the clause's rules), grouped as {treatment, date, rows}
   defp assign(specs, opts \\ []) do
     rs = rows(specs)
-    made = Keyword.get(opts, :made)
-    law = LawStart.resolve(%{type_code: Keyword.get(opts, :type, "uksi"), rows: rs, made: made})
 
-    Provisions.assign(rs, made, law)
-    |> Enum.map(
-      &{&1.treatment, &1.date,
-       Enum.map(&1.section_ids, fn s -> String.replace(s, "UK_x:", "") end)}
-    )
+    input = %{
+      type_code: Keyword.get(opts, :type, "uksi"),
+      rows: rs,
+      made: Keyword.get(opts, :made)
+    }
+
+    "UK_x"
+    |> SertantaiLegal.Scraper.ChangeCollector.Commencement.records(input)
+    |> Enum.filter(&String.starts_with?(&1.effect_type, "provision_"))
+    |> Enum.group_by(&{&1.effect_type, &1.effective_from, &1.section_id == nil, &1.evidence})
+    |> Map.values()
+    |> Enum.map(fn [r | _] = rs ->
+      {String.to_atom(r.effect_type), r.effective_from,
+       for(x <- rs, x.section_id != nil, do: String.replace(x.section_id, "UK_x:", ""))}
+    end)
   end
 
   test "the catalogue lists each provision treatment once" do
@@ -131,7 +141,7 @@ defmodule SertantaiLegal.Scraper.LawStartProvisionsTest do
     assert got == [{:provision_dated, ~D[1995-01-01], ~w[reg.5 reg.5(1)]}]
   end
 
-  test "qualified commencements are listed and start nothing (D2)" do
+  test "a qualified commencement is a partial rule: fully in force once the general one has started too (CR-03, replaces LR-34 D2)" do
     got =
       assign([
         {"reg.1(1)",
@@ -142,7 +152,7 @@ defmodule SertantaiLegal.Scraper.LawStartProvisionsTest do
         "reg.26(4)"
       ])
 
-    assert got == [{:provision_qualified, nil, ~w[reg.26]}]
+    assert got == [{:provision_dated, ~D[2007-08-01], ~w[reg.26]}]
   end
 
   test "a law commenced wholly by order: every row (D1 b)" do
@@ -159,7 +169,7 @@ defmodule SertantaiLegal.Scraper.LawStartProvisionsTest do
     assert got == [{:provision_by_order, nil, ~w[art.1(2) art.2]}]
   end
 
-  test "a list read item by item; inline after \"namely—\"; qualified items listed apart (EPA 1990 s.164)" do
+  test "a list read item by item; inline after \"namely—\"; a qualified item partly in force, the rest by order (EPA 1990 s.164)" do
     got =
       assign(
         [
@@ -179,7 +189,7 @@ defmodule SertantaiLegal.Scraper.LawStartProvisionsTest do
 
     assert {:provision_dated, ~D[1991-01-01], ~w[s.79 s.80 s.97]} in got
     assert {:provision_qualified, nil, ~w[s.105]} in got
-    assert {:provision_by_order, nil, ~w[s.105 s.150]} in got
+    assert {:provision_by_order, nil, ~w[s.150]} in got
   end
 
   test "\"This Part\", \"on the passing of this Act\", \"The preceding provisions\" (ukpga 2003/20-like)" do
@@ -301,7 +311,7 @@ defmodule SertantaiLegal.Scraper.LawStartProvisionsTest do
     assert got == [{:provision_dated, ~D[2018-04-01], ~w[reg.7 reg.20]}]
   end
 
-  test "\"comes into force in Wales on …\" is qualified" do
+  test "\"comes into force in Wales on …\" is partial: fully in force once the law's general date has started too" do
     got =
       assign([
         {"reg.1(1)", "These Regulations come into force on 1st April 2020."},
@@ -309,7 +319,7 @@ defmodule SertantaiLegal.Scraper.LawStartProvisionsTest do
         "reg.5"
       ])
 
-    assert got == [{:provision_qualified, nil, ~w[reg.5]}]
+    assert got == [{:provision_dated, ~D[2020-10-01], ~w[reg.5]}]
   end
 
   describe "groups/3: the sentences with their references unexpanded (commencement-rules CR-03)" do

@@ -77,6 +77,36 @@ defmodule SertantaiLegal.Scraper.Commencement.Rule do
   @spec full?(t()) :: boolean()
   def full?(%__MODULE__{territory: t, purposes: p}), do: t == nil and p == nil
 
+  @doc """
+  A partial entry's qualification in the changes feed's words, as the
+  register's in-force entries carry it (`EffectFacts.partial?/3` reads
+  them): "for E.", "for specified purposes", "for W. for specified
+  purposes"; nil when full.
+  """
+  @spec qualification(String.t() | nil, purposes()) :: String.t() | nil
+  def qualification(nil, nil), do: nil
+
+  def qualification(territory, purposes) do
+    place =
+      territory &&
+        "for " <>
+          Enum.map_join(
+            String.split(territory, "+"),
+            "",
+            &(String.replace(&1, "NI", "N.I") <> ".")
+          )
+
+    how =
+      case purposes do
+        nil -> nil
+        :for_specified_purposes -> "for specified purposes"
+        :for_making_secondary_legislation -> "for the purposes of making secondary legislation"
+        :in_relation_to -> "for certain purposes"
+      end
+
+    [place, how] |> Enum.reject(&is_nil/1) |> Enum.join(" ")
+  end
+
   @doc "The rule as one readable line: scope — when — where, how far — treatment — source."
   @spec to_text(t()) :: String.t()
   def to_text(%__MODULE__{} = r) do

@@ -31,7 +31,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
   import SweetXml
 
-  alias SertantaiLegal.Scraper.AmendingLaw.{Commencement, DefinedTerms, Doc, Text}
+  alias SertantaiLegal.Scraper.AmendingLaw.{DefinedTerms, Doc, Text}
   alias SertantaiLegal.Scraper.Commencement.Rule
   alias SertantaiLegal.Scraper.LawStart.Clause
 
@@ -174,7 +174,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     cond do
       Regex.match?(@appointed, head) ->
         [before, after_] = Regex.split(@appointed, head, parts: 2)
-        with [d] <- Commencement.parse_dates(before), do: {d, after_}, else: (_ -> nil)
+        with [d] <- parse_dates(before), do: {d, after_}, else: (_ -> nil)
 
       Regex.match?(@cif, head) ->
         [subject, tail] = Regex.split(@cif, head, parts: 2)
@@ -207,7 +207,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   # a statement's date: one stated, else counted from the order's making
   # ("the day after this Order is made": LR-33's reading)
   defp tail_date(tail, made) do
-    case Commencement.parse_dates(tail) do
+    case parse_dates(tail) do
       [d] ->
         d
 
@@ -460,9 +460,11 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
             Regex.scan(~r/(?<![Ii]n )\bSchedules?\s+#{@list}(?!\s*,?\s*paragraph)/, text),
           not (text =~ ~r/\bparagraphs?\b[^;]*\bof\s+Schedule/i),
           # "the following provisions of Schedule 22—", "the provisions in
-          # Schedules 13 and 14 … specified in …": a subset, not the Schedule
+          # Schedules 13 and 14 … specified in …", "the provisions of … Schedules
+          # 15, 16 and 18 to, the 1994 Act which are specified in Schedule 3 to
+          # this Order": a subset, not the Schedule
           not (text =~
-                 ~r/\b(?:provisions|paragraphs|entries|repeals|amendments)\s+(?:of|in|made\s+by)\s+(?:Part\s+\w+\s+of\s+)?Schedules?\b|\bSchedules?\s+[\d\s,and]+(?:to\s+the\s+Act\s+)?specified\b|\bSchedules?\s+\d+[A-Z]*\s*[—–:]/iu),
+                 ~r/\b(?:provisions|paragraphs|entries|repeals|amendments)\s+(?:of|in|made\s+by)\s+(?:Part\s+\w+\s+of\s+)?Schedules?\b|\bSchedules?\s+[\d\s,and]+(?:to\s+the\s+Act\s+)?specified\b|\bSchedules?\s+\d+[A-Z]*\s*[—–:]|\b(?:which\s+are|as\s+are)\s+specified\s+in\b/iu),
           r <- list_refs(list, "sch."),
           do: r
 
@@ -518,7 +520,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     Enum.reverse(refs)
   end
 
-  # ── Schedule tables (as `CommencingOrder`) ──────────────────────────
+  # ── Schedule tables ──────────────────────────
 
   defp tables(order, _act) do
     for id <- order.ids,
@@ -584,7 +586,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   defp schedule_date(order, el) do
     title = el |> xpath(~x"./TitleBlock/Title | ./Title"l) |> Enum.map_join(" ", &Doc.text/1)
 
-    case Commencement.parse_dates(title) do
+    case parse_dates(title) do
       [d] -> d
       _ -> article_date(order, el)
     end
@@ -595,7 +597,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
          [_, n] <- Regex.run(~r/(?:Article|Regulation) (\d+)/i, Doc.text(ref)),
          words =
            Text.words_of(order, "article-#{n}") <> " " <> Text.words_of(order, "regulation-#{n}") do
-      case Commencement.parse_dates(words) do
+      case parse_dates(words) do
         [d] -> d
         _ -> nil
       end
@@ -606,11 +608,23 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
   # ── helpers ─────────────────────────────────────────────────────────
 
+  @months ~w(january february march april may june july august september october november december)
+  @date ~r/(\d{1,2})(?:st|nd|rd|th)? (January|February|March|April|May|June|July|August|September|October|November|December),? (\d{4})/i
+
+  # "1st October 2001", "2 April 1994" → dates, in order
+  defp parse_dates(w) do
+    for [_, day, month, year] <- Regex.scan(@date, w) do
+      m = Enum.find_index(@months, &(&1 == String.downcase(month))) + 1
+      Date.new!(String.to_integer(year), m, String.to_integer(day))
+    end
+  end
+
   defp source_ref(id), do: ref(id) || id
 
   defp prefix("section"), do: "s"
   defp prefix("regulation"), do: "reg"
-  defp prefix("article"), do: "art"
+  # domestic instruments number articles as `reg.` (LAT's convention; `art.` is EU)
+  defp prefix("article"), do: "reg"
 
   defp brackets(subs), do: Enum.map_join(subs, &"(#{&1})")
 

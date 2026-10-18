@@ -204,4 +204,16 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
     assert %{full_from: nil} = dated(rules, "schedule-22-paragraph-109")
     assert %{full_from: nil} = dated(rules, "schedule-13-paragraph-119-7-a")
   end
+
+  test "\"the provisions of … Schedules 15, 16 and 18 to, the Act which are specified in Schedule 3 to this Order\": a subset (SI 1995/2490)" do
+    rules =
+      Order.rules(
+        order(
+          ~S|<P1 id="article-5"><P1para><Text>The provisions of Part VII of, and Schedules 15, 16 and 18 to, the Act which are specified in Schedule 3 to this Order shall come into force on 1st October 1995.</Text></P1para></P1>|
+        ),
+        @act
+      )
+
+    assert %{full_from: nil} = dated(rules, "schedule-16-paragraph-3")
+  end
 end

@@ -3,6 +3,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLawTest do
 
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.ChangeCollector.{AmendingLaw, Record}
+  alias SertantaiLegal.Scraper.Commencement.Order
 
   @dir "test/fixtures/amending_law"
   @law "UK_ukpga_1989_29"
@@ -33,7 +34,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLawTest do
     AmendingLaw.records(@law, "Electricity Act", sids, notes, MapSet.new(sids), docs())
   end
 
-  test "an inserted subsection: a law record from s. 60(5), dated by order → no date (hop 2)" do
+  test "an inserted subsection: a law record from s. 60(5), no rules → no date" do
     [r] =
       run([
         note(
@@ -136,26 +137,9 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLawTest do
     refute SertantaiLegal.Scraper.ChangeCollector.dated?(dated, "#{@law}:s.25", "UK_ukpga_1999_1")
   end
 
-  test "hop 2: an undated record is dated by the commencing order the note names" do
+  test "dated by the evaluator over the amending law's rules: the commencing order's (CR-06)" do
     order = Doc.new("UK_uksi_2001_3266", [File.read!("#{@dir}/uksi_2001_3266.xml")])
-
-    act =
-      Doc.new("UK_ukpga_2000_27", [
-        File.read!("#{@dir}/ukpga_2000_27_body.xml"),
-        File.read!("#{@dir}/ukpga_2000_27_schedules.xml")
-      ])
-
-    docs = fn
-      "UK_ukpga_2000_27" -> act
-      "UK_uksi_2001_3266" -> order
-      _ -> nil
-    end
-
-    titles = fn
-      "UK_ukpga_2000_27" -> "Utilities Act"
-      _ -> nil
-    end
-
+    rules = Order.rules(order, %{law: "UK_ukpga_2000_27", title: "Utilities Act", year: "2000"})
     sids = ["#{@law}:s.25(5A)"]
 
     n =
@@ -168,18 +152,15 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLawTest do
     assert [
              %Record{
                effective_from: ~D[2001-10-01],
-               dated_by_law: "UK_uksi_2001_3266",
-               dated_by_ref: "schedule"
+               dated_by_law: "UK_uksi_2001_3266"
              } = r
            ] =
-             AmendingLaw.records(
-               @law,
-               "Electricity Act",
-               sids,
-               [n],
-               MapSet.new(sids),
-               docs,
-               titles
+             AmendingLaw.records(@law, "Electricity Act", sids, [n], MapSet.new(sids), docs(),
+               rules: fn
+                 "UK_ukpga_2000_27" -> rules
+                 _ -> []
+               end,
+               extents: %{"#{@law}:s.25(5A)" => "E+W+S"}
              )
 
     assert [%{"date" => "2001-10-01", "qualification" => nil}] = r.in_force

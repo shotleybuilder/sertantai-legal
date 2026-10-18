@@ -5,18 +5,19 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLaw do
   such a row (a pointer only: `AmendingLaw.Pointer`), the provisions it
   points to are found in the amending law (`Locator`); a record is made
   only when the law's text names the row's law and provision (`Target`, or
-  a repeals table: `RepealTable`) and states an operation (`Operation`). The
-  date is the law's own commencement for it (`Commencement`); by order, or
-  unread, leaves it empty (hop 2 dates it). Source `law`; the evidence is
-  the provision read. Undated, it is dated by the commencing orders its
-  note names (hop 2: `CommencingOrder`). Notes give no value. Pure: the
-  documents come from `docs` (law → `Doc` | nil), amending laws' titles from
-  `titles`.
+  a repeals table: `RepealTable`) and states an operation (`Operation`).
+  Source `law`; the evidence is the provision read. The date is the
+  commencement evaluator's for the provision that made the change
+  (commencement-rules CR-06, `Commencement.Amending`): the amending law's
+  coming-into-force effects first, else its own clause and the orders its
+  notes cite, as stored rules; partial entries are kept as in-force
+  entries, `effective_from` only once fully in force. Notes give no value.
+  Pure: the documents come from `docs` (law → `Doc` | nil), the amending
+  laws' rules from `rules:` (law → `[Commencement.Rule]`), the rows' extents from
+  `extents:` (section_id → extent).
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{
-    CommencingOrder,
-    Commencement,
     DefinedTerms,
     Doc,
     Locator,
@@ -29,30 +30,40 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLaw do
   }
 
   alias SertantaiLegal.Scraper.ChangeCollector.Record
+  alias SertantaiLegal.Scraper.Commencement.{Amending, Evaluator}
 
   @doc """
   Records for `law_name` (title `title`, its LAT `section_ids`) from its
   `notes` (`code`, `text`, `citation_law`, `affected_sections`), for the rows
-  in `ask` only.
+  in `ask` only. `opts`: `rules:` (amending law → its commencement rules;
+  none: undated), `extents:` (section_id → extent).
   """
-  @spec records(String.t(), String.t() | nil, [String.t()], [map()], MapSet.t(), (String.t() ->
-                                                                                    Doc.t() | nil)) ::
-          [Record.t()]
-  def records(law_name, title, section_ids, notes, ask, docs, titles \\ fn _ -> nil end) do
+  @spec records(
+          String.t(),
+          String.t() | nil,
+          [String.t()],
+          [map()],
+          MapSet.t(),
+          (String.t() -> Doc.t() | nil),
+          keyword()
+        ) :: [Record.t()]
+  def records(law_name, title, section_ids, notes, ask, docs, opts \\ []) do
     held = MapSet.new(section_ids)
     {terms, terms_table} = memo(fn doc -> DefinedTerms.of(doc) end)
-    {starts, starts_table} = memo(fn doc -> Commencement.provisions(doc) end)
+    rules_of = Keyword.get(opts, :rules, fn _law -> [] end)
+    {rules, rules_table} = memo(fn doc -> rules_of.(doc.law_name) end)
+    extents = Keyword.get(opts, :extents, %{})
 
     try do
-      collect(law_name, title, notes, ask, docs, titles, held, terms, starts)
+      collect(law_name, title, notes, ask, docs, held, terms, {rules, extents})
     after
       # per call: a corpus run in one process must not keep them (LR-25)
       :ets.delete(terms_table)
-      :ets.delete(starts_table)
+      :ets.delete(rules_table)
     end
   end
 
-  defp collect(law_name, title, notes, ask, docs, titles, held, terms, starts) do
+  defp collect(law_name, title, notes, ask, docs, held, terms, dating) do
     for note <- notes,
         sid <- Map.get(note, :affected_sections) || [],
         MapSet.member?(ask, sid),
@@ -61,8 +72,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLaw do
         doc != nil,
         ref <- pointer.provisions,
         id <- Locator.ids(doc, ref),
-        rec = read(doc, id, RowRef.new(sid, title), {terms.(doc), starts.(doc)}, pointer),
-        rec = rec && hop2(rec, doc, pointer, docs, titles),
+        rec = read(doc, id, RowRef.new(sid, title), {terms.(doc), dating}, pointer),
         rec != nil,
         MapSet.member?(held, rec.section_id) do
       %{rec | law_name: law_name}
@@ -70,7 +80,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLaw do
     |> Enum.uniq_by(&{&1.evidence, &1.section_id})
   end
 
-  defp read(doc, id, row, {terms, starts}, pointer) do
+  defp read(doc, id, row, {terms, dating}, pointer) do
     case RepealTable.match(doc, id, row) do
       {:ok, target, type} ->
         record(
@@ -78,7 +88,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLaw do
           id,
           target,
           {"repealed", type},
-          {RepealTable.reference(doc, id) || id, starts},
+          {RepealTable.reference(doc, id) || id, dating},
           pointer
         )
 
@@ -88,16 +98,16 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLaw do
       # only a single provision is read as an instruction, never a whole
       # Schedule or Part
       :not_a_table ->
-        if provision?(id), do: instruction(doc, id, row, terms, starts, pointer)
+        if provision?(id), do: instruction(doc, id, row, terms, dating, pointer)
     end
   end
 
-  defp instruction(doc, id, row, terms, starts, pointer) do
+  defp instruction(doc, id, row, terms, dating, pointer) do
     text = Text.of(doc, id)
 
     with op when op != nil <- Operation.of(text),
          {:ok, target} <- Target.match(text, Doc.title(doc, id), terms, row) do
-      record(doc, id, target, op, {id, starts}, pointer)
+      record(doc, id, target, op, {id, dating}, pointer)
     else
       _ -> nil
     end
@@ -106,12 +116,9 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLaw do
   defp provision?(id),
     do: Regex.match?(~r/^(?:section|regulation|article|rule)-|^schedule-[^-]+-paragraph-/, id)
 
-  defp record(doc, id, target, {op, type}, {dated_id, starts}, pointer) do
-    {from, by, by_ref} =
-      case Commencement.of(doc, dated_id, starts) do
-        {:date, d, cid} -> {d, doc.law_name, cid}
-        _ -> {nil, nil, nil}
-      end
+  defp record(doc, id, target, {op, type}, {dated_id, {rules, extents}}, pointer) do
+    r = Amending.evaluate(rules.(doc), dated_id, target, Map.get(extents, target))
+    by = dated_by(r)
 
     %Record{
       law_name: nil,
@@ -122,74 +129,37 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLaw do
       affecting_ref: id,
       operation: op,
       effect_type: type,
-      effective_from: from,
+      effective_from: r.full_from,
       in_force:
-        if(from,
-          do: [
-            %{
-              "date" => Date.to_iso8601(from),
-              "applied" => true,
-              "prospective" => false,
-              "qualification" => nil
-            }
-          ],
-          else: []
+        for(
+          e <- Evaluator.in_force(r),
+          do: %{
+            "date" => Date.to_iso8601(e.date),
+            "applied" => true,
+            "prospective" => false,
+            "qualification" => e.qualification
+          }
         ),
       prospective: false,
       applied: true,
-      dated_by_law: by,
-      dated_by_ref: by_ref,
+      dated_by_law: by && by.rule.source.law,
+      dated_by_ref: by && by.rule.source.ref,
       pointer: pointer.note_code,
       via: ["law_pointer"]
     }
   end
 
-  # hop 2: an undated record dated by the commencing orders its note names
-  # (CommencingOrder); the latest fully in-force date is effective_from,
-  # partial entries are kept as in-force entries
-  defp hop2(%Record{effective_from: nil} = rec, doc, pointer, docs, titles) do
-    [_, _, year, _] = String.split(doc.law_name, "_", parts: 4)
-    act = %{law: doc.law_name, title: titles.(doc.law_name), year: year}
+  # the entry that brought the provision fully into force, else its first
+  # dated one
+  defp dated_by(%{entries: entries, full_from: full}) do
+    dated = Enum.filter(entries, & &1.date)
 
-    entries =
-      for {si, _refs} <- pointer.commencing,
-          order = docs.(si),
-          order != nil,
-          e <- CommencingOrder.dates(order, act, rec.affecting_ref),
-          do: Map.put(e, :law, si)
-
-    case entries do
-      [] ->
-        rec
-
-      _ ->
-        full =
-          entries
-          |> Enum.filter(&is_nil(&1.qualification))
-          |> Enum.max_by(& &1.date, Date, fn -> nil end)
-
-        by = full || Enum.max_by(entries, & &1.date, Date)
-
-        %{
-          rec
-          | effective_from: full && full.date,
-            in_force:
-              for(
-                e <- entries,
-                do: %{
-                  "date" => Date.to_iso8601(e.date),
-                  "applied" => true,
-                  "prospective" => false,
-                  "qualification" => e.qualification
-                }
-              ),
-            dated_by_law: by.law,
-            dated_by_ref: by.ref
-        }
-    end
+    (full && Enum.find(dated, &(&1.date == full and full?(&1)))) ||
+      (full && Enum.find(dated, &(&1.date == full))) ||
+      Enum.min_by(dated, & &1.date, Date, fn -> nil end)
   end
 
-  defp hop2(rec, _doc, _pointer, _docs, _titles), do: rec
+  defp full?(e), do: e.territory == nil and e.purposes == nil
 
   # ukpga/2000/27/schedule/6/paragraph/33/c
   defp evidence(doc, id) do

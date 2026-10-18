@@ -173,9 +173,17 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
     rows =
       Enum.map(rows, fn row ->
         case Map.get(starts, row.section_id) do
-          {"provision_dated", %Date{} = d} -> Map.put(row, :law_start, d)
-          {"provision_by_order", _} -> Map.put(row, :by_order, true)
-          _ -> row
+          {"provision_dated", %Date{} = d, in_force} ->
+            row |> Map.put(:law_start, d) |> clause_in_force(in_force)
+
+          {"provision_qualified", _, [_ | _] = in_force} ->
+            row |> Map.put(:law_start, first(in_force)) |> clause_in_force(in_force)
+
+          {"provision_by_order", _, _} ->
+            Map.put(row, :by_order, true)
+
+          _ ->
+            row
         end
       end)
 
@@ -190,24 +198,36 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
   end
 
   @doc """
-  Each row's own start from the law's commencement clause (LR-34):
-  section_id → `{treatment, date}` for `provision_dated` and
-  `provision_by_order` records.
+  Each row's own start from the law's commencement clause (LR-34; CR-06:
+  the evaluator's): section_id → `{treatment, date, in_force}` for
+  `provision_dated`, `provision_qualified` and `provision_by_order`
+  records (`in_force`: the record's entries, partial ones qualified).
   """
-  @spec row_starts(String.t()) :: %{String.t() => {String.t(), Date.t() | nil}}
+  @spec row_starts(String.t()) :: %{String.t() => {String.t(), Date.t() | nil, [map()]}}
   def row_starts(law_name) do
     %{rows: rows} =
       Repo.query!(
         """
-        SELECT section_id, effect_type, effective_from FROM lat_change_log_rows
+        SELECT section_id, effect_type, effective_from, in_force FROM lat_change_log_rows
         WHERE law_name = $1 AND collector = 'commencement' AND section_id IS NOT NULL
-          AND effect_type IN ('provision_dated', 'provision_by_order')
+          AND effect_type IN ('provision_dated', 'provision_qualified', 'provision_by_order')
         """,
         [law_name]
       )
 
-    Map.new(rows, fn [sid, t, d] -> {sid, {t, d}} end)
+    Map.new(rows, fn [sid, t, d, in_force] -> {sid, {t, d, in_force || []}} end)
   end
+
+  # a row partly in force before its full start carries the clause's
+  # entries (CR-06: a qualified sentence is a partial rule)
+  defp clause_in_force(row, in_force) do
+    if Enum.any?(in_force, &(&1["qualification"] != nil)),
+      do: Map.put(row, :clause_in_force, in_force),
+      else: row
+  end
+
+  defp first(in_force),
+    do: in_force |> Enum.map(&Date.from_iso8601!(&1["date"])) |> Enum.min(Date)
 
   @doc """
   The date of the revised text we hold (LR-34 D1 b): the latest parse's
