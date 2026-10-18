@@ -855,8 +855,14 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   defp words_level?(c),
     do: EffectIndex.words_level?(%Effect{type: c.effect_type || "", affecting: nil})
 
+  # a commencement read from the law (its clause, CR-06) is the feed's
+  # "coming into force" kind, whatever treatment named it
   defp effect(c),
-    do: %Effect{type: c.effect_type || "", affecting: c.affecting_law, in_force: c.in_force}
+    do: %Effect{
+      type: if(c.operation == "commenced", do: "coming into force", else: c.effect_type || ""),
+      affecting: c.affecting_law,
+      in_force: c.in_force
+    }
 
   # register rows as maps: in-force entries with atom keys and dates
   defp normalise(c) do

@@ -561,6 +561,24 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
              ] = periods(@law, rows, [], law_start: ~D[2027-10-01], made: @made)
     end
 
+    test "CR-06: the clause brings a row in partly first (Part 9 \"in relation to\" the day after making), fully at the law's start" do
+      rows = [
+        row(@law, "pt.9",
+          law_start: ~D[2027-10-01],
+          clause_in_force: [
+            %{"date" => "2026-03-26", "qualification" => "for certain purposes"},
+            %{"date" => "2027-10-01", "qualification" => nil}
+          ]
+        )
+      ]
+
+      assert [
+               {~D[2026-03-25], ~D[2026-03-26], "prospective", nil, nil},
+               {~D[2026-03-26], ~D[2027-10-01], "in_force_partial", _, nil},
+               {~D[2027-10-01], nil, "in_force", ~D[2027-10-01], nil}
+             ] = periods(@law, rows, [], law_start: ~D[2027-10-01], made: @made)
+    end
+
     test "made the day it comes into force, or no made date: starts at the start" do
       rows = [row(@law, "reg.5")]
 
