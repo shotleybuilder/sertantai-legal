@@ -112,7 +112,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
     "sixtieth" => 60
   }
 
-  @made ~S"(?:(?:the\s+(?:day|date)\s+(?:(?:on\s+which|of)\s+)?)?(?:it\s+is|they\s+are|they\s+were|(?:this|these)\s+[A-Za-z ]+?\s+(?:is|are|was|were))\s+(?:made|passed)|(?:the\s+)?(?:making|passing)\s+(?:of\s+(?:this|these)\s+[A-Za-z ]+|thereof)|its\s+(?:making|passing)|(?:the\s+day\s+(?:on\s+which\s+)?)?(?:this\s+Act\s+receives\s+)?Royal\s+Assent)"
+  @made ~S"(?:(?:the\s+(?:day|date)\s+(?:(?:on\s+which|of)\s+)?)?(?:it\s+is|they\s+are|they\s+were|(?:(?:this|these)\s+[A-Za-z ]+?|the\s+(?:Order|Regulations|Rules|Act|Scheme|Measure|Instrument))\s+(?:is|are|was|were))\s+(?:made|passed)|(?:the\s+)?(?:making|passing)\s+(?:of\s+(?:this|these)\s+[A-Za-z ]+|thereof)|its\s+(?:making|passing)|(?:the\s+day\s+(?:on\s+which\s+)?)?(?:this\s+Act\s+receives\s+)?Royal\s+Assent)"
   @number ~S"(\d+|[a-z]+(?:[- ][a-z]+)?)"
 
   @doc "The law's start from its commencement clause; nil when it has none."

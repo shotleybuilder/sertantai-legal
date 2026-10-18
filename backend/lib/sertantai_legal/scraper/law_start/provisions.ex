@@ -36,7 +36,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
         }
 
   @cif ~r/\b(?:shall\s+(?:,[^,]{0,160},\s*)?)?(?:comes?|came)\s+into\s+(?:force|operation)\b/i
-  @qualified ~r/\b(?:so far as|in so far as|insofar as|for the purposes? of|in relation to|with respect to|to the extent|for (?:all )?other purposes)\b/i
+  @qualified ~r/\b(?:so far as|in so far as|insofar as|for the purposes? of|in relation to|with respect to|to the extent|for (?:all )?other purposes|into\s+(?:force|operation)\s+in\s+(?:England|Wales|Scotland|Northern Ireland|Great Britain)\b)\b/i
   @remaining ~r/\b(?:remaining provisions|remainder|other provisions|all (?:other )?(?:provisions|regulations|articles|sections|rules)|provisions of this \w+(?: \([^)]*\))?,? except|preceding (?:provisions|Parts)|^\s*(?:\(\w+\)\s*)?otherwise\b|^\s*(?:\(\w+\)\s*)?(?:Subject to [^,]+,\s*)?the provisions of this)/i
   @except ~r/,?\s*\b(?:except|other than|with the exception of)\b/i
   @noun ~r/\b(sections?|regulations?|articles?|rules?)\s+((?:(?:\s*(?:,|and|to|–|-)\s*)?(?:\d+[A-Z]*(?:\([^)]+\))*|\([^)]+\)(?:\([^)]+\))*))+)/i
@@ -70,17 +70,45 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
 
   def assign(_rows, _made, _law), do: []
 
-  defp from_clause(rows, made, evidence) do
+  @doc """
+  The provision-level sentences of a law's commencement clause as groups,
+  their references unexpanded (commencement-rules CR-03: a rule's scope):
+  `kind` (`:named` | `:remaining` | `:unread`), `refs` (provisions as
+  section_id prefixes; Parts and Chapters as the law's own ids, "UK_x:pt.II",
+  "UK_x:pt.6.ch.1"), `excluded`, `treatment`, `date`, `qualified_date` (a
+  qualified sentence's date: `assign/3` lists it with no effect, LR-34 D2),
+  `evidence`, `text`. None for a law commenced wholly by order (its
+  law-level rule covers it).
+  """
+  @spec groups([map()], Date.t() | nil, LawStart.t()) :: [map()]
+  def groups(rows, made, %LawStart{treatment: treatment, evidence: evidence})
+      when treatment != :by_order and is_binary(evidence) do
+    if String.contains?(evidence, ":"),
+      do:
+        for(
+          g <- clause_groups(rows, made, evidence, false),
+          do: %{g | refs: Enum.map(g.refs, &elem(&1, 0))}
+        ),
+      else: []
+  end
+
+  def groups(_rows, _made, _law), do: []
+
+  defp clause_groups(rows, made, evidence, expand) do
     base = provision(evidence)
     held = rows |> Enum.filter(&(provision(&1.section_id) == base))
 
-    groups =
-      for row <- held,
-          s <- sentences(row),
-          Regex.match?(@cif, s),
-          not Clause.general?(s),
-          g <- groups(s, row, rows, made, base),
-          do: g
+    for row <- held,
+        s <- sentences(row),
+        Regex.match?(@cif, s),
+        not Clause.general?(s),
+        g <- groups(s, row, rows, made, base, expand),
+        do: g
+  end
+
+  defp from_clause(rows, made, evidence) do
+    base = provision(evidence)
+    groups = clause_groups(rows, made, evidence, true)
 
     {named, remaining} = Enum.split_with(groups, &(&1.kind != :remaining))
     {qualified, named} = Enum.split_with(named, &(&1.treatment == :provision_qualified))
@@ -124,7 +152,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
   # excluded refs, treatment and date. A list ("The following provisions
   # come into force on …— (a) section 1; (b) section 105 in so far as …")
   # is read item by item: qualified items are their own (D2) group.
-  defp groups(sentence, row, rows, made, base) do
+  defp groups(sentence, row, rows, made, base, expand) do
     [subject, tail] = Regex.split(@cif, sentence, parts: 2)
 
     # an inline list follows "namely—" or a dash; else the rows under this one
@@ -142,6 +170,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
       excluded: [],
       treatment: treatment,
       date: date,
+      qualified_date: nil,
       evidence: row.section_id,
       text: sentence
     }
@@ -158,19 +187,21 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
       {refs, excluded} =
         Enum.reduce(plain, {[], []}, fn item, {rs, ex} ->
           {inside, outside} = split_except(item)
-          named = weighted_refs(inside, rows, base)
+          named = weighted_refs(inside, rows, base, expand)
 
           {rs ++ named,
-           ex ++ refs(outside, rows, List.first(Enum.map(named, &elem(&1, 0)), base))}
+           ex ++
+             refs(outside, rows, relative_base(named, base), expand)}
         end)
 
       named = %{g | refs: refs, excluded: excluded}
 
       listed = %{
         g
-        | refs: Enum.flat_map(qualified, &weighted_refs(&1, rows, base)),
+        | refs: Enum.flat_map(qualified, &weighted_refs(&1, rows, base, expand)),
           treatment: :provision_qualified,
-          date: nil
+          date: nil,
+          qualified_date: date
       }
 
       # a list whose items are all qualified is only the qualified group
@@ -179,11 +210,13 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
       |> Enum.reject(&(&1.kind == :unread and plain == [] and qualified != []))
     else
       {subject_in, subject_out} = split_except(subject)
-      refs = weighted_refs(subject_in, rows, base)
+      refs = weighted_refs(subject_in, rows, base, expand)
 
       # "Regulation 26, with the exception of paragraph (4)": relative to
       # what the subject names
-      excluded = refs(subject_out, rows, List.first(Enum.map(refs, &elem(&1, 0)), base))
+      excluded =
+        refs(subject_out, rows, relative_base(refs, base), expand)
+
       [classify(%{g | refs: refs, excluded: excluded}, sentence, subject)]
     end
   end
@@ -191,7 +224,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
   defp classify(g, qualifiable, subject \\ "") do
     cond do
       Regex.match?(@qualified, qualifiable) ->
-        %{g | treatment: :provision_qualified, date: nil}
+        %{g | treatment: :provision_qualified, date: nil, qualified_date: g.date}
 
       Regex.match?(@remaining, subject) and g.treatment != :provision_unread ->
         %{g | kind: :remaining}
@@ -205,12 +238,31 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
   end
 
   defp tail_treatment(tail, made) do
+    # "in relation to Wales on 1st October 2020": the date after the place
+    # (such a sentence is qualified: listed by assign/3, a partial rule in CR-03)
+    tail =
+      String.replace(
+        tail,
+        ~r/^(?:in relation to|in|as respects)\s+(?:England and Wales|Great Britain|England|Wales|Scotland|Northern Ireland)\s+(?=on\b|from\b)/i,
+        ""
+      )
+
     case Clause.tail_date(tail, made) do
       {_, %Date{} = d} ->
         {:provision_dated, d}
 
       _ ->
         if Clause.by_order?(tail), do: {:provision_by_order, nil}, else: {:provision_unread, nil}
+    end
+  end
+
+  # what an "except …" is relative to: the first provision named, else the
+  # clause's own (a Part's or Chapter's id isn't a provision: "Part 7 …,
+  # except regulation 73")
+  defp relative_base(named, base) do
+    case named |> Enum.map(&elem(&1, 0)) |> Enum.reject(&String.contains?(&1, ":pt.")) do
+      [first | _] -> first
+      [] -> base
     end
   end
 
@@ -259,19 +311,24 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
   ("UK_x:reg.45(4)(d)", "UK_x:reg.48"); a Part gives its rows' ids.
   """
   @spec refs(String.t(), [map()], String.t()) :: [String.t()]
-  def refs(subject, rows, base),
-    do: subject |> weighted_refs(rows, base) |> Enum.map(&elem(&1, 0))
+  def refs(subject, rows, base), do: refs(subject, rows, base, true)
+
+  defp refs(subject, rows, base, expand),
+    do: subject |> weighted_refs(rows, base, expand) |> Enum.map(&elem(&1, 0))
 
   # each reference with its specificity: a named provision's is its length;
   # a Part's or Chapter's rows weigh 0, so a provision another sentence
   # names wins over its Part ("Part 7 …" vs "Regulation 73 … 2030")
-  defp weighted_refs(subject, rows, base) do
+  defp weighted_refs(subject, rows, base, expand) do
     # another law's provisions ("section 3 of the 2022 Act") are never this
     # law's rows
-    if subject =~ @other_law, do: [], else: own_refs(subject, rows, base)
+    if subject =~ @other_law, do: [], else: own_refs(subject, rows, base, expand)
   end
 
-  defp own_refs(subject, rows, base) do
+  # Parts and Chapters as their rows (`expand`: assign/3) or as the law's
+  # own ids ("UK_x:pt.II", "UK_x:pt.6.ch.1": groups/3)
+  defp own_refs(subject, rows, base, expand) do
+    law = base |> String.split(":", parts: 2) |> hd()
     prefix = base |> provision() |> String.split(".", parts: 2) |> hd()
     held = MapSet.new(rows, & &1.section_id)
 
@@ -282,7 +339,9 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
       with true <- Regex.match?(@this_part, subject),
            %{part: part} when is_binary(part) <-
              Enum.find(rows, &(provision(&1.section_id) == provision(base))) do
-        for r <- rows, Map.get(r, :part) == part, do: r.section_id
+        if expand,
+          do: for(r <- rows, Map.get(r, :part) == part, do: r.section_id),
+          else: ["#{law}:pt.#{part}"]
       else
         _ -> []
       end
@@ -298,14 +357,14 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
           r <- rows,
           same_part?(Map.get(r, :part), p),
           same_part?(Map.get(r, :chapter), c),
-          do: r.section_id
+          do: if(expand, do: r.section_id, else: "#{law}:pt.#{r.part}.ch.#{r.chapter}")
 
     parts =
       for [_, list] <- Regex.scan(@part, Regex.replace(@chapter_of_part, subject, "")),
           p <- String.split(list, ~r/\s*(?:,|and)\s*/, trim: true),
           r <- rows,
           same_part?(Map.get(r, :part), p),
-          do: r.section_id
+          do: if(expand, do: r.section_id, else: "#{law}:pt.#{r.part}")
 
     # "paragraph (4)" / "subsection (6)" alone: within the clause's provision
     relative =
@@ -314,10 +373,13 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
           not Regex.match?(@noun, subject),
           do: base <> b
 
-    (Enum.map(this ++ nouns ++ relative, &{&1, String.length(&1)}) ++
-       Enum.map(this_part ++ chapters ++ parts, &{&1, 0}))
-    |> Enum.uniq_by(&elem(&1, 0))
-    |> Enum.filter(fn {ref, _} -> Enum.any?(held, &covers?(ref, &1)) end)
+    # a container's ids exist by construction (its rows, or theirs)
+    provisions =
+      (this ++ nouns ++ relative)
+      |> Enum.filter(fn ref -> Enum.any?(held, &covers?(ref, &1)) end)
+      |> Enum.map(&{&1, String.length(&1)})
+
+    Enum.uniq_by(provisions ++ Enum.map(this_part ++ chapters ++ parts, &{&1, 0}), &elem(&1, 0))
   end
 
   # "45(4)(d) and (5)(a) and 48", "17 to 21", "3, 4, 17, 21 and 23"

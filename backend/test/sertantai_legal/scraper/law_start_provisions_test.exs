@@ -286,4 +286,99 @@ defmodule SertantaiLegal.Scraper.LawStartProvisionsTest do
 
     assert [{:provision_unread, nil, []}] = got
   end
+
+  test "a place inside a parenthesis doesn't qualify the sentence (uksi 2017/1200 reg.2(2))" do
+    got =
+      assign([
+        {"reg.2(1)",
+         "These Regulations (except Parts 2 and 3) come into force on 1st January 2018."},
+        {"reg.2(2)",
+         "Parts 2 and 3 (which are about civil enforcement except in Scotland and the Scottish offshore area) come into force on 1st April 2018."},
+        {"reg.7", "", "2"},
+        {"reg.20", "", "3"}
+      ])
+
+    assert got == [{:provision_dated, ~D[2018-04-01], ~w[reg.7 reg.20]}]
+  end
+
+  test "\"comes into force in Wales on …\" is qualified" do
+    got =
+      assign([
+        {"reg.1(1)", "These Regulations come into force on 1st April 2020."},
+        {"reg.1(2)", "Regulation 5 comes into force in Wales on 1st October 2020."},
+        "reg.5"
+      ])
+
+    assert got == [{:provision_qualified, nil, ~w[reg.5]}]
+  end
+
+  describe "groups/3: the sentences with their references unexpanded (commencement-rules CR-03)" do
+    defp groups(specs, opts \\ []) do
+      rs = rows(specs)
+      made = Keyword.get(opts, :made)
+      law = LawStart.resolve(%{type_code: Keyword.get(opts, :type, "uksi"), rows: rs, made: made})
+
+      for g <- Provisions.groups(rs, made, law),
+          do:
+            {g.kind, g.treatment, g.date || g.qualified_date,
+             Enum.map(g.refs, &String.replace(&1, "UK_x:", "")),
+             Enum.map(g.excluded, &String.replace(&1, "UK_x:", ""))}
+    end
+
+    test "a Part by the law's own numeral, not its rows" do
+      got =
+        groups([
+          {"reg.1(2)",
+           "These Regulations shall, except as provided by paragraph (3) below, come into force on 3rd August 1994."},
+          {"reg.1(3)", "Part II of these Regulations shall come into force on 1st January 1995."},
+          {"reg.2", "", "I"},
+          {"reg.5", "", "II"},
+          {"reg.5(1)", "", "II"}
+        ])
+
+      assert got == [{:named, :provision_dated, ~D[1995-01-01], ["pt.II"], []}]
+    end
+
+    test "this Part, a Chapter of a Part, a Part with an item's except, a named regulation (wsi 2026/103)" do
+      got =
+        groups(
+          [
+            {"reg.1(2)",
+             "Except as provided in paragraphs (3) and (4), these Regulations come into force on 1 October 2027.",
+             "1"},
+            {"reg.1(3)",
+             "The following provisions come into force on the day after the day on which these Regulations are made—",
+             "1"},
+            {"reg.1(3)(a)", "this Part;", "1"},
+            {"reg.1(3)(b)", "Chapter 1 of Part 6 (items subject to overseas schemes);", "1"},
+            {"reg.1(3)(c)", "Part 7 (the scheme administrator), except regulation 73;", "1"},
+            {"reg.1(4)",
+             "Regulation 73 (reuse of returned refund items) comes into force on 1 October 2030.",
+             "1"},
+            {"reg.50", "", "6", "1"},
+            {"reg.60", "", "6", "2"},
+            {"reg.70", "", "7"},
+            {"reg.73", "", "7"}
+          ],
+          made: ~D[2026-03-25]
+        )
+
+      assert {:named, :provision_dated, ~D[2026-03-26], ["pt.1", "pt.6.ch.1", "pt.7"], ["reg.73"]} in got
+      assert {:named, :provision_dated, ~D[2030-10-01], ["reg.73"], []} in got
+    end
+
+    test "remaining provisions and a qualified sentence keep their dates" do
+      got =
+        groups([
+          {"reg.1(1)",
+           "These Regulations may be cited as the Quarries Regulations (Northern Ireland) 2006 and, subject to paragraphs (2) and (3), shall come into operation on 1st August 2006."},
+          {"reg.1(2)",
+           "Regulation 26, with the exception of paragraph (4), shall come into operation on 1st August 2007 with respect to any tip which was not a classified tip."},
+          "reg.26",
+          "reg.26(4)"
+        ])
+
+      assert got == [{:named, :provision_qualified, ~D[2007-08-01], ["reg.26"], ["reg.26(4)"]}]
+    end
+  end
 end

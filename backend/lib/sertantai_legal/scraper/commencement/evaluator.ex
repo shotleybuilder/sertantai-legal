@@ -12,6 +12,10 @@ defmodule SertantaiLegal.Scraper.Commencement.Evaluator do
     `:rest` (what the source's other rules don't name), then `:all` (which,
     like `:rest`, doesn't reach what another rule of the source names). So
     "s.62 on 23 March 2027; otherwise on Royal Assent" dates s.62 once.
+    Where the most specific are all partial ("Regulation 26 … with respect
+    to any tip which was not a classified tip", "… in relation to Wales on
+    1 October"), the next rule down still applies, partly: fully in force
+    once both have started.
   - **Across sources every covering rule applies, in date order**: an
     order's "remaining provisions" reaches a provision an earlier order
     brought in for specified purposes; it is fully in force from the first
@@ -37,7 +41,8 @@ defmodule SertantaiLegal.Scraper.Commencement.Evaluator do
           date: Date.t() | nil,
           territory: String.t() | nil,
           purposes: Rule.purposes(),
-          rule: Rule.t()
+          rule: Rule.t(),
+          role: :normal | :general | :completes
         }
   @type result :: %{
           entries: [entry()],
@@ -55,9 +60,15 @@ defmodule SertantaiLegal.Scraper.Commencement.Evaluator do
       rules
       |> Enum.group_by(& &1.source.law)
       |> Enum.flat_map(fn {_source, rs} -> most_specific(rs, chain, ctx) end)
-      |> Enum.map(
-        &%{date: date(&1.when, ctx), territory: &1.territory, purposes: &1.purposes, rule: &1}
-      )
+      |> Enum.map(fn {r, role} ->
+        %{
+          date: date(r.when, ctx),
+          territory: r.territory,
+          purposes: r.purposes,
+          rule: r,
+          role: role
+        }
+      end)
       |> Enum.sort_by(& &1.date, &later_or_nil/2)
 
     full_from = full_from(entries, ctx[:extent])
@@ -74,13 +85,13 @@ defmodule SertantaiLegal.Scraper.Commencement.Evaluator do
     }
   end
 
-  @doc "The provision's status on `date`: fully or partly in force, prospective (a rule reaches it, not yet), or unknown (none does)."
+  @doc "The provision's status on `date`: fully or partly in force, prospective (a rule reaches it, not yet), or unknown (none does, or only an unread one)."
   @spec status(result(), Date.t()) :: :in_force | :in_force_partial | :prospective | :unknown
   def status(%{entries: entries, full_from: full, partial_from: partial}, date) do
     cond do
       full && Date.compare(full, date) != :gt -> :in_force
       partial && Date.compare(partial, date) != :gt -> :in_force_partial
-      entries != [] -> :prospective
+      Enum.any?(entries, &(&1.rule.when != :unread)) -> :prospective
       true -> :unknown
     end
   end
@@ -93,6 +104,8 @@ defmodule SertantaiLegal.Scraper.Commencement.Evaluator do
       |> String.split(":", parts: 2)
       |> List.last()
       |> String.replace(~r/\[[^\]]*\]$/, "")
+      # a duplicate id's disambiguator (LR-13: "s.153(1)(n)#2", "s.33(2)(a)n1")
+      |> String.replace(~r/(?<=\))(?:#\d+|n\d+)$|#\d+$/, "")
 
     brackets =
       Stream.iterate(ref, &String.replace(&1, ~r/\([^()]*\)$/, ""))
@@ -111,16 +124,20 @@ defmodule SertantaiLegal.Scraper.Commencement.Evaluator do
   end
 
   # a source document's rules (its clauses together) reaching the provision,
-  # most specific only
+  # most specific only, each with its role: `:normal`; or, where the most
+  # specific are all partial ("Regulation 26 … with respect to any tip which
+  # was not a classified tip"), they `:complete` the next rule down, which
+  # still applies as `:general` — partly in force from it, fully once both
+  # have started (CR-03: Quarries Regulations reg.26)
   defp most_specific(rules, chain, ctx) do
-    named? = Enum.any?(rules, &(is_list(&1.scope) and refs_index(&1, chain, ctx) != nil))
+    named? =
+      Enum.any?(
+        rules,
+        &(is_list(&1.scope) and refs_index(&1, chain, ctx) != nil and
+            not excepted?(&1, chain, ctx))
+      )
 
-    ranked =
-      for r <- rules,
-          not excepted?(r, chain, ctx),
-          rank = rank(r, chain, ctx, named?),
-          rank != nil,
-          do: {rank, r}
+    ranked = ranked(rules, chain, ctx, named?)
 
     case ranked do
       [] ->
@@ -128,8 +145,28 @@ defmodule SertantaiLegal.Scraper.Commencement.Evaluator do
 
       _ ->
         best = ranked |> Enum.map(&elem(&1, 0)) |> Enum.min()
-        for {^best, r} <- ranked, do: r
+        top = for {^best, r} <- ranked, do: r
+
+        below =
+          rules
+          |> ranked(chain, ctx, false)
+          |> Enum.filter(&(elem(&1, 0) > best))
+
+        if Enum.all?(top, &(not Rule.full?(&1))) and below != [] do
+          next = below |> Enum.map(&elem(&1, 0)) |> Enum.min()
+          Enum.map(top, &{&1, :completes}) ++ for({^next, r} <- below, do: {r, :general})
+        else
+          Enum.map(top, &{&1, :normal})
+        end
     end
+  end
+
+  defp ranked(rules, chain, ctx, named?) do
+    for r <- rules,
+        not excepted?(r, chain, ctx),
+        rank = rank(r, chain, ctx, named?),
+        rank != nil,
+        do: {rank, r}
   end
 
   defp rank(%Rule{scope: refs} = r, chain, ctx, _named?) when is_list(refs),
@@ -217,12 +254,20 @@ defmodule SertantaiLegal.Scraper.Commencement.Evaluator do
 
   defp date(_appointed_or_unread, _ctx), do: nil
 
-  # fully in force: the first entry with no purposes and no territory, or
-  # the date territorial entries together first cover the extent
+  # fully in force: the first entry with no purposes and no territory, the
+  # date territorial entries together first cover the extent, or the date a
+  # completing rule and the general rule it completes have both started
   defp full_from(entries, extent) do
-    dated = for %{date: %Date{}, purposes: nil} = e <- entries, do: e
+    dated = for %{date: %Date{}, purposes: nil, role: :normal} = e <- entries, do: e
 
     plain = for %{territory: nil, date: d} <- dated, do: d
+
+    general = for %{role: :general, date: d} <- entries, do: d
+
+    completed =
+      for %{role: :completes, date: %Date{} = d} <- entries,
+          general != [] and Enum.all?(general, &is_struct(&1, Date)),
+          do: Enum.max([d | general], Date)
 
     territorial =
       case extent && codes(extent) do
@@ -240,7 +285,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Evaluator do
           |> then(&if(is_struct(&1, Date), do: &1))
       end
 
-    Enum.min(Enum.reject([territorial | plain], &is_nil/1), Date, fn -> nil end)
+    Enum.min(Enum.reject([territorial | plain ++ completed], &is_nil/1), Date, fn -> nil end)
   end
 
   defp codes(territory), do: territory |> String.split("+", trim: true) |> MapSet.new()

@@ -120,6 +120,48 @@ defmodule SertantaiLegal.Scraper.Commencement.EvaluatorTest do
     end
   end
 
+  describe "within a source, a qualified rule completes the general one (CR-03)" do
+    test "Quarries reg.26: in force for classified tips with the Regulations, fully when the rest is added" do
+      rules = [
+        rule("L", "L", :all, {:date, ~D[2006-08-01]}, ref: "reg.1(1)"),
+        rule("L", "L", ["reg.26"], {:date, ~D[2007-08-01]},
+          ref: "reg.1(2)",
+          purposes: :in_relation_to,
+          except: ["reg.26(4)"]
+        )
+      ]
+
+      r = eval(rules, "reg.26")
+      assert %{partial_from: ~D[2006-08-01], full_from: ~D[2007-08-01]} = r
+      # the exception isn't reached by the qualified rule: the general one alone
+      assert %{full_from: ~D[2006-08-01], partial_from: nil} = eval(rules, "reg.26(4)")
+    end
+
+    test "a provision commenced in relation to Wales later: partly in force, then fully" do
+      rules = [
+        rule("L", "L", :all, {:date, ~D[2020-04-01]}, ref: "reg.1(1)"),
+        rule("L", "L", ["reg.5"], {:date, ~D[2020-10-01]}, ref: "reg.1(2)", territory: "W")
+      ]
+
+      assert %{partial_from: ~D[2020-04-01], full_from: ~D[2020-10-01]} =
+               eval(rules, "reg.5", %{extent: "E+W"})
+
+      assert %{full_from: ~D[2020-04-01]} = eval(rules, "reg.6", %{extent: "E+W"})
+    end
+
+    test "a qualified rule dated before the general one completes it only when the general starts" do
+      rules = [
+        rule("L", "L", :all, {:date, ~D[2020-04-01]}),
+        rule("L", "L", ["s.5"], {:date, ~D[2020-01-01]},
+          ref: "s.20(2)",
+          purposes: :for_making_secondary_legislation
+        )
+      ]
+
+      assert %{partial_from: ~D[2020-01-01], full_from: ~D[2020-04-01]} = eval(rules, "s.5")
+    end
+  end
+
   describe "across sources: every rule, in date order (Gemini)" do
     test "for specified purposes, then the remaining provisions: partial, then full" do
       rules = [
@@ -182,9 +224,25 @@ defmodule SertantaiLegal.Scraper.Commencement.EvaluatorTest do
     assert %{full_from: nil, undated: [_]} = eval(rules, "s.9")
   end
 
+  test "a duplicate id's disambiguator doesn't hide its provision (LR-13 ids)" do
+    rules = [
+      rule("L", "L", ["s.33"], {:appointed, "by order"}),
+      rule("L", "L", :rest, {:date, ~D[1984-12-01]})
+    ]
+
+    assert %{full_from: nil, undated: [_]} = eval(rules, "UK_x:s.33(2)(a)n1")
+    assert %{full_from: nil, undated: [_]} = eval(rules, "UK_x:s.33(1)(n)#2")
+  end
+
   test "no rule covers the provision: unknown" do
     r = eval([rule("L", "L", ["s.1"], {:date, ~D[2024-01-01]})], "s.2")
     assert %{entries: [], full_from: nil, partial_from: nil, undated: []} = r
+    assert Evaluator.status(r, ~D[2026-01-01]) == :unknown
+  end
+
+  test "an unread rule says nothing about when: unknown, not prospective (CR-03)" do
+    r = eval([rule("L", "L", :all, :unread)], "s.2")
+    assert %{undated: [_]} = r
     assert Evaluator.status(r, ~D[2026-01-01]) == :unknown
   end
 
