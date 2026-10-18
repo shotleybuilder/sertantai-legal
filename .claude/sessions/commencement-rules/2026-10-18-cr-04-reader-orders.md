@@ -109,3 +109,19 @@ Bugs caught by the measure: the feed's refs list a paragraph's Schedule too, so 
 | text | 2,843 | 86 | 1,928 |
 
 The text tier dates most pre-2002 rows (2,771) but at 65% where checkable — below the bar; its pre-2002 precision can't be checked against the feed (6 records).
+
+## Decided (Jason 2026-10-18: "1. accept recommendation; 2. only if used as a qa and never a source of truth (b)")
+
+1. **Only effects-tier dates reach the labels (CR-06)**; text-tier dates are held back (below the bar). Pre-2002 changes no effect dates stay undated — a known limit for now.
+2. **Text tier QA against note dates — measure only, never a source**: a scratch QA script (not in `lib/`, so the note-read architecture test stays true) compares text-tier dates with the dates a change's note states; if ≥ 95%, the text tier may follow (Jason decides). Notes never label anything.
+
+## Final measure (2026-10-18)
+
+Fixes from the note-date QA: an Act's Royal Assent fallback (LR-33's law start when its clause leaves the rest to orders) is never evidence for an amending provision (text tier 14% → 81%); a whole Schedule whose entries came in on different dates gets no date (repeals tables); "the following provisions of Schedule 22—" / "the provisions in Schedules 13 and 14 … specified in …" are a subset, never the whole Schedule, and set the paragraph context.
+
+| Tier | vs the feed (where it dates) | vs note dates (QA only, never a source) |
+|---|---|---|
+| **effects** | **97.0%** (12,046 / 12,415) | 2002+: 99.6% (741 / 744); pre-2002: 9 / 29 |
+| text (own clause + cited orders) | 77% (924 / 1,199) | pre-2002: **92.8%** (1,727 / 1,860) |
+
+Coverage of the 5,720 undated amending-law changes on our rows: effects tier dates 706 and partly 68 (passes the bar → CR-06); text tier would date 1,476 and partly 535 (held back: below the bar).
