@@ -1,11 +1,55 @@
 ---
 session: 'CR-04: Reader — Commencement Orders'
-status: active
+status: closed
 opened: '2026-10-18'
+closed: '2026-10-18'
+outcome: success
 parent: commencement-rules/2026-10-18-cr-00-meta.md
+summary: 'When an amending provision came into force is now read effects first: each amending Act''s legislation.gov.uk "coming into force" effects become rules (221 Acts, 32,335 rules) and date 774 of the 5,720 undated changes on our rows at 97.0% agreement with the feed. Orders read as text (Commencement.Order) reach 92.8% against note dates (QA only) — below the 95% bar, held back (CR-08).'
+decisions:
+  - what: Bar of 95% agreement before any order-derived date reaches the labels
+    why: 'Jason 2026-10-18: "Agree, 95% bar and read all orders"'
+    result: effects tier passes (97.0%); text tier held back
+  - what: Effects first; law text only where effects are missing; every fetch one hop from our domain rows
+    why: 'Jason 2026-10-18: "We''re not driving through the cascade…"; "if we have the effects data from leg.gov.uk why do we need to pull the laws too?"'
+    result: all-orders fetch stopped at 56 of 1,131; one changes feed per amending Act instead
+  - what: Note dates only as a QA yardstick for the text tier, never a source
+    why: 'Jason 2026-10-18: "only if used as a qa and never a source of truth"'
+    result: scratch QA script outside lib/; text tier 92.8%
+  - what: Close with the effects tier; the text tier a pending session
+    why: 'Jason 2026-10-18 "(a)"'
+    result: CR-08
+metrics:
+  effects_tier: { vs_feed: '97.0% (12,046/12,415)', vs_notes_2002_on: '99.6% (741/744)', dates: 706, partial: 68 }
+  text_tier: { vs_feed: '77% (924/1,199)', vs_notes_pre_2002: '92.8% (1,727/1,860)', would_date: 1476, would_partial: 535 }
+  rules: { effects: 32335, order_text: 1061, amending_acts: 221, commencing_instruments: 712 }
+lessons:
+  - title: Ask whether an effect already holds the fact before reading or fetching text
+    detail: 'Jason stopped a 1,131-order fetch: the amending Acts'' own feeds held the commencement effects. Effects first is now standing guidance (feedback_effects_first).'
+    tag: data
+  - title: A measured disagreement usually has one systematic cause
+    detail: 'Each precision jump came from one bug: the feed listing a paragraph''s Schedule as a ref (86% → 96%), an Act''s year taken for its commencement''s (feeds for every Act), LR-33''s Royal Assent fallback read as an amending provision''s date (14% → 81%), a Schedule subset read as the whole (81% → 92.8%).'
+    tag: data
+bugs:
+  - pattern: 'The amending-law collector dates changes from CommencingOrder (hop 2), which finds no date for most held orders'
+    category: commencement
+    module: AmendingLaw.CommencingOrder
+    affected: 1463
+    fix: Commencement.Amending (effects first) — consumed at CR-06
+    status: fixed
+artifacts:
+  - backend/lib/sertantai_legal/scraper/commencement/effects.ex
+  - backend/lib/sertantai_legal/scraper/commencement/amending.ex
+  - backend/lib/sertantai_legal/scraper/commencement/order.ex
+  - backend/lib/sertantai_legal/scraper/commencement/orders.ex
+depends_on:
+  - commencement-rules/2026-10-18-cr-03-reader-own-clause
+enables:
+  - commencement-rules/2026-10-18-cr-06-switch-over
+  - commencement-rules/2026-10-18-cr-08-text-tier
 ---
 
-# Session: CR-04: Reader — Commencement Orders (ACTIVE)
+# Session: CR-04: Reader — Commencement Orders (CLOSED)
 
 ## Problem
 
@@ -14,9 +58,9 @@ A commencement order becomes rules about the law it commences. Today `Commencing
 ## Todo
 
 - ✅ Trace a sample of the 1,463 (30, `order_trace.exs`): below
-- ⬜ Reader: an order's articles and Schedules → rules (`scope`, `when: date`, territory, purposes, `not_already_in_force`)
-- ⬜ Which orders: those notes name (hop 2) and those made under a law's commencement power (for CR-07)
-- ⬜ Classified diff vs `CommencingOrder` on the benchmark; date differs (854) expected down
+- ✅ Reader: `Commencement.Order` (text tier) and `Commencement.Effects` (effects tier, first); `Commencement.Amending` decides
+- ✅ Which: effects from each amending Act's feed; text from the orders notes cite (the all-orders route `Commencement.Orders` built, not used — Jason: scope from our rows)
+- ✅ Gate vs the feed: effects 97.0%; text 77% (92.8% vs note dates, QA only) → text held back (CR-08)
 
 ## Dependencies
 
