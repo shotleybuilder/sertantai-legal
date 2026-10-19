@@ -9,7 +9,8 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Commencement do
 
   - **The law** (`LawStart`): one law-level record (`section_id` nil).
   - **Its provisions**: the commencement evaluator over the law's own
-    clause as rules (`OwnClause`) — one record per row a rule other than
+    clause as rules (`OwnClause`) and, for rows its own feed doesn't date,
+    its commencement orders (`Order`, CR-07) — one record per row a rule other than
     the law-level one reaches: `provision_dated` (fully in force on a date;
     its partial entries before it kept as in-force entries),
     `provision_qualified` (in force partly only), `provision_by_order` (left
@@ -23,19 +24,37 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Commencement do
 
   alias SertantaiLegal.Scraper.ChangeCollector.Record
   alias SertantaiLegal.Scraper.Commencement.{Evaluator, OwnClause}
-  alias SertantaiLegal.Scraper.LawStart
+  alias SertantaiLegal.Scraper.{LatStatus, LawStart}
 
-  @doc "The law's commencement records from its `LawStart.input()`."
-  @spec records(String.t(), LawStart.input()) :: [Record.t()]
-  def records(law_name, input) do
+  @doc """
+  The law's commencement records from its `LawStart.input()`. `opts`:
+  `orders:` the law's own commencement orders as rules (CR-07), which reach
+  a row only where its own feed dates no commencement of it or an ancestor
+  (`feed_dated:`, section_ids: effects first).
+  """
+  @spec records(String.t(), LawStart.input(), keyword()) :: [Record.t()]
+  def records(law_name, input, opts \\ []) do
     %{law: law, rules: rules, unread: unread} = OwnClause.read(law_name, input)
     rows = Map.get(input, :rows, [])
     ctx = rows |> OwnClause.context() |> Map.put(:made, Map.get(input, :made))
     law_rule = Enum.find(rules, &(&1.scope == :all))
+    orders = Keyword.get(opts, :orders, [])
+    feed_dated = Keyword.get(opts, :feed_dated, MapSet.new())
+
+    rules_for = fn sid ->
+      if orders == [] or Enum.any?(LatStatus.ancestors(sid), &MapSet.member?(feed_dated, &1)),
+        do: rules,
+        else: rules ++ orders
+    end
 
     provisions =
       for row <- rows,
-          r = Evaluator.evaluate(rules, row.section_id, Map.put(ctx, :extent, row[:extent_code])),
+          r =
+            Evaluator.evaluate(
+              rules_for.(row.section_id),
+              row.section_id,
+              Map.put(ctx, :extent, row[:extent_code])
+            ),
           rec = provision(law_name, row.section_id, r, law_rule),
           rec != nil,
           do: rec
@@ -106,9 +125,12 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Commencement do
   end
 
   defp record(law_name, sid, treatment, r, source) do
+    by = source.law || law_name
+
     %Record{
-      base(law_name, sid, treatment, r.full_from, evidence(law_name, source.ref))
+      base(law_name, sid, treatment, r.full_from, evidence(by, source.ref))
       | affected_ref: source.text,
+        dated_by_law: if(r.full_from, do: by),
         in_force: for(e <- Evaluator.in_force(r), do: entry(e.date, e.qualification))
     }
   end

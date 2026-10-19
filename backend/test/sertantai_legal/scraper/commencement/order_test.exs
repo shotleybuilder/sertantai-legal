@@ -255,4 +255,36 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
     assert %{full_from: ~D[1997-07-17]} = dated(rules, "schedule-6-paragraph-20")
     assert %{full_from: nil, partial_from: ~D[1997-07-17]} = dated(rules, "section-8")
   end
+
+  test "CR-07: an older order lists its items first and states the date last; Parts are items; \"so far as relating to the entries\" names no other law's sections (SI 1982/1217)" do
+    rules =
+      Order.rules(
+        order(~S"""
+        <P1 id="article-2"><P1para><Text>The following provisions of the Act, namely—</Text>
+        <P3 id="article-2-a"><P3para><Text>Part I so far as not already in force;</Text></P3para></P3>
+        <P3 id="article-2-b"><P3para><Text>Schedule 17 so far as relating to the entries in Part II thereof as respects sections 27 to 35 and 38 of the Countryside Act 1968,</Text></P3para></P3>
+        <Text>shall come into force on 28th September 1982.</Text></P1para></P1>
+        """),
+        @act
+      )
+
+    ctx = Map.put(Order.context(), :ancestors, fn _ -> ["pt.I"] end)
+    assert %{full_from: ~D[1982-09-28]} = Evaluator.evaluate(rules, "s.3(1)", ctx)
+    refute Enum.any?(rules, &("s.27..s.35" in List.wrap(&1.scope)))
+  end
+
+  test "CR-07: another law's section whose title has small words is not the Act's (\"the repeal of section 1 of the Control of Pollution Act 1974\": SI 1994/1096)" do
+    rules =
+      Order.rules(
+        order(~S"""
+        <P1 id="article-2"><P1para><Text>The following provisions of the Act shall come into force on 1st May 1994—</Text>
+        <UnorderedList><ListItem><Para><Text>section 54;</Text></Para></ListItem>
+        <ListItem><Para><Text>the repeal of section 1 of the Control of Pollution Act 1974;</Text></Para></ListItem></UnorderedList></P1para></P1>
+        """),
+        @act
+      )
+
+    assert %{full_from: ~D[1994-05-01]} = dated(rules, "section-54")
+    assert %{full_from: nil} = dated(rules, "section-1")
+  end
 end

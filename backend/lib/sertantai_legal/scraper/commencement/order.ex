@@ -40,7 +40,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   @cif ~r/\b(?:shall\s+)?(?:come|comes)\s+into\s+(?:force|operation)\b/i
   @appointed ~r/\bis\s+the\s+(?:day|date)\s+appointed\s+for\s+the\s+coming\s+into\s+(?:force|operation)\s+of\b/i
   @full ~r/\b(?:so|in so|insofar|in as)\s*far\s+as\s+(?:it|they|that\s+[\w-]+)\s+(?:has|have|is|are)\s+not\s+(?:already|previously)\s+(?:been\s+)?(?:commenced|brought\s+into\s+force|in\s+force)|so\s+far\s+as\s+not\s+(?:already|previously)\s+in\s+force|for\s+all\s+(?:remaining\s+|other\s+)?purposes/i
-  @relating ~r/\b(?:so|in so|insofar)\s*far\s+as\s+(?:it|they)\s+relates?\s+to\b|\b(?:so|in so|insofar)\s*far\s+as\s+(?:it|they)\s+(?:gives?|give)\s+effect\s+to\b/i
+  @relating ~r/\b(?:so|in so|insofar)\s*far\s+as\s+(?:(?:it|they)\s+relates?|relating)\s+to\b|\bas\s+respects\b|\b(?:so|in so|insofar)\s*far\s+as\s+(?:it|they)\s+(?:gives?|give)\s+effect\s+to\b/i
   @partial ~r/\b(?:so|in so|insofar)\s*far\s+as\b|\bfor\s+the\s+purposes?\s+of\b|\bfor\s+(?:specified|certain|limited|particular)\s+purposes\b|\bexcept\b|\bsave\b|\bin\s+relation\s+to\b/i
   @places %{
     "england and wales" => "E+W",
@@ -161,18 +161,28 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
         words = Text.words_of(order, id),
         Regex.match?(@cif, words) or Regex.match?(@appointed, words),
         lines = order |> Doc.element(id) |> Doc.lines() |> Enum.map(&clean_line/1),
-        {head, rest} = split_head(lines),
+        {pre, head, rest} = split_head(lines),
         head != nil,
         {date, inline} <- List.wrap(statement(head, made)),
-        items = Enum.reject([clean_line(inline) | rest], &(&1 == "")),
+        items = Enum.reject(pre ++ [clean_line(inline) | rest], &(&1 == "")),
         rule <- item_rules(items, aliases, date, order.law_name, id, head),
         do: rule
   end
 
+  # {items before the statement, the statement line, the lines after}: an
+  # older order lists its items first and states the date last ("The
+  # following provisions of the … Act 1981, namely— (a) Part I …; (b) …
+  # shall come into force on 28th September 1982": CR-07, SI 1982/1217)
   defp split_head(lines) do
     case Enum.split_while(lines, &(not (Regex.match?(@cif, &1) or Regex.match?(@appointed, &1)))) do
-      {_, [head | rest]} -> {head, Enum.reject(rest, &(&1 == ""))}
-      _ -> {nil, []}
+      {before, [head | rest]} ->
+        case Enum.split_while(before, &(not (&1 =~ ~r/\b(?:namely|the following)\b/i))) do
+          {_, [_header | items]} -> {items, head, Enum.reject(rest, &(&1 == ""))}
+          _ -> {[], head, Enum.reject(rest, &(&1 == ""))}
+        end
+
+      _ ->
+        {[], nil, []}
     end
   end
 
@@ -415,7 +425,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   # a line naming another law's provisions keeps only the Act's
   defp drop_other_laws(line, aliases) do
     Regex.replace(
-      ~r/\b(?:sections?|paragraphs?|Schedules?|regulations?|articles?)\s+\d+[A-Z]*(?:\([0-9A-Za-z]+\))*(?:\s*(?:,|and|to)\s*\d+[A-Z]*(?:\([0-9A-Za-z]+\))*)*(?:\s*\([^()]*\))?,?\s+(?:of|to|into)\s+(?:the\s+)?((?:\d{4}\s+)?(?:[A-Z][\w()',-]*\s+){0,10}(?:Act|Order|Regulations|Measure)(?:\s+\d{4})?)/u,
+      ~r/\b(?:sections?|paragraphs?|Schedules?|regulations?|articles?)\s+\d+[A-Z]*(?:\([0-9A-Za-z]+\))*(?:\s*(?:,|and|to)\s*\d+[A-Z]*(?:\([0-9A-Za-z]+\))*)*(?:\s*\([^()]*\))?,?\s+(?:of|to|into)\s+(?:the\s+)?((?:\d{4}\s+)?(?:[A-Z][\w()',-]*\s+){0,10}(?:(?:of|and|for|the|in|on)\s+(?:[A-Z][\w()',-]*\s+){1,8})*(?:Act|Order|Regulations|Measure)(?:\s+\d{4})?)/u,
       line,
       fn whole, law ->
         if Enum.any?(aliases, &String.contains?(norm("the " <> law), &1)) or
@@ -487,6 +497,18 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
           r <- list_refs(list, "sch."),
           do: r
 
+    # "Part I", "Parts III and IV" of the Act (not "Part II of Schedule 17";
+    # "in Part II, the repeals of …" is where in a repeals Schedule)
+    parts =
+      for [_, list] <-
+            Regex.scan(
+              ~r/(?<![Ii]n )\bParts?\s+((?:[IVXL]+[A-Z]?|\d+[A-Z]?)(?:\s*(?:,|and|to)\s*(?:[IVXL]+[A-Z]?|\d+[A-Z]?))*)\b(?!\s+(?:of|to)\s+(?:the\s+)?Schedule|\s+thereof)/,
+              text
+            ),
+          not (text =~ ~r/\bof\s+Schedule\b/i and sch != nil),
+          p <- String.split(list, ~r/\s*(?:,|and|to)\s*/, trim: true),
+          do: "pt.#{p}"
+
     paragraphs =
       case sch do
         nil ->
@@ -501,7 +523,9 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
               do: r
       end
 
-    Enum.uniq(sections ++ subsections ++ Enum.reject(schedules, &(&1 in [])) ++ paragraphs)
+    Enum.uniq(
+      sections ++ subsections ++ Enum.reject(schedules, &(&1 in [])) ++ parts ++ paragraphs
+    )
     |> Enum.reject(&(&1 =~ ~r/^s\.\(/))
   end
 

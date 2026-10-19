@@ -56,7 +56,11 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
         "feed" => feed,
         "markup" => Markup.records(law_name, rows),
         "amending_law" => amending_law(law_name, order, feed, Keyword.get(opts, :mode, :gaps)),
-        "commencement" => Commencement.records(law_name, law_start_input(law_name, rows))
+        "commencement" =>
+          Commencement.records(law_name, law_start_input(law_name, rows),
+            orders: orders_rules(law_name),
+            feed_dated: feed_dated(feed)
+          )
       }
 
       {:ok,
@@ -220,6 +224,22 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
 
     for [code, text, law, sids] <- rows,
         do: %{code: code, text: text, citation_law: law, affected_sections: sids || []}
+  end
+
+  # the law's own commencement orders as rules (CR-07: its by-order rows)
+  defp orders_rules(law_name) do
+    law_name
+    |> CommencementRules.for_law()
+    |> Enum.filter(&(&1.treatment in [:order_date, :order_schedule]))
+  end
+
+  # rows the law's own feed dates a commencement of (effects first, CR-07)
+  defp feed_dated(feed) do
+    for r <- feed,
+        r.operation == "commenced",
+        r.effective_from != nil,
+        into: MapSet.new(),
+        do: r.section_id
   end
 
   # the rows' extents, for a commencement by territory (CR-06)

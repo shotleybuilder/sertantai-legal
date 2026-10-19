@@ -16,6 +16,7 @@ defmodule Mix.Tasks.Lat.Commencement do
       mix lat.commencement --compare --all --tag cr03_cmp   # the evaluator vs today's register, per row
       mix lat.commencement --effects                        # amending Acts: their feed's "coming into force" effects as rules (CR-04)
       mix lat.commencement --read-orders                    # amending Acts before 2002: the rules the orders their notes cite state (where no effect reaches)
+      mix lat.commencement --read-orders --law X,Y          # a labelled law's own commencement orders (CR-07: its by-order rows)
       mix lat.commencement --read-amending                  # amending laws with no LAT: their own clause from the CLML held (CR-06; one hop, no fetch)
 
   `--read` writes only `commencement_rules` (no label changes). `--compare`
@@ -274,7 +275,35 @@ defmodule Mix.Tasks.Lat.Commencement do
 
   defp year(law), do: law |> String.split("_") |> Enum.at(2) |> String.to_integer()
 
-  defp read_orders(_opts) do
+  # a labelled law's own commencement orders (CR-07: its by-order rows),
+  # every one held
+  defp read_orders(opts) do
+    case opts[:law] do
+      nil -> read_cited_orders()
+      laws -> read_law_orders(String.split(laws, ",", trim: true))
+    end
+  end
+
+  defp read_law_orders(laws) do
+    for law <- laws do
+      a = act(law)
+      orders = Orders.for_act(law, a.title, a.year)
+
+      read =
+        for order <- orders, d = doc(order), d != nil do
+          {:ok, n} =
+            Store.write(order, Order.rules(d, a), treatments: [:order_date, :order_schedule])
+
+          n
+        end
+
+      Mix.shell().info(
+        "#{law}: #{length(orders)} orders, #{length(read)} held and read, #{Enum.sum(read)} rules"
+      )
+    end
+  end
+
+  defp read_cited_orders do
     cited = cited_orders()
 
     # every order read is rewritten, with no rules too: a re-read never

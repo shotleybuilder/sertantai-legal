@@ -145,4 +145,44 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.CommencementTest do
              input
            )
   end
+
+  test "CR-07: the law's own commencement order dates a by-order row; the feed first where it dates the row" do
+    alias SertantaiLegal.Scraper.Commencement.Rule
+
+    input = %{
+      type_code: "ukpga",
+      made: ~D[1981-10-30],
+      rows:
+        rows([
+          {"s.1", "Duty."},
+          {"s.2", "Duty."},
+          {"s.74",
+           "This Act shall come into force on such day as the Secretary of State may by order appoint."}
+        ])
+    }
+
+    order =
+      Rule.new(
+        commences: "UK_x",
+        scope: ["s.1", "s.2"],
+        when: {:date, ~D[1982-09-28]},
+        source: %{law: "UK_uksi_1982_1217", ref: "reg.2", text: "… section 1 …"},
+        treatment: :order_date
+      )
+
+    recs =
+      Commencement.records("UK_x", input, orders: [order], feed_dated: MapSet.new(["UK_x:s.2"]))
+
+    s1 = Enum.find(recs, &(&1.section_id == "UK_x:s.1"))
+    s2 = Enum.find(recs, &(&1.section_id == "UK_x:s.2"))
+
+    assert %{
+             effect_type: "provision_dated",
+             effective_from: ~D[1982-09-28],
+             dated_by_law: "UK_uksi_1982_1217",
+             evidence: "UK_uksi_1982_1217:reg.2"
+           } = s1
+
+    assert %{effect_type: "provision_by_order", effective_from: nil} = s2
+  end
 end
