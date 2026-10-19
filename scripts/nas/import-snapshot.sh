@@ -2,11 +2,24 @@
 set -euo pipefail
 
 # Restore dev database tables from NAS snapshots.
-# Usage: ./import-snapshot.sh [--verify-only]
+# Usage: ./import-snapshot.sh [--verify-only] [--from DIR]
 #   --verify-only: check checksums and row counts without restoring
+#   --from DIR:    restore from DIR instead of snapshots/latest — a restore
+#                  point (nas-backup.sh --tables … --tag …) holds only the
+#                  tables an apply wrote; only those are restored
 
 NAS_DIR="/mnt/nas/sertantai-data/data"
 SNAPSHOT_DIR="${NAS_DIR}/snapshots/latest"
+VERIFY_ONLY=false
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --verify-only) VERIFY_ONLY=true ;;
+    --from)        SNAPSHOT_DIR="$2"; shift ;;
+    *) echo "unknown option: $1"; exit 1 ;;
+  esac
+  shift
+done
 
 DB_HOST="${DB_HOST:-localhost}"
 DB_PORT="${DB_PORT:-5436}"
@@ -28,6 +41,8 @@ TABLES=(
   lat_events
   lat_changes
   lat_section_id_renames
+  # the commencement ruleset (commencement-rules CR-01)
+  commencement_rules
   controls
   control_mappings
   secondary_sources
@@ -94,7 +109,7 @@ if [ "$all_ok" != true ]; then
   exit 1
 fi
 
-if [[ "${1:-}" == "--verify-only" ]]; then
+if [ "$VERIFY_ONLY" = true ]; then
   echo ""
   echo "Verification passed. Use without --verify-only to restore."
   exit 0

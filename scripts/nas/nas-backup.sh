@@ -3,9 +3,19 @@ set -euo pipefail
 
 # Backup sertantai-legal to NAS: database snapshots + project data files.
 # Usage: ./nas-backup.sh [--archive] [--db-only] [--data-only]
+#        ./nas-backup.sh --tables t1,t2 --tag NAME
 #   --archive:   move current latest/ to archive/ before exporting DB
 #   --db-only:   skip project data sync
 #   --data-only: skip database snapshot
+#   --tables:    a restore point before an apply: only the tables it writes
+#                (e.g. a relabel: lat_change_log,lat_label_timeline,lat_events),
+#                to snapshots/restore-points/<date>-<tag>/ — latest/ untouched,
+#                no data sync. Needs --tag.
+#
+# The data sync is incremental: rsync over the CIFS mount can't keep a file's
+# time when it writes a temp file and renames it, so every run re-sent every
+# file (1.2 GB, ~25 min). --inplace keeps times; --modify-window=1 allows the
+# share's rounding; -rt, not -a (the share holds no unix owners or modes).
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
@@ -34,6 +44,8 @@ TABLES=(
   lat_events
   lat_changes
   lat_section_id_renames
+  # the commencement ruleset (commencement-rules CR-01)
+  commencement_rules
   controls
   control_mappings
   secondary_sources
@@ -61,14 +73,34 @@ DATA_DIR="data"
 DO_DB=true
 DO_DATA=true
 DO_ARCHIVE=false
+ONLY_TABLES=""
+TAG=""
 
-for arg in "$@"; do
-  case "$arg" in
+while [ $# -gt 0 ]; do
+  case "$1" in
     --archive)   DO_ARCHIVE=true ;;
     --db-only)   DO_DATA=false ;;
     --data-only) DO_DB=false ;;
+    --tables)    ONLY_TABLES="$2"; shift ;;
+    --tag)       TAG="$2"; shift ;;
+    *) echo "unknown option: $1"; exit 1 ;;
   esac
+  shift
 done
+
+RSYNC_OPTS=(-rt --inplace --modify-window=1 --delete)
+
+# a restore point: the named tables only, in their own folder
+if [ -n "$ONLY_TABLES" ]; then
+  if [ -z "$TAG" ]; then
+    echo "ERROR: --tables needs --tag (the restore point's name)"
+    exit 1
+  fi
+  IFS=',' read -r -a TABLES <<< "$ONLY_TABLES"
+  SNAPSHOT_DIR="${NAS_DIR}/snapshots/restore-points/$(date +%Y-%m-%d)-${TAG}"
+  DO_DATA=false
+  DO_ARCHIVE=false
+fi
 
 # Check NAS is mounted
 if [ ! -d "$NAS_DIR" ]; then
@@ -80,6 +112,7 @@ fi
 echo "=== sertantai-legal NAS Backup ==="
 echo "  NAS: ${NAS_DIR}"
 echo "  DB:  ${DO_DB} | Data: ${DO_DATA} | Archive: ${DO_ARCHIVE}"
+[ -n "$ONLY_TABLES" ] && echo "  Restore point: ${SNAPSHOT_DIR} (${ONLY_TABLES})"
 echo ""
 
 # =========================================================================
@@ -174,7 +207,7 @@ if [ "$DO_DATA" = true ]; then
   if [ -d "$src" ]; then
     mkdir -p "$dest"
     echo "  rsync ${DATA_DIR}/ → ${dest}/"
-    rsync -a --delete "$src/" "$dest/"
+    rsync "${RSYNC_OPTS[@]}" "$src/" "$dest/"
     file_count=$(find "$src" -type f | wc -l)
     dir_size=$(du -sh "$src" | cut -f1)
     echo "    ${file_count} files, ${dir_size}"
@@ -189,7 +222,7 @@ if [ "$DO_DATA" = true ]; then
   if [ -d "$backend_data" ]; then
     mkdir -p "$backend_dest"
     echo "  rsync backend/data/ → ${backend_dest}/"
-    rsync -a --delete "$backend_data/" "$backend_dest/"
+    rsync "${RSYNC_OPTS[@]}" "$backend_data/" "$backend_dest/"
     file_count=$(find "$backend_data" -type f | wc -l)
     dir_size=$(du -sh "$backend_data" | cut -f1)
     echo "    ${file_count} files, ${dir_size}"
