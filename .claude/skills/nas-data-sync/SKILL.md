@@ -61,7 +61,16 @@ cd ~/Desktop/sertantai-legal
 
 # Archive previous snapshot first, then export
 ./scripts/nas/nas-backup.sh --archive
+
+# Before an apply (relabel, reparse, a data fix): a restore point of only the
+# tables it writes — seconds, latest/ untouched (snapshots/restore-points/<date>-<tag>/)
+./scripts/nas/nas-backup.sh --tables lat_change_log,lat_label_timeline,lat_events --tag cr06-relabel
+
+# Restore a restore point (only its tables)
+./scripts/nas/import-snapshot.sh --from /mnt/nas/sertantai-data/data/snapshots/restore-points/2026-10-19-cr06-relabel
 ```
+
+**Pick the smallest backup the change needs** (Jason 2026-10-19: "more finesse to backup, not blunt calls"): an apply needs a restore point of the tables it writes, not a full snapshot and data sync. The data sync is incremental (`rsync -rt --inplace --modify-window=1`): over the CIFS mount a temp-file-and-rename write loses the file's time, so the old `rsync -a` re-sent all 1.2 GB (~25 min) every run.
 
 **Tables exported** (in FK dependency order):
 1. `legal_register_uk` (19K+ rows, ~39MB)

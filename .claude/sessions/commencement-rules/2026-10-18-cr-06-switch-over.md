@@ -18,7 +18,7 @@ Every consumer asks the evaluator and the four old readers go: one path (as LR-2
 - ✅ Row starts from the evaluator: the commencement collector's provision records (evidence = the rule's source); partial starts carried to the labels (`in_force_partial`); `LawStart` stays the law-level start (its catalogue, LR-33)
 - ✅ Amending-law collector dates from the evaluator (`Commencement.Amending`: effects, else own clause and cited orders — Jason (a))
 - ✅ Deleted `AmendingLaw.Commencement`, `CommencingOrder`, `Provisions.assign` (row expansion); architecture test `commencement_read_test` (red before, green after)
-- ⬜ Dry run (undated_change, no_start, insertion_not_in_register; every label change classified), benchmark, Jason, NAS backup, relabel
+- ✅ Dry runs (eight; every label change classified), Jason ("Okay, go"), restore point, relabel — applied 2026-10-19, post-apply check 0 diffs
 
 ## Dependencies
 
@@ -115,3 +115,10 @@ Not changed (for Jason): EU-exit SIs "on exit day" (34 of the remaining note-dat
 | 37 | date emptied, status kept | J6: partly in, rest by order (FWMA 2010, 2021/30, Building Act 1984) |
 | 36 | → repealed | repeals now dated (Petroleum Act 1998 s.17E by SI 2011/2704 …) |
 | 49 | in force → partial | 16 uksi 1996/2925 (a qualified sentence "in accordance with paragraph (4)" unread), 16 TCPA 1990, 6 WRA 1991 (SI 1996/186: one item's "in so far as it requires …" read over the whole bare-number list — CR-08 class), rest staged E/W |
+
+## Applied (2026-10-19, Jason: "Okay, go")
+
+- NAS: full backup (checksums verified) and restore point `snapshots/restore-points/2026-10-19-cr06-relabel` (lat_change_log, lat_label_timeline, lat_events, commencement_rules; 4 s). The full backup's data sync took 25 min — CIFS lost file times under `rsync -a`, so every run re-sent 1.2 GB; Jason: "We need more finesse to backup, not blunt calls" → incremental sync and restore points (`56390f46`).
+- `mix lat.relabel --stale`: 1,066 laws, 0 failed.
+- Post-apply relabel dry run `cr06_post`: **0 diffs**, unknown today 16,680, gaps as `cr06_dry8`.
+- `mix lat.stale` shows all 1,066 parser-stale: `effect_facts.ex` is a `ParserVersion` input, and the parser calls only `EffectFacts.kind` (unchanged) — the parse output can't differ; a version-hash artefact.
