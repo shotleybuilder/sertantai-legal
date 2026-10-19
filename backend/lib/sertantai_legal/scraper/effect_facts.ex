@@ -8,8 +8,7 @@ defmodule SertantaiLegal.Scraper.EffectFacts do
   Handles:
   - `effect_fact/1` — an effect's facts (the change register's feed
     collector)
-  - `kind/2` — an effect Type as a change kind (substituted | inserted |
-    repealed | renumbered | commenced | amended | modified | other)
+  - `kind/2` — an effect Type as a change kind (`EffectKind`, delegated)
   - `partial?/3` — a provision partly in force from its commencing effects'
     InForce entries: purposes, or territories short of its extent
 
@@ -17,7 +16,7 @@ defmodule SertantaiLegal.Scraper.EffectFacts do
   force); territorial commencement is partial. Pure: `today` is passed in.
   """
 
-  alias SertantaiLegal.Scraper.{EffectIndex, EffectTerritory, Territory}
+  alias SertantaiLegal.Scraper.{EffectIndex, EffectKind, EffectTerritory, Territory}
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
 
   @type fact :: %{
@@ -30,56 +29,12 @@ defmodule SertantaiLegal.Scraper.EffectFacts do
           dates_source: :effect | nil
         }
 
-  # the leading verb of an effect Type ("words substituted", "inserted",
-  # "applied (with modifications)")
-  @verbs [
-    {~r/\bsubstituted\b/, "substituted"},
-    {~r/\b(inserted|added)\b/, "inserted"},
-    {~r/\b(repealed|revoked|omitted|ceased to have effect)\b/, "repealed"},
-    {~r/\brenumbered\b/, "renumbered"},
-    {~r/\bcoming into force\b/, "commenced"},
-    {~r/\bamended\b/, "amended"},
-    # a modification's own verb ("applied in part … (as inserted)"): the
-    # earliest verb wins, so it isn't read as the text change it cites (LR-24)
-    {~r/\b(applied|modified|excluded|extended|restricted|disapplied|construed|continued|transferred|functions|powers?)\b/,
-     "other"}
-  ]
-
   # an InForce qualification that completes commencement
   @complete ~r/wholly in force|fully in force|not already in force|\botherwise\b|remaining purposes|all other purposes/i
   @purposes ~r/for (?:specified|certain) purposes|for (?:the )?purposes? of/i
 
-  @doc """
-  An effect Type as a change kind: a note's `code_type`, where one is
-  passed, decides commencement and modification; else the first verb in
-  the type, "other" when none.
-  """
-  @spec kind(String.t() | nil, String.t() | nil) :: String.t()
-  def kind(_type, "commencement"), do: "commenced"
-  def kind(_type, "modification"), do: "modified"
-
-  # a change to an earlier amending or affecting provision ("amendment to
-  # earlier affecting provision SI 1995/3128 reg. 10(2) (as substituted)")
-  # changes another law's provision, not this text (LR-24)
-  def kind(type, _code_type) when is_binary(type) and type != "" do
-    if Regex.match?(~r/\bearlier (affecting|amending) provision/i, type),
-      do: "other",
-      else: verb_kind(String.downcase(type))
-  end
-
-  def kind(_type, _code_type), do: verb_kind("")
-
-  defp verb_kind(type) do
-    @verbs
-    |> Enum.flat_map(fn {re, name} ->
-      case Regex.run(re, type, return: :index) do
-        [{pos, _} | _] -> [{pos, name}]
-        nil -> []
-      end
-    end)
-    |> Enum.min_by(&elem(&1, 0), fn -> {nil, "other"} end)
-    |> elem(1)
-  end
+  @doc "An effect Type as a change kind (`EffectKind.kind/2`)."
+  defdelegate kind(type, code_type), to: EffectKind
 
   @doc """
   An effect's facts: every dated InForce (`effective_from` the latest), the

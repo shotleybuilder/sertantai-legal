@@ -30,7 +30,7 @@ defmodule SertantaiLegal.Scraper.ParserVersion do
       lib/sertantai_legal/scraper/id_field.ex
       lib/sertantai_legal/scraper/commentary_parser.ex
       lib/sertantai_legal/scraper/note_pointer.ex
-      lib/sertantai_legal/scraper/effect_facts.ex
+      lib/sertantai_legal/scraper/effect_kind.ex
       lib/sertantai_legal/scraper/legislation_gov_uk/changes_feed.ex
       lib/sertantai_legal/scraper/pdf_backlog/clml.ex
       lib/sertantai_legal/scraper/pdf_backlog/transcript.ex
