@@ -82,10 +82,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
   # provision: that provision's date
   defp own_words(law_name, rows, input) do
     for row <- rows,
-        s <-
-          (row.text || "")
-          |> String.replace(~r/\s+/, " ")
-          |> String.split(~r/(?<=\.)\s+(?=[A-Z(])/),
+        s <- Clause.sentences(row.text || ""),
         [_, tail] <- [Regex.run(@this, s)],
         {_treatment, %Date{} = d} <- [Clause.tail_date(tail, Map.get(input, :made))],
         uniq: true do

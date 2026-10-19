@@ -62,7 +62,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Target do
 
     with {:law, true} <-
            {:law, law?(Stream.concat(texts ++ List.wrap(title), before), terms, row)},
-         {:number, {:ok, numbers}} <- {:number, numbers(texts, row.kind)},
+         {:number, {:ok, numbers}} <- {:number, numbers_or_quoted(texts, text, row)},
          {:provision_number, true} <-
            {:provision_number, row.number_ref in numbers or inserted?(text, row.number_ref)} do
       case provision(text, row) do
@@ -153,6 +153,15 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Target do
     end)
   end
 
+  # the numbers named; a block instruction naming none ("For Part 13,
+  # Sub-Part C substitute—") still names what its quote numbers (LR-43)
+  defp numbers_or_quoted(texts, text, row) do
+    case numbers(texts, row.kind) do
+      {:ok, ns} -> {:ok, ns}
+      :none -> if inserted?(text, row.number_ref), do: {:ok, []}, else: :none
+    end
+  end
+
   # an inserted provision's own number: the top of a path in the quote
   defp inserted?(%Text{inserted: ins, instruction: i}, number),
     do: i =~ ~r/insert|substitut/i and Enum.any?(ins, &match?([^number | _], &1))
@@ -204,10 +213,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Target do
   defp quoted_path?(%Text{inserted: ins, instruction: i} = text, row) do
     named = brackets(text)
 
+    # (LR-43: or the quote numbered from the subsection it substitutes —
+    # "for subsection (3) substitute— (3) … (a) …" reaches s.148(3)(a))
     i =~ ~r/insert|substitut/i and
       Enum.any?(
         ins,
-        &(&1 == [row.number_ref | row.subs] or (row.subs != [] and row.subs == named ++ &1))
+        &(&1 == [row.number_ref | row.subs] or (row.subs != [] and row.subs == named ++ &1) or
+            (named != [] and row.subs == &1 and hd(&1) in named))
       )
   end
 

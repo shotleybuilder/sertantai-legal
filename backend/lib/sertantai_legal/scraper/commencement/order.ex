@@ -39,7 +39,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
   @cif ~r/\b(?:shall\s+)?(?:come|comes)\s+into\s+(?:force|operation)\b/i
   @appointed ~r/\bis\s+the\s+(?:day|date)\s+appointed\s+for\s+the\s+coming\s+into\s+(?:force|operation)\s+of\b/i
-  @full ~r/\b(?:so|in so|insofar|in as)\s*far\s+as\s+(?:it|they|that\s+[\w-]+)\s+(?:has|have|is|are)\s+not\s+(?:already|previously)\s+(?:been\s+)?(?:commenced|brought\s+into\s+force|in\s+force)|so\s+far\s+as\s+not\s+(?:already|previously)\s+in\s+force|for\s+all\s+(?:remaining\s+|other\s+)?purposes/i
+  @full ~r/\b(?:so|in so|insofar|in as)\s*far\s+as\s+(?:it|they|that\s+[\w-]+)\s+(?:has|have|is|are)\s+not\s+(?:already|previously|yet)\s+(?:been\s+)?(?:commenced|brought\s+into\s+force|in\s+force)|so\s+far\s+as\s+not\s+(?:already|previously|yet)\s+in\s+force|for\s+all\s+(?:remaining\s+|other\s+)?purposes/i
   @relating ~r/\b(?:so|in so|insofar)\s*far\s+as\s+(?:(?:it|they)\s+relates?|relating)\s+to\b|\bto\s+the\s+extent\s+that\s+(?:it|they)\s+relates?\s+to\b|\bas\s+respects\b|\b(?:so|in so|insofar)\s*far\s+as\s+(?:it|they)\s+(?:gives?|give)\s+effect\s+to\b/i
   @partial ~r/\b(?:so|in so|insofar)\s*far\s+as\b|\bto\s+the\s+extent\b|\bfor\s+the\s+purposes?\s+of\b|\bfor\s+(?:specified|certain|limited|particular)\s+purposes\b|\bexcept\b|\bsave\b|\bin\s+relation\s+to\b/i
   @places %{

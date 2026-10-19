@@ -186,10 +186,21 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
     end)
   end
 
-  defp sentences(nil), do: []
+  @doc """
+  A provision's text as sentences: a full stop then a capital or "(" — but
+  not after an abbreviation ("Metrology etc. (Amendment etc.) (EU Exit)
+  Regulations 2019 and come into force …": LR-43, SI 2019/696).
+  """
+  @spec sentences(String.t() | nil) :: [String.t()]
+  def sentences(nil), do: []
 
-  defp sentences(text),
-    do: text |> String.replace(~r/\s+/, " ") |> String.split(~r/(?<=\.)\s+(?=[A-Z(])/)
+  def sentences(text),
+    do:
+      text
+      |> String.replace(~r/\s+/, " ")
+      |> String.split(
+        ~r/(?<=\.)(?<!\betc\.)(?<!\bNo\.)(?<!\bNos\.)(?<!\bSch\.)(?<!\bart\.)(?<!\breg\.)(?<!\bs\.)(?<!\bc\.)(?<!\bi\.e\.)(?<!\be\.g\.)\s+(?=[A-Z(])/
+      )
 
   @doc """
   A tail's date and its treatment: `{treatment, date}`; `:made_unknown`

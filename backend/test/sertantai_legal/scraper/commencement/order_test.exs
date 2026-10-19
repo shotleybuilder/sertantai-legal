@@ -318,4 +318,16 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
     assert %{full_from: ~D[1991-04-01]} = dated(rules, "schedule-15-paragraph-30")
     assert %{full_from: nil} = dated(rules, "schedule-15-paragraph-31-2")
   end
+
+  test "LR-43: \"so far as it is not yet in force\" is full (SI 1992/1630)" do
+    rules =
+      Order.rules(
+        order(
+          ~S|<P1 id="article-2"><P1para><Text>The following provisions of the Act shall come into force on 27th July 1992— section 4, so far as it is not yet in force;</Text></P1para></P1>|
+        ),
+        @act
+      )
+
+    assert %{full_from: ~D[1992-07-27]} = dated(rules, "section-4-1")
+  end
 end

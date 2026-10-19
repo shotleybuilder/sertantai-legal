@@ -286,6 +286,64 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
     assert Target.match(words, nil, %{}, lca.("s.4")) == {:ok, "UK_ukpga_1973_26:s.4"}
   end
 
+  describe "LR-43: a block instruction reaches the rows inside it" do
+    test "a quoted block's provisions, with no provision number named (\"For Part 13, Sub-Part C substitute—\": SI 2019/696)" do
+      text =
+        tx("For Part 13, Sub-Part C substitute—.",
+          inserted: [["69"], ["69", "1"], ["69", "1", "a"], ["76"], ["76", "1"]],
+          context: ["The Electricity Safety Regulations 2014 are amended as follows."]
+        )
+
+      m = fn sid ->
+        Target.match(
+          text,
+          nil,
+          %{},
+          RowRef.new("UK_uksi_2014_1638:" <> sid, "Electricity Safety Regulations")
+        )
+      end
+
+      assert m.("reg.69(1)(a)") == {:ok, "UK_uksi_2014_1638:reg.69(1)(a)"}
+      assert m.("reg.76(1)") == {:ok, "UK_uksi_2014_1638:reg.76(1)"}
+      assert m.("reg.80") == :no_match
+    end
+
+    test "a substituted subsection's paragraphs, the quote numbered from the subsection (\"for subsection (3) substitute—\": NRSWA 1991 s.148)" do
+      text =
+        tx(
+          "In section 148 of the New Roads and Street Works Act 1991, for subsection (3) substitute—.",
+          inserted: [["3"], ["3", "a"], ["3", "b"]]
+        )
+
+      m = fn sid ->
+        Target.match(
+          text,
+          nil,
+          %{},
+          RowRef.new("UK_ukpga_1991_22:" <> sid, "New Roads and Street Works Act")
+        )
+      end
+
+      assert m.("s.148(3)(a)") == {:ok, "UK_ukpga_1991_22:s.148(3)(a)"}
+      assert m.("s.148(3)") == {:ok, "UK_ukpga_1991_22:s.148(3)"}
+      assert m.("s.148(4)") == :no_match
+    end
+
+    test "words substituted in a subsection don't reach its paragraphs" do
+      text =
+        tx("In section 148(3) of the New Roads and Street Works Act 1991, for “x” substitute .",
+          quoted: "y"
+        )
+
+      assert Target.match(
+               text,
+               nil,
+               %{},
+               RowRef.new("UK_ukpga_1991_22:s.148(3)(a)", "New Roads and Street Works Act")
+             ) == :no_match
+    end
+  end
+
   describe "Target truth guards (benchmark review)" do
     test "inserted words beginning 'a' are not an inserted paragraph (a) (1990/43 s.6(2)(a))" do
       text =

@@ -351,6 +351,19 @@ defmodule SertantaiLegal.Scraper.LawStartTest do
     end
   end
 
+  test "LR-43: a title with \"etc.\" doesn't end the citation-and-commencement sentence (SI 2019/696)" do
+    rows = [
+      %{
+        section_id: "UK_uksi_2019_696:reg.1",
+        text:
+          "These Regulations may be cited as the Product Safety and Metrology etc. (Amendment etc.) (EU Exit) Regulations 2019 and come into force on exit day."
+      }
+    ]
+
+    assert %LawStart{treatment: :clause_named_day, date: ~D[2020-12-31]} =
+             Clause.read(rows, ~D[2019-03-27])
+  end
+
   describe "named days (P2)" do
     test "IP completion day, also immediately before / after; exit day" do
       assert Clause.tail_date("on IP completion day", nil) == {:clause_named_day, ~D[2020-12-31]}

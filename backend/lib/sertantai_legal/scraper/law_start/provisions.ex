@@ -377,11 +377,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
         &(&1.section_id != row.section_id and covers?(row.section_id, &1.section_id))
       )
 
-  defp sentences(row) do
-    (Map.get(row, :text) || "")
-    |> String.replace(~r/\s+/, " ")
-    |> String.split(~r/(?<=\.)\s+(?=[A-Z(])/)
-  end
+  defp sentences(row), do: Clause.sentences(Map.get(row, :text) || "")
 
   # "UK_x:reg.1(2)" → "UK_x:reg.1"
   defp provision(section_id), do: section_id |> String.split("(", parts: 2) |> hd()
