@@ -360,6 +360,23 @@ defmodule SertantaiLegal.Scraper.LawStartTest do
 
       assert Clause.tail_date("on exit day", nil) == {:clause_named_day, ~D[2020-01-31]}
     end
+
+    test "CR-09: \"exit day\" in an instrument made before exit day is IP completion day (EU(WA)A 2020 Sch. 5 para. 1(1)), unless it disapplies that (para. 1(2))" do
+      assert Clause.tail_date("on exit day", ~D[2019-03-28]) ==
+               {:clause_named_day, ~D[2020-12-31]}
+
+      assert Clause.tail_date("immediately before exit day", ~D[2019-02-11]) ==
+               {:clause_named_day, ~D[2020-12-31]}
+
+      # made on or after exit day: exit day as written
+      assert Clause.tail_date("on exit day", ~D[2020-01-31]) ==
+               {:clause_named_day, ~D[2020-01-31]}
+
+      assert Clause.tail_date(
+               "on exit day (and paragraph 1(1) of Schedule 5 to the European Union (Withdrawal Agreement) Act 2020 does not apply)",
+               ~D[2020-01-27]
+             ) == {:clause_named_day, ~D[2020-01-31]}
+    end
   end
 
   describe "known limits (P4, P5)" do

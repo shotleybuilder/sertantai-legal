@@ -13,7 +13,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
   |---|---|
   | "on 17th April 1995" | `:clause_date` |
   | "on the day after the day on which it is made"; "on the twenty-first day after …"; "six months after the date on which they are made"; "on the expiration of two months from the day …" (+1 day); "at the end of the period of three months beginning with the day on which it is passed"; "on the first day of the month following that in which it is made" | `:clause_made_relative` |
-  | "on IP completion day" (also "immediately before / after"): 2020-12-31; "on exit day": 2020-01-31 | `:clause_named_day` |
+  | "on IP completion day" (also "immediately before / after"): 2020-12-31; "on exit day": 2020-01-31, or IP completion day for an instrument made before exit day (EU(WA)A 2020 Sch. 5 para. 1(1), CR-09) | `:clause_named_day` |
   | "in accordance with paragraphs (2) and (3)", "as follows", a list: the earliest date its provision's other sentences state | `:clause_staged` |
   | no clause for the whole law, only for its parts ("This Article and Article 2 …", "The remaining provisions of this Order …"): the earliest date that provision states | `:clause_staged` |
   | "on such day as … may by order appoint" | `:by_order` |
@@ -199,7 +199,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
           {LawStart.treatment(), Date.t()} | :made_unknown | nil
   def tail_date(tail, made) do
     cond do
-      d = named_day(tail) ->
+      d = named_day(tail, made) ->
         {:clause_named_day, d}
 
       d = date_at_start(String.replace(tail, ~r/^(?:at [^,]{1,30}? )?(?:on|from)\s+/i, "")) ->
@@ -225,15 +225,30 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
     end
   end
 
-  defp named_day(tail) do
+  defp named_day(tail, made) do
     case Regex.run(
            ~r/^(?:on\s+|at\s+|immediately\s+(?:before|after)\s+)?(IP completion day|exit day)\b/i,
            tail
          ) do
-      [_, day] -> if day =~ ~r/^IP/i, do: @ip_completion_day, else: @exit_day
+      [_, day] -> if day =~ ~r/^IP/i, do: @ip_completion_day, else: exit_day(tail, made)
       nil -> nil
     end
   end
+
+  # EU(WA)A 2020 Sch. 5 para. 1(1) (CR-09, Jason 2026-10-19): subordinate
+  # legislation made before exit day that comes into force by reference to
+  # exit day is read as coming into force by reference to IP completion day —
+  # unless it expressly disapplies that (para. 1(2)); regulations varying it
+  # (para. 1(3)) aren't read (a known limit). Made date unknown: as written.
+  defp exit_day(tail, %Date{} = made) do
+    disapplied? = tail =~ ~r/Schedule 5 to the European Union \(Withdrawal Agreement\) Act 2020/i
+
+    if Date.compare(made, @exit_day) == :lt and not disapplied?,
+      do: @ip_completion_day,
+      else: @exit_day
+  end
+
+  defp exit_day(_tail, _made), do: @exit_day
 
   @doc "A date at the start of text: \"17th April 1995\", \"30 th August 2013\", \"1 October 2020\"."
   @spec date_at_start(String.t()) :: Date.t() | nil

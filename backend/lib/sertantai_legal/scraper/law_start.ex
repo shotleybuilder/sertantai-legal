@@ -94,7 +94,7 @@ defmodule SertantaiLegal.Scraper.LawStart do
      "the clause counts from the made (or passed) date: the day after; N days after; the expiration of N days / weeks / months from (+1 day) or beginning with the day; the first day of the following month",
      "Jason 2026-10-16 (LR-33 P1)"},
     {:clause_named_day, true,
-     "IP completion day = 2020-12-31 (and immediately before / after); exit day = 2020-01-31",
+     "IP completion day = 2020-12-31 (and immediately before / after); exit day = 2020-01-31, read as IP completion day in an instrument made before exit day (EU(WA)A 2020 Sch. 5 para. 1(1); CR-09)",
      "Jason 2026-10-16 (LR-33 P1, P2)"},
     {:clause_staged, true,
      "the general clause defers to its paragraphs (\"in accordance with paragraphs (2) and (3)\"): the earliest date they state",
