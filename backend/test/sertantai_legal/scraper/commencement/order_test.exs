@@ -287,4 +287,35 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
     assert %{full_from: ~D[1994-05-01]} = dated(rules, "section-54")
     assert %{full_from: nil} = dated(rules, "section-1")
   end
+
+  test "CR-08: a table's \"Schedule 6, paragraphs … and 20\"; \"to the extent that it relates to\" is partial (SI 1997/1082)" do
+    rules =
+      Order.rules(
+        order(~S"""
+        <Schedules><Schedule id="schedule"><TitleBlock><Title>Provisions coming into force on 23rd March 1997</Title></TitleBlock><ScheduleBody><Tabular><table><tbody>
+        <tr><td>Section 29(1), to the extent that it relates to the provisions of Schedule 6 specified below</td><td>Minor and consequential amendments</td></tr>
+        <tr><td>Schedule 6, paragraphs 18(1), 19(1) and 20</td><td>Minor and consequential amendments</td></tr>
+        </tbody></table></Tabular></ScheduleBody></Schedule></Schedules>
+        """),
+        @act
+      )
+
+    assert %{full_from: ~D[1997-03-23]} = dated(rules, "schedule-6-paragraph-20")
+    assert %{full_from: nil, partial_from: ~D[1997-03-23]} = dated(rules, "section-29-1")
+  end
+
+  test "CR-08: a wrapped list's tail \"… 29 and 30 of Schedule 15\" is paragraphs, not the Schedule (SI 1991/1042)" do
+    rules =
+      Order.rules(
+        order(~S"""
+        <P1 id="article-2"><P1para><Text>The following provisions of the Act shall come into force on 1st April 1991—</Text>
+        <UnorderedList><ListItem><Para><Text>section 162(1) in so far as it relates to paragraphs 1, 2(1) (except in so far as it relates to the</Text></Para></ListItem>
+        <ListItem><Para><Text>Pollution Act 1974) and (3), 20, 23, 29 and 30 of Schedule 15;</Text></Para></ListItem></UnorderedList></P1para></P1>
+        """),
+        @act
+      )
+
+    assert %{full_from: ~D[1991-04-01]} = dated(rules, "schedule-15-paragraph-30")
+    assert %{full_from: nil} = dated(rules, "schedule-15-paragraph-31-2")
+  end
 end

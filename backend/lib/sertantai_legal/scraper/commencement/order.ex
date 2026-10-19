@@ -40,8 +40,8 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   @cif ~r/\b(?:shall\s+)?(?:come|comes)\s+into\s+(?:force|operation)\b/i
   @appointed ~r/\bis\s+the\s+(?:day|date)\s+appointed\s+for\s+the\s+coming\s+into\s+(?:force|operation)\s+of\b/i
   @full ~r/\b(?:so|in so|insofar|in as)\s*far\s+as\s+(?:it|they|that\s+[\w-]+)\s+(?:has|have|is|are)\s+not\s+(?:already|previously)\s+(?:been\s+)?(?:commenced|brought\s+into\s+force|in\s+force)|so\s+far\s+as\s+not\s+(?:already|previously)\s+in\s+force|for\s+all\s+(?:remaining\s+|other\s+)?purposes/i
-  @relating ~r/\b(?:so|in so|insofar)\s*far\s+as\s+(?:(?:it|they)\s+relates?|relating)\s+to\b|\bas\s+respects\b|\b(?:so|in so|insofar)\s*far\s+as\s+(?:it|they)\s+(?:gives?|give)\s+effect\s+to\b/i
-  @partial ~r/\b(?:so|in so|insofar)\s*far\s+as\b|\bfor\s+the\s+purposes?\s+of\b|\bfor\s+(?:specified|certain|limited|particular)\s+purposes\b|\bexcept\b|\bsave\b|\bin\s+relation\s+to\b/i
+  @relating ~r/\b(?:so|in so|insofar)\s*far\s+as\s+(?:(?:it|they)\s+relates?|relating)\s+to\b|\bto\s+the\s+extent\s+that\s+(?:it|they)\s+relates?\s+to\b|\bas\s+respects\b|\b(?:so|in so|insofar)\s*far\s+as\s+(?:it|they)\s+(?:gives?|give)\s+effect\s+to\b/i
+  @partial ~r/\b(?:so|in so|insofar)\s*far\s+as\b|\bto\s+the\s+extent\b|\bfor\s+the\s+purposes?\s+of\b|\bfor\s+(?:specified|certain|limited|particular)\s+purposes\b|\bexcept\b|\bsave\b|\bin\s+relation\s+to\b/i
   @places %{
     "england and wales" => "E+W",
     "great britain" => "E+W+S",
@@ -445,6 +445,10 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
       m = Regex.run(~r/\bprovisions\s+(?:of|in)\s+Schedule\s+(\d+[A-Z]*)\s*[—–:]/iu, line) ->
         Enum.at(m, 1)
 
+      # "Schedule 6, paragraphs 18(1), (3) and (5), … and 20" (a table row: SI 1997/1082)
+      m = Regex.run(~r/\bSchedule\s+(\d+[A-Z]*)\s*,\s*paragraphs?\b/i, line) ->
+        Enum.at(m, 1)
+
       m = Regex.run(~r/\bin\s+Schedule\s+(\d+[A-Z]*)\b/i, line) ->
         Enum.at(m, 1)
 
@@ -483,11 +487,24 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
           []
       end
 
+    # a wrapped list's tail "… 28, 29 and 30 of Schedule 15" (its "paragraphs"
+    # on the line before: SI 1991/1042): those paragraphs
+    bare =
+      for [_, list, n] <-
+            Regex.scan(
+              ~r/(?<![Ss]ections\s)(?<![Ss]ection\s)((?:\d+[A-Z]*(?:\([0-9A-Za-z]+\))*\s*(?:,|and)\s*)+\d+[A-Z]*(?:\([0-9A-Za-z]+\))*)\s+of\s+Schedule\s+(\d+[A-Z]*)/,
+              text
+            ),
+          not (text =~ ~r/\b(?:paragraphs?|sections?)\b/i),
+          r <- list_refs(list, "sch.#{n}.para."),
+          do: r
+
     # "in Schedule 13 to the Act, paragraphs …" is where, not what
     schedules =
       for [_, list] <-
             Regex.scan(~r/(?<![Ii]n )\bSchedules?\s+#{@list}(?!\s*,?\s*paragraph)/, text),
           not (text =~ ~r/\bparagraphs?\b[^;]*\bof\s+Schedule/i),
+          bare == [],
           # "the following provisions of Schedule 22—", "the provisions in
           # Schedules 13 and 14 … specified in …", "the provisions of … Schedules
           # 15, 16 and 18 to, the 1994 Act which are specified in Schedule 3 to
@@ -524,7 +541,8 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
       end
 
     Enum.uniq(
-      sections ++ subsections ++ Enum.reject(schedules, &(&1 in [])) ++ parts ++ paragraphs
+      sections ++
+        subsections ++ Enum.reject(schedules, &(&1 in [])) ++ parts ++ bare ++ paragraphs
     )
     |> Enum.reject(&(&1 =~ ~r/^s\.\(/))
   end

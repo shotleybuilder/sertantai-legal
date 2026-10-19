@@ -206,4 +206,39 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLawTest do
                _ -> nil
              end)
   end
+
+  test "CR-08: a repeals table is dated by its own entry before the section introducing it (1994 c.19 Sch. 18 / s.66(8))" do
+    alias SertantaiLegal.Scraper.Commencement.Rule
+
+    rule = fn scope, w, src ->
+      Rule.new(
+        commences: "UK_ukpga_2000_27",
+        scope: scope,
+        when: w,
+        source: %{law: "UK_ukpga_2000_27", ref: src, text: nil},
+        treatment: :provision_dated
+      )
+    end
+
+    # the introducing section on passing; the Schedule left to orders
+    rules = [
+      rule.(["s.108"], {:date, ~D[2000-07-28]}, "s.110(1)"),
+      rule.(["sch.8"], {:appointed, "by order"}, "s.110(2)")
+    ]
+
+    sids = ["#{@law}:s.36"]
+
+    [r] =
+      AmendingLaw.records(
+        @law,
+        "Electricity Act",
+        sids,
+        [note("F3", "S. 36 repealed by 2000 c. 27, s. 108, Sch. 8", ["s.36"])],
+        MapSet.new(sids),
+        docs(),
+        rules: fn _ -> rules end
+      )
+
+    assert %Record{effective_from: nil, in_force: []} = r
+  end
 end

@@ -88,7 +88,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLaw do
           id,
           target,
           {"repealed", type},
-          {RepealTable.reference(doc, id) || id, dating},
+          {Enum.uniq(Enum.reject([id, RepealTable.reference(doc, id)], &is_nil/1)), dating},
           pointer
         )
 
@@ -108,7 +108,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLaw do
     with op when op != nil <- Operation.of(text),
          {:ok, target} <- Target.match(text, Doc.title(doc, id), terms, row) do
       op = if quoted?(text, target), do: Operation.of_quoted(text), else: op
-      record(doc, id, target, op, {id, dating}, pointer)
+      record(doc, id, target, op, {[id], dating}, pointer)
     else
       _ -> nil
     end
@@ -126,8 +126,20 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLaw do
   defp provision?(id),
     do: Regex.match?(~r/^(?:section|regulation|article|rule)-|^schedule-[^-]+-paragraph-/, id)
 
-  defp record(doc, id, target, {op, type}, {dated_id, {rules, extents}}, pointer) do
-    r = Amending.evaluate(rules.(doc), dated_id, target, Map.get(extents, target))
+  # the first of the provision's ids any rule reaches: a repeals table's own
+  # entry before the section introducing it (CR-08: "this section" commenced
+  # on passing reaches s.66(8), while Schedule 18's entries came in by order —
+  # 1994 c.19)
+  defp record(doc, id, target, {op, type}, {dated_ids, {rules, extents}}, pointer) do
+    rs = rules.(doc)
+    extent = Map.get(extents, target)
+
+    r =
+      Enum.reduce_while(dated_ids, nil, fn did, _acc ->
+        r = Amending.evaluate(rs, did, target, extent)
+        if r.entries == [], do: {:cont, r}, else: {:halt, r}
+      end)
+
     by = dated_by(r)
 
     %Record{
