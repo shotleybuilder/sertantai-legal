@@ -1,11 +1,116 @@
 ---
 session: 'CR-06: Switch-over'
-status: active
+status: closed
 opened: '2026-10-18'
+closed: '2026-10-19'
+outcome: success
 parent: commencement-rules/2026-10-18-cr-00-meta.md
+summary: >
+  One commencement path: the amending-law collector and every labelled row's start now ask the commencement evaluator (effects, else the amending law's own clause read from held CLML, else cited orders), and the old readers are deleted (CR-05 folded in). Applied by relabel after eight classified dry runs: unknown today 17,079 → 16,680, undated_change 16,268 → 15,440, post-apply check 0 diffs; parser-stale artefact cleared (EffectKind split, one restamp, 0 stale).
+decisions:
+  - what: Fold CR-05 into CR-06
+    why: 'Jason 2026-10-18 "CR-05 session next folded into cr-06"; the amending half was Commencement.Amending already, and Schedules are not in LAT'
+    result: CR-05 closed (deferred), its Schedule half needs nothing
+  - what: Orders tier live behind effects (option a)
+    why: 'Jason 2026-10-18 "(a)": the text tier passed note-date QA (96.5%), and order rules only act where no feed effect reaches the provision'
+    result: 987 of 1,019 hop-2 dates kept, 19 corrected; own-clause tier 99.6% vs feed
+  - what: A row partly in on a date with the rest left to orders is J6 (by order), partial entries kept
+    why: LR-34 D1 b already says rows left to orders are in force as at the revised text; in_force_partial forever was wrong for them
+    result: commenced_by_order 18,443 → 19,001; status unchanged
+  - what: Note-read allow-list entry for lat.commencement (pointer)
+    why: 'Jason 2026-10-19 "3 agree": reads a note citation only to choose which orders to read'
+    result: note_read_test allow-list
+  - what: '"On exit day" in subordinate legislation made before exit day = IP completion day (31 Dec 2020)'
+    why: 'EU(WA)A 2020 Sch. 5 para. 1(1) (researched 2026-10-19); Jason: run as a separate session'
+    result: CR-09 opened
+  - what: Backups as restore points of the tables an apply writes; incremental NAS sync
+    why: 'Jason 2026-10-19 "We need more finesse to backup, not blunt calls": the full backup took 25 min because CIFS lost file times under rsync -a'
+    result: restore point 4 s; data sync incremental (1 file vs 23,000)
+metrics:
+  labels: { unknown_today: '17,079 → 16,680', undated_change: '16,268 → 15,440', insertion_not_in_register: '9,286 → 8,887', markup_conflict: '8,189 → 8,160', commenced_by_order: '18,443 → 19,001', fields_changed: 5490, rows_changed: 2545, laws: 84, post_apply_diffs: 0 }
+  amending_dates: { kept_same: 1710, corrected: 19, newly_dated: 2059, newly_dated_vs_notes: '96.1%', all_vs_notes: '97.6%', partial_new: 771 }
+  tiers: { own_clause_vs_feed: '99.6% (762/765)', orders_vs_notes: '96.5%', effects_vs_feed: '97.0%' }
+  rules: { amending_laws_read: 1467, own_clause_rules_amending: 1751, own_clause_rules_lat: 1240 }
+  runs: { relabel_dry_runs: 8, parse_snapshot: '0 differences', restamp: '1,066 laws, 0 changed, 0 stale' }
+lessons:
+  - title: A relabel dry run classified row by row finds bugs no unit test does
+    detail: 'Each of eight runs surfaced one systematic cause behind hundreds of rows: Compact merging records of one clause with different dates (same evidence key), an "(England) Order" read as UK-wide, a qualifier read over a whole list, a compound instruction''s first verb taken for an inserted row (42 RTA rows "repealed" once dated). Trace two or three rows of each class to the record that made the label.'
+    tag: data
+  - title: Iterate on a few laws; run the whole corpus once
+    detail: 'Jason 2026-10-19: "we are rerunning full parses again and again and again and we''ll not hit the QQ deadline". Eight 20-min dry runs and a restamp stopped half way (the next fix would stale it) cost hours. Prove a fix on the affected laws (--laws A,B), batch changes, then one corpus run (memory feedback_no_needless_corpus_runs).'
+    tag: tooling
+  - title: A version hash must count only what its output uses
+    detail: 'effect_facts.ex held the parser''s kind/2 and labels'' partial?/3: a label-only change staled every law''s parse, while LabelVersion didn''t count the file at all. Split EffectKind; ParserVersion counts it, LabelVersion both.'
+    tag: tooling
+  - title: Over CIFS, rsync -a re-sends everything
+    detail: 'The temp-file-and-rename write loses the file time on the SMB mount, so every backup re-sent 1.2 GB (25 min). rsync -rt --inplace --modify-window=1 keeps times; a one-time --size-only pass repaired the NAS copy without sending data.'
+    tag: infrastructure
+  - title: Undated wrong records are harmless until something dates them
+    detail: 'Dating amending changes exposed old reader errors that were inert while undated (1991 c.40 s.9(1) read as a repeal of the s.66A it inserts). A new date source needs a dry run that looks at status changes, not only date gains.'
+    tag: data
+  - title: A failing test can slip into a commit when the chain does not stop on it
+    detail: 'Twice `mix test | grep … && git commit` committed with a failure (grep succeeded). Commit only on the suite''s own exit status.'
+    tag: tooling
+bugs:
+  - pattern: 'A sentence qualified by one item qualifies all it names ("Sections 33, 34, 41 and (in so far as …) 42": asp 2005/13)'
+    category: 'commencement'
+    module: 'LawStart.Provisions'
+    affected: 32
+    fix: 'trailing_qualified/1 — the qualifier covers only the items after it'
+    status: fixed
+  - pattern: 'A row''s dated commencement record lost to a qualified record of the same sentence (Commencement uniq by {section_id, evidence}: wsi 2026/103 reg.36)'
+    category: 'commencement'
+    module: 'ChangeCollector.Commencement'
+    affected: 1
+    fix: 'provision records from the evaluator (one per row)'
+    status: fixed
+  - pattern: 'LawStart.Provisions reads an "Otherwise … comes into force on" sentence over provisions an earlier sentence commences (uksi 2017/469 art.11 dated 8 May; the feed says 25 Mar)'
+    category: 'commencement'
+    module: 'LawStart.Provisions'
+    affected: 4
+    fix: 'the evaluator''s most-specific rule within a source decides row starts'
+    status: fixed
+  - pattern: 'Compact merged consecutive records of one evidence with different dates or in-force entries; the fidelity gate compared the same narrow key'
+    category: 'register'
+    module: 'ChangeCollector.Compact'
+    affected: 26
+    fix: 'a change''s identity is every field but its rows (Compact.key/1)'
+    status: fixed
+  - pattern: 'An instruction''s first verb taken for every target ("… shall cease to have effect, and after section 66 … inserted— 66A")'
+    category: 'amending-law'
+    module: 'AmendingLaw.Operation / ChangeCollector.AmendingLaw'
+    affected: 42
+    fix: 'a row the quoted text makes takes the insertion / substitution verb (Operation.of_quoted/1)'
+    status: fixed
+  - pattern: 'A qualifier on one item of a bare paragraph list ("68(2) in so far as it requires …") read over the whole list'
+    category: 'commencement'
+    module: 'Commencement.Order'
+    affected: 6
+    fix: 'split a bare-number list at each item''s own qualifier (CR-08)'
+    status: open
+artifacts:
+  - backend/lib/sertantai_legal/scraper/change_collector/amending_law.ex
+  - backend/lib/sertantai_legal/scraper/change_collector/commencement.ex
+  - backend/lib/sertantai_legal/scraper/change_collector/compact.ex
+  - backend/lib/sertantai_legal/scraper/commencement/own_clause.ex
+  - backend/lib/sertantai_legal/scraper/commencement/order.ex
+  - backend/lib/sertantai_legal/scraper/commencement/evaluator.ex
+  - backend/lib/sertantai_legal/scraper/effect_kind.ex
+  - backend/lib/sertantai_legal/scraper/label_projection.ex
+  - backend/test/sertantai_legal/architecture/commencement_read_test.exs
+  - scripts/nas/nas-backup.sh
+  - scripts/nas/import-snapshot.sh
+  - backend/data/reports/lat-refactor/cr06_dry8.diff.csv
+depends_on:
+  - commencement-rules/2026-10-18-cr-04-reader-orders
+  - commencement-rules/2026-10-18-cr-05-reader-schedules-amending
+enables:
+  - commencement-rules/2026-10-19-cr-09-exit-day
+  - commencement-rules/2026-10-18-cr-07-by-order-rows
+  - commencement-rules/2026-10-18-cr-08-text-tier
 ---
 
-# Session: CR-06: Switch-over (ACTIVE)
+# Session: CR-06: Switch-over (CLOSED)
 
 ## Problem
 
