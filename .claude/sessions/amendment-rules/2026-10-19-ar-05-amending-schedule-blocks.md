@@ -39,7 +39,7 @@ Amendment ruleset (AR-00 meta): "Part I of Schedule 4 shall be substituted for P
 ## Todo
 
 - ✅ Trace EReA 1999 → ERA 1996 Pt VIII today: what `mix lat.amending --law UK_ukpga_1999_26` reads, which rows the feed and markup date, what is missing
-- ⬜ Find the other instances: rules (or unread instructions) substituting / inserting a block "for" / "as" the amending law's own Schedule or Part — count across the stored rules
+- ✅ Find the other instances: rules (or unread instructions) substituting / inserting a block "for" / "as" the amending law's own Schedule or Part — count across the stored rules
 - ⬜ Reader: such an instruction targets the amended block (Part / range), its rows reached as a provision-level change (reader + collect tests first)
 - ⬜ Pilot on the affected laws (`mix lat.wave_preview --relabel --laws …`); classified diff; batch into the AR measure run
 - ⬜ Close LR-43's open bug as fixed when reached
@@ -56,4 +56,20 @@ Amendment ruleset (AR-00 meta): "Part I of Schedule 4 shall be substituted for P
 - **The date is missing upstream too.** SI 1999/2830 reg.2(2) commences "the provisions of the Act specified in Part II of Schedule 1 to this Order" on 1999-12-15; the commencement reader stores this as scope `sch.1` (of EReA). So even a reached record would be undated (T1: undated_change).
 - **Repeals-table cells.** Sch 9's cells each list many entries; each cell gave one rule (its first entry). The feed's own records still mark those rows repealed, undated.
 
-So reaching ERA Part VIII needs three things, in different places: the amendment reader (the block instruction), the feed range (s.71–80), and the commencement reader (the order's Schedule). The last two are outside AR-05's scope: logged as bugs above for their own sessions.
+So reaching ERA Part VIII needs three things, in different places: the amendment reader (the block instruction), the feed range (s.71–80), and the commencement reader (the order's Schedule). The last two are outside AR-05's scope: AR-11 (feed range) and AR-12 (commencement order Schedule), Jason 2026-10-20; the repeals-table cells are AR-13, the spurious targets go with AR-07.
+
+## Count: block instructions from the amending law's own Schedule (2026-10-20)
+
+Scanned the stored XML of the 2,733 stored amending laws (of 7,621 in the change log) for "The provisions / section / Schedule set out in [Part N of] Schedule M [to this Act] shall be substituted for / inserted after / inserted as …", plus a second pass for "Schedule M … shall be / is inserted" (it added only commentary lines such as "Schedule 4A is inserted by regulation 41(8)"; none were instructions).
+
+| Amending law | Instruction | Amends | In our register |
+|---|---|---|---|
+| EReA 1999 (ukpga 1999/26) | s.7 Sch 4 Pt I substituted for Part VIII | ERA 1996 | **yes**: ss.71–80, ~150 rows |
+| EReA 1999 | s.8 Sch 4 Pt II inserted after s.57 | ERA 1996 | **yes**: ss.57A–57B, 32 rows (the feed reaches 4, some rows unlabelled) |
+| Administration of Justice Act 1982 (ukpga 1982/53) | ss.15, 55, 69: a section from Sch 1 / 4 / 7 | Senior Courts Act 1981; Judicature (NI) Act 1978 | no |
+| ukpga 1995/20 | s.3: Sch 2 inserted as Sch 5A | Criminal Procedure (Scotland) Act 1975 | no |
+| ukpga 1996/46 | Sch 4 inserted as the Schedule | Rehabilitation of Offenders Act 1974 | no |
+| RPA 2000 (ukpga 2000/2) | Sch 5 inserted as Sch 3A | RPA 1983 | no |
+| uksi 1994/2280 | reg.7: Sch 1 inserted after Sch 21 | — | not traced (no records) |
+
+**AR-05's reach is one amending law on one law: about 180 ERA rows.** The form is old drafting (1982–2000), so the corpus is unlikely to hold many more. Even once reached, the rows stay undated until AR-12 reads SI 1999/2830's Schedule; AR-11 (the feed range) reaches the same Part VIII rows from the feed's side.
