@@ -218,22 +218,30 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
       end
 
     quoted =
-      if quoting? do
-        for path <- text.inserted,
-            # "In section 7(1) … for paragraph (b) substitute— (b) … (c) …":
-            # numbered from the provision holding the replaced bracket
-            t <-
-              [ref(p, path)] ++
-                for(n <- numbers, do: ref(p, [n | named ++ path])) ++
-                for(n <- numbers, named != [], hd(path) in named, do: ref(p, [n | path])) ++
-                for(
-                  n <- numbers,
-                  length(named) > 1,
-                  do: ref(p, [n | Enum.drop(named, -1) ++ path])
-                ),
-            do: t
-      else
-        []
+      cond do
+        # "For section 99 substitute— 99 …", "After section 47B insert— 47C":
+        # the quote's numbers are sections, never nested in one (AR-07)
+        quoting? and sections_quoted?(text) ->
+          for path <- text.inserted, provision_path?(path), do: ref(p, path)
+
+        quoting? ->
+          for path <- text.inserted,
+              # "In section 7(1) … for paragraph (b) substitute— (b) … (c) …":
+              # numbered from the provision holding the replaced bracket
+              # a quoted sub-paragraph "(i)" is never a provision of its own
+              t <-
+                if(provision_path?(path), do: [ref(p, path)], else: []) ++
+                  for(n <- numbers, do: ref(p, [n | named ++ path])) ++
+                  for(n <- numbers, named != [], hd(path) in named, do: ref(p, [n | path])) ++
+                  for(
+                    n <- numbers,
+                    length(named) > 1,
+                    do: ref(p, [n | Enum.drop(named, -1) ++ path])
+                  ),
+              do: t
+
+        true ->
+          []
       end
 
     # a quote's own provision is never reached as a named one; an insertion
@@ -543,11 +551,26 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
             )
       })
 
+  # the whole section is the thing substituted or inserted ("For section 7",
+  # "after section 47B", "substituted for section 18"; not "for section
+  # 7(2)", not "for subsection (2)")
+  defp sections_quoted?(%Text{} = text),
+    do:
+      captionless(text).instruction =~
+        ~r/\b(?:for|after|before)\s+(?:the\s+)?sections?\s+\d+[A-Z]*\b(?!\s*\()/i
+
+  defp provision_path?([top | _]), do: top =~ ~r/^\d/
+
+  # a bracket is a number, a letter or two, or a roman numeral — never a
+  # word ("(interpretation)": a one-word caption, AR-07)
+  @bracket ~r/^(?:\d+[A-Z]*|[a-z]{1,3}|[A-Z]{1,2}|(?:x{0,3})(?:ix|iv|v?i{0,3}))$/
+
   defp brackets(%Text{instruction: i}) do
     i
     |> String.replace(~r/[“"][^”"]*[”"]/u, "")
     |> String.replace(~r/\b(?:after|before) (?:sub)?(?:section|paragraph) \([^)]*\)/i, "")
     |> String.replace(~r/\(which becomes [^()]*\([^)]*\)\)/i, "")
     |> then(&for([b] <- Regex.scan(~r/\(([0-9A-Za-z]+)\)/, &1, capture: :all_but_first), do: b))
+    |> Enum.filter(&(&1 =~ @bracket))
   end
 end

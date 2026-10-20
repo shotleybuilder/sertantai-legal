@@ -276,6 +276,72 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderTest do
     assert level.("s.109(2)") == [:provision]
   end
 
+  describe "AR-07: targets that name no row" do
+    defp targets(id, text) do
+      d = doc(~s(<P1 id="#{id}"><P1para><Text>#{text}</P1para></P1>))
+
+      Reader.instruction(
+        d,
+        id,
+        %{"the principal act" => %{law: "UK_ukpga_1956_52", title: "Clean Air Act 1956"}},
+        [@clean_air]
+      )
+      |> Enum.flat_map(& &1.targets)
+    end
+
+    test "a one-word caption is no bracket (\"In section 7 (interpretation), …\")" do
+      t =
+        targets(
+          "section-30",
+          ~S|In section 7 of the principal Act (interpretation), in subsection (2), for “x” substitute “y”.</Text>|
+        )
+
+      assert "s.7(2)" in t
+      refute Enum.any?(t, &String.contains?(&1, "interpretation"))
+    end
+
+    test "a quoted sub-paragraph is never a provision of its own (\"for sub-paragraph (i) substitute— (i)\": no s.i)" do
+      t =
+        targets(
+          "section-31",
+          ~S|In section 7(5)(b) of the principal Act for sub-paragraph (i) substitute—</Text><BlockAmendment><P4><Pnumber>i</Pnumber><P4para><Text>new</Text></P4para></P4></BlockAmendment>|
+        )
+
+      assert "s.7(5)(b)(i)" in t
+      refute "s.i" in t
+    end
+
+    test "a whole section substituted or inserted: the quote's numbers are sections, not nested (\"For section 7 substitute— 7\", \"After section 7 insert— 7A\")" do
+      sub =
+        targets(
+          "section-32",
+          ~S|For section 7 of the principal Act substitute—</Text><BlockAmendment><P1group><P1><Pnumber>7</Pnumber><P1para><P2><Pnumber>1</Pnumber><P2para><Text>new</Text></P2para></P2></P1para></P1></P1group></BlockAmendment>|
+        )
+
+      assert "s.7(1)" in sub
+      refute "s.7(7)" in sub
+
+      ins =
+        targets(
+          "section-33",
+          ~S|After section 7 of the principal Act insert—</Text><BlockAmendment><P1group><P1><Pnumber>7A</Pnumber><P1para><Text>new</Text></P1para></P1></P1group></BlockAmendment>|
+        )
+
+      assert "s.7A" in ins
+      refute "s.7(7A)" in ins
+    end
+
+    test "a subsection inserted after a subsection is still numbered from its section (\"In section 7, after subsection (4) insert— (4A)\")" do
+      t =
+        targets(
+          "section-34",
+          ~S|In section 7 of the principal Act, after subsection (4) insert—</Text><BlockAmendment><P2><Pnumber>4A</Pnumber><P2para><Text>new</Text></P2para></P2></BlockAmendment>|
+        )
+
+      assert "s.7(4A)" in t
+    end
+  end
+
   test "many provisions, each with its brackets: no cap (SSI 2005/658)" do
     d =
       doc(
