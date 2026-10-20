@@ -1,8 +1,32 @@
 ---
 session: "AR-14: Subsections of a Section in a Commencement Order"
-status: active
+status: closed
 opened: '2026-10-20'
+closed: '2026-10-20'
+outcome: success
 parent: amendment-rules/2026-10-19-ar-00-meta.md
+summary: >
+  A commencement order's "Subsections (1) to (5) of section 18" / "sub-sections (2), (3) and (4) of section 34" now
+  commence those subsections, never the whole section (bfc033f2). 16 rules in 8 orders re-read (all narrowings);
+  pilot on 10 laws: 11 label changes, e.g. Energy Act 2016 s.1/s.2 fully in force 2016-10-01 (not 2016-05-24),
+  RTSA 2003 s.34 and s.80(1)–(3) no longer dated by rules for other subsections.
+decisions:
+  - what: The "sub-section(s) … of section N" phrase is taken out of the text once read
+    why: the section regex would otherwise read its "section N" as the whole section again
+    result: test asserts s.18(6), s.34(1), s.22(2) undated
+  - what: Re-read and write only the 8 affected orders now; the corpus re-read stays with the AR measure run
+    why: one batched corpus run (no needless corpus runs)
+    result: commencement_rules for 8 orders rewritten (same rule counts, narrower scopes)
+  - what: 'Bugs need not each have their own session: a bug is captured in any session (active, pending or suspended) so it is never lost; one session per bug fits a raised GitHub issue'
+    why: 'Jason 2026-10-20 at close: the one-bug-per-session rule was too restrictive, and sessions already fix several bugs'
+    result: the unnumbered-Schedule and s.66 findings stay as open bugs here (and as AR-15 todos), not new stubs
+metrics:
+  corpus: { rules: 16, orders: 8, all_whole_section: true }
+  pilot_ar14: { laws: 10, own_label_changes: 11, moved: 2, emptied: 9 }
+lessons:
+  - title: A narrowing that empties a date is usually a wrong date removed
+    detail: 'RTSA 2003 s.80(1)–(3) lost 2004-03-30: SI 2004/827 commenced only s.80(4),(5), and the notes date nothing else. Check the I-notes before reading "effective_from emptied" as a loss.'
+    tag: data
 bugs:
   - pattern: 'An order table row "Subsections (1) to (5) of section 18" is read as the whole section s.18, fully (SI 1999/2830 Sch 1 Pt I); "Subsections (1) to (3) of section 13" likewise'
     category: commencement reader
@@ -16,9 +40,24 @@ bugs:
     affected: 'SI 1997/3114 (1 rule); corpus count unknown'
     fix: '"the Schedule to this Order" / "Part N of the Schedule to this Order" is the order''s own, never a ref; and its unnumbered Schedule''s Parts dated as AR-12'
     status: open
+  - pattern: 'Energy Act 2016 s.66 goes blank (not 2016-10-01) after AR-14: SI 2016/920 reg.2(b) commences "66(1)(2)(5)-(7)", possibly a form the order reader misses (unverified)'
+    category: commencement reader
+    module: Commencement.Order.refs
+    affected: '1 row seen (s.66 heading); unverified'
+    fix: check SI 2016/920 reg.2's rules; read "66(1)(2)(5)-(7)" as s.66(1), (2), (5)..(7)
+    status: open
+artifacts:
+  - backend/lib/sertantai_legal/scraper/commencement/order.ex
+  - backend/test/sertantai_legal/scraper/commencement/order_test.exs
+  - backend/data/reports/lat-refactor/ar14_pilot.csv
+depends_on:
+  - 2026-10-20-ar-12-commencement-order-schedule
+enables:
+  - AR-15 (order reader, with the open bugs here)
+  - the AR measure run
 ---
 
-# Session: AR-14: Subsections of a Section in a Commencement Order (ACTIVE)
+# Session: AR-14: Subsections of a Section in a Commencement Order (CLOSED)
 
 ## Problem
 

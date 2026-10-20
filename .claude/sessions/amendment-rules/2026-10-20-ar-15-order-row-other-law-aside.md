@@ -15,6 +15,7 @@ SI 1999/2830 Sch 1 Pt I: "Section 31 and in Schedule 7, paragraphs 1, 2, 5 (to t
 
 - ⬜ Count order rows lost to an aside naming another law
 - ⬜ Drop only the aside, keep the row's own refs (Order test first)
+- ⬜ With it (AR-14 open bugs): "Part N of the Schedule to this Order" (no number) read as the Act's Part (SI 1997/3114); check Energy Act 2016 s.66 / SI 2016/920 "66(1)(2)(5)-(7)"
 - ⬜ Re-read the affected orders; pilot; batch into the AR measure run
 
 ## Dependencies
