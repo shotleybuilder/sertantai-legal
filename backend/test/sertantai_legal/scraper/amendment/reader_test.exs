@@ -183,6 +183,69 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderTest do
     end
   end
 
+  describe "AR-05: a block set out in the amending law's own Schedule" do
+    @era Reader.law_ref("UK_ukpga_1996_18", "Employment Rights Act", "s")
+
+    # EReA 1999: the quote is Sch 4's, under wrappers with their own ids
+    defp erea(body) do
+      quote = fn part, wrapper, ns ->
+        ~s(<Part id="schedule-4-part-#{part}"><P1group id="schedule-4-part-#{part}-chapter-1-paragraph-#{wrapper}"><BlockAmendment><Part><Number>Part VIII</Number>) <>
+          Enum.map_join(
+            ns,
+            &~s(<P1group><P1><Pnumber>#{&1}</Pnumber><P1para><P2><Pnumber>1</Pnumber><P2para><Text>new</Text></P2para></P2></P1para></P1></P1group>)
+          ) <> "</Part></BlockAmendment></P1group></Part>"
+      end
+
+      Doc.new("UK_ukpga_1999_26", [
+        ~s(<Legislation><Primary><Body>#{body}</Body></Primary></Legislation>),
+        ~s(<Legislation><Primary><Schedules><Schedule id="schedule-4">) <>
+          quote.("I", "wrapper2n1", ~w(71 72 80)) <>
+          quote.("II", "wrapper3n1", ~w(57A 57B)) <>
+          ~s(</Schedule><Schedule id="schedule-1"><P1 id="schedule-1-paragraph-1"><P1para><Text>For section 9 substitute—</Text><BlockAmendment><P1><Pnumber>9</Pnumber><P1para><Text>new</Text></P1para></P1></BlockAmendment></P1para></P1></Schedule></Schedules></Primary></Legislation>)
+      ])
+    end
+
+    defp era_reached(rules, sid),
+      do: for(r <- rules, {:ok, t} <- [Evaluator.reach(r, "UK_ukpga_1996_18:" <> sid)], do: t)
+
+    test "\"The provisions set out in Part I of Schedule 4 shall be substituted for Part VIII of the … Act 1996\" reaches the provisions the Part quotes (EReA 1999 s.7)" do
+      d =
+        erea(
+          ~S|<P1 id="section-7"><P1para><Text>The provisions set out in Part I of Schedule 4 shall be substituted for Part VIII of the Employment Rights Act 1996.</Text></P1para></P1>|
+        )
+
+      rules = Reader.instruction(d, "section-7", %{}, [@era])
+
+      assert Enum.all?(rules, &(&1.operation == :substituted and &1.level == :provision))
+      assert "UK_ukpga_1996_18:s.72(1)" in era_reached(rules, "s.72(1)")
+      assert "UK_ukpga_1996_18:s.80" in era_reached(rules, "s.80")
+      assert era_reached(rules, "s.57A") == []
+    end
+
+    test "\"… set out in Part II of Schedule 4 shall be inserted after section 57 of that Act\" reaches the sections inserted, not s.57 (EReA 1999 s.8)" do
+      d =
+        erea(
+          ~S|<P1 id="section-7"><P1para><Text>The provisions set out in Part I of Schedule 4 shall be substituted for Part VIII of the Employment Rights Act 1996.</Text></P1para></P1><P1 id="section-8"><P1para><Text>The provisions set out in Part II of Schedule 4 shall be inserted after section 57 of that Act.</Text></P1para></P1>|
+        )
+
+      rules = Reader.instruction(d, "section-8", %{}, [@era])
+
+      assert Enum.all?(rules, &(&1.operation == :inserted and &1.level == :provision))
+      assert "UK_ukpga_1996_18:s.57B(1)" in era_reached(rules, "s.57B(1)")
+      assert era_reached(rules, "s.57") == []
+      assert era_reached(rules, "s.72") == []
+    end
+
+    test "\"is amended as set out in Schedule 1\" points to the Schedule's own instructions: no block" do
+      d =
+        erea(
+          ~S|<P1 id="section-9"><P1para><Text>The Employment Rights Act 1996 is amended as set out in Schedule 1.</Text></P1para></P1>|
+        )
+
+      assert Reader.instruction(d, "section-9", %{}, [@era]) == []
+    end
+  end
+
   test "many provisions, each with its brackets: no cap (SSI 2005/658)" do
     d =
       doc(

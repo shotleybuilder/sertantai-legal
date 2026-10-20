@@ -45,6 +45,13 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   # modification, not an amendment (SI 1974/2013 Sch. 2 para. 15)
   @modification ~r/\b(?:have effect|be read|be construed) as if\b/i
 
+  # "The provisions set out in Part I of Schedule 4 shall be substituted for
+  # Part VIII of …" (EReA 1999 s.7), "The section set out in Part I of
+  # Schedule 1 to this Act shall be inserted after section 35 of …" (1982
+  # c.53): the quote is the amending law's own Schedule (AR-05); "is amended
+  # as set out in Schedule 1" points to the Schedule's instructions instead
+  @set_out ~r/\bset out in (?:Part ([IVXLC\d]+[A-Z]?) of )?Schedule ([\dA-Z]+)\b(?: to th(?:is|ese) \w+)?,? (?:shall be|is|are) (?:substituted for|inserted (?:after|before)) (?:the )?(?:Part|Chapter|sections?|regulations?|articles?|rules?)\b/i
+
   # "the following paragraph", "a new subsection": the insertion is a provision
   @provision_named ~r/\b(?:following|new)\s+(?:sub-?)?(?:sections?|paragraphs?|regulations?|articles?|rules?|provisions?|schedules?|parts?|chapters?)\b/i
 
@@ -112,7 +119,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   def instruction(doc, id, terms, laws) do
     case Text.of(doc, id) do
       %Text{} = text ->
-        of_text(text, Doc.title(doc, id), terms, laws, %{
+        text
+        |> set_out(doc)
+        |> of_text(Doc.title(doc, id), terms, laws, %{
           law: doc.law_name,
           ref: id,
           text: text.instruction
@@ -122,6 +131,32 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
         []
     end
   end
+
+  # an instruction quoting nothing, whose block is set out in its own
+  # Schedule: the provisions that Schedule (or its Part) quotes, gathered
+  # from the elements under it (each quote sits in a wrapper with its own id)
+  defp set_out(%Text{inserted: [], instruction: i} = text, doc) do
+    case Regex.run(@set_out, i) do
+      [_, part, schedule] ->
+        block =
+          if part == "", do: "schedule-#{schedule}", else: "schedule-#{schedule}-part-#{part}"
+
+        paths =
+          for id <- doc.ids,
+              id == block or String.starts_with?(id, block <> "-"),
+              %Text{inserted: ins} <- [Text.of(doc, id)],
+              path <- ins,
+              uniq: true,
+              do: path
+
+        %{text | inserted: paths}
+
+      nil ->
+        text
+    end
+  end
+
+  defp set_out(text, _doc), do: text
 
   @doc "The rules an instruction's `text` (its container's `title`) states for `laws`, with `source` on each."
   @spec of_text(Text.t(), String.t() | nil, map(), [law_ref()], map()) :: [Rule.t()]
