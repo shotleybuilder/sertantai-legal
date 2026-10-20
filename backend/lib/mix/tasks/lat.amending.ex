@@ -146,11 +146,14 @@ defmodule Mix.Tasks.Lat.Amending do
     end
   end
 
+  # the note's pointer law as the collector reads it: its Citation, else the
+  # law its text names (`ChangeCollector.law_notes/1`)
   defp notes_pointing_to(amending) do
     %{rows: rows} =
       Repo.query!(
         """
-        SELECT law_name, code, text, citation_law, affected_sections FROM amendment_annotations
+        SELECT law_name, code, text, coalesce(citation_law, changed_by), affected_sections
+        FROM amendment_annotations
         WHERE code_type = 'amendment' AND coalesce(citation_law, changed_by) = $1
           AND law_name IN (SELECT DISTINCT law_name FROM legal_articles)
         """,

@@ -42,4 +42,104 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderTest do
 
     assert Reader.instruction(d, "section-6", %{}, [@clean_air]) == []
   end
+
+  test "brackets named out of order are a set (\"In paragraph (a) of section 7(2)\")" do
+    d =
+      doc(
+        ~S|<P1 id="section-7"><P1para><Text>In paragraph (a) of section 7(2) of the principal Act, for “x” substitute “y”.</Text></P1para></P1>|
+      )
+
+    rules =
+      Reader.instruction(
+        d,
+        "section-7",
+        %{"the principal act" => %{law: "UK_ukpga_1956_52", title: "Clean Air Act 1956"}},
+        [@clean_air]
+      )
+
+    assert "UK_ukpga_1956_52:s.7(2)(a)" in reached(rules, "s.7(2)(a)")
+  end
+
+  test "a caption's words are not the verb (SI 1998/1420: \"(… revoked or suspended licences), after subsection (4) insert—\")" do
+    d =
+      doc(
+        ~S|<P1 id="section-13"><P1para><Text>In section 7 of the principal Act (surrender of revoked or suspended licences), after subsection (4) insert—</Text><BlockAmendment><P2><Pnumber>4A</Pnumber><P2para><Text>new</Text></P2para></P2></BlockAmendment></P1para></P1>|
+      )
+
+    rules =
+      Reader.instruction(
+        d,
+        "section-13",
+        %{"the principal act" => %{law: "UK_ukpga_1956_52", title: "Clean Air Act 1956"}},
+        [@clean_air]
+      )
+
+    assert Enum.all?(rules, &(&1.operation == :inserted))
+  end
+
+  test "a term named in brackets is not words changed (1989 c.27 s.1(1): \"for section 18 of the … Act 1956 (“the 1956 Act”)\")" do
+    d =
+      doc(
+        ~S|<P1 id="section-14"><P1para><Text>The following section shall be substituted for section 18 of the Clean Air Act 1956 (“the 1956 Act”)—</Text><BlockAmendment><P1><Pnumber>18</Pnumber><P1para><Text>new</Text></P1para></P1></BlockAmendment></P1para></P1>|
+      )
+
+    rules = Reader.instruction(d, "section-14", %{}, [@clean_air])
+
+    assert rules != []
+    assert Enum.all?(rules, &(&1.operation == :substituted and &1.level == :provision))
+  end
+
+  test "quoted words keep their brackets (\"for “(within the meaning of x)” substitute “y”\")" do
+    d =
+      doc(
+        ~S|<P1 id="section-15"><P1para><Text>In section 7 of the principal Act, for “(within the meaning of x)” substitute “y”.</Text></P1para></P1>|
+      )
+
+    rules =
+      Reader.instruction(
+        d,
+        "section-15",
+        %{"the principal act" => %{law: "UK_ukpga_1956_52", title: "Clean Air Act 1956"}},
+        [@clean_air]
+      )
+
+    assert rules != []
+    assert Enum.all?(rules, &(&1.level == :words))
+  end
+
+  test "an insertion at the end of a named provision is words in it (2025 c.34 s.113(6): \"in subsection (3)(a), at the end (but before the “and”) insert\")" do
+    d =
+      doc(
+        ~S|<P1 id="section-16"><P1para><Text>In section 30 of the principal Act (amount of payment), in subsection (3)(a), at the end (but before the “and”) insert “, or”.</Text></P1para></P1>|
+      )
+
+    rules =
+      Reader.instruction(
+        d,
+        "section-16",
+        %{"the principal act" => %{law: "UK_ukpga_1956_52", title: "Clean Air Act 1956"}},
+        [@clean_air]
+      )
+
+    assert "UK_ukpga_1956_52:s.30(3)(a)" in reached(rules, "s.30(3)(a)")
+    assert Enum.all?(rules, &(&1.level == :words and &1.operation == :inserted))
+  end
+
+  test "many provisions, each with its brackets: no cap (SSI 2005/658)" do
+    d =
+      doc(
+        ~S|<P1 id="section-2"><P1para><Text>In each of the following provisions of the principal Act, for “a” substitute “b”–section 7(7)(b)(i),section 8(10)(b),section 9(4)(b),section 10(4),section 11(4),section 12(2),section 12(3).</Text></P1para></P1>|
+      )
+
+    rules =
+      Reader.instruction(
+        d,
+        "section-2",
+        %{"the principal act" => %{law: "UK_ukpga_1956_52", title: "Clean Air Act 1956"}},
+        [@clean_air]
+      )
+
+    assert "UK_ukpga_1956_52:s.12(3)" in reached(rules, "s.12(3)")
+    assert "UK_ukpga_1956_52:s.7(7)(b)(i)" in reached(rules, "s.7(7)(b)(i)")
+  end
 end

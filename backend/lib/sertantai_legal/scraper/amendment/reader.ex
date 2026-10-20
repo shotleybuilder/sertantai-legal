@@ -63,7 +63,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   @spec instruction(Doc.t(), String.t(), map(), [law_ref()]) :: [Rule.t()]
   def instruction(doc, id, terms, laws) do
     with %Text{} = text <- Text.of(doc, id),
-         {_, _} = op <- Operation.of(text) do
+         {_, _} = op <- operation(text) do
       title = Doc.title(doc, id)
       texts = Enum.map([text.instruction | Enum.reverse(text.context)], &unquote_words/1)
       before = Stream.map(text.before, &unquote_words/1)
@@ -115,7 +115,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
       for n <- numbers, n not in tops, t <- named_refs(text, op, p, n, named), do: t
 
     [
-      rule(law, Enum.uniq(quoted), Operation.of_quoted(text), source),
+      rule(law, Enum.uniq(quoted), Operation.of_quoted(captionless(text)), source),
       rule(law, Enum.uniq(named_targets), op, source)
     ]
     |> Enum.reject(&is_nil/1)
@@ -147,14 +147,55 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   # "s" + ["25", "5A"] → "s.25(5A)"
   defp ref(p, [n | subs]), do: "#{p}.#{n}" <> Enum.map_join(subs, &"(#{&1})")
 
-  # every in-order combination of the brackets named (rows whose brackets
-  # are all named: "subsection (5), paragraphs (b) and (c)" → (5), (5)(b),
-  # (5)(c), (b), …); at most six brackets
+  # the paths the brackets named make, by level — subsection (5), (5A);
+  # paragraph (a), (ca); sub-paragraph (i), (iv); (A) — each level taken or
+  # skipped, in that order (rows whose brackets are all named, as the
+  # row-driven matcher's set semantics: "subsection (5), paragraphs (b) and
+  # (c)" → (5), (5)(b), (5)(c), (b) …; "In paragraph (a) of section 7(2)"
+  # → (2)(a)); a letter that is also a roman numeral is tried at both
   defp combos(named) do
-    named
-    |> Enum.take(6)
-    |> Enum.reduce([[]], fn b, acc -> acc ++ Enum.map(acc, &(&1 ++ [b])) end)
+    named = Enum.uniq(named)
+    digits = Enum.filter(named, &(&1 =~ ~r/^\d/))
+    letters = Enum.filter(named, &(&1 =~ ~r/^[a-z]+$/))
+    romans = Enum.filter(letters, &(&1 =~ ~r/^(?:i{1,3}|iv|v|vi{1,3}|ix|x|xi{1,3})$/))
+    capitals = Enum.filter(named, &(&1 =~ ~r/^[A-Z]+$/))
+
+    [digits, letters, romans, capitals]
+    |> Enum.reduce([[]], fn level, acc ->
+      acc ++ for(path <- acc, b <- level, b not in path, do: path ++ [b])
+    end)
     |> Enum.reject(&(&1 == []))
+    |> Enum.uniq()
+  end
+
+  # the instruction's operation, its captions aside; an insertion quoting
+  # no provision "at the end" / "at the appropriate place" puts words into
+  # the provision named (2014 c.6 s.128(2)(e): a definition into s.235(1))
+  defp operation(text) do
+    case Operation.of(captionless(text)) do
+      {"inserted", "inserted"} = op ->
+        if text.inserted == [] and
+             text.instruction =~ ~r/\bat the (?:end|beginning|appropriate places?)\b/i,
+           do: {"inserted", "words inserted"},
+           else: op
+
+      op ->
+        op
+    end
+  end
+
+  # the instruction without its bracketed captions ("In section 118 (… of
+  # revoked or suspended licences), after subsection (4) insert—": the verb
+  # is "insert", not the caption's "revoked" — SI 1998/1420; "(“the 1984
+  # Act”)" names a term, not words changed); quoted words keep their brackets
+  defp captionless(%Text{instruction: i} = text),
+    do: %{text | instruction: strip_captions(i)}
+
+  # a bracketed caption: a parenthetical with a space, quotes inside allowed,
+  # never starting inside a quote
+  defp strip_captions(s) do
+    ~r/[“"][^”"]*[”"]|\((?:[^()“”"]|[“"][^”"]*[”"])*\)/u
+    |> Regex.replace(s, fn m -> if m =~ ~r/^[“"]/u or not (m =~ ~r/\s/u), do: m, else: "" end)
   end
 
   # ── repeals tables ──────────────────────────────────────────────────
