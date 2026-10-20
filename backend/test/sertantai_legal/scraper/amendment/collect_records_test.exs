@@ -151,6 +151,38 @@ defmodule SertantaiLegal.Scraper.Amendment.CollectRecordsTest do
     refute SertantaiLegal.Scraper.ChangeCollector.dated?(dated, "#{@law}:s.25", "UK_ukpga_1999_1")
   end
 
+  test "ChangeCollector.asked_notes/3: per note — a row asked about for one law's note doesn't re-read another law the feed dates (AR-04: s.41A(8)(b))" do
+    alias SertantaiLegal.Scraper.ChangeCollector
+
+    sid = "#{@law}:s.41A(8)(b)"
+
+    feed = [
+      %Record{
+        law_name: @law,
+        section_id: sid,
+        source: "feed",
+        evidence: "key-x",
+        affecting_law: "UK_ukpga_2011_16",
+        operation: "repealed",
+        effect_type: "omitted",
+        effective_from: ~D[2011-12-18]
+      }
+    ]
+
+    undated = %{
+      note("F1", "S. 41A(8)(b) substituted by 2000 c. 27, s. 70", ["s.41A(8)(b)"])
+      | citation_law: "UK_ukpga_2000_27"
+    }
+
+    dated = %{
+      note("F2", "S. 41A(8)(b) omitted by 2011 c. 16, s. 67(10)", ["s.41A(8)(b)"])
+      | citation_law: "UK_ukpga_2011_16"
+    }
+
+    assert [%{code: "F1"}] = ChangeCollector.asked_notes([undated, dated], feed, :gaps)
+    assert [%{code: "F2"}] = ChangeCollector.asked_notes([undated, dated], feed, :benchmark)
+  end
+
   test "dated by the evaluator over the amending law's rules: the commencing order's (CR-06)" do
     order = Doc.new("UK_uksi_2001_3266", [File.read!("#{@dir}/uksi_2001_3266.xml")])
     rules = Order.rules(order, %{law: "UK_ukpga_2000_27", title: "Utilities Act", year: "2000"})
@@ -217,7 +249,7 @@ defmodule SertantaiLegal.Scraper.Amendment.CollectRecordsTest do
              end)
   end
 
-  test "AR-04: a change to the provision named lands on it and on the note's row inside it (Electricity Act s.42(1)(b))" do
+  test "AR-04: a change to the provision named lands on the note's row inside it, words-level — never on the provision (Electricity Act s.42(1)(b); Jason option c)" do
     doc =
       Doc.new("UK_ukpga_2000_27", [
         ~S|<Legislation><Primary><Body><P1 id="section-57"><P1para><P2 id="section-57-2"><P2para><Text>In section 42(1) of the Electricity Act 1989, omit the word “and” where it last occurs.</Text></P2para></P2></P1para></P1></Body></Primary></Legislation>|
@@ -239,12 +271,11 @@ defmodule SertantaiLegal.Scraper.Amendment.CollectRecordsTest do
       end)
 
     assert recs |> Enum.map(&{&1.section_id, &1.effect_type}) |> Enum.sort() == [
-             {"#{@law}:s.42(1)", "words repealed"},
              {"#{@law}:s.42(1)(b)", "words repealed"}
            ]
   end
 
-  test "AR-04: a repeal reaching a row only through its ancestor repeals neither (2000 c.27 s.57(2): (c) and the \"and\" before it)" do
+  test "AR-04: a repeal reaching the note's row only through its ancestor is words on that row; the row it names is repealed (2000 c.27 s.57(2): (c) and the \"and\" before it)" do
     doc =
       Doc.new("UK_ukpga_2000_27", [
         ~S|<Legislation><Primary><Body><P1 id="section-57"><P1para><Text>Section 42 of the Electricity Act 1989 is amended as follows.</Text><P2 id="section-57-2"><P2para><Text>In subsection (1), paragraph (c) (and the word “and” preceding it) shall cease to have effect.</Text></P2para></P2></P1para></P1></Body></Primary></Legislation>|
@@ -268,7 +299,6 @@ defmodule SertantaiLegal.Scraper.Amendment.CollectRecordsTest do
       end)
 
     assert recs |> Enum.map(&{&1.section_id, &1.effect_type}) |> Enum.sort() == [
-             {"#{@law}:s.42(1)", "words repealed"},
              {"#{@law}:s.42(1)(b)", "words repealed"},
              {"#{@law}:s.42(1)(c)", "repealed"}
            ]

@@ -6,11 +6,11 @@ defmodule SertantaiLegal.Scraper.Amendment.Evaluator do
   - **The target that covers the row:** the row itself when a target names
     it, else its nearest covering ancestor (bracket, or container from
     `ctx.ancestors`) — the target's own row. Words-level and whole-provision
-    changes alike land on the provision they name ("In regulation 31— after
-    “x” insert “y”" with its note on reg.31(2) is a change to reg.31), never
-    fanned onto its descendants; the labels carry an ancestor's change down
-    (LR-08's matcher placed records so). The level only names the change
-    ("words inserted"). A block's quoted provisions are targets already
+    changes alike reach the provision they name ("In regulation 31— after
+    “x” insert “y”" with its note on reg.31(2) reaches reg.31). Where the
+    record goes is the collector's: reached through an ancestor, on the
+    note's row, words-level (`Amendment.Collect`, AR-04 option c). The level
+    only names the change ("words inserted"). A block's quoted provisions are targets already
     (expanded at read time: LR-43).
   - **Ranges** ("s.41..s.43") by document order (`ctx.order`), else number.
 

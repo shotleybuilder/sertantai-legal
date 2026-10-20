@@ -4,10 +4,10 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
   AR-03; the change register's since AR-04): for each note on a row asked
   about (a pointer: which amending provisions to read, one hop), the
   amending law's rules for those provisions are placed by the evaluator
-  (`Amendment.Evaluator`: a row inside a provision named lands on that
-  provision) — and on the note's own row too, whose text the change markup
-  shows changed (AR-04: else the row would fall back to the law's start);
-  a change reached through an ancestor is words-level on both rows. Dating is the commencement ruleset's (`Commencement.Amending`).
+  (`Amendment.Evaluator`). A change the rule names on the note's row lands
+  there as read; one reaching it only through an ancestor lands on the
+  note's row alone, words-level (AR-04, Jason option c: the change markup
+  marks the row that changed). Dating is the commencement ruleset's (`Commencement.Amending`).
 
   The rules come from a `source` per amending law (`sources`: law → source
   | nil): `doc_source/1` reads a parsed document (`Amendment.Reader`), or
@@ -77,18 +77,14 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
   end
 
   # where a rule's change lands for a note on `sid`: the row itself when the
-  # rule names it; else the provision named (`target`, an ancestor) and the
-  # note's row inside it, whose text the change markup shows changed (AR-04,
-  # Jason option a) — both words-level: something inside the ancestor
-  # changed, so neither row is wholly inserted, substituted or repealed
-  # ("In subsection (1), paragraph (c) … shall cease to have effect", note on
-  # (b): s.42(1) and (b) keep their status)
+  # rule names it; else (the rule names an ancestor: "in section 6, omit the
+  # “or” after paragraph (e)") the note's row only, words-level — the change
+  # markup marks the row whose text changed; the ancestor (often a heading
+  # row with no text) is never versioned by a change inside it, and neither
+  # row is wholly inserted, substituted or repealed (AR-04, Jason option c)
   defp placements(rule, sid, sid), do: [{sid, rule}]
 
-  defp placements(rule, target, sid) do
-    inside = %{rule | level: :words}
-    [{target, inside}, {sid, inside}]
-  end
+  defp placements(rule, _target, sid), do: [{sid, %{rule | level: :words}}]
 
   @doc """
   A source read from a parsed document: rules read on demand for each law

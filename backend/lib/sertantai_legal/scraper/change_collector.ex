@@ -157,24 +157,8 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
   """
   @spec amending_law(String.t(), [String.t()], [Record.t()], :gaps | :benchmark) :: [Record.t()]
   def amending_law(law_name, section_ids, feed, mode) do
-    notes = law_notes(law_name)
-
-    dated =
-      for r <- feed,
-          r.effective_from != nil,
-          into: MapSet.new(),
-          do: {r.section_id, r.affecting_law}
-
-    want_dated = mode == :benchmark
-
-    # (a `for` match on a boolean would filter out every false: an explicit
-    # filter instead)
-    ask =
-      for n <- notes,
-          sid <- n.affected_sections,
-          dated?(dated, sid, n.citation_law) == want_dated,
-          into: MapSet.new(),
-          do: sid
+    notes = asked_notes(law_notes(law_name), feed, mode)
+    ask = for n <- notes, sid <- n.affected_sections, into: MapSet.new(), do: sid
 
     if MapSet.size(ask) == 0,
       do: [],
@@ -237,6 +221,31 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
   after
     for {__MODULE__, :doc, _} = key <- Process.get_keys(), do: Process.delete(key)
     Collect.clear()
+  end
+
+  @doc """
+  The notes the amending-law collector reads, each on the rows it asks
+  about: `:gaps` — rows where the feed has no dated change by the note's own
+  law (on the row or an ancestor); `:benchmark` — rows where it has one. Per
+  note, not per row: a row asked about for one law's note never re-reads
+  another law's change the feed already dates (AR-04: a savings-less record
+  beside the feed's repeal with savings turned repealed_saved into repealed).
+  """
+  @spec asked_notes([map()], [Record.t()], :gaps | :benchmark) :: [map()]
+  def asked_notes(notes, feed, mode) do
+    dated =
+      for r <- feed,
+          r.effective_from != nil,
+          into: MapSet.new(),
+          do: {r.section_id, r.affecting_law}
+
+    want_dated = mode == :benchmark
+
+    for n <- notes,
+        sids =
+          Enum.filter(n.affected_sections, &(dated?(dated, &1, n.citation_law) == want_dated)),
+        sids != [],
+        do: %{n | affected_sections: sids}
   end
 
   @doc "True when the row or an ancestor has a dated change by `law` in `dated` ({section_id, law} pairs)."

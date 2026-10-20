@@ -387,8 +387,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
           quoted: "a fee and a charge"
         )
 
-      # the note on (a) lands on s.6(2), the provision named (AR-04, Jason
-      # 2026-10-20 "Parent"), never on an inserted (a)
+      # the rule reaches (a) through s.6(2), the provision named — never as an
+      # inserted (a); the collector records it on (a), words-level (AR-04,
+      # Jason option c)
       row = row("UK_ukpga_1990_43:s.6(2)(a)", "Environmental Protection Act")
       assert match(text, nil, %{}, row) == {:ok, "UK_ukpga_1990_43:s.6(2)"}
 
@@ -442,8 +443,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
     assert m.("s.11A(1)(b)") == {:ok, "UK_ukpga_1989_29:s.11A(1)(b)"}
     assert m.("s.11A(7)") == {:ok, "UK_ukpga_1989_29:s.11A(7)"}
     # (7)(b) isn't in the inserted text: added later by another law
-    # (AR-04: a row inside an inserted provision lands on the provision —
-    # Jason 2026-10-20 "Parent" — never on the row itself)
+    # (the rule reaches a row inside an inserted provision through it, never
+    # as inserted itself; the collector records it on the row, words-level:
+    # AR-04, Jason option c)
     assert m.("s.11A(7)(b)") == {:ok, "UK_ukpga_1989_29:s.11A(7)"}
   end
 end
