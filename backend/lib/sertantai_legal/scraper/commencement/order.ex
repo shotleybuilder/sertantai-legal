@@ -478,6 +478,8 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   @list ~S"((?:(?:\s*(?:,|and|to|–|-)\s*)?(?:\d+[A-Z]*(?:\([0-9A-Za-z]+\))*|\([0-9A-Za-z]+\)(?:\([0-9A-Za-z]+\))*))+)"
 
   defp refs(text, sch) do
+    {of_section, text} = subsections_of(text)
+
     sections =
       for [_, list] <- Regex.scan(~r/\bsections?\s+#{@list}/i, text),
           r <- list_refs(list, "s."),
@@ -562,11 +564,36 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
       end
 
     Enum.uniq(
-      sections ++
+      of_section ++
+        sections ++
         subsections ++
         schedules ++ Enum.map(schedule_parts, &elem(&1, 1)) ++ parts ++ bare ++ paragraphs
     )
     |> Enum.reject(&(&1 =~ ~r/^s\.\(/))
+  end
+
+  # "Subsections (1) to (5) of section 18", "sub-sections (2), (3) and (4)
+  # of section 34": those subsections, never the section (AR-14: SI
+  # 1999/2830, SI 2004/1572); the phrase is taken out of the text so its
+  # "section 18" isn't read as the whole section
+  @subsections_of ~r/\bsub-?sections?\s+((?:\([0-9A-Za-z]+\)\s*(?:,|and|to|–)?\s*)+)of\s+section\s+(\d+[A-Z]*)\b/i
+
+  defp subsections_of(text) do
+    for [phrase, list, n] <- Regex.scan(@subsections_of, text), reduce: {[], text} do
+      {refs, t} -> {refs ++ bracket_refs(list, "s.#{n}"), String.replace(t, phrase, " ")}
+    end
+  end
+
+  # "(1) to (5)" → s.18(1)..s.18(5); "(2), (3) and (4)" → each
+  defp bracket_refs(list, base) do
+    Regex.scan(~r/\(([0-9A-Za-z]+)\)|\b(to)\b|(–)/, list)
+    |> Enum.reduce({[], false}, fn
+      [_, b], {[from | rest], true} -> {["#{from}..#{base}(#{b})" | rest], false}
+      [_, b], {acc, _} -> {["#{base}(#{b})" | acc], false}
+      _range, {acc, _} -> {acc, true}
+    end)
+    |> elem(0)
+    |> Enum.reverse()
   end
 
   # "17 to 22", "1, 3 to 6, and 10 to 14", "2(1) to (3)", "105(1)"

@@ -348,6 +348,26 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
     assert Order.ref("schedule-4-part-III") == "sch.4.pt.III"
   end
 
+  test "AR-14: \"Subsections (1) to (5) of section 18\", \"sub-sections (2), (3) and (4) of section 34\" are those subsections, not the section (SI 1999/2830, SI 2004/1572)" do
+    rules =
+      Order.rules(
+        order(~S"""
+        <P1 id="article-2"><P1para><Text>The following provisions of the Act shall come into force on 1st July 2004—</Text>
+        <UnorderedList><ListItem><Para><Text>Subsections (1) to (5) of section 18;</Text></Para></ListItem>
+        <ListItem><Para><Text>sub-sections (2), (3) and (4) of section 34 (compulsory purchase);</Text></Para></ListItem>
+        <ListItem><Para><Text>subsection (1) of section 22 (establishment).</Text></Para></ListItem></UnorderedList></P1para></P1>
+        """),
+        @act
+      )
+
+    assert %{full_from: ~D[2004-07-01]} = dated(rules, "section-18-3")
+    assert %{full_from: ~D[2004-07-01]} = dated(rules, "section-34-4")
+    assert %{full_from: ~D[2004-07-01]} = dated(rules, "section-22-1")
+    assert %{full_from: nil} = dated(rules, "section-18-6")
+    assert %{full_from: nil} = dated(rules, "section-34-1")
+    assert %{full_from: nil} = dated(rules, "section-22-2")
+  end
+
   test "LR-43: \"so far as it is not yet in force\" is full (SI 1992/1630)" do
     rules =
       Order.rules(
