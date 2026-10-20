@@ -1,7 +1,7 @@
 defmodule SertantaiLegal.Scraper.AmendingLaw.DocTest do
   use ExUnit.Case, async: true
 
-  alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Locator, RowRef, Text}
+  alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Locator, Text}
 
   @dir "test/fixtures/amending_law"
   defp doc,
@@ -38,26 +38,6 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.DocTest do
              "In section 40 (overall standards of performance)—",
              "in subsection (2) at the end there is inserted ;"
            ]
-  end
-
-  test "RowRef: a LAT row's law and provision path" do
-    assert %RowRef{
-             law_name: "UK_ukpga_1989_29",
-             year: "1989",
-             number: "29",
-             kind: :section,
-             number_ref: "25",
-             subs: ["5A"]
-           } =
-             RowRef.new("UK_ukpga_1989_29:s.25(5A)", "Electricity Act")
-
-    assert %RowRef{kind: :regulation, number_ref: "4", subs: ["2", "b"]} =
-             RowRef.new("UK_uksi_1999_1:reg.4(2)(b)", "X Regulations")
-
-    assert %RowRef{kind: :section, number_ref: "13", subs: ["1A"]} =
-             RowRef.new("UK_ukpga_1974_40:s.13(1A)[S]", "Control of Pollution Act")
-
-    assert RowRef.new("UK_ukpga_1974_40:pt.II", "Act").kind == :other
   end
 
   test "Locator: a pointer ref to the held ids — the path as far as it is held, Schedule parts ignored" do

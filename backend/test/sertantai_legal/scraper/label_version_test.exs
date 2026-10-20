@@ -7,13 +7,16 @@ defmodule SertantaiLegal.Scraper.LabelVersionTest do
     assert LabelVersion.current() =~ ~r/^[0-9a-f]{12}$/
   end
 
-  test "it covers the collectors, the amending-law readers and the projection" do
+  test "it covers the collectors, the amendment ruleset, the amending-law readers and the projection" do
     files = LabelVersion.files()
 
     for f <- ~w(
           lib/sertantai_legal/scraper/change_collector.ex
           lib/sertantai_legal/scraper/change_collector/feed.ex
-          lib/sertantai_legal/scraper/amending_law/target.ex
+          lib/sertantai_legal/scraper/amending_law/text.ex
+          lib/sertantai_legal/scraper/amendment/reader.ex
+          lib/sertantai_legal/scraper/amendment/collect.ex
+          lib/sertantai_legal/scraper/lat_ref.ex
           lib/sertantai_legal/scraper/label_projection.ex
           lib/sertantai_legal/scraper/label_timeline.ex
           lib/sertantai_legal/scraper/label_refresh.ex

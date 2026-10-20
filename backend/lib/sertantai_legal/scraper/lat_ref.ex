@@ -5,9 +5,8 @@ defmodule SertantaiLegal.Scraper.LatRef do
   specific first — and whether a rule's ref covers a chain element (itself,
   or a range "s.41..s.43" by document order, else by number).
 
-  The same matching as `Commencement.Evaluator` (CR-02); that evaluator
-  moves onto this module at the amendment switch-over (AR-04), when label
-  code changes anyway — not before (a change to it stales every law). Pure.
+  Shared by both evaluators: `Commencement.Evaluator` (CR-02; moved onto
+  this module at AR-04) and `Amendment.Evaluator`. Pure.
   """
 
   @doc """

@@ -2,8 +2,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   @moduledoc """
   An amending provision read once into amendment rules (amendment-rules
   AR-03), for the laws its notes point to (`laws`: one hop from our rows) —
-  the row-driven `AmendingLaw.Target` / `RepealTable` turned round: the
-  targets they would accept, expanded at read time.
+  the row-driven matchers (LR-08 `Target` / `RepealTable`, deleted at AR-04)
+  turned round: the targets they would accept, expanded at read time.
 
   - **The law:** the nearest text naming any law decides — the instruction,
     its context nearest first, the container's title, then the text before
@@ -25,9 +25,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
     definitions or entries; else whole provisions.
 
   The note is a pointer (which provisions to read); the date is the
-  commencement ruleset's. `AmendingLaw.Target` / `RepealTable` are deleted
-  at the switch-over (AR-04): this module copies the matching it needs
-  (they're LabelVersion inputs). Pure.
+  commencement ruleset's. Pure.
   """
 
   import SweetXml
@@ -59,22 +57,80 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
     %{law_name: law_name, title: title, year: year, number: number, kind: kind || :section}
   end
 
+  @doc """
+  The rules an amending provision (`id` in `doc`, its defined `terms`)
+  states for `laws`: a repeals table's lines, else a single provision's
+  instruction — never a whole Schedule or Part read as one.
+  """
+  @spec read(Doc.t(), String.t(), map(), [law_ref()]) :: [Rule.t()]
+  def read(doc, id, terms, laws) do
+    cond do
+      repeal_table?(doc, id) -> repeal_table(doc, id, laws)
+      provision?(id) -> instruction(doc, id, terms, laws)
+      true -> []
+    end
+  end
+
+  defp provision?(id),
+    do: Regex.match?(~r/^(?:section|regulation|article|rule)-|^schedule-[^-]+-paragraph-/, id)
+
+  @doc "Each repeals table's introducing section (`reference/2`), by the table's id."
+  @spec references(Doc.t()) :: %{String.t() => String.t()}
+  def references(doc) do
+    for id <- doc.ids,
+        String.match?(id, ~r/^schedule-[^-]+$/),
+        ref = reference(doc, id),
+        ref != nil,
+        into: %{},
+        do: {id, ref}
+  end
+
+  @doc "The provision giving effect to a Schedule (its Reference, \"Section 108.\" → section-108)."
+  @spec reference(Doc.t(), String.t()) :: String.t() | nil
+  def reference(doc, id) do
+    with el when el != nil <- Doc.element(doc, id),
+         [_, n] <-
+           Regex.run(
+             ~r/Section (\d+[A-Z]*)/,
+             el |> xpath(~x"./Reference//text()"ls) |> Enum.join()
+           ) do
+      "section-#{n}"
+    else
+      _ -> nil
+    end
+  end
+
   @doc "The rules an instruction (`id` in `doc`) states for `laws`."
   @spec instruction(Doc.t(), String.t(), map(), [law_ref()]) :: [Rule.t()]
   def instruction(doc, id, terms, laws) do
-    with %Text{} = text <- Text.of(doc, id),
-         {_, _} = op <- operation(text) do
-      title = Doc.title(doc, id)
-      texts = Enum.map([text.instruction | Enum.reverse(text.context)], &unquote_words/1)
-      before = Stream.map(text.before, &unquote_words/1)
-      source = %{law: doc.law_name, ref: id, text: text.instruction}
+    case Text.of(doc, id) do
+      %Text{} = text ->
+        of_text(text, Doc.title(doc, id), terms, laws, %{
+          law: doc.law_name,
+          ref: id,
+          text: text.instruction
+        })
 
-      for law <- laws,
-          law?(Stream.concat(texts ++ List.wrap(title), before), terms, law),
-          rule <- rules(text, texts, op, law, source),
-          do: rule
-    else
-      _ -> []
+      _ ->
+        []
+    end
+  end
+
+  @doc "The rules an instruction's `text` (its container's `title`) states for `laws`, with `source` on each."
+  @spec of_text(Text.t(), String.t() | nil, map(), [law_ref()], map()) :: [Rule.t()]
+  def of_text(%Text{} = text, title, terms, laws, source) do
+    case operation(text) do
+      {_, _} = op ->
+        texts = Enum.map([text.instruction | Enum.reverse(text.context)], &unquote_words/1)
+        before = Stream.map(text.before, &unquote_words/1)
+
+        for law <- laws,
+            law?(Stream.concat(texts ++ List.wrap(title), before), terms, law),
+            rule <- rules(text, texts, op, law, source),
+            do: rule
+
+      nil ->
+        []
     end
   end
 
@@ -168,14 +224,18 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
     |> Enum.uniq()
   end
 
+  # "the following paragraph", "a new subsection": the insertion is a provision
+  @provision_named ~r/\b(?:following|new)\s+(?:sub-?)?(?:sections?|paragraphs?|regulations?|articles?|rules?|provisions?|schedules?|parts?|chapters?)\b/i
+
   # the instruction's operation, its captions aside; an insertion quoting
-  # no provision "at the end" / "at the appropriate place" puts words into
-  # the provision named (2014 c.6 s.128(2)(e): a definition into s.235(1))
+  # no provision "at the end" / "at the appropriate place" — and naming no
+  # kind of provision as inserted — puts words into the provision named (2014 c.6 s.128(2)(e): a definition into s.235(1))
   defp operation(text) do
     case Operation.of(captionless(text)) do
       {"inserted", "inserted"} = op ->
         if text.inserted == [] and
-             text.instruction =~ ~r/\bat the (?:end|beginning|appropriate places?)\b/i,
+             text.instruction =~ ~r/\bat the (?:end|beginning|appropriate places?)\b/i and
+             not (text.instruction =~ @provision_named),
            do: {"inserted", "words inserted"},
            else: op
 
@@ -277,7 +337,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   defp plain_brackets(s),
     do: for([b] <- Regex.scan(~r/\(([0-9A-Za-z]+)\)/, s, capture: :all_but_first), do: b)
 
-  # ── the law named (as `AmendingLaw.Target`, LR-41) ─────────────────
+  # ── the law named (LR-41) ──────────────────────────────────────────
 
   defp law?(texts, terms, law) do
     texts
@@ -333,7 +393,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
       |> String.replace(~r/[^a-z0-9]+/, " ")
       |> String.trim()
 
-  # ── provisions named (as `AmendingLaw.Target`) ────────────────────
+  # ── provisions named ───────────────────────────────────────────────
 
   defp numbers(texts, kind) do
     re = ~r/\b#{@kind_words[kind]} (\d+[A-Z]*)(?:(?:,| and| or| to) (\d+[A-Z]*))*/u

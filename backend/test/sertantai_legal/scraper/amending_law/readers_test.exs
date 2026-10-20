@@ -1,15 +1,50 @@
 defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
   use ExUnit.Case, async: true
 
-  alias SertantaiLegal.Scraper.AmendingLaw.{
-    DefinedTerms,
-    Doc,
-    Operation,
-    RepealTable,
-    RowRef,
-    Target,
-    Text
-  }
+  alias SertantaiLegal.Scraper.AmendingLaw.{DefinedTerms, Doc, Operation, Text}
+  alias SertantaiLegal.Scraper.Amendment.{Evaluator, Reader}
+
+  # AR-04: the row matchers (`Target`, `RepealTable`) are gone; their cases
+  # run on the reader's rules and the evaluator, in the matchers' shape —
+  # `{:ok, row reached}` | `:no_match` (a table: `{:ok, row, type}` |
+  # `:no_match` | `:not_a_table`)
+  defp row(sid, title), do: %{section_id: sid, title: title}
+
+  defp law(%{section_id: sid, title: title}) do
+    [name, _] = String.split(sid, ":", parts: 2)
+    [_, prefix] = Regex.run(~r/:(s|reg|art|rule)\./, sid)
+    Reader.law_ref(name, title, prefix)
+  end
+
+  defp match(%Text{} = text, title, terms, row) do
+    text
+    |> Reader.of_text(title, terms, [law(row)], %{
+      law: "UK_test",
+      ref: text.id,
+      text: text.instruction
+    })
+    |> Enum.find_value(:no_match, &reached(&1, row))
+  end
+
+  defp table(doc, id, row) do
+    if Reader.repeal_table?(doc, id) do
+      doc
+      |> Reader.repeal_table(id, [law(row)])
+      |> Enum.find_value(:no_match, fn rule ->
+        with {:ok, t} <- reached(rule, row),
+             do: {:ok, t, if(rule.level == :words, do: "words repealed", else: "repealed")}
+      end)
+    else
+      :not_a_table
+    end
+  end
+
+  defp reached(rule, row) do
+    case Evaluator.reach(rule, row.section_id) do
+      {:ok, t} -> {:ok, t}
+      :no_match -> nil
+    end
+  end
 
   @dir "test/fixtures/amending_law"
   defp doc,
@@ -19,8 +54,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
         File.read!("#{@dir}/ukpga_2000_27_schedules.xml")
       ])
 
-  defp electricity(sid), do: RowRef.new("UK_ukpga_1989_29:" <> sid, "Electricity Act")
-  defp gas(sid), do: RowRef.new("UK_ukpga_1986_44:" <> sid, "Gas Act")
+  defp electricity(sid), do: row("UK_ukpga_1989_29:" <> sid, "Electricity Act")
+  defp gas(sid), do: row("UK_ukpga_1986_44:" <> sid, "Gas Act")
 
   test "DefinedTerms: a term's law from its definition's Citation, else its title" do
     terms = DefinedTerms.of(doc())
@@ -60,7 +95,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
   test "Target: the text names the row's law and provision — else no match" do
     d = doc()
     terms = DefinedTerms.of(d)
-    t = fn id, row -> Target.match(Text.of(d, id), Doc.title(d, id), terms, row) end
+    t = fn id, row -> match(Text.of(d, id), Doc.title(d, id), terms, row) end
 
     # "The 1989 Act is amended" (context) + "subsection (5) of that section" (section 25) + inserted (5A)
     assert t.("section-60-5", electricity("s.25(5A)")) == {:ok, "UK_ukpga_1989_29:s.25(5A)"}
@@ -81,60 +116,60 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
   test "RepealTable: a row of a repeals Schedule naming the row's law and provision" do
     d = doc()
 
-    assert RepealTable.match(d, "schedule-8", electricity("s.36")) ==
+    assert table(d, "schedule-8", electricity("s.36")) ==
              {:ok, "UK_ukpga_1989_29:s.36", "repealed"}
 
-    assert RepealTable.match(d, "schedule-8", electricity("s.42")) ==
+    assert table(d, "schedule-8", electricity("s.42")) ==
              {:ok, "UK_ukpga_1989_29:s.42", "repealed"}
 
-    assert RepealTable.match(d, "schedule-8", electricity("s.40")) ==
+    assert table(d, "schedule-8", electricity("s.40")) ==
              {:ok, "UK_ukpga_1989_29:s.40", "words repealed"}
 
-    assert RepealTable.match(d, "schedule-8", electricity("s.37")) == :no_match
-    assert RepealTable.match(d, "schedule-8", gas("s.36")) == :no_match
-    assert RepealTable.match(d, "schedule-6", electricity("s.36")) == :not_a_table
-    assert RepealTable.reference(d, "schedule-8") == "section-108"
+    assert table(d, "schedule-8", electricity("s.37")) == :no_match
+    assert table(d, "schedule-8", gas("s.36")) == :no_match
+    assert table(d, "schedule-6", electricity("s.36")) == :not_a_table
+    assert Reader.reference(d, "schedule-8") == "section-108"
   end
 
   test "RepealTable, modern form: Reference / Extent of repeal or revocation, entries per line" do
     d = Doc.new("UK_ukpga_2002_40", [File.read!("#{@dir}/ukpga_2002_40_schedules.xml")])
-    row = fn sid, title -> RowRef.new(sid, title) end
+    row = fn sid, title -> row(sid, title) end
 
-    assert RepealTable.match(
+    assert table(
              d,
              "schedule-26",
              row.("UK_ukpga_1989_29:s.56C(7)", "Electricity Act")
            ) ==
              {:ok, "UK_ukpga_1989_29:s.56C(7)", "repealed"}
 
-    assert RepealTable.match(
+    assert table(
              d,
              "schedule-26",
              row.("UK_ukpga_1989_29:s.56C(6)", "Electricity Act")
            ) == :no_match
 
-    assert RepealTable.match(
+    assert table(
              d,
              "schedule-26",
              row.("UK_ukpga_1989_29:s.57(1)", "Electricity Act")
            ) ==
              {:ok, "UK_ukpga_1989_29:s.57(1)", "words repealed"}
 
-    assert RepealTable.match(
+    assert table(
              d,
              "schedule-26",
              row.("UK_ukpga_1949_88:s.11A(1)(b)", "Registered Designs Act")
            ) ==
              {:ok, "UK_ukpga_1949_88:s.11A(1)(b)", "repealed"}
 
-    assert RepealTable.match(
+    assert table(
              d,
              "schedule-26",
              row.("UK_ukpga_1968_29:s.28(5A)", "Trade Descriptions Act")
            ) ==
              {:ok, "UK_ukpga_1968_29:s.28(5A)", "repealed"}
 
-    assert RepealTable.reference(d, "schedule-26") == "section-278"
+    assert Reader.reference(d, "schedule-26") == "section-278"
   end
 
   describe "LR-41: defined terms name a law only when their definition does" do
@@ -172,17 +207,17 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
     end
 
     test "only a law term stops the search, and only as whole words" do
-      row = RowRef.new("UK_ukpga_1991_22:s.148(3)", "New Roads and Street Works Act")
+      row = row("UK_ukpga_1991_22:s.148(3)", "New Roads and Street Works Act")
       text = tx("for subsection (3) substitute—.", context: ["In section 148 (sewers)—"])
       title = "The New Roads and Street Works Act 1991 (c.22)"
 
-      assert Target.match(text, title, %{"a" => %{law: nil, title: nil}}, row) ==
+      assert match(text, title, %{"a" => %{law: nil, title: nil}}, row) ==
                {:ok, "UK_ukpga_1991_22:s.148(3)"}
 
       # "the 1986 act" inside "of the 1986 Actions" is not the term
       gas = %{"the 1986 act" => %{law: nil, title: "Gas Act 1986"}}
 
-      assert Target.match(
+      assert match(
                tx("In section 148 of the 1986 Actions, for subsection (3) substitute—."),
                title,
                gas,
@@ -193,7 +228,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
   end
 
   describe "LR-41: the law named before the instruction" do
-    defp pipelines(sid), do: RowRef.new("UK_ukpga_1962_58:" <> sid, "Pipe-lines Act")
+    defp pipelines(sid), do: row("UK_ukpga_1962_58:" <> sid, "Pipe-lines Act")
 
     test "a Schedule paragraph amends the law the body says the Schedule amends (SI 2000/1937)" do
       d =
@@ -203,11 +238,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
 
       row = pipelines("s.10(1)")
 
-      assert Target.match(Text.of(d, "schedule-1-paragraph-3"), nil, %{}, row) ==
+      assert match(Text.of(d, "schedule-1-paragraph-3"), nil, %{}, row) ==
                {:ok, row.section_id}
 
       # Schedule 2: nothing names its law
-      assert Target.match(Text.of(d, "schedule-2-paragraph-1"), nil, %{}, row) == :no_match
+      assert match(Text.of(d, "schedule-2-paragraph-1"), nil, %{}, row) == :no_match
     end
 
     test "\"that Act\": the law an earlier provision names; a nearer other law stops the search (EReA 1999 s.8)" do
@@ -217,8 +252,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
         ])
 
       row = pipelines("s.10(1)")
-      assert Target.match(Text.of(d, "section-8"), nil, %{}, row) == {:ok, row.section_id}
-      assert Target.match(Text.of(d, "section-10"), nil, %{}, row) == :no_match
+      assert match(Text.of(d, "section-8"), nil, %{}, row) == {:ok, row.section_id}
+      assert match(Text.of(d, "section-10"), nil, %{}, row) == :no_match
     end
   end
 
@@ -228,10 +263,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
         inserted: [["2A"], ["2B"]]
       )
 
-    era = &RowRef.new("UK_ukpga_1996_18:" <> &1, "Employment Rights Act")
-    assert Target.match(text, nil, %{}, era.("s.235")) == :no_match
-    assert Target.match(text, nil, %{}, era.("s.235(2A)")) == {:ok, "UK_ukpga_1996_18:s.235(2A)"}
-    assert Target.match(text, nil, %{}, era.("s.235(2)")) == :no_match
+    era = &row("UK_ukpga_1996_18:" <> &1, "Employment Rights Act")
+    assert match(text, nil, %{}, era.("s.235")) == :no_match
+    assert match(text, nil, %{}, era.("s.235(2A)")) == {:ok, "UK_ukpga_1996_18:s.235(2A)"}
+    assert match(text, nil, %{}, era.("s.235(2)")) == :no_match
 
     # a paragraph added at the end of a subsection, no number in the quote (1980/60 s.20(1)(b))
     added =
@@ -239,9 +274,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
         context: ["In section 4(3) of the Land Compensation Act 1973—"]
       )
 
-    lca = &RowRef.new("UK_ukpga_1973_26:" <> &1, "Land Compensation Act")
-    assert Target.match(added, nil, %{}, lca.("s.4")) == :no_match
-    assert Target.match(added, nil, %{}, lca.("s.4(3)")) == :no_match
+    lca = &row("UK_ukpga_1973_26:" <> &1, "Land Compensation Act")
+    assert match(added, nil, %{}, lca.("s.4")) == :no_match
+    assert match(added, nil, %{}, lca.("s.4(3)")) == :no_match
 
     # a renumbering aside names no target (2008/32 Sch. 1 para. 8)
     renumbered =
@@ -250,9 +285,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
         inserted: [["2"]]
       )
 
-    assert Target.match(renumbered, nil, %{}, lca.("s.13(1)")) == :no_match
+    assert match(renumbered, nil, %{}, lca.("s.13(1)")) == :no_match
 
-    assert Target.match(renumbered, nil, %{}, lca.("s.13(2)")) ==
+    assert match(renumbered, nil, %{}, lca.("s.13(2)")) ==
              {:ok, "UK_ukpga_1973_26:s.13(2)"}
 
     # "In subsection (1) … insert" is where, not what (1999/1820 → 1984/26 s.9(1))
@@ -262,9 +297,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
         inserted: [["c"]]
       )
 
-    assert Target.match(into_sub, nil, %{}, lca.("s.9(1)")) == :no_match
+    assert match(into_sub, nil, %{}, lca.("s.9(1)")) == :no_match
 
-    assert Target.match(
+    assert match(
              tx(
                "In subsection (1) of section 9 of the Land Compensation Act 1973 there shall be added the following paragraph—"
              ),
@@ -279,11 +314,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
         "In section 9 of the Land Compensation Act 1973 there shall be inserted the following subsection (5A)—"
       )
 
-    assert Target.match(named_new, nil, %{}, lca.("s.9(5A)")) == {:ok, "UK_ukpga_1973_26:s.9(5A)"}
+    assert match(named_new, nil, %{}, lca.("s.9(5A)")) == {:ok, "UK_ukpga_1973_26:s.9(5A)"}
 
     # words inserted into a section still reach it
     words = tx("In section 4 of the Land Compensation Act 1973, after “x” insert “y”.")
-    assert Target.match(words, nil, %{}, lca.("s.4")) == {:ok, "UK_ukpga_1973_26:s.4"}
+    assert match(words, nil, %{}, lca.("s.4")) == {:ok, "UK_ukpga_1973_26:s.4"}
   end
 
   describe "LR-43: a block instruction reaches the rows inside it" do
@@ -295,11 +330,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
         )
 
       m = fn sid ->
-        Target.match(
+        match(
           text,
           nil,
           %{},
-          RowRef.new("UK_uksi_2014_1638:" <> sid, "Electricity Safety Regulations")
+          row("UK_uksi_2014_1638:" <> sid, "Electricity Safety Regulations")
         )
       end
 
@@ -316,11 +351,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
         )
 
       m = fn sid ->
-        Target.match(
+        match(
           text,
           nil,
           %{},
-          RowRef.new("UK_ukpga_1991_22:" <> sid, "New Roads and Street Works Act")
+          row("UK_ukpga_1991_22:" <> sid, "New Roads and Street Works Act")
         )
       end
 
@@ -329,18 +364,18 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
       assert m.("s.148(4)") == :no_match
     end
 
-    test "words substituted in a subsection don't reach its paragraphs" do
+    test "words substituted in a subsection land on the subsection, not its paragraphs" do
       text =
         tx("In section 148(3) of the New Roads and Street Works Act 1991, for “x” substitute .",
           quoted: "y"
         )
 
-      assert Target.match(
+      assert match(
                text,
                nil,
                %{},
-               RowRef.new("UK_ukpga_1991_22:s.148(3)(a)", "New Roads and Street Works Act")
-             ) == :no_match
+               row("UK_ukpga_1991_22:s.148(3)(a)", "New Roads and Street Works Act")
+             ) == {:ok, "UK_ukpga_1991_22:s.148(3)"}
     end
   end
 
@@ -352,14 +387,16 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
           quoted: "a fee and a charge"
         )
 
-      row = RowRef.new("UK_ukpga_1990_43:s.6(2)(a)", "Environmental Protection Act")
-      assert Target.match(text, nil, %{}, row) == :no_match
+      # the note on (a) lands on s.6(2), the provision named (AR-04, Jason
+      # 2026-10-20 "Parent"), never on an inserted (a)
+      row = row("UK_ukpga_1990_43:s.6(2)(a)", "Environmental Protection Act")
+      assert match(text, nil, %{}, row) == {:ok, "UK_ukpga_1990_43:s.6(2)"}
 
-      assert Target.match(
+      assert match(
                text,
                nil,
                %{},
-               RowRef.new("UK_ukpga_1990_43:s.6(2)", "Environmental Protection Act")
+               row("UK_ukpga_1990_43:s.6(2)", "Environmental Protection Act")
              ) == {:ok, "UK_ukpga_1990_43:s.6(2)"}
     end
 
@@ -370,23 +407,23 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
           context: ["In the Water Industry Act 1991—"]
         )
 
-      assert Target.match(
+      assert match(
                text,
                nil,
                %{},
-               RowRef.new("UK_ukpga_1991_56:s.98(2)(ca)", "Water Industry Act")
+               row("UK_ukpga_1991_56:s.98(2)(ca)", "Water Industry Act")
              ) == {:ok, "UK_ukpga_1991_56:s.98(2)(ca)"}
     end
 
     test "a law named only in quoted old words doesn't count; the nearest law-naming text decides" do
-      row = RowRef.new("UK_ukpga_1990_43:s.142(7)", "Environmental Protection Act")
+      row = row("UK_ukpga_1990_43:s.142(7)", "Environmental Protection Act")
       quoted_old = tx("In section 142(7), for “Explosive Substances Act 1875” substitute .")
 
-      assert Target.match(quoted_old, "Environmental Protection Act 1990", %{}, row) ==
+      assert match(quoted_old, "Environmental Protection Act 1990", %{}, row) ==
                {:ok, "UK_ukpga_1990_43:s.142(7)"}
 
       other = tx("In section 142(7) of the Gas Act 1986, for “x” substitute .")
-      assert Target.match(other, "Environmental Protection Act 1990", %{}, row) == :no_match
+      assert match(other, "Environmental Protection Act 1990", %{}, row) == :no_match
     end
   end
 
@@ -399,12 +436,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
     assert t.inserted == [["11A"], ["11A", "1"], ["11A", "1", "b"], ["11A", "7"]]
 
     m = fn sid ->
-      Target.match(t, nil, %{}, RowRef.new("UK_ukpga_1989_29:" <> sid, "Electricity Act"))
+      match(t, nil, %{}, row("UK_ukpga_1989_29:" <> sid, "Electricity Act"))
     end
 
     assert m.("s.11A(1)(b)") == {:ok, "UK_ukpga_1989_29:s.11A(1)(b)"}
     assert m.("s.11A(7)") == {:ok, "UK_ukpga_1989_29:s.11A(7)"}
     # (7)(b) isn't in the inserted text: added later by another law
-    assert m.("s.11A(7)(b)") == :no_match
+    # (AR-04: a row inside an inserted provision lands on the provision —
+    # Jason 2026-10-20 "Parent" — never on the row itself)
+    assert m.("s.11A(7)(b)") == {:ok, "UK_ukpga_1989_29:s.11A(7)"}
   end
 end

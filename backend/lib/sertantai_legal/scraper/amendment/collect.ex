@@ -1,12 +1,11 @@
 defmodule SertantaiLegal.Scraper.Amendment.Collect do
   @moduledoc """
   The amending-law collector on the amendment ruleset (amendment-rules
-  AR-03): for each note on a row asked about (a pointer: which amending
-  provisions to read, one hop), the amending law's rules for those
-  provisions are placed by the evaluator (`Amendment.Evaluator`) — the same
-  records as `ChangeCollector.AmendingLaw`, which it replaces at the
-  switch-over (AR-04). Dating is the commencement ruleset's
-  (`Commencement.Amending`).
+  AR-03; the change register's since AR-04): for each note on a row asked
+  about (a pointer: which amending provisions to read, one hop), the
+  amending law's rules for those provisions are placed by the evaluator
+  (`Amendment.Evaluator`: a row inside a provision named lands on that
+  provision). Dating is the commencement ruleset's (`Commencement.Amending`).
 
   The rules come from a `source` per amending law (`sources`: law → source
   | nil): `doc_source/1` reads a parsed document (`Amendment.Reader`), or
@@ -15,7 +14,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
   extents from `extents:`, the law's LAT prefix from `prefix:`.
   """
 
-  alias SertantaiLegal.Scraper.AmendingLaw.{DefinedTerms, Doc, Locator, Pointer, RepealTable}
+  alias SertantaiLegal.Scraper.AmendingLaw.{DefinedTerms, Doc, Locator, Pointer}
   alias SertantaiLegal.Scraper.Amendment.{Evaluator, Reader, Rule}
   alias SertantaiLegal.Scraper.ChangeCollector.Record
   alias SertantaiLegal.Scraper.Commencement.Amending
@@ -80,7 +79,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
     %{
       law: doc.law_name,
       elements: doc.elements,
-      references: references(doc),
+      references: Reader.references(doc),
       rules: fn id, law ->
         memo({doc.law_name, id, law.law_name}, fn -> read(doc, id, [law]) end)
       end
@@ -104,26 +103,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
     }
   end
 
-  @doc "The rules an amending provision (`id` in `doc`) states for `laws` — the read pass and `doc_source/1`."
+  @doc "The rules an amending provision (`id` in `doc`) states for `laws` (`Reader.read/4`, its defined terms memoised) — the read pass and `doc_source/1`."
   @spec read(Doc.t(), String.t(), [Reader.law_ref()]) :: [Rule.t()]
-  def read(doc, id, laws) do
-    cond do
-      Reader.repeal_table?(doc, id) -> Reader.repeal_table(doc, id, laws)
-      provision?(id) -> Reader.instruction(doc, id, terms(doc), laws)
-      true -> []
-    end
-  end
-
-  @doc "Each repeals table's introducing section (`RepealTable.reference/2`), by the table's id."
-  @spec references(Doc.t()) :: %{String.t() => String.t()}
-  def references(doc) do
-    for id <- doc.ids,
-        String.match?(id, ~r/^schedule-[^-]+$/),
-        ref = RepealTable.reference(doc, id),
-        ref != nil,
-        into: %{},
-        do: {id, ref}
-  end
+  def read(doc, id, laws), do: Reader.read(doc, id, terms(doc), laws)
 
   defp terms(doc), do: memo({:terms, doc.law_name}, fn -> DefinedTerms.of(doc) end)
 
@@ -140,11 +122,6 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
     for {__MODULE__, _} = k <- Process.get_keys(), do: Process.delete(k)
     :ok
   end
-
-  # only a single provision is read as an instruction, never a whole
-  # Schedule or Part
-  defp provision?(id),
-    do: Regex.match?(~r/^(?:section|regulation|article|rule)-|^schedule-[^-]+-paragraph-/, id)
 
   # a repeals table's own entry before the section introducing it (CR-08)
   defp dated_ids(src, id, %Rule{treatment: :repeal_table}),

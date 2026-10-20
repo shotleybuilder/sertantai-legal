@@ -1,8 +1,14 @@
-defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLawTest do
+defmodule SertantaiLegal.Scraper.Amendment.CollectRecordsTest do
+  @moduledoc """
+  The amending-law collector's records (LR-08, CR-06, CR-08), on the
+  amendment ruleset since AR-04 (`Amendment.Collect` over a document
+  source; the row-driven `ChangeCollector.AmendingLaw` is deleted).
+  """
   use ExUnit.Case, async: true
 
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
-  alias SertantaiLegal.Scraper.ChangeCollector.{AmendingLaw, Record}
+  alias SertantaiLegal.Scraper.Amendment.Collect
+  alias SertantaiLegal.Scraper.ChangeCollector.Record
   alias SertantaiLegal.Scraper.Commencement.Order
 
   @dir "test/fixtures/amending_law"
@@ -29,9 +35,17 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLawTest do
       affected_sections: Enum.map(sids, &"#{@law}:#{&1}")
     }
 
+  # the collector over each amending law's document
+  defp records(law, title, sids, notes, ask, docs, opts \\ []) do
+    sources = fn l -> (d = docs.(l)) && Collect.doc_source(d) end
+    Collect.records(law, title, sids, notes, ask, sources, opts)
+  after
+    Collect.clear()
+  end
+
   defp run(notes, rows \\ ["s.25", "s.25(5)", "s.25(5A)", "s.36", "s.40", "s.40(2)"]) do
     sids = Enum.map(rows, &"#{@law}:#{&1}")
-    AmendingLaw.records(@law, "Electricity Act", sids, notes, MapSet.new(sids), docs())
+    records(@law, "Electricity Act", sids, notes, MapSet.new(sids), docs())
   end
 
   test "an inserted subsection: a law record from s. 60(5), no rules → no date" do
@@ -94,9 +108,9 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLawTest do
   test "only rows asked for; the amending law not held; no law named: no record" do
     sids = ["#{@law}:s.25(5A)"]
     n = note("F1", "S. 25(5A) inserted by 2000 c. 27, s. 60(5)", ["s.25(5A)"])
-    assert AmendingLaw.records(@law, "Electricity Act", sids, [n], MapSet.new(), docs()) == []
+    assert records(@law, "Electricity Act", sids, [n], MapSet.new(), docs()) == []
 
-    assert AmendingLaw.records(
+    assert records(
              @law,
              "Electricity Act",
              sids,
@@ -105,7 +119,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLawTest do
              docs()
            ) == []
 
-    assert AmendingLaw.records(
+    assert records(
              @law,
              "Electricity Act",
              sids,
@@ -155,7 +169,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLawTest do
                dated_by_law: "UK_uksi_2001_3266"
              } = r
            ] =
-             AmendingLaw.records(@law, "Electricity Act", sids, [n], MapSet.new(sids), docs(),
+             records(@law, "Electricity Act", sids, [n], MapSet.new(sids), docs(),
                rules: fn
                  "UK_ukpga_2000_27" -> rules
                  _ -> []
@@ -166,20 +180,16 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLawTest do
     assert [%{"date" => "2001-10-01", "qualification" => nil}] = r.in_force
   end
 
-  test "records/7 leaves no ETS tables behind (memory across a corpus run, LR-25)" do
-    # only this process's tables: async tests create their own in parallel
-    owned = fn -> Enum.count(:ets.all(), &(:ets.info(&1, :owner) == self())) end
-    before = owned.()
+  test "ChangeCollector.with_doc_cache/1 leaves no memoised reads behind (memory across a corpus run, LR-25)" do
+    sources = fn l -> (d = docs().(l)) && Collect.doc_source(d) end
+    sids = ["#{@law}:s.25(5A)"]
+    n = note("F1", "S. 25(5A) inserted by 2000 c. 27, s. 60(5)", ["s.25(5A)"])
 
-    run([
-      note(
-        "F1",
-        "S. 25(5A) inserted (1.10.2001) by 2000 c. 27, s. 60(5); S.I. 2001/3266, art. 2",
-        ["s.25(5A)"]
-      )
-    ])
+    SertantaiLegal.Scraper.ChangeCollector.with_doc_cache(fn ->
+      Collect.records(@law, "Electricity Act", sids, [n], MapSet.new(sids), sources)
+    end)
 
-    assert owned.() == before
+    assert Enum.filter(Process.get_keys(), &match?({Collect, _}, &1)) == []
   end
 
   test "CR-06: a row the quoted text makes is inserted, not the sentence's earlier repeal (1991 c.40 s.9(1))" do
@@ -201,7 +211,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLawTest do
     sids = ["#{rta}:s.66A(1)"]
 
     assert [%Record{operation: "inserted"}] =
-             AmendingLaw.records(rta, "Road Traffic Act", sids, [n], MapSet.new(sids), fn
+             records(rta, "Road Traffic Act", sids, [n], MapSet.new(sids), fn
                "UK_ukpga_1991_40" -> doc
                _ -> nil
              end)
@@ -229,7 +239,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLawTest do
     sids = ["#{@law}:s.36"]
 
     [r] =
-      AmendingLaw.records(
+      records(
         @law,
         "Electricity Act",
         sids,

@@ -10,11 +10,11 @@ defmodule Mix.Tasks.Lat.Amending do
 
   The read pass (AR-03) reads each amending law once — the provisions our
   laws' notes point to (one hop), for every law they point from — and stores
-  its rules (`amendment_rules`) with a small index (element ids, each repeals
-  table's introducing section) under `data/cache/amendment-index/`, so the
-  collector needs no XML:
+  its rules (`amendment_rules`) with a small index (`Amendment.Index`:
+  element ids, each repeals table's introducing section, the reader version,
+  the laws read for), so the collector needs no XML:
 
-      mix lat.amending --read                    # every amending law not yet read (resumable)
+      mix lat.amending --read                    # every amending law not read by this reader (resumable)
       mix lat.amending --read --amending A,B     # these amending laws (re-read)
       mix lat.amending --read --limit 20         # the next 20
 
@@ -26,9 +26,7 @@ defmodule Mix.Tasks.Lat.Amending do
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Locator, Pointer}
-  alias SertantaiLegal.Scraper.Amendment.{Collect, Reader, Rule, Store}
-
-  @index_dir "data/cache/amendment-index"
+  alias SertantaiLegal.Scraper.Amendment.{Collect, Index, Reader, Rule, Store}
 
   @shortdoc "Print a law's amendment rules; read amending laws into rules"
 
@@ -70,21 +68,12 @@ defmodule Mix.Tasks.Lat.Amending do
     ["#{law}: #{length(rules)} rule(s)" | groups]
   end
 
-  @doc "The read pass's index for an amending law (`%{\"elements\" => …, \"references\" => …}`), or nil."
-  @spec index(String.t()) :: map() | nil
-  def index(amending) do
-    case File.read(Path.join(@index_dir, "#{amending}.json")) do
-      {:ok, json} -> Jason.decode!(json)
-      _ -> nil
-    end
-  end
-
   # ── --read ──────────────────────────────────────────────────────────
 
   defp read(opts) do
     laws =
       case opts[:amending] do
-        nil -> amending_laws() |> Enum.reject(&index_held?/1)
+        nil -> amending_laws() |> Enum.reject(&(&1 |> Index.get() |> Index.fresh?()))
         list -> String.split(list, ",", trim: true)
       end
 
@@ -132,15 +121,7 @@ defmodule Mix.Tasks.Lat.Amending do
         rules = Enum.flat_map(ids, &Collect.read(doc, &1, laws))
         {:ok, n} = Store.write(amending, rules)
 
-        File.mkdir_p!(@index_dir)
-
-        File.write!(
-          Path.join(@index_dir, "#{amending}.json"),
-          Jason.encode!(%{
-            "elements" => Map.keys(doc.elements),
-            "references" => Collect.references(doc)
-          })
-        )
+        :ok = Index.write(amending, doc, Enum.map(laws, & &1.law_name))
 
         {n, length(ids)}
     end
@@ -192,8 +173,6 @@ defmodule Mix.Tasks.Lat.Amending do
 
     Reader.law_ref(law, title, prefix)
   end
-
-  defp index_held?(amending), do: File.exists?(Path.join(@index_dir, "#{amending}.json"))
 
   defp held?(law) do
     case String.split(law, "_", parts: 4) do

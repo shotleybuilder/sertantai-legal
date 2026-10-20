@@ -5,8 +5,9 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
   delete + insert that law's records per collector, in one transaction.
 
   Collectors: `Feed` (changes-feed effects with their joins), `Markup`
-  (change markup no effect explains), `AmendingLaw` (the amending law's own
-  text, for rows the feed doesn't date; LR-08), `Commencement` (the law's
+  (change markup no effect explains), the amending law's own text for rows
+  the feed doesn't date (LR-08; on the amendment ruleset, AR-04:
+  `Amendment.Collect` over the read pass's stored rules, else the document), `Commencement` (the law's
   own start and the `LawStart` treatment that decided it; LR-33). Records are stored compact (`Compact`:
   one per run of consecutive rows) and checked against the per-row joins
   in the DB's row order before writing (`fidelity/3`). Never fetches.
@@ -15,9 +16,10 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
+  alias SertantaiLegal.Scraper.Amendment.{Collect, Index}
+  alias SertantaiLegal.Scraper.Amendment.Store, as: AmendmentRules
 
   alias SertantaiLegal.Scraper.ChangeCollector.{
-    AmendingLaw,
     Commencement,
     Compact,
     Feed,
@@ -178,17 +180,48 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
       do: [],
       else:
         with_doc_cache(fn ->
-          AmendingLaw.records(
+          Collect.records(
             law_name,
             law_title(law_name),
             section_ids,
             notes,
             ask,
-            &amending_doc/1,
+            amending_sources(law_name),
             rules: &CommencementRules.for_law/1,
             extents: extents(law_name)
           )
         end)
+  end
+
+  # each amending law as a source (AR-04): its stored rules when the read
+  # pass read it with this reader for this law, else its document (parsed
+  # once per law's collection, `with_doc_cache/1`); nil when not held
+  defp amending_sources(law_name) do
+    stored = Enum.group_by(AmendmentRules.for_law(law_name), & &1.source.law)
+
+    fn amending ->
+      key = {__MODULE__, :doc, {:source, amending}}
+
+      case Process.get(key, :none) do
+        :none -> tap(source(amending, law_name, stored), &Process.put(key, &1))
+        src -> src
+      end
+    end
+  end
+
+  defp source(amending, law_name, stored) do
+    index = Index.get(amending)
+
+    cond do
+      Index.current?(index, law_name) ->
+        Collect.stored_source(amending, index, Map.get(stored, amending, []))
+
+      doc = amending_doc(amending) ->
+        Collect.doc_source(doc)
+
+      true ->
+        nil
+    end
   end
 
   @doc """
@@ -203,6 +236,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
     fun.()
   after
     for {__MODULE__, :doc, _} = key <- Process.get_keys(), do: Process.delete(key)
+    Collect.clear()
   end
 
   @doc "True when the row or an ancestor has a dated change by `law` in `dated` ({section_id, law} pairs)."

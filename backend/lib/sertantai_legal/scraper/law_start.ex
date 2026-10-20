@@ -121,9 +121,9 @@ defmodule SertantaiLegal.Scraper.LawStart do
     {:provision_by_order, true,
      "named or remaining provisions left to commencement orders, or a law commenced wholly by order: no law start; their own dated commencement where held, else in force as at the revised text unless it marks them prospective, since unknown (gap commenced_by_order)",
      "Jason 2026-10-16 (LR-34 D1 b)"},
-    {:provision_qualified, false,
-     "commenced for some purposes or places only (\"so far as …\", \"in relation to Wales\"): listed on its rows, no effect",
-     "Jason 2026-10-16 (LR-34 D2)"},
+    {:provision_qualified, true,
+     "commenced for some purposes or places only (\"so far as …\", \"in relation to Wales\"): partly in force from its date (in_force_partial), fully once a rule for the rest starts (the evaluator's partial rule)",
+     "Jason 2026-10-16 (LR-34 D2); CR-03"},
     {:provision_unread, false,
      "a sentence whose provisions or date the reader can't resolve: listed for the law, no effect",
      "LR-34"}
