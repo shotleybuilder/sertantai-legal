@@ -15,8 +15,9 @@ Every XML read goes through xmerl (SweetXml): 27 modules — the LAT parser (wal
 ## Todo
 
 - ⬜ Measure the baseline: time and peak memory per document for xmerl on a fixed set (the 10 largest amending laws; 10 large LAT laws' bodies + Schedules); where the time goes (scan vs xpath)
-- ⬜ Decide the approach (options below) — Jason; Gemini review of the plan
-- ⬜ Phase 1: `AmendingLaw.Doc` on the new parser behind its existing API (`element/2`, `text/1`, `lines/1`, `title/2`, `ids`, `elements`) — gate: the read pass writes identical rules for every amending law (`amendment_rules` diff = 0), LR-08/41/43 and AR tests green; measure time and memory
+- ✅ Gemini review of the plan (2026-10-20, `backend/data/code-reviews/2026-10-20-lr-45-saxy-gemini.md`); accepted points below
+- ⬜ Spike: `AmendingLaw.Doc` on a Saxy compact tree, the 10 largest amending laws — pass = `amendment_rules` diff 0, peak memory ≥ 5× lower, parse ≥ 2× faster; else re-plan before Phase 1
+- ⬜ Phase 1: `AmendingLaw.Doc` (and `Text`, `DefinedTerms`, `RepealTable`) on the compact tree — gate: the read pass writes identical rules for **every** amending law, LR-08/41/43 and AR tests green; time and memory measured
 - ⬜ Phase 2: the LAT parser (walker, text, ids, refs, effects, xml helpers) — gate: `mix lat.parse_snapshot --all` zero diff (LR-04's gate)
 - ⬜ Phase 3, only if measured worth it: the commencement order reader, changes feed, definitions, metadata
 - ⬜ Remove SweetXml / xmerl where nothing uses it; architecture note in scraper CLAUDE.md
@@ -30,7 +31,21 @@ Every XML read goes through xmerl (SweetXml): 27 modules — the LAT parser (wal
 | **C. Fragment parse** | parse only the provisions a note points to (amending laws) | small for the collector | the read pass already parses once; little left to gain there |
 | **D. Cache derived artefacts** (LR-31 B) | store a compact `Doc` / parsed effects per document, keyed by content hash | repeated reads become loads | doesn't make the first parse faster; storage |
 
-Leaning: **A first** (one adapter, mechanical call-site changes, strong gates), **B** only for a hot path A leaves slow. Saxy is pure Elixir, streaming-capable, no NIF; not yet a dependency (SweetXml and Floki are).
+## Gemini review — accepted (2026-10-20)
+
+- **A new compact tree, not xmerl-shaped records.** Saxy parses to `{tag, attrs, children}` with binaries; call sites move onto a small set of tree helpers (children in document order, text, lines, attribute, local name). Emulating xmerl records would rebuild much of the weight and tie the code to xmerl's internals. The 30 direct `{:xmlElement, …}` / `{:xmlText, …}` matches and 9 `xml_element(…)` uses are converted — finite and mechanical. Not taken: the "drop-in" reading of option A.
+- **XPath:** SweetXml's xpath runs only on xmerl records, so the 55 `xpath(` calls move to a minimal adapter over the new tree covering only the forms used (`./@a`, `.//X`, `//ns:X/@a`, `local-name()`, unions, `self::` alternations, the one `ancestor::` + `[1]` form) — or are rewritten as tree helpers where simpler.
+- **Semantic traps the gates must cover:** whitespace-only text nodes (xmerl keeps them; `text/1`, `lines/1` and any child counting must match exactly); namespaces and prefixes (`ukm:`, `dc:`) and `local-name()`; entity and character-reference decoding; parent and position information (`ancestor::`, `[1]` — the adapter passes the path from the root); attribute order (anything relying on `hd(attributes)`); CDATA, comments, processing instructions.
+- **First spike** (above): the amending-law `Doc` only, the 10 largest amending laws, zero diff + ≥ 5× memory + ≥ 2× time.
+- **Gates:** a transitional dual-parser mode (both parsers, the structured outputs compared) behind a switch; the **whole corpus per phase** (all ~1,867 amending laws for Phase 1, all ~1,066 LAT laws for Phase 2), never a sample, at the gate; for the LAT parser, intermediate artefacts (e.g. the walker's effects, refs) diffed as well as the final snapshot, to localise a divergence.
+
+## Gemini review — not accepted / corrected
+
+- *"The `parent` field makes a linked graph that stops GC"*: xmerl's `parents` is a list of `{name, pos}`, not pointers. The weight is charlists, a heavy record per node and the scanner's state — the conclusion (a compact binary tree) stands.
+- *`fast_xml` wraps RapidXML*: it wraps Expat (C); either way a NIF and a C toolchain — Saxy (pure Elixir) kept unless the spike misses.
+- Hybrid stream/DOM: not needed (the AR-03 read pass already parses each amending law once).
+
+Saxy is not yet a dependency (SweetXml and Floki are); adding it is Phase 1's first commit.
 
 ## Gates (non-negotiable)
 
