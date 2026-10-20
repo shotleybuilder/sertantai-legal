@@ -252,13 +252,22 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
           # "In section 7(1) … for paragraph (b) substitute— (b) … (c) …":
           # numbered from the provision holding the replaced bracket
           # a quoted sub-paragraph "(i)" is never a provision of its own
+          # a quote numbered "1A" is a section only when no section is
+          # named to hold it ("In section 142, after subsection (1)
+          # insert— (1A)": s.142(1A), never s.1A)
+          # under the brackets named at levels above its own ("for
+          # subsection (5) substitute— (4A) (5)": s.52(4A), never
+          # s.52(5)(4A))
+          # a quoted "(i)" may be a sub-paragraph under the last
+          # bracket's parent ("In section 7(5)(b) for sub-paragraph (i)
+          # substitute— (i)": s.7(5)(b)(i)) — a letter or a numeral
           t <-
-            if(provision_path?(path), do: [ref(p, path)], else: []) ++
-              for(n <- numbers, do: ref(p, [n | named ++ path])) ++
-              for(n <- numbers, named != [], hd(path) in named, do: ref(p, [n | path])) ++
+            if(provision_path?(path) and numbers == [], do: [ref(p, path)], else: []) ++
+              for(n <- numbers, do: ref(p, [n | above(named, [hd(path)]) ++ path])) ++
               for(
                 n <- numbers,
                 length(named) > 1,
+                hd(path) =~ ~r/^[ivx]+[a-z]?$/,
                 do: ref(p, [n | Enum.drop(named, -1) ++ path])
               ),
           uniq: true,
@@ -287,7 +296,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
 
     {scoped, _} =
       Enum.map_reduce(clauses, {nil, true}, fn c, {prev, ours?} ->
-        unquoted = unquote_words(c.instruction)
+        # captions and quotes aside: a law named there is not the clause's
+        unquoted = c.instruction |> asides() |> unquote_words() |> own_part(law, terms)
 
         ours? =
           case laws(unquoted, terms) do
@@ -302,12 +312,81 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
             {:none, ns} -> ns
           end
 
-        own = brackets(c)
+        own = brackets(%{c | instruction: own_part(unquote_words(c.instruction), law, terms)})
         named = if c == first, do: own, else: above(place, own) ++ own
         {%{text: c, named: named, numbers: numbers, ours?: ours?}, {numbers, ours?}}
       end)
 
     Enum.filter(scoped, & &1.ours?)
+  end
+
+  # the text without its captions, a title's own brackets kept ("Planning
+  # (Listed Buildings and Conservation Areas) Act 1990")
+  defp asides(s) do
+    ~r/[“"][^”"]*[”"]|\((?:[^()“”"]|[“"][^”"]*[”"])*\)(?!\s*(?:Act|Regulations|Order|Rules|\d{4})\b)/u
+    |> Regex.replace(s, fn m -> if m =~ ~r/^[“"]/u or not (m =~ ~r/\s/u), do: m, else: "" end)
+  end
+
+  # a clause naming two laws ("Section 7 of the PPVA 1981 and section
+  # 68(1) and (2) of the RTA 1988 shall cease to have effect"): the law's
+  # part is the text up to its name from the name before
+  defp own_part(t, law, terms) do
+    spans = law_spans(t, terms)
+    ours = Enum.map(spans, fn {_, _, r} -> law_named?(r, law) end)
+
+    if Enum.any?(ours) and not Enum.all?(ours) do
+      # the last law named has the rest of the text ("… of the RTA 1988
+      # (…) shall cease to have effect")
+      last = length(spans) - 1
+
+      spans
+      |> Enum.with_index()
+      |> Enum.reduce({0, []}, fn {{_, b, r}, k}, {from, acc} ->
+        stop = if k == last, do: byte_size(t), else: b
+        {b, if(law_named?(r, law), do: [binary_part(t, from, stop - from) | acc], else: acc)}
+      end)
+      |> elem(1)
+      |> Enum.reverse()
+      |> Enum.join(" ")
+    else
+      t
+    end
+  end
+
+  # each law named, with its place in the text
+  defp law_spans(t, terms) do
+    lower = String.downcase(t)
+
+    defined =
+      for {term, law} <- terms,
+          law.law != nil or law.title != nil,
+          [{a, len}] <-
+            Regex.scan(~r/(?<![\w])#{Regex.escape(term)}(?![\w])/u, lower, return: :index),
+          do: {a, a + len, law}
+
+    titled =
+      for [{a, len}] <-
+            Regex.scan(
+              ~r/[A-Z][\w,'’()\- ]*? (?:Act|Regulations|Order|Rules)(?: \(Northern Ireland\))? \d{4}/u,
+              t,
+              return: :index
+            ),
+          do: {a, a + len, %{law: nil, title: binary_part(t, a, len)}}
+
+    chapters =
+      for [{a, len}, {ya, yl}, {na, nl}] <-
+            Regex.scan(~r/\b(\d{4}) c\. (\d+)/, t, return: :index),
+          do: {a, a + len, %{law: nil, chapter: {binary_part(t, ya, yl), binary_part(t, na, nl)}}}
+
+    # a name inside another ("land" in "Land Compensation Act 1973") is
+    # part of it
+    (defined ++ titled ++ chapters)
+    |> Enum.sort()
+    |> Enum.reduce([], fn
+      {_, b, _}, [{_, pb, _} | _] = acc when b <= pb -> acc
+      span, acc -> [span | acc]
+    end)
+    |> Enum.reverse()
   end
 
   # the place's brackets at levels above the clause's own
@@ -743,7 +822,10 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
 
   # the provision numbers named; "22 to 25" a range ("22..25")
   defp numbers(texts, kind) do
-    re = ~r/\b(?i:#{@kind_words[kind]}) (\d+[A-Z]*)(?:(?:,| and| or| to) (\d+[A-Z]*))*/u
+    # "The Electricity Safety Regulations 2014": a title's year, never
+    # regulation 2014 (sections do run past 999: Companies Act 2006 s.1300)
+    year = if kind == :section, do: "", else: "(?!\\d{4}\\b)"
+    re = ~r/\b(?i:#{@kind_words[kind]}) #{year}(\d+[A-Z]*)(?:(?:,| and| or| to) (\d+[A-Z]*))*/u
 
     Enum.find_value(texts, :none, fn t ->
       case Regex.scan(re, t, capture: :first) do
@@ -782,14 +864,24 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   defp sections_quoted?(%Text{} = text),
     do:
       captionless(text).instruction =~
-        ~r/\b(?:for|after|before)\s+(?:the\s+)?sections?\s+\d+[A-Z]*\b(?!\s*\()/i
+        ~r/\b(?:for|after|before)\s+(?:the\s+)?sections?\s+\d+[A-Z]*\b(?!\s*\((?:\d+[A-Z]*|[a-z]{1,3})\))/i
 
   defp provision_path?([top | _]), do: top =~ ~r/^\d/
 
   defp brackets(%Text{instruction: i}) do
     i
     |> String.replace(~r/[“"][^”"]*[”"]/u, "")
-    |> String.replace(~r/\b(?:after|before) (?:sub)?(?:section|paragraph) \([^)]*\)/i, "")
+    # "after paragraph (2)(b)": the anchor is a sibling, its parent the place
+    |> String.replace(
+      ~r/\b(?:after|before) (?:sub-?)?(?:section|paragraph) ((?:\([^)]*\))+)/i,
+      fn m ->
+        m
+        |> then(&Regex.scan(~r/\([^)]*\)/, &1))
+        |> List.flatten()
+        |> Enum.drop(-1)
+        |> Enum.join()
+      end
+    )
     |> String.replace(~r/\(which becomes [^()]*\([^)]*\)\)/i, "")
     |> then(&for([b] <- Regex.scan(~r/\(([0-9A-Za-z]+)\)/, &1, capture: :all_but_first), do: b))
     |> Enum.filter(&(&1 =~ @bracket))

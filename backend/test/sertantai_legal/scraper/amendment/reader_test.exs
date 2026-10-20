@@ -395,6 +395,63 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderTest do
       refute {"s.23", :repealed, :provision} in t
     end
 
+    test "one clause naming two laws: each law its own numbers (1991 c.40 s.9(1))" do
+      t =
+        mixed(
+          "section-44",
+          ~S|Section 7 of the Gas Act 1986 and section 68(1) and (2) of the principal Act shall cease to have effect.</Text>|
+        )
+
+      assert {"s.68(1)", :repealed, :provision} in t
+      assert {"s.68(2)", :repealed, :provision} in t
+      refute Enum.any?(t, fn {r, _, _} -> r =~ ~r/^s\.7\b/ end)
+    end
+
+    test "a quoted subsection is never a section of its own (\"In section 7, after subsection (1) insert— (1A)\": no s.1A)" do
+      t =
+        mixed(
+          "section-45",
+          ~S|In section 7 of the principal Act, after subsection (1) insert—</Text><BlockAmendment><P2><Pnumber>1A</Pnumber><P2para><Text>new</Text></P2para></P2></BlockAmendment>|
+        )
+
+      assert {"s.7(1A)", :inserted, :provision} in t
+      refute Enum.any?(t, fn {r, _, _} -> r =~ ~r/^s\.1A/ end)
+    end
+
+    test "subsections substituted for a subsection are its siblings, not inside it (1991 c.34 s.63(1))" do
+      t =
+        mixed(
+          "section-47",
+          ~S|In section 7 of the principal Act (right to advance payment of compensation) for subsection (5) there is substituted—</Text><BlockAmendment><P2><Pnumber>4A</Pnumber><P2para><Text>new</Text></P2para></P2><P2><Pnumber>5</Pnumber><P2para><Text>new</Text></P2para></P2></BlockAmendment>|
+        )
+
+      assert {"s.7(4A)", :substituted, :provision} in t
+      assert {"s.7(5)", :substituted, :provision} in t
+      refute Enum.any?(t, fn {r, _, _} -> r in ["s.7(5)(4A)", "s.7(5)(5)", "s.4A"] end)
+    end
+
+    test "inserted after a paragraph's sub-paragraph: under that paragraph (\"after paragraph (2)(b) insert— (c)\")" do
+      t =
+        mixed(
+          "section-48",
+          ~S|In section 7 of the principal Act, after paragraph (2)(b) insert—</Text><BlockAmendment><P3><Pnumber>c</Pnumber><P3para><Text>new</Text></P3para></P3></BlockAmendment>|
+        )
+
+      assert {"s.7(2)(c)", :inserted, :provision} in t
+      refute Enum.any?(t, fn {r, _, _} -> r in ["s.7(c)", "s.7(2)(b)(c)", "s.7(b)(c)"] end)
+    end
+
+    test "a section inserted after a captioned section is still a section (\"after section 3 (Interpretation) insert— 3A\")" do
+      t =
+        mixed(
+          "section-46",
+          ~S|In the principal Act, after section 3 (Interpretation) insert—</Text><BlockAmendment><P1group><P1><Pnumber>3A</Pnumber><P1para><Text>new</Text></P1para></P1></P1group></BlockAmendment>|
+        )
+
+      assert {"s.3A", :inserted, :provision} in t
+      refute {"s.3(3A)", :inserted, :provision} in t
+    end
+
     test "a clause naming another law is not this law's (1991 c.40 s.9(1))" do
       t =
         mixed(
