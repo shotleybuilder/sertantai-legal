@@ -133,7 +133,7 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
         """
         SELECT section_id, evidence, operation, effect_type, affecting_law, in_force,
                effective_from, savings, via, prospective, applied, effect_extent,
-               territorial_application, source, pointer
+               territorial_application, source, pointer, affected_ref
         FROM lat_change_log_rows
         WHERE law_name = $1 AND section_id IS NOT NULL AND collector <> 'commencement'
         """,

@@ -37,6 +37,46 @@ defmodule SertantaiLegal.Scraper.LatParser.Refs do
   end
 
   @doc """
+  Each change's note ref by its ChangeId (AR-10): the Addition /
+  Substitution / Repeal's CommentaryRef attribute, else a CommentaryRef
+  element just before it in the same parent (older markup: `<Pnumber>
+  <CommentaryRef Ref="c13981151"/><Addition ChangeId="d29p11612">10`) —
+  the change's other occurrences (its text) carry neither.
+  """
+  @spec change_refs(tuple()) :: %{String.t() => String.t()}
+  def change_refs(doc), do: change_refs(doc, %{})
+
+  defp change_refs(node, acc) when elem(node, 0) == :xmlElement do
+    {acc, _} =
+      Enum.reduce(elem(node, 8), {acc, nil}, fn child, {acc, before} ->
+        case child do
+          {:xmlElement, name, _, _, _, _, _, _, _, _, _, _} ->
+            local = Xml.local_name(name)
+
+            acc =
+              with true <- local in ~w(Addition Substitution Repeal),
+                   id when id != nil <- Xml.change_id(child),
+                   ref when ref != nil <-
+                     Xml.blank_to_nil(Xml.attr(child, :CommentaryRef)) || before do
+                Map.put_new(acc, id, ref)
+              else
+                _ -> acc
+              end
+
+            before = if local == "CommentaryRef", do: Xml.attr_or_nil(child, :Ref), else: nil
+            {change_refs(child, acc), before}
+
+          _ ->
+            {acc, before}
+        end
+      end)
+
+    acc
+  end
+
+  defp change_refs(_node, acc), do: acc
+
+  @doc """
   Classify each CommentaryRef by looking up its type in the Commentaries block.
   Falls back to ID prefix matching (F1→amendment) for backwards compatibility.
   """

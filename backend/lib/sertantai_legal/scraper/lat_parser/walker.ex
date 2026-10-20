@@ -51,7 +51,9 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
               # whole-provision changes (rule 3) inherited by descendant rows
               effects: nil,
               law_extent: nil,
-              provision_changes: []
+              provision_changes: [],
+              # AR-10: each change's note ref by ChangeId (`Refs.change_refs/1`)
+              change_refs: %{}
 
     @type t :: %__MODULE__{
             part: String.t() | nil,
@@ -74,7 +76,8 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
             version_extent: String.t() | nil,
             effects: SertantaiLegal.Scraper.EffectIndex.t(),
             law_extent: String.t() | nil,
-            provision_changes: [SertantaiLegal.Scraper.LatTerritory.Change.t()]
+            provision_changes: [SertantaiLegal.Scraper.LatTerritory.Change.t()],
+            change_refs: %{String.t() => String.t()}
           }
 
     @doc """
@@ -90,7 +93,8 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
         ref_type_lookup: Refs.type_lookup(doc),
         versions: versions(doc),
         effects: Effects.index(Map.get(context, :effects), doc, law_extent),
-        law_extent: law_extent
+        law_extent: law_extent,
+        change_refs: Refs.change_refs(doc)
       }
     end
 
@@ -375,7 +379,12 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
       # LR-23: each joined effect with its join kind (the change log's `via`)
       effect_joins: joins,
       # LR-23: change markup no effect explains (the change log's markup source)
-      unjoined_changes: LatTerritory.unjoined_changes(segments),
+      unjoined_changes:
+        for(
+          {id, ref, op} <- LatTerritory.unjoined_changes(segments),
+          uniq: true,
+          do: {id, ref || ctx.change_refs[id], op}
+        ),
       effect_ids: Enum.map(joins, &elem(&1, 0)),
       from_version: ctx.from_version
     }

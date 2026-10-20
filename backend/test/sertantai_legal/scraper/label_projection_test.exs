@@ -267,6 +267,124 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
            ]
   end
 
+  test "AR-10: an ancestor's record naming another provision under it never versions the row (1990/43 s.153(1)(q): SSI 2024/371's (z10) placed on s.153)" do
+    law = "UK_ukpga_1990_43"
+
+    changes = [
+      change(
+        law,
+        "s.153",
+        "z10",
+        "inserted",
+        "inserted",
+        "UK_ssi_2024_371",
+        [
+          {~D[2025-02-06], nil}
+        ],
+        affected_ref: "s. 153(1)(z10)",
+        via: ["whole"]
+      ),
+      change(
+        law,
+        "s.153",
+        "s1",
+        "substituted",
+        "substituted",
+        "UK_ukpga_2000_1",
+        [
+          {~D[2001-01-01], nil}
+        ],
+        affected_ref: "s. 153(1)",
+        via: ["whole"]
+      ),
+      change(
+        law,
+        "s.153",
+        "rng",
+        "substituted",
+        "substituted",
+        "UK_ukpga_2002_1",
+        [
+          {~D[2003-01-01], nil}
+        ],
+        affected_ref: "ss. 153-155",
+        via: ["whole"]
+      )
+    ]
+
+    assert periods(law, [row(law, "s.153(1)(q)")], changes, law_start: ~D[1991-01-01]) == [
+             {~D[1991-01-01], ~D[2001-01-01], "in_force", ~D[1991-01-01], nil},
+             {~D[2001-01-01], ~D[2003-01-01], "in_force", ~D[2001-01-01], "UK_ukpga_2000_1"},
+             {~D[2003-01-01], nil, "in_force", ~D[2003-01-01], "UK_ukpga_2002_1"}
+           ]
+  end
+
+  test "AR-10: a range or a list reaches its members only (\"s. 153(1)(a)-(nn)\")" do
+    law = "UK_ukpga_1990_43"
+
+    changes = [
+      change(
+        law,
+        "s.153",
+        "rng",
+        "substituted",
+        "substituted",
+        "UK_uksi_2015_479",
+        [
+          {~D[2015-04-01], nil}
+        ],
+        affected_ref: "s. 153(1)(a)-(nn)",
+        via: ["whole"]
+      ),
+      change(
+        law,
+        "s.153",
+        "lst",
+        "inserted",
+        "inserted",
+        "UK_ssi_2022_278",
+        [
+          {~D[2022-11-17], nil}
+        ],
+        affected_ref: "s. 153(1)(z8)(z9)",
+        via: ["whole"]
+      )
+    ]
+
+    # (q) is in the range (a)-(nn), not in the list (z8)(z9)
+    assert [_, {~D[2015-04-01], nil, "in_force", ~D[2015-04-01], "UK_uksi_2015_479"}] =
+             periods(law, [row(law, "s.153(1)(q)")], changes, law_start: ~D[1991-01-01])
+
+    assert [{~D[2022-11-17], nil, "in_force", ~D[2022-11-17], "UK_ssi_2022_278"}] =
+             periods(law, [row(law, "s.153(1)(z9)")], changes, law_start: ~D[1991-01-01])
+
+    assert [{~D[1991-01-01], nil, "in_force", ~D[1991-01-01], nil}] =
+             periods(law, [row(law, "s.153(2)")], changes, law_start: ~D[1991-01-01])
+  end
+
+  test "AR-10: a ref listing siblings (\"s. 33(9)(10)\") reaches the rows under its parent" do
+    law = "UK_ukpga_1990_43"
+
+    changes = [
+      change(
+        law,
+        "s.33",
+        "ins",
+        "inserted",
+        "inserted",
+        "UK_ukpga_1995_25",
+        [
+          {~D[1996-04-01], nil}
+        ],
+        affected_ref: "s. 33(9)(10)",
+        via: ["whole"]
+      )
+    ]
+
+    assert [{~D[1996-04-01], nil, "in_force", ~D[1996-04-01], "UK_ukpga_1995_25"}] =
+             periods(law, [row(law, "s.33(10)")], changes, law_start: ~D[1991-01-01])
+  end
+
   test "J1: no evidence of a start (no law date, no change): no periods, a gap" do
     law = "UK_uksi_1999_1"
 

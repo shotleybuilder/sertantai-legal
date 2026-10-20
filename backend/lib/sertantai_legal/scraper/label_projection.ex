@@ -215,9 +215,142 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
         a <- above,
         c <- Map.get(by_row, a, []),
         not words_level?(c),
+        on_line?(c, own),
         do: Map.put(c, :own, false)
       )
     )
+  end
+
+  # AR-10: an ancestor's record naming a provision (the feed places an
+  # effect on the ancestors of the provision it names, `whole`) reaches the
+  # row only when that provision is the row or above it: SSI 2024/371's
+  # insertion of s.153(1)(z10), placed on s.153, never versions or inserts
+  # s.153(1)(q). A range or a list names their common parent ("s.
+  # 153(1)(a)-(nn)", "s. 33(9)(10)": s.153(1), s.33); a ref not read as a
+  # provision (a Part, a Schedule, "ss. 92-94", a heading) still reaches
+  # every row under it.
+  defp on_line?(c, sid) do
+    case provision_ref(Map.get(c, :affected_ref)) do
+      nil ->
+        true
+
+      {path, members} ->
+        local =
+          sid
+          |> String.split(":", parts: 2)
+          |> List.last()
+          |> String.replace(~r/\[.*\]$/, "")
+          |> path()
+
+        under?(local, path, members)
+    end
+  end
+
+  # the row is the provision named or under it; for a list or range, under
+  # one of its members
+  defp under?(nil, _path, _members), do: false
+
+  defp under?(local, path, nil), do: List.starts_with?(local, path)
+
+  defp under?(local, path, members) do
+    List.starts_with?(local, path) and length(local) > length(path) and
+      member?(Enum.at(local, length(path)), members)
+  end
+
+  defp member?(b, {:list, bs}), do: b in bs
+
+  defp member?(b, {:range, from, to}) do
+    [kb, kf, kt] = Enum.map([b, from, to], &order/1)
+    kb != nil and kf != nil and kt != nil and kf <= kb and kb <= kt
+  end
+
+  # a bracket's place in its sequence: (2) < (2A) < (3); (z) < (aa); (iv) < (v)
+  defp order(b) do
+    cond do
+      b =~ ~r/^\d+[A-Z]*$/ ->
+        [_, n, s] = Regex.run(~r/^(\d+)([A-Z]*)$/, b)
+        {:number, String.to_integer(n), s}
+
+      b =~ ~r/^[ivx]+$/ ->
+        {:roman, roman(b)}
+
+      b =~ ~r/^[a-z]+\d*$/ ->
+        {:letter, String.length(b), b}
+
+      true ->
+        nil
+    end
+  end
+
+  defp roman(r) do
+    v = %{?i => 1, ?v => 5, ?x => 10}
+    ds = r |> String.to_charlist() |> Enum.map(&v[&1])
+
+    ds
+    |> Enum.zip(tl(ds) ++ [0])
+    |> Enum.reduce(0, fn {d, n}, acc -> if d < n, do: acc - d, else: acc + d end)
+  end
+
+  # "s.153(1)(q)" → ["s.153", "1", "q"]
+  defp path(local) do
+    case Regex.run(~r/^((?:s|reg|art|rule)\.\d+[A-Z]*)((?:\([0-9A-Za-z]+\))*)$/, local) do
+      [_, head, brackets] -> [head | brackets(brackets)]
+      nil -> nil
+    end
+  end
+
+  defp brackets(s),
+    do: ~r/\(([0-9A-Za-z]+)\)/ |> Regex.scan(s, capture: :all_but_first) |> List.flatten()
+
+  # a ref as {the provision's path, its members}: "s. 153(1)(z10)" →
+  # {["s.153", "1", "z10"], nil}; a list "s. 153(1)(z8)(z9)" → {["s.153",
+  # "1"], {:list, ["z8", "z9"]}}; a range "s. 153(1)(a)-(nn)" → {…,
+  # {:range, "a", "nn"}}; nil when not read as a provision
+  defp provision_ref(nil), do: nil
+
+  defp provision_ref(ref) do
+    r = String.replace(ref, ~r/\s+/, "")
+
+    with [_, kind, number, bs, rest] <-
+           Regex.run(~r/^(s|reg|art|rule)\.(\d+[A-Z]*)((?:\([0-9A-Za-z]+\))*)(.*)$/i, r) do
+      head = String.downcase(kind) <> "." <> number
+      bs = brackets(bs)
+
+      case {rest, bs} do
+        {"", _} ->
+          case Enum.chunk_every(bs, 2, 1, :discard) |> Enum.find_index(&siblings?/1) do
+            nil -> {[head | bs], nil}
+            k -> {[head | Enum.take(bs, k)], {:list, Enum.drop(bs, k)}}
+          end
+
+        {"-" <> to, [_ | _]} ->
+          case brackets(to) do
+            [last | _] -> {[head | Enum.drop(bs, -1)], {:range, List.last(bs), last}}
+            [] -> nil
+          end
+
+        _ ->
+          nil
+      end
+    else
+      _ -> nil
+    end
+  end
+
+  # two brackets of one kind, or a letter then the next ("(h)(i)"), may be
+  # siblings
+  defp siblings?([a, b]) do
+    bracket_kind(a) == bracket_kind(b) or
+      (bracket_kind(a) == :letter and String.length(a) == 1 and String.length(b) == 1 and
+         hd(String.to_charlist(b)) == hd(String.to_charlist(a)) + 1)
+  end
+
+  defp bracket_kind(b) do
+    cond do
+      b =~ ~r/^\d/ -> :number
+      b =~ ~r/^[ivx]+$/ -> :roman
+      true -> :letter
+    end
   end
 
   defp row_timeline(law, row, changes, {law_start, made}, today, text_date) do
