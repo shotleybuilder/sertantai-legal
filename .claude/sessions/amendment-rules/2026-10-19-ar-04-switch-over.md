@@ -1,6 +1,55 @@
 ---
 session: 'AR-04: Switch-over'
-status: active
+status: closed
+opened: '2026-10-19'
+closed: '2026-10-20'
+outcome: success
+parent: amendment-rules/2026-10-19-ar-00-meta.md
+
+summary: >
+  The change register's amending-law records now come from the amendment ruleset (Amendment.Collect over the
+  read pass's stored rules, else the document); the row matchers (Target, RepealTable, the old collector) are deleted.
+  Seven pilots and two corpus previews found and fixed eight bugs; applied by relabel (restore point first):
+  unknown today 16,359 → 16,159, undated_change 15,189 → 14,259, 0 failed, 0 stale.
+
+decisions:
+  - what: 'Stored rules only when the read pass''s index is current (ReaderVersion) and covers the law collected; else the collector reads the document'
+    why: 'a law LAT-parsed later, an amending law first cited later, or rules read by an older reader would otherwise lose records silently'
+    result: 'Amendment.Index + ReaderVersion; the read pass re-reads stale indexes (AR-03 lesson: it skipped by file existence)'
+  - what: 'Streaming XML (LR-45) after AR-04'
+    why: 'Jason: "agree to finish ar-04 first" — minutes saved on the remaining runs for days of work; an XML-layer change in the same corpus run would confound the label diff'
+    result: 'LR-45 pending'
+  - what: 'Option (c): a change reaching the note''s row only through the provision named lands on that row alone, words-level; never on the provision'
+    why: 'pilot evidence — option (a) (parent + note row) dated heading rows with no text by the latest change anywhere inside them (Electricity Act s.6: 2024 from "omit the “or” after paragraph (e)"); the change markup marks the row that changed, the instruction is only less specific. Reverses the AR-03 "Parent" decision (my recommendation then was wrong)'
+    result: 'Jason 2026-10-20 "option c"; s.42(1)(b) dated 2001; heading rows no longer versioned by children'
+  - what: 'Savings are the feed''s: the same repeal read from an amending law never drops them; an amending law''s whole repeal never repeals a row the markup shows in force'
+    why: 'amending-law records carry no savings or territory and are marked applied; the revised text is the authority on what is in force (J2 spirit)'
+    result: 'false repeals 50 → 0 in the corpus preview; 36 rows today''s register falsely held repealed corrected; repealed_saved restored'
+  - what: 'Keep the per-row ask (every note on a row asked about is read)'
+    why: 'a per-note skip lost real dates — the feed''s own record can be an "excluded" effect or not date a single-territory row'
+    result: 'reverted within the session; the savings loss it targeted fixed in the projection'
+
+metrics:
+  corpus_preview_ar04_dry2: { laws: 1066, errors: 0, label_diffs: 2997, changed_by_gained: 1120, effective_from_gained: 1116, unknown_to_in_force: 198, false_repeals: 0, repealed_to_in_force: 36 }
+  applied: { laws: 1066, failed: 0, stale: 0, unknown_today: '16,359 → 16,159', undated_change: '15,189 → 14,259', insertion_not_in_register: '8,567 → 8,366', markup_conflict: '8,180 → 8,125' }
+  restore_point: { tag: 2026-10-20-ar04_pre_relabel, lat_change_log: 135272, lat_label_timeline: 583410, lat_events: 36424 }
+  read_pass: { amending_laws: 1872, minutes: 16, runs: 4 }
+  suite: { tests: 2890 }
+
+lessons:
+  - title: 'Pilot the label preview on a few laws before the corpus — and read each odd diff to the row''s text'
+    detail: 'Seven 4-law pilots (2–3 min each) found the placement problem, two reader bugs and a projection tie-break before any corpus run; the first corpus preview still found 50 false repeals. Every class that loses information (repealed, emptied, unknown) was traced to the row''s text and markup before Jason saw it.'
+    tag: data
+  - title: 'A placement decision made from gate counts can be wrong — the label preview is the real test'
+    detail: 'AR-03''s "Parent" placement looked right in the record gate; only the projected labels showed heading rows with no text taking their children''s latest dates. Changing it took one more question to Jason with pilot evidence for both options.'
+    tag: data
+  - title: 'An amending law''s reading is not the revised text: let the markup veto whole repeals'
+    detail: 'Readings overreach (modifications, emptied quotes, lists of words, devolved instruments); the projection guard stops a whole class without enumerating it. The same pattern earlier gave the old matcher 36 false repeals still live in today''s register.'
+    tag: data
+  - title: 'Background jobs may ignore cd — wrap them in bash -c'
+    detail: 'Twice a backgrounded "cd backend && mix …" ran in the repo root ("task could not be found", exit 0 from the wrapper); `bash -c ''cd backend && exec mix …''` and a pwd line in the log fixed it. Check a background run actually started.'
+    tag: tooling
+
 bugs:
   - pattern: 'Parent placement left the note''s row with no record: the label timeline saw a dated change by the law on an ancestor, dropped the row''s undated_change gap, and fell back to the law''s start — a confident wrong date (Electricity Act s.42(1)(b): 1989 for text changed in 2001)'
     category: amending-law
@@ -46,9 +95,33 @@ bugs:
     status: open
 opened: '2026-10-19'
 parent: amendment-rules/2026-10-19-ar-00-meta.md
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/amendment/collect.ex
+  - backend/lib/sertantai_legal/scraper/amendment/reader.ex
+  - backend/lib/sertantai_legal/scraper/amendment/index.ex
+  - backend/lib/sertantai_legal/scraper/amendment/reader_version.ex
+  - backend/lib/sertantai_legal/scraper/change_collector.ex
+  - backend/lib/sertantai_legal/scraper/label_projection.ex
+  - backend/lib/sertantai_legal/scraper/commencement/evaluator.ex
+  - backend/lib/sertantai_legal/scraper/label_version.ex
+  - backend/lib/sertantai_legal/scraper/law_start.ex
+  - backend/lib/mix/tasks/lat.amending.ex
+  - backend/test/sertantai_legal/architecture/amendment_read_test.exs
+  - backend/test/sertantai_legal/scraper/amendment/collect_records_test.exs
+  - backend/data/reports/lat-refactor/ar04_dry2.csv
+  - /mnt/nas/sertantai-data/data/snapshots/restore-points/2026-10-20-ar04_pre_relabel
+
+depends_on:
+  - 2026-10-19-ar-03-reader
+
+enables:
+  - 'AR-05: blocks from the amending law''s own Schedule'
+  - 'The amendment companion guide (docs), alongside COMMENCEMENT-GUIDE.md'
+  - 'LR-45 streaming XML (Phase 1 gate: identical amendment_rules)'
 ---
 
-# Session: AR-04: Switch-over (ACTIVE)
+# Session: AR-04: Switch-over (CLOSED)
 
 ## Problem
 
@@ -66,7 +139,6 @@ Amendment ruleset (AR-00 meta): labels still come from the old row matcher (`Cha
 - ✅ Read pass under the new reader version (every index stale) — and again after the "Section" fix (`9db8483b`)
 - ✅ Dry run: relabel preview on a few laws (pilots 1–7), then the corpus (`ar04_dry`, `ar04_dry2`); label diff classified
 - ✅ Jason ("go ahead, restore point then apply"); restore point `2026-10-20-ar04_pre_relabel` (lat_change_log, lat_label_timeline, lat_events); `mix lat.relabel --all` applied — 0 failed, 0 stale
-- ⬜ Tell compliance / fractalaw — only when Jason says
 
 ## Dependencies
 
