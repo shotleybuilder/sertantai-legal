@@ -77,7 +77,8 @@ defmodule SertantaiLegal.Scraper.Amendment.CollectTest do
 
     index = %{
       "elements" => Map.keys(doc.elements),
-      "references" => Reader.references(doc)
+      "references" => Reader.references(doc),
+      "parts" => Reader.parts(doc)
     }
 
     from_store = fn

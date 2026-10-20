@@ -332,4 +332,58 @@ defmodule SertantaiLegal.Scraper.Amendment.CollectRecordsTest do
 
     assert %Record{effective_from: nil, in_force: []} = r
   end
+
+  test "AR-12: a Schedule paragraph no rule names is dated by its Part (SI 1999/2830: \"Section 9 and Part III of Schedule 4\")" do
+    alias SertantaiLegal.Scraper.Amendment.Reader
+    alias SertantaiLegal.Scraper.Commencement.Rule
+
+    rules = [
+      Rule.new(
+        commences: "UK_ukpga_2000_27",
+        scope: ["sch.6.pt.II"],
+        when: {:date, ~D[2001-10-01]},
+        source: %{law: "UK_uksi_2001_3266", ref: "sch.1.pt.II", text: nil},
+        treatment: :order_schedule
+      )
+    ]
+
+    sids = ["#{@law}:s.40(2)"]
+
+    notes = [
+      note(
+        "F2",
+        "Words in s. 40(2) substituted by 2000 c. 27, s. 108, Sch. 6 Pt. II para. 33(c)",
+        ["s.40(2)"]
+      )
+    ]
+
+    opts = [rules: fn _ -> rules end]
+
+    assert [%Record{effective_from: ~D[2001-10-01], dated_by_ref: "sch.1.pt.II"}] =
+             records(@law, "Electricity Act", sids, notes, MapSet.new(sids), docs(), opts)
+
+    # the read pass's index keeps each paragraph's Part
+    doc = docs().("UK_ukpga_2000_27")
+    law = Reader.law_ref(@law, "Electricity Act", "s")
+    stored = Enum.flat_map(doc.ids, &Collect.read(doc, &1, [law]))
+
+    index = %{
+      "elements" => Map.keys(doc.elements),
+      "references" => Reader.references(doc),
+      "parts" => Reader.parts(doc)
+    }
+
+    from_store = fn _ -> Collect.stored_source("UK_ukpga_2000_27", index, stored) end
+
+    assert [%Record{effective_from: ~D[2001-10-01]}] =
+             Collect.records(
+               @law,
+               "Electricity Act",
+               sids,
+               notes,
+               MapSet.new(sids),
+               from_store,
+               opts
+             )
+  end
 end

@@ -24,13 +24,15 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
 
   @typedoc """
   An amending law as the collector needs it: its `elements` (id → true, for
-  `Locator`), each repeals table's introducing section (`references`), and
-  its rules for a provision and a law ref (`rules`).
+  `Locator`), each repeals table's introducing section (`references`), each
+  Schedule paragraph's Part (`parts`, AR-12), and its rules for a provision
+  and a law ref (`rules`).
   """
   @type source :: %{
           law: String.t(),
           elements: %{String.t() => any()},
           references: %{String.t() => String.t()},
+          parts: %{String.t() => String.t()},
           rules: (String.t(), Reader.law_ref() -> [Rule.t()])
         }
 
@@ -97,6 +99,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
       law: doc.law_name,
       elements: doc.elements,
       references: Reader.references(doc),
+      parts: Reader.parts(doc),
       rules: fn id, law ->
         memo({doc.law_name, id, law.law_name}, fn -> read(doc, id, [law]) end)
       end
@@ -116,6 +119,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
       law: law,
       elements: Map.new(index["elements"] || [], &{&1, true}),
       references: index["references"] || %{},
+      parts: index["parts"] || %{},
       rules: fn id, ref -> Map.get(by, {id, ref.law_name}, []) end
     }
   end
@@ -144,7 +148,10 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
   defp dated_ids(src, id, %Rule{treatment: :repeal_table}),
     do: Enum.uniq(Enum.reject([id, src.references[id]], &is_nil/1))
 
-  defp dated_ids(_src, id, _rule), do: [id]
+  # a Schedule paragraph before its Part ("Section 9 and Part III of
+  # Schedule 4": an order dating the Part, AR-12)
+  defp dated_ids(src, id, _rule),
+    do: Enum.uniq(Enum.reject([id, Map.get(src, :parts, %{})[id]], &is_nil/1))
 
   defp record(src, id, rule, target, {rules_of, extents}, pointer) do
     rs = rules_of.(src.law)

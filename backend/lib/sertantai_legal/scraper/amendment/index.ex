@@ -2,7 +2,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Index do
   @moduledoc """
   The read pass's index for an amending law (amendment-rules AR-03/AR-04),
   beside its stored rules (`amendment_rules`): its element ids (for
-  `Locator`), each repeals table's introducing section, the reader version
+  `Locator`), each repeals table's introducing section, each Schedule
+  paragraph's Part (AR-12), the reader version
   that read it (`ReaderVersion`) and the laws it was read for. One JSON file
   per amending law under `data/cache/amendment-index/` (NAS-backed with
   `backend/data`).
@@ -39,6 +40,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Index do
       Jason.encode!(%{
         "elements" => Map.keys(doc.elements),
         "references" => Reader.references(doc),
+        "parts" => Reader.parts(doc),
         "reader" => ReaderVersion.current(),
         "laws" => Enum.sort(Enum.uniq(laws))
       })

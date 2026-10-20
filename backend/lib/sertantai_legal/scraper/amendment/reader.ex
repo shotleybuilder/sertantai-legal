@@ -99,6 +99,35 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
         do: {id, ref}
   end
 
+  @doc """
+  Each Schedule paragraph's Part, by the paragraph's id
+  (`schedule-4-paragraph-10` → `schedule-4-part-III`): an order may date a
+  Part ("Section 9 and Part III of Schedule 4": SI 1999/2830, AR-12), and a
+  paragraph's id doesn't carry it.
+  """
+  @spec parts(Doc.t()) :: %{String.t() => String.t()}
+  def parts(doc) do
+    doc.ids
+    |> Enum.reduce({%{}, nil}, fn id, {acc, part} ->
+      cond do
+        id =~ ~r/^schedule-[^-]+$/ ->
+          {acc, nil}
+
+        id =~ ~r/^schedule-[^-]+-part-[^-]+$/ ->
+          {acc, id}
+
+        part != nil and String.starts_with?(id, schedule_of(part) <> "-paragraph-") ->
+          {Map.put(acc, id, part), part}
+
+        true ->
+          {acc, part}
+      end
+    end)
+    |> elem(0)
+  end
+
+  defp schedule_of(part), do: part |> String.split("-part-") |> hd()
+
   @doc "The provision giving effect to a Schedule (its Reference, \"Section 108.\" → section-108)."
   @spec reference(Doc.t(), String.t()) :: String.t() | nil
   def reference(doc, id) do

@@ -75,6 +75,10 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
       ["schedule", s, "paragraph", p | subs] ->
         "sch.#{s}.para.#{p}" <> brackets(subs)
 
+      # a Part of a Schedule (AR-12: "Section 9 and Part III of Schedule 4")
+      ["schedule", s, "part", p | _] ->
+        "sch.#{s}.pt.#{p}"
+
       ["schedule", s | _] ->
         "sch.#{s}"
 
@@ -468,6 +472,9 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     end
   end
 
+  # not the order's own Schedule ("Schedule 1 to this Order")
+  @own ~S"(?!\s+to\s+th(?:is|ese)\s)"
+
   @list ~S"((?:(?:\s*(?:,|and|to|–|-)\s*)?(?:\d+[A-Z]*(?:\([0-9A-Za-z]+\))*|\([0-9A-Za-z]+\)(?:\([0-9A-Za-z]+\))*))+)"
 
   defp refs(text, sch) do
@@ -499,10 +506,23 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
           r <- list_refs(list, "sch.#{n}.para."),
           do: r
 
-    # "in Schedule 13 to the Act, paragraphs …" is where, not what
+    # "Part III of Schedule 4": that Part (AR-12)
+    schedule_parts =
+      for [_, p, n] <-
+            Regex.scan(
+              ~r/\bPart\s+([IVXL]+[A-Z]?|\d+[A-Z]?)\s+of\s+Schedule\s+(\d+[A-Z]*)\b#{@own}/,
+              text
+            ),
+          do: {n, "sch.#{n}.pt.#{p}"}
+
+    # "in Schedule 13 to the Act, paragraphs …" is where, not what; "Schedule
+    # 1 to this Order" is the order's own (AR-12: SI 1999/2830)
     schedules =
       for [_, list] <-
-            Regex.scan(~r/(?<![Ii]n )\bSchedules?\s+#{@list}(?!\s*,?\s*paragraph)/, text),
+            Regex.scan(
+              ~r/(?<![Ii]n )\bSchedules?\s+#{@list}\b(?!\s*,?\s*paragraph)#{@own}/,
+              text
+            ),
           not (text =~ ~r/\bparagraphs?\b[^;]*\bof\s+Schedule/i),
           bare == [],
           # "the following provisions of Schedule 22—", "the provisions in
@@ -512,6 +532,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
           not (text =~
                  ~r/\b(?:provisions|paragraphs|entries|repeals|amendments)\s+(?:of|in|made\s+by)\s+(?:Part\s+\w+\s+of\s+)?Schedules?\b|\bSchedules?\s+[\d\s,and]+(?:to\s+the\s+Act\s+)?specified\b|\bSchedules?\s+\d+[A-Z]*\s*[—–:]|\b(?:which\s+are|as\s+are)\s+specified\s+in\b/iu),
           r <- list_refs(list, "sch."),
+          r not in for({n, _} <- schedule_parts, do: "sch.#{n}"),
           do: r
 
     # "Part I", "Parts III and IV" of the Act (not "Part II of Schedule 17";
@@ -542,7 +563,8 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
     Enum.uniq(
       sections ++
-        subsections ++ Enum.reject(schedules, &(&1 in [])) ++ parts ++ bare ++ paragraphs
+        subsections ++
+        schedules ++ Enum.map(schedule_parts, &elem(&1, 1)) ++ parts ++ bare ++ paragraphs
     )
     |> Enum.reject(&(&1 =~ ~r/^s\.\(/))
   end
@@ -583,9 +605,13 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
   # ── Schedule tables ──────────────────────────
 
+  # a Schedule dated by its title (or its article), or each of its Parts by
+  # its own ("PART II PROVISIONS COMING INTO FORCE ON 15th DECEMBER 1999":
+  # SI 1999/2830, AR-12) — never both
   defp tables(order, _act) do
     for id <- order.ids,
-        String.match?(id, ~r/^schedule(-\d+[A-Z]*)?$/),
+        String.match?(id, ~r/^schedule(-\d+[A-Z]*)?(?:-part-[IVXL\d]+[A-Z]?)?$/),
+        not dated_parts?(order, id),
         el = Doc.element(order, id),
         date = schedule_date(order, el),
         date != nil,
@@ -606,6 +632,26 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
             },
             treatment: :order_schedule
           )
+  end
+
+  defp dated_parts?(order, id) do
+    not String.contains?(id, "-part-") and
+      Enum.any?(order.ids, fn part ->
+        String.match?(part, ~r/^#{Regex.escape(id)}-part-[IVXL\d]+[A-Z]?$/) and
+          part_date(order, part) != nil
+      end)
+  end
+
+  defp part_date(order, id) do
+    order
+    |> Doc.element(id)
+    |> xpath(~x"./TitleBlock/Title | ./Title"l)
+    |> Enum.map_join(" ", &Doc.text/1)
+    |> parse_dates()
+    |> case do
+      [d] -> d
+      _ -> nil
+    end
   end
 
   defp table_purposes(purpose, from_text) do

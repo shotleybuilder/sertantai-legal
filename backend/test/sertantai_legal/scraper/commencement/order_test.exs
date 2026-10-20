@@ -319,6 +319,35 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
     assert %{full_from: nil} = dated(rules, "schedule-15-paragraph-31-2")
   end
 
+  test "AR-12: \"the provisions of the Act specified in Part II of Schedule 1 to this Order\" are the order's Schedule's, each Part dated by its title (SI 1999/2830)" do
+    rules =
+      Order.rules(
+        order(~S"""
+        <P1 id="article-2"><P1para><P2 id="article-2-1"><P2para><Text>The provisions of the Act specified in Part I of Schedule 1 to this Order shall come into force on 25th October 1999.</Text></P2para></P2><P2 id="article-2-2"><P2para><Text>The provisions of the Act specified in Part II of Schedule 1 to this Order shall come into force on 15th December 1999.</Text></P2para></P2></P1para></P1>
+        <Schedules><Schedule id="schedule-1"><Number>SCHEDULE 1</Number><Reference>Article 2(1) and (2)</Reference><ScheduleBody>
+        <Part id="schedule-1-part-I"><Number>PART I</Number><Title>PROVISIONS COMING INTO FORCE ON 25th OCTOBER 1999</Title><Tabular><table><tbody>
+        <tr><td>Section 2 and Schedule 2</td><td>Detriment related to union membership</td></tr>
+        </tbody></table></Tabular></Part>
+        <Part id="schedule-1-part-II"><Number>PART II</Number><Title>PROVISIONS COMING INTO FORCE ON 15th DECEMBER 1999</Title><Tabular><table><tbody>
+        <tr><td>Section 7 and Part I of Schedule 4</td><td>Maternity and parental leave</td></tr>
+        <tr><td>Section 9 and Part III of Schedule 4</td><td>Consequential amendments</td></tr>
+        </tbody></table></Tabular></Part>
+        </ScheduleBody></Schedule></Schedules>
+        """),
+        @act
+      )
+
+    assert %{full_from: ~D[1999-10-25]} = dated(rules, "section-2")
+    assert %{full_from: ~D[1999-10-25]} = dated(rules, "schedule-2-paragraph-3")
+    assert %{full_from: ~D[1999-12-15]} = dated(rules, "section-7")
+    assert %{full_from: ~D[1999-12-15]} = dated(rules, "schedule-4-part-III")
+    # the order's own Schedule 1 is never the Act's; Part III of Schedule 4
+    # is not its Part I nor the whole Schedule
+    assert %{full_from: nil, partial_from: nil} = dated(rules, "schedule-1-paragraph-1")
+    assert %{full_from: nil, partial_from: nil} = dated(rules, "schedule-4-paragraph-10")
+    assert Order.ref("schedule-4-part-III") == "sch.4.pt.III"
+  end
+
   test "LR-43: \"so far as it is not yet in force\" is full (SI 1992/1630)" do
     rules =
       Order.rules(
