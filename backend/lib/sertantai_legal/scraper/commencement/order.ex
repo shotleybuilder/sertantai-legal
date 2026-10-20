@@ -41,7 +41,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   @appointed ~r/\bis\s+the\s+(?:day|date)\s+appointed\s+for\s+the\s+coming\s+into\s+(?:force|operation)\s+of\b/i
   @full ~r/\b(?:so|in so|insofar|in as)\s*far\s+as\s+(?:it|they|that\s+[\w-]+)\s+(?:has|have|is|are)\s+not\s+(?:already|previously|yet)\s+(?:been\s+)?(?:commenced|brought\s+into\s+force|in\s+force)|so\s+far\s+as\s+not\s+(?:already|previously|yet)\s+in\s+force|for\s+all\s+(?:remaining\s+|other\s+)?purposes/i
   @relating ~r/\b(?:so|in so|insofar)\s*far\s+as\s+(?:(?:it|they)\s+relates?|relating)\s+to\b|\bto\s+the\s+extent\s+that\s+(?:it|they)\s+relates?\s+to\b|\bas\s+respects\b|\b(?:so|in so|insofar)\s*far\s+as\s+(?:it|they)\s+(?:gives?|give)\s+effect\s+to\b/i
-  @partial ~r/\b(?:so|in so|insofar)\s*far\s+as\b|\bto\s+the\s+extent\b|\bfor\s+the\s+purposes?\s+of\b|\bfor\s+(?:specified|certain|limited|particular)\s+purposes\b|\bexcept\b|\bsave\b|\bin\s+relation\s+to\b/i
+  @partial ~r/\b(?:so|in so|insofar)\s*far\s+as\b|\bto\s+the\s+extent\b|\bfor\s+the\s+purposes?\s+(?:only\s+)?of\b|\bfor\s+(?:specified|certain|limited|particular)\s+purposes\b|\bexcept\b|\bsave\b|\bin\s+relation\s+to\b/i
   @places %{
     "england and wales" => "E+W",
     "great britain" => "E+W+S",
@@ -538,11 +538,12 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
           do: r
 
     # "Part I", "Parts III and IV" of the Act (not "Part II of Schedule 17";
-    # "in Part II, the repeals of …" is where in a repeals Schedule)
+    # "in Part II, the repeals of …" is where in a repeals Schedule; "the
+    # said Part I" is the order's own, AR-15: SI 1997/3114)
     parts =
       for [_, list] <-
             Regex.scan(
-              ~r/(?<![Ii]n )\bParts?\s+((?:[IVXL]+[A-Z]?|\d+[A-Z]?)(?:\s*(?:,|and|to)\s*(?:[IVXL]+[A-Z]?|\d+[A-Z]?))*)\b(?!\s+(?:of|to)\s+(?:the\s+)?Schedule|\s+thereof)/,
+              ~r/(?<![Ii]n )(?<!said )\bParts?\s+((?:[IVXL]+[A-Z]?|\d+[A-Z]?)(?:\s*(?:,|and|to)\s*(?:[IVXL]+[A-Z]?|\d+[A-Z]?))*)\b(?!\s+(?:of|to)\s+(?:the\s+)?Schedule|\s+thereof)/,
               text
             ),
           not (text =~ ~r/\bof\s+Schedule\b/i and sch != nil),
@@ -706,21 +707,28 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
         cond do
           purpose in [nil, ""] ->
-            {acc, first}
+            {flush(acc, parent), {first, false}}
 
           parent && first =~ ~r/^(sub)?(sections?|paragraphs?)\b/ ->
-            {[{"#{parent} #{first}", purpose} | acc], parent}
+            {text, _} = parent
+            {[{"#{text} #{first}", purpose} | acc], {text, true}}
 
           true ->
-            {[{first, purpose} | acc], nil}
+            {[{first, purpose} | flush(acc, parent)], nil}
         end
 
       _, acc ->
         acc
     end)
-    |> elem(0)
+    |> then(fn {acc, parent} -> flush(acc, parent) end)
     |> Enum.reverse()
   end
+
+  # a row with no subject is a heading for the rows under it ("Section 44" over
+  # "paragraph 3 …"); with none under it, it is an item itself (AR-15: SI
+  # 1999/2830 "Section 31 and in Schedule 7, …" has no subject cell)
+  defp flush(acc, {text, false}), do: [{text, ""} | acc]
+  defp flush(acc, _parent), do: acc
 
   defp schedule_date(order, el) do
     title = el |> xpath(~x"./TitleBlock/Title | ./Title"l) |> Enum.map_join(" ", &Doc.text/1)

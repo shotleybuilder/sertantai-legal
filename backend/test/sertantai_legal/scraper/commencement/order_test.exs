@@ -368,6 +368,49 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
     assert %{full_from: nil} = dated(rules, "section-22-2")
   end
 
+  test "AR-15: a table row with no subject cell is an item unless rows under it continue it (SI 1999/2830: \"Section 31 and in Schedule 7, paragraphs 1, 2, 5 (… into the Employment Agencies Act 1973), 6 and 8\")" do
+    rules =
+      Order.rules(
+        order(~S"""
+        <Schedules><Schedule id="schedule"><TitleBlock><Title>Provisions coming into force on 25th October 1999</Title></TitleBlock><ScheduleBody><Tabular><table><tbody>
+        <tr><td>Section 30</td><td>Partnerships at work</td></tr>
+        <tr><td>Section 31 and in Schedule 7, paragraphs 1, 2, 5 (to the extent that it inserts section 11A into the Employment Agencies Act 1973), 6 and 8</td></tr>
+        <tr><td>Section 32</td><td>Employment outside Great Britain</td></tr>
+        <tr><td>Section 44</td><td/></tr>
+        <tr><td>paragraph 3</td><td>Repeals</td></tr>
+        <tr><td>Section 50</td></tr>
+        </tbody></table></Tabular></ScheduleBody></Schedule></Schedules>
+        """),
+        @act
+      )
+
+    # dated (partly: "to the extent that it inserts …" is read over the whole
+    # line — the open bug of a qualifier on one item of a list)
+    assert %{full_from: f, partial_from: p} = dated(rules, "section-31")
+    assert ~D[1999-10-25] in [f, p]
+    assert %{full_from: f, partial_from: p} = dated(rules, "schedule-7-paragraph-8")
+    assert ~D[1999-10-25] in [f, p]
+    assert %{full_from: ~D[1999-10-25]} = dated(rules, "section-32")
+    assert %{full_from: ~D[1999-10-25]} = dated(rules, "section-50")
+    # a heading row continued by the rows under it is not an item itself
+    refute Enum.any?(rules, &(&1.source.text == "Section 44 |"))
+    assert Enum.any?(rules, &(&1.source.text == "Section 44 paragraph 3 | Repeals"))
+  end
+
+  test "AR-15: \"the repeals listed in the said Part I\" is the order's Part, not the Act's; \"for the purposes only of\" is partial (SI 1997/3114 art. 3)" do
+    rules =
+      Order.rules(
+        order(
+          ~S|<P1 id="article-3"><P1para><Text>The provisions of the Act specified in Part I of the Schedule to this Order shall come into force on 17th December 1997, save that:</Text><P3 id="article-3-a"><Pnumber>a</Pnumber><P3para><Text>subsections (3) and (4) of section 2 shall come into force on that date for the purposes only of making a compensation scheme, and</Text></P3para></P3><P3 id="article-3-b"><Pnumber>b</Pnumber><P3para><Text>subsection (7) of section 2 shall come into force on that date to the extent only that it relates to the repeals listed in the said Part I.</Text></P3para></P3></P1para></P1>|
+        ),
+        @act
+      )
+
+    refute Enum.any?(rules, &("pt.I" in &1.scope))
+    assert %{full_from: nil, partial_from: ~D[1997-12-17]} = dated(rules, "section-2-7")
+    assert %{full_from: nil, partial_from: ~D[1997-12-17]} = dated(rules, "section-2-3")
+  end
+
   test "LR-43: \"so far as it is not yet in force\" is full (SI 1992/1630)" do
     rules =
       Order.rules(
