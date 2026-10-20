@@ -27,6 +27,8 @@ defmodule SertantaiLegal.Architecture.AmendmentReadTest do
   end
 
   test "only the ruleset collector makes amending-law records" do
-    assert offenders(~r/"law_pointer"/, ["sertantai_legal/scraper/amendment/collect.ex"]) == []
+    assert offenders(~r/via:\s*\["law_pointer"\]/, [
+             "sertantai_legal/scraper/amendment/collect.ex"
+           ]) == []
   end
 end

@@ -41,6 +41,13 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
           kind: :section | :regulation | :article | :rule
         }
 
+  # "shall have effect as if … were omitted", "be read as if": a
+  # modification, not an amendment (SI 1974/2013 Sch. 2 para. 15)
+  @modification ~r/\b(?:have effect|be read|be construed) as if\b/i
+
+  # "the following paragraph", "a new subsection": the insertion is a provision
+  @provision_named ~r/\b(?:following|new)\s+(?:sub-?)?(?:sections?|paragraphs?|regulations?|articles?|rules?|provisions?|schedules?|parts?|chapters?)\b/i
+
   @kind_words %{
     section: "sections?",
     regulation: "regulations?",
@@ -119,7 +126,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   @doc "The rules an instruction's `text` (its container's `title`) states for `laws`, with `source` on each."
   @spec of_text(Text.t(), String.t() | nil, map(), [law_ref()], map()) :: [Rule.t()]
   def of_text(%Text{} = text, title, terms, laws, source) do
-    case operation(text) do
+    case if(text.instruction =~ @modification, do: nil, else: operation(text)) do
       {_, _} = op ->
         texts = Enum.map([text.instruction | Enum.reverse(text.context)], &unquote_words/1)
         before = Stream.map(text.before, &unquote_words/1)
@@ -201,7 +208,14 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
       )
 
   # "s" + ["25", "5A"] → "s.25(5A)"
-  defp ref(p, [n | subs]), do: "#{p}.#{n}" <> Enum.map_join(subs, &"(#{&1})")
+  # a range "22..25" → "s.22..s.25" (whole provisions; with brackets, as
+  # before ranges were read: its first number)
+  defp ref(p, [n | subs]) do
+    case {String.split(n, ".."), subs} do
+      {[a, b], []} -> "#{p}.#{a}..#{p}.#{b}"
+      {[a | _], _} -> "#{p}.#{a}" <> Enum.map_join(subs, &"(#{&1})")
+    end
+  end
 
   # the paths the brackets named make, by level — subsection (5), (5A);
   # paragraph (a), (ca); sub-paragraph (i), (iv); (A) — each level taken or
@@ -224,14 +238,23 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
     |> Enum.uniq()
   end
 
-  # "the following paragraph", "a new subsection": the insertion is a provision
-  @provision_named ~r/\b(?:following|new)\s+(?:sub-?)?(?:sections?|paragraphs?|regulations?|articles?|rules?|provisions?|schedules?|parts?|chapters?)\b/i
+  # words the instruction doesn't spell out: an emptied quote ("“”": the
+  # quote held only markup — 1991 c.39 s.1(2)) or "each of the following is
+  # omitted—" with no kind of provision named (a list of words: 2004 c.5)
+  defp words_unnamed?(i),
+    do:
+      i =~ ~r/[“"]\s*[”"]/u or
+        (i =~ ~r/\bthe following (?:is|are|shall be) (?:omitted|repealed|revoked)\b/i and
+           not (i =~ @provision_named))
 
   # the instruction's operation, its captions aside; an insertion quoting
   # no provision "at the end" / "at the appropriate place" — and naming no
   # kind of provision as inserted — puts words into the provision named (2014 c.6 s.128(2)(e): a definition into s.235(1))
   defp operation(text) do
     case Operation.of(captionless(text)) do
+      {verb, verb} = op when verb != "inserted" ->
+        if words_unnamed?(text.instruction), do: {verb, "words #{verb}"}, else: op
+
       {"inserted", "inserted"} = op ->
         if text.inserted == [] and
              text.instruction =~ ~r/\bat the (?:end|beginning|appropriate places?)\b/i and
@@ -395,11 +418,12 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
 
   # ── provisions named ───────────────────────────────────────────────
 
+  # the provision numbers named; "22 to 25" a range ("22..25")
   defp numbers(texts, kind) do
     re = ~r/\b(?i:#{@kind_words[kind]}) (\d+[A-Z]*)(?:(?:,| and| or| to) (\d+[A-Z]*))*/u
 
     Enum.find_value(texts, :none, fn t ->
-      case Regex.scan(re, t) do
+      case Regex.scan(re, t, capture: :first) do
         [] ->
           nil
 
@@ -407,7 +431,11 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
           {:ok,
            found
            |> List.flatten()
-           |> Enum.flat_map(&Regex.scan(~r/\d+[A-Z]*/, &1))
+           |> Enum.flat_map(fn m ->
+             m
+             |> String.replace(~r/(\d+[A-Z]*) to (\d+[A-Z]*)/, "\\1..\\2")
+             |> then(&Regex.scan(~r/\d+[A-Z]*(?:\.\.\d+[A-Z]*)?/, &1))
+           end)
            |> List.flatten()}
       end
     end)

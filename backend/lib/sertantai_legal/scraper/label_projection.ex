@@ -471,6 +471,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
       in_force
       |> Enum.filter(&(&1.operation == "repealed" and not words_level?(&1)))
       |> Enum.filter(&covers_row?(&1, row.extent_code))
+      |> Enum.reject(&unmarked_law_repeal?(&1, row))
 
     repeal = latest(repeals)
 
@@ -542,6 +543,14 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
       change_ids: Enum.uniq(ids ++ if(repeal, do: [repeal.evidence], else: []))
     }
   end
+
+  # an amending law's reading of a whole repeal (applied to the text) on a
+  # row the revised text doesn't mark repealed: the reading overreaches —
+  # words gone, a modification ("as if … omitted"), another territory — so it
+  # dates the row's text but never repeals it (AR-04: 1954/70 s.173, 1875/17
+  # s.61 by an NI instrument)
+  defp unmarked_law_repeal?(c, row),
+    do: "law_pointer" in (c.via || []) and Map.get(row, :markup_status) != "repealed"
 
   # a repeal makes the row repealed only where it reaches the row's whole
   # extent; one for part of it narrows the territory (LR-26). Its extent: the

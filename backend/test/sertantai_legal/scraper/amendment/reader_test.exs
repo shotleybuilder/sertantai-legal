@@ -142,6 +142,47 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderTest do
     assert "UK_ukpga_1956_52:s.7(1)(c)" in reached(rules, "s.7(1)(c)")
   end
 
+  describe "AR-04: whole repeals the corpus preview showed overreaching" do
+    defp read(id, body),
+      do:
+        Reader.instruction(
+          doc(~s(<P1 id="#{id}"><P1para><Text>#{body}</Text></P1para></P1>)),
+          id,
+          %{"the principal act" => %{law: "UK_ukpga_1956_52", title: "Clean Air Act 1956"}},
+          [@clean_air]
+        )
+
+    test "a modification (\"shall have effect as if … were omitted\": SI 1974/2013) is no amendment" do
+      assert read(
+               "section-20",
+               "Section 7 of the principal Act shall have effect as if any reference to an order were omitted."
+             ) == []
+    end
+
+    test "an emptied quote is words (\"At the end of subsection (1)(d) “” shall be omitted\": 1991 c.39)" do
+      assert [%{level: :words}] =
+               read(
+                 "section-21",
+                 "In section 7 of the principal Act, at the end of subsection (1)(d) “” shall be omitted."
+               )
+    end
+
+    test "\"each of the following is omitted—\" (a list of words: 2004 c.5) is words" do
+      assert [%{level: :words}] =
+               read(
+                 "section-22",
+                 "In section 7 of the principal Act, in subsection (5) each of the following is omitted—"
+               )
+    end
+
+    test "\"Sections 22 to 25 … are repealed\" is a range (SI 1988/1729)" do
+      rules = read("section-23", "Sections 22 to 25 and 33 of the principal Act are repealed.")
+      assert "UK_ukpga_1956_52:s.24" in reached(rules, "s.24")
+      assert "UK_ukpga_1956_52:s.33" in reached(rules, "s.33")
+      assert reached(rules, "s.26") == []
+    end
+  end
+
   test "many provisions, each with its brackets: no cap (SSI 2005/658)" do
     d =
       doc(

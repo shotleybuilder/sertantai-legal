@@ -130,6 +130,31 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
              periods(law, [row(law, "s.41A(8)(b)")], [feed, read], law_start: ~D[1989-07-27])
   end
 
+  test "an amending law's whole repeal of a row its revised text shows in force doesn't repeal it (AR-04: 1954/70 s.173)" do
+    law = "UK_ukpga_1954_70"
+
+    read =
+      change(
+        law,
+        "s.173",
+        "uksi/1974/2013/schedule/2/paragraph/15",
+        "repealed",
+        "repealed",
+        "UK_uksi_1974_2013",
+        [{~D[1975-01-01], nil}],
+        via: ["law_pointer"]
+      )
+
+    assert [_, {~D[1975-01-01], nil, "in_force", ~D[1975-01-01], "UK_uksi_1974_2013"}] =
+             periods(law, [row(law, "s.173")], [read], law_start: ~D[1954-11-25])
+
+    # the markup shows it repealed: the amending law dates the repeal
+    assert [_, {~D[1975-01-01], nil, "repealed", _, _}] =
+             periods(law, [row(law, "s.173", markup_status: "repealed")], [read],
+               law_start: ~D[1954-11-25]
+             )
+  end
+
   test "partial commencement: prospective, then partly in force, then in force (1990/43 s.162(2))" do
     law = "UK_ukpga_1990_43"
 
