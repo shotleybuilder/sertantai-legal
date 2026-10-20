@@ -342,6 +342,108 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderTest do
     end
   end
 
+  describe "AR-08: a mixed instruction is one rule per operation" do
+    defp mixed(id, text) do
+      d = doc(~s(<P1 id="#{id}"><P1para><Text>#{text}</P1para></P1>))
+
+      for r <-
+            Reader.instruction(
+              d,
+              id,
+              %{"the principal act" => %{law: "UK_ukpga_1956_52", title: "Clean Air Act 1956"}},
+              [@clean_air]
+            ),
+          t <- r.targets,
+          do: {t, r.operation, r.level}
+    end
+
+    test "words omitted and a paragraph inserted: each at its own level (1994 c.19 Sch 9 para 17)" do
+      t =
+        mixed(
+          "section-40",
+          ~S|In section 7 of the principal Act, in subsection (2), omit “either”; and at the end insert—</Text><BlockAmendment><P3><Pnumber>c</Pnumber><P3para><Text>new</Text></P3para></P3></BlockAmendment>|
+        )
+
+      assert {"s.7(2)(c)", :inserted, :provision} in t
+      assert {"s.7(2)", :repealed, :words} in t
+      refute {"s.7(2)(c)", :inserted, :words} in t
+    end
+
+    test "a paragraph omitted and words substituted in another: each its own place and level" do
+      t =
+        mixed(
+          "section-41",
+          ~S|In section 7 of the principal Act, in subsection (1), paragraph (b) is omitted and in paragraph (c) for “x” there is substituted “y”.</Text>|
+        )
+
+      assert {"s.7(1)(b)", :repealed, :provision} in t
+      assert {"s.7(1)(c)", :substituted, :words} in t
+      refute {"s.7(1)(b)", :repealed, :words} in t
+      refute {"s.7(1)(c)", :repealed, :provision} in t
+    end
+
+    test "sections omitted and a section substituted: each clause its own numbers (NISR 2006/425)" do
+      t =
+        mixed(
+          "section-42",
+          ~S|Omit sections 4 to 22 of the principal Act and for section 23 substitute—</Text><BlockAmendment><P1group><P1><Pnumber>23</Pnumber><P1para><P2><Pnumber>1</Pnumber><P2para><Text>new</Text></P2para></P2></P1para></P1></P1group></BlockAmendment>|
+        )
+
+      assert {"s.4..s.22", :repealed, :provision} in t
+      assert {"s.23(1)", :substituted, :provision} in t
+      refute Enum.any?(t, fn {r, _, _} -> r =~ ~r/^s\.4\(/ end)
+      refute {"s.23", :repealed, :provision} in t
+    end
+
+    test "a clause naming another law is not this law's (1991 c.40 s.9(1))" do
+      t =
+        mixed(
+          "section-43",
+          ~S|Section 8 of the Gas Act 1986 shall cease to have effect, and for section 68 of the principal Act there shall be substituted—</Text><BlockAmendment><P1group><P1><Pnumber>68</Pnumber><P1para><Text>new</Text></P1para></P1></P1group></BlockAmendment>|
+        )
+
+      assert {"s.68", :substituted, :provision} in t
+      refute Enum.any?(t, fn {r, _, _} -> r == "s.8" end)
+    end
+  end
+
+  test "AR-08: a mixed repeals-table line is a target per piece, each at its own level (1991 c.34 Sch 19)" do
+    d =
+      Doc.new("UK_ukpga_1991_34", [
+        ~S"""
+        <Legislation><Primary><Schedules><Schedule id="schedule-19"><Tabular><table><tbody>
+        <tr><th>Chapter</th><th>Short title</th><th>Extent of repeal</th></tr>
+        <tr><td>1982 c. 16</td><td>Civic Government (Scotland) Act 1982</td><td><Para><Text>In section 109, in subsection (1) the definitions of “bridge authority” and “street”; and subsection (2).</Text></Para><Para><Text>In section 1, subsection (4) and, in subsection (5), the words “and liable to a special penalty”.</Text></Para><Para><Text>In section 2, in subsection (3)(c), the words from “section” to “requirements and” and, in subsection (5), paragraph (b) and, in paragraph (c), the words “16(1) or”.</Text></Para><Para><Text>In section 117, subsection (4)(b) and the word “or” before it, and subsections (5) and (6).</Text></Para><Para><Text>In section 56(1), paragraph (b) of the definition of “environmental licence”.</Text></Para><Para><Text>In section 105(1), in the definition of “statutory undertaker”, paragraph (c).</Text></Para><Para><Text>In section 4, in subsection (8), the words “or”, and, in subsection (11), the words “and Wales” in paragraph (b) and paragraph (c) and subsection (12).</Text></Para><Para><Text>In section 6, in subsection (2) the words “who”, and subsections (4) and (7) to (10).</Text></Para></td></tr>
+        </tbody></table></Tabular></Schedule></Schedules></Primary></Legislation>
+        """
+      ])
+
+    law = Reader.law_ref("UK_ukpga_1982_16", "Civic Government (Scotland) Act", "s")
+    rules = Reader.repeal_table(d, "schedule-19", [law])
+    level = fn target -> for r <- rules, target in r.targets, do: r.level end
+
+    assert level.("s.109(1)") == [:words]
+    assert level.("s.109(2)") == [:provision]
+    assert level.("s.1(4)") == [:provision]
+    assert level.("s.1(5)") == [:words]
+    assert level.("s.2(3)(c)") == [:words]
+    assert level.("s.2(5)(b)") == [:provision]
+    assert level.("s.2(5)(c)") == [:words]
+    assert level.("s.117(4)(b)") == [:provision]
+    assert level.("s.117(5)") == [:provision]
+    assert level.("s.117(6)") == [:provision]
+    # a paragraph of a definition is words in the provision
+    assert level.("s.56(1)") == [:words]
+    assert level.("s.105(1)") == [:words]
+    refute "s.105(1)(c)" in Enum.flat_map(rules, & &1.targets)
+    # "in paragraph (b) and paragraph (c)": two places for the words
+    assert level.("s.4(11)(b)") == [:words]
+    assert level.("s.4(11)(c)") == [:words]
+    assert level.("s.4(12)") == [:provision]
+    assert level.("s.6(8)") == [:provision]
+    assert level.("s.6(10)") == [:provision]
+  end
+
   test "many provisions, each with its brackets: no cap (SSI 2005/658)" do
     d =
       doc(

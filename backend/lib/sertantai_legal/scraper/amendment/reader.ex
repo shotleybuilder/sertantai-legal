@@ -55,6 +55,10 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   # "the following paragraph", "a new subsection": the insertion is a provision
   @provision_named ~r/\b(?:following|new)\s+(?:sub-?)?(?:sections?|paragraphs?|regulations?|articles?|rules?|provisions?|schedules?|parts?|chapters?)\b/i
 
+  # a bracket is a number, a letter or two, or a roman numeral — never a
+  # word ("(interpretation)": a one-word caption, AR-07)
+  @bracket ~r/^(?:\d+[A-Z]*|[a-z]{1,3}|[A-Z]{1,2}|(?:x{0,3})(?:ix|iv|v?i{0,3}))$/
+
   @kind_words %{
     section: "sections?",
     regulation: "regulations?",
@@ -191,13 +195,13 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   @spec of_text(Text.t(), String.t() | nil, map(), [law_ref()], map()) :: [Rule.t()]
   def of_text(%Text{} = text, title, terms, laws, source) do
     case if(text.instruction =~ @modification, do: nil, else: operation(text)) do
-      {_, _} = op ->
+      {_, _} ->
         texts = Enum.map([text.instruction | Enum.reverse(text.context)], &unquote_words/1)
         before = Stream.map(text.before, &unquote_words/1)
 
         for law <- laws,
             law?(Stream.concat(texts ++ List.wrap(title), before), terms, law),
-            rule <- rules(text, texts, op, law, source),
+            rule <- rules(text, texts, law, source, terms),
             do: rule
 
       nil ->
@@ -205,56 +209,176 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
     end
   end
 
-  defp rules(text, texts, op, law, source) do
+  # one rule per operation (AR-08): each clause of a mixed instruction
+  # ("omit “either”; and at the end insert—") its own level, brackets and
+  # numbers; the quote is the clause's that introduces it
+  defp rules(text, texts, law, source, terms) do
     p = @prefix[law.kind]
-    quoting? = text.instruction =~ ~r/insert|substitut/i
-    tops = if quoting?, do: text.inserted |> Enum.map(&hd/1) |> Enum.uniq(), else: []
-    named = brackets(text)
-
-    numbers =
-      case numbers(texts, law.kind) do
-        {:ok, ns} -> ns
-        :none -> []
-      end
+    tops = text.inserted |> Enum.map(&hd/1) |> Enum.uniq()
+    clauses = text |> clauses() |> scoped(texts, law, terms)
+    quoting = quoting_clause(clauses)
 
     quoted =
-      cond do
-        # "For section 99 substitute— 99 …", "After section 47B insert— 47C":
-        # the quote's numbers are sections, never nested in one (AR-07)
-        quoting? and sections_quoted?(text) ->
-          for path <- text.inserted, provision_path?(path), do: ref(p, path)
-
-        quoting? ->
-          for path <- text.inserted,
-              # "In section 7(1) … for paragraph (b) substitute— (b) … (c) …":
-              # numbered from the provision holding the replaced bracket
-              # a quoted sub-paragraph "(i)" is never a provision of its own
-              t <-
-                if(provision_path?(path), do: [ref(p, path)], else: []) ++
-                  for(n <- numbers, do: ref(p, [n | named ++ path])) ++
-                  for(n <- numbers, named != [], hd(path) in named, do: ref(p, [n | path])) ++
-                  for(
-                    n <- numbers,
-                    length(named) > 1,
-                    do: ref(p, [n | Enum.drop(named, -1) ++ path])
-                  ),
-              do: t
-
-        true ->
-          []
+      case quoting do
+        nil -> nil
+        c -> rule(law, quoted_targets(c, p), Operation.of_quoted(captionless(c.text)), source)
       end
 
-    # a quote's own provision is never reached as a named one; an insertion
-    # reaches only what it quotes or names as inserted
-    named_targets =
-      for n <- numbers, n not in tops, t <- named_refs(text, op, p, n, named), do: t
+    named =
+      for c <- clauses,
+          op = operation(c.text),
+          op != nil,
+          # an insertion reaches only what it quotes or names as inserted
+          targets =
+            for(
+              n <- c.numbers,
+              n not in tops,
+              t <- named_refs(c.text, op, p, n, c.named),
+              uniq: true,
+              do: t
+            ),
+          do: rule(law, targets, op, source)
 
-    [
-      rule(law, Enum.uniq(quoted), Operation.of_quoted(captionless(text)), source),
-      rule(law, Enum.uniq(named_targets), op, source)
-    ]
-    |> Enum.reject(&is_nil/1)
+    Enum.reject([quoted | named], &is_nil/1)
   end
+
+  defp quoted_targets(%{text: text, named: named, numbers: numbers}, p) do
+    if sections_quoted?(text) do
+      # "For section 99 substitute— 99 …", "After section 47B insert— 47C":
+      # the quote's numbers are sections, never nested in one (AR-07)
+      for path <- text.inserted, provision_path?(path), uniq: true, do: ref(p, path)
+    else
+      for path <- text.inserted,
+          # "In section 7(1) … for paragraph (b) substitute— (b) … (c) …":
+          # numbered from the provision holding the replaced bracket
+          # a quoted sub-paragraph "(i)" is never a provision of its own
+          t <-
+            if(provision_path?(path), do: [ref(p, path)], else: []) ++
+              for(n <- numbers, do: ref(p, [n | named ++ path])) ++
+              for(n <- numbers, named != [], hd(path) in named, do: ref(p, [n | path])) ++
+              for(
+                n <- numbers,
+                length(named) > 1,
+                do: ref(p, [n | Enum.drop(named, -1) ++ path])
+              ),
+          uniq: true,
+          do: t
+    end
+  end
+
+  # the clause whose quote follows ("… and after that subsection insert—"),
+  # else the first quoting one
+  defp quoting_clause(clauses) do
+    quoting = Enum.filter(clauses, &(&1.text.instruction =~ ~r/insert|substitut/i))
+
+    Enum.find(quoting, List.first(quoting), fn c ->
+      captionless(c.text).instruction =~ ~r/[—–:]\s*[;.,]?\s*$/u
+    end)
+  end
+
+  # each clause with its brackets and numbers: a clause naming none takes
+  # its predecessor's numbers, and the first clause's place ("in subsection
+  # (1), paragraph (b) is omitted and in paragraph (c) …" → (1)(c)) at the
+  # levels above its own; a clause naming another law is that law's
+  defp scoped(clauses, texts, law, terms) do
+    [first | _] = clauses
+    place = located_brackets(first.instruction)
+    context = tl(texts)
+
+    {scoped, _} =
+      Enum.map_reduce(clauses, {nil, true}, fn c, {prev, ours?} ->
+        unquoted = unquote_words(c.instruction)
+
+        ours? =
+          case laws(unquoted, terms) do
+            [] -> ours?
+            refs -> Enum.any?(refs, &law_named?(&1, law))
+          end
+
+        numbers =
+          case {numbers([unquoted], law.kind), prev} do
+            {{:ok, ns}, _} -> ns
+            {:none, nil} -> with({:ok, ns} <- numbers(context, law.kind), do: ns, else: (_ -> []))
+            {:none, ns} -> ns
+          end
+
+        own = brackets(c)
+        named = if c == first, do: own, else: above(place, own) ++ own
+        {%{text: c, named: named, numbers: numbers, ours?: ours?}, {numbers, ours?}}
+      end)
+
+    Enum.filter(scoped, & &1.ours?)
+  end
+
+  # the place's brackets at levels above the clause's own
+  defp above(place, []), do: place
+
+  defp above(place, own) do
+    top = own |> Enum.map(&bracket_level/1) |> Enum.min()
+    Enum.filter(place, &(bracket_level(&1) < top))
+  end
+
+  defp bracket_level(b) do
+    cond do
+      b =~ ~r/^\d/ -> 0
+      b =~ ~r/^[A-Z]+$/ -> 3
+      b =~ ~r/^(?:ii|iii|iv|vi{1,3}|ix|xi{1,3})$/ -> 2
+      true -> 1
+    end
+  end
+
+  # "in subsection (1)", "In section 7(1)(a)": where the clause is
+  @place ~r/\bin\s+(?:sub-?)?(?:sections?|paragraphs?|sub-?paragraphs?|regulations?|articles?|rules?)\s+(?:\d+[A-Z]*\s*)?((?:\([0-9A-Za-z]+\))+)/i
+
+  defp located_brackets(i) do
+    i
+    |> strip_captions()
+    |> unquote_words()
+    |> then(&Regex.scan(@place, &1, capture: :all_but_first))
+    |> Enum.flat_map(&plain_brackets(hd(&1)))
+    |> Enum.filter(&(&1 =~ @bracket))
+  end
+
+  # the instruction's clauses, one per operation: split at "and" or ";"
+  # outside quotes and captions, a piece with no verb joined to the next
+  # ("Sections 4 and 5 are repealed") or, last, to the one before
+  defp clauses(%Text{instruction: i} = text) do
+    masked =
+      Regex.replace(
+        ~r/[“"][^”"]*[”"]|\((?:[^()“”"]|[“"][^”"]*[”"])*\)/u,
+        i,
+        &String.duplicate("x", byte_size(&1))
+      )
+
+    cuts =
+      for [{pos, len}] <- Regex.scan(~r/;\s*|,?\s+and\s+/, masked, return: :index),
+          do: pos + len
+
+    pieces =
+      [0 | cuts]
+      |> Enum.zip(cuts ++ [byte_size(i)])
+      |> Enum.map(fn {a, b} -> {binary_part(i, a, b - a), binary_part(masked, a, b - a)} end)
+
+    pieces
+    |> Enum.reduce([], fn {piece, m}, acc ->
+      case acc do
+        [{open, om, false} | rest] -> [{open <> piece, om <> m, verb?(om <> m)} | rest]
+        _ -> [{piece, m, verb?(m)} | acc]
+      end
+    end)
+    |> then(fn
+      [{last, _, false}, {prev, pm, _} | rest] -> [{prev <> last, pm, true} | rest]
+      acc -> acc
+    end)
+    |> Enum.reverse()
+    |> Enum.map(fn {piece, _, _} -> %{text | instruction: String.trim(piece)} end)
+    |> case do
+      [_] -> [text]
+      cs -> cs
+    end
+  end
+
+  defp verb?(masked), do: Operation.of(%Text{id: nil, instruction: masked}) != nil
 
   defp named_refs(text, {"inserted", "inserted"}, p, n, _named) do
     case {text.inserted, inserted_named(text)} do
@@ -417,6 +541,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
 
         cond do
           to != "" -> {["s.#{n}..s.#{to}"], :provision}
+          mixed = mixed_line(n, subs, rest) -> mixed
           words_line?(rest) -> {words_targets(n, subs, located(rest)), :words}
           true -> whole_targets(n, subs ++ plain_brackets(rest))
         end
@@ -435,6 +560,102 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   defp located(rest),
     do: for([_, bs] <- Regex.scan(@located, unquote_words(rest)), do: plain_brackets(bs))
 
+  # a line repealing words and provisions ("in subsection (1) the
+  # definitions of …; and subsection (2)"): read piece by piece — "in
+  # subsection (5)" the place, a piece with words a words target there, a
+  # provision named ("paragraph (b)", "(6)") a provision under it (AR-08);
+  # nil unless both
+  # a paragraph of a definition is words in the provision ("paragraph (b)
+  # of the definition of …", "in the definition of “…”, paragraph (c)")
+  @of_definition ~r/(?:sub-?)?paragraphs?\s+(?:\([0-9A-Za-z]+\)\s*)+of\s+(?:the\s+)?definitions?\b|\bdefinitions?\s+of\s*x*\s*,?\s*(?:sub-?)?paragraphs?\s+(?:\([0-9A-Za-z]+\)\s*)+/i
+
+  @located_end ~r/\bin\s+(?:sub-?)?(?:section|subsection|paragraph|sub-?paragraph)\s+(?:\([0-9A-Za-z]+\))+[\s.]*$/i
+  @glued ~r/\.\s*(?:In\s+)?(?:[Ss]ections?\s+\d|Schedules?\s+\d|In\s+Schedule\b)/
+
+  @named_provision ~r/^(?:(?:sub-?)?(?:sections?|subsections?|paragraphs?|sub-?paragraphs?)\s*)?((?:\([0-9A-Za-z]+\))+)(?:\s+to\s+(\([0-9A-Za-z]+\)))?$/i
+
+  defp mixed_line(_n, _subs, rest) when not is_binary(rest), do: nil
+
+  defp mixed_line(n, subs, rest) do
+    # entries run together ("…(i).Sections 193 and 194.Schedule 1.") are
+    # AR-13's: never read as pieces of one line
+    if rest =~ @glued, do: nil, else: mixed_pieces(n, subs, rest)
+  end
+
+  defp mixed_pieces(n, subs, rest) do
+    masked =
+      ~r/[“"][^”"]*[”"]/u
+      |> Regex.replace(rest, &String.duplicate("x", byte_size(&1)))
+      |> then(
+        &Regex.replace(@of_definition, &1, fn m ->
+          String.pad_trailing("definition", byte_size(m))
+        end)
+      )
+
+    cuts =
+      for [{pos, len}] <- Regex.scan(~r/[;,]|\band\b/, masked, return: :index),
+          do: {pos, pos + len}
+
+    pieces =
+      [{0, 0} | cuts]
+      |> Enum.zip(cuts ++ [{byte_size(rest), byte_size(rest)}])
+      |> Enum.map(fn {{_, a}, {b, _}} ->
+        {binary_part(rest, a, b - a), binary_part(masked, a, b - a)}
+      end)
+
+    {targets, _} =
+      Enum.flat_map_reduce(pieces, {[], nil}, fn {piece, m}, {place, trailing} ->
+        place =
+          case Regex.run(@located, m, capture: :all_but_first) do
+            [bs] -> bs |> plain_brackets() |> then(&(above(place, &1) ++ &1))
+            nil -> place
+          end
+
+        bare = m |> String.replace(@located, "") |> String.replace(~r/^[\s.]+|[\s.]+$/, "")
+
+        cond do
+          bare =~ ~r/\bwords?\b|\bdefinitions?\b|\bentr(?:y|ies)\b|\bonwards\b|\bto the end\b/i or
+              piece =~ ~r/[“"][^”"]*[”"]/u ->
+            # "the words “…” in paragraph (b) and paragraph (c)": (c) is
+            # another place for the words, not a provision repealed (a
+            # provision of another level is: "… and subsection (12)")
+            {[{ref("s", [n | subs ++ place]), :words}],
+             {place, if(m =~ @located_end, do: place |> List.last() |> bracket_level())}}
+
+          named = Regex.run(@named_provision, bare, capture: :all_but_first) ->
+            {for(
+               bs <- provisions(named),
+               level = if(bracket_level(hd(bs)) == trailing, do: :words, else: :provision),
+               do: {ref("s", [n | subs ++ above(place, bs) ++ bs]), level}
+             ), {place, trailing}}
+
+          true ->
+            {[], {place, nil}}
+        end
+      end)
+
+    by_level = Enum.group_by(targets, &elem(&1, 1), &elem(&1, 0))
+
+    if Map.has_key?(by_level, :words) and Map.has_key?(by_level, :provision),
+      do: for(l <- [:words, :provision], do: {Enum.uniq(by_level[l]), l})
+  end
+
+  # "(4)(b)" → [["4", "b"]]; "(7)" to "(10)" → (7), (8), (9), (10)
+  defp provisions([g, ""]), do: [plain_brackets(g)]
+  defp provisions([g]), do: [plain_brackets(g)]
+
+  defp provisions([g, to]) do
+    case {plain_brackets(g), plain_brackets(to)} do
+      {[a], [b]} ->
+        if a =~ ~r/^\d+$/ and b =~ ~r/^\d+$/ and String.to_integer(a) < String.to_integer(b),
+          do: for(k <- String.to_integer(a)..String.to_integer(b), do: ["#{k}"]),
+          else: [[a], [b]]
+
+      {as, bs} ->
+        [as, bs]
+    end
+  end
+
   defp words_targets(n, subs, []), do: [ref("s", [n | subs])]
   defp words_targets(n, subs, places), do: for(p <- places, do: ref("s", [n | subs ++ p]))
 
@@ -442,7 +663,11 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   # “114”."), a definition or entry — unless a provision is named beside the
   # quote ("sub-paragraph (ii) and the preceding “and”") (AR-06)
   defp words_line?(rest) do
-    unquoted = rest |> unquote_words() |> String.replace(@located, "")
+    unquoted =
+      rest
+      |> String.replace(~r/[“"][^”"]*[”"]/u, "x")
+      |> String.replace(@of_definition, "definition")
+      |> String.replace(@located, "")
 
     named? =
       unquoted =~ ~r/\b(?:sub-?)?(?:sections?|subsections?|paragraphs?|sub-?paragraphs?)\b/i
@@ -560,10 +785,6 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
         ~r/\b(?:for|after|before)\s+(?:the\s+)?sections?\s+\d+[A-Z]*\b(?!\s*\()/i
 
   defp provision_path?([top | _]), do: top =~ ~r/^\d/
-
-  # a bracket is a number, a letter or two, or a roman numeral — never a
-  # word ("(interpretation)": a one-word caption, AR-07)
-  @bracket ~r/^(?:\d+[A-Z]*|[a-z]{1,3}|[A-Z]{1,2}|(?:x{0,3})(?:ix|iv|v?i{0,3}))$/
 
   defp brackets(%Text{instruction: i}) do
     i
