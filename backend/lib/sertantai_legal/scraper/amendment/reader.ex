@@ -282,9 +282,10 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   end
 
   # the clause whose quote follows ("… and after that subsection insert—"),
-  # else the first quoting one
+  # else the first quoting one; "at the end there shall be added—" quotes
+  # too (RTA 1991 s.18(1), AR-10)
   defp quoting_clause(clauses) do
-    quoting = Enum.filter(clauses, &(&1.text.instruction =~ ~r/insert|substitut/i))
+    quoting = Enum.filter(clauses, &(&1.text.instruction =~ ~r/insert|substitut|\badded\b/i))
 
     Enum.find(quoting, List.first(quoting), fn c ->
       captionless(c.text).instruction =~ ~r/[—–:]\s*[;.,]?\s*$/u

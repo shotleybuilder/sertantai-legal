@@ -369,6 +369,16 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderTest do
       refute {"s.7(2)(c)", :inserted, :words} in t
     end
 
+    test "AR-10: \"at the end there shall be added—\" quotes the provision added (RTA 1991 s.18(1): s.92(10))" do
+      t =
+        mixed(
+          "section-18-1",
+          ~S|In section 7 of the principal Act (physical fitness of drivers) at the end there shall be added—</Text><BlockAmendment><P2><Pnumber>10</Pnumber><P2para><Text>new</Text></P2para></P2></BlockAmendment>|
+        )
+
+      assert t == [{"s.7(10)", :inserted, :provision}]
+    end
+
     test "a paragraph omitted and words substituted in another: each its own place and level" do
       t =
         mixed(
