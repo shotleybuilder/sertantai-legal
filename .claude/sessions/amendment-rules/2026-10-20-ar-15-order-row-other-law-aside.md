@@ -1,8 +1,36 @@
 ---
 session: "AR-15: Order Table Row with Another Law in an Aside"
-status: active
+status: closed
 opened: '2026-10-20'
+closed: '2026-10-20'
+outcome: success
 parent: amendment-rules/2026-10-19-ar-00-meta.md
+summary: >
+  The "aside" row (SI 1999/2830: EReA s.31, Sch 7) was dropped because it had no subject cell and was taken for a
+  heading; a heading with no sub-rows is now an item. With it: "the said Part I" is the order's own Part (SI 1997/3114),
+  "for the purposes only of" is partial (SI 2017/281: Policing and Crime Act 2016 s.41/s.43 fully in force 2018-04-06),
+  and Energy Act 2016 s.66 was confirmed no misread (fb627631). One open gap: orders held without their Schedule.
+decisions:
+  - what: Fix AR-14's open order-reader bugs in this session, with the row bug
+    why: 'Jason 2026-10-20: bugs are captured in a session, not one session each; several related bugs fixed together'
+    result: 4 bugs fixed, 1 open
+  - what: Don't fetch SI 1997/3114's missing Schedule
+    why: effects first, scoped fetch one hop; the order is two hops from our rows (law ← amending Act ← order)
+    result: logged open for Jason; Firearms Act 1968 stays at 128 unknown
+  - what: Pin only that s.31 is dated, not its partial reading
+    why: the partial comes from the open qualifier-over-list bug; a test must not codify a known misread
+    result: test asserts the date in full_from or partial_from
+metrics:
+  table_orders_scanned: { orders: 13, rows_gained: 1 }
+  reread_orders: { orders: 5, rules_written: 50 }
+  pilot_ar15: { laws: 6, own_label_changes: 2, era_same_as_ar12: true }
+lessons:
+  - title: Trace the row before trusting a bug's named cause
+    detail: 'AR-15 was opened as "an aside naming another law drops the row"; the aside was handled correctly, and the row had no subject cell, so it was read as a heading. The session title carried a guessed cause.'
+    tag: data
+  - title: A test fixture must keep the real structure
+    detail: 'A one-sentence fixture for SI 1997/3114 art.3 passed before the fix: the misread came from the (a)/(b) lines read separately. Rebuild fixtures from the element''s lines (Doc.lines) before relying on red.'
+    tag: tooling
 bugs:
   - pattern: 'An order table row naming another law in an aside ("Section 31 and in Schedule 7, paragraphs 1, 2, 5 (to the extent that it inserts section 11A into the Employment Agencies Act 1973), 6 and 8") gives no rule at all'
     category: commencement reader
@@ -34,9 +62,17 @@ bugs:
     affected: 'SI 1997/3114 → Firearms (Amendment) (No. 2) Act 1997 (amends Firearms Act 1968: 128 unknown rows); corpus count unknown'
     fix: 'count orders held without their Schedule; a fetch is two hops from our rows (effects first) — Jason to decide; when held, date a Part by the article naming it'
     status: open
+artifacts:
+  - backend/lib/sertantai_legal/scraper/commencement/order.ex
+  - backend/test/sertantai_legal/scraper/commencement/order_test.exs
+  - backend/data/reports/lat-refactor/ar15_pilot.csv
+depends_on:
+  - 2026-10-20-ar-14-order-subsection-ranges
+enables:
+  - the AR measure run (order re-read)
 ---
 
-# Session: AR-15: Order Table Row with Another Law in an Aside (ACTIVE)
+# Session: AR-15: Order Table Row with Another Law in an Aside (CLOSED)
 
 ## Problem
 
