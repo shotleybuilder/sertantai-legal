@@ -1,11 +1,11 @@
 ---
 session: "AR-07: One-Word Caption Read as a Target"
-status: pending
+status: active
 opened: '2026-10-20'
 parent: amendment-rules/2026-10-19-ar-00-meta.md
 ---
 
-# Session: AR-07: One-Word Caption Read as a Target (PENDING)
+# Session: AR-07: One-Word Caption Read as a Target (ACTIVE)
 
 ## Problem
 

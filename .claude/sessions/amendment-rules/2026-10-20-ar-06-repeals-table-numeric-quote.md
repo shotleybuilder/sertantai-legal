@@ -1,8 +1,28 @@
 ---
 session: "AR-06: Repeals-Table Line Quoting a Number"
-status: active
+status: closed
 opened: '2026-10-20'
+closed: '2026-10-20'
+outcome: success
 parent: amendment-rules/2026-10-19-ar-00-meta.md
+summary: >
+  Repeals-table lines that change words (a quote, a definition, an entry) are now words-level unless a provision is
+  named beside them, and "in subsection (1)" places the words on that row, one target per place (914384d6, 1e99bf95).
+  55 of 67 rules in 28 amending laws moved to words; pilot on 27 laws: 13 rows dated, 1 unknown → in force, 0 losses.
+decisions:
+  - what: A quote, definition or entry in a repeals-table line is words-level; a provision named beside it keeps the provision's repeal
+    why: Operation already treats quoted words, definitions and entries as words in instructions; a table line is the same drafting
+    result: 'provision 241 → 186, words 87 → 142 (28 amending laws)'
+  - what: Mixed lines (words in one subsection, a whole repeal of another) stay provision-level
+    why: one level per rule; splitting by operation is AR-08's job
+    result: 'e.g. 1980 c.45 s.109 "the definitions …; and subsection (2)" unchanged'
+metrics:
+  rules: { quoted_provision_level: 67, amending_laws: 28, moved_to_words: 55 }
+  pilot_ar06_pilot2: { laws: 27, label_changes: 36, own_gains: 14, own_losses: 0, errors: 0 }
+lessons:
+  - title: Read every loss in a pilot before trusting the fix
+    detail: 'The first pilot''s 4 "in force → unknown" rows were two bugs the fix introduced (places joined into one path s.30(1)(2); a definition check ahead of the named-provision guard). A clean test suite didn''t show either; the classified diff did.'
+    tag: data
 bugs:
   - pattern: 'A repeals-table line quoting a number only ("In section 53(1)(a) “114”.") is read as a whole-provision repeal, not words'
     category: amendment reader
@@ -16,9 +36,17 @@ bugs:
     affected: '1982 c.16 s.30(1)–(2), 1980 c.45 s.109(1)(b)(i)–(ii) went in force → unknown in the first pilot'
     fix: a target per place; the named-provision guard covers definitions and entries
     status: fixed
+artifacts:
+  - backend/lib/sertantai_legal/scraper/amendment/reader.ex
+  - backend/test/sertantai_legal/scraper/amendment/reader_test.exs
+  - backend/data/reports/lat-refactor/ar06_pilot2.csv
+depends_on:
+  - 2026-10-19-ar-03-reader
+enables:
+  - AR-08 (mixed lines) and the AR measure run
 ---
 
-# Session: AR-06: Repeals-Table Line Quoting a Number (ACTIVE)
+# Session: AR-06: Repeals-Table Line Quoting a Number (CLOSED)
 
 ## Problem
 
