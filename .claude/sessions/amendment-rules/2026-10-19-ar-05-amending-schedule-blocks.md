@@ -40,8 +40,8 @@ Amendment ruleset (AR-00 meta): "Part I of Schedule 4 shall be substituted for P
 
 - ✅ Trace EReA 1999 → ERA 1996 Pt VIII today: what `mix lat.amending --law UK_ukpga_1999_26` reads, which rows the feed and markup date, what is missing
 - ✅ Find the other instances: rules (or unread instructions) substituting / inserting a block "for" / "as" the amending law's own Schedule or Part — count across the stored rules
-- ⬜ Reader: such an instruction targets the amended block (Part / range), its rows reached as a provision-level change (reader + collect tests first)
-- ⬜ Pilot on the affected laws (`mix lat.wave_preview --relabel --laws …`); classified diff; batch into the AR measure run
+- ✅ Reader: such an instruction targets the amended block (Part / range), its rows reached as a provision-level change (reader + collect tests first)
+- ⬜ Pilot on the affected laws (`mix lat.wave_preview --relabel --laws …`); classified diff; batch into the AR measure run — first pilot 0 label changes: the records are undated until AR-12; re-pilot ERA 1996 with AR-12 and AR-11
 - ⬜ Close LR-43's open bug as fixed when reached
 
 ## Dependencies
@@ -73,3 +73,12 @@ Scanned the stored XML of the 2,733 stored amending laws (of 7,621 in the change
 | uksi 1994/2280 | reg.7: Sch 1 inserted after Sch 21 | — | not traced (no records) |
 
 **AR-05's reach is one amending law on one law: about 180 ERA rows.** The form is old drafting (1982–2000), so the corpus is unlikely to hold many more. Even once reached, the rows stay undated until AR-12 reads SI 1999/2830's Schedule; AR-11 (the feed range) reaches the same Part VIII rows from the feed's side.
+
+## Reader fix (2026-10-20, bf752873)
+
+`Reader.instruction/4`: an instruction quoting nothing whose verb clause says the provisions "set out in [Part N of] Schedule M [to this Act] shall be / are substituted for / inserted after|before" a Part, Chapter or provision (`@set_out`) takes the quote of that Schedule (or Part): the paths of every element under it (each quote sits in a wrapper with its own id, which `Text` skips). Then the rule is made as for any quoting instruction. "is amended as set out in Schedule 1" is not matched (it points to the Schedule's own instructions). Three reader tests (EReA s.7, s.8, the "amended as set out" guard); suite 2,893 pass.
+
+- **Real law:** `mix lat.amending --read --amending UK_ukpga_1999_26` → s.7: ERA ss.71–80 substituted (provision); s.8: ss.57A–57B inserted (provision). As before for quoting instructions, "after section 57" adds `s.57(57A)…` targets (no such rows; AR-07).
+- **Collector on ERA 1996:** EReA records 285 (s.7: 138 rows substituted + 12 words-level, option c, on rows inserted later such as s.71(3)(ba); s.8: 31 rows + 1 words-level).
+- **Pilot (`ar05_pilot`, no write):** 0 label changes. Every EReA record is undated because SI 1999/2830 commences what its own Schedule lists (AR-12), so the rows stay unknown / insertion_not_in_register (ERA 477). The rule has to wait for AR-12 before it pays off.
+- The read pass now sees a new reader version, so every amending law's index is stale. The collector reads documents until the next `mix lat.amending --read` (about 16 min). That run goes with the AR measure run.
