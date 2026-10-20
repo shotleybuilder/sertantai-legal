@@ -386,4 +386,54 @@ defmodule SertantaiLegal.Scraper.Amendment.CollectRecordsTest do
                opts
              )
   end
+
+  describe "AR-09: an amending-law record carries its law's territory" do
+    test "a devolved law's type sets it, whatever its register extent (Welsh law extends to E+W)" do
+      assert Collect.territory("UK_nisr_2009_248", "NI") == "NI"
+      assert Collect.territory("UK_wsi_2010_1", "E+W") == "W"
+      assert Collect.territory("UK_asc_2016_3", "E+W") == "W"
+      assert Collect.territory("UK_anaw_2014_4", "E+W") == "W"
+      assert Collect.territory("UK_mwa_2010_7", nil) == "W"
+      assert Collect.territory("UK_ssi_2006_181", nil) == "S"
+      assert Collect.territory("UK_asp_2005_1", "S") == "S"
+      assert Collect.territory("UK_nia_2011_1", nil) == "NI"
+      assert Collect.territory("UK_apni_1970_1", "NI") == "NI"
+      assert Collect.territory("UK_nisi_1981_154", "NI") == "NI"
+    end
+
+    test "a UK-level law's register extent, only when narrower than the UK" do
+      assert Collect.territory("UK_ukpga_1990_43", "E+W") == "E+W"
+      assert Collect.territory("UK_ukpga_1995_25", "S") == "S"
+      assert Collect.territory("UK_uksi_2001_1", "NI") == "NI"
+      assert Collect.territory("UK_ukpga_1974_37", "GB") == "E+W+S"
+      assert Collect.territory("UK_ukpga_2000_27", "UK") == nil
+      assert Collect.territory("UK_ukpga_2000_27", "E+W+S+NI") == nil
+      assert Collect.territory("UK_uksi_2001_1", nil) == nil
+      assert Collect.territory("UK_uksi_2001_1", "") == nil
+    end
+
+    test "none when the amended law is devolved to the same territory (a Welsh law's rows extend to E+W)" do
+      assert Collect.territory("UK_asc_2025_4", "E+W", "UK_asc_2023_3") == nil
+      assert Collect.territory("UK_wsi_2020_1", "E+W", "UK_anaw_2017_2") == nil
+      assert Collect.territory("UK_ssi_2006_3", "S", "UK_asp_2005_13") == nil
+      assert Collect.territory("UK_ssi_2006_3", "S", "UK_ukpga_1990_43") == "S"
+      assert Collect.territory("UK_nisr_2009_248", "NI", "UK_ukpga_1875_17") == "NI"
+    end
+
+    test "the record carries it as the feed's does (territorial_application)" do
+      note = note("F3", "S. 36 repealed by 2000 c. 27, s. 108, Sch. 8", ["s.36"])
+      sids = Enum.map(["s.36"], &"#{@law}:#{&1}")
+      ask = MapSet.new(sids)
+
+      [r] =
+        records(@law, "Electricity Act", sids, [note], ask, docs(),
+          law_extent: fn "UK_ukpga_2000_27" -> "E+W" end
+        )
+
+      assert r.territorial_application == "E+W"
+
+      [r] = records(@law, "Electricity Act", sids, [note], ask, docs())
+      assert r.territorial_application == nil
+    end
+  end
 end

@@ -172,7 +172,8 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
             ask,
             amending_sources(law_name),
             rules: &CommencementRules.for_law/1,
-            extents: extents(law_name)
+            extents: extents(law_name),
+            law_extent: &law_extent/1
           )
         end)
   end
@@ -302,6 +303,23 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
       )
 
     Map.new(rows, fn [sid, e] -> {sid, e} end)
+  end
+
+  # an amending law's register extent (AR-09), once per law's collection
+  # (`with_doc_cache/1`)
+  defp law_extent(law) do
+    key = {__MODULE__, :doc, {:extent, law}}
+
+    case Process.get(key, :none) do
+      :none ->
+        %{rows: rows} =
+          Repo.query!("SELECT geo_extent FROM uk_lrt WHERE name = $1 LIMIT 1", [law])
+
+        tap(List.first(List.flatten(rows)), &Process.put(key, &1))
+
+      e ->
+        e
+    end
   end
 
   defp law_title(law_name) do

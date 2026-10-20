@@ -13,7 +13,12 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
   | nil): `doc_source/1` reads a parsed document (`Amendment.Reader`), or
   `stored_source/3` serves the rules the read pass stored (`mix lat.amending
   --read`) — no XML at collection. Pure: commencement rules from `rules:`,
-  extents from `extents:`, the law's LAT prefix from `prefix:`.
+  extents from `extents:`, the law's LAT prefix from `prefix:`, each
+  amending law's register extent from `law_extent:` (law → extent | nil).
+
+  A record carries its amending law's territory (`territory/2`, AR-09) as
+  the feed's carries the affecting territorial application: a devolved
+  instrument's change reaches its own territory only.
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{DefinedTerms, Doc, Locator, Pointer}
@@ -21,6 +26,23 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
   alias SertantaiLegal.Scraper.ChangeCollector.Record
   alias SertantaiLegal.Scraper.Commencement.Amending
   alias SertantaiLegal.Scraper.Commencement.Evaluator, as: When
+  alias SertantaiLegal.Scraper.Territory
+
+  # a devolved law's territory from its type (as `LiveStatus`): Welsh law
+  # extends to E+W but applies in Wales
+  @devolved %{
+    "ssi" => "S",
+    "asp" => "S",
+    "wsi" => "W",
+    "anaw" => "W",
+    "asc" => "W",
+    "mwa" => "W",
+    "nisr" => "NI",
+    "nisro" => "NI",
+    "nia" => "NI",
+    "apni" => "NI",
+    "nisi" => "NI"
+  }
 
   @typedoc """
   An amending law as the collector needs it: its `elements` (id → true, for
@@ -55,6 +77,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
     law = Reader.law_ref(law_name, title, Keyword.get(opts, :prefix) || prefix(section_ids))
     rules_of = Keyword.get(opts, :rules, fn _law -> [] end)
     extents = Keyword.get(opts, :extents, %{})
+    law_extent = Keyword.get(opts, :law_extent, fn _law -> nil end)
 
     for note <- notes,
         sid <- Map.get(note, :affected_sections) || [],
@@ -69,7 +92,11 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
         {row, rule} <- placements(rule, target, sid),
         MapSet.member?(held, row) do
       {target == sid,
-       %{record(src, id, rule, row, {rules_of, extents}, pointer) | law_name: law_name}}
+       %{
+         record(src, id, rule, row, {rules_of, extents}, pointer)
+         | law_name: law_name,
+           territorial_application: territory(src.law, law_extent.(src.law), law_name)
+       }}
     end
     # a rule naming the row itself wins over one reaching it through an
     # ancestor (sort is stable: true sorts after false, so reverse)
@@ -77,6 +104,35 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
     |> Enum.map(&elem(&1, 1))
     |> Enum.uniq_by(&{&1.evidence, &1.section_id})
   end
+
+  @doc """
+  The territory an amending law's change reaches (AR-09, Jason): a devolved
+  law's from its type; a UK-level law's register `extent` when narrower than
+  the UK (an extent is the law's whole reach: too wide at worst, never the
+  wrong territory); nil (the UK) otherwise — and nil when the `amended` law
+  is devolved to that same territory (a Welsh law's rows extend to E+W: a
+  Welsh repeal of them is whole).
+  """
+  @spec territory(String.t(), String.t() | nil, String.t() | nil) :: String.t() | nil
+  def territory(law, extent, amended \\ nil) do
+    t = reach(law, extent)
+    if t != nil and t == devolved(amended), do: nil, else: t
+  end
+
+  defp devolved(nil), do: nil
+  defp devolved(law), do: @devolved[law |> String.split("_") |> Enum.at(1)]
+
+  defp reach(law, extent) do
+    devolved(law) ||
+      case extent && String.trim(extent) do
+        "GB" -> "E+W+S"
+        "UK" -> nil
+        e -> e |> Territory.normalize() |> narrower()
+      end
+  end
+
+  defp narrower("E+W+S+NI"), do: nil
+  defp narrower(code), do: code
 
   # where a rule's change lands for a note on `sid`: the row itself when the
   # rule names it; else (the rule names an ancestor: "in section 6, omit the
