@@ -41,7 +41,7 @@ Amendment ruleset (AR-00 meta): "Part I of Schedule 4 shall be substituted for P
 - ✅ Trace EReA 1999 → ERA 1996 Pt VIII today: what `mix lat.amending --law UK_ukpga_1999_26` reads, which rows the feed and markup date, what is missing
 - ✅ Find the other instances: rules (or unread instructions) substituting / inserting a block "for" / "as" the amending law's own Schedule or Part — count across the stored rules
 - ✅ Reader: such an instruction targets the amended block (Part / range), its rows reached as a provision-level change (reader + collect tests first)
-- ⬜ Pilot on the affected laws (`mix lat.wave_preview --relabel --laws …`); classified diff; batch into the AR measure run — first pilot 0 label changes: the records are undated until AR-12; re-pilot ERA 1996 with AR-12 and AR-11
+- ⬜ Pilot on the affected laws (`mix lat.wave_preview --relabel --laws …`); classified diff; batch into the AR measure run — first pilot 0 label changes (undated until AR-12); with AR-12 (`ar12_pilot`): ERA unknown 477 → 319, 180 rows dated 1999-12-15 by EReA; re-pilot with AR-11
 - ⬜ Close LR-43's open bug as fixed when reached
 
 ## Dependencies
