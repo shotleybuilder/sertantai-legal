@@ -1,8 +1,33 @@
 ---
 session: "AR-07: One-Word Caption Read as a Target"
-status: active
+status: closed
 opened: '2026-10-20'
+closed: '2026-10-20'
+outcome: success
 parent: amendment-rules/2026-10-19-ar-00-meta.md
+summary: >
+  The reader no longer makes targets that can name no row: a one-word caption is no bracket, a quoted sub-paragraph is
+  never a provision of its own (s.i), and a whole section substituted or inserted has its quote's numbers as sections
+  (no s.99(99)) (1fa9cb6e). Pilot on 3 amending laws removed 2,995 word-bracket, 61 self-nested and 2 s.i targets with
+  no real target lost; preview on 5 laws: no losses.
+decisions:
+  - what: Keep the skip-level combinations (s.88(c) beside s.88(1)(c))
+    why: they are the old row matcher's set semantics ("In paragraph (a) of section 7(2)"); a section never has both forms, so they reach no wrong row
+    result: unchanged
+  - what: '"Whole sections" only when the instruction names a section with no bracket ("for section 7", not "for section 7(2)")'
+    why: '"For section 7(2) substitute— (2)" quotes a subsection that must stay numbered from its section'
+    result: guard test (s.7(4A))
+  - what: Pilot on 3 amending laws, corpus re-read with the AR measure run
+    why: ~500 amending laws carry one of the forms; prove the change on a few first
+    result: 3,058 spurious targets removed, 0 real
+metrics:
+  stored_before: { word_bracket_targets: 3904, word_bracket_rules: 295, letter_provision_rules: 1493, self_nested_rules: 366 }
+  pilot: { amending_laws: 3, removed_word: 2995, removed_nested: 61, removed_letter: 2, real_lost: 0 }
+  preview_ar07: { laws: 5, losses: 0, era_label_changes: 797 }
+lessons:
+  - title: Regex counts of "bad" targets overstate; separate the never-real forms first
+    detail: 'The "section nested in section" bucket (29,551) and "skipped level" (13,773) mostly matched real subsections (s.5(5A)) and paragraphs. Only forms that can never name a row (a word, a bare letter, a number nested in itself) were safe to remove.'
+    tag: data
 bugs:
   - pattern: 'A one-word caption ("(interpretation)") becomes a bracket target (s.336(interpretation)) that matches no row'
     category: amendment reader
@@ -16,9 +41,17 @@ bugs:
     affected: 's.i: 1,493 rules / 367 laws; s.99(99): 366 rules / 155 laws (pre-fix counts)'
     fix: 'a quoted path is a provision only when it starts with a number; a whole section substituted or inserted has its quote''s numbers as sections. Skip-level combos (s.88(c) beside s.88(1)(c)) kept: the old matcher''s set semantics, never both real (AR-07)'
     status: fixed
+artifacts:
+  - backend/lib/sertantai_legal/scraper/amendment/reader.ex
+  - backend/test/sertantai_legal/scraper/amendment/reader_test.exs
+  - backend/data/reports/lat-refactor/ar07_pilot.csv
+depends_on:
+  - 2026-10-20-ar-06-repeals-table-numeric-quote
+enables:
+  - the AR measure run
 ---
 
-# Session: AR-07: One-Word Caption Read as a Target (ACTIVE)
+# Session: AR-07: One-Word Caption Read as a Target (CLOSED)
 
 ## Problem
 
