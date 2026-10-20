@@ -409,13 +409,33 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
 
         cond do
           to != "" -> {["s.#{n}..s.#{to}"], :provision}
-          rest =~ ~r/\bwords?\b/ -> {[ref("s", [n | subs])], :words}
+          words_line?(rest) -> {[ref("s", [n | subs ++ located(rest)])], :words}
           true -> whole_targets(n, subs ++ plain_brackets(rest))
         end
 
       _ ->
         nil
     end
+  end
+
+  # "in subsection (1)", "in paragraph (b)": where the words are, not a
+  # provision repealed — its brackets narrow the words' row (AR-06)
+  @located ~r/\bin\s+(?:sub-?)?(?:section|subsection|paragraph|sub-?paragraph)\s+((?:\([0-9A-Za-z]+\))+)/i
+
+  defp located(rest) do
+    for [_, bs] <- Regex.scan(@located, unquote_words(rest)), b <- plain_brackets(bs), do: b
+  end
+
+  # words in the provision: "the words …", a quote ("In section 53(1)(a)
+  # “114”."), a definition or entry — unless a provision is named beside the
+  # quote ("sub-paragraph (ii) and the preceding “and”") (AR-06)
+  defp words_line?(rest) do
+    unquoted = rest |> unquote_words() |> String.replace(@located, "")
+
+    unquoted =~ ~r/\b(?:words?|definitions?|entr(?:y|ies))\b/ or
+      (rest =~ ~r/[“"][^”"]+[”"]/u and
+         not (unquoted =~
+                ~r/\b(?:sub-?)?(?:sections?|subsections?|paragraphs?|sub-?paragraphs?)\b/i))
   end
 
   defp whole_targets(n, []), do: {["s.#{n}"], :provision}
