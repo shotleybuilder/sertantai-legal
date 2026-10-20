@@ -1,8 +1,41 @@
 ---
 session: "AR-09: Territory of a Devolved Amending Law"
-status: active
+status: closed
 opened: '2026-10-20'
+closed: '2026-10-20'
+outcome: success
 parent: amendment-rules/2026-10-19-ar-00-meta.md
+
+summary: >
+  An amending-law record now carries its law's territory as territorial_application (Amendment.Collect.territory/3):
+  a devolved law's from its type, a UK-level law's register extent when narrower than the UK, none when the amended
+  law is devolved to the same territory. Pilot (10 laws, against a control): 11 rows in 2 laws change, all right
+  (Explosives Act 1875 NI repeals no longer date the UK version); exact count deferred to the AR measure run.
+
+decisions:
+  - what: 'Type, then extent (Jason): devolved type sets the territory; a UK-level law''s geo_extent only when narrower than the UK (GB → E+W+S)'
+    why: 'Welsh amending laws carry register extent E+W (wsi 50, asc 177, anaw 12 records) but apply in Wales; an extent is a law''s whole reach, so for UK-level laws it is too wide at worst, never the wrong territory'
+    result: '1,296 matched records carry a territory; 194 do not cover their row (169 rows, 42 laws)'
+  - what: 'No territory when the amended law is devolved to the same territory'
+    why: 'A Welsh law''s rows extend to E+W, so a W territory would turn a Welsh repeal of a Welsh provision into a partial one'
+    result: 'Welsh-on-Welsh and SSI-on-Scottish pilots: 0 label changes'
+  - what: 'Keep the 8 records where a UK-level law''s extent misses the row'
+    why: 'They are extent versions sharing an xml id (1984 c.22 → 1982 c.16 s.36(5)[S]); the territory stops them dating the wrong version, as LR-32 intends'
+    result: 'register extent trusted for UK-level amenders'
+
+metrics:
+  pilot: { laws: 10, rows_changed_by_ar09: 11, laws_changed: 2, wrong: 0 }
+  corpus_bound: { records_with_territory: 1296, not_covering_row: 194, rows: 169, laws: 42 }
+  suite: { passed: 2919, skipped: 2 }
+
+lessons:
+  - title: 'A Welsh law''s legal extent is E+W; its application is W'
+    detail: 'Register geo_extent (and LAT row extent) for Welsh law says E+W, so extent cannot tell a Welsh change from an English one, and a Welsh territory on a Welsh law''s E+W rows makes whole repeals partial. Use the type for devolved laws, and skip the territory when amended and amending law share it.'
+    tag: data
+  - title: 'Separate a change''s own effect from the reader''s with a stashed control preview'
+    detail: 'Stored labels predate AR-08, so any relabel preview mixes reader changes in; stashing the AR-09 files and previewing the same laws isolated 11 of 71 diffs as AR-09''s.'
+    tag: tooling
+
 bugs:
   - pattern: 'An amending-law record carries no territory: a devolved instrument''s change (nisr / ssi / wsi, nia / asp / anaw) reads as UK-wide (NI SR 2009/248 repealing Explosives Act 1875 ss.53–76 for NI only)'
     category: amending-law
@@ -10,9 +43,23 @@ bugs:
     affected: '169 rows in 42 laws at most (records whose territory misses the row); 11 rows in 2 of 10 pilot laws'
     fix: 'territorial_application from the amending law''s type (devolved), else its register extent when narrower than the UK; none when the amended law is devolved to the same territory'
     status: fixed
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/amendment/collect.ex
+  - backend/lib/sertantai_legal/scraper/change_collector.ex
+  - backend/test/sertantai_legal/scraper/amendment/collect_records_test.exs
+  - backend/data/reports/lat-refactor/ar09_pilot*
+  - backend/data/reports/lat-refactor/ar09_ctl*
+
+depends_on:
+  - 2026-10-19-ar-04-switch-over
+  - 2026-10-20-ar-08-mixed-instruction-level
+
+enables:
+  - AR measure run (exact AR-09 row count)
 ---
 
-# Session: AR-09: Territory of a Devolved Amending Law (ACTIVE)
+# Session: AR-09: Territory of a Devolved Amending Law (CLOSED)
 
 ## Problem
 
