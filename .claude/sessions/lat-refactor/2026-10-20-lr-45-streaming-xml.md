@@ -10,7 +10,7 @@ depends_on: ["lat-refactor/2026-10-15-lr-31-pipeline-performance"]
 
 ## Problem
 
-Every XML read goes through xmerl (SweetXml): 27 modules — the LAT parser (walker, text, ids, refs, effects), the amending-law reader (`AmendingLaw.Doc`, `DefinedTerms`, `RepealTable`), the commencement order reader, the changes feed, definitions, metadata. xmerl is slow and very memory-hungry (records with parent chains, charlists): parsing dominated the amending-law collector (LR-31: `xmerl_scan` 41% of 1988/52's collection), one law's amending documents peaked at ~3.3 GB, and a 5-wide parity run exhausted memory and crashed the machine (AR-03, 2026-10-20). LR-31 listed a streaming parser (option D: Saxy) and dropped it while parallelism and fewer parses were enough; AR-03's read-once pass removed the repeated parsing for amendments, but every parse and read still pays xmerl. Jason 2026-10-20: "create a new pending session for stream XML parse … Let's plan that too".
+Every XML read goes through xmerl (SweetXml): 27 modules — the LAT parser (walker, text, ids, refs, effects), the amending-law reader (`AmendingLaw.Doc`, `DefinedTerms`, `RepealTable`), the commencement order reader, the changes feed, definitions, metadata. xmerl is slow and very memory-hungry (charlists, a heavy record per node, the scanner's state): parsing dominated the amending-law collector (LR-31: `xmerl_scan` 41% of 1988/52's collection), one law's amending documents peaked at ~3.3 GB, and a 5-wide parity run exhausted memory and crashed the machine (AR-03, 2026-10-20). LR-31 listed a streaming parser (option D: Saxy) and dropped it while parallelism and fewer parses were enough; AR-03's read-once pass removed the repeated parsing for amendments, but every parse and read still pays xmerl. Jason 2026-10-20: "create a new pending session for stream XML parse … Let's plan that too".
 
 ## Todo
 
@@ -22,11 +22,11 @@ Every XML read goes through xmerl (SweetXml): 27 modules — the LAT parser (wal
 - ⬜ Phase 3, only if measured worth it: the commencement order reader, changes feed, definitions, metadata
 - ⬜ Remove SweetXml / xmerl where nothing uses it; architecture note in scraper CLAUDE.md
 
-## Options (to decide)
+## Options
 
 | Option | What | Gain | Cost / risk |
 |---|---|---|---|
-| **A. Saxy SimpleForm behind an adapter** | parse to compact tuples (binaries, no parent chains); a small adapter gives the xpath subset the code uses (`//X`, `./X`, `local-name()`, attributes, text) so call sites barely change | memory ~5–10× smaller, scan several × faster | the adapter must match SweetXml's semantics exactly (document order, whitespace, namespaces) — the zero-diff gates catch any drift |
+| **A. Saxy compact tree** (chosen, as refined by the review below) | parse to compact tuples (binaries); call sites onto tree helpers, the xpath forms used onto a minimal adapter | memory ~5–10× smaller, scan several × faster | the adapter must match SweetXml's semantics exactly (document order, whitespace, namespaces) — the zero-diff gates catch any drift |
 | **B. Saxy streaming handlers per reader** | SAX handlers build only what each reader needs (e.g. `Doc`: id → text / lines / title / quote paths) | the most speed and least memory | rewrites each reader; largest change |
 | **C. Fragment parse** | parse only the provisions a note points to (amending laws) | small for the collector | the read pass already parses once; little left to gain there |
 | **D. Cache derived artefacts** (LR-31 B) | store a compact `Doc` / parsed effects per document, keyed by content hash | repeated reads become loads | doesn't make the first parse faster; storage |
