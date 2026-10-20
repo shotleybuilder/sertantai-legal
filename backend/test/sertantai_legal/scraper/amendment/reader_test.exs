@@ -441,6 +441,27 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderTest do
       refute Enum.any?(t, fn {r, _, _} -> r in ["s.7(c)", "s.7(2)(b)(c)", "s.7(b)(c)"] end)
     end
 
+    test "a section inserted after \"that section\" is a section of its own (1991 c.34 s.63(2))" do
+      d =
+        doc(
+          ~S|<P1 id="section-63"><P1para><P2 id="section-63-1"><P2para><Text>In section 52 of the principal Act for “x” substitute “y”.</Text></P2para></P2><P2 id="section-63-2"><P2para><Text>After that section there is inserted—</Text><BlockAmendment><P1group><P1><Pnumber>52A</Pnumber><P1para><P2><Pnumber>1</Pnumber><P2para><Text>new</Text></P2para></P2></P1para></P1></P1group></BlockAmendment></P2para></P2></P1para></P1>|
+        )
+
+      t =
+        for r <-
+              Reader.instruction(
+                d,
+                "section-63-2",
+                %{"the principal act" => %{law: "UK_ukpga_1956_52", title: "Clean Air Act 1956"}},
+                [@clean_air]
+              ),
+            t <- r.targets,
+            do: t
+
+      assert "s.52A(1)" in t
+      refute Enum.any?(t, &String.starts_with?(&1, "s.52(52A)"))
+    end
+
     test "a section inserted after a captioned section is still a section (\"after section 3 (Interpretation) insert— 3A\")" do
       t =
         mixed(
@@ -450,6 +471,17 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderTest do
 
       assert {"s.3A", :inserted, :provision} in t
       refute {"s.3(3A)", :inserted, :provision} in t
+    end
+
+    test "a law named in a caption is not a second law (1993 c.43 s.111)" do
+      t =
+        mixed(
+          "section-49",
+          ~S|In section 42 of the principal Act, in subsection (6) (limit on money borrowed under section 19 of the Gas Act 1986 and the debt), paragraph (b) (which is spent) shall be omitted.</Text>|
+        )
+
+      assert {"s.42(6)(b)", :repealed, :provision} in t
+      refute {"s.42", :repealed, :provision} in t
     end
 
     test "a clause naming another law is not this law's (1991 c.40 s.9(1))" do

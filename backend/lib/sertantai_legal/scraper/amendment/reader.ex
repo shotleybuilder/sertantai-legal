@@ -249,29 +249,35 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
       for path <- text.inserted, provision_path?(path), uniq: true, do: ref(p, path)
     else
       for path <- text.inserted,
-          # "In section 7(1) … for paragraph (b) substitute— (b) … (c) …":
-          # numbered from the provision holding the replaced bracket
-          # a quoted sub-paragraph "(i)" is never a provision of its own
-          # a quote numbered "1A" is a section only when no section is
-          # named to hold it ("In section 142, after subsection (1)
-          # insert— (1A)": s.142(1A), never s.1A)
-          # under the brackets named at levels above its own ("for
-          # subsection (5) substitute— (4A) (5)": s.52(4A), never
-          # s.52(5)(4A))
-          # a quoted "(i)" may be a sub-paragraph under the last
-          # bracket's parent ("In section 7(5)(b) for sub-paragraph (i)
-          # substitute— (i)": s.7(5)(b)(i)) — a letter or a numeral
-          t <-
-            if(provision_path?(path) and numbers == [], do: [ref(p, path)], else: []) ++
-              for(n <- numbers, do: ref(p, [n | above(named, [hd(path)]) ++ path])) ++
-              for(
-                n <- numbers,
-                length(named) > 1,
-                hd(path) =~ ~r/^[ivx]+[a-z]?$/,
-                do: ref(p, [n | Enum.drop(named, -1) ++ path])
-              ),
+          t <- quoted_paths(path, named, numbers, p),
           uniq: true,
           do: t
+    end
+  end
+
+  # a quoted path's targets:
+  # - a provision of its own when no provision is named to hold it, or its
+  #   number grows from one named ("After that section insert— 52A": s.52A;
+  #   "In section 142, after subsection (1) insert— (1A)": never s.1A)
+  # - else under the brackets named at levels above its own ("In section
+  #   7(1) for paragraph (b) substitute— (b) (c)": s.7(1)(c); "for
+  #   subsection (5) substitute— (4A) (5)": s.52(4A), never s.52(5)(4A))
+  # - a quoted "(i)" may be a sub-paragraph under the last bracket's parent
+  #   ("In section 7(5)(b) for sub-paragraph (i) substitute— (i)":
+  #   s.7(5)(b)(i)) — a letter or a numeral
+  defp quoted_paths(path, named, numbers, p) do
+    own? = provision_path?(path) and (numbers == [] or own_number?(hd(path), numbers))
+
+    if own? do
+      [ref(p, path)]
+    else
+      for(n <- numbers, do: ref(p, [n | above(named, [hd(path)]) ++ path])) ++
+        for(
+          n <- numbers,
+          length(named) > 1,
+          hd(path) =~ ~r/^[ivx]+[a-z]?$/,
+          do: ref(p, [n | Enum.drop(named, -1) ++ path])
+        )
     end
   end
 
@@ -312,7 +318,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
             {:none, ns} -> ns
           end
 
-        own = brackets(%{c | instruction: own_part(unquote_words(c.instruction), law, terms)})
+        own =
+          brackets(%{c | instruction: own_part(unquote_words(asides(c.instruction)), law, terms)})
+
         named = if c == first, do: own, else: above(place, own) ++ own
         {%{text: c, named: named, numbers: numbers, ours?: ours?}, {numbers, ours?}}
       end)
@@ -864,9 +872,18 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   defp sections_quoted?(%Text{} = text),
     do:
       captionless(text).instruction =~
-        ~r/\b(?:for|after|before)\s+(?:the\s+)?sections?\s+\d+[A-Z]*\b(?!\s*\((?:\d+[A-Z]*|[a-z]{1,3})\))/i
+        ~r/\b(?:for|after|before)\s+(?:the\s+)?(?:sections?|regulations?|articles?|rules?)\s+\d+[A-Z]*\b(?!\s*\((?:\d+[A-Z]*|[a-z]{1,3})\))/i
 
   defp provision_path?([top | _]), do: top =~ ~r/^\d/
+
+  # a number grown from a provision named ("52A" from section 52, "2C" from
+  # regulation 2B)
+  defp own_number?(top, numbers) do
+    case Regex.run(~r/^(\d+)[A-Z]+$/, top) do
+      [_, stem] -> Enum.any?(numbers, &(&1 =~ ~r/^#{stem}(?:[A-Z]+)?$/))
+      nil -> false
+    end
+  end
 
   defp brackets(%Text{instruction: i}) do
     i
