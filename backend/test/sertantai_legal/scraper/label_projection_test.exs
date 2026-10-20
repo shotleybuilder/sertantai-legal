@@ -96,6 +96,40 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
            ]
   end
 
+  test "the same repeal read from the amending law (no savings) keeps the feed's savings (AR-04: 1989/29 s.41A(8)(b))" do
+    law = "UK_ukpga_1989_29"
+
+    feed =
+      change(
+        law,
+        "s.41A(8)(b)",
+        "key-x",
+        "repealed",
+        "omitted",
+        "UK_ukpga_2011_16",
+        [
+          {~D[2011-12-18], nil}
+        ],
+        savings: ["section-67-16"]
+      )
+
+    read =
+      change(
+        law,
+        "s.41A(8)(b)",
+        "ukpga/2011/16/section/67/10",
+        "repealed",
+        "repealed",
+        "UK_ukpga_2011_16",
+        [
+          {~D[2011-12-18], nil}
+        ]
+      )
+
+    assert [_, {~D[2011-12-18], nil, "repealed_saved", _, "UK_ukpga_2011_16"}] =
+             periods(law, [row(law, "s.41A(8)(b)")], [feed, read], law_start: ~D[1989-07-27])
+  end
+
   test "partial commencement: prospective, then partly in force, then in force (1990/43 s.162(2))" do
     law = "UK_ukpga_1990_43"
 

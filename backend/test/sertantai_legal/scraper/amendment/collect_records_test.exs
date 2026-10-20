@@ -151,36 +151,30 @@ defmodule SertantaiLegal.Scraper.Amendment.CollectRecordsTest do
     refute SertantaiLegal.Scraper.ChangeCollector.dated?(dated, "#{@law}:s.25", "UK_ukpga_1999_1")
   end
 
-  test "ChangeCollector.asked_notes/3: per note — a row asked about for one law's note doesn't re-read another law the feed dates (AR-04: s.41A(8)(b))" do
+  test "ChangeCollector.asked_notes/3: a row asked about is read for every note on it (AR-04: the feed's own record may not date the row)" do
     alias SertantaiLegal.Scraper.ChangeCollector
 
-    sid = "#{@law}:s.41A(8)(b)"
+    a = "#{@law}:s.51A(1)(a)"
 
+    # the feed dates 2022 c.30 on (a) only with an "excluded" effect, no text change
     feed = [
       %Record{
         law_name: @law,
-        section_id: sid,
+        section_id: a,
         source: "feed",
         evidence: "key-x",
-        affecting_law: "UK_ukpga_2011_16",
-        operation: "repealed",
-        effect_type: "omitted",
-        effective_from: ~D[2011-12-18]
+        affecting_law: "UK_ukpga_2022_30",
+        operation: "other",
+        effect_type: "excluded",
+        effective_from: ~D[2022-09-01]
       }
     ]
 
-    undated = %{
-      note("F1", "S. 41A(8)(b) substituted by 2000 c. 27, s. 70", ["s.41A(8)(b)"])
-      | citation_law: "UK_ukpga_2000_27"
-    }
+    on = fn code, law -> %{note(code, "x", []) | citation_law: law, affected_sections: [a]} end
+    notes = [on.("F1", "UK_uksi_1996_1905"), on.("F2", "UK_ukpga_2022_30")]
 
-    dated = %{
-      note("F2", "S. 41A(8)(b) omitted by 2011 c. 16, s. 67(10)", ["s.41A(8)(b)"])
-      | citation_law: "UK_ukpga_2011_16"
-    }
-
-    assert [%{code: "F1"}] = ChangeCollector.asked_notes([undated, dated], feed, :gaps)
-    assert [%{code: "F2"}] = ChangeCollector.asked_notes([undated, dated], feed, :benchmark)
+    assert [%{code: "F1"}, %{code: "F2"}] = ChangeCollector.asked_notes(notes, feed, :gaps)
+    assert [] = ChangeCollector.asked_notes([on.("F2", "UK_ukpga_2022_30")], feed, :gaps)
   end
 
   test "dated by the evaluator over the amending law's rules: the commencing order's (CR-06)" do

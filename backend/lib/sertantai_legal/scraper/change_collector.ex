@@ -224,12 +224,12 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
   end
 
   @doc """
-  The notes the amending-law collector reads, each on the rows it asks
-  about: `:gaps` — rows where the feed has no dated change by the note's own
-  law (on the row or an ancestor); `:benchmark` — rows where it has one. Per
-  note, not per row: a row asked about for one law's note never re-reads
-  another law's change the feed already dates (AR-04: a savings-less record
-  beside the feed's repeal with savings turned repealed_saved into repealed).
+  The notes the amending-law collector reads, on the rows it asks about
+  (LR-08): `:gaps` — rows where some note names a law with no dated change
+  in the feed on the row or an ancestor; `:benchmark` — rows where one has.
+  Every note on a row asked about is read: the feed's own record of a change
+  can be unusable for the row (another territory, an effect that is no text
+  change), so the amending law's reading of it stays (AR-04).
   """
   @spec asked_notes([map()], [Record.t()], :gaps | :benchmark) :: [map()]
   def asked_notes(notes, feed, mode) do
@@ -241,9 +241,17 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
 
     want_dated = mode == :benchmark
 
+    # (a `for` match on a boolean would filter out every false: an explicit
+    # filter instead)
+    ask =
+      for n <- notes,
+          sid <- n.affected_sections,
+          dated?(dated, sid, n.citation_law) == want_dated,
+          into: MapSet.new(),
+          do: sid
+
     for n <- notes,
-        sids =
-          Enum.filter(n.affected_sections, &(dated?(dated, &1, n.citation_law) == want_dated)),
+        sids = Enum.filter(n.affected_sections, &MapSet.member?(ask, &1)),
         sids != [],
         do: %{n | affected_sections: sids}
   end

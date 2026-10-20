@@ -467,11 +467,23 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     in_force =
       Enum.filter(changes, &(&1.effective_from && Date.compare(&1.effective_from, from) != :gt))
 
-    repeal =
+    repeals =
       in_force
       |> Enum.filter(&(&1.operation == "repealed" and not words_level?(&1)))
       |> Enum.filter(&covers_row?(&1, row.extent_code))
-      |> latest()
+
+    repeal = latest(repeals)
+
+    # savings are the feed's: the same repeal read from the amending law
+    # (same law, same date) carries none and never drops them (AR-04:
+    # Electricity Act s.41A(8)(b))
+    saved? =
+      repeal != nil and
+        Enum.any?(
+          repeals,
+          &(&1.affecting_law == repeal.affecting_law and
+              &1.effective_from == repeal.effective_from and &1.savings != [])
+        )
 
     commencing = Enum.filter(changes, &commencing?/1)
 
@@ -480,7 +492,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
 
     status =
       cond do
-        repeal && repeal.savings != [] ->
+        saved? ->
           "repealed_saved"
 
         repeal ->
