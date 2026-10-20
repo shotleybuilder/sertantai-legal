@@ -1,8 +1,45 @@
 ---
 session: "AR-08: Mixed Instruction Level"
-status: active
+status: closed
 opened: '2026-10-20'
+closed: '2026-10-20'
+outcome: success
 parent: amendment-rules/2026-10-19-ar-00-meta.md
+summary: >
+  A mixed instruction is one rule per operation (each clause its own level, numbers, brackets and law), and a mixed
+  repeals-table line is read piece by piece (3a078a10). Two older reader faults the pilot showed are fixed: each law
+  takes its own part of a clause (captions and quotes aside), and a quote is numbered under the brackets named above its
+  level, a provision of its own only when none holds it or its number grows from one named (ba47a333, 69940b46). Pilots
+  on 15 amending laws: ~3,900 junk targets gone, 0 real lost; 67-law preview dates 109 more rows with no wrong losses.
+decisions:
+  - what: Split at "and" / ";" outside quotes and captions; a piece with no verb joins the next
+    why: '"Sections 4 and 5 are repealed" is one operation; "omit X and after (b) insert—" is two'
+    result: single-operation instructions read as before (suite unchanged)
+  - what: A mixed table line is read by pieces only when it has both words and a provision; glued lines left to AR-13
+    why: keep AR-06's reading where it is right; glued entries attribute brackets to the wrong section
+    result: 22 table targets gained, 14 junk gone, glued lines unchanged
+  - what: Fix the two pre-existing faults inside AR-08 (Jason "Yes")
+    why: same reader code; ~1,210 rules carried a quote read as a section, so it mattered for the measure run
+    result: ~3,900 junk targets gone in the pilots
+  - what: Rule count left to the AR measure run
+    why: an exact count needs the full lat.amending --read, which is batched into one corpus run
+    result: pilot rate recorded; meta measure item reports the AR-08 rule diff
+metrics:
+  stored_before: { mixed_verb_instruction_rules: 242, mixed_table_rules: 72, quote_as_section_rules: 1210 }
+  pilot_mixed: { amending_laws: 7, targets_gone: 81, targets_new: 75, real_lost: 0 }
+  pilot_tables: { amending_laws: 9, targets_gained: 22, targets_gone: 14 }
+  pilot_faults: { amending_laws: 15, rules: 3680, targets_before: 16191, targets_after: 12547, real_lost: 0 }
+  preview_ar08_fixes3: { laws: 67, rows_dated: 109, wrong_losses: 0, correct_losses: 2, partial_from_in_force: 11 }
+lessons:
+  - title: Preview the touched laws before trusting a target diff
+    detail: 'The target diff of the quote-numbering fix looked clean by shape, but the first 67-law preview lost 90 dates: "After that section insert— 52A" and "after regulation 2B insert— 2C" were nested, and a law named in a caption cut the clause''s brackets. The label preview, not the rule diff, caught them.'
+    tag: data
+  - title: A wave preview re-reads every amending law with a stale index
+    detail: 'Any change to reader.ex makes every amendment index stale, so the preview reads 1984 c.54 and 2024/696 with the new reader even though they were never re-read into amendment_rules. Preview differences can come from laws outside the pilot.'
+    tag: tooling
+  - title: String.trim/2 trims a whole string, not a set of characters
+    detail: 'String.trim(s, " .\n") left "subsection (2)." untouched; a regex replace is needed to strip a set of characters.'
+    tag: tooling
 bugs:
   - pattern: "A mixed instruction (\"omit “and Wales” and after paragraph (b) insert—\") labels the inserted paragraph words-level"
     category: reader level
@@ -26,9 +63,20 @@ bugs:
     affected: 1210
     fix: "quoted_paths: a provision of its own only when none is named or its number grows from one named (52 → 52A); else under the brackets named above its level"
     status: fixed
+artifacts:
+  - backend/lib/sertantai_legal/scraper/amendment/reader.ex
+  - backend/test/sertantai_legal/scraper/amendment/reader_test.exs
+  - backend/data/reports/lat-refactor/ar08_after.csv
+  - backend/data/reports/lat-refactor/ar08_tables.csv
+  - backend/data/reports/lat-refactor/ar08_fixes3.csv
+depends_on:
+  - 2026-10-20-ar-06-repeals-table-numeric-quote
+  - 2026-10-20-ar-07-one-word-caption-target
+enables:
+  - the AR measure run
 ---
 
-# Session: AR-08: Mixed Instruction Level (ACTIVE)
+# Session: AR-08: Mixed Instruction Level (CLOSED)
 
 ## Problem
 
@@ -40,7 +88,7 @@ A mixed instruction ("omit “and Wales” and after paragraph (b) insert—", 1
 - ✅ Mixed repeals-table lines (left by AR-06): words beside a named provision ("the definitions of …; and subsection (2)") — one target per operation, each at its own level
 - ✅ Pilot on a few amending laws (re-read, wave preview); prove it changes output, 0 losses
 - ✅ Two pre-existing reader faults the pilot showed: a clause naming two laws; a quoted subsection also read as a section (~1,210 rules)
-- ⬜ Count the rules it changes; batch into the AR measure run
+- ✅ Count the rules it changes; batch into the AR measure run (stored: 242 mixed instruction rules, 72 mixed table rules, ~1,210 quote-as-section rules; pilot 15 laws: 16,191 → 12,547 targets; exact count with the measure run)
 
 ## Dependencies
 
