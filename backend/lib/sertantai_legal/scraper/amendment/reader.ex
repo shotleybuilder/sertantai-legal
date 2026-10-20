@@ -409,7 +409,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
 
         cond do
           to != "" -> {["s.#{n}..s.#{to}"], :provision}
-          words_line?(rest) -> {[ref("s", [n | subs ++ located(rest)])], :words}
+          words_line?(rest) -> {words_targets(n, subs, located(rest)), :words}
           true -> whole_targets(n, subs ++ plain_brackets(rest))
         end
 
@@ -422,9 +422,13 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   # provision repealed — its brackets narrow the words' row (AR-06)
   @located ~r/\bin\s+(?:sub-?)?(?:section|subsection|paragraph|sub-?paragraph)\s+((?:\([0-9A-Za-z]+\))+)/i
 
-  defp located(rest) do
-    for [_, bs] <- Regex.scan(@located, unquote_words(rest)), b <- plain_brackets(bs), do: b
-  end
+  # each place a path of its own ("in subsection (1) … and, in subsection
+  # (2), …" → (1) and (2), never (1)(2))
+  defp located(rest),
+    do: for([_, bs] <- Regex.scan(@located, unquote_words(rest)), do: plain_brackets(bs))
+
+  defp words_targets(n, subs, []), do: [ref("s", [n | subs])]
+  defp words_targets(n, subs, places), do: for(p <- places, do: ref("s", [n | subs ++ p]))
 
   # words in the provision: "the words …", a quote ("In section 53(1)(a)
   # “114”."), a definition or entry — unless a provision is named beside the
@@ -432,10 +436,12 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   defp words_line?(rest) do
     unquoted = rest |> unquote_words() |> String.replace(@located, "")
 
-    unquoted =~ ~r/\b(?:words?|definitions?|entr(?:y|ies))\b/ or
-      (rest =~ ~r/[“"][^”"]+[”"]/u and
-         not (unquoted =~
-                ~r/\b(?:sub-?)?(?:sections?|subsections?|paragraphs?|sub-?paragraphs?)\b/i))
+    named? =
+      unquoted =~ ~r/\b(?:sub-?)?(?:sections?|subsections?|paragraphs?|sub-?paragraphs?)\b/i
+
+    unquoted =~ ~r/\bwords?\b/ or
+      (not named? and
+         (rest =~ ~r/[“"][^”"]+[”"]/u or unquoted =~ ~r/\b(?:definitions?|entr(?:y|ies))\b/))
   end
 
   defp whole_targets(n, []), do: {["s.#{n}"], :provision}

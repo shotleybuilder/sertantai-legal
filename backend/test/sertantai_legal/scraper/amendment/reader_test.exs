@@ -252,7 +252,7 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderTest do
         ~S"""
         <Legislation><Primary><Schedules><Schedule id="schedule-19"><Tabular><table><tbody>
         <tr><th>Chapter</th><th>Short title</th><th>Extent of repeal</th></tr>
-        <tr><td>1982 c. 16</td><td>Civic Government (Scotland) Act 1982</td><td><Para><Text>In section 53(1)(a) “114”.</Text></Para><Para><Text>In section 63(6), the definition of “statutory provision”.</Text></Para><Para><Text>In section 86, the entry relating to the expression “licensing authority”.</Text></Para><Para><Text>In section 33(3)(a), sub-paragraph (ii) and the preceding “and”.</Text></Para><Para><Text>Section 40.</Text></Para><Para><Text>In section 130, in subsection (1) “, in place of the Commission”.</Text></Para><Para><Text>In section 10, in subsection (1), the words “or water development board”.</Text></Para></td></tr>
+        <tr><td>1982 c. 16</td><td>Civic Government (Scotland) Act 1982</td><td><Para><Text>In section 53(1)(a) “114”.</Text></Para><Para><Text>In section 63(6), the definition of “statutory provision”.</Text></Para><Para><Text>In section 86, the entry relating to the expression “licensing authority”.</Text></Para><Para><Text>In section 33(3)(a), sub-paragraph (ii) and the preceding “and”.</Text></Para><Para><Text>Section 40.</Text></Para><Para><Text>In section 130, in subsection (1) “, in place of the Commission”.</Text></Para><Para><Text>In section 10, in subsection (1), the words “or water development board”.</Text></Para><Para><Text>In section 31, in subsection (1), the words “, other than a district council,” and, in subsection (2), the words “or a council”.</Text></Para><Para><Text>In section 109, in subsection (1) the definitions of “bridge authority” and “street”; and subsection (2).</Text></Para></td></tr>
         </tbody></table></Tabular></Schedule></Schedules></Primary></Legislation>
         """
       ])
@@ -269,6 +269,11 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderTest do
     # "in subsection (1)" is where the words are: words, on that subsection
     assert level.("s.130(1)") == [:words]
     assert level.("s.10(1)") == [:words]
+    # two places: a target each, never one path s.31(1)(2)
+    assert level.("s.31(1)") == [:words]
+    assert level.("s.31(2)") == [:words]
+    # a definition beside a provision named: the provision stays repealed
+    assert level.("s.109(2)") == [:provision]
   end
 
   test "many provisions, each with its brackets: no cap (SSI 2005/658)" do
