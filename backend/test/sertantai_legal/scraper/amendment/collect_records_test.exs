@@ -217,6 +217,63 @@ defmodule SertantaiLegal.Scraper.Amendment.CollectRecordsTest do
              end)
   end
 
+  test "AR-04: a change to the provision named lands on it and on the note's row inside it (Electricity Act s.42(1)(b))" do
+    doc =
+      Doc.new("UK_ukpga_2000_27", [
+        ~S|<Legislation><Primary><Body><P1 id="section-57"><P1para><P2 id="section-57-2"><P2para><Text>In section 42(1) of the Electricity Act 1989, omit the word “and” where it last occurs.</Text></P2para></P2></P1para></P1></Body></Primary></Legislation>|
+      ])
+
+    sids = ["#{@law}:s.42(1)", "#{@law}:s.42(1)(b)"]
+
+    n =
+      note(
+        "F1",
+        "S. 42(1)(c) and the word “and” immediately preceding it repealed by 2000 c. 27, s. 57(2)",
+        ["s.42(1)(b)"]
+      )
+
+    recs =
+      records(@law, "Electricity Act", sids, [n], MapSet.new(sids), fn
+        "UK_ukpga_2000_27" -> doc
+        _ -> nil
+      end)
+
+    assert recs |> Enum.map(&{&1.section_id, &1.effect_type}) |> Enum.sort() == [
+             {"#{@law}:s.42(1)", "words repealed"},
+             {"#{@law}:s.42(1)(b)", "words repealed"}
+           ]
+  end
+
+  test "AR-04: a repeal reaching a row only through its ancestor repeals neither (2000 c.27 s.57(2): (c) and the \"and\" before it)" do
+    doc =
+      Doc.new("UK_ukpga_2000_27", [
+        ~S|<Legislation><Primary><Body><P1 id="section-57"><P1para><Text>Section 42 of the Electricity Act 1989 is amended as follows.</Text><P2 id="section-57-2"><P2para><Text>In subsection (1), paragraph (c) (and the word “and” preceding it) shall cease to have effect.</Text></P2para></P2></P1para></P1></Body></Primary></Legislation>|
+      ])
+
+    sids = ["#{@law}:s.42(1)", "#{@law}:s.42(1)(b)", "#{@law}:s.42(1)(c)"]
+
+    n =
+      note(
+        "F1",
+        "S. 42(1)(c) and the word “and” immediately preceding it repealed by 2000 c. 27, s. 57(2)",
+        ["s.42(1)(b)"]
+      )
+
+    on_c = %{n | code: "F2", affected_sections: ["#{@law}:s.42(1)(c)"]}
+
+    recs =
+      records(@law, "Electricity Act", sids, [n, on_c], MapSet.new(sids), fn
+        "UK_ukpga_2000_27" -> doc
+        _ -> nil
+      end)
+
+    assert recs |> Enum.map(&{&1.section_id, &1.effect_type}) |> Enum.sort() == [
+             {"#{@law}:s.42(1)", "words repealed"},
+             {"#{@law}:s.42(1)(b)", "words repealed"},
+             {"#{@law}:s.42(1)(c)", "repealed"}
+           ]
+  end
+
   test "CR-08: a repeals table is dated by its own entry before the section introducing it (1994 c.19 Sch. 18 / s.66(8))" do
     alias SertantaiLegal.Scraper.Commencement.Rule
 

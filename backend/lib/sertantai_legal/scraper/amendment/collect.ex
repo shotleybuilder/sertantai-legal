@@ -5,7 +5,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
   about (a pointer: which amending provisions to read, one hop), the
   amending law's rules for those provisions are placed by the evaluator
   (`Amendment.Evaluator`: a row inside a provision named lands on that
-  provision). Dating is the commencement ruleset's (`Commencement.Amending`).
+  provision) — and on the note's own row too, whose text the change markup
+  shows changed (AR-04: else the row would fall back to the law's start);
+  a change reached through an ancestor is words-level on both rows. Dating is the commencement ruleset's (`Commencement.Amending`).
 
   The rules come from a `source` per amending law (`sources`: law → source
   | nil): `doc_source/1` reads a parsed document (`Amendment.Reader`), or
@@ -62,11 +64,30 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
         id <- Locator.ids(src, ref),
         rule <- src.rules.(id, law),
         {:ok, target} <- [Evaluator.reach(rule, sid)],
-        MapSet.member?(held, target) do
-      record(src, id, rule, target, {rules_of, extents}, pointer)
-      |> Map.put(:law_name, law_name)
+        {row, rule} <- placements(rule, target, sid),
+        MapSet.member?(held, row) do
+      {target == sid,
+       %{record(src, id, rule, row, {rules_of, extents}, pointer) | law_name: law_name}}
     end
+    # a rule naming the row itself wins over one reaching it through an
+    # ancestor (sort is stable: true sorts after false, so reverse)
+    |> Enum.sort_by(&elem(&1, 0), :desc)
+    |> Enum.map(&elem(&1, 1))
     |> Enum.uniq_by(&{&1.evidence, &1.section_id})
+  end
+
+  # where a rule's change lands for a note on `sid`: the row itself when the
+  # rule names it; else the provision named (`target`, an ancestor) and the
+  # note's row inside it, whose text the change markup shows changed (AR-04,
+  # Jason option a) — both words-level: something inside the ancestor
+  # changed, so neither row is wholly inserted, substituted or repealed
+  # ("In subsection (1), paragraph (c) … shall cease to have effect", note on
+  # (b): s.42(1) and (b) keep their status)
+  defp placements(rule, sid, sid), do: [{sid, rule}]
+
+  defp placements(rule, target, sid) do
+    inside = %{rule | level: :words}
+    [{target, inside}, {sid, inside}]
   end
 
   @doc """

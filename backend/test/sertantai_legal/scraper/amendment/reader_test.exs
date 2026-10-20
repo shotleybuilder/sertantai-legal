@@ -125,6 +125,23 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderTest do
     assert Enum.all?(rules, &(&1.level == :words and &1.operation == :inserted))
   end
 
+  test "a section named at the start of a sentence (\"Section 42 of the 1989 Act is amended as follows\": 2000 c.27 s.57(2))" do
+    d =
+      doc(
+        ~S|<P1 id="section-17"><P1para><Text>Section 7 of the principal Act is amended as follows.</Text><P2 id="section-17-2"><P2para><Text>In subsection (1), paragraph (c) (and the word “and” preceding it) shall cease to have effect.</Text></P2para></P2></P1para></P1>|
+      )
+
+    rules =
+      Reader.instruction(
+        d,
+        "section-17-2",
+        %{"the principal act" => %{law: "UK_ukpga_1956_52", title: "Clean Air Act 1956"}},
+        [@clean_air]
+      )
+
+    assert "UK_ukpga_1956_52:s.7(1)(c)" in reached(rules, "s.7(1)(c)")
+  end
+
   test "many provisions, each with its brackets: no cap (SSI 2005/658)" do
     d =
       doc(

@@ -396,7 +396,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   # ── provisions named ───────────────────────────────────────────────
 
   defp numbers(texts, kind) do
-    re = ~r/\b#{@kind_words[kind]} (\d+[A-Z]*)(?:(?:,| and| or| to) (\d+[A-Z]*))*/u
+    re = ~r/\b(?i:#{@kind_words[kind]}) (\d+[A-Z]*)(?:(?:,| and| or| to) (\d+[A-Z]*))*/u
 
     Enum.find_value(texts, :none, fn t ->
       case Regex.scan(re, t) do
