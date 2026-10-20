@@ -42,6 +42,11 @@ defmodule SertantaiLegal.Scraper.Amendment.Rule do
         }
 
   @operations [:inserted, :substituted, :repealed, :renumbered]
+  @by_name Map.new(
+             [:inserted, :substituted, :repealed, :renumbered, :provision, :words] ++
+               [:instruction, :repeal_table],
+             &{Atom.to_string(&1), &1}
+           )
   @levels [:provision, :words]
   @treatments [:instruction, :repeal_table]
 
@@ -61,6 +66,17 @@ defmodule SertantaiLegal.Scraper.Amendment.Rule do
     end
 
     rule
+  end
+
+  @doc "An operation's atom from its name (\"substituted\" → `:substituted`); raises on another."
+  @spec operation(String.t()) :: operation()
+  def operation(name), do: atom!(name, @operations)
+
+  defp atom!(name, allowed) do
+    case Map.fetch(@by_name, name) do
+      {:ok, a} -> if a in allowed, do: a, else: raise(ArgumentError, "#{inspect(name)}")
+      :error -> raise ArgumentError, "#{inspect(name)}"
+    end
   end
 
   @doc "The rule as one readable line: law targets — (words) operation — treatment — source."
@@ -98,10 +114,10 @@ defmodule SertantaiLegal.Scraper.Amendment.Rule do
     new(
       amends: row.amends,
       targets: row.targets,
-      operation: String.to_existing_atom(row.operation),
-      level: String.to_existing_atom(row.level),
+      operation: operation(row.operation),
+      level: atom!(row.level, @levels),
       source: %{law: row.source_law, ref: row.source_ref, text: row.source_text},
-      treatment: String.to_existing_atom(row.treatment)
+      treatment: atom!(row.treatment, @treatments)
     )
   end
 

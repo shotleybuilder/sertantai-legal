@@ -30,6 +30,9 @@ defmodule SertantaiLegal.Architecture.NoteReadTest do
     # the same pointer: which commencing orders a note cites, so their text
     # is read for rules (commencement-rules CR-04 --read-orders; CR-06)
     "mix/tasks/lat.commencement.ex" => :pointer,
+    # the same pointer: which amending provisions a note points to, read
+    # once into amendment rules (amendment-rules AR-03 read pass)
+    "mix/tasks/lat.amending.ex" => :pointer,
     # shown to QA agents as the note, beside the row
     "mix/tasks/lat.qa_sample.ex" => :display,
     # exported as the note itself (AI sync)

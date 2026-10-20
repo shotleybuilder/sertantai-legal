@@ -39,11 +39,15 @@ defmodule SertantaiLegal.Scraper.Amendment.EvaluatorTest do
     assert reach(r, "s.37") == :no_match
   end
 
-  test "words-level reaches the named provision only, never its children or parent" do
+  test "words-level lands on the provision it names, as whole provisions do — never on its children (AR-03 parity: \"In regulation 31— after “x” insert “y”\")" do
     r = rule(["s.40(2)"], :substituted, :words)
     assert reach(r, "s.40(2)") == {:ok, "#{@law}:s.40(2)"}
-    assert reach(r, "s.40(2)(a)") == :no_match
+    # a note on a child row: the change is to the named provision
+    assert reach(r, "s.40(2)(a)") == {:ok, "#{@law}:s.40(2)"}
     assert reach(r, "s.40") == :no_match
+
+    assert Evaluator.rows(r, Enum.map(["s.40(2)", "s.40(2)(a)", "s.40(2)(b)"], &"#{@law}:#{&1}")) ==
+             ["#{@law}:s.40(2)"]
   end
 
   test "a block's quoted provisions (LR-43: SI 2019/696 on SI 2014/1638 Pt. 13 Sub-Pt. C)" do

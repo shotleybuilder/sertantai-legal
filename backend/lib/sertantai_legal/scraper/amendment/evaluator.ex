@@ -3,14 +3,15 @@ defmodule SertantaiLegal.Scraper.Amendment.Evaluator do
   Which row of the amended law an amendment rule reaches (amendment-rules
   AR-02), from the rule alone. Pure.
 
-  - **Words-level** (`level: :words`): only the row a target names — never
-    its children or its parent ("for “x” substitute “y”" in s.40(2)).
-  - **Whole provisions** (`level: :provision`): the row itself when a target
-    names it, else its nearest covering ancestor (bracket, or container from
-    `ctx.ancestors`) — the target's own row: a whole-provision instruction on
-    a sub-provision row targets the provision's own row, as the row-driven
-    matcher placed records (LR-08), and the labels carry it down. A block's
-    quoted provisions are targets already (expanded at read time: LR-43).
+  - **The target that covers the row:** the row itself when a target names
+    it, else its nearest covering ancestor (bracket, or container from
+    `ctx.ancestors`) — the target's own row. Words-level and whole-provision
+    changes alike land on the provision they name ("In regulation 31— after
+    “x” insert “y”" with its note on reg.31(2) is a change to reg.31), never
+    fanned onto its descendants; the labels carry an ancestor's change down
+    (LR-08's matcher placed records so). The level only names the change
+    ("words inserted"). A block's quoted provisions are targets already
+    (expanded at read time: LR-43).
   - **Ranges** ("s.41..s.43") by document order (`ctx.order`), else number.
 
   `ctx`: `ancestors` (top ref → containers, nearest first), `order` (refs in
@@ -42,12 +43,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Evaluator do
     |> Enum.uniq()
   end
 
-  defp in_law(%Rule{level: :words} = rule, section_id, ctx) do
-    [own | _] = LatRef.chain(section_id, ctx)
-    if covered?(rule, own, ctx), do: {:ok, section_id}, else: :no_match
-  end
-
-  defp in_law(%Rule{level: :provision} = rule, section_id, ctx) do
+  defp in_law(%Rule{} = rule, section_id, ctx) do
     [own | _] = chain = LatRef.chain(section_id, ctx)
 
     case Enum.find(chain, &covered?(rule, &1, ctx)) do
