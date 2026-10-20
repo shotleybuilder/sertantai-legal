@@ -1,15 +1,19 @@
 ---
 session: 'LR-40: Undated Change'
-status: active
+status: suspended
 opened: '2026-10-17'
 parent: lat-refactor/2026-10-09-lr-00-meta.md
 ---
 
-# Session: LR-40 Undated Change (ACTIVE)
+# Session: LR-40 Undated Change (SUSPENDED)
 
 ## Problem
 
 16,528 provisions carry the `undated_change` gap (T1): a text change on them that no source dates, so their in-force periods have no `in_force_from` / `changed_by` ("changed, date unknown"). The largest A8 gap class (Jason 2026-10-17: "Let's do change with no date next").
+
+## Suspended (2026-10-20)
+
+Jason 2026-10-20: one active session at a time (meta excepted). The amendment-rules thread (AR-05…AR-15) is working through the causes of undated_change for held amending laws (the reader, the commencement orders). Resume the stage attribution after the AR measure run, from its new undated_change numbers.
 
 ## Todo
 

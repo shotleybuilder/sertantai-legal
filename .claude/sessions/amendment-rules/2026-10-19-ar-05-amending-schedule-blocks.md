@@ -1,8 +1,40 @@
 ---
 session: "AR-05: Blocks from the Amending Law's Own Schedule"
-status: active
+status: closed
 opened: '2026-10-19'
+closed: '2026-10-20'
+outcome: success
 parent: amendment-rules/2026-10-19-ar-00-meta.md
+summary: >
+  The reader now reads "The provisions set out in [Part N of] Schedule M shall be substituted for / inserted after …"
+  as the provisions that Schedule quotes (bf752873): EReA 1999 s.7 and s.8 reach ERA 1996 ss.71–80 and 57A–57B
+  (169 records). The trace found three neighbouring causes, split into AR-11 (feed range), AR-12 (commencement
+  order Schedule; with it the ERA pilot moves unknown 477 → 319) and AR-13 (repeals-table cells).
+decisions:
+  - what: The block's targets are what the amending law's Schedule (or its Part) quotes, gathered from the elements under it
+    why: the AR-00 schema expands a block to what it quotes; "inserted after section 57" has no other way to name ss.57A–57B
+    result: 'EReA s.7 → ss.71–80 substituted, s.8 → ss.57A–57B inserted (provision level)'
+  - what: '"is amended as set out in Schedule 1" stays a pointer, not a block'
+    why: that Schedule holds instructions with their own quotes; reading it as one block would reach every quoted provision
+    result: guard test
+  - what: Feed range, commencement order Schedule and repeals-table cells each their own pending AR session (AR-11, AR-12, AR-13)
+    why: 'Jason 2026-10-20: "open them as pending AR sessions"; one session per bug'
+    result: AR-12 done next (it dates the AR-05 records)
+  - what: Close with the re-pilot deferred to the AR measure run
+    why: 'Jason 2026-10-20: one active session at a time (meta excepted); the fix is done and piloted with AR-12'
+    result: closed
+metrics:
+  instances: { amending_laws_stored_scanned: 2733, instructions: 9, amending_laws: 6, in_register: 1, era_rows: 180 }
+  collector_era_1996: { erea_records: 285, section_7: 150, section_8: 32 }
+  pilot_ar05_only: { label_diffs: 0, reason: records undated until AR-12 }
+  pilot_with_ar12: { unknown: '477 → 319', undated_change: '965 → 881', rows_dated_by_erea_1999_12_15: 180 }
+lessons:
+  - title: A reach fix can show nothing until its dating lands
+    detail: 'AR-05 alone gave 0 label changes on ERA: every record was undated because the commencement order was misread (AR-12). Check the records'' effective_from before reading a 0-diff pilot as "no effect".'
+    tag: data
+  - title: Trace one law end to end before fixing a form
+    detail: 'The EReA → ERA trace found four causes in four places (reader, feed range, commencement order, repeals-table cells) for the same ~180 rows; fixing the reader alone would have looked like no progress.'
+    tag: data
 bugs:
   - pattern: 'A feed effect on a range ("s. 71 - 80 (Pt. 8) substituted", EReA 1999 s.7 on ERA 1996) reaches only the range''s first section (s.71) and the Part row via the note; s.72–s.80 get no record'
     category: feed range refs
@@ -28,9 +60,24 @@ bugs:
     affected: 'harmless (no such rows); seen throughout EReA 1999 on ERA 1996'
     fix: with AR-07 — a target only from the instruction's own reference
     status: open
+  - pattern: 'A block substituted from the amending law''s own Schedule ("Part I of Schedule 4 shall be substituted for Part VIII": EReA 1999 on ERA 1996) not reached'
+    category: amending-law collector
+    module: Amendment.Reader
+    affected: 'ERA 1996 ss.71–80, 57A–57B (~180 rows); 9 instructions in 6 laws, 1 in the register'
+    fix: '"set out in [Part N of] Schedule M … substituted for / inserted after" → the Schedule''s quote (bf752873)'
+    status: fixed
+artifacts:
+  - backend/lib/sertantai_legal/scraper/amendment/reader.ex
+  - backend/test/sertantai_legal/scraper/amendment/reader_test.exs
+  - backend/data/reports/lat-refactor/ar05_pilot.csv
+depends_on:
+  - 2026-10-19-ar-04-switch-over
+enables:
+  - AR-11 / AR-12 / AR-13 (split from its trace)
+  - the AR measure run
 ---
 
-# Session: AR-05: Blocks from the Amending Law's Own Schedule (ACTIVE)
+# Session: AR-05: Blocks from the Amending Law's Own Schedule (CLOSED)
 
 ## Problem
 
@@ -41,8 +88,8 @@ Amendment ruleset (AR-00 meta): "Part I of Schedule 4 shall be substituted for P
 - ✅ Trace EReA 1999 → ERA 1996 Pt VIII today: what `mix lat.amending --law UK_ukpga_1999_26` reads, which rows the feed and markup date, what is missing
 - ✅ Find the other instances: rules (or unread instructions) substituting / inserting a block "for" / "as" the amending law's own Schedule or Part — count across the stored rules
 - ✅ Reader: such an instruction targets the amended block (Part / range), its rows reached as a provision-level change (reader + collect tests first)
-- ⬜ Pilot on the affected laws (`mix lat.wave_preview --relabel --laws …`); classified diff; batch into the AR measure run — first pilot 0 label changes (undated until AR-12); with AR-12 (`ar12_pilot`): ERA unknown 477 → 319, 180 rows dated 1999-12-15 by EReA; re-pilot with AR-11
-- ⬜ Close LR-43's open bug as fixed when reached
+- ⏸️ Pilot on the affected laws (`mix lat.wave_preview --relabel --laws …`); classified diff; batch into the AR measure run — first pilot 0 label changes (undated until AR-12); with AR-12 (`ar12_pilot`): ERA unknown 477 → 319, 180 rows dated 1999-12-15 by EReA; re-pilot with AR-11 (deferred to the AR measure run)
+- ✅ Close LR-43's open bug as fixed when reached (ERA Part VIII reached and dated in ar12_pilot)
 
 ## Dependencies
 

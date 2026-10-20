@@ -1,8 +1,33 @@
 ---
 session: "AR-12: Provisions Listed in a Commencement Order's Schedule"
-status: active
+status: closed
 opened: '2026-10-20'
+closed: '2026-10-20'
+outcome: success
 parent: amendment-rules/2026-10-19-ar-00-meta.md
+summary: >
+  A commencement order's own Schedule ("specified in Part II of Schedule 1 to this Order") is no longer read as the
+  commenced Act's; each Part of it is dated by its title; "Part III of Schedule 4" is that Part, and the amending law's
+  Schedule paragraphs are dated by their Part (c24bedc3). ERA 1996 pilot with AR-05: unknown 477 → 319, 180 rows
+  dated 1999-12-15 by EReA.
+decisions:
+  - what: '"Part N of Schedule M" in an order is scope sch.M.pt.N, and a Schedule paragraph is dated by its Part when no rule names it'
+    why: mapping the Part to the whole Schedule over-dates Parts commenced on other dates; the paragraph's id doesn't carry its Part, so the read pass's index keeps it (Reader.parts)
+    result: 'EReA Sch 4 Pt III paragraphs dated 1999-12-15'
+  - what: A Schedule is dated as a whole only when none of its Parts has its own dated title
+    why: SI 1999/2830 Sch 1 has two Parts on two dates; its article gives two dates, so the whole-Schedule date was nil and no rule was made
+    result: 24 rules from SI 1999/2830 (was 2 wrong sch.1 rules)
+  - what: Re-read only SI 1999/2830 for the pilot; the full --read-orders goes with the AR measure run
+    why: one corpus run, batched (no needless corpus runs)
+    result: 56 rules in 16 orders still carry the old reading until then
+metrics:
+  si_1999_2830: { rules_before: 2, rules_after: 24 }
+  corpus_misread: { rules: 56, orders: 16, acts: 7 }
+  pilot_era_1996: { unknown: '477 → 319', undated_change: '965 → 881', markup_conflict: '44 → 41', label_diffs: 777, rows_dated: 229 }
+lessons:
+  - title: '"to this Order" decides whose Schedule it is'
+    detail: 'An order''s statement names its own Schedule ("specified in Part II of Schedule 1 to this Order"); the ref reader took any "Schedule N" as the commenced Act''s and dated the wrong Schedule twice. Check the owner phrase before treating a Schedule as a ref.'
+    tag: data
 bugs:
   - pattern: 'A commencement order commencing "the provisions of the Act specified in Part II of Schedule 1 to this Order" is read as scope sch.1 of the commenced Act (SI 1999/2830 reg.2 → EReA 1999 sch.1, twice, 1999-10-25 and 1999-12-15); the provisions the order''s Schedule lists are never dated'
     category: commencement reader
@@ -22,9 +47,20 @@ bugs:
     affected: 'seen in SI 1999/2830 (1 row: EReA s.31, Sch 7)'
     fix: drop only the aside naming the other law, keep the row's own refs
     status: open
+artifacts:
+  - backend/lib/sertantai_legal/scraper/commencement/order.ex
+  - backend/lib/sertantai_legal/scraper/amendment/collect.ex
+  - backend/lib/sertantai_legal/scraper/amendment/index.ex
+  - backend/lib/sertantai_legal/scraper/amendment/reader.ex
+  - backend/data/reports/lat-refactor/ar12_pilot.csv
+depends_on:
+  - 2026-10-19-ar-05-amending-schedule-blocks
+enables:
+  - AR-14 / AR-15 (order-reader bugs found here)
+  - the AR measure run (full --read-orders)
 ---
 
-# Session: AR-12: Provisions Listed in a Commencement Order's Schedule (ACTIVE)
+# Session: AR-12: Provisions Listed in a Commencement Order's Schedule (CLOSED)
 
 ## Problem
 
@@ -34,7 +70,7 @@ SI 1999/2830 reg.2(2) commences "the provisions of the Act specified in Part II 
 
 - ✅ Count commencement rules whose source text points to the order's own Schedule ("specified in … Schedule N to this Order")
 - ✅ Read the order's Schedule rows as the scope (tests first); never the commenced Act's Schedule
-- ⬜ Read-pass the affected orders; pilot; batch into the AR measure run (docs/COMMENCEMENT-GUIDE.md gap note)
+- ⏸️ Read-pass the affected orders (deferred to the AR measure run: full `--read-orders`); pilot done on ERA 1996; docs/COMMENCEMENT-GUIDE.md gap note with the guide
 
 ## Dependencies
 
