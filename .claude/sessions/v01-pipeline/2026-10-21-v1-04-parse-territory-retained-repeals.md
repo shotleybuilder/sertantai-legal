@@ -107,6 +107,17 @@ From the DB (`territory_provenance` joined to `lat_change_log` by effect id; the
 - **The orphan join needs exactly one whole-law repeal:** with two or more there is no join, a safe failure.
 - **The "…" convention is legislation.gov.uk's rendering:** noted in the code.
 
+## Territory audit, laws from 2002 (2026-10-21)
+
+Rows the register says a territorial law repealed wholly (`repealed` / `revoked` / `omitted`, not words; dated, on or before today; the territory from the feed or `LawTerritory`) that still read with no exclusion for it after this fix (`v104_diff` spliced over the stored parse; markup not repealed): **2 provisions** (`v104/audit.exs` in the scratchpad). A rolled-back relabel shows both labels stay wrong:
+
+| Row | Register | Label after relabel | Should be |
+|---|---|---|---|
+| Coronavirus Act 2020 s.78 | NI repealed 2021-08-27 (nia 2021/8); E repealed 2021-12-09 (SI 2021/1399) | in force W+NI from 2021-08-27 | W |
+| SI 2016/1105 reg.72(2)(b) | NI omitted 2020-12-31 ("(Northern Ireland) (EU Exit)" SI 2020/678); markup repeals GB (E+W+S) | in force NI from 2020-12-31 | repealed |
+
+**Cause:** today's territory is the row's extent minus the parse's `excluded_extent` (LR-26 D1′). The parse adds a whole-provision repeal from the effects layer (rule 3) only when none of the provision's change markup joins an effect (Jason 2026-10-09). reg.72(2)(b)'s markup joins the GB repeal, so the applied NI repeal, which has no markup, is never added. s.78 (provenance: effect application E, markup NI; the row has no text of its own) is likely the same gap; not yet traced. **Jason decides** (it changes his 2026-10-09 rule): rule 3 per effect (each applied whole-provision effect that no markup on the provision joins), measured first; or both rows listed as known limits.
+
 ## Related (not in this session)
 
 - **LH-07 Welsh SI duplicates (#178), v0.1:** a Welsh SI held under a `uksi` name escapes the devolved-by-type rule. The title-place rule catches most ("… (Wales) Regulations"); the identity fix is LH-07's.
