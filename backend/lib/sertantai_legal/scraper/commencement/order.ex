@@ -302,9 +302,29 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
   # ── items in a line ─────────────────────────────────────────────────
 
+  # "Paragraphs 1 to 27(3) and 28 to 43 of Schedule 7, and section 22(1) so
+  # far as it relates thereto" (SI 1996/396): the paragraphs as read, the
+  # section partly — "thereto" qualifies only the provision it follows
+  @thereto ~r/^(.*?),?\s+and\s+((?:sub-?)?sections?\s+\S+(?:\s+and\s+\(\w+\))?)\s+(?:in\s+)?so\s+far\s+as\s+(?:it|they)\s+relates?\s+thereto\b.*$/is
+
   # a line's items: [{refs, purposes, territory}] and the Schedule context
   # its paragraphs carry to the next lines
   defp items(line, aliases, sch) do
+    case Regex.run(@thereto, line) do
+      [_, rest, section] ->
+        {items, next} = items(rest, aliases, sch)
+        qualified = refs(section, nil)
+
+        if qualified == [],
+          do: {items, next},
+          else: {items ++ [{qualified, :in_relation_to, territory(line)}], next}
+
+      nil ->
+        line_items(line, aliases, sch)
+    end
+  end
+
+  defp line_items(line, aliases, sch) do
     line = drop_other_laws(line, aliases)
     territory = territory(line)
 
@@ -682,14 +702,18 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     end
   end
 
+  @purpose_opening ~r/^\W*(?:(?:in\s+)?so\s+far|insofar|to\s+the\s+extent|for\s+(?:the\s+)?(?:purposes?|specified|certain)|except|only|in\s+relation\s+to|as\s+respects)\b/i
+
   defp table_purposes(purpose, from_text) do
     cond do
       purpose in [nil, ""] or purpose =~ ~r/^for all (?:remaining |other )?purposes\.?$/i ->
         from_text
 
       # the table's second column is mostly its subject ("Minor and
-      # consequential amendments"): a purpose only when it words one
-      Regex.match?(@partial, purpose) ->
+      # consequential amendments"): a purpose only when it opens with one
+      # — never a subject naming purposes ("Definition of “county” for the
+      # purposes of the … Act 1986": SI 1995/2490)
+      Regex.match?(@partial, purpose) and Regex.match?(@purpose_opening, purpose) ->
         from_text || purposes(purpose)
 
       true ->

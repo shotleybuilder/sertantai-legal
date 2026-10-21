@@ -397,6 +397,25 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
     assert Enum.any?(rules, &(&1.source.text == "Section 44 paragraph 3 | Repeals"))
   end
 
+  test "AR measure: \"Paragraphs 1 to 27(3) and 28 to 43 of Schedule 7, and section 22(1) so far as it relates thereto\": the paragraphs fully, the section partly (SI 1996/396)" do
+    rules =
+      Order.rules(
+        order(~S"""
+        <Schedules><Schedule id="schedule"><TitleBlock><Title>Provisions coming into force on 1st April 1996</Title></TitleBlock><ScheduleBody><Tabular><table><tbody>
+        <tr><td>Paragraphs 1 to 3 and 5 of Schedule 7, and section 22(1) so far as it relates thereto</td><td>Highways</td></tr>
+        <tr><td>Paragraph 13 of Schedule 2 and section 1(3) so far as it relates thereto</td><td>Definition of “county” for the purposes of the Parliamentary Constituencies Act 1986.</td></tr>
+        </tbody></table></Tabular></ScheduleBody></Schedule></Schedules>
+        """),
+        @act
+      )
+
+    assert %{full_from: ~D[1996-04-01]} = dated(rules, "schedule-7-paragraph-2")
+    assert %{full_from: ~D[1996-04-01]} = dated(rules, "schedule-7-paragraph-5")
+    assert %{full_from: nil, partial_from: ~D[1996-04-01]} = dated(rules, "section-22-1")
+    assert %{full_from: ~D[1996-04-01]} = dated(rules, "schedule-2-paragraph-13")
+    assert %{full_from: nil, partial_from: ~D[1996-04-01]} = dated(rules, "section-1-3")
+  end
+
   test "AR-15: \"the repeals listed in the said Part I\" is the order's Part, not the Act's; \"for the purposes only of\" is partial (SI 1997/3114 art. 3)" do
     rules =
       Order.rules(
