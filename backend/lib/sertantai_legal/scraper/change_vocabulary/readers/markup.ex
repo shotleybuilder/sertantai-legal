@@ -19,6 +19,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
 
   import SweetXml
 
+  alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.ChangeVocabulary.Claim
   alias SertantaiLegal.Scraper.Commencement.Order
   alias SertantaiLegal.Scraper.EffectIndex
@@ -29,6 +30,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
   Provision facts the markup states (CV-03), by ref:
   - `prospective` — the provision is within an element marked
     `Status="Prospective"` (not yet in force in the revised text);
+  - `shows_text` — the provision still shows words (a removal there with no
+    Repeal markup is retained elsewhere: V1-04);
   - `versions` — the territories of its territorial versions (one element
     per territory sharing the provision's id, told apart by their
     DocumentURI: `…/regulation/36/england`, `…/wales`; C3).
@@ -57,7 +60,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
       |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
       |> Map.new(fn {ref, ts} -> {ref, %{versions: Enum.uniq(ts)}} end)
 
-    Map.merge(prospective, versions, fn _ref, a, b -> Map.merge(a, b) end)
+    # a provision still showing words (letters or numbers, not only "…"):
+    # a removal there is retained elsewhere (V1-04)
+    text =
+      for el <- xpath(doc, ~x"//*[@id]"l),
+          ref = el |> xpath(~x"./@id"s) |> Order.ref(),
+          ref != nil,
+          # its own words: not its number, title or sub-provisions
+          String.length(el |> own() |> letters()) >= 2,
+          into: %{},
+          do: {ref, %{shows_text: true}}
+
+    [prospective, versions, text]
+    |> Enum.reduce(&Map.merge(&2, &1, fn _ref, a, b -> Map.merge(a, b) end))
   end
 
   @places %{
@@ -83,6 +98,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
   def read(xml) do
     doc = SweetXml.parse(xml, quiet: true, namespace_conformant: false)
     cited = cited(doc)
+    own = own_texts(doc)
 
     doc
     |> occurrences([], [])
@@ -91,7 +107,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
       key = EffectIndex.effect_id(change_id) || change_id
 
       for {ref, xml_id, group} <- placements(change_id, occ),
-          do: {key, ref, claims(change_id, group, xml_id, cited)}
+          do: {key, ref, claims(change_id, group, xml_id, cited, own)}
     end)
   end
 
@@ -139,7 +155,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
             retain: attr(attrs, :RetainText) == "true",
             paired: attr(attrs, :SubstitutionRef) != nil,
             extent: attr(attrs, :Extent),
-            note: attr(attrs, :CommentaryRef)
+            note: attr(attrs, :CommentaryRef),
+            text: letters(el)
           }
         ]
       else
@@ -174,9 +191,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     |> List.last()
   end
 
-  defp claims(change_id, occ, target, cited) do
+  defp claims(change_id, occ, target, cited, own) do
     first = hd(occ)
-    whole? = Enum.any?(occ, &(&1.number? and (target == "*" or List.last(&1.path) == target)))
+
+    # whole provision: the change wraps its number, or all its own words
+    # (1988/52 s.4(6): a RetainText Repeal round the text, not the number)
+    whole? =
+      Enum.any?(occ, &(&1.number? and (target == "*" or List.last(&1.path) == target))) or
+        covers_own_text?(occ, Map.get(own, target))
 
     operation =
       cond do
@@ -194,6 +216,36 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
       Claim.new(:markup, :cited, Map.get(cited, first.note), change_id)
     ])
   end
+
+  defp covers_own_text?(_occ, nil), do: false
+  defp covers_own_text?(_occ, ""), do: false
+
+  defp covers_own_text?(occ, own_text),
+    do: String.contains?(occ |> Enum.map(& &1.text) |> Enum.join(), own_text)
+
+  # each provision's own words (not its number, title or sub-provisions),
+  # letters and digits only — to tell a change round all of them
+  defp own_texts(doc) do
+    for el <- xpath(doc, ~x"//*[@id]"l),
+        id = xpath(el, ~x"./@id"s),
+        into: %{},
+        do: {id, el |> own() |> letters()}
+  end
+
+  defp own({:xmlElement, _, _, _, _, _, _, _, children, _, _, _} = el) do
+    kept =
+      Enum.flat_map(children, fn
+        {:xmlElement, name, _, _, _, _, _, attrs, _, _, _, _} = c ->
+          if name in [:Pnumber, :Title] or attr(attrs, :id), do: [], else: [own(c)]
+
+        other ->
+          [other]
+      end)
+
+    put_elem(el, 8, kept)
+  end
+
+  defp letters(el), do: el |> Doc.text() |> String.replace(~r/[^\p{L}\p{N}]/u, "")
 
   # each commentary's first cited law, as a law name ("UK_uksi_2023_911")
   defp cited(doc) do

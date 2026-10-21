@@ -36,7 +36,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
     changes =
       (Feed.read(effects) ++ Markup.read(xml) ++ amending)
       |> Merge.merge()
-      |> Enum.map(&Evidence.resolve(&1, extent(provisions, &1.target)))
+      |> Enum.map(
+        &Evidence.resolve(&1, extent(provisions, &1.target), Map.get(facts, &1.target, %{}))
+      )
 
     Map.new(provisions, fn {id, provision} ->
       {base, version} = version(id)

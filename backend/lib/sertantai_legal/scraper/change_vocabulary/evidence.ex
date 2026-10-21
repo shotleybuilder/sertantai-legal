@@ -114,10 +114,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
   @spec table() :: keyword()
   def table, do: @table
 
-  @doc "The change with each attribute chosen; `extent` is the provision's extent."
-  @spec resolve(Change.t(), String.t() | nil) :: Change.t()
-  def resolve(%Change{} = c, extent) do
-    chosen = Map.new(@table, fn {attribute, order} -> {attribute, first(c, order, extent)} end)
+  @doc """
+  The change with each attribute chosen; `extent` is the provision's
+  extent, `facts` the provision's markup facts (`shows_text`).
+  """
+  @spec resolve(Change.t(), String.t() | nil, map()) :: Change.t()
+  def resolve(%Change{} = c, extent, facts \\ %{}) do
+    chosen =
+      Map.new(@table, fn {attribute, order} -> {attribute, first(c, order, extent, facts)} end)
+
     value = &elem(chosen[&1], 0)
 
     %{
@@ -148,7 +153,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
         do: {attribute, {source, value}, {derived, other}}
   end
 
-  defp first(change, order, extent) do
+  defp first(change, order, extent, facts) do
     Enum.find_value(order, {nil, nil}, fn entry ->
       {source, attribute, condition} =
         case entry do
@@ -161,8 +166,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
           nil
 
         v ->
-          if condition == nil or condition?(condition, v, %{change: change, extent: extent}),
-            do: {v, source}
+          if condition == nil or
+               condition?(condition, v, Map.merge(facts, %{change: change, extent: extent})),
+             do: {v, source}
       end
     end)
   end
@@ -172,9 +178,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
   - `:in_part` — the claim is a removal in part
   - `:non_empty` — the list claim has an item
   - `:narrower_than_provision` — the territory doesn't cover the provision's extent
-  - `:retained_removal_narrower` — the change removes text the markup retains
-    (by the claims: markup or feed operation `:repealed`, markup `retained`),
-    and the territory is narrower than the provision's extent
+  - `:retained_removal_narrower` — the change removes text that is
+    retained (the markup's RetainText; with no Repeal markup, the provision
+    still showing its words: `shows_text`), and the territory is narrower
+    than the provision's extent
   """
   @spec condition?(atom(), term(), %{change: Change.t(), extent: String.t() | nil}) :: boolean()
   def condition?(:in_part, operation, _context), do: operation == :repealed_in_part
@@ -183,10 +190,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
   def condition?(:narrower_than_provision, territory, %{extent: extent}),
     do: not Territory.covers?(territory, extent)
 
-  def condition?(:retained_removal_narrower, territory, %{change: c, extent: extent}) do
+  def condition?(:retained_removal_narrower, territory, %{change: c, extent: extent} = context) do
     operation = Change.value(c, :markup, :operation) || Change.value(c, :feed, :operation)
 
-    operation == :repealed and Change.value(c, :markup, :retained) == true and
-      not Territory.covers?(territory, extent)
+    retained =
+      case Change.value(c, :markup, :retained) do
+        # no Repeal markup: the provision still showing its words (V1-04)
+        nil -> Map.get(context, :shows_text, false)
+        r -> r
+      end
+
+    operation == :repealed and retained == true and not Territory.covers?(territory, extent)
   end
 end
