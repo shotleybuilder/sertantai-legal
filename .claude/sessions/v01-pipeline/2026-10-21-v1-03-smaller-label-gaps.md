@@ -77,6 +77,12 @@ bugs:
     affected: 'SI 2010/2214 210 → 48 undated rows; ~300 laws with undated changes re-previewed'
     fix: markup explained by a dated effect whose id is its ref, or by its note''s law''s dated text change on the row (086c2ab6)
     status: fixed
+  - pattern: 'J5 read "definition of … inserted" / "entry … inserted" as the provision inserted, withholding the law''s start from the provision and its children (NISI 2003/419 art.2)'
+    category: label timeline (J5)
+    module: LabelTimeline.whole_insertion_note?
+    affected: '61 laws with such notes'
+    fix: a definition or entry note is words-level, like "words" (858e3b5e)
+    status: fixed
 ---
 
 # Session: V1-03: Smaller Label Gaps on Laws from 2002 (ACTIVE)
@@ -89,7 +95,7 @@ After V1-01 and V1-02, the rest of the v0.1 label load on UK laws from 2002 on i
 
 - ✅ Disambiguator ancestors: `LatRef.ancestors/1` (label side) reads past `nN`; `LatStatus.ancestors` left as the parser's (it counts toward ParserVersion, not LabelVersion) (§1)
 - ✅ Undated changes ≥2002 attributed by T1 reason (§2); fixed: twins, a note joined to a dated change, markup explained by a dated effect, endings; amending-law dating needs the re-read own-clause rules
-- ⬜ Insertions not in the register ≥2002 (144) and text-only feed refs (24 effects): count what each reaches; fix or known limit
+- ✅ Insertions not in the register ≥2002 (118 after the dry run): a definition/entry note read as a whole insertion fixed (J5); the rest are genuine J5 (a note says inserted, nothing dates it) — V1-04's audit lists them; text-only refs closed (stale, §4)
 - ✅ LR-17's rows: the cause is wider — feed effects with no territory take the affecting law's (AR-09 rule + title places) (§3)
 - ✅ Stale bugs: 3 closed (LR-20 note facts, LR-23 note spread, LR-27 text-only refs); LR-20 provenance left open for Jason (§4)
 - ⏸️ A row commenced through only some of its children (V1-01 finding): known limit — a fix needs the row's children, which the projection doesn't see; a blanket "partial" would leave SI 2026/318 reg.11(1) partial after 2027
@@ -141,3 +147,8 @@ Closed: LR-20 note-text facts, LR-23 note-join spread, LR-27 text-only refs (fro
 **Preview `v103c`:** the union of laws with undated changes (299) and the laws the title rule moves (93): 324 laws, running.
 
 **Moved to V1-04 (Jason 2026-10-21):** SI 2010/404 reg.14 still reads repealed today. The markup keeps the text; the parse's territory claim (`EffectTerritory` `:effect_everywhere`) reads the "(England)" SI's retained repeal as everywhere, and J2 holds it. The fix is at source, in the parse, with the V1-03 law-territory rule shared: `v01-pipeline/2026-10-21-v1-04-parse-territory-retained-repeals.md`.
+
+## 6. Spliced and last items (2026-10-21)
+
+- **`v103c` (324 laws, 0 errors)** spliced into `v01_final`. For UK laws from 2002, undated_change 1,366 (V1-03 start) → 901 (dry run) → **548**, and unknown today 300. Corpus label changes vs today's DB: 41,216 over 18,570 rows in 380 laws.
+- **J5 definitions (`858e3b5e`).** "Art. 2: definition of … inserted" withheld art.2's start: a definition or entry is words-level. 61 laws affected; `v103d` is previewing them. NISI 2003/419's remaining 17 rows are genuine J5 (inserted provisions nothing dates). The residual undated insertions (~118) and notes naming no law (~39) go to V1-04's audit.
