@@ -1,6 +1,7 @@
 ---
 session: 'LR-45: Streaming XML Parse'
 status: pending
+release: v0.2
 opened: '2026-10-20'
 parent: lat-refactor/2026-10-09-lr-00-meta.md
 depends_on: ["lat-refactor/2026-10-15-lr-31-pipeline-performance"]

@@ -1,6 +1,7 @@
 ---
 session: 'LR-15: changed_by Gaps on Change Notes'
 status: suspended
+release: v0.2
 opened: 2026-10-12
 parent: lat-refactor/2026-10-09-lr-00-meta.md
 bugs:

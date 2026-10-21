@@ -1,6 +1,7 @@
 ---
 session: "QQ-P1: Prod Backup & Partition Migration (#133)"
 status: pending
+release: v0.1
 opened: 2026-09-25
 parent: qq-data-readiness/2026-09-25-qq-00-meta.md
 issue: 133

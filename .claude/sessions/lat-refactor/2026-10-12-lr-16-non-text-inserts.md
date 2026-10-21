@@ -1,6 +1,7 @@
 ---
 session: 'LR-16: Non-text Inserts'
 status: pending
+release: v0.1
 opened: 2026-10-12
 parent: lat-refactor/2026-10-09-lr-00-meta.md
 bugs:

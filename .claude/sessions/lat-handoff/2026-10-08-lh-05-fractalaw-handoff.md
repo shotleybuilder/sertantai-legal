@@ -1,6 +1,7 @@
 ---
 session: "LH-05: fractalaw Contract & Hand-off"
 status: pending
+release: v0.1
 opened: 2026-10-08
 parent: lat-handoff/2026-10-08-lh-00-meta.md
 ---

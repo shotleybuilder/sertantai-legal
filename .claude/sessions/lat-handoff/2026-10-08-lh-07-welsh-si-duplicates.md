@@ -1,6 +1,7 @@
 ---
 session: "LH-07: Welsh SI Duplicates (#178)"
 status: pending
+release: v0.1
 opened: 2026-10-08
 parent: lat-handoff/2026-10-08-lh-00-meta.md
 issue: 178

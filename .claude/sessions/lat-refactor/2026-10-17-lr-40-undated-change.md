@@ -1,6 +1,7 @@
 ---
 session: 'LR-40: Undated Change'
 status: suspended
+release: v0.2
 opened: '2026-10-17'
 parent: lat-refactor/2026-10-09-lr-00-meta.md
 ---
