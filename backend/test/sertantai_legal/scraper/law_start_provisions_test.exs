@@ -446,4 +446,26 @@ defmodule SertantaiLegal.Scraper.LawStartProvisionsTest do
       assert got == [{:named, :provision_qualified, ~D[2007-08-01], ["reg.26"], ["reg.26(4)"]}]
     end
   end
+
+  test "V1-02: a staged clause's items date their provisions (wsi 2026/60; SI 2005/894 \"the remainder\")" do
+    got =
+      assign([
+        {"reg.1(2)", "These Regulations come into force on the following dates—"},
+        {"reg.1(2)(a)", "this regulation and regulations 2 and 5 on 1 July 2026;"},
+        {"reg.1(2)(b)", "regulation 3 on 4 March 2027;"},
+        {"reg.1(2)(c)", "the remainder, on 1 September 2026."},
+        "reg.2",
+        "reg.3",
+        "reg.3(1)",
+        "reg.4",
+        "reg.5"
+      ])
+
+    assert {:provision_dated, ~D[2027-03-04], ~w[reg.3 reg.3(1)]} in got
+    assert {:provision_dated, ~D[2026-09-01], ~w[reg.4]} in got
+
+    assert Enum.any?(got, fn {t, d, rows} ->
+             t == :provision_dated and d == ~D[2026-07-01] and "reg.2" in rows
+           end)
+  end
 end

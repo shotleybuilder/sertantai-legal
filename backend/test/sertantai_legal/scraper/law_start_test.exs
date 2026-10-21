@@ -457,4 +457,152 @@ defmodule SertantaiLegal.Scraper.LawStartTest do
                start("eur", relative, clml_head: head)
     end
   end
+
+  describe "V1-02: a staged clause's items name their date inside them" do
+    test "\"…, on 16th April 2005\" / \"the remainder, on 16th July 2005\" (SI 2005/894)" do
+      s =
+        start("uksi", [
+          {"reg.1(1)",
+           "These Regulations may be cited as the Hazardous Waste (England and Wales) Regulations 2005 and come into force as follows-"},
+          {"reg.1(1)(a)", "Parts 1, 2 and regulation 78 on 16th April 2005;"},
+          {"reg.1(1)(b)", "the remainder, on 16th July 2005."}
+        ])
+
+      assert %{treatment: :clause_staged, date: ~D[2005-04-16]} = s
+    end
+
+    test "\"as regards Parts 1 and 4, immediately before 31st December 2023\" (SI 2023/1407)" do
+      s =
+        start("uksi", [
+          {"reg.1(2)", "This Order comes into force—"},
+          {"reg.1(2)(a)", "as regards Parts 1 and 4, immediately before 31st December 2023;"},
+          {"reg.1(2)(b)", "as regards Parts 2 and 3, on 31st December 2023."}
+        ])
+
+      assert %{treatment: :clause_staged, date: ~D[2023-12-31]} = s
+    end
+
+    test "\"regulation 4 at 12:01 a.m. on 1 July 2026\"; \"on the following dates—\" (wsi 2026/60)" do
+      s =
+        start("wsi", [
+          {"reg.1(2)", "These Regulations come into force on the following dates—"},
+          {"reg.1(2)(b)", "regulation 4 at 12:01 a.m. on 1 July 2026;"},
+          {"reg.1(2)(c)", "regulations 3, 8(1), 8(2) and 8(4) on 4 March 2027."}
+        ])
+
+      assert %{treatment: :clause_staged, date: ~D[2026-07-01]} = s
+    end
+
+    test "\"Part 2, immediately before IP completion day\" (SI 2020/1577)" do
+      s =
+        start("uksi", [
+          {"reg.1(1)",
+           "These Regulations may be cited as the REACH etc. (Amendment etc.) (EU Exit) Regulations 2020 and come into force as follows—"},
+          {"reg.1(1)(b)", "Part 2, immediately before IP completion day;"},
+          {"reg.1(1)(c)", "Part 4, on IP completion day."}
+        ])
+
+      assert %{treatment: :clause_staged, date: ~D[2020-12-31]} = s
+    end
+  end
+
+  describe "V1-02: clauses the reader missed" do
+    test "a pronoun subject in the citation provision (SI 2011/988)" do
+      s =
+        start(
+          "uksi",
+          [
+            {"reg.1(1)",
+             "These Regulations may be cited as the Waste (England and Wales) Regulations 2011."},
+            {"reg.1(2)",
+             "Subject to paragraph (3), they come into force on the day after the day on which they are made."}
+          ],
+          made: ~D[2011-03-28]
+        )
+
+      assert %{treatment: :clause_made_relative, date: ~D[2011-03-29]} = s
+    end
+
+    test "the subject in the parent row, the verb in a list item (SI 2013/1582, SI 2015/776)" do
+      s =
+        start(
+          "uksi",
+          [
+            {"reg.1(1)", "These Regulations—"},
+            {"reg.1(1)(a)",
+             "may be cited as the Water Industry (Specified Infrastructure Projects) (English Undertakers) Regulations 2013;"},
+            {"reg.1(1)(b)",
+             "come into force on the day after the day on which they are made; and"}
+          ],
+          made: ~D[2013-06-24]
+        )
+
+      assert %{treatment: :clause_made_relative, date: ~D[2013-06-25]} = s
+    end
+
+    test "\"The remainder comes into force on …\" with named provisions before it (SI 2025/878)" do
+      s =
+        start("uksi", [
+          {"reg.1(2)", "Regulations 1 and 17 to 21 come into force on 15th September 2025."},
+          {"reg.1(4)", "The remainder comes into force on 1st October 2025."}
+        ])
+
+      assert %{treatment: :clause_staged, date: ~D[2025-09-15]} = s
+    end
+
+    test "\"The following come into force on …—\" (SI 2026/318)" do
+      s =
+        start("uksi", [
+          {"reg.2(1)", "The following come into force on 10th April 2026—"},
+          {"reg.2(2)", "The following come into force on 19th September 2026—"}
+        ])
+
+      assert %{treatment: :clause_staged, date: ~D[2026-04-10]} = s
+    end
+
+    test "\"Otherwise, these Regulations come into force on …\" (SI 2023/284)" do
+      s =
+        start("uksi", [
+          {"reg.1(2)", "Regulation 14(2)(a)(v) comes into force on 6th April 2025."},
+          {"reg.1(3)", "Otherwise, these Regulations come into force on 6th April 2023."}
+        ])
+
+      assert %{treatment: :clause_staged, date: ~D[2023-04-06]} = s
+    end
+
+    test "\"Otherwise this Order comes into force on …\" is the rest, not the whole law: the earliest part starts it (SI 2017/469)" do
+      s =
+        start(
+          "uksi",
+          [
+            {"reg.1(2)",
+             "This article, article 2 and article 11 come into force on the day after the day on which the Order is made."},
+            {"reg.1(3)", "Otherwise this Order comes into force on 8th May 2017."}
+          ],
+          made: ~D[2017-03-28]
+        )
+
+      assert %{treatment: :clause_staged, date: ~D[2017-03-29]} = s
+    end
+
+    test "\"Subject to paragraphs (3), (4) and (5) these Regulations shall come into force on …\" (SI 2013/3113)" do
+      s =
+        start("uksi", [
+          {"reg.1(2)",
+           "Subject to paragraphs (3), (4) and (5) these Regulations shall come into force on 1st January 2014."}
+        ])
+
+      assert %{treatment: :clause_date, date: ~D[2014-01-01]} = s
+    end
+
+    test "\"on implementation period completion day\" is IP completion day (wsi 2020/1489)" do
+      s =
+        start("wsi", [
+          {"reg.1(1)",
+           "These Regulations may be cited as the Personal Protective Equipment (Temporary Arrangements) (Coronavirus) (Wales) Regulations 2020 and come into force on implementation period completion day."}
+        ])
+
+      assert %{treatment: :clause_named_day, date: ~D[2020-12-31]} = s
+    end
+  end
 end

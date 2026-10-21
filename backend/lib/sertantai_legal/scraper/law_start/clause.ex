@@ -35,7 +35,9 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
   # an aside between commas: ", subject to paragraphs (2) and (3),"
   @aside ~S"(?:\s*,[^,]{0,160},)?\s*"
   @cif ~S"(?:shall" <> @aside <> ~S")?(?:comes?|came)\s+into\s+(?:force|operation)"
-  @prefix ~S"^(?:\(?\d+[A-Z]?\)?\s+)?(?:(?:Subject to|Except as (?:otherwise )?(?:provided|specified)|Save as (?:otherwise )?provided|Apart from)[^,]{0,200}?(?:,\s*|\s+(?=(?:this|these|the)\s)))?"
+  # "Subject to paragraphs (3), (4) and (5) these Regulations …" (commas in
+  # a list of paragraphs: V1-02)
+  @prefix ~S"^(?:\(?\d+[A-Z]?\)?\s+)?(?:(?:Subject to|Except as (?:otherwise )?(?:provided|specified)|Save as (?:otherwise )?provided|Apart from)(?:[^,]|,(?=\s*(?:\(|and\b|or\b))){0,200}?(?:,\s*|\s+(?=(?:this|these|the)\s)))?"
 
   @general [
     Regex.compile!(
@@ -52,9 +54,11 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
   ]
 
   # a part of this law commencing ("This Article and Article 2 shall come
-  # into operation …", "The remaining provisions of this Order …")
+  # into operation …", "The remaining provisions of this Order …", "The
+  # remainder comes into force …", "The following come into force …—",
+  # "Otherwise, these Regulations come into force …": the rest, V1-02)
   @own_part Regex.compile!(
-              ~S"^(?:\(?\d+[A-Z]?\)?\s+)?(?:this\s+(?:article|regulation|section|rule|paragraph|Part|Schedule)\b|(?:the\s+)?(?:remaining provisions|remainder)\s+of\s+(?:this|these)\b|the\s+following\s+provisions\b(?!\s+of\s+(?:the|that)\b)|.{0,200}\bof\s+(?:this|these)\s+" <>
+              ~S"^(?:\(?\d+[A-Z]?\)?\s+)?(?:this\s+(?:article|regulation|section|rule|paragraph|Part|Schedule)\b|(?:the\s+)?(?:remaining provisions|remainder)(?:\s+of\s+(?:this|these)\b)?|the\s+following\b(?!\s+(?:provisions\s+)?of\s+(?:the|that)\b)|otherwise\b|.{0,200}\bof\s+(?:this|these)\s+" <>
                 @instrument <> ~S"\b).{0,300}?\binto\s+(?:force|operation)\b",
               "is"
             )
@@ -169,8 +173,55 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
   def general?(sentence), do: Enum.any?(@general, &Regex.match?(&1, sentence))
 
   # the first sentence in document order where the whole instrument comes
-  # into force: {row, sentence, tail}
-  defp general(rows) do
+  # into force: {row, sentence, tail}; else a list whose parent names the
+  # instrument ("These Regulations— … (b) come into force on …"); else "they"
+  # or "it" in the citation provision ("Subject to paragraph (3), they come
+  # into force on …": V1-02)
+  defp general(rows), do: stated(rows) || listed(rows) || pronoun(rows)
+
+  @parent ~r/^(?:\(?\d+[A-Z]?\)?\s+)?(?:this|these)\s+#{@instrument}\s*[—–:-]\s*$/iu
+  @item_cif ~r/^(?:\(?[a-z0-9]+\)\s*)?(?:shall\s+)?(?:comes?|came)\s+into\s+(?:force|operation)\s*(.*?)\s*(?:;\s*(?:and|or)?)?\s*$/i
+  @pronoun Regex.compile!(@prefix <> ~S"(?:they|it)" <> @aside <> @cif <> ~S"\s*(.*)$", "is")
+
+  defp listed(rows) do
+    Enum.find_value(rows, fn row ->
+      if Regex.match?(@parent, Map.get(row, :text) || "") do
+        Enum.find_value(rows, fn item ->
+          with true <- item.section_id != row.section_id,
+               true <- String.starts_with?(item.section_id, row.section_id <> "("),
+               [_, tail] <- Regex.run(@item_cif, Map.get(item, :text) || "") do
+            {item, String.trim(item.text), String.trim(tail)}
+          else
+            _ -> nil
+          end
+        end)
+      end
+    end)
+  end
+
+  defp pronoun(rows) do
+    cited =
+      for r <- rows,
+          (Map.get(r, :text) || "") =~ ~r/\bmay be cited as\b/i,
+          into: MapSet.new(),
+          do: provision(r.section_id)
+
+    Enum.find_value(rows, fn row ->
+      if MapSet.member?(cited, provision(row.section_id)) do
+        row
+        |> Map.get(:text)
+        |> sentences()
+        |> Enum.find_value(fn s ->
+          case Regex.run(@pronoun, s) do
+            [_, tail] -> {row, s, String.trim(tail)}
+            nil -> nil
+          end
+        end)
+      end
+    end)
+  end
+
+  defp stated(rows) do
     Enum.find_value(rows, fn row ->
       row
       |> Map.get(:text)
@@ -238,11 +289,14 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
 
   defp named_day(tail, made) do
     case Regex.run(
-           ~r/^(?:on\s+|at\s+|immediately\s+(?:before|after)\s+)?(IP completion day|exit day)\b/i,
+           ~r/^(?:on\s+|at\s+|immediately\s+(?:before|after)\s+)?(IP completion day|implementation period completion day|exit day)\b/i,
            tail
          ) do
-      [_, day] -> if day =~ ~r/^IP/i, do: @ip_completion_day, else: exit_day(tail, made)
-      nil -> nil
+      [_, day] ->
+        if day =~ ~r/^(?:IP|implementation)/i, do: @ip_completion_day, else: exit_day(tail, made)
+
+      nil ->
+        nil
     end
   end
 
@@ -399,7 +453,9 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
 
   defp staged?(tail),
     do:
-      tail == "" or tail =~ ~r/^(?:[—:;,–-]|as follows|in accordance with|in stages|subject to)/i
+      tail == "" or
+        tail =~
+          ~r/^(?:[—:;,–-]|as follows|on the following dates?|in accordance with|in stages|subject to)/i
 
   # the earliest date the clause's own provision states elsewhere
   # ("(2) … on 1st June 2015", "(3) … on IP completion day")
@@ -415,13 +471,13 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
           {_, %Date{} = d} <- [tail_date(String.trim(tail), made)],
           do: d
 
-    # list items under the clause: "(a) on 1st October 2006, for …"
+    # list items under the clause: "(a) on 1st October 2006, for …", "Parts
+    # 1, 2 … on 16th April 2005", "the remainder, on 16th July 2005" (V1-02)
     listed =
       for r <- in_provision,
           r.section_id != row.section_id,
           String.starts_with?(r.section_id, row.section_id),
-          text = (Map.get(r, :text) || "") |> String.replace(~r/^\(?[a-z0-9]+\)\s*/i, ""),
-          {_, %Date{} = d} <- [tail_date(String.trim(text), made)],
+          {_, _, %Date{} = d} <- [item_split(Map.get(r, :text), made)],
           do: d
 
     dates = stated ++ listed
@@ -430,6 +486,42 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
       [] -> found
       ds -> %{found | treatment: :clause_staged, date: Enum.min(ds, Date)}
     end
+  end
+
+  @doc """
+  A staged clause's list item as `{subject, tail, date}` (V1-02): the
+  provisions it names and the date it gives them — "Parts 1, 2 … on 16th
+  April 2005", "the remainder, on 16th July 2005", "as regards Parts 1 and 4,
+  immediately before 31st December 2023", "regulation 4 at 12:01 a.m. on 1
+  July 2026", "Part 4, on IP completion day"; the subject is "" when the
+  item opens with its date. nil when no date is found.
+  """
+  @spec item_split(String.t() | nil, Date.t() | nil) :: {String.t(), String.t(), Date.t()} | nil
+  def item_split(nil, _made), do: nil
+
+  def item_split(text, made) do
+    text = text |> String.replace(~r/^\(?[a-z0-9]+\)\s*/i, "") |> String.trim()
+
+    ~r/\b(?=(?:on|from|at|immediately)\b)/i
+    |> Regex.scan(text, return: :index)
+    |> Enum.find_value(fn [{at, _}] ->
+      tail = text |> binary_part(at, byte_size(text) - at) |> String.trim()
+
+      date =
+        case tail_date(tail, made) do
+          {_, %Date{} = d} ->
+            d
+
+          _ ->
+            # "immediately before / after 31st December 2023": that date
+            tail |> String.replace(~r/^immediately\s+(?:before|after)\s+/i, "") |> date_at_start()
+        end
+
+      if date do
+        subject = text |> binary_part(0, at) |> String.trim() |> String.trim_trailing(",")
+        {String.trim(subject), tail, date}
+      end
+    end)
   end
 
   # "UK_x:reg.1(2)" → "UK_x:reg.1"

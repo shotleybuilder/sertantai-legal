@@ -27,6 +27,9 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
   @cif ~r/\b(?:shall\s+(?:,[^,]{0,160},\s*)?)?(?:comes?|came)\s+into\s+(?:force|operation)\b/i
   @qualified ~r/\b(?:so far as|in so far as|insofar as|for the purposes? of|in relation to|with respect to|to the extent|for (?:all )?other purposes|into\s+(?:force|operation)\s+in\s+(?:England|Wales|Scotland|Northern Ireland|Great Britain)\b)\b/i
   @remaining ~r/\b(?:remaining provisions|remainder|other provisions|all (?:other )?(?:provisions|regulations|articles|sections|rules)|provisions of this \w+(?: \([^)]*\))?,? except|preceding (?:provisions|Parts)|^\s*(?:\(\w+\)\s*)?otherwise\b|^\s*(?:\(\w+\)\s*)?(?:Subject to [^,]+,\s*)?the provisions of this)/i
+  # a general clause left open for its list ("… come into force as follows—",
+  # "… on the following dates—", "… come into force—")
+  @open_clause ~r/into\s+(?:force|operation)\s*(?:as follows|on the following dates?)?\s*[—–:-]?\s*$/iu
   @except ~r/,?\s*\b(?:except|other than|with the exception of)\b/i
   @noun ~r/\b(sections?|regulations?|articles?|rules?)\s+((?:(?:\s*(?:,|and|to|–|-)\s*)?(?:\d+[A-Z]*(?:\([^)]+\))*|\([^)]+\)(?:\([^)]+\))*))+)/i
   @part ~r/\bParts?\s+((?:(?:\s*(?:,|and)\s*)?[0-9]+[A-Z]?|(?:\s*(?:,|and)\s*)?[IVXL]+[A-Z]?)+)\b/
@@ -46,12 +49,12 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
   law-level rule covers it).
   """
   @spec groups([map()], Date.t() | nil, LawStart.t()) :: [map()]
-  def groups(rows, made, %LawStart{treatment: treatment, evidence: evidence})
+  def groups(rows, made, %LawStart{treatment: treatment, evidence: evidence} = law)
       when treatment != :by_order and is_binary(evidence) do
     if String.contains?(evidence, ":"),
       do:
         for(
-          g <- clause_groups(rows, made, evidence),
+          g <- clause_groups(rows, made, evidence, whole_clause(law)),
           do: %{g | refs: Enum.map(g.refs, &elem(&1, 0))}
         ),
       else: []
@@ -59,16 +62,41 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
 
   def groups(_rows, _made, _law), do: []
 
-  defp clause_groups(rows, made, evidence) do
+  defp clause_groups(rows, made, evidence, clause) do
     base = provision(evidence)
     held = rows |> Enum.filter(&(provision(&1.section_id) == base))
+    clause = squash(clause)
 
+    # never the sentence the law's start was read from ("they come into
+    # force …", a list item "come into force …": V1-02)
     for row <- held,
         s <- sentences(row),
         Regex.match?(@cif, s),
-        not Clause.general?(s),
-        g <- groups(s, row, rows, made, base),
+        squash(s) != clause,
+        g <- clause_sentence_groups(s, row, rows, made, base),
         do: g
+  end
+
+  # the general clause commences the whole law; its list items, each with
+  # its date ("These Regulations come into force as follows— (a) Parts 1, 2
+  # … on 16th April 2005; (b) the remainder, on 16th July 2005"), are read as
+  # sentences of their own (V1-02)
+  defp clause_sentence_groups(s, row, rows, made, base) do
+    cond do
+      Clause.general?(s) and Regex.match?(@open_clause, s) ->
+        for item <- children(row, rows),
+            not Regex.match?(@cif, item.text || ""),
+            {subject, tail, _date} <- [Clause.item_split(item.text, made)],
+            subject != "",
+            g <- groups("#{subject} come into force #{tail}", item, rows, made, base),
+            do: g
+
+      Clause.general?(s) ->
+        []
+
+      true ->
+        groups(s, row, rows, made, base)
+    end
   end
 
   # one sentence → its groups: kind (:named | :remaining | :unread), refs,
@@ -378,6 +406,18 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
       )
 
   defp sentences(row), do: Clause.sentences(Map.get(row, :text) || "")
+
+  # the law's start read from one sentence for the whole law (a dated
+  # clause, a pronoun or a list item: V1-02) — a staged or own-part clause
+  # is also a provision sentence
+  defp whole_clause(%LawStart{treatment: t, text: text})
+       when t not in [:clause_staged, :clause_unread],
+       do: text
+
+  defp whole_clause(_law), do: nil
+
+  defp squash(nil), do: nil
+  defp squash(s), do: s |> String.replace(~r/\s+/, " ") |> String.trim()
 
   # "UK_x:reg.1(2)" → "UK_x:reg.1"
   defp provision(section_id), do: section_id |> String.split("(", parts: 2) |> hd()
