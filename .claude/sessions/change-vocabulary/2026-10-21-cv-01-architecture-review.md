@@ -4,6 +4,19 @@ status: active
 release: v0.1
 opened: '2026-10-21'
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
+bugs:
+  - pattern: 'Register records land on the wrong provision (golden-set draft, to verify): nia 2021/8 recorded as revoking all of Coronavirus Act 2020 s.78 (it repealed s.78(3)); anaw 2015/4 recorded on TCPA 1990 s.78(4BA) (it omitted 4B-4D, before 4BA existed); SI 2024/49 recorded on s.284(3)(a) (it inserted s.284(3)(k))'
+    category: register / effect target
+    module: ChangeCollector.Feed (joins from the parse) / EffectTarget / range expansion
+    affected: unknown — measure in CV-04
+    fix: the vocabulary's targets read once per source, ranges only over provisions that existed at the date (V1-05)
+    status: open
+  - pattern: 'Feed effects naming grouped provisions ("s. 78(4BA)(4BB)", "s. 1(4)(b) and word") reach no row, so the row takes its dates from an older wrapping change (s.78(4BA) dated from the 2008/29 insertion of 4A-4D)'
+    category: register / effect target
+    module: EffectTarget / ChangesFeed affected_refs parsing
+    affected: unknown — measure in CV-03
+    fix: the feed reader parses grouped provision lists into targets
+    status: open
 ---
 
 # Session: CV-01: Architecture Review (ACTIVE)
@@ -17,7 +30,7 @@ Part of the change-vocabulary architecture shift (CV-00): every change source an
 - ✅ Inventory: every change source (markup, feed effects, amending-law text, commencement, notes) and what each says (operation, level, targets, territory, dates, in force, savings)
 - ✅ Inventory: every reconciling rule — parse (`EffectTerritory` claim order, rule 3, orphan and whole-law joins, `LatStatus`), register (`ChangeCollector` sources, `Collect.territory`, feed territory), projection (J1–J6, T1, LR-26 D1′, AR-10 ancestor rule) — each restated as evidence-per-attribute
 - ✅ Retrospective (below): why the AR design review covered only the amending law's text (scope), and what the commencement ruleset did differently
-- ⬜ Golden set: ~25 provisions across the hard cases (retained repeals by territorial laws, whole-law repeals, parallel E/W changes, ranges over later insertions, renumbering, staged commencement, legacy ids, words vs provision, EU retained law), each with its correct label periods worked out from the law and the sources, signed off by Gemini (Jason 2026-10-21: "Golden set - use Gemini to sign off") — the acceptance suite every later session runs (starts from the five V1-04 cases)
+- ✅ Golden set (signed off by Gemini 2026-10-21; below): ~25 provisions across the hard cases (retained repeals by territorial laws, whole-law repeals, parallel E/W changes, ranges over later insertions, renumbering, staged commencement, legacy ids, words vs provision, EU retained law), each with its correct label periods worked out from the law and the sources, signed off by Gemini (Jason 2026-10-21: "Golden set - use Gemini to sign off") — the acceptance suite every later session runs (starts from the five V1-04 cases)
 - ⬜ Identity: how changes from different sources are matched when they share an effect id, when they don't (legacy markup ids, amending-law reads, notes as pointers), and when they disagree on the target (kind words: NI Order "art. 10" vs row reg.10)
 - ⬜ Granularity and time: one record per change; words vs whole provision; ranges (reach only provisions that existed at the range's date, V1-05); renumbering; prospective and staged changes
 - ⬜ Evidence order: per attribute, written as a readable table in one module (conditions included: removal vs insertion, retained text), each claim recording its winning source; the loser list only if cheap
@@ -30,32 +43,26 @@ Part of the change-vocabulary architecture shift (CV-00): every change source an
 
 - ✅ CR-00, AR-00 closed (the patterns reviewed)
 
-## Golden set (in progress, 2026-10-21)
+## Golden set (signed off by Gemini 2026-10-21)
 
-25 provisions (`backend/data/reports/change-vocabulary/golden/`). Evidence packs (`packs.md`) were built from local stores only. Each pack holds the parse row, the change markup in the stored CLML, the feed effects on the provision, its ancestors and the whole law (with `affecting_territory`), the register records and today's label. Expected labels are drafted per batch (`expected-batch{1,2,3}.md`), checked here, then sent to Gemini for sign-off.
+`backend/data/reports/change-vocabulary/golden/golden-set.md` (the index: expected today, verdict, current label; conventions C1–C12). Expected periods are in `expected-batch{1,2,3}.md`, evidence in `packs.md`, and the sign-off in `backend/data/code-reviews/2026-10-21-cv-01-golden-set-gemini.md`.
 
-Cases:
-- **Territorial retained repeal:** SI 2010/404 reg.14; SI 2010/2215 reg.29.
-- **Whole-Act repeal for one territory, legacy id:** Forestry Act 1967 s.1(4)(a).
-- **Welsh insertion that applies in England:** Forestry Act 1967 s.1(1A).
-- **Two territorial repeals, one marked up:** Coronavirus Act 2020 s.78; SI 2016/1105 reg.72(2)(b).
-- **Range over a later insertion; outstanding effect:** TCPA 1990 s.78(4BA).
-- **Welsh substitution pair:** TCPA 1990 s.284(3)(a).
-- **Repeal with the text removed:** NERCA 2006 s.73.
-- **Act repealed (S.) on S rows:** 1989/14 s.3(5).
-- **Repealed (S.) with no markup:** 1974/40 s.101.
-- **Legacy ids:** 1974/37 s.78.
-- **A range repeal for S on a marked-up provision:** 1993/12 s.18.
-- **Parallel E/W changes by two instruments:** SI 2000/1043 reg.11(3).
-- **A silent feed:** 1988/52 s.4(6).
-- **Expiry in part:** Coronavirus Act 2020 s.8.
-- **EU retained law, omitted for GB, in force in NI:** Reg (EU) 2016/2031 Art 28(3).
-- **Renumbering by a Welsh SI:** SI 2017/544 reg.1(1).
-- **Commenced by order:** Environment Act 2021 s.8.
-- **Partial:** EUWA 2018 s.6.
-- **Territorial versions:** SI 2008/1597 reg.14(1)[E+W+S] and [NI]; SI 2010/2214 reg.36[E].
-- **Revoked in part, in force in NI:** SI 2012/3038 reg.1A.
-- **Prospective:** 2022 c.30 s.138(2)(a).
+- **How it was made:**
+  - Evidence packs came from local stores only: the parse row, the CLML change markup (versions matched by DocumentURI suffix), the feed effects (grouped provision lists included), the register and today's label.
+  - Three drafts gave expected periods with evidence and confidence.
+  - Gemini reviewed all 25 against the evidence.
+- **Verdict:** 19 APPROVE; 3 AMEND (changed_by lists both parallel laws; renumbering date; application-clause reasoning); 3 UNDECIDABLE on commencement dates. The undecidable three are older Acts commenced by orders we don't hold: 1989/14 s.3(5), 1974/40 s.101, 1974/37 s.78. They stay in the set with in_force_from nil (C10). **SIGNED OFF.**
+- **Today's labels against the set:** right for 3 (2021 c.30 s.8, 2022 c.30 s.138(2)(a), NERCA s.73 apart from nil for "nowhere"). Wrong today or in history for the other 22.
+- **Conventions (C1–C12) that shape the vocabulary:**
+  - territory needs a "nowhere" value (C2);
+  - `changed_by` becomes a list (C5);
+  - a renumbering opens a period (C4);
+  - a child's change never opens a period on its parent (C9);
+  - no Royal Assent default for Acts commenced by order (C10);
+  - territorial versions carry the shared history (C3);
+  - retained one-territory repeals stay in force where they still apply (C1, C12);
+  - a provision's own application clause sets territory (C6, a new source to read).
+- **For Jason:** C6 and C11 make the law's text (an application clause; the context of the Act amended) outrank the CLML's stated extent. That is a new source and a new evidence order.
 
 ## Inventory (2026-10-21)
 
