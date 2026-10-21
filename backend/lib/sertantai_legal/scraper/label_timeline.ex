@@ -11,8 +11,9 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
   treatment that decided it, are `LawStart`'s (LR-33).
   """
 
+  alias SertantaiLegal.Scraper.LatRef
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.{LabelProjection, LabelsToday, LatStatus}
+  alias SertantaiLegal.Scraper.{LabelProjection, LabelsToday}
   alias SertantaiLegal.Scraper.LatParser.Effects
 
   @doc """
@@ -65,6 +66,14 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
       not (text =~ ~r/\bwords?\b(?:[^.;]|\.\s*(?=[\d(]))*?\b(?:inserted|added|substituted)\b/i)
   end
 
+  @doc """
+  A law's identity for T1 (V1-03): a Welsh SI's note cites its uksi URI
+  ("UK_uksi_2011_971") while the feed records "UK_wsi_2011_971" — one law.
+  """
+  @spec law_key(String.t() | nil) :: String.t() | nil
+  def law_key("UK_wsi_" <> rest), do: "UK_uksi_" <> rest
+  def law_key(law), do: law
+
   @doc "A law's timeline from the DB: `%{periods, gaps, rows}` (`rows[].today`: the stored timeline as at today, for the diff)."
   @spec build(String.t(), Date.t()) :: map()
   def build(law_name, today) do
@@ -104,14 +113,14 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
     %{rows: noted} =
       Repo.query!(
         """
-        SELECT s, coalesce(citation_law, changed_by) FROM amendment_annotations,
+        SELECT s, code, coalesce(citation_law, changed_by) FROM amendment_annotations,
                unnest(affected_sections) s
         WHERE law_name = $1 AND code_type = 'amendment'
         """,
         [law_name]
       )
 
-    noted = Enum.group_by(noted, &hd/1, fn [_, l] -> l end)
+    noted = Enum.group_by(noted, &hd/1, fn [_, code, l] -> {code, l} end)
 
     law_type = law_name |> String.split("_") |> Enum.at(1)
 
@@ -130,8 +139,7 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
               c <- claims || [],
               do: %{effect_id: c["effect_id"], territory: c["territory"], source: c["source"]}
             ),
-          inserted_pointer:
-            sid |> LatStatus.ancestors() |> Enum.any?(&MapSet.member?(pointed, &1)),
+          inserted_pointer: sid |> LatRef.ancestors() |> Enum.any?(&MapSet.member?(pointed, &1)),
           # the stored timeline as at today (`mix lat.timeline` diffs a fresh
           # build against it)
           today:
@@ -160,25 +168,7 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
         cols |> Enum.map(&String.to_atom/1) |> Enum.zip(r) |> Map.new()
       end)
 
-    # T1: a row has an undatable text change when change markup on it has no
-    # date, or a note on it names a law with no dated text change on the row
-    # (or names none)
-    dated =
-      for c <- changes,
-          c.effective_from != nil,
-          c.operation != "other",
-          into: MapSet.new(),
-          do: {c.section_id, c.affecting_law}
-
-    undated_markup = undated_markup(changes)
-
-    undated? = fn sid ->
-      MapSet.member?(undated_markup, sid) or
-        Enum.any?(Map.get(noted, sid, []), fn law ->
-          law == nil or
-            not Enum.any?(LatStatus.ancestors(sid), &MapSet.member?(dated, {&1, law}))
-        end)
-    end
+    undated? = undated_change(changes, noted)
 
     rows = Enum.map(rows, &Map.put(&1, :undated_change, undated?.(&1.section_id)))
 
@@ -300,16 +290,58 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
   end
 
   @doc """
+  T1 as a test on a row's section_id: it has an undatable text change when
+  change markup on it has no date (`undated_markup/1`), or a note on it
+  (`noted`: section_id → [{code, law}]) names a law with no dated text
+  change on the row or an ancestor (or names none) — unless a dated text
+  change on the row is joined to that very note (V1-03: "inserted by S.I.
+  2019/465 … (as substituted) by S.I. 2020/1359", which the feed dates as
+  2020/1359's). An ending is a text change (`EffectFacts.kind/2`).
+  """
+  @spec undated_change([map()], %{String.t() => [{String.t() | nil, String.t() | nil}]}) ::
+          (String.t() -> boolean())
+  def undated_change(changes, noted) do
+    dated =
+      for c <- changes,
+          c.effective_from != nil,
+          c.operation != "other",
+          into: MapSet.new(),
+          do: {c.section_id, law_key(c.affecting_law)}
+
+    joined =
+      for c <- changes,
+          c.effective_from != nil,
+          c.operation != "other",
+          is_binary(c[:pointer]),
+          into: MapSet.new(),
+          do: {c.section_id, c.pointer}
+
+    undated_markup = undated_markup(changes)
+
+    fn sid ->
+      levels = LatRef.ancestors(sid)
+
+      MapSet.member?(undated_markup, sid) or
+        Enum.any?(Map.get(noted, sid, []), fn {code, law} ->
+          not Enum.any?(levels, &MapSet.member?(joined, {&1, code})) and
+            (law == nil or not Enum.any?(levels, &MapSet.member?(dated, {&1, law_key(law)})))
+        end)
+    end
+  end
+
+  @doc """
   Rows with change markup no source dates (T1): a markup record makes its
-  row "date unknown" unless a dated law record on the same row points to
-  the same note (the markup's commentary ref = the law record's note code,
-  "c950488" / "F:c950488": the same change, now dated by the law; LR-08).
+  row "date unknown" unless a dated law record — or a dated feed effect
+  joined through that note (V1-03: legacy `M_F_` markup the feed dates) —
+  on the same row points to the same note (the markup's commentary ref =
+  the record's note code, "c950488" / "F:c950488": the same change, dated;
+  LR-08).
   """
   @spec undated_markup([map()]) :: MapSet.t()
   def undated_markup(changes) do
     explained =
       for c <- changes,
-          c.source == "law",
+          c.source in ["law", "effect"],
           c.effective_from != nil,
           is_binary(c[:pointer]),
           into: MapSet.new(),

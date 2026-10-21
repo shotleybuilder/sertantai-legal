@@ -177,4 +177,34 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.FeedTest do
     assert [%Record{via: ["note_own", "note_cited"], pointer: "C1"}] =
              Feed.records(@law, [], notes, [effect("key-c", "coming into force")])
   end
+
+  test "V1-03: an effect the feed gives no territory takes its affecting law's (SI 2023/911 \"(England)\" omits reg.14 for E)" do
+    rows = [
+      %{section_id: "#{@law}:s.6(6A)", effect_joins: [{"key-a", :markup}, {"key-b", :markup}]}
+    ]
+
+    effects = [
+      effect("key-a", "omitted", affecting: "UK_uksi_2023_911", effect_extent: "E+W"),
+      effect("key-b", "omitted",
+        affecting: "UK_uksi_2023_912",
+        effect_extent: "E+W",
+        territorial_application: "W"
+      )
+    ]
+
+    territory = fn
+      "UK_uksi_2023_911" -> "E"
+      _ -> "E+W+S"
+    end
+
+    recs = Feed.records(@law, rows, [], effects, territory: territory)
+    by = Map.new(recs, &{&1.evidence, &1.territorial_application})
+
+    assert by["key-a"] == "E"
+    # the feed's own territorial application stands
+    assert by["key-b"] == "W"
+    # without the option, nothing is filled
+    assert [nil, "W"] =
+             Feed.records(@law, rows, [], effects) |> Enum.map(& &1.territorial_application)
+  end
 end

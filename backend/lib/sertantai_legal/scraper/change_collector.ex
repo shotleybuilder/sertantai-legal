@@ -14,6 +14,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
   Thin: the joins and records are the pure collectors'.
   """
 
+  alias SertantaiLegal.Scraper.LatRef
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.Amendment.{Collect, Index}
@@ -28,7 +29,6 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
   }
 
   alias SertantaiLegal.Scraper.Commencement.Store, as: CommencementRules
-  alias SertantaiLegal.Scraper.LatStatus
   alias SertantaiLegal.Scraper.LatStagedParser
 
   @doc """
@@ -52,7 +52,11 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
   def collect(law_name, opts \\ []) do
     with {:ok, %{rows: rows, notes: notes, effects: effects}} <- parsed(law_name, opts) do
       order = Enum.map(rows, & &1.section_id)
-      feed = Feed.records(law_name, rows, notes, effects)
+
+      feed =
+        Feed.records(law_name, rows, notes, effects,
+          territory: &Collect.territory(&1, law_extent(&1), law_name)
+        )
 
       per_row = %{
         "feed" => feed,
@@ -321,7 +325,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
   @doc "True when the row or an ancestor has a dated change by `law` in `dated` ({section_id, law} pairs)."
   @spec dated?(MapSet.t(), String.t(), String.t()) :: boolean()
   def dated?(dated, sid, law),
-    do: Enum.any?(LatStatus.ancestors(sid), &MapSet.member?(dated, {&1, law}))
+    do: Enum.any?(LatRef.ancestors(sid), &MapSet.member?(dated, {&1, law}))
 
   # the law's amendment notes, each with the law it points to
   defp law_notes(law_name) do
@@ -368,20 +372,48 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
 
   # an amending law's register extent (AR-09), once per law's collection
   # (`with_doc_cache/1`)
+  # a law's extent for its changes' territory (AR-09): its title's place
+  # when it names one ("… (England) Regulations 2023": V1-03, SI 2023/911
+  # registers E+W), else the register's geo_extent
+  defp law_extent(nil), do: nil
+
   defp law_extent(law) do
     key = {__MODULE__, :doc, {:extent, law}}
 
     case Process.get(key, :none) do
       :none ->
         %{rows: rows} =
-          Repo.query!("SELECT geo_extent FROM uk_lrt WHERE name = $1 LIMIT 1", [law])
+          Repo.query!("SELECT geo_extent, title_en FROM uk_lrt WHERE name = $1 LIMIT 1", [law])
 
-        tap(List.first(List.flatten(rows)), &Process.put(key, &1))
+        extent =
+          case rows do
+            [[geo, title] | _] -> title_place(title) || geo
+            _ -> nil
+          end
+
+        tap(extent, &Process.put(key, &1))
 
       e ->
         e
     end
   end
+
+  @places %{
+    "England and Wales" => "E+W",
+    "England" => "E",
+    "Wales" => "W",
+    "Scotland" => "S",
+    "Northern Ireland" => "NI"
+  }
+
+  defp title_place(title) when is_binary(title) do
+    case Regex.run(~r/\((England and Wales|England|Wales|Scotland|Northern Ireland)\)/, title) do
+      [_, place] -> @places[place]
+      nil -> nil
+    end
+  end
+
+  defp title_place(_title), do: nil
 
   defp law_title(law_name) do
     case Repo.query!("SELECT title_en FROM uk_lrt WHERE name = $1 LIMIT 1", [law_name]) do

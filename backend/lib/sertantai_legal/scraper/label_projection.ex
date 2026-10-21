@@ -70,14 +70,9 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   Notes are never read. Pure: `today` and `law_start` are passed in.
   """
 
-  alias SertantaiLegal.Scraper.{
-    EffectFacts,
-    EffectIndex,
-    EffectTerritory,
-    LatStatus,
-    NotePointer,
-    Territory
-  }
+  alias SertantaiLegal.Scraper.LatRef
+
+  alias SertantaiLegal.Scraper.{EffectFacts, EffectIndex, EffectTerritory, NotePointer, Territory}
 
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
 
@@ -203,7 +198,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   # the row's own changes, its ancestors' whole-provision ones; each tagged
   # with whether it is the row's own
   defp relevant(row, by_row) do
-    [own | above] = LatStatus.ancestors(row.section_id)
+    [own | above] = LatRef.ancestors(row.section_id)
 
     # a whole-instrument words-level change (a blanket "words substituted")
     # applies where the words occur, not to every row: it counts like an
@@ -673,7 +668,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
           do: {c.section_id, d}
 
     row.section_id
-    |> LatStatus.ancestors()
+    |> LatRef.ancestors()
     |> Enum.find_value(fn sid ->
       dated
       |> Enum.filter(&(elem(&1, 0) == sid))

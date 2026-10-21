@@ -24,7 +24,20 @@ defmodule SertantaiLegal.Scraper.EffectFactsTest do
       assert EffectFacts.kind("Words added", "amendment") == "inserted"
       assert EffectFacts.kind("word omitted", "amendment") == "repealed"
       assert EffectFacts.kind("coming into force", nil) == "commenced"
-      assert EffectFacts.kind("expires", "amendment") == "other"
+    end
+
+    test "V1-03: an ending is a change like a repeal (Jason 2026-10-18); a partial one changes the text (Coronavirus Act 2020)" do
+      assert EffectFacts.kind("expires", "amendment") == "repealed"
+      assert EffectFacts.kind("expired", nil) == "repealed"
+      assert EffectFacts.kind("ceases to have effect", nil) == "repealed"
+      assert EffectFacts.kind("expires in part", nil) == "amended"
+      assert EffectFacts.kind("expires in so far as not already expired", nil) == "repealed"
+      # an earlier affecting provision's expiry is another law's change
+      assert EffectFacts.kind("expiry of earlier affecting provision 2020 c. 7, s. 22", nil) ==
+               "other"
+
+      # a power or function ceasing isn't the text ending
+      assert EffectFacts.kind("functions cease to be exercisable", nil) == "other"
     end
 
     test "a change to an earlier amending or affecting provision changes another law's provision, not this text (LR-24)" do

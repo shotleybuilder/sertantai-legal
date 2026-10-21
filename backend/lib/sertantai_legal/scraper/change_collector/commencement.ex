@@ -22,9 +22,10 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Commencement do
   Pure.
   """
 
+  alias SertantaiLegal.Scraper.LatRef
   alias SertantaiLegal.Scraper.ChangeCollector.Record
   alias SertantaiLegal.Scraper.Commencement.{Evaluator, OwnClause}
-  alias SertantaiLegal.Scraper.{LatStatus, LawStart}
+  alias SertantaiLegal.Scraper.{LawStart}
 
   @doc """
   The law's commencement records from its `LawStart.input()`. `opts`:
@@ -42,7 +43,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Commencement do
     feed_dated = Keyword.get(opts, :feed_dated, MapSet.new())
 
     rules_for = fn sid ->
-      if orders == [] or Enum.any?(LatStatus.ancestors(sid), &MapSet.member?(feed_dated, &1)),
+      if orders == [] or Enum.any?(LatRef.ancestors(sid), &MapSet.member?(feed_dated, &1)),
         do: rules,
         else: rules ++ orders
     end

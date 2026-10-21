@@ -36,8 +36,14 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Feed do
   `effect_joins`), its `notes` (`code`, `affected_sections`, `effect_joins`)
   and its changes-feed `effects`.
   """
-  @spec records(String.t(), [map()], [map()], [Effect.t()]) :: [Record.t()]
-  def records(law_name, rows, notes, effects) do
+  @spec records(String.t(), [map()], [map()], [Effect.t()], keyword()) :: [Record.t()]
+  def records(law_name, rows, notes, effects, opts \\ []) do
+    # V1-03: an effect with no territorial application of its own takes its
+    # affecting law's territory (`territory`: law → code | nil — a devolved
+    # type, a "(England)" title, a register extent narrower than the UK; as
+    # the amending-law records, AR-09)
+    territory = Keyword.get(opts, :territory, fn _law -> nil end)
+
     by_id = for %Effect{effect_id: id} = e <- effects, id != nil, into: %{}, do: {id, e}
 
     # a note's markup join is where a row's own markup carries the change
@@ -75,7 +81,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Feed do
       |> Enum.filter(fn {{id, _}, _, _} -> Map.has_key?(by_id, id) end)
       |> group_ordered()
       |> Enum.map(fn {{id, sid}, vias, pointer} ->
-        record(law_name, by_id[id], sid, vias, pointer)
+        record(law_name, by_id[id], sid, vias, pointer, territory)
       end)
 
     hit = MapSet.new(reached, & &1.evidence)
@@ -90,7 +96,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Feed do
           id != nil,
           not MapSet.member?(hit, id),
           on_lat?(e, held),
-          do: record(law_name, e, nil, [], nil)
+          do: record(law_name, e, nil, [], nil, territory)
 
     reached ++ unreached
   end
@@ -181,7 +187,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Feed do
     end
   end
 
-  defp record(law_name, %Effect{} = e, section_id, vias, pointer) do
+  defp record(law_name, %Effect{} = e, section_id, vias, pointer, territory) do
     %Record{
       law_name: law_name,
       section_id: section_id,
@@ -201,7 +207,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Feed do
       savings: e.savings || [],
       affected_extent: e.affected_extent,
       effect_extent: e.effect_extent,
-      territorial_application: e.territorial_application
+      territorial_application: e.territorial_application || territory.(e.affecting)
     }
   end
 end

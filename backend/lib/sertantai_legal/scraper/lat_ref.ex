@@ -34,6 +34,35 @@ defmodule SertantaiLegal.Scraper.LatRef do
     brackets ++ containers
   end
 
+  @doc """
+  A row's section_id, then its levels as section_ids, for the labels
+  (`LabelProjection`, `LabelTimeline`, the collectors): as
+  `LatStatus.ancestors/1` — an extent version's tagged levels, then the
+  untagged ones — but read past a disambiguator: "L:s.1(2)n1" → ["L:s.1(2)n1",
+  "L:s.1(2)", "L:s.1"] (V1-03: asp 2002/3 s.1(2)n1 had no ancestors).
+  `LatStatus.ancestors/1` stays the parser's.
+  """
+  @spec ancestors(String.t()) :: [String.t()]
+  def ancestors(section_id) do
+    case Regex.run(~r/\A(.+?)(\[[^\]]*\])\z/, section_id) do
+      [_, untagged, tag] ->
+        levels = levels(undisambiguated(untagged))
+        Enum.uniq([section_id | Enum.map(levels, &(&1 <> tag))] ++ levels)
+
+      nil ->
+        Enum.uniq([section_id | levels(undisambiguated(section_id))])
+    end
+  end
+
+  defp levels(id) do
+    case Regex.run(~r/\A(.+)\([^()]*\)\z/, id) do
+      [_, parent] -> [id | levels(parent)]
+      nil -> [id]
+    end
+  end
+
+  defp undisambiguated(id), do: String.replace(id, ~r/(?<=[)0-9A-Za-z])n\d+\z/, "")
+
   @doc "A section_id's ref: no law, no extent suffix, no disambiguator (\"UK_x:s.33(2)(a)n1\" → \"s.33(2)(a)\")."
   @spec bare(String.t()) :: String.t()
   def bare(section_id) do

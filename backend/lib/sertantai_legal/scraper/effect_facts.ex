@@ -33,8 +33,22 @@ defmodule SertantaiLegal.Scraper.EffectFacts do
   @complete ~r/wholly in force|fully in force|not already in force|\botherwise\b|remaining purposes|all other purposes/i
   @purposes ~r/for (?:specified|certain) purposes|for (?:the )?purposes? of/i
 
-  @doc "An effect Type as a change kind (`EffectKind.kind/2`)."
-  defdelegate kind(type, code_type), to: EffectKind
+  @doc """
+  An effect Type as a change kind (`EffectKind.kind/2`), with one label-side
+  reading the parse doesn't need (V1-03): an ending is a change like a
+  repeal (Jason 2026-10-18) — "expires", "expired", "ceases to have effect"
+  are `repealed`; "expires in part" changes the text (`amended`).
+  """
+  @spec kind(String.t() | nil, String.t() | nil) :: String.t()
+  def kind(type, code_type) when is_binary(type) do
+    cond do
+      type =~ ~r/^\s*(?:expires?|expired|ceases? to have effect)\s+in\s+part\b/i -> "amended"
+      type =~ ~r/^\s*(?:expires?|expired|ceases? to have effect)\b/i -> "repealed"
+      true -> EffectKind.kind(type, code_type)
+    end
+  end
+
+  def kind(type, code_type), do: EffectKind.kind(type, code_type)
 
   @doc """
   An effect's facts: every dated InForce (`effective_from` the latest), the
