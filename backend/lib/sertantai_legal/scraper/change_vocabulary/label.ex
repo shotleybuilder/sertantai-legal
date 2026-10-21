@@ -77,11 +77,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
     # the text in force at the start: the original, or the law that
     # inserted or substituted it that day (D1); none when the start's date
     # is not known (C10: commenced by an order we don't hold)
+    # its own whole insertion made it, whether or not any source dates it
+    # (Forestry Act 1967 s.1(4)(a), inserted by SI 1999/1747)
     made_by =
-      reaching
-      |> Enum.filter(
-        &(Date.compare(&1.resolved.date, start) == :eq and &1.resolved.operation in @text_changes)
-      )
+      changes
+      |> Enum.filter(fn c ->
+        (c.target == id and c.resolved.operation == :inserted and c.resolved.level == :provision and
+           c.resolved.date == nil) or
+          (c in reaching and Date.compare(c.resolved.date, start) == :eq and
+             c.resolved.operation in @text_changes)
+      end)
       |> by(self)
 
     dated? = Map.get(provision, :start_dated, true)

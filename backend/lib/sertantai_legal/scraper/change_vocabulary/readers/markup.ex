@@ -107,8 +107,30 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     cited = cited(doc)
     own = own_texts(doc)
 
-    doc
-    |> occurrences([], [])
+    {placed, occurrences} =
+      doc |> occurrences([], []) |> Enum.split_with(&Map.has_key?(&1, :placement))
+
+    changes =
+      occurrences
+      |> group_changes(cited, own, law_name)
+
+    # an effect placed by its note ref on a provision where no change
+    # element of it sits
+    marked = MapSet.new(changes, fn {key, ref, _} -> {key, ref} end)
+
+    placements =
+      for %{placement: key, path: [_ | _] = path} <- placed,
+          ref = Ref.from_clml(List.last(path), law_name),
+          ref != nil,
+          not MapSet.member?(marked, {key, ref}),
+          uniq: true,
+          do: {key, ref, Claim.new(:markup, :placed, true, key)}
+
+    changes ++ placements
+  end
+
+  defp group_changes(occurrences, cited, own, law_name) do
+    occurrences
     |> Enum.group_by(& &1.change_id)
     |> Enum.flat_map(fn {change_id, occ} ->
       key = EffectIndex.effect_id(change_id) || change_id
@@ -152,23 +174,32 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     title_path = if name == :P1group, do: path ++ List.wrap(group_provision(el)), else: path
 
     own =
-      if name in @changes and attr(attrs, :ChangeId) do
-        [
-          %{
-            change_id: attr(attrs, :ChangeId),
-            kind: name,
-            path: path,
-            number?: :number in flags,
-            retain: attr(attrs, :RetainText) == "true",
-            paired: attr(attrs, :SubstitutionRef) != nil,
-            extent: attr(attrs, :Extent),
-            note: attr(attrs, :CommentaryRef),
-            text: letters(el)
-          }
-        ]
-      else
-        []
-      end
+      cond do
+        # a note ref carrying an effect id: where that event sits in the
+        # text (its id, not its note's words)
+        name == :CommentaryRef and String.starts_with?(attr(attrs, :Ref) || "", "key-") ->
+          [%{placement: attr(attrs, :Ref), path: path}]
+
+        true ->
+          []
+      end ++
+        if name in @changes and attr(attrs, :ChangeId) do
+          [
+            %{
+              change_id: attr(attrs, :ChangeId),
+              kind: name,
+              path: path,
+              number?: :number in flags,
+              retain: attr(attrs, :RetainText) == "true",
+              paired: attr(attrs, :SubstitutionRef) != nil,
+              extent: attr(attrs, :Extent),
+              note: attr(attrs, :CommentaryRef),
+              text: letters(el)
+            }
+          ]
+        else
+          []
+        end
 
     own ++
       Enum.flat_map(children, fn

@@ -46,41 +46,50 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
     |> Kernel.++(effect_keyed)
   end
 
-  # one effect id on a provision and on provisions below it: the markup
-  # places the change more precisely than the feed (the evidence table's
-  # target order) — the feed's claims move to each change below, and the
-  # coarser one goes (SI 2008/1597 reg.14(1): the feed says reg.14)
+  # One effect id is one event, wherever its sources place it. The markup
+  # places it precisely (the evidence table's target order): a markup
+  # change with no feed claims of its own takes the event's feed facts
+  # (date, law, territory) from the feed's change of the same id — on a
+  # provision above it, or beside it (Forestry Act 1967 s.1(4)(a): the
+  # "and" SI 2019/734 omits, which the feed records on s.1(4)(b)). A feed
+  # change with the markup's below it is the coarser record and goes.
   defp precise(changes) do
-    by_key = Enum.group_by(changes, & &1.key)
+    changes
+    |> Enum.group_by(& &1.key)
+    |> Enum.flat_map(fn {_key, group} ->
+      {marked, fed_only} = Enum.split_with(group, &marked?/1)
+      # the event's facts, from the first change of it the feed records
+      facts =
+        case Enum.find(group, &(Change.values(&1, :feed, :by) != [])) do
+          nil -> []
+          c -> Enum.filter(c.claims, &(&1.source in [:feed, :law]))
+        end
 
-    Enum.flat_map(changes, fn c ->
-      below =
-        Enum.filter(by_key[c.key], fn d ->
-          d != c and c.target in tl(LatRef.ancestors(d.target)) and
-            Change.values(d, :markup, :operation) != []
+      # where the feed names the event (with or without markup there)
+      fed_targets = for c <- group, Change.values(c, :feed, :by) != [], do: c.target
+
+      marked =
+        Enum.map(marked, fn m ->
+          m = if Change.values(m, :feed, :by) == [], do: %{m | claims: m.claims ++ facts}, else: m
+
+          # placed only by its note ref, on a provision the feed doesn't
+          # name: the change there is in its words (the "and" in s.1(4)(a))
+          if Change.values(m, :markup, :operation) == [] and m.target not in fed_targets,
+            do: %{m | claims: m.claims ++ Claim.new(:markup, :level, :words, m.key)},
+            else: m
         end)
 
-      cond do
-        below != [] and Change.values(c, :markup, :operation) == [] ->
-          []
+      kept =
+        Enum.reject(fed_only, fn f ->
+          Enum.any?(marked, &(f.target in tl(LatRef.ancestors(&1.target))))
+        end)
 
-        true ->
-          [
-            absorb(
-              c,
-              Enum.filter(
-                by_key[c.key],
-                &(&1 != c and &1.target in tl(LatRef.ancestors(c.target)) and
-                    Change.values(&1, :markup, :operation) == [])
-              )
-            )
-          ]
-      end
+      marked ++ kept
     end)
   end
 
-  defp absorb(c, coarser),
-    do: %{c | claims: c.claims ++ Enum.flat_map(coarser, & &1.claims)}
+  defp marked?(c),
+    do: Change.values(c, :markup, :operation) != [] or Change.values(c, :markup, :placed) != []
 
   # an unkeyed change joins the one change on its provision of the same
   # operation family by the same law (the law it names, or its note cites);
