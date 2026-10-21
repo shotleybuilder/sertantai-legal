@@ -26,7 +26,7 @@ defmodule SertantaiLegal.Scraper.LawStart do
   date and the law's rows.
   """
 
-  alias SertantaiLegal.Scraper.LawStart.{Clause, Eu}
+  alias SertantaiLegal.Scraper.LawStart.{Clause, Eu, ScheduleTable}
 
   @enforce_keys [:treatment]
   defstruct [:treatment, :date, :evidence, :text]
@@ -67,7 +67,9 @@ defmodule SertantaiLegal.Scraper.LawStart do
           optional(:lrt_date) => Date.t() | nil,
           optional(:clml_head) => String.t() | nil,
           optional(:made) => Date.t() | nil,
-          optional(:rows) => [map()]
+          optional(:rows) => [map()],
+          optional(:schedule_tables) => %{String.t() => [[String.t()]]},
+          optional(:tied_date) => Date.t() | nil
         }
 
   # Royal Assent is an Act's start only where its own clause states no date
@@ -104,8 +106,8 @@ defmodule SertantaiLegal.Scraper.LawStart do
      "LR-24 J3; after the clause, LR-33"},
     {:by_order, false, "\"on such day as … may by order appoint\"",
      "Jason 2026-10-16 (LR-33 P4)"},
-    {:tied_to_other_law, false,
-     "\"at the same time as section 83 of the 2022 Act comes into force\"",
+    {:tied_to_other_law, true,
+     "\"at the same time as section 83 of the 2022 Act comes into force\": that provision's date in the other law's own feed (V1-02); undated when the feed doesn't date it",
      "Jason 2026-10-16 (LR-33 P4)"},
     {:clause_unread, false, "a commencement clause none of the above reads (listed for review)",
      "Jason 2026-10-16 (LR-33 P5)"},
@@ -151,12 +153,37 @@ defmodule SertantaiLegal.Scraper.LawStart do
   @spec resolve(input()) :: t()
   def resolve(%{type_code: type} = input) do
     head = Map.get(input, :clml_head) || ""
-    clause = Clause.read(Map.get(input, :rows, []), Map.get(input, :made))
+
+    clause =
+      input
+      |> Map.get(:rows, [])
+      |> Clause.read(Map.get(input, :made))
+      |> with_schedule_table(Map.get(input, :schedule_tables))
+      |> with_tied(Map.get(input, :tied_date))
 
     lrt(input) || coming_into_force(head) || eu(input, head, type) ||
       dated(clause) || enactment(head, type) || clause ||
       %__MODULE__{treatment: :no_clause}
   end
+
+  # a clause commencing by its Schedule's table (V1-02): the table's
+  # earliest date
+  defp with_schedule_table(%__MODULE__{date: nil, text: text} = clause, tables)
+       when is_map(tables) do
+    case ScheduleTable.start(text, tables) do
+      %Date{} = d -> %{clause | treatment: :clause_staged, date: d}
+      nil -> clause
+    end
+  end
+
+  defp with_schedule_table(clause, _tables), do: clause
+
+  # a clause tied to another law's provision (V1-02): that provision's date,
+  # from the other law's own feed (`ChangeCollector.law_start_input/2`)
+  defp with_tied(%__MODULE__{treatment: :tied_to_other_law, date: nil} = clause, %Date{} = d),
+    do: %{clause | date: d}
+
+  defp with_tied(clause, _date), do: clause
 
   defp dated(%__MODULE__{date: %Date{}} = clause), do: clause
   defp dated(_clause), do: nil

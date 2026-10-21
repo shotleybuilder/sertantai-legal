@@ -63,14 +63,16 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
   def read(law_name, input) do
     law = LawStart.resolve(input)
     rows = Map.get(input, :rows, [])
-    groups = Provisions.groups(rows, Map.get(input, :made), law)
+
+    table = Provisions.table_groups(rows, law, Map.get(input, :schedule_tables))
+    groups = Provisions.groups(rows, Map.get(input, :made), law) ++ table
 
     # a staged clause's law-level rule is LawStart's earliest date (LR-33 P1);
     # whether it should reach rows no sentence names is open (CR-03 question)
     %{
       law: law,
       rules:
-        List.wrap(law_rule(law_name, law)) ++
+        List.wrap(law_rule(law_name, law, table |> Enum.flat_map(& &1.refs) |> Enum.map(&bare/1))) ++
           Enum.flat_map(groups, &group_rule(law_name, &1)) ++ own_words(law_name, rows, input),
       unread: Enum.filter(groups, &(&1.kind == :unread))
     }
@@ -160,7 +162,10 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
 
   # ── the law-level rule ──────────────────────────────────────────────
 
-  defp law_rule(law_name, %LawStart{} = law) do
+  # a law commenced by its Schedule's table (V1-02): the table names what it
+  # commences, so the law's rule leaves out every provision it names — never
+  # completing one the table commences partly
+  defp law_rule(law_name, %LawStart{} = law, except) do
     case law_when(law) do
       nil ->
         nil
@@ -169,6 +174,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
         Rule.new(
           commences: law_name,
           scope: :all,
+          except: Enum.uniq(except),
           when: w,
           source: source(law_name, law.evidence, law.text),
           treatment: law.treatment

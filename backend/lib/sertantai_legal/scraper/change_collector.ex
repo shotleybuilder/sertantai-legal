@@ -104,6 +104,10 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
       lrt_date: lrt_date,
       made: made || clml_made(head),
       clml_head: head,
+      # V1-02: a commencement table in the law's own Schedule (LAT holds no
+      # Schedules), read only when the text cites one
+      schedule_tables: schedule_tables(law_name, rows),
+      tied_date: tied_date(rows, made || clml_made(head)),
       rows:
         Enum.map(
           rows,
@@ -115,6 +119,63 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
           }
         )
     }
+  end
+
+  defp schedule_tables(law_name, rows) do
+    with true <-
+           Enum.any?(
+             rows,
+             &SertantaiLegal.Scraper.LawStart.ScheduleTable.clause?(Map.get(&1, :text))
+           ),
+         [_, type, year, number] <- String.split(law_name, "_", parts: 4),
+         {:ok, gz} <- File.read("data/cache/clml/#{type}/#{year}/#{number}/schedules/data.xml.gz") do
+      gz |> :zlib.gunzip() |> SertantaiLegal.Scraper.LawStart.ScheduleTable.parse()
+    else
+      _ -> %{}
+    end
+  end
+
+  # V1-02: a law tied to another law's provision ("at the same time as
+  # section 83 of the 2022 Act comes into force") starts when that provision
+  # came into force — fully, else first — by the other law's own feed (the
+  # store; one hop)
+  defp tied_date(rows, made) do
+    alias SertantaiLegal.Scraper.Commencement.{Effects, Evaluator}
+    alias SertantaiLegal.Scraper.LawStart.Clause
+    alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed
+
+    rows = Enum.map(rows, &%{section_id: &1.section_id, text: Map.get(&1, :text)})
+
+    with %{treatment: :tied_to_other_law, text: text} <- Clause.read(rows, made),
+         {title, ref} <- Clause.tied_ref(text, rows),
+         other when is_binary(other) <- law_by_title(title),
+         [_, t, y, n] <- String.split(other, "_", parts: 4),
+         {:ok, effects} <- ChangesFeed.fetch(t, y, n, store: :only) do
+      result = Evaluator.evaluate(Effects.rules(other, effects), ref)
+
+      result.full_from ||
+        result |> Evaluator.in_force() |> Enum.map(& &1.date) |> Enum.min(Date, fn -> nil end)
+    else
+      _ -> nil
+    end
+  end
+
+  # "Building Safety Act 2022" → its register name (title and year, a
+  # primary type first)
+  defp law_by_title(title) do
+    with [_, name, year] <- Regex.run(~r/^(.+?)\s+(\d{4})$/, title),
+         %{rows: [[law] | _]} <-
+           Repo.query!(
+             """
+             SELECT name FROM uk_lrt WHERE lower(title_en) = lower($1) AND name LIKE $2
+             ORDER BY (split_part(name, '_', 2) IN ('ukpga', 'asp', 'anaw', 'asc', 'nia', 'mwa')) DESC LIMIT 1
+             """,
+             [name, "%\\_#{year}\\_%"]
+           ) do
+      law
+    else
+      _ -> nil
+    end
   end
 
   defp date(%Date{} = d), do: d

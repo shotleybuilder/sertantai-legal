@@ -605,4 +605,42 @@ defmodule SertantaiLegal.Scraper.LawStartTest do
       assert %{treatment: :clause_named_day, date: ~D[2020-12-31]} = s
     end
   end
+
+  describe "V1-02: a law tied to another law's provision" do
+    test "tied_ref/2: the other law named, or through a defined term (SI 2023/854, SI 2024/41)" do
+      assert {"Health and Care Act 2022", "s.162"} =
+               Clause.tied_ref(
+                 "These Regulations come into force immediately after section 162 of the Health and Care Act 2022 comes into force.",
+                 []
+               )
+
+      rows = [
+        %{
+          section_id: "UK_x:reg.2",
+          text:
+            "In these Regulations— “the 2022 Act” means the Building Safety Act 2022; “AP” means accountable person;"
+        }
+      ]
+
+      assert {"Building Safety Act 2022", "s.83"} =
+               Clause.tied_ref(
+                 "These Regulations come into force at the same time as section 83 of the 2022 Act comes into force.",
+                 rows
+               )
+    end
+
+    test "the other provision's date dates the law" do
+      s =
+        start(
+          "uksi",
+          [
+            {"reg.1",
+             "These Regulations come into force at the same time as section 83 of the 2022 Act comes into force."}
+          ],
+          tied_date: ~D[2023-10-01]
+        )
+
+      assert %{treatment: :tied_to_other_law, date: ~D[2023-10-01]} = s
+    end
+  end
 end

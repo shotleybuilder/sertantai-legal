@@ -488,6 +488,49 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
     end
   end
 
+  @tied_ref ~r/\b(?:at the same time as|immediately (?:after|before)|on the (?:same )?(?:day|date) (?:on which|that))\s+(section|regulation|article|rule)\s+(\d+[A-Z]*(?:\([0-9A-Za-z]+\))*)\s+of\s+(?:the\s+)?(.+?)\s+comes?\s+(?:fully\s+)?into\s+(?:force|operation)\b/i
+  @prefixes %{"section" => "s", "regulation" => "reg", "article" => "art", "rule" => "rule"}
+
+  @doc """
+  The other law's provision a tied clause waits for (V1-02): `{title with
+  year, ref}` — "immediately after section 162 of the Health and Care Act
+  2022 comes into force" → {"Health and Care Act 2022", "s.162"}; a defined
+  term ("the 2022 Act") through its definition in `rows`. nil when unread.
+  """
+  @spec tied_ref(String.t() | nil, [map()]) :: {String.t(), String.t()} | nil
+  def tied_ref(nil, _rows), do: nil
+
+  def tied_ref(sentence, rows) do
+    with [_, kind, number, law] <- Regex.run(@tied_ref, sentence),
+         title when is_binary(title) <- law_title(law, rows) do
+      {title, Map.fetch!(@prefixes, String.downcase(kind)) <> "." <> number}
+    else
+      _ -> nil
+    end
+  end
+
+  # "Health and Care Act 2022", or a defined term's meaning ("“the 2022 Act”
+  # means the Building Safety Act 2022")
+  defp law_title(law, rows) do
+    cond do
+      law =~ ~r/^[A-Z].*\b(?:Act|Measure)\s+\d{4}$/ and not (law =~ ~r/^\d{4}\s+Act$/) ->
+        law
+
+      true ->
+        term = Regex.escape("the " <> law)
+
+        Enum.find_value(rows, fn r ->
+          case Regex.run(
+                 ~r/[“"]#{term}[”"]\s+means\s+the\s+(.+?\b(?:Act|Measure)\s+\d{4})/iu,
+                 Map.get(r, :text) || ""
+               ) do
+            [_, title] -> title
+            nil -> nil
+          end
+        end)
+    end
+  end
+
   @doc """
   A staged clause's list item as `{subject, tail, date}` (V1-02): the
   provisions it names and the date it gives them — "Parts 1, 2 … on 16th
