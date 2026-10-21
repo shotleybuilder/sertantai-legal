@@ -18,7 +18,7 @@ decisions:
   - what: Read a staged clause's items as sentences of their own, so each item's provisions get its date, not only the law its earliest
     why: SI 2005/894 "Parts 1, 2 … on 16th April 2005; the remainder, on 16th July 2005" — the earliest date alone would date most rows three months early
     result: 2005/894 rows dated mostly 2005-07-16; Provisions skips the sentence a whole-law start came from (no false provision_unread)
-  - what: "Otherwise …" is the rest of the law, not a clause for the whole law
+  - what: 'An "Otherwise …" sentence is the rest of the law, not a clause for the whole law'
     why: read as general, it overrode SI 2017/469's earlier part as the law's start and cost 76 periods of history
     result: no law loses periods in the preview
   - what: Read a commencement table from the law's own Schedule in the stored CLML (Jason "fix both here")
