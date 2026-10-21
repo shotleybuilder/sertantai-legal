@@ -54,7 +54,8 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
 
   @doc """
   J5: a note on a whole provision inserted, added or substituted (a pointer
-  only: it withholds the law's start). A words note never is, the place
+  only: it withholds the law's start). A words, definition or entry note
+  never is (V1-03: "definition of … inserted", NISI 2003/419), the place
   between "Words" and the verb read across its abbreviations ("Words in
   art. 18(1) inserted": SI 2015/595).
   """
@@ -63,7 +64,8 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
 
   def whole_insertion_note?(text) do
     text =~ ~r/\b(?:inserted|added|substituted)\b/i and
-      not (text =~ ~r/\bwords?\b(?:[^.;]|\.\s*(?=[\d(]))*?\b(?:inserted|added|substituted)\b/i)
+      not (text =~
+             ~r/\b(?:words?|definitions?|entr(?:y|ies))\b(?:[^.;]|\.\s*(?=[\d(]))*?\b(?:inserted|added|substituted)\b/i)
   end
 
   @doc """

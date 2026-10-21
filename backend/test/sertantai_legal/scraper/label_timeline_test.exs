@@ -172,4 +172,20 @@ defmodule SertantaiLegal.Scraper.LabelTimelineTest do
     # markup with no note at all stays undated
     assert LabelTimeline.undated_change(changes, %{}).("L:reg.2(1)")
   end
+
+  test "V1-03: a definition or entry inserted is words in the provision, not the provision inserted (NISI 2003/419 art.2)" do
+    refute LabelTimeline.whole_insertion_note?(
+             "Art. 2: definition of \"the Agency\" inserted (15.4.2011) by Gas and Electricity (Internal Markets) Regulations (Northern Ireland) 2011"
+           )
+
+    refute LabelTimeline.whole_insertion_note?(
+             "Entry in Sch. 1 inserted (1.4.2010) by S.I. 2010/675"
+           )
+
+    refute LabelTimeline.whole_insertion_note?(
+             "Definitions in reg. 2(1) substituted (6.4.2009) by S.I. 2009/507"
+           )
+
+    assert LabelTimeline.whole_insertion_note?("Art. 2A inserted (15.4.2011) by S.R. 2011/155")
+  end
 end
