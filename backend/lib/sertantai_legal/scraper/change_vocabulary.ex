@@ -14,21 +14,26 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Evidence, Label, Merge}
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.{Feed, Markup}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.{AmendingLaw, Feed, Markup}
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
 
   @doc """
   Label periods for each provision in `provisions` (id → `%{extent, start}`,
-  ids in LAT grammar without the law prefix), from the law's CLML and its
-  feed effects.
+  ids in LAT grammar without the law prefix), from the law's CLML, its feed
+  effects and — primary — the amending laws' own text (`opts`: `:rules`, the
+  stored `Amendment.Rule`s amending the law; `:commencement`, each amending
+  law's `Commencement.Rule`s).
   """
-  @spec labels(String.t(), String.t(), [Effect.t()], %{String.t() => map()}) ::
+  @spec labels(String.t(), String.t(), [Effect.t()], %{String.t() => map()}, keyword()) ::
           %{String.t() => [Label.period()]}
-  def labels(law_name, xml, effects, provisions) do
+  def labels(law_name, xml, effects, provisions, opts \\ []) do
     facts = Markup.provisions(xml)
 
+    amending =
+      AmendingLaw.read(Keyword.get(opts, :rules, []), Keyword.get(opts, :commencement, %{}))
+
     changes =
-      (Feed.read(effects) ++ Markup.read(xml))
+      (Feed.read(effects) ++ Markup.read(xml) ++ amending)
       |> Merge.merge()
       |> Enum.map(&Evidence.resolve(&1, extent(provisions, &1.target)))
 

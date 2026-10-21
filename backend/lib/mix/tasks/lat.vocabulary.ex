@@ -54,7 +54,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       |> Merge.merge()
       |> Enum.map(&Evidence.resolve(&1, get_in(provisions, [&1.target, :extent])))
 
-    labels = ChangeVocabulary.labels(law, xml, effects, provisions)
+    labels = ChangeVocabulary.labels(law, xml, effects, provisions, primary(law))
 
     for id <- ids do
       Mix.shell().info(
@@ -105,7 +105,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
             &{&1.id, %{extent: &1.extent, start: &1.start, start_dated: not &1.undecidable}}
           )
 
-        labels = ChangeVocabulary.labels(law, xml, effects, provisions)
+        labels = ChangeVocabulary.labels(law, xml, effects, provisions, primary(law))
         Enum.map(entries, &{&1, labels[&1.id]})
       end)
 
@@ -131,6 +131,20 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       end)
 
     Mix.shell().info("\n#{passed} / #{length(results)} golden provisions pass")
+  end
+
+  # the amending laws' own text: their stored rules, and each one's
+  # commencement rules
+  defp primary(law) do
+    rules = SertantaiLegal.Scraper.Amendment.Store.for_law(law)
+
+    commencement =
+      rules
+      |> Enum.map(& &1.source.law)
+      |> Enum.uniq()
+      |> Map.new(&{&1, SertantaiLegal.Scraper.Commencement.Store.for_law(&1)})
+
+    [rules: rules, commencement: commencement]
   end
 
   defp line(p),
