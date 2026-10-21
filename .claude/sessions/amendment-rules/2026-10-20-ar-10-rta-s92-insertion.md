@@ -28,12 +28,12 @@ bugs:
     affected: '10 rows in the 6-law pilot (1990 c.43 s.153(1)); corpus unknown'
     fix: 'an ancestor''s record whose affected_ref names a descendant versions only that descendant, never its siblings'
     status: fixed
-  - pattern: 'A row''s own words-level omission ("word omitted") does not start a version: 1986 c.44 s.23C(2) by 2013 c.24 (2014-04-01) was dated only through the sibling s.23C(2A) insertion on s.23C; with that cut it shows 2011 (also 1991 c.56 s.159(2)(a), s.99(2A)(a)) — cause unverified'
+  - pattern: 'A row''s own words-level omission ("word omitted") does not start a version: 1986 c.44 s.23C(2) by 2013 c.24 (2014-04-01) was dated only through the sibling s.23C(2A) insertion on s.23C; with that cut it shows 2011 (also 1991 c.56 s.159(2)(a), s.99(2A)(a)) — cause: the version rule asked every repeal to cover the row''s whole extent; 2013 c.24''s omission was E+W+S on an E+W+S+NI row'
     category: label-projection
     module: LabelProjection
     affected: '3 rows in the 10-law pilot'
-    fix: 'trace why an own repealed / "word omitted" change is not a version (covers_row? or period split)'
-    status: open
+    fix: 'a words omission is a version where it overlaps the row (as a words substitution); only a whole repeal must cover the row''s extent'
+    status: fixed
 ---
 
 # Session: AR-10: RTA 1988 s.92 Insertion Recheck (ACTIVE)
@@ -48,6 +48,7 @@ RTA 1988 9 rows: in_force_from moved 1992-07-01 → 1988-11-15 when an undated "
 - ✅ Fix at source: AR-08's `quoting_clause` missed "added" — s.92(10) now inserted 1992-07-01 (SI 1992/1286); pilot 6 laws vs control
 - ✅ Markup pointer (Jason: here): `Refs.change_refs/1` — a change's note ref by ChangeId, from its attribute else the CommentaryRef just before it; unjoined markup takes it. Pilot: 28 rows gain dates (s.92(10) 1992-07-01 RTA 1991)
 - ✅ Ancestor placement (Jason: here): `LabelProjection.relevant/2` — an ancestor's record reaches a row only when its affected_ref is the row or above it; a list or range reaches its members only; unparsed refs reach all. Pilot: ~1,630 rows, 1,400 of 1,403 lost dates came only via a sibling; 167 false repeals gone (markup in force)
+- ✅ Own "word omitted" not a version (Jason 2026-10-21: chase here): a words omission versions where it overlaps the row; only a whole repeal must cover its extent. Pilot: 19 rows dated by their own omissions
 
 ## Dependencies
 
@@ -81,3 +82,9 @@ Rule as built: `affected_ref` read as {path, members} — "s. 153(1)(z10)" the p
 Pilot `ar10_fix4` vs `ar10_fix2` (same 10 laws, pointer fix in both): 3,255 diffs only with the rule, 28 gone (s.102(9) of 1984 c.27: dated by its own laws, 1991 c.40 1993-07-05 / 2004 c.18 2008-03-31, not SI 2008/2367's sibling change). Classes: effective_from moved 1,252; changed_by changed 868 / emptied 535; repealed(_saved) → in_force 170 and the rows' markup says in force for all 167 checked (e.g. "s. 61A(1) repealed" placed on s.61A had repealed s.61A(3)(b); "s. 87C(8) omitted" had repealed s.87C(2)); in_force → unknown 42: J5 rows (inserted, undated) that had taken a sibling's insertion date (1990 c.43 s.161(5): Part VIII's s.153(1) insertions). Check: of 1,403 rows losing a changed_by law, 1,400 had no record by that law on the row — the date came through an ancestor only. The 3 others logged (own "word omitted" not a version).
 
 Suite 2,925 pass. Corpus: the measure run counts it.
+
+## 5. Own words omission (Jason 2026-10-21: chase here)
+
+1986 c.44 s.23C(2) (extent E+W+S+NI): 2013 c.24's "word omitted" (effect extent E+W+S, 2014-04-01) is `repealed`, and the version rule asked every repeal to cover the row's whole extent (`covers_row?`) — right for a whole repeal (the row repealed), wrong for a words omission, a text change like a words substitution (which needs only to overlap: `for_row?`). Its 2014 date had come only through the sibling s.23C(2A) insertion; the ancestor rule exposed it. Fix: `words_level?` repeals skip `covers_row?`. 1991 c.56 s.159(2)(a) (SI 2021/1208) the same; s.99(2A)(a) is markup-repealed — the label now says repealed from 2018 with a markup_conflict gap (before: in force, 2014 c.21 — against the text).
+
+Pilot `ar10_fix5` vs `ar10_fix4`: 19 rows move, each to its own words omission's date — many territorial (Welsh omissions on E+W rows, 1990 c.8 s.70A(1)(a) asc 2024/3; NI SR 2006/425 on 1875 c.17 s.102), as a territorial words substitution already versions the row. Suite 2,926 pass.
