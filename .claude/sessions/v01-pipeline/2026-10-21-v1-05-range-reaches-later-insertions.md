@@ -29,4 +29,4 @@ Found in V1-04's parse diff (2026-10-21). A range record ("ss. 78(4B)-(4D) omitt
 
 ## Dependencies
 
-- ⬜ V1-04 closed (its parse diff found this)
+- ⬜ CV-01 signed off: the range rule belongs to the vocabulary's evaluator (CV-04); this session may fold into it

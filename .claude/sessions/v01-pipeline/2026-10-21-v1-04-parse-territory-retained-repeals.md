@@ -1,6 +1,6 @@
 ---
 session: 'V1-04: Parse Territory for Retained Repeals'
-status: active
+status: suspended
 release: v0.1
 opened: '2026-10-21'
 parent: v01-pipeline/2026-10-21-v1-00-meta.md
@@ -31,11 +31,19 @@ bugs:
     status: fixed
 ---
 
-# Session: V1-04: Parse Territory for Retained Repeals (ACTIVE)
+# Session: V1-04: Parse Territory for Retained Repeals (SUSPENDED)
 
 ## Problem
 
 Jason 2026-10-21: "I cannot have recent laws with wrong territory metadata" — the most reliable and correct fix, at source, shipping with v0.1. SI 2010/404 reg.14 reads repealed everywhere today. The markup keeps its text (`RetainText="true"`) and Welsh SIs keep amending it, but the parse's territory claim (`EffectTerritory.claim/5`, step 7 `:effect_everywhere`, LR-07) reads a retained repeal whose effect has no territorial application as repealed everywhere. The effect here is the "(England)" SI 2023/911's. The parse writes `excluded_extent` E+W, `markup_status` `repealed_saved`, and J2 (markup wins today) then holds the label. V1-03 fixed the same gap in the register (a feed effect with no territory takes its affecting law's); the parse still has it, both ways. Over-claim: step 7 reads SI 2010/404 reg.14 as repealed everywhere. No claim: step 8 leaves Forestry Act 1967 s.1(4)(a), repealed for S (asp 2018/8) and W (wsi 2013/755), with no exclusion, so today reads E+W+S instead of E. Both are retained repeals (`RetainText="true"`, no Extent) whose affecting law is territorial.
+
+## Suspended (2026-10-21)
+
+Jason 2026-10-21: "we've again slipped into chasing edges in code rather than abstracting … Abstracting all change sources into a common vocabulary that we can just 'read' is the only way to do the labelling reliably. Suspend this session." The territory audit's residuals (Coronavirus Act 2020 s.78, SI 2016/1105 reg.72(2)(b)) come from the parse and the register merging markup and feed effects separately, with pairwise rules (rule 3's gate). That is now the change-vocabulary thread (`change-vocabulary/2026-10-21-cv-00-meta.md`).
+
+- **Committed, not pushed:** `be338f00` (`LawTerritory`; `Effect.affecting_territory`; the claim's `:affecting_law` step for retained text; the whole-law orphan join). It stays: it is evidence the vocabulary keeps (CV-03/CV-04 re-express it).
+- **Parked:** rule 3 per effect by identity, in `git stash` "V1-04 parked: rule 3 per effect by identity (superseded by the change-vocabulary thread)". Superseded by CV-04's merge by identity; not to be applied.
+- **Not done:** the re-parse (now the CV thread's switch-over, CV-06, into the v0.1 re-parse); the audit residuals are CV-06 acceptance cases.
 
 ## Todo
 
@@ -48,8 +56,8 @@ Jason 2026-10-21: "I cannot have recent laws with wrong territory metadata" — 
 - ✅ Parse diff on the affected laws (below) (`mix lat.parse_snapshot` / `lat.text_diff --store only`), classified; only territory fields and markup_status move
 - ✅ Gemini review of the change (`backend/data/code-reviews/2026-10-21-v1-04-parse-territory-gemini.md`: rows showing only numbers now count as retained, 0 rows moved; the rest noted below) (parser territory rule), saved to `backend/data/code-reviews/`
 - ✅ Close the identical open bug in LR-07 and LR-17 ("Retained repeal read as everywhere when the feed is silent on territory …": 2010/404 reg.14; its 2020/7 s.8 half is V1-03's expiry fix) as fixed here
-- ⬜ Territory audit, laws from 2002, after the fix: rows in force today whose territory is unknown or the whole extent while the register holds a dated territorial repeal (or insertion) narrower than the row; each a fix here or a listed known limit — nothing left unexplained for v0.1
-- ⬜ Dry run → Jason → restore point (`legal_articles`, `amendment_annotations`, `lat_change_log`, `lat_label_timeline`) → re-parse (`mix lat.reparse --store only`, the laws whose parse changes; ParserVersion moves) — folded into the v0.1 relabel (V1-00)
+- ✅ Territory audit, laws from 2002, after the fix (2 provisions; to CV-06): rows in force today whose territory is unknown or the whole extent while the register holds a dated territorial repeal (or insertion) narrower than the row; each a fix here or a listed known limit — nothing left unexplained for v0.1
+- ⏸️ (suspended → CV-06) Dry run → Jason → restore point (`legal_articles`, `amendment_annotations`, `lat_change_log`, `lat_label_timeline`) → re-parse (`mix lat.reparse --store only`, the laws whose parse changes; ParserVersion moves) — folded into the v0.1 relabel (V1-00)
 
 ## Measure (2026-10-21)
 
