@@ -291,11 +291,18 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     |> Enum.reduce(0, fn {d, n}, acc -> if d < n, do: acc - d, else: acc + d end)
   end
 
+  # a provision's number: "153", "27ZA", "97Z1" (asp), "12a" (an EU Article)
+  @number "\\d+[A-Za-z]*(?:\\d+[A-Z]*)?"
+
   # "s.153(1)(q)" → ["153", "1", "q"]: the number alone heads it — within
   # one law the feed's kind word can differ from the row's ("art. 10" on an
-  # NI Order whose rows are reg.10: NISI 2006/1254)
+  # NI Order whose rows are reg.10: NISI 2006/1254); an EU row's id names
+  # its Article ("art.Article 12(2)(a)")
   defp path(local) do
-    case Regex.run(~r/^(?:s|reg|art|rule)\.(\d+[A-Z]*)((?:\([0-9A-Za-z]+\))*)$/, local) do
+    case Regex.run(
+           ~r/^(?:s|reg|art|rule)\.(?:Article\s+)?(#{@number})((?:\([0-9A-Za-z]+\))*)(?:n\d+)?$/,
+           local
+         ) do
       [_, number, brackets] -> [number | brackets(brackets)]
       nil -> nil
     end
@@ -314,7 +321,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     r = String.replace(ref, ~r/\s+/, "")
 
     with [_, head, bs, rest] <-
-           Regex.run(~r/^(?:s|reg|art|rule)\.(\d+[A-Z]*)((?:\([0-9A-Za-z]+\))*)(.*)$/i, r) do
+           Regex.run(~r/^(?:s|reg|art|rule)\.(#{@number})((?:\([0-9A-Za-z]+\))*)(.*)$/i, r) do
       bs = brackets(bs)
 
       case {rest, bs} do
@@ -324,10 +331,12 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
             k -> {[head | Enum.take(bs, k)], {:list, Enum.drop(bs, k)}}
           end
 
+        # a range is its last bracket to one more ("(a)-(nn)"); anything
+        # after it ("(i)-(iv)(vi)(b)(3)": SI 2023/284) isn't read
         {"-" <> to, [_ | _]} ->
-          case brackets(to) do
-            [last | _] -> {[head | Enum.drop(bs, -1)], {:range, List.last(bs), last}}
-            [] -> nil
+          case Regex.run(~r/^\(([0-9A-Za-z]+)\)$/, to) do
+            [_, last] -> {[head | Enum.drop(bs, -1)], {:range, List.last(bs), last}}
+            nil -> nil
           end
 
         _ ->

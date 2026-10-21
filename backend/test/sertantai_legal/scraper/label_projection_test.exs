@@ -408,6 +408,79 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
              periods(law, [row(law, "reg.10(a)")], changes, law_start: ~D[2006-07-01])
   end
 
+  test "AR-10: a ref with more after a range (\"reg. 14(1)(2)(a)(i)-(iv)(vi)(b)(3)(4)\") isn't read: it reaches every row (SI 2023/284)" do
+    law = "UK_uksi_2023_284"
+
+    changes = [
+      change(
+        law,
+        "reg.14",
+        "cif",
+        "commenced",
+        "coming into force",
+        law,
+        [
+          {~D[2023-04-06], nil}
+        ],
+        affected_ref: "reg. 14(1)(2)(a)(i)-(iv)(vi)(vii)(b)(c)(3)(4)",
+        via: ["note_own"]
+      )
+    ]
+
+    assert [{~D[2023-04-06], nil, "in_force", ~D[2023-04-06], _}] =
+             periods(law, [row(law, "reg.14(2)")], changes, [])
+  end
+
+  test "AR-10: an EU row id (\"art.Article 12(2)(a)\") is on the line of \"Art. 12(2)\" (Directive 2011/92)" do
+    law = "UK_eudr_2011_92"
+
+    changes = [
+      change(
+        law,
+        "art.Article 12",
+        "cif",
+        "commenced",
+        "coming into force",
+        law,
+        [
+          {~D[2012-02-17], nil}
+        ],
+        affected_ref: "Art. 12(2)",
+        via: ["ref"]
+      )
+    ]
+
+    assert [{~D[2012-02-17], nil, "in_force", ~D[2012-02-17], _}] =
+             periods(law, [row(law, "art.Article 12(2)(a)")], changes, [])
+  end
+
+  test "AR-10: ids with an inserted number or an EU Article letter are on the line (asp 2003/2 s.97Z1; Article 12a)" do
+    law = "UK_asp_2003_2"
+
+    on = fn ancestor, ref, sid ->
+      changes = [
+        change(
+          law,
+          ancestor,
+          "cif",
+          "commenced",
+          "coming into force",
+          law,
+          [{~D[2004-01-01], nil}],
+          affected_ref: ref,
+          via: ["ref"]
+        )
+      ]
+
+      periods(law, [row(law, sid)], changes, [])
+    end
+
+    assert [{~D[2004-01-01], nil, "in_force", _, _}] = on.("s.97Z1", "s. 97Z1", "s.97Z1(1)(a)")
+
+    assert [{~D[2004-01-01], nil, "in_force", _, _}] =
+             on.("art.Article 12a", "Art. 12a", "art.Article 12a(1)")
+  end
+
   test "AR-10: a words omission for part of the row's extent is a version, as a words substitution (1986/44 s.23C(2))" do
     law = "UK_ukpga_1986_44"
 
