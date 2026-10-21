@@ -97,9 +97,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
       {:feed, :territory},
       {:markup, :territory},
       {:feed, :effect_extent, :narrower_than_provision},
-      {:law, :territory, :retained_removal_narrower}
+      {:law, :territory, :retained_removal_narrower},
+      # an insertion by a devolved legislature's Act: its competence
+      {:law, :competence, :insertion}
     ],
-    date: [{:commencement, :date}, {:feed, :date}],
+    date: [{:commencement, :date}, {:feed, :date_first}, {:feed, :date}],
     # a commencement stage that doesn't complete the provision
     partial: [{:commencement, :partial}, {:feed, :partial}],
     # a removal with savings (D3: repealed_saved)
@@ -178,6 +180,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
   The table's named conditions:
   - `:in_part` — the claim is a removal in part
   - `:non_empty` — the list claim has an item
+  - `:insertion` — the change inserts text
   - `:narrower_than_provision` — the territory doesn't cover the provision's extent
   - `:retained_removal_narrower` — the change removes text that is
     retained (the markup's RetainText; with no Repeal markup, the provision
@@ -187,6 +190,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
   @spec condition?(atom(), term(), %{change: Change.t(), extent: String.t() | nil}) :: boolean()
   def condition?(:in_part, operation, _context), do: operation == :repealed_in_part
   def condition?(:non_empty, list, _context), do: list != []
+
+  def condition?(:insertion, _territory, %{change: c}),
+    do:
+      (Change.value(c, :law_text, :operation) || Change.value(c, :markup, :operation) ||
+         Change.value(c, :feed, :operation)) == :inserted
 
   def condition?(:narrower_than_provision, territory, %{extent: extent}),
     do: not Territory.covers?(territory, extent)

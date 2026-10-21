@@ -68,9 +68,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
 
     later? = &(Date.compare(&1.resolved.date, start) == :gt)
 
+    # prospective while a commencement reaches it later — unless it already
+    # exists in force (partly) from its own insertion at the start
+    started? =
+      Enum.any?(reaching, fn c ->
+        c.target == id and c.resolved.operation == :inserted and c.resolved.level == :provision and
+          not later?.(c)
+      end)
+
     prospective? =
       Map.get(provision, :prospective, false) or
-        Enum.any?(reaching, &(&1.resolved.operation == :commenced and later?.(&1)))
+        (not started? and
+           Enum.any?(reaching, &(&1.resolved.operation == :commenced and later?.(&1))))
 
     self = Map.get(provision, :law)
 
@@ -91,13 +100,38 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
 
     dated? = Map.get(provision, :start_dated, true)
 
+    # its own whole insertion at the start: partly in force when only its
+    # first stage is (TCPA 1990 s.78(4BA)); and where the inserted text
+    # applies
+    own_insertion =
+      Enum.find(reaching, fn c ->
+        c.target == id and c.resolved.operation == :inserted and c.resolved.level == :provision and
+          Date.compare(c.resolved.date, start) == :eq
+      end)
+
+    partial? = own_insertion != nil and own_insertion.resolved.partial
+
+    territory =
+      case own_insertion && own_insertion.resolved.territory do
+        t when is_binary(t) and is_binary(provision.extent) -> intersect(provision.extent, t)
+        t when is_binary(t) -> t
+        _ -> provision.extent
+      end
+
+    status =
+      cond do
+        prospective? -> :prospective
+        partial? -> :in_force_partial
+        true -> :in_force
+      end
+
     first = %{
       valid_from: start,
       valid_to: nil,
-      status: if(prospective?, do: :prospective, else: :in_force),
-      in_force_from: if(prospective? or not dated?, do: nil, else: start),
-      changed_by: if(prospective?, do: [], else: made_by),
-      territory: provision.extent,
+      status: status,
+      in_force_from: if(status != :in_force or not dated?, do: nil, else: start),
+      changed_by: if(status != :in_force, do: [], else: made_by),
+      territory: territory,
       tiers:
         Map.new(
           ~w(status in_force_from changed_by territory)a,

@@ -62,7 +62,31 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
          ])}
       end
     else
-      [{id, claims(e)}]
+      case {operation(e), stages(e)} do
+        # a whole insertion in stages (for specified purposes, then fully):
+        # the provision exists from the first stage, partly in force; each
+        # later stage commences it further (TCPA 1990 s.78(4BA))
+        {:inserted, [{first, q} | later]} when later != [] and e.type in ["inserted", "added"] ->
+          [
+            {id,
+             claims(e) ++
+               Claim.new(:feed, :date_first, first, id) ++
+               Claim.new(:feed, :partial, not String.match?(q || "", @full), id)}
+            | for {date, qualification} <- later do
+                {"#{id}@#{date}",
+                 Enum.concat([
+                   Claim.new(:feed, :operation, :commenced, id),
+                   Claim.new(:feed, :level, :provision, id),
+                   Claim.new(:feed, :date, date, id),
+                   Claim.new(:feed, :partial, not String.match?(qualification || "", @full), id),
+                   Claim.new(:feed, :by, e.affecting, id)
+                 ])}
+              end
+          ]
+
+        _ ->
+          [{id, claims(e)}]
+      end
     end
   end
 
@@ -120,6 +144,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
     end
   end
 
+  # an Act of a devolved legislature makes law only within its competence
+  # (for Wales, GoWA 2006 s.108A): what it inserts applies in its territory.
+  # A devolved minister's instrument carries no such limit (Forestry Act 1967
+  # s.1(1A), inserted by a Welsh SI, applies in England too)
+  @devolved_acts ~w(asp anaw asc mwa nia apni)
+
+  defp competence(%Effect{affecting: law, affecting_territory: t}) when is_binary(law) do
+    if Enum.at(String.split(law, "_"), 1) in @devolved_acts, do: t
+  end
+
+  defp competence(_e), do: nil
+
   defp depth(id), do: id |> String.split("-") |> length()
 
   defp claims(%Effect{effect_id: id} = e) do
@@ -132,7 +168,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
       Claim.new(:feed, :applied, e.applied, id),
       Claim.new(:feed, :savings, e.savings, id),
       Claim.new(:feed, :by, e.affecting, id),
-      Claim.new(:law, :territory, e.affecting_territory, id)
+      Claim.new(:law, :territory, e.affecting_territory, id),
+      Claim.new(:law, :competence, competence(e), id)
     ])
   end
 
