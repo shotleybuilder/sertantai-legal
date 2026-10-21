@@ -17,6 +17,18 @@ bugs:
     affected: '~1,060 rows in 9 laws reading no_clause / clause_unread'
     fix: listed/pronoun fallbacks, own-part forms, prefix commas, the named-day alias (257c7e58)
     status: fixed
+  - pattern: 'A law commenced by a table in its own Schedule ("Each provision … mentioned in the second column of the Table in Schedule 1 shall come into force on the date mentioned in the first column") had no start: LAT holds no Schedules'
+    category: law start
+    module: LawStart.ScheduleTable / Provisions.table_groups / OwnClause
+    affected: '267 rows in 2 laws (SI 2012/3119, wsi 2013/747)'
+    fix: read the stored Schedule's table; a group per row, partial by purpose or the item's own qualifier; the law rule leaves out what the table names (2cc610bc)
+    status: fixed
+  - pattern: 'A law tied to another law''s provision ("at the same time as section 83 of the 2022 Act comes into force") had no date'
+    category: law start
+    module: LawStart.Clause.tied_ref / ChangeCollector.law_start_input
+    affected: '65 rows in 3 laws (SI 2023/854, 2024/41, 2023/907)'
+    fix: the other law (named or a defined term) and provision; its date from the other law's stored feed via the commencement evaluator (2cc610bc)
+    status: fixed
 ---
 
 # Session: V1-02: Law Start for Laws from 2002 with an Unread Clause (ACTIVE)
@@ -28,7 +40,8 @@ bugs:
 ## Todo
 
 - ✅ The 27 laws grouped by clause form (§1)
-- ✅ Reader fixes, tests first (§2): 20 of 27 laws now start; 7 left (§3, Jason)
+- ✅ Reader fixes, tests first (§2): 20 of 27 laws now start
+- ✅ Jason 2026-10-21 "fix both here": Schedule tables and tied-to-another-law (§4); 25 of 27 start; 142 rows known limits
 - ✅ Old vs new `LawStart` over every LAT law (DB rows): 16 laws move; previewed and spliced into `v102_final` (§2)
 - ⬜ Batch into the v0.1 relabel (V1-00)
 
@@ -60,8 +73,15 @@ bugs:
 - **Preview (16 laws, 0 errors):** unknown today 1,560 → 7; no_start 1,492 → 0; periods 5,020 → 10,069; no law loses periods.
 - **Spliced (`v102_final`):** UK ≥2002 unknown today 2,208 → **658**, no_start 1,967 → 474; corpus unknown 13,134 → 11,584.
 
-## 3. Left (474 rows, Jason)
+## 3. Left after §2 (474 rows; Jason: fix the tables and the tied laws)
 
 - **Schedule tables (267 rows, 2 laws).** The dates are in the law's own Schedule, which LAT doesn't hold. `LawStart` would need the stored Schedule, as the order reader has. A small fix is possible.
 - **Tied to another law (65 rows, 3 laws).** The evaluator supports `{:with, ref}`. Building Safety Act 2022 s.83 is dated by its own orders, so this is resolvable.
 - **Known limits:** laid-before-Parliament dates (66), the "main commencement day" defined by a treaty (56), commencement orders' own rows (10), Measure approval date (5), "Regulation 15 … when section 7(3) of the Water Act 2003 comes into force" (5).
+
+## 4. Schedule tables and tied laws (2026-10-21)
+
+- **Schedule tables** (`LawStart.ScheduleTable`, `Provisions.table_groups/3`). `law_start_input` reads the stored Schedule only when a row cites such a table. Each table row is date | provisions | purpose, in the columns the clause names. A row commences its provisions fully when its purpose is "all" ("All purposes", "In respect of all buildings"); otherwise partly. An item's own bracketed qualifier ("11(a) (in so far as it inserts …)", "Regulation 17 (for the purpose of new regulation 25A)") makes only that item partial; "(so far as not otherwise commenced)" completes it. The law-level rule leaves out every provision the table names, so it never completes a partial one. Cell text is read by walking the nodes: SI 2012/3119's later rows wrap their cells in `<leg:Substitution xmlns:leg=…>`, which `string(.)` drops.
+- **Tied** (`Clause.tied_ref/2`, `ChangeCollector.tied_date`). The other law is named or reached through a defined term ("“the 2022 Act” means the Building Safety Act 2022"). Its stored feed's coming-into-force effects become rules (`Commencement.Effects`), and the evaluator gives the provision's full date, else its first. Checked against the feed: Building Safety Act s.83 was for specified purposes from 2022-04-28 and fully from 2024-01-16 (SI 2024/40); Health and Care Act s.162 was wholly in force from 2023-08-18 (SI 2023/821). The `tied_to_other_law` catalogue entry now dates.
+- **Affected set:** the old vs new start dump moves exactly 5 laws. Preview (0 errors): unknown 332 → 0, no_start 332 → 0; one row partly in force (reg.17's 25A/25B purposes).
+- **Spliced (`v102_final2`):** UK ≥2002 unknown today **326** (from 2,208), no_start 142, all known limits (§3). Corpus unknown 11,252. Label changes vs today's DB: 36,717 over 16,421 rows in 346 laws.
