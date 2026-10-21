@@ -1,12 +1,12 @@
 ---
 session: 'V1-02: Law Start for Laws from 2002 with an Unread Clause'
-status: pending
+status: active
 release: v0.1
 opened: '2026-10-21'
 parent: v01-pipeline/2026-10-21-v1-00-meta.md
 ---
 
-# Session: V1-02: Law Start for Laws from 2002 with an Unread Clause (PENDING)
+# Session: V1-02: Law Start for Laws from 2002 with an Unread Clause (ACTIVE)
 
 ## Problem
 
