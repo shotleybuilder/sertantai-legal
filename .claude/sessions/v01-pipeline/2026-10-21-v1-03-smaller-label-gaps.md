@@ -4,6 +4,13 @@ status: pending
 release: v0.1
 opened: '2026-10-21'
 parent: v01-pipeline/2026-10-21-v1-00-meta.md
+bugs:
+  - pattern: 'A row id with a duplicate disambiguator ("s.1(2)n1") has no ancestors (LatStatus.ancestors), so it never inherits an ancestor''s change or commencement'
+    category: label projection
+    module: LatStatus.ancestors
+    affected: '552 rows / 90 laws (141 / 36 from 2002)'
+    fix: strip the nN disambiguator before computing ancestors
+    status: open
 ---
 
 # Session: V1-03: Smaller Label Gaps on Laws from 2002 (PENDING)
