@@ -9,14 +9,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.OwnCommencement do
 
   Not its own text: the feed's coming-into-force records (derived; the feed
   reader's), and an Act's Royal Assent where its clause leaves the rest to
-  orders (its start, not a commencement: CR-06). Pure.
+  orders, or a staged clause's earliest stage (the law's start, not a
+  provision's commencement: CR-06). Pure.
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Claim
   alias SertantaiLegal.Scraper.Commencement.{Evaluator, Order}
   alias SertantaiLegal.Scraper.Commencement.Rule
 
-  @not_text [:feed_commencement, :act_enactment]
+  # a staged clause's law-level rule is the law's start (its earliest
+  # stage, LR-33), not when a provision came in (CR-06; EUWA 2018 s.6)
+  @not_text [:feed_commencement, :act_enactment, :clause_staged]
 
   @doc "Claim sets `{key, target, claims}` for each provision in `ids` (LAT refs)."
   @spec read([Rule.t()], String.t(), [String.t()]) :: [{String.t(), String.t(), [Claim.t()]}]

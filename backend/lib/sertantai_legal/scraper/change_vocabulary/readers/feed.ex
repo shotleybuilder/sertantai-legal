@@ -141,6 +141,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
       |> Enum.map(fn {id, r} -> {Ref.from_clml(id, law), r} end)
       |> Enum.reject(&is_nil(elem(&1, 0)))
       |> Enum.uniq_by(&elem(&1, 0))
+      |> case do
+        # no provision we hold (a cross-heading): the event's facts are
+        # kept, unplaced ("?"), for the markup that places it (EUWA s.6's
+        # heading, 2024)
+        [] -> [{"?", false}]
+        targets -> targets
+      end
     end
   end
 

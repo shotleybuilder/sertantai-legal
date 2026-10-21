@@ -32,6 +32,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
 
     # the law's own text joins first, then the markup's legacy ids; a change
     # carrying an effect id the feed doesn't place there is its own
+    # the law's own commencement is its own change, never joined
+    {own, unkeyed} =
+      Enum.split_with(
+        unkeyed,
+        &(Change.values(&1, :commencement, :by) != [] and Change.values(&1, :law_text, :by) == [])
+      )
+
     {law_text, markup} = Enum.split_with(unkeyed, &(Change.values(&1, :law_text, :by) != []))
     {effect_keyed, legacy} = Enum.split_with(markup, &(EffectIndex.effect_id(&1.key) != nil))
 
@@ -44,6 +51,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
     |> Map.values()
     |> List.flatten()
     |> Kernel.++(effect_keyed)
+    |> Kernel.++(own)
   end
 
   # One effect id is one event, wherever its sources place it. The markup
@@ -108,17 +116,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
 
     case matches do
       [match] ->
-        # the more precise target stays (the orphan's when it lies below)
+        # the more precise target stays (the orphan's when it lies below) —
+        # unless the markup placed the change: where its text sits
         joined = %{
           match
-          | target: orphan.target,
+          | target: if(marked?(match), do: match.target, else: orphan.target),
             claims: match.claims ++ orphan.claims,
             aliases: match.aliases ++ orphan.aliases
         }
 
         by_target
         |> Map.update!(match.target, &List.delete(&1, match))
-        |> Map.update(orphan.target, [joined], &[joined | &1])
+        |> Map.update(joined.target, [joined], &[joined | &1])
 
       _ ->
         Map.update(by_target, orphan.target, [orphan], &[orphan | &1])
@@ -133,6 +142,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
   defp by(c), do: Change.value(c, :feed, :by) || Change.value(c, :law_text, :by)
 
   defp family(op) when op in [:repealed, :repealed_in_part], do: :removal
+  defp family(:commenced), do: :commencement
   defp family(nil), do: nil
   defp family(_text_change), do: :text
 end

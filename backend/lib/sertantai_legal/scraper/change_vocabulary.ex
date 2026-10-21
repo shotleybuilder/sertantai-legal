@@ -14,7 +14,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Evidence, Label, Merge}
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Change
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Ref}
+  alias SertantaiLegal.Scraper.LatRef
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.{
     AmendingLaw,
@@ -39,8 +40,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   def labels(law_name, xml, effects, provisions, opts \\ []) do
     facts = Markup.provisions(xml, law_name)
 
+    order =
+      xml |> Markup.order() |> Enum.map(&Ref.from_clml(&1, law_name)) |> Enum.reject(&is_nil/1)
+
     amending =
-      AmendingLaw.read(Keyword.get(opts, :rules, []), Keyword.get(opts, :commencement, %{}))
+      AmendingLaw.read(
+        Keyword.get(opts, :rules, []),
+        Keyword.get(opts, :commencement, %{}),
+        order
+      )
 
     # the law's own commencement, for each provision asked about (its base)
     own =
@@ -58,6 +66,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
         &Evidence.resolve(&1, extent(provisions, &1.target), Map.get(facts, &1.target, %{}))
       )
       |> existing()
+      |> Enum.reject(&(&1.target == "?"))
+
+    changes = changes ++ parent_commencements(changes, provisions, order)
 
     Map.new(provisions, fn {id, provision} ->
       {base, version} = version(id)
@@ -78,6 +89,82 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
 
       {id, Label.fold(base, provision, changes)}
     end)
+  end
+
+  # A provision commenced through its parts (EUWA 2018 s.6: s.6(7) on
+  # 2018-07-04, s.6(1)-(6) on 2020-12-31): partly in force from the first
+  # part's commencement, fully once every part is — credited to the law of
+  # the last. Only for a provision with no full commencement of its own.
+  defp parent_commencements(changes, provisions, order) do
+    for {id, _} <- provisions,
+        {base, _} = version(id),
+        not own_full?(changes, base),
+        parts = Enum.filter(order, &(parent(&1) == base)) |> Enum.uniq(),
+        parts != [],
+        stages = Enum.map(parts, &stages(changes, &1)),
+        Enum.any?(stages, &(&1 != [])),
+        change <- parent_stages(base, stages),
+        uniq: true,
+        do: change
+  end
+
+  defp own_full?(changes, id),
+    do:
+      Enum.any?(changes, fn c ->
+        c.target == id and c.resolved.operation == :commenced and not c.resolved.partial
+      end)
+
+  defp parent(ref), do: ref |> LatRef.ancestors() |> Enum.at(1)
+
+  # a part's dated commencements: [{date, partial?, by}]
+  defp stages(changes, part) do
+    for c <- changes,
+        c.target == part,
+        c.resolved.operation == :commenced,
+        c.resolved.date != nil,
+        do: {c.resolved.date, c.resolved.partial, c.resolved.by}
+  end
+
+  defp parent_stages(id, stages) do
+    first = stages |> List.flatten() |> Enum.map(&elem(&1, 0)) |> Enum.min(Date)
+
+    fulls =
+      Enum.map(stages, fn s ->
+        s |> Enum.reject(&elem(&1, 1)) |> Enum.min_by(&elem(&1, 0), Date, fn -> nil end)
+      end)
+
+    partial = synthetic(id, first, true, nil)
+
+    case Enum.any?(fulls, &is_nil/1) do
+      true ->
+        [partial]
+
+      false ->
+        {date, _, by} = Enum.max_by(fulls, &elem(&1, 0), Date)
+
+        if Date.compare(first, date) == :lt,
+          do: [partial, synthetic(id, date, false, by)],
+          else: [synthetic(id, date, false, by)]
+    end
+  end
+
+  defp synthetic(id, date, partial?, by) do
+    %Change{
+      key: "parts:#{id}@#{date}",
+      target: id,
+      resolved: %Evidence.Resolved{
+        operation: :commenced,
+        level: :words,
+        territory: nil,
+        date: date,
+        by: by,
+        retained: false,
+        partial: partial?,
+        saved: false,
+        sources: %{date: :parts},
+        tiers: %{date: :derived}
+      }
+    }
   end
 
   # a range reaches only provisions that existed at its date: one inserted

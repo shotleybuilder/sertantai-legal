@@ -36,10 +36,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
   Claim sets `{key, target, claims}` from the rules amending a law, dated
   by `commencement` (amending law → its `Commencement.Rule`s).
   """
-  @spec read([Rule.t()], %{String.t() => [CRule.t()]}) :: [{String.t(), String.t(), [Claim.t()]}]
-  def read(rules, commencement \\ %{}) do
+  @spec read([Rule.t()], %{String.t() => [CRule.t()]}, [String.t()] | nil) ::
+          [{String.t(), String.t(), [Claim.t()]}]
+  def read(rules, commencement \\ %{}, known \\ nil) do
+    known = known && MapSet.new(known)
+
+    # a target the amended law doesn't contain is a misread, not a fact
     for %Rule{source: %{law: law, ref: ref}} = r <- rules,
-        target <- targets(r) do
+        target <- targets(r),
+        known == nil or MapSet.member?(known, target) do
       key = "#{law}:#{ref}"
 
       {key, target,
