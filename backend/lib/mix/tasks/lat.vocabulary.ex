@@ -144,7 +144,13 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       |> Enum.uniq()
       |> Map.new(&{&1, SertantaiLegal.Scraper.Commencement.Store.for_law(&1)})
 
-    [rules: rules, commencement: commencement]
+    title =
+      case SertantaiLegal.Repo.query!("SELECT title_en FROM uk_lrt WHERE name = $1 LIMIT 1", [law]) do
+        %{rows: [[t]]} -> t
+        _ -> nil
+      end
+
+    [rules: rules, commencement: commencement, title: title]
   end
 
   defp line(p),

@@ -17,7 +17,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Claim
-  alias SertantaiLegal.Scraper.Commencement.Order
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Ref
   alias SertantaiLegal.Scraper.EffectFacts
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
 
@@ -34,11 +34,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   @full ~r/^\s*$|wholly in force|so far as not already in force/i
 
   @doc "Claim sets `{key, target, claims}` for each effect's target provisions."
-  @spec read([Effect.t()]) :: [{String.t(), String.t(), [Claim.t()]}]
-  def read(effects) do
+  @spec read([Effect.t()], String.t() | nil) :: [{String.t(), String.t(), [Claim.t()]}]
+  def read(effects, law_name \\ nil) do
     for %Effect{effect_id: id} = e <- effects,
         id != nil,
-        target <- targets(e),
+        target <- targets(e, law_name),
         {key, claims} <- changes(e),
         do: {key, target, claims}
   end
@@ -84,11 +84,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   # every provision: the target "*"
   @whole_law ~r/^\s*(?:Act|Regulations|Order|Rules|Measure|Scheme|Instrument|S\.\s?I\.)\s*$/i
 
-  defp targets(%Effect{affected_refs: refs, affected_ranges: ranges, affected_provisions: text}) do
+  defp targets(
+         %Effect{affected_refs: refs, affected_ranges: ranges, affected_provisions: text},
+         law
+       ) do
     if refs in [nil, []] and ranges in [nil, []] and String.match?(text || "", @whole_law) do
       ["*"]
     else
-      refs |> List.wrap() |> Enum.map(&Order.ref/1) |> Enum.reject(&is_nil/1) |> Enum.uniq()
+      refs
+      |> List.wrap()
+      |> Enum.map(&Ref.from_clml(&1, law))
+      |> Enum.reject(&is_nil/1)
+      |> Enum.uniq()
     end
   end
 

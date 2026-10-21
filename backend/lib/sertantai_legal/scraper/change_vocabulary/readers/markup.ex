@@ -20,8 +20,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
   import SweetXml
 
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Claim
-  alias SertantaiLegal.Scraper.Commencement.Order
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Claim, Ref}
   alias SertantaiLegal.Scraper.EffectIndex
 
   @changes ~w(Addition Substitution Repeal)a
@@ -36,15 +35,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     per territory sharing the provision's id, told apart by their
     DocumentURI: `…/regulation/36/england`, `…/wales`; C3).
   """
-  @spec provisions(String.t()) :: %{String.t() => map()}
-  def provisions(xml) do
+  @spec provisions(String.t(), String.t() | nil) :: %{String.t() => map()}
+  def provisions(xml, law_name \\ nil) do
     doc = SweetXml.parse(xml, quiet: true, namespace_conformant: false)
 
     # the status sits on the provision or an element around it (a P1group
     # has no id: Building Safety Act 2022 s.138)
     prospective =
       for el <- xpath(doc, ~x"//*[@Status='Prospective']/descendant-or-self::*[@id]"l),
-          ref = el |> xpath(~x"./@id"s) |> Order.ref(),
+          ref = el |> xpath(~x"./@id"s) |> Ref.from_clml(law_name),
           ref != nil,
           into: %{},
           do: {ref, %{prospective: true}}
@@ -53,7 +52,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
       for el <- xpath(doc, ~x"//*[@id][@DocumentURI]"l),
           territory = el |> xpath(~x"./@DocumentURI"s) |> version_territory(),
           territory != nil,
-          ref = el |> xpath(~x"./@id"s) |> Order.ref(),
+          ref = el |> xpath(~x"./@id"s) |> Ref.from_clml(law_name),
           ref != nil do
         {ref, territory}
       end
@@ -64,7 +63,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     # a removal there is retained elsewhere (V1-04)
     text =
       for el <- xpath(doc, ~x"//*[@id]"l),
-          ref = el |> xpath(~x"./@id"s) |> Order.ref(),
+          ref = el |> xpath(~x"./@id"s) |> Ref.from_clml(law_name),
           ref != nil,
           # its own words: not its number, title or sub-provisions
           String.length(el |> own() |> letters()) >= 2,
@@ -94,8 +93,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
   end
 
   @doc "Claim sets `{key, target, claims}`, one per change id."
-  @spec read(String.t()) :: [{String.t(), String.t(), [Claim.t()]}]
-  def read(xml) do
+  @spec read(String.t(), String.t() | nil) :: [{String.t(), String.t(), [Claim.t()]}]
+  def read(xml, law_name \\ nil) do
     doc = SweetXml.parse(xml, quiet: true, namespace_conformant: false)
     cited = cited(doc)
     own = own_texts(doc)
@@ -106,7 +105,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     |> Enum.flat_map(fn {change_id, occ} ->
       key = EffectIndex.effect_id(change_id) || change_id
 
-      for {ref, xml_id, group} <- placements(change_id, occ),
+      for {ref, xml_id, group} <- placements(change_id, occ, law_name),
           do: {key, ref, claims(change_id, group, xml_id, cited, own)}
     end)
   end
@@ -115,7 +114,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
   # all; with none (they span the law) — a legacy id is a change to the
   # whole law ("*", a whole-Act repeal for a territory: Forestry Act 1967),
   # an effect id is a change to each top provision it touches
-  defp placements(change_id, occ) do
+  defp placements(change_id, occ, law) do
     case occ |> Enum.map(& &1.path) |> lowest() do
       nil ->
         if EffectIndex.effect_id(change_id) do
@@ -123,13 +122,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
           occ
           |> Enum.reject(&(&1.path == []))
           |> Enum.group_by(&List.first(&1.path))
-          |> Enum.flat_map(fn {_top, group} -> placements(change_id, group) end)
+          |> Enum.flat_map(fn {_top, group} -> placements(change_id, group, law) end)
         else
           [{"*", "*", occ}]
         end
 
       id ->
-        case Order.ref(id) do
+        case Ref.from_clml(id, law) do
           nil -> []
           ref -> [{ref, id, occ}]
         end
