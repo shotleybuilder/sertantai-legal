@@ -1,12 +1,55 @@
 ---
 session: 'CV-02: The Vocabulary'
-status: active
+status: closed
 release: v0.1
 opened: '2026-10-21'
+closed: '2026-10-21'
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
+outcome: success
+
+summary: >
+  The thin slice proved the change-vocabulary design. Markup and feed are read into claims, merged by effect id (a legacy markup id joins by the law its note cites), each attribute chosen by one evidence table held as data, and folded into label periods. It gives the golden set's labels for SI 2010/404 reg.14, 14(1) and 14(3) and SI 2000/1043 reg.11(3), on fixtures and on the full stored CLML and feed, with no reconciling rules.
+
+decisions:
+  - what: in_force_from / changed_by follow D1 (when the current text took effect; the laws that made it)
+    why: Jason's D1 (2026-10-13); the golden drafts kept the original date across text changes; consistent with Gemini's C4
+    result: golden expectations normalised for the slice cases
+  - what: A territory-only repeal opens a period without versioning the text; labels start at the law's start
+    why: D1, and today's label convention (no made-to-in-force period for SIs)
+    result: SI 2010/404 reg.14 reads in force in W from 2023-10-01 with changed_by empty
+  - what: The evidence table is data with named conditions; resolved attributes are a struct
+    why: Gemini slice review — a condition hidden in code is a reconciling rule in disguise
+    result: Evidence.table/0; Evidence.Resolved
+  - what: Storage deferred to CV-04; a read-only mix lat.vocabulary for debugging
+    why: Jason 2026-10-21 "deferred store to allow schema development"
+    result: d1902bdd
+
+metrics:
+  slice: {provisions: 4, tests: 5, real_data_matches_golden: 4}
+
+lessons:
+  - title: A thin slice on the hardest golden cases tests the design before any widening
+    detail: Two laws exercised the legacy-id join, the retained-removal territory condition, C5 and C9; the same code then matched the full stored CLML and feed with no change.
+    tag: data
+  - title: Golden-set drafts need the project's existing label definitions, not their own
+    detail: The drafting agents chose their own in_force_from convention; D1 already defined it. State existing definitions in the drafting prompt.
+    tag: tooling
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/change_vocabulary.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/
+  - backend/test/sertantai_legal/scraper/change_vocabulary/slice_test.exs
+  - backend/lib/mix/tasks/lat.vocabulary.ex
+  - backend/data/code-reviews/2026-10-21-cv-02-slice-gemini.md
+
+depends_on:
+  - 2026-10-21-cv-01-architecture-review
+
+enables:
+  - CV-03 readers in full
 ---
 
-# Session: CV-02: The Vocabulary (ACTIVE)
+# Session: CV-02: The Vocabulary (CLOSED)
 
 ## Problem
 
@@ -20,7 +63,7 @@ Part of the change-vocabulary architecture shift (CV-00): one change record (ide
 - ✅ Merge by effect id; the evidence table for operation, territory and date (`ChangeVocabulary.Evidence`)
 - ✅ Label fold: status, in_force_from, changed_by list, territory (with "nowhere") from merged changes plus commencement
 - ✅ Green on both slice cases; classify what the slice taught (design changes back into CV-00/CV-01)
-- ⬜ Storage: Ash resources for changes and change_claims (Ash-generated migrations), beside `lat_change_log`
+- ⏸️ Storage: Ash resources for changes and change_claims (deferred to CV-04 — Jason 2026-10-21: "deferred store to allow schema development"); meanwhile `mix lat.vocabulary` (read-only debug)
 - ✅ Gemini review of the slice (`backend/data/code-reviews/2026-10-21-cv-02-slice-gemini.md`; below)
 
 ## Dependencies
@@ -69,4 +112,4 @@ Part of the change-vocabulary architecture shift (CV-00): one change record (ide
   - revival and gap periods;
   - staged territorial repeals.
 
-**Storage: Gemini says now, for debuggability.** Held until the readers widen (CV-03), so the Ash schema isn't migrated while the claim shape is still moving. Proposed meanwhile (not built): a read-only `mix` task printing a law's claims, merged changes and labels for debugging. Decision for Jason.
+**Storage: Gemini says now, for debuggability.** Held until the readers widen (CV-03), so the Ash schema isn't migrated while the claim shape is still moving. Proposed meanwhile (not built): a read-only `mix` task printing a law's claims, merged changes and labels for debugging. Decided (Jason 2026-10-21): deferred to CV-04; `mix lat.vocabulary` built (`d1902bdd`).

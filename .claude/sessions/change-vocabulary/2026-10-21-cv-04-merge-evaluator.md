@@ -19,6 +19,7 @@ Part of the change-vocabulary architecture shift (CV-00): changes merged by iden
 - ⬜ Ranges expanded once (document order) over provisions existing at the change's date (V1-05's rule; fold V1-05 in)
 - ⬜ Evidence table complete (all attributes; lists collected; conditions by operation)
 - ⬜ Measure the CV-01 register bugs (records on the wrong provision) against the merged changes
+- ⬜ Storage: Ash resources for changes and change_claims (Ash-generated migrations), beside `lat_change_log` (deferred from CV-02)
 - ⬜ Golden set: all 25 pass at the merge level
 
 ## Dependencies
