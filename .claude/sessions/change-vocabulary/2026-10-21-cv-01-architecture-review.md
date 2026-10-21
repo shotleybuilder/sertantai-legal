@@ -31,12 +31,12 @@ Part of the change-vocabulary architecture shift (CV-00): every change source an
 - ✅ Inventory: every reconciling rule — parse (`EffectTerritory` claim order, rule 3, orphan and whole-law joins, `LatStatus`), register (`ChangeCollector` sources, `Collect.territory`, feed territory), projection (J1–J6, T1, LR-26 D1′, AR-10 ancestor rule) — each restated as evidence-per-attribute
 - ✅ Retrospective (below): why the AR design review covered only the amending law's text (scope), and what the commencement ruleset did differently
 - ✅ Golden set (signed off by Gemini 2026-10-21; below): ~25 provisions across the hard cases (retained repeals by territorial laws, whole-law repeals, parallel E/W changes, ranges over later insertions, renumbering, staged commencement, legacy ids, words vs provision, EU retained law), each with its correct label periods worked out from the law and the sources, signed off by Gemini (Jason 2026-10-21: "Golden set - use Gemini to sign off") — the acceptance suite every later session runs (starts from the five V1-04 cases)
-- ⬜ Identity: how changes from different sources are matched when they share an effect id, when they don't (legacy markup ids, amending-law reads, notes as pointers), and when they disagree on the target (kind words: NI Order "art. 10" vs row reg.10)
-- ⬜ Granularity and time: one record per change; words vs whole provision; ranges (reach only provisions that existed at the range's date, V1-05); renumbering; prospective and staged changes
-- ⬜ Evidence order: per attribute, written as a readable table in one module (conditions included: removal vs insertion, retained text), each claim recording its winning source; the loser list only if cheap
-- ⬜ Target architecture: vocabulary, readers, merge by identity, evaluator, consumers; what is retired; storage beside `lat_change_log` during the switch; version hashes; idempotence and a time budget for a full run
-- ⬜ Switch-over plan: shadow runs (old and new labels per provision, every difference classified, against `v01_final`), consumers switched one at a time, restore points for rollback; the reconciling rules retired once the shadow diff is explained
-- ⬜ Gemini review of the plan, saved to `backend/data/code-reviews/`
+- ✅ Identity: how changes from different sources are matched when they share an effect id, when they don't (legacy markup ids, amending-law reads, notes as pointers), and when they disagree on the target (kind words: NI Order "art. 10" vs row reg.10)
+- ✅ Granularity and time: one record per change; words vs whole provision; ranges (reach only provisions that existed at the range's date, V1-05); renumbering; prospective and staged changes
+- ✅ Evidence order: per attribute, written as a readable table in one module (conditions included: removal vs insertion, retained text), each claim recording its winning source; the loser list only if cheap
+- ✅ Target architecture: vocabulary, readers, merge by identity, evaluator, consumers; what is retired; storage beside `lat_change_log` during the switch; version hashes; idempotence and a time budget for a full run
+- ✅ Switch-over plan: shadow runs (old and new labels per provision, every difference classified, against `v01_final`), consumers switched one at a time, restore points for rollback; the reconciling rules retired once the shadow diff is explained
+- ✅ Gemini review of the plan (`2026-10-21-cv-01-design-gemini.md`; below), saved to `backend/data/code-reviews/`
 - ⬜ Jason signs off; CV-02..06 scoped from the plan
 
 ## Dependencies
@@ -127,6 +127,35 @@ Part of the change-vocabulary architecture shift (CV-00): every change source an
 - Should `Commencement.Rule` become claims in the same merge, or stay a separate ruleset the merge reads?
 - Should territorial version rows be one `Provision` with versions, or separate provisions?
 - Is `retained` a change attribute or a provision fact?
+
+## Gemini design review (2026-10-21, gemini-2.5-pro) and what changed
+
+`backend/data/code-reviews/2026-10-21-cv-01-design-gemini.md`: "the design is well-structured to handle the complexity revealed by the golden set … not over-engineered."
+
+**Taken:**
+- **Territorial versions (C3):** separate `Provision` records, each with `split_from` (the provision before the split), so a version's label starts with the shared history.
+- **One-to-many:** a reader emits one claim set per target ("ss. 5 to 7" gives three), all citing the same source ref.
+- **Renumbering:** provisions and their `renamed` history are built before changes are merged, so a target named by an old number resolves to the current provision.
+- **The secondary key gains a source position** (the amending instruction's place in its law), so two same-type changes by one provision to one target don't collide.
+- **Combine, not rank:**
+  - `in_force` entries and `savings` are lists collected from every source;
+  - parallel changes stay separate changes, and the label fold unions their territories (C5's `changed_by` list comes from the same place).
+- **Open questions:**
+  - `Commencement.Rule` stays a separate ruleset, read by the merge for dates;
+  - versions are separate provisions;
+  - `retained` is a change attribute.
+- **Prove it with a thin vertical slice first (in CV-02):**
+  - the schemas;
+  - minimal markup and feed readers;
+  - the merge by effect id;
+  - the evidence table for operation, territory and date;
+  - a label fold;
+  - golden-set tests for SI 2010/404 reg.14 (retained repeal) and SI 2000/1043 reg.11(3) (parallel E/W).
+  Then widen.
+
+**Adjusted:**
+- **Loser list:** none as such. `change_claims` already holds every source's value, so the losers are the claims that didn't win; nothing extra is stored.
+- **"Territory by operation":** a removal can take the affecting law's territory (retained text only); an insertion never does (V1-04: a Welsh SI inserted text that applies in England). An insertion's territory is its own evidence, else the provision's extent.
 
 ## Golden set (signed off by Gemini 2026-10-21)
 
