@@ -10,7 +10,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
     prospective. A full commencement puts it in force; a partial one,
     partly in force. A commencement is a version (D1): `in_force_from` its
     date, `changed_by` its law (none for the law itself).
-  - **Repeal.** A repeal takes its territory out of the provision's
+  - **Repeal.** Words repealed are a text change (below). A whole-provision
+    repeal takes its territory out of the provision's
     (everywhere when it names none); nothing left → repealed, territory
     `"nowhere"` (C2), `changed_by` the repealing laws.
   - **Removal in part** ("revoked in part"): never a whole removal; an
@@ -42,7 +43,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
           required(:extent) => String.t() | nil,
           required(:start) => Date.t(),
           optional(:law) => String.t(),
-          optional(:prospective) => boolean()
+          optional(:prospective) => boolean(),
+          optional(:start_dated) => boolean()
         }
 
   @doc "The periods of provision `id` from resolved changes."
@@ -59,16 +61,28 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
       Map.get(provision, :prospective, false) or
         Enum.any?(reaching, &(&1.resolved.operation == :commenced and later?.(&1)))
 
+    self = Map.get(provision, :law)
+
+    # the text in force at the start: the original, or the law that
+    # inserted or substituted it that day (D1); none when the start's date
+    # is not known (C10: commenced by an order we don't hold)
+    made_by =
+      reaching
+      |> Enum.filter(
+        &(Date.compare(&1.resolved.date, start) == :eq and &1.resolved.operation in @text_changes)
+      )
+      |> by(self)
+
+    dated? = Map.get(provision, :start_dated, true)
+
     first = %{
       valid_from: start,
       valid_to: nil,
       status: if(prospective?, do: :prospective, else: :in_force),
-      in_force_from: if(prospective?, do: nil, else: start),
-      changed_by: [],
+      in_force_from: if(prospective? or not dated?, do: nil, else: start),
+      changed_by: if(prospective?, do: [], else: made_by),
       territory: provision.extent
     }
-
-    self = Map.get(provision, :law)
 
     reaching
     |> Enum.filter(later?)
@@ -83,8 +97,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
     |> Enum.reverse()
   end
 
+  # its own changes; provision-level changes on an ancestor, or on the
+  # whole law ("*")
   defp reaches?(%Change{target: target, resolved: r}, id) do
-    target == id or (r.level == :provision and target in tl(LatRef.ancestors(id)))
+    target == id or
+      (r.level == :provision and (target == "*" or target in tl(LatRef.ancestors(id))))
   end
 
   defp apply_day(%{status: :repealed} = current, _date, _day, _self), do: current
@@ -92,12 +109,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
   defp apply_day(current, date, day, self) do
     of = fn op -> Enum.filter(day, &(&1.resolved.operation == op)) end
     commenced = of.(:commenced)
-    territory = after_repeals(current.territory, of.(:repealed))
+
+    # a whole-provision repeal removes it (where it applies); words repealed
+    # change its text — a version, as any other text change
+    {removals, word_repeals} = Enum.split_with(of.(:repealed), &(&1.resolved.level == :provision))
+    territory = after_repeals(current.territory, removals)
 
     versions =
       Enum.filter(
         day,
-        &(&1.resolved.operation in @text_changes and overlaps?(&1.resolved.territory, territory))
+        &((&1.resolved.operation in @text_changes or &1 in word_repeals) and
+            overlaps?(&1.resolved.territory, territory))
       )
 
     # a removal in part leaves an in-force provision partly in force (C7);

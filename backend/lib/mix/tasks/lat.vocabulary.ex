@@ -99,7 +99,12 @@ defmodule Mix.Tasks.Lat.Vocabulary do
           |> LatStagedParser.law_effects(store: :only)
           |> LatStagedParser.with_affecting_territory(law)
 
-        provisions = Map.new(entries, &{&1.id, %{extent: &1.extent, start: &1.start}})
+        provisions =
+          Map.new(
+            entries,
+            &{&1.id, %{extent: &1.extent, start: &1.start, start_dated: not &1.undecidable}}
+          )
+
         labels = ChangeVocabulary.labels(law, xml, effects, provisions)
         Enum.map(entries, &{&1, labels[&1.id]})
       end)

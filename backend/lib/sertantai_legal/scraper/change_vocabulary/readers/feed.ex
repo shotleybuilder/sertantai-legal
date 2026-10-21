@@ -12,7 +12,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   A commencement ("coming into force") is one change per dated in-force
   entry, keyed `effect id@date`, with a `partial` claim (its qualification
   doesn't complete the provision). Limits (CV-03 widens): targets are the
-  effect's structured refs as given. Pure.
+  effect's structured refs as given; an effect on the whole instrument
+  targets `"*"` (every provision). Pure.
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Claim
@@ -79,8 +80,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
       else: Map.get(@operations, EffectFacts.kind(e.type, nil))
   end
 
-  defp targets(%Effect{affected_refs: refs}),
-    do: refs |> List.wrap() |> Enum.map(&Order.ref/1) |> Enum.reject(&is_nil/1) |> Enum.uniq()
+  # an effect on the whole instrument ("Act", "Regulations"; no refs) reaches
+  # every provision: the target "*"
+  @whole_law ~r/^\s*(?:Act|Regulations|Order|Rules|Measure|Scheme|Instrument|S\.\s?I\.)\s*$/i
+
+  defp targets(%Effect{affected_refs: refs, affected_ranges: ranges, affected_provisions: text}) do
+    if refs in [nil, []] and ranges in [nil, []] and String.match?(text || "", @whole_law) do
+      ["*"]
+    else
+      refs |> List.wrap() |> Enum.map(&Order.ref/1) |> Enum.reject(&is_nil/1) |> Enum.uniq()
+    end
+  end
 
   defp claims(%Effect{effect_id: id} = e) do
     Enum.concat([

@@ -53,19 +53,36 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     |> occurrences([], [])
     |> Enum.group_by(& &1.change_id)
     |> Enum.flat_map(fn {change_id, occ} ->
-      target = occ |> Enum.map(& &1.path) |> lowest()
+      key = EffectIndex.effect_id(change_id) || change_id
 
-      case target && Order.ref(target) do
-        nil ->
-          []
-
-        ref ->
-          [
-            {EffectIndex.effect_id(change_id) || change_id, ref,
-             claims(change_id, occ, target, cited)}
-          ]
-      end
+      for {ref, xml_id, group} <- placements(change_id, occ),
+          do: {key, ref, claims(change_id, group, xml_id, cited)}
     end)
+  end
+
+  # where a change id's occurrences land: the lowest provision holding them
+  # all; with none (they span the law) — a legacy id is a change to the
+  # whole law ("*", a whole-Act repeal for a territory: Forestry Act 1967),
+  # an effect id is a change to each top provision it touches
+  defp placements(change_id, occ) do
+    case occ |> Enum.map(& &1.path) |> lowest() do
+      nil ->
+        if EffectIndex.effect_id(change_id) do
+          # outside any provision (an empty path) it lands nowhere
+          occ
+          |> Enum.reject(&(&1.path == []))
+          |> Enum.group_by(&List.first(&1.path))
+          |> Enum.flat_map(fn {_top, group} -> placements(change_id, group) end)
+        else
+          [{"*", "*", occ}]
+        end
+
+      id ->
+        case Order.ref(id) do
+          nil -> []
+          ref -> [{ref, id, occ}]
+        end
+    end
   end
 
   # every change element with the path of provision ids above it, and
@@ -124,7 +141,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
 
   defp claims(change_id, occ, target, cited) do
     first = hd(occ)
-    whole? = Enum.any?(occ, &(&1.number? and List.last(&1.path) == target))
+    whole? = Enum.any?(occ, &(&1.number? and (target == "*" or List.last(&1.path) == target)))
 
     operation =
       cond do
