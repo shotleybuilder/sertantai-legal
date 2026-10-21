@@ -162,6 +162,15 @@ Where a reading is missing, the label says so — an `undated_change` gap, never
 
 ## 5. Quality and measures
 
-*Filled after the AR measure run (2026-10-21).*
+AR measure run, 2026-10-21 (no-write relabel preview over the 1,066 LAT laws, `backend/data/reports/lat-refactor/ar_measure_final*.csv`; the rules re-read first):
+
+- **Rules:** 18,918 amendment rules from 833 amending laws (was 18,311 / 799). Instruction targets 117,158 → 64,018 (targets that could name no row removed, AR-07/08). Repeals-table rules 673 → 912 (AR-13). Order Schedule rules 426 → 803 (AR-12/15 and the fetched Schedules).
+- **Labels vs today:** 31,783 changes over 14,465 rows in 339 laws, 0 errors.
+  - unknown today: 16,159 → 13,134;
+  - undated_change: 14,259 → 13,590;
+  - insertion_not_in_register: 4,982 left.
+  - status repealed / repealed_saved → in force: 396 (false repeals: a sibling's repeal had reached the row, AR-10);
+  - in force → unknown: 306, mostly in laws whose own commencement clause is unread, where the old date was another provision's change.
+- **Remaining gaps** are §4's and the commencement guide's: unread law-level clauses, orders no source finds (`commenced_by_order` 18,318), and rows whose ids carry a duplicate disambiguator (`s.1(2)n1`), which have no ancestors (open bug).
 
 Sessions: `.claude/sessions/amendment-rules/` (AR-00 meta, AR-01–15); `lat-refactor/` LR-08, LR-23, LR-24, LR-29, LR-35, LR-41, LR-43; `commencement-rules/` for dating.
