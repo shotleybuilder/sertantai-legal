@@ -43,6 +43,91 @@ Part of the change-vocabulary architecture shift (CV-00): every change source an
 
 - ✅ CR-00, AR-00 closed (the patterns reviewed)
 
+## Design draft (2026-10-21, for Gemini review and Jason's sign-off)
+
+**Two vocabularies, one mechanism.** Text changes (`Change`) and bringing into force (`Commencement.Rule`, kept: it is already multi-reader) are both made of **claims**. A claim is one source's statement about one attribute. Records are merged by identity, and each attribute is chosen by one evidence table. Provision facts (extent, versions, when a provision exists) are a third, small vocabulary (`Provision`), because ranges (V1-05) and territory (C6, C11) need them.
+
+**`Change`: one per legal change event on one provision**
+- `key`: the effect id when any source carries one. Otherwise `{amended law, target, affecting law, affecting provision, operation family}`. Aliases record every source id (effect ids, markup ChangeIds, amending-law rule refs).
+- **Attributes:**
+  - `amends`, `target` (one provision, canonical LAT grammar with its version), `level` (`:provision` | `:words`);
+  - `operation` (`:inserted` | `:substituted` | `:repealed` | `:renumbered`, plus `renumbered_to`);
+  - `by` (affecting law and provision);
+  - `territory` (where the change applies);
+  - `date` (from the change's own dated evidence, else the commencement ruleset for `by`);
+  - `in_force` entries (partial, purposes);
+  - `applied` (the text reflects it), `retained` (the text is kept: RetainText, or a row still showing words);
+  - `savings`.
+- `claims`: every source's value for every attribute (`{source, attribute, value, ref}`). Each chosen value records its winning source (the loser list is kept; it's cheap).
+
+**`Provision`**
+- `id`, `version` ([E], [NI] …), `extent` (law text C6/C11 > CLML RestrictExtent > law type).
+- `exists_from` / `exists_to`, derived from the merged insertion and repeal changes; a range reaches only provisions that exist at its date (V1-05).
+- `renamed` (renumbering, C4).
+
+**Readers: one per source, pure, claims only**
+1. **Markup** (CLML change elements): operation, level (by element position), territory (Extent), retained, ChangeId, note ref, the text position (for rendering).
+2. **Feed** (effects): operation (one verb list), targets (`EffectTarget`, grouped provision lists parsed), territory (application, in-force qualifiers, effect extent), date, applied, prospective, savings; plus `Commencement.Rule`s (as now).
+3. **Amending law** (`Amendment.Reader`, adapted to emit claims): operation, level, targets.
+4. **Law text, new** (C6, C11): a provision's own application clause; the extent of the Act a provision amends.
+5. **Law metadata** (`LawTerritory`): the affecting law's territory, as a low-rank territory claim for retained removals.
+6. **Commencement** (the existing ruleset): dates for `by` and for each provision's start.
+- **Notes stay pointers.** They say which amending provisions the amending-law reader reads; they are never claims.
+
+**Identity and merge**
+- Effect id first: markup `key-` ids, feed effects, and the feed's `affecting_provisions` joined to the amending law's read rule by `{affecting law, affecting provision, target}`.
+- Without a shared id (legacy markup ids, amending-law reads with no feed effect): the secondary key; ancestor reach only for `:provision`-level changes.
+- One canonical kind word per law type (NI Order "art. 10" = row reg.10), applied once, in readers.
+- A source whose claim fits no change becomes its own change with that one source (a visible gap, as markup-only records are now).
+- Two sources that share an id but disagree on target or operation: both claims kept, the evidence table decides, and the record carries a conflict flag (a report, not a rule).
+
+**Granularity and time**
+- One change per (event, target). A change on a child never touches its parent (C9).
+- `:provision`-level changes reach descendants; `:words` changes reach only their target.
+- Ranges expand once (`LatRef`, document order) over provisions existing at the change's date.
+- A renumbering is a change linking old and new ids (C4).
+- Prospective and unapplied changes are attributes, not rules.
+
+**Evidence order (one table, `ChangeVocabulary.Evidence`; conditions stated in the table)**
+
+| Attribute | Order |
+|---|---|
+| operation | markup element > feed type > amending-law read |
+| level | markup position > amending-law read > feed type ("words …") |
+| target | markup placement > feed text (`EffectTarget`) > feed refs > amending-law read |
+| territory of a change | feed application > markup Extent > feed in-force qualifiers > feed effect extent when narrower than the provision > the affecting law's territory (removals with retained text only) > none (unknown) |
+| date | the change's dated feed entry > commencement of `by` (the ruleset) > none (an explicit undated gap) |
+| applied / prospective | feed > markup Status |
+| savings | feed > amending-law text |
+| provision extent | law text (C6/C11) > CLML RestrictExtent > law type |
+
+**Consumers**
+- **Labels:** a pure fold over a row's merged changes and commencement in date order gives status, territory (provision extent minus the territories where repealed; "nowhere" is explicit, C2), `in_force_from`, `changed_by` as a list (C5) and gaps. Territorial versions carry the shared pre-split history (C3).
+- **The parse:** keeps rendering text; its brackets and `excluded_extent` come from the merged changes' territory (by change id), not from its own claim.
+
+**Retired**
+- `EffectTerritory.claim`'s step order;
+- rule 3's gate;
+- the orphan-join cascade (it becomes the markup reader's id → effect lookup, plus the secondary key);
+- J2;
+- T1's blanking (an undated change is explicit);
+- AR-04's every-note read with `saved?` / `unmarked_law_repeal?`;
+- LR-26 D1′'s parse/register split;
+- the six operation verb lists (one), the three qualification parsers (one), the three date choosers (one), the three range expansions (one), the two type-to-territory maps (one).
+
+**Storage and switch-over**
+- New tables `changes` (merged) and `change_claims`, beside `lat_change_log`, during the switch.
+- The golden set as the test suite first (red).
+- Shadow runs: new labels against today's and against `v01_final`, every difference classified.
+- Consumers switch one at a time: labels first, then the parse's territory.
+- The old tables and rules go once the shadow diff is explained.
+- One re-parse and one relabel for v0.1.
+
+**Open for the review**
+- Should `Commencement.Rule` become claims in the same merge, or stay a separate ruleset the merge reads?
+- Should territorial version rows be one `Provision` with versions, or separate provisions?
+- Is `retained` a change attribute or a provision fact?
+
 ## Golden set (signed off by Gemini 2026-10-21)
 
 `backend/data/reports/change-vocabulary/golden/golden-set.md` (the index: expected today, verdict, current label; conventions C1–C12). Expected periods are in `expected-batch{1,2,3}.md`, evidence in `packs.md`, and the sign-off in `backend/data/code-reviews/2026-10-21-cv-01-golden-set-gemini.md`.
@@ -62,7 +147,7 @@ Part of the change-vocabulary architecture shift (CV-00): every change source an
   - territorial versions carry the shared history (C3);
   - retained one-territory repeals stay in force where they still apply (C1, C12);
   - a provision's own application clause sets territory (C6, a new source to read).
-- **For Jason:** C6 and C11 make the law's text (an application clause; the context of the Act amended) outrank the CLML's stated extent. That is a new source and a new evidence order.
+- **C6 and C11 agreed (Jason 2026-10-21):** the law's own text (an application clause; the context of the Act amended) outranks the CLML's stated extent for a provision's territory.
 
 ## Inventory (2026-10-21)
 
