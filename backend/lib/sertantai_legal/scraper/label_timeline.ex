@@ -316,17 +316,54 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
           into: MapSet.new(),
           do: {c.section_id, c.pointer}
 
-    undated_markup = undated_markup(changes)
+    unexplained = unexplained_markup(changes)
+
+    # a note on the row is undated unless a dated change joined to it, or a
+    # dated text change by the law it names, is on the row or above
+    undated_note? = fn levels, {code, law} ->
+      not Enum.any?(levels, &MapSet.member?(joined, {&1, code})) and
+        (law == nil or not Enum.any?(levels, &MapSet.member?(dated, {&1, law_key(law)})))
+    end
 
     fn sid ->
       levels = LatRef.ancestors(sid)
+      notes = Map.get(noted, sid, [])
 
-      MapSet.member?(undated_markup, sid) or
-        Enum.any?(Map.get(noted, sid, []), fn {code, law} ->
-          not Enum.any?(levels, &MapSet.member?(joined, {&1, code})) and
-            (law == nil or not Enum.any?(levels, &MapSet.member?(dated, {&1, law_key(law)})))
-        end)
+      by_code =
+        Map.new(notes, fn {code, law} -> {code |> String.split(":") |> List.last(), law} end)
+
+      # markup no dated record explains is still explained when its note's
+      # law has a dated text change here (an orphan id the feed doesn't hold:
+      # "Words in reg. 2(1) substituted (E.) … by S.I. 2023/911", V1-03)
+      Enum.any?(Map.get(unexplained, sid, []), fn ref ->
+        case Map.fetch(by_code, ref) do
+          {:ok, law} -> undated_note?.(levels, {nil, law})
+          :error -> true
+        end
+      end) or Enum.any?(notes, &undated_note?.(levels, &1))
     end
+  end
+
+  # markup records no dated record explains: section_id → [ref]
+  defp unexplained_markup(changes) do
+    explained = explained_refs(changes)
+
+    changes
+    |> Enum.filter(
+      &(&1.source == "markup" and not MapSet.member?(explained, {&1.section_id, &1[:pointer]}))
+    )
+    |> Enum.group_by(& &1.section_id, & &1[:pointer])
+  end
+
+  defp explained_refs(changes) do
+    for c <- changes,
+        c.source in ["law", "effect"],
+        c.effective_from != nil,
+        # the note it points to, or (an effect the markup joined) its id
+        ref <- [c[:pointer], if(c.source == "effect", do: c[:evidence])],
+        is_binary(ref),
+        into: MapSet.new(),
+        do: {c.section_id, ref |> String.split(":") |> List.last()}
   end
 
   @doc """
@@ -338,21 +375,7 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
   LR-08).
   """
   @spec undated_markup([map()]) :: MapSet.t()
-  def undated_markup(changes) do
-    explained =
-      for c <- changes,
-          c.source in ["law", "effect"],
-          c.effective_from != nil,
-          is_binary(c[:pointer]),
-          into: MapSet.new(),
-          do: {c.section_id, c.pointer |> String.split(":") |> List.last()}
-
-    for c <- changes,
-        c.source == "markup",
-        not MapSet.member?(explained, {c.section_id, c[:pointer]}),
-        into: MapSet.new(),
-        do: c.section_id
-  end
+  def undated_markup(changes), do: changes |> unexplained_markup() |> Map.keys() |> MapSet.new()
 
   @doc "Replace the law's periods. Returns the number written."
   @spec write(String.t(), [LabelProjection.Period.t()], String.t()) :: {:ok, non_neg_integer()}

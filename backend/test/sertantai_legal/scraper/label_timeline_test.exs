@@ -134,4 +134,42 @@ defmodule SertantaiLegal.Scraper.LabelTimelineTest do
              "L:reg.2(1)"
            )
   end
+
+  test "V1-03: undated_markup/1 — a dated feed effect joined by the markup itself (its id the markup's ref) explains it (SI 2010/2214 reg.47(a)[E], SI 2023/911)" do
+    changes = [
+      %{section_id: "L:reg.47(a)[E]", source: "markup", pointer: "key-10e5", effective_from: nil},
+      %{
+        section_id: "L:reg.47(a)[E]",
+        source: "effect",
+        pointer: nil,
+        evidence: "key-10e5",
+        effective_from: ~D[2023-10-01]
+      }
+    ]
+
+    assert LabelTimeline.undated_markup(changes) == MapSet.new()
+  end
+
+  test "V1-03: undated_change/2 — markup on an orphan id is explained by its note's law's dated change on the row (SI 2010/2214 reg.2(1), SI 2023/911)" do
+    changes = [
+      %{section_id: "L:reg.2(1)", source: "markup", pointer: "key-1667", effective_from: nil},
+      %{
+        section_id: "L:reg.2(1)",
+        source: "effect",
+        operation: "substituted",
+        affecting_law: "UK_uksi_2023_911",
+        pointer: nil,
+        evidence: "key-7bef",
+        effective_from: ~D[2023-10-01]
+      }
+    ]
+
+    noted = %{"L:reg.2(1)" => [{"F:key-1667", "UK_uksi_2023_911"}]}
+    refute LabelTimeline.undated_change(changes, noted).("L:reg.2(1)")
+    # a note naming a law with no dated change here leaves it undated
+    noted = %{"L:reg.2(1)" => [{"F:key-1667", "UK_uksi_2019_1"}]}
+    assert LabelTimeline.undated_change(changes, noted).("L:reg.2(1)")
+    # markup with no note at all stays undated
+    assert LabelTimeline.undated_change(changes, %{}).("L:reg.2(1)")
+  end
 end
