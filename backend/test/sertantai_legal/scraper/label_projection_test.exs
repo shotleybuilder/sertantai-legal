@@ -385,6 +385,32 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
              periods(law, [row(law, "s.33(10)")], changes, law_start: ~D[1991-01-01])
   end
 
+  test "AR-10: a words omission for part of the row's extent is a version, as a words substitution (1986/44 s.23C(2))" do
+    law = "UK_ukpga_1986_44"
+
+    changes = [
+      change(
+        law,
+        "s.23C(2)",
+        "w",
+        "repealed",
+        "word omitted",
+        "UK_ukpga_2013_24",
+        [
+          {~D[2014-04-01], "wholly in force"}
+        ],
+        effect_extent: "E+W+S"
+      )
+    ]
+
+    assert periods(law, [row(law, "s.23C(2)", extent_code: "E+W+S+NI")], changes,
+             law_start: ~D[2011-11-10]
+           ) == [
+             {~D[2011-11-10], ~D[2014-04-01], "in_force", ~D[2011-11-10], nil},
+             {~D[2014-04-01], nil, "in_force", ~D[2014-04-01], "UK_ukpga_2013_24"}
+           ]
+  end
+
   test "J1: no evidence of a start (no law date, no change): no periods, a gap" do
     law = "UK_uksi_1999_1"
 

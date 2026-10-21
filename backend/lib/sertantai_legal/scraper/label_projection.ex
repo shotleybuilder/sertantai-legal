@@ -646,7 +646,8 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
       in_force
       |> Enum.filter(
         &(version?(&1) and for_row?(&1, row.extent_code) and
-            (&1.operation != "repealed" or covers_row?(&1, row.extent_code)))
+            (&1.operation != "repealed" or words_level?(&1) or
+               covers_row?(&1, row.extent_code)))
       )
       |> latest()
 
@@ -738,7 +739,9 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
       |> String.starts_with?("SAMEAS")
 
   # a version starts with a text change (an ancestor's only when whole-
-  # provision; a repeal only where it reaches the row's whole extent) or a
+  # provision; a whole repeal only where it reaches the row's whole extent —
+  # a words omission is a text change, as a words substitution: AR-10,
+  # 1986/44 s.23C(2) "word omitted" for E+W+S on an E+W+S+NI row) or a
   # commencement — never a modification
   defp version?(%{operation: op}) when op in @text_ops, do: true
   defp version?(%{operation: "commenced"}), do: true
