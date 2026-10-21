@@ -1,9 +1,61 @@
 ---
 session: 'V1-03: Smaller Label Gaps on Laws from 2002'
-status: active
+status: closed
 release: v0.1
 opened: '2026-10-21'
+closed: '2026-10-21'
+outcome: success
 parent: v01-pipeline/2026-10-21-v1-00-meta.md
+
+summary: >
+  The label gaps left on laws from 2002 after V1-01/V1-02 were traced and fixed on the label side (LabelVersion only):
+  disambiguated rows inherit their ancestors, T1 no longer flags dated changes as undated (Welsh twins, notes joined to dated
+  changes, markup explained by its effect or its note's law), endings are repeals, J5 reads definition inserts as words, and a
+  feed effect with no territory takes its affecting law's (type, own title place, narrower extent). The v0.1 dry run plus three
+  targeted previews (v01_final): UK ≥2002 undated_change 1,366 → 548, unknown today 300; the parse-side territory gap found here
+  went to V1-04 (Jason: fix at source, ship with v0.1).
+
+decisions:
+  - what: Label-side ancestors in LatRef, not LatStatus
+    why: lat_status.ex is a ParserVersion input, not LabelVersion; changing it would stale every parse while labels moved unhashed
+    result: LatRef.ancestors/1 reads past nN; label callers switched; the parser keeps LatStatus
+  - what: An ending ("expires", "ceases to have effect") is a repeal; "in part" a text change
+    why: Jason 2026-10-18 "an ending is a change like a repeal"; the earlier "other" was a default, not a decision
+    result: Coronavirus Act 2020 expiries read repealed; 155 undated rows cleared
+  - what: A feed effect with no territorial application takes its affecting law's territory, the AR-09 rule plus the law's own title place
+    why: SI 2023/911 "(England)" read as repealing SI 2010/404 reg.14 everywhere; Welsh laws' changes read E+W
+    result: territory now right in the register; the parse-side twin (retained repeals) moved to V1-04
+  - what: Run the v0.1 dry run over all laws once, then only targeted previews spliced in
+    why: T1, expiry and feed territory touch most laws; each later fix touched a known set (324, 93, 61 laws)
+    result: v01_final with 0 errors across all runs
+  - what: Fix the retained-repeal territory at source in the parse (V1-04), not by bending J2
+    why: Jason "the most reliable and correct fix, not the most expedient"; "I cannot have recent laws with wrong territory metadata"
+    result: V1-04 scoped, pending, before the v0.1 re-parse and relabel
+
+metrics:
+  uk_from_2002: { undated_change: '1,366 → 548', unknown_today: '326 → 300', insertion_not_in_register: '144 → 118', no_start: 142 }
+  corpus_v01_final: { unknown_today: 11177, diffs_vs_db: 41298, rows: 18604, laws: 382 }
+  previews: { v01_dry: 1066, v103c: 324, v103d: 61, errors: 0 }
+  rule_rereads: { own_clause_laws: 1066, own_clause_rules: 1297, amending_no_lat_laws: 1467, amending_rules: 1789, errors: 0 }
+  suite: { passed: 2968, skipped: 2 }
+
+lessons:
+  - title: Check which version hash a file feeds before editing it
+    detail: 'LatStatus.ancestors is used by labels, but lat_status.ex hashes into ParserVersion only; changing it would mark every parse stale while LabelVersion missed the change. Put label logic in a LabelVersion input (LatRef).'
+    tag: tooling
+  - title: Classify a gap on the stored register only as a guide; trace fresh rows before fixing
+    detail: 'The first T1 classification on the stored register over-counted "markup undated" (it skipped the explained rule); a fresh refresh in a rolled-back transaction showed the real cause (orphan note ids, effects joined by markup).'
+    tag: data
+  - title: Feed records joined by markup carry no pointer — match them by their effect id
+    detail: 'A markup record''s ref is the effect id (key-…) and the feed record''s evidence is the same id; T1 only compared pointers, so dated effects never explained their own markup.'
+    tag: data
+  - title: A title place must belong to the law's own name
+    detail: '"Forestry and Land Management (Scotland) Act 2018 (Consequential …) Order" is not a Scottish instrument; NI titles put the place after the word ("Mines Act (Northern Ireland)"); "(Scotland) Amendment Regulations" has words, not brackets, after the place.'
+    tag: data
+  - title: The markup-wins rule (J2) is only as right as our reading of the markup
+    detail: 'SI 2010/404 reg.14 read repealed today because the parse turned a RetainText repeal with no territory into "everywhere"; the markup itself kept the text and Welsh SIs still amend it.'
+    tag: data
+
 bugs:
   - pattern: 'A row id with a duplicate disambiguator ("s.1(2)n1") has no ancestors (LatStatus.ancestors), so it never inherits an ancestor''s change or commencement'
     category: label projection
@@ -83,9 +135,26 @@ bugs:
     affected: '61 laws with such notes'
     fix: a definition or entry note is words-level, like "words" (858e3b5e)
     status: fixed
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/lat_ref.ex
+  - backend/lib/sertantai_legal/scraper/label_timeline.ex
+  - backend/lib/sertantai_legal/scraper/effect_facts.ex
+  - backend/lib/sertantai_legal/scraper/change_collector.ex
+  - backend/lib/sertantai_legal/scraper/change_collector/feed.ex
+  - backend/data/reports/lat-refactor/v01_dry.csv
+  - backend/data/reports/lat-refactor/v01_final.csv
+
+depends_on:
+  - 2026-10-21-v1-01-ancestor-commencement-history
+  - 2026-10-21-v1-02-law-start-unread-clauses
+
+enables:
+  - V1-04 parse territory for retained repeals
+  - the v0.1 re-parse and relabel (V1-00)
 ---
 
-# Session: V1-03: Smaller Label Gaps on Laws from 2002 (ACTIVE)
+# Session: V1-03: Smaller Label Gaps on Laws from 2002 (CLOSED)
 
 ## Problem
 
@@ -99,11 +168,11 @@ After V1-01 and V1-02, the rest of the v0.1 label load on UK laws from 2002 on i
 - ✅ LR-17's rows: the cause is wider — feed effects with no territory take the affecting law's (AR-09 rule + title places) (§3)
 - ✅ Stale bugs: 3 closed (LR-20 note facts, LR-23 note spread, LR-27 text-only refs); LR-20 provenance left open for Jason (§4)
 - ⏸️ A row commenced through only some of its children (V1-01 finding): known limit — a fix needs the row's children, which the projection doesn't see; a blanket "partial" would leave SI 2026/318 reg.11(1) partial after 2027
-- ⬜ Preview only the affected laws, splice into `v101_final`; batch into the v0.1 relabel (V1-00)
+- ⏸️ Batch into the v0.1 relabel (deferred — V1-00's re-parse and relabel; previews spliced into `v01_final`)
 
 ## Dependencies
 
-- ⬜ V1-01, V1-02 (their previews first, so splices don't overlap)
+- ✅ V1-01, V1-02 (closed; previews spliced first)
 - ✅ AR measure dry run (2026-10-21)
 
 ## 1. Disambiguator ancestors (2026-10-21)
