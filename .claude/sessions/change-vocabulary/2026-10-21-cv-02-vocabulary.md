@@ -21,7 +21,7 @@ Part of the change-vocabulary architecture shift (CV-00): one change record (ide
 - ✅ Label fold: status, in_force_from, changed_by list, territory (with "nowhere") from merged changes plus commencement
 - ✅ Green on both slice cases; classify what the slice taught (design changes back into CV-00/CV-01)
 - ⬜ Storage: Ash resources for changes and change_claims (Ash-generated migrations), beside `lat_change_log`
-- ⬜ Gemini review of the slice
+- ✅ Gemini review of the slice (`backend/data/code-reviews/2026-10-21-cv-02-slice-gemini.md`; below)
 
 ## Dependencies
 
@@ -46,3 +46,27 @@ Part of the change-vocabulary architecture shift (CV-00): one change record (ide
   - **A label starts at the law's start** (no made-to-in-force prospective period for SIs), as today's labels do.
   - **Identity needs only the effect id and one pointer join** for these cases: no orphan cascade, no rule 3.
 - **Seen for CV-03:** `Order.ref` maps an EU `article-28-3` to "reg.28(3)". Kind words per law type belong in the readers (the CV-01 identity note).
+
+## Gemini slice review (2026-10-21)
+
+"A strong, well-structured thin slice."
+
+**Fixed now:**
+- **The evidence table is data** (`Evidence.table/0`): per attribute, the sources in order, with named conditions (`:narrower_than_provision`, `:retained_removal_narrower`) stated in the table, not hidden in code. Its point 3: the affecting-law territory's dependence on operation and retained is now a stated condition on the change's own claims.
+- **Resolved attributes are a struct** (`Evidence.Resolved`, enforced keys).
+- Labels on real data are unchanged.
+
+**Carried to later sessions:**
+- **CV-03:**
+  - a ChangeId spanning unrelated provisions is dropped silently today; it must be reported;
+  - prospective changes;
+  - dates from commencement.
+- **CV-04:**
+  - two same-day, same-type changes to one provision need the source position in the secondary key;
+  - the markup → feed join generalised as the secondary key.
+- **CV-05:**
+  - the fold's state as an explicit struct;
+  - revival and gap periods;
+  - staged territorial repeals.
+
+**Storage: Gemini says now, for debuggability.** Held until the readers widen (CV-03), so the Ash schema isn't migrated while the claim shape is still moving. Meanwhile a read-only `mix` task prints a law's claims, merged changes and labels for debugging. Decision for Jason.
