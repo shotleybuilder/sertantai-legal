@@ -4,21 +4,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Change do
   identified by `key` (the effect id when any source carries one, else a
   source's own id) and `target` (the provision, LAT grammar, no law
   prefix). `claims` hold every source's statements; `aliases` every source
-  id merged in. `ChangeVocabulary.Evidence.resolve/2` fills `resolved` (the
-  chosen value per attribute). Pure.
+  id merged in. `ChangeVocabulary.Evidence.resolve/2` fills `resolved` (an
+  `Evidence.Resolved`: the chosen value per attribute, and its source). Pure.
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Claim
 
   @enforce_keys [:key, :target]
-  defstruct [:key, :target, claims: [], aliases: [], resolved: %{}]
+  defstruct [:key, :target, :resolved, claims: [], aliases: []]
 
   @type t :: %__MODULE__{
           key: String.t(),
           target: String.t(),
           claims: [Claim.t()],
           aliases: [String.t()],
-          resolved: map()
+          resolved: SertantaiLegal.Scraper.ChangeVocabulary.Evidence.Resolved.t() | nil
         }
 
   @doc "The values every claim of `source` makes for `attribute`."

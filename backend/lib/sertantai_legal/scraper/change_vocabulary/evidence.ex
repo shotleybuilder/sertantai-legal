@@ -4,71 +4,110 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
   of a change, which source's claim wins. One table replaces the pairwise
   reconciling rules (`EffectTerritory.claim`'s step order, rule 3's gate, J2).
 
-  | Attribute | Order |
-  |---|---|
-  | operation | markup > feed |
-  | level | markup > feed |
-  | territory | feed application > markup Extent > feed effect extent narrower than the provision > the affecting law's territory (a removal whose text is retained, narrower than the provision) > none |
-  | date | feed |
-  | by | feed > the markup note's cited law |
-  | retained | markup |
-
-  `resolve/2` sets `Change.resolved` (each value with the source that won,
-  under `:sources`). Slice: the attributes the slice's cases need. Pure.
+  `table/0` is the table as data: per attribute, the sources in order, each
+  `{source, claim attribute}` or `{source, claim attribute, condition}`. A
+  condition is a named test (`condition?/3`) on the claim's value, the
+  provision and the change's own claims — stated in the table, never hidden
+  in code. The first source in order with a claim that passes wins.
+  `resolve/2` writes a `Resolved` struct, with the winning source of each
+  attribute. Pure.
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Change
   alias SertantaiLegal.Scraper.Territory
 
+  defmodule Resolved do
+    @moduledoc "A change's chosen attributes, and the source each came from."
+    @enforce_keys [:operation, :level, :territory, :date, :by, :retained, :sources]
+    defstruct [:operation, :level, :territory, :date, :by, :retained, :sources]
+
+    @type t :: %__MODULE__{
+            operation: atom() | nil,
+            level: :provision | :words,
+            territory: String.t() | nil,
+            date: Date.t() | nil,
+            by: String.t() | nil,
+            retained: boolean(),
+            sources: %{atom() => atom() | nil}
+          }
+  end
+
+  @table [
+    operation: [{:markup, :operation}, {:feed, :operation}],
+    level: [{:markup, :level}, {:feed, :level}],
+    retained: [{:markup, :retained}],
+    # where the change applies: the feed's application, the markup's Extent,
+    # an effect extent narrower than the provision, then the affecting law's
+    # territory — only for a removal whose text is retained (V1-04: an
+    # insertion by a devolved law can apply across the border)
+    territory: [
+      {:feed, :territory},
+      {:markup, :territory},
+      {:feed, :effect_extent, :narrower_than_provision},
+      {:law, :territory, :retained_removal_narrower}
+    ],
+    date: [{:feed, :date}],
+    by: [{:feed, :by}, {:markup, :cited}]
+  ]
+
+  @doc "The evidence table: attribute → sources in order (with named conditions)."
+  @spec table() :: keyword()
+  def table, do: @table
+
   @doc "The change with each attribute chosen; `extent` is the provision's extent."
   @spec resolve(Change.t(), String.t() | nil) :: Change.t()
   def resolve(%Change{} = c, extent) do
-    {operation, op_src} = first(c, [{:markup, :operation}, {:feed, :operation}])
-    {retained, _} = first(c, [{:markup, :retained}])
-
-    {territory, t_src} =
-      first(c, [
-        {:feed, :territory},
-        {:markup, :territory},
-        {:feed, :effect_extent, &narrower(&1, extent)},
-        {:law, :territory,
-         &(operation == :repealed and retained == true and narrower(&1, extent))}
-      ])
-
-    {level, _} = first(c, [{:markup, :level}, {:feed, :level}])
-    {date, _} = first(c, [{:feed, :date}])
-    {by, _} = first(c, [{:feed, :by}, {:markup, :cited}])
+    chosen = Map.new(@table, fn {attribute, order} -> {attribute, first(c, order, extent)} end)
+    value = &elem(chosen[&1], 0)
 
     %{
       c
-      | resolved: %{
-          operation: operation,
-          level: level || :provision,
-          territory: territory,
-          date: date,
-          by: by,
-          retained: retained == true,
-          sources: %{operation: op_src, territory: t_src}
+      | resolved: %Resolved{
+          operation: value.(:operation),
+          level: value.(:level) || :provision,
+          territory: value.(:territory),
+          date: value.(:date),
+          by: value.(:by),
+          retained: value.(:retained) == true,
+          sources: Map.new(chosen, fn {attribute, {_v, source}} -> {attribute, source} end)
         }
     }
   end
 
-  # the first source in order claiming the attribute (and passing its test)
-  defp first(change, order) do
-    Enum.find_value(order, {nil, nil}, fn
-      {source, attribute} ->
-        case Change.value(change, source, attribute) do
-          nil -> nil
-          v -> {v, source}
+  defp first(change, order, extent) do
+    Enum.find_value(order, {nil, nil}, fn entry ->
+      {source, attribute, condition} =
+        case entry do
+          {s, a} -> {s, a, nil}
+          {s, a, cond} -> {s, a, cond}
         end
 
-      {source, attribute, ok?} ->
-        case Change.value(change, source, attribute) do
-          nil -> nil
-          v -> if ok?.(v), do: {v, source}
-        end
+      case Change.value(change, source, attribute) do
+        nil ->
+          nil
+
+        v ->
+          if condition == nil or condition?(condition, v, %{change: change, extent: extent}),
+            do: {v, source}
+      end
     end)
   end
 
-  defp narrower(territory, extent), do: not Territory.covers?(territory, extent)
+  @doc """
+  The table's named conditions:
+  - `:narrower_than_provision` — the territory doesn't cover the provision's extent
+  - `:retained_removal_narrower` — the change removes text the markup retains
+    (by the claims: markup or feed operation `:repealed`, markup `retained`),
+    and the territory is narrower than the provision's extent
+  """
+  @spec condition?(atom(), term(), %{change: Change.t(), extent: String.t() | nil}) :: boolean()
+  def condition?(:narrower_than_provision, territory, %{extent: extent}),
+    do: not Territory.covers?(territory, extent)
+
+  def condition?(:retained_removal_narrower, territory, %{change: c, extent: extent}) do
+    operation = Change.value(c, :markup, :operation) || Change.value(c, :feed, :operation)
+
+    operation == :repealed and Change.value(c, :markup, :retained) == true and
+      not Territory.covers?(territory, extent)
+  end
 end
