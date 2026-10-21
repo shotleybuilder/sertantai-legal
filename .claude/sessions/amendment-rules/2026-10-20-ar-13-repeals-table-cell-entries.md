@@ -1,8 +1,49 @@
 ---
 session: "AR-13: Repeals-Table Cells with Several Entries"
-status: active
+status: closed
 opened: '2026-10-20'
+closed: '2026-10-21'
+outcome: success
 parent: amendment-rules/2026-10-19-ar-00-meta.md
+
+summary: >
+  A repeals-table cell was read as one line, so only its first entry became a rule: AmendingLaw.Doc.lines matched only bare
+  Para/Text (EReA 1999 Sch 9 uses <leg:Para>), and some sources run entries together with no markup. Both are fixed, plus the
+  sibling words line ("In section 117(2) and (3), the words") the split exposed. A no-write pilot of 41 amending laws, net of a
+  control, changes only repeals-table rules (+243 / -22 in 22 laws); every removed rule was a glued misreading.
+
+decisions:
+  - what: Fix the line splitter at the source (Doc.lines by local name), not by splitting glued text only
+    why: 26 of the 29 glued stored repeals-table rules came from documents with prefixed elements; the markup already separates the entries
+    result: EReA 1999 on ERA 1996 goes from 6 table rules to ~60
+  - what: Also split a cell line at a full stop before Section(s)/Schedule(s) N or In Schedule, outside quoted words
+    why: 3 stored rules (1991 c.60, 1992 c.15, 1992 c.42, 1993 c.11) are glued in the source text itself, with no markup between entries
+    result: each entry its own rule; a full stop inside quoted words never splits (test)
+  - what: The rules reach labels through the AR measure run, not a pilot write
+    why: batch changes into one corpus run (Jason); the full lat.amending --read rewrites amendment_rules
+    result: batching item deferred to the measure run
+
+metrics:
+  glued_stored_rules: { repeal_table: 29, from_prefixed_docs: 26, glued_in_source: 3, instruction: 4 }
+  prefixed_clml_files: 72
+  pilot_41_laws_net_of_control: { lines: 265, added: 243, removed: 22, amending_laws: 22, instruction_changes: 0 }
+  pilot_top_gains: { ukpga_1994_39: 68, ukpga_1999_26: 56, ukpga_2003_37: 24, ukpga_1991_22: 20, ukpga_2004_20: 19, ukpga_1993_43: 17 }
+  suite: { passed: 2928, skipped: 2 }
+
+lessons:
+  - title: xmerl with namespace_conformant false keeps the prefix in element names — match local names
+    detail: 'A document that declares xmlns:leg and writes <leg:Para> gives the atom :"leg:Para"; a guard on :Para silently misses it and every paragraph joins into one line. 72 stored CLML files do this.'
+    tag: data
+  - title: Diff a re-read against a control on the old code, not against the stored rules
+    detail: 'The stored rules were read by an older reader; a fix-vs-stored diff showed instruction changes (EReA s.31(7), s.199) that the control showed were drift since the stored read, not this fix. Net of the control only repeals-table rules moved.'
+    tag: tooling
+  - title: Splitting glued text exposes the next reader fault behind it
+    detail: '"In section 117(2) and (3), the words …" was hidden inside a glued cell; once split it read as a provision (2)(3). Inspect the new rules a fix produces, not only the count.'
+    tag: data
+  - title: Do not edit code while a background pilot is running against it
+    detail: 'mix run recompiles per process, so a loop that spans an edit mixes two code versions; stop it, compile, and restart (fix then stash-control in one script).'
+    tag: tooling
+
 bugs:
   - pattern: 'AmendingLaw.Doc.lines matches only bare Para/Text/br: a document with prefixed elements (<leg:Para>, EReA 1999 Sch 9) runs every entry of a cell into one line'
     category: reader lines
@@ -22,9 +63,31 @@ bugs:
     affected: 'exposed by the split (EReA 1999 Sch 9 on ERA s.117)'
     fix: siblings after the section's brackets are each a place for the words (fixed, reader_test)
     status: fixed
+  - pattern: 'A repeals-table cell listing several entries ("In section 117, …. Section 118(2) and (3). Section 120(2). … Section 125. …") is read as its first entry only'
+    category: reader repeal table
+    module: Amendment.Reader.repeal_table
+    affected: '29 stored glued repeals-table rules; pilot +243 / -22 rules in 22 amending laws'
+    fix: Doc.lines by local name; split glued source entries; sibling words line (bdc6af07)
+    status: fixed
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/amending_law/doc.ex
+  - backend/lib/sertantai_legal/scraper/amendment/reader.ex
+  - backend/test/sertantai_legal/scraper/amending_law/doc_test.exs
+  - backend/test/sertantai_legal/scraper/amendment/reader_test.exs
+  - backend/data/reports/lat-refactor/ar13_fix.csv
+  - backend/data/reports/lat-refactor/ar13_ctl.csv
+  - backend/data/reports/lat-refactor/ar13_net.csv
+
+depends_on:
+  - 2026-10-19-ar-05-amending-schedule-blocks
+  - 2026-10-20-ar-04-switch-over
+
+enables:
+  - AR measure run (full lat.amending --read rewrites the repeals-table rules)
 ---
 
-# Session: AR-13: Repeals-Table Cells with Several Entries (ACTIVE)
+# Session: AR-13: Repeals-Table Cells with Several Entries (CLOSED)
 
 ## Problem
 
@@ -37,7 +100,7 @@ A repeals-table cell listing several entries ("In section 117, …. Section 118(
 - ✅ Glued source text: split a cell line into its entries, one rule each (reader test first)
 - ✅ Siblings in a words line ("In section 117(2) and (3), the words"): words in each (found by the split; reader test first)
 - ✅ Pilot: no-write re-read of 41 amending laws vs a control (§2); code `bdc6af07`
-- ⬜ Batch into the AR measure run (the full `lat.amending --read` rewrites the stored rules)
+- ⏸️ Batch into the AR measure run (deferred — to the AR-00 measure run: its full `lat.amending --read` rewrites the stored rules)
 
 ## Dependencies
 
