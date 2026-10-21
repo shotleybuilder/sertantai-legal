@@ -69,4 +69,4 @@ Part of the change-vocabulary architecture shift (CV-00): one change record (ide
   - revival and gap periods;
   - staged territorial repeals.
 
-**Storage: Gemini says now, for debuggability.** Held until the readers widen (CV-03), so the Ash schema isn't migrated while the claim shape is still moving. Meanwhile a read-only `mix` task prints a law's claims, merged changes and labels for debugging. Decision for Jason.
+**Storage: Gemini says now, for debuggability.** Held until the readers widen (CV-03), so the Ash schema isn't migrated while the claim shape is still moving. Proposed meanwhile (not built): a read-only `mix` task printing a law's claims, merged changes and labels for debugging. Decision for Jason.
