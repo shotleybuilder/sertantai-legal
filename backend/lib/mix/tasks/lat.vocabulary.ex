@@ -7,6 +7,11 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
       mix lat.vocabulary --law UK_uksi_2010_404 --provision reg.14
       mix lat.vocabulary --law UK_uksi_2010_404 --provision reg.14 --provision "reg.14(1)"
+      mix lat.vocabulary --golden          # the CV-01 golden set: pass / fail per provision
+
+  `--golden` reads `test/fixtures/change_vocabulary/golden.exs` (the signed-off
+  golden set, normalised to D1) and compares each provision's vocabulary label
+  with its expected periods — the change-vocabulary scoreboard (CV-03).
 
   Provisions take their extent from `legal_articles` and the law's start
   from its law-level commencement record.
@@ -22,7 +27,13 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
   @impl Mix.Task
   def run(args) do
-    {opts, _, _} = OptionParser.parse(args, strict: [law: :string, provision: :keep])
+    {opts, _, _} =
+      OptionParser.parse(args, strict: [law: :string, provision: :keep, golden: :boolean])
+
+    if opts[:golden], do: golden(), else: show(opts)
+  end
+
+  defp show(opts) do
     law = opts[:law] || Mix.raise("--law is required")
     ids = Keyword.get_values(opts, :provision)
     if ids == [], do: Mix.raise("--provision is required (one or more)")
@@ -69,6 +80,47 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       Mix.shell().info("stored label today:")
       for p <- stored(law, id), do: Mix.shell().info("  " <> line(p))
     end
+  end
+
+  @golden "test/fixtures/change_vocabulary/golden.exs"
+
+  defp golden do
+    Mix.Task.run("app.start")
+    {cases, _} = Code.eval_file(@golden)
+
+    results =
+      cases
+      |> Enum.group_by(& &1.law)
+      |> Enum.flat_map(fn {law, entries} ->
+        xml = clml(law)
+
+        effects =
+          law
+          |> LatStagedParser.law_effects(store: :only)
+          |> LatStagedParser.with_affecting_territory(law)
+
+        provisions = Map.new(entries, &{&1.id, %{extent: &1.extent, start: &1.start}})
+        labels = ChangeVocabulary.labels(law, xml, effects, provisions)
+        Enum.map(entries, &{&1, labels[&1.id]})
+      end)
+
+    for {c, got} <- results do
+      mark = if got == c.periods, do: "PASS", else: "FAIL"
+
+      Mix.shell().info(
+        "#{mark}  #{c.law} #{c.id}  — #{c.case}#{if c.undecidable, do: " (undecidable)", else: ""}"
+      )
+
+      if got != c.periods do
+        Mix.shell().info("    expected:")
+        for p <- c.periods, do: Mix.shell().info("      " <> line(p))
+        Mix.shell().info("    got:")
+        for p <- got || [], do: Mix.shell().info("      " <> line(p))
+      end
+    end
+
+    passed = Enum.count(results, fn {c, got} -> got == c.periods end)
+    Mix.shell().info("\n#{passed} / #{length(results)} golden provisions pass")
   end
 
   defp line(p),
