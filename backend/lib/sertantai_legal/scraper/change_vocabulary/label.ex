@@ -50,16 +50,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
           optional(:law) => String.t(),
           optional(:prospective) => boolean(),
           optional(:start_dated) => boolean(),
-          optional(:start_tier) => :primary | :derived
+          optional(:start_tier) => :primary | :derived,
+          optional(:version) => String.t()
         }
 
   @doc "The periods of provision `id` from resolved changes."
   @spec fold(String.t(), provision(), [Change.t()]) :: [period()]
   def fold(id, %{start: start} = provision, changes) do
+    version = Map.get(provision, :version)
+
+    # a territorial version takes only the changes that can apply to it
     reaching =
       changes
       |> Enum.filter(&reaches?(&1, id))
       |> Enum.filter(&(&1.resolved.date != nil))
+      |> Enum.filter(&(version == nil or overlaps?(&1.resolved.territory, version)))
 
     later? = &(Date.compare(&1.resolved.date, start) == :gt)
 
@@ -100,7 +105,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
     |> Enum.group_by(& &1.resolved.date)
     |> Enum.sort_by(&elem(&1, 0), Date)
     |> Enum.reduce([first], fn {date, day}, [current | rest] ->
-      next = apply_day(current, date, day, self)
+      next = apply_day(current, date, day, self) |> split(day, version)
 
       # a day that changes no label field opens no period
       if Map.delete(next, :tiers) == Map.delete(current, :tiers),
@@ -148,6 +153,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
       end
 
     cond do
+      # repealed with savings: saved where it was in force (D3)
+      territory == :gone and Enum.any?(removals, & &1.resolved.saved) ->
+        %{
+          current
+          | tiers: tiers(current.tiers, [:status, :in_force_from, :changed_by], removals),
+            status: :repealed_saved,
+            in_force_from: nil,
+            changed_by: by(removals, self)
+        }
+
       territory == :gone ->
         %{
           current
@@ -156,7 +171,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
             status: :repealed,
             territory: "nowhere",
             in_force_from: nil,
-            changed_by: by(of.(:repealed), self)
+            changed_by: by(removals, self)
         }
 
       status in [:prospective, :in_force_partial] ->
@@ -191,6 +206,25 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
         current
     end
   end
+
+  # a territorial version splits from its base when a text change confined
+  # to its territory takes effect: from then, its own territory (C3)
+  defp split(period, _day, nil), do: period
+  defp split(%{status: s} = period, _day, _v) when s in [:repealed, :repealed_saved], do: period
+
+  defp split(period, day, version) do
+    confined? =
+      Enum.any?(day, fn c ->
+        c.resolved.operation in @text_changes and c.resolved.territory != nil and
+          Territory.covers?(version, c.resolved.territory)
+      end)
+
+    if confined? and is_binary(period.territory),
+      do: %{period | territory: intersect(period.territory, version)},
+      else: period
+  end
+
+  defp intersect(a, b), do: Territory.subtract(a, Territory.subtract(a, b) || "") || a
 
   # the fields' tier from the changes that set them: derived when any is
   defp tiers(current, fields, changes) do

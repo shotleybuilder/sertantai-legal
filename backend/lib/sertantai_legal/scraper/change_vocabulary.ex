@@ -16,6 +16,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Evidence, Label, Merge}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.{AmendingLaw, Feed, Markup}
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
+  alias SertantaiLegal.Scraper.Territory
 
   @doc """
   Label periods for each provision in `provisions` (id → `%{extent, start}`,
@@ -38,9 +39,28 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
       |> Enum.map(&Evidence.resolve(&1, extent(provisions, &1.target)))
 
     Map.new(provisions, fn {id, provision} ->
-      provision = Map.merge(%{law: law_name, prospective: prospective?(facts, id)}, provision)
-      {id, Label.fold(id, provision, changes)}
+      {base, version} = version(id)
+      provision = Map.merge(%{law: law_name, prospective: prospective?(facts, base)}, provision)
+
+      # a territorial version's label is its base provision's, from the
+      # union of its versions' territories, narrowed at the split (C3)
+      provision =
+        case {version, get_in(facts, [base, :versions])} do
+          {nil, _} -> provision
+          {v, [_ | _] = vs} -> %{provision | extent: Territory.union(vs)} |> Map.put(:version, v)
+          {v, _} -> Map.put(provision, :version, v)
+        end
+
+      {id, Label.fold(base, provision, changes)}
     end)
+  end
+
+  # "reg.14(1)[NI]" → {"reg.14(1)", "NI"}
+  defp version(id) do
+    case Regex.run(~r/^(.*)\[([^\]]+)\]$/, id) do
+      [_, base, v] -> {base, Territory.normalize(v)}
+      nil -> {id, nil}
+    end
   end
 
   # the markup marks the provision, or an ancestor, prospective

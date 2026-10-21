@@ -46,6 +46,8 @@
 # for the law itself); in_force_from / changed_by are empty while prospective
 # or partly in force. Coronavirus Act s.78's 2024 expiry is the Act's own
 # (s.89): changed_by [].
+# And to D3 (label_projection.ex): a repeal carrying savings is :repealed_saved,
+# kept where it was in force — HSWA 1974 s.78 from 2006-10-01 (E+W+S).
 
 [
   %{
@@ -473,11 +475,11 @@
         valid_to: ~D[2006-10-01]
       },
       %{
-        status: :repealed,
+        status: :repealed_saved,
         valid_from: ~D[2006-10-01],
         in_force_from: nil,
         changed_by: ["UK_ssi_2006_475", "UK_uksi_2005_1541"],
-        territory: "nowhere",
+        territory: "E+W+S",
         valid_to: nil
       }
     ],

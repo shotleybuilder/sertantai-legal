@@ -26,21 +26,56 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
   @changes ~w(Addition Substitution Repeal)a
 
   @doc """
-  Provision facts the markup states (CV-03): each provision within an
-  element marked `Status="Prospective"` (not yet in force in the revised
-  text), by ref.
+  Provision facts the markup states (CV-03), by ref:
+  - `prospective` — the provision is within an element marked
+    `Status="Prospective"` (not yet in force in the revised text);
+  - `versions` — the territories of its territorial versions (one element
+    per territory sharing the provision's id, told apart by their
+    DocumentURI: `…/regulation/36/england`, `…/wales`; C3).
   """
-  @spec provisions(String.t()) :: %{String.t() => %{prospective: boolean()}}
+  @spec provisions(String.t()) :: %{String.t() => map()}
   def provisions(xml) do
     doc = SweetXml.parse(xml, quiet: true, namespace_conformant: false)
 
     # the status sits on the provision or an element around it (a P1group
     # has no id: Building Safety Act 2022 s.138)
-    for el <- xpath(doc, ~x"//*[@Status='Prospective']/descendant-or-self::*[@id]"l),
-        ref = el |> xpath(~x"./@id"s) |> Order.ref(),
-        ref != nil,
-        into: %{},
-        do: {ref, %{prospective: true}}
+    prospective =
+      for el <- xpath(doc, ~x"//*[@Status='Prospective']/descendant-or-self::*[@id]"l),
+          ref = el |> xpath(~x"./@id"s) |> Order.ref(),
+          ref != nil,
+          into: %{},
+          do: {ref, %{prospective: true}}
+
+    versions =
+      for el <- xpath(doc, ~x"//*[@id][@DocumentURI]"l),
+          territory = el |> xpath(~x"./@DocumentURI"s) |> version_territory(),
+          territory != nil,
+          ref = el |> xpath(~x"./@id"s) |> Order.ref(),
+          ref != nil do
+        {ref, territory}
+      end
+      |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
+      |> Map.new(fn {ref, ts} -> {ref, %{versions: Enum.uniq(ts)}} end)
+
+    Map.merge(prospective, versions, fn _ref, a, b -> Map.merge(a, b) end)
+  end
+
+  @places %{
+    "england" => "E",
+    "wales" => "W",
+    "scotland" => "S",
+    "ni" => "NI",
+    "northern-ireland" => "NI"
+  }
+
+  # ".../regulation/14/1/england+wales+scotland" → "E+W+S"; nil for an
+  # unversioned URI
+  defp version_territory(uri) do
+    last = uri |> String.split("/") |> List.last() |> to_string()
+    parts = String.split(last, "+")
+
+    if parts != [] and Enum.all?(parts, &Map.has_key?(@places, &1)),
+      do: parts |> Enum.map(&@places[&1]) |> SertantaiLegal.Scraper.Territory.union()
   end
 
   @doc "Claim sets `{key, target, claims}`, one per change id."
