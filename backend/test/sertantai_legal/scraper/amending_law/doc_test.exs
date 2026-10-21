@@ -48,4 +48,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.DocTest do
     assert Locator.ids(d, {:schedule, "8", nil, nil, []}) == ["schedule-8"]
     assert Locator.ids(d, {:section, "999", []}) == []
   end
+
+  test "AR-13: lines — a prefixed Para or Text starts a line (EReA 1999 Sch 9 cells: leg:Para)" do
+    cell =
+      ~s|<td xmlns:leg="http://www.legislation.gov.uk/namespaces/legislation"><leg:P><leg:Text>In section 37, the word “and”.</leg:Text></leg:P><leg:Para><leg:Text>Section 96.</leg:Text></leg:Para><leg:Para><leg:Text>Section 97(6).</leg:Text></leg:Para></td>|
+      |> SweetXml.parse(quiet: true, namespace_conformant: false)
+
+    assert Doc.lines(cell) == ["In section 37, the word “and”.", "Section 96.", "Section 97(6)."]
+  end
 end

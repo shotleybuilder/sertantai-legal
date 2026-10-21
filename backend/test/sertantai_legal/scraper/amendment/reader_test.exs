@@ -560,4 +560,34 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderTest do
     assert "UK_ukpga_1956_52:s.12(3)" in reached(rules, "s.12(3)")
     assert "UK_ukpga_1956_52:s.7(7)(b)(i)" in reached(rules, "s.7(7)(b)(i)")
   end
+
+  test "AR-13: entries run together in one cell line are a rule each (1993 c.11 Sch 6, 1992 c.42 Sch 4)" do
+    d =
+      Doc.new("UK_ukpga_1993_11", [
+        ~S"""
+        <Legislation><Primary><Schedules><Schedule id="schedule-6"><Tabular><table><tbody>
+        <tr><th>Chapter</th><th>Short title</th><th>Extent of repeal</th></tr>
+        <tr><td>1990 c. 43</td><td>Environmental Protection Act 1990</td><td>Sections 75 to 84.Section 103.In section 109(3), the words “75, 77”.In Schedule 2, paragraphs 19, 26 and 27.In section 117(2) and (3), the words “and to regulations under section 127B”.</td></tr>
+        <tr><td>1974 c. 37</td><td>Health and Safety at Work etc. Act 1974</td><td>Section 121(4) (except as it applies in Scotland). In section 121(5), the words “Act.In section 9” (except as they apply in Scotland).</td></tr>
+        </tbody></table></Tabular></Schedule></Schedules></Primary></Legislation>
+        """
+      ])
+
+    epa = Reader.law_ref("UK_ukpga_1990_43", "Environmental Protection Act", "s")
+    hswa = Reader.law_ref("UK_ukpga_1974_37", "Health and Safety at Work etc. Act", "s")
+    rules = Reader.repeal_table(d, "schedule-6", [epa, hswa])
+    by = fn law -> for r <- rules, r.amends == law, do: {r.targets, r.level} end
+
+    assert by.("UK_ukpga_1990_43") == [
+             {["s.75..s.84"], :provision},
+             {["s.103"], :provision},
+             {["s.109(3)"], :words},
+             # the words in each sibling, never a provision "(3)" under (2)
+             {["s.117(2)", "s.117(3)"], :words}
+           ]
+
+    # a full stop inside quoted words never splits the line
+    assert by.("UK_ukpga_1974_37") == [{["s.121(4)"], :provision}, {["s.121(5)"], :words}]
+    assert Enum.map(rules, & &1.source.text) |> Enum.at(1) == "Section 103."
+  end
 end

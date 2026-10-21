@@ -99,17 +99,21 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Doc do
   end
 
   defp walk({:xmlText, _, _, _, value, _}, [line | rest]), do: [[to_string(value) | line] | rest]
-  defp walk({:xmlElement, :br, _, _, _, _, _, _, _, _, _, _}, acc), do: [[] | acc]
 
-  # a paragraph or text block starts a new line
-  defp walk({:xmlElement, name, _, _, _, _, _, _, children, _, _, _}, acc)
-       when name in [:Para, :Text],
-       do: Enum.reduce(children, [[] | acc], &walk/2)
-
-  defp walk({:xmlElement, _, _, _, _, _, _, _, children, _, _, _}, acc),
-    do: Enum.reduce(children, acc, &walk/2)
+  # by local name: some documents prefix their elements ("leg:Para" in
+  # EReA 1999 Sch 9's repeals table cells, AR-13)
+  defp walk({:xmlElement, name, _, _, _, _, _, _, children, _, _, _}, acc) do
+    case local(name) do
+      "br" -> [[] | acc]
+      # a paragraph or text block starts a new line
+      l when l in ["Para", "Text"] -> Enum.reduce(children, [[] | acc], &walk/2)
+      _ -> Enum.reduce(children, acc, &walk/2)
+    end
+  end
 
   defp walk(_node, acc), do: acc
+
+  defp local(name), do: name |> Atom.to_string() |> String.split(":") |> List.last()
 
   defp id(el), do: Xml.attr(el, :id)
 

@@ -607,9 +607,26 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
     if header =~ ~r/Extent of (?:repeal|revocation)/i do
       for row <- tl(cells), length(row) in [2, 3] do
         {law_cells, [extent]} = Enum.split(row, -1)
-        {Enum.map_join(law_cells, " ", &Doc.text/1), Doc.lines(extent)}
+
+        {Enum.map_join(law_cells, " ", &Doc.text/1),
+         extent |> Doc.lines() |> Enum.flat_map(&entries/1)}
       end
     end
+  end
+
+  # a new entry after a full stop ("Sections 75 to 84.Section 103.In section
+  # 109(3), …": run together in the source, AR-13), never inside quoted words
+  @entry ~r/\.\s*(?=(?:In\s+)?(?:[Ss]ections?|Schedules?)\s+\d|In\s+Schedule\b)/
+
+  defp entries(line) do
+    masked = Regex.replace(~r/[“"][^”"]*[”"]/u, line, &String.duplicate("x", byte_size(&1)))
+
+    cuts = for [{pos, len}] <- Regex.scan(@entry, masked, return: :index), do: pos + len
+
+    [0 | cuts]
+    |> Enum.zip(cuts ++ [byte_size(line)])
+    |> Enum.map(fn {a, b} -> line |> binary_part(a, b - a) |> String.trim() end)
+    |> Enum.reject(&(&1 == ""))
   end
 
   defp table_law?(cells, law) do
@@ -626,18 +643,44 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
          ) do
       [_, n, subs, to, rest] ->
         subs = plain_brackets(subs)
+        {siblings, after_siblings} = siblings(subs, rest)
 
         cond do
-          to != "" -> {["s.#{n}..s.#{to}"], :provision}
-          mixed = mixed_line(n, subs, rest) -> mixed
-          words_line?(rest) -> {words_targets(n, subs, located(rest)), :words}
-          true -> whole_targets(n, subs ++ plain_brackets(rest))
+          to != "" ->
+            {["s.#{n}..s.#{to}"], :provision}
+
+          # "In section 117(2) and (3), the words …": the words in each (AR-13)
+          siblings != [] and words_line?(after_siblings) ->
+            {Enum.flat_map(siblings, &words_targets(n, &1, located(after_siblings))), :words}
+
+          mixed = mixed_line(n, subs, rest) ->
+            mixed
+
+          words_line?(rest) ->
+            {words_targets(n, subs, located(rest)), :words}
+
+          true ->
+            whole_targets(n, subs ++ plain_brackets(rest))
         end
 
       _ ->
         nil
     end
   end
+
+  # brackets listed after the section's own ("117(2) and (3), the words"):
+  # each sibling's path and the rest after them; [] when none
+  defp siblings([_ | _] = subs, rest) do
+    case Regex.run(~r/^\s*,?\s*and\s+((?:\([0-9A-Za-z]+\))+)(.*)$/s, rest) do
+      [_, bs, after_siblings] ->
+        {[subs, Enum.drop(subs, -1) ++ plain_brackets(bs)], after_siblings}
+
+      nil ->
+        {[], rest}
+    end
+  end
+
+  defp siblings([], rest), do: {[], rest}
 
   # "in subsection (1)", "in paragraph (b)": where the words are, not a
   # provision repealed — its brackets narrow the words' row (AR-06)
