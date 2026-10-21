@@ -291,10 +291,12 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     |> Enum.reduce(0, fn {d, n}, acc -> if d < n, do: acc - d, else: acc + d end)
   end
 
-  # "s.153(1)(q)" → ["s.153", "1", "q"]
+  # "s.153(1)(q)" → ["153", "1", "q"]: the number alone heads it — within
+  # one law the feed's kind word can differ from the row's ("art. 10" on an
+  # NI Order whose rows are reg.10: NISI 2006/1254)
   defp path(local) do
-    case Regex.run(~r/^((?:s|reg|art|rule)\.\d+[A-Z]*)((?:\([0-9A-Za-z]+\))*)$/, local) do
-      [_, head, brackets] -> [head | brackets(brackets)]
+    case Regex.run(~r/^(?:s|reg|art|rule)\.(\d+[A-Z]*)((?:\([0-9A-Za-z]+\))*)$/, local) do
+      [_, number, brackets] -> [number | brackets(brackets)]
       nil -> nil
     end
   end
@@ -303,7 +305,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     do: ~r/\(([0-9A-Za-z]+)\)/ |> Regex.scan(s, capture: :all_but_first) |> List.flatten()
 
   # a ref as {the provision's path, its members}: "s. 153(1)(z10)" →
-  # {["s.153", "1", "z10"], nil}; a list "s. 153(1)(z8)(z9)" → {["s.153",
+  # {["153", "1", "z10"], nil}; a list "s. 153(1)(z8)(z9)" → {["153",
   # "1"], {:list, ["z8", "z9"]}}; a range "s. 153(1)(a)-(nn)" → {…,
   # {:range, "a", "nn"}}; nil when not read as a provision
   defp provision_ref(nil), do: nil
@@ -311,9 +313,8 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   defp provision_ref(ref) do
     r = String.replace(ref, ~r/\s+/, "")
 
-    with [_, kind, number, bs, rest] <-
-           Regex.run(~r/^(s|reg|art|rule)\.(\d+[A-Z]*)((?:\([0-9A-Za-z]+\))*)(.*)$/i, r) do
-      head = String.downcase(kind) <> "." <> number
+    with [_, head, bs, rest] <-
+           Regex.run(~r/^(?:s|reg|art|rule)\.(\d+[A-Z]*)((?:\([0-9A-Za-z]+\))*)(.*)$/i, r) do
       bs = brackets(bs)
 
       case {rest, bs} do

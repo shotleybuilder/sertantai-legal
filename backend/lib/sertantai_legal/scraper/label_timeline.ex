@@ -51,6 +51,20 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
     end
   end
 
+  @doc """
+  J5: a note on a whole provision inserted, added or substituted (a pointer
+  only: it withholds the law's start). A words note never is, the place
+  between "Words" and the verb read across its abbreviations ("Words in
+  art. 18(1) inserted": SI 2015/595).
+  """
+  @spec whole_insertion_note?(String.t() | nil) :: boolean()
+  def whole_insertion_note?(nil), do: false
+
+  def whole_insertion_note?(text) do
+    text =~ ~r/\b(?:inserted|added|substituted)\b/i and
+      not (text =~ ~r/\bwords?\b(?:[^.;]|\.\s*(?=[\d(]))*?\b(?:inserted|added|substituted)\b/i)
+  end
+
   @doc "A law's timeline from the DB: `%{periods, gaps, rows}` (`rows[].today`: the stored timeline as at today, for the diff)."
   @spec build(String.t(), Date.t()) :: map()
   def build(law_name, today) do
@@ -74,15 +88,16 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
     %{rows: pointed} =
       Repo.query!(
         """
-        SELECT DISTINCT unnest(affected_sections) FROM amendment_annotations
+        SELECT affected_sections, text FROM amendment_annotations
         WHERE law_name = $1 AND code_type = 'amendment'
-          AND text ~* '\\y(inserted|added|substituted)\\y'
-          AND text !~* '\\ywords?\\y[^.;]{0,40}\\y(inserted|added|substituted)\\y'
         """,
         [law_name]
       )
 
-    pointed = MapSet.new(List.flatten(pointed))
+    pointed =
+      MapSet.new(
+        for [sids, text] <- pointed, whole_insertion_note?(text), sid <- sids || [], do: sid
+      )
 
     # T1: the laws each row's amendment notes name (a pointer), to check the
     # register dates a change by each on the row

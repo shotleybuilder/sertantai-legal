@@ -385,6 +385,29 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
              periods(law, [row(law, "s.33(10)")], changes, law_start: ~D[1991-01-01])
   end
 
+  test "AR-10: the feed's kind word needn't match the row's (\"art. 10\" on reg.10 reaches reg.10(a): NISI 2006/1254)" do
+    law = "UK_nisi_2006_1254"
+
+    changes = [
+      change(
+        law,
+        "reg.10",
+        "cif",
+        "commenced",
+        "coming into force",
+        "UK_nisr_2006_257",
+        [
+          {~D[2006-07-01], nil}
+        ],
+        affected_ref: "art. 10",
+        via: ["ref"]
+      )
+    ]
+
+    assert [{~D[2006-07-01], nil, "in_force", ~D[2006-07-01], "UK_nisr_2006_257"}] =
+             periods(law, [row(law, "reg.10(a)")], changes, law_start: ~D[2006-07-01])
+  end
+
   test "AR-10: a words omission for part of the row's extent is a version, as a words substitution (1986/44 s.23C(2))" do
     law = "UK_ukpga_1986_44"
 
