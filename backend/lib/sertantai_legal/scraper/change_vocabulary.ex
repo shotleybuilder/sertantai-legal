@@ -24,14 +24,23 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   """
   @spec labels(String.t(), String.t(), [Effect.t()], %{String.t() => map()}) ::
           %{String.t() => [Label.period()]}
-  def labels(_law_name, xml, effects, provisions) do
+  def labels(law_name, xml, effects, provisions) do
+    facts = Markup.provisions(xml)
+
     changes =
       (Feed.read(effects) ++ Markup.read(xml))
       |> Merge.merge()
       |> Enum.map(&Evidence.resolve(&1, extent(provisions, &1.target)))
 
-    Map.new(provisions, fn {id, provision} -> {id, Label.fold(id, provision, changes)} end)
+    Map.new(provisions, fn {id, provision} ->
+      provision = Map.merge(%{law: law_name, prospective: prospective?(facts, id)}, provision)
+      {id, Label.fold(id, provision, changes)}
+    end)
   end
+
+  # the markup marks the provision, or an ancestor, prospective
+  defp prospective?(facts, id),
+    do: Enum.any?(SertantaiLegal.Scraper.LatRef.ancestors(id), &get_in(facts, [&1, :prospective]))
 
   defp extent(provisions, target), do: provisions |> Map.get(target, %{}) |> Map.get(:extent)
 end

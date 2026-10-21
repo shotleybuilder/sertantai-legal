@@ -18,8 +18,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
 
   defmodule Resolved do
     @moduledoc "A change's chosen attributes, and the source each came from."
-    @enforce_keys [:operation, :level, :territory, :date, :by, :retained, :sources]
-    defstruct [:operation, :level, :territory, :date, :by, :retained, :sources]
+    @enforce_keys [:operation, :level, :territory, :date, :by, :retained, :partial, :sources]
+    defstruct [:operation, :level, :territory, :date, :by, :retained, :partial, :sources]
 
     @type t :: %__MODULE__{
             operation: atom() | nil,
@@ -28,12 +28,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
             date: Date.t() | nil,
             by: String.t() | nil,
             retained: boolean(),
+            partial: boolean(),
             sources: %{atom() => atom() | nil}
           }
   end
 
   @table [
-    operation: [{:markup, :operation}, {:feed, :operation}],
+    # the feed's "in part" outranks a whole-provision Repeal in the markup
+    # (Jason 2026-10-11: "revoked in part will not mean full revocation")
+    operation: [{:feed, :operation, :in_part}, {:markup, :operation}, {:feed, :operation}],
     level: [{:markup, :level}, {:feed, :level}],
     retained: [{:markup, :retained}],
     # where the change applies: the feed's application, the markup's Extent,
@@ -47,6 +50,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
       {:law, :territory, :retained_removal_narrower}
     ],
     date: [{:feed, :date}],
+    # a commencement stage that doesn't complete the provision
+    partial: [{:feed, :partial}],
     by: [{:feed, :by}, {:markup, :cited}]
   ]
 
@@ -69,6 +74,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
           date: value.(:date),
           by: value.(:by),
           retained: value.(:retained) == true,
+          partial: value.(:partial) == true,
           sources: Map.new(chosen, fn {attribute, {_v, source}} -> {attribute, source} end)
         }
     }
@@ -95,12 +101,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
 
   @doc """
   The table's named conditions:
+  - `:in_part` — the claim is a removal in part
   - `:narrower_than_provision` — the territory doesn't cover the provision's extent
   - `:retained_removal_narrower` — the change removes text the markup retains
     (by the claims: markup or feed operation `:repealed`, markup `retained`),
     and the territory is narrower than the provision's extent
   """
   @spec condition?(atom(), term(), %{change: Change.t(), extent: String.t() | nil}) :: boolean()
+  def condition?(:in_part, operation, _context), do: operation == :repealed_in_part
+
   def condition?(:narrower_than_provision, territory, %{extent: extent}),
     do: not Territory.covers?(territory, extent)
 

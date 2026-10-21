@@ -9,8 +9,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   `savings`, `by` (the affecting law). The affecting law's own territory
   (`Effect.affecting_territory`, `LawTerritory`) is a `:law` claim.
 
-  Slice limits (CV-03 widens): targets are the effect's structured refs as
-  given; in-force entries and qualifications are not read. Pure.
+  A commencement ("coming into force") is one change per dated in-force
+  entry, keyed `effect id@date`, with a `partial` claim (its qualification
+  doesn't complete the provision). Limits (CV-03 widens): targets are the
+  effect's structured refs as given. Pure.
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Claim
@@ -22,8 +24,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
     "repealed" => :repealed,
     "substituted" => :substituted,
     "inserted" => :inserted,
-    "renumbered" => :renumbered
+    "renumbered" => :renumbered,
+    "commenced" => :commenced
   }
+
+  # an in-force entry that completes the provision's commencement; any
+  # other qualification ("for specified purposes", "for W.") is partial
+  @full ~r/^\s*$|wholly in force|so far as not already in force/i
 
   @doc "Claim sets `{key, target, claims}` for each effect's target provisions."
   @spec read([Effect.t()]) :: [{String.t(), String.t(), [Claim.t()]}]
@@ -31,7 +38,45 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
     for %Effect{effect_id: id} = e <- effects,
         id != nil,
         target <- targets(e),
-        do: {id, target, claims(e)}
+        {key, claims} <- changes(e),
+        do: {key, target, claims}
+  end
+
+  # a commencement is one change per dated in-force entry (staged
+  # commencement: each stage its own change, partial or full); any other
+  # effect is one change
+  defp changes(%Effect{effect_id: id} = e) do
+    if operation(e) == :commenced do
+      for {date, qualification} <- stages(e) do
+        {"#{id}@#{date}",
+         Enum.concat([
+           Claim.new(:feed, :operation, :commenced, id),
+           Claim.new(:feed, :level, :provision, id),
+           Claim.new(:feed, :date, date, id),
+           Claim.new(:feed, :partial, not String.match?(qualification || "", @full), id),
+           Claim.new(:feed, :by, e.affecting, id)
+         ])}
+      end
+    else
+      [{id, claims(e)}]
+    end
+  end
+
+  defp stages(%Effect{in_force: entries, in_force_date: date, in_force_qualification: q}) do
+    case for(%{date: %Date{} = d} = entry <- entries || [], do: {d, entry.qualification}) do
+      [] -> if date, do: [{date, q}], else: []
+      stages -> Enum.uniq(stages)
+    end
+  end
+
+  # a removal "in part" (revoked / repealed / omitted / expires / ceases …
+  # in part) is never a whole removal (Jason 2026-10-11)
+  @in_part ~r/\b(?:repeal|revok|omit|expir|cease)\w*\b.*\bin part\b/i
+
+  defp operation(e) do
+    if String.match?(e.type || "", @in_part),
+      do: :repealed_in_part,
+      else: Map.get(@operations, EffectFacts.kind(e.type, nil))
   end
 
   defp targets(%Effect{affected_refs: refs}),
@@ -39,7 +84,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
 
   defp claims(%Effect{effect_id: id} = e) do
     Enum.concat([
-      Claim.new(:feed, :operation, Map.get(@operations, EffectFacts.kind(e.type, nil)), id),
+      Claim.new(:feed, :operation, operation(e), id),
       Claim.new(:feed, :level, level(e.type), id),
       Claim.new(:feed, :territory, code(e.territorial_application), id),
       Claim.new(:feed, :effect_extent, code(e.effect_extent), id),

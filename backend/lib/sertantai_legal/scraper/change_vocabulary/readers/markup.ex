@@ -25,6 +25,24 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
 
   @changes ~w(Addition Substitution Repeal)a
 
+  @doc """
+  Provision facts the markup states (CV-03): each provision within an
+  element marked `Status="Prospective"` (not yet in force in the revised
+  text), by ref.
+  """
+  @spec provisions(String.t()) :: %{String.t() => %{prospective: boolean()}}
+  def provisions(xml) do
+    doc = SweetXml.parse(xml, quiet: true, namespace_conformant: false)
+
+    # the status sits on the provision or an element around it (a P1group
+    # has no id: Building Safety Act 2022 s.138)
+    for el <- xpath(doc, ~x"//*[@Status='Prospective']/descendant-or-self::*[@id]"l),
+        ref = el |> xpath(~x"./@id"s) |> Order.ref(),
+        ref != nil,
+        into: %{},
+        do: {ref, %{prospective: true}}
+  end
+
   @doc "Claim sets `{key, target, claims}`, one per change id."
   @spec read(String.t()) :: [{String.t(), String.t(), [Claim.t()]}]
   def read(xml) do
