@@ -34,7 +34,14 @@ Jason 2026-10-21: "I cannot have recent laws with wrong territory metadata" — 
 - ⬜ Check `markup_status` / J2 afterwards: a retained repeal for part of the row's extent is in force elsewhere — J2 should no longer hold such rows repealed
 - ⬜ Parse diff on the affected laws (`mix lat.parse_snapshot` / `lat.text_diff --store only`), classified; only territory fields and markup_status move
 - ⬜ Gemini review of the change (parser territory rule), saved to `backend/data/code-reviews/`
+- ⬜ Close the identical open bug in LR-07 and LR-17 ("Retained repeal read as everywhere when the feed is silent on territory …": 2010/404 reg.14; its 2020/7 s.8 half is V1-03's expiry fix) as fixed here
+- ⬜ Territory audit, laws from 2002, after the fix: rows in force today whose territory is unknown or the whole extent while the register holds a dated territorial repeal (or insertion) narrower than the row; each a fix here or a listed known limit — nothing left unexplained for v0.1
 - ⬜ Dry run → Jason → restore point (`legal_articles`, `amendment_annotations`, `lat_change_log`, `lat_label_timeline`) → re-parse (`mix lat.reparse --store only`, the laws whose parse changes; ParserVersion moves) — folded into the v0.1 relabel (V1-00)
+
+## Related (not in this session)
+
+- **LH-07 Welsh SI duplicates (#178), v0.1:** a Welsh SI held under a `uksi` name escapes the devolved-by-type rule. The title-place rule catches most ("… (Wales) Regulations"); the identity fix is LH-07's.
+- **QQ-00 fractalaw tree bugs** (an NI law's jurisdiction matching GB orgs; a Not node disapplying a law's own jurisdiction): fractalaw's applicability trees, not legal's labels.
 
 ## Dependencies
 
