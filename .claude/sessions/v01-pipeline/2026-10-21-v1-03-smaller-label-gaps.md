@@ -11,6 +11,12 @@ bugs:
     affected: '552 rows / 90 laws (141 / 36 from 2002)'
     fix: strip the nN disambiguator before computing ancestors
     status: open
+  - pattern: 'A row commenced only through some of the children it is above (SI 2026/318 reg.11(1): (1)(a)-(b) from 2026-09-19, (c)-(i) from 2027-01-19) reads in force, not in force partly'
+    category: label projection
+    module: LabelProjection (commencement reaching rows above a member, V1-01)
+    affected: 'unknown; found in the V1-01 preview'
+    fix: a commencement reaching the row only from above a member is partial unless every child it holds is commenced
+    status: open
 ---
 
 # Session: V1-03: Smaller Label Gaps on Laws from 2002 (PENDING)
@@ -26,7 +32,8 @@ After V1-01 and V1-02, the rest of the v0.1 label load on UK laws from 2002 on i
 - ⬜ Insertions not in the register ≥2002 (144) and text-only feed refs (24 effects): count what each reaches; fix or known limit
 - ⬜ LR-17's 8 retained-repeal rows: read the amending provisions from the store (an amendment-rules slice), or a known limit
 - ⬜ Check and close stale open bugs: LR-20's note-fact fallback and provenance entries, LR-23's note-join spread, LR-27's text-only refs (each against today's code)
-- ⬜ Preview only the affected laws, splice; batch into the v0.1 relabel (V1-00)
+- ⬜ A row commenced through only some of its children: partial, not in force (V1-01 finding)
+- ⬜ Preview only the affected laws, splice into `v101_final`; batch into the v0.1 relabel (V1-00)
 
 ## Dependencies
 
