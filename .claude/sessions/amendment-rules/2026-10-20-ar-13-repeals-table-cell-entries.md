@@ -1,11 +1,11 @@
 ---
 session: "AR-13: Repeals-Table Cells with Several Entries"
-status: pending
+status: active
 opened: '2026-10-20'
 parent: amendment-rules/2026-10-19-ar-00-meta.md
 ---
 
-# Session: AR-13: Repeals-Table Cells with Several Entries (PENDING)
+# Session: AR-13: Repeals-Table Cells with Several Entries (ACTIVE)
 
 ## Problem
 
