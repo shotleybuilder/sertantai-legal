@@ -1,8 +1,56 @@
 ---
 session: "AR-10: RTA 1988 s.92 Insertion Recheck"
-status: active
+status: closed
 opened: '2026-10-20'
+closed: '2026-10-21'
+outcome: success
 parent: amendment-rules/2026-10-19-ar-00-meta.md
+
+summary: >
+  The RTA 1988 s.92 "regression" was the old matcher's error (RTA 1991 s.18(1) added s.92(10) only); chasing why s.92(10)
+  itself stayed undated found four faults, all fixed: "there shall be added—" quotes unread (reader), markup with its note
+  beside it unpointed (LAT parser), ancestor-placed feed effects versioning every row under the ancestor, and own words
+  omissions for part of a row's territory never versioning it (projection). 10-law pilot: ~1,650 rows move, 167 false repeals gone.
+
+decisions:
+  - what: 'The 9 rows'' 1988-11-15 stands; nothing to restore'
+    why: 'Note F:c13981151 and the text: RTA 1991 s.18(1) "at the end there shall be added— (10)" — the old 1992-07-01 on s.92 was the matcher reading an insertion of s.92(10) as of s.92'
+    result: 'LR-41 bug closed as not a fault'
+  - what: 'Fix the two downstream bugs here (Jason: "Both here in AR-10"), then the own-omission bug (Jason 2026-10-21: chase here)'
+    why: 's.92(10) stayed blank without the pointer fix; the measure run would have applied wrong labels (10 s.153(1) rows changed by SSI 2024/371) without the ancestor rule'
+    result: 'four fixes, each piloted against a control or the previous run'
+  - what: 'An ancestor''s record reaches a row only when its affected_ref is the row or above it; a list or range its members only; an unread ref every row as before'
+    why: 'The feed places an effect on the ancestors of the provision it names (via whole); counted as whole-provision changes they versioned, dated insertions of and repealed sibling rows'
+    result: '1,400 of 1,403 rows losing a changed_by law had no record by it; 167 repeals gone, markup in force for all'
+  - what: 'A words omission versions where it overlaps the row; only a whole repeal must cover the row''s extent'
+    why: 'A words omission is a text change like a words substitution (for_row?); covers_row? is for the row being repealed'
+    result: '19 rows dated by their own omissions; territorial ones version as territorial substitutions already did'
+
+metrics:
+  added_notes_bound: { notes: 240, laws: 79, amending_laws: 124 }
+  unpointed_markup: { records: 227, rows_beside_dated_law_record: 95 }
+  pilot_pointer: { laws: 10, rows_gaining_dates: 28 }
+  pilot_ancestor: { laws: 10, diffs: 3255, rows_changed_by_lost: 1403, via_ancestor_only: 1400, false_repeals_gone: 167, in_force_to_unknown: 42 }
+  pilot_words_omission: { rows: 19 }
+  suite: { passed: 2926, skipped: 2 }
+
+lessons:
+  - title: 'A blanking gap can hide wrong data underneath it'
+    detail: 'T1 (undated change) blanked s.153(1)(q) and s.92(10); fixing the read that dated them exposed version chains from sibling insertions the projection had built all along. Each fix that lifts a gap needs its own pilot diff, read row by row.'
+    tag: data
+  - title: 'The today-label diff misses period starts'
+    detail: 'lat_labels_today shows status / in_force_from / changed_by / territory; s.92(10)''s period moved 2016-01-04 → 1992-07-01 with no diff because in_force_from stayed blank. Check lat_label_timeline when a collector record changes but no label does.'
+    tag: tooling
+  - title: 'A new projection input must be selected by LabelTimeline'
+    detail: 'The ancestor rule read affected_ref, which LabelTimeline did not select — the first pilot showed no change and the unit tests passed. Wire the field end to end before piloting.'
+    tag: tooling
+  - title: 'Feed refs list siblings as paths'
+    detail: '"s. 33(9)(10)" is (9) and (10), "s. 153(1)(a)-(nn)" a range: read as a path they cut rows out; parse them as parent + members.'
+    tag: data
+  - title: 'Never chain a code commit and a --no-verify session commit'
+    detail: 'Twice a formatting failure left code staged and the chained session commit swept it in past the hooks; undone with reset --soft before push. Commit code alone, confirm, then the session doc.'
+    tag: tooling
+
 bugs:
   - pattern: 'RTA 1988 9 rows: in_force_from moved 1992-07-01 → 1988-11-15 when an undated "insertion of s.92" by RTA 1991 is no longer read; s.92(1)''s 2009 words substitution never dates it'
     category: amending-law
@@ -34,9 +82,28 @@ bugs:
     affected: '3 rows in the 10-law pilot'
     fix: 'a words omission is a version where it overlaps the row (as a words substitution); only a whole repeal must cover the row''s extent'
     status: fixed
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/amendment/reader.ex
+  - backend/lib/sertantai_legal/scraper/lat_parser/refs.ex
+  - backend/lib/sertantai_legal/scraper/lat_parser/walker.ex
+  - backend/lib/sertantai_legal/scraper/label_projection.ex
+  - backend/lib/sertantai_legal/scraper/label_timeline.ex
+  - backend/test/sertantai_legal/scraper/amendment/reader_test.exs
+  - backend/test/sertantai_legal/scraper/label_projection_test.exs
+  - backend/test/sertantai_legal/scraper/lat_parser/change_refs_test.exs
+  - backend/data/reports/lat-refactor/ar10_*
+
+depends_on:
+  - 2026-10-17-lr-41-instruction-law
+  - 2026-10-19-ar-04-switch-over
+  - 2026-10-20-ar-08-mixed-instruction-level
+
+enables:
+  - AR measure run (classify the ancestor rule's corpus diff by kind)
 ---
 
-# Session: AR-10: RTA 1988 s.92 Insertion Recheck (ACTIVE)
+# Session: AR-10: RTA 1988 s.92 Insertion Recheck (CLOSED)
 
 ## Problem
 
