@@ -831,6 +831,120 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
                {~D[2025-06-01], nil, "in_force", ~D[2025-06-01], "UK_ssi_2025_9"}
              ] = periods(@law, rows, [com], law_start: ~D[2024-11-13], text_date: ~D[2026-09-14])
     end
+
+    test "V1-01: an ancestor's dated commencement is the row's: exists from the law's start, in force from the date (Equality Act 2010 s.13(1))" do
+      rows = [row(@law, "s.1(2)", by_order: true)]
+
+      com =
+        change(
+          @law,
+          "s.1",
+          "c1",
+          "commenced",
+          "coming into force",
+          "UK_ssi_2025_9",
+          [
+            {~D[2025-06-01], nil}
+          ],
+          affected_ref: "s. 1",
+          via: ["ref"]
+        )
+
+      assert %{
+               periods: [
+                 %{valid_from: ~D[2024-11-13], valid_to: ~D[2025-06-01], status: "prospective"},
+                 %{valid_from: ~D[2025-06-01], status: "in_force", in_force_from: ~D[2025-06-01]}
+               ],
+               gaps: []
+             } =
+               LabelProjection.timeline(@law, rows, [com],
+                 today: @today,
+                 law_start: ~D[2024-11-13],
+                 text_date: ~D[2026-09-14]
+               )
+    end
+
+    test "V1-01: a feed list names its members only (\"reg. 16(1)-(1B)(1E)(2)(a)(b)(3)-(5)\" leaves out (1C) and (2)(c): SI 2026/318)" do
+      law = "UK_uksi_2026_318"
+
+      com = fn ref, date ->
+        change(law, "reg.16", ref, "commenced", "coming into force", law, [{date, nil}],
+          affected_ref: ref,
+          via: ["note_own"]
+        )
+      end
+
+      changes = [
+        com.("reg. 16(1)-(1B)(1E)(2)(a)(b)(3)-(5)", ~D[2026-09-19]),
+        com.("reg. 16(1C)(1D)(2)(c)-(i)", ~D[2027-01-19])
+      ]
+
+      first = fn sid ->
+        case periods(law, [row(law, sid)], changes, []) do
+          [{from, _, _, _, _} | _] -> from
+          [] -> nil
+        end
+      end
+
+      assert first.("reg.16(1A)") == ~D[2026-09-19]
+      assert first.("reg.16(1E)") == ~D[2026-09-19]
+      assert first.("reg.16(2)(b)") == ~D[2026-09-19]
+      assert first.("reg.16(4)") == ~D[2026-09-19]
+      assert first.("reg.16(1C)") == ~D[2027-01-19]
+      assert first.("reg.16(2)(c)") == ~D[2027-01-19]
+      assert first.("reg.16(2)(g)(ii)") == ~D[2027-01-19]
+      # a commencement of (2)(a) commences part of (2): the row above a member
+      assert first.("reg.16(2)") == ~D[2026-09-19]
+    end
+
+    test "V1-01: a doubled letter under a roman numeral is a level of its own (\"art. 136(1)(b)(i)(bb)\")" do
+      law = "UK_eur_2006_1907"
+
+      changes = [
+        change(
+          law,
+          "art.136",
+          "c",
+          "commenced",
+          "coming into force",
+          law,
+          [{~D[2008-06-01], nil}],
+          affected_ref: "art. 136(1)(b)(i)(bb)",
+          via: ["ref"]
+        )
+      ]
+
+      assert [{~D[2008-06-01], _, _, _, _} | _] =
+               periods(law, [row(law, "art.136(1)(b)(i)(bb)")], changes, [])
+
+      assert [] = periods(law, [row(law, "art.136(1)(bb)")], changes, [])
+    end
+
+    test "V1-01: an ancestor's commencement naming another provision isn't the row's (J6 stands)" do
+      rows = [row(@law, "s.1(2)", by_order: true)]
+
+      com =
+        change(
+          @law,
+          "s.1",
+          "c1",
+          "commenced",
+          "coming into force",
+          "UK_ssi_2025_9",
+          [
+            {~D[2025-06-01], nil}
+          ],
+          affected_ref: "s. 1(3)",
+          via: ["whole"]
+        )
+
+      assert %{gaps: [{"UK_asp_2024_14:s.1(2)", :commenced_by_order}]} =
+               LabelProjection.timeline(@law, rows, [com],
+                 today: @today,
+                 law_start: ~D[2024-11-13],
+                 text_date: ~D[2026-09-14]
+               )
+    end
   end
 
   describe "LR-39: a law made, not yet in force" do

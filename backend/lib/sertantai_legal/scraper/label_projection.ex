@@ -30,7 +30,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     commencement still means not yet in force); in_force_partial while a
     commencement is partial; else in_force.
   - **J1 start.** The row's own insertion (it didn't exist before), else the
-    law's coming into force (`law_start`, decided by `LawStart`, LR-33), else its own commencement, else
+    law's coming into force (`law_start`, decided by `LawStart`, LR-33), else its own or an ancestor's commencement (V1-01), else
     the earliest change held on the row (not a whole-instrument one); with
     none, no periods (a `:no_start` gap).
     Before the start: no period ("unknown") — except that a row the law
@@ -41,6 +41,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     and the disagreement is a `:markup_conflict` gap.
   - **J6 by order (LR-34 D1 b).** A row the law's clause leaves to
     commencement orders (`by_order`) with no dated commencement of its own
+    or an ancestor's on its line (V1-01)
     and not marked prospective by the text is in force as at the revised
     text held (`text_date`; its insertion, if dated, still starts it),
     `in_force_from` empty: a `:commenced_by_order` gap. With a dated
@@ -223,18 +224,20 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
 
   # AR-10: an ancestor's record naming a provision (the feed places an
   # effect on the ancestors of the provision it names, `whole`) reaches the
-  # row only when that provision is the row or above it: SSI 2024/371's
-  # insertion of s.153(1)(z10), placed on s.153, never versions or inserts
-  # s.153(1)(q). A range or a list names their common parent ("s.
-  # 153(1)(a)-(nn)", "s. 33(9)(10)": s.153(1), s.33); a ref not read as a
-  # provision (a Part, a Schedule, "ss. 92-94", a heading) still reaches
-  # every row under it.
+  # row only when the row is a provision it names or under one: SSI
+  # 2024/371's insertion of s.153(1)(z10), placed on s.153, never versions
+  # or inserts s.153(1)(q). The ref is read as the feed's list (V1-01):
+  # "reg. 16(1)-(1B)(1E)(2)(a)(b)(3)-(5)" names (1)-(1B), (1E), (2)(a),
+  # (2)(b) and (3)-(5), never (1C). A commencement also reaches the rows
+  # above a provision it names: commencing (2)(a) commences part of (2)
+  # (SI 2023/284 reg.14(2)). A ref not read as a provision (a Part, a
+  # Schedule, "ss. 92-94", a heading) still reaches every row under it.
   defp on_line?(c, sid) do
     case provision_ref(Map.get(c, :affected_ref)) do
       nil ->
         true
 
-      {path, members} ->
+      members ->
         local =
           sid
           |> String.split(":", parts: 2)
@@ -242,27 +245,43 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
           |> String.replace(~r/\[.*\]$/, "")
           |> path()
 
-        under?(local, path, members)
+        commenced? = Map.get(c, :operation) == "commenced"
+
+        local != nil and
+          Enum.any?(members, &(under?(local, &1) or (commenced? and above?(local, &1))))
     end
   end
 
-  # the row is the provision named or under it; for a list or range, under
-  # one of its members
-  defp under?(nil, _path, _members), do: false
+  # the row is the member or under it; under a range, under one in it
+  defp under?(local, {path, nil}), do: List.starts_with?(local, path)
 
-  defp under?(local, path, nil), do: List.starts_with?(local, path)
+  defp under?(local, {path, {from, to}}) do
+    parent = Enum.drop(path, -1)
 
-  defp under?(local, path, members) do
-    List.starts_with?(local, path) and length(local) > length(path) and
-      member?(Enum.at(local, length(path)), members)
+    List.starts_with?(local, parent) and length(local) > length(parent) and
+      in_range?(Enum.at(local, length(parent)), from, to)
   end
 
-  defp member?(b, {:list, bs}), do: b in bs
+  # the row is above the member, on its line
+  defp above?(local, {path, range}) do
+    path = if range, do: Enum.drop(path, -1), else: path
 
-  defp member?(b, {:range, from, to}) do
-    [kb, kf, kt] = Enum.map([b, from, to], &order/1)
+    (length(local) < length(path) and List.starts_with?(path, local)) or
+      (range != nil and local == path)
+  end
+
+  # a range's members are of its start's kind ("(c)-(i)": letters)
+  defp in_range?(b, from, to) do
+    kind = from |> order() |> then(&(&1 && elem(&1, 0)))
+    [kb, kf, kt] = Enum.map([b, from, to], &order(&1, kind))
     kb != nil and kf != nil and kt != nil and kf <= kb and kb <= kt
   end
+
+  defp order(b, :letter) do
+    if b =~ ~r/^[a-z]+\d*$/, do: {:letter, String.length(b), b}, else: nil
+  end
+
+  defp order(b, _kind), do: order(b)
 
   # a bracket's place in its sequence: (2) < (2A) < (3); (z) < (aa); (iv) < (v)
   defp order(b) do
@@ -311,55 +330,122 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   defp brackets(s),
     do: ~r/\(([0-9A-Za-z]+)\)/ |> Regex.scan(s, capture: :all_but_first) |> List.flatten()
 
-  # a ref as {the provision's path, its members}: "s. 153(1)(z10)" →
-  # {["153", "1", "z10"], nil}; a list "s. 153(1)(z8)(z9)" → {["153",
-  # "1"], {:list, ["z8", "z9"]}}; a range "s. 153(1)(a)-(nn)" → {…,
-  # {:range, "a", "nn"}}; nil when not read as a provision
+  # a ref as the provisions it names, each {path, nil | {from, to}}: "s.
+  # 153(1)(z10)" → [{["153", "1", "z10"], nil}]; "s. 153(1)(z8)(z9)" → (1)(z8)
+  # and (1)(z9); "s. 153(1)(a)-(nn)" → [{["153", "1", "a"], {"a", "nn"}}].
+  # A bracket of a kind already open is a sibling at that depth, a new kind
+  # goes deeper, and a bracket with brackets under it is a path, not a
+  # member. nil when not read as a provision
   defp provision_ref(nil), do: nil
 
   defp provision_ref(ref) do
     r = String.replace(ref, ~r/\s+/, "")
 
-    with [_, head, bs, rest] <-
-           Regex.run(~r/^(?:s|reg|art|rule)\.(#{@number})((?:\([0-9A-Za-z]+\))*)(.*)$/i, r) do
-      bs = brackets(bs)
-
-      case {rest, bs} do
-        {"", _} ->
-          case Enum.chunk_every(bs, 2, 1, :discard) |> Enum.find_index(&siblings?/1) do
-            nil -> {[head | bs], nil}
-            k -> {[head | Enum.take(bs, k)], {:list, Enum.drop(bs, k)}}
-          end
-
-        # a range is its last bracket to one more ("(a)-(nn)"); anything
-        # after it ("(i)-(iv)(vi)(b)(3)": SI 2023/284) isn't read
-        {"-" <> to, [_ | _]} ->
-          case Regex.run(~r/^\(([0-9A-Za-z]+)\)$/, to) do
-            [_, last] -> {[head | Enum.drop(bs, -1)], {:range, List.last(bs), last}}
-            nil -> nil
-          end
-
-        _ ->
-          nil
-      end
+    with [_, head, rest] <-
+           Regex.run(~r/^(?:s|reg|art|rule)\.(#{@number})((?:\([0-9A-Za-z]+\)|-)*)$/i, r),
+         tokens =
+           Regex.scan(~r/\(([0-9A-Za-z]+)\)|-/, rest, capture: :all) |> Enum.map(&List.last/1),
+         {:ok, items} <- list_items(tokens) do
+      for %{path: path, range: range, parent?: false} <- items, do: {[head | path], range}
     else
       _ -> nil
     end
   end
 
-  # two brackets of one kind, or a letter then the next ("(h)(i)"), may be
-  # siblings
-  defp siblings?([a, b]) do
-    bracket_kind(a) == bracket_kind(b) or
-      (bracket_kind(a) == :letter and String.length(a) == 1 and String.length(b) == 1 and
-         hd(String.to_charlist(b)) == hd(String.to_charlist(a)) + 1)
+  defp list_items([]), do: {:ok, [%{path: [], kinds: [], range: nil, parent?: false}]}
+
+  defp list_items(tokens) do
+    tokens
+    |> Enum.reduce_while({[], false}, fn
+      "-", {[%{range: nil} | _] = items, false} ->
+        {:cont, {items, true}}
+
+      b, {[%{path: path, kinds: kinds} = item | rest], true} ->
+        if kind(b, Enum.drop(kinds, -1), Enum.drop(path, -1)) == List.last(kinds),
+          do: {:cont, {[%{item | range: {List.last(path), b}} | rest], false}},
+          else: {:halt, :error}
+
+      "-", _ ->
+        {:halt, :error}
+
+      b, {items, false} ->
+        {path, kinds} =
+          case items do
+            [%{path: p, kinds: k} | _] -> {p, k}
+            [] -> {[], []}
+          end
+
+        k = kind(b, kinds, path)
+
+        case Enum.find_index(kinds, &(&1 == k)) do
+          nil ->
+            # a new kind goes deeper: the item above is a path
+            items = mark_parent(items)
+
+            {:cont,
+             {[%{path: path ++ [b], kinds: kinds ++ [k], range: nil, parent?: false} | items],
+              false}}
+
+          d ->
+            {:cont,
+             {[
+                %{
+                  path: Enum.take(path, d) ++ [b],
+                  kinds: Enum.take(kinds, d) ++ [k],
+                  range: nil,
+                  parent?: false
+                }
+                | items
+              ], false}}
+        end
+    end)
+    |> case do
+      {items, false} when items != [] -> {:ok, Enum.reverse(items)}
+      _ -> :error
+    end
   end
 
-  defp bracket_kind(b) do
+  defp mark_parent([%{range: nil} = item | rest]), do: [%{item | parent?: true} | rest]
+  defp mark_parent(items), do: items
+
+  # a bracket's kind in context: "(i)" after "(h)" is a letter, after "(a)"
+  # a roman numeral
+  defp kind(b, kinds, path) do
     cond do
-      b =~ ~r/^\d/ -> :number
-      b =~ ~r/^[ivx]+$/ -> :roman
-      true -> :letter
+      b =~ ~r/^\d/ ->
+        :number
+
+      b =~ ~r/^[ivx]+$/ ->
+        case Enum.find_index(kinds, &(&1 == :letter)) do
+          nil ->
+            if :roman in kinds or String.length(b) > 1, do: :roman, else: :letter
+
+          d ->
+            last = Enum.at(path, d)
+
+            if String.length(b) == 1 and String.length(last) == 1 and
+                 hd(String.to_charlist(b)) == hd(String.to_charlist(last)) + 1,
+               do: :letter,
+               else: :roman
+        end
+
+      # "(bb)" under a roman numeral is a level of its own ("art. 136(1)(b)(i)
+      # (bb)"); after "(z)" or another doubled letter it continues the letters
+      b =~ ~r/^([a-z])\1$/ ->
+        case Enum.find_index(kinds, &(&1 == :letter)) do
+          nil ->
+            :letter
+
+          d ->
+            last = Enum.at(path, d)
+            if last == "z" or last =~ ~r/^([a-z])\1$/, do: :letter, else: :double
+        end
+
+      b =~ ~r/^[a-z]+\d*$/ ->
+        :letter
+
+      true ->
+        :upper
     end
   end
 
@@ -370,7 +456,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     withheld? = Map.get(row, :inserted_pointer) || undated_insertion?(row, changes)
 
     # J6 applies only where nothing else says when the row commenced: no
-    # dated commencement of its own (else it exists from the law's start and
+    # dated commencement of its own or an ancestor's (else it exists from the law's start and
     # is prospective until then, D3) and the text doesn't mark it
     # prospective (else prospective from the law's start, J2)
     by_order? =
@@ -544,8 +630,11 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   end
 
   # a dated commencement of the row's own
+  # a dated commencement of the row: its own, or an ancestor's on its line
+  # (the feed commences "s. 13"; the row is s.13(1): V1-01, Equality Act
+  # 2010) — `relevant/2` has already kept only those reaching the row
   defp commenced?(changes),
-    do: Enum.any?(changes, &(&1.own and &1.operation == "commenced" and dates(&1) != []))
+    do: Enum.any?(changes, &(&1.operation == "commenced" and dates(&1) != []))
 
   # J1: {start, whether it is evidence of commencement}
   defp start(row, changes, law_start) do
@@ -553,7 +642,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
 
     commencement =
       changes
-      |> Enum.filter(&(&1.own and &1.operation == "commenced"))
+      |> Enum.filter(&(&1.operation == "commenced"))
       |> Enum.flat_map(&dates/1)
       |> Enum.min(Date, fn -> nil end)
 
