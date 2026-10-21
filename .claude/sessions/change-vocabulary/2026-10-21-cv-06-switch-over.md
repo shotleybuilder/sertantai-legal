@@ -14,8 +14,12 @@ Part of the change-vocabulary architecture shift (CV-00): corpus dry run against
 
 ## Todo
 
-- ⬜ Scoped by CV-01's signed-off plan
+- ⬜ Shadow runs: new labels against today's and `v01_final`, per provision, every difference classified
+- ⬜ Consumers switched one at a time (labels, then the parse's territory); restore points
+- ⬜ Old tables and rules removed once the shadow diff is explained
+- ⬜ Dry run → Jason → restore point → the v0.1 re-parse and one relabel (V1-00)
 
 ## Dependencies
 
-- ⬜ CV-01 signed off by Jason
+- ✅ CV-01 signed off by Jason
+- ⬜ CV-05 closed

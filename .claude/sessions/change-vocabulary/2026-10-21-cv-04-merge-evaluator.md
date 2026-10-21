@@ -14,8 +14,15 @@ Part of the change-vocabulary architecture shift (CV-00): changes merged by iden
 
 ## Todo
 
-- ⬜ Scoped by CV-01's signed-off plan
+- ⬜ `Provision` built first: versions with split_from, exists_from/to, renamed (renumbering), canonical kind words
+- ⬜ Merge: effect id, then the secondary key with source position; one-to-many per target; conflicts flagged
+- ⬜ Ranges expanded once (document order) over provisions existing at the change's date (V1-05's rule; fold V1-05 in)
+- ⬜ Evidence table complete (all attributes; lists collected; conditions by operation)
+- ⬜ Measure the CV-01 register bugs (records on the wrong provision) against the merged changes
+- ⬜ Golden set: all 25 pass at the merge level
 
 ## Dependencies
 
-- ⬜ CV-01 signed off by Jason
+- ⬜ the previous CV session closed (each widens the slice)
+
+- ✅ CV-01 signed off by Jason (2026-10-21: "start small, prove, iterate and grow")

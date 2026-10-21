@@ -1,9 +1,48 @@
 ---
 session: 'CV-01: Architecture Review'
-status: active
+status: closed
 release: v0.1
 opened: '2026-10-21'
+closed: '2026-10-21'
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
+outcome: success
+
+summary: >
+  Inventoried every change source and reconciling rule across the parse (25 source points, 7 reconcilers), the register (4 collectors, 6 reconcilers) and the labels (19 rules): there is no cross-source identity, and each attribute is decided in two or three places. A 25-provision golden set was signed off by Gemini (today's labels are wrong for 22). A design was signed off by Jason: one vocabulary of claims, read per source, merged by identity, one evidence table, one label fold, proven first by a thin slice.
+
+decisions:
+  - what: Golden set signed off by Gemini, not Jason
+    why: Jason 2026-10-21 "Golden set - use Gemini to sign off"
+    result: 19 approve, 3 amend, 3 undecidable (commencement orders not held); conventions C1-C12
+  - what: C6 and C11 — a provision's own application clause, and the context of the Act amended, outrank the CLML's stated extent
+    why: Jason 2026-10-21 "Agree c6 and c11"
+    result: a new law-text reader (CV-03)
+  - what: Change and Provision vocabularies; Commencement.Rule stays a separate ruleset read for dates
+    why: the commencement ruleset is already multi-reader; Gemini design review
+    result: claims per source, merge by effect id then a secondary key with source position, one evidence table, lists collected not ranked
+  - what: Territorial versions are separate provisions with split_from
+    why: C3 (shared pre-split history); Gemini design review
+    result: CV-04
+  - what: Start with a thin vertical slice (SI 2010/404 reg.14, SI 2000/1043 reg.11(3))
+    why: Jason 2026-10-21 "start small, prove, iterate and grow"; Gemini design review
+    result: CV-02 scoped as the slice
+
+metrics:
+  inventory: {parse_source_points: 25, parse_reconcilers: 7, register_collectors: 4, register_reconcilers: 6, label_rules: 19}
+  golden_set: {provisions: 25, approve: 19, amend: 3, undecidable: 3, current_labels_wrong: 22}
+  duplication: {operation_verb_lists: 6, qualification_parsers: 3, date_choosers: 3, range_expansions: 3, type_territory_maps: 2}
+
+lessons:
+  - title: Frame a ruleset by the fact it answers and list every source of that fact first
+    detail: CR-00 asked "when did P come into force, and where?" and took in every reader; AR-00 started from a code problem (the text matcher), so its scope was one source and the feed and markup, handled in other modules, were never in it. Its Gemini review checked the schema, not the scope.
+    tag: data
+  - title: Without cross-source identity, every fix becomes a pairwise reconciling rule
+    detail: Rule 3's gate, AR-04's every-note read with saved?/unmarked_law_repeal?, J2 and T1 all stand in for knowing that a feed effect, a markup element and an amending-law instruction are the same change.
+    tag: data
+  - title: Evidence packs must match territorial versions by DocumentURI, and grouped feed provision lists
+    detail: Versions share one element id (regulation-14-1 for /england+wales+scotland and /ni); feed affected_provisions like "s. 78(4BA)(4BB)" escape a ref-only filter. Both misled the first golden-set drafts.
+    tag: tooling
+
 bugs:
   - pattern: 'Register records land on the wrong provision (golden-set draft, to verify): nia 2021/8 recorded as revoking all of Coronavirus Act 2020 s.78 (it repealed s.78(3)); anaw 2015/4 recorded on TCPA 1990 s.78(4BA) (it omitted 4B-4D, before 4BA existed); SI 2024/49 recorded on s.284(3)(a) (it inserted s.284(3)(k))'
     category: register / effect target
@@ -17,9 +56,30 @@ bugs:
     affected: unknown — measure in CV-03
     fix: the feed reader parses grouped provision lists into targets
     status: open
+
+artifacts:
+  - backend/data/reports/change-vocabulary/inventory-parse.md
+  - backend/data/reports/change-vocabulary/inventory-register.md
+  - backend/data/reports/change-vocabulary/inventory-labels.md
+  - backend/data/reports/change-vocabulary/golden/golden-set.md
+  - backend/data/reports/change-vocabulary/golden/expected-batch1.md
+  - backend/data/reports/change-vocabulary/golden/expected-batch2.md
+  - backend/data/reports/change-vocabulary/golden/expected-batch3.md
+  - backend/data/reports/change-vocabulary/golden/packs.md
+  - backend/data/code-reviews/2026-10-21-cv-00-plan-gemini.md
+  - backend/data/code-reviews/2026-10-21-cv-01-golden-set-gemini.md
+  - backend/data/code-reviews/2026-10-21-cv-01-design-gemini.md
+
+depends_on:
+  - 2026-10-18-cr-00-meta
+  - 2026-10-19-ar-00-meta
+  - 2026-10-21-v1-04-parse-territory-retained-repeals
+
+enables:
+  - CV-02 thin slice (vocabulary, readers, merge, label fold on two golden cases)
 ---
 
-# Session: CV-01: Architecture Review (ACTIVE)
+# Session: CV-01: Architecture Review (CLOSED)
 
 ## Problem
 
@@ -37,7 +97,7 @@ Part of the change-vocabulary architecture shift (CV-00): every change source an
 - ✅ Target architecture: vocabulary, readers, merge by identity, evaluator, consumers; what is retired; storage beside `lat_change_log` during the switch; version hashes; idempotence and a time budget for a full run
 - ✅ Switch-over plan: shadow runs (old and new labels per provision, every difference classified, against `v01_final`), consumers switched one at a time, restore points for rollback; the reconciling rules retired once the shadow diff is explained
 - ✅ Gemini review of the plan (`2026-10-21-cv-01-design-gemini.md`; below), saved to `backend/data/code-reviews/`
-- ⬜ Jason signs off; CV-02..06 scoped from the plan
+- ✅ Jason signs off (2026-10-21: "Yes, start small, prove, iterate and grow"); CV-02..06 scoped from the plan
 
 ## Dependencies
 
