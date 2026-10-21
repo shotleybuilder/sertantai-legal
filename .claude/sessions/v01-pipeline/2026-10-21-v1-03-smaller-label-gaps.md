@@ -139,3 +139,5 @@ Closed: LR-20 note-text facts, LR-23 note-join spread, LR-27 text-only refs (fro
 - T1 left markup on orphan note ids undated when the note's law has a dated change on the row (SI 2010/2214 210 → 48).
 
 **Preview `v103c`:** the union of laws with undated changes (299) and the laws the title rule moves (93): 324 laws, running.
+
+**Moved to V1-04 (Jason 2026-10-21):** SI 2010/404 reg.14 still reads repealed today. The markup keeps the text; the parse's territory claim (`EffectTerritory` `:effect_everywhere`) reads the "(England)" SI's retained repeal as everywhere, and J2 holds it. The fix is at source, in the parse, with the V1-03 law-territory rule shared: `v01-pipeline/2026-10-21-v1-04-parse-territory-retained-repeals.md`.
