@@ -1,9 +1,60 @@
 ---
 session: 'V1-02: Law Start for Laws from 2002 with an Unread Clause'
-status: active
+status: closed
 release: v0.1
 opened: '2026-10-21'
+closed: '2026-10-21'
+outcome: success
 parent: v01-pipeline/2026-10-21-v1-00-meta.md
+
+summary: >
+  25 of the 27 UK laws from 2002 with no start now have one: LawStart reads staged clauses' items (and dates each item's
+  provisions), clauses split across a list or using "they", "The remainder" / "The following" / "Otherwise" parts, a
+  commencement table in the law's own Schedule (from the stored CLML) and a clause tied to another law's provision (dated by
+  that law's feed). UK ≥2002 unknown today 2,208 → 326 and no_start 1,967 → 142 (all known limits); previewed on the 21 laws
+  that move and spliced into v102_final2.
+
+decisions:
+  - what: Read a staged clause's items as sentences of their own, so each item's provisions get its date, not only the law its earliest
+    why: SI 2005/894 "Parts 1, 2 … on 16th April 2005; the remainder, on 16th July 2005" — the earliest date alone would date most rows three months early
+    result: 2005/894 rows dated mostly 2005-07-16; Provisions skips the sentence a whole-law start came from (no false provision_unread)
+  - what: "Otherwise …" is the rest of the law, not a clause for the whole law
+    why: read as general, it overrode SI 2017/469's earlier part as the law's start and cost 76 periods of history
+    result: no law loses periods in the preview
+  - what: Read a commencement table from the law's own Schedule in the stored CLML (Jason "fix both here")
+    why: LAT holds no Schedules; 267 rows in 2 laws had no start
+    result: SI 2012/3119 and wsi 2013/747 fully started; the law rule leaves out what the table names so a partial row stays partial
+  - what: Date a tied law by the other law's own feed for that provision (Jason "fix both here")
+    why: effects first; the evaluator already supports with-another-provision; Building Safety Act s.83 and Health and Care Act s.162 are fed
+    result: 65 rows in 3 laws dated (2023-08-18, 2024-01-16); catalogue entry tied_to_other_law now dates
+  - what: Find the affected laws by running old and new LawStart over every LAT law's DB rows, then preview only those
+    why: no whole-corpus run; DB rows suffice for the start reader
+    result: 16 + 5 laws previewed (of 1,066)
+
+metrics:
+  laws_27: { started: 25, known_limit: 2, rows_known_limit: 142 }
+  uk_from_2002: { unknown_today: '2,208 → 326', no_start: '1,967 → 142' }
+  corpus: { unknown_today: '13,137 → 11,252', diffs_vs_db: 36717, rows: 16421, laws: 346 }
+  previews: { v102b_laws: 16, v102c_laws: 5, errors: 0 }
+  suite: { passed: 2957, skipped: 2 }
+
+lessons:
+  - title: A "no_clause" law usually has a clause in a shape the reader doesn't know
+    detail: 'All 11 "no_clause" laws had commencement text: subject in the parent row, a pronoun, named provisions plus "The remainder". Check the text before calling it a known limit.'
+    tag: data
+  - title: A regex character class with an em dash needs the u flag
+    detail: '[—–:-] without u compares bytes, so "—" at the end of "on the following dates—" never matched; the existing staged? regex only worked by matching the first byte at the start of a string.'
+    tag: tooling
+  - title: In an Elixir for comprehension, `x = expr` is a filter
+    detail: '`all? = purpose == nil or …` silently dropped every row whose purpose wasn''t "all"; compute such values in the body or a helper.'
+    tag: tooling
+  - title: xmerl string(.) drops text inside prefixed elements with an inline xmlns
+    detail: 'SI 2012/3119''s later table cells sit in <leg:Substitution xmlns:leg=…>; xpath string(.) returned "" — walk the nodes (AmendingLaw.Doc.text, the AR-13 fix) instead.'
+    tag: data
+  - title: A law-level rule can complete a partial provision rule — exclude what a table names
+    detail: 'The evaluator lets the next rule down complete a partial one (right for clauses like Quarries reg.26); a Schedule table lists exactly what it commences, so the law rule must leave those out.'
+    tag: data
+
 bugs:
   - pattern: 'LawStart read a staged clause''s list items only when they open with the date; "Parts 1, 2 … on 16th April 2005", "the remainder, on …", "as regards Parts 1 and 4, immediately before …" gave no start, and Provisions never read the items'
     category: law start
@@ -29,9 +80,25 @@ bugs:
     affected: '65 rows in 3 laws (SI 2023/854, 2024/41, 2023/907)'
     fix: the other law (named or a defined term) and provision; its date from the other law's stored feed via the commencement evaluator (2cc610bc)
     status: fixed
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/law_start/clause.ex
+  - backend/lib/sertantai_legal/scraper/law_start/provisions.ex
+  - backend/lib/sertantai_legal/scraper/law_start/schedule_table.ex
+  - backend/lib/sertantai_legal/scraper/law_start.ex
+  - backend/lib/sertantai_legal/scraper/commencement/own_clause.ex
+  - backend/lib/sertantai_legal/scraper/change_collector.ex
+  - backend/data/reports/lat-refactor/v102_final2.csv
+
+depends_on:
+  - 2026-10-21-v1-01-ancestor-commencement-history
+
+enables:
+  - V1-03 (splices into v102_final2)
+  - the v0.1 relabel (V1-00)
 ---
 
-# Session: V1-02: Law Start for Laws from 2002 with an Unread Clause (ACTIVE)
+# Session: V1-02: Law Start for Laws from 2002 with an Unread Clause (CLOSED)
 
 ## Problem
 
@@ -43,7 +110,7 @@ bugs:
 - ✅ Reader fixes, tests first (§2): 20 of 27 laws now start
 - ✅ Jason 2026-10-21 "fix both here": Schedule tables and tied-to-another-law (§4); 25 of 27 start; 142 rows known limits
 - ✅ Old vs new `LawStart` over every LAT law (DB rows): 16 laws move; previewed and spliced into `v102_final` (§2)
-- ⬜ Batch into the v0.1 relabel (V1-00)
+- ⏸️ Batch into the v0.1 relabel (deferred — V1-00's one relabel)
 
 ## Dependencies
 

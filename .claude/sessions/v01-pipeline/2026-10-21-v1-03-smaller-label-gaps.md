@@ -1,6 +1,6 @@
 ---
 session: 'V1-03: Smaller Label Gaps on Laws from 2002'
-status: pending
+status: active
 release: v0.1
 opened: '2026-10-21'
 parent: v01-pipeline/2026-10-21-v1-00-meta.md
@@ -19,7 +19,7 @@ bugs:
     status: open
 ---
 
-# Session: V1-03: Smaller Label Gaps on Laws from 2002 (PENDING)
+# Session: V1-03: Smaller Label Gaps on Laws from 2002 (ACTIVE)
 
 ## Problem
 
