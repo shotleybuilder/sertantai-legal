@@ -21,6 +21,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
     changing the text that day (C5) — D1.
   - `in_force_from` / `changed_by` are empty while prospective or partly
     in force (D1). A day that changes nothing opens no period.
+  - **Tier** (Jason 2026-10-21): each period's `tiers` say, per field,
+    whether it rests on the legal text (`:primary`) or on legislation.gov.uk
+    (`:derived`) — derived when any change behind it is; the start's from
+    the provision (`:start_tier`).
 
   Pure.
   """
@@ -36,7 +40,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
           status: atom(),
           in_force_from: Date.t() | nil,
           changed_by: [String.t()],
-          territory: String.t() | nil
+          territory: String.t() | nil,
+          tiers: %{atom() => :primary | :derived | nil}
         }
 
   @type provision :: %{
@@ -44,7 +49,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
           required(:start) => Date.t(),
           optional(:law) => String.t(),
           optional(:prospective) => boolean(),
-          optional(:start_dated) => boolean()
+          optional(:start_dated) => boolean(),
+          optional(:start_tier) => :primary | :derived
         }
 
   @doc "The periods of provision `id` from resolved changes."
@@ -81,7 +87,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
       status: if(prospective?, do: :prospective, else: :in_force),
       in_force_from: if(prospective? or not dated?, do: nil, else: start),
       changed_by: if(prospective?, do: [], else: made_by),
-      territory: provision.extent
+      territory: provision.extent,
+      tiers:
+        Map.new(
+          ~w(status in_force_from changed_by territory)a,
+          &{&1, Map.get(provision, :start_tier)}
+        )
     }
 
     reaching
@@ -89,10 +100,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
     |> Enum.group_by(& &1.resolved.date)
     |> Enum.sort_by(&elem(&1, 0), Date)
     |> Enum.reduce([first], fn {date, day}, [current | rest] ->
-      case apply_day(current, date, day, self) do
-        same when same == current -> [current | rest]
-        next -> [%{next | valid_from: date}, %{current | valid_to: date} | rest]
-      end
+      next = apply_day(current, date, day, self)
+
+      # a day that changes no label field opens no period
+      if Map.delete(next, :tiers) == Map.delete(current, :tiers),
+        do: [current | rest],
+        else: [%{next | valid_from: date}, %{current | valid_to: date} | rest]
     end)
     |> Enum.reverse()
   end
@@ -138,27 +151,55 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
       territory == :gone ->
         %{
           current
-          | status: :repealed,
+          | tiers:
+              tiers(current.tiers, [:status, :territory, :in_force_from, :changed_by], removals),
+            status: :repealed,
             territory: "nowhere",
             in_force_from: nil,
             changed_by: by(of.(:repealed), self)
         }
 
       status in [:prospective, :in_force_partial] ->
-        %{current | status: status, territory: territory, in_force_from: nil, changed_by: []}
+        %{
+          current
+          | status: status,
+            territory: territory,
+            in_force_from: nil,
+            changed_by: [],
+            tiers: tiers(current.tiers, [:status, :territory], day)
+        }
 
       versions != [] or (commenced != [] and status != current.status) ->
         %{
           current
-          | status: status,
+          | tiers:
+              tiers(
+                current.tiers,
+                [:status, :territory, :in_force_from, :changed_by],
+                versions ++ commenced ++ removals
+              ),
+            status: status,
             territory: territory,
             in_force_from: date,
             changed_by: by(versions ++ commenced, self)
         }
 
+      territory != current.territory ->
+        %{current | territory: territory, tiers: tiers(current.tiers, [:territory], removals)}
+
       true ->
-        %{current | territory: territory}
+        current
     end
+  end
+
+  # the fields' tier from the changes that set them: derived when any is
+  defp tiers(current, fields, changes) do
+    tier =
+      if Enum.any?(changes, &Enum.any?(Map.values(&1.resolved.tiers), fn t -> t == :derived end)),
+        do: :derived,
+        else: :primary
+
+    Enum.reduce(fields, current, &Map.put(&2, &1, tier))
   end
 
   # a repeal naming no territory reaches everywhere; nil extent is the UK

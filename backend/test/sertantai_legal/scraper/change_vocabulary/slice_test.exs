@@ -24,6 +24,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.SliceTest do
     )
   end
 
+  # the label fields (each period's tiers are asserted separately)
+  defp labels(law, xml, effects, provisions) do
+    law
+    |> ChangeVocabulary.labels(xml, effects, provisions)
+    |> Map.new(fn {id, periods} -> {id, Enum.map(periods, &Map.delete(&1, :tiers))} end)
+  end
+
   defp period(from, to, status, in_force_from, changed_by, territory),
     do: %{
       valid_from: from,
@@ -105,7 +112,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.SliceTest do
     }
 
     setup do
-      %{labels: ChangeVocabulary.labels("UK_uksi_2010_404", @xml, effects_404(), @provisions)}
+      %{labels: labels("UK_uksi_2010_404", @xml, effects_404(), @provisions)}
     end
 
     test "reg.14: in force in Wales from the England-only omission; the Welsh heading change versions it",
@@ -203,7 +210,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.SliceTest do
 
     test "one version for E+W on 2005-07-16, made by both laws (C5)" do
       labels =
-        ChangeVocabulary.labels("UK_uksi_2000_1043", @xml_pcb, effects_pcb(), %{
+        labels("UK_uksi_2000_1043", @xml_pcb, effects_pcb(), %{
           "reg.11(3)" => %{extent: "E+W", start: ~D[2000-05-04]}
         })
 

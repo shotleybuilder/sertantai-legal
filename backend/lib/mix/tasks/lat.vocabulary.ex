@@ -110,6 +110,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       end)
 
     for {c, got} <- results do
+      got = Enum.map(got || [], &Map.delete(&1, :tiers))
       mark = if got == c.periods, do: "PASS", else: "FAIL"
 
       Mix.shell().info(
@@ -124,7 +125,11 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       end
     end
 
-    passed = Enum.count(results, fn {c, got} -> got == c.periods end)
+    passed =
+      Enum.count(results, fn {c, got} ->
+        Enum.map(got || [], &Map.delete(&1, :tiers)) == c.periods
+      end)
+
     Mix.shell().info("\n#{passed} / #{length(results)} golden provisions pass")
   end
 

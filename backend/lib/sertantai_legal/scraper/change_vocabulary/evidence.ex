@@ -10,7 +10,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
   provision and the change's own claims — stated in the table, never hidden
   in code. The first source in order with a claim that passes wins.
   `resolve/2` writes a `Resolved` struct, with the winning source of each
-  attribute. Pure.
+  attribute and its tier.
+
+  **Authority (Jason 2026-10-21):** "The actual legal text is primary.
+  These other sources are derived and secondary." Every attribute's order
+  starts with the primary sources (`:law_text` — the amending law's
+  instruction, extent and application; `:commencement` — its commencement
+  provisions and orders), then legislation.gov.uk's markup, then its
+  changes feed. Derived sources fill only what the primary text doesn't
+  say. A primary claim and a derived claim that disagree are both kept as a
+  conflict (`Resolved.conflicts`) — reported, never reconciled. Pure.
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Change
@@ -19,7 +28,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
   defmodule Resolved do
     @moduledoc "A change's chosen attributes, and the source each came from."
     @enforce_keys [:operation, :level, :territory, :date, :by, :retained, :partial, :sources]
-    defstruct [:operation, :level, :territory, :date, :by, :retained, :partial, :sources]
+    defstruct [
+      :operation,
+      :level,
+      :territory,
+      :date,
+      :by,
+      :retained,
+      :partial,
+      :sources,
+      tiers: %{},
+      conflicts: []
+    ]
 
     @type t :: %__MODULE__{
             operation: atom() | nil,
@@ -29,31 +49,52 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
             by: String.t() | nil,
             retained: boolean(),
             partial: boolean(),
-            sources: %{atom() => atom() | nil}
+            sources: %{atom() => atom() | nil},
+            tiers: %{atom() => :primary | :derived | nil},
+            conflicts: [{atom(), term(), term()}]
           }
   end
 
+  # the tier of each source
+  @tiers %{
+    law_text: :primary,
+    commencement: :primary,
+    markup: :derived,
+    feed: :derived,
+    law: :derived
+  }
+
   @table [
-    # the feed's "in part" outranks a whole-provision Repeal in the markup
+    # the primary text first; then the feed's "in part" outranks a whole-provision Repeal in the markup
     # (Jason 2026-10-11: "revoked in part will not mean full revocation")
-    operation: [{:feed, :operation, :in_part}, {:markup, :operation}, {:feed, :operation}],
-    level: [{:markup, :level}, {:feed, :level}],
+    operation: [
+      {:law_text, :operation},
+      {:feed, :operation, :in_part},
+      {:markup, :operation},
+      {:feed, :operation}
+    ],
+    level: [{:law_text, :level}, {:markup, :level}, {:feed, :level}],
     retained: [{:markup, :retained}],
     # where the change applies: the feed's application, the markup's Extent,
     # an effect extent narrower than the provision, then the affecting law's
     # territory — only for a removal whose text is retained (V1-04: an
     # insertion by a devolved law can apply across the border)
     territory: [
+      {:law_text, :territory},
       {:feed, :territory},
       {:markup, :territory},
       {:feed, :effect_extent, :narrower_than_provision},
       {:law, :territory, :retained_removal_narrower}
     ],
-    date: [{:feed, :date}],
+    date: [{:commencement, :date}, {:feed, :date}],
     # a commencement stage that doesn't complete the provision
     partial: [{:feed, :partial}],
-    by: [{:feed, :by}, {:markup, :cited}]
+    by: [{:law_text, :by}, {:feed, :by}, {:markup, :cited}]
   ]
+
+  @doc "The tier of a claim source: `:primary` (the legal text) or `:derived`."
+  @spec tier(atom()) :: :primary | :derived | nil
+  def tier(source), do: Map.get(@tiers, source)
 
   @doc "The evidence table: attribute → sources in order (with named conditions)."
   @spec table() :: keyword()
@@ -75,9 +116,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
           by: value.(:by),
           retained: value.(:retained) == true,
           partial: value.(:partial) == true,
-          sources: Map.new(chosen, fn {attribute, {_v, source}} -> {attribute, source} end)
+          sources: Map.new(chosen, fn {attribute, {_v, source}} -> {attribute, source} end),
+          tiers: Map.new(chosen, fn {attribute, {_v, source}} -> {attribute, tier(source)} end),
+          conflicts: conflicts(c, chosen)
         }
     }
+  end
+
+  # a primary value differing from a derived claim on the same attribute
+  defp conflicts(change, chosen) do
+    for {attribute, {value, source}} <- chosen,
+        tier(source) == :primary,
+        {derived, _} <- Enum.filter(@tiers, fn {_s, t} -> t == :derived end),
+        other <- Change.values(change, derived, attribute),
+        other != value,
+        do: {attribute, {source, value}, {derived, other}}
   end
 
   defp first(change, order, extent) do
