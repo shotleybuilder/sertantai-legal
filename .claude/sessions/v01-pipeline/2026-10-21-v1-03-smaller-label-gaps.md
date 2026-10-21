@@ -152,3 +152,7 @@ Closed: LR-20 note-text facts, LR-23 note-join spread, LR-27 text-only refs (fro
 
 - **`v103c` (324 laws, 0 errors)** spliced into `v01_final`. For UK laws from 2002, undated_change 1,366 (V1-03 start) → 901 (dry run) → **548**, and unknown today 300. Corpus label changes vs today's DB: 41,216 over 18,570 rows in 380 laws.
 - **J5 definitions (`858e3b5e`).** "Art. 2: definition of … inserted" withheld art.2's start: a definition or entry is words-level. 61 laws affected; `v103d` is previewing them. NISI 2003/419's remaining 17 rows are genuine J5 (inserted provisions nothing dates). The residual undated insertions (~118) and notes naming no law (~39) go to V1-04's audit.
+- **`v103d` (61 laws, 0 errors)** spliced into `v01_final`: unknown 3,298 → 3,268 and insertion_not_in_register 3,180 → 3,150 in those laws, mostly older ones. The Wildlife and Countryside Act 1981 loses 2 of 4,046 periods (merged history; no change to today's labels).
+- **`v01_final` now:**
+  - UK ≥2002: unknown today 300, undated_change 548, insertion_not_in_register 118, no_start 142 (known limits).
+  - Corpus: unknown today 11,177; label changes vs today's DB 41,298 over 18,604 rows in 382 laws.
