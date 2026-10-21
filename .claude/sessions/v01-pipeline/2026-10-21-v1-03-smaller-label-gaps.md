@@ -65,6 +65,18 @@ bugs:
     affected: 'none today'
     fix: LR-29 lands an effect where its own AffectedProvisions text says ("Pt. 2B" parses as the Part)
     status: fixed
+  - pattern: 'A title place taken from a cited law ("Forestry and Land Management (Scotland) Act 2018 (Consequential Provisions and Modifications) Order" read as Scotland); Northern Ireland titles ("Mines Act (Northern Ireland)") and "(Scotland) Amendment Regulations" missed'
+    category: territory
+    module: ChangeCollector.title_place
+    affected: '101 affecting laws differ from the first rule; 93 LAT laws re-previewed'
+    fix: the place belonging to the law''s own name (before its instrument word, or after it as NI's), never one followed by a cited Act and year (086c2ab6)
+    status: fixed
+  - pattern: 'T1 markup on an orphan id (a note id the feed doesn''t hold) stayed "date unknown" though its note''s law has a dated text change on the row; markup joined to a feed effect (pointer nil, evidence = its id) wasn''t explained either'
+    category: label timeline (T1)
+    module: LabelTimeline.undated_change / unexplained_markup
+    affected: 'SI 2010/2214 210 → 48 undated rows; ~300 laws with undated changes re-previewed'
+    fix: markup explained by a dated effect whose id is its ref, or by its note''s law''s dated text change on the row (086c2ab6)
+    status: fixed
 ---
 
 # Session: V1-03: Smaller Label Gaps on Laws from 2002 (ACTIVE)
@@ -113,3 +125,17 @@ SI 2023/911, the Building Regulations etc. (Amendment) **(England)** Regulations
 ## 4. Stale open bugs
 
 Closed: LR-20 note-text facts, LR-23 note-join spread, LR-27 text-only refs (frontmatter, with the code that fixed each). Left open for Jason: LR-20 "Provenance mislabelled or missing for note-derived values … change-log cause, renumbering renames and the manifest amended flag record none". The label provenance went with LR-25; whether the change-log cause, renames and amended flag now record provenance wasn't checked here.
+
+## 5. The v0.1 dry run and follow-ups (2026-10-21)
+
+**Full preview `v01_dry`** (after the rule re-reads: own clauses for 1,066 laws, own clauses of 1,467 amending laws with no LAT; 0 errors). UK ≥2002: undated_change 1,366 → 901, unknown today 326 → 300, insertion_not_in_register 144 → 118. Since `v102_final2`, 2,692 label values moved in 1,128 rows. Checked:
+- **Fire Services Act 1947** now reads repealed: E+W by the 2004 Act, S by asp 2005/5 except ss.26–27A.
+- **Forestry Act 1967 s.1(4)(a)** now reads in force (repealed only for S and W); today's territory stays E+W+S, the parse's.
+- **SI 2010/404 reg.14** reads in force until today; today's markup (repealed-saved) wins under J2.
+- **Coronavirus Act 2020 endings** now read as repeals.
+
+**Found in the dry run, fixed (`086c2ab6`):**
+- the title rule took a place from a cited Act;
+- T1 left markup on orphan note ids undated when the note's law has a dated change on the row (SI 2010/2214 210 → 48).
+
+**Preview `v103c`:** the union of laws with undated changes (299) and the laws the title rule moves (93): 324 laws, running.
