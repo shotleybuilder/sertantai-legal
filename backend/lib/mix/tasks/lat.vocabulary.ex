@@ -150,7 +150,12 @@ defmodule Mix.Tasks.Lat.Vocabulary do
         _ -> nil
       end
 
-    [rules: rules, commencement: commencement, title: title]
+    [
+      rules: rules,
+      commencement: commencement,
+      own_commencement: SertantaiLegal.Scraper.Commencement.Store.for_law(law),
+      title: title
+    ]
   end
 
   defp line(p),

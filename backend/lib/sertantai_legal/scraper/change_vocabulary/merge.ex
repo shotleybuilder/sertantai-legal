@@ -34,7 +34,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
     # carrying an effect id the feed doesn't place there is its own
     {law_text, markup} = Enum.split_with(unkeyed, &(Change.values(&1, :law_text, :by) != []))
     {effect_keyed, legacy} = Enum.split_with(markup, &(EffectIndex.effect_id(&1.key) != nil))
-    Enum.reduce(law_text ++ legacy, fed, &join/2) ++ effect_keyed
+
+    # changes indexed by target: an orphan looks only at its provision and
+    # those above it
+    by_target = Enum.group_by(fed, & &1.target)
+
+    (law_text ++ legacy)
+    |> Enum.reduce(by_target, &join/2)
+    |> Map.values()
+    |> List.flatten()
+    |> Kernel.++(effect_keyed)
   end
 
   # one effect id on a provision and on provisions below it: the markup
@@ -76,15 +85,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
   # an unkeyed change joins the one change on its provision of the same
   # operation family by the same law (the law it names, or its note cites);
   # with none, or several, it stays its own change (a visible gap)
-  defp join(%Change{} = orphan, changes) do
+  defp join(%Change{} = orphan, by_target) do
     law = Change.value(orphan, :law_text, :by) || Change.value(orphan, :markup, :cited)
     family = family(operation(orphan))
 
     matches =
-      Enum.filter(changes, fn c ->
-        c.key != orphan.key and same_or_above?(c.target, orphan.target) and
-          family(operation(c)) == family and (law == nil or by(c) == law)
-      end)
+      for t <- LatRef.ancestors(orphan.target),
+          c <- Map.get(by_target, t, []),
+          c.key != orphan.key,
+          family(operation(c)) == family,
+          law == nil or by(c) == law,
+          do: c
 
     case matches do
       [match] ->
@@ -96,14 +107,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
             aliases: match.aliases ++ orphan.aliases
         }
 
-        Enum.map(changes, &if(&1 == match, do: joined, else: &1))
+        by_target
+        |> Map.update!(match.target, &List.delete(&1, match))
+        |> Map.update(orphan.target, [joined], &[joined | &1])
 
       _ ->
-        changes ++ [orphan]
+        Map.update(by_target, orphan.target, [orphan], &[orphan | &1])
     end
   end
-
-  defp same_or_above?(target, of), do: target == of or target in tl(LatRef.ancestors(of))
 
   defp operation(c),
     do:

@@ -14,7 +14,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Evidence, Label, Merge}
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.{AmendingLaw, Feed, Markup}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Change
+
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.{
+    AmendingLaw,
+    Feed,
+    Markup,
+    OwnCommencement
+  }
+
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
   alias SertantaiLegal.Scraper.{LawTerritory, Territory}
 
@@ -23,7 +31,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   ids in LAT grammar without the law prefix), from the law's CLML, its feed
   effects and — primary — the amending laws' own text (`opts`: `:rules`, the
   stored `Amendment.Rule`s amending the law; `:commencement`, each amending
-  law's `Commencement.Rule`s; `:title`, the law's title — its own place).
+  law's `Commencement.Rule`s; `:own_commencement`, the law's own
+  `Commencement.Rule`s; `:title`, the law's title — its own place).
   """
   @spec labels(String.t(), String.t(), [Effect.t()], %{String.t() => map()}, keyword()) ::
           %{String.t() => [Label.period()]}
@@ -33,12 +42,22 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
     amending =
       AmendingLaw.read(Keyword.get(opts, :rules, []), Keyword.get(opts, :commencement, %{}))
 
+    # the law's own commencement, for each provision asked about (its base)
+    own =
+      OwnCommencement.read(
+        Keyword.get(opts, :own_commencement, []),
+        law_name,
+        provisions |> Map.keys() |> Enum.map(&elem(version(&1), 0)) |> Enum.uniq()
+      )
+
     changes =
-      (Feed.read(effects, law_name) ++ Markup.read(xml, law_name) ++ amending)
+      (Feed.read(effects, law_name, Markup.order(xml)) ++
+         Markup.read(xml, law_name) ++ amending ++ own)
       |> Merge.merge()
       |> Enum.map(
         &Evidence.resolve(&1, extent(provisions, &1.target), Map.get(facts, &1.target, %{}))
       )
+      |> existing()
 
     Map.new(provisions, fn {id, provision} ->
       {base, version} = version(id)
@@ -58,6 +77,27 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
         end
 
       {id, Label.fold(base, provision, changes)}
+    end)
+  end
+
+  # a range reaches only provisions that existed at its date: one inserted
+  # later is not in it (V1-05: TCPA 1990 s.78(4BA), inserted 2017 inside a
+  # 2015 range "s.78(4B)-(4D)")
+  defp existing(changes) do
+    inserted =
+      for c <- changes,
+          c.resolved.operation == :inserted,
+          c.resolved.level == :provision,
+          c.resolved.date != nil,
+          into: %{},
+          do: {c.target, c.resolved.date}
+
+    Enum.reject(changes, fn c ->
+      Change.value(c, :feed, :ranged) == true and
+        case Map.get(inserted, c.target) do
+          nil -> false
+          born -> c.resolved.date != nil and Date.compare(born, c.resolved.date) == :gt
+        end
     end)
   end
 

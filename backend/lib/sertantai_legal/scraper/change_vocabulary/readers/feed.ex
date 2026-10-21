@@ -18,7 +18,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Claim
   alias SertantaiLegal.Scraper.ChangeVocabulary.Ref
-  alias SertantaiLegal.Scraper.EffectFacts
+  alias SertantaiLegal.Scraper.{EffectFacts, EffectTarget}
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
 
   @operations %{
@@ -34,13 +34,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   @full ~r/^\s*$|wholly in force|so far as not already in force/i
 
   @doc "Claim sets `{key, target, claims}` for each effect's target provisions."
-  @spec read([Effect.t()], String.t() | nil) :: [{String.t(), String.t(), [Claim.t()]}]
-  def read(effects, law_name \\ nil) do
+  @spec read([Effect.t()], String.t() | nil, [String.t()]) ::
+          [{String.t(), String.t(), [Claim.t()]}]
+  def read(effects, law_name \\ nil, order \\ []) do
+    flat = EffectTarget.flat(order)
+
     for %Effect{effect_id: id} = e <- effects,
         id != nil,
-        target <- targets(e, law_name),
+        {target, ranged?} <- targets(e, law_name, flat),
         {key, claims} <- changes(e),
-        do: {key, target, claims}
+        do: {key, target, claims ++ Claim.new(:feed, :ranged, if(ranged?, do: true), id)}
   end
 
   # a commencement is one change per dated in-force entry (staged
@@ -84,20 +87,40 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   # every provision: the target "*"
   @whole_law ~r/^\s*(?:Act|Regulations|Order|Rules|Measure|Scheme|Instrument|S\.\s?I\.)\s*$/i
 
+  # targets with whether a range reached them ("s. 1-24": every provision
+  # from the first to the last in document order — the caller drops those
+  # that didn't yet exist at the effect's date: V1-05)
   defp targets(
          %Effect{affected_refs: refs, affected_ranges: ranges, affected_provisions: text},
-         law
+         law,
+         flat
        ) do
-    if refs in [nil, []] and ranges in [nil, []] and String.match?(text || "", @whole_law) do
-      ["*"]
+    ranges = ranges || []
+
+    if refs in [nil, []] and ranges == [] and String.match?(text || "", @whole_law) do
+      [{"*", false}]
     else
-      refs
-      |> List.wrap()
-      |> Enum.map(&Ref.from_clml(&1, law))
-      |> Enum.reject(&is_nil/1)
-      |> Enum.uniq()
+      ends = Enum.flat_map(ranges, fn {a, b} -> [a, b] end)
+      # the provisions at the range's own depth: a whole-provision change
+      # reaches what lies under each
+      spanned =
+        for {a, b} <- ranges,
+            id <- EffectTarget.span(flat, a, b),
+            depth(id) == depth(a),
+            do: {id, true}
+
+      named = for id <- List.wrap(refs), id not in ends, do: {id, false}
+      # a range the document can't span keeps its ends
+      ends_kept = if spanned == [], do: Enum.map(ends, &{&1, false}), else: []
+
+      (named ++ spanned ++ ends_kept)
+      |> Enum.map(fn {id, r} -> {Ref.from_clml(id, law), r} end)
+      |> Enum.reject(&is_nil(elem(&1, 0)))
+      |> Enum.uniq_by(&elem(&1, 0))
     end
   end
+
+  defp depth(id), do: id |> String.split("-") |> length()
 
   defp claims(%Effect{effect_id: id} = e) do
     Enum.concat([

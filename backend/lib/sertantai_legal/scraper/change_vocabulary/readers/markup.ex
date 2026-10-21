@@ -92,6 +92,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
       do: parts |> Enum.map(&@places[&1]) |> SertantaiLegal.Scraper.Territory.union()
   end
 
+  @doc "The document's provision ids (CLML) in document order, for ranges."
+  @spec order(String.t()) :: [String.t()]
+  def order(xml) do
+    xml
+    |> SweetXml.parse(quiet: true, namespace_conformant: false)
+    |> xpath(~x"//*[@id]/@id"sl)
+  end
+
   @doc "Claim sets `{key, target, claims}`, one per change id."
   @spec read(String.t(), String.t() | nil) :: [{String.t(), String.t(), [Claim.t()]}]
   def read(xml, law_name \\ nil) do
@@ -193,8 +201,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
   defp claims(change_id, occ, target, cited, own) do
     first = hd(occ)
 
-    # whole provision: the change wraps its number, or all its own words
-    # (1988/52 s.4(6): a RetainText Repeal round the text, not the number)
+    # whole provision: the change wraps its number, or all the text under it
+    # (1988/52 s.4(6): a RetainText Repeal round the text, not the number;
+    # Coronavirus Act 2020 s.78: round every sub-provision)
     whole? =
       Enum.any?(occ, &(&1.number? and (target == "*" or List.last(&1.path) == target))) or
         covers_own_text?(occ, Map.get(own, target))
@@ -222,13 +231,24 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
   defp covers_own_text?(occ, own_text),
     do: String.contains?(occ |> Enum.map(& &1.text) |> Enum.join(), own_text)
 
-  # each provision's own words (not its number, title or sub-provisions),
-  # letters and digits only — to tell a change round all of them
+  # the text under each provision (not its own number or title), letters
+  # and digits only — to tell a change round all of it
   defp own_texts(doc) do
     for el <- xpath(doc, ~x"//*[@id]"l),
         id = xpath(el, ~x"./@id"s),
         into: %{},
-        do: {id, el |> own() |> letters()}
+        do: {id, el |> body() |> letters()}
+  end
+
+  defp body({:xmlElement, _, _, _, _, _, _, _, children, _, _, _} = el) do
+    put_elem(
+      el,
+      8,
+      Enum.reject(
+        children,
+        &match?({:xmlElement, n, _, _, _, _, _, _, _, _, _, _} when n in [:Pnumber, :Title], &1)
+      )
+    )
   end
 
   defp own({:xmlElement, _, _, _, _, _, _, _, children, _, _, _} = el) do

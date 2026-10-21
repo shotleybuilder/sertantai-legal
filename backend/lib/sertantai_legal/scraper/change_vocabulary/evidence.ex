@@ -81,11 +81,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
     # (Jason 2026-10-11: "revoked in part will not mean full revocation")
     operation: [
       {:law_text, :operation},
+      {:commencement, :operation},
       {:feed, :operation, :in_part},
       {:markup, :operation},
       {:feed, :operation}
     ],
-    level: [{:law_text, :level}, {:markup, :level}, {:feed, :level}],
+    level: [{:law_text, :level}, {:commencement, :level}, {:markup, :level}, {:feed, :level}],
     retained: [{:markup, :retained}],
     # where the change applies: the feed's application, the markup's Extent,
     # an effect extent narrower than the provision, then the affecting law's
@@ -100,10 +101,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
     ],
     date: [{:commencement, :date}, {:feed, :date}],
     # a commencement stage that doesn't complete the provision
-    partial: [{:feed, :partial}],
+    partial: [{:commencement, :partial}, {:feed, :partial}],
     # a removal with savings (D3: repealed_saved)
     saved: [{:feed, :savings, :non_empty}],
-    by: [{:law_text, :by}, {:feed, :by}, {:markup, :cited}]
+    by: [{:law_text, :by}, {:commencement, :by}, {:feed, :by}, {:markup, :cited}]
   ]
 
   @doc "The tier of a claim source: `:primary` (the legal text) or `:derived`."
