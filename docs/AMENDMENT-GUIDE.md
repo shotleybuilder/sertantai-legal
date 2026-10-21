@@ -92,7 +92,7 @@ An amending-law record carries its law's territory as the feed's records carry t
 
 The full rules are in the module doc; the ones the amendment thread shaped:
 
-- **A row's changes:** its own, its ancestors' whole-provision changes, whole-instrument changes. The feed records an effect on every ancestor of the provision it names; an ancestor's record counts only when the provision it names (`affected_ref`) is on the row's line — the row, its ancestor or its descendant — and a list or range ("s. 153(1)(z8)(z9)", "(a)-(nn)") reaches its members only (AR-10).
+- **A row's changes:** its own, its ancestors' whole-provision changes, whole-instrument changes. The feed records an effect on every ancestor of the provision it names; an ancestor's record counts only when the row is the provision it names (`affected_ref`) or under it — the insertion of reg.12(1)(f) never versions reg.12(1)(a) — and a list or range ("s. 153(1)(z8)(z9)", "(a)-(nn)") reaches its members only (AR-10). Provisions compare by number: the feed's "art. 10" is an NI Order's row `reg.10`.
 - **A version** starts at a text change in force (`in_force_from`, `changed_by`); a words-level change versions the row where it overlaps the row's territory; only a whole repeal must cover the row's whole extent to repeal it (AR-10).
 - **No date, no guess:** a change no source dates is an `undated_change` gap — the row is in force, changed, date unknown.
 
