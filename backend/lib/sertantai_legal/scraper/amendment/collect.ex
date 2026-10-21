@@ -26,23 +26,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
   alias SertantaiLegal.Scraper.ChangeCollector.Record
   alias SertantaiLegal.Scraper.Commencement.Amending
   alias SertantaiLegal.Scraper.Commencement.Evaluator, as: When
-  alias SertantaiLegal.Scraper.Territory
-
-  # a devolved law's territory from its type (as `LiveStatus`): Welsh law
-  # extends to E+W but applies in Wales
-  @devolved %{
-    "ssi" => "S",
-    "asp" => "S",
-    "wsi" => "W",
-    "anaw" => "W",
-    "asc" => "W",
-    "mwa" => "W",
-    "nisr" => "NI",
-    "nisro" => "NI",
-    "nia" => "NI",
-    "apni" => "NI",
-    "nisi" => "NI"
-  }
+  alias SertantaiLegal.Scraper.LawTerritory
 
   @typedoc """
   An amending law as the collector needs it: its `elements` (id → true, for
@@ -105,34 +89,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
     |> Enum.uniq_by(&{&1.evidence, &1.section_id})
   end
 
-  @doc """
-  The territory an amending law's change reaches (AR-09, Jason): a devolved
-  law's from its type; a UK-level law's register `extent` when narrower than
-  the UK (an extent is the law's whole reach: too wide at worst, never the
-  wrong territory); nil (the UK) otherwise — and nil when the `amended` law
-  is devolved to that same territory (a Welsh law's rows extend to E+W: a
-  Welsh repeal of them is whole).
-  """
+  @doc "The territory an amending law's change reaches (AR-09): `LawTerritory.territory/3`."
   @spec territory(String.t(), String.t() | nil, String.t() | nil) :: String.t() | nil
-  def territory(law, extent, amended \\ nil) do
-    t = reach(law, extent)
-    if t != nil and t == devolved(amended), do: nil, else: t
-  end
-
-  defp devolved(nil), do: nil
-  defp devolved(law), do: @devolved[law |> String.split("_") |> Enum.at(1)]
-
-  defp reach(law, extent) do
-    devolved(law) ||
-      case extent && String.trim(extent) do
-        "GB" -> "E+W+S"
-        "UK" -> nil
-        e -> e |> Territory.normalize() |> narrower()
-      end
-  end
-
-  defp narrower("E+W+S+NI"), do: nil
-  defp narrower(code), do: code
+  defdelegate territory(law, extent, amended \\ nil), to: LawTerritory
 
   # where a rule's change lands for a note on `sid`: the row itself when the
   # rule names it; else (the rule names an ancestor: "in section 6, omit the

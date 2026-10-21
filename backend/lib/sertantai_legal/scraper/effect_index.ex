@@ -32,6 +32,9 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
 
   @whole ~w(repealed revoked omitted inserted added)
 
+  # an effect on the whole instrument ("Act", "Regulations", "S.I.")
+  @whole_law ~r/^\s*(?:Act|Regulations|Order|Rules|Measure|Scheme|Instrument|S\.\s?I\.)\s*$/i
+
   @doc "An empty index (a law with no effects, or none loaded)."
   @spec empty() :: t()
   def empty, do: %{by_id: %{}, by_ref: %{}, law_extent: nil, orphans: %{}, targets: %{}}
@@ -276,7 +279,7 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
             (law == nil or (e.affecting != nil and NotePointer.same_law?(e.affecting, law)))
         end
 
-        case orphan_effect(index, paths, kind, keep?) do
+        case orphan_effect(index, paths, kind, keep?) || whole_law(index, kind, law, keep?) do
           nil -> []
           effect -> [{id, effect.effect_id}]
         end
@@ -328,6 +331,27 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
       |> Enum.uniq()
       |> Enum.map(&on_provision(index, &1, kind, keep?))
       |> agreed()
+  end
+
+  # V1-04: a retained repeal joining no provision's effect — a legacy id
+  # spanning the law, marking its repeal for a territory (Forestry Act 1967:
+  # "Act repealed (S.)" by asp 2018/8) — joins the law's one applied
+  # whole-law repeal (no provisions named; never "in part"), only when the
+  # change's note cites its affecting law
+  defp whole_law(_index, kind, law, _keep?) when kind != :keep or law == nil, do: nil
+
+  defp whole_law(index, _kind, _law, keep?) do
+    index.by_id
+    |> Map.values()
+    |> Enum.filter(fn e ->
+      e.applied == true and e.type in ~w(repealed revoked) and
+        (e.affected_refs || []) == [] and (e.affected_ranges || []) == [] and
+        String.match?(e.affected_provisions || "", @whole_law) and keep?.(e)
+    end)
+    |> case do
+      [e] -> e
+      _ -> nil
+    end
   end
 
   defp agreed([%Effect{} = e | rest]) do

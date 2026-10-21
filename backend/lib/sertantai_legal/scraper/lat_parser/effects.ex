@@ -199,7 +199,16 @@ defmodule SertantaiLegal.Scraper.LatParser.Effects do
   """
   @spec row_segments(LatSegments.t(), map(), String.t() | nil, tuple()) :: LatSegments.t()
   def row_segments(segments, ctx, extent, node) do
+    # V1-04: a whole-provision repeal on a row still showing text (letters
+    # or numbers) is retained there (in force elsewhere); on one showing
+    # only "…", whole — legislation.gov.uk's rendering of removed text
+    retained = LatSegments.plain(segments) =~ ~r/[\p{L}\p{N}]/u
+
     ctx.provision_changes
+    |> Enum.map(fn
+      %LatTerritory.Change{synthetic: true} = c -> %{c | retained: retained}
+      c -> c
+    end)
     |> Enum.reduce(segments, fn change, inner -> [{:words, change, inner}] end)
     |> LatTerritory.resolve(ctx.effects, extent, Xml.xml_id(node))
   end

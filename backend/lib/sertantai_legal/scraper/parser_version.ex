@@ -26,6 +26,7 @@ defmodule SertantaiLegal.Scraper.ParserVersion do
       lib/sertantai_legal/scraper/effect_target.ex
       lib/sertantai_legal/scraper/provision_text.ex
       lib/sertantai_legal/scraper/effect_territory.ex
+      lib/sertantai_legal/scraper/law_territory.ex
       lib/sertantai_legal/scraper/in_force_qualifier.ex
       lib/sertantai_legal/scraper/id_field.ex
       lib/sertantai_legal/scraper/commentary_parser.ex

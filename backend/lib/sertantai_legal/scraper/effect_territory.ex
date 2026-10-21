@@ -18,6 +18,21 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
      never when wider or equal; "same as affected" is no territory;
   6. for a removal whose qualifiers name a territory that can't be read
      here: none — `{nil, :effect_unreadable}`; it removes nothing;
+  6a. the affecting law's territory (`Effect.affecting_territory`,
+     `LawTerritory`: a devolved type, the law's own title place, a
+     register extent narrower than the UK), when every joined effect
+     has one and it is narrower than the row's extent — a territorial law
+     changes text only in its territory, whatever its savings (V1-04: SI
+     2010/404 reg.14, repealed by the "(England)" SI 2023/911, stays in
+     force in Wales) — removals only: retained text is legislation.gov.uk's
+     sign that it still applies elsewhere; an insertion has no such sign,
+     and a devolved law can insert text that applies across the border
+     (Forestry Act 1967 s.1(1A), inserted by the Welsh SI 2013/755, defines
+     the authority for England too); and only text the markup retains
+     (`retained: false` for a whole-provision change from the effects
+     layer: text legislation.gov.uk removed is repealed wholly, and a UK
+     Act's repeal commonly "has the same extent as the provision
+     repealed" — NERCA 2006 s.73);
   7. for a removal whose effect shows it reaches everywhere — in force for
      purposes only, with savings, or an effect extent covering the row's
      (1989/14 s.3(5): "Act repealed (S.)" on S rows): `{nil,
@@ -27,7 +42,8 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
 
   Returns `{territory | nil, source | nil}` with source `:effect_application`,
   `:markup`, `:effect_in_force`, `:effect_not_in_force`, `:effect_extent`,
-  `:effect_unreadable` or `:effect_everywhere`. Notes are never read.
+  `:effect_unreadable`, `:affecting_law` or `:effect_everywhere`. Notes are
+  never read.
   Pure.
   """
 
@@ -42,6 +58,7 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
           | :effect_not_in_force
           | :effect_extent
           | :effect_unreadable
+          | :affecting_law
           | :effect_everywhere
 
   @doc """
@@ -56,10 +73,12 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
           :keep | :ins | :pair,
           String.t() | nil,
           String.t() | nil,
-          String.t() | nil
+          String.t() | nil,
+          keyword()
         ) ::
           {String.t() | nil, source() | nil}
-  def claim(effects, kind, attribute, row_extent \\ nil, provision \\ nil) do
+  def claim(effects, kind, attribute, row_extent \\ nil, provision \\ nil, opts \\ []) do
+    retained? = Keyword.get(opts, :retained, true)
     effects = effects |> List.wrap() |> Enum.reject(&is_nil/1)
     application = application(effects)
     markup = Territory.normalize(attribute)
@@ -74,6 +93,8 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
        fn -> kind in [:keep, :pair] and not_in_force?(effects, provision) and :none end},
       {:effect_extent, fn -> effects != [] and narrower_extent(hd(effects), row_extent) end},
       {:effect_unreadable, fn -> kind in [:keep, :pair] and territorial?(effects) and :none end},
+      {:affecting_law,
+       fn -> retained? and kind in [:keep, :pair] and affecting(effects, row_extent) end},
       {:effect_everywhere,
        fn -> kind in [:keep, :pair] and everywhere?(effects, row_extent) and :none end}
     ]
@@ -188,6 +209,23 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
           Qualifier.scope_kind?(elem(Qualifier.scope(q), 1), provision) and
           not Qualifier.in_scope?(elem(Qualifier.scope(q), 1), provision)
       end)
+  end
+
+  # the affecting laws' territory (the keyed effect's and its parallels'),
+  # when each has one and it is narrower than the row's extent (else the
+  # affected provision's: the law's own when the feed gives none)
+  defp affecting([], _row_extent), do: nil
+
+  defp affecting([keyed | _] = effects, row_extent) do
+    codes = Enum.map(effects, & &1.affecting_territory)
+
+    with false <- Enum.any?(codes, &is_nil/1),
+         t = Territory.union(codes),
+         false <- Territory.covers?(t, row_extent || code(keyed.affected_extent)) do
+      t
+    else
+      _ -> nil
+    end
   end
 
   # positive evidence a removal reaches the whole row: purposes, savings, or

@@ -197,6 +197,60 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
       assert EffectIndex.orphan(index, nil, :ins) == nil
     end
 
+    test "V1-04: a legacy id spanning the law joins the law's one whole-law repeal by the cited law (Forestry Act 1967, asp 2018/8)" do
+      act =
+        effect(
+          effect_id: "k-act",
+          type: "repealed",
+          affecting: "UK_asp_2018_8",
+          affected_provisions: "Act",
+          effect_extent: "S",
+          affected_extent: "E+W+S",
+          savings: ["section-80", "section-83"]
+        )
+
+      words =
+        effect(
+          effect_id: "k-words",
+          type: "words omitted",
+          affecting: "UK_wsi_2013_755",
+          affected_refs: ["section-1-4-a"]
+        )
+
+      order = ~w(section-1 section-1-4 section-1-4-a section-10)
+      index = EffectIndex.new([act, words], order)
+
+      occ = [
+        {"M_F_d297", ["part-1", "section-1", "section-1-4", "section-1-4-a"], :keep},
+        {"M_F_d297", ["part-2", "section-10"], :keep}
+      ]
+
+      joined = EffectIndex.with_orphans(index, occ, cited: %{"M_F_d297" => "UK_asp_2018_8"})
+      assert EffectIndex.orphan(joined, "M_F_d297", :keep) == act
+      assert EffectTerritory.claim([act], :keep, nil, "E+W+S") == {"S", :effect_extent}
+
+      # only by the law the note cites, and never for an insertion
+      assert index |> EffectIndex.with_orphans(occ) |> EffectIndex.orphan("M_F_d297", :keep) ==
+               nil
+
+      other = EffectIndex.with_orphans(index, occ, cited: %{"M_F_d297" => "UK_wsi_2013_755"})
+      assert EffectIndex.orphan(other, "M_F_d297", :keep) == nil
+
+      ins = [{"M_F_d297", ["part-2", "section-10"], :ins}]
+      cited = EffectIndex.with_orphans(index, ins, cited: %{"M_F_d297" => "UK_asp_2018_8"})
+      assert EffectIndex.orphan(cited, "M_F_d297", :ins) == nil
+
+      # a repeal "in part" of the instrument is no whole-law repeal
+      part = %{act | type: "repealed in part"}
+
+      in_part =
+        [part, words]
+        |> EffectIndex.new(order)
+        |> EffectIndex.with_orphans(occ, cited: %{"M_F_d297" => "UK_asp_2018_8"})
+
+      assert EffectIndex.orphan(in_part, "M_F_d297", :keep) == nil
+    end
+
     test "with_orphans/3: never an effect with its own note or markup; only one by the law the change's note cites (LR-19: 1968/47 s.1(1))" do
       # the 2002 substitution (legacy d30p67, note citing asp 2002/3) has no
       # effect in the feed; asp 2003/3's insertion has its own note and markup
@@ -480,6 +534,75 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
       # repealed (1986/62 "repealed in part", s. 1-3, by asp 2003/15 for S)
       named = effect(type: "repealed in part", effect_extent: "S", affected_refs: ["section-1"])
       assert EffectTerritory.claim(named, :keep, nil, "S") == {nil, :effect_everywhere}
+    end
+
+    # V1-04: a territorial law changes text only in its territory —
+    # explicit data first (application, Extent, qualifiers, effect extent),
+    # then the affecting law's territory, before "everywhere" and "no claim"
+    test "V1-04: a territorial affecting law limits a retained repeal to its territory (SI 2010/404 reg.14 by \"(England)\" SI 2023/911)" do
+      england =
+        effect(
+          affecting: "UK_uksi_2023_911",
+          affecting_territory: "E",
+          effect_extent: "E+W",
+          affected_extent: "E+W"
+        )
+
+      assert EffectTerritory.claim(england, :keep, nil, "E+W") == {"E", :affecting_law}
+
+      # a Welsh SI's on an E+W row; an asp's on a GB row
+      wales = effect(affecting: "UK_wsi_2013_755", affecting_territory: "W")
+      assert EffectTerritory.claim(wales, :keep, nil, "E+W") == {"W", :affecting_law}
+      asp = effect(affecting: "UK_asp_2018_8", affecting_territory: "S")
+      assert EffectTerritory.claim(asp, :pair, nil, "E+W+S") == {"S", :affecting_law}
+
+      # with savings, still only its territory
+      saved = %{england | savings: ["regulation-3"]}
+      assert EffectTerritory.claim(saved, :keep, nil, "E+W") == {"E", :affecting_law}
+    end
+
+    test "V1-04: the affecting law's territory never overrides explicit data, nor narrows a row it covers" do
+      england = effect(affecting_territory: "E", effect_extent: "E+W")
+
+      # the markup Extent and the feed's application win
+      assert EffectTerritory.claim(england, :keep, "E+W", "E+W") == {"E+W", :markup}
+
+      assert EffectTerritory.claim(%{england | territorial_application: "W"}, :keep, nil, "E+W") ==
+               {"W", :effect_application}
+
+      # an effect extent narrower than the row wins
+      assert EffectTerritory.claim(%{england | effect_extent: "W"}, :keep, nil, "E+W") ==
+               {"W", :effect_extent}
+
+      # 1989/14 s.3(5): an asp's "Act repealed (S.)" on an S row reaches the whole row
+      s_row =
+        effect(affecting_territory: "S", effect_extent: "S", affected_extent: "E+W+S")
+
+      assert EffectTerritory.claim(s_row, :keep, nil, "S") == {nil, :effect_everywhere}
+
+      # a UK-wide law's repeal with savings: everywhere, as before
+      uk = effect(savings: ["section-71-3"], affecting_territory: nil)
+      assert EffectTerritory.claim(uk, :keep, nil, "E+W+S") == {nil, :effect_everywhere}
+    end
+
+    test "V1-04: parallels count only when every one has a territory (their union)" do
+      w = effect(effect_id: "k-w", affecting_territory: "W", affected_refs: ["section-1"])
+      s = effect(effect_id: "k-s", affecting_territory: "S", affected_refs: ["section-1"])
+      uk = effect(effect_id: "k-uk", affecting_territory: nil, affected_refs: ["section-1"])
+
+      assert EffectTerritory.claim([w, s], :keep, nil, "E+W+S") == {"W+S", :affecting_law}
+      assert EffectTerritory.claim([w, uk], :keep, nil, "E+W+S") == {nil, nil}
+    end
+
+    test "V1-04: only retained text — a whole-provision change from the effects layer is repealed wholly (NERCA 2006 s.73)" do
+      act = effect(affecting: "UK_ukpga_2014_21", affecting_territory: "E+W")
+      assert EffectTerritory.claim(act, :keep, nil, "E+W+S", nil, retained: false) == {nil, nil}
+      assert EffectTerritory.claim(act, :keep, nil, "E+W+S") == {"E+W", :affecting_law}
+    end
+
+    test "V1-04: never for an insertion — a Welsh SI can insert text that applies in England (Forestry Act 1967 s.1(1A) by wsi 2013/755)" do
+      ins = effect(type: "inserted", affecting: "UK_wsi_2013_755", affecting_territory: "W")
+      assert EffectTerritory.claim(ins, :ins, nil, "E+W+S") == {nil, nil}
     end
 
     test "5. nothing names one: no claim" do

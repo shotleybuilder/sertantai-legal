@@ -30,6 +30,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
 
   alias SertantaiLegal.Scraper.Commencement.Store, as: CommencementRules
   alias SertantaiLegal.Scraper.LatStagedParser
+  alias SertantaiLegal.Scraper.LawTerritory
 
   @doc """
   A law's records from the store, by collector: `records` compact (one per
@@ -387,7 +388,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
 
         extent =
           case rows do
-            [[geo, title] | _] -> title_place(title) || geo
+            [[geo, title] | _] -> LawTerritory.extent(title, geo)
             _ -> nil
           end
 
@@ -398,54 +399,9 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
     end
   end
 
-  @places %{
-    "England and Wales" => "E+W",
-    "England" => "E",
-    "Wales" => "W",
-    "Scotland" => "S",
-    "Northern Ireland" => "NI"
-  }
-
-  @doc """
-  The place in a law's own title (V1-03): "Building Regulations etc.
-  (Amendment) (England) Regulations" → "E"; a place belonging to a law the
-  title cites isn't its own ("Forestry and Land Management (Scotland) Act
-  2018 (Consequential Provisions and Modifications) Order" → nil).
-  """
+  @doc "The place in a law's own title (V1-03): `LawTerritory.title_place/1`."
   @spec title_place(String.t() | nil) :: String.t() | nil
-  def title_place(title) when is_binary(title) do
-    # the title's own instrument word at its end (a year and a register note
-    # "(repealed …)" allowed), then the last place before it — none when a
-    # cited law ("… (Scotland) Act 1994 (Commencement) Order") sits between;
-    # or a place after the word, as Northern Ireland's ("Mines Act (Northern
-    # Ireland)")
-    title = String.replace(title, ~r/\s*\((?:repealed|revoked)[^)]*\)\s*$/i, "")
-
-    trailing =
-      ~r/\b(?:Regulations|Order(?: in Council)?|Rules|Act|Measure|Scheme|Byelaws?)(?:\s+\d{4})?\s*\((England and Wales|England|Wales|Scotland|Northern Ireland)\)(?:\s+\d{4})?\s*$/
-
-    with nil <- Regex.run(trailing, title),
-         [_, head] <-
-           Regex.run(
-             ~r/^(.*)\b(?:Regulations|Order(?: in Council)?|Rules|Act|Measure|Scheme|Byelaws?)(?:\s+\d{4})?\s*$/,
-             title
-           ),
-         [_ | _] = places <-
-           Regex.scan(
-             ~r/\((England and Wales|England|Wales|Scotland|Northern Ireland)\)(.*?)(?=\(|$)/,
-             head
-           ),
-         [_, place, _] <- List.last(places),
-         rest = head |> String.split("(#{place})") |> List.last(),
-         false <- rest =~ ~r/\b(?:Act|Measure)\s+\d{4}\b/ do
-      @places[place]
-    else
-      [_, place] -> @places[place]
-      _ -> nil
-    end
-  end
-
-  def title_place(_title), do: nil
+  defdelegate title_place(title), to: LawTerritory
 
   defp law_title(law_name) do
     case Repo.query!("SELECT title_en FROM uk_lrt WHERE name = $1 LIMIT 1", [law_name]) do

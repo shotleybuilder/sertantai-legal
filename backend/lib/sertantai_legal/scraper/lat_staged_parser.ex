@@ -37,6 +37,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
   alias SertantaiLegal.Scraper.PdfBacklog
   alias SertantaiLegal.Scraper.PdfBacklog.Batch
   alias SertantaiLegal.Scraper.IdField
+  alias SertantaiLegal.Scraper.LawTerritory
   alias SertantaiLegal.Repo
 
   @stages [:fetch_body, :parse_lat, :persist_lat, :parse_annotations, :persist_annotations]
@@ -510,13 +511,40 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
 
         case ChangesFeed.fetch(type, year, number, store: mode) do
           {:ok, effects} ->
-            effects
+            with_affecting_territory(effects, law_name)
 
           {:error, reason} ->
             Logger.warning("[LatStagedParser] #{law_name}: no effects (#{reason}): markup only")
             []
         end
     end
+  end
+
+  # V1-04: each effect's affecting-law territory (`LawTerritory`), from the
+  # register's title and extent for that law — one query for the law's
+  # affecting laws; a law the register doesn't hold has its type's only
+  @doc false
+  def with_affecting_territory([], _law_name), do: []
+
+  def with_affecting_territory(effects, law_name) do
+    laws = effects |> Enum.map(& &1.affecting) |> Enum.reject(&is_nil/1) |> Enum.uniq()
+
+    %{rows: rows} =
+      Repo.query!("SELECT name, title_en, geo_extent FROM uk_lrt WHERE name = ANY($1)", [laws])
+
+    extents = Map.new(rows, fn [name, title, geo] -> {name, LawTerritory.extent(title, geo)} end)
+
+    Enum.map(effects, fn
+      %{affecting: nil} = e ->
+        e
+
+      e ->
+        %{
+          e
+          | affecting_territory:
+              LawTerritory.territory(e.affecting, Map.get(extents, e.affecting), law_name)
+        }
+    end)
   end
 
   # Client store options for a law (#175): the mode, and the law's latest

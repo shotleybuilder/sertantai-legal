@@ -44,7 +44,11 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
       :conflict_markup,
       substitution: false,
       # LR-07: a whole-provision change from the effects layer (rule 3), not markup
-      synthetic: false
+      synthetic: false,
+      # V1-04: the change's text is still shown — markup RetainText, or a
+      # synthetic change on a row that keeps words (`Effects.row_segments/4`);
+      # removed text ("…") is repealed wholly
+      retained: true
     ]
 
     @type t :: %__MODULE__{
@@ -57,7 +61,8 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
             source: atom() | nil,
             conflict_markup: String.t() | nil,
             substitution: boolean(),
-            synthetic: boolean()
+            synthetic: boolean(),
+            retained: boolean()
           }
   end
 
@@ -117,7 +122,9 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
     effects = if effect, do: EffectIndex.parallel(index, effect), else: []
 
     {territory, source} =
-      EffectTerritory.claim(effects, change.kind, change.attribute, row_extent, provision)
+      EffectTerritory.claim(effects, change.kind, change.attribute, row_extent, provision,
+        retained: change.retained
+      )
 
     # markup disjoint from the (unioned) application: the markup is used,
     # and kept on the claim for the conflict report

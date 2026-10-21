@@ -44,6 +44,10 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
       :affected_extent,
       :effect_extent,
       :territorial_application,
+      # V1-04: where the affecting law's changes reach (`LawTerritory`),
+      # filled from the register by the parse (`LatStagedParser`); never
+      # from the feed
+      :affecting_territory,
       :applied,
       :requires_applied,
       # #168: in-force data, savings and structured affected refs
@@ -69,6 +73,7 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
             affected_extent: String.t() | nil,
             effect_extent: String.t() | nil,
             territorial_application: String.t() | nil,
+            affecting_territory: String.t() | nil,
             applied: boolean() | nil,
             requires_applied: boolean() | nil,
             in_force_date: Date.t() | nil,
