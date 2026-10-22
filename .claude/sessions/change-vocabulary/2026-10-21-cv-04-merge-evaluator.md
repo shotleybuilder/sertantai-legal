@@ -11,18 +11,24 @@ bugs:
     affected: 335
     fix: ":unjoined" report as the worklist; join rules for undated primary and words-vs-provision levels
     status: open
+  - pattern: "Extent reader reads only 'this Act extends to X'; 110 of 176 Acts changing golden laws read as no clause (does not extend to NI; Parts … extend to; The following provisions extend to …)"
+    category: reader coverage
+    module: AmendingLaw.Extent
+    affected: 110
+    fix: "read the other wordings; Scottish and NI Acts rightly none"
+    status: open
   - pattern: "by overloaded: maker (feed) vs commencing order (commencement) compared as a conflict"
     category: vocabulary
     module: ChangeVocabulary.Readers.Feed / Evidence
     affected: 85
     fix: "split commenced_by from by"
-    status: open
+    status: fixed
   - pattern: "Label period tier derived when any attribute of any change is derived (level/retained/saved), so almost every label reads derived"
     category: label tier
     module: ChangeVocabulary.Label.tiers/3
     affected: 2416
-    fix: "per-field tier from the attributes that set the field; golden expected tiers"
-    status: open
+    fix: "per-field tier from the attributes that set the field (done); golden expected tiers (open item)"
+    status: fixed
 ---
 
 # Session: CV-04: Merge and Evaluator (ACTIVE)
@@ -39,7 +45,11 @@ Part of the change-vocabulary architecture shift (CV-00): changes merged by iden
 - ✅ Ranges expanded once, in document order, over provisions existing at the change's date (done in CV-03: `ChangeVocabulary.existing/1`, ranges at their own depth); V1-05 folded in (its fix reaches production at the CV-06 switch-over)
 - ⬜ Evidence table complete: every attribute listed; the conflict report as an output (primary vs derived, per change), sized over the golden laws
 - ⬜ Measure the CV-01 register bugs (records on the wrong provision) against the merged changes, over the golden laws
-- ⬜ Storage: Ash resources for changes and change_claims (Ash-generated migrations), beside `lat_change_log` (deferred from CV-02); with it, a cache of each Act's extent clause (the scoreboard takes 5½ min reading them)
+- ✅ Storage (2026-10-22, `46d2b13a`): `provision_changes` and `provision_change_claims` (tiers and conflicts derived on read), `extent_rules` (a third ruleset), `changes_built` events with input fingerprints; golden 27 / 27 from inputs (3 min 13 s) and from the store (51 s)
+- ✅ Conflict report (`ChangeVocabulary.Conflicts`; `mix lat.vocabulary --conflicts`): value, unjoined, uncovered, unread; `commenced_by` apart from `by`; label tier per field
+- ⬜ Merge the unjoined pairs (1,104 over the golden laws: the report is the worklist)
+- ⬜ Golden expected tiers per period, judged; the start's tier from its source
+- ⬜ Primary coverage (to place: CV-04 or a reader session): the read pass reads every amending provision the feed names (2,461 unread); the extent reader reads the other wordings (110 of 176 Acts)
 - ⬜ Golden set: 27 / 27 at the merge level; a Gemini review of the merge and evaluator
 
 ## Dependencies
@@ -172,3 +182,72 @@ Jason 2026-10-22: "defer to pending session, pick the right one and put it there
   - label tier per field;
   - golden cases gain expected tiers.
 - The `:unjoined` list is the worklist for the merge item above; joining those pairs is what makes the remaining value conflicts visible.
+
+### Storage built (2026-10-22; Jason: "That's better, build and then we can judge the results")
+
+- **`extent_rules`** (`Legal.ExtentRule`; `AmendingLaw.Extent.to_rows/2`, `from_rows/1`; `AmendingLaw.Extent.Store`). One row per statement; `none` when an Act was read with no clause.
+  - Written in the amending read pass (`mix lat.amending --read`).
+  - Also written alone: `mix lat.amending --extents --law X | --amending A,B`.
+  - `mix lat.vocabulary` reads it, else reads the Act from its document and names it.
+- **One reader for a Schedule's introducing section.** `Amendment.Reader.references/1` now takes the Schedule's own reference where the schedules are held, else the section saying it "has effect" where only the body is held. `Extent` uses it; its own copy is gone. On TCPA's 51 Acts the two had never overlapped: the store holds only the body for most Acts, so the reference reader found nothing there.
+- **`provision_changes` and `provision_change_claims`** (`Legal.ProvisionChange`, `Legal.ProvisionChangeClaim`, Ash migration `20261022055656_change_vocabulary_store`).
+  - `ChangeVocabulary.Store.write/3` deletes and inserts a law's changes in one transaction, bulk inserted.
+  - Each build records a `changes_built` lat_event. Its provenance holds the code version (`ChangeVocabulary.Version`) and the inputs read: `clml_valid`, `feed_fetched`, the latest `read_at` of the amendment, commencement and extent rules, and `extents_unread`.
+  - `for_law/1` reads the changes back; tiers and conflicts are derived on read (`Evidence.derive/1`).
+  - Claim values are stored as tagged JSON (`Store.Codec`).
+- **`ChangeVocabulary.Conflicts`:** `values/1` (like for like; `@agree`: a substitution shown as an insertion) and `report/1` (`:value`, `:unjoined`, `:uncovered`). Printed by `mix lat.vocabulary --conflicts --law X | --golden [--all]`.
+- **`by` split.** The law making a change is `by`; the law bringing it into force is `commenced_by` (evidence row `commenced_by: [{:commencement, :commenced_by}]`). `Change.credit/1` is what a label's `changed_by` credits: the commencing law for a commencement, else the maker.
+- **Label tier per field** (`Label.tiers/3`): status from operation, date and partial; territory; `in_force_from` from the date; `changed_by` from `by` and `commenced_by`. Nil when no source states it. Shown by `mix lat.vocabulary --golden --stored --tiers`.
+- **`labels/5` takes `:changes`** (read back from the store) and reads the markup facts once.
+- **Found: the extent reader's coverage.** Of the 176 Acts changing the golden laws, 66 have a clause read and 110 have none read. Scottish and NI Acts rightly have none (no clause). Many UK Acts word extent in forms not read:
+  - "This Act does not extend to Northern Ireland" (2005/14; 1991/34: "This Act, apart from sections 82 and 83, does not extend to Northern Ireland");
+  - "Parts I and III … extend to England and Wales only" (1991/34);
+  - "The following provisions of this Act extend to England and Wales only—" (2005/14);
+  - "Part 1 … extends to England and Wales only, save that—" (2015/7);
+  - "this Act shall not extend to Northern Ireland" (1982/49).
+  Logged as a reader item below.
+- **Not done:** `--law` (the debug print) still takes the law's start from `lat_change_log`. A build doesn't need the start; only the debug label print does.
+
+### Results (2026-10-22, code `46d2b13a`)
+
+**Scoreboards:**
+- From inputs: golden 27 / 27 in 3 min 13 s (was about 6 min).
+- From the store: 27 / 27 in 51 s. These changes are built for every LAT row, so the whole-law build gives the same labels as the 27-provision one.
+- Build: 21 golden laws, 48,900 changes (only 279 more with the TCPA's whole rows), about 5 min; TCPA 1990 takes 79 s.
+
+**The conflict report over the 21 golden laws.** The first report counted 4,000 conflicts, and most were noise. After the fixes:
+
+| kind | count | what it is |
+|---|---|---|
+| `:unread` | 2,461 | legislation.gov.uk only, and the amending provision it names was not read (the read pass reads what our notes point to): coverage |
+| `:unjoined` | 1,104 | a law-text-only change beside a legislation.gov.uk-only twin: the merge worklist |
+| `:uncovered`, missing derived | 399 | the law's text only, with no legislation.gov.uk record |
+| `:uncovered`, missing primary | 80 | legislation.gov.uk only, though its amending provision was read: the reader found no rule |
+| `:value` | 67 | level 35, date 16 (commencement vs feed), operation 16 |
+
+The noise removed:
+- `by` (85 on TCPA): `commenced_by` is now apart.
+- Primary territory against our own affecting-law inference (50): `:law` isn't legislation.gov.uk.
+- "Read" meaning the law was read rather than its provision (about 3,100 moved to `:unread`).
+
+**Coverage: how much the law's text backs.**
+- Of the golden laws' 16,578 text changes:
+  - 1,928 (12%) have both sources;
+  - 1,329 (8%) only the law's text;
+  - 13,321 (80%) only legislation.gov.uk.
+- Five laws have no law-text claims at all: SI 2010/2215, EU 2016/2031, SI 2017/544, the Environment Act 2021 and the Building Safety Act 2022. Their amending laws haven't been read, so their "0 conflicts" means unread, not agreement.
+
+**Tiers (golden periods, per field):**
+- `status`: P 8, D 23, none 37.
+- `territory`: P 3, D 24, none 41.
+- `in_force_from`: P 8, D 21, none 39.
+- `changed_by`: P 10, D 18, none 40.
+
+"None" is mostly a start period: the law's own start carries no tier, because the golden set supplies the start, not its source. Primary tiers are few because primary coverage is: the tier now reports coverage honestly instead of always saying derived.
+
+**What this says for "get what's wanted":**
+1. **The conflict report is now a usable worklist.** Its 67 value conflicts are real disagreements to inspect. Its 1,104 unjoined pairs are the merge's work, and until they are joined their real conflicts stay hidden.
+2. **Primary coverage is the limit.** 80% of text changes rest on legislation.gov.uk alone. Labels that carry the law's text need:
+   - the read pass to read every provision legislation.gov.uk names, not only those our notes point to (the 2,461 unread);
+   - the extent reader to read the other wordings (110 of 176 Acts unread).
+3. **The golden set doesn't check tiers.** Expected tiers per period need judging, and the start's tier needs its source.
