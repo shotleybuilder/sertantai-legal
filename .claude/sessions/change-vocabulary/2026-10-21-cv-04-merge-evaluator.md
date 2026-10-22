@@ -1,6 +1,6 @@
 ---
 session: 'CV-04: Merge and Evaluator'
-status: active
+status: suspended
 release: v0.1
 opened: '2026-10-21'
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
@@ -31,11 +31,13 @@ bugs:
     status: fixed
 ---
 
-# Session: CV-04: Merge and Evaluator (ACTIVE)
+# Session: CV-04: Merge and Evaluator (SUSPENDED)
 
 ## Problem
 
 Part of the change-vocabulary architecture shift (CV-00): changes merged by identity; one evidence order per attribute; dates from the commencement ruleset; ranges reach only provisions that existed at their date (V1-05).
+
+**Suspended 2026-10-22** (Jason: "we leave the merge/join as it currently is and analyse the data when we have more examples"). CV-07 widens primary coverage first; the open items here gain from more law text read. The merge stands at 184 unjoined, left as is.
 
 ## Todo
 
@@ -47,7 +49,7 @@ Part of the change-vocabulary architecture shift (CV-00): changes merged by iden
 - ⬜ Measure the CV-01 register bugs (records on the wrong provision) against the merged changes, over the golden laws
 - ✅ Storage (2026-10-22, `46d2b13a`): `provision_changes` and `provision_change_claims` (tiers and conflicts derived on read), `extent_rules` (a third ruleset), `changes_built` events with input fingerprints; golden 27 / 27 from inputs (3 min 13 s) and from the store (51 s)
 - ✅ Conflict report (`ChangeVocabulary.Conflicts`; `mix lat.vocabulary --conflicts`): value, unjoined, uncovered, unread; `commenced_by` apart from `by`; label tier per field
-- ⬜ Merge the unjoined pairs (1,104 over the golden laws: the report is the worklist)
+- ✅ Merge the unjoined pairs: 1,104 → 184 (`75d11be6`, `22e8c56b`, `63204804`); the rest are left as is until there are more examples (Jason 2026-10-22)
 - ⏸️ Golden expected tiers per period, judged; the start's tier from its source (deferred — Jason 2026-10-22: "later", once primary coverage is wider)
 - ⏸️ Primary coverage: moved to CV-07 (Jason 2026-10-22: its own session, after the merge work here)
 - ⬜ Golden set: 27 / 27 at the merge level; a Gemini review of the merge and evaluator

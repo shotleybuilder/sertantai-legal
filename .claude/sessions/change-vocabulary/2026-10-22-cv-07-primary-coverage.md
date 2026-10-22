@@ -1,12 +1,12 @@
 ---
 session: 'CV-07: Primary Coverage'
-status: pending
+status: active
 release: v0.1
 opened: '2026-10-22'
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
 ---
 
-# Session: CV-07: Primary Coverage (PENDING)
+# Session: CV-07: Primary Coverage (ACTIVE)
 
 ## Problem
 
@@ -36,7 +36,7 @@ Placed by Jason 2026-10-22: its own session, after CV-04's merge work (CV-04 sus
 
 ## Dependencies
 
-- ⬜ CV-04's merge of the unjoined pairs (the conflict report's worklist) — done first (Jason 2026-10-22)
+- ✅ CV-04's merge of the unjoined pairs: 1,104 → 184; CV-04 suspended 2026-10-22
 
 ## Notes
 
