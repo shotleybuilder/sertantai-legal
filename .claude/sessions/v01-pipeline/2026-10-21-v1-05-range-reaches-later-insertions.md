@@ -19,6 +19,10 @@ bugs:
 
 Found in V1-04's parse diff (2026-10-21). A range record ("ss. 78(4B)-(4D) omitted", anaw 2015/4, 2015) is expanded by document order, so it reaches provisions later inserted inside the range (TCPA 1990 s.78(4BA)-(4BB), inserted 2017). Those rows read repealed today though they are in force, and an earlier range insertion gives them an in-force period from 2012, five years before they existed. The parse's whole-provision rule (rule 3) joins the same range, and V1-04's territory rule then excludes Wales on them.
 
+## Folded into the change vocabulary (2026-10-22)
+
+CV-03 built the rule in the vocabulary: a range spans the provisions at its own depth and reaches only those that existed at its date (`ChangeVocabulary.existing/1`). TCPA 1990 s.78(4BA) is right on the golden scoreboard. The fix reaches production at the CV-06 switch-over; this session stays pending until then as the record of the bug.
+
 ## Todo
 
 - ⬜ Size precisely: the register's range rows (`lat_change_log_rows`) and the parse's range spans (`EffectIndex.new`, `as_given`; `EffectTarget`), by operation and era; sample 20 to confirm the provision didn't exist at the range's date

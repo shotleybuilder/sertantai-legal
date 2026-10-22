@@ -1,12 +1,12 @@
 ---
 session: 'CV-04: Merge and Evaluator'
-status: pending
+status: active
 release: v0.1
 opened: '2026-10-21'
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
 ---
 
-# Session: CV-04: Merge and Evaluator (PENDING)
+# Session: CV-04: Merge and Evaluator (ACTIVE)
 
 ## Problem
 
@@ -14,18 +14,18 @@ Part of the change-vocabulary architecture shift (CV-00): changes merged by iden
 
 ## Todo
 
-- ⬜ `Provision` built first: versions with split_from, exists_from/to, renamed (renumbering), canonical kind words
-- ⬜ Merge: effect id, then the secondary key with source position; one-to-many per target; conflicts flagged
-- ⬜ Ranges expanded once (document order) over provisions existing at the change's date (V1-05's rule; fold V1-05 in)
-- ⬜ Evidence table complete (all attributes; lists collected; conditions by operation)
-- ⬜ Measure the CV-01 register bugs (records on the wrong provision) against the merged changes
-- ⬜ Expiry and continuation reader (primary; deferred from CV-03, Jason 2026-10-22): a law's own sunset clause and the orders continuing it, read as removals with their dates and territories — the last golden case (Coronavirus Act 2020 s.78)
-- ⬜ Storage: Ash resources for changes and change_claims (Ash-generated migrations), beside `lat_change_log` (deferred from CV-02)
-- ⬜ Golden set: all 25 pass at the merge level
+- ⬜ Expiry and continuation reader (primary; deferred from CV-03, Jason 2026-10-22): a law's own sunset clause and the orders continuing it, read as removals with their dates and territories — the last golden case (Coronavirus Act 2020 s.78) → 27 / 27
+- ⬜ `Provision` facts complete: versions (done in CV-03: DocumentURI, shared history), `exists_from/to`, renumbering (C4: a renamed provision keeps its history; a target named by an old number resolves to the current one), kind words for NI Orders ("art. 10" in the feed = row reg.10)
+- ⬜ Merge complete: the secondary key gains the source position (two same-day, same-type changes by one provision to one target don't collide); conflicts across changes (two sources placing one event on different provisions) reported
+- ✅ Ranges expanded once, in document order, over provisions existing at the change's date (done in CV-03: `ChangeVocabulary.existing/1`, ranges at their own depth); V1-05 folded in (its fix reaches production at the CV-06 switch-over)
+- ⬜ Evidence table complete: every attribute listed; the conflict report as an output (primary vs derived, per change), sized over the golden laws
+- ⬜ Measure the CV-01 register bugs (records on the wrong provision) against the merged changes, over the golden laws
+- ⬜ Storage: Ash resources for changes and change_claims (Ash-generated migrations), beside `lat_change_log` (deferred from CV-02); with it, a cache of each Act's extent clause (the scoreboard takes 5½ min reading them)
+- ⬜ Golden set: 27 / 27 at the merge level; a Gemini review of the merge and evaluator
 
 ## Dependencies
 
-- ⬜ the previous CV session closed (each widens the slice)
+- ✅ CV-03 closed 2026-10-22 (golden 26 / 27)
 
 - ✅ CV-01 signed off by Jason (2026-10-21: "start small, prove, iterate and grow")
 
