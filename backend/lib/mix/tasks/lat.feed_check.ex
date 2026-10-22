@@ -9,7 +9,7 @@ defmodule Mix.Tasks.Lat.FeedCheck do
 
       mix lat.feed_check --family "OH&S: Occupational"
       mix lat.feed_check --family "OH&S: Occupational" --all              # every fault listed
-      mix lat.feed_check --family "OH&S: Occupational" --sample FILE --n 50
+      mix lat.feed_check --family "OH&S: Occupational" --sample FILE --n 50 [--seed N]
   """
   use Mix.Task
 
@@ -24,7 +24,14 @@ defmodule Mix.Tasks.Lat.FeedCheck do
   def run(args) do
     {opts, _, _} =
       OptionParser.parse(args,
-        strict: [family: :string, laws: :string, all: :boolean, sample: :string, n: :integer]
+        strict: [
+          family: :string,
+          laws: :string,
+          all: :boolean,
+          sample: :string,
+          n: :integer,
+          seed: :integer
+        ]
       )
 
     Mix.Task.run("app.start")
@@ -63,7 +70,7 @@ defmodule Mix.Tasks.Lat.FeedCheck do
             "  #{elem(r.outcome, 1)}  #{r.law} #{inspect(r.effect.affected_provisions)} refs #{inspect(r.effect.affected_refs)} → #{inspect(r.targets)}"
           )
 
-    if opts[:sample], do: sample(results, opts[:sample], opts[:n] || 50)
+    if opts[:sample], do: sample(results, opts[:sample], opts[:n] || 50, opts[:seed])
 
     Mix.shell().info("\n#{if faults == [], do: "PASS (placement)", else: "FAIL (placement)"}")
   end
@@ -138,6 +145,7 @@ defmodule Mix.Tasks.Lat.FeedCheck do
           effect: e,
           targets: targets,
           claims: claims,
+          sets: mine,
           outcome: Placement.classify(e, targets, held)
         }
       end
@@ -146,10 +154,10 @@ defmodule Mix.Tasks.Lat.FeedCheck do
     end
   end
 
-  # a reproducible random sample (fixed seed): each effect as the feed
-  # states it, beside what the reader made of it
-  defp sample(results, file, n) do
-    :rand.seed(:exsss, {2026, 10, 22})
+  # a reproducible random sample (fixed seed; `--seed N` draws another):
+  # each effect as the feed states it, beside what the reader made of it
+  defp sample(results, file, n, seed) do
+    :rand.seed(:exsss, if(seed, do: {seed, seed, seed}, else: {2026, 10, 22}))
     picked = results |> Enum.sort_by(&{&1.law, &1.effect.effect_id}) |> Enum.take_random(n)
 
     rows =
@@ -188,7 +196,23 @@ defmodule Mix.Tasks.Lat.FeedCheck do
             effect_extent: claim.(:effect_extent),
             territory: claim.(:territory),
             savings: claim.(:savings),
-            partial: claim.(:partial)
+            partial: claim.(:partial),
+            # each change the reader made of it (a stage of a staged change
+            # is its own, keyed "id@date")
+            changes:
+              for {key, target, claims} <- r.sets do
+                v = fn a -> Enum.find_value(claims, &(&1.attribute == a and {:ok, &1.value})) end
+
+                %{
+                  key: key,
+                  target: target,
+                  operation: elem(v.(:operation) || {:ok, nil}, 1),
+                  level: elem(v.(:level) || {:ok, nil}, 1),
+                  date_first: elem(v.(:date_first) || {:ok, nil}, 1),
+                  date: elem(v.(:date) || {:ok, nil}, 1),
+                  partial: elem(v.(:partial) || {:ok, nil}, 1)
+                }
+              end
           }
         }
       end
