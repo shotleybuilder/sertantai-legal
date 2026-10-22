@@ -142,4 +142,42 @@ defmodule SertantaiLegal.Scraper.SourcesTest do
 
     assert Sources.register_counts("UK_x", effects) == %{effects: 2, laws: 1}
   end
+
+  describe "stale: could the register know of a newer version than the copy we hold? (CV-S01, Jason: \"Apply the stale fix\")" do
+    @now ~U[2026-10-22 12:00:00Z]
+
+    defp copy(valid, fetched), do: %{dct_valid: valid, fetched_at: fetched}
+
+    test "the register last updated before we fetched: whatever it knew was already published — fresh (NI SR 1997/193)" do
+      refute Sources.stale?(
+               copy(~D[1997-03-28], ~U[2026-10-22 09:00:00Z]),
+               ~D[1997-05-12],
+               ~N[2026-10-19 08:40:11],
+               @now
+             )
+    end
+
+    test "the register updated since, and knows a later version than our copy: stale (a version published after our fetch)" do
+      assert Sources.stale?(
+               copy(~D[2025-01-01], ~U[2026-01-10 09:00:00Z]),
+               ~D[2025-06-01],
+               ~N[2026-09-30 10:00:00],
+               @now
+             )
+    end
+
+    test "the register updated since, but our copy is as new: fresh" do
+      refute Sources.stale?(
+               copy(~D[2025-06-01], ~U[2026-01-10 09:00:00Z]),
+               ~D[2025-06-01],
+               ~N[2026-09-30 10:00:00],
+               @now
+             )
+    end
+
+    test "no dates to compare: fresh while fetched within 30 days" do
+      refute Sources.stale?(copy(nil, ~U[2026-10-01 09:00:00Z]), nil, nil, @now)
+      assert Sources.stale?(copy(nil, ~U[2026-08-01 09:00:00Z]), nil, nil, @now)
+    end
+  end
 end

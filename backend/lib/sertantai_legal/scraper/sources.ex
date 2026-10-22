@@ -110,6 +110,38 @@ defmodule SertantaiLegal.Scraper.Sources do
   defp act?(law), do: (String.split(law, "_") |> Enum.at(1)) in @act_types
 
   @doc """
+  Whether a held copy is stale: could the register know of a newer version
+  than the one we hold? (CV-S01; Jason: "Apply the stale fix".)
+
+  - The register's record of the law last updated before we fetched the
+    copy: whatever validity date it holds was already published when we
+    fetched, so the copy is at least as new — fresh. (The register's
+    validity date comes from the law's introduction, ours from the
+    document's body; they can differ, as for NI SR 1997/193.)
+  - Otherwise stale when the register's validity date is after the copy's
+    (legislation.gov.uk publishes a revised version after the date it's
+    valid from, so the fetch date alone can't decide).
+  - With no dates to compare: fresh while fetched within 30 days.
+
+  The register's update time moves for other reasons too: the rule can only
+  err towards stale.
+  """
+  @spec stale?(map(), Date.t() | nil, NaiveDateTime.t() | nil, DateTime.t()) :: boolean()
+  def stale?(%{dct_valid: copy, fetched_at: fetched}, register_valid, register_updated, now) do
+    cond do
+      register_updated != nil and fetched != nil and
+          NaiveDateTime.compare(register_updated, DateTime.to_naive(fetched)) == :lt ->
+        false
+
+      is_struct(copy, Date) and is_struct(register_valid, Date) ->
+        Date.compare(copy, register_valid) == :lt
+
+      true ->
+        DateTime.diff(now, fetched, :day) > 30
+    end
+  end
+
+  @doc """
   A law's feed counted as the register counts it (`Amending`: the
   `🔻_stats_affected_by_count` and `…_laws_count` columns): effects by other
   laws that are not revocations (`LiveStatus.revocation?/1`), and their

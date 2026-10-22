@@ -14,8 +14,8 @@ defmodule Mix.Tasks.Lat.Sources do
 
   Statuses: `held` (fresh), `absent` (legislation.gov.uk has none: a stored
   404), `not_fetched`, `incomplete` (a feed missing pages), `stale` (older
-  than legislation.gov.uk's latest, or with no date fetched over 30 days
-  ago: `ClmlStore.fresh?`). The rules are `Sources`'; this task reads the
+  than a version the register could know of: `Sources.stale?/4`). The
+  rules are `Sources`'; this task reads the
   facts.
   """
   use Mix.Task
@@ -268,11 +268,12 @@ defmodule Mix.Tasks.Lat.Sources do
     %{clause: clause, enabling: enabling, commencing: commencing}
   end
 
+  # each law's register validity date and when its record last updated
   defp valid_dates(laws) do
-    Repo.query!("SELECT name, md_dct_valid_date FROM uk_lrt WHERE name = ANY($1)", [
+    Repo.query!("SELECT name, md_dct_valid_date, updated_at FROM uk_lrt WHERE name = ANY($1)", [
       Enum.uniq(laws)
     ]).rows
-    |> Map.new(fn [n, d] -> {n, d} end)
+    |> Map.new(fn [n, d, u] -> {n, {d, u}} end)
   end
 
   defp status(%{part: :introduction, law: law}, _valid) do
@@ -289,8 +290,11 @@ defmodule Mix.Tasks.Lat.Sources do
       {:ok, _} ->
         # a feed carries no valid date: fresh while recently fetched
         case ClmlStore.get(ChangesFeed.page_path(type, year, number, 1)) do
-          {:ok, _, meta} -> if ClmlStore.fresh?(meta, nil), do: :held, else: :stale
-          _ -> :held
+          {:ok, _, meta} ->
+            if Sources.stale?(meta, nil, nil, DateTime.utc_now()), do: :stale, else: :held
+
+          _ ->
+            :held
         end
 
       _ ->
@@ -313,9 +317,18 @@ defmodule Mix.Tasks.Lat.Sources do
       end
 
     case ClmlStore.get(path) do
-      {:ok, _, meta} -> if ClmlStore.fresh?(meta, Map.get(valid, law)), do: :held, else: :stale
-      {:missing, _} -> :absent
-      :none -> :not_fetched
+      {:ok, _, meta} ->
+        {register_valid, register_updated} = Map.get(valid, law, {nil, nil})
+
+        if Sources.stale?(meta, register_valid, register_updated, DateTime.utc_now()),
+          do: :stale,
+          else: :held
+
+      {:missing, _} ->
+        :absent
+
+      :none ->
+        :not_fetched
     end
   end
 
