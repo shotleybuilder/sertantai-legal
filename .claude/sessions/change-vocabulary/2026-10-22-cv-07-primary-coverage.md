@@ -30,19 +30,21 @@ Placed by Jason 2026-10-22: its own session, after CV-04's merge work (CV-04 sus
 
 ## Todo
 
-- ⬜ Size: domain laws (EHS, HR, customer registers), their distinct amending laws (`amended_by`, one hop), how many are held, and the provisions the feed names; time and store size for the fetch
-- ⬜ Fetch every amending law of a domain law into the CLML store: one hop only, never the amending laws of amending laws (no cascade)
-- ✅ The read pass reads one set of (amending law, provision) pointers: the notes' and the feed's (each effect's affecting provisions), deduplicated (Jason 2026-10-22: "both pointers … we mustn't duplicate"); `9ddeba19`, both sources 12% → 27% on the golden laws
-- ⏸️ The reader's yield over the feed (7,448 golden-law changes read with no rule): not chased — the feed is the coverage baseline (Jason 2026-10-22); the reader is improved on the legislation.gov.uk backlog instead
-- ⬜ The backlog: law-text-only changes (861 on the golden laws) checked; the reader improved there; reconciled when legislation.gov.uk catches up
-- ⬜ Slicing the fetch (Jason to discuss)
-- ⬜ The extent reader reads the other wordings, progressively. 110 of 176 Acts were read as having no clause. Unread forms:
+- ✅ Size (2026-10-22): the LAT laws' amending laws not held: 6,166 (`amended_by`); from their feeds, 3,022 text amenders (440 Acts); slices A, A′, B, C, D by count
+- ✅ The read pass reads one set of (amending law, provision) pointers, the notes' and the feed's, deduplicated (Jason 2026-10-22: "both pointers … we mustn't duplicate"); `9ddeba19`; on the golden laws, changes with both sources went from 12% to 27%
+- ✅ Source use: the balance decided (Jason 2026-10-22). The feed and markup are the baseline. The law's text is read for territory, dates, its own clauses and the backlog. Fetch whole documents, by count.
+- ✅ Slicing the fetch: capped to the OH&S core family (Jason 2026-10-22), 144 laws including D, fetched and read (`0f6a1e83`); family measured
+- ⏸️ The reader's yield over the feed (7,448 golden-law changes read with no rule): not chased; the feed is the coverage baseline (Jason 2026-10-22)
+- ⬜ **1. Territory (ours):** the extent and application clauses of amending SIs ("These Regulations extend to …", "apply in relation to Wales") as the territory of the changes they make; and the Act wordings not read (110 of 176 Acts read as no clause):
   - "does not extend to Northern Ireland";
   - "Parts I and III … extend to …";
   - "The following provisions … extend to … only—";
   - "Part 1 … extends to …, save that—".
-  Scottish and NI Acts rightly have none.
-- ⬜ Measure: coverage and the conflict report over the golden laws, before and after
+  OH&S family text changes: 3% have territory from the law, 67% none.
+- ⬜ **2. Dates:** 555 OH&S family text changes have no date from either source. Why, and the law's date where it states one.
+- ⬜ **3. The backlog:** the OH&S family's law-text-only changes (133; 84 with no legislation.gov.uk record per the report) checked. The reader is improved there, and reconciled when legislation.gov.uk catches up.
+- ⬜ Measure after each: the OH&S family (coverage, the attributes that are ours, conflicts) and golden 27 / 27
+- ⏸️ Fetch beyond the OH&S core family: other families, slice by slice, once the core family's results are judged
 
 ## Dependencies
 
