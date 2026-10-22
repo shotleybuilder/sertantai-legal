@@ -32,7 +32,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
 
     # the law's own text joins first, then the markup's legacy ids; a change
     # carrying an effect id the feed doesn't place there is its own
-    # the law's own commencement is its own change, never joined
+    # the law's own commencement, and its application clauses, are their
+    # own changes, never joined
+    {applied, unkeyed} =
+      Enum.split_with(unkeyed, &(Change.value(&1, :law_text, :operation) == :applied))
+
     {own, unkeyed} =
       Enum.split_with(
         unkeyed,
@@ -52,6 +56,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
     |> List.flatten()
     |> Kernel.++(effect_keyed)
     |> Kernel.++(own)
+    |> Kernel.++(applied)
   end
 
   # One effect id is one event, wherever its sources place it. The markup

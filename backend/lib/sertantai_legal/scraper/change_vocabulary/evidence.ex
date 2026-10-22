@@ -101,7 +101,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
       # an insertion by a devolved legislature's Act: its competence
       {:law, :competence, :insertion}
     ],
-    date: [{:commencement, :date}, {:feed, :date_first}, {:feed, :date}],
+    date: [{:commencement, :date}, {:law_text, :date}, {:feed, :date_first}, {:feed, :date}],
     # a commencement stage that doesn't complete the provision
     partial: [{:commencement, :partial}, {:feed, :partial}],
     # a removal with savings (D3: repealed_saved)

@@ -48,6 +48,8 @@
 # (s.89): changed_by [].
 # And to D3 (label_projection.ex): a repeal carrying savings is :repealed_saved,
 # kept where it was in force — HSWA 1974 s.78 from 2006-10-01 (E+W+S).
+# SI 2012/3038 reg.1A: extent is its CLML extent (E+W+S+NI); NI comes from
+# its own application clause (C6), read by the vocabulary, not the data.
 
 [
   %{
@@ -857,7 +859,7 @@
         valid_to: nil
       }
     ],
-    extent: "NI",
+    extent: "E+W+S+NI",
     undecidable: false
   },
   %{

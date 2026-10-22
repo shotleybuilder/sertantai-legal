@@ -107,4 +107,37 @@ defmodule SertantaiLegal.Scraper.ApplicationClauseTest do
       assert ApplicationClause.resolve([{:apply, ["E"]}, {:apply, ["E"]}], nil) == ["E"]
     end
   end
+
+  describe "C6 (change vocabulary CV-03): dated and provision-level clauses" do
+    test "parse_dated/1: \"From <date> these Regulations apply in X only, in relation to …\" (SI 2012/3038 reg.1A)" do
+      assert ApplicationClause.parse_dated(
+               "From 1st January 2021 these Regulations apply in Northern Ireland only, in relation to any emissions created on or after that date, from a regulated activity at an installation."
+             ) == {{:apply, ["NI"]}, ~D[2021-01-01]}
+
+      assert ApplicationClause.parse_dated("These Regulations apply in relation to Wales.") ==
+               {{:apply, ["W"]}, nil}
+
+      # "except …" after the comma is a territorial qualification: unread
+      assert ApplicationClause.parse_dated(
+               "These Regulations apply in England, except in relation to the Isles of Scilly."
+             ) ==
+               nil
+    end
+
+    test "parse_provision/1: a provision applying in one territory" do
+      assert ApplicationClause.parse_provision(
+               "This regulation applies in relation to England only."
+             ) ==
+               {:apply, ["E"]}
+
+      assert ApplicationClause.parse_provision("(1) This section applies in Wales.") ==
+               {:apply, ["W"]}
+
+      assert ApplicationClause.parse_provision("This regulation applies to every employer.") ==
+               nil
+
+      assert ApplicationClause.parse_provision("These Regulations apply in relation to Wales.") ==
+               nil
+    end
+  end
 end

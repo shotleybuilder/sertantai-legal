@@ -14,6 +14,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
     repeal takes its territory out of the provision's
     (everywhere when it names none); nothing left → repealed, territory
     `"nowhere"` (C2), `changed_by` the repealing laws.
+  - **Application** (C6): the law's own application clause narrows where
+    the provision applies — from its date, or from the start when it has
+    none or sits in the provision itself. Not a version.
   - **Removal in part** ("revoked in part"): never a whole removal; an
     in-force provision is then partly in force (C7).
   - **Text change** (substituted, inserted, renumbered) where it applies:
@@ -118,6 +121,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
         _ -> provision.extent
       end
 
+    # the law's application clauses in force at the start (C6): a clause
+    # with no date, or one in the provision itself, applies from its start
+    {at_start, applied_later} =
+      changes
+      |> Enum.filter(&(&1.resolved.operation == :applied and reaches?(&1, id)))
+      |> Enum.split_with(fn c ->
+        c.resolved.date == nil or Change.value(c, :law_text, :clause) == id or
+          Date.compare(c.resolved.date, start) != :gt
+      end)
+
+    territory = Enum.reduce(at_start, territory, &apply_to(&2, &1.resolved.territory))
+
     status =
       cond do
         prospective? -> :prospective
@@ -139,7 +154,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
         )
     }
 
-    reaching
+    (Enum.reject(reaching, &(&1.resolved.operation == :applied)) ++ applied_later)
     |> Enum.filter(later?)
     |> Enum.group_by(& &1.resolved.date)
     |> Enum.sort_by(&elem(&1, 0), Date)
@@ -170,7 +185,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
     # a whole-provision repeal removes it (where it applies); words repealed
     # change its text — a version, as any other text change
     {removals, word_repeals} = Enum.split_with(of.(:repealed), &(&1.resolved.level == :provision))
-    territory = after_repeals(current.territory, removals)
+
+    # an application clause taking effect narrows where it applies (C6)
+    territory =
+      current.territory
+      |> after_repeals(removals)
+      |> then(fn t -> Enum.reduce(of.(:applied), t, &apply_to(&2, &1.resolved.territory)) end)
 
     versions =
       Enum.filter(
@@ -262,6 +282,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
       do: %{period | territory: intersect(period.territory, version)},
       else: period
   end
+
+  defp apply_to(:gone, _t), do: :gone
+  defp apply_to(territory, nil), do: territory
+  defp apply_to(nil, t), do: t
+  defp apply_to(territory, t), do: intersect(territory, t)
 
   defp intersect(a, b), do: Territory.subtract(a, Territory.subtract(a, b) || "") || a
 

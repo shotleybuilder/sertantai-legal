@@ -24,6 +24,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
     OwnCommencement
   }
 
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.Application, as: ApplicationReader
+
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
   alias SertantaiLegal.Scraper.{LawTerritory, Territory}
 
@@ -67,7 +69,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
          Keyword.get(opts, :commencement, %{}),
          Keyword.get(opts, :extents, %{})
        ) ++
-         Markup.read(xml, law_name) ++ amending ++ own)
+         Markup.read(xml, law_name) ++ amending ++ own ++ ApplicationReader.read(xml, law_name))
       |> Merge.merge()
       |> Enum.map(
         &Evidence.resolve(&1, extent(provisions, &1.target), Map.get(facts, &1.target, %{}))

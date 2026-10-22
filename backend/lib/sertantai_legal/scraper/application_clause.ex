@@ -100,6 +100,75 @@ defmodule SertantaiLegal.Scraper.ApplicationClause do
   end
 
   @doc """
+  A whole-instrument clause with the date it takes effect (change vocabulary
+  C6): "From 1st January 2021 these Regulations apply in Northern Ireland
+  only, in relation to any emissions …" → `{{:apply, ["NI"]}, ~D[2021-01-01]}`.
+  A leading "From <date>" is the date (nil when none). A remainder after
+  the territory that limits subject matter only ("…, in relation to any
+  emissions …") is read past; "except" or "save" there is a territorial
+  qualification, unread. Nil when no clause. `parse/1` (live status) is
+  unchanged.
+  """
+  @spec parse_dated(String.t() | nil) :: {clause(), Date.t() | nil} | nil
+  def parse_dated(nil), do: nil
+
+  def parse_dated(text) do
+    {date, rest} =
+      case Regex.run(
+             ~r/^\s*From\s+(\d{1,2})(?:st|nd|rd|th)?\s+([A-Z][a-z]+)\s+(\d{4}),?\s+(.*)$/su,
+             text
+           ) do
+        [_, d, m, y, rest] -> {date(d, m, y), rest}
+        nil -> {nil, text}
+      end
+
+    clause =
+      parse(rest) ||
+        case Regex.run(~r/^(.*?\bappl(?:y|ies)\b[^,]*?),\s*(in relation to\b.*)$/su, rest) do
+          [_, head, tail] ->
+            if tail =~ ~r/\b(?:except|save)\b/i, do: nil, else: parse(head <> ".")
+
+          nil ->
+            nil
+        end
+
+    if clause, do: {clause, date}
+  end
+
+  @months ~w(january february march april may june july august september october november december)
+
+  defp date(d, m, y) do
+    case Enum.find_index(@months, &(&1 == String.downcase(m))) do
+      nil -> nil
+      i -> Date.new!(String.to_integer(y), i + 1, String.to_integer(d))
+    end
+  end
+
+  @doc """
+  A clause confining one provision to a territory (change vocabulary C6):
+  "This regulation applies in relation to England only" → `{:apply, ["E"]}`.
+  Only a provision's own subject ("This regulation / section / article /
+  rule"); nil otherwise.
+  """
+  @spec parse_provision(String.t() | nil) :: clause() | nil
+  def parse_provision(nil), do: nil
+
+  def parse_provision(text) do
+    case Regex.run(
+           ~r/^\s*(?:\(\w+\)\s*)?This\s+(?:regulation|section|article|rule)\s+(?:shall\s+)?(?:only\s+)?appl(?:y|ies)\s+(?:only\s+)?(?:in\s+relation\s+to|in|to|as\s+respects)\s+(England and Wales|Great Britain|England|Wales|Scotland|Northern Ireland)(?:\s+only)?\s*[.;]/iu,
+           text
+         ) do
+      [_, place] -> {:apply, place |> String.upcase() |> place_regions()}
+      nil -> nil
+    end
+  end
+
+  defp place_regions("ENGLAND AND WALES"), do: ~w(E W)
+
+  defp place_regions(place),
+    do: Enum.find_value(@nations, fn {n, codes} -> if n == place, do: codes end)
+
+  @doc """
   A law's application regions from its clauses: agreeing application clauses
   give their regions; an exclusion is taken from the extent regions; none, or
   disagreeing clauses, give nil.
