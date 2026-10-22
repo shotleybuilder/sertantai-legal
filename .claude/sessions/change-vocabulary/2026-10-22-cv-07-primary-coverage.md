@@ -41,3 +41,21 @@ Placed by Jason 2026-10-22: its own session, after CV-04's merge work (CV-04 sus
 ## Notes
 
 - **Amending amending text** (Jason 2026-10-22): a correction usually amends the original law directly, as a new effect on it. Exception: 2019–20 EU Exit SIs amended by later EU Exit SIs before they came into force; legislation.gov.uk generally records the corrected effect on the original law. One hop stands; the exception is a known edge, not a reason to cascade.
+
+## Sizing (2026-10-22)
+
+**Domain.** `uk_lrt.domain` (environment, health_safety, human_resources, governance); 1,066 laws hold LAT, which are the laws we label.
+
+| scope | amending laws (`amended_by`, one hop) | held in the CLML store | not held |
+|---|---|---|---|
+| the 1,066 LAT laws | 8,118 | 1,952 (67 MB gz) | 6,166: uksi 4,138, ssi 704, wsi 460, ukpga 330, nisr 180, eur 106, asp 92 |
+| domain laws in force or part-revoked | 16,535 | 2,047 | 14,488 |
+
+**Two parts:**
+1. **Held but not read (no fetching).** The 2,290 golden "provision not read" changes sit in 70 laws, all held. The read pass must take the feed's pointers (each effect's affecting provisions) beside the notes', deduplicated. This runs offline.
+2. **Not held (fetching).** At the client's rate limit (2 s per request) and two documents per law (body and schedules), about 5 s per law:
+   - LAT laws' amending laws: 6,166 laws, about 8½ hours;
+   - all domain laws: 14,488 laws, about 20 hours.
+   A resumable background run writes each document as it arrives (`ClmlStore`, `:prefer`), at an estimated 200 MB gz for the LAT scope. It sends requests to legislation.gov.uk, so it needs Jason's go-ahead.
+
+**Note:** each newly read amending law brings its own commencement (its clause, and the orders its feed names). Reading those orders is the commencement read pass, not a further amendment hop.
