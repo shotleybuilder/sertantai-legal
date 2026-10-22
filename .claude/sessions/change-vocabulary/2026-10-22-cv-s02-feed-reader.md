@@ -101,3 +101,17 @@ Still to do: the 50-effect sample checked by a Claude agent (criteria 2 and 3), 
 **Deep effects refined** (`40aa55b1`; Jason: "Make the change. I Agree the logic"). Only text changes move to the row above a deep provision: inserted, substituted, repealed (whole or in part), renumbered, in any territory. The row's words change, its status doesn't. A commencement of a deep item stays on it, where "commenced through its parts" makes the row above partly in force until it is. A modification or application changes no label and stays.
 
 **Non-breaking space accommodated** (`e6cd3863`; Jason: "Can we make the reader more accommodating?"). The parse names 639 rows in 15 laws with U+00A0 (#182), and the spelling isn't stable even within a law: UK_eur_2016_2031 has 736 articles with an ordinary space and 42 with a non-breaking one. The feed reader matched them through `source_xml_id`, but markup, the law's text, application and expiry name them from the CLML with an ordinary space. On those rows the feed's change and the others' could not join. `Ref.canonical/1` (any Unicode space → " ") now applies to every LAT name the vocabulary reads: provisions, `:rows`, `:xml_ids`, stored `:changes`, and the feed check's held rows. Canonical, not the row's spelling: stored changes don't move when the parse is fixed. Anything joining stored changes back to `legal_articles` compares canonical names until #182 is re-parsed. #182 stays open (raise, don't fix).
+
+## Check results (2026-10-22, after `e6cd3863`)
+
+- **Repeatability: PASS.** Two runs of the feed check give the same counts, and the two 50-effect samples (seed {2026,10,22}) are byte-identical.
+- **Golden from inputs: PASS.** 27/27 (4½ min).
+- **Placement: PASS.** 6,568 effects in 149 laws; reader faults 0.
+- **Agent sample (50 effects): FAIL.** Placement 46/50; facts 43/50, 1 doubtful. Claims A, B, D and E checked by me against the CLML, the DB and `EffectKind`.
+  - **A. Definitions without ids are called "not in text" (#1, #5, #40).** CLP Art. 2's definitions are `ListItem`s with no `id`, so `article-2-38` and the like are missing from the CLML id set, though the effect's key is in the text. They should be placed on the row above (Art. 2) as words changes; today they are dropped. Ranges over such items keep only their ends; that is moot once A is fixed.
+  - **B. A shared `source_xml_id` picks a row at random (#13).** In the parse, `article-38-1` names 38(A1), 38(1) and 38(3); 119 ids corpus-wide name more than one row. The feed's own text ("Art. 38(1)") should break the tie. The duplicate ids are the parse's tell-tale: raise, don't fix.
+  - **C. Staged changes other than insertions keep only the first date, with no `partial` (#12, #23).** "For specified purposes" and then "in so far as not already in force": a repeal reads as fully effective from the purposes-only date. `Feed.changes/1` splits stages only for commencements and whole insertions.
+  - **D. "words deleted" has no operation (#22).** Not in the `EffectKind` verbs.
+  - **E. EU types "replacement" and "addition" have no operation (#2, #11, #30).** They should be substituted and inserted; "deletion" probably too.
+  - **F (doubtful). "sum substituted" is read as provision level (#48).** `Feed.level/1` knows only words and heading.
+  - **Latent:** a schedule paragraph's commencement also targets the whole schedule (feed parent and child refs). Hidden today by `schedule_not_parsed`.
