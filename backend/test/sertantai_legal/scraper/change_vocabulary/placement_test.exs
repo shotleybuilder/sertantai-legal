@@ -70,11 +70,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.PlacementTest do
              :placed_ancestor
   end
 
-  test "no id of its own, the change marked in the text: on the row above (CLP Art. 2's definitions)" do
+  test "the feed's ref not in the text, the change marked there: placed by the markup (CLP Art. 2's definitions)" do
     held = Map.put(@held, :marked, MapSet.new(["key-2"]))
     e = %{affected_provisions: "reg. 3(9)", affected_refs: ["regulation-3-9"], effect_id: "key-2"}
 
-    assert Placement.classify(e, ["reg.3(9)"], held) == :placed_ancestor
+    assert Placement.classify(e, ["reg.3(9)"], held) == :placed_by_markup
 
     assert Placement.classify(%{e | effect_id: "key-3"}, ["reg.3(9)"], held) ==
              {:unplaced, :not_in_text}
@@ -156,25 +156,24 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.PlacementTest do
       end
     end
 
-    test "no id of its own, the event marked in the text: moved, or dropped where the markup put it" do
+    test "not in the text, the event marked there: the markup's change carries it; the feed's record goes" do
+      # the feed's "s. 3(5)(ia)" is s.3(5)(c)(ia) in the text (EPA 1989)
       deep = resolved("reg.13(2)(b)(i)(zz)", :substituted, :words)
 
-      marked = fn target ->
+      marked =
         %Change{
           key: "k",
-          target: target,
+          target: "reg.13(2)(b)(i)",
           claims: [%Claim{source: :markup, attribute: :operation, value: :substituted, ref: "k"}]
         }
         |> Evidence.resolve(nil)
-      end
-
-      moved = Placement.retarget([deep, marked.("reg.13")], @rows, @text)
-      assert Enum.map(moved, & &1.target) == ["reg.13(2)(b)(i)", "reg.13"]
 
       assert [%Change{target: "reg.13(2)(b)(i)"} = kept] =
-               Placement.retarget([deep, marked.("reg.13(2)(b)(i)")], @rows, @text)
+               Placement.retarget([deep, marked], @rows, @text)
 
       assert Change.values(kept, :markup, :operation) == [:substituted]
+      # unmarked, it stays where the feed put it
+      assert [%Change{target: "reg.13(2)(b)(i)(zz)"}] = Placement.retarget([deep], @rows, @text)
     end
 
     test "held, held as versions, gone from the text, or nothing held above: left alone" do

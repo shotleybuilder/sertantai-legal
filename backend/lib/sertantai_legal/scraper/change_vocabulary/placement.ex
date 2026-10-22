@@ -11,9 +11,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
     (C3: `s.23` → `s.23[E+W]`, `s.23[S]`);
   - `:whole_law` — on the whole instrument;
   - `:placed_ancestor` — deeper than our rows: on the nearest held row,
-    whose words it changes (`retarget/3` moves it there); also a provision
-    with no id of its own (a definition in a list) whose change the text
-    marks (`marked`: the effect ids in the CLML);
+    whose words it changes (`retarget/3` moves it there);
+  - `:placed_by_markup` — the feed's ref isn't in the text, but the text
+    marks the change (`marked`: the effect ids in the CLML): a provision
+    with no id of its own (a definition in a list), or a ref the feed
+    states loosely; the markup places it;
   - `{:unplaced, reason}`:
     - `:schedule_not_parsed` — in a schedule (or an EU annex, the same
       role); schedules are not parsed into LAT (a known limit for v0.1,
@@ -87,11 +89,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
       Enum.any?(targets, &MapSet.member?(held.clml, &1)) ->
         {:unplaced, :row_missing}
 
-      # a provision with no id of its own (CLP Art. 2's definitions are
-      # ListItems), the change marked in the text: on the row above
-      MapSet.member?(Map.get(held, :marked, MapSet.new()), Map.get(effect, :effect_id)) and
-          Enum.any?(targets, &(held_ancestor(&1, held.rows) != nil)) ->
-        :placed_ancestor
+      # the feed's ref isn't in the text, but the text marks the change
+      # (CLP Art. 2's definitions are ListItems with no id; the feed's
+      # "s. 3(5)(ia)" is s.3(5)(c)(ia), EPA 1989): where the markup puts it
+      MapSet.member?(Map.get(held, :marked, MapSet.new()), Map.get(effect, :effect_id)) ->
+        :placed_by_markup
 
       true ->
         {:unplaced, :not_in_text}
@@ -122,7 +124,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
     |> Enum.flat_map(fn %Change{target: t} = c ->
       with true <- c.resolved != nil and c.resolved.operation in @text_changes,
            false <- MapSet.member?(bases, t),
-           true <- MapSet.member?(text, t) or MapSet.member?(marked, c.key),
+           true <- in_text?(c, t, text, marked),
            a when a != nil <- held_ancestor(t, rows) do
         # the event already on that row (the markup's): it stands for it
         if MapSet.member?(placed, {c.key, a}),
@@ -136,10 +138,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
             }
           ]
       else
+        # not in the text, the event marked there: the markup's change
+        # carries it where the text puts it
+        :marked -> []
         _ -> [c]
       end
     end)
     |> Enum.uniq_by(&{&1.key, &1.target})
+  end
+
+  defp in_text?(c, t, text, marked) do
+    cond do
+      MapSet.member?(text, t) -> true
+      MapSet.member?(marked, c.key) and not marked?(c) -> :marked
+      true -> false
+    end
   end
 
   defp marked?(c),

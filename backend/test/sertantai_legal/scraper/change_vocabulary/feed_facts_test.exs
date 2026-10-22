@@ -92,16 +92,29 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedFactsTest do
            ]
   end
 
-  test "words substituted in stages: from the first stage, partly; the later stage commences it" do
+  test "words substituted in stages: from the first stage, partly, complete at the full one — no commencement" do
     e =
       effect("words substituted", [
         %{date: ~D[2006-04-06], qualification: "for specified purposes", prospective: false},
         %{date: ~D[2008-04-06], qualification: "wholly in force", prospective: false}
       ])
 
+    assert [{"key-1", :substituted, :words, ~D[2006-04-06], true}] = read(e)
+
+    [{_, _, claims}] = Feed.read([e], "UK_ukpga_1974_37")
+    assert Enum.find(claims, &(&1.attribute == :date_full)).value == ~D[2008-04-06]
+  end
+
+  test "a whole insertion in stages: each later stage commences it (TCPA 1990 s.78(4BA))" do
+    e =
+      effect("inserted", [
+        %{date: ~D[2015-09-06], qualification: "for specified purposes", prospective: false},
+        %{date: ~D[2017-03-01], qualification: "wholly in force", prospective: false}
+      ])
+
     assert Enum.sort(read(e)) == [
-             {"key-1", :substituted, :words, ~D[2006-04-06], true},
-             {"key-1@2008-04-06", :commenced, :provision, ~D[2008-04-06], false}
+             {"key-1", :inserted, :provision, ~D[2015-09-06], true},
+             {"key-1@2017-03-01", :commenced, :provision, ~D[2017-03-01], false}
            ]
   end
 

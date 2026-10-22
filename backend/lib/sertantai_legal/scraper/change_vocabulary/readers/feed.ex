@@ -189,20 +189,39 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
         {:repealed, [_, _ | _] = stages} ->
           if level(EffectFacts.type(e.type)) == :provision,
             do: staged_removal(e, stages),
-            else: staged(e, stages)
+            else: text_staged(e, stages)
 
-        # a text change in stages (inserted for specified purposes, then
-        # fully: TCPA 1990 s.78(4BA); words substituted the same way): it
-        # takes effect from the first stage, partly; each later stage
-        # commences it further
+        # a whole insertion in stages (for specified purposes, then fully:
+        # TCPA 1990 s.78(4BA)): the provision exists from the first stage,
+        # partly in force; each later stage commences it further
+        {:inserted, [_, _ | _] = stages} when e.type in ["inserted", "added", "addition"] ->
+          staged(e, stages)
+
+        # any other text change in stages (words substituted for specified
+        # purposes, then fully: SI 1998/2306 reg.12(5)(d)) changes a
+        # provision already in force: from the first stage, partly, complete
+        # at the full one — a fact, never a commencement of the provision
+        # (TCPA 1990 s.284(3)(a); EUWA 2018 s.6)
         {op, [_, _ | _] = stages}
         when op in [:inserted, :substituted, :repealed_in_part, :renumbered] ->
-          staged(e, stages)
+          text_staged(e, stages)
 
         _ ->
           [{id, claims(e)}]
       end
     end
+  end
+
+  defp text_staged(%Effect{effect_id: id} = e, [{first, q} | _] = stages) do
+    full = Enum.find_value(stages, fn {d, q} -> if String.match?(q || "", @full), do: d end)
+
+    [
+      {id,
+       claims(e) ++
+         Claim.new(:feed, :date_first, first, id) ++
+         Claim.new(:feed, :partial, not String.match?(q || "", @full), id) ++
+         Claim.new(:feed, :date_full, full, id)}
+    ]
   end
 
   defp staged(%Effect{effect_id: id} = e, [{first, q} | later]) do
