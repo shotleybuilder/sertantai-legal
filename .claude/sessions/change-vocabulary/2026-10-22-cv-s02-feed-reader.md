@@ -21,6 +21,7 @@ The session does not close until its results pass.
 - ⬜ Unplaced effects counted and reported with a reason (today they are dropped as target "?")
 - ⬜ Grouped provisions in an effect ("s. 78(4BA)(4BB)", "s. 1(4)(b) and word") reach no row (open bug, CV-03)
 - ⬜ NI Order kind words: "art. 10" in the feed is the row reg.10 (CV-04 Provision facts)
+- ⬜ EU annex refs converted (`annex-XVII` → a provision we can hold or name): 824 effects, 14 laws
 - ⬜ Fix until the check passes reliably; record the result
 
 ## Dependencies
@@ -44,3 +45,21 @@ The session does not close until its results pass.
 3. **Facts carried faithfully** on the same 50: operation, in-force date, affecting law, extent, savings, as the effect states them.
 4. **Tested:** the counting and the reasons defined in words, with unit tests.
 5. **Repeatable:** two runs give the same report.
+
+
+## Survey of placement today (2026-10-22, read-only)
+
+OH&S core family, 6,568 effects. `Feed.read` places each effect on its structured refs; one with none usable becomes `"?"`. The reader never checks a target against the rows we hold.
+
+| outcome | effects | laws |
+|---|---|---|
+| placed on a row we hold | 3,443 | 98 |
+| placed on its territorial versions (C3: `s.23[E+W]`) | 261 | 2 |
+| target in a schedule; our LAT holds no schedules | 1,704 | 69 |
+| refs not converted (EU annexes: `annex-XVII`) | 824 | 14 |
+| not in the current CLML (gone, or a grouped ref split wrongly: "reg. 13(2)(a)(vi)(vii)") | 201 | 25 |
+| no ref ("C/O", "specified amended provision(s)", "Directive") | 75 | 21 |
+| whole law | 53 | 22 |
+| in the CLML, not in our LAT | 7 | 3 |
+
+**Decision (Jason 2026-10-22): schedules absent from LAT are a known limit for v0.1.** "We started by not parsing schedules into LAT. Some are huge reference tables. Then two schedule roles we need them for: amending and duties. I don't think selective schedule parsing is done." An effect on a schedule we don't parse is unplaced with that reason, a known limit, not a reader fault.
