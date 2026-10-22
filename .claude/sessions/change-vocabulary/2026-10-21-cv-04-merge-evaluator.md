@@ -1,22 +1,57 @@
 ---
 session: 'CV-04: Merge and Evaluator'
-status: suspended
+status: closed
 release: v0.1
 opened: '2026-10-21'
+closed: '2026-10-22'
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
+outcome: partial
+
+summary: >
+  Built the expiry and continuation reader (golden 27 / 27), the change store (provision_changes, claims,
+  extent_rules; tiers and conflicts derived on read), the conflict report, and reworked the merge
+  (unjoined 1,104 → 184 on the golden laws). Closed partial with CV-07 (Jason 2026-10-22): its open items
+  move to the workflow step sessions, each closing only when its results pass.
+
+decisions:
+  - what: Store claims and sources; derive tiers and conflicts on read
+    why: tiers follow from sources and conflicts from claims; storing them duplicates and freezes the rule (Gemini review, then Jason's "dig into tiers and conflicts")
+    result: 46d2b13a
+  - what: commenced_by apart from by; label tier per field
+    why: the maker and the commencing order are two facts; a tier from any attribute read almost everything as derived
+    result: 46d2b13a
+  - what: One record from each source per event in the merge; legacy markup joins first; the note's amending provision a pointer for identity
+    why: joins snowballed (RTA 1988 s.89); Jason — "decision - yes" to note pointers for identity
+    result: unjoined 1,104 → 184
+  - what: Leave the merge as it is and analyse with more examples
+    why: Jason — "we leave the merge/join as it currently is and analyse the data when we have more examples"
+    result: suspended 2026-10-22, closed 2026-10-22
+
+metrics:
+  golden: {provisions: 27, passing: 27}
+  merge_golden_laws: {unjoined_before: 1104, unjoined_after: 184}
+
+lessons:
+  - title: A merge that joins into an already-joined change snowballs
+    detail: Each join made the next record look like the same event; one change on RTA 1988 s.89 took 12 markup records and 18 instructions. One record from each source per event stopped it.
+    tag: data
+  - title: A foreign key cascade with no index makes every rebuild scan the child table
+    detail: provision_change_claims had no index on change_id; rebuilds ran about 5× slower than into empty tables.
+    tag: schema
+
 bugs:
   - pattern: "Merge leaves a primary change and its legislation.gov.uk twin apart (TCPA 1990: 335 of 548 primary-only text changes have a derived-only change by the same law on the same or parent/child provision); both fold into the label, no conflict seen"
     category: merge identity
     module: ChangeVocabulary.Merge
-    affected: 335
-    fix: ":unjoined" report as the worklist; join rules for undated primary and words-vs-provision levels
+    affected: 184
+    fix: "1,104 → 184 on the golden laws; the rest in CV-S07"
     status: open
   - pattern: "Extent reader reads only 'this Act extends to X'; 110 of 176 Acts changing golden laws read as no clause (does not extend to NI; Parts … extend to; The following provisions extend to …)"
     category: reader coverage
     module: AmendingLaw.Extent
     affected: 110
-    fix: "read the other wordings; Scottish and NI Acts rightly none"
-    status: open
+    fix: "SI forms, does/do/shall not extend, except-lists, Part lists, enabling powers, competence (CV-07); residue in CV-S05"
+    status: fixed
   - pattern: "by overloaded: maker (feed) vs commencing order (commencement) compared as a conflict"
     category: vocabulary
     module: ChangeVocabulary.Readers.Feed / Evidence
@@ -27,11 +62,34 @@ bugs:
     category: label tier
     module: ChangeVocabulary.Label.tiers/3
     affected: 2416
-    fix: "per-field tier from the attributes that set the field (done); golden expected tiers (open item)"
+    fix: "per-field tier from the attributes that set the field (done); golden expected tiers (CV-S09)"
     status: fixed
+  - pattern: "provision_change_claims had no index on change_id: a rebuild's cascading delete scanned every claim"
+    category: schema
+    module: Legal.ProvisionChangeClaim
+    affected: 1
+    fix: "index (migration 20261022074039)"
+    status: fixed
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/readers/expiry.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/store.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/conflicts.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/merge.ex
+  - backend/lib/sertantai_legal/legal/provision_change.ex
+  - backend/lib/sertantai_legal/legal/provision_change_claim.ex
+  - backend/lib/sertantai_legal/legal/extent_rule.ex
+  - backend/priv/repo/migrations/20261022055656_change_vocabulary_store.exs
+
+depends_on:
+  - 2026-10-21-cv-03-readers
+
+enables:
+  - 2026-10-22-cv-07-primary-coverage
+  - CV-S01 … CV-S11
 ---
 
-# Session: CV-04: Merge and Evaluator (SUSPENDED)
+# Session: CV-04: Merge and Evaluator (CLOSED)
 
 ## Problem
 
@@ -42,17 +100,17 @@ Part of the change-vocabulary architecture shift (CV-00): changes merged by iden
 ## Todo
 
 - ✅ Expiry and continuation reader (primary; deferred from CV-03, Jason 2026-10-22; built 2026-10-22, golden 27 / 27): a law's own sunset clause and the orders continuing it, read as removals with their dates and territories — the last golden case (Coronavirus Act 2020 s.78) → 27 / 27
-- ⬜ `Provision` facts complete: versions (done in CV-03: DocumentURI, shared history), `exists_from/to`, renumbering (C4: a renamed provision keeps its history; a target named by an old number resolves to the current one), kind words for NI Orders ("art. 10" in the feed = row reg.10)
-- ⬜ Merge complete: the secondary key gains the source position (two same-day, same-type changes by one provision to one target don't collide); conflicts across changes (two sources placing one event on different provisions) reported
+- ⏸️ (deferred → CV-S02 NI kind words, CV-S06 renumbering, CV-S07 exists_from/to) `Provision` facts complete: versions (done in CV-03: DocumentURI, shared history), `exists_from/to`, renumbering (C4: a renamed provision keeps its history; a target named by an old number resolves to the current one), kind words for NI Orders ("art. 10" in the feed = row reg.10)
+- ⏸️ (deferred → CV-S07) Merge complete: the secondary key gains the source position (two same-day, same-type changes by one provision to one target don't collide); conflicts across changes (two sources placing one event on different provisions) reported
 - ✅ Ranges expanded once, in document order, over provisions existing at the change's date (done in CV-03: `ChangeVocabulary.existing/1`, ranges at their own depth); V1-05 folded in (its fix reaches production at the CV-06 switch-over)
-- ⬜ Evidence table complete: every attribute listed; the conflict report as an output (primary vs derived, per change), sized over the golden laws
-- ⬜ Measure the CV-01 register bugs (records on the wrong provision) against the merged changes, over the golden laws
+- ⏸️ (deferred → CV-S08) Evidence table complete: every attribute listed; the conflict report as an output (primary vs derived, per change), sized over the golden laws
+- ⏸️ (deferred → CV-S07) Measure the CV-01 register bugs (records on the wrong provision) against the merged changes, over the golden laws
 - ✅ Storage (2026-10-22, `46d2b13a`): `provision_changes` and `provision_change_claims` (tiers and conflicts derived on read), `extent_rules` (a third ruleset), `changes_built` events with input fingerprints; golden 27 / 27 from inputs (3 min 13 s) and from the store (51 s)
 - ✅ Conflict report (`ChangeVocabulary.Conflicts`; `mix lat.vocabulary --conflicts`): value, unjoined, uncovered, unread; `commenced_by` apart from `by`; label tier per field
 - ✅ Merge the unjoined pairs: 1,104 → 184 (`75d11be6`, `22e8c56b`, `63204804`); the rest are left as is until there are more examples (Jason 2026-10-22)
 - ⏸️ Golden expected tiers per period, judged; the start's tier from its source (deferred — Jason 2026-10-22: "later", once primary coverage is wider)
 - ⏸️ Primary coverage: moved to CV-07 (Jason 2026-10-22: its own session, after the merge work here)
-- ⬜ Golden set: 27 / 27 at the merge level; a Gemini review of the merge and evaluator
+- ⏸️ (deferred → CV-S07, CV-S08) Golden set: 27 / 27 at the merge level; a Gemini review of the merge and evaluator
 
 ## Dependencies
 

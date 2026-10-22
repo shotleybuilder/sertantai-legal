@@ -21,6 +21,8 @@ Part of the change-vocabulary architecture shift (CV-00): the parse's territory 
 
 ## Dependencies
 
+- ⬜ CV-S01–S11 passed (the workflow steps, 2026-10-22)
+
 - ⬜ the previous CV session closed (each widens the slice)
 
 - ✅ CV-01 signed off by Jason (2026-10-21: "start small, prove, iterate and grow")

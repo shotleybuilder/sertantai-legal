@@ -1,19 +1,103 @@
 ---
 session: 'CV-07: Primary Coverage'
-status: active
+status: closed
+release: v0.1
+opened: '2026-10-22'
+closed: '2026-10-22'
+parent: change-vocabulary/2026-10-21-cv-00-meta.md
+outcome: partial
+
+summary: >
+  Widened where the law's own text backs label facts, tested on the OH&S core family: the read pass takes
+  the feed's and the notes' pointers, 144 amending laws fetched and read, amending laws' extent and
+  application read (263 of 356 family amenders), undated changes dated from the amending law (555 → 342).
+  Closed partial (Jason 2026-10-22: "we're really in a muddle … nothing is actually production ready"):
+  no step was checked against its own sample, and the coverage metric was wrong; the work is carried into
+  one session per workflow step (CV-S01–S11), each closing only when its results pass.
+
+decisions:
+  - what: Source use balanced — the feed and markup are the coverage baseline; the law's text is read for territory, commencement dates, the law's own clauses and the legislation.gov.uk backlog
+    why: "leg.gov.uk are doing the hard work of getting the changes from the law"; where both state an attribute they agree 96–100%; widening the reader to the feed's coverage would take a long time
+    result: the amendment reader's yield over the feed not chased; territory and dates built
+  - what: Notes and feed are both pointers, read as one deduplicated set; notes may fill gaps (identity, dates) but never stand as facts
+    why: Jason — "both pointers … we mustn't duplicate"; "Use Notes as pointers when we have a gap. We can always get a date from the actual amending law"
+    result: read pass and NoteDate built
+  - what: Fetch whole documents, capped to the OH&S core family
+    why: "the count is the constraint not size"; "landing a core family will be a good test"
+    result: 144 + 25 parent Acts + 24 revoked SIs' made introductions
+  - what: Ask before any rebuild, re-parse, fetch or long run
+    why: Jason — "Feels like we're bouncing all over and I'm getting lost"
+    result: memory feedback_ask_before_long_runs
+  - what: One session per workflow step, closed only when its results pass
+    why: Jason — "restate the aim of each step … know what good looks like. Build the step until it is reliably good. Then move on"
+    result: CV-S01–S11 created; this session and CV-04 closed partial
+
+metrics:
+  oh_s_family: {lat_laws: 149, amending_laws: 359, fetched: 144, parents_fetched: 25, amenders_with_extent_from_own_text: 263, text_changes: 4619, both_sources: 611, law_text_only: 133, lgu_only: 3875, undated_text_changes: 342, undated_status_relevant: 90}
+  golden: {provisions: 27, passing: 27, text_changes: 15020, both_sources: 3242}
+  read_pass: {amending_laws_read: 1938, amendment_rules: 36902}
+
+lessons:
+  - title: A step tuned only against an end-to-end test can't tell a real gain from a broken measure
+    detail: Readers, merge and evidence were tuned against golden's 27 cases and counts; no step had its own checked sample, so a wrong coverage metric went unnoticed through several rounds.
+    tag: data
+  - title: Classify "who states a change" by the claims of the change itself, not every claim on it
+    detail: Gap-fill claims from the law (an amending law's extent since CV-03, dates via pointers) made legislation.gov.uk-only records count as law-backed; coverage and conflict counts were overstated (golden both-sources 27% → 22%, family 16% → 13%).
+    tag: data
+  - title: Don't measure while still changing the code, and never run two rebuilds of the same laws at once
+    detail: Stale and overlapping rebuilds wrote mixed results twice; a --check was committed without being run and crashed.
+    tag: tooling
+  - title: Scope grows one fix at a time unless each step has a finish line
+    detail: "Read the feed's pointers" became fetching, four territory rounds, dates, a merge rework, speed and a refetch — each found while measuring the last.
+    tag: tooling
+
 bugs:
   - pattern: "Amendment reader reads an amending provision but yields no rule for the amended law (7,448 golden-law changes; 3,531 where the amending law has no rule for that law at all: EU law amended by SIs, Senedd Acts on TCPA, laws amending themselves)"
     category: reader yield
     module: Amendment.Reader / Amendment.Collect
     affected: 7448
-    fix: "classify by cause (law not named / target unread / EU art. grammar / self-amendment); fix per form"
+    fix: "not chased (feed is the coverage baseline); revisit in CV-S06 only where the backlog needs it"
     status: open
-release: v0.1
-opened: '2026-10-22'
-parent: change-vocabulary/2026-10-21-cv-00-meta.md
+  - pattern: "Coverage and conflict report counted every claim's source, so law-text gap-fills made legislation.gov.uk-only records look law-backed"
+    category: measures
+    module: ChangeVocabulary.Conflicts
+    affected: 3365
+    fix: "stated-by from :operation claims (41f9afe0); define and test in CV-S10"
+    status: fixed
+  - pattern: "Competence-only extent of a Welsh SI confined its insertion into a GB Act (Forestry Act 1967 s.1(1A)), against V1-04"
+    category: territory
+    module: AmendingLaw.Extent / Readers.Feed
+    affected: 1
+    fix: "competence_only?/1: no bound on insertions (7de25e45)"
+    status: fixed
+  - pattern: "Revoked SIs' made introduction falls back to the repealed text, so no enabling provisions"
+    category: fetch
+    module: EnactedBy.EnablingCache
+    affected: 24
+    fix: "/introduction/made/ when the placeholder comes back (83e15ae7); 23 of 24 parse"
+    status: fixed
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/amending_law/extent.ex
+  - backend/lib/sertantai_legal/scraper/amending_law/extent/store.ex
+  - backend/lib/sertantai_legal/scraper/amending_law/pointer.ex
+  - backend/lib/sertantai_legal/scraper/enacted_by/enabling_provisions.ex
+  - backend/lib/sertantai_legal/scraper/enacted_by/enabling_cache.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/readers/note_date.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/conflicts.ex
+  - backend/lib/mix/tasks/lat.amending.ex
+  - backend/lib/mix/tasks/lat.vocabulary.ex
+  - backend/lib/mix/tasks/clml.fetch.ex
+  - backend/lib/mix/tasks/lat.commencement.ex
+
+depends_on:
+  - 2026-10-21-cv-04-merge-evaluator
+
+enables:
+  - CV-S01 … CV-S11 (one session per workflow step)
 ---
 
-# Session: CV-07: Primary Coverage (ACTIVE)
+# Session: CV-07: Primary Coverage (CLOSED)
 
 ## Problem
 
@@ -42,8 +126,8 @@ Placed by Jason 2026-10-22: its own session, after CV-04's merge work (CV-04 sus
   - "Part 1 … extends to …, save that—".
   OH&S family text changes: 3% have territory from the law, 67% none.
 - ✅ **2. Dates** (`a50a00fc`): 555 → 342 undated; status-relevant 150 → 90
-- ⬜ **3. The backlog:** the OH&S family's law-text-only changes (133; 84 with no legislation.gov.uk record per the report) checked. The reader is improved there, and reconciled when legislation.gov.uk catches up.
-- ⬜ Measure after each: the OH&S family (coverage, the attributes that are ours, conflicts) and golden 27 / 27
+- ⏸️ (deferred → CV-S06) **3. The backlog:** the OH&S family's law-text-only changes (133; 84 with no legislation.gov.uk record per the report) checked. The reader is improved there, and reconciled when legislation.gov.uk catches up.
+- ⏸️ (deferred → each step session's acceptance check) Measure after each: the OH&S family (coverage, the attributes that are ours, conflicts) and golden 27 / 27
 - ⏸️ Fetch beyond the OH&S core family: other families, slice by slice, once the core family's results are judged
 
 ## Dependencies
