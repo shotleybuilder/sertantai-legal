@@ -124,3 +124,22 @@ Still to do: the 50-effect sample checked by a Claude agent (criteria 2 and 3), 
 - **F.** Words level also covers sums, figures, entries, punctuation, formula, number, label and definitions.
 - **Not mapped (a gap, noted):** "am" and "amendment" (about 1,300) say only "amended", with no operation to label.
 - **Feed check** (`eb5e31bf`): `--seed N` draws a fresh sample, and each change the reader made is shown (stage keys, level, first date).
+
+**Golden regressions from the fixes, and the revision** (`285c9f3e`). After `a92a5011`, golden was 24/27:
+- **Staged substitutions** in provisions already in force commenced the provision (TCPA 1990 s.284(3)(a) turned prospective; EUWA 2018 s.6 took 2020/1's stage as its commencement). Now only a whole insertion's later stages are commencements. Any other staged text change takes effect from its first stage, partly, with its full date as a fact (`date_full`).
+- **Fix A trusted the feed's path** (EPA 1989: the feed's "s. 3(5)(ia)" is s.3(5)(c)(ia) in the text) and moved a Scottish insertion onto s.3(5). Now a feed ref the text doesn't hold, for an event the text marks, gives way to the markup's change, which places it where the text does. Feed-check outcome: `placed_by_markup`.
+
+## Re-check (2026-10-23)
+
+- **Golden: PASS.** 27/27.
+- **Repeatability: PASS.** Counts repeat.
+- **Placement: PASS.** Reader faults 0. Placed 3,483; schedules 2,471; versions 261; by markup 105; not in text 96; not a provision 79; whole law 71; ancestor 1; ambiguous 1.
+- **Same 50:** every flagged item now reads correctly (checked by me).
+- **The feed repeats effects:** #11 and #30 (first sample) are two identical feed entries with one EffectId (rows 107 and 163). The merge joins them into one change.
+- **Fresh 50 (seed 7), agent: FAIL.** Placement 38 OK, 4 wrong, 8 doubtful; facts 48 OK, 2 wrong. D1 and D3 checked by me.
+  - **D1. The feed check's `marked` includes unapplied-effects metadata (#14, #25).** It scans every `key-` in the CLML, including `<ukm:UnappliedEffect>`, so effects legislation.gov.uk has not applied look marked. Feed check only; the vocabulary reads markup claims.
+  - **D2. A CLML id that names a provision wrongly (#7).** HSWA `section-28n1-f-i` is s.28(3)(f)(i)[S], held as `s.28(f)(i)[S]`. The feed's `section-28-3-f-i` meets nothing, and the markup is legacy (`d29p…`), so the outcome says not in text. A parse tell-tale: raise, don't fix.
+  - **D3. EU refs coarser than the feed's text (#8).** The refs give `article-56`; the text says "Art. 56 para. 6 Point (b)", a row we hold. It is placed as the whole article replaced. Two feed rows share the effect id.
+  - **D4. A parent ref kept beside its child (8 items).** `schedule-1` + `schedule-1-paragraph-2` gives a change on `sch.1`, and a commencement there claims the whole schedule. Hidden in v0.1 by `schedule_not_parsed`; it matters once schedules are parsed.
+  - **D5. Commencements carry no extent, territory or savings (#24).** The commenced branch, and the later stages of a staged insertion, build only operation, level, date, partial and by. "Commenced for N.I." loses N.I.
+  - **Not counted:** EU effects have no date, but the feed's `Comments` says "EUR-Lex in-force date …". That is an editorial comment, a pointer like a note, not a fact.
