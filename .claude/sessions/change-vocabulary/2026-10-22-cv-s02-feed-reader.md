@@ -71,3 +71,29 @@ OH&S core family, 6,568 effects. `Feed.read` places each effect on its structure
   - **NI SR 1997/248 reg.13(2)(b)(i)(aa):** a P5 item, deeper than our rows. Its words sit inside row `reg.13(2)(b)(i)`, so the change belongs there, but the fold never sees a change on `(aa)`. **Policy for Jason:** move a target deeper than our rows to its nearest held ancestor, as a words change? (C9, "a child's change never versions its parent", was written for children with their own rows.)
   - **EU 1989/391 Article 17 and REACH Article 127EA:** in the CLML with text, but the LAT parse made no row (the row made is `art.Article 17a`). A LAT parse bug, not the feed reader's.
   - **"(bb)" in the same NI effect:** legislation.gov.uk's own structured ref is `regulation-13-2-bb` (under 13(2), not 13(2)(b)(i)). The feed's error, faithfully read, so "not in the text"; noted for CV-S08.
+
+## Faults fixed; placement PASS (2026-10-22)
+
+Jason: "Yes, treat EU Annex like Schedules"; "A really deep affect is small. We can again be smart and choose the changes that will affect our labels"; "Good to capture tell tales for parser bugs. Raise but don't fix."
+
+- **EU annexes** converted, and unparsed like schedules (`e0220498`).
+- **Deeper than our rows:** a change on a provision in the law's text with no row of its own moves to the nearest held row as a words change, keeping the feed's target (`Placement.retarget/3`, `:rows` option; `e937bea8`).
+- **One namer:** the reader names a provision as the parse did (`source_xml_id` → `section_id`), else `Ref.from_clml`. That fixed Parts, EU Titles and Chapters, and the EU articles whose `section_id` holds a non-breaking space.
+- **Bare words in the refs:** the instrument ("Rules", or the effect's own text) is the whole law; any other word is no provision.
+- **`ref_ambiguous`:** the feed's ref names a part found under several (CLP "Ch. 2 heading", `chapter-2`: Titles II, III, V). The feed's own, not ours.
+- **#182 raised and corrected.** First raised as "no row for EU 1989/391 Art 17, REACH Art 127EA"; the rows exist, but the LAT parse put a non-breaking space in the name: 639 rows in 15 EU laws. Raised, not fixed.
+
+**Check (`mix lat.feed_check`):** our faults went from 885 to 0.
+
+| outcome | effects |
+|---|---|
+| placed | 3,483 |
+| placed on territorial versions | 261 |
+| placed on the nearest held row | 1 |
+| whole law | 71 |
+| schedule / annex not parsed (known v0.1 limit) | 2,471 |
+| not in the current text | 201 |
+| not a provision | 79 |
+| ref ambiguous (the feed's own) | 1 |
+
+Still to do: the 50-effect sample checked by a Claude agent (criteria 2 and 3), tests already in, repeatability, and golden re-checked (the reader changed).
