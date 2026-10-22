@@ -41,14 +41,25 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.PlacementTest do
              {:unplaced, :refs_not_converted}
   end
 
-  test "gone from the current text; in the text but not our rows" do
+  test "gone from the current text; in the text but no row and no held ancestor: the parse's tell-tale (#182)" do
     assert Placement.classify(effect("reg. 5A"), ["reg.5A"], @held) == {:unplaced, :not_in_text}
-    assert Placement.classify(effect("reg. 4"), ["reg.4"], @held) == {:unplaced, :not_in_rows}
+    assert Placement.classify(effect("reg. 4"), ["reg.4"], @held) == {:unplaced, :row_missing}
   end
 
-  test "which reasons are faults of ours, which known limits, which the feed's own" do
+  test "deeper than our rows: on the nearest held ancestor (NI SR 1997/248 reg.13(2)(b)(i)(aa))" do
+    held = %{
+      @held
+      | rows: MapSet.put(@held.rows, "reg.13(2)(b)(i)"),
+        clml: MapSet.put(@held.clml, "reg.13(2)(b)(i)(aa)")
+    }
+
+    assert Placement.classify(effect("reg. 13(2)(b)(i)(aa)"), ["reg.13(2)(b)(i)(aa)"], held) ==
+             :placed_ancestor
+  end
+
+  test "which reasons are faults of ours, which known limits, tell-tales, or the feed's own" do
     assert Placement.fault?(:refs_not_converted)
-    assert Placement.fault?(:not_in_rows)
+    refute Placement.fault?(:row_missing)
     refute Placement.fault?(:schedule_not_parsed)
     refute Placement.fault?(:not_in_text)
     refute Placement.fault?(:not_a_provision)
@@ -65,5 +76,47 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.PlacementTest do
              @held
            ) ==
              {:unplaced, :schedule_not_parsed}
+  end
+
+  describe "a change deeper than our rows moves to the nearest held row, as a words change (Jason: \"choose the changes that will affect our labels\")" do
+    alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Claim, Evidence}
+
+    defp resolved(target, op, level),
+      do:
+        %Change{
+          key: "k",
+          target: target,
+          claims: [
+            %Claim{source: :feed, attribute: :operation, value: op, ref: "k"},
+            %Claim{source: :feed, attribute: :level, value: level, ref: "k"}
+          ]
+        }
+        |> Evidence.resolve(nil)
+
+    @rows MapSet.new([
+            "reg.13",
+            "reg.13(2)",
+            "reg.13(2)(b)",
+            "reg.13(2)(b)(i)",
+            "s.23[E+W]",
+            "s.23[S]"
+          ])
+    @text MapSet.new(["reg.13(2)(b)(i)(aa)", "reg.13(2)(b)(i)"])
+
+    test "moved, its words changed, the feed's target kept" do
+      [c] =
+        Placement.retarget([resolved("reg.13(2)(b)(i)(aa)", :inserted, :provision)], @rows, @text)
+
+      assert c.target == "reg.13(2)(b)(i)"
+      assert c.resolved.level == :words
+      assert Change.value(c, :placement, :below_rows) == "reg.13(2)(b)(i)(aa)"
+    end
+
+    test "held, held as versions, gone from the text, or nothing held above: left alone" do
+      for t <- ["reg.13(2)", "s.23", "reg.13(2)(b)(i)(cc)", "sch.3"] do
+        [c] = Placement.retarget([resolved(t, :substituted, :words)], @rows, @text)
+        assert c.target == t
+      end
+    end
   end
 end

@@ -10,6 +10,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
   - `:placed_versions` — on a provision we hold as territorial versions
     (C3: `s.23` → `s.23[E+W]`, `s.23[S]`);
   - `:whole_law` — on the whole instrument;
+  - `:placed_ancestor` — deeper than our rows: on the nearest held row,
+    whose words it changes (`retarget/3` moves it there);
   - `{:unplaced, reason}`:
     - `:schedule_not_parsed` — in a schedule (or an EU annex, the same
       role); schedules are not parsed into LAT (a known limit for v0.1,
@@ -17,17 +19,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
     - `:not_a_provision` — the feed names no provision ("specified amended
       provision(s)", "C/O");
     - `:not_in_text` — not in the current text (gone, or not yet applied);
-    - `:refs_not_converted` — refs given, none converted (our fault);
-    - `:not_in_rows` — in the text but not in our LAT rows (our fault until
-      explained).
+    - `:refs_not_converted` — refs given, none converted (the reader's
+      fault);
+    - `:row_missing` — in the text, but no row of its own nor any held
+      ancestor: the LAT parse's tell-tale (#182; raised, not fixed).
 
   Pure.
   """
 
   @type outcome ::
-          :placed | :placed_versions | :whole_law | {:unplaced, atom()}
+          :placed | :placed_versions | :placed_ancestor | :whole_law | {:unplaced, atom()}
 
-  @faults [:refs_not_converted, :not_in_rows]
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Claim}
+  alias SertantaiLegal.Scraper.LatRef
+
+  @faults [:refs_not_converted]
 
   @doc "Where an effect lands, from its targets and what we hold of the law."
   @spec classify(map(), [String.t()], %{rows: MapSet.t(), clml: MapSet.t(), schedules?: boolean()}) ::
@@ -53,13 +59,55 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
       not held.schedules? and Enum.all?(targets, &schedule?/1) ->
         {:unplaced, :schedule_not_parsed}
 
+      Enum.any?(targets, &(MapSet.member?(held.clml, &1) and held_ancestor(&1, held.rows) != nil)) ->
+        :placed_ancestor
+
       Enum.any?(targets, &MapSet.member?(held.clml, &1)) ->
-        {:unplaced, :not_in_rows}
+        {:unplaced, :row_missing}
 
       true ->
         {:unplaced, :not_in_text}
     end
   end
+
+  @doc """
+  Changes deeper than our rows moved to the nearest held row, as words
+  changes (Jason 2026-10-22: "choose the changes that will affect our
+  labels"): a change on a provision in the law's text (`text`) that has no
+  row of its own, but an ancestor that does, changes that row's words. The
+  feed's own target is kept (`:placement :below_rows`). Held, held as
+  territorial versions, gone from the text, or with nothing held above:
+  left alone.
+  """
+  @spec retarget([Change.t()], MapSet.t(), MapSet.t()) :: [Change.t()]
+  def retarget(changes, rows, text) do
+    bases = MapSet.new(rows, &base/1)
+
+    changes
+    |> Enum.map(fn %Change{target: t} = c ->
+      with false <- MapSet.member?(bases, t),
+           true <- MapSet.member?(text, t),
+           a when a != nil <- held_ancestor(t, rows) do
+        %Change{
+          c
+          | target: a,
+            claims: c.claims ++ Claim.new(:placement, :below_rows, t, c.key),
+            resolved: c.resolved && %{c.resolved | level: :words}
+        }
+      else
+        _ -> c
+      end
+    end)
+    |> Enum.uniq_by(&{&1.key, &1.target})
+  end
+
+  # the nearest ancestor we hold a row for (or its territorial versions)
+  defp held_ancestor(target, rows) do
+    bases = MapSet.new(rows, &base/1)
+    target |> LatRef.ancestors() |> tl() |> Enum.find(&MapSet.member?(bases, &1))
+  end
+
+  defp base(row), do: String.replace(row, ~r/\[[^\]]+\]$/, "")
 
   # a schedule, or an EU annex (the same role, the same limit)
   defp schedule?(target),

@@ -219,8 +219,9 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       |> LatStagedParser.law_effects(store: :only)
       |> LatStagedParser.with_affecting_territory(law)
 
-    opts = primary(law, effects)
-    changes = ChangeVocabulary.changes(law, xml, effects, rows(law), opts)
+    all = rows(law)
+    opts = law |> primary(effects) |> Keyword.put(:rows, Map.keys(all))
+    changes = ChangeVocabulary.changes(law, xml, effects, all, opts)
     {:ok, n} = Store.write(law, changes, inputs(law, effects, opts))
     "#{n.changes} changes, #{n.claims} claims"
   end
@@ -298,7 +299,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
     provisions = provisions(law, ids)
 
-    opts = primary(law, effects)
+    opts = law |> primary(effects) |> Keyword.put(:rows, law |> rows() |> Map.keys())
     changes = ChangeVocabulary.changes(law, xml, effects, provisions, opts)
     labels = ChangeVocabulary.labels(law, xml, effects, provisions, opts)
 
@@ -359,7 +360,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
         given =
           if opts[:stored],
             do: [changes: Store.for_law(law), title: title(law)],
-            else: primary(law, effects)
+            else: law |> primary(effects) |> Keyword.put(:rows, law |> rows() |> Map.keys())
 
         labels = ChangeVocabulary.labels(law, xml, effects, provisions, given)
         Enum.map(entries, &{&1, labels[&1.id]})

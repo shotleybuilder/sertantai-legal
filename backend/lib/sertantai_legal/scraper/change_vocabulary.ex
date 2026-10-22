@@ -13,7 +13,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   orchestrator; pure.
   """
 
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{Evidence, Label, Merge}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Evidence, Label, Merge, Placement}
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Ref}
   alias SertantaiLegal.Scraper.LatRef
 
@@ -40,7 +40,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   `Commencement.Rule`s; `:extents`, each amending Act's extent clause read
   (`AmendingLaw.Extent`); `:title`, the law's title — its own place;
   `:passed`, `:act_title` and `:continuations` for its own sunset
-  (`Readers.Expiry`); `:changes`, the law's changes already built (read
+  (`Readers.Expiry`); `:rows`, every LAT row of the law (a change deeper
+  than them moves to the nearest held row: `Placement.retarget/3`); `:changes`, the law's changes already built (read
   back from `provision_changes`: `Store.for_law/1`) — the fold alone.
   """
   @spec labels(String.t(), String.t(), [Effect.t()], %{String.t() => map()}, keyword()) ::
@@ -239,9 +240,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
       )
       |> existing()
       |> Enum.reject(&(&1.target == "?"))
+      # a change deeper than our rows changes the words of the nearest held
+      # row (CV-S02); only with the law's full set of rows
+      |> below_rows(Keyword.get(opts, :rows), facts)
 
     changes ++ parent_commencements(changes, provisions, order)
   end
+
+  defp below_rows(changes, nil, _facts), do: changes
+
+  defp below_rows(changes, rows, facts),
+    do: Placement.retarget(changes, MapSet.new(rows), MapSet.new(Map.keys(facts)))
 
   # a devolved law's own provisions apply in its territory (a Welsh SI
   # extends to E+W, applies in W: SI 2017/544). The evidence is the law's
