@@ -190,7 +190,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
       AmendingLaw.read(
         Keyword.get(opts, :rules, []),
         Keyword.get(opts, :commencement, %{}),
-        order
+        order,
+        Keyword.get(opts, :extents, %{})
       )
 
     # the law's own commencement, for each provision asked about (its base)

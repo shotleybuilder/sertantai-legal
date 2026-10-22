@@ -88,4 +88,155 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
     assert Extent.from_rows(Extent.to_rows(e, "UK_ukpga_2099_1")) == e
     assert Extent.from_rows([]) == nil
   end
+
+  # one provision's text as a document
+  defp clause(law, id, text),
+    do:
+      Extent.read(
+        Doc.new(law, [
+          ~s(<Legislation><Body><P1 id="#{id}"><P1para><Text>#{text}</Text></P1para></P1></Body></Legislation>)
+        ])
+      )
+
+  describe "the forms an amending law states its extent in (CV-07: OH&S amending laws surveyed)" do
+    test "an SI's: These Regulations / This Order extend to a list of places" do
+      assert clause(
+               "UK_uksi_2014_1639",
+               "regulation-1",
+               "These Regulations extend to England and Wales and Scotland only."
+             ).default == "E+W+S"
+
+      assert clause(
+               "UK_uksi_2023_149",
+               "regulation-1",
+               "These Regulations extend to England and Wales."
+             ).default == "E+W"
+
+      assert clause(
+               "UK_uksi_2014_469",
+               "article-1",
+               "This Order extends to England and Wales, Scotland and Northern Ireland."
+             ).default == "E+W+S+NI"
+
+      assert clause("UK_uksi_2013_235", "article-1", "This Order extends to Great Britain only.").default ==
+               "E+W+S"
+    end
+
+    test "extent and application in one sentence: the extent is read here" do
+      e =
+        clause(
+          "UK_uksi_2026_195",
+          "regulation-1",
+          "These Regulations extend to England and Wales and apply in relation to England only."
+        )
+
+      assert e.default == "E+W"
+    end
+
+    test "do not / shall not extend; which extend; the whole of" do
+      assert clause(
+               "UK_uksi_2015_398",
+               "regulation-1",
+               "These Regulations do not extend to Northern Ireland."
+             ).default == "E+W+S"
+
+      assert clause(
+               "UK_uksi_2009_716",
+               "regulation-1",
+               "These Regulations shall not extend to Northern Ireland."
+             ).default == "E+W+S"
+
+      assert clause(
+               "UK_uksi_1996_1513",
+               "regulation-1",
+               "These Regulations, which extend to Great Britain, may be cited as the Health and Safety (Consultation with Employees) Regulations 1996."
+             ).default == "E+W+S"
+
+      assert clause(
+               "UK_uksi_2013_602",
+               "article-1",
+               "The provisions of this Order extend to the whole of the United Kingdom."
+             ).default == "E+W+S+NI"
+
+      assert clause(
+               "UK_uksi_2013_603",
+               "article-1",
+               "This Order extends to the whole of the United Kingdom."
+             ).default == "E+W+S+NI"
+    end
+
+    test "an Act that does not extend to a place: the rest of the United Kingdom" do
+      assert clause(
+               "UK_ukpga_2003_22",
+               "section-20",
+               "This Act does not extend to Northern Ireland."
+             ).default == "E+W+S"
+    end
+
+    test "… apart from named sections, which extend there too" do
+      e =
+        clause(
+          "UK_ukpga_1991_34",
+          "section-84",
+          "This Act, apart from sections 82 and 83, does not extend to Northern Ireland."
+        )
+
+      assert e.default == "E+W+S"
+      assert Extent.of(e, "s.82") == "E+W+S+NI"
+      assert Extent.of(e, "s.12") == "E+W+S"
+    end
+
+    test "a list of provisions named before its place, with no default, decides for those provisions" do
+      e =
+        clause(
+          "UK_ukpga_2005_14",
+          "section-60",
+          "The following provisions of this Act extend to England and Wales only— (a) section 13; (b) section 39; and (c) section 52."
+        )
+
+      assert Extent.of(e, "s.39") == "E+W"
+    end
+  end
+
+  describe "an amending law's application (CV-07: where its changes apply; ApplicationClause)" do
+    test "extend to one place, apply in another" do
+      e =
+        clause(
+          "UK_uksi_2026_195",
+          "regulation-1",
+          "These Regulations extend to England and Wales and apply in relation to England only."
+        )
+
+      assert e.application == "E"
+    end
+
+    test "a bare application clause" do
+      assert clause(
+               "UK_wsi_2016_1",
+               "regulation-1",
+               "These Regulations apply in relation to Wales."
+             ).application == "W"
+    end
+
+    test "none stated" do
+      assert clause(
+               "UK_uksi_2023_149",
+               "regulation-1",
+               "These Regulations extend to England and Wales."
+             ).application == nil
+    end
+
+    test "stored as a row, read back" do
+      e =
+        clause(
+          "UK_uksi_2026_195",
+          "regulation-1",
+          "These Regulations extend to England and Wales and apply in relation to England only."
+        )
+
+      rows = Extent.to_rows(e, "UK_uksi_2026_195")
+      assert Enum.any?(rows, &(&1.kind == "applies" and &1.place == "E"))
+      assert Extent.from_rows(rows) == e
+    end
+  end
 end

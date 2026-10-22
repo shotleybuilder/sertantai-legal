@@ -6,7 +6,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
   Each stored `Amendment.Rule` (the amending law's instruction or repeals
   table entry read by `Amendment.Reader`) is one change per target, keyed
   `source law:source provision`. Claims (source `:law_text`): `operation`,
-  `level`, `by` (the amending law). Its date (source `:commencement`) is
+  `level`, `by` (the amending law), `territory` (where the amending law
+  applies, by its own application clause: `AmendingLaw.Extent`, CV-07). Its date (source `:commencement`) is
   when the amending provision came into force by the amending law's own
   text — its commencement clause and the orders read
   (`Commencement.Evaluator` over the text rules; the feed's
@@ -36,9 +37,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
   Claim sets `{key, target, claims}` from the rules amending a law, dated
   by `commencement` (amending law → its `Commencement.Rule`s).
   """
-  @spec read([Rule.t()], %{String.t() => [CRule.t()]}, [String.t()] | nil) ::
+  @spec read(
+          [Rule.t()],
+          %{String.t() => [CRule.t()]},
+          [String.t()] | nil,
+          %{String.t() => SertantaiLegal.Scraper.AmendingLaw.Extent.t()}
+        ) ::
           [{String.t(), String.t(), [Claim.t()]}]
-  def read(rules, commencement \\ %{}, known \\ nil) do
+  def read(rules, commencement \\ %{}, known \\ nil, extents \\ %{}) do
     known = known && MapSet.new(known)
 
     # a target the amended law doesn't contain is a misread, not a fact
@@ -52,8 +58,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
          Claim.new(:law_text, :operation, r.operation, key),
          Claim.new(:law_text, :level, r.level, key),
          Claim.new(:law_text, :by, law, key),
-         Claim.new(:commencement, :date, date(Map.get(commencement, law, []), ref), key)
+         Claim.new(:commencement, :date, date(Map.get(commencement, law, []), ref), key),
+         # where the amending law applies (its application clause; CV-07)
+         Claim.new(:law_text, :territory, application(extents, law), key)
        ])}
+    end
+  end
+
+  defp application(extents, law) do
+    case Map.get(extents, law) do
+      %{application: a} -> a
+      _ -> nil
     end
   end
 

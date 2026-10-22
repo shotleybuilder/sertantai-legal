@@ -23,10 +23,17 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, RefList}
   alias SertantaiLegal.Scraper.Amendment.Reader
+  alias SertantaiLegal.Scraper.ApplicationClause
   alias SertantaiLegal.Scraper.Commencement.Order
   alias SertantaiLegal.Scraper.Territory
 
-  defstruct default: nil, lists: [], corresponds: false, introduced_by: %{}, ref: nil, text: nil
+  defstruct default: nil,
+            lists: [],
+            corresponds: false,
+            introduced_by: %{},
+            ref: nil,
+            text: nil,
+            application: nil
 
   @type list_kind :: :also | :only | :same
   @type t :: %__MODULE__{
@@ -35,18 +42,38 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
           corresponds: boolean(),
           introduced_by: %{String.t() => String.t()},
           ref: String.t() | nil,
-          text: String.t() | nil
+          text: String.t() | nil,
+          application: String.t() | nil
         }
 
-  @places "England and Wales|Great Britain|England|Wales|Scotland|Northern Ireland"
+  @places "England and Wales|Great Britain|the United Kingdom|United Kingdom|England|Wales|Scotland|Northern Ireland"
   @codes %{
     "england and wales" => "E+W",
     "great britain" => "E+W+S",
+    "the united kingdom" => "E+W+S+NI",
+    "united kingdom" => "E+W+S+NI",
     "england" => "E",
     "wales" => "W",
     "scotland" => "S",
     "northern ireland" => "NI"
   }
+
+  # the law speaking of itself (an Act, an SI; "The provisions of this
+  # Order"), not of some provisions of it ("The following provisions of
+  # this Act extend …" is a list)
+  @subject "(?:\\bThe provisions of |(?<!of )\\b)(?:this Act|these Regulations|this Order|these Rules|this Scheme)"
+  # "England and Wales and Scotland", "England and Wales, Scotland and
+  # Northern Ireland"
+  @place_list "(?:#{@places})(?:\\s*,\\s*(?:#{@places}))*(?:\\s+and\\s+(?:#{@places}))*"
+  @heading ~r/The following (?:provisions (?:of this (?:Act|Part) )?)?(?:extend(?:s)? (also )?to (#{@places})( only)?|ha(?:s|ve) the same extent as the enactments? to which (?:it|they) relates?)\s*[—–:-]/iu
+  @extends Regex.compile!(
+             "#{@subject}(?:,\\s*which)?\\s+(?:shall\\s+)?extends?\\s+to\\s+(?:the\\s+whole\\s+of\\s+)?(#{@place_list})(?:\\s+only)?(?!\\s*[—–])",
+             "iu"
+           )
+  @not_extends Regex.compile!(
+                 "#{@subject}(?:,\\s*(?:apart from|except(?: for)?)\\s+([^,]+),)?\\s+(?:does|do|shall)\\s+not\\s+extend\\s+to\\s+(#{@place_list})",
+                 "iu"
+               )
 
   @doc "The Act's extent clause read from its document; empty when it has none read."
   @spec read(Doc.t()) :: t()
@@ -62,30 +89,77 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
     {clause_ref, clause} =
       Enum.find(sections, {nil, ""}, fn {ref, text} ->
         not String.contains?(ref, "(") and
-          Regex.match?(~r/\bthis Act extends to (?:#{@places})(?: only)?\b/i, text)
+          (Regex.match?(@extends, text) or Regex.match?(@not_extends, text) or
+             Regex.match?(@heading, text))
       end)
 
     %__MODULE__{
       default: default(clause),
-      lists: lists(clause, clause_ref),
+      lists: apart(clause, clause_ref) ++ lists(clause, clause_ref),
       corresponds: Regex.match?(~r/\bcorresponds\s+to\s+the\s+repeal\b/i, clause),
       introduced_by: introductions(doc),
       ref: clause_ref,
-      text: if(clause != "", do: clause)
+      text: if(clause != "", do: clause),
+      application: application(sections, default(clause))
     }
   end
 
-  defp default(clause) do
-    case Regex.run(~r/\bthis Act extends to (#{@places})(?: only)?\b/i, clause) do
-      [_, place] -> @codes[String.downcase(place)]
+  # the law's whole-instrument application clause ("These Regulations …
+  # apply in relation to England only"; `ApplicationClause`), as a code:
+  # where the changes it makes apply (CV-07)
+  defp application(sections, extent) do
+    clauses =
+      for {ref, text} <- sections,
+          not String.contains?(ref, "("),
+          c = ApplicationClause.parse(text),
+          c != nil,
+          do: c
+
+    extent_regions = extent && String.split(extent, "+")
+
+    case ApplicationClause.resolve(clauses, extent_regions) do
       nil -> nil
+      regions -> Enum.join(regions, "+")
     end
+  end
+
+  # "These Regulations extend to England and Wales and Scotland" → E+W+S;
+  # "This Act does not extend to Northern Ireland" → the rest of the UK
+  defp default(clause) do
+    cond do
+      m = Regex.run(@extends, clause) ->
+        places(Enum.at(m, 1))
+
+      m = Regex.run(@not_extends, clause) ->
+        Territory.subtract("E+W+S+NI", places(List.last(m)))
+
+      true ->
+        nil
+    end
+  end
+
+  # "… apart from sections 82 and 83, does not extend to Northern
+  # Ireland": those extend there too
+  defp apart(clause, clause_ref) do
+    case Regex.run(@not_extends, clause) do
+      [_, except, place] when except != "" ->
+        [{:also, places(place), RefList.parse(except, clause_ref)}]
+
+      _ ->
+        []
+    end
+  end
+
+  defp places(list) do
+    Regex.scan(~r/#{@places}/iu, list)
+    |> List.flatten()
+    |> Enum.map(&@codes[String.downcase(&1)])
+    |> Territory.union()
   end
 
   # each list: "The following extend also to Scotland— …", "… to Scotland
   # only— …", "… have the same extent as the enactments to which they
   # relate— …", up to the next such heading
-  @heading ~r/The following (?:extend(?:s)? (also )?to (#{@places})( only)?|ha(?:s|ve) the same extent as the enactments? to which (?:it|they) relates?)\s*[—–:-]/iu
 
   defp lists(clause, clause_ref) do
     parts = Regex.split(@heading, clause, include_captures: true, trim: true)
@@ -174,7 +248,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
             if(e.corresponds, do: [row.("corresponds", nil, [], e.ref, nil, 0)], else: [])
       end
 
+    applies =
+      if e.application, do: [row.("applies", e.application, [], e.ref, nil, 0)], else: []
+
     clause ++
+      applies ++
       for {sch, sec} <- Enum.sort(e.introduced_by),
           do: row.("introduces", nil, [sch], sec, nil, 0)
   end
@@ -197,6 +275,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
           do: {String.to_existing_atom(r.kind), r.place, r.items}
         ),
       corresponds: Enum.any?(rows, &(&1.kind == "corresponds")),
+      application: Enum.find_value(rows, &(&1.kind == "applies" && &1.place)),
       introduced_by:
         for(r <- rows, r.kind == "introduces", into: %{}, do: {hd(r.items), r.source_ref})
     }
@@ -208,8 +287,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   changes), or nil (the clause wasn't read).
   """
   @spec of(t(), String.t()) :: String.t() | :same | nil
-  def of(%__MODULE__{default: nil}, _ref), do: nil
+  def of(%__MODULE__{default: nil, lists: []}, _ref), do: nil
 
+  # with no default, only a list naming the provision decides ("The
+  # following provisions of this Act extend to England and Wales only—")
   def of(%__MODULE__{} = e, ref) do
     candidates = [ref | containers(ref)] ++ introducing(e, ref)
 
@@ -217,7 +298,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
       if Enum.any?(candidates, &named?(&1, items)) do
         case kind do
           :only -> place
-          :also -> Territory.union([e.default, place])
+          :also when e.default != nil -> Territory.union([e.default, place])
+          :also -> nil
           :same -> :same
         end
       end

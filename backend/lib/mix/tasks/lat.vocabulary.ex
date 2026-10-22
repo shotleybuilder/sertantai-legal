@@ -336,14 +336,15 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
     title = title(law)
 
-    # each affecting Act's own extent clause: read into `extent_rules`,
+    # each affecting law's own extent clause (Act or SI): read into `extent_rules`,
     # else from its CLML held (named: `mix lat.amending --extents`)
     acts =
       effects
       |> Enum.map(& &1.affecting)
+      |> Kernel.++(Enum.map(rules, & &1.source.law))
       |> Enum.reject(&is_nil/1)
       |> Enum.uniq()
-      |> Enum.filter(&ExtentStore.act?/1)
+      |> Enum.filter(&ExtentStore.reads?/1)
 
     stored = ExtentStore.for_laws(acts)
 

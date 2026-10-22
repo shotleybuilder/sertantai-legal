@@ -11,14 +11,15 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Store do
 
   @columns ~w(kind place items position source_law source_ref source_text)a
 
-  # the Acts with an extent clause to read (their own legislatures' Acts)
-  @act_types ~w(ukpga asp anaw asc nia apni)
+  # the laws whose own extent clause is read: Acts ("this Act extends to")
+  # and SIs ("These Regulations extend to", "This Order extends to"; CV-07)
+  @types ~w(ukpga asp anaw asc nia apni uksi ssi wsi nisr nisi)
 
-  @doc "True when `law` is an Act, whose extent clause is read."
-  @spec act?(String.t()) :: boolean()
-  def act?(law) do
+  @doc "True when `law` is of a type whose own extent clause is read."
+  @spec reads?(String.t()) :: boolean()
+  def reads?(law) do
     case String.split(law || "", "_", parts: 4) do
-      [_, type, _, _] -> type in @act_types
+      [_, type, _, _] -> type in @types
       _ -> false
     end
   end

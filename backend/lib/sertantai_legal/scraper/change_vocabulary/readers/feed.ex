@@ -90,12 +90,22 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   # clause (primary: `AmendingLaw.Extent`; SOCPA 2005 s.179) — an upper
   # bound on where the change applies
   defp extent(%Effect{affecting: law, affecting_provisions: text, effect_id: id}, extents) do
-    with %AmendingLaw.Extent{} = e <- Map.get(extents, law),
-         [_ | _] = refs <- affecting_refs(text),
-         code when is_binary(code) <- AmendingLaw.Extent.of_change(e, refs) do
-      Claim.new(:law_text, :extent, code, id)
-    else
-      _ -> []
+    case Map.get(extents, law) do
+      %AmendingLaw.Extent{} = e ->
+        bound =
+          with [_ | _] = refs <- affecting_refs(text),
+               code when is_binary(code) <- AmendingLaw.Extent.of_change(e, refs) do
+            Claim.new(:law_text, :extent, code, id)
+          else
+            _ -> []
+          end
+
+        # where the amending law applies, its changes apply ("These
+        # Regulations … apply in relation to England only"; CV-07)
+        bound ++ Claim.new(:law_text, :territory, e.application, id)
+
+      _ ->
+        []
     end
   end
 

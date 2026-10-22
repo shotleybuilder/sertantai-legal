@@ -90,7 +90,7 @@ defmodule Mix.Tasks.Lat.Amending do
 
   # ── --extents ───────────────────────────────────────────────────────
 
-  # the extent clauses of the Acts changing a law (its feed's affecting
+  # the extent clauses of the laws changing a law (its feed's affecting
   # laws), or of the Acts named, held in the CLML store
   defp extents(opts) do
     acts =
@@ -107,9 +107,9 @@ defmodule Mix.Tasks.Lat.Amending do
         {list, _} ->
           String.split(list, ",", trim: true)
       end
-      |> Enum.filter(&(Extent.Store.act?(&1) and held?(&1)))
+      |> Enum.filter(&(Extent.Store.reads?(&1) and held?(&1)))
 
-    Mix.shell().info("#{length(acts)} Acts to read for their extent clause")
+    Mix.shell().info("#{length(acts)} laws to read for their extent clause")
 
     for {a, i} <- Enum.with_index(acts, 1) do
       # in its own process: the parsed document goes when it exits
@@ -253,7 +253,7 @@ defmodule Mix.Tasks.Lat.Amending do
         {:ok, n} = Store.write(amending, rules)
 
         # an Act's own extent clause, from the same document (CV-04)
-        if Extent.Store.act?(amending), do: Extent.Store.write(amending, Extent.read(doc))
+        if Extent.Store.reads?(amending), do: Extent.Store.write(amending, Extent.read(doc))
 
         :ok = Index.write(amending, doc, Enum.map(laws, & &1.law_name), pointer_keys(refs))
 
