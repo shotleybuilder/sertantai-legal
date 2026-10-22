@@ -35,13 +35,13 @@ Placed by Jason 2026-10-22: its own session, after CV-04's merge work (CV-04 sus
 - ✅ Source use: the balance decided (Jason 2026-10-22). The feed and markup are the baseline. The law's text is read for territory, dates, its own clauses and the backlog. Fetch whole documents, by count.
 - ✅ Slicing the fetch: capped to the OH&S core family (Jason 2026-10-22), 144 laws including D, fetched and read (`0f6a1e83`); family measured
 - ⏸️ The reader's yield over the feed (7,448 golden-law changes read with no rule): not chased; the feed is the coverage baseline (Jason 2026-10-22)
-- ⬜ **1. Territory (ours):** the extent and application clauses of amending SIs ("These Regulations extend to …", "apply in relation to Wales") as the territory of the changes they make; and the Act wordings not read (110 of 176 Acts read as no clause):
+- ✅ **1. Territory (ours)** (`6dfc62c5`, `eb74eb7f`, `7de25e45`, `1abafe60`; family: 249 of 356 amending laws with extent; 24 revoked SIs' made-introduction fetch left for Jason): the extent and application clauses of amending SIs ("These Regulations extend to …", "apply in relation to Wales") as the territory of the changes they make; and the Act wordings not read (110 of 176 Acts read as no clause):
   - "does not extend to Northern Ireland";
   - "Parts I and III … extend to …";
   - "The following provisions … extend to … only—";
   - "Part 1 … extends to …, save that—".
   OH&S family text changes: 3% have territory from the law, 67% none.
-- ⬜ **2. Dates:** 555 OH&S family text changes have no date from either source. Why, and the law's date where it states one.
+- ✅ **2. Dates** (`a50a00fc`): 555 → 342 undated; status-relevant 150 → 90
 - ⬜ **3. The backlog:** the OH&S family's law-text-only changes (133; 84 with no legislation.gov.uk record per the report) checked. The reader is improved there, and reconciled when legislation.gov.uk catches up.
 - ⬜ Measure after each: the OH&S family (coverage, the attributes that are ours, conflicts) and golden 27 / 27
 - ⏸️ Fetch beyond the OH&S core family: other families, slice by slice, once the core family's results are judged
@@ -291,3 +291,21 @@ No territory conflicts. Golden 27 / 27 from inputs and from the store.
 - 6 other unparsed forms;
 - 1 with no enacting formula;
 - the rarer Act forms.
+
+## 2. Dates (2026-10-22; code `a50a00fc`)
+
+Jason: "Use Notes as pointers when we have a gap. We can always get a date from the actual amending law."
+
+**Why undated:** of the 150 status-relevant undated changes (whole insertions and repeals), 104 have markup only. Their amending laws are mostly pre-2002, before legislation.gov.uk's changes feed. About 25 have a feed record with no date. All 135 known amending laws are held, and 130 have commencement rules read.
+
+**Built:**
+- `Readers.NoteDate.claims/2`: a change no source dates takes its date from the amending law's commencement rules, at the provision its feed record names, else its note. The deepest provision decides; disagreement leaves a visible gap. Claimed as `:commencement :date` plus `:via :feed | :note`.
+- `NoteDate.extent_claims/2`: the amending law's extent for a change no feed record carries it for. The dated markup-only twins reached SI 2008/1597 reg.14(1)[NI] with no territory and broke golden; fixed.
+
+**Result (OH&S core family):**
+- undated text changes: 555 → 342;
+- status-relevant: 150 → 90 (38 dated via a note, 22 via the feed).
+
+Golden 27 / 27 from inputs and from the store.
+
+**Jason 2026-10-22:** ask before any rebuild, re-parse, fetch or long run ("Feels like we're bouncing all over and I'm getting lost").
