@@ -239,4 +239,85 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
       assert Extent.from_rows(rows) == e
     end
   end
+
+  describe "an SI with no extent clause extends as far as its enabling powers (CV-07)" do
+    # HSWA-like parent: Part 1 to GB; s.84 to the UK
+    @parent %Extent{default: "E+W+S", lists: [{:also, "NI", ["s.84"]}]}
+    @wra %Extent{default: "E+W+S", lists: [{:only, "E+W", ["pt.3", "s.82"]}]}
+
+    test "the union of its enabling sections' extents, by each parent's extent clause" do
+      assert Extent.from_powers(
+               [%{"law" => "UK_ukpga_1974_37", "sections" => ["15", "82"], "schedules" => []}],
+               %{"UK_ukpga_1974_37" => @parent}
+             ) == "E+W+S"
+
+      assert Extent.from_powers(
+               [%{"law" => "UK_ukpga_1991_57", "sections" => ["82"], "schedules" => []}],
+               %{"UK_ukpga_1991_57" => @wra}
+             ) == "E+W"
+
+      assert Extent.from_powers(
+               [%{"law" => "UK_ukpga_1974_37", "sections" => ["84"], "schedules" => []}],
+               %{"UK_ukpga_1974_37" => @parent}
+             ) == "E+W+S+NI"
+    end
+
+    test "all or nothing: a parent not read, or no provisions, gives no verdict" do
+      assert Extent.from_powers(
+               [
+                 %{"law" => "UK_ukpga_1974_37", "sections" => ["15"], "schedules" => []},
+                 %{"law" => "UK_ukpga_1972_68", "sections" => ["2"], "schedules" => []}
+               ],
+               %{"UK_ukpga_1974_37" => @parent}
+             ) == nil
+
+      assert Extent.from_powers([], %{}) == nil
+    end
+
+    test "used where the SI states none, stored as a powers row" do
+      e = %Extent{powers: "E+W+S", ref: nil}
+      assert Extent.of(e, "reg.3") == "E+W+S"
+      rows = Extent.to_rows(e, "UK_uksi_2013_1471")
+      assert Enum.any?(rows, &(&1.kind == "powers" and &1.place == "E+W+S"))
+      assert Extent.from_rows(rows) == e
+      # its own clause wins
+      assert Extent.of(%Extent{default: "E+W", powers: "E+W+S"}, "reg.3") == "E+W"
+    end
+  end
+
+  describe "HSWA 1974 s.84: an exception list, a purpose-limited exception, and a Part that does not extend" do
+    @hswa ~S"""
+    <Legislation><Primary><Body>
+    <Part id="part-I"><P1 id="section-15"><P1para><Text>Health and safety regulations.</Text></P1para></P1></Part>
+    <Part id="part-III"><P1 id="section-75"><P1para><Text>Amendments.</Text></P1para></P1><P1 id="section-77"><P1para><Text>Building regulations.</Text></P1para></P1></Part>
+    <Part id="part-IV">
+    <P1 id="section-84"><P1para>
+    <P2 id="section-84-1"><P2para><Text>This Act, except—</Text>
+    <P3 id="section-84-1-a"><P3para><Text>Part I and this Part so far as may be necessary to enable regulations under section 15 or 30 to be made and operate for the purpose mentioned in paragraph 2 of Schedule 3; and</Text></P3para></P3>
+    <P3 id="section-84-1-b"><P3para><Text>section 77,</Text></P3para></P3>
+    <Text>does not extend to Northern Ireland.</Text></P2para></P2>
+    <P2 id="section-84-2"><P2para><Text>Part III, except section 75 and Schedule 7, does not extend to Scotland.</Text></P2para></P2>
+    </P1para></P1></Part>
+    </Body></Primary></Legislation>
+    """
+
+    setup do
+      %{hswa: Extent.read(Doc.new("UK_ukpga_1974_37", [@hswa]))}
+    end
+
+    test "the Act: Great Britain", %{hswa: e} do
+      assert e.default == "E+W+S"
+    end
+
+    test "Part I: a purpose-limited exception doesn't widen it", %{hswa: e} do
+      assert Extent.of(e, "s.15") == "E+W+S"
+    end
+
+    test "Part III, except s.75: not Scotland; s.77 named in the exceptions reaches NI too", %{
+      hswa: e
+    } do
+      assert Extent.of(e, "s.75") == "E+W+S"
+      assert Extent.of(e, "s.77") == "E+W+NI"
+    end
+  end
 end

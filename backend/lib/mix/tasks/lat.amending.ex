@@ -111,19 +111,64 @@ defmodule Mix.Tasks.Lat.Amending do
 
     Mix.shell().info("#{length(acts)} laws to read for their extent clause")
 
+    # the parent Acts the SIs' enabling powers lie in, read first (by this
+    # reader), so an SI stating no extent is placed by them (CV-07)
+    parents =
+      for a <- acts,
+          not act?(a),
+          p <- SertantaiLegal.Scraper.EnactedBy.EnablingCache.get(a),
+          law = p["law"],
+          Extent.Store.reads?(law) and held?(law) and law not in acts,
+          uniq: true,
+          do: law
+
+    Mix.shell().info("#{length(parents)} parent Acts of their enabling powers, read first")
+
+    for p <- parents do
+      Task.async(fn -> {:ok, _} = Extent.Store.write(p, p |> doc() |> Extent.read()) end)
+      |> Task.await(:infinity)
+    end
+
     for {a, i} <- Enum.with_index(acts, 1) do
       # in its own process: the parsed document goes when it exits
       line =
         Task.async(fn ->
-          e = a |> doc() |> Extent.read()
+          e = a |> doc() |> Extent.read() |> with_powers(a)
           {:ok, n} = Extent.Store.write(a, e)
-          "#{a}: #{e.default || "no clause"} (#{n} rows)"
+
+          stated =
+            cond do
+              e.default -> e.default
+              e.powers -> "#{e.powers} (by its enabling powers)"
+              true -> "no clause"
+            end
+
+          "#{a}: #{stated} (#{n} rows)"
         end)
         |> Task.await(:infinity)
 
       Mix.shell().info("  [#{i}/#{length(acts)}] #{line}")
     end
   end
+
+  # An SI stating no extent extends as far as its enabling powers: its
+  # enabling provisions (its introduction: `EnablingCache`, fetched once
+  # on a miss), each placed by its parent Act's own extent clause (read
+  # first in this run, `extents/1`). CV-07.
+  defp with_powers(%Extent{default: nil, lists: []} = e, law) do
+    if Extent.Store.reads?(law) and not act?(law) do
+      provisions = SertantaiLegal.Scraper.EnactedBy.EnablingCache.get(law)
+      parents = provisions |> Enum.map(& &1["law"]) |> Enum.uniq()
+      %{e | powers: Extent.from_powers(provisions, Extent.Store.for_laws(parents))}
+    else
+      e
+    end
+  end
+
+  defp with_powers(e, _law), do: e
+
+  defp act?(law),
+    do: (String.split(law, "_") |> Enum.at(1)) in ~w(ukpga asp anaw asc nia apni)
 
   # ── --read ──────────────────────────────────────────────────────────
 

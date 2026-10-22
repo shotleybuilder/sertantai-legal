@@ -32,12 +32,15 @@ defmodule SertantaiLegal.Legal.ExtentRule do
     attribute :kind, :string do
       allow_nil?(false)
       public?(true)
-      constraints(match: ~r/^(default|also|only|same|corresponds|introduces|applies|none)$/)
+
+      constraints(
+        match: ~r/^(default|also|only|same|corresponds|introduces|applies|powers|none)$/
+      )
     end
 
     attribute(:place, :string,
       public?: true,
-      description: "default / also / only / applies: the territory code (\"E+W\", \"S\")"
+      description: "default / also / only / applies / powers: the territory code (\"E+W\", \"S\")"
     )
 
     attribute(:items, {:array, :string},
