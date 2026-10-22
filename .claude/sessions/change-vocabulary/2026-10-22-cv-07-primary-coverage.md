@@ -17,13 +17,13 @@ summary: >
 
 decisions:
   - what: Source use balanced — the feed and markup are the coverage baseline; the law's text is read for territory, commencement dates, the law's own clauses and the legislation.gov.uk backlog
-    why: "leg.gov.uk are doing the hard work of getting the changes from the law"; where both state an attribute they agree 96–100%; widening the reader to the feed's coverage would take a long time
+    why: '"leg.gov.uk are doing the hard work of getting the changes from the law"; where both state an attribute they agree 96–100%; widening the reader to the feed''s coverage would take a long time'
     result: the amendment reader's yield over the feed not chased; territory and dates built
   - what: Notes and feed are both pointers, read as one deduplicated set; notes may fill gaps (identity, dates) but never stand as facts
     why: Jason — "both pointers … we mustn't duplicate"; "Use Notes as pointers when we have a gap. We can always get a date from the actual amending law"
     result: read pass and NoteDate built
   - what: Fetch whole documents, capped to the OH&S core family
-    why: "the count is the constraint not size"; "landing a core family will be a good test"
+    why: '"the count is the constraint not size"; "landing a core family will be a good test"'
     result: 144 + 25 parent Acts + 24 revoked SIs' made introductions
   - what: Ask before any rebuild, re-parse, fetch or long run
     why: Jason — "Feels like we're bouncing all over and I'm getting lost"
@@ -48,7 +48,7 @@ lessons:
     detail: Stale and overlapping rebuilds wrote mixed results twice; a --check was committed without being run and crashed.
     tag: tooling
   - title: Scope grows one fix at a time unless each step has a finish line
-    detail: "Read the feed's pointers" became fetching, four territory rounds, dates, a merge rework, speed and a refetch — each found while measuring the last.
+    detail: '"Read the feed''s pointers" became fetching, four territory rounds, dates, a merge rework, speed and a refetch — each found while measuring the last.'
     tag: tooling
 
 bugs:
