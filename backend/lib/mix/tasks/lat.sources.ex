@@ -4,12 +4,13 @@ defmodule Mix.Tasks.Lat.Sources do
   labels need against what the local store holds — sliced by the gap the
   feed leaves (read from the feed and the stored changes: re-run after a
   rebuild), every missing or stale document named with its status, and each
-  law's feed against the register's change statistics. Read-only: it never
-  fetches.
+  law's feed against the register's change statistics. Read-only unless
+  `--fetch`, which fetches only the documents the check failed.
 
       mix lat.sources --family "OH&S: Occupational"
       mix lat.sources --laws UK_uksi_2010_404,UK_ukpga_1974_37
       mix lat.sources --family "OH&S: Occupational" --all   # every failure listed
+      mix lat.sources --family "OH&S: Occupational" --fetch # then fetch only what failed (ask first)
 
   Statuses: `held` (fresh), `absent` (legislation.gov.uk has none: a stored
   404), `not_fetched`, `incomplete` (a feed missing pages), `stale` (older
@@ -28,14 +29,16 @@ defmodule Mix.Tasks.Lat.Sources do
 
   @text_ops ~w(inserted substituted repealed repealed_in_part renumbered)a
   alias SertantaiLegal.Scraper.EnactedBy.EnablingCache
-  alias SertantaiLegal.Scraper.LegislationGovUk.{ChangesFeed, ClmlStore}
+  alias SertantaiLegal.Scraper.LegislationGovUk.{ChangesFeed, Client, ClmlStore}
 
   @shortdoc "Sources a scope's labels need, against what is held (read-only)"
 
   @impl Mix.Task
   def run(args) do
     {opts, _, _} =
-      OptionParser.parse(args, strict: [family: :string, laws: :string, all: :boolean])
+      OptionParser.parse(args,
+        strict: [family: :string, laws: :string, all: :boolean, fetch: :boolean]
+      )
 
     Mix.Task.run("app.start")
     Logger.configure(level: :warning)
@@ -62,7 +65,65 @@ defmodule Mix.Tasks.Lat.Sources do
             |> Sources.register_counts(f.effects)
             |> Map.merge(%{law: f.law, register: f.register})
 
-    print(Sources.report(statuses, comparisons), opts)
+    report = Sources.report(statuses, comparisons)
+    print(report, opts)
+
+    if opts[:fetch], do: fetch(report.failures)
+  end
+
+  # --fetch: only the documents the check failed — a missing one fetched, a
+  # stale one or an incomplete feed fetched again (CV-S01; asked for first)
+  defp fetch(failures) do
+    Mix.shell().info("\nfetching #{length(failures)} documents the check failed …")
+
+    results =
+      for {f, i} <- Enum.with_index(failures, 1) do
+        r = fetch_one(f)
+        if rem(i, 20) == 0, do: Mix.shell().info("  #{i}/#{length(failures)}")
+        {f, r}
+      end
+
+    failed = for {f, r} <- results, r != :ok, do: {f, r}
+    Mix.shell().info("fetched #{length(results) - length(failed)}, failed #{length(failed)}")
+
+    for {f, r} <- failed,
+        do: Mix.shell().info("  #{f.law} #{inspect(f.part)}: #{inspect(r)}")
+  end
+
+  defp fetch_one(%{part: :introduction, law: law}) do
+    EnablingCache.get(law, retry_empty: true)
+    if EnablingCache.cached(law) != :none, do: :ok, else: :failed
+  end
+
+  defp fetch_one(%{part: :feed, law: law, status: status}) do
+    [_, type, year, number] = String.split(law, "_", parts: 4)
+    mode = if status == :not_fetched, do: :write, else: :refresh
+
+    case ChangesFeed.fetch(type, year, number, store: mode) do
+      {:ok, _} -> :ok
+      {:error, reason} -> if reason =~ "404", do: :ok, else: {:error, reason}
+    end
+  end
+
+  defp fetch_one(%{part: part, law: law, status: status}) do
+    [_, type, year, number] = String.split(law, "_", parts: 4)
+
+    path =
+      case part do
+        :body -> "/#{type}/#{year}/#{number}/body/data.xml"
+        :schedules -> "/#{type}/#{year}/#{number}/schedules/data.xml"
+        path when is_binary(path) -> path
+      end
+
+    mode = if status == :stale, do: :refresh, else: :prefer
+
+    case Client.fetch_xml(path, store: mode) do
+      {:ok, _} -> :ok
+      {:ok, _, _} -> :ok
+      # a 404 is stored as missing: legislation.gov.uk has none
+      {:error, 404, _} -> :ok
+      other -> other
+    end
   end
 
   defp scope(opts) do
