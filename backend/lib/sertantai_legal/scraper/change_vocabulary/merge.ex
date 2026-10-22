@@ -40,7 +40,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
     {own, unkeyed} =
       Enum.split_with(
         unkeyed,
-        &(Change.values(&1, :commencement, :by) != [] and Change.values(&1, :law_text, :by) == [])
+        &(Change.values(&1, :commencement, :commenced_by) != [] and
+            Change.values(&1, :law_text, :by) == [])
       )
 
     {law_text, markup} = Enum.split_with(unkeyed, &(Change.values(&1, :law_text, :by) != []))

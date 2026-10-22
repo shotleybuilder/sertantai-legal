@@ -39,13 +39,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   `Commencement.Rule`s; `:extents`, each amending Act's extent clause read
   (`AmendingLaw.Extent`); `:title`, the law's title — its own place;
   `:passed`, `:act_title` and `:continuations` for its own sunset
-  (`Readers.Expiry`).
+  (`Readers.Expiry`); `:changes`, the law's changes already built (read
+  back from `provision_changes`: `Store.for_law/1`) — the fold alone.
   """
   @spec labels(String.t(), String.t(), [Effect.t()], %{String.t() => map()}, keyword()) ::
           %{String.t() => [Label.period()]}
   def labels(law_name, xml, effects, provisions, opts \\ []) do
     facts = Markup.provisions(xml, law_name)
-    changes = changes(law_name, xml, effects, provisions, opts)
+
+    # the changes given (read back from `provision_changes`), else built
+    changes =
+      Keyword.get_lazy(opts, :changes, fn ->
+        build(law_name, xml, effects, provisions, opts, facts)
+      end)
 
     Map.new(provisions, fn {id, provision} ->
       {base, version} = version(id)
@@ -99,7 +105,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
         c.target == part,
         c.resolved.operation == :commenced,
         c.resolved.date != nil,
-        do: {c.resolved.date, c.resolved.partial, c.resolved.by}
+        do: {c.resolved.date, c.resolved.partial, Change.credit(c)}
   end
 
   defp parent_stages(id, stages) do
@@ -173,9 +179,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   """
   @spec changes(String.t(), String.t(), [Effect.t()], %{String.t() => map()}, keyword()) ::
           [Change.t()]
-  def changes(law_name, xml, effects, provisions, opts \\ []) do
-    facts = Markup.provisions(xml, law_name)
+  def changes(law_name, xml, effects, provisions, opts \\ []),
+    do: build(law_name, xml, effects, provisions, opts, Markup.provisions(xml, law_name))
 
+  defp build(law_name, xml, effects, provisions, opts, facts) do
     order =
       xml |> Markup.order() |> Enum.map(&Ref.from_clml(&1, law_name)) |> Enum.reject(&is_nil/1)
 

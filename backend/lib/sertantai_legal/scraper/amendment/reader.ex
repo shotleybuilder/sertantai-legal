@@ -92,15 +92,41 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   defp provision?(id),
     do: Regex.match?(~r/^(?:section|regulation|article|rule)-|^schedule-[^-]+-paragraph-/, id)
 
-  @doc "Each repeals table's introducing section (`reference/2`), by the table's id."
+  @doc """
+  Each Schedule's introducing section, by the Schedule's id
+  (`"schedule-7" => "section-111"`): the Schedule's own reference
+  (`reference/2`, where the schedules are held), else the section saying it
+  has effect ("111 Schedule 7, which supplements section 110 …, has
+  effect", where only the body is held). The one reader of this fact: the
+  repeals tables' sources (`Collect`) and an Act's extent
+  (`AmendingLaw.Extent`) use it.
+  """
   @spec references(Doc.t()) :: %{String.t() => String.t()}
   def references(doc) do
+    referenced =
+      for id <- doc.ids,
+          String.match?(id, ~r/^schedule-[^-]+$/),
+          ref = reference(doc, id),
+          ref != nil,
+          into: %{},
+          do: {id, ref}
+
+    Map.merge(has_effect(doc), referenced)
+  end
+
+  # "111 Schedule 7 … has effect": in a section's own words (not a
+  # subsection's, which says it of a Schedule it amends)
+  defp has_effect(doc) do
     for id <- doc.ids,
-        String.match?(id, ~r/^schedule-[^-]+$/),
-        ref = reference(doc, id),
-        ref != nil,
+        String.match?(id, ~r/^section-\d+[A-Z]*$/),
+        text = doc |> Doc.element(id) |> Doc.lines() |> Enum.join(" "),
+        [_, n] <-
+          Regex.scan(
+            ~r/\bSchedule\s+(\d+[A-Z]*)\b[^.]{0,300}?\b(?:has|shall have) effect\b/u,
+            text
+          ),
         into: %{},
-        do: {id, ref}
+        do: {"schedule-#{n}", id}
   end
 
   @doc """

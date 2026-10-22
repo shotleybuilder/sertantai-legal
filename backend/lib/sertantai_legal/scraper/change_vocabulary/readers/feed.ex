@@ -50,7 +50,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
            claims ++
              Claim.new(:feed, :ranged, if(ranged?, do: true), id) ++
              commenced_by(claims, e, commencement) ++
-             extent(e, extents)}
+             extent(e, extents) ++
+             affecting(e)}
+  end
+
+  # the amending provisions the feed names ("s. 29(4)" → ["s.29(4)"]): was
+  # the amending law's text read there? (`Conflicts`)
+  defp affecting(%Effect{affecting_provisions: text, effect_id: id}) do
+    case affecting_refs(text) do
+      [] -> []
+      refs -> Claim.new(:feed, :affecting, refs, id)
+    end
   end
 
   # A commencement stage of an effect, credited (primary) to the law whose
@@ -70,7 +80,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
          %{entries: entries} <- Evaluator.evaluate(text, ref, ctx),
          %{rule: %{source: %{law: by}}} <-
            Enum.find(entries, &(&1.date == date and not is_nil(&1.rule.source.law))) do
-      Claim.new(:commencement, :by, by, e.effect_id)
+      Claim.new(:commencement, :commenced_by, by, e.effect_id)
     else
       _ -> []
     end

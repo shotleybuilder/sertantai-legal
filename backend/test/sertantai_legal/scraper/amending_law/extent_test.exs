@@ -58,4 +58,34 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
     assert Extent.of_change(e, ["sch.7.para.27(2)", "sch.17.pt.2"]) == "E+W"
     assert Extent.of_change(e, ["sch.17.pt.2"]) == :same
   end
+
+  test "rows: one per statement, read back to the same extent (extent_rules, CV-04)", %{
+    extent: e
+  } do
+    rows = Extent.to_rows(e, "UK_ukpga_2005_15")
+
+    assert %{kind: "default", place: "E+W", source_ref: "s.179"} =
+             Enum.find(rows, &(&1.kind == "default"))
+
+    assert Enum.any?(rows, &(&1.kind == "only" and &1.place == "S" and "s.129" in &1.items))
+    assert Enum.any?(rows, &(&1.kind == "corresponds"))
+
+    assert %{items: ["sch.7"], source_ref: "s.111"} = Enum.find(rows, &(&1.kind == "introduces"))
+
+    assert Enum.all?(rows, &(&1.source_law == "UK_ukpga_2005_15"))
+    assert Extent.from_rows(rows) == e
+  end
+
+  test "an Act read with no extent clause is one row, read back as no clause" do
+    e =
+      Extent.read(
+        Doc.new("UK_ukpga_2099_1", [
+          ~S(<Legislation><Primary><Body><P1 id="section-1"><P1para><Text>Words.</Text></P1para></P1></Body></Primary></Legislation>)
+        ])
+      )
+
+    assert [%{kind: "none"}] = Extent.to_rows(e, "UK_ukpga_2099_1")
+    assert Extent.from_rows(Extent.to_rows(e, "UK_ukpga_2099_1")) == e
+    assert Extent.from_rows([]) == nil
+  end
 end

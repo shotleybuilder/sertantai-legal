@@ -22,7 +22,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
   conflict (`Resolved.conflicts`) — reported, never reconciled. Pure.
   """
 
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Change
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Conflicts}
   alias SertantaiLegal.Scraper.Territory
 
   defmodule Resolved do
@@ -48,6 +48,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
       :partial,
       :saved,
       :sources,
+      commenced_by: nil,
       tiers: %{},
       conflicts: []
     ]
@@ -58,6 +59,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
             territory: String.t() | nil,
             date: Date.t() | nil,
             by: String.t() | nil,
+            commenced_by: String.t() | nil,
             retained: boolean(),
             partial: boolean(),
             saved: boolean(),
@@ -73,7 +75,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
     commencement: :primary,
     markup: :derived,
     feed: :derived,
-    law: :derived
+    law: :derived,
+    # a parent commenced through its parts (`ChangeVocabulary`)
+    parts: :derived
   }
 
   @table [
@@ -106,12 +110,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
     partial: [{:commencement, :partial}, {:feed, :partial}],
     # a removal with savings (D3: repealed_saved)
     saved: [{:feed, :savings, :non_empty}],
-    by: [{:law_text, :by}, {:commencement, :by}, {:feed, :by}, {:markup, :cited}]
+    # the law making the change; the law bringing it into force is apart
+    # (a commencing order is not the law that made the change)
+    by: [{:law_text, :by}, {:feed, :by}, {:markup, :cited}],
+    commenced_by: [{:commencement, :commenced_by}]
   ]
 
   @doc "The tier of a claim source: `:primary` (the legal text) or `:derived`."
   @spec tier(atom()) :: :primary | :derived | nil
   def tier(source), do: Map.get(@tiers, source)
+
+  @doc "Each source's tier."
+  @spec tiers() :: %{atom() => :primary | :derived}
+  def tiers, do: @tiers
 
   @doc "The evidence table: attribute → sources in order (with named conditions)."
   @spec table() :: keyword()
@@ -130,22 +141,33 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
 
     value = &elem(chosen[&1], 0)
 
-    %{
-      c
-      | resolved: %Resolved{
-          operation: value.(:operation),
-          level: value.(:level) || :provision,
-          territory: value.(:territory),
-          date: value.(:date),
-          by: value.(:by),
-          retained: value.(:retained) == true,
-          partial: value.(:partial) == true,
-          saved: value.(:saved) not in [nil, []],
-          sources: Map.new(chosen, fn {attribute, {_v, source}} -> {attribute, source} end),
-          tiers: Map.new(chosen, fn {attribute, {_v, source}} -> {attribute, tier(source)} end),
-          conflicts: conflicts(c, chosen)
-        }
-    }
+    resolved =
+      %Resolved{
+        operation: value.(:operation),
+        level: value.(:level) || :provision,
+        territory: value.(:territory),
+        date: value.(:date),
+        by: value.(:by),
+        commenced_by: value.(:commenced_by),
+        retained: value.(:retained) == true,
+        partial: value.(:partial) == true,
+        saved: value.(:saved) not in [nil, []],
+        sources: Map.new(chosen, fn {attribute, {_v, source}} -> {attribute, source} end)
+      }
+
+    derive(%Change{c | resolved: resolved})
+  end
+
+  @doc """
+  A resolved change's tiers and conflicts, from its sources and claims —
+  never stored (CV-04): a change read back from `provision_changes` gets
+  them here.
+  """
+  @spec derive(Change.t()) :: Change.t()
+  def derive(%Change{resolved: %Resolved{} = r} = c) do
+    tiers = Map.new(r.sources, fn {attribute, source} -> {attribute, tier(source)} end)
+    c = %Change{c | resolved: %Resolved{r | tiers: tiers}}
+    %Change{c | resolved: %Resolved{c.resolved | conflicts: Conflicts.values(c)}}
   end
 
   # The amending provision's extent (primary: its Act's extent clause) bounds
@@ -170,16 +192,6 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
           cut -> %{chosen | territory: {cut, :law_text}}
         end
     end
-  end
-
-  # a primary value differing from a derived claim on the same attribute
-  defp conflicts(change, chosen) do
-    for {attribute, {value, source}} <- chosen,
-        tier(source) == :primary,
-        {derived, _} <- Enum.filter(@tiers, fn {_s, t} -> t == :derived end),
-        other <- Change.values(change, derived, attribute),
-        other != value,
-        do: {attribute, {source, value}, {derived, other}}
   end
 
   defp first(change, order, extent, facts) do

@@ -18,6 +18,12 @@ defmodule Mix.Tasks.Lat.Amending do
       mix lat.amending --read --amending A,B     # these amending laws (re-read)
       mix lat.amending --read --limit 20         # the next 20
 
+  An Act's own extent clause (CV-04: `extent_rules`) is read in the same
+  pass; for the Acts changing a law, or named Acts, alone:
+
+      mix lat.amending --extents --law UK_ukpga_1990_8
+      mix lat.amending --extents --amending UK_ukpga_2005_15
+
   One amending law at a time, each in its own process: a parsed amending
   law can take gigabytes (a 5-wide run exhausted memory, 2026-10-20).
   """
@@ -25,7 +31,7 @@ defmodule Mix.Tasks.Lat.Amending do
   use Mix.Task
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Locator, Pointer}
+  alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Extent, Locator, Pointer}
   alias SertantaiLegal.Scraper.Amendment.{Collect, Index, Reader, Rule, Store}
 
   @shortdoc "Print a law's amendment rules; read amending laws into rules"
@@ -34,13 +40,22 @@ defmodule Mix.Tasks.Lat.Amending do
   def run(args) do
     {opts, _, _} =
       OptionParser.parse(args,
-        strict: [law: :string, read: :boolean, amending: :string, limit: :integer]
+        strict: [
+          law: :string,
+          read: :boolean,
+          amending: :string,
+          limit: :integer,
+          extents: :boolean
+        ]
       )
 
     Mix.Task.run("app.start")
     Logger.configure(level: :warning)
 
     cond do
+      opts[:extents] ->
+        extents(opts)
+
       opts[:read] ->
         read(opts)
 
@@ -48,7 +63,9 @@ defmodule Mix.Tasks.Lat.Amending do
         for line <- opts[:law] |> Store.for_law() |> print(opts[:law]), do: Mix.shell().info(line)
 
       true ->
-        Mix.raise("usage: mix lat.amending --law X | --read [--amending A,B] [--limit N]")
+        Mix.raise(
+          "usage: mix lat.amending --law X | --read [--amending A,B] [--limit N] | --extents --law X | --extents --amending A,B"
+        )
     end
   end
 
@@ -66,6 +83,43 @@ defmodule Mix.Tasks.Lat.Amending do
       end)
 
     ["#{law}: #{length(rules)} rule(s)" | groups]
+  end
+
+  # ── --extents ───────────────────────────────────────────────────────
+
+  # the extent clauses of the Acts changing a law (its feed's affecting
+  # laws), or of the Acts named, held in the CLML store
+  defp extents(opts) do
+    acts =
+      case {opts[:amending], opts[:law]} do
+        {nil, nil} ->
+          Mix.raise("--extents needs --law X or --amending A,B")
+
+        {nil, law} ->
+          law
+          |> SertantaiLegal.Scraper.LatStagedParser.law_effects(store: :only)
+          |> Enum.map(& &1.affecting)
+          |> Enum.uniq()
+
+        {list, _} ->
+          String.split(list, ",", trim: true)
+      end
+      |> Enum.filter(&(Extent.Store.act?(&1) and held?(&1)))
+
+    Mix.shell().info("#{length(acts)} Acts to read for their extent clause")
+
+    for {a, i} <- Enum.with_index(acts, 1) do
+      # in its own process: the parsed document goes when it exits
+      line =
+        Task.async(fn ->
+          e = a |> doc() |> Extent.read()
+          {:ok, n} = Extent.Store.write(a, e)
+          "#{a}: #{e.default || "no clause"} (#{n} rows)"
+        end)
+        |> Task.await(:infinity)
+
+      Mix.shell().info("  [#{i}/#{length(acts)}] #{line}")
+    end
   end
 
   # ── --read ──────────────────────────────────────────────────────────
@@ -120,6 +174,9 @@ defmodule Mix.Tasks.Lat.Amending do
 
         rules = Enum.flat_map(ids, &Collect.read(doc, &1, laws))
         {:ok, n} = Store.write(amending, rules)
+
+        # an Act's own extent clause, from the same document (CV-04)
+        if Extent.Store.act?(amending), do: Extent.Store.write(amending, Extent.read(doc))
 
         :ok = Index.write(amending, doc, Enum.map(laws, & &1.law_name))
 

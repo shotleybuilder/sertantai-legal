@@ -26,6 +26,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Change do
   def values(%__MODULE__{claims: claims}, source, attribute),
     do: for(%Claim{source: ^source, attribute: ^attribute, value: v} <- claims, do: v)
 
+  @doc """
+  The law a label credits with the change (D1 `changed_by`): for a
+  commencement, the law bringing it into force; else the law making it.
+  """
+  @spec credit(t()) :: String.t() | nil
+  def credit(%__MODULE__{resolved: %{operation: :commenced, commenced_by: by}}) when by != nil,
+    do: by
+
+  def credit(%__MODULE__{resolved: %{by: by}}), do: by
+
   @doc "The first value `source` claims for `attribute`; nil when none."
   @spec value(t(), atom(), atom()) :: term()
   def value(change, source, attribute), do: change |> values(source, attribute) |> List.first()

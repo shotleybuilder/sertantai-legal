@@ -45,7 +45,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.OwnCommencement do
       Claim.new(:commencement, :level, :provision, ref),
       Claim.new(:commencement, :date, date, ref),
       Claim.new(:commencement, :partial, partial?, ref),
-      Claim.new(:commencement, :by, law, ref)
+      Claim.new(:commencement, :commenced_by, law, ref)
     ])
   end
 end

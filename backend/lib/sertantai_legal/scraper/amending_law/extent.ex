@@ -22,17 +22,20 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, RefList}
+  alias SertantaiLegal.Scraper.Amendment.Reader
   alias SertantaiLegal.Scraper.Commencement.Order
   alias SertantaiLegal.Scraper.Territory
 
-  defstruct default: nil, lists: [], corresponds: false, introduced_by: %{}
+  defstruct default: nil, lists: [], corresponds: false, introduced_by: %{}, ref: nil, text: nil
 
   @type list_kind :: :also | :only | :same
   @type t :: %__MODULE__{
           default: String.t() | nil,
           lists: [{list_kind(), String.t() | nil, [String.t()]}],
           corresponds: boolean(),
-          introduced_by: %{String.t() => String.t()}
+          introduced_by: %{String.t() => String.t()},
+          ref: String.t() | nil,
+          text: String.t() | nil
         }
 
   @places "England and Wales|Great Britain|England|Wales|Scotland|Northern Ireland"
@@ -66,7 +69,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
       default: default(clause),
       lists: lists(clause, clause_ref),
       corresponds: Regex.match?(~r/\bcorresponds\s+to\s+the\s+repeal\b/i, clause),
-      introduced_by: introductions(sections)
+      introduced_by: introductions(doc),
+      ref: clause_ref,
+      text: if(clause != "", do: clause)
     }
   end
 
@@ -121,18 +126,80 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
 
   defp refs(text, clause_ref), do: RefList.parse(text, clause_ref)
 
-  # each Schedule's introducing section: "111 Schedule 7, which supplements
-  # section 110 …, has effect"
-  defp introductions(sections) do
-    for {ref, text} <- sections,
-        not String.contains?(ref, "("),
-        [_, n] <-
-          Regex.scan(
-            ~r/\bSchedule\s+(\d+[A-Z]*)\b[^.]{0,300}?\b(?:has|shall have) effect\b/u,
-            text
-          ),
+  # each Schedule's introducing section (`Amendment.Reader.references/1`,
+  # the one reader of it), as refs: "sch.7" => "s.111"
+  defp introductions(doc) do
+    for {sch, sec} <- Reader.references(doc),
+        s = Order.ref(sch),
+        r = Order.ref(sec),
+        s != nil and r != nil,
         into: %{},
-        do: {"sch.#{n}", ref}
+        do: {s, r}
+  end
+
+  @doc """
+  The extent read as `extent_rules` rows, one per statement (CV-04): the
+  default (`"default"`, with the clause's ref and words), each list
+  (`"also"`, `"only"`, `"same"`, in order), the corresponding-repeal
+  sentence (`"corresponds"`) and each Schedule's introducing section
+  (`"introduces"`: `items` the Schedule, `source_ref` the section). An Act
+  read with no clause gives a `"none"` row, so read is told from unread.
+  """
+  @spec to_rows(t(), String.t()) :: [map()]
+  def to_rows(%__MODULE__{} = e, law) do
+    row = fn kind, place, items, ref, text, position ->
+      %{
+        kind: kind,
+        place: place,
+        items: items,
+        source_law: law,
+        source_ref: ref,
+        source_text: text,
+        position: position
+      }
+    end
+
+    clause =
+      case e.default do
+        nil ->
+          [row.("none", nil, [], nil, nil, 0)]
+
+        d ->
+          [row.("default", d, [], e.ref, e.text, 0)] ++
+            (e.lists
+             |> Enum.with_index(1)
+             |> Enum.map(fn {{kind, place, items}, i} ->
+               row.(to_string(kind), place, items, e.ref, nil, i)
+             end)) ++
+            if(e.corresponds, do: [row.("corresponds", nil, [], e.ref, nil, 0)], else: [])
+      end
+
+    clause ++
+      for {sch, sec} <- Enum.sort(e.introduced_by),
+          do: row.("introduces", nil, [sch], sec, nil, 0)
+  end
+
+  @doc "The extent from its `extent_rules` rows; nil when there are none (not read)."
+  @spec from_rows([map()]) :: t() | nil
+  def from_rows([]), do: nil
+
+  def from_rows(rows) do
+    default = Enum.find(rows, &(&1.kind == "default"))
+
+    %__MODULE__{
+      default: default && default.place,
+      ref: default && default.source_ref,
+      text: default && default.source_text,
+      lists:
+        for(
+          r <- Enum.sort_by(rows, & &1.position),
+          r.kind in ~w(also only same),
+          do: {String.to_existing_atom(r.kind), r.place, r.items}
+        ),
+      corresponds: Enum.any?(rows, &(&1.kind == "corresponds")),
+      introduced_by:
+        for(r <- rows, r.kind == "introduces", into: %{}, do: {hd(r.items), r.source_ref})
+    }
   end
 
   @doc """

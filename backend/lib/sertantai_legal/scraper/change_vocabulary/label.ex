@@ -290,14 +290,36 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
 
   defp intersect(a, b), do: Territory.subtract(a, Territory.subtract(a, b) || "") || a
 
-  # the fields' tier from the changes that set them: derived when any is
-  defp tiers(current, fields, changes) do
-    tier =
-      if Enum.any?(changes, &Enum.any?(Map.values(&1.resolved.tiers), fn t -> t == :derived end)),
-        do: :derived,
-        else: :primary
+  # each field's tier from the attributes that set it, over the changes
+  # that set it: derived when any is, primary when all stated are, nil
+  # when no source states them (CV-04: a field rests on its own evidence,
+  # not on any attribute of the change)
+  @field_attributes %{
+    status: [:operation, :date, :partial],
+    territory: [:territory],
+    in_force_from: [:date],
+    changed_by: [:by, :commenced_by]
+  }
 
-    Enum.reduce(fields, current, &Map.put(&2, &1, tier))
+  defp tiers(current, fields, changes) do
+    Enum.reduce(fields, current, fn field, acc ->
+      stated =
+        for c <- changes,
+            a <- Map.fetch!(@field_attributes, field),
+            t = Map.get(c.resolved.tiers, a),
+            t != nil,
+            uniq: true,
+            do: t
+
+      tier =
+        cond do
+          :derived in stated -> :derived
+          :primary in stated -> :primary
+          true -> nil
+        end
+
+      Map.put(acc, field, tier)
+    end)
   end
 
   # a repeal naming no territory reaches everywhere; nil extent is the UK
@@ -317,7 +339,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
   defp by(changes, self),
     do:
       changes
-      |> Enum.map(& &1.resolved.by)
+      |> Enum.map(&Change.credit/1)
       |> Enum.reject(&(&1 == nil or &1 == self))
       |> Enum.uniq()
       |> Enum.sort()
