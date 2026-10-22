@@ -111,28 +111,16 @@ defmodule Mix.Tasks.Lat.FeedCheck do
         end)
 
       # each row's XML id → its ref, as the parse named it
-      xml_ids =
-        Enum.reduce(row_ids, %{}, fn
-          [_, nil], acc ->
-            acc
-
-          [sid, x], acc ->
-            Map.put_new(
-              acc,
-              x,
-              sid
-              |> String.replace_prefix(law <> ":", "")
-              |> String.replace(~r/\[[^\]]+\]$/, "")
-              |> Ref.canonical()
-            )
-        end)
+      xml_ids = Ref.xml_ids(law, row_ids)
 
       held = %{
         rows: MapSet.new(rows),
         clml:
           order |> Enum.map(&Ref.from_clml(&1, law)) |> Enum.reject(&is_nil/1) |> MapSet.new(),
         schedules?: Enum.any?(rows, &String.starts_with?(&1, "sch.")),
-        xml_ids: xml_ids
+        xml_ids: xml_ids,
+        # the effects the text marks (its change ids)
+        marked: ~r/key-[0-9a-f]{32}/ |> Regex.scan(xml) |> List.flatten() |> MapSet.new()
       }
 
       sets =

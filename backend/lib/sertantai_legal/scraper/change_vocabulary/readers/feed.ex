@@ -183,30 +183,76 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
       end
     else
       case {operation(e), stages(e)} do
-        # a whole insertion in stages (for specified purposes, then fully):
-        # the provision exists from the first stage, partly in force; each
-        # later stage commences it further (TCPA 1990 s.78(4BA))
-        {:inserted, [{first, q} | later]} when later != [] and e.type in ["inserted", "added"] ->
-          [
-            {id,
-             claims(e) ++
-               Claim.new(:feed, :date_first, first, id) ++
-               Claim.new(:feed, :partial, not String.match?(q || "", @full), id)}
-            | for {date, qualification} <- later do
-                {"#{id}@#{date}",
-                 Enum.concat([
-                   Claim.new(:feed, :operation, :commenced, id),
-                   Claim.new(:feed, :level, :provision, id),
-                   Claim.new(:feed, :date, date, id),
-                   Claim.new(:feed, :partial, not String.match?(qualification || "", @full), id),
-                   Claim.new(:feed, :by, e.affecting, id)
-                 ])}
-              end
-          ]
+        # a whole removal in stages (omitted for specified purposes, then
+        # in so far as not already in force: HSWA 1974 s.47(5)): a removal
+        # in part at each partial stage, the removal at the full one
+        {:repealed, [_, _ | _] = stages} ->
+          if level(EffectFacts.type(e.type)) == :provision,
+            do: staged_removal(e, stages),
+            else: staged(e, stages)
+
+        # a text change in stages (inserted for specified purposes, then
+        # fully: TCPA 1990 s.78(4BA); words substituted the same way): it
+        # takes effect from the first stage, partly; each later stage
+        # commences it further
+        {op, [_, _ | _] = stages}
+        when op in [:inserted, :substituted, :repealed_in_part, :renumbered] ->
+          staged(e, stages)
 
         _ ->
           [{id, claims(e)}]
       end
+    end
+  end
+
+  defp staged(%Effect{effect_id: id} = e, [{first, q} | later]) do
+    [
+      {id,
+       claims(e) ++
+         Claim.new(:feed, :date_first, first, id) ++
+         Claim.new(:feed, :partial, not String.match?(q || "", @full), id)}
+      | for {date, qualification} <- later do
+          {"#{id}@#{date}",
+           Enum.concat([
+             Claim.new(:feed, :operation, :commenced, id),
+             Claim.new(:feed, :level, :provision, id),
+             Claim.new(:feed, :date, date, id),
+             Claim.new(:feed, :partial, not String.match?(qualification || "", @full), id),
+             Claim.new(:feed, :by, e.affecting, id)
+           ])}
+        end
+    ]
+  end
+
+  # the removal is the effect (its key, for the markup to join) on the day
+  # it is complete; the earlier stages remove it in part
+  defp staged_removal(%Effect{effect_id: id} = e, stages) do
+    {full, partial} =
+      case Enum.split_with(stages, fn {_, q} -> String.match?(q || "", @full) end) do
+        {[], partial} -> {nil, partial}
+        {[{date, _} | _], partial} -> {date, partial}
+      end
+
+    removal =
+      if full,
+        do: [
+          {id,
+           Enum.reject(claims(e), &(&1.attribute == :date)) ++ Claim.new(:feed, :date, full, id)}
+        ],
+        else: []
+
+    in_part =
+      for {date, _} <- partial do
+        {"#{id}@#{date}",
+         Enum.reject(claims(e), &(&1.attribute in [:date, :operation])) ++
+           Claim.new(:feed, :operation, :repealed_in_part, id) ++
+           Claim.new(:feed, :date, date, id)}
+      end
+
+    # no full stage: every stage removes it in part, the first keeping the key
+    case {removal, in_part} do
+      {[], [{_, claims} | rest]} -> [{id, claims} | rest]
+      _ -> removal ++ in_part
     end
   end
 
@@ -222,7 +268,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   @in_part ~r/\b(?:repeal|revok|omit|expir|cease)\w*\b.*\bin part\b/i
 
   defp operation(e) do
-    if String.match?(e.type || "", @in_part),
+    if String.match?(EffectFacts.type(e.type) || "", @in_part),
       do: :repealed_in_part,
       else: Map.get(@operations, EffectFacts.kind(e.type, nil))
   end
@@ -302,7 +348,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   defp claims(%Effect{effect_id: id} = e) do
     Enum.concat([
       Claim.new(:feed, :operation, operation(e), id),
-      Claim.new(:feed, :level, level(e.type), id),
+      Claim.new(:feed, :level, level(EffectFacts.type(e.type)), id),
       Claim.new(:feed, :territory, code(e.territorial_application), id),
       Claim.new(:feed, :effect_extent, code(e.effect_extent), id),
       Claim.new(:feed, :date, e.in_force_date, id),
@@ -314,8 +360,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
     ])
   end
 
+  # a change within the provision's text: its words, a sum, a figure, an
+  # entry in its table, punctuation, its heading
+  @words_level ~r/^\s*(?:words?|sums?|figures?|entry|entries|comma|semi[- ]?colon|full stop|hyphen|symbol|punctuation|formula|number|label|definitions?)\b|\bheading\b/i
+
   defp level(type) do
-    if String.match?(type || "", ~r/^\s*words?\b|\bheading\b/i), do: :words, else: :provision
+    if String.match?(type || "", @words_level), do: :words, else: :provision
   end
 
   defp code(nil), do: nil

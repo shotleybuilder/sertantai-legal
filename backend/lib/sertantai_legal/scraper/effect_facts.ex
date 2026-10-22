@@ -41,6 +41,8 @@ defmodule SertantaiLegal.Scraper.EffectFacts do
   """
   @spec kind(String.t() | nil, String.t() | nil) :: String.t()
   def kind(type, code_type) when is_binary(type) do
+    type = type(type)
+
     cond do
       type =~ ~r/^\s*(?:expires?|expired|ceases? to have effect)\s+in\s+part\b/i -> "amended"
       type =~ ~r/^\s*(?:expires?|expired|ceases? to have effect)\b/i -> "repealed"
@@ -49,6 +51,38 @@ defmodule SertantaiLegal.Scraper.EffectFacts do
   end
 
   def kind(type, code_type), do: EffectKind.kind(type, code_type)
+
+  # the feed's other words for the verbs (CV-S02: the corpus's stored
+  # feeds): EU types, older abbreviations, misspellings
+  @words [
+    {~r/\b(?:deleted|deletion)\b/i, "omitted"},
+    {~r/\b(?:replacement|replaced)\b/i, "substituted"},
+    {~r/\baddition\b/i, "inserted"},
+    {~r/\bpartial repeal\b/i, "repealed in part"},
+    {~r/\brepeal\b/i, "repealed"},
+    {~r/\brev\b\.?\s*/i, "revoked "},
+    {~r/\bsubst\b\.?/i, "substituted"},
+    {~r/\bsu[bs]\w*t\w*t\w*ed\b/i, "substituted"},
+    {~r/\bomit+ed\b/i, "omitted"},
+    {~r/\bin pt\b\.?/i, "in part"}
+  ]
+
+  @doc """
+  An effect Type in the verbs `EffectKind` reads: "replacement" is
+  "substituted", "addition" "inserted", "words deleted" "words omitted",
+  "rev in pt" "revoked in part", "subst" and "substititued" "substituted".
+  The label side's reading (`kind/2`, the feed reader's in-part and
+  level); the parse's `EffectKind` is unchanged.
+  """
+  @spec type(String.t() | nil) :: String.t() | nil
+  def type(nil), do: nil
+
+  def type(type) do
+    @words
+    |> Enum.reduce(type, fn {re, verb}, t -> Regex.replace(re, t, verb) end)
+    |> String.replace(~r/\s+/, " ")
+    |> String.trim()
+  end
 
   @doc """
   An effect's facts: every dated InForce (`effective_from` the latest), the

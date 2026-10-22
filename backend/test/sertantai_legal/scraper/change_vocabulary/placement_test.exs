@@ -70,6 +70,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.PlacementTest do
              :placed_ancestor
   end
 
+  test "no id of its own, the change marked in the text: on the row above (CLP Art. 2's definitions)" do
+    held = Map.put(@held, :marked, MapSet.new(["key-2"]))
+    e = %{affected_provisions: "reg. 3(9)", affected_refs: ["regulation-3-9"], effect_id: "key-2"}
+
+    assert Placement.classify(e, ["reg.3(9)"], held) == :placed_ancestor
+
+    assert Placement.classify(%{e | effect_id: "key-3"}, ["reg.3(9)"], held) ==
+             {:unplaced, :not_in_text}
+  end
+
   test "which reasons are faults of ours, which known limits, tell-tales, or the feed's own" do
     assert Placement.fault?(:refs_not_converted)
     refute Placement.fault?(:row_missing)
@@ -144,6 +154,27 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.PlacementTest do
         [c] = Placement.retarget([resolved("reg.13(2)(b)(i)(aa)", op, :provision)], @rows, @text)
         assert c.target == "reg.13(2)(b)(i)(aa)"
       end
+    end
+
+    test "no id of its own, the event marked in the text: moved, or dropped where the markup put it" do
+      deep = resolved("reg.13(2)(b)(i)(zz)", :substituted, :words)
+
+      marked = fn target ->
+        %Change{
+          key: "k",
+          target: target,
+          claims: [%Claim{source: :markup, attribute: :operation, value: :substituted, ref: "k"}]
+        }
+        |> Evidence.resolve(nil)
+      end
+
+      moved = Placement.retarget([deep, marked.("reg.13")], @rows, @text)
+      assert Enum.map(moved, & &1.target) == ["reg.13(2)(b)(i)", "reg.13"]
+
+      assert [%Change{target: "reg.13(2)(b)(i)"} = kept] =
+               Placement.retarget([deep, marked.("reg.13(2)(b)(i)")], @rows, @text)
+
+      assert Change.values(kept, :markup, :operation) == [:substituted]
     end
 
     test "held, held as versions, gone from the text, or nothing held above: left alone" do

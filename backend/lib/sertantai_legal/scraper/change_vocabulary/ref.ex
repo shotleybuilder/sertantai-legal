@@ -40,6 +40,37 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Ref do
   @spec canonical(String.t()) :: String.t()
   def canonical(ref), do: String.replace(ref, ~r/\p{Zs}/u, " ")
 
+  @doc """
+  Each LAT row's XML id → its ref (canonical, versions share their base:
+  "section-23" → "s.23"), from `[section_id, source_xml_id]` rows — the
+  parse's own naming, for the feed reader. One id can name several rows,
+  where legislation.gov.uk repeats it (SI 1272/2008 gives `article-38-1`
+  to Art. 38(A1), (1) and (3)): the row the id names by itself
+  (`from_clml/2`) wins, else one without a `#n` repeat mark.
+  """
+  @spec xml_ids(String.t(), [[String.t() | nil]]) :: %{String.t() => String.t()}
+  def xml_ids(law_name, rows) do
+    rows
+    |> Enum.reject(fn [_, x] -> is_nil(x) end)
+    |> Enum.group_by(&List.last/1, fn [sid, _] ->
+      sid
+      |> String.replace_prefix(law_name <> ":", "")
+      |> String.replace(~r/\[[^\]]+\]$/, "")
+      |> canonical()
+    end)
+    |> Map.new(fn {x, refs} -> {x, pick(Enum.uniq(refs), x, law_name)} end)
+  end
+
+  defp pick([ref], _x, _law_name), do: ref
+
+  defp pick(refs, x, law_name) do
+    own = from_clml(x, law_name)
+
+    if own in refs,
+      do: own,
+      else: Enum.find(refs, hd(refs), &(not String.contains?(&1, "#")))
+  end
+
   defp eu?(nil), do: false
   defp eu?(law_name), do: Enum.at(String.split(law_name, "_"), 1) in @eu
 end

@@ -25,6 +25,31 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.CanonicalTest do
     assert Ref.canonical("s.23(1)[E+W]") == "s.23(1)[E+W]"
   end
 
+  test "an XML id naming several rows: the row it names by itself, else one without a repeat mark" do
+    law = "UK_eur_2008_1272"
+
+    ids =
+      Ref.xml_ids(law, [
+        [law <> ":art.Article 38(A1)", "article-38-1"],
+        [law <> ":art.Article 38(1)", "article-38-1"],
+        [law <> ":art.Article 38(3)", "article-38-1"],
+        [law <> ":h.4", "crossheading-x"],
+        [law <> ":h.5", "crossheading-x"],
+        [law <> ":art.Article 7(1)[E+W]", "article-7-1"],
+        [law <> ":art.Article 7(1)[S]", "article-7-1"],
+        [law <> ":art.Article 9#2", "article-9-x"],
+        [law <> ":art.Article 9", "article-9-x"],
+        [law <> ":art.Article 10", nil]
+      ])
+
+    assert ids == %{
+             "article-38-1" => "art.Article 38(1)",
+             "crossheading-x" => "h.4",
+             "article-7-1" => "art.Article 7(1)",
+             "article-9-x" => "art.Article 9"
+           }
+  end
+
   test "a row named with a non-breaking space meets the readers' name" do
     labels =
       ChangeVocabulary.labels("UK_eur_2012_1", @xml, [], %{

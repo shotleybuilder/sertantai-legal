@@ -11,7 +11,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
     (C3: `s.23` → `s.23[E+W]`, `s.23[S]`);
   - `:whole_law` — on the whole instrument;
   - `:placed_ancestor` — deeper than our rows: on the nearest held row,
-    whose words it changes (`retarget/3` moves it there);
+    whose words it changes (`retarget/3` moves it there); also a provision
+    with no id of its own (a definition in a list) whose change the text
+    marks (`marked`: the effect ids in the CLML);
   - `{:unplaced, reason}`:
     - `:schedule_not_parsed` — in a schedule (or an EU annex, the same
       role); schedules are not parsed into LAT (a known limit for v0.1,
@@ -85,6 +87,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
       Enum.any?(targets, &MapSet.member?(held.clml, &1)) ->
         {:unplaced, :row_missing}
 
+      # a provision with no id of its own (CLP Art. 2's definitions are
+      # ListItems), the change marked in the text: on the row above
+      MapSet.member?(Map.get(held, :marked, MapSet.new()), Map.get(effect, :effect_id)) and
+          Enum.any?(targets, &(held_ancestor(&1, held.rows) != nil)) ->
+        :placed_ancestor
+
       true ->
         {:unplaced, :not_in_text}
     end
@@ -105,25 +113,37 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
   @spec retarget([Change.t()], MapSet.t(), MapSet.t()) :: [Change.t()]
   def retarget(changes, rows, text) do
     bases = MapSet.new(rows, &base/1)
+    # events the text marks (the markup placed them): in the text, though
+    # the provision named has no id of its own (a definition in a list)
+    marked = for c <- changes, marked?(c), into: MapSet.new(), do: c.key
+    placed = MapSet.new(changes, &{&1.key, &1.target})
 
     changes
-    |> Enum.map(fn %Change{target: t} = c ->
+    |> Enum.flat_map(fn %Change{target: t} = c ->
       with true <- c.resolved != nil and c.resolved.operation in @text_changes,
            false <- MapSet.member?(bases, t),
-           true <- MapSet.member?(text, t),
+           true <- MapSet.member?(text, t) or MapSet.member?(marked, c.key),
            a when a != nil <- held_ancestor(t, rows) do
-        %Change{
-          c
-          | target: a,
-            claims: c.claims ++ Claim.new(:placement, :below_rows, t, c.key),
-            resolved: %{c.resolved | level: :words}
-        }
+        # the event already on that row (the markup's): it stands for it
+        if MapSet.member?(placed, {c.key, a}),
+          do: [],
+          else: [
+            %Change{
+              c
+              | target: a,
+                claims: c.claims ++ Claim.new(:placement, :below_rows, t, c.key),
+                resolved: %{c.resolved | level: :words}
+            }
+          ]
       else
-        _ -> c
+        _ -> [c]
       end
     end)
     |> Enum.uniq_by(&{&1.key, &1.target})
   end
+
+  defp marked?(c),
+    do: Change.values(c, :markup, :operation) != [] or Change.values(c, :markup, :placed) != []
 
   # the nearest ancestor we hold a row for (or its territorial versions)
   defp held_ancestor(target, rows) do

@@ -39,7 +39,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.{ChangeVocabulary, LatRef, LatStagedParser}
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.Store, as: ExtentStore
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{Conflicts, Store}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Conflicts, Ref, Store}
 
   @shortdoc "A law's changes, evidence and labels through the change vocabulary; build the change register"
 
@@ -242,14 +242,13 @@ defmodule Mix.Tasks.Lat.Vocabulary do
   # each LAT row's XML id → its ref, as the parse named it (versions share
   # their base: "section-23" → "s.23")
   defp xml_ids(law) do
-    Repo.query!(
-      "SELECT source_xml_id, section_id FROM legal_articles WHERE law_name = $1 AND source_xml_id IS NOT NULL",
-      [law]
-    ).rows
-    |> Enum.reduce(%{}, fn [x, sid], acc ->
-      ref = sid |> String.replace_prefix(law <> ":", "") |> String.replace(~r/\[[^\]]+\]$/, "")
-      Map.put_new(acc, x, ref)
-    end)
+    Ref.xml_ids(
+      law,
+      Repo.query!(
+        "SELECT section_id, source_xml_id FROM legal_articles WHERE law_name = $1 AND source_xml_id IS NOT NULL",
+        [law]
+      ).rows
+    )
   end
 
   # what the build read, for staleness: each input's latest reading
