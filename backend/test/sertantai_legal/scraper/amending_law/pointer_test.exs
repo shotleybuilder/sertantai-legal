@@ -101,4 +101,21 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.PointerTest do
     # a path stays a path: (4)(a) is sub-paragraph (4), item (a)
     assert Pointer.to_refs({:schedule, "22", nil, "4", ["4", "a"]}) == ["sch.22.para.4(4)(a)"]
   end
+
+  test "the feed's amending provisions read as the notes' are (CV-07: one set of pointers)" do
+    assert Pointer.refs_in("s. 29(4)") == [{:section, "29", ["4"]}]
+
+    assert Pointer.refs_in("Sch. 7 para. 27(2) Sch. 17 Pt. 2") == [
+             {:schedule, "7", nil, "27", ["2"]},
+             {:schedule, "17", "2", nil, []}
+           ]
+
+    assert Pointer.refs_in("s. 111, Sch. 7") == [
+             {:section, "111", []},
+             {:schedule, "7", nil, nil, []}
+           ]
+
+    assert Pointer.refs_in("reg. 2(2)(a)") == [{:regulation, "2", ["2", "a"]}]
+    assert Pointer.refs_in(nil) == []
+  end
 end

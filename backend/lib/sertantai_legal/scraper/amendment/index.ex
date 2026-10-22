@@ -30,9 +30,12 @@ defmodule SertantaiLegal.Scraper.Amendment.Index do
     end
   end
 
-  @doc "Write `amending`'s index from its document, read for `laws` (law names)."
-  @spec write(String.t(), Doc.t(), [String.t()]) :: :ok
-  def write(amending, doc, laws) do
+  @doc """
+  Write `amending`'s index from its document, read for `laws` (law names),
+  at `pointers` (the provisions read: notes' and feed's, CV-07).
+  """
+  @spec write(String.t(), Doc.t(), [String.t()], [String.t()]) :: :ok
+  def write(amending, doc, laws, pointers \\ []) do
     File.mkdir_p!(@dir)
 
     File.write!(
@@ -42,7 +45,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Index do
         "references" => Reader.references(doc),
         "parts" => Reader.parts(doc),
         "reader" => ReaderVersion.current(),
-        "laws" => Enum.sort(Enum.uniq(laws))
+        "laws" => Enum.sort(Enum.uniq(laws)),
+        "pointers" => Enum.sort(Enum.uniq(pointers))
       })
     )
   end

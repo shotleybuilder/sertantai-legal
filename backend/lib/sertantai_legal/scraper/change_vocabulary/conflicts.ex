@@ -79,22 +79,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Conflicts do
   Every conflict in a law's changes, as maps with `kind`, `target`, `key`,
   `by` and the kind's detail.
   """
-  @spec report([Change.t()]) :: [map()]
-  def report(changes) do
+  @spec report([Change.t()], %{String.t() => [String.t()]} | nil) :: [map()]
+  def report(changes, pointers \\ nil) do
     primary = Enum.filter(changes, &(tiers(&1) == [:primary] and text?(&1)))
     derived = Enum.filter(changes, &(tiers(&1) == [:derived] and text?(&1)))
 
-    # the amending provisions whose text was read: each rule's key is
-    # "law:element id" ("UK_ukpga_2015_7:section-29" → s.29)
+    # the amending provisions whose text was read: the read pass's own
+    # record (`pointers`: law → refs read, `Amendment.Index`), else each
+    # rule's key, "law:element id" ("UK_ukpga_2015_7:section-29" → s.29)
     read =
-      for c <- changes,
-          Change.values(c, :law_text, :by) != [],
-          [law, id] <- [String.split(c.key, ":", parts: 2)],
-          ref = Order.ref(id),
-          ref != nil,
-          reduce: %{} do
-        acc -> Map.update(acc, law, MapSet.new([ref]), &MapSet.put(&1, ref))
-      end
+      if pointers,
+        do: Map.new(pointers, fn {l, rs} -> {l, MapSet.new(rs)} end),
+        else: rule_refs(changes)
 
     twins = Map.new(primary, fn p -> {p.key <> "|" <> p.target, twins(p, derived)} end)
     twinned = twins |> Map.values() |> List.flatten() |> MapSet.new(&(&1.key <> "|" <> &1.target))
@@ -148,6 +144,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Conflicts do
           }
 
     value ++ unjoined ++ uncovered ++ unread
+  end
+
+  defp rule_refs(changes) do
+    for c <- changes,
+        Change.values(c, :law_text, :by) != [],
+        [law, id] <- [String.split(c.key, ":", parts: 2)],
+        ref = Order.ref(id),
+        ref != nil,
+        reduce: %{} do
+      acc -> Map.update(acc, law, MapSet.new([ref]), &MapSet.put(&1, ref))
+    end
   end
 
   # one of the amending provisions the feed names was read (it, or a

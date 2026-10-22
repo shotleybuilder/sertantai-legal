@@ -87,6 +87,18 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Pointer do
     end
   end
 
+  @doc """
+  The amending provisions a changes-feed effect names ("Sch. 7 para. 27(2)
+  Sch. 17 Pt. 2", "s. 111, Sch. 7") as refs, read as a note's are — the
+  feed and the notes are both pointers to where the amending law's text is
+  read (CV-07; Jason 2026-10-22: "both pointers … we mustn't duplicate").
+  """
+  @spec refs_in(String.t() | nil) :: [ref()]
+  def refs_in(nil), do: []
+
+  def refs_in(text),
+    do: text |> String.replace(~r/\s+(?=Schs?\.)/, ", ") |> refs()
+
   # a commencing instrument after ";": "S.I. 2001/3266, art. 2, Sch."
   defp commencing(segment) do
     case Regex.run(@si, segment, return: :index) do

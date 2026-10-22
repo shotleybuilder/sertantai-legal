@@ -81,7 +81,16 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
     for law <- laws do
       changes = Store.for_law(law)
-      report = Conflicts.report(changes)
+
+      # what the read pass read of each amending law (its index)
+      pointers =
+        for l <- changes |> Enum.map(& &1.resolved.by) |> Enum.reject(&is_nil/1) |> Enum.uniq(),
+            index = SertantaiLegal.Scraper.Amendment.Index.get(l),
+            index != nil,
+            into: %{},
+            do: {l, index["pointers"] || []}
+
+      report = Conflicts.report(changes, pointers)
 
       counts =
         report

@@ -9,7 +9,8 @@ defmodule Mix.Tasks.Lat.Amending do
       UK_uksi_2014_1638 reg.69, reg.70 — substituted — instruction — UK_uksi_2019_696 sch.16.para.28: “For Part 13, Sub-Part C … substitute—”
 
   The read pass (AR-03) reads each amending law once — the provisions our
-  laws' notes point to (one hop), for every law they point from — and stores
+  laws' notes and their changes feeds point to (one hop; one deduplicated
+  set of pointers, CV-07), for every law they point from — and stores
   its rules (`amendment_rules`) with a small index (`Amendment.Index`:
   element ids, each repeals table's introducing section, the reader version,
   the laws read for), so the collector needs no XML:
@@ -33,6 +34,8 @@ defmodule Mix.Tasks.Lat.Amending do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Extent, Locator, Pointer}
   alias SertantaiLegal.Scraper.Amendment.{Collect, Index, Reader, Rule, Store}
+
+  @text_kinds ~w(substituted inserted repealed renumbered amended)
 
   @shortdoc "Print a law's amendment rules; read amending laws into rules"
 
@@ -125,52 +128,126 @@ defmodule Mix.Tasks.Lat.Amending do
   # ── --read ──────────────────────────────────────────────────────────
 
   defp read(opts) do
+    Mix.shell().info("reading the changes feeds of our LAT laws for their pointers …")
+    feed = feed_pointers()
+
     laws =
       case opts[:amending] do
-        nil -> amending_laws() |> Enum.reject(&(&1 |> Index.get() |> Index.fresh?()))
+        nil -> amending_laws(feed) |> Enum.filter(&to_read?(&1, Map.get(feed, &1)))
         list -> String.split(list, ",", trim: true)
       end
 
-    laws = if opts[:limit], do: Enum.take(laws, opts[:limit]), else: laws
     Mix.shell().info("#{length(laws)} amending laws to read")
+    laws = if opts[:limit], do: Enum.take(laws, opts[:limit]), else: laws
 
     for {a, i} <- Enum.with_index(laws, 1) do
+      entry = Map.get(feed, a, %{laws: MapSet.new(), refs: []})
+
       # in its own process: the parsed document goes when it exits
-      {n, ids} = Task.async(fn -> read_one(a) end) |> Task.await(:infinity)
+      {n, ids} = Task.async(fn -> read_one(a, entry) end) |> Task.await(:infinity)
       mem = div(:erlang.memory(:total), 1_048_576)
       Mix.shell().info("  [#{i}/#{length(laws)}] #{a}: #{ids} provisions, #{n} rules (#{mem} MB)")
     end
   end
 
-  # the laws our LAT laws' amendment notes point to, held in the CLML store
-  defp amending_laws do
+  # the laws our LAT laws' amendment notes, or their changes feeds, point
+  # to, held in the CLML store
+  defp amending_laws(feed) do
     Repo.query!("""
     SELECT DISTINCT coalesce(citation_law, changed_by) FROM amendment_annotations
     WHERE code_type = 'amendment' AND coalesce(citation_law, changed_by) ~ '^UK_'
       AND law_name IN (SELECT DISTINCT law_name FROM legal_articles)
-    ORDER BY 1
     """).rows
     |> List.flatten()
+    |> Kernel.++(Map.keys(feed))
+    |> Enum.uniq()
+    |> Enum.sort()
     |> Enum.filter(&held?/1)
   end
 
-  defp read_one(amending) do
+  # each amending law's pointers from the changes feeds of our LAT laws
+  # (stored pages): the laws it changes and the provisions each effect
+  # names as its own (CV-07)
+  defp feed_pointers do
+    Repo.query!("SELECT DISTINCT law_name FROM legal_articles").rows
+    |> List.flatten()
+    |> Enum.flat_map(fn law ->
+      for e <- SertantaiLegal.Scraper.LatStagedParser.law_effects(law, store: :only) || [],
+          is_binary(e.affecting) and e.affecting =~ ~r/^UK_/,
+          # text changes only: the instructions this reader reads (a
+          # commencement order's "coming into force" is the commencement
+          # read pass's)
+          SertantaiLegal.Scraper.EffectKind.kind(e.type, nil) in @text_kinds,
+          do: {e.affecting, law, Pointer.refs_in(e.affecting_provisions)}
+    end)
+    |> Enum.group_by(&elem(&1, 0))
+    |> Map.new(fn {a, rows} ->
+      {a,
+       %{
+         laws: MapSet.new(rows, &elem(&1, 1)),
+         refs: rows |> Enum.flat_map(&elem(&1, 2)) |> Enum.uniq()
+       }}
+    end)
+  end
+
+  # read again when the reader changed, or the feed points to provisions
+  # the last reading didn't (an index from before CV-07 read the notes'
+  # pointers only)
+  defp to_read?(amending, feed_entry) do
+    index = Index.get(amending)
+
+    cond do
+      not Index.fresh?(index) ->
+        true
+
+      feed_entry == nil ->
+        false
+
+      true ->
+        read = MapSet.new(index["pointers"] || note_pointers(amending))
+        not MapSet.subset?(MapSet.new(pointer_keys(feed_entry.refs)), read)
+    end
+  end
+
+  defp note_pointers(amending) do
+    for n <- notes_pointing_to(amending),
+        p = Pointer.parse(n),
+        p.affecting_law == amending,
+        key <- pointer_keys(p.provisions),
+        uniq: true,
+        do: key
+  end
+
+  # a pointer as the index records it ("sch.2.para.10(2)(a)")
+  defp pointer_keys(refs), do: refs |> Enum.flat_map(&Pointer.to_refs/1) |> Enum.uniq()
+
+  defp read_one(amending, feed_entry) do
     case doc(amending) do
       nil ->
         {0, 0}
 
       doc ->
         notes = notes_pointing_to(amending)
-        laws = notes |> Enum.map(& &1.law_name) |> Enum.uniq() |> Enum.map(&law_ref/1)
 
-        ids =
-          for n <- notes,
-              p = Pointer.parse(n),
-              p.affecting_law == amending,
-              ref <- p.provisions,
-              id <- Locator.ids(doc, ref),
-              uniq: true,
-              do: id
+        laws =
+          notes
+          |> Enum.map(& &1.law_name)
+          |> Kernel.++(MapSet.to_list(feed_entry.laws))
+          |> Enum.uniq()
+          |> Enum.map(&law_ref/1)
+
+        # one set of pointers: the notes' and the feed's, deduplicated
+        refs =
+          for(
+            n <- notes,
+            p = Pointer.parse(n),
+            p.affecting_law == amending,
+            ref <- p.provisions,
+            do: ref
+          ) ++ feed_entry.refs
+
+        refs = Enum.uniq(refs)
+        ids = for ref <- refs, id <- Locator.ids(doc, ref), uniq: true, do: id
 
         rules = Enum.flat_map(ids, &Collect.read(doc, &1, laws))
         {:ok, n} = Store.write(amending, rules)
@@ -178,7 +255,7 @@ defmodule Mix.Tasks.Lat.Amending do
         # an Act's own extent clause, from the same document (CV-04)
         if Extent.Store.act?(amending), do: Extent.Store.write(amending, Extent.read(doc))
 
-        :ok = Index.write(amending, doc, Enum.map(laws, & &1.law_name))
+        :ok = Index.write(amending, doc, Enum.map(laws, & &1.law_name), pointer_keys(refs))
 
         {n, length(ids)}
     end
