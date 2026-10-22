@@ -8,6 +8,7 @@ defmodule Mix.Tasks.Clml.Fetch do
       mix clml.fetch --laws A,B
       mix clml.fetch --limit 50
       mix clml.fetch --refresh             # re-fetch even when a fresh copy is stored
+      mix clml.fetch --laws A,B --whole    # body and schedules: amending laws (CV-07)
 
   Fetches go through `Client.fetch_xml/2` with `store: :prefer`, so a law
   whose stored copy is fresh (stored dct:valid ≥ its `md_dct_valid_date`)
@@ -26,7 +27,9 @@ defmodule Mix.Tasks.Clml.Fetch do
   @impl Mix.Task
   def run(args) do
     {opts, _, _} =
-      OptionParser.parse(args, strict: [laws: :string, limit: :integer, refresh: :boolean])
+      OptionParser.parse(args,
+        strict: [laws: :string, limit: :integer, refresh: :boolean, whole: :boolean]
+      )
 
     Mix.Task.run("app.start")
     mode = if opts[:refresh], do: :refresh, else: :prefer
@@ -46,11 +49,16 @@ defmodule Mix.Tasks.Clml.Fetch do
         scope = LatScope.get(law)
         store_opts = LatStagedParser.store_opts(law, store: mode)
 
-        results =
-          law
-          |> IdField.normalize_to_slash_format()
-          |> LatScope.paths(scope)
-          |> Enum.map(&Client.fetch_xml(&1, store_opts))
+        slash = IdField.normalize_to_slash_format(law)
+
+        # --whole: an amending law read for its instructions, extent and
+        # commencement — its body and its schedules (CV-07), not a LAT scope
+        paths =
+          if opts[:whole],
+            do: ["/#{slash}/body/data.xml", "/#{slash}/schedules/data.xml"],
+            else: LatScope.paths(slash, scope)
+
+        results = Enum.map(paths, &Client.fetch_xml(&1, store_opts))
 
         failed = Enum.count(results, &(not match?({:ok, _}, &1)))
 

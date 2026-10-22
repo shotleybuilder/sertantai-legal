@@ -18,6 +18,7 @@ defmodule Mix.Tasks.Lat.Commencement do
       mix lat.commencement --read-orders                    # amending Acts before 2002: the rules the orders their notes cite state (where no effect reaches)
       mix lat.commencement --read-orders --law X,Y          # a labelled law's own commencement orders (CR-07: its by-order rows)
       mix lat.commencement --read-amending                  # amending laws with no LAT: their own clause from the CLML held (CR-06; one hop, no fetch)
+      mix lat.commencement --read-amending --law A,B --workers 1   # these amending laws (CV-07: just fetched)
 
   `--read` writes only `commencement_rules` (no label changes). `--compare`
   writes `data/reports/commencement-rules/<tag>.csv` — each row whose
@@ -164,7 +165,15 @@ defmodule Mix.Tasks.Lat.Commencement do
       ORDER BY 1
       """)
 
-    laws = rows |> List.flatten() |> Enum.filter(&held?/1)
+    # the laws named (CV-07: the amending laws just fetched, which no note
+    # may cite yet), else those our notes cite
+    laws =
+      case opts[:law] do
+        nil -> List.flatten(rows)
+        list -> String.split(list, ",", trim: true)
+      end
+      |> Enum.filter(&held?/1)
+
     Mix.shell().info("#{length(laws)} amending laws held with no LAT")
 
     results =

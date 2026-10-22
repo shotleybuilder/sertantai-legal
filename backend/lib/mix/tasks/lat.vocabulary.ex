@@ -21,6 +21,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
       mix lat.vocabulary --build --law UK_ukpga_1990_8
       mix lat.vocabulary --build --golden  # every golden-set law
+      mix lat.vocabulary --build --laws A,B
       mix lat.vocabulary --conflicts --law UK_ukpga_1990_8 [--all]
                                            # where the law's text and legislation.gov.uk disagree
 
@@ -46,6 +47,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       OptionParser.parse(args,
         strict: [
           law: :string,
+          laws: :string,
           provision: :keep,
           golden: :boolean,
           build: :boolean,
@@ -75,8 +77,9 @@ defmodule Mix.Tasks.Lat.Vocabulary do
     laws =
       cond do
         opts[:golden] -> golden_laws()
+        opts[:laws] -> String.split(opts[:laws], ",", trim: true)
         opts[:law] -> [opts[:law]]
-        true -> Mix.raise("--conflicts needs --law X or --golden")
+        true -> Mix.raise("--conflicts needs --law X, --laws A,B or --golden")
       end
 
     for law <- laws do
@@ -120,8 +123,9 @@ defmodule Mix.Tasks.Lat.Vocabulary do
     laws =
       cond do
         opts[:golden] -> golden_laws()
+        opts[:laws] -> String.split(opts[:laws], ",", trim: true)
         opts[:law] -> [opts[:law]]
-        true -> Mix.raise("--build needs --law X or --golden")
+        true -> Mix.raise("--build needs --law X, --laws A,B or --golden")
       end
 
     for {law, i} <- Enum.with_index(laws, 1) do
