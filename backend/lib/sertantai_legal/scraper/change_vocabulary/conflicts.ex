@@ -213,5 +213,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Conflicts do
 
   defp text?(c), do: c.resolved.operation in @text
 
-  defp tiers(c), do: c.claims |> Enum.map(&Evidence.tier(&1.source)) |> Enum.uniq()
+  # who states the change: the sources claiming the change itself (its
+  # operation) — not those filling a gap in it (the amending law's extent
+  # or date, added to a record legislation.gov.uk alone states)
+  defp tiers(c) do
+    c.claims
+    |> Enum.filter(&(&1.attribute == :operation))
+    |> Enum.map(&Evidence.tier(&1.source))
+    |> Enum.uniq()
+  end
 end

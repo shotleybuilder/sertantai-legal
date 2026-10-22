@@ -114,4 +114,25 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.ConflictsTest do
 
     assert Conflicts.values(c) == []
   end
+
+  test "who states a change is who claims the change itself: a gap filled from the law (its extent, its date) doesn't make legislation.gov.uk's record the law's" do
+    d =
+      change("key-d", "s.81", [
+        {:feed, :operation, :inserted},
+        {:feed, :by, "UK_ukpga_2005_14"},
+        {:feed, :affecting, ["s.40(2)"]},
+        {:law_text, :extent, "E+W"},
+        {:commencement, :date, ~D[2006-04-01]},
+        {:commencement, :via, :feed}
+      ])
+
+    p =
+      change("UK_ukpga_2005_14:section-9", "s.12", [
+        {:law_text, :operation, :inserted},
+        {:law_text, :by, "UK_ukpga_2005_14"}
+      ])
+
+    report = Conflicts.report([d, p])
+    assert [%{kind: :unread, target: "s.81"}] = Enum.filter(report, &(&1.kind == :unread))
+  end
 end

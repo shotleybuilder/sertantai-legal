@@ -147,11 +147,10 @@ defmodule Mix.Tasks.Lat.Vocabulary do
     for {k, n} <- counts, do: Mix.shell().info("  #{n}  #{inspect(k)}")
   end
 
-  # what the read pass read of each amending law of `law` (its index)
-  defp pointers(law) do
+  # what the read pass read of each amending law behind `changes` (its index)
+  defp pointers(changes) do
     for l <-
-          law
-          |> Store.for_law()
+          changes
           |> Enum.map(& &1.resolved.by)
           |> Enum.reject(&is_nil/1)
           |> Enum.uniq(),
