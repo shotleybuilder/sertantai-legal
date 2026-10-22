@@ -270,3 +270,24 @@ No territory conflicts. Golden 27 / 27 from inputs and from the store.
 | no enacting formula | 1 | not fixable from the text |
 
 All four parser fixes together resolve 36 of the 66 in simulation: ECA 1972 ×20, HSWA 1974 ×16, REUL 2023 ×2, others ×1. The refer-back fix needs the clause-ending fix, or it picks up HSWA s.50 from purpose wording.
+
+**Step 4: the parser's missed forms** (code `1abafe60`; restore point `cv07-territory-parser`):
+- The powers clause now also starts at "the power conferred", "his powers under" and "in pursuance of". It ends at ", is pleased", ", having" and "and for the purpose" too.
+- Defined-term brackets ("Act 1974 (“the 1974 Act”)") are removed.
+- Unmarked text is split after each "Act YYYY"; each piece takes the shortest title the register knows.
+- "that Act", "that section" and "the said section" take what was named before the clause.
+- Over the agent's 66 cached introductions, 36 now resolve (ECA 1972 16, HSWA 16, …). They were written to the enabling cache from those cached texts, with no re-fetch.
+- A superseded rebuild still running was stopped by PID, so two builds didn't write the same laws.
+
+**Results (OH&S core family):**
+- amending laws with an extent from their own text: 235 → 249 of 356 (94 by enabling powers, 76 by competence);
+- text changes with territory from the law: 269 → 305;
+- text changes with an extent bound from the law: 2,671 (58%). It was 2,736 before the V1-04 fix stopped competence confining insertions.
+
+No territory conflicts. Golden 27 / 27 from inputs and from the store.
+
+**Left for territory:**
+- 24 revoked SIs: the "made" introduction falls back to the repealed text. Fixing that means changing the fetch path `EnactedBy.introduction_path`, shared with the LRT enacted_by stage, so it needs Jason.
+- 6 other unparsed forms;
+- 1 with no enacting formula;
+- the rarer Act forms.
