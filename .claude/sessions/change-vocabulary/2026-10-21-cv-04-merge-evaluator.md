@@ -251,3 +251,44 @@ The noise removed:
    - the read pass to read every provision legislation.gov.uk names, not only those our notes point to (the 2,461 unread);
    - the extent reader to read the other wordings (110 of 176 Acts unread).
 3. **The golden set doesn't check tiers.** Expected tiers per period need judging, and the start's tier needs its source.
+
+### Merging the unjoined pairs (2026-10-22; Jason: "join/merge first … before item 3")
+
+Jason's questions answered (2026-10-22):
+- **Sources.** A conflict is between the law's text (primary) and legislation.gov.uk's feed and markup (secondary). Notes are never a source, and our own inference (`:law`) is left out.
+- **Value conflict.** Two sources joined as one event that disagree on one attribute.
+- **Unjoined.** Not compared yet: once joined, a pair either agrees or becomes a value conflict.
+- **Law text only.** legislation.gov.uk not yet updated, our misread, or a missed twin.
+- **legislation.gov.uk only, read.** Our reader, or their false positive.
+- **legislation.gov.uk only, unread.** The XML is held (all 70 laws behind the 2,461); the provision wasn't read, because the read pass follows notes only. Also, 641 of the 1,081 laws amending the golden laws aren't in the store at all, and their changes appear in no kind. CV-07 covers this.
+
+**First pass:** 1,104 unjoined → 657, and 514 pairs joined. Changes in `Merge.join`:
+1. **An event is its key.** One effect placed at two levels counts as one candidate (RTA 1988 s.48 and s.48(4A)).
+2. **Records below the law's text are candidates.** The join used to look only at the provision and those above it.
+3. **The source position (the open merge item).** Same-day events by one law are told apart by the amending provision the feed names: the feed reader's new `:affecting` claim (SI 2019/696 Sch.12 para.21(a) vs (d)).
+
+Value conflicts rose from 67 to 112 as joined pairs were compared.
+
+**Second pass, on the 657 left:** 1,394 of their 1,651 candidate twins were legacy markup changes (`d29p…`, `M_F_…`; no effect id, no feed record). The law's text was joined before those changes existed as candidates, so they never met. Changes:
+- legacy markup joins first;
+- `by` falls back to the note's citation (a pointer for identity);
+- a `:law_text, :placed` claim keeps where the law's text named the change when the join moves it below;
+- the conflicts treat "words in s.28(3)(c)" against "provision s.28(3)(c)(ii)" as agreement.
+
+**Found: the claims table had no index on `change_id`.** A rebuild's cascading delete scanned every claim, so builds ran about 5 times slower than into empty tables. Index added (migration `20261022074039`): SI 2017/544 went from 17 s to 1 s, HSWA from 78 s to 21 s.
+
+**Third pass: the second pass over-joined.** One change on RTA 1988 s.89 had taken 12 legacy markup records and 18 of the law's instructions. Each join made the next record look like the same single event, and legacy markup records joined each other. New rule: **one record from each source per event.** The law's text joins a change holding none of the law's text yet; legacy markup joins a feed record holding no legacy markup yet. The largest change now holds three records (an effect, one legacy markup record, one instruction).
+
+**Result (code `75d11be6`; golden 27 / 27 from inputs, 3 min 9 s, and from the store; build 4.6 min):**
+
+| | start | now |
+|---|---|---|
+| unjoined | 1,104 | 254 |
+| value conflicts | 67 | 120 (level vs markup 47, level vs feed 30, operation vs feed 23, date 19, operation vs markup 1) |
+| law text only (missing derived) | 399 | 464 |
+| legislation.gov.uk only, provision read | 80 | 86 |
+| legislation.gov.uk only, provision not read | 2,461 | 1,878 |
+
+**The 254 left.** 1,079 candidate twins, about 4 each; 815 of those are legacy markup with no effect id and no feed record, mostly undated. Several records by one law on one provision and below can't be told apart: legacy markup carries no amending provision. Its note names one ("Words substituted by Highways Act 1980 (c. 66), Sch. 2 para. 10(2)(a)"). `AmendingLaw.Pointer` reads that as a pointer for identity, never a fact, the same use as the note's citation. That is the next lever, and needs Jason's agreement because it reads note text.
+
+**The level conflicts with the markup (47) look real.** For example, SI 1995/889 art.2 substitutes RTA 1988 s.157(2), while the markup's insertion covers only part of the text under it ("words"). That is a disagreement between the two sources' reading of level; the law wins.
