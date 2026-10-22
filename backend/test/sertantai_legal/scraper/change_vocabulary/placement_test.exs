@@ -53,4 +53,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.PlacementTest do
     refute Placement.fault?(:not_in_text)
     refute Placement.fault?(:not_a_provision)
   end
+
+  test "an EU annex is converted, and unparsed like a schedule: the same known limit (REACH Annex XVII)" do
+    alias SertantaiLegal.Scraper.ChangeVocabulary.Ref
+    assert Ref.from_clml("annex-XVII", "UK_eur_2006_1907") == "annex.XVII"
+    assert Ref.from_clml("annex-I-part-2", "UK_eur_2008_1272") == "annex.I"
+
+    assert Placement.classify(
+             effect("Annex 17 Table entry 57", ["annex-XVII"]),
+             ["annex.XVII"],
+             @held
+           ) ==
+             {:unplaced, :schedule_not_parsed}
+  end
 end

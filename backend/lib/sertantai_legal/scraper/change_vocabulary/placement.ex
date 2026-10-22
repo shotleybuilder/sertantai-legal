@@ -11,8 +11,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
     (C3: `s.23` → `s.23[E+W]`, `s.23[S]`);
   - `:whole_law` — on the whole instrument;
   - `{:unplaced, reason}`:
-    - `:schedule_not_parsed` — in a schedule; schedules are not parsed into
-      LAT (a known limit for v0.1, Jason 2026-10-22);
+    - `:schedule_not_parsed` — in a schedule (or an EU annex, the same
+      role); schedules are not parsed into LAT (a known limit for v0.1,
+      Jason 2026-10-22);
     - `:not_a_provision` — the feed names no provision ("specified amended
       provision(s)", "C/O");
     - `:not_in_text` — not in the current text (gone, or not yet applied);
@@ -49,7 +50,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
       Enum.any?(targets, &MapSet.member?(bases, &1)) ->
         :placed_versions
 
-      not held.schedules? and Enum.all?(targets, &String.starts_with?(&1, "sch.")) ->
+      not held.schedules? and Enum.all?(targets, &schedule?/1) ->
         {:unplaced, :schedule_not_parsed}
 
       Enum.any?(targets, &MapSet.member?(held.clml, &1)) ->
@@ -59,6 +60,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
         {:unplaced, :not_in_text}
     end
   end
+
+  # a schedule, or an EU annex (the same role, the same limit)
+  defp schedule?(target),
+    do: String.starts_with?(target, "sch.") or String.starts_with?(target, "annex.")
 
   @doc "True for a reason that is the reader's fault (pass needs none)."
   @spec fault?(atom()) :: boolean()
