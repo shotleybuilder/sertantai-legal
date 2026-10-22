@@ -220,3 +220,29 @@ Code `0f6a1e83`. Golden 27 / 27 from inputs and from the store.
 - **The rest state none.** An SI with no extent clause extends as far as its enabling powers. Of the family's 234 no-clause amending SIs, 201 record their enabling Act and 145 have an enabling Act we hold text for.
 
 **Next lever, all primary:** the SI's own preamble names its enabling sections ("in exercise of the powers conferred by sections 15(1) …"); the parent Act's extent clause, now read, says where those sections extend.
+
+**Step 2: an SI stating no extent extends as far as its enabling powers** (code `eb74eb7f`; restore point `cv07-territory-powers`):
+- `Extent.from_powers/2`: the union of the SI's enabling provisions' extents (`EnactedBy.EnablingCache`, its introduction), each by its parent Act's own extent clause. All or nothing. Stored as a `powers` row and used only where the SI states none.
+- HSWA 1974 s.84 now read:
+  - "This Act, except— (a) …; (b) …, does not extend to Northern Ireland": a "so far as may be necessary" item is purpose-limited and dropped;
+  - "Part III, except section 75 and Schedule 7, does not extend to Scotland": a `not` list.
+  Parts and "this Part" are expanded into their sections from the document. Result: E+W+S, with Part III (except s.75) not Scotland.
+- `Extent.of/2` applies every list naming a provision, in order: `only` sets, `also` widens, `not` narrows.
+- `--extents` reads the SIs' parent Acts first. The EU (Withdrawal) Act 2018's CV-04 record was stale (E+W); it now reads E+W+S+NI.
+
+**Enabling provisions:** fetched for the family's 244 no-clause amending SIs (182 introductions). 141 parse to none: the powers clause names the Act in plain words with no citation marker (SI 2016/1105: "section 2(2) of … the European Communities Act 1972"), or Northern Ireland Order forms. Parents of the rest: HSWA 35, 1975/26 9, 1968/14 9, ECA 1972 8, EUWA 2018 7. 1975/26 and 1968/14 are not held; for ECA 1972 only fragments are held.
+
+**Results (OH&S core family):**
+
+| | before CV-07 territory | step 1 | step 2 |
+|---|---|---|---|
+| amending laws with an extent from their own text | Acts, one form | 79 / 356 | 124 / 356 (44 by enabling powers) |
+| text changes with an extent bound from the law | — | 1,087 | 1,385 (30%) |
+| text changes with territory from the law | 148 | 209 | 262 |
+
+No territory conflicts. Golden 27 / 27 from inputs and from the store.
+
+**What's left for territory:**
+- the enabling parser's gaps (141 SIs: plain-words citations, NI Orders);
+- the parents not held (1975/26, 1968/14; ECA 1972's body);
+- the rarer Act forms ("Parts I and III of this Act … extend to …").
