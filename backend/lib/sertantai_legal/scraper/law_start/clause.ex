@@ -249,6 +249,10 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
     do:
       text
       |> String.replace(~r/\s+/, " ")
+      # a qualification set off by commas after "into force" is no staging:
+      # "shall come into force, subject to the transitory provisions in …,
+      # at the end of the period of six months …" (Road Traffic Act 1988 s.197(2))
+      |> String.replace(~r/\binto (force|operation), subject to [^,]{1,250}, /i, "into \\1 ")
       |> String.split(
         ~r/(?<=\.)(?<!\betc\.)(?<!\bNo\.)(?<!\bNos\.)(?<!\bSch\.)(?<!\bart\.)(?<!\breg\.)(?<!\bs\.)(?<!\bc\.)(?<!\bi\.e\.)(?<!\be\.g\.)\s+(?=[A-Z(])/
       )

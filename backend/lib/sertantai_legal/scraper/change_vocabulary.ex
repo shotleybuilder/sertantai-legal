@@ -33,7 +33,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   effects and — primary — the amending laws' own text (`opts`: `:rules`, the
   stored `Amendment.Rule`s amending the law; `:commencement`, each amending
   law's `Commencement.Rule`s; `:own_commencement`, the law's own
-  `Commencement.Rule`s; `:title`, the law's title — its own place).
+  `Commencement.Rule`s; `:extents`, each amending Act's extent clause read
+  (`AmendingLaw.Extent`); `:title`, the law's title — its own place).
   """
   @spec labels(String.t(), String.t(), [Effect.t()], %{String.t() => map()}, keyword()) ::
           %{String.t() => [Label.period()]}
@@ -59,7 +60,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
       )
 
     changes =
-      (Feed.read(effects, law_name, Markup.order(xml), Keyword.get(opts, :commencement, %{})) ++
+      (Feed.read(
+         effects,
+         law_name,
+         Markup.order(xml),
+         Keyword.get(opts, :commencement, %{}),
+         Keyword.get(opts, :extents, %{})
+       ) ++
          Markup.read(xml, law_name) ++ amending ++ own)
       |> Merge.merge()
       |> Enum.map(

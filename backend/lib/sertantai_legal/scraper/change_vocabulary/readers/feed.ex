@@ -17,6 +17,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Claim
+  alias SertantaiLegal.Scraper.AmendingLaw
   alias SertantaiLegal.Scraper.ChangeVocabulary.Ref
   alias SertantaiLegal.Scraper.Commencement.{Evaluator, Order}
   alias SertantaiLegal.Scraper.{EffectFacts, EffectTarget}
@@ -37,7 +38,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   @doc "Claim sets `{key, target, claims}` for each effect's target provisions."
   @spec read([Effect.t()], String.t() | nil, [String.t()]) ::
           [{String.t(), String.t(), [Claim.t()]}]
-  def read(effects, law_name \\ nil, order \\ [], commencement \\ %{}) do
+  def read(effects, law_name \\ nil, order \\ [], commencement \\ %{}, extents \\ %{}) do
     flat = EffectTarget.flat(order)
 
     for %Effect{effect_id: id} = e <- effects,
@@ -48,7 +49,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
           {key, target,
            claims ++
              Claim.new(:feed, :ranged, if(ranged?, do: true), id) ++
-             commenced_by(claims, e, commencement)}
+             commenced_by(claims, e, commencement) ++
+             extent(e, extents)}
   end
 
   # A commencement stage of an effect, credited (primary) to the law whose
@@ -72,6 +74,41 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
     else
       _ -> []
     end
+  end
+
+  # where the amending provisions extend, by the amending Act's own extent
+  # clause (primary: `AmendingLaw.Extent`; SOCPA 2005 s.179) — an upper
+  # bound on where the change applies
+  defp extent(%Effect{affecting: law, affecting_provisions: text, effect_id: id}, extents) do
+    with %AmendingLaw.Extent{} = e <- Map.get(extents, law),
+         [_ | _] = refs <- affecting_refs(text),
+         code when is_binary(code) <- AmendingLaw.Extent.of_change(e, refs) do
+      Claim.new(:law_text, :extent, code, id)
+    else
+      _ -> []
+    end
+  end
+
+  # "Sch. 7 para. 27(2) Sch. 17 Pt. 2" → ["sch.7.para.27(2)", "sch.17.pt.2"];
+  # "s. 111, Sch. 7" → ["s.111", "sch.7"]
+  defp affecting_refs(nil), do: []
+
+  defp affecting_refs(text) do
+    Regex.scan(
+      ~r/\b(?:Sch\.\s*(\d+[A-Z]*)(?:\s+Pt\.\s*(\d+[A-Z]*))?(?:\s+para\.\s*(\d+[A-Z]*(?:\([^)]+\))*))?|(s|reg|art)\.\s*(\d+[A-Z]*(?:\([^)]+\))*))/u,
+      text
+    )
+    |> Enum.map(fn
+      [_, sch, "", ""] -> "sch.#{sch}"
+      [_, sch, pt, ""] -> "sch.#{sch}.pt.#{pt}"
+      [_, sch, "", para] -> "sch.#{sch}.para.#{para}"
+      [_, sch, _pt, para] -> "sch.#{sch}.para.#{para}"
+      [_, "", "", "", kind, n] -> "#{kind}.#{n}"
+      [_, sch] -> "sch.#{sch}"
+      [_, sch, pt] -> "sch.#{sch}.pt.#{pt}"
+      _ -> nil
+    end)
+    |> Enum.reject(&is_nil/1)
   end
 
   defp value(claims, attribute),

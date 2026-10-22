@@ -124,7 +124,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
   @spec resolve(Change.t(), String.t() | nil, map()) :: Change.t()
   def resolve(%Change{} = c, extent, facts \\ %{}) do
     chosen =
-      Map.new(@table, fn {attribute, order} -> {attribute, first(c, order, extent, facts)} end)
+      @table
+      |> Map.new(fn {attribute, order} -> {attribute, first(c, order, extent, facts)} end)
+      |> bound(c, extent)
 
     value = &elem(chosen[&1], 0)
 
@@ -144,6 +146,30 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
           conflicts: conflicts(c, chosen)
         }
     }
+  end
+
+  # The amending provision's extent (primary: its Act's extent clause) bounds
+  # where the change applies: extent is not application (an E+W provision
+  # may apply in W only), so a stated territory is cut to it; with none
+  # stated, the extent is the territory when narrower than the provision
+  defp bound(chosen, c, provision_extent) do
+    case {Change.value(c, :law_text, :extent), chosen.territory} do
+      {nil, _} ->
+        chosen
+
+      {ext, {nil, _}} ->
+        if Territory.covers?(ext, provision_extent),
+          do: chosen,
+          else: %{chosen | territory: {ext, :law_text}}
+
+      {ext, {t, source}} ->
+        case Territory.subtract(t, Territory.subtract(t, ext) || "") do
+          # disjoint: kept as stated; the conflict is reported
+          nil -> chosen
+          ^t -> %{chosen | territory: {t, source}}
+          cut -> %{chosen | territory: {cut, :law_text}}
+        end
+    end
   end
 
   # a primary value differing from a derived claim on the same attribute

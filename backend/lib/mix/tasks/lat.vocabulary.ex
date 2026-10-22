@@ -152,9 +152,27 @@ defmodule Mix.Tasks.Lat.Vocabulary do
         _ -> nil
       end
 
+    # each affecting Act's own extent clause, from its CLML held
+    extents =
+      for law <- effects |> Enum.map(& &1.affecting) |> Enum.reject(&is_nil/1) |> Enum.uniq(),
+          [_, type, year, num] <- [String.split(law, "_", parts: 4)],
+          type in ~w(ukpga asp anaw asc nia apni),
+          paths = Path.wildcard("data/cache/clml/#{type}/#{year}/#{num}/body/data.xml.gz"),
+          paths != [],
+          into: %{} do
+        doc =
+          SertantaiLegal.Scraper.AmendingLaw.Doc.new(
+            law,
+            Enum.map(paths, &(&1 |> File.read!() |> :zlib.gunzip()))
+          )
+
+        {law, SertantaiLegal.Scraper.AmendingLaw.Extent.read(doc)}
+      end
+
     [
       rules: rules,
       commencement: commencement,
+      extents: extents,
       own_commencement: SertantaiLegal.Scraper.Commencement.Store.for_law(law),
       title: title
     ]

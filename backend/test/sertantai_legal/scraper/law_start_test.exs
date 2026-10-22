@@ -247,6 +247,21 @@ defmodule SertantaiLegal.Scraper.LawStartTest do
       assert %{treatment: :clause_made_relative, date: ~D[1990-09-29]} = s
     end
 
+    test "a qualification set off by commas is no staging (Road Traffic Act 1988 s.197(2): \"…, subject to the transitory provisions in …, at the end of the period of six months …\")" do
+      s =
+        start(
+          "ukpga",
+          [
+            {"s.197(2)",
+             "This Act shall come into force, subject to the transitory provisions in Schedule 5 to the Road Traffic (Consequential Provisions) Act 1988, at the end of the period of six months beginning with the day on which it is passed."}
+          ],
+          clml_head: ~s(<ukm:EnactmentDate Date="1988-11-15"/>),
+          made: ~D[1988-11-15]
+        )
+
+      assert %{treatment: :clause_made_relative, date: ~D[1989-05-15]} = s
+    end
+
     test "a clause the reader can't date yields to Royal Assent" do
       s =
         start(
