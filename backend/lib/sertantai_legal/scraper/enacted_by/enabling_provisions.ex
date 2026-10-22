@@ -25,11 +25,14 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingProvisions do
 
   @marker ~r/\b([fc]\d{5})\b/
 
+  # a defined term after a title: "Act 1974 (“ the 1974 Act ”)"
+  @defined_term ~r/\(\s*[“"]\s*the\s+[^”"()]*[”"]\s*\)/u
+
   @doc """
   Enabling provisions per parent law, in clause order. `titles` (lower-case
   "title year" → law name) resolves an Act the clause names in plain words,
   with no citation marker ("… of, the European Communities Act 1972.";
-  CV-07).
+  CV-07), and one it refers back to ("… of, that Act"; "that section").
   """
   @spec parse(String.t() | nil, map(), %{String.t() => String.t()}) :: [provision()]
   def parse(text, urls, titles \\ %{})
@@ -40,61 +43,124 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingProvisions do
       nil ->
         []
 
-      clause ->
+      {clause, before} ->
         clause
+        |> String.replace(@defined_term, " ")
         |> chunks()
         |> Enum.flat_map(fn
-          {chunk, nil} -> by_title(chunk, titles)
+          {chunk, nil} -> by_title(chunk, titles, before)
           {chunk, marker} -> provision(chunk, Map.get(urls, marker, []))
         end)
     end
   end
 
-  @act_title ~r/\bthe\s+([A-Z][\w,'’()\-. ]*?\bAct\s+\d{4})/u
-
-  @doc "The Act titles (\"title year\", lower case) a powers clause names, to look up."
+  @doc """
+  Every "the … Act YYYY" the text names, as lower-case "title year": each
+  "the" before an "Act YYYY" gives one, and the register lookup keeps those
+  it knows ("the Pyrotechnic … Regulations 2010, section 2(2) of the
+  European Communities Act 1972" → "european communities act 1972" among
+  them). Over the whole text: an Act named before the clause can be
+  referred back to.
+  """
   @spec titles(String.t() | nil) :: [String.t()]
   def titles(nil), do: []
 
   def titles(text) do
-    case powers_clause(text) do
-      nil ->
+    Regex.scan(~r/\bAct\s+\d{4}\b/u, text, return: :index)
+    |> Enum.flat_map(fn [{i, l}] ->
+      upto = binary_part(text, 0, i + l)
+
+      Regex.scan(~r/\bthe\s+(?=[A-Z])/u, upto, return: :index)
+      |> Enum.map(fn [{j, jl}] ->
+        upto |> binary_part(j + jl, byte_size(upto) - j - jl) |> String.downcase()
+      end)
+    end)
+    |> Enum.uniq()
+  end
+
+  # text with no marker: each piece ending "Act YYYY" names its Act by
+  # title; a piece referring back ("that Act", "that section", "the said
+  # section") takes the Act, or the section, named before the clause
+  defp by_title(chunk, titles, before) do
+    chunk
+    |> String.split(~r/(?<=\bAct\s\d{4})/u)
+    |> Enum.flat_map(fn piece ->
+      case title_law(piece, titles) do
+        nil -> referred(piece, titles, before)
+        law -> found(law, piece)
+      end
+    end)
+  end
+
+  # the shortest "the … Act YYYY" ending the piece that the register knows
+  defp title_law(piece, titles) do
+    piece
+    |> String.trim()
+    |> String.trim_trailing(",")
+    |> String.trim()
+    |> titles()
+    |> Enum.reverse()
+    |> Enum.find_value(&Map.get(titles, &1))
+  end
+
+  defp referred(piece, titles, before) do
+    last_act = before |> titles() |> Enum.reverse() |> Enum.find_value(&Map.get(titles, &1))
+
+    cond do
+      last_act == nil ->
         []
 
-      clause ->
-        @act_title
-        |> Regex.scan(clause)
-        |> Enum.map(&String.downcase(Enum.at(&1, 1)))
-        |> Enum.uniq()
+      piece =~ ~r/\bthat\s+section\b/u ->
+        case Regex.scan(~r/\bsection\s+(\d+[A-Z]*)/u, before) do
+          [] ->
+            []
+
+          named ->
+            [%{law: last_act, sections: [named |> List.last() |> List.last()], schedules: []}]
+        end
+
+      piece =~ ~r/\bthat\s+Act\b|\bthe\s+said\s+section\b/u ->
+        found(last_act, String.replace(piece, ~r/\bthe\s+said\s+section/u, "section"))
+
+      true ->
+        []
     end
   end
 
-  # a chunk with no marker: the Act it ends with, by title
-  defp by_title(chunk, titles) do
-    trimmed = chunk |> String.trim() |> String.trim_trailing(".") |> String.trim()
+  defp found(law, piece) do
+    sections = sections(piece)
+    schedules = schedules(piece)
 
-    with [_, title] <- Regex.run(~r/\bthe\s+([A-Z][\w,'’()\-. ]*?\bAct\s+\d{4})$/u, trimmed),
-         law when is_binary(law) <- Map.get(titles, String.downcase(title)),
-         sections = sections(chunk),
-         schedules = schedules(chunk),
-         true <- sections != [] or schedules != [] do
-      [%{law: law, sections: sections, schedules: schedules}]
-    else
-      _ -> []
-    end
+    if sections != [] or schedules != [],
+      do: [%{law: law, sections: sections, schedules: schedules}],
+      else: []
   end
 
-  # "powers conferred …" up to "and (of) all other powers" / "hereby"
+  # The powers clause and the text before it: from "powers conferred" (or
+  # "the power conferred", "his powers under", "in pursuance of") up to "and
+  # (of) all other powers" / "hereby" / ", is pleased" / ", having" / "and
+  # for the purpose", or its sentence's end ("… Act 2018 . In accordance
+  # with …"; not "etc. Act")
   defp powers_clause(text) do
-    case Regex.run(~r/powers\s+conferred\b(.*)/isu, text) do
-      [_, rest] ->
-        # … or at its sentence's end ("… Act 2018 . In accordance with …";
-        # not "etc. Act")
-        rest
-        |> String.split(~r/\b(?:and\s+)?(?:of\s+)?all\s+other\s+powers\b|\bhereby\b/iu, parts: 2)
-        |> hd()
-        |> String.split(~r/(?<!\betc)\s*\.\s+(?=[A-Z])/u, parts: 2)
-        |> hd()
+    case Regex.run(
+           ~r/\b(?:powers?\s+conferred|powers?\s+under|in\s+pursuance\s+of)\b/iu,
+           text,
+           return: :index
+         ) do
+      [{start, len}] ->
+        rest = binary_part(text, start + len, byte_size(text) - start - len)
+
+        clause =
+          rest
+          |> String.split(
+            ~r/\b(?:and\s+)?(?:of\s+)?all\s+other\s+powers\b|\bhereby\b|,\s*is\s+pleased\b|,\s*having\b|\band\s+for\s+the\s+purposes?\b/iu,
+            parts: 2
+          )
+          |> hd()
+          |> String.split(~r/(?<!\betc)\s*\.\s+(?=[A-Z])/u, parts: 2)
+          |> hd()
+
+        {clause, binary_part(text, 0, start)}
 
       _ ->
         nil
