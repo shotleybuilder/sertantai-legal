@@ -55,6 +55,6 @@ Jason 2026-10-22: "defer to pending session, pick the right one and put it there
 - **Merge rules found on the way:**
   - A dated change from the law's text joins only a record of the same day. The sunset (2022) and the NI continuation (2024) are two removals of s.78 by the Act itself.
   - It joins only a feed or markup record, never another unjoined change.
-  - Two continuation orders the feed names were never fetched; only the latest is needed, since it fixes the expiry date.
+  - The earlier NI continuation orders the feed names (SR 2022/108, 2022/226, 2023/48, 2023/51) are not held; only the latest is needed, since it fixes the expiry date.
 - **`ChangeVocabulary.changes/5`:** the merged, resolved changes that `labels/5` folds. `mix lat.vocabulary` now prints these, from every reader; before, it showed the feed and markup only and so hid the primary readers.
 - **Full suite:** 3,001 passing.
