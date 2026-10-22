@@ -115,3 +115,12 @@ Still to do: the 50-effect sample checked by a Claude agent (criteria 2 and 3), 
   - **E. EU types "replacement" and "addition" have no operation (#2, #11, #30).** They should be substituted and inserted; "deletion" probably too.
   - **F (doubtful). "sum substituted" is read as provision level (#48).** `Feed.level/1` knows only words and heading.
   - **Latent:** a schedule paragraph's commencement also targets the whole schedule (feed parent and child refs). Hidden today by `schedule_not_parsed`.
+
+**Fixes** (`a92a5011`; Jason: "Go"):
+- **A.** A provision with no id of its own whose change the text marks (the effect id is in the CLML) goes on the row above as a words change. The feed check calls it `placed_ancestor`. In the vocabulary, the deep record is dropped where the markup already put that event on the row.
+- **B.** `Ref.xml_ids/2` builds one map for both tasks. An id naming several rows resolves to the row it names by itself, else one without `#n`. This is not a parser bug: legislation.gov.uk repeats the id in the CLML (119 ids in 59 laws, mostly `#2` repeats and cross-headings), and the parse names each row from its own number. No issue raised.
+- **C.** Every staged text change keeps its stages: it takes effect from the first, partly, and each later stage is a commencement. A whole removal in stages is a removal in part at each partial stage, then the removal at the full one. Staged modifications stay one change.
+- **D and E.** `EffectFacts.type/1` maps the feed's other words to the verbs. The stored feeds (whole corpus) show many: replacement 2,435; addition 912; repeal 311; rev and "rev in pt" variants; subst; words/word deleted 146; deleted 48; replaced 43; misspellings (substititued, subsitituted, omittted). This is label side only: `EffectKind` (the parse's, in `ParserVersion`) is unchanged.
+- **F.** Words level also covers sums, figures, entries, punctuation, formula, number, label and definitions.
+- **Not mapped (a gap, noted):** "am" and "amendment" (about 1,300) say only "amended", with no operation to label.
+- **Feed check** (`eb5e31bf`): `--seed N` draws a fresh sample, and each change the reader made is shown (stage keys, level, first date).
