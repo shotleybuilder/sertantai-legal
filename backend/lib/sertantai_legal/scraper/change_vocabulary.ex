@@ -59,7 +59,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
       )
 
     changes =
-      (Feed.read(effects, law_name, Markup.order(xml)) ++
+      (Feed.read(effects, law_name, Markup.order(xml), Keyword.get(opts, :commencement, %{})) ++
          Markup.read(xml, law_name) ++ amending ++ own)
       |> Merge.merge()
       |> Enum.map(

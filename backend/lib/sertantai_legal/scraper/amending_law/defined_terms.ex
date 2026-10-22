@@ -29,7 +29,21 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.DefinedTerms do
       uri = text |> xpath(~x"./*[local-name()='Citation']/@URI"s) |> to_string()
       {name, %{law: law(uri), title: title(words) || apposition(words, raw)}}
     end
+    |> Map.merge(plain(roots))
     |> Map.filter(fn {name, t} -> name != "" and (t.law != nil or law_title?(t.title)) end)
+  end
+
+  # a definition with no Term markup — “the 2015 Act” (“Deddf 2015”) means
+  # the Planning (Wales) Act 2015 (Welsh orders: WSI 2017/546)
+  @plain ~r/^\s*“([^”]+)”\s*(?:\(“[^”]*”\)\s*)?means\s+(?:the\s+)?(.+?)\s*[;.]?\s*$/u
+
+  defp plain(roots) do
+    for root <- roots,
+        text <- xpath(root, ~x"//*[local-name()='Text'][not(*[local-name()='Term'])]"l),
+        words = Doc.text(text),
+        [_, term, title] <- [Regex.run(@plain, words)],
+        into: %{},
+        do: {String.downcase(term), %{law: nil, title: title}}
   end
 
   @law_title ~r/\b(?:Act|Regulations|Order|Rules|Measure)(?: \(Northern Ireland\))? \d{4}$/u

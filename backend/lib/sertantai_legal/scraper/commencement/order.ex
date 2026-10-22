@@ -39,6 +39,9 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
   @cif ~r/\b(?:shall\s+)?(?:come|comes)\s+into\s+(?:force|operation)\b/i
   @appointed ~r/\bis\s+the\s+(?:day|date)\s+appointed\s+for\s+the\s+coming\s+into\s+(?:force|operation)\s+of\b/i
+  # "The appointed day for the coming into force of <provisions> … is
+  # <date>" (Welsh orders: WSI 2017/546)
+  @appointed_is ~r/\bthe\s+(?:appointed\s+(?:day|date)|(?:day|date)\s+appointed)\s+for\s+the\s+coming\s+into\s+(?:force|operation)\s+of\b(.*)\bis\s+(.+)$/isu
   @full ~r/\b(?:so|in so|insofar|in as)\s*far\s+as\s+(?:it|they|that\s+[\w-]+)\s+(?:has|have|is|are)\s+not\s+(?:already|previously|yet)\s+(?:been\s+)?(?:commenced|brought\s+into\s+force|in\s+force)|so\s+far\s+as\s+not\s+(?:already|previously|yet)\s+in\s+force|for\s+all\s+(?:remaining\s+|other\s+)?purposes/i
   @relating ~r/\b(?:so|in so|insofar)\s*far\s+as\s+(?:(?:it|they)\s+relates?|relating)\s+to\b|\bto\s+the\s+extent\s+that\s+(?:it|they)\s+relates?\s+to\b|\bas\s+respects\b|\b(?:so|in so|insofar)\s*far\s+as\s+(?:it|they)\s+(?:gives?|give)\s+effect\s+to\b/i
   @partial ~r/\b(?:so|in so|insofar)\s*far\s+as\b|\bto\s+the\s+extent\b|\bfor\s+the\s+purposes?\s+(?:only\s+)?of\b|\bfor\s+(?:specified|certain|limited|particular)\s+purposes\b|\bexcept\b|\bsave\b|\bin\s+relation\s+to\b/i
@@ -163,7 +166,8 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     for id <- order.ids,
         String.match?(id, ~r/^(?:article|regulation)-\d+[A-Z]*(?:-\d+[A-Z]*)?$/),
         words = Text.words_of(order, id),
-        Regex.match?(@cif, words) or Regex.match?(@appointed, words),
+        Regex.match?(@cif, words) or Regex.match?(@appointed, words) or
+          Regex.match?(@appointed_is, words),
         lines = order |> Doc.element(id) |> Doc.lines() |> Enum.map(&clean_line/1),
         {pre, head, rest} = split_head(lines),
         head != nil,
@@ -178,7 +182,11 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   # following provisions of the … Act 1981, namely— (a) Part I …; (b) …
   # shall come into force on 28th September 1982": CR-07, SI 1982/1217)
   defp split_head(lines) do
-    case Enum.split_while(lines, &(not (Regex.match?(@cif, &1) or Regex.match?(@appointed, &1)))) do
+    case Enum.split_while(
+           lines,
+           &(not (Regex.match?(@cif, &1) or Regex.match?(@appointed, &1) or
+                    Regex.match?(@appointed_is, &1)))
+         ) do
       {before, [head | rest]} ->
         case Enum.split_while(before, &(not (&1 =~ ~r/\b(?:namely|the following)\b/i))) do
           {_, [_header | items]} -> {items, head, Enum.reject(rest, &(&1 == ""))}
@@ -193,6 +201,19 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   # {date, the items stated inline} | nil
   defp statement(head, made) do
     cond do
+      # "The appointed day for the coming into force of X … is D—": the
+      # date after "is"; the items X, or after the dash ("the following")
+      match = Regex.run(@appointed_is, head) ->
+        [_, subject, tail] = match
+        [date_part | after_dash] = Regex.split(~r/[—–:]\s*/u, tail, parts: 2)
+
+        with [d] <- parse_dates(date_part) do
+          {d,
+           if(subject =~ ~r/\bthe following\b/i, do: Enum.join(after_dash, " "), else: subject)}
+        else
+          _ -> nil
+        end
+
       Regex.match?(@appointed, head) ->
         [before, after_] = Regex.split(@appointed, head, parts: 2)
         with [d] <- parse_dates(before), do: {d, after_}, else: (_ -> nil)

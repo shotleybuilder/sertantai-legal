@@ -26,6 +26,53 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
       |> Evaluator.evaluate(Order.ref(id), Order.context())
       |> Map.take([:full_from, :partial_from])
 
+  test "\"The appointed day for the coming into force of … is <date>\" (WSI 2017/546 art.3: Planning (Wales) Act 2015)" do
+    act = %{law: "UK_anaw_2015_4", title: "Planning (Wales) Act", year: "2015"}
+
+    rules =
+      Order.rules(
+        Doc.new("UK_wsi_2017_546", [
+          ~S"""
+          <Legislation><Secondary><Body><P1 id="article-1"><P1para><Text>In this Order “<Term id="t1">the 2015 Act</Term>” means the Planning (Wales) Act 2015.</Text></P1para></P1>
+          <P1 id="article-2"><P1para><Text>The appointed day for the coming into force of section 54 of the 2015 Act, so far as it is not already in force, is 10 April 2017.</Text></P1para></P1>
+          <P1 id="article-3"><P1para><Text>The appointed day for the coming into force of the following provisions of the 2015 Act so far as they are not already in force is 5 May 2017—</Text>
+          <P2 id="article-3-a"><P2para><Text>section 39;</Text></P2para></P2>
+          <P2 id="article-3-b"><P2para><Text>sections 47 and 48;</Text></P2para></P2></P1para></P1>
+          </Body></Secondary></Legislation>
+          """
+        ]),
+        act
+      )
+
+    # a Welsh Act's provisions extend to Wales: the order's W covers them
+    welsh = Map.put(Order.context(), :extent, "W")
+    at = &Evaluator.evaluate(rules, Order.ref(&1), welsh).full_from
+
+    assert at.("section-47") == ~D[2017-05-05]
+    assert at.("section-39") == ~D[2017-05-05]
+    assert at.("section-54") == ~D[2017-04-10]
+    assert Enum.all?(rules, &(&1.source.law == "UK_wsi_2017_546"))
+  end
+
+  test "a definition with no Term markup names the Act (“the 2015 Act” (“Deddf 2015”) means …: WSI 2017/546 art.1(2), art.2)" do
+    act = %{law: "UK_anaw_2015_4", title: "Planning (Wales) Act", year: "2015"}
+
+    rules =
+      Order.rules(
+        Doc.new("UK_wsi_2017_546", [
+          ~S"""
+          <Legislation><Secondary><Body><P1 id="article-1"><P1para><Text>In this Order—</Text><UnorderedList Class="Definition"><ListItem><Para><Text>“the 2015 Act” (“<Emphasis>Deddf 2015</Emphasis>”) means the Planning (Wales) Act 2015.</Text></Para></ListItem></UnorderedList></P1para></P1>
+          <P1 id="article-2"><P1para><Text>The appointed day for the coming into force of section 54 of the 2015 Act, so far as it is not already in force, is 10 April 2017.</Text></P1para></P1>
+          </Body></Secondary></Legislation>
+          """
+        ]),
+        act
+      )
+
+    welsh = Map.put(Order.context(), :extent, "W")
+    assert Evaluator.evaluate(rules, "s.54", welsh).full_from == ~D[2017-04-10]
+  end
+
   test "ref/1: an amending provision's id in the Act's grammar" do
     assert Order.ref("section-36-3") == "s.36(3)"
     assert Order.ref("schedule-11-paragraph-137-a") == "sch.11.para.137(a)"

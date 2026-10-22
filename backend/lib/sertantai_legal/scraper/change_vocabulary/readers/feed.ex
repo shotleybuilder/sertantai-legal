@@ -18,6 +18,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Claim
   alias SertantaiLegal.Scraper.ChangeVocabulary.Ref
+  alias SertantaiLegal.Scraper.Commencement.{Evaluator, Order}
   alias SertantaiLegal.Scraper.{EffectFacts, EffectTarget}
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
 
@@ -36,14 +37,62 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   @doc "Claim sets `{key, target, claims}` for each effect's target provisions."
   @spec read([Effect.t()], String.t() | nil, [String.t()]) ::
           [{String.t(), String.t(), [Claim.t()]}]
-  def read(effects, law_name \\ nil, order \\ []) do
+  def read(effects, law_name \\ nil, order \\ [], commencement \\ %{}) do
     flat = EffectTarget.flat(order)
 
     for %Effect{effect_id: id} = e <- effects,
         id != nil,
         {target, ranged?} <- targets(e, law_name, flat),
         {key, claims} <- changes(e),
-        do: {key, target, claims ++ Claim.new(:feed, :ranged, if(ranged?, do: true), id)}
+        do:
+          {key, target,
+           claims ++
+             Claim.new(:feed, :ranged, if(ranged?, do: true), id) ++
+             commenced_by(claims, e, commencement)}
+  end
+
+  # A commencement stage of an effect, credited (primary) to the law whose
+  # text brought the affecting provision into force that day — the order
+  # read from the affecting law's commencement rules (TCPA 1990 s.78(4BA):
+  # inserted by the Planning (Wales) Act 2015 s.47(1), commenced fully by
+  # WSI 2017/546)
+  @not_text [:feed_commencement, :act_enactment, :clause_staged]
+
+  defp commenced_by(claims, %Effect{affecting: law} = e, commencement) do
+    with :commenced <- value(claims, :operation),
+         %Date{} = date <- value(claims, :date),
+         [_ | _] = rules <- Map.get(commencement, law, []),
+         ref when ref != nil <- affecting_ref(e.affecting_provisions),
+         text = Enum.reject(rules, &(&1.treatment in @not_text)),
+         ctx = Map.put(Order.context(), :extent, e.affecting_territory),
+         %{entries: entries} <- Evaluator.evaluate(text, ref, ctx),
+         %{rule: %{source: %{law: by}}} <-
+           Enum.find(entries, &(&1.date == date and not is_nil(&1.rule.source.law))) do
+      Claim.new(:commencement, :by, by, e.effect_id)
+    else
+      _ -> []
+    end
+  end
+
+  defp value(claims, attribute),
+    do: Enum.find_value(claims, &(&1.attribute == attribute && &1.value))
+
+  # "s. 47(1)" → "s.47(1)"; "Sch. 5 para. 3" → "sch.5.para.3"; nil for other forms
+  defp affecting_ref(nil), do: nil
+
+  defp affecting_ref(text) do
+    cond do
+      m = Regex.run(~r/^\s*(s|reg|art)\.\s*(\d+[A-Z]*(?:\([^)]+\))*)\s*$/, text) ->
+        [_, kind, rest] = m
+        "#{kind}.#{rest}"
+
+      m = Regex.run(~r/^\s*Sch\.\s*(\d+[A-Z]*)\s+para\.\s*(\d+[A-Z]*(?:\([^)]+\))*)\s*$/, text) ->
+        [_, sch, para] = m
+        "sch.#{sch}.para.#{para}"
+
+      true ->
+        nil
+    end
   end
 
   # a commencement is one change per dated in-force entry (staged
