@@ -144,3 +144,50 @@ Territory is stated by neither source for 40,377 of 47,952 changes.
 | B. commencing orders the feeds name | dates (ours) | 486 | 35 min |
 | C. amending Acts | extent and application (territory, ours); their own commencement | 440 | 30 min |
 | D. older amending SIs | covered by the feed baseline | about 2,580 | 3 h; deferred |
+
+## OH&S core family landed (2026-10-22; Jason: "cap to oh&s family … landing a core family will be a good test"; "include D")
+
+Scope: `💙 OH&S: Occupational / Personal Safety`, 149 LAT laws.
+
+**Fetch:** 144 amending, commencing or recent family laws not held, each whole (`mix clml.fetch --whole`: body and schedules). 288 requests, all held:
+- 55 have no schedules (stored as missing);
+- one 502 and one body failure were retried.
+
+**Read** (restore point `cv07-ohs-family-reads`: amendment, extent and commencement rules):
+- `lat.amending --read`: 137 laws, 817 rules;
+- `lat.commencement --read-amending --law …`: 144 laws, 163 rules;
+- `--read-orders` over the family.
+
+Code `0f6a1e83`. Golden 27 / 27 from inputs and from the store.
+
+**Text changes, before → after:**
+
+| | before | after |
+|---|---|---|
+| total | 4,572 | 4,619 |
+| both sources | 595 (13%) | 754 (16%) |
+| law text only | 87 (2%) | 133 (3%) |
+| legislation.gov.uk only | 3,890 (85%) | 3,732 (81%) |
+
+**Conflicts after:**
+- value 64 (level 37, date 15, operation 11, territory 1);
+- unjoined 49;
+- law text only 84;
+- legislation.gov.uk only, provision read, no rule 3,223;
+- not read 346.
+
+**The attributes that are ours** (family changes, by source):
+
+| kind | n | date from the law | date from legislation.gov.uk | no date | territory from the law | territory derived | no territory |
+|---|---|---|---|---|---|---|---|
+| commencements | 16,838 | 14,212 (84%) | 2,626 | 0 | 0 | 0 | 16,838 |
+| text changes | 4,619 | 684 (15%) | 3,380 | 555 (12%) | 148 (3%) | 1,360 | 3,111 (67%) |
+
+**What landing the family shows:**
+1. **Dates for commencements are ours already** (84% from the law).
+2. **Dates for text changes mostly come from the feed** (fine under the balance). 555 have no date at all: these need a look.
+3. **Territory is the weak "ours" attribute.**
+   - The law states it for 3% of text changes; 67% state none, so the change falls to the provision's extent.
+   - The extent reader reads Acts only, and one wording.
+   - Most amending laws are SIs, whose own extent and application clauses ("These Regulations extend to England and Wales", "apply in relation to Wales") aren't read as amending-law territory.
+4. **The backlog candidates:** 133 law-text-only changes to inspect.
