@@ -63,3 +63,11 @@ OH&S core family, 6,568 effects. `Feed.read` places each effect on its structure
 | in the CLML, not in our LAT | 7 | 3 |
 
 **Decision (Jason 2026-10-22): schedules absent from LAT are a known limit for v0.1.** "We started by not parsing schedules into LAT. Some are huge reference tables. Then two schedule roles we need them for: amending and duties. I don't think selective schedule parsing is done." An effect on a schedule we don't parse is unplaced with that reason, a known limit, not a reader fault.
+
+## Known faults (2026-10-22; Jason: "Fix known faults first, then baseline")
+
+- **EU annexes (824 effects, 14 laws): fixed** (`e0220498`). `Ref.from_clml` converts `annex-XVII` to `annex.XVII`. No law in the DB holds annex rows, so an unparsed annex is the EU form of the schedule limit. My reading of the schedules decision, flagged to Jason.
+- **"In the text, not our rows" (7 effects, 3 laws).** Each looked at in the CLML:
+  - **NI SR 1997/248 reg.13(2)(b)(i)(aa):** a P5 item, deeper than our rows. Its words sit inside row `reg.13(2)(b)(i)`, so the change belongs there, but the fold never sees a change on `(aa)`. **Policy for Jason:** move a target deeper than our rows to its nearest held ancestor, as a words change? (C9, "a child's change never versions its parent", was written for children with their own rows.)
+  - **EU 1989/391 Article 17 and REACH Article 127EA:** in the CLML with text, but the LAT parse made no row (the row made is `art.Article 17a`). A LAT parse bug, not the feed reader's.
+  - **"(bb)" in the same NI effect:** legislation.gov.uk's own structured ref is `regulation-13-2-bb` (under 13(2), not 13(2)(b)(i)). The feed's error, faithfully read, so "not in the text"; noted for CV-S08.
