@@ -91,7 +91,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.PlacementTest do
              {:unplaced, :schedule_not_parsed}
   end
 
-  describe "a change deeper than our rows moves to the nearest held row, as a words change (Jason: \"choose the changes that will affect our labels\")" do
+  # Jason: "choose the changes that will affect our labels"
+  describe "deeper than our rows: retarget/3" do
     alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Claim, Evidence}
 
     defp resolved(target, op, level),
@@ -123,6 +124,26 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.PlacementTest do
       assert c.target == "reg.13(2)(b)(i)"
       assert c.resolved.level == :words
       assert Change.value(c, :placement, :below_rows) == "reg.13(2)(b)(i)(aa)"
+    end
+
+    # a commencement stays on the deep item for the "commenced through its
+    # parts" rule; a modification or application changes no label
+    test "only text changes move; a commencement and others stay" do
+      for {op, level} <- [
+            {:repealed, :provision},
+            {:inserted, :provision},
+            {:substituted, :words},
+            {:repealed_in_part, :provision},
+            {:renumbered, :provision}
+          ] do
+        [c] = Placement.retarget([resolved("reg.13(2)(b)(i)(aa)", op, level)], @rows, @text)
+        assert c.target == "reg.13(2)(b)(i)" and c.resolved.level == :words
+      end
+
+      for op <- [:commenced, :applied, :modified] do
+        [c] = Placement.retarget([resolved("reg.13(2)(b)(i)(aa)", op, :provision)], @rows, @text)
+        assert c.target == "reg.13(2)(b)(i)(aa)"
+      end
     end
 
     test "held, held as versions, gone from the text, or nothing held above: left alone" do

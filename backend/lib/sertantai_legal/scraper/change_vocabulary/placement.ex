@@ -38,6 +38,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
 
   @faults [:refs_not_converted]
 
+  # the changes that change a provision's text, so the words of the row
+  # above a deep one; a commencement stays for "commenced through its
+  # parts" (`ChangeVocabulary`); a modification or application changes no
+  # label (Jason 2026-10-22: "I agree the logic")
+  @text_changes ~w(inserted substituted repealed repealed_in_part renumbered)a
+
   @doc "Where an effect lands, from its targets and what we hold of the law."
   @spec classify(map(), [String.t()], %{rows: MapSet.t(), clml: MapSet.t(), schedules?: boolean()}) ::
           outcome()
@@ -87,8 +93,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
   @doc """
   Changes deeper than our rows moved to the nearest held row, as words
   changes (Jason 2026-10-22: "choose the changes that will affect our
-  labels"): a change on a provision in the law's text (`text`) that has no
-  row of its own, but an ancestor that does, changes that row's words. The
+  labels"): a text change (inserted, substituted, repealed, renumbered —
+  whole or words, in any territory) on a provision in the law's text
+  (`text`) that has no row of its own, but an ancestor that does, changes
+  that row's words. A commencement stays on the deep item: the row above
+  is in force partly until it is ("commenced through its parts"). The
   feed's own target is kept (`:placement :below_rows`). Held, held as
   territorial versions, gone from the text, or with nothing held above:
   left alone.
@@ -99,14 +108,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
 
     changes
     |> Enum.map(fn %Change{target: t} = c ->
-      with false <- MapSet.member?(bases, t),
+      with true <- c.resolved != nil and c.resolved.operation in @text_changes,
+           false <- MapSet.member?(bases, t),
            true <- MapSet.member?(text, t),
            a when a != nil <- held_ancestor(t, rows) do
         %Change{
           c
           | target: a,
             claims: c.claims ++ Claim.new(:placement, :below_rows, t, c.key),
-            resolved: c.resolved && %{c.resolved | level: :words}
+            resolved: %{c.resolved | level: :words}
         }
       else
         _ -> c
