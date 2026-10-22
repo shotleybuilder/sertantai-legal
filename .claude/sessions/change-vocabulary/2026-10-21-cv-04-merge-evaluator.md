@@ -4,6 +4,25 @@ status: active
 release: v0.1
 opened: '2026-10-21'
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
+bugs:
+  - pattern: "Merge leaves a primary change and its legislation.gov.uk twin apart (TCPA 1990: 335 of 548 primary-only text changes have a derived-only change by the same law on the same or parent/child provision); both fold into the label, no conflict seen"
+    category: merge identity
+    module: ChangeVocabulary.Merge
+    affected: 335
+    fix: ":unjoined" report as the worklist; join rules for undated primary and words-vs-provision levels
+    status: open
+  - pattern: "by overloaded: maker (feed) vs commencing order (commencement) compared as a conflict"
+    category: vocabulary
+    module: ChangeVocabulary.Readers.Feed / Evidence
+    affected: 85
+    fix: "split commenced_by from by"
+    status: open
+  - pattern: "Label period tier derived when any attribute of any change is derived (level/retained/saved), so almost every label reads derived"
+    category: label tier
+    module: ChangeVocabulary.Label.tiers/3
+    affected: 2416
+    fix: "per-field tier from the attributes that set the field; golden expected tiers"
+    status: open
 ---
 
 # Session: CV-04: Merge and Evaluator (ACTIVE)
@@ -112,3 +131,44 @@ Jason 2026-10-22: "defer to pending session, pick the right one and put it there
 - **Declined: cutting `tiers` and `conflicts`.** They are Jason's decision (2026-10-21: labels carry a tier; conflicts reported) and are the conflict report's data.
 - **Declined: "delete + insert is not idempotent" and production locking.** One transaction rolls back whole. This is the local dev DB; production gets only `lat_label_timeline` by delta sync. Runs are one law at a time.
 - **CV-06's concern: a reversible switch-over mechanism.** Noted there.
+
+### Tiers and conflicts examined (2026-10-22; Jason: "dig into tiers and conflicts … Is this the right move to get what's wanted")
+
+**What's wanted** (Jason 2026-10-21):
+- each label field says whether the law's text backs it;
+- a list of where the law's text and legislation.gov.uk disagree, the worklist for reader errors and for errors in legislation.gov.uk's records.
+
+**What the code gives.** Measured over all LAT rows of three golden laws:
+
+| | SI 2010/404 | HSWA 1974 | TCPA 1990 |
+|---|---|---|---|
+| changes | 286 | 2,432 | 14,850 |
+| with any derived attribute | 128 | 2,416 | 7,148 |
+| conflicts (changes) | 0 | 4 (2) | 173 (167) |
+| primary only, text operations | 2 | 11 | 548 |
+| … with a derived-only change by the same law on the same or a parent/child provision | — | 7 | 335 |
+| derived only, though the amending law's text was read | 5 | 435 | 2,233 |
+
+**Missing:**
+1. **The disagreements the report misses.** A conflict is found only inside one merged change. When the merge leaves a primary change and its legislation.gov.uk twin apart, the report never sees them, and both act on the label (HSWA s.53(1): text "repealed" and markup "inserted", as two changes). On TCPA, 335 of the 548 primary-only text changes have a likely twin. These unjoined pairs are the largest class of disagreement, and none of them is reported.
+2. **Noise in what it does report.**
+   - `by` means two things. The feed's is the law that made the change; the commencement's is the order that commenced it. That gives 85 of TCPA's 173 conflicts (anaw 2015/4 inserted, wsi 2016/52 commenced), and they are two facts, not a disagreement.
+   - The markup shows a substitution as an insertion: 19 more.
+   - A repeal in part beside a whole repeal is a real disagreement.
+3. **A label tier that is almost always "derived".** A period's tier is derived when any attribute of any change behind it comes from a derived source, including `level`, `retained` and `saved`. Only the markup and the feed state those last two, so 2,416 of HSWA's 2,432 changes count as derived. The tier is meant to be per field: `in_force_from` from the date's source, `changed_by` from `by`'s, `territory` from the territory's, and `status` from operation, date and partial. No test checks tiers: the golden scoreboard strips them.
+4. **Stored tiers would duplicate sources.** A tier is a function of its source (`Evidence.tier/1`). Conflicts are a function of the stored claims. Storing either copies what the claims already hold, and fixes the conflict rule at build time.
+5. **The label table has nowhere for tiers.** `lat_label_timeline`, which compliance reads, has no tier column. "Labels carry tier" reaches compliance only through a schema change to a synced table, which is CV-06 and needs compliance's agreement.
+
+**Revised plan:**
+- Store the claims and `sources`, not `tiers` or `conflicts`. Tiers and conflicts are derived when read, so the rule can change without a rebuild.
+- `ChangeVocabulary.Conflicts`, a pure function over the merged changes, reports three kinds:
+  - `:value`: like-for-like attributes only.
+  - `:unjoined`: a primary-only change beside a derived-only change by the same law, on the same or a parent/child provision.
+  - `:uncovered`: derived only although the amending law's text was read, or primary only with no record from legislation.gov.uk.
+  - It is run over the stored changes, so the report is a query.
+- Vocabulary fixes:
+  - `commenced_by` split from `by`;
+  - operation equivalences (substituted ≈ inserted in the markup) before a value counts as a conflict;
+  - label tier per field;
+  - golden cases gain expected tiers.
+- The `:unjoined` list is the worklist for the merge item above; joining those pairs is what makes the remaining value conflicts visible.
