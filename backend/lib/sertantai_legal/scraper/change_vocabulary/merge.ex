@@ -117,6 +117,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
           c.key != orphan.key,
           family(operation(c)) == family,
           law == nil or by(c) == law,
+          same_day?(orphan, c),
+          # only a record from another source: never another unjoined change
+          Change.values(c, :feed, :by) != [] or marked?(c),
           do: c
 
     case matches do
@@ -136,6 +139,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
 
       _ ->
         Map.update(by_target, orphan.target, [orphan], &[orphan | &1])
+    end
+  end
+
+  # a dated change from the law's text joins only a record of that day (the
+  # Coronavirus Act's sunset, 2022, and its NI continuation, 2024, are two
+  # removals of s.78 by the Act itself)
+  defp same_day?(orphan, c) do
+    case {Change.value(orphan, :law_text, :date), Change.value(c, :feed, :date)} do
+      {%Date{} = a, %Date{} = b} -> Date.compare(a, b) == :eq
+      _ -> true
     end
   end
 

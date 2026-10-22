@@ -19,6 +19,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.{
     AmendingLaw,
+    Expiry,
     Feed,
     Markup,
     OwnCommencement
@@ -36,48 +37,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   stored `Amendment.Rule`s amending the law; `:commencement`, each amending
   law's `Commencement.Rule`s; `:own_commencement`, the law's own
   `Commencement.Rule`s; `:extents`, each amending Act's extent clause read
-  (`AmendingLaw.Extent`); `:title`, the law's title — its own place).
+  (`AmendingLaw.Extent`); `:title`, the law's title — its own place;
+  `:passed`, `:act_title` and `:continuations` for its own sunset
+  (`Readers.Expiry`).
   """
   @spec labels(String.t(), String.t(), [Effect.t()], %{String.t() => map()}, keyword()) ::
           %{String.t() => [Label.period()]}
   def labels(law_name, xml, effects, provisions, opts \\ []) do
     facts = Markup.provisions(xml, law_name)
-
-    order =
-      xml |> Markup.order() |> Enum.map(&Ref.from_clml(&1, law_name)) |> Enum.reject(&is_nil/1)
-
-    amending =
-      AmendingLaw.read(
-        Keyword.get(opts, :rules, []),
-        Keyword.get(opts, :commencement, %{}),
-        order
-      )
-
-    # the law's own commencement, for each provision asked about (its base)
-    own =
-      OwnCommencement.read(
-        Keyword.get(opts, :own_commencement, []),
-        law_name,
-        provisions |> Map.keys() |> Enum.map(&elem(version(&1), 0)) |> Enum.uniq()
-      )
-
-    changes =
-      (Feed.read(
-         effects,
-         law_name,
-         Markup.order(xml),
-         Keyword.get(opts, :commencement, %{}),
-         Keyword.get(opts, :extents, %{})
-       ) ++
-         Markup.read(xml, law_name) ++ amending ++ own ++ ApplicationReader.read(xml, law_name))
-      |> Merge.merge()
-      |> Enum.map(
-        &Evidence.resolve(&1, extent(provisions, &1.target), Map.get(facts, &1.target, %{}))
-      )
-      |> existing()
-      |> Enum.reject(&(&1.target == "?"))
-
-    changes = changes ++ parent_commencements(changes, provisions, order)
+    changes = changes(law_name, xml, effects, provisions, opts)
 
     Map.new(provisions, fn {id, provision} ->
       {base, version} = version(id)
@@ -195,6 +163,64 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
           born -> c.resolved.date != nil and Date.compare(born, c.resolved.date) == :gt
         end
     end)
+  end
+
+  @doc """
+  The law's merged, resolved changes — every reader's claims (the
+  amending laws' text, the law's own commencement, application and expiry,
+  the markup, the feed), merged by identity and chosen by the evidence
+  table: what `labels/5` folds, and what `mix lat.vocabulary` prints.
+  """
+  @spec changes(String.t(), String.t(), [Effect.t()], %{String.t() => map()}, keyword()) ::
+          [Change.t()]
+  def changes(law_name, xml, effects, provisions, opts \\ []) do
+    facts = Markup.provisions(xml, law_name)
+
+    order =
+      xml |> Markup.order() |> Enum.map(&Ref.from_clml(&1, law_name)) |> Enum.reject(&is_nil/1)
+
+    amending =
+      AmendingLaw.read(
+        Keyword.get(opts, :rules, []),
+        Keyword.get(opts, :commencement, %{}),
+        order
+      )
+
+    # the law's own commencement, for each provision asked about (its base)
+    own =
+      OwnCommencement.read(
+        Keyword.get(opts, :own_commencement, []),
+        law_name,
+        provisions |> Map.keys() |> Enum.map(&elem(version(&1), 0)) |> Enum.uniq()
+      )
+
+    changes =
+      (Feed.read(
+         effects,
+         law_name,
+         Markup.order(xml),
+         Keyword.get(opts, :commencement, %{}),
+         Keyword.get(opts, :extents, %{})
+       ) ++
+         Markup.read(xml, law_name) ++
+         amending ++
+         own ++
+         ApplicationReader.read(xml, law_name) ++
+         Expiry.read(
+           xml,
+           law_name,
+           Keyword.get(opts, :passed),
+           Keyword.get(opts, :act_title),
+           Keyword.get(opts, :continuations, [])
+         ))
+      |> Merge.merge()
+      |> Enum.map(
+        &Evidence.resolve(&1, extent(provisions, &1.target), Map.get(facts, &1.target, %{}))
+      )
+      |> existing()
+      |> Enum.reject(&(&1.target == "?"))
+
+    changes ++ parent_commencements(changes, provisions, order)
   end
 
   # a devolved law's own provisions apply in its territory (a Welsh SI

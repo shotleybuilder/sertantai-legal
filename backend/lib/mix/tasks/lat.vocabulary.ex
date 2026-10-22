@@ -20,8 +20,6 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.{ChangeVocabulary, LatRef, LatStagedParser}
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{Evidence, Merge}
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.{Feed, Markup}
 
   @shortdoc "Print a law's changes, evidence and labels through the change vocabulary (read-only)"
 
@@ -49,12 +47,9 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
     provisions = provisions(law, ids)
 
-    changes =
-      (Feed.read(effects) ++ Markup.read(xml))
-      |> Merge.merge()
-      |> Enum.map(&Evidence.resolve(&1, get_in(provisions, [&1.target, :extent])))
-
-    labels = ChangeVocabulary.labels(law, xml, effects, provisions, primary(law, effects))
+    opts = primary(law, effects)
+    changes = ChangeVocabulary.changes(law, xml, effects, provisions, opts)
+    labels = ChangeVocabulary.labels(law, xml, effects, provisions, opts)
 
     for id <- ids do
       Mix.shell().info(
@@ -63,7 +58,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
       Mix.shell().info("changes reaching it:")
 
-      for c <- changes, c.target == id or c.target in tl(LatRef.ancestors(id)) do
+      for c <- changes, c.target in [id, "*"] or c.target in tl(LatRef.ancestors(id)) do
         r = c.resolved
 
         Mix.shell().info(
@@ -169,13 +164,59 @@ defmodule Mix.Tasks.Lat.Vocabulary do
         {law, SertantaiLegal.Scraper.AmendingLaw.Extent.read(doc)}
       end
 
+    own = SertantaiLegal.Scraper.Commencement.Store.for_law(law)
+
+    # when it was passed (an Act's Royal Assent), for its own sunset
+    passed =
+      Enum.find_value(own, fn r ->
+        with :act_enactment <- r.treatment, {:date, d} <- r.when, do: d, else: (_ -> nil)
+      end)
+
+    # the orders continuing it, from their CLML held (the feed names them:
+    # "continued until …"), each with its territory
+    continuations =
+      for law_c <-
+            effects
+            |> Enum.filter(&(&1.type =~ ~r/\bcontinu/i))
+            |> Enum.map(& &1.affecting)
+            |> Enum.uniq(),
+          [_, t, y, n] <- [String.split(law_c, "_", parts: 4)],
+          [path | _] <- [Path.wildcard("data/cache/clml/#{t}/#{y}/#{n}/body/data.xml.gz")] do
+        doc =
+          SertantaiLegal.Scraper.AmendingLaw.Doc.new(law_c, [
+            path |> File.read!() |> :zlib.gunzip()
+          ])
+
+        %{
+          law: law_c,
+          text:
+            doc.roots
+            |> Enum.map(&SertantaiLegal.Scraper.AmendingLaw.Doc.text/1)
+            |> Enum.join(" "),
+          territory: SertantaiLegal.Scraper.LawTerritory.territory(law_c, register_extent(law_c))
+        }
+      end
+
     [
       rules: rules,
       commencement: commencement,
       extents: extents,
-      own_commencement: SertantaiLegal.Scraper.Commencement.Store.for_law(law),
+      passed: passed,
+      act_title: title && String.replace(title, ~r/\s*\(repealed[^)]*\)\s*$/i, ""),
+      continuations: continuations,
+      own_commencement: own,
       title: title
     ]
+  end
+
+  defp register_extent(law) do
+    case SertantaiLegal.Repo.query!(
+           "SELECT title_en, geo_extent FROM uk_lrt WHERE name = $1 LIMIT 1",
+           [law]
+         ) do
+      %{rows: [[t, g]]} -> SertantaiLegal.Scraper.LawTerritory.extent(t, g)
+      _ -> nil
+    end
   end
 
   defp line(p),
