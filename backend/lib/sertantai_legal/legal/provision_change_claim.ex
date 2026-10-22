@@ -24,6 +24,8 @@ defmodule SertantaiLegal.Legal.ProvisionChangeClaim do
     end
 
     custom_indexes do
+      # a law's rewrite deletes its changes, cascading here; read back by change
+      index([:change_id])
       index([:source, :attribute])
     end
   end

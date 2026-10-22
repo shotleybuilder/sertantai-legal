@@ -7,8 +7,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Conflicts do
 
   - `:value` — inside one change, a primary value and a derived claim on
     the same attribute that differ (`values/1`). Like for like only: the
-    markup shows a substitution as an insertion (`@agree`), and the law
-    commencing a change is not the law making it (`commenced_by` apart).
+    markup shows a substitution as an insertion (`@agree`), the law
+    commencing a change is not the law making it (`commenced_by` apart),
+    and words the law's text changes in a provision are a whole provision
+    where the change sits below it (`:placed`).
   - `:unjoined` — a change only the law's text states beside a change only
     legislation.gov.uk states, by the same law, on the same provision or
     one above or below it: likely one event the merge left as two (both
@@ -58,8 +60,20 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Conflicts do
         other <- Change.values(c, s, attribute),
         other != value,
         {attribute, value, other} not in @agree,
+        not placed_above?(c, attribute, value, other),
         do: {attribute, {source, value}, {s, other}}
   end
+
+  # the law's text named a provision above where the change sits: its
+  # words there are a whole provision here
+  defp placed_above?(c, :level, :words, :provision) do
+    case Change.value(c, :law_text, :placed) do
+      nil -> false
+      placed -> placed in tl(LatRef.ancestors(c.target))
+    end
+  end
+
+  defp placed_above?(_c, _attribute, _value, _other), do: false
 
   @doc """
   Every conflict in a law's changes, as maps with `kind`, `target`, `key`,
