@@ -22,6 +22,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
     Expiry,
     Feed,
     Markup,
+    NoteDate,
     OwnCommencement
   }
 
@@ -222,6 +223,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
            Keyword.get(opts, :continuations, [])
          ))
       |> Merge.merge()
+      # a gap no source fills: the amending law's commencement (the date)
+      # and extent at the provision the note names (CV-07)
+      |> Enum.map(fn c ->
+        %{
+          c
+          | claims:
+              c.claims ++
+                NoteDate.claims(c, Keyword.get(opts, :commencement, %{})) ++
+                NoteDate.extent_claims(c, Keyword.get(opts, :extents, %{}))
+        }
+      end)
       |> Enum.map(
         &Evidence.resolve(&1, extent(provisions, &1.target), Map.get(facts, &1.target, %{}))
       )

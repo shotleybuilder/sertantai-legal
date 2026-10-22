@@ -328,8 +328,20 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
     # each amending law's commencement rules: the rules' sources and the
     # feed's affecting laws
+    # … and the laws the notes cite: a change no source dates is dated from
+    # its amending law at the provision its note names (CV-07)
+    cited =
+      Repo.query!(
+        """
+        SELECT DISTINCT coalesce(citation_law, changed_by) FROM amendment_annotations
+        WHERE law_name = $1 AND code_type = 'amendment' AND coalesce(citation_law, changed_by) ~ '^UK_'
+        """,
+        [law]
+      ).rows
+      |> List.flatten()
+
     commencement =
-      (Enum.map(rules, & &1.source.law) ++ Enum.map(effects, & &1.affecting))
+      (Enum.map(rules, & &1.source.law) ++ Enum.map(effects, & &1.affecting) ++ cited)
       |> Enum.reject(&is_nil/1)
       |> Enum.uniq()
       |> Map.new(&{&1, SertantaiLegal.Scraper.Commencement.Store.for_law(&1)})
@@ -342,6 +354,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       effects
       |> Enum.map(& &1.affecting)
       |> Kernel.++(Enum.map(rules, & &1.source.law))
+      |> Kernel.++(cited)
       |> Enum.reject(&is_nil/1)
       |> Enum.uniq()
       |> Enum.filter(&ExtentStore.reads?/1)

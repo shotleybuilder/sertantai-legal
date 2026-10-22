@@ -83,6 +83,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
     end)
   end
 
+  @doc """
+  When the amending provision `ref` came fully into force by its law's own
+  text (`rules`: the amending law's commencement rules; the feed's records,
+  an Act's Royal Assent and a staged clause's start left out). Nil when
+  they don't say.
+  """
+  @spec commenced_on([CRule.t()], String.t()) :: Date.t() | nil
+  def commenced_on(rules, ref), do: date(rules, ref)
+
   # when the amending provision came fully into force by the law's own text
   defp date(rules, ref) do
     text = Enum.reject(rules, &(&1.treatment in @not_text))
