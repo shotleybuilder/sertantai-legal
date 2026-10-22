@@ -8,63 +8,88 @@ defmodule SertantaiLegal.Scraper.SourcesTest do
 
   alias SertantaiLegal.Scraper.Sources
 
-  # one family law, as the loader gives it
+  # one family law, as the loader gives it: its amending laws, and the
+  # gaps the feed leaves (from the stored changes)
   @law %{
     law: "UK_uksi_2010_404",
     scope: ["/uksi/2010/404/body/data.xml"],
-    effects: [
-      %{affecting: "UK_uksi_2023_914", kind: "substituted"},
-      %{affecting: "UK_uksi_2023_914", kind: "inserted"},
-      %{affecting: "UK_ukpga_2022_30", kind: "repealed"},
-      %{affecting: "UK_uksi_2023_993", kind: "commenced"},
-      %{affecting: "UK_uksi_2010_404", kind: "other"}
-    ],
-    cited: ["UK_uksi_2011_1043"],
-    register: %{effects: 5, laws: 4}
+    amenders: ["UK_uksi_2023_914", "UK_ukpga_2022_30", "UK_uksi_2011_1043", "UK_ukpga_1974_37"],
+    gaps: [
+      # gap A: in the feed, undated; made by an Act's s.47
+      %{by: "UK_ukpga_2022_30", gap: :a, provisions: ["s.47(2)"]},
+      # gap B: not in the feed at all
+      %{by: "UK_uksi_2011_1043", gap: :b, provisions: ["sch.1.para.10(4)"]},
+      %{by: "UK_ukpga_1974_37", gap: :b, provisions: []}
+    ]
   }
 
   @amending %{
-    "UK_uksi_2023_914" => %{enabling: ["UK_ukpga_1974_37"]},
-    "UK_uksi_2011_1043" => %{enabling: []},
-    "UK_ukpga_2022_30" => %{commenced_by: ["UK_uksi_2023_362"]}
+    # an SI stating its extent: no introduction needed
+    "UK_uksi_2023_914" => %{clause: true, enabling: ["UK_ukpga_1974_37"], commencing: []},
+    # an SI stating none: its powers, and their parent
+    "UK_uksi_2011_1043" => %{clause: false, enabling: ["UK_ukpga_1972_68"], commencing: []},
+    "UK_ukpga_2022_30" => %{
+      clause: true,
+      commencing: [
+        %{order: "UK_uksi_2023_362", provisions: ["s.47"]},
+        %{order: "UK_uksi_2023_999", provisions: ["s.12"]}
+      ]
+    },
+    "UK_ukpga_1974_37" => %{
+      clause: true,
+      commencing: [%{order: "UK_uksi_1974_1439", provisions: ["s.15"]}]
+    }
   }
 
-  test "the seven categories, one hop and a narrow second" do
-    needs = Sources.needs(@law, @amending)
-    by = Enum.group_by(needs, & &1.category, &{&1.law, &1.part})
+  defp by(needs), do: Enum.group_by(needs, & &1.category, &{&1.law, &1.part})
 
-    assert by[:own] == [{"UK_uksi_2010_404", "/uksi/2010/404/body/data.xml"}]
-    assert by[:feed] == [{"UK_uksi_2010_404", :feed}]
+  test "own text and feed; every amending law's body, for territory" do
+    b = by(Sources.needs(@law, @amending))
+    assert b[:own] == [{"UK_uksi_2010_404", "/uksi/2010/404/body/data.xml"}]
+    assert b[:feed] == [{"UK_uksi_2010_404", :feed}]
+    assert Enum.sort(b[:territory]) == Enum.sort(Enum.map(@law.amenders, &{&1, :body}))
+  end
 
-    # the feed's text-change laws and the notes' cited laws, body and schedules
-    assert Enum.sort(by[:amending]) ==
-             Enum.sort(
-               for l <- ["UK_uksi_2023_914", "UK_ukpga_2022_30", "UK_uksi_2011_1043"],
-                   p <- [:body, :schedules],
-                   do: {l, p}
-             )
+  test "enabling powers only for an SI stating no extent" do
+    b = by(Sources.needs(@law, @amending))
+    assert b[:introduction] == [{"UK_uksi_2011_1043", :introduction}]
+    assert b[:enabling_parent] == [{"UK_ukpga_1972_68", :body}]
+  end
 
-    assert by[:commencing] == [{"UK_uksi_2023_993", :body}, {"UK_uksi_2023_993", :schedules}]
-    # an amending SI's introduction; an Act has none to read for powers
-    assert Enum.sort(by[:introduction]) == [
-             {"UK_uksi_2011_1043", :introduction},
-             {"UK_uksi_2023_914", :introduction}
+  test "gap A: an Act's feed and only the orders commencing the provisions that made the changes" do
+    b = by(Sources.needs(@law, @amending))
+
+    assert Enum.sort(b[:dates]) == [
+             {"UK_ukpga_2022_30", :feed},
+             {"UK_uksi_2023_362", :body},
+             {"UK_uksi_2023_362", :schedules}
            ]
+  end
 
-    assert by[:enabling_parent] == [{"UK_ukpga_1974_37", :body}]
-    # row 7, narrow: an amending Act's own feed, and the orders it names as commencing it
-    assert Enum.sort(by[:amending_commencing]) ==
-             [
-               {"UK_ukpga_2022_30", :feed},
-               {"UK_uksi_2023_362", :body},
-               {"UK_uksi_2023_362", :schedules}
-             ]
+  test "gap B: body and schedules; an Act with no provisions named: every order its feed names" do
+    b = by(Sources.needs(@law, @amending))
+
+    assert Enum.sort(b[:backlog]) == [
+             {"UK_ukpga_1974_37", :feed},
+             {"UK_ukpga_1974_37", :schedules},
+             {"UK_uksi_1974_1439", :body},
+             {"UK_uksi_1974_1439", :schedules},
+             {"UK_uksi_2011_1043", :schedules}
+           ]
+  end
+
+  test "no gap, no need beyond the body: a feed-dated change's law needs no schedules or orders" do
+    l = %{@law | gaps: []}
+    b = by(Sources.needs(l, @amending))
+    assert b[:dates] == nil and b[:backlog] == nil
   end
 
   test "the law itself is never its own amending law" do
+    l = %{@law | amenders: ["UK_uksi_2010_404" | @law.amenders]}
+
     refute Enum.any?(
-             Sources.needs(@law, @amending),
-             &(&1.category == :amending and &1.law == "UK_uksi_2010_404")
+             Sources.needs(l, @amending),
+             &(&1.category == :territory and &1.law == "UK_uksi_2010_404")
            )
   end
 

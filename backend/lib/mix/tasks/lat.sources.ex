@@ -1,9 +1,11 @@
 defmodule Mix.Tasks.Lat.Sources do
   @moduledoc """
   Sources held (change vocabulary CV-S01): for a scope, the documents its
-  labels need against what the local store holds — by category, every
-  missing or stale document named with its status, and each law's feed
-  against the register's change statistics. Read-only: it never fetches.
+  labels need against what the local store holds — sliced by the gap the
+  feed leaves (read from the feed and the stored changes: re-run after a
+  rebuild), every missing or stale document named with its status, and each
+  law's feed against the register's change statistics. Read-only: it never
+  fetches.
 
       mix lat.sources --family "OH&S: Occupational"
       mix lat.sources --laws UK_uksi_2010_404,UK_ukpga_1974_37
@@ -19,6 +21,12 @@ defmodule Mix.Tasks.Lat.Sources do
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.{EffectKind, LatScope, Sources}
+  alias SertantaiLegal.Scraper.AmendingLaw.Pointer
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.Store, as: ExtentStore
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Store}
+  alias SertantaiLegal.Scraper.Commencement.Order
+
+  @text_ops ~w(inserted substituted repealed repealed_in_part renumbered)a
   alias SertantaiLegal.Scraper.EnactedBy.EnablingCache
   alias SertantaiLegal.Scraper.LegislationGovUk.{ChangesFeed, ClmlStore}
 
@@ -36,15 +44,9 @@ defmodule Mix.Tasks.Lat.Sources do
     Mix.shell().info("#{length(laws)} laws in scope")
 
     facts = Enum.map(laws, &law_facts/1)
-
-    amenders =
-      facts
-      |> Enum.flat_map(&Sources.needs(&1, %{}))
-      |> Enum.filter(&(&1.category == :amending))
-      |> Enum.map(& &1.law)
-      |> Enum.uniq()
-
-    amending = Map.new(amenders, &{&1, amending_facts(&1)})
+    amenders = facts |> Enum.flat_map(& &1.amenders) |> Enum.uniq()
+    clauses = ExtentStore.for_laws(amenders)
+    amending = Map.new(amenders, &{&1, amending_facts(&1, clauses)})
 
     needs =
       facts |> Enum.flat_map(&Sources.needs(&1, amending)) |> Enum.uniq_by(&{&1.law, &1.part})
@@ -102,15 +104,23 @@ defmodule Mix.Tasks.Lat.Sources do
       end
       |> Enum.reject(&is_nil(&1.affecting))
 
-    cited =
-      Repo.query!(
-        """
-        SELECT DISTINCT coalesce(citation_law, changed_by) FROM amendment_annotations
-        WHERE law_name = $1 AND code_type = 'amendment' AND coalesce(citation_law, changed_by) ~ '^UK_'
-        """,
-        [law]
-      ).rows
-      |> List.flatten()
+    # its amending laws and the gaps the feed leaves, from the stored
+    # changes (`mix lat.vocabulary --build`)
+    changes = Enum.filter(Store.for_law(law), &(&1.resolved.operation in @text_ops))
+
+    amenders =
+      changes
+      |> Enum.flat_map(&[&1.resolved.by, Change.value(&1, :markup, :cited)])
+      |> Enum.reject(&is_nil/1)
+      |> Enum.uniq()
+
+    gaps =
+      for c <- changes,
+          by = c.resolved.by || Change.value(c, :markup, :cited),
+          by != nil,
+          gap = gap(c),
+          gap != nil,
+          do: %{by: by, gap: gap, provisions: provisions(c)}
 
     register =
       case Repo.query!(
@@ -125,15 +135,51 @@ defmodule Mix.Tasks.Lat.Sources do
       law: law,
       scope: LatScope.paths(slash, LatScope.get(law)),
       effects: effects,
-      cited: cited,
+      amenders: amenders,
+      gaps: gaps,
       register: register
     }
   end
 
-  # an amending SI's enabling powers (cached, never fetched); an amending
-  # Act's commencing orders (its own feed, store only)
-  defp amending_facts(law) do
+  # gap A: the feed records the change with no date; gap B: the feed
+  # doesn't record it (no feed claim of its operation)
+  defp gap(c) do
+    cond do
+      Change.values(c, :feed, :operation) == [] -> :b
+      Change.values(c, :feed, :date) == [] and Change.values(c, :feed, :date_first) == [] -> :a
+      true -> nil
+    end
+  end
+
+  # the amending provisions named: the feed's, the note's, or the law's own
+  # (a rule's key, "law:element id")
+  defp provisions(c) do
+    named = Change.value(c, :feed, :affecting) || Change.value(c, :markup, :affecting)
+
+    cond do
+      named != nil ->
+        named
+
+      true ->
+        for a <- c.aliases,
+            [_, id] <- [String.split(a, ":", parts: 2)],
+            ref = Order.ref(id),
+            ref != nil,
+            do: ref
+    end
+  end
+
+  # whether an amending law states its extent (extent_rules); an SI's
+  # enabling-power parents (the cache, never fetched); an Act's commencing
+  # orders and the provisions each commences (its own feed, store only)
+  defp amending_facts(law, clauses) do
     [_, type, year, number] = String.split(law, "_", parts: 4)
+
+    clause =
+      case Map.get(clauses, law) do
+        %{default: d, lists: ls} -> d != nil or ls != []
+        _ -> false
+      end
 
     enabling =
       case EnablingCache.cached(law) do
@@ -141,21 +187,24 @@ defmodule Mix.Tasks.Lat.Sources do
         :none -> []
       end
 
-    commenced_by =
+    commencing =
       case ChangesFeed.fetch(type, year, number, store: :only) do
         {:ok, es} ->
           for e <- es,
               EffectKind.kind(e.type, nil) == "commenced",
               is_binary(e.affecting),
               e.affecting != law,
-              uniq: true,
-              do: e.affecting
+              do: %{
+                order: e.affecting,
+                provisions:
+                  e.affected_provisions |> Pointer.refs_in() |> Enum.flat_map(&Pointer.to_refs/1)
+              }
 
         _ ->
           []
       end
 
-    %{enabling: enabling, commenced_by: commenced_by}
+    %{clause: clause, enabling: enabling, commencing: commencing}
   end
 
   defp valid_dates(laws) do

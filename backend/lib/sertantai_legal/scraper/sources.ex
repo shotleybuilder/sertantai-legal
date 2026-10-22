@@ -2,23 +2,27 @@ defmodule SertantaiLegal.Scraper.Sources do
   @moduledoc """
   What a scope's labels need from legislation.gov.uk, and the report against
   what is held (change vocabulary CV-S01, agreed with Jason 2026-10-22).
-  Pure: the loader (`mix lat.sources`) reads the feeds, notes, caches and
-  store and passes the facts in.
+  Pure: the loader (`mix lat.sources`) reads the feeds, stored changes,
+  caches and store and passes the facts in.
 
-  Needed, by category (one hop; two narrow second hops):
+  Needed, sliced by the gap the feed leaves (Jason: "Are we slicing based
+  on the defined gap after using the change feed" — "Yes"). A document is
+  needed because a gap in the feed points to it, never only because it is
+  one hop away:
 
   1. `:own` — each law's own text (its LAT scope's documents)
   2. `:feed` — its changes feed (every page)
-  3. `:amending` — every law its feed names as making a text change, or its
-     notes cite (body and schedules)
-  4. `:commencing` — every order its feed names as commencing it
-  5. `:introduction` — each amending SI's introduction (its enabling powers)
-  6. `:enabling_parent` — the parent Acts of those powers (body)
-  7. `:amending_commencing` — an amending Act's own feed, and the orders it
-     names as commencing that Act ("a narrow row 7"); an SI commences
-     itself in its own text
+  3. `:territory` — every amending law's body (its extent and application
+     clauses: the feed is weak on territory for every change); for an SI
+     stating no extent, its `:introduction` (enabling powers) and those
+     powers' `:enabling_parent` Acts (body)
+  4. `:dates` — gap A, a change the feed records with no date: an amending
+     Act's own feed and the orders it names commencing the provisions that
+     made those changes (an SI commences itself in its body, held under 3)
+  5. `:backlog` — gap B, a change the feed doesn't record: the amending
+     law's schedules too (the instruction itself), and for an Act, as in 4
 
-  A document needed under two categories is counted once, under the first.
+  A document needed twice is counted once, under the first.
 
   The report passes when every need is held and fresh, or legislation.gov.uk
   has none (a stored 404: `:absent`); `:not_fetched`, `:incomplete` (a feed
@@ -28,50 +32,80 @@ defmodule SertantaiLegal.Scraper.Sources do
   a difference fails until explained.
   """
 
-  @text_kinds ~w(substituted inserted repealed renumbered amended)
+  alias SertantaiLegal.Scraper.LatRef
+
   @act_types ~w(ukpga asp anaw asc nia apni)
-  @order ~w(own feed amending commencing introduction enabling_parent amending_commencing)a
+  @order ~w(own feed territory introduction enabling_parent dates backlog)a
   @failing [:not_fetched, :incomplete, :stale]
 
   @type need :: %{category: atom(), law: String.t(), part: atom() | String.t(), for: String.t()}
   @type status :: :held | :absent | :not_fetched | :incomplete | :stale
+  @type gap :: %{by: String.t(), gap: :a | :b, provisions: [String.t()]}
 
   @doc """
-  The documents one law needs. `law`: `%{law, scope, effects, cited}`
-  (`scope` its document paths; `effects` `%{affecting, kind}`; `cited` the
-  laws its notes cite). `amending`: per amending law, `%{enabling: [parent
-  law]}` (an SI's enabling powers, read from its introduction) and
-  `%{commenced_by: [order]}` (an Act's commencing orders, from its own
-  feed).
+  The documents one law needs. `law`: `%{law, scope, amenders, gaps}`
+  (`scope` its document paths; `amenders` its amending laws; `gaps` the
+  changes the feed leaves undated (`:a`) or doesn't record (`:b`), each with
+  its amending law and the amending provisions named). `amending`: per
+  amending law, `%{clause, enabling, commencing}` — whether it states its
+  extent, an SI's enabling-power parents, and an Act's commencing orders
+  from its own feed (`%{order, provisions}`).
   """
   @spec needs(map(), %{String.t() => map()}) :: [need()]
   def needs(%{law: law} = l, amending) do
-    by_kind = fn kinds ->
-      for e <- l.effects, e.kind in kinds, e.affecting != law, uniq: true, do: e.affecting
-    end
-
-    amenders = Enum.uniq(by_kind.(@text_kinds) ++ Enum.reject(l.cited || [], &(&1 == law)))
-    {acts, sis} = Enum.split_with(amenders, &act?/1)
-    whole = fn laws -> for x <- laws, p <- [:body, :schedules], do: {x, p} end
+    amenders = l.amenders |> Enum.reject(&(&1 == law)) |> Enum.uniq()
+    sis = Enum.reject(amenders, &act?/1)
+    unclaused = Enum.reject(sis, &get_in(amending, [&1, :clause]))
+    gaps = Enum.reject(l.gaps, &(&1.by == law))
 
     [
       own: Enum.map(l.scope, &{law, &1}),
       feed: [{law, :feed}],
-      amending: whole.(amenders),
-      commencing: whole.(by_kind.(["commenced"])),
-      introduction: Enum.map(sis, &{&1, :introduction}),
+      territory: Enum.map(amenders, &{&1, :body}),
+      introduction: Enum.map(unclaused, &{&1, :introduction}),
       enabling_parent:
-        for(s <- sis, p <- get_in(amending, [s, :enabling]) || [], uniq: true, do: {p, :body}),
-      amending_commencing:
-        Enum.flat_map(acts, fn a ->
-          [{a, :feed} | whole.(get_in(amending, [a, :commenced_by]) || [])]
-        end)
+        for(
+          s <- unclaused,
+          p <- get_in(amending, [s, :enabling]) || [],
+          uniq: true,
+          do: {p, :body}
+        ),
+      dates: commencing(Enum.filter(gaps, &(&1.gap == :a)), amending),
+      backlog:
+        for(%{gap: :b, by: b} <- gaps, uniq: true, do: {b, :schedules}) ++
+          commencing(Enum.filter(gaps, &(&1.gap == :b)), amending)
     ]
     |> Enum.flat_map(fn {category, docs} ->
       Enum.map(docs, fn {x, part} -> %{category: category, law: x, part: part, for: law} end)
     end)
     |> Enum.uniq_by(&{&1.law, &1.part})
   end
+
+  # an amending Act's own feed, and the orders it names commencing the
+  # provisions that made the changes (every order, where none is named)
+  defp commencing(gaps, amending) do
+    gaps
+    |> Enum.filter(&act?(&1.by))
+    |> Enum.group_by(& &1.by, & &1.provisions)
+    |> Enum.flat_map(fn {act, provisions} ->
+      provisions = List.flatten(provisions)
+
+      orders =
+        for %{order: o, provisions: ps} <- get_in(amending, [act, :commencing]) || [],
+            provisions == [] or ps == [] or related?(ps, provisions),
+            uniq: true,
+            do: o
+
+      [{act, :feed} | for(o <- orders, p <- [:body, :schedules], do: {o, p})]
+    end)
+    |> Enum.uniq()
+  end
+
+  defp related?(as, bs),
+    do:
+      Enum.any?(as, fn a ->
+        Enum.any?(bs, &(a in LatRef.ancestors(&1) or &1 in LatRef.ancestors(a)))
+      end)
 
   defp act?(law), do: (String.split(law, "_") |> Enum.at(1)) in @act_types
 
