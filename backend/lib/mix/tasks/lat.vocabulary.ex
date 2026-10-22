@@ -22,6 +22,8 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       mix lat.vocabulary --build --law UK_ukpga_1990_8
       mix lat.vocabulary --build --golden  # every golden-set law
       mix lat.vocabulary --build --laws A,B
+      mix lat.vocabulary --build --family "OH&S: Occupational / Personal Safety"
+      mix lat.vocabulary --check --family "OH&S: Occupational"   # build, conflict counts, golden from the store — one app start
       mix lat.vocabulary --conflicts --law UK_ukpga_1990_8 [--all]
                                            # where the law's text and legislation.gov.uk disagree
 
@@ -48,6 +50,8 @@ defmodule Mix.Tasks.Lat.Vocabulary do
         strict: [
           law: :string,
           laws: :string,
+          family: :string,
+          check: :boolean,
           provision: :keep,
           golden: :boolean,
           build: :boolean,
@@ -59,11 +63,102 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       )
 
     cond do
+      opts[:check] -> check(opts)
       opts[:build] -> build(opts)
       opts[:conflicts] -> conflicts(opts)
       opts[:golden] -> golden(opts)
       true -> show(opts)
     end
+  end
+
+  # the laws named: --golden, --family F (its LAT laws), --laws A,B, --law X
+  defp laws(opts, task) do
+    cond do
+      opts[:golden] ->
+        golden_laws()
+
+      opts[:family] ->
+        Repo.query!(
+          """
+          SELECT name FROM uk_lrt WHERE family LIKE '%' || $1 || '%'
+            AND name IN (SELECT DISTINCT law_name FROM legal_articles) ORDER BY name
+          """,
+          [opts[:family]]
+        ).rows
+        |> List.flatten()
+
+      opts[:laws] ->
+        String.split(opts[:laws], ",", trim: true)
+
+      opts[:law] ->
+        [opts[:law]]
+
+      true ->
+        Mix.raise("#{task} needs --law X, --laws A,B, --family F or --golden")
+    end
+  end
+
+  # ── --check ─────────────────────────────────────────────────────────
+
+  # One run, one app start: build the laws named, the conflict report's
+  # counts over them, and the golden scoreboard from the store — naming the
+  # golden laws built by older code (their stored changes aren't this
+  # code's: rebuild them for a true score)
+  defp check(opts) do
+    build(opts)
+
+    laws = laws(opts, "--check")
+    conflict_totals(laws)
+
+    stale =
+      for l <- golden_laws(),
+          v =
+            Repo.query!(
+              "SELECT DISTINCT code_version FROM provision_changes WHERE law_name = $1",
+              [l]
+            ).rows,
+          v != [[ChangeVocabulary.Version.current()]],
+          do: l
+
+    if stale != [],
+      do:
+        Mix.shell().info(
+          "\n#{length(stale)} golden laws built by older code (scored as stored): #{Enum.join(stale, ", ")}"
+        )
+
+    golden(Keyword.put(opts, :stored, true))
+  end
+
+  defp conflict_totals(laws) do
+    counts =
+      laws
+      |> Enum.flat_map(fn law ->
+        changes = Store.for_law(law)
+        Conflicts.report(changes, pointers(changes))
+      end)
+      |> Enum.frequencies_by(fn
+        %{kind: :value, attribute: a} -> {:value, a}
+        %{kind: :uncovered, missing: m} -> {:uncovered, m}
+        %{kind: k} -> k
+      end)
+      |> Enum.sort_by(&(-elem(&1, 1)))
+
+    Mix.shell().info("\nconflicts over #{length(laws)} laws:")
+    for {k, n} <- counts, do: Mix.shell().info("  #{n}  #{inspect(k)}")
+  end
+
+  # what the read pass read of each amending law of `law` (its index)
+  defp pointers(law) do
+    for l <-
+          law
+          |> Store.for_law()
+          |> Enum.map(& &1.resolved.by)
+          |> Enum.reject(&is_nil/1)
+          |> Enum.uniq(),
+        index = SertantaiLegal.Scraper.Amendment.Index.get(l),
+        index != nil,
+        into: %{},
+        do: {l, index["pointers"] || []}
   end
 
   # ── --conflicts ─────────────────────────────────────────────────────
@@ -74,26 +169,12 @@ defmodule Mix.Tasks.Lat.Vocabulary do
     Mix.Task.run("app.start")
     Logger.configure(level: :warning)
 
-    laws =
-      cond do
-        opts[:golden] -> golden_laws()
-        opts[:laws] -> String.split(opts[:laws], ",", trim: true)
-        opts[:law] -> [opts[:law]]
-        true -> Mix.raise("--conflicts needs --law X, --laws A,B or --golden")
-      end
+    laws = laws(opts, "--conflicts")
 
     for law <- laws do
       changes = Store.for_law(law)
 
-      # what the read pass read of each amending law (its index)
-      pointers =
-        for l <- changes |> Enum.map(& &1.resolved.by) |> Enum.reject(&is_nil/1) |> Enum.uniq(),
-            index = SertantaiLegal.Scraper.Amendment.Index.get(l),
-            index != nil,
-            into: %{},
-            do: {l, index["pointers"] || []}
-
-      report = Conflicts.report(changes, pointers)
+      report = Conflicts.report(changes, pointers(changes))
 
       counts =
         report
@@ -120,13 +201,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
     Mix.Task.run("app.start")
     Logger.configure(level: :warning)
 
-    laws =
-      cond do
-        opts[:golden] -> golden_laws()
-        opts[:laws] -> String.split(opts[:laws], ",", trim: true)
-        opts[:law] -> [opts[:law]]
-        true -> Mix.raise("--build needs --law X, --laws A,B or --golden")
-      end
+    laws = laws(opts, "--build")
 
     for {law, i} <- Enum.with_index(laws, 1) do
       # in its own process: a law's parsed documents go when it exits

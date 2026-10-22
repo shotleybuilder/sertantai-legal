@@ -1,7 +1,7 @@
 defmodule SertantaiLegal.Scraper.EnactedBy.EnablingCache do
   @moduledoc """
-  An SI's enabling provisions, fetched from its introduction (never the
-  body), parsed by `EnactedBy.EnablingProvisions` and cached in
+  An SI's enabling provisions, fetched from its made introduction (never
+  the body; a revoked SI's asked for by version: CV-07), parsed by `EnactedBy.EnablingProvisions` and cached in
   `data/cache/enabling/<law>.json`.
 
   Shared by `mix live.enabling` (enabling-extent evidence) and `mix lat.scope
@@ -42,10 +42,8 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingCache do
 
   defp fetch(name) do
     with ["UK", type, year | number] when number != [] <- String.split(name, "_"),
-         {:ok, %{text: text, urls: urls}} <-
-           EnactedBy.fetch_enacting_data(
-             EnactedBy.introduction_path(type, year, Enum.join(number, "_"))
-           ) do
+         number = Enum.join(number, "_"),
+         {:ok, %{text: text, urls: urls}} <- introduction(type, year, number) do
       text
       |> EnablingProvisions.parse(urls, titles(text))
       |> Enum.map(&%{"law" => &1.law, "sections" => &1.sections, "schedules" => &1.schedules})
@@ -53,6 +51,30 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingCache do
       _ -> []
     end
   end
+
+  # the made introduction: the usual path, else — a revoked SI, whose
+  # usual path falls back to the current, repealed text — the made
+  # version asked for by name (CV-07)
+  defp introduction(type, year, number) do
+    case EnactedBy.fetch_enacting_data(EnactedBy.introduction_path(type, year, number)) do
+      {:ok, %{text: text}} = ok ->
+        if placeholder?(text),
+          do: EnactedBy.fetch_enacting_data(made_path(type, year, number)),
+          else: ok
+
+      _ ->
+        EnactedBy.fetch_enacting_data(made_path(type, year, number))
+    end
+  end
+
+  @doc "True for no text, or legislation.gov.uk's repealed placeholder (\". . . .\")."
+  @spec placeholder?(String.t() | nil) :: boolean()
+  def placeholder?(nil), do: true
+  def placeholder?(text), do: String.trim(String.replace(text, ".", "")) == ""
+
+  @doc "The made introduction's path, asked for by version."
+  @spec made_path(String.t(), String.t(), String.t()) :: String.t()
+  def made_path(type, year, number), do: "/#{type}/#{year}/#{number}/introduction/made/data.xml"
 
   # the Acts the powers clause names in plain words, by register title
   # (title_en holds no year: "European Communities Act" + year)
