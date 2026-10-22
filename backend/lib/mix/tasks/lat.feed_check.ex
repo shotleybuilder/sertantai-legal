@@ -105,7 +105,10 @@ defmodule Mix.Tasks.Lat.FeedCheck do
           law
         ]).rows
 
-      rows = Enum.map(row_ids, fn [sid, _] -> String.replace_prefix(sid, law <> ":", "") end)
+      rows =
+        Enum.map(row_ids, fn [sid, _] ->
+          sid |> String.replace_prefix(law <> ":", "") |> Ref.canonical()
+        end)
 
       # each row's XML id → its ref, as the parse named it
       xml_ids =
@@ -117,7 +120,10 @@ defmodule Mix.Tasks.Lat.FeedCheck do
             Map.put_new(
               acc,
               x,
-              sid |> String.replace_prefix(law <> ":", "") |> String.replace(~r/\[[^\]]+\]$/, "")
+              sid
+              |> String.replace_prefix(law <> ":", "")
+              |> String.replace(~r/\[[^\]]+\]$/, "")
+              |> Ref.canonical()
             )
         end)
 

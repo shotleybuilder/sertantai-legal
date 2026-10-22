@@ -31,6 +31,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Ref do
     end
   end
 
+  @doc """
+  A ref in one spelling: any Unicode space (U+00A0 between "Article" and
+  its number, as the parse names some EU articles: #182) is an ordinary
+  space. Every name the vocabulary reads from LAT goes through it, so the
+  readers agree today and nothing moves when the parse is fixed.
+  """
+  @spec canonical(String.t()) :: String.t()
+  def canonical(ref), do: String.replace(ref, ~r/\p{Zs}/u, " ")
+
   defp eu?(nil), do: false
   defp eu?(law_name), do: Enum.at(String.split(law_name, "_"), 1) in @eu
 end

@@ -48,6 +48,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   @spec labels(String.t(), String.t(), [Effect.t()], %{String.t() => map()}, keyword()) ::
           %{String.t() => [Label.period()]}
   def labels(law_name, xml, effects, provisions, opts \\ []) do
+    {provisions, opts} = canonical(provisions, opts)
     facts = Markup.provisions(xml, law_name)
 
     # the changes given (read back from `provision_changes`), else built
@@ -182,8 +183,27 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   """
   @spec changes(String.t(), String.t(), [Effect.t()], %{String.t() => map()}, keyword()) ::
           [Change.t()]
-  def changes(law_name, xml, effects, provisions, opts \\ []),
-    do: build(law_name, xml, effects, provisions, opts, Markup.provisions(xml, law_name))
+  def changes(law_name, xml, effects, provisions, opts \\ []) do
+    {provisions, opts} = canonical(provisions, opts)
+    build(law_name, xml, effects, provisions, opts, Markup.provisions(xml, law_name))
+  end
+
+  # LAT's names in one spelling (`Ref.canonical/1`): the readers name from
+  # the CLML, the parse sometimes with a non-breaking space (#182)
+  defp canonical(provisions, opts) do
+    provisions = Map.new(provisions, fn {id, p} -> {Ref.canonical(id), p} end)
+
+    opts =
+      opts
+      |> update_opt(:rows, fn rows -> Enum.map(rows, &Ref.canonical/1) end)
+      |> update_opt(:xml_ids, fn ids -> Map.new(ids, fn {x, r} -> {x, Ref.canonical(r)} end) end)
+      |> update_opt(:changes, fn cs -> Enum.map(cs, &%{&1 | target: Ref.canonical(&1.target)}) end)
+
+    {provisions, opts}
+  end
+
+  defp update_opt(opts, key, f),
+    do: if(Keyword.get(opts, key), do: Keyword.update!(opts, key, f), else: opts)
 
   defp build(law_name, xml, effects, provisions, opts, facts) do
     order =
