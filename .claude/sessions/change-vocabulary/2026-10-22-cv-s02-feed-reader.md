@@ -97,3 +97,5 @@ Jason: "Yes, treat EU Annex like Schedules"; "A really deep affect is small. We 
 | ref ambiguous (the feed's own) | 1 |
 
 Still to do: the 50-effect sample checked by a Claude agent (criteria 2 and 3), tests already in, repeatability, and golden re-checked (the reader changed).
+
+**Deep effects refined** (`40aa55b1`; Jason: "Make the change. I Agree the logic"). Only text changes move to the row above a deep provision: inserted, substituted, repealed (whole or in part), renumbered, in any territory. The row's words change, its status doesn't. A commencement of a deep item stays on it, where "commenced through its parts" makes the row above partly in force until it is. A modification or application changes no label and stays.
