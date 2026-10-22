@@ -10,8 +10,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
   with a substitution → substituted, Substitution → substituted, Addition →
   inserted), `level` (`:provision` when the change wraps the provision's
   number, else `:words`), `retained` (RetainText), `territory` (the Extent
-  attribute), and `cited` — the law the change's note cites. `cited` is a
-  pointer for identity only (`ChangeVocabulary.Merge`), never a fact.
+  attribute), `cited` — the law the change's note cites — and `affecting`
+  — the amending provisions the note names after it. Both are pointers for
+  identity only (`ChangeVocabulary.Merge`; Jason 2026-10-22), never facts.
 
   A heading's change (`P1group/Title`) is on the provision the group holds.
   Pure.
@@ -19,7 +20,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
 
   import SweetXml
 
-  alias SertantaiLegal.Scraper.AmendingLaw.Doc
+  alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Pointer}
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Claim, Ref}
   alias SertantaiLegal.Scraper.EffectIndex
 
@@ -252,7 +253,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
       Claim.new(:markup, :level, if(whole?, do: :provision, else: :words), change_id),
       Claim.new(:markup, :retained, if(first.kind == :Repeal, do: first.retain), change_id),
       Claim.new(:markup, :territory, Enum.find_value(occ, & &1.extent) |> code(), change_id),
-      Claim.new(:markup, :cited, Map.get(cited, first.note), change_id)
+      Claim.new(:markup, :cited, get_in(cited, [first.note, :law]), change_id),
+      Claim.new(:markup, :affecting, get_in(cited, [first.note, :refs]), change_id)
     ])
   end
 
@@ -297,14 +299,26 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
 
   defp letters(el), do: el |> Doc.text() |> String.replace(~r/[^\p{L}\p{N}]/u, "")
 
-  # each commentary's first cited law, as a law name ("UK_uksi_2023_911")
+  # each commentary's first cited law, as a law name ("UK_uksi_2023_911"),
+  # and the amending provisions it names after it ("Sch. 2 para. 10(2)(a)"
+  # → ["sch.2.para.10(2)(a)"]; `AmendingLaw.Pointer`) — pointers for
+  # identity only (Jason 2026-10-22: the merge may use them to tell same-day
+  # events by one law apart; never stored as facts or labelled)
   defp cited(doc) do
     for c <- xpath(doc, ~x"//Commentary"l),
         id = xpath(c, ~x"./@id"s),
         uri = xpath(c, ~x"(.//Citation/@URI)[1]"s),
         [_, type, year, num] <- [Regex.run(~r"/id/([a-z]+)/(\d{4})/(\d+)", uri)],
-        into: %{},
-        do: {id, "UK_#{type}_#{year}_#{num}"}
+        law = "UK_#{type}_#{year}_#{num}",
+        into: %{} do
+      refs =
+        %{text: Doc.text(c), citation_law: law}
+        |> Pointer.parse()
+        |> Map.get(:provisions)
+        |> Enum.flat_map(&Pointer.to_refs/1)
+
+      {id, %{law: law, refs: if(refs != [], do: refs)}}
+    end
   end
 
   defp attr(attrs, name) do

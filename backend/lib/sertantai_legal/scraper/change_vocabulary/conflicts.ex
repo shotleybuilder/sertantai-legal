@@ -144,7 +144,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Conflicts do
             key: d.key,
             by: d.resolved.by,
             operation: d.resolved.operation,
-            affecting: Change.value(d, :feed, :affecting)
+            affecting: Change.value(d, :feed, :affecting) || Change.value(d, :markup, :affecting)
           }
 
     value ++ unjoined ++ uncovered ++ unread
@@ -155,7 +155,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Conflicts do
   defp read?(d, read) do
     refs = Map.get(read, d.resolved.by, MapSet.new())
 
-    Enum.any?(Change.value(d, :feed, :affecting) || [], fn a ->
+    # the provisions the feed names, else those its note names (a pointer)
+    named = Change.value(d, :feed, :affecting) || Change.value(d, :markup, :affecting) || []
+
+    Enum.any?(named, fn a ->
       Enum.any?(containing(a), &MapSet.member?(refs, &1))
     end)
   end

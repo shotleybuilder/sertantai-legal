@@ -144,10 +144,73 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Pointer do
     end
   end
 
+  @doc """
+  A pointer's provision as a ref in the feed's grammar, for identity only
+  (change vocabulary CV-04: telling apart same-day events by one law):
+  `{:schedule, "2", nil, "10", ["2", "a"]}` → `"sch.2.para.10(2)(a)"`. Nil
+  when it names no number.
+  """
+  @spec to_ref(tuple()) :: String.t() | nil
+  def to_ref({:schedule, nil, _part, _para, _subs}), do: nil
+
+  def to_ref({:schedule, n, _part, para, subs}) when is_binary(para),
+    do: "sch.#{n}.para.#{para}#{brackets(subs)}"
+
+  def to_ref({:schedule, n, part, nil, _subs}) when is_binary(part), do: "sch.#{n}.pt.#{part}"
+  def to_ref({:schedule, n, nil, nil, _subs}), do: "sch.#{n}"
+
+  def to_ref({kind, n, subs}) do
+    prefix = %{section: "s", regulation: "reg", article: "art", rule: "rule"}[kind]
+    if prefix, do: "#{prefix}.#{n}#{brackets(subs)}"
+  end
+
+  defp brackets(subs), do: Enum.map_join(subs, &"(#{&1})")
+
+  @doc """
+  The refs a pointer's provision names: a run of brackets of one kind is a
+  list of items, not a path ("para. 9(b)(c)(d)" → 9(b), 9(c), 9(d);
+  "para. 4(4)(a)" stays one path).
+  """
+  @spec to_refs(tuple()) :: [String.t()]
+  def to_refs(ref) do
+    {subs, rebuild} =
+      case ref do
+        {:schedule, n, part, para, subs} -> {subs, &{:schedule, n, part, para, &1}}
+        {kind, n, subs} -> {subs, &{kind, n, &1}}
+      end
+
+    case Enum.find_index(Enum.chunk_every(subs, 2, 1, :discard), fn [a, b] ->
+           kind(a) == kind(b)
+         end) do
+      nil ->
+        List.wrap(to_ref(ref))
+
+      i ->
+        {path, items} = Enum.split(subs, i)
+        for item <- items, r = to_ref(rebuild.(path ++ [item])), r != nil, do: r
+    end
+  end
+
+  defp kind(s) do
+    cond do
+      s =~ ~r/^\d/ -> :number
+      s =~ ~r/^[a-z]$/ -> :letter
+      s =~ ~r/^[ivxl]+$/ -> :roman
+      s =~ ~r/^[A-Z]+$/ -> :capital
+      true -> :other
+    end
+  end
+
   defp continues?(last), do: last in [:section, :regulation, :article, :rule]
 
+  # the leading run of bracketed numbers ("(4)(with s. 84(5))" → ["4"]:
+  # words in brackets end it)
   defp subs(""), do: []
-  defp subs(s), do: ~r/\(([^)]*)\)/ |> Regex.scan(s, capture: :all_but_first) |> List.flatten()
+
+  defp subs(s) do
+    [run] = Regex.run(~r/^(?:\([A-Za-z0-9]+\))*/, s)
+    ~r/\(([A-Za-z0-9]+)\)/ |> Regex.scan(run, capture: :all_but_first) |> List.flatten()
+  end
 
   defp blank(""), do: nil
   defp blank(s), do: s

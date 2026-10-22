@@ -156,4 +156,99 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeTest do
       assert Enum.count(Enum.uniq(c.aliases), &String.contains?(&1, ":")) <= 1
     end
   end
+
+  test "two legacy markup records by one law told apart by the provision each note names (HSWA 1974 s.13, Highways Act 1980 Sch.2 para.10(2))" do
+    changes =
+      Merge.merge([
+        text(
+          "UK_ukpga_1980_65:schedule-2-paragraph-10-2-a",
+          "s.13",
+          :substituted,
+          "UK_ukpga_1980_65"
+        ),
+        set("d29p24120", "s.13", [
+          {:markup, :operation, :inserted},
+          {:markup, :cited, "UK_ukpga_1980_65"},
+          {:markup, :affecting, ["sch.2.para.10(2)(b)"]}
+        ]),
+        set("d29p24227", "s.13", [
+          {:markup, :operation, :inserted},
+          {:markup, :cited, "UK_ukpga_1980_65"},
+          {:markup, :affecting, ["sch.2.para.10(2)(a)"]}
+        ])
+      ])
+
+    assert %{key: "d29p24227"} =
+             Enum.find(changes, &("UK_ukpga_1980_65:schedule-2-paragraph-10-2-a" in &1.aliases))
+  end
+
+  test "legacy markup below the law's text is found (TCPA 1990 s.248(3), 1999/29 Sch.22 para.4(4)(b))" do
+    changes =
+      Merge.merge([
+        text(
+          "UK_ukpga_1999_29:schedule-22-paragraph-4-4-b",
+          "s.248",
+          :substituted,
+          "UK_ukpga_1999_29"
+        ),
+        set("d29p19536", "s.248(3)", [
+          {:markup, :operation, :inserted},
+          {:markup, :cited, "UK_ukpga_1999_29"},
+          {:markup, :affecting, ["sch.22.para.4(4)(a)"]}
+        ]),
+        set("d29p19540", "s.248(3)", [
+          {:markup, :operation, :inserted},
+          {:markup, :cited, "UK_ukpga_1999_29"},
+          {:markup, :affecting, ["sch.22.para.4(4)(b)"]}
+        ])
+      ])
+
+    assert %{key: "d29p19540"} =
+             Enum.find(changes, &("UK_ukpga_1999_29:schedule-22-paragraph-4-4-b" in &1.aliases))
+  end
+
+  test "one instruction with several targets joins the event at each (TCPA 1990 s.65(1), 2016/22 Sch.12 para.9)" do
+    changes =
+      Merge.merge([
+        text(
+          "UK_ukpga_2016_22:schedule-12-paragraph-9",
+          "s.65(1)(a)",
+          :inserted,
+          "UK_ukpga_2016_22"
+        ),
+        text(
+          "UK_ukpga_2016_22:schedule-12-paragraph-9",
+          "s.65(1)(b)",
+          :inserted,
+          "UK_ukpga_2016_22"
+        ),
+        feed("key-e", "s.65", :inserted, "UK_ukpga_2016_22", ["sch.12.para.9"])
+      ])
+
+    assert alone(changes) == []
+  end
+
+  test "an instruction's placement where the event already sits is that change, not a second (TCPA 1990 s.97(1))" do
+    changes =
+      Merge.merge([
+        text(
+          "UK_ukpga_2016_22:schedule-12-paragraph-9",
+          "s.65(1)(a)",
+          :inserted,
+          "UK_ukpga_2016_22"
+        ),
+        text(
+          "UK_ukpga_2016_22:schedule-12-paragraph-9",
+          "s.65(1)(b)",
+          :inserted,
+          "UK_ukpga_2016_22"
+        ),
+        feed("key-e", "s.65", :inserted, "UK_ukpga_2016_22", ["sch.12.para.9"]),
+        feed("key-e", "s.65(1)(b)", :inserted, "UK_ukpga_2016_22", ["sch.12.para.9"])
+      ])
+
+    keys = Enum.map(changes, &{&1.key, &1.target})
+    assert keys == Enum.uniq(keys)
+    assert alone(changes) == []
+  end
 end

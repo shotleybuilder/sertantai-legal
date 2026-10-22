@@ -56,7 +56,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
     # changes indexed by target: an orphan looks at its provision, those
     # above it and those below it (`below`: each provision's descendants)
     by_target = Enum.group_by(fed, & &1.target)
-    below = below(Map.keys(by_target))
+    below = below(Map.keys(by_target) ++ Enum.map(legacy ++ law_text, & &1.target))
 
     # legacy markup first, so the law's text meets it (joined to a feed
     # record, or standing alone, marked)
@@ -168,10 +168,54 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
 
         by_target
         |> Map.update!(match.target, &List.delete(&1, match))
-        |> Map.update(joined.target, [joined], &[joined | &1])
+        |> place(joined)
 
       _ ->
-        Map.update(by_target, orphan.target, [orphan], &[orphan | &1])
+        case joined_instruction(orphan, by_target) do
+          nil -> Map.update(by_target, orphan.target, [orphan], &[orphan | &1])
+          event -> place(by_target, event)
+        end
+    end
+  end
+
+  # the event's placement on a provision: merged into the one there, if the
+  # event already sits there (one change per key and provision)
+  defp place(by_target, %Change{key: key, target: target} = event) do
+    here = Map.get(by_target, target, [])
+
+    case Enum.find(here, &(&1.key == key)) do
+      nil ->
+        Map.put(by_target, target, [event | here])
+
+      c ->
+        own = Enum.reject(event.claims, &(&1 in c.claims))
+        merged = %{c | claims: c.claims ++ own, aliases: Enum.uniq(c.aliases ++ event.aliases)}
+        Map.put(by_target, target, [merged | List.delete(here, c)])
+    end
+  end
+
+  # One instruction naming several provisions ("Sch.12 para.9" inserting
+  # into s.65(1)(a) and (b)) is one event: when it has joined the event at
+  # one, it is the event's placement at the others, with the event's
+  # feed facts — not its markup, which is where it sits elsewhere (as the
+  # markup's placements are: `precise/1`)
+  defp joined_instruction(orphan, by_target) do
+    with true <- Change.values(orphan, :law_text, :by) != [],
+         %Change{} = joined <-
+           by_target
+           |> Map.values()
+           |> List.flatten()
+           |> Enum.find(&(orphan.key in &1.aliases and &1.key != orphan.key)) do
+      facts = Enum.filter(joined.claims, &(&1.source in [:feed, :law]))
+
+      %Change{
+        key: joined.key,
+        target: orphan.target,
+        claims: facts ++ orphan.claims,
+        aliases: Enum.uniq([joined.key, orphan.key])
+      }
+    else
+      _ -> nil
     end
   end
 
@@ -192,20 +236,35 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
   # text's are "law:element id"
   defp legacy?(id), do: EffectIndex.effect_id(id) == nil and not String.contains?(id, ":")
 
-  # the events whose feed names the orphan's amending provision (its key
-  # is "law:element id": "UK_uksi_2019_696:schedule-12-paragraph-21-a")
+  # the events naming the orphan's amending provision: the law's text's
+  # own (its key is "law:element id": "UK_uksi_2019_696:schedule-12-
+  # paragraph-21-a"), else the provisions its note names (legacy markup);
+  # an event names them in the feed, or in its own note
   defp at_source(events, orphan) do
-    with [_, id] <- String.split(orphan.key, ":", parts: 2),
-         ref when ref != nil <- Order.ref(id) do
-      Map.filter(events, fn {_key, placements} ->
-        Enum.any?(placements, fn c ->
-          Enum.any?(Change.values(c, :feed, :affecting) |> List.flatten(), &related?(&1, ref))
+    case refs(orphan) do
+      [] ->
+        events
+
+      refs ->
+        Map.filter(events, fn {_key, placements} ->
+          Enum.any?(placements, fn c ->
+            Enum.any?(affecting(c), fn a -> Enum.any?(refs, &related?(a, &1)) end)
+          end)
         end)
-      end)
-    else
-      _ -> events
     end
   end
+
+  defp refs(orphan) do
+    with [_, id] <- String.split(orphan.key, ":", parts: 2),
+         ref when ref != nil <- Order.ref(id) do
+      [ref]
+    else
+      _ -> Change.values(orphan, :markup, :affecting) |> List.flatten()
+    end
+  end
+
+  defp affecting(c),
+    do: List.flatten(Change.values(c, :feed, :affecting) ++ Change.values(c, :markup, :affecting))
 
   defp related?(a, b), do: a in LatRef.ancestors(b) or b in LatRef.ancestors(a)
 
