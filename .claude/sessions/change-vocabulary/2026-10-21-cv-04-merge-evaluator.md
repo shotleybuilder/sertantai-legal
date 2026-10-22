@@ -58,3 +58,57 @@ Jason 2026-10-22: "defer to pending session, pick the right one and put it there
   - The earlier NI continuation orders the feed names (SR 2022/108, 2022/226, 2023/48, 2023/51) are not held; only the latest is needed, since it fixes the expiry date.
 - **`ChangeVocabulary.changes/5`:** the merged, resolved changes that `labels/5` folds. `mix lat.vocabulary` now prints these, from every reader; before, it showed the feed and markup only and so hid the primary readers.
 - **Full suite:** 3,001 passing.
+
+## Storage plan (2026-10-22; Jason: "Store next. The review and plan should include existing abstractions")
+
+### What exists
+
+| Store | Holds | Written | Size | Fate |
+|---|---|---|---|---|
+| `amendment_rules` (`Amendment.Store`) | each amending provision read: targets, operation, level, source | per source law, delete + insert (`mix lat.amending --read`) | 18,918 | input; kept |
+| `commencement_rules` (`Commencement.Store`) | each commencement statement read (clause, orders, feed) | per source law, delete + insert (`mix lat.commencement`) | 38,040 | input; kept |
+| `Amendment.Index` (JSON per amending law, `data/cache/amendment-index/`, 1,872) | the read pass's per-document facts: element ids, each repeals table's introducing section (`references`), Schedule paragraph Parts; `ReaderVersion`; laws read for | with the rules, same pass | 1,872 files | input; **home for the extent clause** |
+| `ClmlStore` (`data/cache/clml/`) | CLML and feed pages, gzipped, `dct:valid` freshness | on fetch | — | input; kept |
+| `legal_register.geo_extent`, `application_clause` | law-level extent and application (`ExtentResolver`, `ExtentBackfill`, `ApplicationClause.parse`) | extent resolve / LAT persist | — | input; kept |
+| `lat_change_log` (`ChangeCollector`) + view `lat_change_log_rows` | the old change register: one record per source per run of rows, joins (`via`), no merge | per law per collector, delete + insert | 137,289 | **replaced** by the merged store; retired at CV-06 |
+| `lat_label_timeline` (`LabelProjection`) | label periods; read by compliance | per law, delete + insert | 583,946 | kept; at CV-06 the fold writes it |
+| `SourceVersion` → `ParserVersion`, `LabelVersion`; `lat_events` `labels_refreshed`; `LabelStaleness`, `mix lat.stale` / `lat.relabel` | code versions and staleness | per build | — | reused |
+| `amendment_annotations` | notes (pointers only) | parse | 89,679 | untouched |
+
+### Where the time goes (measured 2026-10-22, TCPA 1990: 4,187 effects, 584 affecting laws, 51 Acts held)
+
+- Affecting Acts' extent clauses: 44 s (`Doc.new` 25 s, `Extent.read` 19 s), every run, from CLML.
+- `Markup.provisions`: 11 s, computed twice (`labels/5` and `changes/5` each call it).
+- `Markup.read` 10 s; feed effects 5 s; commencement rules for 584 laws 0.5 s; amendment rules 12 ms.
+- HSWA 1974: primary inputs 26 s of ~40 s. SI 2010/404: under 0.5 s in all.
+
+### Proposal
+
+1. *(Revised after review: an `extent_rules` table instead, below.)* **The extent clause is a read fact of the amending Act's document, stored with the others in `Amendment.Index`** — not a new cache. The read pass already opens each amending Act's document; it adds `"extent"` (the `AmendingLaw.Extent` struct as JSON) and `ReaderVersion` covers `Extent` and `RefList`. The vocabulary reads it from the index, else reads the document (the index's existing "no silent loss" fallback). Check first: `Extent.introductions` (a Schedule's "has effect" section) and `Reader.references` (a repeals table's introducing section) may be one fact read twice; if so, one reader.
+2. **The merged changes in two Ash resources** (Ash-generated migrations), beside `lat_change_log` during the shadow (CV-01), which retires it:
+   - `law_changes`: `law_name`, `key`, `target`, `aliases[]`, the resolved attributes (`operation`, `level`, `territory`, `date`, `by`, `retained`, `partial`, `saved`), `sources` and `tiers` (map), `conflicts` (array of maps), `code_version` (a `VocabularyVersion` by `SourceVersion`), `built_at`. Identity `(law_name, key, target)`.
+   - `law_change_claims`: `change_id`, `source`, `attribute`, `value` (jsonb, type-tagged so Dates and atoms round-trip), `ref`.
+   - `ChangeVocabulary.Store.write(law, changes)`: delete + insert per law in one transaction (as `ChangeCollector`, `Amendment.Store`); `for_law/1` reads back `Change` structs. Whatever `changes/5` returns is stored, the parent-commencement changes included (source `:parts`, no claims), so the fold reads exactly what was stored.
+   - The conflict report is a query (`conflicts` non-empty).
+3. **One computation per run:** `labels/5` folds changes it is given (or computes them once); `Markup.provisions` once.
+4. **The scoreboard:** `--golden` keeps building from inputs (it tests the code); `--golden --stored` folds stored changes (tests the fold alone, seconds). `mix lat.vocabulary --build --law X` writes a law.
+5. **The vocabulary stops reading the old register:** `--law` takes the law's start from `lat_change_log`; it moves to the commencement rules (`LawStart`).
+
+**Not now:** `LabelStaleness` learning `:changes_version` (CV-06, when the store feeds labels); input-change detection (rules re-read after a build) beyond the version stamp; storing the expiry and continuation reads (one law, cheap).
+
+**Order (TDD):** codec round-trip test (red) → resources and migrations → `Store` → build golden laws → `--stored` scoreboard equals the built one (27 / 27) → extent in the index → time measured. Writes only new tables and index files: no restore point needed; a backup after the golden laws are built.
+
+**Questions for review:** (a) extent in the JSON index vs a DB table beside the rules; (b) claim values as tagged jsonb vs typed columns; (c) storing the derived `:parts` changes vs deriving at the fold; (d) table names in a DB shared with compliance; (e) is the version stamp enough for staleness until CV-06.
+
+### Gemini review of the storage plan (2026-10-22)
+
+`backend/data/code-reviews/2026-10-22-cv-04-storage-plan-gemini.md` (gemini-2.5-pro). Taken, adjusted or declined:
+
+- **Taken: the extent clause isn't the index's.** The index holds a reader's working facts; an extent clause is a statement in the law's text, the same kind as the amendment and commencement rules. Revised: **`extent_rules`**, a third ruleset table that follows the pattern of those two. It has one row per statement (the default, each "also", "only" or "same extent" list, the "corresponds" sentence, each Schedule's introducing section), with `source_law`, `source_ref`, `source_text` and `read_at`. It is written per source law by delete + insert, in the same read pass. This is better than Gemini's one JSON blob per law, because the rows can be queried like the other rules.
+- **Taken: input staleness.** A code version alone misses re-read rules or a refetched feed. Revised: each build records a `changes_built` lat_event (reusing `lat_events`), whose `provenance` holds the input fingerprints: the latest `read_at` of the rules read, the feed's fetch time, the CLML `dct:valid` and the code version. A law is stale when any of these moves.
+- **Taken: store the `:parts` changes, and use tagged jsonb for claim values.** Both were already in the plan.
+- **Taken in part: names.** `law_changes` is too near the existing `law_change_snapshots`. Gemini's `cv_` prefix is opaque, so I'd use **`provision_changes`** and `provision_change_claims` instead (no collision).
+- **Taken: identity collisions.** One event that two sources place on different provisions is the "conflicts across changes" item already in this session's merge todo. The store records which provision the merge chose and the conflict; it doesn't fork the change.
+- **Declined: cutting `tiers` and `conflicts`.** They are Jason's decision (2026-10-21: labels carry a tier; conflicts reported) and are the conflict report's data.
+- **Declined: "delete + insert is not idempotent" and production locking.** One transaction rolls back whole. This is the local dev DB; production gets only `lat_label_timeline` by delta sync. Runs are one law at a time.
+- **CV-06's concern: a reversible switch-over mechanism.** Noted there.

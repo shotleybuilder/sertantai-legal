@@ -19,6 +19,8 @@ Part of the change-vocabulary architecture shift (CV-00): corpus dry run against
 - ⬜ Old tables and rules removed once the shadow diff is explained
 - ⬜ Dry run → Jason → restore point → the v0.1 re-parse and one relabel (V1-00)
 
+- ⬜ The switch from `lat_change_log` to `provision_changes` is reversible: one setting selects the register the projection reads (Gemini CV-04 storage review)
+
 ## Dependencies
 
 - ✅ CV-01 signed off by Jason
