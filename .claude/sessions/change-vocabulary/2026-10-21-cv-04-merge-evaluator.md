@@ -292,3 +292,31 @@ Value conflicts rose from 67 to 112 as joined pairs were compared.
 **The 254 left.** 1,079 candidate twins, about 4 each; 815 of those are legacy markup with no effect id and no feed record, mostly undated. Several records by one law on one provision and below can't be told apart: legacy markup carries no amending provision. Its note names one ("Words substituted by Highways Act 1980 (c. 66), Sch. 2 para. 10(2)(a)"). `AmendingLaw.Pointer` reads that as a pointer for identity, never a fact, the same use as the note's citation. That is the next lever, and needs Jason's agreement because it reads note text.
 
 **The level conflicts with the markup (47) look real.** For example, SI 1995/889 art.2 substitutes RTA 1988 s.157(2), while the markup's insertion covers only part of the text under it ("words"). That is a disagreement between the two sources' reading of level; the law wins.
+
+**Fourth pass: the note's amending provision as a pointer for identity** (Jason 2026-10-22: "decision - yes"). Code `22e8c56b`, `63204804`.
+- The markup reader reads each change's note with `AmendingLaw.Pointer`, giving `:markup :affecting` ("Sch. 2 para. 10(2)(a)"). The merge uses it only to tell same-day events by one law apart; it is never stored as a fact or labelled.
+- `Pointer.to_refs/1`: a run of same-kind brackets is a list ("para. 9(b)(c)(d)"), and a path stays a path ("4(4)(a)"). Words in brackets end the run ("(with s. 84(5))").
+- The merge's "look below" index now includes legacy markup and the law's text. It was built from feed records only and missed TCPA s.248(3).
+- One instruction naming several provisions (2016/22 Sch.12 para.9 → s.65(1)(a), (b)) is the event's placement at each, borrowing its feed facts only. It is placed only where the event has feed facts: a legacy-markup-only event lends none.
+- A placement where the event already sits merges into it. The store's unique key `(law, key, target)` caught the duplicate on TCPA s.97(1).
+- Mistakes on the way, both fixed: copying the markup's claims onto other placements (level conflicts went to 109); placements under a markup key with no feed facts.
+
+**Now (golden 27 / 27 from inputs, 3 min 22 s, and from the store):**
+
+| | start of CV-04 merge | now |
+|---|---|---|
+| unjoined | 1,104 | 184 |
+| value conflicts | 67 | 147 (level vs markup 62, level vs feed 41, operation vs feed 24, date 19, operation vs markup 1) |
+| law text only | 399 | 421 |
+| legislation.gov.uk only, provision read | 80 | 156 |
+| legislation.gov.uk only, provision not read | 2,461 | 2,290 |
+
+More changes now count as "read" or "unread" because legacy markup names its amending provision.
+
+**The 184 left:**
+- 103: several records name the same provision. Typically several legacy markup records share one note, one instruction marked at several places.
+- 40: the twins name other provisions.
+- 31: one names it, but another rule blocks the join (one record per source, family, or day).
+- 10: the law's own element id doesn't map to a ref.
+
+Next lever for the 103: legacy markup records sharing one note are one event.
