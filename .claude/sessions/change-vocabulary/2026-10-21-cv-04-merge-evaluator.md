@@ -48,8 +48,8 @@ Part of the change-vocabulary architecture shift (CV-00): changes merged by iden
 - ✅ Storage (2026-10-22, `46d2b13a`): `provision_changes` and `provision_change_claims` (tiers and conflicts derived on read), `extent_rules` (a third ruleset), `changes_built` events with input fingerprints; golden 27 / 27 from inputs (3 min 13 s) and from the store (51 s)
 - ✅ Conflict report (`ChangeVocabulary.Conflicts`; `mix lat.vocabulary --conflicts`): value, unjoined, uncovered, unread; `commenced_by` apart from `by`; label tier per field
 - ⬜ Merge the unjoined pairs (1,104 over the golden laws: the report is the worklist)
-- ⬜ Golden expected tiers per period, judged; the start's tier from its source
-- ⬜ Primary coverage (to place: CV-04 or a reader session): the read pass reads every amending provision the feed names (2,461 unread); the extent reader reads the other wordings (110 of 176 Acts)
+- ⏸️ Golden expected tiers per period, judged; the start's tier from its source (deferred — Jason 2026-10-22: "later", once primary coverage is wider)
+- ⏸️ Primary coverage: moved to CV-07 (Jason 2026-10-22: its own session, after the merge work here)
 - ⬜ Golden set: 27 / 27 at the merge level; a Gemini review of the merge and evaluator
 
 ## Dependencies
