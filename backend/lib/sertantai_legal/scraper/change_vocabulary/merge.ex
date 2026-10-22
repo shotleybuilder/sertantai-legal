@@ -208,12 +208,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
            |> Enum.find(&(orphan.key in &1.aliases and &1.key != orphan.key)) do
       facts = Enum.filter(joined.claims, &(&1.source in [:feed, :law]))
 
-      %Change{
-        key: joined.key,
-        target: orphan.target,
-        claims: facts ++ orphan.claims,
-        aliases: Enum.uniq([joined.key, orphan.key])
-      }
+      # an event the feed doesn't record (legacy markup alone) has no facts
+      # to lend: the instruction stays its own change there
+      if facts != [],
+        do: %Change{
+          key: joined.key,
+          target: orphan.target,
+          claims: facts ++ orphan.claims,
+          aliases: Enum.uniq([joined.key, orphan.key])
+        }
     else
       _ -> nil
     end
