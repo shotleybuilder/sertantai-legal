@@ -22,6 +22,7 @@ The session does not close until its results pass.
 - ⬜ Act wordings not read: "Parts I and III of this Act … extend to …"; "except for Part N, which extends to …"; "the same part or parts … as the provision to which it relates" (CV-07)
 - ⬜ Enabling-power parser: 6 other unparsed forms and 1 with no enacting formula (CV-07 agent sample); SI 1999/3232 matched to "ECA 1972 s.80, Sch.9" (a multi-law citation marker misread)
 - ⬜ The competence rule (a devolved SI's competence doesn't confine its insertion, V1-04) confirmed on cases beyond Forestry Act s.1(1A)
+- ⬜ SI 2012/760: its made introduction (held) names no enabling provisions (from CV-S01)
 - ⬜ Fix until the check passes reliably; record the result
 
 ## Dependencies

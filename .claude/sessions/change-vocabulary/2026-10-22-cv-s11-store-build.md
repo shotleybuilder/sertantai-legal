@@ -22,6 +22,7 @@ The session does not close until its results pass.
 - ⬜ Speed: cache each law's parsed markup facts and feed effects, keyed by the stored document's version (CV-07)
 - ⬜ `mix lat.vocabulary --check` / `--family` (CV-07 `83e15ae7`, fixed `41f9afe0`) proven
 - ⬜ Staleness: `changes_built` events and code versions shown per law (LabelStaleness learns :changes_version at the switch-over)
+- ⬜ The sources check (`mix lat.sources`) reads its gaps from the stored changes: re-run it after each rebuild, automatically (from CV-S01)
 - ⬜ Fix until the check passes reliably; record the result
 
 ## Dependencies
