@@ -33,7 +33,8 @@ Placed by Jason 2026-10-22: its own session, after CV-04's merge work (CV-04 sus
 - ⬜ Size: domain laws (EHS, HR, customer registers), their distinct amending laws (`amended_by`, one hop), how many are held, and the provisions the feed names; time and store size for the fetch
 - ⬜ Fetch every amending law of a domain law into the CLML store: one hop only, never the amending laws of amending laws (no cascade)
 - ✅ The read pass reads one set of (amending law, provision) pointers: the notes' and the feed's (each effect's affecting provisions), deduplicated (Jason 2026-10-22: "both pointers … we mustn't duplicate"); `9ddeba19`, both sources 12% → 27% on the golden laws
-- ⬜ The reader's yield: 7,448 golden-law changes whose amending provision was read but gave no rule (EU law as the amended law; Senedd Acts; laws amending themselves) — placement to agree with Jason
+- ⏸️ The reader's yield over the feed (7,448 golden-law changes read with no rule): not chased — the feed is the coverage baseline (Jason 2026-10-22); the reader is improved on the legislation.gov.uk backlog instead
+- ⬜ The backlog: law-text-only changes (861 on the golden laws) checked; the reader improved there; reconciled when legislation.gov.uk catches up
 - ⬜ Slicing the fetch (Jason to discuss)
 - ⬜ The extent reader reads the other wordings, progressively. 110 of 176 Acts were read as having no clause. Unread forms:
   - "does not extend to Northern Ireland";
@@ -108,3 +109,38 @@ Placed by Jason 2026-10-22: its own session, after CV-04's merge work (CV-04 sus
   - SI 2010/675 → 1993/12 (70).
 
 **Stopped here** (Jason: "then stop because i want to discuss slicing up the fetch").
+
+## Source use: the balance (decided 2026-10-22)
+
+Jason: "leg.gov.uk are doing the hard work of getting the changes from the law for us and serve them up in the feed. fixing our reader to achieve same level of coverage as the feed will take a long time … is there a balanced approach?"
+
+**Agreement where both sources state an attribute** (golden laws, stored changes):
+
+| attribute | both state it | disagree |
+|---|---|---|
+| by | 2,755 | 0% |
+| operation | 3,207 | 3.8% |
+| date | 1,633 | 3.1% |
+| level | 3,207 | 7.0% |
+| territory | 0 | — |
+
+Territory is stated by neither source for 40,377 of 47,952 changes.
+
+**Decided (Jason 2026-10-22):**
+1. **The feed and markup are the coverage baseline.** What changed, where and by whom, plus most dates; tier `derived`. The law still wins wherever it speaks.
+2. **The law's text is read for what the feed lacks or is weak at** ("yes, those are ours"):
+   - territory: the extent and application clauses;
+   - commencement dates: orders, and the law's own clauses (staged, partial, prospective);
+   - the law's own sunset and application.
+3. **The amendment reader earns its keep on the legislation.gov.uk backlog:** changes their feed hasn't recorded yet. It is improved there, and reconciled when legislation.gov.uk catches up (the law-text-only change then joins its feed twin). It is not widened to match the feed's coverage.
+4. **Fetch full documents, not fragments:** "the count is the constraint not size".
+
+**Fetch slices, by count** (about 2 requests per law, 2 s each, so about 4 s per law):
+
+| slice | why | laws not held | about |
+|---|---|---|---|
+| A. recent domain laws (2024–26) | the backlog: new laws whose changes the feed may not yet record (2024: 348, 2025: 271, 2026: 122) | 741 | 50 min |
+| A′. laws whose recorded effects aren't applied to the text yet | 8,854 unapplied text effects on LAT laws, by 741 laws (overlaps A) | 392 | 25 min |
+| B. commencing orders the feeds name | dates (ours) | 486 | 35 min |
+| C. amending Acts | extent and application (territory, ours); their own commencement | 440 | 30 min |
+| D. older amending SIs | covered by the feed baseline | about 2,580 | 3 h; deferred |
