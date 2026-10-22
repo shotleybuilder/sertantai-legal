@@ -320,4 +320,27 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
       assert Extent.of(e, "s.77") == "E+W+NI"
     end
   end
+
+  describe "a devolved instrument stating no extent: its legislature's competence (CV-07)" do
+    test "by its type" do
+      assert Extent.competence("UK_nisr_2016_427") == "NI"
+      assert Extent.competence("UK_nisi_1978_1039") == "NI"
+      assert Extent.competence("UK_ssi_2020_1") == "S"
+      assert Extent.competence("UK_wsi_2016_1") == "E+W"
+      assert Extent.competence("UK_uksi_2016_1105") == nil
+    end
+
+    test "told apart from an extent the law states (V1-04: it doesn't confine a devolved SI's insertion)" do
+      assert Extent.competence_only?(%Extent{competence: "E+W"})
+      refute Extent.competence_only?(%Extent{competence: "E+W", powers: "E+W"})
+      refute Extent.competence_only?(%Extent{default: "E+W"})
+    end
+
+    test "used last: after its own clause and its enabling powers; stored as a row" do
+      assert Extent.of(%Extent{competence: "NI"}, "reg.3") == "NI"
+      assert Extent.of(%Extent{powers: "E+W+S", competence: "NI"}, "reg.3") == "E+W+S"
+      e = %Extent{competence: "NI"}
+      assert Extent.from_rows(Extent.to_rows(e, "UK_nisr_2016_427")) == e
+    end
+  end
 end

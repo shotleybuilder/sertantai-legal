@@ -116,7 +116,7 @@ defmodule Mix.Tasks.Lat.Amending do
     parents =
       for a <- acts,
           not act?(a),
-          p <- SertantaiLegal.Scraper.EnactedBy.EnablingCache.get(a),
+          p <- SertantaiLegal.Scraper.EnactedBy.EnablingCache.get(a, retry_empty: true),
           law = p["law"],
           Extent.Store.reads?(law) and held?(law) and law not in acts,
           uniq: true,
@@ -140,6 +140,7 @@ defmodule Mix.Tasks.Lat.Amending do
             cond do
               e.default -> e.default
               e.powers -> "#{e.powers} (by its enabling powers)"
+              e.competence -> "#{e.competence} (by its legislature's competence)"
               true -> "no clause"
             end
 
@@ -157,9 +158,13 @@ defmodule Mix.Tasks.Lat.Amending do
   # first in this run, `extents/1`). CV-07.
   defp with_powers(%Extent{default: nil, lists: []} = e, law) do
     if Extent.Store.reads?(law) and not act?(law) do
-      provisions = SertantaiLegal.Scraper.EnactedBy.EnablingCache.get(law)
+      provisions = SertantaiLegal.Scraper.EnactedBy.EnablingCache.get(law, retry_empty: true)
       parents = provisions |> Enum.map(& &1["law"]) |> Enum.uniq()
-      %{e | powers: Extent.from_powers(provisions, Extent.Store.for_laws(parents))}
+      e = %{e | powers: Extent.from_powers(provisions, Extent.Store.for_laws(parents))}
+
+      # with neither, a devolved instrument extends as far as its
+      # legislature's competence
+      if e.powers, do: e, else: %{e | competence: Extent.competence(law)}
     else
       e
     end

@@ -34,7 +34,8 @@ defmodule SertantaiLegal.Legal.ExtentRule do
       public?(true)
 
       constraints(
-        match: ~r/^(default|also|only|same|corresponds|introduces|applies|powers|none)$/
+        match:
+          ~r/^(default|also|only|same|corresponds|introduces|applies|powers|competence|none)$/
       )
     end
 

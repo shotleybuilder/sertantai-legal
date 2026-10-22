@@ -38,7 +38,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
             ref: nil,
             text: nil,
             application: nil,
-            powers: nil
+            powers: nil,
+            competence: nil
 
   @type list_kind :: :also | :only | :same | :not
   @type t :: %__MODULE__{
@@ -49,7 +50,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
           ref: String.t() | nil,
           text: String.t() | nil,
           application: String.t() | nil,
-          powers: String.t() | nil
+          powers: String.t() | nil,
+          competence: String.t() | nil
         }
 
   @places "England and Wales|Great Britain|the United Kingdom|United Kingdom|England|Wales|Scotland|Northern Ireland"
@@ -340,9 +342,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
 
     powers = if e.powers, do: [row.("powers", e.powers, [], nil, nil, 0)], else: []
 
+    competence =
+      if e.competence, do: [row.("competence", e.competence, [], nil, nil, 0)], else: []
+
     clause ++
       applies ++
       powers ++
+      competence ++
       for {sch, sec} <- Enum.sort(e.introduced_by),
           do: row.("introduces", nil, [sch], sec, nil, 0)
   end
@@ -367,6 +373,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
       corresponds: Enum.any?(rows, &(&1.kind == "corresponds")),
       application: Enum.find_value(rows, &(&1.kind == "applies" && &1.place)),
       powers: Enum.find_value(rows, &(&1.kind == "powers" && &1.place)),
+      competence: Enum.find_value(rows, &(&1.kind == "competence" && &1.place)),
       introduced_by:
         for(r <- rows, r.kind == "introduces", into: %{}, do: {hd(r.items), r.source_ref})
     }
@@ -378,8 +385,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   changes), or nil (the clause wasn't read).
   """
   @spec of(t(), String.t()) :: String.t() | :same | nil
-  # stating none, an SI extends as far as its enabling powers (`powers`)
-  def of(%__MODULE__{default: nil, lists: [], powers: powers}, _ref), do: powers
+  # stating none, an SI extends as far as its enabling powers (`powers`),
+  # else a devolved instrument as far as its legislature (`competence`)
+  def of(%__MODULE__{default: nil, lists: [], powers: powers, competence: c}, _ref),
+    do: powers || c
 
   # with no default, only a list naming the provision decides ("The
   # following provisions of this Act extend to England and Wales only—")
@@ -390,7 +399,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
     # narrows (HSWA s.77: also NI by s.84(1), not Scotland by s.84(2))
     e.lists
     |> Enum.filter(fn {_kind, _place, items} -> Enum.any?(candidates, &named?(&1, items)) end)
-    |> Enum.reduce_while(e.default || e.powers, fn
+    |> Enum.reduce_while(e.default || e.powers || e.competence, fn
       {:same, _, _}, _acc -> {:halt, :same}
       {:only, place, _}, _acc -> {:cont, place}
       {:also, _place, _}, nil -> {:cont, nil}
@@ -417,6 +426,47 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   end
 
   defp named?(ref, items), do: Enum.any?(items, &RefList.covers?(&1, ref))
+
+  # a devolved legislature's instruments extend no further than its
+  # competence (a Welsh Minister's SI forms part of the law of England and
+  # Wales)
+  @competence %{
+    "nisr" => "NI",
+    "nisi" => "NI",
+    "nia" => "NI",
+    "apni" => "NI",
+    "ssi" => "S",
+    "asp" => "S",
+    "wsi" => "E+W",
+    "anaw" => "E+W",
+    "asc" => "E+W"
+  }
+
+  @doc """
+  A devolved instrument's extent by its legislature's competence (CV-07),
+  used only where it states none and its enabling powers aren't read: an
+  NI statutory rule extends to Northern Ireland. Nil for a UK instrument.
+  """
+  @spec competence(String.t()) :: String.t() | nil
+  def competence(law) do
+    case String.split(law || "", "_", parts: 4) do
+      [_, type, _, _] -> Map.get(@competence, type)
+      _ -> nil
+    end
+  end
+
+  @doc """
+  True when the extent rests on the legislature's competence alone (the
+  instrument states none and its powers aren't read). Such an extent
+  doesn't confine an insertion the instrument makes (V1-04, signed off: a
+  Welsh SI's insertion into a GB Act's single text applies across it;
+  Forestry Act 1967 s.1(1A)).
+  """
+  @spec competence_only?(t()) :: boolean()
+  def competence_only?(%__MODULE__{default: nil, lists: [], powers: nil, competence: c}),
+    do: c != nil
+
+  def competence_only?(%__MODULE__{}), do: false
 
   @doc """
   An SI's extent from its enabling powers (CV-07), where it states none:

@@ -50,7 +50,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
            claims ++
              Claim.new(:feed, :ranged, if(ranged?, do: true), id) ++
              commenced_by(claims, e, commencement) ++
-             extent(e, extents) ++
+             extent(e, extents, claims) ++
              affecting(e)}
   end
 
@@ -89,11 +89,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   # where the amending provisions extend, by the amending Act's own extent
   # clause (primary: `AmendingLaw.Extent`; SOCPA 2005 s.179) — an upper
   # bound on where the change applies
-  defp extent(%Effect{affecting: law, affecting_provisions: text, effect_id: id}, extents) do
+  defp extent(%Effect{affecting: law, affecting_provisions: text, effect_id: id}, extents, claims) do
     case Map.get(extents, law) do
       %AmendingLaw.Extent{} = e ->
+        # a devolved SI's competence doesn't confine its insertion (V1-04)
         bound =
-          with [_ | _] = refs <- affecting_refs(text),
+          with false <-
+                 AmendingLaw.Extent.competence_only?(e) and value(claims, :operation) == :inserted,
+               [_ | _] = refs <- affecting_refs(text),
                code when is_binary(code) <- AmendingLaw.Extent.of_change(e, refs) do
             Claim.new(:law_text, :extent, code, id)
           else

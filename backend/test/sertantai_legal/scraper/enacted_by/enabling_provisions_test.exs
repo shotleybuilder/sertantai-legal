@@ -77,4 +77,39 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingProvisionsTest do
              %{"f00001" => ["http://www.legislation.gov.uk/id/ukpga/1991/57"]}
            ) == []
   end
+
+  test "an Act named in plain words, no citation marker: resolved by its title (SI 2016/1105; CV-07)" do
+    text =
+      "The Secretary of State makes these Regulations in exercise of the powers conferred by section 2(2) of, and paragraph 1A of Schedule 2 to, the European Communities Act 1972."
+
+    titles = %{"european communities act 1972" => "UK_ukpga_1972_68"}
+
+    assert EnablingProvisions.parse(text, %{}, titles) == [
+             %{law: "UK_ukpga_1972_68", sections: ["2"], schedules: ["2"]}
+           ]
+
+    # unknown title: nothing
+    assert EnablingProvisions.parse(text, %{}, %{}) == []
+  end
+
+  test "the titles a powers clause names, to look up" do
+    text =
+      "in exercise of the powers conferred by section 2(2) of the European Communities Act 1972 and section 15 of the Health and Safety at Work etc. Act 1974."
+
+    assert EnablingProvisions.titles(text) == [
+             "european communities act 1972",
+             "health and safety at work etc. act 1974"
+           ]
+  end
+
+  test "the powers clause ends at its sentence (no 'all other powers', no 'hereby': SI 2019/758)" do
+    text =
+      "The Secretary of State makes these Regulations in exercise of the powers conferred by section 8(1) of, and paragraph 1 of Schedule 4 and paragraph 21 of Schedule 7 to, the European Union (Withdrawal) Act 2018 . In accordance with paragraph 3(1) of Schedule 4 to that Act, these Regulations are made with the consent of the Treasury."
+
+    titles = %{"european union (withdrawal) act 2018" => "UK_ukpga_2018_16"}
+
+    assert EnablingProvisions.parse(text, %{}, titles) == [
+             %{law: "UK_ukpga_2018_16", sections: ["8"], schedules: ["4", "7"]}
+           ]
+  end
 end
