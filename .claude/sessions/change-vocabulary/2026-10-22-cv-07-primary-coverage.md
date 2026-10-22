@@ -246,3 +246,27 @@ No territory conflicts. Golden 27 / 27 from inputs and from the store.
 - the enabling parser's gaps (141 SIs: plain-words citations, NI Orders);
 - the parents not held (1975/26, 1968/14; ECA 1972's body);
 - the rarer Act forms ("Parts I and III of this Act … extend to …").
+
+**Step 3: parser gaps and the parents not held** (code `7de25e45`; restore point `cv07-territory-competence`):
+- `EnablingProvisions` resolves an Act named in plain words, with no citation marker, by its register title ("title year"). The powers clause ends at its sentence, and several Schedules before one "to" are read. `EnablingCache` looks the titles up, and `retry_empty` re-fetches where nothing parsed.
+- **Competence:** a devolved instrument stating no extent, with no enabling powers read, extends as far as its legislature (NI, S, E+W). It is stored as a `competence` row and used last.
+  - It doesn't confine a devolved SI's insertion (`competence_only?/1`). The first run broke golden: Forestry Act 1967 s.1(1A), inserted by WSI 2013/755, came out E+W; the signed-off V1-04 rule says the insertion applies across the GB text. Fixed; golden back to 27 / 27.
+- The parents of the family's no-clause SIs were fetched (25 Acts, whole, no failures). 36 parents were read first.
+- **Results:**
+  - amending laws with an extent from their own text: 124 → 235 of 356 (79 by enabling powers, 77 by competence);
+  - text changes with an extent bound from the law: 1,385 → 2,736 (59%);
+  - territory from the law: 262 → 269 (a bound becomes the territory only when narrower than the provision).
+
+**The 66 UK SIs still without enabling provisions** (agent report, read-only; one fetch each; simulation files `noenab_*` in the scratchpad):
+
+| cause | count | fix |
+|---|---|---|
+| revoked SIs: the "made" introduction fell back to the current repealed text (". . . .") | 24 | fetch `/introduction/made/`. This is the fetch path `EnactedBy.introduction_path`, shared with the LRT enacted_by stage: needs Jason |
+| a defined-term bracket after the title ("Act 1974 (“the 1974 Act”)") | 15 | strip before parsing |
+| the title not at the chunk's end (trailing comma, two Acts, runs on to "hereby" / "is pleased") | 10 | split after each "Act YYYY"; end the clause at those phrases |
+| the Act named earlier, referred back to ("that Act", "the said section") | 11 | resolve to the last Act named before the clause |
+| "power conferred", "powers under", "in pursuance of" | 4 | widen the trigger |
+| a title with no year | 1 | match the register title among the marker's laws |
+| no enacting formula | 1 | not fixable from the text |
+
+All four parser fixes together resolve 36 of the 66 in simulation: ECA 1972 ×20, HSWA 1974 ×16, REUL 2023 ×2, others ×1. The refer-back fix needs the clause-ending fix, or it picks up HSWA s.50 from purpose wording.
