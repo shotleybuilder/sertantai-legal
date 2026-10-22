@@ -309,3 +309,25 @@ Jason: "Use Notes as pointers when we have a gap. We can always get a date from 
 Golden 27 / 27 from inputs and from the store.
 
 **Jason 2026-10-22:** ask before any rebuild, re-parse, fetch or long run ("Feels like we're bouncing all over and I'm getting lost").
+
+## Speed, the 24, and a measurement correction (2026-10-22)
+
+- **Speed** (`83e15ae7`): `mix lat.vocabulary --check` (build the laws named, conflict counts, golden from the store, one app start; it names golden laws built by older code) and `--family F`.
+  - First run: the family build took about 2 min. Then it crashed in the conflict counts: my `pointers/1` edit hadn't landed, and I hadn't run `--check` before committing. Fixed in `41f9afe0`.
+  - **Restore point** `cv07-territory-revoked`.
+  - **Extents re-read:** 263 of 356 family amenders have an extent from their own text (109 by enabling powers, 75 by competence).
+- **The 24 revoked SIs:** `EnablingCache` asks for `/introduction/made/` when the usual path returns the repealed placeholder; the shared `EnactedBy.introduction_path` is unchanged. 23 of 24 parse.
+  - SI 2012/760 still gives none.
+  - SI 1999/3232 claims "ECA 1972 s.80, Sch.9", probably a multi-law citation marker matched wrongly. Not chased.
+- **Measurement correction.** The conflict report and the coverage queries counted every claim's source, so a law-text gap-fill (the amending law's extent since CV-03, this round's extent and date fills) made a legislation.gov.uk-only record count as backed by the law. Fixed: a change is stated by the sources claiming its operation.
+  - The figures quoted earlier this session were overstated. Corrected now:
+    - golden laws: both sources 3,242 of 15,020 (22%), not 27%;
+    - OH&S core family: 611 of 4,619 (13%), not 16%.
+    The "before" baselines (12%, 13%) used the same method and can't be recomputed now.
+  - **Family conflicts, corrected:**
+    - legislation.gov.uk only, provision read but no rule: 3,365;
+    - provision not read: 346;
+    - law text only: 84;
+    - unjoined: 49;
+    - value conflicts: 63.
+- Golden 27 / 27 from the store.
