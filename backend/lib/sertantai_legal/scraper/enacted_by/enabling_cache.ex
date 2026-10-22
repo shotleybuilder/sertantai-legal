@@ -34,6 +34,15 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingCache do
     end
   end
 
+  @doc "The cached provisions for `name`, never fetching: `{:ok, provisions}` or `:none`."
+  @spec cached(String.t()) :: {:ok, [map()]} | :none
+  def cached(name) do
+    case File.read(Path.join(@cache, name <> ".json")) do
+      {:ok, json} -> {:ok, Jason.decode!(json)}
+      _ -> :none
+    end
+  end
+
   defp store(path, ps) do
     File.mkdir_p!(@cache)
     File.write!(path, Jason.encode!(ps))

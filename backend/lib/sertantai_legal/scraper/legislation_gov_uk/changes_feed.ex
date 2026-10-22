@@ -97,12 +97,17 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
   def fetch(type_code, year, number, opts \\ []),
     do: fetch_page(type_code, year, number, 1, [], opts)
 
+  @doc "A feed page's request path (the store's key for it)."
+  @spec page_path(String.t(), integer() | String.t(), String.t(), pos_integer()) :: String.t()
+  def page_path(type_code, year, number, page),
+    do:
+      "/changes/affected/#{type_code}/#{year}/#{number}/data.feed?results-count=#{@results_per_page}&page=#{page}"
+
   defp fetch_page(_t, _y, _n, page, _acc, _opts) when page > @max_pages,
     do: {:error, "changes feed exceeded #{@max_pages} pages"}
 
   defp fetch_page(type_code, year, number, page, acc, opts) do
-    path =
-      "/changes/affected/#{type_code}/#{year}/#{number}/data.feed?results-count=#{@results_per_page}&page=#{page}"
+    path = page_path(type_code, year, number, page)
 
     case Client.fetch_xml(path, Keyword.take(opts, [:store, :root])) do
       {:ok, xml} when is_binary(xml) ->
