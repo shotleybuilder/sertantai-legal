@@ -193,3 +193,30 @@ Code `0f6a1e83`. Golden 27 / 27 from inputs and from the store.
    - The extent reader reads Acts only, and one wording.
    - Most amending laws are SIs, whose own extent and application clauses ("These Regulations extend to England and Wales", "apply in relation to Wales") aren't read as amending-law territory.
 4. **The backlog candidates:** 133 law-text-only changes to inspect.
+
+## 1. Territory (2026-10-22; code `6dfc62c5`)
+
+**Survey of the OH&S family's 359 amending laws.** Acts: 48 of 68 state extent. SIs: 114 of 291 state extent or application, 177 nothing. The common forms:
+- "this Act extends to X only";
+- "These Regulations extend to X (and Y)";
+- "This Order extends to X, Y and Z";
+- "This Act does not extend to X";
+- "These Regulations extend to X and apply in relation to Y".
+
+**`AmendingLaw.Extent` now reads:**
+- the SI forms: These Regulations / This Order / The provisions of this Order extend to a list of places; "which extend to"; "the whole of";
+- "does / do / shall not extend to X" (the rest of the UK), with "apart from" sections extending there too;
+- "The following provisions of this Act extend to …—" lists, which decide with or without a default.
+
+**Application:** the law's whole-instrument application clause (`ApplicationClause`) is read with it and stored as an `applies` row. The feed and amending-law readers claim it as the change's territory (law text). `Extent.Store.reads?/1` covers Acts and SIs. Restore point `cv07-territory-extent`.
+
+**Results:**
+- Family amenders' clauses read: 79 of 356 (before: Acts only, one form). Application stated by 10.
+- Family text changes (4,619): territory from the law 148 → 209. An extent bound from the law is on 1,087 (23%); where the bound covers the provision, the change applies across the provision's extent, so "no territory stated" there is not unknown.
+- Golden 27 / 27 from inputs and from the store, including the V1-04 case.
+
+**Still not read:**
+- 31 of the 287 no-clause laws state extent in forms not read: "Parts I and III of this Act … extend to …"; "except for Part N, which extends to …"; "the same part or parts … as the provision to which it relates".
+- **The rest state none.** An SI with no extent clause extends as far as its enabling powers. Of the family's 234 no-clause amending SIs, 201 record their enabling Act and 145 have an enabling Act we hold text for.
+
+**Next lever, all primary:** the SI's own preamble names its enabling sections ("in exercise of the powers conferred by sections 15(1) …"); the parent Act's extent clause, now read, says where those sections extend.
