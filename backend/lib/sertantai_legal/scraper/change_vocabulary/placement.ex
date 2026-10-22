@@ -18,6 +18,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
       Jason 2026-10-22);
     - `:not_a_provision` — the feed names no provision ("specified amended
       provision(s)", "C/O");
+    - `:ref_ambiguous` — the feed's ref names a part found under several
+      ("chapter-2" in a law with a Chapter 2 in three Titles): the feed's
+      own;
     - `:not_in_text` — not in the current text (gone, or not yet applied);
     - `:refs_not_converted` — refs given, none converted (the reader's
       fault);
@@ -45,10 +48,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
       "*" in targets ->
         :whole_law
 
+      # no ref naming an element (none, or bare words: "rule", "introduction")
       targets == ["?"] ->
-        if effect.affected_refs in [nil, []],
-          do: {:unplaced, :not_a_provision},
-          else: {:unplaced, :refs_not_converted}
+        # an element id joins a kind and a number ("annex-XVII", "part-4")
+        refs = Enum.filter(List.wrap(effect.affected_refs), &(&1 =~ ~r/[-\d]/))
+
+        cond do
+          refs == [] ->
+            {:unplaced, :not_a_provision}
+
+          Enum.all?(refs, &ambiguous?(&1, Map.get(held, :xml_ids, %{}))) ->
+            {:unplaced, :ref_ambiguous}
+
+          true ->
+            {:unplaced, :refs_not_converted}
+        end
 
       Enum.any?(targets, &MapSet.member?(held.rows, &1)) ->
         :placed
@@ -108,6 +122,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
   end
 
   defp base(row), do: String.replace(row, ~r/\[[^\]]+\]$/, "")
+
+  # the ref names a part found under several ("chapter-2" ends
+  # "title-II-chapter-2" and "title-III-chapter-2"): the feed doesn't say which
+  defp ambiguous?(ref, xml_ids),
+    do: xml_ids |> Map.keys() |> Enum.count(&String.ends_with?(&1, "-" <> ref)) > 1
 
   # a schedule, or an EU annex (the same role, the same limit)
   defp schedule?(target),

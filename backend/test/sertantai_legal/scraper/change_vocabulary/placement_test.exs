@@ -41,6 +41,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.PlacementTest do
              {:unplaced, :refs_not_converted}
   end
 
+  test "a ref naming a part found under several (CLP \"Ch. 2 heading\", chapter-2: Titles II, III, V): ambiguous, the feed's own" do
+    held =
+      Map.put(@held, :xml_ids, %{
+        "title-II-chapter-2" => "pt.II.ch.2",
+        "title-III-chapter-2" => "pt.III.ch.2"
+      })
+
+    assert Placement.classify(effect("Ch. 2 heading", ["chapter-2"]), ["?"], held) ==
+             {:unplaced, :ref_ambiguous}
+
+    refute Placement.fault?(:ref_ambiguous)
+  end
+
   test "gone from the current text; in the text but no row and no held ancestor: the parse's tell-tale (#182)" do
     assert Placement.classify(effect("reg. 5A"), ["reg.5A"], @held) == {:unplaced, :not_in_text}
     assert Placement.classify(effect("reg. 4"), ["reg.4"], @held) == {:unplaced, :row_missing}

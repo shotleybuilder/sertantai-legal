@@ -40,7 +40,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   `Commencement.Rule`s; `:extents`, each amending Act's extent clause read
   (`AmendingLaw.Extent`); `:title`, the law's title — its own place;
   `:passed`, `:act_title` and `:continuations` for its own sunset
-  (`Readers.Expiry`); `:rows`, every LAT row of the law (a change deeper
+  (`Readers.Expiry`); `:xml_ids`, each LAT row's `source_xml_id` → its ref
+  (the feed placed as the parse named it); `:rows`, every LAT row of the law (a change deeper
   than them moves to the nearest held row: `Placement.retarget/3`); `:changes`, the law's changes already built (read
   back from `provision_changes`: `Store.for_law/1`) — the fold alone.
   """
@@ -210,7 +211,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
          law_name,
          Markup.order(xml),
          Keyword.get(opts, :commencement, %{}),
-         Keyword.get(opts, :extents, %{})
+         Keyword.get(opts, :extents, %{}),
+         Keyword.get(opts, :xml_ids, %{})
        ) ++
          Markup.read(xml, law_name) ++
          amending ++

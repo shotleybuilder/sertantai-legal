@@ -220,7 +220,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       |> LatStagedParser.with_affecting_territory(law)
 
     all = rows(law)
-    opts = law |> primary(effects) |> Keyword.put(:rows, Map.keys(all))
+    opts = law |> primary(effects) |> Keyword.merge(rows: Map.keys(all), xml_ids: xml_ids(law))
     changes = ChangeVocabulary.changes(law, xml, effects, all, opts)
     {:ok, n} = Store.write(law, changes, inputs(law, effects, opts))
     "#{n.changes} changes, #{n.claims} claims"
@@ -237,6 +237,19 @@ defmodule Mix.Tasks.Lat.Vocabulary do
     for [sid, ext] <- rows,
         into: %{},
         do: {String.replace_prefix(sid, law <> ":", ""), %{extent: ext}}
+  end
+
+  # each LAT row's XML id → its ref, as the parse named it (versions share
+  # their base: "section-23" → "s.23")
+  defp xml_ids(law) do
+    Repo.query!(
+      "SELECT source_xml_id, section_id FROM legal_articles WHERE law_name = $1 AND source_xml_id IS NOT NULL",
+      [law]
+    ).rows
+    |> Enum.reduce(%{}, fn [x, sid], acc ->
+      ref = sid |> String.replace_prefix(law <> ":", "") |> String.replace(~r/\[[^\]]+\]$/, "")
+      Map.put_new(acc, x, ref)
+    end)
   end
 
   # what the build read, for staleness: each input's latest reading
@@ -299,7 +312,11 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
     provisions = provisions(law, ids)
 
-    opts = law |> primary(effects) |> Keyword.put(:rows, law |> rows() |> Map.keys())
+    opts =
+      law
+      |> primary(effects)
+      |> Keyword.merge(rows: law |> rows() |> Map.keys(), xml_ids: xml_ids(law))
+
     changes = ChangeVocabulary.changes(law, xml, effects, provisions, opts)
     labels = ChangeVocabulary.labels(law, xml, effects, provisions, opts)
 
@@ -360,7 +377,10 @@ defmodule Mix.Tasks.Lat.Vocabulary do
         given =
           if opts[:stored],
             do: [changes: Store.for_law(law), title: title(law)],
-            else: law |> primary(effects) |> Keyword.put(:rows, law |> rows() |> Map.keys())
+            else:
+              law
+              |> primary(effects)
+              |> Keyword.merge(rows: law |> rows() |> Map.keys(), xml_ids: xml_ids(law))
 
         labels = ChangeVocabulary.labels(law, xml, effects, provisions, given)
         Enum.map(entries, &{&1, labels[&1.id]})

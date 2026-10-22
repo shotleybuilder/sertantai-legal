@@ -11,9 +11,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
 
   A commencement ("coming into force") is one change per dated in-force
   entry, keyed `effect id@date`, with a `partial` claim (its qualification
-  doesn't complete the provision). Limits (CV-03 widens): targets are the
-  effect's structured refs as given; an effect on the whole instrument
-  targets `"*"` (every provision). Pure.
+  doesn't complete the provision). Targets are the effect's structured refs,
+  named as our rows name them (`xml_ids`: each row's `source_xml_id`, the
+  parse's own naming; else `Ref.from_clml`). An effect on the whole
+  instrument targets `"*"` (every provision; also a bare "Rules" ref); one
+  naming no provision we can place, `"?"`. Pure.
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Claim
@@ -36,14 +38,23 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   @full ~r/^\s*$|wholly in force|so far as not already in force/i
 
   @doc "Claim sets `{key, target, claims}` for each effect's target provisions."
-  @spec read([Effect.t()], String.t() | nil, [String.t()]) ::
+  @spec read([Effect.t()], String.t() | nil, [String.t()], map(), map(), %{
+          String.t() => String.t()
+        }) ::
           [{String.t(), String.t(), [Claim.t()]}]
-  def read(effects, law_name \\ nil, order \\ [], commencement \\ %{}, extents \\ %{}) do
+  def read(
+        effects,
+        law_name \\ nil,
+        order \\ [],
+        commencement \\ %{},
+        extents \\ %{},
+        xml_ids \\ %{}
+      ) do
     flat = EffectTarget.flat(order)
 
     for %Effect{effect_id: id} = e <- effects,
         id != nil,
-        {target, ranged?} <- targets(e, law_name, flat),
+        {target, ranged?} <- targets(e, law_name, flat, xml_ids),
         {key, claims} <- changes(e),
         do:
           {key, target,
@@ -226,11 +237,23 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   defp targets(
          %Effect{affected_refs: refs, affected_ranges: ranges, affected_provisions: text},
          law,
-         flat
+         flat,
+         xml_ids
        ) do
     ranges = ranges || []
 
-    if refs in [nil, []] and ranges == [] and String.match?(text || "", @whole_law) do
+    # a bare word in the refs ("Rules", "rule", "introduction") names no
+    # element: the instrument's kind is the whole law, any other none
+    {bare, refs} =
+      refs
+      |> List.wrap()
+      |> Enum.split_with(&(not Map.has_key?(xml_ids, &1) and not (&1 =~ ~r/[-\d]/)))
+
+    whole? =
+      refs == [] and ranges == [] and
+        (String.match?(text || "", @whole_law) or Enum.any?(bare, &String.match?(&1, @whole_law)))
+
+    if whole? do
       [{"*", false}]
     else
       ends = Enum.flat_map(ranges, fn {a, b} -> [a, b] end)
@@ -247,7 +270,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
       ends_kept = if spanned == [], do: Enum.map(ends, &{&1, false}), else: []
 
       (named ++ spanned ++ ends_kept)
-      |> Enum.map(fn {id, r} -> {Ref.from_clml(id, law), r} end)
+      # as our rows name it (the parse's own `source_xml_id`), else the
+      # reader's converter — one namer (CV-S02)
+      |> Enum.map(fn {id, r} -> {Map.get(xml_ids, id) || Ref.from_clml(id, law), r} end)
       |> Enum.reject(&is_nil(elem(&1, 0)))
       |> Enum.uniq_by(&elem(&1, 0))
       |> case do
