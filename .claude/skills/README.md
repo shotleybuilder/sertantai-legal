@@ -89,6 +89,16 @@ How to use `GET /api/ai/drrp/clause/queue`:
 - Composite key for Phase 2 write-back
 - curl examples for common scenarios
 
+### ✅ [Feed Reader Check](feed-reader-check/)
+
+**Use when:** Running the change vocabulary's feed-reader acceptance check (CV-S02) for a family of laws
+
+One check, repeatable per family:
+- Prerequisites gate (stored feed and text), placement count, repeatability by seed
+- Golden where held
+- A saved Claude agent prompt checking 50 random effects, labelling findings as known patterns or NEW
+- Parse tell-tales by kind
+
 ### 🔍 [Gemini Review](gemini-review/)
 
 **Use when:** Getting external AI review of a plan, design document, or technical decision
