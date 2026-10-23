@@ -1,12 +1,167 @@
 ---
 session: 'CV-S02: Feed Reader'
-status: active
+status: closed
 release: v0.1
 opened: '2026-10-22'
+closed: '2026-10-23'
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
+outcome: success
+
+summary: >
+  The changes-feed reader accounts for every effect in the OH&S family (6,568 effects, 149 laws,
+  0 reader faults, from 885) and carries the feed's facts as read. A seed-17 sample of 50 checked
+  by a Claude agent came out clean (placement 50/50, facts 50/50), golden 27/27, repeatable. The
+  check is repeatable for the next ~49 families: the feed-reader-check skill, a prerequisites gate,
+  tell-tales by kind, and a recipe in CV-00.
+
+decisions:
+  - what: Readers carry what the source says; what it means for a label is the label fold's (CV-S09)
+    why: 'Jason: "the reader accurately parses the feed info, what it means comes later" (D5)'
+    result: commencements carry effect_extent, savings and in_force_for as read; the territorial reading is logged in CV-S09
+  - what: Markup faults are raised against the parser as measured patterns, never fixed for one law, and fixed in a sub-session straight after the step
+    why: 'Jason: "to sense markup bugs ... The pattern needs abstracting"'
+    result: '#183 (structure faults: 27 + 14 elements), #184 (id-less list items: 1,652 in 114 laws), #185 (doubled brackets: 79 rows in 9 laws); with #182 in CV-S02a'
+  - what: Accommodate the non-breaking space in the vocabulary (Ref.canonical) rather than re-parse
+    why: The spelling is unstable even within a law; a canonical spelling keeps stored changes stable when the parse is fixed
+    result: feed, markup and law-text readers agree on 639 rows in 15 laws without a re-parse
+  - what: Only text changes on a deep provision move to the held row above; a commencement stays for "commenced through its parts"
+    why: A commencement of a deep item changes the parent's status only through its parts
+    result: placement PASS; golden 27/27
+  - what: Staged commencement only for whole insertions; other staged text changes date from the first stage, partly, with the full date as a fact
+    why: Making every staged substitution a commencement broke golden (TCPA s.284(3)(a), EUWA s.6)
+    result: golden back from 24/27 to 27/27
+  - what: A feed ref the text doesn't hold, for an event the text marks (ChangeId), gives way to the markup's placement
+    why: Trusting the feed's path put an EPA 1989 Scottish insertion on s.3(5) (the feed's "s. 3(5)(ia)" is s.3(5)(c)(ia))
+    result: placed_by_markup 42; unapplied effects (id only in the metadata) are not in text
+  - what: Effect-type words mapped on the label side (EffectFacts.type), never in EffectKind
+    why: EffectKind is a ParserVersion input; a label-side mapping doesn't stale every parse
+    result: replacement, addition, completion, deleted, rev in pt, subst and misspellings read
+  - what: Close with a clean sample only (Jason, "One more sample of 50 - that hasn't passed clean yet")
+    why: The pass rule is a clean result, not a mostly-clean one
+    result: seed 17 clean, 50/50
+
+metrics:
+  placement: { effects: 6568, laws: 149, placed: 3483, schedule_not_parsed: 2471, placed_versions: 261, not_in_text: 159, not_a_provision: 79, whole_law: 71, placed_by_markup: 42, placed_ancestor: 1, ref_ambiguous: 1, our_faults: 0, our_faults_at_start: 885 }
+  agent_samples: { seed_2026_10_22: "defects A-F", seed_7: "38/50 placement, 48/50 facts; D1-D5", seed_11: "49/50, 49/50; NEW-A, NEW-B", seed_13: "49/50, 49/50; NEW-C (K10), NEW-D", seed_17: "50/50, 50/50 clean" }
+  golden: { provisions: 27, pass: 27 }
+  tell_tales: { finer_form_not_held: 16, no_ids: 10, naming: 1, not_found: 5 }
+  feed_corpus_shapes: { pages: 1208, effects: 251692, id_shapes: 2614, id_shapes_99pct: 36, qualifications: 566, qualifications_99pct: 63 }
+  family_scope: { family_laws: 377, with_lat_rows: 149 }
+
+lessons:
+  - title: A downstream check senses parser bugs best; raise them as measured patterns
+    detail: >
+      The feed check found the non-breaking space (#182), legislation.gov.uk structure faults (#183),
+      id-less list items (#184) and doubled brackets (#185). Each looked like one law's problem
+      until measured across the family's stored CLML. Jason redirected a one-law fix to "the pattern
+      needs abstracting".
+    tag: data
+  - title: Count the right attribute — Ref="…" also matches FoundRef= and err:Ref=
+    detail: >
+      A regex for Ref=" counted FoundRef (legislation.gov.uk's nearest-found provision), inflating
+      parent+child refs from 44 to 264 and producing a wrong explanation (reg. 11(6)). Use a
+      lookbehind or an XML parser, and read the raw record before explaining a defect.
+    tag: tooling
+  - title: The effect id in the CLML is not proof the change is in the text
+    detail: >
+      UnappliedEffects metadata carries EffectId; notes carry CommentaryRef. Only a ChangeId on
+      change markup means the change was made. Scanning the whole file for key- ids counted 63
+      unapplied effects (legislation.gov.uk's backlog) as placed.
+    tag: data
+  - title: A fix that reads well can break golden — run golden after every reader change
+    detail: >
+      Generalising staged insertion to all staged text changes, and trusting the feed's path for
+      marked events, each broke golden (24/27) though the unit tests passed. Golden caught both.
+    tag: tooling
+  - title: legislation.gov.uk links one citation in pieces
+    detail: >
+      "Title 5 Ch. 1 heading" is <Section Ref="title-V">Title 5</Section><Section
+      Ref="title-V-chapter-1">Ch. 1</Section>: one path, not two targets. 1,417 effects in the family
+      (1,373 in schedules). Jason read the applied effect to be sure: show the raw record and the
+      markup when explaining.
+    tag: data
+  - title: Version hashes include shared readers — say so before committing
+    detail: >
+      ChangesFeed and EffectKind are ParserVersion inputs. Word mappings went label-side
+      (EffectFacts) to avoid staling every parse; the lowercase "other" fix had to touch ChangesFeed,
+      so ParserVersion moved, folded into CV-S02a's planned re-parse.
+    tag: tooling
+  - title: Step through defects one at a time with the evidence
+    detail: >
+      Jason asked to step through D1-D5 one by one; that exposed a wrong explanation (D1 "Addition
+      tag") and a miscount (D4). For later families only NEW defects go to Jason.
+    tag: tooling
+  - title: A clean pass, not a mostly-clean one
+    detail: >
+      Four agent rounds each found new minor defects; closing waited for a fully clean sample.
+      Samples can miss rules a sample doesn't hit; the bounded feed grammar (36 id shapes cover 99%
+      of 251K effects) points to a pattern-catalogue fixture (CV-S02b).
+    tag: tooling
+
+bugs:
+  - pattern: "Feed effects naming grouped provisions (\"s. 78(4BA)(4BB)\", \"s. 1(4)(b) and word\") reach no row, so the row takes its dates from an older wrapping change (s.78(4BA) dated from the 2008/29 insertion of 4A-4D)"
+    category: feed reader
+    module: EffectTarget / ChangesFeed affected_refs parsing
+    affected: unknown — measure in CV-03
+    fix: "Verified 2026-10-23: s.78(4BA)(4BB) → s.78(4BA), s.78(4BB); s.17(1)(b) and word → s.17(1)(b)"
+    status: fixed
+  - pattern: Non-breaking space in EU article section_ids (#182)
+    category: parser tell-tale
+    module: LAT parse (lat_parser/ids.ex)
+    affected: 639 rows / 15 laws
+    fix: name from the number, normalised (CV-S02a); accommodated in the vocabulary by Ref.canonical
+    status: open
+  - pattern: legislation.gov.uk CLML structure faults — ids contradicting nesting, levels skipped (#183)
+    category: parser tell-tale
+    module: LAT parse
+    affected: 27 + 14 elements in the OH&S family
+    fix: sense as diagnostics; one general repair rule if any (CV-S02a)
+    status: open
+  - pattern: Numbered list items with no id get no row (#184)
+    category: parser tell-tale
+    module: LAT parse
+    affected: 1,652 ListItems / 114 laws
+    fix: decide whether numbered items become rows (CV-S02a)
+    status: open
+  - pattern: Row names with doubled brackets "art.Article 77(2)((e))" (#185)
+    category: parser tell-tale
+    module: LAT parse
+    affected: 79 rows / 9 laws
+    fix: strip brackets from a number before naming (CV-S02a)
+    status: open
+  - pattern: Shared namer drops nested schedule ids (schedule-N-part-P-paragraph-M → sch.N.pt.P; unnumbered schedule-paragraph-1 → sch.paragraph)
+    category: namer
+    module: Commencement.Order.ref/1
+    affected: 48 collisions in the family's feeds, none in the body
+    fix: with the schedule naming decision when schedules are parsed (CV-S02a, deferred)
+    status: open
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/placement.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/readers/feed.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/ref.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary.ex
+  - backend/lib/sertantai_legal/scraper/effect_facts.ex
+  - backend/lib/sertantai_legal/scraper/legislation_gov_uk/changes_feed.ex
+  - backend/lib/mix/tasks/lat.feed_check.ex
+  - backend/lib/mix/tasks/lat.vocabulary.ex
+  - backend/test/sertantai_legal/scraper/change_vocabulary/placement_test.exs
+  - backend/test/sertantai_legal/scraper/change_vocabulary/feed_targets_test.exs
+  - backend/test/sertantai_legal/scraper/change_vocabulary/feed_facts_test.exs
+  - backend/test/sertantai_legal/scraper/change_vocabulary/canonical_test.exs
+  - .claude/skills/feed-reader-check/SKILL.md
+
+depends_on:
+  - 2026-10-22-cv-s01-sources.md
+
+enables:
+  - CV-S02a parser tell-tales (#182-#185)
+  - CV-S02b feed pattern catalogue (fixture)
+  - CV-S03 markup reader
+  - the feed-reader check for the next families
 ---
 
-# Session: CV-S02: Feed Reader (ACTIVE)
+# Session: CV-S02: Feed Reader (CLOSED)
 
 ## Problem
 
