@@ -17,13 +17,13 @@ The session does not close until its results pass.
 ## Todo
 
 - ✅ Define what good looks like (agreed 2026-10-22, below): every effect accounted for; 50 random effects checked by a Claude agent; facts faithful; tested; repeatable
-- ⬜ Build the acceptance check; run it (ask Jason before any long run)
+- ✅ Build the acceptance check; run it (ask Jason before any long run)
 - ✅ Unplaced effects counted and reported with a reason (`Placement`, `mix lat.feed_check`)
-- ⬜ Grouped provisions in an effect ("s. 78(4BA)(4BB)", "s. 1(4)(b) and word") reach no row (open bug, CV-03)
-- ⬜ NI Order kind words: "art. 10" in the feed is the row reg.10 (CV-04 Provision facts)
+- ✅ Grouped provisions in an effect ("s. 78(4BA)(4BB)", "s. 1(4)(b) and word") reach no row (open bug, CV-03): checked 2026-10-23, TCPA 1990 "s. 78(4BA)(4BB)" → s.78(4BA), s.78(4BB); Forestry Act 1967 "s. 17(1)(b) and word" → s.17(1)(b)
+- ✅ NI Order kind words: "art. 10" in the feed is the row reg.10 (CV-04 Provision facts): checked 2026-10-23, NISI 1998/1069 "art. 4(4)(f)" → reg.4(4)(f), the family's only NI Order effect on an article
 - ✅ EU annex refs converted (`annex-XVII` → `annex.XVII`; unparsed like schedules, a known v0.1 limit)
-- ⬜ Fix until the check passes reliably; record the result (final checks: feed check twice + fresh 50 at seed 11, golden, agent)
-- ⬜ Repeatable for the next family (Jason 2026-10-23: "We have about 50 Families"; right after the final checks):
+- ✅ Fix until the check passes reliably; record the result (final checks: feed check twice + fresh 50 at seed 11, golden, agent)
+- ✅ Repeatable for the next family (Jason 2026-10-23: "We have about 50 Families"; right after the final checks):
   - ✅ The agent's instructions saved as a project skill (`feed-reader-check`): reader rules, read-only limits, a fixed report format (table + defects, each a known pattern or new)
   - ✅ A prerequisites gate in `lat.feed_check`: a family whose feeds, text or rows aren't stored is stopped and pointed to `mix lat.sources --family X`
   - ✅ Tell-tales printed by kind (no ids in the text, naming fault, gone from the text), no ad hoc scripts
