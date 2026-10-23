@@ -126,8 +126,8 @@ defmodule Mix.Tasks.Lat.FeedCheck do
           order |> Enum.map(&Ref.from_clml(&1, law)) |> Enum.reject(&is_nil/1) |> MapSet.new(),
         schedules?: Enum.any?(rows, &String.starts_with?(&1, "sch.")),
         xml_ids: xml_ids,
-        # the effects the text marks (its change ids)
-        marked: ~r/key-[0-9a-f]{32}/ |> Regex.scan(xml) |> List.flatten() |> MapSet.new()
+        # the effects the text marks as made (change markup only)
+        marked: Placement.marked(xml)
       }
 
       sets =

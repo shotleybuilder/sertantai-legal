@@ -80,6 +80,23 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.PlacementTest do
              {:unplaced, :not_in_text}
   end
 
+  test "marked: change markup in the text only — not an unapplied effect in the metadata, not a note reference (D1)" do
+    # effect ids built at runtime: a literal "key-" + 32 hex trips GitHub
+    # push protection (read as a Mailgun key)
+    id = &("key-" <> String.duplicate(&1, 32))
+
+    xml = """
+    <Legislation><ukm:Metadata><ukm:UnappliedEffects>
+    <ukm:UnappliedEffect Type="inserted" EffectId="#{id.("7")}" AffectedProvisions="reg. 3A"/>
+    </ukm:UnappliedEffects></ukm:Metadata><Body>
+    <P1 id="regulation-17"><Pnumber><CommentaryRef Ref="#{id.("1")}"/>17</Pnumber></P1>
+    <P4 id="section-3-5-c-ia"><Pnumber><Addition ChangeId="#{id.("a")}-1457517729152" CommentaryRef="#{id.("a")}">ia</Addition></Pnumber></P4>
+    </Body></Legislation>
+    """
+
+    assert Placement.marked(xml) == MapSet.new([id.("a")])
+  end
+
   test "which reasons are faults of ours, which known limits, tell-tales, or the feed's own" do
     assert Placement.fault?(:refs_not_converted)
     refute Placement.fault?(:row_missing)

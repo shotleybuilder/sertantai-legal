@@ -175,6 +175,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
   defp schedule?(target),
     do: String.starts_with?(target, "sch.") or String.starts_with?(target, "annex.")
 
+  @doc """
+  The effects the law's text marks as made: the effect id in a change
+  markup's `ChangeId` (`<Addition ChangeId="key-…-1457517729152">`). Never
+  the metadata's unapplied effects (`EffectId`: listed, not yet made) nor a
+  note reference (`CommentaryRef Ref`: a pointer) — an unapplied effect has
+  no change markup (D1, 2026-10-23).
+  """
+  @spec marked(String.t()) :: MapSet.t()
+  def marked(xml) do
+    ~r/\bChangeId="(key-[0-9a-f]{32})/
+    |> Regex.scan(xml, capture: :all_but_first)
+    |> List.flatten()
+    |> MapSet.new()
+  end
+
   @doc "True for a reason that is the reader's fault (pass needs none)."
   @spec fault?(atom()) :: boolean()
   def fault?(reason), do: reason in @faults
