@@ -92,3 +92,9 @@ Numbered `ListItem`s with no id, outside amendments, versions and schedules: **1
 - The drift: `UK_ukpga_1967_10` (443 rows `excluded_extent` nil → S), `UK_uksi_2010_2215`, `UK_uksi_2010_404`: their feeds were refetched on 2026-10-21 (CV-S01) after their last parse (2026-10-19). `UK_ukpga_1990_8` (9 rows): feed unchanged; it has 3 lowercase "other" qualifications, read since CV-S02 NEW-D. Real source changes the re-parse should carry.
 - Positional ids: signature, note and table rows are named by position, so inserted item rows renumber them. Churn for fractalaw, not a fault of these fixes.
 - Territory checks: 25 findings (23 child_live_where_parent_excluded, 2 markup_effect_conflict); the checks run on every parsed law, so not attributable to these fixes without a baseline.
+
+## Apply (2026-10-23)
+
+- Restore point: `snapshots/restore-points/2026-10-23-cv-s02a-reparse` (legal_register_uk, legal_articles_uk, amendment_annotations, lat_change_log, lat_label_timeline, lat_events, lat_changes, lat_section_id_renames, control_mappings).
+- `mix lat.reparse --laws <the dry run's 128> --store only`, reports `data/reports/lat-reparse/cv_s02a*.csv`.
+- The enrichment gate stopped on signature rows renumbered by the new item rows whose text is only dots (no text match to carry by): `UK_eur_2006_561` `signed.114`, `UK_eur_2012_649` `signed.181`, and `UK_eur_2016_425` `signed.264` ahead of its turn. Forced with Jason's agreement (only those rows' enrichment lost); the rest ran gate on. Raised as **#186** (position-named rows), pending session `2026-10-23-issue-186.md`.
