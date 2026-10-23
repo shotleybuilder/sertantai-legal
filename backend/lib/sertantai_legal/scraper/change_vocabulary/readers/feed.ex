@@ -37,10 +37,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   # other qualification ("for specified purposes", "for W.") is partial
   @full ~r/^\s*$|wholly in force|so far as not already in force/i
 
-  @doc "Claim sets `{key, target, claims}` for each effect's target provisions."
-  @spec read([Effect.t()], String.t() | nil, [String.t()], map(), map(), %{
-          String.t() => String.t()
-        }) ::
+  @doc """
+  Claim sets `{key, target, claims}` for each effect's target provisions.
+  `rows` are every row the law holds (refs), for reading EU finer forms
+  down to; nil takes the rows `xml_ids` names (rows with no XML id of
+  their own, like item rows, are then not seen).
+  """
+  @spec read(
+          [Effect.t()],
+          String.t() | nil,
+          [String.t()],
+          map(),
+          map(),
+          %{String.t() => String.t()},
+          [String.t()] | nil
+        ) ::
           [{String.t(), String.t(), [Claim.t()]}]
   def read(
         effects,
@@ -48,10 +59,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
         order \\ [],
         commencement \\ %{},
         extents \\ %{},
-        xml_ids \\ %{}
+        xml_ids \\ %{},
+        rows \\ nil
       ) do
     flat = EffectTarget.flat(order)
-    held = MapSet.new(Map.values(xml_ids))
+    held = MapSet.new(rows || Map.values(xml_ids))
 
     for %Effect{effect_id: id} = e <- effects,
         id != nil,

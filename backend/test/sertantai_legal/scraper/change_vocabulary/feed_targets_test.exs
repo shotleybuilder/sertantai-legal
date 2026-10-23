@@ -114,6 +114,25 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedTargetsTest do
                {"art.Article 56(6)", "art.Article 56(6)(c)"}
     end
 
+    test "a row with no XML id of its own is held too (an item row, CV-S02a #184)" do
+      # REACH Art. 57(a): a numbered ListItem with no id, a row since CV-S02a
+      rows = ["art.Article 57", "art.Article 57(a)"]
+
+      [{_, target, claims}] =
+        Feed.read(
+          [effect("Art. 57 Point (a)", ["article-57"])],
+          @reach,
+          [],
+          %{},
+          %{},
+          %{"article-57" => "art.Article 57"},
+          rows
+        )
+
+      assert target == "art.Article 57(a)"
+      refute Enum.any?(claims, &(&1.attribute == :finer_unheld and &1.value))
+    end
+
     test "EUR-Lex paragraph forms: \".2 L2\" and \"(7)\" (the subparagraph names no row)" do
       assert finer("Art. 56 .6 L2", "article-56") == {"art.Article 56(6)", nil}
       assert finer("Art. 25 (7) L1", "article-25") == {"art.Article 25(7)", nil}

@@ -185,7 +185,7 @@ defmodule Mix.Tasks.Lat.FeedCheck do
 
       sets =
         effects
-        |> Feed.read(law, order, %{}, %{}, xml_ids)
+        |> Feed.read(law, order, %{}, %{}, xml_ids, rows)
         |> Enum.group_by(fn {key, _, _} -> key |> String.split("@") |> hd() end)
 
       # what each finer form not held tells of our parse
