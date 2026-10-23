@@ -15,7 +15,9 @@ defmodule SertantaiLegal.Architecture.CommencementReadTest do
     "sertantai_legal/scraper/law_start" => "the law's own clause (LR-33, LR-34)",
     "sertantai_legal/scraper/commencement/" => "the ruleset's readers (CR-03, CR-04)",
     # the feed's effect type "coming into force", not law text
-    "sertantai_legal/scraper/effect_kind.ex" => "the feed's effect kind"
+    "sertantai_legal/scraper/effect_kind.ex" => "the feed's effect kind",
+    # the feed's effect type "coming into operation" (CV-S02b review D), not law text
+    "sertantai_legal/scraper/change_vocabulary/effect_verb.ex" => "the feed reader's effect verb"
   }
 
   test "only the commencement readers match commencement words" do
