@@ -40,3 +40,16 @@ Measured in the DB (2026-10-23): the number is taken from the text with its deco
 - Prefix word left on: 26 rows (`pt.PART15`, `pt.PART3A`), and a heading as a number (`UK_nisr_2016_366` `ch.SUB-PART A: MAKING AVAILABLE ON THE MARKET`).
 
 The rule (`LatParser.Ids`): spaces cleaned (`Ids.clean/1`), brackets round a number dropped (one inside it stays), the prefix word stripped whatever space follows or none (not before a letter), a number holding a space after a dash split is a heading numbered by the id. Tests in `ids_test.exs`. Takes effect on the re-parse.
+
+## #184: measure (2026-10-23, OH&S stored body text, 149 laws, read-only)
+
+Numbered `ListItem`s with no id, outside amendments, versions and schedules: **1,222** (1,864 unnumbered items not counted). The issue's 1,652 counted more widely.
+
+| Where | EU | UK |
+|---|---|---|
+| Directly under a provision (points, numbered definitions) | 522 | 16 |
+| Inside an unnumbered item (a definition's "means— (a) … (b)") | 18 | 666 |
+
+- Direct items: 538 in 60 provisions of 17 laws (CLP 201, REACH 135, Directive 2013/35 59, Directive 92/57 33, …).
+- Level they would take (all items): sub 388, paragraph 656, sub_paragraph 174, none left (below P4) 4.
+- Parent rows whose text would change if items became rows: 156 (60 for direct items only).
