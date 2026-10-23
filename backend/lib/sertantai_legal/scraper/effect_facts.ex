@@ -57,7 +57,9 @@ defmodule SertantaiLegal.Scraper.EffectFacts do
   @words [
     {~r/\b(?:deleted|deletion)\b/i, "omitted"},
     {~r/\b(?:replacement|replaced)\b/i, "substituted"},
-    {~r/\baddition\b/i, "inserted"},
+    # EUR-Lex "completion": text added (Directive 2006/21 adds an activity
+    # to Directive 2004/35 Annex III; Jason 2026-10-23)
+    {~r/\b(?:addition|completion)\b/i, "inserted"},
     {~r/\bpartial repeal\b/i, "repealed in part"},
     {~r/\brepeal\b/i, "repealed"},
     {~r/\brev\b\.?\s*/i, "revoked "},

@@ -94,10 +94,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   defp eu?(nil), do: false
   defp eu?(law), do: Enum.at(String.split(law, "_"), 1) in @eu
 
-  # "para. 6 Point (b)" → ["6", "b"]; "Point B)III)" → ["b", "iii"];
+  # "para. 6 Point (b)" → ["6", "b"]; ".2 L2" → ["2"]; "Point B)III)" → ["b", "iii"];
   # "para. 4a" → ["4a"]; reading stops at what names no row ("Sentence 2")
   defp finer_parts(tail) do
-    case Regex.run(~r/^para\.\s*(\w+)\s*(.*)$/u, tail) do
+    # "para. 2", EUR-Lex ".2" or "(2)"; a subparagraph ("L2") names no row
+    case Regex.run(~r/^(?:para\.\s*|\.\s*|\()(\w+)\)?\s*(.*)$/u, tail) do
       [_, n, rest] -> [n | points(rest)]
       nil -> points(tail)
     end

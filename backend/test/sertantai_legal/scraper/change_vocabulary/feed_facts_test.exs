@@ -40,6 +40,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedFactsTest do
     for {type, op} <- [
           {"replacement", :substituted},
           {"addition", :inserted},
+          {"completion", :inserted},
           {"deletion", :repealed},
           {"words deleted", :repealed},
           {"word replaced", :substituted},

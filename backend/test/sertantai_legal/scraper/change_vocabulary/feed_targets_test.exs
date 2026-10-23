@@ -114,6 +114,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedTargetsTest do
                {"art.Article 56(6)", "art.Article 56(6)(c)"}
     end
 
+    test "EUR-Lex paragraph forms: \".2 L2\" and \"(7)\" (the subparagraph names no row)" do
+      assert finer("Art. 56 .6 L2", "article-56") == {"art.Article 56(6)", nil}
+      assert finer("Art. 25 (7) L1", "article-25") == {"art.Article 25(7)", nil}
+      assert finer("Art. 25 .9", "article-25") == {"art.Article 25", "art.Article 25(9)"}
+    end
+
     test "nothing finer, or what names no row: the article, nothing flagged" do
       assert finer("Art. 56", "article-56") == {"art.Article 56", nil}
       assert finer("Art. 25 Sentence 2", "article-25") == {"art.Article 25", nil}
