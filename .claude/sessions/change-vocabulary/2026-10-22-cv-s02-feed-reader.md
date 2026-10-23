@@ -186,3 +186,11 @@ The item stays "not in text" until the parse senses the fault. Parser bugs raise
 - **The gate:** stored feed and text are required for every family law with LAT rows; otherwise FAIL, pointing to `mix lat.sources`. OH&S: 377 family laws, 149 with rows (in scope), all held.
 - **Tell-tales by kind** (`Placement.tell_tale/3`): naming 1 (#185); no ids 10 (#184); not found 5. Not found is a candidate: the tool looks only at the held row's own text, up to the next id, so REACH 76(1)(c) and 77(3)(a), which I had classed as no ids by hand, show as not found.
 - **The saved agent prompt:** reader rules, known patterns K1–K9, fixed report format.
+
+## Closing run (seed 13, the recipe and the saved agent prompt, first use)
+
+- **Gate, placement (our faults 0), repeatability (identical), golden 27/27: PASS.**
+- **Agent: placement 49/50, facts 49/50.** Known: K1 ×13, K4 ×1, K6 ×1. Two new, both minor, checked by me in the code:
+  - **NEW-C. A schedule Part's paragraph is cut short to the Part** (#20, SI 1996/341 "Sch. 1 Pt. III para. 5"). `Commencement.Order.ref/1` maps `schedule-1-part-III-paragraph-5` to `sch.1.pt.III`, so with D4 the one target is the Part. It shares the namer with the commencement and amendment readers (14 callers). No effect in v0.1 (no schedule rows); it matters when schedules are parsed.
+  - **NEW-D. A lowercase `Qualification="other"` never reads its `OtherQualification`** (#16, #33). `ChangesFeed` swaps in the free text only for exactly "Other" (lines 209, 352); the stored feeds hold 181 lowercase against 7,547 "Other". #16: "for specified purposes and 1.1.1996 in so far as not already in force" is read as "other": partial true only by luck, the text unread.
+  - **Not counted:** a staged application ("applied (with modifications)", two stages) is one change with no stages. Modifications carry no operation; the rule stages text changes only.
