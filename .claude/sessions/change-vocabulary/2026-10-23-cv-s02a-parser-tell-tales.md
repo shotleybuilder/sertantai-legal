@@ -15,7 +15,7 @@ The CV-S02 feed-reader check senses markup faults the LAT parse passes on faithf
 - ✅ What good looks like, agreed with Jason (2026-10-23)
 - ✅ #182 (code, `84ea7ffb`; re-parse pending): a non-breaking space in EU section_ids (639 rows, 15 laws); the spelling is unstable within a law. Name from the number, normalised.
 - ⬜ #183: CLML structure faults sensed as diagnostics (ids that contradict their nesting: 27 elements in 4 laws; levels skipped: 14 in 3 laws); decide one general repair rule, if any.
-- ⬜ #184: numbered items with no id get no row (1,652 ListItems in 114 laws; CLP Art. 2's definitions, REACH Art. 57 points)
+- ✅ #184 (code, `1a389d91`; re-parse pending): numbered items with no id get no row (1,652 ListItems in 114 laws; CLP Art. 2's definitions, REACH Art. 57 points)
 - ✅ #185 (code, `84ea7ffb`; re-parse pending): row names with doubled brackets, `art.Article 77(2)((e))` (79 rows in 9 laws)
 - ⬜ Note: `ParserVersion` already moved with CV-S02 NEW-D (`ChangesFeed` reads lowercase "other"); the re-parse plan covers it
 - ⏸️ The shared namer (`Commencement.Order.ref/1`) drops nested schedule ids: `schedule-N-part-P-paragraph-M` → `sch.N.pt.P`; unnumbered `schedule-paragraph-1` → `sch.paragraph`. 48 collisions in the family's feeds, none in the body (CV-S02 NEW-C). Deferred until schedules are parsed (no schedule rows in v0.1); fix it with the schedule naming decision
@@ -53,3 +53,11 @@ Numbered `ListItem`s with no id, outside amendments, versions and schedules: **1
 - Direct items: 538 in 60 provisions of 17 laws (CLP 201, REACH 135, Directive 2013/35 59, Directive 92/57 33, …).
 - Level they would take (all items): sub 388, paragraph 656, sub_paragraph 174, none left (below P4) 4.
 - Parent rows whose text would change if items became rows: 156 (60 for direct items only).
+
+## #184: the rule (agreed with Jason 2026-10-23)
+
+- A numbered `ListItem` (NumberOverride, or an OrderedList with a Type) directly under a provision is a row: every item between it and the provision is a numbered item row too, and a level is free below the provision (P1 three, P4 none).
+- **Aligned with legislation.gov.uk's addresses** (Jason: "Are we aligning our LAT rows with those with an XML id address the feed uses?"): the feed names these items by the id they would have (32 feed refs in REACH and CLP today, e.g. `article-3-10`, `article-2-10`, `article-1-5-e-i`; 344 implied ids in the 17 laws). The row is named as that id converts (`Ref.from_clml("article-57-a")` = `art.Article 57(a)`, tested); `source_xml_id` stays nil — the CLML has none.
+- The parent's text stops where item rows begin (" … "), as at child provisions. An item row's text is its own, without its number (as P rows).
+- Stay text: items inside a definition (an unnumbered item: 684 in OH&S, mostly UK interpretation clauses), and items with no level left (4).
+- Code: `LatParser.Items` (pure: which items, their numbers), `Walker` (an item row typed as the level it takes), `Text` (gaps at item rows; shares `Items.list_number`). Two LH-03 rendering tests updated to the rule, keeping number rendering covered inside a definition. Full suite 3,131 passed.
