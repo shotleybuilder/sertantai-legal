@@ -151,3 +151,8 @@ Still to do: the 50-effect sample checked by a Claude agent (criteria 2 and 3), 
 - a level skipped beside siblings at the right level: 14 in 3 laws (HSWA 10).
 
 The item stays "not in text" until the parse senses the fault. Parser bugs raised here (#182, #183) are fixed in the sub-session CV-S02a, straight after this one; then back to the workflow.
+
+**D3 fixed** (`89778f5d`; Jason: "if we cannot find the finer form we can default but we should be able to spot those as possible tell tales that our parse of the text has a bug"). For EU law with one article ref, the feed's words are read further: "para. N" is (N), and "Point (x)", "Point x)" and "Point B)III)" are (x)(y). The change goes on the deepest of those held, else on the article. A finer form not held is a `:finer_unheld` claim, which the feed check lists as a parse tell-tale. Family: 14 tell-tales, checked against the CLML and rows:
+- **10: the CLML gives the points or paragraphs no ids**, so the parse makes no rows. EUDR 98/24 Art. 2(b)(i)–(iii); REACH Art. 57(a)–(c), 76(1)(c), 77(3)(a); CLP Art. 23(f), in two forms. This is the same gap as fix A (CLP Art. 2's definitions).
+- **1: a real parse naming bug.** REACH Art. 77(2)(e) is held as `art.Article 77(2)((e))`: the number is taken with its brackets. Across the DB: 79 rows in 9 laws (EU mostly; also UK_ukpga_2006_46).
+- **3: gone from the text.** CLP Art. 54 is omitted, so 54(3) and (4) are gone; REACH Art. 14(2) holds (a) and (b) only, so the feed's (e) isn't there. Not parse bugs: the tell-tale is a candidate.
