@@ -158,3 +158,7 @@ The item stays "not in text" until the parse senses the fault. Parser bugs raise
 - **3: gone from the text.** CLP Art. 54 is omitted, so 54(3) and (4) are gone; REACH Art. 14(2) holds (a) and (b) only, so the feed's (e) isn't there. Not parse bugs: the tell-tale is a candidate.
 
 **Raised from D3's tell-tales:** #184 (numbered items with no id get no row: 1,652 ListItems in 114 laws) and #185 (doubled brackets: 79 rows in 9 laws). Both are in CV-S02a.
+
+**D4 fixed** (`3b20dc26`). legislation.gov.uk links one citation in pieces: "Title 5 Ch. 1 heading" is `<Section Ref="title-V">Title 5 </Section><Section Ref="title-V-chapter-1">Ch. 1</Section> heading`. The reader took every `Ref`, so it made a second change on all of Title V. The applied effect sits only in Chapter 1's heading (CLP, SI 2019/720 Sch. 2 para. 31). Now a ref that another of the effect's refs extends is part of that path, not a target; siblings ("reg. 7(3A)(3B)") stay two. Family: 1,417 effects linked in pieces (schedules 1,373, annexes 39, titles 4, sections 1). Placement counts unchanged; only the extra parent target is gone.
+- **Correction:** my first count (1,637, with 264 outside schedules) matched `FoundRef=` too. That is legislation.gov.uk's note of the nearest provision found in the current text, never read by the reader (reg. 11(6) has one ref). A possible pointer for unapplied effects later.
+- A hand-built test that expected both Title I and Ch. 1 (from `bcf6987f`) was rewritten to test the naming alone.
