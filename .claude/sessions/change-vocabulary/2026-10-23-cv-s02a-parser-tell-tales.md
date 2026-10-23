@@ -17,9 +17,10 @@ The CV-S02 feed-reader check senses markup faults the LAT parse passes on faithf
 - ✅ #183 (code, `5275d2b0`; re-parse pending): CLML structure faults sensed as diagnostics (ids that contradict their nesting: 27 elements in 4 laws; levels skipped: 14 in 3 laws); decide one general repair rule, if any.
 - ✅ #184 (code, `1a389d91`; re-parse pending): numbered items with no id get no row (1,652 ListItems in 114 laws; CLP Art. 2's definitions, REACH Art. 57 points)
 - ✅ #185 (code, `84ea7ffb`; re-parse pending): row names with doubled brackets, `art.Article 77(2)((e))` (79 rows in 9 laws)
-- ⬜ Note: `ParserVersion` already moved with CV-S02 NEW-D (`ChangesFeed` reads lowercase "other"); the re-parse plan covers it
+- ✅ Note: `ParserVersion` already moved with CV-S02 NEW-D (`ChangesFeed` reads lowercase "other"); the re-parse plan covers it
 - ⏸️ The shared namer (`Commencement.Order.ref/1`) drops nested schedule ids: `schedule-N-part-P-paragraph-M` → `sch.N.pt.P`; unnumbered `schedule-paragraph-1` → `sch.paragraph`. 48 collisions in the family's feeds, none in the body (CV-S02 NEW-C). Deferred until schedules are parsed (no schedule rows in v0.1); fix it with the schedule naming decision
-- ⬜ Re-parse plan for the affected laws only: dry run → Jason → restore point → apply; tell fractalaw (renamed rows).
+- ✅ Re-parse of the affected laws only (128): dry run → Jason → restore point → apply (2026-10-23)
+- ⬜ Tell fractalaw of the renamed rows — only on Jason's word (standing rule: we don't message fractalaw ourselves)
 
 ## Dependencies
 
@@ -98,3 +99,11 @@ Numbered `ListItem`s with no id, outside amendments, versions and schedules: **1
 - Restore point: `snapshots/restore-points/2026-10-23-cv-s02a-reparse` (legal_register_uk, legal_articles_uk, amendment_annotations, lat_change_log, lat_label_timeline, lat_events, lat_changes, lat_section_id_renames, control_mappings).
 - `mix lat.reparse --laws <the dry run's 128> --store only`, reports `data/reports/lat-reparse/cv_s02a*.csv`.
 - The enrichment gate stopped on signature rows renumbered by the new item rows whose text is only dots (no text match to carry by): `UK_eur_2006_561` `signed.114`, `UK_eur_2012_649` `signed.181`, and `UK_eur_2016_425` `signed.264` ahead of its turn. Forced with Jason's agreement (only those rows' enrichment lost); the rest ran gate on. Raised as **#186** (position-named rows), pending session `2026-10-23-issue-186.md`.
+- Apply complete: **128 laws** re-parsed (`cv_s02a`, `_force`, `_rest`, `_force2`, `_rest3` reports). Rows 116,578 → 118,669 (+2,091, the dry run's item rows exactly); enriched 99,385 → 99,377 (8 lost: 3 dots-only signature rows, the rest parents whose text changed); renamed 880; orphaned control mappings 0.
+
+## Results after the apply (2026-10-23)
+
+- DB measures: Unicode spaces in section_ids 0 (was 640), doubled/extra brackets 0 (79), label words 0 (26). HSWA `s.28(3)(f)`(i)(ii) in all 3 versions; WSI 2025/1321 `reg.39(2)(e)`–`(g)`; REACH Art. 57(a)–(f); CLP Art. 2 53 rows under it.
+- The feed reader saw only rows with an XML id (its held set was the XML-id map), so item rows were flagged unheld. Fixed: `Feed.read` takes every row of the law (`19196e8d`, test added).
+- OH&S feed check: our faults 0; placed 3,483 → 3,549, not in text 159 → 128, placed by markup 42 → 5; **tell-tales 16 → 5**, all `not_found` and genuinely absent from today's text (REACH Art. 77(3) and CLP Art. 54 repealed ("…"), REACH 14(2) holds only (a)–(b), REACH 76(1) no row). naming 0, no_ids 0.
+- Golden 27/27.
