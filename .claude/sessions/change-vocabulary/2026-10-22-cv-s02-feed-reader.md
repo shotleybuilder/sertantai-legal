@@ -145,3 +145,9 @@ Still to do: the 50-effect sample checked by a Claude agent (criteria 2 and 3), 
   - **Not counted:** EU effects have no date, but the feed's `Comments` says "EUR-Lex in-force date …". That is an editorial comment, a pointer like a note, not a fact.
 
 **D1 fixed** (`90f1fe95`). `Placement.marked/1` reads the effect ids in change markup (`ChangeId`) only. An unapplied effect has none: its id appears only in the metadata's `UnappliedEffects` (`EffectId`; 1,258 in the family). The 161 unapplied effects whose id is also in the text are all commencements carrying a note reference (`CommentaryRef`), a pointer, not markup. Feed check: placed by markup 105 → 42; not in text 96 → 159 (63 were unapplied effects, legislation.gov.uk's backlog, wrongly counted as placed). Reader faults 0.
+
+**D2 raised: #183** (Jason 2026-10-23: "We're raising against the parser, even though our parser was faithful, to sense markup bugs. The broken pattern can be detected. We mustn't make a fix just for this one bug in the XML. The pattern needs abstracting."). In legislation.gov.uk's CLML, HSWA s.28(3)(f) has the id `section-28-f` and sits outside subsection (3), in all three versions. Two general patterns, measured over the family:
+- ids that contradict their nesting: 27 elements in 4 laws (CLP 15);
+- a level skipped beside siblings at the right level: 14 in 3 laws (HSWA 10).
+
+The item stays "not in text" until the parse senses the fault. Parser bugs raised here (#182, #183) are fixed in the sub-session CV-S02a, straight after this one; then back to the workflow.
