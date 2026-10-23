@@ -203,3 +203,10 @@ The item stays "not in text" until the parse senses the fault. Parser bugs raise
 No effect in v0.1 (no schedule rows). The namer is shared (commencement and amendment readers, 14 callers), so it is fixed with the schedule naming decision when schedules are parsed: logged in CV-S02a and as known pattern K10 in the `feed-reader-check` skill.
 
 **NEW-D fixed** (`3e54a3da`). `ChangesFeed` reads `OtherQualification` for "other" in any case. `ChangesFeed` is a `ParserVersion` input (the parse reads in-force qualifications through `InForceQualifier`), so every law's parse shows stale. That is honest, and it folds into CV-S02a's re-parse, which moves `ParserVersion` anyway. Placement re-run: PASS, our faults 0. A second date in the free text ("and 1.1.1996 in so far as not already in force") is not made a stage; the text is carried.
+
+## Clean pass (seed 17, 2026-10-23; Jason: "One more sample of 50 - that hasn't passed clean yet")
+
+Run by the `feed-reader-check` skill, with the prompt as the skill holds it (K1–K12):
+- **Gate:** 149 of 149 in-scope laws held. **Placement:** our faults 0. **Repeatability:** counts and samples identical. **Golden:** 27/27, after NEW-D.
+- **Agent: placement 50/50, facts 50/50, no new defects.** Known: K1 ×15, K7 ×3, K9 ×2. Closer checks: an unapplied insertion correctly not in text (its id only in the metadata); "in earlier amending provision" types carry no operation; one path linked in pieces (`annex-XV` + `annex-XV-part-1`); sibling refs (1A, 1B); savings matched on 13 items.
+- **This sample's coverage:** no OtherQualification text, no staged multi-date effects, no placed by markup, no ranges, no territory in a qualification, no EU finer form. Those rules are covered by unit tests and by the earlier samples (seeds 7, 11, 13), where each was found and fixed.
