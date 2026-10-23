@@ -24,10 +24,10 @@ The session does not close until its results pass.
 - ✅ EU annex refs converted (`annex-XVII` → `annex.XVII`; unparsed like schedules, a known v0.1 limit)
 - ⬜ Fix until the check passes reliably; record the result (final checks: feed check twice + fresh 50 at seed 11, golden, agent)
 - ⬜ Repeatable for the next family (Jason 2026-10-23: "We have about 50 Families"; right after the final checks):
-  - ⬜ The agent's instructions saved as a project skill (`feed-reader-check`): reader rules, read-only limits, a fixed report format (table + defects, each a known pattern or new)
-  - ⬜ A prerequisites gate in `lat.feed_check`: a family whose feeds, text or rows aren't stored is stopped and pointed to `mix lat.sources --family X`
-  - ⬜ Tell-tales printed by kind (no ids in the text, naming fault, gone from the text), no ad hoc scripts
-  - ⬜ A one-page recipe in CV-00 for a new family: sources → feed check → sample + agent → golden where held; pass = no reader faults, clean agent check, repeatable; only defects with no known pattern go to Jason
+  - ✅ The agent's instructions saved as a project skill (`feed-reader-check`): reader rules, read-only limits, a fixed report format (table + defects, each a known pattern or new)
+  - ✅ A prerequisites gate in `lat.feed_check`: a family whose feeds, text or rows aren't stored is stopped and pointed to `mix lat.sources --family X`
+  - ✅ Tell-tales printed by kind (no ids in the text, naming fault, gone from the text), no ad hoc scripts
+  - ✅ A one-page recipe in CV-00 for a new family: sources → feed check → sample + agent → golden where held; pass = no reader faults, clean agent check, repeatable; only defects with no known pattern go to Jason
 
 ## Dependencies
 
@@ -179,3 +179,10 @@ The item stays "not in text" until the parse senses the fault. Parser bugs raise
   - **NEW-A. An EU paragraph written ".N"** ("Art. 35 .2 L2", ref `article-35`) is not read, so it is placed on the article though `art.Article 35(2)` is held. EUR-Lex notation: ".2" is paragraph 2, "L2" subparagraph 2 (no row). 24 such effects across the stored EU feeds, plus 8 "(N) LN".
   - **NEW-B. The EU type "completion" gives no operation.** 28 such effects across the stored feeds, all applied, none with change markup (EU-era changes are in the base text), mostly on annexes. Example: Directive 2004/35 Annex III "completion" by Directive 2006/21, the mining-waste directive that added an activity to Annex III. That suggests inserted; it needs Jason's call.
   - **Observation (not a defect).** `placed_versions` targets the bare provision. The feed's extent (E+W+N.I., "modifications do not extend to Scotland") and the markup (only in the [E+W] version) say which version is changed; the reader carries the extent. Narrowing to the version is the label fold's job: logged in CV-S09.
+
+**NEW-A and NEW-B fixed** (`92881d39`; Jason: "Agree New A and New B"). EUR-Lex paragraph forms ".2 L2" and "(7)" are read as paragraph N (a subparagraph names no row). "completion" maps to inserted. Two more tell-tales surfaced (REACH Art. 3(20)(b), (c): no ids): 16 in all.
+
+**Repeatable for the next family** (`b31a6e8e`, skill `feed-reader-check`, CV-00 recipe):
+- **The gate:** stored feed and text are required for every family law with LAT rows; otherwise FAIL, pointing to `mix lat.sources`. OH&S: 377 family laws, 149 with rows (in scope), all held.
+- **Tell-tales by kind** (`Placement.tell_tale/3`): naming 1 (#185); no ids 10 (#184); not found 5. Not found is a candidate: the tool looks only at the held row's own text, up to the next id, so REACH 76(1)(c) and 77(3)(a), which I had classed as no ids by hand, show as not found.
+- **The saved agent prompt:** reader rules, known patterns K1–K9, fixed report format.
