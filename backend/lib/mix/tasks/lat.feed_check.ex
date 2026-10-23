@@ -224,7 +224,10 @@ defmodule Mix.Tasks.Lat.FeedCheck do
                   level: elem(v.(:level) || {:ok, nil}, 1),
                   date_first: elem(v.(:date_first) || {:ok, nil}, 1),
                   date: elem(v.(:date) || {:ok, nil}, 1),
-                  partial: elem(v.(:partial) || {:ok, nil}, 1)
+                  partial: elem(v.(:partial) || {:ok, nil}, 1),
+                  effect_extent: elem(v.(:effect_extent) || {:ok, nil}, 1),
+                  in_force_for: elem(v.(:in_force_for) || {:ok, nil}, 1),
+                  savings: elem(v.(:savings) || {:ok, nil}, 1)
                 }
               end
           }

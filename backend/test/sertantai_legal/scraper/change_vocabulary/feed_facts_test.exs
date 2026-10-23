@@ -127,4 +127,35 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedFactsTest do
 
     assert [{"key-1", nil, _, _, _}] = read(e)
   end
+
+  describe "a commencement carries what the feed says, as read (D5)" do
+    defp commenced(qualification, extent \\ "N.I.") do
+      e = %{
+        effect("coming into force", [
+          %{date: ~D[2010-05-19], qualification: qualification, prospective: false}
+        ])
+        | effect_extent: extent,
+          savings: ["s. 3"]
+      }
+
+      [{_, _, claims}] = Feed.read([e], "UK_nisr_2010_160")
+      Map.new(claims, &{&1.attribute, &1.value})
+    end
+
+    test "its effects extent and savings (NISR 2010/160 reg. 30)" do
+      c = commenced("wholly in force")
+      assert c.effect_extent == "NI"
+      assert c.savings == ["s. 3"]
+      refute Map.has_key?(c, :in_force_for)
+    end
+
+    test "the territory its qualification names, as a fact for the label fold" do
+      assert commenced("for E.W.S.").in_force_for == "E+W+S"
+      assert commenced("for N.I.").in_force_for == "NI"
+      assert commenced("for specified purposes for E.").in_force_for == "E"
+      assert commenced("in relation to Wales").in_force_for == "W"
+      assert commenced("in relation to England and Wales").in_force_for == "E+W"
+      refute Map.has_key?(commenced("for specified purposes"), :in_force_for)
+    end
+  end
 end

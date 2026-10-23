@@ -229,7 +229,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
            Claim.new(:feed, :level, :provision, id),
            Claim.new(:feed, :date, date, id),
            Claim.new(:feed, :partial, not String.match?(qualification || "", @full), id),
-           Claim.new(:feed, :by, e.affecting, id)
+           Claim.new(:feed, :by, e.affecting, id),
+           stage_facts(e, qualification)
          ])}
       end
     else
@@ -288,7 +289,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
              Claim.new(:feed, :level, :provision, id),
              Claim.new(:feed, :date, date, id),
              Claim.new(:feed, :partial, not String.match?(qualification || "", @full), id),
-             Claim.new(:feed, :by, e.affecting, id)
+             Claim.new(:feed, :by, e.affecting, id),
+             stage_facts(e, qualification)
            ])}
         end
     ]
@@ -323,6 +325,44 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
     case {removal, in_part} do
       {[], [{_, claims} | rest]} -> [{id, claims} | rest]
       _ -> removal ++ in_part
+    end
+  end
+
+  # what the feed says of a commencement stage beyond its date, carried as
+  # read (D5, Jason 2026-10-23: "the reader accurately parses the feed
+  # info, what it means comes later"): the effects extent, the savings, and
+  # the territory its qualification names ("for E.W.S.") — `in_force_for`,
+  # for the label fold to read (CV-S09)
+  defp stage_facts(%Effect{effect_id: id} = e, qualification),
+    do:
+      Enum.concat([
+        Claim.new(:feed, :effect_extent, code(e.effect_extent), id),
+        Claim.new(:feed, :savings, e.savings, id),
+        Claim.new(:feed, :in_force_for, in_force_for(qualification), id)
+      ])
+
+  @places %{"England" => "E", "Wales" => "W", "Scotland" => "S", "Northern Ireland" => "NI"}
+
+  # "for E.W.S." → "E+W+S"; "for N.I." → "NI"; "in relation to Wales" →
+  # "W"; nil when the qualification names no territory
+  defp in_force_for(nil), do: nil
+
+  defp in_force_for(qualification) do
+    case Regex.run(
+           ~r/\b(?:for|in relation to)\s+((?:(?:N\.\s?I\.?|[EWS]\.|England|Wales|Scotland|Northern Ireland)(?:\s*(?:,|and|\+)?\s*))+)/u,
+           qualification
+         ) do
+      [_, places] ->
+        places
+        |> then(
+          &Regex.replace(~r/England|Wales|Scotland|Northern Ireland/, &1, fn p ->
+            @places[p] <> "."
+          end)
+        )
+        |> SertantaiLegal.Scraper.Territory.normalize()
+
+      nil ->
+        nil
     end
   end
 
