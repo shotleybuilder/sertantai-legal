@@ -156,3 +156,5 @@ The item stays "not in text" until the parse senses the fault. Parser bugs raise
 - **10: the CLML gives the points or paragraphs no ids**, so the parse makes no rows. EUDR 98/24 Art. 2(b)(i)–(iii); REACH Art. 57(a)–(c), 76(1)(c), 77(3)(a); CLP Art. 23(f), in two forms. This is the same gap as fix A (CLP Art. 2's definitions).
 - **1: a real parse naming bug.** REACH Art. 77(2)(e) is held as `art.Article 77(2)((e))`: the number is taken with its brackets. Across the DB: 79 rows in 9 laws (EU mostly; also UK_ukpga_2006_46).
 - **3: gone from the text.** CLP Art. 54 is omitted, so 54(3) and (4) are gone; REACH Art. 14(2) holds (a) and (b) only, so the feed's (e) isn't there. Not parse bugs: the tell-tale is a candidate.
+
+**Raised from D3's tell-tales:** #184 (numbered items with no id get no row: 1,652 ListItems in 114 laws) and #185 (doubled brackets: 79 rows in 9 laws). Both are in CV-S02a.
