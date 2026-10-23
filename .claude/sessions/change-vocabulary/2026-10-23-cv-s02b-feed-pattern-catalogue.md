@@ -1,12 +1,135 @@
 ---
 session: 'CV-S02b: Feed Pattern Catalogue'
-status: active
+status: closed
 release: v0.1
 opened: '2026-10-23'
+closed: '2026-10-23'
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
+outcome: success
+
+summary: >
+  Built a feed pattern catalogue: mix lat.feed_patterns classes all 251,692 stored feed effects by
+  what the reader decides into 985 patterns, with real examples as test fixtures, and
+  FeedPatternsTest holds the reader to them (unreviewed patterns fail; K10 pending). Its first run
+  found ten misreadings no 50-effect sample had reached (A–J), all fixed in the change
+  vocabulary's own modules; the OH&S feed check stays at 0 faults and golden at 27/27.
+
+decisions:
+  - what: Patterns are one per dimension and value (ref, verb, level, qualification, staging, linkage, range, eu_finer), not their cross product
+    why: the literal strings are unbounded but the reader's decisions are bounded; a cross product would be unreviewable
+    result: 1,470 → 1,065 → 985 patterns after grouping qualifications into classes and stripping verb noise
+  - what: Expectations start as the reader's current output (--accept); Jason reviews the readings flagged by dimension; held expectations never change on accept
+    why: hand-writing ~1,600 expectations is waste where the reader is right; review effort goes to the long tail
+    result: A–J raised and decided one by one
+  - what: Readings fixed in new change-vocabulary modules (EffectVerb, Qualification) and Ref, not in EffectFacts or Commencement.Order
+    why: EffectFacts and Order count toward LabelVersion; changing them would stale every law's labels and need a relabel run
+    result: LabelVersion and ParserVersion unchanged; no corpus re-run
+  - what: B — a verb counts only when it says what this effect did to the affected provision
+    why: '"(as substituted)", "repeal of affecting provision", savings and appointed-day types named another law''s change (Jason asked for B explained with the records first)'
+    result: 13 effects to no operation; e.g. 2005 c. 15 s.75A no longer read as repealed
+  - what: E — a stage is partial only when its qualification limits scope; the qualification's classes are carried as read
+    why: 'a time of day, "in accordance with", "retrospective" limit nothing (readers carry facts, the fold decides)'
+    result: ~16,000 in-force entries no longer partial; 12 staged removals whole at their unlimited stage
+  - what: F — a prospective commencement with no date is a change (commenced, prospective, no date)
+    why: the reader dropped 6,135 effects entirely; the provision awaiting commencement is a fact
+    result: commenced changes 60,244 → 66,393
+  - what: J — one dated stage with a qualification carries partial, qualification, in_force_for/except; a partial whole removal is repealed_in_part
+    why: 'found by tracing E''s effect; one-stage changes carried nothing (NISR 2007/31 "revoked" for specified purposes read as whole)'
+    result: 367 removals repealed → repealed_in_part; ~2,340 effects carry their qualification
+  - what: K10 marked pending with full names (sch.N.pt.R.para.N; unnumbered schedule sch.para.N, a proposed convention)
+    why: schedules are not parsed (K1); the correct names wait for that
+    result: 16 patterns, ~2,300 effects, 42 examples pending
+
+metrics:
+  catalogue: { laws: 1207, effects: 251692, excluded_legacy_dated: 1622, unclassified: 0, patterns: 985, examples: 1638, pending_examples: 42, fixtures_mb: 3.7, run_minutes: 8 }
+  dimensions: { verb: 412, ref: 336, qualification: 84, eu_finer: 65, staging: 48, level: 20, linkage: 17, range: 3 }
+  fixes: { A_except_entries: 1130, B: 13, C: 24, D: 14, E_entries: 16000, F: 6135, G: 10, H: 40, J_removals: 367 }
+  acceptance: { ohs_our_faults: 0, ohs_placed: 3549, ohs_tell_tales: 5, golden: "27/27", change_vocabulary_tests: 1758 }
+
+lessons:
+  - title: A full-corpus catalogue finds what repeated samples cannot
+    detail: Five 50-effect rounds passed CV-S02, yet the first catalogue run surfaced ten misreadings (A–J), some in thousands of effects (F 6,135; E ~16,000 entries; A ~1,130). The long tail of effect types and qualifications is where readers go wrong.
+    tag: data
+  - title: Tracing one fix's effect through the catalogue exposes the next defect
+    detail: Checking why 12 removals moved after E led to J (one-stage changes carried no qualification at all). The pattern diff between runs is a measure in itself.
+    tag: data
+  - title: The catalogue is a regression check for refactors
+    detail: Reordering the reader's in-part check for speed was verified by the catalogue (all 1,758 examples identical) rather than by reasoning.
+    tag: tooling
+  - title: Keep reader-only rules out of version-hashed shared modules
+    detail: EffectFacts and Commencement.Order count toward LabelVersion; layering the reader's rules in its own modules avoided staling every law's labels.
+    tag: tooling
+  - title: Per-effect regex chains cost real time at corpus scale
+    detail: EffectVerb.kind re-read the type several times (152 µs a call); reading it once halved it, but the catalogue run still went from 2 to 8 minutes.
+    tag: tooling
+
+bugs:
+  - pattern: "Feed reader read an excepted territory as in_force_for ('except in relation to W.' → W)"
+    category: feed reader
+    module: ChangeVocabulary.Readers.Feed (now Qualification)
+    affected: 1130
+    fix: Qualification.in_force_for ignores the except clause; in_force_except carries it
+    status: fixed
+  - pattern: "Feed reader took a verb describing another law as this effect's operation ('(as substituted)', 'repeal of affecting provision', savings, appointed days)"
+    category: feed reader
+    module: ChangeVocabulary.EffectVerb
+    affected: 13
+    fix: drop '(as …)'; no_operation? for affecting-provision repeals, savings, transitional, appointed days
+    status: fixed
+  - pattern: "Feed reader missed removal and commencement words (cease to have effect after an object, removed, left out, omiited, rep in pt, lapsed, coming into operation, becomes, moved, restored, revived)"
+    category: feed reader
+    module: ChangeVocabulary.EffectVerb
+    affected: 48
+    fix: reader word mapping
+    status: fixed
+  - pattern: "Feed reader marked any non-completing qualification partial (time of day, in accordance with, retrospective)"
+    category: feed reader
+    module: ChangeVocabulary.Qualification
+    affected: 16000
+    fix: partial only when scope is limited; classes carried
+    status: fixed
+  - pattern: "Feed reader dropped prospective commencements with no date entirely"
+    category: feed reader
+    module: ChangeVocabulary.Readers.Feed
+    affected: 6135
+    fix: one change, commenced, prospective, no date
+    status: fixed
+  - pattern: "Feed reader carried no qualification facts on one-stage text changes (revoked for specified purposes read as whole)"
+    category: feed reader
+    module: ChangeVocabulary.Readers.Feed
+    affected: 2340
+    fix: one-stage changes carry partial/qualification/territory; partial whole removal is repealed_in_part
+    status: fixed
+  - pattern: "rule-N ids not named by the reader's converter"
+    category: feed reader
+    module: ChangeVocabulary.Ref
+    affected: 40
+    fix: rule- named as regulation (reg.), as the parse does
+    status: fixed
+
+artifacts:
+  - backend/lib/mix/tasks/lat.feed_patterns.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/feed_patterns.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/effect_verb.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/qualification.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/readers/feed.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/ref.ex
+  - backend/test/fixtures/feed_patterns/
+  - backend/test/sertantai_legal/scraper/change_vocabulary/feed_patterns_test.exs
+  - backend/data/reports/feed-patterns/catalogue-2026-10-23.md
+  - .claude/skills/feed-reader-check/SKILL.md
+
+depends_on:
+  - 2026-10-22-cv-s02-feed-reader
+  - 2026-10-23-cv-s02a-parser-tell-tales
+
+enables:
+  - Feed reader checks for new families start from the catalogue (new patterns as a diff)
+  - CV-S03 markup reader (a catalogue of the same kind can follow)
+  - K10 pending tests turn green when schedules are named in full
 ---
 
-# Session: CV-S02b: Feed Pattern Catalogue (ACTIVE)
+# Session: CV-S02b: Feed Pattern Catalogue (CLOSED)
 
 ## Problem
 
