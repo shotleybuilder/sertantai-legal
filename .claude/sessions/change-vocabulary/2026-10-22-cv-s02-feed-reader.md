@@ -169,3 +169,13 @@ The item stays "not in text" until the parse senses the fault. Parser bugs raise
 - A hand-built test that expected both Title I and Ch. 1 (from `bcf6987f`) was rewritten to test the naming alone.
 
 **D5 fixed** (`ce22a2de`; Jason: "the reader accurately parses the feed info, what it means comes later"). A commencement change, from the feed or the later stage of a staged insertion, now carries the effects extent and the savings. It also carries the territory its qualification names ("for E.W.S." → `in_force_for` "E+W+S"), as read, not applied. Family: 1,777 commencements, with territorial application 0, effects extent 81 (80 restate an NI law's own N.I.), savings 6, territory in the qualification 2. What `in_force_for` means for the label (in force there, prospective elsewhere) is logged in CV-S09 Label fold.
+
+## Final checks (2026-10-23, after `ce22a2de`)
+
+- **Placement: PASS.** 6,568 effects, reader faults 0; finer-form tell-tales 14 (as classified above).
+- **Repeatability: PASS.** Two runs at seed 11: counts identical, samples byte-identical.
+- **Golden: PASS.** 27/27.
+- **Agent, fresh 50 (seed 11; 1 effect shared with earlier samples): 49 OK, 0 wrong, 1 doubtful (#5).** Known patterns labelled: K1 (schedules and annexes unparsed) on 16, K7 on 1. Two new, both minor, both on #5:
+  - **NEW-A. An EU paragraph written ".N"** ("Art. 35 .2 L2", ref `article-35`) is not read, so it is placed on the article though `art.Article 35(2)` is held. EUR-Lex notation: ".2" is paragraph 2, "L2" subparagraph 2 (no row). 24 such effects across the stored EU feeds, plus 8 "(N) LN".
+  - **NEW-B. The EU type "completion" gives no operation.** 28 such effects across the stored feeds, all applied, none with change markup (EU-era changes are in the base text), mostly on annexes. Example: Directive 2004/35 Annex III "completion" by Directive 2006/21, the mining-waste directive that added an activity to Annex III. That suggests inserted; it needs Jason's call.
+  - **Observation (not a defect).** `placed_versions` targets the bare provision. The feed's extent (E+W+N.I., "modifications do not extend to Scotland") and the markup (only in the [E+W] version) say which version is changed; the reader carries the extent. Narrowing to the version is the label fold's job: logged in CV-S09.

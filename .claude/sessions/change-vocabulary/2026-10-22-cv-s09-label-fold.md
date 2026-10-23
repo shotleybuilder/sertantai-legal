@@ -22,6 +22,7 @@ The session does not close until its results pass.
 - ⬜ Golden expected tiers per period, and the start's tier from its source (deferred in CV-04)
 - ⬜ A row commenced only through some of its children reads in force, not in force partly (open bug, V1-01)
 - ⬜ A commencement for one territory ("for E.W.S.", "for N.I."): the feed reader carries it as `in_force_for` (CV-S02 D5). The fold should read it as in force there, not "partly in force" everywhere (2 effects in the OH&S family)
+- ⬜ A change placed on territorial versions (`placed_versions`: the bare `s.51A(2E)(a)` held as [E+W] and [S]) changes only the versions its extent reaches (HSWA s.51A(2E)(a): effect extent E+W+N.I., markup only in [E+W]; SI 2008/1597 reg.12(1)(b)(iv)): confirm the fold narrows by the carried extent (CV-S02 final check)
 - ⬜ Fix until the check passes reliably; record the result
 
 ## Dependencies
