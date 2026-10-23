@@ -48,6 +48,42 @@ defmodule SertantaiLegal.Scraper.LatParser.IdsTest do
     assert Ids.number(el("<Part><Number>Part 2-3</Number></Part>"), "Part") == "2-3"
   end
 
+  # CV-S02a (#182, #185): a number is named the same whichever form the CLML
+  # prints it in — Unicode spaces, brackets round it, the label word
+  test "pnumber/1: Unicode spaces are ordinary, brackets round the number dropped" do
+    assert Ids.pnumber(el("<P1><Pnumber>Article 17</Pnumber></P1>")) == "Article 17"
+    assert Ids.pnumber(el("<P1><Pnumber>Article   127EA</Pnumber></P1>")) == "Article 127EA"
+    assert Ids.pnumber(el("<P3><Pnumber>(e)</Pnumber></P3>")) == "e"
+    assert Ids.pnumber(el(~s|<P2><Pnumber PuncAfter="">1)</Pnumber></P2>|)) == "1"
+    assert Ids.pnumber(el("<P3><Pnumber>(<Addition>ia</Addition>)</Pnumber></P3>")) == "ia"
+    assert Ids.pnumber(el("<P3><Pnumber>[b]</Pnumber></P3>")) == "b"
+    # a bracket inside the number stays
+    assert Ids.pnumber(el("<P1><Pnumber>6(1)</Pnumber></P1>")) == "6(1)"
+  end
+
+  test "number/2: the prefix word goes whatever space follows it, or none" do
+    assert Ids.number(el("<Part><Number>PART 4</Number></Part>"), "Part") == "4"
+    assert Ids.number(el("<Part><Number>PART15</Number></Part>"), "Part") == "15"
+    assert Ids.number(el("<Part><Number>PART3A</Number></Part>"), "Part") == "3A"
+    assert Ids.number(el("<Chapter><Number>Chapter 4</Number></Chapter>"), "Chapter") == "4"
+    assert Ids.number(el("<Chapter><Number>CHAPTER V</Number></Chapter>"), "Chapter") == "V"
+    # a word that only begins with the prefix is not the prefix
+    particulars = el(~s(<Part id="part-2"><Number>Particulars</Number></Part>))
+    refute Ids.number(particulars, "Part") == "iculars"
+  end
+
+  test "number/2: a dashed heading with no number takes the id's (nisr 2016/366)" do
+    node =
+      el(
+        ~s(<Chapter id="part-3-chapter-1"><Number>SUB-PART A: MAKING AVAILABLE ON THE MARKET – OBLIGATIONS OF ECONOMIC OPERATORS</Number></Chapter>)
+      )
+
+    assert Ids.number(node, "Chapter") == "1"
+
+    assert Ids.number_titled(%{title: nil, text: ""}, node, "Chapter").title ==
+             "SUB-PART A: MAKING AVAILABLE ON THE MARKET – OBLIGATIONS OF ECONOMIC OPERATORS"
+  end
+
   test "number_titled/3: an untitled row takes its Number's heading" do
     node = el("<Part><Number>Part III — Administration</Number></Part>")
     row = %{title: nil, text: ""}

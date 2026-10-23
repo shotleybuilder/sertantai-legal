@@ -59,13 +59,31 @@ defmodule SertantaiLegal.Scraper.LatParser.Ids do
         texts
         |> Enum.map(&to_string/1)
         |> Enum.join("")
-        |> String.trim()
+        |> clean()
         # "6." (EU paragraph numbering) is number 6: no "(6.)" in ids
         |> String.trim_trailing(".")
-        |> case do
-          "" -> nil
-          v -> v
-        end
+        |> unbracket()
+        |> Xml.blank_to_nil()
+    end
+  end
+
+  @doc """
+  Text as a name: any Unicode space an ordinary one, runs collapsed, trimmed
+  (#182: "Article\u00A017" and "Article 17" are one name).
+  """
+  @spec clean(String.t()) :: String.t()
+  def clean(text) do
+    text
+    |> String.replace(~r/[\p{Zs}\t\r\n]+/u, " ")
+    |> String.trim()
+  end
+
+  # brackets printed round a number are not the number (#185): "(e)" → e,
+  # "1)" → 1, "[b]" → b; a bracket inside it ("6(1)") stays
+  defp unbracket(n) do
+    case Regex.run(~r/\A[(\[]?([^()\[\]]*)[)\]]?\z/u, n) do
+      [_, inner] -> String.trim(inner)
+      nil -> n
     end
   end
 
@@ -83,15 +101,22 @@ defmodule SertantaiLegal.Scraper.LatParser.Ids do
       |> Xml.children(:Number)
       |> Enum.flat_map(&Xml.texts/1)
       |> Enum.map_join("", &to_string/1)
-      |> String.trim()
-      # Strip the prefix word: "Part I" → "I", "SCHEDULE 1" → "1"
-      |> String.replace(~r/^(?:#{prefix}|#{String.upcase(prefix)})\s+/i, "")
+      |> clean()
+      # Strip the prefix word: "Part I" → "I", "SCHEDULE 1" → "1", "PART15"
+      # → "15" (a figure may follow it unspaced; a letter may not: "Particulars")
+      |> String.replace(~r/^#{prefix}(?:\s+|(?=\d))/iu, "")
       |> String.replace(~r/^\s*<[^>]+>\s*/, "")
       |> String.trim()
 
     case String.split(raw, ~r/\.?\s*[—–]\s*|\s+-\s+/u, parts: 2) do
       [number, heading] ->
-        {Xml.blank_to_nil(String.trim(number)), Xml.blank_to_nil(String.trim(heading))}
+        number = String.trim(number)
+
+        # a number never contains a space: a heading cut at its own dash
+        # ("SUB-PART A: … – OBLIGATIONS …") is a heading, numbered by the id
+        if String.contains?(number, " "),
+          do: heading_as_number(node, prefix, raw),
+          else: {Xml.blank_to_nil(number), Xml.blank_to_nil(String.trim(heading))}
 
       [number] ->
         heading_as_number(node, prefix, Xml.blank_to_nil(number))
@@ -214,11 +239,8 @@ defmodule SertantaiLegal.Scraper.LatParser.Ids do
         texts
         |> Enum.map(&to_string/1)
         |> Enum.join("")
-        |> String.trim()
-        |> case do
-          "" -> nil
-          v -> v
-        end
+        |> clean()
+        |> Xml.blank_to_nil()
     end
   end
 end
