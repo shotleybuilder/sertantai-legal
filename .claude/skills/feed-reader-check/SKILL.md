@@ -17,8 +17,19 @@ The reader carries what the feed says; what it means for a label is the label fo
 
 ## Steps
 
-All steps are read-only. Ask Jason before running them, per the standing rule, and say how long each takes.
+All steps are read-only, except that step 0 writes the catalogue fixtures. Ask Jason before running them, per the standing rule, and say how long each takes.
 
+0. **Pattern catalogue (CV-S02b).** `mix lat.feed_patterns` (~8 min, every stored feed; writes only `backend/test/fixtures/feed_patterns/`) prints:
+   - the new patterns (no status yet);
+   - the examples that read differently from expected;
+   - `unclassified` (must be 0).
+
+   Take each new pattern's reading to Jason as a measured pattern:
+   - accept it: `mix lat.feed_patterns --accept` records the reader's current output for new patterns and never changes a held expectation; Jason reviews the diff;
+   - fix the reader: rerun until the tests pass;
+   - or mark it `pending: <why>` in `expected.json`, its examples holding the correct outcome.
+
+   Pass: `mix test test/sertantai_legal/scraper/change_vocabulary/feed_patterns_test.exs` passes (pending excluded). The review list format is in `backend/data/reports/feed-patterns/`.
 1. **Sources held (the gate).** `mix lat.feed_check --family "F"` fails if a family law with LAT rows lacks its stored feed or law text. Fix that with `mix lat.sources --family "F" --fetch` (a fetch: ask first). It also prints how many family laws hold no LAT rows and are out of scope.
 2. **Placement.** The same run prints each outcome's count and `our faults`, which must be 0.
 3. **Repeatability.** Run it twice with the same seed and a sample:
@@ -79,19 +90,28 @@ Reader rules (intended behaviour):
 - Operation: inserted/added/addition/completion → inserted; substituted/replacement/replaced/subst
   (+ misspellings) → substituted; repealed/revoked/omitted/deleted/deletion/rev → repealed;
   "in part"/"in pt"/partial repeal → repealed_in_part; renumbered; coming into force → commenced;
-  expires/ceases to have effect → repealed; applied/modified/excluded/extended/restricted…,
-  "am"/"amended", "amendment to earlier affecting provision" → nil by design.
+  expires/ceases to have effect, removed, left out, lapsed → repealed; coming into operation →
+  commenced; becomes/moved → renumbered; restored/revived → inserted;
+  applied/modified/excluded/extended/restricted…, "am"/"amended", "amendment to earlier
+  affecting provision" → nil by design. A verb describing another law is no operation
+  ("(as inserted)", "(as substituted)" are dropped; "repeal of affecting provision", savings,
+  transitional provisions, appointed days → nil).
 - Level words when the type begins words/word/sum/figure/entry/comma/semicolon/full stop/formula/
   number/label/definition(s), or concerns a heading; else provision.
-- Dates: the in-force date; prospective without a date → none. Staged: a commencement → one
-  change per stage keyed id@date, partial unless the qualification completes it ("wholly in
-  force", "so far as not already in force"); a whole insertion → change from the first stage
-  (date_first, partial) plus a commenced change per later stage; a whole removal →
-  repealed_in_part at partial stages, repealed at the full stage; any other text change → one
-  change from the first stage (date_first, partial).
+- Dates: the in-force date; a commencement not yet dated → one change, no date, prospective true.
+  A stage is partial only when its qualification limits scope (purposes, a territory named or
+  excepted, a dated scope, certain provisions); a time of day, "in accordance with",
+  "retrospective" or other words limit nothing. Staged: a commencement → one change per stage
+  keyed id@date; a whole insertion → change from the first stage (date_first, partial) plus a
+  commenced change per later stage; a whole removal → repealed_in_part at partial stages,
+  repealed at the full stage; any other text change → one change from the first stage
+  (date_first, partial). One stage with a qualification carries the same facts, a partial whole
+  removal being repealed_in_part.
 - A qualification "Other"/"other" is replaced by its OtherQualification text.
-- Commencements carry effect_extent, savings, and in_force_for = the territory the qualification
-  names ("for E.W.S." → "E+W+S"), as read, not applied.
+- Commencements carry effect_extent and savings. A qualified stage carries in_force_for = the
+  territory the qualification names ("for E.W.S." → "E+W+S"), in_force_except = the one it
+  excepts ("except in relation to W." → "W"), and qualification = its classes, all as read, not
+  applied.
 - Other facts: by = affecting law; effect_extent ("E+W+S+N.I." = "E+W+S+NI"; the placeholder
   "S+A+M+E…" is nil); territory from territorial_application; savings.
 
@@ -126,5 +146,6 @@ say doubtful rather than guess. Under 900 words.
 
 ## History
 
+- CV-S02b (2026-10-23): the catalogue over all 1,207 stored feeds (251,692 effects, 985 patterns) found readings no sample had reached, A–J. They are fixed in `ChangeVocabulary.EffectVerb` and `Qualification`. K10 is pending (16 patterns). The session is `.claude/sessions/change-vocabulary/2026-10-23-cv-s02b-feed-pattern-catalogue.md`.
 - OH&S (first family, 2026-10-22/23). Rounds: seed {2026,10,22} (defects A–F), seed 7 (D1–D5), seed 11 (49/50, NEW-A and NEW-B fixed), seed 13 (49/50, NEW-C deferred as K10, NEW-D fixed), seed 17. The session is `.claude/sessions/change-vocabulary/2026-10-22-cv-s02-feed-reader.md`.
 - CV-S02a (2026-10-23) fixed K2, K4, K5 and sensed K3 in the parser; the OH&S re-check after its re-parse: our faults 0, tell-tales 16 → 5 (all `not_found`, genuinely absent), golden 27/27. A new family's tell-tales of these kinds are now NEW.
