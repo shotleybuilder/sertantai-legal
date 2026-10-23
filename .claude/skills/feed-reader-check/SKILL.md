@@ -101,7 +101,9 @@ skipped); K4 #184 numbered list items without ids get no row; K5 #185 doubled br
 K6 the feed lists one effect twice (identical rows), merged later; K7 EU "EUR-Lex in-force date"
 in Comments not used (a pointer); K8 a commencement's territory not yet applied by the label
 (in_force_for carried); K9 placed_versions targets every version — narrowing by the carried
-extent is the label fold's (CV-S09).
+extent is the label fold's (CV-S09); K10 nested schedule ids named short by the shared namer
+(schedule-N-part-P-paragraph-M → sch.N.pt.P; unnumbered schedule-paragraph-1 → sch.paragraph) —
+no effect while schedules are unparsed (CV-S02a, deferred).
 
 For each item judge placement (targets + outcome, verified in the DB and text) and facts
 (operation, level, dates/stages, by, extent, territory, savings, in_force_for) against the
