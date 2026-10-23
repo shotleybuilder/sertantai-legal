@@ -365,6 +365,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
       |> List.wrap()
       |> Enum.split_with(&(not Map.has_key?(xml_ids, &1) and not (&1 =~ ~r/[-\d]/)))
 
+    # one path linked in pieces ("Title 5" → title-V, "Ch. 1" →
+    # title-V-chapter-1; "Sch. 1" "para. 2"): a ref another of the effect's
+    # refs extends is part of that path, not a target (D4)
+    refs = Enum.reject(refs, fn r -> Enum.any?(refs, &String.starts_with?(&1, r <> "-")) end)
+
     whole? =
       refs == [] and ranges == [] and
         (String.match?(text || "", @whole_law) or Enum.any?(bare, &String.match?(&1, @whole_law)))

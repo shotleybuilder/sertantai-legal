@@ -30,14 +30,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedTargetsTest do
     assert targets(effect("Pt. 4 heading", ["part-4"]), "UK_uksi_2008_1597", %{"part-4" => "pt.4"}) ==
              ["pt.4"]
 
-    assert targets(
-             effect("Title I Chapter 1", ["title-I", "title-I-chapter-1"]),
-             "UK_eur_2006_1907",
-             %{
-               "title-I" => "pt.I",
-               "title-I-chapter-1" => "pt.I.ch.1"
-             }
-           ) == ["pt.I", "pt.I.ch.1"]
+    ids = %{"title-I" => "pt.I", "title-I-chapter-1" => "pt.I.ch.1"}
+    assert targets(effect("Title I", ["title-I"]), "UK_eur_2006_1907", ids) == ["pt.I"]
+
+    assert targets(effect("Chapter 1", ["title-I-chapter-1"]), "UK_eur_2006_1907", ids) ==
+             ["pt.I.ch.1"]
   end
 
   test "our rows' name first; the reader's own converter for ids they don't know" do
@@ -49,6 +46,39 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedTargetsTest do
     assert targets(effect("Rules", ["rule"]), "UK_uksi_1974_2068", %{}) == ["*"]
     assert targets(effect("Sch.", ["schedule"]), "UK_uksi_1997_1713", %{}) == ["?"]
     assert targets(effect("Preamble", ["introduction"]), "UK_uksi_2009_716", %{}) == ["?"]
+  end
+
+  test "one path linked in pieces is one target; siblings stay two (D4)" do
+    ids = %{"title-V" => "pt.V", "title-V-chapter-1" => "pt.V.ch.1"}
+
+    assert targets(
+             effect("Title 5 Ch. 1 heading", ["title-V", "title-V-chapter-1"]),
+             "UK_eur_2008_1272",
+             ids
+           ) ==
+             ["pt.V.ch.1"]
+
+    assert targets(
+             effect("Sch. 1 para. 2", ["schedule-1", "schedule-1-paragraph-2"]),
+             "UK_uksi_1998_2307",
+             %{}
+           ) ==
+             ["sch.1.para.2"]
+
+    assert targets(
+             effect("reg. 7(3A)(3B)", ["regulation-7-3A", "regulation-7-3B"]),
+             "UK_uksi_1975_335",
+             %{}
+           ) ==
+             ["reg.7(3A)", "reg.7(3B)"]
+
+    # "regulation-1" is not a piece of "regulation-10"
+    assert targets(
+             effect("regs. 1, 10", ["regulation-1", "regulation-10"]),
+             "UK_uksi_1975_335",
+             %{}
+           ) ==
+             ["reg.1", "reg.10"]
   end
 
   describe "EU: the feed's words name finer than its ref (D3)" do
