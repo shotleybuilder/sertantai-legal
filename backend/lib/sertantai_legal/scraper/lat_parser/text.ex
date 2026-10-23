@@ -14,7 +14,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Text do
 
   import SweetXml
 
-  alias SertantaiLegal.Scraper.LatParser.{Ids, Inline, Xml}
+  alias SertantaiLegal.Scraper.LatParser.{Ids, Inline, Items, Xml}
   alias SertantaiLegal.Scraper.LatSegments
 
   @doc """
@@ -173,23 +173,30 @@ defmodule SertantaiLegal.Scraper.LatParser.Text do
 
   # A list's items as text blocks, each led by its number: NumberOverride,
   # else counted from an OrderedList's Type and Decoration ("(a)", "(i)").
-  defp list_blocks(list, mode) do
+  # An item that is a row of its own (`Items`, #184) is a :gap here.
+  defp list_blocks(list, mode, items \\ %{}) do
     list
     |> elem(8)
     |> Enum.filter(&(elem(&1, 0) == :xmlElement and Xml.local_name(elem(&1, 1)) == "ListItem"))
     |> Enum.with_index(1)
     |> Enum.flat_map(fn {item, i} ->
-      case {item_label(item, list, i), text_blocks(item, mode)} do
-        {nil, blocks} ->
-          blocks
-
-        {label, [first | rest]} when is_list(first) ->
-          [LatSegments.mark(label <> " ") ++ first | rest]
-
-        {label, blocks} ->
-          [LatSegments.mark(label) | blocks]
-      end
+      if mode == :structural and Map.has_key?(items, Items.key(item)),
+        do: [:gap],
+        else: item_blocks(item, list, i, mode, items)
     end)
+  end
+
+  defp item_blocks(item, list, i, mode, items) do
+    case {item_label(item, list, i), text_blocks(item, mode, items)} do
+      {nil, blocks} ->
+        blocks
+
+      {label, [first | rest]} when is_list(first) ->
+        [LatSegments.mark(label <> " ") ++ first | rest]
+
+      {label, blocks} ->
+        [LatSegments.mark(label) | blocks]
+    end
   end
 
   defp item_label(item, list, i) do
@@ -201,7 +208,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Text do
         type = Xml.attr(list, :Type)
 
         if elem(list, 1) == :OrderedList and type != "",
-          do: decorate(list_number(i, type), decoration)
+          do: decorate(Items.list_number(i, type), decoration)
 
       override ->
         decorate(override, decoration)
@@ -213,21 +220,6 @@ defmodule SertantaiLegal.Scraper.LatParser.Text do
   defp decorate(n, "parenRight"), do: n <> ")"
   defp decorate(n, "brackets"), do: "[" <> n <> "]"
   defp decorate(n, _parens), do: "(" <> n <> ")"
-
-  defp list_number(i, "alpha"), do: alpha(i)
-  defp list_number(i, "alphaUpper"), do: String.upcase(alpha(i))
-  defp list_number(i, "roman"), do: roman(i)
-  defp list_number(i, "romanUpper"), do: String.upcase(roman(i))
-  defp list_number(i, _arabic), do: Integer.to_string(i)
-
-  defp alpha(i) when i <= 26, do: <<?a + i - 1>>
-  defp alpha(i), do: alpha(div(i - 1, 26)) <> alpha(rem(i - 1, 26) + 1)
-
-  @romans [{10, "x"}, {9, "ix"}, {5, "v"}, {4, "iv"}, {1, "i"}]
-  defp roman(0), do: ""
-
-  defp roman(i),
-    do: @romans |> Enum.find(fn {v, _} -> v <= i end) |> then(fn {v, r} -> r <> roman(i - v) end)
 
   # A signature: name, job title, address lines, date (its text, else @Date),
   # as segments, so a change around them (a retained repeal) keeps its
@@ -311,10 +303,10 @@ defmodule SertantaiLegal.Scraper.LatParser.Text do
   :structural skips other laws' text (amendment blocks); :leaf keeps it,
   as leaf rows always have.
   """
-  @spec text_blocks(tuple(), :leaf | :structural | :cell) :: [
+  @spec text_blocks(tuple(), :leaf | :structural | :cell, %{Items.key() => Items.item()}) :: [
           LatSegments.t() | :gap | {:append, LatSegments.t()}
         ]
-  def text_blocks(node, mode) do
+  def text_blocks(node, mode, items \\ %{}) do
     # the state: after an open child (its content is the child's), and the
     # node's own lead-in so far (`lead_in_before_children_open?/1`: the
     # blocks before its first child row)
@@ -322,7 +314,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Text do
       node
       |> Xml.children()
       |> Enum.flat_map_reduce({false, []}, fn child, {after_open_child?, lead} ->
-        {out, after?} = block(child, mode, after_open_child?, lead)
+        {out, after?} = block(child, mode, after_open_child?, lead, items)
         {out, {after?, freeze(lead, out)}}
       end)
 
@@ -336,7 +328,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Text do
   defp parent_open?(open?) when is_boolean(open?), do: open?
   defp parent_open?(blocks), do: open_block?(blocks)
 
-  defp block(child, mode, after_open_child?, lead) do
+  defp block(child, mode, after_open_child?, lead, items) do
     name = Xml.element_name(child)
 
     cond do
@@ -382,18 +374,18 @@ defmodule SertantaiLegal.Scraper.LatParser.Text do
 
       # after the open-child skip above: a list following an open child is its (#174)
       name in ~w(OrderedList UnorderedList) ->
-        {list_blocks(child, mode), after_open_child?}
+        {list_blocks(child, mode, items), after_open_child?}
 
       # a change wrapping whole blocks (<Repeal RetainText><Text>…</Text></Repeal>):
       # each of its blocks is the changed words
       Inline.block_change(child) != nil ->
         change = Inline.block_change(child)
 
-        {child |> text_blocks(mode) |> Enum.map(&Inline.changed_block(&1, change)),
+        {child |> text_blocks(mode, items) |> Enum.map(&Inline.changed_block(&1, change)),
          after_open_child?}
 
       true ->
-        {text_blocks(child, mode), after_open_child?}
+        {text_blocks(child, mode, items), after_open_child?}
     end
   end
 
@@ -472,20 +464,26 @@ defmodule SertantaiLegal.Scraper.LatParser.Text do
   Chapter, Schedule, P1, P2, P3 holding rows of their own): its Title and
   its own text. Falls back to the leaf text when it has no child provisions.
   """
-  @spec structural(tuple()) :: LatSegments.t()
-  def structural(node) do
-    if child_provisions?(node) do
+  @spec structural(tuple(), %{Items.key() => Items.item()}) :: LatSegments.t()
+  def structural(node, items \\ %{}) do
+    if child_provisions?(node) or item_rows?(node, items) do
       # Title/Number text for the structural header (if any)
       title = Ids.title(node)
 
       # The node's own text in document order, stopping at child provisions
       # (their own rows): a chapeau, then " … " and any continuation text
       # after them.
-      direct = node |> text_blocks(:structural) |> join_blocks()
+      direct = node |> text_blocks(:structural, items) |> join_blocks()
       LatSegments.join([LatSegments.text(title), direct], " ")
     else
       # No child provisions — keep full text (leaf node)
       leaf(node)
     end
   end
+
+  # list items inside the node that are rows of their own (#184)
+  defp item_rows?(_node, items) when map_size(items) == 0, do: false
+
+  defp item_rows?(node, items),
+    do: node |> Xml.descendants_xmerl(:ListItem) |> Enum.any?(&Map.has_key?(items, Items.key(&1)))
 end

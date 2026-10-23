@@ -2810,8 +2810,19 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
           ~s|<P1group><P1><Pnumber>6</Pnumber><P1para><Text>A test may be required where—</Text><OrderedList Type="alpha" Decoration="parens"><ListItem NumberOverride="a"><Para><Text>a constable suspects,</Text></Para></ListItem><ListItem NumberOverride="b"><Para><Text>an accident occurs.</Text></Para></ListItem></OrderedList></P1para></P1></P1group>|
         )
 
+      # numbered items directly under a provision are its rows (CV-S02a, #184)
+      assert lh3_row(rows, "s.6").text == "A test may be required where—"
+      assert lh3_row(rows, "s.6(a)").text == "a constable suspects,"
+      assert lh3_row(rows, "s.6(b)").text == "an accident occurs."
+
+      # inside a definition they stay its text, with their numbers
+      rows =
+        lh3(
+          ~s|<P1group><P1><Pnumber>6</Pnumber><P1para><Text>In this section—</Text><UnorderedList Class="Definition"><ListItem><Para><Text>“test” means a test where—</Text><OrderedList Type="alpha" Decoration="parens"><ListItem NumberOverride="a"><Para><Text>a constable suspects,</Text></Para></ListItem><ListItem NumberOverride="b"><Para><Text>an accident occurs.</Text></Para></ListItem></OrderedList></Para></ListItem></UnorderedList></P1para></P1></P1group>|
+        )
+
       assert lh3_row(rows, "s.6").text ==
-               "A test may be required where— (a) a constable suspects, (b) an accident occurs."
+               "In this section— “test” means a test where— (a) a constable suspects, (b) an accident occurs."
     end
 
     test "an ordered list without overrides is numbered from its Type and Decoration" do
@@ -2820,7 +2831,15 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
           ~s|<P1group><P1><Pnumber>7</Pnumber><P1para><Text>Either—</Text><OrderedList Type="roman" Decoration="parens"><ListItem><Para><Text>this,</Text></Para></ListItem><ListItem><Para><Text>that.</Text></Para></ListItem></OrderedList></P1para></P1></P1group>|
         )
 
-      assert lh3_row(rows, "s.7").text == "Either— (i) this, (ii) that."
+      assert lh3_row(rows, "s.7").text == "Either—"
+      assert lh3_row(rows, "s.7(ii)").text == "that."
+
+      rows =
+        lh3(
+          ~s|<P1group><P1><Pnumber>7</Pnumber><P1para><UnorderedList Class="Definition"><ListItem><Para><Text>“x” means either—</Text><OrderedList Type="roman" Decoration="parens"><ListItem><Para><Text>this,</Text></Para></ListItem><ListItem><Para><Text>that.</Text></Para></ListItem></OrderedList></Para></ListItem></UnorderedList></P1para></P1></P1group>|
+        )
+
+      assert lh3_row(rows, "s.7").text == "“x” means either— (i) this, (ii) that."
     end
 
     test "«…» keeps Schedule / Part numbers and references (ukpga 2024/13 s.327(2))" do

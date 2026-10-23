@@ -13,7 +13,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
 
   import SweetXml
 
-  alias SertantaiLegal.Scraper.LatParser.{Effects, Ids, Refs, Text, Xml}
+  alias SertantaiLegal.Scraper.LatParser.{Effects, Ids, Items, Refs, Text, Xml}
   alias SertantaiLegal.Scraper.{LatTerritory, Territory}
 
   defmodule Ctx do
@@ -40,6 +40,8 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
               paragraph: nil,
               sub_paragraph: nil,
               p2_is_wrapper: false,
+              # CV-S02a (#184): the current provision's list items that are rows
+              items: %{},
               trailing: [],
               default_extent: nil,
               prospective: false,
@@ -67,6 +69,10 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
             paragraph: String.t() | nil,
             sub_paragraph: String.t() | nil,
             p2_is_wrapper: boolean(),
+            items: %{
+              SertantaiLegal.Scraper.LatParser.Items.key() =>
+                SertantaiLegal.Scraper.LatParser.Items.item()
+            },
             trailing: [tuple()],
             default_extent: String.t() | nil,
             prospective: boolean(),
@@ -277,6 +283,8 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
             group_refs: []
         }
 
+        new_ctx = with_items(new_ctx, node)
+
         row = emit_structural_row("P1", new_ctx, node, extent)
 
         row = %{
@@ -293,24 +301,31 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
         # nil out sub to avoid doubled citations like reg.30(30)
         # and skip emitting a row (the wrapper has no distinct identity)
         if ctx.p2_is_wrapper and sub == ctx.provision do
-          new_ctx = %{ctx | sub: nil, paragraph: nil, sub_paragraph: nil}
+          new_ctx = with_items(%{ctx | sub: nil, paragraph: nil, sub_paragraph: nil}, node)
           walk_children(node, new_ctx)
         else
-          new_ctx = %{ctx | sub: sub, paragraph: nil, sub_paragraph: nil}
+          new_ctx = with_items(%{ctx | sub: sub, paragraph: nil, sub_paragraph: nil}, node)
           row = "P2" |> emit_structural_row(ungrouped(new_ctx), node, extent) |> grouped(ctx)
           [row | walk_children(node, ungrouped(new_ctx))]
         end
 
       name == "P3" ->
         paragraph = Ids.pnumber(node)
-        new_ctx = %{ctx | paragraph: paragraph, sub_paragraph: nil}
+        new_ctx = with_items(%{ctx | paragraph: paragraph, sub_paragraph: nil}, node)
         row = "P3" |> emit_structural_row(ungrouped(new_ctx), node, extent) |> grouped(ctx)
         [row | walk_children(node, ungrouped(new_ctx))]
 
       name == "P4" ->
         sub_paragraph = Ids.pnumber(node)
-        new_ctx = %{ctx | sub_paragraph: sub_paragraph}
+        new_ctx = with_items(%{ctx | sub_paragraph: sub_paragraph}, node)
         row = emit_row("P4", new_ctx, node, extent)
+        [row | walk_children(node, new_ctx)]
+
+      # a numbered item with no id, directly under a provision (#184)
+      name == "ListItem" and is_map_key(ctx.items, Items.key(node)) ->
+        %{number: number} = Map.fetch!(ctx.items, Items.key(node))
+        new_ctx = Map.put(ctx, next_level(ctx), number)
+        row = emit_structural_row(element_at(ctx), new_ctx, node, extent)
         [row | walk_children(node, new_ctx)]
 
       name == "SignedSection" ->
@@ -332,7 +347,32 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
   defp emit_row(element, ctx, node, extent), do: emit(element, ctx, node, extent, &Text.leaf/1)
 
   defp emit_structural_row(element, ctx, node, extent),
-    do: emit(element, ctx, node, extent, &Text.structural/1)
+    do: emit(element, ctx, node, extent, &Text.structural(&1, ctx.items))
+
+  # The levels below a provision an item row can take: P1 three (sub,
+  # paragraph, sub_paragraph), P4 none (#184).
+  @levels [:sub, :paragraph, :sub_paragraph]
+
+  defp with_items(ctx, node), do: %{ctx | items: Items.rows(node, length(free_levels(ctx)))}
+
+  # the levels below the deepest one set
+  defp free_levels(ctx),
+    do:
+      @levels
+      |> Enum.reverse()
+      |> Enum.take_while(&(Map.fetch!(ctx, &1) == nil))
+      |> Enum.reverse()
+
+  defp next_level(ctx), do: ctx |> free_levels() |> List.first()
+
+  # an item row is typed as the provision level it takes
+  defp element_at(ctx) do
+    case next_level(ctx) do
+      :sub -> "P2"
+      :paragraph -> "P3"
+      :sub_paragraph -> "P4"
+    end
+  end
 
   # A row: its text (leaf, or structural: stopping at child rows) with the
   # sibling content it takes (#174), territory resolved from markup +
