@@ -61,3 +61,10 @@ Numbered `ListItem`s with no id, outside amendments, versions and schedules: **1
 - The parent's text stops where item rows begin (" … "), as at child provisions. An item row's text is its own, without its number (as P rows).
 - Stay text: items inside a definition (an unnumbered item: 684 in OH&S, mostly UK interpretation clauses), and items with no level left (4).
 - Code: `LatParser.Items` (pure: which items, their numbers), `Walker` (an item row typed as the level it takes), `Text` (gaps at item rows; shares `Items.list_number`). Two LH-03 rendering tests updated to the rule, keeping number rendering covered inside a definition. Full suite 3,131 passed.
+
+## #183: decisions and the pattern-2 check (2026-10-23)
+
+- Pattern 1 (an id contradicting its nesting): **diagnose only** (Jason agreed). Our names come from nesting and printed numbers, so they are already right; the reader's tie-break handles the wrong id.
+- Pattern 2 (a level skipped): checked the loose P3/P4s in HSWA 1974, Factories Act 1937 and NISR 1997/455 against a sequence rule — does the loose number continue the last item of the sibling just before it?
+  - **Continues: only HSWA s.28(f)**, in its 3 versions ((3)'s last is (e)). Its feed ref is `section-28-3-f-i`.
+  - Does not continue: the other 31 (HSWA s.11(4)(i)–(ii), s.50(a)–(c); Factories Act s.39(1), s.101(1), s.151(1) (i)–(xiii); NISR 1997/455 reg.3(1)(i)–(ii)). Their own ids agree with where they sit (`section-11-4-i` → s.11(4)(i)), so legislation.gov.uk addresses them as we name them: legitimate structures, not faults.
