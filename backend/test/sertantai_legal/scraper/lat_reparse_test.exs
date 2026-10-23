@@ -74,6 +74,23 @@ defmodule SertantaiLegal.Scraper.LatReparseTest do
     id
   end
 
+  test "an empty drrp_types is not enrichment (#186)" do
+    {a, _} = law()
+
+    Repo.query!(
+      "UPDATE legal_articles SET drrp_types = '{}', taxa_enriched_at = NULL WHERE law_name = $1",
+      [a]
+    )
+
+    report =
+      LatReparse.run([a],
+        snapshot: "lat_reparse_test_#{System.unique_integer([:positive])}",
+        parse_fn: parse_fn(fn n -> [row(n, 1, "One."), row(n, 2, "Two.")] end)
+      )
+
+    assert %{status: :ok, laws: [%{enriched_before: 0, enriched_after: 0}]} = report
+  end
+
   test "older_format_laws/0 finds laws whose stored sort_keys are not current-format" do
     {name, _} = law()
     assert name in LatReparse.older_format_laws()

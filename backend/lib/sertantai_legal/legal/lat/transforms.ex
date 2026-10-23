@@ -259,8 +259,9 @@ defmodule SertantaiLegal.Legal.Lat.Transforms do
       "title" ->
         "title.#{position}"
 
+      # one per law, named by its kind (#186)
       "signed" ->
-        "signed.#{position}"
+        "signed"
 
       "commencement" ->
         "commencement.#{position}"

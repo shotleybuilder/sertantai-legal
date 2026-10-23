@@ -246,8 +246,8 @@ defmodule SertantaiLegal.Legal.Lat.TransformsTest do
       assert T.build_citation("title", position: 1) == "title.1"
     end
 
-    test "signed uses position" do
-      assert T.build_citation("signed", position: 3) == "signed.3"
+    test "signed is named by its kind alone (#186)" do
+      assert T.build_citation("signed", position: 3) == "signed"
     end
 
     test "paragraph" do

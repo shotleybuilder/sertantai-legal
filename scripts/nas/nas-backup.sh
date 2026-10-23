@@ -96,7 +96,23 @@ if [ -n "$ONLY_TABLES" ]; then
     echo "ERROR: --tables needs --tag (the restore point's name)"
     exit 1
   fi
-  IFS=',' read -r -a TABLES <<< "$ONLY_TABLES"
+  IFS=',' read -r -a NAMED <<< "$ONLY_TABLES"
+  # a partitioned table dumps empty (its rows are in the partitions):
+  # take its partitions instead (legal_articles → legal_articles_uk, _au)
+  TABLES=()
+  for t in "${NAMED[@]}"; do
+    parts=$(PGPASSWORD="${PGPASSWORD:-postgres}" psql -h "${DB_HOST:-localhost}" -p "${DB_PORT:-5436}" \
+      -U "${DB_USER:-postgres}" -d "${DB_NAME:-sertantai_legal_dev}" -t -A -c \
+      "SELECT c.relname FROM pg_inherits i JOIN pg_class c ON c.oid = i.inhrelid
+       JOIN pg_class p ON p.oid = i.inhparent WHERE p.relname = '${t}' AND p.relkind = 'p'
+       ORDER BY c.relname")
+    if [ -n "$parts" ]; then
+      echo "  ${t} is partitioned: taking $(echo $parts | tr ' ' ',')"
+      TABLES+=($parts)
+    else
+      TABLES+=("$t")
+    fi
+  done
   SNAPSHOT_DIR="${NAS_DIR}/snapshots/restore-points/$(date +%Y-%m-%d)-${TAG}"
   DO_DATA=false
   DO_ARCHIVE=false

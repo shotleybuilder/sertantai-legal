@@ -123,7 +123,63 @@ defmodule SertantaiLegal.Scraper.LatParser.Rows do
       |> Map.put(:hierarchy_path, hierarchy_path)
       |> Map.put(:depth, depth)
     end)
+    |> name_in_provision(law_name, mode, type_code)
   end
+
+  # Tables and figures carry no id of their own (#186): each is named by
+  # the provision it sits in and its count there, per kind and extent
+  # ("reg.7(1).table.2", "reg.8.figure.1"), so rows inserted elsewhere in
+  # the law rename nothing. With no provision: the schedule, else the law.
+  # A figure's section_type stays "note" (compliance's enum).
+  @in_provision %{"table" => "table", "note" => "figure"}
+
+  defp name_in_provision(rows, law_name, mode, type_code) do
+    class = if mode == :article and type_code not in @eu_type_codes, do: "Regulation", else: nil
+
+    rows
+    |> Enum.map_reduce({%{}, %{}}, fn row, {counts, held} ->
+      case @in_provision[row.section_type] do
+        nil ->
+          # the provision's own name, with any source suffix ("reg.16(5A)n1")
+          {row, {counts, Map.put(held, unsuffixed(row.citation), row.citation)}}
+
+        kind ->
+          built = anchor(row, mode, class)
+          anchor = Map.get(held, built, built)
+          n = Map.get(counts, {anchor, kind, row.extent_code}, 0) + 1
+          citation = Enum.join(Enum.reject([anchor, kind], &is_nil/1), ".") <> ".#{n}"
+
+          {%{row | citation: citation, section_id: "#{law_name}:#{citation}"},
+           {Map.put(counts, {anchor, kind, row.extent_code}, n), held}}
+      end
+    end)
+    |> elem(0)
+  end
+
+  defp unsuffixed(citation), do: String.replace(citation, ~r/(n\d+)+$/, "")
+
+  defp anchor(%{provision: p} = row, mode, class) when not is_nil(p) do
+    Transforms.build_citation(if(mode == :article, do: "article", else: "section"),
+      provision: p,
+      sub: row.sub,
+      paragraph: row.paragraph,
+      sub_paragraph: row.sub_paragraph,
+      schedule: row.schedule,
+      class: class
+    )
+  end
+
+  defp anchor(%{schedule: s, paragraph: para} = row, _mode, _class)
+       when not is_nil(s) and not is_nil(para) do
+    Transforms.build_citation("paragraph",
+      schedule: s,
+      paragraph: para,
+      sub_paragraph: row.sub_paragraph
+    )
+  end
+
+  defp anchor(%{schedule: s}, _mode, _class) when not is_nil(s), do: "sch.#{s}"
+  defp anchor(_row, _mode, _class), do: nil
 
   # legislation.gov.uk makes a recurring number unique with an "n1", "n2"
   # suffix on the element's id (section-70A-1n1, section-70A-1-an1): the

@@ -61,7 +61,7 @@ defmodule SertantaiLegal.Scraper.LatReparse do
   def enriched_laws do
     %{rows: rows} =
       Repo.query!(
-        "SELECT DISTINCT law_name FROM legal_articles WHERE taxa_enriched_at IS NOT NULL OR drrp_types IS NOT NULL",
+        "SELECT DISTINCT law_name FROM legal_articles WHERE taxa_enriched_at IS NOT NULL OR drrp_types <> '{}'",
         [],
         timeout: 120_000
       )
@@ -223,7 +223,9 @@ defmodule SertantaiLegal.Scraper.LatReparse do
   end
 
   # The same "enriched" notion as counts/1: fractalaw taxa present.
-  defp enriched?(%{values: v}), do: not is_nil(v[:taxa_enriched_at]) or not is_nil(v[:drrp_types])
+  # an empty drrp_types ({}) is no enrichment (#186: two figures read as dropped)
+  defp enriched?(%{values: v}),
+    do: not is_nil(v[:taxa_enriched_at]) or v[:drrp_types] not in [nil, []]
 
   # A law with no XML body is queued to the PDF backlog by the parser: an
   # expected outcome, not a failure — record it and carry on.
@@ -261,7 +263,7 @@ defmodule SertantaiLegal.Scraper.LatReparse do
   defp counts(law) do
     %{rows: [[rows, enriched]]} =
       Repo.query!(
-        "SELECT count(*), count(*) FILTER (WHERE taxa_enriched_at IS NOT NULL OR drrp_types IS NOT NULL) FROM legal_articles WHERE law_name = $1",
+        "SELECT count(*), count(*) FILTER (WHERE taxa_enriched_at IS NOT NULL OR drrp_types <> '{}') FROM legal_articles WHERE law_name = $1",
         [law]
       )
 
