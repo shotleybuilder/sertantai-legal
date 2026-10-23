@@ -41,6 +41,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedTargetsTest do
     assert targets(effect("reg. 3", ["regulation-3"]), "UK_uksi_2008_1597", %{}) == ["reg.3"]
   end
 
+  test "a rule is named as the parse names Rules' rows: reg. (review H; SI 1998/1941 r. 2(da))" do
+    assert targets(effect("r. 2(da)", ["rule-2-da"]), "UK_uksi_1998_1941", %{}) == ["reg.2(da)"]
+  end
+
   test "bare words: the instrument (by the refs or the effect's own text) is the whole law; otherwise no provision" do
     assert targets(effect("Rules", ["Rules"]), "UK_uksi_1974_2068", %{}) == ["*"]
     assert targets(effect("Rules", ["rule"]), "UK_uksi_1974_2068", %{}) == ["*"]

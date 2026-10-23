@@ -4,6 +4,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Ref do
   place kind words are decided for the change vocabulary (CV-03; CV-01:
   "one canonical kind word per law type"). `article-28-3` is
   "art.Article 28(3)" in EU retained law and "reg.28(3)" in an NI Order;
+  `rule-2-da` "reg.2(da)";
   `regulation-14-1` "reg.14(1)"; `section-78-4BA` "s.78(4BA)"; an EU annex
   as a whole, `annex-XVII` "annex.XVII". Pure.
   """
@@ -22,6 +23,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Ref do
       nil -> nil
     end
   end
+
+  # a rule is named as a regulation ("rule-2-da" → "reg.2(da)"), as the
+  # parse names Rules' rows (catalogue review H)
+  def from_clml("rule-" <> rest, law_name), do: from_clml("regulation-" <> rest, law_name)
 
   def from_clml(id, law_name) do
     case {Order.ref(id), eu?(law_name)} do

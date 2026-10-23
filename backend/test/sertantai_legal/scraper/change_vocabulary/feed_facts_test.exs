@@ -158,5 +158,139 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedFactsTest do
       assert commenced("in relation to England and Wales").in_force_for == "E+W"
       refute Map.has_key?(commenced("for specified purposes"), :in_force_for)
     end
+
+    test "a territory excepted is never the territory it comes into force for (review A)" do
+      c = commenced("in so far as not already in force except in relation to W.")
+      refute Map.has_key?(c, :in_force_for)
+      assert c.in_force_except == "W"
+      assert c.partial == false
+
+      c = commenced("for specified purposes except in relation to W.")
+      assert c.in_force_except == "W"
+      assert c.partial == true
+      assert commenced("for W. for specified purposes").in_force_for == "W"
+    end
+
+    test "a qualification that limits no scope is not partial, its class carried (review E)" do
+      for {q, class} <- [
+            {"at the end of the day", "time of day"},
+            {"at 11.00 p.m.", "time of day"},
+            {"with effect in accordance with", "in accordance with"},
+            {"retrospective", "retrospective"},
+            {"other(no date)", "other"}
+          ] do
+        c = commenced(q)
+        assert c.partial == false, q
+        assert c.qualification == class, q
+      end
+
+      for q <- [
+            "for specified purposes",
+            "for W.",
+            "with effect in relation to financial years beginning on or after 1.4.2021",
+            "for the repeal of s. 3"
+          ],
+          do: assert(commenced(q).partial == true, q)
+
+      assert commenced("wholly in force").qualification == "complete"
+    end
+  end
+
+  test "a commencement not yet dated is a change with no date, prospective (review F)" do
+    e = %{
+      effect("coming into force", [%{date: nil, qualification: nil, prospective: true}])
+      | prospective: true
+    }
+
+    assert [{"key-1", _target, claims}] = Feed.read([e], "UK_anaw_2016_3")
+    c = Map.new(claims, &{&1.attribute, &1.value})
+    assert c.operation == :commenced
+    assert c.prospective == true
+    refute Map.has_key?(c, :date)
+  end
+
+  describe "a verb counts only when it says what this effect did to the provision (review B)" do
+    test "a verb describing another provision or law is no operation" do
+      for type <- [
+            "fees confirmed by S.I. 2010/441, Sch. (as substituted)",
+            "savings for effects of SSI 2016/141 art. 5(2) by SSI 2016/141 art. 16 (as inserted)",
+            "transitional provisions for effects of 2000 c. 38, s. 123J(2) (as inserted by 2017 c. 21, s. 4)",
+            "referred to by SI 2001/369 reg. 2C(4) (as inserted)",
+            "amendment to earlier commencing S.I. 2007/2194 Sch. 3 para. 23A (as inserted by S.I. 2007/3495 Sch. 5 para. 2(5))",
+            "Appointed days (transitional provns added)",
+            "repeal of affecting provision 2020 c. 7, Sch. 24",
+            "saving (mods) re repeal of certain provns of 1973 c. 65)"
+          ] do
+        assert [{_, nil, _, _, _}] = read(effect(type)), type
+      end
+    end
+
+    test "a verb of its own still counts beside one in brackets" do
+      assert [{_, :substituted, :words, _, _}] =
+               read(effect("words substituted (as amended by S.I. 2001/3)"))
+
+      assert [{_, :substituted, _, _, _}] = read(effect("fees substituted and confirmed"))
+    end
+  end
+
+  test "the feed's other words for removal, coming into force, renumbering, return (reviews C, D, G)" do
+    for {type, op} <- [
+          {"words cease to have effect", :repealed},
+          {"definition ceases to have effect", :repealed},
+          {"words removed", :repealed},
+          {"words left out", :repealed},
+          {"word omiited", :repealed},
+          {"rep in pt", :repealed_in_part},
+          {"rep in part (prosp.)", :repealed_in_part},
+          {"lapsed by virtue of the omission of enabling provision 2008 c. 29, s. 42", :repealed},
+          {"reg. 23 becomes reg. 23(1)", :renumbered},
+          {"definition moved", :renumbered},
+          {"restored", :inserted},
+          {"revived", :inserted}
+        ] do
+      assert [{_, ^op, _, _, _}] = read(effect(type)), type
+    end
+
+    assert [{"key-1@1978-10-01", :commenced, _, _, _}] =
+             read(
+               effect("coming into operation", [
+                 %{date: ~D[1978-10-01], qualification: "wholly in force", prospective: false}
+               ])
+             )
+  end
+
+  describe "one dated stage with a qualification carries what it says (review J)" do
+    defp one_stage(type, qualification) do
+      e =
+        effect(type, [%{date: ~D[2007-04-02], qualification: qualification, prospective: false}])
+
+      [{"key-1", _, claims}] = Feed.read([e], "UK_nisr_2007_31")
+      Map.new(claims, &{&1.attribute, &1.value})
+    end
+
+    test "a whole removal for specified purposes removes in part (NISR 2007/31)" do
+      c = one_stage("revoked", "for specified purposes")
+      assert c.operation == :repealed_in_part
+      assert c.partial == true
+      assert c.qualification == "purposes"
+      assert c.date == ~D[2007-04-02]
+    end
+
+    test "for S.: the territory carried (asp 2012/8)" do
+      c = one_stage("repealed", "for S.")
+      assert c.operation == :repealed_in_part
+      assert c.in_force_for == "S"
+    end
+
+    test "words changed for specified purposes stay a words change, partly" do
+      c = one_stage("words substituted", "for specified purposes")
+      assert {c.operation, c.level, c.partial} == {:substituted, :words, true}
+    end
+
+    test "a qualification that limits nothing: the change whole, its class carried" do
+      c = one_stage("repealed", "at 5.00 a.m.")
+      assert {c.operation, c.partial, c.qualification} == {:repealed, false, "time of day"}
+      assert one_stage("omitted", "wholly in force").operation == :repealed
+    end
   end
 end
