@@ -28,6 +28,10 @@ Runs on every `git commit` to catch basic issues early:
 - Code formatting (`npm run format:check`)
 - TypeScript type checking (`npm run check`)
 
+**All files:**
+- Markdown sensitive-information patterns
+- Mailgun-like keys (`effect-keys.sh --staged`): "key-" + 32 lowercase letters/digits. legislation.gov.uk effect ids have this shape, and GitHub push protection declines them as Mailgun API keys. In tests build them at runtime (`"key-" <> String.duplicate("a", 32)`); in verbatim fixtures rename them (`key-<hex>` → `c-<hex>`).
+
 **Execution time:** ~10-30 seconds
 
 **To bypass:** `git commit --no-verify`
@@ -35,6 +39,8 @@ Runs on every `git commit` to catch basic issues early:
 ### pre-push (Thorough Checks)
 
 Runs on every `git push` for comprehensive validation:
+
+**First, and fatal:** Mailgun-like keys in every commit being pushed (`effect-keys.sh --range`). Session-doc commits use `--no-verify`, which skips pre-commit, so this catches what pre-commit can't.
 
 **Backend:**
 - Type checking (`mix dialyzer`)

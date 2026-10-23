@@ -352,6 +352,24 @@ check_md_sensitive_info() {
     fi
 }
 
+# Check 8: Mailgun-like keys (legislation.gov.uk effect ids trip GitHub push protection)
+check_effect_keys() {
+    print_status "Checking for Mailgun-like keys (key- + 32 characters)..."
+
+    HITS=$(./.githooks/effect-keys.sh --staged)
+
+    if [ $? -ne 0 ]; then
+        print_error "Mailgun-like keys in staged lines (GitHub push protection would decline the push):"
+        echo "$HITS" | sed 's/^/    /'
+        print_info "legislation.gov.uk effect ids look like Mailgun keys: build them at runtime in tests,"
+        print_info "or rename them in fixtures (key-<hex> -> c-<hex>). Never use GitHub's 'allow secret' link."
+        return 1
+    else
+        print_success "No Mailgun-like keys in staged lines"
+        return 0
+    fi
+}
+
 # Function to get list of staged files
 get_staged_files() {
     git diff --cached --name-only --diff-filter=ACM
@@ -397,6 +415,9 @@ main() {
     echo ""
 
     check_md_sensitive_info || EXIT_CODE=1
+    echo ""
+
+    check_effect_keys || EXIT_CODE=1
     echo ""
 
     # Final result
