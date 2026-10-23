@@ -22,6 +22,8 @@ defmodule Mix.Tasks.Lat.Audit do
     * `--limit N` — Only audit the first N laws (for testing)
     * `--verbose` — Show per-law diagnostics, not just summary
     * `--errors-only` — Only show laws with errors (severity: error)
+    * `--structure` — Also sense legislation.gov.uk structure faults in each
+      law's stored CLML body (read-only; `Diagnostics.structure_faults/1`, #183)
 
   ## Checks
 
@@ -65,7 +67,8 @@ defmodule Mix.Tasks.Lat.Audit do
           family: :string,
           limit: :integer,
           verbose: :boolean,
-          errors_only: :boolean
+          errors_only: :boolean,
+          structure: :boolean
         ]
       )
 
@@ -135,6 +138,38 @@ defmodule Mix.Tasks.Lat.Audit do
     # Corpus-wide stats
     all_summaries = results |> Enum.map(&elem(&1, 3)) |> Enum.reject(&is_nil/1)
     print_corpus_stats(all_summaries)
+
+    if Keyword.get(opts, :structure, false), do: print_structure(law_names, verbose)
+  end
+
+  # #183: structure faults in each law's stored CLML body
+  defp print_structure(law_names, verbose) do
+    faults =
+      for law <- law_names,
+          [_, type, year, number] <- [String.split(law, "_", parts: 4)],
+          [path | _] <- [
+            Path.wildcard("data/cache/clml/#{type}/#{year}/#{number}/body/data.xml.gz")
+          ],
+          fault <- path |> File.read!() |> :zlib.gunzip() |> Diagnostics.structure_faults(),
+          do: {law, fault}
+
+    Mix.shell().info("\n── Structure faults (stored CLML, #183) ────────")
+
+    faults
+    |> Enum.frequencies_by(fn {_law, f} -> {f.check, f.detail.adopted} end)
+    |> Enum.sort()
+    |> Enum.each(fn {{check, adopted}, n} ->
+      laws =
+        faults |> Enum.filter(fn {_, f} -> {f.check, f.detail.adopted} == {check, adopted} end)
+
+      laws = laws |> Enum.map(&elem(&1, 0)) |> Enum.uniq() |> length()
+      label = if adopted, do: " (adopted)", else: ""
+      Mix.shell().info("  #{check}#{label}: #{n} in #{laws} laws")
+    end)
+
+    if verbose do
+      for {law, f} <- faults, do: Mix.shell().info("    #{law}  #{f.message}")
+    end
   end
 
   defp fetch_law_names(repo, opts) do

@@ -161,7 +161,11 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       """
 
       rows = LatParser.parse(xml, %{law_name: "UK_uksi_2099_1", type_code: "uksi"})
-      assert Enum.any?(rows, &String.ends_with?(&1.section_id, ":reg.39(e)"))
+      # (e) continues (2)'s (d): it is (2)'s, as the printed law reads (wsi
+      # 2025/1321 reg.39(2): an unnumbered closing line ends the P2 in the
+      # CLML before (e)–(g)); CV-S02a #183 supersedes the 2026-09-26
+      # "mirror the official id regulation-39-e" decision
+      assert Enum.any?(rows, &String.ends_with?(&1.section_id, ":reg.39(2)(e)"))
 
       keys = rows |> Enum.sort_by(& &1.position) |> Enum.map(& &1.sort_key)
       assert keys == Enum.sort(keys)

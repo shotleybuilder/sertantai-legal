@@ -26,7 +26,14 @@ defmodule SertantaiLegal.Scraper.LatParser.Diagnostics do
   - **text_size_outlier** — any single row with text >50KB
   - **missing_provisions** — laws with structural rows but zero section-level rows
   - **novel_elements** — unknown XML elements encountered during parsing
+
+  On the CLML itself (`structure_faults/1`, CV-S02a #183): legislation.gov.uk
+  structure faults — **id_contradicts_nesting** (sensed only) and
+  **level_skipped** (adopted into the sibling before it when it continues
+  that sibling's numbering, else sensed only). See `LatParser.Structure`.
   """
+
+  alias SertantaiLegal.Scraper.LatParser.Structure
 
   @structural_types ~w(part chapter schedule)
   @section_types ~w(section sub_section article sub_article paragraph sub_paragraph)
@@ -281,6 +288,35 @@ defmodule SertantaiLegal.Scraper.LatParser.Diagnostics do
       }
     end)
   end
+
+  @doc """
+  legislation.gov.uk structure faults in a law's CLML (`Structure.faults/1`)
+  as warnings: what the parse met and, for a skipped level, whether it
+  adopted the element.
+  """
+  @spec structure_faults(String.t()) :: [warning()]
+  def structure_faults(xml) when is_binary(xml) do
+    xml
+    |> SweetXml.parse(quiet: true)
+    |> Structure.faults()
+    |> Enum.map(fn fault ->
+      %{
+        check: fault.kind,
+        severity: :warning,
+        message: fault_message(fault),
+        detail: fault
+      }
+    end)
+  end
+
+  defp fault_message(%{kind: :id_contradicts_nesting} = f),
+    do: "#{f.xml_id} sits inside #{f.parent_id} (id contradicts nesting; named by nesting)"
+
+  defp fault_message(%{kind: :level_skipped, adopted: true} = f),
+    do: "#{f.xml_id} skips a level in #{f.parent_id}; continues the sibling before it: adopted"
+
+  defp fault_message(%{kind: :level_skipped} = f),
+    do: "#{f.xml_id} skips a level in #{f.parent_id}; continues nothing: left in place"
 
   # ── Helpers ────────────────────────────────────────────────────
 

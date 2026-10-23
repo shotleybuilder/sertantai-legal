@@ -13,7 +13,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
 
   import SweetXml
 
-  alias SertantaiLegal.Scraper.LatParser.{Effects, Ids, Items, Refs, Text, Xml}
+  alias SertantaiLegal.Scraper.LatParser.{Effects, Ids, Items, Refs, Structure, Text, Xml}
   alias SertantaiLegal.Scraper.{LatTerritory, Territory}
 
   defmodule Ctx do
@@ -42,6 +42,8 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
               p2_is_wrapper: false,
               # CV-S02a (#184): the current provision's list items that are rows
               items: %{},
+              # CV-S02a (#183): loose P3s / P4s that belong in the sibling before them
+              adopt: %{},
               trailing: [],
               default_extent: nil,
               prospective: false,
@@ -72,6 +74,9 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
             items: %{
               SertantaiLegal.Scraper.LatParser.Items.key() =>
                 SertantaiLegal.Scraper.LatParser.Items.item()
+            },
+            adopt: %{
+              SertantaiLegal.Scraper.LatParser.Items.key() => {:sub | :paragraph, String.t()}
             },
             trailing: [tuple()],
             default_extent: String.t() | nil,
@@ -280,7 +285,8 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
             p2_is_wrapper: wrapper,
             # consumed here: provisions nested in this P1 are not the group's
             group_title: nil,
-            group_refs: []
+            group_refs: [],
+            adopt: Structure.adoptions(node)
         }
 
         new_ctx = with_items(new_ctx, node)
@@ -297,6 +303,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
 
       name == "P2" ->
         sub = Ids.pnumber(node)
+        ctx = %{ctx | adopt: Map.merge(ctx.adopt, Structure.adoptions(node))}
         # If P2 is a structural wrapper (single P2 with same number as P1),
         # nil out sub to avoid doubled citations like reg.30(30)
         # and skip emitting a row (the wrapper has no distinct identity)
@@ -311,12 +318,14 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
 
       name == "P3" ->
         paragraph = Ids.pnumber(node)
+        ctx = adopted(ctx, node)
         new_ctx = with_items(%{ctx | paragraph: paragraph, sub_paragraph: nil}, node)
         row = "P3" |> emit_structural_row(ungrouped(new_ctx), node, extent) |> grouped(ctx)
         [row | walk_children(node, ungrouped(new_ctx))]
 
       name == "P4" ->
         sub_paragraph = Ids.pnumber(node)
+        ctx = adopted(ctx, node)
         new_ctx = with_items(%{ctx | sub_paragraph: sub_paragraph}, node)
         row = emit_row("P4", new_ctx, node, extent)
         [row | walk_children(node, new_ctx)]
@@ -348,6 +357,15 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
 
   defp emit_structural_row(element, ctx, node, extent),
     do: emit(element, ctx, node, extent, &Text.structural(&1, ctx.items))
+
+  # a loose P3 / P4 continuing the sibling before it takes that sibling's
+  # number (#183: HSWA s.28(f) → s.28(3)(f))
+  defp adopted(ctx, node) do
+    case Map.fetch(ctx.adopt, Items.key(node)) do
+      {:ok, {field, number}} -> Map.put(ctx, field, number)
+      :error -> ctx
+    end
+  end
 
   # The levels below a provision an item row can take: P1 three (sub,
   # paragraph, sub_paragraph), P4 none (#184).
