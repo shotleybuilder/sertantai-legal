@@ -75,3 +75,20 @@ Numbered `ListItem`s with no id, outside amendments, versions and schedules: **1
 - **Why the CLML closes the subsection early** (Jason, from the printed law): WSI 2025/1321 reg.39(2) has an unnumbered closing line ("or, where regulation 12(3) applies, …") between (d) and (e); the CLML ends the P2 there, leaving (e)–(g) loose. In print they are (2)'s. Parsing the stored law in memory: `reg.39(2)(e)`–`(g)`, (f)(i)–(ii) under it, the closing line in (2)'s text; reg.44 and reg.46 the same shape. HSWA s.28's feed addresses `section-28-3-f` / `-f-i`, never the id `section-28-f`.
 - **Supersedes** the 2026-09-26 decision (LAT sync manifest session: "legal's ids mirror the official ones regulation-39-e … no id churn"): the law text is primary, and the feed follows it. The 2026-09-27 sort-break report lists 63 such items in 43 laws; the re-parse dry run counts which the rule adopts.
 - Code: `LatParser.Structure` (pure: `faults/1`, `adoptions/1`); `Walker` applies adoptions; `Diagnostics.structure_faults/1`; `mix lat.audit --structure` reports them from the stored CLML. The LH sort-key test for reg.39 now expects `reg.39(2)(e)`. Full suite green bar that test before its update.
+
+## Re-parse dry run (2026-10-23)
+
+`mix lat.text_diff --all --store only` (offline, 1,066 laws, nothing written; report in the session scratchpad). **4,613 rows changed in 128 laws** (18 of them OH&S). Every removed row pairs with a renamed row: none lost.
+
+| Cause | Rows | Laws |
+|---|---|---|
+| #184 new item rows | 2,091 | 81 |
+| #184 parent text shortened (items moved to their rows) | 256 | 76 |
+| #182/#185/label-word renames | 722 | 30 |
+| #183 adoptions (a level added: `s.28(c)` → `s.28(1)(c)`) | 128 | — |
+| Positional ids shifted by inserted rows (`signed.45` → `signed.51`, one `note.`, one `table.`) | 46 | — |
+| Territory / text drift, not these fixes | 472 | 4 |
+
+- The drift: `UK_ukpga_1967_10` (443 rows `excluded_extent` nil → S), `UK_uksi_2010_2215`, `UK_uksi_2010_404`: their feeds were refetched on 2026-10-21 (CV-S01) after their last parse (2026-10-19). `UK_ukpga_1990_8` (9 rows): feed unchanged; it has 3 lowercase "other" qualifications, read since CV-S02 NEW-D. Real source changes the re-parse should carry.
+- Positional ids: signature, note and table rows are named by position, so inserted item rows renumber them. Churn for fractalaw, not a fault of these fixes.
+- Territory checks: 25 findings (23 child_live_where_parent_excluded, 2 markup_effect_conflict); the checks run on every parsed law, so not attributable to these fixes without a baseline.
