@@ -21,6 +21,7 @@ The session does not close until its results pass.
 - ⬜ The golden set is big enough to trust: 27 provisions today; grown, OH&S family first
 - ⬜ Golden expected tiers per period, and the start's tier from its source (deferred in CV-04)
 - ⬜ A row commenced only through some of its children reads in force, not in force partly (open bug, V1-01)
+- ⬜ A commencement for one territory ("for E.W.S.", "for N.I."): the feed reader carries it as `in_force_for` (CV-S02 D5). The fold should read it as in force there, not "partly in force" everywhere (2 effects in the OH&S family)
 - ⬜ Fix until the check passes reliably; record the result
 
 ## Dependencies
