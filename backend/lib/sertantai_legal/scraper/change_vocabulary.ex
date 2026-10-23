@@ -235,7 +235,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
          Keyword.get(opts, :xml_ids, %{}),
          Keyword.get(opts, :rows)
        ) ++
-         Markup.read(xml, law_name) ++
+         Markup.read(xml, law_name, Keyword.get(opts, :xml_ids, %{})) ++
          amending ++
          own ++
          ApplicationReader.read(xml, law_name) ++

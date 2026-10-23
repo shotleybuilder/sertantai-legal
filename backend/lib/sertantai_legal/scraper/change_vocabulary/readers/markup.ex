@@ -3,7 +3,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
   The CLML change markup as claims (change vocabulary, CV-02 slice): each
   change id (an `Addition`, `Substitution` or `Repeal` element, however many
   times it occurs) is one change, on the lowest provision holding all its
-  occurrences, keyed by the effect id its ChangeId carries
+  occurrences whose own number, heading or text it touches — else on each
+  provision (or group's row) under it where it sits — keyed by the effect id its ChangeId carries
   (`EffectIndex.effect_id/1`), else the ChangeId itself.
 
   Claims (source `:markup`): `operation` (Repeal → repealed, a Repeal paired
@@ -23,6 +24,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Pointer}
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Claim, Ref}
   alias SertantaiLegal.Scraper.EffectIndex
+  alias SertantaiLegal.Scraper.Commencement.Order
 
   @changes ~w(Addition Substitution Repeal)a
 
@@ -101,19 +103,39 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     |> xpath(~x"//*[@id]/@id"sl)
   end
 
-  @doc "Claim sets `{key, target, claims}`, one per change id."
-  @spec read(String.t(), String.t() | nil) :: [{String.t(), String.t(), [Claim.t()]}]
-  def read(xml, law_name \\ nil) do
-    doc = SweetXml.parse(xml, quiet: true, namespace_conformant: false)
-    cited = cited(doc)
+  @doc """
+  Claim sets `{key, target, claims}`, one per change id and provision; from
+  the XML or its parsed document. `xml_ids` (`Ref.xml_ids/2`) names a row
+  by its CLML id as the parse does — a Part, Chapter or cross-heading has
+  no other name (`pt.1`, `h.3`).
+  """
+  @spec read(String.t() | tuple(), String.t() | nil, %{String.t() => String.t()}) ::
+          [{String.t(), String.t(), [Claim.t()]}]
+  def read(xml, law_name \\ nil, xml_ids \\ %{})
+
+  def read(xml, law_name, xml_ids) when is_binary(xml),
+    do: xml |> SweetXml.parse(quiet: true, namespace_conformant: false) |> read(law_name, xml_ids)
+
+  def read(doc, law_name, xml_ids) do
+    # ids legislation.gov.uk gives several elements (K3: three P2s
+    # `article-38-1`, numbered A1, 1 and 3): each is told apart by its number
+    repeated =
+      doc
+      |> xpath(~x"//*[@id]/@id"sl)
+      |> Enum.frequencies()
+      |> Enum.flat_map(fn {id, n} -> if n > 1, do: [id], else: [] end)
+      |> MapSet.new()
+
     own = own_texts(doc)
+    ctx = %{law: law_name, xml_ids: xml_ids, repeated: repeated, own: own}
+    cited = cited(doc)
 
     {placed, occurrences} =
-      doc |> occurrences([], []) |> Enum.split_with(&Map.has_key?(&1, :placement))
+      doc |> occurrences([], [], ctx) |> Enum.split_with(&Map.has_key?(&1, :placement))
 
     changes =
       occurrences
-      |> group_changes(cited, own, law_name)
+      |> group_changes(cited, own, ctx)
 
     # an effect placed by its note ref on a provision where no change
     # element of it sits
@@ -121,7 +143,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
 
     placements =
       for %{placement: key, path: [_ | _] = path} <- placed,
-          ref = Ref.from_clml(List.last(path), law_name),
+          ref = name(List.last(path), ctx),
           ref != nil,
           not MapSet.member?(marked, {key, ref}),
           uniq: true,
@@ -130,47 +152,119 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     changes ++ placements
   end
 
-  defp group_changes(occurrences, cited, own, law_name) do
-    occurrences
-    |> Enum.group_by(& &1.change_id)
-    |> Enum.flat_map(fn {change_id, occ} ->
-      key = EffectIndex.effect_id(change_id) || change_id
+  @doc """
+  A change's key: the effect id its ChangeId carries (`key-<hex>`, whatever
+  follows it: `-1473449269178`, `-1790691857434/2`), else the ChangeId
+  (a legacy id: `d29p1234`, `M_F_…`).
+  """
+  @spec key(String.t()) :: String.t()
+  def key(change_id) do
+    case Regex.run(~r/^key-[0-9a-f]{32}/, change_id) do
+      [effect] -> effect
+      nil -> EffectIndex.effect_id(change_id) || change_id
+    end
+  end
 
-      for {ref, xml_id, group} <- placements(change_id, occ, law_name),
+  # a retained substitution's new words (an Addition the Repeal's
+  # SubstitutionRef names) are the same change as the old words: one
+  # substitution (catalogue finding D)
+  defp group_changes(occurrences, cited, own, ctx) do
+    substituted =
+      for %{substitution_ref: ref, change_id: id} <- occurrences,
+          ref != nil,
+          into: %{},
+          do: {ref, id}
+
+    occurrences
+    |> Enum.group_by(&Map.get(substituted, &1.change_id, &1.change_id))
+    |> Enum.flat_map(fn {change_id, occ} ->
+      key = key(change_id)
+
+      for {ref, xml_id, group} <- placements(change_id, occ, ctx),
           do: {key, ref, claims(change_id, group, xml_id, cited, own)}
     end)
   end
 
   # where a change id's occurrences land: the lowest provision holding them
-  # all; with none (they span the law) — a legacy id is a change to the
-  # whole law ("*", a whole-Act repeal for a territory: Forestry Act 1967),
-  # an effect id is a change to each top provision it touches
-  defp placements(change_id, occ, law) do
-    case occ |> Enum.map(& &1.path) |> lowest() do
-      nil ->
-        if EffectIndex.effect_id(change_id) do
-          # outside any provision (an empty path) it lands nowhere
+  # all. Where that is a group (a Part, Chapter or cross-heading), each
+  # provision under it is placed apart, and the group's own heading or text
+  # is a change to the group's row (catalogue finding A). With none (they
+  # span the law) — a legacy id is a change to the whole law ("*", a
+  # whole-Act repeal for a territory: Forestry Act 1967), an effect id is a
+  # change to each top provision it touches; outside any provision (an
+  # empty path) it lands nowhere
+  defp placements(change_id, occ, ctx) do
+    case occ |> Enum.map(& &1.path) |> common() do
+      [] ->
+        if EffectIndex.effect_id(key(change_id)) do
           occ
           |> Enum.reject(&(&1.path == []))
           |> Enum.group_by(&List.first(&1.path))
-          |> Enum.flat_map(fn {_top, group} -> placements(change_id, group, law) end)
+          |> Enum.flat_map(fn {_top, group} -> placements(change_id, group, ctx) end)
         else
           [{"*", "*", occ}]
         end
 
-      id ->
-        case Ref.from_clml(id, law) do
-          nil -> []
-          ref -> [{ref, id, occ}]
+      common ->
+        id = List.last(common)
+
+        depth = length(common)
+
+        # a provision placed whole when the change touches its own number,
+        # heading or text, or covers all the text under it (a repeal round
+        # every sub-provision: Coronavirus Act 2020 s.78); a change only in
+        # some provisions under it (two subsections inserted) is placed on
+        # each of them (finding H), as under a group
+        if provision?(id, ctx) and
+             (Enum.any?(occ, &(length(&1.path) == depth)) or
+                covers_own_text?(occ, Map.get(ctx.own, id))) do
+          [{name(id, ctx), id, occ}]
+        else
+          occ
+          |> Enum.group_by(&Enum.at(&1.path, depth))
+          |> Enum.flat_map(fn
+            {nil, group} ->
+              case name(id, ctx) do
+                nil -> []
+                ref -> [{ref, id, group}]
+              end
+
+            {_child, group} ->
+              placements(change_id, group, ctx)
+          end)
         end
     end
   end
 
-  # every change element with the path of provision ids above it, and
-  # whether it sits in the provision's number; a group's title belongs to
-  # the provision the group holds
-  defp occurrences({:xmlElement, name, _, _, _, _, _, attrs, children, _, _, _} = el, path, flags) do
-    path = if id = attr(attrs, :id), do: path ++ [id], else: path
+  # the ids every path shares, outermost first
+  defp common(paths) do
+    Enum.reduce(paths, fn p, acc ->
+      acc |> Enum.zip(p) |> Enum.take_while(fn {a, b} -> a == b end) |> Enum.map(&elem(&1, 0))
+    end)
+  end
+
+  # a row's ref: as the parse names it, else from its CLML id
+  defp name(id, ctx), do: Map.get(ctx.xml_ids, id) || Ref.from_clml(id, ctx.law)
+
+  defp provision?(id, ctx), do: Ref.from_clml(id, ctx.law) != nil
+
+  # the ids that name rows: provisions, and the groups that hold them
+  # (Parts, Chapters, cross-headings, EU Sections) — not a defined term's
+  # or a citation's id inside a provision (catalogue finding B)
+  defp row_id?(id, ctx),
+    do: provision?(id, ctx) or Map.has_key?(ctx.xml_ids, id) or Ref.group?(id, ctx.law)
+
+  # every change element with the path of row ids above it, and whether it
+  # sits in the provision's number; a group's title belongs to the
+  # provision the group holds
+  defp occurrences(
+         {:xmlElement, name, _, _, _, _, _, attrs, children, _, _, _} = el,
+         path,
+         flags,
+         ctx
+       ) do
+    id = attr(attrs, :id) |> renumbered(el, ctx)
+    path = if id && row_id?(id, ctx), do: path ++ [id], else: path
     flags = if name == :Pnumber, do: [:number | flags], else: flags
     title_path = if name == :P1group, do: path ++ List.wrap(group_provision(el)), else: path
 
@@ -193,6 +287,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
               number?: :number in flags,
               retain: attr(attrs, :RetainText) == "true",
               paired: attr(attrs, :SubstitutionRef) != nil,
+              substitution_ref: attr(attrs, :SubstitutionRef),
               extent: attr(attrs, :Extent),
               note: attr(attrs, :CommentaryRef),
               text: letters(el)
@@ -205,14 +300,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     own ++
       Enum.flat_map(children, fn
         {:xmlElement, :Title, _, _, _, _, _, _, _, _, _, _} = title ->
-          occurrences(title, title_path, flags)
+          occurrences(title, title_path, flags, ctx)
 
         child ->
-          occurrences(child, path, flags)
+          occurrences(child, path, flags, ctx)
       end)
   end
 
-  defp occurrences(_other, _path, _flags), do: []
+  defp occurrences(_other, _path, _flags, _ctx), do: []
 
   defp group_provision(group) do
     case xpath(group, ~x"./*[@id][1]/@id"s) do
@@ -221,17 +316,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     end
   end
 
-  # the deepest id every occurrence's path shares
-  defp lowest(paths) do
-    paths
-    |> Enum.reduce(fn p, acc ->
-      acc |> Enum.zip(p) |> Enum.take_while(fn {a, b} -> a == b end) |> Enum.map(&elem(&1, 0))
-    end)
-    |> List.last()
-  end
-
   defp claims(change_id, occ, target, cited, own) do
     first = hd(occ)
+    repeal = Enum.find(occ, &(&1.kind == :Repeal))
 
     # whole provision: the change wraps its number, or all the text under it
     # (1988/52 s.4(6): a RetainText Repeal round the text, not the number;
@@ -242,7 +329,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
 
     operation =
       cond do
-        first.kind == :Repeal and first.paired -> :substituted
+        repeal && repeal.paired -> :substituted
         first.kind == :Repeal -> :repealed
         first.kind == :Substitution -> :substituted
         true -> :inserted
@@ -251,7 +338,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     Enum.concat([
       Claim.new(:markup, :operation, operation, change_id),
       Claim.new(:markup, :level, if(whole?, do: :provision, else: :words), change_id),
-      Claim.new(:markup, :retained, if(first.kind == :Repeal, do: first.retain), change_id),
+      Claim.new(
+        :markup,
+        :retained,
+        if(first.kind == :Repeal or (repeal && repeal.paired), do: repeal.retain),
+        change_id
+      ),
       Claim.new(:markup, :territory, Enum.find_value(occ, & &1.extent) |> code(), change_id),
       Claim.new(:markup, :cited, get_in(cited, [first.note, :law]), change_id),
       Claim.new(:markup, :affecting, get_in(cited, [first.note, :refs]), change_id)
@@ -300,24 +392,83 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
   defp letters(el), do: el |> Doc.text() |> String.replace(~r/[^\p{L}\p{N}]/u, "")
 
   # each commentary's first cited law, as a law name ("UK_uksi_2023_911"),
-  # and the amending provisions it names after it ("Sch. 2 para. 10(2)(a)"
-  # → ["sch.2.para.10(2)(a)"]; `AmendingLaw.Pointer`) — pointers for
-  # identity only (Jason 2026-10-22: the merge may use them to tell same-day
-  # events by one law apart; never stored as facts or labelled)
+  # and the amending provisions it names — pointers for identity only (Jason
+  # 2026-10-22: the merge may use them to tell same-day events by one law
+  # apart; never stored as facts or labelled). The provisions are the note's
+  # own structured pointers (finding G): its `CitationSubRef`s of that
+  # Citation, the operative ones where it marks them ("(with reg. 3)" and
+  # another law's "(as amended by …)" are not), each `SectionRef` a ref
+  # ("schedule-2-paragraph-15-a-i-aa" → "sch.2.para.15(a)(i)(aa)"); a note
+  # with none falls back to its words (`AmendingLaw.Pointer`)
   defp cited(doc) do
     for c <- xpath(doc, ~x"//Commentary"l),
         id = xpath(c, ~x"./@id"s),
-        uri = xpath(c, ~x"(.//Citation/@URI)[1]"s),
+        citation = xpath(c, ~x"(.//Citation[@URI])[1]"e),
+        citation != nil,
+        uri = xpath(citation, ~x"./@URI"s),
         [_, type, year, num] <- [Regex.run(~r"/id/([a-z]+)/(\d{4})/(\d+)", uri)],
         law = "UK_#{type}_#{year}_#{num}",
         into: %{} do
-      refs =
-        %{text: Doc.text(c), citation_law: law}
+      refs = pointers(c, xpath(citation, ~x"./@id"s), law)
+      {id, %{law: law, refs: if(refs != [], do: refs)}}
+    end
+  end
+
+  defp pointers(commentary, citation_id, law) do
+    subrefs =
+      for s <- xpath(commentary, ~x".//CitationSubRef"l),
+          citation_id != "" and xpath(s, ~x"./@CitationRef"s) == citation_id,
+          do: {xpath(s, ~x"./@SectionRef"s), xpath(s, ~x"./@Operative"s) == "true"}
+
+    case subrefs do
+      [] ->
+        %{text: Doc.text(commentary), citation_law: law}
         |> Pointer.parse()
         |> Map.get(:provisions)
         |> Enum.flat_map(&Pointer.to_refs/1)
 
-      {id, %{law: law, refs: if(refs != [], do: refs)}}
+      subrefs ->
+        operative = for {ref, true} <- subrefs, do: ref
+
+        if(operative != [], do: operative, else: Enum.map(subrefs, &elem(&1, 0)))
+        |> Enum.map(&pointer_ref/1)
+        |> Enum.reject(&is_nil/1)
+        |> Enum.uniq()
+    end
+  end
+
+  # a pointer's SectionRef as a ref, named as the feed reader names the
+  # feed's affecting provisions (a Schedule's paragraph by its Schedule,
+  # its Part left out: "schedule-10-part-5-paragraph-9" → "sch.10.para.9");
+  # an unnumbered Schedule's "schedule-paragraph-3-3" → "sch.para.3(3)"
+  defp pointer_ref(section_ref) do
+    case Regex.run(
+           ~r/^schedule(?:-([^-]+))?(?:-part-[^-]+)?-paragraph-([^-]+)((?:-[^-]+)*)$/,
+           section_ref
+         ) do
+      [_, sch, para, rest] ->
+        subs = rest |> String.split("-", trim: true) |> Enum.map_join(&"(#{&1})")
+        if(sch == "", do: "sch.para.", else: "sch.#{sch}.para.") <> para <> subs
+
+      nil ->
+        Order.ref(section_ref)
+    end
+  end
+
+  # a repeated id (K3) named by the element's own number: `article-38-1`
+  # numbered 3 → `article-38-3`, as the parse names its row (finding I)
+  defp renumbered(nil, _el, _ctx), do: nil
+
+  defp renumbered(id, el, ctx) do
+    with true <- MapSet.member?(ctx.repeated, id),
+         pnumber when pnumber != nil <- xpath(el, ~x"./Pnumber"e),
+         number when number != "" <-
+           pnumber |> Doc.text() |> String.replace(~r/[\s()]/u, ""),
+         [_, stem, last] <- Regex.run(~r/^(.*-)([^-]+)$/, id),
+         true <- last != number do
+      stem <> number
+    else
+      _ -> id
     end
   end
 

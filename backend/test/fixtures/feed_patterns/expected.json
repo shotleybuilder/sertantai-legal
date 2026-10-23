@@ -7753,25 +7753,6 @@
         },
         "key": "E",
         "target": "annex.V"
-      },
-      {
-        "claims": {
-          "feed.affecting": [
-            "reg.8(3)"
-          ],
-          "feed.applied": true,
-          "feed.by": "UK_uksi_2020_1455",
-          "feed.date": "2021-01-01",
-          "feed.effect_extent": "E+W+S+NI",
-          "feed.level": "words",
-          "feed.operation": "inserted",
-          "feed.partial": false,
-          "feed.qualification": "complete",
-          "feed.savings": [],
-          "feed.territory": "E+W+S"
-        },
-        "key": "E",
-        "target": "s.0000A3"
       }
     ],
     "UK_eur_2006_1013/9a049ad611": [
@@ -8064,25 +8045,6 @@
         },
         "key": "E",
         "target": "annex.V"
-      },
-      {
-        "claims": {
-          "feed.affecting": [
-            "reg.8(4)"
-          ],
-          "feed.applied": true,
-          "feed.by": "UK_uksi_2020_1455",
-          "feed.date": "2021-01-01",
-          "feed.effect_extent": "E+W+S+NI",
-          "feed.level": "words",
-          "feed.operation": "substituted",
-          "feed.partial": false,
-          "feed.qualification": "complete",
-          "feed.savings": [],
-          "feed.territory": "E+W+S"
-        },
-        "key": "E",
-        "target": "s.0000B3"
       }
     ],
     "UK_eur_2006_1013/f834a0d84b": [
@@ -33119,7 +33081,7 @@
           "feed.savings": []
         },
         "key": "E",
-        "target": "?"
+        "target": "s.56"
       }
     ],
     "UK_ukpga_1991_22/49649fb4c8": [
@@ -53039,7 +53001,7 @@
           ]
         },
         "key": "E",
-        "target": "?"
+        "target": "reg.78"
       }
     ],
     "UK_uksi_2014_1638/707f4d568f": [
@@ -53062,7 +53024,7 @@
           ]
         },
         "key": "E",
-        "target": "?"
+        "target": "reg.81(4)"
       }
     ],
     "UK_uksi_2014_928/e4070a3c88": [

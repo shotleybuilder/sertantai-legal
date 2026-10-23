@@ -28,7 +28,37 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Ref do
   # parse names Rules' rows (catalogue review H)
   def from_clml("rule-" <> rest, law_name), do: from_clml("regulation-" <> rest, law_name)
 
-  def from_clml(id, law_name) do
+  # an EU Section is a group of articles, not a provision ("section-III")
+  def from_clml("section-" <> _ = id, law_name) do
+    if eu?(law_name), do: nil, else: from_clml_provision(id, law_name)
+  end
+
+  def from_clml(id, law_name), do: from_clml_provision(id, law_name)
+
+  @doc """
+  True for a group's id — a Part, Chapter, Title, cross-heading, or an EU
+  Section: an id that holds provisions, named only by its row.
+  """
+  @spec group?(String.t(), String.t() | nil) :: boolean()
+  def group?(id, law_name),
+    do:
+      id =~ ~r/^(?:part|chapter|title|crossheading|division|subpart)-/ or
+        (eu?(law_name) and String.starts_with?(id, "section-"))
+
+  # a provision id led by its group's ("part-V-section-36-2An1" →
+  # "s.36(2An1)"): named by the provision (markup catalogue finding C) —
+  # not in EU law, where a Section is a group ("chapter-II-section-2")
+  defp from_clml_provision(id, law_name) do
+    id =
+      if eu?(law_name),
+        do: id,
+        else:
+          String.replace(
+            id,
+            ~r/^(?:(?:part|chapter|title)-[^-]+-)+(?=(?:section|regulation|article|rule)-)/,
+            ""
+          )
+
     case {Order.ref(id), eu?(law_name)} do
       {nil, _} -> nil
       {"reg." <> rest, true} -> "art.Article " <> rest
