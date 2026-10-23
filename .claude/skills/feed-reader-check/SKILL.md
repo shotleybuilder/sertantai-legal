@@ -97,8 +97,12 @@ Reader rules (intended behaviour):
 
 Known patterns (label a finding with one if it fits; otherwise NEW):
 K1 schedules/annexes not parsed (v0.1 limit); K2 #182 non-breaking space in EU row names
-(accommodated); K3 #183 legislation.gov.uk structure faults (ids contradicting nesting, levels
-skipped); K4 #184 numbered list items without ids get no row; K5 #185 doubled brackets "((e))";
+(fixed in CV-S02a; the reader still tolerates it); K3 #183 legislation.gov.uk structure faults
+(ids contradicting nesting: sensed only, rows named by nesting; a skipped level: adopted into the
+sibling before it when it continues that sibling's numbering — s.28(3)(f) — else left in place);
+K4 #184 numbered list items with no id directly under a provision are rows since CV-S02a
+(art.Article 57(a), no source_xml_id); items inside a definition stay text; K5 #185 doubled
+brackets (fixed in CV-S02a);
 K6 the feed lists one effect twice (identical rows), merged later; K7 EU "EUR-Lex in-force date"
 in Comments not used (a pointer); K8 a commencement's territory not yet applied by the label
 (in_force_for carried); K9 placed_versions targets every version — narrowing by the carried
@@ -123,3 +127,4 @@ say doubtful rather than guess. Under 900 words.
 ## History
 
 - OH&S (first family, 2026-10-22/23). Rounds: seed {2026,10,22} (defects A–F), seed 7 (D1–D5), seed 11 (49/50, NEW-A and NEW-B fixed), seed 13 (49/50, NEW-C deferred as K10, NEW-D fixed), seed 17. The session is `.claude/sessions/change-vocabulary/2026-10-22-cv-s02-feed-reader.md`.
+- CV-S02a (2026-10-23) fixed K2, K4, K5 and sensed K3 in the parser; the OH&S re-check after its re-parse: our faults 0, tell-tales 16 → 5 (all `not_found`, genuinely absent), golden 27/27. A new family's tell-tales of these kinds are now NEW.

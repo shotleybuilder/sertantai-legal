@@ -1,10 +1,142 @@
 ---
 session: CV-S02a Parser tell-tales
-status: active
+status: closed
 opened: 2026-10-23
+closed: 2026-10-23
+outcome: success
+
+summary: >
+  The four parser faults the CV-S02 feed check sensed were fixed as general rules: numbers named the same
+  whatever form the CLML prints them in (#182, #185, label words), numbered list items directly under a
+  provision as rows named as legislation.gov.uk addresses them (#184), and CLML structure faults sensed with
+  one repair — a loose item continuing the sibling before it belongs in it (#183). 128 laws re-parsed after a
+  corpus dry run; the OH&S feed check kept 0 reader faults with tell-tales 16 → 5 (all genuinely absent), golden 27/27.
+
+decisions:
+  - what: One naming rule in LatParser.Ids — Unicode spaces ordinary, brackets round a number dropped, the label word stripped however spaced, a number holding a space after a dash split is a heading numbered by the id
+    why: The DB showed the fault wider than #182/#185 (640 Unicode-space rows, 79 bracket rows incl. "1)", 26 label-word rows incl. a heading as a chapter number); one rule, not one per issue
+    result: 0 / 0 / 0 such row names after the apply (722 rows renamed in 30 laws)
+  - what: A numbered ListItem directly under a provision is a row (next free level), named as legislation.gov.uk's address for it converts; items inside a definition and items with no level left stay text; the parent's text stops where item rows begin; source_xml_id stays nil
+    why: Jason asked whether rows align with the ids the feed uses — 32 feed refs in REACH/CLP already address id-less items (article-3-10, article-2-10); the measure split direct items (538) from items inside definitions (684), which have no number to name from
+    result: 2,091 item rows in 81 laws; REACH Art. 57(a)–(f), CLP Art. 2's 53 definitions
+  - what: "#183 pattern 1 (id contradicts nesting) diagnosed only; pattern 2 (level skipped) diagnosed, and a loose P3/P4 whose number continues the last item of the sibling before it is adopted into it"
+    why: Rows are named by nesting, so pattern 1's names are already right; for pattern 2 only HSWA s.28(f) continued a sequence in the 3 laws checked (its feed says section-28-3-f), the other 31 have ids agreeing with where they sit
+    result: 128 rows adopted corpus-wide (s.28(3)(f), wsi 2025/1321 reg.39(2)(e)–(g)); Diagnostics.structure_faults/1 and mix lat.audit --structure report them
+  - what: Supersede the 2026-09-26 decision that row names mirror the official ids (regulation-39-e)
+    why: Jason's screenshot of wsi 2025/1321 — an unnumbered closing line between (d) and (e) makes the CLML close the P2 early; in print (e)–(g) are (2)'s; the law text is primary and HSWA's feed follows it, not the id
+    result: The LH sort-key test now expects reg.39(2)(e)
+  - what: Force the enrichment gate only for dots-only signature rows (UK_eur_2006_561, UK_eur_2012_649, UK_eur_2016_425); raise position-named rows as #186
+    why: Inserted item rows renumber signed./note./table. rows (named by position); text matching can't carry "..." rows; only that row's enrichment is lost
+    result: 3 laws forced, the other 125 gate on; #186 pending session
+  - what: The feed reader reads EU finer forms down to every row the law holds (Feed.read takes :rows), not only rows with an XML id
+    why: After the apply, item rows (no XML id) were still flagged unheld — the reader's held set was the XML-id map's values
+    result: Tell-tales 15 → 5, naming 0, no_ids 0
+  - what: No message to fractalaw about the renamed rows
+    why: Jason — fractalaw isn't running; the renames are in lat_section_id_renames for its next pull
+    result: Not sent
+
+metrics:
+  dry_run: { laws_diffed: 1066, rows_changed: 4613, laws_changed: 128, item_rows: 2091, parent_text_shortened: 256, naming_renames: 722, adoptions: 128, positional_renumbered: 46, source_drift_rows: 472, source_drift_laws: 4 }
+  apply: { laws: 128, rows_before: 116578, rows_after: 118669, enriched_before: 99385, enriched_after: 99377, renamed: 880, orphaned_mappings: 0, forced_laws: 3 }
+  ohs_feed_check: { effects: 6568, our_faults: 0, placed: 3549, placed_was: 3483, not_in_text: 128, not_in_text_was: 159, placed_by_markup: 5, placed_by_markup_was: 42, tell_tales: 5, tell_tales_was: 16 }
+  golden: { pass: 27, total: 27 }
+  ohs_list_items: { numbered_idless: 1222, direct: 538, in_definition: 684, no_level_left: 4, feed_refs_on_item_ids: 32 }
+  tests: { full_suite: 3141 }
+
+lessons:
+  - title: Measure the fault in the DB before fixing the issue as filed
+    detail: "#182 and #185 were filed from two examples; a query over section_ids found the same cause (number taken with its decoration) in label words, a figure space and a heading used as a chapter number — one rule fixed all three instead of three issues."
+    tag: data
+  - title: legislation.gov.uk's XML ids are not its last word — the printed law and the feed are
+    detail: "HSWA s.28(f) has the id section-28-f but the feed addresses section-28-3-f; wsi 2025/1321 reg.39's (e)–(g) carry regulation-39-e etc. because an unnumbered closing line ends the P2 in the CLML. An earlier decision to mirror official ids was overturned on the printed text (Jason's screenshot). Check print and feed before trusting an id."
+    tag: data
+  - title: A new kind of row needs every consumer's notion of "held rows" checked
+    detail: "Item rows have no source_xml_id; the feed reader built its held set from the XML-id map, so after a correct re-parse it still flagged them unheld. Look for code that derives the row set from source_xml_id when adding id-less rows."
+    tag: tooling
+  - title: Position-named rows turn any row insertion into renames that the enrichment gate catches
+    detail: "signed./note./table. citations use position; inserting 2,091 item rows renumbered 46 of them, and dots-only signature text can't be matched to carry enrichment. The gate stopped the run twice — the gate worked; the naming is the weakness (#186)."
+    tag: data
+  - title: Separate source drift from the change in a corpus dry run
+    detail: "472 territory/text row changes in 4 laws came from feeds refetched in CV-S01 after the laws' last parse (and one law's lowercase 'other' qualifications), not from the parser fixes. Compare last-parse time with the stored sources' fetch time before attributing a diff."
+    tag: data
+  - title: The re-parse tag becomes a table name
+    detail: "mix lat.reparse --tag cv-s02a failed before writing (invalid snapshot table name lat_reparse_cv-s02a); use underscores."
+    tag: tooling
+
+bugs:
+  - pattern: Non-breaking space in EU article section_ids (#182)
+    category: LAT parse
+    module: LAT parse (lat_parser/ids.ex)
+    affected: 640 rows / 16 laws
+    fix: Ids.clean — every Unicode space ordinary (84ea7ffb); re-parsed
+    status: fixed
+  - pattern: Row names with doubled brackets "art.Article 77(2)((e))" (#185)
+    category: LAT parse
+    module: LAT parse
+    affected: 79 rows / 9 laws
+    fix: Brackets printed round a number dropped (84ea7ffb); re-parsed
+    status: fixed
+  - pattern: Part/Chapter names keep their label word (pt.PART15, ch.CHAPTER V) or a heading as the number
+    category: LAT parse
+    module: LatParser.Ids.number/2
+    affected: 26 rows
+    fix: Prefix stripped however spaced; a spaced number after a dash split is a heading (84ea7ffb)
+    status: fixed
+  - pattern: Numbered list items with no id get no row (#184)
+    category: LAT parse
+    module: LAT parse
+    affected: 1,652 ListItems / 114 laws
+    fix: LatParser.Items — direct numbered items are rows (1a389d91); 2,091 rows corpus-wide
+    status: fixed
+  - pattern: legislation.gov.uk CLML structure faults — ids contradicting nesting, levels skipped (#183)
+    category: LAT parse
+    module: LAT parse
+    affected: 27 + 14 elements in the OH&S family
+    fix: LatParser.Structure senses both; a loose item continuing the sibling before it is adopted (5275d2b0)
+    status: fixed
+  - pattern: Feed reader's held set only rows with an XML id — id-less item rows flagged finer_unheld
+    category: change vocabulary
+    module: ChangeVocabulary.Readers.Feed
+    affected: 10 tell-tales in OH&S
+    fix: Feed.read takes the law's rows (19196e8d)
+    status: fixed
+  - pattern: Position-named rows (signed., table., note.) renumbered by inserted rows lose enrichment (#186)
+    category: LAT parse
+    module: LatParser.Rows / LatReparse carry
+    affected: 46 rows renumbered; 3 laws forced
+    fix: Stable names or carry by kind and order (pending session 2026-10-23-issue-186.md)
+    status: open
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/lat_parser/ids.ex
+  - backend/lib/sertantai_legal/scraper/lat_parser/items.ex
+  - backend/lib/sertantai_legal/scraper/lat_parser/structure.ex
+  - backend/lib/sertantai_legal/scraper/lat_parser/walker.ex
+  - backend/lib/sertantai_legal/scraper/lat_parser/text.ex
+  - backend/lib/sertantai_legal/scraper/lat_parser/diagnostics.ex
+  - backend/lib/mix/tasks/lat.audit.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/readers/feed.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary.ex
+  - backend/lib/mix/tasks/lat.feed_check.ex
+  - backend/test/sertantai_legal/scraper/lat_parser/ids_test.exs
+  - backend/test/sertantai_legal/scraper/lat_parser/items_test.exs
+  - backend/test/sertantai_legal/scraper/lat_parser/structure_test.exs
+  - backend/test/sertantai_legal/scraper/lat_parser_test.exs
+  - backend/test/sertantai_legal/scraper/change_vocabulary/feed_targets_test.exs
+  - backend/data/reports/lat-reparse/cv_s02a.csv (+ _force, _rest, _force2, _rest3)
+  - NAS snapshots/restore-points/2026-10-23-cv-s02a-reparse
+  - .claude/sessions/2026-10-23-issue-186.md
+
+depends_on:
+  - 2026-10-22-cv-s02-feed-reader
+
+enables:
+  - CV-S02b feed pattern catalogue
+  - CV-S03 markup reader
+  - "#186 position-named rows"
 ---
 
-# Session: CV-S02a Parser tell-tales (ACTIVE)
+# Session: CV-S02a Parser tell-tales (CLOSED)
 
 ## Problem
 
@@ -20,7 +152,7 @@ The CV-S02 feed-reader check senses markup faults the LAT parse passes on faithf
 - ✅ Note: `ParserVersion` already moved with CV-S02 NEW-D (`ChangesFeed` reads lowercase "other"); the re-parse plan covers it
 - ⏸️ The shared namer (`Commencement.Order.ref/1`) drops nested schedule ids: `schedule-N-part-P-paragraph-M` → `sch.N.pt.P`; unnumbered `schedule-paragraph-1` → `sch.paragraph`. 48 collisions in the family's feeds, none in the body (CV-S02 NEW-C). Deferred until schedules are parsed (no schedule rows in v0.1); fix it with the schedule naming decision
 - ✅ Re-parse of the affected laws only (128): dry run → Jason → restore point → apply (2026-10-23)
-- ⬜ Tell fractalaw of the renamed rows — only on Jason's word (standing rule: we don't message fractalaw ourselves)
+- ❌ Tell fractalaw of the renamed rows — not sent: fractalaw isn't running (Jason 2026-10-23); the renames are in `lat_section_id_renames` for its next pull
 
 ## Dependencies
 
