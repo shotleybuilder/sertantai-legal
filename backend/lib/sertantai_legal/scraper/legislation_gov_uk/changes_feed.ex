@@ -206,7 +206,7 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
             for(
               f <- e.in_force,
               f.date != "" and f.applied != "false",
-              q = if(f.qualification == "Other", do: f.other_qualification, else: f.qualification),
+              q = qualification(f),
               q != "",
               do: q
             ),
@@ -349,7 +349,7 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
   end
 
   defp in_force_entry(f) do
-    q = if f.qualification == "Other", do: f.other_qualification, else: f.qualification
+    q = qualification(f)
 
     date =
       case Date.from_iso8601(f.date) do
@@ -384,6 +384,14 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
   defp same_as_affected(code) do
     letters = code |> String.replace(~r/[^A-Za-z]/, "") |> String.upcase()
     if String.starts_with?(letters, "SAMEAS"), do: nil, else: code
+  end
+
+  # "Other" (or "other": 181 entries in the OH&S feeds, CV-S02 NEW-D)
+  # carries its text in OtherQualification
+  defp qualification(f) do
+    if String.downcase(f.qualification) == "other",
+      do: f.other_qualification,
+      else: f.qualification
   end
 
   defp blank(""), do: nil

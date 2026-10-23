@@ -202,6 +202,22 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeedTest do
     assert effect.affected_ranges == [{"section-1", "section-30"}]
   end
 
+  test "a lowercase \"other\" reads OtherQualification too (SI 1992/3004: CV-S02 NEW-D)" do
+    xml = """
+    <feed xmlns="http://www.w3.org/2005/Atom" xmlns:ukm="http://www.legislation.gov.uk/namespaces/metadata"><entry><content>
+    <ukm:Effect EffectId="effect-fixture" Type="coming into force" Applied="true" AffectedProvisions="reg. 4" AffectingURI="http://www.legislation.gov.uk/id/uksi/1992/3004">
+    <ukm:InForceDates>
+    <ukm:InForce Date="1993-01-01" Qualification="other" OtherQualification="for specified purposes and 1.1.1996 in so far as not already in force"/>
+    </ukm:InForceDates>
+    </ukm:Effect></content></entry></feed>
+    """
+
+    {[effect], _} = ChangesFeed.parse(xml)
+    q = "for specified purposes and 1.1.1996 in so far as not already in force"
+    assert effect.in_force_qualifications == [q]
+    assert [%{date: ~D[1993-01-01], qualification: ^q}] = effect.in_force
+  end
+
   test "in-force qualifications: \"Other\" reads OtherQualification; undated or unapplied entries don't count (LR-03)" do
     xml = """
     <feed xmlns="http://www.w3.org/2005/Atom" xmlns:ukm="http://www.legislation.gov.uk/namespaces/metadata"><entry><content>
