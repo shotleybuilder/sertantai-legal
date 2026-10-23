@@ -2,7 +2,7 @@
 # Rejects Mailgun-like keys: "key-" followed by 32 lowercase letters/digits.
 #
 # legislation.gov.uk effect ids (changes feed, CLML ChangeId/CommentaryRef,
-# shaped "key-" + 32 hex) have that shape. GitHub push
+# "key-" + 32 hex) have that shape. GitHub push
 # protection reads them as Mailgun API keys and declines the push (GH013).
 # This happened on 2026-10-01, on 2026-10-07 and on 2026-10-23, the last needing a
 # 24-commit history rewrite. Catch them before they enter history.
