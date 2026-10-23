@@ -89,6 +89,7 @@ Reader rules (intended behaviour):
   (date_first, partial) plus a commenced change per later stage; a whole removal →
   repealed_in_part at partial stages, repealed at the full stage; any other text change → one
   change from the first stage (date_first, partial).
+- A qualification "Other"/"other" is replaced by its OtherQualification text.
 - Commencements carry effect_extent, savings, and in_force_for = the territory the qualification
   names ("for E.W.S." → "E+W+S"), as read, not applied.
 - Other facts: by = affecting law; effect_extent ("E+W+S+N.I." = "E+W+S+NI"; the placeholder
@@ -103,7 +104,10 @@ in Comments not used (a pointer); K8 a commencement's territory not yet applied 
 (in_force_for carried); K9 placed_versions targets every version — narrowing by the carried
 extent is the label fold's (CV-S09); K10 nested schedule ids named short by the shared namer
 (schedule-N-part-P-paragraph-M → sch.N.pt.P; unnumbered schedule-paragraph-1 → sch.paragraph) —
-no effect while schedules are unparsed (CV-S02a, deferred).
+no effect while schedules are unparsed (CV-S02a, deferred); K11 a second date written only in
+an OtherQualification's free text ("… and 1.1.1996 in so far as not already in force") is not
+made a stage (the text is carried); K12 staged modifications/applications stay one change (no
+operation, so not staged).
 
 For each item judge placement (targets + outcome, verified in the DB and text) and facts
 (operation, level, dates/stages, by, extent, territory, savings, in_force_for) against the
@@ -118,4 +122,4 @@ say doubtful rather than guess. Under 900 words.
 
 ## History
 
-- OH&S (first family, 2026-10-22/23). Rounds: seed {2026,10,22} (defects A–F), seed 7 (D1–D5), seed 11 (49/50, NEW-A and NEW-B fixed). The session is `.claude/sessions/change-vocabulary/2026-10-22-cv-s02-feed-reader.md`.
+- OH&S (first family, 2026-10-22/23). Rounds: seed {2026,10,22} (defects A–F), seed 7 (D1–D5), seed 11 (49/50, NEW-A and NEW-B fixed), seed 13 (49/50, NEW-C deferred as K10, NEW-D fixed), seed 17. The session is `.claude/sessions/change-vocabulary/2026-10-22-cv-s02-feed-reader.md`.
