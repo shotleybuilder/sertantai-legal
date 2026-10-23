@@ -51,18 +51,69 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
         xml_ids \\ %{}
       ) do
     flat = EffectTarget.flat(order)
+    held = MapSet.new(Map.values(xml_ids))
 
     for %Effect{effect_id: id} = e <- effects,
         id != nil,
         {target, ranged?} <- targets(e, law_name, flat, xml_ids),
+        {target, unheld} = finer(target, e, law_name, held),
         {key, claims} <- changes(e),
         do:
           {key, target,
            claims ++
              Claim.new(:feed, :ranged, if(ranged?, do: true), id) ++
+             Claim.new(:feed, :finer_unheld, unheld, id) ++
              commenced_by(claims, e, commencement) ++
              extent(e, extents, claims) ++
              affecting(e)}
+  end
+
+  @eu ~w(eur eudr eudn)
+
+  # EU law: the feed links the article and writes the rest ("Art. 56 para.
+  # 6 Point (b)", ref `article-56`). The finer part is read — "para. N" is
+  # (N), "Point (x)" / "Point x)" / "Point B)III)" are (x)(y) — and the
+  # change goes on the deepest of them we hold, else stays on the article.
+  # A finer form we don't hold is returned (`:finer_unheld`): maybe our
+  # parse of the text missed it, a tell-tale (D3, Jason 2026-10-23)
+  defp finer(target, %Effect{affected_provisions: text, affected_refs: refs}, law, held) do
+    with true <- eu?(law) and length(List.wrap(refs)) == 1,
+         "art.Article " <> number <- target,
+         [_, ^number, tail] <- Regex.run(~r/^\s*Art\.\s*(\w+)\s*(.*)$/u, text || ""),
+         [_ | _] = parts <- finer_parts(tail) do
+      candidates = parts |> Enum.scan(target, &(&2 <> "(" <> &1 <> ")"))
+      deepest = candidates |> Enum.filter(&MapSet.member?(held, &1)) |> List.last()
+      full = List.last(candidates)
+
+      {deepest || target, if(full != deepest, do: full)}
+    else
+      _ -> {target, nil}
+    end
+  end
+
+  defp eu?(nil), do: false
+  defp eu?(law), do: Enum.at(String.split(law, "_"), 1) in @eu
+
+  # "para. 6 Point (b)" → ["6", "b"]; "Point B)III)" → ["b", "iii"];
+  # "para. 4a" → ["4a"]; reading stops at what names no row ("Sentence 2")
+  defp finer_parts(tail) do
+    case Regex.run(~r/^para\.\s*(\w+)\s*(.*)$/u, tail) do
+      [_, n, rest] -> [n | points(rest)]
+      nil -> points(tail)
+    end
+  end
+
+  defp points(text) do
+    case Regex.run(~r/^[Pp]oint\s+((?:\(?[A-Za-z0-9]+\)\s*)+)/u, text) do
+      [_, items] ->
+        ~r/\(?([A-Za-z0-9]+)\)/
+        |> Regex.scan(items, capture: :all_but_first)
+        |> List.flatten()
+        |> Enum.map(&String.downcase/1)
+
+      nil ->
+        []
+    end
   end
 
   # the amending provisions the feed names ("s. 29(4)" → ["s.29(4)"]): was

@@ -50,4 +50,58 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedTargetsTest do
     assert targets(effect("Sch.", ["schedule"]), "UK_uksi_1997_1713", %{}) == ["?"]
     assert targets(effect("Preamble", ["introduction"]), "UK_uksi_2009_716", %{}) == ["?"]
   end
+
+  describe "EU: the feed's words name finer than its ref (D3)" do
+    @reach "UK_eur_2006_1907"
+    @held %{
+      "article-56" => "art.Article 56",
+      "article-56-6" => "art.Article 56(6)",
+      "article-56-6--b" => "art.Article 56(6)(b)",
+      "article-25" => "art.Article 25",
+      "article-25-7" => "art.Article 25(7)",
+      "article-23" => "art.Article 23",
+      "article-2" => "art.Article 2"
+    }
+
+    defp finer(text, ref) do
+      [{_, target, claims} | _] = Feed.read([effect(text, [ref])], @reach, [], %{}, %{}, @held)
+      {target, Enum.find_value(claims, &(&1.attribute == :finer_unheld && &1.value))}
+    end
+
+    test "para. and Point read down to the deepest row we hold" do
+      assert finer("Art. 56 para. 6 Point (b)", "article-56") == {"art.Article 56(6)(b)", nil}
+      assert finer("Art. 25 para. 7", "article-25") == {"art.Article 25(7)", nil}
+    end
+
+    test "a finer form we don't hold: on the deepest we do, flagged as a tell-tale" do
+      assert finer("Art. 25 para. 8", "article-25") == {"art.Article 25", "art.Article 25(8)"}
+      assert finer("Art. 23 Point F)", "article-23") == {"art.Article 23", "art.Article 23(f)"}
+
+      assert finer("Art. 2 Point B)III)", "article-2") ==
+               {"art.Article 2", "art.Article 2(b)(iii)"}
+
+      assert finer("Art. 56 para. 6 Point (c)", "article-56") ==
+               {"art.Article 56(6)", "art.Article 56(6)(c)"}
+    end
+
+    test "nothing finer, or what names no row: the article, nothing flagged" do
+      assert finer("Art. 56", "article-56") == {"art.Article 56", nil}
+      assert finer("Art. 25 Sentence 2", "article-25") == {"art.Article 25", nil}
+      assert finer("Art. 25 para. 7 Sentence 2", "article-25") == {"art.Article 25(7)", nil}
+    end
+
+    test "only EU law, and only one ref" do
+      [{_, t, _}] =
+        Feed.read(
+          [effect("Art. 25 para. 7", ["article-25"])],
+          "UK_uksi_2008_1597",
+          [],
+          %{},
+          %{},
+          @held
+        )
+
+      assert t == "art.Article 25"
+    end
+  end
 end

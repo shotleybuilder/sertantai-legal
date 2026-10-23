@@ -70,6 +70,20 @@ defmodule Mix.Tasks.Lat.FeedCheck do
             "  #{elem(r.outcome, 1)}  #{r.law} #{inspect(r.effect.affected_provisions)} refs #{inspect(r.effect.affected_refs)} → #{inspect(r.targets)}"
           )
 
+    # the feed's words name a finer provision than we hold (EU "Art. 56
+    # para. 6 Point (b)"): placed on what we hold; maybe our parse missed it
+    unheld =
+      for r <- results,
+          c <- r.claims,
+          c.source == :feed and c.attribute == :finer_unheld and c.value != nil,
+          uniq: true,
+          do: {r.law, c.value, r.effect.affected_provisions}
+
+    Mix.shell().info("\nfiner form not held (parse tell-tales): #{length(unheld)}")
+
+    for {law, ref, text} <- if(opts[:all], do: unheld, else: Enum.take(unheld, 20)),
+        do: Mix.shell().info("  #{law} #{ref}  (#{inspect(text)})")
+
     if opts[:sample], do: sample(results, opts[:sample], opts[:n] || 50, opts[:seed])
 
     Mix.shell().info("\n#{if faults == [], do: "PASS (placement)", else: "FAIL (placement)"}")
