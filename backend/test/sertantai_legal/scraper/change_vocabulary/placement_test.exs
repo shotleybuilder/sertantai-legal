@@ -97,6 +97,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.PlacementTest do
     assert Placement.marked(xml) == MapSet.new([id.("a")])
   end
 
+  test "a finer form not held tells of the parse: a faulty name, items with no ids, or not found" do
+    rows = MapSet.new(["art.Article 77(2)", "art.Article 77(2)((e))", "art.Article 57"])
+
+    assert Placement.tell_tale("art.Article 77(2)(e)", rows, false) == :naming
+    assert Placement.tell_tale("art.Article 57(a)", rows, true) == :no_ids
+    assert Placement.tell_tale("art.Article 54(3)", rows, false) == :not_found
+  end
+
   test "which reasons are faults of ours, which known limits, tell-tales, or the feed's own" do
     assert Placement.fault?(:refs_not_converted)
     refute Placement.fault?(:row_missing)

@@ -14,11 +14,19 @@ defmodule Mix.Tasks.Lat.FeedCheck do
   use Mix.Task
 
   alias SertantaiLegal.Repo
+  alias SertantaiLegal.Scraper.LatRef
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Placement, Ref}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.{Feed, Markup}
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed
 
   @shortdoc "Every feed effect accounted for; a sample for checking (read-only)"
+
+  # what a finer form the feed names but we don't hold tells of our parse
+  @tell_tales %{
+    naming: "a row we hold under a faulty name, #185",
+    no_ids: "the text numbers items with no id; the parse made no row, #184",
+    not_found: "gone from the text, or not there: a candidate only"
+  }
 
   @impl Mix.Task
   def run(args) do
@@ -38,7 +46,20 @@ defmodule Mix.Tasks.Lat.FeedCheck do
     Logger.configure(level: :warning)
 
     laws = scope(opts)
-    results = Enum.flat_map(laws, &law_results/1)
+    {held, missing} = laws |> Enum.map(&law_results/1) |> Enum.split_with(&match?({:ok, _}, &1))
+    results = Enum.flat_map(held, &elem(&1, 1))
+
+    # the check stands on stored sources (CV-S01): a law whose feed or text
+    # isn't held is reported and fails the check, never read as "not in text"
+    if missing != [] do
+      Mix.shell().error(
+        "#{length(missing)} laws lack stored sources (run mix lat.sources --family F --fetch):"
+      )
+
+      for {:missing, law, what} <- missing, do: Mix.shell().error("  #{law}: no #{what}")
+    end
+
+    if opts[:family], do: report_unparsed(opts[:family], length(laws))
 
     counts =
       Enum.frequencies_by(results, fn r ->
@@ -77,16 +98,33 @@ defmodule Mix.Tasks.Lat.FeedCheck do
           c <- r.claims,
           c.source == :feed and c.attribute == :finer_unheld and c.value != nil,
           uniq: true,
-          do: {r.law, c.value, r.effect.affected_provisions}
+          do: {r.law, c.value, r.effect.affected_provisions, r.tell_tales[c.value]}
 
     Mix.shell().info("\nfiner form not held (parse tell-tales): #{length(unheld)}")
 
-    for {law, ref, text} <- if(opts[:all], do: unheld, else: Enum.take(unheld, 20)),
-        do: Mix.shell().info("  #{law} #{ref}  (#{inspect(text)})")
+    unheld
+    |> Enum.group_by(fn {_, _, _, kind} -> kind end)
+    |> Enum.each(fn {kind, items} ->
+      Mix.shell().info("  #{kind}: #{length(items)}  (#{@tell_tales[kind]})")
+
+      for {law, ref, text, _} <- if(opts[:all], do: items, else: Enum.take(items, 10)),
+          do: Mix.shell().info("    #{law} #{ref}  (#{inspect(text)})")
+    end)
 
     if opts[:sample], do: sample(results, opts[:sample], opts[:n] || 50, opts[:seed])
 
-    Mix.shell().info("\n#{if faults == [], do: "PASS (placement)", else: "FAIL (placement)"}")
+    pass? = faults == [] and missing == []
+    Mix.shell().info("\n#{if pass?, do: "PASS (placement)", else: "FAIL (placement)"}")
+  end
+
+  # family laws whose LAT isn't held (not making, discarded): out of scope
+  defp report_unparsed(family, in_scope) do
+    [[all]] =
+      Repo.query!("SELECT count(*) FROM uk_lrt WHERE family LIKE '%' || $1 || '%'", [family]).rows
+
+    Mix.shell().info(
+      "#{all} family laws; #{in_scope} hold LAT rows (in scope), #{all - in_scope} don't"
+    )
   end
 
   defp scope(opts) do
@@ -116,8 +154,9 @@ defmodule Mix.Tasks.Lat.FeedCheck do
   defp law_results(law) do
     [_, type, year, number] = String.split(law, "_", parts: 4)
 
-    with {:ok, effects} <- ChangesFeed.fetch(type, year, number, store: :only),
-         [path | _] <- Path.wildcard("data/cache/clml/#{type}/#{year}/#{number}/body/data.xml.gz") do
+    with {:feed, {:ok, effects}} <- {:feed, ChangesFeed.fetch(type, year, number, store: :only)},
+         {:text, [path | _]} <-
+           {:text, Path.wildcard("data/cache/clml/#{type}/#{year}/#{number}/body/data.xml.gz")} do
       xml = path |> File.read!() |> :zlib.gunzip()
       order = Markup.order(xml)
 
@@ -149,22 +188,61 @@ defmodule Mix.Tasks.Lat.FeedCheck do
         |> Feed.read(law, order, %{}, %{}, xml_ids)
         |> Enum.group_by(fn {key, _, _} -> key |> String.split("@") |> hd() end)
 
-      for e <- effects, e.effect_id != nil do
-        mine = Map.get(sets, e.effect_id, [])
-        targets = mine |> Enum.map(&elem(&1, 1)) |> Enum.uniq()
-        claims = mine |> Enum.flat_map(&elem(&1, 2)) |> Enum.uniq()
+      # what each finer form not held tells of our parse
+      by_ref = Map.new(xml_ids, fn {x, r} -> {r, x} end)
 
-        %{
-          law: law,
-          effect: e,
-          targets: targets,
-          claims: claims,
-          sets: mine,
-          outcome: Placement.classify(e, targets, held)
-        }
-      end
+      tell_tales =
+        for {_, _, claims} <- List.flatten(Map.values(sets)),
+            %{attribute: :finer_unheld, value: v} <- claims,
+            v != nil,
+            into: %{} do
+          held_above = v |> LatRef.ancestors() |> Enum.find(&Map.has_key?(by_ref, &1))
+          {v, Placement.tell_tale(v, held.rows, list_items?(xml, by_ref[held_above]))}
+        end
+
+      results =
+        for e <- effects, e.effect_id != nil do
+          mine = Map.get(sets, e.effect_id, [])
+          targets = mine |> Enum.map(&elem(&1, 1)) |> Enum.uniq()
+          claims = mine |> Enum.flat_map(&elem(&1, 2)) |> Enum.uniq()
+
+          %{
+            law: law,
+            effect: e,
+            targets: targets,
+            claims: claims,
+            sets: mine,
+            tell_tales: tell_tales,
+            outcome: Placement.classify(e, targets, held)
+          }
+        end
+
+      {:ok, results}
     else
-      _ -> []
+      {:feed, _} -> {:missing, law, "changes feed"}
+      {:text, _} -> {:missing, law, "law text (CLML body)"}
+    end
+  end
+
+  # the element's own text, up to the next element with an id: does it
+  # number items with no id of their own?
+  defp list_items?(_xml, nil), do: false
+
+  defp list_items?(xml, xml_id) do
+    case :binary.match(xml, ~s(id="#{xml_id}")) do
+      {at, len} ->
+        rest = binary_part(xml, at + len, byte_size(xml) - at - len)
+
+        own =
+          case :binary.match(rest, ~s( id=")) do
+            {next, _} -> binary_part(rest, 0, next)
+            :nomatch -> rest
+          end
+
+        String.contains?(own, "<ListItem")
+
+      :nomatch ->
+        false
     end
   end
 

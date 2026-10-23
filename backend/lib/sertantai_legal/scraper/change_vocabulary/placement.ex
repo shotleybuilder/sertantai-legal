@@ -190,6 +190,26 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
     |> MapSet.new()
   end
 
+  @doc """
+  What a finer form the feed names but we don't hold (`:finer_unheld`)
+  tells of our parse (CV-S02, for each family's check):
+  `:naming` — a row we hold is that provision under a faulty name (`((e))`,
+  #185); `:no_ids` — the held row's text numbers items with no id of their
+  own, so the parse made no row for them (#184); `:not_found` — gone from
+  the text, or not there (a candidate only). `rows` are the law's rows;
+  `list_items?` whether the held row's own text holds id-less list items.
+  """
+  @spec tell_tale(String.t(), MapSet.t(), boolean()) :: :naming | :no_ids | :not_found
+  def tell_tale(candidate, rows, list_items?) do
+    cond do
+      Enum.any?(rows, &(undoubled(base(&1)) == candidate)) -> :naming
+      list_items? -> :no_ids
+      true -> :not_found
+    end
+  end
+
+  defp undoubled(ref), do: ref |> String.replace("((", "(") |> String.replace("))", ")")
+
   @doc "True for a reason that is the reader's fault (pass needs none)."
   @spec fault?(atom()) :: boolean()
   def fault?(reason), do: reason in @faults
