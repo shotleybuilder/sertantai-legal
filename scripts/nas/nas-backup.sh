@@ -64,6 +64,21 @@ TABLES=(
   cascade_affected_laws
   law_edges
   si_code_families
+  # added 2026-10-24 (CV-S05): legal's tables created since the list was made
+  # — the rulesets (AR, CV-07 extent), the change store (CV-04), definitions'
+  # links and the secondary-source detail (after their parents above)
+  amendment_rules
+  extent_rules
+  provision_changes
+  provision_change_claims
+  evidence_patterns
+  definition_links
+  secondary_obligations
+  secondary_terms
+  secondary_raci
+  secondary_mandated_artefacts
+  artefact_templates
+  applicability_events
 )
 
 # Project data directory to sync (gitignored, not in GitHub)
@@ -230,6 +245,32 @@ if [ "$DO_DATA" = true ]; then
   else
     echo "  SKIP ${DATA_DIR} (not found)"
   fi
+
+  # Git-ignored files held nowhere else (added 2026-10-24, CV-S05): the
+  # project's Claude memory (standing rules and feedback), the QQ framework
+  # docs, the scrape/import batches and parse metrics. Not .env (secrets),
+  # not scripts/sync's old delta dumps (Jason 2026-10-24).
+  EXTRAS=(
+    "${HOME}/.claude/projects/-var-home-jason-Desktop-sertantai-legal/memory:claude-memory"
+    "${PROJECT_DIR}/.claude/memory:claude-memory-repo"
+    "${PROJECT_DIR}/docs/qq:docs-qq"
+    "${PROJECT_DIR}/backend/priv/scraper:priv-scraper"
+    "${PROJECT_DIR}/backend/priv/metrics:priv-metrics"
+  )
+
+  for entry in "${EXTRAS[@]}"; do
+    src="${entry%%:*}"
+    dest="${NAS_DATA_DIR}/extras/${entry##*:}"
+
+    if [ -d "$src" ]; then
+      mkdir -p "$dest"
+      echo "  rsync ${src} → ${dest}/"
+      rsync "${RSYNC_OPTS[@]}" "$src/" "$dest/"
+      echo "    $(find "$src" -type f | wc -l) files, $(du -sh "$src" | cut -f1)"
+    else
+      echo "  SKIP ${src} (not found)"
+    fi
+  done
 
   # Sync backend/data/ (QQ working data, SQLite DBs, imports, reports, cache/clml — the local CLML store, #175)
   backend_data="${PROJECT_DIR}/backend/data"
