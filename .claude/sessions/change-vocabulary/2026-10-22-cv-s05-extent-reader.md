@@ -4,6 +4,12 @@ status: active
 release: v0.1
 opened: '2026-10-22'
 bugs:
+  - pattern: "Fragments beside the whole text: scoped LAT (#166) fetched section/part/schedule fragments; fetching the body or Schedules later never removed them, and every reader globbed **/data.xml.gz, so the fragments' ids repeated the body's and moved document positions (TCEA 2007 Part 1 read as s.44 only)"
+    category: data
+    module: ClmlStore / LatStagedParser / the CLML loaders (lat.amending, lat.commencement*, change_collector, lat.vocabulary, lat.extent_*, lat.order_patterns)
+    affected: 40
+    fix: "689c0adb: one loader (ClmlStore.law_docs: body + Schedules, fragments only without them); storing the whole removes the fragments; a scoped law with its body held is parsed from the body, cut to its scope (LatScope.cut). The duplicates were removed (40 laws, 116 files, archived in backend/data/cache/clml-duplicate-fragments-2026-10-24.tar.gz)"
+    status: fixed
   - pattern: "The extent check fetched from legislation.gov.uk unasked: the shared powers step (`lat.amending` with_powers) re-fetches an SI's made introduction whenever the enabling cache holds nothing parsed for it (retry_empty)"
     category: tooling
     module: mix lat.amending (with_powers) / mix lat.extent_check
@@ -242,3 +248,36 @@ N1–N16 are fixed as logged above, with tests (the reader's tests are 44). Also
   - Unread own sentences: 67 laws (was 79).
   - Changes: bound by the law 3,369; none: EU 573, no powers 470, not named 178, same 118, competence only 79, provision not named 53, no amending law 42, no clause 24, not held 2; territory from the law 31; markup 14.
 - **Golden 27/27.** Agent round 2 launched on the seed-6 sample.
+
+## Agent check, seed 6 (round 2): laws 38 OK / 1 WRONG (K5) / 7 WRONG NEW / 4 doubtful; changes 44 OK / 6 doubtful — FAIL (11 NEW)
+
+- **A:** "The provisions of this Act extend to England and Wales and, except as mentioned below, to Northern Ireland" is read as E+W (truth E+W+NI). And "The following provisions of Part II do not extend to NI— section 92 …" matches `@part_not` on "Part II do not extend", making all of Part II not NI (Arbitration Act 1996 s.108).
+- **B:** "does not extend to Scotland or Northern Ireland": "or" isn't in the place list, so only S is subtracted (Defective Premises Act 1972 s.7(3)).
+- **C:** lists are applied in stored order, so an `also` list applied before an `only` list gives nothing (Police and Justice Act 2006 s.54: s.5, Sch 3, s.38, s.41 should be E+W+S+NI).
+- **D:** "This Act, except this section and the following provisions, namely— …, does not extend to Northern Ireland": `@except_list` only takes "except—" (Gas Act 1986 s.68(6)).
+- **E:** `@part_not` is read only inside a default clause ("Parts 2 and 3 do not extend to Northern Ireland", SENDA 2001 s.43(12)).
+- **F (verified, wider than extent):** 377 laws in the CLML store hold fragment files (`section/N`, `schedule/N`, from scoped fetches) beside the whole body. Every loader globs `**/data.xml.gz`, so the fragments' ids duplicate the body's and move document positions (TCEA 2007: Part 1 reads as s.44 only). The loaders are lat.amending, lat.commencement (+ check, patterns), change_collector, lat.vocabulary, lat.extent_* and lat.order_patterns, so the CV-S04 readers may be affected too. Also unread: "(2) The other provisions of this Act extend only to England and Wales" (a complement default).
+- **G:** "this Act extends throughout the United Kingdom" isn't read (the pattern needs "extends to") (Police Act 1997 s.137(1)).
+- **H:** the extent default is read from BlockAmendment words the law inserts elsewhere (uksi 2026/867 reg.2). The own-words rule was applied to application only.
+- **I:** changes known only from law text (only `law_text:by`) never get an extent claim. `NoteDate.extent_claims` resolves the law from markup's cited or feed's by only (C5, C7, C31–C34).
+- **J:** heading lists are parsed only in the clause provision ("The following provisions extend to the United Kingdom— a Part 1; …" in reg.3, while the clause is reg.2; uksi 2019/696).
+- **K (minor):** qualified items in a parent Act's "also extend to Scotland" list (FRSA 2004 s.63(2)). No effect on powers here.
+- **Minor:**
+  - ukpga 2011/13: "this section and sections 157 and 158" dropped; a carve-out not applied.
+  - ukpga 1996/18 s.244(4): "Sections 240 and 242 and Schedules 1 and 3 have the same extent as the provisions amended" unread (the subject isn't "amendments").
+  - The check's labels `competence_only` / `provision_not_named` misstate the cause for I.
+- **Known:** K1 ×5, K3, K5 ×3, K6 ×2, K8 ×2, K9 ×3, K10.
+
+## F fixed: fragments, and the missing Schedules (2026-10-24, Jason: "The duplicates are our fault and need removing"; "Get all the schedules for the laws we need them for")
+
+- **Measured properly:** the 377 included 260 preamble folders (the enabling cache's `made/introduction`), which repeat no ids. Fragment laws: 24 with the body (the duplicates), 33 with Schedules only, 45 with fragments only.
+- **The cause is ours:** scoped LAT (#166) fetched fragments for parent Acts (2026-10-08/13). Their bodies were fetched later (2026-10-22), and the fragments were never removed.
+- **Schedules fetched:** 160 laws in the OH&S scope had a body naming Schedules we didn't hold, and 2 had no body. Among the 160 are 80 family laws, 137 amending laws (3,036 changes, 938 of them made by Schedule provisions) and 64 commencing laws (12,136 commencements). `mix clml.fetch --whole` ran for 7 minutes: 161 laws now hold both. UK_uksi_2006_475 has no body on legislation.gov.uk. The rest of the store (about 1,100 laws in other families) is left for each family's turn.
+- **Fix (`689c0adb`):**
+  - `ClmlStore.law_docs` is the one loader: the body (else its fragments), plus the Schedules (else the schedule fragments). Never the introduction or the made version.
+  - Storing a body removes the law's other fragments; storing its Schedules removes its schedule fragments.
+  - A scoped law with its body held is parsed from the body, and `LatScope.cut` keeps the scope's rows. `clml.fetch` and `lat.sources` fetch the body for it, never a fragment.
+  - The cut was checked against the stored LAT of all 24 scoped laws: the section rows match on every one, and only some cross-heading ids differ. In 11 laws a fragment parse had named a shared cross-heading after its own section (h.60 where the whole text gives h.59); the cut gives the whole parse's id. No re-parse was run. Tests pass (8,668).
+- **Duplicates removed:** 40 laws, 116 files: the 24, plus laws where the fetch added Schedules beside schedule fragments. They're archived first in `backend/data/cache/clml-duplicate-fragments-2026-10-24.tar.gz`. 77 laws still hold fragments, each with no body, so the fragments are their only text.
+- **Next:** CV-S04's check and catalogues, and CV-S05's runs, must be re-run; the readers now see Schedules and no duplicates. Ask Jason first.
+
