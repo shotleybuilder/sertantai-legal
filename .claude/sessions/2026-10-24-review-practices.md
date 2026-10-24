@@ -1,26 +1,129 @@
 ---
 session: Review Practices from EGM
-status: active
+status: closed
 lane: process
 opened: 2026-10-24
+closed: 2026-10-24
+outcome: success
+
+summary: >
+  Took the lessons of Google's Elephant-Goldfish Model into this project's own practice, without installing the plugin:
+  four written review standards, a fresh-context `reviewer` subagent, `gemini-review --standard`, a lane rule for
+  concurrent Claudes, and CLAUDE.md's review gate rewritten. A trial of a rules-blind check agent on OH&S found nothing
+  the rules-aware agent missed, so it was not adopted; the trial surfaced two markup reader defects (#187, #188).
+
+decisions:
+  - what: Adapt EGM natively rather than install the plugin
+    why: The project already had specs, triage and acceptance checks; EGM's gaps-filling ideas (context-free reviewers, written standards, drift) fit, its ceremony (one-question gates, no-code phase, skill test suites, docs/designs/) did not
+    result: 6 items built, 3 dropped on evidence
+  - what: One active non-meta session per lane (lane frontmatter, default build), not per Claude session
+    why: Claude session ids are invisible in docs and don't survive a new conversation; a named lane does
+    result: two Claudes ran CV-S04 (build) and this session (process) side by side with path-scoped commits and no collisions
+  - what: Reviewer as a Claude Code subagent definition (.claude/agents/reviewer.md), not a skill
+    why: a fixed brief and no conversation history; a skill launching general-purpose carries the caller's framing in the prompt it writes
+    result: loaded after `claude --resume`; every run found real gaps with command evidence
+  - what: Gemini kept for design and naive-reader; reviewer for zoom-out, plan and code claims
+    why: Gemini sees the document only; both dogfood Blockers needed `git check-ignore` to find
+    result: on the same doc, reviewer gave evidenced findings, Gemini gave conformance findings, one generic
+  - what: plan standard checks a session Todo as a whole for scope and order, and holds each item to the full standard before it is built
+    why: the first plan review demanded every far item be designed up front, which fights session-start's "lean at creation"
+    result: standard amended; later reviews checked items just before building
+  - what: Rules-blind agent not adopted in markup-reader-check; A/B runs and the drift check dropped
+    why: trial on bed7d2cc (OH&S seed 2) - blind found no reader-wrong or rule question the rules-aware agent passed; A/B was conditional on that; drift check's trigger (a guide or skill making a false code claim) never fired
+    result: check skills unchanged; blind rerun suggested when a new family brings new rules
+  - what: code-reviews folder stays gitignored; this lane's reviews committed with git add -f
+    why: Jason's call; existing force-add precedent (15 of 61 tracked)
+    result: saving rule (-rN, add -f) written into review-standards README and gemini-review
+
+metrics:
+  dogfood_reviews: { zoom_out: "1 Blocker, 3 Major, 2 Nit", plan: "2 Blocker, 4 Major, 2 Nit" }
+  item4_reviewer_zoom_out: { major: 3, nit: 2 }
+  item5_gemini_design: { blocker: 1, major: 2, nit: 2 }
+  items6_8_plan_review: { blocker: 1, major: 5, nit: 1 }
+  trial_rules_aware: { placement_ok: 42, k9: 8, facts_ok: 47, wrong: 2, doubtful: 1, tokens: "~142k" }
+  trial_blind: { items: 50, unique_real_findings: 0, confirmed_reader_wrong: 2, tokens: "~118k" }
+  skills_readme: { listed_missing: 7, real_unlisted: 21 }
+
+lessons:
+  - title: Fresh-context reviewers find the author's blind spots in the author's own plan
+    detail: >
+      Two reviewers given only the session doc and one standard found that .claude/* in .gitignore hid the new
+      standards, and later that backend/data/code-reviews/ sits under data/ - the same mistake twice, both missed by
+      the author with full context. Both were found with `git check-ignore`, which needs a reviewer that can run commands.
+    tag: tooling
+  - title: A rules-blind check confirms rules more than it finds faults
+    detail: >
+      On OH&S the blind agent independently found the #187 defect but nothing the rules-aware agent missed; every
+      blind-vs-reader disagreement traced to a known pattern (K9, fix I) or a settled decision (notes are hints). The
+      rules-aware agent found #188, which needs the key rule to see. Blind checks test rules, so run one when a family
+      brings new rules, not as a standing step.
+    tag: tooling
+  - title: Hide the reader's answers from a blind agent's file system, not just its prompt
+    detail: >
+      a.json (with reader output) sat beside blind.json; the prompt had to forbid reading other scratchpad files,
+      .claude/ and backend/lib. Give a blind agent its own folder; it also wrote helper scripts there.
+    tag: tooling
+  - title: Named subagents load at conversation start; `claude --resume` picks them up
+    detail: A new .claude/agents/*.md is not callable in the conversation that wrote it; write it, commit, resume.
+    tag: tooling
+  - title: A per-item baseline must be saved to be comparable
+    detail: >
+      CV-S03 round 2 kept only counts, so "found something round 2 passed" could not be measured; the trial had to run
+      the rules-aware agent again on the same sample. Save per-item agent tables (with effect ids shortened - full key-
+      ids trip push protection).
+    tag: tooling
+  - title: Concurrent lanes share a working tree safely with path-scoped commits and explicit signals
+    detail: >
+      Pre-commit compile/credo and pre-push tests ran over lane build's WIP and passed; the risk was staging its files.
+      Cross-session messages (start/finish of heavy runs, commit hashes) replaced guessing; Jason chose to wait for
+      lane build's commit rather than pin an uncommitted snapshot.
+    tag: tooling
+
 bugs:
   - pattern: "Markup reader ignores a note linked by a child <CommentaryRef Ref=…/> (no CommentaryRef attribute), so cited and affecting are lost"
-    category: markup reader
-    module: change_vocabulary/readers/markup.ex (note: attr(attrs, :CommentaryRef) only, ~line 292)
-    affected: 201 ChangeIds in 44 stored laws (all legacy ids); seen as OH&S #27, #39 (UK_ukpga_1961_34 s.29, s.4)
+    category: "markup reader"
+    module: "change_vocabulary/readers/markup.ex (note: attr(attrs, :CommentaryRef) only, ~line 292)"
+    affected: "201 ChangeIds in 44 stored laws (all legacy ids); seen as OH&S #27, #39 (UK_ukpga_1961_34 s.29, s.4)"
     fix: "Fall back to the first child CommentaryRef/@Ref of the change's occurrences"
     issue: 187
     status: open
   - pattern: "An effect id held only in a change's CommentaryRef (ChangeId not key-…) is not used as the key, so a feed-recorded effect is treated as legacy"
-    category: markup reader (design question for Jason)
-    module: change_vocabulary/readers/markup.ex (key rule)
-    affected: 5,598 elements in 54 stored laws (uksi/1996/1527: 2,020; ukpga/1997/50: 1,197); seen as OH&S #34
+    category: "markup reader (design question for Jason)"
+    module: "change_vocabulary/readers/markup.ex (key rule)"
+    affected: "5,598 elements in 54 stored laws (uksi/1996/1527: 2,020; ukpga/1997/50: 1,197); seen as OH&S #34"
     fix: "Jason to decide whether the key falls back to the note's effect id"
     issue: 188
     status: open
+
+artifacts:
+  - .claude/review-standards/README.md
+  - .claude/review-standards/zoom-out.md
+  - .claude/review-standards/design.md
+  - .claude/review-standards/plan.md
+  - .claude/review-standards/naive-reader.md
+  - .claude/agents/reviewer.md
+  - .claude/skills/gemini-review/SKILL.md
+  - .claude/skills/README.md
+  - .claude/commands/session-start.md
+  - .gitignore
+  - CLAUDE.md
+  - backend/data/code-reviews/2026-10-24-review-practices-zoom-out-claude.md
+  - backend/data/code-reviews/2026-10-24-review-practices-plan-claude.md
+  - backend/data/code-reviews/2026-10-24-review-practices-zoom-out-claude-r2.md
+  - backend/data/code-reviews/2026-10-24-review-practices-design-gemini.md
+  - backend/data/code-reviews/2026-10-24-review-practices-items6-8-plan-claude.md
+
+depends_on:
+  - 2026-10-22-cv-s03-markup-reader.md
+
+enables:
+  - Reviews against written standards for any plan or design (reviewer subagent, gemini-review --standard)
+  - Concurrent Claudes on separate lanes
+  - "#187 child CommentaryRef fix; #188 key-fallback decision"
+  - A rules-blind rerun when a new family brings new rules (e.g. CV-S04 commencement reader)
 ---
 
-# Session: Review Practices from EGM (ACTIVE)
+# Session: Review Practices from EGM (CLOSED)
 
 ## Problem
 
