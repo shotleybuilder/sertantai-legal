@@ -16,6 +16,10 @@ Adapted from Google's Elephant-Goldfish Model (`resources/document_standards/`),
 - `gemini-review` with `--standard <name>`: document only, a different model.
 - The fresh-context Claude reviewer: the document plus the files it names, and code search. Only this reviewer can check reuse and claims about the code.
 
+## Saving
+
+The caller saves each report to `backend/data/code-reviews/<YYYY-MM-DD>-<slug>-<standard>-<claude|gemini>.md`. Re-runs add `-r2`, `-r3`; never overwrite a report. The folder sits under the ignored `data/`, so commit reports with `git add -f`.
+
 ## Shared output format
 
 Every reviewer reports each finding as:

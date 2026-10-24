@@ -1,3 +1,8 @@
+---
+name: gemini-review
+description: Send a document to Google Gemini for an outside review — free-form, or against one standard in .claude/review-standards/ with --standard (design, naive-reader, plan, zoom-out). Gemini sees the document only, no code.
+---
+
 # SKILL: Gemini Review
 
 **Purpose:** Send a document or plan to Google Gemini for external review and feedback
@@ -17,9 +22,16 @@ Sends document content with a review prompt via curl to the Gemini REST API.
 
 ## Usage
 
-The skill takes two inputs:
+The skill takes these inputs:
 1. **File path** — the document to review (typically a `.md` plan file)
-2. **Review prompt** — what to ask Gemini (optional, defaults to general review)
+2. **`--standard <name>`** (optional) — review against `.claude/review-standards/<name>.md`; see "Standard review" below
+3. **Review prompt** (optional, ignored with `--standard`) — what to ask Gemini; defaults to the general review prompt
+
+**Gemini sees the document only.** It can't search code, so it can't check reuse or claims about the code. For those use the `reviewer` subagent (`.claude/agents/reviewer.md`). Gemini suits `design` and `naive-reader`, and gives a second model's view on `plan`.
+
+### Saving
+
+Save every review to `backend/data/code-reviews/<YYYY-MM-DD>-<slug>-<standard or "gemini">-gemini.md` (e.g. `2026-10-24-review-practices-design-gemini.md`). Re-runs add `-r2`, `-r3`; never overwrite. The folder sits under the ignored `data/`, so commit reviews with `git add -f`. Record triage in the session doc under Taken / Contested (see `.claude/review-standards/README.md`).
 
 ### Step 1: Read the document
 
@@ -90,14 +102,32 @@ rather than increasing `maxOutputTokens` (which burns prepaid credits faster).
 Present Gemini's feedback to the user. If Gemini answered open questions, highlight
 those answers. If it found issues, summarise them.
 
+## Standard review (`--standard <name>`)
+
+Build the prompt from files, in this order. Use `gemini-2.5-pro`, `maxOutputTokens` 8192.
+
+```bash
+STD=.claude/review-standards/${STANDARD}.md
+FORMAT=$(sed -n '/^## Shared output format/,/^## Triage/p' .claude/review-standards/README.md | sed '$d')
+REVIEW_PROMPT="You are reviewing a document from sertantai-legal, the admin data workbench of SertantAI: it scrapes and parses UK legislation, extracts definitions and amendments, enriches and quality-checks the data, and pushes reference data to the customer-facing service.
+Review the document below against this standard only. Report findings only, in the output format given. Under 900 words.
+
+$(cat "$STD")
+
+${FORMAT}"
+```
+
+Then send `REVIEW_PROMPT` + `---` + the document as in Step 3, with `MODEL="gemini-2.5-pro"`.
+
 ## Default Review Prompt Template
 
-When no specific prompt is given, use:
+When no specific prompt and no standard is given, use:
 
 ```
-You are reviewing a technical plan/design document for a legal compliance SaaS
-platform (SertantAI). The platform helps organisations track which UK laws apply
-to them, screen new laws, and sync their legal register to tools like Baserow.
+You are reviewing a technical plan/design document for sertantai-legal, the
+admin data workbench of SertantAI. It scrapes and parses UK legislation, extracts
+definitions and amendments, enriches and quality-checks the data, and pushes
+reference data to the customer-facing service (sertantai-compliance).
 
 Please:
 1. Answer any "Open Questions" in the document with concrete recommendations
