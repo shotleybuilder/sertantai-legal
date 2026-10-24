@@ -790,6 +790,32 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
       refute Enum.any?(scopes, &(&1 in ["s.7(2)", "s.11(3)", "s.54"]))
     end
 
+    test "repeal lists: entries and \"the following repeals\" are the Schedule in relation to, never their items (SI 1996/3056, SI 1997/3114)" do
+      rules =
+        epa_order(
+          "Section 162(2) of the Environmental Protection Act 1990 shall come into force on 16th December 1996 in so far as it relates to the following repeals in Part I of Schedule 16 to that Act:</Text><P3 id=\"article-3-a\"><P3para><Text>the repeal of section 1(1)(d) and section 5 of the Health and Safety at Work etc. Act 1974;</Text></P3para></P3><Text>"
+        )
+
+      scopes = Enum.flat_map(rules, &List.wrap(&1.scope))
+      assert Enum.any?(rules, &(&1.scope == ["sch.16.pt.I"] and not Rule.full?(&1)))
+      refute Enum.any?(scopes, &(&1 in ["s.1(1)(d)", "s.5"]))
+
+      rules =
+        Order.rules(
+          order(~S"""
+          <Schedules><Schedule id="schedule"><TitleBlock><Title>Provisions coming into force on 17th December 1997</Title></TitleBlock><ScheduleBody><Tabular><table><tbody>
+          <tr><td>Section 2</td><td>Consequential amendments and repeals</td></tr>
+          <tr><td>In the Schedule—the entries relating to sections 11 to 14 of, and Schedule 1 and paragraph 13 of Schedule 2 to, the Firearms (Amendment) Act 1997.</td><td>Repeals</td></tr>
+          </tbody></table></Tabular></ScheduleBody></Schedule></Schedules>
+          """),
+          @act
+        )
+
+      scopes = Enum.flat_map(rules, &List.wrap(&1.scope))
+      assert Enum.any?(rules, &(&1.scope == ["sch"] and not Rule.full?(&1)))
+      refute Enum.any?(scopes, &(&1 in ["s.11..s.14", "sch.1", "sch.2.para.13"]))
+    end
+
     test "N4: a Schedule's Part either way" do
       alias SertantaiLegal.Scraper.LatRef
       assert LatRef.covers?("sch.16.pt.1", "sch.16.pt.I")

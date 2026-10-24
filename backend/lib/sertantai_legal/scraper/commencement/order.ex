@@ -550,17 +550,23 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     end
   end
 
+  @schedule_entries ~r/^\W*In\s+(?:the\s+Schedule|Schedule\s+(\d+[A-Z]*))?\s*(?:to\s+the\s+Act\s*)?[,—–:]\s*the\s+(repeals?|entr(?:y|ies))\b(.*)$/isu
+
   defp line_items(line, aliases, sch) do
-    case Regex.run(
-           ~r/^\W*In\s+Schedule\s+(\d+[A-Z]*)\s*(?:to\s+the\s+Act\s*)?,\s+the\s+(?:repeals?|entries)\b(.*)$/is,
-           line
-         ) do
+    case Regex.run(@schedule_entries, line) do
       # "In Schedule 18, the repeals to …": those entries of that Schedule —
       # and the line's own provisions after them ("… and section 196
-      # insofar as it relates to that repeal": SI 2006/1680)
-      [_, n, rest] ->
-        {items, _} = own_line_items(rest, aliases, sch)
-        {[{["sch.#{n}"], :in_relation_to, territory(line)} | items], sch}
+      # insofar as it relates to that repeal": SI 2006/1680); "In the
+      # Schedule—the entries relating to sections 11 to 14 … of … the
+      # Firearms (Amendment) Act 1997" describes the entries only (SI
+      # 1997/3114)
+      [_, n, kind, rest] ->
+        ref = if n == "", do: "sch", else: "sch.#{n}"
+
+        {items, _} =
+          if kind =~ ~r/^entr/i, do: {[], sch}, else: own_line_items(rest, aliases, sch)
+
+        {[{[ref], :in_relation_to, territory(line)} | items], sch}
 
       nil ->
         own_line_items(line, aliases, sch)
@@ -1144,7 +1150,11 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
         date = schedule_date(order, el),
         date != nil,
         {row, purpose, sch} <- with_schedules(table_rows(el), table_schedule(order, el)),
-        text <- row |> drop_other_laws(["the act"]) |> provision_segments(),
+        text <-
+          if(row =~ @schedule_entries,
+            do: [row],
+            else: row |> drop_other_laws(["the act"]) |> provision_segments()
+          ),
         item <- elem(items(text, ["the act"], sch), 0),
         {refs, purposes, territory, except} = parts(item),
         refs != [],
