@@ -18,7 +18,7 @@ Each item gets its design section, files and done check before it is built (`pla
 - ✅ 1. Lane rule: one active session per lane — memory + `.claude/commands/session-start.md`. Done: committed `56eef5eb`; build lane told.
 - ✅ 2. Review standards — `.claude/review-standards/{README,zoom-out,design,plan,naive-reader}.md`; `.gitignore` exceptions so they commit. Done: files exist, `git check-ignore` clean, dogfooded (below).
 - ✅ 3. Skills README fixed at source — `.claude/skills/README.md` cut to a pointer to SKILL.md frontmatter. Done: no skill list left to drift.
-- ⬜ 4. Reviewer subagent — `.claude/agents/reviewer.md`. Done: a run with `zoom-out` on this doc reproduces the dogfood Blocker class (finds real gaps), report saved.
+- ⬜ 4. Reviewer subagent — `.claude/agents/reviewer.md` (written; awaiting resume to load it). Done: a run with `zoom-out` on this doc reproduces the dogfood Blocker class (finds real gaps), report saved.
 - ⬜ 5. `gemini-review --standard` — `.claude/skills/gemini-review/SKILL.md` (+ frontmatter, corrected project context). Done: one run on this doc saved to `backend/data/code-reviews/`.
 - ⬜ 6. Blind second agent in `feed-reader-check` and `markup-reader-check` — design section before building: fields seen, prompt skeleton, comparison rule, change to the Pass line.
 - ⬜ 7. Trial the blind agent on CV-S03 OH&S (closed work) — design before running: family, seed, sample command, time, measure of a useful result. Ask Jason before the run.
