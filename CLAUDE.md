@@ -77,9 +77,14 @@ This proves the extraction is behaviour-preserving — the same assertions pass 
 - **Structs over ad-hoc maps** — when the same map shape appears in 3+ places, extract a struct with `@enforce_keys`
 - **`defdelegate` for backwards compatibility** — when extracting modules, delegate from the original module so existing callers don't break. Migrate callers incrementally.
 
-### Gemini Review as Acceptance Gate
+### Review as Acceptance Gate
 
-For significant refactors, send the plan to Gemini for review before implementation, and the result for final acceptance after. Use the `gemini-review` skill. Save reviews to `backend/data/code-reviews/`.
+For significant refactors, review the plan before implementation and the result for final acceptance after. Reviews check a document against one written standard in `.claude/review-standards/`: `zoom-out` (root problem, simplicity, reuse), `design` (alternatives rule), `plan` (zero-decision rule), `naive-reader` (a fresh reader can act on it).
+
+- **`reviewer` subagent** (`.claude/agents/reviewer.md`): fresh context, reads the code. Use it for `zoom-out`, `plan`, and any claim about the code. Give it only the document path and the standard name.
+- **`gemini-review --standard <name>`**: a second model, document only. Use it for `design` and `naive-reader`.
+
+Save reviews to `backend/data/code-reviews/` (`-rN` for re-runs; commit with `git add -f`). Triage each finding as Taken or Contested (with evidence) in the session doc. See `.claude/review-standards/README.md`.
 
 ## Quick Reference
 
