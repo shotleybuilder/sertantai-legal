@@ -63,6 +63,18 @@ bugs:
     affected: "HSWA 1974: 6 orders; OSRPA 1963: 3 orders not held at all"
     fix: "fetched 9 orders' body + schedules (Jason 2026-10-23); HSWA Nos. 2-6 are PDF-only on legislation.gov.uk (no text): a known limit"
     status: fixed
+  - pattern: "A qualifier on one item of a bare paragraph list read over the whole list"
+    category: commencement reading
+    module: Commencement.Order
+    affected: "SI 1996/186 Sch. 22"
+    fix: "bare_items/3: each item its own qualifier (round 2)"
+    status: fixed
+  - pattern: "An order whose Schedule is not held dates nothing it lists (SI 1997/3114); once held, its repeal-entries cell (\"In the Schedule—the entries relating to sections 11 to 14 … of … the Firearms (Amendment) Act 1997\") read as the Act's own s.11-14, sch.1, sch.2.para.13"
+    category: commencement reading
+    module: Commencement.Order (tables, line_items)
+    affected: "SI 1997/3114 (Firearms (Amendment) (No. 2) Act 1997): 1 rule"
+    fix: "a repeal-entries cell is read whole, the Schedule in relation to; \"In the Schedule\" unnumbered (9d9f2ab3)"
+    status: fixed
 opened: '2026-10-22'
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
 ---
@@ -81,8 +93,8 @@ The session does not close until its results pass.
 - ✅ Build the acceptance check; run it (ask Jason before any long run)
 - ⬜ OH&S family: 90 status-relevant text changes still undated (whole insertions and repeals), 342 undated in all (CV-07)
 - ⬜ The gap-filler (NoteDate: the amending law's commencement at the provision the feed or note names) verified on a sample (CV-07, built `a50a00fc`)
-- ⬜ An order whose Schedule is not held dates nothing it lists (open bug: SI 1997/3114)
-- ⬜ A qualifier on one item of a bare paragraph list read over the whole list (open bug, Commencement.Order)
+- ✅ An order whose Schedule is not held dates nothing it lists (open bug: SI 1997/3114): its Schedule is held (fetched 2026-10-20) and read. Its repeal-entries cell was read as the Act's own provisions; fixed `9d9f2ab3`
+- ✅ A qualifier on one item of a bare paragraph list read over the whole list (open bug, Commencement.Order): fixed in round 2 (`Order.bare_items/3`, SI 1996/186)
 - ✅ Step 1 (Jason 2026-10-23: "agreed order and approach - dont skip"): fix B, A, C, K (+ the s.33(1)(a) and (b) sibling, the titled repeals line)
 - ✅ Step 2: the commencement-sentence catalogue (every commencement sentence in held laws, classed by form × what the reader made of it, real examples as fixtures); fix by count (F–J, D, E and what it finds). Plus the orders catalogue
 - ✅ Step 3: one corpus-wide own-clause re-read (restore point first), golden (+ the HSWA s.78 golden update, asked), the agent on a new seed (rounds 3–4, seed 7; option 1 fixes and the final rewrite: check PASS, golden 27/27)
@@ -566,3 +578,11 @@ Every remaining gap then sits in a counted pending class (both catalogues). Late
 - "Chapters II and III of Part I" read as Part I (Freedom of Information Act 2000 s.103(2));
 - a Schedule's Parts in an Act clause ("Parts III and IV of Schedule 16") dropped rather than read as `sch.16.pt.III`;
 - "in Schedule 8, the entries relating to:—" heading items-first orders (SI 1978/1583) reads nothing.
+
+## The two open order bugs (2026-10-24, Jason: "Keep session open")
+
+- **Bare-list qualifier:** already fixed in round 2 (`bare_items/3`); its todo is now ticked.
+- **SI 1997/3114:** the Schedule is held and its rules are read. Its repeal-entries cell was read as the Firearms (Amendment) (No. 2) Act's own s.11–14, sch.1 and sch.2.para.13, though those provisions belong to the Firearms (Amendment) Act 1997. **Fixed** (`9d9f2ab3`): a repeal-entries cell is read whole as the Schedule in relation to ("In the Schedule" unnumbered, like "In Schedule N").
+  - A read-only preview gives `sch` in relation to on 1997-12-17 and 1998-02-01; the other Act's provisions are gone.
+  - The catalogues are unchanged; the related suites pass (4,608).
+  - The stored rules are not rewritten yet: one order, `--read-orders --law UK_ukpga_1997_64`, which is outside OH&S (ask first).
