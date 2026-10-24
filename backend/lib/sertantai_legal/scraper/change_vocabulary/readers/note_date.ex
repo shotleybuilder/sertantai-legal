@@ -23,9 +23,49 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
 
   @dated [{:feed, :date}, {:feed, :date_first}, {:commencement, :date}, {:law_text, :date}]
 
+  @type why ::
+          :not_a_gap
+          | {:dated, Date.t(), :feed | :note}
+          | {:undated,
+             :no_amending_law
+             | :no_pointer
+             | :rules_not_held
+             | :no_text_rules
+             | :appointed
+             | :unread
+             | :not_reached
+             | :provisions_disagree}
+
   @doc "The date claims for `change` when it has a gap and a pointer; else []."
   @spec claims(Change.t(), %{String.t() => [Rule.t()]}) :: [Claim.t()]
   def claims(%Change{} = c, commencement) do
+    case why(c, commencement) do
+      {:dated, date, via} ->
+        Claim.new(:commencement, :date, date, c.key) ++
+          Claim.new(:commencement, :via, via, c.key)
+
+      _ ->
+        []
+    end
+  end
+
+  @doc """
+  What the gap-filler makes of `change` (CV-S04: every undated change
+  accounted for): not a gap (a source dates it); dated, and by which
+  pointer; or undated, and why —
+
+  - `:no_amending_law`: neither the feed nor the note names the law;
+  - `:no_pointer`: no amending provision named;
+  - `:rules_not_held`: no commencement rules held for the amending law;
+  - `:no_text_rules`: only rules that aren't its own text (its feed's
+    records, a staged clause's start);
+  - `:appointed`: left to a day fixed later that no rule held dates;
+  - `:unread`: the amending law's own commencement words not read;
+  - `:not_reached`: no rule reaches the provision named;
+  - `:provisions_disagree`: the provisions named came in on different days.
+  """
+  @spec why(Change.t(), %{String.t() => [Rule.t()]}) :: why()
+  def why(%Change{} = c, commencement) do
     law = Change.value(c, :feed, :by) || Change.value(c, :markup, :cited)
 
     # the feed's named provisions, else the note's
@@ -35,13 +75,37 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
         feed -> {feed, :feed}
       end
 
-    with true <- undated?(c),
-         true <- refs != [],
-         [_ | _] = rules <- Map.get(commencement, law, []),
-         %Date{} = date <- date(rules, deepest(refs)) do
-      Claim.new(:commencement, :date, date, c.key) ++ Claim.new(:commencement, :via, via, c.key)
-    else
-      _ -> []
+    cond do
+      not undated?(c) -> :not_a_gap
+      law == nil -> {:undated, :no_amending_law}
+      refs == [] -> {:undated, :no_pointer}
+      Map.get(commencement, law, []) == [] -> {:undated, :rules_not_held}
+      true -> at(Map.fetch!(commencement, law), deepest(refs), via)
+    end
+  end
+
+  defp at(rules, refs, via) do
+    results = Enum.map(refs, &AmendingLaw.commencement(rules, &1))
+
+    case results |> Enum.map(&(&1 && &1.full_from)) |> Enum.uniq() do
+      _ when results == [nil] or hd(results) == nil -> {:undated, :no_text_rules}
+      [%Date{} = d] -> {:dated, d, via}
+      [nil] -> undated_why(results)
+      _ -> {:undated, :provisions_disagree}
+    end
+  end
+
+  defp undated_why(results) do
+    cond do
+      Enum.any?(results, fn r -> Enum.any?(r.undated, &match?({:appointed, _}, &1.when)) end) ->
+        {:undated, :appointed}
+
+      # the amending law's own commencement words not read (CV-S04 round 3)
+      Enum.any?(results, fn r -> Enum.any?(r.undated, &(&1.when == :unread)) end) ->
+        {:undated, :unread}
+
+      true ->
+        {:undated, :not_reached}
     end
   end
 
@@ -90,12 +154,5 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
     depth = &length(LatRef.ancestors(&1))
     max = refs |> Enum.map(depth) |> Enum.max()
     Enum.filter(refs, &(depth.(&1) == max))
-  end
-
-  defp date(rules, refs) do
-    case refs |> Enum.map(&AmendingLaw.commenced_on(rules, &1)) |> Enum.uniq() do
-      [%Date{} = d] -> d
-      _ -> nil
-    end
   end
 end

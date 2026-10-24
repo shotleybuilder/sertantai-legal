@@ -12,7 +12,7 @@ defmodule Mix.Tasks.Lat.Commencement do
   Grouped by the source read (the law's own clause, each commencement
   order).
 
-      mix lat.commencement --read --law X | --all           # write the laws' own-clause rules (CR-03)
+      mix lat.commencement --read --law X[,Y] | --all       # write the laws' own-clause rules (CR-03)
       mix lat.commencement --compare --all --tag cr03_cmp   # the evaluator vs today's register, per row
       mix lat.commencement --effects                        # amending Acts: their feed's "coming into force" effects as rules (CR-04)
       mix lat.commencement --read-orders                    # amending Acts before 2002: the rules the orders their notes cite state (where no effect reaches)
@@ -100,7 +100,7 @@ defmodule Mix.Tasks.Lat.Commencement do
   defp laws(opts) do
     cond do
       opts[:law] ->
-        [opts[:law]]
+        String.split(opts[:law], ",", trim: true)
 
       opts[:all] ->
         List.flatten(Repo.query!("SELECT DISTINCT law_name FROM legal_articles ORDER BY 1").rows)
@@ -131,7 +131,7 @@ defmodule Mix.Tasks.Lat.Commencement do
       LawRunner.run(
         laws,
         fn law ->
-          {_rows, input} = input(law)
+          input = clause_input(law)
 
           {:ok, n} =
             Store.write(law, OwnClause.rules(law, input), treatments: OwnClause.treatments())
@@ -301,7 +301,11 @@ defmodule Mix.Tasks.Lat.Commencement do
       read =
         for order <- orders, d = doc(order), d != nil do
           {:ok, n} =
-            Store.write(order, Order.rules(d, a), treatments: [:order_date, :order_schedule])
+            Store.write(
+              order,
+              Order.rules(d, a) |> Order.resolve_appointed_for(Store.for_law(a.law)),
+              treatments: [:order_date, :order_schedule]
+            )
 
           n
         end
@@ -325,7 +329,13 @@ defmodule Mix.Tasks.Lat.Commencement do
           d = doc(order),
           d != nil,
           reduce: %{} do
-        acc -> Map.update(acc, order, Order.rules(d, a), &(&1 ++ Order.rules(d, a)))
+        acc ->
+          Map.update(
+            acc,
+            order,
+            Order.rules(d, a) |> Order.resolve_appointed_for(Store.for_law(a.law)),
+            &((&1 ++ Order.rules(d, a)) |> Order.resolve_appointed_for(Store.for_law(a.law)))
+          )
       end
 
     for {order, rules} <- by_order,
@@ -472,6 +482,19 @@ defmodule Mix.Tasks.Lat.Commencement do
     if String.contains?(s, [",", "\"", "\n"]),
       do: "\"" <> String.replace(s, "\"", "\"\"") <> "\"",
       else: s
+  end
+
+  # the input a law's own clause is read from: its LAT rows — or, for a law
+  # whose LAT holds part of it (a scope), its whole CLML held, where its
+  # commencement provision is (CV-S04: the REUL Act 2023's scoped LAT holds
+  # no s.22, so its clause read as none, Royal Assent)
+  defp clause_input(law) do
+    with scope when scope not in [nil, []] <- SertantaiLegal.Scraper.LatScope.get(law),
+         %Doc{} = d <- doc(law) do
+      ChangeCollector.law_start_input(law, OwnClause.doc_rows(d))
+    else
+      _ -> law |> input() |> elem(1)
+    end
   end
 
   # the law's rows (document order) and LawStart's input

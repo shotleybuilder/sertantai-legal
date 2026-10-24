@@ -37,7 +37,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   effects and — primary — the amending laws' own text (`opts`: `:rules`, the
   stored `Amendment.Rule`s amending the law; `:commencement`, each amending
   law's `Commencement.Rule`s; `:own_commencement`, the law's own
-  `Commencement.Rule`s; `:extents`, each amending Act's extent clause read
+  `Commencement.Rule`s and `:own_context` its row structure
+  (`OwnClause.context/1`); `:extents`, each amending Act's extent clause read
   (`AmendingLaw.Extent`); `:title`, the law's title — its own place;
   `:passed`, `:act_title` and `:continuations` for its own sunset
   (`Readers.Expiry`); `:xml_ids`, each LAT row's `source_xml_id` → its ref
@@ -217,12 +218,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
         Keyword.get(opts, :extents, %{})
       )
 
-    # the law's own commencement, for each provision asked about (its base)
+    # the law's own commencement, for each provision asked about (its base),
+    # in the law's row structure and the provision's extent
     own =
       OwnCommencement.read(
         Keyword.get(opts, :own_commencement, []),
         law_name,
-        provisions |> Map.keys() |> Enum.map(&elem(version(&1), 0)) |> Enum.uniq()
+        provisions |> Map.keys() |> Enum.map(&elem(version(&1), 0)) |> Enum.uniq(),
+        Keyword.get(opts, :own_context, SertantaiLegal.Scraper.Commencement.Order.context()),
+        base_extents(provisions)
       )
 
     changes =
@@ -269,6 +273,22 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
 
     changes ++ parent_commencements(changes, provisions, order)
   end
+
+  # a provision's extent by its base: its own row's, else the versions'
+  # extents together (s.23[E+W] and s.23[S] → s.23 extends to E+W+S)
+  defp base_extents(provisions) do
+    provisions
+    |> Enum.group_by(fn {id, _} -> elem(version(id), 0) end, fn {_, p} -> p[:extent] end)
+    |> Map.new(fn {base, extents} ->
+      case Map.get(provisions, base) do
+        %{extent: e} when is_binary(e) -> {base, e}
+        _ -> {base, extents |> Enum.reject(&is_nil/1) |> union()}
+      end
+    end)
+  end
+
+  defp union([]), do: nil
+  defp union(extents), do: Territory.union(extents)
 
   defp below_rows(changes, nil, _facts), do: changes
 

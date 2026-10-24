@@ -29,9 +29,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
   alias SertantaiLegal.Scraper.LatRef
 
   # rules that are not the amending law's own text: the feed's records
-  # (derived); an Act's Royal Assent or a staged clause's earliest date is
-  # the law's start, not when a provision came in (CR-06)
-  @not_text [:feed_commencement, :act_enactment, :clause_staged]
+  # (derived); a staged clause's earliest date is the law's start, not when
+  # a provision came in (CR-06). An Act's Royal Assent is its own: since
+  # CV-S04 an Act with a clause has the clause's rule, so a Royal Assent
+  # rule is an Act with none, in force on Royal Assent (Interpretation Act
+  # 1978 s.4; Jason 2026-10-23)
+  @not_text [:feed_commencement, :clause_staged]
 
   @doc """
   Claim sets `{key, target, claims}` from the rules amending a law, dated
@@ -92,13 +95,24 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
   @spec commenced_on([CRule.t()], String.t()) :: Date.t() | nil
   def commenced_on(rules, ref), do: date(rules, ref)
 
+  @doc """
+  The amending provision `ref`'s commencement by its law's own text (the
+  evaluator's result), or nil when the law holds no text rules: what
+  `commenced_on/2` dates by, for saying why it doesn't.
+  """
+  @spec commencement([CRule.t()], String.t()) :: Evaluator.result() | nil
+  def commencement(rules, ref) do
+    case Enum.reject(rules, &(&1.treatment in @not_text)) do
+      [] -> nil
+      text -> Evaluator.evaluate(text, Order.ref(ref) || ref, Order.context())
+    end
+  end
+
   # when the amending provision came fully into force by the law's own text
   defp date(rules, ref) do
-    text = Enum.reject(rules, &(&1.treatment in @not_text))
-
-    case text do
-      [] -> nil
-      _ -> Evaluator.evaluate(text, Order.ref(ref) || ref, Order.context()).full_from
+    case commencement(rules, ref) do
+      nil -> nil
+      r -> r.full_from
     end
   end
 end

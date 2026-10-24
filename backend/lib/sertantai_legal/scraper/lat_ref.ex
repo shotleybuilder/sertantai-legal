@@ -31,7 +31,11 @@ defmodule SertantaiLegal.Scraper.LatRef do
         f -> f.(List.last(brackets))
       end
 
-    brackets ++ containers
+    # every Schedule of the law ("Regulations 5 to 27 and the Schedules":
+    # SI 1992/3004 reg.1(3), CV-S04) holds a Schedule's provisions
+    schedules = if String.starts_with?(ref, "sch."), do: ["sch"], else: []
+
+    brackets ++ containers ++ schedules
   end
 
   @doc """
@@ -83,22 +87,42 @@ defmodule SertantaiLegal.Scraper.LatRef do
   def covers?(ref, el, ctx \\ %{}) do
     case String.split(ref, "..", parts: 2) do
       [from, to] -> in_range?(el, from, to, ctx)
-      [_] -> ref == el
+      [_] -> ref == el or same_part_numeral?(ref, el)
     end
+  end
+
+  # a Schedule's Part written either way: "sch.16.pt.1" is "sch.16.pt.I"
+  # (orders differ: CV-S04 round 4, N4)
+  @numerals ~w(I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII XIX XX)
+
+  defp same_part_numeral?(a, b) do
+    String.contains?(a, ".pt.") and String.contains?(b, ".pt.") and arabic(a) == arabic(b)
+  end
+
+  defp arabic(ref) do
+    Regex.replace(~r/\.pt\.([IVX]+)(?=$|[.(\[])/, ref, fn whole, numeral ->
+      case Enum.find_index(@numerals, &(&1 == numeral)) do
+        nil -> whole
+        i -> ".pt.#{i + 1}"
+      end
+    end)
   end
 
   defp in_range?(el, from, to, ctx) do
     if String.contains?(el, "(") != String.contains?(from, "(") do
       false
     else
-      case ctx[:order] do
+      case ctx[:order] && ordered_between(ctx[:order], el, from, to) do
         nil -> numeric_between?(el, from, to)
-        order -> ordered_between?(order, el, from, to)
+        between? -> between?
       end
     end
   end
 
-  defp ordered_between?(order, el, from, to) do
+  # by document order when the order holds all three (a law's order lists
+  # whole provisions: a range of subsections, "s.10(2)..s.10(4)", goes by
+  # number — CV-S04); else nil
+  defp ordered_between(order, el, from, to) do
     pos = order |> Enum.with_index() |> Map.new()
 
     with a when is_integer(a) <- pos[from],
@@ -106,7 +130,7 @@ defmodule SertantaiLegal.Scraper.LatRef do
          i when is_integer(i) <- pos[el] do
       a <= i and i <= b
     else
-      _ -> false
+      _ -> nil
     end
   end
 

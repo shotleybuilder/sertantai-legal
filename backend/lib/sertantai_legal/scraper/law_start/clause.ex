@@ -33,22 +33,65 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
 
   @instrument ~S"(?:Order(?: in Council)?|Regulations?|Rules|Act|Measure|Scheme|Instrument|Byelaws?|Directions)"
   # an aside between commas: ", subject to paragraphs (2) and (3),"
-  @aside ~S"(?:\s*,[^,]{0,160},)?\s*"
-  @cif ~S"(?:shall" <> @aside <> ~S")?(?:comes?|came)\s+into\s+(?:force|operation)"
+  # … or a list between commas: ", except section 120 above, this section and
+  # section 122 below," (PACE 1984 s.121(1), CV-S04)
+  # … or an except list below: "This Act, except— (a) …, shall come into
+  # force on the appointed day …" (Gas Act 1995 s.18(2), CV-S04 round 3)
+  @aside ~S"(?:\s*,(?:[^,]{0,160},){1,4}|\s*,\s*(?:except|apart\s+from|other\s+than)\s*(?:—|–)(?:\s*…)?)?\s*"
+  # "shall come", "comes", "is to come" (LGRA 1997 s.34(1)); "shall not /
+  # does not come into force until …" (Electronic Communications Act 2000
+  # s.17(3): until such date as … by order) — CV-S04
+  @cif ~S"(?:shall" <>
+         @aside <>
+         ~S"|(?:is|are)\s+to\s+)?(?:(?:shall|does|do)\s+not\s+)?(?:comes?|came)\s+into\s+(?:force|operation)"
   # "Subject to paragraphs (3), (4) and (5) these Regulations …" (commas in
   # a list of paragraphs: V1-02)
-  @prefix ~S"^(?:\(?\d+[A-Z]?\)?\s+)?(?:(?:Subject to|Except as (?:otherwise )?(?:provided|specified)|Save as (?:otherwise )?provided|Apart from)(?:[^,]|,(?=\s*(?:\(|and\b|or\b))){0,200}?(?:,\s*|\s+(?=(?:this|these|the)\s)))?"
+  # … or a long one naming its exceptions with their own dates ("Except as
+  # provided in subsection (2) above and except for this section, section 74
+  # above and paragraphs … (which come into force on the passing of this
+  # Act) and the repeal of …, this Act shall come into force …": EA 1995
+  # s.125(3), CV-S04)
+  @prefix ~S"^(?:\(?\d+[A-Z]?\)?\s+)?(?:(?:Subject to|Subject as follows|Except as (?:otherwise )?(?:expressly )?(?:provided(?: for)?|specified|stated|mentioned)|Except in so far as|Except for|Save as (?:otherwise )?provided|Apart from|Other than)(?:[^,]|,(?=\s*(?:\(|and\b|or\b))){0,200}?(?:,\s*|\s+(?=(?:this|these|the)\s))|(?:Except as (?:otherwise )?(?:provided(?: for)?|specified|mentioned)|Except in so far as|Apart from|Other than).{0,700}?(?:,|\))\s*(?=(?:this|these|the)\s))?"
 
   @general [
     Regex.compile!(
+      # "the provisions of this Act" (Health and Social Care Act 2008
+      # s.170(3)), never with an except list after it (the rest, so read
+      # by `Provisions`: asp 2003/8 s.60)
       @prefix <>
-        ~S"(?:this|these|the)\s+" <>
-        @instrument <> ~S"\b(?:\s*\([^)]*\))?" <> @aside <> @cif <> ~S"\s*(.*)$",
+        ~S"(?:this|these|the)\s+(?:provisions\s+of\s+(?:this|these)\s+(?=\w+\b(?!\s*,?\s*(?:except|other\s+than)\b|\s*\(\s*(?:apart\s+from|except|other\s+than)\b)))?" <>
+        @instrument <> ~S"\b(?:\s*\((?:[^()]|\([^()]*\))*\))?" <> @aside <> @cif <> ~S"\s*(.*)$",
+      "is"
+    ),
+    Regex.compile!(
+      # "… and subject to paragraphs (2) and (3) shall come into force on
+      # 1st January 2000" (Quarries Regulations 1999 reg.1(1), CV-S04)
+      # (", which extend to Great Britain," between: SI 1996/1513)
+      ~S"\b(?:this|these)\s+" <>
+        @instrument <>
+        ~S"(?:\s*,[^,]{0,80},)?\s+may be cited as\b.{0,300}?\band(?:\s+subject\s+to\s+[^,]{1,160}?(?=\s+shall\b))?" <>
+        @aside <> @cif <> ~S"\s*(.*)$",
+      "is"
+    ),
+    # "These Regulations apply in relation to Wales and come into force on
+    # 1 October 2011" (WSI 2010/2880); "These Regulations may be cited as …
+    # which shall come into force on 1st April 1988" (SI 1988/370): CV-S04
+    Regex.compile!(
+      ~S"\b(?:this|these)\s+" <>
+        @instrument <>
+        ~S"\s+(?:apply|applies|extend|extends)\b.{0,200}?\band" <> @aside <> @cif <> ~S"\s*(.*)$",
       "is"
     ),
     Regex.compile!(
       ~S"\b(?:this|these)\s+" <>
-        @instrument <> ~S"\s+may be cited as\b.{0,300}?\band" <> @aside <> @cif <> ~S"\s*(.*)$",
+        @instrument <> ~S"\s+may be cited as\b.{0,300}?\bwhich\s+" <> @cif <> ~S"\s*(.*)$",
+      "is"
+    ),
+    # "The title of this Order is … and it comes into force on 30 April
+    # 2012" (Welsh instruments: SI 2012/801, WSI 2026/18; CV-S04)
+    Regex.compile!(
+      ~S"\bThe\s+title\s+of\s+(?:this|these)\s+" <>
+        @instrument <> ~S"\s+is\b.{0,300}?\band\s+(?:it|they)\s+" <> @cif <> ~S"\s*(.*)$",
       "is"
     )
   ]
@@ -113,10 +156,13 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
     "fifty" => 50,
     "fiftieth" => 50,
     "sixty" => 60,
-    "sixtieth" => 60
+    "sixtieth" => 60,
+    "seventy" => 70,
+    "eighty" => 80,
+    "ninety" => 90
   }
 
-  @made ~S"(?:(?:the\s+(?:day|date)\s+(?:(?:on\s+which|of)\s+)?)?(?:it\s+is|they\s+are|they\s+were|(?:(?:this|these)\s+[A-Za-z ]+?|the\s+(?:Order|Regulations|Rules|Act|Scheme|Measure|Instrument))\s+(?:is|are|was|were))\s+(?:made|passed)|(?:the\s+)?(?:making|passing)\s+(?:of\s+(?:this|these)\s+[A-Za-z ]+|thereof)|its\s+(?:making|passing)|(?:the\s+day\s+(?:on\s+which\s+)?)?(?:this\s+Act\s+receives\s+)?Royal\s+Assent)"
+  @made ~S"(?:(?:the\s+(?:day|date)\s+(?:(?:on\s+which|of)\s+)?)?(?:it\s+is|they\s+are|they\s+were|(?:(?:this|these)\s+[A-Za-z ]+?|the\s+(?:Order|Regulations|Rules|Act|Scheme|Measure|Instrument))\s+(?:is|are|was|were))\s+(?:made|passed)|(?:the\s+)?(?:making|passing)\s+(?:of\s+(?:this|these)\s+[A-Za-z ]+|thereof)|its\s+(?:making|passing)|(?:the\s+day\s+(?:on\s+which\s+)?)?(?:this\s+Act\s+receives\s+)?Royal\s+Assent|receiving\s+Royal\s+Assent|the\s+(?:day|date)\s+of\s+Royal\s+Assent|the\s+Bill\s+for\s+this\s+Act\s+receives\s+Royal\s+Assent|that\s+on\s+which\s+(?:it|this\s+Act)\s+is\s+passed|the\s+(?:day|date)\s+of\s+(?:the\s+)?(?:passing|making)\s+(?:thereof|of\s+(?:this|these)\s+[A-Za-z ]+))"
   @number ~S"(\d+|[a-z]+(?:[- ][a-z]+)?)"
 
   @doc "The law's start from its commencement clause; nil when it has none."
@@ -168,6 +214,40 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
     end
   end
 
+  # the first "comes into force" in a sentence, and what is before it (its
+  # head) — a mention shows there: "before this section …", "the date on
+  # which this section …", "the coming into force", "deemed to have …",
+  # "If …", "… means …", "…, which came into force on …"; never a later
+  # clause of a statement ("They come into force on the day after the day on
+  # which they are made, save for regulation 10 which comes into force on 1st
+  # October 2009": SI 2009/1581, CV-S04)
+  @first_cif ~r/\b(comes?|came|coming|be\s+brought|brought)\s+(?:fully\s+)?into\s+(?:force|operation)\b/i
+  @mention_head ~r/\b(?:before|after|until|unless|when|whenever|once|since|if|by\s+the\s+time|on\s+or\s+after|immediately\s+before|in\s+which|(?:day|date|time)\s+(?:on|upon|at)\s+which|deemed\s+to\s+have|thereby|means)\b|\bthe\s*$|^\W*(?:\[[^\]]*:\s*)?(?:\(\w+\)\s*)?(?:where|when|if|until|unless|once)\b/i
+
+  @doc """
+  Whether a sentence only mentions a commencement ("before this section
+  comes into force", "the date on which …", "the coming into force of",
+  "which came into force on …") rather than stating one — read in its head,
+  before its first "comes into force" (CV-S04).
+  """
+  @spec mention?(String.t()) :: boolean()
+  def mention?(sentence) do
+    case Regex.run(@first_cif, sentence, return: :index) do
+      [{at, _}, {v, vlen}] ->
+        head = binary_part(sentence, 0, at)
+        verb = binary_part(sentence, v, vlen) |> String.downcase()
+
+        Regex.match?(@mention_head, head) or
+          verb == "coming" or
+          head =~ ~r/\b(?:day|date|time)\s+(?:this|these|that|the|it|they)\b[^,;]{0,80}$/i or
+          (verb == "came" and head =~ ~r/\bwhich\s*$/i) or
+          (verb == "brought" and sentence =~ ~r/\bbrought\s+into\s+(?:force|operation)\s+by\b/i)
+
+      _ ->
+        false
+    end
+  end
+
   @doc "Whether a sentence is a clause commencing the whole instrument."
   @spec general?(String.t()) :: boolean()
   def general?(sentence), do: Enum.any?(@general, &Regex.match?(&1, sentence))
@@ -180,7 +260,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
   defp general(rows), do: stated(rows) || listed(rows) || pronoun(rows)
 
   @parent ~r/^(?:\(?\d+[A-Z]?\)?\s+)?(?:this|these)\s+#{@instrument}\s*[—–:-]\s*$/iu
-  @item_cif ~r/^(?:\(?[a-z0-9]+\)\s*)?(?:shall\s+)?(?:comes?|came)\s+into\s+(?:force|operation)\s*(.*?)\s*(?:;\s*(?:and|or)?)?\s*$/i
+  @item_cif ~r/^(?:\(?[a-z0-9]+\)\s*)?(?:may\s+be\s+cited\s+as\b.{0,300}?\band\s+)?(?:shall\s+)?(?:comes?|came)\s+into\s+(?:force|operation)\s*(.*?)\s*(?:;\s*(?:and|or)?)?\s*$/i
   @pronoun Regex.compile!(@prefix <> ~S"(?:they|it)" <> @aside <> @cif <> ~S"\s*(.*)$", "is")
 
   defp listed(rows) do
@@ -268,7 +348,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
       d = named_day(tail, made) ->
         {:clause_named_day, d}
 
-      d = date_at_start(String.replace(tail, ~r/^(?:at [^,]{1,30}? )?(?:on|from)\s+/i, "")) ->
+      d = date_at_start(String.replace(tail, ~r/^(?:at [^,]{1,30}? )?(?:on|from|until)\s+/i, "")) ->
         {:clause_date, d}
 
       d = by_territory(tail) ->
@@ -319,7 +399,11 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
 
   defp exit_day(_tail, _made), do: @exit_day
 
-  @doc "A date at the start of text: \"17th April 1995\", \"30 th August 2013\", \"1 October 2020\"."
+  @doc """
+  A date at the start of text: "17th April 1995", "30 th August 2013",
+  "1 October 2020"; in words, as older Acts write it: "the first day of
+  April, nineteen hundred and sixty-two" (Factories Act 1961 s.185(2)).
+  """
   @spec date_at_start(String.t()) :: Date.t() | nil
   def date_at_start(text) do
     re = ~r/^(?:the\s+)?(\d{1,2})\s*(?:st|nd|rd|th)?\s*(?:day\s+of\s+)?([A-Za-z]+),?\s+(\d{4})\b/
@@ -329,8 +413,45 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
          {:ok, date} <- Date.new(String.to_integer(y), month + 1, String.to_integer(d)) do
       date
     else
+      _ -> date_in_words(String.trim(text))
+    end
+  end
+
+  @in_words ~r/^(?:the\s+)?([a-z]+(?:[- ][a-z]+)?)\s+day\s+of\s+([A-Za-z]+),?\s+(?:in\s+the\s+year\s+)?([a-z][a-z -]*)/i
+
+  defp date_in_words(text) do
+    with [_, d, m, y] <- Regex.run(@in_words, text),
+         month when is_integer(month) <- Enum.find_index(@months, &(&1 == String.downcase(m))),
+         day when is_integer(day) <- words_number(d),
+         year when is_integer(year) and year > 1000 <- year_in_words(y),
+         {:ok, date} <- Date.new(year, month + 1, day) do
+      date
+    else
       _ -> nil
     end
+  end
+
+  # "first", "twenty-first", "thirty first"
+  defp words_number(words) do
+    parts = words |> String.downcase() |> String.split(~r/[- ]/, trim: true)
+    values = Enum.map(parts, &Map.get(@numbers, &1))
+    if parts != [] and Enum.all?(values, & &1), do: Enum.sum(values)
+  end
+
+  # "nineteen hundred and sixty-two", "two thousand and one": the leading
+  # number words, then the rest of the sentence ignored
+  defp year_in_words(words) do
+    words
+    |> String.downcase()
+    |> String.split(~r/[- ]+/, trim: true)
+    |> Enum.take_while(&(Map.has_key?(@numbers, &1) or &1 in ~w(hundred thousand and)))
+    |> Enum.reject(&(&1 == "and"))
+    |> Enum.reduce({0, 0}, fn
+      "thousand", {total, n} -> {total + n * 1000, 0}
+      "hundred", {total, n} -> {total + n * 100, 0}
+      w, {total, n} -> {total, n + Map.fetch!(@numbers, w)}
+    end)
+    |> then(fn {total, n} -> total + n end)
   end
 
   defp made_relative(tail, made) do
@@ -352,6 +473,10 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
         t
       ) and
           starts_made?(t, ~r/^on /i) ->
+        & &1
+
+      # "when they are made" (SI 2022/500, CV-S04)
+      Regex.match?(~r/^when\s+(?:they\s+are|it\s+is|this\s+\w+\s+is)\s+(?:made|passed)\b/i, t) ->
         & &1
 
       Regex.match?(~r/^(?:on )?the day (?:after|following) /i, t) and
@@ -448,7 +573,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
   def by_order?(tail),
     do:
       tail =~
-        ~r/\bsuch (?:day|date|time)s?\b|\bday appointed\b|\bappointed (?:day|by)\b|\bmay,? by (?:order|regulations)\b|\bmay appoint\b|\bappoints\b|\bprovision made by (?:\w+ ){0,6}(?:by )?order\b|\bspecified by order\b/i
+        ~r/\bsuch (?:day|date|time)s?\b|\bday appointed\b|\bappointed (?:day|by)\b|\bmay,? by (?:order|regulations)\b|\bmay appoint\b|\bappoints\b|\bprovision (?:to be )?made by (?:\w+ ){0,6}(?:by )?order\b|\bspecified by order\b/i
 
   defp tied?(tail),
     do:

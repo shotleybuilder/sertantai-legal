@@ -209,7 +209,8 @@ defmodule SertantaiLegal.Scraper.LawStartProvisionsTest do
       )
 
     assert {:provision_dated, ~D[2003-07-10], ~w[s.104]} in got
-    assert {:provision_by_order, nil, ~w[s.1 s.121]} in got
+    # s.121 comes after the clause: not a preceding provision (CV-S04)
+    assert {:provision_by_order, nil, ~w[s.1]} in got
 
     got =
       assign(
@@ -287,11 +288,42 @@ defmodule SertantaiLegal.Scraper.LawStartProvisionsTest do
     refute Enum.any?(got, fn {_, _, ids} -> "reg.60" in ids end)
   end
 
-  test "provisions the reader can't resolve: listed for the law" do
+  test "a Schedule's commencement is read (its rule: `sch.3`), though no LAT row holds it (CV-S04)" do
     got =
       assign([
         {"reg.1(1)", "These Regulations come into force on 1st June 2015."},
         {"reg.1(2)", "Schedule 3 comes into force on 1st June 2016."}
+      ])
+
+    assert got == []
+
+    rules =
+      SertantaiLegal.Scraper.Commencement.OwnClause.rules("UK_x", %{
+        type_code: "uksi",
+        rows: [
+          %{
+            section_id: "UK_x:reg.1(1)",
+            text: "These Regulations come into force on 1st June 2015.",
+            part: nil,
+            chapter: nil
+          },
+          %{
+            section_id: "UK_x:reg.1(2)",
+            text: "Schedule 3 comes into force on 1st June 2016.",
+            part: nil,
+            chapter: nil
+          }
+        ]
+      })
+
+    assert Enum.any?(rules, &(&1.scope == ["sch.3"] and &1.when == {:date, ~D[2016-06-01]}))
+  end
+
+  test "provisions the reader can't resolve: listed for the law" do
+    got =
+      assign([
+        {"reg.1(1)", "These Regulations come into force on 1st June 2015."},
+        {"reg.1(2)", "The provisions mentioned below come into force on 1st June 2016."}
       ])
 
     assert [{:provision_unread, nil, []}] = got

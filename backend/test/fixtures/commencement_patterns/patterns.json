@@ -1,0 +1,5331 @@
+{
+  "patterns": {
+    "mention|except_as|named|present|none|qualified|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2019_3/2312abd7a4",
+        "UK_ukpga_1987_49/be8a0e34e1"
+      ]
+    },
+    "mention|except_as|other|other|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1971_80/b60ae994f8"
+      ]
+    },
+    "mention|except_as|this|present|none|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2013_22/a6d0627e3a"
+      ]
+    },
+    "mention|except_as|whole|other|none|plain|none": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_1974_2013/02076aa899",
+        "UK_uksi_1974_1941/c21822183a",
+        "UK_uksi_1974_1943/39f8f7c215"
+      ]
+    },
+    "mention|none|following|other|by_order|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1978_55/f64e799d2e"
+      ]
+    },
+    "mention|none|following|other|date|qualified|none": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_1992_223/1407245b0d",
+        "UK_uksi_1995_1804/4566b615c9",
+        "UK_uksi_2012_3038/85cbd7028a"
+      ]
+    },
+    "mention|none|following|other|made_relative|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2002_1355/53263f396f"
+      ]
+    },
+    "mention|none|following|other|made_relative|qualified|none": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_1995_2700/41408653e4",
+        "UK_uksi_2015_1947/b5d0461bce"
+      ]
+    },
+    "mention|none|following|other|none|plain|none": {
+      "count": 5,
+      "examples": [
+        "UK_uksi_2006_1521/5ba98f823f",
+        "UK_uksi_2021_745/166d51986c",
+        "UK_uksi_2001_3649/e291ce3c09"
+      ]
+    },
+    "mention|none|following|other|none|qualified|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1987_12/6747c6e2fb",
+        "UK_ukpga_1977_38/38bf43b181"
+      ]
+    },
+    "mention|none|following|present|by_order|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_asp_2005_13/f0ec9b7bd0"
+      ]
+    },
+    "mention|none|following|present|by_order|qualified|none": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_2020_21/4594f60fb5"
+      ]
+    },
+    "mention|none|following|present|list|plain|none": {
+      "count": 5,
+      "examples": [
+        "UK_ukpga_2019_3/cac26fc5b3",
+        "UK_uksi_2015_1522/1500e57138",
+        "UK_uksi_2015_914/04900b9795"
+      ]
+    },
+    "mention|none|following|present|list|qualified|none": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_1991_56/39b75ead2f",
+        "UK_ukpga_2019_3/6d182b3671",
+        "UK_uksi_2017_547/1dd098065e"
+      ]
+    },
+    "mention|none|following|present|made_relative|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2016_1092/62c4a901b2"
+      ]
+    },
+    "mention|none|following|present|made_relative|qualified|none": {
+      "count": 6,
+      "examples": [
+        "UK_nisr_2014_301/7a9c288eef",
+        "UK_ssi_2009_140/bb4cd90294",
+        "UK_ukpga_2004_22/91fabc888e"
+      ]
+    },
+    "mention|none|following|present|none|plain|none": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_2022_30/4bff41d42f",
+        "UK_uksi_2021_1399/e794fa6e4b"
+      ]
+    },
+    "mention|none|following|present|none|qualified|none": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_2006_28/ac7278321f",
+        "UK_uksi_2014_1639/d2085fa7d8",
+        "UK_ukpga_1986_63/fcf442d5c4"
+      ]
+    },
+    "mention|none|following|shall|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1982_30/2a48e7bd38"
+      ]
+    },
+    "mention|none|instrument|is_to|made_relative|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2005_16/43bcbdd2a8"
+      ]
+    },
+    "mention|none|instrument|is_to|none|plain|none": {
+      "count": 3,
+      "examples": [
+        "UK_asp_2001_2/80dbddc71d",
+        "UK_ukpga_1987_27/0b6827b59e",
+        "UK_ukpga_2007_27/f7a7927314"
+      ]
+    },
+    "mention|none|instrument|is_to|period|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2005_16/59387f9d6f",
+        "UK_uksi_1999_916/f231beb72e"
+      ]
+    },
+    "mention|none|instrument|other|by_order|plain|none": {
+      "count": 6,
+      "examples": [
+        "UK_ukpga_1968_72/9d5109cc79",
+        "UK_ukpga_1974_37/3216dd5fcb",
+        "UK_ukpga_1984_55/d4321aa022"
+      ]
+    },
+    "mention|none|instrument|other|by_order|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1974_1885/b40b490ca6"
+      ]
+    },
+    "mention|none|instrument|other|list|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2007_29/fbf412a2c1",
+        "UK_ukpga_2022_32/a596e91cd2"
+      ]
+    },
+    "mention|none|instrument|other|made_relative|plain|none": {
+      "count": 12,
+      "examples": [
+        "UK_anaw_2017_2/0a3e2f9611",
+        "UK_asc_2023_2/2395cc63fa",
+        "UK_ukpga_1981_29/d2f437a077"
+      ]
+    },
+    "mention|none|instrument|other|made_relative|qualified|none": {
+      "count": 5,
+      "examples": [
+        "UK_ukpga_2009_23/01035f00c9",
+        "UK_ukpga_1973_38/3e9d7069b6",
+        "UK_ukpga_2002_26/07229e4726"
+      ]
+    },
+    "mention|none|instrument|other|none|plain|none": {
+      "count": 107,
+      "examples": [
+        "UK_asc_2023_3/01e2e2401f",
+        "UK_asp_2003_1/067cb5441c",
+        "UK_asp_2003_3/4dd4ee8a62"
+      ]
+    },
+    "mention|none|instrument|other|none|qualified|none": {
+      "count": 17,
+      "examples": [
+        "UK_ukpga_1982_16/fb438ff61b",
+        "UK_ukpga_1987_53/e19103cfb2",
+        "UK_ukpga_1990_9/a4b52695fd"
+      ]
+    },
+    "mention|none|instrument|other|tied|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2007_29/6c46bf3336"
+      ]
+    },
+    "mention|none|instrument|other|tied|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1975_74/8e17861aad"
+      ]
+    },
+    "mention|none|instrument|present|date|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1971_10/830dc6c644"
+      ]
+    },
+    "mention|none|instrument|present|list|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2009_23/6bf1e4a9fe"
+      ]
+    },
+    "mention|none|instrument|present|list|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2004_20/c6581e3f5d"
+      ]
+    },
+    "mention|none|instrument|present|made_relative|plain|none": {
+      "count": 7,
+      "examples": [
+        "UK_mwa_2010_8/6a19c94ff9",
+        "UK_nia_2013_10/78153b6bfa",
+        "UK_ukpga_2010_15/583ab088dd"
+      ]
+    },
+    "mention|none|instrument|present|made_relative|qualified|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1936_49/92c2e4fa86",
+        "UK_ukpga_2013_22/de19cb9f92"
+      ]
+    },
+    "mention|none|instrument|present|none|plain|none": {
+      "count": 56,
+      "examples": [
+        "UK_asp_2009_12/c195d802c4",
+        "UK_asp_2012_8/1c972c110c",
+        "UK_ukpga_1968_27/f167218bba"
+      ]
+    },
+    "mention|none|instrument|present|none|qualified|none": {
+      "count": 11,
+      "examples": [
+        "UK_ukpga_1968_73/ae3d421309",
+        "UK_uksi_2004_1769/31e6b47cc5",
+        "UK_nia_2011_25/0b3122973d"
+      ]
+    },
+    "mention|none|instrument|present|tied|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1976_57/b6a62cbb76"
+      ]
+    },
+    "mention|none|instrument|shall|made_relative|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_nisr_2007_321/32a8d99af9"
+      ]
+    },
+    "mention|none|instrument|shall|none|plain|none": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_1998_17/81ec09d6fa",
+        "UK_ukpga_1988_40/ed47d1b7bb",
+        "UK_ukpga_1998_47/12d939d71d"
+      ]
+    },
+    "mention|none|instrument|shall|none|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1994_21/fee4abe8be"
+      ]
+    },
+    "mention|none|instrument|will|none|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_1992_223/7d10edb7f6",
+        "UK_asp_2001_2/a7a8e00400"
+      ]
+    },
+    "mention|none|named|is_to|none|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1988_52/adc9bbd92a",
+        "UK_ukpga_1972_20/28a3017aea"
+      ]
+    },
+    "mention|none|named|other|date|plain|none": {
+      "count": 8,
+      "examples": [
+        "UK_asp_2021_4/f812a7e83d",
+        "UK_ukpga_1997_8/1697866097",
+        "UK_ukpga_2024_13/fadf91f966"
+      ]
+    },
+    "mention|none|named|other|date|qualified|none": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_2009_995/5f0e12bc60",
+        "UK_uksi_2018_110/044035f073",
+        "UK_wsi_2009_995/9d1b9132f8"
+      ]
+    },
+    "mention|none|named|other|list|plain|none": {
+      "count": 15,
+      "examples": [
+        "UK_ukpga_2003_44/a5e8de4105",
+        "UK_ukpga_2020_17/ac3e84cb2c",
+        "UK_ukpga_2022_32/b80a7a738c"
+      ]
+    },
+    "mention|none|named|other|made_relative|plain|none": {
+      "count": 21,
+      "examples": [
+        "UK_nisr_2003_152/240537707b",
+        "UK_ukpga_1990_8/080c41790a",
+        "UK_ukpga_2008_32/032afefdc2"
+      ]
+    },
+    "mention|none|named|other|made_relative|qualified|none": {
+      "count": 19,
+      "examples": [
+        "UK_nisi_2006_1254/fbc37fe232",
+        "UK_nisr_2016_427/c01dd08529",
+        "UK_ssi_2013_121/c7a9b9deb6"
+      ]
+    },
+    "mention|none|named|other|named_day|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2012_1439/dc69b5bf64"
+      ]
+    },
+    "mention|none|named|other|none|plain|none": {
+      "count": 267,
+      "examples": [
+        "UK_asp_2004_6/3b17e61c7a",
+        "UK_asp_2005_3/4aa65137b6",
+        "UK_asp_2010_5/8847517904"
+      ]
+    },
+    "mention|none|named|other|none|qualified|none": {
+      "count": 134,
+      "examples": [
+        "UK_anaw_2016_3/6cc0ecaf14",
+        "UK_asp_2009_12/dc489b7905",
+        "UK_asp_2019_15/d30bf22413"
+      ]
+    },
+    "mention|none|named|other|tied|plain|none": {
+      "count": 3,
+      "examples": [
+        "UK_nisr_2010_160/991c89c5f3",
+        "UK_nisr_2010_59/ebb526d163",
+        "UK_uksi_2009_1348/61d097f2ea"
+      ]
+    },
+    "mention|none|named|other|tied|qualified|none": {
+      "count": 5,
+      "examples": [
+        "UK_ukpga_2003_37/52982107aa",
+        "UK_uksi_2020_1265/e9b8842262",
+        "UK_uksi_2025_1227/df2560c504"
+      ]
+    },
+    "mention|none|named|present|by_order|plain|none": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_1960_62/001b42e641",
+        "UK_ukpga_2009_22/186413f84d",
+        "UK_ukpga_2014_2/43782edf11"
+      ]
+    },
+    "mention|none|named|present|by_order|qualified|none": {
+      "count": 4,
+      "examples": [
+        "UK_uksi_2017_1206/0216433df3",
+        "UK_ukpga_1969_48/016364135b",
+        "UK_ukpga_2004_5/f6f9542dc8"
+      ]
+    },
+    "mention|none|named|present|date|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1974_30/bc4b8673af"
+      ]
+    },
+    "mention|none|named|present|date|plain|none": {
+      "count": 11,
+      "examples": [
+        "UK_asp_2021_4/85e05b4933",
+        "UK_uksi_1986_1078/5013bcf70b",
+        "UK_wsi_2010_2880/5fa350d68c"
+      ]
+    },
+    "mention|none|named|present|date|qualified|none": {
+      "count": 12,
+      "examples": [
+        "UK_ssi_2015_384/e5e77d4efb",
+        "UK_uksi_1986_1078/45ee1635dc",
+        "UK_uksi_1994_656/c29f58eb0b"
+      ]
+    },
+    "mention|none|named|present|list|plain|none": {
+      "count": 21,
+      "examples": [
+        "UK_nia_2013_10/5ece6b852c",
+        "UK_ukpga_1990_43/4620cae27c",
+        "UK_ukpga_1998_46/c09fde1772"
+      ]
+    },
+    "mention|none|named|present|list|qualified|none": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_2015_6/38d042c13c",
+        "UK_ukpga_2015_9/2a8f65e167",
+        "UK_uksi_2018_407/358316cb01"
+      ]
+    },
+    "mention|none|named|present|made_relative|plain|none": {
+      "count": 16,
+      "examples": [
+        "UK_ukpga_1995_25/e79dbc2fa1",
+        "UK_ukpga_2022_30/100efaeb2c",
+        "UK_ukpga_2024_13/ad79e2ec72"
+      ]
+    },
+    "mention|none|named|present|made_relative|qualified|none": {
+      "count": 12,
+      "examples": [
+        "UK_ukpga_1968_73/b01455ae52",
+        "UK_ukpga_2010_29/0ebc8e9dd0",
+        "UK_uksi_2002_1355/0de2f902dd"
+      ]
+    },
+    "mention|none|named|present|named_day|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1999_3323/434a7a47f5"
+      ]
+    },
+    "mention|none|named|present|none|plain|none": {
+      "count": 308,
+      "examples": [
+        "UK_asp_2003_1/05dcdbc6e0",
+        "UK_asp_2004_6/b8ec1493c9",
+        "UK_asp_2005_13/16723fb18d"
+      ]
+    },
+    "mention|none|named|present|none|qualified|none": {
+      "count": 142,
+      "examples": [
+        "UK_asc_2023_3/e30ff79d7f",
+        "UK_asp_2026_6/8abe08205b",
+        "UK_nisi_2003_419/94850cfba3"
+      ]
+    },
+    "mention|none|named|present|period|plain|none": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_2023_55/cea1d8de30",
+        "UK_uksi_1986_1078/dcbe7da5b0",
+        "UK_ukpga_1972_62/f7edc4db1a"
+      ]
+    },
+    "mention|none|named|present|tied|plain|none": {
+      "count": 3,
+      "examples": [
+        "UK_nisr_2007_321/b079a257d4",
+        "UK_ukpga_1986_50/cc1cc3b609",
+        "UK_ukpga_1988_40/39a0848091"
+      ]
+    },
+    "mention|none|named|present|tied|qualified|none": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2015_627/d0a9f3b3c0",
+        "UK_uksi_2003_2155/774772740a"
+      ]
+    },
+    "mention|none|named|shall|by_order|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1972_20/0816dcaf42",
+        "UK_ukpga_1983_25/8ff1155dbc"
+      ]
+    },
+    "mention|none|named|shall|by_order|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1990_8/9f2aa338a5"
+      ]
+    },
+    "mention|none|named|shall|date|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1994_39/dd361c7ae7"
+      ]
+    },
+    "mention|none|named|shall|date|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1992_2932/f4df48942f"
+      ]
+    },
+    "mention|none|named|shall|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1999_1593/759064ab97"
+      ]
+    },
+    "mention|none|named|shall|none|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1994_1096/1aa67ec3ac"
+      ]
+    },
+    "mention|none|other|is_to|none|plain|none": {
+      "count": 15,
+      "examples": [
+        "UK_ukpga_1968_73/bf8edcf111",
+        "UK_ukpga_1988_52/4917b57fbd",
+        "UK_ukpga_1989_29/cbc1c70e17"
+      ]
+    },
+    "mention|none|other|is_to|none|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1982_30/ebc2733f1b"
+      ]
+    },
+    "mention|none|other|may|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2008_26/d0def73edc"
+      ]
+    },
+    "mention|none|other|not_until|none|plain|none": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_1991_40/2f68e60d48",
+        "UK_ukla_2004_1/53c49dfe9b"
+      ]
+    },
+    "mention|none|other|not_until|none|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1994_19/98cfcc27a0"
+      ]
+    },
+    "mention|none|other|other|by_order|plain|none": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_1995_23/b035060c7e",
+        "UK_ukpga_2006_51/a3cc34e247",
+        "UK_uksi_2010_976/37541b992b"
+      ]
+    },
+    "mention|none|other|other|by_order|qualified|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1997_8/a5dc64783f",
+        "UK_nia_2011_25/a056b243f0"
+      ]
+    },
+    "mention|none|other|other|date|plain|none": {
+      "count": 16,
+      "examples": [
+        "UK_nisr_1996_228/0e0a4d5bcc",
+        "UK_nisr_2022_30/3582d56626",
+        "UK_ssi_2025_417/fc576ee2bf"
+      ]
+    },
+    "mention|none|other|other|date|qualified|none": {
+      "count": 12,
+      "examples": [
+        "UK_ssi_2023_3/7026ebaaac",
+        "UK_ukpga_1991_40/1b42e1467f",
+        "UK_asp_2003_7/b4fdc7dc14"
+      ]
+    },
+    "mention|none|other|other|list|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2008_29/c5f11cbbdb"
+      ]
+    },
+    "mention|none|other|other|made_relative|plain|none": {
+      "count": 59,
+      "examples": [
+        "UK_nisr_1999_304/32ba38b476",
+        "UK_nisr_1999_305/0f9c5db488",
+        "UK_nisr_2010_160/ea4bd79182"
+      ]
+    },
+    "mention|none|other|other|made_relative|qualified|none": {
+      "count": 26,
+      "examples": [
+        "UK_nisr_1991_446/48ff022ee2",
+        "UK_nisr_2006_205/ed13fc41ee",
+        "UK_nisr_2016_427/6b7890f1f7"
+      ]
+    },
+    "mention|none|other|other|named_day|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2018_16/6d0af69e9c",
+        "UK_ukpga_2020_1/5d974efea5"
+      ]
+    },
+    "mention|none|other|other|none|plain|none": {
+      "count": 719,
+      "examples": [
+        "UK_anaw_2016_3/c0f73e2f31",
+        "UK_anaw_2017_2/3d19586251",
+        "UK_asc_2025_4/d3bdc19e26"
+      ]
+    },
+    "mention|none|other|other|none|qualified|none": {
+      "count": 261,
+      "examples": [
+        "UK_anaw_2017_3/5392ae7331",
+        "UK_asp_2012_8/015bf79d70",
+        "UK_asp_2014_2/81cf7053b3"
+      ]
+    },
+    "mention|none|other|other|period|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2003_37/1e97870bfb"
+      ]
+    },
+    "mention|none|other|other|tied|plain|none": {
+      "count": 10,
+      "examples": [
+        "UK_ukpga_2025_10/7bb2e43291",
+        "UK_uksi_2016_614/c62d6cbe71",
+        "UK_ukpga_1973_65/6961a332b7"
+      ]
+    },
+    "mention|none|other|other|tied|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1992_12/c4b9568fad"
+      ]
+    },
+    "mention|none|other|present|by_order|plain|none": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_1999_29/5bf7c5b60c",
+        "UK_ukpga_2012_19/d069399d36",
+        "UK_anaw_2013_6/d95475f8c8"
+      ]
+    },
+    "mention|none|other|present|by_order|qualified|none": {
+      "count": 2,
+      "examples": [
+        "UK_asc_2026_7/50c9ef4a9b",
+        "UK_ukpga_2015_11/5f727e4905"
+      ]
+    },
+    "mention|none|other|present|date|plain|none": {
+      "count": 9,
+      "examples": [
+        "UK_asp_2003_1/82ec870f00",
+        "UK_ukpga_1974_30/c56d47e967",
+        "UK_ukpga_1981_35/54ff232ad7"
+      ]
+    },
+    "mention|none|other|present|date|qualified|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1988_39/80cd96df66",
+        "UK_ukpga_1995_4/6865d60994"
+      ]
+    },
+    "mention|none|other|present|list|plain|none": {
+      "count": 15,
+      "examples": [
+        "UK_asp_2002_3/59da0b641c",
+        "UK_ssi_2009_140/545faac4f8",
+        "UK_ukpga_1976_72/23e1214651"
+      ]
+    },
+    "mention|none|other|present|list|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_asc_2021_1/5dde5f8b39"
+      ]
+    },
+    "mention|none|other|present|made_relative|plain|none": {
+      "count": 20,
+      "examples": [
+        "UK_ukpga_1991_40/8c0366f7f5",
+        "UK_ukpga_2015_6/94afa95664",
+        "UK_anaw_2013_6/2e4ca11b9b"
+      ]
+    },
+    "mention|none|other|present|made_relative|qualified|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1978_30/c56b678e6a",
+        "UK_ukpga_1989_42/566701af2b"
+      ]
+    },
+    "mention|none|other|present|none|plain|none": {
+      "count": 180,
+      "examples": [
+        "UK_anaw_2016_3/31bcc277c9",
+        "UK_asp_2005_5/3e51d391f8",
+        "UK_ssi_2009_140/13985d929c"
+      ]
+    },
+    "mention|none|other|present|none|qualified|none": {
+      "count": 47,
+      "examples": [
+        "UK_asc_2023_3/7a53664d56",
+        "UK_ukpga_1956_52/41a0e89116",
+        "UK_ukpga_1968_73/68a2c5a307"
+      ]
+    },
+    "mention|none|other|present|period|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2023_50/dbf08d0d12",
+        "UK_asc_2026_4/b7675ecae3"
+      ]
+    },
+    "mention|none|other|present|period|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2009_23/f7d216bccf"
+      ]
+    },
+    "mention|none|other|present|tied|plain|none": {
+      "count": 3,
+      "examples": [
+        "UK_asc_2026_7/78b65ffdb3",
+        "UK_ukpga_1994_9/e3bd99195a",
+        "UK_ukpga_2015_26/273e030f13"
+      ]
+    },
+    "mention|none|other|present|tied|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1996_1905/23c5c02d85"
+      ]
+    },
+    "mention|none|other|shall|by_order|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1998_31/c62b6fd7f4"
+      ]
+    },
+    "mention|none|other|shall|date|qualified|none": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_1996_2925/fc58c42fdf"
+      ]
+    },
+    "mention|none|other|shall|none|plain|none": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_1980_45/c13c7eec8f",
+        "UK_ukpga_1968_13/e578ca7391",
+        "UK_ukpga_1976_57/96f62d0409"
+      ]
+    },
+    "mention|none|other|shall|none|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1982_30/dab648877e"
+      ]
+    },
+    "mention|none|parts|other|by_order|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1989_22/2e5951bcd0"
+      ]
+    },
+    "mention|none|parts|other|none|plain|none": {
+      "count": 15,
+      "examples": [
+        "UK_anaw_2017_2/396bae78f0",
+        "UK_ukpga_1961_64/300e7ba99e",
+        "UK_ukpga_1968_73/3ebb31d940"
+      ]
+    },
+    "mention|none|parts|other|none|qualified|law:clause_unread": {
+      "count": 1,
+      "examples": [
+        "UK_anaw_2015_4/a1978a8d0b"
+      ]
+    },
+    "mention|none|parts|other|none|qualified|none": {
+      "count": 8,
+      "examples": [
+        "UK_nisr_2000_87/db3de02f2b",
+        "UK_ukpga_2013_32/70076985fe",
+        "UK_uksi_1999_860/24c53f28c2"
+      ]
+    },
+    "mention|none|parts|present|by_order|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1999_30/bceee51730"
+      ]
+    },
+    "mention|none|parts|present|by_order|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1971_78/4615e1b723"
+      ]
+    },
+    "mention|none|parts|present|date|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1988_39/c58b99b916"
+      ]
+    },
+    "mention|none|parts|present|made_relative|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2015_664/d24bc3cb34"
+      ]
+    },
+    "mention|none|parts|present|none|plain|none": {
+      "count": 17,
+      "examples": [
+        "UK_ukpga_1987_53/c1f642cb76",
+        "UK_ukpga_1999_29/d10fc066b7",
+        "UK_ukpga_2008_27/bdf4105fe2"
+      ]
+    },
+    "mention|none|parts|present|none|qualified|none": {
+      "count": 7,
+      "examples": [
+        "UK_ukpga_1973_26/1a235ce4ed",
+        "UK_uksi_1996_1527/4c2f37caf0",
+        "UK_uksi_2013_1959/470972095e"
+      ]
+    },
+    "mention|none|parts|shall|period|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1982_30/a3952e8676"
+      ]
+    },
+    "mention|none|rest|is_to|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1975_51/20d4170bca"
+      ]
+    },
+    "mention|none|rest|other|none|plain|none": {
+      "count": 7,
+      "examples": [
+        "UK_ukpga_1989_15/a024c30290",
+        "UK_ukpga_1993_11/ca8ef4274f",
+        "UK_uksi_1989_1671/03e25fdd8d"
+      ]
+    },
+    "mention|none|rest|other|none|qualified|none": {
+      "count": 5,
+      "examples": [
+        "UK_asp_2009_12/8e9947c3d5",
+        "UK_asp_2019_15/735941784c",
+        "UK_ukpga_1973_50/1b7f407e81"
+      ]
+    },
+    "mention|none|rest|present|date|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1974_30/30eadc1e7e"
+      ]
+    },
+    "mention|none|rest|present|made_relative|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1987_43/a292d6412e"
+      ]
+    },
+    "mention|none|rest|present|made_relative|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1999_915/f122aca4fa"
+      ]
+    },
+    "mention|none|rest|present|none|plain|none": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_1974_40/327cf8b68e",
+        "UK_ukpga_1999_29/6712925494",
+        "UK_ukpga_2015_7/6364be4d63"
+      ]
+    },
+    "mention|none|rest|present|none|qualified|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2024_13/765dcf9fc3",
+        "UK_ukpga_1973_50/5fce6bc7cc"
+      ]
+    },
+    "mention|none|rest|present|tied|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1990_10/c5f19e6c24"
+      ]
+    },
+    "mention|none|schedules|other|by_order|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1978_23/4886ad483d"
+      ]
+    },
+    "mention|none|schedules|other|date|plain|none": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_2008_948/db06603368",
+        "UK_uksi_2009_1941/2b18054302"
+      ]
+    },
+    "mention|none|schedules|other|made_relative|plain|none": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_1956_52/c5938f9fb6",
+        "UK_ukpga_1986_45/1152726fbe",
+        "UK_uksi_2019_598/740acca645"
+      ]
+    },
+    "mention|none|schedules|other|made_relative|qualified|none": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_1985_71/47d6ea2572",
+        "UK_uksi_2012_2404/ded90aa303"
+      ]
+    },
+    "mention|none|schedules|other|none|plain|none": {
+      "count": 31,
+      "examples": [
+        "UK_nisr_2006_1/38011301e4",
+        "UK_ukpga_1981_69/ebaa6a68a9",
+        "UK_ukpga_1989_29/c567053837"
+      ]
+    },
+    "mention|none|schedules|other|none|qualified|none": {
+      "count": 11,
+      "examples": [
+        "UK_ukpga_1989_15/ff722a0a62",
+        "UK_uksi_2017_1012/66e9a2e2e0",
+        "UK_ukpga_1974_44/1363c6766b"
+      ]
+    },
+    "mention|none|schedules|present|none|plain|none": {
+      "count": 9,
+      "examples": [
+        "UK_ukpga_2023_50/40d57d9176",
+        "UK_uksi_2019_775/d56c5e3769",
+        "UK_asc_2026_7/49a1b5b747"
+      ]
+    },
+    "mention|none|schedules|present|none|qualified|none": {
+      "count": 11,
+      "examples": [
+        "UK_ukpga_2019_3/02425c5aca",
+        "UK_ukpga_2021_30/68b0a8a824",
+        "UK_uksi_2015_596/c1dae1aa45"
+      ]
+    },
+    "mention|none|schedules|shall|by_order|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1982_30/1ccfd7085e",
+        "UK_ukpga_1993_40/c0f4e91276"
+      ]
+    },
+    "mention|none|schedules|shall|period|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1990_43/efe73f4b1c",
+        "UK_ukpga_1982_30/58c7368a71"
+      ]
+    },
+    "mention|none|this|is_to|none|qualified|none": {
+      "count": 5,
+      "examples": [
+        "UK_ukpga_1988_52/8d85e5e21c",
+        "UK_ukpga_2004_20/3e75ea16ba",
+        "UK_ukpga_1972_20/1c9bfaf05d"
+      ]
+    },
+    "mention|none|this|is_to|period|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1973_65/da153d9334"
+      ]
+    },
+    "mention|none|this|other|by_order|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2003_33/6e0991e15a",
+        "UK_ukpga_1967_80/7a9b8170fe"
+      ]
+    },
+    "mention|none|this|other|by_order|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1991_57/cd64eca2ae"
+      ]
+    },
+    "mention|none|this|other|list|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2026_23/f995a07982"
+      ]
+    },
+    "mention|none|this|other|made_relative|plain|none": {
+      "count": 19,
+      "examples": [
+        "UK_ukpga_1968_27/4223719ceb",
+        "UK_ukpga_1981_69/f4f0e27160",
+        "UK_ukpga_1987_43/e81df230a0"
+      ]
+    },
+    "mention|none|this|other|made_relative|qualified|none": {
+      "count": 9,
+      "examples": [
+        "UK_ukpga_2003_37/cf590de3e2",
+        "UK_ukpga_1986_50/7f2b1d3fa4",
+        "UK_ukpga_1999_30/24aee28066"
+      ]
+    },
+    "mention|none|this|other|none|plain|none": {
+      "count": 105,
+      "examples": [
+        "UK_asp_2009_12/80685ad739",
+        "UK_nisi_1992_1728/f92882cda6",
+        "UK_nisi_2003_419/47bbd42a80"
+      ]
+    },
+    "mention|none|this|other|none|qualified|none": {
+      "count": 73,
+      "examples": [
+        "UK_asp_2026_6/7c778d07f1",
+        "UK_ukpga_1967_10/e1938dc494",
+        "UK_ukpga_1968_72/a678c08ed8"
+      ]
+    },
+    "mention|none|this|other|tied|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_1983_978/2ff032e101",
+        "UK_uksi_1987_37/fecc174b06"
+      ]
+    },
+    "mention|none|this|present|by_order|plain|none": {
+      "count": 8,
+      "examples": [
+        "UK_ukpga_1988_52/f05895923a",
+        "UK_ukpga_1991_40/072efa008a",
+        "UK_ukpga_2003_37/7d7f966e6e"
+      ]
+    },
+    "mention|none|this|present|by_order|qualified|none": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_1991_56/0e1e8923ac",
+        "UK_ukpga_1985_67/5a7f6eccf4",
+        "UK_ukpga_2022_32/d985e631d3"
+      ]
+    },
+    "mention|none|this|present|date|plain|law:clause_staged": {
+      "count": 11,
+      "examples": [
+        "UK_ukpga_1981_35/7441bf833e",
+        "UK_ukpga_1982_39/71229be181",
+        "UK_ukpga_1988_39/ac0ec6c39f"
+      ]
+    },
+    "mention|none|this|present|date|plain|none": {
+      "count": 32,
+      "examples": [
+        "UK_asp_2010_5/01aa130af8",
+        "UK_nia_2013_10/0c1ed2e658",
+        "UK_ukpga_2023_52/d247d6f044"
+      ]
+    },
+    "mention|none|this|present|date|qualified|none": {
+      "count": 5,
+      "examples": [
+        "UK_ukpga_2008_29/20a7e3cf35",
+        "UK_ukpga_2009_23/516fa6699c",
+        "UK_uksi_1986_1078/a4317bd130"
+      ]
+    },
+    "mention|none|this|present|list|plain|none": {
+      "count": 7,
+      "examples": [
+        "UK_asp_2021_4/61f3a201ea",
+        "UK_ukpga_1999_30/dcf1c58dc1",
+        "UK_ukpga_2022_32/b06cd49424"
+      ]
+    },
+    "mention|none|this|present|list|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2025_34/4d1f702215"
+      ]
+    },
+    "mention|none|this|present|made_relative|plain|none": {
+      "count": 30,
+      "examples": [
+        "UK_asp_2019_15/3bc88f7c73",
+        "UK_asp_2021_4/9b495e7854",
+        "UK_asp_2026_6/189d85e0db"
+      ]
+    },
+    "mention|none|this|present|made_relative|qualified|none": {
+      "count": 21,
+      "examples": [
+        "UK_asp_2021_4/db700b87ca",
+        "UK_ukpga_1937_67/f8b5d4abf7",
+        "UK_ukpga_1968_73/6b7199bda3"
+      ]
+    },
+    "mention|none|this|present|named_day|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2009_23/892747e96b"
+      ]
+    },
+    "mention|none|this|present|none|plain|law:clause_unread": {
+      "count": 1,
+      "examples": [
+        "UK_nisr_2007_321/3c774b4cf3"
+      ]
+    },
+    "mention|none|this|present|none|plain|none": {
+      "count": 409,
+      "examples": [
+        "UK_anaw_2016_3/a6d874844d",
+        "UK_anaw_2017_2/5659af2379",
+        "UK_anaw_2017_3/6c30b3798a"
+      ]
+    },
+    "mention|none|this|present|none|qualified|none": {
+      "count": 170,
+      "examples": [
+        "UK_anaw_2016_3/f06039073a",
+        "UK_asp_2003_2/65d0f74d0c",
+        "UK_asp_2009_12/bd1afc91c0"
+      ]
+    },
+    "mention|none|this|present|period|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_asp_2019_15/8fa7285e73"
+      ]
+    },
+    "mention|none|this|present|period|qualified|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1991_34/4acb492904"
+      ]
+    },
+    "mention|none|this|present|tied|plain|none": {
+      "count": 6,
+      "examples": [
+        "UK_uksi_2005_1541/afaa34cef8",
+        "UK_uksi_2008_1911/95fcee0c56",
+        "UK_nisr_2007_321/2014075b20"
+      ]
+    },
+    "mention|none|this|present|tied|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2003_37/07d4782ae8"
+      ]
+    },
+    "mention|none|this|shall|none|plain|none": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_1962_46/550dcc6513"
+      ]
+    },
+    "mention|none|this|shall|none|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1984_60/cfa4c15bff"
+      ]
+    },
+    "mention|none|this|shall|period|plain|none": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_1976_57/37e926794f"
+      ]
+    },
+    "mention|none|whole|is_to|list|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2006_798/973152a96b"
+      ]
+    },
+    "mention|none|whole|is_to|none|plain|none": {
+      "count": 3,
+      "examples": [
+        "UK_asp_2001_2/e6450aeb9f",
+        "UK_ukpga_2006_52/c6e0721e25",
+        "UK_uksi_2006_1244/47c62619e5"
+      ]
+    },
+    "mention|none|whole|not_until|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukcm_1947_2/2a41ddc003"
+      ]
+    },
+    "mention|none|whole|other|by_order|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2014_21/33712ef76c"
+      ]
+    },
+    "mention|none|whole|other|by_order|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1974_1885/2d44cc949e"
+      ]
+    },
+    "mention|none|whole|other|date|plain|none": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_2019_703/8cff0cc2b3",
+        "UK_uksi_2021_534/24730d2897",
+        "UK_nisr_2019_185/446545dd75"
+      ]
+    },
+    "mention|none|whole|other|date|qualified|none": {
+      "count": 2,
+      "examples": [
+        "UK_nisr_1996_119/e44d146afb",
+        "UK_uksi_1996_341/f0f60529f8"
+      ]
+    },
+    "mention|none|whole|other|list|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2023_982/ac213f520e"
+      ]
+    },
+    "mention|none|whole|other|made_relative|plain|none": {
+      "count": 7,
+      "examples": [
+        "UK_ukpga_1933_13/3d88aa013b",
+        "UK_ukpga_2014_21/143f859831",
+        "UK_nisr_2019_185/ce6e837914"
+      ]
+    },
+    "mention|none|whole|other|made_relative|qualified|none": {
+      "count": 6,
+      "examples": [
+        "UK_ukpga_1937_67/3ca1801e1a",
+        "UK_ukpga_1972_20/838195465f",
+        "UK_ukpga_1993_50/fe693111eb"
+      ]
+    },
+    "mention|none|whole|other|none|plain|none": {
+      "count": 54,
+      "examples": [
+        "UK_asp_2008_5/1e5437b9e6",
+        "UK_nisr_1996_262/518cb6c1e1",
+        "UK_ukpga_1989_15/f9e4082fed"
+      ]
+    },
+    "mention|none|whole|other|none|qualified|none": {
+      "count": 68,
+      "examples": [
+        "UK_asp_2003_2/e4cd7eecc8",
+        "UK_nisr_1999_150/fdc9926847",
+        "UK_ukpga_1956_52/7c2cabaecc"
+      ]
+    },
+    "mention|none|whole|other|tied|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_nisr_1999_90/4766006eaf",
+        "UK_uksi_2002_2665/932a3b5c93"
+      ]
+    },
+    "mention|none|whole|present|by_order|plain|none": {
+      "count": 5,
+      "examples": [
+        "UK_ssi_2010_204/771ac12b2e",
+        "UK_ukpga_1986_31/320cae7b1b",
+        "UK_ukpga_1985_67/2e3709d9eb"
+      ]
+    },
+    "mention|none|whole|present|by_order|qualified|law:by_order": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2018_16/a7c55b9f83"
+      ]
+    },
+    "mention|none|whole|present|by_order|qualified|none": {
+      "count": 6,
+      "examples": [
+        "UK_ukpga_1968_72/807ba01b43",
+        "UK_ukpga_2005_16/fce774d76b",
+        "UK_ukpga_2020_7/86b5f89482"
+      ]
+    },
+    "mention|none|whole|present|date|plain|none": {
+      "count": 6,
+      "examples": [
+        "UK_uksi_1998_1833/367cb23c8a",
+        "UK_uksi_2005_1803/eea31c4f72",
+        "UK_uksi_2010_1001/7d33505a1f"
+      ]
+    },
+    "mention|none|whole|present|date|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2005_15/fa2124508d"
+      ]
+    },
+    "mention|none|whole|present|list|plain|none": {
+      "count": 10,
+      "examples": [
+        "UK_ssi_2009_140/22743d8a59",
+        "UK_ssi_2014_258/ebff8bbac0",
+        "UK_uksi_2007_79/3560291797"
+      ]
+    },
+    "mention|none|whole|present|list|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2021_465/9bf9a9530e"
+      ]
+    },
+    "mention|none|whole|present|made_relative|plain|none": {
+      "count": 5,
+      "examples": [
+        "UK_nisr_2016_427/fd38db0455",
+        "UK_ukpga_1962_58/92ede1e16f",
+        "UK_nia_2021_8/494fc68003"
+      ]
+    },
+    "mention|none|whole|present|made_relative|qualified|none": {
+      "count": 5,
+      "examples": [
+        "UK_ukpga_1971_78/6aef3a1416",
+        "UK_ukpga_1973_32/7bfb0b0627",
+        "UK_uksi_2013_1644/4512b35ad1"
+      ]
+    },
+    "mention|none|whole|present|named_day|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1999_3323/33c56a34b7"
+      ]
+    },
+    "mention|none|whole|present|none|plain|none": {
+      "count": 173,
+      "examples": [
+        "UK_asc_2026_5/d7c8d32eaa",
+        "UK_asp_2009_12/0d1796f52e",
+        "UK_asp_2019_15/3f104108a2"
+      ]
+    },
+    "mention|none|whole|present|none|qualified|none": {
+      "count": 68,
+      "examples": [
+        "UK_asp_2019_15/3fa6ff898f",
+        "UK_nisr_2003_97/ceff268cce",
+        "UK_nisr_2016_28/95d8067d0f"
+      ]
+    },
+    "mention|none|whole|present|tied|qualified|none": {
+      "count": 4,
+      "examples": [
+        "UK_asp_2019_15/5703f9585e",
+        "UK_nisr_2016_427/373a90bc46",
+        "UK_ukpga_2008_30/92151c85fa"
+      ]
+    },
+    "mention|none|whole|shall|by_order|plain|law:by_order": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2004_22/e1eea3f121"
+      ]
+    },
+    "mention|none|whole|shall|by_order|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1937_40/fc507aeedb"
+      ]
+    },
+    "mention|none|whole|will|none|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1990_43/031b774901",
+        "UK_nisi_1997_2778/362b08b2e8"
+      ]
+    },
+    "mention|subject_to|following|other|none|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1971_78/51399517db"
+      ]
+    },
+    "mention|subject_to|following|present|list|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2020_1467/03bb449bd9"
+      ]
+    },
+    "mention|subject_to|instrument|other|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2003_37/1fc94bbd29"
+      ]
+    },
+    "mention|subject_to|instrument|other|none|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1972_11/98394b84e6"
+      ]
+    },
+    "mention|subject_to|instrument|present|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2009_23/21fa25b75c"
+      ]
+    },
+    "mention|subject_to|named|other|made_relative|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_nisi_2003_419/6dab17569c"
+      ]
+    },
+    "mention|subject_to|named|other|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1989_992/67eb102335"
+      ]
+    },
+    "mention|subject_to|named|other|none|qualified|none": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_1990_8/6b0b4d7e00",
+        "UK_ukpga_1997_8/b38e5ae8f8",
+        "UK_uksi_1996_972/1f355802a4"
+      ]
+    },
+    "mention|subject_to|named|present|made_relative|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_nisr_2007_321/4bc39ba35c",
+        "UK_ukpga_1980_66/1aeca03f1c"
+      ]
+    },
+    "mention|subject_to|named|present|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1984_54/8e1924db91"
+      ]
+    },
+    "mention|subject_to|named|present|none|qualified|none": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_1989_29/bdd573eb3a",
+        "UK_nisi_1994_426/9acf854062",
+        "UK_uksi_1996_1905/6df8d3aabb"
+      ]
+    },
+    "mention|subject_to|named|present|tied|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_nisr_2007_321/d5089de615"
+      ]
+    },
+    "mention|subject_to|other|is_to|by_order|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1987_53/613a5e48be"
+      ]
+    },
+    "mention|subject_to|other|other|made_relative|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1987_49/d42f255721"
+      ]
+    },
+    "mention|subject_to|other|other|none|plain|none": {
+      "count": 15,
+      "examples": [
+        "UK_nisr_1997_193/566272ae35",
+        "UK_ukpga_1981_69/cc5ce6fab9",
+        "UK_uksi_1996_825/882559306c"
+      ]
+    },
+    "mention|subject_to|other|other|none|qualified|none": {
+      "count": 10,
+      "examples": [
+        "UK_ukpga_1991_57/019cc66ee8",
+        "UK_asp_2003_7/4c2152770a",
+        "UK_ukpga_1990_19/bee505f97e"
+      ]
+    },
+    "mention|subject_to|other|present|date|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2002_23/e1d5640ea0"
+      ]
+    },
+    "mention|subject_to|other|present|none|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1991_57/920e301709",
+        "UK_ukpga_2006_48/697a17522b"
+      ]
+    },
+    "mention|subject_to|other|present|none|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1995_23/4f51afdf48"
+      ]
+    },
+    "mention|subject_to|schedules|other|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1970_1537/48510a2e4b"
+      ]
+    },
+    "mention|subject_to|schedules|other|none|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1992_12/bab1dfe081"
+      ]
+    },
+    "mention|subject_to|this|other|made_relative|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1967_86/5e15e18f84",
+        "UK_ukpga_1980_66/9e660f2b91"
+      ]
+    },
+    "mention|subject_to|this|other|none|plain|none": {
+      "count": 5,
+      "examples": [
+        "UK_nisr_2017_229/a8e0308ba1",
+        "UK_ukpga_2004_20/7a4ce29d68",
+        "UK_uksi_2017_1075/dba57abdda"
+      ]
+    },
+    "mention|subject_to|this|other|none|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1994_3247/eab1f1132a"
+      ]
+    },
+    "mention|subject_to|this|present|made_relative|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1976_19/e5314daba5"
+      ]
+    },
+    "mention|subject_to|this|present|none|plain|none": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_2005_1541/17a484b983",
+        "UK_uksi_2010_724/657995aa39",
+        "UK_ukpga_1985_67/8bd0e8f0f2"
+      ]
+    },
+    "mention|subject_to|this|present|none|qualified|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2003_37/4b232f84f8",
+        "UK_uksi_2000_730/7a545b841e"
+      ]
+    },
+    "mention|subject_to|whole|present|none|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2013_1959/a7147fa786",
+        "UK_uksi_2020_1497/805f02d117"
+      ]
+    },
+    "mention|subject_to|whole|present|none|qualified|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1986_31/eb95c0a984",
+        "UK_uksi_2013_235/f5c5584498"
+      ]
+    },
+    "statement|apart_from|named|present|by_order|plain|law:by_order": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1999_29/8dc73d5459"
+      ]
+    },
+    "statement|apart_from|other|present|by_order|plain|law:by_order": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1994_21/206e55cce9"
+      ]
+    },
+    "statement|apart_from|rest|present|made_relative|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2002_21/0fa06bab85"
+      ]
+    },
+    "statement|apart_from|this|present|by_order|plain|law:by_order": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1998_39/8b43adf6f8"
+      ]
+    },
+    "statement|apart_from|whole|present|by_order|plain|law:by_order": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2003_37/8cbfe01b9f",
+        "UK_ukpga_2000_2/a5aa6119d7"
+      ]
+    },
+    "statement|except_as|instrument|present|made_relative|plain|unread": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2010_231/37c9ca21d4"
+      ]
+    },
+    "statement|except_as|named|not_until|date|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1995_17/c9c0503222"
+      ]
+    },
+    "statement|except_as|named|present|by_order|plain|law:by_order": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1995_25/7c294e4e9a"
+      ]
+    },
+    "statement|except_as|named|shall|date|plain|law:clause_date": {
+      "count": 2,
+      "examples": [
+        "UK_nisr_2015_236/a8360520be",
+        "UK_nisr_2013_206/0ff0de818b"
+      ]
+    },
+    "statement|except_as|named|shall|none|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1988_1/7cb4f5a73a"
+      ]
+    },
+    "statement|except_as|other|present|by_order|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2008_29/980c0262b5"
+      ]
+    },
+    "statement|except_as|rest|shall|by_order|plain|law:by_order": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1994_29/9bb7e5f8c5"
+      ]
+    },
+    "statement|except_as|rest|shall|by_order|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2000_32/e0e78ae1aa"
+      ]
+    },
+    "statement|except_as|this|present|by_order|plain|law:by_order": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2001_10/c68766b5f3"
+      ]
+    },
+    "statement|except_as|whole|present|by_order|plain|law:by_order": {
+      "count": 16,
+      "examples": [
+        "UK_nisi_2006_2957/54a2291f5c",
+        "UK_ukpga_2017_3/ac163a7b72",
+        "UK_ukpga_2018_12/071418b820"
+      ]
+    },
+    "statement|except_as|whole|present|date|plain|law:clause_date": {
+      "count": 6,
+      "examples": [
+        "UK_uksi_2003_1998/534b8798b2",
+        "UK_uksi_2015_966/4d4702964a",
+        "UK_wsi_2026_103/15a84eb16f"
+      ]
+    },
+    "statement|except_as|whole|present|date|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2013_388/f613e3d72c"
+      ]
+    },
+    "statement|except_as|whole|present|made_relative|plain|law:clause_made_relative": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2026_6/300c9d2641",
+        "UK_uksi_2020_1265/aa2e43acdb"
+      ]
+    },
+    "statement|except_as|whole|present|named_day|plain|law:clause_named_day": {
+      "count": 2,
+      "examples": [
+        "UK_nisr_2020_330/8b54a187bd",
+        "UK_uksi_2020_1460/1f1e50f3d4"
+      ]
+    },
+    "statement|except_as|whole|present|none|plain|law:clause_unread": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2023_994/a1eab62b8d"
+      ]
+    },
+    "statement|except_as|whole|present|period|plain|law:clause_made_relative": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2002_3153/2ede8d6a8c"
+      ]
+    },
+    "statement|except_as|whole|shall|by_order|plain|law:by_order": {
+      "count": 5,
+      "examples": [
+        "UK_nisi_2003_419/ff0e2fdb78",
+        "UK_nisi_2006_3336/4a85ae7b80",
+        "UK_ukpga_1988_40/4aa977d51c"
+      ]
+    },
+    "statement|except_as|whole|shall|by_order|qualified|law:by_order": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1974_44/5995335fcc"
+      ]
+    },
+    "statement|except_as|whole|shall|date|plain|law:clause_date": {
+      "count": 3,
+      "examples": [
+        "UK_ssi_2005_157/da5b9df3f7",
+        "UK_ssi_2005_658/3241609e18",
+        "UK_ukpga_1971_78/f6dc0a59be"
+      ]
+    },
+    "statement|except_as|whole|shall|date|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1968_13/207aa8cc3c"
+      ]
+    },
+    "statement|except_as|whole|shall|date|qualified|law:clause_unread": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1988_1/6fe6aab256"
+      ]
+    },
+    "statement|except_as|whole|shall|period|plain|law:clause_made_relative": {
+      "count": 6,
+      "examples": [
+        "UK_nisi_1992_1728/f8eef86c53",
+        "UK_ukpga_1990_8/cb2bc9e8d2",
+        "UK_ukpga_1990_9/925a3df34b"
+      ]
+    },
+    "statement|none|following|is_to|by_order|plain|rules:provision_by_order": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2003_32/4739b7f544"
+      ]
+    },
+    "statement|none|following|not_until|by_order|plain|rules:provision_by_order": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1992_14/8a7970e249"
+      ]
+    },
+    "statement|none|following|not_until|by_order|plain|rules:provision_by_order+provision_qualified": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_1992_15/94ce601f98",
+        "UK_ukpga_1999_30/4ee0fe68fe"
+      ]
+    },
+    "statement|none|following|not_until|by_order|plain|unread": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1994_20/4e779816d2"
+      ]
+    },
+    "statement|none|following|not_until|date|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1963_33/1fa32cad48"
+      ]
+    },
+    "statement|none|following|present|by_order|plain|law:by_order": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2005_4/ed5cc12a73"
+      ]
+    },
+    "statement|none|following|present|by_order|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_nia_2022_3/08c4c6f3f8"
+      ]
+    },
+    "statement|none|following|present|by_order|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2025_5/f2f12b352d"
+      ]
+    },
+    "statement|none|following|present|by_order|plain|rules:provision_by_order": {
+      "count": 7,
+      "examples": [
+        "UK_anaw_2016_3/67c9806130",
+        "UK_ukpga_2011_16/5bbc98e588",
+        "UK_ukpga_2020_7/432923a805"
+      ]
+    },
+    "statement|none|following|present|by_order|plain|rules:provision_by_order+provision_qualified": {
+      "count": 24,
+      "examples": [
+        "UK_ukpga_1984_55/badd5bc5be",
+        "UK_ukpga_2006_28/904fa3034e",
+        "UK_ukpga_2015_6/2db374541d"
+      ]
+    },
+    "statement|none|following|present|by_order|plain|rules:provision_qualified": {
+      "count": 6,
+      "examples": [
+        "UK_ukpga_2006_28/dc0ffa6571",
+        "UK_ukpga_2010_15/b39e51a20e",
+        "UK_ukpga_2021_30/3e849fb69e"
+      ]
+    },
+    "statement|none|following|present|by_order|plain|unread": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2002_3153/28f8db1c1f"
+      ]
+    },
+    "statement|none|following|present|by_order|qualified|rules:provision_qualified": {
+      "count": 10,
+      "examples": [
+        "UK_ukpga_2006_28/576005404a",
+        "UK_ukpga_2022_30/5851944cf8",
+        "UK_ukpga_2005_15/ff299240fb"
+      ]
+    },
+    "statement|none|following|present|date|plain|law:clause_staged": {
+      "count": 4,
+      "examples": [
+        "UK_uksi_2021_745/07ced4769c",
+        "UK_uksi_2026_15/72efefd45f",
+        "UK_uksi_2026_318/2e7ee06c54"
+      ]
+    },
+    "statement|none|following|present|date|plain|rules:provision_dated": {
+      "count": 12,
+      "examples": [
+        "UK_uksi_2009_890/c630d8da3d",
+        "UK_uksi_2026_318/b466700bd3",
+        "UK_anaw_2013_1/2a32b4346e"
+      ]
+    },
+    "statement|none|following|present|date|plain|rules:provision_dated+provision_qualified": {
+      "count": 4,
+      "examples": [
+        "UK_wsi_2024_207/f672837683",
+        "UK_ukpga_2009_25/d6c75fae84",
+        "UK_ukpga_2014_26/00928ae7da"
+      ]
+    },
+    "statement|none|following|present|date|plain|rules:provision_qualified": {
+      "count": 3,
+      "examples": [
+        "UK_ssi_2009_319/0d0ac82e84",
+        "UK_uksi_2019_1440/54d023d971",
+        "UK_uksi_2022_500/0f91418d33"
+      ]
+    },
+    "statement|none|following|present|date|plain|unread": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2013_591/3d84a2d377",
+        "UK_uksi_2020_1062/fa326391b2"
+      ]
+    },
+    "statement|none|following|present|date|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2015_1630/a866160e6a"
+      ]
+    },
+    "statement|none|following|present|date|qualified|rules:provision_qualified": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2026_82/2de95e6c99"
+      ]
+    },
+    "statement|none|following|present|made_relative|plain|law:clause_staged": {
+      "count": 42,
+      "examples": [
+        "UK_anaw_2017_2/062f4bbb4d",
+        "UK_asc_2023_3/d0a9adc68e",
+        "UK_asp_2012_8/0847b9b817"
+      ]
+    },
+    "statement|none|following|present|made_relative|plain|law:clause_unread": {
+      "count": 2,
+      "examples": [
+        "UK_anaw_2012_2/50362de0f3",
+        "UK_uksi_2024_105/71c76ff288"
+      ]
+    },
+    "statement|none|following|present|made_relative|plain|none": {
+      "count": 3,
+      "examples": [
+        "UK_anaw_2015_4/7c38f1d672",
+        "UK_ukpga_1980_66/839caf440b",
+        "UK_ukpga_2003_44/3f459fd29f"
+      ]
+    },
+    "statement|none|following|present|made_relative|plain|rules:provision_dated": {
+      "count": 25,
+      "examples": [
+        "UK_asc_2026_5/0a907e9f84",
+        "UK_ukpga_2008_29/01d33ecf63",
+        "UK_ukpga_2011_16/062f5872ae"
+      ]
+    },
+    "statement|none|following|present|made_relative|plain|rules:provision_dated+provision_qualified": {
+      "count": 32,
+      "examples": [
+        "UK_nisi_2003_419/0db119a8a9",
+        "UK_nisi_2006_2957/d8dc8de73d",
+        "UK_ukpga_2008_32/6f408012d2"
+      ]
+    },
+    "statement|none|following|present|made_relative|plain|rules:provision_qualified": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2005_15/9b4200342c",
+        "UK_uksi_2012_3039/494c72ebae"
+      ]
+    },
+    "statement|none|following|present|made_relative|qualified|law:clause_unread": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1986_63/983287858f"
+      ]
+    },
+    "statement|none|following|present|made_relative|qualified|rules:provision_dated+provision_qualified": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1998_31/baad5d3680",
+        "UK_ukpga_2001_10/f143f45c94"
+      ]
+    },
+    "statement|none|following|present|made_relative|qualified|rules:provision_qualified": {
+      "count": 2,
+      "examples": [
+        "UK_nia_2009_1/604f374e84",
+        "UK_ukpga_1998_31/952281e50c"
+      ]
+    },
+    "statement|none|following|present|named_day|plain|rules:provision_dated": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2020_22/defdd7000e"
+      ]
+    },
+    "statement|none|following|present|named_day|plain|rules:provision_dated+provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2020_1419/e65d63521d"
+      ]
+    },
+    "statement|none|following|present|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_asc_2021_1/9e8b444220"
+      ]
+    },
+    "statement|none|following|present|none|plain|rules:provision_qualified": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2014_12/d710a0afb6",
+        "UK_ukpga_2015_9/71f8290e95"
+      ]
+    },
+    "statement|none|following|present|none|plain|unread": {
+      "count": 4,
+      "examples": [
+        "UK_uksi_2012_1657/6450793f3e",
+        "UK_asp_2012_5/5a1a619f99",
+        "UK_ukpga_2011_19/973a580cee"
+      ]
+    },
+    "statement|none|following|present|period|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2015_6/c342f45285"
+      ]
+    },
+    "statement|none|following|present|period|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2003_44/432d7d8244"
+      ]
+    },
+    "statement|none|following|present|period|plain|rules:provision_dated": {
+      "count": 27,
+      "examples": [
+        "UK_anaw_2016_3/dca6f09461",
+        "UK_ukpga_2000_37/2732e22c3e",
+        "UK_ukpga_2006_49/e5b81101c2"
+      ]
+    },
+    "statement|none|following|present|period|plain|rules:provision_dated+provision_qualified": {
+      "count": 14,
+      "examples": [
+        "UK_ukpga_2014_21/789d601f53",
+        "UK_ukpga_2021_30/8c6c894d05",
+        "UK_ukpga_2023_52/64b88cf8b8"
+      ]
+    },
+    "statement|none|following|present|period|plain|rules:provision_qualified": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_2018_12/0d42d5b369",
+        "UK_anaw_2015_4/efb8cad3e4",
+        "UK_ukpga_2009_26/95ad807ea3"
+      ]
+    },
+    "statement|none|following|present|period|plain|unread": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2022_14/714a2e60bc",
+        "UK_ukpga_2011_19/e62249b646"
+      ]
+    },
+    "statement|none|following|present|period|qualified|rules:provision_dated+provision_qualified": {
+      "count": 2,
+      "examples": [
+        "UK_anaw_2013_1/1b653e5ba7",
+        "UK_ukpga_2007_28/8f1ad07e48"
+      ]
+    },
+    "statement|none|following|present|period|qualified|rules:provision_qualified": {
+      "count": 3,
+      "examples": [
+        "UK_asc_2023_4/7543112e0d",
+        "UK_ukpga_1996_52/718182c97e",
+        "UK_ukpga_1996_53/c958a7d804"
+      ]
+    },
+    "statement|none|following|present|tied|plain|rules:provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2020_17/37611177ac"
+      ]
+    },
+    "statement|none|following|present|tied|qualified|rules:provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2010_490/5cfc41c325"
+      ]
+    },
+    "statement|none|following|shall|by_order|plain|rules:provision_by_order": {
+      "count": 5,
+      "examples": [
+        "UK_nisi_1992_1728/ae84eb2f32",
+        "UK_ukpga_1987_12/483c510c69",
+        "UK_ukpga_2000_21/0f2e97e2a9"
+      ]
+    },
+    "statement|none|following|shall|by_order|plain|rules:provision_by_order+provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_nisi_1994_426/cc8d101744"
+      ]
+    },
+    "statement|none|following|shall|by_order|qualified|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1968_64/2d97e5dd6d"
+      ]
+    },
+    "statement|none|following|shall|by_order|qualified|none": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_1986_44/cab688f9fa",
+        "UK_ukpga_1984_12/4dd43fa473",
+        "UK_ukpga_1994_29/e076014b65"
+      ]
+    },
+    "statement|none|following|shall|by_order|qualified|rules:provision_by_order+provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1984_54/8f9af1c0c9"
+      ]
+    },
+    "statement|none|following|shall|by_order|qualified|rules:provision_qualified": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2002_32/d083ff1944"
+      ]
+    },
+    "statement|none|following|shall|date|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_nisr_2012_187/f3d37fa81a"
+      ]
+    },
+    "statement|none|following|shall|date|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1981_35/91e1841dec"
+      ]
+    },
+    "statement|none|following|shall|date|plain|rules:provision_dated": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2007_2154/cd05ded120"
+      ]
+    },
+    "statement|none|following|shall|date|plain|rules:provision_dated+provision_qualified": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_1999_3440/e5b843d0cd",
+        "UK_uksi_2004_827/c8cd036efb"
+      ]
+    },
+    "statement|none|following|shall|date|plain|rules:provision_qualified": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_1999_3440/5fd428da6a",
+        "UK_uksi_2004_827/1948f66ef0"
+      ]
+    },
+    "statement|none|following|shall|date|plain|unread": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_2003_835/806da092fa",
+        "UK_ukpga_1988_1/45492f0b1d",
+        "UK_ukpga_1992_12/056881575e"
+      ]
+    },
+    "statement|none|following|shall|date|qualified|none": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_1991_2728/b45e1c528a",
+        "UK_uksi_1999_3434/c38588ff63"
+      ]
+    },
+    "statement|none|following|shall|date|qualified|rules:provision_dated": {
+      "count": 4,
+      "examples": [
+        "UK_uksi_1992_2784/c9640b1673",
+        "UK_uksi_1993_3237/e1d9bded5c",
+        "UK_uksi_1995_1983/0639e34a41"
+      ]
+    },
+    "statement|none|following|shall|date|qualified|rules:provision_dated+provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1996_186/1913a23a25"
+      ]
+    },
+    "statement|none|following|shall|date|qualified|rules:provision_qualified": {
+      "count": 4,
+      "examples": [
+        "UK_uksi_1994_1096/67de01e9b3",
+        "UK_uksi_1996_186/e184411ca5",
+        "UK_uksi_1999_3434/ca1eae1ac6"
+      ]
+    },
+    "statement|none|following|shall|made_relative|plain|law:clause_staged": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_1999_9/5beaff5fee",
+        "UK_ukpga_1994_19/4c029220d0",
+        "UK_ukpga_1998_47/1b2fc759b3"
+      ]
+    },
+    "statement|none|following|shall|made_relative|plain|rules:provision_dated": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1998_23/6845ac4ef8",
+        "UK_ukpga_2002_32/2de7927363"
+      ]
+    },
+    "statement|none|following|shall|made_relative|plain|rules:provision_dated+provision_qualified": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_1975_59/819c0b07fc",
+        "UK_ukpga_1980_34/1fca3e05bd",
+        "UK_ukpga_1994_29/a176ed5c24"
+      ]
+    },
+    "statement|none|following|shall|made_relative|qualified|law:clause_staged": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1973_32/a542ba824b",
+        "UK_ukpga_1973_37/1738bc118a"
+      ]
+    },
+    "statement|none|following|shall|made_relative|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1986_50/fce624a864"
+      ]
+    },
+    "statement|none|following|shall|made_relative|qualified|rules:provision_dated+provision_qualified": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_1990_16/ee6ce0ee6b",
+        "UK_ukpga_1982_48/bf045da686",
+        "UK_ukpga_1988_33/9f70c9eedb"
+      ]
+    },
+    "statement|none|following|shall|made_relative|qualified|rules:provision_qualified": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_1995_1983/4b21b97507"
+      ]
+    },
+    "statement|none|following|shall|none|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1996_2925/1b93355949"
+      ]
+    },
+    "statement|none|following|shall|none|plain|rules:provision_qualified": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_1996_2925/998cd337d6",
+        "UK_ukpga_1994_21/e4db111995"
+      ]
+    },
+    "statement|none|following|shall|none|qualified|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1986_44/5046c8a401",
+        "UK_ukpga_1984_12/41d4a8a459"
+      ]
+    },
+    "statement|none|following|shall|none|qualified|rules:provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1989_15/7d10821fb7"
+      ]
+    },
+    "statement|none|following|shall|period|plain|rules:provision_dated": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1999_22/fe6d379adb"
+      ]
+    },
+    "statement|none|following|shall|period|qualified|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1981_69/d762807814"
+      ]
+    },
+    "statement|none|following|shall|period|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1988_33/09c4ad3fe5"
+      ]
+    },
+    "statement|none|following|shall|period|qualified|rules:provision_dated+provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1990_43/d2fdfd0b22"
+      ]
+    },
+    "statement|none|instrument|is_to|by_order|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_asp_2006_17/ef533f6343"
+      ]
+    },
+    "statement|none|instrument|is_to|made_relative|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2022_32/df64d809da"
+      ]
+    },
+    "statement|none|instrument|is_to|none|plain|unread": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1991_40/13e0ed5522",
+        "UK_ukpga_1982_30/2d81a252d7"
+      ]
+    },
+    "statement|none|instrument|may|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1980_66/51c54a003b"
+      ]
+    },
+    "statement|none|instrument|not_until|by_order|plain|none": {
+      "count": 7,
+      "examples": [
+        "UK_ukpga_1986_31/a67ebe3995",
+        "UK_ukpga_1982_49/0597249943",
+        "UK_ukpga_1985_67/a588b6b36a"
+      ]
+    },
+    "statement|none|instrument|not_until|made_relative|plain|none": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_2000_37/448989e576",
+        "UK_asp_2001_2/c06984cd94",
+        "UK_ukpga_1985_51/6e61abaa21"
+      ]
+    },
+    "statement|none|instrument|not_until|none|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1984_54/e7cbee3280",
+        "UK_ukpga_1996_25/0de9dc4c78"
+      ]
+    },
+    "statement|none|instrument|not_until|period|plain|none": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_1991_57/d2f3cafb4d",
+        "UK_nisi_2006_3336/dd0411e16d",
+        "UK_ukpga_1984_12/cad12244d4"
+      ]
+    },
+    "statement|none|instrument|other|none|plain|none": {
+      "count": 11,
+      "examples": [
+        "UK_ukpga_1994_39/303ae68ca5",
+        "UK_ukpga_2003_21/18d86061cc",
+        "UK_ukpga_2004_21/ba46e50b25"
+      ]
+    },
+    "statement|none|instrument|other|none|qualified|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2003_21/a59e4acb87",
+        "UK_ukpga_1996_25/75223a7507"
+      ]
+    },
+    "statement|none|instrument|present|by_order|plain|none": {
+      "count": 5,
+      "examples": [
+        "UK_asp_2003_2/68f36d96e2",
+        "UK_ukpga_2024_13/04dbbeca8e",
+        "UK_anaw_2013_1/66cd66816c"
+      ]
+    },
+    "statement|none|instrument|present|date|plain|law:clause_date": {
+      "count": 5,
+      "examples": [
+        "UK_uksi_2012_801/2b3e4cbe6f",
+        "UK_wsi_2026_18/8877fcf9d3",
+        "UK_uksi_2009_1941/49dce1097f"
+      ]
+    },
+    "statement|none|instrument|present|date|plain|law:clause_staged": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_2005_2929/3cfe45e631",
+        "UK_uksi_2007_961/6a696d23ba",
+        "UK_wsi_2005_2929/f59fc5774a"
+      ]
+    },
+    "statement|none|instrument|present|date|qualified|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_wsi_2010_1821/01f19a09cf"
+      ]
+    },
+    "statement|none|instrument|present|list|plain|none": {
+      "count": 5,
+      "examples": [
+        "UK_ukpga_2004_20/4674447ccc",
+        "UK_ukpga_2016_22/5c4d019f8c",
+        "UK_nia_2011_6/286e7c5755"
+      ]
+    },
+    "statement|none|instrument|present|made_relative|plain|law:clause_made_relative": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2010_1148/0b71a126a7"
+      ]
+    },
+    "statement|none|instrument|present|made_relative|plain|law:clause_unread": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2002_17/a89edb61e5"
+      ]
+    },
+    "statement|none|instrument|present|made_relative|plain|none": {
+      "count": 8,
+      "examples": [
+        "UK_ukpga_2003_21/5c62f9abb7",
+        "UK_ukpga_2009_23/2946e6ca68",
+        "UK_ukpga_2015_6/16aecf83d5"
+      ]
+    },
+    "statement|none|instrument|present|made_relative|plain|unread": {
+      "count": 3,
+      "examples": [
+        "UK_nisi_2006_3336/f7a173668e",
+        "UK_ukpga_2005_4/98f20fa3e7",
+        "UK_uksi_2006_3336/88d2305681"
+      ]
+    },
+    "statement|none|instrument|present|made_relative|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2008_30/99391cd591"
+      ]
+    },
+    "statement|none|instrument|present|none|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2008_948/52a18d41d6"
+      ]
+    },
+    "statement|none|instrument|present|none|plain|none": {
+      "count": 39,
+      "examples": [
+        "UK_asp_2002_3/77d521dafd",
+        "UK_ukpga_1978_3/0c9678cec9",
+        "UK_ukpga_1987_12/abbdc51f6e"
+      ]
+    },
+    "statement|none|instrument|present|none|plain|unread": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_2003_20/de6614127c",
+        "UK_ukpga_2006_46/06ddbb1ed3",
+        "UK_ukpga_2008_25/276d903f7d"
+      ]
+    },
+    "statement|none|instrument|present|none|qualified|none": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_2001_9/da95183a26",
+        "UK_asp_2005_16/f283696d40",
+        "UK_asp_2014_16/d8505f4f46"
+      ]
+    },
+    "statement|none|instrument|present|period|plain|none": {
+      "count": 5,
+      "examples": [
+        "UK_ukpga_2008_23/86845634df",
+        "UK_ukpga_2018_12/c05e6633ea",
+        "UK_ukpga_2023_50/4aeae864cc"
+      ]
+    },
+    "statement|none|instrument|present|tied|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2003_21/b40925f383"
+      ]
+    },
+    "statement|none|instrument|shall_not|by_order|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1969_19/a0a0eb84ee"
+      ]
+    },
+    "statement|none|instrument|shall_not|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1990_42/edba3eb2ce"
+      ]
+    },
+    "statement|none|instrument|shall|by_order|plain|none": {
+      "count": 5,
+      "examples": [
+        "UK_ukpga_1982_16/0a6300dcb0",
+        "UK_ukpga_2004_20/758e39481b",
+        "UK_nisi_1987_166/eabd537ecc"
+      ]
+    },
+    "statement|none|instrument|shall|by_order|qualified|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1986_60/c8402c78b7"
+      ]
+    },
+    "statement|none|instrument|shall|date|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1990_42/6af74d97d8"
+      ]
+    },
+    "statement|none|instrument|shall|none|plain|none": {
+      "count": 11,
+      "examples": [
+        "UK_ukpga_1968_72/bda0753c93",
+        "UK_ukpga_1988_52/ef0de66285",
+        "UK_ukpga_2003_21/440de8f109"
+      ]
+    },
+    "statement|none|instrument|shall|none|plain|unread": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1991_40/844d57e9b3"
+      ]
+    },
+    "statement|none|instrument|shall|none|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1972_20/71252d9f4d"
+      ]
+    },
+    "statement|none|named|is_to|made_relative|plain|rules:provision_dated": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1997_29/bfabf182f3"
+      ]
+    },
+    "statement|none|named|is_to|period|plain|rules:provision_dated": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1997_29/3929e5c894"
+      ]
+    },
+    "statement|none|named|not_until|by_order|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1991_65/92448943db"
+      ]
+    },
+    "statement|none|named|not_until|by_order|plain|rules:provision_by_order": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1999_24/32ea3818bb",
+        "UK_ukpga_1969_19/7807cab160"
+      ]
+    },
+    "statement|none|named|not_until|date|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_nisr_2006_1/415e873af5",
+        "UK_uksi_2005_1643/602d737af1"
+      ]
+    },
+    "statement|none|named|other|none|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_nisr_2021_98/d53a9a2080",
+        "UK_ukpga_2014_6/0940f3260e"
+      ]
+    },
+    "statement|none|named|other|none|qualified|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1972_11/ba0b97d7f4",
+        "UK_ukpga_2012_10/5df22c26f8"
+      ]
+    },
+    "statement|none|named|present|by_order|plain|none": {
+      "count": 5,
+      "examples": [
+        "UK_ukpga_1981_56/812aa8fb57",
+        "UK_ukpga_2009_10/3a1d14149f",
+        "UK_ukpga_2023_55/02731cf4a0"
+      ]
+    },
+    "statement|none|named|present|by_order|plain|rules:provision_by_order": {
+      "count": 54,
+      "examples": [
+        "UK_mwa_2010_8/70422a92f6",
+        "UK_ukpga_1981_56/5ee8631b89",
+        "UK_ukpga_2003_22/adcf975ca8"
+      ]
+    },
+    "statement|none|named|present|by_order|plain|rules:provision_dated": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2025_34/75d4aaa35b"
+      ]
+    },
+    "statement|none|named|present|by_order|plain|unread": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1995_45/fb39f82666"
+      ]
+    },
+    "statement|none|named|present|by_order|qualified|none": {
+      "count": 5,
+      "examples": [
+        "UK_ukpga_2006_16/44ff6c0630",
+        "UK_ukpga_2010_29/cfd00cb464",
+        "UK_ukpga_2002_23/08d8ffc537"
+      ]
+    },
+    "statement|none|named|present|by_order|qualified|rules:provision_by_order": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2004_33/52fcc1352a"
+      ]
+    },
+    "statement|none|named|present|by_order|qualified|rules:provision_by_order+provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2004_33/1fdf71ae6f"
+      ]
+    },
+    "statement|none|named|present|by_order|qualified|rules:provision_qualified": {
+      "count": 14,
+      "examples": [
+        "UK_ukpga_2006_16/437db2e142",
+        "UK_ukpga_2010_29/74782d6ab5",
+        "UK_ukpga_2004_33/9717a2523e"
+      ]
+    },
+    "statement|none|named|present|date|plain|law:clause_date": {
+      "count": 276,
+      "examples": [
+        "UK_ssi_2008_309/fdd9c895ee",
+        "UK_ssi_2010_204/3b88ae06e6",
+        "UK_ssi_2010_393/fea451b669"
+      ]
+    },
+    "statement|none|named|present|date|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_wsi_2022_1166/4a92c1a170"
+      ]
+    },
+    "statement|none|named|present|date|plain|none": {
+      "count": 7,
+      "examples": [
+        "UK_ssi_2014_258/20538624b5",
+        "UK_uksi_2009_41/f0c2757bcf",
+        "UK_ssi_2020_434/558205abbf"
+      ]
+    },
+    "statement|none|named|present|date|plain|rules:provision_dated": {
+      "count": 72,
+      "examples": [
+        "UK_asc_2025_4/91f1a09402",
+        "UK_ssi_2010_60/5e5ab373d6",
+        "UK_ssi_2020_154/d892c33958"
+      ]
+    },
+    "statement|none|named|present|date|plain|unread": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_2011_16/894751656c",
+        "UK_uksi_2022_500/52e25a0f93"
+      ]
+    },
+    "statement|none|named|present|date|qualified|law:clause_staged": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_2020_206/c224d3cde5",
+        "UK_wsi_2017_1041/07df175011",
+        "UK_uksi_2010_1820/92d6a64154"
+      ]
+    },
+    "statement|none|named|present|date|qualified|none": {
+      "count": 6,
+      "examples": [
+        "UK_uksi_2010_724/8e910b092d",
+        "UK_uksi_2015_1947/d78e324432",
+        "UK_uksi_2004_827/22d7b4311d"
+      ]
+    },
+    "statement|none|named|present|date|qualified|rules:provision_qualified": {
+      "count": 11,
+      "examples": [
+        "UK_uksi_2014_1638/5742176e46",
+        "UK_uksi_2026_335/fe219c6a40",
+        "UK_uksi_1990_144/0ae654b5d1"
+      ]
+    },
+    "statement|none|named|present|list|plain|law:clause_staged": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_2005_894/b6a12656c9",
+        "UK_uksi_2020_1577/1977be64fe",
+        "UK_ssi_2019_276/408444e956"
+      ]
+    },
+    "statement|none|named|present|list|plain|none": {
+      "count": 12,
+      "examples": [
+        "UK_ukpga_2003_33/3753288991",
+        "UK_ukpga_2021_24/60c38e97c1",
+        "UK_ukpga_2023_6/e80571b0c1"
+      ]
+    },
+    "statement|none|named|present|list|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1995_21/f9fc04f140"
+      ]
+    },
+    "statement|none|named|present|made_relative|plain|law:clause_made_relative": {
+      "count": 34,
+      "examples": [
+        "UK_ssi_2007_251/0ffdba8e0c",
+        "UK_ssi_2010_216/d61bdf3755",
+        "UK_ukpga_2026_9/b635b893c5"
+      ]
+    },
+    "statement|none|named|present|made_relative|plain|law:clause_staged": {
+      "count": 3,
+      "examples": [
+        "UK_asp_2013_7/94444a61ef",
+        "UK_asp_2015_1/f0da3b9bbf",
+        "UK_asp_2020_17/73c9b20fc0"
+      ]
+    },
+    "statement|none|named|present|made_relative|plain|law:clause_unread": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2018_407/8b14b0a456"
+      ]
+    },
+    "statement|none|named|present|made_relative|plain|none": {
+      "count": 11,
+      "examples": [
+        "UK_ukpga_2023_55/c7f80bf1e3",
+        "UK_ukpga_2004_33/136c7553b5",
+        "UK_uksi_2018_396/44d7ccc28f"
+      ]
+    },
+    "statement|none|named|present|made_relative|plain|rules:provision_dated": {
+      "count": 37,
+      "examples": [
+        "UK_asp_2009_12/43ee7d6ecc",
+        "UK_ukpga_2008_23/6c1a3259b0",
+        "UK_ukpga_2015_30/aedf9e0552"
+      ]
+    },
+    "statement|none|named|present|made_relative|plain|unread": {
+      "count": 4,
+      "examples": [
+        "UK_asp_2013_5/645cadd990",
+        "UK_uksi_2018_860/af6bf14b43",
+        "UK_uksi_2019_177/277ff2805c"
+      ]
+    },
+    "statement|none|named|present|made_relative|qualified|none": {
+      "count": 10,
+      "examples": [
+        "UK_ukpga_2018_16/c51caac0b7",
+        "UK_ukpga_2015_11/8604e2265c",
+        "UK_uksi_2019_1440/67b98c060c"
+      ]
+    },
+    "statement|none|named|present|made_relative|qualified|rules:provision_dated+provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_asp_2005_13/6f508aec3c"
+      ]
+    },
+    "statement|none|named|present|made_relative|qualified|rules:provision_qualified": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_2006_49/fc0eea7030",
+        "UK_ukpga_2018_16/5fd9611962",
+        "UK_ukpga_2004_33/ca4df4d56a"
+      ]
+    },
+    "statement|none|named|present|named_day|plain|law:clause_named_day": {
+      "count": 35,
+      "examples": [
+        "UK_uksi_2018_1370/bbbe9fcd7d",
+        "UK_uksi_2019_156/95a347e074",
+        "UK_uksi_2019_758/1953c9ac97"
+      ]
+    },
+    "statement|none|named|present|named_day|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_wsi_2019_244/49b9d92d67"
+      ]
+    },
+    "statement|none|named|present|named_day|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2018_1091/7ee6ca12a7",
+        "UK_uksi_2019_645/eee8f41531"
+      ]
+    },
+    "statement|none|named|present|named_day|plain|rules:provision_dated": {
+      "count": 4,
+      "examples": [
+        "UK_uksi_2018_1149/5d7b47b3da",
+        "UK_uksi_2019_1246/94d5dc3474",
+        "UK_uksi_2020_1339/5b3da4fff6"
+      ]
+    },
+    "statement|none|named|present|named_day|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2020_17/2c031b7d05"
+      ]
+    },
+    "statement|none|named|present|none|plain|law:clause_staged": {
+      "count": 4,
+      "examples": [
+        "UK_ssi_2025_417/fe6ddc7c28",
+        "UK_uksi_2013_610/0f121c7ce7",
+        "UK_uksi_2019_1440/67b547417d"
+      ]
+    },
+    "statement|none|named|present|none|plain|law:clause_unread": {
+      "count": 4,
+      "examples": [
+        "UK_ssi_2019_436/66573d83be",
+        "UK_uksi_2019_1354/a74b105f05",
+        "UK_uksi_2020_559/765b7ad709"
+      ]
+    },
+    "statement|none|named|present|none|plain|law:tied_to_other_law": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2017_1285/3e7e028b0a",
+        "UK_uksi_2019_1094/e2c7a5c237"
+      ]
+    },
+    "statement|none|named|present|none|plain|none": {
+      "count": 27,
+      "examples": [
+        "UK_asp_2009_12/80e64fd699",
+        "UK_ssi_2011_24/7f060214e8",
+        "UK_ukpga_1976_72/ef6947ac18"
+      ]
+    },
+    "statement|none|named|present|none|plain|unread": {
+      "count": 28,
+      "examples": [
+        "UK_asp_2009_12/77f8a46af8",
+        "UK_ukpga_2008_23/de523e51a2",
+        "UK_ukpga_2008_27/c7175db824"
+      ]
+    },
+    "statement|none|named|present|none|qualified|none": {
+      "count": 12,
+      "examples": [
+        "UK_ukpga_1988_52/cb081e0e05",
+        "UK_ukpga_1995_21/ab88195539",
+        "UK_ukpga_2017_3/82542129ef"
+      ]
+    },
+    "statement|none|named|present|none|qualified|rules:provision_qualified": {
+      "count": 8,
+      "examples": [
+        "UK_ukpga_2008_23/ca9812c2ee",
+        "UK_ukpga_2023_52/aedf270044",
+        "UK_ukpga_1976_86/89c4de7381"
+      ]
+    },
+    "statement|none|named|present|period|plain|none": {
+      "count": 9,
+      "examples": [
+        "UK_ukpga_2023_55/52fd83787a",
+        "UK_ukpga_2004_5/238807bc68"
+      ]
+    },
+    "statement|none|named|present|period|plain|rules:provision_dated": {
+      "count": 59,
+      "examples": [
+        "UK_ukpga_2003_33/9fae195e13",
+        "UK_ukpga_2006_16/32173c77e3",
+        "UK_ukpga_2006_19/799254a799"
+      ]
+    },
+    "statement|none|named|present|period|plain|rules:provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2021_12/b7bcae4198"
+      ]
+    },
+    "statement|none|named|present|period|plain|unread": {
+      "count": 7,
+      "examples": [
+        "UK_ukpga_2011_16/c06019708f",
+        "UK_asp_2014_14/b1906090a6",
+        "UK_ukpga_2012_21/f69dcc14e8"
+      ]
+    },
+    "statement|none|named|present|period|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2023_55/f317f215bb"
+      ]
+    },
+    "statement|none|named|present|period|qualified|rules:provision_qualified": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2025_34/2ba686b752"
+      ]
+    },
+    "statement|none|named|present|tied|plain|law:clause_date": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2015_51/e416c6a8d8",
+        "UK_uksi_2016_614/9573e56a97"
+      ]
+    },
+    "statement|none|named|present|tied|plain|law:clause_named_day": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_2020_1488/9b4e4edacf",
+        "UK_uksi_2020_660/b5a5693f93",
+        "UK_uksi_2020_676/aa4e098ea0"
+      ]
+    },
+    "statement|none|named|present|tied|plain|law:clause_unread": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_2019_1423/9730c5f8ca",
+        "UK_uksi_2019_859/ae4fc17648",
+        "UK_uksi_2020_1497/bdbd1a5adb"
+      ]
+    },
+    "statement|none|named|present|tied|plain|law:tied_to_other_law": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2024_41/f74ad814ec",
+        "UK_uksi_2024_706/2ddf1dc888"
+      ]
+    },
+    "statement|none|named|present|tied|plain|none": {
+      "count": 5,
+      "examples": [
+        "UK_ukpga_1994_21/b68de67c55",
+        "UK_ukpga_2020_17/5fafd11625",
+        "UK_ukpga_2025_34/d1938f7a2c"
+      ]
+    },
+    "statement|none|named|present|tied|plain|rules:provision_dated": {
+      "count": 5,
+      "examples": [
+        "UK_nisr_2020_330/4061c269a6",
+        "UK_uksi_2020_1540/68ba276dca",
+        "UK_uksi_2020_318/be4ac51740"
+      ]
+    },
+    "statement|none|named|present|tied|plain|unread": {
+      "count": 13,
+      "examples": [
+        "UK_uksi_2013_1471/c948350b44",
+        "UK_uksi_2025_878/f966628955",
+        "UK_uksi_2017_1285/69d277256d"
+      ]
+    },
+    "statement|none|named|present|tied|qualified|none": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_2020_17/d98acac8dc"
+      ]
+    },
+    "statement|none|named|present|tied|qualified|rules:provision_qualified": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2021_24/e8c2225a9d",
+        "UK_uksi_2010_490/bf9d2d28e9"
+      ]
+    },
+    "statement|none|named|shall|by_order|plain|law:by_order": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1994_39/4477e5f97f"
+      ]
+    },
+    "statement|none|named|shall|by_order|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1986_60/904b1e659d",
+        "UK_ukpga_1993_50/cabae3b7b2"
+      ]
+    },
+    "statement|none|named|shall|by_order|plain|rules:provision_by_order": {
+      "count": 21,
+      "examples": [
+        "UK_ukpga_1978_3/c06aca9d4c",
+        "UK_ukpga_1986_62/2dfdfd4925",
+        "UK_nia_2009_4/9b296ae018"
+      ]
+    },
+    "statement|none|named|shall|by_order|plain|rules:provision_dated": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1968_73/afe1167711"
+      ]
+    },
+    "statement|none|named|shall|by_order|qualified|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1983_35/3a079cae90"
+      ]
+    },
+    "statement|none|named|shall|by_order|qualified|rules:provision_by_order+provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1981_23/e62df94476"
+      ]
+    },
+    "statement|none|named|shall|by_order|qualified|rules:provision_qualified": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_1980_58/c4fddabda5",
+        "UK_ukpga_1989_42/12abd57799",
+        "UK_ukpga_2003_30/7414a047d1"
+      ]
+    },
+    "statement|none|named|shall|date|plain|law:clause_date": {
+      "count": 318,
+      "examples": [
+        "UK_nisr_1997_455/fd2e3a423a",
+        "UK_nisr_2004_416/bf8e420a77",
+        "UK_nisr_2006_205/3085cec9e8"
+      ]
+    },
+    "statement|none|named|shall|date|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1981_23/caef01ca55"
+      ]
+    },
+    "statement|none|named|shall|date|plain|law:clause_unread": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2006_641/5f2dc0019c"
+      ]
+    },
+    "statement|none|named|shall|date|plain|none": {
+      "count": 19,
+      "examples": [
+        "UK_nisr_2012_286/48b44de3ba",
+        "UK_uksi_1991_2539/ac1280c127",
+        "UK_uksi_1996_1513/63938d96b7"
+      ]
+    },
+    "statement|none|named|shall|date|plain|rules:provision_dated": {
+      "count": 30,
+      "examples": [
+        "UK_nisr_1997_455/e866d74c73",
+        "UK_nisr_2015_236/fd924b23c6",
+        "UK_ssi_2004_428/e0a015e7d3"
+      ]
+    },
+    "statement|none|named|shall|date|plain|rules:provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2006_2178/98079770e4"
+      ]
+    },
+    "statement|none|named|shall|date|plain|unread": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_1996_2925/19b4f87e6a",
+        "UK_ukpga_1996_46/b2d56ae9bc",
+        "UK_uksi_1994_2063/af2036ebb9"
+      ]
+    },
+    "statement|none|named|shall|date|qualified|none": {
+      "count": 5,
+      "examples": [
+        "UK_uksi_1994_232/243792733b",
+        "UK_ssi_2006_243/c4fe00a7d4",
+        "UK_uksi_1994_1096/1cb5890046"
+      ]
+    },
+    "statement|none|named|shall|date|qualified|rules:provision_dated+provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1981_23/af4964068f"
+      ]
+    },
+    "statement|none|named|shall|date|qualified|rules:provision_qualified": {
+      "count": 19,
+      "examples": [
+        "UK_nisr_1993_37/caf83da257",
+        "UK_nisr_2006_205/22d10b0cc2",
+        "UK_uksi_1988_1324/18c34e6760"
+      ]
+    },
+    "statement|none|named|shall|list|plain|law:clause_staged": {
+      "count": 6,
+      "examples": [
+        "UK_uksi_1986_1510/397c27cbd7",
+        "UK_uksi_2002_2776/fd78e0bbd3",
+        "UK_uksi_2006_599/e389c654d6"
+      ]
+    },
+    "statement|none|named|shall|list|plain|none": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_1994_232/5113862f0d",
+        "UK_uksi_1996_2925/69a4de9ac9"
+      ]
+    },
+    "statement|none|named|shall|list|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1996_2925/f7063f43b0"
+      ]
+    },
+    "statement|none|named|shall|made_relative|plain|law:clause_made_relative": {
+      "count": 13,
+      "examples": [
+        "UK_uksi_1999_3372/c61004caac",
+        "UK_uksi_2002_1355/179612df5c",
+        "UK_uksi_2002_1861/20c2ac098f"
+      ]
+    },
+    "statement|none|named|shall|made_relative|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2014_864/9425f38d33"
+      ]
+    },
+    "statement|none|named|shall|made_relative|plain|law:clause_unread": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2000_2040/e26675bc6a",
+        "UK_uksi_2000_3251/1d4deddaab"
+      ]
+    },
+    "statement|none|named|shall|made_relative|plain|rules:provision_dated": {
+      "count": 12,
+      "examples": [
+        "UK_ukpga_1991_34/cc0303f4ad",
+        "UK_ukpga_2003_20/0e354cc65e",
+        "UK_ssi_2005_658/11ad200a6c"
+      ]
+    },
+    "statement|none|named|shall|made_relative|plain|unread": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2005_2060/1a99624815"
+      ]
+    },
+    "statement|none|named|shall|made_relative|qualified|rules:provision_qualified": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_1995_17/4c909d90b5",
+        "UK_uksi_2005_2060/287fac323c",
+        "UK_uksi_2011_2581/0ef4307d8e"
+      ]
+    },
+    "statement|none|named|shall|none|plain|none": {
+      "count": 8,
+      "examples": [
+        "UK_ukpga_1996_8/38fdf89553",
+        "UK_uksi_1999_860/005dc4f986",
+        "UK_nisr_2007_321/88c762c27e"
+      ]
+    },
+    "statement|none|named|shall|none|plain|unread": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1988_33/2a66eff156",
+        "UK_uksi_2000_2040/c2759ba931"
+      ]
+    },
+    "statement|none|named|shall|none|qualified|rules:provision_qualified": {
+      "count": 7,
+      "examples": [
+        "UK_ukpga_1986_44/10ac673d30",
+        "UK_ukpga_1984_12/ee0d8ee798",
+        "UK_ukpga_1988_4/476b8bf346"
+      ]
+    },
+    "statement|none|named|shall|period|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1987_3/034762043e"
+      ]
+    },
+    "statement|none|named|shall|period|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2000_6/ecee3a7db3"
+      ]
+    },
+    "statement|none|named|shall|period|plain|rules:provision_dated": {
+      "count": 6,
+      "examples": [
+        "UK_nia_2001_1/5f8c1e91d6",
+        "UK_ukpga_1995_25/ed2438c00e",
+        "UK_ukpga_2003_20/81719d3a70"
+      ]
+    },
+    "statement|none|named|shall|period|qualified|rules:provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_nisi_1983_764/41a704188c"
+      ]
+    },
+    "statement|none|named|shall|tied|plain|unread": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1989_33/2a8d712a3a"
+      ]
+    },
+    "statement|none|named|will|tied|plain|unread": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2004_1771/e539ac2251"
+      ]
+    },
+    "statement|none|other|is_to|by_order|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1990_42/ece9b03f88"
+      ]
+    },
+    "statement|none|other|is_to|made_relative|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1998_41/511b9fcf1f"
+      ]
+    },
+    "statement|none|other|is_to|none|plain|none": {
+      "count": 5,
+      "examples": [
+        "UK_ukpga_1988_52/98ec05017c",
+        "UK_ukpga_2004_20/19b5768e37",
+        "UK_nia_2016_22/0e99913543"
+      ]
+    },
+    "statement|none|other|may|date|plain|none": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_2011_16/971417181e"
+      ]
+    },
+    "statement|none|other|may|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1980_51/13d3c4bef9"
+      ]
+    },
+    "statement|none|other|not_until|by_order|plain|rules:provision_dated": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1973_65/bd4082f2b1"
+      ]
+    },
+    "statement|none|other|not_until|date|plain|rules:provision_dated+provision_qualified": {
+      "count": 2,
+      "examples": [
+        "UK_nisr_2006_1/0fb06178ee",
+        "UK_uksi_2005_1643/d7ae53f52f"
+      ]
+    },
+    "statement|none|other|not_until|made_relative|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1982_16/4cb6c0b729"
+      ]
+    },
+    "statement|none|other|other|made_relative|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1997_8/ea9e6b2e3d"
+      ]
+    },
+    "statement|none|other|other|none|plain|none": {
+      "count": 10,
+      "examples": [
+        "UK_ukpga_1990_8/6270f766ec",
+        "UK_ukpga_1997_8/5a5d8e4bc4",
+        "UK_ukpga_2004_21/0140994997"
+      ]
+    },
+    "statement|none|other|other|none|qualified|none": {
+      "count": 7,
+      "examples": [
+        "UK_ukpga_1968_72/eaafbb7791",
+        "UK_ukpga_2003_21/93fbc0ad05",
+        "UK_ukpga_2020_7/f3bf275931"
+      ]
+    },
+    "statement|none|other|present|by_order|plain|none": {
+      "count": 19,
+      "examples": [
+        "UK_asp_2010_5/309e152803",
+        "UK_ukpga_2005_16/a855b8dc24",
+        "UK_ukpga_2010_15/8aab39e6bb"
+      ]
+    },
+    "statement|none|other|present|by_order|plain|rules:provision_by_order": {
+      "count": 6,
+      "examples": [
+        "UK_ukpga_2006_25/7495f71fc2",
+        "UK_ukpga_2016_24/a238e5440b",
+        "UK_ukpga_2012_9/1dae7fd194"
+      ]
+    },
+    "statement|none|other|present|by_order|qualified|none": {
+      "count": 5,
+      "examples": [
+        "UK_ukpga_2005_15/41fe9dea5b",
+        "UK_ukpga_2014_6/f388019cad",
+        "UK_ukpga_2015_7/8456b89502"
+      ]
+    },
+    "statement|none|other|present|by_order|qualified|rules:provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2008_23/792546f064"
+      ]
+    },
+    "statement|none|other|present|date|plain|law:clause_date": {
+      "count": 23,
+      "examples": [
+        "UK_uksi_2004_1490/91f4befa06",
+        "UK_uksi_2006_798/b80dbf2e48",
+        "UK_uksi_2008_2694/a2f6a2878d"
+      ]
+    },
+    "statement|none|other|present|date|plain|none": {
+      "count": 8,
+      "examples": [
+        "UK_asp_2003_3/8929d418a5",
+        "UK_ukpga_2011_16/745d8cdd81",
+        "UK_ssi_2009_404/1e26f58457"
+      ]
+    },
+    "statement|none|other|present|date|plain|rules:provision_dated": {
+      "count": 11,
+      "examples": [
+        "UK_ukpga_1997_28/957b8acfc1",
+        "UK_ukpga_2011_19/84ebb2ad45",
+        "UK_ukpga_2014_26/f8b47f8a7a"
+      ]
+    },
+    "statement|none|other|present|list|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2015_776/13d0bf523b"
+      ]
+    },
+    "statement|none|other|present|list|plain|none": {
+      "count": 5,
+      "examples": [
+        "UK_ukpga_2005_16/aa3b75189e",
+        "UK_uksi_2011_988/ff620394ef",
+        "UK_ukpga_1978_30/e0150b6e0e"
+      ]
+    },
+    "statement|none|other|present|list|qualified|none": {
+      "count": 2,
+      "examples": [
+        "UK_asp_2001_2/f581c2b8c1"
+      ]
+    },
+    "statement|none|other|present|made_relative|plain|law:clause_made_relative": {
+      "count": 4,
+      "examples": [
+        "UK_ssi_2009_266/c0a9f6f09f",
+        "UK_uksi_2013_1582/6e794182ad",
+        "UK_uksi_2010_493/1f9447a867"
+      ]
+    },
+    "statement|none|other|present|made_relative|plain|none": {
+      "count": 8,
+      "examples": [
+        "UK_anaw_2013_6/7fe7ff6909",
+        "UK_ukpga_2007_28/87137f14e5",
+        "UK_ukpga_2009_25/93e3d0498c"
+      ]
+    },
+    "statement|none|other|present|made_relative|plain|rules:provision_dated": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2002_23/7da0a63b21"
+      ]
+    },
+    "statement|none|other|present|made_relative|plain|unread": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2023_861/eefd134bd0",
+        "UK_ukpga_2017_30/8bd671ae27"
+      ]
+    },
+    "statement|none|other|present|made_relative|qualified|none": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_2018_16/e8a01a4dd7",
+        "UK_ukpga_2002_23/38c959176b"
+      ]
+    },
+    "statement|none|other|present|made_relative|qualified|rules:provision_qualified": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_2018_16/8aadd08272",
+        "UK_ukpga_2002_23/5ec17004df",
+        "UK_ukpga_2025_34/deb386a3a3"
+      ]
+    },
+    "statement|none|other|present|named_day|plain|law:clause_named_day": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2020_1112/51fcaf92e4",
+        "UK_uksi_2020_678/07153caed3"
+      ]
+    },
+    "statement|none|other|present|named_day|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2018_16/ea9a5b5342"
+      ]
+    },
+    "statement|none|other|present|none|plain|none": {
+      "count": 51,
+      "examples": [
+        "UK_eudr_1994_63/4f21cfa1c5",
+        "UK_nia_2013_10/3eb681fae7",
+        "UK_ukpga_1981_53/223ae6ccef"
+      ]
+    },
+    "statement|none|other|present|none|plain|unread": {
+      "count": 8,
+      "examples": [
+        "UK_ukpga_1974_40/21f204cb78",
+        "UK_uksi_2025_1135/e7e8094cac",
+        "UK_ukpga_2002_17/6de9a09132"
+      ]
+    },
+    "statement|none|other|present|none|qualified|none": {
+      "count": 10,
+      "examples": [
+        "UK_ukpga_1995_21/772d4956f8",
+        "UK_ukpga_1997_28/5371ebd384",
+        "UK_ukpga_2006_36/5522c005ad"
+      ]
+    },
+    "statement|none|other|present|period|plain|law:clause_made_relative": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1998_26/1d49200bac"
+      ]
+    },
+    "statement|none|other|present|period|plain|none": {
+      "count": 5,
+      "examples": [
+        "UK_ukpga_2005_16/8bb8a4060d",
+        "UK_ukpga_2018_12/7bdcec7874",
+        "UK_ukpga_2025_34/f24eae16aa"
+      ]
+    },
+    "statement|none|other|present|period|plain|rules:provision_dated": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2025_34/1ad2625fd2"
+      ]
+    },
+    "statement|none|other|present|tied|plain|none": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_2018_16/198f3ac684",
+        "UK_ukpga_2011_19/7b31296d4e",
+        "UK_ukpga_2025_34/c6bfe69db4"
+      ]
+    },
+    "statement|none|other|shall_not|made_relative|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1982_16/93c21792c8"
+      ]
+    },
+    "statement|none|other|shall_not|made_relative|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1982_16/58acd51e6a"
+      ]
+    },
+    "statement|none|other|shall_not|none|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1982_16/9053a73709"
+      ]
+    },
+    "statement|none|other|shall|by_order|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_asp_2000_6/574933cf61"
+      ]
+    },
+    "statement|none|other|shall|by_order|plain|none": {
+      "count": 4,
+      "examples": [
+        "UK_asp_2000_5/6850259439",
+        "UK_asp_2001_8/e4a001836b",
+        "UK_ukpga_1988_40/0a19590deb"
+      ]
+    },
+    "statement|none|other|shall|by_order|plain|rules:provision_by_order": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_1981_29/f954f1b1da",
+        "UK_ukpga_1998_17/6658576aaf",
+        "UK_ukpga_1998_36/6359636c2d"
+      ]
+    },
+    "statement|none|other|shall|by_order|qualified|rules:provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1981_35/c0a08f8b82"
+      ]
+    },
+    "statement|none|other|shall|date|plain|law:clause_date": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2005_1805/42e4a729e5"
+      ]
+    },
+    "statement|none|other|shall|date|plain|rules:provision_dated": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1988_39/f9d7e8d260",
+        "UK_ukpga_1993_19/22f5806075"
+      ]
+    },
+    "statement|none|other|shall|made_relative|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1984_54/8f29947ac0",
+        "UK_ukpga_1990_42/a5a3b96f09"
+      ]
+    },
+    "statement|none|other|shall|none|plain|none": {
+      "count": 10,
+      "examples": [
+        "UK_nisr_2007_31/7f8e36f837",
+        "UK_nisr_2012_179/7ce5cbcdb9",
+        "UK_ukpga_1990_9/779d1843fc"
+      ]
+    },
+    "statement|none|other|shall|none|qualified|rules:provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1993_37/ed9d87c7c6"
+      ]
+    },
+    "statement|none|parts|not_until|by_order|plain|rules:provision_by_order": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1973_16/ded4851310"
+      ]
+    },
+    "statement|none|parts|not_until|by_order|qualified|rules:provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2000_17/eee7a36b29"
+      ]
+    },
+    "statement|none|parts|not_until|period|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1973_26/eebc3caf52"
+      ]
+    },
+    "statement|none|parts|other|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2025_10/62ee0dc66e"
+      ]
+    },
+    "statement|none|parts|present|by_order|plain|none": {
+      "count": 5,
+      "examples": [
+        "UK_ukpga_2006_16/74af464821",
+        "UK_ukpga_2023_55/92115ac9bc"
+      ]
+    },
+    "statement|none|parts|present|by_order|plain|rules:provision_by_order": {
+      "count": 19,
+      "examples": [
+        "UK_asp_2003_3/2b7c015c80",
+        "UK_ukpga_2004_21/2c8eeb5bc9",
+        "UK_ukpga_2006_16/5c95fc9419"
+      ]
+    },
+    "statement|none|parts|present|by_order|plain|unread": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2017_3/cffb9282f1"
+      ]
+    },
+    "statement|none|parts|present|by_order|qualified|rules:provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1981_56/1ee75c293b"
+      ]
+    },
+    "statement|none|parts|present|date|plain|law:clause_date": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2017_1200/14193575e9",
+        "UK_ssi_2022_136/3e6af5f115"
+      ]
+    },
+    "statement|none|parts|present|date|plain|law:clause_staged": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2015_962/f053dafbb3",
+        "UK_uksi_2019_731/9c45d624a7"
+      ]
+    },
+    "statement|none|parts|present|date|plain|rules:provision_dated": {
+      "count": 8,
+      "examples": [
+        "UK_ssi_2020_154/f6aa75db68",
+        "UK_uksi_2009_890/cef070728e",
+        "UK_uksi_2017_1200/b922c55e1b"
+      ]
+    },
+    "statement|none|parts|present|date|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1998_36/0cd68c714b"
+      ]
+    },
+    "statement|none|parts|present|date|qualified|rules:provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1948_26/d9093cd2b5"
+      ]
+    },
+    "statement|none|parts|present|list|plain|none": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_2022_30/8803d30ca7",
+        "UK_ukpga_2025_10/8de339da4c",
+        "UK_uksi_2015_962/6063e5bcbe"
+      ]
+    },
+    "statement|none|parts|present|made_relative|plain|law:clause_staged": {
+      "count": 13,
+      "examples": [
+        "UK_asc_2025_4/e245dbc2d3",
+        "UK_asp_2021_4/7b02e1b5fa",
+        "UK_asp_2024_7/0d5f9aa0a6"
+      ]
+    },
+    "statement|none|parts|present|made_relative|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2023_55/f552af9901",
+        "UK_uksi_2019_453/a5470dcf33"
+      ]
+    },
+    "statement|none|parts|present|made_relative|plain|rules:provision_dated": {
+      "count": 14,
+      "examples": [
+        "UK_anaw_2016_3/b3ecd695ab",
+        "UK_anaw_2017_3/427664a66e",
+        "UK_ssi_2020_154/e8352d9f06"
+      ]
+    },
+    "statement|none|parts|present|made_relative|qualified|rules:provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2011_19/a6c08d3921"
+      ]
+    },
+    "statement|none|parts|present|named_day|plain|rules:provision_dated": {
+      "count": 7,
+      "examples": [
+        "UK_uksi_2020_1647/a6a9b60cf3",
+        "UK_ukpga_2020_17/dc621540e0",
+        "UK_uksi_2019_306/f5eab2ab6e"
+      ]
+    },
+    "statement|none|parts|present|none|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2019_306/afc1bf89ba"
+      ]
+    },
+    "statement|none|parts|present|none|plain|none": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_2014_21/2ea3701125",
+        "UK_uksi_2026_194/3f7b8dd941"
+      ]
+    },
+    "statement|none|parts|present|none|plain|unread": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2026_23/0ef1f36a10",
+        "UK_uksi_2020_786/c8a137662f"
+      ]
+    },
+    "statement|none|parts|present|period|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2023_55/e02df47c61"
+      ]
+    },
+    "statement|none|parts|present|period|plain|rules:provision_dated": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_2015_7/4a066cbc7b",
+        "UK_ukpga_2016_11/58acdc46c3"
+      ]
+    },
+    "statement|none|parts|present|period|qualified|rules:provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2023_55/9e0c5b3de4"
+      ]
+    },
+    "statement|none|parts|present|tied|plain|law:clause_staged": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2020_1647/4f988cb0fc",
+        "UK_uksi_2020_1528/0ffa2f1daa"
+      ]
+    },
+    "statement|none|parts|present|tied|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2016_898/1110df5f88"
+      ]
+    },
+    "statement|none|parts|present|tied|plain|rules:provision_dated": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2020_1460/e8c01b0bfd"
+      ]
+    },
+    "statement|none|parts|present|tied|plain|unread": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2020_1460/6ad3624e5a"
+      ]
+    },
+    "statement|none|parts|shall|by_order|plain|rules:provision_by_order": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1969_10/bc9502586b",
+        "UK_ukpga_1988_39/3bd2941b71"
+      ]
+    },
+    "statement|none|parts|shall|date|plain|law:clause_date": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2003_1400/b7d5398655",
+        "UK_uksi_2004_693/9474c54b99"
+      ]
+    },
+    "statement|none|parts|shall|date|plain|law:clause_staged": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_1988_1048/459ad6d959",
+        "UK_uksi_2013_1959/33cfe23fd5"
+      ]
+    },
+    "statement|none|parts|shall|date|plain|rules:provision_dated": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2013_1959/202199d9a5",
+        "UK_nisr_2013_206/0c5465e954"
+      ]
+    },
+    "statement|none|parts|shall|date|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1982_30/34504afe38"
+      ]
+    },
+    "statement|none|parts|shall|list|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1994_1768/045f8f532b"
+      ]
+    },
+    "statement|none|parts|shall|made_relative|plain|unread": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1973_36/8690cb7a81"
+      ]
+    },
+    "statement|none|parts|shall|none|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1980_65/545a812f28"
+      ]
+    },
+    "statement|none|parts|shall|none|plain|unread": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2001_1149/c5531e96ea"
+      ]
+    },
+    "statement|none|parts|shall|none|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1944_31/b7cd215542"
+      ]
+    },
+    "statement|none|parts|shall|period|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1993_37/1714b721cf"
+      ]
+    },
+    "statement|none|rest|is_to|by_order|plain|rules:provision_by_order": {
+      "count": 3,
+      "examples": [
+        "UK_anaw_2013_1/10dcf5e874",
+        "UK_asp_2000_1/82d4505941",
+        "UK_asp_2000_10/ce88b5bda4"
+      ]
+    },
+    "statement|none|rest|not_until|by_order|plain|rules:provision_by_order": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2002_26/e537d10739",
+        "UK_ukpga_2004_24/1da7989e19"
+      ]
+    },
+    "statement|none|rest|present|by_order|plain|law:clause_staged": {
+      "count": 13,
+      "examples": [
+        "UK_anaw_2017_3/e8f4db4b4f",
+        "UK_asp_2005_13/d41bbcc82a",
+        "UK_asp_2010_8/281c3f36b8"
+      ]
+    },
+    "statement|none|rest|present|by_order|plain|none": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_2006_34/97df98b723",
+        "UK_ukpga_2005_15/55567610ea",
+        "UK_ukpga_2023_41/af5640f605"
+      ]
+    },
+    "statement|none|rest|present|by_order|plain|rules:provision_by_order": {
+      "count": 80,
+      "examples": [
+        "UK_anaw_2017_2/16108506d4",
+        "UK_asc_2023_2/1c97fc0fb3",
+        "UK_asc_2023_3/83361b33cc"
+      ]
+    },
+    "statement|none|rest|present|by_order|qualified|rules:provision_qualified": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_2010_29/d06a81d90b",
+        "UK_ukpga_2023_55/8a1e0087d7"
+      ]
+    },
+    "statement|none|rest|present|date|plain|law:clause_staged": {
+      "count": 5,
+      "examples": [
+        "UK_uksi_2019_421/6eed66fc93",
+        "UK_uksi_2023_284/48bccf42b5",
+        "UK_uksi_2024_1290/5df1fdade6"
+      ]
+    },
+    "statement|none|rest|present|date|plain|rules:provision_dated": {
+      "count": 8,
+      "examples": [
+        "UK_ssi_2020_154/9acbf62e50",
+        "UK_uksi_2015_21/dc6f6d5711",
+        "UK_uksi_2017_469/2187c3973c"
+      ]
+    },
+    "statement|none|rest|present|made_relative|plain|law:clause_staged": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2017_33/9b8ef55a82",
+        "UK_ukpga_2022_44/eaad888ad4"
+      ]
+    },
+    "statement|none|rest|present|made_relative|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2022_46/4b41e40916",
+        "UK_ukpga_2025_36/4d63a2c73e"
+      ]
+    },
+    "statement|none|rest|present|made_relative|plain|rules:provision_dated": {
+      "count": 5,
+      "examples": [
+        "UK_ukpga_2015_6/f14ef7d532",
+        "UK_ukpga_2023_6/3efb70f618",
+        "UK_uksi_2021_745/b269b026f0"
+      ]
+    },
+    "statement|none|rest|present|named_day|plain|rules:provision_dated": {
+      "count": 4,
+      "examples": [
+        "UK_uksi_2019_146/306a9eb538",
+        "UK_uksi_2019_539/d03b5cbce7",
+        "UK_uksi_2019_544/6f90960d8e"
+      ]
+    },
+    "statement|none|rest|present|named_day|plain|unread": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2019_145/55260f1ef2"
+      ]
+    },
+    "statement|none|rest|present|none|plain|law:clause_unread": {
+      "count": 1,
+      "examples": [
+        "UK_mwa_2010_8/b9ba052913"
+      ]
+    },
+    "statement|none|rest|present|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2016_11/ec2f5d08c5"
+      ]
+    },
+    "statement|none|rest|present|none|plain|unread": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2024_105/1cbccdbdbd"
+      ]
+    },
+    "statement|none|rest|present|period|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2008_27/433f3f7f02"
+      ]
+    },
+    "statement|none|rest|present|period|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2023_55/68daf6e812"
+      ]
+    },
+    "statement|none|rest|present|period|plain|rules:provision_dated": {
+      "count": 6,
+      "examples": [
+        "UK_ukpga_2019_3/ca8ba44ee0",
+        "UK_ukpga_2023_55/8a3a3a2016",
+        "UK_asp_2014_13/140fc2f5a2"
+      ]
+    },
+    "statement|none|rest|present|tied|plain|rules:provision_dated": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2020_1658/3c1d1add27"
+      ]
+    },
+    "statement|none|rest|present|tied|plain|unread": {
+      "count": 1,
+      "examples": [
+        "UK_wsi_2012_65/558bd2ea81"
+      ]
+    },
+    "statement|none|rest|shall|by_order|plain|law:clause_staged": {
+      "count": 5,
+      "examples": [
+        "UK_ukpga_1990_43/a2ae64735d",
+        "UK_ukpga_1980_51/3e8bfde86f",
+        "UK_ukpga_1988_4/cf9d739554"
+      ]
+    },
+    "statement|none|rest|shall|by_order|plain|rules:provision_by_order": {
+      "count": 17,
+      "examples": [
+        "UK_nisi_2006_1254/e31ecb3d28",
+        "UK_ukpga_1981_69/2e8139d44e",
+        "UK_ukpga_1991_40/8bd5c60f8e"
+      ]
+    },
+    "statement|none|rest|shall|by_order|qualified|rules:provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1971_78/07c46b2589"
+      ]
+    },
+    "statement|none|rest|shall|date|plain|law:clause_date": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_1999_916/4edc574e39",
+        "UK_uksi_1993_3039/3cb5afe6c9",
+        "UK_uksi_2001_2237/0d6b246890"
+      ]
+    },
+    "statement|none|rest|shall|date|plain|rules:provision_dated": {
+      "count": 5,
+      "examples": [
+        "UK_uksi_1986_1510/22ae6a63fe",
+        "UK_uksi_1988_819/835f76904a",
+        "UK_uksi_2000_3184/471a2730c7"
+      ]
+    },
+    "statement|none|rest|shall|date|plain|unread": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2001_1701/df42d20ba3"
+      ]
+    },
+    "statement|none|rest|shall|period|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2003_30/ea169a19c2"
+      ]
+    },
+    "statement|none|rest|shall|period|plain|rules:provision_dated": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1983_35/d4db88e3a5"
+      ]
+    },
+    "statement|none|schedules|other|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2009_26/dad40642c6"
+      ]
+    },
+    "statement|none|schedules|present|by_order|plain|none": {
+      "count": 5,
+      "examples": [
+        "UK_ukpga_2009_10/8035b598f5",
+        "UK_ukpga_2010_33/772017ae17",
+        "UK_ukpga_2015_11/4c58a1387f"
+      ]
+    },
+    "statement|none|schedules|present|by_order|plain|rules:provision_by_order": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2010_33/c8384d04de"
+      ]
+    },
+    "statement|none|schedules|present|date|plain|rules:provision_dated": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2004_827/ff21cdda98"
+      ]
+    },
+    "statement|none|schedules|present|list|plain|unread": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2011_16/e94f53b851"
+      ]
+    },
+    "statement|none|schedules|present|made_relative|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2020_17/98f59141b5"
+      ]
+    },
+    "statement|none|schedules|present|none|plain|law:clause_staged": {
+      "count": 1,
+      "examples": []
+    },
+    "statement|none|schedules|present|none|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2020_17/fe57cefd5b",
+        "UK_ukpga_2022_35/256fc0630f"
+      ]
+    },
+    "statement|none|schedules|present|none|plain|unread": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2026_386/b390256693"
+      ]
+    },
+    "statement|none|schedules|present|none|qualified|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2020_12/a58d270c25"
+      ]
+    },
+    "statement|none|schedules|shall|by_order|plain|rules:provision_by_order": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1994_20/bb8e6e3aa5",
+        "UK_ukpga_2002_23/e0acb3e122"
+      ]
+    },
+    "statement|none|schedules|shall|by_order|qualified|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1968_47/638cd1837d",
+        "UK_uksi_1998_3178/c1b58d544b"
+      ]
+    },
+    "statement|none|schedules|shall|none|plain|law:clause_staged": {
+      "count": 1,
+      "examples": []
+    },
+    "statement|none|schedules|shall|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1989_15/fc82619490"
+      ]
+    },
+    "statement|none|schedules|shall|none|plain|unread": {
+      "count": 1,
+      "examples": [
+        "UK_nisr_2008_170/7b079e451b"
+      ]
+    },
+    "statement|none|this|not_until|by_order|plain|law:by_order": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1997_42/ae8bbae2ab"
+      ]
+    },
+    "statement|none|this|not_until|by_order|plain|rules:provision_by_order": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1998_8/c78903c54f",
+        "UK_ukpga_1999_12/9b036e78b3"
+      ]
+    },
+    "statement|none|this|not_until|by_order|plain|unread": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1988_45/848b0ff888"
+      ]
+    },
+    "statement|none|this|not_until|none|plain|none": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_1987_53/4e9804973d",
+        "UK_ukpga_1962_46/803a343c91"
+      ]
+    },
+    "statement|none|this|not_until|none|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1967_86/1ad2543e00"
+      ]
+    },
+    "statement|none|this|other|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2003_21/6fd339a6ad"
+      ]
+    },
+    "statement|none|this|other|none|qualified|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2003_21/dc6476e30f",
+        "UK_ukpga_1971_78/74e2446a35"
+      ]
+    },
+    "statement|none|this|present|by_order|plain|law:by_order": {
+      "count": 10,
+      "examples": [
+        "UK_asp_2003_1/0547df4f90",
+        "UK_asp_2003_2/7d4f28eee3",
+        "UK_asp_2004_6/9d66f741ba"
+      ]
+    },
+    "statement|none|this|present|by_order|plain|law:clause_staged": {
+      "count": 2,
+      "examples": [
+        "UK_anaw_2016_2/25b068aa01",
+        "UK_ukpga_1992_34/449574c49f"
+      ]
+    },
+    "statement|none|this|present|by_order|plain|law:clause_unread": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2002_3135/3c52a360b8"
+      ]
+    },
+    "statement|none|this|present|by_order|plain|rules:provision_by_order": {
+      "count": 21,
+      "examples": [
+        "UK_asp_2002_3/5aba63f351",
+        "UK_asp_2003_8/519d1b2bae",
+        "UK_asp_2005_15/a3263d6723"
+      ]
+    },
+    "statement|none|this|present|date|plain|law:clause_staged": {
+      "count": 6,
+      "examples": [
+        "UK_uksi_2005_1726/cb733daf97",
+        "UK_uksi_2023_588/5c4befeb3f",
+        "UK_ssi_2009_256/d6aa28657b"
+      ]
+    },
+    "statement|none|this|present|date|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2021_30/03d74f511b"
+      ]
+    },
+    "statement|none|this|present|date|plain|rules:provision_dated": {
+      "count": 19,
+      "examples": [
+        "UK_ssi_2025_417/6a5181cef4",
+        "UK_ukpga_2023_55/811916cade",
+        "UK_uksi_2025_1043/0f23a10d4f"
+      ]
+    },
+    "statement|none|this|present|date|qualified|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2015_21/56c08607f4"
+      ]
+    },
+    "statement|none|this|present|list|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2002_23/b4b4b09648"
+      ]
+    },
+    "statement|none|this|present|list|qualified|none": {
+      "count": 2,
+      "examples": [
+        "UK_ssi_2009_140/37ed7e7a22",
+        "UK_uksi_2015_1947/cc51baf667"
+      ]
+    },
+    "statement|none|this|present|made_relative|plain|law:clause_made_relative": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2025_418/0cc997f39e"
+      ]
+    },
+    "statement|none|this|present|made_relative|plain|law:clause_staged": {
+      "count": 28,
+      "examples": [
+        "UK_asc_2023_2/1d86719f3f",
+        "UK_asp_2014_2/e4484b2e9d",
+        "UK_asp_2016_2/bbdc2985a3"
+      ]
+    },
+    "statement|none|this|present|made_relative|plain|none": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_2016_24/3de03b04a0",
+        "UK_ukpga_2015_11/d4bfa8c95e",
+        "UK_ukpga_2016_19/287ef007a8"
+      ]
+    },
+    "statement|none|this|present|made_relative|plain|rules:provision_dated": {
+      "count": 20,
+      "examples": [
+        "UK_asp_2010_8/3c76793bb4",
+        "UK_ukpga_2006_34/25bd2b8d85",
+        "UK_ukpga_2007_17/74cebe8c4e"
+      ]
+    },
+    "statement|none|this|present|made_relative|plain|unread": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2018_860/278de8679c"
+      ]
+    },
+    "statement|none|this|present|made_relative|qualified|none": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_1980_65/1f0b24c45d",
+        "UK_uksi_2018_1392/0e6b0b6df0"
+      ]
+    },
+    "statement|none|this|present|made_relative|qualified|rules:provision_qualified": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_2016_24/3dcbefc716",
+        "UK_ukpga_1994_9/e8bcf367f7",
+        "UK_ukpga_2013_27/e13a38c9d5"
+      ]
+    },
+    "statement|none|this|present|named_day|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2019_544/d5cda579cf"
+      ]
+    },
+    "statement|none|this|present|none|plain|law:clause_unread": {
+      "count": 1,
+      "examples": [
+        "UK_mwa_2009_3/ceee42e716"
+      ]
+    },
+    "statement|none|this|present|none|plain|none": {
+      "count": 8,
+      "examples": [
+        "UK_ukpga_1991_40/fbd0d08655",
+        "UK_ukpga_2003_21/6ace925766",
+        "UK_ukpga_2014_21/669824a81b"
+      ]
+    },
+    "statement|none|this|present|none|plain|unread": {
+      "count": 7,
+      "examples": [
+        "UK_asc_2026_5/13b9c5859a",
+        "UK_ukpga_2022_46/8b594fe6bc",
+        "UK_uksi_2019_1440/04c9a01a1c"
+      ]
+    },
+    "statement|none|this|present|none|qualified|none": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_2018_12/60fe3312f4",
+        "UK_ukpga_1972_20/c083ec0d1a",
+        "UK_uksi_2018_1251/1535f5c7d0"
+      ]
+    },
+    "statement|none|this|present|period|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_asp_2010_9/bd57dcfba7"
+      ]
+    },
+    "statement|none|this|present|period|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2023_50/8d609a7bc9"
+      ]
+    },
+    "statement|none|this|present|tied|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2020_1658/57e66c828e"
+      ]
+    },
+    "statement|none|this|present|tied|plain|rules:provision_dated": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_2020_1116/80bbf2f252",
+        "UK_uksi_2020_1339/acd65f988c",
+        "UK_wsi_2020_1339/5d7172177a"
+      ]
+    },
+    "statement|none|this|present|tied|plain|unread": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2020_1540/34760d1bb2"
+      ]
+    },
+    "statement|none|this|present|tied|qualified|rules:provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2020_1593/1935613815"
+      ]
+    },
+    "statement|none|this|shall_not|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1976_57/8226b5f898"
+      ]
+    },
+    "statement|none|this|shall|by_order|plain|law:by_order": {
+      "count": 20,
+      "examples": [
+        "UK_asp_2005_5/8c79b2182f",
+        "UK_ukpga_1968_47/e24ab00150",
+        "UK_ukpga_1996_6/3fd30b192f"
+      ]
+    },
+    "statement|none|this|shall|by_order|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1992_43/31251d865d"
+      ]
+    },
+    "statement|none|this|shall|by_order|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1988_45/cbc6821457",
+        "UK_ukpga_1995_36/cdc5060fc6"
+      ]
+    },
+    "statement|none|this|shall|by_order|plain|rules:provision_by_order": {
+      "count": 9,
+      "examples": [
+        "UK_ukpga_1990_10/f91e625709",
+        "UK_ukpga_1995_23/99118257a1",
+        "UK_ukpga_1997_16/5712bd1023"
+      ]
+    },
+    "statement|none|this|shall|by_order|qualified|law:by_order": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1973_65/2d8a0daaf3",
+        "UK_ukpga_1975_30/4e9ba89810"
+      ]
+    },
+    "statement|none|this|shall|date|plain|law:clause_staged": {
+      "count": 9,
+      "examples": [
+        "UK_uksi_2000_3184/9b5a8c0696",
+        "UK_uksi_2001_1701/1bfc1d98ed",
+        "UK_ukpga_1997_58/31e57ed5c7"
+      ]
+    },
+    "statement|none|this|shall|date|plain|rules:provision_dated": {
+      "count": 8,
+      "examples": [
+        "UK_ukpga_1937_67/7a8c254fea",
+        "UK_uksi_1988_1324/03c3013771",
+        "UK_ssi_2004_112/643cba9716"
+      ]
+    },
+    "statement|none|this|shall|date|qualified|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1988_819/043d67cc51"
+      ]
+    },
+    "statement|none|this|shall|made_relative|plain|law:clause_staged": {
+      "count": 2,
+      "examples": [
+        "UK_nisi_2006_1254/21b0764ac9",
+        "UK_ukpga_2004_24/757be8e8fa"
+      ]
+    },
+    "statement|none|this|shall|made_relative|plain|rules:provision_dated": {
+      "count": 9,
+      "examples": [
+        "UK_ukpga_1997_28/a451c9ae53",
+        "UK_ukpga_1998_17/f0c68f7743",
+        "UK_uksi_2005_1541/afdd999410"
+      ]
+    },
+    "statement|none|this|shall|made_relative|plain|unread": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1971_78/4fcb0b17a4"
+      ]
+    },
+    "statement|none|this|shall|made_relative|qualified|rules:provision_qualified": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1989_15/e07c232a34",
+        "UK_ukpga_1993_9/be07c4ef7c"
+      ]
+    },
+    "statement|none|this|shall|none|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2016_653/86dc6a78ae"
+      ]
+    },
+    "statement|none|this|shall|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1971_10/5c68a619ad"
+      ]
+    },
+    "statement|none|this|shall|none|plain|unread": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1976_57/ae35c5a150",
+        "UK_ukpga_1982_30/72492cb283"
+      ]
+    },
+    "statement|none|this|shall|period|plain|law:clause_staged": {
+      "count": 7,
+      "examples": [
+        "UK_nisi_1989_1341/27dd6043ff",
+        "UK_ukpga_1971_80/9f2d5cf22a",
+        "UK_ukpga_1989_42/d5071ff8aa"
+      ]
+    },
+    "statement|none|this|shall|period|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1982_39/d252e32603"
+      ]
+    },
+    "statement|none|this|shall|period|plain|rules:provision_dated": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_2004_22/63bd608754",
+        "UK_ukpga_1989_42/64ee3392e3",
+        "UK_uksi_1991_762/3f8613f58a"
+      ]
+    },
+    "statement|none|whole|is_to|by_order|plain|law:by_order": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1996_37/1ee4652f83",
+        "UK_ukpga_2003_32/73ec898950"
+      ]
+    },
+    "statement|none|whole|may|period|plain|law:clause_made_relative": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1988_54/532998a1c7"
+      ]
+    },
+    "statement|none|whole|other|list|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1990_16/3d30e63529"
+      ]
+    },
+    "statement|none|whole|other|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2000_21/5d37be9b9e"
+      ]
+    },
+    "statement|none|whole|other|none|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2000_21/6deb7adcf4"
+      ]
+    },
+    "statement|none|whole|present|by_order|plain|law:by_order": {
+      "count": 28,
+      "examples": [
+        "UK_ukpga_1991_22/59a83f546a",
+        "UK_ukpga_2003_21/2929e920ce",
+        "UK_ukpga_2011_16/32268d10f3"
+      ]
+    },
+    "statement|none|whole|present|by_order|plain|none": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_1986_31/db3b9a5831",
+        "UK_asp_2003_7/956c4bea99",
+        "UK_ukpga_2000_21/4a24c495dd"
+      ]
+    },
+    "statement|none|whole|present|by_order|plain|rules:provision_by_order": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1973_32/9007d9fab6",
+        "UK_ukpga_2007_27/6b9c040d98"
+      ]
+    },
+    "statement|none|whole|present|by_order|qualified|law:by_order": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2013_22/8c3fbba58a"
+      ]
+    },
+    "statement|none|whole|present|by_order|qualified|rules:provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2026_23/6e305291b1"
+      ]
+    },
+    "statement|none|whole|present|date|plain|law:clause_date": {
+      "count": 274,
+      "examples": [
+        "UK_nisr_2010_59/7652de451b",
+        "UK_nisr_2011_365/ab944a0775",
+        "UK_nisr_2012_177/cbea6040a9"
+      ]
+    },
+    "statement|none|whole|present|date|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2007_764/940fa3905c"
+      ]
+    },
+    "statement|none|whole|present|date|plain|none": {
+      "count": 7,
+      "examples": [
+        "UK_uksi_2009_995/1e1f1adf74",
+        "UK_wsi_2009_995/a5dfa91f01",
+        "UK_ssi_2009_404/8ee6f1be47"
+      ]
+    },
+    "statement|none|whole|present|date|plain|rules:provision_dated": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2017_701/356fd1405b"
+      ]
+    },
+    "statement|none|whole|present|date|plain|rules:provision_qualified": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2017_701/431adb4a7c",
+        "UK_uksi_2026_74/7f7011c2df"
+      ]
+    },
+    "statement|none|whole|present|date|qualified|law:clause_date": {
+      "count": 4,
+      "examples": [
+        "UK_wsi_2008_1081/3bc7779265",
+        "UK_wsi_2010_2880/6bcff06b16",
+        "UK_wsi_2015_1388/75dbc38d4a"
+      ]
+    },
+    "statement|none|whole|present|date|qualified|none": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2026_15/a3b144ba65",
+        "UK_uksi_2009_1941/48a0158e8a"
+      ]
+    },
+    "statement|none|whole|present|date|qualified|rules:provision_qualified": {
+      "count": 3,
+      "examples": [
+        "UK_ssi_2007_179/edca786705",
+        "UK_uksi_2016_359/fa95071344",
+        "UK_wsi_2016_359/32b3d45390"
+      ]
+    },
+    "statement|none|whole|present|list|plain|law:clause_staged": {
+      "count": 22,
+      "examples": [
+        "UK_ukpga_2010_29/865ff5ec7c",
+        "UK_uksi_2005_1806/80a5e0f929",
+        "UK_uksi_2006_2988/daf06731be"
+      ]
+    },
+    "statement|none|whole|present|list|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2019_414/7996e56382",
+        "UK_wsi_2019_414/8c69f70e68"
+      ]
+    },
+    "statement|none|whole|present|made_relative|plain|law:clause_made_relative": {
+      "count": 55,
+      "examples": [
+        "UK_nia_2013_10/882feff5f4",
+        "UK_ssi_2009_140/07535f1c3c",
+        "UK_ssi_2015_383/dbff56c5d2"
+      ]
+    },
+    "statement|none|whole|present|made_relative|plain|law:clause_unread": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2018_1413/7358cccc6d"
+      ]
+    },
+    "statement|none|whole|present|made_relative|plain|none": {
+      "count": 6,
+      "examples": [
+        "UK_ukpga_2005_15/bd47040a7b",
+        "UK_ukpga_2008_4/c1d1e35162",
+        "UK_ukpga_2009_25/4b7797430e"
+      ]
+    },
+    "statement|none|whole|present|made_relative|plain|unread": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1973_37/ba79fc239b",
+        "UK_ukpga_2009_22/b076cf2f56"
+      ]
+    },
+    "statement|none|whole|present|made_relative|qualified|law:clause_date": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2011_1017/11d4b4e7b7"
+      ]
+    },
+    "statement|none|whole|present|made_relative|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2026_23/5860d0f0b6"
+      ]
+    },
+    "statement|none|whole|present|named_day|plain|law:clause_date": {
+      "count": 1,
+      "examples": [
+        "UK_ssi_2019_273/f3b3469946"
+      ]
+    },
+    "statement|none|whole|present|named_day|plain|law:clause_named_day": {
+      "count": 10,
+      "examples": [
+        "UK_uksi_2019_195/9a925c1201",
+        "UK_uksi_2019_177/c225958b4a",
+        "UK_uksi_2019_202/8c7c9d88c6"
+      ]
+    },
+    "statement|none|whole|present|none|plain|law:clause_staged": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2020_1339/bb6969aa21",
+        "UK_wsi_2020_1339/6bf8cc7b3d"
+      ]
+    },
+    "statement|none|whole|present|none|plain|law:clause_unread": {
+      "count": 5,
+      "examples": [
+        "UK_uksi_2018_42/5b218a3d45",
+        "UK_uksi_2013_1465/aac2db4e77",
+        "UK_uksi_2016_1142/c87f0332fc"
+      ]
+    },
+    "statement|none|whole|present|none|plain|law:tied_to_other_law": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_2015_914/e418087a60",
+        "UK_uksi_2019_734/0a4bad0f37",
+        "UK_uksi_2024_49/7a8046ed55"
+      ]
+    },
+    "statement|none|whole|present|none|plain|none": {
+      "count": 24,
+      "examples": [
+        "UK_asp_2010_5/bd6f117d95",
+        "UK_ukpga_2004_18/80bd6497a8",
+        "UK_ukpga_2009_23/75add78c43"
+      ]
+    },
+    "statement|none|whole|present|none|plain|unread": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_2004_21/0afdcd29c6",
+        "UK_ukpga_2006_48/0083f3b93e",
+        "UK_ukpga_2007_21/f16edbd98a"
+      ]
+    },
+    "statement|none|whole|present|none|qualified|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2026_23/d954d80f82"
+      ]
+    },
+    "statement|none|whole|present|none|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1987_53/279682f2bf"
+      ]
+    },
+    "statement|none|whole|present|period|plain|law:clause_made_relative": {
+      "count": 12,
+      "examples": [
+        "UK_ukpga_2003_40/a2a68b4a69",
+        "UK_ukpga_2009_19/dcc8eee475",
+        "UK_ukpga_1979_21/338d309cc8"
+      ]
+    },
+    "statement|none|whole|present|tied|plain|law:clause_date": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2014_1815/e776a39e76"
+      ]
+    },
+    "statement|none|whole|present|tied|plain|law:clause_named_day": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2020_1369/7ee2db89b7",
+        "UK_uksi_2020_1567/235a692a83"
+      ]
+    },
+    "statement|none|whole|present|tied|plain|law:clause_unread": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2023_1344/848cd0b892"
+      ]
+    },
+    "statement|none|whole|present|tied|plain|law:tied_to_other_law": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_2023_854/bd4d91399f",
+        "UK_uksi_2023_907/c0ad4596d3",
+        "UK_uksi_2024_504/4d49a4d188"
+      ]
+    },
+    "statement|none|whole|present|tied|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2006_43/8430698641"
+      ]
+    },
+    "statement|none|whole|shall|by_order|plain|law:by_order": {
+      "count": 74,
+      "examples": [
+        "UK_nisi_1979_1709/f359e96a08",
+        "UK_nisi_1997_1774/8a83338883",
+        "UK_nisi_1998_2795/e303ad4d0a"
+      ]
+    },
+    "statement|none|whole|shall|by_order|plain|law:clause_date": {
+      "count": 2,
+      "examples": [
+        "UK_nisr_1996_262/e27755ab61",
+        "UK_ukpga_1937_67/a197b2e381"
+      ]
+    },
+    "statement|none|whole|shall|by_order|plain|none": {
+      "count": 11,
+      "examples": [
+        "UK_ukpga_1962_58/9bd963ee5d",
+        "UK_ukpga_2006_38/d52e958618",
+        "UK_ukpga_1974_50/f9520ddc64"
+      ]
+    },
+    "statement|none|whole|shall|by_order|plain|rules:provision_by_order": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1989_15/21ffbe8ee8",
+        "UK_ukpga_1982_53/b61209d503"
+      ]
+    },
+    "statement|none|whole|shall|by_order|plain|unread": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1995_45/6cb261ff8f"
+      ]
+    },
+    "statement|none|whole|shall|by_order|qualified|law:by_order": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_1954_70/8168951abc",
+        "UK_ukpga_1963_41/f24828e5db",
+        "UK_ukpga_1965_57/bcde38c4de"
+      ]
+    },
+    "statement|none|whole|shall|date|plain|law:clause_date": {
+      "count": 213,
+      "examples": [
+        "UK_nisr_1991_446/90568d361b",
+        "UK_nisr_1991_509/8c5e4e5744",
+        "UK_nisr_1993_20/9c027aedf7"
+      ]
+    },
+    "statement|none|whole|shall|date|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_1991_1179/c3cf817982",
+        "UK_uksi_1991_146/e9d425bfff"
+      ]
+    },
+    "statement|none|whole|shall|date|qualified|law:clause_date": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1968_60/d6438f903e",
+        "UK_uksi_1992_3107/e70090958d"
+      ]
+    },
+    "statement|none|whole|shall|date|qualified|none": {
+      "count": 5,
+      "examples": [
+        "UK_uksi_2007_3075/ab626a40f6",
+        "UK_uksi_1987_676/ac8d814ea2",
+        "UK_uksi_1998_3178/fab267d9ad"
+      ]
+    },
+    "statement|none|whole|shall|date|qualified|rules:provision_qualified": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2000_3251/146322dbf9",
+        "UK_uksi_2006_1244/758228e835"
+      ]
+    },
+    "statement|none|whole|shall|list|plain|law:clause_staged": {
+      "count": 7,
+      "examples": [
+        "UK_nisr_2003_152/d0320731a3",
+        "UK_uksi_2003_2635/2a3ef80dd7",
+        "UK_uksi_2005_1992/9564b2973d"
+      ]
+    },
+    "statement|none|whole|shall|made_relative|plain|law:clause_made_relative": {
+      "count": 28,
+      "examples": [
+        "UK_nisr_2014_301/517806f56f",
+        "UK_ukpga_1966_4/f265f12edf",
+        "UK_ukpga_1977_39/46e19745ff"
+      ]
+    },
+    "statement|none|whole|shall|made_relative|plain|law:clause_unread": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2003_956/e2de1d2dd0",
+        "UK_uksi_2007_1519/8347e76382"
+      ]
+    },
+    "statement|none|whole|shall|made_relative|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1990_2594/6b679a3a0f"
+      ]
+    },
+    "statement|none|whole|shall|made_relative|plain|rules:provision_dated": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1982_53/79686c2fc3"
+      ]
+    },
+    "statement|none|whole|shall|none|plain|law:clause_staged": {
+      "count": 4,
+      "examples": [
+        "UK_uksi_1988_1324/649e3cb162",
+        "UK_uksi_2005_1541/4d5e8bea47",
+        "UK_uksi_1994_2063/8e7f214583"
+      ]
+    },
+    "statement|none|whole|shall|none|plain|law:clause_unread": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1982_27/2ed73cd671",
+        "UK_uksi_1999_1593/7b6dd7156c"
+      ]
+    },
+    "statement|none|whole|shall|none|plain|law:tied_to_other_law": {
+      "count": 1,
+      "examples": [
+        "UK_ssi_2005_344/605012d87d"
+      ]
+    },
+    "statement|none|whole|shall|none|plain|none": {
+      "count": 4,
+      "examples": [
+        "UK_uksi_1956_1943/74de067fef",
+        "UK_nisr_2009_35/bcb3fd3622",
+        "UK_nisr_2010_27/7befe09078"
+      ]
+    },
+    "statement|none|whole|shall|none|qualified|law:tied_to_other_law": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2007_1756/ff66d39bc0",
+        "UK_uksi_2010_976/c44367b910"
+      ]
+    },
+    "statement|none|whole|shall|period|plain|law:clause_made_relative": {
+      "count": 39,
+      "examples": [
+        "UK_nisi_1983_150/ed83e42dd9",
+        "UK_nisi_1987_1280/4f8b42a5b4",
+        "UK_nisi_1993_3159/6cba4174a8"
+      ]
+    },
+    "statement|none|whole|shall|period|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1989_33/5b6b0f6f82"
+      ]
+    },
+    "statement|none|whole|shall|period|plain|law:clause_unread": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_1971_48/36e522808d",
+        "UK_ukpga_1981_64/5cc6adc9cf",
+        "UK_ukpga_1987_26/cdb48f5523"
+      ]
+    },
+    "statement|none|whole|shall|period|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1964_56/0d2f668154"
+      ]
+    },
+    "statement|none|whole|shall|period|plain|unread": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1976_72/81d3686a90"
+      ]
+    },
+    "statement|subject_to|following|present|date|plain|rules:provision_dated+provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_ssi_2025_165/8d75888e6f"
+      ]
+    },
+    "statement|subject_to|following|shall|made_relative|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1991_2728/aea5228687"
+      ]
+    },
+    "statement|subject_to|instrument|may|none|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1980_66/2c833246d2"
+      ]
+    },
+    "statement|subject_to|instrument|present|none|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2006_38/acd47806f9",
+        "UK_ukpga_2003_17/f48c520bc0"
+      ]
+    },
+    "statement|subject_to|instrument|shall|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1968_73/72e8c8284e"
+      ]
+    },
+    "statement|subject_to|named|not_until|by_order|qualified|rules:provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2002_23/2d2be25417"
+      ]
+    },
+    "statement|subject_to|named|not_until|date|qualified|rules:provision_dated+provision_qualified": {
+      "count": 2,
+      "examples": [
+        "UK_nisr_2006_1/0aa50cb1a2",
+        "UK_uksi_2005_1643/4d29260663"
+      ]
+    },
+    "statement|subject_to|named|present|by_order|plain|rules:provision_by_order": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2022_30/e96bd7734e",
+        "UK_ukpga_2004_33/b7c9d29648"
+      ]
+    },
+    "statement|subject_to|named|present|date|plain|law:clause_date": {
+      "count": 2,
+      "examples": [
+        "UK_ssi_2019_336/0873636bfa",
+        "UK_uksi_2018_682/21c8405cbe"
+      ]
+    },
+    "statement|subject_to|named|present|date|plain|rules:provision_dated": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_2010_724/95a708e484",
+        "UK_uksi_2014_631/1c28d2c028"
+      ]
+    },
+    "statement|subject_to|named|shall|by_order|qualified|law:by_order": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1995_23/9c29f917e7"
+      ]
+    },
+    "statement|subject_to|named|shall|date|qualified|rules:provision_qualified": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_1988_1324/b4a2789b10"
+      ]
+    },
+    "statement|subject_to|named|shall|list|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1994_1096/9a29a59ded"
+      ]
+    },
+    "statement|subject_to|named|shall|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1988_1/284bd8ad8e"
+      ]
+    },
+    "statement|subject_to|named|shall|none|qualified|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1994_1096/4df7fee11c"
+      ]
+    },
+    "statement|subject_to|other|not_until|by_order|plain|rules:provision_by_order": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2002_23/ed8c2e5590"
+      ]
+    },
+    "statement|subject_to|other|present|by_order|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2006_48/f8d102a68e"
+      ]
+    },
+    "statement|subject_to|other|present|made_relative|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_asp_2000_5/3ec13140e3"
+      ]
+    },
+    "statement|subject_to|other|shall|by_order|plain|rules:provision_by_order": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1994_9/55b4963b0c"
+      ]
+    },
+    "statement|subject_to|other|shall|by_order|qualified|rules:provision_qualified": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1990_8/9d845ff7a7"
+      ]
+    },
+    "statement|subject_to|other|shall|list|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1993_37/e5bcec191c"
+      ]
+    },
+    "statement|subject_to|parts|present|made_relative|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2026_881/bb3049bc76"
+      ]
+    },
+    "statement|subject_to|parts|present|tied|plain|rules:provision_dated": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2019_1246/d3384119fb"
+      ]
+    },
+    "statement|subject_to|parts|shall|made_relative|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1980_65/b4f5e5b061"
+      ]
+    },
+    "statement|subject_to|rest|not_until|by_order|plain|rules:provision_by_order": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1993_19/49e0d7e657"
+      ]
+    },
+    "statement|subject_to|rest|present|by_order|plain|rules:provision_by_order": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_2009_23/cb4b3b9500",
+        "UK_ukpga_2010_15/7e0b4886f3",
+        "UK_ukpga_2007_24/c044aba21f"
+      ]
+    },
+    "statement|subject_to|rest|shall|by_order|plain|law:clause_staged": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2003_20/debebf6ac3",
+        "UK_ukpga_1999_22/552ec4b20d"
+      ]
+    },
+    "statement|subject_to|schedules|not_until|date|plain|rules:provision_dated+provision_qualified": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1995_17/87833e73ac"
+      ]
+    },
+    "statement|subject_to|schedules|present|date|plain|rules:provision_dated": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2013_591/9d8647ee1c"
+      ]
+    },
+    "statement|subject_to|this|present|date|plain|rules:provision_dated": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1994_9/3ef696d90f"
+      ]
+    },
+    "statement|subject_to|this|present|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1982_30/99e130d66c"
+      ]
+    },
+    "statement|subject_to|this|shall|by_order|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2003_43/21b76631fd"
+      ]
+    },
+    "statement|subject_to|this|shall|by_order|qualified|law:by_order": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1982_43/affa151a4f"
+      ]
+    },
+    "statement|subject_to|this|shall|date|plain|law:clause_date": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1984_54/4db25c23a7"
+      ]
+    },
+    "statement|subject_to|whole|is_to|by_order|plain|law:by_order": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1997_29/0e9b727a20"
+      ]
+    },
+    "statement|subject_to|whole|not_until|by_order|plain|law:by_order": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1999_30/6b1162f859"
+      ]
+    },
+    "statement|subject_to|whole|present|by_order|plain|law:by_order": {
+      "count": 12,
+      "examples": [
+        "UK_ukpga_2007_17/3cbd747162",
+        "UK_ukpga_2008_32/15232656f0",
+        "UK_ukpga_2010_23/c528786a98"
+      ]
+    },
+    "statement|subject_to|whole|present|date|plain|law:clause_date": {
+      "count": 17,
+      "examples": [
+        "UK_ukpga_1984_55/0be97487fd",
+        "UK_uksi_2010_724/bef863452a",
+        "UK_uksi_2013_1471/89cd82e752"
+      ]
+    },
+    "statement|subject_to|whole|present|date|qualified|rules:provision_qualified": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2016_359/6a48939253",
+        "UK_wsi_2016_359/27c3d302ed"
+      ]
+    },
+    "statement|subject_to|whole|present|made_relative|plain|law:clause_made_relative": {
+      "count": 6,
+      "examples": [
+        "UK_uksi_2011_988/0fd7b41c03",
+        "UK_uksi_2015_1947/dd89bff338",
+        "UK_uksi_2018_369/d8283a8d4b"
+      ]
+    },
+    "statement|subject_to|whole|present|made_relative|plain|rules:provision_dated": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2024_399/a26b643a10"
+      ]
+    },
+    "statement|subject_to|whole|present|named_day|plain|law:clause_named_day": {
+      "count": 7,
+      "examples": [
+        "UK_uksi_2019_196/01a38a8d4f",
+        "UK_uksi_2020_1593/4d769c6fb3",
+        "UK_uksi_2018_1232/d4ccbe6192"
+      ]
+    },
+    "statement|subject_to|whole|present|none|plain|law:clause_unread": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2016_562/8e9acd5867",
+        "UK_uksi_2026_386/8581b63d29"
+      ]
+    },
+    "statement|subject_to|whole|present|none|plain|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1975_18/bea9d5233b"
+      ]
+    },
+    "statement|subject_to|whole|present|period|plain|law:clause_made_relative": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2010_27/046245ecde"
+      ]
+    },
+    "statement|subject_to|whole|shall|by_order|plain|law:by_order": {
+      "count": 20,
+      "examples": [
+        "UK_nisi_1983_764/94f871d3da",
+        "UK_ukpga_1976_72/516353f8f2",
+        "UK_ukpga_1986_44/5fb1a9d7eb"
+      ]
+    },
+    "statement|subject_to|whole|shall|date|plain|law:clause_date": {
+      "count": 14,
+      "examples": [
+        "UK_nisr_1993_37/ff7d7ec3ca",
+        "UK_ssi_2004_428/86b028117e",
+        "UK_uksi_1992_3004/ed944d971b"
+      ]
+    },
+    "statement|subject_to|whole|shall|list|plain|law:clause_staged": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2002_32/7d3da7d492"
+      ]
+    },
+    "statement|subject_to|whole|shall|made_relative|plain|law:clause_unread": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1989_13/3bb84f2f76"
+      ]
+    },
+    "statement|subject_to|whole|shall|none|plain|law:clause_unread": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2006_1177/55091dfb96"
+      ]
+    },
+    "statement|subject_to|whole|shall|none|plain|none": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2006_1177/3b174057ff",
+        "UK_uksi_2006_1244/a4176ef16f"
+      ]
+    },
+    "statement|subject_to|whole|shall|period|plain|law:clause_made_relative": {
+      "count": 5,
+      "examples": [
+        "UK_ukpga_1981_29/c2c99675af",
+        "UK_ukpga_1987_12/74431fa464",
+        "UK_nisi_1994_426/342c24c188"
+      ]
+    }
+  },
+  "totals": {
+    "examples": 1486,
+    "laws": 2606,
+    "patterns": 767,
+    "sentences": 8099,
+    "too_large": 1,
+    "unclassified": 0
+  }
+}

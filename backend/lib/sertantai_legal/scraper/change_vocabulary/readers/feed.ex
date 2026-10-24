@@ -139,7 +139,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   # read from the affecting law's commencement rules (TCPA 1990 s.78(4BA):
   # inserted by the Planning (Wales) Act 2015 s.47(1), commenced fully by
   # WSI 2017/546)
-  @not_text [:feed_commencement, :act_enactment, :clause_staged]
+  # (an Act's Royal Assent is its own text: an Act with no clause, CV-S04)
+  @not_text [:feed_commencement, :clause_staged]
 
   defp commenced_by(claims, %Effect{affecting: law} = e, commencement) do
     with :commenced <- value(claims, :operation),

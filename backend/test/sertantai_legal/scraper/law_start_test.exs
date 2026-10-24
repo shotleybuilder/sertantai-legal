@@ -658,4 +658,32 @@ defmodule SertantaiLegal.Scraper.LawStartTest do
       assert %{treatment: :tied_to_other_law, date: ~D[2023-10-01]} = s
     end
   end
+
+  describe "CV-S04: dates in words, as older Acts write them" do
+    test "the first day of April, nineteen hundred and sixty-two (Factories Act 1961 s.185(2))" do
+      s =
+        start(
+          "ukpga",
+          [
+            {"s.185(2)",
+             "This Act shall come into force on the first day of April, nineteen hundred and sixty-two."}
+          ],
+          clml_head: ~s(<ukm:EnactmentDate Date="1961-06-22"/>)
+        )
+
+      assert %{treatment: :clause_date, date: ~D[1962-04-01]} = s
+    end
+
+    test "an ordinal in two words and a qualified clause (Factories Act 1937 s.160(2))" do
+      assert Clause.date_at_start(
+               "the twenty-first day of July, nineteen hundred and thirty-eight : Provided"
+             ) ==
+               ~D[1938-07-21]
+
+      assert Clause.date_at_start("the first day of January, two thousand and one") ==
+               ~D[2001-01-01]
+
+      assert Clause.date_at_start("the first day of Smarch, nineteen hundred") == nil
+    end
+  end
 end

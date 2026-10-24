@@ -465,13 +465,21 @@
     id: "s.78",
     start: ~D[1974-07-31],
     case:
-      "UNDECIDABLE commencement; C11 extent E+W+S; E+W and S repeals same day 2006-10-01 → nowhere; child (7)(c) repeal ignored",
+      "commenced by order: SI 1974/1439 art.2(c), Sch. 3 \"Section 78\" on 1 April 1975 (CV-S04, Jason 2026-10-24; was UNDECIDABLE, the order not held); C11 extent E+W+S; E+W and S repeals same day 2006-10-01 → nowhere; child (7)(c) repeal ignored",
     law: "UK_ukpga_1974_37",
     periods: [
       %{
-        status: :in_force,
+        status: :prospective,
         valid_from: ~D[1974-07-31],
         in_force_from: nil,
+        changed_by: [],
+        territory: "E+W+S",
+        valid_to: ~D[1975-04-01]
+      },
+      %{
+        status: :in_force,
+        valid_from: ~D[1975-04-01],
+        in_force_from: ~D[1975-04-01],
         changed_by: [],
         territory: "E+W+S",
         valid_to: ~D[2006-10-01]

@@ -481,6 +481,16 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
     own = SertantaiLegal.Scraper.Commencement.Store.for_law(law)
 
+    # the law's row structure, for its own commencement (Parts, Chapters,
+    # document order: CV-S04)
+    own_context =
+      Repo.query!(
+        "SELECT section_id, part, chapter FROM legal_articles WHERE law_name = $1 ORDER BY position",
+        [law]
+      ).rows
+      |> Enum.map(fn [s, p, c] -> %{section_id: s, part: p, chapter: c} end)
+      |> SertantaiLegal.Scraper.Commencement.OwnClause.context()
+
     # when it was passed (an Act's Royal Assent), for its own sunset
     passed =
       Enum.find_value(own, fn r ->
@@ -521,6 +531,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       act_title: title && String.replace(title, ~r/\s*\(repealed[^)]*\)\s*$/i, ""),
       continuations: continuations,
       own_commencement: own,
+      own_context: own_context,
       title: title
     ]
   end

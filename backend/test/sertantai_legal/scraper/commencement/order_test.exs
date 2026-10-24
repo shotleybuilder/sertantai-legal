@@ -488,4 +488,312 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
 
     assert %{full_from: ~D[1992-07-27]} = dated(rules, "section-4-1")
   end
+
+  describe "CV-S04: the whole Act" do
+    test "the Act named as the item: all of it (SI 1973/28: EMAS Act 1972)" do
+      act = %{
+        law: "UK_ukpga_1972_28",
+        title: "Employment Medical Advisory Service Act",
+        year: "1972"
+      }
+
+      rules =
+        Order.rules(
+          Doc.new("UK_uksi_1973_28", [
+            ~S"""
+            <Legislation><Secondary><Body><P1 id="article-1"><P1para><Text>The Employment Medical Advisory Service Act 1972 shall come into operation on 1st February 1973.</Text></P1para></P1>
+            <P1 id="article-2"><P1para><Text>This Order may be cited as the Employment Medical Advisory Service Act 1972 (Commencement) Order 1973.</Text></P1para></P1>
+            </Body></Secondary></Legislation>
+            """
+          ]),
+          act
+        )
+
+      assert lines(rules) == ["all — 1973-02-01 — everywhere, fully — order_date"]
+    end
+
+    test "all but the provisions another paragraph lists, so far as not in force (SI 2008/401: CMCHA 2007)" do
+      act = %{
+        law: "UK_ukpga_2007_19",
+        title: "Corporate Manslaughter and Corporate Homicide Act",
+        year: "2007"
+      }
+
+      rules =
+        Order.rules(
+          Doc.new("UK_uksi_2008_401", [
+            ~S"""
+            <Legislation><Secondary><Body><P1 id="article-2"><P1para>
+            <P2 id="article-2-1"><Pnumber>1</Pnumber><P2para><Text>Apart from the provisions mentioned in paragraph (2), the Corporate Manslaughter and Corporate Homicide Act 2007 shall, to the extent that it is not already in force, come into force on 6th April 2008.</Text></P2para></P2>
+            <P2 id="article-2-2"><Pnumber>2</Pnumber><P2para><Text>Those provisions are—</Text>
+            <P3 id="article-2-2-a"><P3para><Text>section 2(1)(d) (duty owed to a person in custody etc. to be a relevant duty of care);</Text></P3para></P3>
+            <P3 id="article-2-2-b"><P3para><Text>section 10 (power to order conviction etc to be publicised).</Text></P3para></P3></P2para></P2>
+            </P1para></P1></Body></Secondary></Legislation>
+            """
+          ]),
+          act
+        )
+
+      assert lines(rules) == [
+               "all except s.2(1)(d), s.10 — 2008-04-06 — everywhere, fully — order_date"
+             ]
+
+      at = &Evaluator.evaluate(rules, &1, Order.context()).full_from
+      assert at.("s.1") == ~D[2008-04-06]
+      assert at.("s.10") == nil
+    end
+
+    test "an order never commences itself (NISR 2012/286)" do
+      act = %{law: "UK_uksi_1994_571", title: "Railways (Commencement) Order", year: "1994"}
+
+      assert Order.rules(
+               order(
+                 ~s(<P1 id="article-2"><P1para><Text>Section 1 of the Act shall come into force on 1st April 1994.</Text></P1para></P1>)
+               ),
+               act
+             ) == []
+    end
+  end
+
+  describe "CV-S04: Schedule table items (SI 1974/1439, HSWA 1974)" do
+    @hswa %{law: "UK_ukpga_1974_37", title: "Health and Safety at Work etc. Act", year: "1974"}
+
+    defp hswa_rules(rows) do
+      tr = Enum.map_join(rows, "", fn {a, b} -> "<tr><td>#{a}</td><td>#{b}</td></tr>" end)
+
+      Order.rules(
+        Doc.new("UK_uksi_1974_1439", [
+          ~s(<Legislation><Secondary><Body><P1 id="article-1"><P1para><Text>In this Order “<Term id="t">the Act</Term>” means the Health and Safety at Work etc. Act 1974.</Text></P1para></P1></Body><Schedules><Schedule id="schedule"><TitleBlock><Title>Provisions coming into operation on 1st April 1975</Title></TitleBlock><ScheduleBody><Tabular><table><tbody>#{tr}</tbody></table></Tabular></ScheduleBody></Schedule></Schedules></Secondary></Legislation>)
+        ]),
+        @hswa
+      )
+    end
+
+    test "\"(except so far as already in operation)\", \"(except as aforesaid)\": the rest, fully" do
+      rules =
+        hswa_rules([
+          {"Section 47 (except so far as already in operation).", "Civil liability."},
+          {"Section 53 (except as aforesaid).", "General interpretation of Part I."}
+        ])
+
+      assert Enum.all?(rules, &Rule.full?/1)
+      assert Enum.map(rules, & &1.scope) == [["s.47"], ["s.53"]]
+    end
+
+    test "\"33(1)(a) and (b)\": the sibling at its own depth" do
+      assert [%{scope: ["s.33(1)(a)", "s.33(1)(b)"]}] =
+               hswa_rules([{"Section 33(1)(a) and (b).", "Offences."}])
+    end
+
+    test "another law's provisions after its title and a dash are not the Act's; \"the following repeals\" is part of a Schedule" do
+      assert [%{scope: ["sch.10"], purposes: :in_relation_to}] =
+               hswa_rules([
+                 {"Schedule 10, the following repeals:— The Employment Medical Advisory Service Act 1972- sections 1 and 6 and Schedule 1.",
+                  "Repeals."}
+               ])
+    end
+  end
+
+  describe "CV-S04 orders catalogue" do
+    defp doc_of(law, body, schedules \\ ""),
+      do:
+        Doc.new(law, [
+          ~s|<Legislation><Secondary><Body>#{body}</Body>#{schedules}</Secondary></Legislation>|
+        ])
+
+    test "\"18 March 2011 is the appointed day …\": the day kept, the appointed day read (WSI 2011/824)" do
+      act = %{law: "UK_ukpga_2008_23", title: "Children and Young Persons Act", year: "2008"}
+
+      rules =
+        Order.rules(
+          doc_of(
+            "UK_wsi_2011_824",
+            ~s|<P1 id="article-2"><P1para><Text>18 March 2011 is the appointed day for the coming into force of the following provisions of the Children and Young Persons Act 2008—</Text><P2 id="article-2-a"><P2para><Text>section 21(1);</Text></P2para></P2></P1para></P1>|
+          ),
+          act
+        )
+
+      assert [%{scope: ["s.21(1)"], when: {:date, ~D[2011-03-18]}}] = rules
+    end
+
+    test "\"The 1989 Act, so far as not already in force, …\"; a bracketed alias (SI 1997/134, SI 1999/161)" do
+      act = %{law: "UK_ukpga_1989_38", title: "Employment Act", year: "1989"}
+
+      assert [%{scope: :all, when: {:date, ~D[1997-03-03]}}] =
+               Order.rules(
+                 doc_of(
+                   "UK_uksi_1997_134",
+                   ~s|<P1 id="article-1"><P1para><Text>This Order may be cited as the Employment Act 1989 (Commencement No. 2) Order 1997.</Text></P1para></P1><P1 id="article-2"><P1para><Text>The 1989 Act, so far as not already in force, shall come into force on 3rd March 1997.</Text></P1para></P1>|
+                 ),
+                 act
+               )
+
+      act = %{law: "UK_ukpga_1998_17", title: "Petroleum Act", year: "1998"}
+
+      assert [%{scope: :all}] =
+               Order.rules(
+                 doc_of(
+                   "UK_uksi_1999_161",
+                   ~s|<P1 id="article-2"><P1para><Text>The Petroleum Act 1998 (hereinafter referred to as “the Act”) shall come into force on 15th February 1999.</Text></P1para></P1>|
+                 ),
+                 act
+               )
+    end
+
+    test "a table's Schedule from its title (SI 1991/2905: \"EXTENT OF COMMENCEMENT OF SCHEDULE 7\")" do
+      act = %{law: "UK_ukpga_1991_34", title: "Planning and Compensation Act", year: "1991"}
+
+      rules =
+        Order.rules(
+          doc_of(
+            "UK_uksi_1991_2905",
+            ~s|<P1 id="article-1"><P1para><Text>In this Order “<Term id="t">the Act</Term>” means the Planning and Compensation Act 1991.</Text></P1para></P1>|,
+            ~s|<Schedules><Schedule id="schedule"><TitleBlock><Title>Extent of commencement of Schedule 7: provisions coming into force on 2nd January 1992</Title></TitleBlock><ScheduleBody><Tabular><table><tbody><tr><td>Paragraphs 2 and 4</td><td></td></tr><tr><td>Paragraph 7</td><td>Amendments</td></tr></tbody></table></Tabular></ScheduleBody></Schedule></Schedules>|
+          ),
+          act
+        )
+
+      assert Enum.any?(rules, &("sch.7.para.7" in List.wrap(&1.scope)))
+    end
+  end
+
+  describe "CV-S04 agent round 2" do
+    test "N1: a bare Schedule list's own qualifier stays on its item (SI 1996/186 reg.3)" do
+      act = %{law: "UK_ukpga_1995_25", title: "Environment Act", year: "1995"}
+
+      rules =
+        Order.rules(
+          Doc.new("UK_uksi_1996_186", [
+            ~s|<Legislation><Secondary><Body><P1 id="article-3"><P1para><Text>The following provisions of the Environment Act 1995 shall come into force on 1st April 1996—</Text><P2 id="article-3-a"><P2para><Text>section 120(1) in so far as it relates to the following paragraphs of Schedule 22— 1, 3, 29(1) in so far as it is not already in force, 30, 32 to 35.</Text></P2para></P2></P1para></P1></Body></Secondary></Legislation>|
+          ]),
+          act
+        )
+
+      para30 = Enum.find(rules, &("sch.22.para.30" in List.wrap(&1.scope)))
+      assert para30 && Rule.full?(para30)
+    end
+
+    test "N1: \"Section 33 (except subsection (1)(a) and (b))\" is the section but those (SI 1974/1439)" do
+      act = %{law: "UK_ukpga_1974_37", title: "Health and Safety at Work etc. Act", year: "1974"}
+
+      [rule] =
+        Order.rules(
+          Doc.new("UK_uksi_1974_1439", [
+            ~s|<Legislation><Secondary><Body><P1 id="article-1"><P1para><Text>In this Order “<Term id="t">the Act</Term>” means the Health and Safety at Work etc. Act 1974.</Text></P1para></P1></Body><Schedules><Schedule id="schedule-2"><TitleBlock><Title>Provisions coming into operation on 1st January 1975</Title></TitleBlock><ScheduleBody><Tabular><table><tbody><tr><td>Section 33 (except subsection (1)(a) and (b)).</td><td>Offences.</td></tr></tbody></table></Tabular></ScheduleBody></Schedule></Schedules></Secondary></Legislation>|
+          ]),
+          act
+        )
+
+      assert rule.scope == ["s.33"] and rule.except == ["s.33(1)(a)", "s.33(1)(b)"] and
+               Rule.full?(rule)
+    end
+  end
+
+  describe "CV-S04 agent round 3" do
+    test "\"The day appointed for the purpose of section 18(2) … shall be D\": what s.18(2) leaves to it (SI 1996/218)" do
+      act = %{law: "UK_ukpga_1995_45", title: "Gas Act", year: "1995"}
+
+      rules =
+        Order.rules(
+          Doc.new("UK_uksi_1996_218", [
+            ~s|<Legislation><Secondary><Body><P1 id="article-2"><P1para><Text>The day appointed for the purpose of section 18(2) of the Gas Act 1995 shall be 1st March 1996.</Text></P1para></P1></Body></Secondary></Legislation>|
+          ]),
+          act
+        )
+
+      own =
+        Rule.new(
+          commences: "UK_ukpga_1995_45",
+          scope: :all,
+          except: ["s.18", "s.13"],
+          when: {:appointed, "by order"},
+          source: %{law: "UK_ukpga_1995_45", ref: "s.18(2)", text: "This Act, except— …"},
+          treatment: :by_order
+        )
+
+      assert [%{scope: :all, except: ["s.18", "s.13"], when: {:date, ~D[1996-03-01]}}] =
+               Order.resolve_appointed_for(rules, [own])
+
+      assert Order.resolve_appointed_for(rules, []) == []
+    end
+  end
+
+  describe "CV-S04 agent round 3: order items" do
+    test "\"insofar\": a whole-Act commencement (SI 1998/1542) and an item partly (SI 2006/1680)" do
+      act = %{law: "UK_ukpga_1997_42", title: "Police (Health and Safety) Act", year: "1997"}
+
+      assert [%{scope: :all, when: {:date, ~D[1998-07-01]}}] =
+               Order.rules(
+                 Doc.new("UK_uksi_1998_1542", [
+                   ~s|<Legislation><Secondary><Body><P1 id="article-2"><P1para><Text>The Police (Health and Safety) Act 1997 shall, insofar as it is not already in force, come into force on 1st July 1998.</Text></P1para></P1></Body></Secondary></Legislation>|
+                 ]),
+                 act
+               )
+    end
+
+    test "repeal descriptions name another Act's provisions; \"In Schedule 18, the repeals …\" is part of Schedule 18 (SI 1996/396, SI 2004/2593)" do
+      act = %{law: "UK_ukpga_2004_5", title: "Planning and Compulsory Purchase Act", year: "2004"}
+
+      rules =
+        Order.rules(
+          Doc.new("UK_uksi_2004_2593", [
+            ~s|<Legislation><Secondary><Body><P1 id="article-2"><P1para><Text>The following provisions of the Planning and Compulsory Purchase Act 2004 shall come into force on 31 October 2004—</Text><P2 id="article-2-a"><P2para><Text>section 111(2);</Text></P2para></P2><P2 id="article-2-b"><P2para><Text>in the Town and Country Planning Act 1990, sections 226 and 245;</Text></P2para></P2><P2 id="article-2-c"><P2para><Text>In Schedule 9, the repeals to the Game Licences Act 1860.</Text></P2para></P2></P1para></P1></Body></Secondary></Legislation>|
+          ]),
+          act
+        )
+
+      scopes = Enum.flat_map(rules, &List.wrap(&1.scope))
+      assert "s.111(2)" in scopes
+      refute "s.226" in scopes
+      assert Enum.any?(rules, &(&1.scope == ["sch.9"] and &1.purposes == :in_relation_to))
+    end
+  end
+
+  describe "CV-S04 agent round 4" do
+    @epa %{law: "UK_ukpga_1990_43", title: "Environmental Protection Act", year: "1990"}
+
+    defp epa_order(text),
+      do:
+        Order.rules(
+          Doc.new("UK_uksi_1990_2635", [
+            ~s|<Legislation><Secondary><Body><P1 id="article-3"><P1para><Text>#{text}</Text></P1para></P1></Body></Secondary></Legislation>|
+          ]),
+          @epa
+        )
+
+    test "N3: each item its own bracketed qualifier (SI 1990/2635 reg.3)" do
+      rules =
+        epa_order(
+          "Sections 1, 2, 4 to 28, 105 (in so far as it is not already in force), 159 and 162(2) (in so far as it relates to Part V of Schedule 16) of the Environmental Protection Act 1990 shall come into force on 1st January 1991."
+        )
+
+      full = &Enum.any?(rules, fn r -> &1 in List.wrap(r.scope) and Rule.full?(r) end)
+      assert full.("s.1") and full.("s.4..s.28") and full.("s.105") and full.("sch.16.pt.V")
+      refute full.("s.162(2)")
+    end
+
+    test "N1: a qualifier after the date; N2: quoted words and another Act's provisions are not refs" do
+      rules =
+        epa_order(
+          "Section 120(1) of, and Schedule 22 to, the Environmental Protection Act 1990 come into force on 1st April 2015 in so far as they relate to paragraph 81 of Schedule 22."
+        )
+
+      assert Enum.any?(rules, &(&1.scope == ["s.120(1)", "sch.22"] and not Rule.full?(&1)))
+
+      rules =
+        epa_order(
+          "The following provisions of the Environmental Protection Act 1990 shall come into force on 1st April 1996— section 3; the repeal of sections 7(2) and (8) and 11(3) of the Control of Pollution (Amendment) Act 1989; in section 33(1) the words “section 54”."
+        )
+
+      scopes = Enum.flat_map(rules, &List.wrap(&1.scope))
+      assert "s.3" in scopes
+      refute Enum.any?(scopes, &(&1 in ["s.7(2)", "s.11(3)", "s.54"]))
+    end
+
+    test "N4: a Schedule's Part either way" do
+      alias SertantaiLegal.Scraper.LatRef
+      assert LatRef.covers?("sch.16.pt.1", "sch.16.pt.I")
+      refute LatRef.covers?("sch.16.pt.2", "sch.16.pt.I")
+    end
+  end
 end

@@ -150,4 +150,86 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.NoteDateTest do
              }) == []
     end
   end
+
+  describe "why/2: every undated change accounted for (CV-S04)" do
+    defp pointed(law \\ "UK_ukpga_1989_22", refs \\ ["sch.3.para.8(e)"]),
+      do:
+        change([
+          {:markup, :operation, :inserted},
+          {:markup, :cited, law},
+          {:markup, :affecting, refs}
+        ])
+
+    test "dated, and by which pointer; not a gap where a source dates it" do
+      assert NoteDate.why(pointed(), commencement()) == {:dated, ~D[1989-09-01], :note}
+
+      dated = %{
+        pointed()
+        | claims: pointed().claims ++ change([{:feed, :date, ~D[1990-02-02]}]).claims
+      }
+
+      assert NoteDate.why(dated, commencement()) == :not_a_gap
+    end
+
+    test "no law named, no provision named, the law's rules not held" do
+      assert NoteDate.why(change([{:markup, :operation, :inserted}]), commencement()) ==
+               {:undated, :no_amending_law}
+
+      assert NoteDate.why(pointed("UK_ukpga_1989_22", []), commencement()) ==
+               {:undated, :no_pointer}
+
+      assert NoteDate.why(pointed("UK_ukpga_2000_1"), commencement()) ==
+               {:undated, :rules_not_held}
+    end
+
+    test "only rules that aren't the law's own text (a staged clause's start)" do
+      staged = %{
+        rule("UK_ukpga_1989_22", :all, {:date, ~D[1989-07-27]})
+        | treatment: :clause_staged
+      }
+
+      assert NoteDate.why(pointed(), %{"UK_ukpga_1989_22" => [staged]}) ==
+               {:undated, :no_text_rules}
+    end
+
+    test "an Act with no clause: in force on Royal Assent (Jason 2026-10-23)" do
+      assent = %{
+        rule("UK_ukpga_1989_22", :all, {:date, ~D[1989-07-27]})
+        | treatment: :act_enactment
+      }
+
+      assert NoteDate.why(pointed(), %{"UK_ukpga_1989_22" => [assent]}) ==
+               {:dated, ~D[1989-07-27], :note}
+    end
+
+    test "left to an order no rule dates; reached by no rule; provisions disagreeing" do
+      appointed = %{
+        "UK_ukpga_1989_22" => [rule("UK_ukpga_1989_22", ["sch.3"], {:appointed, "order"})]
+      }
+
+      assert NoteDate.why(pointed(), appointed) == {:undated, :appointed}
+
+      other = %{
+        "UK_ukpga_1989_22" => [rule("UK_ukpga_1989_22", ["s.1"], {:date, ~D[1989-09-01]})]
+      }
+
+      assert NoteDate.why(pointed(), other) == {:undated, :not_reached}
+
+      both = pointed("UK_ukpga_1989_22", ["sch.3.para.8(e)", "s.106"])
+      # the paragraph decides over a shallower section …
+      assert {:dated, _, _} = NoteDate.why(both, commencement())
+
+      # … two at one depth disagreeing give no date
+      two = pointed("UK_ukpga_1989_22", ["sch.3.para.8(e)", "sch.4.para.1(a)"])
+
+      rules = %{
+        "UK_ukpga_1989_22" => [
+          rule("UK_ukpga_1989_22", ["sch.3"], {:date, ~D[1989-09-01]}),
+          rule("UK_ukpga_1989_22", ["sch.4"], {:date, ~D[1991-01-01]})
+        ]
+      }
+
+      assert NoteDate.why(two, rules) == {:undated, :provisions_disagree}
+    end
+  end
 end
