@@ -1,7 +1,53 @@
 ---
 session: 'CV-S04: Commencement Reader'
-status: active
+status: closed
+lane: build
 release: v0.1
+closed: '2026-10-24'
+outcome: success
+summary: >
+  The commencement reader passes for OH&S under the agreed stopping rule: the check's rows show our
+  faults 0 (dated 16,430, staged 608, by order 164), every undated change has a reason (unread 0),
+  golden is 27/27 and the round-4 agent sample found no NEW defect. Two pattern catalogues (767
+  sentence, 166 order patterns) bound the clause and order grammar for later families to extend.
+decisions:
+  - what: "The stopping rule: rows our faults 0, golden all-pass, agent sample with no NEW defect, every remaining gap in a counted pending class"
+    why: "Jason 2026-10-24: the order and clause grammar is bounded (heads, a when, items, context carriers); drafting variety within it is open-ended, so the gate is newness, not zero gaps"
+    result: "met after round 4 + option 1"
+  - what: "Catalogues before the corpus re-read (step 2 before step 3), never skipped"
+    why: "Jason 2026-10-23: \"agreed order and approach - dont skip\"; fixing by count across every held sentence, not by sample"
+    result: "unread own-commencement gaps 131 → 0; order statements read 1,951/2,901 (67%)"
+  - what: "Option 1: fix the round-4 rule-level defects N1–N4, then final re-read, rebuild, check, golden; no new agent round"
+    why: "the round-4 sample had 0 NEW at sample level; N1–N4 were rule-level, checked by catalogue diff instead"
+    result: "check PASS, golden 27/27; the diff review found and fixed 6 more forms"
+  - what: "An Act's unread own commencement sentence is unread, never Royal Assent"
+    why: "Royal Assent stood in silently for Gas Act 1995 s.18(2)'s by-order clause"
+    result: "a safety rule (OwnClause.unread_own/2)"
+  - what: "HSWA s.78 golden: prospective 1974-07-31 → in force 1975-04-01 → repealed_saved 2006-10-01"
+    why: "the orders now read show s.78's commencement; Jason agreed the update"
+    result: "golden 27/27"
+metrics:
+  check_final: { rows: 20170, laws: 149, dated: 16430, staged: 608, by_order: 158, by_order_partly: 6, no_clause: 3, our_faults: 0 }
+  gaps_final: { dated_via_feed: 643, dated_via_note: 221, appointed: 109, rules_not_held: 274, no_pointer: 650, no_amending_law: 830, not_reached: 6, unread: 0 }
+  agent_round4_seed7: { rows_ok: 45, rows_wrong_known: 4, rows_doubtful: 1, gaps_ok: 50, new: 0 }
+  catalogues: { sentence_patterns: 767, sentence_pending: 136, order_patterns: 166, order_pending: 41 }
+  order_reach: { statements: 2901, read: 1951 }
+  rules_final: { own_lat_laws: 1614, amending: 2387, stale: 86, cited_orders: 1771 }
+  golden: { pass: 27, total: 27 }
+  tests: { related_suites: 4608 }
+lessons:
+  - title: "A catalogue diff review after every rule fix catches what the agent sample can't"
+    detail: "Reviewing 51 changed catalogue examples against their texts after N1–N4 found 6 further misreads (bracketed titles, entries lists, repeal lists, full qualifiers, atomic Part lists) and one regression (\"s.2014\" from a title's brackets) before any corpus write."
+    tag: data
+  - title: "Regex list captures backtrack into shorter matches past a negative lookahead"
+    detail: "\"Parts I and III of Schedule 11\": the lookahead (?! of Schedule) failed on the full list, so the engine backtracked to \"Part I\" and read an Act Part. An atomic group (?>…) around the list stops it."
+    tag: tooling
+  - title: "Catalogue fixtures carrying source XML carry effect ids"
+    detail: "Order fixtures held 112 legislation.gov.uk key-<32hex> ids (CommentaryRef, ChangeId) that trip push protection; the fixture writer now keeps the last 6. Scan new fixtures before committing."
+    tag: tooling
+  - title: "Stored rules can be stale against a changed reader: a scoped LAT law's clause was read from LAT, not CLML"
+    detail: "Golden failures traced to rules from an older reader; re-reading with clause_input (CLML for scoped laws) fixed them. Rebuilds trust stored rules, so a reader change needs the re-read before the check."
+    tag: data
 bugs:
   - pattern: "An Act whose clause leaves it to orders read as in force on Royal Assent; its clause's sentences never read (LawStart decides the Act's start by ukm:EnactmentDate and its evidence is then metadata)"
     category: commencement reading
@@ -63,23 +109,67 @@ bugs:
     affected: "HSWA 1974: 6 orders; OSRPA 1963: 3 orders not held at all"
     fix: "fetched 9 orders' body + schedules (Jason 2026-10-23); HSWA Nos. 2-6 are PDF-only on legislation.gov.uk (no text): a known limit"
     status: fixed
-  - pattern: "A qualifier on one item of a bare paragraph list read over the whole list"
+  - pattern: "A qualifier on one item of a bare paragraph list (\"68(2) in so far as it requires …\") read over the whole list"
     category: commencement reading
     module: Commencement.Order
     affected: "SI 1996/186 Sch. 22"
     fix: "bare_items/3: each item its own qualifier (round 2)"
     status: fixed
-  - pattern: "An order whose Schedule is not held dates nothing it lists (SI 1997/3114); once held, its repeal-entries cell (\"In the Schedule—the entries relating to sections 11 to 14 … of … the Firearms (Amendment) Act 1997\") read as the Act's own s.11-14, sch.1, sch.2.para.13"
+  - pattern: "An order whose Schedule is not in the CLML store (SI 1997/3114: body only) dates none of the provisions its Schedule lists; its Parts are dated by the articles naming them (\"specified in Part I of the Schedule to this Order … 17th December 1997\")"
+    category: commencement sources
+    module: CLML store / Commencement.Order.tables
+    affected: "SI 1997/3114 (Firearms (Amendment) (No. 2) Act 1997)"
+    fix: "Schedule held (fetched 2026-10-20) and read; its repeal-entries cell read whole as the Schedule in relation to, never the other Act's provisions (9d9f2ab3); rules re-read 2026-10-24"
+    status: fixed
+  - pattern: "A repeal-entries table cell (\"In the Schedule—the entries relating to sections 11 to 14 … of … the Firearms (Amendment) Act 1997\") split per provision and read as the commenced Act's own provisions"
     category: commencement reading
     module: Commencement.Order (tables, line_items)
-    affected: "SI 1997/3114 (Firearms (Amendment) (No. 2) Act 1997): 1 rule"
+    affected: "SI 1997/3114: 1 rule"
     fix: "a repeal-entries cell is read whole, the Schedule in relation to; \"In the Schedule\" unnumbered (9d9f2ab3)"
     status: fixed
+  - pattern: "\"Part IV, apart from section 66 and Schedule 9 …\" in a clause list item: the apart-from after a Part item not read as its except"
+    category: commencement reading
+    module: LawStart.Provisions
+    affected: "Access to Justice Act 1999 s.108(3)(b) (a catalogued pending class)"
+    fix: "read \"apart from\" after an item as that item's except"
+    status: open
+  - pattern: "\"Chapters II and III of Part I\" in a clause list read as the whole Part I"
+    category: commencement reading
+    module: LawStart.Provisions
+    affected: "Freedom of Information Act 2000 s.103(2) (a catalogued pending class)"
+    fix: "Chapter lists of a Part → pt.N.ch.X each"
+    status: open
+  - pattern: "A Schedule's Parts in an Act's clause (\"Parts III and IV of Schedule 16\") dropped rather than read as sch.N.pt.X"
+    category: commencement reading
+    module: LawStart.Provisions
+    affected: "FOIA 2000 s.103(2), Access to Justice Act 1999 s.108(3)(f) (a catalogued pending class)"
+    fix: "read Part lists of a Schedule as sch.N.pt.X"
+    status: open
+  - pattern: "An items-first order's \"in Schedule 8, the entries relating to:—\" heading reads nothing"
+    category: commencement reading
+    module: Commencement.Order (split_head)
+    affected: "SI 1978/1583 (a catalogued pending class)"
+    fix: "the entries head as sch.N in relation to in the items-first form"
+    status: open
 opened: '2026-10-22'
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
+artifacts:
+  - backend/lib/sertantai_legal/scraper/commencement/sentence_patterns.ex
+  - backend/lib/sertantai_legal/scraper/commencement/order_patterns.ex
+  - backend/lib/mix/tasks/lat.commencement_check.ex
+  - backend/lib/mix/tasks/lat.commencement_patterns.ex
+  - backend/lib/mix/tasks/lat.order_patterns.ex
+  - backend/test/fixtures/commencement_patterns/
+  - backend/test/fixtures/order_patterns/
+  - restore-points/2026-10-24-cv-s04-before-final
+depends_on:
+  - 2026-10-21-cv-00-meta.md
+enables:
+  - "CV-S05 and the commencement step for later families (extend both catalogues)"
+  - "CV-07 (undated status-relevant changes, gap-filler sample)"
 ---
 
-# Session: CV-S04: Commencement Reader (ACTIVE)
+# Session: CV-S04: Commencement Reader (CLOSED)
 
 ## Problem
 
@@ -91,14 +181,14 @@ The session does not close until its results pass.
 
 - ✅ Define what good looks like (the acceptance check): a hand-checked sample from the OH&S core family, and the measures, each defined in words with a test
 - ✅ Build the acceptance check; run it (ask Jason before any long run)
-- ⬜ OH&S family: 90 status-relevant text changes still undated (whole insertions and repeals), 342 undated in all (CV-07)
-- ⬜ The gap-filler (NoteDate: the amending law's commencement at the provision the feed or note names) verified on a sample (CV-07, built `a50a00fc`)
+- ⏸️ OH&S family: 90 status-relevant text changes still undated (whole insertions and repeals), 342 undated in all (CV-07) (deferred — CV-07's)
+- ⏸️ The gap-filler (NoteDate: the amending law's commencement at the provision the feed or note names) verified on a sample (CV-07, built `a50a00fc`) (deferred — CV-07's)
 - ✅ An order whose Schedule is not held dates nothing it lists (open bug: SI 1997/3114): its Schedule is held (fetched 2026-10-20) and read. Its repeal-entries cell was read as the Act's own provisions; fixed `9d9f2ab3`
 - ✅ A qualifier on one item of a bare paragraph list read over the whole list (open bug, Commencement.Order): fixed in round 2 (`Order.bare_items/3`, SI 1996/186)
 - ✅ Step 1 (Jason 2026-10-23: "agreed order and approach - dont skip"): fix B, A, C, K (+ the s.33(1)(a) and (b) sibling, the titled repeals line)
 - ✅ Step 2: the commencement-sentence catalogue (every commencement sentence in held laws, classed by form × what the reader made of it, real examples as fixtures); fix by count (F–J, D, E and what it finds). Plus the orders catalogue
 - ✅ Step 3: one corpus-wide own-clause re-read (restore point first), golden (+ the HSWA s.78 golden update, asked), the agent on a new seed (rounds 3–4, seed 7; option 1 fixes and the final rewrite: check PASS, golden 27/27)
-- ⬜ Fix until the check passes reliably; record the result
+- ✅ Fix until the check passes reliably; record the result (final check PASS, golden 27/27, the stopping rule met)
 
 ## Dependencies
 
@@ -586,3 +676,6 @@ Every remaining gap then sits in a counted pending class (both catalogues). Late
   - A read-only preview gives `sch` in relation to on 1997-12-17 and 1998-02-01; the other Act's provisions are gone.
   - The catalogues are unchanged; the related suites pass (4,608).
   - The stored rules are not rewritten yet: one order, `--read-orders --law UK_ukpga_1997_64`, which is outside OH&S (ask first).
+- **Stored rules rewritten** (Jason 2026-10-24: "agree 1 and 2"): restore point `cv-s04-before-3114`, then `--read-orders --law UK_ukpga_1997_64` (3 orders, 7 rules). They match the preview.
+
+**Closed 2026-10-24** under the stopping rule. The two CV-07 items are deferred to CV-07.
