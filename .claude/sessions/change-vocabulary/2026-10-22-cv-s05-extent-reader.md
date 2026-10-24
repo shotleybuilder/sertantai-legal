@@ -4,6 +4,18 @@ status: active
 release: v0.1
 opened: '2026-10-22'
 bugs:
+  - pattern: "\"Nothing in this Act extends to Northern Ireland\" read as extending only there (the subject matched inside \"Nothing in this Act\"); \"Scotland or (to) Northern Ireland\", \"England and Wales and to Scotland\" dropped the second place"
+    category: extent
+    module: AmendingLaw.Extent (@subject, @place_list, @not_extends)
+    affected: 9
+    fix: "71ca78a7: the subject never follows \"in \"; \"Nothing in … extends to X\" is a not-extends; \"or\", \"or to\", \"and to\" join places"
+    status: fixed
+  - pattern: "Own-words rule over-applied to extent (mine, in fix round 2): stripping Addition and Substitution left extent statements amended into a law unread (catalogue run 4: 7 read patterns gone)"
+    category: extent
+    module: AmendingLaw.Extent (own_words)
+    affected: 7
+    fix: "71ca78a7: for extent only BlockAmendment is stripped; application keeps the as-made rule (N2). Caught in the run 4 review; run 5 confirms"
+    status: fixed
   - pattern: "Fragments beside the whole text: scoped LAT (#166) fetched section/part/schedule fragments; fetching the body or Schedules later never removed them, and every reader globbed **/data.xml.gz, so the fragments' ids repeated the body's and moved document positions (TCEA 2007 Part 1 read as s.44 only)"
     category: data
     module: ClmlStore / LatStagedParser / the CLML loaders (lat.amending, lat.commencement*, change_collector, lat.vocabulary, lat.extent_*, lat.order_patterns)
@@ -280,4 +292,40 @@ N1–N16 are fixed as logged above, with tests (the reader's tests are 44). Also
   - The cut was checked against the stored LAT of all 24 scoped laws: the section rows match on every one, and only some cross-heading ids differ. In 11 laws a fragment parse had named a shared cross-heading after its own section (h.60 where the whole text gives h.59); the cut gives the whole parse's id. No re-parse was run. Tests pass (8,668).
 - **Duplicates removed:** 40 laws, 116 files: the 24, plus laws where the fetch added Schedules beside schedule fragments. They're archived first in `backend/data/cache/clml-duplicate-fragments-2026-10-24.tar.gz`. 77 laws still hold fragments, each with no body, so the fragments are their only text.
 - **Next:** CV-S04's check and catalogues, and CV-S05's runs, must be re-run; the readers now see Schedules and no duplicates. Ask Jason first.
+
+## CV-S04 re-check after F (2026-10-24, Jason: "Go for it")
+
+- **Commencement check, fresh, seed 7: PASS, our faults 0.** It matches CV-S04's final figures exactly (rows and gaps). `--fresh` re-reads only the family laws' own clauses, which come from LAT rows, not the XML.
+- **Order catalogue:** no example reads differently. About 40 statements changed pattern count (mostly rules → rules+partial), with +2 orders and +2 units. Run in a worktree with the code before F (bfba7f69) and with CV-S04's own code (e5be305f), against today's store, it gives byte-identical output. So no code change caused it; it's data. That points at today's fetch, which gave several commencing laws their Schedules. Two new patterns were reviewed and accepted: an Act "insofar as not already in force" read as rules+all, and SI 1999/803's in-relation-to plus Schedule paragraphs.
+- **Commencement catalogue (13 minutes):** one example reads differently: 1994/21's rules now name s.67(2)–(6), a refinement. Six patterns are gone and three are new:
+  - 1991/65 and 1988/45: now read as left to orders (they were none and unread);
+  - 1968/13: now `clause_date`;
+  - 1971/10, "on the transfer date": now seen but unread, kept `pending` (a defined or event day, the known limit);
+  - 1981/56, "Part III of that Schedule so far as relates to—": now none. This is CV-S04's own R4-N4 (a Part followed by "of Schedule" is never the Act's), so it is the counted pending class and is marked `pending`.
+- **CV-S04 holds.**
+
+## Fix round 2 (2026-10-24), code `71ca78a7`
+
+- A, B, C, D, E, G, H, I, J are fixed as listed in agent round 2, each with a test (`extent_test.exs` "CV-S05 agent round 2", `note_date_test.exs`).
+- **Also fixed:**
+  - "does not extend to NI except so far as it affects other enactments": the default stands, and the amendments follow the enactments they change (`same` "*");
+  - "Sections 240 and 242 … have the same extent as the provisions amended";
+  - qualified list items ("with the exception of", "so much of Part 2 as", "Chapter 3 of Part 1") stay unread.
+- **Found in the catalogue review and fixed:**
+  - "Nothing in this Act extends to Northern Ireland" had been read as extending only there;
+  - "Scotland or to Northern Ireland" and "England and Wales and to Scotland" dropped a place.
+  - Bugs logged.
+- **My regression, caught in the review:** run 4 lost 7 read patterns. H's own-words rule had stripped words amended into the law (Addition, Substitution), as the application rule does. Extent now strips only BlockAmendment. Run 4 also took 60 minutes because it shared the machine.
+- **Catalogue run 5 (58 minutes, `--accept`):**
+  - 19 examples read differently, each reviewed against its text and re-expected;
+  - 27 new patterns reviewed (several from the newly held Schedules, e.g. "Paragraphs 15 to 17 extend only to England and Wales" in a Schedule: `unread:other_provision`, a counted class);
+  - 10 gone, each moved to the reviewed reading.
+- **Not done (open, minor):**
+  - K, qualified items in a parent Act's list (no effect);
+  - ukpga 2011/13, "this section and sections 157 and 158";
+  - "The following have the same extent as the amendments, modifications, enactments … to which they relate" (2012/10) is unread;
+  - "The relevant NCA provisions do not extend to NI" (2013/22 Sch.) reads as none.
+- **Tests:** 8,709 pass.
+- **Run time:** a PENDING session to reduce it is opened at Jason's request, `2026-10-24-cv-run-time.md`.
+- **Restore point** `cv-s05-before-round3` (`extent_rules`, `provision_changes`, `provision_change_claims`). The re-read (cached) and the rebuild are running.
 
