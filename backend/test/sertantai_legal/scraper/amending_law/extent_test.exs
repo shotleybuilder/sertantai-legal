@@ -343,4 +343,144 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
       assert Extent.from_rows(Extent.to_rows(e, "UK_nisr_2016_427")) == e
     end
   end
+
+  describe "CV-S05 catalogue forms" do
+    defp law(law, provisions) do
+      body =
+        Enum.map_join(provisions, "\n", fn {id, text} ->
+          ~s(<P1 id="#{id}"><P1para><Text>#{text}</Text></P1para></P1>)
+        end)
+
+      Extent.read(
+        Doc.new(law, ["<Legislation><Primary><Body>#{body}</Body></Primary></Legislation>"])
+      )
+    end
+
+    test "named provisions' own extent: also (with a default), only, not, named (no default)" do
+      e =
+        law("UK_ukpga_1999_22", [
+          {"section-109",
+           "This Act extends to England and Wales. Sections 32 to 34 and 73(2) extend to Scotland. Section 74 extends to Northern Ireland only. Sections 17 and 27 do not extend to Wales."}
+        ])
+
+      assert Extent.of(e, "s.33") == "E+W+S"
+      assert Extent.of(e, "s.74") == "NI"
+      assert Extent.of(e, "s.27") == "E"
+      assert Extent.of(e, "s.50") == "E+W"
+
+      assert law("UK_ukpga_2023_36", [
+               {"section-45",
+                "Section 44 and sections 46 and 47 extend to England and Wales, Scotland and Northern Ireland."}
+             ])
+             |> Extent.of("s.46") == "E+W+S+NI"
+    end
+
+    test "a comma before the last place: \"England and Wales, and Scotland\"" do
+      e =
+        law("UK_ukpga_2003_33", [
+          {"section-41", "Sections 32(12) and 38 extend only to England and Wales, and Scotland."}
+        ])
+
+      assert Extent.of(e, "s.38") == "E+W+S"
+    end
+
+    test "never another law's, a mention, a qualified or excepted extent" do
+      for text <- [
+            "Sections 128(4) and 132(3) of that Act shall continue to extend to Scotland.",
+            "Part X of, and Schedule 9 to, the 1989 Act shall cease to extend to England and Wales.",
+            "Section 1(2) and Schedule 1 extend to Northern Ireland so far as they amend the House of Commons Disqualification Act 1975.",
+            "Parts 1 to 7 extend to England and Wales only, except that an amendment effected by any of those Parts has the same extent as the provision amended.",
+            "Sections 1 and 2 above, and Schedule 1 to this Act (except paragraph 12), shall not extend to Northern Ireland."
+          ] do
+        assert law("UK_ukpga_2000_1", [{"section-9", text}]).lists == [], text
+      end
+    end
+
+    test "amendments have the same extent as the enactments they change" do
+      e =
+        law("UK_ukpga_1990_42", [
+          {"section-204",
+           "The amendments and repeals in Schedules 20 and 21 have the same extent as the enactments to which they refer."}
+        ])
+
+      assert Extent.of(e, "sch.20.para.3") == :same
+      assert Extent.of(e, "s.10") == nil
+
+      every =
+        law("UK_wsi_2013_755", [
+          {"article-1",
+           "An amendment, repeal or revocation made by this Order has the same extent as the provision to which it relates."}
+        ])
+
+      assert Extent.of(every, "sch.2.para.289") == :same
+
+      # with exceptions after it, or in its subject: not read
+      for text <- [
+            "The amendments made by Schedule 3 have the same extent as the provisions which they amend, except that the amendments made by paragraphs 164 to 176 extend to England only.",
+            "Any amendment made by this Act, other than one falling within subsection (3), has the same extent as the provision to which it relates."
+          ] do
+        assert law("UK_ukpga_2000_1", [{"section-9", text}]).lists == [], text
+      end
+
+      # never "bind the Crown to the same extent", "to the same extent as if"
+      assert law("UK_asp_2004_6", [
+               {"section-55",
+                "The amendments and repeals of enactments made by schedule 7 bind the Crown to the same extent as the enactments amended or repealed."}
+             ]).lists == []
+    end
+
+    test "a Part's own clause: This Part (of this Act) shall (not) extend to …" do
+      e =
+        law("UK_ukpga_1948_26", [
+          {"part-II", ""},
+          {"section-70", "Duties."},
+          {"section-73", "This Part of this Act shall not extend to Scotland."},
+          {"part-III", ""},
+          {"section-80", "Other."}
+        ])
+
+      assert Extent.of(%{e | default: "E+W+S"}, "s.70") == "E+W"
+      assert Extent.of(%{e | default: "E+W+S"}, "s.80") == "E+W+S"
+    end
+
+    test "a list heading with \"namely\", \"and no others\"; a citation clause's list" do
+      e =
+        law("UK_ukpga_1977_38", [
+          {"section-32",
+           "This Act extends to Great Britain. The following provisions of this Act extend to England and Wales only, namely— section 1(1) and section 5."}
+        ])
+
+      assert Extent.of(e, "s.5") == "E+W"
+
+      assert law("UK_ssi_2009_266", [
+               {"regulation-1",
+                "These Regulations— a may be cited as the Example Regulations 2009; b come into force on 1st July 2009; and c extend to Scotland only."}
+             ]).default == "S"
+    end
+
+    test "EPA 1990 s.164: only the following extend to NI; amendments where the enactment extends" do
+      e =
+        law("UK_ukpga_1990_43", [
+          {"section-141", "Imports."},
+          {"section-164",
+           "Only the following provisions of this Act (together with this section) extend to Northern Ireland, namely— section 3(5) to (8); section 62(2)(e) in so far as it relates to importation; . . ., section 141; section 147. Where any enactment amended or repealed by this Act extends to any part of the United Kingdom, the amendment or repeal extends to that part, subject, however, to any express provision in Schedule 15 or 16."}
+        ])
+
+      assert e.default == "E+W+S"
+      assert Extent.of(e, "s.141") == "E+W+S+NI"
+      assert Extent.of(e, "s.164") == "E+W+S+NI"
+      # qualified items aren't widened; every amendment follows its enactment
+      assert Extent.of(e, "s.62(2)(e)") == :same
+      assert Extent.of(e, "sch.15.para.3") == :same
+    end
+
+    test "stored and read back, \"not\" lists included (dropped before CV-S05)" do
+      e = %Extent{
+        default: "E+W+S",
+        lists: [{:not, "S", ["s.70"]}, {:named, "NI", ["s.9"]}, {:same, nil, ["*"]}]
+      }
+
+      assert Extent.from_rows(Extent.to_rows(e, "UK_ukpga_1948_26")).lists == e.lists
+    end
+  end
 end
