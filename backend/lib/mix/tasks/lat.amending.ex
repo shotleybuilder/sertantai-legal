@@ -24,6 +24,7 @@ defmodule Mix.Tasks.Lat.Amending do
 
       mix lat.amending --extents --law UK_ukpga_1990_8
       mix lat.amending --extents --amending UK_ukpga_2005_15
+      mix lat.amending --extents --amending A,B --cached   # the enabling cache only, never a fetch
 
   One amending law at a time, each in its own process: a parsed amending
   law can take gigabytes (a 5-wide run exhausted memory, 2026-10-20).
@@ -48,7 +49,8 @@ defmodule Mix.Tasks.Lat.Amending do
           read: :boolean,
           amending: :string,
           limit: :integer,
-          extents: :boolean
+          extents: :boolean,
+          cached: :boolean
         ]
       )
 
@@ -116,7 +118,7 @@ defmodule Mix.Tasks.Lat.Amending do
     parents =
       for a <- acts,
           not act?(a),
-          p <- SertantaiLegal.Scraper.EnactedBy.EnablingCache.get(a, retry_empty: true),
+          p <- enabling(a, opts[:cached]),
           law = p["law"],
           Extent.Store.reads?(law) and held?(law) and law not in acts,
           uniq: true,
@@ -133,7 +135,7 @@ defmodule Mix.Tasks.Lat.Amending do
       # in its own process: the parsed document goes when it exits
       line =
         Task.async(fn ->
-          e = a |> doc() |> Extent.read() |> with_powers(a)
+          e = a |> doc() |> Extent.read() |> with_powers(a, cached: opts[:cached])
           {:ok, n} = Extent.Store.write(a, e)
 
           stated =
@@ -156,9 +158,15 @@ defmodule Mix.Tasks.Lat.Amending do
   # enabling provisions (its introduction: `EnablingCache`, fetched once
   # on a miss), each placed by its parent Act's own extent clause (read
   # first in this run, `extents/1`). CV-07.
-  defp with_powers(%Extent{default: nil, lists: []} = e, law) do
+  # `cached: true` (the check, `mix lat.extent_check`; `--extents
+  # --cached`): the enabling cache only, never a fetch (CV-S05)
+  @doc false
+  @spec with_powers(Extent.t(), String.t(), keyword()) :: Extent.t()
+  def with_powers(e, law, opts \\ [])
+
+  def with_powers(%Extent{default: nil, lists: []} = e, law, opts) do
     if Extent.Store.reads?(law) and not act?(law) do
-      provisions = SertantaiLegal.Scraper.EnactedBy.EnablingCache.get(law, retry_empty: true)
+      provisions = enabling(law, opts[:cached])
       parents = provisions |> Enum.map(& &1["law"]) |> Enum.uniq()
       e = %{e | powers: Extent.from_powers(provisions, Extent.Store.for_laws(parents))}
 
@@ -170,7 +178,17 @@ defmodule Mix.Tasks.Lat.Amending do
     end
   end
 
-  defp with_powers(e, _law), do: e
+  def with_powers(e, _law, _opts), do: e
+
+  defp enabling(law, true) do
+    case SertantaiLegal.Scraper.EnactedBy.EnablingCache.cached(law) do
+      {:ok, ps} -> ps
+      :none -> []
+    end
+  end
+
+  defp enabling(law, _),
+    do: SertantaiLegal.Scraper.EnactedBy.EnablingCache.get(law, retry_empty: true)
 
   defp act?(law),
     do: (String.split(law, "_") |> Enum.at(1)) in ~w(ukpga asp anaw asc nia apni)
