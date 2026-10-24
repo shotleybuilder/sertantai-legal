@@ -329,3 +329,28 @@ N1–N16 are fixed as logged above, with tests (the reader's tests are 44). Also
 - **Run time:** a PENDING session to reduce it is opened at Jason's request, `2026-10-24-cv-run-time.md`.
 - **Restore point** `cv-s05-before-round3` (`extent_rules`, `provision_changes`, `provision_change_claims`). The re-read (cached) and the rebuild are running.
 
+
+## Re-read, rebuild, check, golden (round 3, 2026-10-24)
+
+- Re-read 383 (`--cached`, 12 min, no fetch, no errors); rebuild 149 (2 min).
+- **Check, seed 8: PASS, our faults 0.**
+  - Basis: clause 103, powers 97, competence 80, lists 41, application 4; none: EU 60, no powers 54, no clause 4, not held 1.
+  - Unread own sentences: 72 laws (67 before: the Schedules now held add text).
+  - Changes: bound by the law 3,449 (3,369 before); provision not named 0 (53 before: fix I).
+- **Golden 27/27.**
+
+## Agent check, seed 8 (round 3): laws 45 OK / 2 WRONG / 3 doubtful; changes 44 OK / 3 WRONG / 3 doubtful — FAIL (5 NEW)
+
+The stored rows match the sample for all 50 laws. Every round-2 fix the sample reaches holds.
+- **NEW-A (checked in the text):** a Westminster Act's "This Act extends to Northern Ireland." (Ministers of the Crown Act 1975 s.9(2)) is read as NI only. It adds NI to Great Britain. So uksi 2020/942's powers come out as NI; they should be E+W+S+NI.
+- **NEW-B:** nisr 2018/17's application, NI, is read from reg.20(2), "… are also revoked to the extent that they apply in Northern Ireland", which is about other laws. The value is harmless here; changes 35, 37 and 38 inherit it.
+- **NEW-C (checked in the code):** `of/2` halts on a `same` list, so an `only` or `named` list naming the same provision never applies. In SI 2013/602 art.1(6)–(7), sch.2 para.76 should be S (the feed agrees).
+- **NEW-D (checked in the code):** the competence-only guard reads the operation from markup or law text only, so an insertion known only from the feed takes competence (nisr 2006/205, change 45).
+- **NEW-E:** a default "subject to paragraphs (2) to (5)" is applied where the paragraph it defers to is unread (SI 2014/469 art.3(5), "same extent as the provisions which they amend, except that—"). The change should follow the enactment (GB).
+- **NEW-F (data):** ukpga 2004/17 and 1978/44 are stored in their repealed version, every section dotted out, so their extent words as made are lost.
+- **NEW-G (minor):** "This Act, except sections …, extends to Scotland only" (LG(S)A 1973 s.238(3)) is unread.
+- **Outside the sample:**
+  - HSCA 2012 s.308(3)(f): the bracketed "(Part 7: consequential provision etc.)" is read as naming Part 7;
+  - LRRA 2006 s.34(3), "The repeals in the Schedule have the same extent …", is stored as `*`, not the Schedule.
+- **Cosmetic:** the check's label `not_named` for a provision in a `same` list.
+- **Known:** P1 ×4, P2 ×5.
