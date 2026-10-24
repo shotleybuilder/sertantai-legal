@@ -65,7 +65,7 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
       "#{length(laws)} family laws with LAT; #{length(changes)} text changes by #{length(amending)} amending laws"
     )
 
-    stored = Store.for_laws(amending)
+    stored = Store.rows_for(amending)
 
     rows =
       for {law, i} <- Enum.with_index(amending, 1) do
@@ -143,7 +143,7 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
         fault =
           cond do
             stored == nil -> "not_stored"
-            rows(stored, law) != rows(e, law) -> "stale"
+            MapSet.new(stored) != rows(e, law) -> "stale"
             true -> nil
           end
 
@@ -171,7 +171,8 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
     end
   end
 
-  # the statement rows as a set: the reading, apart from row order
+  # the reading as the rows `mix lat.amending --extents` writes, as a set
+  # (compared with the rows stored, never through `from_rows/1`: N9)
   defp rows(%Extent{} = e, law),
     do:
       e

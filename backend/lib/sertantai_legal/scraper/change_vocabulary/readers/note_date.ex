@@ -122,7 +122,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
     alias SertantaiLegal.Scraper.AmendingLaw.Extent
 
     law = Change.value(c, :markup, :cited) || Change.value(c, :feed, :by)
-    refs = Change.values(c, :markup, :affecting) |> List.flatten()
+    # the amending provisions the markup names, else the feed's (CV-S05 N16)
+    refs =
+      case Change.values(c, :markup, :affecting) |> List.flatten() do
+        [] -> Change.values(c, :feed, :affecting) |> List.flatten()
+        refs -> refs
+      end
+
     op = Change.value(c, :markup, :operation) || Change.value(c, :law_text, :operation)
 
     with [] <- Change.values(c, :law_text, :extent),
@@ -136,8 +142,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
   end
 
   # no provision named: the law's own extent (its clause, else its powers,
-  # else its legislature's competence)
-  defp of(e, []), do: e.default || e.powers || e.competence
+  # else its legislature's competence) — never where its amendments follow
+  # the enactments they change, nor where it names provisions' extents
+  # without a default (which one isn't known): CV-S05 N16
+  defp of(%{lists: lists} = e, []) do
+    cond do
+      Enum.any?(lists, &match?({:same, _, _}, &1)) -> nil
+      e.default == nil and lists != [] -> nil
+      true -> e.default || e.powers || e.competence
+    end
+  end
 
   defp of(e, refs) do
     case SertantaiLegal.Scraper.AmendingLaw.Extent.of_change(e, deepest(refs)) do

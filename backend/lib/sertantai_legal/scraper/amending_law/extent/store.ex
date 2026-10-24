@@ -46,6 +46,22 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Store do
     end)
   end
 
+  @doc """
+  Each law's stored rows as written (kind, place, items, source_ref), for
+  those of `laws` read — what the check compares the reading now with, so
+  a row `to_rows/2` loses shows (CV-S05 N9).
+  """
+  @spec rows_for([String.t()]) :: %{String.t() => [map()]}
+  def rows_for(laws) do
+    Repo.query!(
+      "SELECT source_law, kind, place, items, source_ref FROM extent_rules WHERE source_law = ANY($1)",
+      [laws]
+    ).rows
+    |> Enum.group_by(&hd/1, fn [_, k, p, i, r] ->
+      %{kind: k, place: p, items: i, source_ref: r}
+    end)
+  end
+
   @doc "Each law's extent read, for those of `laws` read (absent: not read)."
   @spec for_laws([String.t()]) :: %{String.t() => Extent.t()}
   def for_laws(laws) do

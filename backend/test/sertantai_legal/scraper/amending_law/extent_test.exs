@@ -483,4 +483,288 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
       assert Extent.from_rows(Extent.to_rows(e, "UK_ukpga_1948_26")).lists == e.lists
     end
   end
+
+  describe "CV-S05 agent round 1 (N1–N16)" do
+    defp read_xml(law, body),
+      do:
+        Extent.read(
+          Doc.new(law, ["<Legislation><Primary><Body>#{body}</Body></Primary></Legislation>"])
+        )
+
+    defp p1(id, text), do: ~s(<P1 id="#{id}"><P1para><Text>#{text}</Text></P1para></P1>)
+
+    test "N9: lists are stored and read back with no default" do
+      e = %Extent{lists: [{:only, "S", ["s.107"]}]}
+      rows = Extent.to_rows(e, "UK_ukpga_2015_20")
+      refute Enum.any?(rows, &(&1.kind == "none"))
+      assert Extent.from_rows(rows).lists == e.lists
+      assert Extent.to_rows(%Extent{}, "UK_ukpga_2015_20") |> Enum.map(& &1.kind) == ["none"]
+    end
+
+    test "N15: \"This Act shall extend to Northern Ireland with the exception of— (a) the provisions of Part 1\"" do
+      e =
+        read_xml(
+          "UK_ukpga_1987_43",
+          ~s(<Part id="part-I"><P1 id="section-1"><P1para><Text>Liability.</Text></P1para></P1></Part><Part id="part-II">) <>
+            p1(
+              "section-49",
+              "This Act shall extend to Northern Ireland with the exception of— (a) the provisions of Part 1; (b) any provision amending or repealing an enactment which does not so extend."
+            ) <>
+            "</Part>"
+        )
+
+      assert e.default == "E+W+S+NI"
+      assert Extent.of(e, "s.1") == "E+W+S"
+      assert Extent.of(e, "s.49") == "E+W+S+NI"
+    end
+
+    test "N6: \", which subject to … extends to Scotland only— (a) may be cited\"" do
+      e =
+        read_xml(
+          "UK_ukpga_1995_36",
+          p1(
+            "section-105",
+            "This Act, which subject to subsections (8) to (10) below extends to Scotland only— (a) may be cited as the Children (Scotland) Act 1995; and (b) shall come into force on such day as the Secretary of State may appoint."
+          )
+        )
+
+      assert e.default == "S"
+    end
+
+    test "N1, N2: application from the law's own words, never inserted words" do
+      inserting =
+        read_xml(
+          "UK_uksi_2020_1577",
+          ~s(<P1 id="regulation-15"><P1para><Text>After regulation 1 insert—</Text><BlockAmendment><P1 id="regulation-15-1A"><P1para><Text>These Regulations apply to Northern Ireland only.</Text></P1para></P1></BlockAmendment></P1para></P1>)
+        )
+
+      assert inserting.application == nil
+
+      inserted =
+        read_xml(
+          "UK_uksi_2008_2852",
+          ~s(<P1 id="regulation-1A"><P1para><Text><Addition ChangeId="c1">These Regulations apply to Northern Ireland only.</Addition></Text></P1para></P1>)
+        )
+
+      assert inserted.application == nil
+
+      own =
+        read_xml(
+          "UK_uksi_2026_195",
+          p1(
+            "regulation-1",
+            "These Regulations extend to England and Wales and apply in relation to England only."
+          )
+        )
+
+      assert own.application == "E"
+    end
+
+    test "N4, N11: a list heading naming several places; \"of these Regulations\"" do
+      e =
+        read_xml(
+          "UK_ukpga_2022_31",
+          p1(
+            "section-185",
+            "This Act extends to England and Wales. The following provisions extend to England and Wales, Scotland and Northern Ireland— (a) section 92; (b) section 125."
+          )
+        )
+
+      assert Extent.of(e, "s.92") == "E+W+S+NI"
+
+      si =
+        read_xml(
+          "UK_uksi_2025_361",
+          p1(
+            "regulation-2",
+            "The following provisions of these Regulations extend to England and Wales— (a) regulation 3; (b) Schedule 2."
+          )
+        )
+
+      assert Extent.of(si, "reg.3") == "E+W"
+    end
+
+    test "N5, N8: \"Subject to …, Parts 1 to 5 extend …\"; articles and regulations named" do
+      e =
+        read_xml(
+          "UK_ukpga_2006_48",
+          ~s(<Part id="part-1">) <>
+            p1("section-1", "One.") <>
+            ~s(</Part><Part id="part-2">) <>
+            p1("section-20", "Two.") <>
+            ~s(</Part><Part id="part-6">) <>
+            p1(
+              "section-54",
+              "Subject to subsections (2) to (6), Parts 1 to 2 extend to England and Wales only."
+            ) <> "</Part>"
+        )
+
+      assert Extent.of(e, "s.20") == "E+W"
+
+      si =
+        read_xml(
+          "UK_uksi_2016_1142",
+          p1("article-1", "Articles 2 and 6(1) to (3) extend to Scotland only.")
+        )
+
+      assert Extent.of(si, "reg.2") == "S"
+      assert Extent.of(si, "reg.6(2)") == "S"
+    end
+
+    test "N7: \"the preceding provisions of this Act (including the Schedules) do not extend to Northern Ireland\"" do
+      e =
+        read_xml(
+          "UK_ukpga_1998_8",
+          p1(
+            "section-16",
+            "Subject to subsection (2), the preceding provisions of this Act (including the Schedules) do not extend to Northern Ireland."
+          )
+        )
+
+      assert e.default == "E+W+S"
+    end
+
+    test "N10, N13, N14: same application and extent; named Parts or regulations; amendments' own extent" do
+      assert read_xml(
+               "UK_uksi_2020_660",
+               p1(
+                 "regulation-1",
+                 "An amendment made by these Regulations has the same application and extent as the provision amended."
+               )
+             ).lists ==
+               [{:same, nil, ["*"]}]
+
+      e =
+        read_xml(
+          "UK_uksi_2015_21",
+          p1(
+            "regulation-2",
+            "The amendments made by regulations 3, 4 and 6 have the same extent as the provisions amended."
+          )
+        )
+
+      assert e.lists == [{:same, nil, ["reg.3", "reg.4", "reg.6"]}]
+
+      own =
+        read_xml(
+          "UK_uksi_2015_21",
+          p1(
+            "regulation-2",
+            "The amendments made by regulations 8, 12, 17 and 19 extend to England and Wales and Scotland only."
+          )
+        )
+
+      assert Extent.of(own, "reg.12") == "E+W+S"
+    end
+
+    test "N12: references — Schedule paragraphs and Parts, subsection ranges, Schedule ranges" do
+      alias SertantaiLegal.Scraper.AmendingLaw.RefList
+
+      assert RefList.parse("paragraphs 5, 35 and 36 of Schedule 23") ==
+               ["sch.23.para.5", "sch.23.para.35", "sch.23.para.36"]
+
+      assert RefList.parse("sections 26(7) to (10)") == [
+               "s.26(7)",
+               "s.26(8)",
+               "s.26(9)",
+               "s.26(10)"
+             ]
+
+      assert RefList.parse("Parts 4 and 5 of Schedule 13") == ["sch.13.pt.4", "sch.13.pt.5"]
+
+      assert RefList.parse("Schedules 2 to 4, 11 and 12") == [
+               "sch.2",
+               "sch.3",
+               "sch.4",
+               "sch.11",
+               "sch.12"
+             ]
+
+      assert RefList.parse("Schedule 2 (and article 26 so far as relating to it)") == ["sch.2"]
+      assert RefList.parse("regulations 3 to 5") == ["reg.3..reg.5"]
+      assert RefList.covers?("reg.3..reg.5", "reg.4(1)")
+    end
+
+    test "N3: a list inside an enumerated item ends at the parent's next item; qualified items aren't read" do
+      e =
+        read_xml(
+          "UK_ukpga_1977_45",
+          p1(
+            "section-65",
+            "This Act extends to England and Wales. In this Act— (a) Part V extends to Scotland; (b) the following provisions extend to Northern Ireland namely— sections 38 to 40, . . . section 52, subsections (1) and (3) of this section, Schedule 7, in Schedule 14, paragraph 5; (c) section 31 and Schedule 6, so far as they amend any enactment which extends to the Channel Islands, extend to the Channel Islands."
+          )
+        )
+
+      assert [{:named, "NI", refs}] = Enum.filter(e.lists, &match?({_, "NI", _}, &1))
+      assert refs == ["s.38..s.40", "s.52", "sch.7", "sch.14.para.5"]
+    end
+
+    test "a default with plain exceptions after it; otherwise unread" do
+      e =
+        read_xml(
+          "UK_uksi_2007_605",
+          p1("regulation-1", "These Regulations extend to Northern Ireland except regulation 15.")
+        )
+
+      assert {e.default, e.lists} == {"NI", [{:not, "NI", ["reg.15"]}]}
+
+      e =
+        read_xml(
+          "UK_ukpga_2019_3",
+          p1(
+            "section-26",
+            "This Act extends to England and Wales, Scotland and Northern Ireland, except as otherwise provided by subsections (2) to (6)."
+          )
+        )
+
+      assert e.default == "E+W+S+NI"
+
+      e =
+        read_xml(
+          "UK_ukpga_2021_12",
+          p1(
+            "section-20",
+            "This Act extends to England and Wales, Scotland and Northern Ireland, except that section 12 (airport slot allocation) extends to England and Wales and Scotland only."
+          )
+        )
+
+      assert {e.default, Extent.of(e, "s.12")} == {"E+W+S+NI", "E+W+S"}
+
+      e =
+        read_xml(
+          "UK_uksi_2017_304",
+          p1(
+            "regulation-1",
+            "These Regulations extend to Great Britain, except for regulation 3 which extends only to Northern Ireland."
+          )
+        )
+
+      assert Extent.of(e, "reg.3") == "NI"
+
+      # another law's provisions in the exception: unread
+      e =
+        read_xml(
+          "UK_uksi_2025_904",
+          p1(
+            "regulation-1",
+            "These Regulations extend to England and Wales, Scotland and Northern Ireland, except paragraph 23 of Schedule 12A to the Data Protection Act 2018 which extends to England and Wales only."
+          )
+        )
+
+      assert e.default == nil
+    end
+
+    test "a complement is no compound: \"…, but otherwise this Act extends there\"" do
+      e =
+        read_xml(
+          "UK_ukpga_1987_12",
+          p1(
+            "section-32",
+            "Sections 25, 26 and 27 of this Act do not extend to Northern Ireland, but otherwise this Act extends there."
+          )
+        )
+
+      assert e.lists == [{:not, "NI", ["s.25", "s.26", "s.27"]}]
+    end
+  end
 end

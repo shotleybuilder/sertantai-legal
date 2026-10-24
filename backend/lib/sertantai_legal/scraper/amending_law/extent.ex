@@ -70,18 +70,36 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   # the law speaking of itself (an Act, an SI; "The provisions of this
   # Order"), not of some provisions of it ("The following provisions of
   # this Act extend …" is a list)
-  @subject "(?:\\bThe provisions of |(?<!of )\\b)(?:this Act|these Regulations|this Order|these Rules|this Scheme)"
+  # (also "the preceding provisions of this Act (including the Schedules)":
+  # 1998/8 s.16(1), CV-S05 N7)
+  @subject "(?:\\bThe provisions of |\\bthe preceding provisions of |(?<!of )\\b)(?:this Act|these Regulations|this Order|these Rules|this Scheme)(?:\\s*\\(including the Schedules?(?: to it)?\\))?"
   # "England and Wales and Scotland", "England and Wales, Scotland and
   # Northern Ireland"
   # ("… to England and Wales, and Scotland": a comma before the "and", CV-S05)
   @place_list "(?:#{@places})(?:\\s*,\\s*(?:#{@places}))*(?:\\s*,?\\s+and\\s+(?:#{@places}))*"
   # (also "… of this Act, and no others, shall extend to Scotland—", "…
   # extend to Scotland, namely, Part III; …": CV-S05)
-  @heading ~r/The following (?:provisions (?:of this (?:Act|Part) )?)?(?:,?\s*and no others,\s*)?(?:shall\s+)?(?:(?:also\s+)?extend(?:s)? (also )?to (#{@places})( only)?|ha(?:s|ve) the same extent as the enactments? to which (?:it|they) relates?)(?:\s*[—–:-]|,?\s+namely\b[,:—–]?)/iu
+  # (several places: "… extend to England and Wales, Scotland and Northern
+  # Ireland—"; "of these Regulations", "of this Order": CV-S05 N4, N11)
+  @heading ~r/The following (?:provisions (?:of (?:this (?:Act|Part|Order)|these Regulations) )?)?(?:,?\s*and no others,\s*)?(?:shall\s+)?(?:(?:also\s+)?extend(?:s)? (also )?to (#{@place_list})( only)?|ha(?:s|ve) the same extent as the enactments? to which (?:it|they) relates?)(?:\s*[—–:-]|,?\s+namely\b[,:—–]?)/iu
   @extends Regex.compile!(
-             "#{@subject}(?:,\\s*which)?\\s+(?:shall\\s+)?extends?\\s+to\\s+(?:the\\s+whole\\s+of\\s+)?(#{@place_list})(?:\\s+only)?(?!\\s*[—–])",
+             # (", which subject to subsections (8) to (10) below extends to
+             # Scotland only— (a) may be cited as …": the dash lists what the
+             # Act does, 1995/36 s.105(1); never with exceptions after it:
+             # "… with the exception of—", ", except …" — CV-S05 N6, N15)
+             "#{@subject}(?:,\\s*which(?:\\s+subject\\s+to\\s+[^—–,]{1,80}?)?)?\\s+(?:shall\\s+)?extends?\\s+to\\s+(?:the\\s+whole\\s+of\\s+)?((?>#{@place_list}))(?:\\s+only)?(?!\\s*[—–](?!\\s*\\(?a\\)?\\s*may\\s+be\\s+cited))(?!\\s*,?\\s*(?:with\\s+the\\s+exception|except|save\\s+(?:as|that|for)|apart\\s+from|other\\s+than|excluding)\\b)",
              "iu"
            )
+  # the default with exceptions after it ("This Act extends to the whole of
+  # the United Kingdom, except for Part 1, which extends to England and
+  # Wales only"; "… except regulation 15"; "… except as otherwise provided
+  # by subsections (2) to (6)"): read where the exceptions read plainly
+  # (`exceptions/3`), else unread (CV-S05)
+  @extends_exc Regex.compile!(
+                 "#{@subject}(?:,\\s*which)?\\s+(?:shall\\s+)?extends?\\s+to\\s+(?:the\\s+whole\\s+of\\s+)?(?<places>(?>#{@place_list}))(?:\\s+only)?\\s*,?\\s*(?<exc>(?:except|save|apart\\s+from|other\\s+than|excluding)\\b[^.]*)",
+                 "iu"
+               )
+
   # "These Regulations— (a) may be cited as …; (b) come into force …; and
   # (c) extend to Scotland only" (a citation clause's list: CV-S05)
   @cited_list Regex.compile!(
@@ -94,7 +112,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   # extend to Scotland and Northern Ireland": named provisions' own extent
   # (CV-S05)
   @named Regex.compile!(
-           "^(?:\\(\\w+\\)\\s*)?(?<subj>(?:Sections?|Parts?|Schedules?|This\\s+Part|This\\s+section)\\b(?:(?!\\bextends?\\b|\\bextend\\b).)*?)\\s+(?:shall\\s+)?(?<also>also\\s+)?(?<not>(?:do|does|shall)\\s+not\\s+)?extends?\\s+(?<only>only\\s+)?(?<also2>also\\s+)?to\\s+(?:the\\s+whole\\s+of\\s+)?(?<places>#{@place_list})(?<only2>\\s+only)?",
+           # (also articles, regulations, rules; "Subject to …, Parts 1 to 5
+           # extend …"; "The amendments made by regulations 8 and 12 extend
+           # …", "The modifications specified in paragraphs 65 … of Schedule
+           # 2 extend …": CV-S05 N5, N8, N14)
+           "^(?:\\(\\w+\\)\\s*)?(?:Subject\\s+to\\s+[^,—–]{1,120},\\s*)?(?<subj>(?:(?:The\\s+)?(?:amendments?|modifications?|repeals?|revocations?)\\s+(?:made\\s+by|specified\\s+in|in)\\s+)?(?:Sections?|Articles?|Regulations?|Rules?|Parts?|Schedules?|paragraphs?|This\\s+Part|This\\s+section|This\\s+regulation|This\\s+article)\\b(?:(?!\\bextends?\\b|\\bextend\\b).)*?)\\s+(?:shall\\s+)?(?<also>also\\s+)?(?<not>(?:do|does|shall)\\s+not\\s+)?extends?\\s+(?<only>only\\s+)?(?<also2>also\\s+)?to\\s+(?:the\\s+whole\\s+of\\s+)?(?<places>#{@place_list})(?<only2>\\s+only)?",
            "iu"
          )
   # "The amendments and repeals in Schedules 20 and 21 have the same extent
@@ -102,7 +124,17 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   # revocation made by this Order has the same extent as the provision to
   # which it relates": those provisions follow the enactment they change
   # (`:same`; "*" for every one the law makes) — CV-S05
-  @amendments_same ~r/^(?:\(\w+\)\s*)?(?:Subject\s+to[^,]*,\s*)?(?:An?|The|Any|Each)\s+(?:amendments?|repeals?|revocations?|modifications?)(?:\s*,\s*|\s+(?:and|or)\s+)?(?:(?:amendments?|repeals?|revocations?|modifications?)(?:\s*,\s*|\s+(?:and|or)\s+)?)*(?<subj>.*?)\s+(?:has|have|shall\s+have)\s+the\s+same\s+extent\s+as\s+(?:that\s+of\s+)?the\s+(?:enactments?|provisions?|instruments?|legislation)\b(?!\s+as\s+if)/iu
+  @amendments_same ~r/^(?:\(\w+\)\s*)?(?:Subject\s+to[^,]*,\s*)?(?:An?|The|Any|Each)\s+(?:amendments?|repeals?|revocations?|modifications?)(?:\s*,\s*|\s+(?:and|or)\s+)?(?:(?:amendments?|repeals?|revocations?|modifications?)(?:\s*,\s*|\s+(?:and|or)\s+)?)*(?<subj>.*?)\s+(?:(?:has|have|shall\s+have)\s+the\s+same\s+(?:application\s+and\s+)?extent\s+as\s+(?:that\s+of\s+)?|extends?\s+to\s+the\s+same\s+part\s+or\s+parts\s+of\s+the\s+United\s+Kingdom\s+as\s+)the\s+(?:enactments?|provisions?|instruments?|legislation)\b(?!\s+as\s+if)/iu
+
+  # "This Act shall extend to Northern Ireland with the exception of— (a)
+  # the provisions of Part 1; (b) any provision amending … which does not so
+  # extend; …" (CPA 1987 s.49(1)): an Act of the UK Parliament, so Great
+  # Britain and that place; the Parts and provisions named, plainly, not
+  # there (CV-S05 N15)
+  @extends_except Regex.compile!(
+                    "\\bThis\\s+Act\\s+(?:shall\\s+)?extends?\\s+to\\s+(?<places>#{@place_list})\\s+with\\s+the\\s+exception\\s+of\\s*[—–:]\\s*(?<list>[^.]*)",
+                    "iu"
+                  )
 
   # "Only the following provisions of this Act (together with this section)
   # extend to Northern Ireland, namely— section 3(5) to (8); …; Part V; …"
@@ -149,7 +181,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
         not String.contains?(ref, "(") and
           (Regex.match?(@extends, text) or Regex.match?(@not_extends, text) or
              Regex.match?(@except_list, text) or Regex.match?(@heading, text) or
-             Regex.match?(@cited_list, text) or Regex.match?(@only_following, text))
+             Regex.match?(@cited_list, text) or Regex.match?(@only_following, text) or
+             Regex.match?(@extends_except, text) or Regex.match?(@extends_exc, text))
       end)
 
     %__MODULE__{
@@ -157,12 +190,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
       lists:
         apart(clause, clause_ref, doc) ++
           only_following(clause, clause_ref, doc) ++
-          lists(clause, clause_ref) ++ named(doc) ++ amendments_same(doc),
+          extends_except(clause, clause_ref, doc) ++
+          exception_lists(clause, clause_ref, doc) ++
+          lists(clause, clause_ref, doc) ++ named(doc) ++ amendments_same(doc),
       corresponds: Regex.match?(~r/\bcorresponds\s+to\s+the\s+repeal\b/i, clause),
       introduced_by: introductions(doc),
       ref: clause_ref,
       text: if(clause != "", do: clause),
-      application: application(sections, default(clause))
+      application: application(doc, default(clause))
     }
   end
 
@@ -189,6 +224,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
       Regex.match?(@amendments_same, sentence) or Regex.match?(@amendments_where, sentence) ->
         {:list, :same, nil}
 
+      m = Regex.named_captures(@extends_except, sentence) ->
+        {:default, Territory.union(["E+W+S", places(m["places"])])}
+
+      (m = Regex.named_captures(@extends_exc, sentence)) && exceptions(m, nil, nil) != :unread ->
+        {:default, places(m["places"])}
+
       m = Regex.named_captures(@only_following, sentence) ->
         {:default, Territory.subtract("E+W+S+NI", places(m["places"]))}
 
@@ -209,10 +250,19 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   # the law's whole-instrument application clause ("These Regulations …
   # apply in relation to England only"; `ApplicationClause`), as a code:
   # where the changes it makes apply (CV-07)
-  defp application(sections, extent) do
+  # Read from the law's own words only: never the words an amending
+  # instruction inserts into another law ("After regulation 1 insert— …
+  # These Regulations apply to Northern Ireland": a BlockAmendment), nor
+  # words inserted into this law later (an Addition or Substitution: SI
+  # 2008/2852 reg.1A, inserted 2020, never confines the changes it made in
+  # 2008) — CV-S05 N1, N2
+  defp application(doc, extent) do
     clauses =
-      for {ref, text} <- sections,
+      for id <- doc.ids,
+          ref = Order.ref(id),
+          ref != nil,
           not String.contains?(ref, "("),
+          text = doc |> Doc.element(id) |> own_words() |> Doc.lines() |> Enum.join(" "),
           c = ApplicationClause.parse(text),
           c != nil,
           do: c
@@ -225,6 +275,23 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
     end
   end
 
+  @not_own ~w(BlockAmendment Addition Substitution)
+
+  # the element without the words that aren't the law's own as made
+  defp own_words({:xmlElement, _, _, _, _, _, _, _, children, _, _, _} = el) do
+    kept =
+      for child <- children,
+          not match?({:xmlElement, _, _, _, _, _, _, _, _, _, _, _}, child) or
+            local(elem(child, 1)) not in @not_own,
+          do: own_words(child)
+
+    put_elem(el, 8, kept)
+  end
+
+  defp own_words(node), do: node
+
+  defp local(name), do: name |> Atom.to_string() |> String.split(":") |> List.last()
+
   # "These Regulations extend to England and Wales and Scotland" → E+W+S;
   # "This Act does not extend to Northern Ireland" → the rest of the UK
   defp default(clause) do
@@ -235,8 +302,15 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
       m = Regex.run(@extends, clause) ->
         places(Enum.at(m, 1))
 
+      (m = Regex.named_captures(@extends_exc, clause)) &&
+          exceptions(m, nil, nil) != :unread ->
+        places(m["places"])
+
       m = Regex.run(@not_extends, clause) ->
         Territory.subtract("E+W+S+NI", places(List.last(m)))
+
+      m = Regex.named_captures(@extends_except, clause) ->
+        Territory.union(["E+W+S", places(m["places"])])
 
       m = Regex.named_captures(@only_following, no_dots(clause)) ->
         Territory.subtract("E+W+S+NI", places(m["places"]))
@@ -336,8 +410,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   # exceptions ("excluding section 35"), nor a qualified or excepted extent
   # ("… so far as they amend—", "…, except that— …"): those stay unread
   # (CV-S05, counted in the catalogue)
-  @named_not_plain ~r/\b(?:of|to),?\s+(?:that|the\s+\d{4}|the\s+[A-Z][\w()',\s-]*?\s+(?:Act|Order|Regulations)(?:\s+\d{4})?)\b(?!\s+(?:Act|Order)\s+(?:extends?|shall))|\b(?:continue|cease)s?\s+to\b|\bso\s+much\s+of\b|\bas\s+relates?\b|\bso\s+far\s+as\b|\bin\s+so\s+far\b|\binsofar\b|\bexcept\b|\bexcluding\b|\bother\s+than\b|\bapart\s+from\b|\bwhich\b|[;:—–]/iu
-  @named_tail ~r/^\s*[,(]?\s*(?:but\s+only\s+|only\s+)?(?:so\s+far\s+as|in\s+so\s+far\s+as|insofar\s+as|to\s+the\s+extent|for\s+the\s+purposes?|except|apart\s+from|other\s+than|excluding|in\s+relation\s+to|as\s+respects|subject\s+to)\b/iu
+  @named_not_plain ~r/\b(?:of|to),?\s+(?:that|the\s+\d{4}|the\s+[A-Z][\w()',\s-]*?\s+(?:Act|Order|Regulations)(?:\s+\d{4})?)\b(?!\s+(?:Act|Order)\s+(?:extends?|shall))|\b(?:continue|cease)s?\s+to\b|\bso\s+much\s+of\b|\bcorresponding\b|\btogether\s+with\b|\bas\s+relates?\b|\bso\s+far\s+as\b|\bin\s+so\s+far\b|\binsofar\b|\bexcept\b|\bexcluding\b|\bother\s+than\b|\bapart\s+from\b|\bwhich\b|[;:—–]/iu
+  @named_tail ~r/^\s*[,(]?\s*(?:but\s+only\s+|only\s+)?(?:so\s+far\s+as|in\s+so\s+far\b|insofar\b|to\s+the\s+extent|for\s+the\s+purposes?|except|apart\s+from|other\s+than|excluding|in\s+relation\s+to|as\s+respects|subject\s+to)\b/iu
   @named_excepted ~r/\b(?:except|excluding|other\s+than|apart\s+from)\b/iu
 
   defp plain_named?(m, s) do
@@ -355,8 +429,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
     # 12)", "(other than sections 37 and 38)") still is an exception
     bare = String.replace(m["subj"], ~r/\((?:[^()]|\([^()]*\))*\)/u, "")
 
+    # (a complement is no compound: ", but otherwise this Act extends
+    # there"; "; but this Act does not otherwise so extend")
     String.length(m["subj"]) <= 250 and not Regex.match?(@named_not_plain, bare) and
-      not Regex.match?(@named_excepted, m["subj"]) and not Regex.match?(@named_tail, tail)
+      not Regex.match?(@named_excepted, m["subj"]) and not Regex.match?(@named_tail, tail) and
+      not Regex.match?(
+        ~r/\balso\s+extends?\b|[;,]\s*but\b(?!\s+(?:otherwise|the\s+other\s+provisions|this\s+Act\s+does\s+not\s+otherwise|not\s+otherwise))/iu,
+        tail
+      )
   end
 
   defp named_kind(m) do
@@ -374,6 +454,118 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   # (never with exceptions after it: "…, except that nothing extends to
   # Northern Ireland"; "made by the following provisions— (a) section 10;
   # …": those listed)
+  defp exception_lists(clause, clause_ref, doc) do
+    with nil <- Regex.run(@extends, clause),
+         m when m != nil <- Regex.named_captures(@extends_exc, clause),
+         lists when is_list(lists) <- exceptions(m, clause_ref, doc) do
+      lists
+    else
+      _ -> []
+    end
+  end
+
+  # the exceptions after a default: [] (stated elsewhere), lists, or :unread
+  defp exceptions(%{"exc" => exc, "places" => default_places}, clause_ref, doc) do
+    exc = String.trim(exc)
+
+    cond do
+      # stated elsewhere: the named provisions' own statements are read
+      exc =~
+          ~r/^(?:except|save)\s+(?:as|where|in\s+so\s+far\s+as)\s+(?:otherwise\s+)?(?:expressly\s+)?(?:provided|stated|specified|mentioned)\b/iu ->
+        []
+
+      # "except for Part 1, which extends to England and Wales only"
+      m =
+          Regex.run(
+            ~r/^(?:except|save)\s+(?:for\s+)?(.+?),?\s+which\s+(?:shall\s+)?extends?\s+(?:only\s+)?to\s+((?>#{@place_list}))(?:\s+only)?\s*$/iu,
+            exc
+          ) ->
+        [_, subj, list] = m
+
+        # never another law's provisions ("paragraph 23 of Schedule 12A to
+        # the Data Protection Act 2018")
+        if subj =~
+             ~r/\b(?:of|to)\s+the\s+[A-Z][\w()',\s-]*?\s+(?:Act|Order|Regulations)(?:\s+\d{4})?/u,
+           do: :unread,
+           else: with_refs(subj, clause_ref, doc, &[{:only, places(list), &1}])
+
+      # "except that section 12 (…) extends to England and Wales and Scotland only"
+      m = Regex.run(~r/^except\s+that\s+(.+)$/iu, exc) ->
+        rest = Enum.at(m, 1)
+
+        with n when n != nil <-
+               Regex.named_captures(
+                 @named,
+                 String.capitalize(String.first(rest)) <> String.slice(rest, 1..-1//1)
+               ),
+             true <- plain_named?(n, rest),
+             refs =
+               if(doc,
+                 do:
+                   Enum.uniq(
+                     RefList.parse(n["subj"], clause_ref) ++ parts(n["subj"], doc, clause_ref)
+                   ),
+                 else: [:any]
+               ),
+             [_ | _] <- refs do
+          [{named_kind(n), places(n["places"]), refs}]
+        else
+          _ -> :unread
+        end
+
+      # "except regulation 15": those don't extend there
+      m =
+          Regex.run(
+            ~r/^(?:except|save|apart\s+from|other\s+than|excluding)\s+(?:for\s+)?(.+?)\s*$/iu,
+            exc
+          ) ->
+        subj = Enum.at(m, 1)
+
+        if subj =~ ~r/\b(?:so\s+far|which|where|that|of\s+the\s+[A-Z]|to\s+the\s+[A-Z])/u,
+          do: :unread,
+          else: with_refs(subj, clause_ref, doc, &[{:not, places(default_places), &1}])
+
+      true ->
+        :unread
+    end
+  end
+
+  # the provisions named, plainly; :unread where none are read (no doc: a
+  # sentence alone, `default/1` — read when they name any provision)
+  defp with_refs(subj, _clause_ref, nil, _fun),
+    do:
+      if(
+        subj =~ ~r/\b(?:sections?|regulations?|articles?|rules?|Parts?|Schedules?|paragraphs?)\b/i,
+        do: [],
+        else: :unread
+      )
+
+  defp with_refs(subj, clause_ref, doc, fun) do
+    case Enum.uniq(RefList.parse(subj, clause_ref) ++ parts(subj, doc, clause_ref)) do
+      [] -> :unread
+      refs -> fun.(refs)
+    end
+  end
+
+  defp extends_except(clause, clause_ref, doc) do
+    case Regex.named_captures(@extends_except, clause) do
+      nil ->
+        []
+
+      m ->
+        refs =
+          for item <- String.split(m["list"], ";"),
+              not Regex.match?(
+                ~r/\b(?:so\s+far|in\s+so\s+far|any\s+(?:other\s+)?provision|which|except)\b/iu,
+                item
+              ),
+              ref <- RefList.parse(item, clause_ref) ++ parts(item, doc, clause_ref),
+              do: ref
+
+        if refs == [], do: [], else: [{:not, places(m["places"]), Enum.uniq(refs)}]
+    end
+  end
+
   # repealed words' dots (". . .") are no sentence's end
   defp no_dots(text), do: String.replace(text, ~r/(?:\.\s*){2,}/u, " ")
 
@@ -410,7 +602,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
         ~r/\b(?:other\s+than|apart\s+from|except|save|excluding)\b/iu,
         m["subj"]
       ),
-      refs = same_refs(m["subj"], tail, ref),
+      refs = same_refs(m["subj"], tail, ref, doc),
       refs != :none,
       uniq: true,
       do: {:same, nil, refs}
@@ -421,7 +613,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
           do: {:same, nil, ["*"]}
   end
 
-  defp same_refs(subj, tail, ref) do
+  defp same_refs(subj, tail, ref, doc) do
     cond do
       subj =~ ~r/\bfollowing\b/i ->
         case tail |> String.split(~r/[—–:]/u, parts: 2) do
@@ -429,18 +621,38 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
           _ -> :none
         end
 
+      # "made by Parts 4, 5 and 6", "made by regulations 3, 4, 6": those
+      # (CV-S05 N13); a subject naming provisions not read is no "*"
+      subj =~
+          ~r/\b(?:sections?|regulations?|articles?|rules?|Parts?|Schedules?|paragraphs?)\s+[\dIVXL]/i ->
+        case Enum.uniq(RefList.parse(subj, ref) ++ parts(subj, doc, ref)) do
+          [] -> :none
+          refs -> refs
+        end
+
       true ->
-        with [] <- RefList.parse(subj, ref), do: ["*"]
+        ["*"]
     end
   end
 
   # the sections of the Parts named ("Part III", "Parts I and II"; "this
   # Part": the one holding the clause), from the document
   defp parts(text, doc, clause_ref) do
+    # (never a Schedule's Part: "Part 2 of Schedule 10", "Parts 4 and 5 of
+    # Schedule 13" — the list matched whole, CV-S05)
     named =
-      case Regex.run(~r/\bParts?\s+([IVXLC\d]+[A-Z]*(?:\s*(?:,|and)\s*[IVXLC\d]+[A-Z]*)*)/u, text) do
+      case Regex.run(
+             ~r/(?<![Ii]n\s)\bParts?\s+((?>[IVXLC\d]+[A-Z]*(?:\s*(?:,|and|to)\s*[IVXLC\d]+[A-Z]*)*))\b(?!\s+(?:of|to)\s+(?:that\s+|the\s+)?Schedule)/u,
+             text
+           ) do
         [_, list] ->
-          Regex.scan(~r/[IVXLC\d]+[A-Z]*/u, list) |> List.flatten() |> Enum.map(&"part-#{&1}")
+          # "Part 1" where the document's ids are "part-I", and the reverse
+          # (CPA 1987 s.49(1): CV-S05 N15)
+          for n <- part_numbers(list),
+              id <- ["part-#{n}", "part-#{other_numeral(n)}"],
+              Doc.element(doc, id) != nil,
+              uniq: true,
+              do: id
 
         nil ->
           []
@@ -455,11 +667,72 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
         el = Doc.element(doc, part),
         el != nil,
         id <- doc.ids,
-        id =~ ~r/^section-\d+[A-Z]*$/,
+        id =~ ~r/^(?:section|regulation|article|rule)-\d+[A-Z]*$/,
         holds_id?(doc, part, id),
         ref = Order.ref(id),
         uniq: true,
         do: ref
+  end
+
+  # "I and III", "1 to 5" (each between: CV-S05 N5), "IV to VI"
+  defp part_numbers(list) do
+    list
+    |> String.split(~r/\s*(?:,|\band\b)\s*/u, trim: true)
+    |> Enum.flat_map(fn piece ->
+      case Regex.run(~r/^([IVXLC\d]+)\s+to\s+([IVXLC\d]+)$/u, String.trim(piece)) do
+        [_, a, b] ->
+          roman? = a =~ ~r/^[IVXLC]+$/
+
+          {x, y} =
+            if roman?,
+              do: {arabic(a), arabic(b)},
+              else: {String.to_integer(a), String.to_integer(b)}
+
+          for i <- x..y//1, do: if(roman?, do: roman(i), else: Integer.to_string(i))
+
+        nil ->
+          List.flatten(Regex.scan(~r/[IVXLC\d]+[A-Z]*/u, piece))
+      end
+    end)
+  end
+
+  # 1 ↔ I, 12 ↔ XII (a letter suffix kept: "2A" ↔ "IIA")
+  defp other_numeral(n) do
+    case Regex.run(~r/^(\d+)([A-Z]*)$/, n) do
+      [_, d, suffix] ->
+        roman(String.to_integer(d)) <> suffix
+
+      nil ->
+        case Regex.run(~r/^([IVXLC]+)([A-Z]?)$/, n) do
+          [_, r, suffix] -> Integer.to_string(arabic(r)) <> suffix
+          nil -> n
+        end
+    end
+  end
+
+  @romans [
+    {100, "C"},
+    {90, "XC"},
+    {50, "L"},
+    {40, "XL"},
+    {10, "X"},
+    {9, "IX"},
+    {5, "V"},
+    {4, "IV"},
+    {1, "I"}
+  ]
+
+  defp roman(0), do: ""
+
+  defp roman(n),
+    do: with({v, r} <- Enum.find(@romans, fn {v, _} -> v <= n end), do: r <> roman(n - v))
+
+  defp arabic(r) do
+    r
+    |> String.graphemes()
+    |> Enum.map(&%{"I" => 1, "V" => 5, "X" => 10, "L" => 50, "C" => 100}[&1])
+    |> Enum.chunk_every(2, 1, [0])
+    |> Enum.reduce(0, fn [a, b], acc -> if a < b, do: acc - a, else: acc + a end)
   end
 
   defp holds?(doc, part, ref) do
@@ -490,30 +763,50 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   # only— …", "… have the same extent as the enactments to which they
   # relate— …", up to the next such heading
 
-  defp lists(clause, clause_ref) do
+  defp lists(clause, clause_ref, doc) do
     parts = Regex.split(@heading, clause, include_captures: true, trim: true)
 
     parts
     |> Enum.chunk_every(2, 1, :discard)
     |> Enum.flat_map(fn [head, body] ->
       case Regex.run(@heading, head) do
-        nil -> []
-        match -> [{kind(match), place(match), refs(cut(body), clause_ref)}]
+        nil ->
+          []
+
+        match ->
+          case list_refs(own_list(cut(body)), clause_ref, doc) do
+            [] -> []
+            refs -> [{kind(match), place(match), refs}]
+          end
       end
     end)
   end
 
+  # (no "also" or "only": widens a default, else decides — `:named`,
+  # "The following provisions of these Regulations extend to England and
+  # Wales— …" with no default: SI 2025/361, CV-S05)
   defp kind([whole | _]) do
     cond do
       whole =~ ~r/same extent/i -> :same
       whole =~ ~r/\bonly\b/i -> :only
-      true -> :also
+      whole =~ ~r/\balso\b/i -> :also
+      true -> :named
     end
   end
 
+  # a list inside an enumerated item ("In this Act— … b the following
+  # provisions extend to Northern Ireland namely— sections 38 to 40, …;c
+  # section 31 …"): a body not starting with its own labels ends at the
+  # parent's next one (1977/45 s.65(10): CV-S05 N3)
+  defp own_list(body) do
+    if body =~ ~r/^\s*\(?[a-z]\)?\s/u,
+      do: body,
+      else: body |> String.split(~r/;\s*(?:and\s+)?\(?[a-z]\)?\s+(?=[A-Za-z])/u, parts: 2) |> hd()
+  end
+
   defp place([whole | _]) do
-    case Regex.run(~r/\bto (#{@places})\b/i, whole) do
-      [_, p] -> @codes[String.downcase(p)]
+    case Regex.run(~r/\bto (#{@place_list})/iu, whole) do
+      [_, list] -> places(list)
       nil -> nil
     end
   end
@@ -527,7 +820,23 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
       |> hd()
       |> String.replace(~r/\.\s*\d+[A-Z]?\s*$/u, ".")
 
-  defp refs(text, clause_ref), do: RefList.parse(text, clause_ref)
+  # a list's items, each read plainly: never a qualified item ("so far as
+  # …"), another law's provisions ("… of the Prison Act 1952"), nor a
+  # subsection "of this section" (1977/45 s.65(10): CV-S05 N3)
+  defp list_refs(text, clause_ref, doc) do
+    for item <-
+          String.split(
+            no_dots(text),
+            ~r/;|,\s*(?=(?:and\s+)?(?:[a-z]|[ivx]{2,4})\s)|,\s*(?=(?:and\s+)?(?:sections?|subsections?|Schedules?|in\s+Schedule|Parts?|paragraphs?\s+[^,;]*?\bof\s+Schedule|regulations?|articles?)\b)/u
+          ),
+        not Regex.match?(
+          ~r/\b(?:so\s+far\s+as|in\s+so\s+far|insofar|except|to\s+the\s+extent|of\s+this\s+section|(?:of|to),?\s+the\s+[A-Z][\w()',\s-]*?\s+(?:Act|Order|Regulations)\s+\d{4})\b/u,
+          item
+        ),
+        ref <- RefList.parse(item, clause_ref) ++ parts(item, doc, clause_ref),
+        uniq: true,
+        do: ref
+  end
 
   # each Schedule's introducing section (`Amendment.Reader.references/1`,
   # the one reader of it), as refs: "sch.7" => "s.111"
@@ -562,19 +871,23 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
       }
     end
 
-    clause =
-      case e.default do
-        nil ->
-          [row.("none", nil, [], nil, nil, 0)]
+    # the lists are kept with no default too ("Sections 107 and 116A extend
+    # to Scotland only" alone): before CV-S05 (N9) only a "none" row was
+    # written then, and the lists were lost
+    lists =
+      e.lists
+      |> Enum.with_index(1)
+      |> Enum.map(fn {{kind, place, items}, i} ->
+        row.(to_string(kind), place, items, e.ref, nil, i)
+      end)
 
-        d ->
-          [row.("default", d, [], e.ref, e.text, 0)] ++
-            (e.lists
-             |> Enum.with_index(1)
-             |> Enum.map(fn {{kind, place, items}, i} ->
-               row.(to_string(kind), place, items, e.ref, nil, i)
-             end)) ++
-            if(e.corresponds, do: [row.("corresponds", nil, [], e.ref, nil, 0)], else: [])
+    corresponds = if e.corresponds, do: [row.("corresponds", nil, [], e.ref, nil, 0)], else: []
+
+    clause =
+      case {e.default, lists} do
+        {nil, []} -> [row.("none", nil, [], nil, nil, 0)] ++ corresponds
+        {nil, _} -> lists ++ corresponds
+        {d, _} -> [row.("default", d, [], e.ref, e.text, 0)] ++ lists ++ corresponds
       end
 
     applies =

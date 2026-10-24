@@ -174,7 +174,9 @@ defmodule Mix.Tasks.Lat.Amending do
       # legislature's competence
       if e.powers, do: e, else: %{e | competence: Extent.competence(law)}
     else
-      e
+      # a devolved legislature's Act stating none extends as far as its
+      # competence too (asp, nia, anaw, asc; CV-S05: agent round 1)
+      if act?(law), do: %{e | competence: Extent.competence(law)}, else: e
     end
   end
 

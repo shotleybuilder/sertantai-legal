@@ -15,8 +15,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
   @spec parse(String.t(), String.t() | nil) :: [String.t()]
   def parse(text, self \\ nil) do
     text
+    # a qualified aside names nothing whole ("Schedule 2 (and article 26 so
+    # far as relating to it)": CV-S05 N14)
+    |> String.replace(
+      ~r/\([^()]*\b(?:so\s+far|in\s+so\s+far|insofar|to\s+the\s+extent)\b[^()]*\)/iu,
+      " "
+    )
     |> String.split(
-      ~r/(?:^|[,;]|\s)\s*(?:and\s+)?(?=\b(?:this section|(?<!this\s)sections?|(?<!of\s)Schedules?|Part\s+\d)\b)/iu,
+      ~r/(?:^|[,;]|\s)\s*(?:and\s+)?(?=\b(?:this section|(?<!this\s)(?:sections?|regulations?|articles?|rules?)|(?<!of\s)Schedules?|Parts?\s+[\dIVXL]+[A-Z]*(?:\s*(?:,|and)\s*[\dIVXL]+[A-Z]*)*\s+of\s+Schedule|paragraphs?\s+[^;]*?\bof\s+Schedule)\b)/iu,
       trim: true
     )
     |> Enum.flat_map(&items(&1, self))
@@ -29,42 +35,79 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
       chunk =~ ~r/^\s*this section/i ->
         [self]
 
-      m = Regex.run(~r/^\s*Part\s+(\d+[A-Z]*)\s+of\s+Schedule\s+(\d+[A-Z]*)/i, chunk) ->
-        [_, part, sch] = m
-        ["sch.#{sch}.pt.#{part}"]
+      # "Parts 4 and 5 of Schedule 13" (CV-S05 N12)
+      m =
+          Regex.run(
+            ~r/^\s*Parts?\s+([\dIVXL]+[A-Z]*(?:\s*(?:,|and)\s*[\dIVXL]+[A-Z]*)*)\s+of\s+Schedule\s+(\d+[A-Z]*)/i,
+            chunk
+          ) ->
+        [_, parts, sch] = m
+        for [p] <- Regex.scan(~r/[\dIVXL]+[A-Z]*/, parts), do: "sch.#{sch}.pt.#{p}"
+
+      # "paragraphs 5, 35 and 41 to 43 of Schedule 23" (CV-S05 N12)
+      m = Regex.run(~r/^\s*paragraphs?\s+(.*?)\s+of\s+Schedule\s+(\d+[A-Z]*)/i, chunk) ->
+        [_, list, sch] = m
+        numbered(list, "sch.#{sch}.para.")
 
       chunk =~ ~r/^\s*Schedules?\b/i ->
-        # the item ends at its full stop ("Schedules 1, 3, 5 and 15.")
-        item = chunk |> String.split(~r/\.(?:\s|$)/u, parts: 2) |> hd()
-        for [_, n] <- Regex.scan(~r/\b(\d+[A-Z]*)\b/, item), do: "sch.#{n}"
+        # the item ends at its full stop or a bracket ("Schedules 1, 3, 5
+        # and 15.", "Schedule 2 (and article 26 …)": CV-S05 N14)
+        item = chunk |> String.split(~r/\.(?:\s|$)|\(/u, parts: 2) |> hd()
 
-      chunk =~ ~r/^\s*sections?\b/i ->
-        section_items(chunk)
+        case Regex.run(~r/^\s*Schedule\s+(\d+[A-Z]*)\s*,\s*paragraphs?\s+(.*)$/i, item) do
+          # "Schedule 14, paragraph 5"
+          [_, sch, list] -> numbered(list, "sch.#{sch}.para.")
+          # "Schedules 2 to 9, 11 and 12": each between (CV-S05)
+          nil -> schedule_numbers(item)
+        end
+
+      m = Regex.run(~r/^\s*(sections?|regulations?|articles?|rules?)\b/i, chunk) ->
+        prefix = if m |> Enum.at(1) |> String.downcase() =~ ~r/^section/, do: "s", else: "reg"
+        numbered(String.replace(chunk, ~r/^\s*\w+\s*/u, ""), prefix <> ".")
 
       true ->
         []
     end
   end
 
-  # "sections 60 to 68, 70, 107(1) and (4)": ranges as "s.60..s.68",
-  # subsections on the number before them
-  defp section_items(chunk) do
-    chunk
-    |> String.replace(~r/^\s*sections?\s*/i, "")
+  defp schedule_numbers(item) do
+    item
+    |> String.replace(~r/^\s*Schedules?\s*/iu, "")
+    |> String.split(~r/\s*(?:,|\band\b)\s*/u, trim: true)
+    |> Enum.flat_map(fn piece ->
+      case Regex.run(~r/^(\d+)\s+to\s+(\d+)$/, String.trim(piece)) do
+        [_, a, b] -> for i <- String.to_integer(a)..String.to_integer(b)//1, do: "sch.#{i}"
+        nil -> for [_, n] <- Regex.scan(~r/\b(\d+[A-Z]*)\b/, piece), do: "sch.#{n}"
+      end
+    end)
+  end
+
+  # "60 to 68, 70, 107(1) and (4), 26(7) to (10)": ranges as "x.60..x.68",
+  # subsections on the number before them, a subsection range spelt out
+  defp numbered(list, prefix) do
+    list
     |> String.split(~r/\s*(?:,|\band\b)\s*/u, trim: true)
     |> Enum.reduce({[], nil}, fn piece, {acc, last} ->
       cond do
+        # "26(7) to (10)" → each subsection (CV-S05 N12)
+        m = Regex.run(~r/^(\d+[A-Z]*)\((\d+)\)\s+to\s+\((\d+)\)/, piece) ->
+          [_, n, a, b] = m
+
+          {acc ++
+             for(i <- String.to_integer(a)..String.to_integer(b)//1, do: "#{prefix}#{n}(#{i})"),
+           n}
+
         m = Regex.run(~r/^(\d+[A-Z]*)(\([^)]+\))*\s+to\s+(\d+[A-Z]*)/, piece) ->
           [_, a | rest] = m
-          {acc ++ ["s.#{a}..s.#{List.last(rest)}"], a}
+          {acc ++ ["#{prefix}#{a}..#{prefix}#{List.last(rest)}"], a}
 
         m = Regex.run(~r/^(\d+[A-Z]*)((?:\([^)]+\))*)/, piece) ->
           [_, n, sub] = m
-          {acc ++ ["s.#{n}#{sub}"], n}
+          {acc ++ ["#{prefix}#{n}#{sub}"], n}
 
         last && Regex.match?(~r/^\(/, piece) ->
           [subs] = Regex.run(~r/^(?:\([^)]+\))+/, piece)
-          {acc ++ ["s.#{last}#{subs}"], last}
+          {acc ++ ["#{prefix}#{last}#{subs}"], last}
 
         true ->
           {acc, last}
@@ -77,10 +120,15 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
   @spec covers?(String.t(), String.t()) :: boolean()
   def covers?(item, ref) do
     case String.split(item, "..") do
-      ["s." <> a, "s." <> b] ->
-        case Regex.run(~r/^s\.(\d+)/, ref) do
-          [_, n] -> number(a) <= String.to_integer(n) and String.to_integer(n) <= number(b)
-          nil -> false
+      # a range of any kind: "s.60..s.68", "reg.3..reg.9",
+      # "sch.22.para.1..sch.22.para.5"
+      [lo, hi] ->
+        with [_, prefix, a] <- Regex.run(~r/^(.*?)(\d+)[A-Z]*$/, lo),
+             [_, ^prefix, b] <- Regex.run(~r/^(.*?)(\d+)[A-Z]*$/, hi),
+             [_, n] <- Regex.run(~r/^#{Regex.escape(prefix)}(\d+)/, ref) do
+          number(a) <= String.to_integer(n) and String.to_integer(n) <= number(b)
+        else
+          _ -> false
         end
 
       [single] ->
