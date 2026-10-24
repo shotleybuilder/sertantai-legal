@@ -9,12 +9,14 @@ bugs:
     module: change_vocabulary/readers/markup.ex (note: attr(attrs, :CommentaryRef) only, ~line 292)
     affected: 201 ChangeIds in 44 stored laws (all legacy ids); seen as OH&S #27, #39 (UK_ukpga_1961_34 s.29, s.4)
     fix: "Fall back to the first child CommentaryRef/@Ref of the change's occurrences"
+    issue: 187
     status: open
   - pattern: "An effect id held only in a change's CommentaryRef (ChangeId not key-…) is not used as the key, so a feed-recorded effect is treated as legacy"
     category: markup reader (design question for Jason)
     module: change_vocabulary/readers/markup.ex (key rule)
     affected: 5,598 elements in 54 stored laws (uksi/1996/1527: 2,020; ukpga/1997/50: 1,197); seen as OH&S #34
     fix: "Jason to decide whether the key falls back to the note's effect id"
+    issue: 188
     status: open
 ---
 
@@ -36,8 +38,8 @@ Each item gets its design section, files and done check before it is built (`pla
 - ❌ 6. Blind second agent in `markup-reader-check` (then `feed-reader-check`) — not adopted: item 7 verdict not useful. Skills unchanged. — designed below; build-lane clearance given 2026-10-24 (not running either skill; CV-S04 uses lat.commencement_check); skill edits wait for item 7's verdict. Trial not to overlap CV-S04's rebuild/golden (build lane will signal start and finish).
 - ✅ 7. Trial: rules-aware and blind agents on one OH&S seed-2 sample — run on `bed7d2cc`; verdict not useful (blind found nothing rules-aware passed); 2 reader defects logged., after CV-S04 commits and its rebuild/golden finish — designed below. Jason's go-ahead given 2026-10-24. Lane build's run finished (check PASS, golden 27/27) but its reader code (lat_ref.ex, used by markup_placement.ex) is uncommitted; Jason: wait for the commit. Lane build asked to signal the commit hash.
 - ❌ 8. A/B runs — condition not met (item 7 not useful). Was: **only if item 7 is useful**: a second blind run on the same sample; adopt only if the runs differ on >5/50 items (design below); otherwise ❌ with the count. Ask Jason first.
-- ⬜ 9. Drift check for judgement cases only (guides and skill rule sections against code) — **only if** items 6–7 or a reviewer run find a guide or skill rule section making a false claim about the code (file + claim); otherwise ❌ with that evidence. Design before building: name, scope list, method, hook in `.claude/commands/session-close.md`.
-- ⬜ 10. CLAUDE.md "Gemini Review as Acceptance Gate" names the standards and the reviewer subagent.
+- ❌ 9. Drift check — dropped (Jason 2026-10-24): its condition never triggered; no guide or skill rule section was caught making a false claim about the code. The one drift case found (skills README) was fixed at source in item 3.
+- ✅ 10. CLAUDE.md "Review as Acceptance Gate" (renamed from "Gemini Review as …") names the standards, the `reviewer` subagent, `gemini-review --standard`, saving and triage.
 
 ## Dependencies
 
@@ -194,6 +196,8 @@ Under 900 words.
 | #6, #18 | operation unsure: Addition in markup, note says "repealed (E.W.S.)" / "Words substituted" | OK, markup carried, note out of scope | markup and notes checked | decided already: notes are hints; markup's own correctness is CV-S08 |
 | #7 | `article-49-3` → two rows, 49(3) and 49(4) | OK | legislation.gov.uk gives P2 "4" the id `article-49-3`; rows named by Pnumber (CV-S03 fix I); the change sits in 49(3) | known, **blind wrong** |
 | #34 | agrees with reader | doubtful, NEW-2: effect id only in CommentaryRef → key legacy | 5,598 such elements in 54 laws | rules-aware only |
+
+Both reader defects raised as GitHub issues: #187 (child CommentaryRef), #188 (key from CommentaryRef, decision needed).
 
 **Verdict: not useful (❌).** The blind agent found no reader-wrong or rule question that the rules-aware agent marked OK. It independently confirmed NEW-1, which is worth knowing, but the rules-aware agent found everything it found plus NEW-2. NEW-2 needed the key rule to see, and a rules-blind reader can't see a gap in a rule it was never told. Cost: blind about 118k tokens, rules-aware about 142k.
 
