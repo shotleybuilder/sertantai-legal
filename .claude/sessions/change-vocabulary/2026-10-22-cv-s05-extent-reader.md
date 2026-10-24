@@ -197,3 +197,36 @@ Built on the CV-S04 shape (`Commencement.SentencePatterns`, `mix lat.commencemen
     | feed | 1 |
 
 - **Golden 27/27.**
+
+## Agent check, seed 5 (round 1): laws 31 OK / 15 WRONG / 4 doubtful; changes 43 OK / 7 WRONG — FAIL (16 NEW)
+
+NEW defects. N9 and N15 were verified by me (code and stored rows); the rest are as the agent reports them, with its evidence:
+- **N1:** an amending instruction's inserted words are read as the law's own application (2020/1577 reg.15 "After regulation 1 insert— … These Regulations apply to Northern Ireland"). The REACH changes then carry NI; the feed says UK. (`ApplicationClause`, via `Extent.application`)
+- **N2:** an application clause inserted later (2008/2852 reg.1A, 2020) is applied to the law's own 2008 changes.
+- **N3:** a list heading's body runs on into qualified items and other Acts' sections (1977/45 s.65(10)); "subsections (1), (3) … of this section" becomes s.52(3)…; "in Schedule 14, paragraph 5" becomes sch.5.
+- **N4:** a list heading naming several places is never read (`@heading` takes one place): "…extend to England and Wales, Scotland and Northern Ireland—", "…also to Scotland and Northern Ireland—".
+- **N5:** "Subject to …, Parts 1 to 5 extend to England and Wales only" and "extends to the same part or parts of the United Kingdom as the provision to which it relates" are unread (2006/48 s.54).
+- **N6:** "This Act, which subject to subsections (8) to (10) below extends to Scotland only—" is unread (1995/36 s.105(1)), and the half-read s.105(8) bounds s.18 to E+W.
+- **N7:** "the preceding provisions of this Act (including the Schedules) do not extend to Northern Ireland" is unread and uncounted (1998/8 s.16(1)).
+- **N8:** named Articles, regulations and Parts in SIs are never read (`@named` knows Sections, Parts and Schedules; `parts()` collects only section ids): 2016/1142 art.1(3)–(6), 2020/1460 reg.2.
+- **N9 (verified):** `Extent.to_rows/2` writes only a `none` row when there is no default, so the lists are lost in storage (2015/20, 1995/36, 2006/48, 2016/1142 stored as `none`). This also breaks powers (2015/1637's power 2015/20 s.112 reads as nothing). The check's stale test compares through `to_rows`, so it can't see it.
+- **N10:** "has the same application and extent as the provision amended" is unread (2020/660), so a UK powers bound is used instead of `:same`.
+- **N11:** "The following provisions of these Regulations extend to England and Wales—" is unread (2025/361).
+- **N12:** RefList: "paragraphs 5, 35 … of Schedule 23" becomes s.5, s.35…; "26(7) to (10)" becomes s.26(7) only; "Parts 4 and 5 of Schedule 13" is dropped (2015/20 s.114).
+- **N13:** a same-extent subject naming Parts or regulations becomes `*` ("made by Parts 4, 5 and 6"; "made by regulations 3, 4, 6, …").
+- **N14:** amendments or modifications with their own extent are unread ("The amendments made by regulations 8, 12, 17 and 19 extend to England, Wales and Scotland only"); "(and article 26 …)" is stored as sch.26.
+- **N15 (verified):** "This Act shall extend to Northern Ireland with the exception of— (a) … Part 1; …" (CPA 1987 s.49(1)) is stored as default **NI**, so every CPA change to HSWA (a GB Act) carries an NI bound. It must be unread (an excepted statement) or read in full.
+- **N16:** `NoteDate.extent_claims` falls back to the law's default when markup names no amending provision, ignoring `feed:affecting` and same-extent lists (OSRPA 1963 changes by the Licensing Act 2003, claimed E+W, though they follow the enactment, which is GB).
+- **Doubtful:** devolved Acts (asp, asc, nia) get no competence (`with_powers` applies it to SIs only). "Parts 2 and 3 do not extend to NI" with no default is left unread (2001/10).
+- **Minor:** the check reports an empty clause for basis `application`; the enabling cache for 2020/1111 lists ukpga 2005/14 (result unaffected).
+- **Known (K):** K1 EU ×6, K3 ×3, K5, K6, K9 ×2 (1994/3140 refer-back, 2008/396 garbled title).
+
+## Fix round 1 (2026-10-24, Jason: "Go ahead"), code `d5cba338`
+
+N1–N16 are fixed as logged above, with tests (the reader's tests are 44). Also fixed, found while reviewing the catalogue diff:
+- **A default with exceptions after it:** read only where the exceptions are plain ("except regulation 15" becomes not there; "except for Part 1, which extends to …" and "except that section 12 extends …" become those lists; "except as otherwise provided …" means the exceptions are stated elsewhere). Otherwise unread, and never with another law's provisions.
+- **Atomic place lists**, so a shorter list can't slip past the exception guard.
+- **Lists:** a list inside an enumerated item ends at the parent's next item. Items are split at each provision noun, with dots removed. A qualified aside in brackets names nothing. A complement (", but otherwise this Act extends there") is no compound.
+- **Never read:** "together with corresponding entries in Schedule 4"; "in so far it applies".
+- **Devolved Acts** (asp, nia, anaw, asc) stating no extent take their legislature's competence.
+- **Catalogue:** 100 examples changed. The risky ones (changed defaults, lists now unread) were reviewed against their text, the rest sampled; all re-accepted. The related suites pass (4,073).
