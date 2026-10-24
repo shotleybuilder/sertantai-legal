@@ -20,9 +20,9 @@ Each item gets its design section, files and done check before it is built (`pla
 - ✅ 3. Skills README fixed at source — `.claude/skills/README.md` cut to a pointer to SKILL.md frontmatter. Done: no skill list left to drift.
 - ✅ 4. Reviewer subagent — `.claude/agents/reviewer.md`. Done: loaded after resume; a `zoom-out` run on this doc found ≥1 real, previously unrecorded gap checked against the files (review reports gitignored) — `…-zoom-out-claude-r2.md`.
 - ✅ 5. `gemini-review --standard` — `.claude/skills/gemini-review/SKILL.md` (+ frontmatter, corrected project context). Done: a `design` run on this doc returned findings in the shared format, ≥1 real (an unfalsifiable done check) — `…-design-gemini.md`.
-- ⬜ 6. Blind second agent in `feed-reader-check` and `markup-reader-check` — design section before building: fields seen, prompt skeleton, comparison rule, change to the Pass line.
-- ⬜ 7. Trial the blind agent on CV-S03 OH&S (closed work) — design before running: family, seed, sample command, time, measure of a useful result. Ask Jason before the run.
-- ⬜ 8. A/B runs — **only if item 7 shows a single run misses findings**; otherwise ❌ with the evidence.
+- ⬜ 6. Blind second agent in `markup-reader-check` (then `feed-reader-check`) — designed below; build-lane clearance given 2026-10-24 (not running either skill; CV-S04 uses lat.commencement_check); skill edits wait for item 7's verdict. Trial not to overlap CV-S04's rebuild/golden (build lane will signal start and finish).
+- ⬜ 7. Trial: rules-aware and blind agents on one OH&S seed-2 sample, after CV-S04 commits and its rebuild/golden finish — designed below. Ask Jason before the run.
+- ⬜ 8. A/B runs — **only if item 7 is useful**: a second blind run on the same sample; adopt only if the runs differ on >5/50 items (design below); otherwise ❌ with the count. Ask Jason first.
 - ⬜ 9. Drift check for judgement cases only (guides and skill rule sections against code) — **only if** items 6–7 or a reviewer run find a guide or skill rule section making a false claim about the code (file + claim); otherwise ❌ with that evidence. Design before building: name, scope list, method, hook in `.claude/commands/session-close.md`.
 - ⬜ 10. CLAUDE.md "Gemini Review as Acceptance Gate" names the standards and the reviewer subagent.
 
@@ -76,6 +76,102 @@ Run after resume, on commit `3b4491ca`. **reviewer** (`zoom-out`, code access): 
 
 - **Replace Bash with narrow tools** (Gemini, Major fix): no such per-command tools exist for subagents, and Bash supplied the evidence for every Blocker so far. The risk is recorded instead.
 - **Reviewer pass = ≥80% recall on 3 seeded documents** (Gemini, Nit): more machinery than a one-developer process needs. The measured pass (a real, unrecorded gap checked against files) stays; item 7's trial is where recall gets measured.
+
+## Item 6–8 design: rules-blind agent (trial first, skills after)
+
+Revised after `reviewer` (`plan`) — see "Items 6–8 plan review" below.
+
+**Aim.** The current agent gets the reader rules and known patterns and judges the reader against them, so a wrong rule passes. The blind agent reads the source itself, with no rules and no reader output, and writes down what it finds. Comparison happens afterwards. Disagreements are where a rule or the reader may be wrong.
+
+**What it sees (markup check).** Per item: `law`, `key`, and the item's change ids. `markup` is a list (a paired substitution has two elements), so:
+`jq '[.[] | {law, key, change_ids: ([.markup[].change_id] | unique)}]' $S/a.json > $S/blind.json`
+Left out: `provision_ids`, `heading_of`, `attributes`, `text`, `note_refs` (all read out by our code) and `reader`.
+
+**What it is given and not given.**
+- Given: the allowed values for operation (inserted / substituted / repealed / repealed_in_part / other) and level (provision / words), so answers can be compared. It names provisions by the **id in the law text** (`id="regulation-5-2"`), and looks up the DB row via `source_xml_id`, so no naming rules are needed.
+- Not given: the placement rule (lowest provision, P1group headings, per child), the level rule, the paired-substitution rule, the key rule, the cited/affecting rule, the known patterns.
+
+**Blind prompt (full).**
+```
+You are reading UK legislation as a careful lawyer would, to record what each change does.
+READ-ONLY: no edits, no internet, no DB writes, no mix tasks. Read files, run read-only psql
+SELECTs, decompress stored XML; use /usr/bin/python3 for parsing. Working dir: backend/.
+
+Input: FILE — 50 items, each {law, key, change_ids}. A change id is the ChangeId attribute on
+<Addition>, <Substitution> or <Repeal> elements in the law's revised text.
+
+Stored data:
+- Law text: data/cache/clml/{type}/{year}/{number}/body/data.xml.gz (UK_uksi_2008_1597 → uksi/2008/1597).
+  Each change element has a CommentaryRef to a <Commentary> note in the same file.
+- Rows: PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -Atc
+  "select section_id, source_xml_id, section_type from legal_articles where law_name='LAW' and source_xml_id='ID'"
+
+For each item, find every element carrying its change ids, read the surrounding text and the note,
+and answer:
+1. provisions: which provision(s) does this change alter? Give each as its id in the law text, and
+   the DB row's section_id for that id ("no row" if none). One change may alter several provisions.
+2. operation: inserted / substituted / repealed / repealed_in_part / other (say what).
+3. level: provision (the whole provision, its number or heading) or words (some words within it).
+4. cited: the law that made the change, per the note.  affecting: the provision(s) of that law.
+5. retained: does a repeal keep any text in place (yes/no/n.a.)?  territory: if the markup states one.
+Quote the markup or note for each answer. Say "unsure" rather than guess.
+
+Output: one row per item — #, law, key last 6, provisions (ids → section_ids), operation, level,
+cited, affecting, retained, territory, confidence (sure/unsure) — then a list of anything odd.
+Under 900 words.
+```
+
+**Comparison (by the caller, after the agents return).** Fields: placement, operation, level, cited, affecting, retained, territory.
+- **Placement** compares the set of section_ids. They agree only when the sets are equal; any other overlap is a disagreement to triage.
+- The other fields agree when the values match after normalising the reader's claim names (e.g. `territory` Extent "E+W" vs "England and Wales").
+- Each disagreement is triaged with evidence into one of four:
+  - **reader wrong**: a defect; NEW unless a known pattern covers it.
+  - **rule question**: both readings defensible; goes to Jason to decide.
+  - **blind wrong**: not a finding.
+  - **unsure**: counted only.
+
+**Trial (item 7).** The round-2 per-item table was never saved, and the reader code has changed since, so round 2 is not a per-item baseline. The trial runs both agents on one sample:
+- **When:** after CV-S04 commits its reader changes and its rebuild, check and golden have finished. The build lane signals when it starts and finishes. The trial runs on that commit, which is named here.
+- **Sample:** `mix lat.markup_check --family "OH&S: Occupational" --sample $S/a.json --n 50 --seed 2`. Seconds, read-only, writes only `$S/a.json` (`$S` = this conversation's scratchpad). Ask Jason first.
+- **Agents:** the current rules-aware agent (the CV-S03 round-2 prompt, unchanged) on `$S/a.json`, and the blind agent on `$S/blind.json`, run in parallel. Two general-purpose agents.
+- **Useful if** the blind agent finds at least one **reader wrong** or **rule question**, checked against the law text, that the rules-aware agent marked OK on the same item. If none, the step is not adopted (❌ with counts) and the feed version is not built.
+- **Recorded here:** the commit, agree counts per field, both agents' verdicts on each disagreement, the triage list, the verdict. Agent outputs are saved to `backend/data/code-reviews/2026-10-24-blind-trial-{rules,blind}.md` (`git add -f`).
+
+**A/B (item 8): only if item 7 is useful.** A second blind run on the same `$S/blind.json`. Ask Jason first.
+- If the two runs differ on more than 5 of 50 items in placement or operation, one run is too noisy, so the step uses two.
+- With two runs, an item is triaged when **either** run disagrees with the reader (union, for recall). The Pass line is unchanged: every disagreement triaged.
+- Otherwise item 8 is ❌ with the count.
+
+**Pass line (only after adoption).** `markup-reader-check` Pass gains "every blind disagreement triaged; no reader-wrong outside known patterns; rule questions decided by Jason". Not changed during the trial.
+
+**Files when adopted.** `.claude/skills/markup-reader-check/SKILL.md`: step 6, "Blind check", with the jq line, the prompt above, the comparison and the Pass change. Step 5 stays.
+
+**Feed version (only after the markup step is adopted).**
+- Items `{law, effect_id, feed}`: `effect_id` is the feed sample's key (`lat.feed_check.ex`).
+- Before writing its prompt, list which `feed` fields are raw source and which are derived by our code (e.g. `affected_refs`). Only raw ones are given.
+
+**Alternatives.**
+- Strip the rules from the existing agent: this loses the rule-conformance check, which still catches code bugs.
+- Give the blind agent the reader output to "verify": it anchors on the answer, which is the bias this removes.
+- Gemini: it can't read the stored XML or the DB.
+
+**Risks.**
+- The blind agent may read placement more coarsely or finely than the rules do. Such cases surface as rule questions; that is the purpose.
+- Cost: two agents per trial; one extra agent per family check once adopted.
+
+**Backing out.** Remove step 6 from the skill; nothing else depends on it.
+
+## Items 6–8 plan review
+
+`reviewer` (`plan`): 1 Blocker, 5 Major, 1 Nit — `backend/data/code-reviews/2026-10-24-review-practices-items6-8-plan-claude.md`. All taken; the design above is the revised version.
+
+- **jq fails on the real shape** (Blocker): `markup` is a list; the reviewer ran the line and got exit 5. Filter now collects unique change ids.
+- **Brief was a skeleton** (Major): full prompt written, with data paths, psql, the output table and a word limit.
+- **Vocabulary vs rules boundary** (Major): exact list given and withheld. Naming sidestepped: provisions are named by law-text id → `source_xml_id` → section_id.
+- **Fields and multi-target scoring** (Major): cited and retained added; placement agrees only on equal sets.
+- **Baseline drift** (Major): no per-item round-2 table exists, and the reader has uncommitted changes in lane build. The trial now runs the rules-aware agent alongside the blind agent on one sample, on CV-S04's committed state.
+- **Item 8 undefined** (Major): conditional on item 7; two runs combine as a union; ask Jason first.
+- **Feed version drops the key** (Nit): `{law, effect_id, feed}`; raw vs derived fields listed before its prompt is written.
 
 ## Item 4 design: reviewer subagent
 
