@@ -17,6 +17,7 @@ Open a new session or resume a PENDING/SUSPENDED session.
 ---
 session: <Title>
 status: active
+lane: <lane>        # omit for the main coding lane (default: build)
 opened: <YYYY-MM-DD>
 ---
 
@@ -86,6 +87,15 @@ When fixing a bug from a previous session, add a `bugs` entry with `status: fixe
 3. **Review the work items** — confirm which are still relevant. Remove or update stale items.
 4. **Check dependencies** — have they been resolved since the session was paused?
 5. **Brief the user** on the current state: what's done, what's next, any blockers resolved.
+
+## Lanes (concurrent Claudes)
+
+Jason may run more than one Claude on this project at once, each on a separate thread of work. Each thread is a **lane**, named in session frontmatter as `lane: <name>`; no field means `lane: build`, the main coding lane.
+
+- **One non-meta ACTIVE session per lane.** Before opening or resuming a session, find active ones with `grep -rl '^status: active' .claude/sessions` (the SQLite index lags until a rebuild) and resolve only those in your own lane.
+- **Never close, suspend or edit another lane's session.** A finding for another lane goes to Jason or to a PENDING stub.
+- **Shared working tree:** stage your own files by path — never `git add -A`, `git commit -a`, or a whole `.claude/sessions` directory. Another lane's uncommitted work can fail the pre-commit compile/credo checks; if it does, tell Jason rather than reaching for `--no-verify`.
+- **Heavy runs** (corpus scripts, re-parses, scoreboards): ask Jason first — another lane may be running one.
 
 ## Conventions
 
