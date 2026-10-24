@@ -230,3 +230,15 @@ N1–N16 are fixed as logged above, with tests (the reader's tests are 44). Also
 - **Never read:** "together with corresponding entries in Schedule 4"; "in so far it applies".
 - **Devolved Acts** (asp, nia, anaw, asc) stating no extent take their legislature's competence.
 - **Catalogue:** 100 examples changed. The risky ones (changed defaults, lists now unread) were reviewed against their text, the rest sampled; all re-accepted. The related suites pass (4,073).
+
+## Round 2 runs (2026-10-24)
+
+- **Catalogue run 3:** 3,357 laws, 2,778 sentences. 62 new patterns accepted, 41 no longer seen; examples reading differently 0.
+  - By outcome: default 736, list 706 (was 528), unread in clause 177 (was 253), unread not read 302, provision extent 268 (was 335), none 247, applies 157, provision application 130.
+- **Restore point** `cv-s05-before-round2`; re-read 383 (`--cached`, no fetch, no errors); rebuild 149.
+- **First check:** PASS, but bound by the law fell from 3,385 to 2,768. **Cause, mine:** a named list blocked the enabling-powers fallback. SI 2019/758 says only "Regulation 12 and Schedule 10 extend to England and Wales and Scotland", so its other 580 changes lost their bound. Fixed (`b87027d7`): powers or competence apply wherever there is no default; a `named` list decides over an implied extent and widens only a stated default. With a test.
+- **Re-read, rebuild, check (seed 6): PASS, our faults 0.**
+  - Basis: clause 104, powers 95, competence 80, lists 39, application 4; none: EU 60, no powers 55, no clause 6, not held 1.
+  - Unread own sentences: 67 laws (was 79).
+  - Changes: bound by the law 3,369; none: EU 573, no powers 470, not named 178, same 118, competence only 79, provision not named 53, no amending law 42, no clause 24, not held 2; territory from the law 31; markup 14.
+- **Golden 27/27.** Agent round 2 launched on the seed-6 sample.
