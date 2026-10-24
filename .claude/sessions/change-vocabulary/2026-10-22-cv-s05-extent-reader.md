@@ -3,6 +3,19 @@ session: 'CV-S05: Extent and Application Reader'
 status: active
 release: v0.1
 opened: '2026-10-22'
+bugs:
+  - pattern: "The extent check fetched from legislation.gov.uk unasked: the shared powers step (`lat.amending` with_powers) re-fetches an SI's made introduction whenever the enabling cache holds nothing parsed for it (retry_empty)"
+    category: tooling
+    module: mix lat.amending (with_powers) / mix lat.extent_check
+    affected: "about 65 introductions fetched 2026-10-24 (SIs with no parsed powers); only data/cache/enabling written"
+    fix: "with_powers(e, law, cached: true): the enabling cache only; the check always passes it; `--extents --cached` for re-reads"
+    status: fixed
+  - pattern: "Stored extent_rules stale against the extent reader (written before the CV-S05 forms); 13 family amending laws never stored"
+    category: extent reading
+    module: extent_rules (mix lat.amending --extents)
+    affected: "OH&S: 62 stale, 13 not stored, of 444 amending laws"
+    fix: "re-read the family's amending laws (--cached), then rebuild (2026-10-24: our faults 0)"
+    status: fixed
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
 ---
 
@@ -146,3 +159,41 @@ Built on the CV-S04 shape (`Commencement.SentencePatterns`, `mix lat.commencemen
   - **A provision's territorial versions** gave the same sentence twice; the second copy read as `another_default`, and both shared one example id. Each sentence is now read once per provision.
 - **Code:** `fb6d8bfe` (hooks passed). The reader's tests are 32; the related suites pass (4,061).
 - **Not run again yet:** the catalogue keys still show EPA's old class until the next run, which can go with the next fixes. The stored `extent_rules` are stale against the reader; they are re-read at the check step (ask first).
+
+## The check: `mix lat.extent_check` (built 2026-10-24)
+
+- **Amending laws** (the family's stored text changes' `by`): each law's basis as the reader reads it now (clause, lists, application, powers, competence, or none with why). Our faults: stored `extent_rules` that differ from the reading now (`stale`) or are missing (`not_stored`). Beside it: the law's own extent sentences left unread, by catalogue class.
+- **Text changes** (inserted, substituted, repealed, repealed_in_part, renumbered): where the territory comes from (`territory:law`, `bound:law`, `territory:feed` / `markup`), or none and why.
+- `--sample FILE --n --seed`: stratified, for the agent.
+- **Dry run before the re-read:** 444 amending laws, 4,953 text changes. FAIL with our faults 75 (62 stale, 13 not stored).
+  - Basis: clause 102, powers 96, competence 73, none (no powers) 61, none (type not read: EU) 60, lists 29, none (no clause) 16, application 6, not held 1.
+  - Changes: bound by the law 3,383; none (law's type not read) 573; none (no powers) 524; none (provision not named) 132; not named 88; competence only 79; territory from the law 47; none (no clause) 45; no amending law 42; same 20; markup 17; feed 1.
+- **A slip, mine:** the dry run fetched about 65 SI introductions from legislation.gov.uk unasked. The shared powers step re-fetches where the enabling cache parsed nothing. Fixed: the check reads the cache only, and re-reads take `--cached`. Logged as a bug (fixed).
+
+## Re-read, rebuild, check 1, golden (2026-10-24, Jason: "Okay for all 3")
+
+- **Restore point** `cv-s05-before-extent-reread` (`extent_rules`, `provision_changes`, `provision_change_claims`).
+- `mix lat.amending --extents --cached` on the 444 family amending laws: 383 read (60 EU types aren't read, 1 not held), 42 parent Acts read first. No errors, no fetch.
+- `mix lat.vocabulary --build --family "OH&S: Occupational"`: 149 laws, no errors.
+- **Check (seed 5 sample): PASS, our faults 0.**
+  - Basis: clause 102, powers 98, competence 73, none (EU type) 60, none (no powers) 59, lists 29, none (no clause) 16, application 6, not held 1.
+  - Unread own sentences: 79 laws (66 in the clause, 66 not read, 22 other provision, 3 another default, 3 list, 1 application).
+  - Text changes (4,953):
+
+    | territory from | changes |
+    |---|---|
+    | bound by the law | 3,385 |
+    | none: law's type not read (EU) | 573 |
+    | none: no powers | 496 |
+    | none: not named | 143 |
+    | none: competence only (insertions, V1-04) | 79 |
+    | none: same as the enactment, or not named | 69 |
+    | none: provision not named | 54 |
+    | territory from the law | 47 |
+    | none: no clause | 45 |
+    | none: no amending law | 42 |
+    | markup | 17 |
+    | none: law not held | 2 |
+    | feed | 1 |
+
+- **Golden 27/27.**
