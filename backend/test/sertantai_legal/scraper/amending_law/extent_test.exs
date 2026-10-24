@@ -783,4 +783,176 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
       assert Extent.of(e, "reg.5") == "E+W+S+NI"
     end
   end
+
+  describe "CV-S05 agent round 2" do
+    defp read2(law, body),
+      do:
+        Extent.read(
+          Doc.new(law, ["<Legislation><Primary><Body>#{body}</Body></Primary></Legislation>"])
+        )
+
+    defp sec(id, text), do: ~s(<P1 id="#{id}"><P1para><Text>#{text}</Text></P1para></P1>)
+
+    test "A: \"to England and Wales and, except as mentioned below, to Northern Ireland\"; a Part's listed provisions" do
+      e =
+        read2(
+          "UK_ukpga_1996_23",
+          ~s(<Part id="part-II">) <>
+            sec("section-92", "Small claims.") <>
+            sec("section-95", "Other.") <>
+            "</Part>" <>
+            sec(
+              "section-108",
+              "The provisions of this Act extend to England and Wales and, except as mentioned below, to Northern Ireland. The following provisions of Part II do not extend to Northern Ireland— section 92 (exclusion of Part I in relation to small claims arbitration in the county court)."
+            )
+        )
+
+      assert e.default == "E+W+NI"
+      assert Extent.of(e, "s.92") == "E+W"
+      assert Extent.of(e, "s.95") == "E+W+NI"
+    end
+
+    test "B, G: \"or\" and \"or to\" join places; \"throughout\"; \"Nothing in this Act extends to\"" do
+      assert read2(
+               "L",
+               sec("section-7", "This Act does not extend to Scotland or Northern Ireland.")
+             ).default ==
+               "E+W"
+
+      assert read2(
+               "L",
+               sec("section-7", "This Act shall not extend to Scotland or to Northern Ireland.")
+             ).default ==
+               "E+W"
+
+      assert read2(
+               "L",
+               sec(
+                 "section-137",
+                 "Subject to subsection (2), this Act extends throughout the United Kingdom."
+               )
+             ).default ==
+               "E+W+S+NI"
+
+      assert read2("L", sec("section-9", "Nothing in this Act extends to Northern Ireland.")).default ==
+               "E+W+S"
+    end
+
+    test "C: lists apply in a fixed order, whatever order they are stored in" do
+      e = %Extent{
+        lists: [{:also, "S+NI", ["s.5"]}, {:only, "E+W", ["s.5", "s.6"]}]
+      }
+
+      assert Extent.of(e, "s.5") == "E+W+S+NI"
+      assert Extent.of(e, "s.6") == "E+W"
+    end
+
+    test "D: \"except this section and the following provisions, namely—\"" do
+      e =
+        read2(
+          "UK_ukpga_1986_44",
+          sec(
+            "section-68",
+            "This Act, except this section and the following provisions, namely— sections 49 and 50; section 58, does not extend to Northern Ireland."
+          )
+        )
+
+      assert e.default == "E+W+S"
+      assert Extent.of(e, "s.68") == "E+W+S+NI"
+      assert Extent.of(e, "s.49") == "E+W+S+NI"
+      assert Extent.of(e, "s.10") == "E+W+S"
+    end
+
+    test "E: a Part that does not extend, outside the clause" do
+      e =
+        read2(
+          "UK_ukpga_2001_10",
+          ~s(<Part id="part-2">) <>
+            sec("section-20", "Duties.") <>
+            "</Part>" <>
+            ~s(<Part id="part-4">) <>
+            sec("section-42", "This Act extends to England and Wales and Northern Ireland.") <>
+            sec("section-43", "Parts 2 and 3 do not extend to Northern Ireland.") <>
+            "</Part>"
+        )
+
+      assert Extent.of(e, "s.20") == "E+W"
+      assert Extent.of(e, "s.42") == "E+W+NI"
+    end
+
+    test "H: words the law inserts elsewhere are never its own clause" do
+      e =
+        read2(
+          "UK_uksi_2026_867",
+          ~s(<P1 id="regulation-2"><P1para><Text>After regulation 1 insert—</Text><BlockAmendment><Text>These Regulations extend to Northern Ireland.</Text></BlockAmendment></P1para></P1>)
+        )
+
+      assert e.default == nil
+    end
+
+    test "J: a heading list in a provision other than the clause" do
+      e =
+        read2(
+          "UK_uksi_2019_696",
+          sec("regulation-2", "These Regulations extend to England and Wales.") <>
+            sec(
+              "regulation-3",
+              "The following provisions extend to the United Kingdom— regulation 5; regulation 6."
+            )
+        )
+
+      assert Extent.of(e, "reg.5") == "E+W+S+NI"
+      assert Extent.of(e, "reg.7") == "E+W"
+    end
+
+    test "qualified list items stay unread: \"with the exception of\", \"so much of Part 2 as\", a Chapter's Part" do
+      e =
+        read2(
+          "UK_ukpga_2004_20",
+          ~s(<Part id="part-1">) <>
+            sec("section-1", "One.") <>
+            "</Part>" <>
+            ~s(<Part id="part-2">) <>
+            sec("section-80", "Two.") <>
+            "</Part>" <>
+            sec(
+              "section-188",
+              "This Act extends to England and Wales, Scotland and Northern Ireland. The following provisions of this Act do not extend to Northern Ireland— (a) Chapter 3 of Part 1 (with the exception of section 59); (b) so much of Part 2 as amends the 1989 Act; (c) sections 82, 90 and 91."
+            )
+        )
+
+      assert Extent.of(e, "s.1") == "E+W+S+NI"
+      assert Extent.of(e, "s.80") == "E+W+S+NI"
+      assert Extent.of(e, "s.82") == "E+W+S"
+    end
+
+    test "\"does not extend to Northern Ireland except so far as it affects other enactments\": the amendments follow them" do
+      e =
+        read2(
+          "UK_ukpga_1988_54",
+          sec(
+            "section-30",
+            "This Act does not extend to Northern Ireland except so far as it affects other enactments extending to Northern Ireland."
+          ) <> sec("section-2", "Amends.")
+        )
+
+      assert e.default == "E+W+S"
+      assert Extent.of(e, "s.2") == :same
+    end
+
+    test "\"Sections 240 and 242 … have the same extent as the provisions amended\"" do
+      e =
+        read2(
+          "UK_ukpga_1996_18",
+          sec("section-243", "This Act extends to England and Wales and Scotland.") <>
+            sec(
+              "section-244",
+              "Sections 240 and 242 and Schedule 1 have the same extent as the provisions amended."
+            )
+        )
+
+      assert Extent.of(e, "s.240") == :same
+      assert Extent.of(e, "s.10") == "E+W+S"
+    end
+  end
 end

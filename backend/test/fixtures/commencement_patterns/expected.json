@@ -1811,12 +1811,6 @@
       "class": "none",
       "rules": []
     },
-    "UK_ukpga_1971_78/f6dc0a59be": {
-      "class": "law:clause_date",
-      "rules": [
-        "all — 1972-04-01 — everywhere, fully — clause_date"
-      ]
-    },
     "UK_ukpga_1971_80/9f2d5cf22a": {
       "class": "law:clause_staged",
       "rules": [
@@ -2362,6 +2356,10 @@
       ]
     },
     "UK_ukpga_1982_49/0597249943": {
+      "class": "none",
+      "rules": []
+    },
+    "UK_ukpga_1982_49/73885a20b2": {
       "class": "none",
       "rules": []
     },
@@ -3166,8 +3164,8 @@
     "UK_ukpga_1994_21/206e55cce9": {
       "class": "law:by_order",
       "rules": [
-        "all except s.68, s.7, s.8, s.9, s.12, s.13, s.14, s.17, sch.2, s.54, s.62, s.63, s.64, s.65, s.65A, s.66, s.67, sch.11.pt.I — appointed (by order) — everywhere, fully — by_order",
-        "s.68, s.7, s.8, s.9, s.12, s.13, s.14, s.17, sch.2, s.54, s.62, s.63, s.64, s.65, s.65A, s.66, sch.11.pt.I — 1994-07-05 — everywhere, fully — act_enactment"
+        "all except s.68, s.7, s.8, s.9, s.12, s.13, s.14, s.17, sch.2, s.54, s.62, s.63, s.64, s.65, s.65A, s.66, s.67(2), s.67(3), s.67(4), s.67(5), s.67(6), s.67, sch.11.pt.I — appointed (by order) — everywhere, fully — by_order",
+        "s.68, s.7, s.8, s.9, s.12, s.13, s.14, s.17, sch.2, s.54, s.62, s.63, s.64, s.65, s.65A, s.66, s.67(2), s.67(3), s.67(4), s.67(5), s.67(6), sch.11.pt.I — 1994-07-05 — everywhere, fully — act_enactment"
       ]
     },
     "UK_ukpga_1994_21/b68de67c55": {
@@ -3310,13 +3308,6 @@
     "UK_ukpga_1995_4/6865d60994": {
       "class": "none",
       "rules": []
-    },
-    "UK_ukpga_1995_45/6cb261ff8f": {
-      "class": "law:by_order",
-      "rules": [
-        "all except s.18, s.12, s.13, sch.5 — appointed (by order) — everywhere, fully — by_order",
-        "s.18, s.13, sch.5 — 1995-11-08 — everywhere, fully — act_enactment"
-      ]
     },
     "UK_ukpga_1995_45/fb39f82666": {
       "class": "unread",
@@ -4192,13 +4183,6 @@
     "UK_ukpga_2006_38/acd47806f9": {
       "class": "none",
       "rules": []
-    },
-    "UK_ukpga_2006_38/d52e958618": {
-      "class": "law:by_order",
-      "rules": [
-        "all except s.66, s.25, s.56, s.60, s.63 — appointed (by order) — everywhere, fully — by_order",
-        "s.66, s.25, s.56, s.60, s.63 — 2006-11-08 — everywhere, fully — act_enactment"
-      ]
     },
     "UK_ukpga_2006_43/8430698641": {
       "class": "none",
@@ -5588,12 +5572,6 @@
       "class": "none",
       "rules": []
     },
-    "UK_uksi_1996_1513/63938d96b7": {
-      "class": "law:clause_date",
-      "rules": [
-        "all — 1996-10-01 — everywhere, fully — clause_date"
-      ]
-    },
     "UK_uksi_1996_1527/4c2f37caf0": {
       "class": "none",
       "rules": []
@@ -6060,12 +6038,6 @@
       "class": "unread",
       "rules": []
     },
-    "UK_uksi_2006_599/e389c654d6": {
-      "class": "law:clause_staged",
-      "rules": [
-        "all — 2006-04-10 — everywhere, fully — clause_staged"
-      ]
-    },
     "UK_uksi_2006_641/5f2dc0019c": {
       "class": "law:clause_unread",
       "rules": [
@@ -6111,6 +6083,10 @@
         "rest except reg.1 — 2007-04-02 — W, fully — provision_qualified",
         "rest except reg.1 — 2007-07-01 — E, fully — provision_qualified"
       ]
+    },
+    "UK_uksi_2007_765/f9a5db5202": {
+      "class": "none",
+      "rules": []
     },
     "UK_uksi_2007_79/3560291797": {
       "class": "none",
@@ -7640,7 +7616,6 @@
     "statement|except_as|whole|shall|by_order|plain|law:by_order": "accepted",
     "statement|except_as|whole|shall|by_order|qualified|law:by_order": "accepted",
     "statement|except_as|whole|shall|date|plain|law:clause_date": "accepted",
-    "statement|except_as|whole|shall|date|plain|none": "pending: a form the reader doesn't read yet",
     "statement|except_as|whole|shall|date|qualified|law:clause_unread": "accepted",
     "statement|except_as|whole|shall|period|plain|law:clause_made_relative": "accepted",
     "statement|none|following|is_to|by_order|plain|rules:provision_by_order": "accepted",
@@ -7754,7 +7729,7 @@
     "statement|none|instrument|shall|none|qualified|none": "accepted",
     "statement|none|named|is_to|made_relative|plain|rules:provision_dated": "accepted",
     "statement|none|named|is_to|period|plain|rules:provision_dated": "accepted",
-    "statement|none|named|not_until|by_order|plain|none": "pending: a form the reader doesn't read yet",
+    "statement|none|named|not_until|by_order|plain|law:by_order": "accepted",
     "statement|none|named|not_until|by_order|plain|rules:provision_by_order": "accepted",
     "statement|none|named|not_until|date|plain|none": "pending: a form the reader doesn't read yet",
     "statement|none|named|other|none|plain|none": "pending: no date read in the sentence",
@@ -7904,7 +7879,7 @@
     "statement|none|parts|present|by_order|plain|none": "pending: a form the reader doesn't read yet",
     "statement|none|parts|present|by_order|plain|rules:provision_by_order": "accepted",
     "statement|none|parts|present|by_order|plain|unread": "pending: a form the reader doesn't read yet",
-    "statement|none|parts|present|by_order|qualified|rules:provision_qualified": "accepted",
+    "statement|none|parts|present|by_order|qualified|none": "pending: a Schedule's Part named in an Act clause is dropped, not read as sch.N.pt.X (CV-S04 R4-N4; the counted pending class)",
     "statement|none|parts|present|date|plain|law:clause_date": "accepted",
     "statement|none|parts|present|date|plain|law:clause_staged": "accepted",
     "statement|none|parts|present|date|plain|rules:provision_dated": "accepted",
@@ -7983,7 +7958,6 @@
     "statement|none|schedules|shall|none|plain|unread": "pending: no date read in the sentence",
     "statement|none|this|not_until|by_order|plain|law:by_order": "accepted",
     "statement|none|this|not_until|by_order|plain|rules:provision_by_order": "accepted",
-    "statement|none|this|not_until|by_order|plain|unread": "pending: a form the reader doesn't read yet",
     "statement|none|this|not_until|none|plain|none": "pending: no date read in the sentence",
     "statement|none|this|not_until|none|qualified|none": "pending: no date read in the sentence",
     "statement|none|this|other|none|plain|none": "pending: no date read in the sentence",
@@ -8030,7 +8004,7 @@
     "statement|none|this|shall|made_relative|plain|unread": "accepted",
     "statement|none|this|shall|made_relative|qualified|rules:provision_qualified": "accepted",
     "statement|none|this|shall|none|plain|law:clause_staged": "accepted",
-    "statement|none|this|shall|none|plain|none": "pending: a defined or event day (a known limit)",
+    "statement|none|this|shall|none|plain|law:clause_unread": "pending: a defined or event day (a known limit)",
     "statement|none|this|shall|none|plain|unread": "pending: no date read in the sentence",
     "statement|none|this|shall|period|plain|law:clause_staged": "accepted",
     "statement|none|this|shall|period|plain|none": "pending: a form the reader doesn't read yet",
@@ -8080,7 +8054,6 @@
     "statement|none|whole|shall|by_order|plain|law:clause_date": "accepted",
     "statement|none|whole|shall|by_order|plain|none": "pending: a form the reader doesn't read yet",
     "statement|none|whole|shall|by_order|plain|rules:provision_by_order": "accepted",
-    "statement|none|whole|shall|by_order|plain|unread": "pending: a defined or event day (a known limit)",
     "statement|none|whole|shall|by_order|qualified|law:by_order": "accepted",
     "statement|none|whole|shall|date|plain|law:clause_date": "accepted",
     "statement|none|whole|shall|date|plain|none": "pending: a form the reader doesn't read yet",

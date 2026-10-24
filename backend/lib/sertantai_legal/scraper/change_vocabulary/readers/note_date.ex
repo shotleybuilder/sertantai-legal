@@ -121,12 +121,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
   def extent_claims(%Change{} = c, extents) do
     alias SertantaiLegal.Scraper.AmendingLaw.Extent
 
-    law = Change.value(c, :markup, :cited) || Change.value(c, :feed, :by)
-    # the amending provisions the markup names, else the feed's (CV-S05 N16)
+    # (a change only the amending law's text gives: its law, CV-S05 I)
+    law =
+      Change.value(c, :markup, :cited) || Change.value(c, :feed, :by) ||
+        Change.value(c, :law_text, :by)
+
+    # the amending provisions the markup names, else the feed's, else the
+    # law text's own (keyed "law:ref": CV-S05 N16, I)
     refs =
-      case Change.values(c, :markup, :affecting) |> List.flatten() do
-        [] -> Change.values(c, :feed, :affecting) |> List.flatten()
-        refs -> refs
+      with [] <- Change.values(c, :markup, :affecting) |> List.flatten(),
+           [] <- Change.values(c, :feed, :affecting) |> List.flatten() do
+        own_ref(c.key, law)
       end
 
     op = Change.value(c, :markup, :operation) || Change.value(c, :law_text, :operation)
@@ -159,6 +164,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
       _ -> nil
     end
   end
+
+  defp own_ref(key, law) when is_binary(key) and is_binary(law) do
+    case String.split(key, ":", parts: 2) do
+      [^law, ref] -> [ref]
+      _ -> []
+    end
+  end
+
+  defp own_ref(_key, _law), do: []
 
   defp undated?(c), do: Enum.all?(@dated, fn {s, a} -> Change.values(c, s, a) == [] end)
 

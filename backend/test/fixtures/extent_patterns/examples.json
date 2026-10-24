@@ -19,11 +19,6 @@
     "ref": "s.55",
     "sentence": "The amendments and repeals of enactments made by schedule 7 bind the Crown to the same extent as the enactments amended or repealed."
   },
-  "UK_asp_2005_3/7663eec6a2": {
-    "law": "UK_asp_2005_3",
-    "ref": "s.30",
-    "sentence": "In section 68 (extent, etc.) of that Act, after subsection (7) there is inserted—7A Sections 4D to 4F of, and Schedule 1C to, this Act extend to Scotland only.."
-  },
   "UK_asp_2009_6/4ad644cf98": {
     "law": "UK_asp_2009_6",
     "ref": "s.87",
@@ -43,6 +38,21 @@
     "law": "UK_asp_2014_16",
     "ref": "s.223",
     "sentence": "A copy of any document provided to Revenue Scotland for the purposes of this Act or any other enactment and certified by it to be such a copy is admissible in any proceedings, whether civil or criminal, to the same extent as the document itself."
+  },
+  "UK_nia_2011_25/0bff9658e6": {
+    "law": "UK_nia_2011_25",
+    "ref": "sch.2",
+    "sentence": "Compensation151 This paragraph applies in a case where—a an application made under paragraph 9 in respect of an active Phase I or II site is finally determined; andb the requirements of sub-paragraph (2), (3) or (4) are satisfied.2 The requirements, referred to in sub-paragraph (1)(b), of this sub-paragraph are—a that the conditions to which the relevant planning permissions relating to the site are to be subject were determined by the council;b no appeal was made under paragraph 11(1)(a) in respect of that determination or any such appeal was withdrawn or dismissed; andc the council gave notice under paragraph (d) of paragraph 10(2) and either—i that notice stated that, in the council's opinion, the restriction of working rights in question would be such as to prejudice adversely to an unreasonable degree either of the matters referred to in sub-paragraphs (i) and (ii) of paragraph (d); orii that notice stated that, in the council's opinion, the restriction in question would not be such as would so prejudice either of those matters but an appeal under paragraph 11(1)(b) in respect of the giving of the notice has been allowed.3 The requirements, referred to in sub-paragraph (1)(b), of this sub-paragraph are that the conditions to which the relevant planning permissions are to be subject were determined by the Department and the Department gave notice under paragraph (d) of paragraph 10(2) stating that, in its opinion, the restriction of working rights in question would be such as to prejudice adversely to an unreasonable degree either of the matters referred to in sub-paragraphs (i) and (ii) of paragraph (d).4 The requirements, referred to in sub-paragraph (1)(b), of this sub-paragraph are that the conditions to which the relevant planning permissions are to be subject were determined by the planning appeals commission upon an appeal under paragraph 11(1)(a) and either—a the council gave notice under paragraph (d) of paragraph 10(2) stating that, in its opinion, the restriction of working rights in question would be such as to prejudice adversely to an unreasonable degree either of the matters referred to in sub-paragraphs (i) and (ii) of paragraph (d); orb the council gave a notice under paragraph (d) stating that, in its opinion, the restriction in question would not be such as would so prejudice either of those matters but an appeal under paragraph 11(1)(b) in respect of the giving of that notice has been allowed.5 In a case to which this paragraph applies, section 26 of the Act of 1965 shall have effect as if an order having effect under section 68 of this Act had effect to modify those permissions to the extent specified in sub-paragraph (6).6 For the purposes of sub-paragraph (5), the order which is treated by virtue of that sub-paragraph as having effect under section 68 is one whose only effect adverse to the interests of any person having an estate or interest in the land or minerals comprised in the mineral site is to restrict working rights in respect of the site to the same extent as the relevant restriction."
+  },
+  "UK_nia_2011_25/3c57eac861": {
+    "law": "UK_nia_2011_25",
+    "ref": "sch.2.para.15",
+    "sentence": "For the purposes of sub-paragraph (5), the order which is treated by virtue of that sub-paragraph as having effect under section 68 is one whose only effect adverse to the interests of any person having an estate or interest in the land or minerals comprised in the mineral site is to restrict working rights in respect of the site to the same extent as the relevant restriction."
+  },
+  "UK_nia_2011_25/ab9a5d2034": {
+    "law": "UK_nia_2011_25",
+    "ref": "sch.3",
+    "sentence": "Compensation141 This paragraph applies where—a an application made under paragraph 7 in respect of a mining site is finally determined; andb the conditions to which the mineral permissions relating to the site are to be subject, as determined under this Schedule, differ in any respect from the proposed conditions set out in the application; andc the effect of the new conditions, except insofar as they are restoration or aftercare conditions, as compared with the effect of the existing conditions, except insofar as they were restoration or aftercare conditions, is to restrict working rights in respect of the site.2 For the purposes of this paragraph— “the new conditions”, in relation to a mining site, means the conditions, determined under this Schedule, to which the mineral permissions relating to the site are to be subject; and “the existing conditions”, in relation to a mining site, means the conditions to which the mineral permissions relating to the site were subject immediately prior to the final determination of the application made under paragraph 7 in respect of that site.3 For the purposes of this paragraph, working rights are restricted in respect of a mining site if any of—a the size of the area which may be used for the winning and working of minerals or the depositing of mineral waste;b the depth to which operations for the winning and working of minerals may extend;c the height of any deposit of mineral waste;d the rate at which any particular mineral may be extracted;e the rate at which any particular mineral waste may be deposited;f the period at the expiry of which any winning or working of minerals or depositing of mineral waste is to cease; org the total quantity of minerals which may be extracted from, or of mineral waste which may be deposited on, the site, is restricted or reduced in respect of the mining site in question.4 In a case to which this paragraph applies, section 26 of the Act of 1965 shall have effect as if an order having effect under section 68 of this Act had effect to modify those permissions to the extent specified in sub-paragraph (5).5 For the purposes of this paragraph, the order referred to in sub-paragraph (4) is one whose only effect adverse to the interests of any person having an interest in the land or minerals comprised in the mineral site is to restrict working rights in respect of the site to the same extent as the relevant restriction."
   },
   "UK_nisi_1992_231/b7ad368ab2": {
     "law": "UK_nisi_1992_231",
@@ -68,6 +78,11 @@
     "law": "UK_nisr_2004_416",
     "ref": "reg.1",
     "sentence": "These Regulations apply to Northern Ireland only."
+  },
+  "UK_nisr_2009_238/c3f6175cde": {
+    "law": "UK_nisr_2009_238",
+    "ref": "sch.8.pt.II",
+    "sentence": "PART IIREVOCATIONS TO STATUTORY INSTRUMENTS THAT EXTEND TO NORTHERN IRELAND123Regulations revokedReferencesExtent of revocationThe Dangerous Substances and Preparations (Safety) (Amendment) Regulations 2007S.I. 2007/386Regulation 3The Export and Import of Dangerous Chemicals Regulations 2008S.I. 2008/2108Regulation 5, paragraphs (3) and (5)The REACH Enforcement Regulations 2008S.I. 2008/2852Paragraphs 1 to 4 of Part 5 of Schedule 10"
   },
   "UK_ssi_1999_133/23dcbb96a5": {
     "law": "UK_ssi_1999_133",
@@ -259,6 +274,11 @@
     "ref": "s.36",
     "sentence": "The provisions of this Act . . . shall not extend to Northern Ireland . . ."
   },
+  "UK_ukpga_1957_31/95aa6a215a": {
+    "law": "UK_ukpga_1957_31",
+    "ref": "s.8",
+    "sentence": "This Act shall not extend to Scotland, nor to Northern Ireland except in so far as it extends the powers of the Parliament of Northern Ireland."
+  },
   "UK_ukpga_1957_42/a46a6cc078": {
     "law": "UK_ukpga_1957_42",
     "ref": "s.16",
@@ -273,11 +293,6 @@
     "law": "UK_ukpga_1958_71",
     "ref": "s.11",
     "sentence": "This Act . . . shall not extend to Northern Ireland."
-  },
-  "UK_ukpga_1959_66/63a06a8414": {
-    "law": "UK_ukpga_1959_66",
-    "ref": "s.5",
-    "sentence": "This Act shall not extend to Scotland or to Northern Ireland."
   },
   "UK_ukpga_1960_30/c6cf28b94b": {
     "law": "UK_ukpga_1960_30",
@@ -404,10 +419,20 @@
     "ref": "s.61",
     "sentence": "This Act may be cited as the Sewerage (Scotland) Act 1968 and shall extend to Scotland only."
   },
+  "UK_ukpga_1968_60/0f68ab8a93": {
+    "law": "UK_ukpga_1968_60",
+    "ref": "s.36",
+    "sentence": "This Act does not extend to Scotland or, . . . to Northern Ireland, except as regards any amendment or repeal which in accordance with section 33 above is to extend to Scotland or Northern Ireland."
+  },
   "UK_ukpga_1968_60/9e94710723": {
     "law": "UK_ukpga_1968_60",
     "ref": "s.33",
     "sentence": "The enactments mentioned in Schedule 3 to this Act (which include in Part II certain enactments related to the subject matter of this Act but already obsolete or redundant apart from this Act) are hereby repealed to the extent specified in column 3 of that Schedule; and, notwithstanding that the foregoing sections of this Act do not extend to Scotland, where any enactment expressed to be repealed by Schedule 3 does so extend, the Schedule shall have effect to repeal it in its application to Scotland except in so far as the repeal is expressed not to extend to Scotland."
+  },
+  "UK_ukpga_1968_64/fc04e00c5d": {
+    "law": "UK_ukpga_1968_64",
+    "ref": "s.20",
+    "sentence": "This Act shall not extend to Scotland or, . . . to Northern Ireland."
   },
   "UK_ukpga_1968_72/0e7633c432": {
     "law": "UK_ukpga_1968_72",
@@ -449,6 +474,11 @@
     "ref": "s.47",
     "sentence": "The provisions of this Act other than—a . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . c the repeals made in the House of Commons Disqualification Act 1957, shall not extend to Scotland."
   },
+  "UK_ukpga_1971_10/28e35fa073": {
+    "law": "UK_ukpga_1971_10",
+    "ref": "s.40",
+    "sentence": "This Act extends to Northern Ireland."
+  },
   "UK_ukpga_1971_10/4edbf3f64d": {
     "law": "UK_ukpga_1971_10",
     "ref": "s.31",
@@ -468,6 +498,11 @@
     "law": "UK_ukpga_1971_48",
     "ref": "s.12",
     "sentence": "Part II of the Schedule to this Act and so much of section 11(8) above as relates thereto extend to Scotland; and section 11(2) of this Act, Part III of that Schedule and so much of section 11(8) as relates thereto extend to Scotland and Northern Ireland."
+  },
+  "UK_ukpga_1971_48/c115e4bb76": {
+    "law": "UK_ukpga_1971_48",
+    "ref": "s.12",
+    "sentence": "Except as provided by subsections (4) to (6) below, this Act does not extend to Scotland or Northern Ireland."
   },
   "UK_ukpga_1971_60/d00790232a": {
     "law": "UK_ukpga_1971_60",
@@ -718,11 +753,6 @@
     "law": "UK_ukpga_1976_55",
     "ref": "s.27",
     "sentence": "Except for the following provisions, namely—a sections ... 15, 26(1) and (2) and this section;b section 7 and Schedule 3 so far as they relate to enactments (within the meaning of that section) that extend to Northern Ireland; andc Part I of Schedule 4 and, so far as it relates to that Part, section 26(3), this Act does not extend to Northern Ireland."
-  },
-  "UK_ukpga_1976_57/e1d4169503": {
-    "law": "UK_ukpga_1976_57",
-    "ref": "s.83",
-    "sentence": "This Act does not extend to Scotland and Northern Ireland"
   },
   "UK_ukpga_1976_76/bae355bb40": {
     "law": "UK_ukpga_1976_76",
@@ -988,6 +1018,11 @@
     "law": "UK_ukpga_1981_12",
     "ref": "s.7",
     "sentence": "Section 1 of this Act extends to Scotland and Northern Ireland but otherwise this Act extends to England and Wales only."
+  },
+  "UK_ukpga_1981_29/5464754d6e": {
+    "law": "UK_ukpga_1981_29",
+    "ref": "s.46",
+    "sentence": "The following provisions of this Act do not extend to Northern Ireland, that is to say, section 19(2)(a) and (b), section 25(3), (4) and (5), Part IV, sections 36 to 39 and Schedule 4."
   },
   "UK_ukpga_1981_29/a3be06de2b": {
     "law": "UK_ukpga_1981_29",
@@ -2104,10 +2139,35 @@
     "ref": "s.68",
     "sentence": "This Act, except for—a sections 7 to 9, 12 and 13 and Schedule 2,b sections 20 and 21 and Schedule 4,c so much of Schedule 1 as amends the Parliamentary Commissioner Act 1967, the House of Commons Disqualification Act 1975 and the Northern Ireland Assembly Disqualification Act 1975,d so much of Schedule 9 as amends any enactment that extends to Northern Ireland,e the repeal, by virtue of their inclusion in Schedule 11, of—i the entries relating to the Corporation in the Statutory Corporations (Financial Provisions) Act 1975, the House of Commons Disqualification Act 1975, the Northern Ireland Assembly Disqualification Act 1975 and the National Audit Act 1983,ii the Coal Consumers’ Councils (Northern Irish Interests) Act 1962,iii section 2(4) and (5) of the Overseas Development and Co-operation Act 1980 and the entry relating to the Corporation in Schedule 1 to that Act,iv section 1(2) of the Continental Shelf Act 1964 and section 2(3) of the Territorial Sea Act 1987,v so much of the Coal Industry Act 1987 as extends to Northern Ireland, andvi the British Coal and British Rail (Transfer Proposals) Act 1993, andf so much of this Part as is required for the purpose of giving effect to the extension to Northern Ireland of the provisions mentioned in the preceding paragraphs, does not extend to Northern Ireland."
   },
+  "UK_ukpga_1994_21/5c13fbcac9": {
+    "law": "UK_ukpga_1994_21",
+    "ref": "sch.8.para.12",
+    "sentence": "After subsection (5) there shall be inserted the following subsection—5A For the purposes of subsection (5) above a local planning authority may enter into an agreement with any applicant for an order under this section as to the steps to be taken by that person or any of his successors for securing the reconstruction of the way in question; and such an agreement shall have effect, so far as it relates to steps to be taken by any successor of the applicant, as if that successor had been a party to it and was bound by it to the same extent as the applicant."
+  },
+  "UK_ukpga_1994_21/79db9a0bc9": {
+    "law": "UK_ukpga_1994_21",
+    "ref": "sch.8",
+    "sentence": "Power to make compulsory rights orders21 In subsection (1) of section 4 (compulsory rights order)—a for the words “the Corporation”, in each place where they occur, there shall be substituted “ the Coal Authority ”;b for the words “compulsorily acquire” there shall be substituted “ confer ”; andc for the words “the whole or part of any land on which they desire” there shall be substituted “ the whole, or such part as (subject to the confirmation of the Secretary of State) the Coal Authority thinks fit, of any land on which the applicant for the order desires ”.2 After that subsection there shall be inserted the following subsections—1A The Coal Authority shall not make a compulsory rights order except on the application of a person who satisfies that Authority—a that he is either a licensed operator within the meaning of the Coal Industry Act 1994 or a person whose application to that Authority for a licence under Part II of that Act is pending; andb that he has served notice in the prescribed form of the application for the order on every person who is known to him to be a person who would, in relation to the order applied for, be directly concerned.1B Subject to the provisions of section 5 of this Act, the rights conferred by an order made on such an application as is mentioned in subsection (1A) of this section shall be conferred on the applicant and his successors so as to be exercisable for the purposes only of—a operations which the applicant or, as the case may be, any such successor is authorised to carry out by virtue of being a licensed operator within the meaning of the Coal Industry Act 1994; andb operations which are incidental to operations falling within paragraph (a) above (including operations carried out at times when the authorisation for the operations falling within that paragraph is not in force).3 In subsection (5) of that section (which has effect in relation to Scotland for applying enactments relating to compulsory purchase and giving effect to Part I of Schedule 2 to the Act), after the first “to the” there shall be inserted “ Scottish ”; and subsection (8) of that section shall cease to have effect."
+  },
+  "UK_ukpga_1994_21/7aa94a4795": {
+    "law": "UK_ukpga_1994_21",
+    "ref": "sch.4.pt.I",
+    "sentence": "Losses to be retained by the predecessor141 Notwithstanding anything in the preceding provisions of this Part of this Schedule or in Schedule 2 or 3 to this Act, the relevant unallowed tax losses of the predecessor—a shall not be capable, at any time after a relevant transfer comes into force, of being brought into account for any of the purposes of the Corporation Tax Acts in relation to the taxation of the transferee; butb shall continue, to the same extent as before, to be treated after any relevant transfer as unallowed tax losses of the predecessor.2 In sub-paragraph (1) above “relevant unallowed tax losses” means—a if the accounting period of the predecessor ends immediately before the coming into force of the relevant transfer, the unallowed tax losses of the predecessor as at the end of that period; andb in any other case, any losses, expenses, charges or amounts which would be unallowed tax losses of the predecessor immediately before the coming into force of the relevant transfer, if an accounting period of the predecessor had ended at that time.3 In this paragraph “unallowed tax losses” means any losses, expenses, charges or amounts which are tax losses within the meaning of section 400(2)(a), (b), (d) or (e) of the 1988 Act."
+  },
+  "UK_ukpga_1994_21/a4a4f6cd94": {
+    "law": "UK_ukpga_1994_21",
+    "ref": "sch.4.pt.I",
+    "sentence": "Transfer of liabilities131 If, by virtue of any relevant transfer, there is transferred any liability the amount of which is for the purposes of corporation tax—a an amount brought into account as deductible in computing the predecessor’s profits, or any description of the predecessor’s profits, for any accounting period ending before the time when the transfer comes into force, orb an amount falling to be so brought into account if it is assumed, where it is not the case, that the accounting period of the predecessor current on the day before the transfer comes into force ends immediately before that time, then that transfer shall not require any modification of the way that amount has been or is to be treated in relation to the predecessor for those purposes or entitle any amount due or paid in respect of that liability to be deductible in computing the transferee’s profits, or any description of the transferee’s profits, for any accounting period.2 Where the amount of any liability which in consequence of any relevant transfer falls to be discharged by the transferee is an amount which would (but for that and any other transfer) have fallen to be deductible in computing the predecessor’s profits, or any description of the predecessor’s profits, for any accounting period beginning with the coming into force of the transfer or at any subsequent time, that amount—a shall not be so deductible; butb subject to sub-paragraph (3) below, shall be deductible in computing the transferee’s profits to the same extent as if the transferee had become subject to the obligation in pursuance of which the liability arises or has arisen at the same time and for the same consideration, and otherwise on the same terms and in the same circumstances, as the predecessor; and for the purposes of this sub-paragraph it shall be assumed, where it is not the case, that the accounting period of the predecessor current on the day before the transfer comes into force ends immediately before the coming into force of that transfer.3 For the purposes of corporation tax, where any relevant transfer has the effect that any liability falls to any extent to be discharged by the transferee instead of by the predecessor, the amounts deductible in computing the transferee’s profits, or any description of the transferee’s profits, for any accounting period shall not include any amount in respect of so much of that liability as falls to be so discharged unless it is an amount which (but for that and any other transfer) would have fallen to be deductible in computing the predecessor’s profits, or any description of the predecessor’s profits, for any accounting period beginning or ending after the coming into force of that transfer.4 The preceding provisions of this paragraph shall apply in relation to the deduction of charges on income against the total profits of the predecessor or transferee for any period as they apply in relation to the deduction of any amount in the computation for that period of the profits of the predecessor or, as the case may be, of the transferee.5 For the purposes of Chapter II of Part VI of the 1988 Act (definition of distributions), where in the case of any relevant transfer any consideration given or treated as given in respect of a security relating to—a any liability, orb the use of the principal to which any liability, being a liability to interest or an equivalent liability, relates, would fall (apart from this sub-paragraph) to be regarded for those purposes as new consideration received by the predecessor, that consideration shall be treated instead, to the extent that it relates to so much of the liability as falls in consequence of the transfer to be discharged by the transferee and is not a liability to which sub-paragraph (1) above applies, as if it were new consideration received by the transferee."
+  },
   "UK_ukpga_1994_21/a6598bdc7b": {
     "law": "UK_ukpga_1994_21",
     "ref": "s.68",
     "sentence": "Sections 4D to 4F of, and Schedule 1C to, this Act extend to Scotland only."
+  },
+  "UK_ukpga_1994_21/e53fd005ec": {
+    "law": "UK_ukpga_1994_21",
+    "ref": "sch.8",
+    "sentence": "Suspension of rights of way121 In subsection (1) of section 15 (orders for suspension of right of way)—a in paragraph (a), for “the Corporation apply” there shall be substituted “ any person applies ”; andb in the words after paragraph (b), for “the Corporation may also apply to the Secretary of State” there shall be substituted “ that person may also apply to the Coal Authority ”.2 In subsection (2) of that section—a for “Secretary of State shall not make such an order” there shall be substituted “ Coal Authority shall not make an order under this section ”;b in paragraph (a), for “is granted” there shall be substituted “ has been applied for or granted ”; andc in paragraph (b), for the words from the beginning to “the Corporation” there shall be substituted—aa it is satisfied that the applicant—i is a licensed operator within the meaning of the Coal Industry Act 1994 or a person whose application to the Coal Authority for a licence under Part II of that Act is pending; andii has complied with the requirements of section 15A of this Act before submitting the application; andb it is also satisfied—i that a suitable alternative way will be made available by the applicant.3 For subsection (3) of that section there shall be substituted the following subsections—3 An order under this section—a shall not have effect unless confirmed by the Secretary of State; andb where it has been confirmed, shall have effect (with such modifications as the Secretary of State may in confirming it determine) so as to suspend the right of way to which it relates with effect (subject to section 15A(10) and (11) of this Act) from such date as may be determined by the Secretary of State and specified in the order as confirmed.3A Where at any time after an application for an order under this section has been made and before any order made on that application is confirmed—a any person becomes the successor of the original applicant for the order and notifies that fact—i if no order has been made on the application, to the Coal Authority, orii if such an order has been made, to the Secretary of State, andb the Authority or, as the case may be, the Secretary of State decides to proceed in relation to the application or order in accordance with this subsection, the provisions of this Act shall have effect as if the application had been made by that person, as if he had the same right to make it as the original applicant and as if anything done for the purposes of the application by or in relation to the original applicant or a previous successor had been done by or in relation to that person.3B The Coal Authority or, as the case may be, the Secretary of State may make a decision to proceed in accordance with subsection (3A) of this section subject to compliance by the successor giving the notification with such conditions as that Authority or the Secretary of State thinks fit.4 In subsection (4) of that section, after paragraph (b) there shall be inserted or c he is satisfied that it is appropriate to do so on account of any failure on the part of the person on whose application the order was made to comply with any of the requirements of section 15A(10) of this Act.5 In subsection (5) of that section, for the words from “include” to “to”, in the second place where it occurs, there shall be substituted “ not be made except where such conditions for the making of the order are imposed or such other provision is included in the order as may ”.6 After subsection (5) there shall be inserted the following subsection—5A For the purposes of subsection (5) above a local planning authority may enter into an agreement with any applicant for an order under this section as to the steps to be taken by that person or any of his successors for securing the reconstruction of the way in question; and such an agreement shall have effect, so far as it relates to steps to be taken by any successor of the applicant, as if that successor had been a party to it and was bound by it to the same extent as the applicant."
   },
   "UK_ukpga_1994_21/fcd2622ea5": {
     "law": "UK_ukpga_1994_21",
@@ -2249,6 +2309,11 @@
     "ref": "s.125",
     "sentence": "Except for this section and any amendment or repeal by this Act of any provision contained in—a the Parliamentary Commissioner Act 1967,b the Sea Fish (Conservation) Act 1967,c the House of Commons Disqualification Act 1975, ord the Northern Ireland Assembly Disqualification Act 1975, this Act shall not extend to Northern Ireland."
   },
+  "UK_ukpga_1995_25/22d966e6c1": {
+    "law": "UK_ukpga_1995_25",
+    "ref": "s.125",
+    "sentence": "Section 106 of, and Schedule 16 to, this Act extend to Scotland only."
+  },
   "UK_ukpga_1995_25/322db9aa93": {
     "law": "UK_ukpga_1995_25",
     "ref": "sch.22",
@@ -2363,6 +2428,11 @@
     "law": "UK_ukpga_1995_40",
     "ref": "s.7",
     "sentence": "Paragraph 5 of Schedule 3 to this Act and this section also extend to England and Wales and Northern Ireland."
+  },
+  "UK_ukpga_1995_40/b8e0e57a20": {
+    "law": "UK_ukpga_1995_40",
+    "ref": "sch.4",
+    "sentence": "Road Traffic Offenders Act 1988 (c. 53)711 The Road Traffic Offenders Act 1988 shall be amended as follows.2 In subsection (5) of section 6 (time limit for commencement of summary proceedings), for the words “section 331 of the Criminal Procedure (Scotland) Act 1975” there shall be substituted the words “ section 136 of the Criminal Procedure (Scotland) Act 1995 ”.3 In subsection (6) of section 24 (alternative verdicts) for the words “sections 61, 63, 64, 312 and 457A of the Criminal Procedure (Scotland) Act 1975” there shall be substituted the words “ sections 295, 138(4), 256 and 293 of and Schedule 3 to the Criminal Procedure (Scotland) Act 1995 ”.4 In subsection (2) of section 31 (taking account of endorsation) for the words “section 357(1) of the Criminal Procedure (Scotland) Act 1975” there shall be substituted the words “ section 166(1) to (6) of the Criminal Procedure (Scotland) Act 1995 ”.5 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .6 After section 33 of the Road Traffic Offenders Act 1988 (fine and imprisonment), there shall be inserted the following section— Forfeiture of vehicles: Scotland.33A1 Where a person commits an offence to which this subsection applies by—a driving, attempting to drive, or being in charge of a vehicle; orb failing to comply with a requirement made under section 7 of the Road Traffic Act 1988 (failure to provide specimen for analysis or laboratory test) in the course of an investigation into whether the offender had committed an offence while driving, attempting to drive or being in charge of a vehicle, orc failing, as the driver of a vehicle, to comply with subsections (2) and (3) of section 170 of the Road Traffic Act 1988 (duty to stop and give information or report accident), the court may, on an application under this subsection, make an order forfeiting the vehicle concerned; and any vehicle forfeited under this subsection shall be disposed of as the court may direct.2 Subsection (1) above applies—a to an offence under the Road Traffic Act 1988 which is punishable with imprisonment; andb to an offence of culpable homicide.3 An application under subsection (1) above shall be at the instance of the prosecutor made when he moves for sentence (or, if the person has been remitted for sentence under section 195 of the Criminal Procedure (Scotland) Act 1995) made before sentence is pronounced.4 Where—a the court is satisfied, on an application under this subsection by the prosecutor—i that proceedings have been, or are likely to be, instituted against a person in Scotland for an offence to which subsection (1) above applies allegedly committed in the manner specified in paragraph (a), (b) or (c) of that subsection; andii that there is reasonable cause to believe that a vehicle specified in the application is to be found in a place or in premises so specified; andb it appears to the court that there are reasonable grounds for thinking that in the event of the person being convicted of the offence an order under subsection (1) above might be made in relation to the vehicle, the court may grant a warrant authorising a person named therein to enter and search the place or premises and seize the vehicle.5 Where the court has made an order under subsection (1) above for the forfeiture of a vehicle, the court or any justice may, if satisfied on evidence on oath—a that there is reasonable cause to believe that the vehicle is to be found in any place or premises; andb that admission to the place or premises has been refused or that a refusal of such admission is apprehended, issue a warrant of search which may be executed according to law.6 In relation to summary proceedings, the reference in subsection (5) above to a justice includes a reference to the sheriff and to a magistrate.7 Part II of the Proceeds of Crime (Scotland) Act 1995 shall not apply in respect of a vehicle in relation to which this section applies.8 This section extends to Scotland only.7 In subsection (3) of section 46 (combination of disqualification and endorsement with probation etc)—a in paragraph (b) for the words from “section 182” to the end there shall be substituted the words “ section 228 (probation) or 246(2) or (3) (absolute discharge) of the Criminal Procedure (Scotland) Act 1995 ”; andb for the words from “section 191” to the end of the subsection there shall be substituted the words “ section 247 of that Act shall not apply ”.8 In section 60—a in subsection (4) for the words “section 315 of the Criminal Procedure (Scotland) Act 1975” there shall be substituted the words “ section 140 of the Criminal Procedure (Scotland) Act 1995 ”;b in subsection (5) for the words “Part II” there shall be substituted the words “ Part IX ”; andc in subsection (6)—i in paragraph (b) for the words “section 312” where they first occur there shall be substituted the words “ section 140(4) ”;ii in that paragraph for the words “paragraphs (a) to (z) of section 312 of” there shall be substituted the words “ section 255 of and Schedule 3 to ”; andiii paragraph (c) shall cease to have effect.9 In subsection (7) of section 64 (commencement of proceedings against owner of vehicle) for the words “section 331(1) of the Criminal Procedure (Scotland) Act 1975” there shall be substituted the words “ section 136(1) of the Criminal Procedure (Scotland) Act 1995 ”.10 In subsection (1) of section 89 (interpretation), in the definition of “court of summary jurisdiction” for the words “section 462(1) of the Criminal Procedure (Scotland) Act 1975” there shall be substituted the words “ section 307(1) of the Criminal Procedure (Scotland) Act 1995 ”."
   },
   "UK_ukpga_1995_45/97ac208c25": {
     "law": "UK_ukpga_1995_45",
@@ -2879,6 +2949,36 @@
     "ref": "s.66",
     "sentence": "In this Part, so far as it applies to England and Wales—a references to excluded material shall be construed in accordance with section 11 of the 1984 Act (meaning of “excluded material”); andb references to special procedure material shall be construed in accordance with section 14 of that Act (meaning of “special procedure material”)."
   },
+  "UK_ukpga_2001_24/2bc8c039cf": {
+    "law": "UK_ukpga_2001_24",
+    "ref": "s.127",
+    "sentence": "The following provisions come into force on the day on which this Act is passed—a Parts 2 to 6,b Part 8, except section 78,c Part 9, except sections 84 and 87,d sections 89 to 97,e sections 98 to 100, except so far as they extend to Scotland,f section 101 and Schedule 7, except so far as they relate to the entries in respect of the Police (Scotland) Act 1967,g Part 11,h Part 13, except section 121,i this Part, except section 125 and Schedule 8 so far as they relate to the entries—i in Part 1 of Schedule 8,ii in Part 5 of Schedule 8, in respect of the Nuclear Installations Act 1965,iii in Part 6 of Schedule 8, in respect of the British Transport Commission Act 1962 and the Ministry of Defence Police Act 1987, so far as those entries extend to Scotland,iv in Part 7 of Schedule 8, in respect of Schedule 5 to the Terrorism Act 2000."
+  },
+  "UK_ukpga_2001_24/30c9bb4244": {
+    "law": "UK_ukpga_2001_24",
+    "ref": "s.128",
+    "sentence": "The following provisions do not extend to Scotland—a Part 5,b Part 12,c in Part 6 of Schedule 8, the repeals in the Criminal Justice and Police Order Act 1994 and in the Crime and Disorder Act 1998."
+  },
+  "UK_ukpga_2001_24/498478bfe7": {
+    "law": "UK_ukpga_2001_24",
+    "ref": "s.127",
+    "sentence": "The following provisions come into force on such day as the Secretary of State and the Scottish Ministers, acting jointly, may appoint by order—a sections 98 to 100, so far as they extend to Scotland,b section 101 and Schedule 7, so far as they relate to the entries in respect of the Police (Scotland) Act 1967, andc section 125 and Schedule 8, so far as they relate to the entries in Part 6 of Schedule 8 in respect of the British Transport Commission Act 1962 and the Ministry of Defence Police Act 1987, so far as those entries extend to Scotland."
+  },
+  "UK_ukpga_2001_24/4ba94f30fa": {
+    "law": "UK_ukpga_2001_24",
+    "ref": "s.128",
+    "sentence": "The following provisions do not extend to Northern Ireland—a section 76,b section 100."
+  },
+  "UK_ukpga_2001_24/6ad0a170d3": {
+    "law": "UK_ukpga_2001_24",
+    "ref": "sch.1.pt.4A",
+    "sentence": "Associated and joint property10H1 Paragraphs 10I and 10J apply if—a an application is made under paragraph 10G in respect of property detained under this Part of this Schedule,b the court or sheriff is satisfied that the property is a listed asset,c the court or sheriff is satisfied that all or part of the property is within subsection (1)(a) or (b) of section 1 or is property earmarked as terrorist property, andd there exists property that is associated with the property in relation to which the court or sheriff is satisfied as mentioned in paragraph (c).2 Paragraphs 10I and 10J also apply in England and Wales and Northern Ireland if—a an application is made under paragraph 10G in respect of property detained under this Part of this Schedule,b the court is satisfied that the property is a listed asset,c the court is satisfied that all or part of the property is property earmarked as terrorist property, andd the property in relation to which the court or sheriff is satisfied as mentioned in paragraph (c) belongs to joint tenants and one of the tenants is an excepted joint owner.3 In this paragraph and paragraphs 10I and 10J “associated property” means property of any of the following descriptions that is not itself the forfeitable property—a any interest in the forfeitable property;b any other interest in the property in which the forfeitable property subsists;c if the forfeitable property is a tenancy in common, the tenancy of the other tenant;d if (in Scotland) the forfeitable property is owned in common, the interest of the other owner;e if the forfeitable property is part of a larger property, but not a separate part, the remainder of that property."
+  },
+  "UK_ukpga_2001_24/ff9e6e086e": {
+    "law": "UK_ukpga_2001_24",
+    "ref": "s.128",
+    "sentence": "Except as provided in subsections (1) and (2), an amendment, repeal or revocation in this Act has the same extent as the enactment amended, repealed or revoked."
+  },
   "UK_ukpga_2001_3/87ef79c62b": {
     "law": "UK_ukpga_2001_3",
     "ref": "s.45",
@@ -2994,6 +3094,11 @@
     "ref": "s.201",
     "sentence": "Section 155(1) also extends to Northern Ireland."
   },
+  "UK_ukpga_2003_17/f76b177317": {
+    "law": "UK_ukpga_2003_17",
+    "ref": "sch.8.pt.4",
+    "sentence": "Savings31 Notwithstanding the repeal by this Act of Schedule 12 to the London Government Act 1963 (c. 33) (licensing of public entertainment in Greater London), or of any enactment amending that Schedule, that Schedule shall continue to apply in relation to—a licences granted under section 21 of the Greater London Council (General Powers) Act 1966 (c. xxviii) (licensing of public exhibitions in London), andb licences granted under section 5 of the Greater London Council (General Powers) Act 1978 (c. xiii) (licensing of entertainments booking offices in London), as it applied before that repeal.321 In Schedule 3 to the Local Government (Miscellaneous Provisions) Act 1982 (c. 30) (control of sex establishments), paragraph (ii) of the proviso to paragraph 3A (as substituted by paragraph 85(3) of Schedule 6 to this Act) does not apply in relation to a borough of a participating council (within the meaning of section 2 of the London Local Authorities Act 1990 (c. vii)) which has appointed a day under section 3 of that Act for the coming into force of section 18 of that Act (repeal of paragraph (ii) of the proviso to paragraph 3A of Schedule 3 to that Act).2 On or after the coming into force of paragraph 85(3) of Schedule 6 to this Act, the reference in section 18 of that Act to paragraph (ii) of the proviso to paragraph 3A of Schedule 3 to that Act is to be read as a reference to that paragraph as substituted by paragraph 85(3) of Schedule 6 to this Act.33 Notwithstanding that by virtue of this Act the Cinemas Act 1985 (c. 13) ceases to have effect in England and Wales, section 6 of that Act (other than subsection (3)), and sections 5, 20 and 21 of that Act so far as relating to that section, shall continue to have effect there for the purposes of—a paragraph 3(2)(b) of Schedule 3 to the Local Government (Miscellaneous Provisions) Act 1982 (definition of “sex cinema”), andb section 3(6)(b) of the Video Recordings Act 1984 (c. 39) (exempted supplies)."
+  },
   "UK_ukpga_2003_20/363f46085a": {
     "law": "UK_ukpga_2003_20",
     "ref": "s.14",
@@ -3064,15 +3169,65 @@
     "ref": "s.105",
     "sentence": "Sections 3, 4, 10 and 27 have the same extent as they would have if they were contained in the WRA, and section 224 of the WRA (application to Isles of Scilly) applies in relation to those sections as it applies to the WRA."
   },
+  "UK_ukpga_2003_39/1b1d34b0ce": {
+    "law": "UK_ukpga_2003_39",
+    "ref": "sch.8",
+    "sentence": "Railway Clauses Consolidation Act 1845 (c. 20)20 In section 3 (interpretation), omit the words from “The word “justice”” to “acting together:”.21 In section 11 (limiting deviation from datum line described on sections, etc.)—a for “in petty sessions assembled for that purpose, and acting for the district” substitute “ acting in the local justice area ”, andb for the words from “every petty sessions” to “holding of such petty sessions” substitute “ every hearing before two or more justices to be held for the purpose of obtaining their consent as mentioned above shall, at least 14 days before the hearing ”.22 In section 46 (crossings of roads—level crossings), omit “in petty sessions”.23 In section 59 (proceedings on application to justices to consent to level crossings over highways other than public carriage roads)—a for “fourteen days at least previous to the holding of the petty sessions at which such application is intended to be made” substitute “ at least 14 days before the application is intended to be made ”,b for “acting for the district” substitute “ acting in the local justice area ”, andc omit “, and assembled in petty sessions,”.24 Paragraphs 20 to 23 extend only to England and Wales."
+  },
+  "UK_ukpga_2003_39/1eed37b8f5": {
+    "law": "UK_ukpga_2003_39",
+    "ref": "sch.8.para.18",
+    "sentence": "Paragraphs 15 to 17 extend only to England and Wales."
+  },
+  "UK_ukpga_2003_39/2cb158d0d3": {
+    "law": "UK_ukpga_2003_39",
+    "ref": "sch.5.pt.3",
+    "sentence": "Paragraphs 9A and 9B: supplementary9C1 Sub-paragraphs (3) and (3A) apply for the purposes of paragraphs 9A and 9B.2 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .3 “Information” means information held in any form. 3A Relevant court” has the same meaning as in Part 3 of this Schedule.3B In paragraphs 9A and 10 (as in the provisions of this Schedule which extend to England and Wales only)— “fines officer” has the meaning given by section 36; “P” has the meaning given by paragraph 1. 4 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .5 Nothing in paragraph 9A or 9B authorises the making of a disclosure which contravenes the data protection legislation. 6 In this paragraph, “the data protection legislation” has the same meaning as in the Data Protection Act 2018 (see section 3 of that Act)."
+  },
+  "UK_ukpga_2003_39/568e044780": {
+    "law": "UK_ukpga_2003_39",
+    "ref": "sch.8",
+    "sentence": "Reserve and Auxiliary Forces (Protection of Civil Interests) Act 1951 (c. 65)931 In Schedule 2 (paying authorities under Part 5), omit Part 2.2 Nothing in sub-paragraph (1) is to be read as amending Schedule 2 as it extends to Northern Ireland."
+  },
+  "UK_ukpga_2003_39/5d6b398f1a": {
+    "law": "UK_ukpga_2003_39",
+    "ref": "sch.8.para.93",
+    "sentence": "Nothing in sub-paragraph (1) is to be read as amending Schedule 2 as it extends to Northern Ireland."
+  },
   "UK_ukpga_2003_39/5d8cbfcad4": {
     "law": "UK_ukpga_2003_39",
     "ref": "s.111",
     "sentence": "Subject to subsections (2) and (3) and to section 27(13) of the Crime and Courts Act 2013 (extent of paragraphs 9A, 9C and 10 of Schedule 5) and Article 1(3) of the Collection of Fines etc. (Northern Ireland Consequential Amendments) Order 2016 (extent of Part 3B of Schedule 5), this Act extends only to England and Wales."
   },
+  "UK_ukpga_2003_39/7d40d9c07f": {
+    "law": "UK_ukpga_2003_39",
+    "ref": "sch.8",
+    "sentence": "Defence Act 1842 (c. 94)131 In section 24 (compensation for damage caused by temporary buildings), omit “of the county, riding, city, or place”.2 This paragraph extends only to England and Wales."
+  },
+  "UK_ukpga_2003_39/80906c82da": {
+    "law": "UK_ukpga_2003_39",
+    "ref": "sch.8",
+    "sentence": "Ecclesiastical Courts Jurisdiction Act 1860 (c. 32)37 In section 2 (offence of making a disturbance in churches, chapels, churchyards etc.)—a for “before two justices of the peace” substitute “ by a magistrates' court ”,b for “a penalty of not more than” substitute “ a fine not exceeding ”, andc for “for every such offence, or may, if the justices before whom he shall be convicted think fit, instead of being subjected to any pecuniary penalty, be committed to prison for any time” substitute “ or to imprisonment for a term ”.38 In section 3 (power to arrest offenders and take them before a justice of the peace), for “justice of the peace of the county or place where the said offence shall have been so committed,” substitute “ magistrates' court ”.39 Paragraphs 37 and 38 do not extend to Northern Ireland."
+  },
   "UK_ukpga_2003_39/91170bf15b": {
     "law": "UK_ukpga_2003_39",
     "ref": "s.111",
     "sentence": "Subject to any provision made in Schedule 8, the amendments and repeals made by Schedules 4, 8 and 10 have the same extent as the enactments to which they relate."
+  },
+  "UK_ukpga_2003_39/9686a84445": {
+    "law": "UK_ukpga_2003_39",
+    "ref": "sch.8",
+    "sentence": "Maintenance Orders Act 1950 (c. 37)87 In section 17(1)(a) (registration of maintenance orders in England), for “for the same place” substitute “ acting in the same local justice area ”.88 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .89 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .90 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .911 Amend section 25 (rules as to procedure of magistrates' courts) as follows.2 Omit subsection (1).3 In subsection (3)—a after “Rules” insert “ of court ”, andb in paragraph (a), for the words from “by means of” onwards, substitute “ in accordance with the rules ”.4 Sub-paragraph (3) does not extend to Northern Ireland.921 Amend section 28(1) (interpretation) as follows.2 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .3 In the definition of “prescribed”, omit—a “England or”,b “by rules made under section fifteen of the Justices of the Peace Act 1949, or”, andc “as the case may be,”."
+  },
+  "UK_ukpga_2003_39/bba8c5554b": {
+    "law": "UK_ukpga_2003_39",
+    "ref": "sch.8.para.39",
+    "sentence": "Paragraphs 37 and 38 do not extend to Northern Ireland."
+  },
+  "UK_ukpga_2003_39/d287ce2b15": {
+    "law": "UK_ukpga_2003_39",
+    "ref": "sch.5.para.9Cn1",
+    "sentence": "C1 Sub-paragraphs (3) and (3A) apply for the purposes of paragraphs 9A and 9B.2 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .3 “Information” means information held in any form. 3A Relevant court” has the same meaning as in Part 3 of this Schedule.3B In paragraphs 9A and 10 (as in the provisions of this Schedule which extend to England and Wales only)— “fines officer” has the meaning given by section 36; “P” has the meaning given by paragraph 1. 4 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .5 Nothing in paragraph 9A or 9B authorises the making of a disclosure which contravenes the data protection legislation. 6 In this paragraph, “the data protection legislation” has the same meaning as in the Data Protection Act 2018 (see section 3 of that Act)."
   },
   "UK_ukpga_2003_43/1e5a0ce820": {
     "law": "UK_ukpga_2003_43",
@@ -3118,11 +3273,6 @@
     "law": "UK_ukpga_2004_20",
     "ref": "s.187",
     "sentence": "In this section references to section 33 of the 1989 Act are references to that section as it has effect in Scotland."
-  },
-  "UK_ukpga_2004_20/2ec310af1a": {
-    "law": "UK_ukpga_2004_20",
-    "ref": "s.198",
-    "sentence": "The following provisions of this Act do not extend to Northern Ireland—a Chapter 3 of Part 1 (with the exception of section 59 and paragraphs 1, 5, 6, 8, 10(1) and (2) and 11 of Schedule 14);b so much of Part 2 as amends the 1989 Act;c sections 82, 90, 91 and 100; andd Part 3 (with the exception of section 151(5))."
   },
   "UK_ukpga_2004_20/85a1b60184": {
     "law": "UK_ukpga_2004_20",
@@ -3199,6 +3349,11 @@
     "ref": "s.60",
     "sentence": "The following provisions of this Act extend to England and Wales only—a section 13;b section 39; andc section 52."
   },
+  "UK_ukpga_2005_15/0905102fd9": {
+    "law": "UK_ukpga_2005_15",
+    "ref": "sch.7.pt.4",
+    "sentence": "This paragraph extends also to Scotland."
+  },
   "UK_ukpga_2005_15/0af094429f": {
     "law": "UK_ukpga_2005_15",
     "ref": "s.173",
@@ -3209,15 +3364,35 @@
     "ref": "s.179",
     "sentence": "So far as Schedule 17 contains a repeal or revocation of an enactment which corresponds to the repeal or revocation of that enactment by another provision of this Act, that Schedule and section 174(2) have the same extent as that other provision."
   },
+  "UK_ukpga_2005_15/2d1115a61f": {
+    "law": "UK_ukpga_2005_15",
+    "ref": "sch.7.pt.3",
+    "sentence": "International Criminal Court Act 2001 (c. 17)491 The International Criminal Court Act 2001 is amended as follows.2 In section 33 (entry, search and seizure), in subsection (2), for “a serious arrestable offence” substitute “ (in the case of Part 2 of the 1984 Act) to an indictable offence or (in the case of Part III of the 1989 Order) to a serious arrestable offence ”.3 In section 55 (meaning of “ancillary offence” under the law of England and Wales), in subsection (5), in each of paragraphs (a) and (b), for “an arrestable offence” substitute “ a relevant offence ”.4 This paragraph extends to England and Wales and to Northern Ireland (but not to Scotland)."
+  },
+  "UK_ukpga_2005_15/8ebcab888d": {
+    "law": "UK_ukpga_2005_15",
+    "ref": "sch.7.pt.3",
+    "sentence": "Terrorism Act 2000 (c. 11)481 In Schedule 8 to the Terrorism Act 2000 (detention), in paragraph 8 (which relates to the rights of a person detained under Schedule 7 to or section 41 of that Act)—a in sub-paragraph (4), for “serious arrestable offence”, in each place where it occurs, substitute “ serious offence ”,b in sub-paragraph (9), for the words before paragraph (a) substitute “ In this paragraph, references to a “serious offence” are (in relation to England and Wales) to an indictable offence, and (in relation to Northern Ireland) to a serious arrestable offence within the meaning of Article 87 of the Police and Criminal Evidence (Northern Ireland) Order 1989; but also include— ”.2 This paragraph extends to the whole of the United Kingdom."
+  },
   "UK_ukpga_2005_15/c702833295": {
     "law": "UK_ukpga_2005_15",
     "ref": "s.178",
     "sentence": "The following provisions, so far as they extend to Northern Ireland, come into force on such day as the Department of Justice in Northern Ireland may by order appoint—a section 144 so far as it relates to Part 2 of Schedule 10,b section 163(1),c section 163(3) so far as it relates to paragraphs 4 and 10 of Schedule 14,d Part 2 of Schedule 10, ande paragraphs 4 and 10 of Schedule 14."
   },
+  "UK_ukpga_2005_15/d42817db48": {
+    "law": "UK_ukpga_2005_15",
+    "ref": "sch.7.pt.1",
+    "sentence": "Road Traffic Act 1988 (c. 52)271 The Road Traffic Act 1988 is amended as follows.2 In section 4 (driving etc. under influence of drink or drugs), omit subsections (6) to (8).3 In section 163 of the Road Traffic Act 1988 (power of police to stop vehicles), omit subsection (4).4 The repeal of section 4(8) extends also to Scotland."
+  },
   "UK_ukpga_2005_15/ec0f11679b": {
     "law": "UK_ukpga_2005_15",
     "ref": "s.173",
     "sentence": "Before exercising the power conferred by subsection (1) in relation to an enactment which extends to Scotland, the Secretary of State must consult the Scottish Ministers."
+  },
+  "UK_ukpga_2005_15/ef1cd20fa6": {
+    "law": "UK_ukpga_2005_15",
+    "ref": "sch.7.para.49",
+    "sentence": "This paragraph extends to England and Wales and to Northern Ireland (but not to Scotland)."
   },
   "UK_ukpga_2005_15/fa52f550ae": {
     "law": "UK_ukpga_2005_15",
@@ -3263,11 +3438,6 @@
     "law": "UK_ukpga_2006_16",
     "ref": "s.108",
     "sentence": "In this Part—a sections 105, 107 and 109 and this section extend also to Scotland and Northern Ireland so far as necessary, andb the amendments, repeals and revocations in Schedules 11 and 12 have the same extent as the provisions to which they relate (except where otherwise provided)."
-  },
-  "UK_ukpga_2006_16/94086c4e91": {
-    "law": "UK_ukpga_2006_16",
-    "ref": "sch.11.para.72",
-    "sentence": "Sub-paragraph (2) extends to England and Wales (including their adjacent territorial waters) only."
   },
   "UK_ukpga_2006_16/a1070ac20d": {
     "law": "UK_ukpga_2006_16",
@@ -3418,11 +3588,6 @@
     "law": "UK_ukpga_2007_15",
     "ref": "s.148",
     "sentence": "The provisions of Part 6 come into force, in so far as they extend to Scotland, in accordance with provision made by the Scottish Ministers by order."
-  },
-  "UK_ukpga_2007_15/4c9d421b56": {
-    "law": "UK_ukpga_2007_15",
-    "ref": "sch.13.para.7",
-    "sentence": "This paragraph extends only to England and Wales."
   },
   "UK_ukpga_2007_15/5ceb962bb1": {
     "law": "UK_ukpga_2007_15",
@@ -3659,11 +3824,6 @@
     "ref": "s.323",
     "sentence": "The amendment or repeal of any enactment (including an enactment comprised in subordinate legislation) by, or in consequence of, the following provisions of this Act has the same extent as the enactment amended or repealed—a Part 1 (the MMO);b Part 2 (exclusive economic zone, UK marine area and Welsh zone), other than paragraph 2 of Schedule 4;c Chapter 3 of Part 7 (migratory and freshwater fish);d Chapter 4 of Part 7 (obsolete fisheries enactments);e Part 9 (coastal access);f in Part 10—i sections 311 and 312 (Natural England);ii section 313 (Countryside Council for Wales);iii section 314 (which inserts Part 4A into the Energy Act 2008 (c. 32));g Schedule 14 (minor and consequential amendments relating to IFC authorities)."
   },
-  "UK_ukpga_2009_25/0c99732cc8": {
-    "law": "UK_ukpga_2009_25",
-    "ref": "s.132",
-    "sentence": "In this section “legislation” means—a an Act of Parliament if, or to the extent that, it extends to England and Wales;b subordinate legislation made under an Act of Parliament if, or to the extent that, the subordinate legislation extends to England and Wales;c a Measure or Act of the National Assembly for Wales or subordinate legislation made under such a Measure or Act."
-  },
   "UK_ukpga_2009_25/20969b7b37": {
     "law": "UK_ukpga_2009_25",
     "ref": "s.181",
@@ -3708,11 +3868,6 @@
     "law": "UK_ukpga_2009_26",
     "ref": "s.115",
     "sentence": "Section 104(1) and (2) (so far as relating to the Police, Public Order and Criminal Justice (Scotland) Act 2006 (asp 10)) extends to Scotland only."
-  },
-  "UK_ukpga_2009_4/d52d933f23": {
-    "law": "UK_ukpga_2009_4",
-    "ref": "s.446",
-    "sentence": "Credits or debits relating to the imputed amount are to be brought into account for the purposes of this Part to the same extent as they would be in the case of an actual amount of such profits or losses."
   },
   "UK_ukpga_2010_23/f7ab82d9ac": {
     "law": "UK_ukpga_2010_23",
@@ -3779,25 +3934,50 @@
     "ref": "s.81",
     "sentence": "This Part extends to the whole of the United Kingdom."
   },
+  "UK_ukpga_2012_10/1a77962f49": {
+    "law": "UK_ukpga_2012_10",
+    "ref": "s.152",
+    "sentence": "In Chapter 8 of Part 3—a section 139 extends to England and Wales only,b sections 140 and 141 extend to England and Wales, Scotland and Northern Ireland,c paragraphs 1 to 11 of Schedule 25 extend to England and Wales only,d paragraphs 12 to 17 of that Schedule extend to Scotland only, ande Part 2 of that Schedule extends to England and Wales only."
+  },
+  "UK_ukpga_2012_10/3025886264": {
+    "law": "UK_ukpga_2012_10",
+    "ref": "s.152",
+    "sentence": "The following have the same extent as the amendments, modifications, enactments, instruments or provisions to which they relate—a section 68(7),b section 80(10) and (11),c section 135(4), (5) and (7),d section 148(6),e Part 4 of Schedule 7 and Part 3 of Schedule 8, andf Schedule 15."
+  },
   "UK_ukpga_2012_10/721ba868b2": {
     "law": "UK_ukpga_2012_10",
     "ref": "s.152",
     "sentence": "Sections 149, 150, 151, this section and section 154 extend to England and Wales, Scotland and Northern Ireland."
+  },
+  "UK_ukpga_2012_10/72ebfa0030": {
+    "law": "UK_ukpga_2012_10",
+    "ref": "s.152",
+    "sentence": "Subsection (6) applies to section 148(1) to (5) only so far as the provisions amended extend to England and Wales or apply in relation to service offences."
   },
   "UK_ukpga_2012_10/75e824abb4": {
     "law": "UK_ukpga_2012_10",
     "ref": "s.152",
     "sentence": "Sections 130 and 131(1) extend to England and Wales and Scotland."
   },
+  "UK_ukpga_2012_10/9ab0bed4a8": {
+    "law": "UK_ukpga_2012_10",
+    "ref": "s.152",
+    "sentence": "Parts 1 to 3 of this Act extend to England and Wales only, subject to subsections (2) to (8)."
+  },
+  "UK_ukpga_2012_10/a553e246b5": {
+    "law": "UK_ukpga_2012_10",
+    "ref": "s.152",
+    "sentence": "The following provisions extend to England and Wales and Northern Ireland—a section 22,b section 33,c section 40 and Schedule 6, andd sections 41 to 43."
+  },
+  "UK_ukpga_2012_10/c36209a9ec": {
+    "law": "UK_ukpga_2012_10",
+    "ref": "s.152",
+    "sentence": "Section 77 extends to England and Wales, Scotland and Northern Ireland, subject to subsection (11)."
+  },
   "UK_ukpga_2012_7/0789237861": {
     "law": "UK_ukpga_2012_7",
     "ref": "s.295",
     "sentence": "In this section— “commission” means arrange for the provision of, “Northern Ireland health service” means any of the health services under any enactment which extends to Northern Ireland and which corresponds to section 1(1) of the National Health Service Act 2006 (and, for that purpose, “enactment” includes subordinate legislation within the meaning of the Interpretation Act 1978 and Northern Ireland legislation), and “Northern Ireland Minister” includes the First Minister, the deputy First Minister and a Northern Ireland department."
-  },
-  "UK_ukpga_2012_7/964593c2ac": {
-    "law": "UK_ukpga_2012_7",
-    "ref": "s.308",
-    "sentence": "Sections 128 to 133 (health special administration) extend to England and Wales and Scotland."
   },
   "UK_ukpga_2012_9/6f8ce27672": {
     "law": "UK_ukpga_2012_9",
@@ -3844,20 +4024,35 @@
     "ref": "s.23",
     "sentence": "This Act extends to England and Wales."
   },
-  "UK_ukpga_2013_22/5395e0a5d1": {
+  "UK_ukpga_2013_22/26a3e5e465": {
     "law": "UK_ukpga_2013_22",
-    "ref": "s.61",
-    "sentence": "Subsection (15) applies to section 43 only so far as the provisions amended extend to England and Wales or apply in relation to service offences."
+    "ref": "sch.24",
+    "sentence": "Provisions that do not extend to Northern Ireland11 The relevant NCA provisions do not extend to Northern Ireland.2 The Secretary of State may, by order, provide that any other provision of Part 1 of this Act is not to extend to Northern Ireland.3 This paragraph is subject to paragraph 2."
+  },
+  "UK_ukpga_2013_22/2a02891bbf": {
+    "law": "UK_ukpga_2013_22",
+    "ref": "sch.24.para.1",
+    "sentence": "The Secretary of State may, by order, provide that any other provision of Part 1 of this Act is not to extend to Northern Ireland."
   },
   "UK_ukpga_2013_22/78481de299": {
     "law": "UK_ukpga_2013_22",
     "ref": "s.61",
     "sentence": "Except as provided by subsections (13) ..., an amendment, repeal or revocation has the same extent as the provision amended, repealed or revoked (ignoring extent by virtue of an Order in Council)."
   },
+  "UK_ukpga_2013_22/9581e4b5ef": {
+    "law": "UK_ukpga_2013_22",
+    "ref": "sch.25.pt.1",
+    "sentence": "Relevant civil recovery provisions not to extend to Northern Ireland unless order made21 The relevant civil recovery provisions do not extend to Northern Ireland.2 But that is subject to paragraph 3."
+  },
   "UK_ukpga_2013_22/9e3c640c79": {
     "law": "UK_ukpga_2013_22",
     "ref": "s.61",
     "sentence": "Subsection (15) does not apply to amendments made by section 27(13) and (14) or to the amendments made by this Act in the Government Annuities Act 1929 or the Friendly Societies Act 1974 (which amendments, accordingly, extend to England and Wales, Scotland and Northern Ireland only)."
+  },
+  "UK_ukpga_2013_22/a776cd57be": {
+    "law": "UK_ukpga_2013_22",
+    "ref": "sch.5.pt.8",
+    "sentence": "General provision about orders291 The power to make an order under paragraph 27 or 28 may, in particular, be exercised by—a amending, repealing, revoking or otherwise modifying any provision made by or under an enactment, orb applying an enactment (with or without modifications).2 The Secretary of State must consult—a the Commissioners before exercising the power conferred by paragraph 27 or 28 in relation to an enactment which (expressly or otherwise) confers any function on the Commissioners or an officer of Revenue and Customs;b the Scottish Ministers before exercising the power conferred by paragraph 27 or 28 in relation to an enactment which extends to Scotland;c the Department of Justice in Northern Ireland before exercising the power conferred by paragraph 27 or 28 in relation to an enactment which extends to Northern Ireland.3 In this paragraph “enactment” includes a description of enactments."
   },
   "UK_ukpga_2013_24/1ac9f36386": {
     "law": "UK_ukpga_2013_24",
@@ -3903,11 +4098,6 @@
     "law": "UK_ukpga_2013_32",
     "ref": "s.155",
     "sentence": "Section 149 extends to England and Wales and Northern Ireland only."
-  },
-  "UK_ukpga_2013_32/9b17bf076e": {
-    "law": "UK_ukpga_2013_32",
-    "ref": "s.155",
-    "sentence": "Subject to the rest of this section, this Act extends to England and Wales and Scotland."
   },
   "UK_ukpga_2013_32/c6eff8cf67": {
     "law": "UK_ukpga_2013_32",
@@ -3964,11 +4154,6 @@
     "ref": "s.185",
     "sentence": "The Secretary of State may by order make whatever saving, transitional or transitory provision (in addition to the provision in sections 21, 33, 42, 58 and 93) the Secretary of State thinks appropriate in connection with the coming into force of any provision of this Act, other than the provisions listed in subsection (3) as they apply in Wales."
   },
-  "UK_ukpga_2014_2/df3bb17be8": {
-    "law": "UK_ukpga_2014_2",
-    "ref": "s.48",
-    "sentence": "An amendment, repeal or revocation made by this Act, other than one mentioned in subsection (3), has the same extent as the relevant part of the Act or instrument amended, repealed or revoked."
-  },
   "UK_ukpga_2014_21/3a4c92cdfc": {
     "law": "UK_ukpga_2014_21",
     "ref": "s.37",
@@ -3994,11 +4179,6 @@
     "ref": "s.140",
     "sentence": "Section 126(3) and (4), so far as relating to paragraphs 5, 56 to 62 and 64 of Schedule 7, extends to Northern Ireland."
   },
-  "UK_ukpga_2015_15/4de148cd1b": {
-    "law": "UK_ukpga_2015_15",
-    "ref": "s.99",
-    "sentence": "Chapter 3 of this Part extends only to England and Wales."
-  },
   "UK_ukpga_2015_2/056d3b73da": {
     "law": "UK_ukpga_2015_2",
     "ref": "s.96",
@@ -4023,11 +4203,6 @@
     "law": "UK_ukpga_2015_20",
     "ref": "s.114",
     "sentence": "Except as provided by subsections (2) and (3), a repeal, revocation or other amendment or modification made by this Act has the same extent as the provision repealed, revoked or otherwise amended or modified."
-  },
-  "UK_ukpga_2015_26/0342d8ac44": {
-    "law": "UK_ukpga_2015_26",
-    "ref": "s.163",
-    "sentence": "In Part 10, sections 144 to 146 and Schedule 11 extend to England and Wales and Scotland only."
   },
   "UK_ukpga_2015_26/c675c61464": {
     "law": "UK_ukpga_2015_26",
@@ -4098,11 +4273,6 @@
     "law": "UK_ukpga_2015_9",
     "ref": "s.88",
     "sentence": "No regulations may be made under subsection (1) bringing into force any of the following provisions, so far as they extend to Scotland, unless the Secretary of State has consulted the Scottish Ministers—a section 23;b section 38(1);c Part 2;d section 46 and Schedule 1;e sections 47 to 50."
-  },
-  "UK_ukpga_2015_9/aa8ecf42c0": {
-    "law": "UK_ukpga_2015_9",
-    "ref": "s.88",
-    "sentence": "No regulations may be made under subsection (1) bringing into force any of the following provisions, so far as they extend to Northern Ireland, unless the Secretary of State has consulted the Department of Justice in Northern Ireland—a section 38(1) and (2);b section 40;c sections 47 to 50;d section 69 and Schedule 3;e section 73."
   },
   "UK_ukpga_2015_9/e162064362": {
     "law": "UK_ukpga_2015_9",
@@ -4204,10 +4374,35 @@
     "ref": "s.414",
     "sentence": "The following provisions extend to England and Wales and Northern Ireland—a section 196 and Schedule 8 (transfer of youth rehabilitation orders to Northern Ireland);b section 351 (variation of sexual harm prevention order by court in Northern Ireland);c section 407 (regulations and rules) (but see subsection (7));d paragraph 12 of Schedule 23 (power to amend Schedule 8 in consequence of changes to the law in Northern Ireland)."
   },
+  "UK_ukpga_2020_17/12730a9a59": {
+    "law": "UK_ukpga_2020_17",
+    "ref": "sch.11.pt.3",
+    "sentence": "Explanation to be given by court before order is made or amended15 Before making or amending the community order, the court must explain to the offender in ordinary language—a the effect of paragraph 20 (order to be treated as corresponding order),b the requirements of the legislation relating to corresponding orders which has effect in Scotland or Northern Ireland (as the case may be),c the powers of the home court under that legislation, as modified by Part 4 of this Schedule, andd its own powers in relation to the community order (see Part 4 of this Schedule)."
+  },
+  "UK_ukpga_2020_17/40ba995a40": {
+    "law": "UK_ukpga_2020_17",
+    "ref": "sch.24.para.139",
+    "sentence": "Omit sections 58 to 60 and section 61(1) to (3) of that Act except so far as they extend to Northern Ireland."
+  },
+  "UK_ukpga_2020_17/52f0463105": {
+    "law": "UK_ukpga_2020_17",
+    "ref": "sch.8.para.21",
+    "sentence": "For the purposes of this Schedule, in relation to a youth rehabilitation order— “breach”, in relation to a requirement of the order, means a failure to comply with it, and related expressions are to be read accordingly; “corresponding order” means the order specified under paragraph 10(1); “home court” means— a court of summary jurisdiction in Northern Ireland, or where the youth rehabilitation order was made or amended by the Crown Court and the Crown Court in Northern Ireland has not made a direction under paragraph 14, the Crown Court in Northern Ireland; “supervision” means the performance of supervisory, enforcement and other related functions conferred by the legislation which has effect in Northern Ireland relating to the corresponding order; “the relevant court in England and Wales” means— the court in England and Wales which made or which last amended the order, or if the order was made by the Crown Court and includes a direction under section 189, such youth court or other magistrates' court as may be specified in the order; “the relevant officer” means the person responsible for the offender's supervision under the order."
+  },
   "UK_ukpga_2020_17/bb7e3f4785": {
     "law": "UK_ukpga_2020_17",
     "ref": "s.358A",
     "sentence": "In this Chapter—a a reference to a person “engaging in child criminal exploitation” is to the person—i doing anything that constitutes an offence under section 48 of the Crime and Policing Act 2026 (as it has effect in England and Wales), orii doing anything in Scotland or Northern Ireland that would constitute an offence under that section (as it has effect in England and Wales) if done in England and Wales;b a reference to a person “engaging in conduct associated with child criminal exploitation” is to the person doing anything, in any part of the United Kingdom, that is associated with the doing of anything within paragraph (a)(i) or (ii)."
+  },
+  "UK_ukpga_2020_17/c0e331aff3": {
+    "law": "UK_ukpga_2020_17",
+    "ref": "sch.8.pt.4",
+    "sentence": "Effect of the youth rehabilitation order in Northern Ireland151 The youth rehabilitation order is to be treated in Northern Ireland as if it were a corresponding order and the legislation which has effect in Northern Ireland in relation to such orders applies accordingly.2 Sub-paragraph (1) is subject to the following provisions of this Part of this Schedule."
+  },
+  "UK_ukpga_2020_17/c779d0447f": {
+    "law": "UK_ukpga_2020_17",
+    "ref": "sch.11.pt.4",
+    "sentence": "Order to be treated as corresponding order in certain circumstances201 The community order is to be treated as if it were a corresponding order.2 The relevant home legislation applies accordingly.3 In this Schedule, “relevant home legislation”—a in relation to a Scottish community order, means the legislation relating to corresponding orders that has effect in Scotland;b in relation to a Northern Ireland community order, means the legislation relating to corresponding orders that has effect in Northern Ireland.4 This paragraph is subject to the following provisions of this Part of this Schedule."
   },
   "UK_ukpga_2020_21/c81f505a12": {
     "law": "UK_ukpga_2020_21",
@@ -4378,11 +4573,6 @@
     "law": "UK_ukpga_2023_41",
     "ref": "s.62",
     "sentence": "Part 4 extends to Northern Ireland only."
-  },
-  "UK_ukpga_2023_50/ae5b5f8c34": {
-    "law": "UK_ukpga_2023_50",
-    "ref": "s.239",
-    "sentence": "The following provisions extend to England and Wales and Northern Ireland— a sections 179 to 183; b section 189(1)."
   },
   "UK_ukpga_2023_50/aed9ba4e82": {
     "law": "UK_ukpga_2023_50",
@@ -4564,11 +4754,6 @@
     "ref": "reg.1",
     "sentence": "These Regulations may be cited as the Control of Pollution (Radioactive Waste) (Scotland) Regulations 1991, shall come into force on 2nd December 1991 and shall extend to Scotland only."
   },
-  "UK_uksi_1992_266/67b0c71529": {
-    "law": "UK_uksi_1992_266",
-    "ref": "reg.3",
-    "sentence": "The following provisions of the Environmental Protection Act 1990 shall come into force on 1st April 1992— section 45(1) and (3) to (12) (in so far as not already in force); section 45(2), in so far as it extends to Scotland; sections 46 and 47; section 48(1) to (6), (8) and (9); section 52(1), (3) to (7) and (9) to (11); section 53; sections 55 and 56; section 73(1) to (5); sections 149 to 151 (in so far as not already in force); section 162(1) in so far as it relates to paragraphs 3 and 19 of Schedule 15; section 162(2) in so far as it relates to the following repeals in Schedule 16— in Part II, the repeals of the following sections— sections 12, 13 and 14(1) to (5) and (7) to (11) of the Control of Pollution Act 1974, save in so far as they relate to industrial waste in England and Wales; section 15 of that Act; the repeals relating to the Civic Government (Scotland) Act 1982; in Part IX, the repeals relating to the Dogs Act 1906, the Civic Government (Scotland) Act 1982 and the Local Government Act 1988; section 162(3)."
-  },
   "UK_uksi_1992_266/f09b991457": {
     "law": "UK_uksi_1992_266",
     "ref": "reg.2",
@@ -4624,11 +4809,6 @@
     "ref": "reg.94",
     "sentence": "Save as otherwise expressly provided the naval, military and air force authorities and members of any visiting force and any international headquarters and the members thereof and property held or used for the purpose of such a force or headquarters shall be exempt from the provisions of this Order and of any regulations made thereunder to the same extent as if that force or headquarters formed part of the forces of Her Majesty raised in the United Kingdom and for the time being serving in Hong Kong."
   },
-  "UK_uksi_1996_1513/0715411fdb": {
-    "law": "UK_uksi_1996_1513",
-    "ref": "reg.1",
-    "sentence": "These Regulations, which extend to Great Britain, may be cited as the Health and Safety (Consultation with Employees) Regulations 1996 and shall come into force on 1st October 1996."
-  },
   "UK_uksi_1996_2325/2e068faa1c": {
     "law": "UK_uksi_1996_2325",
     "ref": "reg.6",
@@ -4663,11 +4843,6 @@
     "law": "UK_uksi_1998_2241",
     "ref": "reg.4",
     "sentence": "These Regulations apply to United Kingdom ships wherever they may be and to other ships while they are within United Kingdom waters, except— a ships of war; b ships solely engaged in fishing; c pleasure vessels; d ships which do not go to sea; and e ships under 80 tons register falling within one of the classes specified in paragrah (2) engaged solely in the coasting trade, and, subject to paragraph (3), not carrying cargo—"
-  },
-  "UK_uksi_1999_1820/74fc7d7dab": {
-    "law": "UK_uksi_1999_1820",
-    "ref": "sch.2.para.88",
-    "sentence": "After section 1(5) (grants in respect of farm businesses), there is inserted– 6 In subsection (5) in the definition of “the appropriate authority” the words from “or, if it extends to more than one part,” to the end shall not extend to Scotland. ."
   },
   "UK_uksi_1999_1820/bd4b73c9e0": {
     "law": "UK_uksi_1999_1820",
@@ -5599,11 +5774,6 @@
     "ref": "reg.3",
     "sentence": "Parts 5 to 9, except regulations 17(b) and 19(2), extend to England and Wales and Scotland."
   },
-  "UK_uksi_2022_500/e7b5c49026": {
-    "law": "UK_uksi_2022_500",
-    "ref": "sch.part",
-    "sentence": "PART 1 Amendments of primary legislation Column 1Column 2 Paragraph 5 of Schedule 4 to the Offender Management Act 2007“the commencement of section 154(1) of the Criminal Justice Act 2003 (c. 44) (limit on magistrates’ court’s powers to impose imprisonment)”Section 53(8) of the Space Industry Act 2018“section 154(1) of that Act comes into force”Section 1207(6)(a) of the Corporation Tax Act 2009“the commencement of section 282 of the Criminal Justice Act 2003 (c. 44)”Sections 1216CN(6)(a) and 1217CN(6)(a) of the Corporation Tax Act 2009“the commencement of section 282 of the Criminal Justice Act 2003”Paragraph 26(1A) of Schedule 1 to the Housing Act 1996“the commencement of section 282 of the Criminal Justice Act 2003 (short sentences)”Section 82(6) of the Pensions Act 2004Subsections (1), (2), (3) and (7) of section 55 of the Commissioners for Revenue and Customs Act 2005Section 4C(5) of the National Lottery etc. Act 1993“the commencement of section 282 of the Criminal Justice Act 2003 (c. 44) (short sentences)”Section 5C(4) of the Petroleum Act 1998Section 90(6) of the Education and Skills Act 2008Section 264(4) of the Housing and Regeneration Act 2008Section 18(6) of the Borders, Citizenship and Immigration Act 2009“the commencement of section 282 of the Criminal Justice Act 2003 (c. 44) (increase in maximum sentence on summary conviction of offence triable either way)”Paragraph 10(8) of Schedule 7 to the Crime and Courts Act 2013“the commencement of section 282 of the Criminal Justice Act 2003 (increase in maximum sentence on summary conviction of offence triable either way)”Section 14D(6)(a) of the Hydrocarbon Oil Duties Act 1979“the commencement of section 282 of the Criminal Justice Act 2003 (increase in maximum term that may be imposed on summary conviction of offence triable either way)”Section 14F(6) of the Hydrocarbon Oil Duties Act 1979 (as it extends to Northern Ireland and otherwise as to be inserted by paragraph 9(6) of Schedule 11 to the Finance Act 2020)Section 76(7) of the Education and Skills Act 2008“the commencement of section 282 of the Criminal Justice Act 2003 (c. 44) (increase in maximum term that may be imposed on summary conviction of offence triable either way)”Section 42(5)(b) of the UK Borders Act 2007“the commencement of section 282 of the Criminal Justice Act 2003 (c. 44) (imprisonment on summary conviction for certain offences in England and Wales)”Paragraph 11(6) of Schedule 5A to the Terrorism Act 2000“the coming into force of section 282 of the Criminal Justice Act 2003 (increase in maximum sentence on summary conviction of offence triable either way)”Section 362E(3) of the Proceeds of Crime Act 2002Section 17(9) of the Cultural Property (Armed Conflicts) Act 2017“section 282 of the Criminal Justice Act 2003 comes into force”Paragraph 4(a) of Schedule 13 to the Serious Crime Act 2007“the commencement of section 282(1) of the Criminal Justice Act 2003 (c. 44) (increase in sentencing powers of magistrates’ court from 6 to 12 months for certain offences triable either way)”Section 106A(3)(a) of the Taxes Management Act 1970“the commencement of section 282(3) of the Criminal Justice Act 2003”Paragraph 2(6)(b) of Schedule 21 to the Environment Act 2021Sections 7(6), 9(6) and 19(10) of the Safeguarding Vulnerable Groups Act 2006“the commencement of section 282(3) of the Criminal Justice Act 2003 (c. 44)”Paragraph 16 of Schedule 8 to the Wireless Telegraphy Act 2006Section 196D(6) of the Town and Country Planning Act 1990“the coming into force of paragraph 24(2) of Schedule 22 to the Sentencing Act 2020”Section 110(5H) of the Environment Act 1995Paragraph 52(2) of Schedule 11 to the Government of Wales Act 2006Section 22(4)(b) of the Public Bodies Act 2011Section 33C(2) of the Immigration Act 2014Section 75A(5)(a)(i) of the Serious Crime Act 2015Sections 41(7), 50(7), 58(7), 66(13) and 68(11) of the Digital Economy Act 2017Sections 1(5) and 2(5) of the Laser Misuse (Vehicles) Act 2018Sections 39(5)(a)(i) and 43(3)(a)(i) of the Domestic Abuse Act 2021Section 139A(5ZA) of the Criminal Justice Act 1988 (as to be inserted by section 45(5) of the Offensive Weapons Act 2019)“the coming into force of paragraph 24(2) of Schedule 22 to the Sentencing Act 2020 (maximum sentence that may be imposed on summary conviction of offence triable either way)”Sections 6(8), 25(3), 29(3) and 52(7) of the Offensive Weapons Act 2019Section 37B(8) of the Land Drainage Act 1991“the coming into force of paragraph 24(2) of Schedule 22 to the Sentencing Act 2020 (increase in maximum term that may be imposed on summary conviction of offence triable either way)”Section 67A(5) of the Sexual Offences Act 2003Section 1(4) of the Assaults on Emergency Workers (Offences) Act 2018Section 63(2) of the Children Act 2004“the commencement of paragraph 24 of Schedule 22 to the Sentencing Act 2020”Sections 2(15), 5(11) and 35(9) of the Asylum and Immigration (Treatment of Claimants, etc.) Act 2004“the commencement of paragraph 24 of Schedule 22 to the Sentencing Act 2020 (increased limit on magistrates’ power of imprisonment)”Section 1A(8) of the Prevention of Crime Act 1953“the commencement of paragraph 24(2) of Schedule 22 to the Sentencing Act 2020”Section 44BC(5) of the Solicitors Act 1974Section 88G(7) of the Alcoholic Liquor Duties Act 1979Section 20AAC(4)(a)(i) of the Hydrocarbon Oil Duties Act 1979Section 29L(4) of the Public Order Act 1986Section 139AA(10) of the Criminal Justice Act 1988Section 4A(6) of the Protection from Harassment Act 1997Section 23(1G)(a) of the Financial Services and Markets Act 2000Section 4A(9)(a) of the Private Security Industry Act 2001 (as to be inserted by section 42 of the Crime and Security Act 2010)Section 12(3) of the Gangmasters (Licensing) Act 2004Section 131C(6)(a) of the Energy Act 2004Section 34(9) of the Fire and Rescue Services Act 2004Paragraph 1(2) of Schedule 12 to the Domestic Violence, Crime and Victims Act 2004Section 58(1) of the Human Tissue Act 2004Sections 41(3) and 105(2) of the Clean Neighbourhoods and Environment Act 2005Sections 109(4) and 111(5) of the Education Act 2005Sections 1(8), 2(12), 6(6) and 8(5) of the Terrorism Act 2006Section 13B(5) of the Childcare Act 2006Paragraph 1 of Schedule 2 to the Fraud Act 2006Sections 1131(2), 1186(3), 1191(3) and 1250(5)(b) of the Companies Act 2006Section 61(5) of the Road Safety Act 2006Section 32(4A) of the Animal Welfare Act 2006Section 3(8)(a) of the Digital Switchover (Disclosure of Information) Act 2007Sections 92(3) and 105(2) of the Tribunals, Courts and Enforcement Act 2007Section 39(11)(a) of the Statistics and Registration Service Act 2007Sections 14(5), 16(7), 17(3) and 181(3) of the Legal Services Act 2007Paragraphs 23 and 31 of Schedule 27 to the Criminal Justice and Immigration Act 2008Section 49(2)(a) of the Regulatory Enforcement and Sanctions Act 2008Sections 10(5) and 76(4) of the Health and Social Care Act 2008Sections 54(3)(a) and 76(2), and paragraph 15(3)(a) of Schedule 5 to, the Counter-Terrorism Act 2008Paragraph 10(2) of Schedule A1 to the English language text of the Learner Travel (Wales) Measure 2008 (nawm 2)Section 10(3)(a) of the Parliamentary Standards Act 2009Paragraphs 12(1), 13 and 14 of Schedule 22 to the Coroners and Justice Act 2009Section 11(4)(a) of the Bribery Act 2010Section 6(4) of the Identity Documents Act 2010Paragraph 5(5)(a) of Schedule 25 to the Finance Act 2011Section 23(4) of the Terrorism Prevention and Investigation Measures Act 2011Sections 33(7) and 143(6), and paragraph 2(7) of Schedule 6 to, the Legal Aid, Sentencing and Punishment of Offenders Act 2012Paragraph 37(4)(a) of Schedule 24 to the Finance Act 2012Section 92(2)(a) of the Financial Services Act 2012Section 13(3) of the Electoral Registration and Administration Act 2013Sections 36(4)(a)(i) and 90(7)(a)(i), and paragraph 14(2)(a)(i) of Schedule 5 to the Financial Services (Banking Reform) Act 2013Sections 120(7) and 121(10) of the Anti-social Behaviour, Crime and Policing Act 2014Section 174(4)(a) of the Finance Act 2014Section 86(14) of the Serious Crime Act 2015Sections 10(1)(a)(i) and (2)(a)(i), and 26(2)(a)(i) of the Psychoactive Substances Act 2016Section 27(3) of the Immigration Act 2016Sections 11(4)(a)(i), 43(7)(a)(i), 59(2)(a)(i), 82(3)(a)(i), 134(2)(a)(i), 155(2)(a)(i), 173(2)(a)(i), 174(3)(a)(i), 196(2)(a)(i) and 224(4)(a)(i) of the Investigatory Powers Act 2016Sections 50(6) and 51(7) of the Finance Act 2017Section 53(6) of the Finance (No. 2) Act 2017Section 16(5) of the European Union (Future Relationship) Act 2020Section 77(6) of the Finance Act 2021Section 15(5) of the Trade Act 2021Sections 1(10), 4(13), 5(13) and 22(6) of the Nuclear Installations Act 1965“the commencement of paragraph 24(2) of Schedule 22 to the Sentencing Act 2020 (general limit on magistrates’ court’s power to imprison)”Section 77(3A) of the Anti-terrorism, Crime and Security Act 2001Section 102(4) of, and paragraph 6(2) of Schedule 9 to the Energy Act 2013Paragraph 2(2) of Schedule 3A to the Health and Safety at Work etc. Act 1974“the commencement of paragraph 24(2) of Schedule 22 to the Sentencing Act 2020 (general limit on magistrates’ court’s powers to imprison)”Sections 103(3) and 105(8) of, paragraphs 7(3) and 17(4) of Schedule 8 to, and paragraph 13(8) of Schedule 10 to, the Energy Act 2013Paragraph 9B(6) of Schedule 5 to the Courts Act 2003“the commencement of paragraph 24(2) of Schedule 22 to the Sentencing Act 2020 (general limit on power of magistrates’ courts to impose imprisonment)”Paragraph 30(4)(a) of Schedule 16 to the Crime and Courts Act 2013Section 51E(3)(a) of the Constitutional Reform Act 2005“the commencement of paragraph 24(2) of Schedule 22 to the Sentencing Act 2020 (general limit on magistrates’ court’s power to impose imprisonment)”Section 175(2) of the Serious Organised Crime and Police Act 2005Section 12(6) of the Children and Adoption Act 2006Paragraph 16 of Schedule 10 to the Charities Act 2006Section 40 of the Political Parties and Elections Act 2009Section 28(8)(a) of the Crime and Courts Act 2013Paragraphs 14 and 24 of Schedule 9 to the Charities Act 2011“the commencement of paragraph 24(2) of Schedule 22 to the Sentencing Act 2020 (general limit on the magistrates’ court’s power to impose imprisonment)”Section 78(2) of the Health Act 2006“the commencement of paragraph 24(2) of Schedule 22 to the Sentencing Act 2020 (general limit on magistrates’ courts power to impose imprisonment)”Section 208(1) of, and paragraph 8(4) of Schedule 10 to, the National Health Service Act 2006Section 156(1) of the National Health Service (Wales) Act 2006Section 21(4) of the Immigration, Asylum and Nationality Act 2006“the commencement of paragraph 24(2) of Schedule 22 to the Sentencing Act 2020 (general limit on magistrates’ powers to imprison)”Paragraph 15(4) of Schedule 20 to the Tribunals, Courts and Enforcement Act 2007“the commencement of paragraph 24(2) of Schedule 22 to the Sentencing Act 2020 (limit on magistrates’ court powers to impose imprisonment)”Paragraph 66(2) of Schedule 19 to the Enterprise and Regulatory Reform Act 2013Section 63B(8) of the Local Government Finance Act 1988“the commencement of paragraph 24(2) of Schedule 22 to the Sentencing Act 2020 (increase in maximum term that may be imposed on summary conviction of offence triable either way)”Paragraph 15D(7) of Schedule 2 to the Local Government Finance Act 1992Sections 129(9) and 132(9) of the Welfare Reform Act 2012Section 6(5) of the Legislative and Regulatory Reform Act 2006“the date on which paragraph 24(2) of Schedule 22 to the Sentencing Act 2020 comes into force”Paragraph 30(6)(a) of Schedule 2 to the Climate Change Act 2008Paragraphs 2(4)(a) and 6(2)(a) of Schedule 5 to the Defence Reform Act 2014Paragraph 37(5)(a) of Schedule 8 to the Water Act 2014Section 75(3)(a)(i) of the Energy Act 2013“the date on which paragraph 24(2) of Schedule 22 to the Sentencing Act 2020 (general limit on magistrates’ court’s power to imprison) comes into force”Section 14B(5) of the Local Government Finance Act 1992“the date that paragraph 24(2) of Schedule 22 to the Sentencing Act 2020 comes into force”Section 4A(2)(a)(i) of the Firearms Act 1968“paragraph 24(2) of Schedule 22 to the Sentencing Act 2020 comes into force”Section 430(4A) of the Insolvency Act 1986Section 1(5) of the Malicious Communications Act 1988Section 8A(11)(a)(i) of the Firearms (Amendment) Act 1988Section 1(7) of the Prisoners (Return to Custody) Act 1995Section 32ZA(6) of the Crime (Sentences) Act 1997Paragraph 7(6)(a)(i) and (7)(a)(i) of Schedule 3 to the Anti-terrorism, Crime and Security Act 2001Section 255ZA(6) of the Criminal Justice Act 2003Sections 15A(6), 15C(6) and 25(2)(a) of, and paragraph 5(3) of Schedule 7 to the Companies (Audit, Investigations and Community Enterprise) Act 2004Section 210(7) of the Housing Act 2004Section 38(6) of the Police and Justice Act 2006Paragraphs 30(4A)(a)(i), 30A(1A)(a)(i) and 31(2)(a)(i) of Schedule 7 to the Counter-Terrorism Act 2008Paragraph 9 of Schedule 5 to the English language text of Mobile Homes (Wales) Act 2013Section 9(7) of the Mesothelioma Act 2014Sections 20(9), 29(3)(a) and 33(11), and paragraphs 15(4) and 25(4) of Schedule 10 to the Criminal Justice and Courts Act 2015Section 49(1) of the Counter-Terrorism and Security Act 2015Paragraph 21(2)(a) of Schedule 4 to the Recall of MPs Act 2015Section 5(4) of the Modern Slavery Act 2015Section 68(4)(a)(i) of the Policing and Crime Act 2017Section 17(5)(b)(i) of the Sanctions and Anti-Money Laundering Act 2018Section 12(5) of the Ivory Act 2018Sections 8(3) and 11(7) of the Stalking Protection Act 2019Section 39(3) of the National Security and Investment Act 2021"
-  },
   "UK_uksi_2022_520/146057c50d": {
     "law": "UK_uksi_2022_520",
     "ref": "reg.3",
@@ -5703,11 +5873,6 @@
     "law": "UK_uksi_2026_440",
     "ref": "reg.1",
     "sentence": "This Order— a extends to England and Wales; b applies in relation to England only."
-  },
-  "UK_uksi_2026_607/2334127c33": {
-    "law": "UK_uksi_2026_607",
-    "ref": "reg.9",
-    "sentence": "The instruments listed in the Schedule are revoked in so far as they extend to Northern Ireland."
   },
   "UK_uksi_2026_689/707cd63dc2": {
     "law": "UK_uksi_2026_689",
