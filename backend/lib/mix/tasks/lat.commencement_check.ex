@@ -26,6 +26,8 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
   use Mix.Task
 
   alias SertantaiLegal.Repo
+
+  alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Ref, Store}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.{AmendingLaw, NoteDate, OwnCommencement}
   alias SertantaiLegal.Scraper.Commencement.{OwnClause, Rule}
@@ -176,13 +178,8 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
   end
 
   defp order_rules(order, act) do
-    with [_, t, y, n] <- String.split(order, "_", parts: 4),
-         [_ | _] = paths <- Path.wildcard("data/cache/clml/#{t}/#{y}/#{n}/**/data.xml.gz") do
-      doc =
-        SertantaiLegal.Scraper.AmendingLaw.Doc.new(
-          order,
-          paths |> Enum.sort() |> Enum.map(&(&1 |> File.read!() |> :zlib.gunzip()))
-        )
+    with [_ | _] = xmls <- ClmlStore.law_docs(order) do
+      doc = SertantaiLegal.Scraper.AmendingLaw.Doc.new(order, xmls)
 
       SertantaiLegal.Scraper.Commencement.Order.rules(doc, act)
     else

@@ -33,7 +33,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     LatCause
   }
 
-  alias SertantaiLegal.Scraper.LegislationGovUk.Client
+  alias SertantaiLegal.Scraper.LegislationGovUk.{Client, ClmlStore}
   alias SertantaiLegal.Scraper.PdfBacklog
   alias SertantaiLegal.Scraper.PdfBacklog.Batch
   alias SertantaiLegal.Scraper.IdField
@@ -99,6 +99,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     notify(on_progress, {:stage_start, :fetch_body, 1, @total_stages})
 
     scope = LatScope.get(law_name)
+    opts = Keyword.put(opts, :cut, body_cut(slash_path, scope))
 
     case if(LatScope.excluded?(scope),
            do: :excluded,
@@ -151,9 +152,10 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
   """
   @spec fetch_rows(String.t(), keyword()) :: {:ok, [map()], String.t()} | {:error, String.t()}
   def fetch_rows(law_name, opts \\ []) do
-    with {:ok, xmls, law_id} <- fetch_docs(law_name, opts),
-         {:ok, {type_code, _}} <- parse_law_name(law_name) do
-      {:ok, parse_rows(xmls, law_name, type_code, law_effects(law_name, opts)), law_id}
+    with {:ok, {type_code, slash_path}} <- parse_law_name(law_name),
+         cut = body_cut(slash_path, LatScope.get(law_name)),
+         {:ok, xmls, law_id} <- fetch_docs(law_name, opts) do
+      {:ok, parse_rows(xmls, law_name, type_code, law_effects(law_name, opts), cut), law_id}
     end
   end
 
@@ -166,14 +168,15 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
           {:ok, %{rows: [map()], notes: [map()], effects: [ChangesFeed.Effect.t()]}}
           | {:error, String.t()}
   def fetch_changes(law_name, opts \\ []) do
-    with {:ok, xmls, _law_id} <- fetch_docs(law_name, opts),
-         {:ok, {type_code, _}} <- parse_law_name(law_name) do
+    with {:ok, {type_code, slash_path}} <- parse_law_name(law_name),
+         cut = body_cut(slash_path, LatScope.get(law_name)),
+         {:ok, xmls, _law_id} <- fetch_docs(law_name, opts) do
       effects = law_effects(law_name, opts) || []
-      rows = parse_rows(xmls, law_name, type_code, effects)
+      rows = parse_rows(xmls, law_name, type_code, effects, cut)
 
       notes =
         xmls
-        |> parse_annotations(law_name, rows)
+        |> parse_annotations(law_name, rows, cut)
         |> CommentaryParser.with_effects(rows, effects)
 
       {:ok, %{rows: rows, notes: notes, effects: effects}}
@@ -235,6 +238,8 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
   @spec run_stages(String.t(), String.t(), String.t(), String.t(), keyword()) :: {:ok, map()}
   def run_stages(law_name, type_code, law_id, body_xml, opts \\ []) do
     start = System.monotonic_time(:millisecond)
+    # a whole body in hand for a scoped law is cut to its fragments
+    opts = Keyword.put_new_lazy(opts, :cut, fn -> fragments(LatScope.get(law_name)) end)
     do_run_stages(law_name, type_code, law_id, body_xml, opts, start)
   end
 
@@ -260,7 +265,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     # fetched once: the rows' territory (LR-03) and the notes' effects (LR-07)
     effects = law_effects(law_name, opts)
 
-    case parse_rows(xmls, law_name, type_code, effects) do
+    case parse_rows(xmls, law_name, type_code, effects, opts[:cut]) do
       [] ->
         no_body(law_name, hd(xmls), opts, start)
 
@@ -282,8 +287,17 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
   A law's annotations from its documents and parsed LAT rows (stage 4):
   placed on the rows that cite them; per document and renumbered when scoped.
   """
-  @spec parse_annotations([String.t()], String.t(), [map()]) :: [map()]
-  def parse_annotations(xmls, law_name, lat_rows) do
+  @spec parse_annotations([String.t()], String.t(), [map()], [String.t()] | nil) :: [map()]
+  def parse_annotations(xmls, law_name, lat_rows, cut \\ nil)
+
+  # a body cut to a scope (CV-S05 F): only the notes on the rows kept
+  def parse_annotations(xmls, law_name, lat_rows, [_ | _]) do
+    xmls
+    |> parse_annotations(law_name, lat_rows, nil)
+    |> Enum.filter(& &1.affected_sections)
+  end
+
+  def parse_annotations(xmls, law_name, lat_rows, nil) do
     ref_to_sections = CommentaryParser.build_ref_to_sections(lat_rows)
 
     case xmls do
@@ -297,7 +311,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     end
   end
 
-  defp parse_rows(xmls, law_name, type_code, effects) do
+  defp parse_rows(xmls, law_name, type_code, effects, cut) do
     xmls
     |> Enum.map(
       &LatParser.parse(&1, %{law_name: law_name, type_code: type_code, effects: effects})
@@ -307,7 +321,21 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
       [] -> []
       lists -> LatScope.merge(lists)
     end
+    |> then(&if(cut, do: LatScope.cut(&1, cut), else: &1))
   end
+
+  # A scoped law whose body is held reads the body, cut to its fragments: a
+  # fragment is never fetched beside the whole text (CV-S05 F). The
+  # fragments to cut to, else nil.
+  defp body_cut(slash_path, scope) do
+    if fragments(scope) && body_held?(slash_path), do: fragments(scope)
+  end
+
+  defp fragments(%{"fragments" => [_ | _] = fragments}), do: fragments
+  defp fragments(_scope), do: nil
+
+  defp body_held?(slash_path),
+    do: match?({:ok, _, _}, ClmlStore.get("/#{slash_path}/body/data.xml"))
 
   defp persist_stages(law_name, law_id, xmls, lat_rows, opts, start) do
     on_progress = Keyword.get(opts, :on_progress)
@@ -340,7 +368,15 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
       if lat_error do
         skip_annotations(on_progress)
       else
-        run_annotation_stages(law_name, law_id, xmls, lat_rows, on_progress, opts[:effects] || [])
+        run_annotation_stages(
+          law_name,
+          law_id,
+          xmls,
+          lat_rows,
+          on_progress,
+          opts[:effects] || [],
+          opts[:cut]
+        )
       end
 
     # After the notes (and their status/change_id refresh): why the LAT changed.
@@ -434,14 +470,14 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     {%{inserted: 0, skipped: true}, false, []}
   end
 
-  defp run_annotation_stages(law_name, law_id, xmls, lat_rows, on_progress, effects) do
+  defp run_annotation_stages(law_name, law_id, xmls, lat_rows, on_progress, effects, cut) do
     # Stage 4: Parse annotations (per document when scoped), each with the
     # effects behind it (LR-07)
     notify(on_progress, {:stage_start, :parse_annotations, 4, @total_stages})
 
     annotations =
       xmls
-      |> parse_annotations(law_name, lat_rows)
+      |> parse_annotations(law_name, lat_rows, cut)
       |> CommentaryParser.with_effects(lat_rows, effects)
 
     notify(
@@ -569,7 +605,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
   # The body, or each scoped fragment (all must fetch)
   defp fetch_xmls(slash_path, scope, store_opts) do
     slash_path
-    |> LatScope.paths(scope)
+    |> LatScope.fetch_paths(scope, body_cut(slash_path, scope) != nil)
     |> Enum.reduce_while({:ok, []}, fn path, {:ok, acc} ->
       case fetch_xml(path, store_opts) do
         {:ok, xml} -> {:cont, {:ok, acc ++ [xml]}}

@@ -116,4 +116,37 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ClmlStoreTest do
       assert ClmlStore.dct_valid("<Legislation/>") == nil
     end
   end
+
+  describe "a law's text (CV-S05 F)" do
+    defp doc(root, path, xml), do: :ok = ClmlStore.put(path, xml, root: root)
+
+    test "the body and the Schedules, never a fragment beside them", %{root: root} do
+      doc(root, "/ukpga/2007/15/section/44/data.xml", "<s44/>")
+      doc(root, "/ukpga/2007/15/schedule/7/data.xml", "<sch7/>")
+      doc(root, "/ukpga/2007/15/made/introduction/data.xml", "<intro/>")
+      assert ClmlStore.law_docs("UK_ukpga_2007_15", root: root) == ["<s44/>", "<sch7/>"]
+
+      doc(root, "/ukpga/2007/15/body/data.xml", "<body/>")
+      assert ClmlStore.law_docs("UK_ukpga_2007_15", root: root) == ["<body/>", "<sch7/>"]
+      refute File.exists?(Path.join(root, "ukpga/2007/15/section"))
+
+      doc(root, "/ukpga/2007/15/schedules/data.xml", "<schedules/>")
+      assert ClmlStore.law_docs("UK_ukpga_2007_15", root: root) == ["<body/>", "<schedules/>"]
+      refute File.exists?(Path.join(root, "ukpga/2007/15/schedule"))
+    end
+
+    test "a law not held has no text", %{root: root} do
+      assert ClmlStore.law_files("UK_ukpga_2007_15", root: root) == []
+    end
+
+    test "remove_fragments/3 removes every fragment folder", %{root: root} do
+      doc(root, "/ukpga/1999/29/part/VIII/data.xml", "<p/>")
+      doc(root, "/ukpga/1999/29/body/data.xml", "<body/>")
+      doc(root, "/ukpga/1999/29/schedule/2/data.xml", "<s/>")
+
+      assert [_] = ClmlStore.remove_fragments("ukpga/1999/29", ["schedule"], root: root)
+      assert ClmlStore.remove_fragments("ukpga/1999/29", ["schedule", "part"], root: root) == []
+      assert ClmlStore.law_docs("UK_ukpga_1999_29", root: root) == ["<body/>"]
+    end
+  end
 end

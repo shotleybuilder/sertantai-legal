@@ -15,6 +15,8 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
   """
 
   alias SertantaiLegal.Scraper.LatRef
+
+  alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.Amendment.{Collect, Index}
@@ -188,9 +190,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
 
   # the stored CLML's metadata (up to its close: EU metadata runs long)
   defp clml_head(law_name) do
-    with [_, type, year, number] <- String.split(law_name, "_", parts: 4),
-         [path | _] <-
-           Enum.sort(Path.wildcard("data/cache/clml/#{type}/#{year}/#{number}/**/data.xml.gz")),
+    with [path | _] <- ClmlStore.law_files(law_name),
          {:ok, gz} <- File.read(path) do
       xml = :zlib.gunzip(gz)
 
@@ -425,12 +425,9 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
   end
 
   defp read_doc(law) do
-    with [_, type, year, number] <- String.split(law, "_", parts: 4),
-         [_ | _] = paths <-
-           Path.wildcard("data/cache/clml/#{type}/#{year}/#{number}/**/data.xml.gz") do
-      Doc.new(law, Enum.map(Enum.sort(paths), &(&1 |> File.read!() |> :zlib.gunzip())))
-    else
-      _ -> nil
+    case ClmlStore.law_docs(law) do
+      [] -> nil
+      xmls -> Doc.new(law, xmls)
     end
   end
 

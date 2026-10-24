@@ -32,6 +32,8 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
   use Mix.Task
 
   alias Mix.Tasks.Lat.Amending
+
+  alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Extent}
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Patterns, Store}
@@ -188,11 +190,9 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
   defp act?(law), do: (String.split(law, "_") |> Enum.at(1)) in ~w(ukpga asp anaw asc nia apni)
 
   defp doc(law) do
-    with [_, t, y, n] <- String.split(law, "_", parts: 4),
-         [_ | _] = paths <- Path.wildcard("data/cache/clml/#{t}/#{y}/#{n}/**/data.xml.gz") do
-      Doc.new(law, paths |> Enum.sort() |> Enum.map(&(&1 |> File.read!() |> :zlib.gunzip())))
-    else
-      _ -> nil
+    case ClmlStore.law_docs(law) do
+      [] -> nil
+      xmls -> Doc.new(law, xmls)
     end
   end
 

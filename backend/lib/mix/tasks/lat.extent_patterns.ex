@@ -25,6 +25,8 @@ defmodule Mix.Tasks.Lat.ExtentPatterns do
   use Mix.Task
 
   alias Mix.Tasks.Lat.FeedPatterns, as: Files
+
+  alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Patterns, Store}
 
@@ -90,9 +92,7 @@ defmodule Mix.Tasks.Lat.ExtentPatterns do
   # the law's classes, and the example its reading needs (with whether it
   # reads alone as in the law)
   defp law_result(law) do
-    [_, t, y, n] = String.split(law, "_", parts: 4)
-    paths = Path.wildcard("data/cache/clml/#{t}/#{y}/#{n}/**/data.xml.gz") |> Enum.sort()
-    doc = Doc.new(law, Enum.map(paths, &(&1 |> File.read!() |> :zlib.gunzip())))
+    doc = Doc.new(law, ClmlStore.law_docs(law))
     classes = Patterns.classes(doc)
 
     if classes == [] do

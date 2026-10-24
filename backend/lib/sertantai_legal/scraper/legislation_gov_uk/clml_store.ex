@@ -17,6 +17,13 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ClmlStore do
     law's latest known valid date (`legal_register.md_dct_valid_date`, kept
     current by the LRT scrape); with no date, when fetched within 30 days
   - `dct_valid/1` — the latest `<dct:valid>` in a document (pure)
+  - `law_docs/2`, `law_files/2` — a law's text as the readers read it: its
+    body and its Schedules; scoped fragments (`section/44`, #166) only for
+    a law with no body held, never beside it (a fragment repeats the
+    body's ids and moves document positions: CV-S05 F)
+  - storing a body removes the law's non-schedule fragments, storing its
+    Schedules its schedule fragments (`remove_fragments/3`): the whole
+    text replaces them
 
   Root: `opts[:root]`, else `config :sertantai_legal, :clml_store_dir`
   (default `data/cache/clml`); `nil` disables the store (tests).
@@ -26,6 +33,11 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ClmlStore do
   @ttl_days 30
   @document ~r"^/(?!changes/|new/)[a-z]+/\d{4}/[^/?]+(?:/[^?]*)?/data\.xml$"
   @feed ~r"^/changes/affected/[a-z]+/\d{4}/[^/?]+/data\.feed(?:\?.*)?$"
+
+  # a law's fragment folders (#166 scoped LAT): the schedule ones, and the rest
+  @schedule_fragments ~w(schedule)
+  @body_fragments ~w(section part chapter crossheading article regulation rule paragraph)
+  @whole ~r"^/([a-z]+/\d{4}/[^/]+)/(body|schedules)/data\.xml$"
 
   @type meta :: %{fetched_at: DateTime.t(), dct_valid: Date.t() | nil, status: String.t()}
 
@@ -39,7 +51,68 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ClmlStore do
     with_root(opts, :ok, fn root ->
       write!(file(root, path), :zlib.gzip(body))
       write_meta!(root, path, %{"status" => "ok", "dct_valid" => date_string(dct_valid(body))})
+
+      case Regex.run(@whole, path) do
+        [_, law, "body"] -> remove_fragments(law, @body_fragments, root: root)
+        [_, law, "schedules"] -> remove_fragments(law, @schedule_fragments, root: root)
+        _ -> []
+      end
+
+      :ok
     end)
+  end
+
+  @doc """
+  Remove a law's fragment folders (`slash`: \"ukpga/2007/15\"; `kinds`:
+  folder names, default all) — their text is in the body or Schedules held.
+  Returns the folders removed.
+  """
+  @spec remove_fragments(String.t(), [String.t()], keyword()) :: [String.t()]
+  def remove_fragments(slash, kinds \\ @body_fragments ++ @schedule_fragments, opts \\ []) do
+    with_root(opts, [], fn root ->
+      for kind <- kinds,
+          dir = Path.join([root, slash, kind]),
+          File.dir?(dir) do
+        File.rm_rf!(dir)
+        dir
+      end
+    end)
+  end
+
+  @doc """
+  A law's stored text files as the readers read them (`law`:
+  \"UK_ukpga_2007_15\"): the body, else its fragments (sorted), then the
+  Schedules, else the schedule fragments. Never the introduction or the
+  made version (the enabling cache's), never a fragment beside the whole.
+  """
+  @spec law_files(String.t(), keyword()) :: [String.t()]
+  def law_files(law, opts \\ []) do
+    with_root(opts, [], fn root ->
+      case String.split(law, "_", parts: 4) do
+        [_, t, y, n] ->
+          dir = Path.join([root, t, y, n])
+          whole(dir, "body", @body_fragments) ++ whole(dir, "schedules", @schedule_fragments)
+
+        _ ->
+          []
+      end
+    end)
+  end
+
+  @doc "A law's stored text (`law_files/2`), each document gunzipped."
+  @spec law_docs(String.t(), keyword()) :: [String.t()]
+  def law_docs(law, opts \\ []),
+    do: law |> law_files(opts) |> Enum.map(&(&1 |> File.read!() |> :zlib.gunzip()))
+
+  defp whole(dir, name, kinds) do
+    file = Path.join([dir, name, "data.xml.gz"])
+
+    if File.exists?(file),
+      do: [file],
+      else:
+        kinds
+        |> Enum.flat_map(&Path.wildcard(Path.join([dir, &1, "**", "data.xml.gz"])))
+        |> Enum.sort()
   end
 
   @doc "Store a 404 (so fallbacks like regulation → article → rule aren't retried)."

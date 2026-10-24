@@ -56,7 +56,7 @@ defmodule Mix.Tasks.Clml.Fetch do
         paths =
           if opts[:whole],
             do: ["/#{slash}/body/data.xml", "/#{slash}/schedules/data.xml"],
-            else: LatScope.paths(slash, scope)
+            else: LatScope.fetch_paths(slash, scope, body_held?(slash))
 
         results = Enum.map(paths, &Client.fetch_xml(&1, store_opts))
 
@@ -85,4 +85,12 @@ defmodule Mix.Tasks.Clml.Fetch do
 
     List.flatten(rows)
   end
+
+  # the body held: a fragment is never fetched beside it (CV-S05 F)
+  defp body_held?(slash),
+    do:
+      match?(
+        {:ok, _, _},
+        SertantaiLegal.Scraper.LegislationGovUk.ClmlStore.get("/#{slash}/body/data.xml")
+      )
 end

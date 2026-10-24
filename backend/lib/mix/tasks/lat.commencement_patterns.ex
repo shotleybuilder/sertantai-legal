@@ -25,6 +25,8 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
   use Mix.Task
 
   alias Mix.Tasks.Lat.FeedPatterns, as: Files
+
+  alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.ChangeCollector
@@ -130,9 +132,7 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
   end
 
   defp rows(law, :clml) do
-    [_, t, y, n] = String.split(law, "_", parts: 4)
-    paths = Path.wildcard("data/cache/clml/#{t}/#{y}/#{n}/**/data.xml.gz")
-    doc = Doc.new(law, paths |> Enum.sort() |> Enum.map(&(&1 |> File.read!() |> :zlib.gunzip())))
+    doc = Doc.new(law, ClmlStore.law_docs(law))
     OwnClause.doc_rows(doc)
   end
 

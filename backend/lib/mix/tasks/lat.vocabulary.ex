@@ -37,6 +37,8 @@ defmodule Mix.Tasks.Lat.Vocabulary do
   use Mix.Task
 
   alias SertantaiLegal.Repo
+
+  alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
   alias SertantaiLegal.Scraper.{ChangeVocabulary, LatRef, LatStagedParser}
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.Store, as: ExtentStore
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Conflicts, Ref, Store}
@@ -458,15 +460,10 @@ defmodule Mix.Tasks.Lat.Vocabulary do
     unread =
       for law <- acts,
           not Map.has_key?(stored, law),
-          [_, type, year, num] <- [String.split(law, "_", parts: 4)],
-          paths = Path.wildcard("data/cache/clml/#{type}/#{year}/#{num}/**/data.xml.gz"),
-          paths != [],
+          xmls = ClmlStore.law_docs(law),
+          xmls != [],
           into: %{} do
-        doc =
-          SertantaiLegal.Scraper.AmendingLaw.Doc.new(
-            law,
-            paths |> Enum.sort() |> Enum.map(&(&1 |> File.read!() |> :zlib.gunzip()))
-          )
+        doc = SertantaiLegal.Scraper.AmendingLaw.Doc.new(law, xmls)
 
         {law, SertantaiLegal.Scraper.AmendingLaw.Extent.read(doc)}
       end

@@ -194,7 +194,8 @@ defmodule Mix.Tasks.Lat.Sources do
 
     %{
       law: law,
-      scope: LatScope.paths(slash, LatScope.get(law)),
+      # a scoped law whose body is held reads the body (CV-S05 F)
+      scope: LatScope.fetch_paths(slash, LatScope.get(law), body_held?(slash)),
       effects: effects,
       amenders: amenders,
       gaps: gaps,
@@ -365,4 +366,12 @@ defmodule Mix.Tasks.Lat.Sources do
 
     Mix.shell().info("\n#{if r.pass, do: "PASS", else: "FAIL"}")
   end
+
+  # the body held: a fragment is never fetched beside it (CV-S05 F)
+  defp body_held?(slash),
+    do:
+      match?(
+        {:ok, _, _},
+        SertantaiLegal.Scraper.LegislationGovUk.ClmlStore.get("/#{slash}/body/data.xml")
+      )
 end

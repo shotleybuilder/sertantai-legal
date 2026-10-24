@@ -180,4 +180,58 @@ defmodule SertantaiLegal.Scraper.LatScopeTest do
       refute LatScope.excluded?(%{"fragments" => ["part/1"]})
     end
   end
+
+  describe "a scoped law read from its body (CV-S05 F)" do
+    defp row(id, type, xml_id, n),
+      do: %{
+        section_id: "L:" <> id,
+        section_type: type,
+        xml_id: xml_id,
+        position: n,
+        sort_key: "000.000.#{n}.00000#{n}~"
+      }
+
+    defp rows,
+      do: [
+        row("pt.1", "part", "part-1", 1),
+        row("h.1", "heading", "crossheading-x", 2),
+        row("s.1", "section", "section-1", 3),
+        row("s.1(1)", "sub_section", "section-1-1", 4),
+        row("s.1A", "section", "section-1A", 5),
+        row("pt.2", "part", "part-2", 6),
+        row("s.2", "section", "section-2", 7),
+        row("s.2(1)", "sub_section", "section-2-1", 8),
+        row("signed", "signed", nil, 9)
+      ]
+
+    test "a section keeps itself, what is under it and what encloses it" do
+      assert LatScope.cut(rows(), ["section/1"]) |> Enum.map(& &1.section_id) ==
+               ~w[L:pt.1 L:h.1 L:s.1 L:s.1(1)]
+    end
+
+    test "a Part keeps everything to the next Part; positions renumbered" do
+      cut = LatScope.cut(rows(), ["part/2"])
+      assert Enum.map(cut, & &1.section_id) == ~w[L:pt.2 L:s.2 L:s.2(1)]
+      assert Enum.map(cut, & &1.position) == [1, 2, 3]
+      assert hd(cut).sort_key == "000.000.6.000001~"
+    end
+
+    test "a fragment the body lacks keeps nothing" do
+      assert LatScope.cut(rows(), ["section/9"]) == []
+    end
+
+    test "with the body held, the body is read, never a fragment" do
+      scope = %{"fragments" => ["section/44"]}
+
+      assert LatScope.fetch_paths("ukpga/2007/15", scope, true) == [
+               "/ukpga/2007/15/body/data.xml"
+             ]
+
+      assert LatScope.fetch_paths("ukpga/2007/15", scope, false) == [
+               "/ukpga/2007/15/section/44/data.xml"
+             ]
+
+      assert LatScope.fetch_paths("ukpga/2007/15", nil, true) == ["/ukpga/2007/15/body/data.xml"]
+    end
+  end
 end

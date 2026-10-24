@@ -39,6 +39,81 @@ defmodule SertantaiLegal.Scraper.LatScope do
   def paths(slash_path, _scope), do: ["/#{slash_path}/body/data.xml"]
 
   @doc """
+  The data.xml paths to read for a scoped law: when its body is held
+  (`body_held?`), the body — its rows are cut to the scope (`cut/2`), so no
+  fragment is fetched beside the whole text (CV-S05 F); else `paths/2`.
+  """
+  @spec fetch_paths(String.t(), map() | nil, boolean()) :: [String.t()]
+  def fetch_paths(slash_path, %{"fragments" => [_ | _]}, true),
+    do: ["/#{slash_path}/body/data.xml"]
+
+  def fetch_paths(slash_path, scope, _body_held?), do: paths(slash_path, scope)
+
+  # how deep a row type sits: a fragment's head keeps the deeper rows after
+  # it and the nearest shallower ones before it (its Part, Chapter, heading)
+  @rank %{
+    "part" => 1,
+    "chapter" => 2,
+    "heading" => 3,
+    "section" => 4,
+    "article" => 4,
+    "sub_section" => 5,
+    "sub_article" => 5,
+    "paragraph" => 6,
+    "sub_paragraph" => 7
+  }
+
+  @doc """
+  A whole body's rows cut to a scope's fragments: each fragment's head row
+  (`section/44` → xml id `section-44`, `part/2/chapter/2` →
+  `part-2-chapter-2`), the deeper rows after it up to the next row as
+  shallow, and its enclosing rows (Part, Chapter, cross-heading) — as a
+  fragment's own parse gives, except that a cross-heading keeps its whole
+  parse's id. Positions renumbered. A fragment the body lacks keeps nothing.
+  """
+  @spec cut([map()], [String.t()]) :: [map()]
+  def cut(rows, fragments) do
+    rows = Enum.sort_by(rows, & &1.position)
+    indexed = Enum.with_index(rows)
+
+    keep =
+      for f <- fragments,
+          id = String.replace(f, "/", "-"),
+          {head, i} <- indexed,
+          head[:xml_id] == id,
+          r <- fragment_rows(rows, head, i),
+          into: MapSet.new(),
+          do: r.section_id
+
+    rows
+    |> Enum.filter(&MapSet.member?(keep, &1.section_id))
+    |> Enum.with_index(1)
+    |> Enum.map(fn {r, n} -> %{r | position: n, sort_key: with_position(r.sort_key, n)} end)
+  end
+
+  defp fragment_rows(rows, head, i) do
+    depth = rank(head)
+    below = rows |> Enum.drop(i + 1) |> Enum.take_while(&(rank(&1) > depth))
+
+    {above, _} =
+      rows
+      |> Enum.take(i)
+      |> Enum.reverse()
+      |> Enum.reduce({[], depth}, fn r, {acc, shallowest} ->
+        if rank(r) in 1..(shallowest - 1)//1,
+          do: {[r | acc], rank(r)},
+          else: {acc, shallowest}
+      end)
+
+    above ++ [head | below]
+  end
+
+  # other rows (tables, notes) sit inside a provision; a signature ends
+  # every fragment and encloses none
+  defp rank(%{section_type: "signed"}), do: 0
+  defp rank(%{section_type: t}), do: Map.get(@rank, t, 8)
+
+  @doc """
   Join per-document LAT rows into one law's rows. One document is returned
   as is; several (fragments) are deduplicated by section_id, ordered by the
   structural part of the sort key and renumbered (position and the sort

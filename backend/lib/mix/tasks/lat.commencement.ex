@@ -30,6 +30,8 @@ defmodule Mix.Tasks.Lat.Commencement do
   use Mix.Task
 
   alias SertantaiLegal.Repo
+
+  alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
   alias SertantaiLegal.Scraper.{ChangeCollector, LabelTimeline, LawRunner}
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
 
@@ -372,17 +374,15 @@ defmodule Mix.Tasks.Lat.Commencement do
 
   defp held?(law) do
     case String.split(law, "_", parts: 4) do
-      [_, t, y, n] -> Path.wildcard("data/cache/clml/#{t}/#{y}/#{n}/**/data.xml.gz") != []
+      [_, _, _, _] -> ClmlStore.law_files(law) != []
       _ -> false
     end
   end
 
   defp doc(law) do
-    with [_, t, y, n] <- String.split(law, "_", parts: 4),
-         [_ | _] = paths <- Path.wildcard("data/cache/clml/#{t}/#{y}/#{n}/**/data.xml.gz") do
-      Doc.new(law, paths |> Enum.sort() |> Enum.map(&(&1 |> File.read!() |> :zlib.gunzip())))
-    else
-      _ -> nil
+    case ClmlStore.law_docs(law) do
+      [] -> nil
+      xmls -> Doc.new(law, xmls)
     end
   end
 
