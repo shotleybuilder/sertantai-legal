@@ -3,6 +3,19 @@ session: Review Practices from EGM
 status: active
 lane: process
 opened: 2026-10-24
+bugs:
+  - pattern: "Markup reader ignores a note linked by a child <CommentaryRef Ref=…/> (no CommentaryRef attribute), so cited and affecting are lost"
+    category: markup reader
+    module: change_vocabulary/readers/markup.ex (note: attr(attrs, :CommentaryRef) only, ~line 292)
+    affected: 201 ChangeIds in 44 stored laws (all legacy ids); seen as OH&S #27, #39 (UK_ukpga_1961_34 s.29, s.4)
+    fix: "Fall back to the first child CommentaryRef/@Ref of the change's occurrences"
+    status: open
+  - pattern: "An effect id held only in a change's CommentaryRef (ChangeId not key-…) is not used as the key, so a feed-recorded effect is treated as legacy"
+    category: markup reader (design question for Jason)
+    module: change_vocabulary/readers/markup.ex (key rule)
+    affected: 5,598 elements in 54 stored laws (uksi/1996/1527: 2,020; ukpga/1997/50: 1,197); seen as OH&S #34
+    fix: "Jason to decide whether the key falls back to the note's effect id"
+    status: open
 ---
 
 # Session: Review Practices from EGM (ACTIVE)
@@ -20,9 +33,9 @@ Each item gets its design section, files and done check before it is built (`pla
 - ✅ 3. Skills README fixed at source — `.claude/skills/README.md` cut to a pointer to SKILL.md frontmatter. Done: no skill list left to drift.
 - ✅ 4. Reviewer subagent — `.claude/agents/reviewer.md`. Done: loaded after resume; a `zoom-out` run on this doc found ≥1 real, previously unrecorded gap checked against the files (review reports gitignored) — `…-zoom-out-claude-r2.md`.
 - ✅ 5. `gemini-review --standard` — `.claude/skills/gemini-review/SKILL.md` (+ frontmatter, corrected project context). Done: a `design` run on this doc returned findings in the shared format, ≥1 real (an unfalsifiable done check) — `…-design-gemini.md`.
-- ⬜ 6. Blind second agent in `markup-reader-check` (then `feed-reader-check`) — designed below; build-lane clearance given 2026-10-24 (not running either skill; CV-S04 uses lat.commencement_check); skill edits wait for item 7's verdict. Trial not to overlap CV-S04's rebuild/golden (build lane will signal start and finish).
-- ⬜ 7. Trial: rules-aware and blind agents on one OH&S seed-2 sample, after CV-S04 commits and its rebuild/golden finish — designed below. Ask Jason before the run.
-- ⬜ 8. A/B runs — **only if item 7 is useful**: a second blind run on the same sample; adopt only if the runs differ on >5/50 items (design below); otherwise ❌ with the count. Ask Jason first.
+- ❌ 6. Blind second agent in `markup-reader-check` (then `feed-reader-check`) — not adopted: item 7 verdict not useful. Skills unchanged. — designed below; build-lane clearance given 2026-10-24 (not running either skill; CV-S04 uses lat.commencement_check); skill edits wait for item 7's verdict. Trial not to overlap CV-S04's rebuild/golden (build lane will signal start and finish).
+- ✅ 7. Trial: rules-aware and blind agents on one OH&S seed-2 sample — run on `bed7d2cc`; verdict not useful (blind found nothing rules-aware passed); 2 reader defects logged., after CV-S04 commits and its rebuild/golden finish — designed below. Jason's go-ahead given 2026-10-24. Lane build's run finished (check PASS, golden 27/27) but its reader code (lat_ref.ex, used by markup_placement.ex) is uncommitted; Jason: wait for the commit. Lane build asked to signal the commit hash.
+- ❌ 8. A/B runs — condition not met (item 7 not useful). Was: **only if item 7 is useful**: a second blind run on the same sample; adopt only if the runs differ on >5/50 items (design below); otherwise ❌ with the count. Ask Jason first.
 - ⬜ 9. Drift check for judgement cases only (guides and skill rule sections against code) — **only if** items 6–7 or a reviewer run find a guide or skill rule section making a false claim about the code (file + claim); otherwise ❌ with that evidence. Design before building: name, scope list, method, hook in `.claude/commands/session-close.md`.
 - ⬜ 10. CLAUDE.md "Gemini Review as Acceptance Gate" names the standards and the reviewer subagent.
 
@@ -30,7 +43,7 @@ Each item gets its design section, files and done check before it is built (`pla
 
 - ✅ EGM read: skills, reviewer roles, `resources/document_standards/*`, resolve and drift-report
 - ✅ Survey of our practice: session docs, `gemini-review`, acceptance-check skills, SQLite index
-- ⬜ Item 6 edits two skills lane build also uses: ask Jason that CV-S04 isn't mid-run of either before editing
+- ✅ Item 6 edits two skills lane build also uses: cleared by lane build 2026-10-24 (not needed: item 6 not adopted)
 
 ## Lane notes
 
@@ -160,6 +173,34 @@ Under 900 words.
 - Cost: two agents per trial; one extra agent per family check once adopted.
 
 **Backing out.** Remove step 6 from the skill; nothing else depends on it.
+
+## Item 7 trial run (2026-10-24)
+
+- **Commit:** `bed7d2cc` (lane build's CV-S04 reader code); the markup path (`lat_ref.ex`, `change_vocabulary.ex`, `change_vocabulary/`, `lat.markup_check.ex`) was clean against it.
+- **Sample:** `mix lat.markup_check --family "OH&S: Occupational" --sample $S/a.json --n 50 --seed 2` → 50 items; changes and note placements our faults 0; PASS (placement).
+- **Agents:** rules-aware (round-2 prompt verbatim, FILE and family filled in) and blind (the designed prompt), in parallel.
+- **One change to the blind prompt as designed:** a line forbidding reads of other `/tmp` files, `.claude/` and `backend/lib`. `a.json`, which holds the reader's answers, sits beside `blind.json`, and the reader code would carry the rules. Add the same line to the skill step if adopted.
+- **Results:** both agents read all 50 items; the comparison was done by the caller.
+
+**Agreement.** The two readings agree on operation, level, retained and cited/affecting on every item, except the four discussed below. Placement differences are known patterns, not findings:
+- **K9, 8 items** (#2, 19, 21, 34, 42, 45, 48, 50): the reader targets every version; the blind agent named the one version the change sits in. The rules-aware agent called these WRONG under K9.
+- **Granularity, 5 items** (#22, 25, 26, 29, 49): the blind agent listed every child row of a whole inserted provision; the reader placed it at the top row by rule. The same reading.
+
+**Each disagreement, triaged with evidence:**
+
+| Item | Blind agent | Rules-aware agent | Evidence | Triage |
+|---|---|---|---|---|
+| #27, #39 | cited SI 1992/3004; reader has none | WRONG, NEW-1 | note linked by child `<CommentaryRef Ref="c14250731"/>` inside the Addition | **reader wrong**, found by both |
+| #6, #18 | operation unsure: Addition in markup, note says "repealed (E.W.S.)" / "Words substituted" | OK, markup carried, note out of scope | markup and notes checked | decided already: notes are hints; markup's own correctness is CV-S08 |
+| #7 | `article-49-3` → two rows, 49(3) and 49(4) | OK | legislation.gov.uk gives P2 "4" the id `article-49-3`; rows named by Pnumber (CV-S03 fix I); the change sits in 49(3) | known, **blind wrong** |
+| #34 | agrees with reader | doubtful, NEW-2: effect id only in CommentaryRef → key legacy | 5,598 such elements in 54 laws | rules-aware only |
+
+**Verdict: not useful (❌).** The blind agent found no reader-wrong or rule question that the rules-aware agent marked OK. It independently confirmed NEW-1, which is worth knowing, but the rules-aware agent found everything it found plus NEW-2. NEW-2 needed the key rule to see, and a rules-blind reader can't see a gap in a rule it was never told. Cost: blind about 118k tokens, rules-aware about 142k.
+
+**What the trial does show.** A wrong rule would surface as a blind-vs-reader disagreement that the rules-aware agent passes. On this family the rules held: every blind disagreement traced to a known pattern or a settled decision. The test was fair, and the rules passed it. Worth rerunning when a new family brings new rules (e.g. CV-S04's commencement reader), not as a standing step.
+
+- Agent outputs are summarised here, not saved whole: they contain full `key-` effect ids, which the push-protection hooks reject.
+- The blind agent wrote helper scripts into the trial folder. Not a repo edit, but a skill version would give it its own working folder.
 
 ## Items 6–8 plan review
 
