@@ -60,3 +60,5 @@ rel/
 .claude/sessions/sessions.db
 !.claude/plans/
 !.claude/commands/
+!.claude/review-standards/
+!.claude/agents/
