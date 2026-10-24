@@ -766,5 +766,21 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
 
       assert e.lists == [{:not, "NI", ["s.25", "s.26", "s.27"]}]
     end
+
+    test "an SI naming some provisions' extent: the rest as far as its powers (SI 2019/758)" do
+      e = %{
+        read_xml(
+          "UK_uksi_2019_758",
+          p1(
+            "regulation-1",
+            "Regulation 12 and Schedule 10 extend to England and Wales and Scotland."
+          )
+        )
+        | powers: "E+W+S+NI"
+      }
+
+      assert Extent.of(e, "reg.12") == "E+W+S"
+      assert Extent.of(e, "reg.5") == "E+W+S+NI"
+    end
   end
 end

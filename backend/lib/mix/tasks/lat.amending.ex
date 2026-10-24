@@ -164,7 +164,10 @@ defmodule Mix.Tasks.Lat.Amending do
   @spec with_powers(Extent.t(), String.t(), keyword()) :: Extent.t()
   def with_powers(e, law, opts \\ [])
 
-  def with_powers(%Extent{default: nil, lists: []} = e, law, opts) do
+  # (with lists too: "Regulation 12 and Schedule 10 extend to England and
+  # Wales and Scotland" names those only; the rest extend as far as the
+  # powers — SI 2019/758, CV-S05)
+  def with_powers(%Extent{default: nil} = e, law, opts) do
     if Extent.Store.reads?(law) and not act?(law) do
       provisions = enabling(law, opts[:cached])
       parents = provisions |> Enum.map(& &1["law"]) |> Enum.uniq()

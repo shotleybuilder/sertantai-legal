@@ -148,7 +148,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
   defp of(%{lists: lists} = e, []) do
     cond do
       Enum.any?(lists, &match?({:same, _, _}, &1)) -> nil
-      e.default == nil and lists != [] -> nil
+      e.default == nil and e.powers == nil and e.competence == nil and lists != [] -> nil
       true -> e.default || e.powers || e.competence
     end
   end

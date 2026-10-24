@@ -962,14 +962,30 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
 
     naming
     |> Enum.reduce_while(e.default || e.powers || e.competence, fn
-      {:same, _, _}, _acc -> {:halt, :same}
-      {:named, place, _}, nil -> {:cont, place}
-      {:named, place, _}, acc -> {:cont, Territory.union([acc, place])}
-      {:only, place, _}, _acc -> {:cont, place}
-      {:also, _place, _}, nil -> {:cont, nil}
-      {:also, place, _}, acc -> {:cont, Territory.union([acc, place])}
-      {:not, _place, _}, nil -> {:cont, nil}
-      {:not, place, _}, acc -> {:cont, Territory.subtract(acc, place)}
+      {:same, _, _}, _acc ->
+        {:halt, :same}
+
+      {:named, place, _}, nil ->
+        {:cont, place}
+
+      # a stated default is widened; an extent implied (powers, competence) is not
+      {:named, place, _}, acc ->
+        {:cont, if(e.default, do: Territory.union([acc, place]), else: place)}
+
+      {:only, place, _}, _acc ->
+        {:cont, place}
+
+      {:also, _place, _}, nil ->
+        {:cont, nil}
+
+      {:also, place, _}, acc ->
+        {:cont, Territory.union([acc, place])}
+
+      {:not, _place, _}, nil ->
+        {:cont, nil}
+
+      {:not, place, _}, acc ->
+        {:cont, Territory.subtract(acc, place)}
     end)
   end
 
