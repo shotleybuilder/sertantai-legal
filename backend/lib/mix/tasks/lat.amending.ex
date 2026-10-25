@@ -33,6 +33,8 @@ defmodule Mix.Tasks.Lat.Amending do
   use Mix.Task
 
   alias SertantaiLegal.Repo
+  alias SertantaiLegal.Scraper.LawRunner
+  alias SertantaiLegal.Scraper.LawRunner.Guard
 
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Extent, Locator, Pointer}
@@ -52,7 +54,8 @@ defmodule Mix.Tasks.Lat.Amending do
           amending: :string,
           limit: :integer,
           extents: :boolean,
-          cached: :boolean
+          cached: :boolean,
+          workers: :integer
         ]
       )
 
@@ -116,44 +119,66 @@ defmodule Mix.Tasks.Lat.Amending do
     Mix.shell().info("#{length(acts)} laws to read for their extent clause")
 
     # the parent Acts the SIs' enabling powers lie in, read first (by this
-    # reader), so an SI stating no extent is placed by them (CV-07)
-    parents =
+    # reader), so an SI stating no extent is placed by them (CV-07) — those
+    # among the laws read too: an SI never reads a parent not yet re-read
+    # (several laws are read at once: run time, 2026-10-25)
+    enabling_laws =
       for a <- acts,
           not act?(a),
           p <- enabling(a, opts[:cached]),
           law = p["law"],
-          Extent.Store.reads?(law) and held?(law) and law not in acts,
+          Extent.Store.reads?(law) and held?(law),
           uniq: true,
           do: law
 
+    parents = Enum.reject(enabling_laws, &(&1 in acts))
+    {first, rest} = Enum.split_with(acts, &(&1 in enabling_laws))
+
     Mix.shell().info("#{length(parents)} parent Acts of their enabling powers, read first")
 
-    for p <- parents do
-      Task.async(fn -> {:ok, _} = Extent.Store.write(p, p |> doc() |> Extent.read()) end)
-      |> Task.await(:infinity)
+    workers = Guard.workers(workers: opts[:workers])
+
+    LawRunner.run(
+      parents,
+      fn p -> {:ok, _} = Extent.Store.write(p, p |> doc() |> Extent.read()) end,
+      fn _, _ -> :ok end,
+      workers: workers
+    )
+
+    counter = :counters.new(1, [])
+
+    # each in its own process (the parsed document goes when it exits);
+    # the parents among them first
+    for batch <- [first, rest] do
+      LawRunner.run(
+        batch,
+        &extent_line(&1, opts[:cached]),
+        fn law, line ->
+          :counters.add(counter, 1, 1)
+
+          Mix.shell().info(
+            "  [#{:counters.get(counter, 1)}/#{length(acts)}] " <>
+              if(is_binary(line), do: line, else: "#{law}: #{inspect(line)}")
+          )
+        end,
+        workers: workers
+      )
     end
+  end
 
-    for {a, i} <- Enum.with_index(acts, 1) do
-      # in its own process: the parsed document goes when it exits
-      line =
-        Task.async(fn ->
-          e = a |> doc() |> Extent.read() |> with_powers(a, cached: opts[:cached])
-          {:ok, n} = Extent.Store.write(a, e)
+  defp extent_line(a, cached) do
+    e = a |> doc() |> Extent.read() |> with_powers(a, cached: cached)
+    {:ok, n} = Extent.Store.write(a, e)
 
-          stated =
-            cond do
-              e.default -> e.default
-              e.powers -> "#{e.powers} (by its enabling powers)"
-              e.competence -> "#{e.competence} (by its legislature's competence)"
-              true -> "no clause"
-            end
+    stated =
+      cond do
+        e.default -> e.default
+        e.powers -> "#{e.powers} (by its enabling powers)"
+        e.competence -> "#{e.competence} (by its legislature's competence)"
+        true -> "no clause"
+      end
 
-          "#{a}: #{stated} (#{n} rows)"
-        end)
-        |> Task.await(:infinity)
-
-      Mix.shell().info("  [#{i}/#{length(acts)}] #{line}")
-    end
+    "#{a}: #{stated} (#{n} rows)"
   end
 
   # An SI stating no extent extends as far as its enabling powers: its
