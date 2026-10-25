@@ -56,6 +56,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
           check: :boolean,
           provision: :keep,
           golden: :boolean,
+          workers: :integer,
           build: :boolean,
           stored: :boolean,
           conflicts: :boolean,
@@ -354,38 +355,50 @@ defmodule Mix.Tasks.Lat.Vocabulary do
     cases |> Enum.map(& &1.law) |> Enum.uniq()
   end
 
+  defp golden_law({law, entries}, opts) do
+    xml = clml(law)
+
+    effects =
+      law
+      |> LatStagedParser.law_effects(store: :only)
+      |> LatStagedParser.with_affecting_territory(law)
+
+    provisions =
+      Map.new(
+        entries,
+        &{&1.id, %{extent: &1.extent, start: &1.start, start_dated: not &1.undecidable}}
+      )
+
+    given =
+      if opts[:stored],
+        do: [changes: Store.for_law(law), title: title(law)],
+        else:
+          law
+          |> primary(effects)
+          |> Keyword.merge(rows: law |> rows() |> Map.keys(), xml_ids: xml_ids(law))
+
+    labels = ChangeVocabulary.labels(law, xml, effects, provisions, given)
+    Enum.map(entries, &{&1, labels[&1.id]})
+  end
+
   defp golden(opts) do
     Mix.Task.run("app.start")
     {cases, _} = Code.eval_file(@golden)
 
+    # each golden law read where the machine allows several at once
+    # (`LawRunner.Guard`), in order (run time, 2026-10-25)
+    workers = SertantaiLegal.Scraper.LawRunner.Guard.workers(workers: opts[:workers])
+
     results =
       cases
       |> Enum.group_by(& &1.law)
-      |> Enum.flat_map(fn {law, entries} ->
-        xml = clml(law)
-
-        effects =
-          law
-          |> LatStagedParser.law_effects(store: :only)
-          |> LatStagedParser.with_affecting_territory(law)
-
-        provisions =
-          Map.new(
-            entries,
-            &{&1.id, %{extent: &1.extent, start: &1.start, start_dated: not &1.undecidable}}
-          )
-
-        given =
-          if opts[:stored],
-            do: [changes: Store.for_law(law), title: title(law)],
-            else:
-              law
-              |> primary(effects)
-              |> Keyword.merge(rows: law |> rows() |> Map.keys(), xml_ids: xml_ids(law))
-
-        labels = ChangeVocabulary.labels(law, xml, effects, provisions, given)
-        Enum.map(entries, &{&1, labels[&1.id]})
-      end)
+      |> Enum.sort_by(&elem(&1, 0))
+      |> Task.async_stream(&golden_law(&1, opts),
+        max_concurrency: workers,
+        ordered: true,
+        timeout: :infinity
+      )
+      |> Enum.flat_map(fn {:ok, rows} -> rows end)
 
     for {c, with_tiers} <- results do
       got = Enum.map(with_tiers || [], &Map.delete(&1, :tiers))
