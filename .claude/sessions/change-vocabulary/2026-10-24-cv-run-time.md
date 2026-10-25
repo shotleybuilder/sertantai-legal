@@ -396,3 +396,42 @@ Review: `backend/data/code-reviews/2026-10-25-reader-decomposition-plan-reviewer
 - Previews: the two laws as intended; regression 29 changed, net +78 — moves to the Act the text amends (WSI 2025/1320's 20 rules to the Wales 2024 Regulations its context names; SI 2009/1941 off the Insolvency Act 1986); losses checked (each caption had named another Act).
 - The preview workflow paid for itself: the blunt version would have been a full write pass and a revert.
 - ✅ End of this round: full write pass (Jason: "Run the pass and push"; restore point `run-time-before-read-pass-8`): **6 min 58 s** (writes; the preview is 4.5), 2,102 laws, 52 changed, rules 43,548 → 43,778 (+230); 2 pure losses, both checked (captions naming the Scotland Act 1998, the Electricity Act 1989); the rest moves to the Act amended (Enterprise Act 2002 Sch. 25 → Railways Act 1993, Gas Act 1986; laws off the Enterprise Act its captions named) and gains (Employment Rights Act 2025 Sch. 12 +31 on ERA 1996). Every index fresh.
+
+## Plan: decompose `AmendingLaw.Extent` (1,343 lines) — PROPOSED 2026-10-25
+
+**Rule:** no extent behaviour change until the gate passes. One step per commit, each leaving the suite green. Moved functions keep their names and arities. A function another module calls becomes public, with `@spec` and `@doc`. `Extent` keeps its struct, its type and its public API: `read/1`, `statement/2`, `units/2`, `statements/1`, `to_rows/2`, `from_rows/1`, `of/2`, `of_change/2`, `competence/1`, `competence_only?/1`, `from_powers/2`. It delegates whatever has moved out, so no caller changes.
+
+**Shared patterns:** the regexes are module attributes that many functions use. Each pattern moves to the module that owns it. Where another module needs one, the owner exposes it as a zero-arity function (`Forms.heading/0`). The place list is a compile-time string (`Places.place_list/0`), interpolated into the other modules' attributes.
+
+**Call direction (no cycles):** `Places` ← `Forms` ← `Units` ← `Parts` ← `Named` ← `Lists` ← `Default` ← `Extent`.
+- `Same` calls `Forms`, `Parts`, `Named`.
+- `Application` calls `Units`.
+- `Lookup` and `Rows` use only `%Extent{}`, `RefList` and `Territory`. `Extent` reaches them by `defdelegate`, a runtime call, so there's no compile cycle.
+
+| Module (`AmendingLaw.Extent.…`) | Holds (from `Extent`) | ~lines |
+|---|---|---|
+| `Places` | `@places`, `@codes`, the place-list string, `places/1` | 45 |
+| `Forms` | the sentence forms: `@subject`, `@heading`, `@extends`, `@extends_and`, `@extends_exc`, `@cited_list`, `@named`, `@amendments_same`, `@extends_except`, `@only_following`, `@amendments_where`, `@except_list`, `@part_not`, `@not_extends` with their comments; one function each | 170 |
+| `Units` | `own_words/2`, `local/1`, `units/2`, `unit_sentences/1`, `statements/1`, `@provision_word`, `no_dots/1` | 100 |
+| `Parts` | `parts/3`, `part_numbers/1`, `other_numeral/1`, `roman/1`, `arabic/1`, `@romans`, `holds?/3`, `holds_id?/3` | 135 |
+| `Named` | `named/2`, `plain_named?/2`, `named_kind/1`, `@named_not_plain`, `@named_tail`, `@named_excepted` | 95 |
+| `Lists` | `apart/3`, `part_not/2`, `extends_except/3`, `only_following/3`, `headed_lists/4`, `lists/3`, `kind/1`, `own_list/1`, `place/1`, `cut/1`, `list_refs/3` | 210 |
+| `Default` | `statement/2`, `statement_alone/1`, `default/1`, `westminster/3`, `exception_lists/3`, `exceptions/3`, `with_refs/4` | 170 |
+| `Same` | `amendments_same/2`, `same_lists/3`, `same_refs/4`, `@named_same`, `@not_extends_amending` | 100 |
+| `Application` | `application/2`, `@not_own`, `@not_own_extent` (the constant `Units.own_words` defaults to) | 45 |
+| `Rows` | `to_rows/2`, `from_rows/1` | 90 |
+| `Lookup` | `of/2`, `of_change/2`, `containers/1`, `introducing/2`, `named?/2`, `@apply_order`, `@competence`, `competence/1`, `competence_only?/1`, `from_powers/2`, `powers_extent/1` | 190 |
+| **Stays in `Extent`** | moduledoc, struct, type, `read/1`, `introductions/1`, delegates | 150 |
+
+**Steps, each test-first** (red: a test naming the new module fails; green: extract it; the existing tests unchanged):
+1. `Places` + `Forms`. Tests: `places/1` ("England and Wales and Scotland" → "E+W+S"); one sentence per form from `extent_test.exs`'s CV-S05 catalogue cases, matched by `Forms.*`.
+2. `Units`. Tests: `units/2` and `statements/1` cases moved from `extent_test.exs`, their assertions unchanged; `no_dots/1`.
+3. `Parts`. Tests: `parts/3` on a built `Doc` ("Parts 1 to 5", "Part III" where ids are `part-3`, "this Part", "Chapter 3 of Part 1" dropped).
+4. `Named`, `Lists`, `Same`, `Default`, in that order. Tests come from the round 1–4 cases in `extent_test.exs`, each called on the new module's function with the same assertion.
+5. `Application`, `Rows`, `Lookup`. Tests: the application cases; `to_rows/2`/`from_rows/1` round trip; the `of/2` cases (HSWA s.84; SI 2013/602; Police and Justice Act 2006 s.54).
+6. After each step: `mix test` green. That includes `ExtentPatternsTest`, which reads every catalogue example against `expected.json`.
+
+**Gate (ask Jason first; ~7 min cold, since `ReadCache` keys on the code, so the run re-reads every law):**
+- **Before step 1:** `mix lat.extent_patterns --out $S/extent-before`, and `mix lat.extent_check --family "OH&S: Occupational"` saved to `$S/check-before.txt`.
+- **After step 5:** the same two runs to `$S/extent-after` and `$S/check-after.txt`.
+- **Pass:** `diff -r` empty for both, `stale` 0, and every module under ~300 lines.
