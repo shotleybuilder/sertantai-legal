@@ -23,7 +23,7 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 - ⬜ Parse each law once and reuse it: cache the parsed `Doc` (or its flattened text and ids) keyed by the stored files' hash, so the catalogue, the check and the re-read don't each parse the same 3,357 laws again.
 - ⬜ Incremental runs: re-read only the laws a change can alter. Key each law's result by reader version + file hash, and re-use unchanged results ("prove a change alters a run first"; memory: no needless corpus runs). A full run then costs only what changed.
 - ⬜ The "reads the same alone" check: run it only for examples whose pattern or reading changed, not every sentence on every run.
-- ⬜ Bounded concurrency inside a run (2 laws at once, under a memory cap), if profiling shows CPU-bound work. Memory: a 5-wide corpus run once crashed the machine; one law at a time is the rule until this is proven safe.
+- ✅ Bounded concurrency inside a run (2 laws at once, under a memory cap), if profiling shows CPU-bound work. Memory: a 5-wide corpus run once crashed the machine; one law at a time is the rule until this is proven safe.
 - ✅ The extent check: it re-runs `Patterns.classes` per law. Share that work with the catalogue (the same result), or read the catalogue's stored result.
 - ⬜ Measure before and after on the same inputs: the extent catalogue, the commencement catalogue and the extent check give identical output, in less time.
 
@@ -51,4 +51,19 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
   - laws in parallel with a fixed limit (4 of 6) and a memory ceiling;
   - prove the output identical.
 - **Still to profile:** the commencement catalogue (13–15 minutes), the re-read (12), golden (6).
+
+## Parallel, with a check of the machine first (2026-10-25)
+
+- **Jason:** the 5-wide crash happened with a VM session open (usually it isn't), so a parallel run should check the system state first. Memory updated.
+- **Measured** peak per law, each in its own process: a small SI 160 MB; the largest Acts 1.27–1.70 GB (ukpga 2010/4). The crashed run held ~3.3 GB per law, with the VM open.
+- **`LawRunner.Guard` (`7dd02446`):**
+  - The number of laws at once is the smallest of: the maximum, 4; (MemAvailable − 6 GB) ÷ 1.8 GB; and the cores not busy, measured over half a second from `/proc/stat`.
+  - A VM running (qemu, VirtualBox, VMware, GNOME Boxes) or an unreadable state means one at a time; `--workers` overrides.
+  - The decision is printed at the start of each run.
+  - The first version used the 1-minute load average. That still counted a run just finished, so it chose 1 on a quiet machine. Replaced.
+- **Results are merged in law order**, so output doesn't depend on how many ran at once.
+  - Extent catalogue: 15 → 5 min (peak 2.3 GB); fixtures unchanged.
+  - Extent check: 4 → 1.5 min; report and sample identical.
+- **So far today:** the catalogue went from ~60 min to 5, and the check from ~30 to 1.5.
+- **Next:** the re-read (`lat.amending --extents`, 12 min, writes `extent_rules`), the commencement catalogue (13–15 min) and golden (6 min). Profile each, then the guard where laws are independent.
 
