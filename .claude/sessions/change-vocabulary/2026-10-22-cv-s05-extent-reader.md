@@ -407,3 +407,24 @@ The stored rows match the sample for all 50 laws. Every round-2 fix the sample r
     - "Any amendment … of an enactment which does not extend throughout the United Kingdom shall extend only to the part …" (1983/29).
   - The pattern keys of the 10 examples re-read after the run stay as run 7 wrote them until the next catalogue run; only their expectations were updated. Tests: 8,717 pass.
 - **Restore point** `cv-s05-before-round5`. The re-read and the rebuild are running.
+
+## Round 5 runs and agent check, seed 10 (2026-10-25)
+
+- Re-read and rebuild, then a check: PASS, but one law had moved from powers to no powers. **My regression from round 4:** REUL 2023's new `same *` list was applied to its enabling sections, so uksi 2025/82 lost its powers. Fixed (`61cf4177`): an SI's powers ignore a parent's every-amendment lists. Re-read, rebuild, check again.
+- **Check, seed 10: PASS, our faults 0.** Basis: powers 99 (96 before), no powers 52, lists 41. Bound by the law 3,183.
+- **Golden 27/27** (after the second rebuild).
+- **Agent check: laws 41 OK / 7 WRONG / 2 doubtful; changes 44 OK / 3 WRONG / 3 doubtful — FAIL (8 NEW).**
+  - **NEW-A (mine, round 3):** the "Chapter N of Part M" stripping drops real list items: Energy Act 2013 s.155(2)(b) Chapters of Part 2; CJA 2009 s.181(3)(h)–(i).
+  - **NEW-B:** a compound's first clause is dropped and not counted: "Any amendment or repeal … of an enactment which extends to Scotland or Northern Ireland has the same extent as that enactment but, save as aforesaid, this Act extends to England and Wales only" (1985/51 s.106(2)).
+  - **NEW-C:** a section named inside a bracketed description, "(amendment to section 24A of the Nuclear Installations Act 1965 …)", is read as a list item: s.24A, which Energy Act 2013 doesn't have.
+  - **NEW-D:** "extends to any part of the United Kingdom to which the amended enactment extends" is unread and uncounted (uksi 2012/2404 reg.4(2)).
+  - **NEW-E:** "… but except as aforesaid this Act shall not extend there" is unread (ukpga 1975/71 s.129(6)), so two sampled HSWA changes get no bound.
+  - **NEW-F:** a parent's lettered places, "This Part shall extend to— (a) England and Wales, and (b) Scotland, and (c) Northern Ireland" (RTSA 2003 s.17), are unread, so uksi 2015/1682 has no powers.
+  - **NEW-G (doubtful):** "Section 98 and Schedule 15 apply to England and Wales and Scotland" inside the extent section.
+  - **NEW-H:** "Amendments, repeals and revocations in this Order have the same extent as the provisions amended, repealed or revoked" is unread (no effect on claims).
+  - **Outside the sample:**
+    - uksi 2019/696 reg.3(c): a list's exceptions are stored as its items, and Part 5 itself is missing;
+    - "In Schedule N— (a) paragraph X extends to …" is unread (2019/758, 2014/469);
+    - 2022/1037 "Part 3 and Part 4" keeps Part 3 only;
+    - 2009/20 s.147(1), "Parts 1 to 7 … except that—", stores nothing and is uncounted.
+- **The trend:** NEW per round is 16, 11, 5, 5, 8. Three of the defects found since round 3 are regressions from my own fixes ("may extend", powers, Chapter of Part). Most of the rest are statements the reader skips silently: neither read nor counted.
