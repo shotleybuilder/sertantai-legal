@@ -27,10 +27,17 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, RefList}
 
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Default, Forms, Lists, Named, Same, Units}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{
+    Application,
+    Default,
+    Forms,
+    Lists,
+    Named,
+    Same,
+    Units
+  }
 
   alias SertantaiLegal.Scraper.Amendment.Reader
-  alias SertantaiLegal.Scraper.ApplicationClause
   alias SertantaiLegal.Scraper.Commencement.Order
   alias SertantaiLegal.Scraper.Territory
 
@@ -96,7 +103,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
       introduced_by: introductions(doc),
       ref: clause_ref,
       text: if(clause != "", do: clause),
-      application: application(doc, Default.default(clause))
+      application: Application.application(doc, Default.default(clause))
     }
   end
 
@@ -110,45 +117,6 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
           | {:part_not, String.t()}
           | nil
   defdelegate statement(sentence, type \\ nil), to: Default
-
-  # the law's whole-instrument application clause ("These Regulations …
-  # apply in relation to England only"; `ApplicationClause`), as a code:
-  # where the changes it makes apply (CV-07)
-  # Read from the law's own words only: never the words an amending
-  # instruction inserts into another law ("After regulation 1 insert— …
-  # These Regulations apply to Northern Ireland": a BlockAmendment), nor
-  # words inserted into this law later (an Addition or Substitution: SI
-  # 2008/2852 reg.1A, inserted 2020, never confines the changes it made in
-  # 2008) — CV-S05 N1, N2
-  @not_own ~w(BlockAmendment Addition Substitution)
-
-  defp application(doc, extent) do
-    clauses =
-      for id <- doc.ids,
-          ref = Order.ref(id),
-          ref != nil,
-          not String.contains?(ref, "("),
-          text =
-            doc |> Doc.element(id) |> Units.own_words(@not_own) |> Doc.lines() |> Enum.join(" "),
-          # (never "… revoked to the extent that they apply in Northern
-          # Ireland": other laws' application, nisr 2018/17 — CV-S05 round 3 B)
-          c =
-            text
-            |> String.replace(
-              ~r/\b(?:to\s+the\s+extent\s+that|so\s+far\s+as|in\s+so\s+far\s+as|insofar\s+as)\s+(?:it|they)\s+appl(?:y|ies)\b[^.;]*/iu,
-              ""
-            )
-            |> ApplicationClause.parse(),
-          c != nil,
-          do: c
-
-    extent_regions = extent && String.split(extent, "+")
-
-    case ApplicationClause.resolve(clauses, extent_regions) do
-      nil -> nil
-      regions -> Enum.join(regions, "+")
-    end
-  end
 
   # each Schedule's introducing section (`Amendment.Reader.references/1`,
   # the one reader of it), as refs: "sch.7" => "s.111"
