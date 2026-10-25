@@ -205,13 +205,29 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
     laws = laws(opts, "--build")
 
-    for {law, i} <- Enum.with_index(laws, 1) do
-      # in its own process: a law's parsed documents go when it exits
-      {us, line} =
-        :timer.tc(fn -> Task.async(fn -> build_one(law) end) |> Task.await(:infinity) end)
+    # several at once where the machine allows (`LawRunner.Guard`): each
+    # law writes only its own changes, and reads no other law's (run time,
+    # 2026-10-25); each in its own process, its parsed documents gone when
+    # it exits
+    workers = SertantaiLegal.Scraper.LawRunner.Guard.workers(workers: opts[:workers])
+    counter = :counters.new(1, [])
 
-      Mix.shell().info("  [#{i}/#{length(laws)}] #{law}: #{line} (#{div(us, 1_000_000)} s)")
-    end
+    SertantaiLegal.Scraper.LawRunner.run(
+      laws,
+      fn law -> :timer.tc(fn -> build_one(law) end) end,
+      fn law, result ->
+        :counters.add(counter, 1, 1)
+
+        line =
+          case result do
+            {us, line} when is_binary(line) -> "#{line} (#{div(us, 1_000_000)} s)"
+            other -> "FAILED #{inspect(other)}"
+          end
+
+        Mix.shell().info("  [#{:counters.get(counter, 1)}/#{length(laws)}] #{law}: #{line}")
+      end,
+      workers: workers
+    )
   end
 
   defp build_one(law) do
