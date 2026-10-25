@@ -104,6 +104,31 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ClmlStore do
   def law_docs(law, opts \\ []),
     do: law |> law_files(opts) |> Enum.map(&(&1 |> File.read!() |> :zlib.gunzip()))
 
+  @doc "A law's stored changes-feed pages, in page order (none when not stored)."
+  @spec feed_files(String.t(), String.t(), String.t(), keyword()) :: [String.t()]
+  def feed_files(type, year, number, opts \\ []) do
+    with_root(opts, [], fn root ->
+      Path.join([
+        root,
+        "changes",
+        "affected",
+        type,
+        to_string(year),
+        number,
+        "data.feed.page-*.gz"
+      ])
+      |> Path.wildcard()
+      |> Enum.sort_by(&page_number/1)
+    end)
+  end
+
+  defp page_number(file) do
+    case Regex.run(~r/\.page-(\d+)\.gz$/, file) do
+      [_, n] -> String.to_integer(n)
+      nil -> 0
+    end
+  end
+
   @doc """
   A digest of the law's stored text (`law_files/2`'s files, their bytes):
   what a reading of it was made from, so a reading goes stale when the

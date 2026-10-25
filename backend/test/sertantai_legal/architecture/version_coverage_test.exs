@@ -18,7 +18,8 @@ defmodule SertantaiLegal.Architecture.VersionCoverageTest do
 
   for version <- [
         SertantaiLegal.Scraper.ChangeVocabulary.Version,
-        SertantaiLegal.Scraper.Amendment.ReaderVersion
+        SertantaiLegal.Scraper.Amendment.ReaderVersion,
+        SertantaiLegal.Scraper.LegislationGovUk.FeedVersion
       ] do
     test "#{inspect(version)} covers every module its files reach" do
       covered = unquote(version).files() |> Enum.map(&Path.relative_to_cwd/1) |> MapSet.new()

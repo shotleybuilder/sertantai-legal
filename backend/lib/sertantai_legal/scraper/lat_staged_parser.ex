@@ -545,7 +545,13 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
         [_uk, type, year, number] = String.split(law_name, "_", parts: 4)
         mode = Keyword.get(opts, :store, :write)
 
-        case ChangesFeed.fetch(type, year, number, store: mode) do
+        # offline, the parse kept between runs (`FeedCache`, run time 2026-10-25)
+        fetched =
+          if mode == :only,
+            do: SertantaiLegal.Scraper.LegislationGovUk.FeedCache.effects(type, year, number),
+            else: ChangesFeed.fetch(type, year, number, store: mode)
+
+        case fetched do
           {:ok, effects} ->
             with_affecting_territory(effects, law_name)
 
