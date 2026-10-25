@@ -53,6 +53,30 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderTest do
     assert Reader.instruction(d, "regulation-3", terms, [reach]) == []
   end
 
+  test "a title with \"etc.\" names its law (SI 2013/283: \"The Maternity and Parental Leave etc. Regulations 1999 are amended\")" do
+    mpl =
+      Reader.law_ref(
+        "UK_uksi_1999_3312",
+        "The Maternity and Parental Leave etc. Regulations",
+        "reg"
+      )
+
+    era = Reader.law_ref("UK_ukpga_1996_18", "Employment Rights Act", "s")
+
+    d =
+      Doc.new("UK_uksi_2013_283", [
+        ~s(<Legislation><Secondary><Body><P1 id="regulation-2"><P1para><Text>In section 1 of the Employment Rights Act 1996, omit “x”.</Text></P1para></P1><P1 id="regulation-3"><P1para><P2 id="regulation-3-1"><P2para><Text>The Maternity and Parental Leave etc. Regulations 1999 are amended as follows.</Text></P2para></P2><P2 id="regulation-3-2"><P2para><Text>In regulation 14, omit “y”.</Text></P2para></P2></P1para></P1></Body></Secondary></Legislation>)
+      ])
+
+    assert [%{amends: "UK_uksi_1999_3312"} | _] =
+             Reader.instruction(d, "regulation-3-2", %{}, [mpl, era])
+
+    refute Enum.any?(
+             Reader.instruction(d, "regulation-3-2", %{}, [mpl, era]),
+             &(&1.amends == "UK_ukpga_1996_18")
+           )
+  end
+
   test "a law the text doesn't name gets no rule" do
     d =
       doc(

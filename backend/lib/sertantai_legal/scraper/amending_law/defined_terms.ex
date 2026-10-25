@@ -73,7 +73,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.DefinedTerms do
          [_, head] <- Regex.run(~r/^(.*)\([^()]*$/su, before),
          [_, t] <-
            Regex.run(
-             ~r/([A-Z][\w,'’\-]*(?: (?:[A-Z][\w,'’\-]*|and|of|the|for|\(Northern Ireland\)))* (?:Act|Regulations|Order|Rules|Measure) \d{4})\s*$/u,
+             ~r/([A-Z][\w,'’\-]*(?: (?:[A-Z][\w,'’\-]*|and|of|the|for|etc\.|\(Northern Ireland\)))* (?:Act|Regulations|Order|Rules|Measure) \d{4})\s*$/u,
              head
            ) do
       # "In the Town and Country Planning Act 1990": the title, not the words before it

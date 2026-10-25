@@ -68,6 +68,14 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   }
   @prefix %{section: "s", regulation: "reg", article: "art", rule: "rule"}
 
+  # a law's title in running text; "etc." inside it ("Health and Safety at
+  # Work etc. Act 1974", "The Maternity and Parental Leave etc. Regulations
+  # 1999 are amended": SI 2013/283, run time 2026-10-25) — the full stop
+  # had ended the match, so such a title named no law
+  @title_words ~S"[A-Z](?:[\w,'’()\- ]|\betc\.)*? (?:Act|Regulations|Order|Rules)(?: \(Northern Ireland\))? \d{4}"
+  @title Regex.compile!(@title_words, "u")
+  @title_group Regex.compile!("(" <> @title_words <> ")", "u")
+
   @doc "The law ref of a law name and its title (`kind` from its LAT prefix: \"s\", \"reg\", …)."
   @spec law_ref(String.t(), String.t() | nil, String.t()) :: law_ref()
   def law_ref(law_name, title, prefix) do
@@ -420,7 +428,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
     titled =
       for [{a, len}] <-
             Regex.scan(
-              ~r/[A-Z][\w,'’()\- ]*? (?:Act|Regulations|Order|Rules)(?: \(Northern Ireland\))? \d{4}/u,
+              @title,
               t,
               return: :index
             ),
@@ -895,7 +903,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
     titled =
       for [x] <-
             Regex.scan(
-              ~r/([A-Z][\w,'’()\- ]*? (?:Act|Regulations|Order|Rules)(?: \(Northern Ireland\))? \d{4})/u,
+              @title_group,
               t,
               capture: :all_but_first
             ),

@@ -19,3 +19,7 @@ UK_ukpga_2005_14   # Railways Act 1993 by term
 UK_ssi_2004_332    # "the 1997 Act" = TCP (Scotland) Act 1997, not the Listed Buildings Act
 UK_uksi_2019_696   # the largest amending law (2,033 provisions): the tail
 UK_wsi_2013_755    # 976 provisions for 57 laws: the reader's per-law cost
+UK_uksi_2013_283   # "The Maternity and Parental Leave etc. Regulations 1999": "etc." ended the title match
+UK_uksi_2016_912   # "(Licensing etc.) Regulations 2010": "etc." ended the title match
+UK_uksi_2009_229   # cross-headings "… Act 2006 (c. 16)" name the amended Act
+UK_ukpga_1995_25   # Environment Act 1995: HSWA ("etc.") paragraphs had read as COPA 1974; Sch.22 para 30 now reads nothing (open)
