@@ -30,6 +30,7 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.ChangeCollector
+  alias SertantaiLegal.Scraper.LawRunner.Guard
   alias SertantaiLegal.Scraper.Commencement.{OwnClause, SentencePatterns}
 
   @shortdoc "Own commencement sentences' pattern catalogue, as test fixtures (read-only)"
@@ -42,7 +43,9 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
   @impl Mix.Task
   def run(args) do
     {opts, _, _} =
-      OptionParser.parse(args, strict: [laws: :string, out: :string, accept: :boolean])
+      OptionParser.parse(args,
+        strict: [laws: :string, out: :string, accept: :boolean, workers: :integer]
+      )
 
     Mix.Task.run("app.start")
     Logger.configure(level: :warning)
@@ -56,16 +59,32 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
       "#{length(laws)} laws (#{Enum.count(laws, &(elem(&1, 1) == :lat))} with LAT)"
     )
 
+    # each law read where the machine allows several at once
+    # (`LawRunner.Guard`), its results taken in law order (examples are
+    # chosen in that order, so the catalogue is the same however many ran)
+    workers = Guard.workers(workers: opts[:workers])
+
     acc =
       laws
+      |> Task.async_stream(fn {law, source} -> {law, law_read(law, source)} end,
+        max_concurrency: workers,
+        ordered: true,
+        timeout: :infinity
+      )
       |> Enum.with_index(1)
-      |> Enum.reduce(new_acc(), fn {{law, source}, i}, acc ->
+      |> Enum.reduce(new_acc(), fn {{:ok, {law, read}}, i}, acc ->
         if rem(i, 250) == 0, do: Mix.shell().info("  #{i}/#{length(laws)}")
 
-        try do
-          law_patterns(law, source, acc)
-        rescue
-          error -> %{acc | unclassified: [{law, Exception.message(error)} | acc.unclassified]}
+        case read do
+          {:ok, read} ->
+            try do
+              law_patterns(law, read, acc)
+            rescue
+              error -> %{acc | unclassified: [{law, Exception.message(error)} | acc.unclassified]}
+            end
+
+          {:error, why} ->
+            %{acc | unclassified: [{law, why} | acc.unclassified]}
         end
       end)
 
@@ -136,17 +155,26 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
     OwnClause.doc_rows(doc)
   end
 
-  defp law_patterns(law, source, acc) do
+  # a law's own reading, independent of every other law (run in parallel)
+  defp law_read(law, source) do
     rows = rows(law, source)
     input = ChangeCollector.law_start_input(law, rows)
     read = OwnClause.read(law, input)
 
+    sentences =
+      for {row_id, s} <- SentencePatterns.sentences(rows),
+          do: {row_id, s, SentencePatterns.form(s), SentencePatterns.outcome(s, read)}
+
+    {:ok, %{input: input, sentences: sentences}}
+  rescue
+    error -> {:error, Exception.message(error)}
+  end
+
+  defp law_patterns(law, %{input: input, sentences: sentences}, acc) do
     acc = %{acc | laws: acc.laws + 1}
 
-    for {row_id, s} <- SentencePatterns.sentences(rows), reduce: acc do
+    for {row_id, s, f, o} <- sentences, reduce: acc do
       acc ->
-        f = SentencePatterns.form(s)
-        o = SentencePatterns.outcome(s, read)
         key = SentencePatterns.key(f, o.class)
         id = example_id(law, row_id, s)
 
