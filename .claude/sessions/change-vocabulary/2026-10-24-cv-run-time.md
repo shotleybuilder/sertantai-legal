@@ -125,6 +125,7 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 - ✅ Decompose `Amendment.Reader` (1,004 → 305 lines; five modules under ~270; gate 0 changed) — `2d4b7c7e`…`81573975`
 - ⬜ Decompose `AmendingLaw.Extent` (1,343 lines) the same way: plan, review, steps test-first, zero-diff gate on the extent catalogue and check — plan revised after review (see "Plan: decompose `AmendingLaw.Extent`")
 - ⬜ `Extent.Patterns` is 390 lines: split after the Extent gate
+- ⬜ 202 laws stale in `lat.extent_check` (OH&S): stored `extent_rules` differ from the reading now — trace why (pre-existing at the decomposition baseline)
 - ⬜ Incremental read pass: re-read only the amending laws whose output can change (per-law inputs; a reader edit no longer stales all 2,102)
 - ❌ Cached `Doc` for the read pass — dropped on measurement: loading a stored `Doc` costs about as much as parsing it (2017/3: load 1.3 s, parse 0.6 s; 1995/25: 2.3 vs 4.5 s). Cache only what step 2 shows is costly, if anything
 - ⬜ LR-45 Saxy (pending v0.2 session) reconsidered: parsing is not the read pass's bottleneck (profile); kept for memory and cold parses, not for this
@@ -509,3 +510,26 @@ Review: `backend/data/code-reviews/2026-10-25-extent-decomposition-plan-reviewer
 - every form gets a function.
 
 Finding 7 (`from_powers` and `Powers`) is Contested: `Powers` is I/O, and `from_powers` is pure on `of/2`.
+
+## Extent decomposition, steps 1–11 (2026-10-25, Jason: "Next decomposition", "Baseline")
+
+- Baseline (before step 1): catalogue `--out $S/extent-before` 5 min 14 s (0 patterns lost, 0 examples differing); check `$S/check-before.txt` 3 s (warm). **The check reports 202 stale laws** (stored `extent_rules` ≠ reading now) — pre-existing; the gate needs it unchanged; traced after the gate (todo).
+
+| Step | Module | Lines | Commit |
+|---|---|---|---|
+| 1 | `Extent.Places` | 45 | `0250e307` |
+| 2 | `Extent.Forms` | 186 | `a408829a` |
+| 3 | `Extent.Units` (+ `test/support/extent_doc.ex`) | 131 | `e2f427a6` |
+| 4 | `Extent.Parts` | 143 | `ac2a3eb9` |
+| 5 | `Extent.Named` | 82 | `c38893fa` |
+| 6 | `Extent.Lists` | 219 | `5e879736` |
+| 7 | `Extent.Same` | 126 | `166569be` |
+| 8 | `Extent.Default` | 229 | `b2b1e970` |
+| 9 | `Extent.Application` | 54 | `beecae53` |
+| 10 | `Extent.Rows` | 95 | `4e875024` |
+| 11 | `Extent.Lookup` | 200 | `f08e680f` |
+
+- `AmendingLaw.Extent` 1,343 → 160 lines (struct, `read/1`, `introductions/1`, delegates); public API unchanged.
+- Each step test-first (red, then green). One expectation of mine was wrong (`no_dots` leaves the space before the dots: two spaces) — the test was corrected, not the code.
+- Full suite: 8,825 pass.
+- ⬜ Gate: catalogue and check after, `diff` against the baseline.
