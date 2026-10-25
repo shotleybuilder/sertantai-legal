@@ -242,14 +242,32 @@ defmodule Mix.Tasks.Lat.Amending do
     Mix.shell().info("#{length(laws)} amending laws to read")
     laws = if opts[:limit], do: Enum.take(laws, opts[:limit]), else: laws
 
-    for {a, i} <- Enum.with_index(laws, 1) do
-      entry = Map.get(feed, a, %{laws: MapSet.new(), refs: []})
+    # several at once where the machine allows (`LawRunner.Guard`): each
+    # amending law writes only its own rules and index (run time,
+    # 2026-10-25); each in its own process, its parsed document gone when
+    # it exits
+    workers = Guard.workers(workers: opts[:workers])
+    counter = :counters.new(1, [])
 
-      # in its own process: the parsed document goes when it exits
-      {n, ids} = Task.async(fn -> read_one(a, entry) end) |> Task.await(:infinity)
-      mem = div(:erlang.memory(:total), 1_048_576)
-      Mix.shell().info("  [#{i}/#{length(laws)}] #{a}: #{ids} provisions, #{n} rules (#{mem} MB)")
-    end
+    LawRunner.run(
+      laws,
+      &read_one(&1, Map.get(feed, &1, %{laws: MapSet.new(), refs: []})),
+      fn a, result ->
+        :counters.add(counter, 1, 1)
+        mem = div(:erlang.memory(:total), 1_048_576)
+
+        line =
+          case result do
+            {n, ids} -> "#{ids} provisions, #{n} rules"
+            other -> "FAILED #{inspect(other)}"
+          end
+
+        Mix.shell().info(
+          "  [#{:counters.get(counter, 1)}/#{length(laws)}] #{a}: #{line} (#{mem} MB)"
+        )
+      end,
+      workers: workers
+    )
   end
 
   # the laws our LAT laws' amendment notes, or their changes feeds, point
