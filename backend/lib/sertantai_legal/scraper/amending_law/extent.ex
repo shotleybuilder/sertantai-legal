@@ -26,6 +26,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, RefList}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.Places
   alias SertantaiLegal.Scraper.Amendment.Reader
   alias SertantaiLegal.Scraper.ApplicationClause
   alias SertantaiLegal.Scraper.Commencement.Order
@@ -55,29 +56,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
           competence: String.t() | nil
         }
 
-  @places "England and Wales|Great Britain|the United Kingdom|United Kingdom|England|Wales|Scotland|Northern Ireland"
-  @codes %{
-    "england and wales" => "E+W",
-    "great britain" => "E+W+S",
-    "the united kingdom" => "E+W+S+NI",
-    "united kingdom" => "E+W+S+NI",
-    "england" => "E",
-    "wales" => "W",
-    "scotland" => "S",
-    "northern ireland" => "NI"
-  }
-
   # the law speaking of itself (an Act, an SI; "The provisions of this
   # Order"), not of some provisions of it ("The following provisions of
   # this Act extend …" is a list)
   # (also "the preceding provisions of this Act (including the Schedules)":
   # 1998/8 s.16(1), CV-S05 N7)
   @subject "(?:\\bThe provisions of |\\bthe preceding provisions of |(?<!of )(?<!in )(?<!to )(?<!to, )\\b)(?:this Act|these Regulations|this Order|these Rules|this Scheme)(?:\\s*\\(including the Schedules?(?: to it)?\\))?"
-  # "England and Wales and Scotland", "England and Wales, Scotland and
-  # Northern Ireland"
-  # ("… to England and Wales, and Scotland": a comma before the "and", CV-S05)
-  # ("… to Scotland or Northern Ireland": CV-S05 B)
-  @place_list "(?:#{@places})(?:\\s*,\\s*(?:#{@places}))*(?:\\s*,?\\s+(?:and|or|as\\s+well\\s+as)\\s+(?:to\\s+)?(?:#{@places}))*"
+  @place_list Places.place_list()
   # (also "… of this Act, and no others, shall extend to Scotland—", "…
   # extend to Scotland, namely, Part III; …": CV-S05)
   # (several places: "… extend to England and Wales, Scotland and Northern
@@ -955,12 +940,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
     end
   end
 
-  defp places(list) do
-    Regex.scan(~r/#{@places}/iu, list)
-    |> List.flatten()
-    |> Enum.map(&@codes[String.downcase(&1)])
-    |> Territory.union()
-  end
+  defp places(list), do: Places.places(list)
 
   # each list: "The following extend also to Scotland— …", "… to Scotland
   # only— …", "… have the same extent as the enactments to which they
