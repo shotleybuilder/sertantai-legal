@@ -414,13 +414,17 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
 
       assert Extent.of(every, "sch.2.para.289") == :same
 
-      # with exceptions after it, or in its subject: not read
-      for text <- [
-            "The amendments made by Schedule 3 have the same extent as the provisions which they amend, except that the amendments made by paragraphs 164 to 176 extend to England only.",
-            "Any amendment made by this Act, other than one falling within subsection (3), has the same extent as the provision to which it relates."
-          ] do
-        assert law("UK_ukpga_2000_1", [{"section-9", text}]).lists == [], text
-      end
+      # with exceptions after it not read plainly: its provisions' extent is
+      # unknown, never the default (CV-S05 round 3 E); in its subject: not read
+      assert law("UK_ukpga_2000_1", [
+               {"section-9",
+                "The amendments made by Schedule 3 have the same extent as the provisions which they amend, except that the amendments made by paragraphs 164 to 176, in so far as they relate to inquiries, extend to England only."}
+             ]).lists == [{:unread, nil, ["sch.3"]}]
+
+      assert law("UK_ukpga_2000_1", [
+               {"section-9",
+                "Any amendment made by this Act, other than one falling within subsection (3), has the same extent as the provision to which it relates."}
+             ]).lists == []
 
       # never "bind the Crown to the same extent", "to the same extent as if"
       assert law("UK_asp_2004_6", [
@@ -953,6 +957,90 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
 
       assert Extent.of(e, "s.240") == :same
       assert Extent.of(e, "s.10") == "E+W+S"
+    end
+  end
+
+  describe "CV-S05 agent round 3" do
+    defp read3(law, body),
+      do:
+        Extent.read(
+          Doc.new(law, ["<Legislation><Primary><Body>#{body}</Body></Primary></Legislation>"])
+        )
+
+    defp sec3(id, text), do: ~s(<P1 id="#{id}"><P1para><Text>#{text}</Text></P1para></P1>)
+
+    test "A: a Westminster Act that \"extends to Northern Ireland\" extends to the UK" do
+      assert read3("UK_ukpga_1975_26", sec3("section-9", "This Act extends to Northern Ireland.")).default ==
+               "E+W+S+NI"
+
+      assert read3(
+               "UK_ukpga_1975_26",
+               sec3("section-9", "This Act extends to Northern Ireland only.")
+             ).default ==
+               "NI"
+
+      assert read3(
+               "UK_nisr_2000_1",
+               sec3("regulation-1", "These Regulations extend to Northern Ireland.")
+             ).default ==
+               "NI"
+    end
+
+    test "B: \"to the extent that they apply in Northern Ireland\" is no application of the law's own" do
+      e =
+        read3(
+          "UK_nisr_2018_17",
+          sec3(
+            "regulation-20",
+            "The Medicines Regulations 1978 are also revoked to the extent that they apply in Northern Ireland."
+          )
+        )
+
+      assert e.application == nil
+    end
+
+    test "C, E: a list naming its own extent beats a same list; an exception read, or the extent unknown" do
+      e =
+        read3(
+          "UK_uksi_2013_602",
+          ~s(<P1 id="article-1"><P1para>) <>
+            ~s{<P2 id="article-1-3"><P2para><Text>Subject to paragraphs (4) to (8), the provisions of this Order extend to the whole of the United Kingdom.</Text></P2para></P2>} <>
+            ~s{<P2 id="article-1-6"><P2para><Text>Subject to paragraph (7), the modifications specified in Schedule 2 have the same extent as the provisions being modified.</Text></P2para></P2>} <>
+            ~s{<P2 id="article-1-7"><P2para><Text>The modifications specified in paragraphs 65, 66 and 76 of Schedule 2 extend to Scotland only.</Text></P2para></P2>} <>
+            ~s{<P2 id="article-1-8"><P2para><Text>The amendments made by Schedule 3 have the same extent as the provisions which they amend, except that the amendments made by paragraphs 11 to 13 of that Schedule extend to Scotland only.</Text></P2para></P2>} <>
+            ~s{<P2 id="article-1-9"><P2para><Text>The amendments made by Schedule 4 have the same extent as the provisions which they amend, except that— (a) the amendments made by paragraph 178 of that Schedule, in so far as they relate to inquiries, extend to Scotland.</Text></P2para></P2>} <>
+            "</P1para></P1>"
+        )
+
+      assert Extent.of(e, "sch.2.para.76") == "S"
+      assert Extent.of(e, "sch.2.para.10") == :same
+      assert Extent.of(e, "sch.3.para.12") == "S"
+      assert Extent.of(e, "sch.3.para.2") == :same
+      assert Extent.of(e, "sch.4.para.33") == nil
+      assert Extent.of(e, "art.2") == "E+W+S+NI"
+
+      rows = Extent.to_rows(e, "UK_uksi_2013_602")
+      assert Extent.from_rows(rows).lists == e.lists
+    end
+
+    test "a bracketed description never names a Part" do
+      e =
+        read3(
+          "UK_ukpga_2012_7",
+          ~s(<Part id="part-7">) <>
+            sec3("section-209", "Seven.") <>
+            "</Part>" <>
+            ~s(<Part id="part-12">) <>
+            sec3("section-306", "This Act extends to England and Wales.") <>
+            sec3(
+              "section-308",
+              "The following provisions extend to England and Wales, Scotland and Northern Ireland— section 230(1) to (4) and paragraphs 53 and 59 of Schedule 15 (Part 7: consequential provision etc.)."
+            ) <>
+            "</Part>"
+        )
+
+      assert Extent.of(e, "s.209") == "E+W"
+      assert Extent.of(e, "s.230(1)") == "E+W+S+NI"
     end
   end
 end

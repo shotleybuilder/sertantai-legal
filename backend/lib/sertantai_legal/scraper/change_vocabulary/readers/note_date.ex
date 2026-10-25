@@ -134,7 +134,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
         own_ref(c.key, law)
       end
 
-    op = Change.value(c, :markup, :operation) || Change.value(c, :law_text, :operation)
+    # (the feed's too: an insertion only the feed records, nisr 2006/205 —
+    # CV-S05 round 3 D)
+    op =
+      Change.value(c, :markup, :operation) || Change.value(c, :law_text, :operation) ||
+        Change.value(c, :feed, :operation)
 
     with [] <- Change.values(c, :law_text, :extent),
          %Extent{} = e <- Map.get(extents, law),

@@ -118,7 +118,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
           if MapSet.member?(seen, {ref, s}) do
             {acc, default_seen?, seen}
           else
-            {class, seen?} = outcome(s, ref, e, default_seen?)
+            {class, seen?} = outcome(s, ref, e, doc.type, default_seen?)
             {[{ref, s, class} | acc], seen?, MapSet.put(seen, {ref, s})}
           end
       end
@@ -162,8 +162,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
   end
 
   # {class, whether the clause's default has been taken}
-  defp outcome(s, ref, %Extent{} = e, default_seen?) do
-    statement = Extent.statement(s)
+  defp outcome(s, ref, %Extent{} = e, type, default_seen?) do
+    statement = Extent.statement(s, type)
     in_clause? = e.ref != nil and e.ref == ref
 
     cond do

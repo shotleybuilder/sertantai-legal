@@ -134,6 +134,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.NoteDateTest do
       assert [%Claim{value: "E+W+S"}] = NoteDate.extent_claims(c, %{"UK_uksi_2019_696" => @gb})
     end
 
+    test "competence alone never confines an insertion only the feed records (CV-S05 round 3 D)" do
+      c =
+        change([
+          {:feed, :operation, :inserted},
+          {:feed, :by, "UK_nisr_2006_205"},
+          {:feed, :affecting, ["reg.3"]}
+        ])
+
+      assert NoteDate.extent_claims(c, %{"UK_nisr_2006_205" => %Extent{competence: "NI"}}) == []
+    end
+
     test "a change only the law's own text gives: its law and provision (CV-S05 I)" do
       c = %{
         change([{:law_text, :operation, :substituted}, {:law_text, :by, "UK_uksi_2019_696"}])

@@ -19,6 +19,11 @@
     "ref": "s.55",
     "sentence": "The amendments and repeals of enactments made by schedule 7 bind the Crown to the same extent as the enactments amended or repealed."
   },
+  "UK_asp_2005_3/7663eec6a2": {
+    "law": "UK_asp_2005_3",
+    "ref": "s.30",
+    "sentence": "In section 68 (extent, etc.) of that Act, after subsection (7) there is inserted—7A Sections 4D to 4F of, and Schedule 1C to, this Act extend to Scotland only.."
+  },
   "UK_asp_2009_6/4ad644cf98": {
     "law": "UK_asp_2009_6",
     "ref": "s.87",
@@ -1064,10 +1069,20 @@
     "ref": "s.74",
     "sentence": "This Act, except section 15(1) and Schedule 10 and, so far as regards any enactment mentioned in Schedule 17 that so extends, section 73 and that Schedule, does not extend to Northern Ireland."
   },
+  "UK_ukpga_1981_69/67a1a4ee2d": {
+    "law": "UK_ukpga_1981_69",
+    "ref": "s.74",
+    "sentence": "The following provisions of this Act, namely— sections 39, 40 and 42 to 49 and Schedule 13; and Part III, do not extend to Scotland."
+  },
   "UK_ukpga_1981_69/e7e414428f": {
     "law": "UK_ukpga_1981_69",
     "ref": "s.74",
     "sentence": "Sections 29 and 30 extend to Scotland only."
+  },
+  "UK_ukpga_1982_16/1ddac2451c": {
+    "law": "UK_ukpga_1982_16",
+    "ref": "s.107",
+    "sentence": "The following provisions of this Act, that is to say, sections 27, 30 to 35, 37, 38A to 38C, 44(9), 51, 54 and 88, paragraph 12 of Schedule 7 and paragraph 10 of Schedule 9 and Schedule 10 shall not extend to Northern Ireland."
   },
   "UK_ukpga_1982_23/1a41631bff": {
     "law": "UK_ukpga_1982_23",
@@ -1289,6 +1304,11 @@
     "ref": "s.77",
     "sentence": "This section applies to Scotland only."
   },
+  "UK_ukpga_1985_67/5fb4a6e545": {
+    "law": "UK_ukpga_1985_67",
+    "ref": "s.140",
+    "sentence": "This Act, with the exceptions mentioned in subsection (6) below, does not extend to Northern Ireland."
+  },
   "UK_ukpga_1985_67/67cf224163": {
     "law": "UK_ukpga_1985_67",
     "ref": "s.57",
@@ -1298,6 +1318,11 @@
     "law": "UK_ukpga_1985_67",
     "ref": "s.58",
     "sentence": "In section 9 of the 1968 Act (as amended by section 57(1) of this Act)—a in subsection (1)—i at the beginning there shall be inserted the words “Subject to any order under section 42(1)(c) of the Local Government Act 1985 (alteration or abolition of passenger transport areas, etc.)”; andii in paragraph (b)(i), for the word “council” there shall be substituted the words “passenger transport authority for the county which is coterminous with or includes that passenger transport area”;b in subsection (4), after the word “the” (where it last occurs) there shall be inserted the words “county which is coterminous with or includes that”; andc in subsection (5), as it applies in England and Wales, after the words “comprised in” there shall be inserted the words “a county which is coterminous with or includes”."
+  },
+  "UK_ukpga_1985_67/ab6cb88ce4": {
+    "law": "UK_ukpga_1985_67",
+    "ref": "s.140",
+    "sentence": "The following provisions of this Act do not extend to Scotland, that is to say— sections 10 and 11; Part II; and section 102."
   },
   "UK_ukpga_1985_71/2878e4551c": {
     "law": "UK_ukpga_1985_71",
@@ -1363,11 +1388,6 @@
     "law": "UK_ukpga_1986_44",
     "ref": "sch.3.para.29",
     "sentence": "This Part of this Schedule shall extend to Scotland only."
-  },
-  "UK_ukpga_1986_5/43e75efc82": {
-    "law": "UK_ukpga_1986_5",
-    "ref": "s.102",
-    "sentence": "Subject to subsection (4) below, this Act extends to England and Wales only."
   },
   "UK_ukpga_1986_5/7e9e9412a9": {
     "law": "UK_ukpga_1986_5",
@@ -1453,11 +1473,6 @@
     "law": "UK_ukpga_1987_27",
     "ref": "s.50",
     "sentence": "This Act does not extend to Northern Ireland and—a in Part IV, sections 42 and 43 extend to England and Wales only and section 44 extends to Scotland only; andb in Part V, sections 46 and 47 extend to England and Wales only and section 48 extends to Scotland only."
-  },
-  "UK_ukpga_1987_43/b20e6fad1e": {
-    "law": "UK_ukpga_1987_43",
-    "ref": "s.49",
-    "sentence": "This Act shall extend to Northern Ireland with the exception of—a the provisions of Part 1;b any provision amending or repealing an enactment which does not so extend; andc any other provision so far as it has effect for the purposes of, or in relation to, a provision falling within paragraph (a) or (b) above."
   },
   "UK_ukpga_1987_43/bc2c2803d7": {
     "law": "UK_ukpga_1987_43",
@@ -1648,11 +1663,6 @@
     "law": "UK_ukpga_1989_29",
     "ref": "sch.4",
     "sentence": "Street works etc. in England and Wales11 Subject to the following provisions of this paragraph, for any purpose connected with the carrying on of the activities which he is authorised by his licence to carry on, a licence holder may execute—a the following kinds of works, that is to say, installing under, over, in, on, along or across any street and from time to time inspecting, maintaining, adjusting, repairing, altering, replacing or removing—i any electric lines or electrical plant; andii any structures for housing or covering any such lines or plant; andb any works requisite for or incidental to the purposes of any works falling within paragraph (a) above, including for those purposes—i opening or breaking up any street or any sewers, drains or tunnels within or under any street;ii tunnelling or boring under any street; andiii removing or using all earth and materials in or under any street; but nothing in this sub-paragraph shall empower a licence holder to lay down or place any electric line or electrical plant into, through or against any building, or in any land not dedicated to the public use.2 The power of a licence holder under sub-paragraph (1) to place on or over a street any structure for housing any line or plant shall be exercisable only with the consent of the street authority; but such consent shall not be unreasonably withheld.3 Any question under sub-paragraph (2) above as to whether or not a consent is unreasonably withheld shall be determined by a single arbitrator to be appointed by the parties or, in default of agreement, by the Director.4 Except in cases of emergency arising from faults in any electric lines or electrical plant, a street which is not a maintainable highway shall not be opened or broken up by virtue of sub-paragraph (1) above except with the consent of the street authority or the consent of the Secretary of State.5 The Secretary of State shall not entertain an application for his consent under sub-paragraph (4) above unless the licence holder has served notice of the application on the person whose consent would otherwise be required.6 A licence holder shall do as little damage as possible in the exercise of the powers conferred by sub-paragraph (1) above and shall make compensation for any damage done in the exercise of those powers.7 A licence holder shall exercise the powers conferred by sub-paragraph (1) above in such manner as will secure that nothing which he instals or keeps installed under, over, in, on, along or across any street becomes a source of danger to the public.8 Nothing in sub-paragraph (1) above shall affect the application to any operation of sections 34 to 36 of the Coast Protection Act 1949.9 In this paragraph “maintainable highway”, “street” and “street authority” have the same meaning as in Part III of the New Roads and Street Works Act 1991.10 This paragraph extends to England and Wales only."
-  },
-  "UK_ukpga_1989_29/67f1b3c444": {
-    "law": "UK_ukpga_1989_29",
-    "ref": "s.113",
-    "sentence": "This Act, except this section and the following provisions, namely— Sections 32N to 32Z2; sections 65 to 70; section 82; sections 91 to 95; section 100; paragraph 8 of Schedule 1 and section 1(5) so far as relating to that paragraph; paragraph 10 of Schedule 2 and section 2(6) so far as relating to that paragraph; paragraph 11 of Schedule 16 and section 112(1) so far as relating to that paragraph; and Schedule 18 and section 112(4) so far as relating to enactments which extend there ..., does not extend to Northern Ireland."
   },
   "UK_ukpga_1989_29/81d799bd43": {
     "law": "UK_ukpga_1989_29",
@@ -2119,11 +2129,6 @@
     "ref": "s.3",
     "sentence": "This Act extends to England and Wales, Scotland and Northern Ireland."
   },
-  "UK_ukpga_1993_9/84dee15f9c": {
-    "law": "UK_ukpga_1993_9",
-    "ref": "s.48",
-    "sentence": "Subject to subsection (6) below, this Act extends to Scotland only."
-  },
   "UK_ukpga_1993_9/d73bec3d93": {
     "law": "UK_ukpga_1993_9",
     "ref": "s.48",
@@ -2174,11 +2179,6 @@
     "ref": "s.68",
     "sentence": "The following provisions of this Act do not extend to Scotland, that is to say—za sections 4A to 4C and Schedules 1A and 1B;a sections 49 and 50 and Schedule 7; andb so much of Schedules 9 and 11 as relates to enactments extending to England and Wales only."
   },
-  "UK_ukpga_1994_26/9f0b904216": {
-    "law": "UK_ukpga_1994_26",
-    "ref": "s.108",
-    "sentence": "This Act extends to England and Wales, Scotland and Northern Ireland."
-  },
   "UK_ukpga_1994_29/30c3a21ebb": {
     "law": "UK_ukpga_1994_29",
     "ref": "s.96",
@@ -2198,11 +2198,6 @@
     "law": "UK_ukpga_1994_29",
     "ref": "s.96",
     "sentence": "The following provisions of this Act extend to Northern Ireland . . .— sections 43 and 44 together with Schedules 4 and 5 so far as they relate to enactments which extend there; . . .; Part V."
-  },
-  "UK_ukpga_1994_29/734f67d515": {
-    "law": "UK_ukpga_1994_29",
-    "ref": "s.96",
-    "sentence": "Except as provided by subsections (3) and (4) above, this Act does not extend to Northern Ireland."
   },
   "UK_ukpga_1994_31/6cbf8c8a52": {
     "law": "UK_ukpga_1994_31",
@@ -2259,11 +2254,6 @@
     "ref": "s.118",
     "sentence": "Section 110 of and Schedule 4 to this Act extend to England and Wales as well as to Scotland."
   },
-  "UK_ukpga_1995_20/7ee7c3ed17": {
-    "law": "UK_ukpga_1995_20",
-    "ref": "s.118",
-    "sentence": "Subject to subsections (5) to (7) below, this Act extends only to Scotland."
-  },
   "UK_ukpga_1995_21/161306bfff": {
     "law": "UK_ukpga_1995_21",
     "ref": "sch.4.pt.chapter",
@@ -2308,11 +2298,6 @@
     "law": "UK_ukpga_1995_25",
     "ref": "s.125",
     "sentence": "Except for this section and any amendment or repeal by this Act of any provision contained in—a the Parliamentary Commissioner Act 1967,b the Sea Fish (Conservation) Act 1967,c the House of Commons Disqualification Act 1975, ord the Northern Ireland Assembly Disqualification Act 1975, this Act shall not extend to Northern Ireland."
-  },
-  "UK_ukpga_1995_25/22d966e6c1": {
-    "law": "UK_ukpga_1995_25",
-    "ref": "s.125",
-    "sentence": "Section 106 of, and Schedule 16 to, this Act extend to Scotland only."
   },
   "UK_ukpga_1995_25/322db9aa93": {
     "law": "UK_ukpga_1995_25",
@@ -2474,11 +2459,6 @@
     "ref": "s.244",
     "sentence": "Sections 240 and 242 and Schedules 1 and 3 have the same extent as the provisions amended or repealed by this Act."
   },
-  "UK_ukpga_1996_23/6b8d75949a": {
-    "law": "UK_ukpga_1996_23",
-    "ref": "s.108",
-    "sentence": "The following provisions of Part II do not extend to Northern Ireland— section 92 (exclusion of Part I in relation to small claims arbitration in the county court), and section 93 and Schedule 2 (appointment of judges as arbitrators)."
-  },
   "UK_ukpga_1996_23/872612a663": {
     "law": "UK_ukpga_1996_23",
     "ref": "s.108",
@@ -2533,11 +2513,6 @@
     "law": "UK_ukpga_1996_37",
     "ref": "s.14",
     "sentence": "This Act does not extend to Scotland."
-  },
-  "UK_ukpga_1996_47/c745637f31": {
-    "law": "UK_ukpga_1996_47",
-    "ref": "s.27",
-    "sentence": "Subject to subsection (4), the provisions of this Act extend only to England and Wales."
   },
   "UK_ukpga_1996_47/ffaa338a2a": {
     "law": "UK_ukpga_1996_47",
@@ -2613,11 +2588,6 @@
     "law": "UK_ukpga_1997_29",
     "ref": "s.35",
     "sentence": "Sections 1 to 4, 9 to 31 and Schedule 1 extend to England and Wales only."
-  },
-  "UK_ukpga_1997_29/e4581b6c3f": {
-    "law": "UK_ukpga_1997_29",
-    "ref": "s.35",
-    "sentence": "Sections 5 to 8 and Schedule 2 extend to Scotland only."
   },
   "UK_ukpga_1997_42/19970a9c84": {
     "law": "UK_ukpga_1997_42",
@@ -2829,11 +2799,6 @@
     "ref": "s.17",
     "sentence": "Sections 10 and 11 and paragraph 1 of Schedule 6 extend only to England and Wales."
   },
-  "UK_ukpga_2000_2/9b78592607": {
-    "law": "UK_ukpga_2000_2",
-    "ref": "s.17",
-    "sentence": "Subject to subsections (6) to (9), this Act extends to the whole of the United Kingdom."
-  },
   "UK_ukpga_2000_2/bd956676c3": {
     "law": "UK_ukpga_2000_2",
     "ref": "s.17",
@@ -2869,20 +2834,10 @@
     "ref": "s.80",
     "sentence": "The amendments and repeals in Schedules 6 and 8 have the same extent as the statutory provisions to which they relate."
   },
-  "UK_ukpga_2000_36/c07c951fc6": {
-    "law": "UK_ukpga_2000_36",
-    "ref": "s.88",
-    "sentence": "Subject to subsection (3), this Act extends to Northern Ireland."
-  },
   "UK_ukpga_2000_37/00235c3491": {
     "law": "UK_ukpga_2000_37",
     "ref": "s.104",
     "sentence": "The provisions of Schedule 8 and of so much of Part III of Schedule 16 as relates to the enactments referred to in paragraphs 2 and 3 of Schedule 8 have the same extent as the enactments which they amend or repeal."
-  },
-  "UK_ukpga_2000_37/1206311ef0": {
-    "law": "UK_ukpga_2000_37",
-    "ref": "s.104",
-    "sentence": "Paragraph 1 of Schedule 10 extends to Scotland only."
   },
   "UK_ukpga_2000_37/3d6b72dfd4": {
     "law": "UK_ukpga_2000_37",
@@ -2963,11 +2918,6 @@
     "law": "UK_ukpga_2001_24",
     "ref": "s.127",
     "sentence": "The following provisions come into force on such day as the Secretary of State and the Scottish Ministers, acting jointly, may appoint by order—a sections 98 to 100, so far as they extend to Scotland,b section 101 and Schedule 7, so far as they relate to the entries in respect of the Police (Scotland) Act 1967, andc section 125 and Schedule 8, so far as they relate to the entries in Part 6 of Schedule 8 in respect of the British Transport Commission Act 1962 and the Ministry of Defence Police Act 1987, so far as those entries extend to Scotland."
-  },
-  "UK_ukpga_2001_24/4ba94f30fa": {
-    "law": "UK_ukpga_2001_24",
-    "ref": "s.128",
-    "sentence": "The following provisions do not extend to Northern Ireland—a section 76,b section 100."
   },
   "UK_ukpga_2001_24/6ad0a170d3": {
     "law": "UK_ukpga_2001_24",
@@ -3083,11 +3033,6 @@
     "law": "UK_ukpga_2003_16",
     "ref": "s.5",
     "sentence": "But section 2 extends to England and Wales only."
-  },
-  "UK_ukpga_2003_16/647e74d391": {
-    "law": "UK_ukpga_2003_16",
-    "ref": "s.5",
-    "sentence": "This Act extends to the whole of the United Kingdom."
   },
   "UK_ukpga_2003_17/b03457b04d": {
     "law": "UK_ukpga_2003_17",
@@ -3324,11 +3269,6 @@
     "ref": "s.262",
     "sentence": "Part 2 (civil partnership: England and Wales), excluding section 35 but including Schedules 1 to 9, extends to England and Wales only."
   },
-  "UK_ukpga_2004_37/0e8b29feb0": {
-    "law": "UK_ukpga_2004_37",
-    "ref": "s.17",
-    "sentence": "This Act shall extend only to England and Wales."
-  },
   "UK_ukpga_2004_5/44b0d7101c": {
     "law": "UK_ukpga_2004_5",
     "ref": "s.124",
@@ -3338,11 +3278,6 @@
     "law": "UK_ukpga_2004_5",
     "ref": "s.124",
     "sentence": "Except as otherwise provided in this section, this Act extends to England and Wales only."
-  },
-  "UK_ukpga_2005_11/16d2a3a10e": {
-    "law": "UK_ukpga_2005_11",
-    "ref": "s.56",
-    "sentence": "This Act extends to the United Kingdom."
   },
   "UK_ukpga_2005_14/bfaf1a1d14": {
     "law": "UK_ukpga_2005_14",
@@ -3399,6 +3334,11 @@
     "ref": "s.179",
     "sentence": "The following have the same extent as the enactments to which they relate—a section 55(1) and Schedule 2,b section 59 and Schedule 4,c section 109 and Schedule 6,d section 154,e section 159 and Schedule 11,f section 160 and Schedule 12,g section 161(5) (so far as it has effect for the purposes of Part 2 of Schedule 13) and that Part of that Schedule,h section 163(3) and Schedule 14,i sections 169(5) and 170,j (subject to subsection (8)) section 174(2) and Schedule 17."
   },
+  "UK_ukpga_2005_4/574bb1d417": {
+    "law": "UK_ukpga_2005_4",
+    "ref": "s.147",
+    "sentence": "Subject to subsections (1) to (3), this Act extends to Northern Ireland."
+  },
   "UK_ukpga_2005_4/6a74f15268": {
     "law": "UK_ukpga_2005_4",
     "ref": "s.147",
@@ -3408,11 +3348,6 @@
     "law": "UK_ukpga_2006_11",
     "ref": "s.17",
     "sentence": "Subsection (5) does not extend to Scotland except in relation to—a the doing of an act as an act of terrorism or for the purposes of terrorism; orb the possession or control of a substance for the purposes of terrorism."
-  },
-  "UK_ukpga_2006_11/58bab6cd5d": {
-    "law": "UK_ukpga_2006_11",
-    "ref": "s.39",
-    "sentence": "Subject to section 17(6) and to subsection (4) of this section, this Act extends to the whole of the United Kingdom."
   },
   "UK_ukpga_2006_11/edbed1bb85": {
     "law": "UK_ukpga_2006_11",
@@ -3594,6 +3529,11 @@
     "ref": "sch.13",
     "sentence": "Lands Clauses Consolidation Act 1845 (c. 18)71 In section 91 of the Lands Clauses Consolidation Act 1845 (proceedings in case of refusal to deliver possession of lands) for “levied by distress” substitute “ recovered by using the procedure in Schedule 12 to the Tribunals, Courts and Enforcement Act 2007 (taking control of goods), ”.2 This paragraph extends only to England and Wales."
   },
+  "UK_ukpga_2007_15/a4e9254239": {
+    "law": "UK_ukpga_2007_15",
+    "ref": "s.147",
+    "sentence": "The other provisions of this Act extend only to England and Wales."
+  },
   "UK_ukpga_2007_15/cba08da1fd": {
     "law": "UK_ukpga_2007_15",
     "ref": "sch.5.pt.1",
@@ -3613,11 +3553,6 @@
     "law": "UK_ukpga_2007_17",
     "ref": "s.65",
     "sentence": "Subject to subsections (2) to (6), this Act extends to England and Wales, Scotland and Northern Ireland."
-  },
-  "UK_ukpga_2007_19/e3cd24bf5e": {
-    "law": "UK_ukpga_2007_19",
-    "ref": "s.28",
-    "sentence": "Subject to subsection (2), this Act extends to England and Wales, Scotland and Northern Ireland."
   },
   "UK_ukpga_2007_21/bbe7857dcb": {
     "law": "UK_ukpga_2007_21",
@@ -3759,10 +3694,10 @@
     "ref": "s.112",
     "sentence": "Section 40(2) to (4) (the Northern Ireland renewables obligation) extend to Northern Ireland only."
   },
-  "UK_ukpga_2008_4/3c5d11459f": {
+  "UK_ukpga_2008_4/83db1a5841": {
     "law": "UK_ukpga_2008_4",
-    "ref": "s.49",
-    "sentence": "The provisions of Schedule 10 (and this section) extend only to England and Wales."
+    "ref": "s.79",
+    "sentence": "Subsections (2) and (3) (and the related repeals in Schedule 28) extend to England and Wales only."
   },
   "UK_ukpga_2008_4/9e8271e6db": {
     "law": "UK_ukpga_2008_4",
@@ -3958,11 +3893,6 @@
     "law": "UK_ukpga_2012_10",
     "ref": "s.152",
     "sentence": "Sections 130 and 131(1) extend to England and Wales and Scotland."
-  },
-  "UK_ukpga_2012_10/9ab0bed4a8": {
-    "law": "UK_ukpga_2012_10",
-    "ref": "s.152",
-    "sentence": "Parts 1 to 3 of this Act extend to England and Wales only, subject to subsections (2) to (8)."
   },
   "UK_ukpga_2012_10/a553e246b5": {
     "law": "UK_ukpga_2012_10",
@@ -4709,10 +4639,10 @@
     "ref": "reg.1",
     "sentence": "In the case of any provision specified in a Schedule to this Order which (by virtue of sections 63(2) and 65(10) of the Criminal Law Act 1977) extends to Scotland nothing in this Order shall bring the provision into force in its application to Scotland."
   },
-  "UK_uksi_1978_712/28ce1fe8c6": {
-    "law": "UK_uksi_1978_712",
+  "UK_uksi_1986_948/629dfd2d91": {
+    "law": "UK_uksi_1986_948",
     "ref": "reg.1",
-    "sentence": "In the case of any provision specified in the Schedule to this Order which (by virtue of sections 63(2) and 65(10) of the Criminal Law Act 1977) extends to Scotland nothing in this Order shall bring the provision into force in its application to Scotland."
+    "sentence": "This Order extends to Northern Ireland."
   },
   "UK_uksi_1988_1636/7aea01f2c9": {
     "law": "UK_uksi_1988_1636",
@@ -4859,6 +4789,16 @@
     "ref": "reg.1",
     "sentence": "This Regulation, Regulation 2 and Regulations 8 to 11 extend to Northern Ireland."
   },
+  "UK_uksi_1999_2920/a0011db9ff": {
+    "law": "UK_uksi_1999_2920",
+    "ref": "reg.1",
+    "sentence": "These Regulations extend to Northern Ireland."
+  },
+  "UK_uksi_1999_3323/a0011db9ff": {
+    "law": "UK_uksi_1999_3323",
+    "ref": "reg.1",
+    "sentence": "These Regulations extend to Northern Ireland."
+  },
   "UK_uksi_1999_3372/f131ecdb51": {
     "law": "UK_uksi_1999_3372",
     "ref": "reg.1",
@@ -4868,6 +4808,11 @@
     "law": "UK_uksi_2000_800",
     "ref": "reg.2",
     "sentence": "Section 6(1) of and Schedule 2 to the Pollution Prevention and Control Act 1999 shall come into force on 21st March 2000 in so far as they extend to England and Wales."
+  },
+  "UK_uksi_2000_90/1ca07672c8": {
+    "law": "UK_uksi_2000_90",
+    "ref": "reg.2",
+    "sentence": "Paragraphs 6, 9, 23, 27 and 30 of Schedule 1 to this Order and article 3(1), in so far as it relates to those paragraphs, extend to England and Wales and to Scotland, but not to Northern Ireland."
   },
   "UK_uksi_2000_90/cc8534dc1e": {
     "law": "UK_uksi_2000_90",
@@ -5003,11 +4948,6 @@
     "law": "UK_uksi_2004_1769",
     "ref": "reg.8",
     "sentence": "A determination to which this regulation applies shall—a be treated as a justification decision for the purposes of these Regulations;b be treated as limited to the same extent that the power of the person making it, or under whose authority it was made, is limited by sub-paragraphs (a) to (d) of regulation 6(2); andc if it was limited to a particular practice, be treated as a justification decision whose scope is limited to the same extent as was the determination in question."
-  },
-  "UK_uksi_2004_1822/ef1b7b5dd1": {
-    "law": "UK_uksi_2004_1822",
-    "ref": "reg.1",
-    "sentence": "The modifications specified in paragraphs 2, 3, 4, 7, 8, 11, 12, 13 and 15 of the Schedule to this Order extend to Scotland only."
   },
   "UK_uksi_2004_288/7709fff404": {
     "law": "UK_uksi_2004_288",
@@ -5159,11 +5099,6 @@
     "ref": "reg.3",
     "sentence": "In regulation 5, paragraphs (2)(a), (2)(d) (except in respect of the definitions “premises” and “sample”), (3) (in respect of the insertion of paragraph (2B) only), (6), (22), (23)(a), (c) and (d), (24)(b), (25) to (27), (29)(c) and (d), (30), (33) to (35), (37) to (39), (41), (42), (44), (45) and (61) also extend to Scotland."
   },
-  "UK_uksi_2007_1843/a8f79f5104": {
-    "law": "UK_uksi_2007_1843",
-    "ref": "reg.3",
-    "sentence": "Except as provided for in this regulation, these Regulations extend to England and Wales only."
-  },
   "UK_uksi_2007_390/f13ea4fb7e": {
     "law": "UK_uksi_2007_390",
     "ref": "reg.1",
@@ -5304,11 +5239,6 @@
     "ref": "reg.1",
     "sentence": "These Regulations extend to England and Wales and Scotland only, save as provided for in Schedule 1 (provisions extending to England and Wales, Scotland and Northern Ireland)."
   },
-  "UK_uksi_2010_93/b1c0b39578": {
-    "law": "UK_uksi_2010_93",
-    "ref": "sch.1.para.1",
-    "sentence": "The following provisions of Schedule 2 to these Regulations extend to England and Wales, Scotland and Northern Ireland."
-  },
   "UK_uksi_2011_1210/7e52da8bec": {
     "law": "UK_uksi_2011_1210",
     "ref": "reg.1",
@@ -5403,11 +5333,6 @@
     "law": "UK_uksi_2013_1506",
     "ref": "reg.3",
     "sentence": "Regulations 1, 2(1), (4) and (5), 7, 33(2) and 34 (f) and Chapter 3 of Part 3 of these Regulations shall extend to Northern Ireland."
-  },
-  "UK_uksi_2013_1644/2085ce7663": {
-    "law": "UK_uksi_2013_1644",
-    "ref": "reg.1",
-    "sentence": "Articles 2 and 3 and Schedules 1 and 2 extend to England and Wales and Scotland (but see article 2 in relation to Scotland)."
   },
   "UK_uksi_2013_1644/cfc245178d": {
     "law": "UK_uksi_2013_1644",
