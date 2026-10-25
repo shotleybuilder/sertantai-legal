@@ -1,0 +1,21 @@
+# Amending laws whose reading has gone wrong before: `mix lat.amending --read --preview --regression`
+# reads them (and the golden laws' amending laws) after every reader fix. Add a law when a fix is
+# made for it; the line says why. Run time session, 2026-10-25.
+UK_ukpga_2005_15   # SOCPA: Royal Assent beside a by-order clause (commencement; golden RTA 1988 s.4(6))
+UK_ukpga_2017_3    # PCA: "fire and rescue authority" a thing under a law, read as FRSA 2004
+UK_ukpga_2008_29   # Planning Act 2008: "TCPA 1990 (c. 8)" chapter; "local planning authority" read as TCP(S)A 1997
+UK_uksi_2009_1941  # "unregistered company" read as Companies Act 2006
+UK_ukpga_1995_23   # "goods vehicle" read as RTA 1988 (it amends itself)
+UK_asp_2011_6      # WANE: list-item "," definitions; 1981 Act instructions read as 2004 Act
+UK_ukpga_2022_46   # PSTI: the code = CA 2003 Sch. 3A, paragraphs read as sections
+UK_uksi_2019_598   # Part 3 heading "Amendment to the 2009 Regulations"
+UK_uksi_2019_453   # Part heading names the enabling Act (ECA 1972), not the amended one
+UK_wsi_2013_747    # title garbled by xmerl order ("etc.The Building (Approved Inspectors ) …")
+UK_uksi_2019_758   # REACH: Annex paragraphs read as Articles; garbled Schedule 10 heading
+UK_ukpga_1994_39   # "the 1968 Act" / "the 1980 Act" (Sewerage / Water (Scotland))
+UK_uksi_2019_544   # Schedule heading names the amended 2010 Regulations
+UK_ukpga_2008_26   # "the TA 1968/1985/2000" chapter-suffixed terms
+UK_ukpga_2005_14   # Railways Act 1993 by term
+UK_ssi_2004_332    # "the 1997 Act" = TCP (Scotland) Act 1997, not the Listed Buildings Act
+UK_uksi_2019_696   # the largest amending law (2,033 provisions): the tail
+UK_wsi_2013_755    # 976 provisions for 57 laws: the reader's per-law cost

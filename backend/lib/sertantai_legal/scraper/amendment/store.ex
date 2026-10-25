@@ -40,14 +40,20 @@ defmodule SertantaiLegal.Scraper.Amendment.Store do
 
   @doc "The rules amending `law_name`, from every source."
   @spec for_law(String.t()) :: [Rule.t()]
-  def for_law(law_name) do
+  def for_law(law_name), do: select("amends", law_name)
+
+  @doc "The rules read from the amending law `source_law`."
+  @spec for_source(String.t()) :: [Rule.t()]
+  def for_source(source_law), do: select("source_law", source_law)
+
+  defp select(column, value) when column in ["amends", "source_law"] do
     %{rows: rows, columns: cols} =
       Repo.query!(
         """
         SELECT #{Enum.join(@columns, ", ")} FROM amendment_rules
-        WHERE amends = $1 ORDER BY source_law, source_ref, read_at
+        WHERE #{column} = $1 ORDER BY source_law, source_ref, read_at
         """,
-        [law_name]
+        [value]
       )
 
     for r <- rows do

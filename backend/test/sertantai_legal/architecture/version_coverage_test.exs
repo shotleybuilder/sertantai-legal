@@ -5,8 +5,9 @@ defmodule SertantaiLegal.Architecture.VersionCoverageTest do
   else a change to that module leaves stale results looking current
   (run time, 2026-10-25: `ChangeVocabulary.Version` missed the LawStart
   readers). Reach is followed through module references in the compiled
-  code; I/O modules (the repo, the HTTP client, the CLML store) are
-  allowed, the inputs they serve being fingerprinted on their own.
+  code; I/O modules (the repo, the HTTP client, the CLML store, the staged
+  parser's effects loading, the enabling cache) are allowed, the inputs
+  they serve being fingerprinted on their own (`FeedCache`, the stores).
   """
   use ExUnit.Case, async: true
 
@@ -14,6 +15,8 @@ defmodule SertantaiLegal.Architecture.VersionCoverageTest do
     lib/sertantai_legal/repo.ex
     lib/sertantai_legal/scraper/legislation_gov_uk/client.ex
     lib/sertantai_legal/scraper/legislation_gov_uk/clml_store.ex
+    lib/sertantai_legal/scraper/lat_staged_parser.ex
+    lib/sertantai_legal/scraper/enacted_by/enabling_cache.ex
   )
 
   for version <- [
@@ -40,7 +43,8 @@ defmodule SertantaiLegal.Architecture.VersionCoverageTest do
   defp walk([], seen, _by_file, _mods), do: seen
 
   defp walk([f | rest], seen, by_file, mods) do
-    case {MapSet.member?(seen, f), by_file[f]} do
+    # an I/O module is a boundary: what it serves is fingerprinted on its own
+    case {MapSet.member?(seen, f) or f in @io, by_file[f]} do
       {false, mod} when mod != nil ->
         walk(refs(mod, mods) ++ rest, MapSet.put(seen, f), by_file, mods)
 

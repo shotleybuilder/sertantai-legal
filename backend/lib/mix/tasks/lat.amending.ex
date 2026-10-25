@@ -18,6 +18,15 @@ defmodule Mix.Tasks.Lat.Amending do
       mix lat.amending --read                    # every amending law not read by this reader (resumable)
       mix lat.amending --read --amending A,B     # these amending laws (re-read)
       mix lat.amending --read --limit 20         # the next 20
+      mix lat.amending --read --preview --amending A,B   # read, report what would change, write nothing
+      mix lat.amending --read --preview --regression     # the regression set (test/fixtures/amendment_read/regression.txt + the golden laws' amending laws)
+
+  Each changed amending law is reported (`ReadReport`: rules removed and
+  added per amended law, the provisions behind them), then a summary.
+  **Workflow (run time, 2026-10-25):** a reader fix is checked with
+  `--preview` on the laws it concerns and on `--regression`; fixes are
+  batched; one full `--read` per round, its report traced before
+  accepting. Never a full pass per fix.
 
   An Act's own extent clause (CV-04: `extent_rules`) is read in the same
   pass; for the Acts changing a law, or named Acts, alone:
@@ -32,13 +41,11 @@ defmodule Mix.Tasks.Lat.Amending do
 
   use Mix.Task
 
-  alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.LawRunner
   alias SertantaiLegal.Scraper.LawRunner.Guard
 
-  alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
-  alias SertantaiLegal.Scraper.AmendingLaw.{Extent, Pointer}
-  alias SertantaiLegal.Scraper.Amendment.{Index, ReadLaw, Rule, Store}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent
+  alias SertantaiLegal.Scraper.Amendment.{ReadPass, ReadReport, Rule, Store}
 
   @shortdoc "Print a law's amendment rules; read amending laws into rules"
 
@@ -53,7 +60,9 @@ defmodule Mix.Tasks.Lat.Amending do
           limit: :integer,
           extents: :boolean,
           cached: :boolean,
-          workers: :integer
+          workers: :integer,
+          preview: :boolean,
+          regression: :boolean
         ]
       )
 
@@ -112,7 +121,7 @@ defmodule Mix.Tasks.Lat.Amending do
         {list, _} ->
           String.split(list, ",", trim: true)
       end
-      |> Enum.filter(&(Extent.Store.reads?(&1) and held?(&1)))
+      |> Enum.filter(&(Extent.Store.reads?(&1) and ReadPass.held?(&1)))
 
     Mix.shell().info("#{length(acts)} laws to read for their extent clause")
 
@@ -122,10 +131,10 @@ defmodule Mix.Tasks.Lat.Amending do
     # (several laws are read at once: run time, 2026-10-25)
     enabling_laws =
       for a <- acts,
-          not act?(a),
-          p <- enabling(a, opts[:cached]),
+          not Extent.Powers.act?(a),
+          p <- Extent.Powers.enabling(a, opts[:cached]),
           law = p["law"],
-          Extent.Store.reads?(law) and held?(law),
+          Extent.Store.reads?(law) and ReadPass.held?(law),
           uniq: true,
           do: law
 
@@ -167,7 +176,12 @@ defmodule Mix.Tasks.Lat.Amending do
   defp extent_line(a, cached) do
     # the reading kept between runs (`Extent.ReadCache`, shared with the
     # catalogue and the check)
-    e = a |> Extent.ReadCache.law() |> Map.fetch!(:read) |> with_powers(a, cached: cached)
+    e =
+      a
+      |> Extent.ReadCache.law()
+      |> Map.fetch!(:read)
+      |> Extent.Powers.with_powers(a, cached: cached)
+
     {:ok, n} = Extent.Store.write(a, e)
 
     stated =
@@ -181,192 +195,101 @@ defmodule Mix.Tasks.Lat.Amending do
     "#{a}: #{stated} (#{n} rows)"
   end
 
-  # An SI stating no extent extends as far as its enabling powers: its
-  # enabling provisions (its introduction: `EnablingCache`, fetched once
-  # on a miss), each placed by its parent Act's own extent clause (read
-  # first in this run, `extents/1`). CV-07.
-  # `cached: true` (the check, `mix lat.extent_check`; `--extents
-  # --cached`): the enabling cache only, never a fetch (CV-S05)
-  @doc false
-  @spec with_powers(Extent.t(), String.t(), keyword()) :: Extent.t()
-  def with_powers(e, law, opts \\ [])
-
-  # (with lists too: "Regulation 12 and Schedule 10 extend to England and
-  # Wales and Scotland" names those only; the rest extend as far as the
-  # powers — SI 2019/758, CV-S05)
-  def with_powers(%Extent{default: nil} = e, law, opts) do
-    if Extent.Store.reads?(law) and not act?(law) do
-      provisions = enabling(law, opts[:cached])
-      parents = provisions |> Enum.map(& &1["law"]) |> Enum.uniq()
-      e = %{e | powers: Extent.from_powers(provisions, Extent.Store.for_laws(parents))}
-
-      # with neither, a devolved instrument extends as far as its
-      # legislature's competence
-      if e.powers, do: e, else: %{e | competence: Extent.competence(law)}
-    else
-      # a devolved legislature's Act stating none extends as far as its
-      # competence too (asp, nia, anaw, asc; CV-S05: agent round 1)
-      if act?(law), do: %{e | competence: Extent.competence(law)}, else: e
-    end
-  end
-
-  def with_powers(e, _law, _opts), do: e
-
-  defp enabling(law, true) do
-    case SertantaiLegal.Scraper.EnactedBy.EnablingCache.cached(law) do
-      {:ok, ps} -> ps
-      :none -> []
-    end
-  end
-
-  defp enabling(law, _),
-    do: SertantaiLegal.Scraper.EnactedBy.EnablingCache.get(law, retry_empty: true)
-
-  defp act?(law),
-    do: (String.split(law, "_") |> Enum.at(1)) in ~w(ukpga asp anaw asc nia apni)
-
   # ── --read ──────────────────────────────────────────────────────────
 
   defp read(opts) do
     Mix.shell().info("reading the changes feeds of our LAT laws for their pointers …")
-    feed = feed_pointers()
+    feed = ReadPass.feed_pointers()
 
     laws =
-      case opts[:amending] do
-        nil -> amending_laws(feed) |> Enum.filter(&to_read?(&1, Map.get(feed, &1)))
-        list -> String.split(list, ",", trim: true)
+      cond do
+        opts[:regression] ->
+          regression_laws()
+
+        opts[:amending] ->
+          String.split(opts[:amending], ",", trim: true)
+
+        true ->
+          feed |> ReadPass.amending_laws() |> Enum.filter(&ReadPass.stale?(&1, Map.get(feed, &1)))
       end
 
-    Mix.shell().info("#{length(laws)} amending laws to read")
     laws = if opts[:limit], do: Enum.take(laws, opts[:limit]), else: laws
+    preview? = opts[:preview] == true
+
+    Mix.shell().info(
+      "#{length(laws)} amending laws to read#{if preview?, do: " (preview: nothing written)", else: ""}"
+    )
 
     # several at once where the machine allows (`LawRunner.Guard`): each
-    # amending law writes only its own rules and index (run time,
-    # 2026-10-25); each in its own process, its parsed document gone when
-    # it exits
-    workers = Guard.workers(workers: opts[:workers])
+    # amending law writes only its own rules and index; each in its own
+    # process, its parsed document gone when it exits
     counter = :counters.new(1, [])
 
-    LawRunner.run(
-      laws,
-      &read_one(&1, Map.get(feed, &1, %{laws: MapSet.new(), refs: []})),
-      fn a, result ->
-        :counters.add(counter, 1, 1)
-        mem = div(:erlang.memory(:total), 1_048_576)
+    results =
+      LawRunner.run(
+        laws,
+        &read_one(&1, Map.get(feed, &1, %{laws: MapSet.new(), refs: []}), preview?),
+        fn a, result ->
+          :counters.add(counter, 1, 1)
+          mem = div(:erlang.memory(:total), 1_048_576)
 
-        line =
-          case result do
-            {n, ids} -> "#{ids} provisions, #{n} rules"
-            other -> "FAILED #{inspect(other)}"
-          end
+          line =
+            case result do
+              {diff, ids} -> "#{ids} provisions, #{diff.after} rules"
+              other -> "FAILED #{inspect(other)}"
+            end
 
-        Mix.shell().info(
-          "  [#{:counters.get(counter, 1)}/#{length(laws)}] #{a}: #{line} (#{mem} MB)"
-        )
-      end,
-      workers: workers
-    )
+          Mix.shell().info(
+            "  [#{:counters.get(counter, 1)}/#{length(laws)}] #{a}: #{line} (#{mem} MB)"
+          )
+        end,
+        workers: Guard.workers(workers: opts[:workers])
+      )
+
+    diffs = for {a, {diff, _ids}} <- results, into: %{}, do: {a, diff}
+    changed = diffs |> Enum.sort() |> Enum.flat_map(fn {a, d} -> ReadReport.lines(a, d) end)
+
+    Mix.shell().info("\n#{if preview?, do: "would change", else: "changed"}:")
+    for line <- changed, do: Mix.shell().info("  " <> line)
+    Mix.shell().info(ReadReport.summary(diffs))
   end
 
-  # the laws our LAT laws' amendment notes, or their changes feeds, point
-  # to, held in the CLML store
-  defp amending_laws(feed) do
-    Repo.query!("""
-    SELECT DISTINCT coalesce(citation_law, changed_by) FROM amendment_annotations
-    WHERE code_type = 'amendment' AND coalesce(citation_law, changed_by) ~ '^UK_'
-      AND law_name IN (SELECT DISTINCT law_name FROM legal_articles)
-    """).rows
-    |> List.flatten()
-    |> Kernel.++(Map.keys(feed))
-    |> Enum.uniq()
-    |> Enum.sort()
-    |> Enum.filter(&held?/1)
-  end
+  # one amending law: its reading against its stored rules, stored unless a
+  # preview
+  defp read_one(amending, feed_entry, preview?) do
+    old = Store.for_source(amending)
 
-  # each amending law's pointers from the changes feeds of our LAT laws
-  # (stored pages): the laws it changes and the provisions each effect
-  # names as its own (CV-07)
-  defp feed_pointers do
-    Repo.query!("SELECT DISTINCT law_name FROM legal_articles").rows
-    |> List.flatten()
-    |> Enum.flat_map(fn law ->
-      for e <- SertantaiLegal.Scraper.LatStagedParser.law_effects(law, store: :only) || [],
-          is_binary(e.affecting) and e.affecting =~ ~r/^UK_/,
-          # text changes only: the instructions this reader reads (a
-          # commencement order's "coming into force" is the commencement
-          # read pass's)
-          ReadLaw.text_effect?(e),
-          do: {e.affecting, law, Pointer.refs_in(e.affecting_provisions)}
-    end)
-    |> Enum.group_by(&elem(&1, 0))
-    |> Map.new(fn {a, rows} ->
-      {a,
-       %{
-         laws: MapSet.new(rows, &elem(&1, 1)),
-         refs: rows |> Enum.flat_map(&elem(&1, 2)) |> Enum.uniq()
-       }}
-    end)
-  end
-
-  # read again when the reader changed, or the feed points to provisions
-  # the last reading didn't (an index from before CV-07 read the notes'
-  # pointers only)
-  defp to_read?(amending, feed_entry) do
-    index = Index.get(amending)
-
-    cond do
-      not Index.fresh?(amending, index) ->
-        true
-
-      feed_entry == nil ->
-        false
-
-      true ->
-        read = MapSet.new(index["pointers"] || note_pointers(amending))
-        not MapSet.subset?(MapSet.new(pointer_keys(feed_entry.refs)), read)
-    end
-  end
-
-  defp note_pointers(amending) do
-    amending |> ReadLaw.note_refs(ReadLaw.notes(amending)) |> pointer_keys()
-  end
-
-  # a pointer as the index records it ("sch.2.para.10(2)(a)")
-  defp pointer_keys(refs), do: refs |> Enum.flat_map(&Pointer.to_refs/1) |> Enum.uniq()
-
-  defp read_one(amending, feed_entry) do
-    case ReadLaw.doc(amending) do
+    case ReadPass.read(amending, feed_entry) do
       nil ->
-        {0, 0}
+        {ReadReport.diff(old, old), 0}
 
-      doc ->
-        notes = ReadLaw.notes(amending)
-
-        laws =
-          notes
-          |> Enum.map(& &1.law_name)
-          |> Kernel.++(MapSet.to_list(feed_entry.laws))
-          |> Enum.uniq()
-          |> Enum.map(&ReadLaw.law_ref/1)
-
-        # one set of pointers: the notes' and the feed's, deduplicated
-        refs = Enum.uniq(ReadLaw.note_refs(amending, notes) ++ feed_entry.refs)
-        {rules, ids} = ReadLaw.rules(doc, laws, refs)
-        {:ok, n} = Store.write(amending, rules)
-
-        # an Act's own extent clause, from the same document (CV-04)
-        if Extent.Store.reads?(amending), do: Extent.Store.write(amending, Extent.read(doc))
-
-        :ok = Index.write(amending, doc, Enum.map(laws, & &1.law_name), pointer_keys(refs))
-
-        {n, length(ids)}
+      r ->
+        unless preview?, do: ReadPass.write(r)
+        {ReadReport.diff(old, r.rules), length(r.ids)}
     end
   end
 
-  defp held?(law) do
-    case String.split(law, "_", parts: 4) do
-      [_, _, _, _] -> ClmlStore.law_files(law) != []
-      _ -> false
-    end
+  # the regression set: amending laws whose reading has gone wrong before
+  # (a committed list, one per line, # comments) and the golden laws'
+  # amending laws
+  @regression "test/fixtures/amendment_read/regression.txt"
+
+  defp regression_laws do
+    listed =
+      @regression
+      |> File.read!()
+      |> String.split("\n")
+      |> Enum.map(&(&1 |> String.replace(~r/#.*/, "") |> String.trim()))
+      |> Enum.reject(&(&1 == ""))
+
+    {golden, _} = Code.eval_file("test/fixtures/change_vocabulary/golden.exs")
+
+    behind_golden =
+      for law <- golden |> Enum.map(& &1.law) |> Enum.uniq(),
+          r <- Store.for_law(law),
+          uniq: true,
+          do: r.source.law
+
+    Enum.uniq(listed ++ behind_golden)
   end
 end

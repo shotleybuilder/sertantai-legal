@@ -31,7 +31,6 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
   """
   use Mix.Task
 
-  alias Mix.Tasks.Lat.Amending
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.Extent
@@ -150,7 +149,7 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
       true ->
         read = reading.read
         classes = reading.classes
-        e = Amending.with_powers(read, law, cached: true)
+        e = SertantaiLegal.Scraper.AmendingLaw.Extent.Powers.with_powers(read, law, cached: true)
         {basis, why} = basis(e, law)
 
         unread =
