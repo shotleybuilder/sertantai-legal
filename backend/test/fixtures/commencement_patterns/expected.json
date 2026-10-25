@@ -1601,9 +1601,9 @@
     "UK_ukpga_1963_33/1fa32cad48": {
       "class": "law:clause_staged",
       "rules": [
-        "all — 1965-04-01 — everywhere, fully — clause_staged",
-        "rest except s.94 — 1965-04-01 — everywhere, fully — provision_dated",
-        "rest except s.94 — 1965-04-01 — everywhere, in relation to — provision_qualified"
+        "all — 1963-07-31 — everywhere, fully — clause_staged",
+        "rest except s.94 — 1963-07-31 — everywhere, in relation to — provision_qualified",
+        "rest except s.94 — 1965-04-01 — everywhere, fully — provision_dated"
       ]
     },
     "UK_ukpga_1963_41/f24828e5db": {
@@ -2801,7 +2801,7 @@
     "UK_ukpga_1989_33/5b6b0f6f82": {
       "class": "law:clause_staged",
       "rules": [
-        "all — 1989-09-27 — everywhere, fully — clause_staged",
+        "all — 1989-07-27 — everywhere, fully — clause_staged",
         "rest except s.38 — 1989-09-27 — everywhere, fully — provision_dated"
       ]
     },
@@ -2884,7 +2884,7 @@
     "UK_ukpga_1990_43/a2ae64735d": {
       "class": "law:clause_staged",
       "rules": [
-        "all except s.164 — 1991-01-01 — everywhere, fully — clause_staged",
+        "all except s.164 — 1990-11-01 — everywhere, fully — clause_staged",
         "rest except s.164 — appointed (by order) — everywhere, fully — provision_by_order"
       ]
     },
@@ -3625,7 +3625,7 @@
     "UK_ukpga_2001_16/93682e5ed1": {
       "class": "law:clause_staged",
       "rules": [
-        "all — 2001-07-11 — everywhere, fully — clause_staged",
+        "all — 2001-05-11 — everywhere, fully — clause_staged",
         "rest except s.138, s.42, s.43, s.81, s.82, s.83, s.84, s.85, s.109 — appointed (by order) — everywhere, fully — provision_by_order"
       ]
     },

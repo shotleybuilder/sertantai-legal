@@ -338,6 +338,35 @@ defmodule SertantaiLegal.Scraper.LawStartTest do
       assert %{treatment: :act_enactment, date: ~D[1990-06-29]} = s
     end
 
+    test "a staged clause leaving provisions out starts no later than Royal Assent (CJPA 2001 s.138; LGA 1963 s.94(2))" do
+      by_order =
+        start(
+          "ukpga",
+          [
+            {"s.138(2)",
+             "The provisions of this Act, other than this section and sections 42 and 43, shall come into force on such day as the Secretary of State may by order made by statutory instrument appoint."},
+            {"s.138(4)",
+             "Section 85 comes into force at the end of the period of two months beginning with the day on which this Act is passed."}
+          ],
+          clml_head: @assent,
+          made: ~D[1990-06-29]
+        )
+
+      assert %{treatment: :clause_staged, date: ~D[1990-06-29]} = by_order
+
+      until =
+        start(
+          "ukpga",
+          [
+            {"s.94(2)",
+             "The following provisions of this Act shall not come into force until 1st April 1995, that is to say, Parts II and III."}
+          ],
+          clml_head: @assent
+        )
+
+      assert %{treatment: :clause_staged, date: ~D[1990-06-29]} = until
+    end
+
     test "… unless it goes on to the rest (ukpga 1992/34 s.8(3))" do
       s =
         start(

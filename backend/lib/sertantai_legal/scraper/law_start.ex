@@ -164,6 +164,7 @@ defmodule SertantaiLegal.Scraper.LawStart do
       |> Clause.read(Map.get(input, :made), type in @acts)
       |> with_schedule_table(Map.get(input, :schedule_tables))
       |> with_tied(Map.get(input, :tied_date))
+      |> assent_floor(head, type)
 
     lrt(input) || coming_into_force(head) || eu(input, head, type) ||
       dated(clause) || enactment(head, type) || clause ||
@@ -188,6 +189,34 @@ defmodule SertantaiLegal.Scraper.LawStart do
     do: %{clause | date: d}
 
   defp with_tied(clause, _date), do: clause
+
+  # an Act's staged clause leaving provisions out ("The provisions of this
+  # Act, other than this section and sections 42 and 43, … by order": CJPA
+  # 2001 s.138(2); "The following provisions … shall not come into force
+  # until 1st April 1965": London Government Act 1963 s.94(2)) leaves them to
+  # Royal Assent (Interpretation Act 1978 s.4): the Act starts no later
+  # (CV-S05). UK Acts only: devolved Acts date their excepted provisions
+  # themselves ("this section and sections 186, 187 … on the day after
+  # Royal Assent": anaw 2016/2); an "except" inside a listed item leaves no
+  # provision of the Act out (Wildlife and Countryside Act 1981 s.74(2))
+  @leaves_out ~r/\b(?:this\s+Act|(?:provisions|remainder)\s+of\s+this\s+Act)\s*,?\s*\(?\s*(?:other\s+than|except)\b|\bnot\s+come\s+into\s+(?:force|operation)\s+until\b/i
+
+  defp assent_floor(
+         %__MODULE__{treatment: :clause_staged, date: %Date{} = d, text: text} = clause,
+         head,
+         type
+       )
+       when type == "ukpga" and is_binary(text) do
+    with true <- Regex.match?(@leaves_out, text),
+         %__MODULE__{date: %Date{} = assent} <- enactment(head, type),
+         :lt <- Date.compare(assent, d) do
+      %{clause | date: assent}
+    else
+      _ -> clause
+    end
+  end
+
+  defp assent_floor(clause, _head, _type), do: clause
 
   defp dated(%__MODULE__{date: %Date{}} = clause), do: clause
   defp dated(_clause), do: nil
