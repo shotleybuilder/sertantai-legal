@@ -11,10 +11,10 @@ defmodule Mix.Tasks.Lat.Reparse do
       mix lat.reparse --laws A,B --store prefer --tag x # parse from the local CLML store (#175)
       mix lat.reparse --older-format --enriched --dry-run --tag preview
                                                       # plan only, persist nothing
-      mix lat.reparse --laws A,B --store only --workers 3 --tag x  # laws at once (default 5 with --store only, else 1; LR-38)
+      mix lat.reparse --laws A,B --store only --workers 3 --tag x  # laws at once (default: the guard's with --store only, else 1; LR-38)
 
   Each run snapshots the batch to `lat_reparse_<tag>` (+ `_cm`), re-parses
-  the laws in parallel (LR-38; `--workers`, default 5 with `--store only`,
+  the laws in parallel (LR-38; `--workers`, default the guard's with `--store only`,
   else 1: the client's rate limit is per process), stops starting new laws at the
   first error or failed enrichment gate (laws in flight finish; the rest are
   listed as not started), and writes `data/reports/lat-reparse/<tag>.csv`
@@ -175,7 +175,7 @@ defmodule Mix.Tasks.Lat.Reparse do
   # offline (`--store only`): 5 at once; anything that may fetch stays one
   # at a time — the client's rate limit is a per-process delay, so workers
   # would multiply the request rate to legislation.gov.uk
-  defp default_workers(:only), do: LawRunner.default_workers()
+  defp default_workers(:only), do: LawRunner.Guard.workers()
   defp default_workers(_store), do: 1
 
   defp store_mode(nil), do: nil

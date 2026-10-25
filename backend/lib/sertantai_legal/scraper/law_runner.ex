@@ -16,22 +16,30 @@ defmodule SertantaiLegal.Scraper.LawRunner do
   `{:error, …}` result and the run goes on. Results arrive as they finish
   (not in input order) and are handed to `on_result` in the caller's
   process, so report and done-file writes stay serial.
+
+  How many at once is the machine's to say (`LawRunner.Guard`: memory,
+  busy cores, no VM) unless the caller names `workers` (a `--workers N`
+  choice): a 5-wide run once crashed the machine with a VM open, and the
+  guard sat only in the tasks that called it (run time, 2026-10-25).
   """
 
-  @default_workers 5
-
-  @doc "The default number of laws run at once."
-  @spec default_workers() :: pos_integer()
-  def default_workers, do: @default_workers
+  alias SertantaiLegal.Scraper.LawRunner.Guard
 
   @doc """
-  `fun.(law)` for each law, `workers` at a time; `on_result.(law, result)`
-  in the caller as each finishes. Returns the results by law.
+  `fun.(law)` for each law, `workers` at a time (`opts[:workers]`, else
+  the guard's decision; one law runs alone without asking);
+  `on_result.(law, result)` in the caller as each finishes. Returns the
+  results by law.
   """
   @spec run([String.t()], (String.t() -> term()), (String.t(), term() -> any()), keyword()) ::
           %{String.t() => term()}
   def run(laws, fun, on_result, opts \\ []) do
-    workers = Keyword.get(opts, :workers, @default_workers)
+    workers =
+      case {Keyword.get(opts, :workers), laws} do
+        {n, _} when is_integer(n) and n > 0 -> n
+        {_, [_, _ | _]} -> Guard.workers()
+        _ -> 1
+      end
 
     laws
     |> Task.async_stream(fn law -> {law, safely(law, fun)} end,

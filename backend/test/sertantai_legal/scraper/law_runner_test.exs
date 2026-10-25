@@ -46,4 +46,27 @@ defmodule SertantaiLegal.Scraper.LawRunnerTest do
     LawRunner.run(for(i <- 1..10, do: "L#{i}"), fun, fn _, _ -> :ok end, workers: 3)
     assert {0, 3} = Agent.get(agent, & &1)
   end
+
+  describe "how many at once" do
+    import ExUnit.CaptureIO
+
+    test "the guard decides when the caller names no workers (it says why)" do
+      out =
+        capture_io(fn ->
+          assert LawRunner.run(~w(a b c), &String.upcase/1, fn _, _ -> :ok end) ==
+                   %{"a" => "A", "b" => "B", "c" => "C"}
+        end)
+
+      assert out =~ "laws read"
+    end
+
+    test "one law runs alone, without asking the guard" do
+      out =
+        capture_io(fn ->
+          assert LawRunner.run(~w(a), &String.upcase/1, fn _, _ -> :ok end) == %{"a" => "A"}
+        end)
+
+      assert out == ""
+    end
+  end
 end

@@ -141,7 +141,7 @@ defmodule Mix.Tasks.Lat.Commencement do
           n
         end,
         fn _law, _n -> :ok end,
-        workers: opts[:workers] || LawRunner.default_workers()
+        workers: opts[:workers]
       )
 
     errors = for {law, {:error, e}} <- results, do: {law, e}
@@ -196,7 +196,7 @@ defmodule Mix.Tasks.Lat.Commencement do
           end
         end,
         fn _law, _n -> :ok end,
-        workers: opts[:workers] || LawRunner.default_workers()
+        workers: opts[:workers]
       )
 
     errors = for {law, {:error, e}} <- results, do: {law, e}
@@ -405,7 +405,7 @@ defmodule Mix.Tasks.Lat.Commencement do
         fn _law, rows ->
           for r <- List.wrap(rows), r.class != "same", do: IO.write(out, csv(r) <> "\n")
         end,
-        workers: opts[:workers] || LawRunner.default_workers()
+        workers: opts[:workers]
       )
       |> Enum.flat_map(fn
         {_law, rows} when is_list(rows) -> Enum.map(rows, & &1.class)

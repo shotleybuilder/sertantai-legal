@@ -11,7 +11,7 @@ defmodule Mix.Tasks.Lat.Relabel do
       mix lat.relabel --laws A,B
       mix lat.relabel --stale             # laws stale for a label reason
       mix lat.relabel --all
-      mix lat.relabel --stale --workers 1   # one law at a time (default: 5 at once, LR-31)
+      mix lat.relabel --stale --workers 1   # one law at a time (default: as many as LawRunner.Guard allows)
 
   Resumable: laws done are listed in `data/reports/lat-refactor/<tag>.done`
   (default tag: `relabel_<LabelVersion>`, so a resume never skips a law
@@ -80,7 +80,7 @@ defmodule Mix.Tasks.Lat.Relabel do
             {:error, reason} -> Mix.shell().error("  #{law}: #{inspect(reason)}")
           end
         end,
-        workers: opts[:workers] || LawRunner.default_workers()
+        workers: opts[:workers]
       )
 
     failed = Enum.count(results, fn {_, r} -> r != :ok end)

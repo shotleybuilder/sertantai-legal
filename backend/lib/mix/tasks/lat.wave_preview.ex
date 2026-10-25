@@ -11,7 +11,7 @@ defmodule Mix.Tasks.Lat.WavePreview do
       mix lat.wave_preview --laws A,B --tag lr25_dry
       mix lat.wave_preview --all --tag lr25_dry
       mix lat.wave_preview --all --relabel --tag lr33_dry   # the label path only (`LabelRefresh.run/1`, as `mix lat.relabel`)
-      mix lat.wave_preview --all --workers 1 --tag x       # one law at a time (default: 5 at once, LR-31)
+      mix lat.wave_preview --all --workers 1 --tag x       # one law at a time (default: as many as LawRunner.Guard allows)
 
   Rows in the reports are in finishing order, not input order.
 
@@ -121,7 +121,7 @@ defmodule Mix.Tasks.Lat.WavePreview do
           i = :counters.get(counter, 1)
           if rem(i, 25) == 0, do: Mix.shell().info("  [#{i}/#{total}]")
       end,
-      workers: opts[:workers] || LawRunner.default_workers()
+      workers: opts[:workers]
     )
 
     write_classes(diff_csv, Path.join(dir, "#{tag}.classes.csv"))
