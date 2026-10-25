@@ -1,10 +1,10 @@
 ---
 session: Reader run time — make the catalogues, checks and re-reads quicker
-status: pending
+status: active
 opened: 2026-10-24
 ---
 
-# Session: Reader run time (PENDING)
+# Session: Reader run time (ACTIVE)
 
 ## Problem
 
@@ -30,4 +30,4 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 ## Dependencies
 
 - ✅ The shared CLML loader (`ClmlStore.law_docs`, `689c0adb`): one place to add a parse cache.
-- ⬜ CV-S05 closed first (this session doesn't change readings), or taken as a sub-session between rounds if Jason prefers.
+- ✅ CV-S05 suspended for it (Jason 2026-10-25: "Let's suspend and sort out run time"). This session must not change readings: each catalogue, check and re-read gives identical output before and after.

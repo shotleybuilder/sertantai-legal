@@ -1,6 +1,8 @@
 ---
 session: 'CV-S05: Extent and Application Reader'
-status: active
+status: suspended
+suspended: '2026-10-25'
+suspended_reason: 'Jason 2026-10-25: "Let''s suspend and sort out run time" — each fix round costs ~2½ h of runs; resume after 2026-10-24-cv-run-time.md'
 release: v0.1
 opened: '2026-10-22'
 bugs:
@@ -37,7 +39,7 @@ bugs:
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
 ---
 
-# Session: CV-S05: Extent and Application Reader (ACTIVE)
+# Session: CV-S05: Extent and Application Reader (SUSPENDED)
 
 ## Problem
 
@@ -47,14 +49,15 @@ The session does not close until its results pass.
 
 ## Todo
 
-- ⬜ Define what good looks like (the acceptance check): a hand-checked sample from the OH&S core family, and the measures, each defined in words with a test
-- ⬜ The extent/application/powers catalogue (every sentence in held amending laws, classed by form × reading; fixtures + test)
-- ⬜ Build the acceptance check; run it (ask Jason before any long run)
-- ⬜ Checked on a sample of each wording read (CV-07 built four rounds, checked only by golden)
-- ⬜ Act wordings not read: "Parts I and III of this Act … extend to …"; "except for Part N, which extends to …"; "the same part or parts … as the provision to which it relates" (CV-07)
+- ✅ Define what good looks like (the acceptance check): a hand-checked sample from the OH&S core family, and the measures, each defined in words with a test
+- ✅ The extent/application/powers catalogue (every sentence in held amending laws, classed by form × reading; fixtures + test)
+- ✅ Build the acceptance check; run it (ask Jason before any long run)
+- ✅ Checked on a sample of each wording read (CV-07 built four rounds, checked only by golden)
+- ✅ Act wordings not read: "Parts I and III of this Act … extend to …"; "except for Part N, which extends to …"; "the same part or parts … as the provision to which it relates" (CV-07)
 - ⬜ Enabling-power parser: 6 other unparsed forms and 1 with no enacting formula (CV-07 agent sample); SI 1999/3232 matched to "ECA 1972 s.80, Sch.9" (a multi-law citation marker misread)
 - ⬜ The competence rule (a devolved SI's competence doesn't confine its insertion, V1-04) confirmed on cases beyond Forestry Act s.1(1A)
 - ⬜ SI 2012/760: its made introduction (held) names no enabling provisions (from CV-S01)
+- ⬜ Round 6 (proposed 2026-10-25, Jason's go-ahead needed on step 1, a design change): (1) never drop a statement silently: a sentence saying where provisions extend that isn't turned fully into rules is recorded unread, and its provisions get no bound, never the default; the catalogue and the check count it; (2) the misreads and my regressions: NEW-A (Chapter of Part), NEW-C (section in brackets), uksi 2019/696's exceptions read as items, 2022/1037's Part 4; (3) forms: "except as aforesaid … shall not extend there", lettered places "to— (a) England and Wales, (b) …", "extends to any part of the United Kingdom to which the amended enactment extends"; (4) the same runs, then agent round 6 (misses that are counted are known classes; only misreads and silent drops are NEW)
 - ⬜ Fix until the check passes reliably; record the result
 
 ## Dependencies
@@ -428,3 +431,16 @@ The stored rows match the sample for all 50 laws. Every round-2 fix the sample r
     - 2022/1037 "Part 3 and Part 4" keeps Part 3 only;
     - 2009/20 s.147(1), "Parts 1 to 7 … except that—", stores nothing and is uncounted.
 - **The trend:** NEW per round is 16, 11, 5, 5, 8. Three of the defects found since round 3 are regressions from my own fixes ("may extend", powers, Chapter of Part). Most of the rest are statements the reader skips silently: neither read nor counted.
+
+## Suspended (2026-10-25)
+
+Jason: "Let's suspend and sort out run time." Each fix round's runs cost about 2½ hours: catalogue ~60 min, re-read 12, rebuild 2, check 30, golden 6. Resume after `2026-10-24-cv-run-time.md`, from the round-6 todo.
+
+State at suspension:
+- code `61cf4177`;
+- stored readings from round 5's second re-read and rebuild;
+- check PASS, our faults 0; golden 27/27;
+- agent round 5 FAIL (8 NEW).
+- Restore points: `cv-s05-before-round3` to `cv-s05-before-round5`.
+- Nothing pushed since `e5be305f`.
+
