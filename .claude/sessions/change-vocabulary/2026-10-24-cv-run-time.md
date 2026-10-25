@@ -113,7 +113,7 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 - ✅ Guard in `LawRunner.run` itself: every parallel run checks the machine — `0ba0bd31`
 - ✅ Staleness that hid: version hashes cover what they reach (`VersionCoverageTest`); amendment indexes keyed to the stored text's digest — `7afcd1f0`
 - ✅ Build and golden never use stale amendment rules: `Amendment.ReadLaw` reads a stale amending law from the text held — `dcb91f5f`
-- ⬜ **(in progress) Amendment read pass speed, profile-led** (35 min; see "Read pass profile"):
+- ✅ **Amendment read pass speed, profile-led: 35 min → 4 min 30 s** (reader's repeated work, feed start-up cache, workers, largest first; see "Read pass profile"):
   - ✅ step 1, the reader's repeated work: laws named found once per instruction, defined-term patterns compiled once — `18e25def` (570,639 regex compiles gone; 1995/25 8.2 → 1.7 s; SI 2019/696 + WSI 2013/755 ~17 → 2.5 min; rules identical)
   - ✅ step 2, start-up: every LAT law's feed pages were parsed at the start of each pass (160 s); `FeedCache` keeps the parse (offline), keyed by `FeedVersion` + page digest — `d293d7d8` (one-law pass 2 min 15 s → 12 s; golden and build gain too)
   - ✅ step 3, a full pass on the new code: **7 min 19 s (was 35 min)**, 2,099 laws, 0 errors, peak 2.3 GB, 4 workers. Rules 41,581 → 42,270, 17 laws, traced (see below); it exposed a list-item comma in definitions — fixed `81016a36`, so the indexes are stale again until one more pass (7 min)
