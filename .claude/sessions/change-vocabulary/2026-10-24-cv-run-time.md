@@ -2,6 +2,19 @@
 session: Reader run time — make the catalogues, checks and re-reads quicker
 status: active
 opened: 2026-10-24
+bugs:
+  - pattern: "Commencement: an Act with a by-order clause also holds an \"all — act_enactment\" (Royal Assent) rule, so an amending provision no order rule names is dated Royal Assent: SOCPA 2005 Sch.7 para 27(2) repealing RTA 1988 s.4(6) dated 2005-04-07, golden expects 2006-01-01 (SI 2005/3495). Exposed 2026-10-25 when the read pass (with SOCPA's Schedules now held) first reached that repeal: golden 26/27"
+    category: commencement
+    module: Commencement (OwnClause / LawStart act_enactment rule beside a by-order clause; CV-S04)
+    affected: 1
+    fix: "Royal Assent stands only for an Act with no clause (CV-S04's rule); SOCPA s.178(8) leaves the rest to orders. Fix in CV-S04's readers, then rebuild; or confirm the order (SI 2005/3495) is held and read"
+    status: open
+  - pattern: "Amendment reader: \"The Localism Act 2011 is amended as follows\" (PCA 2017 Sch.1 para 94) read as amending FRSA 2004 whenever FRSA is among the laws pointing to the amending law; with only the Localism Act it reads nothing"
+    category: amendment
+    module: Amendment.Reader (law?/laws title matching)
+    affected: 3
+    fix: "Find why the context's title doesn't select the Localism Act and FRSA matches instead; the stored rules before 2026-10-25 had the Localism Act (FRSA wasn't then pointing to PCA 2017)"
+    status: open
 ---
 
 # Session: Reader run time (ACTIVE)
@@ -27,7 +40,7 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 - ✅ The extent check: it re-runs `Patterns.classes` per law. Share that work with the catalogue (the same result), or read the catalogue's stored result.
 - ✅ Measure before and after on the same inputs: the extent catalogue, the commencement catalogue and the extent check give identical output, in less time.
 
-- ⬜ The amendment read pass (`mix lat.amending --read`): this morning's `Doc` change (`cb5d9ce7`) changed `ReaderVersion`, so all 2,095 amendment indexes are stale and every build and golden re-parses every amending law. The pass is now parallel (`fb72a393`); running it, with a restore point and an `amendment_rules` digest compared before and after, needs Jason's go-ahead.
+- ✅ The amendment read pass (`mix lat.amending --read`): this morning's `Doc` change (`cb5d9ce7`) changed `ReaderVersion`, so all 2,095 amendment indexes are stale and every build and golden re-parses every amending law. The pass is now parallel (`fb72a393`); running it, with a restore point and an `amendment_rules` digest compared before and after, needs Jason's go-ahead.
 
 ## Dependencies
 
@@ -106,4 +119,19 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
   - check ~3 s;
   - golden ~3 min (~1–2 min once the amendment indexes are fresh).
   - About 10 minutes in all, against about 2½ hours this morning.
+
+## The amendment read pass (2026-10-25, Jason: "Run it")
+
+- **Before the run:** restore point `run-time-before-amendment-read` (`amendment_rules`); the 2,095 index files archived in `backend/data/cache/amendment-index-2026-10-25.tar.gz`; the rules snapshotted (37,719).
+- **The run:** 2,102 amending laws, 4 at once, no failures. 28m40 wall clock, 81 minutes of CPU: about 3× faster than one at a time, more than the ~16 minutes I'd estimated.
+- **Rules: 37,719 → 41,435. Not identical, and every difference traced to the store:**
+  - 64 laws given their Schedules today: +2,224;
+  - 18 laws whose duplicate fragments were removed today (F): +1,137 (e.g. ukpga 2015/15 0 → 89);
+  - 14 laws whose Schedules were stored on 2026-10-22, after the last read pass: +355 (e.g. SI 2014/469 0 → 129).
+  - Only 3 rules changed. PCA 2017 Sch.1 para 94 now reads as amending FRSA 2004 instead of the Localism Act 2011, which is wrong. The old-style document (with the fragments) reads it the same way, so it's an amendment-reader defect, exposed because FRSA now points to PCA 2017. Bug logged.
+- **Golden (indexes fresh):** 2m38, TCPA 1990 130 s. **26/27:** RTA 1988 s.4(6) now ends 2005-04-07, not 2006-01-01.
+  - The new SOCPA rules (Sch.7 para 27(2), the Sch.17 table) reach the repeal for the first time.
+  - SOCPA's commencement holds an "all — act_enactment" Royal Assent rule beside its by-order clause, so the repeal is dated Royal Assent.
+  - This is a CV-S04 commencement defect, exposed by the fuller store. Bug logged; golden all-pass is part of CV-S05's stopping rule, so it is to be fixed before CV-S05 can close.
+- **The rebuild has not been re-run since the read pass,** so `provision_changes` still reflect the old rules. The next CV-S05 round's rebuild picks the new ones up.
 
