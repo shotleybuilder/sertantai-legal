@@ -112,7 +112,8 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 - ⬜ The amendment read pass, cached: each law's parsed reading inputs cached by stored-file digest (as `Extent.ReadCache`), so a warm pass skips the XML parse that dominates its time (golden profile: over half)
 - ⬜ More workers where memory allows: measure real memory per law (the catalogue runs peaked at 2.3–2.9 GB for the whole run) and set the guard's per-law estimate (1.8 GB, max 4) from it, so a 6-core machine runs 5–6 laws at once when there's room
 - ✅ Guard in `LawRunner.run` itself, so every parallel run checks the machine (relabel, wave_preview, commencement reads, reparse ran 5 wide unchecked) — `0ba0bd31`
-- ⬜ Staleness that hides: `ChangeVocabulary.Version` to cover `law_start*.ex`; amendment index freshness to include the stored files' digest
+- ✅ Staleness that hides: `ChangeVocabulary.Version` to cover `law_start*.ex`; amendment index freshness to include the stored files' digest — `7afcd1f0`
+- ⬜ The vocabulary (build, golden) uses stale amendment rules after naming them: read a stale amending law's document on the fly, as the label collector does (Jason to decide)
 - ⬜ Staleness that over-reaches: `Extent.ReadCache` keyed on the modules the reading uses, not the whole app; `mix.lock` out of `ChangeVocabulary.Version` (or only the deps it reads)
 - ⬜ Incremental rebuild: skip a law whose stored code version and input fingerprints are unchanged
 - ⬜ Commencement catalogue cache (6–7 min every run), as `Extent.ReadCache`
@@ -261,3 +262,10 @@ From the code (each task's runner, caches, version hashes) and the times recorde
 - Callers that passed the hard 5 now pass `opts[:workers]`: `lat.relabel`, `lat.wave_preview`, `lat.commencement` (`--read`, `--read-amending`, `--read-orders`); `lat.reparse --store only` asks the guard (live re-parses stay 1 for the rate limit).
 - Tests: the guard decides with no workers named; one law never probes. Full suite 8,729 pass. Live: `lat.commencement --read` on 2 laws printed the guard's decision (4 at once: 29.9 GB available, 0.5 of 6 cores busy).
 - Docs: the tasks' usage lines and the scraper guide ("Corpus runs are parallel") say the guard decides.
+
+## Staleness that hid (2026-10-25, Jason: "Do those 2"), code `7afcd1f0`
+
+- **Version coverage.** A closure over compiled module references from each version's files: `ChangeVocabulary.Version` reached 20 files it didn't cover (the 5 LawStart readers; effect/feed facts: `effect_*`, `in_force_qualifier`, `note_pointer`, `provision_text`, `changes_feed`; `change_collector/record`; `lat_parser/xml`; the store codec; and I/O: repo, client, CLML store). `ReaderVersion` missed `lat_parser/xml`, `territory`. All but the I/O added. `VersionCoverageTest` now fails the suite on any miss (red-checked: removing the LawStart lines lists all five).
+- **Index freshness.** `ClmlStore.digest/1` (the stored text's bytes); the index records it; `Index.fresh?/2`, `current?/3` compare it (callers: the label collector, the read pass).
+- **Found on the way:** the vocabulary's build and golden read `amendment_rules` with no freshness check at all (only the label collector checked). They now name stale amending laws, as they name unread extent clauses (golden on RTA 1988: 82 named — all, every index predating today's changes). Using stale rules still happens after the notice; reading those laws' documents on the fly is a todo for Jason.
+- Full suite 8,731 pass. Both versions changed, so stored changes and amendment indexes are stale (they were already).
