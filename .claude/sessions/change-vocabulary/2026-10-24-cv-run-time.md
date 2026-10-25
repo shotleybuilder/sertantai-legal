@@ -111,7 +111,7 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 - ⬜ The amendment read pass, incremental: re-read only the amending laws whose output can change — a stored file changed, or the changed code's inputs differ for that law (for a `DefinedTerms` fix, only laws whose terms read differently) — and keep every other law's stored rules and index. The pass always re-reads all 2,102 laws today (28 min, 2026-10-25, for a fix touching few)
 - ⬜ The amendment read pass, cached: each law's parsed reading inputs cached by stored-file digest (as `Extent.ReadCache`), so a warm pass skips the XML parse that dominates its time (golden profile: over half)
 - ⬜ More workers where memory allows: measure real memory per law (the catalogue runs peaked at 2.3–2.9 GB for the whole run) and set the guard's per-law estimate (1.8 GB, max 4) from it, so a 6-core machine runs 5–6 laws at once when there's room
-- ⬜ Guard in `LawRunner.run` itself, so every parallel run checks the machine (relabel, wave_preview, commencement reads, reparse run 5 wide unchecked)
+- ✅ Guard in `LawRunner.run` itself, so every parallel run checks the machine (relabel, wave_preview, commencement reads, reparse ran 5 wide unchecked) — `0ba0bd31`
 - ⬜ Staleness that hides: `ChangeVocabulary.Version` to cover `law_start*.ex`; amendment index freshness to include the stored files' digest
 - ⬜ Staleness that over-reaches: `Extent.ReadCache` keyed on the modules the reading uses, not the whole app; `mix.lock` out of `ChangeVocabulary.Version` (or only the deps it reads)
 - ⬜ Incremental rebuild: skip a law whose stored code version and input fingerprints are unchanged
@@ -254,3 +254,10 @@ From the code (each task's runner, caches, version hashes) and the times recorde
 6. **Long single-law tails.** `LawRunner` runs laws in list order, so a huge law near the end runs alone (SI 2019/696: the last ~9 of 35 min). Fix: start the largest laws first (by stored file size).
 7. **Workers capped at 4 by a cautious estimate** (1.8 GB a law; today's read pass peaked at 1.8 GB for all four together, ~600 MB resident mid-run). Todo: measure, then size.
 8. **Serial runs:** the feed, markup and order catalogues and the feed check (30 s – 2 min each) — small; parallel only if they grow.
+
+## The guard in `LawRunner` (2026-10-25, Jason: "Guard start"), code `0ba0bd31`
+
+- `LawRunner.run` asks `LawRunner.Guard` whenever the caller names no `workers`; `--workers N` stays the user's override (printed as such); one law runs alone without probing. `default_workers/0` (5) removed.
+- Callers that passed the hard 5 now pass `opts[:workers]`: `lat.relabel`, `lat.wave_preview`, `lat.commencement` (`--read`, `--read-amending`, `--read-orders`); `lat.reparse --store only` asks the guard (live re-parses stay 1 for the rate limit).
+- Tests: the guard decides with no workers named; one law never probes. Full suite 8,729 pass. Live: `lat.commencement --read` on 2 laws printed the guard's decision (4 at once: 29.9 GB available, 0.5 of 6 cores busy).
+- Docs: the tasks' usage lines and the scraper guide ("Corpus runs are parallel") say the guard decides.
