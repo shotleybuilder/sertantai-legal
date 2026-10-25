@@ -123,7 +123,8 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 - ⬜ Environment Act 1995 Sch. 22 para 30 (HSWA, "in this paragraph referred to as …"): its sub-paragraphs read no rule since the "etc." fix (they had read wrongly as COPA 1974) — trace in the reader work after the decomposition gate
 - ⬜ Annex/Schedule targets: instructions placed in a Schedule or Annex of the amended law (by a heading, or a term like "the electronic communications code" = CA 2003 Sch. 3A) are read at its paragraphs (EU Annex instructions are now held back, giving no Article rules; PSTI 2022's dropped). Was: a defined term meaning a Schedule of a law ("the electronic communications code" = CA 2003 Sch. 3A, PSTI 2022): read its instructions at that Schedule's paragraphs (now dropped rather than placed on CA 2003 sections; belongs to CV-S05's reader work)
 - ✅ Decompose `Amendment.Reader` (1,004 → 305 lines; five modules under ~270; gate 0 changed) — `2d4b7c7e`…`81573975`
-- ⬜ Decompose `AmendingLaw.Extent` (1,343 lines) the same way: plan, review, steps test-first, zero-diff gate on the extent catalogue and check
+- ⬜ Decompose `AmendingLaw.Extent` (1,343 lines) the same way: plan, review, steps test-first, zero-diff gate on the extent catalogue and check — plan revised after review (see "Plan: decompose `AmendingLaw.Extent`")
+- ⬜ `Extent.Patterns` is 390 lines: split after the Extent gate
 - ⬜ Incremental read pass: re-read only the amending laws whose output can change (per-law inputs; a reader edit no longer stales all 2,102)
 - ❌ Cached `Doc` for the read pass — dropped on measurement: loading a stored `Doc` costs about as much as parsing it (2017/3: load 1.3 s, parse 0.6 s; 1995/25: 2.3 vs 4.5 s). Cache only what step 2 shows is costly, if anything
 - ⬜ LR-45 Saxy (pending v0.2 session) reconsidered: parsing is not the read pass's bottleneck (profile); kept for memory and cold parses, not for this
@@ -397,41 +398,114 @@ Review: `backend/data/code-reviews/2026-10-25-reader-decomposition-plan-reviewer
 - The preview workflow paid for itself: the blunt version would have been a full write pass and a revert.
 - ✅ End of this round: full write pass (Jason: "Run the pass and push"; restore point `run-time-before-read-pass-8`): **6 min 58 s** (writes; the preview is 4.5), 2,102 laws, 52 changed, rules 43,548 → 43,778 (+230); 2 pure losses, both checked (captions naming the Scotland Act 1998, the Electricity Act 1989); the rest moves to the Act amended (Enterprise Act 2002 Sch. 25 → Railways Act 1993, Gas Act 1986; laws off the Enterprise Act its captions named) and gains (Employment Rights Act 2025 Sch. 12 +31 on ERA 1996). Every index fresh.
 
-## Plan: decompose `AmendingLaw.Extent` (1,343 lines) — PROPOSED 2026-10-25
+## Plan: decompose `AmendingLaw.Extent` (1,343 lines) — REVISED 2026-10-25 after review
 
-**Rule:** no extent behaviour change until the gate passes. One step per commit, each leaving the suite green. Moved functions keep their names and arities. A function another module calls becomes public, with `@spec` and `@doc`. `Extent` keeps its struct, its type and its public API: `read/1`, `statement/2`, `units/2`, `statements/1`, `to_rows/2`, `from_rows/1`, `of/2`, `of_change/2`, `competence/1`, `competence_only?/1`, `from_powers/2`. It delegates whatever has moved out, so no caller changes.
+**Rules:**
+- No extent behaviour changes until the gate passes.
+- One module per step, and one commit per step; each commit leaves the suite green.
+- Moved functions keep their names and arities. A function another module calls becomes public, with `@spec` and `@doc`.
+- `Extent` keeps its struct, its type and its public API (`read/1`, `statement/2`, `units/2`, `statements/1`, `to_rows/2`, `from_rows/1`, `of/2`, `of_change/2`, `competence/1`, `competence_only?/1`, `from_powers/2`), delegating whatever moved out. No caller changes.
 
-**Shared patterns:** the regexes are module attributes that many functions use. Each pattern moves to the module that owns it. Where another module needs one, the owner exposes it as a zero-arity function (`Forms.heading/0`). The place list is a compile-time string (`Places.place_list/0`), interpolated into the other modules' attributes.
+**Shared patterns:**
+- Every regex attribute moves to its owner module, and **every form gets a zero-arity public function named after its attribute** (`Forms.heading/0`, `Forms.extends_and/0`, …).
+- The place list is a compile-time string, `Places.place_list/0`, interpolated into the other modules' attributes.
 
 **Call direction (no cycles):** `Places` ← `Forms` ← `Units` ← `Parts` ← `Named` ← `Lists` ← `Default` ← `Extent`.
-- `Same` calls `Forms`, `Parts`, `Named`.
+- `Same` calls `Forms`, `Units`, `Parts` and `Named`.
 - `Application` calls `Units`.
-- `Lookup` and `Rows` use only `%Extent{}`, `RefList` and `Territory`. `Extent` reaches them by `defdelegate`, a runtime call, so there's no compile cycle.
+- `Lookup` and `Rows` use only `%Extent{}`, `RefList` and `Territory`. `Extent` reaches them by `defdelegate` (runtime), so there is no compile cycle.
 
 | Module (`AmendingLaw.Extent.…`) | Holds (from `Extent`) | ~lines |
 |---|---|---|
-| `Places` | `@places`, `@codes`, the place-list string, `places/1` | 45 |
-| `Forms` | the sentence forms: `@subject`, `@heading`, `@extends`, `@extends_and`, `@extends_exc`, `@cited_list`, `@named`, `@amendments_same`, `@extends_except`, `@only_following`, `@amendments_where`, `@except_list`, `@part_not`, `@not_extends` with their comments; one function each | 170 |
-| `Units` | `own_words/2`, `local/1`, `units/2`, `unit_sentences/1`, `statements/1`, `@provision_word`, `no_dots/1` | 100 |
+| `Places` | `@places`, `@codes`, `place_list/0`, `places/1` | 45 |
+| `Forms` | `@subject`, `@place_list`, `@heading`, `@extends`, `@extends_and`, `@extends_exc`, `@cited_list`, `@named`, `@amendments_same`, `@extends_except`, `@only_following`, `@amendments_where`, `@except_list`, `@part_not`, `@not_extends`, with their comments; one function each | 170 |
+| `Units` | `own_words/2` and its default `@not_own_extent`, `local/1`, `units/2`, `unit_sentences/1`, `statements/1`, `@provision_word`, `no_dots/1` | 100 |
 | `Parts` | `parts/3`, `part_numbers/1`, `other_numeral/1`, `roman/1`, `arabic/1`, `@romans`, `holds?/3`, `holds_id?/3` | 135 |
 | `Named` | `named/2`, `plain_named?/2`, `named_kind/1`, `@named_not_plain`, `@named_tail`, `@named_excepted` | 95 |
 | `Lists` | `apart/3`, `part_not/2`, `extends_except/3`, `only_following/3`, `headed_lists/4`, `lists/3`, `kind/1`, `own_list/1`, `place/1`, `cut/1`, `list_refs/3` | 210 |
-| `Default` | `statement/2`, `statement_alone/1`, `default/1`, `westminster/3`, `exception_lists/3`, `exceptions/3`, `with_refs/4` | 170 |
 | `Same` | `amendments_same/2`, `same_lists/3`, `same_refs/4`, `@named_same`, `@not_extends_amending` | 100 |
-| `Application` | `application/2`, `@not_own`, `@not_own_extent` (the constant `Units.own_words` defaults to) | 45 |
+| `Default` | `statement/2`, `statement_alone/1`, `default/1`, `westminster/3`, `exception_lists/3`, `exceptions/3`, `with_refs/4` | 170 |
+| `Application` | `application/2`, `@not_own` | 45 |
 | `Rows` | `to_rows/2`, `from_rows/1` | 90 |
 | `Lookup` | `of/2`, `of_change/2`, `containers/1`, `introducing/2`, `named?/2`, `@apply_order`, `@competence`, `competence/1`, `competence_only?/1`, `from_powers/2`, `powers_extent/1` | 190 |
 | **Stays in `Extent`** | moduledoc, struct, type, `read/1`, `introductions/1`, delegates | 150 |
 
-**Steps, each test-first** (red: a test naming the new module fails; green: extract it; the existing tests unchanged):
-1. `Places` + `Forms`. Tests: `places/1` ("England and Wales and Scotland" → "E+W+S"); one sentence per form from `extent_test.exs`'s CV-S05 catalogue cases, matched by `Forms.*`.
-2. `Units`. Tests: `units/2` and `statements/1` cases moved from `extent_test.exs`, their assertions unchanged; `no_dots/1`.
-3. `Parts`. Tests: `parts/3` on a built `Doc` ("Parts 1 to 5", "Part III" where ids are `part-3`, "this Part", "Chapter 3 of Part 1" dropped).
-4. `Named`, `Lists`, `Same`, `Default`, in that order. Tests come from the round 1–4 cases in `extent_test.exs`, each called on the new module's function with the same assertion.
-5. `Application`, `Rows`, `Lookup`. Tests: the application cases; `to_rows/2`/`from_rows/1` round trip; the `of/2` cases (HSWA s.84; SI 2013/602; Police and Justice Act 2006 s.54).
-6. After each step: `mix test` green. That includes `ExtentPatternsTest`, which reads every catalogue example against `expected.json`.
+`from_powers/2` goes to `Lookup`, not `Extent.Powers`. It is pure and built on `of/2`; `Powers` reads the enabling cache (I/O). Pure logic stays apart from I/O.
 
-**Gate (ask Jason first; ~7 min cold, since `ReadCache` keys on the code, so the run re-reads every law):**
-- **Before step 1:** `mix lat.extent_patterns --out $S/extent-before`, and `mix lat.extent_check --family "OH&S: Occupational"` saved to `$S/check-before.txt`.
-- **After step 5:** the same two runs to `$S/extent-after` and `$S/check-after.txt`.
-- **Pass:** `diff -r` empty for both, `stale` 0, and every module under ~300 lines.
+**Tests:**
+- `extent_test.exs` and `extent_patterns_test.exs` stay as they are; the new tests are added beside them.
+- The shared builders go in `test/support/extent_doc.ex` (`ExtentDoc.doc(law, body)` → `Doc.t()`, `ExtentDoc.p1(id, text)`), the same as `read_xml/2` and `p1/2` in `extent_test.exs`.
+- Each new test file is `test/sertantai_legal/scraper/amending_law/extent/<module>_test.exs`.
+- Each step is test-first: red (the module doesn't exist), then green, with the test assertions not changed.
+
+**Steps:**
+
+1. **`Places`**
+   - `places("England and Wales and Scotland")` → `"E+W+S"`;
+   - `places("the United Kingdom")` → `"E+W+S+NI"`;
+   - `places("Northern Ireland")` → `"NI"`.
+2. **`Forms`.** One sentence per form, each matching it (the sentences quoted in the code's comments):
+
+   | Form | Sentence |
+   |---|---|
+   | `extends/0` | "Subject to the following provisions, this Act extends to England and Wales only." |
+   | `extends_and/0` | "The provisions of this Act extend to England and Wales and, except as mentioned below, to Northern Ireland" |
+   | `extends_exc/0` | "This Act extends to the whole of the United Kingdom, except for Part 1, which extends to England and Wales only" |
+   | `cited_list/0` | "These Regulations— (a) may be cited as …; (b) come into force …; and (c) extend to Scotland only" |
+   | `named/0` | "Sections 107 and 116A of this Act extend to Scotland only" |
+   | `amendments_same/0` | "The amendments and repeals in Schedules 20 and 21 have the same extent as the enactments to which they refer" |
+   | `extends_except/0` | "This Act shall extend to Northern Ireland with the exception of— (a) the provisions of Part 1" |
+   | `only_following/0` | "Only the following provisions of this Act (together with this section) extend to Northern Ireland, namely— section 3(5) to (8); Part V" |
+   | `amendments_where/0` | "Where any enactment amended or repealed by this Act extends to any part of the United Kingdom, the amendment or repeal extends to that part" |
+   | `except_list/0` | "This Act, except— (a) section 1; and (b) section 2, does not extend to Northern Ireland" |
+   | `part_not/0` | "Part III, except section 75 and Schedule 7, does not extend to Scotland" |
+   | `not_extends/0` | "Nothing in this Act extends to Scotland or Northern Ireland" |
+   | `heading/0` | "The following extend also to Scotland—" |
+   | `subject/0` | (a string; covered by the forms above) |
+
+3. **`Units`**
+   - `statements("In Part 5— (a) sections 220 to 224 extend to England and Wales only; (b) section 225 extends to Scotland only")` → the sentence, then "sections 220 to 224 extend to England and Wales only", then "section 225 extends to Scotland only";
+   - `statements("Paragraphs 34 and 35 of Schedule 2 extend to England and Wales and Scotland, and paragraph 36 of that Schedule extends to Scotland only")` → the sentence, then the first clause, then "paragraph 36 of Schedule 2 extends to Scotland only";
+   - `no_dots("section 1 . . . extends")` → "section 1   extends" (each run of dots becomes one space);
+   - `units/2` on `ExtentDoc.doc` with `section-84` holding `section-84-1` and `section-84-2` → their two texts, the leading number dropped.
+4. **`Parts`.** On an `ExtentDoc.doc` with `part-I` (s.1, s.2), `part-II` (s.3) and `part-3` (s.4):
+   - `parts("Parts I and II", doc, nil)` → s.1, s.2, s.3;
+   - `parts("Part 1", …)` → s.1, s.2 (the numerals cross over);
+   - `parts("Part III", …)` → s.4;
+   - `parts("this Part", doc, "s.3")` → s.3;
+   - `parts("Chapter 3 of Part 1", …)` → none.
+5. **`Named`.** Mirrors extent_test's "named provisions' own extent: also, only, not, named" test (CV-S05 catalogue forms, line ~360), calling `Named.named/2` over `Units.unit_sentences/1`. Plus the not-plain cases: "… of that Act shall continue to extend" and "(except paragraph 12)" → none.
+6. **`Lists`.** The SOCPA s.179 doc at the top of extent_test, through `Lists.headed_lists/4`:
+   - `{:also, "S", […]}` at s.1;
+   - `{:only, "S", […s.129, s.130(3)]}`;
+   - `{:same, nil, [s.174(2), sch.17]}`.
+
+   Plus HSWA s.84's describe (`apart/3`: s.84(1)'s exception list, the purpose-limited item dropped) and `part_not/2` on "Part III, except section 75 and Schedule 7, does not extend to Scotland".
+7. **`Same`.** Round 3 E (SI 2014/469 art.3(5): "except that the amendments made by paragraphs 11 to 13 of that Schedule extend to Scotland only") and round 4 N-A (uksi 2023/1071: "made by the provisions in Parts 2 and 3"), through `Same.amendments_same/2`.
+8. **`Default`.** `statement/2` on the six sentences in `extent_patterns_test.exs:105-110`, with the same expected tuples. Plus `westminster`: "This Act extends to Northern Ireland" with type `ukpga` → E+W+S+NI.
+9. **`Application`.** extent_test's application describe (line ~201), through `Application.application/2`.
+10. **`Rows`.** Round 1 N9's `to_rows`/`from_rows` round trip, through `Rows`.
+11. **`Lookup`.** HSWA s.84 (`of/2`: also NI, not Scotland), SI 2013/602 (round 3 C: only beats same) and the powers describe (line ~243), through `Lookup`.
+
+After each step, `mix test` is green, including `ExtentPatternsTest`, which reads every catalogue example against `expected.json`. `wc -l` is run on the new module and on `Extent`.
+
+**Gate** (ask Jason first). The gate takes about 7 minutes cold, because `ReadCache` keys on the code. `S=/tmp/claude-1000/-var-home-jason-Desktop-sertantai-legal/b76f3af3-b9b6-4d29-990b-1ac0dab89760/scratchpad`.
+
+- **Before step 1:**
+  - `mix lat.extent_patterns --out $S/extent-before`;
+  - `mix lat.extent_check --family "OH&S: Occupational" > $S/check-before.txt`.
+- **After step 11:** the same two runs, to `$S/extent-after` and `$S/check-after.txt`.
+- **Pass:**
+  - `diff -r $S/extent-before $S/extent-after` is empty;
+  - `diff $S/check-before.txt $S/check-after.txt` is empty, which includes the stale count;
+  - the 11 new modules and `Extent` are each under ~300 lines. (`Extent.Patterns`, 390, is outside this plan; it is logged as a todo.)
+
+Review: `backend/data/code-reviews/2026-10-25-extent-decomposition-plan-reviewer.md`. The 6 findings within the standard are Taken:
+- the constant stays in `Units`, so no cycle;
+- inputs and outputs are named;
+- test files and shared builders are named, with `extent_test.exs` kept;
+- one module per step;
+- `$S`, stale and the size rule are defined;
+- every form gets a function.
+
+Finding 7 (`from_powers` and `Powers`) is Contested: `Powers` is I/O, and `from_powers` is pure on `of/2`.
