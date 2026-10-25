@@ -113,7 +113,7 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 - ⬜ More workers where memory allows: measure real memory per law (the catalogue runs peaked at 2.3–2.9 GB for the whole run) and set the guard's per-law estimate (1.8 GB, max 4) from it, so a 6-core machine runs 5–6 laws at once when there's room
 - ✅ Guard in `LawRunner.run` itself, so every parallel run checks the machine (relabel, wave_preview, commencement reads, reparse ran 5 wide unchecked) — `0ba0bd31`
 - ✅ Staleness that hides: `ChangeVocabulary.Version` to cover `law_start*.ex`; amendment index freshness to include the stored files' digest — `7afcd1f0`
-- ⬜ The vocabulary (build, golden) uses stale amendment rules after naming them: read a stale amending law's document on the fly, as the label collector does (Jason to decide)
+- ✅ The vocabulary (build, golden) used stale amendment rules: a stale amending law is now read from the text held (`Amendment.ReadLaw`) — `dcb91f5f`
 - ⬜ Staleness that over-reaches: `Extent.ReadCache` keyed on the modules the reading uses, not the whole app; `mix.lock` out of `ChangeVocabulary.Version` (or only the deps it reads)
 - ⬜ Incremental rebuild: skip a law whose stored code version and input fingerprints are unchanged
 - ⬜ Commencement catalogue cache (6–7 min every run), as `Extent.ReadCache`
@@ -269,3 +269,9 @@ From the code (each task's runner, caches, version hashes) and the times recorde
 - **Index freshness.** `ClmlStore.digest/1` (the stored text's bytes); the index records it; `Index.fresh?/2`, `current?/3` compare it (callers: the label collector, the read pass).
 - **Found on the way:** the vocabulary's build and golden read `amendment_rules` with no freshness check at all (only the label collector checked). They now name stale amending laws, as they name unread extent clauses (golden on RTA 1988: 82 named — all, every index predating today's changes). Using stale rules still happens after the notice; reading those laws' documents on the fly is a todo for Jason.
 - Full suite 8,731 pass. Both versions changed, so stored changes and amendment indexes are stale (they were already).
+
+## Never stale amendment rules (2026-10-25, Jason: the answer is self-evident from the aim), code `dcb91f5f`
+
+- `Amendment.ReadLaw`: the read pass's reading of one amending law, moved out of `mix lat.amending` (re-reading 3 laws before/after gave the same 1,383 rules).
+- `lat.vocabulary` (build, golden): stored rules only where the amending law's index is fresh; a stale one is read now, for the law built, at the provisions its notes and feed point to (the reader decides each law on its own, so reading for one law gives that law's rules).
+- RTA 1988 golden passes; 138 amending laws read from text (all stale today), 180 s instead of 28 s — correct, slower until the indexes are fresh (the incremental and cached read todos).
