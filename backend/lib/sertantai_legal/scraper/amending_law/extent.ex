@@ -197,6 +197,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
           ref != nil,
           do: {ref, doc |> Doc.element(id) |> own_words() |> Doc.lines() |> Enum.join(" ")}
 
+    # built once: the named and same-extent readers both walk them
+    unit_sentences = unit_sentences(doc)
+
     {clause_ref, clause} =
       Enum.find(sections, {nil, ""}, fn {ref, text} ->
         not String.contains?(ref, "(") and
@@ -215,7 +218,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
           extends_except(clause, clause_ref, doc) ++
           exception_lists(clause, clause_ref, doc) ++
           headed_lists(sections, clause_ref, clause, doc) ++
-          part_not(sections, doc) ++ named(doc) ++ amendments_same(doc),
+          part_not(sections, doc) ++
+          named(unit_sentences, doc) ++
+          amendments_same(unit_sentences, doc),
       corresponds: Regex.match?(~r/\bcorresponds\s+to\s+the\s+repeal\b/i, clause),
       introduced_by: introductions(doc),
       ref: clause_ref,
@@ -445,8 +450,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   """
   @spec units(Doc.t(), String.t()) :: [String.t()]
   def units(%Doc{} = doc, id) do
-    child = ~r/^#{Regex.escape(id)}-[^-]+$/
-    children = for c <- doc.ids, c =~ child, do: c
+    children = Doc.children(doc, id)
 
     for el_id <- if(children == [], do: [id], else: children),
         text = doc |> Doc.element(el_id) |> own_words() |> Doc.lines() |> Enum.join(" "),
@@ -525,8 +529,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   # this Act extend to Scotland only" → {:only, "S", ["s.107", "s.116A"]};
   # "… extend to Scotland" (no "only") widens a default (`:also`), else
   # it is where they extend (`:only`); "do not extend" → `:not`
-  defp named(doc) do
-    for {ref, s} <- unit_sentences(doc),
+  defp named(unit_sentences, doc) do
+    for {ref, s} <- unit_sentences,
         not Regex.match?(@heading, s),
         not Regex.match?(@part_not, s),
         m = Regex.named_captures(@named, s),
@@ -735,9 +739,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   # makes follows the enactment it changes (CV-S05)
   @not_extends_amending ~r/\bnot\s+extend\s+to\s+[^.]*?\bexcept\b[^.]*?\bso\s+far\s+as\s+(?:it|they)\s+(?:affects?|amends?|repeals?|revokes?)\s+(?:any\s+)?(?:other\s+)?enactments?\b/iu
 
-  defp amendments_same(doc) do
+  defp amendments_same(unit_sentences, doc) do
     for(
-      {ref, s} <- unit_sentences(doc),
+      {ref, s} <- unit_sentences,
       m = Regex.named_captures(@amendments_same, s),
       m != nil,
       [_, tail] <- [Regex.split(@amendments_same, s, parts: 2)],
@@ -752,12 +756,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
       do: list
     ) ++
       for(
-        {_ref, s} <- unit_sentences(doc),
+        {_ref, s} <- unit_sentences,
         Regex.match?(@amendments_where, s) or Regex.match?(@not_extends_amending, s),
         uniq: true,
         do: {:same, nil, ["*"]}
       ) ++
-      for {ref, s} <- unit_sentences(doc),
+      for {ref, s} <- unit_sentences,
           m = Regex.named_captures(@named_same, s),
           m != nil,
           not Regex.match?(@named_excepted, m["subj"]),
@@ -943,7 +947,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   defp holds_id?(doc, part, id) do
     case {Map.get(doc.pos, part), Map.get(doc.pos, id)} do
       {p, i} when is_integer(p) and is_integer(i) and i > p ->
-        next = doc.ids |> Enum.drop(p + 1) |> Enum.find(&(&1 =~ ~r/^part-[^-]+$/))
+        next = Doc.next_part(doc, p)
         next == nil or i < Map.fetch!(doc.pos, next)
 
       _ ->

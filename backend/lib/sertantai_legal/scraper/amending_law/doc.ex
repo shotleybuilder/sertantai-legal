@@ -20,7 +20,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Doc do
     pos: %{},
     elements: %{},
     titles: %{},
-    roots: []
+    roots: [],
+    children: %{},
+    parts: []
   ]
 
   @type t :: %__MODULE__{
@@ -31,7 +33,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Doc do
           pos: %{String.t() => non_neg_integer()},
           elements: %{String.t() => tuple()},
           titles: %{String.t() => String.t()},
-          roots: [tuple()]
+          roots: [tuple()],
+          children: %{String.t() => [String.t()]},
+          parts: [{non_neg_integer(), String.t()}]
         }
 
   @doc "Parse a law's documents (`xmls`: body, Schedules)."
@@ -57,9 +61,37 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Doc do
       pos: ids |> Enum.with_index() |> Map.new(),
       elements: Map.new(Enum.zip(ids, els)),
       titles: titles(roots),
-      roots: roots
+      roots: roots,
+      children: children(ids),
+      parts: for({id, i} <- Enum.with_index(ids), id =~ ~r/^part-[^-]+$/, do: {i, id})
     }
   end
+
+  # each id's direct children ("section-84" → ["section-84-1", …]: the id
+  # and one more "-segment"), in document order — built once, so readers
+  # never scan every id for every provision (run time: CV-S05)
+  defp children(ids) do
+    ids
+    |> Enum.reduce(%{}, fn id, acc ->
+      case String.split(id, "-") |> Enum.split(-1) do
+        {[_ | _] = head, [last]} when last != "" ->
+          Map.update(acc, Enum.join(head, "-"), [id], &[id | &1])
+
+        _ ->
+          acc
+      end
+    end)
+    |> Map.new(fn {parent, kids} -> {parent, Enum.reverse(kids)} end)
+  end
+
+  @doc "An element's direct children's ids (\"section-84\" → [\"section-84-1\", …]), in order."
+  @spec children(t(), String.t()) :: [String.t()]
+  def children(%__MODULE__{children: children}, id), do: Map.get(children, id, [])
+
+  @doc "The id of the first Part (\"part-N\") after position `p`, or nil."
+  @spec next_part(t(), non_neg_integer()) :: String.t() | nil
+  def next_part(%__MODULE__{parts: parts}, p),
+    do: Enum.find_value(parts, fn {i, id} -> if i > p, do: id end)
 
   @doc "The element with this id; nil when not held."
   @spec element(t(), String.t()) :: tuple() | nil

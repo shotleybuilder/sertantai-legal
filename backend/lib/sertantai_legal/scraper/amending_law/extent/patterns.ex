@@ -155,9 +155,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
   # whole with its lists, else the provision itself; the leading number
   # CLML runs into the words ("841 This Act" → "This Act") dropped
   defp units(doc, id) do
-    child = ~r/^#{Regex.escape(id)}-[^-]+$/
-
-    children = for c <- doc.ids, c =~ child, do: c
+    children = Doc.children(doc, id)
 
     for el_id <- if(children == [], do: [id], else: children),
         text = doc |> Doc.element(el_id) |> Doc.lines() |> Enum.join(" "),
@@ -371,9 +369,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
 
   # the provision with its subsections, each whole (the units read)
   defp element(doc, id, true) do
-    child = ~r/^#{Regex.escape(id)}-[^-]+$/
-
-    case for(c <- doc.ids, c =~ child, do: c) do
+    case Doc.children(doc, id) do
       [] ->
         {:P1, [id: to_charlist(id)], [text(doc, id)]}
 
