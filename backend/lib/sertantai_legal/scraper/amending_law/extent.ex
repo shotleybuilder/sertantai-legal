@@ -135,7 +135,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   # revocation made by this Order has the same extent as the provision to
   # which it relates": those provisions follow the enactment they change
   # (`:same`; "*" for every one the law makes) — CV-S05
-  @amendments_same ~r/^(?:\(\w+\)\s*)?(?:Subject\s+to[^,]*,\s*)?(?:An?|The|Any|Each)\s+(?:amendments?|repeals?|revocations?|modifications?)(?:\s*,\s*|\s+(?:and|or)\s+)?(?:(?:amendments?|repeals?|revocations?|modifications?)(?:\s*,\s*|\s+(?:and|or)\s+)?)*(?<subj>.*?)\s+(?:(?:has|have|shall\s+have)\s+the\s+same\s+(?:application\s+and\s+)?extent\s+as\s+(?:that\s+of\s+)?|extends?\s+to\s+the\s+same\s+part\s+or\s+parts\s+of\s+the\s+United\s+Kingdom\s+as\s+)the\s+(?:enactments?|provisions?|instruments?|legislation)\b(?!\s+as\s+if)/iu
+  # (also "Except as provided by subsections (2) and (3), a repeal,
+  # revocation or other amendment … has the same extent as …", "… the same
+  # extent within the United Kingdom as …", "an amendment … extends to the
+  # part or parts of the United Kingdom to which the enactment extends":
+  # CV-S05 round 4 N-B)
+  @amendments_same ~r/^(?:\(\w+\)\s*)?(?:(?:Subject\s+to|Except\s+as\s+(?:otherwise\s+)?(?:provided|set\s+out|specified|mentioned)\s+(?:by|in))[^,]*,\s*)?(?:An?|The|Any|Each)\s+(?:other\s+)?(?:amendments?|repeals?|revocations?|modifications?)(?:\s*,\s*|\s+(?:and|or)\s+)?(?:(?:other\s+)?(?:amendments?|repeals?|revocations?|modifications?)(?:\s*,\s*|\s+(?:and|or)\s+)?)*(?<subj>.*?)\s+(?:(?:has|have|shall\s+have)\s+the\s+same\s+(?:application\s+and\s+)?extent\s+(?:within\s+the\s+United\s+Kingdom\s+)?as\s+(?:that\s+of\s+)?|extends?\s+to\s+the\s+(?:same\s+)?part\s+or\s+parts\s+of\s+the\s+United\s+Kingdom\s+(?:as|to\s+which)\s+)the\s+(?:enactments?|provisions?|instruments?|legislation)\b(?!\s+as\s+if)/iu
 
   # "This Act shall extend to Northern Ireland with the exception of— (a)
   # the provisions of Part 1; (b) any provision amending … which does not so
@@ -406,7 +411,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
       nil ->
         case Regex.run(@not_extends, clause) do
           [_, except, _, place] when except != "" ->
-            [{:also, places(place), RefList.parse(except, clause_ref)}]
+            # (an item not parsed, "section seventy-seven", gives none:
+            # Factories Act 1961 s.185(3), CV-S05 round 4 N-E)
+            case RefList.parse(except, clause_ref) do
+              [] -> []
+              refs -> [{:also, places(place), refs}]
+            end
 
           _ ->
             []
@@ -452,7 +462,63 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
         not String.starts_with?(ref, "sch."),
         unit <- units(doc, id),
         s <- Clause.sentences(unit),
-        do: {ref, s}
+        part <- statements(s),
+        uniq: true,
+        do: {ref, part}
+  end
+
+  @provision_word "(?:sections?|paragraphs?|Schedules?|Parts?|regulations?|articles?|rules?)\\s+[\\dIVXL]"
+
+  @doc """
+  A sentence and the statements inside it (CV-S05 round 4): each lettered
+  item under a lead-in ("In Part 5— (a) sections 220 to 224 extend to
+  England and Wales only; (b) …", "Part 5 extends as follows— (a) …"), and
+  each clause of a compound ("Paragraphs 34 and 35 … extend to England and
+  Wales and Scotland, and paragraph 36 of that Schedule extends to Scotland
+  only", "that Schedule" named). The sentence itself first.
+  """
+  @spec statements(String.t()) :: [String.t()]
+  def statements(s) do
+    items =
+      if s =~ ~r/[—–]/u do
+        s
+        |> String.split(
+          Regex.compile!(
+            "[—–;]\\s*(?:and\\s+)?\\(?[a-z]{1,2}\\)?\\s+(?=#{@provision_word})",
+            "u"
+          )
+        )
+        |> tl()
+      else
+        []
+      end
+
+    clauses =
+      case String.split(
+             s,
+             Regex.compile!(",\\s+and\\s+(?=#{@provision_word}[^,;]*?\\bextends?\\b)", "iu"),
+             parts: 2
+           ) do
+        [first, second] ->
+          sch = Regex.run(~r/\bSchedule\s+(\d+[A-Z]*)\b/u, first, capture: :all_but_first)
+
+          second =
+            case sch do
+              [n] -> String.replace(second, ~r/\bof\s+that\s+Schedule\b/u, "of Schedule #{n}")
+              nil -> second
+            end
+
+          [first, second]
+
+        _ ->
+          []
+      end
+
+    for part <- [s | items ++ clauses],
+        part = part |> String.trim() |> String.trim_trailing(";") |> String.trim(),
+        part != "",
+        uniq: true,
+        do: part
   end
 
   # named provisions' own extent, wherever stated: "Sections 107 and 116A of
@@ -478,7 +544,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   # exceptions ("excluding section 35"), nor a qualified or excepted extent
   # ("… so far as they amend—", "…, except that— …"): those stay unread
   # (CV-S05, counted in the catalogue)
-  @named_not_plain ~r/\b(?:of|to),?\s+(?:that|the\s+\d{4}|the\s+[A-Z][\w()',\s-]*?\s+(?:Act|Order|Regulations)(?:\s+\d{4})?)\b(?!\s+(?:Act|Order)\s+(?:extends?|shall))|\b(?:continue|cease)s?\s+to\b|\bso\s+much\s+of\b|\bcorresponding\b|\btogether\s+with\b|\bas\s+relates?\b|\bso\s+far\s+as\b|\bin\s+so\s+far\b|\binsofar\b|\bexcept\b|\bexcluding\b|\bother\s+than\b|\bapart\s+from\b|\bwhich\b|[;:—–]/iu
+  @named_not_plain ~r/\b(?:of|to),?\s+(?:that|the\s+\d{4}|the\s+[A-Z][\w()',\s-]*?\s+(?:Act|Order|Regulations)(?:\s+\d{4})?)\b(?!\s+(?:Act|Order)\s+(?:extends?|shall))|\b(?:continue|cease)s?\s+to\b|\bso\s+much\s+of\b|\bcorresponding\b|\btogether\s+with\b|\bas\s+relates?\b|\bso\s+far\s+as\b|\bin\s+so\s+far\b|\binsofar\b|\bexcept\b|\bexcluding\b|\bother\s+than\b|\bapart\s+from\b|\bwhich\b|\bmay\b|\bunder\s+this\b|[;:—–]/iu
   @named_tail ~r/^\s*[,(]?\s*(?:but\s+only\s+|only\s+)?(?:so\s+far\s+as|in\s+so\s+far\b|insofar\b|to\s+the\s+extent|for\s+the\s+purposes?|except|apart\s+from|other\s+than|excluding|in\s+relation\s+to|as\s+respects|subject\s+to)\b/iu
   @named_excepted ~r/\b(?:except|excluding|other\s+than|apart\s+from)\b/iu
 
@@ -661,7 +727,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
 
   # "Sections 240 and 242 and Schedules 1 and 3 have the same extent as the
   # provisions amended" (1996/18 s.244(4): CV-S05)
-  @named_same ~r/^(?:\(\w+\)\s*)?(?<subj>(?:Sections?|Schedules?|Parts?|paragraphs?|regulations?|articles?)\s+[\dIVXL][^.;:—–]*?)\s+(?:has|have|shall\s+have)\s+the\s+same\s+extent\s+as\s+the\s+(?:enactments?|provisions?)\s+(?:amended|repealed|revoked|modified|to\s+which\s+(?:it|they)\s+relates?)\b/iu
+  @named_same ~r/^(?:\(\w+\)\s*)?(?<subj>(?:Sections?|Schedules?|Parts?|paragraphs?|regulations?|articles?)\s+[\dIVXL][^.;:—–]*?)\s+(?:has|have|shall\s+have)\s+the\s+same\s+extent\s+(?:within\s+the\s+United\s+Kingdom\s+)?as\s+the\s+(?:enactments?|provisions?)\s+(?:amended|repealed|revoked|modified|to\s+which\s+(?:it|they)\s+relates?)\b/iu
 
   # "This Act does not extend to Northern Ireland except so far as it
   # affects other enactments extending to Northern Ireland" (1988/54,
@@ -731,6 +797,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   end
 
   defp same_refs(subj, tail, ref, doc) do
+    # "made by the provisions in Parts 2 and 3": those Parts (uksi
+    # 2023/1071 reg.1(2): CV-S05 round 4 N-A)
+    subj = Regex.replace(~r/\bprovisions\s+(?:in|of)\s+(?=Parts?\s+[\dIVXL])/iu, subj, "")
+
     cond do
       subj =~ ~r/\bfollowing\b/i ->
         case tail |> String.split(~r/[—–:]/u, parts: 2) do

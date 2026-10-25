@@ -429,6 +429,11 @@
     "ref": "s.36",
     "sentence": "This Act does not extend to Scotland or, . . . to Northern Ireland, except as regards any amendment or repeal which in accordance with section 33 above is to extend to Scotland or Northern Ireland."
   },
+  "UK_ukpga_1968_60/98c75a3bce": {
+    "law": "UK_ukpga_1968_60",
+    "ref": "s.33",
+    "sentence": "No amendment or repeal made by this Act in Schedule 1 to the Extradition Act 1870 or in the Schedule to the Extradition Act 1873 shall affect the operation of that Schedule by reference to the law of a British possession; but the repeal made in Schedule 1 to the Extradition Act 1870 shall extend throughout the United Kingdom."
+  },
   "UK_ukpga_1968_60/9e94710723": {
     "law": "UK_ukpga_1968_60",
     "ref": "s.33",
@@ -438,6 +443,11 @@
     "law": "UK_ukpga_1968_64",
     "ref": "s.20",
     "sentence": "This Act shall not extend to Scotland or, . . . to Northern Ireland."
+  },
+  "UK_ukpga_1968_72/08136a42ee": {
+    "law": "UK_ukpga_1968_72",
+    "ref": "s.13",
+    "sentence": "Regulations under this section may extend throughout England and Wales or to specified areas only and may make different provisions for different cases."
   },
   "UK_ukpga_1968_72/0e7633c432": {
     "law": "UK_ukpga_1968_72",
@@ -518,6 +528,11 @@
     "law": "UK_ukpga_1971_60",
     "ref": "s.11A",
     "sentence": "This section does not extend to Northern Ireland."
+  },
+  "UK_ukpga_1971_78/1da0d7eeff": {
+    "law": "UK_ukpga_1971_78",
+    "ref": "s.18",
+    "sentence": "Regulations under this section may extend throughout England and Wales or to specified areas only and may make different provisions for different cases."
   },
   "UK_ukpga_1971_78/68985b095a": {
     "law": "UK_ukpga_1971_78",
@@ -1209,6 +1224,11 @@
     "ref": "s.10",
     "sentence": "Sections 1 and 2 above, and Schedule 1 to this Act (except paragraph 12), shall not extend to Northern Ireland."
   },
+  "UK_ukpga_1983_29/da8e6c8084": {
+    "law": "UK_ukpga_1983_29",
+    "ref": "s.10",
+    "sentence": "Any amendment or repeal by section 4, 7 or 8 above of an enactment which does not extend throughout the United Kingdom shall extend only to the part of the United Kingdom to which the enactment amended or repealed extends."
+  },
   "UK_ukpga_1983_35/a4349ffe7a": {
     "law": "UK_ukpga_1983_35",
     "ref": "s.13",
@@ -1873,6 +1893,11 @@
     "law": "UK_ukpga_1990_8",
     "ref": "s.303ZA",
     "sentence": "In this section “the appropriate authority” means—a the Secretary of State in relation to England;b the Welsh Ministers in relation to appeals under any provision made by or under this Act as it applies in relation to Wales."
+  },
+  "UK_ukpga_1990_8/ad4d06c826": {
+    "law": "UK_ukpga_1990_8",
+    "ref": "s.53",
+    "sentence": "Regulations under this section may extend throughout England and Wales or to specified areas only and may make different provision for different cases."
   },
   "UK_ukpga_1991_22/a4996da29e": {
     "law": "UK_ukpga_1991_22",
@@ -2594,6 +2619,11 @@
     "ref": "s.9",
     "sentence": "Section 7 extends to Northern Ireland, but the other provisions of this Act do not extend there."
   },
+  "UK_ukpga_1997_50/0f0da52746": {
+    "law": "UK_ukpga_1997_50",
+    "ref": "s.137",
+    "sentence": "Subject to subsections (2) to (4), this Act extends throughout the United Kingdom."
+  },
   "UK_ukpga_1997_50/cb864cb042": {
     "law": "UK_ukpga_1997_50",
     "ref": "s.137",
@@ -2604,15 +2634,15 @@
     "ref": "s.113A",
     "sentence": "In this section— “central records” means such records of convictions and cautions held for the use of police forces generally as may be prescribed; “exempted question” means a question in relation to which section 4(2)(a) or (b) of the Rehabilitation of Offenders Act 1974 (effect of rehabilitation) has been excluded by an order of the Secretary of State under section 4(4) of that Act; “relevant matter”, in this section as it has effect in Northern Ireland, means– any of the following convictions– a conviction of an offence within subsection (6D); a conviction in respect of which a sentence of imprisonment, a sentence of service detention or custodial order was imposed; ... a current conviction; or a current conviction of any offence, except an offence within subsection (6D), stated by a court to be aggravated under section 15 of the Domestic Abuse and Civil Proceedings Act (Northern Ireland) 2021; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . a caution, restorative caution, diversionary youth conference or informed warning given in respect of an offence within subsection (6D); a current caution, restorative caution, diversionary youth conference or informed warning."
   },
-  "UK_ukpga_1997_60/75ac4c45f7": {
-    "law": "UK_ukpga_1997_60",
-    "ref": "s.3",
-    "sentence": "Subject to subsection (4), this Act extends to Northern Ireland."
-  },
   "UK_ukpga_1997_8/6a89445b61": {
     "law": "UK_ukpga_1997_8",
     "ref": "s.278",
     "sentence": "Section 70 and Schedule 7 extend also to England and Wales."
+  },
+  "UK_ukpga_1997_8/c5ac7267ff": {
+    "law": "UK_ukpga_1997_8",
+    "ref": "s.23A",
+    "sentence": "Regulations under this Part may extend throughout Scotland or to specified areas only and may make different provision for different cases."
   },
   "UK_ukpga_1998_26/7451742104": {
     "law": "UK_ukpga_1998_26",
@@ -3184,6 +3214,11 @@
     "ref": "s.202",
     "sentence": "The following provisions also extend to Scotland—a sections 124 and 125;b Part 3, except for section 163(3);c sections 185, 187 and 188 and Schedule 12;d this Part."
   },
+  "UK_ukpga_2003_44/13efb81671": {
+    "law": "UK_ukpga_2003_44",
+    "ref": "s.337",
+    "sentence": "The amendment or repeal of any enactment by any provision of—a Part 1,b section 285,c Part 2 of Schedule 3 (except as mentioned in subsection (8)),d Schedule 27,e Schedule 28,f Part 1 of Schedule 32,g Parts 1 to 4 and 6 of Schedule 36, andh Parts 1 to 4, 6 to 8, 10 and 12 of Schedule 37 (except as mentioned in subsection (9)), extends to the part or parts of the United Kingdom to which the enactment extends."
+  },
   "UK_ukpga_2003_44/292688956b": {
     "law": "UK_ukpga_2003_44",
     "ref": "s.337",
@@ -3479,6 +3514,11 @@
     "ref": "s.53",
     "sentence": "The following provisions come into force in accordance with provision made by order by the Scottish Ministers—a sections 35 to 38 so far as they extend to Scotland;b paragraphs 17 to 19 and 29 of Schedule 14 so far as they extend to Scotland;c paragraph 25 of that Schedule;d the repeals in Part 4 of Schedule 15 of—i provisions in section 13 of the Computer Misuse Act 1990 (c. 18);ii section 17(7) of that Act so far as it extends to Scotland;iii paragraph 77 of Schedule 4 to the Criminal Procedure (Consequential Provisions) (Scotland) Act 1995 (c. 40);e section 52 so far as relating to those paragraphs and repeals."
   },
+  "UK_ukpga_2006_48/55f9b4ff45": {
+    "law": "UK_ukpga_2006_48",
+    "ref": "s.54",
+    "sentence": "Any amendment or repeal made by this Act extends to the same part or parts of the United Kingdom as the provision to which it relates."
+  },
   "UK_ukpga_2006_48/8eb66110ec": {
     "law": "UK_ukpga_2006_48",
     "ref": "sch.14",
@@ -3553,6 +3593,11 @@
     "law": "UK_ukpga_2007_17",
     "ref": "s.65",
     "sentence": "Subject to subsections (2) to (6), this Act extends to England and Wales, Scotland and Northern Ireland."
+  },
+  "UK_ukpga_2007_19/16fdb8d77d": {
+    "law": "UK_ukpga_2007_19",
+    "ref": "s.28",
+    "sentence": "An amendment made by this Act extends to the same part or parts of the United Kingdom as the provision to which it relates."
   },
   "UK_ukpga_2007_21/bbe7857dcb": {
     "law": "UK_ukpga_2007_21",
@@ -3694,6 +3739,11 @@
     "ref": "s.112",
     "sentence": "Section 40(2) to (4) (the Northern Ireland renewables obligation) extend to Northern Ireland only."
   },
+  "UK_ukpga_2008_4/7453cfe0fb": {
+    "law": "UK_ukpga_2008_4",
+    "ref": "s.152",
+    "sentence": "Except as otherwise provided by this Act, an amendment, repeal or revocation of any enactment by any provision of this Act extends to the part or parts of the United Kingdom to which the enactment extends."
+  },
   "UK_ukpga_2008_4/83db1a5841": {
     "law": "UK_ukpga_2008_4",
     "ref": "s.79",
@@ -3773,6 +3823,11 @@
     "law": "UK_ukpga_2009_25",
     "ref": "sch.23.pt.2",
     "sentence": "The repeal of section 4 of the Law of Libel Amendment Act 1888 (c. 64) and the repeal of section 20(2) of the Defamation Act 1996 do not extend to Northern Ireland.Short title and chapterExtent of repealLibel Act 1792 (c. 60)The whole Act.Criminal Libel Act 1819 (60 Geo. 3 & 1 Geo. 4 c. 8)In section 1, from “, or any seditious libel” to “means”.Libel Act 1843 (c. 96)Sections 4 to 6.Newspaper Libel and Registration Act 1881 (c. 60)In section 4, from “as to the publication” to “malice, and”.Law of Libel Amendment Act 1888 (c. 64)Sections 3 and 4.Defamation Act 1952 (c. 66)Section 17(2).Homicide Act 1957 (c. 11)Section 3.Suicide Act 1961 (c. 60) In Schedule 1— in Part 1, the entry relating to the Children and Young Persons Act 1933, and in Part 2, the entry relating to section 7 of the Visiting Forces Act 1952.Criminal Justice Act (Northern Ireland) 1966 (c. 20)Section 7.Theatres Act 1968 (c. 54)In section 4(1), from “(including” to “matter)”.In section 7(2), from “or an offence” to “course of a performance of a play”.In section 8, from “or an offence” to “play”.Broadcasting Act 1990 (c. 42)In section 166, from “(including” to “matter)”.Criminal Procedure and Investigations Act 1996 (c. 25)Section 61(4) and (5).Defamation Act 1996 (c. 31)Section 20(2).Legal Deposit Libraries Act 2003 (c. 28) In section 10— in subsection (1), “, or subject to any criminal liability,”, in subsection (2)(a), “in the case of liability in damages”, in subsection (3), “, or subject to any criminal liability,”, in subsection (4)(a), “in the case of liability in damages”, in subsection 6(a), “, or subject to any criminal liability,”, and in subsection (8), “and criminal liability”.Criminal Justice Act 2003 (c. 44)In Schedule 21, in paragraph 11(d), “in a way not amounting to a defence of provocation”."
+  },
+  "UK_ukpga_2009_25/d6f7d0ff35": {
+    "law": "UK_ukpga_2009_25",
+    "ref": "s.181",
+    "sentence": "Except as otherwise provided by this Act, an amendment, repeal or revocation of any enactment by any provision of this Act extends to the part or parts of the United Kingdom to which the enactment extends."
   },
   "UK_ukpga_2009_25/e93a49e451": {
     "law": "UK_ukpga_2009_25",
@@ -4084,6 +4139,11 @@
     "ref": "s.185",
     "sentence": "The Secretary of State may by order make whatever saving, transitional or transitory provision (in addition to the provision in sections 21, 33, 42, 58 and 93) the Secretary of State thinks appropriate in connection with the coming into force of any provision of this Act, other than the provisions listed in subsection (3) as they apply in Wales."
   },
+  "UK_ukpga_2014_2/df3bb17be8": {
+    "law": "UK_ukpga_2014_2",
+    "ref": "s.48",
+    "sentence": "An amendment, repeal or revocation made by this Act, other than one mentioned in subsection (3), has the same extent as the relevant part of the Act or instrument amended, repealed or revoked."
+  },
   "UK_ukpga_2014_21/3a4c92cdfc": {
     "law": "UK_ukpga_2014_21",
     "ref": "s.37",
@@ -4224,6 +4284,11 @@
     "ref": "s.45",
     "sentence": "Paragraphs 1 and 15 of Schedule 1 (establishment of Small Business Commissioner as corporation sole and provisions about the application of the seal etc) extend to England and Wales and Northern Ireland."
   },
+  "UK_ukpga_2016_19/a4d64395f2": {
+    "law": "UK_ukpga_2016_19",
+    "ref": "s.95",
+    "sentence": "Any amendment, repeal or revocation made by this Act has the same extent within the United Kingdom as the provision to which it relates."
+  },
   "UK_ukpga_2016_20/42ae9c2d11": {
     "law": "UK_ukpga_2016_20",
     "ref": "s.85",
@@ -4233,6 +4298,11 @@
     "law": "UK_ukpga_2016_21",
     "ref": "s.20",
     "sentence": "The amendments made by the following sections have the same extent as the provisions to which they relate—a section 14 (repeals relating to discharge for homosexual acts);b section 17 (Ministry of Defence fire-fighters: minor amendments)."
+  },
+  "UK_ukpga_2016_25/5dbd18435f": {
+    "law": "UK_ukpga_2016_25",
+    "ref": "s.272",
+    "sentence": "An amendment, repeal or revocation made by this Act of an enactment has the same extent within the United Kingdom as the enactment amended, repealed or revoked."
   },
   "UK_ukpga_2017_16/606acd710d": {
     "law": "UK_ukpga_2017_16",
@@ -4469,6 +4539,11 @@
     "ref": "s.169",
     "sentence": "The Secretary of State may by regulations— a provide for the provisions mentioned in subsection (5) to extend also to Northern Ireland, and b make provision (including provision amending this Act or any other enactment) in relation to the application of the provisions mentioned in subsection (5) in Northern Ireland."
   },
+  "UK_ukpga_2022_32/6d27b46c52": {
+    "law": "UK_ukpga_2022_32",
+    "ref": "s.207",
+    "sentence": "A provision of this Act which amends, repeals or revokes an enactment has the same extent within the United Kingdom as the enactment amended, repealed or revoked, subject to subsections (6) to (9)."
+  },
   "UK_ukpga_2022_32/c4dafcf057": {
     "law": "UK_ukpga_2022_32",
     "ref": "s.207",
@@ -4599,6 +4674,11 @@
     "ref": "s.158",
     "sentence": "Except as set out below— a Parts 1, 2 and 4 of this Act extend to England and Wales and Scotland; b in Part 3— i Chapter 1 extends to England and Wales; ii Chapter 2 extends to England and Wales and Scotland; iii Chapter 3 extends to England and Wales, Scotland and Northern Ireland; c Part 5 and this Part extend to England and Wales, Scotland and Northern Ireland."
   },
+  "UK_ukpga_2025_36/f9793b18b0": {
+    "law": "UK_ukpga_2025_36",
+    "ref": "s.158",
+    "sentence": "Except as set out in subsection (5), an amendment, repeal or revocation made by this Act has the same extent within the United Kingdom as the provision amended, repealed or revoked."
+  },
   "UK_ukpga_2026_20/0f6af15f8c": {
     "law": "UK_ukpga_2026_20",
     "ref": "s.254",
@@ -4703,11 +4783,6 @@
     "law": "UK_uksi_1992_831",
     "ref": "reg.3",
     "sentence": "Paragraph 10 of Schedule 8 to the Act shall come into force on 1st September 1992 so far as it relates to institutions within the PCFC funding sector and otherwise on 1st April 1993, but this article does not extend to Wales."
-  },
-  "UK_uksi_1994_249/21fc27818e": {
-    "law": "UK_uksi_1994_249",
-    "ref": "reg.1",
-    "sentence": "These Regulations may be cited as the Agriculture Act 1986 (Amendment) Regulations 1994, shall come into force on 1st March 1994 and shall extend to Great Britain."
   },
   "UK_uksi_1994_3246/2f6a653bd4": {
     "law": "UK_uksi_1994_3246",
@@ -5629,6 +5704,11 @@
     "ref": "reg.2",
     "sentence": "Any amendment, repeal or revocation made by these Regulations has the same extent within the United Kingdom as the provision to which it relates, except that—a regulation 107(5) (amendment of the Proceeds of Crime Act 2002 ) extends to England and Wales and Scotland only;b regulation 107(8) extends to England and Wales only, andc regulation 109(1) to (3) (amendment of the Criminal Finances Act 2017 ) extends to Northern Ireland only."
   },
+  "UK_uksi_2019_837/140556a72e": {
+    "law": "UK_uksi_2019_837",
+    "ref": "reg.2",
+    "sentence": "These Regulations extend as follows."
+  },
   "UK_uksi_2019_837/7021e2bc96": {
     "law": "UK_uksi_2019_837",
     "ref": "reg.2",
@@ -5669,11 +5749,6 @@
     "ref": "reg.1",
     "sentence": "These Regulations extend to England and Wales but apply to England only."
   },
-  "UK_uksi_2020_904/3056102843": {
-    "law": "UK_uksi_2020_904",
-    "ref": "reg.1",
-    "sentence": "An amendment made by Part 2 has the same extent as the provision amended, except regulations 4 and 5(3), which have the extent stated in those regulations."
-  },
   "UK_uksi_2020_971/118ee15a58": {
     "law": "UK_uksi_2020_971",
     "ref": "reg.1",
@@ -5709,20 +5784,10 @@
     "ref": "reg.1",
     "sentence": "These Regulations extend to England and Wales but apply in England only."
   },
-  "UK_uksi_2022_634/b117919315": {
-    "law": "UK_uksi_2022_634",
-    "ref": "reg.2",
-    "sentence": "Any amendment or revocation made by the provisions in Parts 2 to 9 has the same extent as the provision amended or revoked."
-  },
   "UK_uksi_2022_834/ffb1ba8de5": {
     "law": "UK_uksi_2022_834",
     "ref": "reg.1",
     "sentence": "c extends to England and Wales and Scotland."
-  },
-  "UK_uksi_2023_1071/315e96a794": {
-    "law": "UK_uksi_2023_1071",
-    "ref": "reg.1",
-    "sentence": "Any amendment or revocation made by the provisions in Parts 2 and 3 has the same extent as the provision amended or revoked."
   },
   "UK_uksi_2023_722/6431de17f0": {
     "law": "UK_uksi_2023_722",

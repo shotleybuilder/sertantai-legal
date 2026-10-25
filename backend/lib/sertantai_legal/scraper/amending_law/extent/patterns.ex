@@ -42,7 +42,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
 
   @places "England and Wales|Great Britain|the United Kingdom|United Kingdom|England|Wales|Scotland|Northern Ireland"
   @extent_words Regex.compile!(
-                  "\\bextends?\\s+(?:also\\s+|only\\s+)?to\\s+(?:the\\s+whole\\s+of\\s+)?(?:#{@places})|\\bnot\\s+extend\\s+to\\s+(?:#{@places})|\\bsame\\s+extent\\s+as\\b",
+                  # (also "the same extent within the United Kingdom as", "extends
+                  # to the part or parts of the United Kingdom", "extends
+                  # throughout", "extends as follows": counted, CV-S05 round 4)
+                  "\\bextends?\\s+(?:also\\s+|only\\s+)?(?:to\\s+(?:the\\s+whole\\s+of\\s+)?|throughout\\s+)(?:#{@places})|\\bnot\\s+extend\\s+to\\s+(?:#{@places})|\\bsame\\s+extent\\s+(?:within\\s+the\\s+United\\s+Kingdom\\s+)?as\\b|\\bextends?\\s+to\\s+the\\s+(?:same\\s+)?part\\s+or\\s+parts\\s+of\\s+the\\s+United\\s+Kingdom\\b|\\bextends?\\s+as\\s+follows\\b",
                   "iu"
                 )
   @application_words Regex.compile!(

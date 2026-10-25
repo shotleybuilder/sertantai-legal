@@ -1043,4 +1043,87 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
       assert Extent.of(e, "s.230(1)") == "E+W+S+NI"
     end
   end
+
+  describe "CV-S05 agent round 4" do
+    defp read4(law, body),
+      do:
+        Extent.read(
+          Doc.new(law, ["<Legislation><Primary><Body>#{body}</Body></Primary></Legislation>"])
+        )
+
+    defp sec4(id, text), do: ~s{<P1 id="#{id}"><P1para><Text>#{text}</Text></P1para></P1>}
+
+    test "N-A: \"Any amendment … made by the provisions in Parts 2 and 3 has the same extent as the provision amended\"" do
+      e =
+        read4(
+          "UK_uksi_2023_1071",
+          sec4(
+            "regulation-1",
+            "Any amendment or revocation made by the provisions in Parts 2 and 3 has the same extent as the provision amended or revoked."
+          ) <>
+            ~s{<Part id="part-2">} <>
+            sec4("regulation-107", "Schedule 1 has effect.") <>
+            "</Part>" <>
+            ~s{<Part id="part-4">} <> sec4("regulation-120", "Other.") <> "</Part>"
+        )
+
+      assert Extent.of(e, "reg.107") == :same
+      assert Extent.of(e, "reg.120") == nil
+    end
+
+    test "N-B: other same-extent wordings" do
+      for text <- [
+            "Section 22 has the same extent within the United Kingdom as the provision to which it relates.",
+            "Except as provided by subsections (2) and (3), a repeal, revocation or other amendment made by this Act has the same extent as the provision repealed, revoked or amended.",
+            "Except as otherwise provided by this Act, an amendment made by this Act extends to the part or parts of the United Kingdom to which the enactment amended extends."
+          ] do
+        e = read4("UK_ukpga_2015_20", sec4("section-114", text))
+        assert Extent.of(e, "s.22") == :same, text
+      end
+    end
+
+    test "N-C: lettered statements under a lead-in" do
+      e =
+        read4(
+          "UK_ukpga_2004_33",
+          sec4(
+            "section-262",
+            "This Act extends to England and Wales, Scotland and Northern Ireland. In Part 5— (a) sections 220 to 224 extend to England and Wales only; (b) sections 225 to 227 extend to Scotland only; (c) sections 228 to 232 extend to Northern Ireland only."
+          )
+        )
+
+      assert Extent.of(e, "s.221") == "E+W"
+      assert Extent.of(e, "s.226") == "S"
+      assert Extent.of(e, "s.230") == "NI"
+      assert Extent.of(e, "s.10") == "E+W+S+NI"
+    end
+
+    test "N-D: a compound's second clause; \"that Schedule\" named" do
+      e =
+        read4(
+          "UK_ukpga_2009_25",
+          sec4(
+            "section-181",
+            "This Act extends to England and Wales. Paragraphs 34 and 35 of Schedule 22 extend to England and Wales and Scotland, and paragraph 36 of that Schedule extends to Scotland only."
+          )
+        )
+
+      assert Extent.of(e, "sch.22.para.34") == "E+W+S"
+      assert Extent.of(e, "sch.22.para.36") == "S"
+    end
+
+    test "N-E: an exception not parsed gives no list" do
+      e =
+        read4(
+          "UK_ukpga_1961_34",
+          sec4(
+            "section-185",
+            "This Act, except subsections (1) and (2) of section seventy-seven, does not extend to Northern Ireland."
+          )
+        )
+
+      assert e.default == "E+W+S"
+      assert e.lists == []
+    end
+  end
 end
