@@ -1389,6 +1389,7 @@
     "extent|amendments|same_extent|except|places:0|-|-|unread:list": "accepted",
     "extent|amendments|same_extent|except|places:0|-|-|unread:not_read": "accepted",
     "extent|amendments|same_extent|except|places:0|-|-|unread:other_provision": "accepted",
+    "extent|amendments|same_extent|except|places:1|-|-|list:same:same": "accepted",
     "extent|amendments|same_extent|except|places:1|-|-|unread:not_read": "accepted",
     "extent|amendments|same_extent|except|places:1|only|-|list:same:same": "accepted",
     "extent|amendments|same_extent|except|places:many|-|-|unread:other_provision": "accepted",
