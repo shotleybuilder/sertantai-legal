@@ -115,7 +115,8 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 - ✅ Build and golden never use stale amendment rules: `Amendment.ReadLaw` reads a stale amending law from the text held — `dcb91f5f`
 - ⬜ **(in progress) Amendment read pass speed, profile-led** (35 min; see "Read pass profile"):
   - ✅ step 1, the reader's repeated work: laws named found once per instruction, defined-term patterns compiled once — `18e25def` (570,639 regex compiles gone; 1995/25 8.2 → 1.7 s; SI 2019/696 + WSI 2013/755 ~17 → 2.5 min; rules identical)
-  - ⬜ step 2, the rest of a law's read: stage timings running (every LAT law's feed pages loaded at start, extent reading, index references/parts, parse); fix what they show, then time a full pass
+  - ✅ step 2, start-up: every LAT law's feed pages were parsed at the start of each pass (160 s); `FeedCache` keeps the parse (offline), keyed by `FeedVersion` + page digest — `d293d7d8` (one-law pass 2 min 15 s → 12 s; golden and build gain too)
+  - ⬜ step 3, time a full pass on the new code (needs Jason's go-ahead: ~2,102 laws; writes `amendment_rules` and the indexes, restoring them as fresh) — expected well under the 35 min
 - ⬜ Incremental read pass: re-read only the amending laws whose output can change (per-law inputs; a reader edit no longer stales all 2,102)
 - ⬜ `Amendment.Reader` decomposition: 976 lines, 73 functions (guideline ~300; Jason: "very poorly architected"); pure modules extracted test-first, rules identical on every amending law
 - ❌ Cached `Doc` for the read pass — dropped on measurement: loading a stored `Doc` costs about as much as parsing it (2017/3: load 1.3 s, parse 0.6 s; 1995/25: 2.3 vs 4.5 s). Cache only what step 2 shows is costly, if anything
@@ -290,3 +291,10 @@ From the code (each task's runner, caches, version hashes) and the times recorde
 - **eprof, ukpga 1995/25 reading:** 570,639 `re:compile` calls — `Reader.laws/2` built `~r/(?<!\w)TERM(?!\w)/` for every defined term, every text, every law offered; ~30% of time, GC 19%; 6.3 M `downcase` calls. Fixed `18e25def`.
 - **After step 1:** a quarter of WSI 2013/755's provisions for 83 laws reads in 1.3 s; SI 2019/696 + WSI 2013/755 through the pass 2 min 28 s together (peak 1.5 GB) — so most of what's left is outside the reader: step 2.
 - Lesson: profile before optimising — the first pass parallelised the read pass without profiling it, and the planned cure (a parse cache) would have saved nothing.
+
+## Read pass, step 2: start-up (2026-10-25, Jason: "Build it"), code `d293d7d8`
+
+- Stage timings: SI 2019/696 parse 1.9 s, extent 1.4 s, index 0.07 s; WSI 2013/755 parse 0.4 s, extent 0.7 s. **Start-up: every LAT law's feed pages parsed, 160 s** — a one-law pass took 2 min 15 s.
+- Where a law's 150 ms went: page parse 110 ms, territory query 3 ms; a cached parse loads in ~1.5 ms.
+- `FeedCache` (`data/cache/feed_effects/`, one file per law): the parsed effects keyed by `FeedVersion` (ChangesFeed's code, added to `VersionCoverageTest`) and the stored pages' digest (`ClmlStore.feed_files/4`); offline only (`law_effects(…, store: :only)`); the territory lookup stays live.
+- Checked: 107 laws' effects equal parsed vs cached; parse 11.8 s, warm 0.28 s; tests for cache hit, a changed page re-parsed, no pages. One-law read pass: cold 2 min 05 s (fills the cache), warm 12 s, same 251 rules.
