@@ -1,8 +1,7 @@
 ---
 session: Reader run time — make the catalogues, checks and re-reads quicker
-status: suspended
+status: active
 opened: 2026-10-24
-suspended: 2026-10-25
 outcome: success
 summary: >
   A CV-S05 fix round's runs went from ~2½ hours to ~10 minutes with identical output: the extent
@@ -83,7 +82,7 @@ enables:
   - later families' catalogues and checks at corpus scale
 ---
 
-# Session: Reader run time (SUSPENDED)
+# Session: Reader run time (ACTIVE)
 
 ## Problem
 
@@ -98,6 +97,7 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 
 ## Todo
 
+- ⬜ **First: find what the first pass missed.** This session closed with the amendment read pass still slow (35 min, 2026-10-25) and had to be reopened (Jason: "we did such a poor job last time"). Inventory every long run the CV workflow uses (read passes, re-reads, rebuilds, catalogues, checks, golden, relabel), time each, and for each say whether it is parallel, cached and incremental, and what invalidates it (version hashes covering too much, e.g. `ReaderVersion` staling all 2,102 indexes for a `DefinedTerms` fix). List the gaps here before fixing any
 - ✅ Profile one catalogue run and the check on a sample of laws (`:eprof` / `:fprof`, or timing per stage): XML parse (`SweetXml` in `Doc.new`), `Doc.lines`, sentence splitting, the per-sentence "reads the same alone" check, the regexes. Record where the time goes before changing anything.
 - ✅ Parse each law once and reuse it: cache the parsed `Doc` (or its flattened text and ids) keyed by the stored files' hash, so the catalogue, the check and the re-read don't each parse the same 3,357 laws again.
 - ✅ Incremental runs: re-read only the laws a change can alter. Key each law's result by reader version + file hash, and re-use unchanged results ("prove a change alters a run first"; memory: no needless corpus runs). A full run then costs only what changed.
@@ -209,3 +209,7 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 ## Re-opened as suspended (2026-10-25)
 
 Jason, on CV-S05's 28-minute amendment read pass (for the `DefinedTerms` fix, `65bf8b34`): "why is this not faster given the previous session". This session made the pass parallel (`fb72a393`, ~85 → 28 min, 81 CPU-minutes, 4 workers by the guard's 1.8 GB a law) but gave it neither an incremental mode nor a cache: it was treated as a rare run, and it never was profiled. Two items added to the todo (Jason: "log 1 and 2 in the previously closed session - that should now be marked-up as suspended"). Jason then added the third: more workers where memory allows. All three are pending. Resume after CV-S05 or when Jason says.
+
+## Active again (2026-10-25)
+
+Jason: "make the unclosed/suspended runtime session active again … first todo in the reactivated session is to find the other bits we didn't fix last time around". CV-S05 suspended. No pushes without naming them to Jason first (another lane is fixing GitHub CI).

@@ -1,6 +1,6 @@
 ---
 session: 'CV-S05: Extent and Application Reader'
-status: active
+status: suspended
 release: v0.1
 opened: '2026-10-22'
 bugs:
@@ -67,7 +67,7 @@ bugs:
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
 ---
 
-# Session: CV-S05: Extent and Application Reader (ACTIVE)
+# Session: CV-S05: Extent and Application Reader (SUSPENDED)
 
 ## Problem
 
@@ -504,3 +504,16 @@ State at suspension:
 - Label timelines (law starts changed for LAT laws) are not refreshed: a later relabel.
 - **Amendment read pass** (35 min; SI 2019/696 alone the last ~9 min; peak 1.8 GB): rules 41,435 → 41,581, 13 laws changed, each traced to the term fix. Additions where a caption's false term had blocked the named law (e.g. ukpga 1994/39 +64); PCA 2017 para 94 → Localism Act; SI 2009/1941 para 76 → Insolvency Act 1986 ("unregistered company" had read Companies Act 2006); ukpga 1995/23 Sch.5 para 5 no longer read as RTA 1988 (it amends 1995/23 itself); Planning Act 2008 Sch.7 → TCPA 1990 / Listed Buildings Act (had read TCP (Scotland) Act 1997 through "local planning authority").
 - **Exposed:** Planning Act 2008 s.174/175 ("TCPA 1990 is amended as follows") then read nothing: "TCPA 1990 … means the Town and Country Planning Act 1990 (c. 8)" failed the title test on its chapter. Fixed `5d404342` (chapter stripped; "set out in", "article N of" are things under a law). A text search finds 241 amending laws with definitions in these forms; `ReaderVersion` hashes `defined_terms.ex`, so all 2,102 indexes are stale again (builds fall back to parsing, correct but slow).
+
+## Suspended again (2026-10-25)
+
+Jason: "suspend the session and make the unclosed/suspended runtime session active again". The run-time work left the amendment read pass slow (35 min for a fix touching ~241 laws), and every `DefinedTerms` fix stales all 2,102 indexes.
+
+State at suspension:
+- code `5d404342` (all tests pass); nothing pushed since `d1d26d75` — another lane is fixing GitHub CI, so any push is to be named to Jason first;
+- own commencement clauses re-read (after `9c28b1ad`); commencement catalogue accepted;
+- amendment rules from the read pass before `5d404342`; all amendment indexes stale against `5d404342`;
+- stored changes not rebuilt; golden not re-run (RTA 1988 s.4(6) passes alone);
+- restore point `cv-s05-before-exposed-fixes`.
+
+On resume: re-read the affected amending laws (with the incremental read if built), rebuild, golden; then round 6.
