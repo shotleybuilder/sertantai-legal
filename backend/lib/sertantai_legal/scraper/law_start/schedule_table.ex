@@ -61,7 +61,7 @@ defmodule SertantaiLegal.Scraper.LawStart.ScheduleTable do
   def rows(clause, tables) when is_binary(clause) and is_map(tables) do
     case Regex.run(@clause, clause) do
       [_, prov, sch, date | rest] ->
-        id = if sch in [nil, ""], do: "schedule", else: "schedule-#{sch}"
+        id = if sch == "", do: "schedule", else: "schedule-#{sch}"
         purpose = List.first(rest)
         [p, d] = Enum.map([prov, date], &Map.get(@ordinals, String.downcase(&1)))
         u = purpose && Map.get(@ordinals, String.downcase(purpose))

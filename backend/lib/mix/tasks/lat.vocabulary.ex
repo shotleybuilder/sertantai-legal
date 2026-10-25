@@ -440,7 +440,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
         Mix.shell().info("    expected:")
         for p <- c.periods, do: Mix.shell().info("      " <> line(p))
         Mix.shell().info("    got:")
-        for p <- got || [], do: Mix.shell().info("      " <> line(p))
+        for p <- got, do: Mix.shell().info("      " <> line(p))
       end
     end
 

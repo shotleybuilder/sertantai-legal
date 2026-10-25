@@ -20,9 +20,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
   defstruct [:id, :instruction, quoted: "", inserted: [], context: [], before: []]
 
   @type t :: %__MODULE__{
-          id: String.t(),
+          id: String.t() | nil,
           instruction: String.t(),
           quoted: String.t(),
+          inserted: [[String.t()]],
           context: [String.t()],
           before: Enumerable.t()
         }
