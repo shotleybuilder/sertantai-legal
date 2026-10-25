@@ -122,12 +122,13 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 - ⬜ After the decomposition gate, first: a caption names no law ("In section 1 (application of Part I of Health and Safety at Work etc. Act 1974 …)" took Petroleum Act 1998 Sch. 4 para 33's rules off the Offshore Safety Act 1992, −9); nested quotes ("omit ““…” means the Building (Approved Inspectors etc.) Regulations 2010”": SI 2024/1268, −1) — both exposed by the "etc." fix
 - ⬜ Environment Act 1995 Sch. 22 para 30 (HSWA, "in this paragraph referred to as …"): its sub-paragraphs read no rule since the "etc." fix (they had read wrongly as COPA 1974) — trace in the reader work after the decomposition gate
 - ⬜ Annex/Schedule targets: instructions placed in a Schedule or Annex of the amended law (by a heading, or a term like "the electronic communications code" = CA 2003 Sch. 3A) are read at its paragraphs (EU Annex instructions are now held back, giving no Article rules; PSTI 2022's dropped). Was: a defined term meaning a Schedule of a law ("the electronic communications code" = CA 2003 Sch. 3A, PSTI 2022): read its instructions at that Schedule's paragraphs (now dropped rather than placed on CA 2003 sections; belongs to CV-S05's reader work)
-- ⬜ Decompose the oversized modules: `Amendment.Reader` (976 lines, 73 functions) and `AmendingLaw.Extent` (1,343), test-first, rules identical on every amending law (Jason: "mahoosive modules")
+- ✅ Decompose `Amendment.Reader` (1,004 → 305 lines; five modules under ~270; gate 0 changed) — `2d4b7c7e`…`81573975`
+- ⬜ Decompose `AmendingLaw.Extent` (1,343 lines) the same way: plan, review, steps test-first, zero-diff gate on the extent catalogue and check
 - ⬜ Incremental read pass: re-read only the amending laws whose output can change (per-law inputs; a reader edit no longer stales all 2,102)
 - ❌ Cached `Doc` for the read pass — dropped on measurement: loading a stored `Doc` costs about as much as parsing it (2017/3: load 1.3 s, parse 0.6 s; 1995/25: 2.3 vs 4.5 s). Cache only what step 2 shows is costly, if anything
 - ⬜ LR-45 Saxy (pending v0.2 session) reconsidered: parsing is not the read pass's bottleneck (profile); kept for memory and cold parses, not for this
-- ⬜ More workers where memory allows (the two tail laws together peaked at 1.5 GB): measure, then size the guard
-- ⬜ Largest laws first in `LawRunner` (no single-law tail)
+- ✅ More workers where memory allows: the read pass's own measure (0.8 GB a law, max 5) — `2efc3ed4`
+- ✅ Largest laws first in `LawRunner` (`weight:`) — `2efc3ed4`; full read 7 min 20 s → 4 min 30 s with both
 - ⬜ Staleness that over-reaches: `Extent.ReadCache` keyed on the modules the reading uses, not the whole app; `mix.lock` out of `ChangeVocabulary.Version`
 - ⬜ Incremental rebuild: skip a law whose stored code version and input fingerprints are unchanged
 - ⬜ Commencement catalogue cache (6–7 min every run), as `Extent.ReadCache`
@@ -386,4 +387,4 @@ Review: `backend/data/code-reviews/2026-10-25-reader-decomposition-plan-reviewer
 - `Amendment.Reader` 1,004 → 305 lines; calls run Brackets ← Clauses ← Targets ← LawNamed ← Reader, RepealTable → Brackets, Clauses, LawNamed; no cycles.
 - Each step test-first (red, then green); 3 of my new tests had wrong expectations (a year is a valid bracket; a title is captured from its first capital; a repeals table needs its header row) — corrected to the existing behaviour, never the code.
 - Full suite 8,773 pass.
-- ⬜ Gate (ask Jason): `mix lat.amending --read --preview --all` — 0 changed over every amending law.
+- ✅ **Gate (Jason: "Push then the gate"): `mix lat.amending --read --preview --all` — 2,102 laws, 0 changed, rules 43,548 → 43,548; 4 min 30 s** (5 workers, largest first; the same full read was 35 min this morning). Pushed first: `32cbe53c..c142170a` (27 commits; Dialyzer caught a closed map type in `Targets` — fixed `c142170a`).
