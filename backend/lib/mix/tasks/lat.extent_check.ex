@@ -37,6 +37,8 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Extent}
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Patterns, Store}
+  alias SertantaiLegal.Scraper.LawRunner
+  alias SertantaiLegal.Scraper.LawRunner.Guard
 
   @shortdoc "Every amending law's extent and every text change's territory accounted for (read-only)"
 
@@ -47,7 +49,7 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
   def run(args) do
     {opts, _, _} =
       OptionParser.parse(args,
-        strict: [family: :string, sample: :string, n: :integer, seed: :integer]
+        strict: [family: :string, sample: :string, n: :integer, seed: :integer, workers: :integer]
       )
 
     Mix.Task.run("app.start")
@@ -69,10 +71,21 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
 
     stored = Store.rows_for(amending)
 
+    # several at once where the machine allows (`LawRunner.Guard`), in
+    # law order after
+    workers = Guard.workers(workers: opts[:workers])
+
+    by_law =
+      LawRunner.run(amending, &law_row(&1, Map.get(stored, &1)), fn _, _ -> :ok end,
+        workers: workers
+      )
+
     rows =
-      for {law, i} <- Enum.with_index(amending, 1) do
-        if rem(i, 100) == 0, do: Mix.shell().info("  #{i}/#{length(amending)}")
-        Task.async(fn -> law_row(law, Map.get(stored, law)) end) |> Task.await(:infinity)
+      for law <- amending do
+        case by_law[law] do
+          {:error, why} -> raise "#{law}: #{inspect(why)}"
+          row -> row
+        end
       end
 
     by_law = Map.new(rows, &{&1.law, &1})

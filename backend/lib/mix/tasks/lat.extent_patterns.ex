@@ -29,6 +29,8 @@ defmodule Mix.Tasks.Lat.ExtentPatterns do
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Patterns, Store}
+  alias SertantaiLegal.Scraper.LawRunner
+  alias SertantaiLegal.Scraper.LawRunner.Guard
 
   @shortdoc "Extent and application sentences' pattern catalogue, as test fixtures (read-only)"
 
@@ -38,7 +40,9 @@ defmodule Mix.Tasks.Lat.ExtentPatterns do
   @impl Mix.Task
   def run(args) do
     {opts, _, _} =
-      OptionParser.parse(args, strict: [laws: :string, out: :string, accept: :boolean])
+      OptionParser.parse(args,
+        strict: [laws: :string, out: :string, accept: :boolean, workers: :integer]
+      )
 
     Mix.Task.run("app.start")
     Logger.configure(level: :warning)
@@ -49,14 +53,27 @@ defmodule Mix.Tasks.Lat.ExtentPatterns do
     laws = laws(opts[:laws])
     Mix.shell().info("#{length(laws)} laws")
 
-    acc =
-      laws
-      |> Enum.with_index(1)
-      |> Enum.reduce(new_acc(), fn {law, i}, acc ->
-        if rem(i, 250) == 0, do: Mix.shell().info("  #{i}/#{length(laws)}")
+    # several at once where the machine allows (`LawRunner.Guard`), each
+    # in its own process (the parsed document goes when it exits); merged
+    # in law order, so the catalogue is the same however many ran at once
+    workers = Guard.workers(workers: opts[:workers])
+    counter = :counters.new(1, [])
 
-        # in its own process: the parsed document goes when it exits
-        case Task.async(fn -> law_result(law) end) |> Task.await(:infinity) do
+    results =
+      LawRunner.run(
+        laws,
+        &law_result/1,
+        fn _law, _result ->
+          :counters.add(counter, 1, 1)
+          i = :counters.get(counter, 1)
+          if rem(i, 250) == 0, do: Mix.shell().info("  #{i}/#{length(laws)}")
+        end,
+        workers: workers
+      )
+
+    acc =
+      Enum.reduce(laws, new_acc(), fn law, acc ->
+        case results[law] do
           {:ok, result} -> merge(acc, law, result)
           {:error, why} -> %{acc | unclassified: [{law, why} | acc.unclassified]}
         end
