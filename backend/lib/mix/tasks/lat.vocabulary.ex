@@ -455,25 +455,13 @@ defmodule Mix.Tasks.Lat.Vocabulary do
   # the amending laws' own text: their stored rules, and each one's
   # commencement rules
   defp primary(law, effects) do
-    rules = SertantaiLegal.Scraper.Amendment.Store.for_law(law)
+    stored_rules = SertantaiLegal.Scraper.Amendment.Store.for_law(law)
 
-    # the stored rules as read: an amending law whose index is stale (older
-    # reader, or text held since changed) is named, never used silently
-    # (run time, 2026-10-25)
-    stale =
-      for l <- rules |> Enum.map(& &1.source.law) |> Enum.uniq(),
-          not SertantaiLegal.Scraper.Amendment.Index.fresh?(
-            l,
-            SertantaiLegal.Scraper.Amendment.Index.get(l)
-          ),
-          do: l
-
-    if stale != [],
-      do:
-        Mix.shell().info(
-          "  #{length(stale)} amending laws' stored rules are stale (older reader or text since changed): " <>
-            "mix lat.amending --read --amending #{Enum.join(stale, ",")}"
-        )
+    # the stored rules stand only where read by this reader from the text
+    # held now; a stale amending law is read again here, for this law, at
+    # the provisions this law's notes and feed point to (never stale rules:
+    # run time, 2026-10-25)
+    rules = fresh_rules(law, effects, stored_rules)
 
     # each amending law's commencement rules: the rules' sources and the
     # feed's affecting laws
@@ -582,6 +570,46 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       own_context: own_context,
       title: title
     ]
+  end
+
+  # the law's amendment rules: stored where the amending law's index is
+  # fresh, else read now from the text held (`Amendment.ReadLaw`)
+  defp fresh_rules(law, effects, stored) do
+    alias SertantaiLegal.Scraper.Amendment.{Index, ReadLaw}
+    alias SertantaiLegal.Scraper.AmendingLaw.Pointer
+
+    by_feed = for e <- effects, ReadLaw.text_effect?(e), do: e
+
+    amending =
+      (Enum.map(stored, & &1.source.law) ++ Enum.map(by_feed, & &1.affecting))
+      |> Enum.filter(&(is_binary(&1) and &1 =~ ~r/^UK_/))
+      |> Enum.uniq()
+
+    stale = Enum.reject(amending, &Index.fresh?(&1, Index.get(&1)))
+    ref = if stale != [], do: ReadLaw.law_ref(law)
+
+    read =
+      for a <- stale, doc = ReadLaw.doc(a), doc != nil do
+        refs =
+          ReadLaw.note_refs(a, ReadLaw.notes(a, law)) ++
+            for(
+              e <- by_feed,
+              e.affecting == a,
+              r <- Pointer.refs_in(e.affecting_provisions),
+              do: r
+            )
+
+        {rules, _ids} = ReadLaw.rules(doc, [ref], refs)
+        rules
+      end
+
+    if stale != [],
+      do:
+        Mix.shell().info(
+          "  #{length(stale)} amending laws read from their text (stored rules stale: mix lat.amending --read)"
+        )
+
+    Enum.reject(stored, &(&1.source.law in stale)) ++ List.flatten(read)
   end
 
   # the law's title: its own place (a devolved law's territory)

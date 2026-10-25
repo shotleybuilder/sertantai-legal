@@ -37,10 +37,8 @@ defmodule Mix.Tasks.Lat.Amending do
   alias SertantaiLegal.Scraper.LawRunner.Guard
 
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
-  alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Extent, Locator, Pointer}
-  alias SertantaiLegal.Scraper.Amendment.{Collect, Index, Reader, Rule, Store}
-
-  @text_kinds ~w(substituted inserted repealed renumbered amended)
+  alias SertantaiLegal.Scraper.AmendingLaw.{Extent, Pointer}
+  alias SertantaiLegal.Scraper.Amendment.{Index, ReadLaw, Rule, Store}
 
   @shortdoc "Print a law's amendment rules; read amending laws into rules"
 
@@ -297,7 +295,7 @@ defmodule Mix.Tasks.Lat.Amending do
           # text changes only: the instructions this reader reads (a
           # commencement order's "coming into force" is the commencement
           # read pass's)
-          SertantaiLegal.Scraper.EffectKind.kind(e.type, nil) in @text_kinds,
+          ReadLaw.text_effect?(e),
           do: {e.affecting, law, Pointer.refs_in(e.affecting_provisions)}
     end)
     |> Enum.group_by(&elem(&1, 0))
@@ -330,46 +328,30 @@ defmodule Mix.Tasks.Lat.Amending do
   end
 
   defp note_pointers(amending) do
-    for n <- notes_pointing_to(amending),
-        p = Pointer.parse(n),
-        p.affecting_law == amending,
-        key <- pointer_keys(p.provisions),
-        uniq: true,
-        do: key
+    amending |> ReadLaw.note_refs(ReadLaw.notes(amending)) |> pointer_keys()
   end
 
   # a pointer as the index records it ("sch.2.para.10(2)(a)")
   defp pointer_keys(refs), do: refs |> Enum.flat_map(&Pointer.to_refs/1) |> Enum.uniq()
 
   defp read_one(amending, feed_entry) do
-    case doc(amending) do
+    case ReadLaw.doc(amending) do
       nil ->
         {0, 0}
 
       doc ->
-        notes = notes_pointing_to(amending)
+        notes = ReadLaw.notes(amending)
 
         laws =
           notes
           |> Enum.map(& &1.law_name)
           |> Kernel.++(MapSet.to_list(feed_entry.laws))
           |> Enum.uniq()
-          |> Enum.map(&law_ref/1)
+          |> Enum.map(&ReadLaw.law_ref/1)
 
         # one set of pointers: the notes' and the feed's, deduplicated
-        refs =
-          for(
-            n <- notes,
-            p = Pointer.parse(n),
-            p.affecting_law == amending,
-            ref <- p.provisions,
-            do: ref
-          ) ++ feed_entry.refs
-
-        refs = Enum.uniq(refs)
-        ids = for ref <- refs, id <- Locator.ids(doc, ref), uniq: true, do: id
-
-        rules = Enum.flat_map(ids, &Collect.read(doc, &1, laws))
+        refs = Enum.uniq(ReadLaw.note_refs(amending, notes) ++ feed_entry.refs)
+        {rules, ids} = ReadLaw.rules(doc, laws, refs)
         {:ok, n} = Store.write(amending, rules)
 
         # an Act's own extent clause, from the same document (CV-04)
@@ -381,64 +363,10 @@ defmodule Mix.Tasks.Lat.Amending do
     end
   end
 
-  # the note's pointer law as the collector reads it: its Citation, else the
-  # law its text names (`ChangeCollector.law_notes/1`)
-  defp notes_pointing_to(amending) do
-    %{rows: rows} =
-      Repo.query!(
-        """
-        SELECT law_name, code, text, coalesce(citation_law, changed_by), affected_sections
-        FROM amendment_annotations
-        WHERE code_type = 'amendment' AND coalesce(citation_law, changed_by) = $1
-          AND law_name IN (SELECT DISTINCT law_name FROM legal_articles)
-        """,
-        [amending]
-      )
-
-    for [law, code, text, cl, sids] <- rows,
-        do: %{
-          law_name: law,
-          code: code,
-          text: text,
-          citation_law: cl,
-          affected_sections: sids || []
-        }
-  end
-
-  # a LAT law's ref: its title (no year) and its rows' prefix
-  defp law_ref(law) do
-    title =
-      case Repo.query!("SELECT title_en FROM uk_lrt WHERE name = $1 LIMIT 1", [law]) do
-        %{rows: [[t]]} when is_binary(t) ->
-          t |> String.replace(~r/\s+\d{4}\b.*$/, "") |> String.trim()
-
-        _ ->
-          nil
-      end
-
-    prefix =
-      case Repo.query!(
-             "SELECT substring(section_id from ':(s|reg|art|rule)\\.') FROM legal_articles WHERE law_name = $1 AND section_id ~ ':(s|reg|art|rule)\\.' LIMIT 1",
-             [law]
-           ) do
-        %{rows: [[p]]} when is_binary(p) -> p
-        _ -> "s"
-      end
-
-    Reader.law_ref(law, title, prefix)
-  end
-
   defp held?(law) do
     case String.split(law, "_", parts: 4) do
       [_, _, _, _] -> ClmlStore.law_files(law) != []
       _ -> false
-    end
-  end
-
-  defp doc(law) do
-    case ClmlStore.law_docs(law) do
-      [] -> nil
-      xmls -> Doc.new(law, xmls)
     end
   end
 end
