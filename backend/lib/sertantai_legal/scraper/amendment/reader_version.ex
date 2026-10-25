@@ -11,6 +11,7 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderVersion do
   use SertantaiLegal.Scraper.SourceVersion,
     patterns: ~w(
       lib/sertantai_legal/scraper/amendment/reader.ex
+      lib/sertantai_legal/scraper/amendment/reader/*.ex
       lib/sertantai_legal/scraper/amendment/rule.ex
       lib/sertantai_legal/scraper/amending_law/doc.ex
       lib/sertantai_legal/scraper/amending_law/text.ex

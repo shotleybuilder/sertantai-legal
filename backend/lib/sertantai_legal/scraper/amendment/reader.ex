@@ -32,6 +32,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   import SweetXml
 
   alias SertantaiLegal.Scraper.Amendment.Rule
+  alias SertantaiLegal.Scraper.Amendment.Reader.Brackets
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Operation, Text}
 
   @type law_ref :: %{
@@ -58,7 +59,6 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
 
   # a bracket is a number, a letter or two, or a roman numeral — never a
   # word ("(interpretation)": a one-word caption, AR-07)
-  @bracket ~r/^(?:\d+[A-Z]*|[a-z]{1,3}|[A-Z]{1,2}|(?:x{0,3})(?:ix|iv|v?i{0,3}))$/
 
   @kind_words %{
     section: "sections?",
@@ -298,7 +298,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
     if sections_quoted?(text) do
       # "For section 99 substitute— 99 …", "After section 47B insert— 47C":
       # the quote's numbers are sections, never nested in one (AR-07)
-      for path <- text.inserted, provision_path?(path), uniq: true, do: ref(p, path)
+      for path <- text.inserted, provision_path?(path), uniq: true, do: Brackets.ref(p, path)
     else
       for path <- text.inserted,
           t <- quoted_paths(path, named, numbers, p),
@@ -321,14 +321,14 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
     own? = provision_path?(path) and (numbers == [] or own_number?(hd(path), numbers))
 
     if own? do
-      [ref(p, path)]
+      [Brackets.ref(p, path)]
     else
-      for(n <- numbers, do: ref(p, [n | above(named, [hd(path)]) ++ path])) ++
+      for(n <- numbers, do: Brackets.ref(p, [n | Brackets.above(named, [hd(path)]) ++ path])) ++
         for(
           n <- numbers,
           length(named) > 1,
           hd(path) =~ ~r/^[ivx]+[a-z]?$/,
-          do: ref(p, [n | Enum.drop(named, -1) ++ path])
+          do: Brackets.ref(p, [n | Enum.drop(named, -1) ++ path])
         )
     end
   end
@@ -374,7 +374,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
         own =
           brackets(%{c | instruction: own_part(unquote_words(asides(c.instruction)), law, terms)})
 
-        named = if c == first, do: own, else: above(place, own) ++ own
+        named = if c == first, do: own, else: Brackets.above(place, own) ++ own
         {%{text: c, named: named, numbers: numbers, ours?: ours?}, {numbers, ours?}}
       end)
 
@@ -450,23 +450,6 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
     |> Enum.reverse()
   end
 
-  # the place's brackets at levels above the clause's own
-  defp above(place, []), do: place
-
-  defp above(place, own) do
-    top = own |> Enum.map(&bracket_level/1) |> Enum.min()
-    Enum.filter(place, &(bracket_level(&1) < top))
-  end
-
-  defp bracket_level(b) do
-    cond do
-      b =~ ~r/^\d/ -> 0
-      b =~ ~r/^[A-Z]+$/ -> 3
-      b =~ ~r/^(?:ii|iii|iv|vi{1,3}|ix|xi{1,3})$/ -> 2
-      true -> 1
-    end
-  end
-
   # "in subsection (1)", "In section 7(1)(a)": where the clause is
   @place ~r/\bin\s+(?:sub-?)?(?:sections?|paragraphs?|sub-?paragraphs?|regulations?|articles?|rules?)\s+(?:\d+[A-Z]*\s*)?((?:\([0-9A-Za-z]+\))+)/i
 
@@ -475,8 +458,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
     |> strip_captions()
     |> unquote_words()
     |> then(&Regex.scan(@place, &1, capture: :all_but_first))
-    |> Enum.flat_map(&plain_brackets(hd(&1)))
-    |> Enum.filter(&(&1 =~ @bracket))
+    |> Enum.flat_map(&Brackets.plain_brackets(hd(&1)))
+    |> Enum.filter(&Brackets.bracket?/1)
   end
 
   # the instruction's clauses, one per operation: split at "and" or ";"
@@ -522,13 +505,15 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
 
   defp named_refs(text, {"inserted", "inserted"}, p, n, _named) do
     case {text.inserted, inserted_named(text)} do
-      {[], [_ | _] = ins} -> for c <- combos(ins), do: ref(p, [n | c])
+      {[], [_ | _] = ins} -> for c <- Brackets.combos(ins), do: Brackets.ref(p, [n | c])
       _ -> []
     end
   end
 
-  defp named_refs(_text, _op, p, n, []), do: [ref(p, [n])]
-  defp named_refs(_text, _op, p, n, named), do: for(c <- combos(named), do: ref(p, [n | c]))
+  defp named_refs(_text, _op, p, n, []), do: [Brackets.ref(p, [n])]
+
+  defp named_refs(_text, _op, p, n, named),
+    do: for(c <- Brackets.combos(named), do: Brackets.ref(p, [n | c]))
 
   defp rule(_law, [], _op, _source), do: nil
 
@@ -542,37 +527,6 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
         source: source,
         treatment: :instruction
       )
-
-  # "s" + ["25", "5A"] → "s.25(5A)"
-  # a range "22..25" → "s.22..s.25" (whole provisions; with brackets, as
-  # before ranges were read: its first number)
-  defp ref(p, [n | subs]) do
-    case {String.split(n, ".."), subs} do
-      {[a, b], []} -> "#{p}.#{a}..#{p}.#{b}"
-      {[a | _], _} -> "#{p}.#{a}" <> Enum.map_join(subs, &"(#{&1})")
-    end
-  end
-
-  # the paths the brackets named make, by level — subsection (5), (5A);
-  # paragraph (a), (ca); sub-paragraph (i), (iv); (A) — each level taken or
-  # skipped, in that order (rows whose brackets are all named, as the
-  # row-driven matcher's set semantics: "subsection (5), paragraphs (b) and
-  # (c)" → (5), (5)(b), (5)(c), (b) …; "In paragraph (a) of section 7(2)"
-  # → (2)(a)); a letter that is also a roman numeral is tried at both
-  defp combos(named) do
-    named = Enum.uniq(named)
-    digits = Enum.filter(named, &(&1 =~ ~r/^\d/))
-    letters = Enum.filter(named, &(&1 =~ ~r/^[a-z]+$/))
-    romans = Enum.filter(letters, &(&1 =~ ~r/^(?:i{1,3}|iv|v|vi{1,3}|ix|x|xi{1,3})$/))
-    capitals = Enum.filter(named, &(&1 =~ ~r/^[A-Z]+$/))
-
-    [digits, letters, romans, capitals]
-    |> Enum.reduce([[]], fn level, acc ->
-      acc ++ for(path <- acc, b <- level, b not in path, do: path ++ [b])
-    end)
-    |> Enum.reject(&(&1 == []))
-    |> Enum.uniq()
-  end
 
   # words the instruction doesn't spell out: an emptied quote ("“”": the
   # quote held only markup — 1991 c.39 s.1(2)) or "each of the following is
@@ -694,7 +648,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
            line
          ) do
       [_, n, subs, to, rest] ->
-        subs = plain_brackets(subs)
+        subs = Brackets.plain_brackets(subs)
         {siblings, after_siblings} = siblings(subs, rest)
 
         cond do
@@ -712,7 +666,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
             {words_targets(n, subs, located(rest)), :words}
 
           true ->
-            whole_targets(n, subs ++ plain_brackets(rest))
+            whole_targets(n, subs ++ Brackets.plain_brackets(rest))
         end
 
       _ ->
@@ -725,7 +679,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   defp siblings([_ | _] = subs, rest) do
     case Regex.run(~r/^\s*,?\s*and\s+((?:\([0-9A-Za-z]+\))+)(.*)$/s, rest) do
       [_, bs, after_siblings] ->
-        {[subs, Enum.drop(subs, -1) ++ plain_brackets(bs)], after_siblings}
+        {[subs, Enum.drop(subs, -1) ++ Brackets.plain_brackets(bs)], after_siblings}
 
       nil ->
         {[], rest}
@@ -741,7 +695,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   # each place a path of its own ("in subsection (1) … and, in subsection
   # (2), …" → (1) and (2), never (1)(2))
   defp located(rest),
-    do: for([_, bs] <- Regex.scan(@located, unquote_words(rest)), do: plain_brackets(bs))
+    do: for([_, bs] <- Regex.scan(@located, unquote_words(rest)), do: Brackets.plain_brackets(bs))
 
   # a line repealing words and provisions ("in subsection (1) the
   # definitions of …; and subsection (2)"): read piece by piece — "in
@@ -790,7 +744,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
       Enum.flat_map_reduce(pieces, {[], nil}, fn {piece, m}, {place, trailing} ->
         place =
           case Regex.run(@located, m, capture: :all_but_first) do
-            [bs] -> bs |> plain_brackets() |> then(&(above(place, &1) ++ &1))
+            [bs] -> bs |> Brackets.plain_brackets() |> then(&(Brackets.above(place, &1) ++ &1))
             nil -> place
           end
 
@@ -802,14 +756,15 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
             # "the words “…” in paragraph (b) and paragraph (c)": (c) is
             # another place for the words, not a provision repealed (a
             # provision of another level is: "… and subsection (12)")
-            {[{ref("s", [n | subs ++ place]), :words}],
-             {place, if(m =~ @located_end, do: place |> List.last() |> bracket_level())}}
+            {[{Brackets.ref("s", [n | subs ++ place]), :words}],
+             {place, if(m =~ @located_end, do: place |> List.last() |> Brackets.bracket_level())}}
 
           named = Regex.run(@named_provision, bare, capture: :all_but_first) ->
             {for(
                bs <- provisions(named),
-               level = if(bracket_level(hd(bs)) == trailing, do: :words, else: :provision),
-               do: {ref("s", [n | subs ++ above(place, bs) ++ bs]), level}
+               level =
+                 if(Brackets.bracket_level(hd(bs)) == trailing, do: :words, else: :provision),
+               do: {Brackets.ref("s", [n | subs ++ Brackets.above(place, bs) ++ bs]), level}
              ), {place, trailing}}
 
           true ->
@@ -824,11 +779,11 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   end
 
   # "(4)(b)" → [["4", "b"]]; "(7)" to "(10)" → (7), (8), (9), (10)
-  defp provisions([g, ""]), do: [plain_brackets(g)]
-  defp provisions([g]), do: [plain_brackets(g)]
+  defp provisions([g, ""]), do: [Brackets.plain_brackets(g)]
+  defp provisions([g]), do: [Brackets.plain_brackets(g)]
 
   defp provisions([g, to]) do
-    case {plain_brackets(g), plain_brackets(to)} do
+    case {Brackets.plain_brackets(g), Brackets.plain_brackets(to)} do
       {[a], [b]} ->
         if a =~ ~r/^\d+$/ and b =~ ~r/^\d+$/ and String.to_integer(a) < String.to_integer(b),
           do: for(k <- String.to_integer(a)..String.to_integer(b), do: ["#{k}"]),
@@ -839,8 +794,10 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
     end
   end
 
-  defp words_targets(n, subs, []), do: [ref("s", [n | subs])]
-  defp words_targets(n, subs, places), do: for(p <- places, do: ref("s", [n | subs ++ p]))
+  defp words_targets(n, subs, []), do: [Brackets.ref("s", [n | subs])]
+
+  defp words_targets(n, subs, places),
+    do: for(p <- places, do: Brackets.ref("s", [n | subs ++ p]))
 
   # words in the provision: "the words …", a quote ("In section 53(1)(a)
   # “114”."), a definition or entry — unless a provision is named beside the
@@ -861,10 +818,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   end
 
   defp whole_targets(n, []), do: {["s.#{n}"], :provision}
-  defp whole_targets(n, named), do: {for(c <- combos(named), do: ref("s", [n | c])), :provision}
 
-  defp plain_brackets(s),
-    do: for([b] <- Regex.scan(~r/\(([0-9A-Za-z]+)\)/, s, capture: :all_but_first), do: b)
+  defp whole_targets(n, named),
+    do: {for(c <- Brackets.combos(named), do: Brackets.ref("s", [n | c])), :provision}
 
   # ── the law named (LR-41) ──────────────────────────────────────────
 
@@ -1007,6 +963,6 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
     )
     |> String.replace(~r/\(which becomes [^()]*\([^)]*\)\)/i, "")
     |> then(&for([b] <- Regex.scan(~r/\(([0-9A-Za-z]+)\)/, &1, capture: :all_but_first), do: b))
-    |> Enum.filter(&(&1 =~ @bracket))
+    |> Enum.filter(&Brackets.bracket?/1)
   end
 end
