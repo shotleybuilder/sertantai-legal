@@ -373,3 +373,22 @@ The stored rows match the sample for all 50 laws. Every round-2 fix the sample r
 - **Catalogue run 6 (66 minutes, `--accept`):** 38 examples re-read, each among the 46 reviewed against their text; 14 new patterns reviewed; 27 gone. Tests: 8,699 pass.
 - **CV-S04 is not affected:** the commencement readers don't use `AmendingLaw.Extent`, so their catalogues weren't re-run.
 - **Restore point** `cv-s05-before-round4`. The re-read and the rebuild are running.
+
+## Round 4 runs and agent check, seed 9 (2026-10-25)
+
+- Re-read 383 (12 min, no fetch, no errors); rebuild 149 (2 min).
+- **Check: PASS, our faults 0.**
+  - Bound by the law fell from 3,449 to 3,184. This is intended: 184 changes under the three `unread` lists (SI 2014/469 Sch.3, Energy Act 2013 Sch.12, SI 2013/602 Sch.1) no longer take the default (E), and about 98 feed-only insertions are no longer confined by competence (D).
+- **Golden 27/27.**
+- **Agent check: laws 44 OK / 6 WRONG; changes 49 OK / 1 WRONG — FAIL (5 NEW).** The stored rows and claims match the sample.
+  - **N-A:** "Any amendment or revocation made by the provisions in Parts 2 and 3 has the same extent as the provision amended" is unread (uksi 2023/1071 reg.1(2)). Change a7393c takes the enabling powers' E+W+S+NI instead.
+  - **N-B:** same-extent wordings unread, and not counted as unread:
+    - "has the same extent within the United Kingdom as …" (REUL 2023 s.23(2));
+    - "Except as provided by subsections (2) and (3), a repeal, revocation or other amendment … has the same extent as …" (Deregulation Act 2015 s.114(1));
+    - "an amendment … extends to the part or parts of the United Kingdom to which the enactment extends" (CJA 2009 s.181(6)).
+  - **N-C:** lettered statements under a lead-in are unread and uncounted:
+    - "In Part 5— (a) sections 220 to 224 extend to England and Wales only; …" (CPA 2004 s.262(4));
+    - "Part 3 extends to …, except as follows— (a) …" and "Part 5 extends as follows— (a) …" (ERRA 2013 s.102).
+  - **N-D:** a sentence's second clause is dropped: "Paragraphs 34 and 35 … extend to England and Wales and Scotland, and paragraph 36 of that Schedule extends to Scotland only" (CJA 2009 s.181(5)).
+  - **N-E (minor):** a number in words, "section seventy-seven", is unread (Factories Act 1961 s.185(3)), and an empty `also` list is stored.
+  - **Known:** P1–P7.
