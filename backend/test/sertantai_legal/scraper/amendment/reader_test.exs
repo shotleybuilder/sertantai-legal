@@ -34,6 +34,25 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderTest do
     assert "UK_ukpga_1956_52:s.7(1)(b)" in reached(rules, "s.7(1)(b)")
   end
 
+  test "an EU law's Annex paragraphs are never its Articles; its Titles still are (SI 2019/758)" do
+    reach =
+      Reader.law_ref(
+        "UK_eur_2006_1907",
+        "Regulation (EC) No 1907/2006 of the European Parliament and of the Council",
+        "art"
+      )
+
+    d =
+      Doc.new("UK_uksi_2019_758", [
+        ~s(<Legislation><Secondary><Body><Part><Title>Amendment of the REACH Regulation</Title><P1group><Title>Amendment of Titles</Title><P1 id="regulation-2"><P1para><Text>In Article 4 of the REACH Regulation, omit “x”.</Text></P1para></P1></P1group><P1group><Title>Amendment of the Annexes to the REACH Regulation</Title><P1 id="regulation-3"><P1para><Text>In section 4 of Annex 2 to the REACH Regulation, omit “y”.</Text></P1para></P1></P1group></Part></Body></Secondary></Legislation>)
+      ])
+
+    terms = %{"the reach regulation" => %{law: "UK_eur_2006_1907", title: nil}}
+
+    assert [_ | _] = Reader.instruction(d, "regulation-2", terms, [reach])
+    assert Reader.instruction(d, "regulation-3", terms, [reach]) == []
+  end
+
   test "a law the text doesn't name gets no rule" do
     d =
       doc(

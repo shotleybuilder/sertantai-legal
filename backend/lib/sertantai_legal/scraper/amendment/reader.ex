@@ -6,8 +6,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   turned round: the targets they would accept, expanded at read time.
 
   - **The law:** the nearest text naming any law decides — the instruction,
-    its context nearest first, its containers' titles nearest first (group,
-    Chapter, Part, Schedule), then the text before
+    its context nearest first, the container's title, then the text before
+    (its Part's earlier provisions, the Part's headings, earlier Parts)
     (LR-41); it must name the law (title and year, chapter, or a defined term
     meaning it).
   - **Quoted provisions:** an insertion or substitution reaches the paths its
@@ -181,7 +181,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
       %Text{} = text ->
         text
         |> set_out(doc)
-        |> of_text(Doc.headings(doc, id), terms, laws, %{
+        |> of_text(Doc.title(doc, id), terms, articles_only(laws, doc, id), %{
           law: doc.law_name,
           ref: id,
           text: text.instruction
@@ -190,6 +190,17 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
       _ ->
         []
     end
+  end
+
+  # an instruction under a heading amending an EU law's Annexes or
+  # Appendices numbers that Annex's paragraphs, never its Articles ("8.1.1.1",
+  # "4" in "Amendment of the Annexes and Appendices to the REACH
+  # Regulation": SI 2019/758 Sch. 3): no Article rules until Annex targets
+  # are read (run time, 2026-10-25)
+  defp articles_only(laws, doc, id) do
+    if Enum.any?(Doc.headings(doc, id), &(&1 =~ ~r/\b(?:Annex(?:es)?|Appendi(?:x|ces))\b/)),
+      do: Enum.reject(laws, &(&1.kind == :article)),
+      else: laws
   end
 
   # an instruction quoting nothing, whose block is set out in its own

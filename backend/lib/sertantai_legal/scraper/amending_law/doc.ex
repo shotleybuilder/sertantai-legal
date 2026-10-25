@@ -173,12 +173,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Doc do
               root,
               ~x"//*[self::P1group or self::Pblock or self::PsubBlock or self::Part or self::Chapter or self::Schedule]"l
             ) do
-        # xpath kept: its union orders text nodes by term order, which the
-        # titles' text depends on (LR-31: "No. The Pastoral Measure 1983")
+        # in document order: xmerl's `//text()` put a nested word first
+        # ("etc.The Building (Approved Inspectors ) Regulations 2010": WSI
+        # 2013/747's <Abbreviation>; SI 2019/758's "EnforcementAmendment of
+        # the REACH Regulations 2008", CV run time 2026-10-25)
         title =
           el
-          |> xpath(~x"./Title//text() | ./TitleBlock/Title//text()"ls)
-          |> Enum.join()
+          |> xpath(~x"./Title | ./TitleBlock/Title"l)
+          |> Enum.map_join(" ", &text/1)
           |> String.trim()
 
         {depth(el), title, el}

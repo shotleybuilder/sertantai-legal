@@ -112,13 +112,19 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
   end
 
   # the words before the top provision `top`, nearest first (lazy): its
-  # Schedule's earlier provisions then the body's words naming the Schedule;
-  # or the body's earlier provisions
+  # Schedule's earlier provisions, its containers' headings beyond its own
+  # group's, then the body's words naming the Schedule; or the body's
+  # earlier provisions in its Part, the Part's (and Chapter's) headings,
+  # then the earlier Parts. Structure decides what is nearer: a Part
+  # heading naming the enabling Act ("Amendments pursuant to the European
+  # Communities Act 1972": SI 2019/453) is farther than "The Transport Act
+  # 1968 is amended …" earlier in the Part; with nothing earlier in its Part
+  # naming a law, "For regulation 24 substitute—" is read by its Part's
+  # heading ("Amendment to the 2009 Regulations": SI 2019/598)
   defp before(doc, top) do
-    earlier =
-      doc.ids
-      |> Enum.take(Map.get(doc.pos, top, 0))
-      |> Enum.reverse()
+    at = Map.get(doc.pos, top, 0)
+    earlier = doc.ids |> Enum.take(at) |> Enum.reverse()
+    outer = doc |> Doc.headings(top) |> Enum.drop(1)
 
     case Regex.run(~r/^schedule-([^-]+)-/, top) do
       [prefix, n] ->
@@ -133,12 +139,23 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
         earlier
         |> Stream.filter(&String.starts_with?(&1, prefix))
         |> words_stream(doc)
+        |> Stream.concat(outer)
         |> Stream.concat(body)
 
       nil ->
-        earlier
+        part_start = doc.parts |> Enum.filter(fn {i, _} -> i < at end) |> List.last()
+        start = if part_start, do: elem(part_start, 0), else: -1
+        {in_part, rest} = Enum.split_with(earlier, &(doc.pos[&1] > start))
+
+        in_part
         |> Stream.reject(&String.starts_with?(&1, "schedule-"))
         |> words_stream(doc)
+        |> Stream.concat(outer)
+        |> Stream.concat(
+          rest
+          |> Stream.reject(&String.starts_with?(&1, "schedule-"))
+          |> words_stream(doc)
+        )
     end
   end
 
