@@ -264,7 +264,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
     index = Index.get(amending)
 
     cond do
-      Index.current?(index, law_name) ->
+      Index.current?(amending, index, law_name) ->
         Collect.stored_source(amending, index, Map.get(stored, amending, []))
 
       doc = amending_doc(amending) ->

@@ -18,5 +18,7 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderVersion do
       lib/sertantai_legal/scraper/amending_law/defined_terms.ex
       lib/sertantai_legal/scraper/amending_law/locator.ex
       lib/sertantai_legal/scraper/amending_law/pointer.ex
+      lib/sertantai_legal/scraper/lat_parser/xml.ex
+      lib/sertantai_legal/scraper/territory.ex
     )
 end

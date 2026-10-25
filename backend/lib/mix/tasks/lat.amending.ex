@@ -317,7 +317,7 @@ defmodule Mix.Tasks.Lat.Amending do
     index = Index.get(amending)
 
     cond do
-      not Index.fresh?(index) ->
+      not Index.fresh?(amending, index) ->
         true
 
       feed_entry == nil ->

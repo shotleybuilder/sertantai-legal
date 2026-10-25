@@ -457,6 +457,24 @@ defmodule Mix.Tasks.Lat.Vocabulary do
   defp primary(law, effects) do
     rules = SertantaiLegal.Scraper.Amendment.Store.for_law(law)
 
+    # the stored rules as read: an amending law whose index is stale (older
+    # reader, or text held since changed) is named, never used silently
+    # (run time, 2026-10-25)
+    stale =
+      for l <- rules |> Enum.map(& &1.source.law) |> Enum.uniq(),
+          not SertantaiLegal.Scraper.Amendment.Index.fresh?(
+            l,
+            SertantaiLegal.Scraper.Amendment.Index.get(l)
+          ),
+          do: l
+
+    if stale != [],
+      do:
+        Mix.shell().info(
+          "  #{length(stale)} amending laws' stored rules are stale (older reader or text since changed): " <>
+            "mix lat.amending --read --amending #{Enum.join(stale, ",")}"
+        )
+
     # each amending law's commencement rules: the rules' sources and the
     # feed's affecting laws
     # … and the laws the notes cite: a change no source dates is dated from

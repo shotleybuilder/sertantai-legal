@@ -4,18 +4,21 @@ defmodule SertantaiLegal.Scraper.Amendment.Index do
   beside its stored rules (`amendment_rules`): its element ids (for
   `Locator`), each repeals table's introducing section, each Schedule
   paragraph's Part (AR-12), the reader version
-  that read it (`ReaderVersion`) and the laws it was read for. One JSON file
+  that read it (`ReaderVersion`), the stored text it was read from
+  (`ClmlStore.digest/1`) and the laws it was read for. One JSON file
   per amending law under `data/cache/amendment-index/` (NAS-backed with
   `backend/data`).
 
   The stored rules stand for an amending law only when its index is
-  `current?/2` for the law collected: read by this reader, for that law.
+  `current?/3` for the law collected: read by this reader, from the text
+  held now, for that law.
   Otherwise the collector reads the document (no silent loss for a law
   LAT-parsed, or an amending law first cited, after the read pass).
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.Amendment.{Reader, ReaderVersion}
+  alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
 
   @dir "data/cache/amendment-index"
 
@@ -45,20 +48,24 @@ defmodule SertantaiLegal.Scraper.Amendment.Index do
         "references" => Reader.references(doc),
         "parts" => Reader.parts(doc),
         "reader" => ReaderVersion.current(),
+        "files" => ClmlStore.digest(amending),
         "laws" => Enum.sort(Enum.uniq(laws)),
         "pointers" => Enum.sort(Enum.uniq(pointers))
       })
     )
   end
 
-  @doc "True when `index` was read by this reader (any law)."
-  @spec fresh?(t() | nil) :: boolean()
-  def fresh?(%{"reader" => v}), do: v == ReaderVersion.current()
-  def fresh?(_), do: false
+  @doc "True when `amending`'s `index` was read by this reader from the text held now (any law)."
+  @spec fresh?(String.t(), t() | nil) :: boolean()
+  def fresh?(amending, %{"reader" => v, "files" => files}),
+    do: v == ReaderVersion.current() and files == ClmlStore.digest(amending)
 
-  @doc "True when `index` was read by this reader for `law`."
-  @spec current?(t() | nil, String.t()) :: boolean()
-  def current?(index, law), do: fresh?(index) and law in (index["laws"] || [])
+  def fresh?(_amending, _index), do: false
+
+  @doc "True when `amending`'s `index` is fresh and was read for `law`."
+  @spec current?(String.t(), t() | nil, String.t()) :: boolean()
+  def current?(amending, index, law),
+    do: fresh?(amending, index) and law in (index["laws"] || [])
 
   defp path(amending), do: Path.join(@dir, "#{amending}.json")
 end

@@ -104,6 +104,23 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ClmlStore do
   def law_docs(law, opts \\ []),
     do: law |> law_files(opts) |> Enum.map(&(&1 |> File.read!() |> :zlib.gunzip()))
 
+  @doc """
+  A digest of the law's stored text (`law_files/2`'s files, their bytes):
+  what a reading of it was made from, so a reading goes stale when the
+  text held changes — Schedules stored, fragments removed (run time,
+  2026-10-25: amendment indexes stayed "fresh" across both).
+  """
+  @spec digest(String.t(), keyword()) :: String.t()
+  def digest(law, opts \\ []) do
+    law
+    |> law_files(opts)
+    |> Enum.map(&:erlang.md5(File.read!(&1)))
+    |> :erlang.term_to_binary()
+    |> then(&:crypto.hash(:sha256, &1))
+    |> Base.encode16(case: :lower)
+    |> binary_part(0, 16)
+  end
+
   defp whole(dir, name, kinds) do
     file = Path.join([dir, name, "data.xml.gz"])
 
