@@ -20,12 +20,14 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 ## Todo
 
 - ✅ Profile one catalogue run and the check on a sample of laws (`:eprof` / `:fprof`, or timing per stage): XML parse (`SweetXml` in `Doc.new`), `Doc.lines`, sentence splitting, the per-sentence "reads the same alone" check, the regexes. Record where the time goes before changing anything.
-- ⬜ Parse each law once and reuse it: cache the parsed `Doc` (or its flattened text and ids) keyed by the stored files' hash, so the catalogue, the check and the re-read don't each parse the same 3,357 laws again.
-- ⬜ Incremental runs: re-read only the laws a change can alter. Key each law's result by reader version + file hash, and re-use unchanged results ("prove a change alters a run first"; memory: no needless corpus runs). A full run then costs only what changed.
-- ⬜ The "reads the same alone" check: run it only for examples whose pattern or reading changed, not every sentence on every run.
+- ✅ Parse each law once and reuse it: cache the parsed `Doc` (or its flattened text and ids) keyed by the stored files' hash, so the catalogue, the check and the re-read don't each parse the same 3,357 laws again.
+- ✅ Incremental runs: re-read only the laws a change can alter. Key each law's result by reader version + file hash, and re-use unchanged results ("prove a change alters a run first"; memory: no needless corpus runs). A full run then costs only what changed.
+- ✅ The "reads the same alone" check: run it only for examples whose pattern or reading changed, not every sentence on every run.
 - ✅ Bounded concurrency inside a run (2 laws at once, under a memory cap), if profiling shows CPU-bound work. Memory: a 5-wide corpus run once crashed the machine; one law at a time is the rule until this is proven safe.
 - ✅ The extent check: it re-runs `Patterns.classes` per law. Share that work with the catalogue (the same result), or read the catalogue's stored result.
 - ✅ Measure before and after on the same inputs: the extent catalogue, the commencement catalogue and the extent check give identical output, in less time.
+
+- ⬜ The amendment read pass (`mix lat.amending --read`): this morning's `Doc` change (`cb5d9ce7`) changed `ReaderVersion`, so all 2,095 amendment indexes are stale and every build and golden re-parses every amending law. The pass is now parallel (`fb72a393`); running it, with a restore point and an `amendment_rules` digest compared before and after, needs Jason's go-ahead.
 
 ## Dependencies
 
@@ -84,4 +86,24 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
   - the rebuild (`lat.vocabulary --build`, ~2 min) is still one law at a time;
   - golden is bound by its slowest law;
   - the commencement catalogue's serial example step, which now dominates it.
+
+## The remaining items (2026-10-25, Jason: "Finish all items in this session")
+
+- **A parse cache was measured and not taken:** loading a saved parse of ukpga 2009/4 takes 5.9 s against 4.9 s to parse it, at twice the XML's size.
+- **`Extent.ReadCache` (`fc681416`):**
+  - What it holds: a law's reading (`Extent.read`, the catalogue classes, the example and its alone classes), kept between runs. Keyed by the code version (a digest of every module of the app, so any code change reads every law again, never stale) and a digest of the law's stored files. 3,358 laws in 14 MB, under `data/cache/extent_reads/`.
+  - Who shares it: the catalogue, the check, the re-read, and the build's unstored extents.
+  - Timings: a cold catalogue run 5m21 fills it; warm 3.5 s. From the cache, the check takes 3 s and the re-read 3.6 s.
+  - Output: fixtures unchanged; the check's report and sample byte-identical; `extent_rules` identical row for row.
+  - The "alone" check now runs only when a law's reading is recomputed.
+- **The rebuild (`b7275079`):** parallel, 2m03 → 1m06; every change and claim identical (a digest of all rows).
+- **Golden:** prints each law's time and takes `--law X` (`682364b2`). TCPA 1990 alone takes 140–169 s of its ~3 min. Profiled: over half is XML parsing of its amending laws. **The cause is mine:** `ReaderVersion` covers `amending_law/doc.ex`, so this morning's `Doc` change made all 2,095 amendment indexes stale, and the build falls back to parsing each amending law (by design: output unchanged, slower). The read pass restores them.
+- **The commencement catalogue's example step:** measured and left. 300 laws take 39 s on 1 worker and 28 s on 4, with the BEAM at ~110% CPU and Postgres idle, so the serial example selection is the limit. Running it in parallel would mean testing every law's first sentence of each pattern (~5× the work). It runs only when the commencement readers or the store change; 6m40.
+- **A CV-S05 round now, from code change to agent:**
+  - extent catalogue 5 min (cold; fills the cache);
+  - re-read ~4 s;
+  - rebuild ~1 min;
+  - check ~3 s;
+  - golden ~3 min (~1–2 min once the amendment indexes are fresh).
+  - About 10 minutes in all, against about 2½ hours this morning.
 
