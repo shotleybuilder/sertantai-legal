@@ -6,7 +6,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   turned round: the targets they would accept, expanded at read time.
 
   - **The law:** the nearest text naming any law decides — the instruction,
-    its context nearest first, the container's title, then the text before
+    its context nearest first, its containers' titles nearest first (group,
+    Chapter, Part, Schedule), then the text before
     (LR-41); it must name the law (title and year, chapter, or a defined term
     meaning it).
   - **Quoted provisions:** an insertion or substitution reaches the paths its
@@ -180,7 +181,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
       %Text{} = text ->
         text
         |> set_out(doc)
-        |> of_text(Doc.title(doc, id), terms, laws, %{
+        |> of_text(Doc.headings(doc, id), terms, laws, %{
           law: doc.law_name,
           ref: id,
           text: text.instruction
@@ -217,8 +218,10 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
 
   defp set_out(text, _doc), do: text
 
-  @doc "The rules an instruction's `text` (its container's `title`) states for `laws`, with `source` on each."
-  @spec of_text(Text.t(), String.t() | nil, map(), [law_ref()], map()) :: [Rule.t()]
+  @doc "The rules an instruction's `text` (its containers' titles, nearest first, or one title) states for `laws`, with `source` on each."
+  @spec of_text(Text.t(), String.t() | [String.t()] | nil, map(), [law_ref()], map()) :: [
+          Rule.t()
+        ]
   def of_text(%Text{} = text, title, terms, laws, source) do
     case if(text.instruction =~ @modification, do: nil, else: operation(text)) do
       {_, _} ->

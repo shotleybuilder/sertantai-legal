@@ -32,7 +32,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Doc do
           ids: [String.t()],
           pos: %{String.t() => non_neg_integer()},
           elements: %{String.t() => tuple()},
-          titles: %{String.t() => String.t()},
+          titles: %{String.t() => [String.t()]},
           roots: [tuple()],
           children: %{String.t() => [String.t()]},
           parts: [{non_neg_integer(), String.t()}]
@@ -108,7 +108,15 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Doc do
 
   @doc "The title of the nearest container over the element (its own title for a container)."
   @spec title(t(), String.t()) :: String.t() | nil
-  def title(%__MODULE__{titles: titles}, id), do: titles[id]
+  def title(%__MODULE__{titles: titles}, id), do: titles |> Map.get(id, []) |> List.first()
+
+  @doc """
+  Every titled container's title around `id`, nearest first: its group's,
+  then its Chapter's, Part's, Schedule's ("Amendment to regulation 24 …",
+  "Amendment to the 2009 Regulations": SI 2019/598, CV-S05).
+  """
+  @spec headings(t(), String.t()) :: [String.t()]
+  def headings(%__MODULE__{titles: titles}, id), do: Map.get(titles, id, [])
 
   @doc "An element's text in document order (XPath `//text()` isn't), whitespace squashed."
   @spec text(tuple()) :: String.t()
@@ -156,7 +164,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Doc do
     end
   end
 
-  # each id → the title of its deepest titled container
+  # each id → its titled containers' titles, deepest first
   defp titles(roots) do
     roots
     |> Enum.flat_map(fn root ->
@@ -180,7 +188,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Doc do
     |> Enum.sort_by(&elem(&1, 0))
     |> Enum.reduce(%{}, fn {_, title, el}, acc ->
       ids = for d <- [el | Xml.descendants(el)], v = Xml.attr_or_nil(d, :id), v != nil, do: v
-      Enum.reduce(ids, acc, &Map.put(&2, &1, title))
+      Enum.reduce(ids, acc, fn id, acc -> Map.update(acc, id, [title], &[title | &1]) end)
     end)
   end
 

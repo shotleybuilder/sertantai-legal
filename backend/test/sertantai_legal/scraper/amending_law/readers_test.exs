@@ -57,6 +57,21 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
   defp electricity(sid), do: row("UK_ukpga_1989_29:" <> sid, "Electricity Act")
   defp gas(sid), do: row("UK_ukpga_1986_44:" <> sid, "Gas Act")
 
+  test "Doc.headings: every titled container around a provision, nearest first (SI 2019/598)" do
+    d =
+      Doc.new("UK_uksi_2019_598", [
+        ~s(<Legislation><Secondary><Body><Part id="part-3"><Title>Amendment to the 2009 Regulations</Title><P1group><Title>Amendment to regulation 24</Title><P1 id="regulation-7"><P1para><Text>For regulation 24 substitute—</Text></P1para></P1></P1group></Part></Body></Secondary></Legislation>)
+      ])
+
+    assert Doc.headings(d, "regulation-7") == [
+             "Amendment to regulation 24",
+             "Amendment to the 2009 Regulations"
+           ]
+
+    assert Doc.title(d, "regulation-7") == "Amendment to regulation 24"
+    assert Doc.headings(d, "nowhere") == []
+  end
+
   test "DefinedTerms: a term's law from its definition's Citation, else its title" do
     terms = DefinedTerms.of(doc())
     assert terms["the 1989 act"] == %{law: "UK_ukpga_1989_29", title: "Electricity Act 1989"}
