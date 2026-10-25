@@ -8,6 +8,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       mix lat.vocabulary --law UK_uksi_2010_404 --provision reg.14
       mix lat.vocabulary --law UK_uksi_2010_404 --provision reg.14 --provision "reg.14(1)"
       mix lat.vocabulary --golden          # the CV-01 golden set: pass / fail per provision
+      mix lat.vocabulary --golden --law X  # one golden law only
       mix lat.vocabulary --golden --stored # the same, folding the stored changes
       mix lat.vocabulary --golden --stored --tiers  # with each period's tier per field
 
@@ -38,7 +39,6 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
   alias SertantaiLegal.Repo
 
-  alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
   alias SertantaiLegal.Scraper.{ChangeVocabulary, LatRef, LatStagedParser}
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.Store, as: ExtentStore
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Conflicts, Ref, Store}
@@ -407,9 +407,15 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
     results =
       cases
+      |> Enum.filter(&(opts[:law] == nil or &1.law == opts[:law]))
       |> Enum.group_by(& &1.law)
       |> Enum.sort_by(&elem(&1, 0))
-      |> Task.async_stream(&golden_law(&1, opts),
+      |> Task.async_stream(
+        fn {law, _} = group ->
+          {us, rows} = :timer.tc(fn -> golden_law(group, opts) end)
+          Mix.shell().info("  #{law}: #{div(us, 1_000_000)} s")
+          rows
+        end,
         max_concurrency: workers,
         ordered: true,
         timeout: :infinity
@@ -486,16 +492,14 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
     stored = ExtentStore.for_laws(acts)
 
+    # (the reading kept between runs: `Extent.ReadCache`, run time 2026-10-25)
     unread =
       for law <- acts,
           not Map.has_key?(stored, law),
-          xmls = ClmlStore.law_docs(law),
-          xmls != [],
-          into: %{} do
-        doc = SertantaiLegal.Scraper.AmendingLaw.Doc.new(law, xmls)
-
-        {law, SertantaiLegal.Scraper.AmendingLaw.Extent.read(doc)}
-      end
+          reading = SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCache.law(law),
+          reading != nil,
+          into: %{},
+          do: {law, reading.read}
 
     if unread != %{},
       do:
