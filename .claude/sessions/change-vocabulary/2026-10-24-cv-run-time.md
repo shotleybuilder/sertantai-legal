@@ -1,7 +1,59 @@
 ---
 session: Reader run time — make the catalogues, checks and re-reads quicker
-status: active
+status: closed
 opened: 2026-10-24
+closed: 2026-10-25
+outcome: success
+summary: >
+  A CV-S05 fix round's runs went from ~2½ hours to ~10 minutes with identical output: the extent
+  reader was quadratic (12× from a children index in Doc), the check read each law three times,
+  laws now run in parallel behind a machine check (LawRunner.Guard), and a per-law reading cache
+  (Extent.ReadCache) is shared by the catalogue, check, re-read and build. The amendment read
+  pass, re-run after the Doc change staled its indexes, exposed two existing defects (golden 26/27).
+decisions:
+  - what: Profile before optimising; prove each change gives identical output (term, row or byte digests)
+    why: Jason's rule — the session must not change readings
+    result: every catalogue, check, re-read, rebuild and golden run compared before/after; identical
+  - what: Children index and Part positions built once in Doc.new; unit sentences once per read
+    why: profile — units/2 regex-scanned every id per provision, 4× per read (156 s for one read of ukpga 2009/4)
+    result: 51 laws 1,357 s → 114 s, output identical
+  - what: Parallel runs only after a pre-run machine check (LawRunner.Guard)
+    why: Jason — the 5-wide crash had a VM open; check memory, busy cores, VMs first
+    result: (MemAvailable − 6 GB) ÷ 1.8 GB per law, cores not busy (/proc/stat), any VM → 1; max 4; decision printed
+  - what: Busy cores measured over half a second, not the 1-minute load average
+    why: the load average still counted a just-finished run and chose 1 worker on a quiet machine
+    result: guard decides 4 on a quiet machine
+  - what: Cache readings (small), not parsed documents
+    why: measured — decoding a saved parse of ukpga 2009/4 took 5.9 s vs 4.9 s to parse, at 2× the size
+    result: Extent.ReadCache, 3,358 laws in 14 MB; warm catalogue 3.5 s, check 3 s, re-read 3.6 s
+  - what: Cache keyed by a digest of every app module plus a digest of the law's stored files
+    why: a stale reading would be wrong; a full recompute costs ~5 min
+    result: any code change re-reads every law
+  - what: Leave the commencement catalogue's serial example step
+    why: measured — BEAM ~110%, Postgres idle; parallel example selection would be ~5× the work
+    result: 13 → 6m40 from the parallel per-law reads only
+metrics:
+  extent_catalogue_min: { before: 60, after_cold: 5.3, after_warm: 0.06 }
+  extent_check_min: { before: 30, after: 1.5, warm_cache: 0.05 }
+  extent_reread_min: { before: 12, after: 1.5, warm_cache: 0.06 }
+  rebuild_min: { before: 2.05, after: 1.1 }
+  golden_min: { before: 6.4, after: 2.6 }
+  commencement_catalogue_min: { before: 13, after: 6.7 }
+  amendment_read_pass: { laws: 2102, wall_min: 28.7, cpu_min: 81, rules_before: 37719, rules_after: 41435 }
+  peak_memory_per_law_gb: { small_si: 0.16, largest_act: 1.70 }
+lessons:
+  - title: The cost was an algorithm, not the hardware
+    detail: The 60-minute catalogue was dominated by a quadratic id scan in one helper; parsing and the "alone" check were minor. Profiling per stage on a sample with the largest laws found it in minutes. Parallelism alone would have hidden it.
+    tag: tooling
+  - title: A version hash over source files stales derived data when an unrelated field is added
+    detail: ReaderVersion covers amending_law/doc.ex, so adding Doc's children/parts fields made all 2,095 amendment indexes stale; builds silently fell back to parsing every amending law (correct, slower). Re-run the read pass after touching a hashed file.
+    tag: tooling
+  - title: A re-read after store changes surfaces latent reader defects
+    detail: The amendment read pass over the fuller store (Schedules fetched, duplicate fragments removed) added 3,716 rules and exposed two existing defects (SOCPA Royal Assent beside a by-order clause; Localism Act read as FRSA 2004). Compare rules per law and trace each difference to its cause before accepting.
+    tag: data
+  - title: Parallel results must be merged in a fixed order, and aggregates need an ORDER BY
+    detail: Catalogue example choice depends on law order; the check's array_agg had no ORDER BY, so even serial runs could differ byte for byte.
+    tag: tooling
 bugs:
   - pattern: "Commencement: an Act with a by-order clause also holds an \"all — act_enactment\" (Royal Assent) rule, so an amending provision no order rule names is dated Royal Assent: SOCPA 2005 Sch.7 para 27(2) repealing RTA 1988 s.4(6) dated 2005-04-07, golden expects 2006-01-01 (SI 2005/3495). Exposed 2026-10-25 when the read pass (with SOCPA's Schedules now held) first reached that repeal: golden 26/27"
     category: commencement
@@ -15,9 +67,23 @@ bugs:
     affected: 3
     fix: "Find why the context's title doesn't select the Localism Act and FRSA matches instead; the stored rules before 2026-10-25 had the Localism Act (FRSA wasn't then pointing to PCA 2017)"
     status: open
+artifacts:
+  - backend/lib/sertantai_legal/scraper/amending_law/doc.ex
+  - backend/lib/sertantai_legal/scraper/law_runner/guard.ex
+  - backend/lib/sertantai_legal/scraper/amending_law/extent/read_cache.ex
+  - backend/lib/mix/tasks/lat.extent_patterns.ex
+  - backend/lib/mix/tasks/lat.extent_check.ex
+  - backend/lib/mix/tasks/lat.amending.ex
+  - backend/lib/mix/tasks/lat.commencement_patterns.ex
+  - backend/lib/mix/tasks/lat.vocabulary.ex
+depends_on:
+  - 2026-10-22-cv-s05-extent-reader.md
+enables:
+  - CV-S05 rounds in ~10 minutes of runs
+  - later families' catalogues and checks at corpus scale
 ---
 
-# Session: Reader run time (ACTIVE)
+# Session: Reader run time (CLOSED)
 
 ## Problem
 
