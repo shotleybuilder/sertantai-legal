@@ -104,9 +104,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
   Each extent or application sentence of the document with its outcome:
   `{ref, sentence, class}`, in order.
   """
-  @spec classes(Doc.t()) :: [{String.t(), String.t(), String.t()}]
-  def classes(%Doc{} = doc) do
-    e = Extent.read(doc)
+  # (`e`: the document's `Extent.read/1`, where the caller has read it
+  # already — never read twice: run time, CV-S05)
+  @spec classes(Doc.t(), Extent.t() | nil) :: [{String.t(), String.t(), String.t()}]
+  def classes(%Doc{} = doc, e \\ nil) do
+    e = e || Extent.read(doc)
 
     # a provision's territorial versions say the same once: each
     # sentence of a provision read at its first

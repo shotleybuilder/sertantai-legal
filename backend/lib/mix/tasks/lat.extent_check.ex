@@ -98,7 +98,8 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
     Repo.query!(
       """
       SELECT c.law_name, c.key, c.target, c.operation, c.by, c.territory,
-             coalesce(array_agg(cl.source || ':' || cl.attribute || '=' || (cl.value #>> '{}'))
+             coalesce(array_agg(cl.source || ':' || cl.attribute || '=' || (cl.value #>> '{}')
+                 ORDER BY cl.source, cl.attribute, cl.value #>> '{}')
                FILTER (WHERE cl.attribute IN ('territory', 'extent')), '{}')
       FROM provision_changes c
       LEFT JOIN provision_change_claims cl ON cl.change_id = c.id
@@ -133,12 +134,14 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
         %{law: law, basis: "none", why: "not_held", fault: nil, unread: %{}, words: nil}
 
       true ->
-        e = doc |> Extent.read() |> Amending.with_powers(law, cached: true)
+        # read once, classed once (run time: CV-S05)
+        read = Extent.read(doc)
+        classes = Patterns.classes(doc, read)
+        e = Amending.with_powers(read, law, cached: true)
         {basis, why} = basis(e, law)
 
         unread =
-          doc
-          |> Patterns.classes()
+          classes
           |> Enum.filter(fn {_, _, c} -> c in @law_unread end)
           |> Enum.frequencies_by(&elem(&1, 2))
 
@@ -156,7 +159,7 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
           fault: fault,
           unread: unread,
           extent: e,
-          words: e.text || words(doc)
+          words: e.text || words(classes)
         }
     end
   end
@@ -183,8 +186,8 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
       |> MapSet.new()
 
   # the law's first extent or application words, where it states none read
-  defp words(doc) do
-    Enum.find_value(Patterns.classes(doc), fn {ref, s, _} -> "#{ref}: #{s}" end)
+  defp words(classes) do
+    Enum.find_value(classes, fn {ref, s, _} -> "#{ref}: #{s}" end)
   end
 
   defp act?(law), do: (String.split(law, "_") |> Enum.at(1)) in ~w(ukpga asp anaw asc nia apni)
