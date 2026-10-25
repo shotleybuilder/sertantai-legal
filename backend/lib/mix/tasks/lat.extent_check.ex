@@ -31,7 +31,6 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
   """
   use Mix.Task
 
-
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.Extent
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{ReadCache, Store}
