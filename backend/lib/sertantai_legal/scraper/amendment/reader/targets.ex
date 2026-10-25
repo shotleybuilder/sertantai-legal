@@ -11,6 +11,14 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
   alias SertantaiLegal.Scraper.Amendment.Rule
   alias SertantaiLegal.Scraper.Amendment.Reader.{Brackets, Clauses}
 
+  @typedoc "A clause as the reader scopes it (`Reader.LawNamed.scoped/4`): its text, brackets, numbers, and more."
+  @type clause :: %{
+          required(:text) => Text.t(),
+          optional(:named) => [String.t()],
+          optional(:numbers) => [String.t()],
+          optional(atom()) => term()
+        }
+
   @kind_words %{
     section: "sections?",
     regulation: "regulations?",
@@ -21,8 +29,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
   The targets of a clause's quoted provisions (`text.inserted`) under its
   brackets (`named`) and provision numbers.
   """
-  @spec quoted_targets(%{text: Text.t(), named: [String.t()], numbers: [String.t()]}, String.t()) ::
-          [String.t()]
+  @spec quoted_targets(clause(), String.t()) :: [String.t()]
   def quoted_targets(%{text: text, named: named, numbers: numbers}, p) do
     if sections_quoted?(text) do
       # "For section 99 substitute— 99 …", "After section 47B insert— 47C":
@@ -69,7 +76,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
   else the first quoting one; "at the end there shall be added—" quotes
   too (RTA 1991 s.18(1), AR-10)
   """
-  @spec quoting_clause([%{text: Text.t()}]) :: %{text: Text.t()} | nil
+  @spec quoting_clause([clause()]) :: clause() | nil
   def quoting_clause(clauses) do
     quoting = Enum.filter(clauses, &(&1.text.instruction =~ ~r/insert|substitut|\badded\b/i))
 
