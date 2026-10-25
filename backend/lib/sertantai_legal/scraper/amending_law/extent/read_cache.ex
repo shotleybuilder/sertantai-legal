@@ -96,7 +96,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCache do
 
   defp read_file(path) do
     case File.read(path) do
-      {:ok, bin} -> :erlang.binary_to_term(bin)
+      # never an executable term, never a new atom (sobelow)
+      {:ok, bin} -> Plug.Crypto.non_executable_binary_to_term(bin, [:safe])
       _ -> nil
     end
   rescue
