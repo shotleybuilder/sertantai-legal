@@ -97,7 +97,6 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 
 ## Todo
 
-- ✅ **First: find what the first pass missed** — done: see "Inventory" below (8 gaps)
 - ✅ Profile one catalogue run and the check on a sample of laws (`:eprof` / `:fprof`, or timing per stage): XML parse (`SweetXml` in `Doc.new`), `Doc.lines`, sentence splitting, the per-sentence "reads the same alone" check, the regexes. Record where the time goes before changing anything.
 - ✅ Parse each law once and reuse it: cache the parsed `Doc` (or its flattened text and ids) keyed by the stored files' hash, so the catalogue, the check and the re-read don't each parse the same 3,357 laws again.
 - ✅ Incremental runs: re-read only the laws a change can alter. Key each law's result by reader version + file hash, and re-use unchanged results ("prove a change alters a run first"; memory: no needless corpus runs). A full run then costs only what changed.
@@ -108,16 +107,24 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 
 - ✅ The amendment read pass (`mix lat.amending --read`): this morning's `Doc` change (`cb5d9ce7`) changed `ReaderVersion`, so all 2,095 amendment indexes are stale and every build and golden re-parses every amending law. The pass is now parallel (`fb72a393`); running it, with a restore point and an `amendment_rules` digest compared before and after, needs Jason's go-ahead.
 
-- ⬜ The amendment read pass, incremental: re-read only the amending laws whose output can change — a stored file changed, or the changed code's inputs differ for that law (for a `DefinedTerms` fix, only laws whose terms read differently) — and keep every other law's stored rules and index. The pass always re-reads all 2,102 laws today (28 min, 2026-10-25, for a fix touching few)
-- ⬜ The amendment read pass, cached: each law's parsed reading inputs cached by stored-file digest (as `Extent.ReadCache`), so a warm pass skips the XML parse that dominates its time (golden profile: over half)
-- ⬜ More workers where memory allows: measure real memory per law (the catalogue runs peaked at 2.3–2.9 GB for the whole run) and set the guard's per-law estimate (1.8 GB, max 4) from it, so a 6-core machine runs 5–6 laws at once when there's room
-- ✅ Guard in `LawRunner.run` itself, so every parallel run checks the machine (relabel, wave_preview, commencement reads, reparse ran 5 wide unchecked) — `0ba0bd31`
-- ✅ Staleness that hides: `ChangeVocabulary.Version` to cover `law_start*.ex`; amendment index freshness to include the stored files' digest — `7afcd1f0`
-- ✅ The vocabulary (build, golden) used stale amendment rules: a stale amending law is now read from the text held (`Amendment.ReadLaw`) — `dcb91f5f`
-- ⬜ Staleness that over-reaches: `Extent.ReadCache` keyed on the modules the reading uses, not the whole app; `mix.lock` out of `ChangeVocabulary.Version` (or only the deps it reads)
+### Reopened 2026-10-25 — in order
+
+- ✅ Inventory of what the first pass missed (8 gaps; see "Inventory")
+- ✅ Guard in `LawRunner.run` itself: every parallel run checks the machine — `0ba0bd31`
+- ✅ Staleness that hid: version hashes cover what they reach (`VersionCoverageTest`); amendment indexes keyed to the stored text's digest — `7afcd1f0`
+- ✅ Build and golden never use stale amendment rules: `Amendment.ReadLaw` reads a stale amending law from the text held — `dcb91f5f`
+- ⬜ **(in progress) Amendment read pass speed, profile-led** (35 min; see "Read pass profile"):
+  - ✅ step 1, the reader's repeated work: laws named found once per instruction, defined-term patterns compiled once — `18e25def` (570,639 regex compiles gone; 1995/25 8.2 → 1.7 s; SI 2019/696 + WSI 2013/755 ~17 → 2.5 min; rules identical)
+  - ⬜ step 2, the rest of a law's read: stage timings running (every LAT law's feed pages loaded at start, extent reading, index references/parts, parse); fix what they show, then time a full pass
+- ⬜ Incremental read pass: re-read only the amending laws whose output can change (per-law inputs; a reader edit no longer stales all 2,102)
+- ⬜ `Amendment.Reader` decomposition: 976 lines, 73 functions (guideline ~300; Jason: "very poorly architected"); pure modules extracted test-first, rules identical on every amending law
+- ❌ Cached `Doc` for the read pass — dropped on measurement: loading a stored `Doc` costs about as much as parsing it (2017/3: load 1.3 s, parse 0.6 s; 1995/25: 2.3 vs 4.5 s). Cache only what step 2 shows is costly, if anything
+- ⬜ LR-45 Saxy (pending v0.2 session) reconsidered: parsing is not the read pass's bottleneck (profile); kept for memory and cold parses, not for this
+- ⬜ More workers where memory allows (the two tail laws together peaked at 1.5 GB): measure, then size the guard
+- ⬜ Largest laws first in `LawRunner` (no single-law tail)
+- ⬜ Staleness that over-reaches: `Extent.ReadCache` keyed on the modules the reading uses, not the whole app; `mix.lock` out of `ChangeVocabulary.Version`
 - ⬜ Incremental rebuild: skip a law whose stored code version and input fingerprints are unchanged
 - ⬜ Commencement catalogue cache (6–7 min every run), as `Extent.ReadCache`
-- ⬜ Largest laws first in `LawRunner` (no single-law tail)
 
 ## Dependencies
 
@@ -275,3 +282,11 @@ From the code (each task's runner, caches, version hashes) and the times recorde
 - `Amendment.ReadLaw`: the read pass's reading of one amending law, moved out of `mix lat.amending` (re-reading 3 laws before/after gave the same 1,383 rules).
 - `lat.vocabulary` (build, golden): stored rules only where the amending law's index is fresh; a stale one is read now, for the law built, at the provisions its notes and feed point to (the reader decides each law on its own, so reading for one law gives that law's rules).
 - RTA 1988 golden passes; 138 amending laws read from text (all stale today), 180 s instead of 28 s — correct, slower until the indexes are fresh (the incremental and cached read todos).
+
+## Read pass profile (2026-10-25, Jason: "the incremental and cached read pass todos … we need to do these things next"; "the reader is very poorly architected … Needs optimising")
+
+- **Per law, by stage** (ms): uksi 2013/1119 parse 891, read 0; ukpga 1995/25 parse 4,475, read 7,941 (406 provisions × 24 laws); ukpga 2017/3 parse 622, read 512; WSI 2013/755 parse 403. A stored `Doc` loads in 657 / 2,285 / 1,310 / 550 — no gain over parsing (cached `Doc` dropped).
+- **The tail is reading, not parsing:** WSI 2013/755 parses in 0.4 s but took ~8 min in the pass (976 provisions, 57 laws).
+- **eprof, ukpga 1995/25 reading:** 570,639 `re:compile` calls — `Reader.laws/2` built `~r/(?<!\w)TERM(?!\w)/` for every defined term, every text, every law offered; ~30% of time, GC 19%; 6.3 M `downcase` calls. Fixed `18e25def`.
+- **After step 1:** a quarter of WSI 2013/755's provisions for 83 laws reads in 1.3 s; SI 2019/696 + WSI 2013/755 through the pass 2 min 28 s together (peak 1.5 GB) — so most of what's left is outside the reader: step 2.
+- Lesson: profile before optimising — the first pass parallelised the read pass without profiling it, and the planned cure (a parse cache) would have saved nothing.
