@@ -119,6 +119,33 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadPass do
     {:ok, n}
   end
 
+  @regression "test/fixtures/amendment_read/regression.txt"
+
+  @doc """
+  The regression set (`--regression`): amending laws whose reading has gone
+  wrong before (`#{@regression}`, one per line with why) and the golden
+  laws' amending laws.
+  """
+  @spec regression_laws() :: [String.t()]
+  def regression_laws do
+    listed =
+      @regression
+      |> File.read!()
+      |> String.split("\n")
+      |> Enum.map(&(&1 |> String.replace(~r/#.*/, "") |> String.trim()))
+      |> Enum.reject(&(&1 == ""))
+
+    {golden, _} = Code.eval_file("test/fixtures/change_vocabulary/golden.exs")
+
+    behind_golden =
+      for law <- golden |> Enum.map(& &1.law) |> Enum.uniq(),
+          r <- Store.for_law(law),
+          uniq: true,
+          do: r.source.law
+
+    Enum.uniq(listed ++ behind_golden)
+  end
+
   @doc "A pointer as the index records it (\"sch.2.para.10(2)(a)\")."
   @spec pointer_keys([Pointer.ref()]) :: [String.t()]
   def pointer_keys(refs), do: refs |> Enum.flat_map(&Pointer.to_refs/1) |> Enum.uniq()

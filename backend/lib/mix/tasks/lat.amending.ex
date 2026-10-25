@@ -19,6 +19,7 @@ defmodule Mix.Tasks.Lat.Amending do
       mix lat.amending --read --amending A,B     # these amending laws (re-read)
       mix lat.amending --read --limit 20         # the next 20
       mix lat.amending --read --preview --amending A,B   # read, report what would change, write nothing
+      mix lat.amending --read --preview --all    # every amending law, stale or not (a refactor's zero-diff gate)
       mix lat.amending --read --preview --regression     # the regression set (test/fixtures/amendment_read/regression.txt + the golden laws' amending laws)
 
   Each changed amending law is reported (`ReadReport`: rules removed and
@@ -62,7 +63,8 @@ defmodule Mix.Tasks.Lat.Amending do
           cached: :boolean,
           workers: :integer,
           preview: :boolean,
-          regression: :boolean
+          regression: :boolean,
+          all: :boolean
         ]
       )
 
@@ -204,10 +206,13 @@ defmodule Mix.Tasks.Lat.Amending do
     laws =
       cond do
         opts[:regression] ->
-          regression_laws()
+          ReadPass.regression_laws()
 
         opts[:amending] ->
           String.split(opts[:amending], ",", trim: true)
+
+        opts[:all] ->
+          ReadPass.amending_laws(feed)
 
         true ->
           feed |> ReadPass.amending_laws() |> Enum.filter(&ReadPass.stale?(&1, Map.get(feed, &1)))
@@ -271,29 +276,5 @@ defmodule Mix.Tasks.Lat.Amending do
         unless preview?, do: ReadPass.write(r)
         {ReadReport.diff(old, r.rules), length(r.ids)}
     end
-  end
-
-  # the regression set: amending laws whose reading has gone wrong before
-  # (a committed list, one per line, # comments) and the golden laws'
-  # amending laws
-  @regression "test/fixtures/amendment_read/regression.txt"
-
-  defp regression_laws do
-    listed =
-      @regression
-      |> File.read!()
-      |> String.split("\n")
-      |> Enum.map(&(&1 |> String.replace(~r/#.*/, "") |> String.trim()))
-      |> Enum.reject(&(&1 == ""))
-
-    {golden, _} = Code.eval_file("test/fixtures/change_vocabulary/golden.exs")
-
-    behind_golden =
-      for law <- golden |> Enum.map(& &1.law) |> Enum.uniq(),
-          r <- Store.for_law(law),
-          uniq: true,
-          do: r.source.law
-
-    Enum.uniq(listed ++ behind_golden)
   end
 end
