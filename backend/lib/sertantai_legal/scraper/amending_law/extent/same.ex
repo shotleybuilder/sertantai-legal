@@ -23,6 +23,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Same do
   # makes follows the enactment it changes (CV-S05)
   @not_extends_amending ~r/\bnot\s+extend\s+to\s+[^.]*?\bexcept\b[^.]*?\bso\s+far\s+as\s+(?:it|they)\s+(?:affects?|amends?|repeals?|revokes?)\s+(?:any\s+)?(?:other\s+)?enactments?\b/iu
 
+  # "The amendments and repeals in Schedules 20 and 21 have the same extent
+  # as the enactments to which they refer" → {:same, nil, ["sch.20",
+  # "sch.21"]}; "… made by this Act / Order" (or none named) → ["*"]
+  # (never with exceptions after it: "…, except that nothing extends to
+  # Northern Ireland"; "made by the following provisions— (a) section 10;
+  # …": those listed)
   @doc """
   The provisions with the same extent as the enactments they change, from
   the unit sentences (`Units.unit_sentences/1`): `{:same, nil, refs}` ("*"
