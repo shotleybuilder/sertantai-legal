@@ -31,15 +31,5 @@
 
   # MapSet built in a module attribute loses its opaque type at compile time;
   # MapSet.member?/2 on it is fine at runtime (known Dialyzer false positive)
-  {"lib/sertantai_legal/scraper/filters.ex", :call_without_opaque},
-
-  # CV-S05 lane (amending_law/, law_start/, lat.vocabulary): left for that lane to fix.
-  # Line-specific so new warnings in these files still fail.
-  # - Text.t() types id as String.t() but %Text{id: nil} is built for verb detection
-  {"lib/sertantai_legal/scraper/amendment/reader.ex", :no_return, 477},
-  {"lib/sertantai_legal/scraper/amendment/reader.ex", :no_return, 495},
-  {"lib/sertantai_legal/scraper/amendment/reader.ex", :call, 495},
-  # - `got || []` and `x == nil` on values that are never nil
-  {"lib/mix/tasks/lat.vocabulary.ex", :guard_fail, 443},
-  {"lib/sertantai_legal/scraper/law_start/schedule_table.ex", :exact_compare, 64}
+  {"lib/sertantai_legal/scraper/filters.ex", :call_without_opaque}
 ]
