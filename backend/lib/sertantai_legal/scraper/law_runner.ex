@@ -29,7 +29,9 @@ defmodule SertantaiLegal.Scraper.LawRunner do
   `fun.(law)` for each law, `workers` at a time (`opts[:workers]`, else
   the guard's decision; one law runs alone without asking);
   `on_result.(law, result)` in the caller as each finishes. Returns the
-  results by law.
+  results by law. `opts[:weight]` (law → number): the heaviest laws start
+  first, so none runs alone at the end (SI 2019/696 alone for the last
+  ~9 min of a read pass, run time 2026-10-25).
   """
   @spec run([String.t()], (String.t() -> term()), (String.t(), term() -> any()), keyword()) ::
           %{String.t() => term()}
@@ -42,6 +44,7 @@ defmodule SertantaiLegal.Scraper.LawRunner do
       end
 
     laws
+    |> heaviest_first(Keyword.get(opts, :weight))
     |> Task.async_stream(fn law -> {law, safely(law, fun)} end,
       max_concurrency: workers,
       ordered: false,
@@ -52,6 +55,9 @@ defmodule SertantaiLegal.Scraper.LawRunner do
       Map.put(acc, law, result)
     end)
   end
+
+  defp heaviest_first(laws, nil), do: laws
+  defp heaviest_first(laws, weight), do: Enum.sort_by(laws, weight, :desc)
 
   defp safely(law, fun) do
     fun.(law)

@@ -126,6 +126,11 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadPass do
   defp note_pointers(amending),
     do: amending |> ReadLaw.note_refs(ReadLaw.notes(amending)) |> pointer_keys()
 
+  @doc "The size of the law's stored text in bytes: the read pass starts the largest first."
+  @spec weight(String.t()) :: non_neg_integer()
+  def weight(law),
+    do: law |> ClmlStore.law_files() |> Enum.map(&File.stat!(&1).size) |> Enum.sum()
+
   @doc "Whether the law's text is held in the CLML store."
   @spec held?(String.t()) :: boolean()
   def held?(law) do

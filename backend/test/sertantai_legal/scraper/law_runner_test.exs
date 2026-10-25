@@ -69,4 +69,17 @@ defmodule SertantaiLegal.Scraper.LawRunnerTest do
       assert out == ""
     end
   end
+
+  test "the heaviest laws start first (opts[:weight])" do
+    me = self()
+
+    LawRunner.run(~w(a bbb cc), fn law -> send(me, {:started, law}) end, fn _, _ -> :ok end,
+      workers: 1,
+      weight: &String.length/1
+    )
+
+    assert_received {:started, "bbb"}
+    started = for _ <- 1..2, do: receive(do: ({:started, l} -> l))
+    assert started == ["cc", "a"]
+  end
 end

@@ -243,7 +243,11 @@ defmodule Mix.Tasks.Lat.Amending do
             "  [#{:counters.get(counter, 1)}/#{length(laws)}] #{a}: #{line} (#{mem} MB)"
           )
         end,
-        workers: Guard.workers(workers: opts[:workers])
+        # the read pass's own measure: 4 laws at once peaked at 2.1 GB for
+        # the whole run (2026-10-25), so ~0.8 GB a law, at most 5 of 6
+        # cores; the largest laws first
+        workers: Guard.workers(workers: opts[:workers], per_law_kb: 800_000, max: 5),
+        weight: &ReadPass.weight/1
       )
 
     diffs = for {a, {diff, _ids}} <- results, into: %{}, do: {a, diff}
