@@ -372,3 +372,18 @@ Review: `backend/data/code-reviews/2026-10-25-reader-decomposition-plan-reviewer
 - **7 min 23 s**, 5 workers (0.8 cores busy at start), peak 3.35 GB, 0 errors. 85 laws changed, rules 42,591 → 43,548 (+957) — the "etc." fix across the corpus: HSWA named in full; NI "(Design and Construction, etc.)" Regulations; Energy Act 2013 52 rules Nuclear Installations Act → HSWA; SI 2020/1488 +630 on the "Human Medicines (Amendment etc.) (EU Exit) Regulations 2019" (its Schedule heading).
 - Exposed (logged, fixed after the gate so the refactor is measured clean): captions naming a law (Petroleum Act 1998 −9) and nested quotes (SI 2024/1268 −1).
 - Decomposition step 1 (`Reader.Brackets`) extracted test-first; `ReaderVersion` and `ChangeVocabulary.Version` cover `amendment/reader/*.ex` (the coverage test caught the second).
+
+## Reader decomposition, steps 1–5 (2026-10-25, Jason: "implement the plan")
+
+| Step | Module | Lines | Commit | Regression preview |
+|---|---|---|---|---|
+| 1 | `Reader.Brackets` | 78 | `2d4b7c7e` | 272 laws, 0 changed |
+| 2 | `Reader.Clauses` (+ `unquote_words`, moved here not to LawNamed: `located_brackets` uses it) | 147 | `e1ae9f04` | 0 changed |
+| 3 | `Reader.Targets` | 215 | `a109cc29` | 0 changed |
+| 4 | `Reader.LawNamed` | 216 | `7512d200` | 0 changed |
+| 5 | `Reader.RepealTable` (Reader delegates) | 268 | `81573975` | 0 changed |
+
+- `Amendment.Reader` 1,004 → 305 lines; calls run Brackets ← Clauses ← Targets ← LawNamed ← Reader, RepealTable → Brackets, Clauses, LawNamed; no cycles.
+- Each step test-first (red, then green); 3 of my new tests had wrong expectations (a year is a valid bracket; a title is captured from its first capital; a repeals table needs its header row) — corrected to the existing behaviour, never the code.
+- Full suite 8,773 pass.
+- ⬜ Gate (ask Jason): `mix lat.amending --read --preview --all` — 0 changed over every amending law.
