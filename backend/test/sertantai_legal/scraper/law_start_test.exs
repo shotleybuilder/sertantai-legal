@@ -307,6 +307,51 @@ defmodule SertantaiLegal.Scraper.LawStartTest do
 
       assert %{treatment: :clause_staged, date: ~D[1990-06-30]} = s
     end
+
+    test "a mention before the clause is not it (SOCPA 2005 s.101(2) before s.178)" do
+      s =
+        start(
+          "ukpga",
+          [
+            {"s.101(2)",
+             "This section does not apply to a decision of a court taken before this section comes into force."},
+            {"s.178(1)",
+             "The following provisions come into force on the day on which this Act is passed—"},
+            {"s.178(8)",
+             "Otherwise, this Act comes into force on such day as the Secretary of State may by order appoint."}
+          ],
+          clml_head: @assent,
+          made: ~D[1990-06-29]
+        )
+
+      assert %{treatment: :clause_staged, date: ~D[1990-06-29], evidence: "UK_x:s.178(1)"} = s
+    end
+
+    test "a section commencing itself alone leaves the Act to Royal Assent (Finance Act 1981 s.137(4))" do
+      s =
+        start(
+          "ukpga",
+          [{"s.137(4)", "This section shall come into force on 1st April 1982."}],
+          clml_head: @assent
+        )
+
+      assert %{treatment: :act_enactment, date: ~D[1990-06-29]} = s
+    end
+
+    test "… unless it goes on to the rest (ukpga 1992/34 s.8(3))" do
+      s =
+        start(
+          "ukpga",
+          [
+            {"s.8(3)",
+             "This section comes into force on the passing of this Act but otherwise this Act comes into force on such date as may be appointed by order made by the Secretary of State."}
+          ],
+          clml_head: @assent,
+          made: ~D[1990-06-29]
+        )
+
+      assert %{treatment: :clause_staged, date: ~D[1990-06-29]} = s
+    end
   end
 
   describe "made-relative counting" do

@@ -106,6 +106,13 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
               "is"
             )
 
+  # a section commencing itself alone; "This section and sections 62, 63
+  # and 65 come into force on the day after Royal Assent" is an Act's first
+  # stage (asp 2024/14); so is one going on to the rest ("… but otherwise
+  # this Act comes into force on such date as may be appointed by order":
+  # ukpga 1992/34 s.8)
+  @this_section ~r/^(?:\(?\d+[A-Z]?\)?\s+)?this\s+section\s+(?:shall\s+|is\s+to\s+)?(?:comes?|come)\s+into\s+(?:force|operation)\b(?![^.;]*\b(?:otherwise|remaining|remainder|rest|other\s+provisions)\b)/i
+
   @months ~w(january february march april may june july august september october november december)
 
   @numbers %{
@@ -165,21 +172,34 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
   @made ~S"(?:(?:the\s+(?:day|date)\s+(?:(?:on\s+which|of)\s+)?)?(?:it\s+is|they\s+are|they\s+were|(?:(?:this|these)\s+[A-Za-z ]+?|the\s+(?:Order|Regulations|Rules|Act|Scheme|Measure|Instrument))\s+(?:is|are|was|were))\s+(?:made|passed)|(?:the\s+)?(?:making|passing)\s+(?:of\s+(?:this|these)\s+[A-Za-z ]+|thereof)|its\s+(?:making|passing)|(?:the\s+day\s+(?:on\s+which\s+)?)?(?:this\s+Act\s+receives\s+)?Royal\s+Assent|receiving\s+Royal\s+Assent|the\s+(?:day|date)\s+of\s+Royal\s+Assent|the\s+Bill\s+for\s+this\s+Act\s+receives\s+Royal\s+Assent|that\s+on\s+which\s+(?:it|this\s+Act)\s+is\s+passed|the\s+(?:day|date)\s+of\s+(?:the\s+)?(?:passing|making)\s+(?:thereof|of\s+(?:this|these)\s+[A-Za-z ]+))"
   @number ~S"(\d+|[a-z]+(?:[- ][a-z]+)?)"
 
-  @doc "The law's start from its commencement clause; nil when it has none."
-  @spec read([map()], Date.t() | nil) :: LawStart.t() | nil
-  def read(rows, made) do
+  @doc """
+  The law's start from its commencement clause; nil when it has none. `act?`:
+  the law is an Act, where a section commencing itself ("This section shall
+  come into force on 1st April 1982") is that section's own words, leaving
+  the rest to Royal Assent — never the Act's start (Finance Act 1981
+  s.137(4), CV-S05).
+  """
+  @spec read([map()], Date.t() | nil, boolean()) :: LawStart.t() | nil
+  def read(rows, made, act? \\ false) do
     case general(rows) do
-      nil -> own_parts(rows, made)
+      nil -> own_parts(rows, made, act?)
       {row, sentence, tail} -> decide(rows, row, sentence, tail, made)
     end
   end
 
   # no clause for the whole law, but its parts commence: the earliest date
   # the first such provision states (`:clause_staged`); unread when it
-  # states none
-  defp own_parts(rows, made) do
+  # states none. A mention isn't one ("… taken before this section comes
+  # into force": SOCPA 2005 s.101(2) hid its s.178, CV-S05)
+  defp own_parts(rows, made, act?) do
     Enum.find_value(rows, fn row ->
-      case row |> Map.get(:text) |> sentences() |> Enum.find(&Regex.match?(@own_part, &1)) do
+      case row
+           |> Map.get(:text)
+           |> sentences()
+           |> Enum.find(
+             &(Regex.match?(@own_part, &1) and not mention?(&1) and
+                 not (act? and Regex.match?(@this_section, &1)))
+           ) do
         nil ->
           nil
 

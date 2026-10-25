@@ -139,6 +139,10 @@ defmodule SertantaiLegal.Scraper.LawStart do
   @spec catalogue() :: [{treatment(), boolean(), String.t(), String.t()}]
   def catalogue, do: @catalogue
 
+  @doc "Whether a law of type `type_code` is an Act (Royal Assent its start where its clause states none)."
+  @spec act?(String.t() | nil) :: boolean()
+  def act?(type_code), do: type_code in @acts
+
   @doc "Whether a treatment dates the law (else it is a known limit)."
   @spec dates?(treatment()) :: boolean()
   def dates?(treatment),
@@ -157,7 +161,7 @@ defmodule SertantaiLegal.Scraper.LawStart do
     clause =
       input
       |> Map.get(:rows, [])
-      |> Clause.read(Map.get(input, :made))
+      |> Clause.read(Map.get(input, :made), type in @acts)
       |> with_schedule_table(Map.get(input, :schedule_tables))
       |> with_tied(Map.get(input, :tied_date))
 

@@ -74,7 +74,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
     # its sentences, and its own date, or an Act's whole-Act "by order",
     # is the rule (NISR 1997/455 reg.1: 1 April 1998, the register's 1
     # December 1997 being reg.1(2)'s; HSWA 1974 s.85(2))
-    clause = clause(law, rows, Map.get(input, :made))
+    clause = clause(law, rows, Map.get(input, :made), LawStart.act?(Map.get(input, :type_code)))
     read_from = clause || law
 
     table = Provisions.table_groups(rows, read_from, Map.get(input, :schedule_tables))
@@ -314,14 +314,14 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
   defp squash(s), do: s |> String.replace(~r/\s+/u, " ") |> String.trim()
 
   # the clause behind a start metadata decided, when the law has one
-  defp clause(%LawStart{treatment: t}, rows, made) when t in @metadata do
-    case Clause.read(rows, made) do
+  defp clause(%LawStart{treatment: t}, rows, made, act?) when t in @metadata do
+    case Clause.read(rows, made, act?) do
       %LawStart{evidence: e} = clause when is_binary(e) -> clause
       _ -> nil
     end
   end
 
-  defp clause(_law, _rows, _made), do: nil
+  defp clause(_law, _rows, _made, _act?), do: nil
 
   # a law commenced by its Schedule's table (V1-02): the table names what it
   # commences, so the law's rule leaves out every provision it names — never

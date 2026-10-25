@@ -44,11 +44,6 @@
     "row": "UK_anaw_2015_4:s.58(1)",
     "sentence": "The following provisions come into force on the day on which this Act receives Royal Assent—"
   },
-  "UK_anaw_2015_4/a1978a8d0b": {
-    "law": "UK_anaw_2015_4",
-    "row": "UK_anaw_2015_4:s.1(12)",
-    "sentence": "Part 9 contains provisions that apply generally for the purposes of this Act (including provision about the making of subordinate legislation by the Welsh Ministers and about the interpretation and coming into force of the Act)."
-  },
   "UK_anaw_2015_4/efb8cad3e4": {
     "law": "UK_anaw_2015_4",
     "row": "UK_anaw_2015_4:s.58(2)",
@@ -559,11 +554,6 @@
     "row": "UK_asp_2012_8:s.122(3)",
     "sentence": "Subsection (4) applies until the coming into force of section 101(1) for the purpose of inserting section 1A(2) into the 2005 Act."
   },
-  "UK_asp_2012_8/0847b9b817": {
-    "law": "UK_asp_2012_8",
-    "row": "UK_asp_2012_8:s.129(1)",
-    "sentence": "The following provisions of this Act come into force on the day after Royal Assent—"
-  },
   "UK_asp_2012_8/1c972c110c": {
     "law": "UK_asp_2012_8",
     "row": "UK_asp_2012_8:s.36C(2)(b)",
@@ -684,11 +674,6 @@
     "row": "UK_asp_2021_4:s.12(3)",
     "sentence": "References in subsection (1) to former Article 34(2)(c) of the Treaty on European Union are references to that Article as it had effect at any time before the coming into force of the Treaty of Lisbon Amending the Treaty on European Union and the Treaty establishing the European Community signed at Lisbon on 13 December 2007."
   },
-  "UK_asp_2024_7/0d5f9aa0a6": {
-    "law": "UK_asp_2024_7",
-    "row": "UK_asp_2024_7:s.39(1)",
-    "sentence": "This Part comes into force on the day after Royal Assent."
-  },
   "UK_asp_2026_6/189d85e0db": {
     "law": "UK_asp_2026_6",
     "row": "UK_asp_2026_6:s.1(4)",
@@ -713,6 +698,11 @@
     "law": "UK_mwa_2009_3",
     "row": "UK_mwa_2009_3:s.12(2)",
     "sentence": "This section comes into force on the day on which this Measure is approved by Her Majesty in Council."
+  },
+  "UK_mwa_2009_3/db79facead": {
+    "law": "UK_mwa_2009_3",
+    "row": "UK_mwa_2009_3:s.12(3)",
+    "sentence": "The remaining provisions of this Measure come into force on such day or days as the Welsh Ministers may appoint by order."
   },
   "UK_mwa_2010_8/6a19c94ff9": {
     "law": "UK_mwa_2010_8",
@@ -1108,11 +1098,6 @@
     "law": "UK_nisr_2007_321",
     "row": "UK_nisr_2007_321:reg.42(9)",
     "sentence": "A scheme made under this regulation shall be published in the Belfast Gazette before the commencement date and shall come into operation on that date; and conclusive evidence of a scheme so made may be given in all courts of justice and in all legal proceedings whatever by the production of a copy of the Gazette which purports to contain it."
-  },
-  "UK_nisr_2007_321/3c774b4cf3": {
-    "law": "UK_nisr_2007_321",
-    "row": "UK_nisr_2007_321:reg.42(1)",
-    "sentence": "This regulation applies where immediately before the date regulation 9 comes into operation a public electricity supplier (“the supplier”) is supplying tariff customers with electricity."
   },
   "UK_nisr_2007_321/4bc39ba35c": {
     "law": "UK_nisr_2007_321",
@@ -1984,11 +1969,6 @@
     "row": "UK_ukpga_1974_30:s.54(2)",
     "sentence": "The preceding subsection shall be deemed to have come into operation on 12th February 1974."
   },
-  "UK_ukpga_1974_30/bc4b8673af": {
-    "law": "UK_ukpga_1974_30",
-    "row": "UK_ukpga_1974_30:s.46(5)(a)",
-    "sentence": "subsection (1) of section 45 of this Act has operated in the case of a chargeable building or would have so operated if that section had been enacted and come into force before the commencement of the relevant development, and had been so enacted with the omission of subsection (3) and of the words “after 17th December 1973” in subsection (1); and"
-  },
   "UK_ukpga_1974_30/c56d47e967": {
     "law": "UK_ukpga_1974_30",
     "row": "UK_ukpga_1974_30:s.44(5)",
@@ -2249,11 +2229,6 @@
     "row": "UK_ukpga_1981_35:s.9(8)",
     "sentence": "Subsection (1) above shall be deemed to have come into force on 12th July 1981, . . . and (6) above shall come into force on 1st October 1981."
   },
-  "UK_ukpga_1981_35/7441bf833e": {
-    "law": "UK_ukpga_1981_35",
-    "row": "UK_ukpga_1981_35:s.1(6)",
-    "sentence": "This section shall be deemed to have come into force on 11th March 1981."
-  },
   "UK_ukpga_1981_35/91e1841dec": {
     "law": "UK_ukpga_1981_35",
     "row": "UK_ukpga_1981_35:s.11(2)",
@@ -2399,11 +2374,6 @@
     "row": "UK_ukpga_1982_30:s.13(9)(b)",
     "sentence": "if it provides for the coming into force of section 15 below, specify the descriptions of persons in relation to whom that section is to come into force."
   },
-  "UK_ukpga_1982_39/71229be181": {
-    "law": "UK_ukpga_1982_39",
-    "row": "UK_ukpga_1982_39:s.1(6)",
-    "sentence": "This section shall be deemed to have come into force on 10th March 1982."
-  },
   "UK_ukpga_1982_39/d252e32603": {
     "law": "UK_ukpga_1982_39",
     "row": "UK_ukpga_1982_39:s.151(2)",
@@ -2428,6 +2398,11 @@
     "law": "UK_ukpga_1982_49",
     "row": "UK_ukpga_1982_49:s.76(2)",
     "sentence": ". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . , this Act shall come into force on such day or days as the Secretary of State may by order appoint, and different days may be appointed for different purposes."
+  },
+  "UK_ukpga_1982_53/6d507d95e6": {
+    "law": "UK_ukpga_1982_53",
+    "row": "UK_ukpga_1982_53:s.76(3)",
+    "sentence": "The provisions of this Act specified in subsection (4) below shall come into operation on such day as the Secretary of State may by order appoint."
   },
   "UK_ukpga_1982_53/79686c2fc3": {
     "law": "UK_ukpga_1982_53",
@@ -2758,11 +2733,6 @@
     "law": "UK_ukpga_1988_39",
     "row": "UK_ukpga_1988_39:s.143(9)",
     "sentence": "Subsections (2) and (3) above, together with subsection (1) above so far as relating to them, shall be deemed to have come into force on 1st November 1987, and subsections (4), (5) and (7) above, together with subsection (1) above so far as relating to them, shall be deemed to have come into force on 9th December 1987."
-  },
-  "UK_ukpga_1988_39/ac0ec6c39f": {
-    "law": "UK_ukpga_1988_39",
-    "row": "UK_ukpga_1988_39:s.2(2)",
-    "sentence": "This section shall be deemed to have come into force on 18th March 1988."
   },
   "UK_ukpga_1988_39/c58b99b916": {
     "law": "UK_ukpga_1988_39",
@@ -3484,11 +3454,6 @@
     "row": "UK_ukpga_1997_42:s.9(2)",
     "sentence": "This Act, apart from sections 7 and 8 and this section, shall not come into force until such day as the Secretary of State may by order made by statutory instrument appoint; and different days may be appointed for different purposes."
   },
-  "UK_ukpga_1997_58/31e57ed5c7": {
-    "law": "UK_ukpga_1997_58",
-    "row": "UK_ukpga_1997_58:s.7(2)",
-    "sentence": "This section shall come into force on 1st January 1998."
-  },
   "UK_ukpga_1997_8/1697866097": {
     "law": "UK_ukpga_1997_8",
     "row": "UK_ukpga_1997_8:s.58(3C)",
@@ -3724,6 +3689,11 @@
     "row": "UK_ukpga_2001_10:s.43(4)",
     "sentence": "The following provisions of this Act come into force on the day on which it is passed— but only so far as is necessary for enabling the making of any regulations for which they provide."
   },
+  "UK_ukpga_2001_16/93682e5ed1": {
+    "law": "UK_ukpga_2001_16",
+    "row": "UK_ukpga_2001_16:s.138(2)",
+    "sentence": "The provisions of this Act, other than this section and sections 42 and 43, 81 to 85, 109, 116(7) and 119(7), shall come into force on such day as the Secretary of State may by order made by statutory instrument appoint; and different days may be appointed under this subsection for different purposes."
+  },
   "UK_ukpga_2001_9/da95183a26": {
     "law": "UK_ukpga_2001_9",
     "row": "UK_ukpga_2001_9:s.37(7)(e)",
@@ -3848,11 +3818,6 @@
     "law": "UK_ukpga_2003_21",
     "row": "UK_ukpga_2003_21:s.411(2)",
     "sentence": "This Act (except the provisions listed in subsection (3), which come into force on the passing of this Act) shall come into force on such day as the Secretary of State may by order appoint; and different days may be appointed under this subsection for different purposes."
-  },
-  "UK_ukpga_2003_21/440de8f109": {
-    "law": "UK_ukpga_2003_21",
-    "row": "UK_ukpga_2003_21:s.215(10)(b)",
-    "sentence": "the replacement licence shall come into force, and the existing licence cease to have effect, at the time specified in the offer, or such later time as OFCOM may, with the consent of that person, direct; and"
   },
   "UK_ukpga_2003_21/5c62f9abb7": {
     "law": "UK_ukpga_2003_21",
@@ -3979,6 +3944,11 @@
     "row": "UK_ukpga_2003_43:s.199(1)",
     "sentence": "Subject to this section— shall come into force on such day as the appropriate authority may by order appoint."
   },
+  "UK_ukpga_2003_44/0b14bc31ce": {
+    "law": "UK_ukpga_2003_44",
+    "row": "UK_ukpga_2003_44:s.333(2)(a)",
+    "sentence": "provide for any provision of this Act which comes into force before another such provision has come into force to have effect, until that other provision has come into force, with such modifications as are specified in the order, and"
+  },
   "UK_ukpga_2003_44/3f459fd29f": {
     "law": "UK_ukpga_2003_44",
     "row": "UK_ukpga_2003_44:s.336(1)",
@@ -4104,10 +4074,10 @@
     "row": "UK_ukpga_2004_33:s.263(8)(e)",
     "sentence": "the provisions of Schedule 24 listed in subsection (9), and section 254(1) so far as relating to those provisions, come into force in accordance with provision made by the Department of Finance and Personnel, after consulting the Secretary of State, and"
   },
-  "UK_ukpga_2004_5/238807bc68": {
-    "law": "UK_ukpga_2004_5",
-    "row": "UK_ukpga_2004_5:s.121(6)",
-    "sentence": "In Schedule 7, paragraph 10(7) comes into force at the end of the period of two months starting on the day this Act is passed."
+  "UK_ukpga_2004_33/d63385ee5e": {
+    "law": "UK_ukpga_2004_33",
+    "row": "UK_ukpga_2004_33:s.259(4)(a)",
+    "sentence": "provide for any provision of this Act which comes into force before another such provision has come into force to have effect, until that other provision has come into force, with such modifications as are specified in the order;"
   },
   "UK_ukpga_2004_5/f6f9542dc8": {
     "law": "UK_ukpga_2004_5",
@@ -4118,16 +4088,6 @@
     "law": "UK_ukpga_2005_15",
     "row": "UK_ukpga_2005_15:s.178(4)",
     "sentence": "So far as they extend to Scotland— come into force on such day as the Scottish Ministers may by order appoint."
-  },
-  "UK_ukpga_2005_15/55567610ea": {
-    "law": "UK_ukpga_2005_15",
-    "row": "UK_ukpga_2005_15:s.178(8)",
-    "sentence": "Otherwise, this Act comes into force on such day as the Secretary of State may by order appoint."
-  },
-  "UK_ukpga_2005_15/9b4200342c": {
-    "law": "UK_ukpga_2005_15",
-    "row": "UK_ukpga_2005_15:s.178(1)",
-    "sentence": "The following provisions come into force on the day on which this Act is passed—"
   },
   "UK_ukpga_2005_15/bd47040a7b": {
     "law": "UK_ukpga_2005_15",
@@ -4244,11 +4204,6 @@
     "row": "UK_ukpga_2006_34:s.14(2)",
     "sentence": "Section 6, this section and Schedule 1 come into force on the day on which this Act is passed."
   },
-  "UK_ukpga_2006_34/97df98b723": {
-    "law": "UK_ukpga_2006_34",
-    "row": "UK_ukpga_2006_34:s.14(3)",
-    "sentence": "Otherwise, this Act comes into force on such day as the Secretary of State may appoint by order made by statutory instrument."
-  },
   "UK_ukpga_2006_36/5522c005ad": {
     "law": "UK_ukpga_2006_36",
     "row": "UK_ukpga_2006_36:s.16(3)(b)",
@@ -4268,11 +4223,6 @@
     "law": "UK_ukpga_2006_46",
     "row": "UK_ukpga_2006_46:s.1296(2)",
     "sentence": "An order may, in particular, make such adaptations of provisions brought into force as appear to be necessary or expedient in consequence of other provisions of this Act not yet having come into force."
-  },
-  "UK_ukpga_2006_48/0083f3b93e": {
-    "law": "UK_ukpga_2006_48",
-    "row": "UK_ukpga_2006_48:s.51(3)(a)",
-    "sentence": "provide for any provision of this Act which comes into force before another provision has come into force to have effect, until that other provision has come into force, with specified modifications;"
   },
   "UK_ukpga_2006_48/697a17522b": {
     "law": "UK_ukpga_2006_48",
@@ -4313,11 +4263,6 @@
     "law": "UK_ukpga_2007_17",
     "row": "UK_ukpga_2007_17:s.66(1)",
     "sentence": "This section and sections 60 to 62, 65 and 67 come into force on the day this Act is passed."
-  },
-  "UK_ukpga_2007_21/f16edbd98a": {
-    "law": "UK_ukpga_2007_21",
-    "row": "UK_ukpga_2007_21:s.38(2)(b)",
-    "sentence": "provide for any provision of this Act which comes into force before another provision has come into force to have effect, until that other provision has come into force, with specified modifications."
   },
   "UK_ukpga_2007_24/c044aba21f": {
     "law": "UK_ukpga_2007_24",
@@ -4394,6 +4339,11 @@
     "row": "UK_ukpga_2008_27:s.100(5)",
     "sentence": "The other provisions of this Act come into force at the end of two months beginning with the day it is passed."
   },
+  "UK_ukpga_2008_27/5465aa3541": {
+    "law": "UK_ukpga_2008_27",
+    "row": "UK_ukpga_2008_27:s.100(1)",
+    "sentence": "Part 1 (carbon target and budgeting), Part 2 (the Committee on Climate Change) and this Part come into force on the day this Act is passed."
+  },
   "UK_ukpga_2008_27/bdf4105fe2": {
     "law": "UK_ukpga_2008_27",
     "row": "UK_ukpga_2008_27:s.4(2)",
@@ -4403,11 +4353,6 @@
     "law": "UK_ukpga_2008_27",
     "row": "UK_ukpga_2008_27:s.100(2)",
     "sentence": "Section 71(1) and Schedule 5 (waste reduction schemes) come into force in accordance with sections 72 to 75."
-  },
-  "UK_ukpga_2008_29/01d33ecf63": {
-    "law": "UK_ukpga_2008_29",
-    "row": "UK_ukpga_2008_29:s.241(1)",
-    "sentence": "The following provisions of this Act come into force on the day on which this Act is passed—"
   },
   "UK_ukpga_2008_29/20a7e3cf35": {
     "law": "UK_ukpga_2008_29",
@@ -4664,11 +4609,6 @@
     "row": "UK_ukpga_2011_19:s.29(7)",
     "sentence": "The amendments made by subsections (1) and (2) are to be regarded as having come into force on 1 January 1997."
   },
-  "UK_ukpga_2011_19/973a580cee": {
-    "law": "UK_ukpga_2011_19",
-    "row": "UK_ukpga_2011_19:s.38(2)",
-    "sentence": "The following provisions of this Act come into force on that day—"
-  },
   "UK_ukpga_2011_19/a6c08d3921": {
     "law": "UK_ukpga_2011_19",
     "row": "UK_ukpga_2011_19:s.38(1)",
@@ -4688,11 +4628,6 @@
     "law": "UK_ukpga_2012_19",
     "row": "UK_ukpga_2012_19:s.110(4)",
     "sentence": "The day appointed for the coming into force of section 3 must fall on or after 1 April 2014, unless paragraph 3 of Schedule 10, or provision having equivalent effect, comes into force on or before the appointed day."
-  },
-  "UK_ukpga_2012_21/f69dcc14e8": {
-    "law": "UK_ukpga_2012_21",
-    "row": "UK_ukpga_2012_21:s.122(2)",
-    "sentence": "Sections 108 and 113 come into force at the end of the period of 2 months beginning with day on which this Act is passed."
   },
   "UK_ukpga_2012_9/1dae7fd194": {
     "law": "UK_ukpga_2012_9",
@@ -4748,11 +4683,6 @@
     "law": "UK_ukpga_2014_21",
     "row": "UK_ukpga_2014_21:s.91(3)",
     "sentence": "If a provision of this Act is brought into force to any extent by the Welsh Ministers acting alone under section 94(3), the Welsh Ministers may by order made by statutory instrument make such transitional, transitory or saving provision as the Welsh Ministers consider appropriate in connection with the coming into force of so much of that provision as is so brought into force."
-  },
-  "UK_ukpga_2014_21/669824a81b": {
-    "law": "UK_ukpga_2014_21",
-    "row": "UK_ukpga_2014_21:s.14(3)",
-    "sentence": "(8) An undertaking under this section— (a) comes into force when accepted; (b) may be varied or superseded by another undertaking under this section; (c) may be released by the CMA."
   },
   "UK_ukpga_2014_21/789d601f53": {
     "law": "UK_ukpga_2014_21",
@@ -4869,6 +4799,11 @@
     "row": "UK_ukpga_2016_11:s.72(3)",
     "sentence": "Part 2 comes into force at the end of 2 months beginning with the day on which this Act is passed, subject to the provision made by that Part."
   },
+  "UK_ukpga_2016_11/bd8dce814a": {
+    "law": "UK_ukpga_2016_11",
+    "row": "UK_ukpga_2016_11:s.72(7)",
+    "sentence": "The other provisions of this Act come into force at the end of 2 months beginning with the day on which this Act is passed."
+  },
   "UK_ukpga_2016_11/ec2f5d08c5": {
     "law": "UK_ukpga_2016_11",
     "row": "UK_ukpga_2016_11:s.72(2)",
@@ -4898,6 +4833,11 @@
     "law": "UK_ukpga_2016_24",
     "row": "UK_ukpga_2016_24:s.144(3)",
     "sentence": "The repeals made by subsection (2) come into force on the day appointed by the Treasury by regulations made by statutory instrument."
+  },
+  "UK_ukpga_2017_3/7d6702c99f": {
+    "law": "UK_ukpga_2017_3",
+    "row": "UK_ukpga_2017_3:s.183(5)",
+    "sentence": "The following provisions come into force on the day on which this Act is passed—"
   },
   "UK_ukpga_2017_3/82542129ef": {
     "law": "UK_ukpga_2017_3",
@@ -4933,6 +4873,11 @@
     "law": "UK_ukpga_2018_12",
     "row": "UK_ukpga_2018_12:s.212(3)",
     "sentence": "The following provisions come into force at the end of the period of 2 months beginning when this Act is passed—"
+  },
+  "UK_ukpga_2018_12/3b32e0e8dc": {
+    "law": "UK_ukpga_2018_12",
+    "row": "UK_ukpga_2018_12:s.212(2)",
+    "sentence": "This section and the following provisions come into force on the day on which this Act is passed—"
   },
   "UK_ukpga_2018_12/60fe3312f4": {
     "law": "UK_ukpga_2018_12",
@@ -5198,11 +5143,6 @@
     "law": "UK_ukpga_2022_46",
     "row": "UK_ukpga_2022_46:s.76(2)",
     "sentence": "Regulations under this section may (among other things) make any adaptations of any provisions of this Act brought into force that appear to be appropriate in consequence of other provisions of this Act not yet having come into force."
-  },
-  "UK_ukpga_2023_41/af5640f605": {
-    "law": "UK_ukpga_2023_41",
-    "row": "UK_ukpga_2023_41:s.63(4)",
-    "sentence": "Otherwise, this Act comes into force on such day or days as the Secretary of State may by regulations appoint."
   },
   "UK_ukpga_2023_50/40d57d9176": {
     "law": "UK_ukpga_2023_50",
@@ -5594,11 +5534,6 @@
     "row": "UK_uksi_1991_2728:reg.2",
     "sentence": "So much of the following provisions of the 1991 Act as enables provision to be made by rules of court, confers on the Secretary of State a power or imposes on him a duty to make or to make provision by development order or other order or regulations or to give or revoke directions, or makes provision with respect to the exercise of any such power or performance of any such duty, shall come into force on 25th November 1991: section 3; section 5 section 6(5); section 10; section 12(1) (so far as it is not already in force); section 13(2); section 16; section 19; section 20; section 23(7) (so far as it relates to section 214A(2) of the 1990 Act); section 25 (so far as it relates to paragraphs 7 and 15 of Part I of Schedule 3); section 27 (except so far as it relates to paragraphs 3 and 26 of Schedule 4); section 28; and section 32 (so far as it relates to paragraphs 48 and 49 of Schedule 7)."
   },
-  "UK_uksi_1991_762/3f8613f58a": {
-    "law": "UK_uksi_1991_762",
-    "row": "UK_uksi_1991_762:reg.1(3)",
-    "sentence": "This Article and Articles 2 and 12 shall come into operation on the expiration of 2 months from the day on which the Order is made."
-  },
   "UK_uksi_1992_223/1407245b0d": {
     "law": "UK_uksi_1992_223",
     "row": "UK_uksi_1992_223:reg.2(1)",
@@ -5928,6 +5863,11 @@
     "law": "UK_uksi_2001_2237",
     "row": "UK_uksi_2001_2237:reg.1(1)",
     "sentence": "This Order may be cited as the Local Authorities (Executive and Alternative Arrangements) (Modification of Enactments and Other Provisions) (England) Order 2001 and shall come into force on 11th July 2001."
+  },
+  "UK_uksi_2001_3208/aadfde6d33": {
+    "law": "UK_uksi_2001_3208",
+    "row": "UK_uksi_2001_3208:reg.1(2)",
+    "sentence": "This regulation and regulations 2, 8 and 10 shall come into force on 16 October 2001 and regulations 3, 4, 5, 6, 7, 9, 11 and 12 shall come into force on 1st May 2002."
   },
   "UK_uksi_2001_3649/e291ce3c09": {
     "law": "UK_uksi_2001_3649",
@@ -6834,11 +6774,6 @@
     "row": "UK_uksi_2019_156:reg.1",
     "sentence": "These Regulations may be cited as the Transfrontier Shipment of Radioactive Waste and Spent Fuel (EU Exit) Regulations 2019 and come into force on exit day."
   },
-  "UK_uksi_2019_177/277ff2805c": {
-    "law": "UK_uksi_2019_177",
-    "row": "UK_uksi_2019_177:reg.2(a)",
-    "sentence": "regulation 14, which comes into force 21 days after the day on which the Statutory Auditors, Third Country Auditors and International Accounting Standards (Amendment) (EU Exit) Regulations 2019 are made; and"
-  },
   "UK_uksi_2019_177/c225958b4a": {
     "law": "UK_uksi_2019_177",
     "row": "UK_uksi_2019_177:reg.2",
@@ -7144,6 +7079,11 @@
     "row": "UK_uksi_2021_745:reg.1(3)",
     "sentence": "The remainder of these Regulations come into force the day after the day on which they are made."
   },
+  "UK_uksi_2022_1037/889e04dc7c": {
+    "law": "UK_uksi_2022_1037",
+    "row": "UK_uksi_2022_1037:reg.1(2)",
+    "sentence": "These Regulations come into force on the 22nd day after the day on which they are made."
+  },
   "UK_uksi_2022_500/0f91418d33": {
     "law": "UK_uksi_2022_500",
     "row": "UK_uksi_2022_500:reg.3",
@@ -7298,6 +7238,11 @@
     "law": "UK_uksi_2026_386",
     "row": "UK_uksi_2026_386:reg.1(3)",
     "sentence": "A provision of these Regulations specified in Column 1 of the table in Schedule 1 comes into force— whichever is the later."
+  },
+  "UK_uksi_2026_484/9619442b05": {
+    "law": "UK_uksi_2026_484",
+    "row": "UK_uksi_2026_484:reg.1(1)",
+    "sentence": "These Regulations may be cited as the Chemicals (Health and Safety) (Amendment, Consequential and Transitional Provision) Regulations 2026 and come into force on the 21st day after the day on which they are made."
   },
   "UK_uksi_2026_74/7f7011c2df": {
     "law": "UK_uksi_2026_74",

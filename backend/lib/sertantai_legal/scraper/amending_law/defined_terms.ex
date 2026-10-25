@@ -48,8 +48,16 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.DefinedTerms do
 
   @law_title ~r/\b(?:Act|Regulations|Order|Rules|Measure)(?: \(Northern Ireland\))? \d{4}$/u
 
+  # … the title itself, not a thing under a law ("a fire and rescue authority
+  # under the Fire and Rescue Services Act 2004", "an offence … for the
+  # purposes of the Royal Parks (Trading) Act 2000", "that district as
+  # defined in section 76 of …": PCA 2017, whose caption "(power of fire and
+  # rescue authority …)" then named the 2004 Act for a Localism Act 2011
+  # amendment, CV-S05)
+  @thing_under ~r/^(?:a|an|any|that|those|each|every)\s|\b(?:under|purposes\s+of|meaning\s+of|defined\s+in|section\s+\d+\w*\s+of)\s+(?:the\s+)?[A-Z]/u
+
   defp law_title?(nil), do: false
-  defp law_title?(t), do: Regex.match?(@law_title, t)
+  defp law_title?(t), do: Regex.match?(@law_title, t) and not Regex.match?(@thing_under, t)
 
   # "… the Firearms Act 1968 (in this Act referred to as “the principal Act”)":
   # the law's title just before the parenthesis holding the term
