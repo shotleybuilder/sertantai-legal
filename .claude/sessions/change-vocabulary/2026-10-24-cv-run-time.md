@@ -25,7 +25,7 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 - ⬜ The "reads the same alone" check: run it only for examples whose pattern or reading changed, not every sentence on every run.
 - ✅ Bounded concurrency inside a run (2 laws at once, under a memory cap), if profiling shows CPU-bound work. Memory: a 5-wide corpus run once crashed the machine; one law at a time is the rule until this is proven safe.
 - ✅ The extent check: it re-runs `Patterns.classes` per law. Share that work with the catalogue (the same result), or read the catalogue's stored result.
-- ⬜ Measure before and after on the same inputs: the extent catalogue, the commencement catalogue and the extent check give identical output, in less time.
+- ✅ Measure before and after on the same inputs: the extent catalogue, the commencement catalogue and the extent check give identical output, in less time.
 
 ## Dependencies
 
@@ -66,4 +66,22 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
   - Extent check: 4 → 1.5 min; report and sample identical.
 - **So far today:** the catalogue went from ~60 min to 5, and the check from ~30 to 1.5.
 - **Next:** the re-read (`lat.amending --extents`, 12 min, writes `extent_rules`), the commencement catalogue (13–15 min) and golden (6 min). Profile each, then the guard where laws are independent.
+
+## The re-read, the commencement catalogue and golden (2026-10-25, Jason: "Go ahead with all three")
+
+- **The re-read (`5142706a`):**
+  - restore point `run-time-before-reread`; `extent_rules` snapshotted row for row;
+  - today's code, one law at a time: 3m46 (12 min before the reader fix), rows identical;
+  - parallel through the guard: 1m30, rows identical.
+  - The parents among the laws re-read are now read first, so an SI never reads a parent not yet re-read. That was a latent order dependency in the sequential loop.
+- **The commencement catalogue (`83e31838`):**
+  - profiled first: no quadratic spot (55 laws, the 5 largest included, 22 s; parsing the XML of amending laws costs most);
+  - each law's reading runs in parallel, streamed in law order (a bounded window), with examples chosen in that order as before;
+  - 13 min → 6m40, peak 2.9 GB; fixtures unchanged; the "2 examples not held" are the same as before.
+- **Golden (`55d58a2b`):** the 21 golden laws run in parallel, results in law order. 6m23 → 3m19; 27/27, every PASS/FAIL line the same. Only the per-law notices print in finishing order.
+- **A CV-S05 round's runs now:** the extent catalogue 5 min, the re-read 1.5, the rebuild ~2, the check 1.5, golden 3.3: about 13 minutes, against about 2½ hours this morning. The commencement catalogue (6.7 min) runs only when the commencement readers or the store change.
+- **Not done (small):**
+  - the rebuild (`lat.vocabulary --build`, ~2 min) is still one law at a time;
+  - golden is bound by its slowest law;
+  - the commencement catalogue's serial example step, which now dominates it.
 
