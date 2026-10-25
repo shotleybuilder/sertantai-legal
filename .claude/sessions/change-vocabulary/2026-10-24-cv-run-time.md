@@ -97,7 +97,7 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 
 ## Todo
 
-- ⬜ **First: find what the first pass missed.** This session closed with the amendment read pass still slow (35 min, 2026-10-25) and had to be reopened (Jason: "we did such a poor job last time"). Inventory every long run the CV workflow uses (read passes, re-reads, rebuilds, catalogues, checks, golden, relabel), time each, and for each say whether it is parallel, cached and incremental, and what invalidates it (version hashes covering too much, e.g. `ReaderVersion` staling all 2,102 indexes for a `DefinedTerms` fix). List the gaps here before fixing any
+- ✅ **First: find what the first pass missed** — done: see "Inventory" below (8 gaps)
 - ✅ Profile one catalogue run and the check on a sample of laws (`:eprof` / `:fprof`, or timing per stage): XML parse (`SweetXml` in `Doc.new`), `Doc.lines`, sentence splitting, the per-sentence "reads the same alone" check, the regexes. Record where the time goes before changing anything.
 - ✅ Parse each law once and reuse it: cache the parsed `Doc` (or its flattened text and ids) keyed by the stored files' hash, so the catalogue, the check and the re-read don't each parse the same 3,357 laws again.
 - ✅ Incremental runs: re-read only the laws a change can alter. Key each law's result by reader version + file hash, and re-use unchanged results ("prove a change alters a run first"; memory: no needless corpus runs). A full run then costs only what changed.
@@ -111,6 +111,12 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 - ⬜ The amendment read pass, incremental: re-read only the amending laws whose output can change — a stored file changed, or the changed code's inputs differ for that law (for a `DefinedTerms` fix, only laws whose terms read differently) — and keep every other law's stored rules and index. The pass always re-reads all 2,102 laws today (28 min, 2026-10-25, for a fix touching few)
 - ⬜ The amendment read pass, cached: each law's parsed reading inputs cached by stored-file digest (as `Extent.ReadCache`), so a warm pass skips the XML parse that dominates its time (golden profile: over half)
 - ⬜ More workers where memory allows: measure real memory per law (the catalogue runs peaked at 2.3–2.9 GB for the whole run) and set the guard's per-law estimate (1.8 GB, max 4) from it, so a 6-core machine runs 5–6 laws at once when there's room
+- ⬜ Guard in `LawRunner.run` itself, so every parallel run checks the machine (relabel, wave_preview, commencement reads, reparse run 5 wide unchecked)
+- ⬜ Staleness that hides: `ChangeVocabulary.Version` to cover `law_start*.ex`; amendment index freshness to include the stored files' digest
+- ⬜ Staleness that over-reaches: `Extent.ReadCache` keyed on the modules the reading uses, not the whole app; `mix.lock` out of `ChangeVocabulary.Version` (or only the deps it reads)
+- ⬜ Incremental rebuild: skip a law whose stored code version and input fingerprints are unchanged
+- ⬜ Commencement catalogue cache (6–7 min every run), as `Extent.ReadCache`
+- ⬜ Largest laws first in `LawRunner` (no single-law tail)
 
 ## Dependencies
 
@@ -213,3 +219,38 @@ Jason, on CV-S05's 28-minute amendment read pass (for the `DefinedTerms` fix, `6
 ## Active again (2026-10-25)
 
 Jason: "make the unclosed/suspended runtime session active again … first todo in the reactivated session is to find the other bits we didn't fix last time around". CV-S05 suspended. No pushes without naming them to Jason first (another lane is fixing GitHub CI).
+
+## Inventory: what the first pass missed (2026-10-25, Jason: "Do the inventory")
+
+From the code (each task's runner, caches, version hashes) and the times recorded in the CV sessions. No runs made for it.
+
+| Run | Time | Parallel | Cached | Incremental | Goes stale on |
+|---|---|---|---|---|---|
+| Amendment read pass `lat.amending --read` | 35 min (2,102 laws) | guard, max 4 | no | per law, by `ReaderVersion` only | any edit to 8 reader files (all laws); never on a stored-file change |
+| Extent re-read `--extents` | 3.6 s warm / ~12 min cold | guard | `Extent.ReadCache` | via the cache | **any module of the app** (cache key) |
+| Extent catalogue `lat.extent_patterns` | 3.5 s warm / 5 min cold | guard | `ReadCache` | via the cache | any module of the app |
+| Extent check `lat.extent_check` | 3 s warm | guard | `ReadCache` | via the cache | any module of the app |
+| Commencement catalogue `lat.commencement_patterns` | 6–7 min | guard | no | no | — (always all 2,606 laws) |
+| Own clauses `lat.commencement --read --all` / `--read-amending` | 33 s / 2 min 15 s | **5, no guard** | no | no | — (always all) |
+| Orders `--read-orders` | seconds | **5, no guard** | order lists cached | no | — |
+| Rebuild `lat.vocabulary --build` | ~1 min (fresh indexes) | guard | no | **no: always every law, though each law's input fingerprints are stored** | `ChangeVocabulary.Version` |
+| Golden `--golden` | 2.6 min fresh / ~6 min stale indexes | guard | no | no | — |
+| Relabel `lat.relabel` | ~18 min preview | **5, no guard** | no | by `LabelVersion` / `ParserVersion` | label/parse code |
+| Wave preview, re-parse `--store only` | ~22 min re-parse | **5, no guard** | no | no | — |
+| Feed / markup / order catalogues, feed check | 30 s – 2 min | serial | no | no | — |
+
+### Gaps, worst first
+
+1. **No guard on five parallel runs.** `LawRunner` defaults to 5 workers with no system check: `lat.relabel`, `lat.wave_preview`, `lat.commencement --read / --read-amending / --read-orders`, `lat.reparse --store only`. That is the 5-wide setting of the crash Jason asked a pre-run check for; only the tasks touched in the first pass got the guard (`--read-amending` ran 5 wide unchecked today). Fix: the guard inside `LawRunner.run` itself, so no task can skip it.
+2. **Staleness under-reported (correctness):**
+   - `ChangeVocabulary.Version` (stored changes) omits `law_start.ex` and `law_start/*.ex`, which its commencement readers use: today's LawStart fixes (`65bf8b34`, `9c28b1ad`) don't mark stored changes stale.
+   - `Index.fresh?` (amendment indexes) compares only `ReaderVersion`, never the stored CLML: laws given Schedules or cleared of fragments kept "fresh" indexes (why the last read pass found +3,716 rules nobody had flagged).
+3. **Staleness over-reported (time):**
+   - `Extent.ReadCache` is keyed by every module of the app: any commit (even golden's printing) makes the next extent catalogue, check and re-read cold (5–12 min, not seconds). It should key on the modules the reading uses.
+   - `ReaderVersion` stales all 2,102 indexes for an edit that changes few laws (todo: incremental read).
+   - `ChangeVocabulary.Version` includes `mix.lock`: any dependency bump stales every stored change.
+4. **No incremental rebuild.** `--build` rebuilds every law though `provision_changes` stores each law's code version and input fingerprints; it could skip laws whose version and inputs are unchanged.
+5. **No cache for the commencement catalogue** (6–7 min every run, 2,606 laws) or for the amendment read pass (todo); golden re-reads its laws each run.
+6. **Long single-law tails.** `LawRunner` runs laws in list order, so a huge law near the end runs alone (SI 2019/696: the last ~9 of 35 min). Fix: start the largest laws first (by stored file size).
+7. **Workers capped at 4 by a cautious estimate** (1.8 GB a law; today's read pass peaked at 1.8 GB for all four together, ~600 MB resident mid-run). Todo: measure, then size.
+8. **Serial runs:** the feed, markup and order catalogues and the feed check (30 s – 2 min each) — small; parallel only if they grow.
