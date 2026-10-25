@@ -110,6 +110,7 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 
 - ⬜ The amendment read pass, incremental: re-read only the amending laws whose output can change — a stored file changed, or the changed code's inputs differ for that law (for a `DefinedTerms` fix, only laws whose terms read differently) — and keep every other law's stored rules and index. The pass always re-reads all 2,102 laws today (28 min, 2026-10-25, for a fix touching few)
 - ⬜ The amendment read pass, cached: each law's parsed reading inputs cached by stored-file digest (as `Extent.ReadCache`), so a warm pass skips the XML parse that dominates its time (golden profile: over half)
+- ⬜ More workers where memory allows: measure real memory per law (the catalogue runs peaked at 2.3–2.9 GB for the whole run) and set the guard's per-law estimate (1.8 GB, max 4) from it, so a 6-core machine runs 5–6 laws at once when there's room
 
 ## Dependencies
 
@@ -207,4 +208,4 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 
 ## Re-opened as suspended (2026-10-25)
 
-Jason, on CV-S05's 28-minute amendment read pass (for the `DefinedTerms` fix, `65bf8b34`): "why is this not faster given the previous session". This session made the pass parallel (`fb72a393`, ~85 → 28 min, 81 CPU-minutes, 4 workers by the guard's 1.8 GB a law) but gave it neither an incremental mode nor a cache: it was treated as a rare run, and it never was profiled. Two items added to the todo (Jason: "log 1 and 2 in the previously closed session - that should now be marked-up as suspended"). A third idea, measuring real memory per law so the guard allows 5–6 workers, was not asked for. Resume after CV-S05 or when Jason says.
+Jason, on CV-S05's 28-minute amendment read pass (for the `DefinedTerms` fix, `65bf8b34`): "why is this not faster given the previous session". This session made the pass parallel (`fb72a393`, ~85 → 28 min, 81 CPU-minutes, 4 workers by the guard's 1.8 GB a law) but gave it neither an incremental mode nor a cache: it was treated as a rare run, and it never was profiled. Two items added to the todo (Jason: "log 1 and 2 in the previously closed session - that should now be marked-up as suspended"). Jason then added the third: more workers where memory allows. All three are pending. Resume after CV-S05 or when Jason says.
