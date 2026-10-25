@@ -1303,11 +1303,17 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
           ref <-
             Enum.map(p["sections"] || [], &"s.#{&1}") ++
               Enum.map(p["schedules"] || [], &"sch.#{&1}"),
-          do: with(%__MODULE__{} = e <- Map.get(parents, law), do: of(e, ref))
+          do: with(%__MODULE__{} = e <- Map.get(parents, law), do: of(powers_extent(e), ref))
 
     if extents != [] and Enum.all?(extents, &is_binary/1),
       do: Territory.union(extents)
   end
+
+  # a parent Act's extent at its enabling sections: what "every amendment
+  # the law makes" follows (a `*` same or unread list) is no enabling
+  # section's (REUL 2023 s.23(2): uksi 2025/82, CV-S05 round 5)
+  defp powers_extent(%__MODULE__{lists: lists} = e),
+    do: %{e | lists: Enum.reject(lists, &match?({k, _, ["*"]} when k in [:same, :unread], &1))}
 
   @doc """
   The territory of a change made by the amending provisions `refs` (an

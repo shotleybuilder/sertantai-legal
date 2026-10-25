@@ -1126,4 +1126,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
       assert e.lists == []
     end
   end
+
+  test "an SI's powers: a parent's \"every amendment has the same extent\" is no enabling section's (CV-S05 round 5)" do
+    parent = %Extent{default: "E+W+S+NI", lists: [{:same, nil, ["*"]}]}
+
+    assert Extent.from_powers(
+             [%{"law" => "UK_ukpga_2023_28", "sections" => ["14"], "schedules" => []}],
+             %{"UK_ukpga_2023_28" => parent}
+           ) == "E+W+S+NI"
+  end
 end
