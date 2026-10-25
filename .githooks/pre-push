@@ -73,22 +73,20 @@ check_dialyzer() {
         return 0
     fi
 
-    # Run Dialyzer — use default format to avoid dialyxir crash on
-    # unrecognised warning types (e.g. :exact_compare in OTP 28).
-    # The --format github flag triggers a throw in dialyxir 1.4.7.
+    # Same command as CI, so a pass here is a pass there. dialyxir >= 1.4.8
+    # reports OTP 28+'s :exact_compare as an ordinary warning; never skip on it.
     DIALYZER_OUTPUT=$(mix dialyzer 2>&1)
     DIALYZER_STATUS=$?
 
     # Return to root
     cd ..
 
-    # dialyxir 1.4.7 cannot handle the :exact_compare warning type added in OTP 28.
-    # It either throws or exits with status 2 printing the raw atom. Treat as non-blocking.
-    # Also catch dialyzer infrastructure errors (missing beam files after OTP upgrade).
-    if echo "$DIALYZER_OUTPUT" | grep -q ':exact_compare\|:dialyzer.run error\|File not found.*beam'; then
-        print_warning "Dialyzer infrastructure issue (dialyxir vs OTP 28)"
-        print_info "Run 'cd backend && mix dialyzer --plt' to rebuild PLT, or upgrade dialyxir"
-        return 0
+    # A stale PLT (missing beam files after an Elixir/OTP upgrade) means no
+    # result at all: block, never pass silently.
+    if echo "$DIALYZER_OUTPUT" | grep -q ':dialyzer.run error\|File not found.*beam'; then
+        print_error "Dialyzer could not run (stale PLT after an Elixir/OTP upgrade?)"
+        print_info "Run 'cd backend && mix dialyzer --plt' to rebuild the PLT, then push again"
+        return 1
     fi
 
     if [ $DIALYZER_STATUS -ne 0 ]; then
