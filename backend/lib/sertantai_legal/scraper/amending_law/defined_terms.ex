@@ -43,7 +43,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.DefinedTerms do
         words = Doc.text(text),
         [_, term, title] <- [Regex.run(@plain, words)],
         into: %{},
-        do: {String.downcase(term), %{law: nil, title: title}}
+        do: {String.downcase(term), %{law: nil, title: unchaptered(title)}}
   end
 
   @law_title ~r/\b(?:Act|Regulations|Order|Rules|Measure)(?: \(Northern Ireland\))? \d{4}$/u
@@ -53,8 +53,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.DefinedTerms do
   # purposes of the Royal Parks (Trading) Act 2000", "that district as
   # defined in section 76 of …": PCA 2017, whose caption "(power of fire and
   # rescue authority …)" then named the 2004 Act for a Localism Act 2011
-  # amendment, CV-S05)
-  @thing_under ~r/^(?:a|an|any|that|those|each|every)\s|\b(?:under|purposes\s+of|meaning\s+of|defined\s+in|section\s+\d+\w*\s+of)\s+(?:the\s+)?[A-Z]/u
+  # amendment, CV-S05); "code set out in Schedule 3A to …", "development …
+  # granted by article 3 of …" (Planning Act 2008)
+  @thing_under ~r/^(?:a|an|any|that|those|each|every)\s|\b(?:under|purposes\s+of|meaning\s+of|defined\s+in|set\s+out\s+in|(?:section|article|regulation|Schedule|Part)\s+\w+\s+(?:to|of))\s+(?:the\s+)?[A-Z]/u
 
   defp law_title?(nil), do: false
   defp law_title?(t), do: Regex.match?(@law_title, t) and not Regex.match?(@thing_under, t)
@@ -87,8 +88,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.DefinedTerms do
 
   defp title(words) do
     case Regex.run(~r/\bmeans (?:the )?([^;:]+?)\s*[;.]?\s*$/u, words) do
-      [_, t] -> String.trim(t)
+      [_, t] -> t |> String.trim() |> unchaptered()
       nil -> nil
     end
   end
+
+  # "the Town and Country Planning Act 1990 (c. 8)": the title without its
+  # chapter, which hid it from the title test (Planning Act 2008's "TCPA
+  # 1990", CV-S05)
+  defp unchaptered(t), do: String.replace(t, ~r/\s*\((?:c|asp|anaw|nia|mwa)\.?\s*\d+\)$/u, "")
 end
