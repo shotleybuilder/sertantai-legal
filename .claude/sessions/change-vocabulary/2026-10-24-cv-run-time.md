@@ -1,8 +1,8 @@
 ---
 session: Reader run time — make the catalogues, checks and re-reads quicker
-status: closed
+status: suspended
 opened: 2026-10-24
-closed: 2026-10-25
+suspended: 2026-10-25
 outcome: success
 summary: >
   A CV-S05 fix round's runs went from ~2½ hours to ~10 minutes with identical output: the extent
@@ -83,7 +83,7 @@ enables:
   - later families' catalogues and checks at corpus scale
 ---
 
-# Session: Reader run time (CLOSED)
+# Session: Reader run time (SUSPENDED)
 
 ## Problem
 
@@ -107,6 +107,9 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 - ✅ Measure before and after on the same inputs: the extent catalogue, the commencement catalogue and the extent check give identical output, in less time.
 
 - ✅ The amendment read pass (`mix lat.amending --read`): this morning's `Doc` change (`cb5d9ce7`) changed `ReaderVersion`, so all 2,095 amendment indexes are stale and every build and golden re-parses every amending law. The pass is now parallel (`fb72a393`); running it, with a restore point and an `amendment_rules` digest compared before and after, needs Jason's go-ahead.
+
+- ⬜ The amendment read pass, incremental: re-read only the amending laws whose output can change — a stored file changed, or the changed code's inputs differ for that law (for a `DefinedTerms` fix, only laws whose terms read differently) — and keep every other law's stored rules and index. The pass always re-reads all 2,102 laws today (28 min, 2026-10-25, for a fix touching few)
+- ⬜ The amendment read pass, cached: each law's parsed reading inputs cached by stored-file digest (as `Extent.ReadCache`), so a warm pass skips the XML parse that dominates its time (golden profile: over half)
 
 ## Dependencies
 
@@ -201,3 +204,7 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
   - This is a CV-S04 commencement defect, exposed by the fuller store. Bug logged; golden all-pass is part of CV-S05's stopping rule, so it is to be fixed before CV-S05 can close.
 - **The rebuild has not been re-run since the read pass,** so `provision_changes` still reflect the old rules. The next CV-S05 round's rebuild picks the new ones up.
 
+
+## Re-opened as suspended (2026-10-25)
+
+Jason, on CV-S05's 28-minute amendment read pass (for the `DefinedTerms` fix, `65bf8b34`): "why is this not faster given the previous session". This session made the pass parallel (`fb72a393`, ~85 → 28 min, 81 CPU-minutes, 4 workers by the guard's 1.8 GB a law) but gave it neither an incremental mode nor a cache: it was treated as a rare run, and it never was profiled. Two items added to the todo (Jason: "log 1 and 2 in the previously closed session - that should now be marked-up as suspended"). A third idea, measuring real memory per law so the guard allows 5–6 workers, was not asked for. Resume after CV-S05 or when Jason says.

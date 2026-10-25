@@ -34,6 +34,36 @@ bugs:
     affected: "OH&S: 62 stale, 13 not stored, of 444 amending laws"
     fix: "re-read the family's amending laws (--cached), then rebuild (2026-10-24: our faults 0)"
     status: fixed
+  - pattern: "LawStart's own-parts fallback took a mention as an Act's clause (SOCPA 2005 s.101(2) \"… taken before this section comes into force\" before s.178), so SOCPA fell to Royal Assent beside its by-order clause and the vocabulary dated RTA 1988 s.4(6)'s repeal 2005-04-07 (golden 26/27); and a section commencing itself alone (\"This section shall come into force on 1st April 1982\") set an Act's start"
+    category: commencement
+    module: LawStart.Clause (own_parts)
+    affected: "21 catalogue examples (reviewed); SOCPA re-read, RTA 1988 golden passes"
+    fix: "own_parts skips mentions; for an Act it skips \"This section … come into force\" alone (Clause.read/3 act?), never one going on to the rest (ukpga 1992/34 s.8(3))"
+    status: fixed
+  - pattern: "DefinedTerms kept terms meaning a thing under a law (\"fire and rescue authority\" = \"a fire and rescue authority under the Fire and Rescue Services Act 2004\"), so PCA 2017 Sch.1 para 94's caption named FRSA 2004 and its Localism Act 2011 amendments were read as FRSA's"
+    category: amendment
+    module: AmendingLaw.DefinedTerms (law_title?)
+    affected: "PCA 2017: 6 of 7 terms; corpus reach unmeasured until the read pass"
+    fix: "a term means a law only when its definition is the title itself: not \"a/an/that …\", \"under / for the purposes of / defined in / section N of\" a law"
+    status: fixed
+  - pattern: "A UK Act's staged clause leaving provisions out (\"other than this section and sections 42 and 43 … by order\", \"shall not come into force until 1st April 1965\") dated the Act's start from its first stage, after Royal Assent (CJPA 2001: 2001-07-11; LGA 1963: 1965-04-01); exposed once mentions stopped hiding these clauses"
+    category: commencement
+    module: LawStart (assent_floor)
+    affected: "4 catalogue examples (reviewed)"
+    fix: "9c28b1ad: ukpga only, the start no later than Royal Assent when the clause says \"this Act / the provisions of this Act, other than|except …\" or \"not … until\""
+    status: fixed
+  - pattern: "An Act whose clause leaves its provisions to orders in other words still falls to Royal Assent: \"Apart from section 54(1) and (2), the preceding provisions of this Act come into force in accordance with orders made by the Treasury\" (Tax Credits Act 2002 s.61), \"the remainder of this Act shall come into operation on such day as Her Majesty may by Order in Council appoint\" (ukpga 1962/58, its rest unread); the SOCPA class, older"
+    category: commencement
+    module: LawStart.Clause (general / by_order forms)
+    affected: unmeasured (2 seen in the catalogue)
+    fix: "read \"in accordance with orders\" and \"the remainder … by Order in Council\" as by order"
+    status: open
+  - pattern: "Amendment reader drops a context's subsection: \"In section 43(1) …— (a) omit the 'or' at the end of paragraph (h)\" targets s.43(h), not s.43(1)(h) (PCA 2017 Sch.1 para 94(3)); a target the amended law lacks is then dropped as a misread"
+    category: amendment
+    module: Amendment.Reader (numbers / brackets from context)
+    affected: unmeasured
+    fix: "carry the context's brackets onto the instruction's paragraph"
+    status: open
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
 ---
 
@@ -55,7 +85,7 @@ The session does not close until its results pass.
 - ⬜ Enabling-power parser: 6 other unparsed forms and 1 with no enacting formula (CV-07 agent sample); SI 1999/3232 matched to "ECA 1972 s.80, Sch.9" (a multi-law citation marker misread)
 - ⬜ The competence rule (a devolved SI's competence doesn't confine its insertion, V1-04) confirmed on cases beyond Forestry Act s.1(1A)
 - ⬜ SI 2012/760: its made introduction (held) names no enabling provisions (from CV-S01)
-- ⬜ Before round 6, two defects the run-time session's amendment read pass exposed (logged there, open): SOCPA 2005's "all — act_enactment" Royal Assent rule beside its by-order clause dates RTA 1988 s.4(6)'s repeal 2005-04-07, not 2006-01-01, so golden is 26/27 (a CV-S04 commencement fault; golden all-pass is in this session's stopping rule); and PCA 2017 Sch.1 para 94 "The Localism Act 2011 is amended" read as amending FRSA 2004 (amendment reader). The stored changes haven't been rebuilt since that read pass
+- ✅ Before round 6, the two defects the run-time read pass exposed — fixed (`65bf8b34`, `9c28b1ad`); runs below (Jason: "Run")
 - ⬜ Round 6 (proposed 2026-10-25, Jason's go-ahead needed on step 1, a design change): (1) never drop a statement silently: a sentence saying where provisions extend that isn't turned fully into rules is recorded unread, and its provisions get no bound, never the default; the catalogue and the check count it; (2) the misreads and my regressions: NEW-A (Chapter of Part), NEW-C (section in brackets), uksi 2019/696's exceptions read as items, 2022/1037's Part 4; (3) forms: "except as aforesaid … shall not extend there", lettered places "to— (a) England and Wales, (b) …", "extends to any part of the United Kingdom to which the amended enactment extends"; (4) the same runs, then agent round 6 (misses that are counted are known classes; only misreads and silent drops are NEW)
 - ⬜ Fix until the check passes reliably; record the result
 
@@ -455,3 +485,20 @@ State at suspension:
 - **Golden is now 26/27** (RTA 1988 s.4(6)).
 - Round 6 still needs Jason's go-ahead on its step 1.
 
+
+## The two exposed defects (2026-10-25)
+
+- **SOCPA's Royal Assent (golden 26/27).** `LawStart.Clause`'s fallback for a law with no whole-law clause (`own_parts`) took the first sentence naming a part's commencement, mentions included: SOCPA's s.101(2) ("… taken before this section comes into force") came before s.178, so SOCPA had no clause and fell to Royal Assent, and the vocabulary's amending-law reader (which keeps an Act's Royal Assent rule, CV-S04: "an Act with a clause has the clause's rule") dated Sch.7 para 27(2)'s repeal 2005-04-07.
+  - Fix: `own_parts` skips mentions; for an Act it also skips a section commencing itself alone ("This section shall come into force on 1st April 1982": Finance Act 1981 s.137(4) set the Act's start), keeping "This section and sections 62, 63 and 65 …" (asp 2024/14, an Act's first stage) and "… but otherwise this Act comes into force … by order" (ukpga 1992/34).
+  - SOCPA now: `clause_staged` 2005-04-07 (s.178(1)), every s.178 group, the rest by order (s.178(8)). Re-read alone (12 rules); RTA 1988 golden passes.
+  - 21 commencement catalogue examples change, all reviewed: five Acts move from Royal Assent to their staged clause (same date); mentions stop standing as clauses (anaw 2015/4 s.1(12), NISR 2007/321 reg.42(1), Finance Act 1974 s.46(5)); three Finance Acts' "deemed to have come into force" or lone-section dates give way to Royal Assent. Finance Act 1982 stays unread (s.151(2)'s "three months beginning with …" not computed; its fixture holds no metadata head).
+- **Localism read as FRSA.** `DefinedTerms` kept "fire and rescue authority" (= "a fire and rescue authority under the Fire and Rescue Services Act 2004") as a term meaning a law, so the caption in para 94(2) "named" FRSA before para 94(1)'s Localism Act was reached. Fix: a term means a law only when its definition is the title itself. PCA's other false terms (collaboration agreement, metropolitan police district, museum firearms licence, park trading offence, articles of war of 1876) go too. Para 94 now reads as the Localism Act 2011's.
+- Found on the way (open, logged): "In section 43(1) …— (a) … paragraph (h)" targets s.43(h).
+- Full suite: only the 21 reviewed catalogue examples fail, pending `--accept`.
+
+## Runs after the fixes (2026-10-25, Jason: "Run")
+
+- Restore point `cv-s05-before-exposed-fixes` (commencement_rules, amendment_rules, provision_changes); amendment indexes copied to the scratchpad.
+- **Commencement catalogue** (`--accept`, 6 min 16 s): 12 new patterns accepted, 17 gone, 0 unclassified; 20 example readings updated by hand after review (`--accept` keeps changed expectations). Committed `65bf8b34`.
+- **Own clauses re-read:** 45 laws' starts changed. Finance Acts' deemed or lone-section dates → Royal Assent; Acts → their real staged clause (Scottish, Welsh, NI: the day after Royal Assent); mentions gone. The re-read exposed CJPA 2001 (2001-07-11) and LGA 1963 (1965-04-01): staged clauses leaving provisions to Royal Assent, dated by their first stage. Fixed (`9c28b1ad`, Royal Assent floor, UK Acts only after a first try misdated three devolved Acts), re-read again: no errors.
+- Label timelines (law starts changed for LAT laws) are not refreshed: a later relabel.
