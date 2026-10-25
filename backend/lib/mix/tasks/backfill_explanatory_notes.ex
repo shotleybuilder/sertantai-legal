@@ -128,10 +128,6 @@ defmodule Mix.Tasks.BackfillExplanatoryNotes do
             IO.puts("  ⊘ #{name}: no note available")
             %{acc | not_found: acc.not_found + 1}
 
-          {:error, :empty} ->
-            IO.puts("  ⊘ #{name}: empty note")
-            %{acc | not_found: acc.not_found + 1}
-
           {:error, reason} ->
             IO.puts("  ✗ #{name}: #{inspect(reason)}")
             %{acc | errors: acc.errors + 1}

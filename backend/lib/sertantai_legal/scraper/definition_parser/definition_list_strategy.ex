@@ -168,7 +168,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.DefinitionListStrategy do
     end
   end
 
-  @spec direct_elements(tuple(), SweetXml.xpath_sigil(), SweetXml.xpath_sigil()) :: [tuple()]
+  @spec direct_elements(tuple(), SweetXml.spec(), SweetXml.spec()) :: [tuple()]
   defp direct_elements(item, all_xpath, nested_xpath) do
     all = XmlUtils.xpath_list(item, all_xpath)
     nested = XmlUtils.xpath_list(item, nested_xpath)

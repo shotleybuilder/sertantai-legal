@@ -201,10 +201,10 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Feed do
       operation: EffectFacts.kind(e.type, nil),
       effect_type: e.type,
       effective_from: EffectFacts.effect_fact(e).effective_from,
-      in_force: e.in_force || [],
+      in_force: e.in_force,
       prospective: e.prospective,
       applied: e.applied,
-      savings: e.savings || [],
+      savings: e.savings,
       affected_extent: e.affected_extent,
       effect_extent: e.effect_extent,
       territorial_application: e.territorial_application || territory.(e.affecting)

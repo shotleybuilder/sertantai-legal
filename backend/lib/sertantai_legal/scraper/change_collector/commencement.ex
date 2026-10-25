@@ -27,6 +27,9 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Commencement do
   alias SertantaiLegal.Scraper.Commencement.{Evaluator, OwnClause}
   alias SertantaiLegal.Scraper.{LawStart}
 
+  # an unread group: no dated entries, never in force from this law
+  @undated %{entries: [], full_from: nil, partial_from: nil, undated: []}
+
   @doc """
   The law's commencement records from its `LawStart.input()`. `opts`:
   `orders:` the law's own commencement orders as rules (CR-07), which reach
@@ -63,7 +66,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Commencement do
     unread =
       for g <- unread,
           do:
-            record(law_name, nil, :provision_unread, %{full_from: nil, entries: []}, %{
+            record(law_name, nil, :provision_unread, @undated, %{
               law: law_name,
               ref: g.evidence,
               text: g.text

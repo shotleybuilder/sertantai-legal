@@ -263,6 +263,7 @@ defmodule Mix.Tasks.Lat.CreateSession do
     Mix.shell().info("  #{length(laws)} records in group1, status: #{session.status}")
   end
 
+  @spec abort(String.t()) :: no_return()
   defp abort(message) do
     Mix.shell().error(message)
     exit({:shutdown, 1})

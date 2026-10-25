@@ -49,8 +49,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
   @text_changes ~w(inserted substituted repealed repealed_in_part renumbered)a
 
   @doc "Where an effect lands, from its targets and what we hold of the law."
-  @spec classify(map(), [String.t()], %{rows: MapSet.t(), clml: MapSet.t(), schedules?: boolean()}) ::
-          outcome()
+  @spec classify(
+          map(),
+          [String.t()],
+          %{
+            required(:rows) => MapSet.t(),
+            required(:clml) => MapSet.t(),
+            required(:schedules?) => boolean(),
+            optional(atom()) => any()
+          }
+        ) :: outcome()
   def classify(effect, targets, held) do
     bases = MapSet.new(held.rows, &String.replace(&1, ~r/\[[^\]]+\]$/, ""))
 

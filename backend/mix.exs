@@ -157,7 +157,7 @@ defmodule SertantaiLegal.MixProject do
     [
       plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
       plt_add_apps: [:mix, :ex_unit],
-      flags: [:error_handling, :underspecs],
+      flags: [:error_handling],
       ignore_warnings: ".dialyzer_ignore.exs"
     ]
   end

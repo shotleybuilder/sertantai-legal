@@ -40,10 +40,10 @@ defmodule SertantaiLegal.Legal.FamilyInference do
     assigned = lookup_family(law_name)
 
     # Parent families (via enacted_by edges)
-    parent_families = edge_families(law_name, "enacted_by", :target)
+    parent_families = edge_families(law_name, "enacted_by")
 
     # Amendment target families (what does this law amend?)
-    target_families = edge_families(law_name, "amends", :target)
+    target_families = edge_families(law_name, "amends")
 
     # Amender families (what laws amend this law?) — reverse direction
     # Important for EU retained law which has no SI codes but is amended by UK SIs with families
@@ -162,14 +162,13 @@ defmodule SertantaiLegal.Legal.FamilyInference do
     end
   end
 
-  defp edge_families(law_name, edge_type, direction) do
-    col = if direction == :target, do: "target_family", else: "source_family"
-
+  # families of the laws this law points at (its parents, or the laws it amends)
+  defp edge_families(law_name, edge_type) do
     sql = """
-    SELECT #{col}, COUNT(*) AS cnt
+    SELECT target_family, COUNT(*) AS cnt
     FROM law_edges
-    WHERE source_law = $1 AND edge_type = $2 AND #{col} IS NOT NULL
-    GROUP BY #{col}
+    WHERE source_law = $1 AND edge_type = $2 AND target_family IS NOT NULL
+    GROUP BY target_family
     ORDER BY cnt DESC
     """
 

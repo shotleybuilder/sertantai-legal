@@ -831,7 +831,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
       }
 
       base =
-        if law_level in [nil, ""], do: base, else: Map.put(base, :md_restrict_extent, law_level)
+        if law_level == "", do: base, else: Map.put(base, :md_restrict_extent, law_level)
 
       if section_extents == [] do
         base

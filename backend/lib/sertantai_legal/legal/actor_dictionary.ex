@@ -197,15 +197,9 @@ defmodule SertantaiLegal.Legal.ActorDictionary do
         tenant = Application.get_env(:sertantai_legal, :zenoh)[:tenant] || "dev"
         key_expr = "fractalaw/@#{tenant}/dictionary/actors"
 
-        case Zenohex.Session.declare_subscriber(session_id, key_expr, self()) do
-          {:ok, subscriber_id} ->
-            Logger.info("[ActorDictionary] Subscribed to #{key_expr}")
-            subscriber_id
-
-          {:error, reason} ->
-            Logger.warning("[ActorDictionary] Failed to subscribe: #{inspect(reason)}")
-            nil
-        end
+        {:ok, subscriber_id} = Zenohex.Session.declare_subscriber(session_id, key_expr, self())
+        Logger.info("[ActorDictionary] Subscribed to #{key_expr}")
+        subscriber_id
 
       {:error, _reason} ->
         Logger.debug("[ActorDictionary] Zenoh not ready, subscription deferred")
@@ -251,7 +245,7 @@ defmodule SertantaiLegal.Legal.ActorDictionary do
         tenant = Application.get_env(:sertantai_legal, :zenoh)[:tenant] || "dev"
         key_expr = "fractalaw/@#{tenant}/dictionary/actors"
 
-        case Zenohex.Session.get(session_id, key_expr, timeout: 5000) do
+        case Zenohex.Session.get(session_id, key_expr, 5000) do
           {:ok, [%{payload: payload} | _]} when is_binary(payload) ->
             parse_yaml(payload)
 

@@ -566,8 +566,6 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
     end
   end
 
-  defp coerce_duckdb_value(value), do: value
-
   # --- Obligations processing ---
 
   defp process_obligations(row, provision) do

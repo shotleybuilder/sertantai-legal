@@ -12,7 +12,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.XmlUtils do
   # ── XML helpers ──────────────────────────────────────────────
 
   @doc "SweetXml returns nil for empty list results; normalise to []."
-  @spec xpath_list(tuple(), SweetXml.xpath_sigil()) :: [tuple()]
+  @spec xpath_list(tuple(), SweetXml.spec()) :: [tuple()]
   def xpath_list(node, expr), do: xpath(node, expr) || []
 
   @doc """

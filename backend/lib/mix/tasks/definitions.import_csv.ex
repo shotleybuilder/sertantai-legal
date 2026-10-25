@@ -273,7 +273,6 @@ defmodule Mix.Tasks.Definitions.ImportCsv do
     |> Enum.reverse()
   end
 
-  defp parse_section_id(nil), do: nil
   defp parse_section_id(""), do: nil
 
   defp parse_section_id(path) do

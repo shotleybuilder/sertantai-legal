@@ -51,20 +51,16 @@ defmodule SertantaiLegal.Scraper.LatParser.Ids do
   defp printed_pnumber(node) do
     # descendant::text() reaches through nested Addition/Repeal/Substitution
     # wrappers in document order (xmerl's //text() puts direct text first)
-    case node |> Xml.children(:Pnumber) |> Enum.flat_map(&Xml.texts/1) do
-      nil ->
-        nil
-
-      texts ->
-        texts
-        |> Enum.map(&to_string/1)
-        |> Enum.join("")
-        |> clean()
-        # "6." (EU paragraph numbering) is number 6: no "(6.)" in ids
-        |> String.trim_trailing(".")
-        |> unbracket()
-        |> Xml.blank_to_nil()
-    end
+    node
+    |> Xml.children(:Pnumber)
+    |> Enum.flat_map(&Xml.texts/1)
+    |> Enum.map(&to_string/1)
+    |> Enum.join("")
+    |> clean()
+    # "6." (EU paragraph numbering) is number 6: no "(6.)" in ids
+    |> String.trim_trailing(".")
+    |> unbracket()
+    |> Xml.blank_to_nil()
   end
 
   @doc """
@@ -203,7 +199,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Ids do
   # the old words kept for another territory, then their replacement.
   defp territorial_pair?(prev, next) do
     elem(prev, 1) == :Repeal and Xml.attr(prev, :RetainText) == "true" and
-      Xml.attr(prev, :SubstitutionRef) not in ["", nil] and
+      Xml.attr(prev, :SubstitutionRef) != "" and
       Xml.attr(prev, :SubstitutionRef) == Xml.attr(next, :ChangeId)
   end
 

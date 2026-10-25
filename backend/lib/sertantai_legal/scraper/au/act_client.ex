@@ -19,9 +19,10 @@ defmodule SertantaiLegal.Scraper.Au.ActClient do
   @doc """
   Fetch metadata for an ACT law by its type prefix, year, and number.
 
-  Returns {:ok, metadata} or {:error, reason}.
+  Returns {:ok, metadata}, {:ok, nil} when the page is not found (404), or
+  {:error, reason}.
   """
-  @spec fetch_metadata(String.t(), integer(), String.t()) :: {:ok, map()} | {:error, any()}
+  @spec fetch_metadata(String.t(), integer(), String.t()) :: {:ok, map() | nil} | {:error, any()}
   def fetch_metadata(type_prefix, year, number) do
     url = "#{@base_url}/#{type_prefix}/#{year}-#{number}"
     fetch_url(url)
@@ -30,7 +31,7 @@ defmodule SertantaiLegal.Scraper.Au.ActClient do
   @doc """
   Fetch metadata from a full ACT legislation URL.
   """
-  @spec fetch_url(String.t()) :: {:ok, map()} | {:error, any()}
+  @spec fetch_url(String.t()) :: {:ok, map() | nil} | {:error, any()}
   def fetch_url(url) do
     case Req.get(url, req_options(receive_timeout: 15_000, retry: false, redirect: true)) do
       {:ok, %Req.Response{status: 200, body: body}} when is_binary(body) ->
