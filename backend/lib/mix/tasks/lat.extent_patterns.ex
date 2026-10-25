@@ -26,9 +26,7 @@ defmodule Mix.Tasks.Lat.ExtentPatterns do
 
   alias Mix.Tasks.Lat.FeedPatterns, as: Files
 
-  alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
-  alias SertantaiLegal.Scraper.AmendingLaw.Doc
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Patterns, Store}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Patterns, ReadCache, Store}
   alias SertantaiLegal.Scraper.LawRunner
   alias SertantaiLegal.Scraper.LawRunner.Guard
 
@@ -108,15 +106,15 @@ defmodule Mix.Tasks.Lat.ExtentPatterns do
 
   # the law's classes, and the example its reading needs (with whether it
   # reads alone as in the law)
+  # (the reading kept between runs: `ReadCache`, shared with the check
+  # and the re-read)
   defp law_result(law) do
-    doc = Doc.new(law, ClmlStore.law_docs(law))
-    classes = Patterns.classes(doc)
+    case ReadCache.law(law) do
+      nil ->
+        {:ok, %{classes: [], xml: nil, alone: MapSet.new()}}
 
-    if classes == [] do
-      {:ok, %{classes: [], xml: nil, alone: MapSet.new()}}
-    else
-      xml = Patterns.example(doc)
-      {:ok, %{classes: classes, xml: xml, alone: MapSet.new(Patterns.read(law, xml))}}
+      r ->
+        {:ok, %{classes: r.classes, xml: r.example, alone: MapSet.new(r.alone)}}
     end
   rescue
     error -> {:error, Exception.message(error)}

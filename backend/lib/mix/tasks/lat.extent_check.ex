@@ -33,10 +33,9 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
 
   alias Mix.Tasks.Lat.Amending
 
-  alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Extent}
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Patterns, Store}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{ReadCache, Store}
   alias SertantaiLegal.Scraper.LawRunner
   alias SertantaiLegal.Scraper.LawRunner.Guard
 
@@ -137,19 +136,20 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
   # ── amending laws ────────────────────────────────────────────────────
 
   defp law_row(law, stored) do
-    doc = if Store.reads?(law), do: doc(law)
+    # the reading kept between runs (`ReadCache`, shared with the
+    # catalogue and the re-read)
+    reading = if Store.reads?(law), do: ReadCache.law(law)
 
     cond do
       not Store.reads?(law) ->
         %{law: law, basis: "none", why: "type_not_read", fault: nil, unread: %{}, words: nil}
 
-      doc == nil ->
+      reading == nil ->
         %{law: law, basis: "none", why: "not_held", fault: nil, unread: %{}, words: nil}
 
       true ->
-        # read once, classed once (run time: CV-S05)
-        read = Extent.read(doc)
-        classes = Patterns.classes(doc, read)
+        read = reading.read
+        classes = reading.classes
         e = Amending.with_powers(read, law, cached: true)
         {basis, why} = basis(e, law)
 
@@ -204,13 +204,6 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
   end
 
   defp act?(law), do: (String.split(law, "_") |> Enum.at(1)) in ~w(ukpga asp anaw asc nia apni)
-
-  defp doc(law) do
-    case ClmlStore.law_docs(law) do
-      [] -> nil
-      xmls -> Doc.new(law, xmls)
-    end
-  end
 
   # ── text changes ─────────────────────────────────────────────────────
 

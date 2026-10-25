@@ -140,7 +140,7 @@ defmodule Mix.Tasks.Lat.Amending do
 
     LawRunner.run(
       parents,
-      fn p -> {:ok, _} = Extent.Store.write(p, p |> doc() |> Extent.read()) end,
+      fn p -> {:ok, _} = Extent.Store.write(p, Extent.ReadCache.law(p).read) end,
       fn _, _ -> :ok end,
       workers: workers
     )
@@ -167,7 +167,9 @@ defmodule Mix.Tasks.Lat.Amending do
   end
 
   defp extent_line(a, cached) do
-    e = a |> doc() |> Extent.read() |> with_powers(a, cached: cached)
+    # the reading kept between runs (`Extent.ReadCache`, shared with the
+    # catalogue and the check)
+    e = a |> Extent.ReadCache.law() |> Map.fetch!(:read) |> with_powers(a, cached: cached)
     {:ok, n} = Extent.Store.write(a, e)
 
     stated =
