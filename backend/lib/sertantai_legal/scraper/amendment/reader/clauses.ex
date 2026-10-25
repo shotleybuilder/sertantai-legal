@@ -139,9 +139,33 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
     |> Regex.replace(s, fn m -> if m =~ ~r/^[“"]/u or not (m =~ ~r/\s/u), do: m, else: "" end)
   end
 
+  # a provision reference, then its caption: "section 1 (application of …)",
+  # "regulation 2(1) (interpretation)", "paragraph 14 of Schedule 7A (…)"
+  @captioned ~r/(\b(?:sections?|subsections?|regulations?|articles?|rules?|paragraphs?|sub-paragraphs?|Schedules?|Parts?|Chapters?)\s+[0-9]+[A-Z]*(?:\s*\([0-9A-Za-z]+\))*)\s*\((?:[^()“”"]|[“"][^”"]*[”"]|\([^()]*\))*\)/u
+
   @doc """
-  The text without its quoted words.
+  The text without the captions that follow a provision reference ("In
+  section 1 (application of Part I of Health and Safety at Work etc. Act
+  1974 …)": a caption describes the provision, never names the law amended
+  — Petroleum Act 1998 Sch. 4 para 33). Titles keep every bracket of their
+  own ("The Environmental Protection (Disposal of …) (England and Wales)
+  Regulations 2000"), unlike `asides/1`.
+  """
+  @spec uncaptioned(String.t()) :: String.t()
+  def uncaptioned(s), do: Regex.replace(@captioned, s, "\\1")
+
+  @doc """
+  The text without its quoted words — nested quotes too, innermost first
+  ("omit ““x” means the Building (Approved Inspectors etc.) Regulations
+  2010”": SI 2024/1268, whose definition's title had named a law).
   """
   @spec unquote_words(String.t()) :: String.t()
-  def unquote_words(t), do: String.replace(t, ~r/[“"][^”"]*[”"]/u, "")
+  def unquote_words(t), do: t |> unnest() |> String.replace(~r/[“"][^”"]*[”"]/u, "")
+
+  defp unnest(t) do
+    case String.replace(t, ~r/“[^“”]*”(?=[^“]*”)/u, "") do
+      ^t -> t
+      fewer -> unnest(fewer)
+    end
+  end
 end

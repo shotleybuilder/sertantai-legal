@@ -240,8 +240,13 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
         before = Stream.map(text.before, &Clauses.unquote_words/1)
 
         # the laws named, found once for every law offered (run time,
-        # 2026-10-25: found per law, 24× over for ukpga 1995/25)
-        named = LawNamed.named(Stream.concat(texts ++ List.wrap(title), before), terms)
+        # 2026-10-25: found per law, 24× over for ukpga 1995/25); a caption
+        # describes a provision, never names the law amended ("In section 1
+        # (application of Part I of Health and Safety at Work etc. Act 1974
+        # …)" under "The Offshore Safety Act 1992 shall be amended":
+        # Petroleum Act 1998 Sch. 4 para 33)
+        uncaptioned = Enum.map(texts, &Clauses.uncaptioned/1)
+        named = LawNamed.named(Stream.concat(uncaptioned ++ List.wrap(title), before), terms)
 
         for law <- laws,
             Enum.any?(named, &LawNamed.law_named?(&1, law)),

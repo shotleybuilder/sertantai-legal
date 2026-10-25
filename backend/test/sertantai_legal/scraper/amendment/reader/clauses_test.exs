@@ -55,4 +55,27 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.ClausesTest do
            ) ==
              "In section 9  of the Planning (Listed Buildings and Conservation Areas) Act 1990"
   end
+
+  test "uncaptioned/1: a provision's caption goes; a title keeps every bracket (Petroleum Act 1998 Sch. 4 para 33)" do
+    assert Clauses.uncaptioned(
+             "In section 1 (application of Part I of Health and Safety at Work etc. Act 1974 offshore), omit"
+           ) == "In section 1, omit"
+
+    title =
+      "The Environmental Protection (Disposal of Polychlorinated Biphenyls and other Dangerous Substances) (England and Wales) Regulations 2000 are amended"
+
+    assert Clauses.uncaptioned(title) == title
+
+    assert Clauses.uncaptioned("In regulation 2(1) (interpretation), in paragraph (1)") ==
+             "In regulation 2(1), in paragraph (1)"
+  end
+
+  test "unquote_words/1: nested quotes, innermost first (SI 2024/1268)" do
+    assert Clauses.unquote_words(
+             "omit ““x” means the Building (Approved Inspectors etc.) Regulations 2010”."
+           ) ==
+             "omit ."
+
+    assert Clauses.unquote_words("for “a” substitute “b”") == "for  substitute "
+  end
 end
