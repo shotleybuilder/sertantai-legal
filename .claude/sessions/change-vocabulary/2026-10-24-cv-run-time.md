@@ -116,7 +116,8 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 - ⬜ **(in progress) Amendment read pass speed, profile-led** (35 min; see "Read pass profile"):
   - ✅ step 1, the reader's repeated work: laws named found once per instruction, defined-term patterns compiled once — `18e25def` (570,639 regex compiles gone; 1995/25 8.2 → 1.7 s; SI 2019/696 + WSI 2013/755 ~17 → 2.5 min; rules identical)
   - ✅ step 2, start-up: every LAT law's feed pages were parsed at the start of each pass (160 s); `FeedCache` keeps the parse (offline), keyed by `FeedVersion` + page digest — `d293d7d8` (one-law pass 2 min 15 s → 12 s; golden and build gain too)
-  - ⬜ step 3, time a full pass on the new code (needs Jason's go-ahead: ~2,102 laws; writes `amendment_rules` and the indexes, restoring them as fresh) — expected well under the 35 min
+  - ✅ step 3, a full pass on the new code: **7 min 19 s (was 35 min)**, 2,099 laws, 0 errors, peak 2.3 GB, 4 workers. Rules 41,581 → 42,270, 17 laws, traced (see below); it exposed a list-item comma in definitions — fixed `81016a36`, so the indexes are stale again until one more pass (7 min)
+- ⬜ A defined term meaning a Schedule of a law ("the electronic communications code" = CA 2003 Sch. 3A, PSTI 2022): read its instructions at that Schedule's paragraphs (now dropped rather than placed on CA 2003 sections; belongs to CV-S05's reader work)
 - ⬜ Incremental read pass: re-read only the amending laws whose output can change (per-law inputs; a reader edit no longer stales all 2,102)
 - ⬜ `Amendment.Reader` decomposition: 976 lines, 73 functions (guideline ~300; Jason: "very poorly architected"); pure modules extracted test-first, rules identical on every amending law
 - ❌ Cached `Doc` for the read pass — dropped on measurement: loading a stored `Doc` costs about as much as parsing it (2017/3: load 1.3 s, parse 0.6 s; 1995/25: 2.3 vs 4.5 s). Cache only what step 2 shows is costly, if anything
@@ -298,3 +299,11 @@ From the code (each task's runner, caches, version hashes) and the times recorde
 - Where a law's 150 ms went: page parse 110 ms, territory query 3 ms; a cached parse loads in ~1.5 ms.
 - `FeedCache` (`data/cache/feed_effects/`, one file per law): the parsed effects keyed by `FeedVersion` (ChangesFeed's code, added to `VersionCoverageTest`) and the stored pages' digest (`ClmlStore.feed_files/4`); offline only (`law_effects(…, store: :only)`); the territory lookup stays live.
 - Checked: 107 laws' effects equal parsed vs cached; parse 11.8 s, warm 0.28 s; tests for cache hit, a changed page re-parsed, no pages. One-law read pass: cold 2 min 05 s (fills the cache), warm 12 s, same 251 rules.
+
+## Read pass, step 3: the full pass (2026-10-25, Jason: "Run it")
+
+- Restore point `run-time-before-read-pass-2` (amendment_rules, extent_rules); indexes archived in the scratchpad.
+- **7 min 19 s** (35 min before today's reader and start-up fixes), 2,099 laws (3 already fresh), 0 errors, peak 2.3 GB, CPU 348%.
+- Rules 41,581 → 42,270; 17 laws changed, all from the definition fixes (`5d404342`): abbreviations with a chapter now read — Local Transport Act 2008 → Transport Act 2000 (+191), Railways Act 2005 → Railways Act 1993 (+219), Energy Act 2004 → Electricity Act 1989 (+77), GLA Act 2007 → GLA Act 1999 (+135), Planning (Wales) Act 2015 → TCPA 1990 (+68, was the Hazardous Substances Act), Employment Relations Act 2004 → TULRCA 1992 (+119, was ERA 1996), Planning Act 2008 → TCPA 1990.
+- **Exposed, fixed:** asp 2011/6 (WANE) lost 344 rules — its definitions list ends items with "," ("…Act 1981 (c.69),"), so only the last term was read and every 1981 Act instruction went to the 2004 Act (before, with no terms, to all three laws). `DefinedTerms` now ends a definition at ";", "." or "," (each perhaps with "and"/"or").
+- **Removed rightly:** PSTI 2022 (ukpga 2022/46) −17 against the Communications Act 2003: "paragraph 3", "paragraph 4" of the electronic communications code (Sch. 3A) had been placed on CA 2003 ss.2, 4, 17A — false changes on real sections.
