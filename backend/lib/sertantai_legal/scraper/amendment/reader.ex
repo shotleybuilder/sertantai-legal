@@ -32,7 +32,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   import SweetXml
 
   alias SertantaiLegal.Scraper.Amendment.Rule
-  alias SertantaiLegal.Scraper.Amendment.Reader.Brackets
+  alias SertantaiLegal.Scraper.Amendment.Reader.{Brackets, Clauses}
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Operation, Text}
 
   @type law_ref :: %{
@@ -53,9 +53,6 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   # c.53): the quote is the amending law's own Schedule (AR-05); "is amended
   # as set out in Schedule 1" points to the Schedule's instructions instead
   @set_out ~r/\bset out in (?:Part ([IVXLC\d]+[A-Z]?) of )?Schedule ([\dA-Z]+)\b(?: to th(?:is|ese) \w+)?,? (?:shall be|is|are) (?:substituted for|inserted (?:after|before)) (?:the )?(?:Part|Chapter|sections?|regulations?|articles?|rules?)\b/i
-
-  # "the following paragraph", "a new subsection": the insertion is a provision
-  @provision_named ~r/\b(?:following|new)\s+(?:sub-?)?(?:sections?|paragraphs?|regulations?|articles?|rules?|provisions?|schedules?|parts?|chapters?)\b/i
 
   # a bracket is a number, a letter or two, or a roman numeral — never a
   # word ("(interpretation)": a one-word caption, AR-07)
@@ -242,10 +239,12 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
           Rule.t()
         ]
   def of_text(%Text{} = text, title, terms, laws, source) do
-    case if(text.instruction =~ @modification, do: nil, else: operation(text)) do
+    case if(text.instruction =~ @modification, do: nil, else: Clauses.operation(text)) do
       {_, _} ->
-        texts = Enum.map([text.instruction | Enum.reverse(text.context)], &unquote_words/1)
-        before = Stream.map(text.before, &unquote_words/1)
+        texts =
+          Enum.map([text.instruction | Enum.reverse(text.context)], &Clauses.unquote_words/1)
+
+        before = Stream.map(text.before, &Clauses.unquote_words/1)
 
         # the laws named, found once for every law offered (run time,
         # 2026-10-25: found per law, 24× over for ukpga 1995/25)
@@ -267,18 +266,26 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   defp rules(text, texts, law, source, terms) do
     p = @prefix[law.kind]
     tops = text.inserted |> Enum.map(&hd/1) |> Enum.uniq()
-    clauses = text |> clauses() |> scoped(texts, law, terms)
+    clauses = text |> Clauses.clauses() |> scoped(texts, law, terms)
     quoting = quoting_clause(clauses)
 
     quoted =
       case quoting do
-        nil -> nil
-        c -> rule(law, quoted_targets(c, p), Operation.of_quoted(captionless(c.text)), source)
+        nil ->
+          nil
+
+        c ->
+          rule(
+            law,
+            quoted_targets(c, p),
+            Operation.of_quoted(Clauses.captionless(c.text)),
+            source
+          )
       end
 
     named =
       for c <- clauses,
-          op = operation(c.text),
+          op = Clauses.operation(c.text),
           op != nil,
           # an insertion reaches only what it quotes or names as inserted
           targets =
@@ -340,7 +347,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
     quoting = Enum.filter(clauses, &(&1.text.instruction =~ ~r/insert|substitut|\badded\b/i))
 
     Enum.find(quoting, List.first(quoting), fn c ->
-      captionless(c.text).instruction =~ ~r/[—–:]\s*[;.,]?\s*$/u
+      Clauses.captionless(c.text).instruction =~ ~r/[—–:]\s*[;.,]?\s*$/u
     end)
   end
 
@@ -350,13 +357,14 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   # levels above its own; a clause naming another law is that law's
   defp scoped(clauses, texts, law, terms) do
     [first | _] = clauses
-    place = located_brackets(first.instruction)
+    place = Clauses.located_brackets(first.instruction)
     context = tl(texts)
 
     {scoped, _} =
       Enum.map_reduce(clauses, {nil, true}, fn c, {prev, ours?} ->
         # captions and quotes aside: a law named there is not the clause's
-        unquoted = c.instruction |> asides() |> unquote_words() |> own_part(law, terms)
+        unquoted =
+          c.instruction |> Clauses.asides() |> Clauses.unquote_words() |> own_part(law, terms)
 
         ours? =
           case laws(unquoted, terms) do
@@ -372,20 +380,17 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
           end
 
         own =
-          brackets(%{c | instruction: own_part(unquote_words(asides(c.instruction)), law, terms)})
+          brackets(%{
+            c
+            | instruction:
+                own_part(Clauses.unquote_words(Clauses.asides(c.instruction)), law, terms)
+          })
 
         named = if c == first, do: own, else: Brackets.above(place, own) ++ own
         {%{text: c, named: named, numbers: numbers, ours?: ours?}, {numbers, ours?}}
       end)
 
     Enum.filter(scoped, & &1.ours?)
-  end
-
-  # the text without its captions, a title's own brackets kept ("Planning
-  # (Listed Buildings and Conservation Areas) Act 1990")
-  defp asides(s) do
-    ~r/[“"][^”"]*[”"]|\((?:[^()“”"]|[“"][^”"]*[”"])*\)(?!\s*(?:Act|Regulations|Order|Rules|\d{4})\b)/u
-    |> Regex.replace(s, fn m -> if m =~ ~r/^[“"]/u or not (m =~ ~r/\s/u), do: m, else: "" end)
   end
 
   # a clause naming two laws ("Section 7 of the PPVA 1981 and section
@@ -450,59 +455,6 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
     |> Enum.reverse()
   end
 
-  # "in subsection (1)", "In section 7(1)(a)": where the clause is
-  @place ~r/\bin\s+(?:sub-?)?(?:sections?|paragraphs?|sub-?paragraphs?|regulations?|articles?|rules?)\s+(?:\d+[A-Z]*\s*)?((?:\([0-9A-Za-z]+\))+)/i
-
-  defp located_brackets(i) do
-    i
-    |> strip_captions()
-    |> unquote_words()
-    |> then(&Regex.scan(@place, &1, capture: :all_but_first))
-    |> Enum.flat_map(&Brackets.plain_brackets(hd(&1)))
-    |> Enum.filter(&Brackets.bracket?/1)
-  end
-
-  # the instruction's clauses, one per operation: split at "and" or ";"
-  # outside quotes and captions, a piece with no verb joined to the next
-  # ("Sections 4 and 5 are repealed") or, last, to the one before
-  defp clauses(%Text{instruction: i} = text) do
-    masked =
-      Regex.replace(
-        ~r/[“"][^”"]*[”"]|\((?:[^()“”"]|[“"][^”"]*[”"])*\)/u,
-        i,
-        &String.duplicate("x", byte_size(&1))
-      )
-
-    cuts =
-      for [{pos, len}] <- Regex.scan(~r/;\s*|,?\s+and\s+/, masked, return: :index),
-          do: pos + len
-
-    pieces =
-      [0 | cuts]
-      |> Enum.zip(cuts ++ [byte_size(i)])
-      |> Enum.map(fn {a, b} -> {binary_part(i, a, b - a), binary_part(masked, a, b - a)} end)
-
-    pieces
-    |> Enum.reduce([], fn {piece, m}, acc ->
-      case acc do
-        [{open, om, false} | rest] -> [{open <> piece, om <> m, verb?(om <> m)} | rest]
-        _ -> [{piece, m, verb?(m)} | acc]
-      end
-    end)
-    |> then(fn
-      [{last, _, false}, {prev, pm, _} | rest] -> [{prev <> last, pm, true} | rest]
-      acc -> acc
-    end)
-    |> Enum.reverse()
-    |> Enum.map(fn {piece, _, _} -> %{text | instruction: String.trim(piece)} end)
-    |> case do
-      [_] -> [text]
-      cs -> cs
-    end
-  end
-
-  defp verb?(masked), do: Operation.of(%Text{id: nil, instruction: masked}) != nil
-
   defp named_refs(text, {"inserted", "inserted"}, p, n, _named) do
     case {text.inserted, inserted_named(text)} do
       {[], [_ | _] = ins} -> for c <- Brackets.combos(ins), do: Brackets.ref(p, [n | c])
@@ -527,49 +479,6 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
         source: source,
         treatment: :instruction
       )
-
-  # words the instruction doesn't spell out: an emptied quote ("“”": the
-  # quote held only markup — 1991 c.39 s.1(2)) or "each of the following is
-  # omitted—" with no kind of provision named (a list of words: 2004 c.5)
-  defp words_unnamed?(i),
-    do:
-      i =~ ~r/[“"]\s*[”"]/u or
-        (i =~ ~r/\bthe following (?:is|are|shall be) (?:omitted|repealed|revoked)\b/i and
-           not (i =~ @provision_named))
-
-  # the instruction's operation, its captions aside; an insertion quoting
-  # no provision "at the end" / "at the appropriate place" — and naming no
-  # kind of provision as inserted — puts words into the provision named (2014 c.6 s.128(2)(e): a definition into s.235(1))
-  defp operation(text) do
-    case Operation.of(captionless(text)) do
-      {verb, verb} = op when verb != "inserted" ->
-        if words_unnamed?(text.instruction), do: {verb, "words #{verb}"}, else: op
-
-      {"inserted", "inserted"} = op ->
-        if text.inserted == [] and
-             text.instruction =~ ~r/\bat the (?:end|beginning|appropriate places?)\b/i and
-             not (text.instruction =~ @provision_named),
-           do: {"inserted", "words inserted"},
-           else: op
-
-      op ->
-        op
-    end
-  end
-
-  # the instruction without its bracketed captions ("In section 118 (… of
-  # revoked or suspended licences), after subsection (4) insert—": the verb
-  # is "insert", not the caption's "revoked" — SI 1998/1420; "(“the 1984
-  # Act”)" names a term, not words changed); quoted words keep their brackets
-  defp captionless(%Text{instruction: i} = text),
-    do: %{text | instruction: strip_captions(i)}
-
-  # a bracketed caption: a parenthetical with a space, quotes inside allowed,
-  # never starting inside a quote
-  defp strip_captions(s) do
-    ~r/[“"][^”"]*[”"]|\((?:[^()“”"]|[“"][^”"]*[”"])*\)/u
-    |> Regex.replace(s, fn m -> if m =~ ~r/^[“"]/u or not (m =~ ~r/\s/u), do: m, else: "" end)
-  end
 
   # ── repeals tables ──────────────────────────────────────────────────
 
@@ -695,7 +604,11 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   # each place a path of its own ("in subsection (1) … and, in subsection
   # (2), …" → (1) and (2), never (1)(2))
   defp located(rest),
-    do: for([_, bs] <- Regex.scan(@located, unquote_words(rest)), do: Brackets.plain_brackets(bs))
+    do:
+      for(
+        [_, bs] <- Regex.scan(@located, Clauses.unquote_words(rest)),
+        do: Brackets.plain_brackets(bs)
+      )
 
   # a line repealing words and provisions ("in subsection (1) the
   # definitions of …; and subsection (2)"): read piece by piece — "in
@@ -845,8 +758,6 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
     end
   end
 
-  defp unquote_words(t), do: String.replace(t, ~r/[“"][^”"]*[”"]/u, "")
-
   defp laws(t, terms) do
     lower = String.downcase(t)
 
@@ -933,7 +844,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   # 7(2)", not "for subsection (2)")
   defp sections_quoted?(%Text{} = text),
     do:
-      captionless(text).instruction =~
+      Clauses.captionless(text).instruction =~
         ~r/\b(?:for|after|before)\s+(?:the\s+)?(?:sections?|regulations?|articles?|rules?)\s+\d+[A-Z]*\b(?!\s*\((?:\d+[A-Z]*|[a-z]{1,3})\))/i
 
   defp provision_path?([top | _]), do: top =~ ~r/^\d/

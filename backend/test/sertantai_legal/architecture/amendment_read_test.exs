@@ -21,8 +21,10 @@ defmodule SertantaiLegal.Architecture.AmendmentReadTest do
   end
 
   test "only the reader asks an instruction's operation" do
+    # the reader is reader.ex and its modules (decomposed, run time 2026-10-25)
     assert offenders(~r/\bOperation\.of(?:_quoted)?\(/, [
-             "sertantai_legal/scraper/amendment/reader.ex"
+             "sertantai_legal/scraper/amendment/reader.ex",
+             "sertantai_legal/scraper/amendment/reader/clauses.ex"
            ]) == []
   end
 
