@@ -225,8 +225,12 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
         texts = Enum.map([text.instruction | Enum.reverse(text.context)], &unquote_words/1)
         before = Stream.map(text.before, &unquote_words/1)
 
+        # the laws named, found once for every law offered (run time,
+        # 2026-10-25: found per law, 24× over for ukpga 1995/25)
+        named = named(Stream.concat(texts ++ List.wrap(title), before), terms)
+
         for law <- laws,
-            law?(Stream.concat(texts ++ List.wrap(title), before), terms, law),
+            Enum.any?(named, &law_named?(&1, law)),
             rule <- rules(text, texts, law, source, terms),
             do: rule
 
@@ -396,7 +400,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
       for {term, law} <- terms,
           law.law != nil or law.title != nil,
           [{a, len}] <-
-            Regex.scan(~r/(?<![\w])#{Regex.escape(term)}(?![\w])/u, lower, return: :index),
+            Regex.scan(term_re(term), lower, return: :index),
           do: {a, a + len, law}
 
     titled =
@@ -842,15 +846,25 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
 
   # ── the law named (LR-41) ──────────────────────────────────────────
 
-  defp law?(texts, terms, law) do
-    texts
-    |> Enum.find_value({:named, false}, fn t ->
+  # the laws the nearest text naming any law names (LR-41)
+  defp named(texts, terms) do
+    Enum.find_value(texts, [], fn t ->
       case laws(t, terms) do
         [] -> nil
-        refs -> {:named, Enum.any?(refs, &law_named?(&1, law))}
+        refs -> refs
       end
     end)
-    |> elem(1)
+  end
+
+  # a defined term as a whole word, compiled once per process (it was
+  # compiled at every match: 570,639 compiles reading ukpga 1995/25)
+  defp term_re(term) do
+    key = {__MODULE__, :term_re, term}
+
+    case Process.get(key) do
+      nil -> tap(~r/(?<![\w])#{Regex.escape(term)}(?![\w])/u, &Process.put(key, &1))
+      re -> re
+    end
   end
 
   defp unquote_words(t), do: String.replace(t, ~r/[“"][^”"]*[”"]/u, "")
@@ -861,7 +875,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
     defined =
       for {term, law} <- terms,
           law.law != nil or law.title != nil,
-          Regex.match?(~r/(?<![\w])#{Regex.escape(term)}(?![\w])/u, lower),
+          Regex.match?(term_re(term), lower),
           do: law
 
     titled =
