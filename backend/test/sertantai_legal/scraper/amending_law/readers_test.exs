@@ -188,6 +188,30 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
           ])
         )
 
+    test "a definition's chapter and list-item comma are not its title (asp 2011/6, Planning Act 2008)" do
+      assert terms_of(
+               ~s(“<Term id="t1">the 1981 Act</Term>” means the Wildlife and Countryside Act 1981 \(c.69\),)
+             )["the 1981 act"] == %{law: nil, title: "Wildlife and Countryside Act 1981"}
+
+      assert terms_of(
+               ~s(“<Term id="t1">TCPA 1990</Term>” means the Town and Country Planning Act 1990 \(c. 8\).)
+             )["tcpa 1990"] == %{law: nil, title: "Town and Country Planning Act 1990"}
+
+      assert terms_of(
+               ~s(“<Term id="t1">the 2004 Act</Term>” means the Nature Conservation \(Scotland\) Act 2004 \(asp 6\); and)
+             )["the 2004 act"] == %{law: nil, title: "Nature Conservation (Scotland) Act 2004"}
+    end
+
+    test "a thing under a law is not the law (PCA 2017, Planning Act 2008)" do
+      for text <- [
+            ~s(“<Term id="t1">fire and rescue authority</Term>” means a fire and rescue authority under the Fire and Rescue Services Act 2004;),
+            ~s(“<Term id="t1">metropolitan police district</Term>” means that district as defined in section 76 of the London Government Act 1963;),
+            ~s(“<Term id="t1">permitted development</Term>” means development in relation to which planning permission is granted by article 3 of the Town and Country Planning \(General Permitted Development\) Order 1995;)
+          ] do
+        assert terms_of(text) == %{}, text
+      end
+    end
+
     test "a term defined by apposition to a law's title means that law (1988/45: “the principal Act”)" do
       terms =
         terms_of(

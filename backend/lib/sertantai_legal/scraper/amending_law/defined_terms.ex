@@ -35,7 +35,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.DefinedTerms do
 
   # a definition with no Term markup — “the 2015 Act” (“Deddf 2015”) means
   # the Planning (Wales) Act 2015 (Welsh orders: WSI 2017/546)
-  @plain ~r/^\s*“([^”]+)”\s*(?:\(“[^”]*”\)\s*)?means\s+(?:the\s+)?(.+?)\s*[;.]?\s*$/u
+  # a definition's end: ";", "." or a list item's ",", each perhaps with
+  # "and" / "or":
+  # "“the 1981 Act” means the Wildlife and Countryside Act 1981 (c.69),"
+  # (asp 2011/6, CV-S05)
+  @item_end ~S"(?:[;.,](?:\s*(?:and|or))?)?\s*"
+
+  @plain ~r/^\s*“([^”]+)”\s*(?:\(“[^”]*”\)\s*)?means\s+(?:the\s+)?(.+?)\s*#{@item_end}$/u
 
   defp plain(roots) do
     for root <- roots,
@@ -87,7 +93,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.DefinedTerms do
   end
 
   defp title(words) do
-    case Regex.run(~r/\bmeans (?:the )?([^;:]+?)\s*[;.]?\s*$/u, words) do
+    case Regex.run(~r/\bmeans (?:the )?([^;:]+?)\s*#{@item_end}$/u, words) do
       [_, t] -> t |> String.trim() |> unchaptered()
       nil -> nil
     end
