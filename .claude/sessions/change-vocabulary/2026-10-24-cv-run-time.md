@@ -331,3 +331,29 @@ From the code (each task's runner, caches, version hashes) and the times recorde
 - First regression preview: 255 laws, 1 min 54 s; 2 changes, both expected (SI 2019/758 −4: the Annex guard; SI 2016/285 +6: the title fix finds the Building (Approved Inspectors etc.) Regulations 2010).
 - Durable: the workflow in `backend/lib/sertantai_legal/scraper/CLAUDE.md` (amendment reader section) and memory (`reader-fix-loop`, `module-size`).
 - Module size: `lat.amending` 372 → under 300 lines (`with_powers` → `AmendingLaw.Extent.Powers`; the read pass → `ReadPass`); `VersionCoverageTest` now stops at I/O modules.
+
+## Plan: decompose `Amendment.Reader` (1,004 lines, 73 functions) — PROPOSED 2026-10-25, revised after review
+
+**Order:** after the end-of-round full read pass (running); **no reader behaviour change until the gate passes** (the Annex/Schedule targets work waits). Each step a commit that leaves the suite green.
+
+**Call direction, no cycles:** `Brackets` ← `Clauses` ← `Targets` ← `LawNamed` ← `Reader`; `RepealTable` → `Brackets`, `Targets`, `LawNamed`. Arities kept; each moved function keeps its name and arity, made public with `@spec` and `@doc` where another module calls it.
+
+| Module | Holds (from Reader, names and arities kept) | Public (called across modules) |
+|---|---|---|
+| `Amendment.Reader.Brackets` | `@bracket`, `plain_brackets/1`, `bracket_level/1`, `above/2`, `ref/2`, `combos/1` | all |
+| `Amendment.Reader.Clauses` | `clauses/1`, `verb?/1`, `operation/1`, `captionless/1`, `strip_captions/1`, `located_brackets/1`, `words_unnamed?/1`, `asides/1` | `clauses/1`, `operation/1`, `captionless/1`, `located_brackets/1`, `asides/1`, `words_unnamed?/1` |
+| `Amendment.Reader.Targets` | `numbers/2`, `inserted_named/1`, `sections_quoted?/1`, `provision_path?/1`, `own_number?/2`, `brackets/1`, `quoted_targets/2`, `quoted_paths/4`, `quoting_clause/1`, `named_refs/5`, `rule/4` | `numbers/2`, `brackets/1`, `quoted_targets/2`, `quoting_clause/1`, `named_refs/5`, `rule/4`, `inserted_named/1` |
+| `Amendment.Reader.LawNamed` | `named/2`, `laws/2`, `law_named?/2`, `norm/1`, `term_re/1`, `unquote_words/1`, `scoped/4`, `own_part/3`, `law_spans/2` | `named/2`, `law_named?/2`, `norm/1`, `unquote_words/1`, `scoped/4` |
+| `Amendment.Reader.RepealTable` | `repeal_table/3`, `repeal_table?/2`, `table_rows/1`, `entries/1`, `table_law?/2`, `line_targets/1`, `siblings/2`, `located/1`, `mixed_line/3`, `mixed_pieces/3`, `provisions/1`, `words_targets/3`, `words_line?/1`, `whole_targets/2` | `repeal_table/3`, `repeal_table?/2` |
+| **Stays in `Amendment.Reader`** | `law_ref/3`, `read/4`, `provision?/1`, `references/1`, `has_effect/1`, `parts/1`, `schedule_of/1`, `reference/2`, `instruction/4`, `articles_only/3`, `set_out/2`, `of_text/5`, `rules/5` | its public API unchanged; `repeal_table/3`, `repeal_table?/2` delegate |
+
+**Steps:**
+1. `Brackets`, with `ReaderVersion` gaining `lib/sertantai_legal/scraper/amendment/reader/*.ex` in the same commit (`SourceVersion` takes globs) so the coverage test stays green. Unit tests: `plain_brackets("(a)(ii)")`, `bracket_level/1`, `above/2`, `ref/2`, `combos/1` on the inputs the existing reader tests produce ("subsection (5), paragraphs (b) and (c)").
+2. `Clauses`: unit tests from reader_test's mixed-instruction cases (AR-08: "omit “either”; and at the end insert—" → two clauses), built with `%Text{}` as reader_test builds them.
+3. `Targets`: unit tests from reader_test's quoted-provision cases (Clean Air Act 1968 s.5(1): `(b)` → `(b)`, `(c)`) and named-bracket cases.
+4. `LawNamed`: unit tests from readers_test's defined-term cases and the SI 2019/598 / 2019/453 heading cases (`named/2` over texts).
+5. `RepealTable`: reader_test's repeals-table cases move to `RepealTable.repeal_table/3` unchanged.
+6. After each step: `mix test` green and `mix lat.amending --read --preview --regression` reports 0 changed.
+7. **Gate (ask Jason first, ~7 min):** `mix lat.amending --read --preview --all` reports 0 changed over every amending law; every module under ~300 lines.
+
+Review: `backend/data/code-reviews/2026-10-25-reader-decomposition-plan-reviewer.md` — all 7 findings Taken (cycle broken by `Brackets` and a call direction; arities kept; tests named per module; ReaderVersion glob in step 1; gate command exact and asked; what stays listed and the order fixed; figure updated).
