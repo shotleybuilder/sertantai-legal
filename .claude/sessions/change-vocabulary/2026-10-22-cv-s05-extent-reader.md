@@ -392,3 +392,18 @@ The stored rows match the sample for all 50 laws. Every round-2 fix the sample r
   - **N-D:** a sentence's second clause is dropped: "Paragraphs 34 and 35 … extend to England and Wales and Scotland, and paragraph 36 of that Schedule extends to Scotland only" (CJA 2009 s.181(5)).
   - **N-E (minor):** a number in words, "section seventy-seven", is unread (Factories Act 1961 s.185(3)), and an empty `also` list is stored.
   - **Known:** P1–P7.
+
+## Fix round 4 (2026-10-25, Jason: "Do 1"), code `c2532fe6`
+
+- **N-A, N-B:** the same-extent wordings are read: "made by the provisions in Parts 2 and 3"; the leads "Except as provided by / set out in / mentioned in …"; "or other amendment"; "the same extent within the United Kingdom as"; "extends to the part or parts of the United Kingdom to which the enactment extends".
+- **N-C, N-D:** `Extent.statements/1` gives a sentence's own statements: each lettered item under a lead-in, and a compound's second clause (with "that Schedule" named).
+- **N-E:** an exception that isn't parsed gives no list (no empty `also`).
+- **The counting gap:** the catalogue now counts the wider same-extent, "extends throughout" and "extends as follows" wordings, so unread ones are seen and counted.
+- **Found in run 7 and fixed:** "Regulations under this section may extend throughout England and Wales …" had been read as a named list since round 3 (G). I missed it in the run 6 review. A modal "may" or "under this" statement is never the law's own.
+- **Catalogue run 7 (62 minutes, `--accept`):** 10 new patterns reviewed; 4 examples read differently, then 10 after the fix above, each reviewed against its text.
+  - Remaining unread forms, counted:
+    - "A provision of this Act which amends … has the same extent within the United Kingdom as …, subject to subsections (6) to (9)" (2022/32);
+    - "These Regulations extend as follows." (2019/837);
+    - "Any amendment … of an enactment which does not extend throughout the United Kingdom shall extend only to the part …" (1983/29).
+  - The pattern keys of the 10 examples re-read after the run stay as run 7 wrote them until the next catalogue run; only their expectations were updated. Tests: 8,717 pass.
+- **Restore point** `cv-s05-before-round5`. The re-read and the rebuild are running.
