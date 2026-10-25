@@ -354,3 +354,22 @@ The stored rows match the sample for all 50 laws. Every round-2 fix the sample r
   - LRRA 2006 s.34(3), "The repeals in the Schedule have the same extent …", is stored as `*`, not the Schedule.
 - **Cosmetic:** the check's label `not_named` for a provision in a `same` list.
 - **Known:** P1 ×4, P2 ×5.
+
+## Fix round 3 (2026-10-24/25, Jason: "Go start"), code `1492a41b`
+
+- **A:** an Act of the UK Parliament that "extends to Northern Ireland" (no "only") extends to the UK. `statement/2` takes the law's type, so the catalogue reads the sentence the same way as the law.
+- **B:** "to the extent that they apply in …" is never the law's own application.
+- **C:** an `only` or `named` list beats a `same` (or `unread`) list for the provisions it names.
+- **D:** the competence guard reads the feed's operation too.
+- **E:** "same extent …, except that the amendments made by paragraphs X of that Schedule extend to P only" is read: same, plus those paragraphs only there. Any other exception gives a new list kind, `unread`: the provisions' extent is unknown, never the default. It is stored and read back.
+- **Outside the sample:** a bracketed description never names a Part (HSCA 2012).
+- **Found in the catalogue review and fixed:**
+  - The subject "this Act" never follows "to ". "Schedule 17 to this Act shall extend to NI" had been read as the Act's default (NI); it now reads correctly, and "… and save as aforesaid this Act shall not extend to NI" gives E+W+S.
+  - "extends only to", "as well as to", "except for—" and "that is to say—" are now read; "so much of" items stay unread.
+- **Not done:**
+  - LRRA 2006: the unnumbered Schedule has no ref (`Order.ref("schedule")` is nil), so "the repeals in the Schedule" stays `*`;
+  - NEW-F, repealed laws stored in their repealed version: a data limit, counted;
+  - NEW-G, "This Act, except sections …, extends to Scotland only".
+- **Catalogue run 6 (66 minutes, `--accept`):** 38 examples re-read, each among the 46 reviewed against their text; 14 new patterns reviewed; 27 gone. Tests: 8,699 pass.
+- **CV-S04 is not affected:** the commencement readers don't use `AmendingLaw.Extent`, so their catalogues weren't re-run.
+- **Restore point** `cv-s05-before-round4`. The re-read and the rebuild are running.
