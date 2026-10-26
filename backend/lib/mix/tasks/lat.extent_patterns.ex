@@ -26,6 +26,7 @@ defmodule Mix.Tasks.Lat.ExtentPatterns do
 
   alias Mix.Tasks.Lat.FeedPatterns, as: Files
 
+  alias SertantaiLegal.Scraper.AmendingLaw.SweepForm
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Patterns, ReadCache}
   alias SertantaiLegal.Scraper.LawRunner
   alias SertantaiLegal.Scraper.LawRunner.Guard
@@ -79,6 +80,20 @@ defmodule Mix.Tasks.Lat.ExtentPatterns do
 
     write(dir, acc)
     report(dir, acc, opts[:accept])
+    uncaught(results)
+  end
+
+  # the extent sentences this catalogue misses (the sweep, CV-S05a:
+  # `mix lat.extent_sweep` for the clusters)
+  defp uncaught(results) do
+    forms =
+      for {_law, {:ok, %{uncaught: u}}} <- results, {_ref, s, _net} <- u, do: SweepForm.form(s)
+
+    Mix.shell().info(
+      "\nextent sentences not in the catalogue (the sweep): #{length(forms)}; " <>
+        "in a form the reader is to read: #{Enum.count(forms, &SweepForm.read?/1)} " <>
+        "(mix lat.extent_sweep)"
+    )
   end
 
   defp new_acc,
@@ -104,10 +119,11 @@ defmodule Mix.Tasks.Lat.ExtentPatterns do
   defp law_result(law) do
     case ReadCache.law(law) do
       nil ->
-        {:ok, %{classes: [], xml: nil, alone: MapSet.new()}}
+        {:ok, %{classes: [], xml: nil, alone: MapSet.new(), uncaught: []}}
 
       r ->
-        {:ok, %{classes: r.classes, xml: r.example, alone: MapSet.new(r.alone)}}
+        {:ok,
+         %{classes: r.classes, xml: r.example, alone: MapSet.new(r.alone), uncaught: r.uncaught}}
     end
   rescue
     error -> {:error, Exception.message(error)}

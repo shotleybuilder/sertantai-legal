@@ -68,14 +68,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.SweepTest do
            ]
   end
 
-  test "shape/1 and group/1" do
-    s = "Subsection (1) does not apply to section 59(3), 90, 91 or 109."
-    assert Sweep.shape(s) == "Subsection N does not apply to section N."
-    assert Sweep.group(s) == "exception"
-    assert Sweep.group("This paragraph applies in relation to England only.") == "place"
-
-    assert Sweep.group(
-             "Her Majesty may by Order in Council provide for any of the provisions of this Act to extend to the Isle of Man."
-           ) == "outside_uk"
+  test "shape/1" do
+    assert Sweep.shape("Subsection (1) does not apply to section 59(3), 90, 91 or 109.") ==
+             "Subsection N does not apply to section N."
   end
 end

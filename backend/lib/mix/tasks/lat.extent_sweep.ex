@@ -9,12 +9,13 @@ defmodule Mix.Tasks.Lat.ExtentSweep do
   Read-only (the reading kept between runs: `Extent.ReadCache`). Writes,
   under `--out` (default `data/extent_sweep`):
 
-  - `clusters.json`: each shape with its count, laws, nets, first guess
-    (`Sweep.group/1`) and examples, most first;
-  - `sentences.tsv`: every uncaught sentence (law, ref, net, group, shape,
+  - `clusters.json`: each shape with its count, laws, nets, form
+    (`AmendingLaw.SweepForm`: read / count / noise) and examples, most first;
+  - `sentences.tsv`: every uncaught sentence (law, ref, net, form, shape,
     sentence).
 
-  Prints the totals by group and net, and the largest clusters.
+  Prints the sentences in a form the reader is to read (misses), the
+  totals by form and net, and the largest clusters.
 
       mix lat.extent_sweep
       mix lat.extent_sweep --family "OH&S: Occupational"   # the family's amending laws only
@@ -23,6 +24,7 @@ defmodule Mix.Tasks.Lat.ExtentSweep do
   use Mix.Task
 
   alias SertantaiLegal.Repo
+  alias SertantaiLegal.Scraper.AmendingLaw.SweepForm
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{ReadCache, Sweep}
   alias SertantaiLegal.Scraper.LawRunner
   alias SertantaiLegal.Scraper.LawRunner.Guard
@@ -75,7 +77,7 @@ defmodule Mix.Tasks.Lat.ExtentSweep do
             net: net,
             sentence: s,
             shape: Sweep.shape(s),
-            group: Sweep.group(s)
+            form: SweepForm.form(s)
           }
 
     errors = for law <- laws, not is_list(results[law]), do: law
@@ -119,8 +121,8 @@ defmodule Mix.Tasks.Lat.ExtentSweep do
         count: length(rs),
         laws: rs |> Enum.map(& &1.law) |> Enum.uniq() |> length(),
         nets: rs |> Enum.map(& &1.net) |> Enum.frequencies(),
-        group:
-          rs |> Enum.map(& &1.group) |> Enum.frequencies() |> Enum.max_by(&elem(&1, 1)) |> elem(0),
+        form:
+          rs |> Enum.map(& &1.form) |> Enum.frequencies() |> Enum.max_by(&elem(&1, 1)) |> elem(0),
         examples: rs |> Enum.take(@examples) |> Enum.map(&Map.take(&1, [:law, :ref, :sentence]))
       }
     end)
@@ -145,10 +147,10 @@ defmodule Mix.Tasks.Lat.ExtentSweep do
 
     tsv =
       for r <- rows,
-          into: "law\tref\tnet\tgroup\tshape\tsentence\n",
+          into: "law\tref\tnet\tform\tshape\tsentence\n",
           do:
             Enum.map_join(
-              [r.law, r.ref, r.net, r.group, r.shape, r.sentence],
+              [r.law, r.ref, r.net, r.form, r.shape, r.sentence],
               "\t",
               &String.replace(&1, ~r/[\t\n]/u, " ")
             ) <> "\n"
@@ -164,7 +166,10 @@ defmodule Mix.Tasks.Lat.ExtentSweep do
       "\nuncaught: #{length(rows)} sentences in #{laws_with} laws, #{length(clusters)} shapes"
     )
 
-    for {label, key} <- [{"by group", :group}, {"by net", :net}] do
+    to_read = Enum.count(rows, &SweepForm.read?(&1.form))
+    shell.info("to read (a form the reader is to read: a miss): #{to_read}")
+
+    for {label, key} <- [{"by form", :form}, {"by net", :net}] do
       shell.info("\n#{label}:")
 
       rows
@@ -177,7 +182,7 @@ defmodule Mix.Tasks.Lat.ExtentSweep do
 
     for c <- Enum.take(clusters, @shown) do
       shell.info(
-        "  #{String.pad_leading(to_string(c.count), 4)} (#{c.laws} laws, #{c.group})  #{c.shape}"
+        "  #{String.pad_leading(to_string(c.count), 4)} (#{c.laws} laws, #{c.form})  #{c.shape}"
       )
     end
 

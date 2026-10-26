@@ -25,8 +25,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Sweep do
   Never an idiom ("to the extent that", "the extent to which", "revoked to
   the extent specified", "extend the period", "as it applies in England").
   A sentence the catalogue classes (whole, or holding or held by one) is
-  caught. `shape/1` clusters what remains; `group/1` is a first guess at
-  what each is, for review. Pure.
+  caught. `shape/1` clusters what remains; `AmendingLaw.SweepForm` names
+  each one's form (kept apart: the labels never change the reading). Pure.
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
@@ -140,39 +140,6 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Sweep do
     |> String.split(" ")
     |> Enum.take(14)
     |> Enum.join(" ")
-  end
-
-  @doc """
-  A first guess at what an uncaught sentence is, for review (never
-  commencement words: those are the commencement readers' alone):
-  `outside_uk` (the Isle of Man, the Channel Islands, …),
-  `outside_gb` (application outside Great Britain), `same_extent`,
-  `exception` ("does not apply to section …", "subject to …"), `place`
-  (names a place), or `other`.
-  """
-  @spec group(String.t()) :: String.t()
-  def group(s) do
-    cond do
-      s =~
-          ~r/\bIsle\s+of\s+Man\b|\bChannel\s+Islands\b|\boverseas\s+territor|\boutside\s+the\s+United\s+Kingdom\b/iu ->
-        "outside_uk"
-
-      s =~ ~r/\boutside\s+Great\s+Britain\b/iu ->
-        "outside_gb"
-
-      s =~
-          ~r/\bsame\s+(?:territorial\s+)?(?:extent|application)\b|\bthe\s+extent\s+of\b[^.]*\bis\s+the\s+same\b/iu ->
-        "same_extent"
-
-      s =~ ~r/\b(?:does|do|shall)\s+not\s+apply\b|\bis\s+subject\s+to\b|\bexcept\b/iu ->
-        "exception"
-
-      Regex.match?(Regex.compile!("\\b(?:#{@places})\\b", "u"), s) ->
-        "place"
-
-      true ->
-        "other"
-    end
   end
 
   # a Schedule (or a Part of one) whose paragraphs are units of their own

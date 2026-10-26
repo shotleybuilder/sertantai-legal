@@ -12,7 +12,9 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
      `no_clause`). Our faults: the stored `extent_rules` differ from the
      reading now (`stale`), or none stored (`not_stored`). Beside it, the
      law's own extent sentences the reader leaves unread
-     (`Extent.Patterns`, by class: the catalogue's counted classes).
+     (`Extent.Patterns`, by class: the catalogue's counted classes), and
+     the extent sentences the catalogue misses (`Extent.Sweep`, by form:
+     `AmendingLaw.SweepForm`; one in a `read:` form is a miss).
   2. **Text changes:** every stored text change (inserted, substituted,
      repealed, renumbered) of the family's laws, by where its territory
      comes from: `territory:law` (the amending law's application),
@@ -34,7 +36,7 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
   use Mix.Task
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent
+  alias SertantaiLegal.Scraper.AmendingLaw.{Extent, SweepForm}
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{ReadCache, Store}
   alias SertantaiLegal.Scraper.LawRunner
   alias SertantaiLegal.Scraper.LawRunner.Guard
@@ -142,10 +144,26 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
 
     cond do
       not Store.reads?(law) ->
-        %{law: law, basis: "none", why: "type_not_read", fault: nil, unread: %{}, words: nil}
+        %{
+          law: law,
+          basis: "none",
+          why: "type_not_read",
+          fault: nil,
+          unread: %{},
+          uncaught: [],
+          words: nil
+        }
 
       reading == nil ->
-        %{law: law, basis: "none", why: "not_held", fault: nil, unread: %{}, words: nil}
+        %{
+          law: law,
+          basis: "none",
+          why: "not_held",
+          fault: nil,
+          unread: %{},
+          uncaught: [],
+          words: nil
+        }
 
       true ->
         read = reading.read
@@ -171,6 +189,9 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
           why: why,
           fault: fault,
           unread: unread,
+          # the sweep's sentences the catalogue misses, with their form
+          # (CV-S05a)
+          uncaught: for({ref, s, _net} <- reading.uncaught, do: {ref, s, SweepForm.form(s)}),
           extent: e,
           words: e.text || words(classes)
         }
@@ -272,6 +293,21 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
     )
 
     for {c, n} <- Enum.sort_by(unread, &(-elem(&1, 1))), do: shell.info("  #{pad(n)}  #{c}")
+
+    uncaught = for r <- rows, {ref, s, form} <- r.uncaught, do: {r.law, ref, s, form}
+    misses = Enum.filter(uncaught, fn {_, _, _, form} -> SweepForm.read?(form) end)
+
+    shell.info(
+      "\nextent sentences the catalogue misses (the sweep, CV-S05a): #{length(uncaught)} in " <>
+        "#{uncaught |> Enum.map(&elem(&1, 0)) |> Enum.uniq() |> length()} laws; " <>
+        "#{length(misses)} in a form the reader is to read"
+    )
+
+    for {f, n} <- uncaught |> Enum.frequencies_by(&elem(&1, 3)) |> Enum.sort_by(&(-elem(&1, 1))),
+        do: shell.info("  #{pad(n)}  #{f}")
+
+    for {law, ref, s, form} <- misses,
+        do: shell.info("    #{law} #{ref} (#{form}): #{String.slice(s, 0, 140)}")
 
     shell.info("\n#{length(change_rows)} text changes — territory from:")
 
