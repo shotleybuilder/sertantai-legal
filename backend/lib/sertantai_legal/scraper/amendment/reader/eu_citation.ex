@@ -56,10 +56,20 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.EuCitation do
   def ref([_whole, kind, n, y | _]) when n != "",
     do: %{law: nil, eu: {@types[kind], year(y), n}}
 
+  # (a Regulation's "273/2004" with no "No": number / year, when only the
+  # second is a year — SI 2019/742's "Regulation (EC) 273/2004")
+  def ref([_whole, "Regulation", _, _, a, b]) when a != "" and b != "" do
+    if not year?(a) and year?(b),
+      do: %{law: nil, eu: {"eur", b, a}},
+      else: %{law: nil, eu: {"eur", year(a), b}}
+  end
+
   def ref([_whole, kind, _, _, y, n]) when y != "" and n != "",
     do: %{law: nil, eu: {@types[kind], year(y), n}}
 
   def ref(_), do: nil
+
+  defp year?(s), do: s =~ ~r/^(?:19[5-9]\d|20\d\d)$/
 
   defp year(<<_, _>> = yy), do: if(String.to_integer(yy) >= 50, do: "19" <> yy, else: "20" <> yy)
   defp year(yyyy), do: yyyy

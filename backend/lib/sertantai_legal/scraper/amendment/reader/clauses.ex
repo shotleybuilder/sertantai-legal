@@ -186,7 +186,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   The text without its quoted words — nested quotes too, innermost first
   ("omit ““x” means the Building (Approved Inspectors etc.) Regulations
   2010”": SI 2024/1268, whose definition's title had named a law), and
-  words up to a closing quote left with no opener.
+  words up to a closing quote left with no opener or after an opening
+  quote left with no closer.
   """
   @spec unquote_words(String.t()) :: String.t()
   def unquote_words(t),
@@ -199,6 +200,11 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
       # Regulation (EU) 2017/1354 …;”": a term lost in the flattening; SI
       # 2019/696 Sch. 29 para 2, whose inserted words had named EU laws)
       |> String.replace(~r/([—–])[^“”—–]*”/u, "\\1")
+      # and an opening quote left with no closer, quoted words to the end
+      # ("for substitute “Schedule 2 to the Supply of Machinery (Safety)
+      # Regulations 2008/1597; and": SI 2019/696 Sch. 22, which had named
+      # the Machinery Regulations for the Lifts Regulations' paragraphs)
+      |> String.replace(~r/“[^”]*$/u, "")
 
   defp unnest(t) do
     case String.replace(t, ~r/“[^“”]*”(?=[^“]*”)/u, "") do

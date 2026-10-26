@@ -13,6 +13,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.EuCitationTest do
     assert refs("In Regulation (EU) 2016/425, for Article 3 substitute") ==
              [%{law: nil, eu: {"eur", "2016", "425"}}]
 
+    assert refs("Amendment of Regulation (EC) 273/2004 of the European Parliament") ==
+             [%{law: nil, eu: {"eur", "2004", "273"}}]
+
     assert refs("Council Directive 89/391/EEC and Decision 2000/532/EC") == [
              %{law: nil, eu: {"eudr", "1989", "391"}},
              %{law: nil, eu: {"eudn", "2000", "532"}}

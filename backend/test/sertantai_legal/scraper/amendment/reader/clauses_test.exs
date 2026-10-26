@@ -81,6 +81,12 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.ClausesTest do
            ) == "before the definition of  insert—;"
   end
 
+  test "unquote_words/1: an opening quote with no closer quotes to the end (SI 2019/696 Sch. 22)" do
+    assert Clauses.unquote_words(
+             "for “2008” substitute “Schedule 2 to the Supply of Machinery (Safety) Regulations 2008/1597; and"
+           ) == "for  substitute "
+  end
+
   test "unquote_words/1: nested quotes, innermost first (SI 2024/1268)" do
     assert Clauses.unquote_words(
              "omit ““x” means the Building (Approved Inspectors etc.) Regulations 2010”."
