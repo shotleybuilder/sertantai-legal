@@ -123,7 +123,7 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 - ⬜ Environment Act 1995 Sch. 22 para 30 (HSWA, "in this paragraph referred to as …"): its sub-paragraphs read no rule since the "etc." fix (they had read wrongly as COPA 1974) — trace in the reader work after the decomposition gate
 - ⬜ Annex/Schedule targets: instructions placed in a Schedule or Annex of the amended law (by a heading, or a term like "the electronic communications code" = CA 2003 Sch. 3A) are read at its paragraphs (EU Annex instructions are now held back, giving no Article rules; PSTI 2022's dropped). Was: a defined term meaning a Schedule of a law ("the electronic communications code" = CA 2003 Sch. 3A, PSTI 2022): read its instructions at that Schedule's paragraphs (now dropped rather than placed on CA 2003 sections; belongs to CV-S05's reader work)
 - ✅ Decompose `Amendment.Reader` (1,004 → 305 lines; five modules under ~270; gate 0 changed) — `2d4b7c7e`…`81573975`
-- ⬜ Decompose `AmendingLaw.Extent` (1,343 lines) the same way: plan, review, steps test-first, zero-diff gate on the extent catalogue and check — plan revised after review (see "Plan: decompose `AmendingLaw.Extent`")
+- ✅ Decompose `AmendingLaw.Extent` (1,343 → 160 lines; 11 modules ≤ 229; gate 0 differences) — `0250e307`…`f08e680f`
 - ⬜ `Extent.Patterns` is 390 lines: split after the Extent gate
 - ⬜ 202 laws stale in `lat.extent_check` (OH&S): stored `extent_rules` differ from the reading now — trace why (pre-existing at the decomposition baseline)
 - ⬜ Incremental read pass: re-read only the amending laws whose output can change (per-law inputs; a reader edit no longer stales all 2,102)
@@ -532,4 +532,4 @@ Finding 7 (`from_powers` and `Powers`) is Contested: `Powers` is I/O, and `from_
 - `AmendingLaw.Extent` 1,343 → 160 lines (struct, `read/1`, `introductions/1`, delegates); public API unchanged.
 - Each step test-first (red, then green). One expectation of mine was wrong (`no_dots` leaves the space before the dots: two spaces) — the test was corrected, not the code.
 - Full suite: 8,825 pass.
-- ⬜ Gate: catalogue and check after, `diff` against the baseline.
+- ✅ **Gate (2026-10-26, Jason: "Run the gate"): catalogue 5 min 12 s, 3,358 laws re-read cold; `diff -r` of the catalogue output empty; check output identical (202 stale, unchanged); 0 patterns lost, 0 examples differing.** Every new module under 230 lines.
