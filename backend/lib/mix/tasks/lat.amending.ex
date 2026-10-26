@@ -271,7 +271,7 @@ defmodule Mix.Tasks.Lat.Amending do
         {ReadReport.diff(old, old), 0}
 
       r ->
-        unless preview?, do: ReadPass.write(r)
+        unless preview?, do: ReadPass.write(r, old)
         {ReadReport.diff(old, r.rules), length(r.ids)}
     end
   end

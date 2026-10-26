@@ -110,13 +110,32 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadPass do
     end
   end
 
-  @doc "Store a reading: its rules, an Act's own extent clause (CV-04), the index."
-  @spec write(reading()) :: {:ok, non_neg_integer()}
-  def write(%{amending: amending, doc: doc} = r) do
-    {:ok, n} = Store.write(amending, r.rules)
-    # (with its powers or competence, from what is held: never a fetch)
-    if Extent.Store.reads?(amending),
-      do: {:ok, _, _} = Extent.Store.write_read(amending, Extent.read(doc), cached: true)
+  @doc """
+  Store a reading: its rules, an Act's own extent clause (CV-04), the
+  index. With `stored` (the source's rules as stored, read before), rules
+  and extent the same as stored are not written again; the index always
+  is, stamped with this reader (run time 2026-10-26).
+  """
+  @spec write(reading(), [Rule.t()] | nil) :: {:ok, non_neg_integer()}
+  def write(%{amending: amending, doc: doc} = r, stored \\ nil) do
+    {:ok, n} =
+      case stored do
+        nil -> Store.write(amending, r.rules)
+        _ -> with {:ok, n, _} <- Store.write_changed(amending, r.rules, stored), do: {:ok, n}
+      end
+
+    # (with its powers or competence, from what is held: never a fetch;
+    # the reading from `Extent.ReadCache`, kept across amendment-reader
+    # changes: run time 2026-10-26)
+    if Extent.Store.reads?(amending) do
+      read =
+        case Extent.ReadCache.law(amending, doc: doc) do
+          %{read: read} -> read
+          nil -> Extent.read(doc)
+        end
+
+      {:ok, _, _} = Extent.Store.write_read(amending, read, cached: true)
+    end
 
     :ok = Index.write(amending, doc, r.laws, pointer_keys(r.refs))
     {:ok, n}

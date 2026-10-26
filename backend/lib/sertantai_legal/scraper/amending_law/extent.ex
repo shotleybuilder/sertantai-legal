@@ -25,7 +25,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   enactment's own), or nil (not read). Pure.
   """
 
-  alias SertantaiLegal.Scraper.AmendingLaw.Doc
+  alias SertantaiLegal.Scraper.AmendingLaw.{Doc, ScheduleRefs}
 
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{
     Application,
@@ -39,7 +39,6 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
     Units
   }
 
-  alias SertantaiLegal.Scraper.Amendment.Reader
   alias SertantaiLegal.Scraper.Commencement.Order
 
   defstruct default: nil,
@@ -119,10 +118,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
           | nil
   defdelegate statement(sentence, type \\ nil), to: Default
 
-  # each Schedule's introducing section (`Amendment.Reader.references/1`,
+  # each Schedule's introducing section (`ScheduleRefs.references/1`,
   # the one reader of it), as refs: "sch.7" => "s.111"
   defp introductions(doc) do
-    for {sch, sec} <- Reader.references(doc),
+    for {sch, sec} <- ScheduleRefs.references(doc),
         s = Order.ref(sch),
         r = Order.ref(sec),
         s != nil and r != nil,

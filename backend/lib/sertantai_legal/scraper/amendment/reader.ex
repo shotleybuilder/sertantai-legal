@@ -29,8 +29,6 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   commencement ruleset's. Pure.
   """
 
-  import SweetXml
-
   alias SertantaiLegal.Scraper.Amendment.Rule
 
   alias SertantaiLegal.Scraper.Amendment.Reader.{
@@ -40,7 +38,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
     Targets
   }
 
-  alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Operation, Text}
+  alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Operation, ScheduleRefs, Text}
 
   @type law_ref :: %{
           law_name: String.t(),
@@ -91,42 +89,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   defp provision?(id),
     do: Regex.match?(~r/^(?:section|regulation|article|rule)-|^schedule-[^-]+-paragraph-/, id)
 
-  @doc """
-  Each Schedule's introducing section, by the Schedule's id
-  (`"schedule-7" => "section-111"`): the Schedule's own reference
-  (`reference/2`, where the schedules are held), else the section saying it
-  has effect ("111 Schedule 7, which supplements section 110 …, has
-  effect", where only the body is held). The one reader of this fact: the
-  repeals tables' sources (`Collect`) and an Act's extent
-  (`AmendingLaw.Extent`) use it.
-  """
+  @doc "Each Schedule's introducing section (`AmendingLaw.ScheduleRefs.references/1`)."
   @spec references(Doc.t()) :: %{String.t() => String.t()}
-  def references(doc) do
-    referenced =
-      for id <- doc.ids,
-          String.match?(id, ~r/^schedule-[^-]+$/),
-          ref = reference(doc, id),
-          ref != nil,
-          into: %{},
-          do: {id, ref}
-
-    Map.merge(has_effect(doc), referenced)
-  end
-
-  # "111 Schedule 7 … has effect": in a section's own words (not a
-  # subsection's, which says it of a Schedule it amends)
-  defp has_effect(doc) do
-    for id <- doc.ids,
-        String.match?(id, ~r/^section-\d+[A-Z]*$/),
-        text = doc |> Doc.element(id) |> Doc.lines() |> Enum.join(" "),
-        [_, n] <-
-          Regex.scan(
-            ~r/\bSchedule\s+(\d+[A-Z]*)\b[^.]{0,300}?\b(?:has|shall have) effect\b/u,
-            text
-          ),
-        into: %{},
-        do: {"schedule-#{n}", id}
-  end
+  defdelegate references(doc), to: ScheduleRefs
 
   @doc """
   Each Schedule paragraph's Part, by the paragraph's id
@@ -157,20 +122,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
 
   defp schedule_of(part), do: part |> String.split("-part-") |> hd()
 
-  @doc "The provision giving effect to a Schedule (its Reference, \"Section 108.\" → section-108)."
+  @doc "The provision giving effect to a Schedule (`AmendingLaw.ScheduleRefs.reference/2`)."
   @spec reference(Doc.t(), String.t()) :: String.t() | nil
-  def reference(doc, id) do
-    with el when el != nil <- Doc.element(doc, id),
-         [_, n] <-
-           Regex.run(
-             ~r/Section (\d+[A-Z]*)/,
-             el |> xpath(~x"./Reference//text()"ls) |> Enum.join()
-           ) do
-      "section-#{n}"
-    else
-      _ -> nil
-    end
-  end
+  defdelegate reference(doc, id), to: ScheduleRefs
 
   @doc "The rules an instruction (`id` in `doc`) states for `laws`."
   @spec instruction(Doc.t(), String.t(), map(), [law_ref()]) :: [Rule.t()]

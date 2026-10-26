@@ -7,16 +7,17 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCache do
   re-read share, done once per law and re-used until something it rests on
   changes.
 
-  Keyed by the code version (a digest of every compiled module of the app:
-  any code change re-reads every law, never a stale reading) and the law's
-  stored text files (path and a digest of their bytes: a changed text is read again).
+  Keyed by the code version (`Extent.ReadVersion`: the modules the reading
+  reaches, held by `VersionCoverageTest` — a change to any of them re-reads
+  every law, never a stale reading) and the law's stored text files (path
+  and a digest of their bytes: a changed text is read again).
   Stored as one file per law under `data/cache/extent_reads/`; a law with
   no text held is not cached. Pure in what it returns: the reading is the
   same with or without the cache.
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Extent}
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Patterns, ReadVersion}
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
 
   @dir Path.join(["data", "cache", "extent_reads"])
@@ -30,7 +31,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCache do
 
   @doc """
   The law's reading (`reading/0`), from the cache when current; nil when no
-  text is held. `opts`: `:dir` (the cache), `:root` (the CLML store).
+  text is held. `opts`: `:dir` (the cache), `:root` (the CLML store),
+  `:doc` (the law's document, already parsed from those files: not parsed
+  again on a miss).
   """
   @spec law(String.t(), keyword()) :: reading() | nil
   def law(law, opts \\ []) do
@@ -47,7 +50,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCache do
             reading
 
           _ ->
-            reading = compute(law, files)
+            reading = compute(law, files, opts[:doc])
             write_file(path, {key, reading})
             reading
         end
@@ -55,9 +58,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCache do
   end
 
   @doc "The reading computed, never from the cache."
-  @spec compute(String.t(), [String.t()]) :: reading()
-  def compute(law, files) do
-    doc = Doc.new(law, Enum.map(files, &(&1 |> File.read!() |> :zlib.gunzip())))
+  @spec compute(String.t(), [String.t()], Doc.t() | nil) :: reading()
+  def compute(law, files, doc \\ nil) do
+    doc = doc || Doc.new(law, Enum.map(files, &(&1 |> File.read!() |> :zlib.gunzip())))
     read = Extent.read(doc)
     classes = Patterns.classes(doc, read)
     example = if classes != [], do: Patterns.example(doc)
@@ -70,26 +73,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCache do
     }
   end
 
-  @doc "The code version: a digest of every module of the app, once per VM."
-  @spec version() :: binary()
-  def version do
-    case :persistent_term.get({__MODULE__, :version}, nil) do
-      nil ->
-        {:ok, modules} = :application.get_key(:sertantai_legal, :modules)
-
-        v =
-          modules
-          |> Enum.sort()
-          |> Enum.map(& &1.module_info(:md5))
-          |> then(&:crypto.hash(:sha256, &1))
-
-        :persistent_term.put({__MODULE__, :version}, v)
-        v
-
-      v ->
-        v
-    end
-  end
+  @doc """
+  The code version: the extent reading's own (`Extent.ReadVersion`, the
+  modules it reaches), so an amendment-reader change leaves the cache warm
+  (run time 2026-10-26; it was a digest of every module of the app).
+  """
+  @spec version() :: String.t()
+  def version, do: ReadVersion.current()
 
   # each file's path and a digest of its stored bytes
   defp fingerprint(files), do: for(f <- files, do: {f, :erlang.md5(File.read!(f))})

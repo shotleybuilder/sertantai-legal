@@ -11,6 +11,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Store do
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.Powers
 
   @columns ~w(kind place items position source_law source_ref source_text)a
+  # what `rows_for/1` reads back, compared before writing
+  @compared ~w(kind place items source_ref)a
 
   # the laws whose own extent clause is read: Acts ("this Act extends to")
   # and SIs ("These Regulations extend to", "This Order extends to"; CV-07)
@@ -32,14 +34,26 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Store do
   `mix lat.extent_check` reads it. The one way `extent_rules` are written
   (`ExtentWriteTest`): the amendment read pass once stored the bare
   reading, wiping 482 laws' powers and competence rows (run time,
-  2026-10-26). Returns `{:ok, count, extent}`, the extent stored.
+  2026-10-26). Rows the same as stored are left as they are. Returns
+  `{:ok, count, extent}`, the extent stored.
   """
   @spec write_read(String.t(), Extent.t(), keyword()) ::
           {:ok, non_neg_integer(), Extent.t()}
   def write_read(source_law, %Extent{} = read, opts \\ []) do
     extent = Powers.with_powers(read, source_law, opts)
-    {:ok, n} = write(source_law, extent)
-    {:ok, n, extent}
+
+    # (the same rows as stored: not written again — a full read pass after
+    # a reader change reads most laws' extent unchanged; run time 2026-10-26)
+    same? =
+      Map.get(rows_for([source_law]), source_law, []) |> MapSet.new() ==
+        extent |> Extent.to_rows(source_law) |> Enum.map(&Map.take(&1, @compared)) |> MapSet.new()
+
+    if same? do
+      {:ok, length(Extent.to_rows(extent, source_law)), extent}
+    else
+      {:ok, n} = write(source_law, extent)
+      {:ok, n, extent}
+    end
   end
 
   # replace `source_law`'s extent rules with `extent`

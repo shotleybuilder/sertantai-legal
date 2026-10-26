@@ -38,6 +38,25 @@ defmodule SertantaiLegal.Scraper.Amendment.Store do
     end)
   end
 
+  @doc """
+  `write/2` only when `rules` differ from `stored` (the source's rules as
+  stored, read before): `{:ok, count, :written | :unchanged}`. A full read
+  pass after a reader change finds most laws' rules unchanged (run time
+  2026-10-26).
+  """
+  @spec write_changed(String.t(), [Rule.t()], [Rule.t()]) ::
+          {:ok, non_neg_integer(), :written | :unchanged}
+  def write_changed(source_law, rules, stored) do
+    rows = &Enum.frequencies(Enum.map(&1, fn r -> Rule.to_row(r) end))
+
+    if rows.(rules) == rows.(stored) do
+      {:ok, length(rules), :unchanged}
+    else
+      {:ok, n} = write(source_law, rules)
+      {:ok, n, :written}
+    end
+  end
+
   @doc "The rules amending `law_name`, from every source."
   @spec for_law(String.t()) :: [Rule.t()]
   def for_law(law_name), do: select("amends", law_name)
