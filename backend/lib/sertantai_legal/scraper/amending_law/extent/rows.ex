@@ -16,7 +16,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Rows do
   (`"introduces"`: `items` the Schedule, `source_ref` the section). An Act
   read with no clause gives a `"none"` row, so read is told from unread.
   """
-  @spec to_rows(Extent.t(), String.Extent.t()) :: [map()]
+  @spec to_rows(Extent.t(), String.t()) :: [map()]
   def to_rows(%Extent{} = e, law) do
     row = fn kind, place, items, ref, text, position ->
       %{
