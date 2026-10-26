@@ -4,6 +4,36 @@ status: suspended
 release: v0.1
 opened: '2026-10-22'
 bugs:
+  - pattern: "Amendment reader target precision: \"of that subsection\" not resolved to the subsection named before; a nested list item's parent bracket (\"(f) in subsection (5)— (i) in paragraph (a)\") not carried; \"—shall be omitted; (i) the words …\" read as provision-level (1995/25 Sch. 22 para 30(6))"
+    category: amendment
+    module: Amendment.Reader.Targets / Clauses
+    affected: 9
+    fix: "2c1bf0b0: parents' brackets (lead-in only), \"that subsection\" the last named, words listed; plus captions never targets, Schedule paragraphs no section rules"
+    status: fixed
+  - pattern: "extent_rules written without an SI's enabling powers or a devolved law's competence: the amendment read pass (ReadPass.write) and --extents' parents step stored the bare Extent.read/1, so every full read pass wiped those rows (482 laws stale, 2026-10-26)"
+    category: extent
+    module: Amendment.ReadPass / mix lat.amending --extents (now Extent.Store.write_read/3)
+    affected: 482
+    fix: "One writer, Extent.Store.write_read/3 (with_powers, cached: true from the read pass); ExtentWriteTest; then re-write the affected laws' extent rules"
+    status: fixed
+  - pattern: "Commencement: an Act with a by-order clause also holds an \"all — act_enactment\" (Royal Assent) rule, so an amending provision no order rule names is dated Royal Assent: SOCPA 2005 Sch.7 para 27(2) repealing RTA 1988 s.4(6) dated 2005-04-07, golden expects 2006-01-01 (SI 2005/3495). Exposed 2026-10-25 when the read pass (with SOCPA's Schedules now held) first reached that repeal: golden 26/27"
+    category: commencement
+    module: Commencement (OwnClause / LawStart act_enactment rule beside a by-order clause; CV-S04)
+    affected: 1
+    fix: "65bf8b34 / 9c28b1ad (the assent floor and own-parts fixes; golden 27/27)"
+    status: fixed
+  - pattern: "Amendment reader: \"The Localism Act 2011 is amended as follows\" (PCA 2017 Sch.1 para 94) read as amending FRSA 2004 whenever FRSA is among the laws pointing to the amending law; with only the Localism Act it reads nothing"
+    category: amendment
+    module: Amendment.Reader (law?/laws title matching)
+    affected: 3
+    fix: "fixed with DefinedTerms' thing-under rule (a caption naming FRSA 2004 under \"a fire and rescue authority under …\"), 2026-10-25"
+    status: fixed
+  - pattern: "Amendment reader: a parent's \"listed in sub-paragraph (4)\" (the amending law's own) inherited as a place (SI 2026/386 Sch. 3 para 6(3)(a) → reg.2(4)); a sibling list item naming a law outranks the provision's own heading (SI 2026/386 Sch. 3 para 6(5): was DPA 2018 s.155, now nothing, should be PEC reg.32)"
+    category: amendment
+    module: Amendment.Reader.LawNamed (placed_by, named)
+    affected: 2
+    fix: "Drop parent brackets after \"listed/mentioned/specified in\"; prefer the provision's headings and parents over siblings when naming the law"
+    status: open
   - pattern: "\"Nothing in this Act extends to Northern Ireland\" read as extending only there (the subject matched inside \"Nothing in this Act\"); \"Scotland or (to) Northern Ireland\", \"England and Wales and to Scotland\" dropped the second place"
     category: extent
     module: AmendingLaw.Extent (@subject, @place_list, @not_extends)
@@ -87,6 +117,15 @@ The session does not close until its results pass.
 - ⬜ SI 2012/760: its made introduction (held) names no enabling provisions (from CV-S01)
 - ✅ Before round 6, the two defects the run-time read pass exposed — fixed (`65bf8b34`, `9c28b1ad`); runs below (Jason: "Run")
 - ⬜ Round 6 (proposed 2026-10-25, Jason's go-ahead needed on step 1, a design change): (1) never drop a statement silently: a sentence saying where provisions extend that isn't turned fully into rules is recorded unread, and its provisions get no bound, never the default; the catalogue and the check count it; (2) the misreads and my regressions: NEW-A (Chapter of Part), NEW-C (section in brackets), uksi 2019/696's exceptions read as items, 2022/1037's Part 4; (3) forms: "except as aforesaid … shall not extend there", lettered places "to— (a) England and Wales, (b) …", "extends to any part of the United Kingdom to which the amended enactment extends"; (4) the same runs, then agent round 6 (misses that are counted are known classes; only misreads and silent drops are NEW)
+- Reader correctness done in the run-time session (moved here 2026-10-26):
+  - ✅ After the gate: a caption names no law, nested quotes stripped whole — `be32c526` (Petroleum Act 1998 +9, SI 2024/1268 +1; regression 29 changed, net +78)
+  - ✅ Environment Act 1995 Sch. 22 para 30 (HSWA): "The Health and Safety at Work etc. Act 1974 (in this paragraph referred to as “the 1974 Act”)" read as "Work etc. Act 1974" (apposition title stopped at "at"), naming no law — fixed `407df2c2` (short words, bracketed parts); regression preview 2 changed, +34 (1995/25 +10 HSWA; SI 2012/3119 +24 on SI 2010/2215, its bracketed title). Indexes stale until the round's full pass
+  - ✅ Reader target precision — `2c1bf0b0`: a list item's place from its parents (lead-in only; a named sub-paragraph level 2), "that subsection", words listed, captions (nested too) never brackets or numbers, one quoted target per subsection, Schedule-paragraph instructions no section rules
+  - ✅ End of round: full read pass (restore point `run-time-before-read-pass-9`): 7 min 49 s, 2,102 laws, 635 changed, rules 43,778 → 42,335, traced by class (see below); golden 27/27
+  - ⬜ Next round: a parent's "listed in sub-paragraph (4)" (the amending law's own) is inherited as a place (SI 2026/386 Sch. 3 para 6(3)(a) → reg.2(4); no rule stored yet); a sibling list item naming a law outranks the provision's heading (SI 2026/386 para 6(5): was DPA 2018 s.155, now nothing, should be PEC reg.32)
+  - ⏸️ Annex/Schedule targets — deferred (Jason 2026-10-26): LAT holds no Schedule or Annex rows (LR-10, v0.1), so these rules would reach no row and change no output; the instructions are held back / dropped, never placed on real sections. Prerequisite if Schedules come into LAT. Known cases: PSTI 2022 → CA 2003 Sch. 3A ("the electronic communications code"); SI 2019/758 Sch. 3 → REACH Annexes
+  - ✅ 202 laws stale in `lat.extent_check` (OH&S) traced: corpus-wide 483 of 2,050 — 482 the read pass's bare extent write wiping powers/competence (fixed `1a4626b8`, one writer `Extent.Store.write_read/3` + `ExtentWriteTest`), 1 (`UK_ukpga_1995_15`) last written 2026-10-22, before CV-S05's reader fixes
+  - ✅ Repaired the 483 laws' `extent_rules` (restore point `run-time-before-extent-repair`; `--extents --cached`, 1 min 28 s, 483 + 49 parent Acts); OH&S extent check PASS, 0 stale. CV-S05's rebuild picks the territories up
 - ⬜ Fix until the check passes reliably; record the result
 
 ## Dependencies
@@ -517,3 +556,66 @@ State at suspension:
 - restore point `cv-s05-before-exposed-fixes`.
 
 On resume: re-read the affected amending laws (with the incremental read if built), rebuild, golden; then round 6.
+
+## Reader correctness found during the run-time session (moved here 2026-10-26)
+
+The run-time session's full read passes changed rules and exposed reader defects; their tracing and the fixes belong to this session (Jason 2026-10-26: "the reader correctness work should be moved into cv-s05"). The passes' timings stay in `2026-10-24-cv-run-time.md`.
+
+### Pass 3 (2026-10-25, 7 min 19 s)
+
+- Rules 41,581 → 42,270; 17 laws changed, all from the definition fixes (`5d404342`): abbreviations with a chapter now read — Local Transport Act 2008 → Transport Act 2000 (+191), Railways Act 2005 → Railways Act 1993 (+219), Energy Act 2004 → Electricity Act 1989 (+77), GLA Act 2007 → GLA Act 1999 (+135), Planning (Wales) Act 2015 → TCPA 1990 (+68, was the Hazardous Substances Act), Employment Relations Act 2004 → TULRCA 1992 (+119, was ERA 1996), Planning Act 2008 → TCPA 1990.
+- **Exposed, fixed:** asp 2011/6 (WANE) lost 344 rules — its definitions list ends items with "," ("…Act 1981 (c.69),"), so only the last term was read and every 1981 Act instruction went to the 2004 Act (before, with no terms, to all three laws). `DefinedTerms` now ends a definition at ";", "." or "," (each perhaps with "and"/"or").
+- **Removed rightly:** PSTI 2022 (ukpga 2022/46) −17 against the Communications Act 2003: "paragraph 3", "paragraph 4" of the electronic communications code (Sch. 3A) had been placed on CA 2003 ss.2, 4, 17A — false changes on real sections.
+
+### Read pass 4 of today (2026-10-25, Jason: "Run it") and what it exposed
+
+- **7 min 14 s**, 2,102 laws, 0 errors, peak 2.1 GB. Rules 42,270 → 42,561; 18 laws, traced: the list-comma fix (`81016a36`) put WANE (asp 2011/6) on the Wildlife and Countryside Act 1981 (127) and the Badgers Act 1992 (23); Water Act 2003 → Water Industry / Water Resources Acts 1991; NC(S)A 2004 → WCA 1981; Scottish Acts → Civic Government (Scotland) Act 1982; SSI 2004/332's rules leave the Listed Buildings (Scotland) Act for "the 1997 Act" (TCP (Scotland) Act 1997, not offered for that SSI).
+- **Exposed, fixed `8b3026bd`:** SI 2019/598 regs 6–7 (2 rules) lost. "For regulation 24 substitute—" sits in Part 3 "Amendment to the 2009 Regulations", but `Doc` kept only a provision's deepest heading, so the reader walked back into Part 2 and met "the 2008 Regulations" (newly recognised: its definition ends "; and"); before, it reached the definitions sentence naming all three laws and got the 2009 Regulations by luck. `Doc.headings/2` keeps every container's title, nearest first; the reader checks them all before the text before. Reg 7 now reads the 2009 Regulations.
+- Pattern: each definitions fix exposes a reader shortcut that luck had covered; each pass's diff is traced per law before accepting.
+
+### Read pass 5 of today (2026-10-25, Jason: "Run it") and the heading work
+
+- **7 min 20 s**, 2,102 laws, 0 errors. Rules 42,561 → 42,534; SI 2019/598 regained its 2 rules, but **my heading rule was too strong**: SI 2019/453 lost 69 (its Part "Amendments pursuant to the European Communities Act 1972" names the enabling Act and beat "The Transport Act 1968 is amended …" earlier in the Part).
+- Fixed: structural nearness in `Text.before` — earlier provisions in the Part, then the Part's headings, then earlier Parts (a Schedule: its earlier paragraphs, its headings, then the body naming it). The reader passes only the nearest heading again.
+- Exposed and fixed: titles garbled by xmerl's `//text()` order ("etc.The Building (Approved Inspectors ) Regulations 2010", WSI 2013/747 −5; "EnforcementAmendment of the REACH Regulations 2008", SI 2019/758) — `Doc` titles now read in document order (an old LR-31 zero-diff choice kept the garbling).
+- Exposed: SI 2019/758 Sch. 3 ("Amendment of the Annexes and Appendices to the REACH Regulation") read Annex paragraphs as REACH Articles 1, 2(7), 4, 8 — false changes on real Articles. Held back: no Article rules under an Annex/Appendix heading until Annex targets are read (open todo).
+- 13 changed laws re-read against the rules before the heading work: 7 differ, all checked right — gains by Part/Schedule headings (asp 2024/15 → CC(S)A 2009; ukpga 1972/70 Sch. 24 → TA 1968; ukpga 2026/6 → MCAA 2009; SI 2019/598 → the 2009 Regulations; SI 2019/758 para 61 → REACH Title 10) and corrections (ukpga 1994/39 → Sewerage (Scotland) Act 1968 / Water (Scotland) Act 1980, not LGFA 1992; SI 2019/544 off a 2011 SI).
+
+### End-of-round pass (2026-10-25, Jason: "implement the plan"), and the "etc." fix
+
+- Read pass with largest-first and the guard's own measure (0.8 GB a law, max 5): **7 min 19 s**, still 4 workers (1.1 cores busy at start → 6 − 2); peak 3.25 GB (largest laws together). Report: 6 laws changed, rules 42,576 → 42,591 — the first report printed by the pass itself.
+- Traced: SI 2009/229 and WSI 2016/413 right (cross-headings naming the amended Act); SI 2013/283 and SI 2016/912 **wrong** — "The Maternity and Parental Leave etc. Regulations 1999", "(Licensing etc.) Regulations 2010": the title pattern stopped at the "." of "etc.", so an "etc." title named no law (hidden until the title fix by luck).
+- Fixed: one title pattern in the reader allowing "etc." (and in DefinedTerms' apposition). Regression preview: 41 of 258 laws change, rules 21,893 → 22,030 — HSWA ("Health and Safety at Work etc. Act 1974"), the Local Government etc. (Scotland) Act 1994 and the Water Services etc. (Scotland) Act 2005 now named; moves checked (ERRA 2013 s.69 → HSWA s.47; Environment Act 1995 HSWA paragraphs off COPA 1974; the Approved Inspectors Regulations are SI 2010/2215, not 2010/2214 the Building Regulations — the earlier "+6" was itself wrong).
+- Open: Environment Act 1995 Sch. 22 para 30 now reads nothing for HSWA (todo).
+
+### Caption and nested-quote fixes (2026-10-25, Jason: "Carry on")
+
+- First try (`asides/1` on the texts searched for a law) was too blunt: regression preview 52 changed with net losses — `asides` keeps a bracket only right before "Act/Regulations/…", so a title with two bracketed parts ("The Environmental Protection (Disposal of …) (England and Wales) Regulations 2000") lost its first and named nothing. Caught by the preview, never written.
+- Fix: `Clauses.uncaptioned/1` drops only the bracket right after a provision reference ("section 1 (…)", "regulation 2(1) (…)"); `unquote_words/1` strips nested quotes innermost first.
+- Previews: the two laws as intended; regression 29 changed, net +78 — moves to the Act the text amends (WSI 2025/1320's 20 rules to the Wales 2024 Regulations its context names; SI 2009/1941 off the Insolvency Act 1986); losses checked (each caption had named another Act).
+- The preview workflow paid for itself: the blunt version would have been a full write pass and a revert.
+- ✅ End of this round: full write pass (Jason: "Run the pass and push"; restore point `run-time-before-read-pass-8`): **6 min 58 s** (writes; the preview is 4.5), 2,102 laws, 52 changed, rules 43,548 → 43,778 (+230); 2 pure losses, both checked (captions naming the Scotland Act 1998, the Electricity Act 1989); the rest moves to the Act amended (Enterprise Act 2002 Sch. 25 → Railways Act 1993, Gas Act 1986; laws off the Enterprise Act its captions named) and gains (Employment Rights Act 2025 Sch. 12 +31 on ERA 1996). Every index fresh.
+
+### The 202 stale laws (2026-10-26, Jason: "Push then start 1")
+
+- Pushed first: `04a761e7..a00838f7` (16 commits; Dialyzer caught `String.Extent.t()` — my step 10 text replacement — fixed `a00838f7`).
+- Corpus-wide diff of stored `extent_rules` against the reading now (`with_powers`, enabling cache only): **483 of 2,050 laws differ — 307 lack the `competence` row, 175 the `powers` row, 1 (`UK_ukpga_1995_15`) stored `none` against a default E+W+S now** (its rows date from 2026-10-22, before CV-S05's reader fixes; no pass since reached it).
+- Cause: `ReadPass.write` stored `Extent.read(doc)` bare (since CV-04, `46d2b13a`), as did `--extents`' parents step; only `--extents`' own laws were stored with powers. Each full read pass (3 on 2026-10-25) wiped them. The build then reads such an SI's changes as unknown territory, not its powers' reach.
+- Fix `1a4626b8`: `Extent.Store.write_read/3`, the one writer (with powers or competence; the read pass passes `cached: true`, never a fetch); `Store.write` private; `ExtentWriteTest` holds it (it also caught `lat.vocabulary`'s alias, a different store — the test follows aliases). Suite 8,826 + store test pass.
+- Repair (2026-10-26, Jason: "do the repair"): restore point `run-time-before-extent-repair` (`extent_rules`); `mix lat.amending --extents --amending <483> --cached` — 1 min 28 s, 49 parent Acts first. **OH&S extent check: our faults 0, PASS** (was 202 stale).
+- Basis shifted in the check: powers 97 → 106, competence 82 → 73 — SSIs (and WSI 2020/1211) under devolved parent Acts: those parents were stored without their competence row, so the SI's powers didn't resolve and it fell back to competence; same territory (S, E+W), now by powers.
+- Still to come: provision_changes take the territories at CV-S05's rebuild (its resume step).
+
+### Todo 1 deferred, todo 2 fixed (2026-10-26, Jason: "Push then start 1")
+
+- Pushed `a00838f7..ef1b4ac9` (3 commits).
+- Annex/Schedule targets deferred (Jason): LAT holds no Schedule or Annex rows (LR-10), so the rules would reach nothing.
+- Environment Act 1995 Sch. 22 para 30: traced to `DefinedTerms.apposition/2` — the title pattern allowed only "and/of/the/for/etc." inside a title, so "Health and Safety at Work etc. Act 1974" became "Work etc. Act 1974"; the context's "the 1974 Act" was then the nearest law-naming words, and named nothing. Fixed `407df2c2` (at, to, by, in, on; a bracketed part). Regression preview 1 min 52 s: 274 laws, 2 changed (both checked right). Para 30's targets show three precision limits of the reader (logged, open).
+
+### Round: target precision, full pass, golden (2026-10-26, Jason: "do 1 through 3")
+
+- Fixes `2c1bf0b0` (tests from 1995/25 Sch. 22 para 30, asc 2023/4 s.47, 1994/19, 2013/22, 2009/20, 1999/28, SI 2015/664). Regression previews iterated 6 times (each ~2 min, nothing written) as the target diffs were classified; two of my own overshoots were caught there (a guard on the provision's first words only; a second bracket filter).
+- Full pass: **7 min 49 s, 2,102 laws, 635 changed, rules 43,778 → 42,335 (−1,443)**. Old rules loaded from the restore point (`rp9` schema) and diffed by class: 9,479 refined (parents' brackets added); 1,216 to a different provision — 878 new number in the words not the old, 322 old number only in a caption, 16 both, 0 otherwise; 1,382 groups gone — 1,365 under a Schedule (paragraphs read as sections), 17 others checked (an Order's article read as an Act's caption section; Schedule A1 paragraphs; words-level now; one existing law-naming flaw, logged). Every index fresh.
+- Golden first **crashed**: `Extent.Rows.from_rows/1` (my decomposition) used `String.to_existing_atom` — atoms present only once `Extent` was loaded, which the gate always did. Fixed (kinds by name); **golden 27/27**.
+- Golden's "N amending laws read from their text (stored rules stale)" counts laws never indexed (HSWA: 46 text not held, 29 held with no text-change pointer), not stale ones — wording only.
+
