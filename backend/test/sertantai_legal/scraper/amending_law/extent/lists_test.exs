@@ -69,6 +69,45 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListsTest do
            ) == [{:not, "S", ["s.77"]}]
   end
 
+  test "a list item's own exceptions: the item kept, its sub-items excepted (uksi 2019/696 reg.3)" do
+    doc =
+      Doc.new("UK_uksi_2019_696", [
+        ~S"""
+        <Legislation><Secondary><Body>
+        <Part id="part-1"><P1 id="regulation-1"><P1para><Text>Citation.</Text></P1para></P1></Part>
+        <Part id="part-5"><P1 id="regulation-30"><P1para><Text>Enforcement.</Text></P1para></P1></Part>
+        <Part id="part-6"><P1 id="regulation-40"><P1para><Text>Review.</Text></P1para></P1></Part>
+        </Body></Secondary></Legislation>
+        """
+      ])
+
+    clause =
+      "The following provisions extend to the United Kingdom—a Part 1;b regulation 4 and Schedule 1;c Part 5 and its related schedules, except—i paragraphs 29 to 40 of Schedule 34 (cosmetic product enforcement);ii paragraphs 1 and 2 of Schedule 35 (personal protective equipment enforcement);d Part 6 and its related schedule."
+
+    assert Lists.lists(clause, "reg.3", doc) == [
+             {:named, "E+W+S+NI", ["reg.1", "reg.4", "sch.1", "reg.30", "reg.40"]},
+             {:except, "E+W+S+NI",
+              ["sch.34.para.29..sch.34.para.40", "sch.35.para.1", "sch.35.para.2"]}
+           ]
+  end
+
+  test "a bare Chapter in a list takes its Part; an item's bracketed exception is taken out (NEW-A)" do
+    doc =
+      Doc.new("UK_ukpga_2013_32", [
+        ~S"""
+        <Legislation><Primary><Body>
+        <Part id="part-2"><Chapter id="part-2-chapter-1"><P1 id="section-5"><P1para><Text>A.</Text></P1para></P1><P1 id="section-6"><P1para><Text>B.</Text></P1para></P1></Chapter><Chapter id="part-2-chapter-2"><P1 id="section-7"><P1para><Text>C.</Text></P1para></P1></Chapter></Part>
+        </Body></Primary></Legislation>
+        """
+      ])
+
+    assert Lists.lists(
+             "The following also extend to Northern Ireland—a in Part 2—i Chapter 1 (general considerations) (except section 6),ii Chapter 2 (contracts for difference).",
+             "s.155",
+             doc
+           ) == [{:also, "NI", ["s.5", "s.7"]}]
+  end
+
   test "a heading's kind and place" do
     m = ["The following extend also to Scotland—"]
     assert Lists.kind(m) == :also

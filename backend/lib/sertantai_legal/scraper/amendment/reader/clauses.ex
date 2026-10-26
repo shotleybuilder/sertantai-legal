@@ -165,8 +165,11 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   end
 
   # a provision reference, then its caption: "section 1 (application of …)",
-  # "regulation 2(1) (interpretation)", "paragraph 14 of Schedule 7A (…)"
-  @captioned ~r/(\b(?:sections?|subsections?|regulations?|articles?|rules?|paragraphs?|sub-paragraphs?|Schedules?|Parts?|Chapters?)\s+[0-9]+[A-Z]*(?:\s*\([0-9A-Za-z]+\))*)\s*\((?:[^()“”"]|[“"][^”"]*[”"]|\([^()]*\))*\)/u
+  # "regulation 2(1) (interpretation)", "paragraph 14 of Schedule 7A (…)",
+  # "paragraph 15(b) and (f) (in the quoted text modifying section 155 of
+  # the Data Protection Act 2018)" (SI 2026/386 Sch. 3 para 6(4)(j)(iv): a
+  # sibling's aside had named the law for para 6(5), CV-S05)
+  @captioned ~r/(\b(?:sections?|subsections?|regulations?|articles?|rules?|paragraphs?|sub-paragraphs?|Schedules?|Parts?|Chapters?)\s+[0-9]+[A-Z]*(?:\s*\([0-9A-Za-z]+\))*(?:\s*(?:,|and|or|to)\s*\([0-9A-Za-z]+\)(?:\s*\([0-9A-Za-z]+\))*)*)\s*\((?:[^()“”"]|[“"][^”"]*[”"]|\([^()]*\))*\)/u
 
   @doc """
   The text without the captions that follow a provision reference ("In
@@ -182,10 +185,20 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   @doc """
   The text without its quoted words — nested quotes too, innermost first
   ("omit ““x” means the Building (Approved Inspectors etc.) Regulations
-  2010”": SI 2024/1268, whose definition's title had named a law).
+  2010”": SI 2024/1268, whose definition's title had named a law), and
+  words up to a closing quote left with no opener.
   """
   @spec unquote_words(String.t()) :: String.t()
-  def unquote_words(t), do: t |> unnest() |> String.replace(~r/[“"][^”"]*[”"]/u, "")
+  def unquote_words(t),
+    do:
+      t
+      |> unnest()
+      |> String.replace(~r/[“"][^”"]*[”"]/u, "")
+      # a closing quote left with no opener ends quoted words that run back
+      # to the instruction's dash ("insert—“” means Commission Implementing
+      # Regulation (EU) 2017/1354 …;”": a term lost in the flattening; SI
+      # 2019/696 Sch. 29 para 2, whose inserted words had named EU laws)
+      |> String.replace(~r/([—–])[^“”—–]*”/u, "\\1")
 
   defp unnest(t) do
     case String.replace(t, ~r/“[^“”]*”(?=[^“]*”)/u, "") do

@@ -9,12 +9,79 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Parts do
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.Commencement.Order
 
+  @chapter_list "[\\dIVXLC]+[A-Z]*(?:\\s*(?:,|and|to)\\s*[\\dIVXLC]+[A-Z]*)*"
+  @chapters Regex.compile!(
+              "\\bChapters?\\s+(#{@chapter_list})\\s+of\\s+(?:Part\\s+([\\dIVXLC]+[A-Z]*)|(this)\\s+Part)\\b",
+              "u"
+            )
+
   @doc """
-  The sections of the Parts named in `text` ("Part III", "Parts I and II";
-  "this Part": the one holding the clause `clause_ref`), from the document.
+  The sections of the Parts and Chapters named in `text` ("Part III",
+  "Parts I and II", "Chapter 3 of Part 1", "Chapters 1 and 2 of Part 2";
+  "this Part": the one holding the clause `clause_ref`), from the
+  document. A bare Chapter names nothing here: `qualify_chapters/1` first.
   """
   @spec parts(String.t(), Doc.t(), String.t() | nil) :: [String.t()]
   def parts(text, doc, clause_ref) do
+    Enum.uniq(part_sections(text, doc, clause_ref) ++ chapters(text, doc, clause_ref))
+  end
+
+  @doc """
+  Each bare Chapter given the Part named last before it, and "that Part"
+  that Part ("… in Part 2— (i) Chapter 1 …, (ii) Chapter 2 …" → "Chapter 1
+  of Part 2"; "(h) Chapter 1 of Part 3; (i) Chapter 2 of that Part" →
+  "… of Part 3": Energy Act 2013 s.155(2)(b), CJA 2009 s.181(3), CV-S05
+  NEW-A) — before a list is split into items. A Schedule's Part never.
+  """
+  @spec qualify_chapters(String.t()) :: String.t()
+  def qualify_chapters(text) do
+    ~r/\bPart\s+([\dIVXLC]+[A-Z]*)\b(?!\s+(?:of|to)\s+(?:that\s+|the\s+)?Schedule)|\bChapters?\s+#{@chapter_list}\b(?!\s+of\b)|\bthat\s+Part\b/u
+    |> Regex.split(text, include_captures: true)
+    |> Enum.map_reduce(nil, fn piece, part ->
+      cond do
+        m = Regex.run(~r/^Part\s+([\dIVXLC]+[A-Z]*)$/u, piece) -> {piece, Enum.at(m, 1)}
+        piece =~ ~r/^Chapters?\s/u and part != nil -> {"#{piece} of Part #{part}", part}
+        piece =~ ~r/^that\s+Part$/u and part != nil -> {"Part #{part}", part}
+        true -> {piece, part}
+      end
+    end)
+    |> elem(0)
+    |> Enum.join()
+  end
+
+  # the sections inside each Chapter named ("part-2-chapter-1": the Part's
+  # id in either numeral), up to the next Chapter or Part
+  defp chapters(text, doc, clause_ref) do
+    text = Regex.replace(~r/\((?:[^()]|\([^()]*\))*\)/u, text, "")
+
+    for [_, list, part | this] <- Regex.scan(@chapters, text),
+        p <- chapter_parts(part, this, doc, clause_ref),
+        n <- part_numbers(list),
+        id <- ["#{p}-chapter-#{n}", "#{p}-chapter-#{other_numeral(n)}"],
+        Map.has_key?(doc.pos, id),
+        sid <- chapter_ids(doc, id),
+        uniq: true,
+        do: Order.ref(sid)
+  end
+
+  defp chapter_parts("", ["this"], doc, clause_ref) when is_binary(clause_ref),
+    do: Enum.filter(doc.ids, &(&1 =~ ~r/^part-[^-]+$/ and holds?(doc, &1, clause_ref)))
+
+  defp chapter_parts(n, _this, _doc, _clause_ref) when n != "",
+    do: Enum.uniq(["part-#{n}", "part-#{other_numeral(n)}"])
+
+  defp chapter_parts(_, _, _, _), do: []
+
+  defp chapter_ids(doc, chapter) do
+    start = Map.fetch!(doc.pos, chapter)
+
+    doc.ids
+    |> Enum.drop(start + 1)
+    |> Enum.take_while(&(not (&1 =~ ~r/^part-[^-]+(?:-chapter-[^-]+)?$/)))
+    |> Enum.filter(&(&1 =~ ~r/^(?:section|regulation|article|rule)-\d+[A-Z]*$/))
+  end
+
+  defp part_sections(text, doc, clause_ref) do
     # (never a Schedule's Part: "Part 2 of Schedule 10", "Parts 4 and 5 of
     # Schedule 13" — the list matched whole, CV-S05)
     # (nor a Chapter's Part: "Chapter 3 of Part 1", 2004/20; nor a
@@ -22,30 +89,28 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Parts do
     # consequential provision etc.)", HSCA 2012 s.308(3)(f) — CV-S05)
     text = Regex.replace(~r/\((?:[^()]|\([^()]*\))*\)/u, text, "")
 
+    # (a Chapter's Part is the Chapter's: `chapters/3`)
     text =
       Regex.replace(
-        ~r/\bChapters?\s+[\dIVXLC]+[A-Z]*(?:\s*(?:,|and|to)\s*[\dIVXLC]+[A-Z]*)*\s+of\s+Part\s+[\dIVXLC]+[A-Z]*/u,
+        ~r/\bChapters?\s+[\dIVXLC]+[A-Z]*(?:\s*(?:,|and|to)\s*[\dIVXLC]+[A-Z]*)*\s+of\s+(?:Part\s+[\dIVXLC]+[A-Z]*|th(?:is|at)\s+Part)/u,
         text,
         ""
       )
 
+    # every Part named ("Part 3 and Part 4": SI 2022/1037 reg.2, CV-S05)
     named =
-      case Regex.run(
-             ~r/(?<![Ii]n\s)\bParts?\s+((?>[IVXLC\d]+[A-Z]*(?:\s*(?:,|and|to)\s*[IVXLC\d]+[A-Z]*)*))\b(?!\s+(?:of|to)\s+(?:that\s+|the\s+)?Schedule)/u,
-             text
-           ) do
-        [_, list] ->
+      for [_, list] <-
+            Regex.scan(
+              ~r/(?<![Ii]n\s)\bParts?\s+((?>[IVXLC\d]+[A-Z]*(?:\s*(?:,|and|to)\s*[IVXLC\d]+[A-Z]*)*))\b(?!\s+(?:of|to)\s+(?:that\s+|the\s+)?Schedule)/u,
+              text
+            ),
           # "Part 1" where the document's ids are "part-I", and the reverse
           # (CPA 1987 s.49(1): CV-S05 N15)
-          for n <- part_numbers(list),
-              id <- ["part-#{n}", "part-#{other_numeral(n)}"],
-              Doc.element(doc, id) != nil,
-              uniq: true,
-              do: id
-
-        nil ->
-          []
-      end
+          n <- part_numbers(list),
+          id <- ["part-#{n}", "part-#{other_numeral(n)}"],
+          Doc.element(doc, id) != nil,
+          uniq: true,
+          do: id
 
     this =
       if text =~ ~r/\bthis Part\b/i and clause_ref,

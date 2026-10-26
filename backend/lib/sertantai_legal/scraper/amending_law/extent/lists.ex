@@ -148,9 +148,15 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lists do
           []
 
         match ->
-          case list_refs(own_list(cut(body)), clause_ref, doc) do
-            [] -> []
-            refs -> [{kind(match), place(match), refs}]
+          {body, excepted} = item_exceptions(own_list(cut(body)), clause_ref, doc)
+
+          case list_refs(body, clause_ref, doc) do
+            [] ->
+              []
+
+            refs ->
+              [{kind(match), place(match), refs}] ++
+                if(excepted != [], do: [{:except, place(match), excepted}], else: [])
           end
       end
     end)
@@ -202,18 +208,52 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lists do
   # a list's items, each read plainly: never a qualified item ("so far as
   # …"), another law's provisions ("… of the Prison Act 1952"), nor a
   # subsection "of this section" (1977/45 s.65(10): CV-S05 N3)
+  # (a bare Chapter takes the Part named before it, before the split:
+  # "in Part 2— (i) Chapter 1 …"; an item's bracketed exception taken out
+  # of it, "Chapter 1 of Part 3 (except section 84)": CV-S05 NEW-A)
   defp list_refs(text, clause_ref, doc) do
     for item <-
           String.split(
-            Units.no_dots(text),
+            text |> Parts.qualify_chapters() |> Units.no_dots(),
             ~r/;|,\s*(?=(?:and\s+)?(?:[a-z]|[ivx]{2,4})\s)|,\s*(?=(?:and\s+)?(?:sections?|subsections?|Schedules?|in\s+Schedule|Parts?|paragraphs?\s+[^,;]*?\bof\s+Schedule|regulations?|articles?)\b)/u
           ),
+        {item, minus} = bracketed_except(item, clause_ref),
         not Regex.match?(
-          ~r/\b(?:so\s+far\s+as|in\s+so\s+far|insofar|except|exception|so\s+much\s+of|to\s+the\s+extent|of\s+this\s+section|(?:of|to),?\s+the\s+[A-Z][\w()',\s-]*?\s+(?:Act|Order|Regulations)\s+\d{4})\b/u,
+          # (a description is some of a Chapter, never all: "the service
+          # courts provisions of Chapter 2 of Part 3", CJA 2009 s.181(2)(b))
+          ~r/\bthe\s+(?:[\w-]+\s+){1,3}provisions\s+of\s+(?:Chapter|Part)\b|\b(?:so\s+far\s+as|in\s+so\s+far|insofar|except|exception|so\s+much\s+of|to\s+the\s+extent|of\s+this\s+section|(?:of|to),?\s+the\s+[A-Z][\w()',\s-]*?\s+(?:Act|Order|Regulations)\s+\d{4})\b/u,
           item
         ),
         ref <- RefList.parse(item, clause_ref) ++ Parts.parts(item, doc, clause_ref),
+        ref not in minus,
         uniq: true,
         do: ref
+  end
+
+  # an item's own exceptions, a sub-list ("c Part 5 and its related
+  # schedules, except— i paragraphs 29 to 40 of Schedule 34 …; ii …; d
+  # Part 6": uksi 2019/696 reg.3, CV-S05): the item kept, its sub-items
+  # taken out as the provisions excepted (`{:except, place, refs}`: they
+  # keep the default, `Extent.read/1`)
+  defp item_exceptions(body, clause_ref, doc) do
+    case Regex.run(
+           ~r/,?\s*except\s*[—–]\s*((?:i|[ivx]{2,4})\s.*?)(?=;\s*(?:and\s*)?\(?[a-hj-uw-z]\)?\s+(?=[A-Z])|$)/u,
+           body
+         ) do
+      [whole, sub] ->
+        {String.replace(body, whole, ""), list_refs(sub, clause_ref, doc)}
+
+      nil ->
+        {body, []}
+    end
+  end
+
+  # "Chapter 1 of Part 3 (except section 84)": the item without its
+  # exception, and the provisions excepted
+  defp bracketed_except(item, clause_ref) do
+    case Regex.run(~r/\s*\((?:except|other\s+than|excluding)\s+([^()]*)\)/u, item) do
+      [whole, except] -> {String.replace(item, whole, ""), RefList.parse(except, clause_ref)}
+      nil -> {item, []}
+    end
   end
 end

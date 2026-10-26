@@ -2564,11 +2564,6 @@
     "ref": "s.148",
     "sentence": "Except as otherwise provided, any amendment or repeal by this Act of an enactment has the same extent as the enactment amended or repealed."
   },
-  "UK_ukpga_1996_53/a3c24e32df": {
-    "law": "UK_ukpga_1996_53",
-    "ref": "s.148",
-    "sentence": "The following provisions of this Act extend to Northern Ireland— . . ."
-  },
   "UK_ukpga_1996_53/b0d73163d6": {
     "law": "UK_ukpga_1996_53",
     "ref": "s.148",
@@ -3934,6 +3929,11 @@
     "ref": "s.152",
     "sentence": "Sections 130 and 131(1) extend to England and Wales and Scotland."
   },
+  "UK_ukpga_2012_10/9ab0bed4a8": {
+    "law": "UK_ukpga_2012_10",
+    "ref": "s.152",
+    "sentence": "Parts 1 to 3 of this Act extend to England and Wales only, subject to subsections (2) to (8)."
+  },
   "UK_ukpga_2012_10/a553e246b5": {
     "law": "UK_ukpga_2012_10",
     "ref": "s.152",
@@ -4179,6 +4179,11 @@
     "ref": "s.114",
     "sentence": "Except as provided by subsections (2) and (3), a repeal, revocation or other amendment or modification made by this Act has the same extent as the provision repealed, revoked or otherwise amended or modified."
   },
+  "UK_ukpga_2015_26/0342d8ac44": {
+    "law": "UK_ukpga_2015_26",
+    "ref": "s.163",
+    "sentence": "In Part 10, sections 144 to 146 and Schedule 11 extend to England and Wales and Scotland only."
+  },
   "UK_ukpga_2015_26/c675c61464": {
     "law": "UK_ukpga_2015_26",
     "ref": "s.163",
@@ -4248,6 +4253,11 @@
     "law": "UK_ukpga_2015_9",
     "ref": "s.88",
     "sentence": "No regulations may be made under subsection (1) bringing into force any of the following provisions, so far as they extend to Scotland, unless the Secretary of State has consulted the Scottish Ministers—a section 23;b section 38(1);c Part 2;d section 46 and Schedule 1;e sections 47 to 50."
+  },
+  "UK_ukpga_2015_9/ca86bc9287": {
+    "law": "UK_ukpga_2015_9",
+    "ref": "s.87",
+    "sentence": "Chapter 3 of Part 1 extends to Northern Ireland only."
   },
   "UK_ukpga_2015_9/e162064362": {
     "law": "UK_ukpga_2015_9",
@@ -4553,11 +4563,6 @@
     "law": "UK_ukpga_2023_13",
     "ref": "s.13",
     "sentence": "This Act extends to England and Wales and Scotland."
-  },
-  "UK_ukpga_2023_41/3ec9873a74": {
-    "law": "UK_ukpga_2023_41",
-    "ref": "s.62",
-    "sentence": "Part 4 extends to Northern Ireland only."
   },
   "UK_ukpga_2023_50/aed9ba4e82": {
     "law": "UK_ukpga_2023_50",

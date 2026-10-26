@@ -68,6 +68,17 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.ClausesTest do
 
     assert Clauses.uncaptioned("In regulation 2(1) (interpretation), in paragraph (1)") ==
              "In regulation 2(1), in paragraph (1)"
+
+    # after run-on brackets (SI 2026/386 Sch. 3 para 6(4)(j)(iv))
+    assert Clauses.uncaptioned(
+             "paragraph 15(b) and (f) (in the quoted text modifying section 155 of the Data Protection Act 2018)."
+           ) == "paragraph 15(b) and (f)."
+  end
+
+  test "unquote_words/1: a closing quote with no opener ends quoted words back to the dash (SI 2019/696 Sch. 29 para 2)" do
+    assert Clauses.unquote_words(
+             "before the definition of “importer” insert—“” means Commission Implementing Regulation (EU) 2017/1354 specifying how;”;"
+           ) == "before the definition of  insert—;"
   end
 
   test "unquote_words/1: nested quotes, innermost first (SI 2024/1268)" do

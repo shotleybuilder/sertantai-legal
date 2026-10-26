@@ -40,6 +40,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   }
 
   alias SertantaiLegal.Scraper.Commencement.Order
+  alias SertantaiLegal.Scraper.Territory
 
   defstruct default: nil,
             lists: [],
@@ -88,17 +89,20 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
              Regex.match?(Forms.extends_except(), text) or Regex.match?(Forms.extends_exc(), text))
       end)
 
+    default = Default.westminster(Default.default(clause), clause, doc.type)
+
     %__MODULE__{
-      default: Default.westminster(Default.default(clause), clause, doc.type),
+      default: default,
       lists:
-        Lists.apart(clause, clause_ref, doc) ++
-          Lists.only_following(clause, clause_ref, doc) ++
-          Lists.extends_except(clause, clause_ref, doc) ++
-          Default.exception_lists(clause, clause_ref, doc) ++
-          Lists.headed_lists(sections, clause_ref, clause, doc) ++
-          Lists.part_not(sections, doc) ++
-          Named.named(unit_sentences, doc) ++
-          Same.amendments_same(unit_sentences, doc),
+        (Lists.apart(clause, clause_ref, doc) ++
+           Lists.only_following(clause, clause_ref, doc) ++
+           Lists.extends_except(clause, clause_ref, doc) ++
+           Default.exception_lists(clause, clause_ref, doc) ++
+           Lists.headed_lists(sections, clause_ref, clause, doc) ++
+           Lists.part_not(sections, doc) ++
+           Named.named(unit_sentences, doc) ++
+           Same.amendments_same(unit_sentences, doc))
+        |> Enum.flat_map(&excepted(&1, default)),
       corresponds: Regex.match?(~r/\bcorresponds\s+to\s+the\s+repeal\b/i, clause),
       introduced_by: introductions(doc),
       ref: clause_ref,
@@ -106,6 +110,19 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
       application: Application.application(doc, Default.default(clause))
     }
   end
+
+  # a list item's own exceptions (`Lists`: "Part 5 …, except— i …") keep
+  # the default: what the list adds is taken from them; with no default,
+  # unknown (CV-S05 round 6)
+  defp excepted({:except, place, refs}, default) when is_binary(default) and is_binary(place) do
+    case Territory.subtract(place, default) do
+      added when added in [nil, ""] -> []
+      added -> [{:not, added, refs}]
+    end
+  end
+
+  defp excepted({:except, _place, refs}, _default), do: [{:unread, nil, refs}]
+  defp excepted(list, _default), do: [list]
 
   defdelegate units(doc, id), to: Units
   defdelegate statements(s), to: Units

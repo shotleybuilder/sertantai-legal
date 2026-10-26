@@ -10,7 +10,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
 
   alias SertantaiLegal.Scraper.AmendingLaw.Text
   alias SertantaiLegal.Scraper.Amendment.Reader
-  alias SertantaiLegal.Scraper.Amendment.Reader.{Brackets, Clauses, Targets}
+  alias SertantaiLegal.Scraper.Amendment.Reader.{Brackets, Clauses, EuCitation, Targets}
 
   # a law's title in running text; "etc." inside it ("Health and Safety at
   # Work etc. Act 1974", "The Maternity and Parental Leave etc. Regulations
@@ -214,9 +214,14 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
             Regex.scan(~r/\b(\d{4}) c\. (\d+)/, t, return: :index),
           do: {a, a + len, %{law: nil, chapter: {binary_part(t, ya, yl), binary_part(t, na, nl)}}}
 
+    eu =
+      for [{a, len} | _] = m <- EuCitation.scan(t, return: :index),
+          ref = EuCitation.ref(Enum.map(m, &part(t, &1))),
+          do: {a, a + len, ref}
+
     # a name inside another ("land" in "Land Compensation Act 1973") is
     # part of it
-    (defined ++ titled ++ chapters)
+    (defined ++ titled ++ chapters ++ eu)
     |> Enum.sort()
     |> Enum.reduce([], fn
       {_, b, _}, [{_, pb, _} | _] = acc when b <= pb -> acc
@@ -271,8 +276,16 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
       for [y, n] <- Regex.scan(~r/\b(\d{4}) c\. (\d+)/, t, capture: :all_but_first),
           do: %{law: nil, chapter: {y, n}}
 
-    defined ++ titled ++ chapters
+    eu =
+      for m <- EuCitation.scan(t),
+          ref = EuCitation.ref(m),
+          do: ref
+
+    defined ++ titled ++ chapters ++ eu
   end
+
+  defp part(_t, {-1, 0}), do: ""
+  defp part(t, {a, len}), do: binary_part(t, a, len)
 
   @doc """
   Whether a law reference found in the text (a defined term's law, a
@@ -281,6 +294,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
   @spec law_named?(map(), Reader.law_ref()) :: boolean()
   def law_named?(%{law: name}, law) when is_binary(name), do: name == law.law_name
   def law_named?(%{chapter: {y, n}}, law), do: y == law.year and n == law.number
+
+  def law_named?(%{eu: {type, y, n}}, law),
+    do: String.starts_with?(law.law_name, "UK_#{type}_") and y == law.year and n == law.number
 
   def law_named?(%{title: t}, law) when is_binary(t) and is_binary(law.title),
     do: String.ends_with?(norm(t), norm("#{law.title} #{law.year}"))

@@ -22,11 +22,18 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Named do
         m = Regex.named_captures(Forms.named(), s),
         m != nil,
         plain_named?(m, s),
-        subj = m["subj"],
+        subj = described_out(m["subj"]),
         refs = Enum.uniq(RefList.parse(subj, ref) ++ Parts.parts(subj, doc, ref)),
         refs != [],
         do: {named_kind(m), Places.places(m["places"]), refs}
   end
+
+  # a description in brackets names no provision of the law ("paragraph 25
+  # (amendment to section 24A of the Nuclear Installations Act 1965 …)":
+  # Energy Act 2013 s.155(5)(a), CV-S05 NEW-C); a number in brackets is
+  # kept ("section 73(2)")
+  defp described_out(subj),
+    do: String.replace(subj, ~r/\((?=[^()]*\s)(?:[^()]|\([^()]*\))*\)/u, " ")
 
   # read only as plainly stated: never another law's provisions ("… of that
   # Act shall continue to extend", "… the 1989 Act shall cease to extend"),

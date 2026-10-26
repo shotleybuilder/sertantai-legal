@@ -30,6 +30,28 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.NamedTest do
     end
   end
 
+  test "never a provision named in a bracketed description (NEW-C)" do
+    assert named(
+             "UK_ukpga_2013_32",
+             "Paragraph 25 (amendment to section 24A of the Nuclear Installations Act 1965 as it has effect in England and Wales and Scotland) extends to England and Wales and Scotland only."
+           ) == []
+
+    assert named("UK_ukpga_2013_32", "Section 73(2) (powers) extends to Scotland only.") ==
+             [{:only, "S", ["s.73(2)"]}]
+  end
+
+  test "a Chapter of this Part (NEW-A)" do
+    p1 = &ExtentDoc.p1/2
+
+    doc =
+      ExtentDoc.doc(
+        "UK_ukpga_2015_15",
+        ~s(<Part id="part-3"><Chapter id="part-3-chapter-3">#{p1.("section-83", "One.")}#{p1.("section-84", "Two.")}</Chapter><Chapter id="part-3-chapter-4">#{p1.("section-99", "Chapter 3 of this Part extends only to England and Wales.")}</Chapter></Part>)
+      )
+
+    assert Named.named(Units.unit_sentences(doc), doc) == [{:only, "E+W", ["s.83", "s.84"]}]
+  end
+
   test "the kind: not, only, also, else named" do
     assert Named.named_kind(%{
              "not" => "",

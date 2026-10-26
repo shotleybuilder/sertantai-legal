@@ -345,7 +345,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
   @doc """
   An example: the law flattened to what `Extent.read/1` reads — each
   top-level provision speaking of extent or application, with its words,
-  and the Parts and top-level sections (regulations, articles) as empty
+  and the Parts, their Chapters and top-level sections (regulations, articles) as empty
   shells, all in document order — as XML.
   """
   @spec example(Doc.t()) :: String.t()
@@ -365,7 +365,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
     |> :unicode.characters_to_binary()
   end
 
-  defp shell?(id), do: id =~ ~r/^(?:part-[^-]+|(?:section|regulation|article|rule)-\d+[A-Z]*)$/
+  # (a Part's Chapters too: "Chapter 1 of Part 3 … extends to …", CV-S05 NEW-A)
+  defp shell?(id),
+    do:
+      id =~
+        ~r/^(?:part-[^-]+(?:-chapter-[^-]+)?|(?:section|regulation|article|rule)-\d+[A-Z]*)$/
 
   defp element(_doc, id, false), do: {:P1, [id: to_charlist(id)], []}
 
