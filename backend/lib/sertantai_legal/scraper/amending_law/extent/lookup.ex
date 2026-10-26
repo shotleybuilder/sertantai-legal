@@ -11,8 +11,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lookup do
   alias SertantaiLegal.Scraper.AmendingLaw.{Extent, RefList}
   alias SertantaiLegal.Scraper.Territory
 
-  # the order lists apply in (`of/2`)
-  @apply_order %{same: 0, unread: 0, only: 1, named: 2, also: 3, not: 4}
+  # the order lists apply in (`of/2`): a statement unread first — unknown
+  # whatever else is read for the same provisions ("*" both: every
+  # amendment the same extent, and an amendments' statement unread), then
+  # the same extent, then those that set, widen, narrow
+  @apply_order %{unread: -1, same: 0, only: 1, named: 2, also: 3, not: 4}
 
   @doc """
   Where the amending provision `ref` ("s.111", "sch.7.para.27(2)",

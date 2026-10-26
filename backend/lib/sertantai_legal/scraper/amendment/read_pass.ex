@@ -131,7 +131,7 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadPass do
       read =
         case Extent.ReadCache.law(amending, doc: doc) do
           %{read: read} -> read
-          nil -> Extent.read(doc)
+          nil -> Extent.ReadCache.read(doc)
         end
 
       {:ok, _, _} = Extent.Store.write_read(amending, read, cached: true)

@@ -18,7 +18,9 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
      comes from: `territory:law` (the amending law's application),
      `bound:law` (its extent at the amending provisions), `territory:feed`
      / `territory:markup` (derived), or none — and why, from the amending
-     law's basis (`same` where it follows the enactment it changes).
+     law's basis (`same` where it follows the enactment it changes;
+     `unread_statement` where the law has a statement left unread, which
+     withholds its provisions' bound: `Extent.Unread`).
   3. With `--sample FILE`, a reproducible sample of each (`--n` each,
      stratified so every kind is seen), with the words behind each, for
      checking.
@@ -225,16 +227,24 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
   defp none_why(%{basis: "none", why: why}), do: "law_" <> why
   defp none_why(%{basis: "competence"}), do: "competence_only"
 
-  defp none_why(%{extent: %Extent{lists: lists, default: d}}) when d == nil and lists != [],
+  # a statement of the law's left unread withholds its provisions' bound,
+  # never the default (CV-S05 round 6)
+  defp none_why(%{extent: %Extent{lists: lists}} = row) do
+    if Enum.any?(lists, &match?({:unread, _, _}, &1)),
+      do: "unread_statement",
+      else: none_listed(row)
+  end
+
+  defp none_why(_), do: "unknown"
+
+  defp none_listed(%{extent: %Extent{lists: lists, default: d}}) when d == nil and lists != [],
     do: "not_named"
 
-  defp none_why(%{extent: %Extent{} = e}) do
+  defp none_listed(%{extent: %Extent{} = e}) do
     if Enum.any?(e.lists, &match?({:same, _, _}, &1)),
       do: "same_or_not_named",
       else: "provision_not_named"
   end
-
-  defp none_why(_), do: "unknown"
 
   # ── report ───────────────────────────────────────────────────────────
 

@@ -17,7 +17,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCache do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Extent}
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Patterns, ReadVersion}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Patterns, ReadVersion, Unread}
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
 
   @dir Path.join(["data", "cache", "extent_reads"])
@@ -61,8 +61,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCache do
   @spec compute(String.t(), [String.t()], Doc.t() | nil) :: reading()
   def compute(law, files, doc \\ nil) do
     doc = doc || Doc.new(law, Enum.map(files, &(&1 |> File.read!() |> :zlib.gunzip())))
-    read = Extent.read(doc)
-    classes = Patterns.classes(doc, read)
+    {read, classes} = read_classes(doc)
     example = if classes != [], do: Patterns.example(doc)
 
     %{
@@ -71,6 +70,22 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCache do
       example: example,
       alone: if(example, do: Patterns.read(law, example), else: [])
     }
+  end
+
+  @doc """
+  The law's extent from its document, computed (never from the cache):
+  `Extent.read/1` with the bounds its unread statements withhold
+  (`Extent.Unread`, CV-S05 round 6).
+  """
+  @spec read(Doc.t()) :: Extent.t()
+  def read(%Doc{} = doc), do: doc |> read_classes() |> elem(0)
+
+  # the statements read, the catalogue's classes of every sentence (read
+  # against those statements), then the bounds the unread ones withhold
+  defp read_classes(doc) do
+    read = Extent.read(doc)
+    classes = Patterns.classes(doc, read)
+    {Unread.withheld(read, classes, doc), classes}
   end
 
   @doc """
