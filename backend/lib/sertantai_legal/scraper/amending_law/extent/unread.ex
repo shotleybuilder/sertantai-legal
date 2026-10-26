@@ -92,6 +92,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Unread do
   @spec subject(String.t(), String.t(), Doc.t(), MapSet.t() | nil) :: [String.t()]
   def subject(s, ref, %Doc{} = doc, known \\ nil) do
     known = known || known_refs(doc)
+    # (as every reader reads a provision's words: `Units.unlettered/1`)
+    s = Units.unlettered(s)
 
     if own?(s, ref, doc) do
       [whole | items] = Units.statements(s)
@@ -160,8 +162,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Unread do
     lead = sentence |> String.split(~r/[—–]/u, parts: 2) |> hd()
 
     case statement_at(lead) do
-      nil -> lead =~ ~r/\b(?:following|namely|Those\s+provisions)\b/iu
-      at -> not (binary_part(lead, at, byte_size(lead) - at) =~ ~r/[.;]\s*\S/u)
+      # (never an application's list: "The following provisions … do not
+      # apply in England and Wales or Scotland— …", SI 2020/818 reg.1A)
+      nil ->
+        lead =~ ~r/\b(?:following|namely|Those\s+provisions)\b/iu and
+          not (lead =~ ~r/\b(?:appl(?:y|ies)|ha(?:ve|s)\s+effect)\b/iu)
+
+      at ->
+        not (binary_part(lead, at, byte_size(lead) - at) =~ ~r/[.;]\s*\S/u)
     end
   end
 

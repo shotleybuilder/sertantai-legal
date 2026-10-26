@@ -35,6 +35,14 @@
         "UK_wsi_2016_413/e07f266149"
       ]
     },
+    "application|amendments|applies|none|places:many|-|-|unread:not_read": {
+      "count": 1,
+      "examples": []
+    },
+    "application|amendments|applies|none|places:many|only|-|unread:not_read": {
+      "count": 1,
+      "examples": []
+    },
     "application|amendments|not_applies|except|places:1|-|-|unread:not_read": {
       "count": 1,
       "examples": [
@@ -60,6 +68,10 @@
         "UK_ukpga_2003_32/32b70b6f25"
       ]
     },
+    "application|following|applies|except|places:many|only|-|unread:not_read": {
+      "count": 1,
+      "examples": []
+    },
     "application|following|applies|none|places:1|-|-|none": {
       "count": 2,
       "examples": [
@@ -68,19 +80,15 @@
       ]
     },
     "application|following|applies|none|places:1|-|-|unread:not_read": {
-      "count": 2,
-      "examples": [
-        "UK_ukpga_1990_16/5467e7a40b"
-      ]
+      "count": 1,
+      "examples": []
     },
     "application|following|applies|none|places:1|only|-|unread:not_read": {
       "count": 1,
-      "examples": [
-        "UK_ukpga_1985_73/6d242e3b5a"
-      ]
+      "examples": []
     },
     "application|following|applies|none|places:many|-|-|none": {
-      "count": 6,
+      "count": 7,
       "examples": [
         "UK_ukpga_1985_67/67cf224163",
         "UK_ukpga_2011_13/9b890a8531",
@@ -136,7 +144,7 @@
       ]
     },
     "application|following|not_applies|none|places:many|-|-|unread:not_read": {
-      "count": 1,
+      "count": 2,
       "examples": [
         "UK_ukpga_1973_65/6a30a33f79"
       ]
@@ -181,6 +189,10 @@
         "UK_ukpga_2008_23/e321b54229"
       ]
     },
+    "application|named|applies|none|places:1|only|-|unread:provision_application": {
+      "count": 2,
+      "examples": []
+    },
     "application|named|applies|none|places:many|-|-|applies:E": {
       "count": 1,
       "examples": [
@@ -195,13 +207,13 @@
       ]
     },
     "application|named|applies|none|places:many|-|-|none": {
-      "count": 2,
+      "count": 3,
       "examples": [
         "UK_ukpga_2020_17/12730a9a59"
       ]
     },
     "application|named|applies|none|places:many|-|-|unread:provision_application": {
-      "count": 12,
+      "count": 15,
       "examples": [
         "UK_uksi_1999_1820/bd4b73c9e0"
       ]
@@ -217,6 +229,10 @@
       "examples": [
         "UK_uksi_2001_2315/5dc3c32e5b"
       ]
+    },
+    "application|named|applies|none|places:many|only|-|unread:provision_application": {
+      "count": 1,
+      "examples": []
     },
     "application|named|applies|subject_to|places:many|-|-|unread:provision_application": {
       "count": 2,
@@ -250,7 +266,7 @@
       ]
     },
     "application|named|not_applies|none|places:many|-|-|unread:provision_application": {
-      "count": 1,
+      "count": 2,
       "examples": [
         "UK_uksi_2014_469/f4daf7e52a"
       ]
@@ -603,7 +619,7 @@
       ]
     },
     "application|whole|applies|except|places:1|-|-|unread:not_read": {
-      "count": 4,
+      "count": 5,
       "examples": [
         "UK_uksi_2005_894/14b49a6640",
         "UK_uksi_2010_630/1406a224b3",
@@ -723,7 +739,7 @@
       "examples": []
     },
     "application|whole|applies|none|places:1|only|-|unread:not_read": {
-      "count": 4,
+      "count": 6,
       "examples": [
         "UK_uksi_2016_618/c0323f7c45",
         "UK_uksi_2020_312/9d3eac8c92",
@@ -738,8 +754,12 @@
         "UK_uksi_2015_627/56baa8a6ab"
       ]
     },
+    "application|whole|applies|none|places:many|-|-|unread:application": {
+      "count": 1,
+      "examples": []
+    },
     "application|whole|applies|none|places:many|-|-|unread:not_read": {
-      "count": 8,
+      "count": 12,
       "examples": [
         "UK_ukpga_1960_62/493e6027df",
         "UK_ukpga_2023_6/01c58bebf4",
@@ -824,6 +844,10 @@
       "examples": [
         "UK_ukpga_1983_54/e8ba5db711"
       ]
+    },
+    "extent+application|named|extends|none|places:many|only|-|list:named:E+W": {
+      "count": 1,
+      "examples": []
     },
     "extent+application|named|extends|none|places:many|only|-|unread:provision_extent": {
       "count": 1,
@@ -939,7 +963,7 @@
       ]
     },
     "extent+application|whole|same_extent|except|places:1|only|-|unread:not_read": {
-      "count": 1,
+      "count": 2,
       "examples": [
         "UK_uksi_2017_702/6d5a9b99be"
       ]
@@ -976,6 +1000,12 @@
         "UK_ukpga_1976_86/8b620eedbb"
       ]
     },
+    "extent|amendments|extends|except|places:1|-|-|unread:other_provision": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2008_2683/96de6d6170"
+      ]
+    },
     "extent|amendments|extends|except|places:1|only|-|unread:in_clause": {
       "count": 2,
       "examples": [
@@ -1003,10 +1033,11 @@
       ]
     },
     "extent|amendments|extends|none|places:1|-|-|list:same:same": {
-      "count": 2,
+      "count": 3,
       "examples": [
         "UK_ukpga_2006_48/55f9b4ff45",
-        "UK_ukpga_2007_19/16fdb8d77d"
+        "UK_ukpga_2007_19/16fdb8d77d",
+        "UK_uksi_2012_2404/b2e97d9221"
       ]
     },
     "extent|amendments|extends|none|places:1|-|-|none": {
@@ -1016,13 +1047,14 @@
       ]
     },
     "extent|amendments|extends|none|places:1|-|-|unread:in_clause": {
-      "count": 1,
+      "count": 2,
       "examples": [
-        "UK_ukpga_1991_60/2e74474370"
+        "UK_ukpga_1991_60/2e74474370",
+        "UK_ukpga_1996_52/e1a1da0b6d"
       ]
     },
     "extent|amendments|extends|none|places:1|-|-|unread:not_read": {
-      "count": 8,
+      "count": 9,
       "examples": [
         "UK_asp_2009_6/4ad644cf98",
         "UK_ukpga_1968_60/98c75a3bce",
@@ -1124,6 +1156,12 @@
         "UK_uksi_2015_21/0f396bfb1c"
       ]
     },
+    "extent|amendments|extends|none|places:many|only|-|list:only:NI": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2025_36/5556ccdcb8"
+      ]
+    },
     "extent|amendments|extends|none|places:many|only|-|list:only:S": {
       "count": 1,
       "examples": [
@@ -1135,14 +1173,13 @@
       "examples": [
         "UK_ukpga_1996_23/c1ac073ec1",
         "UK_ukpga_2010_23/f7ab82d9ac",
-        "UK_uksi_2014_1638/517194f446"
+        "UK_uksi_2014_1638/999d269aa3"
       ]
     },
     "extent|amendments|extends|none|places:many|only|-|unread:not_read": {
-      "count": 3,
+      "count": 2,
       "examples": [
         "UK_ukpga_2012_9/f97e3ddafe",
-        "UK_ukpga_2025_36/8e61ca6488",
         "UK_uksi_2018_631/85e3cc881d"
       ]
     },
@@ -1202,8 +1239,9 @@
       ]
     },
     "extent|amendments|not_extends|except|places:many|-|-|default:E+W+S": {
-      "count": 1,
+      "count": 2,
       "examples": [
+        "UK_ukpga_1975_71/9e1bd547f2",
         "UK_ukpga_1995_25/0ae2420921"
       ]
     },
@@ -1217,12 +1255,6 @@
       "count": 1,
       "examples": [
         "UK_ukpga_1996_52/76cc0c95b5"
-      ]
-    },
-    "extent|amendments|not_extends|except|places:many|-|-|unread:not_read": {
-      "count": 1,
-      "examples": [
-        "UK_ukpga_1975_71/579736e588"
       ]
     },
     "extent|amendments|not_extends|except|places:many|-|also|unread:in_clause": {
@@ -1367,7 +1399,7 @@
       ]
     },
     "extent|amendments|same_extent|none|places:0|-|-|list:same:same": {
-      "count": 142,
+      "count": 146,
       "examples": [
         "UK_ssi_2022_296/b85b2a97e7",
         "UK_ukpga_1990_42/171129f4cb",
@@ -1375,7 +1407,7 @@
       ]
     },
     "extent|amendments|same_extent|none|places:0|-|-|unread:in_clause": {
-      "count": 15,
+      "count": 13,
       "examples": [
         "UK_ukpga_1995_38/2dd9d4bf2f",
         "UK_ukpga_2000_2/bd956676c3",
@@ -1389,11 +1421,11 @@
       ]
     },
     "extent|amendments|same_extent|none|places:0|-|-|unread:not_read": {
-      "count": 11,
+      "count": 9,
       "examples": [
         "UK_asp_2004_6/c86578e136",
         "UK_ukpga_1991_60/91072760a3",
-        "UK_ukpga_1998_40/ed75351c58"
+        "UK_ukpga_2001_10/c8f05363cf"
       ]
     },
     "extent|amendments|same_extent|none|places:0|-|also|unread:in_clause": {
@@ -1403,24 +1435,23 @@
       ]
     },
     "extent|amendments|same_extent|none|places:1|-|-|list:same:same": {
-      "count": 12,
+      "count": 13,
       "examples": [
         "UK_ukpga_2004_24/ee156974fd",
         "UK_ukpga_2016_19/a4d64395f2",
         "UK_ukpga_2016_25/5dbd18435f"
       ]
     },
-    "extent|amendments|same_extent|none|places:1|-|-|unread:in_clause": {
+    "extent|amendments|same_extent|none|places:1|only|-|list:same:same": {
       "count": 1,
       "examples": [
-        "UK_ukpga_2022_32/6d27b46c52"
+        "UK_ukpga_2004_33/6bdc8190be"
       ]
     },
     "extent|amendments|same_extent|none|places:1|only|-|unread:not_read": {
-      "count": 2,
+      "count": 1,
       "examples": [
-        "UK_ukpga_2004_33/6bdc8190be",
-        "UK_ukpga_2015_7/0074fc7bfd"
+        "UK_ukpga_2015_7/ea22f9bdd6"
       ]
     },
     "extent|amendments|same_extent|none|places:many|-|-|unread:not_read": {
@@ -1430,18 +1461,11 @@
       ]
     },
     "extent|amendments|same_extent|subject_to|places:0|-|-|list:same:same": {
-      "count": 19,
+      "count": 21,
       "examples": [
         "UK_ukpga_1995_25/7273f364ad",
         "UK_ukpga_2003_39/91170bf15b",
         "UK_ukpga_2006_11/edbed1bb85"
-      ]
-    },
-    "extent|amendments|same_extent|subject_to|places:0|-|-|unread:in_clause": {
-      "count": 2,
-      "examples": [
-        "UK_ukpga_2009_23/44a8a7e818",
-        "UK_ukpga_2020_29/b57d0afb2f"
       ]
     },
     "extent|amendments|same_extent|subject_to|places:0|-|-|unread:not_read": {
@@ -1468,10 +1492,14 @@
         "UK_ukpga_1986_63/f0f85cd695"
       ]
     },
+    "extent|following|extends|except|places:1|-|-|list:named:E+W+S+NI": {
+      "count": 1,
+      "examples": []
+    },
     "extent|following|extends|except|places:1|-|-|list:named:NI": {
       "count": 2,
       "examples": [
-        "UK_ukpga_1981_56/deb667018c",
+        "UK_ukpga_1981_56/6fcaeaaf5e",
         "UK_ukpga_2000_19/9fbef96d30"
       ]
     },
@@ -1497,13 +1525,13 @@
       "count": 2,
       "examples": [
         "UK_ukpga_1975_21/cf6d91bb9d",
-        "UK_ukpga_2021_30/bcaeb8b504"
+        "UK_ukpga_2021_30/a66c0e430a"
       ]
     },
     "extent|following|extends|except|places:many|-|-|list:named:E+W+NI": {
       "count": 1,
       "examples": [
-        "UK_ukpga_2009_25/38c9a7c6ba"
+        "UK_ukpga_2009_25/8820467052"
       ]
     },
     "extent|following|extends|except|places:many|-|-|list:named:E+W+S+NI": {
@@ -1529,9 +1557,10 @@
       ]
     },
     "extent|following|extends|except|places:many|-|-|unread:not_read": {
-      "count": 1,
+      "count": 4,
       "examples": [
-        "UK_ukpga_2023_52/c63fb052ae"
+        "UK_ukpga_2023_52/1281387f10",
+        "UK_uksi_2004_1733/233f5ef045"
       ]
     },
     "extent|following|extends|except|places:many|-|also|list:also:S+NI": {
@@ -1611,7 +1640,7 @@
       ]
     },
     "extent|following|extends|none|places:1|-|-|unread:not_read": {
-      "count": 3,
+      "count": 4,
       "examples": [
         "UK_ukpga_1982_30/27fcc9b7c2",
         "UK_uksi_1996_3056/a36948d78a"
@@ -1668,11 +1697,11 @@
       ]
     },
     "extent|following|extends|none|places:1|only|-|list:only:NI": {
-      "count": 13,
+      "count": 14,
       "examples": [
+        "UK_ukpga_1975_59/6af3e421ea",
         "UK_ukpga_1984_60/0e85e2d961",
-        "UK_ukpga_1999_30/bc2ab69ec1",
-        "UK_ukpga_2003_44/a2d64b7429"
+        "UK_ukpga_1999_30/bc2ab69ec1"
       ]
     },
     "extent|following|extends|none|places:1|only|-|list:only:S": {
@@ -1696,7 +1725,7 @@
       ]
     },
     "extent|following|extends|none|places:1|only|-|unread:in_clause": {
-      "count": 5,
+      "count": 6,
       "examples": [
         "UK_ukpga_1988_33/2ab864b716",
         "UK_ukpga_1991_60/3b1d054024",
@@ -1704,11 +1733,11 @@
       ]
     },
     "extent|following|extends|none|places:1|only|-|unread:not_read": {
-      "count": 7,
+      "count": 5,
       "examples": [
-        "UK_ukpga_1975_59/6af3e421ea",
         "UK_ukpga_1989_29/1ded9cd6e1",
-        "UK_ukpga_1994_40/a87e13023c"
+        "UK_ukpga_1994_40/a87e13023c",
+        "UK_ukpga_2006_32/07fab982c3"
       ]
     },
     "extent|following|extends|none|places:many|-|-|list:named:E+W": {
@@ -1780,7 +1809,7 @@
       ]
     },
     "extent|following|extends|none|places:many|-|-|unread:not_read": {
-      "count": 10,
+      "count": 11,
       "examples": [
         "UK_ukpga_1971_23/ef90af605c",
         "UK_ukpga_1982_48/ed536b5c66",
@@ -1790,15 +1819,15 @@
     "extent|following|extends|none|places:many|-|also|list:also:NI": {
       "count": 1,
       "examples": [
-        "UK_uksi_2017_1012/20c2dbdad4"
+        "UK_uksi_2017_1012/b68b6a681a"
       ]
     },
     "extent|following|extends|none|places:many|-|also|list:also:S": {
       "count": 3,
       "examples": [
         "UK_ukpga_1988_33/c320c1f10d",
-        "UK_uksi_2010_490/e4dba68284",
-        "UK_uksi_2017_1012/b8c45c730e"
+        "UK_uksi_2010_490/88d424d8d0",
+        "UK_uksi_2017_1012/e8f009ab75"
       ]
     },
     "extent|following|extends|none|places:many|-|also|list:also:S+NI": {
@@ -1812,7 +1841,7 @@
     "extent|following|extends|none|places:many|-|also|unread:list": {
       "count": 1,
       "examples": [
-        "UK_uksi_2010_490/411ae81ff5"
+        "UK_uksi_2010_490/383ab20fd1"
       ]
     },
     "extent|following|extends|none|places:many|only|-|list:named:NI": {
@@ -1862,7 +1891,7 @@
       ]
     },
     "extent|following|extends|none|places:many|only|-|none": {
-      "count": 2,
+      "count": 4,
       "examples": [
         "UK_ukpga_1995_40/b8e0e57a20"
       ]
@@ -1896,16 +1925,16 @@
     "extent|following|extends|subject_to|places:1|-|also|list:also:NI": {
       "count": 1,
       "examples": [
-        "UK_ukpga_2009_23/4dd4fab64d"
+        "UK_ukpga_2009_23/4bf8bacb93"
       ]
     },
     "extent|following|extends|subject_to|places:1|-|also|list:also:S": {
       "count": 1,
       "examples": [
-        "UK_ukpga_2009_23/586f2bbe71"
+        "UK_ukpga_2009_23/c2397cf581"
       ]
     },
-    "extent|following|extends|subject_to|places:1|only|-|unread:not_read": {
+    "extent|following|extends|subject_to|places:1|only|-|list:only:E+W": {
       "count": 1,
       "examples": [
         "UK_ukpga_1982_53/0577d109c4"
@@ -1979,7 +2008,7 @@
       ]
     },
     "extent|following|not_extends|none|places:1|-|-|list:not:S": {
-      "count": 2,
+      "count": 3,
       "examples": [
         "UK_ukpga_1985_67/ab6cb88ce4",
         "UK_ukpga_2001_24/30c9bb4244"
@@ -2161,7 +2190,7 @@
       ]
     },
     "extent|named|extends|none|places:1|-|-|none": {
-      "count": 16,
+      "count": 14,
       "examples": [
         "UK_ssi_2000_169/546aa2277d",
         "UK_ssi_2000_95/76f208481c",
@@ -2176,7 +2205,7 @@
       ]
     },
     "extent|named|extends|none|places:1|-|-|unread:provision_extent": {
-      "count": 7,
+      "count": 6,
       "examples": [
         "UK_ukpga_1991_28/8329523712",
         "UK_uksi_2003_1082/bc3560339d",
@@ -2243,12 +2272,6 @@
         "UK_ukpga_1996_25/00fdf0fdfc"
       ]
     },
-    "extent|named|extends|none|places:1|only|-|none": {
-      "count": 2,
-      "examples": [
-        "UK_uksi_1991_2272/4faff757eb"
-      ]
-    },
     "extent|named|extends|none|places:1|only|-|unread:in_clause": {
       "count": 3,
       "examples": [
@@ -2280,7 +2303,7 @@
       ]
     },
     "extent|named|extends|none|places:many|-|-|list:named:E+W+S": {
-      "count": 16,
+      "count": 17,
       "examples": [
         "UK_ukpga_2003_30/e338dc0d52",
         "UK_ukpga_2008_25/67380a8ba9",
@@ -2309,11 +2332,11 @@
       ]
     },
     "extent|named|extends|none|places:many|-|-|none": {
-      "count": 17,
+      "count": 16,
       "examples": [
-        "UK_ukpga_1978_38/d38853fda3",
         "UK_ukpga_1990_43/8b266810a1",
-        "UK_ukpga_2003_33/fb7daf43d2"
+        "UK_ukpga_2003_33/fb7daf43d2",
+        "UK_ukpga_2013_22/ced6b7e835"
       ]
     },
     "extent|named|extends|none|places:many|-|-|unread:in_clause": {
@@ -2324,11 +2347,11 @@
       ]
     },
     "extent|named|extends|none|places:many|-|-|unread:provision_extent": {
-      "count": 4,
+      "count": 3,
       "examples": [
         "UK_ukpga_1984_54/0dfb7bd077",
         "UK_ukpga_2012_9/cb48726a77",
-        "UK_uksi_2006_1176/f7a2596438"
+        "UK_uksi_2022_1075/e722e55c62"
       ]
     },
     "extent|named|extends|none|places:many|-|also|list:also:E+W+S": {
@@ -2504,12 +2527,6 @@
         "UK_ukpga_1968_72/0e7633c432"
       ]
     },
-    "extent|named|not_extends|none|places:1|-|-|list:named:NI": {
-      "count": 1,
-      "examples": [
-        "UK_ukpga_1997_42/19970a9c84"
-      ]
-    },
     "extent|named|not_extends|none|places:1|-|-|list:not:NI": {
       "count": 6,
       "examples": [
@@ -2550,6 +2567,12 @@
       "count": 1,
       "examples": [
         "UK_ukpga_1995_25/328e02bcf1"
+      ]
+    },
+    "extent|named|not_extends|none|places:many|-|-|list:named:NI": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1997_42/be00146944"
       ]
     },
     "extent|named|not_extends|none|places:many|-|-|unread:provision_extent": {
@@ -2595,7 +2618,7 @@
         "UK_ukpga_1994_21/e53fd005ec"
       ]
     },
-    "extent|named|same_extent|except|places:1|only|-|unread:provision_extent": {
+    "extent|named|same_extent|except|places:1|only|-|list:only:NI": {
       "count": 1,
       "examples": [
         "UK_ukpga_2006_3/1249f4382b"
@@ -2648,10 +2671,16 @@
         "UK_nisi_1992_231/b7ad368ab2"
       ]
     },
-    "extent|named|same_extent|none|places:1|only|-|unread:provision_extent": {
+    "extent|named|same_extent|none|places:1|only|-|list:only:S": {
       "count": 1,
       "examples": [
         "UK_ukpga_2009_1/08e757b5cf"
+      ]
+    },
+    "extent|named|same_extent|none|places:1|only|-|unread:in_clause": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2013_602/850aa5db49"
       ]
     },
     "extent|other|extends|apart_from|places:1|only|-|unread:in_clause": {
@@ -2668,16 +2697,16 @@
         "UK_uksi_2006_378/91bdc46f53"
       ]
     },
+    "extent|other|extends|except|places:many|only|-|list:only:E+W+S": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2013_24/849ede8e8b"
+      ]
+    },
     "extent|other|extends|except|places:many|only|-|unread:in_clause": {
       "count": 1,
       "examples": [
         "UK_ukpga_2008_29/be0f134de9"
-      ]
-    },
-    "extent|other|extends|except|places:many|only|-|unread:not_read": {
-      "count": 1,
-      "examples": [
-        "UK_ukpga_2013_24/849ede8e8b"
       ]
     },
     "extent|other|extends|none|places:0|-|-|unread:other_provision": {
@@ -2695,23 +2724,19 @@
       ]
     },
     "extent|other|extends|none|places:1|-|-|none": {
-      "count": 9,
+      "count": 10,
       "examples": [
         "UK_ukpga_1989_29/81d799bd43",
         "UK_ukpga_2005_15/ec0f11679b",
         "UK_ukpga_2011_16/a3b89ac606"
       ]
     },
-    "extent|other|extends|none|places:1|-|-|unread:in_clause": {
-      "count": 1,
-      "examples": []
-    },
     "extent|other|extends|none|places:1|-|-|unread:not_read": {
-      "count": 15,
+      "count": 13,
       "examples": [
         "UK_ukpga_1979_5/32f623088a",
         "UK_ukpga_1982_30/cc8be68bb7",
-        "UK_ukpga_1998_26/7451742104"
+        "UK_ukpga_2003_20/9e86232b39"
       ]
     },
     "extent|other|extends|none|places:1|only|-|list:only:S": {
@@ -2721,7 +2746,7 @@
       ]
     },
     "extent|other|extends|none|places:1|only|-|unread:in_clause": {
-      "count": 10,
+      "count": 7,
       "examples": [
         "UK_ukpga_2002_17/d0ae1d4463",
         "UK_ukpga_2011_13/ea3313bfba",
@@ -2729,15 +2754,15 @@
       ]
     },
     "extent|other|extends|none|places:1|only|-|unread:not_read": {
-      "count": 12,
+      "count": 10,
       "examples": [
-        "UK_ssi_2009_266/9cc6f41009",
         "UK_ukpga_1980_65/f7b4de218d",
-        "UK_ukpga_2003_39/d287ce2b15"
+        "UK_ukpga_2003_39/d287ce2b15",
+        "UK_ukpga_2006_16/94086c4e91"
       ]
     },
     "extent|other|extends|none|places:many|-|-|list:named:E+W+S+NI": {
-      "count": 9,
+      "count": 10,
       "examples": [
         "UK_ukpga_2009_20/08255c3fd6",
         "UK_ukpga_2015_7/7829f3c74b",
@@ -2750,13 +2775,6 @@
         "UK_ukpga_1989_29/d0b1fd2a03",
         "UK_ukpga_2005_15/0af094429f",
         "UK_ukpga_2020_7/a74f9bd2fc"
-      ]
-    },
-    "extent|other|extends|none|places:many|-|-|unread:not_read": {
-      "count": 2,
-      "examples": [
-        "UK_uksi_2022_834/ffb1ba8de5",
-        "UK_uksi_2026_237/9c10c82167"
       ]
     },
     "extent|other|extends|none|places:many|-|also|unread:in_clause": {
@@ -2773,7 +2791,7 @@
       ]
     },
     "extent|other|extends|none|places:many|only|-|unread:in_clause": {
-      "count": 3,
+      "count": 2,
       "examples": [
         "UK_ukpga_2013_22/9e3c640c79",
         "UK_ukpga_2017_29/7bcd96243f"
@@ -2877,16 +2895,25 @@
         "UK_ukpga_2015_30/6d666ba21e"
       ]
     },
+    "extent|parts|extends|except|places:many|-|-|list:named:E+W+S": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2025_36/eca01ec67d"
+      ]
+    },
+    "extent|parts|extends|except|places:many|-|-|none": {
+      "count": 1,
+      "examples": []
+    },
     "extent|parts|extends|except|places:many|-|-|unread:in_clause": {
       "count": 1,
       "examples": [
-        "UK_uksi_2019_453/717b469269"
+        "UK_uksi_2019_453/89d2ec1e80"
       ]
     },
     "extent|parts|extends|except|places:many|-|-|unread:provision_extent": {
-      "count": 2,
+      "count": 1,
       "examples": [
-        "UK_ukpga_2025_36/c4b641e5d3",
         "UK_uksi_2022_293/550d56a436"
       ]
     },
@@ -2894,6 +2921,18 @@
       "count": 1,
       "examples": [
         "UK_ukpga_1977_45/8239a928fc"
+      ]
+    },
+    "extent|parts|extends|except|places:many|only|-|list:only:E+W": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2025_18/75ef9b39af"
+      ]
+    },
+    "extent|parts|extends|except|places:many|only|-|list:only:E+W+S": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2013_24/908dcdeeb6"
       ]
     },
     "extent|parts|extends|except|places:many|only|-|none": {
@@ -2906,21 +2945,25 @@
     "extent|parts|extends|except|places:many|only|-|unread:in_clause": {
       "count": 1,
       "examples": [
-        "UK_ukpga_2025_18/75ef9b39af"
-      ]
-    },
-    "extent|parts|extends|except|places:many|only|-|unread:provision_extent": {
-      "count": 3,
-      "examples": [
-        "UK_ukpga_2006_38/cd3e4ba343",
         "UK_ukpga_2013_24/a53b081f0c"
       ]
     },
-    "extent|parts|extends|except|places:many|only|also|unread:provision_extent": {
-      "count": 2,
+    "extent|parts|extends|except|places:many|only|-|unread:provision_extent": {
+      "count": 1,
       "examples": [
-        "UK_ukpga_1995_25/7f336841ba",
-        "UK_ukpga_2013_24/9e063a9191"
+        "UK_ukpga_2006_38/cd3e4ba343"
+      ]
+    },
+    "extent|parts|extends|except|places:many|only|also|list:also:NI": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2013_24/33188307d4"
+      ]
+    },
+    "extent|parts|extends|except|places:many|only|also|unread:provision_extent": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1995_25/7f336841ba"
       ]
     },
     "extent|parts|extends|none|places:1|-|-|list:named:E+W": {
@@ -3011,7 +3054,7 @@
       "count": 3,
       "examples": [
         "UK_ukpga_1994_29/45e3cd15fa",
-        "UK_ukpga_1995_25/9fad1c8934",
+        "UK_ukpga_1995_25/e753c850fe",
         "UK_ukpga_2012_10/9ab0bed4a8"
       ]
     },
@@ -3030,15 +3073,15 @@
       ]
     },
     "extent|parts|extends|none|places:many|-|-|list:named:E+W+S": {
-      "count": 6,
+      "count": 7,
       "examples": [
         "UK_ukpga_2009_20/4c32f96b27",
         "UK_ukpga_2015_6/839d5243f2",
-        "UK_uksi_2019_837/7479648d79"
+        "UK_ukpga_2025_10/7338cb02a4"
       ]
     },
     "extent|parts|extends|none|places:many|-|-|list:named:E+W+S+NI": {
-      "count": 20,
+      "count": 21,
       "examples": [
         "UK_ukpga_2001_3/c854a69492",
         "UK_ukpga_2007_15/fa61e243dd",
@@ -3060,25 +3103,44 @@
       ]
     },
     "extent|parts|extends|none|places:many|-|-|unread:provision_extent": {
-      "count": 5,
+      "count": 4,
       "examples": [
         "UK_ukpga_2005_15/2d1115a61f",
-        "UK_ukpga_2015_30/05b929048a",
-        "UK_ukpga_2025_10/7338cb02a4"
+        "UK_ukpga_2015_30/05b929048a"
       ]
     },
     "extent|parts|extends|none|places:many|-|also|list:also:S+NI": {
-      "count": 2,
+      "count": 3,
       "examples": [
         "UK_ukpga_2006_16/a1070ac20d",
         "UK_ukpga_2006_41/42d390260b"
       ]
     },
     "extent|parts|extends|none|places:many|-|also|unread:in_clause": {
-      "count": 3,
+      "count": 2,
       "examples": [
-        "UK_ukpga_2006_16/3b382973e0",
+        "UK_ukpga_2006_16/1f4c66a602",
         "UK_uksi_2017_1012/e371bfe44c"
+      ]
+    },
+    "extent|parts|extends|none|places:many|only|-|list:named:E+W+S": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2015_7/e97ac25f66"
+      ]
+    },
+    "extent|parts|extends|none|places:many|only|-|list:named:E+W+S+NI": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2020_16/8f047a14c5"
+      ]
+    },
+    "extent|parts|extends|none|places:many|only|-|list:only:E+W": {
+      "count": 7,
+      "examples": [
+        "UK_ukpga_2004_33/c1db7c7665",
+        "UK_ukpga_2012_10/1a77962f49",
+        "UK_ukpga_2015_30/159df2076f"
       ]
     },
     "extent|parts|extends|none|places:many|only|-|list:only:E+W+NI": {
@@ -3109,26 +3171,23 @@
       ]
     },
     "extent|parts|extends|none|places:many|only|-|none": {
-      "count": 2,
+      "count": 1,
       "examples": [
-        "UK_uksi_2001_916/dacfac6b91",
         "UK_uksi_2017_1012/bcd8a8b577"
       ]
     },
     "extent|parts|extends|none|places:many|only|-|unread:in_clause": {
-      "count": 6,
+      "count": 4,
       "examples": [
         "UK_ukpga_1990_42/1cba617d8a",
-        "UK_ukpga_2012_10/1a77962f49",
-        "UK_ukpga_2015_26/0342d8ac44"
+        "UK_ukpga_2015_26/0342d8ac44",
+        "UK_ukpga_2020_22/4b27f8309f"
       ]
     },
     "extent|parts|extends|none|places:many|only|-|unread:provision_extent": {
-      "count": 8,
+      "count": 1,
       "examples": [
-        "UK_ukpga_2004_33/ff85ad5c0b",
-        "UK_ukpga_2015_30/159df2076f",
-        "UK_ukpga_2015_7/66de6d4b8c"
+        "UK_ukpga_2004_33/ff85ad5c0b"
       ]
     },
     "extent|parts|extends|subject_to|places:1|-|-|list:named:NI": {
@@ -3236,8 +3295,20 @@
         "UK_ukpga_2014_21/3a4c92cdfc"
       ]
     },
+    "extent|parts|same_extent|except|places:many|-|-|list:named:E+W": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2021_30/a4dc9f9c6e"
+      ]
+    },
+    "extent|parts|same_extent|except|places:many|-|-|list:same:same": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2021_30/fe80960415"
+      ]
+    },
     "extent|parts|same_extent|except|places:many|-|-|unread:in_clause": {
-      "count": 3,
+      "count": 1,
       "examples": [
         "UK_ukpga_2021_30/054e39050d"
       ]
@@ -3251,14 +3322,19 @@
     "extent|parts|same_extent|except|places:many|only|-|list:only:E+W": {
       "count": 1,
       "examples": [
-        "UK_ukpga_2015_7/bfeda227e9"
+        "UK_ukpga_2015_7/bd773776df"
+      ]
+    },
+    "extent|parts|same_extent|except|places:many|only|also|unread:in_clause": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2013_24/96429ee262"
       ]
     },
     "extent|parts|same_extent|except|places:many|only|also|unread:provision_extent": {
-      "count": 2,
+      "count": 1,
       "examples": [
-        "UK_ukpga_2009_20/5a42cb16fb",
-        "UK_ukpga_2013_24/96429ee262"
+        "UK_ukpga_2009_20/5a42cb16fb"
       ]
     },
     "extent|parts|same_extent|none|places:0|-|-|unread:in_clause": {
@@ -3282,10 +3358,16 @@
         "UK_uksi_2006_1244/9ae4e2e8a8"
       ]
     },
-    "extent|parts|same_extent|none|places:1|only|-|unread:in_clause": {
+    "extent|parts|same_extent|none|places:1|only|-|list:only:E+W": {
       "count": 1,
       "examples": [
         "UK_ukpga_2025_18/9016987050"
+      ]
+    },
+    "extent|parts|same_extent|none|places:many|-|-|list:named:E+W": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2021_30/51b8e6530f"
       ]
     },
     "extent|parts|same_extent|none|places:many|-|-|list:named:E+W+S+NI": {
@@ -3294,22 +3376,16 @@
         "UK_uksi_2010_708/9664a8ba43"
       ]
     },
-    "extent|parts|same_extent|none|places:many|-|-|unread:in_clause": {
+    "extent|parts|same_extent|none|places:many|only|-|list:named:E+W+S+NI": {
       "count": 1,
       "examples": [
-        "UK_ukpga_2021_30/51b8e6530f"
+        "UK_ukpga_2023_55/2ebe2c793c"
       ]
     },
-    "extent|parts|same_extent|none|places:many|only|-|unread:in_clause": {
+    "extent|parts|same_extent|none|places:many|only|-|list:only:E+W": {
       "count": 1,
       "examples": [
         "UK_ukpga_1999_9/8825917e70"
-      ]
-    },
-    "extent|parts|same_extent|none|places:many|only|-|unread:provision_extent": {
-      "count": 1,
-      "examples": [
-        "UK_ukpga_2023_55/fbcff04cb4"
       ]
     },
     "extent|schedules|extends|except|places:1|-|-|none": {
@@ -3477,7 +3553,7 @@
       ]
     },
     "extent|schedules|extends|none|places:many|-|-|list:named:E+W+S": {
-      "count": 5,
+      "count": 6,
       "examples": [
         "UK_ukpga_1995_20/3cb3401a0c",
         "UK_ukpga_2006_34/f388eeda22",
@@ -3498,7 +3574,7 @@
       ]
     },
     "extent|schedules|extends|none|places:many|-|-|unread:provision_extent": {
-      "count": 7,
+      "count": 6,
       "examples": [
         "UK_ukpga_1975_18/e71012975b",
         "UK_ukpga_1991_28/5b51590b88",
@@ -3535,6 +3611,12 @@
         "UK_ukpga_2009_25/e93a49e451"
       ]
     },
+    "extent|schedules|extends|none|places:many|only|-|list:named:E+W+S+NI": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2022_32/429cfa5369"
+      ]
+    },
     "extent|schedules|extends|none|places:many|only|-|list:only:E+W": {
       "count": 1,
       "examples": [
@@ -3549,7 +3631,7 @@
       ]
     },
     "extent|schedules|extends|none|places:many|only|-|list:only:E+W+S": {
-      "count": 4,
+      "count": 5,
       "examples": [
         "UK_ukpga_2006_49/c9f3cb8cbc",
         "UK_ukpga_2008_27/df7e4e08ef",
@@ -3557,11 +3639,9 @@
       ]
     },
     "extent|schedules|extends|none|places:many|only|-|unread:in_clause": {
-      "count": 3,
+      "count": 1,
       "examples": [
-        "UK_ukpga_1998_31/90abbd2f70",
-        "UK_ukpga_2022_32/c4dafcf057",
-        "UK_uksi_2014_469/5524b7e3ee"
+        "UK_ukpga_1998_31/90abbd2f70"
       ]
     },
     "extent|schedules|extends|none|places:many|only|-|unread:provision_extent": {
@@ -3672,15 +3752,9 @@
       ]
     },
     "extent|schedules|same_extent|none|places:0|-|-|unread:provision_extent": {
-      "count": 1,
+      "count": 2,
       "examples": [
         "UK_uksi_2003_1998/6cc6d5240a"
-      ]
-    },
-    "extent|schedules|same_extent|none|places:1|only|-|unread:in_clause": {
-      "count": 1,
-      "examples": [
-        "UK_uksi_2013_602/7c56be4e87"
       ]
     },
     "extent|schedules|same_extent|subject_to|places:1|-|-|unread:provision_extent": {
@@ -3904,12 +3978,6 @@
         "UK_ukpga_1991_40/db4638ab0b"
       ]
     },
-    "extent|this|not_extends|none|places:1|-|-|list:named:NI": {
-      "count": 1,
-      "examples": [
-        "UK_ukpga_1999_24/1c4d0c1955"
-      ]
-    },
     "extent|this|not_extends|none|places:1|-|-|list:not:NI": {
       "count": 2,
       "examples": [
@@ -3937,6 +4005,12 @@
       "count": 2,
       "examples": [
         "UK_ukpga_2000_37/6d66d31589"
+      ]
+    },
+    "extent|this|not_extends|none|places:many|-|-|list:named:NI": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1999_24/f4b06dfdd3"
       ]
     },
     "extent|this|not_extends|none|places:many|-|-|unread:provision_extent": {
@@ -4015,7 +4089,7 @@
       ]
     },
     "extent|whole|extends|except|places:1|-|-|default:E+W+S": {
-      "count": 1,
+      "count": 2,
       "examples": [
         "UK_uksi_2011_2131/56334f3466"
       ]
@@ -4138,7 +4212,7 @@
       ]
     },
     "extent|whole|extends|none|places:1|-|-|default:E+W+S": {
-      "count": 15,
+      "count": 16,
       "examples": [
         "UK_ukpga_1954_68/e2585857ac",
         "UK_uksi_1989_1127/40f3af2452",
@@ -4146,7 +4220,7 @@
       ]
     },
     "extent|whole|extends|none|places:1|-|-|default:E+W+S+NI": {
-      "count": 54,
+      "count": 55,
       "examples": [
         "UK_ukpga_1968_13/682d80411b",
         "UK_ukpga_1969_19/20580e3c70",
@@ -4161,6 +4235,12 @@
         "UK_uksi_1999_3323/a0011db9ff"
       ]
     },
+    "extent|whole|extends|none|places:1|-|-|list:same:same": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1990_43/d3e697e39e"
+      ]
+    },
     "extent|whole|extends|none|places:1|-|-|none": {
       "count": 1,
       "examples": [
@@ -4171,6 +4251,12 @@
       "count": 1,
       "examples": [
         "UK_ukpga_2002_30/bdd51f24de"
+      ]
+    },
+    "extent|whole|extends|none|places:1|-|-|unread:in_clause": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1986_50/bf1e9ef6aa"
       ]
     },
     "extent|whole|extends|none|places:1|-|-|unread:not_read": {
@@ -4193,7 +4279,7 @@
       ]
     },
     "extent|whole|extends|none|places:1|only|-|default:E+W": {
-      "count": 57,
+      "count": 59,
       "examples": [
         "UK_ukpga_1975_76/fed7abb007",
         "UK_ukpga_1980_27/3379d7da50",
@@ -4209,7 +4295,7 @@
       ]
     },
     "extent|whole|extends|none|places:1|only|-|default:NI": {
-      "count": 3,
+      "count": 6,
       "examples": [
         "UK_uksi_2024_1231/a87a640a0f",
         "UK_uksi_2025_1244/a87a640a0f",
@@ -4217,7 +4303,7 @@
       ]
     },
     "extent|whole|extends|none|places:1|only|-|default:S": {
-      "count": 72,
+      "count": 73,
       "examples": [
         "UK_ssi_1999_133/23dcbb96a5",
         "UK_ssi_2000_169/c36f4894f5",
@@ -4247,7 +4333,7 @@
       ]
     },
     "extent|whole|extends|none|places:many|-|-|default:E+W+S": {
-      "count": 58,
+      "count": 60,
       "examples": [
         "UK_ukpga_2010_27/e9324933c3",
         "UK_ukpga_2022_25/07d9cdac5e",
@@ -4255,7 +4341,7 @@
       ]
     },
     "extent|whole|extends|none|places:many|-|-|default:E+W+S+NI": {
-      "count": 75,
+      "count": 76,
       "examples": [
         "UK_ukpga_1971_60/d00790232a",
         "UK_ukpga_1992_34/64ef2791e9",
@@ -4297,7 +4383,7 @@
       ]
     },
     "extent|whole|extends|none|places:many|-|-|unread:not_read": {
-      "count": 11,
+      "count": 12,
       "examples": [
         "UK_ukpga_2015_6/2a4191e585",
         "UK_ukpga_2022_44/c3e16a51e1",
@@ -4309,6 +4395,10 @@
       "examples": [
         "UK_ukpga_1996_52/a67d043bf4"
       ]
+    },
+    "extent|whole|extends|none|places:many|only|-|default:E+W+NI": {
+      "count": 1,
+      "examples": []
     },
     "extent|whole|extends|none|places:many|only|-|default:E+W+S": {
       "count": 2,
@@ -4356,6 +4446,12 @@
       "count": 1,
       "examples": [
         "UK_ukpga_2005_4/574bb1d417"
+      ]
+    },
+    "extent|whole|extends|subject_to|places:1|-|-|unread:not_read": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1982_53/fd2b7935ac"
       ]
     },
     "extent|whole|extends|subject_to|places:1|only|-|default:E+W": {
@@ -4508,11 +4604,10 @@
       ]
     },
     "extent|whole|not_extends|none|places:1|-|-|unread:in_clause": {
-      "count": 3,
+      "count": 2,
       "examples": [
         "UK_ukpga_1981_56/5f01fc74f0",
-        "UK_ukpga_1985_67/5fb4a6e545",
-        "UK_ukpga_2002_17/ab350013d3"
+        "UK_ukpga_1985_67/5fb4a6e545"
       ]
     },
     "extent|whole|not_extends|none|places:1|-|-|unread:not_read": {
@@ -4541,6 +4636,12 @@
       "count": 1,
       "examples": [
         "UK_ukpga_1977_39/60cdf24e43"
+      ]
+    },
+    "extent|whole|not_extends|none|places:many|-|-|unread:another_default": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2002_17/9570b88566"
       ]
     },
     "extent|whole|not_extends|none|places:many|only|-|default:E+W+S": {
@@ -4581,21 +4682,27 @@
         "UK_uksi_2019_742/03ce5a39f3"
       ]
     },
-    "extent|whole|same_extent|except|places:many|only|-|unread:not_read": {
+    "extent|whole|same_extent|except|places:many|only|-|list:only:S": {
       "count": 1,
       "examples": [
         "UK_ukpga_2010_29/10c6ffbc46"
       ]
     },
-    "extent|whole|same_extent|none|places:0|-|-|unread:in_clause": {
+    "extent|whole|same_extent|none|places:0|-|-|list:same:same": {
       "count": 2,
       "examples": [
         "UK_ukpga_2021_10/2c3f947922",
+        "UK_uksi_2025_82/98f57c8b59"
+      ]
+    },
+    "extent|whole|same_extent|none|places:0|-|-|unread:in_clause": {
+      "count": 1,
+      "examples": [
         "UK_uksi_2013_235/eb711f0d66"
       ]
     },
     "extent|whole|same_extent|none|places:0|-|-|unread:not_read": {
-      "count": 5,
+      "count": 4,
       "examples": [
         "UK_ukpga_1971_10/4edbf3f64d",
         "UK_uksi_2011_2491/94f98cffe0",
@@ -4617,11 +4724,11 @@
     }
   },
   "totals": {
-    "examples": 1177,
+    "examples": 1180,
     "laws": 3358,
-    "not_alone": 46,
-    "patterns": 690,
-    "sentences": 2909,
+    "not_alone": 84,
+    "patterns": 713,
+    "sentences": 2948,
     "unclassified": 0
   }
 }

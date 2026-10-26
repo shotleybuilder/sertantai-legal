@@ -32,4 +32,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefListTest do
     assert RefList.covers?("sch.7", "sch.7.para.27(2)")
     assert RefList.covers?("s.107", "s.107(4)")
   end
+
+  test "a lettered range spelt out (SI 2014/469: \"paragraph 8(2)(b) to (d)\")" do
+    assert RefList.parse("paragraph 8(2)(b) to (d) of Schedule 1") ==
+             ["sch.1.para.8(2)(b)", "sch.1.para.8(2)(c)", "sch.1.para.8(2)(d)"]
+
+    assert RefList.parse("regulation 4(a) to (c)") == ["reg.4(a)", "reg.4(b)", "reg.4(c)"]
+  end
 end

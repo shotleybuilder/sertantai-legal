@@ -28,6 +28,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, ScheduleRefs}
 
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{
+    Amends,
     Application,
     Default,
     Forms,
@@ -74,7 +75,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
       for id <- doc.ids,
           ref = Order.ref(id),
           ref != nil,
-          do: {ref, doc |> Doc.element(id) |> Units.own_words() |> Doc.lines() |> Enum.join(" ")}
+          do:
+            {ref,
+             doc
+             |> Doc.element(id)
+             |> Units.own_words()
+             |> Doc.lines()
+             |> Enum.join(" ")
+             |> Units.unlettered()}
 
     # built once: the named and same-extent readers both walk them
     unit_sentences = Units.unit_sentences(doc)
@@ -101,7 +109,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
            Lists.headed_lists(sections, clause_ref, clause, doc) ++
            Lists.part_not(sections, doc) ++
            Named.named(unit_sentences, doc) ++
-           Same.amendments_same(unit_sentences, doc))
+           Same.amendments_same(unit_sentences, doc) ++
+           Amends.amends(unit_sentences, doc))
         |> Enum.flat_map(&excepted(&1, default)),
       corresponds: Regex.match?(~r/\bcorresponds\s+to\s+the\s+repeal\b/i, clause),
       introduced_by: introductions(doc),

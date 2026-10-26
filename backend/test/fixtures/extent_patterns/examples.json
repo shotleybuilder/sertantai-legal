@@ -124,11 +124,6 @@
     "ref": "reg.14",
     "sentence": "The Control of Pollution (Supply and Use of Injurious Substances) Regulations 1986 , as they extend to Scotland, are revoked, with effect from 1st January 2001."
   },
-  "UK_ssi_2009_266/9cc6f41009": {
-    "law": "UK_ssi_2009_266",
-    "ref": "reg.1",
-    "sentence": "c extend to Scotland only."
-  },
   "UK_ssi_2010_60/2defd2ec46": {
     "law": "UK_ssi_2010_60",
     "ref": "reg.31",
@@ -744,10 +739,10 @@
     "ref": "s.14",
     "sentence": "The following provisions of this Act, that is to say—a sections 1 to 3, section 4(1) to (3), sections 5 and 6 and sections 8 to 11, andb Schedules 1 and 2, paragraphs 2 to 5 of Schedule 3, Schedule 4 and Parts II and III of Schedule 6, shall extend to Northern Ireland only."
   },
-  "UK_ukpga_1975_71/579736e588": {
+  "UK_ukpga_1975_71/9e1bd547f2": {
     "law": "UK_ukpga_1975_71",
     "ref": "s.129",
-    "sentence": "6 . . . any provision of this Act which amends or repeals any provision of the House of Commons Disqualification Act 1975 or the Northern Ireland Assembly Disqualification Act 1975 shall extend to Northern Ireland, but except as aforesaid this Act shall not extend there."
+    "sentence": "6 . . . any provision of this Act which amends or repeals any provision of the House of Commons Disqualification Act 1975 or the Northern Ireland Assembly Disqualification Act 1975 shall extend to Northern Ireland, but except as aforesaid this Act shall not extend to Northern Ireland."
   },
   "UK_ukpga_1975_74/776573d55b": {
     "law": "UK_ukpga_1975_74",
@@ -848,11 +843,6 @@
     "law": "UK_ukpga_1978_30",
     "ref": "s.24",
     "sentence": "In the application of section 14 to Acts passed after the commencement of this Act which extend to Northern Ireland, “statutory instrument” includes statutory rule for the purposes of the Statutory Rules (Northern Ireland) Order 1979."
-  },
-  "UK_ukpga_1978_38/d38853fda3": {
-    "law": "UK_ukpga_1978_38",
-    "ref": "s.11",
-    "sentence": "g in section 9(4)— i in the definition of \" goods \", for the reference to section 135(1) of the Food and Drugs Act 1955 there shall be substituted a reference to section 70(1) of the Food and Drugs Act (Northern Ireland) 1958, and ii in the definition of \" statutory maximum \", for the reference to England and Wales there shall be substituted a reference to Northern Ireland, and for the purposes of the definition of \" statutory maximum\" as so amended the provisions of the Criminal Law Act 1977 which relate to the sum mentioned in that definition shall extend to Northern Ireland;"
   },
   "UK_ukpga_1978_44/7ac2e4b7ca": {
     "law": "UK_ukpga_1978_44",
@@ -1054,15 +1044,15 @@
     "ref": "s.41",
     "sentence": "The other provisions of this Act do not extend to Northern Ireland."
   },
+  "UK_ukpga_1981_56/6fcaeaaf5e": {
+    "law": "UK_ukpga_1981_56",
+    "ref": "s.41",
+    "sentence": "The following provisions of this Act extend to Northern Ireland—a Part I;b Part II, except—i in Schedule 3, paragraphs 7 and 19;ii in Schedule 4, paragraphs 1, 5 to 9 and 15;c Section 38;d Part I of Schedule 12, and section 40 so far as relates to Part II;e the repeal by Part II of Schedule 12 of the entry for the National Ports Council in Part II of Schedule 1 to the House of Commons Disqualification Act 1975, and section 40 so far as it relates to that repeal ;f Part III of Schedule 12 and section 40 so far as relating to the Railway Fires Act (1905) Amendment Act 1923;g this section and sections 42 and 43."
+  },
   "UK_ukpga_1981_56/92dd2e9a12": {
     "law": "UK_ukpga_1981_56",
     "ref": "s.35",
     "sentence": "This section does not extend to Scotland."
-  },
-  "UK_ukpga_1981_56/deb667018c": {
-    "law": "UK_ukpga_1981_56",
-    "ref": "s.41",
-    "sentence": "The following provisions of this Act extend to Northern Ireland—a Part I;b Part II, except—i in Schedule 3, paragraphs 7 and 19;ii in Schedule 4, paragraphs 1, 5 to 9 and 15;c Section 38;d Part I of Schedule 12, and section 40 so far as relates to that Part;e the repeal by Part II of Schedule 12 of the entry for the National Ports Council in Part II of Schedule 1 to the House of Commons Disqualification Act 1975, and section 40 so far as it relates to that repeal ;f Part III of Schedule 12 and section 40 so far as relating to the Railway Fires Act (1905) Amendment Act 1923;g this section and sections 42 and 43."
   },
   "UK_ukpga_1981_64/0a7c1d9178": {
     "law": "UK_ukpga_1981_64",
@@ -1208,6 +1198,11 @@
     "law": "UK_ukpga_1982_53",
     "ref": "s.77",
     "sentence": "Part II of this Act and section 26 above extend to Scotland only and Part VI of this Act applies to Scotland only to the extent specified in section 48 above."
+  },
+  "UK_ukpga_1982_53/fd2b7935ac": {
+    "law": "UK_ukpga_1982_53",
+    "ref": "s.77",
+    "sentence": "Subject to subsection (5) above, where any enactment repealed or amended or instrument revoked by this Act extends to any part of the United Kingdom, the repeal, amendment or revocation extends to that part."
   },
   "UK_ukpga_1983_25/79642d0073": {
     "law": "UK_ukpga_1983_25",
@@ -1364,11 +1359,6 @@
     "ref": "s.60",
     "sentence": "This act applies to Scotland only."
   },
-  "UK_ukpga_1985_73/6d242e3b5a": {
-    "law": "UK_ukpga_1985_73",
-    "ref": "s.11",
-    "sentence": "b after section 75 there shall be inserted the following section—75A1 On the countermand of payment of a cheque, the banker shall be treated as having no funds available for the payment of the cheque.2 This section applies to Scotland only."
-  },
   "UK_ukpga_1986_14/98ddf47ada": {
     "law": "UK_ukpga_1986_14",
     "ref": "s.29",
@@ -1433,6 +1423,11 @@
     "law": "UK_ukpga_1986_50",
     "ref": "s.87",
     "sentence": "Section 82 above (with Schedule 9) extends to Northern Ireland only."
+  },
+  "UK_ukpga_1986_50/bf1e9ef6aa": {
+    "law": "UK_ukpga_1986_50",
+    "ref": "s.87",
+    "sentence": "Where any enactment repealed or amended by this Act extends to any part of the United Kingdom, the repeal or amendment extends to that part."
   },
   "UK_ukpga_1986_60/10a7b09f09": {
     "law": "UK_ukpga_1986_60",
@@ -1754,11 +1749,6 @@
     "ref": "sch.4",
     "sentence": "Other regulations4 In so far as any existing regulations made under section 1 of the Importation of Milk Act 1983 have effect in relation to Great Britain, they shall have effect, after the commencement of the relevant repeal, as if made under section 18(1)(c) of this Act."
   },
-  "UK_ukpga_1990_16/5467e7a40b": {
-    "law": "UK_ukpga_1990_16",
-    "ref": "sch.3.para.9",
-    "sentence": "b after that subsection there shall be inserted the following subsection—2A Subsection (12) of section 108 of this Act shall have effect in relation to Scotland as if for paragraphs (a) and (b) there were substituted the words “ an islands or district council ”."
-  },
   "UK_ukpga_1990_16/9dbce3b46c": {
     "law": "UK_ukpga_1990_16",
     "ref": "sch.4",
@@ -1873,6 +1863,11 @@
     "law": "UK_ukpga_1990_43",
     "ref": "s.106A",
     "sentence": "In this Part as it applies in relation to England, references to genetically modified organisms (except in this section and section 127)—a do not include references to precision bred organisms;b so far as they relate to marketing, also do not include references to gametes of precision bred organisms."
+  },
+  "UK_ukpga_1990_43/d3e697e39e": {
+    "law": "UK_ukpga_1990_43",
+    "ref": "s.164",
+    "sentence": "Where any enactment amended or repealed by this Act extends to any part of the United Kingdom, the amendment or repeal extends to that part, subject, however, to any express provision in Schedule 15 or 16."
   },
   "UK_ukpga_1990_43/de3953e765": {
     "law": "UK_ukpga_1990_43",
@@ -2379,11 +2374,6 @@
     "ref": "sch.22.para.15",
     "sentence": "After section 11 (duty to report discharge of oil into waters of harbours) there shall be inserted— Certain provisions not to apply where a discharge or escape is authorised under Part I of the Environmental Protection Act 1990.11A1 The provisions of sections 2(1) and (2A), 3(1) and 11(1) of this Act shall not apply to any discharge which is made under, and the provisions of section 11(1) of this Act shall not apply to any escape which is authorised by, an authorisation granted under Part I of the Environmental Protection Act 1990.2 This section does not extend to Northern Ireland."
   },
-  "UK_ukpga_1995_25/9fad1c8934": {
-    "law": "UK_ukpga_1995_25",
-    "ref": "s.125",
-    "sentence": "Part III of this Act, and Schedule 24 to this Act so far as relating to that Part, extends to England and Wales only."
-  },
   "UK_ukpga_1995_25/a1c28dbe1d": {
     "law": "UK_ukpga_1995_25",
     "ref": "s.102",
@@ -2398,6 +2388,11 @@
     "law": "UK_ukpga_1995_25",
     "ref": "sch.14",
     "sentence": "Compensation131 This paragraph applies where—a an application made under paragraph 6 above in respect of a mining site is finally determined; andb the conditions to which the mineral permissions relating to the site are to be subject, as determined under this Schedule, differ in any respect from the proposed conditions set out in the application; andc the effect of the new conditions, except insofar as they are restoration or aftercare conditions, as compared with the effect of the existing conditions, except insofar as they were restoration or aftercare conditions, is to restrict working rights in respect of the site.2 For the purposes of this paragraph— “ the new conditions ”, in relation to a mining site, means the conditions, determined under this Schedule, to which the mineral permissions relating to the site are to be subject; and “ the existing conditions ”, in relation to a mining site, means the conditions to which the mineral permissions relating to the site were subject immediately prior to the final determination of the application made under paragraph 6 above in respect of that site. 3 For the purposes of this paragraph, working rights are restricted in respect of a mining site if any of—a the size of the area which may be used for the winning and working of minerals or the depositing of mineral waste;b the depth to which operations for the winning and working of minerals may extend;c the height of any deposit of mineral waste;d the rate at which any particular mineral may be extracted;e the rate at which any particular mineral waste may be deposited;f the period at the expiry of which any winning or working of minerals or depositing of mineral waste is to cease; org the total quantity of minerals which may be extracted from, or of mineral waste which may be deposited on, the site, is restricted or reduced in respect of the mining site in question.4 In a case to which this paragraph applies, but subject to sub-paragraph (6) below, . . ., Parts IV and XI of the 1990 Act . . ., shall have effect as if an order made under section 97 of the 1990 Act . . .—a had been confirmed by the Secretary of State under section 98 of the 1990 Act . . . at the time when the application in question was finally determined; andb as so confirmed, had effect to modify those permissions to the extent specified in sub-paragraph (6) below.5 For the purposes of this paragraph, the order referred to in sub-paragraph (4) above is one whose only effect adverse to the interests of any person having an interest in the land or minerals comprised in the mineral site is to restrict working rights in respect of the site to the same extent as the relevant restriction.6 For the purposes of section 116 of the 1990 Act . . . and of any regulations made under those sections, the permissions treated as being modified by the order mentioned in sub-paragraph (4) above shall be treated as if they were planning permissions for development which neither consists of nor includes any minerals development."
+  },
+  "UK_ukpga_1995_25/e753c850fe": {
+    "law": "UK_ukpga_1995_25",
+    "ref": "s.125",
+    "sentence": "Part III of this Act, and Schedule 24 to this Act so far as relating to Part III, extends to England and Wales only."
   },
   "UK_ukpga_1995_25/fa76c55dfd": {
     "law": "UK_ukpga_1995_25",
@@ -2554,6 +2549,11 @@
     "ref": "s.231",
     "sentence": "The provisions of this Act extend to England and Wales, and only to England and Wales, subject as follows."
   },
+  "UK_ukpga_1996_52/e1a1da0b6d": {
+    "law": "UK_ukpga_1996_52",
+    "ref": "s.231",
+    "sentence": "Any power conferred by this Act to make consequential amendments or repeals of enactments may be exercised in relation to enactments as they extend to any part of the United Kingdom."
+  },
   "UK_ukpga_1996_52/fe61bf2e45": {
     "law": "UK_ukpga_1996_52",
     "ref": "s.231",
@@ -2604,10 +2604,10 @@
     "ref": "s.35",
     "sentence": "Sections 1 to 4, 9 to 31 and Schedule 1 extend to England and Wales only."
   },
-  "UK_ukpga_1997_42/19970a9c84": {
+  "UK_ukpga_1997_42/be00146944": {
     "law": "UK_ukpga_1997_42",
     "ref": "s.9",
-    "sentence": "Section 7 extends to Northern Ireland, but the other provisions of this Act do not extend there."
+    "sentence": "Section 7 extends to Northern Ireland, but the other provisions of this Act do not extend to Northern Ireland."
   },
   "UK_ukpga_1997_50/0f0da52746": {
     "law": "UK_ukpga_1997_50",
@@ -2633,11 +2633,6 @@
     "law": "UK_ukpga_1997_8",
     "ref": "s.23A",
     "sentence": "Regulations under this Part may extend throughout Scotland or to specified areas only and may make different provision for different cases."
-  },
-  "UK_ukpga_1998_26/7451742104": {
-    "law": "UK_ukpga_1998_26",
-    "ref": "s.3",
-    "sentence": "c extends to Northern Ireland."
   },
   "UK_ukpga_1998_31/2c849d0ed2": {
     "law": "UK_ukpga_1998_31",
@@ -2678,11 +2673,6 @@
     "law": "UK_ukpga_1998_37",
     "ref": "s.121",
     "sentence": "The following provisions also extend to Scotland, namely—a Chapter III of Part I;b section 36(3) to (5);bb sections 52A and 52B;c . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .d section 115;e paragraph 3 of Schedule 3 to this Act and section 52(6) above so far as relating to that paragraph;f . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .g paragraphs 1, 7(1) and (3), 14(1) and (2), 35, 36, 45, 135, 136 and 138 of Schedule 8 to this Act and section 119 above so far as relating to those paragraphs; andh this section."
-  },
-  "UK_ukpga_1998_40/ed75351c58": {
-    "law": "UK_ukpga_1998_40",
-    "ref": "s.10",
-    "sentence": "A provision of this Act which amends, repeals or revokes an enactment shall have the same extent as the enactment which it amends, repeals or revokes."
   },
   "UK_ukpga_1998_8/9a1bec3b90": {
     "law": "UK_ukpga_1998_8",
@@ -2749,15 +2739,15 @@
     "ref": "s.2",
     "sentence": "Subsection (8) applies to—a the first regulations to be made under this section which apply in relation to England;b the first regulations to be made under this section which apply in relation to Wales;c the first regulations to be made under this section which apply in relation to Scotland;d regulations under this section which create an offence or increase a penalty for an existing offence;e regulations under this section which amend or repeal any provision of an Act."
   },
-  "UK_ukpga_1999_24/1c4d0c1955": {
-    "law": "UK_ukpga_1999_24",
-    "ref": "s.7",
-    "sentence": "This section and sections 3 and 5 extend to Northern Ireland but, subject to subsections (6) to (8), the other provisions of this Act do not extend there."
-  },
   "UK_ukpga_1999_24/5bf88bf739": {
     "law": "UK_ukpga_1999_24",
     "ref": "s.7",
     "sentence": "Where an enactment extending to Northern Ireland is amended or repealed by any regulations or order under this Act, the regulations or order may provide for the amendment or repeal to extend to Northern Ireland."
+  },
+  "UK_ukpga_1999_24/f4b06dfdd3": {
+    "law": "UK_ukpga_1999_24",
+    "ref": "s.7",
+    "sentence": "This section and sections 3 and 5 extend to Northern Ireland but, subject to subsections (6) to (8), the other provisions of this Act do not extend to Northern Ireland."
   },
   "UK_ukpga_1999_26/62fa2e6eca": {
     "law": "UK_ukpga_1999_26",
@@ -2894,6 +2884,11 @@
     "ref": "s.43",
     "sentence": "Parts 2 and 3 do not extend to Northern Ireland."
   },
+  "UK_ukpga_2001_10/c8f05363cf": {
+    "law": "UK_ukpga_2001_10",
+    "ref": "s.43",
+    "sentence": "Amendments made by this Act to the 1996 Act have the same extent as that Act."
+  },
   "UK_ukpga_2001_16/15ccd31e81": {
     "law": "UK_ukpga_2001_16",
     "ref": "s.66",
@@ -2969,10 +2964,10 @@
     "ref": "s.42",
     "sentence": "Subject to subsection (6), this Act extends to the whole of the United Kingdom, except for Part 1, which extends to England and Wales only."
   },
-  "UK_ukpga_2002_17/ab350013d3": {
+  "UK_ukpga_2002_17/9570b88566": {
     "law": "UK_ukpga_2002_17",
     "ref": "s.42",
-    "sentence": "The Secretary of State may by order provide that so much of this Act as extends to England and Wales is to apply to the Isles of Scilly with such modifications (if any) as are specified in the order; but otherwise this Act does not extend there."
+    "sentence": "The Secretary of State may by order provide that so much of this Act as extends to England and Wales is to apply to the Isles of Scilly with such modifications (if any) as are specified in the order; but otherwise this Act does not extend to England and Wales."
   },
   "UK_ukpga_2002_17/d0ae1d4463": {
     "law": "UK_ukpga_2002_17",
@@ -3073,6 +3068,11 @@
     "law": "UK_ukpga_2003_20",
     "ref": "s.103",
     "sentence": "This section extends to the whole of the United Kingdom."
+  },
+  "UK_ukpga_2003_20/9e86232b39": {
+    "law": "UK_ukpga_2003_20",
+    "ref": "s.83",
+    "sentence": "For the purpose of the application by subsection (1) of a provision listed in the table in that subsection—a the provision shall extend to the whole of the United Kingdom, andb a reference to the provision shall be treated, unless the context otherwise requires, as including a reference to the provision as applied."
   },
   "UK_ukpga_2003_30/0d7f85168e": {
     "law": "UK_ukpga_2003_30",
@@ -3214,11 +3214,6 @@
     "ref": "s.337",
     "sentence": "The following provisions extend also to Scotland and Northern Ireland— sections 71 and 72; sections 82 and 83; ... section 188 and Schedule 11; ... section 293; section 306 section 307; section 311; this Part, except sections 331, 332 and 334(5); paragraphs 19, 70 and 71 of Schedule 3; ... paragraphs 3, 6, 7 and 8 of Schedule 27; paragraphs 6 to 8 of Schedule 31."
   },
-  "UK_ukpga_2003_44/a2d64b7429": {
-    "law": "UK_ukpga_2003_44",
-    "ref": "s.337",
-    "sentence": "The following provisions extend to Northern Ireland only— . . . sections 296 and 297; section 314; section 317; section 334(5)."
-  },
   "UK_ukpga_2003_44/c99755430d": {
     "law": "UK_ukpga_2003_44",
     "ref": "s.337",
@@ -3268,6 +3263,11 @@
     "law": "UK_ukpga_2004_33",
     "ref": "s.262",
     "sentence": "Schedule 29 extends to Northern Ireland only."
+  },
+  "UK_ukpga_2004_33/c1db7c7665": {
+    "law": "UK_ukpga_2004_33",
+    "ref": "s.262",
+    "sentence": "In Part 5 (civil partnerships formed or dissolved abroad etc.)—a sections 220 to 224 extend to England and Wales only;b sections 225 to 227 extend to Scotland only;c sections 228 to 232 extend to Northern Ireland only."
   },
   "UK_ukpga_2004_33/d3d7615490": {
     "law": "UK_ukpga_2004_33",
@@ -3379,15 +3379,20 @@
     "ref": "s.108",
     "sentence": "Except as provided by this section, this Act extends to England and Wales only."
   },
-  "UK_ukpga_2006_16/3b382973e0": {
+  "UK_ukpga_2006_16/1f4c66a602": {
     "law": "UK_ukpga_2006_16",
     "ref": "s.108",
-    "sentence": "In Part 8 (flexible administrative arrangements)—a Chapter 2 (powers to reform agricultural etc. bodies) extends also to Scotland and Northern Ireland, andb Chapter 3 (financial assistance) extends also to Northern Ireland."
+    "sentence": "In Part 9 (miscellaneous), section 101 (abolition of certain agricultural etc. committees) extends also to Scotland and Northern Ireland."
   },
   "UK_ukpga_2006_16/6ebbecd3d5": {
     "law": "UK_ukpga_2006_16",
     "ref": "s.108",
     "sentence": "In this Part—a sections 105, 107 and 109 and this section extend also to Scotland and Northern Ireland so far as necessary, andb the amendments, repeals and revocations in Schedules 11 and 12 have the same extent as the provisions to which they relate (except where otherwise provided)."
+  },
+  "UK_ukpga_2006_16/94086c4e91": {
+    "law": "UK_ukpga_2006_16",
+    "ref": "sch.11.para.72",
+    "sentence": "Sub-paragraph (2) extends to England and Wales (including their adjacent territorial waters) only."
   },
   "UK_ukpga_2006_16/a1070ac20d": {
     "law": "UK_ukpga_2006_16",
@@ -3428,6 +3433,11 @@
     "law": "UK_ukpga_2006_3",
     "ref": "s.94",
     "sentence": "But—a section 82 extends only to Northern Ireland, andb except as provided by subsection (3), an amendment of an enactment by this Act shall have the same extent as the enactment amended (or as the relevant part of the enactment amended)."
+  },
+  "UK_ukpga_2006_32/07fab982c3": {
+    "law": "UK_ukpga_2006_32",
+    "ref": "s.165",
+    "sentence": "The following provisions— section 36(7) to (9), section 39, and section 40(2) and (3), extend only to England and Wales."
   },
   "UK_ukpga_2006_34/f388eeda22": {
     "law": "UK_ukpga_2006_34",
@@ -3769,35 +3779,30 @@
     "ref": "sch.22.pt.2",
     "sentence": "Part 2 Marine licensing The repeals in the Coast Protection Act 1949 (c. 74) and the Merchant Shipping Act 1988 (c. 12) extend to England and Wales only.Short title and chapterExtent of repealCoast Protection Act 1949 (c. 74)Part 2.Section 47(a), (b) and (d).Section 49(2A).Telecommunications Act 1984 (c. 12) In Schedule 2, in paragraph 11— sub-paragraphs (3) to (10); in sub-paragraph (11), the definition of “remedial works”.Food and Environment Protection Act 1985 (c. 48) In section 5— paragraph (b); in paragraph (e), sub-paragraph (ii) and the “or” preceding that sub-paragraph.In section 6(1)(a), sub-paragraph (ii) and the “or” preceding it.Section 7A(5).In section 8(6), the words “evidence, and in Scotland”.Section 9(5) to (7).Section 21(8)."
   },
-  "UK_ukpga_2009_23/44a8a7e818": {
+  "UK_ukpga_2009_23/4bf8bacb93": {
     "law": "UK_ukpga_2009_23",
     "ref": "s.323",
-    "sentence": "Subject to subsection (2)—a any repeal in Schedule 22 (and section 321 so far as relating to the repeal) has the same extent as the provisions of this Act to which the repeal relates, butb paragraph (a) is subject to any provision in the notes in that Schedule."
-  },
-  "UK_ukpga_2009_23/4dd4fab64d": {
-    "law": "UK_ukpga_2009_23",
-    "ref": "s.323",
-    "sentence": "Subject to subsection (2), the following provisions also extend to Northern Ireland—a Part 1 (the MMO);b Part 2 (exclusive economic zone, UK marine area and Welsh zone);c Part 3 (marine planning);d Part 4 (marine licensing), other than paragraph 1 of Schedule 8;e Chapter 1 of Part 5 (MCZs), other than section 146 and Schedules 11 and 12;f in Part 8 (enforcement), Chapters 1 to 5 and section 295;g this Part (other than section 321 and Schedule 22, except as provided by subsection (2) or (3))."
-  },
-  "UK_ukpga_2009_23/586f2bbe71": {
-    "law": "UK_ukpga_2009_23",
-    "ref": "s.323",
-    "sentence": "Subject to subsection (2), the following provisions also extend to Scotland—a Part 1 (the MMO);b Part 2 (exclusive economic zone, UK marine area and Welsh zone);c Part 3 (marine planning);d Part 4 (marine licensing), other than paragraph 1 of Schedule 8;e Chapter 1 of Part 5 (MCZs), other than section 146 and Schedules 11 and 12;f in Chapter 1 of Part 6, sections 165, 166 and 186 (powers of IFC officers etc);g in Part 7 (fisheries)—i sections 212 and 213 (crabs and lobsters);ii section 232 (keeping, introduction and removal of fish);h in Part 8 (enforcement), Chapters 1 to 5 and section 295;i this Part (other than section 321 and Schedule 22, except as provided by subsection (2) or (3))."
+    "sentence": "Subject to subsection (2), the following provisions also extend to Northern Ireland—a Part 1 (the MMO);b Part 2 (exclusive economic zone, UK marine area and Welsh zone);c Part 3 (marine planning);d Part 4 (marine licensing), other than paragraph 1 of Schedule 8;e Chapter 1 of Part 5 (MCZs), other than section 146 and Schedules 11 and 12;f in Part 8 (enforcement), Chapters 1 to 5 of Part 8 and section 295;g this Part (other than section 321 and Schedule 22, except as provided by subsection (2) or (3))."
   },
   "UK_ukpga_2009_23/5ff1de3373": {
     "law": "UK_ukpga_2009_23",
     "ref": "s.323",
     "sentence": "The amendment or repeal of any enactment (including an enactment comprised in subordinate legislation) by, or in consequence of, the following provisions of this Act has the same extent as the enactment amended or repealed—a Part 1 (the MMO);b Part 2 (exclusive economic zone, UK marine area and Welsh zone), other than paragraph 2 of Schedule 4;c Chapter 3 of Part 7 (migratory and freshwater fish);d Chapter 4 of Part 7 (obsolete fisheries enactments);e Part 9 (coastal access);f in Part 10—i sections 311 and 312 (Natural England);ii section 313 (Countryside Council for Wales);iii section 314 (which inserts Part 4A into the Energy Act 2008 (c. 32));g Schedule 14 (minor and consequential amendments relating to IFC authorities)."
   },
+  "UK_ukpga_2009_23/c2397cf581": {
+    "law": "UK_ukpga_2009_23",
+    "ref": "s.323",
+    "sentence": "Subject to subsection (2), the following provisions also extend to Scotland—a Part 1 (the MMO);b Part 2 (exclusive economic zone, UK marine area and Welsh zone);c Part 3 (marine planning);d Part 4 (marine licensing), other than paragraph 1 of Schedule 8;e Chapter 1 of Part 5 (MCZs), other than section 146 and Schedules 11 and 12;f in Chapter 1 of Part 6, sections 165, 166 and 186 (powers of IFC officers etc);g in Part 7 (fisheries)—i sections 212 and 213 (crabs and lobsters);ii section 232 (keeping, introduction and removal of fish);h in Part 8 (enforcement), Chapters 1 to 5 of Part 8 and section 295;i this Part (other than section 321 and Schedule 22, except as provided by subsection (2) or (3))."
+  },
   "UK_ukpga_2009_25/20969b7b37": {
     "law": "UK_ukpga_2009_25",
     "ref": "s.181",
     "sentence": "The following provisions extend to England and Wales, Scotland and Northern Ireland—a section 84;b the service courts provisions of Chapter 2 of Part 3;c section 143;d Part 7 (except sections 158(1) and (2), 170(2) and 171 and Schedule 19);e sections 176 to 183;f paragraph 4 of Schedule 1;g paragraphs 8, 15, 29, 42 and 45 of Schedule 22."
   },
-  "UK_ukpga_2009_25/38c9a7c6ba": {
+  "UK_ukpga_2009_25/8820467052": {
     "law": "UK_ukpga_2009_25",
     "ref": "s.181",
-    "sentence": "The following provisions extend to England and Wales and Northern Ireland—a sections 54, 55 and 56(1);b section 61 and Schedule 12;c sections 62 to 66;d section 67(3);e section 68 and Schedule 13;f section 71;g section 73;h Chapter 1 of Part 3 (except section 84);i Chapter 2 of that Part, and paragraphs 16 and 17 of Schedule 22, (subject to subsection (2)(b));j paragraphs 7, 12(2), 39, 40 and 41 of Schedule 22."
+    "sentence": "The following provisions extend to England and Wales and Northern Ireland—a sections 54, 55 and 56(1);b section 61 and Schedule 12;c sections 62 to 66;d section 67(3);e section 68 and Schedule 13;f section 71;g section 73;h Chapter 1 of Part 3 (except section 84);i Chapter 2 of Part 3, and paragraphs 16 and 17 of Schedule 22, (subject to subsection (2)(b));j paragraphs 7, 12(2), 39, 40 and 41 of Schedule 22."
   },
   "UK_ukpga_2009_25/96a5bcbf98": {
     "law": "UK_ukpga_2009_25",
@@ -4024,25 +4029,35 @@
     "ref": "sch.5.pt.8",
     "sentence": "General provision about orders291 The power to make an order under paragraph 27 or 28 may, in particular, be exercised by—a amending, repealing, revoking or otherwise modifying any provision made by or under an enactment, orb applying an enactment (with or without modifications).2 The Secretary of State must consult—a the Commissioners before exercising the power conferred by paragraph 27 or 28 in relation to an enactment which (expressly or otherwise) confers any function on the Commissioners or an officer of Revenue and Customs;b the Scottish Ministers before exercising the power conferred by paragraph 27 or 28 in relation to an enactment which extends to Scotland;c the Department of Justice in Northern Ireland before exercising the power conferred by paragraph 27 or 28 in relation to an enactment which extends to Northern Ireland.3 In this paragraph “enactment” includes a description of enactments."
   },
+  "UK_ukpga_2013_22/ced6b7e835": {
+    "law": "UK_ukpga_2013_22",
+    "ref": "sch.5.para.29",
+    "sentence": "The Secretary of State must consult—a the Commissioners before exercising the power conferred by paragraph 27 or 28 in relation to an enactment which (expressly or otherwise) confers any function on the Commissioners or an officer of Revenue and Customs;b the Scottish Ministers before exercising the power conferred by paragraph 27 or 28 in relation to an enactment which extends to Scotland;c the Department of Justice in Northern Ireland before exercising the power conferred by paragraph 27 or 28 in relation to an enactment which extends to Northern Ireland."
+  },
   "UK_ukpga_2013_24/1ac9f36386": {
     "law": "UK_ukpga_2013_24",
     "ref": "s.102",
     "sentence": "Part 1 extends to England and Wales, Scotland and Northern Ireland."
+  },
+  "UK_ukpga_2013_24/33188307d4": {
+    "law": "UK_ukpga_2013_24",
+    "ref": "s.102",
+    "sentence": "Part 2 extends only to England and Wales and Scotland, except that the following provisions of Part 2 extend also to Northern Ireland—a section 23(3);b paragraph 11 of Schedule 1;c paragraphs 36 to 39 of Schedule 2."
   },
   "UK_ukpga_2013_24/849ede8e8b": {
     "law": "UK_ukpga_2013_24",
     "ref": "s.102",
     "sentence": "This Part extends to England and Wales, Scotland and Northern Ireland except that—a sections 92, 93, 95, 97 and 98 extend only to England and Wales and Scotland;b sections 83 to 88, 94 and 96 extend only to England and Wales."
   },
+  "UK_ukpga_2013_24/908dcdeeb6": {
+    "law": "UK_ukpga_2013_24",
+    "ref": "s.102",
+    "sentence": "Part 4 extends to England and Wales, Scotland and Northern Ireland, except as follows—a paragraphs 1 to 7 and 11 to 14 of Schedule 14 and paragraphs 2, 3, 7, 13 and 41 of Schedule 15, extend only to England and Wales and Scotland;b paragraphs 8 to 10 and 20 to 22 of Schedule 14, and paragraphs 4 to 6 and 47 to 49 of Schedule 15, extend only to England and Wales;c paragraphs 23 to 29 of Schedule 14, and paragraphs 53 to 55 of Schedule 15, extend only to Northern Ireland."
+  },
   "UK_ukpga_2013_24/96429ee262": {
     "law": "UK_ukpga_2013_24",
     "ref": "s.102",
     "sentence": "Part 5 extends as follows—a sections 59, 62, 67, 68 and 70 and Part 1 of Schedule 21 extend to England and Wales, Scotland and Northern Ireland,b section 69 extends only to England and Wales and Scotland except that it also extends to Northern Ireland so far as Parts 1 and 4 of the Health and Safety at Work etc. Act 1974 extend there,c sections 64, 65 and 66 and paragraphs 1, 56 to 58, 60 and 66 of Schedule 19 (and section 71(3) so far as it relates to those paragraphs) extend only to England and Wales and Scotland,d sections 60, 61, 63, 71(1) and (2) and 72(1) to (3), Schedules 16, 17 and 18, paragraphs 2 to 55, 59, 61 to 65 of Schedule 19 (and section 71(3) so far as it relates to those paragraphs) and Parts 2 and 3 of Schedule 21 extend only to England and Wales, ande an amendment, repeal or revocation made by Schedule 20 has the same extent as the provision amended, repealed or revoked, subject to subsection (6)."
-  },
-  "UK_ukpga_2013_24/9e063a9191": {
-    "law": "UK_ukpga_2013_24",
-    "ref": "s.102",
-    "sentence": "Part 2 extends only to England and Wales and Scotland, except that the following provisions of that Part extend also to Northern Ireland—a section 23(3);b paragraph 11 of Schedule 1;c paragraphs 36 to 39 of Schedule 2."
   },
   "UK_ukpga_2013_24/a53b081f0c": {
     "law": "UK_ukpga_2013_24",
@@ -4224,25 +4239,25 @@
     "ref": "s.51",
     "sentence": "Part 5 extends to England and Wales and Scotland."
   },
-  "UK_ukpga_2015_7/0074fc7bfd": {
-    "law": "UK_ukpga_2015_7",
-    "ref": "s.56",
-    "sentence": "In Part 5 (planning, land and buildings)—a an amendment or repeal has the same extent as the provision to which it relates, andb sections 30(2) to (4), 32(11) and (12) and 33(2), Part 4 of Schedule 5 and section 34 so far as applying to that Part and section 37(6) extend to England and Wales only."
-  },
-  "UK_ukpga_2015_7/66de6d4b8c": {
-    "law": "UK_ukpga_2015_7",
-    "ref": "s.56",
-    "sentence": "In Part 3 (powers of British Transport Police Force)—a section 22(1) extends to England and Wales only, andb section 22(2) extends to England and Wales and Scotland."
-  },
   "UK_ukpga_2015_7/7829f3c74b": {
     "law": "UK_ukpga_2015_7",
     "ref": "s.56",
     "sentence": "This Part extends to England and Wales, Scotland and Northern Ireland."
   },
-  "UK_ukpga_2015_7/bfeda227e9": {
+  "UK_ukpga_2015_7/bd773776df": {
     "law": "UK_ukpga_2015_7",
     "ref": "s.56",
-    "sentence": "Part 1 (strategic highways companies) extends to England and Wales only, save that—a sections 16 and 18 to 20 extend to England and Wales, Scotland and Northern Ireland, andb an amendment or repeal made by that Part, other than the amendment made by section 17(7), has the same extent as the provision to which it relates."
+    "sentence": "Part 1 (strategic highways companies) extends to England and Wales only, save that—a sections 16 and 18 to 20 extend to England and Wales, Scotland and Northern Ireland, andb an amendment or repeal made by Part 1, other than the amendment made by section 17(7), has the same extent as the provision to which it relates."
+  },
+  "UK_ukpga_2015_7/e97ac25f66": {
+    "law": "UK_ukpga_2015_7",
+    "ref": "s.56",
+    "sentence": "In Part 6 (energy)—a sections 38 and 39, sections 41 and 42, sections 51 to 53 and Schedules 6 and 7 extend to England and Wales and Scotland,b section 40 and section 49 extend to England and Wales, Scotland and Northern Ireland, andc sections 43 to 48 and section 50 extend to England and Wales only."
+  },
+  "UK_ukpga_2015_7/ea22f9bdd6": {
+    "law": "UK_ukpga_2015_7",
+    "ref": "s.56",
+    "sentence": "In Part 5 (planning, land and buildings)—a an amendment or repeal has the same extent as the provision to which it relates, andb sections 30(2) to (4), 32(11) and (12) and 33(2), Part 4 of Schedule 5 and section 34 so far as applying to Part 5 and section 37(6) extend to England and Wales only."
   },
   "UK_ukpga_2015_9/024e1a16f6": {
     "law": "UK_ukpga_2015_9",
@@ -4354,6 +4369,11 @@
     "ref": "s.26",
     "sentence": "This Act extends to England and Wales, Scotland and Northern Ireland, except as otherwise provided by subsections (2) to (6)."
   },
+  "UK_ukpga_2020_16/8f047a14c5": {
+    "law": "UK_ukpga_2020_16",
+    "ref": "s.24",
+    "sentence": "In Part 2—a section 12 extends to England and Wales, Scotland and Northern Ireland,b sections 13 and 14 extend to England and Wales and Scotland only, andc section 15 extends to Northern Ireland only."
+  },
   "UK_ukpga_2020_17/0943d179f6": {
     "law": "UK_ukpga_2020_17",
     "ref": "s.413",
@@ -4399,15 +4419,15 @@
     "ref": "s.56",
     "sentence": "The following provisions of this Act extend to England and Wales only—a Part 1, apart from sections 17 and 18;b Chapter 2 of Part 2;c Chapter 1 of Part 3;d section 36 and Schedule 3;e section 37 and Schedule 4;f section 40;g . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."
   },
+  "UK_ukpga_2020_22/4b27f8309f": {
+    "law": "UK_ukpga_2020_22",
+    "ref": "s.53",
+    "sentence": "— a Part 1 extends to Scotland only;b Part 2 extends to England and Wales only;c Part 3 extends to Northern Ireland only."
+  },
   "UK_ukpga_2020_29/66d13783c4": {
     "law": "UK_ukpga_2020_29",
     "ref": "s.40",
     "sentence": "Paragraph 2 of Schedule 4 extends to England and Wales and Scotland only."
-  },
-  "UK_ukpga_2020_29/b57d0afb2f": {
-    "law": "UK_ukpga_2020_29",
-    "ref": "s.40",
-    "sentence": "Subject to subsection (4), any provision of this Act which amends or repeals an enactment has the same extent as the enactment amended or repealed."
   },
   "UK_ukpga_2020_7/171f40730e": {
     "law": "UK_ukpga_2020_7",
@@ -4499,10 +4519,20 @@
     "ref": "s.146",
     "sentence": "In Part 5 of this Act (water)— a section 84 (report on elimination of discharges from storm overflows) extends to England and Wales; b sections 89 and 93 (water quality) extend to England and Wales, Scotland and Northern Ireland; c section 90 (water quality - powers of Welsh Ministers) extends to England and Wales; d section 91 (water quality - powers of Northern Ireland Department) extends to Northern Ireland; e section 92 (Solway Tweed river basin district) extends to England and Wales and Scotland; f an amendment or repeal has the same extent as the provision amended or repealed."
   },
-  "UK_ukpga_2021_30/bcaeb8b504": {
+  "UK_ukpga_2021_30/a4dc9f9c6e": {
     "law": "UK_ukpga_2021_30",
     "ref": "s.146",
-    "sentence": "In Part 1 of this Act (environmental governance)— a the following provisions extend to England and Wales— i Chapter 1 (improving the natural environment), except for sections 17 to 20; ii section 28 (monitoring and reporting on environmental improvement plans and targets); b sections 17 to 19 (policy statement on environmental principles) extend to England and Wales and Scotland; c the remaining provisions extend to England and Wales, Scotland and Northern Ireland."
+    "sentence": "In Part 4 of this Act (air quality and environmental recall)— a section 73 and Schedule 12 (smoke control areas) extend to England and Wales; b sections 74 to 77 (recall of motor vehicles) extend to England and Wales, Scotland and Northern Ireland; c an amendment or repeal has the same extent as the provision amended or repealed, except where contained in a provision for which a different extent is provided by this subsection."
+  },
+  "UK_ukpga_2021_30/a66c0e430a": {
+    "law": "UK_ukpga_2021_30",
+    "ref": "s.146",
+    "sentence": "In Part 1 of this Act (environmental governance)— a the following provisions extend to England and Wales— i Chapter 1 of Part 1 (improving the natural environment), except for sections 17 to 20; ii section 28 (monitoring and reporting on environmental improvement plans and targets); b sections 17 to 19 (policy statement on environmental principles) extend to England and Wales and Scotland; c the remaining provisions extend to England and Wales, Scotland and Northern Ireland."
+  },
+  "UK_ukpga_2021_30/fe80960415": {
+    "law": "UK_ukpga_2021_30",
+    "ref": "s.146",
+    "sentence": "Part 6 of this Act (nature and biodiversity) extends to England and Wales, except that— a the amendments made by Schedule 15 (biodiversity gain in nationally significant infrastructure projects) have the same extent as the provisions amended, and b section 116 and Schedule 17 (use of forest risk commodities in commercial activity) extend to England and Wales, Scotland and Northern Ireland."
   },
   "UK_ukpga_2022_25/07d9cdac5e": {
     "law": "UK_ukpga_2022_25",
@@ -4529,15 +4559,10 @@
     "ref": "s.169",
     "sentence": "The Secretary of State may by regulations— a provide for the provisions mentioned in subsection (5) to extend also to Northern Ireland, and b make provision (including provision amending this Act or any other enactment) in relation to the application of the provisions mentioned in subsection (5) in Northern Ireland."
   },
-  "UK_ukpga_2022_32/6d27b46c52": {
+  "UK_ukpga_2022_32/429cfa5369": {
     "law": "UK_ukpga_2022_32",
     "ref": "s.207",
-    "sentence": "A provision of this Act which amends, repeals or revokes an enactment has the same extent within the United Kingdom as the enactment amended, repealed or revoked, subject to subsections (6) to (9)."
-  },
-  "UK_ukpga_2022_32/c4dafcf057": {
-    "law": "UK_ukpga_2022_32",
-    "ref": "s.207",
-    "sentence": "In Schedule 18— a paragraphs 4 and 6 extend to England and Wales, Scotland and Northern Ireland, and b paragraph 5 extends to England and Wales and Scotland only."
+    "sentence": "— a paragraphs 4 and 6 of Schedule 18 extend to England and Wales, Scotland and Northern Ireland, and b paragraph 5 of Schedule 18 extends to England and Wales and Scotland only."
   },
   "UK_ukpga_2022_35/15cedb5a7e": {
     "law": "UK_ukpga_2022_35",
@@ -4574,30 +4599,30 @@
     "ref": "s.333",
     "sentence": "Paragraph 4 of Schedule 5 extends to England and Wales, Scotland and Northern Ireland."
   },
+  "UK_ukpga_2023_52/1281387f10": {
+    "law": "UK_ukpga_2023_52",
+    "ref": "s.333",
+    "sentence": "The following provisions extend to England and Wales, Scotland and Northern Ireland, subject to subsection (5)— a Part 1, except Chapter 4 of Part 1; b Part 2; c Chapter 1 of Part 4; d Chapter 3 of Part 4, except sections 155 and 159; e section 204; f Chapter 1 of Part 8, except sections 223 and 224; g Parts 10, 11, 12 and 13; h Chapter 1 of Part 14; i section 309; j Chapter 3 of Part 14; k this Part."
+  },
   "UK_ukpga_2023_52/3d457313bf": {
     "law": "UK_ukpga_2023_52",
     "ref": "sch.18.para.61",
     "sentence": "The regulations may also make provision extending to Northern Ireland or applying in relation to the General Consumer Council for Northern Ireland that corresponds to such provision in Part 1 of the Consumers, Estate Agents and Redress Act 2007 as does not extend to Northern Ireland or does not apply in relation to the General Consumer Council for Northern Ireland (as the case may be)."
-  },
-  "UK_ukpga_2023_52/c63fb052ae": {
-    "law": "UK_ukpga_2023_52",
-    "ref": "s.333",
-    "sentence": "The following provisions extend to England and Wales, Scotland and Northern Ireland, subject to subsection (5)— a Part 1, except Chapter 4; b Part 2; c Chapter 1 of Part 4; d Chapter 3 of Part 4, except sections 155 and 159; e section 204; f Chapter 1 of Part 8, except sections 223 and 224; g Parts 10, 11, 12 and 13; h Chapter 1 of Part 14; i section 309; j Chapter 3 of Part 14; k this Part."
   },
   "UK_ukpga_2023_52/d24e826947": {
     "law": "UK_ukpga_2023_52",
     "ref": "s.333",
     "sentence": "The following provisions extend to England and Wales and Scotland only, subject to subsection (5)— a Chapter 4 of Part 1; b Part 3; c Chapter 2 of Part 4; d section 155; e section 159; f Parts 5 and 6; g Part 7, except section 204; h section 223; i Part 9; j Chapter 2 of Part 14, except section 309; k Chapter 4 of ​Part 14​."
   },
+  "UK_ukpga_2023_55/2ebe2c793c": {
+    "law": "UK_ukpga_2023_55",
+    "ref": "s.254",
+    "sentence": "In Part 3— a Chapter 1 of Part 3 (including Schedule 13 so far as it relates to Chapter 1 of Part 3) extends to England and Wales, Scotland and Northern Ireland; b an amendment or repeal made by Chapters 2 to 6 of Part 3 has the same extent as the provision amended or repealed; c sections 108 and 132 extend to England and Wales, Scotland and Northern Ireland; d section 133 extends to England and Wales and Scotland; e section 136 extends to England and Wales only."
+  },
   "UK_ukpga_2023_55/d5b57d9f50": {
     "law": "UK_ukpga_2023_55",
     "ref": "s.219",
     "sentence": "So far as the regulations are to extend to Scotland or Northern Ireland, the only permitted purpose is the national security purpose."
-  },
-  "UK_ukpga_2023_55/fbcff04cb4": {
-    "law": "UK_ukpga_2023_55",
-    "ref": "s.254",
-    "sentence": "In Part 3— a Chapter 1 (including Schedule 13 so far as it relates to Chapter 1 of Part 3) extends to England and Wales, Scotland and Northern Ireland; b an amendment or repeal made by Chapters 2 to 6 has the same extent as the provision amended or repealed; c sections 108 and 132 extend to England and Wales, Scotland and Northern Ireland; d section 133 extends to England and Wales and Scotland; e section 136 extends to England and Wales only."
   },
   "UK_ukpga_2023_56/56f38e6f95": {
     "law": "UK_ukpga_2023_56",
@@ -4639,20 +4664,20 @@
     "ref": "s.117",
     "sentence": "A provision of this Act, other than an amendment, repeal or revocation, extends to England and Wales only, subject to subsections (4) to (6)."
   },
+  "UK_ukpga_2025_36/5556ccdcb8": {
+    "law": "UK_ukpga_2025_36",
+    "ref": "s.158",
+    "sentence": "— a the amendments made by paragraph 9(3) and (4) of Schedule 12 extend to Northern Ireland only; b the amendments made by paragraphs 10, 12 and 13 of Schedule 12 extend to England and Wales and Scotland only."
+  },
   "UK_ukpga_2025_36/8781f1ce21": {
     "law": "UK_ukpga_2025_36",
     "ref": "s.158",
     "sentence": "Sections 12 and 13 (statutory sick pay in Northern Ireland) extend to Northern Ireland only."
   },
-  "UK_ukpga_2025_36/8e61ca6488": {
+  "UK_ukpga_2025_36/eca01ec67d": {
     "law": "UK_ukpga_2025_36",
     "ref": "s.158",
-    "sentence": "In Schedule 12 (increase in time limits for making claims)— a the amendments made by paragraph 9(3) and (4) extend to Northern Ireland only; b the amendments made by paragraphs 10, 12 and 13 extend to England and Wales and Scotland only."
-  },
-  "UK_ukpga_2025_36/c4b641e5d3": {
-    "law": "UK_ukpga_2025_36",
-    "ref": "s.158",
-    "sentence": "Except as set out below— a Parts 1, 2 and 4 of this Act extend to England and Wales and Scotland; b in Part 3— i Chapter 1 extends to England and Wales; ii Chapter 2 extends to England and Wales and Scotland; iii Chapter 3 extends to England and Wales, Scotland and Northern Ireland; c Part 5 and this Part extend to England and Wales, Scotland and Northern Ireland."
+    "sentence": "Except as set out below— a Parts 1, 2 and 4 of this Act extend to England and Wales and Scotland; b in Part 3— i Chapter 1 of Part 3 extends to England and Wales; ii Chapter 2 of Part 3 extends to England and Wales and Scotland; iii Chapter 3 of Part 3 extends to England and Wales, Scotland and Northern Ireland; c Part 5 and this Part extend to England and Wales, Scotland and Northern Ireland."
   },
   "UK_ukpga_2025_36/f9793b18b0": {
     "law": "UK_ukpga_2025_36",
@@ -4728,11 +4753,6 @@
     "law": "UK_uksi_1991_2092",
     "ref": "reg.3",
     "sentence": "Subject to article 4, the following provisions of the 1991 Act shall come into force on 25th September 1991:– section 47; section 48; section 50; section 57 in so far as it relates to the provisions of Schedule 10 referred to below; section 60(1), (4), (6), (7) and (8); section 61 in so far as it relates to the provisions of Schedule 13 referred to below; sections 71 to 76; section 77; section 78; section 79; section 80 in so far as it relates to the provisions of Schedule 18 referred to below; section 84(6) in so far as it relates to the repeals in Part IV of Schedule 19 specified in Schedule 1 to this Order; Schedule 10 in so far as it relates to paragraphs 1 and 2; Schedule 12; Schedule 13 in so far as it relates to paragraphs 2, 5, 6, 7(a)(ii) and (iii) and (b), 9, 11(a) and (c), 12, 14, 28, 36, 38(e), 41(1), 43(a)(i) and (b)(i); Schedule 16; Schedule 17; Schedule 18 as it applies in relation to Scotland except in so far as it relates to the entries in respect of section 56J(8) and 56K(12) of the Town and Country Planning (Scotland) Act 1972() in Part I; Schedule 19 in so far as it relates to the repeals in Part IV specified in Schedule 1 to this Order."
-  },
-  "UK_uksi_1991_2272/4faff757eb": {
-    "law": "UK_uksi_1991_2272",
-    "ref": "reg.2",
-    "sentence": "a section 6(6) (which extends to England and Wales only);"
   },
   "UK_uksi_1991_2272/d7d50aacc8": {
     "law": "UK_uksi_1991_2272",
@@ -4914,11 +4934,6 @@
     "ref": "reg.1",
     "sentence": "This Order extends to England only."
   },
-  "UK_uksi_2001_916/dacfac6b91": {
-    "law": "UK_uksi_2001_916",
-    "ref": "reg.2",
-    "sentence": "b in Part VI: i sections 98 (justices and clerks: immunity from costs), 99 (justices and clerks: indemnity), and 100 (assistant justices' clerks: immunity from action); and ii so far as they extend to England and Wales and Northern Ireland only, sections 101 (General Commissioners: immunity from action), 102 (General Commissioners; immunity from costs and expenses), and 103 (General Commissioners and clerks: indemnity); and"
-  },
   "UK_uksi_2002_2024/ebd487f252": {
     "law": "UK_uksi_2002_2024",
     "ref": "reg.1",
@@ -4999,6 +5014,11 @@
     "ref": "reg.1",
     "sentence": "These Regulations extend to England and Wales and apply in relation to Wales."
   },
+  "UK_uksi_2004_1733/233f5ef045": {
+    "law": "UK_uksi_2004_1733",
+    "ref": "sch.paragraph",
+    "sentence": "d after subsection (3) insert the following subsection— 3A In subsection (3) “lawfully” means without any contravention of— a this Part and orders made under it; b the Protection of Birds Acts 1954 to 1967 and orders made under those Acts; c any other legislation which implements Council Directive 79/409/EEC on the conservation of wild birds and extends to any part of the United Kingdom, to any area designated in accordance with section 1(7) of the Continental Shelf Act 1964, or to any area to which British fishery limits extend in accordance with section 1 of the Fishery Limits Act 1976; and d the provisions of the law of any member State (other than the United Kingdom) implementing the Council Directive referred to in paragraph (c). ."
+  },
   "UK_uksi_2004_1769/2cb2c735eb": {
     "law": "UK_uksi_2004_1769",
     "ref": "reg.8",
@@ -5073,11 +5093,6 @@
     "law": "UK_uksi_2005_894",
     "ref": "reg.1",
     "sentence": "Nothing in these Regulations applies to Wales except this regulation, Part 11, and regulation 5 so far as relating to that Part."
-  },
-  "UK_uksi_2006_1176/f7a2596438": {
-    "law": "UK_uksi_2006_1176",
-    "ref": "reg.2",
-    "sentence": "b article 5 extends to England and Wales and to Northern Ireland; and"
   },
   "UK_uksi_2006_1244/9ae4e2e8a8": {
     "law": "UK_uksi_2006_1244",
@@ -5179,6 +5194,11 @@
     "ref": "reg.42",
     "sentence": "Sections 507 to 509 apply to LLPs, modified so that they read as follows—Offences in connection with auditor's report5071 A person to whom this section applies commits an offence if he knowingly or recklessly causes a report under section 495 (auditor's report on LLP's annual accounts) to include any matter that is misleading, false or deceptive in a material particular.2 A person to whom this section applies commits an offence if he knowingly or recklessly causes such a report to omit a statement required by—a section 498(2)(b) (statement that LLP's accounts do not agree with accounting records and returns),b section 498(3) (statement that necessary information and explanations not obtained), orc section 498(4) (statement that members wrongly prepared accounts in accordance with the small LLPs regime).3 This section applies to—a where the auditor is an individual, that individual and any employee or agent of his who is eligible for appointment as auditor of the LLP;b where the auditor is a firm, any director, member, employee or agent of the firm who is eligible for appointment as auditor of the LLP.4 A person guilty of an offence under this section is liable—a on conviction on indictment, to a fine;b on summary conviction, to a fine not exceeding the statutory maximum.Guidance for regulatory and prosecuting authorities: England, Wales and Northern Ireland5081 The Secretary of State may issue guidance for the purpose of helping relevant regulatory and prosecuting authorities to determine how they should carry out their functions in cases where behaviour occurs that—a appears to involve the commission of an offence under section 507 (offences in connection with auditor's report), andb has been, is being or may be investigated pursuant to arrangements—i under paragraph 15 of Schedule 10 (investigation of complaints against auditors and supervisory bodies), orii of a kind mentioned in paragraph 24 of that Schedule (independent investigation for disciplinary purposes of public interest cases).2 The Secretary of State must obtain the consent of the Attorney General before issuing any such guidance.3 In this section “relevant regulatory and prosecuting authorities” means—a supervisory bodies within the meaning of Part 42 of this Act,b bodies to which the Secretary of State may make grants under section 16(1) of the Companies (Audit, Investigations and Community Enterprise) Act 2004 (c.27) (bodies concerned with accounting standards etc),c the Director of the Serious Fraud Office,d the Director of Public Prosecutions or the Director of Public Prosecutions for Northern Ireland, ande the Secretary of State.4 This section does not apply to Scotland.Guidance for regulatory authorities: Scotland5091 The Lord Advocate may issue guidance for the purpose of helping relevant regulatory authorities to determine how they should carry out their functions in cases where behaviour occurs that—a appears to involve the commission of an offence under section 507 (offences in connection with auditor's report), andb has been, is being or may be investigated pursuant to arrangements—i under paragraph 15 of Schedule 10 (investigation of complaints against auditors and supervisory bodies), orii of a kind mentioned in paragraph 24 of that Schedule (independent investigation for disciplinary purposes of public interest cases).2 The Lord Advocate must consult the Secretary of State before issuing any such guidance.3 In this section “relevant regulatory authorities” means—a supervisory bodies within the meaning of Part 42 of this Act,b bodies to which the Secretary of State may make grants under section 16(1) of the Companies (Audit, Investigations and Community Enterprise) Act 2004 (c.27) (bodies concerned with accounting standards etc), andc the Secretary of State.4 This section applies only to Scotland."
   },
+  "UK_uksi_2008_2683/96de6d6170": {
+    "law": "UK_uksi_2008_2683",
+    "ref": "reg.2",
+    "sentence": "Except as provided by articles 3 and 4, an amendment or revocation of any enactment by any provision of Schedules 1 and 2 extends to any part of the United Kingdom to which the enactment extends."
+  },
   "UK_uksi_2008_960/fe378219fa": {
     "law": "UK_uksi_2008_960",
     "ref": "sch.1",
@@ -5234,25 +5254,25 @@
     "ref": "reg.1",
     "sentence": "The title of these Regulations is the Environmental Civil Sanctions (Miscellaneous Amendments) (Wales) Regulations 2010; they apply in relation to Wales and come into force on 15 July 2010."
   },
-  "UK_uksi_2010_490/411ae81ff5": {
+  "UK_uksi_2010_490/383ab20fd1": {
     "law": "UK_uksi_2010_490",
     "ref": "reg.2",
-    "sentence": "The following provisions also extend to Northern Ireland—a regulations 9 and 9A, in so far as those regulations apply in relation to the exercise of a function which relates to an excepted matter (within the meaning given by section 4(1) of the Northern Ireland Act 1998);b Chapter 1 of Part 6, in so far as that Chapter applies in relation to plans and projects—i which do not relate to a matter specified in Chapters 2 to 9 of that Part, andii which relate to an excepted matter (within the meaning given by section 4(1) of the Northern Ireland Act 1998);c regulation 100, in so far as it applies in relation to a marine licence under Part 4 of the Marine Act in respect of anything done in the course of carrying on an activity which relates to a matter which is an excepted matter by virtue of paragraph 4 of Schedule 2 to the Northern Ireland Act 1998 (defence of the realm etc.);d regulation 107A, in so far as it applies in relation to the exercise of any power by the Secretary of State, and regulations 102, 103 and 105 in so far as they apply to marine policy statements by virtue of regulation 107A; ande in Schedule 6—i sub-paragraphs (3) and (5) of paragraph 5, and sub-paragraph (1) of paragraph 5 in so far as it relates to those sub-paragraphs, andii paragraph 7, and regulation 132 in so far as it relates to those provisions."
+    "sentence": "The following provisions also extend to Northern Ireland—a regulations 9 and 9A, in so far as those regulations apply in relation to the exercise of a function which relates to an excepted matter (within the meaning given by section 4(1) of the Northern Ireland Act 1998);b Chapter 1 of Part 6, in so far as that Chapter applies in relation to plans and projects—i which do not relate to a matter specified in Chapters 2 of Part 6 to 9 of Part 6, andii which relate to an excepted matter (within the meaning given by section 4(1) of the Northern Ireland Act 1998);c regulation 100, in so far as it applies in relation to a marine licence under Part 4 of the Marine Act in respect of anything done in the course of carrying on an activity which relates to a matter which is an excepted matter by virtue of paragraph 4 of Schedule 2 to the Northern Ireland Act 1998 (defence of the realm etc.);d regulation 107A, in so far as it applies in relation to the exercise of any power by the Secretary of State, and regulations 102, 103 and 105 in so far as they apply to marine policy statements by virtue of regulation 107A; ande in Schedule 6—i sub-paragraphs (3) and (5) of paragraph 5, and sub-paragraph (1) of paragraph 5 in so far as it relates to those sub-paragraphs, andii paragraph 7, and regulation 132 in so far as it relates to those provisions."
   },
   "UK_uksi_2010_490/7b94d246d4": {
     "law": "UK_uksi_2010_490",
     "ref": "reg.2",
     "sentence": "This regulation and regulations 1, 3, 5, 7, 8, 128 and 131 also extend to Northern Ireland in so far as they have effect in relation to the provisions specified in paragraph (4)."
   },
+  "UK_uksi_2010_490/88d424d8d0": {
+    "law": "UK_uksi_2010_490",
+    "ref": "reg.2",
+    "sentence": "The following provisions also extend to Scotland—a regulation 3(8) (interpretation in relation to adjacent sea);b regulations 9 (duties relating to compliance with the Directives) and 9A (duties in relation to wild bird habitat), in so far as those regulations apply in relation to the exercise of a function which relates to a reserved matter (within the meaning of Schedule 5 to the Scotland Act 1998 (reserved matters));c regulation 39(4) (statement under Planning Act 2008 );ca Chapter 1 of Part 6 (assessment of plans and projects: general provisions), in so far as that Chapter applies in relation to plans and projects—i which do not relate to a matter specified in Chapters 2 of Part 6 to 9 of Part 6, andii which relate to a reserved matter (within the meaning of Schedule 5 to the Scotland Act 1998);d in regulation 68 (grant of planning permission)—i paragraph (1)(e)(ii) and (iii) (deemed grant of planning permission under section 57(2) of the Town and Country Planning (Scotland) Act 1997 and section 5(1) of the Pipe-lines Act 1962 ), andii paragraph (2) in so far as that paragraph relates to paragraph (1)(e)(ii) and (iii) of that regulation;e in regulation 69 (planning permission: duty to review), in paragraph (3)—i sub-paragraph (b) (direction under section 5(1) of the Pipe-lines Act 1962), andii sub-paragraph (d) in so far as that sub-paragraph relates to a direction under section 57(2) of the Town and Country Planning (Scotland) Act 1997;f regulations 81, 82 and 83(2) (development consent under Planning Act 2008);g Chapter 4 of Part 6 (electricity);h Chapter 5 of Part 6 (pipe-lines);ha regulation 100 (marine works) in so far as it applies to the granting of a licence under Part 2 of the Food and Environment Protection Act 1985;i regulation 106 (national policy statements under Planning Act 2008), and regulations 102, 103 and 105 in so far as they apply in relation to a national policy statement by virtue of regulation 106; ...ia regulation 107A, in so far as it applies in relation to the exercise of any power by the Secretary of State, and regulations 102, 103 and 105 in so far as they apply to marine policy statements by virtue of regulation 107A;j in Schedule 6 (amendments of legislation)—i sub-paragraph (3) of paragraph 5 (amendment of section 123 of the Marine Act),ii sub-paragraph (5) of that paragraph (amendment of section 237 of that Act), andiii paragraph 7 (amendment of the 2007 Regulations ), and regulation 132 in so far as it relates to those provisions."
+  },
   "UK_uksi_2010_490/911eb9e95c": {
     "law": "UK_uksi_2010_490",
     "ref": "reg.2",
     "sentence": "Chapter 1 of Part 6 also extends to Northern Ireland in so far as it has effect in relation to the provision specified in paragraph (4)(c)."
-  },
-  "UK_uksi_2010_490/e4dba68284": {
-    "law": "UK_uksi_2010_490",
-    "ref": "reg.2",
-    "sentence": "The following provisions also extend to Scotland—a regulation 3(8) (interpretation in relation to adjacent sea);b regulations 9 (duties relating to compliance with the Directives) and 9A (duties in relation to wild bird habitat), in so far as those regulations apply in relation to the exercise of a function which relates to a reserved matter (within the meaning of Schedule 5 to the Scotland Act 1998 (reserved matters));c regulation 39(4) (statement under Planning Act 2008 );ca Chapter 1 of Part 6 (assessment of plans and projects: general provisions), in so far as that Chapter applies in relation to plans and projects—i which do not relate to a matter specified in Chapters 2 to 9 of that Part, andii which relate to a reserved matter (within the meaning of Schedule 5 to the Scotland Act 1998);d in regulation 68 (grant of planning permission)—i paragraph (1)(e)(ii) and (iii) (deemed grant of planning permission under section 57(2) of the Town and Country Planning (Scotland) Act 1997 and section 5(1) of the Pipe-lines Act 1962 ), andii paragraph (2) in so far as that paragraph relates to paragraph (1)(e)(ii) and (iii) of that regulation;e in regulation 69 (planning permission: duty to review), in paragraph (3)—i sub-paragraph (b) (direction under section 5(1) of the Pipe-lines Act 1962), andii sub-paragraph (d) in so far as that sub-paragraph relates to a direction under section 57(2) of the Town and Country Planning (Scotland) Act 1997;f regulations 81, 82 and 83(2) (development consent under Planning Act 2008);g Chapter 4 of Part 6 (electricity);h Chapter 5 of Part 6 (pipe-lines);ha regulation 100 (marine works) in so far as it applies to the granting of a licence under Part 2 of the Food and Environment Protection Act 1985;i regulation 106 (national policy statements under Planning Act 2008), and regulations 102, 103 and 105 in so far as they apply in relation to a national policy statement by virtue of regulation 106; ...ia regulation 107A, in so far as it applies in relation to the exercise of any power by the Secretary of State, and regulations 102, 103 and 105 in so far as they apply to marine policy statements by virtue of regulation 107A;j in Schedule 6 (amendments of legislation)—i sub-paragraph (3) of paragraph 5 (amendment of section 123 of the Marine Act),ii sub-paragraph (5) of that paragraph (amendment of section 237 of that Act), andiii paragraph 7 (amendment of the 2007 Regulations ), and regulation 132 in so far as it relates to those provisions."
   },
   "UK_uksi_2010_490/f71bab8d65": {
     "law": "UK_uksi_2010_490",
@@ -5333,6 +5353,11 @@
     "law": "UK_uksi_2012_1916",
     "ref": "reg.256ZA",
     "sentence": "This part applies to Northern Ireland only."
+  },
+  "UK_uksi_2012_2404/b2e97d9221": {
+    "law": "UK_uksi_2012_2404",
+    "ref": "reg.4",
+    "sentence": "An amendment in Schedule 2 or 3 extends to any part of the United Kingdom to which the amended enactment extends."
   },
   "UK_uksi_2012_2404/fcdea858ae": {
     "law": "UK_uksi_2012_2404",
@@ -5434,10 +5459,10 @@
     "ref": "reg.1",
     "sentence": "The modifications specified in paragraphs 65, 66, 73, 74(2) and 76 of Schedule 2 (and article 26 in so far as it relates to those modifications) extend to Scotland only."
   },
-  "UK_uksi_2013_602/7c56be4e87": {
+  "UK_uksi_2013_602/850aa5db49": {
     "law": "UK_uksi_2013_602",
     "ref": "reg.1",
-    "sentence": "In Schedule 3— a paragraphs 1 to 11 and 13 to 18 (and article 27 in so far as it relates to those paragraphs) have the same extent as the provisions to which they relate; and b paragraphs 12 and 19 (and article 27 in so far as it relates to those paragraphs) extend to Scotland only."
+    "sentence": "— a paragraphs 1 to 11 and 13 to 18 (and article 27 in so far as it relates to those paragraphs) have the same extent as the provisions to which they relate; and b paragraphs 12 and 19 (and article 27 in so far as it relates to those paragraphs) extend to Scotland only."
   },
   "UK_uksi_2013_602/b85075cc96": {
     "law": "UK_uksi_2013_602",
@@ -5449,15 +5474,15 @@
     "ref": "sch.7.para.5",
     "sentence": "A direction which was given under section 40(2) of the 1995 Act before the transfer date is, to the extent that it applies in relation to Wales, to be treated on and after the transfer date as a direction given to the Body under article 11(3) of the Establishment Order (as substituted by this Order), but this is subject to any provision made by this Part in relation to particular directions."
   },
-  "UK_uksi_2014_1638/517194f446": {
-    "law": "UK_uksi_2014_1638",
-    "ref": "reg.3",
-    "sentence": "In Schedule 13—a the amendments made by paragraphs 16, 20 and 30 extend to Scotland only; andb the amendments made by paragraphs 11 and 14 extend to England and Wales only."
-  },
   "UK_uksi_2014_1638/83e7e87957": {
     "law": "UK_uksi_2014_1638",
     "ref": "reg.3",
     "sentence": "Except as provided by paragraphs (2) and (3), these Regulations extend to England and Wales and Scotland."
+  },
+  "UK_uksi_2014_1638/999d269aa3": {
+    "law": "UK_uksi_2014_1638",
+    "ref": "reg.3",
+    "sentence": "— a the amendments made by paragraphs 16, 20 and 30 of Schedule 13 extend to Scotland only; andb the amendments made by paragraphs 11 and 14 of Schedule 13 extend to England and Wales only."
   },
   "UK_uksi_2014_1638/bab687b176": {
     "law": "UK_uksi_2014_1638",
@@ -5468,11 +5493,6 @@
     "law": "UK_uksi_2014_1639",
     "ref": "reg.1",
     "sentence": "These Regulations extend to England and Wales and Scotland only."
-  },
-  "UK_uksi_2014_469/5524b7e3ee": {
-    "law": "UK_uksi_2014_469",
-    "ref": "reg.3",
-    "sentence": "In Schedule 1—a paragraph 3 extends to England and Wales and Scotland only;b paragraph 8(2)(b) to (d) extends to England and Wales and Scotland only."
   },
   "UK_uksi_2014_469/63357a8d61": {
     "law": "UK_uksi_2014_469",
@@ -5549,11 +5569,6 @@
     "ref": "reg.5",
     "sentence": "In a provision of Part 6 which extends to Scotland or Northern Ireland, “the appropriate nature conservation body” means—a in relation to an effect on a European offshore marine site, the Joint Nature Conservation Committee; andb otherwise—i in relation to England, Natural England;ii in relation to Wales, the Natural Resources Body for Wales;iii in relation to Scotland, Scottish Natural Heritage; andiv in relation to Northern Ireland, the Department of Agriculture, Environment and Rural Affairs."
   },
-  "UK_uksi_2017_1012/20c2dbdad4": {
-    "law": "UK_uksi_2017_1012",
-    "ref": "reg.2",
-    "sentence": "The following provisions also extend to Northern Ireland—a regulations 9 and 10, in so far as those regulations apply in relation to the exercise of a function which relates to an excepted matter (within the meaning given by section 4(1) of the Northern Ireland Act 1998 );b Chapter 1 of Part 6, in so far as that Chapter applies in relation to plans and projects—i which do not relate to a matter specified in Chapters 2 to 9 of that Part; andii which relate to an excepted matter (within the meaning given by section 4(1) of the Northern Ireland Act 1998);c regulation 103, in so far as it applies in relation to a marine licence under Part 4 of the Marine Act in respect of anything done in the course of carrying on an activity which relates to a matter which is an excepted matter by virtue of paragraph 4 of Schedule 2 to the Northern Ireland Act 1998 (defence of the realm etc.);d regulation 112, in so far as it applies in relation to the exercise of any power by the Secretary of State, and regulations 105, 107 and 109 in so far as they apply to marine policy statements by virtue of regulation 112; ande in Part 1 of Schedule 6—i sub-paragraphs (2) and (4) of paragraph 8;ii sub-paragraph (1) of paragraph 8 in so far as it relates to sub-paragraphs (2) and (4); and regulation 139 in so far as it relates to those provisions."
-  },
   "UK_uksi_2017_1012/4e0b818da9": {
     "law": "UK_uksi_2017_1012",
     "ref": "reg.2",
@@ -5564,10 +5579,10 @@
     "ref": "reg.2",
     "sentence": "The following provisions also extend to Scotland in so far as they have effect in relation to the provisions specified in paragraph (2)—a regulations 1 (citation and commencement), 2 (extent), 3 (interpretation), 5 (nature conservation bodies), 7 (competent authorities) and 8 (European sites and European marine sites);b Chapter 1 of Part 6 (assessment of plans and projects); andc regulations 134, 135(3) and 138 (advisory role of the Joint Nature Conservation Committee, advisory role of Scottish Natural Heritage, notices, respectively)."
   },
-  "UK_uksi_2017_1012/b8c45c730e": {
+  "UK_uksi_2017_1012/b68b6a681a": {
     "law": "UK_uksi_2017_1012",
     "ref": "reg.2",
-    "sentence": "The following provisions also extend to Scotland—a regulation 3(8) (meaning of adjacent sea);b regulations 9 and 10 (duties relating to compliance with the Directive and wild bird habitat, respectively), in so far as those regulations apply in relation to the exercise of a function which relates to a reserved matter (within the meaning of Schedule 5 to the Scotland Act 1998 (reserved matters) );c regulation 41(4) (national policy statement under Planning Act 2008 );d Chapter 1 of Part 6 (assessment of plans and projects: general provisions), in so far as that Chapter applies in relation to plans and projects—i which do not relate to a matter specified in Chapters 2 to 9 of that Part, andii which relate to a reserved matter (within the meaning of Schedule 5 to the Scotland Act 1998);e in regulation 70 (grant of planning permission)—i paragraph (1)(e)(ii) and (iii) (deemed grant of planning permission under section 57(2) and (2A) of the Town and Country Planning (Scotland) Act 1997 and section 5(1) of the Pipe-lines Act 1962 );ii paragraph 1(f) (variation of permission deemed to be granted under section 57(2) of the Town and Country Planning (Scotland) Act 1997), in so far as that paragraph relates to a direction under section 57(2ZA) of the Town and Country Planning (Scotland) Act 1997 (development with government authorisation) ; andiii paragraph (2) in so far as that paragraph relates to sub-paragraph (1)(e)(ii) or (iii), or (1)(f) of that regulation;f in regulation 71 (planning permission: duty to review), in paragraph (4)—i sub-paragraph (b);ii sub-paragraph (d) in so far as that sub-paragraph relates to a direction under section 57(2) of the Town and Country Planning (Scotland) Act 1997;iii sub-paragraph (e) in so far as that sub-paragraph relates to a direction under section 57(2ZA) of the Town and Country Planning (Scotland) Act 1997; and paragraph (3) in so far as it relates to directions specified in those sub-paragraphs;g regulations 84, 85 and 86(2) (development consent under Planning Act 2008);h Chapter 4 of Part 6 (electricity);i Chapter 5 of Part 6 (pipe-lines);j regulation 103 (marine works) in so far as it applies to the granting of a licence under Part 2 of the Food and Environment Protection Act 1985 ;k regulation 110 (national policy statements under Planning Act 2008), and regulations 105, 107 and 109 in so far as they apply in relation to a national policy statement by virtue of regulation 110;l regulation 112 (marine policy statement), in so far as it applies in relation to the exercise of any power by the Secretary of State, and regulations 105, 107 and 109 in so far as they apply to marine policy statements by virtue of regulation 112; andm in Part 1 of Schedule 6 (consequential amendments to primary legislation)—i sub-paragraphs (2) and (4) of paragraph 8 (amendment of section 123 of the Marine Act); andii sub-paragraph (1) of paragraph 8 in so far as it relates to sub-paragraph (2) and (4); and regulation 139 in so far as it relates to those provisions."
+    "sentence": "The following provisions also extend to Northern Ireland—a regulations 9 and 10, in so far as those regulations apply in relation to the exercise of a function which relates to an excepted matter (within the meaning given by section 4(1) of the Northern Ireland Act 1998 );b Chapter 1 of Part 6, in so far as that Chapter applies in relation to plans and projects—i which do not relate to a matter specified in Chapters 2 of Part 6 to 9 of Part 6; andii which relate to an excepted matter (within the meaning given by section 4(1) of the Northern Ireland Act 1998);c regulation 103, in so far as it applies in relation to a marine licence under Part 4 of the Marine Act in respect of anything done in the course of carrying on an activity which relates to a matter which is an excepted matter by virtue of paragraph 4 of Schedule 2 to the Northern Ireland Act 1998 (defence of the realm etc.);d regulation 112, in so far as it applies in relation to the exercise of any power by the Secretary of State, and regulations 105, 107 and 109 in so far as they apply to marine policy statements by virtue of regulation 112; ande in Part 1 of Schedule 6—i sub-paragraphs (2) and (4) of paragraph 8;ii sub-paragraph (1) of paragraph 8 in so far as it relates to sub-paragraphs (2) and (4); and regulation 139 in so far as it relates to those provisions."
   },
   "UK_uksi_2017_1012/bcd8a8b577": {
     "law": "UK_uksi_2017_1012",
@@ -5578,6 +5593,11 @@
     "law": "UK_uksi_2017_1012",
     "ref": "reg.2",
     "sentence": "Chapter 1 of Part 6 also extends to Northern Ireland in so far as it has effect for the purposes of regulation 103, to the extent that that regulation extends to Northern Ireland by virtue of paragraph (4)(c)."
+  },
+  "UK_uksi_2017_1012/e8f009ab75": {
+    "law": "UK_uksi_2017_1012",
+    "ref": "reg.2",
+    "sentence": "The following provisions also extend to Scotland—a regulation 3(8) (meaning of adjacent sea);b regulations 9 and 10 (duties relating to compliance with the Directive and wild bird habitat, respectively), in so far as those regulations apply in relation to the exercise of a function which relates to a reserved matter (within the meaning of Schedule 5 to the Scotland Act 1998 (reserved matters) );c regulation 41(4) (national policy statement under Planning Act 2008 );d Chapter 1 of Part 6 (assessment of plans and projects: general provisions), in so far as that Chapter applies in relation to plans and projects—i which do not relate to a matter specified in Chapters 2 of Part 6 to 9 of Part 6, andii which relate to a reserved matter (within the meaning of Schedule 5 to the Scotland Act 1998);e in regulation 70 (grant of planning permission)—i paragraph (1)(e)(ii) and (iii) (deemed grant of planning permission under section 57(2) and (2A) of the Town and Country Planning (Scotland) Act 1997 and section 5(1) of the Pipe-lines Act 1962 );ii paragraph 1(f) (variation of permission deemed to be granted under section 57(2) of the Town and Country Planning (Scotland) Act 1997), in so far as that paragraph relates to a direction under section 57(2ZA) of the Town and Country Planning (Scotland) Act 1997 (development with government authorisation) ; andiii paragraph (2) in so far as that paragraph relates to sub-paragraph (1)(e)(ii) or (iii), or (1)(f) of that regulation;f in regulation 71 (planning permission: duty to review), in paragraph (4)—i sub-paragraph (b);ii sub-paragraph (d) in so far as that sub-paragraph relates to a direction under section 57(2) of the Town and Country Planning (Scotland) Act 1997;iii sub-paragraph (e) in so far as that sub-paragraph relates to a direction under section 57(2ZA) of the Town and Country Planning (Scotland) Act 1997; and paragraph (3) in so far as it relates to directions specified in those sub-paragraphs;g regulations 84, 85 and 86(2) (development consent under Planning Act 2008);h Chapter 4 of Part 6 (electricity);i Chapter 5 of Part 6 (pipe-lines);j regulation 103 (marine works) in so far as it applies to the granting of a licence under Part 2 of the Food and Environment Protection Act 1985 ;k regulation 110 (national policy statements under Planning Act 2008), and regulations 105, 107 and 109 in so far as they apply in relation to a national policy statement by virtue of regulation 110;l regulation 112 (marine policy statement), in so far as it applies in relation to the exercise of any power by the Secretary of State, and regulations 105, 107 and 109 in so far as they apply to marine policy statements by virtue of regulation 112; andm in Part 1 of Schedule 6 (consequential amendments to primary legislation)—i sub-paragraphs (2) and (4) of paragraph 8 (amendment of section 123 of the Marine Act); andii sub-paragraph (1) of paragraph 8 in so far as it relates to sub-paragraph (2) and (4); and regulation 139 in so far as it relates to those provisions."
   },
   "UK_uksi_2017_1200/f21357e316": {
     "law": "UK_uksi_2017_1200",
@@ -5644,10 +5664,10 @@
     "ref": "reg.1A",
     "sentence": "Subject to paragraph (2), the amendments made by Parts 2 and 3 have the same extent as the Regulations being amended."
   },
-  "UK_uksi_2019_453/717b469269": {
+  "UK_uksi_2019_453/89d2ec1e80": {
     "law": "UK_uksi_2019_453",
     "ref": "reg.1",
-    "sentence": "Except for the regulations referred to in paragraphs 4(b) and (c), Part 2 and Part 3, Chapters 1 and 2 extend to England and Wales and Scotland."
+    "sentence": "Except for the regulations referred to in paragraphs 4(b) and (c), Part 2 and Part 3, Chapters 1 and 2 of Part 3 extend to England and Wales and Scotland."
   },
   "UK_uksi_2019_458/b00df41c88": {
     "law": "UK_uksi_2019_458",
@@ -5694,11 +5714,6 @@
     "ref": "reg.2",
     "sentence": "Part 5 extends to Northern Ireland."
   },
-  "UK_uksi_2019_837/7479648d79": {
-    "law": "UK_uksi_2019_837",
-    "ref": "reg.2",
-    "sentence": "Parts 2 and 4 extend to England and Wales and Scotland."
-  },
   "UK_uksi_2020_1444/d695fd64a9": {
     "law": "UK_uksi_2020_1444",
     "ref": "reg.1",
@@ -5739,6 +5754,11 @@
     "ref": "reg.1",
     "sentence": "Regulation 2(c) extends to Scotland."
   },
+  "UK_uksi_2022_1075/e722e55c62": {
+    "law": "UK_uksi_2022_1075",
+    "ref": "reg.2",
+    "sentence": "Regulation 3(f) in so far as it commences section 89(1) and (3) to (7) extends to England and Wales and Scotland."
+  },
   "UK_uksi_2022_1174/8d47a4d587": {
     "law": "UK_uksi_2022_1174",
     "ref": "reg.2",
@@ -5763,11 +5783,6 @@
     "law": "UK_uksi_2022_547",
     "ref": "reg.1",
     "sentence": "These Regulations extend to England and Wales but apply in England only."
-  },
-  "UK_uksi_2022_834/ffb1ba8de5": {
-    "law": "UK_uksi_2022_834",
-    "ref": "reg.1",
-    "sentence": "c extends to England and Wales and Scotland."
   },
   "UK_uksi_2023_722/6431de17f0": {
     "law": "UK_uksi_2023_722",
@@ -5809,6 +5824,11 @@
     "ref": "reg.1",
     "sentence": "These Regulations extend to Northern Ireland only."
   },
+  "UK_uksi_2025_82/98f57c8b59": {
+    "law": "UK_uksi_2025_82",
+    "ref": "reg.1",
+    "sentence": "A provision of these Regulations that amends or revokes an enactment has the same extent as the enactment amended or revoked unless otherwise specified."
+  },
   "UK_uksi_2025_904/0c76fbbd83": {
     "law": "UK_uksi_2025_904",
     "ref": "reg.1",
@@ -5823,11 +5843,6 @@
     "law": "UK_uksi_2026_20",
     "ref": "reg.1",
     "sentence": "Subject to paragraph (4), these Regulations extend to England and Wales."
-  },
-  "UK_uksi_2026_237/9c10c82167": {
-    "law": "UK_uksi_2026_237",
-    "ref": "reg.1",
-    "sentence": "c extend to England and Wales and Scotland."
   },
   "UK_uksi_2026_335/c78598c480": {
     "law": "UK_uksi_2026_335",

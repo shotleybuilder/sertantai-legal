@@ -51,4 +51,22 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.SameTest do
              )
            ) == [{:same, nil, ["s.240", "s.242", "sch.1"]}]
   end
+
+  test "\"A provision of these Regulations that amends …\" and \"any part of the UK to which the amended enactment extends\" (CV-S05 round 6)" do
+    assert same(
+             "UK_uksi_2025_82",
+             ExtentDoc.p1(
+               "regulation-1",
+               "A provision of these Regulations that amends or revokes an enactment has the same extent as the enactment amended or revoked unless otherwise specified."
+             )
+           ) == [{:same, nil, ["*"]}]
+
+    assert same(
+             "UK_uksi_2012_2404",
+             ExtentDoc.p1(
+               "article-4",
+               "An amendment in Schedule 2 or 3 extends to any part of the United Kingdom to which the amended enactment extends."
+             )
+           ) == [{:same, nil, ["sch.2", "sch.3"]}]
+  end
 end

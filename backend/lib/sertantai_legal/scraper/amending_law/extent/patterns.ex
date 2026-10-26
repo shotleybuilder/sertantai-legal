@@ -36,6 +36,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Extent}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.Units
   alias SertantaiLegal.Scraper.ApplicationClause
   alias SertantaiLegal.Scraper.Commencement.Order
   alias SertantaiLegal.Scraper.LawStart.Clause
@@ -44,8 +45,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
   @extent_words Regex.compile!(
                   # (also "the same extent within the United Kingdom as", "extends
                   # to the part or parts of the United Kingdom", "extends
-                  # throughout", "extends as follows": counted, CV-S05 round 4)
-                  "\\bextends?\\s+(?:also\\s+|only\\s+)?(?:to\\s+(?:the\\s+whole\\s+of\\s+)?|throughout\\s+)(?:#{@places})|\\bnot\\s+extend\\s+to\\s+(?:#{@places})|\\bsame\\s+extent\\s+(?:within\\s+the\\s+United\\s+Kingdom\\s+)?as\\b|\\bextends?\\s+to\\s+the\\s+(?:same\\s+)?part\\s+or\\s+parts\\s+of\\s+the\\s+United\\s+Kingdom\\b|\\bextends?\\s+as\\s+follows\\b",
+                  # throughout", "extends as follows": counted, CV-S05 round 4;
+                  # "extends to any part of the United Kingdom …": round 6)
+                  "\\bextends?\\s+(?:also\\s+|only\\s+)?(?:to\\s+(?:the\\s+whole\\s+of\\s+)?|throughout\\s+)(?:#{@places})|\\bnot\\s+extend\\s+to\\s+(?:#{@places})|\\bsame\\s+extent\\s+(?:within\\s+the\\s+United\\s+Kingdom\\s+)?as\\b|\\bextends?\\s+to\\s+the\\s+(?:same\\s+)?part\\s+or\\s+parts\\s+of\\s+the\\s+United\\s+Kingdom\\b|\\bextends?\\s+as\\s+follows\\b|\\bextends?\\s+to\\s+any\\s+part\\s+of\\s+the\\s+United\\s+Kingdom\\b",
                   "iu"
                 )
   @application_words Regex.compile!(
@@ -157,11 +159,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
   # whole with its lists, else the provision itself; the leading number
   # CLML runs into the words ("841 This Act" → "This Act") dropped
   defp units(doc, id) do
-    children = Doc.children(doc, id)
+    children = Units.numbered_children(doc, id)
 
     for el_id <- if(children == [], do: [id], else: children),
         text = doc |> Doc.element(el_id) |> Doc.lines() |> Enum.join(" "),
-        do: String.replace(text, ~r/^\s*\d+[A-Z]*\s*(?=[A-Z(])/u, "")
+        do: text |> String.replace(~r/^\s*\d+[A-Z]*\s*(?=[A-Z(])/u, "") |> Units.unlettered()
   end
 
   # {class, whether the clause's default has been taken}
@@ -200,6 +202,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
           do: {"part_not:#{place}", default_seen?},
           else: {"unread:part_not", default_seen?}
 
+      # a sentence of lettered statements, every one read ("— (a)
+      # paragraph 3 of Schedule 1 extends to …; (b) paragraph 8(2)(b) to
+      # (d) … extends to …": SI 2014/469 art.3(2), CV-S05 round 6) — as its
+      # first item's list
+      item = statement == nil && items_read(s, e, type) ->
+        {item, default_seen?}
+
       Regex.match?(@application_words, s) and ApplicationClause.parse(s) != nil ->
         if e.application,
           do: {"applies:#{e.application}", default_seen?},
@@ -227,6 +236,31 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
       true ->
         {"unread:not_read", default_seen?}
     end
+  end
+
+  # the first item's list class when every lettered item of the sentence
+  # speaking of extent ("(a)", "(i)": whatever it begins with) is a list
+  # statement read; else nil (one unread item: the sentence is unread)
+  defp items_read(s, %Extent{lists: lists}, type) do
+    items =
+      s
+      |> String.split(~r/[—–;]\s*(?:and\s*|or\s*)?\(?[a-z]{1,4}\)?\s+/u)
+      |> tl()
+      |> Enum.filter(&Regex.match?(@extent_words, &1))
+
+    found =
+      for item <- items do
+        case Extent.statement(item, type) do
+          {:list, kind, place} ->
+            if Enum.any?(lists, &match?({^kind, ^place, _}, &1)),
+              do: "list:#{kind}:#{place || "same"}"
+
+          _ ->
+            nil
+        end
+      end
+
+    if found != [] and Enum.all?(found, &is_binary/1), do: hd(found)
   end
 
   @doc "A sentence's form (see the moduledoc)."

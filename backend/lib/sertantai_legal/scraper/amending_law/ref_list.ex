@@ -97,6 +97,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
              for(i <- String.to_integer(a)..String.to_integer(b)//1, do: "#{prefix}#{n}(#{i})"),
            n}
 
+        # "8(2)(b) to (d)" → each lettered item (SI 2014/469 art.3(2)(b):
+        # CV-S05 round 6)
+        m = Regex.run(~r/^(\d+[A-Z]*)((?:\(\d+[A-Z]*\))*)\(([a-z])\)\s+to\s+\(([a-z])\)/, piece) ->
+          [_, n, subs, <<a>>, <<b>>] = m
+          {acc ++ for(c <- a..b//1, do: "#{prefix}#{n}#{subs}(#{<<c>>})"), n}
+
         m = Regex.run(~r/^(\d+[A-Z]*)(\([^)]+\))*\s+to\s+(\d+[A-Z]*)/, piece) ->
           [_, a | rest] = m
           {acc ++ ["#{prefix}#{a}..#{prefix}#{List.last(rest)}"], a}

@@ -8,6 +8,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Parts, Places}
   alias SertantaiLegal.Scraper.Commencement.Order
   alias SertantaiLegal.Scraper.LawStart.Clause
 
@@ -49,11 +50,27 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
   """
   @spec units(Doc.t(), String.t()) :: [String.t()]
   def units(%Doc{} = doc, id) do
-    children = Doc.children(doc, id)
+    children = numbered_children(doc, id)
 
     for el_id <- if(children == [], do: [id], else: children),
         text = doc |> Doc.element(el_id) |> own_words() |> Doc.lines() |> Enum.join(" "),
-        do: String.replace(text, ~r/^\s*\d+[A-Z]*\s*(?=[A-Z(])/u, "")
+        do: text |> String.replace(~r/^\s*\d+[A-Z]*\s*(?=[A-Z(])/u, "") |> unlettered()
+  end
+
+  @doc """
+  A provision's numbered children (subsections "section-84-1"), the units it
+  is read in; none where its children are lettered items ("section-17-a":
+  "This Part shall extend to— (a) England and Wales, …", RTSA 2003 s.17;
+  "These Regulations— … (c) extend to Northern Ireland only", SI 2020/1112
+  reg.1), which are read whole with their lead-in (CV-S05 round 6).
+  """
+  @spec numbered_children(Doc.t(), String.t()) :: [String.t()]
+  def numbered_children(%Doc{} = doc, id) do
+    children = Doc.children(doc, id)
+
+    if children != [] and Enum.all?(children, &(&1 =~ ~r/-[a-z]{1,2}$/)),
+      do: [],
+      else: children
   end
 
   @doc "Each top-level provision's unit sentences and the statements in them, with its ref."
@@ -71,7 +88,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
         do: {ref, part}
   end
 
-  @provision_word "(?:sections?|paragraphs?|Schedules?|Parts?|regulations?|articles?|rules?)\\s+[\\dIVXL]"
+  # (a Chapter, and "the amendments made by …": items of "In Part 3— (i)
+  # Chapter 1 extends to …", "— (a) the amendments made by paragraph 9(3)
+  # of Schedule 12 extend to …", CV-S05 round 6)
+  @provision_word "(?:(?:sections?|paragraphs?|Schedules?|Parts?|Chapters?|regulations?|articles?|rules?)\\s+[\\dIVXL]|the\\s+(?:amendments?|repeals?|revocations?)\\s+(?:made\\s+by|in)\\s)"
 
   @doc """
   A sentence and the statements inside it (CV-S05 round 4): each lettered
@@ -123,6 +143,105 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
         part != "",
         uniq: true,
         do: part
+  end
+
+  @places Places.place_names()
+
+  @doc """
+  Lettered extent wordings as plain ones (CV-S05 round 6), so every reader
+  of a provision's words reads them:
+
+  - places lettered: "This Part shall extend … to— (a) England and Wales,
+    and (b) Scotland, and (c) Northern Ireland" (RTSA 2003 s.17) → "…
+    extend to England and Wales, Scotland and Northern Ireland";
+  - a verb lettered under its subject: "These Regulations— … ; and (c)
+    extend to Northern Ireland only" (SI 2020/1112 reg.1) → "…; and.
+    These Regulations extend to Northern Ireland only";
+  - "there" after a place: "… shall extend to Northern Ireland, but except
+    as aforesaid this Act shall not extend there" (ukpga 1975/71 s.129(6))
+    → "… shall not extend to Northern Ireland";
+  - paragraphs under "In Schedule N—": "In Schedule 1— (a) paragraph 3
+    extends to …" → "(a) paragraph 3 of Schedule 1 extends to …".
+  """
+  @spec unlettered(String.t()) :: String.t()
+  def unlettered(text) do
+    text
+    |> lettered_places()
+    |> lettered_verbs()
+    |> there()
+    |> in_schedule()
+    |> chapters()
+  end
+
+  # "In Part 3— (i) Chapter 1 extends to …" → "Chapter 1 of Part 3 …"
+  # (extent words only: `Parts.qualify_chapters/1`)
+  defp chapters(text),
+    do: if(text =~ ~r/\bextends?\b/u, do: Parts.qualify_chapters(text), else: text)
+
+  # "In Schedule 1— (a) paragraph 3 extends to …; (b) paragraph 8(2)(b) to
+  # (d) extends to …" (SI 2014/469 art.3(2), SI 2019/758 reg.1): each
+  # paragraph that Schedule's, the lead-in dropped (extent words only)
+  defp in_schedule(text) do
+    with true <- text =~ ~r/\bextends?\b/u,
+         [lead, n] <-
+           Regex.run(
+             ~r/^\s*(?:\d+[A-Z]*\s*)?In\s+Schedule\s+(\d+[A-Z]*)\b(?:\s*\([^()]*\))?\s*[—–]\s*/u,
+             text
+           ) do
+      text
+      |> String.replace_prefix(lead, "— ")
+      |> then(
+        &Regex.replace(
+          ~r/\b(paragraphs?\s+(?:(?:\d+[A-Z]*|\([0-9A-Za-z]+\))(?:\([0-9A-Za-z]+\))*(?:\s*(?:,|and|to)\s*)?)+?)(?=\s*(?:extends?|extend|ha(?:s|ve)|do|does|shall|[,;]|$))(?!\s*of\b)/u,
+          &1,
+          "\\1 of Schedule #{n} "
+        )
+      )
+    else
+      _ -> text
+    end
+  end
+
+  defp lettered_places(text) do
+    Regex.replace(
+      ~r/\b(extends?|extend)(?:\s*\.)*\s+to\s*[—–]\s*\(?a\)?\s+(#{@places})((?:\s*,?\s*(?:and|or)?\s*\(?[b-e]\)?\s+(?:#{@places}))+)/u,
+      text,
+      fn _, verb, first, rest ->
+        places =
+          [first | for([p] <- Regex.scan(~r/#{@places}/u, rest), do: p)]
+
+        "#{verb} to " <>
+          case Enum.split(places, -1) do
+            {[], [one]} -> one
+            {init, [last]} -> Enum.join(init, ", ") <> " and " <> last
+          end
+      end
+    )
+  end
+
+  defp lettered_verbs(text) do
+    case Regex.run(
+           ~r/^\s*(?:\d+[A-Z]*\s*)?(Th(?:is|ese)\s+(?:Act|Regulations|Order|Rules|Scheme|Part))\s*[—–]/u,
+           text
+         ) do
+      [_, subject] ->
+        Regex.replace(
+          ~r/([;,.]\s*(?:and\s*)?)\(?[a-z]\)?\s+(?=(?:shall\s+)?(?:not\s+)?extends?\b)/u,
+          text,
+          "\\1. #{subject} "
+        )
+
+      nil ->
+        text
+    end
+  end
+
+  defp there(text) do
+    Regex.replace(
+      ~r/(\bextends?\s+to\s+(#{@places})\b[^.]*?\bnot\s+extend\s+)there\b/u,
+      text,
+      "\\1to \\2"
+    )
   end
 
   @doc "Repealed words' dots (\". . .\") taken out: they are no sentence's end."

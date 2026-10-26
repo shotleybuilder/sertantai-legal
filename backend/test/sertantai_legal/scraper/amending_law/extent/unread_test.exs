@@ -129,7 +129,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.UnreadTest do
           "The amendments made to the Marine and Coastal Access Act 2009 by sections 77 to 80 of the Environment (Wales) Act 2016 (anaw 3) extend to Scotland and Northern Ireland (as well as England and Wales).",
           "In the application of section 3 to Acts passed after the commencement of this Act which extend to Northern Ireland, “statutory instrument” includes statutory rule.",
           "A copy of a document shall be admissible in any legal proceedings to the same extent as the document itself.",
-          "In this section “legislation” means— (a) an Act of Parliament if, or to the extent that, it extends to England and Wales."
+          "In this section “legislation” means— (a) an Act of Parliament if, or to the extent that, it extends to England and Wales.",
+          # an application's list (SI 2020/818 reg.1A)
+          "The following provisions of these Regulations do not apply in England and Wales or Scotland— (a) section 3; (b) section 4."
         ] do
       assert subject("section-8", "s.8", text) == [], text
     end
