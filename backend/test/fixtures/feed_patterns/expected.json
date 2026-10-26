@@ -81,7 +81,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(a)"
+            "reg.2(a)"
           ],
           "feed.by": "UK_wsi_2017_152",
           "feed.date": "2017-02-24",
@@ -587,7 +587,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(c)"
+            "reg.3(c)"
           ],
           "feed.by": "UK_wsi_2024_1248",
           "feed.date": "2025-08-29",
@@ -607,7 +607,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(c)"
+            "reg.3(c)"
           ],
           "feed.by": "UK_wsi_2024_1248",
           "feed.date": "2025-08-29",
@@ -627,7 +627,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(c)"
+            "reg.3(c)"
           ],
           "feed.by": "UK_wsi_2024_1248",
           "feed.date": "2025-08-29",
@@ -647,7 +647,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(c)"
+            "reg.3(c)"
           ],
           "feed.by": "UK_wsi_2024_1248",
           "feed.date": "2025-08-29",
@@ -777,7 +777,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)(a)"
+            "reg.2(1)(a)"
           ],
           "feed.by": "UK_wsi_2020_1048",
           "feed.date": "2020-09-29",
@@ -905,7 +905,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": false,
           "feed.by": "UK_wsi_2017_967",
@@ -921,7 +921,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(x)"
+            "reg.2(x)"
           ],
           "feed.by": "UK_wsi_2018_35",
           "feed.date": "2018-01-25",
@@ -957,7 +957,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.by": "UK_wsi_2018_35",
           "feed.date": "2018-04-01",
@@ -973,7 +973,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.by": "UK_wsi_2018_35",
           "feed.date": "2018-04-01",
@@ -989,7 +989,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.by": "UK_wsi_2018_35",
           "feed.date": "2018-04-01",
@@ -1006,7 +1006,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.by": "UK_wsi_2018_35",
           "feed.date": "2018-04-01",
@@ -1023,7 +1023,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.by": "UK_wsi_2018_35",
           "feed.date": "2018-04-01",
@@ -1144,7 +1144,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(a)"
+            "reg.2(a)"
           ],
           "feed.by": "UK_wsi_2017_955",
           "feed.date": "2017-10-18",
@@ -1160,7 +1160,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(a)"
+            "reg.2(a)"
           ],
           "feed.by": "UK_wsi_2017_955",
           "feed.date": "2017-10-18",
@@ -1211,7 +1211,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)"
+            "reg.2(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_nisr_2022_181",
@@ -1231,7 +1231,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)"
+            "reg.2(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_nisr_2026_121",
@@ -1673,7 +1673,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(a)"
+            "reg.2(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_nisr_2018_99",
@@ -1710,7 +1710,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(r)"
+            "reg.2(r)"
           ],
           "feed.by": "UK_wsi_2023_1149",
           "feed.date": "2023-10-30",
@@ -1769,7 +1769,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(d)"
+            "reg.3(d)"
           ],
           "feed.by": "UK_wsi_2024_860",
           "feed.date": "2024-11-04",
@@ -1785,7 +1785,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(d)"
+            "reg.3(d)"
           ],
           "feed.by": "UK_wsi_2024_860",
           "feed.date": "2024-11-04",
@@ -1801,7 +1801,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(d)"
+            "reg.3(d)"
           ],
           "feed.by": "UK_wsi_2024_860",
           "feed.date": "2024-11-04",
@@ -1817,7 +1817,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(d)"
+            "reg.3(d)"
           ],
           "feed.by": "UK_wsi_2024_860",
           "feed.date": "2024-11-04",
@@ -1833,7 +1833,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(d)"
+            "reg.3(d)"
           ],
           "feed.by": "UK_wsi_2024_860",
           "feed.date": "2024-11-04",
@@ -2070,7 +2070,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)(f)"
+            "reg.2(2)(f)"
           ],
           "feed.by": "UK_wsi_2024_860",
           "feed.date": "2024-09-09",
@@ -2130,7 +2130,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)(e)"
+            "reg.2(2)(e)"
           ],
           "feed.by": "UK_ssi_2003_267",
           "feed.date": "2003-10-01",
@@ -2319,7 +2319,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2009_2232",
@@ -2411,7 +2411,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2002_172",
@@ -2501,7 +2501,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2003_227",
@@ -2579,7 +2579,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.by": "UK_ssi_2003_516",
           "feed.date": "2003-11-04",
@@ -2595,7 +2595,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.by": "UK_ssi_2003_516",
           "feed.date": "2003-11-04",
@@ -2629,7 +2629,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2002_118",
@@ -2667,7 +2667,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(1)"
+            "reg.4(1)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2002_166",
@@ -2680,7 +2680,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(1)"
+            "reg.4(1)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2002_166",
@@ -2867,7 +2867,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2007_517",
@@ -2884,7 +2884,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2007_517",
@@ -2903,7 +2903,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2007_512",
@@ -3109,7 +3109,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_ssi_2003_134",
           "feed.date": "2003-04-01",
@@ -3125,7 +3125,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_ssi_2003_134",
           "feed.date": "2003-04-01",
@@ -3141,7 +3141,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_ssi_2003_134",
           "feed.date": "2003-04-01",
@@ -3157,7 +3157,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_ssi_2003_134",
           "feed.date": "2003-04-01",
@@ -3173,7 +3173,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_ssi_2003_134",
           "feed.date": "2003-04-01",
@@ -3189,7 +3189,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_ssi_2003_134",
           "feed.date": "2003-04-01",
@@ -3205,7 +3205,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_ssi_2003_134",
           "feed.date": "2003-04-01",
@@ -3221,7 +3221,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_ssi_2003_134",
           "feed.date": "2003-04-01",
@@ -3237,7 +3237,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_ssi_2003_134",
           "feed.date": "2003-04-01",
@@ -3254,7 +3254,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_ssi_2003_134",
           "feed.date": "2003-04-01",
@@ -3271,7 +3271,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_ssi_2003_134",
           "feed.date": "2003-04-01",
@@ -3288,7 +3288,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_ssi_2003_134",
           "feed.date": "2003-04-01",
@@ -3305,7 +3305,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_ssi_2003_134",
           "feed.date": "2003-04-01",
@@ -3346,7 +3346,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_ssi_2003_134",
           "feed.date": "2003-04-01",
@@ -3362,7 +3362,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_ssi_2003_134",
           "feed.date": "2003-04-01",
@@ -3378,7 +3378,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_ssi_2003_134",
           "feed.date": "2003-04-01",
@@ -3394,7 +3394,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_ssi_2003_134",
           "feed.date": "2003-04-01",
@@ -3411,7 +3411,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_ssi_2003_134",
           "feed.date": "2003-04-01",
@@ -3428,7 +3428,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_ssi_2003_134",
           "feed.date": "2003-04-01",
@@ -3445,7 +3445,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_ssi_2003_134",
           "feed.date": "2003-04-01",
@@ -3462,7 +3462,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_ssi_2003_134",
           "feed.date": "2003-04-01",
@@ -3479,7 +3479,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_ssi_2003_134",
           "feed.date": "2003-04-01",
@@ -3496,7 +3496,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_ssi_2003_134",
           "feed.date": "2003-04-01",
@@ -3979,7 +3979,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.by": "UK_ssi_2007_50",
           "feed.date": "2007-02-06",
@@ -3996,7 +3996,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.by": "UK_ssi_2007_50",
           "feed.date": "2007-03-31",
@@ -4013,7 +4013,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.by": "UK_ssi_2007_50",
           "feed.date": "2007-02-06",
@@ -4030,7 +4030,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.by": "UK_ssi_2007_50",
           "feed.date": "2007-03-31",
@@ -4047,7 +4047,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.by": "UK_ssi_2007_50",
           "feed.date": "2007-02-06",
@@ -4064,7 +4064,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.by": "UK_ssi_2007_50",
           "feed.date": "2007-03-31",
@@ -4081,7 +4081,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.by": "UK_ssi_2007_50",
           "feed.date": "2007-02-06",
@@ -4098,7 +4098,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.by": "UK_ssi_2007_50",
           "feed.date": "2007-03-31",
@@ -4156,7 +4156,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)",
+            "reg.2(1)",
             "sch.1"
           ],
           "feed.by": "UK_ssi_2004_404",
@@ -4173,7 +4173,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)",
+            "reg.2(1)",
             "sch.1"
           ],
           "feed.by": "UK_ssi_2004_404",
@@ -4190,7 +4190,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)",
+            "reg.2(1)",
             "sch.1"
           ],
           "feed.by": "UK_ssi_2004_404",
@@ -4231,7 +4231,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)(2)",
+            "reg.2(1)(2)",
             "sch.1"
           ],
           "feed.by": "UK_ssi_2004_404",
@@ -4248,7 +4248,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)(2)",
+            "reg.2(1)(2)",
             "sch.1"
           ],
           "feed.by": "UK_ssi_2004_404",
@@ -4348,7 +4348,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(b)",
+            "reg.3(b)",
             "sch.2"
           ],
           "feed.by": "UK_ssi_2005_492",
@@ -4384,7 +4384,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(d)"
+            "reg.3(d)"
           ],
           "feed.by": "UK_ssi_2005_492",
           "feed.date": "2006-03-26",
@@ -4423,7 +4423,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(b)",
+            "reg.3(b)",
             "sch.2"
           ],
           "feed.by": "UK_ssi_2006_121",
@@ -4440,7 +4440,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(b)",
+            "reg.3(b)",
             "sch.2"
           ],
           "feed.by": "UK_ssi_2006_121",
@@ -4457,7 +4457,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(b)",
+            "reg.3(b)",
             "sch.2"
           ],
           "feed.by": "UK_ssi_2006_121",
@@ -4474,7 +4474,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(b)",
+            "reg.3(b)",
             "sch.2"
           ],
           "feed.by": "UK_ssi_2006_121",
@@ -4493,7 +4493,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2006_1115",
@@ -4512,7 +4512,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2006_1115",
@@ -4796,7 +4796,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2013_97",
@@ -4941,7 +4941,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(3)",
+            "reg.2(3)",
             "sch.3"
           ],
           "feed.by": "UK_ssi_2009_404",
@@ -5192,7 +5192,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(5)"
+            "reg.3(5)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2025_356",
@@ -5207,7 +5207,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(5)"
+            "reg.3(5)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2025_356",
@@ -5287,7 +5287,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2020_140",
@@ -5304,7 +5304,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2020_140",
@@ -5343,7 +5343,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(5)"
+            "reg.3(5)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2025_356",
@@ -5399,7 +5399,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2025_97",
@@ -5416,7 +5416,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2025_97",
@@ -5454,7 +5454,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(3)(a)"
+            "reg.2(3)(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2025_356",
@@ -5495,7 +5495,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.by": "UK_ssi_2014_348",
           "feed.date": "2015-01-01",
@@ -5533,7 +5533,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2013_121",
@@ -5570,7 +5570,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.by": "UK_ssi_2013_51",
           "feed.date": "2013-04-01",
@@ -10567,7 +10567,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.133(2)(a)"
+            "reg.133(2)(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_nisi_2015_2006",
@@ -10648,7 +10648,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.133(2)(b)"
+            "reg.133(2)(b)"
           ],
           "feed.applied": true,
           "feed.by": "UK_nisi_2015_2006",
@@ -11144,7 +11144,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.18(5)(6)"
+            "reg.18(5)(6)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_602",
@@ -11162,7 +11162,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.18(5)(6)"
+            "reg.18(5)(6)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_602",
@@ -11180,7 +11180,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.18(5)(6)"
+            "reg.18(5)(6)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_602",
@@ -13905,7 +13905,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(a)"
+            "reg.3(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2017_432",
@@ -13923,7 +13923,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.9(5)"
+            "reg.9(5)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2014_94",
@@ -13944,7 +13944,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.9(5)"
+            "reg.9(5)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2014_94",
@@ -13965,7 +13965,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.9(5)"
+            "reg.9(5)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2014_94",
@@ -13988,7 +13988,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.8"
+            "reg.8"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2010_147",
@@ -14009,7 +14009,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.8"
+            "reg.8"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2010_147",
@@ -14030,7 +14030,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.8"
+            "reg.8"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2010_147",
@@ -14051,7 +14051,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.8"
+            "reg.8"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2010_147",
@@ -14072,7 +14072,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.8"
+            "reg.8"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2010_147",
@@ -14093,7 +14093,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.8"
+            "reg.8"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2010_147",
@@ -14114,7 +14114,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.8"
+            "reg.8"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2010_147",
@@ -14137,7 +14137,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.6(2)"
+            "reg.6(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2013_116",
@@ -14159,7 +14159,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.9(2)"
+            "reg.9(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2013_116",
@@ -14181,7 +14181,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.28"
+            "reg.28"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2013_116",
@@ -14201,7 +14201,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.28"
+            "reg.28"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2013_116",
@@ -14283,7 +14283,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.12"
+            "reg.12"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2017_432",
@@ -14740,7 +14740,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1994_1901",
@@ -14776,7 +14776,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.9",
+            "reg.9",
             "sch.2"
           ],
           "feed.applied": true,
@@ -14855,7 +14855,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2024_1161",
@@ -14878,7 +14878,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.9",
+            "reg.9",
             "sch.2"
           ],
           "feed.applied": true,
@@ -14901,7 +14901,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.1"
           ],
           "feed.applied": true,
@@ -14934,7 +14934,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2024_1161",
@@ -14976,7 +14976,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.1"
           ],
           "feed.applied": true,
@@ -15029,7 +15029,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.1"
           ],
           "feed.applied": true,
@@ -15128,7 +15128,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4"
+            "reg.4"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2018_644",
@@ -15168,7 +15168,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.1"
           ],
           "feed.applied": true,
@@ -15208,7 +15208,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.1"
           ],
           "feed.applied": true,
@@ -15349,7 +15349,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2012_760",
@@ -15369,7 +15369,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2014_1790",
@@ -15388,7 +15388,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2010_441",
@@ -15452,7 +15452,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.3.para.5"
           ],
           "feed.applied": true,
@@ -15469,7 +15469,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3",
+            "reg.3",
             "sch.3.para.5(a)"
           ],
           "feed.applied": true,
@@ -15489,7 +15489,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.9",
+            "reg.9",
             "sch.2"
           ],
           "feed.applied": true,
@@ -15510,7 +15510,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.9",
+            "reg.9",
             "sch.2"
           ],
           "feed.applied": true,
@@ -15533,7 +15533,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2024_1161",
@@ -15556,7 +15556,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.3.para.5"
           ],
           "feed.applied": true,
@@ -15571,7 +15571,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.3.para.5"
           ],
           "feed.applied": true,
@@ -15626,7 +15626,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1999_1756",
@@ -15661,7 +15661,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.1"
           ],
           "feed.applied": true,
@@ -15931,7 +15931,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(3)",
+            "reg.2(3)",
             "sch.1.pt.1"
           ],
           "feed.applied": true,
@@ -15986,7 +15986,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.1"
           ],
           "feed.applied": true,
@@ -16001,7 +16001,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.1"
           ],
           "feed.applied": true,
@@ -16050,7 +16050,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2000_746",
@@ -16064,7 +16064,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2000_746",
@@ -16078,7 +16078,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2000_746",
@@ -16092,7 +16092,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2000_746",
@@ -16125,7 +16125,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1995_269",
@@ -16139,7 +16139,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1995_269",
@@ -16219,7 +16219,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.1"
           ],
           "feed.applied": true,
@@ -16236,7 +16236,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.9(1)"
+            "reg.9(1)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2018_644",
@@ -16274,7 +16274,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(4)(c)"
+            "reg.4(4)(c)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1999_3426",
@@ -16840,7 +16840,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.9"
+            "reg.9"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2018_1133",
@@ -16964,7 +16964,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.1"
           ],
           "feed.applied": true,
@@ -17166,7 +17166,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.12"
+            "reg.12"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2018_644",
@@ -17259,7 +17259,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.5(1)"
+            "reg.5(1)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1999_677",
@@ -17379,7 +17379,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.1"
           ],
           "feed.applied": true,
@@ -17653,7 +17653,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3",
+            "reg.3",
             "sch.15.para.2(3)"
           ],
           "feed.applied": true,
@@ -17686,7 +17686,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2006_304",
@@ -17707,7 +17707,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(11)(a)"
+            "reg.3(11)(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2002_794",
@@ -17747,7 +17747,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.47"
+            "reg.47"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2024_402",
@@ -17800,7 +17800,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.28(1)(b)(iii)"
+            "reg.28(1)(b)(iii)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2026_264",
@@ -18108,7 +18108,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(a)"
+            "reg.3(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2007_1159",
@@ -18127,7 +18127,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(a)"
+            "reg.3(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2007_1159",
@@ -18228,7 +18228,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2001_2237",
@@ -18244,7 +18244,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2002_3210",
@@ -18318,7 +18318,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.8(6)"
+            "reg.8(6)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2022_328",
@@ -18551,7 +18551,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.10(a)"
+            "reg.10(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2017_251",
@@ -18593,7 +18593,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.6"
+            "reg.6"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2002_1057",
@@ -18609,7 +18609,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)"
+            "reg.2(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_wsi_2007_969",
@@ -18822,7 +18822,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2009_2860",
@@ -19380,7 +19380,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1995_789",
@@ -19413,7 +19413,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1999_2000",
@@ -19595,7 +19595,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4"
+            "reg.4"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2010_1218",
@@ -19615,7 +19615,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2024_1161",
@@ -19888,7 +19888,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.9",
+            "reg.9",
             "sch.2"
           ],
           "feed.applied": true,
@@ -19911,7 +19911,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.9",
+            "reg.9",
             "sch.2"
           ],
           "feed.applied": true,
@@ -19932,7 +19932,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.44(2)"
+            "reg.44(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2024_752",
@@ -19997,7 +19997,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2001_2237",
@@ -20030,7 +20030,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(b)"
+            "reg.3(b)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2007_1159",
@@ -20616,7 +20616,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.15(1)"
+            "reg.15(1)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2018_644",
@@ -20707,7 +20707,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2001_2237",
@@ -20742,7 +20742,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.25(1)(2)(xxiv)"
+            "reg.25(1)(2)(xxiv)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2004_1778",
@@ -21017,7 +21017,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3",
+            "reg.3",
             "sch.2"
           ],
           "feed.applied": false,
@@ -21052,7 +21052,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_878",
@@ -21377,7 +21377,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4"
+            "reg.4"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1995_3098",
@@ -21720,7 +21720,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.1"
           ],
           "feed.applied": true,
@@ -21930,7 +21930,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.3.para.8"
           ],
           "feed.applied": true,
@@ -21967,7 +21967,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.14(5)"
+            "reg.14(5)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2024_752",
@@ -22081,7 +22081,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.16"
+            "reg.16"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2018_644",
@@ -22454,7 +22454,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2007_614",
@@ -22489,7 +22489,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)(b)"
+            "reg.2(1)(b)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2010_723",
@@ -22509,7 +22509,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(9)"
+            "reg.4(9)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2010_723",
@@ -22707,7 +22707,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)"
+            "reg.2(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2026_162",
@@ -22878,7 +22878,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.3.para.7"
           ],
           "feed.applied": true,
@@ -22916,7 +22916,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(a)(c)"
+            "reg.4(a)(c)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2006_446",
@@ -22954,7 +22954,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.6",
+            "reg.6",
             "sch.2"
           ],
           "feed.applied": true,
@@ -23084,7 +23084,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.3.para.7"
           ],
           "feed.applied": true,
@@ -23121,7 +23121,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.1"
           ],
           "feed.applied": true,
@@ -23136,7 +23136,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.1"
           ],
           "feed.applied": true,
@@ -23151,7 +23151,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.1"
           ],
           "feed.applied": true,
@@ -23166,7 +23166,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.1"
           ],
           "feed.applied": true,
@@ -23181,7 +23181,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.1"
           ],
           "feed.applied": true,
@@ -23198,7 +23198,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.48(6)(a)"
+            "reg.48(6)(a)"
           ],
           "feed.applied": false,
           "feed.by": "UK_uksi_2020_1297",
@@ -23219,7 +23219,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.1"
           ],
           "feed.applied": true,
@@ -23234,7 +23234,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.1"
           ],
           "feed.applied": true,
@@ -23339,7 +23339,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_878",
@@ -23355,7 +23355,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2007_517",
@@ -23374,7 +23374,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_878",
@@ -23647,7 +23647,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(9)(b)"
+            "reg.3(9)(b)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_1905",
@@ -24323,7 +24323,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3",
+            "reg.3",
             "sch.2.para.4(2)"
           ],
           "feed.applied": true,
@@ -24408,7 +24408,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.1"
           ],
           "feed.applied": true,
@@ -24484,7 +24484,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.6(a)"
+            "reg.6(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2016_449",
@@ -24547,7 +24547,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.8(4)"
+            "reg.8(4)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2017_126",
@@ -24566,7 +24566,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3",
+            "reg.3",
             "sch.1.para.7"
           ],
           "feed.applied": true,
@@ -24625,7 +24625,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(1)"
+            "reg.3(1)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1999_3089",
@@ -24894,7 +24894,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.6"
+            "reg.6"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2018_1244",
@@ -25044,7 +25044,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.8(3)(9)",
+            "reg.8(3)(9)",
             "sch.4.pt.2"
           ],
           "feed.applied": true,
@@ -25059,7 +25059,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.8(3)(9)",
+            "reg.8(3)(9)",
             "sch.4.pt.2"
           ],
           "feed.applied": true,
@@ -25074,7 +25074,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.8(3)(9)",
+            "reg.8(3)(9)",
             "sch.4.pt.2"
           ],
           "feed.applied": true,
@@ -25089,7 +25089,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.8(3)(9)",
+            "reg.8(3)(9)",
             "sch.4.pt.2"
           ],
           "feed.applied": true,
@@ -25104,7 +25104,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.8(3)(9)",
+            "reg.8(3)(9)",
             "sch.4.pt.2"
           ],
           "feed.applied": true,
@@ -25142,7 +25142,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.8(3)"
+            "reg.8(3)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2017_209",
@@ -25220,7 +25220,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.8(3)"
+            "reg.8(3)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2018_1244",
@@ -25239,7 +25239,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.8(3)"
+            "reg.8(3)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2018_1244",
@@ -25414,7 +25414,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_nisr_2003_346",
@@ -25569,7 +25569,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3",
+            "reg.3",
             "sch.1.para.8"
           ],
           "feed.applied": true,
@@ -25659,7 +25659,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1995_1189",
@@ -25674,7 +25674,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1995_1189",
@@ -26248,7 +26248,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1995_2356",
@@ -26263,7 +26263,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1995_2356",
@@ -26676,7 +26676,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2009_849",
@@ -26777,7 +26777,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1997_2238",
@@ -26909,7 +26909,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1994_2854",
@@ -27032,7 +27032,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(a)"
+            "reg.2(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_2597",
@@ -27053,7 +27053,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.9",
+            "reg.9",
             "sch.1"
           ],
           "feed.applied": true,
@@ -27117,7 +27117,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2009_849",
@@ -32755,7 +32755,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.5(4)(b)"
+            "reg.5(4)(b)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_2148",
@@ -33008,7 +33008,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2009_849",
@@ -33072,7 +33072,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2001_3627",
@@ -33107,7 +33107,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_878",
@@ -33121,7 +33121,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_878",
@@ -33135,7 +33135,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_878",
@@ -33149,7 +33149,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_878",
@@ -33163,7 +33163,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_878",
@@ -33177,7 +33177,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_878",
@@ -33191,7 +33191,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_878",
@@ -33205,7 +33205,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_878",
@@ -33399,7 +33399,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1997_2260",
@@ -33607,7 +33607,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.7(2)"
+            "reg.7(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2024_204",
@@ -33625,7 +33625,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.7(2)"
+            "reg.7(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2024_204",
@@ -33780,7 +33780,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(5)(unpublished)"
+            "reg.2(5)(unpublished)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_1079",
@@ -33817,7 +33817,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.11(6)"
+            "reg.11(6)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1999_2336",
@@ -33851,7 +33851,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2023_1164",
@@ -33927,7 +33927,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2005_721",
@@ -34142,7 +34142,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.9",
+            "reg.9",
             "sch.1"
           ],
           "feed.applied": true,
@@ -34235,7 +34235,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(1)(2)(a)"
+            "reg.4(1)(2)(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2017_611",
@@ -34254,7 +34254,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.53(2)"
+            "reg.53(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_wsi_2026_102",
@@ -34274,7 +34274,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(b)"
+            "reg.2(b)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_2597",
@@ -34377,7 +34377,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.99"
+            "reg.99"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2004_163",
@@ -34418,7 +34418,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.5"
+            "reg.5"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1998_218",
@@ -34618,7 +34618,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1994_2568",
@@ -34634,7 +34634,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -34652,7 +34652,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -34670,7 +34670,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -34688,7 +34688,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -34706,7 +34706,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -34724,7 +34724,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -34742,7 +34742,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -34760,7 +34760,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -34778,7 +34778,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -34796,7 +34796,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -34814,7 +34814,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -34832,7 +34832,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -34850,7 +34850,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -34868,7 +34868,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -34886,7 +34886,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -34904,7 +34904,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -34922,7 +34922,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -34940,7 +34940,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -34958,7 +34958,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -34976,7 +34976,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -34994,7 +34994,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -35012,7 +35012,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -35030,7 +35030,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -35048,7 +35048,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -35066,7 +35066,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -35084,7 +35084,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -35102,7 +35102,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -35120,7 +35120,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -35138,7 +35138,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -35156,7 +35156,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -35174,7 +35174,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -35192,7 +35192,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -35210,7 +35210,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -35228,7 +35228,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -35246,7 +35246,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -35264,7 +35264,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -35282,7 +35282,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -35300,7 +35300,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1309",
@@ -35653,7 +35653,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(1)",
+            "reg.4(1)",
             "sch.2.para.2"
           ],
           "feed.applied": true,
@@ -35683,7 +35683,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)"
+            "reg.2(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2003_287",
@@ -35893,7 +35893,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2009_2972",
@@ -35948,7 +35948,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.75(1)(a)"
+            "reg.75(1)(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2006_1914",
@@ -35969,7 +35969,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4"
+            "reg.4"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_459",
@@ -35989,7 +35989,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(3)(d)"
+            "reg.2(3)(d)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2024_24",
@@ -36009,7 +36009,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2019_958",
@@ -36066,7 +36066,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(3)(a)"
+            "reg.2(3)(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2024_24",
@@ -36255,7 +36255,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_878",
@@ -36479,7 +36479,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(3)(c)"
+            "reg.3(3)(c)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2025_279",
@@ -36496,7 +36496,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(3)(c)"
+            "reg.3(3)(c)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2025_279",
@@ -36605,7 +36605,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_2560",
@@ -36639,7 +36639,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(a)"
+            "reg.2(a)"
           ],
           "feed.by": "UK_ssi_2003_206",
           "feed.date": "2003-04-01",
@@ -36655,7 +36655,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(a)"
+            "reg.2(a)"
           ],
           "feed.by": "UK_ssi_2003_206",
           "feed.date": "2003-04-01",
@@ -36673,7 +36673,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1997_3044",
@@ -36705,7 +36705,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.6"
+            "reg.6"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1821",
@@ -36724,7 +36724,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.6"
+            "reg.6"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1821",
@@ -36784,7 +36784,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.003(addingarts. 4-6toSi1996/3201)"
+            "reg.003(addingarts. 4-6toSi1996/3201)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1997_744",
@@ -36800,7 +36800,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -36818,7 +36818,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -36836,7 +36836,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -36854,7 +36854,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -36872,7 +36872,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -36890,7 +36890,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -36908,7 +36908,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -36926,7 +36926,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -36944,7 +36944,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -36962,7 +36962,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -36980,7 +36980,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -36998,7 +36998,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37016,7 +37016,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37034,7 +37034,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37052,7 +37052,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37070,7 +37070,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37088,7 +37088,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37106,7 +37106,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37124,7 +37124,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37142,7 +37142,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37160,7 +37160,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37178,7 +37178,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37196,7 +37196,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37214,7 +37214,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37232,7 +37232,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37250,7 +37250,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37268,7 +37268,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37286,7 +37286,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37304,7 +37304,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37322,7 +37322,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37340,7 +37340,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37358,7 +37358,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37376,7 +37376,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37394,7 +37394,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37412,7 +37412,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37430,7 +37430,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37448,7 +37448,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37466,7 +37466,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -37484,7 +37484,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)"
+            "reg.4(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_1465",
@@ -38379,7 +38379,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(substituting art. 3(7)"
+            "reg.2(substituting art. 3(7)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1997_744",
@@ -38523,7 +38523,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(3)"
+            "reg.2(3)"
           ],
           "feed.applied": true,
           "feed.by": "UK_wsi_2022_794",
@@ -38541,7 +38541,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(3)"
+            "reg.2(3)"
           ],
           "feed.applied": true,
           "feed.by": "UK_wsi_2022_794",
@@ -38559,7 +38559,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(3)"
+            "reg.2(3)"
           ],
           "feed.applied": true,
           "feed.by": "UK_wsi_2022_794",
@@ -38577,7 +38577,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(3)"
+            "reg.2(3)"
           ],
           "feed.applied": true,
           "feed.by": "UK_wsi_2022_794",
@@ -38595,7 +38595,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(3)"
+            "reg.2(3)"
           ],
           "feed.applied": true,
           "feed.by": "UK_wsi_2022_794",
@@ -38613,7 +38613,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(3)"
+            "reg.2(3)"
           ],
           "feed.applied": true,
           "feed.by": "UK_wsi_2022_794",
@@ -38631,7 +38631,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(3)"
+            "reg.2(3)"
           ],
           "feed.applied": true,
           "feed.by": "UK_wsi_2022_794",
@@ -38649,7 +38649,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(3)"
+            "reg.2(3)"
           ],
           "feed.applied": true,
           "feed.by": "UK_wsi_2022_794",
@@ -38667,7 +38667,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(3)"
+            "reg.2(3)"
           ],
           "feed.applied": true,
           "feed.by": "UK_wsi_2022_794",
@@ -38685,7 +38685,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(3)"
+            "reg.2(3)"
           ],
           "feed.applied": true,
           "feed.by": "UK_wsi_2022_794",
@@ -38705,7 +38705,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4"
+            "reg.4"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2004_2333",
@@ -38932,7 +38932,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)(2)"
+            "reg.2(1)(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1997_618",
@@ -39178,7 +39178,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1999_610",
@@ -39212,7 +39212,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(2)"
+            "reg.3(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1999_120",
@@ -39349,7 +39349,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2010_441",
@@ -39401,7 +39401,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.6"
+            "reg.6"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2015_599",
@@ -41518,7 +41518,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4"
+            "reg.4"
           ],
           "feed.applied": true,
           "feed.by": "UK_nisr_2012_320",
@@ -41537,7 +41537,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.17(3)"
+            "reg.17(3)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2017_100",
@@ -41558,7 +41558,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.5(2)"
+            "reg.5(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2009_256",
@@ -42229,7 +42229,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.6(1)"
+            "reg.6(1)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1999_2908",
@@ -42284,7 +42284,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1998_3092",
@@ -42380,7 +42380,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.5(2)"
+            "reg.5(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2014_1559",
@@ -42437,7 +42437,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3",
+            "reg.3",
             "sch.1"
           ],
           "feed.applied": true,
@@ -42692,7 +42692,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.9",
+            "reg.9",
             "sch.1"
           ],
           "feed.applied": true,
@@ -42930,7 +42930,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(c)"
+            "reg.2(c)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_2597",
@@ -43087,7 +43087,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)"
+            "reg.2(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2012_1023",
@@ -43149,7 +43149,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.1.para.1"
           ],
           "feed.applied": true,
@@ -43354,7 +43354,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.6(b)"
+            "reg.6(b)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2016_449",
@@ -43659,7 +43659,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(4)(5)",
+            "reg.2(4)(5)",
             "sch.2.pt.1"
           ],
           "feed.by": "UK_uksi_2002_2866",
@@ -43678,7 +43678,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(4)(5)",
+            "reg.2(4)(5)",
             "sch.2.pt.1"
           ],
           "feed.by": "UK_uksi_2002_2866",
@@ -43776,7 +43776,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.9"
+            "reg.9"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2023_1185",
@@ -43833,7 +43833,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_uksi_2003_1397",
           "feed.date": "2003-06-20",
@@ -43851,7 +43851,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(1)"
+            "reg.2(1)"
           ],
           "feed.by": "UK_uksi_2003_1397",
           "feed.date": "2003-06-20",
@@ -43909,7 +43909,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_783",
@@ -44123,7 +44123,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2003_2899",
@@ -44463,7 +44463,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4"
+            "reg.4"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2004_307",
@@ -44655,7 +44655,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.7"
+            "reg.7"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2017_251",
@@ -44693,7 +44693,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.13(3)"
+            "reg.13(3)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_806",
@@ -44712,7 +44712,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(l)(iv)(aa)"
+            "reg.2(l)(iv)(aa)"
           ],
           "feed.by": "UK_uksi_2005_2714",
           "feed.date": "2005-10-01",
@@ -44730,7 +44730,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(1)(c)"
+            "reg.3(1)(c)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2007_1021",
@@ -45601,7 +45601,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.1(1)",
+            "reg.1(1)",
             "sch.1.para.13"
           ],
           "feed.by": "UK_uksi_2006_1407",
@@ -45622,7 +45622,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(1)(3)"
+            "reg.3(1)(3)"
           ],
           "feed.by": "UK_uksi_2004_759",
           "feed.date": "2004-04-01",
@@ -45638,7 +45638,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(1)(3)"
+            "reg.3(1)(3)"
           ],
           "feed.by": "UK_uksi_2004_759",
           "feed.date": "2006-04-01",
@@ -45654,7 +45654,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(1)(3)"
+            "reg.3(1)(3)"
           ],
           "feed.by": "UK_uksi_2004_759",
           "feed.date": "2007-04-01",
@@ -45670,7 +45670,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(1)(3)"
+            "reg.3(1)(3)"
           ],
           "feed.by": "UK_uksi_2004_759",
           "feed.date": "2008-04-01",
@@ -45688,7 +45688,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.5"
+            "reg.5"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2014_600",
@@ -45801,7 +45801,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.by": "UK_uksi_2004_2304",
           "feed.date": "2004-09-07",
@@ -45820,7 +45820,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.by": "UK_uksi_2004_2304",
           "feed.date": "2004-10-01",
@@ -46004,7 +46004,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.by": "UK_uksi_2020_357",
           "feed.date": "2020-03-27",
@@ -46061,7 +46061,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2007_1419",
@@ -46077,7 +46077,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2007_1419",
@@ -46095,7 +46095,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4"
+            "reg.4"
           ],
           "feed.by": "UK_uksi_2006_3125",
           "feed.date": "2007-01-29",
@@ -46113,7 +46113,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.5(b)"
+            "reg.5(b)"
           ],
           "feed.by": "UK_uksi_2006_2603",
           "feed.date": "2006-10-01",
@@ -46188,7 +46188,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(3)"
+            "reg.2(3)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_290",
@@ -46208,7 +46208,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)(a)"
+            "reg.2(2)(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_290",
@@ -46286,7 +46286,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.1"
           ],
           "feed.applied": true,
@@ -46496,7 +46496,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)"
+            "reg.2(2)"
           ],
           "feed.by": "UK_uksi_2007_2194",
           "feed.date": "2007-10-01",
@@ -46518,7 +46518,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)"
+            "reg.2(2)"
           ],
           "feed.by": "UK_uksi_2007_2194",
           "feed.date": "2007-11-01",
@@ -46540,7 +46540,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)"
+            "reg.2(2)"
           ],
           "feed.by": "UK_uksi_2007_2194",
           "feed.date": "2008-10-01",
@@ -46563,7 +46563,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.7"
+            "reg.7"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2012_1741",
@@ -46625,7 +46625,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)"
+            "reg.2(2)"
           ],
           "feed.by": "UK_uksi_2007_2194",
           "feed.date": "2007-10-01",
@@ -46647,7 +46647,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)"
+            "reg.2(2)"
           ],
           "feed.by": "UK_uksi_2007_2194",
           "feed.date": "2007-11-01",
@@ -46777,7 +46777,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2009_1802",
@@ -46923,7 +46923,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)(a)"
+            "reg.2(2)(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2025_365",
@@ -46987,7 +46987,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.by": "UK_uksi_2008_568",
           "feed.date": "2008-04-01",
@@ -47005,7 +47005,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.by": "UK_uksi_2008_568",
           "feed.date": "2008-07-01",
@@ -47023,7 +47023,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.by": "UK_uksi_2008_568",
           "feed.date": "2009-01-01",
@@ -47041,7 +47041,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.by": "UK_uksi_2008_568",
           "feed.date": "2009-04-01",
@@ -47061,7 +47061,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2008_1521",
@@ -47133,7 +47133,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.17"
+            "reg.17"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2015_776",
@@ -47154,7 +47154,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(1)"
+            "reg.3(1)"
           ],
           "feed.by": "UK_uksi_2008_2358",
           "feed.date": "2008-09-08",
@@ -47209,7 +47209,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.10(5)",
+            "reg.10(5)",
             "sch.2.pt.1"
           ],
           "feed.applied": true,
@@ -47249,7 +47249,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(a)"
+            "reg.2(a)"
           ],
           "feed.by": "UK_uksi_2013_1204",
           "feed.date": "2013-06-28",
@@ -47626,7 +47626,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(c)"
+            "reg.2(c)"
           ],
           "feed.by": "UK_wsi_2016_79",
           "feed.date": "2016-04-01",
@@ -47645,7 +47645,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1051",
@@ -47662,7 +47662,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1051",
@@ -47681,7 +47681,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.12(9)"
+            "reg.12(9)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2018_648",
@@ -47700,7 +47700,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.26(6)"
+            "reg.26(6)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2023_1432",
@@ -47720,7 +47720,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.12",
+            "reg.12",
             "sch.3"
           ],
           "feed.applied": true,
@@ -47761,7 +47761,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)(e)"
+            "reg.4(2)(e)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2025_611",
@@ -47779,7 +47779,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)(e)"
+            "reg.4(2)(e)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2025_611",
@@ -47819,7 +47819,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(a)"
+            "reg.3(a)"
           ],
           "feed.by": "UK_uksi_2013_77",
           "feed.date": "2013-04-01",
@@ -47839,7 +47839,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.by": "UK_uksi_2017_525",
           "feed.date": "2017-05-01",
@@ -47944,7 +47944,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)"
+            "reg.2(2)"
           ],
           "feed.by": "UK_uksi_2013_671",
           "feed.date": "2013-04-01",
@@ -47960,7 +47960,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)"
+            "reg.2(2)"
           ],
           "feed.by": "UK_uksi_2013_671",
           "feed.date": "2013-04-01",
@@ -47976,7 +47976,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)"
+            "reg.2(2)"
           ],
           "feed.by": "UK_uksi_2013_671",
           "feed.date": "2013-04-01",
@@ -47993,7 +47993,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)"
+            "reg.2(2)"
           ],
           "feed.by": "UK_uksi_2013_671",
           "feed.date": "2013-04-01",
@@ -48010,7 +48010,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)"
+            "reg.2(2)"
           ],
           "feed.by": "UK_uksi_2013_671",
           "feed.date": "2013-04-01",
@@ -48027,7 +48027,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)"
+            "reg.2(2)"
           ],
           "feed.by": "UK_uksi_2013_671",
           "feed.date": "2013-04-01",
@@ -48044,7 +48044,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)"
+            "reg.2(2)"
           ],
           "feed.by": "UK_uksi_2013_671",
           "feed.date": "2013-04-01",
@@ -48061,7 +48061,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)"
+            "reg.2(2)"
           ],
           "feed.by": "UK_uksi_2013_671",
           "feed.date": "2013-04-01",
@@ -48078,7 +48078,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)"
+            "reg.2(2)"
           ],
           "feed.by": "UK_uksi_2013_671",
           "feed.date": "2013-04-01",
@@ -48097,7 +48097,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2016_682",
@@ -48116,7 +48116,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": false,
           "feed.by": "UK_uksi_2013_1813",
@@ -48132,7 +48132,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2018_357",
@@ -48150,7 +48150,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2014_956",
@@ -48188,7 +48188,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.by": "UK_uksi_2017_236",
           "feed.date": "2017-03-13",
@@ -48209,7 +48209,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": false,
           "feed.by": "UK_uksi_2015_1558",
@@ -48225,7 +48225,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2014_824",
@@ -48260,7 +48260,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": false,
           "feed.by": "UK_uksi_2014_2928",
@@ -48279,7 +48279,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(2)"
+            "reg.3(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2026_98",
@@ -48298,7 +48298,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2014_1042",
@@ -48334,7 +48334,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.8(a)"
+            "reg.8(a)"
           ],
           "feed.by": "UK_uksi_2014_1640",
           "feed.date": "2015-03-15",
@@ -48354,7 +48354,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": false,
           "feed.by": "UK_uksi_2015_1619",
@@ -48389,7 +48389,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": false,
           "feed.by": "UK_uksi_2014_2270",
@@ -48565,7 +48565,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_940",
@@ -48586,7 +48586,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.9(3)(a)(4)"
+            "reg.9(3)(a)(4)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2023_424",
@@ -48607,7 +48607,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_940",
@@ -48628,7 +48628,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_530",
@@ -49100,7 +49100,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_nisr_2022_24",
@@ -49119,7 +49119,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_nisr_2026_161",
@@ -49219,7 +49219,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_nisr_2023_140",
@@ -49238,7 +49238,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_nisr_2026_161",
@@ -49278,7 +49278,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_nisr_2022_160",
@@ -49476,7 +49476,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2025_135",
@@ -49533,7 +49533,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3"
+            "reg.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2025_135",
@@ -49554,7 +49554,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2"
+            "reg.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2025_135",
@@ -50372,7 +50372,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.8(a)(i)"
+            "reg.8(a)(i)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1997_3060",
@@ -50392,7 +50392,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)(e)(i)"
+            "reg.2(2)(e)(i)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2012_285",
@@ -50414,7 +50414,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.5(b)(ii)"
+            "reg.5(b)(ii)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ssi_2023_35",
@@ -50891,7 +50891,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2",
+            "reg.2",
             "sch.1"
           ],
           "feed.applied": false,
@@ -51250,7 +51250,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.34",
+            "reg.34",
             "sch.4"
           ],
           "feed.applied": false,
@@ -51310,7 +51310,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.1(2)"
+            "reg.1(2)"
           ],
           "feed.by": "UK_uksi_2003_1998",
           "feed.date": "2003-08-25",
@@ -51393,7 +51393,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)"
+            "reg.2(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2018_454",
@@ -51413,7 +51413,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.2(2)"
+            "reg.2(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2018_454",
@@ -51638,7 +51638,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.8"
+            "reg.8"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2024_634",
@@ -51658,7 +51658,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.13(7)"
+            "reg.13(7)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1420",
@@ -51678,7 +51678,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.13(7)"
+            "reg.13(7)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_1420",
@@ -51700,7 +51700,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.6(b)"
+            "reg.6(b)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2024_634",
@@ -51719,7 +51719,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.6(b)"
+            "reg.6(b)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2024_634",
@@ -51738,7 +51738,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.6(b)"
+            "reg.6(b)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2024_634",
@@ -52693,7 +52693,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.16(2)(e)"
+            "reg.16(2)(e)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2018_1380",
@@ -52713,7 +52713,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(2)"
+            "reg.3(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_957",
@@ -53083,7 +53083,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.10(2)(a)(i)(bb)"
+            "reg.10(2)(a)(i)(bb)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2023_1279",
@@ -53103,7 +53103,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.8(3)(a)"
+            "reg.8(3)(a)"
           ],
           "feed.applied": false,
           "feed.by": "UK_uksi_2026_1056",
@@ -53123,7 +53123,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)(b)"
+            "reg.4(2)(b)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2022_278",
@@ -53141,7 +53141,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(2)(b)"
+            "reg.4(2)(b)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2022_278",
@@ -53161,7 +53161,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(5)(e)"
+            "reg.4(5)(e)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_755",
@@ -53182,7 +53182,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.9(5)(c)"
+            "reg.9(5)(c)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_428",
@@ -53204,7 +53204,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(3)(a)"
+            "reg.4(3)(a)"
           ],
           "feed.applied": false,
           "feed.by": "UK_uksi_2026_1056",
@@ -53226,7 +53226,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.5(5)(a)(i)"
+            "reg.5(5)(a)(i)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2021_814",
@@ -53247,7 +53247,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(4)(a)"
+            "reg.4(4)(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2025_560",
@@ -53268,7 +53268,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.3(2)(b)"
+            "reg.3(2)(b)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2023_747",
@@ -53290,7 +53290,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(3)(a)"
+            "reg.4(3)(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2025_560",
@@ -53311,7 +53311,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(4)(a)"
+            "reg.4(4)(a)"
           ],
           "feed.applied": false,
           "feed.by": "UK_uksi_2026_1056",
@@ -53333,7 +53333,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4(1)(b)(i)"
+            "reg.4(1)(b)(i)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2026_896",
@@ -53570,7 +53570,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.46(1)(a)"
+            "reg.46(1)(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2017_1112",
@@ -53634,7 +53634,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.45(a)"
+            "reg.45(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2017_1112",
@@ -53785,7 +53785,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.45(2)"
+            "reg.45(2)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2024_1366",
@@ -53804,7 +53804,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.13(7)"
+            "reg.13(7)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2022_1173",
@@ -53822,7 +53822,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.13(7)"
+            "reg.13(7)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2022_1173",
@@ -53842,7 +53842,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.7(2)(b)"
+            "reg.7(2)(b)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2022_454",
@@ -53861,7 +53861,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.7(2)(b)"
+            "reg.7(2)(b)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2022_454",
@@ -53880,7 +53880,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.7(2)(b)"
+            "reg.7(2)(b)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2022_454",
@@ -54017,7 +54017,7 @@
       {
         "claims": {
           "feed.affecting": [
-            "art.4"
+            "reg.4"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2022_1050",

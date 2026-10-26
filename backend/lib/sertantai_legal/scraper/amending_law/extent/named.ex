@@ -28,12 +28,30 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Named do
         do: {named_kind(m), Places.places(m["places"]), refs}
   end
 
-  # a description in brackets names no provision of the law ("paragraph 25
-  # (amendment to section 24A of the Nuclear Installations Act 1965 …)":
-  # Energy Act 2013 s.155(5)(a), CV-S05 NEW-C); a number in brackets is
-  # kept ("section 73(2)")
-  defp described_out(subj),
-    do: String.replace(subj, ~r/\((?=[^()]*\s)(?:[^()]|\([^()]*\))*\)/u, " ")
+  @doc """
+  A subject without what describes it: a bracket that describes
+  ("paragraph 25 (amendment to section 24A of the Nuclear Installations
+  Act 1965 …)": Energy Act 2013 s.155(5)(a), CV-S05 NEW-C; "Section 114
+  (power … under section 113)") or an "as amended by" aside ("Paragraphs
+  9A, 9C and 10, as amended by the preceding provisions of this section,
+  extend to …" are another Act's: ukpga 2013/22 s.27(13), round 7 NEW-1).
+  A number in brackets is kept ("section 73(2)"), and so is a bracket
+  naming provisions too ("Section 82 above (with Schedule 9)", "(and
+  sections 236 and 243, this section and section 245)": round 8).
+  """
+  @spec described_out(String.t()) :: String.t()
+  def described_out(subj) do
+    ~r/\((?=[^()]*\s)((?:[^()]|\([^()]*\))*)\)/u
+    |> Regex.replace(subj, fn _, inner ->
+      # (never a qualified one: "(and article 27 in so far as it relates to
+      # those paragraphs)", SI 2013/602 art.1(8))
+      if inner =~ ~r/^\s*(?:and|with|including|together\s+with)\b/iu and
+           not (inner =~ ~r/\b(?:so\s+far|in\s*so\s*far|insofar|to\s+the\s+extent)\b/iu),
+         do: " " <> inner <> " ",
+         else: " "
+    end)
+    |> String.replace(~r/,?\s*as\s+(?:amended|inserted|substituted)\s+by\b[^,]*,?/iu, " ")
+  end
 
   # read only as plainly stated: never another law's provisions ("… of that
   # Act shall continue to extend", "… the 1989 Act shall cease to extend"),

@@ -2689,11 +2689,6 @@
     "ref": "s.35",
     "sentence": "Sections 1 to 4, 9 to 31 and Schedule 1 extend to England and Wales only."
   },
-  "UK_ukpga_1997_42/be00146944": {
-    "law": "UK_ukpga_1997_42",
-    "ref": "s.9",
-    "sentence": "Section 7 extends to Northern Ireland, but the other provisions of this Act do not extend to Northern Ireland."
-  },
   "UK_ukpga_1997_50/0f0da52746": {
     "law": "UK_ukpga_1997_50",
     "ref": "s.137",
@@ -4309,6 +4304,11 @@
     "ref": "s.140",
     "sentence": "Section 126(3) and (4), so far as relating to paragraphs 5, 56 to 62 and 64 of Schedule 7, extends to Northern Ireland."
   },
+  "UK_ukpga_2015_15/4de148cd1b": {
+    "law": "UK_ukpga_2015_15",
+    "ref": "s.99",
+    "sentence": "Chapter 3 of this Part extends only to England and Wales."
+  },
   "UK_ukpga_2015_2/056d3b73da": {
     "law": "UK_ukpga_2015_2",
     "ref": "s.96",
@@ -5669,10 +5669,10 @@
     "ref": "reg.1",
     "sentence": "The modifications specified in paragraphs 65, 66, 73, 74(2) and 76 of Schedule 2 (and article 26 in so far as it relates to those modifications) extend to Scotland only."
   },
-  "UK_uksi_2013_602/850aa5db49": {
+  "UK_uksi_2013_602/85c3856dad": {
     "law": "UK_uksi_2013_602",
     "ref": "reg.1",
-    "sentence": "— a paragraphs 1 to 11 and 13 to 18 (and article 27 in so far as it relates to those paragraphs) have the same extent as the provisions to which they relate; and b paragraphs 12 and 19 (and article 27 in so far as it relates to those paragraphs) extend to Scotland only."
+    "sentence": "— a paragraphs 1 to 11 and 13 to 18 of Schedule 3 (and article 27 in so far as it relates to those paragraphs) have the same extent as the provisions to which they relate; and b paragraphs 12 and 19 of Schedule 3 (and article 27 in so far as it relates to those paragraphs) extend to Scotland only."
   },
   "UK_uksi_2013_602/b85075cc96": {
     "law": "UK_uksi_2013_602",
@@ -5783,6 +5783,11 @@
     "law": "UK_uksi_2016_1142",
     "ref": "reg.1",
     "sentence": "Part 3 of the Schedule extends to England and Wales only."
+  },
+  "UK_uksi_2016_1142/f9009d720b": {
+    "law": "UK_uksi_2016_1142",
+    "ref": "reg.1",
+    "sentence": "This article, articles 6(4) and (5) and 7 and Part 1 of the Schedule extend to England and Wales, Scotland and Northern Ireland."
   },
   "UK_uksi_2016_618/c0323f7c45": {
     "law": "UK_uksi_2016_618",
@@ -6003,6 +6008,11 @@
     "law": "UK_uksi_2020_41",
     "ref": "reg.1",
     "sentence": "These Regulations extend to England and Wales but apply to England only."
+  },
+  "UK_uksi_2020_904/3056102843": {
+    "law": "UK_uksi_2020_904",
+    "ref": "reg.1",
+    "sentence": "An amendment made by Part 2 has the same extent as the provision amended, except regulations 4 and 5(3), which have the extent stated in those regulations."
   },
   "UK_uksi_2020_971/118ee15a58": {
     "law": "UK_uksi_2020_971",

@@ -26,7 +26,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Forms do
   # Ireland—"; "of these Regulations", "of this Order": CV-S05 N4, N11)
   # (also "The following provisions of Part II do not extend to Northern
   # Ireland— …": a `:not` list, CV-S05 A)
-  @heading ~r/The following (?:provisions (?:of (?:this (?:Act|Part|Order)|these Regulations|Part [IVXLC\d]+[A-Z]*(?: of this Act)?) )?)?(?:,?\s*and no others,\s*)?(?:shall\s+)?(?:(?:also\s+)?extend(?:s)? (also )?to (#{@place_list})( only)?|(?:do|does|shall) not extend to (#{@place_list})|ha(?:s|ve) the same extent as the enactments? to which (?:it|they) relates?)(?:\s*[—–:-]|,?\s+(?:namely|that\s+is\s+to\s+say)\b[,:—–]?)/iu
+  # (also "This section and the following provisions … also extend to
+  # England and Wales—": ukpga 1993/9 s.48, round 8 — the provision too)
+  @heading ~r/(?:This\s+(?:section|article|regulation)\s+and\s+)?The following (?:provisions (?:of (?:this (?:Act|Part|Order)|these Regulations|Part [IVXLC\d]+[A-Z]*(?: of this Act)?) )?)?(?:,?\s*and no others,\s*)?(?:shall\s+)?(?:(?:also\s+)?extend(?:s)? (also )?to (#{@place_list})( only)?|(?:do|does|shall) not extend to (#{@place_list})|ha(?:s|ve) the same extent as the enactments? to which (?:it|they) relates?)(?:\s*[—–:-]|,?\s+(?:namely|that\s+is\s+to\s+say)\b[,:—–]?)/iu
   @extends Regex.compile!(
              # (", which subject to subsections (8) to (10) below extends to
              # Scotland only— (a) may be cited as …": the dash lists what the
@@ -110,9 +112,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Forms do
                   )
   # "Where any enactment amended or repealed by this Act extends to any part
   # of the United Kingdom, the amendment or repeal extends to that part"
-  # (EPA 1990 s.164(5)): every amendment the law makes has the enactment's
-  # extent
-  @amendments_where ~r/^(?:\(\w+\)\s*)?Where\s+any\s+enactment\s+amended(?:\s+or\s+repealed)?\s+by\s+this\s+(?:Act|Order)\s+extends\s+to\s+any\s+part\s+of\s+the\s+United\s+Kingdom,\s+the\s+amendment(?:\s+or\s+repeal)?\s+extends\s+to\s+that\s+part\b/iu
+  # (EPA 1990 s.164(5); also "repealed or amended … the repeal or
+  # amendment": ukpga 1986/50 s.87(5), round 8): every amendment the law
+  # makes has the enactment's extent
+  @amendments_where ~r/^(?:\(\w+\)\s*)?Where\s+any\s+enactment\s+(?:amended(?:\s+or\s+repealed)?|repealed\s+or\s+amended)\s+by\s+this\s+(?:Act|Order)\s+extends\s+to\s+any\s+part\s+of\s+the\s+United\s+Kingdom,\s+the\s+(?:amendment(?:\s+or\s+repeal)?|repeal\s+or\s+amendment)\s+extends\s+to\s+that\s+part\b/iu
 
   # "This Act, except— (a) …; and (b) …, does not extend to Northern Ireland"
   # (also "This Act, except this section and the following provisions,

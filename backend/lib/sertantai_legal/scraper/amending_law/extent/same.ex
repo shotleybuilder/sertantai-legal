@@ -80,6 +80,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Same do
   @also_there ~r/^(?:\(\w+\)\s*)?The\s+(?:amendments?|repeals?|revocations?)\b[^.]*?\bby\s+this\s+(?:Act|Order|Regulations)\s+of\s+any\s+enactments?\s+extending\s+to\s+[^.]*?\balso\s+extends?\s+there\b/iu
   @also_any_place ~r/^(?:\(\w+\)\s*)?(?<subj>(?:Sections?|Regulations?|Articles?|Schedules?|Parts?)\s+[\dIVXL][^.;]*?)\s+also\s+extends?\s+to\s+any\s+place\s*(?<except>\(\s*except[^)]*\))?\s+to\s+which\s+the\s+enactments?\b/iu
 
+  @doc "The `@named_same` form: \"Sections 240 and 242 have the same extent as the provisions amended\"."
+  @spec named_same() :: Regex.t()
+  def named_same, do: @named_same
+
   @doc "Whether a sentence says amendments \"also extend there\" (`@also_there`, `@also_any_place`)."
   @spec also_there?(String.t()) :: boolean()
   def also_there?(s), do: Regex.match?(@also_there, s) or Regex.match?(@also_any_place, s)

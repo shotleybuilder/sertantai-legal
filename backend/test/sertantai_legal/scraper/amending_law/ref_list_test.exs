@@ -39,4 +39,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefListTest do
 
     assert RefList.parse("regulation 4(a) to (c)") == ["reg.4(a)", "reg.4(b)", "reg.4(c)"]
   end
+
+  test "\"this article\", \"This Regulation\": the provision's own (CV-S05 round 8)" do
+    assert RefList.parse("This article, articles 6(4) and (5) and 7", "reg.1") ==
+             ["reg.1", "reg.6(4)", "reg.6(5)", "reg.7"]
+
+    assert RefList.parse("This Regulation, Regulation 2 and Regulations 8 to 11", "reg.1") ==
+             ["reg.1", "reg.2", "reg.8..reg.11"]
+  end
 end

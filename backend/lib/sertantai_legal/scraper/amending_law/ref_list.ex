@@ -11,7 +11,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
   A range is "s.a..s.b"; `covers?/2` tests a ref against an item. Pure.
   """
 
-  @doc "The refs a list names; `self` is \"this section\"'s ref."
+  @doc "The refs a list names; `self` is \"this section\"'s (\"this article\", …) ref."
   @spec parse(String.t(), String.t() | nil) :: [String.t()]
   def parse(text, self \\ nil) do
     text
@@ -22,7 +22,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
       " "
     )
     |> String.split(
-      ~r/(?:^|[,;]|\s)\s*(?:and\s+)?(?=\b(?:this section|(?<!this\s)(?:sections?|regulations?|articles?|rules?)|(?<!of\s)Schedules?|Parts?\s+[\dIVXL]+[A-Z]*(?:\s*(?:,|and)\s*[\dIVXL]+[A-Z]*)*\s+of\s+Schedule|paragraphs?\s+[^;]*?\bof\s+Schedule)\b)/iu,
+      ~r/(?:^|[,;]|\s)\s*(?:and\s+)?(?=\b(?:this\s+(?:section|article|regulation|rule)\b|(?<!this\s)(?:sections?|regulations?|articles?|rules?)|(?<!of\s)Schedules?|Parts?\s+[\dIVXL]+[A-Z]*(?:\s*(?:,|and)\s*[\dIVXL]+[A-Z]*)*\s+of\s+Schedule|paragraphs?\s+[^;]*?\bof\s+Schedule)\b)/iu,
       trim: true
     )
     |> Enum.flat_map(&items(&1, self))
@@ -32,7 +32,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
 
   defp items(chunk, self) do
     cond do
-      chunk =~ ~r/^\s*this section/i ->
+      # (an Order's "this article", "This Regulation": SI 2010/708, 1999/1925)
+      chunk =~ ~r/^\s*this\s+(?:section|article|regulation|rule)\b/i ->
         [self]
 
       # "Parts 4 and 5 of Schedule 13" (CV-S05 N12)

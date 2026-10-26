@@ -15,6 +15,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lists do
   @type list_entry :: {atom(), String.t() | nil, [String.t()]}
 
   @place_list Places.place_list()
+  # a qualified aside: with the number it qualifies ("370 (so far as
+  # relating to section 374)"), or alone where it adds one ("Schedule 2
+  # (and article 26 so far as relating to it)")
+  @qualified_aside ~r/(?:\b\d+[A-Z]*(?:\(\w+\))*\s*(?=\(\s*(?:so\s+far|in\s+so\s+far|insofar|to\s+the\s+extent)\b))?\([^()]*\b(?:so\s+far|in\s+so\s+far|insofar|to\s+the\s+extent)\b[^()]*\)/iu
 
   # "… apart from sections 82 and 83, does not extend to Northern
   # Ireland": those extend there too
@@ -150,7 +154,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lists do
         match ->
           {body, excepted} = item_exceptions(own_list(cut(body)), clause_ref, doc)
 
-          case list_refs(body, clause_ref, doc) do
+          self = if head =~ ~r/^\s*This\s+\w+\s+and\b/iu, do: [clause_ref], else: []
+
+          case self ++ list_refs(body, clause_ref, doc) do
             [] ->
               []
 
@@ -213,11 +219,24 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lists do
   # of it, "Chapter 1 of Part 3 (except section 84)": CV-S05 NEW-A)
   defp list_refs(text, clause_ref, doc) do
     for item <-
-          String.split(
-            text |> Parts.qualify_chapters() |> Units.no_dots(),
+          text
+          |> Parts.qualify_chapters()
+          |> Units.no_dots()
+          |> String.split(
             ~r/;|,\s*(?=(?:and\s+)?(?:[a-z]|[ivx]{2,4})\s)|,\s*(?=(?:and\s+)?(?:sections?|subsections?|Schedules?|in\s+Schedule|Parts?|paragraphs?\s+[^,;]*?\bof\s+Schedule|regulations?|articles?)\b)/u
-          ),
+          )
+          |> own_items(),
+        # (a qualified aside is no part of the item, nor what it qualifies:
+        # "370 (so far as relating to section 374), 374": 1975/21
+        # s.463(1)(b), round 7 NEW-2)
+        item = String.replace(item, @qualified_aside, " "),
         {item, minus} = bracketed_except(item, clause_ref),
+        # (a locator is no item: "and in section 47, subsection (1) in so
+        # far as …": ukpga 1993/9 s.48, round 8)
+        not Regex.match?(
+          ~r/^\s*(?:and\s+)?in\s+(?:section|regulation|article)\s+\S+\s*$/iu,
+          item
+        ),
         not Regex.match?(
           # (a description is some of a Chapter, never all: "the service
           # courts provisions of Chapter 2 of Part 3", CJA 2009 s.181(2)(b))
@@ -228,6 +247,25 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lists do
         ref not in minus,
         uniq: true,
         do: ref
+  end
+
+  # the items, without one qualified by a sub-list of what it relates to
+  # and that sub-list ("d in Schedule 9, the amendments relating to— i …;
+  # ii the Criminal Justice Act 1961; …": 1975/21 s.463(1)(d), (e), round
+  # 7 NEW-2; its sub-items named another Act's sections)
+  defp own_items(items) do
+    items
+    |> Enum.map_reduce(false, fn item, skipping ->
+      sub? = item =~ ~r/^\s*(?:and\s*)?[ivx]{1,4}\s/u
+
+      cond do
+        item =~ ~r/\brelating\s+to\s*[—–]/u -> {nil, true}
+        skipping and sub? -> {nil, true}
+        true -> {item, false}
+      end
+    end)
+    |> elem(0)
+    |> Enum.reject(&is_nil/1)
   end
 
   # an item's own exceptions, a sub-list ("c Part 5 and its related

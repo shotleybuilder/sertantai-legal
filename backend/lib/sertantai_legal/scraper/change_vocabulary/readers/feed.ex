@@ -21,6 +21,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Claim, EffectVerb, Qualification}
   alias SertantaiLegal.Scraper.AmendingLaw
   alias SertantaiLegal.Scraper.ChangeVocabulary.Ref
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.FeedAffecting
   alias SertantaiLegal.Scraper.Commencement.{Evaluator, Order}
   alias SertantaiLegal.Scraper.EffectTarget
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
@@ -128,7 +129,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   # the amending provisions the feed names ("s. 29(4)" → ["s.29(4)"]): was
   # the amending law's text read there? (`Conflicts`)
   defp affecting(%Effect{affecting_provisions: text, effect_id: id}) do
-    case affecting_refs(text) do
+    case FeedAffecting.refs(text) do
       [] -> []
       refs -> Claim.new(:feed, :affecting, refs, id)
     end
@@ -146,7 +147,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
     with :commenced <- value(claims, :operation),
          %Date{} = date <- value(claims, :date),
          [_ | _] = rules <- Map.get(commencement, law, []),
-         ref when ref != nil <- affecting_ref(e.affecting_provisions),
+         ref when ref != nil <- FeedAffecting.ref(e.affecting_provisions),
          text = Enum.reject(rules, &(&1.treatment in @not_text)),
          ctx = Map.put(Order.context(), :extent, e.affecting_territory),
          %{entries: entries} <- Evaluator.evaluate(text, ref, ctx),
@@ -168,7 +169,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
         bound =
           with false <-
                  AmendingLaw.Extent.competence_only?(e) and value(claims, :operation) == :inserted,
-               [_ | _] = refs <- affecting_refs(text),
+               [_ | _] = refs <- FeedAffecting.refs(text),
                code when is_binary(code) <- AmendingLaw.Extent.of_change(e, refs) do
             Claim.new(:law_text, :extent, code, id)
           else
@@ -183,7 +184,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
           Claim.new(
             :law_text,
             :territory,
-            AmendingLaw.Extent.application_at(e, affecting_refs(text)),
+            AmendingLaw.Extent.application_at(e, FeedAffecting.refs(text)),
             id
           )
 
@@ -192,48 +193,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
     end
   end
 
-  # "Sch. 7 para. 27(2) Sch. 17 Pt. 2" → ["sch.7.para.27(2)", "sch.17.pt.2"];
-  # "s. 111, Sch. 7" → ["s.111", "sch.7"]
-  defp affecting_refs(nil), do: []
-
-  defp affecting_refs(text) do
-    Regex.scan(
-      ~r/\b(?:Sch\.\s*(\d+[A-Z]*)(?:\s+Pt\.\s*(\d+[A-Z]*))?(?:\s+para\.\s*(\d+[A-Z]*(?:\([^)]+\))*))?|(s|reg|art)\.\s*(\d+[A-Z]*(?:\([^)]+\))*))/u,
-      text
-    )
-    |> Enum.map(fn
-      [_, sch, "", ""] -> "sch.#{sch}"
-      [_, sch, pt, ""] -> "sch.#{sch}.pt.#{pt}"
-      [_, sch, "", para] -> "sch.#{sch}.para.#{para}"
-      [_, sch, _pt, para] -> "sch.#{sch}.para.#{para}"
-      [_, "", "", "", kind, n] -> "#{kind}.#{n}"
-      [_, sch] -> "sch.#{sch}"
-      [_, sch, pt] -> "sch.#{sch}.pt.#{pt}"
-      _ -> nil
-    end)
-    |> Enum.reject(&is_nil/1)
-  end
-
   defp value(claims, attribute),
     do: Enum.find_value(claims, &(&1.attribute == attribute && &1.value))
-
-  # "s. 47(1)" → "s.47(1)"; "Sch. 5 para. 3" → "sch.5.para.3"; nil for other forms
-  defp affecting_ref(nil), do: nil
-
-  defp affecting_ref(text) do
-    cond do
-      m = Regex.run(~r/^\s*(s|reg|art)\.\s*(\d+[A-Z]*(?:\([^)]+\))*)\s*$/, text) ->
-        [_, kind, rest] = m
-        "#{kind}.#{rest}"
-
-      m = Regex.run(~r/^\s*Sch\.\s*(\d+[A-Z]*)\s+para\.\s*(\d+[A-Z]*(?:\([^)]+\))*)\s*$/, text) ->
-        [_, sch, para] = m
-        "sch.#{sch}.para.#{para}"
-
-      true ->
-        nil
-    end
-  end
 
   # a commencement is one change per dated in-force entry (staged
   # commencement: each stage its own change, partial or full); any other

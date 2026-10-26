@@ -9,7 +9,17 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Default do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Extent, RefList}
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Forms, Lists, Named, Parts, Places, Units}
+
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{
+    Forms,
+    Lists,
+    Named,
+    Parts,
+    Places,
+    Same,
+    Units
+  }
+
   alias SertantaiLegal.Scraper.Territory
 
   @place_list Places.place_list()
@@ -71,6 +81,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Default do
 
       (m = Regex.named_captures(Forms.named(), sentence)) && Named.plain_named?(m, sentence) ->
         {:list, Named.named_kind(m), Places.places(m["places"])}
+
+      # "paragraphs 1 to 11 … have the same extent as the provisions to
+      # which they relate" (a lettered item: SI 2013/602 art.1(8), round 8)
+      (m = Regex.named_captures(Same.named_same(), sentence)) &&
+          not (m["subj"] =~ ~r/\bextends?\b/u) ->
+        {:list, :same, nil}
 
       true ->
         nil

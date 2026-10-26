@@ -26,7 +26,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
     `application` (an application clause not resolved), `not_read` (the
     law's own statement, not read), `provision_extent` /
     `provision_application` (a provision's own: "This section applies only
-    to England") — or `none` (the
+    to England"), `list_partial` (a list of its kind and place read, but
+    not every provision it names: `Extent.Credit`) — or `none` (the
     words, but no statement: "a provision which extends to Scotland").
 
   An example is the law flattened to what the reading needs: each top-level
@@ -36,7 +37,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Extent}
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Applies, Excepted, Same, Units}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Applies, Credit, Excepted, Same, Units}
   alias SertantaiLegal.Scraper.ApplicationClause
   alias SertantaiLegal.Scraper.Commencement.Order
   alias SertantaiLegal.Scraper.LawStart.Clause
@@ -186,17 +187,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
       match?({:list, k, _} when k in [:named, :same, :only, :also, :not], statement) and
           not in_clause? ->
         {:list, kind, place} = statement
-
-        if Enum.any?(e.lists, &match?({^kind, ^place, _}, &1)),
-          do: {"list:#{kind}:#{place || "same"}", default_seen?},
-          else: {"unread:other_provision", default_seen?}
+        {list_class(s, ref, doc, e, kind, place, "unread:other_provision"), default_seen?}
 
       in_clause? and match?({:list, _, _}, statement) ->
         {:list, kind, place} = statement
-
-        if Enum.any?(e.lists, &match?({^kind, ^place, _}, &1)),
-          do: {"list:#{kind}:#{place || "same"}", default_seen?},
-          else: {"unread:list", default_seen?}
+        {list_class(s, ref, doc, e, kind, place, "unread:list"), default_seen?}
 
       in_clause? and match?({:part_not, _}, statement) ->
         {:part_not, place} = statement
@@ -209,7 +204,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
       # paragraph 3 of Schedule 1 extends to …; (b) paragraph 8(2)(b) to
       # (d) … extends to …": SI 2014/469 art.3(2), CV-S05 round 6) — as its
       # first item's list
-      item = statement == nil && items_read(s, e, type) ->
+      item = statement == nil && Credit.items_read(s, ref, doc, e.lists, @extent_words) ->
         {item, default_seen?}
 
       # the forms the recall sweep counted, read in round 7 (CV-S05a):
@@ -262,29 +257,15 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
     end
   end
 
-  # the first item's list class when every lettered item of the sentence
-  # speaking of extent ("(a)", "(i)": whatever it begins with) is a list
-  # statement read; else nil (one unread item: the sentence is unread)
-  defp items_read(s, %Extent{lists: lists}, type) do
-    items =
-      s
-      |> String.split(~r/[—–;]\s*(?:and\s*|or\s*)?\(?[a-z]{1,4}\)?\s+/u)
-      |> tl()
-      |> Enum.filter(&Regex.match?(@extent_words, &1))
-
-    found =
-      for item <- items do
-        case Extent.statement(item, type) do
-          {:list, kind, place} ->
-            if Enum.any?(lists, &match?({^kind, ^place, _}, &1)),
-              do: "list:#{kind}:#{place || "same"}"
-
-          _ ->
-            nil
-        end
-      end
-
-    if found != [] and Enum.all?(found, &is_binary/1), do: hd(found)
+  # a list sentence read whole (`Credit`: each provision its subject
+  # names is in a list of its kind and place); one of that kind and place
+  # missing some is a partial read (CV-S05 round 8, NEW-3)
+  defp list_class(s, ref, doc, e, kind, place, unread) do
+    cond do
+      Credit.list_read?(s, ref, doc, e.lists, kind, place) -> "list:#{kind}:#{place || "same"}"
+      Enum.any?(e.lists, &match?({^kind, ^place, _}, &1)) -> "unread:list_partial"
+      true -> unread
+    end
   end
 
   # a provision's own application stated in the sentence or one of its

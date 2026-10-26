@@ -91,7 +91,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
   # (a Chapter, and "the amendments made by …": items of "In Part 3— (i)
   # Chapter 1 extends to …", "— (a) the amendments made by paragraph 9(3)
   # of Schedule 12 extend to …", CV-S05 round 6)
-  @provision_word "(?:(?:sections?|paragraphs?|Schedules?|Parts?|Chapters?|regulations?|articles?|rules?)\\s+[\\dIVXL]|the\\s+(?:amendments?|repeals?|revocations?)\\s+(?:made\\s+by|in)\\s)"
+  # (also "(b) an amendment or repeal made by Chapters 2 to 6 …", "(a) any
+  # amendment made by virtue of …": ukpga 2023/55 s.254(3), 2004/33
+  # s.262(6), round 8)
+  @provision_word "(?:(?:sections?|paragraphs?|Schedules?|Parts?|Chapters?|regulations?|articles?|rules?)\\s+[\\dIVXL]|(?:the|an?|any)\\s+(?:amendments?|repeals?|revocations?)(?:\\s*(?:,|or|and)\\s*(?:amendments?|repeals?|revocations?))*\\s+(?:made\\s+by|in)\\s)"
 
   @doc """
   A sentence and the statements inside it (CV-S05 round 4): each lettered
@@ -108,7 +111,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
         s
         |> String.split(
           Regex.compile!(
-            "[—–;]\\s*(?:and\\s+)?\\(?[a-z]{1,2}\\)?\\s+(?=#{@provision_word})",
+            "[—–;]\\s*(?:and\\s+)?\\(?(?:[a-z]{1,2}|[ivx]{3,4})\\)?\\s+(?=#{@provision_word})",
             "u"
           )
         )
@@ -169,6 +172,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
     |> lettered_places()
     |> lettered_verbs()
     |> there()
+    |> other_provisions()
     |> in_schedule()
     |> chapters()
   end
@@ -180,7 +184,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
 
   # "In Schedule 1— (a) paragraph 3 extends to …; (b) paragraph 8(2)(b) to
   # (d) extends to …" (SI 2014/469 art.3(2), SI 2019/758 reg.1): each
-  # paragraph that Schedule's, the lead-in dropped (extent words only)
+  # paragraph that Schedule's, the lead-in dropped (extent words only);
+  # also before an aside ("(b) paragraphs 12 and 19 (and article 27 …)
+  # extend to Scotland only": SI 2013/602 art.1(8), round 7 NEW-5)
   defp in_schedule(text) do
     with true <- text =~ ~r/\bextends?\b/u,
          [lead, n] <-
@@ -192,7 +198,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
       |> String.replace_prefix(lead, "— ")
       |> then(
         &Regex.replace(
-          ~r/\b(paragraphs?\s+(?:(?:\d+[A-Z]*|\([0-9A-Za-z]+\))(?:\([0-9A-Za-z]+\))*(?:\s*(?:,|and|to)\s*)?)+?)(?=\s*(?:extends?|extend|ha(?:s|ve)|do|does|shall|[,;]|$))(?!\s*of\b)/u,
+          ~r/\b(paragraphs?\s+(?:(?:\d+[A-Z]*|\([0-9A-Za-z]+\))(?:\([0-9A-Za-z]+\))*(?:\s*(?:,|and|to)\s*)?)+?)(?=\s*(?:\((?=[^()]*\s)[^()]*\)\s*)?(?:extends?|extend|ha(?:s|ve)|do|does|shall|[,;]|$))(?!\s*of\b)/u,
           &1,
           "\\1 of Schedule #{n} "
         )
@@ -241,6 +247,18 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
       ~r/(\bextends?\s+to\s+(#{@places})\b[^.]*?\bnot\s+extend\s+)there\b/u,
       text,
       "\\1to \\2"
+    )
+  end
+
+  # "Section 7 extends to Northern Ireland, but the other provisions of
+  # this Act do not extend to Northern Ireland" → "This Act, except—
+  # Section 7, does not extend to Northern Ireland" (ukpga 1997/42 s.9(3),
+  # CV-S05 round 7 NEW-4)
+  defp other_provisions(text) do
+    Regex.replace(
+      ~r/((?:^|[.;:])\s*(?:\(?\d+[A-Z]*\)?\s*)?)((?:Sections?|Regulations?|Articles?|Parts?|Schedules?)\s[^,;.]+?)\s+extends?\s+(?:also\s+)?to\s+(#{@places}),?\s+but\s+the\s+other\s+provisions\s+of\s+this\s+(Act|Order|Regulations)\s+do\s+not\s+extend\s+to\s+\3\b/u,
+      text,
+      "\\1This \\4, except— \\2, does not extend to \\3"
     )
   end
 
