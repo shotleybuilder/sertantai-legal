@@ -1,6 +1,6 @@
 ---
 session: 'CV-S05: Extent and Application Reader'
-status: suspended
+status: active
 release: v0.1
 opened: '2026-10-22'
 bugs:
@@ -97,7 +97,7 @@ bugs:
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
 ---
 
-# Session: CV-S05: Extent and Application Reader (SUSPENDED)
+# Session: CV-S05: Extent and Application Reader (ACTIVE)
 
 ## Problem
 
@@ -619,3 +619,12 @@ The run-time session's full read passes changed rules and exposed reader defects
 - Golden first **crashed**: `Extent.Rows.from_rows/1` (my decomposition) used `String.to_existing_atom` — atoms present only once `Extent` was loaded, which the gate always did. Fixed (kinds by name); **golden 27/27**.
 - Golden's "N amending laws read from their text (stored rules stale)" counts laws never indexed (HSWA: 46 text not held, 29 held with no text-change pointer), not stale ones — wording only.
 
+
+## Resumed (2026-10-26): rebuild, golden, check
+
+- The run-time session is closed: a full read pass takes ~6 min and writes only what changed. The precision round's rules (42,335) and the repaired `extent_rules` are stored.
+- Restore point `cv-s05-before-resume-rebuild` (`provision_changes`, `provision_change_claims`).
+- **Rebuild and golden** (`mix lat.vocabulary --check --family "OH&S: Occupational"`): 3 min, run one law at a time because a VM was running. 149 laws; conflicts 2,663 uncovered primary, 641 unread, 84 uncovered derived, 64 unjoined, values 59 level / 19 date / 11 operation. **Golden 27/27.**
+  - 30 laws read a parent's extent from CLML (not in `extent_rules`; NI Orders and similar). The result is correct, only slower.
+- **Extent check: PASS, our faults 0.** 69 laws have unread extent sentences, all counted. Of 4,993 text changes, 3,215 are bound by the law and 1,742 have no territory, each by a counted reason.
+- Next: round 6. Its step 1 is a design change and needs Jason's go-ahead.
