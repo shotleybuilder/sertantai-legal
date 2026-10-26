@@ -54,6 +54,12 @@ lessons:
     detail: Catalogue example choice depends on law order; the check's array_agg had no ORDER BY, so even serial runs could differ byte for byte.
     tag: tooling
 bugs:
+  - pattern: "Amendment reader target precision: \"of that subsection\" not resolved to the subsection named before; a nested list item's parent bracket (\"(f) in subsection (5)— (i) in paragraph (a)\") not carried; \"—shall be omitted; (i) the words …\" read as provision-level (1995/25 Sch. 22 para 30(6))"
+    category: amendment
+    module: Amendment.Reader.Targets / Clauses
+    affected: 9
+    fix: "Carry the nearest named subsection for \"that subsection\"; prefix a list item's brackets with its parent item's; words level when the omitted things are words"
+    status: open
   - pattern: "extent_rules written without an SI's enabling powers or a devolved law's competence: the amendment read pass (ReadPass.write) and --extents' parents step stored the bare Extent.read/1, so every full read pass wiped those rows (482 laws stale, 2026-10-26)"
     category: extent
     module: Amendment.ReadPass / mix lat.amending --extents (now Extent.Store.write_read/3)
@@ -126,7 +132,9 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 - ✅ Stop the fix → full pass loop: `--preview` (writes nothing) + `--regression` (committed list + golden laws' amending laws: 255 laws, ~2 min) with a per-law change report (`ReadReport`); the full pass prints the same report; workflow in the scraper guide and memory — this commit
 - ✅ One full read pass at the end of the round — done (see the caption and nested-quote fixes)
 - ✅ After the gate: a caption names no law, nested quotes stripped whole — `be32c526` (Petroleum Act 1998 +9, SI 2024/1268 +1; regression 29 changed, net +78)
-- ⬜ Environment Act 1995 Sch. 22 para 30 (HSWA, "in this paragraph referred to as …"): its sub-paragraphs read no rule since the "etc." fix (they had read wrongly as COPA 1974) — trace in the reader work after the decomposition gate
+- ✅ Environment Act 1995 Sch. 22 para 30 (HSWA): "The Health and Safety at Work etc. Act 1974 (in this paragraph referred to as “the 1974 Act”)" read as "Work etc. Act 1974" (apposition title stopped at "at"), naming no law — fixed `407df2c2` (short words, bracketed parts); regression preview 2 changed, +34 (1995/25 +10 HSWA; SI 2012/3119 +24 on SI 2010/2215, its bracketed title). Indexes stale until the round's full pass
+- ⬜ Reader target precision (seen in 1995/25 Sch. 22 para 30(6)): "of that subsection" not resolved to the subsection named before ((6)(b)–(d) → s.28(c)(ii), not s.28(3)(c)(ii)); a list item's parent bracket not carried ((f)(i) "in paragraph (a)" under "(f) in subsection (5)—" → s.28(a), not s.28(5)(a)); "(b) in paragraph (c)(ii) …—shall be omitted; (i) the words …" read as a provision repealed, not words
+- ⬜ End of round: one full read pass (~7 min; restore point first; ask Jason)
 - ⏸️ Annex/Schedule targets — deferred (Jason 2026-10-26): LAT holds no Schedule or Annex rows (LR-10, v0.1), so these rules would reach no row and change no output; the instructions are held back / dropped, never placed on real sections. Prerequisite if Schedules come into LAT. Known cases: PSTI 2022 → CA 2003 Sch. 3A ("the electronic communications code"); SI 2019/758 Sch. 3 → REACH Annexes
 - ✅ Decompose `Amendment.Reader` (1,004 → 305 lines; five modules under ~270; gate 0 changed) — `2d4b7c7e`…`81573975`
 - ✅ Decompose `AmendingLaw.Extent` (1,343 → 160 lines; 11 modules ≤ 229; gate 0 differences) — `0250e307`…`f08e680f`
@@ -550,3 +558,9 @@ Finding 7 (`from_powers` and `Powers`) is Contested: `Powers` is I/O, and `from_
 - Repair (2026-10-26, Jason: "do the repair"): restore point `run-time-before-extent-repair` (`extent_rules`); `mix lat.amending --extents --amending <483> --cached` — 1 min 28 s, 49 parent Acts first. **OH&S extent check: our faults 0, PASS** (was 202 stale).
 - Basis shifted in the check: powers 97 → 106, competence 82 → 73 — SSIs (and WSI 2020/1211) under devolved parent Acts: those parents were stored without their competence row, so the SI's powers didn't resolve and it fell back to competence; same territory (S, E+W), now by powers.
 - Still to come: provision_changes take the territories at CV-S05's rebuild (its resume step).
+
+## Todo 1 deferred, todo 2 fixed (2026-10-26, Jason: "Push then start 1")
+
+- Pushed `a00838f7..ef1b4ac9` (3 commits).
+- Annex/Schedule targets deferred (Jason): LAT holds no Schedule or Annex rows (LR-10), so the rules would reach nothing.
+- Environment Act 1995 Sch. 22 para 30: traced to `DefinedTerms.apposition/2` — the title pattern allowed only "and/of/the/for/etc." inside a title, so "Health and Safety at Work etc. Act 1974" became "Work etc. Act 1974"; the context's "the 1974 Act" was then the nearest law-naming words, and named nothing. Fixed `407df2c2` (at, to, by, in, on; a bracketed part). Regression preview 1 min 52 s: 274 laws, 2 changed (both checked right). Para 30's targets show three precision limits of the reader (logged, open).
