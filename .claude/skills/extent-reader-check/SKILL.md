@@ -101,10 +101,23 @@ Reader rules (intended):
   (`Extent.Credit`, round 8); otherwise the catalogue counts it `unread:list_partial`. "This article", "This Regulation"
   and "this section and the following provisions" name the provision itself. Another Act's provisions ("Paragraphs 9A
   … , as amended by … this section") are never the law's own. A qualified item ("370 (so far as relating to …)",
-  "in Schedule 9, the amendments relating to— (i) …") and its sub-list are left out, never read whole.
+  "in Schedule 9, the amendments relating to— (i) …") and its sub-list are left out, never read whole; an item led by its
+  qualifier ("(b) in so far as relating to …, section 52") is withheld (unread).
 - "Section 7 extends to Northern Ireland, but the other provisions of this Act do not extend there" = default the
   rest of the UK, section 7 also there.
 - Feed-cited articles of a domestic Order are `reg.N` (the feed's "art. 18"), as our provisions are named.
+- A Part with its exceptions after it ("Part 3 extends to …, except as follows— (a) paragraphs … of Schedule 6 extend only
+  to …"; "Part 2 extends only to …, except that the following provisions of Part 2 extend also to …— (a) …"; "This Part
+  extends to … except that— (a) …"): the Part's provisions read (only/named), less those an exception sets; only where
+  every exception reads plainly (a qualified one leaves the sentence unread). "of that Schedule" = the law's own Schedule
+  named just before. A list setting a Schedule paragraph's extent (only/named) outranks its introducing section's lists.
+- "with the exception of— … (b) any provision amending or repealing an enactment which does not so extend" and "Any
+  amendment … by this Act of an enactment which extends to S or NI has the same extent as that enactment but, save as
+  aforesaid, …" = every amendment the same extent as its enactment (same "*"), the default kept.
+- The clause (default) is the first section stating one, not an earlier list ("31 The following … do not extend to
+  Scotland— …"; "32 It is hereby declared that this Act extends to Northern Ireland").
+- An SI's Schedule is introduced by the provision its Reference names ("Regulation 30"). A change only the law's own
+  text gives is looked up at its own provision (key "schedule-7-paragraph-3" = sch.7.para.3).
 
 Known counted classes (label a finding with one if it fits; otherwise NEW):
 - KU unread statement, counted: a qualified or conditional statement ("so far as …", "in so far as it relates to …",
@@ -144,6 +157,7 @@ OH&S (first family, 2026-10-24 →). The session is `.claude/sessions/change-voc
 | 6 | 11 | FAIL, 3 NEW (all silent drops: "Subsection (N) does not apply to …" ×2, "The extent of … is the same as that of …"); changes 50/50 |
 | 7 | 12 | FAIL, 6 NEW — all misreads or partial reads of statements read (none a silent drop of an uncaught form); NEW-6 systemic: feed "art." vs domestic `reg.` |
 | 8 | 13 | FAIL, 6 NEW — round 7's six fixed; NEW-1 systemic (a change's own key passed raw, "schedule-7", to the lookup: 80 claims); 4 misreads, 2 silent drops (a clause in a second section; "with the exception of— (b) any provision amending …") |
+| 9 | 14 | FAIL, 1 NEW — round 8's six fixed; changes 50/50 right; NEW-1 predates round 9: a commencement "This Act, except— …" read as the extent form across the section (ukpga 2002/30 s.108 default E+W+NI, text E+W), bounds still right (withheld) |
 
 - Rounds 1–5's prompts lived only in conversation. Their known classes (K1–K10, then P1–P7) were not recorded; the classes above restate them from the session's findings (2026-10-26).
 - Round 6's design change: unread statements withhold their bound (`Extent.Unread`), so counted unread classes are known gaps.
