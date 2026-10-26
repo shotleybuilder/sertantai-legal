@@ -680,3 +680,22 @@ The run-time session's full read passes changed rules and exposed reader defects
 - **Runs:** restore point `cv-s05-before-round6-step2` (extent_rules, provision_changes, claims). Extents rewritten; rebuild; **golden 27/27**; **check PASS, our faults 0**; bound 3,086 → 3,067, each shift traced (above, plus SI 2019/720 / 2019/696's false rules dropped by the build's re-read).
 - Suite 8,868 pass.
 - **Still to come:** the round's one full read pass (the amendment reader changed, so all indexes are stale), then rebuild, check and golden.
+
+### Round 6 full read pass (2026-10-26, Jason: "go ahead"), code `a779f5c3`
+
+- Restore point `run-cv-s05-r6-read-pass` (amendment_rules, extent_rules); rules snapshot `r6b.rules_before`.
+- **5 min 56 s, 2,102 laws, 26 changed, rules 42,335 → 43,518**, traced:
+  - **EU laws named as the law amended (pure gains):** the tachograph Regulations (SI 2019/453, 2021/135, 2022/1260, 2023/739, 2025/402), REACH and CLP (SI 2019/556, 2021/904, 2023/1344, 2025/361, 2026/195), PIC (SI 2019/720 +229, SI 2022/1037), PPE (SI 2019/696 +193, ukpga 2020/29), 2015/2066–2067 (SI 2019/583), 2012/965.
+  - **Moves, all corrections:**
+    - SI 2020/1482: 61 off the England plant-health SI onto Regulation 2016/2031 (+624);
+    - SI 2019/696: 15 off IRR 2017, and 2 Radio Equipment → PPE Regulation;
+    - SI 2022/1393, SI 2024/504: Radio Equipment → PPE Regulation;
+    - ukpga 2015/26 s.135(3): IA 1986 → Enterprise Act 2002 (the run-on caption named the 1986 Act).
+  - **Losses, both correct:** SI 2019/720 −8 (COSHH), SI 2019/742 −7 (SI 2008/296; these amend the Drug Precursors Regulation).
+- **Traced after the pass and fixed (`a779f5c3`):**
+  - SI 2019/696 Sch. 22 para 44 (the Lifts Regulations 2016) still reached the Machinery Regulations 2008 (12 false OH&S changes). An earlier paragraph's flattened quote has no closer ("substitute “Schedule 2 to the Supply of Machinery (Safety) Regulations 2008/1597; and"). An unclosed opening quote now quotes to the end.
+  - The same fix stops quoted numbers being read as targets (SI 2019/1440 reg.18(4)(a); SI 2020/1369 reg.16(b); SI 2019/696 3 provisions).
+  - "Regulation (EC) 273/2004" (no "No") now reads number/year (SI 2019/742: +30 Regulation 273/2004, +75 Regulation 111/2005).
+  - Written for these four laws only; every other index is stale until the next round's full pass (correct, slower).
+- **Rebuild:** golden 27/27; check PASS, our faults 0; **4,970 text changes, 3,067 bound**. Suite 8,869.
+- **Open:** SI 2026/386 para 6(3) "In each of the provisions listed in sub-paragraph (4)—", where resolving the cross-reference would give its rules.
