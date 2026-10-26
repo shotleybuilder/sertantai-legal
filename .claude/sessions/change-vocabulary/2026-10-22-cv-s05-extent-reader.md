@@ -719,3 +719,8 @@ The run-time session's full read passes changed rules and exposed reader defects
   - Withheld by unread statements: 422 → 358. Unread sentences: 69 laws → 65.
 - Suite 8,881. `Extent.Patterns` is 428 lines (390 when Jason chose not to split it; ballpark).
 - **Next:** step 4, agent check round 6 on a fresh seed (counted misses are known classes; only misreads and silent drops are NEW).
+
+### Agent check prompt saved as a skill (2026-10-26, Jason: "was this not caught in a skill - bit of an oversight")
+
+- Rounds 1–5's agent prompt lived only in conversation (unlike CV-S02's `feed-reader-check`). After compaction it was rebuilt for round 6, and the known classes (K1–K10, P1–P7) had never been recorded.
+- Now `.claude/skills/extent-reader-check/SKILL.md`: steps (catalogue review, extents, rebuild, golden, check, claims diff, repeatable sample), the agent prompt with the known counted classes (KU, KP, KE, KC, KN, KD, KS), and a seed history. Memory: every reader acceptance check keeps its prompt in a skill.
