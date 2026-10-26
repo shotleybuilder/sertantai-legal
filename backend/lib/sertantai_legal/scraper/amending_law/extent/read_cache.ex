@@ -1,9 +1,10 @@
 defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCache do
   @moduledoc """
   A law's extent reading, kept between runs (run time, 2026-10-25): its
-  `Extent.read/1`, its catalogue classes (`Patterns.classes/2`), and the
+  `Extent.read/1`, its catalogue classes (`Patterns.classes/2`), the
   catalogue's example with the classes it reads alone (`Patterns.example/1`,
-  `Patterns.read/2`) — the work the extent catalogue, the check and the
+  `Patterns.read/2`), and the extent-ish sentences the catalogue misses
+  (`Sweep.uncaught/2`) — the work the extent catalogue, the check and the
   re-read share, done once per law and re-used until something it rests on
   changes.
 
@@ -17,7 +18,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCache do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Extent}
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Patterns, ReadVersion, Unread}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Patterns, ReadVersion, Store, Sweep, Unread}
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
 
   @dir Path.join(["data", "cache", "extent_reads"])
@@ -26,7 +27,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCache do
           read: Extent.t(),
           classes: [{String.t(), String.t(), String.t()}],
           example: String.t() | nil,
-          alone: [{String.t(), String.t(), String.t()}]
+          alone: [{String.t(), String.t(), String.t()}],
+          uncaught: [{String.t(), String.t(), String.t()}]
         }
 
   @doc """
@@ -68,8 +70,21 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCache do
       read: read,
       classes: classes,
       example: example,
-      alone: if(example, do: Patterns.read(law, example), else: [])
+      alone: if(example, do: Patterns.read(law, example), else: []),
+      # the sentences the catalogue misses (CV-S05a)
+      uncaught: Sweep.uncaught(doc, classes)
     }
+  end
+
+  @doc "Every held law of a type whose extent the reader reads (its body in the CLML store)."
+  @spec held() :: [String.t()]
+  def held do
+    for path <- Path.wildcard("data/cache/clml/*/*/*/body/data.xml.gz"),
+        [t, y, n | _] = path |> Path.relative_to("data/cache/clml") |> Path.split(),
+        law = "UK_#{t}_#{y}_#{n}",
+        Store.reads?(law),
+        uniq: true,
+        do: law
   end
 
   @doc """

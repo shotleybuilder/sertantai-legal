@@ -26,7 +26,7 @@ defmodule Mix.Tasks.Lat.ExtentPatterns do
 
   alias Mix.Tasks.Lat.FeedPatterns, as: Files
 
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Patterns, ReadCache, Store}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Patterns, ReadCache}
   alias SertantaiLegal.Scraper.LawRunner
   alias SertantaiLegal.Scraper.LawRunner.Guard
 
@@ -93,14 +93,7 @@ defmodule Mix.Tasks.Lat.ExtentPatterns do
     }
 
   # every held body of a type whose extent the reader reads
-  defp laws(nil) do
-    for path <- Path.wildcard("data/cache/clml/*/*/*/body/data.xml.gz"),
-        [t, y, n | _] = path |> Path.relative_to("data/cache/clml") |> Path.split(),
-        law = "UK_#{t}_#{y}_#{n}",
-        Store.reads?(law),
-        uniq: true,
-        do: law
-  end
+  defp laws(nil), do: ReadCache.held()
 
   defp laws(list), do: String.split(list, ",", trim: true)
 
