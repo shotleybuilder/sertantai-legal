@@ -1,6 +1,6 @@
 ---
 session: 'CV-S05: Extent and Application Reader'
-status: suspended
+status: active
 release: v0.1
 opened: '2026-10-22'
 bugs:
@@ -121,7 +121,7 @@ bugs:
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
 ---
 
-# Session: CV-S05: Extent and Application Reader (SUSPENDED)
+# Session: CV-S05: Extent and Application Reader (ACTIVE)
 
 ## Problem
 
@@ -150,6 +150,7 @@ The session does not close until its results pass.
   - ⏸️ Annex/Schedule targets — deferred (Jason 2026-10-26): LAT holds no Schedule or Annex rows (LR-10, v0.1), so these rules would reach no row and change no output; the instructions are held back / dropped, never placed on real sections. Prerequisite if Schedules come into LAT. Known cases: PSTI 2022 → CA 2003 Sch. 3A ("the electronic communications code"); SI 2019/758 Sch. 3 → REACH Annexes
   - ✅ 202 laws stale in `lat.extent_check` (OH&S) traced: corpus-wide 483 of 2,050 — 482 the read pass's bare extent write wiping powers/competence (fixed `1a4626b8`, one writer `Extent.Store.write_read/3` + `ExtentWriteTest`), 1 (`UK_ukpga_1995_15`) last written 2026-10-22, before CV-S05's reader fixes
   - ✅ Repaired the 483 laws' `extent_rules` (restore point `run-time-before-extent-repair`; `--extents --cached`, 1 min 28 s, 483 + 49 parent Acts); OH&S extent check PASS, 0 stale. CV-S05's rebuild picks the territories up
+- ⬜ Round 7 (from CV-S05a's sweep): read the `read:*` forms — same_extent_of (12), same_extent (5), exception (6: round 6 D1, D3), also_there (7), lettered "extends only to—" (1), provision-level application (52; Jason "a"); fold in round 6's D2 (same_extent_of), the check's `same` label (D4), LRRA s.34(3); then the runs, the sweep (OH&S read forms 0), and a fresh-seed agent check
 - ⬜ Fix until the check passes reliably; record the result
 
 ## Dependencies
@@ -776,3 +777,10 @@ State at suspension:
 - round 6 agent FAIL (3 NEW, all silent drops; logged as open bugs above).
 
 On resume: fold round 6's defects into the sweep's clusters (fixed there, or here by count); then the round's runs and a fresh-seed agent check (`extent-reader-check`).
+
+## Resumed (2026-10-26, after CV-S05a closed)
+
+- CV-S05a built the recall sweep (`mix lat.extent_sweep`, `Extent.Sweep`, `AmendingLaw.SweepForm`). Of 3,358 laws, 551 own-words sentences that may state extent or application are not classed by the catalogue: 83 in a form to read, 25 to count, 443 noise.
+- `lat.extent_check` now lists the family's misses: **OH&S 29 in a read form**, including round 6's D1–D3.
+- The pass now needs no uncaught sentence in a read form (skill `extent-reader-check`, step 0).
+- Next: round 7, reading those forms (todo above).

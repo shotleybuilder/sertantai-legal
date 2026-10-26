@@ -1,11 +1,68 @@
 ---
 session: 'CV-S05a: Extent Recall Sweep'
-status: active
+status: closed
 opened: '2026-10-26'
+closed: '2026-10-26'
+outcome: success
 parent: change-vocabulary/2026-10-22-cv-s05-extent-reader.md
+
+summary: >
+  The extent catalogue only saw wordings in its own vocabulary, so CV-S05's agent rounds kept finding silent drops by
+  sampling. A recall sweep (Extent.Sweep, mix lat.extent_sweep) now collects every own-words sentence that may say where
+  provisions extend or apply and that the catalogue misses: 551 in 305 of 3,358 laws, sorted by reviewed form
+  (AmendingLaw.SweepForm) into 83 to read, 25 to count and the rest noise, and counted in the catalogue and lat.extent_check
+  (OH&S: 29 to read, listed as misses).
+
+decisions:
+  - what: Two nets, the clause's neighbourhood (A) and strong signals anywhere (B), idioms excluded, prototyped by count before code
+    why: one wide net gave 4,178 sentences, mostly idioms ("the extent to which", "extend the period"); each refinement was measured and checked against round 6's three known misses
+    result: 191 on OH&S (84 laws), all three misses caught; 551 corpus-wide
+  - what: Uncaught kept in Extent.ReadCache beside the classes; the forms in a separate module outside the reading's version
+    why: warm runs cost nothing and the check counts per law; relabelling forms must never stale every reading
+    result: lat.extent_sweep, lat.extent_patterns and lat.extent_check all report uncaught by form
+  - what: Provision-level application ("Regulation 44 applies to Scotland only", "This paragraph applies in relation to England only") is read, not counted (Jason, "a")
+    why: plain, few forms; leaving them unread would withhold territory from ~40 laws that state it
+    result: read:application, 52 sentences in 33 laws, handed to CV-S05 round 7
+  - what: No commencement guess by a new regex in the sweep; commencement noise through LawStart.Clause's own public readers
+    why: the architecture test (CR-06) keeps commencement words to their readers; a helper in LawStart.Clause would stale the label and vocabulary versions
+    result: the reverted helper; noise:commencement 80
+
+metrics:
+  sweep: { laws: 3358, uncaught: 551, laws_with: 305, shapes: 481, run: "6 min 58 s, 4 workers" }
+  forms: { to_read: 83, read_application: 52, read_same_extent_of: 12, read_also_there: 7, read_exception: 6, read_same_extent: 5, read_lettered: 1, count_qualified: 17, count_outside_gb: 8, noise: 443 }
+  ohs_check: { uncaught: 156, laws: 66, to_read: 29 }
+  net_prototype_ohs: { v1: 4178, v2: 872, v3: 473, v4: 191 }
+
+lessons:
+  - title: A catalogue built from the reader's own vocabulary can't measure its recall
+    detail: The extent catalogue classed only sentences its detector recognised, so wordings outside it were neither read nor counted, and five agent rounds found them one by one. Count the population with a wider, independent net first, then subtract what the catalogue classes.
+    tag: data
+  - title: Prototype a net by count before writing the module
+    detail: Four scratch versions over the OH&S laws took 4,178 sentences to 191 with the known misses held as a test; each noise class was seen in the output before it was excluded.
+    tag: tooling
+  - title: Shapes are too fine to review; forms are the unit
+    detail: 551 sentences gave 481 shapes, mostly singletons. Sorting by hand-checked rules into forms (read, count, noise), with a residual read one by one, made the review a table of counts.
+    tag: data
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/amending_law/extent/sweep.ex
+  - backend/lib/sertantai_legal/scraper/amending_law/sweep_form.ex
+  - backend/lib/mix/tasks/lat.extent_sweep.ex
+  - backend/lib/mix/tasks/lat.extent_check.ex
+  - backend/lib/mix/tasks/lat.extent_patterns.ex
+  - backend/lib/sertantai_legal/scraper/amending_law/extent/read_cache.ex
+  - backend/test/sertantai_legal/scraper/amending_law/extent/sweep_test.exs
+  - backend/test/sertantai_legal/scraper/amending_law/sweep_form_test.exs
+  - .claude/skills/extent-reader-check/SKILL.md
+
+depends_on:
+  - 2026-10-22-cv-s05-extent-reader
+
+enables:
+  - CV-S05 round 7 — read the read:* forms (83 corpus, 29 OH&S); pass needs none uncaught in a read form
 ---
 
-# Session: CV-S05a: Extent Recall Sweep (ACTIVE)
+# Session: CV-S05a: Extent Recall Sweep (CLOSED)
 
 ## Problem
 
@@ -18,9 +75,9 @@ Aim: count the whole population of extent-ish sentences in the held amending law
 - ✅ Define the wide net (signals of extent or application, the law's own words) and what counts as caught (classed by the catalogue)
 - ✅ Build the sweep (pure module + test + thin mix task): every own-words sentence matching the net, minus those the catalogue classes; normalise numbers, places and lists, and cluster by shape with counts and examples
 - ✅ Run it over every held amending law (read-only, ~5 min; ask Jason)
-- ⬜ Review the clusters with Jason, by count: each a wording to read, a counted unread class, or noise
-- ⬜ "Uncaught" as a counted outcome in the catalogue and in `lat.extent_check`
-- ⬜ Hand back to CV-S05: the clusters to read (round 6's D1–D3 folded in), and the skill (`extent-reader-check`) updated with the sweep step
+- ✅ Review the clusters with Jason, by count: each a wording to read, a counted unread class, or noise
+- ✅ "Uncaught" as a counted outcome in the catalogue and in `lat.extent_check`
+- ✅ Hand back to CV-S05: the clusters to read (round 6's D1–D3 folded in), and the skill (`extent-reader-check`) updated with the sweep step
 
 ## Dependencies
 
@@ -85,3 +142,17 @@ Prototyped on the OH&S amending laws (445) before code. Each version was measure
 
 - Readable statements total about 26 sentences (forms 1–5), plus about 60 of provision-level application (6–8). About 16 are to count (9–10); about 430 are noise.
 - Round 6's three are in forms 1 and 3.
+
+## Decision (2026-10-26, Jason: "a, read them as provision-level application")
+
+- Form 6–8, a provision's own application to a place (~60 sentences, ~40 laws), will be **read as provision-level application**: the changes those provisions make take that territory, as the law-level application clause does now. To be implemented in CV-S05's next round, with forms 1–5.
+
+## Uncaught counted, and the hand-back (2026-10-26), code `0513c276`
+
+- `AmendingLaw.SweepForm`: the reviewed forms as rules, tested with a real sentence each. It is kept outside the reading's version, so relabelling never stales a reading. Commencement noise goes through `LawStart.Clause.general?/mention?`.
+- Fixes after the first labelling: "does not apply to regulations which apply only in relation to England" is procedure, not an exception or application; conditional applications ("where", "if", "as follows", "on Sundays") are counted, not read; an exception list after a dash ("does not apply to— (a) …") is read.
+- Counted in `lat.extent_sweep` (to read: 83), `lat.extent_patterns` (a line after the catalogue) and `lat.extent_check` (OH&S: 156 uncaught in 66 laws; **29 in a read form, each listed as a miss**).
+- Re-run: the same 551; by form, read:application 52, same_extent_of 12, also_there 7, exception 6, same_extent 5, lettered 1; count 25; noise 443.
+- One doubtful label to settle in round 7: ukpga 2014/22 s.76 (a power-extension rider) as `read:also_there`.
+- The skill `extent-reader-check` has the sweep as step 0, and the pass needs no uncaught sentence in a `read:` form.
+- Hand-back to CV-S05: round 7 reads the `read:*` forms (provision-level application per Jason's "a"), folding in round 6's D1–D3 (all in these forms).

@@ -20,6 +20,9 @@ A statement the reader can't turn fully into rules is recorded unread (`Extent.U
 
 Ask Jason before the runs that write; say how long each takes. Take a restore point before any write (`./scripts/nas/nas-backup.sh --tables … --tag …`).
 
+0. **Recall sweep** (read-only; ~7 min cold, seconds warm): `mix lat.extent_sweep [--family "F"]` (CV-S05a). It finds every sentence of the laws' own words that may say where provisions extend or apply but that the catalogue doesn't class, labelled by form (`AmendingLaw.SweepForm`: `read:*` to read, `count:*`, `noise:*`).
+   - The catalogue only sees wordings in its own vocabulary, so the sweep is how new wordings are found: by count, not by agent sampling.
+   - A new family: review the uncaught clusters (`data/extent_sweep/clusters.json`) by count, and add their forms to `SweepForm` (and the reader) before the agent check.
 1. **Catalogue** (read-only; ~5 min cold, seconds warm, `Extent.ReadCache`): `mix lat.extent_patterns --accept`. Then review:
    - `git diff --stat backend/test/fixtures/extent_patterns`;
    - each example reading differently, checked in the law's text, then updated by hand in `expected.json`;
@@ -28,7 +31,7 @@ Ask Jason before the runs that write; say how long each takes. Take a restore po
    `--out DIR` writes elsewhere and compares against an empty catalogue, so its "examples reading differently" is always 0. Use the fixtures for the review.
 2. **Extents** (writes `extent_rules`; ~1 min warm, ~5 cold): `mix lat.amending --extents --amending <every law in extent_rules> --cached`. It never fetches, and writes only the laws whose reading changed (`Extent.Store.write_read/3`).
 3. **Rebuild and golden** (writes `provision_changes`, claims; ~2–3 min): `mix lat.vocabulary --check --family "F"`. Golden must stay all-pass.
-4. **The check** (read-only, seconds): `mix lat.extent_check --family "F"` must PASS (our faults 0: stored rows match the reading).
+4. **The check** (read-only, seconds): `mix lat.extent_check --family "F"` must PASS (our faults 0: stored rows match the reading). Its sweep section lists every uncaught sentence of the family's amending laws in a `read:` form: each is a miss, and there must be none.
    - Trace the change in `bound:law` and in each `none:` reason against the round before. Snapshot the law_text extent claims first (`create table r6b.claimsN as …`) and diff lost / changed / gained by `by`.
    - Every movement needs a reason in the text.
 5. **Repeatable sample**, on a seed never used before for this family (record it):
@@ -41,7 +44,7 @@ Ask Jason before the runs that write; say how long each takes. Take a restore po
 6. **Agent check:** launch a general-purpose agent with the prompt below on `$S/a.json`.
 
 **Pass:**
-- the check shows our faults 0;
+- the check shows our faults 0, and no uncaught sentence in a `read:` form (the sweep);
 - golden is all-pass;
 - the catalogue test passes;
 - the agent finds no NEW: every gap sits in a known counted class.
