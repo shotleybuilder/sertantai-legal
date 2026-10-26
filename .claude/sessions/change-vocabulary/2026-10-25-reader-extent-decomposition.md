@@ -14,7 +14,7 @@ decisions:
   - what: Plan, then reviewer (plan standard), then one module per step, test-first, then a corpus zero-diff gate
     why: CLAUDE.md engineering principles; Jason 2026-10-25 "the reader is very poorly architected … Needs optimising"
     result: both plans revised on review findings (7 and 6 Taken, 1 Contested); every step's suite green
-  - what: Gates — Reader: mix lat.amending --read --preview --all; Extent: extent catalogue --out DIR + extent check, diffed against a baseline
+  - what: "Gates — Reader: mix lat.amending --read --preview --all; Extent: extent catalogue --out DIR + extent check, diffed against a baseline"
     why: a refactor must change no reading; the preview and catalogue read every law
     result: Reader 2,102 laws 0 changed; Extent catalogue diff -r empty, check identical
   - what: Shared regexes become zero-arity functions on their owner (Extent.Forms); call direction fixed, no cycles

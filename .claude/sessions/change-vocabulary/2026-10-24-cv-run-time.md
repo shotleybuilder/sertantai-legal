@@ -18,7 +18,7 @@ decisions:
     why: the 5-wide crash had a VM open; five tasks had bypassed the first version
     result: memory, busy cores (/proc/stat over 0.5 s) and VMs checked on every parallel run; --workers overrides
   - what: Cache readings, not parsed documents
-    why: measured — loading a saved parse costs about as much as parsing (ukpga 2009/4: 5.9 vs 4.9 s)
+    why: "measured — loading a saved parse costs about as much as parsing (ukpga 2009/4: 5.9 vs 4.9 s)"
     result: Extent.ReadCache (3,358 laws, 14 MB), FeedCache (feed start-up 160 s → cache load)
   - what: Version hashes cover exactly what they reach (VersionCoverageTest)
     why: hidden staleness (LawStart readers missing) and over-staleness (the extent cache keyed on every app module, mix.lock in the vocabulary version)
