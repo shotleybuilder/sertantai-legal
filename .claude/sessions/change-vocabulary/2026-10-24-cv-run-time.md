@@ -142,12 +142,13 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 - ❌ `Extent.Patterns` (390 lines) split — dropped: ~300 is a ballpark, not a hard limit (Jason 2026-10-26)
 - ✅ 202 laws stale in `lat.extent_check` (OH&S) traced: corpus-wide 483 of 2,050 — 482 the read pass's bare extent write wiping powers/competence (fixed `1a4626b8`, one writer `Extent.Store.write_read/3` + `ExtentWriteTest`), 1 (`UK_ukpga_1995_15`) last written 2026-10-22, before CV-S05's reader fixes
 - ✅ Repaired the 483 laws' `extent_rules` (restore point `run-time-before-extent-repair`; `--extents --cached`, 1 min 28 s, 483 + 49 parent Acts); OH&S extent check PASS, 0 stale. CV-S05's rebuild picks the territories up
-- ⬜ Incremental read pass: re-read only the amending laws whose output can change (per-law inputs; a reader edit no longer stales all 2,102)
+- ✅ Incremental read pass, as far as it is sound — `558779e9`: no per-law dependency on reader code exists (every law runs the same code), and data staleness was already per law (`Index.fresh?`); so a pass now writes only what changed (rules, extent) and takes each law's extent from `Extent.ReadCache`. Full write pass 7 min 50 s → 6 min 01 s, 0 rows rewritten when nothing changed
 - ❌ Cached `Doc` for the read pass — dropped on measurement: loading a stored `Doc` costs about as much as parsing it (2017/3: load 1.3 s, parse 0.6 s; 1995/25: 2.3 vs 4.5 s). Cache only what step 2 shows is costly, if anything
 - ⬜ LR-45 Saxy (pending v0.2 session) reconsidered: parsing is not the read pass's bottleneck (profile); kept for memory and cold parses, not for this
 - ✅ More workers where memory allows: the read pass's own measure (0.8 GB a law, max 5) — `2efc3ed4`
 - ✅ Largest laws first in `LawRunner` (`weight:`) — `2efc3ed4`; full read 7 min 20 s → 4 min 30 s with both
-- ⬜ Staleness that over-reaches: `Extent.ReadCache` keyed on the modules the reading uses, not the whole app; `mix.lock` out of `ChangeVocabulary.Version`
+- ✅ `Extent.ReadCache` keyed on `Extent.ReadVersion` (the modules the extent reading reaches; `VersionCoverageTest`), not the whole app — `558779e9` (`Reader.references` moved to `AmendingLaw.ScheduleRefs` so the amendment reader isn't among them); catalogue gate identical
+- ⬜ `mix.lock` out of `ChangeVocabulary.Version`
 - ⬜ Incremental rebuild: skip a law whose stored code version and input fingerprints are unchanged
 - ⬜ Commencement catalogue cache (6–7 min every run), as `Extent.ReadCache`
 
@@ -572,3 +573,10 @@ Finding 7 (`from_powers` and `Powers`) is Contested: `Powers` is I/O, and `from_
 - Full pass: **7 min 49 s, 2,102 laws, 635 changed, rules 43,778 → 42,335 (−1,443)**. Old rules loaded from the restore point (`rp9` schema) and diffed by class: 9,479 refined (parents' brackets added); 1,216 to a different provision — 878 new number in the words not the old, 322 old number only in a caption, 16 both, 0 otherwise; 1,382 groups gone — 1,365 under a Schedule (paragraphs read as sections), 17 others checked (an Order's article read as an Act's caption section; Schedule A1 paragraphs; words-level now; one existing law-naming flaw, logged). Every index fresh.
 - Golden first **crashed**: `Extent.Rows.from_rows/1` (my decomposition) used `String.to_existing_atom` — atoms present only once `Extent` was loaded, which the gate always did. Fixed (kinds by name); **golden 27/27**.
 - Golden's "N amending laws read from their text (stored rules stale)" counts laws never indexed (HSWA: 46 text not held, 29 held with no text-change pointer), not stale ones — wording only.
+
+## Incremental read pass (2026-10-26, Jason: "do 1 through 3")
+
+- Premise checked: a reader-code change can't be narrowed to the laws it affects without reading them (every law runs the same clause/target/law-naming code); data staleness was already per law. The measurable cost was elsewhere.
+- Measured: a write pass with nothing to change (rules skipped when equal to stored) still took 7 min 50 s — the DB writes weren't the cost. Profiled: `Extent.read/1` was 15–90% on top of each law's amendment read (1995/25: 3.3 s on 6.2 s), re-run for every law because `Extent.ReadCache` was keyed on every app module.
+- Done `558779e9`: `Amendment.Store.write_changed/3`, `Extent.Store.write_read/3` skip rows equal to stored; `Extent.ReadVersion` keys the extent cache (coverage-tested); `AmendingLaw.ScheduleRefs` out of the reader; the read pass takes the extent from the cache (reusing its parsed document on a miss).
+- Gate: extent catalogue identical (5 min 41 s, cold); write pass 2,102 laws, 0 changed, no rows rewritten, **6 min 01 s** (preview 4 min 30 s).
