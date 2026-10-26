@@ -810,3 +810,20 @@ On resume: fold round 6's defects into the sweep's clusters (fixed there, or her
 - **Claims:** 8 bounds now follow the enactment (`same`): ukpga 2007/28 1 (D2: Sch.13's HSWA s.28(6) change, was E+W), SI 2008/912 3, ukpga 2020/17 2, SI 2002/3135 2. No territory claims changed: no OH&S change is made by a provision with its own application. Bound 3,141 → 3,133.
 - `Extent.Patterns` is 456 lines (ballpark noted).
 - **Next:** agent check round 7, seed 12 (sample repeatable), running on the skill's prompt with round 7's rules added.
+
+## Agent check, seed 12 (round 7): laws 41 OK / 5 WRONG / 4 doubtful; changes 46 OK / 3 WRONG / 1 doubtful — FAIL (6 NEW)
+
+Sample repeatable (two runs identical). All six NEW are **misreads or partial reads of statements the reader does read**, so the sweep (recall) can't see them:
+
+- **NEW-6 (verified, systemic):** the feed reader keeps the feed's "art. 18" as `art.18`. Domestic articles are `reg.` by our convention (extent lists, `Order.ref`), so no Order's extent list matches a feed-cited article. 3,894 affecting claims carry `art.` refs. Seen as SI 2022/1174 art.18 (Part 3 "E+W+S only"), none:not_named.
+- **NEW-4 (verified):** ukpga 1997/42 s.9(3) "Section 7 extends to Northern Ireland, but the other provisions of this Act do not extend there". Stored: only `named NI {s.7}`, no default. Truth: default E+W+S, s.7 UK. HSWA changes (s.6(1), s.2) come out none:not_named instead of E+W+S.
+- **NEW-1:** ukpga 2013/22 s.27(13) "Paragraphs 9A, 9C and 10, as amended by the preceding provisions of this section, extend to Scotland and Northern Ireland" (paragraphs of the Courts Act 2003's Sch.5) is stored as `named S+NI {s.27}`, which outranks s.61(15)'s same extent for s.27(1)–(12).
+- **NEW-2:** ukpga 1975/21 s.463(1), a long lettered list with other Acts' sections. "sch.1961" (from "the Criminal Justice Act 1961"); the 1973 Act's ss.53, 58(a) placed on this Act's own; item (b) Part II dropped; all of Sch.9 E+W.
+- **NEW-3:** SI 2016/1142 art.1(3), (5) partly read ("This article" and Schedule Parts 1 and 2 missing). It is credited as read because the list's kind and place matched, so the drop is silent.
+- **NEW-5:** SI 2013/602 art.1(8) "In Schedule 3— (a) paragraphs 1 to 11 and 13 to 18 (…) have the same extent …; (b) paragraphs 12 and 19 (…) extend to Scotland only": no row, no unread, so silent.
+- **Doubtful, not NEW:**
+  - ukpga 2000/32 s.80(3) "same extent as the statutory provisions" counted unread;
+  - application clauses that equal the extent (SI 2014/1639, 2016/1154);
+  - SI 2008/2852 reg.1A "These Regulations apply to Northern Ireland, including offshore installations …" counted unread:application;
+  - change 44's label (no affecting claim, labelled unread_statement).
+- **Pattern:** the catalogue credits a sentence as read when any list of the same kind and place exists (NEW-3; also 1988/33's same-with-exception). So partial reads and misreads stay invisible. Round 7 already moved application crediting to the sentence's own entries; the same for lists would make partial reads counted (precision, as the sweep did for recall).

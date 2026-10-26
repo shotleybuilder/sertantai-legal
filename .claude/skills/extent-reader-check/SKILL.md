@@ -131,7 +131,7 @@ OH&S (first family, 2026-10-24 →). The session is `.claude/sessions/change-voc
 | 4 | 9 | FAIL, 5 NEW |
 | 5 | 10 | FAIL, 8 NEW |
 | 6 | 11 | FAIL, 3 NEW (all silent drops: "Subsection (N) does not apply to …" ×2, "The extent of … is the same as that of …"); changes 50/50 |
-| 7 | 12 | after CV-S05a's sweep: read forms 0 (corpus and OH&S) — running |
+| 7 | 12 | FAIL, 6 NEW — all misreads or partial reads of statements read (none a silent drop of an uncaught form); NEW-6 systemic: feed "art." vs domestic `reg.` |
 
 - Rounds 1–5's prompts lived only in conversation. Their known classes (K1–K10, then P1–P7) were not recorded; the classes above restate them from the session's findings (2026-10-26).
 - Round 6's design change: unread statements withhold their bound (`Extent.Unread`), so counted unread classes are known gaps.
