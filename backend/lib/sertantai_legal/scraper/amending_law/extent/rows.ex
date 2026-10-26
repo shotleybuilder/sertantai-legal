@@ -8,6 +8,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Rows do
 
   alias SertantaiLegal.Scraper.AmendingLaw.Extent
 
+  @list_kinds Map.new(~w(also only same not named unread)a, &{Atom.to_string(&1), &1})
+
   @doc """
   The extent read as `extent_rules` rows, one per statement (CV-04): the
   default (`"default"`, with the clause's ref and words), each list
@@ -81,8 +83,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Rows do
           r <- Enum.sort_by(rows, & &1.position),
           # ("not" was dropped here before CV-S05: a stored "Part III …
           # does not extend to Scotland" read back as nothing)
-          r.kind in ~w(also only same not named unread),
-          do: {String.to_existing_atom(r.kind), r.place, r.items}
+          # (the kinds by name, never `String.to_existing_atom/1`: read
+          # before `Extent` is loaded, "also" was no atom yet — golden, run
+          # time 2026-10-26)
+          kind = Map.get(@list_kinds, r.kind),
+          kind != nil,
+          do: {kind, r.place, r.items}
         ),
       corresponds: Enum.any?(rows, &(&1.kind == "corresponds")),
       application: Enum.find_value(rows, &(&1.kind == "applies" && &1.place)),
