@@ -99,24 +99,54 @@ bugs:
     module: Extent.Patterns / Extent.Forms
     affected: 2
     fix: "CV-S05a recall sweep: every extent-ish sentence counted; then read or count the form"
-    status: open
+    status: fixed
   - pattern: "\"The extent of any amendment, repeal or revocation made by section 60, … is the same as that of the provision amended\" not recognised (ukpga 2007/28 s.244(3)): Sch.13 changes to HSWA s.28(6), RTA 1988 s.144 bound E+W"
     category: extent
     module: Extent.Forms (amendments_same)
     affected: 1
     fix: "read as same for the provisions named (after the CV-S05a sweep counts the form)"
-    status: open
+    status: fixed
   - pattern: "lat.extent_check none_listed/1 labels a provision in a `same` list `not_named` when the law has no default"
     category: tooling
     module: Mix.Tasks.Lat.ExtentCheck
     affected: 3
     fix: "look for a same list naming the provision before not_named"
-    status: open
+    status: fixed
   - pattern: "LRRA 2006 s.34(3) \"The repeals in the Schedule have the same extent …\" stored as `same *`, not the Schedule"
     category: extent
     module: Extent.Same
     affected: 1
     fix: "subject \"The repeals in the Schedule\" → the Schedule"
+    status: open
+  - pattern: "Round 7 agent misreads/partial reads: \"Paragraphs 9A … as amended by … this section\" read as s.27 (2013/22, NEW-1); a qualified item's sub-list read as this Act's (1975/21 s.463(1), NEW-2); \"This article\" and parts dropped (SI 2016/1142, NEW-3); \"Section 7 extends to NI, but the other provisions … do not\" (1997/42, NEW-4); \"In Schedule 3— (a) paragraphs … (and article 27 …)\" dropped (SI 2013/602, NEW-5)"
+    category: extent
+    module: Extent.Named / Lists / Units / RefList
+    affected: 5
+    fix: "fbec0738 (round 8); 1997/42 gains 65 E+W+S bounds; 1975/21 Sch.9 para 51 E+W+S → S"
+    status: fixed
+  - pattern: "Feed affecting refs kept \"art. N\" while a domestic Order's provisions are reg.N, so no extent list matched a feed-cited article (round 7 NEW-6; 3,894 affecting claims)"
+    category: change-vocabulary
+    module: Readers.FeedAffecting
+    affected: 3894
+    fix: "fbec0738: art. → reg. (as Order.ref names them); SI 2022/1174 art.18 bound E+W+S"
+    status: fixed
+  - pattern: "The catalogue credited a list sentence as read when any list of its kind and place existed, so partial reads were silent (round 7 NEW-3, 1988/33)"
+    category: extent
+    module: Extent.Patterns
+    affected: 14
+    fix: "fbec0738: Extent.Credit (own refs read, else unread:list_partial)"
+    status: fixed
+  - pattern: "An unnumbered Schedule's Parts and paragraphs have no usable ref (Order.ref(\"schedule-part-1\") = \"sch.part\"; FeedAffecting needs a Schedule number), so \"Part 1 of the Schedule extends to …\" can't be read (SI 2016/1142 art.1(3)); counted unread:list_partial"
+    category: extent
+    module: Commencement.Order.ref / Readers.FeedAffecting / RefList
+    affected: 2
+    fix: "name an unnumbered Schedule's Parts/paragraphs (sch.pt.N, sch.para.N) in Order.ref, RefList and FeedAffecting together"
+    status: open
+  - pattern: "List sentences still read in part, counted unread:list_partial: 1974/44 s.131 (\"Parts IV, V, VI, VII, and VIII and,, in Part IX, sections …110 to116…\" text glitches); 2013/24 s.102 (\"Part 2 extends only to E+W and S, except that the following … also to NI\"); 1975/21 s.463(1)(a) \"(8) 189\" (no comma)"
+    category: extent
+    module: Extent.Lists / Named
+    affected: 3
+    fix: "read \"X extends only to P, except that the following … also extend to Q\" as only + also; tolerate missing separators"
     status: open
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
 ---
@@ -151,6 +181,7 @@ The session does not close until its results pass.
   - ✅ 202 laws stale in `lat.extent_check` (OH&S) traced: corpus-wide 483 of 2,050 — 482 the read pass's bare extent write wiping powers/competence (fixed `1a4626b8`, one writer `Extent.Store.write_read/3` + `ExtentWriteTest`), 1 (`UK_ukpga_1995_15`) last written 2026-10-22, before CV-S05's reader fixes
   - ✅ Repaired the 483 laws' `extent_rules` (restore point `run-time-before-extent-repair`; `--extents --cached`, 1 min 28 s, 483 + 49 parent Acts); OH&S extent check PASS, 0 stale. CV-S05's rebuild picks the territories up
 - ✅ Round 7 [`aee9b3d9`] (from CV-S05a's sweep; agent check pending): read the `read:*` forms — same_extent_of (12), same_extent (5), exception (6: round 6 D1, D3), also_there (7), lettered "extends only to—" (1), provision-level application (52; Jason "a"); fold in round 6's D2 (same_extent_of), the check's `same` label (D4), LRRA s.34(3); then the runs, the sweep (OH&S read forms 0), and a fresh-seed agent check
+- ✅ Round 8 [`fbec0738`] (Jason 2026-10-26: "round 8 go ahead - run through to completion as proposed in steps 1 to 4"): ✅ (1) feed affecting refs `art.` → `reg.` (NEW-6); ✅ (2) the catalogue credits a list sentence only when its own provisions were read (`Extent.Credit`, `unread:list_partial`); ✅ (3) NEW-1 to NEW-5 and the partial reads (2) exposed; ✅ (4) the runs (check PASS, golden 27/27), agent round 8 seed 13: FAIL, 6 NEW
 - ⬜ Fix until the check passes reliably; record the result
 
 ## Dependencies
@@ -827,3 +858,43 @@ Sample repeatable (two runs identical). All six NEW are **misreads or partial re
   - SI 2008/2852 reg.1A "These Regulations apply to Northern Ireland, including offshore installations …" counted unread:application;
   - change 44's label (no affecting claim, labelled unread_statement).
 - **Pattern:** the catalogue credits a sentence as read when any list of the same kind and place exists (NEW-3; also 1988/33's same-with-exception). So partial reads and misreads stay invisible. Round 7 already moved application crediting to the sentence's own entries; the same for lists would make partial reads counted (precision, as the sweep did for recall).
+
+## Round 8 (2026-10-26, Jason: "round 8 go ahead - run through to completion as proposed in steps 1 to 4"), code `fbec0738`
+
+- **(1) Feed affecting refs (NEW-6):** `Readers.FeedAffecting` (extracted from `Readers.Feed`, 548 → 509 lines) names the feed's "art. N" `reg.N`, as `Order.ref` names our provisions. Merge, Conflicts and commencement crediting compare against `reg.` refs too. 511 `feed.affecting` values in the feed catalogue's expected fixtures moved `art.` → `reg.` (mechanical; nothing else moved).
+- **(2) Precision: `Extent.Credit`:**
+  - A list sentence is credited in the catalogue only when each provision its subject names is in a list of its kind and place. Otherwise it is `unread:list_partial`, a counted class.
+  - The subject is the words before the verb, cut at each provision named. Left out: a lead ("Subject to section 17(6), …"), a describing bracket, a locator ("in Part 13"), another Act's provisions, and a heading's lead-in.
+  - Lettered sentences are credited per item.
+  - First pass: 19 examples moved. False ones were fixed in `Credit` ("Subject to", brackets, "in Part", a `same *` covering all, a Schedule's own Part).
+  - The true partial reads it exposed were then fixed in the reader (3): "This article" / "This Regulation" / "This section and the following"; naming brackets ("(with Schedule 9)"); roman items and "(b) an amendment … made by …" split; "repealed or amended … the repeal or amendment extends to that part"; a lettered "paragraphs … have the same extent as …".
+- **(3) Round 7's NEW:**
+  - NEW-1: "as amended by" asides out of a named subject.
+  - NEW-2: a qualified item, its sub-list and a qualified number left out; a bare "in section 47" locator is no item.
+  - NEW-3: "This article" read; "Part 1 of the Schedule" (unnumbered Schedule) left counted, an open bug.
+  - NEW-4: "…, but the other provisions of this Act do not extend there" read as "This Act, except— …".
+  - NEW-5: "In Schedule 3— … (and article 27 …)".
+- **Still partial, counted (`unread:list_partial`, logged open):** 1974/44 s.131 (text glitches), 2013/24 s.102 ("Part 2 extends only to …, except that the following … also …"), SI 2016/1142 (unnumbered Schedule). Same-with-exception statements held unread by design (SI 2013/602 Sch.1, SI 2014/469 Sch.3, SI 2020/904) now show as `list_partial`.
+- **Runs:**
+  - sweep: corpus uncaught 522 → 520, read forms 0;
+  - catalogue accept: 16 examples reviewed, 13 new patterns;
+  - restore point `cv-s05-before-round8`;
+  - extents re-written for 2,058 laws (58 s, no fetch);
+  - rebuild and **golden 27/27**;
+  - **check PASS**: our faults 0, OH&S read-form misses 0.
+  - Suite (extent + CV) 4,322.
+- **Claims** (against `r6b.claims6`): 0 lost; 66 gained (1997/42 NEW-4: 65 HSWA changes E+W+S; SI 2022/1174 art.18 NEW-6: E+W+S); 1 changed (1975/21 Sch.9 para 51 → HSWA s.34(5)(c): E+W+S → S, right: Sch.9 extends to E+W only for the amendments relating to the Acts listed, and HSWA isn't one). bound:law 3,133 → 3,140; none:not_named 12 → 5.
+- **Next:** agent check round 8, seed 13 (sample repeatable).
+
+## Agent check, seed 13 (round 8): laws 44 OK / 2 WRONG / 4 doubtful; changes 45 OK / 3 WRONG / 2 doubtful — FAIL (6 NEW)
+
+Sample repeatable (two runs identical). Round 7's six are gone. Four new are misreads and two are silent drops; one is systemic (verified):
+- **NEW-1 (verified, systemic):** a change with no markup or feed affecting claim falls back on its own key. `NoteDate.own_ref` passes the raw id ("schedule-7", "schedule-12-paragraph-15-13"), not `Order.ref`'s `sch.7`. No list matches it, so the default is placed even where a row withholds the bound (ukpga 1989/38 Sch.7 `unread`; ukpga 2013/32 Sch.12 `unread`). 80 law_text extent claims are affected.
+- **NEW-2:** ERRA 2013 (ukpga 2013/24) s.102(4), (8) "Part 4 extends to E+W, S and NI, except as follows—": only the exceptions are stored, with no UK row for Parts 4 and 6, yet the catalogue credits them (`list:only:E+W+S`). s.102(6) also makes another Act's provisions this law's (`unread {s.67, sch.2.para.32 …}`).
+- **NEW-3:** CPA 1987 s.49(1)(b) "any provision amending or repealing an enactment which does not so extend" is dropped from "This Act shall extend to Northern Ireland with the exception of— …". s.36 and Sch.3 (HSWA amendments) take E+W+S+NI.
+- **NEW-4:** ukpga 1981/45 s.32 "It is hereby declared that this Act extends to Northern Ireland" is dropped. `Extent.read` takes the first matching section (s.31) as the clause, so no default is stored. Part I of the unnumbered Schedule is also missing.
+- **NEW-5:** SI 2019/696 has no `introduces` rows ("Schedule N contains amendment of …" not read), so sch.33–37 take E+W+S, not reg.3's UK for "Part 5 and its related schedules".
+- **NEW-6:** LGA 1985 s.106(2) "Any amendment or repeal by this Act of an enactment which extends to Scotland or Northern Ireland has the same extent as that enactment but, save as aforesaid, this Act extends to England and Wales only": only `default E+W` is stored. HSWA s.28(6) (Sch.14 para 52) gets bound E+W.
+- **Tooling (verified):** `lat.extent_check`'s `@law_unread` leaves out `unread:list_partial` and `unread:provision_extent`, so the sample's per-law unread classes hide KL counts.
+- **Doubtful:** ukpga 2005/11 s.56(2) "same extent as the enactment (or the relevant part …)" is unread while 2003/20's same words are read; ukpga 2003/20 s.121(3)(a) "has effect despite" (same over a Part clause); ukpga 2007/15 plain "extends only to England and Wales" left unread (counted); 1986/44 qualified items take the default.
+- Trend of NEW per round: 16, 11, 5, 5, 8, 3, 6, 6.

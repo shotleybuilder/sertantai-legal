@@ -97,6 +97,14 @@ Reader rules (intended):
   relation to England only", "The following regulations do not apply in relation to Wales— …") gives the
   territory (`territory:law` claim) of the changes that provision makes; the law's application clause otherwise.
   Only whole statements: a condition ("applies if …", "applies … where …") is left unread.
+- A list sentence is credited as read only when each provision its subject names is in a list of its kind and place
+  (`Extent.Credit`, round 8); otherwise the catalogue counts it `unread:list_partial`. "This article", "This Regulation"
+  and "this section and the following provisions" name the provision itself. Another Act's provisions ("Paragraphs 9A
+  … , as amended by … this section") are never the law's own. A qualified item ("370 (so far as relating to …)",
+  "in Schedule 9, the amendments relating to— (i) …") and its sub-list are left out, never read whole.
+- "Section 7 extends to Northern Ireland, but the other provisions of this Act do not extend there" = default the
+  rest of the UK, section 7 also there.
+- Feed-cited articles of a domestic Order are `reg.N` (the feed's "art. 18"), as our provisions are named.
 
 Known counted classes (label a finding with one if it fits; otherwise NEW):
 - KU unread statement, counted: a qualified or conditional statement ("so far as …", "in so far as it relates to …",
@@ -108,6 +116,9 @@ Known counted classes (label a finding with one if it fits; otherwise NEW):
 - KN a provision named in no list where the law has lists and no default (none:not_named / same_or_not_named).
 - KD data: a law stored in a repealed version (words dotted out); numbers in words ("section seventy-seven").
 - KS Schedules/Annexes of amended laws aren't rows (placement elsewhere).
+- KL a list sentence read in part, counted `unread:list_partial` in the law's unread classes (e.g. "Part 1 of the
+  Schedule" of an unnumbered Schedule: no ref exists for it). NEW only if the part read is misread, or the sentence is
+  missing from the unread classes.
 
 For each LAW: is the basis right, are the default and lists right against the law's own words (every extent/application
 sentence: read, or counted unread)? For each CHANGE: is the territory/bound right given the amending provision and the
@@ -132,6 +143,7 @@ OH&S (first family, 2026-10-24 →). The session is `.claude/sessions/change-voc
 | 5 | 10 | FAIL, 8 NEW |
 | 6 | 11 | FAIL, 3 NEW (all silent drops: "Subsection (N) does not apply to …" ×2, "The extent of … is the same as that of …"); changes 50/50 |
 | 7 | 12 | FAIL, 6 NEW — all misreads or partial reads of statements read (none a silent drop of an uncaught form); NEW-6 systemic: feed "art." vs domestic `reg.` |
+| 8 | 13 | FAIL, 6 NEW — round 7's six fixed; NEW-1 systemic (a change's own key passed raw, "schedule-7", to the lookup: 80 claims); 4 misreads, 2 silent drops (a clause in a second section; "with the exception of— (b) any provision amending …") |
 
 - Rounds 1–5's prompts lived only in conversation. Their known classes (K1–K10, then P1–P7) were not recorded; the classes above restate them from the session's findings (2026-10-26).
 - Round 6's design change: unread statements withhold their bound (`Extent.Unread`), so counted unread classes are known gaps.
