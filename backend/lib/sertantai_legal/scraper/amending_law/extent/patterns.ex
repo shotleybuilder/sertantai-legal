@@ -36,7 +36,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Extent}
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.Units
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Applies, Excepted, Same, Units}
   alias SertantaiLegal.Scraper.ApplicationClause
   alias SertantaiLegal.Scraper.Commencement.Order
   alias SertantaiLegal.Scraper.LawStart.Clause
@@ -47,7 +47,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
                   # to the part or parts of the United Kingdom", "extends
                   # throughout", "extends as follows": counted, CV-S05 round 4;
                   # "extends to any part of the United Kingdom …": round 6)
-                  "\\bextends?\\s+(?:also\\s+|only\\s+)?(?:to\\s+(?:the\\s+whole\\s+of\\s+)?|throughout\\s+)(?:#{@places})|\\bnot\\s+extend\\s+to\\s+(?:#{@places})|\\bsame\\s+extent\\s+(?:within\\s+the\\s+United\\s+Kingdom\\s+)?as\\b|\\bextends?\\s+to\\s+the\\s+(?:same\\s+)?part\\s+or\\s+parts\\s+of\\s+the\\s+United\\s+Kingdom\\b|\\bextends?\\s+as\\s+follows\\b|\\bextends?\\s+to\\s+any\\s+part\\s+of\\s+the\\s+United\\s+Kingdom\\b",
+                  "\\bextends?\\s+(?:also\\s+|only\\s+)?(?:to\\s+(?:the\\s+whole\\s+of\\s+)?|throughout\\s+)(?:#{@places})|\\bnot\\s+extend\\s+to\\s+(?:#{@places})|\\bsame\\s+(?:application\\s+and\\s+)?extent\\s+(?:and\\s+application\\s+)?(?:(?:with)?in\\s+the\\s+United\\s+Kingdom\\s+)?as\\b|\\bextends?\\s+to\\s+the\\s+(?:same\\s+)?part\\s+or\\s+parts\\s+of\\s+the\\s+United\\s+Kingdom\\b|\\bextends?\\s+as\\s+follows\\b|\\bextends?\\s+to\\s+any\\s+part\\s+of\\s+the\\s+United\\s+Kingdom\\b|\\bthe\\s+extent\\s+of\\s+(?:any|each|every)\\b[^.]*\\bis\\s+the\\s+same\\s+as\\b",
                   "iu"
                 )
   @application_words Regex.compile!(
@@ -86,7 +86,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
 
     not Regex.match?(@instruction, t) and
       (Regex.match?(@extent_words, t) or
-         (Regex.match?(@application_words, t) and Regex.match?(@self_subject, t)))
+         (Regex.match?(@application_words, t) and Regex.match?(@self_subject, t)) or
+         Same.also_there?(t) or applies_statement(t) != nil)
   end
 
   @doc """
@@ -119,13 +120,15 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
           not container?(doc, id),
           unit <- units(doc, id),
           s <- Clause.sentences(unit),
-          words?(s),
+          # (an exception to an extent subsection only where it is one:
+          # "Subsection (1) does not apply to …" is mostly substantive)
+          words?(s) or Excepted.refs(s, ref, doc) != [],
           reduce: {[], false, MapSet.new()} do
         {acc, default_seen?, seen} ->
           if MapSet.member?(seen, {ref, s}) do
             {acc, default_seen?, seen}
           else
-            {class, seen?} = outcome(s, ref, e, doc.type, default_seen?)
+            {class, seen?} = outcome(s, ref, e, doc, default_seen?)
             {[{ref, s, class} | acc], seen?, MapSet.put(seen, {ref, s})}
           end
       end
@@ -167,7 +170,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
   end
 
   # {class, whether the clause's default has been taken}
-  defp outcome(s, ref, %Extent{} = e, type, default_seen?) do
+  defp outcome(s, ref, %Extent{} = e, %Doc{type: type} = doc, default_seen?) do
     statement = Extent.statement(s, type)
     in_clause? = e.ref != nil and e.ref == ref
 
@@ -208,6 +211,27 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
       # first item's list
       item = statement == nil && items_read(s, e, type) ->
         {item, default_seen?}
+
+      # the forms the recall sweep counted, read in round 7 (CV-S05a):
+      # provisions excepted from an extent subsection; a provision's own
+      # application; amendments that "also extend there"
+      Excepted.refs(s, ref, doc) != [] ->
+        {"exception", default_seen?}
+
+      a = applies_statement(s) ->
+        # (credited only where this sentence's own entries were read — a
+        # condition, "Subsection (2) applies if …", reads none: 1984/55)
+        read = for part <- Units.statements(s), entry <- Applies.read(part, ref, doc), do: entry
+        {kind, place} = a
+
+        if read != [] and Enum.all?(read, &(&1 in e.applies or &1 in e.lists)),
+          do: {"#{kind}:#{place}", default_seen?},
+          else: {"unread:provision_application", default_seen?}
+
+      Same.also_there?(s) ->
+        if Enum.any?(e.lists, &match?({k, _, _} when k in [:same, :unread], &1)),
+          do: {"list:same:same", default_seen?},
+          else: {"unread:list", default_seen?}
 
       Regex.match?(@application_words, s) and ApplicationClause.parse(s) != nil ->
         if e.application,
@@ -262,6 +286,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
 
     if found != [] and Enum.all?(found, &is_binary/1), do: hd(found)
   end
+
+  # a provision's own application stated in the sentence or one of its
+  # lettered statements (`Applies.statement/1`)
+  defp applies_statement(s), do: s |> Units.statements() |> Enum.find_value(&Applies.statement/1)
 
   @doc "A sentence's form (see the moduledoc)."
   @spec form(String.t()) :: form()

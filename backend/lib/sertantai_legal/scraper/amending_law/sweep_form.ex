@@ -31,6 +31,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.SweepForm do
   them. Pure.
   """
 
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Applies, Units}
   alias SertantaiLegal.Scraper.LawStart.Clause
 
   @places "England|Wales|Scotland|Northern Ireland|Great Britain|the United Kingdom|United Kingdom"
@@ -40,20 +41,23 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.SweepForm do
     # (which regulations a procedure covers, not where: "Subsection (2) does
     # not apply to regulations which apply only in relation to England")
     {"noise:procedure", ~r/\bto\s+regulations\s+which\b/iu},
+    # (an instruction's words run into the sentence: a statement inside it
+    # can't be told from the words it inserts — ukpga 2005/15 Sch. 7 para 59)
+    {"noise:instruction",
+     ~r/\bas\s+(?:it|they)\s+(?:extends?|has\s+effect|have\s+effect|applies|apply)\b|\b(?:substitute|insert|omit)\b/iu},
     {"noise:outside_uk",
-     ~r/Isle of Man|Channel Islands|Bailiwick|overseas territor|outside the United Kingdom|other jurisdiction|territory outside|Gibraltar|Isles of Scilly/iu},
+     ~r/Isle of Man|Channel Islands|Bailiwick|overseas territor|outside the United Kingdom|other jurisdiction|territory outside|Gibraltar|Isles of Scilly|\bextends?\s+outside\b/iu},
     {"count:outside_gb", ~r/\boutside\s+Great\s+Britain\b/iu},
     {"read:same_extent_of",
      ~r/\bthe\s+extent\s+of\s+(?:any|each|the|an?)\b.*\bis\s+the\s+same\b/iu},
     {"read:same_extent", ~r/\bsame\s+(?:territorial\s+)?(?:extent|application)\b/iu},
     {"count:qualified",
      ~r/\bextends?\s*[—–]|\b(?:limits?|affects?)\s+the\s+extent\b|\bso\s+far\s+as\b[^.]*\bextends?\s+to\s+any\s+place\b|\bextends?\s+to\s+any\s+place\b[^.]*\bso\s+far\s+as\b/iu},
-    {"noise:instruction",
-     ~r/\bas\s+(?:it|they)\s+(?:extends?|has\s+effect|have\s+effect|applies|apply)\b|\b(?:substitute|insert|omit)\b/iu},
     {"noise:modification",
      ~r/\bas\s+if\b|\bwith\s+the\s+(?:following\s+)?(?:substitution|modifications?)\b|\bsubject\s+to\s+the\s+modifications?\b/iu},
-    {"read:also_there",
-     ~r/\balso\s+extends?\s+(?:there|to\s+any\s+place)\b|\bextends?\s+there\b/iu},
+    # (never "a provision which extends there by virtue of subsection (5)":
+    # a power-extension rider, ukpga 2014/22 s.76)
+    {"read:also_there", ~r/\balso\s+extends?\s+(?:there|to\s+any\s+place)\b/iu},
     {"read:lettered", ~r/\bextends?\s+only\s+to\s*[—–]/iu},
     {"read:exception",
      ~r/^(?:But\s+)?(?:Subsection|Paragraph)s?\s+\(\w+\)(?:\s+and\s+\(\w+\))?\s+(?:does|do|shall)\s+not\s+apply\s+to\s*(?:[—–]|the\s+following|(?:sections?|regulations?|articles?|paragraphs?|Parts?|Schedules?)\s+[\d(]|the\s+(?:amendments?|repeals?|revocations?))/iu}
@@ -95,10 +99,18 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.SweepForm do
   # an application on a condition is qualified ("applies in Northern
   # Ireland where— …", "shall not apply in Scotland on Sundays …", "apply in
   # relation to Scotland as follows— …", "will continue to apply …")
+  # (read only where the reader reads it whole: `Extent.Applies`)
   defp application(s) do
-    if s =~ ~r/\b(?:where|if|unless|as\s+follows|continue|on\s+Sundays|so\s+far\s+as|insofar)\b/iu,
-      do: "count:qualified",
-      else: "read:application"
+    cond do
+      s =~ ~r/\b(?:where|if|unless|as\s+follows|continue|on\s+Sundays|so\s+far\s+as|insofar)\b/iu ->
+        "count:qualified"
+
+      s |> Units.statements() |> Enum.any?(&(Applies.statement(&1) != nil)) ->
+        "read:application"
+
+      true ->
+        "count:qualified"
+    end
   end
 
   @doc "The forms the extent reader is to read: an uncaught sentence in one is a miss."

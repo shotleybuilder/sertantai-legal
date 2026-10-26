@@ -30,6 +30,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{
     Amends,
     Application,
+    Applies,
+    Excepted,
     Default,
     Forms,
     Lists,
@@ -50,10 +52,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
             ref: nil,
             text: nil,
             application: nil,
+            applies: [],
             powers: nil,
             competence: nil
 
   @type list_kind :: :also | :only | :same | :not | :named | :unread
+  @type applies_kind :: :applies | :applies_not
   @type t :: %__MODULE__{
           default: String.t() | nil,
           lists: [{list_kind(), String.t() | nil, [String.t()]}],
@@ -62,6 +66,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
           ref: String.t() | nil,
           text: String.t() | nil,
           application: String.t() | nil,
+          applies: [{applies_kind(), String.t(), [String.t()]}],
           powers: String.t() | nil,
           competence: String.t() | nil
         }
@@ -98,6 +103,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
       end)
 
     default = Default.westminster(Default.default(clause), clause, doc.type)
+    # a provision's own application, and an "extends and applies" extent
+    applies = Applies.applies(doc)
 
     %__MODULE__{
       default: default,
@@ -110,15 +117,20 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
            Lists.part_not(sections, doc) ++
            Named.named(unit_sentences, doc) ++
            Same.amendments_same(unit_sentences, doc) ++
-           Amends.amends(unit_sentences, doc))
+           Amends.amends(unit_sentences, doc) ++
+           Excepted.excepted(unit_sentences, doc) ++
+           extent_entries(applies))
         |> Enum.flat_map(&excepted(&1, default)),
       corresponds: Regex.match?(~r/\bcorresponds\s+to\s+the\s+repeal\b/i, clause),
       introduced_by: introductions(doc),
       ref: clause_ref,
       text: if(clause != "", do: clause),
-      application: Application.application(doc, Default.default(clause))
+      application: Application.application(doc, Default.default(clause)),
+      applies: for({k, _, _} = a <- applies, k in [:applies, :applies_not], do: a)
     }
   end
+
+  defp extent_entries(applies), do: for({k, _, _} = a <- applies, k in [:only, :named], do: a)
 
   # a list item's own exceptions (`Lists`: "Part 5 …, except— i …") keep
   # the default: what the list adds is taken from them; with no default,
@@ -170,6 +182,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   @doc "The territory of a change made by the amending provisions `refs` (`Extent.Lookup.of_change/2`)."
   @spec of_change(t(), [String.t()]) :: String.t() | :same | nil
   defdelegate of_change(e, refs), to: Lookup
+
+  @doc """
+  Where the changes made by the amending provisions `refs` apply
+  (`Extent.Lookup.application_at/2`): a provision's own application, else
+  the law's.
+  """
+  @spec application_at(t(), [String.t()]) :: String.t() | nil
+  defdelegate application_at(e, refs), to: Lookup
 
   @doc "A devolved instrument's extent by its legislature's competence (`Extent.Lookup.competence/1`)."
   @spec competence(String.t()) :: String.t() | nil

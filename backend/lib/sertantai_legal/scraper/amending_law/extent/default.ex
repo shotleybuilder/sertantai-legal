@@ -49,6 +49,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Default do
         {:default, default(sentence)}
 
       Regex.match?(Forms.amendments_same(), sentence) or
+        Regex.match?(Forms.extent_of_same(), sentence) or
           Regex.match?(Forms.amendments_where(), sentence) ->
         {:list, :same, nil}
 

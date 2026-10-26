@@ -52,10 +52,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.SweepTest do
     doc =
       ExtentDoc.doc(
         "UK_ukpga_2003_39",
-        ExtentDoc.p1(
-          "section-111",
-          "This Act extends to England and Wales only. Subsection (1) does not apply to section 90."
-        ) <>
+        ~s|<P1 id="section-111"><P1para><P2 id="section-111-1"><P2para><Text>This Act extends to England and Wales only.</Text></P2para></P2><P2 id="section-111-2"><P2para><Text>Subsection (1) does not apply to section 90.</Text></P2para></P2></P1para></P1>| <>
           ExtentDoc.p1("section-12", "This section applies in relation to Scotland only.") <>
           ~s|<P1 id="section-13"><P1para><Text>After subsection (2) insert—</Text><BlockAmendment><P2><P2para><Text>This section applies in relation to Wales only.</Text></P2para></P2></BlockAmendment></P1para></P1>|
       )

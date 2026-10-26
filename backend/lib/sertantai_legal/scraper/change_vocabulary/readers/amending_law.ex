@@ -62,16 +62,23 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
          Claim.new(:law_text, :level, r.level, key),
          Claim.new(:law_text, :by, law, key),
          Claim.new(:commencement, :date, date(Map.get(commencement, law, []), ref), key),
-         # where the amending law applies (its application clause; CV-07)
-         Claim.new(:law_text, :territory, application(extents, law), key)
+         # where the amending law applies (its application clause; CV-07),
+         # or the amending provision's own (CV-S05 round 7)
+         Claim.new(:law_text, :territory, application(extents, law, ref), key)
        ])}
     end
   end
 
-  defp application(extents, law) do
+  defp application(extents, law, ref) do
     case Map.get(extents, law) do
-      %{application: a} -> a
-      _ -> nil
+      %SertantaiLegal.Scraper.AmendingLaw.Extent{} = e ->
+        SertantaiLegal.Scraper.AmendingLaw.Extent.application_at(e, List.wrap(Order.ref(ref)))
+
+      %{application: a} ->
+        a
+
+      _ ->
+        nil
     end
   end
 

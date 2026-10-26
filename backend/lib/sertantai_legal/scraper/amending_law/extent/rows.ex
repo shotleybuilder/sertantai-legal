@@ -9,6 +9,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Rows do
   alias SertantaiLegal.Scraper.AmendingLaw.Extent
 
   @list_kinds Map.new(~w(also only same not named unread)a, &{Atom.to_string(&1), &1})
+  @applies_rows %{applies: "applies_to", applies_not: "applies_not"}
+  @applies_kinds Map.new(@applies_rows, fn {k, v} -> {v, k} end)
 
   @doc """
   The extent read as `extent_rules` rows, one per statement (CV-04): the
@@ -54,6 +56,15 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Rows do
     applies =
       if e.application, do: [row.("applies", e.application, [], e.ref, nil, 0)], else: []
 
+    # a provision's own application ("Regulation 44 applies to Scotland
+    # only": CV-S05 round 7)
+    provision_applies =
+      e.applies
+      |> Enum.with_index(1)
+      |> Enum.map(fn {{kind, place, items}, i} ->
+        row.(Map.fetch!(@applies_rows, kind), place, items, nil, nil, i)
+      end)
+
     powers = if e.powers, do: [row.("powers", e.powers, [], nil, nil, 0)], else: []
 
     competence =
@@ -61,6 +72,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Rows do
 
     clause ++
       applies ++
+      provision_applies ++
       powers ++
       competence ++
       for {sch, sec} <- Enum.sort(e.introduced_by),
@@ -92,6 +104,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Rows do
         ),
       corresponds: Enum.any?(rows, &(&1.kind == "corresponds")),
       application: Enum.find_value(rows, &(&1.kind == "applies" && &1.place)),
+      applies:
+        for(
+          r <- Enum.sort_by(rows, & &1.position),
+          kind = Map.get(@applies_kinds, r.kind),
+          kind != nil,
+          do: {kind, r.place, r.items}
+        ),
       powers: Enum.find_value(rows, &(&1.kind == "powers" && &1.place)),
       competence: Enum.find_value(rows, &(&1.kind == "competence" && &1.place)),
       introduced_by:

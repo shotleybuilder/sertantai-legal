@@ -258,13 +258,14 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
 
   defp none_why(_), do: "unknown"
 
-  defp none_listed(%{extent: %Extent{lists: lists, default: d}}) when d == nil and lists != [],
-    do: "not_named"
-
-  defp none_listed(%{extent: %Extent{} = e}) do
-    if Enum.any?(e.lists, &match?({:same, _, _}, &1)),
-      do: "same_or_not_named",
-      else: "provision_not_named"
+  # (a same list first: a provision following the enactment it changes is
+  # no provision left unnamed — round 6 D4)
+  defp none_listed(%{extent: %Extent{lists: lists, default: d}}) do
+    cond do
+      Enum.any?(lists, &match?({:same, _, _}, &1)) -> "same_or_not_named"
+      d == nil and lists != [] -> "not_named"
+      true -> "provision_not_named"
+    end
   end
 
   # ── report ───────────────────────────────────────────────────────────

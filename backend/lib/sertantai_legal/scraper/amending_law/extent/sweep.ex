@@ -30,7 +30,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Sweep do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.Units
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Excepted, Units}
   alias SertantaiLegal.Scraper.Commencement.Order
   alias SertantaiLegal.Scraper.LawStart.Clause
 
@@ -89,6 +89,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Sweep do
         s <- Clause.sentences(unit),
         net = net(s, ref, clause_refs),
         net != nil,
+        # (an exception to a subsection that isn't an extent statement:
+        # `Excepted.other_exception?/3`)
+        not Excepted.other_exception?(s, ref, doc),
         sq = squash(s),
         not Enum.any?(caught, &(String.contains?(&1, sq) or String.contains?(sq, &1))),
         uniq: true,

@@ -204,13 +204,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
 
   defp lettered_places(text) do
     Regex.replace(
-      ~r/\b(extends?|extend)(?:\s*\.)*\s+to\s*[—–]\s*\(?a\)?\s+(#{@places})((?:\s*,?\s*(?:and|or)?\s*\(?[b-e]\)?\s+(?:#{@places}))+)/u,
+      ~r/\b(extends?|extend)(?:\s*\.)*((?:\s+only)?)\s+to\s*[—–]\s*\(?a\)?\s+(#{@places})((?:\s*,?\s*(?:and|or)?\s*\(?[b-e]\)?\s+(?:#{@places}))+)/u,
       text,
-      fn _, verb, first, rest ->
+      fn _, verb, only, first, rest ->
         places =
           [first | for([p] <- Regex.scan(~r/#{@places}/u, rest), do: p)]
 
-        "#{verb} to " <>
+        "#{verb}#{only} to " <>
           case Enum.split(places, -1) do
             {[], [one]} -> one
             {init, [last]} -> Enum.join(init, ", ") <> " and " <> last

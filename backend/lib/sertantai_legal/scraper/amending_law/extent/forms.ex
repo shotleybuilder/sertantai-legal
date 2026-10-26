@@ -88,7 +88,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Forms do
   # extent within the United Kingdom as …", "an amendment … extends to the
   # part or parts of the United Kingdom to which the enactment extends":
   # CV-S05 round 4 N-B)
-  @amendments_same ~r/^(?:\(\w+\)\s*)?(?:(?:Subject\s+to|Except\s+as\s+(?:otherwise\s+)?(?:provided|set\s+out|specified|mentioned)\s+(?:by|in))[^,]*,\s*)?(?:(?:An?|The|Any|Each)\s+(?:other\s+)?(?:amendments?|repeals?|revocations?|modifications?)(?:\s*,\s*|\s+(?:and|or)\s+)?(?:(?:other\s+)?(?:amendments?|repeals?|revocations?|modifications?)(?:\s*,\s*|\s+(?:and|or)\s+)?)*|(?:An?|Any|Each)\s+provision\s+of\s+th(?:is|ese)\s+(?:Act|Regulations|Order)\s+(?:that|which)\s+(?:amends|repeals|revokes)\b)(?<subj>.*?)\s+(?:(?:has|have|shall\s+have)\s+the\s+same\s+(?:application\s+and\s+)?extent\s+(?:within\s+the\s+United\s+Kingdom\s+)?as\s+(?:that\s+of\s+)?|extends?\s+to\s+the\s+(?:same\s+)?part\s+or\s+parts\s+of\s+the\s+United\s+Kingdom\s+(?:as|to\s+which)\s+|extends?\s+to\s+any\s+part\s+of\s+the\s+United\s+Kingdom\s+to\s+which\s+)the\s+(?:amended\s+)?(?:enactments?|provisions?|instruments?|legislation)\b(?!\s+as\s+if)/iu
+  @amendments_same ~r/^(?:\(\w+\)\s*)?(?:(?:Subject\s+to|Except\s+as\s+(?:otherwise\s+)?(?:provided|set\s+out|specified|mentioned)\s+(?:by|in))[^,]*,\s*)?(?:(?:An?|The|Any|Each)\s+(?:other\s+)?(?:amendments?|repeals?|revocations?|modifications?)(?:\s*,\s*|\s+(?:and|or)\s+)?(?:(?:other\s+)?(?:amendments?|repeals?|revocations?|modifications?)(?:\s*,\s*|\s+(?:and|or)\s+)?)*|(?:An?|Any|Each)\s+provision\s+(?:of\s+th(?:is|ese)\s+(?:Act|Regulations|Order)\s+)?(?:that|which)\s+(?:amends|repeals|revokes)\b)(?<subj>.*?)\s+(?:(?:has|have|shall\s+have)\s+the\s+same\s+(?:application\s+and\s+)?extent\s+(?:and\s+application\s+)?(?:(?:with)?in\s+the\s+United\s+Kingdom\s+)?as\s+(?:that\s+of\s+)?|extends?\s+to\s+the\s+(?:same\s+)?part\s+or\s+parts\s+of\s+the\s+United\s+Kingdom\s+(?:as|to\s+which)\s+|extends?\s+to\s+any\s+part\s+of\s+the\s+United\s+Kingdom\s+to\s+which\s+)the\s+(?:amended\s+)?(?:enactments?|provisions?|instruments?|legislation)\b(?!\s+as\s+if)/iu
 
   # "This Act shall extend to Northern Ireland with the exception of— (a)
   # the provisions of Part 1; (b) any provision amending … which does not so
@@ -161,6 +161,17 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Forms do
   @doc "The `@named` form (its wording in the comment where it is defined)."
   @spec named() :: Regex.t()
   def named, do: @named
+
+  # "The extent of any amendment, repeal or revocation made by section 60
+  # … or by Schedule 13 … is the same as that of the provision amended"
+  # (ukpga 2007/28 s.244(3)); "The extent of any amendment … made by this
+  # Act is the same as that of the enactment amended" (2000/6, 2002/17,
+  # 2004/5; SIs 2002/3135, 2008/912): CV-S05 round 7, from the sweep
+  @extent_of_same ~r/^(?:\(\w+\)\s*)?(?:Subject\s+to\s+[^,]{1,120},\s*)?The\s+extent\s+of\s+(?:any|each|every)\s+(?<subj>(?:amendments?|repeals?|revocations?|modifications?)\b[^.]*?)\s+is\s+the\s+same\s+as\s+(?:that\s+of|the\s+extent\s+of)\s+the\s+(?:enactments?|provisions?|instruments?)\b/iu
+
+  @doc "The `@extent_of_same` form (its wording in the comment where it is defined)."
+  @spec extent_of_same() :: Regex.t()
+  def extent_of_same, do: @extent_of_same
 
   @doc "The `@amendments_same` form (its wording in the comment where it is defined)."
   @spec amendments_same() :: Regex.t()

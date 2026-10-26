@@ -40,14 +40,15 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Same do
   def amendments_same(unit_sentences, doc) do
     for(
       {ref, s} <- unit_sentences,
-      m = Regex.named_captures(Forms.amendments_same(), s),
+      form <- [Forms.amendments_same(), Forms.extent_of_same()],
+      m = Regex.named_captures(form, s),
       m != nil,
-      [_, tail] <- [Regex.split(Forms.amendments_same(), s, parts: 2)],
+      [_, tail] <- [Regex.split(form, s, parts: 2)],
       not Regex.match?(
         ~r/\b(?:other\s+than|apart\s+from|except|save|excluding)\b/iu,
         m["subj"]
       ),
-      refs = same_refs(m["subj"], tail, ref, doc),
+      refs = same_refs(that_schedule(m["subj"], ref, unit_sentences), tail, ref, doc),
       refs != :none,
       list <- same_lists(refs, tail, ref),
       uniq: true,
@@ -59,6 +60,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Same do
         uniq: true,
         do: {:same, nil, ["*"]}
       ) ++
+      also_there(unit_sentences, doc) ++
       for {ref, s} <- unit_sentences,
           m = Regex.named_captures(@named_same, s),
           m != nil,
@@ -67,6 +69,39 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Same do
           refs != [],
           uniq: true,
           do: {:same, nil, refs}
+  end
+
+  # amendments that "also extend there" (CV-S05 round 7, from the sweep):
+  # "The amendment by this Act of any enactment extending to Northern
+  # Ireland also extends there" (ukpga 1999/24 s.7) → every amendment the
+  # law makes follows the enactment; "Regulations 6 and 7 also extend to
+  # any place (except Scotland) to which the enactments they amend extend"
+  # (SI 2007/1843 reg.3) → those, or unread with an exception
+  @also_there ~r/^(?:\(\w+\)\s*)?The\s+(?:amendments?|repeals?|revocations?)\b[^.]*?\bby\s+this\s+(?:Act|Order|Regulations)\s+of\s+any\s+enactments?\s+extending\s+to\s+[^.]*?\balso\s+extends?\s+there\b/iu
+  @also_any_place ~r/^(?:\(\w+\)\s*)?(?<subj>(?:Sections?|Regulations?|Articles?|Schedules?|Parts?)\s+[\dIVXL][^.;]*?)\s+also\s+extends?\s+to\s+any\s+place\s*(?<except>\(\s*except[^)]*\))?\s+to\s+which\s+the\s+enactments?\b/iu
+
+  @doc "Whether a sentence says amendments \"also extend there\" (`@also_there`, `@also_any_place`)."
+  @spec also_there?(String.t()) :: boolean()
+  def also_there?(s), do: Regex.match?(@also_there, s) or Regex.match?(@also_any_place, s)
+
+  defp also_there(unit_sentences, doc) do
+    for {ref, s} <- unit_sentences, list <- also_there(s, ref, doc), uniq: true, do: list
+  end
+
+  defp also_there(s, ref, doc) do
+    cond do
+      Regex.match?(@also_there, s) ->
+        [{:same, nil, ["*"]}]
+
+      m = Regex.named_captures(@also_any_place, s) ->
+        case Enum.uniq(RefList.parse(m["subj"], ref) ++ Parts.parts(m["subj"], doc, ref)) do
+          [] -> []
+          refs -> [{if(m["except"] != "", do: :unread, else: :same), nil, refs}]
+        end
+
+      true ->
+        []
+    end
   end
 
   # the same extent, with its exceptions: none → same; "except that the
@@ -95,6 +130,24 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Same do
 
       true ->
         [{:unread, nil, refs}]
+    end
+  end
+
+  # "any repeal in that Schedule" (ukpga 1994/40 s.81): the Schedule the
+  # provision named last before it
+  defp that_schedule(subj, ref, unit_sentences) do
+    if subj =~ ~r/\bthat\s+Schedule\b/u do
+      named =
+        for {^ref, s} <- unit_sentences,
+            [_, n] <- Regex.scan(~r/\bSchedule\s+(\d+[A-Z]*)\b/u, s),
+            do: n
+
+      case named do
+        [] -> subj
+        _ -> String.replace(subj, ~r/\bthat\s+Schedule\b/u, "Schedule #{List.last(named)}")
+      end
+    else
+      subj
     end
   end
 

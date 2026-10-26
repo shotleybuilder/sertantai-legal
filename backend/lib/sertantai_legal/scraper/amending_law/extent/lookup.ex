@@ -90,6 +90,51 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lookup do
     end)
   end
 
+  @doc """
+  Where the changes made by the amending provisions `refs` apply (CV-S05
+  round 7, Jason: "read them as provision-level application"): a
+  provision's own application where one names it ("Regulation 44 applies
+  to Scotland only" → S; "This paragraph does not apply to Scotland" →
+  where it otherwise extends or applies, less Scotland), else the law's
+  (`application`); nil when none is stated, or the provisions disagree.
+  """
+  @spec application_at(Extent.t(), [String.t()]) :: String.t() | nil
+  def application_at(%Extent{applies: [], application: a}, _refs), do: a
+  def application_at(%Extent{application: a}, []), do: a
+
+  def application_at(%Extent{} = e, refs) do
+    case refs |> Enum.map(&provision_application(e, &1)) |> Enum.uniq() do
+      [one] -> one
+      _ -> nil
+    end
+  end
+
+  defp provision_application(%Extent{applies: applies} = e, ref) do
+    candidates = [ref | containers(ref)] ++ introducing(e, ref)
+
+    naming =
+      Enum.filter(applies, fn {_, _, items} -> Enum.any?(candidates, &named?(&1, items)) end)
+
+    case Enum.split_with(naming, &match?({:applies, _, _}, &1)) do
+      {[], []} ->
+        e.application
+
+      {[{:applies, place, _} | _], nots} ->
+        Enum.reduce(nots, place, fn {:applies_not, p, _}, acc -> Territory.subtract(acc, p) end)
+
+      {[], nots} ->
+        # where it would otherwise apply: the law's application, else
+        # where the provision extends
+        case e.application || of(e, ref) do
+          base when is_binary(base) ->
+            Enum.reduce(nots, base, fn {:applies_not, p, _}, acc -> Territory.subtract(acc, p) end)
+
+          _ ->
+            nil
+        end
+    end
+  end
+
   # "sch.7.para.27(2)" → ["sch.7.para.27", "sch.7"]; "sch.17.pt.2" → ["sch.17"]
   defp containers(ref) do
     case Regex.run(~r/^(sch\.\d+[A-Z]*)/, ref) do

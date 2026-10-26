@@ -176,8 +176,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
           end
 
         # where the amending law applies, its changes apply ("These
-        # Regulations … apply in relation to England only"; CV-07)
-        bound ++ Claim.new(:law_text, :territory, e.application, id)
+        # Regulations … apply in relation to England only"; CV-07), or the
+        # amending provision's own application ("Regulation 44 applies to
+        # Scotland only"; CV-S05 round 7)
+        bound ++
+          Claim.new(
+            :law_text,
+            :territory,
+            AmendingLaw.Extent.application_at(e, affecting_refs(text)),
+            id
+          )
 
       _ ->
         []
