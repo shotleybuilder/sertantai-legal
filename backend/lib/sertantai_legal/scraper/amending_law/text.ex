@@ -9,7 +9,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
   `before` (LR-41, lazy): the text before the provision, nearest first —
   the earlier provisions of its Schedule then the body's words naming that
   Schedule ("The Pipe-lines Act 1962 is amended as set out in Schedule 1"),
-  or the body's earlier provisions ("… of that Act") — for law names only.
+  or the body's earlier provisions ("… of that Act") — for law names only;
+  its `parents` — the words of the provisions holding it, nearest first
+  ("in subsection (5)—" over "in paragraph (a) …"), never a sibling's —
+  and its `items`, its own list items' words ("—shall be omitted; (i) the
+  words …"), for where it is and what it changes (run time 2026-10-26).
   Notes (Commentary, CommentaryRef), numbers and sub-provisions with their
   own id are left out. Pure.
   """
@@ -17,7 +21,16 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
 
   @enforce_keys [:id, :instruction]
-  defstruct [:id, :instruction, quoted: "", inserted: [], context: [], before: []]
+  defstruct [
+    :id,
+    :instruction,
+    quoted: "",
+    inserted: [],
+    context: [],
+    parents: [],
+    items: [],
+    before: []
+  ]
 
   @type t :: %__MODULE__{
           id: String.t() | nil,
@@ -25,6 +38,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
           quoted: String.t(),
           inserted: [[String.t()]],
           context: [String.t()],
+          parents: [String.t()],
+          items: [String.t()],
           before: Enumerable.t()
         }
 
@@ -43,10 +58,23 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
         {words, quoted} = words(el)
         top = top(id)
 
-        context =
+        held =
           for other <- Doc.between(doc, top, id),
               other == top or String.starts_with?(other, top <> "-"),
               {w, _} = words(Doc.element(doc, other)),
+              w != "",
+              do: {other, w}
+
+        context = Enum.map(held, &elem(&1, 1))
+
+        parents =
+          for {other, w} <- Enum.reverse(held),
+              String.starts_with?(id, other <> "-"),
+              do: w
+
+        items =
+          for child <- Doc.children(doc, id),
+              {w, _} = words(Doc.element(doc, child)),
               w != "",
               do: w
 
@@ -56,6 +84,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
           quoted: quoted,
           inserted: inserted(el),
           context: context,
+          parents: parents,
+          items: items,
           before: before(doc, top)
         }
     end

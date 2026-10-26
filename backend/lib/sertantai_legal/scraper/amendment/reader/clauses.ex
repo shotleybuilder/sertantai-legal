@@ -94,6 +94,16 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
         (i =~ ~r/\bthe following (?:is|are|shall be) (?:omitted|repealed|revoked)\b/i and
            not (i =~ @provision_named))
 
+  # "in paragraph (c)(ii) of that subsection—shall be omitted; (i) the
+  # words “…”, and (ii) the word “…”": what is omitted is its list items,
+  # all words (1995/25 Sch. 22 para 30(6)(b), run time 2026-10-26)
+  defp words_listed?(%Text{instruction: i, items: [_ | _] = items}),
+    do:
+      i =~ ~r/[—–]\s*(?:shall\s+be|are|is|be)\s+(?:omitted|repealed|revoked)\b/iu and
+        Enum.all?(items, &(&1 =~ ~r/^\s*the\s+words?\b/i))
+
+  defp words_listed?(_text), do: false
+
   @doc """
   The instruction's operation, its captions aside; an insertion quoting no
   provision "at the end" / "at the appropriate place" — and naming no kind
@@ -104,7 +114,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   def operation(text) do
     case Operation.of(captionless(text)) do
       {verb, verb} = op when verb != "inserted" ->
-        if words_unnamed?(text.instruction), do: {verb, "words #{verb}"}, else: op
+        if words_unnamed?(text.instruction) or words_listed?(text),
+          do: {verb, "words #{verb}"},
+          else: op
 
       {"inserted", "inserted"} = op ->
         if text.inserted == [] and
@@ -137,6 +149,19 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   def strip_captions(s) do
     ~r/[“"][^”"]*[”"]|\((?:[^()“”"]|[“"][^”"]*[”"])*\)/u
     |> Regex.replace(s, fn m -> if m =~ ~r/^[“"]/u or not (m =~ ~r/\s/u), do: m, else: "" end)
+  end
+
+  @doc """
+  The text without its captions, brackets inside them too ("… 1990
+  (provisions to which subsections (1) to (4) are subject)—": no place;
+  1995/25 Sch. 10 para 32(1)); a bracket with no space is kept ("(5)",
+  "(Scotland)").
+  """
+  @spec no_captions(String.t()) :: String.t()
+  def no_captions(s) do
+    Regex.replace(~r/\((?:[^()]|\([^()]*\))*\)/u, s, fn m ->
+      if m =~ ~r/\s/u, do: "", else: m
+    end)
   end
 
   # a provision reference, then its caption: "section 1 (application of …)",

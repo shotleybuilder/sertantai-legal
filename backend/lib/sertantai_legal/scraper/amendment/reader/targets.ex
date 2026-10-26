@@ -61,7 +61,11 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
     if own? do
       [Brackets.ref(p, path)]
     else
-      for(n <- numbers, do: Brackets.ref(p, [n | Brackets.above(named, [hd(path)]) ++ path])) ++
+      for(
+        n <- numbers,
+        pre <- prefixes(Brackets.above(named, [hd(path)])),
+        do: Brackets.ref(p, [n | pre ++ path])
+      ) ++
         for(
           n <- numbers,
           length(named) > 1,
@@ -69,6 +73,17 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
           do: Brackets.ref(p, [n | Enum.drop(named, -1) ++ path])
         )
     end
+  end
+
+  # the brackets above a quoted path, one of each level per path ("in
+  # subsections (2) and (5)— after paragraph (z) insert— (za)": (2)(za) and
+  # (5)(za), never (2)(5)(za); run time 2026-10-26)
+  defp prefixes(brackets) do
+    brackets
+    |> Enum.uniq()
+    |> Enum.group_by(&Brackets.bracket_level/1)
+    |> Enum.sort()
+    |> Enum.reduce([[]], fn {_, level}, acc -> for a <- acc, b <- level, do: a ++ [b] end)
   end
 
   @doc """

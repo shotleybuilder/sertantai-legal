@@ -27,3 +27,8 @@ UK_ukpga_1998_17   # a caption "(application of Part I of Health and Safety at W
 UK_uksi_2024_1268  # nested quotes "““…” means the Building (Approved Inspectors etc.) Regulations 2010”"
 UK_wsi_2025_1320   # captions had sent 20 rules to the Building Regulations 2010, not the Wales 2024 Regulations its context names
 UK_uksi_2012_3119  # "the Approved Inspectors Regulations 2010" in apposition to a bracketed title "Building (Approved Inspectors etc.) Regulations 2010" (2026-10-26)
+UK_ukpga_2013_24  # ERRA 2013: Schedule paragraphs (Gas Act Sch. 4A, Enterprise Act Sch. 22) had read as the sections their captions name (2026-10-26)
+UK_asc_2023_4     # list items take their parents' brackets; "In that section" after a caption "(inserted by section 46)" (2026-10-26)
+UK_ukpga_1994_19  # a parent operating first, then "and in subsection (5)—": the lead-in's place (2026-10-26)
+UK_ukpga_2013_22  # caption "(interpretation of sections 3A to 10)" gave numbers; "in section 90 …—" under a Schedule-amended provision (2026-10-26)
+UK_ssi_2006_475   # "In Schedule 1 (…)—" paragraphs had read as section 98 (2026-10-26)

@@ -633,4 +633,189 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderTest do
     assert by.("UK_ukpga_1974_37") == [{["s.121(4)"], :provision}, {["s.121(5)"], :words}]
     assert Enum.map(rules, & &1.source.text) |> Enum.at(1) == "Section 103."
   end
+
+  describe "a list item's place: its parents' brackets, \"that subsection\", words listed (1995/25 Sch. 22 para 30)" do
+    @hswa Reader.law_ref("UK_ukpga_1974_37", "Health and Safety at Work etc. Act", "s")
+    @terms %{"the 1974 act" => %{law: nil, title: "Health and Safety at Work etc. Act 1974"}}
+
+    defp para30 do
+      p = fn id, text, kids ->
+        ~s(<P id="schedule-22-paragraph-30-#{id}"><Text>#{text}</Text>#{kids}</P>)
+      end
+
+      Doc.new("UK_ukpga_1995_25", [
+        ~s(<Legislation><Primary><Schedules><Schedule id="schedule-22"><ScheduleBody><P1 id="schedule-22-paragraph-30"><P1para>) <>
+          p.(
+            "1",
+            "The Health and Safety at Work etc. Act 1974 (in this paragraph referred to as “the 1974 Act”) shall have effect in accordance with the following provisions of this paragraph.",
+            ""
+          ) <>
+          p.(
+            "6",
+            "In section 28 of the 1974 Act (restrictions on disclosure of information)—",
+            p.(
+              "6-a",
+              "in paragraph (a) of subsection (3) (exception for disclosure of information to certain bodies) after the words “the Executive,” there shall be inserted the words “the appropriate new Agency,”;",
+              ""
+            ) <>
+              p.(
+                "6-b",
+                "in paragraph (c)(ii) of that subsection (exception for disclosure to officers of certain bodies) as it applies to England and Wales—shall be omitted;",
+                p.("6-b-i", "the words “of the National Rivers Authority or”, and", "") <>
+                  p.("6-b-ii", "the word “Authority,” (where next occurring),", "")
+              ) <>
+              p.(
+                "6-d",
+                "paragraph (c)(iii) of that subsection (exception for disclosure to officers of river purification boards) shall cease to have effect;",
+                ""
+              ) <>
+              p.(
+                "6-f",
+                "in subsection (5) (information disclosed in pursuance of subsection (3) not to be used by recipient except for specified purposes)—",
+                p.(
+                  "6-f-i",
+                  "in paragraph (a) (use for a purpose of the Executive etc) after the words “of the Executive or” there shall be inserted the words “of the appropriate new Agency or”;",
+                  ""
+                ) <>
+                  p.(
+                    "6-f-ii",
+                    "in paragraph (b) as it applies to England and Wales, the words “the National Rivers Authority” shall be omitted;",
+                    ""
+                  )
+              )
+          ) <>
+          p.(
+            "7",
+            "In section 38 of the 1974 Act (restriction on institution of proceedings in England and Wales) after the words “except by an inspector or” there shall be inserted the words “the appropriate new Agency or”.",
+            ""
+          ) <>
+          "</P1para></P1></ScheduleBody></Schedule></Schedules></Primary></Legislation>"
+      ])
+    end
+
+    defp para30_rules(id),
+      do: Reader.read(para30(), "schedule-22-paragraph-30-" <> id, @terms, [@hswa])
+
+    test "a list item takes its parent's subsection: (f)(i) \"in paragraph (a)\" under \"(f) in subsection (5)—\"" do
+      assert [%{targets: targets}] = para30_rules("6-f-i")
+      assert "s.28(5)(a)" in targets
+      assert [%{targets: t2}] = para30_rules("6-f-ii")
+      assert "s.28(5)(b)" in t2
+    end
+
+    test "\"of that subsection\": the subsection named before ((6)(a)'s (3))" do
+      assert [%{targets: targets}] = para30_rules("6-d")
+      assert "s.28(3)(c)(iii)" in targets
+    end
+
+    test "\"—shall be omitted\" whose items are words: words repealed, not the provision" do
+      assert [%{targets: targets, operation: :repealed, level: :words}] = para30_rules("6-b")
+      assert "s.28(3)(c)(ii)" in targets
+    end
+
+    test "\"in sub-paragraph (i)\" under \"in paragraph (b)—\" under \"in subsection (2)—\": (2)(b)(i) (asc 2023/4 s.47)" do
+      d =
+        Doc.new("UK_asc_2023_4", [
+          ~s|<Legislation><Primary><Body><P1 id="section-47"><P1para><Text>In section 11 of the 1974 Act, in subsection (2)—</Text>| <>
+            ~s|<P id="section-47-a"><Text>in paragraph (b)—</Text><P id="section-47-a-i"><Text>in sub-paragraph (i), omit “and Wales”;</Text></P></P>| <>
+            "</P1para></P1></Body></Primary></Legislation>"
+        ])
+
+      assert [%{targets: targets}] = Reader.read(d, "section-47-a-i", @terms, [@hswa])
+      assert "s.11(2)(b)(i)" in targets
+    end
+
+    test "a parent's caption holding brackets is no place (1995/25 Sch. 10 para 32(1): TCPA 1990 s.1(5)(a))" do
+      tcpa = Reader.law_ref("UK_ukpga_1990_8", "Town and Country Planning Act", "s")
+
+      d =
+        Doc.new("UK_ukpga_1995_25", [
+          ~s|<Legislation><Primary><Body><P1 id="section-1"><P1para><Text>In paragraph (a) of section 1(5) of the Town and Country Planning Act 1990 (provisions to which subsections (1) to (4) are subject)—</Text>| <>
+            ~s|<P id="section-1-a"><Text>for “sections 5 to” there shall be substituted “sections 4A to”; and</Text></P>| <>
+            "</P1para></P1></Body></Primary></Legislation>"
+        ])
+
+      assert [%{targets: targets}] = Reader.read(d, "section-1-a", %{}, [tcpa])
+      assert "s.1(5)(a)" in targets
+      refute "s.1(1)" in targets
+    end
+
+    test "a parent with an operation and then a lead-in: the lead-in's place (1994/19 s.18(6))" do
+      d =
+        Doc.new("UK_ukpga_1994_19", [
+          ~s|<Legislation><Primary><Body><P1 id="section-18"><P1para><Text>In section 1 of the 1974 Act—</Text><P id="section-18-6"><Text>In subsection (3), omit the words “and in Wales” and in subsection (5)—</Text>| <>
+            ~s|<P id="section-18-6-a"><Text>in paragraph (a), for “subsections (1) to (4) have” substitute “x”; and</Text></P></P>| <>
+            "</P1para></P1></Body></Primary></Legislation>"
+        ])
+
+      assert [%{targets: targets}] = Reader.read(d, "section-18-6-a", @terms, [@hswa])
+      assert "s.1(5)(a)" in targets
+      refute "s.1(3)(a)" in targets
+    end
+
+    test "section numbers in a parent's caption are no targets (2013/22 s.56(2): \"(interpretation of sections 3A to 10)\")" do
+      d =
+        Doc.new("UK_ukpga_2013_22", [
+          ~s|<Legislation><Primary><Body><P1 id="section-56"><P1para><P id="section-56-2"><Text>In section 11 of the 1974 Act (interpretation of sections 3A to 10), in subsection (2)—</Text>| <>
+            ~s|<P id="section-56-2-a"><Text>before the definition of “drug” insert “x”;</Text></P></P>| <>
+            "</P1para></P1></Body></Primary></Legislation>"
+        ])
+
+      assert [%{targets: ["s.11(2)"]}] = Reader.read(d, "section-56-2-a", @terms, [@hswa])
+    end
+
+    test "a quote under two subsections: one target in each (1999/28 Sch. 5 para 6(6))" do
+      d =
+        Doc.new("UK_ukpga_1999_28", [
+          ~s|<Legislation><Primary><Body><P1 id="section-6"><P1para><Text>In section 25 of the 1974 Act, in subsections (2) and (5)—</Text>| <>
+            ~s|<P id="section-6-a"><Text>after paragraph (z) insert—</Text><BlockAmendment><P3><Pnumber>za</Pnumber><P3para><Text>new</Text></P3para></P3></BlockAmendment></P></P1para></P1></Body></Primary></Legislation>|
+        ])
+
+      targets = d |> Reader.read("section-6-a", @terms, [@hswa]) |> Enum.flat_map(& &1.targets)
+      assert "s.25(2)(za)" in targets
+      assert "s.25(5)(za)" in targets
+      refute "s.25(2)(5)(za)" in targets
+    end
+
+    test "under \"Schedule N … is amended\", an instruction naming no section reads no section rule (2009/20 Sch. 4 para 10)" do
+      d =
+        Doc.new("UK_ukpga_2009_20", [
+          ~s|<Legislation><Primary><Body><P1 id="section-10"><P1para>| <>
+            ~s|<P id="section-10-1"><Text>Schedule 1 to the 1974 Act (Assembly constituencies and orders under section 2(4)) is amended as follows.</Text></P>| <>
+            ~s|<P id="section-10-2"><Text>For paragraph 1 substitute—</Text><BlockAmendment><P1><Pnumber>1</Pnumber><P1para><Text>new</Text></P1para></P1></BlockAmendment></P>| <>
+            ~s|<P id="section-10-3"><Text>In section 4 of the 1974 Act, for “x” substitute “y”.</Text></P>| <>
+            "</P1para></P1></Body></Primary></Legislation>"
+        ])
+
+      assert Reader.read(d, "section-10-2", @terms, [@hswa]) == []
+      assert [%{targets: ["s.4"]}] = Reader.read(d, "section-10-3", @terms, [@hswa])
+    end
+
+    test "under \"In Schedule 6 (…)—\": a Schedule's paragraphs, no section rule (SI 2015/664 Sch. 2 para 12(3))" do
+      d =
+        Doc.new("UK_uksi_2015_664", [
+          ~s|<Legislation><Secondary><Body><P1 id="regulation-12"><P1para><Text>The 1974 Act is amended as follows.</Text>| <>
+            ~s|<P id="regulation-12-3"><Text>In Schedule 6 (aggregates levy: evasion)—</Text><P id="regulation-12-3-d"><Text>in paragraph 2(4) (in the words following paragraph (b)), for “the statutory maximum” substitute “£20,000”;</Text></P></P>| <>
+            "</P1para></P1></Body></Secondary></Legislation>"
+        ])
+
+      assert Reader.read(d, "regulation-12-3-d", @terms, [@hswa]) == []
+    end
+
+    test "a later list under \"in section 90 …—\" in that provision is the section's (2013/22 s.25(8))" do
+      d =
+        Doc.new("UK_ukpga_2013_22", [
+          ~s|<Legislation><Primary><Body><P1 id="section-25"><P1para>| <>
+            ~s|<P id="section-25-1"><Text>Schedule 12 to the 1974 Act (procedure) is amended as follows.</Text></P>| <>
+            ~s|<P id="section-25-8"><Text>In section 90 of the 1974 Act (regulations)—</Text><P id="section-25-8-a"><Text>omit subsection (4) (procedure for regulations under paragraphs 24(2) of Schedule 12), and</Text></P></P>| <>
+            "</P1para></P1></Body></Primary></Legislation>"
+        ])
+
+      assert [%{targets: ["s.90(4)"]}] = Reader.read(d, "section-25-8-a", @terms, [@hswa])
+    end
+
+    test "a sibling's brackets never: s.38, not s.38(5)" do
+      assert [%{targets: ["s.38"]}] = para30_rules("7")
+    end
+  end
 end

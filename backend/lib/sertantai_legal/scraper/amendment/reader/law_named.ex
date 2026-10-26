@@ -51,8 +51,14 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
             {{:ok, ns}, _} ->
               ns
 
+            # (never from a caption: "In section 11 (interpretation of
+            # sections 3A to 10), in subsection (2)—", 2013/22 s.56(2))
             {:none, nil} ->
-              with({:ok, ns} <- Targets.numbers(context, law.kind), do: ns, else: (_ -> []))
+              with(
+                {:ok, ns} <- Targets.numbers(Enum.map(context, &Clauses.no_captions/1), law.kind),
+                do: ns,
+                else: (_ -> [])
+              )
 
             {:none, ns} ->
               ns
@@ -62,14 +68,93 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
           Targets.brackets(%{
             c
             | instruction:
-                own_part(Clauses.unquote_words(Clauses.asides(c.instruction)), law, terms)
+                c.instruction
+                |> Clauses.asides()
+                |> Clauses.unquote_words()
+                |> own_part(law, terms)
+                |> Clauses.no_captions()
           })
 
         named = if c == first, do: own, else: Brackets.above(place, own) ++ own
+        named = placed_by(c, named, context) ++ named
         {%{text: c, named: named, numbers: numbers, ours?: ours?}, {numbers, ours?}}
       end)
 
     Enum.filter(scoped, & &1.ours?)
+  end
+
+  # where a clause is beyond its own words (run time 2026-10-26; 1995/25
+  # Sch. 22 para 30(6)): its parents' brackets, nearest first, each at the
+  # levels above those already found ("(f) in subsection (5)— (i) in
+  # paragraph (a) …" → (5)(a)); never a sibling's. "of that subsection"
+  # with no subsection found: the last one named before it ("(a) in
+  # paragraph (a) of subsection (3) …; (b) in paragraph (c)(ii) of that
+  # subsection …" → (3))
+  defp placed_by(%Text{} = c, named, context) do
+    from_parents =
+      Enum.reduce(c.parents, [], fn words, acc ->
+        brackets =
+          Targets.brackets(%Text{
+            id: nil,
+            instruction: words |> Clauses.unquote_words() |> Clauses.no_captions() |> lead_in()
+          })
+
+        top = top_level(named ++ acc, c.instruction)
+        acc ++ Enum.filter(brackets, &(Brackets.bracket_level(&1) < top))
+      end)
+
+    found = named ++ from_parents
+
+    that_subsection =
+      if c.instruction =~ ~r/\b(?:that|the said)\s+sub-?section\b/i and
+           not Enum.any?(found, &(Brackets.bracket_level(&1) == 0)) do
+        Enum.find_value(context, [], fn t ->
+          case Regex.scan(
+                 ~r/\bsub-?section\s+\((\d+[A-Z]*)\)/i,
+                 t |> Clauses.unquote_words() |> Clauses.no_captions(),
+                 capture: :all_but_first
+               ) do
+            [] -> nil
+            found -> List.last(found)
+          end
+        end)
+      else
+        []
+      end
+
+    from_parents ++ that_subsection
+  end
+
+  # a parent's lead-in, where it changes something first ("In subsection
+  # (3), omit the words … and in subsection (5)—": "in subsection (5)";
+  # 1994/19 s.18(6)); else its words
+  defp lead_in(s) do
+    case Regex.run(
+           ~r/(?:^|[;,]\s*|\s+and\s+)([Ii]n\s(?:(?![;]|\s+and\s+in\s).)*?)\s*[—–:]\s*$/u,
+           s,
+           capture: :all_but_first
+         ) do
+      [lead] -> lead
+      nil -> s
+    end
+  end
+
+  # the highest level among the brackets found (5 when none): a bracket the
+  # words call a sub-paragraph is one ("in sub-paragraph (i)" under "in
+  # paragraph (b)—": (b)(i), though "i" alone reads as a letter)
+  defp top_level([], _instruction), do: 5
+
+  defp top_level(brackets, instruction) do
+    subs =
+      for [b] <-
+            Regex.scan(~r/\bsub-paragraphs?\s+\(([a-z]+)\)/i, instruction,
+              capture: :all_but_first
+            ),
+          do: b
+
+    brackets
+    |> Enum.map(&if(&1 in subs, do: 2, else: Brackets.bracket_level(&1)))
+    |> Enum.min()
   end
 
   @doc """
