@@ -54,6 +54,12 @@ lessons:
     detail: Catalogue example choice depends on law order; the check's array_agg had no ORDER BY, so even serial runs could differ byte for byte.
     tag: tooling
 bugs:
+  - pattern: "extent_rules written without an SI's enabling powers or a devolved law's competence: the amendment read pass (ReadPass.write) and --extents' parents step stored the bare Extent.read/1, so every full read pass wiped those rows (482 laws stale, 2026-10-26)"
+    category: extent
+    module: Amendment.ReadPass / mix lat.amending --extents (now Extent.Store.write_read/3)
+    affected: 482
+    fix: "One writer, Extent.Store.write_read/3 (with_powers, cached: true from the read pass); ExtentWriteTest; then re-write the affected laws' extent rules"
+    status: fixed
   - pattern: "Commencement: an Act with a by-order clause also holds an \"all — act_enactment\" (Royal Assent) rule, so an amending provision no order rule names is dated Royal Assent: SOCPA 2005 Sch.7 para 27(2) repealing RTA 1988 s.4(6) dated 2005-04-07, golden expects 2006-01-01 (SI 2005/3495). Exposed 2026-10-25 when the read pass (with SOCPA's Schedules now held) first reached that repeal: golden 26/27"
     category: commencement
     module: Commencement (OwnClause / LawStart act_enactment rule beside a by-order clause; CV-S04)
@@ -124,8 +130,9 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 - ⬜ Annex/Schedule targets: instructions placed in a Schedule or Annex of the amended law (by a heading, or a term like "the electronic communications code" = CA 2003 Sch. 3A) are read at its paragraphs (EU Annex instructions are now held back, giving no Article rules; PSTI 2022's dropped). Was: a defined term meaning a Schedule of a law ("the electronic communications code" = CA 2003 Sch. 3A, PSTI 2022): read its instructions at that Schedule's paragraphs (now dropped rather than placed on CA 2003 sections; belongs to CV-S05's reader work)
 - ✅ Decompose `Amendment.Reader` (1,004 → 305 lines; five modules under ~270; gate 0 changed) — `2d4b7c7e`…`81573975`
 - ✅ Decompose `AmendingLaw.Extent` (1,343 → 160 lines; 11 modules ≤ 229; gate 0 differences) — `0250e307`…`f08e680f`
-- ⬜ `Extent.Patterns` is 390 lines: split after the Extent gate
-- ⬜ 202 laws stale in `lat.extent_check` (OH&S): stored `extent_rules` differ from the reading now — trace why (pre-existing at the decomposition baseline)
+- ❌ `Extent.Patterns` (390 lines) split — dropped: ~300 is a ballpark, not a hard limit (Jason 2026-10-26)
+- ✅ 202 laws stale in `lat.extent_check` (OH&S) traced: corpus-wide 483 of 2,050 — 482 the read pass's bare extent write wiping powers/competence (fixed `1a4626b8`, one writer `Extent.Store.write_read/3` + `ExtentWriteTest`), 1 (`UK_ukpga_1995_15`) last written 2026-10-22, before CV-S05's reader fixes
+- ⬜ Repair the 483 laws' `extent_rules` (`mix lat.amending --extents --amending … --cached`, restore point first; ask Jason); then the OH&S check shows 0 stale; CV-S05's rebuild picks the territories up
 - ⬜ Incremental read pass: re-read only the amending laws whose output can change (per-law inputs; a reader edit no longer stales all 2,102)
 - ❌ Cached `Doc` for the read pass — dropped on measurement: loading a stored `Doc` costs about as much as parsing it (2017/3: load 1.3 s, parse 0.6 s; 1995/25: 2.3 vs 4.5 s). Cache only what step 2 shows is costly, if anything
 - ⬜ LR-45 Saxy (pending v0.2 session) reconsidered: parsing is not the read pass's bottleneck (profile); kept for memory and cold parses, not for this
@@ -533,3 +540,10 @@ Finding 7 (`from_powers` and `Powers`) is Contested: `Powers` is I/O, and `from_
 - Each step test-first (red, then green). One expectation of mine was wrong (`no_dots` leaves the space before the dots: two spaces) — the test was corrected, not the code.
 - Full suite: 8,825 pass.
 - ✅ **Gate (2026-10-26, Jason: "Run the gate"): catalogue 5 min 12 s, 3,358 laws re-read cold; `diff -r` of the catalogue output empty; check output identical (202 stale, unchanged); 0 patterns lost, 0 examples differing.** Every new module under 230 lines.
+
+## The 202 stale laws (2026-10-26, Jason: "Push then start 1")
+
+- Pushed first: `04a761e7..a00838f7` (16 commits; Dialyzer caught `String.Extent.t()` — my step 10 text replacement — fixed `a00838f7`).
+- Corpus-wide diff of stored `extent_rules` against the reading now (`with_powers`, enabling cache only): **483 of 2,050 laws differ — 307 lack the `competence` row, 175 the `powers` row, 1 (`UK_ukpga_1995_15`) stored `none` against a default E+W+S now** (its rows date from 2026-10-22, before CV-S05's reader fixes; no pass since reached it).
+- Cause: `ReadPass.write` stored `Extent.read(doc)` bare (since CV-04, `46d2b13a`), as did `--extents`' parents step; only `--extents`' own laws were stored with powers. Each full read pass (3 on 2026-10-25) wiped them. The build then reads such an SI's changes as unknown territory, not its powers' reach.
+- Fix `1a4626b8`: `Extent.Store.write_read/3`, the one writer (with powers or competence; the read pass passes `cached: true`, never a fetch); `Store.write` private; `ExtentWriteTest` holds it (it also caught `lat.vocabulary`'s alias, a different store — the test follows aliases). Suite 8,826 + store test pass.
