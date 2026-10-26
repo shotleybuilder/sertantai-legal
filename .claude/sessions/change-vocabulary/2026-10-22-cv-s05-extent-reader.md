@@ -1,6 +1,6 @@
 ---
 session: 'CV-S05: Extent and Application Reader'
-status: active
+status: suspended
 release: v0.1
 opened: '2026-10-22'
 bugs:
@@ -94,10 +94,34 @@ bugs:
     affected: unmeasured
     fix: "carry the context's brackets onto the instruction's paragraph"
     status: open
+  - pattern: "Extent statements outside the catalogue's vocabulary are dropped silently (neither read nor counted): \"Subsection (1) does not apply to section 59(3), 90, …\" (ukpga 2003/39 s.111(2): ss.102–106 take E+W); \"But subsection (3) does not apply to the amendments made … by paragraphs 30 and 35 of Schedule 3\" (ukpga 2016/19 s.95(4))"
+    category: extent
+    module: Extent.Patterns / Extent.Forms
+    affected: 2
+    fix: "CV-S05a recall sweep: every extent-ish sentence counted; then read or count the form"
+    status: open
+  - pattern: "\"The extent of any amendment, repeal or revocation made by section 60, … is the same as that of the provision amended\" not recognised (ukpga 2007/28 s.244(3)): Sch.13 changes to HSWA s.28(6), RTA 1988 s.144 bound E+W"
+    category: extent
+    module: Extent.Forms (amendments_same)
+    affected: 1
+    fix: "read as same for the provisions named (after the CV-S05a sweep counts the form)"
+    status: open
+  - pattern: "lat.extent_check none_listed/1 labels a provision in a `same` list `not_named` when the law has no default"
+    category: tooling
+    module: Mix.Tasks.Lat.ExtentCheck
+    affected: 3
+    fix: "look for a same list naming the provision before not_named"
+    status: open
+  - pattern: "LRRA 2006 s.34(3) \"The repeals in the Schedule have the same extent …\" stored as `same *`, not the Schedule"
+    category: extent
+    module: Extent.Same
+    affected: 1
+    fix: "subject \"The repeals in the Schedule\" → the Schedule"
+    status: open
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
 ---
 
-# Session: CV-S05: Extent and Application Reader (ACTIVE)
+# Session: CV-S05: Extent and Application Reader (SUSPENDED)
 
 ## Problem
 
@@ -738,3 +762,17 @@ The run-time session's full read passes changed rules and exposed reader defects
 - **Doubtful, not NEW:** application wording not read nor shown (uksi 2014/1639 "These Regulations apply— (a) within Great Britain; (b) … outside", no effect; uksi 2008/960 sch.1 para.12(3) "This paragraph does not apply to Scotland", provision_application, counted in the catalogue, not in the sample's unread).
 - **Aside:** LRRA 2006 s.34(3) "The repeals in the Schedule have the same extent …" stored as `same *` (round 3 noted it; still open).
 - The trend of NEW per round: 16, 11, 5, 5, 8, 3. For the first time the changes are 50/50, and every NEW is a silent drop of a statement, none a misread of a statement the reader reads.
+
+## Suspended (2026-10-26)
+
+Jason: "do we need to build the catalogue - are we using the agents to randomly find unmatched variation (smack a mole) rather than systematically seeding the patterns like in previous stages?" — then "let's build the sweep in a sub-session. Suspend this main session to come to once the sweep sub session is closed".
+
+- **Why:** the catalogue classes only sentences its own detector recognises as extent words, so a wording outside that vocabulary is never seen, counted or flagged. Most NEW defects since round 4, and all three of round 6, were such silent drops, found by sampling.
+- **Sub-session:** `2026-10-26-cv-s05a-extent-recall-sweep.md`. Every extent-ish sentence of the held amending laws is collected with a wide net, what the catalogue doesn't class is subtracted, the remainder is clustered by form and reviewed by count, and "uncaught" becomes a counted outcome in the catalogue and the check.
+
+State at suspension:
+- code `b1a1aad5` (+ skill `e5a59faf`), pushed to `5e284141`;
+- stored extents and changes from step 3's runs (check PASS, golden 27/27, bound 3,067 → 3,141);
+- round 6 agent FAIL (3 NEW, all silent drops; logged as open bugs above).
+
+On resume: fold round 6's defects into the sweep's clusters (fixed there, or here by count); then the round's runs and a fresh-seed agent check (`extent-reader-check`).
