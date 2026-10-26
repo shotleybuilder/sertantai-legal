@@ -116,7 +116,7 @@ The session does not close until its results pass.
 - ⬜ The competence rule (a devolved SI's competence doesn't confine its insertion, V1-04) confirmed on cases beyond Forestry Act s.1(1A)
 - ⬜ SI 2012/760: its made introduction (held) names no enabling provisions (from CV-S01)
 - ✅ Before round 6, the two defects the run-time read pass exposed — fixed (`65bf8b34`, `9c28b1ad`); runs below (Jason: "Run")
-- ⬜ Round 6 (Jason 2026-10-26: "go ahead"): ✅ (1) [`1085611f`] ✅ (2) [`a79b5c36`] never drop a statement silently: a sentence saying where provisions extend that isn't turned fully into rules is recorded unread, and its provisions get no bound, never the default; the catalogue and the check count it; (2) the misreads and my regressions: NEW-A (Chapter of Part), NEW-C (section in brackets), uksi 2019/696's exceptions read as items, 2022/1037's Part 4; (3) forms: "except as aforesaid … shall not extend there", lettered places "to— (a) England and Wales, (b) …", "extends to any part of the United Kingdom to which the amended enactment extends"; (4) the same runs, then agent round 6 (misses that are counted are known classes; only misreads and silent drops are NEW)
+- ⬜ Round 6 (Jason 2026-10-26: "go ahead"): ✅ (1) [`1085611f`] ✅ (2) [`a79b5c36`] ✅ (3) [`b1a1aad5`] never drop a statement silently: a sentence saying where provisions extend that isn't turned fully into rules is recorded unread, and its provisions get no bound, never the default; the catalogue and the check count it; (2) the misreads and my regressions: NEW-A (Chapter of Part), NEW-C (section in brackets), uksi 2019/696's exceptions read as items, 2022/1037's Part 4; (3) forms: "except as aforesaid … shall not extend there", lettered places "to— (a) England and Wales, (b) …", "extends to any part of the United Kingdom to which the amended enactment extends"; (4) the same runs, then agent round 6 (misses that are counted are known classes; only misreads and silent drops are NEW)
 - Reader correctness done in the run-time session (moved here 2026-10-26):
   - ✅ After the gate: a caption names no law, nested quotes stripped whole — `be32c526` (Petroleum Act 1998 +9, SI 2024/1268 +1; regression 29 changed, net +78)
   - ✅ Environment Act 1995 Sch. 22 para 30 (HSWA): "The Health and Safety at Work etc. Act 1974 (in this paragraph referred to as “the 1974 Act”)" read as "Work etc. Act 1974" (apposition title stopped at "at"), naming no law — fixed `407df2c2` (short words, bracketed parts); regression preview 2 changed, +34 (1995/25 +10 HSWA; SI 2012/3119 +24 on SI 2010/2215, its bracketed title). Indexes stale until the round's full pass
@@ -699,3 +699,23 @@ The run-time session's full read passes changed rules and exposed reader defects
   - Written for these four laws only; every other index is stale until the next round's full pass (correct, slower).
 - **Rebuild:** golden 27/27; check PASS, our faults 0; **4,970 text changes, 3,067 bound**. Suite 8,869.
 - **Open:** SI 2026/386 para 6(3) "In each of the provisions listed in sub-paragraph (4)—", where resolving the cross-reference would give its rules.
+
+## Round 6 step 3: forms (2026-10-26, Jason: "step 3 next"), code `b1a1aad5`
+
+- **`Units.unlettered/1`**, read wherever a provision's words are (the clause, units, the catalogue, `Unread`):
+  - lettered places: RTSA 2003 s.17 "This Part shall extend … to— (a) England and Wales, (b) Scotland, (c) Northern Ireland" → UK. Before, this was **dropped silently**, not even counted;
+  - a verb lettered under its subject: SI 2020/1112 reg.1 "These Regulations— … (c) extend to Northern Ireland only" → NI;
+  - "not extend there" after a place: ukpga 1975/71 s.129(6) → E+W+S. Its "any provision … which amends … the Disqualification Acts" is read by `Extent.Amends` (the provisions naming those Acts; here repealed, so none);
+  - "In Schedule N— (a) paragraph 3 extends …" → that Schedule's paragraphs (SI 2014/469, SI 2019/758);
+  - bare Chapters under "In Part M—" (ukpga 2025/36).
+- **Units:** a provision whose children are lettered items is read whole with its lead-in (`Units.numbered_children`). Before, the lead-in, the statement itself, was never a unit: SI 2019/146 reg.3's same-extent statement was dropped silently and is now counted (withheld). Statements split before Chapters and "the amendments made by".
+- **Same-extent wordings:** "A provision of these Regulations that amends …" (SI 2025/82, ukpga 2020/29 s.40, 2021/10 s.17); "extends to any part of the UK to which the amended enactment extends" (SI 2012/2404 art.4(2); also counted as extent words now).
+- **RefList:** lettered ranges spelt out ("8(2)(b) to (d)").
+- **Catalogue:** a sentence of lettered statements is classed by them when every one is read. A first version credited by the first item; ukpga 2025/36 s.158's unread Chapters showed it, and now every item with extent words must be read.
+  - 17 example expectations updated after review: 15 unread → read, 2 unread class nuance.
+  - Corpus-wide, 35 laws' extents change; 3 lose rows, each checked (2009/23 gains s.293–294 in a list; SI 2019/146 none → unread, its statement now counted; SI 2020/818 an application list, now excluded from `Unread`).
+- **Runs:** restore point `cv-s05-before-round6-step3`. Extents rewritten; rebuild; **golden 27/27**; **check PASS, our faults 0**.
+  - **Bound 3,067 → 3,141:** SI 2020/1112 +28 (NI), SI 2015/1682 +25 (powers through RTSA s.17), 1975/71 +17, SI 1976/2004 +5, SI 2014/469 +5 and 2 UK → E+W+S; SI 2012/2404 1 to the enactment's own extent.
+  - Withheld by unread statements: 422 → 358. Unread sentences: 69 laws → 65.
+- Suite 8,881. `Extent.Patterns` is 428 lines (390 when Jason chose not to split it; ballpark).
+- **Next:** step 4, agent check round 6 on a fresh seed (counted misses are known classes; only misreads and silent drops are NEW).
