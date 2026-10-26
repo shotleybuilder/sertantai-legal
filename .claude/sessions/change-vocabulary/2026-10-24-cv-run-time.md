@@ -1,36 +1,40 @@
 ---
 session: Reader run time — make the catalogues, checks and re-reads quicker
-status: active
+status: closed
 opened: 2026-10-24
+closed: 2026-10-26
 outcome: success
 summary: >
-  A CV-S05 fix round's runs went from ~2½ hours to ~10 minutes with identical output: the extent
-  reader was quadratic (12× from a children index in Doc), the check read each law three times,
-  laws now run in parallel behind a machine check (LawRunner.Guard), and a per-law reading cache
-  (Extent.ReadCache) is shared by the catalogue, check, re-read and build. The amendment read
-  pass, re-run after the Doc change staled its indexes, exposed two existing defects (golden 26/27).
+  A change-vocabulary fix round's runs went from ~2½ hours to ~10 minutes with identical output: the
+  extent reader's quadratic scan fixed, laws run in parallel behind a machine check (LawRunner.Guard),
+  per-law caches (Extent.ReadCache keyed on its own code version, FeedCache), and the amendment read
+  pass from 35 to ~6 minutes (preview 4½) — profile-led, writing only what changed, with a preview +
+  regression workflow that ends the fix → full-pass loop.
 decisions:
   - what: Profile before optimising; prove each change gives identical output (term, row or byte digests)
     why: Jason's rule — the session must not change readings
     result: every catalogue, check, re-read, rebuild and golden run compared before/after; identical
-  - what: Children index and Part positions built once in Doc.new; unit sentences once per read
-    why: profile — units/2 regex-scanned every id per provision, 4× per read (156 s for one read of ukpga 2009/4)
-    result: 51 laws 1,357 s → 114 s, output identical
-  - what: Parallel runs only after a pre-run machine check (LawRunner.Guard)
-    why: Jason — the 5-wide crash had a VM open; check memory, busy cores, VMs first
-    result: (MemAvailable − 6 GB) ÷ 1.8 GB per law, cores not busy (/proc/stat), any VM → 1; max 4; decision printed
-  - what: Busy cores measured over half a second, not the 1-minute load average
-    why: the load average still counted a just-finished run and chose 1 worker on a quiet machine
-    result: guard decides 4 on a quiet machine
-  - what: Cache readings (small), not parsed documents
-    why: measured — decoding a saved parse of ukpga 2009/4 took 5.9 s vs 4.9 s to parse, at 2× the size
-    result: Extent.ReadCache, 3,358 laws in 14 MB; warm catalogue 3.5 s, check 3 s, re-read 3.6 s
-  - what: Cache keyed by a digest of every app module plus a digest of the law's stored files
-    why: a stale reading would be wrong; a full recompute costs ~5 min
-    result: any code change re-reads every law
-  - what: Leave the commencement catalogue's serial example step
-    why: measured — BEAM ~110%, Postgres idle; parallel example selection would be ~5× the work
-    result: 13 → 6m40 from the parallel per-law reads only
+  - what: Parallel runs only through LawRunner.Guard, inside LawRunner.run itself
+    why: the 5-wide crash had a VM open; five tasks had bypassed the first version
+    result: memory, busy cores (/proc/stat over 0.5 s) and VMs checked on every parallel run; --workers overrides
+  - what: Cache readings, not parsed documents
+    why: measured — loading a saved parse costs about as much as parsing (ukpga 2009/4: 5.9 vs 4.9 s)
+    result: Extent.ReadCache (3,358 laws, 14 MB), FeedCache (feed start-up 160 s → cache load)
+  - what: Version hashes cover exactly what they reach (VersionCoverageTest)
+    why: hidden staleness (LawStart readers missing) and over-staleness (the extent cache keyed on every app module, mix.lock in the vocabulary version)
+    result: Extent.ReadVersion keys the extent cache; ChangeVocabulary.Version hashes sweet_xml/jason lock entries only
+  - what: Fix the read pass by profile, not by parallelism
+    why: the first pass parallelised it unprofiled (28 min); eprof found 570,639 regex compiles and a 160 s start-up
+    result: 35 min → 4½ preview / 6 min write; largest laws first; 0.8 GB a law, max 5
+  - what: Break the fix → full-pass loop with --preview and --regression; one full pass per round
+    why: Jason — "we repeat the same pattern - run a fix, stale the indexes, have to run a full pass"
+    result: ~2 min previews on a committed regression list; workflow in the scraper guide and memory
+  - what: Incremental read pass as far as sound — write only what changed, extent from its cache
+    why: a reader-code change can't be narrowed to the laws it affects; the measured cost was Extent.read re-run for every law
+    result: full write pass 7 min 50 s → 6 min 01 s, 0 rows rewritten when nothing changed
+  - what: Incremental rebuild and a commencement catalogue cache dropped
+    why: rebuild ~1 min and its stored inputs don't fingerprint LAT rows/notes; the catalogue runs only when any cache would be cold
+    result: recorded as ❌ with the measurements
 metrics:
   extent_catalogue_min: { before: 60, after_cold: 5.3, after_warm: 0.06 }
   extent_check_min: { before: 30, after: 1.5, warm_cache: 0.05 }
@@ -38,30 +42,38 @@ metrics:
   rebuild_min: { before: 2.05, after: 1.1 }
   golden_min: { before: 6.4, after: 2.6 }
   commencement_catalogue_min: { before: 13, after: 6.7 }
-  amendment_read_pass: { laws: 2102, wall_min: 28.7, cpu_min: 81, rules_before: 37719, rules_after: 41435 }
+  amendment_read_pass_min: { before: 35, preview: 4.5, write: 6.0 }
+  fix_round_hours: { before: 2.5, after: 0.17 }
   peak_memory_per_law_gb: { small_si: 0.16, largest_act: 1.70 }
 lessons:
   - title: The cost was an algorithm, not the hardware
-    detail: The 60-minute catalogue was dominated by a quadratic id scan in one helper; parsing and the "alone" check were minor. Profiling per stage on a sample with the largest laws found it in minutes. Parallelism alone would have hidden it.
+    detail: The 60-minute catalogue was a quadratic id scan in one helper; the read pass was 570,639 regex compiles and a 160 s feed start-up. Profiling per stage on a sample with the largest laws found each in minutes; parallelism alone hid them.
     tag: tooling
-  - title: A version hash over source files stales derived data when an unrelated field is added
-    detail: ReaderVersion covers amending_law/doc.ex, so adding Doc's children/parts fields made all 2,095 amendment indexes stale; builds silently fell back to parsing every amending law (correct, slower). Re-run the read pass after touching a hashed file.
+  - title: A version hash must cover exactly what its output reads
+    detail: Too little (LawStart readers missing from ChangeVocabulary.Version) leaves stale results looking current; too much (the extent cache keyed on every app module, mix.lock) re-reads everything for unrelated edits. VersionCoverageTest checks the compiled reference closure, stopping at I/O modules.
     tag: tooling
-  - title: A re-read after store changes surfaces latent reader defects
-    detail: The amendment read pass over the fuller store (Schedules fetched, duplicate fragments removed) added 3,716 rules and exposed two existing defects (SOCPA Royal Assent beside a by-order clause; Localism Act read as FRSA 2004). Compare rules per law and trace each difference to its cause before accepting.
-    tag: data
+  - title: Measure the write path before optimising it
+    detail: Skipping unchanged rule writes saved nothing (7 min 50 s either way); the cost was Extent.read re-run per law inside the write. Time each piece on the largest laws first.
+    tag: tooling
   - title: Parallel results must be merged in a fixed order, and aggregates need an ORDER BY
     detail: Catalogue example choice depends on law order; the check's array_agg had no ORDER BY, so even serial runs could differ byte for byte.
     tag: tooling
+  - title: Keep a session to its deliverable
+    detail: This session absorbed reader-correctness fixes and two decompositions surfaced by its runs, and became hard to follow (Jason 2026-10-26). They were moved to CV-S05 and a closed decomposition session; log such work in its owning session, or suspend and switch.
+    tag: tooling
 artifacts:
-  - backend/lib/sertantai_legal/scraper/amending_law/doc.ex
   - backend/lib/sertantai_legal/scraper/law_runner/guard.ex
+  - backend/lib/sertantai_legal/scraper/amending_law/doc.ex
   - backend/lib/sertantai_legal/scraper/amending_law/extent/read_cache.ex
-  - backend/lib/mix/tasks/lat.extent_patterns.ex
-  - backend/lib/mix/tasks/lat.extent_check.ex
-  - backend/lib/mix/tasks/lat.amending.ex
-  - backend/lib/mix/tasks/lat.commencement_patterns.ex
-  - backend/lib/mix/tasks/lat.vocabulary.ex
+  - backend/lib/sertantai_legal/scraper/amending_law/extent/read_version.ex
+  - backend/lib/sertantai_legal/scraper/legislation_gov_uk/feed_cache.ex
+  - backend/lib/sertantai_legal/scraper/legislation_gov_uk/feed_version.ex
+  - backend/lib/sertantai_legal/scraper/amendment/read_pass.ex
+  - backend/lib/sertantai_legal/scraper/amendment/read_report.ex
+  - backend/lib/sertantai_legal/scraper/amendment/read_law.ex
+  - backend/lib/sertantai_legal/scraper/source_version.ex
+  - backend/test/sertantai_legal/architecture/version_coverage_test.exs
+  - backend/test/fixtures/amendment_read/regression.txt
 depends_on:
   - 2026-10-22-cv-s05-extent-reader.md
 enables:
@@ -69,7 +81,7 @@ enables:
   - later families' catalogues and checks at corpus scale
 ---
 
-# Session: Reader run time (ACTIVE)
+# Session: Reader run time (CLOSED)
 
 ## Problem
 
@@ -112,9 +124,9 @@ Two catalogue runs in one round (run 4 bugged, run 5 again) cost two hours. The 
 - ✅ More workers where memory allows: the read pass's own measure (0.8 GB a law, max 5) — `2efc3ed4`
 - ✅ Largest laws first in `LawRunner` (`weight:`) — `2efc3ed4`; full read 7 min 20 s → 4 min 30 s with both
 - ✅ `Extent.ReadCache` keyed on `Extent.ReadVersion` (the modules the extent reading reaches; `VersionCoverageTest`), not the whole app — `558779e9` (`Reader.references` moved to `AmendingLaw.ScheduleRefs` so the amendment reader isn't among them); catalogue gate identical
-- ⬜ `mix.lock` out of `ChangeVocabulary.Version`
-- ⬜ Incremental rebuild: skip a law whose stored code version and input fingerprints are unchanged
-- ⬜ Commencement catalogue cache (6–7 min every run), as `Extent.ReadCache`
+- ✅ `mix.lock` out of `ChangeVocabulary.Version` — `713ab72d`: `SourceVersion` `deps:` option hashes only the named deps' lock entries (`sweet_xml`, `jason`); `ParserVersion` / `LabelVersion` keep `mix.lock` (changing them would mark the corpus stale)
+- ❌ Incremental rebuild — dropped (Jason 2026-10-26): the rebuild is ~1 min parallel; the stored `inputs` (rules timestamps, CLML valid date, feed fetch) don't fingerprint the law's LAT rows or notes, so skipping risks stale changes looking current
+- ❌ Commencement catalogue cache — dropped (Jason 2026-10-26): it runs only after a commencement-reader or store change, when any cache keyed on that code is cold; its time is the serial example step (300 laws: 39 s on 1 worker, 28 s on 4), not the per-law reads
 
 ## Dependencies
 
@@ -310,3 +322,8 @@ From the code (each task's runner, caches, version hashes) and the times recorde
 - Measured: a write pass with nothing to change (rules skipped when equal to stored) still took 7 min 50 s — the DB writes weren't the cost. Profiled: `Extent.read/1` was 15–90% on top of each law's amendment read (1995/25: 3.3 s on 6.2 s), re-run for every law because `Extent.ReadCache` was keyed on every app module.
 - Done `558779e9`: `Amendment.Store.write_changed/3`, `Extent.Store.write_read/3` skip rows equal to stored; `Extent.ReadVersion` keys the extent cache (coverage-tested); `AmendingLaw.ScheduleRefs` out of the reader; the read pass takes the extent from the cache (reusing its parsed document on a miss).
 - Gate: extent catalogue identical (5 min 41 s, cold); write pass 2,102 laws, 0 changed, no rows rewritten, **6 min 01 s** (preview 4 min 30 s).
+
+## Close (2026-10-26, Jason: "continue the open runtimes to final close out of this session")
+
+- Split first (`d0293543`): the reader-correctness work these runs surfaced moved to CV-S05; the two decompositions to `2026-10-25-reader-extent-decomposition.md` (closed). Memory: session scope — log work in the session it belongs to, or suspend and switch.
+- `mix.lock` scoped (`713ab72d`); incremental rebuild and the commencement catalogue cache dropped on measurement.
