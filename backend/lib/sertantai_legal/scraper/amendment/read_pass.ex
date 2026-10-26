@@ -114,7 +114,10 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadPass do
   @spec write(reading()) :: {:ok, non_neg_integer()}
   def write(%{amending: amending, doc: doc} = r) do
     {:ok, n} = Store.write(amending, r.rules)
-    if Extent.Store.reads?(amending), do: Extent.Store.write(amending, Extent.read(doc))
+    # (with its powers or competence, from what is held: never a fetch)
+    if Extent.Store.reads?(amending),
+      do: {:ok, _, _} = Extent.Store.write_read(amending, Extent.read(doc), cached: true)
+
     :ok = Index.write(amending, doc, r.laws, pointer_keys(r.refs))
     {:ok, n}
   end

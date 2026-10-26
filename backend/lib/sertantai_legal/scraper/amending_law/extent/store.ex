@@ -8,6 +8,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Store do
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.Extent
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.Powers
 
   @columns ~w(kind place items position source_law source_ref source_text)a
 
@@ -24,9 +25,25 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Store do
     end
   end
 
-  @doc "Replace `source_law`'s extent rules with its extent read. Returns `{:ok, count}`."
-  @spec write(String.t(), Extent.t()) :: {:ok, non_neg_integer()}
-  def write(source_law, %Extent{} = extent) do
+  @doc """
+  Store a law's extent as read (`Extent.read/1`), with what it extends to
+  where it states none — an SI's enabling powers, else its legislature's
+  competence (`Powers.with_powers/3`; `cached: true` never fetches) — as
+  `mix lat.extent_check` reads it. The one way `extent_rules` are written
+  (`ExtentWriteTest`): the amendment read pass once stored the bare
+  reading, wiping 482 laws' powers and competence rows (run time,
+  2026-10-26). Returns `{:ok, count, extent}`, the extent stored.
+  """
+  @spec write_read(String.t(), Extent.t(), keyword()) ::
+          {:ok, non_neg_integer(), Extent.t()}
+  def write_read(source_law, %Extent{} = read, opts \\ []) do
+    extent = Powers.with_powers(read, source_law, opts)
+    {:ok, n} = write(source_law, extent)
+    {:ok, n, extent}
+  end
+
+  # replace `source_law`'s extent rules with `extent`
+  defp write(source_law, %Extent{} = extent) do
     rows = Extent.to_rows(extent, source_law)
 
     Repo.transaction(fn ->
