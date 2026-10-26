@@ -67,13 +67,16 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.DefinedTerms do
   defp law_title?(t), do: Regex.match?(@law_title, t) and not Regex.match?(@thing_under, t)
 
   # "… the Firearms Act 1968 (in this Act referred to as “the principal Act”)":
-  # the law's title just before the parenthesis holding the term
+  # the law's title just before the parenthesis holding the term (its short
+  # words too: "Health and Safety at Work etc.", "Access to Justice",
+  # "Damage by Pests", and a bracketed part: "(Scotland)" — 1995/25 Sch. 22
+  # para 30 read "Work etc. Act 1974", naming no law: run time 2026-10-26)
   defp apposition(words, term) do
     with [before | _] <- String.split(words, "“#{term}”", parts: 2),
          [_, head] <- Regex.run(~r/^(.*)\([^()]*$/su, before),
          [_, t] <-
            Regex.run(
-             ~r/([A-Z][\w,'’\-]*(?: (?:[A-Z][\w,'’\-]*|and|of|the|for|etc\.|\(Northern Ireland\)))* (?:Act|Regulations|Order|Rules|Measure) \d{4})\s*$/u,
+             ~r/([A-Z][\w,'’\-]*(?: (?:[A-Z][\w,'’\-]*|and|of|the|for|at|to|by|in|on|etc\.|\([A-Z][^()]*\)))* (?:Act|Regulations|Order|Rules|Measure) \d{4})\s*$/u,
              head
            ) do
       # "In the Town and Country Planning Act 1990": the title, not the words before it

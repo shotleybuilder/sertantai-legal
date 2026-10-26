@@ -22,7 +22,8 @@ UK_wsi_2013_755    # 976 provisions for 57 laws: the reader's per-law cost
 UK_uksi_2013_283   # "The Maternity and Parental Leave etc. Regulations 1999": "etc." ended the title match
 UK_uksi_2016_912   # "(Licensing etc.) Regulations 2010": "etc." ended the title match
 UK_uksi_2009_229   # cross-headings "… Act 2006 (c. 16)" name the amended Act
-UK_ukpga_1995_25   # Environment Act 1995: HSWA ("etc.") paragraphs had read as COPA 1974; Sch.22 para 30 now reads nothing (open)
+UK_ukpga_1995_25   # Environment Act 1995: HSWA ("etc.") paragraphs had read as COPA 1974; Sch.22 para 30 "(in this paragraph referred to as “the 1974 Act”)" — apposition title with "at" (2026-10-26)
 UK_ukpga_1998_17   # a caption "(application of Part I of Health and Safety at Work etc. Act 1974 …)" named the law over the Offshore Safety Act 1992
 UK_uksi_2024_1268  # nested quotes "““…” means the Building (Approved Inspectors etc.) Regulations 2010”"
 UK_wsi_2025_1320   # captions had sent 20 rules to the Building Regulations 2010, not the Wales 2024 Regulations its context names
+UK_uksi_2012_3119  # "the Approved Inspectors Regulations 2010" in apposition to a bracketed title "Building (Approved Inspectors etc.) Regulations 2010" (2026-10-26)

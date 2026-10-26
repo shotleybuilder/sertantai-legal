@@ -241,6 +241,23 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
              )["the principal act"] == %{law: nil, title: "Town and Country Planning Act 1990"}
     end
 
+    test "a title in apposition with short words and brackets in it (1995/25 Sch. 22 para 30: “the 1974 Act”)" do
+      for {title, words} <- [
+            {"Health and Safety at Work etc. Act 1974",
+             "The Health and Safety at Work etc. Act 1974"},
+            {"Access to Justice Act 1999", "In the Access to Justice Act 1999"},
+            {"Prevention of Damage by Pests Act 1949",
+             "The Prevention of Damage by Pests Act 1949"},
+            {"Environmental Protection (Scotland) Act 2099",
+             "The Environmental Protection (Scotland) Act 2099"}
+          ] do
+        assert terms_of(
+                 ~s(#{words} \(in this paragraph referred to as “<Term id="t1">the Act</Term>”\) shall have effect)
+               )["the act"] == %{law: nil, title: title},
+               title
+      end
+    end
+
     test "a term whose definition names no law is not a law term (1994/39 “a”, “authority”)" do
       assert terms_of(~s(“<Term id="t1">authority</Term>” means a local authority;)) == %{}
     end
