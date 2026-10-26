@@ -116,7 +116,7 @@ The session does not close until its results pass.
 - ⬜ The competence rule (a devolved SI's competence doesn't confine its insertion, V1-04) confirmed on cases beyond Forestry Act s.1(1A)
 - ⬜ SI 2012/760: its made introduction (held) names no enabling provisions (from CV-S01)
 - ✅ Before round 6, the two defects the run-time read pass exposed — fixed (`65bf8b34`, `9c28b1ad`); runs below (Jason: "Run")
-- ⬜ Round 6 (proposed 2026-10-25, Jason's go-ahead needed on step 1, a design change): (1) never drop a statement silently: a sentence saying where provisions extend that isn't turned fully into rules is recorded unread, and its provisions get no bound, never the default; the catalogue and the check count it; (2) the misreads and my regressions: NEW-A (Chapter of Part), NEW-C (section in brackets), uksi 2019/696's exceptions read as items, 2022/1037's Part 4; (3) forms: "except as aforesaid … shall not extend there", lettered places "to— (a) England and Wales, (b) …", "extends to any part of the United Kingdom to which the amended enactment extends"; (4) the same runs, then agent round 6 (misses that are counted are known classes; only misreads and silent drops are NEW)
+- ⬜ Round 6 (Jason 2026-10-26: "go ahead"): ✅ (1) [`1085611f`] never drop a statement silently: a sentence saying where provisions extend that isn't turned fully into rules is recorded unread, and its provisions get no bound, never the default; the catalogue and the check count it; (2) the misreads and my regressions: NEW-A (Chapter of Part), NEW-C (section in brackets), uksi 2019/696's exceptions read as items, 2022/1037's Part 4; (3) forms: "except as aforesaid … shall not extend there", lettered places "to— (a) England and Wales, (b) …", "extends to any part of the United Kingdom to which the amended enactment extends"; (4) the same runs, then agent round 6 (misses that are counted are known classes; only misreads and silent drops are NEW)
 - Reader correctness done in the run-time session (moved here 2026-10-26):
   - ✅ After the gate: a caption names no law, nested quotes stripped whole — `be32c526` (Petroleum Act 1998 +9, SI 2024/1268 +1; regression 29 changed, net +78)
   - ✅ Environment Act 1995 Sch. 22 para 30 (HSWA): "The Health and Safety at Work etc. Act 1974 (in this paragraph referred to as “the 1974 Act”)" read as "Work etc. Act 1974" (apposition title stopped at "at"), naming no law — fixed `407df2c2` (short words, bracketed parts); regression preview 2 changed, +34 (1995/25 +10 HSWA; SI 2012/3119 +24 on SI 2010/2215, its bracketed title). Indexes stale until the round's full pass
@@ -628,3 +628,36 @@ The run-time session's full read passes changed rules and exposed reader defects
   - 30 laws read a parent's extent from CLML (not in `extent_rules`; NI Orders and similar). The result is correct, only slower.
 - **Extent check: PASS, our faults 0.** 69 laws have unread extent sentences, all counted. Of 4,993 text changes, 3,215 are bound by the law and 1,742 have no territory, each by a counted reason.
 - Next: round 6. Its step 1 is a design change and needs Jason's go-ahead.
+
+## Round 6 step 1: never drop a statement silently (2026-10-26, Jason: "go ahead"), code `1085611f`
+
+- **Measured first:** 55 laws amending OH&S law, behind 1,336 bound changes, had 152 extent sentences left unread. They fell into three kinds: real statements about named provisions; whole-law qualified statements; and noise (words quoted inside amendments, mentions, "to the same extent as" idioms).
+- **`Extent.Unread`:** a sentence in an unread class (the catalogue's) withholds its subject's bound, `{:unread, nil, refs}` (Lookup → nil, never the default).
+  - **What the subject can be:**
+    - named provisions ("Subsections (5) to (7) above" → s.5(5)–(7));
+    - a following list's items;
+    - "In Schedule N— (a) paragraphs …" → that Schedule's paragraphs;
+    - a Schedule paragraph's own statement → the paragraph;
+    - "This Part of this Schedule" → the Schedule;
+    - the law or its amendments → `*`.
+  - **What it ignores:** the law's own words only, so never words it inserts; mentions; idioms; another law's provisions; a list item's pronoun (the lead-in's subject).
+  - **Rules:** when unsure, the wider container. Lookup applies an unread statement first. `ReadCache` carries the bounds. The check counts `none:unread_statement`. Tests: `extent/unread_test.exs` (10, from real sentences).
+- **Runs:**
+  - The catalogue is identical to the baseline (classes unchanged, 0 examples differ).
+  - Restore point `cv-s05-before-round6-unread` (`extent_rules`). Extents rewritten corpus-wide (`--cached`): 252 laws carry 451 withheld-bound rows (11 before).
+  - Rebuild; **golden 27/27**; **check PASS, our faults 0**. Suite 8,855 pass.
+- **Bound changes 3,215 → 3,086 (−129), each traced:**
+  - **Whole-law statements unread:**
+    - SI 2005/1082, 40 ("To the extent that these Regulations concern the importation …");
+    - SI 2020/1112, 28 ("These Regulations— … (c) extend to Northern Ireland only");
+    - SI 2025/82, 15 ("… same extent as the enactment … unless otherwise specified");
+    - ukpga 2002/30, 10 (two defaults in s.108);
+    - 2005/11 s.56, 2020/29 s.40, 1998/31 s.145.
+  - **Named provisions:** 1989/38 s.30, 1998/8 s.16, 1995/36 s.105, 2017/3 s.182, 1994/29 s.96, 1989/15 s.194, SI 2014/469, SI 2010/93, SI 2008/2683.
+  - **Through a parent's powers (all or nothing):**
+    - Public Expenditure and Receipts Act 1968 s.5 ("shall extend to Northern Ireland in so far as it affects— …"): 9 SIs lose their powers, and 3 SSIs fall to competence (E+W+S → S);
+    - ukpga 2015/15 s.99 ("Chapter 3 of this Part"): the whole Part is withheld because of NEW-A, so uksi 2015/1630 loses 4. Step 2 narrows it.
+  - Caught on the way and fixed before commit:
+    - "In Schedule 11— (a) paragraph 2" read as Schedules 11 and 2 (SI 2019/758 lost a Sch. 2 change);
+    - "except that— (a) it does not extend to Scotland" read as the whole law (ukpga 2007/27).
+- **Forms step 3 could read, now visible as withheld:** "These Regulations— … (c) extend to …"; "A provision … that amends … has the same extent as the enactment … unless otherwise specified"; "paragraph 8(2)(b) to (d)" (only (b) named, so (c) and (d) are bound by the default).
