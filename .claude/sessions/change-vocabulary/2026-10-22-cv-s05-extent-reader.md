@@ -724,3 +724,17 @@ The run-time session's full read passes changed rules and exposed reader defects
 
 - Rounds 1–5's agent prompt lived only in conversation (unlike CV-S02's `feed-reader-check`). After compaction it was rebuilt for round 6, and the known classes (K1–K10, P1–P7) had never been recorded.
 - Now `.claude/skills/extent-reader-check/SKILL.md`: steps (catalogue review, extents, rebuild, golden, check, claims diff, repeatable sample), the agent prompt with the known counted classes (KU, KP, KE, KC, KN, KD, KS), and a seed history. Memory: every reader acceptance check keeps its prompt in a skill.
+
+## Agent check, seed 11 (round 6): laws 45 OK / 2 WRONG / 3 doubtful; changes 50 OK — FAIL (3 NEW, all silent drops)
+
+- Sample repeatable (two runs identical); check PASS on the run; prompt from the new `extent-reader-check` skill.
+- **Changes: 50/50 OK.** Three are right but labelled `none:not_named`, when their amending provisions are in `same` lists (D4).
+- **NEW, verified: none of these sentences is in the catalogue classes at all (not counted):**
+  - **D1 (misread through a drop):** ukpga 2003/39 (Courts Act 2003) s.111(2) "Subsection (1) does not apply to section 59(3), 90, 91, 100, … 106 or 109". The exception to the default is unread and uncounted, so ss.102–106 (Northern Ireland provisions) take the E+W default. Also s.111(1)'s "Subject to … section 27(13) of the Crime and Courts Act 2013 (extent of paragraphs 9A, 9C and 10 of Schedule 5)".
+  - **D2:** ukpga 2007/28 s.244(3) "The extent of any amendment, repeal or revocation made by section 60, 202(1), … or Part 1, 8, … of Schedule 18 is the same as that of the provision amended". This form isn't extent words (no "same extent as"), so it is dropped. Effects seen: HSWA s.28(6) and RTA 1988 s.144(2)(a)(i) changes by Sch.13 bound E+W, when they should follow the enactment.
+  - **D3 (doubtful effect):** ukpga 2016/19 s.95(4) "But subsection (3) does not apply to the amendments made to the Modern Slavery Act 2015 by paragraphs 30 and 35 of Schedule 3 …". The exception to `same *` is dropped, so those paragraphs take `same`.
+  - Pattern: D1 and D3 are one form, "Subsection (N) does not apply to <provisions>", an exception to an extent subsection worded as "apply". D2 is "The extent of … is the same as that of …".
+- **D4 (check label):** `none_listed/1` returns `not_named` before looking for a `same` list.
+- **Doubtful, not NEW:** application wording not read nor shown (uksi 2014/1639 "These Regulations apply— (a) within Great Britain; (b) … outside", no effect; uksi 2008/960 sch.1 para.12(3) "This paragraph does not apply to Scotland", provision_application, counted in the catalogue, not in the sample's unread).
+- **Aside:** LRRA 2006 s.34(3) "The repeals in the Schedule have the same extent …" stored as `same *` (round 3 noted it; still open).
+- The trend of NEW per round: 16, 11, 5, 5, 8, 3. For the first time the changes are 50/50, and every NEW is a silent drop of a statement, none a misread of a statement the reader reads.
