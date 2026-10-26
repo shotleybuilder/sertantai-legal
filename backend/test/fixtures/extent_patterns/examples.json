@@ -364,15 +364,15 @@
     "ref": "s.44",
     "sentence": "This Act shall not extend to Scotland or Nothern Ireland."
   },
-  "UK_ukpga_1967_80/7ce9cbc68a": {
-    "law": "UK_ukpga_1967_80",
-    "ref": "s.106",
-    "sentence": "The following provisions of this Act shall extend to Northern Ireland, that is to say—a so much of this Act as relates to courts-martial and appeals therefrom;b sections. . . 69 and 72;c so much of section 92 and Parts I and II of Schedule 3 as is extended to Northern Ireland by Part IV of that Schedule;d . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . e so much of section 103(1) and Schedule 6 as amends. . . the Criminal Justice Act 1961;f section 105; andg Part III of Schedule 7 and so much of section 103(2) as relates thereto; but except as provided by this subsection and except so far as it relates to the interpretation or commencement of the said provisions this Act shall not extend to Northern Ireland."
-  },
   "UK_ukpga_1967_80/80f8db9be0": {
     "law": "UK_ukpga_1967_80",
     "ref": "s.106",
     "sentence": "The following provisions of this Act shall extend to Scotland, that is to say—a so much of this Act as relates to courts-martial and appeals therefrom;b section 102 and paragraphs 7, 10 to 12 and 14 of Schedule 5;c Part III (except sections 63, 65, 66, 67 and 71) and Schedule 2;d Part V;e section 92 and Schedule 3 so far as they amend any enactment which extends to Scotland;ee section 100;f so much of section 103(1) and Schedule 6 as amends. . . . . . , the Criminal Justice Act 1961 and the Criminal Justice (Scotland) Act 1963; andg Part II of Schedule 7 and so much of section 103(2) as relates thereto; but except as provided by this subsection and except so far as it relates to the interpretation or commencement of the said provisions this Act shall not extend to Scotland."
+  },
+  "UK_ukpga_1967_80/9cd54595b7": {
+    "law": "UK_ukpga_1967_80",
+    "ref": "s.106",
+    "sentence": "The following provisions of this Act shall extend to Northern Ireland, that is to say—a so much of this Act as relates to courts-martial and appeals therefrom;b sections. . . 69 and 72;c so much of section 92 and Parts I and II of Schedule 3 as is extended to Northern Ireland by Part IV of Schedule 3;d . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . e so much of section 103(1) and Schedule 6 as amends. . . the Criminal Justice Act 1961;f section 105; andg Part III of Schedule 7 and so much of section 103(2) as relates thereto; but except as provided by this subsection and except so far as it relates to the interpretation or commencement of the said provisions this Act shall not extend to Northern Ireland."
   },
   "UK_ukpga_1967_86/00426810b4": {
     "law": "UK_ukpga_1967_86",
@@ -434,15 +434,15 @@
     "ref": "s.36",
     "sentence": "This Act does not extend to Scotland or, . . . to Northern Ireland, except as regards any amendment or repeal which in accordance with section 33 above is to extend to Scotland or Northern Ireland."
   },
+  "UK_ukpga_1968_60/4d587af22a": {
+    "law": "UK_ukpga_1968_60",
+    "ref": "s.33",
+    "sentence": "The enactments mentioned in Schedule 3 to this Act (which include in Part II certain enactments related to the subject matter of this Act but already obsolete or redundant apart from this Act) are hereby repealed to the extent specified in column 3 of Schedule 3; and, notwithstanding that the foregoing sections of this Act do not extend to Scotland, where any enactment expressed to be repealed by Schedule 3 does so extend, the Schedule shall have effect to repeal it in its application to Scotland except in so far as the repeal is expressed not to extend to Scotland."
+  },
   "UK_ukpga_1968_60/98c75a3bce": {
     "law": "UK_ukpga_1968_60",
     "ref": "s.33",
     "sentence": "No amendment or repeal made by this Act in Schedule 1 to the Extradition Act 1870 or in the Schedule to the Extradition Act 1873 shall affect the operation of that Schedule by reference to the law of a British possession; but the repeal made in Schedule 1 to the Extradition Act 1870 shall extend throughout the United Kingdom."
-  },
-  "UK_ukpga_1968_60/9e94710723": {
-    "law": "UK_ukpga_1968_60",
-    "ref": "s.33",
-    "sentence": "The enactments mentioned in Schedule 3 to this Act (which include in Part II certain enactments related to the subject matter of this Act but already obsolete or redundant apart from this Act) are hereby repealed to the extent specified in column 3 of that Schedule; and, notwithstanding that the foregoing sections of this Act do not extend to Scotland, where any enactment expressed to be repealed by Schedule 3 does so extend, the Schedule shall have effect to repeal it in its application to Scotland except in so far as the repeal is expressed not to extend to Scotland."
   },
   "UK_ukpga_1968_64/fc04e00c5d": {
     "law": "UK_ukpga_1968_64",
@@ -464,15 +464,15 @@
     "ref": "s.89",
     "sentence": "This section shall not apply to Wales."
   },
-  "UK_ukpga_1968_73/02a6acd713": {
-    "law": "UK_ukpga_1968_73",
-    "ref": "s.164",
-    "sentence": "The provisions of this Act set out in Part I of Schedule 17 to this Act shall extend to Northern Ireland subject to the modifications set out in Part II of that Schedule, but save as aforesaid this Act shall not extend to Northern Ireland."
-  },
   "UK_ukpga_1968_73/71251aa3d0": {
     "law": "UK_ukpga_1968_73",
     "ref": "s.64B",
     "sentence": "In this section as it applies in relation to England and Wales, “public road” means a highway maintainable at the public expense for the purposes of the Highways Act 1980."
+  },
+  "UK_ukpga_1968_73/b24fc065a3": {
+    "law": "UK_ukpga_1968_73",
+    "ref": "s.164",
+    "sentence": "The provisions of this Act set out in Part I of Schedule 17 to this Act shall extend to Northern Ireland subject to the modifications set out in Part II of Schedule 17, but save as aforesaid this Act shall not extend to Northern Ireland."
   },
   "UK_ukpga_1969_10/2f216b4a7f": {
     "law": "UK_ukpga_1969_10",
@@ -794,10 +794,10 @@
     "ref": "s.10",
     "sentence": "This Act, except the repeals in section 13 of the Sea Fisheries Act 1968 (compensation for damage caused by offence), extends to Northern Ireland."
   },
-  "UK_ukpga_1977_38/5b28501764": {
+  "UK_ukpga_1977_38/3593e76436": {
     "law": "UK_ukpga_1977_38",
     "ref": "s.2",
-    "sentence": "The amendments specified in Part I of Schedule 2 to this Act shall have effect for the purpose of enabling the rates of the sums whose payment is provided for by the enactments mentioned in that Part of that Schedule (which extend to England and Wales only) to be determined administratively."
+    "sentence": "The amendments specified in Part I of Schedule 2 to this Act shall have effect for the purpose of enabling the rates of the sums whose payment is provided for by the enactments mentioned in that Part of Schedule 2 (which extend to England and Wales only) to be determined administratively."
   },
   "UK_ukpga_1977_38/c5d418fe8e": {
     "law": "UK_ukpga_1977_38",
@@ -1359,10 +1359,10 @@
     "ref": "s.140",
     "sentence": "This Act, with the exceptions mentioned in subsection (6) below, does not extend to Northern Ireland."
   },
-  "UK_ukpga_1985_67/67cf224163": {
+  "UK_ukpga_1985_67/a06c47bd8c": {
     "law": "UK_ukpga_1985_67",
     "ref": "s.57",
-    "sentence": "In section 9 of the 1968 Act (designation of passenger transport areas and establishment of Passenger Transport Authorities and Executives)—a for subsections (1) to (4) there shall be substituted the following subsections—1 For the purposes of this Part of this Act—a each of the following areas, that is to say—i in England and Wales, the metropolitan counties; andii in Scotland, that part of the Strathclyde region which was a designated area for the purposes of this Part of this Act immediately before the date on which section 57 of the Transport Act 1985 came into operation; shall be a passenger transport area;a the Passenger Transport Authority for a passenger transport area (referred to below in this Part of this Act, in relation to that area, as “the Authority”) shall be—i in relation to a passenger transport area in England and Wales, the metropolitan county council; andii in relation to the Strathclyde passenger transport area, the Strathclyde regional council; andc the Passenger Transport Executive for a passenger transport area (referred to below in this Part of this Act, in relation to that area, as “the Executive”) shall be the body which immediately before the date mentioned in paragraph (a) above was the Passenger Transport Executive for the designated area for the purposes of this Part of this Act corresponding to that passenger transport area.2 The Executive for a passenger transport area consists of—a a Director General appointed in accordance with Part II of Schedule 5 to this Act by the Authority; andb not less than two nor more than eight other members so appointed by the Authority after consultation with the Director General.3 Subject to subsection (2) of this section and Part II of Schedule 5 to this Act, the Secretary of State may by order make with respect to the Executive for any passenger transport area—a such provision with respect to any of the matters referred to in Part III of that Schedule; andb such supplementary, incidental and consequential provision; as appears to the Secretary of State to be necessary or expedient.4 Before making any order under subsection (3) of this section, the Secretary of State shall consult with the Passenger Transport Authority for the area and, where the area is in England and Wales, with the councils of the districts comprised in the area.;b in subsection (5), as it applies to England and Wales, for the words “constituent areas” there shall be substituted the words “the districts comprised in a passenger transport area”;c in subsection (5), as it applies to Scotland, for the word “designated” there shall be substituted the words “passenger transport”; andd subsection (7) shall be omitted."
+    "sentence": "In section 9 of the 1968 Act (designation of passenger transport areas and establishment of Passenger Transport Authorities and Executives)—a for subsections (1) to (4) there shall be substituted the following subsections—1 For the purposes of this Part of this Act—a each of the following areas, that is to say—i in England and Wales, the metropolitan counties; andii in Scotland, that part of the Strathclyde region which was a designated area for the purposes of this Part of this Act immediately before the date on which section 57 of the Transport Act 1985 came into operation; shall be a passenger transport area;a the Passenger Transport Authority for a passenger transport area (referred to below in this Part of this Act, in relation to that area, as “the Authority”) shall be—i in relation to a passenger transport area in England and Wales, the metropolitan county council; andii in relation to the Strathclyde passenger transport area, the Strathclyde regional council; andc the Passenger Transport Executive for a passenger transport area (referred to below in this Part of this Act, in relation to that area, as “the Executive”) shall be the body which immediately before the date mentioned in paragraph (a) above was the Passenger Transport Executive for the designated area for the purposes of this Part of this Act corresponding to that passenger transport area.2 The Executive for a passenger transport area consists of—a a Director General appointed in accordance with Part II of Schedule 5 to this Act by the Authority; andb not less than two nor more than eight other members so appointed by the Authority after consultation with the Director General.3 Subject to subsection (2) of this section and Part II of Schedule 5 to this Act, the Secretary of State may by order make with respect to the Executive for any passenger transport area—a such provision with respect to any of the matters referred to in Part III of Schedule 5; andb such supplementary, incidental and consequential provision; as appears to the Secretary of State to be necessary or expedient.4 Before making any order under subsection (3) of this section, the Secretary of State shall consult with the Passenger Transport Authority for the area and, where the area is in England and Wales, with the councils of the districts comprised in the area.;b in subsection (5), as it applies to England and Wales, for the words “constituent areas” there shall be substituted the words “the districts comprised in a passenger transport area”;c in subsection (5), as it applies to Scotland, for the word “designated” there shall be substituted the words “passenger transport”; andd subsection (7) shall be omitted."
   },
   "UK_ukpga_1985_67/a99ca1ec6b": {
     "law": "UK_ukpga_1985_67",
@@ -1779,10 +1779,10 @@
     "ref": "s.7",
     "sentence": "Section 6(2) and (5) of this Act extend to Northern Ireland only."
   },
-  "UK_ukpga_1990_11/1d767476ba": {
+  "UK_ukpga_1990_11/cddec1aa47": {
     "law": "UK_ukpga_1990_11",
     "ref": "s.7",
-    "sentence": "The repeals in Part II of Schedule 1 extend to England and Wales only and those in Part III of that Schedule to Scotland only."
+    "sentence": "The repeals in Part II of Schedule 1 extend to England and Wales only and those in Part III of Schedule 1 to Scotland only."
   },
   "UK_ukpga_1990_16/37ef864187": {
     "law": "UK_ukpga_1990_16",
@@ -2484,10 +2484,10 @@
     "ref": "s.105",
     "sentence": "This Act, which subject to subsections (8) to (10) below extends to Scotland only—a may be cited as the Children (Scotland) Act 1995; andb except for subsections (1), (2) and (6) to (10) of this section, shall come into force on such day as the Secretary of State may by order made by statutory instrument appoint; and different days may be appointed under paragraph (b) above for different purposes."
   },
-  "UK_ukpga_1995_36/4fb0c0cbf3": {
+  "UK_ukpga_1995_36/a978514766": {
     "law": "UK_ukpga_1995_36",
     "ref": "s.105",
-    "sentence": "Sections 18, 26(2), 33, 44, ..., 93 and 104 of this Act and this section extend to England and Wales, and those sections and this section ... also extend to Northern Ireland; but—a subsection (4) of this section so extends—i to England and Wales, only in so far as it relates to paragraphs 8, 10, 19, 31, 37, 41(1), (2) and (7) to (9), 48 to 52, 54 and 55 of Schedule 4; andii to Northern Ireland, only in so far as it relates to paragraphs 31, 37, 41(1), (2) and (7) to (9), 54, 55 and 58 of that Schedule; andb subsection (5) of this section so extends—i to England and Wales, only in so far as it relates to the entries in Schedule 5 in respect of Part V of the Social Work (Scotland) Act 1968, the Maintenance Orders (Reciprocal Enforcement) Act 1972, section 35(4)(c) of the Family Law Act 1986, the Children Act 1989, the Child Support Act 1991 and the Education Act 1993; andii to Northern Ireland, only in so far as it relates to the entries in that Schedule in respect of Part V of the Social Work (Scotland) Act 1968, the Maintenance Orders (Reciprocal Enforcement) Act 1972 and section 35(4)(c) of the Family Law Act 1986."
+    "sentence": "Sections 18, 26(2), 33, 44, ..., 93 and 104 of this Act and this section extend to England and Wales, and those sections and this section ... also extend to Northern Ireland; but—a subsection (4) of this section so extends—i to England and Wales, only in so far as it relates to paragraphs 8, 10, 19, 31, 37, 41(1), (2) and (7) to (9), 48 to 52, 54 and 55 of Schedule 4; andii to Northern Ireland, only in so far as it relates to paragraphs 31, 37, 41(1), (2) and (7) to (9), 54, 55 and 58 of Schedule 4; andb subsection (5) of this section so extends—i to England and Wales, only in so far as it relates to the entries in Schedule 5 in respect of Part V of the Social Work (Scotland) Act 1968, the Maintenance Orders (Reciprocal Enforcement) Act 1972, section 35(4)(c) of the Family Law Act 1986, the Children Act 1989, the Child Support Act 1991 and the Education Act 1993; andii to Northern Ireland, only in so far as it relates to the entries in that Schedule in respect of Part V of the Social Work (Scotland) Act 1968, the Maintenance Orders (Reciprocal Enforcement) Act 1972 and section 35(4)(c) of the Family Law Act 1986."
   },
   "UK_ukpga_1995_38/2dd9d4bf2f": {
     "law": "UK_ukpga_1995_38",
@@ -2574,15 +2574,15 @@
     "ref": "s.79",
     "sentence": "Section 73 extends only to Scotland."
   },
-  "UK_ukpga_1996_25/16fb886ee7": {
-    "law": "UK_ukpga_1996_25",
-    "ref": "s.79",
-    "sentence": "This Act does not extend to Scotland, with the exception of—a sections 37, 38, 41, 42, 59, 60, 61(3), 63, 72, 73, 74(2) and (3) and 78, this section and section 81;b paragraphs 6 and 7 of Schedule 3, and paragraph 8 of that Schedule so far as it relates to paragraphs 6 and 7;c paragraph 5 of Schedule 5;d paragraph 12 of Schedule 5 so far as it relates to provisions amending section 11 of the Criminal Justice Act 1987."
-  },
   "UK_ukpga_1996_25/67855ea39f": {
     "law": "UK_ukpga_1996_25",
     "ref": "s.79",
     "sentence": "Parts III (other than sections 37 and 38) and VI and sections 44, 47, 65, 67, 68 and 71 do not extend to Northern Ireland."
+  },
+  "UK_ukpga_1996_25/c8051fc636": {
+    "law": "UK_ukpga_1996_25",
+    "ref": "s.79",
+    "sentence": "This Act does not extend to Scotland, with the exception of—a sections 37, 38, 41, 42, 59, 60, 61(3), 63, 72, 73, 74(2) and (3) and 78, this section and section 81;b paragraphs 6 and 7 of Schedule 3, and paragraph 8 of Schedule 3 so far as it relates to paragraphs 6 and 7;c paragraph 5 of Schedule 5;d paragraph 12 of Schedule 5 so far as it relates to provisions amending section 11 of the Criminal Justice Act 1987."
   },
   "UK_ukpga_1996_25/d116692e11": {
     "law": "UK_ukpga_1996_25",
@@ -2674,10 +2674,10 @@
     "ref": "s.31",
     "sentence": "Proceedings for an offence under any provision of this Act other than section 2 or 11 shall not be instituted except by or with the consent of the Secretary of State; but the preceding provisions of this subsection do not apply to Scotland."
   },
-  "UK_ukpga_1997_11/7f9f2dfcae": {
+  "UK_ukpga_1997_11/6d313b9d44": {
     "law": "UK_ukpga_1997_11",
     "ref": "s.6",
-    "sentence": "The repeals in Part II of Schedule 1 extend to Scotland only and those in Part III of that Schedule to England and Wales only."
+    "sentence": "The repeals in Part II of Schedule 1 extend to Scotland only and those in Part III of Schedule 1 to England and Wales only."
   },
   "UK_ukpga_1997_11/b495374b6f": {
     "law": "UK_ukpga_1997_11",
@@ -2894,15 +2894,15 @@
     "ref": "s.79",
     "sentence": "Part X of, and Schedule 9 to, the 1989 Act shall cease to extend to England and Wales."
   },
+  "UK_ukpga_2000_19/2c2e765dc7": {
+    "law": "UK_ukpga_2000_19",
+    "ref": "s.87",
+    "sentence": "The repeals mentioned in subsection (2)(g) (which extend to Northern Ireland) are—a the repeals, in Part I of Schedule 9, that relate to the Tax Credits Act 1999;b the repeals, in sections (1), (6) and (11) of Part III of Schedule 9, that relate to—i section 21(3) of the Pensions Act 1995;ii paragraph 49(a)(ii) of Schedule 3 to the Pensions (Northern Ireland) Order 1995; andiii section 52(5) of the Pension Schemes (Northern Ireland) Act 1993;c the repeals in Part IV of that Schedule (except so far as relating to the Courts and Legal Services Act 1990); andd the repeals in section (2) of Part VIII of that Schedule."
+  },
   "UK_ukpga_2000_19/9fbef96d30": {
     "law": "UK_ukpga_2000_19",
     "ref": "s.87",
     "sentence": "The following provisions of this Act extend to Northern Ireland—a so much of section 46 as amends section 21(3) of the Pensions Act 1995;b sections 57 to 61 (except section 60(5));c section 73;d sections 78 to 81;e in Schedule 3, paragraphs 8 and 9, and in paragraph 11, sub-paragraph (2) (and sub-paragraph (1) so far as it relates to that sub-paragraph);f paragraph 6 of Schedule 5; andg this Part, except—i sections 82 and 83 and Schedule 8; andii so much of this Part as gives effect to any repeal other than the repeals mentioned in subsection (3)."
-  },
-  "UK_ukpga_2000_19/dca5749b55": {
-    "law": "UK_ukpga_2000_19",
-    "ref": "s.87",
-    "sentence": "The repeals mentioned in subsection (2)(g) (which extend to Northern Ireland) are—a the repeals, in Part I of Schedule 9, that relate to the Tax Credits Act 1999;b the repeals, in sections (1), (6) and (11) of Part III of that Schedule, that relate to—i section 21(3) of the Pensions Act 1995;ii paragraph 49(a)(ii) of Schedule 3 to the Pensions (Northern Ireland) Order 1995; andiii section 52(5) of the Pension Schemes (Northern Ireland) Act 1993;c the repeals in Part IV of that Schedule (except so far as relating to the Courts and Legal Services Act 1990); andd the repeals in section (2) of Part VIII of that Schedule."
   },
   "UK_ukpga_2000_2/2123e829e7": {
     "law": "UK_ukpga_2000_2",
@@ -3439,6 +3439,11 @@
     "ref": "sch.7.pt.3",
     "sentence": "International Criminal Court Act 2001 (c. 17)491 The International Criminal Court Act 2001 is amended as follows.2 In section 33 (entry, search and seizure), in subsection (2), for “a serious arrestable offence” substitute “ (in the case of Part 2 of the 1984 Act) to an indictable offence or (in the case of Part III of the 1989 Order) to a serious arrestable offence ”.3 In section 55 (meaning of “ancillary offence” under the law of England and Wales), in subsection (5), in each of paragraphs (a) and (b), for “an arrestable offence” substitute “ a relevant offence ”.4 This paragraph extends to England and Wales and to Northern Ireland (but not to Scotland)."
   },
+  "UK_ukpga_2005_15/3b1eca5f6b": {
+    "law": "UK_ukpga_2005_15",
+    "ref": "s.179",
+    "sentence": "The following have the same extent as the enactments to which they relate—a section 55(1) and Schedule 2,b section 59 and Schedule 4,c section 109 and Schedule 6,d section 154,e section 159 and Schedule 11,f section 160 and Schedule 12,g section 161(5) (so far as it has effect for the purposes of Part 2 of Schedule 13) and that Part of Schedule 13,h section 163(3) and Schedule 14,i sections 169(5) and 170,j (subject to subsection (8)) section 174(2) and Schedule 17."
+  },
   "UK_ukpga_2005_15/8ebcab888d": {
     "law": "UK_ukpga_2005_15",
     "ref": "sch.7.pt.3",
@@ -3463,11 +3468,6 @@
     "law": "UK_ukpga_2005_15",
     "ref": "sch.7.para.49",
     "sentence": "This paragraph extends to England and Wales and to Northern Ireland (but not to Scotland)."
-  },
-  "UK_ukpga_2005_15/fa52f550ae": {
-    "law": "UK_ukpga_2005_15",
-    "ref": "s.179",
-    "sentence": "The following have the same extent as the enactments to which they relate—a section 55(1) and Schedule 2,b section 59 and Schedule 4,c section 109 and Schedule 6,d section 154,e section 159 and Schedule 11,f section 160 and Schedule 12,g section 161(5) (so far as it has effect for the purposes of Part 2 of Schedule 13) and that Part of that Schedule,h section 163(3) and Schedule 14,i sections 169(5) and 170,j (subject to subsection (8)) section 174(2) and Schedule 17."
   },
   "UK_ukpga_2005_4/574bb1d417": {
     "law": "UK_ukpga_2005_4",
@@ -3599,10 +3599,10 @@
     "ref": "s.66",
     "sentence": "Sections 1, 28, 29 and 55 and Schedule 1 and, so far as relating to those provisions, sections 59 to 61 and 65 also extend to Northern Ireland."
   },
-  "UK_ukpga_2006_47/b97115d5b9": {
+  "UK_ukpga_2006_47/fc39c15275": {
     "law": "UK_ukpga_2006_47",
     "ref": "s.66",
-    "sentence": "The amendment of an enactment in Schedule 9 has the same extent as the enactment amended, but the amendments made by paragraph 14 of that Schedule do not extend to Scotland."
+    "sentence": "The amendment of an enactment in Schedule 9 has the same extent as the enactment amended, but the amendments made by paragraph 14 of Schedule 9 do not extend to Scotland."
   },
   "UK_ukpga_2006_48/218d65d8b8": {
     "law": "UK_ukpga_2006_48",
@@ -3618,11 +3618,6 @@
     "law": "UK_ukpga_2006_48",
     "ref": "s.54",
     "sentence": "Subsection (5) does not apply to the amendments made by paragraphs 14 and 37 of Schedule 14, which do not extend to Scotland."
-  },
-  "UK_ukpga_2006_48/423b0d04de": {
-    "law": "UK_ukpga_2006_48",
-    "ref": "s.53",
-    "sentence": "The following provisions come into force in accordance with provision made by order by the Scottish Ministers—a sections 35 to 38 so far as they extend to Scotland;b paragraphs 17 to 19 and 29 of Schedule 14 so far as they extend to Scotland;c paragraph 25 of that Schedule;d the repeals in Part 4 of Schedule 15 of—i provisions in section 13 of the Computer Misuse Act 1990 (c. 18);ii section 17(7) of that Act so far as it extends to Scotland;iii paragraph 77 of Schedule 4 to the Criminal Procedure (Consequential Provisions) (Scotland) Act 1995 (c. 40);e section 52 so far as relating to those paragraphs and repeals."
   },
   "UK_ukpga_2006_48/55f9b4ff45": {
     "law": "UK_ukpga_2006_48",
@@ -3643,6 +3638,11 @@
     "law": "UK_ukpga_2006_48",
     "ref": "s.54",
     "sentence": "The following provisions extend also to Scotland and Northern Ireland— section 1(2)(b); Parts 5 and 6 of Schedule 1 (and section 1(3) so far as relating to those Parts); section 5 and Schedule 3; section 38; section 41."
+  },
+  "UK_ukpga_2006_48/f9154d7673": {
+    "law": "UK_ukpga_2006_48",
+    "ref": "s.53",
+    "sentence": "The following provisions come into force in accordance with provision made by order by the Scottish Ministers—a sections 35 to 38 so far as they extend to Scotland;b paragraphs 17 to 19 and 29 of Schedule 14 so far as they extend to Scotland;c paragraph 25 of Schedule 14;d the repeals in Part 4 of Schedule 15 of—i provisions in section 13 of the Computer Misuse Act 1990 (c. 18);ii section 17(7) of that Act so far as it extends to Scotland;iii paragraph 77 of Schedule 4 to the Criminal Procedure (Consequential Provisions) (Scotland) Act 1995 (c. 40);e section 52 so far as relating to those paragraphs and repeals."
   },
   "UK_ukpga_2006_49/559d48ab95": {
     "law": "UK_ukpga_2006_49",
@@ -3934,10 +3934,10 @@
     "ref": "s.181",
     "sentence": "Except as otherwise provided by this Act, an amendment, repeal or revocation of any enactment by any provision of this Act extends to the part or parts of the United Kingdom to which the enactment extends."
   },
-  "UK_ukpga_2009_25/e93a49e451": {
+  "UK_ukpga_2009_25/db017d4b45": {
     "law": "UK_ukpga_2009_25",
     "ref": "s.181",
-    "sentence": "Paragraphs 34 and 35 of Schedule 22 extend to England and Wales and Scotland, and paragraph 36 of that Schedule extends to Scotland only."
+    "sentence": "Paragraphs 34 and 35 of Schedule 22 extend to England and Wales and Scotland, and paragraph 36 of Schedule 22 extends to Scotland only."
   },
   "UK_ukpga_2009_25/f97b9fe5ce": {
     "law": "UK_ukpga_2009_25",
@@ -4034,11 +4034,6 @@
     "ref": "s.81",
     "sentence": "This Part extends to the whole of the United Kingdom."
   },
-  "UK_ukpga_2012_10/1a77962f49": {
-    "law": "UK_ukpga_2012_10",
-    "ref": "s.152",
-    "sentence": "In Chapter 8 of Part 3—a section 139 extends to England and Wales only,b sections 140 and 141 extend to England and Wales, Scotland and Northern Ireland,c paragraphs 1 to 11 of Schedule 25 extend to England and Wales only,d paragraphs 12 to 17 of that Schedule extend to Scotland only, ande Part 2 of that Schedule extends to England and Wales only."
-  },
   "UK_ukpga_2012_10/3025886264": {
     "law": "UK_ukpga_2012_10",
     "ref": "s.152",
@@ -4058,6 +4053,11 @@
     "law": "UK_ukpga_2012_10",
     "ref": "s.152",
     "sentence": "Sections 130 and 131(1) extend to England and Wales and Scotland."
+  },
+  "UK_ukpga_2012_10/90f5dc0bdc": {
+    "law": "UK_ukpga_2012_10",
+    "ref": "s.152",
+    "sentence": "In Chapter 8 of Part 3—a section 139 extends to England and Wales only,b sections 140 and 141 extend to England and Wales, Scotland and Northern Ireland,c paragraphs 1 to 11 of Schedule 25 extend to England and Wales only,d paragraphs 12 to 17 of Schedule 25 extend to Scotland only, ande Part 2 of Schedule 25 extends to England and Wales only."
   },
   "UK_ukpga_2012_10/9ab0bed4a8": {
     "law": "UK_ukpga_2012_10",
@@ -4088,11 +4088,6 @@
     "law": "UK_ukpga_2012_9",
     "ref": "sch.2.pt.3",
     "sentence": "Cross-border Railway Services (Working Time) Regulations 2008 (2008/1660)141 Omit paragraph 2(2)(a), (b) and (c) of Schedule 2 to the Cross-border Railway Services (Working Time) Regulations 2008 (power of Office of Rail Regulation's inspector to enter premises for the purpose of carrying the regulations into effect).2 This paragraph extends to England and Wales and Scotland only."
-  },
-  "UK_ukpga_2012_9/901faa4be9": {
-    "law": "UK_ukpga_2012_9",
-    "ref": "s.119",
-    "sentence": "The following provisions extend to England and Wales and Northern Ireland only—a Part 2 of Schedule 1,b Chapter 3 of Part 5 (excluding paragraph 5(3) of Schedule 8 and section 91),c in Part 6 of Schedule 9 and Part 5 of Schedule 10, the amendments and repeals in respect of—i the Police Act 1997 (excluding sections 113A(10) and 113B(13) of that Act), andii paragraph 14(7)(c) of Schedule 9 to the Safeguarding Vulnerable Groups Act 2006, andd any provision which extends to England and Wales and Northern Ireland only by virtue of subsection (7)."
   },
   "UK_ukpga_2012_9/9b94b593a9": {
     "law": "UK_ukpga_2012_9",
@@ -4179,25 +4174,20 @@
     "ref": "s.102",
     "sentence": "Part 2 extends only to England and Wales and Scotland, except that the following provisions of Part 2 extend also to Northern Ireland—a section 23(3);b paragraph 11 of Schedule 1;c paragraphs 36 to 39 of Schedule 2."
   },
+  "UK_ukpga_2013_24/5a3c672f54": {
+    "law": "UK_ukpga_2013_24",
+    "ref": "s.102",
+    "sentence": "Part 3 extends to England and Wales, Scotland and Northern Ireland, except as follows—a paragraphs 15 to 44, 69 to 84 and 101 to 107 of Schedule 6 extend only to England and Wales and Scotland;b paragraphs 52 to 68, 96, 108 to 123 and 127 to 139 of Schedule 6 extend only to England and Wales;c paragraphs 9 to 14, 45 to 51, 171 to 180 and 192 to 209 of Schedule 6 extend only to Scotland;d paragraphs 149 to 170 and 181 to 191 of Schedule 6 extend only to Northern Ireland."
+  },
   "UK_ukpga_2013_24/849ede8e8b": {
     "law": "UK_ukpga_2013_24",
     "ref": "s.102",
     "sentence": "This Part extends to England and Wales, Scotland and Northern Ireland except that—a sections 92, 93, 95, 97 and 98 extend only to England and Wales and Scotland;b sections 83 to 88, 94 and 96 extend only to England and Wales."
   },
-  "UK_ukpga_2013_24/908dcdeeb6": {
-    "law": "UK_ukpga_2013_24",
-    "ref": "s.102",
-    "sentence": "Part 4 extends to England and Wales, Scotland and Northern Ireland, except as follows—a paragraphs 1 to 7 and 11 to 14 of Schedule 14 and paragraphs 2, 3, 7, 13 and 41 of Schedule 15, extend only to England and Wales and Scotland;b paragraphs 8 to 10 and 20 to 22 of Schedule 14, and paragraphs 4 to 6 and 47 to 49 of Schedule 15, extend only to England and Wales;c paragraphs 23 to 29 of Schedule 14, and paragraphs 53 to 55 of Schedule 15, extend only to Northern Ireland."
-  },
   "UK_ukpga_2013_24/96429ee262": {
     "law": "UK_ukpga_2013_24",
     "ref": "s.102",
     "sentence": "Part 5 extends as follows—a sections 59, 62, 67, 68 and 70 and Part 1 of Schedule 21 extend to England and Wales, Scotland and Northern Ireland,b section 69 extends only to England and Wales and Scotland except that it also extends to Northern Ireland so far as Parts 1 and 4 of the Health and Safety at Work etc. Act 1974 extend there,c sections 64, 65 and 66 and paragraphs 1, 56 to 58, 60 and 66 of Schedule 19 (and section 71(3) so far as it relates to those paragraphs) extend only to England and Wales and Scotland,d sections 60, 61, 63, 71(1) and (2) and 72(1) to (3), Schedules 16, 17 and 18, paragraphs 2 to 55, 59, 61 to 65 of Schedule 19 (and section 71(3) so far as it relates to those paragraphs) and Parts 2 and 3 of Schedule 21 extend only to England and Wales, ande an amendment, repeal or revocation made by Schedule 20 has the same extent as the provision amended, repealed or revoked, subject to subsection (6)."
-  },
-  "UK_ukpga_2013_24/a53b081f0c": {
-    "law": "UK_ukpga_2013_24",
-    "ref": "s.102",
-    "sentence": "Part 3 extends to England and Wales, Scotland and Northern Ireland, except as follows—a paragraphs 15 to 44, 69 to 84 and 101 to 107 of Schedule 6 extend only to England and Wales and Scotland;b paragraphs 52 to 68, 96, 108 to 123 and 127 to 139 of that Schedule extend only to England and Wales;c paragraphs 9 to 14, 45 to 51, 171 to 180 and 192 to 209 of that Schedule extend only to Scotland;d paragraphs 149 to 170 and 181 to 191 of that Schedule extend only to Northern Ireland."
   },
   "UK_ukpga_2013_27/38c0239699": {
     "law": "UK_ukpga_2013_27",
@@ -4894,10 +4884,10 @@
     "ref": "reg.11",
     "sentence": "This regulation applies only in Wales."
   },
-  "UK_uksi_1991_2067/972f87fd61": {
+  "UK_uksi_1991_2067/8b116ae632": {
     "law": "UK_uksi_1991_2067",
     "ref": "reg.3",
-    "sentence": "Subject to article 4, the following provisions of the 1991 Act shall come into force on 25th September 1991— section 15; section 17; section 18; section 21; section 22; section 25, in so far as it relates to paragraph 1 of Part I of Schedule 3; section 26; section 29; section 31(1), (4) (so far as that subsection is not yet in force), (5) and (6); section 32, in so far as it relates to paragraphs 8, 9(2)(c), 10(1), 36, 51, 54(1), (3)(a), 56 and 57(1), (2)(b), (3)(b) and (4) of Schedule 7; sections 62 to 69; section 70, except in so far as it reltes to paragraph 32 of Schedule 15; section 80 as it applies in relation to England and Wales, except in so far as it relates to the entries relating to the Planning (Hazardous Substances) Act 1990 in Part I of Schedule 18; section 81; and section 84(6), in so far as it relates to Part II of Schedule 19 (so far as it is not yet in force), Parts III and V of that Schedule and the repeals in Parts I and Iv of that Schedule specified in Schedule 1 to this Order."
+    "sentence": "Subject to article 4, the following provisions of the 1991 Act shall come into force on 25th September 1991— section 15; section 17; section 18; section 21; section 22; section 25, in so far as it relates to paragraph 1 of Part I of Schedule 3; section 26; section 29; section 31(1), (4) (so far as that subsection is not yet in force), (5) and (6); section 32, in so far as it relates to paragraphs 8, 9(2)(c), 10(1), 36, 51, 54(1), (3)(a), 56 and 57(1), (2)(b), (3)(b) and (4) of Schedule 7; sections 62 to 69; section 70, except in so far as it reltes to paragraph 32 of Schedule 15; section 80 as it applies in relation to England and Wales, except in so far as it relates to the entries relating to the Planning (Hazardous Substances) Act 1990 in Part I of Schedule 18; section 81; and section 84(6), in so far as it relates to Part II of Schedule 19 (so far as it is not yet in force), Parts III and V of Schedule 19 and the repeals in Parts I and Iv of Schedule 19 specified in Schedule 1 to this Order."
   },
   "UK_uksi_1991_2092/9a25f2f034": {
     "law": "UK_uksi_1991_2092",
@@ -5369,10 +5359,10 @@
     "ref": "reg.1",
     "sentence": "These Regulations extend to England and Wales and Scotland except as provided below."
   },
-  "UK_uksi_2008_1911/447bfb74e7": {
+  "UK_uksi_2008_1911/ce1b7b1ff8": {
     "law": "UK_uksi_2008_1911",
     "ref": "reg.42",
-    "sentence": "Sections 507 to 509 apply to LLPs, modified so that they read as follows—Offences in connection with auditor's report5071 A person to whom this section applies commits an offence if he knowingly or recklessly causes a report under section 495 (auditor's report on LLP's annual accounts) to include any matter that is misleading, false or deceptive in a material particular.2 A person to whom this section applies commits an offence if he knowingly or recklessly causes such a report to omit a statement required by—a section 498(2)(b) (statement that LLP's accounts do not agree with accounting records and returns),b section 498(3) (statement that necessary information and explanations not obtained), orc section 498(4) (statement that members wrongly prepared accounts in accordance with the small LLPs regime).3 This section applies to—a where the auditor is an individual, that individual and any employee or agent of his who is eligible for appointment as auditor of the LLP;b where the auditor is a firm, any director, member, employee or agent of the firm who is eligible for appointment as auditor of the LLP.4 A person guilty of an offence under this section is liable—a on conviction on indictment, to a fine;b on summary conviction, to a fine not exceeding the statutory maximum.Guidance for regulatory and prosecuting authorities: England, Wales and Northern Ireland5081 The Secretary of State may issue guidance for the purpose of helping relevant regulatory and prosecuting authorities to determine how they should carry out their functions in cases where behaviour occurs that—a appears to involve the commission of an offence under section 507 (offences in connection with auditor's report), andb has been, is being or may be investigated pursuant to arrangements—i under paragraph 15 of Schedule 10 (investigation of complaints against auditors and supervisory bodies), orii of a kind mentioned in paragraph 24 of that Schedule (independent investigation for disciplinary purposes of public interest cases).2 The Secretary of State must obtain the consent of the Attorney General before issuing any such guidance.3 In this section “relevant regulatory and prosecuting authorities” means—a supervisory bodies within the meaning of Part 42 of this Act,b bodies to which the Secretary of State may make grants under section 16(1) of the Companies (Audit, Investigations and Community Enterprise) Act 2004 (c.27) (bodies concerned with accounting standards etc),c the Director of the Serious Fraud Office,d the Director of Public Prosecutions or the Director of Public Prosecutions for Northern Ireland, ande the Secretary of State.4 This section does not apply to Scotland.Guidance for regulatory authorities: Scotland5091 The Lord Advocate may issue guidance for the purpose of helping relevant regulatory authorities to determine how they should carry out their functions in cases where behaviour occurs that—a appears to involve the commission of an offence under section 507 (offences in connection with auditor's report), andb has been, is being or may be investigated pursuant to arrangements—i under paragraph 15 of Schedule 10 (investigation of complaints against auditors and supervisory bodies), orii of a kind mentioned in paragraph 24 of that Schedule (independent investigation for disciplinary purposes of public interest cases).2 The Lord Advocate must consult the Secretary of State before issuing any such guidance.3 In this section “relevant regulatory authorities” means—a supervisory bodies within the meaning of Part 42 of this Act,b bodies to which the Secretary of State may make grants under section 16(1) of the Companies (Audit, Investigations and Community Enterprise) Act 2004 (c.27) (bodies concerned with accounting standards etc), andc the Secretary of State.4 This section applies only to Scotland."
+    "sentence": "Sections 507 to 509 apply to LLPs, modified so that they read as follows—Offences in connection with auditor's report5071 A person to whom this section applies commits an offence if he knowingly or recklessly causes a report under section 495 (auditor's report on LLP's annual accounts) to include any matter that is misleading, false or deceptive in a material particular.2 A person to whom this section applies commits an offence if he knowingly or recklessly causes such a report to omit a statement required by—a section 498(2)(b) (statement that LLP's accounts do not agree with accounting records and returns),b section 498(3) (statement that necessary information and explanations not obtained), orc section 498(4) (statement that members wrongly prepared accounts in accordance with the small LLPs regime).3 This section applies to—a where the auditor is an individual, that individual and any employee or agent of his who is eligible for appointment as auditor of the LLP;b where the auditor is a firm, any director, member, employee or agent of the firm who is eligible for appointment as auditor of the LLP.4 A person guilty of an offence under this section is liable—a on conviction on indictment, to a fine;b on summary conviction, to a fine not exceeding the statutory maximum.Guidance for regulatory and prosecuting authorities: England, Wales and Northern Ireland5081 The Secretary of State may issue guidance for the purpose of helping relevant regulatory and prosecuting authorities to determine how they should carry out their functions in cases where behaviour occurs that—a appears to involve the commission of an offence under section 507 (offences in connection with auditor's report), andb has been, is being or may be investigated pursuant to arrangements—i under paragraph 15 of Schedule 10 (investigation of complaints against auditors and supervisory bodies), orii of a kind mentioned in paragraph 24 of Schedule 10 (independent investigation for disciplinary purposes of public interest cases).2 The Secretary of State must obtain the consent of the Attorney General before issuing any such guidance.3 In this section “relevant regulatory and prosecuting authorities” means—a supervisory bodies within the meaning of Part 42 of this Act,b bodies to which the Secretary of State may make grants under section 16(1) of the Companies (Audit, Investigations and Community Enterprise) Act 2004 (c.27) (bodies concerned with accounting standards etc),c the Director of the Serious Fraud Office,d the Director of Public Prosecutions or the Director of Public Prosecutions for Northern Ireland, ande the Secretary of State.4 This section does not apply to Scotland.Guidance for regulatory authorities: Scotland5091 The Lord Advocate may issue guidance for the purpose of helping relevant regulatory authorities to determine how they should carry out their functions in cases where behaviour occurs that—a appears to involve the commission of an offence under section 507 (offences in connection with auditor's report), andb has been, is being or may be investigated pursuant to arrangements—i under paragraph 15 of Schedule 10 (investigation of complaints against auditors and supervisory bodies), orii of a kind mentioned in paragraph 24 of Schedule 10 (independent investigation for disciplinary purposes of public interest cases).2 The Lord Advocate must consult the Secretary of State before issuing any such guidance.3 In this section “relevant regulatory authorities” means—a supervisory bodies within the meaning of Part 42 of this Act,b bodies to which the Secretary of State may make grants under section 16(1) of the Companies (Audit, Investigations and Community Enterprise) Act 2004 (c.27) (bodies concerned with accounting standards etc), andc the Secretary of State.4 This section applies only to Scotland."
   },
   "UK_uksi_2008_2683/96de6d6170": {
     "law": "UK_uksi_2008_2683",
@@ -5439,6 +5429,11 @@
     "ref": "reg.1",
     "sentence": "The title of these Regulations is the Environmental Civil Sanctions (Miscellaneous Amendments) (Wales) Regulations 2010; they apply in relation to Wales and come into force on 15 July 2010."
   },
+  "UK_uksi_2010_490/1908f78e33": {
+    "law": "UK_uksi_2010_490",
+    "ref": "reg.2",
+    "sentence": "The revocation of an enactment by any provision of regulation 133 (revocations) or Schedule 7 (revocations) has the same extent as the enactment revoked, except that the following provisions do not extend to Scotland—a paragraph (3) of that regulation, and paragraph (1) of that regulation so far as it relates to paragraph (3); andb paragraph (4)(b) of that regulation and Part 2 of Schedule 7."
+  },
   "UK_uksi_2010_490/383ab20fd1": {
     "law": "UK_uksi_2010_490",
     "ref": "reg.2",
@@ -5458,11 +5453,6 @@
     "law": "UK_uksi_2010_490",
     "ref": "reg.2",
     "sentence": "Chapter 1 of Part 6 also extends to Northern Ireland in so far as it has effect in relation to the provision specified in paragraph (4)(c)."
-  },
-  "UK_uksi_2010_490/f71bab8d65": {
-    "law": "UK_uksi_2010_490",
-    "ref": "reg.2",
-    "sentence": "The revocation of an enactment by any provision of regulation 133 (revocations) or Schedule 7 (revocations) has the same extent as the enactment revoked, except that the following provisions do not extend to Scotland—a paragraph (3) of that regulation, and paragraph (1) of that regulation so far as it relates to paragraph (3); andb paragraph (4)(b) of that regulation and Part 2 of that Schedule."
   },
   "UK_uksi_2010_490/fd575e64e4": {
     "law": "UK_uksi_2010_490",
@@ -5704,20 +5694,20 @@
     "ref": "reg.1",
     "sentence": "These Regulations extend to England and Wales and Scotland only."
   },
-  "UK_uksi_2014_469/63357a8d61": {
+  "UK_uksi_2014_469/146ebf44e8": {
     "law": "UK_uksi_2014_469",
     "ref": "reg.3",
-    "sentence": "The amendments made by Schedule 2 have the same extent as the provisions which they amend, except that the amendments made by paragraphs 11 to 13 of that Schedule extend to Scotland only."
-  },
-  "UK_uksi_2014_469/b3d6ead7a9": {
-    "law": "UK_uksi_2014_469",
-    "ref": "reg.3",
-    "sentence": "The amendments made by Schedule 3 have the same extent as the provisions which they amend, except that—a the amendments made by paragraphs 164 to 176 of that Schedule, in so far as they make provision for ONR inquiries, extend to England and Wales, Scotland and Northern Ireland;b the amendments made by paragraph 178 of that Schedule, extend to Scotland only;c the amendments made by paragraphs 182(2) and (4) and 187 to 189 of that Schedule apply in relation to England only;d the amendments made by paragraph 182(3) and (5) apply in relation to Wales only."
+    "sentence": "The amendments made by Schedule 2 have the same extent as the provisions which they amend, except that the amendments made by paragraphs 11 to 13 of Schedule 2 extend to Scotland only."
   },
   "UK_uksi_2014_469/bb457dd211": {
     "law": "UK_uksi_2014_469",
     "ref": "reg.7",
     "sentence": "This article makes transitional modifications to the 1965 Act, the 2001 Act and the 2013 Act as they apply to England and Wales."
+  },
+  "UK_uksi_2014_469/e198f3c155": {
+    "law": "UK_uksi_2014_469",
+    "ref": "reg.3",
+    "sentence": "The amendments made by Schedule 3 have the same extent as the provisions which they amend, except that—a the amendments made by paragraphs 164 to 176 of Schedule 3, in so far as they make provision for ONR inquiries, extend to England and Wales, Scotland and Northern Ireland;b the amendments made by paragraph 178 of Schedule 3, extend to Scotland only;c the amendments made by paragraphs 182(2) and (4) and 187 to 189 of Schedule 3 apply in relation to England only;d the amendments made by paragraph 182(3) and (5) apply in relation to Wales only."
   },
   "UK_uksi_2014_469/f4daf7e52a": {
     "law": "UK_uksi_2014_469",

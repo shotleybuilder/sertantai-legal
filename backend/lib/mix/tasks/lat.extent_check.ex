@@ -44,7 +44,6 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
   @shortdoc "Every amending law's extent and every text change's territory accounted for (read-only)"
 
   @text_ops ~w(inserted substituted repealed repealed_in_part renumbered)
-  @law_unread ~w(unread:not_read unread:in_clause unread:another_default unread:application unread:list unread:other_provision)
 
   @impl Mix.Task
   def run(args) do
@@ -173,7 +172,8 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
 
         unread =
           classes
-          |> Enum.filter(fn {_, _, c} -> c in @law_unread end)
+          # (every unread class, list_partial and provision_* too: CV-S05 round 8)
+          |> Enum.filter(fn {_, _, c} -> String.starts_with?(c, "unread:") end)
           |> Enum.frequencies_by(&elem(&1, 2))
 
         fault =

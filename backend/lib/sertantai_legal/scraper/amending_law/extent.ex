@@ -33,6 +33,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
     Applies,
     Excepted,
     Default,
+    Excepting,
     Forms,
     Lists,
     Lookup,
@@ -92,14 +93,23 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
     # built once: the named and same-extent readers both walk them
     unit_sentences = Units.unit_sentences(doc)
 
-    {clause_ref, clause} =
-      Enum.find(sections, {nil, ""}, fn {ref, text} ->
+    clauses =
+      Enum.filter(sections, fn {ref, text} ->
         not String.contains?(ref, "(") and
           (Regex.match?(Forms.extends(), text) or Regex.match?(Forms.extends_and(), text) or
              Regex.match?(Forms.not_extends(), text) or
              Regex.match?(Forms.except_list(), text) or Regex.match?(Forms.heading(), text) or
              Regex.match?(Forms.cited_list(), text) or Regex.match?(Forms.only_following(), text) or
              Regex.match?(Forms.extends_except(), text) or Regex.match?(Forms.extends_exc(), text))
+      end)
+
+    # the first stating a default, else the first: "31 The following
+    # provisions … do not extend to Scotland— …"; "32 It is hereby declared
+    # that this Act extends to Northern Ireland" (ukpga 1981/45, CV-S05
+    # round 8 NEW-4; s.31's list is read as any other provision's)
+    {clause_ref, clause} =
+      Enum.find(clauses, List.first(clauses, {nil, ""}), fn {_, text} ->
+        Default.default(text) != nil
       end)
 
     default = Default.westminster(Default.default(clause), clause, doc.type)
@@ -116,6 +126,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
            Lists.headed_lists(sections, clause_ref, clause, doc) ++
            Lists.part_not(sections, doc) ++
            Named.named(unit_sentences, doc) ++
+           Excepting.leads(unit_sentences, doc) ++
            Same.amendments_same(unit_sentences, doc) ++
            Amends.amends(unit_sentences, doc) ++
            Excepted.excepted(unit_sentences, doc) ++

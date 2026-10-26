@@ -31,7 +31,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lookup do
   # with no default, only a list naming the provision decides ("The
   # following provisions of this Act extend to England and Wales only—")
   def of(%Extent{} = e, ref) do
-    candidates = [ref | containers(ref)] ++ introducing(e, ref)
+    direct = [ref | containers(ref)]
+    candidates = direct ++ introducing(e, ref)
 
     # every list naming it, in order: "only" sets, "also" widens, "not"
     # narrows (HSWA s.77: also NI by s.84(1), not Scotland by s.84(2))
@@ -39,6 +40,17 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lookup do
       Enum.filter(e.lists, fn {_kind, _place, items} ->
         items != ["*"] and Enum.any?(candidates, &named?(&1, items))
       end)
+
+    # a Schedule (or its paragraph) a list sets the extent of is no longer
+    # its introducing section's: "Part 3 extends to …, except as follows—
+    # (a) paragraphs 15 to 44 … of Schedule 6 extend only to …" (ERRA 2013
+    # s.102(4), CV-S05 round 9)
+    naming =
+      if Enum.any?(naming, fn {kind, _, items} ->
+           kind in [:only, :named] and Enum.any?(direct, &named?(&1, items))
+         end),
+         do: Enum.filter(naming, fn {_, _, items} -> Enum.any?(direct, &named?(&1, items)) end),
+         else: naming
 
     # "every amendment the law makes" only where no list names it
     naming = if naming == [], do: Enum.filter(e.lists, &match?({_, _, ["*"]}, &1)), else: naming

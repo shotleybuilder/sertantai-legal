@@ -169,9 +169,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
     end
   end
 
+  # (the key holds the provision's CLML id, "schedule-7": as a ref, "sch.7",
+  # the way extent lists name it — CV-S05 round 8 NEW-1)
   defp own_ref(key, law) when is_binary(key) and is_binary(law) do
-    case String.split(key, ":", parts: 2) do
-      [^law, ref] -> [ref]
+    with [^law, id] <- String.split(key, ":", parts: 2),
+         ref when is_binary(ref) <- SertantaiLegal.Scraper.Commencement.Order.ref(id) do
+      [ref]
+    else
       _ -> []
     end
   end

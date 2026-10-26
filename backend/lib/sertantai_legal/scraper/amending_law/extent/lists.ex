@@ -20,6 +20,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lists do
   # (and article 26 so far as relating to it)")
   @qualified_aside ~r/(?:\b\d+[A-Z]*(?:\(\w+\))*\s*(?=\(\s*(?:so\s+far|in\s+so\s+far|insofar|to\s+the\s+extent)\b))?\([^()]*\b(?:so\s+far|in\s+so\s+far|insofar|to\s+the\s+extent)\b[^()]*\)/iu
 
+  # an item led by its qualifier ("b in so far as relating to …, section 52")
+  @leading_qualifier ~r/^\s*(?:and\s*)?(?:\(?[a-z]{1,2}\)?\s+)?(?:in\s+so\s+far|so\s+far|insofar|to\s+the\s+extent)\b/iu
+
+  @qualifier_object ~r/\b(?:in\s+)?so\s+far\s+as\s+(?:it\s+|they\s+)?(?:relat(?:es?|ing)|appl(?:ies|y|ying)|ha(?:s|ve)\s+effect)\b[^,;—–]*/iu
+
+  @amending_not_so ~r/\bany\s+provision\s+(?:of\s+this\s+Act\s+)?(?:amending|repealing|which\s+(?:amends|repeals))\b[^;]*?\benactments?\s+which\s+(?:does|do)\s+not\s+(?:so\s+)?extend\b/iu
+
   # "… apart from sections 82 and 83, does not extend to Northern
   # Ireland": those extend there too
   @doc "Those excepted from a clause's \"does not extend\" (\"This Act, except— …\", \"apart from …\"): they extend there too."
@@ -87,7 +94,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lists do
               ref <- RefList.parse(item, clause_ref) ++ Parts.parts(item, doc, clause_ref),
               do: ref
 
-        if refs == [], do: [], else: [{:not, Places.places(m["places"]), Enum.uniq(refs)}]
+        # (b) "any provision amending or repealing an enactment which does
+        # not so extend": the law's amendments go where the enactment does
+        # (CPA 1987 s.49(1)(b), CV-S05 round 8 NEW-3)
+        same =
+          if m["list"] =~ @amending_not_so, do: [{:same, nil, ["*"]}], else: []
+
+        if(refs == [], do: [], else: [{:not, Places.places(m["places"]), Enum.uniq(refs)}]) ++
+          same
     end
   end
 
@@ -153,6 +167,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lists do
 
         match ->
           {body, excepted} = item_exceptions(own_list(cut(body)), clause_ref, doc)
+          {body, qualified} = qualified_items(body, clause_ref, doc)
 
           self = if head =~ ~r/^\s*This\s+\w+\s+and\b/iu, do: [clause_ref], else: []
 
@@ -162,7 +177,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lists do
 
             refs ->
               [{kind(match), place(match), refs}] ++
-                if(excepted != [], do: [{:except, place(match), excepted}], else: [])
+                if(excepted != [], do: [{:except, place(match), excepted}], else: []) ++
+                if(qualified != [], do: [{:unread, nil, qualified}], else: [])
           end
       end
     end)
@@ -217,7 +233,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lists do
   # (a bare Chapter takes the Part named before it, before the split:
   # "in Part 2— (i) Chapter 1 …"; an item's bracketed exception taken out
   # of it, "Chapter 1 of Part 3 (except section 84)": CV-S05 NEW-A)
-  defp list_refs(text, clause_ref, doc) do
+  defp list_refs(text, clause_ref, doc, plain? \\ true) do
     for item <-
           text
           |> Parts.qualify_chapters()
@@ -237,12 +253,19 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lists do
           ~r/^\s*(?:and\s+)?in\s+(?:section|regulation|article)\s+\S+\s*$/iu,
           item
         ),
-        not Regex.match?(
-          # (a description is some of a Chapter, never all: "the service
-          # courts provisions of Chapter 2 of Part 3", CJA 2009 s.181(2)(b))
-          ~r/\bthe\s+(?:[\w-]+\s+){1,3}provisions\s+of\s+(?:Chapter|Part)\b|\b(?:so\s+far\s+as|in\s+so\s+far|insofar|except|exception|so\s+much\s+of|to\s+the\s+extent|of\s+this\s+section|(?:of|to),?\s+the\s+[A-Z][\w()',\s-]*?\s+(?:Act|Order|Regulations)\s+\d{4})\b/u,
-          item
-        ),
+        not plain? or
+          not Regex.match?(
+            # (a description is some of a Chapter, never all: "the service
+            # courts provisions of Chapter 2 of Part 3", CJA 2009 s.181(2)(b))
+            ~r/\bthe\s+(?:[\w-]+\s+){1,3}provisions\s+of\s+(?:Chapter|Part)\b|\b(?:so\s+far\s+as|in\s+so\s+far|insofar|except|exception|so\s+much\s+of|to\s+the\s+extent|of\s+this\s+section|(?:of|to),?\s+the\s+[A-Z][\w()',\s-]*?\s+(?:Act|Order|Regulations)\s+\d{4})\b/u,
+            item
+          ),
+        # (a qualified item's own provisions, never another law's)
+        plain? or
+          not Regex.match?(
+            ~r/(?:of|to),?\s+the\s+[A-Z][\w()',\s-]*?\s+(?:Act|Order|Regulations)\s+\d{4}/u,
+            item
+          ),
         ref <- RefList.parse(item, clause_ref) ++ Parts.parts(item, doc, clause_ref),
         ref not in minus,
         uniq: true,
@@ -284,6 +307,32 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lists do
       nil ->
         {body, []}
     end
+  end
+
+  # the items led by a qualifier ("b in so far as relating to
+  # sections 26 to 27A of the Fire Services Act 1947, section 52"; "c in so
+  # far as relating to— i …, iv the Superannuation Act 1972, section 53(1)
+  # and Schedule 1": FRSA 2004 s.63(2), CV-S05 round 9): out of the list,
+  # their provisions' bound withheld (`:unread`), never read whole
+  defp qualified_items(body, clause_ref, doc) do
+    {qualified, plain} =
+      body
+      # (a letter after a comma, never a roman sub-item: "…, v the Superannuation Act 1972")
+      |> String.split(~r/;|,\s*(?=(?:and\s*)?[a-hj-uwyz]\s)/u)
+      |> Enum.split_with(&String.match?(&1, @leading_qualifier))
+
+    # (the qualifier's object is no item: "subsection (1) in so far as
+    # relating to Schedule 5", ukpga 1993/9 s.48)
+    refs =
+      if qualified == [],
+        do: [],
+        else:
+          qualified
+          |> Enum.join(";")
+          |> String.replace(@qualifier_object, " ")
+          |> list_refs(clause_ref, doc, false)
+
+    {Enum.join(plain, ";"), refs}
   end
 
   # "Chapter 1 of Part 3 (except section 84)": the item without its

@@ -148,11 +148,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.NoteDateTest do
     test "a change only the law's own text gives: its law and provision (CV-S05 I)" do
       c = %{
         change([{:law_text, :operation, :substituted}, {:law_text, :by, "UK_uksi_2019_696"}])
-        | key: "UK_uksi_2019_696:reg.3"
+        | key: "UK_uksi_2019_696:regulation-3"
       }
 
       e = %Extent{default: "E+W", lists: [{:also, "S", ["reg.3"]}]}
       assert [%Claim{value: "E+W+S"}] = NoteDate.extent_claims(c, %{"UK_uksi_2019_696" => e})
+    end
+
+    test "the key's CLML id read as a ref: schedule-7 is sch.7 (CV-S05 round 8 NEW-1)" do
+      c = %{
+        change([{:law_text, :operation, :substituted}, {:law_text, :by, "UK_ukpga_2013_24"}])
+        | key: "UK_ukpga_2013_24:schedule-7-paragraph-3-a"
+      }
+
+      e = %Extent{default: "E+W", lists: [{:only, "UK", ["sch.7"]}]}
+      assert [%Claim{value: "UK"}] = NoteDate.extent_claims(c, %{"UK_ukpga_2013_24" => e})
     end
 
     test "not where a source already claims it, nor a competence alone for an insertion (V1-04)" do

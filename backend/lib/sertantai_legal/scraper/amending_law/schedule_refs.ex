@@ -49,16 +49,20 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ScheduleRefs do
         do: {"schedule-#{n}", id}
   end
 
-  @doc "The provision giving effect to a Schedule (its Reference, \"Section 108.\" → section-108)."
+  @doc """
+  The provision giving effect to a Schedule (its Reference, "Section 108."
+  → section-108; an SI's "Regulation 4" → regulation-4, "Article 3" →
+  article-3: uksi 2019/696, CV-S05 round 8 NEW-5).
+  """
   @spec reference(Doc.t(), String.t()) :: String.t() | nil
   def reference(doc, id) do
     with el when el != nil <- Doc.element(doc, id),
-         [_, n] <-
+         [_, kind, n] <-
            Regex.run(
-             ~r/Section (\d+[A-Z]*)/,
+             ~r/(Section|Regulation|Article|Rule) (\d+[A-Z]*)/,
              el |> xpath(~x"./Reference//text()"ls) |> Enum.join()
            ) do
-      "section-#{n}"
+      "#{String.downcase(kind)}-#{n}"
     else
       _ -> nil
     end

@@ -202,7 +202,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Unread do
     # "The following provisions …— (a) …": the list is the subject
     list =
       if bare =~ ~r/\bfollowing\b/iu,
-        do: (sentence |> String.split(~r/[—–]/u, parts: 2) |> Enum.at(1, "")) <> " " <> bare,
+        do:
+          (sentence
+           |> String.split(~r/[—–]/u, parts: 2)
+           |> Enum.at(1, "")
+           # (another law's provisions in the list: "The repeals of the
+           # following provisions in Schedule 20 …— (a) section 67 of the
+           # Agriculture Act 1967", ERRA 2013 s.102(6), round 8 NEW-2)
+           |> String.replace(@other_law, " ")) <> " " <> bare,
         else: bare
 
     named = list |> in_schedule(sentence) |> named(ref, doc)

@@ -175,6 +175,45 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
     |> other_provisions()
     |> in_schedule()
     |> chapters()
+    |> that_schedule()
+  end
+
+  # "… paragraphs 15 to 44 … of Schedule 6 extend …; (b) paragraphs 52 to
+  # 68 … of that Schedule extend …" (ERRA 2013 s.102(4), CV-S05 round 9):
+  # the nearest Schedule named before, where it is the law's own (never
+  # "Schedule 2 to the … Act 1975")
+  defp that_schedule(text) do
+    if text =~ ~r/\bof\s+that\s+Schedule\b/u do
+      mentions =
+        for [{at, _}, {n_at, n_len} | rest] <-
+              Regex.scan(
+                ~r/\bSchedule\s+(\d+[A-Z]*)\b(\s+(?:to|of)\s+(?:the|that)\s+(?:[A-Z]|\d{4}))?/u,
+                text,
+                return: :index
+              ),
+            do: {at, binary_part(text, n_at, n_len), match?([{s, _}] when s >= 0, rest)}
+
+      resolve_that(text, mentions)
+    else
+      text
+    end
+  end
+
+  defp resolve_that(text, mentions) do
+    ~r/\bof\s+that\s+Schedule\b/u
+    |> Regex.scan(text, return: :index)
+    |> Enum.reverse()
+    |> Enum.reduce(text, fn [{at, len}], acc ->
+      case mentions |> Enum.filter(&(elem(&1, 0) < at)) |> List.last() do
+        {_, n, false} ->
+          binary_part(acc, 0, at) <>
+            "of Schedule #{n}" <>
+            binary_part(acc, at + len, byte_size(acc) - at - len)
+
+        _ ->
+          acc
+      end
+    end)
   end
 
   # "In Part 3— (i) Chapter 1 extends to …" → "Chapter 1 of Part 3 …"

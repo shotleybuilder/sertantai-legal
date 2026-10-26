@@ -37,7 +37,16 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Extent}
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Applies, Credit, Excepted, Same, Units}
+
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{
+    Applies,
+    Credit,
+    Excepted,
+    Excepting,
+    Same,
+    Units
+  }
+
   alias SertantaiLegal.Scraper.ApplicationClause
   alias SertantaiLegal.Scraper.Commencement.Order
   alias SertantaiLegal.Scraper.LawStart.Clause
@@ -176,6 +185,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
     in_clause? = e.ref != nil and e.ref == ref
 
     cond do
+      # a Part's extent with its exceptions after it ("Part 3 extends to …,
+      # except as follows— (a) …"): its lead and every exception read
+      # (`Excepting`, CV-S05 round 9)
+      lead = Excepting.lead(s, ref, doc) ->
+        {lead_class(lead, s, ref, doc, e), default_seen?}
+
       in_clause? and match?({:default, _}, statement) ->
         {:default, d} = statement
 
@@ -266,6 +281,25 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
       Enum.any?(e.lists, &match?({^kind, ^place, _}, &1)) -> "unread:list_partial"
       true -> unread
     end
+  end
+
+  defp lead_class({kind, place, _} = lead, s, ref, doc, e) do
+    items = Credit.items_read(s, ref, doc, e.lists, @extent_words)
+
+    # (the "following provisions … extend also to …" form: its items are
+    # the provisions, read as one list)
+    following = String.replace(s, ~r/^.*?\bexcept\s+that\s+(?=the\s+following\b)/su, "")
+
+    items =
+      items ||
+        case following != s and Extent.statement(following, doc.type) do
+          {:list, k, p} -> list_class(following, ref, doc, e, k, p, nil)
+          _ -> nil
+        end
+
+    if lead in e.lists and items not in [nil, "unread:list_partial"],
+      do: "list:#{kind}:#{place}",
+      else: "unread:list_partial"
   end
 
   # a provision's own application stated in the sentence or one of its

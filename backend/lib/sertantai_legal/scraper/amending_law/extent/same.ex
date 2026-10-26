@@ -21,6 +21,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Same do
   # affects other enactments extending to Northern Ireland" (1988/54,
   # 1989/13, 1997/11): the default stands, and every amendment the law
   # makes follows the enactment it changes (CV-S05)
+  # "Any amendment or repeal by this Act of an enactment which extends to
+  # Scotland or Northern Ireland has the same extent as that enactment but,
+  # save as aforesaid, this Act extends to England and Wales only" (LGA 1985
+  # s.106(2), CV-S05 round 8 NEW-6): the default stands, and every
+  # amendment follows its enactment (one extending no further has effect no
+  # further)
+  @of_enactment_same ~r/^(?:\(\w+\)\s*)?Any\s+(?:amendments?|repeals?|revocations?)(?:\s*(?:,|or|and)\s*(?:amendments?|repeals?|revocations?))*\s+(?:made\s+)?by\s+this\s+(?:Act|Order|Regulations)\s+of\s+(?:an|any)\s+enactments?\s+which\s+extends?\s+to\s+[^.]*?\bha(?:s|ve)\s+the\s+same\s+extent\s+as\s+(?:that|the)\s+enactments?\b/iu
+
   @not_extends_amending ~r/\bnot\s+extend\s+to\s+[^.]*?\bexcept\b[^.]*?\bso\s+far\s+as\s+(?:it|they)\s+(?:affects?|amends?|repeals?|revokes?)\s+(?:any\s+)?(?:other\s+)?enactments?\b/iu
 
   # "The amendments and repeals in Schedules 20 and 21 have the same extent
@@ -56,7 +64,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Same do
     ) ++
       for(
         {_ref, s} <- unit_sentences,
-        Regex.match?(Forms.amendments_where(), s) or Regex.match?(@not_extends_amending, s),
+        Regex.match?(Forms.amendments_where(), s) or Regex.match?(@not_extends_amending, s) or
+          Regex.match?(@of_enactment_same, s),
         uniq: true,
         do: {:same, nil, ["*"]}
       ) ++
@@ -120,7 +129,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Same do
 
       (m =
          Regex.named_captures(
-           ~r/^(?:\s+(?:which|to\s+which|being)\b[^,;—–]*)?\s*,?\s*except\s+that\s+the\s+(?:amendments?|modifications?|repeals?|revocations?)\s+(?:made\s+by|specified\s+in)\s+(?<paras>paragraphs?\s+[^,;:—–]+?)\s+of\s+that\s+Schedule\s+(?:shall\s+)?(?<not>do\s+not\s+)?extends?\s+to\s+(?<places>(?>#{@place_list}))(?<only>\s+only)?\s*\.?\s*$/iu,
+           ~r/^(?:\s+(?:which|to\s+which|being)\b[^,;—–]*)?\s*,?\s*except\s+that\s+the\s+(?:amendments?|modifications?|repeals?|revocations?)\s+(?:made\s+by|specified\s+in)\s+(?<paras>paragraphs?\s+[^,;:—–]+?)\s+of\s+(?:that\s+Schedule|Schedule\s+\d+[A-Z]*)\s+(?:shall\s+)?(?<not>do\s+not\s+)?extends?\s+to\s+(?<places>(?>#{@place_list}))(?<only>\s+only)?\s*\.?\s*$/iu,
            tail
          )) && match?([<<"sch.", _::binary>>], refs) ->
         [sch] = refs

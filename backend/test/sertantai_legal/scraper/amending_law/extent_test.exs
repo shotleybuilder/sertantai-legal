@@ -519,7 +519,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
 
       assert e.default == "E+W+S+NI"
       assert Extent.of(e, "s.1") == "E+W+S"
-      assert Extent.of(e, "s.49") == "E+W+S+NI"
+      # (b): an amendment goes where its enactment does (round 8 NEW-3)
+      assert Extent.of(e, "s.49") == :same
     end
 
     test "N6: \", which subject to … extends to Scotland only— (a) may be cited\"" do
