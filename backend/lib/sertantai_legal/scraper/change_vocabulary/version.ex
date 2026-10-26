@@ -37,6 +37,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Version do
       lib/sertantai_legal/scraper/change_collector/record.ex
       lib/sertantai_legal/scraper/lat_parser/xml.ex
       lib/sertantai_legal/scraper/legislation_gov_uk/changes_feed.ex
-      mix.lock
-    )
+    ),
+    # the libraries that shape what is read (XML parsing, the stored
+    # caches' JSON), not the whole mix.lock: another dependency's bump
+    # leaves stored changes current (run time 2026-10-26)
+    deps: ~w(sweet_xml jason)
 end

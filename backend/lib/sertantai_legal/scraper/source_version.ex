@@ -11,6 +11,10 @@ defmodule SertantaiLegal.Scraper.SourceVersion do
   defines `current/0` and `files/0`. Patterns are globs relative to the
   backend root; each matched file is an `@external_resource`, so an edit
   recompiles the module. Any edit, whitespace included, changes the version.
+
+  `deps: ~w(sweet_xml)` adds only those dependencies' `mix.lock` entries,
+  not the whole lock: another dependency's bump leaves the version as it is
+  (run time 2026-10-26: `ChangeVocabulary.Version` hashed all of `mix.lock`).
   """
 
   @root Path.expand("../../..", __DIR__)
@@ -39,17 +43,44 @@ defmodule SertantaiLegal.Scraper.SourceVersion do
   @spec of_files([String.t()]) :: String.t()
   def of_files(files), do: digest(Enum.map(files, &{&1, File.read!(Path.join(@root, &1))}))
 
+  @doc """
+  The named dependencies' entries in a `mix.lock` text, as
+  `{"mix.lock#dep", entry}` pairs (sorted by dep) for `digest/1`.
+  """
+  @spec lock_entries(String.t(), [String.t()]) :: [{String.t(), String.t()}]
+  def lock_entries(lock, deps) do
+    for line <- String.split(lock, "\n"),
+        [_, dep] <- [Regex.run(~r/^\s*"([a-z0-9_]+)":/, line)],
+        dep in deps,
+        do: {"mix.lock#" <> dep, String.trim(line)}
+  end
+
+  @doc "The digest of `files` as on disk, with the named deps' lock entries."
+  @spec of_files([String.t()], [String.t()]) :: String.t()
+  def of_files(files, []), do: of_files(files)
+
+  def of_files(files, deps) do
+    lock = File.read!(Path.join(@root, "mix.lock"))
+    digest(Enum.map(files, &{&1, File.read!(Path.join(@root, &1))}) ++ lock_entries(lock, deps))
+  end
+
   @doc "The absolute path of a backend-relative file."
   @spec path(String.t()) :: String.t()
   def path(file), do: Path.join(@root, file)
 
   defmacro __using__(opts) do
-    quote bind_quoted: [patterns: Keyword.fetch!(opts, :patterns)] do
+    quote bind_quoted: [
+            patterns: Keyword.fetch!(opts, :patterns),
+            deps: Keyword.get(opts, :deps, [])
+          ] do
       @source_files SertantaiLegal.Scraper.SourceVersion.files(patterns)
       for f <- @source_files,
           do: @external_resource(SertantaiLegal.Scraper.SourceVersion.path(f))
 
-      @source_version SertantaiLegal.Scraper.SourceVersion.of_files(@source_files)
+      if deps != [],
+        do: @external_resource(SertantaiLegal.Scraper.SourceVersion.path("mix.lock"))
+
+      @source_version SertantaiLegal.Scraper.SourceVersion.of_files(@source_files, deps)
 
       @doc "The version this build was compiled from."
       @spec current() :: String.t()
