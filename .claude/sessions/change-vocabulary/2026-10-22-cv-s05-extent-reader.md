@@ -150,7 +150,7 @@ The session does not close until its results pass.
   - ⏸️ Annex/Schedule targets — deferred (Jason 2026-10-26): LAT holds no Schedule or Annex rows (LR-10, v0.1), so these rules would reach no row and change no output; the instructions are held back / dropped, never placed on real sections. Prerequisite if Schedules come into LAT. Known cases: PSTI 2022 → CA 2003 Sch. 3A ("the electronic communications code"); SI 2019/758 Sch. 3 → REACH Annexes
   - ✅ 202 laws stale in `lat.extent_check` (OH&S) traced: corpus-wide 483 of 2,050 — 482 the read pass's bare extent write wiping powers/competence (fixed `1a4626b8`, one writer `Extent.Store.write_read/3` + `ExtentWriteTest`), 1 (`UK_ukpga_1995_15`) last written 2026-10-22, before CV-S05's reader fixes
   - ✅ Repaired the 483 laws' `extent_rules` (restore point `run-time-before-extent-repair`; `--extents --cached`, 1 min 28 s, 483 + 49 parent Acts); OH&S extent check PASS, 0 stale. CV-S05's rebuild picks the territories up
-- ⬜ Round 7 (from CV-S05a's sweep): read the `read:*` forms — same_extent_of (12), same_extent (5), exception (6: round 6 D1, D3), also_there (7), lettered "extends only to—" (1), provision-level application (52; Jason "a"); fold in round 6's D2 (same_extent_of), the check's `same` label (D4), LRRA s.34(3); then the runs, the sweep (OH&S read forms 0), and a fresh-seed agent check
+- ✅ Round 7 [`aee9b3d9`] (from CV-S05a's sweep; agent check pending): read the `read:*` forms — same_extent_of (12), same_extent (5), exception (6: round 6 D1, D3), also_there (7), lettered "extends only to—" (1), provision-level application (52; Jason "a"); fold in round 6's D2 (same_extent_of), the check's `same` label (D4), LRRA s.34(3); then the runs, the sweep (OH&S read forms 0), and a fresh-seed agent check
 - ⬜ Fix until the check passes reliably; record the result
 
 ## Dependencies
@@ -784,3 +784,29 @@ On resume: fold round 6's defects into the sweep's clusters (fixed there, or her
 - `lat.extent_check` now lists the family's misses: **OH&S 29 in a read form**, including round 6's D1–D3.
 - The pass now needs no uncaught sentence in a read form (skill `extent-reader-check`, step 0).
 - Next: round 7, reading those forms (todo above).
+
+## Round 7: the sweep's forms read (2026-10-26, Jason: "Round 7 start"), code `aee9b3d9`
+
+- **`Extent.Applies`, provision-level application** (Jason: "read them as provision-level application"):
+  - forms read: "Regulation 44 applies to Scotland only"; "This paragraph applies in relation to England only" (Schedule paragraphs too); subsections; "… respectively"; "The following regulations do not apply in relation to Wales— …"; "the amendments made by … apply …"; "extends and applies" (also an extent list);
+  - kept as `Extent.applies` (rows `applies_to` / `applies_not`), apart from the extent lists so "lists and no default" logic is untouched;
+  - `Extent.application_at/2` gives a change's territory (feed and amending-law readers): the provision's own application, else the law's; "does not apply to S" is where it otherwise applies or extends, less S;
+  - whole statements only. A first version read "Subsection (2) applies if, … as it applies in relation to England" (1984/55 s.120G) as an application; subjects now exclude verbs and conditions.
+- **`Extent.Excepted`:** "Subsection (N) does not apply to <provisions>" withholds those provisions' bound (unread), only where subsection N is an extent or application statement. Round 6 D1 (Courts Act s.111(2)) and D3 (ukpga 2016/19 s.95(4)). "or" items joined; a descriptive bracket stripped before the "which" filter.
+- **Same extent:**
+  - "The extent of any amendment … is the same as that of the enactment …" (round 6 D2: ukpga 2007/28 s.244(3); also 2000/6, 2002/17, 2004/5, SIs 2002/3135, 2008/912);
+  - "a provision that amends …";
+  - "same extent and application / in the United Kingdom as";
+  - "also extends there", and "also extend to any place (except …) to which the enactments … extend";
+  - "that Schedule" resolves to the Schedule named last in the provision.
+- **Lettered:** "extends only to— (a) …" (ukpga 2006/3 s.94).
+- **Check:** a `same` list is labelled `same_or_not_named` first (D4: `not_named` 146 → 12, `same_or_not_named` 74 → 213; outcomes unchanged).
+- **Catalogue:**
+  - These forms are now classed. The exception gate first admitted every "Subsection (N) does not apply to …" (unread:not_read 308 → 1,258); now it admits only an exception actually read.
+  - An application is credited only where its own entries are read.
+  - 16 examples updated after review: 6 applications read, 5 exceptions, 1 same with exception, and 4 unread class shifts.
+- **Sweep:** an exception to a non-extent subsection (ukpga 2013/22 s.61(4), a commencement) is no miss. Forms: instruction words first (ukpga 2005/15 Sch. 7 para 59), "extends outside …" is outside the UK, an application not read whole is counted.
+- **Runs:** restore point `cv-s05-before-round7`; catalogue accept; sweep (corpus uncaught 551 → 522, **read forms 83 → 0**); extents rewritten; rebuild; **golden 27/27**; **check PASS, our faults 0, OH&S read-form misses 29 → 0**. Suite 8,957.
+- **Claims:** 8 bounds now follow the enactment (`same`): ukpga 2007/28 1 (D2: Sch.13's HSWA s.28(6) change, was E+W), SI 2008/912 3, ukpga 2020/17 2, SI 2002/3135 2. No territory claims changed: no OH&S change is made by a provision with its own application. Bound 3,141 → 3,133.
+- `Extent.Patterns` is 456 lines (ballpark noted).
+- **Next:** agent check round 7, seed 12 (sample repeatable), running on the skill's prompt with round 7's rules added.

@@ -88,7 +88,15 @@ Reader rules (intended):
   legislature's competence (nisr NI, ssi S, wsi E+W).
 - A Westminster Act "extends to Northern Ireland" (no "only") = UK. Chapters of Parts are read as their sections.
 - Lettered wordings are read: "extend to— (a) England and Wales, (b) …"; "These Regulations— … (c) extend to …";
-  "In Schedule N— (a) paragraph X extends …"; "not extend there" after a place.
+  "In Schedule N— (a) paragraph X extends …"; "not extend there" after a place; "extends only to— (a) …".
+- Same extent, also: "The extent of any amendment … is the same as that of the enactment …"; "a provision that
+  amends … has the same extent and application as …"; "… also extends there".
+- An exception to an extent subsection ("Subsection (1) does not apply to section 59(3), 90 …") withholds the
+  bound of the provisions excepted (unread) unless a list names them explicitly.
+- A provision's own application to a place ("Regulation 44 applies to Scotland only", "This paragraph applies in
+  relation to England only", "The following regulations do not apply in relation to Wales— …") gives the
+  territory (`territory:law` claim) of the changes that provision makes; the law's application clause otherwise.
+  Only whole statements: a condition ("applies if …", "applies … where …") is left unread.
 
 Known counted classes (label a finding with one if it fits; otherwise NEW):
 - KU unread statement, counted: a qualified or conditional statement ("so far as …", "in so far as it relates to …",
@@ -123,6 +131,7 @@ OH&S (first family, 2026-10-24 →). The session is `.claude/sessions/change-voc
 | 4 | 9 | FAIL, 5 NEW |
 | 5 | 10 | FAIL, 8 NEW |
 | 6 | 11 | FAIL, 3 NEW (all silent drops: "Subsection (N) does not apply to …" ×2, "The extent of … is the same as that of …"); changes 50/50 |
+| 7 | 12 | after CV-S05a's sweep: read forms 0 (corpus and OH&S) — running |
 
 - Rounds 1–5's prompts lived only in conversation. Their known classes (K1–K10, then P1–P7) were not recorded; the classes above restate them from the session's findings (2026-10-26).
 - Round 6's design change: unread statements withhold their bound (`Extent.Unread`), so counted unread classes are known gaps.
