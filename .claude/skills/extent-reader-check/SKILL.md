@@ -179,6 +179,13 @@ Known counted classes (label a finding with one if it fits; otherwise NEW):
   default-sentence check lists them (run-03: 1972/62, 1974/37, 1976/55, 1993/11, 1994/21, 1995/45).
 - KQ an ambiguous provision after an "and" in a qualifier's object, or a second qualified companion, withheld or left to
   the default (1972/71 s.64(2)).
+- KA application to cases, not places (Jason 2026-10-27): a statement of which things, persons or activities a law
+  covers within a place ("these Regulations do not apply in relation to any building in Wales other than an excepted
+  energy building"; "apply to lessors of social homes in England"; "do not apply to explosives seized by an inspector")
+  is fitness scope (personal/material/conditional), fractalaw's, not the extent reader's. Not read into rows; never NEW.
+  It IS NEW where the place is the whole of what is said ("apply in relation to live fish in Wales", "They apply in
+  relation to— (a) England …, (b) Wales": territorial, the reader reads it). Such sentences go to fractalaw as a
+  located extract (session "Application scope hand-off to fractalaw").
 
 Pass bar (Jason 2026-10-27): a round fails only on a NEW defect that places a WRONG BOUND on a provision or change (a
 misread), or a silent drop. A new wording the reader withholds (unread, counted in the law's unread classes) is known,

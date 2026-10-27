@@ -38,6 +38,7 @@ Aim: census every sentence and every reader, checked independently of the reader
 - ✅ Prototype by count (run-01; Jason 2026-10-27 "start cv-s05d"): recall 10/10 on rounds 9–12 agent NEW; 11 confirmed wrong-bound laws the agent rounds hadn't found or had recorded as fixed
 - ⬜ Population: all catalogue sentences of every class (default, list, named, same, application, own paragraph, exception, unread), plus the sweep's 520 uncaught sentences, noise labels included.
 - ⬜ Noise-bin audit: each sweep label checked by the same test; anything naming our provisions with a place and an extend or apply verb is flagged, not trusted.
+- ⬜ Census rule: an "apply" statement whose place is qualified by "other than" / "except" / "any [thing] in", or names things or persons within a place, counts as scope (class KA, extract for fractalaw), not a reader candidate (run-02)
 - ⬜ Count candidates by shape (CV-S05c's masking) and rank them; review with Jason; hand the ranked shapes to CV-S05 round 13.
 - ✅ run-01 stored; ⬜ Store each later run as evidence (`backend/data/experiments/cv-s05d-whole-reader-census/run-NN/`, as CV-S05c: manifest, scripts, input, outputs, README; scan for effect ids; commit by path in one step).
 - ⬜ If it earns its place, build it as a read-only mix task (pure modules and tests) to run every round.
@@ -71,3 +72,14 @@ Python, no reader code: `dump.exs` writes each held law's stored reading (defaul
   - 1980/66, 1990/8: sub-letters lost.
 - **Noise bin:** the sweep's `noise:*` holds real application statements, e.g. wsi 2014/3303 "apply in relation to live fish in Wales" and uksi 2026/335 "apply to buildings and building work in England". The "any building in Wales other than an excepted energy building" form (5 laws) is a scope question for Jason.
 - **Precision:** tuned by sampling; the remaining candidates mix real defects and finder misses. Next: review them by shape (todo), then hand them to round 13.
+
+## Decision: application to cases is fitness scope, not extent (Jason 2026-10-27)
+
+Jason: "agree with the analysis, the breakdown and scopes. do the proposal". Fractalaw drills into application rules as enrichment, and that data drives sertantai-compliance's applicability screener ("we operate as a lessor of social homes").
+
+**The extent reader stays territorial.** It reads where a provision extends or applies, as place codes. A statement of which things, persons or activities are covered within a place is fitness scope (personal, material, conditional), not extent. Example: "these Regulations do not apply in relation to any building in Wales other than an excepted energy building" (2012/3119, 2013/1959, 2014/579, 2015/767, 2016/285).
+- These are not read into rows and are never NEW: skill class **KA**.
+- They are territorial, and the reader's to read, where the place is the whole of what's said. Examples: "apply in relation to live fish in Wales", and 2016/1154's "They apply in relation to— (a) England …, (b) Wales".
+- uksi 2025/1042 "apply to lessors of social homes in England" sets the bound England (territorial), and its "lessors of social homes" is fitness scope as well.
+
+**Our coarser reading still feeds fractalaw.** The census's scope sentences go out as a located, uninterpreted extract, in a separate deliverable: PENDING session `2026-10-27-application-scope-handoff.md`. The run-01 count: 162 "apply" sentences in the sweep's bins, across 106 laws. Of the 100 of those laws in the register, 61 have no fitness data.
