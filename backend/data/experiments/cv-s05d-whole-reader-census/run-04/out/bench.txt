@@ -1,0 +1,11 @@
+FLAGGED r9 NEW-1 default E+W+NI
+FLAGGED r10 NEW-1 Sch.13 applies dropped
+FLAGGED r10 NEW-2 other-than read as items
+FLAGGED r10 NEW-2 'in Chapter 1 of Part 6' read whole
+FLAGGED r10 NEW-2 Chapters 1 to 5 of Part 8 (live)
+MISSED  r10 NEW-3 'this Chapter' dropped (live)
+FLAGGED r11 NEW-1 1977/45 s.65(10) items dropped
+MISSED  r12 NEW-1 locator read whole (live)
+MISSED  r12 NEW-2 'They apply …' in noise (live)
+MISSED  r12 NEW-3 '34 (f)' read whole (live)
+6/10 flagged
