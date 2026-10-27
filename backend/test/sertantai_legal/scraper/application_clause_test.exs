@@ -140,4 +140,42 @@ defmodule SertantaiLegal.Scraper.ApplicationClauseTest do
                nil
     end
   end
+
+  describe "parse_bound/1 (the extent reader's place bound: CV-S05 round 13 S8, class KA)" do
+    test "things in a place, positively" do
+      assert ApplicationClause.parse_bound(
+               "(4) Subject to paragraphs (4) and (5), these Regulations apply in relation to live fish in Wales."
+             ) == {:apply, ["W"]}
+
+      assert ApplicationClause.parse_bound(
+               "These Regulations apply to lessors of social homes in England (whenever the lease was granted)."
+             ) == {:apply, ["E"]}
+
+      assert ApplicationClause.parse_bound(
+               "These Regulations extend to England and Wales and apply to buildings and building work in England."
+             ) ==
+               {:apply, ["E"]}
+    end
+
+    test "the places lettered after a dash (uksi 2016/1154 reg.1(3))" do
+      assert ApplicationClause.parse_bound(
+               "(1) These Regulations may be cited as the X Regulations 2016. (3) They apply in relation to—a England and the sea adjacent to England out as far as the seaward boundary of the territorial sea, andb Wales, within the meaning given by section 158 of the Government of Wales Act 2006."
+             ) == {:apply, ["E", "W"]}
+    end
+
+    test "never a carve-out, a negative, \"outside\", or a qualifier before it" do
+      assert ApplicationClause.parse_bound(
+               "These Regulations do not apply in relation to any building in Wales other than an excepted energy building."
+             ) == nil
+
+      assert ApplicationClause.parse_bound(
+               "These Regulations apply to and in relation to the premises and activities outside Great Britain"
+             ) == nil
+
+      assert ApplicationClause.parse_bound(
+               "Subject to regulation 8, these Regulations apply in relation to fish in Wales."
+             ) ==
+               nil
+    end
+  end
 end

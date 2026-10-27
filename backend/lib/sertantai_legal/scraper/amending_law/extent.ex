@@ -128,6 +128,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
            Lists.extends_except(clause, clause_ref, doc) ++
            Default.exception_lists(clause, clause_ref, doc) ++
            Lists.headed_lists(sections, clause_ref, clause, doc) ++
+           Lists.late_lists(sections, doc) ++
            Lists.part_not(sections, doc) ++
            Named.named(unit_sentences, doc) ++
            Excepting.leads(unit_sentences, doc) ++

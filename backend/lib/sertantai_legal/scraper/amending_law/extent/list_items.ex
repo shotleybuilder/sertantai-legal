@@ -11,7 +11,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, RefList}
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{ItemExceptions, Parts, Units}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Asides, ItemExceptions, Parts, Units}
 
   @typedoc "An item list read: the provisions named, excepted and withheld."
   @type reading :: %{refs: [String.t()], excepted: [String.t()], unread: [String.t()]}
@@ -88,37 +88,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
   # as relate to …)": the section read, the rest of Part 7 withheld;
   # ukpga 2008/4 s.152, round 12)
   defp item(item, clause_ref, doc) do
-    {item, some_of} = together_with_such(item, clause_ref, doc)
+    {item, some_of} = Asides.together_with_such(item, clause_ref, doc)
     r = item_read(item, clause_ref, doc)
-    %{r | unread: Enum.uniq(r.unread ++ ((some_of ++ asides(item, clause_ref, doc)) -- r.refs))}
-  end
 
-  @doc """
-  The provisions a qualified aside names, withheld: "(and section 55 so far
-  as relating to those paragraphs)" → s.55; "(including Schedule 13 so far
-  as it relates to Part 6)" → sch.13 (CV-S05 round 13, S4: they were
-  dropped, so took the default).
-  """
-  @spec asides(String.t(), String.t() | nil, Doc.t()) :: [String.t()]
-  def asides(text, clause_ref, doc) do
-    for [aside] <- Regex.scan(~r/\((?:and|including|together\s+with|with)\b[^()]*\)/iu, text),
-        aside =~ @qualifier,
-        inner = aside |> String.trim_leading("(") |> String.trim_trailing(")"),
-        inner = Regex.replace(~r/^\s*(?:and|including|together\s+with|with)\s+/iu, inner, ""),
-        ref <- withheld(inner, clause_ref, doc),
-        uniq: true,
-        do: ref
-  end
-
-  defp together_with_such(item, clause_ref, doc) do
-    case Regex.run(
-           ~r/\s*\(\s*together\s+with\s+such\s+of\s+(?<what>[^()]*?)\s+as\s+relates?\b[^()]*\)/iu,
-           item,
-           capture: :all
-         ) do
-      [whole, what] -> {String.replace(item, whole, " "), provisions(what, clause_ref, doc)}
-      nil -> {item, []}
-    end
+    %{
+      r
+      | unread:
+          Enum.uniq(r.unread ++ ((some_of ++ Asides.asides(item, clause_ref, doc)) -- r.refs))
+    }
   end
 
   defp item_read(item, clause_ref, doc) do
@@ -286,7 +263,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
     do:
       String.split(
         text,
-        ~r/,\s*(?=(?:and\s+)?(?:sections?|subsections?|Schedules?|in\s+Schedule|Parts?|paragraphs?\s+[^,;]*?\bof\s+Schedule|regulations?|articles?)\b)/u
+        ~r/,\s*(?=(?:and\s+)?(?:sections?|subsections?|Schedules?|in\s+Schedule|Parts?|paragraphs?\s+[^,;]*?\bof\s+Schedule|regulations?|articles?|this\s+(?:Part|Chapter|section|regulation|article))\b)/u
       )
 
   defp refs_in(piece, clause_ref, doc),

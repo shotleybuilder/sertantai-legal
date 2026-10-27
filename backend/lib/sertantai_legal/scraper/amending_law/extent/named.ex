@@ -7,7 +7,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Named do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, RefList}
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Forms, ListItems, Parts, Places}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Asides, Forms, ListItems, Parts, Places}
 
   # named provisions' own extent, wherever stated: "Sections 107 and 116A of
   # this Act extend to Scotland only" → {:only, "S", ["s.107", "s.116A"]};
@@ -40,7 +40,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Named do
         m = Regex.named_captures(Forms.named(), s),
         m != nil,
         plain_named?(m, s),
-        refs = ListItems.asides(m["subj"], ref, doc),
+        refs = Asides.asides(m["subj"], ref, doc),
         refs != [],
         uniq: true,
         do: {:unread, nil, refs}
@@ -53,7 +53,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Named do
   # (never across items: "This Act, except— (a) Part I … so far as may be
   # necessary …; and (b) …, does not extend to Northern Ireland", HSWA
   # s.84(1), is an exception list's item, not a statement)
-  @qualified_clause ~r/,?\s*(?:so\s+far|in\s+so\s+far|insofar)\s+as\s+[^,;—–]*,?/iu
+  @qualified_clause ~r/,?\s*(?:(?:so\s+far|in\s+so\s+far|insofar)\s+as|to\s+the\s+extent\s+that)\s+[^,;—–]*,?/iu
 
   # (never an item split out of an exception list: "This Act,
   # except— … (d) Schedule 6 and section 17(5) so far as relating to …,
@@ -142,15 +142,21 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Named do
   """
   @spec described_out(String.t()) :: String.t()
   def described_out(subj) do
-    ~r/\((?=[^()]*\s)((?:[^()]|\([^()]*\))*)\)/u
-    |> Regex.replace(subj, fn _, inner ->
-      # (never a qualified one: "(and article 27 in so far as it relates to
-      # those paragraphs)", SI 2013/602 art.1(8))
-      if inner =~ ~r/^\s*(?:and|with|including|together\s+with)\b/iu and
-           not (inner =~ ~r/\b(?:so\s+far|in\s*so\s*far|insofar|to\s+the\s+extent)\b/iu),
-         do: " " <> inner <> " ",
-         else: " "
-    end)
+    # (a bracket naming provisions too goes after the subject, so the
+    # numbers after it stay the list's: "sections 228, 229 (and Schedule
+    # 22), 230, 233 to 236", ukpga 2023/55 s.254(12), round 13 S15)
+    {subj, naming} =
+      Regex.scan(~r/\((?=[^()]*\s)((?:[^()]|\([^()]*\))*)\)/u, subj)
+      |> Enum.reduce({subj, []}, fn [whole, inner], {acc, naming} ->
+        # (never a qualified one: "(and article 27 in so far as it relates
+        # to those paragraphs)", SI 2013/602 art.1(8))
+        if inner =~ ~r/^\s*(?:and|with|including|together\s+with)\b/iu and
+             not (inner =~ ~r/\b(?:so\s+far|in\s*so\s*far|insofar|to\s+the\s+extent)\b/iu),
+           do: {String.replace(acc, whole, " ", global: false), naming ++ [inner]},
+           else: {String.replace(acc, whole, " ", global: false), naming}
+      end)
+
+    Enum.map_join([subj | naming], ", ", & &1)
     |> String.replace(~r/,?\s*as\s+(?:amended|inserted|substituted)\s+by\b[^,]*,?/iu, " ")
   end
 
@@ -160,7 +166,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Named do
   # exceptions ("excluding section 35"), nor a qualified or excepted extent
   # ("… so far as they amend—", "…, except that— …"): those stay unread
   # (CV-S05, counted in the catalogue)
-  @named_not_plain ~r/\b(?:of|to),?\s+(?:that|the\s+\d{4}|the\s+[A-Z][\w()',\s-]*?\s+(?:Act|Order|Regulations)(?:\s+\d{4})?)\b(?!\s+(?:Act|Order)\s+(?:extends?|shall))|\b(?:continue|cease)s?\s+to\b|\bso\s+much\s+of\b|\bcorresponding\b|\btogether\s+with\b|\bas\s+relates?\b|\bso\s+far\s+as\b|\bin\s+so\s+far\b|\binsofar\b|\bexcept\b|\bexcluding\b|\bother\s+than\b|\bapart\s+from\b|\bwhich\b|\bmay\b|\bunder\s+this\b|[;:—–]/iu
+  @named_not_plain ~r/\b(?:of|to),?\s+(?:that|the\s+\d{4}|the\s+[A-Z][\w()',\s-]*?\s+(?:Act|Order|Regulations)(?:\s+\d{4})?)\b(?!\s+(?:Act|Order)\s+(?:extends?|shall))|\b(?:continue|cease)s?\s+to\b|\bso\s+much\s+of\b|\bcorresponding\b|\btogether\s+with\b|\bas\s+relates?\b|\bso\s+far\s+as\b|\bin\s+so\s+far\b|\binsofar\b|\bto\s+the\s+extent\s+that\b|\bexcept\b|\bexcluding\b|\bother\s+than\b|\bapart\s+from\b|\bwhich\b|\bmay\b|\bunder\s+this\b|[;:—–]/iu
   @named_tail ~r/^\s*[,(]?\s*(?:but\s+only\s+|only\s+)?(?:so\s+far\s+as|in\s+so\s+far\b|insofar\b|to\s+the\s+extent|for\s+the\s+purposes?|except|apart\s+from|other\s+than|excluding|in\s+relation\s+to|as\s+respects|subject\s+to)\b/iu
   @named_excepted ~r/\b(?:except|excluding|other\s+than|apart\s+from)\b/iu
 

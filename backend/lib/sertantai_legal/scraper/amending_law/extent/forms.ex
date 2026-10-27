@@ -56,7 +56,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Forms do
   # by subsections (2) to (6)"): read where the exceptions read plainly
   # (`exceptions/3`), else unread (CV-S05)
   @extends_exc Regex.compile!(
-                 "#{@subject}(?:,\\s*which)?\\s+(?:shall\\s+)?extends?\\s+(?:to\\s+(?:the\\s+whole\\s+of\\s+)?|throughout\\s+)(?<places>(?>#{@place_list}))(?:\\s+only)?\\s*,?\\s*(?<exc>(?:except|save|apart\\s+from|other\\s+than|excluding)\\b[^.]*)",
+                 "#{@subject}(?:,\\s*which)?\\s+(?:shall\\s+)?extends?\\s+(?:(?:only\\s+)?to\\s+(?:the\\s+whole\\s+of\\s+)?|throughout\\s+)(?<places>(?>#{@place_list}))(?:\\s+only)?\\s*,?\\s*(?<exc>(?:except|save|apart\\s+from|other\\s+than|excluding)\\b[^.]*)",
                  "iu"
                )
 

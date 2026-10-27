@@ -145,6 +145,95 @@ defmodule SertantaiLegal.Scraper.ApplicationClause do
   end
 
   @doc """
+  The place bound a whole-instrument application clause sets, for the
+  change vocabulary's extent reader (CV-S05 round 13, S8; Jason 2026-10-27,
+  class KA: application to cases is fitness scope, but where the place is
+  what bounds it, it is territorial). `parse/1` first; else:
+
+  - things in a place, positively: "Subject to paragraphs (4) and (5),
+    these Regulations apply in relation to live fish in Wales" (wsi
+    2014/3303) → W; "… apply to lessors of social homes in England (whenever
+    the lease was granted)" (uksi 2025/1042) → E;
+  - the places lettered after a dash: "They apply in relation to— (a)
+    England and the sea adjacent to England …, and (b) Wales" (uksi
+    2016/1154) → E+W.
+
+  Never a negative or carved-out one ("do not apply in relation to any
+  building in Wales other than an excepted energy building": fitness scope),
+  "outside", nor one qualified before it ("Subject to regulation 8, …":
+  as `parse/1`, except a "Subject to paragraph (N)" lead, which only points
+  at the law's own exceptions). `parse/1` (live status) is unchanged.
+  """
+  @spec parse_bound(String.t() | nil) :: clause() | nil
+  def parse_bound(nil), do: nil
+
+  def parse_bound(text) do
+    parse(text) ||
+      text
+      # each sentence or numbered paragraph of the provision on its own
+      |> String.split(~r/(?<=[.;])\s+|\s+(?=\(\d+[A-Z]?\)\s+[A-Z])/u)
+      |> Enum.find_value(fn piece ->
+        piece
+        |> String.replace(
+          ~r/^\s*(?:\(\d+[A-Z]?\)\s*)?Subject\s+to\s+paragraphs?\s+\([^,]*,\s*/iu,
+          ""
+        )
+        |> bound()
+      end)
+  end
+
+  @bound_subject "(?:(?:these|this)\\s+#{@instrument}\\b(?:\\s+(?:shall\\s+)?extends?\\s+to\\s+[^.;—]*?\\s+(?:and|but)\\b)?|\\bthey)"
+
+  defp bound(text) do
+    regex =
+      Regex.compile!(
+        "^\\s*(?:\\(\\w+\\)\\s*)?#{@bound_subject}\\s+(?:shall\\s+)?(?:only\\s+)?appl(?:y|ies)\\s+(?:only\\s+)?(?:to\\s+and\\s+)?(?:in\\s+relation\\s+to|to|in)\\s*(?<target>[^.;]*)",
+        "iu"
+      )
+
+    with %{"target" => target} <- Regex.named_captures(regex, text),
+         false <- target =~ @qualifier,
+         false <- target =~ ~r/\b(?:other\s+than|unless|where|if)\b/iu,
+         [_ | _] = regions <- lettered(target) || things_in(target) do
+      {:apply, regions}
+    else
+      _ -> nil
+    end
+  end
+
+  # "— (a) England and the sea adjacent …, and (b) Wales, within the meaning …"
+  defp lettered(target) do
+    if target =~ ~r/^\s*[—–]/u do
+      found =
+        for [_, n] <-
+              Regex.scan(
+                Regex.compile!(
+                  "(?:[—–]|[;,]\\s*(?:and\\s*)?)\\s*\\(?[a-z]\\)?\\s*(#{@nation})\\b",
+                  "iu"
+                ),
+                target
+              ),
+            do: n
+
+      if found != [], do: regions(Enum.join(found, " ")), else: nil
+    end
+  end
+
+  # "live fish in Wales", "lessors of social homes in England (whenever …)"
+  defp things_in(target) do
+    case Regex.run(
+           Regex.compile!(
+             "^\\s*[^.;—–]{1,120}?\\s+in\\s+(#{@nation}(?:\\s*(?:,|and|or)\\s*#{@nation})*)\\s*(?:only)?\\s*(?:\\((?:[^()]|\\([^()]*\\))*\\)\\s*)?$",
+             "iu"
+           ),
+           target
+         ) do
+      [_, list] -> regions(list)
+      nil -> nil
+    end
+  end
+
+  @doc """
   A clause confining one provision to a territory (change vocabulary C6):
   "This regulation applies in relation to England only" → `{:apply, ["E"]}`.
   Only a provision's own subject ("This regulation / section / article /

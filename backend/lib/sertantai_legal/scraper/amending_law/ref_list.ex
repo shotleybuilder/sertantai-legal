@@ -17,6 +17,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
   @spec parse(String.t(), String.t() | nil) :: [String.t()]
   def parse(text, self \\ nil) do
     text
+    |> companions_last()
     |> owned()
     |> own_relative(self)
     # a qualified aside names nothing whole ("Schedule 2 (and article 26 so
@@ -89,6 +90,28 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
   end
 
   defp own_relative(text, _self), do: text
+
+  # a bracketed companion moved after the list, so the numbers after it stay
+  # the list's: "sections 228, 229 (and Schedule 22), 230, 233 to 236" →
+  # "sections 228, 229, 230, 233 to 236, and Schedule 22" (ukpga 2023/55
+  # s.254(12), round 13 S15)
+  defp companions_last(text) do
+    case Regex.scan(
+           ~r/\s*\((?:and|with|including)\s+((?:Schedules?|Parts?)\s+[^()]*?)\)(?=\s*,\s*\d)/iu,
+           text
+         ) do
+      [] ->
+        text
+
+      found ->
+        rest =
+          Enum.reduce(found, text, fn [whole, _], acc ->
+            String.replace(acc, whole, "", global: false)
+          end)
+
+        rest <> Enum.map_join(found, fn [_, inner] -> ", and " <> inner end)
+    end
+  end
 
   defp items(chunk, self) do
     cond do

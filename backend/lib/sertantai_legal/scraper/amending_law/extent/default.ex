@@ -77,6 +77,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Default do
       match = Regex.run(Forms.heading(), sentence) ->
         {:list, Lists.kind(match), Lists.place(match)}
 
+      m = Regex.named_captures(Lists.late(), sentence) ->
+        {:list, Lists.late_kind(m), Places.places(m["places"])}
+
       m = Regex.run(Forms.part_not(), sentence) ->
         {:part_not, Places.places(List.last(m))}
 
@@ -112,6 +115,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Default do
   @doc "The law's own extent from its clause's words; nil when none is read."
   @spec default(String.t()) :: String.t() | nil
   def default(clause) do
+    clause = plain_places(clause)
+
     cond do
       m = Regex.named_captures(Forms.extends_and(), clause) ->
         Territory.union([Places.places(m["a"]), Places.places(m["b"])])
@@ -145,6 +150,17 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Default do
       true ->
         nil
     end
+  end
+
+  # the places as one run: a bracket of its own out ("extends to Scotland
+  # (subject to subsection (6)) and Northern Ireland", ukpga 1999/28 s.43);
+  # repealed words out ("shall not extend to Scotland or, . . . to Northern
+  # Ireland", ukpga 1968/64 s.20): round 13 S6, S7
+  defp plain_places(clause) do
+    clause
+    |> String.replace(~r/\s*\(\s*(?:subject\s+to|but\s+see|see)\b(?:[^()]|\([^()]*\))*\)/iu, "")
+    |> String.replace(~r/\s*,?\s*(?:\.\s*){3,}\s*/u, " ")
+    |> String.replace(~r/\b(Scotland|Wales|England|Northern\s+Ireland)\s+or\s+to\s+/u, "\\1 or ")
   end
 
   @doc "The lists a default's plain exceptions state (\"This Act extends to … except …\")."
@@ -185,6 +201,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Default do
              ~r/\b(?:of|to)\s+the\s+[A-Z][\w()',\s-]*?\s+(?:Act|Order|Regulations)(?:\s+\d{4})?/u,
            do: :unread,
            else: with_refs(subj, clause_ref, doc, &[{:only, Places.places(list), &1}])
+
+      # "except that— (a) section 46(1) extends to Scotland only, (b) …":
+      # each item a statement of its own, read where it is (`Units.statements`
+      # → `Named`, `Same`): ukpga 2010/29 s.49, round 13 S7
+      exc =~ ~r/^except\s+that\s*[—–:]/u ->
+        []
 
       # "except that section 12 (…) extends to England and Wales and Scotland only"
       m = Regex.run(~r/^except\s+that\s+(.+)$/iu, exc) ->

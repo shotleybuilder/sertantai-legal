@@ -120,6 +120,46 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lists do
     end
   end
 
+  # a list whose verb comes after it: "Subject to subsection (6) below, the
+  # following provisions of this Act— (a) sections 3, 4 and 6; (b) …,
+  # extend to England and Wales only" (ukpga 1982/53 s.77); "The following
+  # provisions of this Act, namely— sections 39, 40 …; and Part III, do not
+  # extend to Scotland" (1981/69 s.74): round 13 S6
+  @late ~r/(?:^|[.;]\s+|,\s*)(?:Subject\s+to\s+[^,—–]{1,80},\s*)?the\s+following\s+provisions\s+of\s+this\s+(?:Act|Order|Part)\s*,?\s*(?:namely|that\s+is\s+to\s+say)?\s*,?\s*[—–:]\s*(?<items>[^.]+?),?\s*(?:shall\s+)?(?<not>(?:do|does|shall)\s+not\s+)?extend\s+(?<also>also\s+)?to\s+(?<places>(?>#{@place_list}))(?<only>\s+only)?/iu
+
+  @doc "The \"the following provisions …— (a) …, extend to P\" form."
+  @spec late() :: Regex.t()
+  def late, do: @late
+
+  @doc "The kind of a late-verb list from its match."
+  @spec late_kind(map()) :: :not | :only | :also | :named
+  def late_kind(m) do
+    cond do
+      m["not"] != "" -> :not
+      m["only"] != "" -> :only
+      m["also"] != "" -> :also
+      true -> :named
+    end
+  end
+
+  @doc "Each top-level provision's late-verb lists, its qualified items withheld."
+  @spec late_lists([{String.t(), String.t()}], Doc.t()) :: [list_entry()]
+  def late_lists(sections, doc) do
+    for {ref, text} <- sections,
+        not String.contains?(ref, "("),
+        m <- for(m <- Regex.scan(@late, text, capture: :all_names), do: named(m)),
+        r = ListItems.read(m["items"], ref, doc),
+        list <-
+          if(r.refs != [], do: [{late_kind(m), Places.places(m["places"]), r.refs}], else: []) ++
+            if(r.unread != [], do: [{:unread, nil, r.unread}], else: []),
+        uniq: true,
+        do: list
+  end
+
+  # (capture: :all_names gives the names in order)
+  defp named([also, items, not_, only, places]),
+    do: %{"also" => also, "items" => items, "not" => not_, "only" => only, "places" => places}
+
   # each list: "The following extend also to Scotland— …", "… to Scotland
   # only— …", "… have the same extent as the enactments to which they
   # relate— …", up to the next such heading

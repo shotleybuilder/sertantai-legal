@@ -415,4 +415,236 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Round13ReadsTest do
       assert Extent.of(e, "s.145") == "E+W+S"
     end
   end
+
+  describe "S6: statements whose verb comes late" do
+    test "\"the following provisions of this Act— (a) …; (b) …; extend to England and Wales only\" (ukpga 1982/53 s.77)" do
+      e =
+        read(
+          "UK_ukpga_1982_53",
+          words([3, 4, 6, 17]) <>
+            p1(
+              "section-77",
+              "Subject to subsection (6) below, the following provisions of this Act—a sections 3, 4 and 6;b sections 17 to 22, extend to England and Wales only."
+            )
+        )
+
+      assert Extent.of(e, "s.3") == "E+W"
+    end
+
+    test "\"This Act does not extend to Northern Ireland and— (a) in Part IV, sections 42 and 43 extend to England and Wales only and section 44 extends to Scotland only\" (ukpga 1987/27 s.50)" do
+      e =
+        read(
+          "UK_ukpga_1987_27",
+          words([1, 42, 43, 44]) <>
+            p1(
+              "section-50",
+              "This Act does not extend to Northern Ireland and—a in Part IV, sections 42 and 43 extend to England and Wales only and section 44 extends to Scotland only."
+            )
+        )
+
+      assert e.default == "E+W+S"
+      assert Extent.of(e, "s.42") == "E+W"
+      assert Extent.of(e, "s.44") == "S"
+    end
+
+    test "\"This Act shall not extend to Scotland or, . . . to Northern Ireland\" (ukpga 1968/64 s.20)" do
+      e =
+        read(
+          "UK_ukpga_1968_64",
+          p1("section-20", "This Act shall not extend to Scotland or, . . . to Northern Ireland.")
+        )
+
+      assert e.default == "E+W"
+    end
+  end
+
+  describe "S7: a whole-law default" do
+    test "\"This Act extends to Scotland (subject to subsection (6)) and Northern Ireland\" (ukpga 1999/28 s.43)" do
+      e =
+        read(
+          "UK_ukpga_1999_28",
+          p1(
+            "section-43",
+            "This Act extends to Scotland (subject to subsection (6)) and Northern Ireland."
+          )
+        )
+
+      assert e.default == "S+NI"
+    end
+
+    test "\"This Act extends only to England and Wales, except that— (a) section 46(1) extends to Scotland only, …\" (ukpga 2010/29 s.49)" do
+      e =
+        read(
+          "UK_ukpga_2010_29",
+          words([1, 46]) <>
+            p1(
+              "section-49",
+              "This Act extends only to England and Wales, except that—a section 46(1) extends to Scotland only,b paragraph 43 of Schedule 4 extends to England and Wales and Scotland."
+            )
+        )
+
+      assert e.default == "E+W"
+      assert Extent.of(e, "s.46(1)") == "S"
+    end
+  end
+
+  describe "S9: a qualified subject or object never read whole" do
+    test "\"this Part to the extent that it applies to those sections\" (ukpga 2006/41 s.278)" do
+      e =
+        read(
+          "UK_ukpga_2006_41",
+          p1("section-1", "This Act extends to England and Wales.") <>
+            ~s(<Part id="part-13">#{words([260, 266])}</Part><Part id="part-15">#{words([271])}#{p1("section-278", "Sections 260 to 266 in Part 13 (price of medical supplies), and this Part to the extent that it applies to those sections, extend also to Scotland and Northern Ireland.")}</Part>)
+        )
+
+      assert Extent.of(e, "s.260") == "E+W+S+NI"
+      refute Extent.of(e, "s.271") == "E+W+S+NI"
+    end
+
+    test "\"section 43 so far as it applies to regulations under section 46\": s.46 is the object (ukpga 2014/2 s.?)" do
+      e =
+        read(
+          "UK_ukpga_2014_2",
+          p1("section-1", "This Act extends to England and Wales.") <>
+            words([43, 45, 46]) <>
+            p1(
+              "section-50",
+              "The following provisions of this Act extend to England and Wales, Scotland and Northern Ireland—a section 43 (orders and regulations) so far as it applies to regulations under section 46 or an order under section 49;b section 45."
+            )
+        )
+
+      refute Extent.of(e, "s.46") == "E+W+S+NI"
+      assert Extent.of(e, "s.45") == "E+W+S+NI"
+    end
+  end
+
+  describe "S10: repealed words inside a number list" do
+    test "\"This Act, except sections ... ... 101 and this section, does not extend to Northern Ireland\" (ukpga 1974/40 s.109)" do
+      e =
+        read(
+          "UK_ukpga_1974_40",
+          words([1, 101]) <>
+            p1(
+              "section-109",
+              "This Act, except sections ... ... 101 and this section, does not extend to Northern Ireland."
+            )
+        )
+
+      assert Extent.of(e, "s.101") == "E+W+S+NI"
+    end
+
+    test "\"Sections ... 4, 5, . . . of this Act do not extend to Scotland\" (ukpga 1976/55 s.27)" do
+      e =
+        read(
+          "UK_ukpga_1976_55",
+          p1("section-1", "This Act extends to England and Wales and Scotland.") <>
+            words([4, 5]) <>
+            p1(
+              "section-27",
+              "Sections ... 4, 5, . . . . . . of this Act do not extend to Scotland."
+            )
+        )
+
+      assert Extent.of(e, "s.4") == "E+W"
+    end
+  end
+
+  describe "S12: a same-extent item" do
+    test "\"(c) section 15 and Schedules 3 and 4 have the same extent as the enactments which they amend or repeal\" (ukpga 1999/9 s.17)" do
+      e =
+        read(
+          "UK_ukpga_1999_9",
+          ~s(<Part id="part-I">#{words([1])}</Part><Part id="part-II">#{words([12])}</Part><Part id="part-III">#{words([15])}</Part>) <>
+            p1(
+              "section-17",
+              "In this Act—a Part I extends to England and Wales only,b Part II extends to Scotland only, andc section 15 and Schedules 3 and 4 have the same extent as the enactments which they amend or repeal."
+            )
+        )
+
+      assert Extent.of(e, "s.15") == :same
+      assert Extent.of(e, "sch.3") == :same
+    end
+  end
+
+  describe "S14: \"cease to apply\"" do
+    test "\"Section 61B(1) to (7) (…) cease to apply in relation to England\" is not applying there (ukpga 2013/27 s.5)" do
+      e =
+        read(
+          "UK_ukpga_2013_27",
+          p1(
+            "section-5",
+            "Section 61B(1) to (7) (Secretary of State or Welsh Ministers may call in unadopted local development order for approval) cease to apply in relation to England."
+          )
+        )
+
+      refute Enum.any?(rows(e, :applies), fn {_, refs} -> "s.61B(1)" in refs end)
+
+      assert {"E", ~w[s.61B(1) s.61B(2) s.61B(3) s.61B(4) s.61B(5) s.61B(6) s.61B(7)]} in rows(
+               e,
+               :applies_not
+             )
+    end
+  end
+
+  describe "S15: a bracket then a bare number" do
+    test "\"sections 228, 229 (and Schedule 22), 230, 233 to 236 …\" are sections (ukpga 2023/55 s.254(12))" do
+      e =
+        read(
+          "UK_ukpga_2023_55",
+          p1("section-1", "This Act extends to England and Wales, Scotland and Northern Ireland.") <>
+            words([228, 229, 230, 233, 236]) <>
+            p1(
+              "section-254",
+              "In Part 12— a sections 228, 229 (and Schedule 22), 230, 233 to 236 extend to England and Wales only; b section 231 extends to Scotland only."
+            )
+        )
+
+      assert Extent.of(e, "s.230") == "E+W"
+      assert Extent.of(e, "sch.22") == "E+W"
+      refute Enum.any?(e.lists, fn {_, _, refs} -> "sch.230" in refs end)
+    end
+  end
+
+  describe "S8: territorial application (class KA)" do
+    test "\"They apply in relation to— (a) England …, and (b) Wales\" (uksi 2016/1154 reg.1(3))" do
+      e =
+        read(
+          "UK_uksi_2016_1154",
+          p1(
+            "regulation-1",
+            "These Regulations may be cited as the Environmental Damage (Prevention and Remediation) (England) Regulations 2016. These Regulations extend to England and Wales only. They apply in relation to—a England and the sea adjacent to England out as far as the seaward boundary of the territorial sea, andb Wales, within the meaning given by section 158 of the Government of Wales Act 2006."
+          )
+        )
+
+      assert e.application == "E+W"
+    end
+
+    test "\"Regulation 17 applies in relation to live fish and live eggs of fish in Wales\" (wsi 2014/3303)" do
+      e =
+        read(
+          "UK_wsi_2014_3303",
+          words([17], "regulation") <>
+            p1(
+              "regulation-2",
+              "Regulation 17 applies in relation to live fish and live eggs of fish in Wales."
+            )
+        )
+
+      assert {"W", ["reg.17"]} in rows(e, :applies)
+    end
+
+    test "never a disapplication of things in a place (uksi 2012/3119)" do
+      e =
+        read(
+          "UK_uksi_2012_3119",
+          words([14], "regulation") <>
+            p1(
+              "regulation-1",
+              "These Regulations do not apply in relation to any building in Wales, other than an excepted energy building."
+            )
+        )
+
+      assert e.application == nil
+    end
+  end
 end

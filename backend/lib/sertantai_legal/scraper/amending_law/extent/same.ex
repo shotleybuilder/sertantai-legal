@@ -23,7 +23,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Same do
 
   # "Sections 240 and 242 and Schedules 1 and 3 have the same extent as the
   # provisions amended" (1996/18 s.244(4): CV-S05)
-  @named_same ~r/^(?:\(\w+\)\s*)?(?<subj>(?:Sections?|Schedules?|Parts?|paragraphs?|regulations?|articles?)\s+[\dIVXL][^.;:—–]*?)\s+(?:has|have|shall\s+have)\s+the\s+same\s+extent\s+(?:within\s+the\s+United\s+Kingdom\s+)?as\s+the\s+(?:enactments?|provisions?)\s+(?:amended|repealed|revoked|modified|to\s+which\s+(?:it|they)\s+relates?)\b/iu
+  @named_same ~r/^(?:\(\w+\)\s*)?(?<subj>(?:Sections?|Schedules?|Parts?|paragraphs?|regulations?|articles?)\s+[\dIVXL][^.;:—–]*?)\s+(?:has|have|shall\s+have)\s+the\s+same\s+extent\s+(?:within\s+the\s+United\s+Kingdom\s+)?as\s+the\s+(?:enactments?|provisions?)\s+(?:amended|repealed|revoked|modified|to\s+which\s+(?:it|they)\s+relates?|which\s+(?:it|they)\s+amends?(?:\s+or\s+repeals?)?)\b/iu
 
   # "This Act does not extend to Northern Ireland except so far as it
   # affects other enactments extending to Northern Ireland" (1988/54,

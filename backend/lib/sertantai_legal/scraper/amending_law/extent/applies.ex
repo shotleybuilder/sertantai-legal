@@ -40,8 +40,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Applies do
   # to England": 1984/55 s.120G)
   @subject_words "(?:(?!\\bappl(?:y|ies)\\b|\\b(?:if|where|as|unless)\\b)[^.;])*?"
 
+  # (also "Section 61B(1) to (7) (…) cease to apply in relation to England":
+  # not applying there, ukpga 2013/27 s.5, round 13 S14)
   @statement Regex.compile!(
-               "^\\s*(?<subj>(?:This|That)\\s+(?:paragraph|sub-paragraph|section|subsection|regulation|article|rule)|(?:the\\s+)?(?:amendments?|omission|revocations?|repeals?)\\b#{@subject_words}|#{@provisions}\\s+[\\d(]#{@subject_words})\\s+(?:(?:shall|will)\\s+)?(?<not>(?:does|do|shall)\\s+not\\s+)?(?<ext>extends?\\s+and\\s+)?(?:only\\s+)?appl(?:y|ies)\\s+(?:only\\s+)?(?:in\\s+relation\\s+to|to|in)\\s+(?<places>#{@place_list})(?<only>\\s+only)?(?<resp>\\s+respectively)?\\s*\\.?\\s*$",
+               "^\\s*(?<subj>(?:This|That)\\s+(?:paragraph|sub-paragraph|section|subsection|regulation|article|rule)|(?:the\\s+)?(?:amendments?|omission|revocations?|repeals?)\\b#{@subject_words}|#{@provisions}\\s+[\\d(]#{@subject_words})\\s+(?:(?:shall|will)\\s+)?(?<not>(?:does|do|shall)\\s+not\\s+|ceases?\\s+to\\s+)?(?<ext>extends?\\s+and\\s+)?(?:only\\s+)?appl(?:y|ies)\\s+(?:only\\s+)?(?:in\\s+relation\\s+to|to|in)\\s+(?<things>(?:(?!\\b(?:other\\s+than|except|outside|excluding)\\b)[^.;,—–])*?\\s+in\\s+)?(?<places>#{@place_list})(?<only>\\s+only)?(?<resp>\\s+respectively)?\\s*\\.?\\s*$",
                "iu"
              )
 
@@ -96,6 +98,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Applies do
 
     cond do
       refs == [] ->
+        []
+
+      # things in a place: its bound when positive ("Regulation 17 applies
+      # in relation to live fish and live eggs of fish in Wales", wsi
+      # 2014/3303); a disapplication of things is fitness scope, KA (round 13
+      # S8)
+      m["things"] != "" and kind == :applies_not ->
         []
 
       m["resp"] != "" ->

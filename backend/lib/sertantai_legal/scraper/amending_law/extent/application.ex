@@ -40,7 +40,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Application do
               ~r/\b(?:to\s+the\s+extent\s+that|so\s+far\s+as|in\s+so\s+far\s+as|insofar\s+as)\s+(?:it|they)\s+appl(?:y|ies)\b[^.;]*/iu,
               ""
             )
-            |> ApplicationClause.parse(),
+            |> ApplicationClause.parse_bound(),
           c != nil,
           do: c
 
