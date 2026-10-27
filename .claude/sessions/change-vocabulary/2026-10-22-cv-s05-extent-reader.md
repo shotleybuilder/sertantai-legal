@@ -4,6 +4,12 @@ status: active
 release: v0.1
 opened: '2026-10-22'
 bugs:
+  - pattern: "Amendment reader's Pointer/Locator name a Schedule paragraph inside a Part without its Part (sch.N.para.M), while Order.ref and RefList use the triple sch.N.pt.R.para.M (round 13, Jason 2026-10-27); RefList.covers? matches the two, but identity by target (merge) can split where a Schedule numbers each Part apart"
+    category: naming
+    module: AmendingLaw.Pointer, AmendingLaw.Locator
+    affected: 439 Part-less collisions in 58 laws (ids store); no effect while Schedules are unparsed (K1)
+    fix: "v0.2, with #169 (Schedules in LAT): Pointer.to_ref and Locator emit/try the triple; one amendment read pass (ReaderVersion)"
+    status: open
   - pattern: "Extent round 12 agent seed 17: Applies locator 'in regulation 16, paragraphs (4) and (5)' read as all of reg.16 (uksi 2020/818 reg.1A, wrong bound); '34 (f)' with a space read as reg.34 whole (uksi 2013/1506 reg.3(2), wrong bound); 'They apply in relation to— (a) England … (b) Wales' unread and uncounted (uksi 2016/1154 reg.1(3))"
     category: extent
     module: Extent.Applies / RefList / Application
