@@ -1,7 +1,52 @@
 ---
 session: 'CV-S05c: Shape Mining'
-status: active
+status: closed
 opened: '2026-10-27'
+closed: '2026-10-27'
+outcome: success
+parent: change-vocabulary/2026-10-27-cv-s05b-list-shape-audit.md
+
+summary: >
+  The extent list wordings were treated as a long tail: a census of all 3,039 extent sentences
+  (1,338 laws), masked to shapes, counted and ranked, then each list item was checked against the
+  reader's stored lists. 33 laws have a drop (29 real, in classes A to E), 4 more hold excluded
+  provisions (class F), and the unread tail (757 shapes, 714 in one law only) has one rule worth
+  writing. All of it is handed to CV-S05 round 11, with run-01 committed as the baseline evidence.
+
+decisions:
+  - what: Treat the misreads as a long-tail problem and take a census, not a sample (shape mining)
+    why: "Jason: 'I thought it was a long tail problem'; sampling 50 laws a round kept finding new wordings"
+    result: "every shape is listed; about half of list items are in a one-law shape (Good-Turing unseen 0.39 if sampled)"
+  - what: Store every run as evidence in backend/data/experiments/<session>/<run>/ (manifest, scripts, input, outputs), on GitHub and the NAS
+    why: Jason wanted the experiment to be evidenced later
+    result: run-01 is 5.5 MB; no effect ids
+  - what: Check each item against the stored lists, and the over-reach rules, rather than reviewing shapes by eye
+    why: misreads turned out to sit in common item shapes inside particular sentences, not in rare shapes
+    result: 33 drop candidates (29 real) and 14 over-reach hits (5 real, 1 of them already known)
+
+metrics:
+  census: { sentences: 3039, laws: 1338, list_items: 1825, item_shapes: 884, one_law_item_shapes: 801 }
+  item_verdicts: { items: 2271, read: 801, withheld: 34, not_held: 96 }
+  confirmed: { drop_laws: 29, not_drops: 4, overreach_laws: 5, overreach_false: 4 }
+  unread_tail: { occurrences: 920, shapes: 757, one_law: 714 }
+
+lessons:
+  - title: Drops hide in common item shapes, not in rare ones
+    detail: >
+      Shape counts at item level did not separate the misreads: "section N" was dropped inside
+      particular sentences. The item-against-stored-lists check found them. The long tail matters
+      for misreads of meaning (exceptions, scope), which need rule checks rather than a held/not-held check.
+    tag: data
+  - title: A census beats a sample for a long tail
+    detail: >
+      Agent checks found misreads 3 to 16 at a time. A census of every sentence (seconds to minutes
+      from the read cache) found 33 laws of drops in one pass, and it re-found round 10's NEW.
+    tag: tooling
+  - title: The git index is shared with the other lane
+    detail: >
+      My staged run-01 files were swept into the other lane's commit 30cebd9a. Stage and commit
+      in one command with a pathspec (`git add -f X && git commit -- X`), and check the index first.
+    tag: tooling
 bugs:
   - pattern: "Extent lists: \"In Part N— (a) X extends to P, (b) Y extends to Q\": only item (a) read; later items with their own statement dropped"
     category: extent
@@ -48,7 +93,7 @@ bugs:
 parent: change-vocabulary/2026-10-27-cv-s05b-list-shape-audit.md
 ---
 
-# Session: CV-S05c: Shape Mining (ACTIVE)
+# Session: CV-S05c: Shape Mining (CLOSED)
 
 ## Problem
 
@@ -65,7 +110,7 @@ Aim (Jason 2026-10-27: "I thought it was a long tail problem"): stop sampling an
 - ✅ Mark the shapes the reader already reads, so review skips them (step 2: per-item verdicts)
 - ✅ Confirm the 33 drops (`run-01/dropped.tsv`) against the law text; hand the confirmed ones to CV-S05 round 11
 - ✅ Shape review of the qualified tail (steps 3–4: over-reach rules; the unread tail ranked) (`run-01/review.tsv` buckets `read_qualified`, `misread_qualified`, then `in_unread`), most common first, with Jason; hand the ranked shapes to CV-S05 round 11
-- ⬜ If it earns its place, build it as a read-only mix task with pure modules and tests
+- ⏸️ If it earns its place, build it as a read-only mix task with pure modules and tests (deferred: decide after CV-S05 round 11's re-run census)
 
 ## Run-01 (2026-10-27)
 
