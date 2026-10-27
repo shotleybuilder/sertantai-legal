@@ -29,6 +29,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Applies do
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, RefList, SubPath}
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Parts, Places, Units}
+  alias SertantaiLegal.Scraper.ApplicationClause
   alias SertantaiLegal.Scraper.Commencement.Order
   alias SertantaiLegal.Scraper.LawStart.Clause
 
@@ -105,6 +106,20 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Applies do
       # 2014/3303); a disapplication of things is fitness scope, KA (round 13
       # S8)
       m["things"] != "" and kind == :applies_not ->
+        []
+
+      # (never things that are cases, not a place's: "a freezing order made
+      # … by a magistrates' court in England and Wales or a court … in
+      # Northern Ireland" (1982/27 s.18), "a corporate joint committee as
+      # they apply to a local authority in Wales" (1989/42 s.1), "an agent
+      # who … in England" (2015/15 s.83))
+      m["things"] != "" and ApplicationClause.cases?(m["things"]) ->
+        []
+
+      # (never another law's provision: "Section 10 of the Police and Fire
+      # Reform (Scotland) Act 2012 (declaration) shall apply to a constable
+      # … appointed in Scotland", ukpga 2003/20 s.24)
+      m["subj"] =~ ~r/\bof\s+the\s+[A-Z][\w()',\s-]*?\b(?:Act|Regulations|Order)\b/u ->
         []
 
       m["resp"] != "" ->

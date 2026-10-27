@@ -647,4 +647,82 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Round13ReadsTest do
       assert e.application == nil
     end
   end
+
+  describe "found by the census run-04 (round 13's own check)" do
+    test "things that are cases, not a place's, set no application" do
+      e =
+        read(
+          "UK_ukpga_1982_27",
+          p1(
+            "section-18",
+            "This section applies to a freezing order made under section 40D of the Immigration Act 2014 by a magistrates' court in England and Wales or a court of summary jurisdiction in Northern Ireland."
+          ) <>
+            p1(
+              "section-19",
+              "Subsections (5) to (8) of this section apply to a corporate joint committee as they apply to a local authority in Wales."
+            ) <>
+            p1(
+              "section-20",
+              "Subsection (3C) applies to an agent who advertises letting agency work in relation to dwelling houses in England."
+            )
+        )
+
+      assert rows(e, :applies) == []
+    end
+
+    test "a range before a describing bracket: \"section 14(3) to (5) (acknowledgment …)\" (ukpga 2011/16 s.120)" do
+      alias SertantaiLegal.Scraper.AmendingLaw.RefList
+
+      assert RefList.parse("section 14(3) to (5) (acknowledgment of green deal plan)") ==
+               ~w[s.14(3) s.14(4) s.14(5)]
+
+      assert RefList.parse("section 29(1) to (3) (and section 29(4) has effect accordingly)")
+             |> Enum.take(3) == ~w[s.29(1) s.29(2) s.29(3)]
+    end
+  end
+
+  test "each \"in Schedule N, paragraphs …\" its own Schedule's; \"by virtue of subsection (6)\" no item" do
+    alias SertantaiLegal.Scraper.AmendingLaw.RefList
+
+    assert RefList.parse(
+             "in Schedule 2, paragraphs 2, 5 and 7(3), in Schedule 4, paragraphs 1, 2 and 4."
+           ) ==
+             ~w[sch.2.para.2 sch.2.para.5 sch.2.para.7(3) sch.4.para.1 sch.4.para.2 sch.4.para.4]
+
+    assert RefList.parse(
+             "any provision which extends to England and Wales only by virtue of subsection (6) or (7)",
+             "s.119"
+           ) == []
+  end
+
+  test "never another law's section, nor an \"as if\" modification, as an application (2003/20 s.24, 1990/8 s.319ZZA)" do
+    e =
+      read(
+        "UK_ukpga_2003_20",
+        p1(
+          "section-24",
+          "Section 10 of the Police and Fire Reform (Scotland) Act 2012 (declaration) shall apply to a constable of the Police Force appointed in Scotland."
+        ) <>
+          p1(
+            "section-25",
+            "This section applies in relation to a relevant planning function conferred on a mineral planning authority as if references to a local planning authority were to a mineral planning authority in England."
+          )
+      )
+
+    assert rows(e, :applies) == []
+  end
+
+  test "\"Part 6 of this Act (nature and biodiversity) extends to England and Wales, except that— (a) the amendments made by Schedule 15 … have the same extent as …\" (ukpga 2021/30 s.146)" do
+    e =
+      read(
+        "UK_ukpga_2021_30",
+        ~s(<Part id="part-6">#{words([100, 101])}</Part>) <>
+          p1(
+            "section-146",
+            "Part 6 of this Act (nature and biodiversity) extends to England and Wales, except that— a the amendments made by Schedule 15 (biodiversity gain in nationally significant infrastructure projects) have the same extent as the provisions amended; b section 101 extends to England and Wales and Scotland."
+          )
+      )
+
+    assert Extent.of(e, "s.100") == "E+W"
+  end
 end

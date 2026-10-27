@@ -170,14 +170,14 @@ defmodule SertantaiLegal.Scraper.ApplicationClause do
   def parse_bound(text) do
     parse(text) ||
       text
-      # each sentence or numbered paragraph of the provision on its own
-      |> String.split(~r/(?<=[.;])\s+|\s+(?=\(\d+[A-Z]?\)\s+[A-Z])/u)
+      # each sentence or numbered paragraph of the provision on its own (a
+      # paragraph's number may run into the sentence before it: "… only.3
+      # They apply …", uksi 2016/1154 reg.1)
+      |> String.split(~r/(?<=[.;])\s+|\s+(?=\(\d+[A-Z]?\)\s+[A-Z])|(?<=\.)(?=\d+[A-Z]?\s+[A-Z])/u)
       |> Enum.find_value(fn piece ->
         piece
-        |> String.replace(
-          ~r/^\s*(?:\(\d+[A-Z]?\)\s*)?Subject\s+to\s+paragraphs?\s+\([^,]*,\s*/iu,
-          ""
-        )
+        |> String.replace(~r/^\s*(?:\(\d+[A-Z]?\)|\d+[A-Z]?(?=\s+[A-Z]))\s*/u, "")
+        |> String.replace(~r/^\s*Subject\s+to\s+paragraphs?\s+\([^,]*,\s*/iu, "")
         |> bound()
       end)
   end
@@ -219,16 +219,30 @@ defmodule SertantaiLegal.Scraper.ApplicationClause do
     end
   end
 
+  @doc """
+  Whether the things an application names before its place are cases, not
+  the place's: another place in them, a comparison ("as they apply to"), a
+  relative clause, or what something is made, issued or done by or under
+  (CV-S05 round 13, from the census run-04).
+  """
+  @spec cases?(String.t()) :: boolean()
+  def cases?(things) do
+    things =~
+      ~r/\b(?:England|Wales|Scotland|Northern\s+Ireland|Great\s+Britain|United\s+Kingdom)\b/u or
+      things =~
+        ~r/\b(?:as\s+(?:it|they)\s+appl(?:y|ies)|as\s+if|who|which|that|where|whose|made|issued|granted|appointed|under|by)\b/iu
+  end
+
   # "live fish in Wales", "lessors of social homes in England (whenever …)"
   defp things_in(target) do
     case Regex.run(
            Regex.compile!(
-             "^\\s*[^.;—–]{1,120}?\\s+in\\s+(#{@nation}(?:\\s*(?:,|and|or)\\s*#{@nation})*)\\s*(?:only)?\\s*(?:\\((?:[^()]|\\([^()]*\\))*\\)\\s*)?$",
+             "^\\s*([^.;—–]{1,120}?)\\s+in\\s+(#{@nation}(?:\\s*(?:,|and|or)\\s*#{@nation})*)\\s*(?:only)?\\s*(?:\\((?:[^()]|\\([^()]*\\))*\\)\\s*)?$",
              "iu"
            ),
            target
          ) do
-      [_, list] -> regions(list)
+      [_, things, list] -> if cases?(things), do: nil, else: regions(list)
       nil -> nil
     end
   end

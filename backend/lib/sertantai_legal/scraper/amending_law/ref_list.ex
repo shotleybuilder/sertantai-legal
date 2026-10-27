@@ -53,7 +53,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
     # and paragraph 11 of Schedule 2": ukpga 1977/38 s.32, round 13 S13)
     |> then(
       &Regex.replace(
-        ~r/\bin\s+Schedule\s+(\d+[A-Z]*)\s*,\s*((?:Parts?|paragraphs?)\s+[^;]*?)(?=;|$)/iu,
+        ~r/\bin\s+Schedule\s+(\d+[A-Z]*)\s*,\s*((?:Parts?|paragraphs?)\s+[^;]*?)(?=;|,\s*(?:and\s+)?in\s+Schedule\b|$)/iu,
         &1,
         fn _, sch, rest ->
           Regex.replace(
@@ -88,7 +88,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
     num = n |> String.split("(") |> hd()
 
     Regex.replace(
-      ~r/(?<!subject\sto\s)(?<!within\s)(?<!under\s)(?<!by\s)(?<!in\s)(?<!see\s)(?<!with\s)\bsub-?sections?\s+((?>(?:\([\dA-Z]+\)(?:\s*(?:,|and|or|to)\s*(?=\())?)+))\s*(?:above\s+|below\s+)?(?:of\s+this\s+section\b)?(?!\s*of\b)/iu,
+      ~r/(?<!subject\sto\s)(?<!of\s)(?<!within\s)(?<!under\s)(?<!by\s)(?<!in\s)(?<!see\s)(?<!with\s)\bsub-?sections?\s+((?>(?:\([\dA-Z]+\)(?:\s*(?:,|and|or|to)\s*(?=\())?)+))\s*(?:above\s+|below\s+)?(?:of\s+this\s+section\b)?(?!\s*of\b)/iu,
       text,
       "section #{num}\\1 "
     )
@@ -98,7 +98,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
     num = n |> String.split("(") |> hd()
 
     Regex.replace(
-      ~r/(?<!subject\sto\s)(?<!within\s)(?<!under\s)(?<!by\s)(?<!in\s)(?<!see\s)(?<!with\s)\bparagraphs?\s+((?>(?:\(\d+[A-Z]*\)(?:\([a-z]+\))*(?:\s*(?:,|and|or|to)\s*(?=\())?)+))\s*(?:above\s+|below\s+)?(?:of\s+this\s+regulation\b)?(?!\s*of\b)/iu,
+      ~r/(?<!subject\sto\s)(?<!of\s)(?<!within\s)(?<!under\s)(?<!by\s)(?<!in\s)(?<!see\s)(?<!with\s)\bparagraphs?\s+((?>(?:\(\d+[A-Z]*\)(?:\([a-z]+\))*(?:\s*(?:,|and|or|to)\s*(?=\())?)+))\s*(?:above\s+|below\s+)?(?:of\s+this\s+regulation\b)?(?!\s*of\b)/iu,
       text,
       "regulation #{num}\\1 "
     )
@@ -211,7 +211,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
       cond do
         # "26(7) to (10)" → each subsection (CV-S05 N12); "8(2)(b) to (d)"
         # → each lettered item (SI 2014/469 art.3(2)(b): CV-S05 round 6)
-        m = Regex.run(~r/^(\d+[A-Z]*)((?:\([^)]+\))+)\s+to\s+((?:\([^)]+\))+)\s*[.;]?\s*$/, piece) ->
+        m =
+            Regex.run(
+              ~r/^(\d+[A-Z]*)((?:\([^)]+\))+)\s+to\s+((?:\([^)]+\))+)\s*(?:[.;]|\(.*)?\s*$/,
+              piece
+            ) ->
           [_, n, a, b] = m
           paths = SubPath.paths(a <> " to " <> b)
           {acc ++ Enum.map(paths, &ref(prefix, n, &1)), {n, List.last(paths)}}

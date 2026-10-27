@@ -161,6 +161,11 @@ defmodule SertantaiLegal.Scraper.ApplicationClauseTest do
       assert ApplicationClause.parse_bound(
                "(1) These Regulations may be cited as the X Regulations 2016. (3) They apply in relation to—a England and the sea adjacent to England out as far as the seaward boundary of the territorial sea, andb Wales, within the meaning given by section 158 of the Government of Wales Act 2006."
              ) == {:apply, ["E", "W"]}
+
+      # (the paragraph's number run into the sentence before it)
+      assert ApplicationClause.parse_bound(
+               "These Regulations extend to England and Wales only.3 They apply in relation to—a England, andb Wales, within the meaning given by section 158 of the Government of Wales Act 2006 ."
+             ) == {:apply, ["E", "W"]}
     end
 
     test "never a carve-out, a negative, \"outside\", or a qualifier before it" do

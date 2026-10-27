@@ -10,7 +10,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Excepting do
     following provisions of Part 2 extend also to Northern Ireland— (a)
     section 23(3); (b) …";
   - "This Part extends to … except that— (a) sections 92, 93 … extend only
-    to England and Wales and Scotland; (b) …".
+    to England and Wales and Scotland; (b) …";
+  - "Part 6 of this Act (nature and biodiversity) extends to England and
+    Wales, except that— (a) the amendments made by Schedule 15 … have the
+    same extent as …" (ukpga 2021/30 s.146, round 13 S7).
 
   The lead is read as a list for the Part's provisions (`:only` where it
   says "only", else `:named`), and only where every exception is read
@@ -28,7 +31,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Excepting do
   @place_list Places.place_list()
   @part "(?:This\\s+Part|Parts?\\s+[\\dIVXL]+[A-Z]*(?:\\s*(?:,|and)\\s*[\\dIVXL]+[A-Z]*)*|Chapters?\\s+\\d+[A-Z]*\\s+of\\s+Part\\s+[\\dIVXL]+[A-Z]*)"
   @lead Regex.compile!(
-          "^\\s*(?<subj>#{@part}(?:\\s+of\\s+this\\s+Act)?)\\s+(?:shall\\s+)?extends?\\s+(?<only>only\\s+)?to\\s+(?<places>(?>#{@place_list}))(?<only2>\\s+only)?\\s*,?\\s*except\\s+(?:as\\s+follows\\s*[—–]|that\\s*[—–]|(?<following>that\\s+the\\s+following\\s+provisions\\s+of\\s+#{@part}\\s+(?:shall\\s+)?extends?\\s+also\\s+to\\s+(?>#{@place_list})\\s*[—–]))(?<items>.+)$",
+          "^\\s*(?<subj>#{@part}(?:\\s+of\\s+this\\s+Act)?)(?:\\s*\\((?:[^()]|\\([^()]*\\))*\\))?\\s+(?:shall\\s+)?extends?\\s+(?<only>only\\s+)?to\\s+(?<places>(?>#{@place_list}))(?<only2>\\s+only)?\\s*,?\\s*except\\s+(?:as\\s+follows\\s*[—–]|that\\s*[—–]|(?<following>that\\s+the\\s+following\\s+provisions\\s+of\\s+#{@part}\\s+(?:shall\\s+)?extends?\\s+also\\s+to\\s+(?>#{@place_list})\\s*[—–]))(?<items>.+)$",
           "su"
         )
   @qualified ~r/\b(?:so\s+far|in\s*so\s*far|insofar|to\s+the\s+extent|except|which|subject\s+to|where|if)\b/iu
@@ -85,7 +88,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Excepting do
     not (item =~ @qualified) and RefList.parse(item, ref) != [] and
       (following? or
          match?(
-           {:list, k, _} when k in [:only, :named, :also, :not],
+           {:list, k, _} when k in [:only, :named, :also, :not, :same],
            Default.statement(item, type)
          ))
   end
