@@ -1369,3 +1369,21 @@ Jason 2026-10-27: "I don't need to look at the list - we should have a clear ide
   - silent candidates 113 → 64 (51 cleared, 2 new, both finder-side); unnamed refs 358 → 234;
   - the fix-list check: every wording reads as its text states.
 - **Agent check:** seed 18 (sample repeatable), round 13 rules added to the skill's prompt. The result is below.
+
+## Agent check, seed 18 (round 13): laws 48 OK / 2 WRONG; changes 50/50 OK — FAIL (2 NEW, one root)
+
+The sample repeats; the prompt is the skill's, with round 13's rules. Every change is right. Both NEW defects verified:
+
+- **NEW-1: SI 2005/2060 art.1(4).** "This article extends to England and Wales, Scotland and Northern Ireland, and paragraphs 1 and 14 of the Schedule, and article 3 in so far as it relates to those paragraphs, have the same extent as the provisions modified."
+  - Only "This article" is read (`named UK {reg.1}`); the second statement is dropped.
+  - The sentence is credited `list:named`, because the subject before the first verb is "This article".
+  - Schedule paras 1 and 14 take art.3's default S (wrong bound; the text gives the modified provisions' extent, UK).
+- **NEW-2: ukpga 1981/45 s.31(b)** "Part I of the Schedule" (do not extend to Scotland) is dropped, yet credited `list:not:S`. The repeals in Part I of the unnumbered Schedule keep the UK default.
+
+**Root, one cause:** the shared namer `Commencement.Order.ref` names an unnumbered Schedule's ids as junk refs (`schedule-part-I` → `sch.part`, `schedule-paragraph-1` → `sch.paragraph`, `schedule` → nil). This is CV-S02a's K10 tell-tale, deferred. So nothing can name these provisions, and `Credit` reads "Part I of the Schedule" as the Act's own Part I.
+
+**Not NEW:**
+- ukpga 1981/45 s.11 is `section-ll` in the CLML (KD).
+- SI 2013/1506 reg.3(3) withholds the qualifier's object, but no wrong bound results (named outranks unread).
+
+**Decision for Jason:** name unnumbered Schedules in the shared namer (`sch.pt.I`, `sch.para.1`, `sch`) and read "of the Schedule" in `RefList`; or count these sentences unread only (no wrong bound fixed).
