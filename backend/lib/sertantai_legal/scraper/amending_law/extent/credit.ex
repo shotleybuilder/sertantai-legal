@@ -61,6 +61,40 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Credit do
   end
 
   @doc """
+  A list sentence's class: read whole (`list_read?/6`) → "list:kind:place";
+  a list of its kind and place read but missing some → "unread:list_partial"
+  (CV-S05 round 8, NEW-3) — never on the strength of a Schedule paragraph's
+  own statement ("Paragraphs 15 to 17 extend only to England and Wales"
+  beside "This paragraph extends only to England and Wales": 2003/39
+  Sch.8, round 11); else `unread`.
+  """
+  @spec list_class(
+          String.t(),
+          String.t(),
+          Doc.t(),
+          [list_entry()],
+          atom(),
+          String.t() | nil,
+          String.t()
+        ) ::
+          String.t()
+  def list_class(s, ref, doc, lists, kind, place, unread) do
+    cond do
+      list_read?(s, ref, doc, lists, kind, place) ->
+        "list:#{kind}:#{place || "same"}"
+
+      Enum.any?(lists, &(match?({^kind, ^place, _}, &1) and not own_paragraph?(&1))) ->
+        "unread:list_partial"
+
+      true ->
+        unread
+    end
+  end
+
+  defp own_paragraph?({_, _, [r]}), do: r =~ ~r/^sch\.[^.]+\.para\.[^.()]+$/
+  defp own_paragraph?(_), do: false
+
+  @doc """
   The provisions the subject of `s` names, or `:unparsed` when one it
   names is read as none.
   """

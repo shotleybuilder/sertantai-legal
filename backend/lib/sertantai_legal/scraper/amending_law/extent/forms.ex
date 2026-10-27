@@ -28,7 +28,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Forms do
   # Ireland— …": a `:not` list, CV-S05 A)
   # (also "This section and the following provisions … also extend to
   # England and Wales—": ukpga 1993/9 s.48, round 8 — the provision too)
-  @heading ~r/(?:This\s+(?:section|article|regulation)\s+and\s+)?The following (?:provisions (?:of (?:this (?:Act|Part|Order)|these Regulations|Part [IVXLC\d]+[A-Z]*(?: of this Act)?) )?)?(?:,?\s*and no others,\s*)?(?:shall\s+)?(?:(?:also\s+)?extend(?:s)? (also )?to (#{@place_list})( only)?|(?:do|does|shall) not extend to (#{@place_list})|ha(?:s|ve) the same extent as the enactments? to which (?:it|they) relates?)(?:\s*[—–:-]|,?\s+(?:namely|that\s+is\s+to\s+say)\b[,:—–]?)/iu
+  # ("This section, and the following provisions only of this Act, extend
+  # to Northern Ireland, that is to say,—", 1972/11 s.30; "… shall extend
+  # to the whole of the United Kingdom, namely—", 1989/15 s.194: round 11)
+  @heading ~r/(?:This\s+(?:section|article|regulation)\s*,?\s+and\s+)?The following (?:provisions\s+(?:only\s+)?(?:of (?:this (?:Act|Part|Order)|these Regulations|Part [IVXLC\d]+[A-Z]*(?: of this Act)?)\s*)?)?(?:,?\s*and no others,\s*)?,?\s*(?:shall\s+)?(?:(?:also\s+)?extend(?:s)? (also )?to (?:the\s+whole\s+of\s+)?(#{@place_list})( only)?|(?:do|does|shall) not extend to (#{@place_list})|ha(?:s|ve) the same extent as the enactments? to which (?:it|they) relates?)(?:\s*[—–:-]|,?\s+(?:namely|that\s+is\s+to\s+say)\b[,:—–]?)/iu
   @extends Regex.compile!(
              # (", which subject to subsections (8) to (10) below extends to
              # Scotland only— (a) may be cited as …": the dash lists what the

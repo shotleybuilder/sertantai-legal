@@ -45,6 +45,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
     Excepting,
     MakesFollowing,
     Named,
+    OwnParagraph,
     Same,
     Units
   }
@@ -212,11 +213,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
       match?({:list, k, _} when k in [:named, :same, :only, :also, :not], statement) and
           not in_clause? ->
         {:list, kind, place} = statement
-        {list_class(s, ref, doc, e, kind, place, "unread:other_provision"), default_seen?}
+
+        {Credit.list_class(s, ref, doc, e.lists, kind, place, "unread:other_provision"),
+         default_seen?}
 
       in_clause? and match?({:list, _, _}, statement) ->
         {:list, kind, place} = statement
-        {list_class(s, ref, doc, e, kind, place, "unread:list"), default_seen?}
+        {Credit.list_class(s, ref, doc, e.lists, kind, place, "unread:list"), default_seen?}
 
       in_clause? and match?({:part_not, _}, statement) ->
         {:part_not, place} = statement
@@ -270,6 +273,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
       mention?(s) ->
         {"none", default_seen?}
 
+      # a Schedule paragraph's own ("This paragraph does not extend to
+      # Scotland": `OwnParagraph`, round 11)
+      list = OwnParagraph.list(s, ref) ->
+        {kind, place, _} = list
+
+        {if(list in e.lists, do: "list:#{kind}:#{place}", else: "unread:provision_extent"),
+         default_seen?}
+
       # a provision's own extent or application ("This section applies only
       # to England", "Subsections (3) to (13) above do not extend to
       # Scotland"): the reader reads the law's, not a provision's
@@ -279,17 +290,6 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
 
       true ->
         {"unread:not_read", default_seen?}
-    end
-  end
-
-  # a list sentence read whole (`Credit`: each provision its subject
-  # names is in a list of its kind and place); one of that kind and place
-  # missing some is a partial read (CV-S05 round 8, NEW-3)
-  defp list_class(s, ref, doc, e, kind, place, unread) do
-    cond do
-      Credit.list_read?(s, ref, doc, e.lists, kind, place) -> "list:#{kind}:#{place || "same"}"
-      Enum.any?(e.lists, &match?({^kind, ^place, _}, &1)) -> "unread:list_partial"
-      true -> unread
     end
   end
 
@@ -303,7 +303,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
     items =
       items ||
         case following != s and Extent.statement(following, doc.type) do
-          {:list, k, p} -> list_class(following, ref, doc, e, k, p, nil)
+          {:list, k, p} -> Credit.list_class(following, ref, doc, e.lists, k, p, nil)
           _ -> nil
         end
 

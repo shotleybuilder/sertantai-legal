@@ -78,7 +78,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.PartialReadsTest do
                "section-48",
                "This Act extends to Scotland only. This section and the following provisions of this Act also extend to England and Wales— section 12(2); section 46; and in section 47, subsection (1) in so far as relating to Schedule 5."
              )
-           ).lists == [{:also, "E+W", ["s.48", "s.12(2)", "s.46"]}]
+           ).lists == [
+             {:also, "E+W", ["s.48", "s.12(2)", "s.46"]},
+             # (the qualified item withheld, never dropped: round 11 class D)
+             {:unread, nil, ["s.47(1)"]}
+           ]
 
     assert read(
              "UK_ukpga_1996_18",

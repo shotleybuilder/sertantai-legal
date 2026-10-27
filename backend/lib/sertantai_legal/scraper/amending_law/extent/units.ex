@@ -96,11 +96,22 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
   # s.262(6), round 8)
   @provision_word "(?:(?:sections?|paragraphs?|Schedules?|Parts?|Chapters?|regulations?|articles?|rules?)\\s+[\\dIVXL]|(?:the|an?|any)\\s+(?:amendments?|repeals?|revocations?)(?:\\s*(?:,|or|and)\\s*(?:amendments?|repeals?|revocations?))*\\s+(?:made\\s+by|in)\\s)"
 
+  @item Regex.compile!(
+          "[—–;]\\s*(?:and\\s*)?\\(?(?:[a-z]{1,2}|[ivx]{3,4})\\)?\\s+(?=#{@provision_word})",
+          "u"
+        )
+  @item_comma Regex.compile!(
+                "(?:[—–;]\\s*(?:and\\s*)?|,\\s*(?:and\\s*)?(?!(?:or|as|in|to|of|at|by|on|an|so)\\s))\\(?(?:[a-z]{1,2}|[ivx]{3,4})\\)?\\s+(?=#{@provision_word})",
+                "u"
+              )
+
   @doc """
   A sentence and the statements inside it (CV-S05 round 4): each lettered
   item under a lead-in ("In Part 5— (a) sections 220 to 224 extend to
   England and Wales only; (b) …", "Part 5 extends as follows— (a) …"), and
-  each clause of a compound ("Paragraphs 34 and 35 … extend to England and
+  each clause of a compound (items run in after a comma too: "In Part 6— a
+  … extend to England and Wales and Scotland,b section 40 … extend to …,
+  andc …", ukpga 2015/7 s.56, CV-S05 round 11), and each clause of a compound ("Paragraphs 34 and 35 … extend to England and
   Wales and Scotland, and paragraph 36 of that Schedule extends to Scotland
   only", "that Schedule" named). The sentence itself first.
   """
@@ -108,14 +119,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
   def statements(s) do
     items =
       if s =~ ~r/[—–]/u do
-        s
-        |> String.split(
-          Regex.compile!(
-            "[—–;]\\s*(?:and\\s+)?\\(?(?:[a-z]{1,2}|[ivx]{3,4})\\)?\\s+(?=#{@provision_word})",
-            "u"
-          )
-        )
-        |> tl()
+        # (items run in after a comma too, where each states its own
+        # extent: never "(a) sections 1 to 3, … and (b) Schedules 1 and 2
+        # …, shall extend to Northern Ireland only", 1975/59 s.14)
+        with_commas = s |> String.split(@item_comma) |> tl()
+
+        if Enum.all?(with_commas, &(&1 =~ ~r/\b(?:extends?|extend|same\s+extent)\b/iu)),
+          do: with_commas,
+          else: s |> String.split(@item) |> tl()
       else
         []
       end
@@ -203,6 +214,15 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
           ~r/\b(paragraphs?\s+(?:(?:\d+[A-Z]*|\([0-9A-Za-z]+\))(?:\([0-9A-Za-z]+\))*(?:\s*(?:,|and|to)\s*)?)+?)(?=\s*(?:\((?=[^()]*\s)[^()]*\)\s*)?(?:extends?|extend|ha(?:s|ve)|do|does|shall|[,;]|$))(?!\s*of\b)/u,
           &1,
           "\\1 of Schedule #{n} "
+        )
+      )
+      # (a bare Part too: "In Schedule 8— (a) Part 1 extends to Scotland
+      # only; (b) Part 2 …", ukpga 2020/22 s.53(2), round 11)
+      |> then(
+        &Regex.replace(
+          ~r/\b(Parts?\s+[\dIVXLC]+[A-Z]*(?:\s*(?:,|and|to)\s*[\dIVXLC]+[A-Z]*)*)\b(?!\s+(?:of|to)\b)/u,
+          &1,
+          "\\1 of Schedule #{n}"
         )
       )
     else

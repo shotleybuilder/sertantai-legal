@@ -39,6 +39,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
     Lookup,
     MakesFollowing,
     Named,
+    OwnParagraph,
     Rows,
     Same,
     Units
@@ -132,6 +133,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
            Same.amendments_same(unit_sentences, doc) ++
            Amends.amends(unit_sentences, doc) ++
            Excepted.excepted(unit_sentences, doc) ++
+           OwnParagraph.lists(doc) ++
            extent_entries(applies))
         |> Enum.flat_map(&excepted(&1, default)),
       corresponds: Regex.match?(~r/\bcorresponds\s+to\s+the\s+repeal\b/i, clause),

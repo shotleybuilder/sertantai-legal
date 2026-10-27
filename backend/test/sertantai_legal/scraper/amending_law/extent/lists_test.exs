@@ -105,7 +105,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListsTest do
              "The following also extend to Northern Ireland—a in Part 2—i Chapter 1 (general considerations) (except section 6),ii Chapter 2 (contracts for difference).",
              "s.155",
              doc
-           ) == [{:also, "NI", ["s.5", "s.7"]}]
+           ) == [
+             {:also, "NI", ["s.5", "s.7"]},
+             # (the item's exception kept as excepted: it keeps the default,
+             # `Extent.read/1`; round 11)
+             {:except, "NI", ["s.6"]}
+           ]
   end
 
   test "a heading's kind and place" do

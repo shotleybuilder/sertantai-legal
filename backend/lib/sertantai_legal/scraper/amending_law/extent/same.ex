@@ -9,7 +9,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Same do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, RefList}
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Forms, Named, Parts, Places}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Forms, ListItems, Named, Parts, Places}
 
   @place_list Places.place_list()
 
@@ -171,8 +171,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Same do
 
     cond do
       subj =~ ~r/\bfollowing\b/i ->
+        # (each item read as a list's: its Parts and Chapters, less its
+        # own exception, "Part 2 (…), other than paragraph 2 of Schedule
+        # 4": ukpga 2009/23 s.323(2), CV-S05 round 11)
         case tail |> String.split(~r/[—–:]/u, parts: 2) do
-          [_, list] -> with([] <- RefList.parse(list, ref), do: :none)
+          [_, list] -> with([] <- ListItems.refs(list, ref, doc), do: :none)
           _ -> :none
         end
 
