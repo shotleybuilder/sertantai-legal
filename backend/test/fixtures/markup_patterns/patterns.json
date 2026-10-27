@@ -1,7 +1,7 @@
 {
   "patterns": {
     "extent:  → nil": {
-      "count": 72461,
+      "count": 72479,
       "examples": [
         "UK_anaw_2012_2/cc97f39499",
         "UK_anaw_2013_1/8c81537dc9",
@@ -46,7 +46,7 @@
       "examples": []
     },
     "extent: E+W → E+W": {
-      "count": 942,
+      "count": 944,
       "examples": [
         "UK_ukpga_1919_50/dee0325a12",
         "UK_ukpga_1959_54/1ec347df8a",
@@ -237,7 +237,7 @@
       ]
     },
     "extent: unset → nil": {
-      "count": 89545,
+      "count": 89588,
       "examples": [
         "UK_anaw_2012_2/14df7ec603",
         "UK_anaw_2013_1/4f5f21c755",
@@ -333,7 +333,7 @@
       ]
     },
     "key: dNpN": {
-      "count": 23800,
+      "count": 23817,
       "examples": [
         "UK_apni_1957_25/ee763f4108",
         "UK_apni_1967_36/ef55d6a0ce",
@@ -360,7 +360,7 @@
       ]
     },
     "key: key-HEX-N": {
-      "count": 65494,
+      "count": 65522,
       "examples": [
         "UK_anaw_2012_2/14df7ec603",
         "UK_anaw_2013_1/14c33193bc",
@@ -376,7 +376,7 @@
       "examples": []
     },
     "key: note ref only": {
-      "count": 72461,
+      "count": 72479,
       "examples": [
         "UK_anaw_2012_2/cc97f39499",
         "UK_anaw_2013_1/8c81537dc9",
@@ -392,7 +392,7 @@
       ]
     },
     "level: none": {
-      "count": 72461,
+      "count": 72479,
       "examples": [
         "UK_anaw_2012_2/cc97f39499",
         "UK_anaw_2013_1/8c81537dc9",
@@ -408,7 +408,7 @@
       ]
     },
     "level: provision | all its text": {
-      "count": 438,
+      "count": 439,
       "examples": [
         "UK_anaw_2016_2/b13e8fe234",
         "UK_anaw_2016_3/8159ae5133",
@@ -416,7 +416,7 @@
       ]
     },
     "level: provision | number wrapped": {
-      "count": 28693,
+      "count": 28703,
       "examples": [
         "UK_anaw_2013_1/14c33193bc",
         "UK_anaw_2013_6/cc4d51a2e3",
@@ -424,7 +424,7 @@
       ]
     },
     "level: words": {
-      "count": 61417,
+      "count": 61451,
       "examples": [
         "UK_anaw_2012_2/14df7ec603",
         "UK_anaw_2013_1/4f5f21c755",
@@ -432,7 +432,7 @@
       ]
     },
     "operation: Addition → inserted": {
-      "count": 51152,
+      "count": 51175,
       "examples": [
         "UK_anaw_2013_1/14c33193bc",
         "UK_anaw_2013_6/f202a8913c",
@@ -505,7 +505,7 @@
       ]
     },
     "operation: Repeal → repealed": {
-      "count": 1209,
+      "count": 1211,
       "examples": [
         "UK_asp_2001_8/d96354fd20",
         "UK_asp_2003_7/678c1efb95",
@@ -539,7 +539,7 @@
       ]
     },
     "operation: Substitution → substituted": {
-      "count": 38839,
+      "count": 38859,
       "examples": [
         "UK_anaw_2012_2/14df7ec603",
         "UK_anaw_2013_1/4f5f21c755",
@@ -547,7 +547,7 @@
       ]
     },
     "operation: none": {
-      "count": 72461,
+      "count": 72479,
       "examples": [
         "UK_anaw_2012_2/cc97f39499",
         "UK_anaw_2013_1/8c81537dc9",
@@ -1059,7 +1059,7 @@
       ]
     },
     "placement: note refs only | part-N → split: s.N": {
-      "count": 330,
+      "count": 332,
       "examples": [
         "UK_apni_1969_6/cce3acea80",
         "UK_asp_2001_8/b2366578ad",
@@ -1518,7 +1518,7 @@
       ]
     },
     "placement: note refs only | section-N → s.N": {
-      "count": 34763,
+      "count": 34773,
       "examples": [
         "UK_anaw_2012_2/cc97f39499",
         "UK_anaw_2013_1/8c81537dc9",
@@ -1538,7 +1538,7 @@
       ]
     },
     "placement: note refs only | section-N → split: s.N(+1)": {
-      "count": 2464,
+      "count": 2465,
       "examples": [
         "UK_anaw_2012_2/3e8e96f1e5",
         "UK_anaw_2015_4/0ed1445401",
@@ -1663,7 +1663,7 @@
       ]
     },
     "placement: note refs only | section-N(+1) → s.N(+1)": {
-      "count": 9908,
+      "count": 9911,
       "examples": [
         "UK_anaw_2012_2/96e6806c88",
         "UK_anaw_2013_1/f56c609a05",
@@ -1734,7 +1734,7 @@
       ]
     },
     "placement: note refs only | section-N(+2) → s.N(+2)": {
-      "count": 3692,
+      "count": 3693,
       "examples": [
         "UK_anaw_2013_1/b0ed774e96",
         "UK_anaw_2016_2/92f3838b27",
@@ -1763,7 +1763,7 @@
       ]
     },
     "placement: note refs only | section-N(+3) → s.N(+3)": {
-      "count": 371,
+      "count": 372,
       "examples": [
         "UK_anaw_2016_2/cc94baa30d",
         "UK_asc_2024_3/72ad473ed7",
@@ -2275,7 +2275,7 @@
       ]
     },
     "placement: one element | section-N → s.N": {
-      "count": 2373,
+      "count": 2375,
       "examples": [
         "UK_anaw_2013_6/f202a8913c",
         "UK_anaw_2016_2/4d775b946f",
@@ -2339,7 +2339,7 @@
       ]
     },
     "placement: one element | section-N(+1) → s.N(+1)": {
-      "count": 22032,
+      "count": 22047,
       "examples": [
         "UK_anaw_2012_2/14df7ec603",
         "UK_anaw_2013_1/4f5f21c755",
@@ -2389,7 +2389,7 @@
       ]
     },
     "placement: one element | section-N(+2) → s.N(+2)": {
-      "count": 11491,
+      "count": 11499,
       "examples": [
         "UK_anaw_2012_2/ad39c9ac2f",
         "UK_anaw_2013_1/7c453e229e",
@@ -2410,7 +2410,7 @@
       ]
     },
     "placement: one element | section-N(+3) → s.N(+3)": {
-      "count": 1120,
+      "count": 1121,
       "examples": [
         "UK_anaw_2016_2/b13e8fe234",
         "UK_asc_2023_3/0910d44cf1",
@@ -3695,7 +3695,7 @@
       ]
     },
     "placement: several elements | part-N-crossheading-* → split: s.N": {
-      "count": 363,
+      "count": 364,
       "examples": [
         "UK_anaw_2016_2/b8374bf4d5",
         "UK_asp_2001_8/0ead28fcb6",
@@ -4302,7 +4302,7 @@
       ]
     },
     "placement: several elements | section-N(+1) → s.N(+1)": {
-      "count": 12789,
+      "count": 12801,
       "examples": [
         "UK_anaw_2013_1/e0cb48191b",
         "UK_anaw_2016_2/a2e52cfe64",
@@ -4452,7 +4452,7 @@
       ]
     },
     "placement: several elements | section-N(+2) → s.N(+2)": {
-      "count": 4723,
+      "count": 4728,
       "examples": [
         "UK_anaw_2013_1/14c33193bc",
         "UK_anaw_2013_6/cc4d51a2e3",
@@ -4522,7 +4522,7 @@
       ]
     },
     "placement: several elements | section-N(+3) → s.N(+3)": {
-      "count": 330,
+      "count": 331,
       "examples": [
         "UK_anaw_2016_2/8b59b53562",
         "UK_asp_2000_4/f66d641b1e",
@@ -4560,7 +4560,7 @@
       "examples": []
     },
     "pointers: effect id | cited law": {
-      "count": 80,
+      "count": 29,
       "examples": [
         "UK_asp_2002_13/01358206ff",
         "UK_ssi_2010_60/eb2225697b",
@@ -4568,7 +4568,7 @@
       ]
     },
     "pointers: effect id | cited law + amending provisions": {
-      "count": 65233,
+      "count": 65312,
       "examples": [
         "UK_anaw_2012_2/14df7ec603",
         "UK_anaw_2013_1/14c33193bc",
@@ -4584,7 +4584,7 @@
       ]
     },
     "pointers: legacy | cited law": {
-      "count": 1222,
+      "count": 1131,
       "examples": [
         "UK_apni_1957_25/ee763f4108",
         "UK_apni_1967_36/a78132fa6f",
@@ -4592,7 +4592,7 @@
       ]
     },
     "pointers: legacy | cited law + amending provisions": {
-      "count": 24091,
+      "count": 24199,
       "examples": [
         "UK_anaw_2013_1/4f5f21c755",
         "UK_anaw_2016_2/58dfacb812",
@@ -4608,7 +4608,7 @@
       ]
     },
     "pointers: none": {
-      "count": 72461,
+      "count": 72479,
       "examples": [
         "UK_anaw_2012_2/cc97f39499",
         "UK_anaw_2013_1/8c81537dc9",
@@ -4616,7 +4616,7 @@
       ]
     },
     "retained: not a repeal": {
-      "count": 162969,
+      "count": 163030,
       "examples": [
         "UK_anaw_2012_2/cc97f39499",
         "UK_anaw_2013_1/4f5f21c755",
@@ -4630,7 +4630,7 @@
       ]
     },
     "retained: true → true": {
-      "count": 1085,
+      "count": 1087,
       "examples": [
         "UK_asp_2001_8/d96354fd20",
         "UK_asp_2003_7/678c1efb95",
@@ -4664,7 +4664,7 @@
       ]
     },
     "where: heading": {
-      "count": 2424,
+      "count": 2426,
       "examples": [
         "UK_anaw_2013_1/fab41f35a3",
         "UK_anaw_2016_2/4d775b946f",
@@ -4696,7 +4696,7 @@
       ]
     },
     "where: heading + number + text": {
-      "count": 5938,
+      "count": 5939,
       "examples": [
         "UK_anaw_2016_2/b8374bf4d5",
         "UK_anaw_2016_3/dc0b47f375",
@@ -4720,7 +4720,7 @@
       ]
     },
     "where: none": {
-      "count": 72461,
+      "count": 72479,
       "examples": [
         "UK_anaw_2012_2/cc97f39499",
         "UK_anaw_2013_1/8c81537dc9",
@@ -4763,7 +4763,7 @@
       ]
     },
     "where: number + text": {
-      "count": 24091,
+      "count": 24100,
       "examples": [
         "UK_anaw_2013_1/14c33193bc",
         "UK_anaw_2013_6/cc4d51a2e3",
@@ -4803,7 +4803,7 @@
       ]
     },
     "where: text": {
-      "count": 58118,
+      "count": 58151,
       "examples": [
         "UK_anaw_2012_2/14df7ec603",
         "UK_anaw_2013_1/4f5f21c755",
@@ -4812,9 +4812,9 @@
     }
   },
   "totals": {
-    "changes": 164893,
+    "changes": 164956,
     "examples": 1127,
-    "laws": 3483,
+    "laws": 3487,
     "patterns": 745,
     "too_large": 560,
     "unclassified": 0

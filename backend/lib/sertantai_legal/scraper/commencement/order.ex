@@ -107,28 +107,16 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   @spec ref(String.t()) :: String.t() | nil
   def ref(id) do
     case String.split(id, "-") do
-      # an unnumbered Schedule ("schedule", "schedule-part-I",
-      # "schedule-paragraph-1"): `sch` (CV-S02a K10; CV-S05 round 13)
-      ["schedule"] ->
-        "sch"
-
-      ["schedule", kind | _] = parts when kind in ["part", "paragraph"] ->
-        schedule_ref("sch", tl(parts))
-
-      # a paragraph's id carries no Part ("schedule-4-part-2-paragraph-3" =
-      # sch.4.para.3, never the Part)
-      ["schedule", s, "part", _p, "paragraph", p | subs] ->
-        "sch.#{s}.para.#{p}" <> brackets(subs)
-
-      ["schedule", s, "paragraph", p | subs] ->
-        "sch.#{s}.para.#{p}" <> brackets(subs)
-
-      # a Part of a Schedule (AR-12: "Section 9 and Part III of Schedule 4")
-      ["schedule", s, "part", p | _] ->
-        "sch.#{s}.pt.#{p}"
-
-      ["schedule", s | _] ->
-        "sch.#{s}"
+      # a Schedule, its Parts (nested kept) and paragraph: "schedule-4-part-2-
+      # paragraph-3" → sch.4.pt.2.para.3 (the triple, Jason 2026-10-27:
+      # unique where numbering restarts in each Part); an unnumbered Schedule
+      # is `sch` ("schedule-paragraph-1" → sch.para.1; CV-S02a K10)
+      ["schedule" | rest] ->
+        case rest do
+          [kind | _] when kind in ["part", "paragraph"] -> schedule_ref("sch", rest)
+          [s | more] -> schedule_ref("sch.#{s}", more)
+          [] -> "sch"
+        end
 
       [kind, n | subs] when kind in ~w(section regulation article) ->
         "#{prefix(kind)}.#{n}" <> brackets(subs)
@@ -138,12 +126,9 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     end
   end
 
-  defp schedule_ref(sch, ["part", _p, "paragraph", p | subs]),
-    do: "#{sch}.para.#{p}" <> brackets(subs)
-
+  defp schedule_ref(sch, ["part", p | rest]), do: schedule_ref("#{sch}.pt.#{p}", rest)
   defp schedule_ref(sch, ["paragraph", p | subs]), do: "#{sch}.para.#{p}" <> brackets(subs)
-  defp schedule_ref(sch, ["part", p | _]), do: "#{sch}.pt.#{p}"
-  # (an id with no number, "schedule-part": the Schedule)
+  # (anything else after the Schedule or Part, "schedule-part": that)
   defp schedule_ref(sch, _), do: sch
 
   @doc "The evaluator's context for an amending law's refs: a Schedule paragraph sits in its Schedule."
@@ -151,10 +136,16 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   def context do
     %{
       ancestors: fn ref ->
-        # ("sch.para.3": an unnumbered Schedule's, in `sch`)
-        case Regex.run(~r/^(sch(?:\.(?!para\.)[^.]+)?)\.para\./, ref) do
-          [_, sch] -> [sch]
-          nil -> []
+        # (its Parts, then its Schedule: "sch.4.pt.2.para.3" → sch.4.pt.2,
+        # sch.4; "sch.para.3": an unnumbered Schedule's, in `sch`)
+        case Regex.run(~r/^(sch(?:\.(?!pt\.|para\.)[^.]+)?)((?:\.pt\.[^.]+)*)\.para\./, ref) do
+          [_, sch, pts] ->
+            parts = for [p] <- Regex.scan(~r/\.pt\.[^.]+/, pts), do: p
+            chain = Enum.scan(parts, sch, &(&2 <> &1))
+            Enum.reverse(chain) ++ [sch]
+
+          nil ->
+            []
         end
       end
     }

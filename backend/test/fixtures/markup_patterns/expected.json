@@ -12976,7 +12976,7 @@
       {
         "claims": {
           "markup.affecting": [
-            "sch.part"
+            "sch.pt.1"
           ],
           "markup.cited": "UK_uksi_2022_500",
           "markup.level": "words",
@@ -19445,6 +19445,9 @@
       },
       {
         "claims": {
+          "markup.affecting": [
+            "sch"
+          ],
           "markup.cited": "UK_uksi_2012_2654",
           "markup.level": "words",
           "markup.operation": "repealed",
@@ -21238,7 +21241,7 @@
       {
         "claims": {
           "markup.affecting": [
-            "sch.part"
+            "sch.pt.I"
           ],
           "markup.cited": "UK_uksi_1999_2572",
           "markup.level": "words",
@@ -21250,7 +21253,7 @@
       {
         "claims": {
           "markup.affecting": [
-            "sch.part"
+            "sch.pt.I"
           ],
           "markup.cited": "UK_uksi_1999_2572",
           "markup.level": "words",
@@ -21262,7 +21265,7 @@
       {
         "claims": {
           "markup.affecting": [
-            "sch.part"
+            "sch.pt.I"
           ],
           "markup.cited": "UK_uksi_1999_2572",
           "markup.level": "words",
@@ -21351,6 +21354,9 @@
     "UK_uksi_1991_1742/101b41bd02": [
       {
         "claims": {
+          "markup.affecting": [
+            "sch"
+          ],
           "markup.cited": "UK_uksi_2015_138",
           "markup.level": "provision",
           "markup.operation": "repealed",
@@ -21362,6 +21368,9 @@
       },
       {
         "claims": {
+          "markup.affecting": [
+            "sch"
+          ],
           "markup.cited": "UK_uksi_2015_138",
           "markup.level": "provision",
           "markup.operation": "repealed",
@@ -21373,6 +21382,9 @@
       },
       {
         "claims": {
+          "markup.affecting": [
+            "sch"
+          ],
           "markup.cited": "UK_uksi_2015_138",
           "markup.level": "provision",
           "markup.operation": "repealed",
@@ -22474,6 +22486,9 @@
     "UK_uksi_2002_794/6b05bb8669": [
       {
         "claims": {
+          "markup.affecting": [
+            "sch"
+          ],
           "markup.cited": "UK_uksi_2015_191",
           "markup.level": "provision",
           "markup.operation": "repealed",

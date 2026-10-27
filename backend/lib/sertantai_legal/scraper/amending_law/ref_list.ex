@@ -28,7 +28,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
       " "
     )
     |> String.split(
-      ~r/(?:^|[,;]|\s)\s*(?:and\s+)?(?=\b(?:this\s+(?:section|article|regulation|rule)\b|(?<!this\s)(?:sections?|regulations?|articles?|rules?)|(?<!of\s)Schedules?|Parts?\s+[\dIVXL]+[A-Z]*(?:\s*(?:,|and|or)\s*(?:or\s+)?[\dIVXL]+[A-Z]*)*\s+of\s+Schedule|paragraphs?\s+[^;]*?\bof\s+Schedule)\b)/iu,
+      ~r/(?:^|[,;]|\s)\s*(?:and\s+)?(?=\b(?:this\s+(?:section|article|regulation|rule)\b|(?<!this\s)(?:sections?|regulations?|articles?|rules?)|(?<!of\s)Schedules?|(?<!of\s)Parts?\s+[\dIVXL]+[A-Z]*(?:\s*(?:,|and|or)\s*(?:or\s+)?[\dIVXL]+[A-Z]*)*\s+of\s+Schedule|paragraphs?\s+[^;]*?\bof\s+Schedule)\b)/iu,
       trim: true
     )
     |> Enum.flat_map(&items(&1, self))
@@ -160,6 +160,16 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
         [_, parts, sch] = m
         for [p] <- Regex.scan(~r/[\dIVXL]+[A-Z]*/, parts), do: "sch.#{sch}.pt.#{p}"
 
+      # "paragraphs 11, 12, 18 and 19 of Part I of Schedule 25": the triple
+      # (Jason 2026-10-27)
+      m =
+          Regex.run(
+            ~r/^\s*paragraphs?\s+(.*?)\s+of\s+Part\s+([\dIVXL]+[A-Z]*)\s+of\s+Schedule\s+(\d+[A-Z]*)/i,
+            chunk
+          ) ->
+        [_, list, part, sch] = m
+        numbered(list, "sch.#{sch}.pt.#{part}.para.")
+
       # "paragraphs 5, 35 and 41 to 43 of Schedule 23" (CV-S05 N12)
       m = Regex.run(~r/^\s*paragraphs?\s+(.*?)\s+of\s+Schedule\s+(\d+[A-Z]*)/i, chunk) ->
         [_, list, sch] = m
@@ -269,9 +279,29 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
 
   defp ref(prefix, n, path), do: prefix <> n <> Enum.map_join(path, &"(#{&1})")
 
-  @doc "Whether a list item (a ref or a range \"s.a..s.b\") names `ref` or contains it."
+  @doc """
+  Whether a list item (a ref or a range "s.a..s.b") names `ref` or contains
+  it. A Schedule paragraph cited without its Part names the same paragraph
+  as its triple, and the reverse ("sch.4.para.3" ≡ "sch.4.pt.2.para.3":
+  legislation.gov.uk's ids hold the Part only where the Schedule numbers
+  each Part apart; the text seldom cites it).
+  """
   @spec covers?(String.t(), String.t()) :: boolean()
   def covers?(item, ref) do
+    covers_exactly?(item, ref) or
+      (paragraph?(ref) and part_less?(item, ref) and
+         covers_exactly?(no_parts(item), no_parts(ref)))
+  end
+
+  defp paragraph?(ref), do: ref =~ ~r/^sch(?:\.[^.]+)*\.para\./
+
+  # one side names no Part of the paragraph's Schedule
+  defp part_less?(item, ref),
+    do: not (item =~ ~r/\.pt\.[^.]+\.para\./) or not (ref =~ ~r/\.pt\.[^.]+\.para\./)
+
+  defp no_parts(ref), do: String.replace(ref, ~r/\.pt\.[^.]+(?=\.)/, "")
+
+  defp covers_exactly?(item, ref) do
     case String.split(item, "..") do
       # a range of any kind: "s.60..s.68", "reg.3..reg.9",
       # "sch.22.para.1..sch.22.para.5"

@@ -727,8 +727,6 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Round13ReadsTest do
   end
 
   describe "agent seed 18: an unnumbered Schedule" do
-    defp sch(body), do: ~s(<Schedule id="schedule">#{body}</Schedule>)
-
     test "\"(b) Part I of the Schedule\" does not extend to Scotland (ukpga 1981/45 s.31)" do
       e =
         read(

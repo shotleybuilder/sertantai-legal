@@ -84,12 +84,15 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
     assert Order.ref("schedule-part-I") == "sch.pt.I"
     assert Order.ref("schedule-paragraph-1") == "sch.para.1"
     assert Order.ref("schedule-paragraph-14-2") == "sch.para.14(2)"
-    assert Order.ref("schedule-part-I-paragraph-3") == "sch.para.3"
+    assert Order.ref("schedule-part-I-paragraph-3") == "sch.pt.I.para.3"
     assert Order.ref("schedule-part") == "sch"
-    # (a paragraph's id carries no Part: never the Part's ref)
-    assert Order.ref("schedule-4-part-2-paragraph-3") == "sch.4.para.3"
+    # (the triple where the id holds the Part, Jason 2026-10-27: unique where
+    # numbering restarts in each Part; nested Parts kept)
+    assert Order.ref("schedule-4-part-2-paragraph-3") == "sch.4.pt.2.para.3"
+    assert Order.ref("schedule-2-part-2-part-3-paragraph-142-a") == "sch.2.pt.2.pt.3.para.142(a)"
     assert Order.context().ancestors.("sch.para.3") == ["sch"]
     assert Order.context().ancestors.("sch.4.para.3") == ["sch.4"]
+    assert Order.context().ancestors.("sch.4.pt.2.para.3") == ["sch.4.pt.2", "sch.4"]
   end
 
   test "an inline range of sections and a Schedule (SI 1994/571 art. 6)" do

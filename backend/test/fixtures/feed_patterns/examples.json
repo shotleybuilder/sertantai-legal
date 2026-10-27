@@ -9910,14 +9910,14 @@
       "article-3-3B"
     ],
     "rows": [
-      "art.Article 3(3B)",
-      "art.Article 3(3B)(a)",
-      "art.Article 3(3B)(b)",
       "art.Article 3(3)",
       "art.Article 3(3)(a)",
       "art.Article 3(3)(b)",
       "art.Article 3(3)(b)(i)",
-      "art.Article 3(3)(b)(ii)"
+      "art.Article 3(3)(b)(ii)",
+      "art.Article 3(3B)",
+      "art.Article 3(3B)(a)",
+      "art.Article 3(3B)(b)"
     ],
     "xml_ids": {
       "article-3-3": "art.Article 3(3)",
@@ -10100,9 +10100,9 @@
     "law": "UK_eur_2004_273",
     "order": [],
     "rows": [
+      "art.Article 13(2)",
       "art.Article 13",
-      "art.Article 13(1)",
-      "art.Article 13(2)"
+      "art.Article 13(1)"
     ],
     "xml_ids": {
       "article-13": "art.Article 13"
@@ -12060,41 +12060,6 @@
     "xml_ids": {
       "article-34": "art.Article 34"
     }
-  },
-  "UK_eur_2006_1013/e3fa56f6b5": {
-    "effect": {
-      "affected_provisions": "Annex 5 Pt. 1 List B s. 0000B3",
-      "affected_refs": [
-        "annex-V",
-        "annex-V-part-1",
-        "section-0000B3"
-      ],
-      "affecting": "UK_uksi_2020_1455",
-      "affecting_provisions": "reg. 8(4)",
-      "applied": true,
-      "effect_extent": "E+W+S+N.I.",
-      "in_force": [
-        {
-          "applied": true,
-          "date": "2021-01-01",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "2021-01-01",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "territorial_application": "E+W+S",
-      "type": "words substituted"
-    },
-    "law": "UK_eur_2006_1013",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
   },
   "UK_eur_2006_1013/f834a0d84b": {
     "effect": {
@@ -14800,6 +14765,39 @@
       "article-2": "art.Article 2"
     }
   },
+  "UK_eur_2012_965/0a61d8f23f": {
+    "effect": {
+      "affected_provisions": "Annex 5 point SPA.HEMS.105",
+      "affected_refs": [
+        "annex-V",
+        "section-105"
+      ],
+      "affecting": "UK_uksi_2022_1235",
+      "affecting_provisions": "reg. 8(2)(a)",
+      "applied": true,
+      "effect_extent": "E+W+S+N.I.",
+      "in_force": [
+        {
+          "applied": true,
+          "date": "2022-12-23",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2022-12-23",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "inserted"
+    },
+    "law": "UK_eur_2012_965",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
   "UK_eur_2012_965/1e115cb2a0": {
     "effect": {
       "affected_provisions": "Art. 10 para. 5 Point (b)",
@@ -14835,6 +14833,39 @@
     "xml_ids": {
       "article-10": "art.Article 10"
     }
+  },
+  "UK_eur_2012_965/1e954f0da4": {
+    "effect": {
+      "affected_provisions": "Annex 2 point ARO.OPS.226(a)",
+      "affected_refs": [
+        "annex-II",
+        "section-226-a"
+      ],
+      "affecting": "UK_uksi_2021_614",
+      "affecting_provisions": "reg. 2(2)(a)",
+      "applied": true,
+      "effect_extent": "E+W+S+N.I.",
+      "in_force": [
+        {
+          "applied": true,
+          "date": "2021-06-16",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2021-06-16",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "words substituted"
+    },
+    "law": "UK_eur_2012_965",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
   },
   "UK_eur_2012_965/36f2e58ea6": {
     "effect": {
@@ -15145,6 +15176,39 @@
     "xml_ids": {
       "article-6-4": "art.Article 6(4)"
     }
+  },
+  "UK_eur_2012_965/4d74f1a331": {
+    "effect": {
+      "affected_provisions": "Annex 5 point SPA.HEMS.130(e)(2)(ii)",
+      "affected_refs": [
+        "annex-V",
+        "section-130-e-2-ii"
+      ],
+      "affecting": "UK_uksi_2022_1235",
+      "affecting_provisions": "reg. 8(2)(c)",
+      "applied": true,
+      "effect_extent": "E+W+S+N.I.",
+      "in_force": [
+        {
+          "applied": true,
+          "date": "2022-12-23",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2022-12-23",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "words inserted"
+    },
+    "law": "UK_eur_2012_965",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
   },
   "UK_eur_2012_965/7c435af266": {
     "effect": {
@@ -18842,6 +18906,38 @@
     "rows": [],
     "xml_ids": {}
   },
+  "UK_nisr_1996_119/130dc0755b": {
+    "effect": {
+      "affected_provisions": "Sch. 1 Pt. 9 para. 3",
+      "affected_refs": [
+        "schedule-1-part-IX",
+        "schedule-1-part-IX-paragraph-3"
+      ],
+      "affecting": "UK_uksi_2018_1377",
+      "affecting_provisions": "reg. 5(2)(b)",
+      "applied": false,
+      "in_force": [
+        {
+          "applied": null,
+          "date": "2020-12-31",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2020-12-31",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": false,
+      "type": "words omitted"
+    },
+    "law": "UK_nisr_1996_119",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
   "UK_nisr_1996_119/13770946fd": {
     "effect": {
       "affected_provisions": "Sch. 1 Pt. 2 para. 2.3",
@@ -19610,6 +19706,39 @@
       "regulation-18": "reg.18"
     }
   },
+  "UK_nisr_2009_238/48685aa183": {
+    "effect": {
+      "affected_extent": "N.I.",
+      "affected_provisions": "Sch. 3 Pt. II para. 2n2",
+      "affected_refs": [
+        "schedule-3-part-II",
+        "schedule-3-part-II-paragraph-2n2"
+      ],
+      "affecting": "UK_nisr_2009_238",
+      "affecting_provisions": "reg. 1",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "date": "2009-07-27",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2009-07-27",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "coming into force"
+    },
+    "law": "UK_nisr_2009_238",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
   "UK_nisr_2009_238/4914374613": {
     "effect": {
       "affected_provisions": "Preamble para. (ii)",
@@ -19641,6 +19770,39 @@
         "regulation-19"
       ],
       "type": "words substituted"
+    },
+    "law": "UK_nisr_2009_238",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nisr_2009_238/4dd23e64d1": {
+    "effect": {
+      "affected_extent": "N.I.",
+      "affected_provisions": "Sch. 3 Pt. II para. 1n3",
+      "affected_refs": [
+        "schedule-3-part-II",
+        "schedule-3-part-II-paragraph-1n3"
+      ],
+      "affecting": "UK_nisr_2009_238",
+      "affecting_provisions": "reg. 1",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "date": "2009-07-27",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2009-07-27",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "coming into force"
     },
     "law": "UK_nisr_2009_238",
     "order": [],
@@ -19680,6 +19842,138 @@
     "rows": [],
     "xml_ids": {}
   },
+  "UK_nisr_2009_238/5b5c1feac9": {
+    "effect": {
+      "affected_extent": "N.I.",
+      "affected_provisions": "Sch. 3 Pt. II para. 4n2",
+      "affected_refs": [
+        "schedule-3-part-II",
+        "schedule-3-part-II-paragraph-4n2"
+      ],
+      "affecting": "UK_nisr_2009_238",
+      "affecting_provisions": "reg. 1",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "date": "2009-07-27",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2009-07-27",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "coming into force"
+    },
+    "law": "UK_nisr_2009_238",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nisr_2009_238/5ca418767d": {
+    "effect": {
+      "affected_extent": "N.I.",
+      "affected_provisions": "Sch. 3 Pt. II para. 5n3",
+      "affected_refs": [
+        "schedule-3-part-II",
+        "schedule-3-part-II-paragraph-5n3"
+      ],
+      "affecting": "UK_nisr_2009_238",
+      "affecting_provisions": "reg. 1",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "date": "2009-07-27",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2009-07-27",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "coming into force"
+    },
+    "law": "UK_nisr_2009_238",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nisr_2009_238/60e18ee502": {
+    "effect": {
+      "affected_extent": "N.I.",
+      "affected_provisions": "Sch. 3 Pt. II para. 2n3",
+      "affected_refs": [
+        "schedule-3-part-II",
+        "schedule-3-part-II-paragraph-2n3"
+      ],
+      "affecting": "UK_nisr_2009_238",
+      "affecting_provisions": "reg. 1",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "date": "2009-07-27",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2009-07-27",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "coming into force"
+    },
+    "law": "UK_nisr_2009_238",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nisr_2009_238/822c9dfdb4": {
+    "effect": {
+      "affected_extent": "N.I.",
+      "affected_provisions": "Sch. 3 Pt. II para. 6n3",
+      "affected_refs": [
+        "schedule-3-part-II",
+        "schedule-3-part-II-paragraph-6n3"
+      ],
+      "affecting": "UK_nisr_2009_238",
+      "affecting_provisions": "reg. 1",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "date": "2009-07-27",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2009-07-27",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "coming into force"
+    },
+    "law": "UK_nisr_2009_238",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
   "UK_nisr_2009_238/92cd455c3c": {
     "effect": {
       "affected_extent": "N.I.",
@@ -19687,6 +19981,204 @@
       "affected_refs": [
         "schedule-3",
         "schedule-3-paragraph-1.1"
+      ],
+      "affecting": "UK_nisr_2009_238",
+      "affecting_provisions": "reg. 1",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "date": "2009-07-27",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2009-07-27",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "coming into force"
+    },
+    "law": "UK_nisr_2009_238",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nisr_2009_238/a72d29f334": {
+    "effect": {
+      "affected_extent": "N.I.",
+      "affected_provisions": "Sch. 3 Pt. II para. 3n3",
+      "affected_refs": [
+        "schedule-3-part-II",
+        "schedule-3-part-II-paragraph-3n3"
+      ],
+      "affecting": "UK_nisr_2009_238",
+      "affecting_provisions": "reg. 1",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "date": "2009-07-27",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2009-07-27",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "coming into force"
+    },
+    "law": "UK_nisr_2009_238",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nisr_2009_238/affe8aa361": {
+    "effect": {
+      "affected_extent": "N.I.",
+      "affected_provisions": "Sch. 3 Pt. II para. 1n2",
+      "affected_refs": [
+        "schedule-3-part-II",
+        "schedule-3-part-II-paragraph-1n2"
+      ],
+      "affecting": "UK_nisr_2009_238",
+      "affecting_provisions": "reg. 1",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "date": "2009-07-27",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2009-07-27",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "coming into force"
+    },
+    "law": "UK_nisr_2009_238",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nisr_2009_238/b5a072a863": {
+    "effect": {
+      "affected_extent": "N.I.",
+      "affected_provisions": "Sch. 3 Pt. II para. 5n2",
+      "affected_refs": [
+        "schedule-3-part-II",
+        "schedule-3-part-II-paragraph-5n2"
+      ],
+      "affecting": "UK_nisr_2009_238",
+      "affecting_provisions": "reg. 1",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "date": "2009-07-27",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2009-07-27",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "coming into force"
+    },
+    "law": "UK_nisr_2009_238",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nisr_2009_238/ce9398c9f6": {
+    "effect": {
+      "affected_extent": "N.I.",
+      "affected_provisions": "Sch. 3 Pt. II para. 4n3",
+      "affected_refs": [
+        "schedule-3-part-II",
+        "schedule-3-part-II-paragraph-4n3"
+      ],
+      "affecting": "UK_nisr_2009_238",
+      "affecting_provisions": "reg. 1",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "date": "2009-07-27",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2009-07-27",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "coming into force"
+    },
+    "law": "UK_nisr_2009_238",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nisr_2009_238/d93e63481d": {
+    "effect": {
+      "affected_extent": "N.I.",
+      "affected_provisions": "Sch. 3 Pt. II para. 3n2",
+      "affected_refs": [
+        "schedule-3-part-II",
+        "schedule-3-part-II-paragraph-3n2"
+      ],
+      "affecting": "UK_nisr_2009_238",
+      "affecting_provisions": "reg. 1",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "date": "2009-07-27",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2009-07-27",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "coming into force"
+    },
+    "law": "UK_nisr_2009_238",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nisr_2009_238/fba122566d": {
+    "effect": {
+      "affected_extent": "N.I.",
+      "affected_provisions": "Sch. 3 Pt. II para. 6n2",
+      "affected_refs": [
+        "schedule-3-part-II",
+        "schedule-3-part-II-paragraph-6n2"
       ],
       "affecting": "UK_nisr_2009_238",
       "affecting_provisions": "reg. 1",
@@ -71031,6 +71523,38 @@
       "regulation-27": "reg.27"
     }
   },
+  "UK_uksi_1996_341/1fe41e2f5c": {
+    "effect": {
+      "affected_provisions": "Sch. 1 Pt. 2 para. 2.1",
+      "affected_refs": [
+        "schedule-1-part-II",
+        "schedule-1-part-II-paragraph-2.1"
+      ],
+      "affecting": "UK_uksi_2018_1370",
+      "affecting_provisions": "reg. 5(2)(a)",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "date": "2020-12-31",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2020-12-31",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "words substituted"
+    },
+    "law": "UK_uksi_1996_341",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
   "UK_uksi_1996_341/d0f0794234": {
     "effect": {
       "affected_provisions": "Sch. 1 Pt. 2 para. 3.2",
@@ -75161,6 +75685,43 @@
     "rows": [],
     "xml_ids": {}
   },
+  "UK_uksi_2015_596/4db4ae027f": {
+    "effect": {
+      "affected_extent": "E+W",
+      "affected_provisions": "Sch. 2 Pt. 1 para. A.4(2)(a)(iv)",
+      "affected_refs": [
+        "schedule-2-part-1",
+        "schedule-2-part-1-paragraph-A.4-2-a-iv"
+      ],
+      "affecting": "UK_uksi_2017_391",
+      "affecting_provisions": "art. 3(d)",
+      "applied": true,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": true,
+          "date": "2017-04-06",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2017-04-06",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "savings": [
+        "article-8"
+      ],
+      "type": "inserted"
+    },
+    "law": "UK_uksi_2015_596",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
   "UK_uksi_2015_596/5d1525e3b3": {
     "effect": {
       "affected_provisions": "Sch. 2 Pt. 16 para. A.2(1)(b)-(d)",
@@ -75195,6 +75756,40 @@
       "prospective": false,
       "requires_applied": true,
       "type": "substituted for Sch. 2 Pt. 16 para. A.2(1)(b)"
+    },
+    "law": "UK_uksi_2015_596",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_uksi_2015_596/784819a19c": {
+    "effect": {
+      "affected_extent": "E+W",
+      "affected_provisions": "Sch. 2 Pt. 1 para. B.4",
+      "affected_refs": [
+        "schedule-2-part-1",
+        "schedule-2-part-1-paragraph-B.4"
+      ],
+      "affecting": "UK_uksi_2020_632",
+      "affecting_provisions": "reg. 6(b)",
+      "applied": true,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": true,
+          "date": "2020-08-01",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2020-08-01",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "substituted"
     },
     "law": "UK_uksi_2015_596",
     "order": [],
@@ -75491,6 +76086,40 @@
     "rows": [],
     "xml_ids": {}
   },
+  "UK_uksi_2015_596/e619ce8825": {
+    "effect": {
+      "affected_extent": "E+W",
+      "affected_provisions": "Sch. 2 Pt. 1 para. A.1(j)(iii)",
+      "affected_refs": [
+        "schedule-2-part-1",
+        "schedule-2-part-1-paragraph-A.1-j-iii"
+      ],
+      "affecting": "UK_uksi_2020_632",
+      "affecting_provisions": "reg. 5(a)(i)",
+      "applied": true,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": true,
+          "date": "2020-08-01",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2020-08-01",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "word omitted"
+    },
+    "law": "UK_uksi_2015_596",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
   "UK_uksi_2015_596/eab90d8639": {
     "effect": {
       "affected_provisions": "Sch. 2 Pt. 14 Class B para. B.1(1)(b)(i)",
@@ -75523,6 +76152,40 @@
       ],
       "territorial_application": "E",
       "type": "words omitted"
+    },
+    "law": "UK_uksi_2015_596",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_uksi_2015_596/ff453a6738": {
+    "effect": {
+      "affected_provisions": "Sch. 2 Pt. 1 para. B.1(f)",
+      "affected_refs": [
+        "schedule-2-part-1",
+        "schedule-2-part-1-paragraph-B.1-f"
+      ],
+      "affecting": "UK_uksi_2020_755",
+      "affecting_provisions": "art. 3(3)(a)",
+      "applied": true,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": true,
+          "date": "2020-08-31",
+          "prospective": false,
+          "qualification": "at 9.00 a.m."
+        }
+      ],
+      "in_force_date": "2020-08-31",
+      "in_force_qualification": "Other",
+      "in_force_qualifications": [
+        "at 9.00 a.m."
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "territorial_application": "E",
+      "type": "word omitted"
     },
     "law": "UK_uksi_2015_596",
     "order": [],
@@ -76441,6 +77104,39 @@
       "type": "words inserted"
     },
     "law": "UK_uksi_2020_312",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_uksi_2020_41/187391657f": {
+    "effect": {
+      "affected_extent": "E+W",
+      "affected_provisions": "Sch. Pt. 1 para. wrapper1n2",
+      "affected_refs": [
+        "schedule-part-1",
+        "schedule-part-1-paragraph-wrapper1n2"
+      ],
+      "affecting": "UK_uksi_2020_41",
+      "affecting_provisions": "reg. 1(1)",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "date": "2020-02-11",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2020-02-11",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "coming into force"
+    },
+    "law": "UK_uksi_2020_41",
     "order": [],
     "rows": [],
     "xml_ids": {}

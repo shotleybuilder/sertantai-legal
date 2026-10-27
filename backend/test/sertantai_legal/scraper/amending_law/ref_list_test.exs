@@ -101,4 +101,20 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefListTest do
     # (never another law's Schedule)
     assert RefList.parse("paragraph 3 of the Schedule to the Health Act 2006") == []
   end
+
+  describe "a paragraph in a Schedule's Part: the triple (Jason 2026-10-27)" do
+    test "read from the text" do
+      assert RefList.parse("paragraphs 11, 12, 18 and 19 of Part I of Schedule 25") ==
+               ~w[sch.25.pt.I.para.11 sch.25.pt.I.para.12 sch.25.pt.I.para.18 sch.25.pt.I.para.19]
+    end
+
+    test "a citation without its Part names the same paragraph, and the reverse" do
+      assert RefList.covers?("sch.4.para.3", "sch.4.pt.2.para.3")
+      assert RefList.covers?("sch.4.pt.2.para.3", "sch.4.para.3")
+      assert RefList.covers?("sch.4.para.1..sch.4.para.5", "sch.4.pt.2.para.3(1)")
+      assert RefList.covers?("sch.4.pt.2", "sch.4.pt.2.para.3")
+      refute RefList.covers?("sch.4.pt.1.para.3", "sch.4.pt.2.para.3")
+      refute RefList.covers?("sch.4.pt.1", "sch.4.pt.2.para.3")
+    end
+  end
 end
