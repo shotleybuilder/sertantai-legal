@@ -1,0 +1,32 @@
+{
+  "misread_plain": {
+    "shapes": 33,
+    "items": 479,
+    "one_law_shapes": 18
+  },
+  "misread_qualified": {
+    "shapes": 273,
+    "items": 335,
+    "one_law_shapes": 255
+  },
+  "read_qualified": {
+    "shapes": 108,
+    "items": 180,
+    "one_law_shapes": 94
+  },
+  "in_unread": {
+    "shapes": 1145,
+    "items": 1637,
+    "one_law_shapes": 1055
+  },
+  "skip": {
+    "shapes": 83,
+    "items": 472,
+    "one_law_shapes": 58
+  },
+  "not_list": {
+    "shapes": 471,
+    "items": 655,
+    "one_law_shapes": 439
+  }
+}
