@@ -120,9 +120,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Forms do
   # "This Act, except— (a) …; and (b) …, does not extend to Northern Ireland"
   # (also "This Act, except this section and the following provisions,
   # namely— …, does not extend to Northern Ireland": Gas Act 1986 s.68(6),
-  # CV-S05 D)
+  # CV-S05 D) — within one subsection, never a commencement's "This Act,
+  # except— (a) …, shall come into force" run on to a later "… do not
+  # extend to Scotland" (ukpga 2002/30 s.108(2), (10): round 9 agent NEW-1)
   @except_list Regex.compile!(
-                 "#{@subject},\\s*except\\s*(?:for\\s*)?(?<self>this\\s+section\\s+and\\s+)?(?:the\\s+following\\s+provisions\\s*,?\\s*(?:namely|that\\s+is\\s+to\\s+say)?\\s*,?\\s*)?[—–:]\\s*(?<items>.+?),\\s*(?:does|do|shall)\\s+not\\s+extend\\s+to\\s+(?<places>#{@place_list})",
+                 "#{@subject},\\s*except\\s*(?:for\\s*)?(?<self>this\\s+section\\s+and\\s+)?(?:the\\s+following\\s+provisions\\s*,?\\s*(?:namely|that\\s+is\\s+to\\s+say)?\\s*,?\\s*)?[—–:]\\s*(?<items>(?:(?!(?-i:\\.\\s*\\d+[A-Z]?\\s+[A-Z(]))(?!\\bcome\\s+into\\s+force\\b).)+?),\\s*(?:does|do|shall)\\s+not\\s+extend\\s+to\\s+(?<places>#{@place_list})",
                  "isu"
                )
   # "Part III, except section 75 and Schedule 7, does not extend to Scotland"

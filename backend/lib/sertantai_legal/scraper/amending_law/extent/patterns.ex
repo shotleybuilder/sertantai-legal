@@ -43,6 +43,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
     Credit,
     Excepted,
     Excepting,
+    MakesFollowing,
+    Named,
     Same,
     Units
   }
@@ -190,6 +192,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
       # (`Excepting`, CV-S05 round 9)
       lead = Excepting.lead(s, ref, doc) ->
         {lead_class(lead, s, ref, doc, e), default_seen?}
+
+      # "This Act extends to the United Kingdom so far as it makes the
+      # following provision— (a) …" (`MakesFollowing`); "Part 2 …,
+      # excluding section 35 but including …, extends to …" (`Named`;
+      # round 10)
+      list = MakesFollowing.list(s, ref, doc) || Named.excluding_list(s, ref, doc) ->
+        {kind, place, _} = list
+        {if(list in e.lists, do: "list:#{kind}:#{place}", else: "unread:list"), default_seen?}
 
       in_clause? and match?({:default, _}, statement) ->
         {:default, d} = statement

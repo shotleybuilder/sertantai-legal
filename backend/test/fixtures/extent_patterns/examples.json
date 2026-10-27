@@ -2904,6 +2904,11 @@
     "ref": "s.87",
     "sentence": "The following provisions of this Act extend to Northern Ireland—a so much of section 46 as amends section 21(3) of the Pensions Act 1995;b sections 57 to 61 (except section 60(5));c section 73;d sections 78 to 81;e in Schedule 3, paragraphs 8 and 9, and in paragraph 11, sub-paragraph (2) (and sub-paragraph (1) so far as it relates to that sub-paragraph);f paragraph 6 of Schedule 5; andg this Part, except—i sections 82 and 83 and Schedule 8; andii so much of this Part as gives effect to any repeal other than the repeals mentioned in subsection (3)."
   },
+  "UK_ukpga_2000_2/1bd51ad4dc": {
+    "law": "UK_ukpga_2000_2",
+    "ref": "s.17",
+    "sentence": "The following provisions extend only to Northern Ireland—a Schedule 3,b paragraphs 13 to 17 of Schedule 6, andc Part III of Schedule 7."
+  },
   "UK_ukpga_2000_2/2123e829e7": {
     "law": "UK_ukpga_2000_2",
     "ref": "s.17",
@@ -3118,11 +3123,6 @@
     "law": "UK_ukpga_2002_30",
     "ref": "s.108",
     "sentence": "Subject to subsection (10), this Act, so far as it amends or repeals any enactment (other than one that extends to England and Wales only), has the same extent as the enactment amended or repealed."
-  },
-  "UK_ukpga_2002_30/060a0e1508": {
-    "law": "UK_ukpga_2002_30",
-    "ref": "s.108",
-    "sentence": "Subject to subsections (7) to (9), this Act extends to England and Wales only."
   },
   "UK_ukpga_2002_30/27d802900e": {
     "law": "UK_ukpga_2002_30",
@@ -3379,11 +3379,6 @@
     "ref": "s.262",
     "sentence": "Schedule 29 extends to Northern Ireland only."
   },
-  "UK_ukpga_2004_33/c1db7c7665": {
-    "law": "UK_ukpga_2004_33",
-    "ref": "s.262",
-    "sentence": "In Part 5 (civil partnerships formed or dissolved abroad etc.)—a sections 220 to 224 extend to England and Wales only;b sections 225 to 227 extend to Scotland only;c sections 228 to 232 extend to Northern Ireland only."
-  },
   "UK_ukpga_2004_33/d3d7615490": {
     "law": "UK_ukpga_2004_33",
     "ref": "s.262",
@@ -3554,11 +3549,6 @@
     "ref": "s.94",
     "sentence": "But—a section 82 extends only to Northern Ireland, andb except as provided by subsection (3), an amendment of an enactment by this Act shall have the same extent as the enactment amended (or as the relevant part of the enactment amended)."
   },
-  "UK_ukpga_2006_32/07fab982c3": {
-    "law": "UK_ukpga_2006_32",
-    "ref": "s.165",
-    "sentence": "The following provisions— section 36(7) to (9), section 39, and section 40(2) and (3), extend only to England and Wales."
-  },
   "UK_ukpga_2006_34/f388eeda22": {
     "law": "UK_ukpga_2006_34",
     "ref": "s.14",
@@ -3654,15 +3644,15 @@
     "ref": "s.62",
     "sentence": "Section 11(3) and Schedule 4, section 16 and section 51 extend only to England and Wales and Scotland."
   },
-  "UK_ukpga_2006_51/3cb0ab2eec": {
-    "law": "UK_ukpga_2006_51",
-    "ref": "s.34",
-    "sentence": "In section 31—a subsections (1) and (2) extend to England and Wales only;b subsection (3) extends to Northern Ireland only."
-  },
   "UK_ukpga_2006_51/6a57a93b49": {
     "law": "UK_ukpga_2006_51",
     "ref": "s.34",
     "sentence": "An order under Part 1 which amends or repeals any enactment extending outside England and Wales, Scotland and Northern Ireland may have the same extent as that enactment."
+  },
+  "UK_ukpga_2006_51/6dd1de2008": {
+    "law": "UK_ukpga_2006_51",
+    "ref": "s.34",
+    "sentence": "— a section 31(1) and (2) extend to England and Wales only;b section 31(3) extends to Northern Ireland only."
   },
   "UK_ukpga_2007_15/35583911ed": {
     "law": "UK_ukpga_2007_15",
@@ -4489,10 +4479,10 @@
     "ref": "s.182",
     "sentence": "The following provisions extend to England and Wales and Scotland (but not to Northern Ireland)—a section 6, so far as relating to paragraphs 11, 14, 20 to 22, 33, 35, 52, 55, 59 to 66, 72 to 75, 80 and 85 of Schedule 1, and those paragraphs;b section 7(8);c section 8(5) and (8);d section 9(3), so far as relating to paragraphs 30, 31, 33, 34, 48, 50, 74, 77, 80, 84 to 91, 99, 106 and 116 of Schedule 2, and those paragraphs;e section 29(8), so far as relating to paragraphs 6 to 14 of Schedule 7, and those paragraphs;f section 33(9), so far as relating to paragraphs 62 and 72 of Schedule 9, and those paragraphs;g section 39;h section 45, so far as relating to paragraphs 8, 12 and 17 of Schedule 12, and those paragraphs;i section 46(10), so far as relating to paragraphs 4 and 6 of Schedule 13, and those paragraphs;j section 49;k section 51, so far as relating to paragraphs (a), (b) and (d) of paragraph 7 of Schedule 14, and those paragraphs;l sections 84(2) to (5), 86 to 92 and 95;m sections 96(2) to (7), 98 to 104 and 106;n section 123;o sections 125 to 133."
   },
-  "UK_ukpga_2017_30/11c108374f": {
+  "UK_ukpga_2017_30/ccb0e6b80e": {
     "law": "UK_ukpga_2017_30",
     "ref": "s.119",
-    "sentence": "In section 46—a subsections (4) and (5) (and, so far as it relates to them, subsection (2)) of the new section 19AB inserted in the Registration Service Act 1953 extend to England and Wales, Scotland and Northern Ireland, butb subject to that, the amendments and repeals made to that Act extend to England and Wales only."
+    "sentence": "— a section 46(4) and (5) (and, so far as it relates to them, section 46(2)) of the new section 19AB inserted in the Registration Service Act 1953 extend to England and Wales, Scotland and Northern Ireland, butb subject to that, the amendments and repeals made to that Act extend to England and Wales only."
   },
   "UK_ukpga_2019_3/aacc22b9c8": {
     "law": "UK_ukpga_2019_3",
@@ -5474,6 +5464,11 @@
     "ref": "reg.1",
     "sentence": "The extent of any amendment or repeal commenced by article 6 is the same as the extent of the enactment amended or repealed, but does not apply in relation to Wales."
   },
+  "UK_uksi_2010_708/31e8875f74": {
+    "law": "UK_uksi_2010_708",
+    "ref": "reg.1",
+    "sentence": "As regards article 3— a paragraph (a) extends to England and Wales and Scotland only; and b paragraphs (b) to (d) extend to England and Wales only."
+  },
   "UK_uksi_2010_708/96417e6244": {
     "law": "UK_uksi_2010_708",
     "ref": "reg.1",
@@ -5699,15 +5694,15 @@
     "ref": "reg.3",
     "sentence": "The amendments made by Schedule 2 have the same extent as the provisions which they amend, except that the amendments made by paragraphs 11 to 13 of Schedule 2 extend to Scotland only."
   },
+  "UK_uksi_2014_469/3d4395fa1c": {
+    "law": "UK_uksi_2014_469",
+    "ref": "reg.3",
+    "sentence": "The amendments made by Schedule 3 have the same extent as the provisions which they amend, except that—a the amendments made by paragraphs 164 to 176 of Schedule 3, in so far as they make provision for ONR inquiries, extend to England and Wales, Scotland and Northern Ireland;b the amendments made by paragraph 178 of Schedule 3, extend to Scotland only;c the amendments made by paragraphs 182(2) and (4) and 187 to 189 of Schedule 3 apply in relation to England only;d the amendments made by paragraph 182(3) and (5) of Schedule 3 apply in relation to Wales only."
+  },
   "UK_uksi_2014_469/bb457dd211": {
     "law": "UK_uksi_2014_469",
     "ref": "reg.7",
     "sentence": "This article makes transitional modifications to the 1965 Act, the 2001 Act and the 2013 Act as they apply to England and Wales."
-  },
-  "UK_uksi_2014_469/e198f3c155": {
-    "law": "UK_uksi_2014_469",
-    "ref": "reg.3",
-    "sentence": "The amendments made by Schedule 3 have the same extent as the provisions which they amend, except that—a the amendments made by paragraphs 164 to 176 of Schedule 3, in so far as they make provision for ONR inquiries, extend to England and Wales, Scotland and Northern Ireland;b the amendments made by paragraph 178 of Schedule 3, extend to Scotland only;c the amendments made by paragraphs 182(2) and (4) and 187 to 189 of Schedule 3 apply in relation to England only;d the amendments made by paragraph 182(3) and (5) apply in relation to Wales only."
   },
   "UK_uksi_2014_469/f4daf7e52a": {
     "law": "UK_uksi_2014_469",

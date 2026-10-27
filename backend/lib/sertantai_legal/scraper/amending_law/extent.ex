@@ -37,6 +37,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
     Forms,
     Lists,
     Lookup,
+    MakesFollowing,
     Named,
     Rows,
     Same,
@@ -127,6 +128,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
            Lists.part_not(sections, doc) ++
            Named.named(unit_sentences, doc) ++
            Excepting.leads(unit_sentences, doc) ++
+           MakesFollowing.lists(unit_sentences, doc) ++
            Same.amendments_same(unit_sentences, doc) ++
            Amends.amends(unit_sentences, doc) ++
            Excepted.excepted(unit_sentences, doc) ++

@@ -16,16 +16,52 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Named do
   @doc "Named provisions' own extent, from the unit sentences (`Units.unit_sentences/1`)."
   @spec named([{String.t(), String.t()}], Doc.t()) :: [{atom(), String.t() | nil, [String.t()]}]
   def named(unit_sentences, doc) do
-    for {ref, s} <- unit_sentences,
-        not Regex.match?(Forms.heading(), s),
-        not Regex.match?(Forms.part_not(), s),
-        m = Regex.named_captures(Forms.named(), s),
-        m != nil,
-        plain_named?(m, s),
-        subj = described_out(m["subj"]),
-        refs = Enum.uniq(RefList.parse(subj, ref) ++ Parts.parts(subj, doc, ref)),
-        refs != [],
-        do: {named_kind(m), Places.places(m["places"]), refs}
+    for(
+      {ref, s} <- unit_sentences,
+      not Regex.match?(Forms.heading(), s),
+      not Regex.match?(Forms.part_not(), s),
+      m = Regex.named_captures(Forms.named(), s),
+      m != nil,
+      plain_named?(m, s),
+      subj = described_out(m["subj"]),
+      refs = Enum.uniq(RefList.parse(subj, ref) ++ Parts.parts(subj, doc, ref)),
+      refs != [],
+      do: {named_kind(m), Places.places(m["places"]), refs}
+    ) ++ excluding(unit_sentences, doc)
+  end
+
+  # "Part 2 (civil partnership: England and Wales), excluding section 35
+  # but including Schedules 1 to 9, extends to England and Wales only"
+  # (Civil Partnership Act 2004 s.262(1), CV-S05 round 10): the Part, less
+  # what it excludes, with what it includes
+  @excluding Regex.compile!(
+               "^\\s*(?<main>(?:Parts?|Chapters?|Schedules?|Sections?)\\s+[^,;]+?)\\s*,\\s*excluding\\s+(?<ex>[^,;]+?)(?:\\s+but\\s+including\\s+(?<inc>[^,;]+?))?\\s*,\\s*(?:shall\\s+)?extends?\\s+(?<only>only\\s+)?to\\s+(?<places>(?>#{Places.place_list()}))(?<only2>\\s+only)?\\s*\\.?\\s*$",
+               "u"
+             )
+
+  defp excluding(unit_sentences, doc) do
+    for {ref, s} <- unit_sentences, l = excluding_list(s, ref, doc), l != nil, uniq: true, do: l
+  end
+
+  @doc "The list \"X, excluding A but including B, extends to P\" states, or nil."
+  @spec excluding_list(String.t(), String.t(), Doc.t()) ::
+          {atom(), String.t(), [String.t()]} | nil
+  def excluding_list(s, ref, doc) do
+    with %{} = m <- Regex.named_captures(@excluding, s),
+         false <- Regex.match?(~r/\b(?:so\s+far|in\s+so\s+far|insofar|which|except)\b/iu, s),
+         [_ | _] = ex <- RefList.parse(m["ex"], ref) ++ Parts.parts(m["ex"], doc, ref),
+         inc = RefList.parse(m["inc"], ref) ++ Parts.parts(m["inc"], doc, ref),
+         main = described_out(m["main"]),
+         [_ | _] = refs <-
+           Enum.reject(
+             Enum.uniq(RefList.parse(main, ref) ++ Parts.parts(main, doc, ref)),
+             fn r -> Enum.any?(ex, &(&1 == r or RefList.covers?(&1, r))) end
+           ) do
+      kind = if m["only"] != "" or m["only2"] != "", do: :only, else: :named
+      {kind, Places.places(m["places"]), Enum.uniq(refs ++ inc)}
+    else
+      _ -> nil
+    end
   end
 
   @doc """
