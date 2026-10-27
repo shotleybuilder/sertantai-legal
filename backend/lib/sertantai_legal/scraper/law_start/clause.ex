@@ -268,6 +268,15 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
     end
   end
 
+  @doc """
+  Whether a sentence states a commencement ("The following provisions come
+  into force …"), not only mentions one (`mention?/1`): for other readers to
+  leave it to the commencement ruleset (the extent reader's statements, CV-S05
+  round 13).
+  """
+  @spec commences?(String.t()) :: boolean()
+  def commences?(sentence), do: Regex.match?(@first_cif, sentence) and not mention?(sentence)
+
   @doc "Whether a sentence is a clause commencing the whole instrument."
   @spec general?(String.t()) :: boolean()
   def general?(sentence), do: Enum.any?(@general, &Regex.match?(&1, sentence))

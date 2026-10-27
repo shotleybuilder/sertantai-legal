@@ -5,6 +5,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Statements do
   clause of a compound, and each item's own compound. Pure.
   """
 
+  alias SertantaiLegal.Scraper.LawStart.Clause
+
   # (a Chapter, and "the amendments made by …": items of "In Part 3— (i)
   # Chapter 1 extends to …", "— (a) the amendments made by paragraph 9(3)
   # of Schedule 12 extend to …", CV-S05 round 6)
@@ -38,7 +40,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Statements do
     # into force …— (a) sections 35 to 38 so far as they extend to
     # Scotland; …", ukpga 2006/48 s.53(4), round 13 seed 19)
     items =
-      if s =~ ~r/[—–]/u and not (s =~ ~r/^[^—–]*\bcome\s+into\s+force\b/iu) do
+      if s =~ ~r/[—–]/u and not Clause.commences?(s |> String.split(~r/[—–]/u, parts: 2) |> hd()) do
         # (items run in after a comma too, where each states its own
         # extent: never "(a) sections 1 to 3, … and (b) Schedules 1 and 2
         # …, shall extend to Northern Ireland only", 1975/59 s.14)
