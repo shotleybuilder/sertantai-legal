@@ -1,6 +1,6 @@
 ---
 session: 'CV-S05: Extent and Application Reader'
-status: suspended
+status: active
 release: v0.1
 opened: '2026-10-22'
 bugs:
@@ -229,7 +229,7 @@ bugs:
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
 ---
 
-# Session: CV-S05: Extent and Application Reader (SUSPENDED)
+# Session: CV-S05: Extent and Application Reader (ACTIVE)
 
 > **Suspended 2026-10-27** (Jason: "make the sub session active and suspend this one"): for CV-S05b List shape audit, which finds the technique that counts list misreads across the corpus. Resume with: the pass-bar decision (below), then round 11 from CV-S05b's ranked shapes plus round 10's NEW-1. (CV-S05b, a technique-choice session, was a path not followed and was deleted on 2026-10-27; the work went to CV-S05c Shape Mining, closed.)
 
@@ -266,7 +266,7 @@ The session does not close until its results pass.
 - ✅ Amendment reader full read pass after round 9 (Jason 2026-10-27: "Push. Do 1. Run round 10."): pushed `bf9cfc46..605fe46f`; restore point `cv-s05-before-round9-read`; 2,102 laws, 9 changed (rules 43,623 → 43,678), traced
 - ✅ Round 10 [`56f98e86`]: round 9's NEW-1 (2002/30 s.108) and the agent's side readings; the runs (check PASS, golden 27/27); agent round 10 seed 15 — see below
 - ✅ CV-S05c Shape Mining (CLOSED 2026-10-27): census of all extent sentences (`backend/data/experiments/cv-s05c-shape-mining/run-01/`); classes A–F and the 'this paragraph' rule logged as open bugs in CV-S05c, for round 11
-- ⬜ Pass bar for the agent check: Jason to decide (see "Pass bar: question for Jason")
+- ✅ Pass bar for the agent check: decided 2026-10-27 (see "Pass bar: decided")
 - ⬜ Round 11: CV-S05c's classes by count (A: "In Part N— (a) … (b) …" only (a) read, 6 laws; B: item's own exception drops it, 8+3; C: plain refs dropped with a qualified companion, 4+1; D: trailing-qualified item not withheld, 4+2; E: one-offs, 7; F: excluded provisions held, 4 new; Schedule "this paragraph" own extent, ~12) with their laws as fixtures (`run-01/confirmed.md`, `overreach.md`, `unread_tail.md`); round 10's NEW-1 (lost lead "In Schedule N—", 9 laws); then re-run run-01's commands as run-02 and compare; then agent check against the agreed bar
 - ⬜ Deferred from CV-S05c: after round 11's run-02, decide whether the census earns a permanent read-only mix task (pure modules + tests)
 - ⬜ Fix until the check passes reliably; record the result
@@ -304,6 +304,29 @@ The pass above needs "the agent sample has no NEW defect". Over ten rounds, NEW 
 - **(d) By effect:** no wrong bound on any sampled change (rounds 9 and 10 had none). Law-level misreads that place no wrong bound are counted, not failing.
 
 Recommendation: (b), with (d)'s "no wrong bound on a sampled change" as a hard line.
+
+## Pass bar: decided (Jason 2026-10-27: "yes, resume CV-S05 and start round 11")
+
+A round passes when all three hold:
+1. **Census (run-02, CV-S05c's commands):** classes A–F are at zero in list sentences, apart from cases logged as known and counted.
+2. **Golden:** 27/27.
+3. **Agent sample:** no wrong bound on any sampled change. A new wording the reader withholds (unread, counted) is a known class, not a failure. A law-level misread that sets a wrong bound is NEW.
+
+(Option (b), counted first, with (d)'s hard line, made concrete by the census.)
+
+## Resumed (2026-10-27): round 11
+
+The work comes from CV-S05c (closed), whose run-01 evidence is in `backend/data/experiments/cv-s05c-shape-mining/run-01/`:
+- classes A–F (33 laws, with fixtures in `confirmed.md` and `overreach.md`);
+- the Schedule "this paragraph" own-extent rule (~12 laws, `unread_tail.md`);
+- round 10's NEW-1 (the lost lead "In Schedule N—", 9 laws).
+
+Method, as before:
+1. Write tests on each law's real wording.
+2. Make the fixes.
+3. Preview, then run once: catalogue, restore point, re-read, rebuild, golden, check.
+4. Run-02 census and compare with run-01.
+5. Agent check.
 
 ## Agreed (Jason 2026-10-24: "Agree, start with the catalogue")
 
