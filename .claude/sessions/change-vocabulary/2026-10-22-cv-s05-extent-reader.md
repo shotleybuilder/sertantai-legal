@@ -4,6 +4,12 @@ status: active
 release: v0.1
 opened: '2026-10-22'
 bugs:
+  - pattern: "Extent ListItems residuals after round 11 (census run-02): other-law test matches 'into the … Act' (no word boundary, 2009/23 s.314); a same-extent item with its own 'other than' unread (2015/7 s.56(2)(b)); 'section 113 (together with such of the other provisions of Part 7 …)' dropped (2008/4 s.152)"
+    category: extent
+    module: Extent.ListItems / Same
+    affected: 3
+    fix: "\\b on the other-law test; same-extent items through ItemExceptions; strip a 'together with such of …' bracket; round 12"
+    status: open
   - pattern: "Amendment reader target precision: \"of that subsection\" not resolved to the subsection named before; a nested list item's parent bracket (\"(f) in subsection (5)— (i) in paragraph (a)\") not carried; \"—shall be omitted; (i) the words …\" read as provision-level (1995/25 Sch. 22 para 30(6))"
     category: amendment
     module: Amendment.Reader.Targets / Clauses
@@ -1121,7 +1127,7 @@ Sample repeatable (two runs identical). Round 9's NEW-1 is gone. No sampled chan
   - SI 2013/235 art.1(5) unread `*` outranks art.1(4) same `*` (over-withheld).
 - Trend of NEW per round: 16, 11, 5, 5, 8, 3, 6, 6, 1, 3.
 
-## Round 11 fixes (2026-10-27), code not yet committed
+## Round 11 fixes (2026-10-27), code `e28dfe96`
 
 Tests: `round11_reads_test.exs`, 25 tests on each law's real wording, written red first.
 
@@ -1163,4 +1169,40 @@ Suites: extent and CV, 4,358 of 4,359 (that example).
 7. check;
 8. run-02 census against run-01;
 9. agent check against the pass bar.
+
+## Round 11 runs (2026-10-27, Jason: "VM closed, go ahead with the runs")
+
+1. **Catalogue** (9 min, cold): `--accept`, 3 new patterns. Examples reviewed:
+   - new examples, each checked in its text: 2025/18, 2008/4, 1999/9, 2003/39, 1989/29 (both stay safely unread), 2012/9 Sch.2 para 2 (read);
+   - the rest is example rotation;
+   - sweep: read forms 0.
+
+   By outcome against run-01: list 830 → 877, unread:provision_extent 294 → 251, not_read 308 → 305, in_clause 153 → 151.
+2. **Code** `e28dfe96` (hooks passed).
+3. **Restore point** `cv-s05-before-round11` (extent_rules, provision_changes, provision_change_claims); snapshots `r6b.claims10`, `r6b.rules10`.
+4. **Extents** (1 min): rules for 80 laws changed, 8,536 → 8,644 rows.
+5. **Rebuild and golden** (1½ min): **golden 27/27**.
+6. **Check:** **PASS**, our faults 0.
+   - Against round 10: bound:law 3,092 → 3,091, none:unread_statement 404 → 405; unread:provision_extent 100 → 78 (OH&S).
+   - **Claims** (against `r6b.claims10`): one law_text claim lost, none gained or changed.
+   - The lost claim is 1984/3 s.1(6AA), changed by 2009/23 s.306. It was E+W from the default only, because round 10 dropped Part 9 from s.323(2)'s same list. s.306 now reads `:same`, which is right.
+7. **Census run-02** (`backend/data/experiments/cv-s05c-shape-mining/run-02/`, `b06ad5cd`; run-01's scripts unchanged, formatted only):
+
+   | Measure | run-01 | run-02 |
+   |---|---|---|
+   | items read | 801 | 851 |
+   | withheld | 34 | 50 |
+   | not held (missing / unread / partial) | 69 / 25 / 2 | 13 / 16 / 4 |
+   | laws with drops | 33 | 10 |
+   | over-reach hits | 14 (5 real) | 4 (all known check limits) |
+
+   Of the 10 laws:
+   - 2 are known not-drops: 1975/21, 2019/696.
+   - 5 are artefacts of the per-item check, each traced with the reader right: 1986/50, 2000/19, 2004/20, 2020/21, 2009/23(4)(f). 2021/30 is an improvement: Sch.15 is now `same` only.
+   - **3 are real residuals, now known and counted:**
+     - (R1) 2009/23 s.323(2)(f)(iii), "section 314 (which inserts … into the Energy Act 2008)": the other-law test has no word boundary;
+     - (R2) 2015/7 s.56(2)(b), a same-extent item with its own "other than";
+     - (R3) 2008/4 s.152(c), "section 113 (together with such of the other provisions of Part 7 as relate to …)".
+   - **Pass bar 1 holds:** classes A–F are at zero, apart from the logged residuals.
+8. **Agent check:** next, on a new seed (16).
 
