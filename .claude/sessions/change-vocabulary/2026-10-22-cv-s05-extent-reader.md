@@ -263,6 +263,9 @@ The session does not close until its results pass.
 - ✅ Round 9 [`cac5e205`] (Jason 2026-10-26: "Round 9 for items 1 through 6"): round 8's NEW-1 to NEW-6 and the tooling gap; one misread NEW-1 exposed (FRSA 2004 s.63(2) qualified items) fixed in the round; the runs (check PASS, golden 27/27); agent round 9 seed 14 — see below
 - ✅ Amendment reader full read pass after round 9 (Jason 2026-10-27: "Push. Do 1. Run round 10."): pushed `bf9cfc46..605fe46f`; restore point `cv-s05-before-round9-read`; 2,102 laws, 9 changed (rules 43,623 → 43,678), traced
 - ✅ Round 10 [`56f98e86`]: round 9's NEW-1 (2002/30 s.108) and the agent's side readings; the runs (check PASS, golden 27/27); agent round 10 seed 15 — see below
+- ⬜ CV-S05b List shape audit (PENDING, Jason 2026-10-27): choose a technique that finds list misreads by count, build it, hand round 11 the ranked shapes
+- ⬜ Pass bar for the agent check: Jason to decide (see "Pass bar: question for Jason")
+- ⬜ Round 11: the audit's shapes by count, and round 10's NEW-1 (an "In Schedule N— … apply in relation to …" drop); then agent check against the agreed bar
 - ⬜ Fix until the check passes reliably; record the result
 
 ## Dependencies
@@ -288,6 +291,16 @@ Shaped on CV-S04's agreed approach and stopping rule. The unit is each OH&S amen
 5. **Golden all-pass, tests, repeatable** (the same seed gives the same sample).
 
 **Pass (CV-S04's stopping rule):** rows show our faults 0; golden is all-pass; the agent sample has no NEW defect, and every remaining gap sits in a counted pending class. Later families extend the catalogue.
+
+## Pass bar: question for Jason (2026-10-27)
+
+The pass above needs "the agent sample has no NEW defect". Over ten rounds, NEW per round has been 16, 11, 5, 5, 8, 3, 6, 6, 1, 3. Each round fixes its defects, and each fresh sample of 50 laws finds a few rarer wordings. With 3,000+ extent sentences, a bar of zero NEW per sample may never be met, even by a good reader. Options to decide:
+- **(a) Keep it:** zero NEW on a fresh seed.
+- **(b) Counted first:** after CV-S05b's audit, the agent's NEW may only be what the audit can't see, such as a dropped sentence or wrong data. Anything the audit counts is a known class with a count and goes on a fix list.
+- **(c) By rate:** misreads under an agreed rate (for example ≤ 1 law in 50) on two fresh seeds in a row, with no wrong bound on a sampled change.
+- **(d) By effect:** no wrong bound on any sampled change (rounds 9 and 10 had none). Law-level misreads that place no wrong bound are counted, not failing.
+
+Recommendation: (b), with (d)'s "no wrong bound on a sampled change" as a hard line.
 
 ## Agreed (Jason 2026-10-24: "Agree, start with the catalogue")
 
