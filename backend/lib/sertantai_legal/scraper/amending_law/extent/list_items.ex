@@ -48,6 +48,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
   # 1, and those paragraphs": the paragraphs plainly, the section qualified
   @and_those ~r/^(?<q>.+?),?\s+(?:so\s+far|in\s+so\s+far|insofar)\s+as\s+(?:it\s+|they\s+)?relat\w*\s+to\s+(?<obj>.+?),?\s+and\s+(?:those|that)\s+(?:paragraphs?|provisions?|Parts?|Schedules?|sections?)\s*\.?\s*$/iu
 
+  @qualifies_after ~r/^(?<plain>.+?)\s+and\s*,\s*(?:so\s+far|in\s+so\s+far|insofar)\s+as\s+[^,]*,\s*(?<q>.+)$/iu
+
   @doc """
   The items of a list body read: the provisions named (`refs`), those an
   item excepts from itself (`excepted`), and those withheld (`unread`: a
@@ -156,12 +158,18 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
   # provisions of Schedule 8 … so far as relating to …": ukpga 1991/22
   # s.169; 1973/32 s.58, round 11)
   defp qualified(main, clause_ref, doc) do
-    case Regex.match?(@qualifier, main) and pieces(main) do
-      [_, _ | _] = ps ->
-        rs = Enum.map(ps, &qualified_piece(&1, clause_ref, doc))
+    cond do
+      # ("Sections 1, 28, 29 and 55 and Schedule 1 and, so far as relating
+      # to those provisions, sections 59 to 61 and 65": the qualifier is
+      # what follows it, ukpga 2006/47 s.66; 1976/55 s.27(c), round 12)
+      m = Regex.named_captures(@qualifies_after, main) ->
+        %{refs: plain(m["plain"], clause_ref, doc), unread: withheld(m["q"], clause_ref, doc)}
+
+      Regex.match?(@qualifier, main) and match?([_, _ | _], pieces(main)) ->
+        rs = Enum.map(pieces(main), &qualified_piece(&1, clause_ref, doc))
         %{refs: Enum.flat_map(rs, & &1.refs), unread: Enum.flat_map(rs, & &1.unread)}
 
-      _ ->
+      true ->
         qualified_piece(main, clause_ref, doc)
     end
   end
@@ -191,8 +199,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
   end
 
   # a qualified item's own provisions, never what the qualifier names
+  # (the words before its qualifier: never the qualifier's object, "Section
+  # 126(3) and (4), so far as relating to paragraphs 5, 56 to 62 and 64 of
+  # Schedule 7", ukpga 2014/6 s.140, round 12)
   defp withheld(text, clause_ref, doc) do
-    text = String.replace(text, @qualifier_object, " ")
+    text = text |> String.split(@qualifier, parts: 2) |> hd()
 
     if other_law?(text), do: [], else: provisions(text, clause_ref, doc)
   end

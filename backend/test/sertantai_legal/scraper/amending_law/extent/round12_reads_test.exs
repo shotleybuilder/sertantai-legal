@@ -113,4 +113,77 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Round12ReadsTest do
     assert Extent.of(e, "s.57") == "E+W"
     assert unread?(e, "sch.24")
   end
+
+  test "\"X and, so far as relating to those provisions, Y also extend …\": Y qualified, X read (ukpga 2006/47 s.66)" do
+    e =
+      read(
+        "UK_ukpga_2006_47",
+        p1("section-1", "This Act extends to England and Wales and Scotland.") <>
+          p1(
+            "section-66",
+            "Sections 1, 28, 29 and 55 and Schedule 1 and, so far as relating to those provisions, sections 59 to 61 and 65 also extend to Northern Ireland."
+          )
+      )
+
+    assert {:also, "NI", refs} = Enum.find(e.lists, &match?({:also, "NI", _}, &1))
+    assert "s.1" in refs and "sch.1" in refs
+    refute "s.59..s.61" in refs
+    assert unread?(e, "s.65")
+  end
+
+  test "an exception list's items are never \"not\" statements of their own (ukpga 1976/55 s.27; 1995/45 s.18)" do
+    e =
+      read(
+        "UK_ukpga_1976_55",
+        p1(
+          "section-27",
+          "Except for the following provisions, namely—a sections ... 15, 26(1) and (2) and this section;b section 7 and Schedule 3 so far as they relate to enactments (within the meaning of that section) that extend to Northern Ireland; andc Part I of Schedule 4 and, so far as it relates to that Part, section 26(3), this Act does not extend to Northern Ireland."
+        )
+      )
+
+    refute Enum.any?(e.lists, &match?({:not, "NI", ["s.26(3)"]}, &1))
+
+    e =
+      read(
+        "UK_ukpga_1995_45",
+        p1(
+          "section-18",
+          "This Act, except—a this section;b subsections (1) to (6) of section 11;c paragraphs 1 to 3, 6, 7, 23 and 30 of Schedule 5 and section 17(1) and (2) so far as relating to those paragraphs; andd Schedule 6 and section 17(5) so far as relating to the repeals of paragraph 1 of Schedule 5 to the Fair Trading Act 1973, does not extend to Northern Ireland."
+        )
+      )
+
+    refute Enum.any?(e.lists, &match?({:not, "NI", ["sch.6"]}, &1))
+  end
+
+  test "a withheld subject never takes its qualifier's object (ukpga 2014/6 s.140)" do
+    e =
+      read(
+        "UK_ukpga_2014_6",
+        words([56, 126]) <>
+          p1(
+            "section-140",
+            "Section 126(3) and (4), so far as relating to paragraphs 5, 56 to 62 and 64 of Schedule 7, extends to Northern Ireland."
+          )
+      )
+
+    assert unread?(e, "s.126(3)")
+    refute unread?(e, "s.56")
+    refute unread?(e, "s.56..s.62")
+  end
+
+  test "an exception list's qualified item is no statement of its own (HSWA s.84(1))" do
+    e =
+      read(
+        "UK_ukpga_1974_37",
+        part("I", [1, 15]) <>
+          p1(
+            "section-84",
+            "This Act, except—a Part I and this Part so far as may be necessary to enable regulations under section 15 or 30 to be made and operate for the purpose mentioned in paragraph 2 of Schedule 3; andb paragraphs . . . 3 of Schedule 9, does not extend to Northern Ireland."
+          )
+      )
+
+    assert e.default == "E+W+S"
+    refute unread?(e, "s.15")
+    refute Enum.any?(e.lists, &match?({:not, "NI", _}, &1))
+  end
 end

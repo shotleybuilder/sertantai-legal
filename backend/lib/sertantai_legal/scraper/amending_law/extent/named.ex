@@ -34,10 +34,24 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Named do
   # Act, and Schedule 24 to this Act so far as relating to Part III,
   # extends to England and Wales only": Environment Act 1995 s.125(8),
   # round 12): its plain pieces read, the qualified withheld (`ListItems`)
-  @qualified_clause ~r/,?\s*(?:so\s+far|in\s+so\s+far|insofar)\s+as\s+[^,]*,?/iu
+  # (never across items: "This Act, except— (a) Part I … so far as may be
+  # necessary …; and (b) …, does not extend to Northern Ireland", HSWA
+  # s.84(1), is an exception list's item, not a statement)
+  @qualified_clause ~r/,?\s*(?:so\s+far|in\s+so\s+far|insofar)\s+as\s+[^,;—–]*,?/iu
 
+  # (whole sentences only, never an item split out of one: "This Act,
+  # except— … (d) Schedule 6 and section 17(5) so far as relating to …,
+  # does not extend to Northern Ireland" is an exception list, 1995/45 s.18;
+  # 1976/55 s.27)
   defp qualified(unit_sentences, doc) do
-    for {ref, s} <- unit_sentences,
+    whole =
+      Enum.reject(unit_sentences, fn {ref, s} ->
+        Enum.any?(unit_sentences, fn {r2, s2} ->
+          r2 == ref and s2 != s and String.contains?(s2, s)
+        end)
+      end)
+
+    for {ref, s} <- whole,
         not Regex.match?(Forms.heading(), s),
         not Regex.match?(Forms.part_not(), s),
         m = Regex.named_captures(Forms.named(), s),
