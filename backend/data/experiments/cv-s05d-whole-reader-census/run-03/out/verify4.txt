@@ -1,0 +1,12 @@
+S13 owner read whole | UK_ukpga_1995_45 default="E+W+S" | s.11(1)="E+W+S+NI"  s.11(7)="E+W+S+NI"
+S13 owner read whole | UK_ukpga_2016_12 default=nil | s.14(5)="E+W+S+NI"  s.14(1)="E+W+S+NI"
+S13 owner read whole | UK_uksi_2007_1843 default="E+W" | reg.5(28)="S"  reg.5(1)="S"
+S13 owner read whole | UK_ukpga_1980_51 default=nil | sch.25.para.11=nil  sch.25.para.1=nil
+S13 owner read whole | UK_ukpga_1977_38 default=nil | s.12="S"
+S1 except-for form | UK_ukpga_1982_49 default="E+W+S" | s.1="E+W+S"
+S1 except-for form | UK_ukpga_1991_65 default="E+W+S" | s.8="E+W+S"
+S1 except-for form | UK_ukpga_1973_26 default="E+W+S" | s.86="E+W+S"  sch.3="E+W+S"  s.88="E+W+S+NI"
+S6 two statements | UK_ukpga_1987_27 default="E+W+S" | s.42="E+W+S"  s.44="E+W+S"
+S6 verb in last item | UK_ukpga_1982_53 default=nil | s.3=nil  s.17=nil
+S2 sub-letters | UK_ukpga_1985_71 default=nil | sch.2.para.7(3)="S"  sch.2.para.7(1)="S"  sch.2.para.10="NI"
+S14 cease to apply | UK_ukpga_2013_27 | applies rows [{:applies, "E", ["s.61B(1)", "s.61B(2)", "s.61B(3)", "s.61B(4)", "s.61B(5)", "s.61B(6)", "s.61B(7)"]}]
