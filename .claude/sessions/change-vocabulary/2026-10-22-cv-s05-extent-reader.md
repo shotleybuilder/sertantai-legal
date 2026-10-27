@@ -1440,3 +1440,12 @@ Fresh reads: SOCPA Sch 10 para 8 NI; PJA Sch 1 para 40 UK; PJA Sch 14 para 17 sa
 - PJA 2006 s.1(3): E+W through "Parts 1 to 5 extend to England and Wales only" (explicit only outranks the withheld aside, by design).
 
 Acceptance run and seed 20 next.
+
+**Acceptance run for the seed 19 fixes:**
+- golden 27/27; extent, feed and markup checks PASS (our faults 0);
+- claims against `r6b.claims14`: 0 lost, 1 gained, right: HSWA s.34(1)(d) by SI 2016/1142 → E+W+NI (seed 19 change 22).
+- **Census:** silent 64 → 62. Unnamed 251 → 793 (53 laws). That rise is the finder: the reader now expands "Part N of Schedule M" to the Part's paragraphs, which the finder names only as the Part. Not reviewed.
+
+**Stopped here** (Jason 2026-10-27: "stop when the acceptance run is done"). Next:
+- census finder: name a Schedule Part's paragraphs as the reader does (expected to clear most of the new unnamed);
+- agent check, seed 20.
