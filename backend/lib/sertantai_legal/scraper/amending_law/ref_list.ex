@@ -11,6 +11,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
   A range is "s.a..s.b"; `covers?/2` tests a ref against an item. Pure.
   """
 
+  alias SertantaiLegal.Scraper.AmendingLaw.SubPath
+
   @doc "The refs a list names; `self` is \"this section\"'s (\"this article\", …) ref."
   @spec parse(String.t(), String.t() | nil) :: [String.t()]
   def parse(text, self \\ nil) do
@@ -84,37 +86,40 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
   end
 
   # "60 to 68, 70, 107(1) and (4), 26(7) to (10)": ranges as "x.60..x.68",
-  # subsections on the number before them, a subsection range spelt out
+  # subsections on the number before them, continuing its path at their own
+  # level ("2(1)(a) and (b)", "36(1), (2)(a), (b) and (d)", "(w)(i) and
+  # (ii)": `SubPath`, CV-S05 round 13 S2), a subsection range spelt out
   defp numbered(list, prefix) do
     list
     |> String.split(~r/\s*(?:,|\band\b)\s*/u, trim: true)
     |> Enum.reduce({[], nil}, fn piece, {acc, last} ->
       cond do
-        # "26(7) to (10)" → each subsection (CV-S05 N12)
-        m = Regex.run(~r/^(\d+[A-Z]*)\((\d+)\)\s+to\s+\((\d+)\)/, piece) ->
+        # "26(7) to (10)" → each subsection (CV-S05 N12); "8(2)(b) to (d)"
+        # → each lettered item (SI 2014/469 art.3(2)(b): CV-S05 round 6)
+        m = Regex.run(~r/^(\d+[A-Z]*)((?:\([^)]+\))+)\s+to\s+((?:\([^)]+\))+)\s*$/, piece) ->
           [_, n, a, b] = m
-
-          {acc ++
-             for(i <- String.to_integer(a)..String.to_integer(b)//1, do: "#{prefix}#{n}(#{i})"),
-           n}
-
-        # "8(2)(b) to (d)" → each lettered item (SI 2014/469 art.3(2)(b):
-        # CV-S05 round 6)
-        m = Regex.run(~r/^(\d+[A-Z]*)((?:\(\d+[A-Z]*\))*)\(([a-z])\)\s+to\s+\(([a-z])\)/, piece) ->
-          [_, n, subs, <<a>>, <<b>>] = m
-          {acc ++ for(c <- a..b//1, do: "#{prefix}#{n}#{subs}(#{<<c>>})"), n}
+          paths = SubPath.paths(a <> " to " <> b)
+          {acc ++ Enum.map(paths, &ref(prefix, n, &1)), {n, List.last(paths)}}
 
         m = Regex.run(~r/^(\d+[A-Z]*)(\([^)]+\))*\s+to\s+(\d+[A-Z]*)/, piece) ->
           [_, a | rest] = m
-          {acc ++ ["#{prefix}#{a}..#{prefix}#{List.last(rest)}"], a}
+          {acc ++ ["#{prefix}#{a}..#{prefix}#{List.last(rest)}"], {a, []}}
 
-        m = Regex.run(~r/^(\d+[A-Z]*)((?:\([^)]+\))*)/, piece) ->
-          [_, n, sub] = m
-          {acc ++ ["#{prefix}#{n}#{sub}"], n}
+        # (a short label after a space is the number's: "34 (f)", SI
+        # 2013/1506 reg.3(2); never a describing bracket)
+        m =
+            Regex.run(
+              ~r/^(\d+[A-Z]*)(?:((?:\([^)]+\))+)|\s((?:\((?:[a-z]{1,4}|\d+[A-Z]*)\))+))?/,
+              piece
+            ) ->
+          [n | subs] = tl(m)
+          path = SubPath.labels(Enum.join(subs))
+          {acc ++ [ref(prefix, n, path)], {n, path}}
 
         last && Regex.match?(~r/^\(/, piece) ->
-          [subs] = Regex.run(~r/^(?:\([^)]+\))+/, piece)
-          {acc ++ ["#{prefix}#{last}#{subs}"], last}
+          {n, path} = last
+          paths = SubPath.paths(piece, path)
+          {acc ++ Enum.map(paths, &ref(prefix, n, &1)), {n, List.last(paths, path)}}
 
         true ->
           {acc, last}
@@ -122,6 +127,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
     end)
     |> elem(0)
   end
+
+  defp ref(prefix, n, path), do: prefix <> n <> Enum.map_join(path, &"(#{&1})")
 
   @doc "Whether a list item (a ref or a range \"s.a..s.b\") names `ref` or contains it."
   @spec covers?(String.t(), String.t()) :: boolean()

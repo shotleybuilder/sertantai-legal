@@ -27,8 +27,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Applies do
   application). Pure.
   """
 
-  alias SertantaiLegal.Scraper.AmendingLaw.{Doc, RefList}
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Parts, Places, Units}
+  alias SertantaiLegal.Scraper.AmendingLaw.{Doc, RefList, SubPath}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{ListItems, Parts, Places, Units}
   alias SertantaiLegal.Scraper.Commencement.Order
   alias SertantaiLegal.Scraper.LawStart.Clause
 
@@ -129,6 +129,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Applies do
     refs =
       for item <- String.split(m["items"], ~r/;|[—–,]\s*(?:and\s*|or\s*)?\(?[a-z]\)?\s+/u),
           not (item =~ ~r/\b(?:so\s+far|in\s*so\s*far|to\s+the\s+extent)\b/iu),
+          # ("in regulation 16, paragraphs (4) and (5)": those paragraphs,
+          # SI 2020/818 reg.1A, round 13 S11)
+          item = ListItems.located(item),
           r <- RefList.parse(item, ref) ++ Parts.parts(item, doc, ref),
           uniq: true,
           do: r
@@ -166,7 +169,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Applies do
   end
 
   # "Subsections (4) to (8A)", "Sub-paragraph (3)", "Paragraph (1)": the
-  # provision's own
+  # provision's own, each path whole ("Subsection (2)(aa)", "Subsections
+  # (1A), (2)(b) and (2ZZA) to (2ZZC)": `SubPath`, CV-S05 round 13 S2)
   defp subsections(text, ref) do
     base = String.replace(ref, ~r/\(.*$/, "")
 
@@ -175,20 +179,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Applies do
             ~r/^\s*(?:Sub-?sections?|Sub-?paragraphs?|Paragraphs?)\s+((?:\(\w+\)(?:\s*(?:,|and|to|or)\s*)?)+)(?!\s*of\b)/iu,
             text
           ),
-        n <- numbers(list),
-        do: "#{base}(#{n})"
-  end
-
-  defp numbers(list) do
-    # ("(4) to (8A)": 4 to 8, and 8A)
-    case Regex.run(~r/^\((\d+)\)\s*to\s*\((\d+)([A-Z]*)\)\s*$/u, String.trim(list)) do
-      [_, a, b, suffix] ->
-        Enum.map(String.to_integer(a)..String.to_integer(b), &to_string/1) ++
-          if(suffix != "", do: [b <> suffix], else: [])
-
-      nil ->
-        for [_, n] <- Regex.scan(~r/\((\w+)\)/u, list), do: n
-    end
+        path <- SubPath.paths(list),
+        do: base <> Enum.map_join(path, &"(#{&1})")
   end
 
   # a Schedule (or a Part of one) whose paragraphs are units of their own

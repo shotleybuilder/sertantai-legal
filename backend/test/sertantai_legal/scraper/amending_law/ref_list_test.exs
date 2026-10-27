@@ -47,4 +47,35 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefListTest do
     assert RefList.parse("This Regulation, Regulation 2 and Regulations 8 to 11", "reg.1") ==
              ["reg.1", "reg.2", "reg.8..reg.11"]
   end
+
+  describe "sub-letter runs (CV-S05 round 13, S2: the CV-S05d census)" do
+    test "a letter after a lettered path keeps its parent (SI 2005/457 art.1, ukpga 1981/29 s.46)" do
+      assert RefList.parse("Article 2(1)(a) and (b)") == ["reg.2(1)(a)", "reg.2(1)(b)"]
+      assert RefList.parse("section 19(2)(a) and (b)") == ["s.19(2)(a)", "s.19(2)(b)"]
+    end
+
+    test "each level continued in turn (ukpga 1998/37 s.121)" do
+      assert RefList.parse("Sections 36(1), (2)(a), (b) and (d) and (6)(b) and section 118") ==
+               ["s.36(1)", "s.36(2)(a)", "s.36(2)(b)", "s.36(2)(d)", "s.36(6)(b)", "s.118"]
+    end
+
+    test "roman numerals under letters (SI 2024/437 reg.1, SI 2022/1273 reg.1)" do
+      assert RefList.parse("regulation 2(f), (g), (w)(i) and (ii) and (x)") ==
+               ["reg.2(f)", "reg.2(g)", "reg.2(w)(i)", "reg.2(w)(ii)", "reg.2(x)"]
+
+      assert RefList.parse(
+               "Regulations 4, 5, 62(6) and 72(2)(a)(ii) and (iii), (b)(i), (c)(ii) and (iii), and (d)(ii), (iii) and (iv)"
+             ) ==
+               ~w[reg.4 reg.5 reg.62(6) reg.72(2)(a)(ii) reg.72(2)(a)(iii) reg.72(2)(b)(i)
+                  reg.72(2)(c)(ii) reg.72(2)(c)(iii) reg.72(2)(d)(ii) reg.72(2)(d)(iii) reg.72(2)(d)(iv)]
+    end
+
+    test "a space before a short label: \"34 (f)\" (SI 2013/1506 reg.3(2))" do
+      assert RefList.parse("Regulations 1, 2(1), (4) and (5), 7, 33(2) and 34 (f)") ==
+               ~w[reg.1 reg.2(1) reg.2(4) reg.2(5) reg.7 reg.33(2) reg.34(f)]
+
+      # (never a describing bracket)
+      assert RefList.parse("section 5 (power to make regulations)") == ["s.5"]
+    end
+  end
 end
