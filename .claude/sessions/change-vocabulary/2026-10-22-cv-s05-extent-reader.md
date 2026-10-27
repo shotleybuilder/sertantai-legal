@@ -4,6 +4,12 @@ status: active
 release: v0.1
 opened: '2026-10-22'
 bugs:
+  - pattern: "Extent round 12 agent seed 17: Applies locator 'in regulation 16, paragraphs (4) and (5)' read as all of reg.16 (uksi 2020/818 reg.1A, wrong bound); '34 (f)' with a space read as reg.34 whole (uksi 2013/1506 reg.3(2), wrong bound); 'They apply in relation to— (a) England … (b) Wales' unread and uncounted (uksi 2016/1154 reg.1(3))"
+    category: extent
+    module: Extent.Applies / RefList / Application
+    affected: 3
+    fix: "locator in Applies as in ListItems; RefList joins 'N (f)'; application lettered places; round 13"
+    status: open
   - pattern: "Extent: a default sentence carrying lettered items before its 'save as aforesaid … extends to E+W only' (ukpga 1977/45 s.65(10)) is credited default; items (a) (c) (d) and part of (b) silently dropped — wrong bound on HSWA s.15(6)(d) (E+W, text E+W+S via s.63(2))"
     category: extent
     module: Extent.Default / Lists / Units
@@ -1270,4 +1276,27 @@ Tests: `round12_reads_test.exs`, 14 tests on the laws' real wording.
 - new default-sentence check: 23 sentences, 8 items, all class KX (an exception list's qualified item keeps the default, round 6 design) apart from 1972/71 s.64(2) (KQ, minor).
 
 **Pass bar 1 holds.** Skill updated with round 12's rules and classes KX and KQ. Agent check: seed 17.
+
+## Agent check, seed 17 (round 12): laws 42 OK / 5 doubtful / 3 WRONG (2 NEW + 1 known open); changes 49 OK / 1 doubtful — FAIL (3 NEW)
+
+The sample repeats; the prompt is the skill's (round 12 rules, KX, KQ). Each NEW was verified against the stored rows and the text. None touches a sampled change.
+
+- **NEW-1 (wrong bound): uksi 2020/818 reg.1A.** "The following provisions … do not apply in England and Wales or Scotland— (a) in regulation 16, paragraphs (4) and (5); (b) regulation 17; (c) in regulation 18, paragraphs (8)(b) and (9)."
+  - Stored: `applies_not E+W+S {reg.16, reg.16(5), reg.17, reg.18, reg.18(9)}`.
+  - The locator "in regulation 16, paragraphs (4) and (5)" is read as all of reg.16, and reg.16(4) and reg.18(8)(b) are missing.
+  - This is the `Applies` reader; round 11's locator rule covers lists only.
+- **NEW-2 (silent drop, no wrong bound): uksi 2016/1154 reg.1(3).** "They apply in relation to— (a) England and the sea adjacent to England …, and (b) Wales" is unread and uncounted; the sweep calls it `noise:procedure`. The E+W extent bounds every change.
+- **NEW-3 (wrong bound): uksi 2013/1506 reg.3(2).** "Regulations 1, 2(1), (4) and (5), 7, 33(2) and 34 (f) and Chapter 3 of Part 3 … shall extend to Northern Ireland."
+  - Stored: `named NI … reg.34`. The space in "34 (f)" loses the sub-letter, so reg.34(a)–(e) look up as UK (text: E+W+S).
+  - Also: reg.3(3) "In so far as regulations 4, 31, 32 and 38 apply to Chapter 3 of Part 3 …" withholds the object reg.19–29 (an over-withhold; the named NI outranks it).
+- **Known, open:** 2009/23 s.323 "Chapters 1 to 5 of Part 8 and section 295" holds s.293–294 (Chapter 6): R10 NEW-2's residual.
+- **Doubtful:**
+  - 1986/44 s.68(6): KX items' plain pieces keep E+W+S where the text gives UK. This questions the round 6 design for the plain pieces, and the law is missing from run-03's default check.
+  - 2007/15 s.147(2) "The other provisions of this Act extend only to England and Wales" is unread (counted).
+  - 2015/20 s.114(2): a comma list withheld whole (counted).
+  - 2001/10: `not NI` and `unread` both held.
+  - 1982/48: an object withheld.
+  - Change 28 is labelled unread_statement though its lookup is `same`.
+
+NEW per round: 16, 11, 5, 5, 8, 3, 6, 6, 1, 3, 1, 3.
 

@@ -211,6 +211,7 @@ OH&S (first family, 2026-10-24 →). The session is `.claude/sessions/change-voc
 | 9 | 14 | FAIL, 1 NEW — round 8's six fixed; changes 50/50 right; NEW-1 predates round 9: a commencement "This Act, except— …" read as the extent form across the section (ukpga 2002/30 s.108 default E+W+NI, text E+W), bounds still right (withheld) |
 | 10 | 15 | FAIL, 3 NEW — round 9's fixed; changes 50/50; an "In Schedule N— … apply in relation to England only" dropped; ukpga 2009/23 s.323 list items (unbracketed "other than", "in Chapter 1 of Part 6, sections …"); ukpga 2017/3 "(v) this Chapter" |
 | 11 | 16 | FAIL, 1 NEW (wrong bound) — census-led round (CV-S05c classes A–F; run-02 drops 33 → 10 laws, 3 residual); changes 50/50; ukpga 1977/45 s.65(10) "In this Act— (a) … (d) …, but save as aforesaid, this Act extends to E+W only": items dropped, HSWA s.15(6)(d) E+W (text E+W+S) |
+| 12 | 17 | FAIL, 3 NEW (2 wrong bounds, no sampled change) — census run-03 + default-sentence check; changes 49/50 (1 doubtful label); Applies locator "in regulation 16, paragraphs (4) and (5)" (uksi 2020/818); "34 (f)" (uksi 2013/1506); application "They apply in relation to— (a) England … (b) Wales" unread (uksi 2016/1154) |
 
 - Rounds 1–5's prompts lived only in conversation. Their known classes (K1–K10, then P1–P7) were not recorded; the classes above restate them from the session's findings (2026-10-26).
 - Round 6's design change: unread statements withhold their bound (`Extent.Unread`), so counted unread classes are known gaps.
