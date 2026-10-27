@@ -1461,6 +1461,10 @@ Acceptance run and seed 20 next.
 1. **Finder (CV-S05d), read-only, minutes.** Name a Schedule Part's paragraphs as the reader does. Re-run the census as run-05, and triage every silent and unnamed item to one of: known class, finder miss, doubtful, or real.
    - Done when nothing is untriaged.
    - Real items found here go to step 3, not to an agent.
+   - ✅ **Done 2026-10-27 (run-05, `cv-s05d…/run-05/out/triage.md`).**
+     - Unnamed refs: 793 → 320, all triaged. Silent sentences: 64, all triaged.
+     - 16 real wordings, R1–R16. R1 is a regression of the seed 19 fix: in uksi 2006/1407, "Paragraphs … of Part 1 of Schedule 1 to this Order apply in relation to England only" gives every paragraph of the Part. "to this Order apply" also sets the whole SI's application, an older `ApplicationClause.parse` prefix fault.
+     - Q1 goes to step 2.
 2. **Decide the residuals with Jason, one line each, fix or known class.** Recorded in the skill's known classes:
    - 2009/23 "Chapters 1 to 5 of Part 8" holding Chapter 6 (R10 residual);
    - 1986/44 KX plain pieces;

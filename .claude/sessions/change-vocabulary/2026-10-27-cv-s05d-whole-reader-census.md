@@ -51,6 +51,7 @@ Aim: census every sentence and every reader, checked independently of the reader
 - ✅ (run-02) Census rule: an "apply" statement whose place is qualified by "other than" / "except" / "any [thing] in", or names things or persons within a place, counts as scope (class KA, extract for fractalaw), not a reader candidate (run-02)
 - ✅ (run-02/03) Silent candidates and over-reach triaged by wording, S1–S17, each confirmed on a law with `Extent.of`; handed to CV-S05 round 13 (Jason 2026-10-27: "I don't need to look at the list - we should have a clear idea about what right looks like by now")
 - ✅ run-04 (`a75e80b8`): census after round 13 — silent 113 → 64, unnamed 358 → 234; the fix-list laws read as their text states; round 13's own regressions found and fixed before the final run
+- ✅ run-05 (CV-S05 strategy step 1): the finder names Schedule Parts as the reader does (unnamed 793 → 320); every silent and unnamed item triaged: R1–R16 real, Q1 for Jason (`run-05/out/triage.md`)
 - ✅ run-03: finder misses fixed; over-reach list reviewed in full; the fix list S1–S17 consolidated (`run-03/out/triage.md`)
 - ✅ run-01 stored; ⬜ Store each later run as evidence (`backend/data/experiments/cv-s05d-whole-reader-census/run-NN/`, as CV-S05c: manifest, scripts, input, outputs, README; scan for effect ids; commit by path in one step).
 - ⬜ If it earns its place, build it as a read-only mix task (pure modules and tests) to run every round.
@@ -139,3 +140,17 @@ Evidence: `backend/data/experiments/cv-s05d-whole-reader-census/run-03/` (README
 S1 gained 1991/65 and 1982/49. S6 gained 1973/26 (default E+W+S; the text gives E+W), 1987/27 and 1982/53.
 
 **Left:** about 15 finder misses and about 12 doubtful, listed in the triage. Round 13's re-run of this census (run-04) is its check.
+
+## run-05 (2026-10-27): CV-S05 strategy step 1
+
+Evidence: `backend/data/experiments/cv-s05d-whole-reader-census/run-05/` (README, `out/triage.md`). The input is the round 13 acceptance dump, unchanged, so no cache was rebuilt. Recall is 6/10, as in run-04.
+
+**Finder change:** Schedules are named as the reader names them:
+- an unnumbered Schedule is `sch`;
+- the triple where the id holds the Part;
+- a Schedule's Part reaches the paragraphs it holds.
+
+Unnamed refs fell from 793 to 320. Silent sentences stay at 64.
+
+**Triage:** every item has a label. There are 16 real wordings (R1–R16), with R1 a regression of the seed 19 fix: "Paragraphs … of Part 1 of Schedule 1 to this Order apply …" expands the whole Part, and "to this Order apply" sets the SI's application. There is one decision for Jason (Q1, the qualified companion that points back). The rest are known, doubtful or finder-side. The real ones go to CV-S05's fix batch (strategy step 3).
+
