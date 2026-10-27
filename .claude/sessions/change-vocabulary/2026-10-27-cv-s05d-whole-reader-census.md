@@ -40,8 +40,9 @@ Aim: census every sentence and every reader, checked independently of the reader
 - ✅ Prototype by count (run-01; Jason 2026-10-27 "start cv-s05d"): recall 10/10 on rounds 9–12 agent NEW; 11 confirmed wrong-bound laws the agent rounds hadn't found or had recorded as fixed
 - ⬜ Population: all catalogue sentences of every class (default, list, named, same, application, own paragraph, exception, unread), plus the sweep's 520 uncaught sentences, noise labels included.
 - ⬜ Noise-bin audit: each sweep label checked by the same test; anything naming our provisions with a place and an extend or apply verb is flagged, not trusted.
-- ⬜ Census rule: an "apply" statement whose place is qualified by "other than" / "except" / "any [thing] in", or names things or persons within a place, counts as scope (class KA, extract for fractalaw), not a reader candidate (run-02)
-- ⬜ Count candidates by shape (CV-S05c's masking) and rank them; review with Jason; hand the ranked shapes to CV-S05 round 13.
+- ✅ (run-02) Census rule: an "apply" statement whose place is qualified by "other than" / "except" / "any [thing] in", or names things or persons within a place, counts as scope (class KA, extract for fractalaw), not a reader candidate (run-02)
+- ✅ (run-02) Silent candidates triaged by wording, S1–S12, sampled with `Extent.of`; ⬜ review with Jason; hand them to CV-S05 round 13
+- ⬜ run-03: finder misses fixed (about 30 candidates, listed in run-02's triage); the rest of the over-reach list reviewed
 - ✅ run-01 stored; ⬜ Store each later run as evidence (`backend/data/experiments/cv-s05d-whole-reader-census/run-NN/`, as CV-S05c: manifest, scripts, input, outputs, README; scan for effect ids; commit by path in one step).
 - ⬜ If it earns its place, build it as a read-only mix task (pure modules and tests) to run every round.
 
@@ -85,3 +86,29 @@ Jason: "agree with the analysis, the breakdown and scopes. do the proposal". Fra
 - uksi 2025/1042 "apply to lessors of social homes in England" sets the bound England (territorial), and its "lessors of social homes" is fitness scope as well.
 
 **Our coarser reading still feeds fractalaw.** The census's scope sentences go out as a located, uninterpreted extract, in a separate deliverable: PENDING session `2026-10-27-application-scope-handoff.md`. The run-01 count: 162 "apply" sentences in the sweep's bins, across 106 laws. Of the 100 of those laws in the register, 61 have no fitness data.
+
+## run-02 (2026-10-27): the scope rule and the triage
+
+Evidence: `backend/data/experiments/cv-s05d-whole-reader-census/run-02/` (README, `out/triage.md`, `out/verify3.txt`). The reading is unchanged; recall 10/10.
+
+**The KA rule:** "apply" statements are sorted territorial / scope / both. `out/scope.tsv` is the hand-off extract (44 scope, 19 both).
+
+**The 114 silent candidates, triaged by hand.** The real ones, with a sample of each wording confirmed by `Extent.of`, form the round 13 fix list:
+
+| # | Wording | Laws |
+|---|---|---|
+| S1 | Exception lists' items dropped ("This Act, except— …", "Except for the following provisions …", "with the exception of— …", "but, with the exception of those provisions, …") | 1971/11, 1972/62, 1976/55, 1996/25, 1990/16, 1995/45, 1993/11, 1981/69 (no default), 1986/44, 1988/19 |
+| S2 | Sub-letter runs lost in `RefList`, leaving garbage refs `s.264(a)` and `reg.72(b)(i)` | 2005/457, 1998/37, 1981/29, 2024/437, 2022/1273, 2013/1506, 1980/66, 1990/8 |
+| S3 | "or"-lists in same-extent subjects; "Part N of Schedule M" read as the Act's Part N | 2019/530, 2022/6, 2020/1540, 2007/28 |
+| S4 | Qualified companions dropped, not withheld | 2022/30, 2023/55, 2013/602, 2005/2060, 1980/34, 1977/38, 1972/71 |
+| S5 | A provision's own subsections, self or Chapter dropped | 1992/43, 1973/32, 1998/31, 2017/3, 1977/45, 1988/19 |
+| S6 | Two statements in one sentence | 1969/10, 1968/64, 1968/60 |
+| S7 | Whole-law default misread or missing | 1999/28, 2010/29, 2021/30 |
+| S8 | Territorial application unread | 2016/1154, wsi 2014/3303, 2026/335, 2025/1042, 1978/29 |
+| S9 | Qualified subject or object read whole | 2006/41, 2014/2 |
+| S10 | Repealed words (". . .") inside number lists | 1974/40, 1976/55, 1972/62 |
+| S11 | Locator read whole | 1977/38, 2020/818 |
+| S12 | Same-extent item dropped | 1999/9 |
+| — | Also | 2023/55 "229 (and Schedule 22), 230 …" read as Schedules 230 …; 1972/20 "except as provided by section 189" read as an item; one-offs 1985/71, 1972/11 |
+
+**Lesson:** CV-S05c run-03's default-sentence check labelled the S1 laws "KX by design". It checked them with the reader's own parser and looked only at the qualified items. The independent finder shows the unqualified items dropped too. A check that shares the reader's code shares its blind spots, which is CV-S05d's premise, now measured.
