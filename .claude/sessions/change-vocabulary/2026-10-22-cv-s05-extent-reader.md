@@ -1121,3 +1121,46 @@ Sample repeatable (two runs identical). Round 9's NEW-1 is gone. No sampled chan
   - SI 2013/235 art.1(5) unread `*` outranks art.1(4) same `*` (over-withheld).
 - Trend of NEW per round: 16, 11, 5, 5, 8, 3, 6, 6, 1, 3.
 
+## Round 11 fixes (2026-10-27), code not yet committed
+
+Tests: `round11_reads_test.exs`, 25 tests on each law's real wording, written red first.
+
+| Class | Cause | Fix |
+|---|---|---|
+| A ("In Part N— (a) X extends …, (b) Y extends …") | `Units.statements/1` split items only at "—" and ";" | items after a comma split too, only where every item states its own extent (never 1975/59's shared verb); a glued "andb" accepted |
+| B, F (an item's own exception) | `Lists.list_refs` dropped any item with "except"; its bracket regex failed on nested brackets and knew no "apart from", "with the exception of" or "but excluding" | new `Extent.ItemExceptions`: in brackets (one level deep) or to the item's end; the item read less what it excepts; one holding an excepted subsection withheld; the excepted kept as `:except` (it keeps the default) and never also in the list (2000/19) |
+| C (qualified companion) | the whole item dropped | the plain provisions read, the companion withheld ("… and section 73 so far as relating to those Parts"; "section 6, so far as relating to paragraphs …, and those paragraphs") |
+| D (wholly qualified item) | dropped silently | withheld (`{:unread, nil, refs}`), piece by piece in an unlettered list |
+| E | heading form; "za"; "section 61 to 65"; same-list items | heading takes "This section, and …", "provisions only of", "the whole of the United Kingdom"; a body starting "—a" is labelled; a singular word before a range; `Same` reads a following-list through `ListItems`; "in Chapter 1 of Part 6, sections …" names the sections only |
+| "This paragraph [does not] extend(s) …" | Schedule provisions' own sentences unread | new `Extent.OwnParagraph` (the whole sentence only) |
+| Lost lead "In Schedule N—" | `Units.in_schedule` qualified bare paragraphs only; "; andb" not split | bare Parts qualified too ("Part 1 of Schedule 8"); glued labels split |
+
+**Modules:**
+- new: `ListItems` (287 lines, moved out of `Lists`, now 253), `ItemExceptions` (71), `OwnParagraph` (55);
+- `Credit.list_class/7` moved out of `Patterns` (481 → 481 net).
+
+**Partial reads:** a list counts as partial only where the matching list isn't a Schedule paragraph's own statement. Otherwise "Paragraphs 15 to 17 extend only to England and Wales" would stop being withheld.
+
+**Test changes, each a reviewed behaviour change:**
+- NEW-A test: the bracketed exception is now `{:except, …}`;
+- 1993/9 test: the qualified item is withheld, `s.47(1)`;
+- catalogue expectations:
+  - 1973/32 (list now read; citation sentence now `in_clause`, withholding nothing);
+  - 1971/23 (`unread:list`);
+  - 1989/29 and 1978/44 (`list:…`);
+  - 1990/42 and 2014/1638 (every item read).
+- The 2020/22 example's sentence now reads "Part 1 of Schedule 8 …", so its id changes. The catalogue regeneration replaces it.
+
+Suites: extent and CV, 4,358 of 4,359 (that example).
+
+**Next:** the round's runs, which need Jason's OK:
+1. catalogue regenerate and accept, reviewed;
+2. commit;
+3. restore point;
+4. re-read and write `extent_rules`;
+5. rebuild;
+6. golden;
+7. check;
+8. run-02 census against run-01;
+9. agent check against the pass bar.
+
