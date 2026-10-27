@@ -19,7 +19,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
   # a qualified aside: with the number it qualifies ("370 (so far as
   # relating to section 374)"), or alone where it adds one ("Schedule 2
   # (and article 26 so far as relating to it)")
-  @qualified_aside ~r/(?:\b\d+[A-Z]*(?:\(\w+\))*\s*(?=\(\s*(?:so\s+far|in\s+so\s+far|insofar|to\s+the\s+extent)\b))?\([^()]*\b(?:so\s+far|in\s+so\s+far|insofar|to\s+the\s+extent)\b[^()]*\)/iu
+  @qualified_aside ~r/(?:\b\d+[A-Z]*(?:\(\w+\))*\s*(?=\(\s*(?:so\s+far|in\s+so\s+far|insofar|to\s+the\s+extent)\b))?\((?:[^()]|\([^()]*\))*?\b(?:so\s+far|in\s+so\s+far|insofar|to\s+the\s+extent)\b(?:[^()]|\([^()]*\))*\)/iu
 
   # an item led by its qualifier ("b in so far as relating to …, section 52")
   @leading_qualifier ~r/^\s*(?:and\s*)?(?:\(?[a-z]{1,2}\)?\s+)?(?:in\s+so\s+far|so\s+far|insofar|to\s+the\s+extent)\b/iu

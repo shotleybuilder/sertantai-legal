@@ -760,4 +760,68 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Round13ReadsTest do
       assert Extent.of(e, "reg.1") == "E+W+S+NI"
     end
   end
+
+  describe "agent seed 19" do
+    test "\"Part 2 of Schedule 10 extends to Northern Ireland only\" reaches the Part's paragraphs, ids without the Part (SOCPA 2005 s.179(6)(d))" do
+      e =
+        read(
+          "UK_ukpga_2005_15",
+          p1("section-1", "This Act extends to England and Wales.") <>
+            words([144]) <>
+            ~s(<Schedule id="schedule-10"><Part id="schedule-10-part-1">#{p1("schedule-10-paragraph-1", "Words.")}</Part><Part id="schedule-10-part-2">#{p1("schedule-10-paragraph-8", "Words.")}</Part></Schedule>) <>
+            p1("section-179", "Part 2 of Schedule 10 extends to Northern Ireland only.")
+        )
+
+      assert Extent.of(e, "sch.10.para.8") == "NI"
+      assert Extent.of(e, "sch.10.para.8(2)") == "NI"
+      refute Extent.of(e, "sch.10.para.1") == "NI"
+    end
+
+    test "an aside with a nested bracket withholds only its own provision (Police and Justice Act 2006 s.54(2))" do
+      e =
+        read(
+          "UK_ukpga_2006_48",
+          p1("section-1", "This Act extends to England and Wales.") <>
+            ~s(<Schedule id="schedule-1"><Part id="schedule-1-part-5">#{p1("schedule-1-paragraph-40", "Words.")}</Part></Schedule>) <>
+            p1(
+              "section-54",
+              "The following provisions extend also to Scotland and Northern Ireland— section 5; Parts 5 and 6 of Schedule 1 (and section 1(3) so far as relating to those Parts); section 41."
+            )
+        )
+
+      assert Extent.of(e, "sch.1.para.40") == "E+W+S+NI"
+      assert Extent.of(e, "s.1(3)") == nil
+    end
+
+    test "a commencement list's items are no extent statements (Police and Justice Act 2006 s.53(4))" do
+      e =
+        read(
+          "UK_ukpga_2006_48",
+          p1("section-1", "This Act extends to England and Wales.") <>
+            words([35]) <>
+            p1(
+              "section-53",
+              "The following provisions come into force in accordance with provision made by order by the Scottish Ministers—a sections 35 to 38 so far as they extend to Scotland;b paragraphs 17 to 19 and 29 of Schedule 14 so far as they extend to Scotland."
+            )
+        )
+
+      refute Enum.any?(e.lists, fn {k, _, refs} -> k == :unread and "s.35..s.38" in refs end)
+    end
+  end
+
+  test "\"Part 2 of the Schedule\" reaches an unnumbered Schedule's paragraphs (SI 2016/1142 art.1(5))" do
+    e =
+      read(
+        "UK_uksi_2016_1142",
+        words([3], "article") <>
+          ~s(<Schedule id="schedule"><Part id="schedule-part-1">#{p1("schedule-paragraph-1", "Words.")}</Part><Part id="schedule-part-2">#{p1("schedule-paragraph-3", "Words.")}</Part></Schedule>) <>
+          p1(
+            "article-1",
+            "Articles 3 to 5 and Part 2 of the Schedule extend to England and Wales and Northern Ireland only."
+          )
+      )
+
+    assert Extent.of(e, "sch.para.3(3)") == "E+W+NI"
+    refute Extent.of(e, "sch.para.1") == "E+W+NI"
+  end
 end

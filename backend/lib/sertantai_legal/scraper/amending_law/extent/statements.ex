@@ -34,8 +34,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Statements do
   """
   @spec statements(String.t()) :: [String.t()]
   def statements(s) do
+    # (never a commencement list's items: "The following provisions come
+    # into force …— (a) sections 35 to 38 so far as they extend to
+    # Scotland; …", ukpga 2006/48 s.53(4), round 13 seed 19)
     items =
-      if s =~ ~r/[—–]/u do
+      if s =~ ~r/[—–]/u and not (s =~ ~r/^[^—–]*\bcome\s+into\s+force\b/iu) do
         # (items run in after a comma too, where each states its own
         # extent: never "(a) sections 1 to 3, … and (b) Schedules 1 and 2
         # …, shall extend to Northern Ireland only", 1975/59 s.14)

@@ -24,7 +24,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
     # a qualified aside names nothing whole ("Schedule 2 (and article 26 so
     # far as relating to it)": CV-S05 N14)
     |> String.replace(
-      ~r/\([^()]*\b(?:so\s+far|in\s+so\s+far|insofar|to\s+the\s+extent)\b[^()]*\)/iu,
+      # (one bracket nested inside: "(and section 1(3) so far as relating to
+      # those Parts)", ukpga 2006/48 s.54(2), round 13 seed 19)
+      ~r/\((?:[^()]|\([^()]*\))*?\b(?:so\s+far|in\s+so\s+far|insofar|to\s+the\s+extent)\b(?:[^()]|\([^()]*\))*\)/iu,
       " "
     )
     |> String.split(

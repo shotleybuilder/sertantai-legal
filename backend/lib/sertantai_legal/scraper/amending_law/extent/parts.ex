@@ -25,7 +25,39 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Parts do
   def parts(text, doc, clause_ref) do
     Enum.uniq(
       part_sections(text, doc, clause_ref) ++
-        chapters(text, doc, clause_ref) ++ this_chapter(text, doc, clause_ref)
+        chapters(text, doc, clause_ref) ++
+        this_chapter(text, doc, clause_ref) ++ schedule_parts(text, doc)
+    )
+  end
+
+  # "Part 2 of Schedule 10", "Part 2 of the Schedule": the paragraphs the
+  # Part holds in the document, whatever their ids say (legislation.gov.uk
+  # numbers many Schedules' paragraphs straight through, ids without the
+  # Part: "schedule-10-paragraph-8" inside "schedule-10-part-2"; SOCPA 2005
+  # s.179(6)(d), round 13 seed 19)
+  defp schedule_parts(text, doc) do
+    for [_, list | sch] <-
+          Regex.scan(
+            ~r/\bParts?\s+([IVXLC\d]+[A-Z]*(?:(?:\s*,\s*(?:and|or)?|\s+and|\s+or|\s+to)\s*[IVXLC\d]+[A-Z]*)*)\s+of\s+(?:Schedule\s+(\d+[A-Z]*)|the\s+Schedule\b)(?!\s+to\s+the\b)/u,
+            text
+          ),
+        # (an unnumbered Schedule's: no number captured)
+        base = if(sch in [[], [""]], do: "schedule", else: "schedule-#{hd(sch)}"),
+        n <- part_numbers(list),
+        id <- ["#{base}-part-#{n}", "#{base}-part-#{other_numeral(n)}"],
+        Map.has_key?(doc.pos, id),
+        para <- part_paragraphs(doc, id),
+        uniq: true,
+        do: Order.ref(para)
+  end
+
+  # the paragraph ids after a Schedule's Part, up to its next Part or Schedule
+  defp part_paragraphs(doc, part) do
+    doc.ids
+    |> Enum.drop(Map.fetch!(doc.pos, part) + 1)
+    |> Enum.take_while(&(not (&1 =~ ~r/^schedule(?:-[^-]+)?(?:-part-[^-]+)?$/)))
+    |> Enum.filter(
+      &(&1 =~ ~r/^schedule(?:-(?!part|paragraph)[^-]+)?(?:-part-[^-]+)*-paragraph-[^-]+$/)
     )
   end
 

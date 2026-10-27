@@ -22,7 +22,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Asides do
   @doc "The provisions an item's qualified asides name: withheld."
   @spec asides(String.t(), String.t() | nil, Doc.t()) :: [String.t()]
   def asides(text, clause_ref, doc) do
-    for [aside] <- Regex.scan(~r/\((?:and|including|together\s+with|with)\b[^()]*\)/iu, text),
+    for [aside] <-
+          Regex.scan(
+            ~r/\((?:and|including|together\s+with|with)\b(?:[^()]|\([^()]*\))*\)/iu,
+            text
+          ),
         aside =~ @qualifier,
         inner = aside |> String.trim_leading("(") |> String.trim_trailing(")"),
         inner = Regex.replace(~r/^\s*(?:and|including|together\s+with|with)\s+/iu, inner, ""),
