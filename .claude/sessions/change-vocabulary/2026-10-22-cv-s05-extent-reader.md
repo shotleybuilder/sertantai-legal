@@ -1,6 +1,6 @@
 ---
 session: 'CV-S05: Extent and Application Reader'
-status: active
+status: suspended
 release: v0.1
 opened: '2026-10-22'
 bugs:
@@ -229,7 +229,9 @@ bugs:
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
 ---
 
-# Session: CV-S05: Extent and Application Reader (ACTIVE)
+# Session: CV-S05: Extent and Application Reader (SUSPENDED)
+
+> **Suspended 2026-10-27** (Jason: "make the sub session active and suspend this one"): for CV-S05b List shape audit, which finds the technique that counts list misreads across the corpus. Resume with: the pass-bar decision (below), then round 11 from CV-S05b's ranked shapes plus round 10's NEW-1.
 
 ## Problem
 

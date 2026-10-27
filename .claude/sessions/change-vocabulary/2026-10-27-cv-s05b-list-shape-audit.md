@@ -1,11 +1,11 @@
 ---
 session: 'CV-S05b: List Shape Audit'
-status: pending
+status: active
 opened: '2026-10-27'
 parent: change-vocabulary/2026-10-22-cv-s05-extent-reader.md
 ---
 
-# Session: CV-S05b: List Shape Audit (PENDING)
+# Session: CV-S05b: List Shape Audit (ACTIVE)
 
 ## Problem
 
