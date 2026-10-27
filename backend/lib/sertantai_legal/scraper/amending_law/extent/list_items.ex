@@ -26,7 +26,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
 
   @qualifier_object ~r/\b(?:in\s+)?so\s+far\s+as\s+(?:it\s+|they\s+)?(?:relat(?:es?|ing)|appl(?:ies|y|ying)|ha(?:s|ve)\s+effect)\b[^,;—–]*/iu
 
-  @other_law ~r/(?:of|to),?\s+the\s+[A-Z][\w()',\s-]*?\s+(?:Act|Order|Regulations)\s+\d{4}/u
+  # (never "into the Energy Act 2008": a description, 2009/23 s.323(2), round 12)
+  @other_law ~r/\b(?:of|to),?\s+the\s+[A-Z][\w()',\s-]*?\s+(?:Act|Order|Regulations)\s+\d{4}/u
 
   @qualifier ~r/\b(?:so\s+far\s+as|in\s+so\s+far|insofar|to\s+the\s+extent)\b/iu
 
@@ -81,7 +82,27 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
 
   # one item: its exception taken out, then its qualified parts withheld,
   # then what is left read plainly
+  # ("section 113 (together with such of the other provisions of Part 7
+  # as relate to …)": the section read, the rest of Part 7 withheld;
+  # ukpga 2008/4 s.152, round 12)
   defp item(item, clause_ref, doc) do
+    {item, some_of} = together_with_such(item, clause_ref, doc)
+    r = item_read(item, clause_ref, doc)
+    %{r | unread: r.unread ++ (some_of -- r.refs)}
+  end
+
+  defp together_with_such(item, clause_ref, doc) do
+    case Regex.run(
+           ~r/\s*\(\s*together\s+with\s+such\s+of\s+(?<what>[^()]*?)\s+as\s+relates?\b[^()]*\)/iu,
+           item,
+           capture: :all
+         ) do
+      [whole, what] -> {String.replace(item, whole, " "), provisions(what, clause_ref, doc)}
+      nil -> {item, []}
+    end
+  end
+
+  defp item_read(item, clause_ref, doc) do
     item =
       item
       # (an item ends at its sentence's end: never the next sentence's

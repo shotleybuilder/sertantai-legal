@@ -7,7 +7,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Named do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, RefList}
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Forms, Parts, Places}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Forms, ListItems, Parts, Places}
 
   # named provisions' own extent, wherever stated: "Sections 107 and 116A of
   # this Act extend to Scotland only" → {:only, "S", ["s.107", "s.116A"]};
@@ -27,7 +27,30 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Named do
       refs = Enum.uniq(RefList.parse(subj, ref) ++ Parts.parts(subj, doc, ref)),
       refs != [],
       do: {named_kind(m), Places.places(m["places"]), refs}
-    ) ++ excluding(unit_sentences, doc)
+    ) ++ excluding(unit_sentences, doc) ++ qualified(unit_sentences, doc)
+  end
+
+  # a subject with a qualified piece, plain without it ("Part III of this
+  # Act, and Schedule 24 to this Act so far as relating to Part III,
+  # extends to England and Wales only": Environment Act 1995 s.125(8),
+  # round 12): its plain pieces read, the qualified withheld (`ListItems`)
+  @qualified_clause ~r/,?\s*(?:so\s+far|in\s+so\s+far|insofar)\s+as\s+[^,]*,?/iu
+
+  defp qualified(unit_sentences, doc) do
+    for {ref, s} <- unit_sentences,
+        not Regex.match?(Forms.heading(), s),
+        not Regex.match?(Forms.part_not(), s),
+        m = Regex.named_captures(Forms.named(), s),
+        m != nil,
+        m["subj"] =~ @qualified_clause,
+        not plain_named?(m, s),
+        plain_named?(%{m | "subj" => Regex.replace(@qualified_clause, m["subj"], " ")}, s),
+        r = ListItems.read(described_out(m["subj"]), ref, doc),
+        list <-
+          if(r.refs != [], do: [{named_kind(m), Places.places(m["places"]), r.refs}], else: []) ++
+            if(r.unread != [], do: [{:unread, nil, r.unread}], else: []),
+        uniq: true,
+        do: list
   end
 
   # "Part 2 (civil partnership: England and Wales), excluding section 35

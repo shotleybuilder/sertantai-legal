@@ -9,7 +9,15 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Same do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, RefList}
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Forms, ListItems, Named, Parts, Places}
+
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{
+    Forms,
+    ItemExceptions,
+    ListItems,
+    Named,
+    Parts,
+    Places
+  }
 
   @place_list Places.place_list()
 
@@ -52,12 +60,16 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Same do
       m = Regex.named_captures(form, s),
       m != nil,
       [_, tail] <- [Regex.split(form, s, parts: 2)],
-      not Regex.match?(
-        ~r/\b(?:other\s+than|apart\s+from|except|save|excluding)\b/iu,
-        m["subj"]
-      ),
-      refs = same_refs(that_schedule(m["subj"], ref, unit_sentences), tail, ref, doc),
+      # (a subject with its own exception, read less it: "an amendment or
+      # repeal made by Part 1, other than the amendment made by section
+      # 17(7), has the same extent as …", ukpga 2015/7 s.56(2)(b), round
+      # 12; never one not read)
+      {subj, excepted} = subject_except(m["subj"], ref),
+      excepted != :unread,
+      refs = same_refs(that_schedule(subj, ref, unit_sentences), tail, ref, doc),
       refs != :none,
+      refs = apart(refs, excepted),
+      refs != [],
       list <- same_lists(refs, tail, ref),
       uniq: true,
       do: list
@@ -192,4 +204,30 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Same do
         ["*"]
     end
   end
+
+  # a subject and what it excepts from itself: none, the provisions, or
+  # `:unread` where the exception names none
+  defp subject_except(subj, ref) do
+    case ItemExceptions.split(subj) do
+      {_, nil, _, _} ->
+        if subj =~ ~r/\b(?:other\s+than|apart\s+from|except|save|excluding)\b/iu,
+          do: {subj, :unread},
+          else: {subj, []}
+
+      # (an exception in another law's provisions names none of this
+      # law's: "apart from the repeal of sections 4 and 6 of the
+      # Promissory Oaths Act 1868", ukpga 2002/26 s.91)
+      {main, ex, _, _} ->
+        case not (ex =~ ~r/\b(?:of|to)\s+the\s+[A-Z][\w()',\s-]*?\s+(?:Act|Order|Regulations)\b/u) &&
+               RefList.parse(ex, ref) do
+          excepted when is_list(excepted) and excepted != [] -> {main, excepted}
+          _ -> {subj, :unread}
+        end
+    end
+  end
+
+  # (one only some of which is excepted is no longer the same whole)
+  defp apart(["*"], _), do: ["*"]
+  defp apart(refs, []), do: refs
+  defp apart(refs, excepted), do: refs |> ItemExceptions.apart(excepted) |> elem(0)
 end

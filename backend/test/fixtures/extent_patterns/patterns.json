@@ -1703,15 +1703,10 @@
       ]
     },
     "extent|amendments|same_extent|none|places:1|only|-|list:same:same": {
-      "count": 1,
+      "count": 2,
       "examples": [
-        "UK_ukpga_2004_33/6bdc8190be"
-      ]
-    },
-    "extent|amendments|same_extent|none|places:1|only|-|unread:not_read": {
-      "count": 1,
-      "examples": [
-        "UK_ukpga_2015_7/ea22f9bdd6"
+        "UK_ukpga_2004_33/6bdc8190be",
+        "UK_ukpga_2015_7/dbbc938215"
       ]
     },
     "extent|amendments|same_extent|none|places:many|-|-|unread:not_read": {
@@ -2315,7 +2310,7 @@
     "extent|following|same_extent|except|places:many|-|-|list:named:E+W+S+NI": {
       "count": 1,
       "examples": [
-        "UK_ukpga_2021_30/43c47dcb89"
+        "UK_ukpga_2021_30/a5b3600b6b"
       ]
     },
     "extent|following|same_extent|except|places:many|-|-|list:same:same": {
@@ -3575,12 +3570,6 @@
         "UK_ukpga_2014_21/3a4c92cdfc"
       ]
     },
-    "extent|parts|same_extent|except|places:many|-|-|list:named:E+W": {
-      "count": 1,
-      "examples": [
-        "UK_ukpga_2021_30/a4dc9f9c6e"
-      ]
-    },
     "extent|parts|same_extent|except|places:many|-|-|list:same:same": {
       "count": 1,
       "examples": [
@@ -3591,6 +3580,12 @@
       "count": 1,
       "examples": [
         "UK_ukpga_2021_30/054e39050d"
+      ]
+    },
+    "extent|parts|same_extent|except|places:many|-|-|unread:list_partial": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2021_30/7e8d912d9f"
       ]
     },
     "extent|parts|same_extent|except|places:many|-|also|unread:in_clause": {
@@ -3647,7 +3642,7 @@
     "extent|parts|same_extent|none|places:many|-|-|list:named:E+W": {
       "count": 1,
       "examples": [
-        "UK_ukpga_2021_30/51b8e6530f"
+        "UK_ukpga_2021_30/6a72cc8ce4"
       ]
     },
     "extent|parts|same_extent|none|places:many|-|-|list:named:E+W+S+NI": {
@@ -5020,7 +5015,7 @@
     "examples": 1246,
     "laws": 3358,
     "not_alone": 93,
-    "patterns": 759,
+    "patterns": 758,
     "sentences": 3040,
     "unclassified": 0
   }

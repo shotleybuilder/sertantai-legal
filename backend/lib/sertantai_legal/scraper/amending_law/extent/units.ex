@@ -8,7 +8,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Parts, Places, ScheduleWords}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{PartLead, Parts, Places, ScheduleWords}
   alias SertantaiLegal.Scraper.Commencement.Order
   alias SertantaiLegal.Scraper.LawStart.Clause
 
@@ -188,6 +188,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
     |> in_section()
     |> chapters()
     |> ScheduleWords.resolve()
+    |> PartLead.resolve()
   end
 
   # "In Part 3— (i) Chapter 1 extends to …" → "Chapter 1 of Part 3 …"
