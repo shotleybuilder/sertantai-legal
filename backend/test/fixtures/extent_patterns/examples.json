@@ -444,11 +444,6 @@
     "ref": "s.33",
     "sentence": "No amendment or repeal made by this Act in Schedule 1 to the Extradition Act 1870 or in the Schedule to the Extradition Act 1873 shall affect the operation of that Schedule by reference to the law of a British possession; but the repeal made in Schedule 1 to the Extradition Act 1870 shall extend throughout the United Kingdom."
   },
-  "UK_ukpga_1968_64/fc04e00c5d": {
-    "law": "UK_ukpga_1968_64",
-    "ref": "s.20",
-    "sentence": "This Act shall not extend to Scotland or, . . . to Northern Ireland."
-  },
   "UK_ukpga_1968_72/08136a42ee": {
     "law": "UK_ukpga_1968_72",
     "ref": "s.13",
@@ -518,11 +513,6 @@
     "law": "UK_ukpga_1971_48",
     "ref": "s.12",
     "sentence": "Part II of the Schedule to this Act and so much of section 11(8) above as relates thereto extend to Scotland; and section 11(2) of this Act, Part III of that Schedule and so much of section 11(8) as relates thereto extend to Scotland and Northern Ireland."
-  },
-  "UK_ukpga_1971_48/c115e4bb76": {
-    "law": "UK_ukpga_1971_48",
-    "ref": "s.12",
-    "sentence": "Except as provided by subsections (4) to (6) below, this Act does not extend to Scotland or Northern Ireland."
   },
   "UK_ukpga_1971_60/d00790232a": {
     "law": "UK_ukpga_1971_60",
@@ -1659,11 +1649,6 @@
     "ref": "s.46B",
     "sentence": "In this section as it has effect in Scotland, “document” and “statement” have the same meanings as in section 17(3) of the Law Reform (Miscellaneous Provisions) (Scotland) Act 1968, and the reference to a copy of a document shall be construed in accordance with section 17(4) of that Act."
   },
-  "UK_ukpga_1988_52/86e3f2d6e0": {
-    "law": "UK_ukpga_1988_52",
-    "ref": "s.197",
-    "sentence": "This Act, except section 80 and except as provided by section 184, does not extend to Northern Ireland."
-  },
   "UK_ukpga_1988_54/25c1620a30": {
     "law": "UK_ukpga_1988_54",
     "ref": "s.8",
@@ -2193,6 +2178,11 @@
     "law": "UK_ukpga_1993_28",
     "ref": "s.188",
     "sentence": "Chapter II of Part II of this Act extends to Scotland only."
+  },
+  "UK_ukpga_1993_28/b2a70da61f": {
+    "law": "UK_ukpga_1993_28",
+    "ref": "s.178",
+    "sentence": "For section 157 of the 1980 Act (highways) there shall be substituted the following sections— Private streets Adoption of private streets.1571 Where any street works have been executed on any land in an urban development area which was then or has since become a private street (or part of a private street), the urban development corporation may serve a notice (an “adoption notice”) on the street works authority requiring the authority to declare the street (or part) to be a highway which for the purposes of the Highways Act 1980 is a highway maintainable at the public expense.2 Within the period of two months beginning with the date on which the adoption notice was served, the street works authority may appeal against the notice to the Secretary of State.3 After considering any representations made to him by the corporation and the street works authority, the Secretary of State shall determine an appeal under subsection (2) above by setting aside or confirming the adoption notice (with or without modifications).4 Where, under subsection (3) above, the Secretary of State confirms the adoption notice—a he may at the same time impose conditions (including financial conditions) upon the corporation with which it must comply in order for the notice to take effect; andb with effect from such date as the Secretary of State may specify, the street (or part) shall become a highway which for the purposes of the Highways Act 1980 is a highway maintainable at the public expense.5 Where a street works authority neither complies with the adoption notice, nor appeals under subsection (2) above, the street (or part) shall become, upon the expiry of the period of two months referred to in subsection (2) above, a highway which for the purposes of the Highways Act 1980 is a highway maintainable at the public expense.6 In this section— “highway” has the same meaning as in the Highways Act 1980; “private street”, “street works” and “street works authority” have the same meanings as in Part XI of that Act.7 This section does not extend to Scotland."
   },
   "UK_ukpga_1993_28/d6351cca07": {
     "law": "UK_ukpga_1993_28",
@@ -5924,6 +5914,11 @@
     "ref": "reg.1",
     "sentence": "Regulations 4(a) and (c), 20(4), 21(2) to (5), 22, 24, 27 and 31 do not apply in Wales."
   },
+  "UK_uksi_2019_1499/7589219dd3": {
+    "law": "UK_uksi_2019_1499",
+    "ref": "reg.1",
+    "sentence": "Regulation 2(7) of these Regulations does not apply in relation to excepted energy buildings in Wales."
+  },
   "UK_uksi_2019_1499/ca1086f0be": {
     "law": "UK_uksi_2019_1499",
     "ref": "reg.1",
@@ -6209,10 +6204,10 @@
     "ref": "reg.1",
     "sentence": "These Regulations apply in relation to Wales but do not apply in relation to excepted energy buildings in Wales."
   },
-  "UK_wsi_2014_3303/7c751e07bb": {
+  "UK_wsi_2014_3303/fb1d27cfb8": {
     "law": "UK_wsi_2014_3303",
     "ref": "reg.1",
-    "sentence": "Regulation 18 applies in relation to Wales."
+    "sentence": "Regulation 17 applies in relation to live fish and live eggs of fish in Wales."
   },
   "UK_wsi_2016_413/e07f266149": {
     "law": "UK_wsi_2016_413",
@@ -6223,6 +6218,11 @@
     "law": "UK_wsi_2017_1041",
     "ref": "reg.1",
     "sentence": "The title of these Regulations is the Private Water Supplies (Wales) Regulations 2017; they apply in relation to Wales and come into force on 20 November 2017."
+  },
+  "UK_wsi_2019_1499/7589219dd3": {
+    "law": "UK_wsi_2019_1499",
+    "ref": "reg.1",
+    "sentence": "Regulation 2(7) of these Regulations does not apply in relation to excepted energy buildings in Wales."
   },
   "UK_wsi_2026_105/fe792066fc": {
     "law": "UK_wsi_2026_105",
