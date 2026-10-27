@@ -180,6 +180,10 @@ Reader rules (intended):
     are not territorial: a disapplication of things, a carve-out ("… other than an excepted energy building"), a
     comparison ("as they apply to"), a relative clause ("an agent who …"), what something is made or done by or under,
     "as if". Another law's section never applies. "cease to apply in relation to England" = does not apply there.
+  - Schedule names (Jason 2026-10-27): an unnumbered Schedule is `sch` ("Part I of the Schedule" = sch.pt.I,
+    "paragraphs 1 and 14 of the Schedule" = sch.para.1, sch.para.14); a paragraph whose id sits in a Part is the triple
+    sch.N.pt.R.para.M, and a citation without its Part ("paragraph 3 of Schedule 4") names the same paragraph. The
+    amendment reader's Pointer/Locator still name it Part-less (known limit, v0.2 with #169).
 
 Known counted classes (label a finding with one if it fits; otherwise NEW):
 - KU unread statement, counted: a qualified or conditional statement ("so far as …", "in so far as it relates to …",

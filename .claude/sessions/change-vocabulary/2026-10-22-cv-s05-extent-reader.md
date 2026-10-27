@@ -1393,3 +1393,23 @@ The sample repeats; the prompt is the skill's, with round 13's rules. Every chan
 - SI 2013/1506 reg.3(3) withholds the qualifier's object, but no wrong bound results (named outranks unread).
 
 **Decision for Jason:** name unnumbered Schedules in the shared namer (`sch.pt.I`, `sch.para.1`, `sch`) and read "of the Schedule" in `RefList`; or count these sentences unread only (no wrong bound fixed).
+
+**Root fix for seed 18** (Jason 2026-10-27: "Do 1 the root"; "Triple it is"). Code `ac2b4798`, `39ca4aa9`, `4403cccd`.
+- **Schedule names** (`Order.ref`):
+  - an unnumbered Schedule is `sch` (`sch.pt.I`, `sch.para.1`);
+  - a paragraph whose id sits in a Part is the triple `sch.N.pt.R.para.M`, nested Parts kept.
+  - The whole-store scan: 368,103 Schedule ids, no crash; the Part-less form would have collided 439 times in 58 laws.
+- **Matching** (`RefList`): reads "of the Schedule" and "paragraphs … of Part I of Schedule 25"; `covers?` takes a citation without its Part as its triple's paragraph.
+- **SI 2005/2060:** the same-extent second statement is read, its qualified piece withheld.
+- **CV-S02a K10 closed.**
+- **Known limit** (`Pointer`/`Locator` stay Part-less): on the V1-00 v0.2 list with #169 (`3848b2a2`).
+- **Lesson** (Jason: "40 minute of compute as part of a debug and test routine - madness!"): the first chain crashed on `schedule-part`, which a 1-minute whole-store scan finds. Pre-flight in seconds, one acceptance chain per round (memory `preflight-before-chain`).
+- **Acceptance run** (extents cold 9m47s):
+  - golden 27/27; extent, feed and markup checks PASS (our faults 0);
+  - 53 feed, 5 markup and 2 extent catalogue examples accepted after review; schedule naming only, apart from two extent classes that now read (SI 2016/1142 Part 2 of the Schedule) or are counted (SI 2009/462);
+  - census: silent 64, unnamed 251/44;
+  - claims against `r6b.claims12`, Parts set aside: target renames (a Part → its paragraph's triple) with the same values, and 3 real moves, all right:
+    - HSWA s.33(1)(m) by 1981/45 → E+W+NI (seed 18 NEW-2);
+    - SI 1998/494 reg.4(3)(e) by SI 2005/2060: the S bound is gone, now same extent (NEW-1);
+    - the two application gains (SI 2016/1154 E+W, SI 2000/2853 E).
+- **Agent check:** seed 19 (repeatable).
