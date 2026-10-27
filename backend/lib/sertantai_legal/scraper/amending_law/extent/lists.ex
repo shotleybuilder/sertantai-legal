@@ -35,9 +35,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lists do
       # purpose and doesn't carry its provisions there (HSWA s.84(1)(a));
       # "except this section and …": the clause's own provision too
       %{"items" => items, "places" => place, "self" => self} ->
+        # (items after a comma too, "except for— a sections 7 to 9 …,b
+        # sections 20 and 21 …,c so much of …", 1994/21 s.68; never one
+        # leading a sub-list, "the repeal … of— i …": round 12)
         refs =
-          for item <- String.split(items, ";"),
+          for item <- String.split(items, ~r/;|,(?=\s*(?:and\s*)?[a-hj-uwyz]\s)/u),
               not (item =~ ~r/\bso\s+(?:far|much)\s+(?:as|of)\b/i),
+              not (item =~ ~r/[—–]/u),
               ref <- RefList.parse(item, clause_ref) ++ Parts.parts(item, doc, clause_ref),
               do: ref
 

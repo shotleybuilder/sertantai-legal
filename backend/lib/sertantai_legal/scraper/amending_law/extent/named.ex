@@ -39,15 +39,27 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Named do
   # s.84(1), is an exception list's item, not a statement)
   @qualified_clause ~r/,?\s*(?:so\s+far|in\s+so\s+far|insofar)\s+as\s+[^,;—–]*,?/iu
 
-  # (whole sentences only, never an item split out of one: "This Act,
+  # (never an item split out of an exception list: "This Act,
   # except— … (d) Schedule 6 and section 17(5) so far as relating to …,
   # does not extend to Northern Ireland" is an exception list, 1995/45 s.18;
   # 1976/55 s.27)
+  # an exception list's lead: "This Act, except— …", "Except for the
+  # following provisions, namely— …"
+  @exception_list ~r/^\s*(?:This\s+(?:Act|Order|Regulations)\s*,?\s+)?except\b|\bexcept\s+(?:for\s+)?(?:the\s+following\b[^—–]*)?[—–]/iu
+
   defp qualified(unit_sentences, doc) do
+    # (or an item of a sentence ending in its "save as aforesaid" default:
+    # "In this Act— (a) sections 23, 24, … and this section, … section 64(1)
+    # and Schedule 5 so far as they relate to …, extend to Scotland; … but
+    # save as aforesaid, this Act extends to England and Wales only", 1972/71
+    # s.66, found by the census's default-sentence check, run-03)
+    # (an item of any other lettered sentence is read: "In Part 5— … (b)
+    # sections 30(2) to (4) … and section 34 so far as applying to Part 5
+    # and section 37(6) extend to England and Wales only", 2015/7 s.56(6))
     whole =
       Enum.reject(unit_sentences, fn {ref, s} ->
         Enum.any?(unit_sentences, fn {r2, s2} ->
-          r2 == ref and s2 != s and String.contains?(s2, s)
+          r2 == ref and s2 != s and String.contains?(s2, s) and s2 =~ @exception_list
         end)
       end)
 

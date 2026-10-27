@@ -42,7 +42,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
 
   # plain provisions with a qualified companion: "Parts 1 and 2 of
   # Schedule 7 and section 73 so far as relating to those Parts"
-  @companion ~r/^(?<plain>.+?)\s+and\s+(?<q>(?:sections?|regulations?|articles?|rules?)\s+[\dA-Z()]+(?:\s+(?:above|below))?)\s*,?\s+(?:so\s+far|in\s+so\s+far|insofar)\s+as\b.*$/iu
+  @companion ~r/^(?<plain>.+?)\s+and\s+(?<q>(?:sections?|regulations?|articles?|rules?)\s+[\dA-Z()]+(?:\s+(?:above|below))?)\s*,?\s+(?:so\s+far|in\s+so\s+far|insofar)\s+as\b(?<object>.*)$/iu
 
   # "section 6, so far as relating to paragraphs 81, 95 and 96 of Schedule
   # 1, and those paragraphs": the paragraphs plainly, the section qualified
@@ -187,7 +187,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
           do: %{refs: [], unread: withheld(main, clause_ref, doc)},
           else: %{
             refs: plain(m["plain"], clause_ref, doc),
-            unread: provisions(m["q"], clause_ref, doc)
+            # (a provision after an "and" in the object may be an item of
+            # its own or the object's: withheld either way, "… section 34
+            # so far as applying to Part 5 and section 37(6)", 2015/7
+            # s.56(6)(b))
+            unread: provisions(m["q"], clause_ref, doc) ++ after_and(m["object"], clause_ref, doc)
           }
 
       Regex.match?(@qualifier, main) ->
@@ -195,6 +199,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
 
       true ->
         %{refs: plain(main, clause_ref, doc), unread: []}
+    end
+  end
+
+  defp after_and(object, clause_ref, doc) do
+    case Regex.run(~r/\band\s+((?:sections?|regulations?|articles?|rules?)\s+\d.*)$/u, object) do
+      [_, tail] -> provisions(tail, clause_ref, doc)
+      nil -> []
     end
   end
 

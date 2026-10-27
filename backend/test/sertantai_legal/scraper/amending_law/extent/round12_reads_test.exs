@@ -99,6 +99,25 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Round12ReadsTest do
     refute "*" in refs
   end
 
+  test "a lettered item with a qualified companion: its plain provisions read (ukpga 2015/7 s.56(6)(b))" do
+    e =
+      read(
+        "UK_ukpga_2015_7",
+        part(5, [30, 33, 34, 37]) <>
+          p1(
+            "section-56",
+            "In Part 5 (planning, land and buildings)—a an amendment or repeal has the same extent as the provision to which it relates, andb sections 30(2) to (4), 32(11) and (12) and 33(2), Part 4 of Schedule 5 and section 34 so far as applying to Part 5 and section 37(6) extend to England and Wales only."
+          )
+      )
+
+    assert Extent.of(e, "s.33(2)") == "E+W"
+    assert unread?(e, "s.34")
+    # (after an "and" in the qualifier's object: its own item or the
+    # object's, so withheld, never the Part's same extent)
+    assert unread?(e, "s.37(6)")
+    refute Extent.of(e, "s.37(6)") == :same
+  end
+
   test "a named statement's qualified piece withheld, its plain piece read (Environment Act 1995 s.125(8))" do
     e =
       read(
@@ -153,6 +172,38 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Round12ReadsTest do
       )
 
     refute Enum.any?(e.lists, &match?({:not, "NI", ["sch.6"]}, &1))
+  end
+
+  test "a \"save as aforesaid\" sentence's item: its plain provisions read, the qualified withheld (ukpga 1972/71 s.66)" do
+    e =
+      read(
+        "UK_ukpga_1972_71",
+        words([23, 24, 64]) <>
+          p1(
+            "section-66",
+            "In this Act—a sections 23, 24, 28, 29, 30, 33, 35, 51 and this section, ... section 64(1) and Schedule 5 so far as they relate to the Road Traffic Act 1972 and section 64(2) and Schedule 6 so far as they relate to the Summary Jurisdiction (Scotland) Act 1908 and the Firearms Act 1968, extend to Scotland;b section 63 and this section extend to Northern Ireland; but save as aforesaid, this Act extends to England and Wales only."
+          )
+      )
+
+    assert e.default == "E+W"
+    assert Extent.of(e, "s.23") == "E+W+S"
+    assert unread?(e, "sch.5")
+  end
+
+  test "\"This Act, except for— a …, b …, c so much of …, does not extend to NI\": comma-separated items read (ukpga 1994/21 s.68)" do
+    e =
+      read(
+        "UK_ukpga_1994_21",
+        p1(
+          "section-68",
+          "This Act, except for—a sections 7 to 9, 12 and 13 and Schedule 2,b sections 20 and 21 and Schedule 4,c so much of Schedule 1 as amends the Parliamentary Commissioner Act 1967,d so much of Schedule 9 as amends any enactment that extends to Northern Ireland,e the repeal, by virtue of their inclusion in Schedule 11, of—i the entries relating to the Corporation in the Statutory Corporations (Financial Provisions) Act 1975, does not extend to Northern Ireland."
+        )
+      )
+
+    assert {:also, "NI", refs} = Enum.find(e.lists, &match?({:also, "NI", _}, &1))
+    assert "s.7..s.9" in refs and "s.20" in refs and "sch.4" in refs
+    refute "sch.11" in refs
+    refute "sch.1" in refs
   end
 
   test "a withheld subject never takes its qualifier's object (ukpga 2014/6 s.140)" do
