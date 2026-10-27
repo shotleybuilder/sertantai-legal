@@ -1,6 +1,6 @@
 ---
 session: 'CV-S05: Extent and Application Reader'
-status: suspended
+status: active
 release: v0.1
 opened: '2026-10-22'
 bugs:
@@ -247,7 +247,7 @@ bugs:
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
 ---
 
-# Session: CV-S05: Extent and Application Reader (SUSPENDED)
+# Session: CV-S05: Extent and Application Reader (ACTIVE)
 
 > **Suspended 2026-10-27** (Jason: "open CV-S05d and suspend CV-S05"): for CV-S05d Whole-Reader Census (`2026-10-27-cv-s05d-whole-reader-census.md`). CV-S05c censused list items only, and round 12's agent NEW sat in other readers (application, `RefList`, the sweep's noise bin). Resume with round 13 from CV-S05d's counted shapes, plus the open seed 17 NEW-1–3 and the 2009/23 Chapter 6 residual. Then the agent check as the final confirmation.
 
@@ -289,7 +289,8 @@ The session does not close until its results pass.
 - ✅ Pass bar for the agent check: decided 2026-10-27 (see "Pass bar: decided")
 - ⬜ Round 11: CV-S05c's classes by count (A: "In Part N— (a) … (b) …" only (a) read, 6 laws; B: item's own exception drops it, 8+3; C: plain refs dropped with a qualified companion, 4+1; D: trailing-qualified item not withheld, 4+2; E: one-offs, 7; F: excluded provisions held, 4 new; Schedule "this paragraph" own extent, ~12) with their laws as fixtures (`run-01/confirmed.md`, `overreach.md`, `unread_tail.md`); round 10's NEW-1 (lost lead "In Schedule N—", 9 laws); then re-run run-01's commands as run-02 and compare; then agent check against the agreed bar
 - ⬜ Deferred from CV-S05c: after round 11's run-02, decide whether the census earns a permanent read-only mix task (pure modules + tests)
-- ⬜ CV-S05d Whole-Reader Census (ACTIVE, `2026-10-27-cv-s05d-whole-reader-census.md`): census every sentence and reader; run-01 recall 10/10, 11 confirmed wrong-bound laws for round 13
+- ⬜ CV-S05d Whole-Reader Census (SUSPENDED for round 13, `2026-10-27-cv-s05d-whole-reader-census.md`): fix list S1–S17 (~65 laws) in `backend/data/experiments/cv-s05d-whole-reader-census/run-03/out/triage.md`; run-04 is round 13's check
+- ⬜ Round 13 (Jason 2026-10-27): S1–S17 from CV-S05d run-03, plus seed 17 NEW-1–3 (= S11, S8, S2) and the 2009/23 Chapter 6 residual; tests per wording on the laws' real words; then restore point, one extents run, golden, check, census run-04, agent check
 - ⬜ **Application Scope Hand-off to Fractalaw (PENDING, `2026-10-27-application-scope-handoff.md`; Jason 2026-10-27):** application to cases is fitness scope (skill class KA), not extent. CV-S05d's census extracts these sentences for fractalaw (61 laws with no fitness data in run-01). It is not closed by CV-S05 or CV-S05d: keep it open until it is done.
 - ⬜ Fix until the check passes reliably; record the result
 

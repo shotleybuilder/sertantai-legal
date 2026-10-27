@@ -1,6 +1,6 @@
 ---
 session: 'CV-S05d: Whole-Reader Census'
-status: active
+status: suspended
 opened: '2026-10-27'
 parent: change-vocabulary/2026-10-22-cv-s05-extent-reader.md
 enables:
@@ -26,7 +26,9 @@ bugs:
     status: open
 ---
 
-# Session: CV-S05d: Whole-Reader Census (ACTIVE)
+# Session: CV-S05d: Whole-Reader Census (SUSPENDED)
+
+> **Suspended 2026-10-27** (Jason: "I don't need to look at the list"): the fix list S1–S17 (`run-03/out/triage.md`) is handed to CV-S05 round 13. Resume for run-04, the census re-run as round 13's check, then decide the permanent mix task.
 
 ## Problem
 
@@ -47,7 +49,8 @@ Aim: census every sentence and every reader, checked independently of the reader
 - ⬜ Population: all catalogue sentences of every class (default, list, named, same, application, own paragraph, exception, unread), plus the sweep's 520 uncaught sentences, noise labels included.
 - ⬜ Noise-bin audit: each sweep label checked by the same test; anything naming our provisions with a place and an extend or apply verb is flagged, not trusted.
 - ✅ (run-02) Census rule: an "apply" statement whose place is qualified by "other than" / "except" / "any [thing] in", or names things or persons within a place, counts as scope (class KA, extract for fractalaw), not a reader candidate (run-02)
-- ✅ (run-02/03) Silent candidates and over-reach triaged by wording, S1–S17, each confirmed on a law with `Extent.of`; ⬜ review with Jason; hand them to CV-S05 round 13
+- ✅ (run-02/03) Silent candidates and over-reach triaged by wording, S1–S17, each confirmed on a law with `Extent.of`; handed to CV-S05 round 13 (Jason 2026-10-27: "I don't need to look at the list - we should have a clear idea about what right looks like by now")
+- ⬜ run-04: re-run the census after round 13 as its check (the S1–S17 laws flagged no more; new flags triaged)
 - ✅ run-03: finder misses fixed; over-reach list reviewed in full; the fix list S1–S17 consolidated (`run-03/out/triage.md`)
 - ✅ run-01 stored; ⬜ Store each later run as evidence (`backend/data/experiments/cv-s05d-whole-reader-census/run-NN/`, as CV-S05c: manifest, scripts, input, outputs, README; scan for effect ids; commit by path in one step).
 - ⬜ If it earns its place, build it as a read-only mix task (pure modules and tests) to run every round.
