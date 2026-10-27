@@ -118,6 +118,12 @@ Reader rules (intended):
   Scotland— …"; "32 It is hereby declared that this Act extends to Northern Ireland").
 - An SI's Schedule is introduced by the provision its Reference names ("Regulation 30"). A change only the law's own
   text gives is looked up at its own provision (key "schedule-7-paragraph-3" = sch.7.para.3).
+- A commencement's "This Act, except— (a) …, shall come into force …" is never an extent exception: an "except— …, does
+  not extend to …" form reads within one subsection. "This Act extends to the United Kingdom so far as it makes the
+  following provision— (a) the provision contained in Part 5; …" = named UK for those provisions (widens the default).
+- "Part 2 (…), excluding section 35 but including Schedules 1 to 9, extends to …" = the Part less s.35, with Schs 1–9.
+  "In section 31— (a) subsections (1) and (2) extend …" = s.31(1), s.31(2). A lettered item's bare "paragraph 182(3)"
+  (no Schedule named) is the Schedule the sentence named before it.
 
 Known counted classes (label a finding with one if it fits; otherwise NEW):
 - KU unread statement, counted: a qualified or conditional statement ("so far as …", "in so far as it relates to …",
@@ -132,6 +138,9 @@ Known counted classes (label a finding with one if it fits; otherwise NEW):
 - KL a list sentence read in part, counted `unread:list_partial` in the law's unread classes (e.g. "Part 1 of the
   Schedule" of an unnumbered Schedule: no ref exists for it). NEW only if the part read is misread, or the sentence is
   missing from the unread classes.
+- KU1 an unnumbered Schedule ("The repeals in the Schedule have the same extent …") is read as same "*" (every
+  amendment the law makes): right where the Schedule holds them; over-broad where its sections amend too (LRRA 2006
+  s.34(3)). No ref names an unnumbered Schedule yet (open bug).
 
 For each LAW: is the basis right, are the default and lists right against the law's own words (every extent/application
 sentence: read, or counted unread)? For each CHANGE: is the territory/bound right given the amending provision and the
@@ -158,6 +167,7 @@ OH&S (first family, 2026-10-24 →). The session is `.claude/sessions/change-voc
 | 7 | 12 | FAIL, 6 NEW — all misreads or partial reads of statements read (none a silent drop of an uncaught form); NEW-6 systemic: feed "art." vs domestic `reg.` |
 | 8 | 13 | FAIL, 6 NEW — round 7's six fixed; NEW-1 systemic (a change's own key passed raw, "schedule-7", to the lookup: 80 claims); 4 misreads, 2 silent drops (a clause in a second section; "with the exception of— (b) any provision amending …") |
 | 9 | 14 | FAIL, 1 NEW — round 8's six fixed; changes 50/50 right; NEW-1 predates round 9: a commencement "This Act, except— …" read as the extent form across the section (ukpga 2002/30 s.108 default E+W+NI, text E+W), bounds still right (withheld) |
+| 10 | 15 | FAIL, 3 NEW — round 9's fixed; changes 50/50; an "In Schedule N— … apply in relation to England only" dropped; ukpga 2009/23 s.323 list items (unbracketed "other than", "in Chapter 1 of Part 6, sections …"); ukpga 2017/3 "(v) this Chapter" |
 
 - Rounds 1–5's prompts lived only in conversation. Their known classes (K1–K10, then P1–P7) were not recorded; the classes above restate them from the session's findings (2026-10-26).
 - Round 6's design change: unread statements withhold their bound (`Extent.Unread`), so counted unread classes are known gaps.
