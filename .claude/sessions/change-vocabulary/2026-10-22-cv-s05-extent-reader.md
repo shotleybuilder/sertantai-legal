@@ -1469,6 +1469,11 @@ Acceptance run and seed 20 next.
    - 2009/23 "Chapters 1 to 5 of Part 8" holding Chapter 6 (R10 residual);
    - 1986/44 KX plain pieces;
    - seed 19's doubtfuls: 1975/71 s.129(6), 2015/2 s.96(6)(h), SI 2004/1822 unnumbered-Schedule paragraphs, SI 2013/1387 reg.1A, 1989/15 Part V, PJA s.1(3).
+   - ✅ **Decided 2026-10-27:**
+     - Q1, the qualified companion that points back, keeps the default (KX).
+     - The seed 19 and census doubtfuls are logged as known (KW).
+     - R14–R16 are logged as known (KT).
+     - The fix batch is R1–R13 plus 2009/23's Chapters 1–5 reaching Chapter 6 ("Bounds + schedules").
 3. **One fix batch** for whatever steps 1 and 2 make real: tests, pre-flight, one acceptance chain.
 4. **Agent check, seed 20.**
    - Pass: close.

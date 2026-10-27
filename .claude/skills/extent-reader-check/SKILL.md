@@ -204,6 +204,16 @@ Known counted classes (label a finding with one if it fits; otherwise NEW):
 
 - KX an exception list's qualified item keeps the law's default (round 6 design, HSWA s.84(1)(a)): the census's
   default-sentence check lists them (run-03: 1972/62, 1974/37, 1976/55, 1993/11, 1994/21, 1995/45).
+  Also a qualified companion that points back ("paragraph 7 of Schedule 1 and section 1(5) so far as relating to that
+  paragraph": s.1(5) keeps the default; Jason 2026-10-27, CV-S05 strategy step 2: 1986/44, 1989/29, 1990/16, 1995/45,
+  1976/55).
+- KW withheld or counted, no wrong bound, judged doubtful (Jason 2026-10-27, step 2): 1975/71 s.129(6); 2015/2
+  s.96(6)(h) "Parts 1 to 4 of Schedule 10"; SI 2004/1822 unnumbered-Schedule paragraphs; SI 2013/1387 reg.1A; 1989/15
+  s.194(8)(b) Part V; PJA 2006 s.1(3); 1999/30 s.70; 1998/37 s.120(2); 1972/11 Sch.7 paragraphs after a qualifier.
+- KT text faults and refs to nothing (Jason 2026-10-27, step 2): a missing comma in the text ("188(3) to (8) 189",
+  1975/21); another law's sections read as this law's where none exists (2010/490 s.123, s.237; 2017/1012 s.123;
+  1991/28 s.128(4)); a list running on into the next statement whose refs are also unread (1988/33 s.172, 2021/30
+  s.146(…) s.71): withheld, no rows bound.
 - KQ an ambiguous provision after an "and" in a qualifier's object, or a second qualified companion, withheld or left to
   the default (1972/71 s.64(2)).
 - KA application to cases, not places (Jason 2026-10-27): a statement of which things, persons or activities a law
