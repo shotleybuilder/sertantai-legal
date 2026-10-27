@@ -1413,3 +1413,30 @@ The sample repeats; the prompt is the skill's, with round 13's rules. Every chan
     - SI 1998/494 reg.4(3)(e) by SI 2005/2060: the S bound is gone, now same extent (NEW-1);
     - the two application gains (SI 2016/1154 E+W, SI 2000/2853 E).
 - **Agent check:** seed 19 (repeatable).
+
+## Agent check, seed 19 (round 13 after the root fix): laws 41 OK / 2 WRONG / 7 doubtful; changes 48 OK / 1 WRONG / 1 doubtful — FAIL (1 NEW wrong bound, 1 NEW no bound)
+
+Seed 18's two NEW are gone. Verified with fresh reads:
+
+- **NEW-1 (wrong bounds):** "Part N of Schedule M" never reached the Part's paragraphs where legislation.gov.uk numbers the Schedule straight through (ids without the Part: `schedule-10-paragraph-8` inside `schedule-10-part-2`).
+  - SOCPA 2005 s.179(6)(d): Sch 10 paras 7–10 were E+W+NI; the text gives NI.
+  - SI 2016/1142 art.1(5): change 22 lost its E+W+NI bound.
+  - Police and Justice Act 2006 s.54(2) "Parts 5 and 6 of Schedule 1 (and section 1(3) so far as …)": withheld whole, because the aside's nested "1(3)" broke the qualified-aside patterns. Sch 1 Part 5 paragraphs were E+W; the text gives the UK.
+- **NEW-2 (no wrong bound):** PJA 2006 s.53(4), a commencement list ("… so far as they extend to Scotland"), was read into unread rows.
+
+**Fixed** (`9a721593`), with tests on the real words:
+- `Parts`: "Part 2 of Schedule 10" and "Part 2 of the Schedule" are the paragraphs the Part holds in the document;
+- the aside patterns allow one nested bracket;
+- `Statements`: a commencement list's items are no statements.
+
+Fresh reads: SOCPA Sch 10 para 8 NI; PJA Sch 1 para 40 UK; PJA Sch 14 para 17 same; SI 2016/1142 Sch para 3(3) E+W+NI.
+
+**Doubtful, no wrong bound (noted for later rounds):**
+- 1975/71 s.129(6) (amendments of the HCDA/NIADA 1975, now repealed);
+- 2015/2 s.96(6)(h) "Parts 1 to 4 of Schedule 10" (withheld by `*`);
+- SI 2004/1822 "paragraphs 2, 3, 4 … 15 of the Schedule … extend to Scotland only" (unread `*`);
+- SI 2013/1387 reg.1A "These Regulations apply in England and Wales, and Scotland" (counted);
+- 1989/15 s.194(8)(b) "Part V" withheld with its qualified siblings;
+- PJA 2006 s.1(3): E+W through "Parts 1 to 5 extend to England and Wales only" (explicit only outranks the withheld aside, by design).
+
+Acceptance run and seed 20 next.
