@@ -52,6 +52,7 @@ Aim: census every sentence and every reader, checked independently of the reader
 - ✅ (run-02/03) Silent candidates and over-reach triaged by wording, S1–S17, each confirmed on a law with `Extent.of`; handed to CV-S05 round 13 (Jason 2026-10-27: "I don't need to look at the list - we should have a clear idea about what right looks like by now")
 - ✅ run-04 (`a75e80b8`): census after round 13 — silent 113 → 64, unnamed 358 → 234; the fix-list laws read as their text states; round 13's own regressions found and fixed before the final run
 - ✅ run-05 (CV-S05 strategy step 1): the finder names Schedule Parts as the reader does (unnamed 793 → 320); every silent and unnamed item triaged: R1–R16 real, Q1 for Jason (`run-05/out/triage.md`)
+- ✅ run-06: census after CV-S05's run-05 fix batch: silent 64 → 57, nothing new that is real; pre-flight reading diff stored
 - ✅ run-03: finder misses fixed; over-reach list reviewed in full; the fix list S1–S17 consolidated (`run-03/out/triage.md`)
 - ✅ run-01 stored; ⬜ Store each later run as evidence (`backend/data/experiments/cv-s05d-whole-reader-census/run-NN/`, as CV-S05c: manifest, scripts, input, outputs, README; scan for effect ids; commit by path in one step).
 - ⬜ If it earns its place, build it as a read-only mix task (pure modules and tests) to run every round.

@@ -1475,6 +1475,14 @@ Acceptance run and seed 20 next.
      - R14–R16 are logged as known (KT).
      - The fix batch is R1–R13 plus 2009/23's Chapters 1–5 reaching Chapter 6 ("Bounds + schedules").
 3. **One fix batch** for whatever steps 1 and 2 make real: tests, pre-flight, one acceptance chain.
+   - ✅ **Done 2026-10-27 (`89a580a6`; evidence `cv-s05d…/run-06`).**
+     - **Fixes:** R1–R13 and 2009/23, with 17 tests (`census_run05_reads_test.exs`) and the new module `Extent.NestedLocators`.
+     - **Pre-flight, whole store:** 21 of 3,358 laws changed, all checked against their text. That covers the 15 intended; 2014/12 and 2016/12 improved by the item-exception owner fix; 2019/453 newly withheld. Live status is untouched: only 2006/1407 has the "to this Order apply" wording, and it is revoked.
+     - **Acceptance chain (one):**
+       - golden 27/27; extent, feed and markup checks PASS (our faults 0); `law_text` claims unchanged against `r6b.claims15`;
+       - catalogue: 1 example accepted, 4 re-keyed; the feed catalogue's 31 Schedule-triple renames from round 13 accepted;
+       - census run-06: silent 64 → 57, nothing new that is real.
+     - Full suite: 9,178 pass. Restore point `cv-s05-before-run05-batch`; snapshots `r6b.rules14`, `r6b.claims15`.
 4. **Agent check, seed 20.**
    - Pass: close.
    - A NEW that places a wrong bound or silently drops: fix it with tests and fresh reads, one acceptance chain, seed 21.
