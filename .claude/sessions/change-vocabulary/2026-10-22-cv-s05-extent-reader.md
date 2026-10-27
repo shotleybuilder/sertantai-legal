@@ -289,6 +289,8 @@ The session does not close until its results pass.
 - ✅ Pass bar for the agent check: decided 2026-10-27 (see "Pass bar: decided")
 - ⬜ Round 11: CV-S05c's classes by count (A: "In Part N— (a) … (b) …" only (a) read, 6 laws; B: item's own exception drops it, 8+3; C: plain refs dropped with a qualified companion, 4+1; D: trailing-qualified item not withheld, 4+2; E: one-offs, 7; F: excluded provisions held, 4 new; Schedule "this paragraph" own extent, ~12) with their laws as fixtures (`run-01/confirmed.md`, `overreach.md`, `unread_tail.md`); round 10's NEW-1 (lost lead "In Schedule N—", 9 laws); then re-run run-01's commands as run-02 and compare; then agent check against the agreed bar
 - ⬜ Deferred from CV-S05c: after round 11's run-02, decide whether the census earns a permanent read-only mix task (pure modules + tests)
+- ⬜ CV-S05d Whole-Reader Census (ACTIVE, `2026-10-27-cv-s05d-whole-reader-census.md`): census every sentence and reader; run-01 recall 10/10, 11 confirmed wrong-bound laws for round 13
+- ⬜ **Application Scope Hand-off to Fractalaw (PENDING, `2026-10-27-application-scope-handoff.md`; Jason 2026-10-27):** application to cases is fitness scope (skill class KA), not extent. CV-S05d's census extracts these sentences for fractalaw (61 laws with no fitness data in run-01). It is not closed by CV-S05 or CV-S05d: keep it open until it is done.
 - ⬜ Fix until the check passes reliably; record the result
 
 ## Dependencies

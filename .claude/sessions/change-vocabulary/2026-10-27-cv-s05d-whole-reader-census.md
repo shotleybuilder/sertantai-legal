@@ -3,6 +3,8 @@ session: 'CV-S05d: Whole-Reader Census'
 status: active
 opened: '2026-10-27'
 parent: change-vocabulary/2026-10-22-cv-s05-extent-reader.md
+enables:
+  - change-vocabulary/2026-10-27-application-scope-handoff.md (PENDING: scope sentences to fractalaw)
 bugs:
   - pattern: "Extent census run-01 confirmed wrong bounds: 2017/3 s.182(2)(v) 'this Chapter' dropped (R10 NEW-3 still open); 1977/45 s.65(10)(b) 'subsections (1), (3) and (6) to (10) of this section' and (d) s.65(4),(5) dropped; 1999/9 s.17(c) same-extent item dropped; 1999/28 s.43 default S (text S+NI); 2010/29 s.49 'extends only to E+W, except that—' no default; 1968/64, 1968/60, 1936/49 'not extend to Scotland or, . . . to NI' default E+W+NI"
     category: extent_reader
