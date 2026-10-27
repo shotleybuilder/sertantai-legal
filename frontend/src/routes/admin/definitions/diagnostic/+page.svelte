@@ -190,7 +190,7 @@
 							<div
 								class="h-3 rounded {isCeiling ? 'bg-gray-200' : 'bg-blue-400'}"
 								style="width: {categoryBarWidth(count)}"
-							/>
+							></div>
 						</div>
 						<div class="w-8 text-right text-xs font-medium">{count}</div>
 					</button>

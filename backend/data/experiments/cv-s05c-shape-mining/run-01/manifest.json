@@ -1,0 +1,38 @@
+{
+  "run": "run-01",
+  "date": "2026-10-27",
+  "session": ".claude/sessions/change-vocabulary/2026-10-27-cv-s05c-shape-mining.md",
+  "commit": "46e58a468a4011eeac858d23d11dcf493e6455c6",
+  "extent_read_version": "ade7ca56a35d",
+  "commands": [
+    "cd backend && mix run data/experiments/cv-s05c-shape-mining/run-01/dump.exs data/experiments/cv-s05c-shape-mining/run-01/sentences.tsv",
+    "cd backend/data/experiments/cv-s05c-shape-mining/run-01 && /usr/bin/python3 mine.py sentences.tsv .",
+    "cd backend && mix run data/experiments/cv-s05c-shape-mining/run-01/verdicts.exs data/experiments/cv-s05c-shape-mining/run-01/items.tsv data/experiments/cv-s05c-shape-mining/run-01/verdicts.tsv",
+    "cd backend/data/experiments/cv-s05c-shape-mining/run-01 && /usr/bin/python3 review.py",
+    "dropped.tsv: inline python in the session (items.tsv + verdicts.tsv: not-held items in list-classed sentences)"
+  ],
+  "inputs": {
+    "sentences.tsv": {
+      "sha256": "ad6e0357937f996d4370f3f037ae24f323b1afdfb04c6d086bbb6d1c873d962e",
+      "laws_held": 3358,
+      "sentences": 3039,
+      "laws_with_sentences": 1338
+    }
+  },
+  "scripts": {
+    "dump.exs": "2224e7077bcaec61e39c130b886d2cef245fa6095debef6cf7882a13c04f57d5",
+    "mine.py": "cc8744ed0fe5b40e00f1f51e3d6863a2bce126b3e8565009aa5a137d6cda1faa",
+    "verdicts.exs": "47b42e2d91ba2edc82087362272a7bcad87323b7aecd4e8cdc1deeb7f3b37d10",
+    "review.py": "95a85adc88180b4d59d2f1df89bad6f6586f8bf0fac6f4466784cc027128ccb3"
+  },
+  "outputs": {
+    "items.tsv": "ed469d6003ec747297beaf32afb1f8d36b4027cfa26aee2f82aa0788bfc282b6",
+    "shapes.tsv": "d69d13c2f2e574ef9e7f16f1439b6abe482f4dbe795827075358aa83eadadad7",
+    "stats.json": "e2fd9c1e22fa8847be858ef8f2408814b64bcc7a2a20ba512191598ab9ad6c60",
+    "verdicts.tsv": "3edb1ae1d45c743f4cd5fb9121dd1b3bf1a352fbf8287ea4e65776429d660aba",
+    "review.tsv": "32ab1ed8ad3b537197bf2d8928c5781ee0275dbd01ae3e099a444020d74b09af",
+    "review.json": "28f3814f4e9bdf79e2cf45fa363337ce6d191aaf019f9089d74ad68c791448dc",
+    "dropped.tsv": "41300d86adfba634cb6cee3ee41136c87577b49af6601570f90aa9fb7d157872",
+    "README.md": "(edited by hand)"
+  }
+}

@@ -13,6 +13,7 @@ const browserGlobals = {
 	navigator: 'readonly',
 	localStorage: 'readonly',
 	sessionStorage: 'readonly',
+	Storage: 'readonly',
 	// Timers
 	setTimeout: 'readonly',
 	clearTimeout: 'readonly',

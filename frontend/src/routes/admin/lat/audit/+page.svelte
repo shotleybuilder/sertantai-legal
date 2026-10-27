@@ -2,7 +2,7 @@
 	import { useAuditSummaryQuery, useAuditLawQuery, auditKeys } from '$lib/query/audit';
 	import { useReparseMutation } from '$lib/query/lat';
 	import { useQueryClient } from '@tanstack/svelte-query';
-	import type { AuditLawResult, AuditWarning } from '$lib/api/audit';
+	import type { AuditLawResult } from '$lib/api/audit';
 	import { reparseLat } from '$lib/api/lat';
 
 	let familyFilter = $state('');
@@ -510,7 +510,7 @@
 						<div
 							class="bg-indigo-600 h-2 rounded-full transition-all"
 							style="width: {((bulkProgress / bulkTotal) * 100).toFixed(0)}%"
-						/>
+						></div>
 					</div>
 				{/if}
 				{#if bulkResults.some((r) => r.status === 'error')}

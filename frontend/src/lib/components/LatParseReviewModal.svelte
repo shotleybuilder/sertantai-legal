@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onDestroy } from 'svelte';
+	import { onDestroy, untrack } from 'svelte';
 	import {
 		latParseStream,
 		confirmLatRecord,
@@ -31,7 +31,7 @@
 	const queryClient = useQueryClient();
 
 	// State
-	let currentIndex = $state(initialIndex);
+	let currentIndex = $state(untrack(() => initialIndex)); // reset on open, not tracked
 	let parseResult: LatParseResult | null = $state(null);
 	let confirmedCount = $state(0);
 	let skippedCount = $state(0);
@@ -309,7 +309,7 @@
 						</span>
 					{/if}
 				</div>
-				<button onclick={handleCancel} class="text-gray-400 hover:text-gray-600">
+				<button onclick={handleCancel} aria-label="Close" class="text-gray-400 hover:text-gray-600">
 					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							stroke-linecap="round"

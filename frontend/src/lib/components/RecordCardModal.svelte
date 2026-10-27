@@ -128,7 +128,11 @@
 							{/if}
 						</div>
 					</div>
-					<button onclick={handleClose} class="ml-4 text-gray-400 hover:text-gray-600">
+					<button
+						onclick={handleClose}
+						aria-label="Close"
+						class="ml-4 text-gray-400 hover:text-gray-600"
+					>
 						<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								stroke-linecap="round"

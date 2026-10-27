@@ -269,16 +269,6 @@
 		return parts.join(' > ');
 	}
 
-	function totalAnnotationCount(row: LatRow): number {
-		return (
-			(row.amendment_count ?? 0) +
-			(row.modification_count ?? 0) +
-			(row.commencement_count ?? 0) +
-			(row.extent_count ?? 0) +
-			(row.editorial_count ?? 0)
-		);
-	}
-
 	function formatNumber(n: number): string {
 		return n.toLocaleString();
 	}
@@ -632,7 +622,7 @@
 													</svg>
 												</button>
 											{:else}
-												<span class="w-4" />
+												<span class="w-4"></span>
 											{/if}
 											<span
 												class="inline-block px-1.5 py-0.5 rounded text-xs font-medium {sectionTypeClass(

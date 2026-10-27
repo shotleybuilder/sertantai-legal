@@ -30,6 +30,14 @@
 		expanded = !expanded;
 	}
 
+	function handleHeaderKeydown(e: KeyboardEvent) {
+		if (e.target !== e.currentTarget) return; // keys on the reparse button
+		if (e.key === 'Enter' || e.key === ' ') {
+			e.preventDefault();
+			toggle();
+		}
+	}
+
 	function handleReparse(e: MouseEvent) {
 		e.stopPropagation(); // Don't toggle section when clicking reparse
 		onreparse?.();
@@ -50,10 +58,13 @@
 			? 'opacity-75'
 			: ''}"
 	>
-		<!-- Section Header -->
-		<button
-			type="button"
+		<!-- Section Header (div, not button: it contains the reparse button) -->
+		<div
+			role="button"
+			tabindex="0"
+			aria-expanded={expanded}
 			onclick={toggle}
+			onkeydown={handleHeaderKeydown}
 			class="w-full bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center hover:bg-gray-100 transition-colors cursor-pointer"
 		>
 			<div class="flex items-center space-x-2">
@@ -117,7 +128,7 @@
 					/>
 				</svg>
 			</div>
-		</button>
+		</div>
 
 		<!-- Section Content -->
 		{#if expanded}

@@ -628,6 +628,7 @@
 				<div class="mx-4 mt-4 rounded-md bg-green-50 p-4 flex justify-between items-center">
 					<p class="text-sm text-green-700">{parseCompleteMessage}</p>
 					<button
+						aria-label="Dismiss"
 						onclick={() => (parseCompleteMessage = '')}
 						class="text-green-600 hover:text-green-800"
 					>

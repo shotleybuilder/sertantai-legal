@@ -461,7 +461,11 @@
 						<p class="font-medium text-gray-900">{operationMessage}</p>
 					{/if}
 				</div>
-				<button onclick={dismissResults} class="text-gray-400 hover:text-gray-600">
+				<button
+					onclick={dismissResults}
+					aria-label="Dismiss"
+					class="text-gray-400 hover:text-gray-600"
+				>
 					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							stroke-linecap="round"

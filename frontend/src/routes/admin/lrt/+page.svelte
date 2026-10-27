@@ -1215,7 +1215,7 @@
 		<div
 			class="fixed inset-0 bg-black/30 z-30 lg:hidden"
 			onclick={() => (sidebarVisible = false)}
-		/>
+		></div>
 	{/if}
 
 	<!-- View Sidebar -->
@@ -1376,6 +1376,7 @@
 								Save View
 							</button>
 							<button
+								aria-label="Save view"
 								type="button"
 								onclick={handleSaveView}
 								class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-indigo-600 border-l border-indigo-500 rounded-r-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"

@@ -18,15 +18,7 @@
 		substantive_defs: number;
 	}
 
-	interface Totals {
-		total_defs: number;
-		cross_refs: number;
-		linked: number;
-		citation_defs: number;
-	}
-
 	let families: FamilyStats[] = $state([]);
-	let totals: Totals | null = $state(null);
 	let loading = $state(true);
 	let error = $state('');
 
@@ -132,7 +124,6 @@
 			if (!res.ok) throw new Error(`Stats API returned ${res.status}`);
 			const data = await res.json();
 			families = data.families;
-			totals = data.totals;
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to load stats';
 		} finally {

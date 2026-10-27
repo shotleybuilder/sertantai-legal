@@ -13,7 +13,6 @@
 	} from '@shotleybuilder/svelte-gridlite-kit';
 	import { createPGLiteAdapter } from '@shotleybuilder/gridlite-adapter-pglite';
 	import type { QueryAdapter } from '@shotleybuilder/svelte-gridlite-kit/adapter';
-	import { UK_LRT_COLUMN_METADATA } from '$lib/pglite/uk-lrt-columns';
 	import {
 		initViewStore,
 		SaveViewModal,
@@ -102,16 +101,6 @@
 	const QUEUE_COLUMNS = QUEUE_COLUMNS_LIST.join(', ');
 	// Pre-compute lat_stale: true when LRT was updated > 6 months after LAT was last parsed
 	const BASE_QUERY = `SELECT ${QUEUE_COLUMNS}, (updated_at IS NOT NULL AND latest_lat_updated_at IS NOT NULL AND updated_at > latest_lat_updated_at + INTERVAL '6 months') AS lat_stale FROM laws`;
-	const queueColumnMetadata = [
-		...UK_LRT_COLUMN_METADATA.filter((c) => QUEUE_COLUMNS_LIST.includes(c.name)),
-		{
-			name: 'lat_stale',
-			dataType: 'boolean' as const,
-			postgresType: 'bool',
-			nullable: true,
-			hasDefault: false
-		}
-	];
 
 	// Core filters (always apply): candidates for LAT parsing, not revoked
 	// Exclude records where the effective classification is 'not_making':
@@ -186,7 +175,6 @@
 
 	// ── State ────────────────────────────────────────────────────────
 
-	let reparsingLaw: string | null = $state(null);
 	let reparseMessage = $state('');
 	let reparseError = $state('');
 
@@ -206,7 +194,7 @@
 		} else {
 			selectedLawNames.add(name);
 		}
-		selectedLawNames = selectedLawNames; // trigger reactivity
+		selectedLawNames = new Set(selectedLawNames); // new reference triggers reactivity
 	}
 
 	async function selectAll() {
@@ -269,6 +257,7 @@
 
 	/** Update a record via direct API call + PGLite update. */
 	async function updateRecord(id: string, field: string, value: string | boolean | null) {
+		if (!EDITABLE_FIELDS.has(field)) return;
 		const safeChanges: Record<string, unknown> = {};
 		safeChanges[field] = value === '' ? null : value;
 		if (field === 'making_review') {
@@ -561,12 +550,6 @@
 	}
 
 	// LRT Refresh (Parse & Review modal)
-	function openLrtRefresh(row: Record<string, unknown>) {
-		lrtModalRecord = row;
-		lrtModalRecordId = row.id as string;
-		lrtModalOpen = true;
-	}
-
 	function closeLrtRefresh() {
 		lrtModalOpen = false;
 		lrtModalRecord = null;
@@ -1136,7 +1119,6 @@
 
 	// Stats from current filtered query
 	let statTotal = $state(0);
-	let statParseable = $state(0);
 	let statMissing = $state(0);
 	let statStale = $state(0);
 
@@ -1149,12 +1131,6 @@
 				params
 			);
 			statTotal = parseInt(total.rows[0]?.count ?? '0', 10);
-			// Count parseable: review takes precedence, fall back to auto
-			const parseable = await db.query<{ count: string }>(
-				`SELECT COUNT(*) as count FROM (${sql}) sub WHERE making_review = 'making' OR making_review = 'uncertain' OR (making_review IS NULL AND (making_classification IS NULL OR making_classification != 'not_making'))`,
-				params
-			);
-			statParseable = parseInt(parseable.rows[0]?.count ?? '0', 10);
 			// For detailed stats, check if the filtered data includes lat_count-based filters
 			const hasLatFilters = latestGridState.filters.some(
 				(f: any) => f.field === 'lat_count' || f.id?.startsWith('q-lat')
@@ -1218,7 +1194,7 @@
 		<div
 			class="fixed inset-0 bg-black/30 z-30 lg:hidden"
 			onclick={() => (sidebarVisible = false)}
-		/>
+		></div>
 	{/if}
 
 	<!-- View Sidebar -->
@@ -1408,6 +1384,7 @@
 							Save View
 						</button>
 						<button
+							aria-label="Save view"
 							type="button"
 							onclick={handleSaveView}
 							class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-indigo-600 border-l border-indigo-500 rounded-r-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"

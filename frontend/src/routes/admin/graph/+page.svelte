@@ -648,8 +648,9 @@
 							<div class="border rounded p-3 space-y-2">
 								<h4 class="text-xs font-medium text-gray-700">Enacted Law</h4>
 								<div>
-									<label class="text-xs text-gray-500">Family</label>
+									<label for="graph-edit-family" class="text-xs text-gray-500">Family</label>
 									<select
+										id="graph-edit-family"
 										bind:value={editFamily}
 										class="w-full px-2 py-1 border rounded text-xs bg-white"
 									>
@@ -667,8 +668,9 @@
 									</select>
 								</div>
 								<div>
-									<label class="text-xs text-gray-500">Family II</label>
+									<label for="graph-edit-family-ii" class="text-xs text-gray-500">Family II</label>
 									<select
+										id="graph-edit-family-ii"
 										bind:value={editFamilyII}
 										class="w-full px-2 py-1 border rounded text-xs bg-white"
 									>
@@ -756,8 +758,9 @@
 									>
 								</div>
 								<div>
-									<label class="text-xs text-gray-500">Family</label>
+									<label for="graph-edit-parent-family" class="text-xs text-gray-500">Family</label>
 									<select
+										id="graph-edit-parent-family"
 										bind:value={editParentFamily}
 										class="w-full px-2 py-1 border rounded text-xs bg-white"
 									>
@@ -775,8 +778,11 @@
 									</select>
 								</div>
 								<div>
-									<label class="text-xs text-gray-500">Family II</label>
+									<label for="graph-edit-parent-family-ii" class="text-xs text-gray-500"
+										>Family II</label
+									>
 									<select
+										id="graph-edit-parent-family-ii"
 										bind:value={editParentFamilyII}
 										class="w-full px-2 py-1 border rounded text-xs bg-white"
 									>

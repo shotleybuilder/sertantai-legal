@@ -710,7 +710,7 @@
 								<div
 									class="bg-blue-600 h-2 rounded-full transition-all duration-300"
 									style="width: {(autoReparseProgress.current / autoReparseProgress.total) * 100}%"
-								/>
+								></div>
 							</div>
 							<div class="text-xs text-blue-700">
 								{autoReparseProgress.successes} succeeded{#if autoReparseProgress.errors > 0},
@@ -741,6 +741,7 @@
 									>
 										<span class="text-gray-500">{fullReparse ? 'Full' : 'Min'}</span>
 										<button
+											aria-label="Toggle full reparse"
 											type="button"
 											role="switch"
 											aria-checked={fullReparse}
@@ -753,7 +754,7 @@
 												class="inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform {fullReparse
 													? 'translate-x-4.5'
 													: 'translate-x-0.5'}"
-											/>
+											></span>
 										</button>
 									</label>
 									<span class="text-gray-300">|</span>
