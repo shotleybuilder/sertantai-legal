@@ -8,9 +8,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Places do
 
   alias SertantaiLegal.Scraper.Territory
 
-  @places "England and Wales|Great Britain|the United Kingdom|United Kingdom|England|Wales|Scotland|Northern Ireland"
+  # ("Paragraph 3 of Schedule 10 extends to other parts of the United
+  # Kingdom": the whole of it with the law's own, ukpga 1978/29 s.110,
+  # CV-S05 census run-05 R12)
+  @places "other parts of the United Kingdom|England and Wales|Great Britain|the United Kingdom|United Kingdom|England|Wales|Scotland|Northern Ireland"
   @codes %{
     "england and wales" => "E+W",
+    "other parts of the united kingdom" => "E+W+S+NI",
     "great britain" => "E+W+S",
     "the united kingdom" => "E+W+S+NI",
     "united kingdom" => "E+W+S+NI",

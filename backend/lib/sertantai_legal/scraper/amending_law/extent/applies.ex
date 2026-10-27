@@ -39,12 +39,15 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Applies do
   # a subject's words: never a verb or a condition of its own ("Subsection
   # (2) applies if, …, the regulator considers— … as it applies in relation
   # to England": 1984/55 s.120G)
-  @subject_words "(?:(?!\\bappl(?:y|ies)\\b|\\b(?:if|where|as|unless)\\b)[^.;])*?"
+  # (nor an extent verb: "Parts 1, 5 and 6 extend to England and Wales, but
+  # Part 5 applies …" is two statements, uksi 2010/708 art.1, CV-S05 census
+  # run-05 R4)
+  @subject_words "(?:(?!\\bappl(?:y|ies)\\b|\\bextends?\\b|\\b(?:if|where|as|unless)\\b)[^.;])*?"
 
   # (also "Section 61B(1) to (7) (…) cease to apply in relation to England":
   # not applying there, ukpga 2013/27 s.5, round 13 S14)
   @statement Regex.compile!(
-               "^\\s*(?<subj>(?:This|That)\\s+(?:paragraph|sub-paragraph|section|subsection|regulation|article|rule)|(?:the\\s+)?(?:amendments?|omission|revocations?|repeals?)\\b#{@subject_words}|#{@provisions}\\s+[\\d(]#{@subject_words})\\s+(?:(?:shall|will)\\s+)?(?<not>(?:does|do|shall)\\s+not\\s+|ceases?\\s+to\\s+)?(?<ext>extends?\\s+and\\s+)?(?:only\\s+)?appl(?:y|ies)\\s+(?:only\\s+)?(?:in\\s+relation\\s+to|to|in)\\s+(?<things>(?:(?!\\b(?:other\\s+than|except|outside|excluding)\\b)[^.;,—–])*?\\s+in\\s+)?(?<places>#{@place_list})(?<only>\\s+only)?(?<resp>\\s+respectively)?\\s*\\.?\\s*$",
+               "^\\s*(?<subj>(?:This|That)\\s+(?:paragraph|sub-paragraph|section|subsection|regulation|article|rule)|(?:the\\s+)?(?:amendments?|omission|revocations?|repeals?)\\b#{@subject_words}|#{@provisions}\\s+[\\d(]#{@subject_words})\\s+(?:(?:shall|will)\\s+)?(?<not>(?:does|do|shall)\\s+not\\s+|ceases?\\s+to\\s+)?(?:(?<ext>extends?\\s+and\\s+)|(?<extbut>extends?\\s+to\\s+(?<eplaces>(?>#{@place_list}))\\s*,?\\s*but\\s+(?:(?:it|they)\\s+)?))?(?:only\\s+)?appl(?:y|ies)\\s+(?:only\\s+)?(?:in\\s+relation\\s+to|to|in)\\s+(?<things>(?:(?!\\b(?:other\\s+than|except|outside|excluding)\\b)[^.;,—–])*?\\s+in\\s+)?(?<places>#{@place_list})(?<only>\\s+only)?(?<resp>\\s+respectively)?\\s*\\.?\\s*$",
                "iu"
              )
 
@@ -63,10 +66,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Applies do
         ref != nil,
         not String.contains?(ref, "("),
         not container?(doc, id),
-        unit <- Units.units(doc, id),
+        {unit_id, unit} <- Units.units_with_ids(doc, id),
+        unit_ref = Order.ref(unit_id) || ref,
         s <- Clause.sentences(unit),
         part <- Units.statements(s),
-        entry <- read(part, ref, doc),
+        entry <- read(part, ref, doc, unit_ref),
         uniq: true,
         do: entry
   end
@@ -83,19 +87,45 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Applies do
     end
   end
 
-  @doc "The entries one sentence of the provision `ref` states."
-  @spec read(String.t(), String.t(), Doc.t()) :: [entry()]
-  def read(s, ref, doc) do
+  @doc """
+  The entries one sentence of the provision `ref` states; `unit_ref` the
+  numbered part of it the sentence is in ("This subsection does not apply
+  to Scotland" in s.189(3): s.189(3), ukpga 1974/39, CV-S05 census run-05
+  R7).
+  """
+  @spec read(String.t(), String.t(), Doc.t(), String.t() | nil) :: [entry()]
+  def read(s, ref, doc, unit_ref \\ nil) do
     cond do
-      m = Regex.named_captures(@statement, s) -> statement_entries(m, ref, doc)
+      m = Regex.named_captures(@statement, s) -> statement_entries(m, ref, doc, unit_ref || ref)
       m = Regex.named_captures(@list, s) -> list_entries(m, ref, doc)
       true -> []
     end
   end
 
-  defp statement_entries(m, ref, doc) do
+  @doc """
+  The numbered part of the provision `ref` that holds the sentence `s`
+  ("s.189(3)"), else `ref`: what "This subsection" in it is, for a reader
+  given the sentence alone (the catalogue, `Extent.Patterns`).
+  """
+  @spec unit_ref(String.t(), String.t(), Doc.t()) :: String.t()
+  def unit_ref(s, ref, %Doc{} = doc) do
+    head = s |> String.trim() |> String.slice(0, 60)
+
+    with id when id != nil <- Enum.find(doc.ids, &(Order.ref(&1) == ref)),
+         {unit_id, _} <-
+           Enum.find(Units.units_with_ids(doc, id), fn {_, text} ->
+             String.contains?(text, head)
+           end),
+         unit when unit != nil <- Order.ref(unit_id) do
+      unit
+    else
+      _ -> ref
+    end
+  end
+
+  defp statement_entries(m, ref, doc, unit_ref) do
     kind = if m["not"] != "", do: :applies_not, else: :applies
-    refs = subject(m["subj"], ref, doc)
+    refs = subject(m["subj"], ref, doc, unit_ref)
 
     cond do
       refs == [] ->
@@ -128,8 +158,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Applies do
       true ->
         place = Places.places(m["places"])
 
+        # ("article 9, together with Schedule 2, extend to England and Wales
+        # but apply in relation to England only": its extent too, R4)
         extent =
-          if m["ext"] != "" and kind == :applies, do: [{extent_kind(m), place, refs}], else: []
+          cond do
+            m["ext"] != "" and kind == :applies -> [{extent_kind(m), place, refs}]
+            m["extbut"] != "" -> [{:named, Places.places(m["eplaces"]), refs}]
+            true -> []
+          end
 
         [{kind, place, refs} | extent]
     end
@@ -164,10 +200,16 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Applies do
   # "Sub-paragraph (3)", "Paragraph (1)"); the provisions making the
   # amendments ("the amendments made by paragraph 14(2) of Schedule 13", "…
   # by sub-paragraph (1)"); or those named
-  defp subject(subj, ref, doc) do
+  defp subject(subj, ref, doc, unit_ref) do
     bare = String.replace(subj, ~r/\((?=[^()]*\s)(?:[^()]|\([^()]*\))*\)/u, " ")
 
     cond do
+      # (a subsection's own: "This subsection"; an SI's numbered paragraph,
+      # "This paragraph" in reg.5(3); never a Schedule paragraph's whole)
+      bare =~ ~r/^\s*(?:This|That)\s+(?:subsection|sub-paragraph)\b/iu or
+          (bare =~ ~r/^\s*(?:This|That)\s+paragraph\b/iu and unit_ref =~ ~r/^(?:reg|art)\./) ->
+        [unit_ref]
+
       bare =~ ~r/^\s*(?:This|That)\s+/iu ->
         [ref]
 

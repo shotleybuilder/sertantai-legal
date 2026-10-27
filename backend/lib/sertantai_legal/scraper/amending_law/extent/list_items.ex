@@ -11,7 +11,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, RefList}
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Asides, ItemExceptions, Parts, Units}
+
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{
+    Asides,
+    ItemExceptions,
+    NestedLocators,
+    Parts,
+    Units
+  }
 
   @typedoc "An item list read: the provisions named, excepted and withheld."
   @type reading :: %{refs: [String.t()], excepted: [String.t()], unread: [String.t()]}
@@ -65,6 +72,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
       |> Parts.qualify_chapters()
       |> Units.no_dots()
       |> String.split(~r/;|,\s*(?=(?:and\s*)?(?:z?[a-z]\d{0,2}|[ivx]{2,4})\s)/u)
+      |> NestedLocators.expand()
       |> own_items()
       |> Enum.map(&item(&1, clause_ref, doc))
 
@@ -88,6 +96,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
   # as relate to …)": the section read, the rest of Part 7 withheld;
   # ukpga 2008/4 s.152, round 12)
   defp item(item, clause_ref, doc) do
+    case NestedLocators.some_of(item) do
+      nil -> item_with_asides(item, clause_ref, doc)
+      loc -> %{refs: [], excepted: [], unread: provisions(loc, clause_ref, doc)}
+    end
+  end
+
+  defp item_with_asides(item, clause_ref, doc) do
     {item, some_of} = Asides.together_with_such(item, clause_ref, doc)
     r = item_read(item, clause_ref, doc)
 
@@ -106,6 +121,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
       |> String.split(~r/\.\s+(?=[A-Z][a-z])/u, parts: 2)
       |> hd()
       |> String.replace(@label, "")
+      # ("section 8, so far as it relates to Parts 1, 2 and 5 of Schedule 7
+      # (and those Parts of Schedule 7)": the `@and_those` form, ukpga
+      # 2020/7 s.100, CV-S05 census run-05 R8)
+      |> String.replace(
+        ~r/\s*\(\s*and\s+(th(?:ose|at)\s+(?:Parts?|paragraphs?|provisions?|Schedules?|sections?))(?:\s+of\s+Schedule\s+\d+[A-Z]*)?\s*\)\s*\.?\s*$/iu,
+        ", and \\1"
+      )
       |> String.replace(@qualified_aside, " ")
       |> String.replace(@locator, "")
       # ("in section 47, subsection (1)": section 47(1), ukpga 1993/9 s.48)
@@ -116,7 +138,17 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
       )
 
     {main, except_text, at, len} = ItemExceptions.split(item)
-    excepted = if except_text, do: provisions(except_text, clause_ref, doc), else: []
+
+    # (a bare subsection excepted is the item's own provision's: "section
+    # 153 except subsection (1)(k) and (m)", ukpga 1990/43 s.164, CV-S05
+    # census run-05 R3)
+    owner =
+      case RefList.parse(main, clause_ref) do
+        [one] -> if String.contains?(one, "("), do: clause_ref, else: one
+        _ -> clause_ref
+      end
+
+    excepted = if except_text, do: provisions(except_text, owner, doc), else: []
 
     if except_text != nil and excepted == [] do
       # an exception not read ("… except as provided by subsection (2)",

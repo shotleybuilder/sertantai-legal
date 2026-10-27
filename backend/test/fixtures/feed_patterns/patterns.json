@@ -2810,79 +2810,79 @@
         "UK_uksi_2003_1998/3611dd8c9b"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N → sch.N.para.1n2": {
+    "ref: schedule-N-part-N-paragraph-N → sch.N.pt.N.para.1n2": {
       "count": 1,
       "examples": [
         "UK_nisr_2009_238/affe8aa361"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N → sch.N.para.1n3": {
+    "ref: schedule-N-part-N-paragraph-N → sch.N.pt.N.para.1n3": {
       "count": 1,
       "examples": [
         "UK_nisr_2009_238/4dd23e64d1"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N → sch.N.para.2n2": {
+    "ref: schedule-N-part-N-paragraph-N → sch.N.pt.N.para.2n2": {
       "count": 1,
       "examples": [
         "UK_nisr_2009_238/48685aa183"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N → sch.N.para.2n3": {
+    "ref: schedule-N-part-N-paragraph-N → sch.N.pt.N.para.2n3": {
       "count": 1,
       "examples": [
         "UK_nisr_2009_238/60e18ee502"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N → sch.N.para.3n2": {
+    "ref: schedule-N-part-N-paragraph-N → sch.N.pt.N.para.3n2": {
       "count": 1,
       "examples": [
         "UK_nisr_2009_238/d93e63481d"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N → sch.N.para.3n3": {
+    "ref: schedule-N-part-N-paragraph-N → sch.N.pt.N.para.3n3": {
       "count": 1,
       "examples": [
         "UK_nisr_2009_238/a72d29f334"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N → sch.N.para.4n2": {
+    "ref: schedule-N-part-N-paragraph-N → sch.N.pt.N.para.4n2": {
       "count": 1,
       "examples": [
         "UK_nisr_2009_238/5b5c1feac9"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N → sch.N.para.4n3": {
+    "ref: schedule-N-part-N-paragraph-N → sch.N.pt.N.para.4n3": {
       "count": 1,
       "examples": [
         "UK_nisr_2009_238/ce9398c9f6"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N → sch.N.para.5n2": {
+    "ref: schedule-N-part-N-paragraph-N → sch.N.pt.N.para.5n2": {
       "count": 1,
       "examples": [
         "UK_nisr_2009_238/b5a072a863"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N → sch.N.para.5n3": {
+    "ref: schedule-N-part-N-paragraph-N → sch.N.pt.N.para.5n3": {
       "count": 1,
       "examples": [
         "UK_nisr_2009_238/5ca418767d"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N → sch.N.para.6n2": {
+    "ref: schedule-N-part-N-paragraph-N → sch.N.pt.N.para.6n2": {
       "count": 1,
       "examples": [
         "UK_nisr_2009_238/fba122566d"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N → sch.N.para.6n3": {
+    "ref: schedule-N-part-N-paragraph-N → sch.N.pt.N.para.6n3": {
       "count": 1,
       "examples": [
         "UK_nisr_2009_238/822c9dfdb4"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N → sch.N.para.N": {
+    "ref: schedule-N-part-N-paragraph-N → sch.N.pt.N.para.N": {
       "count": 880,
       "examples": [
         "UK_nisr_1995_340/6efdcfd7b9",
@@ -2890,7 +2890,7 @@
         "UK_nisr_1997_195/99dc59cacd"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N → sch.N.para.N (range end)": {
+    "ref: schedule-N-part-N-paragraph-N → sch.N.pt.N.para.N (range end)": {
       "count": 25,
       "examples": [
         "UK_ukpga_1973_65/c3063814ff",
@@ -2898,7 +2898,7 @@
         "UK_ukpga_1987_53/f6990208d6"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N → sch.N.para.N.N": {
+    "ref: schedule-N-part-N-paragraph-N → sch.N.pt.N.para.N.N": {
       "count": 31,
       "examples": [
         "UK_nisr_1996_119/0f60072028",
@@ -2912,7 +2912,7 @@
         "UK_ukpga_1993_28/5351563d8d"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N(+1) → sch.N.para.N(+1)": {
+    "ref: schedule-N-part-N-paragraph-N(+1) → sch.N.pt.N.para.N(+1)": {
       "count": 364,
       "examples": [
         "UK_nisr_1997_455/31a01cbe9c",
@@ -2920,7 +2920,7 @@
         "UK_nisr_2005_279/599134c38b"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N(+1) → sch.N.para.N(+1) (range end)": {
+    "ref: schedule-N-part-N-paragraph-N(+1) → sch.N.pt.N.para.N(+1) (range end)": {
       "count": 8,
       "examples": [
         "UK_ukpga_1972_70/dd2dd4e4c4",
@@ -2928,13 +2928,13 @@
         "UK_ukpga_2006_32/93f41a4cec"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N(+1) → sch.N.para.N.N(+1)": {
+    "ref: schedule-N-part-N-paragraph-N(+1) → sch.N.pt.N.para.N.N(+1)": {
       "count": 93,
       "examples": [
         "UK_uksi_2015_596/ff453a6738"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N(+2) → sch.N.para.N(+2)": {
+    "ref: schedule-N-part-N-paragraph-N(+2) → sch.N.pt.N.para.N(+2)": {
       "count": 166,
       "examples": [
         "UK_nisr_1997_455/94a1cc33f0",
@@ -2942,26 +2942,26 @@
         "UK_ukpga_1972_70/f4554ef3ce"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N(+2) → sch.N.para.N(+2) (range end)": {
+    "ref: schedule-N-part-N-paragraph-N(+2) → sch.N.pt.N.para.N(+2) (range end)": {
       "count": 4,
       "examples": [
         "UK_ukpga_2012_10/1e959130e6",
         "UK_uksi_2016_1154/a78aa86739"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N(+2) → sch.N.para.N.N(+2)": {
+    "ref: schedule-N-part-N-paragraph-N(+2) → sch.N.pt.N.para.N.N(+2)": {
       "count": 53,
       "examples": [
         "UK_uksi_2015_596/e619ce8825"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N(+2) → sch.N.para.N.N(+2) (range end)": {
+    "ref: schedule-N-part-N-paragraph-N(+2) → sch.N.pt.N.para.N.N(+2) (range end)": {
       "count": 2,
       "examples": [
         "UK_uksi_2015_596/5d1525e3b3"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N(+3) → sch.N.para.N(+3)": {
+    "ref: schedule-N-part-N-paragraph-N(+3) → sch.N.pt.N.para.N(+3)": {
       "count": 12,
       "examples": [
         "UK_uksi_1989_1796/ee2c9858d2",
@@ -2969,13 +2969,13 @@
         "UK_uksi_2008_2852/4102b933ae"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N(+3) → sch.N.para.N.N(+3)": {
+    "ref: schedule-N-part-N-paragraph-N(+3) → sch.N.pt.N.para.N.N(+3)": {
       "count": 13,
       "examples": [
         "UK_uksi_2015_596/4db4ae027f"
       ]
     },
-    "ref: schedule-N-part-N-paragraph-N(+4) → sch.N.para.N.N(+4)": {
+    "ref: schedule-N-part-N-paragraph-N(+4) → sch.N.pt.N.para.N.N(+4)": {
       "count": 3,
       "examples": [
         "UK_uksi_2015_596/12bc3be42d"
@@ -2988,20 +2988,20 @@
         "UK_uksi_1996_972/eb0529857f"
       ]
     },
-    "ref: schedule-N-part-N-part-N → sch.N.pt.N": {
+    "ref: schedule-N-part-N-part-N → sch.N.pt.N.pt.N": {
       "count": 3,
       "examples": [
         "UK_ukpga_2006_46/863c1bc789",
         "UK_uksi_1996_972/3c5f049078"
       ]
     },
-    "ref: schedule-N-part-N-part-N-paragraph-N → sch.N.pt.N": {
+    "ref: schedule-N-part-N-part-N-paragraph-N → sch.N.pt.N.pt.N.para.N": {
       "count": 2,
       "examples": [
         "UK_ukpga_2006_46/b4d36f64be"
       ]
     },
-    "ref: schedule-N-part-N-part-N-section-N → sch.N.pt.N": {
+    "ref: schedule-N-part-N-part-N-section-N → sch.N.pt.N.pt.N": {
       "count": 1,
       "examples": [
         "UK_uksi_1996_972/eb0529857f"
@@ -3211,20 +3211,20 @@
         "UK_uksi_1998_1941/6fefdc4e1b"
       ]
     },
-    "ref: schedule-part-N-paragraph-N → sch.para.N": {
+    "ref: schedule-part-N-paragraph-N → sch.pt.N.para.N": {
       "count": 12,
       "examples": [
         "UK_uksi_2016_1026/c888dad1f0",
         "UK_uksi_2016_588/bbc33f7c40"
       ]
     },
-    "ref: schedule-part-N-paragraph-N → sch.para.wrapper1n1": {
+    "ref: schedule-part-N-paragraph-N → sch.pt.N.para.wrapper1n1": {
       "count": 1,
       "examples": [
         "UK_uksi_2020_41/5949e538b0"
       ]
     },
-    "ref: schedule-part-N-paragraph-N → sch.para.wrapper1n2": {
+    "ref: schedule-part-N-paragraph-N → sch.pt.N.para.wrapper1n2": {
       "count": 1,
       "examples": [
         "UK_uksi_2020_41/187391657f"

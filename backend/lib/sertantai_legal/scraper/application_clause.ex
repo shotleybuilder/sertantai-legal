@@ -55,7 +55,10 @@ defmodule SertantaiLegal.Scraper.ApplicationClause do
 
     with {start, _} <- match_start(regex, text),
          c = Regex.named_captures(regex, text),
-         false <- String.downcase(String.trim(c["prefix"] || "")) == "of",
+         # (never another provision's owner: "Regulation 4 of these
+         # Regulations", "Paragraphs … of Schedule 1 to this Order apply …",
+         # uksi 2006/1407 reg.1: CV-S05 census run-05 R1)
+         false <- String.downcase(String.trim(c["prefix"] || "")) in ["of", "to"],
          false <- c["they"] != "" and (c["as"] != "" or not names_instrument?(text)),
          false <- c["stop"] == "—",
          false <- qualified_before?(text, start),

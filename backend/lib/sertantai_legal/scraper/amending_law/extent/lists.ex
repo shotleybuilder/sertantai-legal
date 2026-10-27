@@ -106,17 +106,31 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lists do
         []
 
       m ->
-        refs =
+        items =
           for item <- String.split(m["list"], ";"),
               not Regex.match?(
-                ~r/\b(?:so\s+far|in\s+so\s+far|insofar|except|to\s+the\s+extent)\b/iu,
+                ~r/\b(?:so\s+far|in\s+so\s+far|insofar|to\s+the\s+extent)\b/iu,
                 item
               ),
-              ref <- RefList.parse(item, clause_ref) ++ Parts.parts(item, doc, clause_ref),
-              do: ref
+              do: item
+
+        # (an item with its own exception, "section 153 except subsection
+        # (1)(k) and (m)": read as a list item, the provision holding the
+        # exception withheld; ukpga 1990/43 s.164, CV-S05 census run-05 R3)
+        {own_except, plain} = Enum.split_with(items, &(&1 =~ ~r/\bexcept\b/iu))
+        r = ListItems.read(Enum.join(own_except, "; "), clause_ref, doc)
+
+        refs =
+          for(
+            item <- plain,
+            ref <- RefList.parse(item, clause_ref) ++ Parts.parts(item, doc, clause_ref),
+            do: ref
+          ) ++ r.refs
 
         refs = if m["self"] != "", do: [clause_ref | refs], else: refs
-        if refs == [], do: [], else: [{:also, Places.places(m["places"]), Enum.uniq(refs)}]
+
+        if(refs == [], do: [], else: [{:also, Places.places(m["places"]), Enum.uniq(refs)}]) ++
+          if(r.unread != [], do: [{:unread, nil, r.unread}], else: [])
     end
   end
 

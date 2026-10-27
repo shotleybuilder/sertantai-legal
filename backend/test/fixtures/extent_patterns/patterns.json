@@ -869,7 +869,7 @@
       ]
     },
     "application|this|not_applies|none|places:1|-|-|applies_not:S": {
-      "count": 24,
+      "count": 25,
       "examples": [
         "UK_ukpga_1974_37/b47b3add43",
         "UK_ukpga_1974_40/6ff4982f0d",
@@ -2150,17 +2150,18 @@
       ]
     },
     "extent|following|extends|none|places:many|-|also|list:also:NI": {
-      "count": 1,
+      "count": 2,
       "examples": [
-        "UK_uksi_2017_1012/b68b6a681a"
+        "UK_uksi_2010_490/9cb01af004",
+        "UK_uksi_2017_1012/9d71f1def7"
       ]
     },
     "extent|following|extends|none|places:many|-|also|list:also:S": {
       "count": 3,
       "examples": [
         "UK_ukpga_1988_33/c320c1f10d",
-        "UK_uksi_2010_490/88d424d8d0",
-        "UK_uksi_2017_1012/e8f009ab75"
+        "UK_uksi_2010_490/c0c45376e2",
+        "UK_uksi_2017_1012/256eea83ed"
       ]
     },
     "extent|following|extends|none|places:many|-|also|list:also:S+NI": {
@@ -2169,12 +2170,6 @@
         "UK_ukpga_2006_28/8ea0e4c75b",
         "UK_ukpga_2006_48/bdc5183618",
         "UK_ukpga_2017_29/c6f7fcec3b"
-      ]
-    },
-    "extent|following|extends|none|places:many|-|also|unread:list": {
-      "count": 1,
-      "examples": [
-        "UK_uksi_2010_490/383ab20fd1"
       ]
     },
     "extent|following|extends|none|places:many|only|-|list:named:NI": {
@@ -2735,8 +2730,9 @@
       ]
     },
     "extent|named|extends|none|places:many|only|-|list:only:E+W": {
-      "count": 1,
+      "count": 2,
       "examples": [
+        "UK_ukpga_1980_65/de5e5e4125",
         "UK_ukpga_2006_51/6dd1de2008"
       ]
     },
@@ -2765,9 +2761,8 @@
       ]
     },
     "extent|named|extends|none|places:many|only|-|list:only:S": {
-      "count": 3,
+      "count": 2,
       "examples": [
-        "UK_ukpga_1980_65/de5e5e4125",
         "UK_ukpga_2009_26/fbc29bb051",
         "UK_ukpga_2022_30/142bfc7be1"
       ]
@@ -5068,8 +5063,8 @@
     "examples": 1244,
     "laws": 3358,
     "not_alone": 136,
-    "patterns": 772,
-    "sentences": 3117,
+    "patterns": 771,
+    "sentences": 3118,
     "unclassified": 0
   }
 }

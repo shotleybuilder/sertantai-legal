@@ -36,11 +36,17 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Parts do
   # Part: "schedule-10-paragraph-8" inside "schedule-10-part-2"; SOCPA 2005
   # s.179(6)(d), round 13 seed 19)
   defp schedule_parts(text, doc) do
-    for [_, list | sch] <-
+    for [{at, _} | _] = m <-
           Regex.scan(
             ~r/\bParts?\s+([IVXLC\d]+[A-Z]*(?:(?:\s*,\s*(?:and|or)?|\s+and|\s+or|\s+to)\s*[IVXLC\d]+[A-Z]*)*)\s+of\s+(?:Schedule\s+(\d+[A-Z]*)|the\s+Schedule\b)(?!\s+to\s+the\b)/u,
-            text
+            text,
+            return: :index
           ),
+        # (never a Part that only owns the paragraphs listed: "Paragraphs 3,
+        # 11(a) and (c), 17 … of Part 1 of Schedule 1 … apply in relation to
+        # England only", uksi 2006/1407 reg.1: CV-S05 census run-05 R1)
+        not owner?(binary_part(text, 0, at)),
+        [_, list | sch] = Enum.map(m, &index_text(text, &1)),
         # (an unnumbered Schedule's: no number captured)
         base = if(sch in [[], [""]], do: "schedule", else: "schedule-#{hd(sch)}"),
         n <- part_numbers(list),
@@ -50,6 +56,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Parts do
         uniq: true,
         do: Order.ref(para)
   end
+
+  defp owner?(before),
+    do: before =~ ~r/\b(?:sub-)?paragraphs?\s+\d[\w\s,()]*?\s+of\s+$/iu
+
+  defp index_text(_text, {-1, _}), do: ""
+  defp index_text(text, {at, len}), do: binary_part(text, at, len)
 
   # the paragraph ids after a Schedule's Part, up to its next Part or Schedule
   defp part_paragraphs(doc, part) do
@@ -85,7 +97,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Parts do
   """
   @spec qualify_chapters(String.t()) :: String.t()
   def qualify_chapters(text) do
-    ~r/\bPart\s+([\dIVXLC]+[A-Z]*)\b(?!\s+(?:of|to)\s+(?:that\s+|the\s+)?Schedule)|\bChapters?\s+#{@chapter_list}\b(?!\s+of\b)|\bthat\s+Part\b/u
+    # (the Chapter list whole, never a shorter one: "Chapters 1 to 5 of Part
+    # 8" is qualified already, never "Chapters 1" + "to 5 of Part 8", ukpga
+    # 2009/23 s.323, the R10 residual, CV-S05 census run-05)
+    ~r/\bPart\s+([\dIVXLC]+[A-Z]*)\b(?!\s+(?:of|to)\s+(?:that\s+|the\s+)?Schedule)|\bChapters?\s+(?>#{@chapter_list})\b(?!\s+of\b)|\bthat\s+Part\b/u
     |> Regex.split(text, include_captures: true)
     |> Enum.map_reduce(nil, fn piece, part ->
       cond do

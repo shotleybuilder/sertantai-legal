@@ -18,6 +18,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Named do
   def named(unit_sentences, doc) do
     for(
       {ref, s} <- unit_sentences,
+      s = other_repeal_out(s),
       not Regex.match?(Forms.heading(), s),
       not Regex.match?(Forms.part_not(), s),
       m = Regex.named_captures(Forms.named(), s),
@@ -31,6 +32,18 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Named do
       excluding(unit_sentences, doc) ++
       qualified(unit_sentences, doc) ++ asides(unit_sentences, doc)
   end
+
+  # "The repeal by this Act of section 14(1) of the Limitation Act 1963 and
+  # the corresponding saving in paragraph 2 of Schedule 2 to this Act shall
+  # extend to Northern Ireland": the saving its own provision, the repeal
+  # another law's (ukpga 1980/58 s.41, CV-S05 census run-05 R11)
+  defp other_repeal_out(s),
+    do:
+      Regex.replace(
+        ~r/^\s*The\s+repeals?\s+by\s+this\s+Act\s+of\s+[^,;]*?\b(?:Act|Regulations|Order)\s+\d{4}\s+and\s+(?:the\s+corresponding\s+\w+\s+in\s+)?(?=(?:paragraphs?|sections?|Schedules?)\s)/iu,
+        s,
+        ""
+      )
 
   # a plain statement's qualified aside withheld, never dropped: "Part 6
   # (including Schedule 13 so far as it relates to Part 6) extends to …"

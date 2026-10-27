@@ -36,6 +36,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Statements do
   """
   @spec statements(String.t()) :: [String.t()]
   def statements(s) do
+    s = elliptical(s)
+
     # (never a commencement list's items: "The following provisions come
     # into force …— (a) sections 35 to 38 so far as they extend to
     # Scotland; …", ukpga 2006/48 s.53(4), round 13 seed 19)
@@ -55,19 +57,25 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Statements do
       end
 
     # (also "; and this section extends also to Scotland", 1998/31 s.145;
+    # "Parts 1, 5 and 6 extend to England and Wales, but Part 5 applies in
+    # relation to England only", uksi 2010/708 art.1, run-05 R4; "…, but
+    # this paragraph does not apply in Scotland", uksi 2026/194 reg.22(3),
+    # R9;
     # "… do not extend to Scotland and sections 34 and 35 extend to Scotland
     # only", 1969/10 s.38: each half with its own verb, round 13 S5, S6)
     clauses =
       case String.split(
              s,
              Regex.compile!(
-               "(?:[,;]\\s*|\\s+)and\\s+(?=(?:#{@provision_word}|this\\s+(?:section|regulation|article|Part|Chapter)\\b)(?:[^,;]*?\\b(?:extends?|extend)\\b|[^;]*?\\bha(?:s|ve)\\s+the\\s+same\\s+extent\\b))",
+               "(?:[,;]\\s*|\\s+)and\\s+(?=(?:#{@provision_word}|this\\s+(?:section|regulation|article|Part|Chapter)\\b)(?:[^,;]*?\\b(?:extends?|extend)\\b|[^;]*?\\bha(?:s|ve)\\s+the\\s+same\\s+extent\\b))|,\\s*but\\s+(?=(?:#{@provision_word}|this\\s+(?:sub-?section|regulation|article|sub-?paragraph|paragraph)\\b)[^,;]*?\\bappl(?:y|ies)\\b)",
                "iu"
              ),
              parts: 2
            ) do
         [first, second] when first != s ->
-          if first =~ ~r/\b(?:extends?|extend)\b/iu, do: compound(first, second), else: []
+          if first =~ ~r/\b(?:extends?|extend)\b/iu or second =~ ~r/\bappl(?:y|ies)\b/iu,
+            do: compound(first, second),
+            else: []
 
         _ ->
           []
@@ -90,6 +98,28 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Statements do
         part != "",
         uniq: true,
         do: part
+  end
+
+  # "The repeals in Part II of Schedule 1 extend to England and Wales only
+  # and those in Part III of Schedule 1 to Scotland only": the second
+  # clause's noun and verb are the first's (ukpga 1990/11 s.7, 1997/11 s.6,
+  # CV-S05 census run-05 R13)
+  defp elliptical(s) do
+    case Regex.run(
+           ~r/^\s*The\s+(amendments|repeals|revocations)\s+in\s+[^,;]+?\s+(?:shall\s+)?extend\b[^,;]*?\s+and\s+those\s+in\s+[^,;]+?\s+(?=to\s)/iu,
+           s
+         ) do
+      [_, noun] ->
+        Regex.replace(
+          ~r/\s+and\s+those\s+in\s+([^,;]+?)\s+to\s/iu,
+          s,
+          " and The #{noun} in \\1 extend to ",
+          global: false
+        )
+
+      nil ->
+        s
+    end
   end
 
   defp item_clauses(item) do

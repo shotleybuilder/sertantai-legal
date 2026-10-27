@@ -57,12 +57,16 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
   "This Act"). The units a statement is read from (CV-S05).
   """
   @spec units(Doc.t(), String.t()) :: [String.t()]
-  def units(%Doc{} = doc, id) do
+  def units(%Doc{} = doc, id), do: for({_, text} <- units_with_ids(doc, id), do: text)
+
+  @doc "`units/2` with each unit's id (\"section-189-3\"): what \"This subsection\" is."
+  @spec units_with_ids(Doc.t(), String.t()) :: [{String.t(), String.t()}]
+  def units_with_ids(%Doc{} = doc, id) do
     children = numbered_children(doc, id)
 
     for el_id <- if(children == [], do: [id], else: children),
         text = doc |> Doc.element(el_id) |> own_words() |> Doc.lines() |> Enum.join(" "),
-        do: text |> String.replace(~r/^\s*\d+[A-Z]*\s*(?=[A-Z(])/u, "") |> unlettered()
+        do: {el_id, text |> String.replace(~r/^\s*\d+[A-Z]*\s*(?=[A-Z(])/u, "") |> unlettered()}
   end
 
   @doc """

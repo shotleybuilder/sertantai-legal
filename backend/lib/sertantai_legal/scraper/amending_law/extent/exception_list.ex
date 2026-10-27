@@ -113,8 +113,20 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ExceptionList do
     end
   end
 
-  defp statement(m),
-    do: %{items: m["items"], places: Places.places(m["places"]), self: (m["self"] || "") != ""}
+  # (the clause's own section leading the items: "…, that is to say, this
+  # section and— (a) …" (ukpga 1988/19 s.34), "Except for this section and
+  # any amendment or repeal …" (ukpga 1995/25 s.125): CV-S05 census run-05
+  # R10)
+  defp statement(m) do
+    lead = ~r/^\s*this\s+section\s*(?:,|;|\band\b)\s*/iu
+    items = m["items"]
+
+    %{
+      items: String.replace(items, lead, "", global: false),
+      places: Places.places(m["places"]),
+      self: (m["self"] || "") != "" or items =~ lead
+    }
+  end
 
   @doc "Whether the clause makes an exception statement."
   @spec match?(String.t()) :: boolean()

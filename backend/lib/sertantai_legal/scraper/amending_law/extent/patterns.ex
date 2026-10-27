@@ -244,7 +244,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
       a = applies_statement(s) ->
         # (credited only where this sentence's own entries were read — a
         # condition, "Subsection (2) applies if …", reads none: 1984/55)
-        read = for part <- Units.statements(s), entry <- Applies.read(part, ref, doc), do: entry
+        unit_ref = Applies.unit_ref(s, ref, doc)
+
+        read =
+          for part <- Units.statements(s),
+              entry <- Applies.read(part, ref, doc, unit_ref),
+              do: entry
+
         {kind, place} = a
 
         if read != [] and Enum.all?(read, &(&1 in e.applies or &1 in e.lists)),
@@ -300,10 +306,19 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
     # the provisions, read as one list)
     following = String.replace(s, ~r/^.*?\bexcept\s+that\s+(?=the\s+following\b)/su, "")
 
+    # (or the exception stated first: "Sections 32 and 46 above extend to
+    # Scotland only but, subject to that, this Part …", ukpga 1980/65 s.47,
+    # CV-S05 census run-05 R2)
+    first = Excepting.stated_first(s)
+
     items =
       items ||
         case following != s and Extent.statement(following, doc.type) do
           {:list, k, p} -> Credit.list_class(following, ref, doc, e.lists, k, p, nil)
+          _ -> nil
+        end ||
+        case first && Extent.statement(first, doc.type) do
+          {:list, k, p} -> Credit.list_class(first, ref, doc, e.lists, k, p, nil)
           _ -> nil
         end
 

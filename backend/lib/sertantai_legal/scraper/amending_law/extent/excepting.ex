@@ -34,6 +34,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Excepting do
           "^\\s*(?<subj>#{@part}(?:\\s+of\\s+this\\s+Act)?)(?:\\s*\\((?:[^()]|\\([^()]*\\))*\\))?\\s+(?:shall\\s+)?extends?\\s+(?<only>only\\s+)?to\\s+(?<places>(?>#{@place_list}))(?<only2>\\s+only)?\\s*,?\\s*except\\s+(?:as\\s+follows\\s*[—–]|that\\s*[—–]|(?<following>that\\s+the\\s+following\\s+provisions\\s+of\\s+#{@part}\\s+(?:shall\\s+)?extends?\\s+also\\s+to\\s+(?>#{@place_list})\\s*[—–]))(?<items>.+)$",
           "su"
         )
+  # "Sections 32 and 46 above extend to Scotland only but, subject to that,
+  # this Part of this Act extends to England and Wales only": the
+  # exception stated first (ukpga 1980/65 s.47(8), CV-S05 census run-05 R2)
+  @subject_to_that Regex.compile!(
+                     "^\\s*(?<items>[^;]+?\\bextends?\\b[^;]+?)\\s+but\\s*,?\\s*subject\\s+to\\s+that\\s*,\\s*(?<subj>#{@part}(?:\\s+of\\s+this\\s+Act)?)\\s+(?:shall\\s+)?extends?\\s+(?<only>only\\s+)?to\\s+(?<places>(?>#{@place_list}))(?<only2>\\s+only)?\\s*\\.?\\s*$",
+                     "isu"
+                   )
   @qualified ~r/\b(?:so\s+far|in\s*so\s*far|insofar|to\s+the\s+extent|except|which|subject\s+to|where|if)\b/iu
 
   @doc """
@@ -43,7 +50,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Excepting do
   """
   @spec lead(String.t(), String.t(), Doc.t()) :: {:only | :named, String.t(), [String.t()]} | nil
   def lead(s, ref, %Doc{} = doc) do
-    with %{} = m <- Regex.named_captures(@lead, s),
+    with %{} = m <- lead_match(s),
          items when items != [] <- items(m["items"]),
          true <- Enum.all?(items, &plain?(&1, m["following"] != "", ref, doc.type)),
          [_ | _] = refs <- own(m, items, ref, doc) do
@@ -51,6 +58,31 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Excepting do
       {kind, Places.places(m["places"]), refs}
     else
       _ -> nil
+    end
+  end
+
+  defp lead_match(s) do
+    case Regex.named_captures(@lead, s) do
+      nil ->
+        case Regex.named_captures(@subject_to_that, s) do
+          nil -> nil
+          m -> Map.put(m, "following", "")
+        end
+
+      m ->
+        m
+    end
+  end
+
+  @doc """
+  The exception stated first in "X extend to Scotland only but, subject to
+  that, this Part … extends to …" (the statement X makes), or nil.
+  """
+  @spec stated_first(String.t()) :: String.t() | nil
+  def stated_first(s) do
+    case Regex.named_captures(@subject_to_that, s) do
+      %{"items" => items} -> items
+      nil -> nil
     end
   end
 
