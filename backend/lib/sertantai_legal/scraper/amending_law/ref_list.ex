@@ -49,6 +49,21 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
   @spec owned(String.t()) :: String.t()
   def owned(text) do
     text
+    # ("in Schedule 2, Part II and paragraph 11" → "Part II of Schedule 2
+    # and paragraph 11 of Schedule 2": ukpga 1977/38 s.32, round 13 S13)
+    |> then(
+      &Regex.replace(
+        ~r/\bin\s+Schedule\s+(\d+[A-Z]*)\s*,\s*((?:Parts?|paragraphs?)\s+[^;]*?)(?=;|$)/iu,
+        &1,
+        fn _, sch, rest ->
+          Regex.replace(
+            ~r/\b((?:Parts?|paragraphs?)\s+[\dIVXL]+[A-Z]*(?:\([^)]*\))*(?:\s*(?:,|and|to)\s*[\dIVXL]+[A-Z]*(?:\([^)]*\))*)*)/iu,
+            rest,
+            "\\1 of Schedule #{sch}"
+          )
+        end
+      )
+    )
     |> String.replace(
       ~r/\bin\s+(section|regulation|article|rule)\s+(\d+[A-Z]*)\s*,\s*(?:sub-?section|paragraph)s?\s+(?=\()/iu,
       "\\1 \\2"
@@ -139,9 +154,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
         # and 15.", "Schedule 2 (and article 26 …)": CV-S05 N14)
         item = chunk |> String.split(~r/\.(?:\s|$)|\(/u, parts: 2) |> hd()
 
-        case Regex.run(~r/^\s*Schedule\s+(\d+[A-Z]*)\s*,\s*paragraphs?\s+(.*)$/i, item) do
-          # "Schedule 14, paragraph 5"
-          [_, sch, list] -> numbered(list, "sch.#{sch}.para.")
+        case Regex.run(~r/^\s*Schedule\s+(\d+[A-Z]*)\s*,\s*((?:paragraphs?|Parts?)\s+.*)$/i, item) do
+          # "Schedule 14, paragraph 5"; "in Schedule 2, Part II and paragraph
+          # 11" (ukpga 1977/38 s.32, round 13 S13: never all of Schedule 2)
+          [_, sch, rest] -> schedule_parts(sch, rest)
           # "Schedules 2 to 9, 11 and 12": each between (CV-S05)
           nil -> schedule_numbers(item)
         end
@@ -153,6 +169,23 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
       true ->
         []
     end
+  end
+
+  defp schedule_parts(sch, rest) do
+    rest
+    |> String.split(~r/\s*(?:,|\band\b)\s*(?=(?:paragraphs?|Parts?)\b)/iu, trim: true)
+    |> Enum.flat_map(fn piece ->
+      case Regex.run(~r/^\s*(paragraphs?|Parts?)\s+(.*)$/iu, piece) do
+        [_, "P" <> _, list] ->
+          for [p] <- Regex.scan(~r/[\dIVXL]+[A-Z]*/, list), do: "sch.#{sch}.pt.#{p}"
+
+        [_, _para, list] ->
+          numbered(list, "sch.#{sch}.para.")
+
+        nil ->
+          []
+      end
+    end)
   end
 
   defp schedule_numbers(item) do

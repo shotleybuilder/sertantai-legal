@@ -31,7 +31,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ExceptionList do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Forms, ListItems, Places}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Forms, ListItems, Places, Units}
   alias SertantaiLegal.Scraper.Territory
 
   @place_list Places.place_list()
@@ -78,14 +78,29 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ExceptionList do
   @doc "Each exception statement the clause makes, in order; [] when none."
   @spec statements(String.t()) :: [statement()]
   def statements(clause) do
+    # (each sentence of the clause on its own, repealed words' dots out: "(2)
+    # Except for section 8, this Act does not extend …" is no clause's
+    # start, 1991/65 s.10; ". . ." no sentence's end, 1972/62 s.27)
+    clause
+    # (a subsection's number runs into the sentence before it: "…
+    # dwellings.3 For the purposes …")
+    |> String.split(
+      ~r/(?<=[.;:])\s+(?=(?:\(\d+[A-Z]?\)\s*)?[A-Z])|\s+(?=\(\d+[A-Z]?\)\s+[A-Z])|(?<=\.)(?=\d+[A-Z]?\s+[A-Z])/u
+    )
+    |> Enum.flat_map(&(&1 |> Units.no_dots() |> sentence_statements()))
+  end
+
+  defp sentence_statements(sentence) do
+    sentence = Regex.replace(~r/^\s*(?:\(\d+[A-Z]?\)|\d+[A-Z]?(?=\s+[A-Z]))\s*/u, sentence, "")
+
     Enum.find_value(@forms, [], fn form ->
-      case Regex.run(form, clause, return: :index, capture: :all) do
+      case Regex.run(form, sentence, return: :index, capture: :all) do
         nil ->
           nil
 
         [{at, len} | _] ->
-          m = Regex.named_captures(form, clause)
-          rest = binary_part(clause, at + len, byte_size(clause) - at - len)
+          m = Regex.named_captures(form, sentence)
+          rest = binary_part(sentence, at + len, byte_size(sentence) - at - len)
           [statement(m) | more(rest)]
       end
     end)
@@ -161,7 +176,16 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ExceptionList do
   @qualifier ~r/\b(?:so\s+far\s+as|in\s+so\s+far|insofar|to\s+the\s+extent)\b/iu
   @points_back ~r/\b(?:so\s+far\s+as|in\s+so\s+far\s+as|insofar\s+as)\s+(?:it\s+|they\s+)?relat\w*\s+(?:to\s+)?(?:th(?:ose|at|ereto|em)\b|it\b)|\band\s*,\s*(?:so\s+far|in\s+so\s+far|insofar)\s+as\b/iu
 
+  # ("paragraphs 7, 29 and 30 of Schedule 3 and, so far as relating to
+  # those paragraphs, section 59(1)": whole, its plain part read, 1990/16
+  # s.60)
   defp item_refs(item, clause_ref, doc) do
+    if item =~ ~r/\band\s*,\s*(?:so\s+far|in\s+so\s+far|insofar)\s+as\b/iu,
+      do: ListItems.refs(item, clause_ref, doc),
+      else: piece_refs(item, clause_ref, doc)
+  end
+
+  defp piece_refs(item, clause_ref, doc) do
     # (each piece after a comma on its own: "paragraphs 6 and 7 of
     # Schedule 3, and paragraph 8 of Schedule 3 so far as it relates to …",
     # 1996/25 s.79)
