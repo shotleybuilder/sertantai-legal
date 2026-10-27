@@ -1449,3 +1449,31 @@ Acceptance run and seed 20 next.
 **Stopped here** (Jason 2026-10-27: "stop when the acceptance run is done"). Next:
 - census finder: name a Schedule Part's paragraphs as the reader does (expected to clear most of the new unnamed);
 - agent check, seed 20.
+
+## Strategy to close (2026-10-27, before compaction)
+
+**Closure aims:** the pass bar, Jason 2026-10-27.
+- census classes at zero, apart from known counted ones;
+- golden all-pass; the check at our faults 0 (and the feed and markup checks, since `Order.ref` is shared);
+- an agent check with no NEW that places a wrong bound or silently drops.
+
+**Steps, in order.** Pre-flight in seconds; one acceptance chain per fix batch, never as a debug loop.
+1. **Finder (CV-S05d), read-only, minutes.** Name a Schedule Part's paragraphs as the reader does. Re-run the census as run-05, and triage every silent and unnamed item to one of: known class, finder miss, doubtful, or real.
+   - Done when nothing is untriaged.
+   - Real items found here go to step 3, not to an agent.
+2. **Decide the residuals with Jason, one line each, fix or known class.** Recorded in the skill's known classes:
+   - 2009/23 "Chapters 1 to 5 of Part 8" holding Chapter 6 (R10 residual);
+   - 1986/44 KX plain pieces;
+   - seed 19's doubtfuls: 1975/71 s.129(6), 2015/2 s.96(6)(h), SI 2004/1822 unnumbered-Schedule paragraphs, SI 2013/1387 reg.1A, 1989/15 Part V, PJA s.1(3).
+3. **One fix batch** for whatever steps 1 and 2 make real: tests, pre-flight, one acceptance chain.
+4. **Agent check, seed 20.**
+   - Pass: close.
+   - A NEW that places a wrong bound or silently drops: fix it with tests and fresh reads, one acceptance chain, seed 21.
+   - Doubtful findings with no wrong bound: log them as known; they never block.
+5. **Close-out:**
+   - close CV-S05 (frontmatter, bugs, lessons);
+   - close CV-S05d: run-01 to run-05 evidence, and the permanent read-only mix task decided (build, or defer to a PENDING session);
+   - the application scope hand-off stays PENDING; the Pointer/Locator naming stays on the v0.2 list (#169);
+   - CV-00 meta updated; push, listing `origin/main..HEAD` first.
+
+**Schedule naming, kept (Jason asked whether the triple was wrong):** the name is the document's own address. Sequential numbering (ids without the Part) gets `sch.N.para.M`; the triple appears only where legislation.gov.uk's id holds the Part, mostly where numbering restarts per Part (439 collisions in 58 laws without it). Seed 19 NEW-1 was not caused by the triple: a Schedule Part never reached its Part-less paragraph ids under any naming. Residual risk: a Part-less citation in a restart Schedule matches every Part's paragraph of that number (over-broad, rare); tighten with the document if an agent finds a case.
