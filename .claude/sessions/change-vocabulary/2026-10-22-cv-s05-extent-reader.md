@@ -265,9 +265,11 @@ The session does not close until its results pass.
 - ✅ Round 9 [`cac5e205`] (Jason 2026-10-26: "Round 9 for items 1 through 6"): round 8's NEW-1 to NEW-6 and the tooling gap; one misread NEW-1 exposed (FRSA 2004 s.63(2) qualified items) fixed in the round; the runs (check PASS, golden 27/27); agent round 9 seed 14 — see below
 - ✅ Amendment reader full read pass after round 9 (Jason 2026-10-27: "Push. Do 1. Run round 10."): pushed `bf9cfc46..605fe46f`; restore point `cv-s05-before-round9-read`; 2,102 laws, 9 changed (rules 43,623 → 43,678), traced
 - ✅ Round 10 [`56f98e86`]: round 9's NEW-1 (2002/30 s.108) and the agent's side readings; the runs (check PASS, golden 27/27); agent round 10 seed 15 — see below
-- ⬜ CV-S05b List shape audit (PENDING, Jason 2026-10-27): choose a technique that finds list misreads by count, build it, hand round 11 the ranked shapes
+- ⬜ CV-S05b List shape audit (SUSPENDED 2026-10-27; its work went to CV-S05c): resume or close once round 11 shows whether more audit is needed
+- ✅ CV-S05c Shape Mining (CLOSED 2026-10-27): census of all extent sentences (`backend/data/experiments/cv-s05c-shape-mining/run-01/`); classes A–F and the 'this paragraph' rule logged as open bugs in CV-S05c, for round 11
 - ⬜ Pass bar for the agent check: Jason to decide (see "Pass bar: question for Jason")
-- ⬜ Round 11: the audit's shapes by count, and round 10's NEW-1 (an "In Schedule N— … apply in relation to …" drop); then agent check against the agreed bar
+- ⬜ Round 11: CV-S05c's classes by count (A: "In Part N— (a) … (b) …" only (a) read, 6 laws; B: item's own exception drops it, 8+3; C: plain refs dropped with a qualified companion, 4+1; D: trailing-qualified item not withheld, 4+2; E: one-offs, 7; F: excluded provisions held, 4 new; Schedule "this paragraph" own extent, ~12) with their laws as fixtures (`run-01/confirmed.md`, `overreach.md`, `unread_tail.md`); round 10's NEW-1 (lost lead "In Schedule N—", 9 laws); then re-run run-01's commands as run-02 and compare; then agent check against the agreed bar
+- ⬜ Deferred from CV-S05c: after round 11's run-02, decide whether the census earns a permanent read-only mix task (pure modules + tests)
 - ⬜ Fix until the check passes reliably; record the result
 
 ## Dependencies
