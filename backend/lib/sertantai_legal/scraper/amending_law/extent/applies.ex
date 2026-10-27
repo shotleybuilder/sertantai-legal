@@ -28,7 +28,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Applies do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, RefList, SubPath}
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{ListItems, Parts, Places, Units}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Parts, Places, Units}
   alias SertantaiLegal.Scraper.Commencement.Order
   alias SertantaiLegal.Scraper.LawStart.Clause
 
@@ -129,9 +129,6 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Applies do
     refs =
       for item <- String.split(m["items"], ~r/;|[—–,]\s*(?:and\s*|or\s*)?\(?[a-z]\)?\s+/u),
           not (item =~ ~r/\b(?:so\s+far|in\s*so\s*far|to\s+the\s+extent)\b/iu),
-          # ("in regulation 16, paragraphs (4) and (5)": those paragraphs,
-          # SI 2020/818 reg.1A, round 13 S11)
-          item = ListItems.located(item),
           r <- RefList.parse(item, ref) ++ Parts.parts(item, doc, ref),
           uniq: true,
           do: r

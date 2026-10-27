@@ -114,7 +114,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
       |> String.replace(@label, "")
       |> String.replace(@qualified_aside, " ")
       |> String.replace(@locator, "")
-      |> located()
+      # ("in section 47, subsection (1)": section 47(1), ukpga 1993/9 s.48)
+      |> RefList.owned()
       |> String.replace(
         ~r/\b(section|regulation|article|paragraph)\s+(?=\d+[A-Z]*\s+(?:to|and)\s+\d)/iu,
         "\\1s "
@@ -148,21 +149,6 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
       |> split_excepted(excepted)
     end
   end
-
-  @doc """
-  A provision's subdivisions named after it as a locator, joined to it: "in
-  section 47, subsection (1)" → "section 47(1)" (ukpga 1993/9 s.48); "in
-  regulation 16, paragraphs (4) and (5)" → "regulation 16(4) and (5)" (SI
-  2020/818 reg.1A, CV-S05 round 13 S11: the run read by `RefList`).
-  """
-  @spec located(String.t()) :: String.t()
-  def located(item),
-    do:
-      String.replace(
-        item,
-        ~r/\bin\s+(section|regulation|article)\s+(\d+[A-Z]*)\s*,\s*(?:sub-?section|paragraph)s?\s+(?=\()/iu,
-        "\\1 \\2"
-      )
 
   # (an unlettered list with a qualifier: each piece on its own, so only
   # the qualified pieces are withheld, "Part I (…), Part III (…), the

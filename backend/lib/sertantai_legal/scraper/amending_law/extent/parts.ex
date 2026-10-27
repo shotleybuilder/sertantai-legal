@@ -97,11 +97,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Parts do
         ""
       )
 
-    # every Part named ("Part 3 and Part 4": SI 2022/1037 reg.2, CV-S05)
+    # every Part named ("Part 3 and Part 4": SI 2022/1037 reg.2, CV-S05;
+    # "Part 2, 3, or 4", never "Part 1, 8 … or 19 of Schedule 18": round 13
+    # S3, ukpga 2007/28)
     named =
       for [_, list] <-
             Regex.scan(
-              ~r/(?<![Ii]n\s)\bParts?\s+((?>[IVXLC\d]+[A-Z]*(?:\s*(?:,|and|to)\s*[IVXLC\d]+[A-Z]*)*))\b(?!\s+(?:of|to)\s+(?:that\s+|the\s+)?Schedule)/u,
+              ~r/(?<![Ii]n\s)\bParts?\s+((?>[IVXLC\d]+[A-Z]*(?:(?:\s*,\s*(?:and|or)?|\s+and|\s+to|\s+or)\s*[IVXLC\d]+[A-Z]*)*))\b(?!\s+(?:of|to)\s+(?:that\s+|the\s+)?Schedule)/u,
               text
             ),
           # "Part 1" where the document's ids are "part-I", and the reverse
@@ -131,7 +133,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Parts do
   # "I and III", "1 to 5" (each between: CV-S05 N5), "IV to VI"
   defp part_numbers(list) do
     list
-    |> String.split(~r/\s*(?:,|\band\b)\s*/u, trim: true)
+    |> String.split(~r/\s*(?:,|\band\b|\bor\b)\s*/u, trim: true)
     |> Enum.flat_map(fn piece ->
       case Regex.run(~r/^([IVXLC\d]+)\s+to\s+([IVXLC\d]+)$/u, String.trim(piece)) do
         [_, a, b] ->

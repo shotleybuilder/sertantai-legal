@@ -248,4 +248,60 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Round13ReadsTest do
              ) == []
     end
   end
+
+  describe "S3: \"or\"-lists in same-extent subjects" do
+    defp same(e),
+      do: e.lists |> Enum.filter(&match?({:same, nil, _}, &1)) |> Enum.flat_map(&elem(&1, 2))
+
+    defp part(n, ids, kind \\ "section"), do: ~s(<Part id="part-#{n}">#{words(ids, kind)}</Part>)
+
+    test "\"… or Part 1, 8 … or 19 of Schedule 18\" is Schedule 18's Parts, never the Act's (ukpga 2007/28 s.?)" do
+      e =
+        read(
+          "UK_ukpga_2007_28",
+          part(1, [1, 10]) <>
+            words([60, 202, 239]) <>
+            p1(
+              "section-246",
+              "The extent of any amendment, repeal or revocation made by section 60, 202(1), 203, 209 or 239 or by Schedule 1, 2, 7, 8, 9, 12, 13, 16 or 17 or Part 1, 8, 9, 14, 17, 18 or 19 of Schedule 18 is the same as that of the provision amended, repealed or revoked."
+            )
+        )
+
+      refs = same(e)
+      assert "s.239" in refs and "s.209" in refs and "sch.17" in refs
+      assert "sch.18.pt.1" in refs and "sch.18.pt.19" in refs
+      refute "s.1" in refs
+      refute "s.10" in refs
+    end
+
+    test "\"made by Part 2, 3, or 4 of these Regulations\" (SI 2019/530 reg.1)" do
+      e =
+        read(
+          "UK_uksi_2019_530",
+          part(2, [5], "regulation") <>
+            part(3, [50], "regulation") <>
+            part(4, [100], "regulation") <>
+            p1(
+              "regulation-1",
+              "An amendment, repeal or revocation made by Part 2, 3, or 4 of these Regulations has the same extent as the provision being amended, repealed or revoked."
+            )
+        )
+
+      assert Enum.all?(~w[reg.5 reg.50 reg.100], &(&1 in same(e)))
+    end
+
+    test "\"(c) paragraph 12 or 46 of Schedule 2\" (ukpga 2022/6 s.41)" do
+      e =
+        read(
+          "UK_ukpga_2022_6",
+          words([24]) <>
+            p1(
+              "section-41",
+              "An amendment made by—a section 24;b Schedule 1;c paragraph 12 or 46 of Schedule 2, has the same extent as the enactment or provision to which it relates."
+            )
+        )
+
+      assert Enum.all?(~w[s.24 sch.1 sch.2.para.12 sch.2.para.46], &(&1 in same(e)))
+    end
+  end
 end

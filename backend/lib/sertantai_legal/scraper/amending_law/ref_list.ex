@@ -25,7 +25,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
       " "
     )
     |> String.split(
-      ~r/(?:^|[,;]|\s)\s*(?:and\s+)?(?=\b(?:this\s+(?:section|article|regulation|rule)\b|(?<!this\s)(?:sections?|regulations?|articles?|rules?)|(?<!of\s)Schedules?|Parts?\s+[\dIVXL]+[A-Z]*(?:\s*(?:,|and)\s*[\dIVXL]+[A-Z]*)*\s+of\s+Schedule|paragraphs?\s+[^;]*?\bof\s+Schedule)\b)/iu,
+      ~r/(?:^|[,;]|\s)\s*(?:and\s+)?(?=\b(?:this\s+(?:section|article|regulation|rule)\b|(?<!this\s)(?:sections?|regulations?|articles?|rules?)|(?<!of\s)Schedules?|Parts?\s+[\dIVXL]+[A-Z]*(?:\s*(?:,|and|or)\s*(?:or\s+)?[\dIVXL]+[A-Z]*)*\s+of\s+Schedule|paragraphs?\s+[^;]*?\bof\s+Schedule)\b)/iu,
       trim: true
     )
     |> Enum.flat_map(&items(&1, self))
@@ -39,11 +39,18 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
   11" → "section 11(1) to (6)" (never all of section 11, 1995/45 s.18);
   "Paragraphs (28), (29)(b) … of regulation 5" → "regulation 5(28), (29)(b)
   …" (SI 2007/1843); "sub-paragraph (2) of paragraph 3 of Schedule 1" →
-  "paragraph 3(2) of Schedule 1".
+  "paragraph 3(2) of Schedule 1". Or named after it as a locator: "in
+  section 47, subsection (1)" → "section 47(1)" (ukpga 1993/9 s.48); "in
+  regulation 16, paragraphs (4) and (5)" → "regulation 16(4) and (5)" (SI
+  2020/818 reg.1A, round 13 S11).
   """
   @spec owned(String.t()) :: String.t()
   def owned(text) do
     text
+    |> String.replace(
+      ~r/\bin\s+(section|regulation|article|rule)\s+(\d+[A-Z]*)\s*,\s*(?:sub-?section|paragraph)s?\s+(?=\()/iu,
+      "\\1 \\2"
+    )
     |> String.replace(
       ~r/\b(?:sub-?sections?|paragraphs?|sub-?paragraphs?)\s+((?:\([\w]+\)(?:\s*(?:,|and|or|to)\s*)?)+?)\s*(?:above\s+|below\s+)?of\s+(section|regulation|article|rule)\s+(\d+[A-Z]*)\b(?!\s*\()/iu,
       "\\2 \\3\\1"
@@ -60,10 +67,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
       chunk =~ ~r/^\s*this\s+(?:section|article|regulation|rule)\b/i ->
         [self]
 
-      # "Parts 4 and 5 of Schedule 13" (CV-S05 N12)
+      # "Parts 4 and 5 of Schedule 13" (CV-S05 N12); "Part 1, 8 … or 19 of
+      # Schedule 18" (round 13 S3)
       m =
           Regex.run(
-            ~r/^\s*Parts?\s+([\dIVXL]+[A-Z]*(?:\s*(?:,|and)\s*[\dIVXL]+[A-Z]*)*)\s+of\s+Schedule\s+(\d+[A-Z]*)/i,
+            ~r/^\s*Parts?\s+([\dIVXL]+[A-Z]*(?:\s*(?:,|and|or)\s*(?:or\s+)?[\dIVXL]+[A-Z]*)*)\s+of\s+Schedule\s+(\d+[A-Z]*)/i,
             chunk
           ) ->
         [_, parts, sch] = m
@@ -98,7 +106,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
   defp schedule_numbers(item) do
     item
     |> String.replace(~r/^\s*Schedules?\s*/iu, "")
-    |> String.split(~r/\s*(?:,|\band\b)\s*/u, trim: true)
+    |> String.split(~r/\s*(?:,|\band\b|\bor\b)\s*/u, trim: true)
     |> Enum.flat_map(fn piece ->
       case Regex.run(~r/^(\d+)\s+to\s+(\d+)$/, String.trim(piece)) do
         [_, a, b] -> for i <- String.to_integer(a)..String.to_integer(b)//1, do: "sch.#{i}"
@@ -113,7 +121,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
   # (ii)": `SubPath`, CV-S05 round 13 S2), a subsection range spelt out
   defp numbered(list, prefix) do
     list
-    |> String.split(~r/\s*(?:,|\band\b)\s*/u, trim: true)
+    |> String.split(~r/\s*(?:,|\band\b|\bor\b)\s*/u, trim: true)
     |> Enum.reduce({[], nil}, fn piece, {acc, last} ->
       cond do
         # "26(7) to (10)" → each subsection (CV-S05 N12); "8(2)(b) to (d)"
