@@ -75,9 +75,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Credit do
           [list_entry()],
           atom(),
           String.t() | nil,
-          String.t()
+          String.t() | nil
         ) ::
-          String.t()
+          String.t() | nil
   def list_class(s, ref, doc, lists, kind, place, unread) do
     cond do
       list_read?(s, ref, doc, lists, kind, place) ->
