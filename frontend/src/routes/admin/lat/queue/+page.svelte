@@ -33,7 +33,6 @@
 	const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
 	import { startSync, syncStatus } from '$lib/pglite/sync';
 	import { getPglite, type PGLiteWithExtensions } from '$lib/pglite/client';
-	import ParseReviewModal from '$lib/components/ParseReviewModal.svelte';
 	import {
 		seedDefaultViews as seedDefaults,
 		seedDefaultGroups,
@@ -177,11 +176,6 @@
 
 	let reparseMessage = $state('');
 	let reparseError = $state('');
-
-	// LRT refresh modal state
-	let lrtModalOpen = $state(false);
-	let lrtModalRecord: Record<string, unknown> | null = $state(null);
-	let lrtModalRecordId: string | undefined = $state(undefined);
 
 	// LAT Parse Dialog state
 	// Selection state for Parse button
@@ -547,13 +541,6 @@
 			}
 		}
 		return null;
-	}
-
-	// LRT Refresh (Parse & Review modal)
-	function closeLrtRefresh() {
-		lrtModalOpen = false;
-		lrtModalRecord = null;
-		lrtModalRecordId = undefined;
 	}
 
 	// ── Column definitions ──────────────────────────────────────────
@@ -1624,23 +1611,5 @@
 		{viewStore}
 		config={capturedConfig}
 		{...{ onsave: handleViewSaved }}
-	/>
-{/if}
-
-<!-- LRT Refresh Modal (Parse & Review) -->
-{#if lrtModalRecord}
-	<ParseReviewModal
-		records={[
-			{
-				name: str(lrtModalRecord.name),
-				Title_EN: str(lrtModalRecord.title_en),
-				type_code: String(lrtModalRecord.type_code ?? ''),
-				Year: Number(lrtModalRecord.year ?? 0),
-				Number: ''
-			}
-		]}
-		recordId={lrtModalRecordId}
-		open={lrtModalOpen}
-		onclose={closeLrtRefresh}
 	/>
 {/if}
