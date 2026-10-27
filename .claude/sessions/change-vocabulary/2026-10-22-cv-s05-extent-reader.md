@@ -1,6 +1,6 @@
 ---
 session: 'CV-S05: Extent and Application Reader'
-status: active
+status: suspended
 release: v0.1
 opened: '2026-10-22'
 bugs:
@@ -247,7 +247,9 @@ bugs:
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
 ---
 
-# Session: CV-S05: Extent and Application Reader (ACTIVE)
+# Session: CV-S05: Extent and Application Reader (SUSPENDED)
+
+> **Suspended 2026-10-27** (Jason: "open CV-S05d and suspend CV-S05"): for CV-S05d Whole-Reader Census (`2026-10-27-cv-s05d-whole-reader-census.md`). CV-S05c censused list items only, and round 12's agent NEW sat in other readers (application, `RefList`, the sweep's noise bin). Resume with round 13 from CV-S05d's counted shapes, plus the open seed 17 NEW-1–3 and the 2009/23 Chapter 6 residual. Then the agent check as the final confirmation.
 
 > **Suspended 2026-10-27** (Jason: "make the sub session active and suspend this one"): for CV-S05b List shape audit, which finds the technique that counts list misreads across the corpus. Resume with: the pass-bar decision (below), then round 11 from CV-S05b's ranked shapes plus round 10's NEW-1. (CV-S05b, a technique-choice session, was a path not followed and was deleted on 2026-10-27; the work went to CV-S05c Shape Mining, closed.)
 
