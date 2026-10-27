@@ -33,6 +33,18 @@ bugs:
     affected: 7
     fix: "trace each; CV-S05 round 11"
     status: open
+  - pattern: "Extent lists: an item's own exception not honoured, so excluded provisions are held ('but excluding', '(excluding …)', 'apart from', 'other than'): 2007/27 s.93, 2012/9 s.119, 2020/21 s.56, 2022/32 s.207 (+ 2009/23, R10 NEW-2)"
+    category: extent
+    module: Extent.Lists / Named
+    affected: 5
+    fix: "subtract the item's exceptions (same fix area as class B); CV-S05 round 11"
+    status: open
+  - pattern: "Extent: a Schedule paragraph's own extent ('This paragraph does not extend to Scotland', '… extends to Northern Ireland only') withheld as unread:provision_extent"
+    category: extent
+    module: Extent.Named / Units
+    affected: 12
+    fix: "own-extent rule for 'this paragraph' in Schedules (~36 sentences); CV-S05 round 11"
+    status: open
 parent: change-vocabulary/2026-10-27-cv-s05b-list-shape-audit.md
 ---
 
@@ -52,7 +64,7 @@ Aim (Jason 2026-10-27: "I thought it was a long tail problem"): stop sampling an
 - ✅ Measure the tail: the shape counts, the singletons, and an unseen-shape estimate (Good–Turing / Chao1)
 - ✅ Mark the shapes the reader already reads, so review skips them (step 2: per-item verdicts)
 - ✅ Confirm the 33 drops (`run-01/dropped.tsv`) against the law text; hand the confirmed ones to CV-S05 round 11
-- ⬜ STAGED for later: shape review of the qualified tail (`run-01/review.tsv` buckets `read_qualified`, `misread_qualified`, then `in_unread`), most common first, with Jason; hand the ranked shapes to CV-S05 round 11
+- ✅ Shape review of the qualified tail (steps 3–4: over-reach rules; the unread tail ranked) (`run-01/review.tsv` buckets `read_qualified`, `misread_qualified`, then `in_unread`), most common first, with Jason; hand the ranked shapes to CV-S05 round 11
 - ⬜ If it earns its place, build it as a read-only mix task with pure modules and tests
 
 ## Run-01 (2026-10-27)
@@ -102,6 +114,23 @@ Each was judged against its whole sentence and the stored lists; full table in `
 - 2019/696: exceptions held as `not NI`, which is a separate question.
 
 **Lesson:** classes A–D are *recurring* shapes at the sentence level, but invisible at item level. The agent check met them only by chance: R10 NEW-2 was 2009/23.
+
+## Shape review (2026-10-27, steps 3–4)
+
+- **Read but qualified items (step 3).** Reviewing 90 shapes by eye was replaced by three rules checked on every list item: excluded, qualified, scope (`run-01/overreach.exs`; 100 laws, about 2 min). There were 14 hits.
+  - **Class F:** 5 laws hold provisions their item excludes: 2007/27, 2012/9, 2020/21 and 2022/32, plus 2009/23, which was R10 NEW-2. So the check re-finds what the agent found.
+  - **Not misreads:** 4 laws, all from the check's own limits. It looks at one item at a time, and bare numbers cut into the wrong chunks.
+  - Details are in `run-01/overreach.md`.
+- **Unread tail (step 4).** 920 withheld sentences and leads fall into 757 shapes, 714 of them in one law only. It is a true long tail, and withholding keeps it safe.
+  - The one rule worth writing is a Schedule paragraph's own extent ("This paragraph does not extend to Scotland"): about 12 laws and 36 sentences, logged as a bug.
+  - Details are in `run-01/unread_tail.md`.
+
+**Summary for CV-S05 round 11:**
+- **Drops:** classes A–E, 29 laws.
+- **Over-reach:** class F, 4 new laws.
+- **One unread rule:** about 12 laws.
+
+Each comes with its laws as fixtures. This census is the baseline: after round 11, rerunning `run-01`'s commands gives a new run to compare against it.
 
 ## Dependencies
 
