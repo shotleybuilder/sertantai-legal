@@ -1,0 +1,20 @@
+{
+  "session": "change-vocabulary/2026-10-27-cv-s05d-whole-reader-census.md",
+  "run": "run-05",
+  "date": "2026-10-27",
+  "reader_commit": "9a721593 reading (round 13 after seed 19); 05f66ca4 behaviour-identical",
+  "purpose": "CV-S05 strategy step 1: finder names Schedule Parts' paragraphs as the reader does; census re-run; every silent and unnamed item triaged.",
+  "read_only": true,
+  "steps": [
+    "input.jsonl.gz: the round 13 acceptance dump (dump.exs), unchanged",
+    "/usr/bin/python3 census.py input.jsonl out; /usr/bin/python3 bench.py input.jsonl > out/bench.txt",
+    "/usr/bin/python3 detail.py > out/silent_detail.txt; ugroups.py (skip list) > out/unnamed_detail.txt"
+  ],
+  "outputs": {
+    "out/triage.md": "R1-R16 real, Q1 for Jason, known, doubtful, finder",
+    "out/stats.json": "64 silent; 320 unnamed refs, 44 laws",
+    "out/bench.txt": "6/10, as run-04",
+    "out/silent_detail.txt": "each silent sentence with the stored rows of its flagged refs",
+    "out/unnamed_detail.txt": "each unnamed group with its law's statements"
+  }
+}

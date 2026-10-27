@@ -1,0 +1,140 @@
+## ukpga_1974_39 applies_not S: s.189
+   [s.189 applies_not:S] This subsection does not apply to Scotland.
+   [s.193 default:E+W+S+NI] This Act extends to Northern Ireland.
+## ukpga_1974_44 only E+W: s.118,s.124,s.125,s.126
+   [s.131 default:E+W+S] This Act does not extend to Northern Ireland.
+## ukpga_1980_34 not NI: sch.1,sch.5
+   [s.70 list:not:NI] The following provisions of this Act do not extend to Northern Ireland, namely,—a Part I (which includes Schedules 1 to 5);b section 61 to 65 ...; andc Parts I and IV of Schedule 9 (and section 69 so far as it relates to those Parts).
+## ukpga_1986_63 named E+W: s.56,s.57,s.58,s.59,sch.11.pt.I,sch.12.pt.III
+   [s.58 list:named:E+W] The following provisions of this Act extend to England and Wales— Part I (housing), except section 3, paragraphs 10(7), 14 and 17 of Schedule 5 and the associated repeals in Part I of Schedule 12; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ; Part V (opencast coal); in Part VI (miscellaneous provisions), sections 40 to 49, 54 and 55, Part I of Schedule 9, ...
+## ukpga_1986_63 named S: s.50,s.51,s.52,s.53,s.54,s.55,s.56,s.57,s.58,s.59,sch.12.pt.IV
+   [s.58 list:named:S] The following provisions of this Act extend to Scotland— in Part I (housing), sections 3, 19 and 22, paragraphs 8, 10(7), 13, 14, 17, 18 and 42 of Schedule 5 and the associated repeals in Part I of Schedule 12; . . . . . . . . .
+## ukpga_1987_43 not NI: s.1,s.2,s.3,s.4,s.5,s.6,s.7,s.8,s.9
+   [s.49 default:E+W+S+NI] This Act shall extend to Northern Ireland with the exception of—a the provisions of Part 1;b any provision amending or repealing an enactment which does not so extend; andc any other provision so far as it has effect for the purposes of, or in relation to, a provision falling within paragraph (a) or (b) above.
+## ukpga_1988_33 also S: s.142
+   [s.172 default:E+W] Subject to the following provisions of this section, and to sections 19, 20 and 21 above, this Act extends to England and Wales only.
+   [s.172 list:also:S] The following provisions extend also to Scotland— Part I; sections 44 to 48; section 50; section 57; section 63; section 68; section 76(3); section 77(10) and (11); section 82; sections 84 to 88; sections 93A to 93D; sections 93F and 93G section 94; section 102, so far as relating to other provisions of this Act extending to Scotland; sections 108 to 115 and 117; section 133; section 134; section 136; section 137; sections 141 141A and 142; section 143; section 145(a) and (b); section 162; section 170; section 171; this section; and section 173.
+   [s.172 list:only:S+NI] Section 95 above extends only to Scotland and Northern Ireland.
+## ukpga_1988_33 also NI: s.103(2),s.116,s.124,s.141C,s.141ZA,s.161,s.56,s.90,s.91,s.92,s.93,s.93E
+   [s.172 default:E+W] Subject to the following provisions of this section, and to sections 19, 20 and 21 above, this Act extends to England and Wales only.
+   [s.172 list:also:NI] The following provisions extend also to Northern Ireland— Part I; Part IV; section 50; section 133; sections 133 to 133B, with the exception of paragraph 5(ba) of Schedule 12 which extends to England and Wales and Scotland only section 135; section 136; section 137; section 139; section 139A; section 139B; section 141; section 142; section 143; section 152; section 159; section 162; section 166(5); section 170; section 171; this section; and section 173;
+   [s.172 list:only:S+NI] Section 95 above extends only to Scotland and Northern Ireland.
+   [s.172 list:only:NI] Sections 145(c), 149 and 168 and paragraph 5(bb), 5(bc) and 5(bd) of Schedule 12 above extend to Northern Ireland only.
+## ukpga_1988_33 not NI: sch.12.para.5(ba)
+   [s.172 default:E+W] Subject to the following provisions of this section, and to sections 19, 20 and 21 above, this Act extends to England and Wales only.
+   [s.172 list:also:NI] The following provisions extend also to Northern Ireland— Part I; Part IV; section 50; section 133; sections 133 to 133B, with the exception of paragraph 5(ba) of Schedule 12 which extends to England and Wales and Scotland only section 135; section 136; section 137; section 139; section 139A; section 139B; section 141; section 142; section 143; section 152; section 159; section 162; section 166(5); section 170; section 171; this section; and section 173;
+   [s.172 list:only:S+NI] Section 95 above extends only to Scotland and Northern Ireland.
+   [s.172 list:only:NI] Sections 145(c), 149 and 168 and paragraph 5(bb), 5(bc) and 5(bd) of Schedule 12 above extend to Northern Ireland only.
+## ukpga_1988_33 same None: sch.16
+   [s.172 list:same:same] The extent of any amendment of an enactment in Schedule 15 to this Act is the same as that of the enactment amended, except that the amendments of the Offences against the Person Act 1861 do not extend to Northern Ireland.
+   [s.172 list:same:same] The extent of any repeal of an enactment in Schedule 16 to this Act is the same as that of the enactment repealed, subject to the Notes at the end of the Schedule.
+## ukpga_1988_45 also NI: s.26
+   [s.27 default:E+W+S] Except for section 1, so far as enabling provision to be made amending the Customs and Excise Management Act 1979, and section 26 and this section this Act does not extend to Northern Ireland.
+## ukpga_1991_28 named S: s.128(4),s.128(5),s.132(3)
+   [s.28 default:S] Subject to subsection (5) below, this Act extends to Scotland only.
+## ukpga_1994_40 same None: sch.11,sch.4.para.2,sch.4.para.3,sch.17
+   [s.40 list:same:same] The extent of any amendment of an enactment in paragraph 2 or 3 of Schedule 4 to this Act or Schedule 11 to this Act is the same as that of the enactment amended.
+   [s.81 list:same:same] The extent of any repeal in that Schedule of an enactment is the same as that of the enactment repealed.
+## ukpga_1996_53 not S: s.141,s.144,s.145,sch.3.pt.I
+   [s.148 default:E+W] The provisions of this Act extend to England and Wales.
+   [s.148 list:named:S] The following provisions of this Act extend to Scotland— Part II (construction contracts), . . . sections 126 to 128 (financial assistance for regeneration and development), and Part V (miscellaneous and general provisions), except—i sections 141, 144 and 145 (which amend provisions which do not extend to Scotland), andii Part I of Schedule 3 (repeals consequential on provisions not extending to Scotland).
+## ukpga_1996_53 named NI: s.141,s.146,s.147,s.148,s.149,s.150,s.151
+   [s.148 default:E+W] The provisions of this Act extend to England and Wales.
+   [s.148 list:named:NI] The following provisions of this Act extend to Northern Ireland— . . .
+## ukpga_1996_53 not NI: s.142,s.143,s.144,s.145,sch.3.pt.I,sch.3.pt.III
+   [s.148 default:E+W] The provisions of this Act extend to England and Wales.
+   [s.148 list:named:NI] The following provisions of this Act extend to Northern Ireland— . . .
+## ukpga_1997_50 same None: sch.10,sch.6,sch.9
+   [s.137 list:same:same] The amendments in Schedules 6 and 9, and the repeals in Schedule 10, have the same extent as the enactments to which they refer.
+## ukpga_2001_24 not S: sch.8.pt.6
+   [s.128 list:not:S] The following provisions do not extend to Scotland—a Part 5,b Part 12,c in Part 6 of Schedule 8, the repeals in the Criminal Justice and Police Order Act 1994 and in the Crime and Disorder Act 1998.
+## ukpga_2004_33 same None: s.247(1)(a)
+   [s.262 list:same:same] In Part 6—a any amendment made by virtue of section 247(1)(a) and Schedule 21 has the same extent as the provision subject to the amendment;b section 248 and Schedule 22 extend to Northern Ireland only.
+   [s.262 list:same:same] Any amendment, repeal or revocation made by Schedules 24 to 27 and 30 has the same extent as the provision subject to the amendment, repeal or revocation.
+## ukpga_2007_28 same None: s.202(1),s.203,s.209,s.239,s.60,sch.1,sch.12,sch.13,sch.16,sch.17,sch.18.pt.1,sch.18.pt.14,sch.18.pt.17,sch.18.pt.18,sch.18.pt.19,sch.18.pt.8,sch.18.pt.9,sch.2,sch.7,sch.8,sch.9
+   [s.244 list:same:same] The extent of any amendment, repeal or revocation made by section 60, 202(1), 203, 209 or 239 or by Schedule 1, 2, 7, 8, 9, 12, 13, 16 or 17 or Part 1, 8, 9, 14, 17, 18 or 19 of Schedule 18 is the same as that of the provision amended, repealed or revoked.
+## ukpga_2009_23 also S: s.293,s.294
+   [s.323 default:E+W] Subject to the following provisions of this section, this Act extends to England and Wales only.
+   [s.323 list:also:S] Subject to subsection (2), the following provisions also extend to Scotland—a Part 1 (the MMO);b Part 2 (exclusive economic zone, UK marine area and Welsh zone);c Part 3 (marine planning);d Part 4 (marine licensing), other than paragraph 1 of Schedule 8;e Chapter 1 of Part 5 (MCZs), other than section 146 and Schedules 11 and 12;f in Chapter 1 of Part 6, sections 165, 166 and 186 (powers of IFC officers etc);g in Part 7 (fisheries)—i sections 212 and 213 (crabs and lobsters);ii section 232 (keeping, introduction and removal of fish);h in Part 8 (enforcement), Chapters 1 to 5 of Part 8 and sect
+## ukpga_2009_23 also NI: s.293,s.294
+   [s.323 default:E+W] Subject to the following provisions of this section, this Act extends to England and Wales only.
+   [s.323 list:also:NI] Subject to subsection (2), the following provisions also extend to Northern Ireland—a Part 1 (the MMO);b Part 2 (exclusive economic zone, UK marine area and Welsh zone);c Part 3 (marine planning);d Part 4 (marine licensing), other than paragraph 1 of Schedule 8;e Chapter 1 of Part 5 (MCZs), other than section 146 and Schedules 11 and 12;f in Part 8 (enforcement), Chapters 1 to 5 of Part 8 and section 295;g this Part (other than section 321 and Schedule 22, except as provided by subsection (2) or (3)).
+## ukpga_2012_9 named E+W+S+NI: s.25
+   [s.119 list:named:E+W+S+NI] The following provisions extend to England and Wales, Scotland and Northern Ireland—a sections 19 to 22 (excluding Parts 2, 5 and 6 of Schedule 1) and 25,b Chapter 2 of Part 2,c Chapter 1 of Part 3 (excluding section 53 and Schedules 2 and 3),d Part 4 (excluding section 63 and Schedule 6),e section 86,f paragraph 5(3) of Schedule 8,g section 91,h Part 6,i sections 115 to 117 (excluding Schedules 9 and 10), this section and sections 120 and 121,j Parts 2, 3 and 8 of Schedule 9,k the amendments of Schedule 1 to the Criminal Justice and Police Act 2001, and Schedule 5 to the Sexual Offences Act 2
+   [sch.2.para.2 list:named:E+W+S+NI] This paragraph extends to England and Wales, Scotland and Northern Ireland.
+   [sch.2.para.8 list:named:E+W+S+NI] This paragraph extends to England and Wales, Scotland and Northern Ireland.
+   [sch.2.para.9 list:named:E+W+S+NI] This paragraph extends to England and Wales, Scotland and Northern Ireland.
+   [sch.2.para.10 list:named:E+W+S+NI] This paragraph extends to England and Wales, Scotland and Northern Ireland.
+   [sch.2.para.13 list:named:E+W+S+NI] This paragraph extends to England and Wales, Scotland and Northern Ireland.
+   [sch.2.para.15 list:named:E+W+S+NI] This paragraph extends to England and Wales, Scotland and Northern Ireland.
+   [sch.10.pt.2 list:named:E+W+S+NI] The repeals and revocations in the following provisions extend to England and Wales, Scotland and Northern Ireland— the Distribution of German Enemy Property (No 1) Order 1950, the Merchant Shipping Act 1995, the Gas Appliances (Safety) Regulations 1995, the Older Cattle (Disposal) (England) Regulations 2005, the Salmonella in Turkey Flocks and Slaughter Pigs (Survey Powers) (England) Regulations 2006, and the Payment Services Regulations 2009.
+## ukpga_2013_24 only E+W: sch.21.para.4,sch.21.para.5,sch.21.pt.2,sch.21.pt.3
+   [s.102 list:named:E+W+S+NI] Part 1 extends to England and Wales, Scotland and Northern Ireland.
+   [s.102 list:only:E+W+S] Part 2 extends only to England and Wales and Scotland, except that the following provisions of Part 2 extend also to Northern Ireland—a section 23(3);b paragraph 11 of Schedule 1;c paragraphs 36 to 39 of Schedule 2.
+   [s.102 list:named:E+W+S+NI] Part 3 extends to England and Wales, Scotland and Northern Ireland, except as follows—a paragraphs 15 to 44, 69 to 84 and 101 to 107 of Schedule 6 extend only to England and Wales and Scotland;b paragraphs 52 to 68, 96, 108 to 123 and 127 to 139 of Schedule 6 extend only to England and Wales;c paragraphs 9 to 14, 45 to 51, 171 to 180 and 192 to 209 of Schedule 6 extend only to Scotland;d paragraphs 149 to 170 and 181 to 191 of Schedule 6 extend only to Northern Ireland.
+   [s.102 list:named:E+W+S+NI] Part 4 extends to England and Wales, Scotland and Northern Ireland, except as follows—a paragraphs 1 to 7 and 11 to 14 of Schedule 14 and paragraphs 2, 3, 7, 13 and 41 of Schedule 15, extend only to England and Wales and Scotland;b paragraphs 8 to 10 and 20 to 22 of Schedule 14, and paragraphs 4 to 6 and 47 to 49 of Schedule 15, extend only to England and Wales;c paragraphs 23 to 29 of Schedule 14, and paragraphs 53 to 55 of Schedule 15, extend only to Northern Ireland.
+   [s.102 list:named:E+W+S+NI] This Part extends to England and Wales, Scotland and Northern Ireland except that—a sections 92, 93, 95, 97 and 98 extend only to England and Wales and Scotland;b sections 83 to 88, 94 and 96 extend only to England and Wales.
+## ukpga_2016_12 named E+W+S+NI: s.14
+   [s.45 list:named:E+W+S+NI] The following provisions of this Act extend to England and Wales, Scotland and Northern Ireland—a Part 1 (Small Business Commissioner) (except paragraphs 1, 15 and 18 to 21 of Schedule 1);b subsections (5) to (9) of section 14 (application of changes relating to the business impact target in relation to the relevant period in which they come into force);c section 26 (apprenticeships: information sharing);d sections 28 and 29 (late payment of insurance claims);e section 35 (grants etc towards electronic communications services and networks), except subsection (2);f section 36 (UK Government Inv
+## ukpga_2020_7 only E+W: s.38(1),s.45,s.53,s.56,s.59,s.60,s.65,s.67,s.79,s.81,s.82,s.84,sch.17.para.1,sch.17.para.2,sch.17.para.3,sch.17.para.4,sch.17.para.5,sch.17.para.6,sch.17.para.7,sch.17.para.8,sch.17.pt.1,sch.23,sch.26
+   [s.100 list:named:E+W+S+NI] The following provisions extend to England and Wales, Scotland and Northern Ireland—a section 1;b section 2 (and Schedule 1);c section 8, so far as it relates to Parts 1, 2 and 5 of Schedule 7 (and those Parts of Schedule 7);d section 9;e sections 22 and 23;f section 24;g sections 25 to 29 (and Schedule 15);h section 50 (and Schedule 20);i section 51 (and Schedule 21);j section 52 (and Schedule 22);k section 54, so far as it relates to Part 2 of Schedule 24 (and that Part of Schedule 24);l section 55, so far as it relates to paragraph 2 of Schedule 25 (and that paragraph of Schedule 25);m sect
+   [s.100 list:only:E+W+S] The following provisions extend to England and Wales and Scotland only—a section 8, so far as it relates to Part 3 of Schedule 7 (and that Part of Schedule 7);b sections 39 to 41;c section 77(3).
+   [s.100 list:only:E+W+NI] The following provisions extend to England and Wales and Northern Ireland only—a section 61;b section 78.
+   [s.100 list:only:E+W] The following provisions extend to England and Wales only—a section 3 (and Schedule 2);b section 6 (and Schedule 5);c section 10(1) (and Schedule 8);d section 11;e sections 14 and 15 (and Schedule 12);f section 18(1) (and Part 1 of Schedule 13);g section 19;h section 30;i section 33;j section 37(1) (and Part 1 of Schedule 16);
+## ukpga_2020_7 only S: s.38(2),s.46,s.49,s.70,sch.17.para.10,sch.17.para.11,sch.17.para.12,sch.17.para.13,sch.17.para.9,sch.17.pt.2,sch.19
+   [s.100 list:named:E+W+S+NI] The following provisions extend to England and Wales, Scotland and Northern Ireland—a section 1;b section 2 (and Schedule 1);c section 8, so far as it relates to Parts 1, 2 and 5 of Schedule 7 (and those Parts of Schedule 7);d section 9;e sections 22 and 23;f section 24;g sections 25 to 29 (and Schedule 15);h section 50 (and Schedule 20);i section 51 (and Schedule 21);j section 52 (and Schedule 22);k section 54, so far as it relates to Part 2 of Schedule 24 (and that Part of Schedule 24);l section 55, so far as it relates to paragraph 2 of Schedule 25 (and that paragraph of Schedule 25);m sect
+   [s.100 list:only:E+W+S] The following provisions extend to England and Wales and Scotland only—a section 8, so far as it relates to Part 3 of Schedule 7 (and that Part of Schedule 7);b sections 39 to 41;c section 77(3).
+   [s.100 list:only:S] The following provisions extend to Scotland only—a section 4 (and Schedule 3);b section 7 (and Schedule 6);c section 10(2) (and Schedule 9);d section 12;e sections 16 and 17;f section 18(2) (and Part 2 of Schedule 13);g section 20 (and Schedule 14);h sections 34 and 35;i section 36;j section 37(2) (and Part 2 of Schedule 16);
+## ukpga_2021_30 named E+W: s.71
+   [s.146 list:named:E+W] In Part 1 of this Act (environmental governance)— a the following provisions extend to England and Wales— i Chapter 1 of Part 1 (improving the natural environment), except for sections 17 to 20; ii section 28 (monitoring and reporting on environmental improvement plans and targets); b sections 17 to 19 (policy statement on environmental principles) extend to England and Wales and Scotland; c the remaining provisions extend to England and Wales, Scotland and Northern Ireland.
+   [s.146 list:named:E+W+S+NI] In Part 3 of this Act (waste and resource efficiency)— a the following provisions extend to England and Wales, Scotland and Northern Ireland— i section 50 and Schedule 4 (producer responsibility obligations); ii section 51 and Schedule 5 (producer responsibility for disposal costs); iii section 52 and Schedule 6 (resource efficiency information); iv section 53 and Schedule 7 (resource efficiency requirements); v section 63 (procedure for regulations under the Environmental Protection Act 1990); b the following provisions extend to England and Wales and Northern Ireland— i section 54 and Schedu
+   [s.146 list:named:E+W] In Part 5 of this Act (water)— a section 84 (report on elimination of discharges from storm overflows) extends to England and Wales; b sections 89 and 93 (water quality) extend to England and Wales, Scotland and Northern Ireland; c section 90 (water quality - powers of Welsh Ministers) extends to England and Wales; d section 91 (water quality - powers of Northern Ireland Department) extends to Northern Ireland; e section 92 (Solway Tweed river basin district) extends to England and Wales and Scotland; f an amendment or repeal made by Part 5 has the same extent as the provision amended or repea
+   [s.146 list:named:E+W] Part 6 of this Act (nature and biodiversity) extends to England and Wales, except that— a the amendments made by Schedule 15 (biodiversity gain in nationally significant infrastructure projects) have the same extent as the provisions amended, and b section 116 and Schedule 17 (use of forest risk commodities in commercial activity) extend to England and Wales, Scotland and Northern Ireland.
+   [s.146 list:named:E+W] Part 7 of this Act (conservation covenants) extends to England and Wales.
+   [s.146 list:named:E+W+S+NI] This Part (miscellaneous and general provisions) extends to England and Wales, Scotland and Northern Ireland.
+## ukpga_2022_32 only E+W: sch.11
+   [s.207 default:E+W] This Act extends to England and Wales only, subject to the following provisions of this section.
+   [s.207 list:named:E+W+S+NI] The following provisions extend to England and Wales, Scotland and Northern Ireland— a section 1; b sections 37 to 44 (and Schedule 3); c section 56(2); d section 202; e this Part, other than section 204 (and Schedule 21).
+   [s.207 list:named:E+W+S] Sections 89(3) to (7), 141 and 143 extend to England and Wales and Scotland.
+   [s.207 list:named:E+W+NI] Section 161 extends to England and Wales and Northern Ireland.
+   [s.207 list:only:E+W] The following provisions extend to England and Wales only— a section 54; b sections 79, 81 and 83; c section 85; d section 90; e section 165; f sections 168 and 169; g section 193; h in Schedule 11, the amendments to the Rehabilitation of Offenders Act 1974 and the Police Act 1997.
+   [s.207 list:named:E+W+S+NI] Sections 198 and 199 extend to England and Wales, Scotland and Northern Ireland.
+   [s.207 list:named:E+W+S+NI] — a paragraphs 4 and 6 of Schedule 18 extend to England and Wales, Scotland and Northern Ireland, and b paragraph 5 of Schedule 18 extends to England and Wales and Scotland only.
+## ukpga_2023_56 also S: s.1084
+   [s.218 default:E+W+S+NI] This Act extends to England and Wales, Scotland and Northern Ireland, subject to subsections (2) and (3).
+## uksi_2002_3135 same None: sch.1
+   [reg.1 list:same:same] The extent of any amendment of any enactment or instrument in Schedule 1 is the same as that of the enactment or instrument amended.
+## uksi_2005_2060 same None: sch.para.1,sch.para.14
+## uksi_2006_1407 applies E: sch.1.para.16,sch.1.para.17,sch.1.para.18,sch.1.para.19,sch.1.para.20,sch.1.para.21,sch.1.para.22,sch.1.para.23,sch.1.para.24,sch.1.para.25,sch.1.para.26,sch.1.para.27,sch.1.para.28,sch.1.para.29,sch.
+   [reg.1 default:E+W] This Order extends to England and Wales only.
+   [reg.1 applies:E] Paragraphs 3, 11(a) and (c), 17, 18, 20, 21 and 31 of Part 1 of Schedule 1 to this Order apply in relation to England only.
+## uksi_2010_231 same None: sch.4,sch.6
+   [reg.2 list:same:same] The extent of any amendment, revocation, repeal or saving of any enactment set out in Schedules 4 and 6 is the same as that of the enactment amended, revoked, repealed or saved.
+## uksi_2010_490 also S: reg.106,s.123,s.237,sch.6
+   [reg.2 default:E+W] Except as provided in this regulation, these Regulations extend to England and Wales only.
+   [reg.2 list:also:S] The following provisions also extend to Scotland—a regulation 3(8) (interpretation in relation to adjacent sea);b regulations 9 (duties relating to compliance with the Directives) and 9A (duties in relation to wild bird habitat), in so far as those regulations apply in relation to the exercise of a function which relates to a reserved matter (within the meaning of Schedule 5 to the Scotland Act 1998 (reserved matters));c regulation 39(4) (statement under Planning Act 2008 );ca Chapter 1 of Part 6 (assessment of plans and projects: general provisions), in so far as that Chapter applies in relat
+## uksi_2010_490 not S: sch.7.pt.2
+   [reg.2 default:E+W] Except as provided in this regulation, these Regulations extend to England and Wales only.
+   [reg.2 list:also:S] The following provisions also extend to Scotland—a regulation 3(8) (interpretation in relation to adjacent sea);b regulations 9 (duties relating to compliance with the Directives) and 9A (duties in relation to wild bird habitat), in so far as those regulations apply in relation to the exercise of a function which relates to a reserved matter (within the meaning of Schedule 5 to the Scotland Act 1998 (reserved matters));c regulation 39(4) (statement under Planning Act 2008 );ca Chapter 1 of Part 6 (assessment of plans and projects: general provisions), in so far as that Chapter applies in relat
+## uksi_2014_469 only S: sch.2.para.11,sch.2.para.12,sch.2.para.13
+   [reg.3 default:E+W+S+NI] Subject to paragraphs (2) to (5), this Order extends to England and Wales, Scotland and Northern Ireland.
+   [reg.3 list:only:E+W+S] — a paragraph 3 of Schedule 1 extends to England and Wales and Scotland only;b paragraph 8(2)(b) to (d) of Schedule 1 extends to England and Wales and Scotland only.
+## uksi_2016_1142 named E+W+S+NI: sch.para.1,sch.para.2,sch.pt.1
+   [reg.1 list:named:E+W+S+NI] This article, articles 6(4) and (5) and 7 and Part 1 of the Schedule extend to England and Wales, Scotland and Northern Ireland.
+## uksi_2016_1142 only E+W+NI: sch.para.10,sch.para.11,sch.para.3,sch.para.4,sch.para.5,sch.para.6,sch.para.7,sch.para.8,sch.para.9,sch.pt.2
+   [reg.1 list:only:E+W+NI] Articles 3 to 5 and Part 2 of the Schedule extend to England and Wales and Northern Ireland only.
+## uksi_2016_1142 only E+W: sch.para.12,sch.para.13,sch.pt.3
+   [reg.1 list:named:E+W+S+NI] This article, articles 6(4) and (5) and 7 and Part 1 of the Schedule extend to England and Wales, Scotland and Northern Ireland.
+   [reg.1 list:only:E+W+NI] Articles 3 to 5 and Part 2 of the Schedule extend to England and Wales and Northern Ireland only.
+   [reg.1 list:only:E+W] Part 3 of the Schedule extends to England and Wales only.
+## uksi_2017_1012 also S: s.123,sch.6.pt.1
+   [reg.2 default:E+W] Except as provided in this regulation, these Regulations extend to England and Wales only.
+   [reg.2 list:also:S] The following provisions also extend to Scotland—a regulation 3(8) (meaning of adjacent sea);b regulations 9 and 10 (duties relating to compliance with the Directive and wild bird habitat, respectively), in so far as those regulations apply in relation to the exercise of a function which relates to a reserved matter (within the meaning of Schedule 5 to the Scotland Act 1998 (reserved matters) );c regulation 41(4) (national policy statement under Planning Act 2008 );d Chapter 1 of Part 6 (assessment of plans and projects: general provisions), in so far as that Chapter applies in relation to pla
+## uksi_2017_1012 also NI: sch.6.pt.1
+   [reg.2 default:E+W] Except as provided in this regulation, these Regulations extend to England and Wales only.
+   [reg.2 list:also:NI] The following provisions also extend to Northern Ireland—a regulations 9 and 10, in so far as those regulations apply in relation to the exercise of a function which relates to an excepted matter (within the meaning given by section 4(1) of the Northern Ireland Act 1998 );b Chapter 1 of Part 6, in so far as that Chapter applies in relation to plans and projects—i which do not relate to a matter specified in Chapters 2 of Part 6 to 9 of Part 6; andii which relate to an excepted matter (within the meaning given by section 4(1) of the Northern Ireland Act 1998);c regulation 103, in so far as it a
+## uksi_2018_1370 same None: reg.10,reg.11,reg.12,reg.2,reg.3,reg.4,reg.5,reg.6,reg.7,reg.8,reg.9
+   [reg.1 list:same:same] Any amendment made by Part 2 of these Regulations of an enactment has the same application and extent as the enactment specified.
+## uksi_2019_458 same None: sch.pt.3
+   [reg.1 list:same:same] Subject to sub-paragraph (2A), an amendment made by Part 2 has the same extent as the provision amended.
+   [reg.1 list:same:same] A revocation made by Part 5 in respect of subordinate legislation in Part 3 of the Schedule has the same extent as the provision revoked.

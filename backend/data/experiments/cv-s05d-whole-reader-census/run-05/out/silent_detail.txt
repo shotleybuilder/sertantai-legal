@@ -1,0 +1,316 @@
+#1 ukpga_1960_62 s.32 [missing] class=sweep:noise:modification default=E+W+S app=None
+   S: This Part of this Act shall apply to Scotland with the following modifications:—a for any reference to the Minister there shall be substituted a reference to the Secretary of State;b for any reference to the Act of 1947 there shall be substituted a reference to the Town and Country Planning (Scotland) Act 1947; and for any reference to any Part or section of the Act of 1947 specified in the first column of the following table there shall be substituted a reference to the Part or section of the Town and Country Planning (Scotland) Act 1947, specified in relation thereto in the second column of that table:— TablePart or section of Act of 1947Part or section of Town and Country Planning (Scotland) Act, 1947Part III . . .Part IISection twelve . . .Section tenSection thirteen . . .Section elevenSection sixteen . . .Section fourteenSection twenty-three . . .Section twenty-oneSection twenty-six
+   missing s.32(3): exact=[] cover=[]
+   missing s.32(2): exact=[] cover=[]
+   missing s.32(1): exact=[] cover=[]
+   missing s.32(6): exact=[] cover=[]
+   missing s.32(8): exact=[] cover=[]
+   missing s.32(5): exact=[] cover=[]
+#2 ukpga_1961_34 s.185 [missing] class=default:E+W+S default=E+W+S app=None
+   S: This Act, except subsections (1) and (2) of section seventy-seven . . ., does not extend to Northern Ireland.
+   missing s.185(1): exact=[] cover=[]
+   missing s.185(2): exact=[] cover=[]
+#3 ukpga_1967_80 s.106 [missing] class=default:E+W+NI default=E+W+NI app=None
+   S: The following provisions of this Act shall extend to Scotland, that is to say—a so much of this Act as relates to courts-martial and appeals therefrom;b section 102 and paragraphs 7, 10 to 12 and 14 of Schedule 5;c Part III (except sections 63, 65, 66, 67 and 71) and Schedule 2;d Part V;e section 92 and Schedule 3 so far as they amend any enactment which extends to Scotland;ee section 100;f so much of section 103(1) and Schedule 6 as amends. . . . . . , the Criminal Justice Act 1961 and the Criminal Justice (Scotland) Act 1963; andg Part II of Schedule 7 and so much of section 103(2) as relates thereto; but except as provided by this subsection and except so far as it relates to the interpretation or commencement of the said provisions this Act shall not extend to Scotland.
+   q_missing s.103(1): exact=[] cover=[]
+   missing sch.6: exact=[] cover=[]
+   missing sch.7.pt.II: exact=[] cover=[]
+   q_missing s.103(2): exact=[] cover=[]
+#4 ukpga_1972_11 s.30 [missing] class=list:named:NI default=None app=None
+   S: This section, and the following provisions only of this Act, extend to Northern Ireland, that is to say,—a sections 1 to 6 and Schedules 1 and 2;b sections 13 and 17;c . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .d section 22(1) and (2) and Schedule 4 so far as they relate to any body exercising functions in relation to Northern Ireland;e section 23 and paragraph 2 of Schedule 5;ee section 25;f section 26, so far as applicable, . . . and 28(2);g section 29 and Schedules 6 and 8, so far as they relate to any enactment which extends to Northern Ireland and paragraphs 1 to 3, 10, 11 and 13 to 15 of Schedule 7.
+   missing sch.7.para.1..sch.7.para.3: exact=[] cover=[]
+   missing sch.7.para.10: exact=[] cover=[]
+   missing sch.7.para.11: exact=[] cover=[]
+   missing sch.7.para.13..sch.7.para.15: exact=[] cover=[]
+#5 ukpga_1972_62 s.27 [missing] class=default:E+W+S default=E+W+S app=None
+   S: Except for the following provisions, that is to say—a sections 9, 10, 11, 16, 17(1), 26(1) and (2) and this section and Schedule 4; andb section 26(3) and (4) and Schedule 6 so far as they relate to the Corn Sales Act 1921, . . . , to section 26 of the Agriculture Act 1967 and to sections 32, 33 and 50 of the Agriculture Act 1970, this Act does not extend to Northern Ireland.
+   missing s.26(3): exact=[] cover=[]
+   missing s.26(4): exact=[] cover=[]
+   q_missing sch.6: exact=[] cover=[]
+#6 ukpga_1972_71 s.66 [q_missing] class=default:E+W default=E+W app=None
+   S: In this Act—a sections 23, 24, 28, 29, 30, 33, 35, 51 and this section, ... section 64(1) and Schedule 5 so far as they relate to the Road Traffic Act 1972 and section 64(2) and Schedule 6 so far as they relate to the Summary Jurisdiction (Scotland) Act 1908 and the Firearms Act 1968, extend to Scotland;b section 63 and this section extend to Northern Ireland;c section 64(1) and Schedule 5 so far as they relate to the Petty Sessions (Ireland) Act 1851 extend to Scotland, Northern Ireland, the Channel Islands and the Isle of Man; but, save as aforesaid, this Act extends to England and Wales only.
+   q_missing sch.6: exact=[] cover=[]
+#7 ukpga_1973_26 s.89 [place] class=default:E+W default=E+W app=None
+   S: This Act, except section 88, does not extend to Northern Ireland and, except section 86 and Schedule 3, does not extend to Scotland.
+   place sch.3: exact=[('also', 'S')] cover=[]
+#8 ukpga_1973_32 s.58 [q_read] class=list:named:S default=None app=None
+   S: The following provisions only of this Act shall extend to Scotland, namely, this subsection and subsections (1) to (3) of this section, sections 32(4) to (7), 36, 37(5), section 39(1) so far as it relates to those sections, sections 50, 51 and 57, paragraphs 41, 42, 43, 49, 58(2), 59(1), 67, 77 to 82, 96, 102, 104, 106, 109, 123, 128, 130, 133 to 135 and 138 to 150 of Schedule 4, the entries in Schedule 5 relating to the National Health Service (Scotland) Act 1947, the Dentists Act 1957, the Opticians Act 1958, the Radioactive Substances Act 1960, the Health Visiting and Social Working Training Act 1962, the Redundancy Payments Act 1965, (excluding the reference to paragraph 6), the Ministry of Social Security Act 1966 and the National Health Service (Scotland) Act 1972, and section 56 so far as it relates to subsection (3) of this section, sections 32(6) and 50 and paragraphs 138 and 13
+   q_read s.51: exact=[('named', 'S')] cover=[]
+   q_read s.57: exact=[('named', 'S')] cover=[]
+#9 ukpga_1974_37 s.84 [missing] class=default:E+W+S default=E+W+S app=None
+   S: This Act, except—a Part I and this Part so far as may be necessary to enable regulations under section 15 or 30 to be made and operate for the purpose mentioned in paragraph 2 of Schedule 3; andb paragraphs . . . 3 of Schedule 9, does not extend to Northern Ireland.
+   missing s.1: exact=[] cover=[]
+   missing s.10: exact=[] cover=[]
+   missing s.11: exact=[] cover=[]
+   missing s.11A: exact=[] cover=[]
+   missing s.12: exact=[] cover=[]
+   missing s.13: exact=[] cover=[]
+#10 ukpga_1975_21 s.463 [missing] class=list:named:E+W default=S app=None
+   S: The following provisions of this Act shall extend to England and Wales, that is to say—a in Part I, sections . . . , 169, 188(3) to (8) 189 and 212A(2) and (6);b in Part II, sections . . . , 365, 370 (so far as relating to section 374), 374, 389(3) to (8) , 390 and 413;c in Part III, section 463(1);d in Schedule 9, the amendments relating to—i . . . ii the Criminal Justice Act 1961;iii . . . iv the Criminal Justice Act 1967;v the Children and Young Persons Act 1969;vi the Immigration Act 1971;vii the Criminal Justice Act 1972; andviii the Powers of Criminal Courts Act 1973.e in Schedule 10, the repeals relating to—i sections 46, 50 and 54 of the Children and Young Persons (Scotland) Act 1937;ii sections 7 and 7A of the Criminal Justice (Scotland) Act 1949;iii sections 39, 40 and 53(1) of the Criminal Justice (Scotland) Act 1963;iv section 54(8) of the Criminal Justice Act 1967;v Schedule
+   missing s.188(4): exact=[] cover=[]
+   missing s.188(5): exact=[] cover=[]
+   missing s.188(6): exact=[] cover=[]
+   missing s.188(7): exact=[] cover=[]
+   missing s.188(8): exact=[] cover=[]
+   missing s.370: exact=[] cover=[]
+#11 ukpga_1976_55 s.27 [missing] class=default:E+W+S default=E+W+S app=None
+   S: Except for the following provisions, namely—a sections ... 15, 26(1) and (2) and this section;b section 7 and Schedule 3 so far as they relate to enactments (within the meaning of that section) that extend to Northern Ireland; andc Part I of Schedule 4 and, so far as it relates to that Part, section 26(3), this Act does not extend to Northern Ireland.
+   missing s.7: exact=[] cover=[]
+   q_missing sch.3: exact=[] cover=[]
+   q_missing s.26(3): exact=[] cover=[]
+#12 ukpga_1978_29 s.110 [missing] class=sweep:noise:other default=S app=None
+   S: Paragraph 3 of Schedule 10 extends to other parts of the United Kingdom.
+   missing sch.10.para.3: exact=[] cover=[]
+#13 ukpga_1980_58 s.41 [missing] class=default:E+W default=E+W app=None
+   S: The repeal by this Act of section 14(1) of the Limitation Act 1963 and the corresponding saving in paragraph 2 of Schedule 2 to this Act shall extend to Northern Ireland, but otherwise this Act does not extend to Scotland or to Northern Ireland.
+   missing sch.2.para.2: exact=[] cover=[]
+#14 ukpga_1980_65 s.47 [place] class=list:only:S default=E+W+S app=None
+   S: Sections 32 and 46 above extend to Scotland only but, subject to that, this Part of this Act extends to England and Wales only.
+   place s.28: exact=[('same', None)] cover=[]
+   place s.29: exact=[('same', None)] cover=[]
+   place s.30: exact=[('same', None)] cover=[]
+   place s.31: exact=[('same', None)] cover=[]
+   place s.32: exact=[('only', 'S'), ('same', None)] cover=[]
+   place s.33: exact=[('same', None)] cover=[]
+#15 ukpga_1981_45 s.31 [missing] class=list:not:S default=E+W+S+NI app=None
+   S: The following provisions of this Act do not extend to Scotland, namely—a Part I; andb Part I of the Schedule.
+   missing s.ll: exact=[] cover=[]
+#16 ukpga_1981_56 s.41 [missing] class=list:named:NI default=None app=None
+   S: The following provisions of this Act extend to Northern Ireland—a Part I;b Part II, except—i in Schedule 3, paragraphs 7 and 19;ii in Schedule 4, paragraphs 1, 5 to 9 and 15;c Section 38;d Part I of Schedule 12, and section 40 so far as relates to Part II;e the repeal by Part II of Schedule 12 of the entry for the National Ports Council in Part II of Schedule 1 to the House of Commons Disqualification Act 1975, and section 40 so far as it relates to that repeal ;f Part III of Schedule 12 and section 40 so far as relating to the Railway Fires Act (1905) Amendment Act 1923;g this section and sections 42 and 43.
+   missing sch.12.pt.II: exact=[] cover=[]
+#17 ukpga_1981_69 s.74 [missing] class=default:E+W+S default=E+W+S app=None
+   S: This Act, except section 15(1) and Schedule 10 and, so far as regards any enactment mentioned in Schedule 17 that so extends, section 73 and that Schedule, does not extend to Northern Ireland.
+   missing s.73: exact=[] cover=[]
+#18 ukpga_1982_53 s.77 [missing] class=list:only:S default=None app=None
+   S: Part II of this Act and section 26 above extend to Scotland only and Part VI of this Act applies to Scotland only to the extent specified in section 48 above.
+   missing s.38: exact=[] cover=[]
+   place s.39: exact=[('named', 'E+W+NI')] cover=[]
+   missing s.40: exact=[] cover=[]
+   missing s.41: exact=[] cover=[]
+   place s.42: exact=[('named', 'E+W+NI')] cover=[]
+   place s.43: exact=[('named', 'E+W+NI')] cover=[]
+#19 ukpga_1983_35 s.13 [place] class=list:only:E+W default=E+W+S app=None
+   S: Sections 1(5) and (6), 4(1) to (3), 5 and 6 above and Schedule 1 to this Act extend only to England and Wales, and sections 1(7), ... 7 and 8 above extend only to Scotland.
+   place s.1(5): exact=[('only', 'E+W')] cover=[]
+   place s.1(6): exact=[('only', 'E+W')] cover=[]
+   place s.4(1): exact=[('only', 'E+W')] cover=[]
+   place s.4(2): exact=[('only', 'E+W')] cover=[]
+   place s.4(3): exact=[('only', 'E+W')] cover=[]
+   place s.5: exact=[('only', 'E+W')] cover=[]
+#20 ukpga_1986_44 s.68 [missing] class=default:E+W+S default=E+W+S app=None
+   S: This Act, except this section and the following provisions, namely— sections 49 and 50; section 58; sections 62 and 63; section 66; paragraph 7 of Schedule 1 and section 1(5) so far as relating to that paragraph; paragraph 8 of Schedule 2 and section 2(5) so far as relating to that paragraph; paragraphs 15, 23 and 28 of Schedule 7 and section 67(1) so far as relating to those paragraphs; and paragraph 27 to 31 of Schedule 8 and section 67(3) so far as relating to those paragraphs; and Schedule 9 and section 67(4) so far as relating to the repeal of section 33(2) of the 1972 Act and the repeals in the House of Commons Disqualification Act 1975, does not extend to Northern Ireland.
+   q_missing s.1(5): exact=[] cover=[]
+   q_missing s.2(5): exact=[] cover=[]
+   q_missing s.67(1): exact=[] cover=[]
+   q_missing s.67(3): exact=[] cover=[]
+   missing sch.9: exact=[] cover=[]
+   q_missing s.67(4): exact=[] cover=[]
+#21 ukpga_1988_19 s.34 [missing] class=default:E+W+S default=E+W+S app=None
+   S: This Act, except for the following provisions, shall not extend to Northern Ireland, that is to say, this section and—a . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .b . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .c section 33 so far as it gives effect to any amendment or repeal specified in Schedule 3 or 4 to this Act of any provision which so extends; . . .
+   q_missing s.33: exact=[] cover=[]
+   missing s.34: exact=[] cover=[]
+#22 ukpga_1988_45 s.27 [q_missing] class=default:E+W+S default=E+W+S app=None
+   S: Except for section 1, so far as enabling provision to be made amending the Customs and Excise Management Act 1979, and section 26 and this section this Act does not extend to Northern Ireland.
+   q_missing s.1: exact=[] cover=[]
+#23 ukpga_1989_15 s.194 [place] class=list:only:E+W+S default=E+W app=None
+   S: Subject to any enactment by virtue of which a provision of this Act has effect in relation to any part of the territorial sea adjacent to or to any part of Great Britain, the following provisions of this Act shall extend to Great Britain only, namely—a section 136 and Schedule 15 so far as they amend section 32 of the Land Drainage Act 1976;b subsections (1) to (4), (6) and (7) of section 141 and, so far as they amend the Diseases of Fish Act 1937 or section 39 of the Salmon and Freshwater Fisheries Act 1975 (border rivers), subsection (5) of the said section 141 and Schedule 17;c section 172;d section 190 and Schedule 25 so far as they relate to the Agriculture Act 1970, the Health and Safety at Work etc. Act 1974 . . .; ande section 190 and Schedule 27 so far as they relate to the Diseases of Fish Act 1937, the Border Rivers (Prevention of Pollution) Act 1951, section 126 of the Water 
+   place s.194(1): exact=[] cover=[('named', 'E+W+S+NI')]
+   place s.194(2): exact=[] cover=[('named', 'E+W+S+NI')]
+   place s.194(3): exact=[] cover=[('named', 'E+W+S+NI')]
+   place s.194(4): exact=[] cover=[('named', 'E+W+S+NI')]
+   place s.194(6): exact=[] cover=[('named', 'E+W+S+NI')]
+   place s.194(7): exact=[] cover=[('named', 'E+W+S+NI')]
+#24 ukpga_1989_29 s.113 [missing] class=default:E+W+S default=E+W+S app=None
+   S: This Act, except this section and the following provisions, namely— Sections 32N to 32Z2; sections 65 to 70; section 82; sections 91 to 95; section 100; paragraph 8 of Schedule 1 and section 1(5) so far as relating to that paragraph; paragraph 10 of Schedule 2 and section 2(6) so far as relating to that paragraph; paragraph 11 of Schedule 16 and section 112(1) so far as relating to that paragraph; and Schedule 18 and section 112(4) so far as relating to enactments which extend there ..., does not extend to Northern Ireland.
+   q_missing s.1(5): exact=[] cover=[]
+   q_missing s.2(6): exact=[] cover=[]
+   q_missing s.112(1): exact=[] cover=[]
+   missing sch.18: exact=[] cover=[]
+   q_missing s.112(4): exact=[] cover=[]
+#25 ukpga_1990_11 s.7 [place] class=list:only:E+W default=E+W app=None
+   S: The repeals in Part II of Schedule 1 extend to England and Wales only and those in Part III of Schedule 1 to Scotland only.
+   place sch.1.pt.III: exact=[('same', None)] cover=[]
+#26 ukpga_1990_16 s.60 [q_missing] class=default:E+W+S default=E+W+S app=None
+   S: This Act, except— this section; section 51, section 58(2) to (4); and paragraphs 7, 29 and 30 of Schedule 3 and, so far as relating to those paragraphs, section 59(1), does not extend to Northern Ireland.
+   q_missing s.59(1): exact=[] cover=[]
+#27 ukpga_1990_43 s.164 [place] class=default:E+W+S default=E+W+S app=None
+   S: Only the following provisions of this Act (together with this section) extend to Northern Ireland, namely— section 3(5) to (8); section 62(2)(e) in so far as it relates to importation; Part V; . . ., section 127(2) in so far as it relates to the continental shelf; section 140 in so far as it relates to importation; section 141; section 142 in so far as it relates to importation; section 146; section 147; section 148; section 153 except subsection (1)(k) and (m); section 156 in so far as it relates to Part VI and sections 140, 141 and 142 in so far as they extend to Northern Ireland and in so far as it relates to the Radioactive Substances Act 1960; section 158 in so far as it relates to Part VI and sections 140, 141 and 142 in so far as they extend to Northern Ireland.
+   place s.153: exact=[('same', None)] cover=[]
+#28 ukpga_1991_22 s.169 [missing] class=list:named:E+W default=None app=None
+   S: The following provisions of this Act extend to England and Wales— Part I (new roads in England and Wales), Part III (street works in England and Wales), the provisions of Schedule 8 (minor and consequential amendments) and Schedule 9 (repeals) so far as relating to enactments which extend to England and Wales, and the other provisions of this Part so far as relating to the above provisions.
+   missing sch.8: exact=[] cover=[]
+#29 ukpga_1991_22 s.169 [missing] class=list:named:S default=None app=None
+   S: The following provisions of this Act extend to Scotland— Part II (new roads in Scotland), Part IV (road works in Scotland), the provisions of Schedule 8 (minor and consequential amendments) and Schedule 9 (repeals) so far as relating to enactments which extend to Scotland, and the other provisions of this Part so far as relating to the above provisions.
+   missing sch.8: exact=[] cover=[]
+#30 ukpga_1994_21 s.68 [q_missing] class=list:not:S default=E+W+S app=None
+   S: The following provisions of this Act do not extend to Scotland, that is to say—za sections 4A to 4C and Schedules 1A and 1B;a sections 49 and 50 and Schedule 7; andb so much of Schedules 9 and 11 as relates to enactments extending to England and Wales only.
+   q_missing sch.11: exact=[] cover=[]
+   q_missing sch.9: exact=[] cover=[]
+#31 ukpga_1994_21 s.68 [q_missing] class=default:E+W+S default=E+W+S app=None
+   S: This Act, except for—a sections 7 to 9, 12 and 13 and Schedule 2,b sections 20 and 21 and Schedule 4,c so much of Schedule 1 as amends the Parliamentary Commissioner Act 1967, the House of Commons Disqualification Act 1975 and the Northern Ireland Assembly Disqualification Act 1975,d so much of Schedule 9 as amends any enactment that extends to Northern Ireland,e the repeal, by virtue of their inclusion in Schedule 11, of—i the entries relating to the Corporation in the Statutory Corporations (Financial Provisions) Act 1975, the House of Commons Disqualification Act 1975, the Northern Ireland Assembly Disqualification Act 1975 and the National Audit Act 1983,ii the Coal Consumers’ Councils (Northern Irish Interests) Act 1962,iii section 2(4) and (5) of the Overseas Development and Co-operation Act 1980 and the entry relating to the Corporation in Schedule 1 to that Act,iv section 1(2) of
+   q_missing sch.1: exact=[] cover=[]
+   q_missing sch.9: exact=[] cover=[]
+#32 ukpga_1995_25 s.125 [place] class=default:E+W+S default=E+W+S app=None
+   S: Except for this section and any amendment or repeal by this Act of any provision contained in—a the Parliamentary Commissioner Act 1967,b the Sea Fish (Conservation) Act 1967,c the House of Commons Disqualification Act 1975, ord the Northern Ireland Assembly Disqualification Act 1975, this Act shall not extend to Northern Ireland.
+   place s.125: exact=[('same', None)] cover=[]
+#33 ukpga_1995_45 s.18 [missing] class=default:E+W+S default=E+W+S app=None
+   S: This Act, except—a this section;b subsections (1) to (6) of section 11;c paragraphs 1 to 3, 6, 7, 23 and 30 of Schedule 5 and section 17(1) and (2) so far as relating to those paragraphs; andd Schedule 6 and section 17(5) so far as relating to the repeals of paragraph 1 of Schedule 5 to the Fair Trading Act 1973 and sections 62(7) and 63 of and paragraph 15(4) of Schedule 7 to the 1986 Act, does not extend to Northern Ireland.
+   q_missing s.17(1): exact=[] cover=[]
+   q_missing s.17(2): exact=[] cover=[]
+   missing sch.6: exact=[] cover=[]
+   q_missing s.17(5): exact=[] cover=[]
+   missing s.62(7): exact=[] cover=[]
+   missing s.63: exact=[] cover=[]
+#34 ukpga_1996_23 s.108 [missing] class=list:named:S default=E+W+NI app=None
+   S: Sections 89, 90 and 91 (consumer arbitration agreements) extend to Scotland and the provisions of Schedules 3 and 4 (consequential amendments and repeals) extend to Scotland so far as they relate to enactments which so extend, subject as follows.
+   missing sch.3: exact=[] cover=[]
+   missing sch.4: exact=[] cover=[]
+#35 ukpga_1996_25 s.79 [missing] class=default:E+W+NI default=E+W+NI app=None
+   S: This Act does not extend to Scotland, with the exception of—a sections 37, 38, 41, 42, 59, 60, 61(3), 63, 72, 73, 74(2) and (3) and 78, this section and section 81;b paragraphs 6 and 7 of Schedule 3, and paragraph 8 of Schedule 3 so far as it relates to paragraphs 6 and 7;c paragraph 5 of Schedule 5;d paragraph 12 of Schedule 5 so far as it relates to provisions amending section 11 of the Criminal Justice Act 1987.
+   missing sch.3.para.8: exact=[] cover=[]
+   missing sch.5.para.12: exact=[] cover=[]
+#36 ukpga_1996_53 s.148 [missing] class=list:named:S default=E+W app=None
+   S: The following provisions of this Act extend to Scotland— Part II (construction contracts), . . . sections 126 to 128 (financial assistance for regeneration and development), and Part V (miscellaneous and general provisions), except—i sections 141, 144 and 145 (which amend provisions which do not extend to Scotland), andii Part I of Schedule 3 (repeals consequential on provisions not extending to Scotland).
+   missing s.111n1: exact=[] cover=[]
+   place s.141: exact=[('not', 'S'), ('named', 'NI')] cover=[]
+   place s.144: exact=[('not', 'S'), ('not', 'NI')] cover=[]
+   place s.145: exact=[('not', 'S'), ('not', 'NI')] cover=[]
+   place sch.3.pt.I: exact=[('not', 'S'), ('not', 'NI')] cover=[]
+#37 ukpga_1997_11 s.6 [place] class=list:only:S default=S app=None
+   S: The repeals in Part II of Schedule 1 extend to Scotland only and those in Part III of Schedule 1 to England and Wales only.
+   place sch.1.pt.III: exact=[('same', None)] cover=[]
+#38 ukpga_1998_37 s.121 [q_read] class=list:same:same default=E+W app=None
+   S: The repeals in Schedule 10 to this Act, and section 120(2) above so far as relating to those repeals, have the same extent as the enactments on which the repeals operate.
+   q_read s.120(2): exact=[('same', None)] cover=[]
+#39 ukpga_1999_30 s.90 [exc_held] class=list:only:E+W+S default=None app=None
+   S: The following provisions extend to England and Wales and Scotland only—a Part I;b sections 9 to 12, 14 and 17;c Schedule 2 (except for paragraphs 1, 2, 3(1), 7(2) and 16), and section 18 so far as relating thereto;d sections 23, 24 and 26;e Part IV except sections 42 to 44;f Chapter I of Part V (except paragraph 1 of Schedule 8, and section 70 so far as relating thereto);g sections 73, 75 and 77 and Schedule 9;h section 79;i paragraphs 1 to 8, 20 to 23, 32(b), 33, 35 and 37 of Schedule 11, and section 81 so far as relating thereto;j paragraphs 14 to 63, 66(17), 76 to 80, 82, 83 and 87 of Schedule 12, and section 84(1) so far as relating thereto; andk section 84(2) to (4).
+   exc_held s.70: exact=[('only', 'E+W+S'), ('unread', None)] cover=[]
+#40 ukpga_2000_19 s.87 [q_missing] class=list:named:NI default=E+W+S app=None
+   S: The following provisions of this Act extend to Northern Ireland—a so much of section 46 as amends section 21(3) of the Pensions Act 1995;b sections 57 to 61 (except section 60(5));c section 73;d sections 78 to 81;e in Schedule 3, paragraphs 8 and 9, and in paragraph 11, sub-paragraph (2) (and sub-paragraph (1) so far as it relates to that sub-paragraph);f paragraph 6 of Schedule 5; andg this Part, except—i sections 82 and 83 and Schedule 8; andii so much of this Part as gives effect to any repeal other than the repeals mentioned in subsection (3).
+   q_missing s.46: exact=[] cover=[]
+   place s.82: exact=[('not', 'NI')] cover=[]
+   place s.83: exact=[('not', 'NI')] cover=[]
+#41 ukpga_2003_20 s.102 [place] class=sweep:noise:other default=None app=None
+   S: This Part applies in relation to—a a function or activity performed or carried out in the United Kingdom, andb a flight function performed or flight activity carried out on a United Kingdom aircraft.
+   place s.100: exact=[('same', None)] cover=[]
+   place s.101: exact=[('same', None)] cover=[]
+   place s.102: exact=[('same', None)] cover=[]
+   place s.92: exact=[('same', None)] cover=[]
+   place s.93: exact=[('same', None)] cover=[]
+   place s.94: exact=[('same', None)] cover=[]
+#42 ukpga_2004_20 s.198 [missing] class=list:not:NI default=E+W+S+NI app=None
+   S: The following provisions of this Act do not extend to Northern Ireland—a Chapter 3 of Part 1 (with the exception of section 59 and paragraphs 1, 5, 6, 8, 10(1) and (2) and 11 of Schedule 14);b so much of Part 2 as amends the 1989 Act;c sections 82, 90, 91 and 100; andd Part 3 (with the exception of section 151(5)).
+   missing s.59: exact=[] cover=[]
+   q_missing s.101: exact=[] cover=[]
+   q_missing s.102: exact=[] cover=[]
+   q_missing s.103: exact=[] cover=[]
+   q_missing s.104: exact=[] cover=[]
+   q_missing s.105: exact=[] cover=[]
+#43 ukpga_2005_15 s.179 [missing] class=list:same:same default=E+W app=None
+   S: The following have the same extent as the enactments to which they relate—a section 55(1) and Schedule 2,b section 59 and Schedule 4,c section 109 and Schedule 6,d section 154,e section 159 and Schedule 11,f section 160 and Schedule 12,g section 161(5) (so far as it has effect for the purposes of Part 2 of Schedule 13) and that Part of Schedule 13,h section 163(3) and Schedule 14,i sections 169(5) and 170,j (subject to subsection (8)) section 174(2) and Schedule 17.
+   missing s.161(5): exact=[] cover=[]
+#44 ukpga_2006_3 s.94 [place] class=list:only:NI default=E+W+S app=None
+   S: But—a section 82 extends only to Northern Ireland, andb except as provided by subsection (3), an amendment of an enactment by this Act shall have the same extent as the enactment amended (or as the relevant part of the enactment amended).
+   place s.82: exact=[('only', 'NI')] cover=[]
+#45 ukpga_2013_24 s.102 [place] class=list:named:E+W+S+NI default=None app=None
+   S: This Part extends to England and Wales, Scotland and Northern Ireland except that—a sections 92, 93, 95, 97 and 98 extend only to England and Wales and Scotland;b sections 83 to 88, 94 and 96 extend only to England and Wales.
+   place s.83: exact=[('only', 'E+W')] cover=[]
+   place s.84: exact=[('only', 'E+W')] cover=[]
+   place s.85: exact=[('only', 'E+W')] cover=[]
+   place s.86: exact=[('only', 'E+W')] cover=[]
+   place s.87: exact=[('only', 'E+W')] cover=[]
+   place s.88: exact=[('only', 'E+W')] cover=[]
+#46 ukpga_2015_15 s.83 [place] class=sweep:noise:other default=E+W+S+NI app=None
+   S: Subsection (3C) applies to an agent who—a is carrying on letting agency work in relation to a dwelling-house in England, andb advertises the dwelling-house on a third party website as a dwelling-house which a landlord is seeking to let on a tenancy.
+   place s.83(3C): exact=[('same', None)] cover=[('only', 'E+W')]
+#47 ukpga_2015_15 s.83 [place] class=sweep:noise:other default=E+W+S+NI app=None
+   S: Subsection (3C) also applies to an agent who, on a third party website, advertises letting agency work carried on by the agent in relation to dwelling houses in England.
+   place s.83(3C): exact=[('same', None)] cover=[('only', 'E+W')]
+#48 ukpga_2015_2 s.96 [place] class=list:only:E+W default=None app=None
+   S: The following provisions extend to England and Wales only—a sections 17 and 18(1) to (4) (restrictions on use of cautions);b sections 20 to 25 (offences involving ill-treatment or wilful neglect);c . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .d sections 57 to 61 (personal injury claims: fundamental dishonesty and rules against inducements);e sections 86 to 90 (judicial review: information about financial resources, interveners and capping of costs);f Schedule 4 (ill-treatment or wilful neglect: excluded health care);g . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .h Parts 1 to 4 of Schedule 10 (contracting out secure colleges).
+   place sch.10.pt.1: exact=[('same', None)] cover=[]
+   place sch.10.pt.2: exact=[('same', None)] cover=[]
+   place sch.10.pt.3: exact=[('same', None)] cover=[]
+   place sch.10.pt.4: exact=[('same', None)] cover=[]
+#49 ukpga_2015_7 s.56 [place] class=list:only:E+W default=None app=None
+   S: Part 1 (strategic highways companies) extends to England and Wales only, save that—a sections 16 and 18 to 20 extend to England and Wales, Scotland and Northern Ireland, andb an amendment or repeal made by Part 1, other than the amendment made by section 17(7), has the same extent as the provision to which it relates.
+   place s.17: exact=[('only', 'E+W')] cover=[]
+#50 ukpga_2020_7 s.100 [missing] class=list:named:E+W+S+NI default=None app=None
+   S: The following provisions extend to England and Wales, Scotland and Northern Ireland—a section 1;b section 2 (and Schedule 1);c section 8, so far as it relates to Parts 1, 2 and 5 of Schedule 7 (and those Parts of Schedule 7);d section 9;e sections 22 and 23;f section 24;g sections 25 to 29 (and Schedule 15);h section 50 (and Schedule 20);i section 51 (and Schedule 21);j section 52 (and Schedule 22);k section 54, so far as it relates to Part 2 of Schedule 24 (and that Part of Schedule 24);l section 55, so far as it relates to paragraph 2 of Schedule 25 (and that paragraph of Schedule 25);m section 58 (and Schedule 28);n sections 62 to 64 and 66;o sections 68 and 69;p section 71;q sections 72 to 74;r section 75;s section 76;t section 77(1) and (2);u this Part.
+   missing sch.25.para.2: exact=[] cover=[]
+#51 ukpga_2021_30 s.146 [place] class=list:named:E+W default=None app=None
+   S: Part 6 of this Act (nature and biodiversity) extends to England and Wales, except that— a the amendments made by Schedule 15 (biodiversity gain in nationally significant infrastructure projects) have the same extent as the provisions amended, and b section 116 and Schedule 17 (use of forest risk commodities in commercial activity) extend to England and Wales, Scotland and Northern Ireland.
+   place s.116: exact=[('named', 'E+W+S+NI')] cover=[]
+#52 ukpga_2025_36 s.158 [place] class=list:named:E+W+S default=None app=None
+   S: Except as set out below— a Parts 1, 2 and 4 of this Act extend to England and Wales and Scotland; b in Part 3— i Chapter 1 of Part 3 extends to England and Wales; ii Chapter 2 of Part 3 extends to England and Wales and Scotland; iii Chapter 3 of Part 3 extends to England and Wales, Scotland and Northern Ireland; c Part 5 and this Part extend to England and Wales, Scotland and Northern Ireland.
+   place s.39: exact=[('named', 'E+W+S'), ('same', None)] cover=[]
+   place s.40: exact=[('named', 'E+W+S'), ('same', None)] cover=[]
+   place s.41: exact=[('named', 'E+W+S'), ('same', None)] cover=[]
+   place s.42: exact=[('named', 'E+W+S'), ('same', None)] cover=[]
+   place s.43: exact=[('named', 'E+W+S'), ('same', None)] cover=[]
+   place s.44: exact=[('named', 'E+W+S'), ('same', None)] cover=[]
+#53 uksi_2005_2060 reg.1 [place] class=list:named:E+W+S+NI default=S app=None
+   S: This article extends to England and Wales, Scotland and Northern Ireland, and paragraphs 1 and 14 of the Schedule, and article 3 in so far as it relates to those paragraphs, have the same extent as the provisions modified.
+   place reg.1: exact=[('named', 'E+W+S+NI'), ('named', 'E+W+S+NI')] cover=[]
+#54 uksi_2007_1375 reg.1 [missing] class=applies:E default=None app=E
+   S: In relation to the commencement of sections 1 to 12 (other than section 5(4)), sections 76 and 77 and Schedules 1 and 2, this Order applies only in relation to England.
+   missing reg.76: exact=[] cover=[]
+   missing reg.77: exact=[] cover=[]
+   missing sch.1: exact=[] cover=[]
+   missing sch.2: exact=[] cover=[]
+#55 uksi_2009_462 reg.1 [missing] class=default:E+W default=E+W app=None
+   S: Subject to paragraph (4), this Order extends to England and Wales only except that―a paragraph 24 of Schedule 1, and article 2 insofar as it relates to that paragraph, extends to England and Wales, Scotland and Northern Ireland;b paragraph 25 of Schedule 1, and article 2 insofar as it relates to that paragraph, extends to England and Wales and Northern Ireland only;c the amendment, repeal and revocation of any enactment commenced by article 2 and paragraphs 35 and 36 of Schedule 1 has the same extent as the enactment amended, repealed or revoked;d article 4 insofar as it relates to―i the repeal effected by the Act in section 16(2)(a)(v) of the Maintenance Orders Act 1950, andii section 147(6) of, and Schedule 13 to the Act, so far as relating to that repeal, extends to England and Wales and Scotland only; ande paragraph 10 of Schedule 3, and article 9 insofar as it relates to that paragr
+   q_missing reg.2: exact=[] cover=[]
+   missing sch.1.para.25: exact=[] cover=[]
+   q_missing reg.4: exact=[] cover=[]
+   missing reg.147(6): exact=[] cover=[]
+   missing sch.13: exact=[] cover=[]
+   missing sch.3.para.10: exact=[] cover=[]
+#56 uksi_2009_462 reg.1 [missing] class=applies:E default=E+W app=None
+   S: The following provisions apply in relation to England only—a articles 6, 7 and 11;b paragraphs 14 to 23 of Schedule 3 and article 9 insofar as it relates to those paragraphs; andc paragraphs 4(1), 5 and 15 of Schedule 4 and article 10 insofar as it relates to those paragraphs.
+   missing sch.3.para.14..sch.3.para.23: exact=[] cover=[]
+   q_missing reg.9: exact=[] cover=[]
+   missing sch.4.para.15: exact=[] cover=[]
+   missing sch.4.para.4(1): exact=[] cover=[]
+   missing sch.4.para.5: exact=[] cover=[]
+   q_missing reg.10: exact=[] cover=[]
+#57 uksi_2010_708 reg.1 [place] class=list:named:E+W+S+NI default=None app=None
+   S: This article and Part 3 extend to England and Wales, Scotland and Northern Ireland (but, by virtue of section 169(6) of the 2008 Act, the repeals commenced by virtue of article 4(1)(b) and (2)(c) have the same extent as the provisions repealed).
+   place reg.4: exact=[('named', 'E+W+S+NI')] cover=[]
+   place reg.5: exact=[('named', 'E+W+S+NI')] cover=[]
+   place reg.1: exact=[('named', 'E+W+S+NI')] cover=[]
+#58 uksi_2010_708 reg.1 [place] class=applies:E default=None app=None
+   S: Parts 1, 5 and 6 extend to England and Wales, but Part 5 applies in relation to England only.
+   place reg.11: exact=[('applies', 'E')] cover=[]
+   place reg.12: exact=[('applies', 'E')] cover=[]
+   place reg.13: exact=[('applies', 'E')] cover=[]
+   place reg.14: exact=[('applies', 'E')] cover=[]
+   place reg.2: exact=[('applies', 'E')] cover=[]
+#59 uksi_2010_708 reg.1 [missing] class=applies:E default=None app=None
+   S: As regards Part 4— a subject to paragraph (6), articles 6 and 7 extend to England and Wales but apply in relation to England only; b paragraphs 1 and 2 of Schedule 1, together with article 8 in so far as it relates to those paragraphs, extend to England and Wales but apply in relation to England only; c paragraph 3 of Schedule 1, together with article 8 in so far as it relates to that paragraph, extend to England and Wales, Scotland and Northern Ireland, but apply in relation to England, Scotland and Northern Ireland only; and d article 9, together with Schedule 2, extend to England and Wales but apply in relation to England only.
+   missing reg.10: exact=[] cover=[]
+   missing reg.7: exact=[] cover=[]
+   missing reg.8: exact=[] cover=[]
+   place reg.9: exact=[('applies', 'E')] cover=[]
+   missing sch.1.para.1: exact=[] cover=[]
+   missing sch.1.para.2: exact=[] cover=[]
+#60 uksi_2012_3119 reg.1 [missing] class=sweep:noise:other default=E+W app=None
+   S: Regulations 14, 15, 16, 17, 18, 19, 22 and 23 apply in relation to—a educational buildings and buildings of statutory undertakers in Wales;b Crown buildings in Wales; andc building work carried out or proposed to be carried out by Crown authorities in Wales.
+   missing reg.14: exact=[] cover=[]
+   missing reg.15: exact=[] cover=[]
+   missing reg.16: exact=[] cover=[]
+   missing reg.17: exact=[] cover=[]
+   missing reg.18: exact=[] cover=[]
+   missing reg.19: exact=[] cover=[]
+#61 uksi_2017_1012 reg.2 [missing] class=list:also:S default=E+W app=None
+   S: The following provisions also extend to Scotland—a regulation 3(8) (meaning of adjacent sea);b regulations 9 and 10 (duties relating to compliance with the Directive and wild bird habitat, respectively), in so far as those regulations apply in relation to the exercise of a function which relates to a reserved matter (within the meaning of Schedule 5 to the Scotland Act 1998 (reserved matters) );c regulation 41(4) (national policy statement under Planning Act 2008 );d Chapter 1 of Part 6 (assessment of plans and projects: general provisions), in so far as that Chapter applies in relation to plans and projects—i which do not relate to a matter specified in Chapters 2 of Part 6 to 9 of Part 6, andii which relate to a reserved matter (within the meaning of Schedule 5 to the Scotland Act 1998);e in regulation 70 (grant of planning permission)—i paragraph (1)(e)(ii) and (iii) (deemed grant of 
+   missing reg.70(1)(e)(ii): exact=[] cover=[]
+#62 uksi_2018_1203 reg.27 [missing] class=none default=None app=None
+   S: A record to which this regulation applies is admissible in any proceedings as evidence (or, in Scotland, sufficient evidence) of any fact stated in it to the same extent as oral evidence of that fact is admissible in those proceedings, subject to paragraph (3).
+   missing reg.27: exact=[] cover=[]
+#63 uksi_2024_437 reg.1 [missing] class=list:named:E+W+S+NI default=E+W app=None
+   S: This regulation and regulation 2(f), (g), (w)(i) and (ii) and (x) extend to England and Wales, Scotland and Northern Ireland.
+   missing reg.2(w)(x): exact=[] cover=[]
+#64 uksi_2026_194 reg.22 [missing] class=sweep:noise:other default=E+W+S+NI app=None
+   S: In default of an agreement between the applicant and responsible person, the arbitrator is such person as may be appointed by the President or Vice President of the Chartered Institute of Arbitrators following a request by— a a party, after giving written notice to the other party; or b the parties jointly, but this paragraph does not apply in Scotland.
+   missing reg.22: exact=[] cover=[]
