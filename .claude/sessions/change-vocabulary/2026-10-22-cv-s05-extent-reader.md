@@ -1349,3 +1349,23 @@ Jason 2026-10-27: "I don't need to look at the list - we should have a clear ide
 **Checked on real text** (fresh reads of the fix-list laws, `Extent.of`): every wording reads as its text states. The census's 2014/2 s.46 flag was a finder miss: "(c) section 46" is in the list plainly.
 
 **Runs next (ask Jason):** `mix lat.extent_patterns --accept` and the fixture review; restore point; one extents run; golden; check; census run-04 (CV-S05d); agent check seed 18.
+
+**Runs** (Jason 2026-10-27: "VM is closed, start"):
+- **Catalogue** (`5fa36bbb`): 27 new patterns. The 12 examples now reading differently were each checked in the text and accepted: defaults read, exception lists read, and unread statements now counted where they were silent before.
+- **Restore point** `cv-s05-before-round13` (extent_rules, provision_changes, provision_change_claims); snapshots `r6b.claims12`, `r6b.rules12`.
+- **First chain:** extents (1 min), **golden 27/27**, **check PASS**.
+- **Census run-04, round 13's own check**, found regressions from round 13's first pass, all fixed and re-run (`fa71db4b`, `fbf94b8b`):
+  - loose application reads, where cases were read as places: "a freezing order made … by a magistrates' court in …", "as they apply to", "an agent who …", "as if", and another law's section;
+  - a range before a describing bracket;
+  - "in Schedule 2, …, in Schedule 4, paragraphs …";
+  - "by virtue of subsection (6)" read as an item;
+  - glued paragraph numbers ("only.3 They apply …");
+  - 2021/30's Part 6 lead (a bracket, same-extent exceptions).
+- **Final chain:**
+  - catalogue: 4 new patterns; 8 patterns gone (round 13's own loose reads) and 2021/30 → `list:named:E+W`;
+  - extents, then **golden 27/27**, then **check PASS** (our faults 0); OH&S outcome counts unchanged;
+  - claims against `r6b.claims12`: **0 lost, 4 gained**, all right: SI 2016/1154's changes to SI 2015/483 get E+W ("They apply in relation to— (a) England … (b) Wales"); SI 2000/2853's HSWA Part I change gets E ("apply in relation to local authorities in England").
+- **Census run-04** (`a75e80b8`):
+  - silent candidates 113 → 64 (51 cleared, 2 new, both finder-side); unnamed refs 358 → 234;
+  - the fix-list check: every wording reads as its text states.
+- **Agent check:** seed 18 (sample repeatable), round 13 rules added to the skill's prompt. The result is below.

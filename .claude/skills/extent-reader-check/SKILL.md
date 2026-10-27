@@ -158,6 +158,29 @@ Reader rules (intended):
     withheld. "which inserts Part 4A into the Energy Act 2008" is a description, not another law's provision.
   - "This Act, except for— (a) …, (b) …, (c) so much of …, does not extend to …": comma-separated items read.
 
+- Round 13 (from the CV-S05d whole-reader census):
+  - Sub-letter runs continue at their level: "2(1)(a) and (b)" = 2(1)(a), 2(1)(b); "36(1), (2)(a), (b) and (d)";
+    "(w)(i) and (ii)"; "34 (f)" = reg.34(f); "Subsection (2)(aa)" = (2)(aa), never all of (2).
+  - Subdivisions named before their provision are only those: "subsections (1) to (6) of section 11", "Paragraphs (28)
+    … of regulation 5", "in regulation 16, paragraphs (4) and (5)", "in Schedule 2, Part II and paragraph 11".
+    A bare "subsections (4) and (5) above" / "… of this section" in a list is the clause's own; "this Chapter" is the
+    Chapter holding the clause.
+  - Every exception-list wording: "This Act, except— …", "Except for the following provisions …— …, this Act does not
+    extend to NI", "Except for section 8, this Act …", "does not extend to Scotland, with the exception of— …", two
+    exception clauses in one sentence. Its items extend there too (a qualified item keeps the default, KX, unless its
+    qualifier points back: "… and section 17(1) so far as relating to those paragraphs" reads the paragraphs).
+  - "or"-lists ("Part 2, 3, or 4"; "paragraph 12 or 46 of Schedule 2"); "Part 1, 8 … or 19 of Schedule 18" is never
+    the Act's own Parts. A bracketed qualified companion ("(and section 55 so far as …)") is withheld.
+  - Two statements in one sentence, and an item's own compound, are each read; a list whose verb comes after it ("the
+    following provisions of this Act— (a) …, extend to P") is read.
+  - Defaults: "extends to Scotland (subject to …) and Northern Ireland" = S+NI; "not extend to Scotland or, . . . to
+    NI" = E+W; "extends only to E+W, except that— (a) …" = E+W, items read as their own statements.
+  - Application (class KA, Jason 2026-10-27): things in a place bound the law's application when positive and plain
+    ("apply in relation to live fish in Wales" = W; "They apply in relation to— (a) England …, (b) Wales" = E+W). Cases
+    are not territorial: a disapplication of things, a carve-out ("… other than an excepted energy building"), a
+    comparison ("as they apply to"), a relative clause ("an agent who …"), what something is made or done by or under,
+    "as if". Another law's section never applies. "cease to apply in relation to England" = does not apply there.
+
 Known counted classes (label a finding with one if it fits; otherwise NEW):
 - KU unread statement, counted: a qualified or conditional statement ("so far as …", "in so far as it relates to …",
   "except that— (a) … so far as …") left unread, its provisions' bound withheld (none:unread_statement). It is NEW only if
@@ -181,8 +204,9 @@ Known counted classes (label a finding with one if it fits; otherwise NEW):
   the default (1972/71 s.64(2)).
 - KA application to cases, not places (Jason 2026-10-27): a statement of which things, persons or activities a law
   covers within a place ("these Regulations do not apply in relation to any building in Wales other than an excepted
-  energy building"; "apply to lessors of social homes in England"; "do not apply to explosives seized by an inspector")
-  is fitness scope (personal/material/conditional), fractalaw's, not the extent reader's. Not read into rows; never NEW.
+  energy building"; "do not apply to explosives seized by an inspector") is fitness scope (personal/material/
+  conditional), fractalaw's, not the extent reader's. Not read into rows; never NEW. (Plain things in a place bound the
+  law's application, round 13: "apply to lessors of social homes in England" = E.)
   It IS NEW where the place is the whole of what is said ("apply in relation to live fish in Wales", "They apply in
   relation to— (a) England …, (b) Wales": territorial, the reader reads it). Such sentences go to fractalaw as a
   located extract (session "Application scope hand-off to fractalaw").

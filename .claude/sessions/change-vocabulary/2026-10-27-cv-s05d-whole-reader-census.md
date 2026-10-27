@@ -50,7 +50,7 @@ Aim: census every sentence and every reader, checked independently of the reader
 - ⬜ Noise-bin audit: each sweep label checked by the same test; anything naming our provisions with a place and an extend or apply verb is flagged, not trusted.
 - ✅ (run-02) Census rule: an "apply" statement whose place is qualified by "other than" / "except" / "any [thing] in", or names things or persons within a place, counts as scope (class KA, extract for fractalaw), not a reader candidate (run-02)
 - ✅ (run-02/03) Silent candidates and over-reach triaged by wording, S1–S17, each confirmed on a law with `Extent.of`; handed to CV-S05 round 13 (Jason 2026-10-27: "I don't need to look at the list - we should have a clear idea about what right looks like by now")
-- ⬜ run-04: re-run the census after round 13 as its check (the S1–S17 laws flagged no more; new flags triaged)
+- ✅ run-04 (`a75e80b8`): census after round 13 — silent 113 → 64, unnamed 358 → 234; the fix-list laws read as their text states; round 13's own regressions found and fixed before the final run
 - ✅ run-03: finder misses fixed; over-reach list reviewed in full; the fix list S1–S17 consolidated (`run-03/out/triage.md`)
 - ✅ run-01 stored; ⬜ Store each later run as evidence (`backend/data/experiments/cv-s05d-whole-reader-census/run-NN/`, as CV-S05c: manifest, scripts, input, outputs, README; scan for effect ids; commit by path in one step).
 - ⬜ If it earns its place, build it as a read-only mix task (pure modules and tests) to run every round.
