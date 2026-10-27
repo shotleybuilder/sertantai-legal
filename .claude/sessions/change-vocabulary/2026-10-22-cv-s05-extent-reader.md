@@ -1234,3 +1234,40 @@ The sample repeats (two draws identical). The prompt is the skill's, with round 
 
 Then the same runs, census run-03 and a fresh seed.
 
+## Push (2026-10-27, Jason: "push then round 12")
+
+The push was blocked by one Dialyzer error, in `Credit.list_class/7`'s spec (`Patterns` passes a nil unread class). It was fixed in `2a8f0811` and pushed; the remote is at `2a8f0811`.
+
+## Round 12 (2026-10-27), code `f1f70bc2`, `e779fe71`, `b09df1be`
+
+Tests: `round12_reads_test.exs`, 14 tests on the laws' real wording.
+
+| Item | Fix |
+|---|---|
+| NEW-1 (1977/45 s.65(10)) | `Extent.QualifiedItems`: in a sentence ending "but save as aforesaid, this Act extends to …", a lettered item qualified by "so far as …" has its qualified pieces withheld. Sch.12 and Sch.13 are withheld, so HSWA s.15(6)(d) gets no bound instead of a wrong one. |
+| R1 (2009/23 s.314) | `ListItems`' other-law test needs a word boundary ("into the Energy Act") |
+| R2 (2015/7 s.56(2)(b)) | `Same`: a subject with its own exception is read less it; an exception naming another Act leaves the statement unread (2002/26 s.91) |
+| R3 (2008/4 s.152) | "(together with such of … as relate to …)": the item read, the rest withheld |
+| 1995/25 s.125(8), doubtful | `Named`: a subject with a qualified piece reads its plain pieces, the qualified withheld. Never an exception list's items. |
+| 2015/7 s.56(6), 2021/30 | `Extent.PartLead`: "In Part 5— (a) an amendment or repeal has the same extent …" = the amendments Part 5 makes |
+| Found in the trace | "X and, so far as relating to those provisions, Y" qualifies Y (2006/47 s.66). A withheld subject keeps only its words before the qualifier (2014/6 s.140). A provision after an "and" in the object is withheld (2015/7: s.37(6)). |
+| Found by the census's new default-sentence check | 1972/71 s.66(a) (read for Scotland); 1994/21 s.68 ("This Act, except for— a …, b …": comma items read as also NI) |
+
+**The trace caught two regressions of my own before they were committed or run past the check:**
+1. The first `QualifiedItems` fired in every lettered sentence. It withheld HSWA Part I through s.84(1)'s exception list, so **400 OH&S changes lost their SI powers' placement** (bound:law 3,091 → 2,652). It was narrowed to the "save as aforesaid" shape.
+2. `Named`'s qualified rule read an exception list's items as "not NI" statements (1976/55 s.27, 1995/45 s.18). It now never reads exception-list items.
+
+**Lesson:** compare the check's counts with the round before after every extents run, not only at the end. My first rules diff query was also wrong: an unparenthesised `EXCEPT … UNION ALL … EXCEPT` shows only lost rows.
+
+**Runs:**
+- restore point `cv-s05-before-round12`, snapshots `r6b.claims11`, `r6b.rules11`;
+- final chain: catalogue 0 new and 0 reading differently; extents (24 laws' rules changed against round 11); **golden 27/27**; **check PASS**;
+- bound:law unchanged at 3,091; 11 changes relabelled none:same_or_not_named → none:unread_statement (no bound either way).
+
+**Census run-03** (`2e28feb7`):
+- drops: 10 laws, all known not-drops or check artefacts, R1–R3 fixed;
+- over-reach: 4 known check limits;
+- new default-sentence check: 23 sentences, 8 items, all class KX (an exception list's qualified item keeps the default, round 6 design) apart from 1972/71 s.64(2) (KQ, minor).
+
+**Pass bar 1 holds.** Skill updated with round 12's rules and classes KX and KQ. Agent check: seed 17.
+

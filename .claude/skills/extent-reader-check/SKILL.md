@@ -142,6 +142,21 @@ Reader rules (intended):
     165, 166 and 186" names those sections only.
   - "This paragraph does not extend to Scotland" in a Schedule paragraph = that paragraph's own extent (whole sentence
     only). "In Schedule 8— (a) Part 1 extends to Scotland only; …" = sch.8.pt.1.
+- Round 12:
+  - In a sentence ending in its default "but save as aforesaid, this Act extends to …" ("In this Act— (a) …; (b) …"), a
+    lettered item qualified by "so far as …" is withheld (its qualified pieces), its plain pieces read.
+  - A named statement whose subject has a qualified piece reads the plain pieces and withholds the qualified
+    ("Part III of this Act, and Schedule 24 … so far as relating to Part III, extends to …"); "X and, so far as relating
+    to those provisions, Y also extend …" qualifies Y. Never an exception list's items ("This Act, except— (a) … so far as
+    …, does not extend to …": a qualified exception item keeps the default, by design since round 6).
+  - A withheld subject keeps only its words before the qualifier (never the qualifier's object). A provision named
+    after an "and" inside a qualifier's object ("… so far as applying to Part 5 and section 37(6)") is withheld.
+  - "In Part 5— (a) an amendment or repeal has the same extent as …" = the amendments made by Part 5 (same).
+  - A same-extent subject with its own exception ("an amendment or repeal made by Part 1, other than the amendment made
+    by section 17(7), …") is read less it; an exception naming another Act's provisions leaves it unread.
+  - "section 113 (together with such of the other provisions of Part 7 as relate to …)": s.113 read, the rest of Part 7
+    withheld. "which inserts Part 4A into the Energy Act 2008" is a description, not another law's provision.
+  - "This Act, except for— (a) …, (b) …, (c) so much of …, does not extend to …": comma-separated items read.
 
 Known counted classes (label a finding with one if it fits; otherwise NEW):
 - KU unread statement, counted: a qualified or conditional statement ("so far as …", "in so far as it relates to …",
@@ -159,9 +174,11 @@ Known counted classes (label a finding with one if it fits; otherwise NEW):
 - KU1 an unnumbered Schedule ("The repeals in the Schedule have the same extent …") is read as same "*" (every
   amendment the law makes): right where the Schedule holds them; over-broad where its sections amend too (LRRA 2006
   s.34(3)). No ref names an unnumbered Schedule yet (open bug).
-- KR round 11 residuals, logged (census run-02): (R1) an item naming another law via "into the … Act" dropped (ukpga
-  2009/23 s.323(2)(f)(iii)); (R2) a same-extent item with its own "other than" unread (ukpga 2015/7 s.56(2)(b)); (R3)
-  "section 113 (together with such of the other provisions of Part 7 as relate to …)" dropped (ukpga 2008/4 s.152).
+
+- KX an exception list's qualified item keeps the law's default (round 6 design, HSWA s.84(1)(a)): the census's
+  default-sentence check lists them (run-03: 1972/62, 1974/37, 1976/55, 1993/11, 1994/21, 1995/45).
+- KQ an ambiguous provision after an "and" in a qualifier's object, or a second qualified companion, withheld or left to
+  the default (1972/71 s.64(2)).
 
 Pass bar (Jason 2026-10-27): a round fails only on a NEW defect that places a WRONG BOUND on a provision or change (a
 misread), or a silent drop. A new wording the reader withholds (unread, counted in the law's unread classes) is known,
