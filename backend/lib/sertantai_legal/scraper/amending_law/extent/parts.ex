@@ -23,8 +23,26 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Parts do
   """
   @spec parts(String.t(), Doc.t(), String.t() | nil) :: [String.t()]
   def parts(text, doc, clause_ref) do
-    Enum.uniq(part_sections(text, doc, clause_ref) ++ chapters(text, doc, clause_ref))
+    Enum.uniq(
+      part_sections(text, doc, clause_ref) ++
+        chapters(text, doc, clause_ref) ++ this_chapter(text, doc, clause_ref)
+    )
   end
+
+  # "this Chapter": the sections of the Chapter holding the clause ("(v)
+  # this Chapter", ukpga 2017/3 s.182(2): round 10 NEW-3, round 13 S5)
+  defp this_chapter(text, doc, clause_ref) when is_binary(clause_ref) do
+    if text =~ ~r/\bthis\s+Chapter\b/iu do
+      doc.ids
+      |> Enum.filter(&(&1 =~ ~r/^part-[^-]+-chapter-[^-]+$/))
+      |> Enum.map(fn ch -> Enum.map(chapter_ids(doc, ch), &Order.ref/1) end)
+      |> Enum.find([], &(clause_ref in &1))
+    else
+      []
+    end
+  end
+
+  defp this_chapter(_text, _doc, _clause_ref), do: []
 
   @doc """
   Each bare Chapter given the Part named last before it, and "that Part"

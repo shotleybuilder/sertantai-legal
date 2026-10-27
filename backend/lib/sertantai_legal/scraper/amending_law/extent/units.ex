@@ -131,22 +131,20 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
         []
       end
 
+    # (also "; and this section extends also to Scotland", 1998/31 s.145;
+    # "… do not extend to Scotland and sections 34 and 35 extend to Scotland
+    # only", 1969/10 s.38: each half with its own verb, round 13 S5, S6)
     clauses =
       case String.split(
              s,
-             Regex.compile!(",\\s+and\\s+(?=#{@provision_word}[^,;]*?\\bextends?\\b)", "iu"),
+             Regex.compile!(
+               "(?:[,;]\\s*|\\s+)and\\s+(?=(?:#{@provision_word}|this\\s+(?:section|regulation|article|Part|Chapter)\\b)[^,;]*?\\b(?:extends?|extend)\\b)",
+               "iu"
+             ),
              parts: 2
            ) do
-        [first, second] ->
-          sch = Regex.run(~r/\bSchedule\s+(\d+[A-Z]*)\b/u, first, capture: :all_but_first)
-
-          second =
-            case sch do
-              [n] -> String.replace(second, ~r/\bof\s+that\s+Schedule\b/u, "of Schedule #{n}")
-              nil -> second
-            end
-
-          [first, second]
+        [first, second] when first != s ->
+          if first =~ ~r/\b(?:extends?|extend)\b/iu, do: compound(first, second), else: []
 
         _ ->
           []
@@ -157,6 +155,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
         part != "",
         uniq: true,
         do: part
+  end
+
+  # the second clause of a compound, "that Schedule" named
+  defp compound(first, second) do
+    case Regex.run(~r/\bSchedule\s+(\d+[A-Z]*)\b/u, first, capture: :all_but_first) do
+      [n] -> [first, String.replace(second, ~r/\bof\s+that\s+Schedule\b/u, "of Schedule #{n}")]
+      nil -> [first, second]
+    end
   end
 
   @places Places.place_names()

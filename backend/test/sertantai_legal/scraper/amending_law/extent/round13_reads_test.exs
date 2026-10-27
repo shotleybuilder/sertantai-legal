@@ -304,4 +304,115 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Round13ReadsTest do
       assert Enum.all?(~w[s.24 sch.1 sch.2.para.12 sch.2.para.46], &(&1 in same(e)))
     end
   end
+
+  describe "S4: a qualified companion is withheld, never dropped" do
+    defp unread(e),
+      do: e.lists |> Enum.filter(&match?({:unread, _, _}, &1)) |> Enum.flat_map(&elem(&1, 2))
+
+    test "\"(b) paragraphs 87 and 88 of Schedule 5 (and section 55 so far as relating to those paragraphs)\" (ukpga 2022/30 s.169)" do
+      e =
+        read(
+          "UK_ukpga_2022_30",
+          p1("section-1", "This Act extends to England and Wales.") <>
+            words([55]) <>
+            p1(
+              "section-169",
+              "The following provisions extend to England and Wales, Scotland and Northern Ireland— a section 1; b paragraphs 87 and 88 of Schedule 5 (and section 55 so far as relating to those paragraphs)."
+            )
+        )
+
+      assert "s.55" in unread(e)
+      refute Extent.of(e, "s.55") == "E+W"
+      assert Extent.of(e, "sch.5.para.87") == "E+W+S+NI"
+    end
+
+    test "\"Part 6 (including Schedule 13 so far as it relates to Part 6) extends to …\" (ukpga 2023/55 s.254)" do
+      e =
+        read(
+          "UK_ukpga_2023_55",
+          ~s(<Part id="part-6">#{words([100])}</Part>) <>
+            p1(
+              "section-254",
+              "Part 6 (including Schedule 13 so far as it relates to Part 6) extends to England and Wales, Scotland and Northern Ireland."
+            )
+        )
+
+      assert Extent.of(e, "s.100") == "E+W+S+NI"
+      assert "sch.13" in unread(e)
+    end
+
+    test "\"subsections (4) and (5) above so far as they relate to …\" in a list: the section's own, withheld (ukpga 1977/38 s.32)" do
+      e =
+        read(
+          "UK_ukpga_1977_38",
+          words([1, 29, 32]) <>
+            p1(
+              "section-32",
+              "The following provisions of this Act extend to Scotland only, namely— section 1(2); section 29; subsections (4) and (5) above so far as they relate to any enactment which extends to Scotland only."
+            )
+        )
+
+      assert "s.32(4)" in unread(e)
+      assert Extent.of(e, "s.29") == "S"
+    end
+  end
+
+  describe "S5: a provision's own subsections and self in its list" do
+    test "\"subsections (1), (3) and (6) to (10) of this section\" (Criminal Law Act 1977 s.65(10)(b))" do
+      e =
+        read(
+          "UK_ukpga_1977_45",
+          words([38, 52]) <>
+            p1(
+              "section-65",
+              "In this Act—a Part V extends to Scotland;b the following provisions extend to Northern Ireland namely— sections 38 to 40, section 52, subsections (1), (3) and (6) to (10) of this section, Schedule 7, in Schedule 14, paragraph 5;c section 31 extends to the Channel Islands; but save as aforesaid, this Act extends to England and Wales only."
+            )
+        )
+
+      assert Extent.of(e, "s.65(1)") == "E+W+NI"
+      assert Extent.of(e, "s.65(7)") == "E+W+NI"
+      assert Extent.of(e, "s.65(2)") == "E+W"
+    end
+
+    test "\"(b) subsections (1) to (4), this subsection and …\" (ukpga 1992/43 s.56(5))" do
+      e =
+        read(
+          "UK_ukpga_1992_43",
+          p1("section-1", "This Act extends to England and Wales and Scotland.") <>
+            words([49, 54]) <>
+            p1(
+              "section-56",
+              "The following provisions of this Act extend to Northern Ireland—a sections 1 to 10, 49 and 54;b subsections (1) to (4) of this section."
+            )
+        )
+
+      assert Extent.of(e, "s.56(1)") == "E+W+S+NI"
+    end
+
+    test "\"(v) this Chapter\" in a named list (ukpga 2017/3 s.182(2))" do
+      e =
+        read(
+          "UK_ukpga_2017_3",
+          p1("section-1", "This Act extends to England and Wales.") <>
+            ~s(<Part id="part-9"><Chapter id="part-9-chapter-2">#{words([180, 181])}#{p1("section-182", "The following provisions extend to England and Wales, Scotland and Northern Ireland—a section 35;b section 50;v this Chapter.")}</Chapter></Part>)
+        )
+
+      assert Extent.of(e, "s.180") == "E+W+S+NI"
+    end
+
+    test "\"this section extends also to Scotland\" (ukpga 1998/31 s.145)" do
+      e =
+        read(
+          "UK_ukpga_1998_31",
+          p1("section-1", "This Act extends to England and Wales.") <>
+            words([130]) <>
+            p1(
+              "section-145",
+              "Section 130(2) extends to Scotland only; and this section extends also to Scotland."
+            )
+        )
+
+      assert Extent.of(e, "s.145") == "E+W+S"
+    end
+  end
 end

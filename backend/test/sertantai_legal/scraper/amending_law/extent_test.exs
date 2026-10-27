@@ -701,7 +701,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
         )
 
       assert [{:named, "NI", refs}] = Enum.filter(e.lists, &match?({_, "NI", _}, &1))
-      assert refs == ["s.38..s.40", "s.52", "sch.7", "sch.14.para.5"]
+      # (the section's own subsections are in the list: round 13 S5, found
+      # by the CV-S05d census)
+      assert refs == ["s.38..s.40", "s.52", "s.65(1)", "s.65(3)", "sch.7", "sch.14.para.5"]
     end
 
     test "a default with plain exceptions after it; otherwise unread" do

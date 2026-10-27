@@ -27,7 +27,23 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Named do
       refs = Enum.uniq(RefList.parse(subj, ref) ++ Parts.parts(subj, doc, ref)),
       refs != [],
       do: {named_kind(m), Places.places(m["places"]), refs}
-    ) ++ excluding(unit_sentences, doc) ++ qualified(unit_sentences, doc)
+    ) ++
+      excluding(unit_sentences, doc) ++
+      qualified(unit_sentences, doc) ++ asides(unit_sentences, doc)
+  end
+
+  # a plain statement's qualified aside withheld, never dropped: "Part 6
+  # (including Schedule 13 so far as it relates to Part 6) extends to …"
+  # (ukpga 2023/55 s.254, round 13 S4)
+  defp asides(unit_sentences, doc) do
+    for {ref, s} <- unit_sentences,
+        m = Regex.named_captures(Forms.named(), s),
+        m != nil,
+        plain_named?(m, s),
+        refs = ListItems.asides(m["subj"], ref, doc),
+        refs != [],
+        uniq: true,
+        do: {:unread, nil, refs}
   end
 
   # a subject with a qualified piece, plain without it ("Part III of this

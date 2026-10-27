@@ -18,6 +18,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
   def parse(text, self \\ nil) do
     text
     |> owned()
+    |> own_relative(self)
     # a qualified aside names nothing whole ("Schedule 2 (and article 26 so
     # far as relating to it)": CV-S05 N14)
     |> String.replace(
@@ -60,6 +61,34 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
       "paragraph \\2\\1"
     )
   end
+
+  # the provision's own subdivisions named bare or "of this section":
+  # "subsections (1), (3) and (6) to (10) of this section" (1977/45
+  # s.65(10)), "subsections (4) and (5) above" (1977/38 s.32), "paragraphs
+  # (2) and (3)" in an SI's regulation (round 13 S4, S5); never a lettered
+  # "paragraph (a)" of an Act (the sentence's own items), nor a reference
+  # ("subject to subsection (8)", "one falling within subsection (3)")
+  defp own_relative(text, "s." <> n) do
+    num = n |> String.split("(") |> hd()
+
+    Regex.replace(
+      ~r/(?<!subject\sto\s)(?<!within\s)(?<!under\s)(?<!by\s)(?<!in\s)(?<!see\s)(?<!with\s)\bsub-?sections?\s+((?>(?:\([\dA-Z]+\)(?:\s*(?:,|and|or|to)\s*(?=\())?)+))\s*(?:above\s+|below\s+)?(?:of\s+this\s+section\b)?(?!\s*of\b)/iu,
+      text,
+      "section #{num}\\1 "
+    )
+  end
+
+  defp own_relative(text, "reg." <> n) do
+    num = n |> String.split("(") |> hd()
+
+    Regex.replace(
+      ~r/(?<!subject\sto\s)(?<!within\s)(?<!under\s)(?<!by\s)(?<!in\s)(?<!see\s)(?<!with\s)\bparagraphs?\s+((?>(?:\(\d+[A-Z]*\)(?:\([a-z]+\))*(?:\s*(?:,|and|or|to)\s*(?=\())?)+))\s*(?:above\s+|below\s+)?(?:of\s+this\s+regulation\b)?(?!\s*of\b)/iu,
+      text,
+      "regulation #{num}\\1 "
+    )
+  end
+
+  defp own_relative(text, _self), do: text
 
   defp items(chunk, self) do
     cond do
@@ -126,7 +155,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
       cond do
         # "26(7) to (10)" → each subsection (CV-S05 N12); "8(2)(b) to (d)"
         # → each lettered item (SI 2014/469 art.3(2)(b): CV-S05 round 6)
-        m = Regex.run(~r/^(\d+[A-Z]*)((?:\([^)]+\))+)\s+to\s+((?:\([^)]+\))+)\s*$/, piece) ->
+        m = Regex.run(~r/^(\d+[A-Z]*)((?:\([^)]+\))+)\s+to\s+((?:\([^)]+\))+)\s*[.;]?\s*$/, piece) ->
           [_, n, a, b] = m
           paths = SubPath.paths(a <> " to " <> b)
           {acc ++ Enum.map(paths, &ref(prefix, n, &1)), {n, List.last(paths)}}

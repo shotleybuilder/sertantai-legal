@@ -90,7 +90,24 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
   defp item(item, clause_ref, doc) do
     {item, some_of} = together_with_such(item, clause_ref, doc)
     r = item_read(item, clause_ref, doc)
-    %{r | unread: r.unread ++ (some_of -- r.refs)}
+    %{r | unread: Enum.uniq(r.unread ++ ((some_of ++ asides(item, clause_ref, doc)) -- r.refs))}
+  end
+
+  @doc """
+  The provisions a qualified aside names, withheld: "(and section 55 so far
+  as relating to those paragraphs)" → s.55; "(including Schedule 13 so far
+  as it relates to Part 6)" → sch.13 (CV-S05 round 13, S4: they were
+  dropped, so took the default).
+  """
+  @spec asides(String.t(), String.t() | nil, Doc.t()) :: [String.t()]
+  def asides(text, clause_ref, doc) do
+    for [aside] <- Regex.scan(~r/\((?:and|including|together\s+with|with)\b[^()]*\)/iu, text),
+        aside =~ @qualifier,
+        inner = aside |> String.trim_leading("(") |> String.trim_trailing(")"),
+        inner = Regex.replace(~r/^\s*(?:and|including|together\s+with|with)\s+/iu, inner, ""),
+        ref <- withheld(inner, clause_ref, doc),
+        uniq: true,
+        do: ref
   end
 
   defp together_with_such(item, clause_ref, doc) do
@@ -224,9 +241,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
   end
 
   # an item read plainly, piece by piece: never a description of some of
-  # a Part or Chapter, "so much of", a subsection "of this section", nor
-  # another law's provisions (1977/45 s.65(10): CV-S05 N3; CJA 2009
-  # s.181(2)(b))
+  # a Part or Chapter, "so much of", nor another law's provisions (CJA 2009
+  # s.181(2)(b)); a subsection "of this section" is the clause's own
+  # (`RefList`: 1977/45 s.65(10), round 13 S5)
   defp plain(text, clause_ref, doc) do
     for piece <- pieces(text),
         piece = own_part(piece),
@@ -236,7 +253,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
         ),
         not other_law?(piece),
         not Regex.match?(
-          ~r/\bthe\s+(?:[\w-]+\s+){1,3}provisions\s+of\s+(?:Chapter|Part)\b|\bso\s+much\s+of\b|\bof\s+this\s+section\b/u,
+          ~r/\bthe\s+(?:[\w-]+\s+){1,3}provisions\s+of\s+(?:Chapter|Part)\b|\bso\s+much\s+of\b/u,
           piece
         ),
         ref <- refs_in(piece, clause_ref, doc),
