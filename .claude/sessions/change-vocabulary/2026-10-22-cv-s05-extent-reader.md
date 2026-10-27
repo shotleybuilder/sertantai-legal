@@ -290,7 +290,7 @@ The session does not close until its results pass.
 - ⬜ Round 11: CV-S05c's classes by count (A: "In Part N— (a) … (b) …" only (a) read, 6 laws; B: item's own exception drops it, 8+3; C: plain refs dropped with a qualified companion, 4+1; D: trailing-qualified item not withheld, 4+2; E: one-offs, 7; F: excluded provisions held, 4 new; Schedule "this paragraph" own extent, ~12) with their laws as fixtures (`run-01/confirmed.md`, `overreach.md`, `unread_tail.md`); round 10's NEW-1 (lost lead "In Schedule N—", 9 laws); then re-run run-01's commands as run-02 and compare; then agent check against the agreed bar
 - ⬜ Deferred from CV-S05c: after round 11's run-02, decide whether the census earns a permanent read-only mix task (pure modules + tests)
 - ⬜ CV-S05d Whole-Reader Census (SUSPENDED for round 13, `2026-10-27-cv-s05d-whole-reader-census.md`): fix list S1–S17 (~65 laws) in `backend/data/experiments/cv-s05d-whole-reader-census/run-03/out/triage.md`; run-04 is round 13's check
-- ⬜ Round 13 (Jason 2026-10-27): S1–S17 from CV-S05d run-03, plus seed 17 NEW-1–3 (= S11, S8, S2) and the 2009/23 Chapter 6 residual; tests per wording on the laws' real words; then restore point, one extents run, golden, check, census run-04, agent check
+- ⬜ Round 13 (Jason 2026-10-27; code done, runs next): S1–S17 from CV-S05d run-03, plus seed 17 NEW-1–3 (= S11, S8, S2) and the 2009/23 Chapter 6 residual; tests per wording on the laws' real words; then restore point, one extents run, golden, check, census run-04, agent check
 - ⬜ **Application Scope Hand-off to Fractalaw (PENDING, `2026-10-27-application-scope-handoff.md`; Jason 2026-10-27):** application to cases is fitness scope (skill class KA), not extent. CV-S05d's census extracts these sentences for fractalaw (61 laws with no fitness data in run-01). It is not closed by CV-S05 or CV-S05d: keep it open until it is done.
 - ⬜ Fix until the check passes reliably; record the result
 
@@ -1305,3 +1305,47 @@ The sample repeats; the prompt is the skill's (round 12 rules, KX, KQ). Each NEW
 
 NEW per round: 16, 11, 5, 5, 8, 3, 6, 6, 1, 3, 1, 3.
 
+
+## Round 13 (2026-10-27): the CV-S05d fix list
+
+Jason 2026-10-27: "I don't need to look at the list - we should have a clear idea about what right looks like by now". Fixes S1–S17 from CV-S05d run-03 (`backend/data/experiments/cv-s05d-whole-reader-census/run-03/out/triage.md`). Each has tests on its law's real words (`round13_reads_test.exs`; `sub_path_test.exs`, `ref_list_test.exs`, `application_clause_test.exs`). Commits `714ec6de`, `5bea7724`, `23c0c8df`, `21bc0306`, `7d9db213`, `9eab994c`.
+
+**S2 sub-letter runs:** `AmendingLaw.SubPath` (new). A bracket continuing the one before replaces it at its own level, with ranges spelt out. `RefList` and `Applies` use it: "2(1)(a) and (b)", "(2)(aa)", "34 (f)", "(w)(i) and (ii)", "(1A), (2)(b) and (2ZZA) to (2ZZC)".
+
+**S11 locators:** "in regulation 16, paragraphs (4) and (5)" is those paragraphs (`RefList.owned/1`).
+
+**S1 exception lists:** `Extent.ExceptionList` (new) holds every wording and finds each exception sentence anywhere in the clause:
+- the forms: "This Act, except— …"; "Except for the following provisions …— …, this Act does not extend …"; "Except for section 8, …"; "does not extend to Scotland, with the exception of— …"; "except for the following provisions, shall not extend to NI, that is to say, …"; two clauses in one sentence (1973/26: default E+W);
+- items read by `ListItems`: plain pieces read, and a qualified item keeps the default (KX) unless its qualifier points back ("so far as relating to those paragraphs");
+- the clause's other "does not extend to" places taken off the default (1973/37: E+W).
+
+**S13 owners:**
+- "subsections (1) to (6) of section 11", "Paragraphs (28) … of regulation 5" and "sub-paragraph (2) of paragraph 3 of Schedule 1" are those subdivisions (`RefList.owned/1`);
+- "in Schedule 2, Part II and paragraph 11" is that Schedule's;
+- a bare "subsections (4) and (5) above" or "… of this section" is the clause's own, never one after "subject to", "within", "by" or "in".
+
+**S3 "or"-lists:** in Parts, Schedules and numbers; "Part 1, 8 … or 19 of Schedule 18" is never the Act's own Parts (2007/28: 109 provisions).
+
+**S4 qualified asides:** "(and section 55 so far as …)" and "(including Schedule 13 so far as …)" are withheld, never dropped (`Extent.Asides`, new, also taking `together_with_such`).
+
+**S5 a provision's own:** subsections, "this Chapter", and "; and this section extends also to Scotland".
+
+**S6 statements in one sentence:** compounds split ("… and sections 34 and 35 extend to Scotland only"), within an item too, an item's "in Part IV," lead dropped; the late-verb list "the following provisions of this Act— (a) …, extend to P" (`Lists.late_lists`).
+
+**S7 defaults:** "extends to Scotland (subject to …) and Northern Ireland"; "not extend to Scotland or, . . . to NI"; "extends only to E+W, except that— (a) …" (items read as their own statements).
+
+**S8 territorial application (KA):** `ApplicationClause.parse_bound/1` (new; `parse/1`, live status, unchanged) reads things in a place and lettered places as the law's application bound. Provision-level "applies in relation to live fish … in Wales" is read too; a disapplication of things is fitness scope.
+
+**The other wordings:**
+- S9: "to the extent that" is a qualifier.
+- S10: repealed dots inside number lists.
+- S12: "the enactments which they amend or repeal".
+- S14: "cease to apply" is not applying.
+- S15: "229 (and Schedule 22), 230".
+- S16: "except as provided by section 189" is no item.
+
+**Module sizes:** `Units.statements` moved to `Extent.Statements`; `units.ex` 249, `list_items.ex` 320.
+
+**Checked on real text** (fresh reads of the fix-list laws, `Extent.of`): every wording reads as its text states. The census's 2014/2 s.46 flag was a finder miss: "(c) section 46" is in the list plainly.
+
+**Runs next (ask Jason):** `mix lat.extent_patterns --accept` and the fixture review; restore point; one extents run; golden; check; census run-04 (CV-S05d); agent check seed 18.
