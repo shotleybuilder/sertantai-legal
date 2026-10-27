@@ -4,7 +4,7 @@ status: closed
 opened: '2026-10-27'
 closed: '2026-10-27'
 outcome: success
-parent: change-vocabulary/2026-10-27-cv-s05b-list-shape-audit.md
+parent: change-vocabulary/2026-10-22-cv-s05-extent-reader.md
 
 summary: >
   The extent list wordings were treated as a long tail: a census of all 3,039 extent sentences
@@ -90,7 +90,6 @@ bugs:
     affected: 12
     fix: "own-extent rule for 'this paragraph' in Schedules (~36 sentences); CV-S05 round 11"
     status: open
-parent: change-vocabulary/2026-10-27-cv-s05b-list-shape-audit.md
 ---
 
 # Session: CV-S05c: Shape Mining (CLOSED)
@@ -181,4 +180,3 @@ Each comes with its laws as fixtures. This census is the baseline: after round 1
 
 - ✅ CV-S05a recall sweep (closed): the population of extent sentences
 - ✅ CV-S05 catalogue (`Extent.Patterns`, `Extent.Credit`) and stored `extent_rules`
-- ⏸️ CV-S05b List Shape Audit (suspended): resumes once this session has listed the tail

@@ -231,7 +231,7 @@ parent: change-vocabulary/2026-10-21-cv-00-meta.md
 
 # Session: CV-S05: Extent and Application Reader (SUSPENDED)
 
-> **Suspended 2026-10-27** (Jason: "make the sub session active and suspend this one"): for CV-S05b List shape audit, which finds the technique that counts list misreads across the corpus. Resume with: the pass-bar decision (below), then round 11 from CV-S05b's ranked shapes plus round 10's NEW-1.
+> **Suspended 2026-10-27** (Jason: "make the sub session active and suspend this one"): for CV-S05b List shape audit, which finds the technique that counts list misreads across the corpus. Resume with: the pass-bar decision (below), then round 11 from CV-S05b's ranked shapes plus round 10's NEW-1. (CV-S05b, a technique-choice session, was a path not followed and was deleted on 2026-10-27; the work went to CV-S05c Shape Mining, closed.)
 
 ## Problem
 
@@ -265,7 +265,6 @@ The session does not close until its results pass.
 - ✅ Round 9 [`cac5e205`] (Jason 2026-10-26: "Round 9 for items 1 through 6"): round 8's NEW-1 to NEW-6 and the tooling gap; one misread NEW-1 exposed (FRSA 2004 s.63(2) qualified items) fixed in the round; the runs (check PASS, golden 27/27); agent round 9 seed 14 — see below
 - ✅ Amendment reader full read pass after round 9 (Jason 2026-10-27: "Push. Do 1. Run round 10."): pushed `bf9cfc46..605fe46f`; restore point `cv-s05-before-round9-read`; 2,102 laws, 9 changed (rules 43,623 → 43,678), traced
 - ✅ Round 10 [`56f98e86`]: round 9's NEW-1 (2002/30 s.108) and the agent's side readings; the runs (check PASS, golden 27/27); agent round 10 seed 15 — see below
-- ⬜ CV-S05b List shape audit (SUSPENDED 2026-10-27; its work went to CV-S05c): resume or close once round 11 shows whether more audit is needed
 - ✅ CV-S05c Shape Mining (CLOSED 2026-10-27): census of all extent sentences (`backend/data/experiments/cv-s05c-shape-mining/run-01/`); classes A–F and the 'this paragraph' rule logged as open bugs in CV-S05c, for round 11
 - ⬜ Pass bar for the agent check: Jason to decide (see "Pass bar: question for Jason")
 - ⬜ Round 11: CV-S05c's classes by count (A: "In Part N— (a) … (b) …" only (a) read, 6 laws; B: item's own exception drops it, 8+3; C: plain refs dropped with a qualified companion, 4+1; D: trailing-qualified item not withheld, 4+2; E: one-offs, 7; F: excluded provisions held, 4 new; Schedule "this paragraph" own extent, ~12) with their laws as fixtures (`run-01/confirmed.md`, `overreach.md`, `unread_tail.md`); round 10's NEW-1 (lost lead "In Schedule N—", 9 laws); then re-run run-01's commands as run-02 and compare; then agent check against the agreed bar
@@ -300,7 +299,7 @@ Shaped on CV-S04's agreed approach and stopping rule. The unit is each OH&S amen
 
 The pass above needs "the agent sample has no NEW defect". Over ten rounds, NEW per round has been 16, 11, 5, 5, 8, 3, 6, 6, 1, 3. Each round fixes its defects, and each fresh sample of 50 laws finds a few rarer wordings. With 3,000+ extent sentences, a bar of zero NEW per sample may never be met, even by a good reader. Options to decide:
 - **(a) Keep it:** zero NEW on a fresh seed.
-- **(b) Counted first:** after CV-S05b's audit, the agent's NEW may only be what the audit can't see, such as a dropped sentence or wrong data. Anything the audit counts is a known class with a count and goes on a fix list.
+- **(b) Counted first:** after the census (CV-S05c), the agent's NEW may only be what the audit can't see, such as a dropped sentence or wrong data. Anything the audit counts is a known class with a count and goes on a fix list.
 - **(c) By rate:** misreads under an agreed rate (for example ≤ 1 law in 50) on two fresh seeds in a row, with no wrong bound on a sampled change.
 - **(d) By effect:** no wrong bound on any sampled change (rounds 9 and 10 had none). Law-level misreads that place no wrong bound are counted, not failing.
 
