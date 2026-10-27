@@ -1,0 +1,35 @@
+{
+  "run": "run-03",
+  "date": "2026-10-27",
+  "after": "CV-S05 round 12 (code b09df1be)",
+  "compare": "run-02",
+  "commit": "b09df1bede89cc2b53bea7a19b05bb7cbbc33e53",
+  "commands": [
+    "cd backend && mix run data/experiments/cv-s05c-shape-mining/run-03/dump.exs data/experiments/cv-s05c-shape-mining/run-03/sentences.tsv",
+    "cd backend/data/experiments/cv-s05c-shape-mining/run-03 && /usr/bin/python3 mine.py sentences.tsv .",
+    "cd backend && mix run data/experiments/cv-s05c-shape-mining/run-03/verdicts.exs data/experiments/cv-s05c-shape-mining/run-03/items.tsv data/experiments/cv-s05c-shape-mining/run-03/verdicts.tsv",
+    "cd backend/data/experiments/cv-s05c-shape-mining/run-03 && /usr/bin/python3 review.py",
+    "cd backend && mix run data/experiments/cv-s05c-shape-mining/run-03/overreach.exs data/experiments/cv-s05c-shape-mining/run-03/items.tsv data/experiments/cv-s05c-shape-mining/run-03/overreach.tsv",
+    "cd backend && mix run data/experiments/cv-s05c-shape-mining/run-03/defaults.exs data/experiments/cv-s05c-shape-mining/run-03/sentences.tsv data/experiments/cv-s05c-shape-mining/run-03/defaults.tsv"
+  ],
+  "scripts": {
+    "dump.exs": "c574504c02cf1289657059a43f98ef0eda5b572b637b6c49ccba39b1eb8d864b",
+    "mine.py": "cc8744ed0fe5b40e00f1f51e3d6863a2bce126b3e8565009aa5a137d6cda1faa",
+    "verdicts.exs": "c02350855e4a7f2a09299025b3aca5d4ee8b8bc183cd239022be9d768aaf1384",
+    "review.py": "95a85adc88180b4d59d2f1df89bad6f6586f8bf0fac6f4466784cc027128ccb3",
+    "overreach.exs": "1083b680fd291d494fd46b3ff1e0699ce66588b9ac80466d966cecff386d7583",
+    "defaults.exs": "bbb4d96e2f377835fa6ba822ee389dbef492d50fc57208d87b42cab4d55cfc85"
+  },
+  "outputs": {
+    "sentences.tsv": "0e5720301d77f33b25e51c468673ec67cceadd2611062565c8421eb7ae6023c7",
+    "items.tsv": "7ded591744f5dd3112ca0f2d2c7060e0581d25ba0c8f293066b69793e73b42a8",
+    "shapes.tsv": "3742e909365744f502ba717e3c7cc31f431f2e6a25f900cf594a3858eadca0f5",
+    "stats.json": "bc024bd86ef293f06fea203237e756d5804c2c700f9ba6c6e7a94ae6dc8beb6c",
+    "verdicts.tsv": "b85ba1b56f8ee036c39ce3b49f9de3423f4b45844a4e6471a4744eb62b3f921b",
+    "review.tsv": "90de24e392cb67e1affdeb301eb1251a9a0d1cb8049080de3a37d97de5691377",
+    "review.json": "941fb452947ad8e19a909fbaea715643fb57e30da7ba4ce5fa753d197f3724a5",
+    "overreach.tsv": "056c62f9497c773dfbb0668c0a98a824266b0c5e7abcb2ffbb2150e93bb94204",
+    "defaults.tsv": "0b0c93e2032f544f13a1533882e81e26334b420b3f7e35d7414ca86d46d065b7"
+  },
+  "note": "run-02's scripts unchanged; defaults.exs added (default sentences carrying lettered items)"
+}

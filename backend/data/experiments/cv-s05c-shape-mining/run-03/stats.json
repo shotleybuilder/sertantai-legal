@@ -1,0 +1,41 @@
+{
+  "scope": "occurrences whose sentence class is not 'none'",
+  "sentence": {
+    "occurrences": 2264,
+    "shapes": 1257,
+    "singletons": 1030,
+    "doubletons": 121,
+    "chao1_estimated_shapes": 5641,
+    "good_turing_unseen_mass": 0.455,
+    "top10_share": 0.208
+  },
+  "lead": {
+    "occurrences": 511,
+    "shapes": 298,
+    "singletons": 236,
+    "doubletons": 36,
+    "chao1_estimated_shapes": 1072,
+    "good_turing_unseen_mass": 0.462,
+    "top10_share": 0.266
+  },
+  "item": {
+    "occurrences": 1875,
+    "shapes": 900,
+    "singletons": 734,
+    "doubletons": 91,
+    "chao1_estimated_shapes": 3860,
+    "good_turing_unseen_mass": 0.391,
+    "top10_share": 0.333
+  },
+  "other_item": {
+    "occurrences": 981,
+    "shapes": 690,
+    "singletons": 564,
+    "doubletons": 87,
+    "chao1_estimated_shapes": 2518,
+    "good_turing_unseen_mass": 0.575,
+    "top10_share": 0.126
+  },
+  "sentences": 3040,
+  "laws": 1338
+}
