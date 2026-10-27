@@ -202,12 +202,8 @@
         "UK_ukpga_2015_26/d79b4bb56e"
       ]
     },
-    "application|named|applies|except|places:many|-|-|applies:E": {
-      "count": 1,
-      "examples": []
-    },
     "application|named|applies|except|places:many|-|-|unread:provision_application": {
-      "count": 1,
+      "count": 2,
       "examples": []
     },
     "application|named|applies|none|places:1|-|-|applies:E": {
@@ -299,12 +295,8 @@
         "UK_uksi_2022_520/c7e6d5a1ef"
       ]
     },
-    "application|named|applies|none|places:many|-|-|applies:S": {
-      "count": 3,
-      "examples": []
-    },
     "application|named|applies|none|places:many|-|-|applies:W": {
-      "count": 4,
+      "count": 2,
       "examples": [
         "UK_uksi_2020_206/012bcb8760",
         "UK_wsi_2017_1041/2aa7a0372e"
@@ -323,7 +315,7 @@
       ]
     },
     "application|named|applies|none|places:many|-|-|unread:provision_application": {
-      "count": 15,
+      "count": 20,
       "examples": [
         "UK_uksi_1999_1820/bd4b73c9e0"
       ]
@@ -432,15 +424,7 @@
       ]
     },
     "application|other|applies|none|places:1|-|-|applies:E": {
-      "count": 4,
-      "examples": []
-    },
-    "application|other|applies|none|places:1|-|-|applies:E+W+S": {
-      "count": 1,
-      "examples": []
-    },
-    "application|other|applies|none|places:1|-|-|applies:W": {
-      "count": 1,
+      "count": 2,
       "examples": []
     },
     "application|other|applies|none|places:1|-|-|none": {
@@ -457,6 +441,10 @@
         "UK_ukpga_1990_16/9dbce3b46c",
         "UK_ukpga_1990_43/c1425bbf2f"
       ]
+    },
+    "application|other|applies|none|places:1|-|-|unread:provision_application": {
+      "count": 4,
+      "examples": []
     },
     "application|other|applies|none|places:1|only|-|applies:E": {
       "count": 1,
@@ -484,10 +472,6 @@
         "UK_uksi_2012_1916/aa68f11f2e"
       ]
     },
-    "application|other|applies|none|places:many|-|-|applies:E+W+S+NI": {
-      "count": 1,
-      "examples": []
-    },
     "application|other|applies|none|places:many|-|-|none": {
       "count": 1,
       "examples": [
@@ -501,7 +485,11 @@
         "UK_ukpga_2020_17/c779d0447f"
       ]
     },
-    "application|other|applies|none|places:many|only|-|applies:E": {
+    "application|other|applies|none|places:many|-|-|unread:provision_application": {
+      "count": 1,
+      "examples": []
+    },
+    "application|other|applies|none|places:many|only|-|unread:provision_application": {
       "count": 1,
       "examples": []
     },
@@ -746,11 +734,11 @@
       ]
     },
     "application|this|applies|none|places:1|-|-|applies:E": {
-      "count": 7,
+      "count": 4,
       "examples": []
     },
     "application|this|applies|none|places:1|-|-|applies:E+W+S+NI": {
-      "count": 10,
+      "count": 5,
       "examples": []
     },
     "application|this|applies|none|places:1|-|-|applies:S": {
@@ -758,7 +746,7 @@
       "examples": []
     },
     "application|this|applies|none|places:1|-|-|applies:W": {
-      "count": 5,
+      "count": 2,
       "examples": []
     },
     "application|this|applies|none|places:1|-|-|none": {
@@ -770,7 +758,7 @@
       ]
     },
     "application|this|applies|none|places:1|-|-|unread:provision_application": {
-      "count": 16,
+      "count": 27,
       "examples": [
         "UK_ukpga_1951_65/ae4a3b987b",
         "UK_ukpga_1981_29/a3be06de2b",
@@ -820,14 +808,6 @@
         "UK_uksi_2007_1711/8f30c7ec6c"
       ]
     },
-    "application|this|applies|none|places:many|-|-|applies:E+W+NI": {
-      "count": 1,
-      "examples": []
-    },
-    "application|this|applies|none|places:many|-|-|applies:NI": {
-      "count": 1,
-      "examples": []
-    },
     "application|this|applies|none|places:many|-|-|none": {
       "count": 19,
       "examples": [
@@ -837,7 +817,7 @@
       ]
     },
     "application|this|applies|none|places:many|-|-|unread:provision_application": {
-      "count": 22,
+      "count": 24,
       "examples": [
         "UK_ukpga_1954_68/e16b2a51d3",
         "UK_ukpga_1968_46/ba574c5c2f",
@@ -3667,7 +3647,7 @@
         "UK_ukpga_2014_21/3a4c92cdfc"
       ]
     },
-    "extent|parts|same_extent|except|places:many|-|-|list:same:same": {
+    "extent|parts|same_extent|except|places:many|-|-|list:named:E+W": {
       "count": 1,
       "examples": [
         "UK_ukpga_2021_30/fe80960415"
@@ -5100,7 +5080,7 @@
     "examples": 1246,
     "laws": 3358,
     "not_alone": 137,
-    "patterns": 779,
+    "patterns": 774,
     "sentences": 3116,
     "unclassified": 0
   }
