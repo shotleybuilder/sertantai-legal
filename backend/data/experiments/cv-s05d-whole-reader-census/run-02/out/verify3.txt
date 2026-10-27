@@ -1,0 +1,31 @@
+S1 exception list | UK_ukpga_1971_11 default="E+W+S" | s.1="E+W+S"  s.17="E+W+S"
+S1 exception list | UK_ukpga_1972_62 default="E+W+S" | s.9="E+W+S"  sch.4="E+W+S"
+S1 exception list | UK_ukpga_1976_55 default="E+W+S" | s.15="E+W+S"  s.26(1)="E+W+S"
+S1 exception list | UK_ukpga_1996_25 default="E+W+NI" | s.37=nil  s.41="E+W+NI"
+S1 exception list | UK_ukpga_1990_16 default="E+W+S" | sch.3.para.7="E+W+S"
+S1 exception list | UK_ukpga_1995_45 default="E+W+S" | sch.5.para.1="E+W+S"
+S1 exception list | UK_ukpga_1993_11 default="E+W+S" | s.30="E+W+S"
+S1 exception list | UK_ukpga_1981_69 default=nil | s.15(1)=nil  sch.10=nil
+S1 range end | UK_ukpga_1989_29 default="E+W+S" | s.32Z1="E+W+S+NI"  s.32Z2="E+W+S+NI"
+S2 sub-letters | UK_uksi_2005_457 default=nil | reg.2(1)(a)="E+W"  reg.2(1)(b)=nil
+S2 sub-letters | UK_ukpga_1998_37 default="E+W" | s.36(2)(b)="E+W"  s.36(2)(d)="E+W"
+S2 sub-letters | UK_ukpga_1981_29 default=nil | s.19(2)(b)=nil
+S2 sub-letters | UK_uksi_2024_437 default="E+W" | reg.2(w)(ii)="E+W"  reg.2(x)="E+W+S+NI"
+S3 or-lists | UK_uksi_2019_530 default=nil | reg.100=nil
+S3 or-lists | UK_ukpga_2022_6 default="E+W" | sch.2.para.46="E+W"
+S3 or-lists | UK_uksi_2020_1540 default=nil | reg.16=nil
+S4 qualified companion | UK_ukpga_2022_30 default="E+W" | s.55="E+W"
+S4 qualified companion | UK_ukpga_2023_55 default=nil | sch.13=nil
+S5 own subsections | UK_ukpga_1992_43 default=nil | s.56(1)=nil
+S5 own subsections | UK_ukpga_1973_32 default=nil | s.58(1)=nil
+S5 own subsections | UK_ukpga_1998_31 default="E+W" | s.145=nil
+S6 two statements | UK_ukpga_1969_10 default="E+W+S" | s.34="E+W+S"  s.35="E+W+S"
+S9 qualified read whole | UK_ukpga_2006_41 default="E+W" | s.271="E+W+S+NI"  s.260="E+W+S+NI"
+S10 ellipsis | UK_ukpga_1974_40 default="E+W+S" | s.101="E+W+S"
+S11 Schedule locator | UK_ukpga_1977_38 default=nil | sch.2.para.1="S"  sch.2.para.11="S"
+check | UK_ukpga_2021_30 default=nil | s.100=nil
+check | UK_ukpga_1985_71 default=nil | sch.2.para.10="NI"
+check | UK_ukpga_1972_11 default=nil | sch.7.para.1=nil
+check | UK_ukpga_1990_43 default="E+W+S" | s.153=:same
+check | UK_ukpga_2013_24 default=nil | s.83="E+W"  s.10="E+W+S"
+check | UK_uksi_2009_462 default="E+W" | sch.1.para.25="E+W"  sch.3.para.14="E+W"

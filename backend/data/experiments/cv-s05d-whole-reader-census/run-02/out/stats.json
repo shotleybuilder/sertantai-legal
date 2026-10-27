@@ -1,0 +1,27 @@
+{
+ "sentences": 3560,
+ "by_worst": {
+  "broader/silent": 5,
+  "exc_held/silent": 1,
+  "missing/counted": 102,
+  "missing/silent": 61,
+  "none/counted": 502,
+  "none/silent": 968,
+  "ok/counted": 55,
+  "ok/silent": 1421,
+  "place/counted": 22,
+  "place/silent": 27,
+  "q_missing/counted": 4,
+  "q_missing/silent": 10,
+  "q_read/silent": 2,
+  "scope/counted": 21,
+  "scope/silent": 18,
+  "whole_mismatch/silent": 3,
+  "whole_missing/counted": 43,
+  "whole_missing/silent": 5,
+  "withheld/counted": 150,
+  "withheld/silent": 140
+ },
+ "unnamed_refs": 516,
+ "unnamed_laws": 83
+}
