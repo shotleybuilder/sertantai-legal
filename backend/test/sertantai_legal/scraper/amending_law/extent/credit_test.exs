@@ -22,10 +22,18 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.CreditTest do
 
     test "a mention read as none leaves it unparsed (round 7 NEW-3)" do
       assert Credit.own_refs(
-               "Articles 3 to 5 and Part 2 of the Schedule extend to England and Wales and Northern Ireland only.",
+               "Articles 3 to 5 and Part 2 of the Annex extend to England and Wales only.",
                "reg.1",
                @doc_
              ) == :unparsed
+    end
+
+    test "an unnumbered Schedule's Part is named (round 13: was unparsed, KL)" do
+      assert Credit.own_refs(
+               "Articles 3 to 5 and Part 2 of the Schedule extend to England and Wales and Northern Ireland only.",
+               "reg.1",
+               @doc_
+             ) == ["reg.3..reg.5", "sch.pt.2"]
     end
 
     test "never a lead, a describing bracket, a locator, another law's or a heading" do

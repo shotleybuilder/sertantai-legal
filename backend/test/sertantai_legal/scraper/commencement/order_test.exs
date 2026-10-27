@@ -79,6 +79,18 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
     assert Order.ref("schedule-34") == "sch.34"
   end
 
+  test "ref/1: an unnumbered Schedule and a paragraph inside a Schedule's Part (CV-S02a K10; CV-S05 round 13)" do
+    assert Order.ref("schedule") == "sch"
+    assert Order.ref("schedule-part-I") == "sch.pt.I"
+    assert Order.ref("schedule-paragraph-1") == "sch.para.1"
+    assert Order.ref("schedule-paragraph-14-2") == "sch.para.14(2)"
+    assert Order.ref("schedule-part-I-paragraph-3") == "sch.para.3"
+    # (a paragraph's id carries no Part: never the Part's ref)
+    assert Order.ref("schedule-4-part-2-paragraph-3") == "sch.4.para.3"
+    assert Order.context().ancestors.("sch.para.3") == ["sch"]
+    assert Order.context().ancestors.("sch.4.para.3") == ["sch.4"]
+  end
+
   test "an inline range of sections and a Schedule (SI 1994/571 art. 6)" do
     rules =
       Order.rules(

@@ -107,6 +107,19 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   @spec ref(String.t()) :: String.t() | nil
   def ref(id) do
     case String.split(id, "-") do
+      # an unnumbered Schedule ("schedule", "schedule-part-I",
+      # "schedule-paragraph-1"): `sch` (CV-S02a K10; CV-S05 round 13)
+      ["schedule"] ->
+        "sch"
+
+      ["schedule", kind | _] = parts when kind in ["part", "paragraph"] ->
+        schedule_ref("sch", tl(parts))
+
+      # a paragraph's id carries no Part ("schedule-4-part-2-paragraph-3" =
+      # sch.4.para.3, never the Part)
+      ["schedule", s, "part", _p, "paragraph", p | subs] ->
+        "sch.#{s}.para.#{p}" <> brackets(subs)
+
       ["schedule", s, "paragraph", p | subs] ->
         "sch.#{s}.para.#{p}" <> brackets(subs)
 
@@ -125,12 +138,19 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     end
   end
 
+  defp schedule_ref(sch, ["part", _p, "paragraph", p | subs]),
+    do: "#{sch}.para.#{p}" <> brackets(subs)
+
+  defp schedule_ref(sch, ["paragraph", p | subs]), do: "#{sch}.para.#{p}" <> brackets(subs)
+  defp schedule_ref(sch, ["part", p | _]), do: "#{sch}.pt.#{p}"
+
   @doc "The evaluator's context for an amending law's refs: a Schedule paragraph sits in its Schedule."
   @spec context() :: map()
   def context do
     %{
       ancestors: fn ref ->
-        case Regex.run(~r/^(sch\.[^.]+)\.para\./, ref) do
+        # ("sch.para.3": an unnumbered Schedule's, in `sch`)
+        case Regex.run(~r/^(sch(?:\.(?!para\.)[^.]+)?)\.para\./, ref) do
           [_, sch] -> [sch]
           nil -> []
         end

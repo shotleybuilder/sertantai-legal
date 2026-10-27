@@ -86,10 +86,15 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Same do
           m = Regex.named_captures(@named_same, s),
           m != nil,
           not Regex.match?(Named.excepted(), m["subj"]),
-          refs = Enum.uniq(RefList.parse(m["subj"], ref) ++ Parts.parts(m["subj"], doc, ref)),
-          refs != [],
+          # (a qualified piece withheld, the plain read: "paragraphs 1 and 14
+          # of the Schedule, and article 3 in so far as it relates to those
+          # paragraphs, have the same extent as …", SI 2005/2060 art.1(4))
+          r = ListItems.read(m["subj"], ref, doc),
+          list <-
+            if(r.refs != [], do: [{:same, nil, r.refs}], else: []) ++
+              if(r.unread != [], do: [{:unread, nil, r.unread}], else: []),
           uniq: true,
-          do: {:same, nil, refs}
+          do: list
   end
 
   # amendments that "also extend there" (CV-S05 round 7, from the sweep):

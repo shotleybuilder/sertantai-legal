@@ -725,4 +725,41 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Round13ReadsTest do
 
     assert Extent.of(e, "s.100") == "E+W"
   end
+
+  describe "agent seed 18: an unnumbered Schedule" do
+    defp sch(body), do: ~s(<Schedule id="schedule">#{body}</Schedule>)
+
+    test "\"(b) Part I of the Schedule\" does not extend to Scotland (ukpga 1981/45 s.31)" do
+      e =
+        read(
+          "UK_ukpga_1981_45",
+          ~s(<Part id="part-I">#{words([1, 2])}</Part>) <>
+            p1(
+              "section-31",
+              "The following provisions of this Act do not extend to Scotland, namely—a Part I; andb Part I of the Schedule."
+            ) <>
+            p1("section-32", "It is hereby declared that this Act extends to Northern Ireland.")
+        )
+
+      assert Extent.of(e, "sch.pt.I") == "E+W+NI"
+      assert Extent.of(e, "sch.para.3") == "E+W+S+NI"
+    end
+
+    test "\"This article extends to …, and paragraphs 1 and 14 of the Schedule, and article 3 in so far as …, have the same extent as the provisions modified\" (SI 2005/2060 art.1(4))" do
+      e =
+        read(
+          "UK_uksi_2005_2060",
+          words([3], "article") <>
+            p1(
+              "article-1",
+              "Subject to paragraph (4), this Order extends to Scotland only. This article extends to England and Wales, Scotland and Northern Ireland, and paragraphs 1 and 14 of the Schedule, and article 3 in so far as it relates to those paragraphs, have the same extent as the provisions modified."
+            )
+        )
+
+      assert Extent.of(e, "sch.para.1") == :same
+      assert Extent.of(e, "sch.para.14(2)") == :same
+      refute Extent.of(e, "reg.3") == :same
+      assert Extent.of(e, "reg.1") == "E+W+S+NI"
+    end
+  end
 end

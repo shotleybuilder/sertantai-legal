@@ -92,4 +92,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefListTest do
              ]
     end
   end
+
+  test "an unnumbered Schedule: \"Part I of the Schedule\", \"paragraphs 1 and 14 of the Schedule\" (round 13: agent seed 18)" do
+    assert RefList.parse("Part I; and Part I of the Schedule.", "s.31")
+           |> Enum.member?("sch.pt.I")
+
+    assert RefList.parse("paragraphs 1 and 14 of the Schedule") == ["sch.para.1", "sch.para.14"]
+    # (never another law's Schedule)
+    assert RefList.parse("paragraph 3 of the Schedule to the Health Act 2006") == []
+  end
 end

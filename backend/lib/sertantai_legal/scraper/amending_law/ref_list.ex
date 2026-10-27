@@ -17,6 +17,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
   @spec parse(String.t(), String.t() | nil) :: [String.t()]
   def parse(text, self \\ nil) do
     text
+    |> unnumbered_schedule()
     |> companions_last()
     |> owned()
     |> own_relative(self)
@@ -32,6 +33,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
     )
     |> Enum.flat_map(&items(&1, self))
     |> Enum.reject(&is_nil/1)
+    |> Enum.map(&String.replace(&1, ~r/^sch\.0(?=\.|$)/, "sch"))
     |> Enum.uniq()
   end
 
@@ -106,6 +108,20 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
 
   defp own_relative(text, _self), do: text
 
+  # the law's own unnumbered Schedule ("Part I of the Schedule",
+  # "paragraphs 1 and 14 of the Schedule", "the Schedule to this Act") as a
+  # Schedule numbered 0, named `sch` after (`Order.ref`; CV-S05 round 13,
+  # agent seed 18): only a Part or paragraph of it, never another law's
+  # ("the Schedule to the X Act") nor a place in it ("the Notes at the end of
+  # the Schedule")
+  defp unnumbered_schedule(text),
+    do:
+      Regex.replace(
+        ~r/(\b(?:Parts?|paragraphs?|sub-paragraphs?)\s+[\dIVXL][^,;]*?)\s+of\s+the\s+Schedule\b(?:\s+to\s+th(?:is|ese)\s+(?:Act|Order|Regulations))?(?!\s+to\s+the\b)/u,
+        text,
+        "\\1 of Schedule 0"
+      )
+
   # a bracketed companion moved after the list, so the numbers after it stay
   # the list's: "sections 228, 229 (and Schedule 22), 230, 233 to 236" →
   # "sections 228, 229, 230, 233 to 236, and Schedule 22" (ukpga 2023/55
@@ -148,6 +164,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
       m = Regex.run(~r/^\s*paragraphs?\s+(.*?)\s+of\s+Schedule\s+(\d+[A-Z]*)/i, chunk) ->
         [_, list, sch] = m
         numbered(list, "sch.#{sch}.para.")
+
+      # (never another law's: "the Schedule to the Health Act 2006")
+      chunk =~ ~r/^\s*Schedules?\s+to\s+the\b/i ->
+        []
 
       chunk =~ ~r/^\s*Schedules?\b/i ->
         # the item ends at its full stop or a bracket ("Schedules 1, 3, 5
