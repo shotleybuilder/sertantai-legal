@@ -78,4 +78,18 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefListTest do
       assert RefList.parse("section 5 (power to make regulations)") == ["s.5"]
     end
   end
+
+  describe "subdivisions named before their provision (round 13, S13)" do
+    test "never the whole provision" do
+      assert RefList.parse("subsections (1) to (6) of section 11") ==
+               ~w[s.11(1) s.11(2) s.11(3) s.11(4) s.11(5) s.11(6)]
+
+      assert RefList.parse("Paragraphs (28), (29)(b), (32) and (51) to (54) of regulation 5") ==
+               ~w[reg.5(28) reg.5(29)(b) reg.5(32) reg.5(51) reg.5(52) reg.5(53) reg.5(54)]
+
+      assert RefList.parse("sub-paragraph (2) of paragraph 3 of Schedule 1") == [
+               "sch.1.para.3(2)"
+             ]
+    end
+  end
 end

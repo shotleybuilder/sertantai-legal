@@ -34,6 +34,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
     Excepted,
     Default,
     Excepting,
+    ExceptionList,
     Forms,
     Lists,
     Lookup,
@@ -101,7 +102,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
         not String.contains?(ref, "(") and
           (Regex.match?(Forms.extends(), text) or Regex.match?(Forms.extends_and(), text) or
              Regex.match?(Forms.not_extends(), text) or
-             Regex.match?(Forms.except_list(), text) or Regex.match?(Forms.heading(), text) or
+             ExceptionList.match?(text) or Regex.match?(Forms.heading(), text) or
              Regex.match?(Forms.cited_list(), text) or Regex.match?(Forms.only_following(), text) or
              Regex.match?(Forms.extends_except(), text) or Regex.match?(Forms.extends_exc(), text))
       end)

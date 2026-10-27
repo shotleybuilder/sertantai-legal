@@ -1,0 +1,178 @@
+defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ExceptionList do
+  @moduledoc """
+  A default stated with the provisions excepted from it: "this Act does not
+  extend to P, except …". The provisions excepted extend to P too (CV-S05
+  round 13, S1: found by the CV-S05d census, which showed these items
+  dropped in 13 laws). Every wording of it:
+
+  - "This Act, except— (a) …; (b) …, does not extend to Northern Ireland"
+    (HSWA s.84(1)); "This Act, except section 88, does not extend to …";
+    "This Act, apart from sections 82 and 83, does not extend to …";
+    "This Act, except this section and the following provisions, namely— …,
+    does not extend to …" (Gas Act 1986 s.68(6));
+  - "This Act, except for the following provisions, shall not extend to
+    Northern Ireland, that is to say, this section and— (a) …" (1988/19
+    s.34);
+  - "Except for the following provisions, that is to say— (a) …, this Act
+    does not extend to Northern Ireland" (1972/62 s.27); "Except for section
+    8, this Act does not extend to Northern Ireland" (1991/65 s.10);
+  - "This Act does not extend to Scotland, with the exception of— (a) …"
+    (1996/25 s.79);
+  - two in one sentence: "This Act, except section 88, does not extend to
+    Northern Ireland and, except section 86 and Schedule 3, does not extend
+    to Scotland" (1973/26 s.89).
+
+  Each item is read as a list item (`ListItems`): its plain pieces extend
+  there; a qualified item or piece ("… so far as …", "so much of …") keeps
+  the default (round 6 design, HSWA s.84(1)(a)); "except as provided by
+  section 189" is a reference, no item. Never a commencement's "This Act,
+  except— (a) …, shall come into force" (2002/30 s.108(2), round 9 NEW-1).
+  Pure.
+  """
+
+  alias SertantaiLegal.Scraper.AmendingLaw.Doc
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Forms, ListItems, Places}
+  alias SertantaiLegal.Scraper.Territory
+
+  @place_list Places.place_list()
+  @not_extend "(?:does|do|shall)\\s+not\\s+extend\\s+to\\s+(?<places>(?>#{@place_list}))"
+  @following "(?:the\\s+following\\s+provisions\\s*,?\\s*(?:namely|that\\s+is\\s+to\\s+say)?\\s*,?\\s*)?"
+  # items never run on into a commencement or a later subsection
+  @items "(?<items>(?:(?!(?-i:\\.\\s*\\d+[A-Z]?\\s+[A-Z(]))(?!\\bcome\\s+into\\s+force\\b)(?!\\bnot\\s+extend\\b).)+?)"
+
+  @forms [
+    # "This Act, except for the following provisions, shall not extend to
+    # Northern Ireland, that is to say, this section and— …"
+    Regex.compile!(
+      "#{Forms.subject()},\\s*(?:except|apart\\s+from)\\s+(?:for\\s+)?the\\s+following\\s+provisions\\s*,\\s*#{@not_extend}\\s*,?\\s*(?:namely|that\\s+is\\s+to\\s+say)\\s*,?\\s*[—–:]?\\s*#{@items}\\s*\\.?\\s*$",
+      "isu"
+    ),
+    # "This Act, except— …, does not extend to …"; "This Act, except section
+    # 88, does not extend to …"
+    Regex.compile!(
+      "#{Forms.subject()},\\s*(?:except|apart\\s+from)\\s*(?:for\\s*)?(?<self>this\\s+section\\s+and\\s+)?#{@following}[—–:]?\\s*#{@items},?\\s*#{@not_extend}",
+      "isu"
+    ),
+    # "Except for the following provisions, that is to say— …, this Act does
+    # not extend to …"; "Except for section 8, this Act does not extend …"
+    Regex.compile!(
+      "^\\s*(?:\\(\\w+\\)\\s*)?(?:Except|Apart\\s+from)\\s+(?:for\\s+)?#{@following}[—–:]?\\s*#{@items},?\\s*#{Forms.subject()}\\s+#{@not_extend}",
+      "isu"
+    ),
+    # "This Act does not extend to Scotland, with the exception of— …"
+    Regex.compile!(
+      "#{Forms.subject()}\\s+#{@not_extend}\\s*,?\\s*(?:with\\s+the\\s+exception\\s+of|except(?:\\s+for)?)\\s*[—–:]\\s*(?<items>[^.]+)",
+      "isu"
+    )
+  ]
+
+  # "… does not extend to Northern Ireland and, except section 86 and
+  # Schedule 3, does not extend to Scotland"
+  @and_except Regex.compile!(
+                "^\\s*and\\s*,?\\s*(?:except|apart\\s+from)\\s+(?:for\\s+)?#{@items},\\s*#{@not_extend}",
+                "isu"
+              )
+
+  @type statement :: %{items: String.t(), places: String.t(), self: boolean()}
+
+  @doc "Each exception statement the clause makes, in order; [] when none."
+  @spec statements(String.t()) :: [statement()]
+  def statements(clause) do
+    Enum.find_value(@forms, [], fn form ->
+      case Regex.run(form, clause, return: :index, capture: :all) do
+        nil ->
+          nil
+
+        [{at, len} | _] ->
+          m = Regex.named_captures(form, clause)
+          rest = binary_part(clause, at + len, byte_size(clause) - at - len)
+          [statement(m) | more(rest)]
+      end
+    end)
+  end
+
+  defp more(rest) do
+    case Regex.named_captures(@and_except, rest) do
+      nil -> []
+      m -> [statement(m)]
+    end
+  end
+
+  defp statement(m),
+    do: %{items: m["items"], places: Places.places(m["places"]), self: (m["self"] || "") != ""}
+
+  @doc "Whether the clause makes an exception statement."
+  @spec match?(String.t()) :: boolean()
+  def match?(clause), do: statements(clause) != []
+
+  @doc """
+  The law's default the statements leave: the United Kingdom less every
+  place they name, and every other place the clause says the law does not
+  extend to ("This Act, except section 4(5) to (8) …, does not extend to
+  Northern Ireland. … but except as aforesaid this Act does not extend to
+  Scotland": E+W, 1973/37 s.40).
+  """
+  @spec default(String.t()) :: String.t() | nil
+  def default(clause) do
+    case statements(clause) do
+      [] ->
+        nil
+
+      st ->
+        others = for m <- Regex.scan(Forms.not_extends(), clause), do: Places.places(List.last(m))
+
+        Enum.reduce(
+          Enum.map(st, & &1.places) ++ others,
+          "E+W+S+NI",
+          &Territory.subtract(&2, &1)
+        )
+    end
+  end
+
+  @doc "The provisions each statement excepts, as `{:also, place, refs}`."
+  @spec lists(String.t(), String.t() | nil, Doc.t()) :: [{:also, String.t(), [String.t()]}]
+  def lists(clause, clause_ref, doc) do
+    for st <- statements(clause),
+        refs = refs(st, clause_ref, doc),
+        refs != [],
+        do: {:also, st.places, refs}
+  end
+
+  # each item, plainly; "this section" the clause's own provision
+  defp refs(st, clause_ref, doc) do
+    items =
+      st.items
+      # ("so much of Schedule 1 as amends …": withheld, keeps the default)
+      |> String.split(~r/;|,(?=\s*(?:and\s*)?[a-hj-uwyz]\s)/u)
+      # (never one leading a sub-list, "the repeal … of— i …", 1994/21 s.68)
+      |> Enum.reject(&(&1 =~ ~r/\bso\s+much\s+of\b|[—–]\s*\S/iu))
+
+    self = if st.self and clause_ref, do: [clause_ref], else: []
+
+    (self ++ Enum.flat_map(items, &item_refs(&1, clause_ref, doc)))
+    |> Enum.uniq()
+  end
+
+  # (a companion before a qualifier is plain only where the qualifier's
+  # object points back to it, "paragraphs 1 to 3 … of Schedule 5 and
+  # section 17(1) and (2) so far as relating to those paragraphs"; else the
+  # qualifier may be both's, "Schedule 6 and section 17(5) so far as
+  # relating to the repeals of …": the item keeps the default, 1995/45 s.18)
+  @qualifier ~r/\b(?:so\s+far\s+as|in\s+so\s+far|insofar|to\s+the\s+extent)\b/iu
+  @points_back ~r/\b(?:so\s+far\s+as|in\s+so\s+far\s+as|insofar\s+as)\s+(?:it\s+|they\s+)?relat\w*\s+(?:to\s+)?(?:th(?:ose|at|ereto|em)\b|it\b)|\band\s*,\s*(?:so\s+far|in\s+so\s+far|insofar)\s+as\b/iu
+
+  defp item_refs(item, clause_ref, doc) do
+    # (each piece after a comma on its own: "paragraphs 6 and 7 of
+    # Schedule 3, and paragraph 8 of Schedule 3 so far as it relates to …",
+    # 1996/25 s.79)
+    item
+    |> String.split(
+      ~r/,\s*(?:and\s+)?(?=(?:paragraphs?|sub-?paragraphs?|sections?|subsections?|Schedules?|Parts?|Chapters?|regulations?|articles?|this)\b)/iu
+    )
+    |> Enum.flat_map(fn piece ->
+      if piece =~ @qualifier and not (piece =~ @points_back),
+        do: [],
+        else: ListItems.refs(piece, clause_ref, doc)
+    end)
+  end
+end

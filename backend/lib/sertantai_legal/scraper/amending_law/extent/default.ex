@@ -11,6 +11,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Default do
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Extent, RefList}
 
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{
+    ExceptionList,
     Forms,
     Lists,
     Named,
@@ -54,7 +55,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Default do
       Regex.match?(Forms.extends_and(), sentence) ->
         {:default, default(sentence)}
 
-      Regex.match?(Forms.except_list(), sentence) or Regex.match?(Forms.extends(), sentence) or
+      ExceptionList.match?(sentence) or Regex.match?(Forms.extends(), sentence) or
         Regex.match?(Forms.not_extends(), sentence) or Regex.match?(Forms.cited_list(), sentence) ->
         {:default, default(sentence)}
 
@@ -115,8 +116,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Default do
       m = Regex.named_captures(Forms.extends_and(), clause) ->
         Territory.union([Places.places(m["a"]), Places.places(m["b"])])
 
-      m = Regex.named_captures(Forms.except_list(), clause) ->
-        Territory.subtract("E+W+S+NI", Places.places(m["places"]))
+      (d = ExceptionList.default(clause)) != nil ->
+        d
 
       m = Regex.run(Forms.extends(), clause) ->
         Places.places(Enum.at(m, 1))

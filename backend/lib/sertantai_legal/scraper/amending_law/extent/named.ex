@@ -170,7 +170,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Named do
     String.length(m["subj"]) <= 250 and not Regex.match?(@named_not_plain, bare) and
       not Regex.match?(@named_excepted, m["subj"]) and not Regex.match?(@named_tail, tail) and
       not Regex.match?(
-        ~r/\balso\s+extends?\b|[;,]\s*but\b(?!\s+(?:otherwise|the\s+other\s+provisions|this\s+Act\s+does\s+not\s+otherwise|not\s+otherwise))/iu,
+        ~r/\balso\s+extends?\b|[;,]\s*but\b(?!\s+(?:otherwise|the\s+other\s+provisions|this\s+Act\s+does\s+not\s+otherwise|not\s+otherwise)|\s*,\s*with\s+the\s+exception\s+of\s+th(?:ose|ese)\s+provisions\s*,)/iu,
         tail
       )
   end

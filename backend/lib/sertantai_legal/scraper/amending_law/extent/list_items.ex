@@ -42,7 +42,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
 
   # plain provisions with a qualified companion: "Parts 1 and 2 of
   # Schedule 7 and section 73 so far as relating to those Parts"
-  @companion ~r/^(?<plain>.+?)\s+and\s+(?<q>(?:sections?|regulations?|articles?|rules?)\s+[\dA-Z()]+(?:\s+(?:above|below))?)\s*,?\s+(?:so\s+far|in\s+so\s+far|insofar)\s+as\b(?<object>.*)$/iu
+  @companion ~r/^(?<plain>.+?)\s+and\s+(?<q>(?:sections?|regulations?|articles?|rules?)\s+[\dA-Z()]+(?:\s*(?:,|and)\s*\([\dA-Za-z]+\))*(?:\s+(?:above|below))?)\s*,?\s+(?:so\s+far|in\s+so\s+far|insofar)\s+as\b(?<object>.*)$/iu
 
   # "section 6, so far as relating to paragraphs 81, 95 and 96 of Schedule
   # 1, and those paragraphs": the paragraphs plainly, the section qualified

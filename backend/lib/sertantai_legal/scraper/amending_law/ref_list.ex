@@ -17,6 +17,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
   @spec parse(String.t(), String.t() | nil) :: [String.t()]
   def parse(text, self \\ nil) do
     text
+    |> owned()
     # a qualified aside names nothing whole ("Schedule 2 (and article 26 so
     # far as relating to it)": CV-S05 N14)
     |> String.replace(
@@ -30,6 +31,27 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
     |> Enum.flat_map(&items(&1, self))
     |> Enum.reject(&is_nil/1)
     |> Enum.uniq()
+  end
+
+  @doc """
+  Subdivisions named before their provision, joined to it (CV-S05 round
+  13, S13: found by the CV-S05d census): "subsections (1) to (6) of section
+  11" → "section 11(1) to (6)" (never all of section 11, 1995/45 s.18);
+  "Paragraphs (28), (29)(b) … of regulation 5" → "regulation 5(28), (29)(b)
+  …" (SI 2007/1843); "sub-paragraph (2) of paragraph 3 of Schedule 1" →
+  "paragraph 3(2) of Schedule 1".
+  """
+  @spec owned(String.t()) :: String.t()
+  def owned(text) do
+    text
+    |> String.replace(
+      ~r/\b(?:sub-?sections?|paragraphs?|sub-?paragraphs?)\s+((?:\([\w]+\)(?:\s*(?:,|and|or|to)\s*)?)+?)\s*(?:above\s+|below\s+)?of\s+(section|regulation|article|rule)\s+(\d+[A-Z]*)\b(?!\s*\()/iu,
+      "\\2 \\3\\1"
+    )
+    |> String.replace(
+      ~r/\bsub-?paragraphs?\s+((?:\([\w]+\)(?:\s*(?:,|and|or|to)\s*)?)+?)\s*of\s+paragraph\s+(\d+[A-Z]*)\b(?!\s*\()/iu,
+      "paragraph \\2\\1"
+    )
   end
 
   defp items(chunk, self) do

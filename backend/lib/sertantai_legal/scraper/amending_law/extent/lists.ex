@@ -12,6 +12,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lists do
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, RefList}
 
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{
+    ExceptionList,
     Forms,
     ItemExceptions,
     ListItems,
@@ -30,25 +31,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lists do
   @doc "Those excepted from a clause's \"does not extend\" (\"This Act, except— …\", \"apart from …\"): they extend there too."
   @spec apart(String.t(), String.t() | nil, Doc.t()) :: [list_entry()]
   def apart(clause, clause_ref, doc) do
-    case Regex.named_captures(Forms.except_list(), clause) do
-      # each item; one "so far as may be necessary …" is limited to a
-      # purpose and doesn't carry its provisions there (HSWA s.84(1)(a));
-      # "except this section and …": the clause's own provision too
-      %{"items" => items, "places" => place, "self" => self} ->
-        # (items after a comma too, "except for— a sections 7 to 9 …,b
-        # sections 20 and 21 …,c so much of …", 1994/21 s.68; never one
-        # leading a sub-list, "the repeal … of— i …": round 12)
-        refs =
-          for item <- String.split(items, ~r/;|,(?=\s*(?:and\s*)?[a-hj-uwyz]\s)/u),
-              not (item =~ ~r/\bso\s+(?:far|much)\s+(?:as|of)\b/i),
-              not (item =~ ~r/[—–]/u),
-              ref <- RefList.parse(item, clause_ref) ++ Parts.parts(item, doc, clause_ref),
-              do: ref
+    # every exception-list wording, each item read plainly; a qualified one
+    # keeps the default (HSWA s.84(1)(a)): `ExceptionList`, round 13 S1
+    case ExceptionList.statements(clause) do
+      [_ | _] ->
+        ExceptionList.lists(clause, clause_ref, doc)
 
-        refs = if self != "" and clause_ref, do: [clause_ref | refs], else: refs
-        if refs != [], do: [{:also, Places.places(place), Enum.uniq(refs)}], else: []
-
-      nil ->
+      [] ->
         case Regex.run(Forms.not_extends(), clause) do
           [_, except, _, place] when except != "" ->
             # (an item not parsed, "section seventy-seven", gives none:
@@ -172,7 +161,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lists do
           r = ListItems.read(body, clause_ref, doc)
           excepted = Enum.uniq(sub_excepted ++ r.excepted)
 
-          self = if head =~ ~r/^\s*This\s+\w+\s*,?\s+and\b/iu, do: [clause_ref], else: []
+          self =
+            if head =~ ~r/^\s*This\s+\w+\s*,?\s+and\b|\(together\s+with\s+this\s+section\)/iu,
+              do: [clause_ref],
+              else: []
 
           # (an excepted provision is never also in the list: "this Part,
           # except— i sections 82 and 83 …", ukpga 2000/19 s.87, round 11;
