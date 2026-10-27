@@ -43,11 +43,12 @@ Ask Jason before the runs that write; say how long each takes. Take a restore po
    ```
 6. **Agent check:** launch a general-purpose agent with the prompt below on `$S/a.json`.
 
-**Pass:**
+**Pass** (decided by Jason 2026-10-27; see CV-S05 "Pass bar: decided"):
+- census (CV-S05c's commands as the next run, `backend/data/experiments/cv-s05c-shape-mining/run-NN/`): classes A–F at
+  zero in list sentences, apart from logged known residuals;
 - the check shows our faults 0, and no uncaught sentence in a `read:` form (the sweep);
-- golden is all-pass;
-- the catalogue test passes;
-- the agent finds no NEW: every gap sits in a known counted class.
+- golden is all-pass; the catalogue test passes;
+- the agent finds no NEW that places a wrong bound on a sampled provision or change, and no silent drop.
 
 Record each round in the family's step session. Only NEW defects go to Jason, explained with the law's own words and the stored rows.
 
@@ -124,6 +125,23 @@ Reader rules (intended):
 - "Part 2 (…), excluding section 35 but including Schedules 1 to 9, extends to …" = the Part less s.35, with Schs 1–9.
   "In section 31— (a) subsections (1) and (2) extend …" = s.31(1), s.31(2). A lettered item's bare "paragraph 182(3)"
   (no Schedule named) is the Schedule the sentence named before it.
+- Round 11 (list items, from the CV-S05c census):
+  - "In Part N— (a) X extends to P, (b) Y extends to Q, and (c) …": every item that states its own extent is read
+    (items may run in after a comma or as "andb"); a shared verb ("(a) sections 1 to 3, … and (b) Schedules 1 and 2 …,
+    shall extend to NI only") is one list.
+  - An item's own exception — "(except …)", "(with the exception of …)", "(excluding …)", ", apart from …",
+    ", other than …", " except for …", " but excluding …" — is taken out: the item is read less what it excepts; a
+    provision only part of which is excepted is withheld (unread); the excepted keep the default (or are unread with no
+    default) and are never also in the item's list.
+  - Plain provisions with a qualified companion are read ("Parts 1 and 2 of Schedule 7 and section 73 so far as relating
+    to those Parts": the Parts read, s.73 withheld; "section 6, so far as relating to paragraphs …, and those paragraphs":
+    the paragraphs read, s.6 withheld). A wholly qualified item is withheld, never dropped to the default; in an
+    unlettered comma list only its qualified pieces are withheld.
+  - Heading forms: "This section, and the following provisions only of this Act, extend to …, that is to say,—" (named);
+    "… the whole of the United Kingdom, namely—"; a "za" item; "section 61 to 65". "in Chapter 1 of Part 6, sections
+    165, 166 and 186" names those sections only.
+  - "This paragraph does not extend to Scotland" in a Schedule paragraph = that paragraph's own extent (whole sentence
+    only). "In Schedule 8— (a) Part 1 extends to Scotland only; …" = sch.8.pt.1.
 
 Known counted classes (label a finding with one if it fits; otherwise NEW):
 - KU unread statement, counted: a qualified or conditional statement ("so far as …", "in so far as it relates to …",
@@ -141,6 +159,13 @@ Known counted classes (label a finding with one if it fits; otherwise NEW):
 - KU1 an unnumbered Schedule ("The repeals in the Schedule have the same extent …") is read as same "*" (every
   amendment the law makes): right where the Schedule holds them; over-broad where its sections amend too (LRRA 2006
   s.34(3)). No ref names an unnumbered Schedule yet (open bug).
+- KR round 11 residuals, logged (census run-02): (R1) an item naming another law via "into the … Act" dropped (ukpga
+  2009/23 s.323(2)(f)(iii)); (R2) a same-extent item with its own "other than" unread (ukpga 2015/7 s.56(2)(b)); (R3)
+  "section 113 (together with such of the other provisions of Part 7 as relate to …)" dropped (ukpga 2008/4 s.152).
+
+Pass bar (Jason 2026-10-27): a round fails only on a NEW defect that places a WRONG BOUND on a provision or change (a
+misread), or a silent drop. A new wording the reader withholds (unread, counted in the law's unread classes) is known,
+not NEW. For each NEW, say whether it places a wrong bound (the provisions affected, the bound placed vs the text's).
 
 For each LAW: is the basis right, are the default and lists right against the law's own words (every extent/application
 sentence: read, or counted unread)? For each CHANGE: is the territory/bound right given the amending provision and the
@@ -168,6 +193,7 @@ OH&S (first family, 2026-10-24 →). The session is `.claude/sessions/change-voc
 | 8 | 13 | FAIL, 6 NEW — round 7's six fixed; NEW-1 systemic (a change's own key passed raw, "schedule-7", to the lookup: 80 claims); 4 misreads, 2 silent drops (a clause in a second section; "with the exception of— (b) any provision amending …") |
 | 9 | 14 | FAIL, 1 NEW — round 8's six fixed; changes 50/50 right; NEW-1 predates round 9: a commencement "This Act, except— …" read as the extent form across the section (ukpga 2002/30 s.108 default E+W+NI, text E+W), bounds still right (withheld) |
 | 10 | 15 | FAIL, 3 NEW — round 9's fixed; changes 50/50; an "In Schedule N— … apply in relation to England only" dropped; ukpga 2009/23 s.323 list items (unbracketed "other than", "in Chapter 1 of Part 6, sections …"); ukpga 2017/3 "(v) this Chapter" |
+| 11 | 16 | FAIL, 1 NEW (wrong bound) — census-led round (CV-S05c classes A–F; run-02 drops 33 → 10 laws, 3 residual); changes 50/50; ukpga 1977/45 s.65(10) "In this Act— (a) … (d) …, but save as aforesaid, this Act extends to E+W only": items dropped, HSWA s.15(6)(d) E+W (text E+W+S) |
 
 - Rounds 1–5's prompts lived only in conversation. Their known classes (K1–K10, then P1–P7) were not recorded; the classes above restate them from the session's findings (2026-10-26).
 - Round 6's design change: unread statements withhold their bound (`Extent.Unread`), so counted unread classes are known gaps.

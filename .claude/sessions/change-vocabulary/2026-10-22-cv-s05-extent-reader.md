@@ -4,6 +4,12 @@ status: active
 release: v0.1
 opened: '2026-10-22'
 bugs:
+  - pattern: "Extent: a default sentence carrying lettered items before its 'save as aforesaid … extends to E+W only' (ukpga 1977/45 s.65(10)) is credited default; items (a) (c) (d) and part of (b) silently dropped — wrong bound on HSWA s.15(6)(d) (E+W, text E+W+S via s.63(2))"
+    category: extent
+    module: Extent.Default / Lists / Units
+    affected: 1
+    fix: "read the lettered items as lists (qualified ones withheld), the default from the trailing 'save as aforesaid'; round 12 (agent seed 16 NEW-1)"
+    status: open
   - pattern: "Extent ListItems residuals after round 11 (census run-02): other-law test matches 'into the … Act' (no word boundary, 2009/23 s.314); a same-extent item with its own 'other than' unread (2015/7 s.56(2)(b)); 'section 113 (together with such of the other provisions of Part 7 …)' dropped (2008/4 s.152)"
     category: extent
     module: Extent.ListItems / Same
@@ -1205,4 +1211,26 @@ Suites: extent and CV, 4,358 of 4,359 (that example).
      - (R3) 2008/4 s.152(c), "section 113 (together with such of the other provisions of Part 7 as relate to …)".
    - **Pass bar 1 holds:** classes A–F are at zero, apart from the logged residuals.
 8. **Agent check:** next, on a new seed (16).
+
+## Agent check, seed 16 (round 11): laws 48 OK / 1 WRONG / 1 doubtful; changes 50/50 — FAIL (1 NEW, a wrong bound)
+
+The sample repeats (two draws identical). The prompt is the skill's, with round 11's rules, the KR residuals and the decided pass bar. The round 10 NEW are gone (2009/23, 2017/3, 2014/1638 not sampled again, but the census confirms them).
+
+**NEW-1 (verified; a silent drop that places a wrong bound): ukpga 1977/45 s.65(10).** The sentence:
+
+> "In this Act— (a) Part V and, so far as there provided, the provisions mentioned in section 63(2) above extend to Scotland; (b) the following provisions extend to Northern Ireland namely— …; (c) … so far as they amend …; (d) subsections (4) and (5) above and Schedules 12 and 13, so far as they relate to— … but save as aforesaid, this Act extends to England and Wales only."
+
+- The whole sentence is credited `default:E+W`, and only (b)'s "namely—" list is read, and that in part.
+- (a), (c) and (d), and "subsections (1), (3) and (6) to (10) of this section" in (b), are neither read nor counted unread.
+- **Wrong bound:** HSWA 1974 s.15(6)(d), inserted by 1977/45 Sch.12, is stored `law_text:extent=E+W`. By s.63(2) and s.65(10)(a), Sch.12 so far as it relates to HSWA has effect in Scotland, so the bound should be E+W+S, or withheld.
+- **Cause:** a default sentence that carries lettered items before its "save as aforesaid" default; the items aren't read as lists.
+
+**Doubtful:** ukpga 1995/25 s.125(8), "Part III …, and Schedule 24 … so far as relating to Part III", withholds Part III too. The companion rule wasn't applied because the qualified companion is a Schedule, not a section. It withholds rather than misreads (counted), so it isn't NEW.
+
+**Round 12 (proposed):**
+- NEW-1;
+- the residuals R1–R3;
+- the 1995/25 companion (a Schedule as the companion).
+
+Then the same runs, census run-03 and a fresh seed.
 
