@@ -85,6 +85,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
     assert Order.ref("schedule-paragraph-1") == "sch.para.1"
     assert Order.ref("schedule-paragraph-14-2") == "sch.para.14(2)"
     assert Order.ref("schedule-part-I-paragraph-3") == "sch.para.3"
+    assert Order.ref("schedule-part") == "sch"
     # (a paragraph's id carries no Part: never the Part's ref)
     assert Order.ref("schedule-4-part-2-paragraph-3") == "sch.4.para.3"
     assert Order.context().ancestors.("sch.para.3") == ["sch"]

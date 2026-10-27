@@ -143,6 +143,8 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
   defp schedule_ref(sch, ["paragraph", p | subs]), do: "#{sch}.para.#{p}" <> brackets(subs)
   defp schedule_ref(sch, ["part", p | _]), do: "#{sch}.pt.#{p}"
+  # (an id with no number, "schedule-part": the Schedule)
+  defp schedule_ref(sch, _), do: sch
 
   @doc "The evaluator's context for an amending law's refs: a Schedule paragraph sits in its Schedule."
   @spec context() :: map()
