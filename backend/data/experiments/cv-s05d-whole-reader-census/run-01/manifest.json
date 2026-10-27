@@ -1,0 +1,23 @@
+{
+  "session": "change-vocabulary/2026-10-27-cv-s05d-whole-reader-census.md",
+  "run": "run-01",
+  "date": "2026-10-27",
+  "reader_commit": "f26d292f (extent reader at b09df1be, round 12)",
+  "purpose": "Prototype whole-reader census: every catalogue and sweep sentence of every held law checked against the stored extent reading by an independent mention-finder (no RefList, Parts, Forms, Units).",
+  "read_only": true,
+  "steps": [
+    "from backend/: mix run data/experiments/cv-s05d-whole-reader-census/run-01/dump.exs input.jsonl  (ReadCache, warm: ~1 min; 3,358 laws)",
+    "/usr/bin/python3 census.py input.jsonl out  (~2 min; parses each law's CLML for its structure)",
+    "/usr/bin/python3 bench.py input.jsonl > out/bench.txt  (recall: rounds 9-12 agent NEW)",
+    "from backend/: mix run .../verify.exs and verify2.exs  (Extent.of on the found defects)"
+  ],
+  "inputs": {"input.jsonl": "dump.exs output: per law default, application, lists, applies, catalogue sentences + sweep uncaught (with SweepForm)"},
+  "outputs": {
+    "out/sentences.tsv": "every sentence (3,560): class, worst verdict, counted/silent, flags",
+    "out/candidates.tsv": "the silent flagged sentences (129, 109 laws)",
+    "out/unnamed.tsv": "stored positive refs no statement of their place names (516 refs, 83 laws)",
+    "out/stats.json": "counts",
+    "out/bench.txt": "recall bench 10/10"
+  },
+  "notes": "Scripts were tuned for precision against sampled false flags during the run; bench held at 10/10 after each change. Effect-id scan: 0."
+}
