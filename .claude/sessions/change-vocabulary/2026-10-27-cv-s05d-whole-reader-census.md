@@ -18,6 +18,12 @@ bugs:
     affected: 4 laws
     fix: "CV-S05 round 13"
     status: open
+  - pattern: "Extent census run-03 fix list S1-S17 (~65 laws; run-03/out/triage.md): exception-list items dropped (S1, 13 laws); RefList sub-letter runs (S2, 8); owner read as whole provision (S13, 9); or-lists / 'Part N of Schedule M' in same subjects (S3, 4); qualified companions dropped not withheld (S4, 7); own subsections/self/Chapter dropped (S5, 6); two statements in a sentence (S6, 6); whole-law default (S7, 3); territorial application unread (S8, 5); qualified read whole (S9, 2); '. . .' in number lists (S10, 3); locator read whole (S11); same item dropped (S12); 'cease to apply' inverted (S14); bracket then bare number (S15); reference read as item (S16, 2); other law's sections in an SI list (S17, 2)"
+    category: extent_reader
+    module: Extent (Lists, ListItems, Named, Same, Applies, Default), RefList
+    affected: 65 laws
+    fix: "CV-S05 round 13, then re-run this census (run-04) as its check"
+    status: open
 ---
 
 # Session: CV-S05d: Whole-Reader Census (ACTIVE)
@@ -41,8 +47,8 @@ Aim: census every sentence and every reader, checked independently of the reader
 - ⬜ Population: all catalogue sentences of every class (default, list, named, same, application, own paragraph, exception, unread), plus the sweep's 520 uncaught sentences, noise labels included.
 - ⬜ Noise-bin audit: each sweep label checked by the same test; anything naming our provisions with a place and an extend or apply verb is flagged, not trusted.
 - ✅ (run-02) Census rule: an "apply" statement whose place is qualified by "other than" / "except" / "any [thing] in", or names things or persons within a place, counts as scope (class KA, extract for fractalaw), not a reader candidate (run-02)
-- ✅ (run-02) Silent candidates triaged by wording, S1–S12, sampled with `Extent.of`; ⬜ review with Jason; hand them to CV-S05 round 13
-- ⬜ run-03: finder misses fixed (about 30 candidates, listed in run-02's triage); the rest of the over-reach list reviewed
+- ✅ (run-02/03) Silent candidates and over-reach triaged by wording, S1–S17, each confirmed on a law with `Extent.of`; ⬜ review with Jason; hand them to CV-S05 round 13
+- ✅ run-03: finder misses fixed; over-reach list reviewed in full; the fix list S1–S17 consolidated (`run-03/out/triage.md`)
 - ✅ run-01 stored; ⬜ Store each later run as evidence (`backend/data/experiments/cv-s05d-whole-reader-census/run-NN/`, as CV-S05c: manifest, scripts, input, outputs, README; scan for effect ids; commit by path in one step).
 - ⬜ If it earns its place, build it as a read-only mix task (pure modules and tests) to run every round.
 
@@ -112,3 +118,21 @@ Evidence: `backend/data/experiments/cv-s05d-whole-reader-census/run-02/` (README
 | — | Also | 2023/55 "229 (and Schedule 22), 230 …" read as Schedules 230 …; 1972/20 "except as provided by section 189" read as an item; one-offs 1985/71, 1972/11 |
 
 **Lesson:** CV-S05c run-03's default-sentence check labelled the S1 laws "KX by design". It checked them with the reader's own parser and looked only at the qualified items. The independent finder shows the unqualified items dropped too. A check that shares the reader's code shares its blind spots, which is CV-S05d's premise, now measured.
+
+## run-03 (2026-10-27): the round 13 fix list
+
+Evidence: `backend/data/experiments/cv-s05d-whole-reader-census/run-03/` (README, `out/triage.md`, `out/verify4.txt`). The reading is unchanged; recall 10/10. 113 silent candidate sentences; 358 unnamed refs in 53 laws, all reviewed.
+
+**The fix list:** 17 wordings in about 65 laws (bugs in the frontmatter). The new ones since run-02:
+
+| # | Wording | Example |
+|---|---|---|
+| S13 | An owner read as the whole provision | "subsections (1) to (6) of section 11" → all of s.11 UK, 1995/45; also 2016/12, 2007/1843, 1980/51, 1985/71, 1977/38 |
+| S14 | "cease to apply in relation to England" stored as applies E | 2013/27 |
+| S15 | "229 (and Schedule 22), 230 …" read as Schedules 230 … | 2023/55 |
+| S16 | "except as provided by section 189" read as an item | 1972/20, 1988/52 |
+| S17 | Another law's sections in an SI's list | 2010/490, 2017/1012 |
+
+S1 gained 1991/65 and 1982/49. S6 gained 1973/26 (default E+W+S; the text gives E+W), 1987/27 and 1982/53.
+
+**Left:** about 15 finder misses and about 12 doubtful, listed in the triage. Round 13's re-run of this census (run-04) is its check.
