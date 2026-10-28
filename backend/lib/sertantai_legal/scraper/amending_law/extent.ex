@@ -44,6 +44,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
     QualifiedItems,
     Rows,
     Same,
+    Targeted,
     Units
   }
 
@@ -59,7 +60,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
             application: nil,
             applies: [],
             powers: nil,
-            competence: nil
+            competence: nil,
+            targets: []
 
   @type list_kind :: :also | :only | :same | :not | :named | :unread
   @type applies_kind :: :applies | :applies_not
@@ -73,7 +75,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
           application: String.t() | nil,
           applies: [{applies_kind(), String.t(), [String.t()]}],
           powers: String.t() | nil,
-          competence: String.t() | nil
+          competence: String.t() | nil,
+          targets: [Targeted.t()]
         }
 
   @doc "The Act's extent clause read from its document; empty when it has none read."
@@ -145,7 +148,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
       ref: clause_ref,
       text: if(clause != "", do: clause),
       application: Application.application(doc, Default.default(clause)),
-      applies: for({k, _, _} = a <- applies, k in [:applies, :applies_not], do: a)
+      applies: for({k, _, _} = a <- applies, k in [:applies, :applies_not], do: a),
+      # the changes' own targets' extent ("The repeal of section 4(8)
+      # extends also to Scotland": `Targeted`, CV-S05f)
+      targets: Targeted.lists(doc)
     }
   end
 
@@ -198,9 +204,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   @spec of(t(), String.t()) :: String.t() | :same | nil
   defdelegate of(e, ref), to: Lookup
 
-  @doc "The territory of a change made by the amending provisions `refs` (`Extent.Lookup.of_change/2`)."
-  @spec of_change(t(), [String.t()]) :: String.t() | :same | nil
-  defdelegate of_change(e, refs), to: Lookup
+  @doc "The territory of a change made by the amending provisions `refs`, to its target where known (`Extent.Lookup.of_change/3`)."
+  @spec of_change(t(), [String.t()], Lookup.change() | nil) :: String.t() | :same | nil
+  defdelegate of_change(e, refs, change \\ nil), to: Lookup
 
   @doc """
   Where the changes made by the amending provisions `refs` apply

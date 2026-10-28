@@ -10,9 +10,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Store do
   alias SertantaiLegal.Scraper.AmendingLaw.Extent
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.Powers
 
-  @columns ~w(kind place items position source_law source_ref source_text)a
+  @columns ~w(kind place items position source_law source_ref source_text amends)a
   # what `rows_for/1` reads back, compared before writing
-  @compared ~w(kind place items source_ref)a
+  @compared ~w(kind place items source_ref amends)a
 
   # the laws whose own extent clause is read: Acts ("this Act extends to")
   # and SIs ("These Regulations extend to", "This Order extends to"; CV-07)
@@ -78,18 +78,18 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Store do
   end
 
   @doc """
-  Each law's stored rows as written (kind, place, items, source_ref), for
+  Each law's stored rows as written (kind, place, items, source_ref, amends), for
   those of `laws` read — what the check compares the reading now with, so
   a row `to_rows/2` loses shows (CV-S05 N9).
   """
   @spec rows_for([String.t()]) :: %{String.t() => [map()]}
   def rows_for(laws) do
     Repo.query!(
-      "SELECT source_law, kind, place, items, source_ref FROM extent_rules WHERE source_law = ANY($1)",
+      "SELECT source_law, kind, place, items, source_ref, amends FROM extent_rules WHERE source_law = ANY($1)",
       [laws]
     ).rows
-    |> Enum.group_by(&hd/1, fn [_, k, p, i, r] ->
-      %{kind: k, place: p, items: i, source_ref: r}
+    |> Enum.group_by(&hd/1, fn [_, k, p, i, r, a] ->
+      %{kind: k, place: p, items: i, source_ref: r, amends: a}
     end)
   end
 

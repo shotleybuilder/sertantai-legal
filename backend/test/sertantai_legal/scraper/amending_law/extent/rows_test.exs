@@ -22,7 +22,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.RowsTest do
       introduced_by: %{"sch.7" => "s.111"},
       application: "E",
       powers: "E+W+S",
-      competence: "E+W"
+      competence: "E+W",
+      targets: [
+        %{kind: :also, place: "S", scope: "sch.7.para.27", law: nil, refs: ["s.4(8)"]},
+        %{kind: :only, place: "E+W+NI", scope: "*", law: "Arbitration Act 1975", refs: ["*"]}
+      ]
     }
 
     assert Rows.from_rows(Rows.to_rows(e, "UK_ukpga_2005_15")) == e

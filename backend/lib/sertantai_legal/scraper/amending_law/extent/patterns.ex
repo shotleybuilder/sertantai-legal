@@ -26,7 +26,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
     `application` (an application clause not resolved), `not_read` (the
     law's own statement, not read), `provision_extent` /
     `provision_application` (a provision's own: "This section applies only
-    to England"), `list_partial` (a list of its kind and place read, but
+    to England"), `target` (a change's own target's statement not read:
+    `Extent.Targeted`, CV-S05f; read, `target:<kind>:<code>`), `list_partial` (a list of its kind and place read, but
     not every provision it names: `Extent.Credit`) — or `none` (the
     words, but no statement: "a provision which extends to Scotland").
 
@@ -47,6 +48,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
     Named,
     OwnParagraph,
     Same,
+    Targeted,
     Units
   }
 
@@ -188,6 +190,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
     in_clause? = e.ref != nil and e.ref == ref
 
     cond do
+      # a change's own target's extent ("The repeal of section 4(8) extends
+      # also to Scotland": `Targeted`, CV-S05f), read at the deepest
+      # provision stating it
+      targets = Targeted.statements(s, ref) ->
+        {target_class(targets, e), default_seen?}
+
       # a Part's extent with its exceptions after it ("Part 3 extends to …,
       # except as follows— (a) …"): its lead and every exception read
       # (`Excepting`, CV-S05 round 9)
@@ -292,8 +300,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
       list = OwnParagraph.list(s, ref) ->
         {kind, place, _} = list
 
-        {if(list in e.lists, do: "list:#{kind}:#{place}", else: "unread:provision_extent"),
-         default_seen?}
+        {if(list in e.lists,
+           do: "list:#{kind}:#{place || "same"}",
+           else: "unread:provision_extent"
+         ), default_seen?}
 
       # a provision's own extent or application ("This section applies only
       # to England", "Subsections (3) to (13) above do not extend to
@@ -305,6 +315,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
       true ->
         {"unread:not_read", default_seen?}
     end
+  end
+
+  defp target_class([%{kind: kind, place: place} | _] = targets, %Extent{targets: read}) do
+    unscoped = &Map.delete(&1, :scope)
+
+    if Enum.all?(targets, fn t -> Enum.any?(read, &(unscoped.(&1) == unscoped.(t))) end),
+      do: "target:#{kind}:#{place}",
+      else: "unread:target"
   end
 
   defp lead_class({kind, place, _} = lead, s, ref, doc, e) do

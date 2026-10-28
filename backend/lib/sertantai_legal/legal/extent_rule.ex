@@ -35,7 +35,7 @@ defmodule SertantaiLegal.Legal.ExtentRule do
 
       constraints(
         match:
-          ~r/^(default|also|only|same|corresponds|introduces|applies|powers|competence|none)$/
+          ~r/^(default|also|only|same|not|named|unread|corresponds|introduces|applies|applies_to|applies_not|powers|competence|none|target_(?:also|only|not|named))$/
       )
     end
 
@@ -66,6 +66,12 @@ defmodule SertantaiLegal.Legal.ExtentRule do
     )
 
     attribute(:source_text, :string, public?: true, description: "default: the clause, verbatim")
+
+    attribute(:amends, :string,
+      public?: true,
+      description:
+        "target_<kind>: the amended law as the statement names it (its title); nil: the law its scope amends (CV-S05f)"
+    )
 
     attribute :read_at, :utc_datetime_usec do
       allow_nil?(false)

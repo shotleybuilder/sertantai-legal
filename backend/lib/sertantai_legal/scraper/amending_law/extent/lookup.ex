@@ -9,12 +9,16 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lookup do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Extent, RefList}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.ChangeTarget
   alias SertantaiLegal.Scraper.Territory
 
   # the order lists apply in (`of/2`): a statement unread first — unknown
   # whatever else is read for the same provisions ("*" both: every
   # amendment the same extent, and an amendments' statement unread), then
   # the same extent, then those that set, widen, narrow
+  @typedoc "A change by its amended law, that law's title and its target ref."
+  @type change :: %{law: String.t(), title: String.t() | nil, target: String.t()}
+
   @apply_order %{unread: -1, same: 0, only: 1, named: 2, also: 3, not: 4}
 
   @doc """
@@ -241,10 +245,18 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lookup do
   effect may name several: "Sch. 7 para. 27(2) Sch. 17 Pt. 2"): a repeals
   schedule with the enactment's extent follows the provision it corresponds
   to (`corresponds`); the provisions that remain must agree. Nil when none
-  is read, or they disagree.
+  is read, or they disagree. With the `change` (its law, title, target):
+  the statements its own target is named in (`Extent.ChangeTarget`).
   """
-  @spec of_change(Extent.t(), [String.t()]) :: String.t() | :same | nil
-  def of_change(%Extent{} = e, refs) do
+  @spec of_change(Extent.t(), [String.t()], change() | nil) :: String.t() | :same | nil
+  def of_change(e, refs, change \\ nil)
+
+  # the change's own target's statements, where the change is named
+  # (`Extent.ChangeTarget`, CV-S05f)
+  def of_change(%Extent{} = e, refs, %{} = change),
+    do: ChangeTarget.bound(e, refs, change, of_change(e, refs, nil))
+
+  def of_change(%Extent{} = e, refs, nil) do
     extents = Enum.map(refs, &of(e, &1))
 
     extents =

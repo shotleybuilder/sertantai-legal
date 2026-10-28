@@ -114,11 +114,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
   (the feed reader claims it there): the law the note cites, at the
   provisions it names (`AmendingLaw.Extent`), else its own extent. A
   competence alone doesn't confine an insertion (V1-04). [] where a source
-  claims it already, or the law's extent isn't read.
+  claims it already, or the law's extent isn't read. `amended` (the
+  amended law and its title) lets a statement naming the change's own
+  target speak (`Extent.Targeted`, CV-S05f).
   """
-  @spec extent_claims(Change.t(), %{String.t() => SertantaiLegal.Scraper.AmendingLaw.Extent.t()}) ::
-          [Claim.t()]
-  def extent_claims(%Change{} = c, extents) do
+  @spec extent_claims(
+          Change.t(),
+          %{String.t() => SertantaiLegal.Scraper.AmendingLaw.Extent.t()},
+          %{law: String.t(), title: String.t() | nil} | nil
+        ) :: [Claim.t()]
+  def extent_claims(%Change{} = c, extents, amended \\ nil) do
     alias SertantaiLegal.Scraper.AmendingLaw.Extent
 
     # (a change only the amending law's text gives: its law, CV-S05 I)
@@ -143,7 +148,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
     with [] <- Change.values(c, :law_text, :extent),
          %Extent{} = e <- Map.get(extents, law),
          false <- Extent.competence_only?(e) and op == :inserted,
-         code when is_binary(code) <- of(e, refs) do
+         code when is_binary(code) <- of(e, refs, amended && Map.put(amended, :target, c.target)) do
       Claim.new(:law_text, :extent, code, c.key)
     else
       _ -> []
@@ -154,7 +159,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
   # else its legislature's competence) — never where its amendments follow
   # the enactments they change, nor where it names provisions' extents
   # without a default (which one isn't known): CV-S05 N16
-  defp of(%{lists: lists} = e, []) do
+  defp of(%{lists: lists} = e, [], _change) do
     cond do
       Enum.any?(lists, &match?({:same, _, _}, &1)) -> nil
       e.default == nil and e.powers == nil and e.competence == nil and lists != [] -> nil
@@ -162,8 +167,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
     end
   end
 
-  defp of(e, refs) do
-    case SertantaiLegal.Scraper.AmendingLaw.Extent.of_change(e, deepest(refs)) do
+  defp of(e, refs, change) do
+    case SertantaiLegal.Scraper.AmendingLaw.Extent.of_change(e, deepest(refs), change) do
       code when is_binary(code) -> code
       _ -> nil
     end

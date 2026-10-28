@@ -52,4 +52,77 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.LookupTest do
     assert Lookup.of_change(e, ["sch.7.para.27(2)", "sch.17.pt.2"]) == "E+W"
     assert Lookup.of_change(e, ["sch.17.pt.2"]) == :same
   end
+
+  describe "of_change/3: a change's own target (CV-S05f)" do
+    defp target(kind, place, scope, law, refs),
+      do: %{kind: kind, place: place, scope: scope, law: law, refs: refs}
+
+    @arbitration %Extent{default: "E+W+NI"}
+
+    test "a law named applies where the change's law has that title" do
+      e = %{@arbitration | targets: [target(:only, "E+W", "*", "Arbitration Act 1975", ["*"])]}
+      change = %{law: "UK_ukpga_1975_3", title: "Arbitration Act 1975", target: "s.1"}
+      assert Lookup.of_change(e, ["sch.4"], change) == "E+W"
+      # (another law's change: the provision's bound)
+      other = %{law: "UK_ukpga_1950_27", title: "Arbitration Act 1950", target: "s.1"}
+      assert Lookup.of_change(e, ["sch.4"], other) == "E+W+NI"
+    end
+
+    test "a register title has no year: the law's own year (\"Arbitration Act\", 1975)" do
+      e = %{@arbitration | targets: [target(:only, "E+W", "*", "Arbitration Act 1975", ["*"])]}
+
+      assert Lookup.of_change(e, ["sch.4"], %{
+               law: "UK_ukpga_1975_3",
+               title: "Arbitration Act",
+               target: "s.1"
+             }) == "E+W"
+
+      assert Lookup.of_change(e, ["sch.4"], %{
+               law: "UK_ukpga_1950_27",
+               title: "Arbitration Act",
+               target: "s.1"
+             }) == "E+W+NI"
+    end
+
+    test "a title not known: unknown, never a bound the statement may narrow" do
+      e = %{@arbitration | targets: [target(:only, "E+W", "*", "Arbitration Act 1975", ["*"])]}
+
+      assert Lookup.of_change(e, ["sch.4"], %{law: "UK_ukpga_1975_3", title: nil, target: "s.1"}) ==
+               nil
+    end
+
+    test "a title matched as written: \"the\", case and a trailing chapter aside" do
+      e = %{@arbitration | targets: [target(:not, "NI", "*", "Arbitration Act 1975", ["*"])]}
+      change = %{law: "UK_ukpga_1975_3", title: "The ARBITRATION Act 1975 (c. 3)", target: "s.1"}
+      assert Lookup.of_change(e, ["sch.4"], change) == "E+W"
+    end
+
+    test "out of scope, or another target: no effect" do
+      e = %Extent{
+        default: "E+W",
+        targets: [target(:also, "S", "sch.7.para.27", nil, ["s.4(8)"])]
+      }
+
+      rta = &%{law: "UK_ukpga_1988_52", title: "Road Traffic Act 1988", target: &1}
+      assert Lookup.of_change(e, ["sch.7.para.28"], rta.("s.4(8)")) == "E+W"
+      assert Lookup.of_change(e, ["sch.7.para.27(2)"], rta.("s.4(8)(a)")) == "E+W+S"
+      assert Lookup.of_change(e, ["sch.7.para.27(2)"], rta.("s.4(7)")) == "E+W"
+      assert Lookup.of_change(e, ["sch.7.para.27(2)"], nil) == "E+W"
+    end
+
+    test "a widening of an unknown bound stays unknown; only and named set it" do
+      e = %Extent{
+        default: "E+W",
+        lists: [{:unread, nil, ["sch.7"]}],
+        targets: [
+          target(:also, "S", "sch.7.para.27", nil, ["s.4(8)"]),
+          target(:only, "S", "sch.7.para.27", nil, ["s.4(9)"])
+        ]
+      }
+
+      rta = &%{law: "UK_ukpga_1988_52", title: "Road Traffic Act 1988", target: &1}
+      assert Lookup.of_change(e, ["sch.7.para.27(2)"], rta.("s.4(8)")) == nil
+      assert Lookup.of_change(e, ["sch.7.para.27(2)"], rta.("s.4(9)")) == "S"
+    end
+  end
 end

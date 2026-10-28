@@ -34,7 +34,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Unread do
   # the classes of a statement the reader leaves unread (`Patterns`); an
   # application clause not resolved bounds nothing here (where a law
   # applies is `Extent.application`)
-  @classes ~w(unread:in_clause unread:not_read unread:another_default unread:list unread:part_not unread:other_provision unread:provision_extent)
+  @classes ~w(unread:in_clause unread:not_read unread:another_default unread:list unread:part_not unread:other_provision unread:provision_extent unread:target)
 
   @places Places.place_names()
 

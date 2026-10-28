@@ -38,7 +38,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   Claim sets `{key, target, claims}` for each effect's target provisions.
   `rows` are every row the law holds (refs), for reading EU finer forms
   down to; nil takes the rows `xml_ids` names (rows with no XML id of
-  their own, like item rows, are then not seen).
+  their own, like item rows, are then not seen). `title` is the law's
+  title, for an amending law's statement naming it (CV-S05f).
   """
   @spec read(
           [Effect.t()],
@@ -47,7 +48,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
           map(),
           map(),
           %{String.t() => String.t()},
-          [String.t()] | nil
+          [String.t()] | nil,
+          String.t() | nil
         ) ::
           [{String.t(), String.t(), [Claim.t()]}]
   def read(
@@ -57,7 +59,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
         commencement \\ %{},
         extents \\ %{},
         xml_ids \\ %{},
-        rows \\ nil
+        rows \\ nil,
+        title \\ nil
       ) do
     flat = EffectTarget.flat(order)
     held = MapSet.new(rows || Map.values(xml_ids))
@@ -73,7 +76,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
              Claim.new(:feed, :ranged, if(ranged?, do: true), id) ++
              Claim.new(:feed, :finer_unheld, unheld, id) ++
              commenced_by(claims, e, commencement) ++
-             extent(e, extents, claims) ++
+             extent(e, extents, claims, %{law: law_name, title: title, target: target}) ++
              affecting(e)}
   end
 
@@ -161,8 +164,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
 
   # where the amending provisions extend, by the amending Act's own extent
   # clause (primary: `AmendingLaw.Extent`; SOCPA 2005 s.179) — an upper
-  # bound on where the change applies
-  defp extent(%Effect{affecting: law, affecting_provisions: text, effect_id: id}, extents, claims) do
+  # bound on where the change applies; a statement naming the change's own
+  # target speaks for it (SOCPA Sch.7 para 27(4), CV-S05f)
+  defp extent(
+         %Effect{affecting: law, affecting_provisions: text, effect_id: id},
+         extents,
+         claims,
+         change
+       ) do
     case Map.get(extents, law) do
       %AmendingLaw.Extent{} = e ->
         # a devolved SI's competence doesn't confine its insertion (V1-04)
@@ -170,7 +179,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
           with false <-
                  AmendingLaw.Extent.competence_only?(e) and value(claims, :operation) == :inserted,
                [_ | _] = refs <- FeedAffecting.refs(text),
-               code when is_binary(code) <- AmendingLaw.Extent.of_change(e, refs) do
+               code when is_binary(code) <- AmendingLaw.Extent.of_change(e, refs, change) do
             Claim.new(:law_text, :extent, code, id)
           else
             _ -> []

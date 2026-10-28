@@ -11,12 +11,16 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Rows do
   @list_kinds Map.new(~w(also only same not named unread)a, &{Atom.to_string(&1), &1})
   @applies_rows %{applies: "applies_to", applies_not: "applies_not"}
   @applies_kinds Map.new(@applies_rows, fn {k, v} -> {v, k} end)
+  # a change's own target's extent (CV-S05f, `Extent.Targeted`): "target_also" …
+  @target_kinds Map.new(~w(also only not named)a, &{"target_#{&1}", &1})
 
   @doc """
   The extent read as `extent_rules` rows, one per statement (CV-04): the
   default (`"default"`, with the clause's ref and words), each list
   (`"also"`, `"only"`, `"same"`, in order), the corresponding-repeal
-  sentence (`"corresponds"`) and each Schedule's introducing section
+  sentence (`"corresponds"`), each target statement (`"target_<kind>"`:
+  `items` the targets, `source_ref` its scope, `amends` the law named;
+  CV-S05f) and each Schedule's introducing section
   (`"introduces"`: `items` the Schedule, `source_ref` the section). An Act
   read with no clause gives a `"none"` row, so read is told from unread.
   """
@@ -30,7 +34,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Rows do
         source_law: law,
         source_ref: ref,
         source_text: text,
-        position: position
+        position: position,
+        amends: nil
       }
     end
 
@@ -70,7 +75,16 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Rows do
     competence =
       if e.competence, do: [row.("competence", e.competence, [], nil, nil, 0)], else: []
 
+    # the target statements: `source_ref` their scope, `amends` the law named
+    targets =
+      e.targets
+      |> Enum.with_index(1)
+      |> Enum.map(fn {t, i} ->
+        %{row.("target_#{t.kind}", t.place, t.refs, t.scope, nil, i) | amends: t.law}
+      end)
+
     clause ++
+      targets ++
       applies ++
       provision_applies ++
       powers ++
@@ -113,6 +127,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Rows do
         ),
       powers: Enum.find_value(rows, &(&1.kind == "powers" && &1.place)),
       competence: Enum.find_value(rows, &(&1.kind == "competence" && &1.place)),
+      targets:
+        for(
+          r <- Enum.sort_by(rows, & &1.position),
+          kind = Map.get(@target_kinds, r.kind),
+          kind != nil,
+          do: %{kind: kind, place: r.place, scope: r.source_ref, law: r[:amends], refs: r.items}
+        ),
       introduced_by:
         for(r <- rows, r.kind == "introduces", into: %{}, do: {hd(r.items), r.source_ref})
     }
