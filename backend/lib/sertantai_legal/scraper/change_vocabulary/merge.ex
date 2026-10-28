@@ -17,23 +17,39 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
   3. An event is its key wherever placed; several same-day events by one
      law are told apart by the amending provision the feed names (CV-04).
 
+  Identity (CV-S07 round 2, `docs/CHANGE-IDENTITY-DESIGN.md`): an effect's
+  `URI` id is its id too (`uris`); a markup effect id no feed record holds
+  is id-less; each source's copies of one event are one candidate
+  (`Merge.Candidates`); the partner is chosen by day, amending provision,
+  family, operation and heading (`Merge.Partner`).
+
   Pure.
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Claim}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Merge.{Candidates, Partner}
   alias SertantaiLegal.Scraper.{EffectIndex, LatRef}
-  alias SertantaiLegal.Scraper.Commencement.Order
 
-  @doc "Changes from `{key, target, claims}` sets."
-  @spec merge([{String.t(), String.t(), [Claim.t()]}]) :: [Change.t()]
-  def merge(sets) do
+  @doc """
+  Changes from `{key, target, claims}` sets. `opts`: `:uris`, the feed's
+  `URI` ids that differ from its effect ids (URI id → effect id).
+  """
+  @spec merge([{String.t(), String.t(), [Claim.t()]}], keyword()) :: [Change.t()]
+  def merge(sets, opts \\ []) do
     {fed, unkeyed} =
       sets
-      |> Enum.group_by(fn {key, target, _} -> {key, target} end, &elem(&1, 2))
-      |> Enum.map(fn {{key, target}, claims} ->
-        %Change{key: key, target: target, claims: List.flatten(claims), aliases: [key]}
+      |> Candidates.rekey(Keyword.get(opts, :uris, %{}))
+      |> Enum.group_by(fn {key, target, _, _} -> {key, target} end, &{elem(&1, 2), elem(&1, 3)})
+      |> Enum.map(fn {{key, target}, sets} ->
+        %Change{
+          key: key,
+          target: target,
+          claims: sets |> Enum.map(&elem(&1, 0)) |> List.flatten(),
+          aliases: Enum.uniq([key | Enum.map(sets, &elem(&1, 1))])
+        }
       end)
       |> precise()
+      |> Candidates.collapse()
       |> Enum.split_with(&(Change.values(&1, :feed, :by) != []))
 
     # the law's own text joins first, then the markup's legacy ids; a change
@@ -50,21 +66,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
             Change.values(&1, :law_text, :by) == [])
       )
 
+    # (a markup effect id no feed record holds is id-less: legislation.gov.uk
+    # re-keyed the effect, or never recorded it — SI 1977/500 reg.6(1))
     {law_text, markup} = Enum.split_with(unkeyed, &(Change.values(&1, :law_text, :by) != []))
-    {effect_keyed, legacy} = Enum.split_with(markup, &(EffectIndex.effect_id(&1.key) != nil))
 
     # changes indexed by target: an orphan looks at its provision, those
     # above it and those below it (`below`: each provision's descendants)
     by_target = Enum.group_by(fed, & &1.target)
-    below = below(Map.keys(by_target) ++ Enum.map(legacy ++ law_text, & &1.target))
+    below = below(Map.keys(by_target) ++ Enum.map(markup ++ law_text, & &1.target))
 
-    # legacy markup first, so the law's text meets it (joined to a feed
-    # record, or standing alone, marked)
-    (legacy ++ law_text)
+    # markup first, so the law's text meets it (joined to a feed record, or
+    # standing alone, marked)
+    (markup ++ law_text)
     |> Enum.reduce(by_target, &join(&1, &2, below))
     |> Map.values()
     |> List.flatten()
-    |> Kernel.++(effect_keyed)
     |> Kernel.++(own)
     |> Kernel.++(applied)
   end
@@ -111,7 +127,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
     end)
   end
 
-  defp marked?(c),
+  @doc "True when the CLML change markup places the change."
+  @spec marked?(Change.t()) :: boolean()
+  def marked?(c),
     do: Change.values(c, :markup, :operation) != [] or Change.values(c, :markup, :placed) != []
 
   # An unkeyed change joins the one event of the same operation family by
@@ -122,29 +140,28 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
   # (`:affecting`: SI 2019/696 Sch.12 para.21(a) vs (d)). With none, or
   # several left, it stays its own change (a visible gap).
   defp join(%Change{} = orphan, by_target, below) do
-    law = Change.value(orphan, :law_text, :by) || Change.value(orphan, :markup, :cited)
-    family = family(operation(orphan))
+    law =
+      Change.value(orphan, :law_text, :by) || Change.value(orphan, :markup, :cited) ||
+        Change.value(orphan, :markup, :cited_text)
 
     candidates =
       for t <- LatRef.ancestors(orphan.target) ++ Map.get(below, orphan.target, []),
           c <- Map.get(by_target, t, []),
           c.key != orphan.key,
-          family(operation(c)) == family,
           law == nil or by(c) == law,
-          same_day?(orphan, c),
           other_source?(orphan, c),
           not inside_words?(orphan, c),
           do: c
 
     events =
-      case Enum.group_by(candidates, & &1.key) do
-        events when map_size(events) > 1 -> at_source(events, orphan)
-        events -> events
+      case Partner.choose(orphan, candidates) do
+        nil -> []
+        placements -> [placements]
       end
 
-    case Map.values(events) do
+    case events do
       [placements] ->
-        match = placement(placements, orphan)
+        match = Partner.placement(placements, orphan)
 
         # the more precise target stays (the orphan's when it lies below) —
         # unless the markup placed the change: where its text sits
@@ -238,59 +255,25 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
   # law's text joins a feed or markup record holding none of the law's text
   # yet; legacy markup joins a feed record holding no legacy markup yet;
   # never another unjoined change.
+  # (markup carrying an effect id the feed lacks joins a feed record with no
+  # markup of its own: one that has its own is another event's)
   defp other_source?(orphan, c) do
-    if Change.values(orphan, :law_text, :by) != [],
-      do:
+    cond do
+      Change.values(orphan, :law_text, :by) != [] ->
         (Change.values(c, :feed, :by) != [] or marked?(c)) and
-          Change.values(c, :law_text, :by) == [],
-      else: Change.values(c, :feed, :by) != [] and not Enum.any?(c.aliases, &legacy?/1)
+          Change.values(c, :law_text, :by) == []
+
+      EffectIndex.effect_id(orphan.key) != nil ->
+        Change.values(c, :feed, :by) != [] and not marked?(c)
+
+      true ->
+        Change.values(c, :feed, :by) != [] and not Enum.any?(c.aliases, &legacy?/1)
+    end
   end
 
   # a markup change id with no effect id ("d29p11050", "M_F_…"); the law's
   # text's are "law:element id"
   defp legacy?(id), do: EffectIndex.effect_id(id) == nil and not String.contains?(id, ":")
-
-  # the events naming the orphan's amending provision: the law's text's
-  # own (its key is "law:element id": "UK_uksi_2019_696:schedule-12-
-  # paragraph-21-a"), else the provisions its note names (legacy markup);
-  # an event names them in the feed, or in its own note
-  defp at_source(events, orphan) do
-    case refs(orphan) do
-      [] ->
-        events
-
-      refs ->
-        Map.filter(events, fn {_key, placements} ->
-          Enum.any?(placements, fn c ->
-            Enum.any?(affecting(c), fn a -> Enum.any?(refs, &related?(a, &1)) end)
-          end)
-        end)
-    end
-  end
-
-  defp refs(orphan) do
-    with [_, id] <- String.split(orphan.key, ":", parts: 2),
-         ref when ref != nil <- Order.ref(id) do
-      [ref]
-    else
-      _ -> Change.values(orphan, :markup, :affecting) |> List.flatten()
-    end
-  end
-
-  defp affecting(c),
-    do: List.flatten(Change.values(c, :feed, :affecting) ++ Change.values(c, :markup, :affecting))
-
-  defp related?(a, b), do: a in LatRef.ancestors(b) or b in LatRef.ancestors(a)
-
-  # the event's placement the orphan joins: on its own provision, else
-  # where the markup placed it, else the nearest
-  defp placement(placements, orphan) do
-    Enum.find(placements, &(&1.target == orphan.target)) ||
-      Enum.find(placements, &marked?/1) ||
-      Enum.min_by(placements, &abs(depth(&1.target) - depth(orphan.target)))
-  end
-
-  defp depth(ref), do: length(LatRef.ancestors(ref))
 
   # each provision's descendants among `targets`
   defp below(targets) do
@@ -299,27 +282,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
     end
   end
 
-  # a dated change from the law's text joins only a record of that day (the
-  # Coronavirus Act's sunset, 2022, and its NI continuation, 2024, are two
-  # removals of s.78 by the Act itself)
-  defp same_day?(orphan, c) do
-    case {Change.value(orphan, :law_text, :date), Change.value(c, :feed, :date)} do
-      {%Date{} = a, %Date{} = b} -> Date.compare(a, b) == :eq
-      _ -> true
-    end
-  end
-
-  defp operation(c),
-    do:
-      Change.value(c, :law_text, :operation) || Change.value(c, :markup, :operation) ||
-        Change.value(c, :feed, :operation)
-
   # the law making it: the feed's, the law's text's, else (legacy markup)
   # the law its note cites — a pointer for identity, never a fact
   defp by(c),
     do:
       Change.value(c, :feed, :by) || Change.value(c, :law_text, :by) ||
-        Change.value(c, :markup, :cited)
+        Change.value(c, :markup, :cited) || Change.value(c, :markup, :cited_text)
 
   @doc "An operation's family: `:removal`, `:commencement`, `:text`, or nil (the merge joins within one)."
   @spec family(atom() | nil) :: :removal | :commencement | :text | nil

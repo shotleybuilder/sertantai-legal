@@ -307,4 +307,32 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderS06Test do
       assert level.("s.2(1)") == [:words]
     end
   end
+
+  describe "CV-S07 round 2: a clause with two operations" do
+    @biocidal Reader.law_ref(
+                "UK_nisr_2012_255",
+                "The Biocidal Products Regulations (Northern Ireland)",
+                "reg"
+              )
+
+    test "\"add\" is an insertion: each operation its own rule (NISR 2015/339 reg.34(2)(b))" do
+      d =
+        doc(
+          p1(
+            "regulation-34",
+            "The Biocidal Products Regulations (Northern Ireland) 2012 are amended as follows."
+          ) <>
+            ~s|<P1 id="regulation-34-2"><P1para><Text>In regulation 8—</Text><P3 id="regulation-34-2-b"><P3para><Text>in paragraph (1), after “a notifier” add “or applicant” and for “2001” substitute “2015”;</Text></P3para></P3></P1para></P1>|,
+          "UK_nisr_2015_339"
+        )
+
+      ops =
+        d
+        |> read("regulation-34-2-b", @biocidal)
+        |> Enum.map(&{&1.operation, &1.level, &1.targets})
+
+      assert {:inserted, :words, ["reg.8(1)"]} in ops
+      assert {:substituted, :words, ["reg.8(1)"]} in ops
+    end
+  end
 end

@@ -2,7 +2,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Operation do
   @moduledoc """
   What an amending instruction does, from its drafting verb (lat-refactor
   LR-08): `{operation, effect_type}` — "there is substituted" / "substitute"
-  → substituted; "there is inserted" / "insert" / "added" → inserted;
+  → substituted; "there is inserted" / "insert" / "add" / "added" → inserted;
   "shall cease to have effect" / "omit" / "is repealed" / "revoked" →
   repealed. The effect type is words-level ("words substituted") when the
   instruction quotes or names the words, definitions or entries it
@@ -14,7 +14,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Operation do
 
   @verbs [
     {~r/\bsubstitut(?:ed|e)\b/i, "substituted"},
-    {~r/\binsert(?:ed)?\b|\badded\b/i, "inserted"},
+    {~r/\binsert(?:ed)?\b|\badd(?:ed)?\b/i, "inserted"},
     {~r/cease to have effect|\bomit(?:ted)?\b|\brepealed\b|\brevoked\b/i, "repealed"}
   ]
 

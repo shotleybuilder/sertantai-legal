@@ -6,6 +6,12 @@
         "UK_uksi_2011_2131/UK_uksi_2009_716/schedule-4"
       ]
     },
+    "instruction|inserted+substituted|none|body|named|rules:inserted+substituted:words": {
+      "count": 1,
+      "examples": [
+        "UK_nisr_2015_339/UK_nisr_2012_255/regulation-34-2-b"
+      ]
+    },
     "instruction|inserted+substituted|none|schedule|named|none": {
       "count": 6,
       "examples": [
@@ -19,11 +25,11 @@
       ]
     },
     "instruction|inserted|block|body|named|none": {
-      "count": 7,
+      "count": 13,
       "examples": [
-        "UK_ukpga_2013_32/UK_ukpga_1974_37/schedule-12-paragraph-15-4",
-        "UK_uksi_2014_469/UK_uksi_2008_1597/schedule-3-paragraph-130-3",
-        "UK_uksi_2019_758/UK_eur_2006_1907/schedule-3-paragraph-13"
+        "UK_nisr_2005_397/UK_nisr_1999_305/regulation-13-2",
+        "UK_nisr_2015_223/UK_nisr_1993_37/regulation-4-5",
+        "UK_ukpga_2013_32/UK_ukpga_1974_37/schedule-12-paragraph-15-4"
       ]
     },
     "instruction|inserted|block|body|named|rules:inserted:provision": {
@@ -51,11 +57,11 @@
       ]
     },
     "instruction|inserted|block|schedule|named|none": {
-      "count": 9,
+      "count": 11,
       "examples": [
+        "UK_nisr_2015_223/UK_nisr_2005_279/regulation-5-3",
         "UK_nisr_2015_265/UK_nisr_1996_119/regulation-4-4-b",
-        "UK_uksi_2014_1639/UK_uksi_1998_494/schedule-2-paragraph-1",
-        "UK_uksi_2015_21/UK_uksi_1996_341/regulation-3-4-b"
+        "UK_uksi_2013_1512/UK_uksi_2005_735/regulation-5-3"
       ]
     },
     "instruction|inserted|block|schedule|unnamed|none": {
@@ -81,11 +87,11 @@
       ]
     },
     "instruction|inserted|none|body|named|rules:inserted:words": {
-      "count": 47,
+      "count": 50,
       "examples": [
         "UK_nisr_2003_288/UK_nisr_2003_34/regulation-2-b-i",
         "UK_nisr_2007_135/UK_nisr_2005_279/regulation-2-2-a-i",
-        "UK_nisr_2011_365/UK_nisr_2010_160/regulation-7-3-a"
+        "UK_nisr_2009_227/UK_nisr_2006_1/regulation-2-b"
       ]
     },
     "instruction|inserted|none|body|unnamed|none": {
@@ -112,7 +118,7 @@
       ]
     },
     "instruction|inserted|words|body|named|rules:inserted:words": {
-      "count": 183,
+      "count": 188,
       "examples": [
         "UK_nisr_2003_288/UK_nisr_2003_34/regulation-2-a",
         "UK_nisr_2004_196/UK_nisr_1997_455/regulation-2-2-b",
@@ -128,7 +134,7 @@
       ]
     },
     "instruction|inserted|words|schedule|named|none": {
-      "count": 8,
+      "count": 9,
       "examples": [
         "UK_nisr_2003_288/UK_nisr_2003_34/regulation-2-d",
         "UK_nisr_2005_45/UK_nisr_1999_13/schedule-3-paragraph-5-c-i",
@@ -136,9 +142,10 @@
       ]
     },
     "instruction|inserted|words|schedule|unnamed|none": {
-      "count": 4,
+      "count": 8,
       "examples": [
         "UK_uksi_2005_1082/UK_uksi_2005_676/schedule-5-paragraph-45-4-f",
+        "UK_uksi_2016_1093/UK_nisr_1999_305/regulation-83-6-b-i",
         "UK_uksi_2023_247/UK_uksi_2022_1378/regulation-14"
       ]
     },
@@ -369,7 +376,7 @@
       ]
     },
     "instruction|substituted|none|body|named|rules:substituted:words": {
-      "count": 134,
+      "count": 133,
       "examples": [
         "UK_nisr_1997_455/UK_nisr_1996_511/schedule-8-paragraph-5",
         "UK_nisr_2000_375/UK_nisr_1993_20/schedule-10-paragraph-3",
@@ -465,23 +472,21 @@
       ]
     },
     "no_verb|-|block|body|named|none": {
-      "count": 33,
+      "count": 27,
       "examples": [
         "UK_nisr_2003_423/UK_nisr_1993_20/regulation-5-a",
-        "UK_nisr_2005_397/UK_nisr_1999_305/regulation-13-2",
-        "UK_nisr_2015_223/UK_nisr_1993_37/regulation-4-5"
+        "UK_ukpga_2008_20/UK_ukpga_1974_37/schedule-1",
+        "UK_uksi_2002_2174/UK_uksi_1981_917/regulation-2"
       ]
     },
     "no_verb|-|block|schedule|named|none": {
-      "count": 3,
+      "count": 1,
       "examples": [
-        "UK_nisr_2005_165/UK_nisr_2003_34/regulation-3-g-i",
-        "UK_nisr_2015_223/UK_nisr_2005_279/regulation-5-3",
-        "UK_uksi_2013_1512/UK_uksi_2005_735/regulation-5-3"
+        "UK_nisr_2005_165/UK_nisr_2003_34/regulation-3-g-i"
       ]
     },
     "no_verb|-|none|body|named|none": {
-      "count": 156,
+      "count": 153,
       "examples": [
         "UK_nisr_1998_448/UK_nisr_1997_248/regulation-5",
         "UK_nisr_2001_436/UK_nisr_1997_455/schedule-11-paragraph-8",
@@ -513,7 +518,7 @@
       ]
     },
     "no_verb|-|words|body|named|none": {
-      "count": 11,
+      "count": 6,
       "examples": [
         "UK_nisr_2003_423/UK_nisr_1993_37/regulation-6-a",
         "UK_ukpga_2005_11/UK_ukpga_1974_37/schedule-4-paragraph-18-4",
@@ -521,16 +526,9 @@
       ]
     },
     "no_verb|-|words|schedule|named|none": {
-      "count": 2,
+      "count": 1,
       "examples": [
-        "UK_nisr_2005_165/UK_nisr_2003_34/regulation-3-g-ii",
-        "UK_uksi_2003_978/UK_uksi_2002_2677/regulation-2-d"
-      ]
-    },
-    "no_verb|-|words|schedule|unnamed|none": {
-      "count": 4,
-      "examples": [
-        "UK_uksi_2016_1093/UK_nisr_1999_305/regulation-83-6-b-i"
+        "UK_nisr_2005_165/UK_nisr_2003_34/regulation-3-g-ii"
       ]
     },
     "set_out|inserted|none|schedule|named|none": {
@@ -582,7 +580,7 @@
   },
   "totals": {
     "amending_laws": 453,
-    "examples": 184,
+    "examples": 182,
     "not_alone": 0,
     "not_held": 1,
     "patterns": 79,

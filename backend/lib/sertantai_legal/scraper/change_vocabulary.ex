@@ -38,7 +38,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   stored `Amendment.Rule`s amending the law; `:commencement`, each amending
   law's `Commencement.Rule`s; `:own_commencement`, the law's own
   `Commencement.Rule`s and `:own_context` its row structure
-  (`OwnClause.context/1`); `:extents`, each amending Act's extent clause read
+  (`OwnClause.context/1`); `:effect_uris`, the feed's re-keyed effects
+  (`FeedUris`: URI id → effect id, for the merge); `:extents`, each amending Act's extent clause read
   (`AmendingLaw.Extent`); `:title`, the law's title — its own place;
   `:passed`, `:act_title` and `:continuations` for its own sunset
   (`Readers.Expiry`); `:xml_ids`, each LAT row's `source_xml_id` → its ref
@@ -262,7 +263,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
            Keyword.get(opts, :act_title),
            Keyword.get(opts, :continuations, [])
          ))
-      |> Merge.merge()
+      |> Merge.merge(uris: Keyword.get(opts, :effect_uris, %{}))
       # a gap no source fills: the amending law's commencement (the date)
       # and extent at the provision the note names (CV-07)
       |> Enum.map(fn c ->

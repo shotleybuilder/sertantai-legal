@@ -23,6 +23,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Pointer}
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Claim, Ref}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteLaw
   alias SertantaiLegal.Scraper.EffectIndex
   alias SertantaiLegal.Scraper.Commencement.Order
 
@@ -290,6 +291,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
               substitution_ref: attr(attrs, :SubstitutionRef),
               extent: attr(attrs, :Extent),
               note: attr(attrs, :CommentaryRef),
+              heading?: :heading in flags,
               text: letters(el)
             }
           ]
@@ -300,7 +302,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     own ++
       Enum.flat_map(children, fn
         {:xmlElement, :Title, _, _, _, _, _, _, _, _, _, _} = title ->
-          occurrences(title, title_path, flags, ctx)
+          occurrences(title, title_path, [:heading | flags], ctx)
 
         child ->
           occurrences(child, path, flags, ctx)
@@ -346,7 +348,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
       ),
       Claim.new(:markup, :territory, Enum.find_value(occ, & &1.extent) |> code(), change_id),
       Claim.new(:markup, :cited, get_in(cited, [first.note, :law]), change_id),
-      Claim.new(:markup, :affecting, get_in(cited, [first.note, :refs]), change_id)
+      Claim.new(:markup, :cited_text, get_in(cited, [first.note, :text_law]), change_id),
+      Claim.new(:markup, :affecting, get_in(cited, [first.note, :refs]), change_id),
+      # pointers for identity (CV-S07 round 2): the note the change hangs on
+      # (its copies in each version share it), and a change wholly in a
+      # heading
+      Claim.new(:markup, :note, first.note, change_id),
+      Claim.new(:markup, :heading, if(Enum.all?(occ, & &1.heading?), do: true), change_id)
     ])
   end
 
@@ -403,14 +411,34 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
   defp cited(doc) do
     for c <- xpath(doc, ~x"//Commentary"l),
         id = xpath(c, ~x"./@id"s),
-        citation = xpath(c, ~x"(.//Citation[@URI])[1]"e),
-        citation != nil,
-        uri = xpath(citation, ~x"./@URI"s),
-        [_, type, year, num] <- [Regex.run(~r"/id/([a-z]+)/(\d{4})/(\d+)", uri)],
-        law = "UK_#{type}_#{year}_#{num}",
-        into: %{} do
-      refs = pointers(c, xpath(citation, ~x"./@id"s), law)
-      {id, %{law: law, refs: if(refs != [], do: refs)}}
+        id != "",
+        entry = cited_entry(c),
+        entry != nil,
+        into: %{},
+        do: {id, entry}
+  end
+
+  # a note with a `Citation` link: its law, and the provisions it names; a
+  # note with none: the law its words cite, for identity only (CV-S07 round
+  # 2, decision 3: "S.I. 2004/ 1822" — never the change's `by`)
+  defp cited_entry(c) do
+    citation = xpath(c, ~x"(.//Citation[@URI])[1]"e)
+
+    case citation && Regex.run(~r"/id/([a-z]+)/(\d{4})/(\d+)", xpath(citation, ~x"./@URI"s)) do
+      [_, type, year, num] ->
+        law = "UK_#{type}_#{year}_#{num}"
+        refs = pointers(c, xpath(citation, ~x"./@id"s), law)
+        %{law: law, refs: if(refs != [], do: refs)}
+
+      _ ->
+        case NoteLaw.law(Doc.text(c)) do
+          nil ->
+            nil
+
+          law ->
+            refs = pointers(c, "", law)
+            %{text_law: law, refs: if(refs != [], do: refs)}
+        end
     end
   end
 

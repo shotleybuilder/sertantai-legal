@@ -499,10 +499,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
       Claim.new(:feed, :applied, e.applied, id),
       Claim.new(:feed, :savings, e.savings, id),
       Claim.new(:feed, :by, e.affecting, id),
+      # a change to the provision's heading, as the feed names it ("reg. 21
+      # heading"): a pointer for the merge's identity (CV-S07 round 2: one
+      # instruction the feed records as a heading and a body effect)
+      Claim.new(:feed, :heading, heading(e), id),
       Claim.new(:law, :territory, e.affecting_territory, id),
       Claim.new(:law, :competence, competence(e), id)
     ])
   end
+
+  defp heading(%Effect{type: type, affected_provisions: text}),
+    do: if(Enum.any?([type, text], &((&1 || "") =~ ~r/\bheading\b/i)), do: true)
 
   # a change within the provision's text: its words, a sum, a figure, an
   # entry in its table, punctuation, its heading

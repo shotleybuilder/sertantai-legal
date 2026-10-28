@@ -427,7 +427,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPatterns do
   sorted: one change's sets on one provision come in no set order.
   """
   @spec outcome([set()]) :: [map()]
-  def outcome(sets), do: sets |> FeedPatterns.outcome() |> Enum.sort()
+  # (the note a change hangs on is a pointer for the merge's identity, not
+  # a reading: CV-S07 round 2)
+  def outcome(sets) do
+    sets
+    |> Enum.map(fn {key, target, claims} ->
+      {key, target, Enum.reject(claims, &(&1.source == :markup and &1.attribute == :note))}
+    end)
+    |> FeedPatterns.outcome()
+    |> Enum.sort()
+  end
 
   @doc "An outcome with the change's effect id named `key-E`, as its example names it."
   @spec rekey([map()], String.t(), String.t()) :: [map()]

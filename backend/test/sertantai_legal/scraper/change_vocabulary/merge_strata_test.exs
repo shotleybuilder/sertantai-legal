@@ -74,9 +74,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeStrataTest do
   end
 
   test "a markup-only change beside a feed-only change of the same family by the same law is a candidate" do
+    # (left apart by the merge: each names another amending provision)
     assert strata([
-             feed("key-a", "reg.21", :repealed, []),
-             markup(effect_id("f"), "reg.21(2)", :repealed)
+             feed("key-a", "reg.21", :repealed, ["reg.5"]),
+             set(effect_id("f"), "reg.21(2)", [
+               {:markup, :operation, :repealed},
+               {:markup, :cited, @law},
+               {:markup, :affecting, ["reg.9"]}
+             ])
            ]) == [{"reg.21", :C}, {"reg.21(2)", :C}]
   end
 

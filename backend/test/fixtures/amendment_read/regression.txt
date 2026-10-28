@@ -41,3 +41,4 @@ UK_uksi_2009_606  # "After regulation 5(3)(b) insert— ; or (c) …": a quote n
 UK_ukpga_1990_43  # repeals table "Section 1(1)(d) and the word “and” preceding it" read as words (CV-S06 round 4, 2026-10-28)
 UK_ukpga_1989_38  # repeals table "Section 27(2)(b) and the word “or” immediately preceding it" read as words (CV-S06 round 4, 2026-10-28)
 UK_uksi_1974_1941 # "sections 7, 8(2) and the entry in Schedule 2 relating to section 124(2) …": s.7(2) and s.124(2) words (CV-S06 round 4, 2026-10-28)
+UK_nisr_2015_339  # CV-S07 round 2: 'after “a notifier” add “or applicant” and for “2001” substitute “2015”' — 'add' an insertion, two rules (reg.34(2)(b))

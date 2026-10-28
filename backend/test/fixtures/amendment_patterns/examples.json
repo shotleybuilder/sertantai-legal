@@ -377,6 +377,12 @@
     "law": "UK_nisr_1999_90",
     "words": "Regulation 35(2)Instruments amendedReferencesAmendments to have effectThe Personal Protective Equipment at Work Regulations (Northern Ireland) 1993In regulation 3(3)(c) for the words “the Control of Asbestos at Work Regulations (Northern Ireland) 1988” substitute “the Control of Asbestos Regulations (Northern Ireland) 2007The Health and Safety (Enforcing Authority) Regulations (Northern Ireland) 1"
   },
+  "UK_nisr_2009_227/UK_nisr_2006_1/regulation-2-b": {
+    "amending": "UK_nisr_2009_227",
+    "id": "regulation-2-b",
+    "law": "UK_nisr_2006_1",
+    "words": "after sub-paragraph (b) add, “and shall comply with any requirement of the Personal Protective Equipment Regulations 2002 which is applicable to them.”."
+  },
   "UK_nisr_2009_238/UK_nisr_1997_193/regulation-17": {
     "amending": "UK_nisr_2009_238",
     "id": "regulation-17",
@@ -418,12 +424,6 @@
     "id": "regulation-4-5",
     "law": "UK_nisr_2010_160",
     "words": "In paragraph (l), at the end, for “.” substitute— ."
-  },
-  "UK_nisr_2011_365/UK_nisr_2010_160/regulation-7-3-a": {
-    "amending": "UK_nisr_2011_365",
-    "id": "regulation-7-3-a",
-    "law": "UK_nisr_2010_160",
-    "words": "after “reassessed by a”, insert “type A”; and"
   },
   "UK_nisr_2012_179/UK_nisr_1993_20/schedule-4": {
     "amending": "UK_nisr_2012_179",
@@ -478,6 +478,12 @@
     "id": "regulation-4-4-b",
     "law": "UK_nisr_1996_119",
     "words": "in Part II, after paragraph 2.2 insert— ;"
+  },
+  "UK_nisr_2015_339/UK_nisr_2012_255/regulation-34-2-b": {
+    "amending": "UK_nisr_2015_339",
+    "id": "regulation-34-2-b",
+    "law": "UK_nisr_2012_255",
+    "words": "in paragraph (1), after “a notifier” add “or applicant” and for “2001” substitute “2015”;"
   },
   "UK_nisr_2016_406/UK_nisr_2012_255/schedule-14-paragraph-43-3": {
     "amending": "UK_nisr_2016_406",
@@ -695,6 +701,12 @@
     "law": "UK_nisi_1998_1069",
     "words": "In Article 4 (offences), in paragraph (4)(f), for “, (2), (2A), (4) and (5)” there is substituted ."
   },
+  "UK_ukpga_2008_20/UK_ukpga_1974_37/schedule-1": {
+    "amending": "UK_ukpga_2008_20",
+    "id": "schedule-1",
+    "law": "UK_ukpga_1974_37",
+    "words": "Section 1(2)"
+  },
   "UK_ukpga_2008_20/UK_ukpga_1974_37/section-1-2": {
     "amending": "UK_ukpga_2008_20",
     "id": "section-1-2",
@@ -833,11 +845,11 @@
     "law": "UK_ukpga_1961_34",
     "words": "Regulation 47(3) Column 1Column 2ProvisionExtent of modification Section 174 Subsection (1) shall be omitted and replaced with the following—"
   },
-  "UK_uksi_2003_978/UK_uksi_2002_2677/regulation-2-d": {
-    "amending": "UK_uksi_2003_978",
-    "id": "regulation-2-d",
-    "law": "UK_uksi_2002_2677",
-    "words": "at the end of Schedule 1 add the following substances– ."
+  "UK_uksi_2002_2174/UK_uksi_1981_917/regulation-2": {
+    "amending": "UK_uksi_2002_2174",
+    "id": "regulation-2",
+    "law": "UK_uksi_1981_917",
+    "words": "Regulation 3 of the Health and Safety (First-Aid) Regulations 1981 shall be amended by adding the following paragraph— ."
   },
   "UK_uksi_2004_3363/UK_ukpga_1974_37/article-5-2": {
     "amending": "UK_uksi_2004_3363",
@@ -910,24 +922,6 @@
     "id": "article-5-b",
     "law": "UK_uksi_2009_716",
     "words": "in sub-paragraph (b) omit “; and” and insert a comma, and"
-  },
-  "UK_uksi_2014_1639/UK_uksi_1998_494/schedule-2-paragraph-1": {
-    "amending": "UK_uksi_2014_1639",
-    "id": "schedule-2-paragraph-1",
-    "law": "UK_uksi_1998_494",
-    "words": "In Schedule 2 to the Health and Safety (Enforcing Authority) Regulations 1998 after paragraph 13 insert— ."
-  },
-  "UK_uksi_2014_469/UK_uksi_2008_1597/schedule-3-paragraph-130-3": {
-    "amending": "UK_uksi_2014_469",
-    "id": "schedule-3-paragraph-130-3",
-    "law": "UK_uksi_2008_1597",
-    "words": "After paragraph 3 insert—."
-  },
-  "UK_uksi_2015_21/UK_uksi_1996_341/regulation-3-4-b": {
-    "amending": "UK_uksi_2015_21",
-    "id": "regulation-3-4-b",
-    "law": "UK_uksi_1996_341",
-    "words": "In Part 2, after paragraph 2.2 insert— ;"
   },
   "UK_uksi_2015_51/UK_ukpga_1961_34/schedule-5": {
     "amending": "UK_uksi_2015_51",
@@ -1048,12 +1042,6 @@
     "id": "schedule-2-paragraph-57-4-g-ii",
     "law": "UK_eur_2008_1272",
     "words": "in Note K, omit “(Table 3.1) or the S-phrases (2-) 9-16 (Table 3.2)” and for “Part 3” substitute ;"
-  },
-  "UK_uksi_2019_758/UK_eur_2006_1907/schedule-3-paragraph-13": {
-    "amending": "UK_uksi_2019_758",
-    "id": "schedule-3-paragraph-13",
-    "law": "UK_eur_2006_1907",
-    "words": "Immediately before the Table insert—."
   },
   "UK_uksi_2019_758/UK_eur_2006_1907/schedule-3-paragraph-2-12": {
     "amending": "UK_uksi_2019_758",
