@@ -1,9 +1,57 @@
 ---
 session: 'CV-S06: Amending-Law Reader'
-status: active
+status: closed
 release: v0.1
 opened: '2026-10-22'
+closed: '2026-10-28'
+outcome: success
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
+
+summary: >
+  The amending-law reader (Amendment.Reader → law_text claims) passed the revised acceptance check on OH&S in
+  round 5: the disagreeing (77) and law-text-only (34) changes checked in full with no misread left, the agreeing
+  stratum (1,063) sampled with 0 wrong of 160 pooled (95% upper 1.85%) and 0 of 86 pairs (3.42%). Agreement with
+  legislation.gov.uk over 1,095 both-sourced changes: amending law 100%, operation 99.5%, level 99.2%; golden from
+  inputs 26/27 (RTA s.4(6): CV-S05f). See "Quality statement".
+
+decisions:
+  - what: "Revised check (Jason 2026-10-28): strata A agreeing / D disagreeing / L law text only; D and L in full, A by pooled agent samples"
+    why: Random seeds put ~49 of 50 items where legislation.gov.uk already vouches; the misreads sat in the disagreements and law-text-only changes
+    result: Round 4 found 7 wrong in D+L in one pass (seeds 31-33 had found 1 each); A pooled 0/160
+  - what: Golden from inputs on every chain (`mix lat.vocabulary --golden`), never only `--check`
+    why: --check scores out-of-family golden laws from stale stored changes; an upstream reader change went unseen (RTA s.4(6))
+    result: Known limit found and placed (CV-S05f PENDING)
+  - what: "A definition's limb with no row of its own is words in the provision defining (`:in_definition` treatment); a held limb stays whole"
+    why: "The first fix (every rule under a definition words) turned held rows (SI 2008/1597 reg.2(ba)) to words; a general 'fallback is words' rule would flip bracket-combination artefacts ('paragraphs (f)–(i)')"
+    result: COSHH reg.2(1) (GB, NI) now agree with the feed; 96-law rules diff otherwise unchanged in level
+  - what: Fix round 4's misreads only, leaving yield gaps logged (Jason 2026-10-28)
+    why: The pass rule is about misreads; yield is CV-07's
+    result: Ranges and two-operation clauses logged as bugs (open)
+
+metrics:
+  strata_at_close: { population: 1174, agreeing: 1063, disagreeing: 77, law_text_only: 34 }
+  agreement_both_sourced: { compared: 1095, by: "1055/1055 (100%)", operation: "1090/1095 (99.5%)", level: "1086/1095 (99.2%)", same_row: "1016/1095 (92.8%)" }
+  agent_rounds: { seed31: "49/50, pairs 47/48", seed32: "50/50, 33/33", seed33: "49/50, 38/39", round4: "D+L 7 wrong of 114; A 50/50", round5: "D+L 0 of 111; recheck 14/14" }
+  pooled_A_at_close: { changes: "0/160 (95% upper 1.85%)", pairs: "0/86 (95% upper 3.42%)" }
+  census: { start: 211, after_B1_B7: 142, at_close: "134 entries (45 unjoined, 34 law text only, 28 level, 19 date, 8 operation)" }
+  coverage_oh_s_text_changes: { total: 4911, law_text: "1174 (23.9%)", feed_only_read_schedule: 831, feed_only_read_eu_article: 654, feed_only_read_body: 1150, feed_only_unread: 661, feed_only_other: 441 }
+  catalogue: { patterns: 81, examples: 185 }
+  golden_from_inputs: "26/27 (RTA 1988 s.4(6): CV-S05f)"
+
+lessons:
+  - title: Sample where the independent source can't vouch; check disagreements in full
+    detail: Three uniform seeds of 50 found one misread each; checking the 114 disagreeing and law-text-only changes in full found seven at once. Agreement with an independent high-fidelity source is evidence; spend agent effort on the strata it doesn't cover.
+    tag: data
+  - title: A wide rules diff before the chain catches a fix that is right for its case and wrong elsewhere
+    detail: Two of round 5's fixes (words under any definition; per-number brackets) passed their own tests but the 96-law diff showed held limbs turned words and brackets read from quotes, captions and context numbers. Narrowed before any write.
+    tag: tooling
+  - title: A new enum value needs every reader of the stored row, not just the writer
+    detail: "`:in_definition` wrote fine but `Rule.from_row` used a hand list of names; six family laws failed the rebuild. Derive name maps from the value lists, and round-trip test every value."
+    tag: schema
+  - title: Golden scored from stored changes hides upstream changes
+    detail: "`--check` scored out-of-family golden laws from stale stored changes (27/27) while from inputs RTA s.4(6) failed. Every chain runs `--golden`."
+    tag: tooling
+
 bugs:
   - pattern: "A Schedule's paragraph read as the amended law's regulation or section of that number: 'In Schedule 2, for paragraph 10 substitute—' → reg.10 and 11 provisions under it; 'Omit Schedule 5' → reg.26; 'In paragraph 4(2)(b) of Schedule 1—' → reg.2(2)(b). The guard (Reader.in_schedule) reads only a holding provision beginning 'In [Part|paragraph N of] Schedule N', misses a non-breaking space (no u flag), nested 'paragraph 1 of Part 3 of Schedule 6' and the instruction's own words"
     category: reader misread (target)
@@ -95,9 +143,31 @@ bugs:
     affected: 1
     fix: "a clause with two operations joined by 'and' gives a rule for each"
     status: open
+  - pattern: "Amendment reader drops a context's subsection: \"In section 43(1) …— (a) omit the 'or' at the end of paragraph (h)\" targets s.43(h), not s.43(1)(h) (PCA 2017 Sch.1 para 94(3))"
+    category: reader misread (target)
+    module: Amendment.Reader.Targets / ChangeVocabulary.Readers.AmendingLaw
+    affected: 2
+    fix: "24e5c371 (B5): a named place's bracket readings all listed, the deepest held taken (rule now {s.43(1), s.43(h), s.43(1)(h)})"
+    status: fixed
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/amendment/patterns.ex, patterns/example.ex, pattern_source.ex, lib/mix/tasks/lat.amendment_patterns.ex
+  - backend/lib/sertantai_legal/scraper/amendment/check_sample.ex, check_strata.ex, lib/mix/tasks/lat.amending_check.ex
+  - backend/lib/sertantai_legal/scraper/amendment/reader/scope.ex (B1, B2)
+  - backend/test/fixtures/amendment_patterns/ (catalogue)
+  - backend/test/sertantai_legal/scraper/amendment/reader_s06_test.exs, check_strata_test.exs, amendment_patterns_test.exs
+  - .claude/skills/amending-reader-check/SKILL.md
+
+depends_on:
+  - 2026-10-22-cv-s05-extent-reader.md
+
+enables:
+  - CV-S05f target-named extent statements (PENDING, next)
+  - CV-S07 merge (unjoined twins logged)
+  - CV-S06 for further families (recipe step 6)
 ---
 
-# Session: CV-S06: Amending-Law Reader (ACTIVE)
+# Session: CV-S06: Amending-Law Reader (CLOSED)
 
 ## Problem
 
@@ -115,12 +185,63 @@ The session does not close until its results pass.
 - ✅ Revised check built: `--strata`/`--stratum`/`--skip` in `mix lat.amending_check` (123f61a5), seeds 31–33 classed
 - ✅ Round 4 (seed 34): A pooled passes; D and L in full FAIL: NEW-1, NEW-2, KR
 - ✅ Round 5: fix batch (91211e44, 51088da8), chain 4, D and L re-checked: PASS (A 0/160, 1.85%; pairs 0/86, 3.42%; D/L no misread; golden 26/27 bar CV-S05f)
-- ⬜ Quality statement and coverage table; CV-00 recipe step 6
+- ✅ Quality statement and coverage table; CV-00 recipe step 6
 - ⏸️ The reader's yield over the feed (2,658 read with no rule): not chased (CV-07)
 
 ## Dependencies
 
-- ⬜ The steps before it passed (CV-00 order)
+- ✅ The steps before it passed (CV-00 order): CV-S01–S05 closed
+
+## Quality statement (2026-10-28): why the amending-law data is held to be good
+
+The record to come back to, and the basis for publishing accuracy. Figures as of reader `51088da8` on OH&S: Occupational (149 laws with LAT).
+
+### What the data is
+
+For each change an amending law makes to a family law, what its own text says it does: the amended law, the target provision, the operation (inserted, substituted, repealed) and the level (words in a provision, or the provision whole). `Amendment.Reader` reads each amending law into `amendment_rules`; `ChangeVocabulary.Readers.AmendingLaw` turns them into `law_text` claims on `provision_changes`, joined with legislation.gov.uk's feed and markup by the merge. The law's text is primary and wins where it speaks (source authority), so this check measures precision: a misread would override a right record. Dates (CV-S04) and territory (CV-S05) are other readers'.
+
+**Design rule:** a target the amended law doesn't hold is no change; a named place resolves to its deepest held reading; a quote's provisions to its top; a definition's limb with no row of its own is words in the provision defining. Schedules of the amended law aren't parsed (v0.1), so an instruction placed in one gives no change.
+
+### How it was checked: four layers
+
+1. **Catalogue** (`mix lat.amendment_patterns`): the family's read instruction sentences classed by form, verb, quote, place, law and outcome — 81 patterns, 185 pruned real examples run as tests (`test/fixtures/amendment_patterns/`); every reading change reviewed per fix batch.
+2. **Census** of disagreements with legislation.gov.uk (`Conflicts`): 211 at the start, each classed; B1–B7 and the round-4 misreads fixed; 134 entries left (45 unjoined, 34 law text only, 28 level, 19 date, 8 operation; a value conflict counts once per derived source) — every change behind them classed (strata D and L).
+3. **Agreement with an independent source** over every change both state (1,095): amending law 100% (1,055/1,055 compared), operation 99.5% (1,090/1,095), level 99.2% (1,086/1,095), same row 92.8% (the rest joined to legislation.gov.uk's record above or below the provision the law named).
+4. **Agent checks** (skill `amending-reader-check`, prompt and known classes written down): a separate Claude agent judges each change against the amending law's stored text and the amended law's rows. The strata (revised check, Jason 2026-10-28):
+   - **D, disagreeing (77) and L, law text only (34): checked in full** — no sampling error. No misread left (round 5).
+   - **A, agreeing (1,063): sampled** (seeds 31–34, reproducible draws), pooled over items unchanged since checked.
+
+### Measured accuracy
+
+| Round | Seeds / strata | Wrong | Result |
+|---|---|---|---|
+| 1 | 31 | 1/50 changes, 1/48 pairs | FAIL, fixed `35f29731` |
+| 2 | 32 | 0/50, 0/33 | PASS |
+| 3 | 33 | 1/50, 1/39 | FAIL, fixed `bd0ff6de` |
+| 4 | D 81 + L 33 in full; A seed 34 | D+L 7/114; A 0/50 | FAIL, fixed `91211e44`, `51088da8` |
+| **5** | **D 77 + L 34 in full; A pooled** | **D+L 0/111; A 0/160 changes (95% upper 1.85%), 0/86 pairs (3.42%)** | **PASS** |
+
+Upper bounds are exact one-sided Clopper–Pearson. **What this supports:** with 95% confidence, at most 1.85% of agreeing changes are wrong, and D and L hold no known misread; over all 1,174 changes the law's text states, the wrong rate is bounded by 1.85% × 1,063 / 1,174 ≈ **1.7%** — at least 98% of the family's law-text changes name the right law, target, operation and level. Golden from inputs 26/27 (RTA 1988 s.4(6): CV-S05f, a territory limit).
+
+### Coverage (4,911 OH&S text changes)
+
+| Who states the change | Changes | Share |
+|---|---|---|
+| **The amending law's text** (with legislation.gov.uk 1,095; alone 79) | 1,174 | 23.9% |
+| legislation.gov.uk only; its amending provision read, no rule — a Schedule target (v0.1 limit) | 831 | 16.9% |
+| — an EU-law article target (EU law amended by UK SIs) | 654 | 13.3% |
+| — a body provision (the reader's yield gap, CV-07) | 1,150 | 23.4% |
+| legislation.gov.uk only; its amending provision not read (schedule targets 214; by EU-law amenders 322) | 661 | 13.5% |
+| legislation.gov.uk only; beside an unjoined law-text change, or its amending law not indexed | 441 | 9.0% |
+
+A change only legislation.gov.uk states keeps legislation.gov.uk's facts (derived tier); the law's text adds nothing there and overrides nothing.
+
+### Caveats for publishing
+
+- **One family.** Other families run the skill's steps (catalogue, census, strata, D+L in full, A sampled).
+- **Precision, not yield.** The reader states 24% of the family's text changes; recall over the feed is CV-07's.
+- **Agent judgement** is an AI review of the stored legal text, not a lawyer's sign-off.
+- **Logged, not misreads:** ranges not expanded ("(1)(b)(i) to (iii)"), a clause with two operations giving one rule (yield); law-text changes left apart from an identical feed effect (CV-S07); target-named extent statements (CV-S05f).
 
 ## Catalogue (2026-10-28)
 
