@@ -175,7 +175,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   # (2)": the block is in that sub-paragraph of the same provision (2005
   # c.14 Sch.3 para 3(1)(b); "(2)" had read as the subsection inserted —
   # CV-S06 B4)
-  defp set_out_beside(%Text{id: id, instruction: i} = text, doc) when is_binary(id) do
+  defp set_out_beside(%Text{id: id, instruction: i} = text, doc) do
     with [phrase, n] <-
            Regex.run(~r/\bset\s+out\s+in\s+(?:sub-?paragraph|subsection)\s+\((\w+)\)/iu, i),
          [_, top] <-
@@ -189,8 +189,6 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
       _ -> text
     end
   end
-
-  defp set_out_beside(text, _doc), do: text
 
   @doc "The rules an instruction's `text` (its containers' titles, nearest first, or one title) states for `laws`, with `source` on each."
   @spec of_text(Text.t(), String.t() | [String.t()] | nil, map(), [law_ref()], map()) :: [
