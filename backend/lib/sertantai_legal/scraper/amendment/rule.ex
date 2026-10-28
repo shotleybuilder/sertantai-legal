@@ -19,7 +19,10 @@ defmodule SertantaiLegal.Scraper.Amendment.Rule do
   - `level`: `:provision` (reaches the rows inside each target) · `:words`
     (the named provision only — never a container's descendants).
   - `source`: `%{law, ref, text}` — the amending provision read, verbatim.
-  - `treatment`: `:instruction` · `:repeal_table` (provenance only).
+  - `treatment`: `:instruction` (a provision named: its brackets are
+    readings of one place, every combination listed) · `:quoted` (the
+    provisions a quote makes: one tree) · `:repeal_table` (CV-S06 B5:
+    the change vocabulary takes a quote's top, a named place's deepest).
 
   `to_text/1` is the readable form (`mix lat.amending`); `to_row/1` /
   `from_row/1` the table's (`amendment_rules`). Pure.
@@ -30,7 +33,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Rule do
 
   @type operation :: :inserted | :substituted | :repealed | :renumbered
   @type level :: :provision | :words
-  @type treatment :: :instruction | :repeal_table
+  @type treatment :: :instruction | :quoted | :repeal_table
   @type source :: %{law: String.t(), ref: String.t() | nil, text: String.t() | nil}
   @type t :: %__MODULE__{
           amends: String.t(),
@@ -44,11 +47,11 @@ defmodule SertantaiLegal.Scraper.Amendment.Rule do
   @operations [:inserted, :substituted, :repealed, :renumbered]
   @by_name Map.new(
              [:inserted, :substituted, :repealed, :renumbered, :provision, :words] ++
-               [:instruction, :repeal_table],
+               [:instruction, :quoted, :repeal_table],
              &{Atom.to_string(&1), &1}
            )
   @levels [:provision, :words]
-  @treatments [:instruction, :repeal_table]
+  @treatments [:instruction, :quoted, :repeal_table]
 
   @doc "A rule from its fields; raises `ArgumentError` on a value outside the schema."
   @spec new(keyword() | map()) :: t()

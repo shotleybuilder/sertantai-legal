@@ -35,6 +35,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
     Clauses,
     LawNamed,
     RepealTable,
+    Scope,
     Targets
   }
 
@@ -133,7 +134,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
       %Text{} = text ->
         text
         |> set_out(doc)
-        |> of_text(Doc.title(doc, id), terms, in_schedule(articles_only(laws, doc, id), text), %{
+        |> of_text(Doc.title(doc, id), terms, Scope.laws(doc, id, text, terms, laws), %{
           law: doc.law_name,
           ref: id,
           text: text.instruction
@@ -142,47 +143,6 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
       _ ->
         []
     end
-  end
-
-  # an instruction under "Schedule 1 (…) is amended as follows" (its
-  # provision's first words), where neither it nor a provision holding it
-  # names a section, regulation or article (captions and quotes aside),
-  # changes that Schedule's paragraphs: no rules while Schedules are not
-  # read as targets (2009/20 Sch. 4 para 10 "For paragraph 1 substitute—"
-  # had read as s.1; captions' "section 2(4)" as s.2; a later "In section
-  # 90 …—" list is that section's: 2013/22 s.25(8)); or under a provision
-  # "In Schedule 6 (…)—" (SI 2015/664 Sch. 2 para 12(3)); run time 2026-10-26
-  defp in_schedule(laws, %Text{context: [first | _], instruction: i, parents: parents}) do
-    names_provision? =
-      Enum.any?([i | parents], fn w ->
-        w |> Clauses.unquote_words() |> Clauses.no_captions() =~
-          ~r/\b(?:sections?|regulations?|articles?|rules?)\s+\d/i
-      end)
-
-    schedule? =
-      first =~
-        ~r/^\s*(?:(?:Part|Paragraph)\s+\w+\s+of\s+)?Schedule\s+\d+[A-Z]*\b[^.]*?\bis\s+amended\b/i or
-        Enum.any?(
-          parents,
-          &(&1 =~ ~r/^\s*In\s+(?:(?:Part|paragraph)\s+\w+\s+of\s+)?Schedule\s+\d+/i)
-        )
-
-    if schedule? and not names_provision?,
-      do: [],
-      else: laws
-  end
-
-  defp in_schedule(laws, _text), do: laws
-
-  # an instruction under a heading amending an EU law's Annexes or
-  # Appendices numbers that Annex's paragraphs, never its Articles ("8.1.1.1",
-  # "4" in "Amendment of the Annexes and Appendices to the REACH
-  # Regulation": SI 2019/758 Sch. 3): no Article rules until Annex targets
-  # are read (run time, 2026-10-25)
-  defp articles_only(laws, doc, id) do
-    if Enum.any?(Doc.headings(doc, id), &(&1 =~ ~r/\b(?:Annex(?:es)?|Appendi(?:x|ces))\b/)),
-      do: Enum.reject(laws, &(&1.kind == :article)),
-      else: laws
   end
 
   # an instruction quoting nothing, whose block is set out in its own
@@ -205,11 +165,32 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
         %{text | inserted: paths}
 
       nil ->
-        text
+        set_out_beside(text, doc)
     end
   end
 
   defp set_out(text, _doc), do: text
+
+  # "after subsection (2) insert the subsection set out in sub-paragraph
+  # (2)": the block is in that sub-paragraph of the same provision (2005
+  # c.14 Sch.3 para 3(1)(b); "(2)" had read as the subsection inserted —
+  # CV-S06 B4)
+  defp set_out_beside(%Text{id: id, instruction: i} = text, doc) when is_binary(id) do
+    with [phrase, n] <-
+           Regex.run(~r/\bset\s+out\s+in\s+(?:sub-?paragraph|subsection)\s+\((\w+)\)/iu, i),
+         [_, top] <-
+           Regex.run(
+             ~r/^(schedule-[^-]+-paragraph-[^-]+|(?:section|regulation|article|rule)-[^-]+)/,
+             id
+           ),
+         %Text{inserted: [_ | _] = paths} <- Text.of(doc, "#{top}-#{n}") do
+      %{text | inserted: paths, instruction: String.replace(i, phrase, "set out")}
+    else
+      _ -> text
+    end
+  end
+
+  defp set_out_beside(text, _doc), do: text
 
   @doc "The rules an instruction's `text` (its containers' titles, nearest first, or one title) states for `laws`, with `source` on each."
   @spec of_text(Text.t(), String.t() | [String.t()] | nil, map(), [law_ref()], map()) :: [
@@ -256,13 +237,27 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
         nil ->
           nil
 
+        # the provisions a quote makes are one tree, its top the change
+        # (`:quoted`); a named provision's brackets are readings of one
+        # place (CV-S06 B5)
         c ->
-          Targets.rule(
-            law,
-            Targets.quoted_targets(c, p),
-            Operation.of_quoted(Clauses.captionless(c.text)),
-            source
-          )
+          case Targets.rule(
+                 law,
+                 Targets.quoted_targets(c, p),
+                 Operation.of_quoted(Clauses.captionless(c.text)),
+                 source
+               ) do
+            nil ->
+              nil
+
+            # a quote numbering provisions makes them whole ("for “.”
+            # substitute— (m) …; (n) …": CV-S06 B7) — not a definition's
+            # own lettered paragraphs, which are words in the provision
+            # defining ("after the definition of “x” insert— “y” means (a) …")
+            r ->
+              whole? = c.text.inserted != [] and not (c.text.instruction =~ ~r/\bdefinitions?\b/i)
+              %{r | treatment: :quoted, level: if(whole?, do: :provision, else: r.level)}
+          end
       end
 
     named =

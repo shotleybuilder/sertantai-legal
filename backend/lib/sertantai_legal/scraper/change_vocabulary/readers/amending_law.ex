@@ -13,10 +13,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
   (`Commencement.Evaluator` over the text rules; the feed's
   coming-into-force records are derived, the feed reader's).
 
-  Targets: a rule lists the provisions its words name and their parents
-  ("s.284(3)", "s.284(3)(i)"). A words change lands on the deepest named
-  (no listed provision below it); a provision change on the top-most (no
-  listed provision above it — its sub-provisions follow it).
+  Targets: those the amended law holds, then — a rule lists the
+  provisions its words name and their parents ("s.284(3)", "s.284(3)(i)")
+  — a quoted provision change on the top-most (no listed provision above
+  it: its sub-provisions follow it); any other change on the deepest named
+  (no listed provision below it: "subsection (6)(e) is omitted" is
+  s.15(6)(e), never s.15(6) — CV-S06 B5).
 
   Pure: the rules come in as data (`Amendment.Store`, `Commencement.Store`
   in the caller).
@@ -52,8 +54,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
 
     # a target the amended law doesn't contain is a misread, not a fact
     for %Rule{source: %{law: law, ref: ref}} = r <- rules,
-        target <- targets(r),
-        known == nil or MapSet.member?(known, target) do
+        target <- targets(r, known) do
       key = "#{law}:#{ref}"
 
       {key, target,
@@ -82,15 +83,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
     end
   end
 
-  defp targets(%Rule{targets: targets, level: level}) do
-    ts = Enum.uniq(targets)
+  # the targets the amended law holds (a misread is not a fact), then: a
+  # quote's top (its provisions follow it), a named place's deepest (its
+  # brackets' readings: "subsection (6)(e)" is s.15(6)(e), never s.15(6) —
+  # CV-S06 B5), words on the deepest named
+  defp targets(%Rule{targets: targets} = r, known) do
+    ts = targets |> Enum.uniq() |> Enum.filter(&(known == nil or MapSet.member?(known, &1)))
 
-    Enum.filter(ts, fn t ->
-      case level do
-        :words -> not Enum.any?(ts, &(&1 != t and t in tl(LatRef.ancestors(&1))))
-        _provision -> not Enum.any?(tl(LatRef.ancestors(t)), &(&1 in ts))
-      end
-    end)
+    if r.level == :provision and r.treatment == :quoted,
+      do: Enum.reject(ts, fn t -> Enum.any?(tl(LatRef.ancestors(t)), &(&1 in ts)) end),
+      else:
+        Enum.reject(ts, fn t -> Enum.any?(ts, &(&1 != t and t in tl(LatRef.ancestors(&1)))) end)
   end
 
   @doc """

@@ -1,0 +1,603 @@
+{
+  "patterns": {
+    "instruction|inserted+repealed+substituted|none|schedule|named|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2011_2131/UK_uksi_2009_716/schedule-4"
+      ]
+    },
+    "instruction|inserted+substituted|none|schedule|named|none": {
+      "count": 6,
+      "examples": [
+        "UK_uksi_2015_51/UK_ukpga_1961_34/schedule-5"
+      ]
+    },
+    "instruction|inserted+substituted|none|schedule|unnamed|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2015_51/UK_uksi_1992_3004/schedule-5"
+      ]
+    },
+    "instruction|inserted|block|body|named|none": {
+      "count": 7,
+      "examples": [
+        "UK_ukpga_2013_32/UK_ukpga_1974_37/schedule-12-paragraph-15-4",
+        "UK_uksi_2014_469/UK_uksi_2008_1597/schedule-3-paragraph-130-3",
+        "UK_uksi_2019_758/UK_eur_2006_1907/schedule-3-paragraph-13"
+      ]
+    },
+    "instruction|inserted|block|body|named|rules:inserted:provision": {
+      "count": 152,
+      "examples": [
+        "UK_asc_2026_5/UK_ukpga_1974_37/schedule-3-paragraph-1",
+        "UK_nisr_2000_87/UK_nisr_1993_20/regulation-4-3",
+        "UK_nisr_2007_135/UK_nisr_2005_279/regulation-2-3"
+      ]
+    },
+    "instruction|inserted|block|body|named|rules:inserted:words": {
+      "count": 5,
+      "examples": [
+        "UK_nisr_2018_17/UK_nisr_2017_229/schedule-4-paragraph-1-2-b",
+        "UK_uksi_2019_1347/UK_uksi_2018_816/regulation-3-a",
+        "UK_uksi_2020_1112/UK_uksi_2008_1597/schedule-4-paragraph-2-1-b-iv"
+      ]
+    },
+    "instruction|inserted|block|body|unnamed|none": {
+      "count": 47,
+      "examples": [
+        "UK_ukpga_1975_71/UK_ukpga_1974_37/schedule-15-paragraph-9",
+        "UK_uksi_1995_2036/UK_uksi_1992_3004/schedule-3",
+        "UK_uksi_2004_3363/UK_ukpga_1974_37/article-5-2"
+      ]
+    },
+    "instruction|inserted|block|schedule|named|none": {
+      "count": 9,
+      "examples": [
+        "UK_nisr_2015_265/UK_nisr_1996_119/regulation-4-4-b",
+        "UK_uksi_2014_1639/UK_uksi_1998_494/schedule-2-paragraph-1",
+        "UK_uksi_2015_21/UK_uksi_1996_341/regulation-3-4-b"
+      ]
+    },
+    "instruction|inserted|block|schedule|unnamed|none": {
+      "count": 5,
+      "examples": [
+        "UK_uksi_2005_1082/UK_uksi_2005_676/schedule-5-paragraph-45-4-b",
+        "UK_uksi_2019_1246/UK_uksi_2008_1597/regulation-11-b",
+        "UK_uksi_2020_1577/UK_eur_2006_1907/regulation-6"
+      ]
+    },
+    "instruction|inserted|none|body|named|none": {
+      "count": 16,
+      "examples": [
+        "UK_nisr_2011_365/UK_nisr_2010_160/regulation-10-2-a",
+        "UK_uksi_2008_396/UK_ukpga_2007_19/article-2-2",
+        "UK_uksi_2021_904/UK_eur_2006_1907/regulation-7-2-a-ii"
+      ]
+    },
+    "instruction|inserted|none|body|named|rules:inserted:provision": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2005_14/UK_ukpga_1974_37/schedule-3-paragraph-3-1-b"
+      ]
+    },
+    "instruction|inserted|none|body|named|rules:inserted:words": {
+      "count": 47,
+      "examples": [
+        "UK_nisr_2003_288/UK_nisr_2003_34/regulation-2-b-i",
+        "UK_nisr_2007_135/UK_nisr_2005_279/regulation-2-2-a-i",
+        "UK_nisr_2011_365/UK_nisr_2010_160/regulation-7-3-a"
+      ]
+    },
+    "instruction|inserted|none|body|unnamed|none": {
+      "count": 4,
+      "examples": [
+        "UK_uksi_2004_3363/UK_ukpga_1974_37/article-5-3",
+        "UK_uksi_2019_720/UK_eur_2008_1272/schedule-2-paragraph-15-b"
+      ]
+    },
+    "instruction|inserted|none|schedule|named|none": {
+      "count": 14,
+      "examples": [
+        "UK_nisr_2005_165/UK_nisr_2003_34/regulation-3-h",
+        "UK_nisr_2006_425/UK_nisr_1997_455/schedule-6-paragraph-28-2-a-ii",
+        "UK_nisr_2007_135/UK_nisr_2005_279/regulation-2-4-a"
+      ]
+    },
+    "instruction|inserted|words|body|named|none": {
+      "count": 23,
+      "examples": [
+        "UK_ukpga_2013_32/UK_ukpga_1974_37/schedule-12-paragraph-15-3",
+        "UK_ukpga_2022_30/UK_ukpga_1974_37/schedule-1-paragraph-8-2",
+        "UK_uksi_2011_1885/UK_uksi_2009_1348/regulation-15-2-a"
+      ]
+    },
+    "instruction|inserted|words|body|named|rules:inserted:provision": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2009_606/UK_uksi_1989_682/regulation-2-3"
+      ]
+    },
+    "instruction|inserted|words|body|named|rules:inserted:words": {
+      "count": 183,
+      "examples": [
+        "UK_nisr_2003_288/UK_nisr_2003_34/regulation-2-a",
+        "UK_nisr_2004_196/UK_nisr_1997_455/regulation-2-2-b",
+        "UK_nisr_2005_165/UK_nisr_2003_34/regulation-3-a-v"
+      ]
+    },
+    "instruction|inserted|words|body|unnamed|none": {
+      "count": 40,
+      "examples": [
+        "UK_uksi_1974_1941/UK_ukpga_1961_34/schedule-2-paragraph-4",
+        "UK_uksi_2016_1154/UK_uksi_2015_483/schedule-29-paragraph-85-2-b",
+        "UK_uksi_2019_720/UK_eur_2008_1272/schedule-2-paragraph-36"
+      ]
+    },
+    "instruction|inserted|words|schedule|named|none": {
+      "count": 8,
+      "examples": [
+        "UK_nisr_2003_288/UK_nisr_2003_34/regulation-2-d",
+        "UK_nisr_2005_45/UK_nisr_1999_13/schedule-3-paragraph-5-c-i",
+        "UK_nisr_2016_406/UK_nisr_2012_255/schedule-14-paragraph-43-3"
+      ]
+    },
+    "instruction|inserted|words|schedule|unnamed|none": {
+      "count": 4,
+      "examples": [
+        "UK_uksi_2005_1082/UK_uksi_2005_676/schedule-5-paragraph-45-4-f",
+        "UK_uksi_2023_247/UK_uksi_2022_1378/regulation-14"
+      ]
+    },
+    "instruction|repealed+inserted|block|body|named|rules:inserted+repealed:provision+words": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1994_19/UK_ukpga_1974_37/schedule-9-paragraph-9"
+      ]
+    },
+    "instruction|repealed+inserted|none|body|named|rules:inserted+repealed:words": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2013_1666/UK_uksi_2009_716/article-5-b"
+      ]
+    },
+    "instruction|repealed+inserted|words|schedule|named|none": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2016_1092/UK_uksi_1998_2306/regulation-78-1",
+        "UK_uksi_2016_1105/UK_uksi_1998_2306/schedule-12-paragraph-1"
+      ]
+    },
+    "instruction|repealed+inserted|words|schedule|unnamed|none": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2016_1092/UK_nisr_1999_304/regulation-78-2",
+        "UK_uksi_2016_1105/UK_nisr_1999_305/schedule-12-paragraph-2"
+      ]
+    },
+    "instruction|repealed+substituted|block|body|named|rules:repealed+substituted:provision": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2018_321/UK_uksi_2013_1471/regulation-6-2"
+      ]
+    },
+    "instruction|repealed+substituted|block|body|unnamed|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1975_71/UK_ukpga_1974_37/schedule-15-paragraph-12"
+      ]
+    },
+    "instruction|repealed+substituted|none|body|unnamed|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1975_71/UK_ukpga_1974_37/schedule-15-paragraph-2"
+      ]
+    },
+    "instruction|repealed+substituted|words|body|unnamed|none": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2019_720/UK_eur_2008_1272/schedule-2-paragraph-57-4-g-ii"
+      ]
+    },
+    "instruction|repealed|none|body|named|none": {
+      "count": 78,
+      "examples": [
+        "UK_nisr_2012_179/UK_nisr_2007_31/regulation-33-1",
+        "UK_nisr_2012_255/UK_nisr_2010_60/regulation-13-1",
+        "UK_nisr_2013_206/UK_nisr_2009_238/regulation-24"
+      ]
+    },
+    "instruction|repealed|none|body|named|rules:repealed:provision": {
+      "count": 85,
+      "examples": [
+        "UK_asp_2016_2/UK_ukpga_1974_37/schedule-2-paragraph-2-2",
+        "UK_nisr_2005_165/UK_nisr_2003_34/regulation-3-d-ii",
+        "UK_nisr_2007_135/UK_nisr_2005_279/regulation-2-2-b"
+      ]
+    },
+    "instruction|repealed|none|body|named|rules:repealed:words": {
+      "count": 88,
+      "examples": [
+        "UK_nisr_2004_196/UK_nisr_1997_455/regulation-2-2-a",
+        "UK_nisr_2005_165/UK_nisr_2003_34/regulation-3-a-i",
+        "UK_nisr_2011_365/UK_nisr_2010_160/regulation-4-4"
+      ]
+    },
+    "instruction|repealed|none|body|unnamed|none": {
+      "count": 119,
+      "examples": [
+        "UK_ukpga_1978_30/UK_ukpga_1961_34/section-17-2-a",
+        "UK_ukpga_1981_45/UK_ukpga_1974_37/section-30",
+        "UK_uksi_1988_1657/UK_ukpga_1961_34/regulation-19-1"
+      ]
+    },
+    "instruction|repealed|none|schedule|named|none": {
+      "count": 37,
+      "examples": [
+        "UK_nisr_2005_45/UK_nisr_1999_13/schedule-3-paragraph-5-c-ii",
+        "UK_nisr_2007_135/UK_nisr_2005_279/regulation-2-4-b",
+        "UK_nisr_2007_247/UK_nisr_2005_45/schedule-10-paragraph-6"
+      ]
+    },
+    "instruction|repealed|none|schedule|named|rules:repealed:provision": {
+      "count": 2,
+      "examples": [
+        "UK_asp_2003_8/UK_ukpga_1974_37/schedule-6-paragraph-9",
+        "UK_ukpga_1974_37/UK_ukpga_1972_28/section-60-5"
+      ]
+    },
+    "instruction|repealed|none|schedule|named|rules:repealed:words": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1974_1941/UK_ukpga_1972_28/regulation-5-1"
+      ]
+    },
+    "instruction|repealed|none|schedule|unnamed|none": {
+      "count": 40,
+      "examples": [
+        "UK_nisr_2003_152/UK_nisr_1993_37/regulation-16-2",
+        "UK_nisr_2006_425/UK_nisr_1997_455/schedule-6-paragraph-28-3",
+        "UK_ukpga_1984_55/UK_ukpga_1974_37/section-133-2"
+      ]
+    },
+    "instruction|repealed|words|body|unnamed|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1999_2024/UK_ukpga_1961_34/schedule-3"
+      ]
+    },
+    "instruction|substituted+inserted+repealed|words|schedule|named|none": {
+      "count": 9,
+      "examples": [
+        "UK_nisr_2009_238/UK_nisr_1997_193/schedule-7",
+        "UK_uksi_2009_716/UK_uksi_1996_825/schedule-6"
+      ]
+    },
+    "instruction|substituted+inserted|none|schedule|named|none": {
+      "count": 7,
+      "examples": [
+        "UK_nisr_2007_31/UK_nisr_1993_20/schedule-6",
+        "UK_uksi_2012_632/UK_uksi_1992_2966/schedule-3"
+      ]
+    },
+    "instruction|substituted+inserted|none|schedule|unnamed|none": {
+      "count": 1,
+      "examples": [
+        "UK_nisr_2007_31/UK_nisr_1999_90/schedule-6"
+      ]
+    },
+    "instruction|substituted+inserted|words|schedule|named|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2020_17/UK_ukpga_1974_37/schedule-24-paragraph-443-1"
+      ]
+    },
+    "instruction|substituted+repealed+inserted|block|schedule|unnamed|none": {
+      "count": 7,
+      "examples": [
+        "UK_uksi_2008_960/UK_ukpga_1995_15/schedule-3"
+      ]
+    },
+    "instruction|substituted+repealed|block|body|named|none": {
+      "count": 6,
+      "examples": [
+        "UK_nisr_2010_160/UK_nisr_1996_119/schedule-5"
+      ]
+    },
+    "instruction|substituted+repealed|block|body|unnamed|none": {
+      "count": 1,
+      "examples": [
+        "UK_nisr_2010_160/UK_nisr_2003_34/schedule-5"
+      ]
+    },
+    "instruction|substituted+repealed|words|body|unnamed|none": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_2019_720/UK_eur_2008_1272/schedule-2-paragraph-49-b-ii"
+      ]
+    },
+    "instruction|substituted|block|body|named|none": {
+      "count": 12,
+      "examples": [
+        "UK_ukpga_2013_32/UK_ukpga_1974_37/schedule-12-paragraph-15-10",
+        "UK_uksi_2019_696/UK_uksi_2008_1597/schedule-12-paragraph-23-13",
+        "UK_uksi_2019_758/UK_eur_2006_1907/schedule-3-paragraph-2-12"
+      ]
+    },
+    "instruction|substituted|block|body|named|rules:substituted:provision": {
+      "count": 127,
+      "examples": [
+        "UK_asp_2012_8/UK_ukpga_1974_37/schedule-7-paragraph-2-a",
+        "UK_asp_2016_2/UK_ukpga_1974_37/schedule-2-paragraph-2-3",
+        "UK_nisr_1996_510/UK_nisr_1993_37/schedule-9-paragraph-3"
+      ]
+    },
+    "instruction|substituted|block|body|named|rules:substituted:provision+words": {
+      "count": 11,
+      "examples": [
+        "UK_nisr_2011_365/UK_nisr_2010_160/regulation-4-5",
+        "UK_ssi_2006_475/UK_ukpga_1974_37/schedule-1-paragraph-6",
+        "UK_ukpga_1997_42/UK_ukpga_1974_37/section-2"
+      ]
+    },
+    "instruction|substituted|block|body|named|rules:substituted:words": {
+      "count": 7,
+      "examples": [
+        "UK_nisr_2007_247/UK_nisr_1997_455/schedule-10-paragraph-4",
+        "UK_nisr_2016_427/UK_nisr_2004_222/schedule-5-paragraph-11",
+        "UK_ukpga_2013_32/UK_ukpga_1961_34/schedule-12-paragraph-53"
+      ]
+    },
+    "instruction|substituted|block|body|unnamed|none": {
+      "count": 62,
+      "examples": [
+        "UK_ukpga_1975_71/UK_ukpga_1974_37/schedule-15-paragraph-6",
+        "UK_uksi_1974_1941/UK_ukpga_1961_34/schedule-2-paragraph-14",
+        "UK_uksi_2019_1144/UK_eur_2006_1907/regulation-3-3"
+      ]
+    },
+    "instruction|substituted|block|schedule|named|none": {
+      "count": 17,
+      "examples": [
+        "UK_nisr_1996_109/UK_nisr_1993_20/regulation-3",
+        "UK_nisr_2004_196/UK_nisr_1997_455/regulation-2-3",
+        "UK_nisr_2006_425/UK_nisr_1997_455/schedule-6-paragraph-28-2-a-i"
+      ]
+    },
+    "instruction|substituted|block|schedule|unnamed|none": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_2019_1246/UK_uksi_2008_1597/regulation-11-a",
+        "UK_uksi_2020_676/UK_uksi_2008_1597/regulation-4-3-a",
+        "UK_uksi_2024_322/UK_uksi_2022_1378/regulation-6"
+      ]
+    },
+    "instruction|substituted|none|body|named|none": {
+      "count": 15,
+      "examples": [
+        "UK_nisr_2017_229/UK_nisr_2010_160/schedule-9-paragraph-9-2-a",
+        "UK_nisr_2019_111/UK_nisr_2010_160/regulation-4",
+        "UK_nisr_2020_330/UK_nisr_2017_229/regulation-12-2"
+      ]
+    },
+    "instruction|substituted|none|body|named|rules:substituted:words": {
+      "count": 134,
+      "examples": [
+        "UK_nisr_1997_455/UK_nisr_1996_511/schedule-8-paragraph-5",
+        "UK_nisr_2000_375/UK_nisr_1993_20/schedule-10-paragraph-3",
+        "UK_nisr_2000_87/UK_nisr_1993_20/regulation-4-2"
+      ]
+    },
+    "instruction|substituted|none|body|unnamed|none": {
+      "count": 26,
+      "examples": [
+        "UK_ukpga_1975_71/UK_ukpga_1974_37/schedule-15-paragraph-15-1",
+        "UK_ukpga_2022_31/UK_ukpga_1974_37/schedule-1-paragraph-1-1",
+        "UK_uksi_1995_3162/UK_ukpga_1961_34/article-2"
+      ]
+    },
+    "instruction|substituted|none|schedule|named|none": {
+      "count": 62,
+      "examples": [
+        "UK_nisr_2000_375/UK_nisr_1999_90/schedule-10-paragraph-9-b",
+        "UK_nisr_2000_388/UK_nisr_1995_491/schedule-3",
+        "UK_nisr_2005_45/UK_nisr_1997_455/schedule-3-paragraph-4-b"
+      ]
+    },
+    "instruction|substituted|words|body|named|none": {
+      "count": 122,
+      "examples": [
+        "UK_nisr_2013_206/UK_nisr_2009_238/schedule-3-paragraph-1",
+        "UK_nisr_2017_229/UK_nisr_2010_160/schedule-9-paragraph-9-2-b",
+        "UK_ukpga_2008_20/UK_nisi_1998_1069/schedule-3-paragraph-5"
+      ]
+    },
+    "instruction|substituted|words|body|named|rules:substituted:provision": {
+      "count": 4,
+      "examples": [
+        "UK_nisr_2024_161/UK_nisr_1993_20/regulation-2-2",
+        "UK_uksi_1997_2776/UK_uksi_1997_1713/schedule-2-paragraph-7-b",
+        "UK_uksi_2016_721/UK_uksi_2009_1348/schedule-5-paragraph-10"
+      ]
+    },
+    "instruction|substituted|words|body|named|rules:substituted:words": {
+      "count": 286,
+      "examples": [
+        "UK_asp_2000_4/UK_ukpga_1963_41/schedule-5-paragraph-9",
+        "UK_asp_2008_5/UK_ukpga_1963_41/schedule-2-paragraph-5-a",
+        "UK_asp_2012_8/UK_ukpga_1974_37/schedule-7-paragraph-49"
+      ]
+    },
+    "instruction|substituted|words|body|unnamed|none": {
+      "count": 277,
+      "examples": [
+        "UK_ukpga_1998_8/UK_ukpga_1974_37/section-1-2-a",
+        "UK_uksi_1974_1941/UK_ukpga_1961_34/schedule-2-paragraph-3",
+        "UK_uksi_1974_1943/UK_ukpga_1963_41/schedule-2-paragraph-1"
+      ]
+    },
+    "instruction|substituted|words|schedule|named|none": {
+      "count": 66,
+      "examples": [
+        "UK_nisr_2000_375/UK_nisr_1997_455/schedule-10-paragraph-6",
+        "UK_nisr_2005_45/UK_nisr_2004_222/schedule-3-paragraph-6-b-ii",
+        "UK_nisr_2012_179/UK_nisr_1993_20/schedule-4"
+      ]
+    },
+    "instruction|substituted|words|schedule|unnamed|none": {
+      "count": 28,
+      "examples": [
+        "UK_nisr_2017_90/UK_nisr_1999_305/schedule-7",
+        "UK_uksi_2019_720/UK_eur_2006_1907/schedule-2-paragraph-5-a",
+        "UK_uksi_2021_1273/UK_uksi_2008_1597/regulation-8"
+      ]
+    },
+    "modification|-|none|body|unnamed|none": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1974_1941/UK_ukpga_1961_34/schedule-2-paragraph-2"
+      ]
+    },
+    "modification|-|none|schedule|named|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1995_45/UK_ukpga_1974_37/schedule-4-paragraph-10-1"
+      ]
+    },
+    "modification|-|none|schedule|unnamed|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1995_40/UK_ukpga_1974_37/schedule-1-paragraph-3-1"
+      ]
+    },
+    "modification|inserted|block|body|named|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1972_28/UK_ukpga_1961_34/section-3"
+      ]
+    },
+    "no_verb|-|block|body|named|none": {
+      "count": 33,
+      "examples": [
+        "UK_nisr_2003_423/UK_nisr_1993_20/regulation-5-a",
+        "UK_nisr_2005_397/UK_nisr_1999_305/regulation-13-2",
+        "UK_nisr_2015_223/UK_nisr_1993_37/regulation-4-5"
+      ]
+    },
+    "no_verb|-|block|schedule|named|none": {
+      "count": 3,
+      "examples": [
+        "UK_nisr_2005_165/UK_nisr_2003_34/regulation-3-g-i",
+        "UK_nisr_2015_223/UK_nisr_2005_279/regulation-5-3",
+        "UK_uksi_2013_1512/UK_uksi_2005_735/regulation-5-3"
+      ]
+    },
+    "no_verb|-|none|body|named|none": {
+      "count": 156,
+      "examples": [
+        "UK_nisr_1998_448/UK_nisr_1997_248/regulation-5",
+        "UK_nisr_2001_436/UK_nisr_1997_455/schedule-11-paragraph-8",
+        "UK_nisr_2002_34/UK_nisr_1997_248/schedule-3-paragraph-1"
+      ]
+    },
+    "no_verb|-|none|body|unnamed|none": {
+      "count": 582,
+      "examples": [
+        "UK_nisr_1998_375/UK_nisr_1997_455/regulation-12",
+        "UK_nisr_1999_150/UK_nisr_1995_491/regulation-2",
+        "UK_nisr_2000_119/UK_nisr_1997_248/regulation-12"
+      ]
+    },
+    "no_verb|-|none|schedule|named|none": {
+      "count": 29,
+      "examples": [
+        "UK_nisi_2006_1254/UK_nisi_1993_3159/schedule-3-paragraph-19",
+        "UK_nisr_2000_375/UK_nisr_1993_20/regulation-41-2-c",
+        "UK_nisr_2013_206/UK_nisr_2009_238/regulation-23"
+      ]
+    },
+    "no_verb|-|none|schedule|unnamed|none": {
+      "count": 78,
+      "examples": [
+        "UK_nia_2022_3/UK_ukpga_2007_19/section-8-1-b",
+        "UK_nisr_2003_152/UK_nisr_1997_248/regulation-15-2",
+        "UK_nisr_2009_238/UK_nisr_1997_193/regulation-17"
+      ]
+    },
+    "no_verb|-|words|body|named|none": {
+      "count": 11,
+      "examples": [
+        "UK_nisr_2003_423/UK_nisr_1993_37/regulation-6-a",
+        "UK_ukpga_2005_11/UK_ukpga_1974_37/schedule-4-paragraph-18-4",
+        "UK_uksi_1981_917/UK_ukpga_1961_34/schedule-1"
+      ]
+    },
+    "no_verb|-|words|schedule|named|none": {
+      "count": 2,
+      "examples": [
+        "UK_nisr_2005_165/UK_nisr_2003_34/regulation-3-g-ii",
+        "UK_uksi_2003_978/UK_uksi_2002_2677/regulation-2-d"
+      ]
+    },
+    "no_verb|-|words|schedule|unnamed|none": {
+      "count": 4,
+      "examples": [
+        "UK_uksi_2016_1093/UK_nisr_1999_305/regulation-83-6-b-i"
+      ]
+    },
+    "set_out|inserted|none|schedule|named|none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2008_20/UK_ukpga_1974_37/section-1-2"
+      ]
+    },
+    "table|repealed|none|body|named|none": {
+      "count": 22,
+      "examples": [
+        "UK_nia_2011_25/UK_nisi_1998_2795/schedule-7",
+        "UK_nia_2016_4/UK_nisi_1998_2795/schedule-9",
+        "UK_nisi_2006_1254/UK_nisi_1998_2795/schedule-4"
+      ]
+    },
+    "table|repealed|none|body|named|rules:repealed:provision": {
+      "count": 12,
+      "examples": [
+        "UK_ssi_2006_475/UK_ukpga_1974_37/schedule-2",
+        "UK_ssi_2009_319/UK_ukpga_1961_34/schedule-3",
+        "UK_ukpga_1982_30/UK_ukpga_1974_37/schedule-7"
+      ]
+    },
+    "table|repealed|none|body|named|rules:repealed:provision+words": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_1989_38/UK_ukpga_1961_34/schedule-7",
+        "UK_ukpga_1995_25/UK_ukpga_1974_37/schedule-24",
+        "UK_ukpga_2005_14/UK_ukpga_1974_37/schedule-13"
+      ]
+    },
+    "table|repealed|none|body|named|rules:repealed:words": {
+      "count": 11,
+      "examples": [
+        "UK_asp_2008_5/UK_ukpga_1963_41/schedule-3",
+        "UK_ukpga_1973_65/UK_ukpga_1961_34/schedule-29",
+        "UK_ukpga_1985_51/UK_ukpga_1974_37/schedule-17"
+      ]
+    },
+    "table|repealed|none|body|unnamed|none": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_2023_28/UK_eur_2008_1272/schedule-1",
+        "UK_uksi_1974_1941/UK_ukpga_1961_34/schedule-1",
+        "UK_uksi_1974_1943/UK_ukpga_1963_41/schedule-1"
+      ]
+    }
+  },
+  "totals": {
+    "amending_laws": 453,
+    "examples": 185,
+    "not_alone": 0,
+    "not_held": 1,
+    "patterns": 81,
+    "provisions": 3285,
+    "unclassified": 0
+  }
+}
