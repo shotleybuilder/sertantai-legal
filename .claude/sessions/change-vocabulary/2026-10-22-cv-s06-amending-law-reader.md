@@ -157,7 +157,7 @@ Population: 1,171 family changes the law's text states (both sources 1,094; law 
 
 | Seed | Changes | Pairs | Result |
 |---|---|---|---|
-| 31 | 49 OK / 1 WRONG / 0 doubtful | 47 / 48 OK | FAIL, 1 NEW: ssi 2008/339 art.5(2) "In paragraph (f)(i) of subsection (3) …" stored a change on HSWA s.28. HSWA's CLML names s.28(3)(f)(i) `section-28-f-i`, so the reading s.28(3) survived beside s.28(f)(i), and placement lifted it to s.28. Fixed (`35f29731`): the longest held spelling of each reading, law-text targets respelt via `xml_ids`. Pre-flight: 6 of 6,214 family and golden rules change, all intended. Chain 2: law text only 32 → 29, unjoined 45; golden 26/27 (CV-S05f). |
+| 31 | 49 OK / 1 WRONG / 0 doubtful | 47 / 48 OK | FAIL, 1 NEW: ssi 2008/339 art.5(2) "In paragraph (f)(i) of subsection (3) …" stored a change on HSWA s.28. HSWA's CLML names s.28(3)(f)(i) `section-28-f-i`, so the reading s.28(3) survived beside s.28(f)(i), and placement lifted it to s.28. Fixed (`35f29731`): the longest held spelling of each reading, law-text targets respelt via `xml_ids`. Pre-flight: 6 of 6,220 family and golden rules change, all intended. Chain 2: law text only 32 → 29, unjoined 45; golden 26/27 (CV-S05f). |
 
 The pool restarts after this fix: seeds 32 onward.
 
