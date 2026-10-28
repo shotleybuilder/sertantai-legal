@@ -321,8 +321,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
       Change.value(c, :feed, :by) || Change.value(c, :law_text, :by) ||
         Change.value(c, :markup, :cited)
 
-  defp family(op) when op in [:repealed, :repealed_in_part], do: :removal
-  defp family(:commenced), do: :commencement
-  defp family(nil), do: nil
-  defp family(_text_change), do: :text
+  @doc "An operation's family: `:removal`, `:commencement`, `:text`, or nil (the merge joins within one)."
+  @spec family(atom() | nil) :: :removal | :commencement | :text | nil
+  def family(op) when op in [:repealed, :repealed_in_part], do: :removal
+  def family(:commenced), do: :commencement
+  def family(nil), do: nil
+  def family(_text_change), do: :text
 end
