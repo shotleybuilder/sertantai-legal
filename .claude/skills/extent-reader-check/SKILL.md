@@ -211,7 +211,8 @@ Known counted classes (label a finding with one if it fits; otherwise NEW):
   s.96(6)(h) "Parts 1 to 4 of Schedule 10"; SI 2004/1822 unnumbered-Schedule paragraphs; SI 2013/1387 reg.1A; 1989/15
   s.194(8)(b) Part V; PJA 2006 s.1(3); 1999/30 s.70; 1998/37 s.120(2); 1972/11 Sch.7 paragraphs after a qualifier.
 - KT text faults and refs to nothing (Jason 2026-10-27, step 2): a missing comma in the text ("188(3) to (8) 189",
-  1975/21); another law's sections read as this law's where none exists (2010/490 s.123, s.237; 2017/1012 s.123;
+  1975/21 s.463(1)(a): s.188(4)–(8) and s.189 take the law's default S, though the text puts them in E+W too; historic,
+  largely repealed); another law's sections read as this law's where none exists (2010/490 s.123, s.237; 2017/1012 s.123;
   1991/28 s.128(4)); a list running on into the next statement whose refs are also unread (1988/33 s.172, 2021/30
   s.146(…) s.71): withheld, no rows bound.
 - KQ an ambiguous provision after an "and" in a qualifier's object, or a second qualified companion, withheld or left to
@@ -262,3 +263,4 @@ OH&S (first family, 2026-10-24 →). The session is `.claude/sessions/change-voc
 - Round 6's design change: unread statements withhold their bound (`Extent.Unread`), so counted unread classes are known gaps.
 - Round 13, seed 18 (2026-10-27): laws 48 OK / 2 WRONG, changes 50/50: FAIL, 2 NEW from one root. Unnumbered Schedule parts ("Part I of the Schedule", "paragraphs 1 and 14 of the Schedule") are dropped yet credited, because `Order.ref` names `schedule-part-I` as `sch.part` (CV-S02a K10).
 - Round 13, seed 19 (2026-10-27): after the root fix, laws 41 OK / 2 WRONG / 7 doubtful, changes 48/1/1: FAIL. NEW-1: "Part N of Schedule M" didn't reach the Part's paragraphs with Part-less ids; a nested bracket broke a qualified aside. NEW-2: a commencement list read as extent. All fixed (`9a721593`).
+- Run-05 fix batch, seed 20 (2026-10-28): laws 49 OK / 0 WRONG / 1 doubtful (1975/21, KT); changes 49 / 0 / 1 (CPA 1987 Sch.3 change labelled `none:unread_statement` where the lookup is `:same`: a label only). **PASS: no NEW.** Withheld observations, not NEW: 1989/38 s.29(5)–(6) cross-subsection exception list unread whole (plain items withheld with it); CPA 1987 s.5(8) "Subsections (5) to (7) above shall not extend to Scotland" stored unread.

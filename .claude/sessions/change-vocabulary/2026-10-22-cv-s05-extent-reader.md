@@ -1484,6 +1484,11 @@ Acceptance run and seed 20 next.
        - census run-06: silent 64 → 57, nothing new that is real.
      - Full suite: 9,178 pass. Restore point `cv-s05-before-run05-batch`; snapshots `r6b.rules14`, `r6b.claims15`.
 4. **Agent check, seed 20.**
+   - ✅ **PASS 2026-10-28.** Seed 20 drawn twice, identical; the sweep has 0 uncaught sentences in a read form.
+     - Laws: 49 OK, 1 doubtful. 1975/21 is KT: "188(3) to (8) 189" leaves s.188(4)–(8) and s.189 on the default S. That's historic, and the KT wording is now corrected.
+     - Changes: 49 OK, 1 doubtful. A CPA 1987 Sch.3 change is labelled `none:unread_statement` where its lookup is `:same`: a label only.
+     - No NEW: no wrong bound, no silent drop.
+     - Withheld observations go to the open bugs: 1989/38 s.29(5)–(6) cross-subsection exception list; CPA 1987 s.5(8) plain statement stored unread; the `none_why` label.
    - Pass: close.
    - A NEW that places a wrong bound or silently drops: fix it with tests and fresh reads, one acceptance chain, seed 21.
    - Doubtful findings with no wrong bound: log them as known; they never block.
