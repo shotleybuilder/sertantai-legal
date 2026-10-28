@@ -1,13 +1,86 @@
 ---
 session: 'CV-S05f: Target-Named Extent Statements'
-status: active
+status: closed
 opened: '2026-10-28'
+closed: '2026-10-28'
+outcome: success
 parent: change-vocabulary/2026-10-22-cv-s05-extent-reader.md
+
+summary: >
+  Amending laws that state a change's extent by its target in the amended law ("The repeal of section 4(8) extends also to Scotland", SOCPA 2005 Sch.7 para 27(4)) are now read (Extent.Targeted), stored as target_<kind> extent rows with a new amends column, and applied per change by its law, title and target (Extent.ChangeTarget via Lookup.of_change/3). SOCPA Sch.7's own-paragraph forms were widened too. Golden from inputs 27/27 (RTA 1988 s.4(6), CV-S06's known limit, fixed); OH&S extent check our faults 0.
+
+decisions:
+  - what: Target statements kept apart from lists, as {kind, place, scope, law, refs}; scope is the amending provisions they speak of (a Schedule paragraph, a Part, or the whole law)
+    why: One bound per amending provision can't give RTA s.4(6) E+W and s.4(8) E+W+S from one paragraph
+    result: s.4(6) E+W, s.4(8) E+W+S from the stored rows on the feed's own affecting refs
+  - what: The named law matched at lookup by name plus year (the year from the law's id), with no law_name resolved at read time
+    why: CLML Citation URIs are absent where needed (SOCPA para 27, 2009/25 Sch.23), the reading must stay pure, and register titles carry no year ("Road Traffic Act")
+    result: a new nullable extent_rules.amends column; with the title unknown, an in-scope statement naming a law gives nil, never a wrong bound
+  - what: With no law named, a target statement is read only inside a Schedule paragraph
+    why: The catalogue pre-flight found SI 2012/2404 reg.4 "The amendment in Schedule 1 extends to …" (the law's own Schedule) taken as a target
+    result: read as before (list:only:E+W)
+  - what: The agreement measure (extent reader vs the feed's extent) moved to a PENDING session (CV-S05g)
+    why: Jason 2026-10-28, "Do if this quality measure belongs in the session, relates to session aims"; it measures the whole reader, not target-named statements
+    result: CV-S05g PENDING
+
+metrics:
+  measure: { change_subject_extent_sentences: 383, own_provision: 278, target_named: 74, target_named_in_rules_laws: 53, specific: 20, specific_laws: 14, general_same: 19, noise: 14, oh_s_bearing: 2 }
+  catalogue: { new_patterns: 10, examples_reread: 8, misreads_fixed_before_accept: 2, run_minutes: 7.7 }
+  chain: { read_pass_laws: 2102, rules_before: 42746, rules_after: 42746, target_rows: 28, target_laws: 10, extent_check_our_faults: 0, golden_from_inputs: "27/27" }
+  tests: { new: 24, amending_law_suite: 1647 }
+
+lessons:
+  - title: A check that compares stored rows on its own column list goes wrong when a column is added
+    detail: lat.extent_check took [:kind, :place, :items, :source_ref] itself; after the amends column it reported 384 laws stale, every law. It now takes Store.compared/0, the store's own list.
+    tag: tooling
+  - title: A family rebuild's check scores out-of-family golden laws from stale stored changes
+    detail: --check gave 27/27 while RTA 1988's stored changes (built 2026-10-22) still said s.4(8) E+W. Only --golden from inputs proves an upstream reader change (CV-S06's lesson, seen again).
+    tag: tooling
+  - title: The catalogue's example review catches overreach before acceptance
+    detail: 2 of 9 changed examples were misreads (own Schedule as target; an own Part "relating to" laws), fixed before --accept.
+    tag: data
+  - title: The register's title_en has no year
+    detail: '"Road Traffic Act", not "Road Traffic Act 1988"; match a named law on name plus the year from the law id.'
+    tag: data
+
+bugs:
+  - pattern: "Target-named extent statements unread ('The repeal of section 4(8) extends also to Scotland'), so one bound per amending provision: RTA 1988 s.4(6) repealed everywhere from 2006 in golden from inputs"
+    category: extent reader
+    module: AmendingLaw.Extent (Targeted, ChangeTarget)
+    affected: 20 statements in 14 laws; 1 golden provision
+    fix: "Extent.Targeted + Extent.ChangeTarget, target_<kind> rows with amends (6ecbc958)"
+    status: fixed
+  - pattern: "Target statements inside an exception or after a lead-in left unread (bound withheld): 1993/28 s.188(7), 2016/20 s.85(2), RSA 1993 Sch.6 Pt I note, 2002/17 s.42(7), 2015/2 s.96(3)"
+    category: extent reader (known limit)
+    module: Extent.Targeted
+    affected: 5 sentences, none bearing on OH&S
+    fix: "Read the exception's targets with the lead's place when a family needs them"
+    status: open
+  - pattern: "SI 2008/948 Sch.2 paragraph id wrapper2n1 (ref sch.2.para.wrapper2n1): its target statement's scope never meets a feed ref"
+    category: parser tell-tale
+    module: Commencement.Order.ref / parser ids
+    affected: 1 law (not OH&S)
+    fix: "Name wrapper paragraphs by their number"
+    status: open
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/amending_law/extent/targeted.ex
+  - backend/lib/sertantai_legal/scraper/amending_law/extent/change_target.ex
+  - backend/priv/repo/migrations/20261028200639_extent_rules_amends.exs
+  - backend/test/sertantai_legal/scraper/amending_law/extent/targeted_test.exs
+  - backend/test/sertantai_legal/scraper/amending_law/extent/own_paragraph_test.exs
+  - backend/test/fixtures/extent_patterns/expected.json
+
 depends_on:
   - change-vocabulary/2026-10-22-cv-s05-extent-reader.md
+  - change-vocabulary/2026-10-22-cv-s06-amending-law-reader.md
+
+enables:
+  - change-vocabulary/2026-10-28-cv-s05g-extent-agreement.md
+  - CV-S07 merge (golden from inputs all-pass)
 ---
 
-# Session: CV-S05f: Target-Named Extent Statements (ACTIVE)
+# Session: CV-S05f: Target-Named Extent Statements (CLOSED)
 
 ## Problem
 
@@ -21,7 +94,7 @@ Found by CV-S06's golden run from inputs (2026-10-28): RTA 1988 s.4(6) fails, re
 - ✅ Design: target statements `{kind, place, scope, law, refs}` (new `Extent.Targeted`), rows `target_<kind>` with a new `amends` column, matched in `Lookup.of_change/3` by the change's law and target; own-paragraph forms widened (see Design)
 - ✅ Read the forms (6ecbc958, check fix 26d91b7e): `Extent.Targeted` + `Extent.ChangeTarget`, `amends` column; own-paragraph forms widened; catalogue 10 new patterns, 8 examples re-read (see Build)
 - ✅ Golden from inputs 27/27; extent check PASS (our faults 0); catalogue; one chain (see Chain)
-- ⬜ Agreement measure (CV-S06's revised check, Jason 2026-10-28): the extent reader's bound (`law_text.extent`) against the feed's `effect_extent` / `territorial_application`, like for like, over every bounded change; agents on the disagreements and on changes with no feed extent. Added to the quality statement
+- ⏸️ (deferred — moved to CV-S05g, Jason 2026-10-28: the measure covers the whole reader, not this session's aim) Agreement measure (CV-S06's revised check, Jason 2026-10-28): the extent reader's bound (`law_text.extent`) against the feed's `effect_extent` / `territorial_application`, like for like, over every bounded change; agents on the disagreements and on changes with no feed extent. Added to the quality statement
 
 ## Dependencies
 
