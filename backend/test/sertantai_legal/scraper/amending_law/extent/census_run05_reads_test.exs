@@ -369,4 +369,18 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.CensusRun05ReadsTest do
       assert {"NI", ["sch.8.para.70(1)"]} in rows(e, :not)
     end
   end
+
+  test "seed 21 NEW: \"This Act extends to … (except that an amendment or repeal made by this Act has the same extent as the provision to which it relates)\" (ukpga 2008/20 s.3(4))" do
+    e =
+      read(
+        "UK_ukpga_2008_20",
+        p1(
+          "section-3",
+          "This Act extends to England and Wales, Scotland and Northern Ireland (except that an amendment or repeal made by this Act has the same extent as the provision to which it relates)."
+        )
+      )
+
+    assert e.default == "E+W+S+NI"
+    assert {nil, ["*"]} in rows(e, :same)
+  end
 end

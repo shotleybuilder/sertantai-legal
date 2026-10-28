@@ -37,6 +37,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Same do
   # further)
   @of_enactment_same ~r/^(?:\(\w+\)\s*)?Any\s+(?:amendments?|repeals?|revocations?)(?:\s*(?:,|or|and)\s*(?:amendments?|repeals?|revocations?))*\s+(?:made\s+)?by\s+this\s+(?:Act|Order|Regulations)\s+of\s+(?:an|any)\s+enactments?\s+which\s+extends?\s+to\s+[^.]*?\bha(?:s|ve)\s+the\s+same\s+extent\s+as\s+(?:that|the)\s+enactments?\b/iu
 
+  # "This Act extends to England and Wales, Scotland and Northern Ireland
+  # (except that an amendment or repeal made by this Act has the same extent
+  # as the provision to which it relates)" (ukpga 2008/20 s.3(4), CV-S05
+  # seed 21 NEW): the default stands, every amendment follows its enactment
+  @bracket_same ~r/\(\s*except\s+that\s+(?:an?|any)\s+(?:amendments?|repeals?|revocations?)(?:\s*(?:,|or|and)\s*(?:amendments?|repeals?|revocations?))*\s+(?:made\s+)?by\s+this\s+(?:Act|Order|Regulations)\s+ha(?:s|ve)\s+the\s+same\s+extent\s+as\s+the\s+(?:provisions?|enactments?)\s+(?:to\s+which\s+(?:it|they)\s+relates?|amended|repealed|revoked)\s*\)/iu
+
   @not_extends_amending ~r/\bnot\s+extend\s+to\s+[^.]*?\bexcept\b[^.]*?\bso\s+far\s+as\s+(?:it|they)\s+(?:affects?|amends?|repeals?|revokes?)\s+(?:any\s+)?(?:other\s+)?enactments?\b/iu
 
   # "The amendments and repeals in Schedules 20 and 21 have the same extent
@@ -77,7 +83,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Same do
       for(
         {_ref, s} <- unit_sentences,
         Regex.match?(Forms.amendments_where(), s) or Regex.match?(@not_extends_amending, s) or
-          Regex.match?(@of_enactment_same, s),
+          Regex.match?(@of_enactment_same, s) or Regex.match?(@bracket_same, s),
         uniq: true,
         do: {:same, nil, ["*"]}
       ) ++
