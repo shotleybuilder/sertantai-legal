@@ -92,7 +92,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
     num = n |> String.split("(") |> hd()
 
     Regex.replace(
-      ~r/(?<!subject\sto\s)(?<!of\s)(?<!within\s)(?<!under\s)(?<!by\s)(?<!in\s)(?<!see\s)(?<!with\s)\bsub-?sections?\s+((?>(?:\([\dA-Z]+\)(?:\s*(?:,|and|or|to)\s*(?=\())?)+))\s*(?:above\s+|below\s+)?(?:of\s+this\s+section\b)?(?!\s*of\b)/iu,
+      ~r/(?<!subject\sto\s)(?<!of\s)(?<!within\s)(?<!under\s)(?<!by\s)(?<!in\s)(?<!see\s)(?<!with\s)\bsub-?sections?\s+((?>(?:\([\dA-Z]+\)(?:\s*(?:,|and|or|to)\s*(?=\())?)+))\s*(?:(?:above|below)\b\s*)?(?:of\s+this\s+section\b)?(?!\s*of\b)/iu,
       text,
       "section #{num}\\1 "
     )
@@ -102,10 +102,27 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
     num = n |> String.split("(") |> hd()
 
     Regex.replace(
-      ~r/(?<!subject\sto\s)(?<!of\s)(?<!within\s)(?<!under\s)(?<!by\s)(?<!in\s)(?<!see\s)(?<!with\s)\bparagraphs?\s+((?>(?:\(\d+[A-Z]*\)(?:\([a-z]+\))*(?:\s*(?:,|and|or|to)\s*(?=\())?)+))\s*(?:above\s+|below\s+)?(?:of\s+this\s+regulation\b)?(?!\s*of\b)/iu,
+      ~r/(?<!subject\sto\s)(?<!of\s)(?<!within\s)(?<!under\s)(?<!by\s)(?<!in\s)(?<!see\s)(?<!with\s)\bparagraphs?\s+((?>(?:\(\d+[A-Z]*\)(?:\([a-z]+\))*(?:\s*(?:,|and|or|to)\s*(?=\())?)+))\s*(?:(?:above|below)\b\s*)?(?:of\s+this\s+regulation\b)?(?!\s*of\b)/iu,
       text,
       "regulation #{num}\\1 "
     )
+  end
+
+  # a Schedule paragraph's own: "Sub-paragraph (1) does not extend to
+  # Northern Ireland" in sch.8.para.70 → paragraph 70(1) of Schedule 8
+  # (ukpga 2003/39, CV-S05 seed 20 batch)
+  defp own_relative(text, "sch" <> _ = self) do
+    case Regex.run(~r/^sch(?:\.(?!pt\.|para\.)([^.]+))?(?:\.pt\.[^.]+)*\.para\.([^.(]+)/u, self) do
+      [_, sch, para] ->
+        Regex.replace(
+          ~r/(?<!subject\sto\s)(?<!of\s)(?<!within\s)(?<!under\s)(?<!by\s)(?<!in\s)(?<!see\s)(?<!with\s)\bsub-?paragraphs?\s+((?>(?:\([\dA-Za-z]+\)(?:\s*(?:,|and|or|to)\s*(?=\())?)+))\s*(?:(?:above|below)\b\s*)?(?:of\s+this\s+paragraph\b)?(?!\s*of\b)/iu,
+          text,
+          "paragraph #{para}\\1 of Schedule #{if sch == "", do: "0", else: sch} "
+        )
+
+      _ ->
+        text
+    end
   end
 
   defp own_relative(text, _self), do: text

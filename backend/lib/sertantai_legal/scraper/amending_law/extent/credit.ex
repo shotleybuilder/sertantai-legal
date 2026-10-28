@@ -91,7 +91,16 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Credit do
     end
   end
 
-  defp own_paragraph?({_, _, [r]}), do: r =~ ~r/^sch\.[^.]+\.para\.[^.()]+$/
+  # (its sub-paragraphs too, all of one paragraph: "Sub-paragraph (1) does
+  # not extend to Northern Ireland", 2003/39 Sch.8 para 70, CV-S05 seed 20
+  # batch)
+  defp own_paragraph?({_, _, [r | _] = refs}) do
+    para = String.replace(r, ~r/\(.*$/, "")
+
+    para =~ ~r/^sch\.[^.]+\.para\.[^.()]+$/ and
+      Enum.all?(refs, &(String.replace(&1, ~r/\(.*$/, "") == para))
+  end
+
   defp own_paragraph?(_), do: false
 
   @doc """

@@ -87,7 +87,35 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ExceptionList do
     |> String.split(
       ~r/(?<=[.;:])\s+(?=(?:\(\d+[A-Z]?\)\s*)?[A-Z])|\s+(?=\(\d+[A-Z]?\)\s+[A-Z])|(?<=\.)(?=\d+[A-Z]?\s+[A-Z])/u
     )
-    |> Enum.flat_map(&(&1 |> Units.no_dots() |> sentence_statements()))
+    |> Enum.flat_map(fn sentence ->
+      sentence = Units.no_dots(sentence)
+      sentence_statements(sentence) ++ mentioned(sentence, Units.no_dots(clause))
+    end)
+  end
+
+  # "With the exception of the provisions mentioned in subsection (6), this
+  # Act does not extend to Northern Ireland. (6) Those provisions are— (a)
+  # …; (e) this section." (ukpga 1989/38 s.30, CV-S05 seed 20): the items
+  # are another subsection's
+  @mentioned Regex.compile!(
+               "^\\s*(?:\\(\\d+[A-Z]?\\)\\s*|\\d+[A-Z]?\\s+)?(?:With\\s+the\\s+exception\\s+of|Except\\s+for|Apart\\s+from)\\s+the\\s+provisions\\s+(?:mentioned|specified|listed)\\s+in\\s+subsection\\s+\\((?<sub>\\d+[A-Z]?)\\)\\s*,\\s*#{Forms.subject()}\\s+#{@not_extend}",
+               "isu"
+             )
+
+  defp mentioned(sentence, clause) do
+    with %{"sub" => sub} = m <- Regex.named_captures(@mentioned, sentence),
+         [_, items] <-
+           Regex.run(
+             Regex.compile!(
+               "(?:^|\\s|\\.)\\(?#{sub}\\)?\\s+(?:Those|These|The)\\s+provisions\\s+(?:are|referred\\s+to\\s+in\\s+subsection\\s+\\(\\w+\\)\\s+are)\\s*[—–:]\\s*(.+?)(?:\\.\\s*(?:\\(?\\d+[A-Z]?\\)?\\s+[A-Z]|$)|$)",
+               "su"
+             ),
+             clause
+           ) do
+      [%{items: items, places: Places.places(m["places"]), self: false}]
+    else
+      _ -> []
+    end
   end
 
   defp sentence_statements(sentence) do

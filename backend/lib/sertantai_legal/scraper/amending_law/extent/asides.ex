@@ -8,7 +8,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Asides do
     (ukpga 2022/30 s.169, 2023/55 s.254: round 13 S4, found by the CV-S05d
     census; they were dropped, so took the default);
   - "section 113 (together with such of the other provisions of Part 7 as
-    relate to …)": the rest of Part 7 (ukpga 2008/4 s.152, round 12).
+    relate to …)": the rest of Part 7 (ukpga 2008/4 s.152, round 12);
+  - "(and the related repeals in Schedule 28)": the Schedule (ukpga 2008/4
+    s.79, CV-S05 seed 20).
 
   Never another law's provisions. Pure.
   """
@@ -22,17 +24,34 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Asides do
   @doc "The provisions an item's qualified asides name: withheld."
   @spec asides(String.t(), String.t() | nil, Doc.t()) :: [String.t()]
   def asides(text, clause_ref, doc) do
-    for [aside] <-
+    qualified =
+      for [aside] <-
+            Regex.scan(
+              ~r/\((?:and|including|together\s+with|with)\b(?:[^()]|\([^()]*\))*\)/iu,
+              text
+            ),
+          aside =~ @qualifier,
+          inner = aside |> String.trim_leading("(") |> String.trim_trailing(")"),
+          inner = Regex.replace(~r/^\s*(?:and|including|together\s+with|with)\s+/iu, inner, ""),
+          subject = inner |> String.split(@qualifier, parts: 2) |> hd(),
+          not (subject =~ @other_law),
+          ref <- provisions(subject, clause_ref, doc),
+          uniq: true,
+          do: ref
+
+    Enum.uniq(qualified ++ related(text, clause_ref, doc))
+  end
+
+  # "(and the related repeals in Schedule 28)": only some of the Schedule,
+  # its bound withheld (ukpga 2008/4 s.79, CV-S05 seed 20)
+  defp related(text, clause_ref, doc) do
+    for [_, where] <-
           Regex.scan(
-            ~r/\((?:and|including|together\s+with|with)\b(?:[^()]|\([^()]*\))*\)/iu,
+            ~r/\(\s*and\s+the\s+related\s+(?:repeals|amendments|revocations)\s+in\s+([^()]+)\)/iu,
             text
           ),
-        aside =~ @qualifier,
-        inner = aside |> String.trim_leading("(") |> String.trim_trailing(")"),
-        inner = Regex.replace(~r/^\s*(?:and|including|together\s+with|with)\s+/iu, inner, ""),
-        subject = inner |> String.split(@qualifier, parts: 2) |> hd(),
-        not (subject =~ @other_law),
-        ref <- provisions(subject, clause_ref, doc),
+        not (where =~ @other_law),
+        ref <- provisions(where, clause_ref, doc),
         uniq: true,
         do: ref
   end

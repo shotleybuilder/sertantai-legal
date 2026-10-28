@@ -76,8 +76,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Forms do
            # extend …"; "The amendments made by regulations 8 and 12 extend
            # …", "The modifications specified in paragraphs 65 … of Schedule
            # 2 extend …": CV-S05 N5, N8, N14; "Chapter 3 of this Part extends
-           # only to England and Wales": ukpga 2015/15 s.99, NEW-A)
-           "^(?:\\(\\w+\\)\\s*)?(?:Subject\\s+to\\s+[^,—–]{1,120},\\s*)?(?<subj>(?:(?:The\\s+)?(?:amendments?|modifications?|repeals?|revocations?)\\s+(?:made\\s+by|specified\\s+in|in)\\s+)?(?:Sections?|Articles?|Regulations?|Rules?|Parts?|Chapters?|Schedules?|paragraphs?|This\\s+Part|This\\s+section|This\\s+regulation|This\\s+article)\\b(?:(?!\\bextends?\\b|\\bextend\\b).)*?)\\s+(?:shall\\s+)?(?<also>also\\s+)?(?<not>(?:do|does|shall)\\s+not\\s+)?extends?\\s+(?<only>only\\s+)?(?<also2>also\\s+)?(?:to\\s+(?:the\\s+whole\\s+of\\s+)?|throughout\\s+)(?<places>#{@place_list})(?<only2>\\s+only)?",
+           # only to England and Wales": ukpga 2015/15 s.99, NEW-A; "Subsections
+           # (5) to (7) above shall not extend to Scotland": the provision's
+           # own, ukpga 1987/43 s.5(8), CV-S05 seed 20; never across "shall be
+           # construed … notwithstanding that the … Act … do not extend", 1963/11
+           # s.22)
+           "^(?:\\(\\w+\\)\\s*)?(?:Subject\\s+to\\s+[^,—–]{1,120},\\s*)?(?<subj>(?:(?:The\\s+)?(?:amendments?|modifications?|repeals?|revocations?)\\s+(?:made\\s+by|specified\\s+in|in)\\s+)?(?:Sections?|Sub-?sections?\\s+\\(|Articles?|Regulations?|Rules?|Parts?|Chapters?|Schedules?|paragraphs?|Sub-?paragraphs?\\s+\\(|This\\s+Part|This\\s+section|This\\s+regulation|This\\s+article)(?:\\b|(?<=\\())(?:(?!\\bextends?\\b|\\bextend\\b|\\bconstrued\\b|\\bnotwithstanding\\b).)*?)\\s+(?:shall\\s+)?(?<also>also\\s+)?(?<not>(?:do|does|shall)\\s+not\\s+)?extends?\\s+(?<only>only\\s+)?(?<also2>also\\s+)?(?:to\\s+(?:the\\s+whole\\s+of\\s+)?|throughout\\s+)(?<places>#{@place_list})(?<only2>\\s+only)?",
            "iu"
          )
   # (also "A provision of these Regulations that amends or revokes an

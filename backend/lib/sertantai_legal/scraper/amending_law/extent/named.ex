@@ -163,8 +163,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Named do
       |> Enum.reduce({subj, []}, fn [whole, inner], {acc, naming} ->
         # (never a qualified one: "(and article 27 in so far as it relates
         # to those paragraphs)", SI 2013/602 art.1(8))
+        # (nor "(and the related repeals in Schedule 28)": some of it,
+        # withheld by `Asides`, ukpga 2008/4 s.79, CV-S05 seed 20)
         if inner =~ ~r/^\s*(?:and|with|including|together\s+with)\b/iu and
-             not (inner =~ ~r/\b(?:so\s+far|in\s*so\s*far|insofar|to\s+the\s+extent)\b/iu),
+             not (inner =~ ~r/\b(?:so\s+far|in\s*so\s*far|insofar|to\s+the\s+extent)\b/iu) and
+             not (inner =~ ~r/\brelated\s+(?:repeals|amendments|revocations)\b/iu),
            do: {String.replace(acc, whole, " ", global: false), naming ++ [inner]},
            else: {String.replace(acc, whole, " ", global: false), naming}
       end)

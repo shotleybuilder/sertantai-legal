@@ -37,7 +37,7 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.{Extent, SweepForm}
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{ReadCache, Store}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Lookup, ReadCache, Store}
   alias SertantaiLegal.Scraper.LawRunner
   alias SertantaiLegal.Scraper.LawRunner.Guard
 
@@ -113,7 +113,10 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
       SELECT c.law_name, c.key, c.target, c.operation, c.by, c.territory,
              coalesce(array_agg(cl.source || ':' || cl.attribute || '=' || (cl.value #>> '{}')
                  ORDER BY cl.source, cl.attribute, cl.value #>> '{}')
-               FILTER (WHERE cl.attribute IN ('territory', 'extent')), '{}')
+               FILTER (WHERE cl.attribute IN ('territory', 'extent')), '{}'),
+             coalesce((SELECT array_agg(DISTINCT e ->> 'v')
+                FROM provision_change_claims a, jsonb_array_elements(a.value -> 'v') e
+                WHERE a.change_id = c.id AND a.attribute = 'affecting'), '{}')
       FROM provision_changes c
       LEFT JOIN provision_change_claims cl ON cl.change_id = c.id
       WHERE c.law_name = ANY($1) AND c.operation = ANY($2)
@@ -121,8 +124,9 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
       """,
       [laws, @text_ops]
     ).rows
-    |> Enum.map(fn [law, key, target, op, by, territory, claims] ->
+    |> Enum.map(fn [law, key, target, op, by, territory, claims, affecting] ->
       %{
+        affecting: affecting,
         law: law,
         key: key,
         target: target,
@@ -238,25 +242,29 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
         has.("feed:territory=") -> "territory:feed"
         has.("markup:territory=") -> "territory:markup"
         c.by == nil -> "none:no_amending_law"
-        true -> "none:" <> none_why(Map.get(by_law, c.by))
+        true -> "none:" <> none_why(Map.get(by_law, c.by), c.affecting)
       end
 
     Map.put(c, :outcome, outcome)
   end
 
-  defp none_why(nil), do: "no_amending_law"
-  defp none_why(%{basis: "none", why: why}), do: "law_" <> why
-  defp none_why(%{basis: "competence"}), do: "competence_only"
+  defp none_why(nil, _), do: "no_amending_law"
+  defp none_why(%{basis: "none", why: why}, _), do: "law_" <> why
+  defp none_why(%{basis: "competence"}, _), do: "competence_only"
 
-  # a statement of the law's left unread withholds its provisions' bound,
-  # never the default (CV-S05 round 6)
-  defp none_why(%{extent: %Extent{lists: lists}} = row) do
-    if Enum.any?(lists, &match?({:unread, _, _}, &1)),
-      do: "unread_statement",
-      else: none_listed(row)
+  # the change's own amending provisions first: one following the
+  # enactment it changes is `same`, whatever else the law leaves unread
+  # (CPA 1987 Sch.3, CV-S05 seed 20); a statement of the law's left unread
+  # withholds its provisions' bound, never the default (CV-S05 round 6)
+  defp none_why(%{extent: %Extent{lists: lists} = e} = row, affecting) do
+    cond do
+      affecting != [] and Lookup.of_change(e, affecting) == :same -> "same"
+      Enum.any?(lists, &match?({:unread, _, _}, &1)) -> "unread_statement"
+      true -> none_listed(row)
+    end
   end
 
-  defp none_why(_), do: "unknown"
+  defp none_why(_, _), do: "unknown"
 
   # (a same list first: a provision following the enactment it changes is
   # no provision left unnamed — round 6 D4)

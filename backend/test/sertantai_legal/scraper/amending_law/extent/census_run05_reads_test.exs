@@ -278,4 +278,95 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.CensusRun05ReadsTest do
     assert "s.295" in also
     refute "s.293" in also
   end
+
+  describe "seed 20 observations" do
+    test "an exception list whose items are another subsection's (ukpga 1989/38 s.30(5)-(6))" do
+      e =
+        read(
+          "UK_ukpga_1989_38",
+          words([10, 22, 27]) <>
+            p2s("section-30", [
+              {"5",
+               "With the exception of the provisions mentioned in subsection (6), this Act does not extend to Northern Ireland."},
+              {"6",
+               "Those provisions are— a sections 10(1) and (2) so far as they amend or repeal any enactment which extends to Northern Ireland; b section 10(6); c paragraph 2 of Schedule 5 and section 22(5) so far as relating thereto; d section 27 (which extends only to Northern Ireland); and e this section."}
+            ])
+        )
+
+      also = refs(e, :also, "NI")
+      assert "s.10(6)" in also
+      assert "sch.5.para.2" in also
+      assert "s.27" in also
+      assert "s.30" in also
+      refute "s.10(1)" in also
+      refute "s.22(5)" in also
+      assert e.default == "E+W+S"
+    end
+
+    test "\"Subsections (5) to (7) above shall not extend to Scotland\" (ukpga 1987/43 s.5(8))" do
+      e =
+        read(
+          "UK_ukpga_1987_43",
+          p2s("section-5", [
+            {"5", "Words."},
+            {"8", "Subsections (5) to (7) above shall not extend to Scotland."}
+          ])
+        )
+
+      assert {"S", ["s.5(5)", "s.5(6)", "s.5(7)"]} in rows(e, :not)
+    end
+
+    test "\"(and the related repeals in Schedule 28)\" withholds the Schedule (ukpga 2008/4 s.79)" do
+      e =
+        read(
+          "UK_ukpga_2008_4",
+          p2s("section-79", [
+            {"2", "Words."},
+            {"3", "Words."},
+            {"4",
+             "Subsections (2) and (3) (and the related repeals in Schedule 28) extend to England and Wales only."}
+          ])
+        )
+
+      assert {"E+W", ["s.79(2)", "s.79(3)"]} in rows(e, :only)
+      assert "sch.28" in refs(e, :unread, nil)
+    end
+
+    test "\"… and subsection (2) of that section extends to Scotland only\" (ukpga 2009/26 s.115)" do
+      e =
+        read(
+          "UK_ukpga_2009_26",
+          p1(
+            "section-115",
+            "Subsections (1) and (3) to (5) of section 105 extend to Scotland and Northern Ireland and subsection (2) of that section extends to Scotland only."
+          )
+        )
+
+      assert {"S", ["s.105(2)"]} in rows(e, :only)
+      assert "s.105(3)" in refs(e, :named, "S+NI")
+    end
+
+    test "\"subsections (1) to (4) of this section shall be construed … do not extend to Northern Ireland\" is no statement (ukpga 1963/11 s.22)" do
+      e =
+        read(
+          "UK_ukpga_1963_11",
+          p1(
+            "section-22",
+            "In the application of this section to Northern Ireland—a “enactment” includes any enactment of the Parliament of Northern Ireland; andc subject to the preceding provisions of this subsection, subsections (1) to (4) of this section shall be construed as they are construed in their application to England and Wales, notwithstanding that the Land Compensation Act 1961 does not extend to Northern Ireland."
+          )
+        )
+
+      assert refs(e, :not, "NI") == []
+    end
+
+    test "\"Sub-paragraph (1) does not extend to Northern Ireland\" in a Schedule paragraph (ukpga 2003/39 Sch.8 para 70)" do
+      e =
+        read(
+          "UK_ukpga_2003_39",
+          ~s(<Schedule id="schedule-8">#{p2s("schedule-8-paragraph-70", [{"1", "Words."}, {"2", "Sub-paragraph (1) does not extend to Northern Ireland."}])}</Schedule>)
+        )
+
+      assert {"NI", ["sch.8.para.70(1)"]} in rows(e, :not)
+    end
+  end
 end

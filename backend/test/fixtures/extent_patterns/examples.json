@@ -1629,11 +1629,6 @@
     "ref": "s.6E",
     "sentence": "This section—a does not extend to Scotland, andb is without prejudice to any rule of law or enactment about the right of a constable in Scotland to enter any place."
   },
-  "UK_ukpga_1988_52/01cffdeda4": {
-    "law": "UK_ukpga_1988_52",
-    "ref": "s.34",
-    "sentence": "Subsection (2) above and section 34A of this Act do not extend to Scotland."
-  },
   "UK_ukpga_1988_52/1122b0b15d": {
     "law": "UK_ukpga_1988_52",
     "ref": "s.46B",
@@ -1733,11 +1728,6 @@
     "law": "UK_ukpga_1989_29",
     "ref": "sch.9",
     "sentence": "Preservation of amenity: England and Wales11 In formulating any relevant proposals, a licence holder or a person authorised by exemption to generate, distribute, supply or participate in the transmission of electricity—a shall have regard to the desirability of preserving natural beauty, of conserving flora, fauna and geological or physiographical features of special interest and of protecting sites, buildings and objects of architectural, historic or archeological interest; andb shall do what he reasonably can to mitigate any effect which the proposals would have on the natural beauty of the countryside or on any such flora, fauna, features, sites, buildings or objects.2 In considering any relevant proposals for which its consent is required under section 36 or 37 of this Act, the appropriate authority shall have regard to—a the desirability of the matters mentioned in paragraph (a) of sub-pargaraph (1) above; andb the extent to which the person by whom the proposals were formulated has complied with his duty under paragraph (b) of that sub-paragraph.3 In this paragraph— “appropriate authority” has the meaning given by section 36(10)(b) or (c) of this Act; “building” includes structure; “relevant proposals” means any proposals— for the construction or extension of a generating station of a capacity not less than 10 megawatts, or for the opreation of such a station in a different manner; for the installation (whether above or below ground) of an electric line; or for the execution of any other works for or in connection with the transmission or supply of electricity.4 The appropriate authority may by order provide that sub-paragraph (3) above shall have effect as if for the capacity mentioned in paragraph (a) there were substituted such other capacity as may be specified in the order.5 This paragraph and paragraph 2 below extend to England and Wales only.21 A licence holder shall within twelve months from the grant of his licence prepare, and from time to time modify, a statement setting out the manner in which he proposes to perform his duty under paragraph 1(1) above, including in particular the consultation procedures which he intends to follow.2 Before preparing or modifying a statement under this paragraph, a licence holder shall consult the Countryside Agency, and—a where the activities which he is authorised by his licence to carry on include activities in England, Natural England and the Historic Buildings and Monuments Commission for England; andb where those activities include activities in Wales, the Natural Resources Body for Wales and the National Assembly for Wales.3 As soon as practicable after preparing or modifying a statement under this paragraph, the licence holder shall publish the statement as so prepared or so modified in such manner as he considers appropriate."
-  },
-  "UK_ukpga_1989_38/1a5075eb67": {
-    "law": "UK_ukpga_1989_38",
-    "ref": "s.30",
-    "sentence": "Those provisions are—a sections 10(1) and (2) and 29(3) and (4) and Schedules 3, 6 and 7 so far as they amend or repeal any enactment which extends to Northern Ireland (other than an enactment contained in the Celluloid and Cinematograph Film Act 1922);b section 10(6);c paragraph 2 of Schedule 5 and section 22(5) so far as relating thereto;d section 27 (which extends only to Northern Ireland); ande this section."
   },
   "UK_ukpga_1989_42/a9b74b84c2": {
     "law": "UK_ukpga_1989_42",
@@ -1898,6 +1888,11 @@
     "law": "UK_ukpga_1990_43",
     "ref": "s.106A",
     "sentence": "For the purposes of subsection (1), this Part applies in relation to England so far as it applies in relation to—a importing genetically modified organisms where their destination is in England;b acquiring genetically modified organisms which are in England;c keeping or releasing genetically modified organisms in England;d marketing a genetically modified organism so far as the organism (or, where the organism is marketed by virtue of a product consisting of or including the organism being made available to other persons, that product) is made available for delivery in England."
+  },
+  "UK_ukpga_1990_43/b2a1f2399e": {
+    "law": "UK_ukpga_1990_43",
+    "ref": "s.78P",
+    "sentence": "Subsections (3) to (13) above do not extend to Scotland."
   },
   "UK_ukpga_1990_43/c1425bbf2f": {
     "law": "UK_ukpga_1990_43",
@@ -3264,6 +3259,11 @@
     "ref": "s.111",
     "sentence": "Subsection (1) does not apply to section 59(3), 90, 91, 100, 101, 102, 103, 104, 105, 106 or 109."
   },
+  "UK_ukpga_2003_39/4c38318690": {
+    "law": "UK_ukpga_2003_39",
+    "ref": "sch.8.para.78",
+    "sentence": "Sub-paragraph (1) extends only to England and Wales."
+  },
   "UK_ukpga_2003_39/568e044780": {
     "law": "UK_ukpga_2003_39",
     "ref": "sch.8",
@@ -3313,6 +3313,11 @@
     "law": "UK_ukpga_2003_39",
     "ref": "sch.8.para.13",
     "sentence": "This paragraph extends only to England and Wales."
+  },
+  "UK_ukpga_2003_39/f531a63c56": {
+    "law": "UK_ukpga_2003_39",
+    "ref": "sch.8.para.70",
+    "sentence": "Sub-paragraph (1) does not extend to Northern Ireland."
   },
   "UK_ukpga_2003_43/1e5a0ce820": {
     "law": "UK_ukpga_2003_43",
@@ -3679,6 +3684,11 @@
     "ref": "sch.13",
     "sentence": "Lands Clauses Consolidation Act 1845 (c. 18)71 In section 91 of the Lands Clauses Consolidation Act 1845 (proceedings in case of refusal to deliver possession of lands) for “levied by distress” substitute “ recovered by using the procedure in Schedule 12 to the Tribunals, Courts and Enforcement Act 2007 (taking control of goods), ”.2 This paragraph extends only to England and Wales."
   },
+  "UK_ukpga_2007_15/8a57268622": {
+    "law": "UK_ukpga_2007_15",
+    "ref": "sch.14",
+    "sentence": "Landlord and Tenant Act 1851 (c. 25)131 The Landlord and Tenant Act 1851 ceases to have effect.2 This paragraph extends only to England and Wales."
+  },
   "UK_ukpga_2007_15/a4e9254239": {
     "law": "UK_ukpga_2007_15",
     "ref": "s.147",
@@ -3888,6 +3898,11 @@
     "law": "UK_ukpga_2009_20",
     "ref": "s.147",
     "sentence": "Parts 1 to 7 extend to England and Wales only, except that—a an amendment or repeal effected by any of those Parts has the same extent as the provision amended or repealed, andb sections 67(2) to (6), ... 114, 116 and 117 (powers to make consequential provision etc) extend also to Scotland and Northern Ireland."
+  },
+  "UK_ukpga_2009_20/7c797f1428": {
+    "law": "UK_ukpga_2009_20",
+    "ref": "s.147",
+    "sentence": "Paragraph (a) does not apply to Chapter 6 of Part 1 (which accordingly extends to England and Wales only)."
   },
   "UK_ukpga_2009_22/5e88f5f50a": {
     "law": "UK_ukpga_2009_22",
@@ -4158,6 +4173,11 @@
     "law": "UK_ukpga_2013_22",
     "ref": "s.61",
     "sentence": "Except as provided by subsections (13) ..., an amendment, repeal or revocation has the same extent as the provision amended, repealed or revoked (ignoring extent by virtue of an Order in Council)."
+  },
+  "UK_ukpga_2013_22/92627f7151": {
+    "law": "UK_ukpga_2013_22",
+    "ref": "sch.24.para.1",
+    "sentence": "The relevant NCA provisions do not extend to Northern Ireland."
   },
   "UK_ukpga_2013_22/9581e4b5ef": {
     "law": "UK_ukpga_2013_22",
@@ -4999,6 +5019,11 @@
     "ref": "reg.4",
     "sentence": "These Regulations apply to United Kingdom ships wherever they may be and to other ships while they are within United Kingdom waters, except— a ships of war; b ships solely engaged in fishing; c pleasure vessels; d ships which do not go to sea; and e ships under 80 tons register falling within one of the classes specified in paragrah (2) engaged solely in the coasting trade, and, subject to paragraph (3), not carrying cargo—"
   },
+  "UK_uksi_1999_1820/74fc7d7dab": {
+    "law": "UK_uksi_1999_1820",
+    "ref": "sch.2.para.88",
+    "sentence": "After section 1(5) (grants in respect of farm businesses), there is inserted– 6 In subsection (5) in the definition of “the appropriate authority” the words from “or, if it extends to more than one part,” to the end shall not extend to Scotland. ."
+  },
   "UK_uksi_1999_1820/bd4b73c9e0": {
     "law": "UK_uksi_1999_1820",
     "ref": "sch.2.para.70",
@@ -5178,6 +5203,11 @@
     "law": "UK_uksi_2004_1769",
     "ref": "reg.8",
     "sentence": "A determination to which this regulation applies shall—a be treated as a justification decision for the purposes of these Regulations;b be treated as limited to the same extent that the power of the person making it, or under whose authority it was made, is limited by sub-paragraphs (a) to (d) of regulation 6(2); andc if it was limited to a particular practice, be treated as a justification decision whose scope is limited to the same extent as was the determination in question."
+  },
+  "UK_uksi_2004_1822/ef1b7b5dd1": {
+    "law": "UK_uksi_2004_1822",
+    "ref": "reg.1",
+    "sentence": "The modifications specified in paragraphs 2, 3, 4, 7, 8, 11, 12, 13 and 15 of the Schedule to this Order extend to Scotland only."
   },
   "UK_uksi_2004_288/7709fff404": {
     "law": "UK_uksi_2004_288",

@@ -67,7 +67,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Statements do
       case String.split(
              s,
              Regex.compile!(
-               "(?:[,;]\\s*|\\s+)and\\s+(?=(?:#{@provision_word}|this\\s+(?:section|regulation|article|Part|Chapter)\\b)(?:[^,;]*?\\b(?:extends?|extend)\\b|[^;]*?\\bha(?:s|ve)\\s+the\\s+same\\s+extent\\b))|,\\s*but\\s+(?=(?:#{@provision_word}|this\\s+(?:sub-?section|regulation|article|sub-?paragraph|paragraph)\\b)[^,;]*?\\bappl(?:y|ies)\\b)",
+               "(?:[,;]\\s*|\\s+)and\\s+(?=(?:#{@provision_word}|sub-?sections?\\s+\\(|this\\s+(?:section|regulation|article|Part|Chapter)\\b)(?:[^,;]*?\\b(?:extends?|extend)\\b|[^;]*?\\bha(?:s|ve)\\s+the\\s+same\\s+extent\\b))|,\\s*but\\s+(?=(?:#{@provision_word}|this\\s+(?:sub-?section|regulation|article|sub-?paragraph|paragraph)\\b)[^,;]*?\\bappl(?:y|ies)\\b)",
                "iu"
              ),
              parts: 2
@@ -136,11 +136,23 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Statements do
     end
   end
 
-  # the second clause of a compound, "that Schedule" named
+  # the second clause of a compound, "that Schedule" / "that section"
+  # named ("Subsections (1) and (3) to (5) of section 105 extend to … and
+  # subsection (2) of that section extends to Scotland only", ukpga 2009/26
+  # s.115, CV-S05 seed 20)
   defp compound(first, second) do
-    case Regex.run(~r/\bSchedule\s+(\d+[A-Z]*)\b/u, first, capture: :all_but_first) do
-      [n] -> [first, String.replace(second, ~r/\bof\s+that\s+Schedule\b/u, "of Schedule #{n}")]
-      nil -> [first, second]
-    end
+    second =
+      case Regex.run(~r/\bSchedule\s+(\d+[A-Z]*)\b/u, first, capture: :all_but_first) do
+        [n] -> String.replace(second, ~r/\bof\s+that\s+Schedule\b/u, "of Schedule #{n}")
+        nil -> second
+      end
+
+    second =
+      case Regex.run(~r/\bof\s+section\s+(\d+[A-Z]*)\b/u, first, capture: :all_but_first) do
+        [n] -> String.replace(second, ~r/\bof\s+that\s+section\b/u, "of section #{n}")
+        nil -> second
+      end
+
+    [first, second]
   end
 end

@@ -241,6 +241,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
       Excepted.refs(s, ref, doc) != [] ->
         {"exception", default_seen?}
 
+      # the items of an exception list stated in an earlier subsection ("With
+      # the exception of the provisions mentioned in subsection (6), this Act
+      # does not extend to Northern Ireland. (6) Those provisions are— …"),
+      # read there (`ExceptionList`; ukpga 1989/38 s.30, CV-S05 seed 20)
+      in_clause? and s =~ ~r/^\s*(?:Those|These)\s+provisions\s+are\s*[—–:]/u and
+          Enum.any?(e.lists, &match?({:also, _, _}, &1)) ->
+        {"exception", default_seen?}
+
       a = applies_statement(s) ->
         # (credited only where this sentence's own entries were read — a
         # condition, "Subsection (2) applies if …", reads none: 1984/55)
