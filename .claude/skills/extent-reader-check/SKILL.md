@@ -43,6 +43,8 @@ Ask Jason before the runs that write; say how long each takes. Take a restore po
    ```
 6. **Agent check:** launch a general-purpose agent with the prompt below on `$S/a.json`.
 
+**Statistical pass rule** (Jason 2026-10-28, CV-S05 close): one clean seed is weak evidence (at a 2% residual rate a 50-law sample is clean 36% of the time). Pool the seeds since the last fix batch, with every NEW fixed, and state exact one-sided 95% upper bounds (Clopper–Pearson). Pass when wrong-bound changes are under 2% and laws under 5%. Decide the rule before the round, and record the pooled numbers and the coverage table, as CV-S05's "Quality statement" does.
+
 **Pass** (decided by Jason 2026-10-27; see CV-S05 "Pass bar: decided"):
 - census (CV-S05c's commands as the next run, `backend/data/experiments/cv-s05c-shape-mining/run-NN/`): classes A–F at
   zero in list sentences, apart from logged known residuals;
@@ -265,3 +267,4 @@ OH&S (first family, 2026-10-24 →). The session is `.claude/sessions/change-voc
 - Round 13, seed 19 (2026-10-27): after the root fix, laws 41 OK / 2 WRONG / 7 doubtful, changes 48/1/1: FAIL. NEW-1: "Part N of Schedule M" didn't reach the Part's paragraphs with Part-less ids; a nested bracket broke a qualified aside. NEW-2: a commencement list read as extent. All fixed (`9a721593`).
 - Run-05 fix batch, seed 20 (2026-10-28): laws 49 OK / 0 WRONG / 1 doubtful (1975/21, KT); changes 49 / 0 / 1 (CPA 1987 Sch.3 change labelled `none:unread_statement` where the lookup is `:same`: a label only). **PASS: no NEW.** Withheld observations, not NEW: 1989/38 s.29(5)–(6) cross-subsection exception list unread whole (plain items withheld with it); CPA 1987 s.5(8) "Subsections (5) to (7) above shall not extend to Scotland" stored unread.
 - Seed 21 (2026-10-28): laws 49 OK / 1 WRONG, changes 49 / 0 / 1: FAIL. NEW: 2008/20 s.3(4)'s bracketed "(except that an amendment or repeal made by this Act has the same extent as the provision to which it relates)" was dropped, so its amendments were bound to the UK. Fixed (`Same`).
+- Seed 22 (2026-10-28): laws 47 / 2 WRONG / 1 doubtful, changes 49 / 0 / 1: FAIL, 2 NEW. 1996/23 s.108(3), a statement qualified after its places, was dropped to the default; 1989/38 s.30(6)(d)'s "(which extends only to Northern Ireland)" was read as also. Both fixed (`157abd4d`). **CV-S05 closed on the statistical rule:** seeds 20–22 pooled, changes 0/150 (upper 2.0%), laws 3/150 (upper 5.1%).

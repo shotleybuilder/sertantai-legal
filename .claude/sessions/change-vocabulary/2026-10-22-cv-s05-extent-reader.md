@@ -1,9 +1,90 @@
 ---
 session: 'CV-S05: Extent and Application Reader'
-status: active
+status: closed
 release: v0.1
 opened: '2026-10-22'
+closed: '2026-10-28'
+outcome: success
+
+summary: >
+  The extent and application reader reads where each amending law's provisions extend and apply, for the OH&S
+  family's 4,967 text changes. It was accepted by statistics, not by a single clean sample (Jason 2026-10-28): across
+  the last three independent agent samples (seeds 20-22), 0 of 150 sampled changes carry a wrong bound (95% upper
+  bound 2.0%) and 3 of 150 sampled laws had a wrong bound, each found and fixed (2.0%, 95% upper bound 5.1%).
+  See "Quality statement" below: the publishable accuracy and coverage, and why the data is held to be good.
+
+decisions:
+  - what: Close on a statistical pass rule, not on "repeat until one clean sample" (Jason 2026-10-28)
+    why: >
+      At a ~2% tail a 50-law sample comes back clean ~36% of the time by luck alone (seed 20 passed, then seeds 21
+      and 22 each found new tail wordings), so "until a clean PASS" measures luck. Pooled over seeds 20-22, every NEW
+      fixed: changes 0/150 wrong (95% upper 2.0%), laws 3/150 (2.0%, 95% upper 5.1%), at the proposed rule
+      (changes < 2%, laws < 5% upper bound). Further agent rounds shave a long tail of one-off wordings.
+    result: "Closed after seed 22's two NEW fixed (157abd4d) and one acceptance chain; no seed 23"
+  - what: "Pass bar (2026-10-27): only a NEW that places a wrong bound, or a silent drop, fails a round; a withheld (unread, counted) wording is a known gap"
+    why: Unread statements withhold their provisions' bound (round 6 design), so a gap is visible and safe; a wrong bound is not
+    result: Known classes KU, KP, KE, KC, KN, KD, KS, KL, KU1, KX, KQ, KA, KW, KT in the skill
+  - what: An independent census (CV-S05d) over the whole store, then agent sampling as the confirmation
+    why: Agent seeds 5-17 kept finding tail wordings one at a time; a finder sharing no reader code found ~80 laws' worth by wording
+    result: "Rounds 13 and the run-05 batch fixed S1-S17 and R1-R13; agent wrong-law rate fell from 30% (seed 5) to 2% (seeds 20-22)"
+  - what: Application to cases is fitness scope (class KA), handed to fractalaw, not read as territory (Jason 2026-10-27)
+    why: The extent reader stays territorial; which persons/things a law covers is fractalaw's enrichment
+    result: PENDING session application-scope-handoff
+  - what: A Schedule paragraph inside a Part is the triple sch.N.pt.R.para.M (Jason 2026-10-27)
+    why: The document's own address; 439 collisions in 58 laws without the Part
+    result: Order.ref, RefList; the amendment reader's Pointer/Locator stay Part-less until v0.2 (#169)
+  - what: Pre-flight in seconds before any full chain; one acceptance chain per fix batch (Jason 2026-10-27)
+    why: Jason called "40 minutes of compute as a debug routine" madness (round 13); a whole-store fresh-read diff (~10 min) lists every law a shared change touches
+    result: Every batch from run-05 on reviewed law by law before its chain; two silent drops caught pre-chain (2003/39, Credit side effect)
+
+metrics:
+  agent_wrong_laws: { seed5: "15/50", seed10: "7/50", seed13: "2/50", seed16: "1/50", seed19: "2/50", seed20: "0/50", seed21: "1/50", seed22: "2/50" }
+  agent_wrong_changes: { seed5: "7/50", seed10: "3/50", seed13: "3/50", seed16: "0/50", seed19: "1/50", seed20: "0/50", seed21: "0/50", seed22: "0/50" }
+  pooled_seeds_20_22: { laws_wrong: "3/150 = 2.0%", laws_95_upper: "5.1%", changes_wrong: "0/150 = 0%", changes_95_upper: "2.0%" }
+  pooled_seeds_17_22: { laws_wrong: "10/300 = 3.3%", laws_95_upper: "5.6%", changes_wrong: "1/300 = 0.3%", changes_95_upper: "1.6%" }
+  coverage_oh_s_changes: { total: 4967, territory_from_law_text: "3117 (62.8%)", territory_feed_markup: 3, follows_enactment_same: "299 (6.0%)", withheld_unread_statement: "328 (6.6%)", eu_law_not_read: "573 (11.5%)", si_powers_not_parsed: "450 (9.1%)", competence_only: "149 (3.0%)", no_amending_law: "42 (0.8%)", other_none: 6 }
+  checks_at_close: { golden: "27/27", extent_check_our_faults: 0, feed_check_our_faults: 0, markup_check_our_faults: 0, sweep_read_form_misses: 0, test_suite: 9194 }
+  census_at_close: { laws: 3358, silent_candidates: 58, all_triaged: "run-05 + reading diffs", unnamed_refs: 360 }
+
+lessons:
+  - title: A single clean random sample is weak evidence; pool samples and state a bound
+    detail: At a 2% residual rate, P(a 50-item sample is clean) = 36%. Decide the pass rule numerically in advance (pooled seeds, 95% upper bound) or the loop either stops on luck or never stops.
+    tag: data
+  - title: Agent sampling finds one tail wording at a time; a census finds them by the dozen
+    detail: Seeds 9-17 each found 1-6 NEW; CV-S05d's independent finder listed S1-S17 (~65 laws) and R1-R16 in two runs. Use the census to clear the tail, the agent to confirm.
+    tag: tooling
+  - title: A check sharing the reader's code shares its blind spots
+    detail: CV-S05c's census parsed with RefList and called dropped exception items "by design"; the independent finder showed them dropped.
+    tag: tooling
+  - title: Triage errors hide real defects; re-check "finder-side" labels
+    detail: Run-05 triaged 1996/23's qualified Schedules 3 and 4 as finder-side; seed 22 found it placed a wrong bound (Factories Act s.171).
+    tag: data
+  - title: Whole-store reading diffs before the chain catch side effects unit tests miss
+    detail: The 2003/39 sub-paragraph fix silently dropped four sentences' withheld rows via Credit; the second pre-flight diff caught it in minutes.
+    tag: tooling
+  - title: Long-tail misses are compositions, not missing simple phrases
+    detail: '"extends only to Northern Ireland" is read; the miss was that phrase inside a bracket of an exception-list item whose items sit in another subsection.'
+    tag: data
+
 bugs:
+  - pattern: "Seed 20-22 observations with no bound effect: 1987/43 s.5(5)-(7) row carries source_ref s.49 (words in s.5(8)); a change from the law's own text (key schedule-N-paragraph-M) labelled by affecting claims only (same_or_not_named / unread_statement where same); SI 2013/1506 reg.3(3) unread row includes the qualifier's object; 2015/20 s.114(2) withheld whole, plain items included; 1977/45 s.65(10)(a) Part V withheld where readable"
+    category: extent
+    module: Extent.Named source_ref / lat.extent_check none_why / Extent.Unread
+    affected: 5 laws, no wrong bound
+    fix: "source_ref from the unit; none_why falls back to the change key's own provision; Unread.subject before the qualifier; read plain items of a partly qualified sentence"
+    status: open
+  - pattern: "Agent seed 21 NEW: ukpga 2008/20 s.3(4) '(except that an amendment or repeal made by this Act has the same extent as the provision to which it relates)' dropped; 9 amendments bound UK"
+    category: extent
+    module: Extent.Same
+    affected: 9 changes
+    fix: "@bracket_same (37d72402)"
+    status: fixed
+  - pattern: "Agent seed 22 NEW: a statement qualified after its places dropped to the default (ukpga 1996/23 s.108(3), Factories Act s.171 change bound E+W+NI); an exception item's '(which extends only to Northern Ireland)' read as also (1989/38 s.30(6)(d))"
+    category: extent
+    module: Extent.Named / ExceptionList / Statements
+    affected: 3 laws, 1 change
+    fix: "qualified_after withheld; own_extents (157abd4d)"
+    status: fixed
   - pattern: "Amendment reader's Pointer/Locator name a Schedule paragraph inside a Part without its Part (sch.N.para.M), while Order.ref and RefList use the triple sch.N.pt.R.para.M (round 13, Jason 2026-10-27); RefList.covers? matches the two, but identity by target (merge) can split where a Schedule numbers each Part apart"
     category: naming
     module: AmendingLaw.Pointer, AmendingLaw.Locator
@@ -15,19 +96,19 @@ bugs:
     module: Extent.Applies / RefList / Application
     affected: 3
     fix: "locator in Applies as in ListItems; RefList joins 'N (f)'; application lettered places; round 13"
-    status: open
+    status: fixed
   - pattern: "Extent: a default sentence carrying lettered items before its 'save as aforesaid … extends to E+W only' (ukpga 1977/45 s.65(10)) is credited default; items (a) (c) (d) and part of (b) silently dropped — wrong bound on HSWA s.15(6)(d) (E+W, text E+W+S via s.63(2))"
     category: extent
     module: Extent.Default / Lists / Units
     affected: 1
     fix: "read the lettered items as lists (qualified ones withheld), the default from the trailing 'save as aforesaid'; round 12 (agent seed 16 NEW-1)"
-    status: open
+    status: fixed
   - pattern: "Extent ListItems residuals after round 11 (census run-02): other-law test matches 'into the … Act' (no word boundary, 2009/23 s.314); a same-extent item with its own 'other than' unread (2015/7 s.56(2)(b)); 'section 113 (together with such of the other provisions of Part 7 …)' dropped (2008/4 s.152)"
     category: extent
     module: Extent.ListItems / Same
     affected: 3
     fix: "\\b on the other-law test; same-extent items through ItemExceptions; strip a 'together with such of …' bracket; round 12"
-    status: open
+    status: fixed
   - pattern: "Amendment reader target precision: \"of that subsection\" not resolved to the subsection named before; a nested list item's parent bracket (\"(f) in subsection (5)— (i) in paragraph (a)\") not carried; \"—shall be omitted; (i) the words …\" read as provision-level (1995/25 Sch. 22 para 30(6))"
     category: amendment
     module: Amendment.Reader.Targets / Clauses
@@ -165,7 +246,7 @@ bugs:
     module: Commencement.Order.ref / Readers.FeedAffecting / RefList
     affected: 2
     fix: "name an unnumbered Schedule's Parts/paragraphs (sch.pt.N, sch.para.N) in Order.ref, RefList and FeedAffecting together"
-    status: open
+    status: fixed
   - pattern: "List sentences still read in part, counted unread:list_partial: 1974/44 s.131 (\"Parts IV, V, VI, VII, and VIII and,, in Part IX, sections …110 to116…\" text glitches); 2013/24 s.102 (\"Part 2 extends only to E+W and S, except that the following … also to NI\"); 1975/21 s.463(1)(a) \"(8) 189\" (no comma)"
     category: extent
     module: Extent.Lists / Named
@@ -231,33 +312,90 @@ bugs:
     module: Extent.Applies
     affected: 1
     fix: "read provision application under an \"In Schedule N—\" lead-in"
-    status: open
+    status: fixed
   - pattern: "Headed-list items with an unbracketed \"other than\" read their exceptions as items; \"in Chapter 1 of Part 6, sections 165, 166 and 186\" read as the whole Chapter; \"Chapters 1 to 5 of Part 8 and section 295\" over-reaches; same-list items with \"other than\" mishandled; \"this Part (other than …, except as provided by …)\" dropped; partial reads not counted (ukpga 2009/23 s.323, round 10 agent NEW-2)"
     category: extent
     module: Extent.Lists / Same / Parts
     affected: 1
     fix: "unbracketed other-than as minus; \"in X, sections …\" as those sections only; Chapter ranges by structure; credit partial reads as list_partial"
-    status: open
+    status: fixed
   - pattern: "\"(v) this Chapter\" item dropped from a named list (ukpga 2017/3 s.182(2): ss.180–184 get the default E+W, the text says UK; round 10 agent NEW-3)"
     category: extent
     module: Extent.Lists / Parts
     affected: 1
     fix: "read \"this Chapter\" as the clause's Chapter's sections"
-    status: open
+    status: fixed
   - pattern: "lat.extent_check's per-law unread classes left out unread:list_partial and unread:provision_*"
     category: tooling
     module: mix lat.extent_check
     affected: 0
     fix: "round 9: every unread: class"
     status: fixed
+  - pattern: "Extent lists: \"In Part N— (a) X extends to P, (b) Y extends to Q\": only item (a) read; later items with their own statement dropped"
+    category: "extent"
+    module: "Extent.Lists / Units"
+    affected: "6"
+    fix: "CV-S05 round 11 (census-led; CV-S05c classes A-F and the Schedule paragraph's own extent), confirmed by census runs 04-07"
+    status: fixed
+  - pattern: "Extent lists: an item with its own exception (\"X except Y\", \"X (except Y)\", \"(with the exception of Y)\") dropped whole; 2009/23 Part 2 'other than' read inverted"
+    category: "extent"
+    module: "Extent.Lists / Excepting"
+    affected: "11"
+    fix: "CV-S05 round 11 (census-led; CV-S05c classes A-F and the Schedule paragraph's own extent), confirmed by census runs 04-07"
+    status: fixed
+  - pattern: "Extent lists: plain provisions with a qualified companion (\"Parts 1 and 2 of Sch 7 and section 73 so far as relating to those Parts\", \"…, and those paragraphs\") dropped with it"
+    category: "extent"
+    module: "Extent.Lists / Credit"
+    affected: "5"
+    fix: "CV-S05 round 11 (census-led; CV-S05c classes A-F and the Schedule paragraph's own extent), confirmed by census runs 04-07"
+    status: fixed
+  - pattern: "Extent lists: a wholly qualified item (trailing \"so far as …\") dropped silently, so its provisions fall to the default; round 9 withholds only qualifier-led items"
+    category: "extent"
+    module: "Extent.Lists"
+    affected: "6"
+    fix: "CV-S05 round 11 (census-led; CV-S05c classes A-F and the Schedule paragraph's own extent), confirmed by census runs 04-07"
+    status: fixed
+  - pattern: "Extent lists, one-offs: 1972/11 s.30 'that is to say,—' list dropped; 1980/34 'section 61 to 65'; 1989/15 'section 95'; 1994/21 item after 'za'; 2008/4 'section 113 (together with …)'; 2009/23 same-list Parts with brackets; 2000/19 s.82–83 both named NI and not NI"
+    category: "extent"
+    module: "Extent.Lists"
+    affected: "7"
+    fix: "CV-S05 round 11 (census-led; CV-S05c classes A-F and the Schedule paragraph's own extent), confirmed by census runs 04-07"
+    status: fixed
+  - pattern: "Extent lists: an item's own exception not honoured, so excluded provisions are held ('but excluding', '(excluding …)', 'apart from', 'other than'): 2007/27 s.93, 2012/9 s.119, 2020/21 s.56, 2022/32 s.207 (+ 2009/23, R10 NEW-2)"
+    category: "extent"
+    module: "Extent.Lists / Named"
+    affected: "5"
+    fix: "CV-S05 round 11 (census-led; CV-S05c classes A-F and the Schedule paragraph's own extent), confirmed by census runs 04-07"
+    status: fixed
+  - pattern: "Extent: a Schedule paragraph's own extent ('This paragraph does not extend to Scotland', '… extends to Northern Ireland only') withheld as unread:provision_extent"
+    category: "extent"
+    module: "Extent.Named / Units"
+    affected: "12"
+    fix: "CV-S05 round 11 (census-led; CV-S05c classes A-F and the Schedule paragraph's own extent), confirmed by census runs 04-07"
+    status: fixed
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
+artifacts:
+  - backend/lib/sertantai_legal/scraper/amending_law/extent/ (the reader; NestedLocators, ExceptionList, Statements, Asides, OwnParagraph, …)
+  - backend/test/sertantai_legal/scraper/amending_law/extent/census_run05_reads_test.exs (and round9-13 reads tests)
+  - backend/test/fixtures/extent_patterns/ (the catalogue)
+  - backend/lib/mix/tasks/lat.extent_check.ex, lat.extent_patterns.ex, lat.extent_sweep.ex
+  - backend/data/experiments/cv-s05d-whole-reader-census/run-01 .. run-07
+  - .claude/skills/extent-reader-check/SKILL.md (agent prompt, known classes, history)
+
+depends_on:
+  - change-vocabulary/2026-10-27-cv-s05c-shape-mining.md
+  - change-vocabulary/2026-10-27-cv-s05d-whole-reader-census.md
+
+enables:
+  - CV-S06+ (the next change-vocabulary steps on OH&S; the label fold CV-S09 reads these extents)
+  - change-vocabulary/2026-10-27-application-scope-handoff.md (PENDING)
+  - change-vocabulary/2026-10-28-cv-s05e-census-mix-task.md (PENDING)
+  - Publishing the extent accuracy and coverage (Quality statement)
 ---
 
-# Session: CV-S05: Extent and Application Reader (ACTIVE)
+# Session: CV-S05: Extent and Application Reader (CLOSED)
 
-> **Suspended 2026-10-27** (Jason: "open CV-S05d and suspend CV-S05"): for CV-S05d Whole-Reader Census (`2026-10-27-cv-s05d-whole-reader-census.md`). CV-S05c censused list items only, and round 12's agent NEW sat in other readers (application, `RefList`, the sweep's noise bin). Resume with round 13 from CV-S05d's counted shapes, plus the open seed 17 NEW-1–3 and the 2009/23 Chapter 6 residual. Then the agent check as the final confirmation.
-
-> **Suspended 2026-10-27** (Jason: "make the sub session active and suspend this one"): for CV-S05b List shape audit, which finds the technique that counts list misreads across the corpus. Resume with: the pass-bar decision (below), then round 11 from CV-S05b's ranked shapes plus round 10's NEW-1. (CV-S05b, a technique-choice session, was a path not followed and was deleted on 2026-10-27; the work went to CV-S05c Shape Mining, closed.)
+> **Closed 2026-10-28** (Jason: close "based on the statistics … with no further rounds"). Read **"Quality statement"** (after Dependencies) first: what the extent data is, how it was checked, its measured accuracy and coverage, and why it is held to be good. Everything after it is the round-by-round history.
 
 ## Problem
 
@@ -272,17 +410,17 @@ The session does not close until its results pass.
 - ✅ Build the acceptance check; run it (ask Jason before any long run)
 - ✅ Checked on a sample of each wording read (CV-07 built four rounds, checked only by golden)
 - ✅ Act wordings not read: "Parts I and III of this Act … extend to …"; "except for Part N, which extends to …"; "the same part or parts … as the provision to which it relates" (CV-07)
-- ⬜ Enabling-power parser: 6 other unparsed forms and 1 with no enacting formula (CV-07 agent sample); SI 1999/3232 matched to "ECA 1972 s.80, Sch.9" (a multi-law citation marker misread)
-- ⬜ The competence rule (a devolved SI's competence doesn't confine its insertion, V1-04) confirmed on cases beyond Forestry Act s.1(1A)
-- ⬜ SI 2012/760: its made introduction (held) names no enabling provisions (from CV-S01)
+- ⏸️ (deferred: an enabling-power parser gap, counted as KP; the laws get no bound, never a wrong one) Enabling-power parser: 6 other unparsed forms and 1 with no enacting formula (CV-07 agent sample); SI 1999/3232 matched to "ECA 1972 s.80, Sch.9" (a multi-law citation marker misread)
+- ⏸️ (deferred: V1-04 design holds; confirm on further cases when they appear) The competence rule (a devolved SI's competence doesn't confine its insertion, V1-04) confirmed on cases beyond Forestry Act s.1(1A)
+- ⏸️ (deferred: KP, no bound) SI 2012/760: its made introduction (held) names no enabling provisions (from CV-S01)
 - ✅ Before round 6, the two defects the run-time read pass exposed — fixed (`65bf8b34`, `9c28b1ad`); runs below (Jason: "Run")
-- ⬜ Round 6 (Jason 2026-10-26: "go ahead"): ✅ (1) [`1085611f`] ✅ (2) [`a79b5c36`] ✅ (3) [`b1a1aad5`] never drop a statement silently: a sentence saying where provisions extend that isn't turned fully into rules is recorded unread, and its provisions get no bound, never the default; the catalogue and the check count it; (2) the misreads and my regressions: NEW-A (Chapter of Part), NEW-C (section in brackets), uksi 2019/696's exceptions read as items, 2022/1037's Part 4; (3) forms: "except as aforesaid … shall not extend there", lettered places "to— (a) England and Wales, (b) …", "extends to any part of the United Kingdom to which the amended enactment extends"; (4) the same runs, then agent round 6 (misses that are counted are known classes; only misreads and silent drops are NEW)
+- ✅ Round 6 (Jason 2026-10-26: "go ahead"): ✅ (1) [`1085611f`] ✅ (2) [`a79b5c36`] ✅ (3) [`b1a1aad5`] never drop a statement silently: a sentence saying where provisions extend that isn't turned fully into rules is recorded unread, and its provisions get no bound, never the default; the catalogue and the check count it; (2) the misreads and my regressions: NEW-A (Chapter of Part), NEW-C (section in brackets), uksi 2019/696's exceptions read as items, 2022/1037's Part 4; (3) forms: "except as aforesaid … shall not extend there", lettered places "to— (a) England and Wales, (b) …", "extends to any part of the United Kingdom to which the amended enactment extends"; (4) the same runs, then agent round 6 (misses that are counted are known classes; only misreads and silent drops are NEW)
 - Reader correctness done in the run-time session (moved here 2026-10-26):
   - ✅ After the gate: a caption names no law, nested quotes stripped whole — `be32c526` (Petroleum Act 1998 +9, SI 2024/1268 +1; regression 29 changed, net +78)
   - ✅ Environment Act 1995 Sch. 22 para 30 (HSWA): "The Health and Safety at Work etc. Act 1974 (in this paragraph referred to as “the 1974 Act”)" read as "Work etc. Act 1974" (apposition title stopped at "at"), naming no law — fixed `407df2c2` (short words, bracketed parts); regression preview 2 changed, +34 (1995/25 +10 HSWA; SI 2012/3119 +24 on SI 2010/2215, its bracketed title). Indexes stale until the round's full pass
   - ✅ Reader target precision — `2c1bf0b0`: a list item's place from its parents (lead-in only; a named sub-paragraph level 2), "that subsection", words listed, captions (nested too) never brackets or numbers, one quoted target per subsection, Schedule-paragraph instructions no section rules
   - ✅ End of round: full read pass (restore point `run-time-before-read-pass-9`): 7 min 49 s, 2,102 laws, 635 changed, rules 43,778 → 42,335, traced by class (see below); golden 27/27
-  - ⬜ Next round: a parent's "listed in sub-paragraph (4)" (the amending law's own) is inherited as a place (SI 2026/386 Sch. 3 para 6(3)(a) → reg.2(4); no rule stored yet); a sibling list item naming a law outranks the provision's heading (SI 2026/386 para 6(5): was DPA 2018 s.155, now nothing, should be PEC reg.32)
+  - ⏸️ (deferred to the amendment reader's next round; open bug in the frontmatter) Next round: a parent's "listed in sub-paragraph (4)" (the amending law's own) is inherited as a place (SI 2026/386 Sch. 3 para 6(3)(a) → reg.2(4); no rule stored yet); a sibling list item naming a law outranks the provision's heading (SI 2026/386 para 6(5): was DPA 2018 s.155, now nothing, should be PEC reg.32)
   - ⏸️ Annex/Schedule targets — deferred (Jason 2026-10-26): LAT holds no Schedule or Annex rows (LR-10, v0.1), so these rules would reach no row and change no output; the instructions are held back / dropped, never placed on real sections. Prerequisite if Schedules come into LAT. Known cases: PSTI 2022 → CA 2003 Sch. 3A ("the electronic communications code"); SI 2019/758 Sch. 3 → REACH Annexes
   - ✅ 202 laws stale in `lat.extent_check` (OH&S) traced: corpus-wide 483 of 2,050 — 482 the read pass's bare extent write wiping powers/competence (fixed `1a4626b8`, one writer `Extent.Store.write_read/3` + `ExtentWriteTest`), 1 (`UK_ukpga_1995_15`) last written 2026-10-22, before CV-S05's reader fixes
   - ✅ Repaired the 483 laws' `extent_rules` (restore point `run-time-before-extent-repair`; `--extents --cached`, 1 min 28 s, 483 + 49 parent Acts); OH&S extent check PASS, 0 stale. CV-S05's rebuild picks the territories up
@@ -293,16 +431,119 @@ The session does not close until its results pass.
 - ✅ Round 10 [`56f98e86`]: round 9's NEW-1 (2002/30 s.108) and the agent's side readings; the runs (check PASS, golden 27/27); agent round 10 seed 15 — see below
 - ✅ CV-S05c Shape Mining (CLOSED 2026-10-27): census of all extent sentences (`backend/data/experiments/cv-s05c-shape-mining/run-01/`); classes A–F and the 'this paragraph' rule logged as open bugs in CV-S05c, for round 11
 - ✅ Pass bar for the agent check: decided 2026-10-27 (see "Pass bar: decided")
-- ⬜ Round 11: CV-S05c's classes by count (A: "In Part N— (a) … (b) …" only (a) read, 6 laws; B: item's own exception drops it, 8+3; C: plain refs dropped with a qualified companion, 4+1; D: trailing-qualified item not withheld, 4+2; E: one-offs, 7; F: excluded provisions held, 4 new; Schedule "this paragraph" own extent, ~12) with their laws as fixtures (`run-01/confirmed.md`, `overreach.md`, `unread_tail.md`); round 10's NEW-1 (lost lead "In Schedule N—", 9 laws); then re-run run-01's commands as run-02 and compare; then agent check against the agreed bar
-- ⬜ Deferred from CV-S05c: after round 11's run-02, decide whether the census earns a permanent read-only mix task (pure modules + tests)
-- ⬜ CV-S05d Whole-Reader Census (SUSPENDED for round 13, `2026-10-27-cv-s05d-whole-reader-census.md`): fix list S1–S17 (~65 laws) in `backend/data/experiments/cv-s05d-whole-reader-census/run-03/out/triage.md`; run-04 is round 13's check
-- ⬜ Round 13 (Jason 2026-10-27; code done, runs next): S1–S17 from CV-S05d run-03, plus seed 17 NEW-1–3 (= S11, S8, S2) and the 2009/23 Chapter 6 residual; tests per wording on the laws' real words; then restore point, one extents run, golden, check, census run-04, agent check
-- ⬜ **Application Scope Hand-off to Fractalaw (PENDING, `2026-10-27-application-scope-handoff.md`; Jason 2026-10-27):** application to cases is fitness scope (skill class KA), not extent. CV-S05d's census extracts these sentences for fractalaw (61 laws with no fitness data in run-01). It is not closed by CV-S05 or CV-S05d: keep it open until it is done.
-- ⬜ Fix until the check passes reliably; record the result
+- ✅ Round 11: CV-S05c's classes by count (A: "In Part N— (a) … (b) …" only (a) read, 6 laws; B: item's own exception drops it, 8+3; C: plain refs dropped with a qualified companion, 4+1; D: trailing-qualified item not withheld, 4+2; E: one-offs, 7; F: excluded provisions held, 4 new; Schedule "this paragraph" own extent, ~12) with their laws as fixtures (`run-01/confirmed.md`, `overreach.md`, `unread_tail.md`); round 10's NEW-1 (lost lead "In Schedule N—", 9 laws); then re-run run-01's commands as run-02 and compare; then agent check against the agreed bar
+- ✅ (decided 2026-10-28: yes, PENDING `2026-10-28-cv-s05e-census-mix-task.md`) Deferred from CV-S05c: after round 11's run-02, decide whether the census earns a permanent read-only mix task (pure modules + tests)
+- ✅ CV-S05d Whole-Reader Census (CLOSED 2026-10-28; was SUSPENDED for round 13, `2026-10-27-cv-s05d-whole-reader-census.md`): fix list S1–S17 (~65 laws) in `backend/data/experiments/cv-s05d-whole-reader-census/run-03/out/triage.md`; run-04 is round 13's check
+- ✅ Round 13 (Jason 2026-10-27): S1–S17 from CV-S05d run-03, plus seed 17 NEW-1–3 (= S11, S8, S2) and the 2009/23 Chapter 6 residual; tests per wording on the laws' real words; then restore point, one extents run, golden, check, census run-04, agent check
+- ⏸️ (stays PENDING after this session closes, its own deliverable) **Application Scope Hand-off to Fractalaw (PENDING, `2026-10-27-application-scope-handoff.md`; Jason 2026-10-27):** application to cases is fitness scope (skill class KA), not extent. CV-S05d's census extracts these sentences for fractalaw (61 laws with no fitness data in run-01). It is not closed by CV-S05 or CV-S05d: keep it open until it is done.
+- ✅ Fix until the check passes reliably; record the result: closed on the statistical pass rule 2026-10-28 (Quality statement)
 
 ## Dependencies
 
 - ✅ The steps before it passed (CV-00 order): CV-S01–S04 closed PASS on OH&S (CV-S04 2026-10-24)
+
+
+## Quality statement (2026-10-28): why the extent data is held to be good
+
+This is the record to come back to, and the basis for publishing the data's accuracy to users. Figures are as of reader `157abd4d` on the OH&S: Occupational family.
+
+### What the data is
+
+**Scope:** for each text change to a family law (149 laws with LAT; 4,967 text changes made by 445 amending laws), the territory where the change has effect.
+
+**Where the territory comes from:**
+- the **amending law's own words**: its extent clause, its lists ("The following provisions extend to Scotland only— …"), and its application statements;
+- else, for an SI, the **extent of its enabling powers**;
+- else, for a devolved law, the **legislature's competence**.
+
+The reader stores this as `extent_rules` per amending law, and as `law_text` extent/territory claims on each change (`provision_changes`). The label fold (CV-S09) reads them.
+
+**Design rule: never guess.** A statement the reader can't turn fully into rules is recorded unread, and its provisions get **no bound, never a default**. A gap is therefore visible and safe; a wrong bound is the only real failure.
+
+### How it was checked: four independent layers
+
+1. **Catalogue** (`mix lat.extent_patterns`): every extent and application sentence in 3,358 held amending laws, classed by form × reading. 1,254 real examples with hand-reviewed expected readings run as tests (`test/fixtures/extent_patterns/`).
+2. **Whole-store census** (CV-S05d, `backend/data/experiments/cv-s05d-whole-reader-census/`):
+   - an independent finder that shares no code with the reader compares every sentence's named provisions and places with the stored rows, across all 3,358 laws;
+   - every flagged item was triaged (run-05);
+   - from run-05 on, every fix batch's whole-store reading diff was reviewed law by law before its chain (runs 06, 07, and the seed 21/22 pre-flights).
+3. **Structural checks, every round:**
+   - `mix lat.extent_check`: stored rows equal the reading (our faults 0), and the sweep shows no uncaught sentence in a readable form;
+   - golden provisions 27/27;
+   - the feed and markup checks (our faults 0).
+4. **Independent agent samples** (skill `extent-reader-check`):
+   - each seed checks 50 amending laws and 50 text changes, stratified so every kind is seen;
+   - the draw is reproducible: the seed is recorded, and it is drawn twice and compared;
+   - a separate Claude agent judges each item against the law's own stored text, under the written prompt in the skill;
+   - a defect counts only if it is a **wrong bound** (a territory contrary to the text) or a **silent drop** (a statement neither read nor counted).
+
+### Measured accuracy
+
+| Seeds | Sampled laws with a wrong bound | Sampled changes with a wrong bound |
+|---|---|---|
+| 5–6 (rounds 1–2, 2026-10-24) | 23/100 (23%; seed 5 alone 30%) | 7/100 (7%; seed 5 alone 14%) |
+| 8–10 (rounds 3–5) | 15/150 (10%) | 7/150 (4.7%) |
+| 11–13 (rounds 6–8) | 9/150 (6%) | 6/150 (4%) |
+| 14–16 (rounds 9–11) | 5/150 (3.3%) | 0/150 |
+| 17–19 (rounds 12–13) | 7/150 (4.7%) | 1/150 (0.7%) |
+| **20–22 (2026-10-28)** | **3/150 (2.0%; 95% upper bound 5.1%)** | **0/150 (95% upper bound 2.0%)** |
+
+The upper bounds are exact one-sided binomial (Clopper–Pearson) bounds. Every defect found in seeds 20–22 was fixed (`37d72402`, `157abd4d`), so the estimate is conservative for the current code. Pooled over seeds 17–22: laws 10/300 (3.3%; upper 5.6%), changes 1/300 (0.3%; upper 1.6%).
+
+**What this supports:** with 95% confidence, **at least 98% of text changes carry no wrong territory from the reader**. At law level, about 98% of amending laws are read without any wrong bound (at least about 95%).
+
+**Why one clean sample isn't the bar:** at a 2% residual rate, a 50-law sample comes back clean 36% of the time by chance. Seed 20 passed; seeds 21 and 22 then found 1 and 2 one-off wordings. So the session closed on the pooled rule decided in advance (changes < 2%, laws < 5% at the 95% upper bound). That rule is met for changes and marginal for laws (5.1%), and was accepted by Jason 2026-10-28.
+
+**What remains:** the residual misses are compositional one-offs. A recent example is "(which extends only to Northern Ireland)" inside a bracket of an exception-list item whose items sit in another subsection. They aren't missing simple phrases. A Good–Turing estimate (3 one-off wordings in 150 sampled laws) agrees: about 2% of laws may hold a not-yet-seen wording.
+
+### Coverage: where the territory comes from (4,967 OH&S text changes)
+
+| Source | Changes | Share |
+|---|---|---|
+| The amending law's own text (`bound:law` 3,093 + `territory:law` 24) | 3,117 | 62.8% |
+| Follows the enactment it amends (`same` 284 + `same_or_not_named` 15) | 299 | 6.0% |
+| Feed or markup territory | 3 | 0.1% |
+| **No bound: EU law, whose extent isn't read (KE)** | 573 | 11.5% |
+| **No bound: SI's enabling powers not parsed (KP)** | 450 | 9.1% |
+| **No bound: a statement withheld, unread and counted (KU)** | 328 | 6.6% |
+| **No bound: devolved competence only (KC)** | 149 | 3.0% |
+| No bound: no amending law known | 42 | 0.8% |
+| No bound: other (no clause, not held, not named) | 6 | 0.1% |
+
+A change with no bound is never given a default. Its territory stays unknown, and the label fold can take it from the feed or markup, or leave it unknown.
+
+### Caveats for publishing
+
+- **One family** (OH&S: Occupational). Other families need their own catalogue review and agent check (skill steps); this is what CV-S05e's census task is for.
+- **The sample is stratified, not proportional.** The rates are per sampled law and change of that design. Agent judgement is an AI review of the stored legal text, not a lawyer's sign-off.
+- **The territory is the amending law's own extent at the amending provision.** Commencement territory (`in_force_for`) and the final label are the label fold's (CV-S09).
+- **Known limits, each counted and never a wrong bound:**
+  - EU law extent (KE);
+  - unparsed enabling powers (KP);
+  - devolved competence only (KC);
+  - qualified statements withheld (KU);
+  - application to cases rather than places (KA, handed to fractalaw);
+  - Schedule rows not held (KS, v0.1; Schedules land in v0.2, #169).
+
+**Draft wording for users:** "Territorial extent of amendments is read from each amending law's own text, or from its enabling powers. In independent checks of randomly drawn samples, at least 98% of amendments (95% confidence) were assigned no incorrect territory. Where the text could not be read with confidence, no territory is assigned rather than a guess: about 31% of amendments in this family, mostly EU-derived law and instruments whose enabling powers are not yet parsed."
+
+### How to re-measure
+
+1. Catalogue: `mix lat.extent_patterns --accept`, then review the diff (the skill's steps).
+2. Write the reading: `mix lat.amending --extents --amending <laws> --cached`.
+3. Golden: `mix lat.vocabulary --check --family F`.
+4. Check: `mix lat.extent_check --family F`.
+5. Sample and agent: `--sample a.json --n 50 --seed N`, drawn twice and compared with `cmp`; the agent prompt in the skill.
+6. Census: `run-07`'s scripts (`dump.exs`, `census.py`), until CV-S05e makes it a mix task.
+
+Pool seeds since the last fix batch, and state the 95% upper bounds.
+
+### The argument in short
+
+- **Safe by design:** an unread statement withholds and never defaults.
+- **Measured four ways:** the catalogue, a census that shares no code with the reader, structural checks, and independent random samples.
+- **The error trend fell and flattened:** 30% → 2% of laws (seed 5 → seeds 20–22), 14% → 0% of changes. Every found defect is fixed with a test on the law's own words.
+- **The remaining risk is stated with a bound, not hidden:** at most 2% of changes (95%).
 
 ## What good looks like (PROPOSED 2026-10-24, awaiting Jason)
 
@@ -1519,6 +1760,14 @@ Acceptance run and seed 20 next.
        - a change by the law's own Schedule key is labelled `same_or_not_named`, not `same`;
        - SI 2013/1506 reg.3(3)'s unread row includes the qualifier's object;
        - 2015/20 s.114(2) is withheld whole, its plain items included.
+   - ❌ **Seed 22 (2026-10-28): FAIL, 2 NEW wrong bounds.** Laws 47 OK / 2 WRONG / 1 doubtful; changes 49 OK / 1 doubtful (a label).
+     - **NEW-1:** 1996/23 s.108(3), "… and the provisions of Schedules 3 and 4 … extend to Scotland so far as they relate to enactments which so extend", fell to the default E+W+NI. The Factories Act s.171 change was bound E+W+NI. Run-05 had mis-triaged this as finder-side.
+     - **NEW-2:** 1989/38 s.30(6)(d), "section 27 (which extends only to Northern Ireland)", was read as also NI.
+     - **Fixed** (`157abd4d`, 3 tests). Pre-flight: 3 laws changed, including 1975/18's Schedules 1 and 2 now withheld by the same rule.
+     - **Chain:** golden 27/27; checks PASS; the claim diff loses only the wrong Factories Act bound. Restore point `cv-s05-before-seed22-fix`; snapshot `r6b.claims18`. Full suite 9,194.
+   - ✅ **Decision 2026-10-28 (Jason): close on the statistics, no seed 23.** "It looks like we're very close to the proposed pass rule today. Capture this in the session and the decision, based on the statistics, to close the session with no further rounds."
+     - Pooled seeds 20–22: changes 0/150 (95% upper 2.0%), laws 3/150 (2.0%, 95% upper 5.1%).
+     - See "Quality statement".
    - close CV-S05 (frontmatter, bugs, lessons);
    - close CV-S05d: run-01 to run-05 evidence, and the permanent read-only mix task decided (build, or defer to a PENDING session);
    - the application scope hand-off stays PENDING; the Pointer/Locator naming stays on the v0.2 list (#169);
