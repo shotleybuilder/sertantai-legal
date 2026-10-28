@@ -20,7 +20,7 @@ Found by CV-S06's golden run from inputs (2026-10-28): RTA 1988 s.4(6) fails, re
 - ✅ Measure: 20 target-named statements in 14 amending laws; 2 bear on OH&S changes (SOCPA Sch.7 para 27(4), EPA 1990 Sch.16 Pt III); 89 unread Schedule own-paragraph rows in 47 laws (see Measure)
 - ✅ Design: target statements `{kind, place, scope, law, refs}` (new `Extent.Targeted`), rows `target_<kind>` with a new `amends` column, matched in `Lookup.of_change/3` by the change's law and target; own-paragraph forms widened (see Design)
 - ✅ Read the forms (6ecbc958, check fix 26d91b7e): `Extent.Targeted` + `Extent.ChangeTarget`, `amends` column; own-paragraph forms widened; catalogue 10 new patterns, 8 examples re-read (see Build)
-- ⬜ Golden from inputs 27/27; extent check and catalogue; one chain
+- ✅ Golden from inputs 27/27; extent check PASS (our faults 0); catalogue; one chain (see Chain)
 - ⬜ Agreement measure (CV-S06's revised check, Jason 2026-10-28): the extent reader's bound (`law_text.extent`) against the feed's `effect_extent` / `territorial_application`, like for like, over every bounded change; agents on the disagreements and on changes with no feed extent. Added to the quality statement
 
 ## Dependencies
@@ -145,4 +145,14 @@ Register titles carry no year ("Road Traffic Act"), so a named law is matched on
 **Extent check (OH&S):**
 - The first run reported 384 `stale`: the check compared a hard-coded column list without `amends`. Fixed to use `Store.compared/0` (26d91b7e).
 - Now 5 stale: exactly the OH&S amending laws whose reading changed (EPA 1990, Arbitration 1996, SOCPA 2005, ERRA 2013, AFA 2015). They clear when their extent rows are written.
+
+## Chain (2026-10-28, Jason: "Full read pass")
+
+1. **Restore point** `cv-s05f-before-chain` (extent_rules, amendment_rules, provision_changes, provision_change_claims).
+2. **Read pass** (`mix lat.amending --read`, 9m48s): 2,102 laws read, rules unchanged (42,746 → 42,746, as expected: no amendment-reader change). Extent rows were rewritten for the laws whose reading changed: 28 `target_*` rows in 10 laws, plus SOCPA Sch.7's own-paragraph rows (paras 47–49, 51, 54, 56, 57, 60) and `target_also S sch.7.para.27 {s.4(8)}`.
+3. **Extent check (OH&S):** PASS, our faults 0. Territory from the law's bound covers 3,057 of 4,911 changes; `none:unread_statement` is 321.
+4. **Rebuild** (`lat.vocabulary --check --family OH&S`, 1m31s): 27/27. That figure is scored from stored changes. RTA 1988 lies outside the family, so its stored changes (built 2026-10-22) still say s.4(8) E+W.
+5. **Golden from inputs** (`--golden`, 2m48s): **27/27**. RTA 1988 s.4(6) passes from a fresh read; it was the CV-S06 known limit.
+
+Lookup from the stored rows on the feed's own affecting refs (`sch.7.para.27(2)`, `sch.17.pt.2`): s.4(6) E+W, **s.4(8) E+W+S**. The stored RTA changes take it at RTA's own rebuild (not in OH&S).
 
