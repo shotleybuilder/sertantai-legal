@@ -220,7 +220,7 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
     do:
       e
       |> Extent.to_rows(law)
-      |> Enum.map(&Map.take(&1, [:kind, :place, :items, :source_ref]))
+      |> Enum.map(&Map.take(&1, Store.compared()))
       |> MapSet.new()
 
   # the law's first extent or application words, where it states none read

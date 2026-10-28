@@ -77,6 +77,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Store do
     end)
   end
 
+  @doc "The columns a stored row is compared on (`rows_for/1`'s), for a reading's rows."
+  @spec compared() :: [atom()]
+  def compared, do: @compared
+
   @doc """
   Each law's stored rows as written (kind, place, items, source_ref, amends), for
   those of `laws` read — what the check compares the reading now with, so
