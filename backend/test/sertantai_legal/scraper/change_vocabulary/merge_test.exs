@@ -8,7 +8,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeTest do
   """
   use ExUnit.Case, async: true
 
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{Claim, Merge}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Claim, Merge}
 
   defp set(key, target, claims),
     do:
@@ -250,5 +250,35 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeTest do
     keys = Enum.map(changes, &{&1.key, &1.target})
     assert keys == Enum.uniq(keys)
     assert alone(changes) == []
+  end
+
+  test "a whole provision the law's text makes below a words change stays its own (HSWA s.51A(2)(c), 2011 c.13 Sch.16 para 119(2)(b), CV-S06 seed 33)" do
+    key = "UK_ukpga_2011_13:schedule-16-paragraph-119-2-b"
+
+    quoted =
+      set(key, "s.51A(2)(c)(ii)", [
+        {:law_text, :operation, :substituted},
+        {:law_text, :level, :provision},
+        {:law_text, :by, "UK_ukpga_2011_13"},
+        {:commencement, :date, ~D[2020-12-31]}
+      ])
+
+    feed =
+      set("key-0000000000000000000000000000c0", "s.51A(2)(c)", [
+        {:feed, :operation, :substituted},
+        {:feed, :level, :words},
+        {:feed, :by, "UK_ukpga_2011_13"},
+        {:feed, :date, ~D[2020-12-31]},
+        {:feed, :affecting, ["sch.16.para.119(2)(b)"]},
+        {:markup, :operation, :substituted},
+        {:markup, :level, :words}
+      ])
+
+    changes =
+      Merge.merge([quoted, text(key, "s.51A(2)(c)", :substituted, "UK_ukpga_2011_13"), feed])
+
+    c = Enum.find(changes, &(&1.target == "s.51A(2)(c)"))
+    refute :provision in Change.values(c, :law_text, :level)
+    assert Enum.any?(changes, &(&1.target == "s.51A(2)(c)(ii)"))
   end
 end

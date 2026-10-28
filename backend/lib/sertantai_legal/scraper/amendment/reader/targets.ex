@@ -61,6 +61,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
     if own? do
       [Brackets.ref(p, path)]
     else
+      # a lone "i", "v" or "x" is a letter or a numeral: as a numeral, under
+      # the last bracket named ("in paragraph (c), for “…” substitute— (i)
+      # … (ii) …": s.51A(2)(c)(i), not only s.51A(2)(i) — CV-S06 seed 33)
       for(
         n <- numbers,
         pre <- prefixes(Brackets.above(named, [hd(path)])),
@@ -71,6 +74,14 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
           length(named) > 1,
           hd(path) =~ ~r/^[ivx]+[a-z]?$/,
           do: Brackets.ref(p, [n | Enum.drop(named, -1) ++ path])
+        ) ++
+        for(
+          n <- numbers,
+          named != [],
+          hd(path) in ~w(i v x),
+          # (under a letter: "(c)", never a numeral already — "(i)(i)")
+          List.last(named) =~ ~r/^[a-z]{1,2}$/ and not (List.last(named) =~ ~r/^[ivx]+$/),
+          do: Brackets.ref(p, [n | named ++ path])
         )
     end
   end

@@ -160,6 +160,19 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderS06Test do
              Enum.find(rules, &("reg.3(m)" in &1.targets))
   end
 
+  test "a quoted lone (i) under a lettered paragraph is that paragraph's (2011 c.13 Sch.16 para 119(2)(b), seed 33)" do
+    hswa = Reader.law_ref("UK_ukpga_1974_37", "Health and Safety at Work etc. Act", "s")
+
+    d =
+      doc(
+        ~s|<P1 id="section-1"><P1para><Text>Section 51A of the Health and Safety at Work etc. Act 1974 is amended as follows.</Text><P2 id="section-1-2"><P2para><Text>In subsection (2)—</Text><P3 id="section-1-2-b"><P3para><Text>in paragraph (c), for “means the person” substitute “means—</Text><BlockAmendment><P4><Pnumber>i</Pnumber><P4para><Text>one</Text></P4para></P4><P4><Pnumber>ii</Pnumber><P4para><Text>two</Text></P4para></P4></BlockAmendment></P3para></P3></P2para></P2></P1para></P1>|,
+        "UK_ukpga_2011_13"
+      )
+
+    quoted = Enum.find(read(d, "section-1-2-b", hswa), &(&1.treatment == :quoted))
+    assert "s.51A(2)(c)(i)" in quoted.targets and "s.51A(2)(c)(ii)" in quoted.targets
+  end
+
   describe "B5: the change vocabulary's targets" do
     defp rule(targets, treatment, level \\ :provision),
       do:

@@ -133,6 +133,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
           law == nil or by(c) == law,
           same_day?(orphan, c),
           other_source?(orphan, c),
+          not inside_words?(orphan, c),
           do: c
 
     events =
@@ -176,6 +177,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
           event -> place(by_target, event)
         end
     end
+  end
+
+  # a whole provision the law's text makes below a words change above it is
+  # its own change, never folded into the words change ("in paragraph (c),
+  # for “…” substitute— (i) … (ii) …": (c)(ii) substituted whole had joined
+  # the feed's words change on (c), and made (c) whole — CV-S06 seed 33)
+  defp inside_words?(orphan, c) do
+    Change.value(orphan, :law_text, :level) == :provision and
+      c.target in tl(LatRef.ancestors(orphan.target)) and
+      (Change.value(c, :feed, :level) || Change.value(c, :markup, :level)) == :words
   end
 
   # the event's placement on a provision: merged into the one there, if the
