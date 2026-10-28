@@ -93,9 +93,8 @@ Known classes (label a finding with one; otherwise NEW):
   provision after it (no heading rows).
 - KB a named place's deepest reading not held as a row falls back to the place held (s.15(6) when the law holds
   no s.15(6)(e) row).
-- KR open, logged: a repeals-table line naming a provision with its joining word ("Section 27(2)(b) and the word
-  “or” immediately preceding it") read as words; SI 1974/1941 reg.5(1) "sections 7, 8(2) and the entry in
-  Schedule 2 relating to section 124(2)" read as s.7(2), s.8(2), s.124(2).
+- KJ2 six law-text changes with an identical feed effect by the same law left apart (CV-S07's).
+(KR, the repeals-table joining word and "sections 7, 8(2)", fixed in round 5: NEW if seen again.)
 Dates (CV-S04) and territory (CV-S05) are not judged here.
 
 For each item judge, against the amending provision's words (open the XML when the instruction alone doesn't
@@ -120,3 +119,5 @@ OH&S (first family, 2026-10-28 →). The session is `.claude/sessions/change-voc
 | 1 | 31 | FAIL, 1 NEW (changes 49/50, pairs 47/48): a skipped-level CLML id (HSWA `section-28-f-i`) left a stray partial reading on s.28; fixed `35f29731` |
 | 2 | 32 | PASS, no NEW (changes 50/50, pairs 33/33) |
 | 3 | 33 | FAIL, 1 NEW (changes 49/50, pairs 38/39): a quote's whole sub-provision folded into a words change on its parent by the merge (HSWA s.51A(2)(c)); fixed `bd0ff6de`. Next rounds use the revised check (strata A/D/L) |
+| 4 | 34 (A) | Strata A 1,059 / D 81 / L 33. A: 50/50 (pooled 0/176). D+L in full: 7 wrong — NEW-1 a definition's limb with no row read whole (COSHH reg.2(1)), NEW-2 a quote numbered in its text ("; or (c)"), KR ×3. FAIL |
+| 5 | — | Fixed `91211e44`, `51088da8`; D+L changed items re-checked 14/14; A pooled (unchanged items) 0/160 (1.85%), pairs 0/86 (3.42%); golden 26/27 (CV-S05f). PASS |

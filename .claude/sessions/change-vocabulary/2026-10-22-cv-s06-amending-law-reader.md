@@ -10,49 +10,49 @@ bugs:
     module: Amendment.Reader (in_schedule)
     affected: 59
     fix: "schedule located when the instruction or a holding provision (unquoted, captionless, unicode) names Schedule N / Annex N and no section, regulation, article or rule: no rules while Schedules are not read as targets"
-    status: open
+    status: fixed  # 24e5c371 (fix batch B1–B7)
   - pattern: "A list of many laws' provisions ('In the following provisions, for … substitute …— s.1A(8) of the 1953 Act; … paragraph 2(2) of Schedule 3A to HSWA; …', Sentencing Act 2020 Sch.24 para 443; 'The enactments are— … HSWA, section 60; …', 2022/31 Sch.1 para 1(2)) read with other laws' items as the amended law's targets (HSWA s.1A… ×125 'inserted'; s.113)"
     category: reader misread (target)
     module: Amendment.Reader / LawNamed.scoped
     affected: 2
     fix: "each law takes only its own item's provisions (the item naming it)"
-    status: open
+    status: fixed  # 24e5c371 (fix batch B1–B7)
   - pattern: "Heading and punctuation substitutions read as whole-provision: 'For the heading substitute—' (under regulation 6) → reg.6 substituted; 'for the full stop at the end of sub-paragraph (b) substitute a comma' → reg.7(4)(b) provision"
     category: reader misread (level)
     module: Amendment.Reader.Clauses (operation level)
     affected: 2
     fix: "heading, full stop, comma, semicolon substitutions are words-level"
-    status: open
+    status: fixed  # 24e5c371 (fix batch B1–B7)
   - pattern: "A named place's bracket readings ('subsection (6)(e)' → s.15(6), s.15(e), s.15(6)(e)) taken top-most by the change vocabulary as if a quote's tree: the parent marked changed (HSWA s.15(6) repealed for (6)(e); reg.14(1) substituted for 14(1)(c); s.28(3) for (3)(c)(iii)): 74 of the family's 521 provision-level rules carry such readings"
     category: reader misread (target)
     module: ChangeVocabulary.Readers.AmendingLaw (targets) / Amendment.Reader (treatment)
     affected: 74
     fix: "quoted rules carry treatment :quoted (top-most); a named place's readings filtered to the law's rows, then the deepest"
-    status: open
+    status: fixed  # 24e5c371 (fix batch B1–B7)
   - pattern: "'after subsection (2) insert the subsection set out in sub-paragraph (2)' read as s.11(2) inserted (the anchor), not s.11(2A) (2005 c.14 Sch.3 para 3(1)(b))"
     category: reader misread (target)
     module: Amendment.Reader (set_out)
     affected: 1
     fix: "the block set out in a sibling sub-paragraph is the quote"
-    status: open
+    status: fixed  # 24e5c371 (fix batch B1–B7)
   - pattern: "A provision omitted with the word joining it ('omit sub-paragraph (d) and the word “or” preceding it') read as words: the quoted conjunction made the clause words-level"
     category: reader misread (level)
     module: AmendingLaw.Operation (words?)
     affected: 8
     fix: "a provision named then 'and the [word] “…” preceding/following/at the end' is whole"
-    status: open
+    status: fixed  # 24e5c371 (fix batch B1–B7)
   - pattern: "A quote numbering provisions ('In paragraph (l), at the end, for “.” substitute— (m) …; (n) …') read as words in the new paragraphs"
     category: reader misread (level)
     module: Amendment.Reader (quoted rule)
     affected: 10
     fix: "a quoted rule with numbered provisions is provision-level, unless it quotes a definition (its lettered paragraphs are words)"
-    status: open
+    status: fixed  # 24e5c371 (fix batch B1–B7)
   - pattern: "A list of sections with a Schedule entry ('sections 7, 8(2) and the entry in Schedule 2 relating to section 124(2) …', SI 1974/1941 reg.5(1)) read as s.7(2), s.8(2), s.124(2): the bracket carried to s.7 and the entry's section taken as the law's"
     category: reader misread (target)
     module: Amendment.Reader.Targets
     affected: 1
-    fix: "not in this batch (one provision); a list's bare numbers are whole, a Schedule entry's section is not the law's"
-    status: open
+    fix: "91211e44: a bare number listed beside bracketed ones is whole (Targets.named_for); the entry in Schedule N relating to … dropped (Clauses.no_schedule_entries)"
+    status: fixed
   - pattern: "A named place's partial readings kept beside its held one when the amended law's CLML skips a level (HSWA s.28(3)(f)(i) is section-28-f-i): 'paragraph (f)(i) of subsection (3)' gave s.28(3) and s.28(f)(i); the s.28(3) change was then placed on s.28 (seed 31 NEW, ssi 2008/339 art.5(2))"
     category: reader misread (target)
     module: ChangeVocabulary.Readers.AmendingLaw (targets) / ChangeVocabulary.build
@@ -69,20 +69,20 @@ bugs:
     category: reader misread (level)
     module: Amendment.Reader (quoted rule) / AmendingLaw.Operation
     affected: 2
-    fix: "a parent 'in the definition of …' makes the quoted rule and the instruction rule words-level (the definition exception reaches a quoted limb)"
-    status: open
+    fix: "91211e44, 51088da8: :in_definition treatment — an instruction rule under a parent naming a definition is words where its target falls back to the provision defining; a held limb stays whole; a quote's change wins over its named place on one row"
+    status: fixed
   - pattern: "A quote whose provision number is plain text, not a numbered P ('After regulation 5(3)(b) insert the following— ; or (c) information …'): quoted_provisions empty, so the anchor reg.5(3)(b) is read as inserted whole, not reg.5(3)(c) (SI 1989/682 by 2009/606 reg.2(3), (4)) — round 4 NEW-2 (D)"
     category: reader misread (target)
     module: AmendingLaw.Text (inserted) / Amendment.Reader.Targets
     affected: 2
-    fix: "read a leading '(x)' in the quote's text as the provision it makes, after any joining words ('; or', 'and')"
-    status: open
+    fix: "91211e44: Text.inserted reads a BlockAmendment's leading '(x)' (after '; or'/'and') when it has no numbered provision"
+    status: fixed
   - pattern: "A repeals-table line naming a provision with its joining word ('Section 1(1)(d) and the word “and” preceding it'; 'Section 27(2)(b) and the word “or” immediately preceding it') read as words (treatment repeal_table); B6's whole-provision rule reaches instructions only (EPA 1990 Sch.16 on HSWA s.1(1)(d); Electricity Act 1989 Sch.7 on HSWA s.27(2)(b)) — KR"
     category: reader misread (level)
     module: Amendment.Reader (repeal table) / AmendingLaw.Operation
     affected: 2
-    fix: "apply the provision-with-joining-word rule to repeals-table lines"
-    status: open
+    fix: "91211e44: RepealTable drops a provision's joining-word clause before reading the line"
+    status: fixed
   - pattern: "A range of provisions not expanded: 'in paragraphs (1)(b)(i) to (iii)' gives (i) and (iii), not (ii) (SI 2008/1597 by 2019/696 Sch.12 para 8(a)); 'Section 63(1) to (4)' gives (1) and (4) (HSWA by 1982 c.30 Sch.7, harmless: no rows between)"
     category: reader gap (target, yield)
     module: Amendment.Reader.Targets
@@ -113,7 +113,8 @@ The session does not close until its results pass.
 - ✅ Fix batch B1–B7; acceptance chain (2026-10-28): disagreements 211 → 142, family rules diff clean, golden from inputs 26/27 (RTA s.4(6): CV-S05f, known limit)
 - ✅ Precision check: `mix lat.amending_check` (0b40fa64), skill `amending-reader-check` (1648bbba)
 - ✅ Revised check built: `--strata`/`--stratum`/`--skip` in `mix lat.amending_check` (123f61a5), seeds 31–33 classed
-- ⬜ Round 4 (seed 34): A pooled passes (0/176, 1.69%); D and L in full FAIL: NEW-1 (definition limb), NEW-2 (plain-text quote number), KR (repeals-table joining word): fix batch, chain, re-check D and L
+- ✅ Round 4 (seed 34): A pooled passes; D and L in full FAIL: NEW-1, NEW-2, KR
+- ✅ Round 5: fix batch (91211e44, 51088da8), chain 4, D and L re-checked: PASS (A 0/160, 1.85%; pairs 0/86, 3.42%; D/L no misread; golden 26/27 bar CV-S05f)
 - ⬜ Quality statement and coverage table; CV-00 recipe step 6
 - ⏸️ The reader's yield over the feed (2,658 read with no rule): not chased (CV-07)
 
@@ -252,6 +253,25 @@ The pool restarts after this fix: seeds 32 onward (and again after seed 33's fix
 **Seen in passing (yield, not judged):** ranges not expanded ("(1)(b)(i) to (iii)", "Section 63(1) to (4)"); a clause with two operations gives one rule (NI 2015/339 reg.34(2)(b)). Logged as bugs.
 
 **Result: FAIL** on D and L (7 misreads: NEW-1, NEW-2, KR), A passes. Wrong changes in P now: 7 known in D∪L, plus A bounded at 1.69% × 1,059.
+
+## Round 5: fixes and re-check (2026-10-28)
+
+Fix batch (Jason: "Misreads only"), `91211e44` + `51088da8`:
+- NEW-1: `:in_definition` treatment. An instruction rule under a parent naming a definition is words where its target falls back to the provision defining (COSHH reg.2(1)); a limb held as a row stays whole; where a quote and its named place reach one row, the quote's change stands. First tried as "every rule under a definition is words": the 96-law diff showed whole limbs held as rows (SI 2008/1597 reg.2(ba)) turned words, so narrowed. A general "fallback is words" rule was also rejected: bracket-combination artefacts ("paragraphs (f)–(i)" → reg.3(f)(i)) would flip right readings.
+- NEW-2: a BlockAmendment numbering its provision in its text ("; or (c) …") makes that provision (SI 2009/606 → reg.5(3)(c), reg.5(1)(c)).
+- KR: repeals-table "Section 27(2)(b) and the word “or” …" whole; "sections 7, 8(2) and the entry in Schedule 2 relating to …" → s.7, s.8(2) (a bare number in a mixed list is whole, outside quotes and captions; a Schedule entry beside sections is no target).
+- Pre-flight: red tests (4 fail without the fixes), suites 4,890 pass, catalogue diff only the intended (2 misread patterns no longer seen), 96-law rules diff traced (per-number brackets first read brackets in quotes, context numbers and captions: tightened to written lists).
+- `in_definition` rows first failed to read back (`Rule.from_row`'s names were a hand list; 6 family laws failed the rebuild): fixed `51088da8`, round-trip test for every treatment.
+
+Chain 4 (restore point `cv-s06-round4`): read pass 143 laws changed (rules 42,758 → 42,746); rebuild 149 laws, no failures; golden from inputs 26/27 (RTA s.4(6), CV-S05f).
+
+**Strata after:** A 1,063 · D 77 · L 34 (P 1,174). Agreement: amending law 100%, operation 99.5%, level 99.2% (was 99.0%), same row 92.8%.
+
+**D and L in full:** 111 items; 102 unchanged since round 4 keep their verdicts (right); 9 changed or new plus the 4 NEW items now in A re-checked by agent: 14/14 right, no NEW. No misread left in D or L.
+
+**A pooled** (seeds 31–34, items unchanged by the fixes): 0 wrong of 160 changes (95% upper 1.85%), 0 of 86 pairs (3.42%). **PASS.**
+
+**Result: PASS** (revised check, Jason 2026-10-28). Open, logged, not misreads: yield gaps (ranges "(1)(b)(i) to (iii)", a clause with two operations); unjoined twins (CV-S07); RTA s.4(6) (CV-S05f).
 
 ## Starting point (2026-10-28, from run-07's family chain)
 
