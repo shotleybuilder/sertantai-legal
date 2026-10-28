@@ -65,6 +65,36 @@ bugs:
     affected: 4
     fix: "bd0ff6de"
     status: fixed
+  - pattern: "A quoted limb of one definition ('In regulation 2(1)— in the definition of “substance hazardous to health”— for paragraph (a), substitute— (a) …') read as provision-level: the law holds no reg.2(1)(a), the change falls back to reg.2(1) and says the whole of it was substituted (COSHH 2002/2677 by 2015/21 reg.12(2)(i)(ii); NI 2003/34 by 2015/265 reg.9(2)(j)(ii)) — round 4 NEW-1 (D)"
+    category: reader misread (level)
+    module: Amendment.Reader (quoted rule) / AmendingLaw.Operation
+    affected: 2
+    fix: "a parent 'in the definition of …' makes the quoted rule and the instruction rule words-level (the definition exception reaches a quoted limb)"
+    status: open
+  - pattern: "A quote whose provision number is plain text, not a numbered P ('After regulation 5(3)(b) insert the following— ; or (c) information …'): quoted_provisions empty, so the anchor reg.5(3)(b) is read as inserted whole, not reg.5(3)(c) (SI 1989/682 by 2009/606 reg.2(3), (4)) — round 4 NEW-2 (D)"
+    category: reader misread (target)
+    module: AmendingLaw.Text (inserted) / Amendment.Reader.Targets
+    affected: 2
+    fix: "read a leading '(x)' in the quote's text as the provision it makes, after any joining words ('; or', 'and')"
+    status: open
+  - pattern: "A repeals-table line naming a provision with its joining word ('Section 1(1)(d) and the word “and” preceding it'; 'Section 27(2)(b) and the word “or” immediately preceding it') read as words (treatment repeal_table); B6's whole-provision rule reaches instructions only (EPA 1990 Sch.16 on HSWA s.1(1)(d); Electricity Act 1989 Sch.7 on HSWA s.27(2)(b)) — KR"
+    category: reader misread (level)
+    module: Amendment.Reader (repeal table) / AmendingLaw.Operation
+    affected: 2
+    fix: "apply the provision-with-joining-word rule to repeals-table lines"
+    status: open
+  - pattern: "A range of provisions not expanded: 'in paragraphs (1)(b)(i) to (iii)' gives (i) and (iii), not (ii) (SI 2008/1597 by 2019/696 Sch.12 para 8(a)); 'Section 63(1) to (4)' gives (1) and (4) (HSWA by 1982 c.30 Sch.7, harmless: no rows between)"
+    category: reader gap (target, yield)
+    module: Amendment.Reader.Targets
+    affected: 2
+    fix: "expand 'X to Y' between siblings at the same depth, held rows only (LatRef range cover)"
+    status: open
+  - pattern: "Two instructions in one clause, the first dropped: 'after “a notifier” add “or applicant” and for “2001” substitute “2015”' gives only the substitution (NI 2012/255 reg.8(1) by 2015/339 reg.34(2)(b))"
+    category: reader gap (yield)
+    module: AmendingLaw.Operation / Amendment.Reader
+    affected: 1
+    fix: "a clause with two operations joined by 'and' gives a rule for each"
+    status: open
 ---
 
 # Session: CV-S06: Amending-Law Reader (ACTIVE)
@@ -82,7 +112,8 @@ The session does not close until its results pass.
 - ✅ Census of the 211 disagreements (B4–B7 found; the rest legislation.gov.uk, the merge's, or right; no renumbering) (65 law text only, 60 unjoined, 86 value): each classed backlog / reader misread / join miss / legislation.gov.uk fault; renumbering (C4) as a class
 - ✅ Fix batch B1–B7; acceptance chain (2026-10-28): disagreements 211 → 142, family rules diff clean, golden from inputs 26/27 (RTA s.4(6): CV-S05f, known limit)
 - ✅ Precision check: `mix lat.amending_check` (0b40fa64), skill `amending-reader-check` (1648bbba)
-- ⬜ Revised check (agreement over A, D and L in full, agent sample of A): `--strata` in `mix lat.amending_check`, skill updated, seeds 31–33 classed; then rounds until it passes
+- ✅ Revised check built: `--strata`/`--stratum`/`--skip` in `mix lat.amending_check` (123f61a5), seeds 31–33 classed
+- ⬜ Round 4 (seed 34): A pooled passes (0/176, 1.69%); D and L in full FAIL: NEW-1 (definition limb), NEW-2 (plain-text quote number), KR (repeals-table joining word): fix batch, chain, re-check D and L
 - ⬜ Quality statement and coverage table; CV-00 recipe step 6
 - ⏸️ The reader's yield over the feed (2,658 read with no rule): not chased (CV-07)
 
@@ -194,6 +225,33 @@ Population: 1,171 family changes the law's text states (both sources 1,094; law 
 | 33 | 49 OK / 1 WRONG / 0 doubtful | 38 / 39 OK | FAIL, 1 NEW: HSWA s.51A(2)(c) (2011 c.13 Sch.16 para 119(2)(b), "in paragraph (c), for “…” substitute “means— (i) … (ii) …”") stored as (c) substituted whole. The quote's (c)(ii) whole-provision claim joined the feed's words change on (c) through the merge, and the quote's lone "(i)" read only as s.51A(2)(i). Fixed (`bd0ff6de`): the merge keeps a whole provision made below a words change as its own change; a quoted lone i/v/x under a lettered paragraph reads as its numeral too. Pre-flight: about 20 family rules gain the missing (x)(i) target. Chain 3 (restore point `cv-s06-seed33`): read pass 56 laws changed; family changes: s.51A(2)(a) and (c) now words with own (i)/(ii), HSWA s.23(4) the same shape (SI 2005/1541, SSI 2006/475); level conflicts 38 → 33; golden 26/27 (CV-S05f). |
 
 The pool restarts after this fix: seeds 32 onward (and again after seed 33's fix: seeds 34 onward, under the revised check). Pooled after seed 32: changes 0/50 (one-sided 95% upper 5.8%), pairs 0/33 (8.7%).
+
+## Round 4: the revised check (2026-10-28, after chain 3)
+
+`mix lat.amending_check --family 'OH&S: Occupational' --strata` (`123f61a5`, 8 s). Population P: 1,173 changes the law's text states (both 1,095; law text only 78).
+
+| Stratum | Changes | Share |
+|---|---|---|
+| A agreeing | 1,059 | 90.3% |
+| D disagreeing | 81 | 6.9% |
+| L law text only | 33 | 2.8% |
+
+**Agreement** over the 1,095 both-sourced changes: amending law 1,055/1,055 (100%), operation 1,090/1,095 (99.5%), level 1,084/1,095 (99.0%), target placed on the same row 1,016/1,095 (92.8%; the rest joined below or above the provision the law named).
+
+**Seeds 31–33 by stratum (today's changes):** 31: A 49, 1 gone (its NEW, fixed); 32: A 45, D 4, L 1; 33: A 47 (one, s.51A(2)(c), changed by its fix), L 2, 1 gone. Every A item checked clean whose change is unchanged since joins A's pool: 134 distinct.
+
+**A, seed 34** (`--stratum A`, repeat draw identical): 50 OK, pairs 37/37; known KB ×2, KM, KJ. 8 items already pooled. **Pooled A: 0 wrong of 176 distinct changes (95% upper 1.69%), 0 of 95 pairs (3.1%): passes.**
+
+**D in full** (81, two agent batches; each item with its census entry and the feed's effects by the same law): 76 right (merge's, KJ 35; legislation.gov.uk coarser, KM 33; backlog 6; the law's slip 1); 5 wrong:
+- NEW-1 ×2: a quoted limb of a definition falls back to reg.2(1) as provision-level (COSHH 2002/2677 by 2015/21; NI 2003/34 by 2015/265).
+- NEW-2 ×2: a quote whose number is plain text ("; or (c) …") not read; the anchor reg.5(3)(b), reg.5(1)(b) read as inserted (SI 1989/682 by 2009/606).
+- KR ×1: repeals-table "Section 1(1)(d) and the word “and” preceding it" read as words (EPA 1990).
+
+**L in full** (33, one agent batch): 31 right (no legislation.gov.uk record, or recorded coarser or not paired: six with a feed twin the merge left apart, CV-S07); 2 wrong, both KR (SI 1974/1941 reg.5(1) s.8(2); Electricity Act 1989 Sch.7 on s.27(2)(b)).
+
+**Seen in passing (yield, not judged):** ranges not expanded ("(1)(b)(i) to (iii)", "Section 63(1) to (4)"); a clause with two operations gives one rule (NI 2015/339 reg.34(2)(b)). Logged as bugs.
+
+**Result: FAIL** on D and L (7 misreads: NEW-1, NEW-2, KR), A passes. Wrong changes in P now: 7 known in D∪L, plus A bounded at 1.69% × 1,059.
 
 ## Starting point (2026-10-28, from run-07's family chain)
 
