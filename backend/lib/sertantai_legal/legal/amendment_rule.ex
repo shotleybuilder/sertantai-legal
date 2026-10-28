@@ -66,7 +66,7 @@ defmodule SertantaiLegal.Legal.AmendmentRule do
     attribute :treatment, :string do
       allow_nil?(false)
       public?(true)
-      constraints(match: ~r/^(instruction|repeal_table)$/)
+      constraints(match: ~r/^(instruction|quoted|repeal_table|in_definition)$/)
     end
 
     attribute :read_at, :utc_datetime_usec do

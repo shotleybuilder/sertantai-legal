@@ -49,14 +49,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Rule do
         }
 
   @operations [:inserted, :substituted, :repealed, :renumbered]
-  @by_name Map.new(
-             [:inserted, :substituted, :repealed, :renumbered, :provision, :words] ++
-               [:instruction, :quoted, :repeal_table],
-             &{Atom.to_string(&1), &1}
-           )
   @levels [:provision, :words]
   @treatments [:instruction, :quoted, :repeal_table, :in_definition]
-
+  @by_name Map.new(@operations ++ @levels ++ @treatments, &{Atom.to_string(&1), &1})
   @doc "A rule from its fields; raises `ArgumentError` on a value outside the schema."
   @spec new(keyword() | map()) :: t()
   def new(fields) do

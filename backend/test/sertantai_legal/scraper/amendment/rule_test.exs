@@ -67,4 +67,11 @@ defmodule SertantaiLegal.Scraper.Amendment.RuleTest do
     r = block()
     assert r |> Rule.to_row() |> Rule.from_row() == r
   end
+
+  test "every treatment round-trips through a row (CV-S06 round 4: :in_definition)" do
+    for t <- [:instruction, :quoted, :repeal_table, :in_definition] do
+      r = %{block() | treatment: t}
+      assert r |> Rule.to_row() |> Rule.from_row() == r
+    end
+  end
 end
