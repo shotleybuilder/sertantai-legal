@@ -210,13 +210,24 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
     order =
       xml |> Markup.order() |> Enum.map(&Ref.from_clml(&1, law_name)) |> Enum.reject(&is_nil/1)
 
+    # the law's text names provisions as the CLML ids spell them; a row
+    # whose id skips a level is named by the parse ("section-28-f-i" is
+    # s.28(3)(f)(i), never s.28(f)(i): CV-S06 seed 31), as the feed's are
+    respelt =
+      for {x, row} <- Keyword.get(opts, :xml_ids, %{}),
+          clml = Ref.from_clml(x, law_name),
+          clml != nil and clml != row,
+          into: %{},
+          do: {clml, row}
+
     amending =
-      AmendingLaw.read(
-        Keyword.get(opts, :rules, []),
+      Keyword.get(opts, :rules, [])
+      |> AmendingLaw.read(
         Keyword.get(opts, :commencement, %{}),
         order,
         Keyword.get(opts, :extents, %{})
       )
+      |> Enum.map(fn {key, target, claims} -> {key, Map.get(respelt, target, target), claims} end)
 
     # the law's own commencement, for each provision asked about (its base),
     # in the law's row structure and the provision's extent

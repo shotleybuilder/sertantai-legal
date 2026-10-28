@@ -190,6 +190,25 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderS06Test do
       assert Enum.sort(targets([r], ["s.47(5)", "s.47(6)"])) == ["s.47(5)", "s.47(6)"]
     end
 
+    test "a reading held only under a skipped-level spelling is that spelling alone (HSWA s.28(3)(f)(i) as section-28-f-i, seed 31)" do
+      r =
+        rule(
+          [
+            "s.28(3)",
+            "s.28(f)",
+            "s.28(i)",
+            "s.28(3)(f)",
+            "s.28(3)(i)",
+            "s.28(f)(i)",
+            "s.28(3)(f)(i)"
+          ],
+          :instruction,
+          :words
+        )
+
+      assert targets([r], ["s.28", "s.28(3)", "s.28(f)", "s.28(f)(i)"]) == ["s.28(f)(i)"]
+    end
+
     test "a quote's provisions follow its top: an inserted s.51A is s.51A" do
       r = rule(["s.51A", "s.51A(1)", "s.51A(2)"], :quoted)
       assert targets([r], ["s.51A", "s.51A(1)", "s.51A(2)"]) == ["s.51A"]

@@ -83,17 +83,73 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
     end
   end
 
-  # the targets the amended law holds (a misread is not a fact), then: a
-  # quote's top (its provisions follow it), a named place's deepest (its
-  # brackets' readings: "subsection (6)(e)" is s.15(6)(e), never s.15(6) —
-  # CV-S06 B5), words on the deepest named
+  # the targets the amended law holds (a misread is not a fact): a quote's
+  # top (its provisions follow it); a named place's readings each resolved
+  # to the longest spelling held ("subsection (6)(e) is omitted" is
+  # s.15(6)(e), never s.15(6) — CV-S06 B5; HSWA's CLML names s.28(3)(f)(i)
+  # "section-28-f-i", so "paragraph (f)(i) of subsection (3)" is s.28(f)(i),
+  # never also s.28(3) — CV-S06 seed 31 NEW); siblings stay apart
   defp targets(%Rule{targets: targets} = r, known) do
-    ts = targets |> Enum.uniq() |> Enum.filter(&(known == nil or MapSet.member?(known, &1)))
+    ts = Enum.uniq(targets)
+    held? = &(known == nil or MapSet.member?(known, &1))
 
-    if r.level == :provision and r.treatment == :quoted,
-      do: Enum.reject(ts, fn t -> Enum.any?(tl(LatRef.ancestors(t)), &(&1 in ts)) end),
-      else:
-        Enum.reject(ts, fn t -> Enum.any?(ts, &(&1 != t and t in tl(LatRef.ancestors(&1)))) end)
+    if r.level == :provision and r.treatment == :quoted do
+      ts = Enum.filter(ts, held?)
+      Enum.reject(ts, fn t -> Enum.any?(tl(LatRef.ancestors(t)), &(&1 in ts)) end)
+    else
+      held = Enum.filter(ts, held?)
+
+      ts
+      |> Enum.reject(fn t -> Enum.any?(ts, &(&1 != t and spells?(t, &1))) end)
+      |> Enum.flat_map(&longest_held(&1, held))
+      |> Enum.uniq()
+      |> deepest_only()
+    end
+  end
+
+  # a place resolved beside a deeper one it holds is no change of its own
+  # ("paragraphs (a)(i) and (ii) of paragraph (5)": never also (5))
+  defp deepest_only(ts),
+    do:
+      Enum.reject(ts, fn t ->
+        Enum.any?(ts, &(&1 != t and (spells?(t, &1) or t in tl(LatRef.ancestors(&1)))))
+      end)
+
+  # the held spellings of a full reading with the most brackets
+  defp longest_held(full, held) do
+    case Enum.filter(held, &(&1 == full or spells?(&1, full))) do
+      [] ->
+        []
+
+      spellings ->
+        most = spellings |> Enum.map(&length(brackets(&1))) |> Enum.max()
+        Enum.filter(spellings, &(length(brackets(&1)) == most))
+    end
+  end
+
+  # `t` is a shorter spelling of `u`: the same provision, its brackets a
+  # subsequence of `u`'s ("s.28(f)(i)" and "s.28(3)" of "s.28(3)(f)(i)")
+  defp spells?(t, u) do
+    {pt, bt} = split(t)
+    {pu, bu} = split(u)
+    pt == pu and length(bt) < length(bu) and subsequence?(bt, bu)
+  end
+
+  defp subsequence?([], _), do: true
+  defp subsequence?(_, []), do: false
+  defp subsequence?([x | xs], [x | ys]), do: subsequence?(xs, ys)
+  defp subsequence?(xs, [_ | ys]), do: subsequence?(xs, ys)
+
+  defp brackets(t), do: elem(split(t), 1)
+
+  defp split(t) do
+    case Regex.run(~r/^([^()]+)((?:\([^()]+\))*)$/, t) do
+      [_, head, bs] ->
+        {head, Regex.scan(~r/\(([^()]+)\)/, bs, capture: :all_but_first) |> List.flatten()}
+
+      nil ->
+        {t, []}
+    end
   end
 
   @doc """
