@@ -59,6 +59,12 @@ bugs:
     affected: 6
     fix: "each full reading resolved to its longest held spelling, shallower places dropped; law-text targets respelt to rows via xml_ids (35f29731)"
     status: fixed
+  - pattern: "A whole provision made by a quote below a words change folded into the words change by the merge, so the parent read as substituted whole (HSWA s.51A(2)(a), (c); s.23(4)); and a quoted lone (i) under a lettered paragraph read only beside it (s.51A(2)(i), not (c)(i)) — seed 33 NEW"
+    category: reader misread (level) / merge
+    module: ChangeVocabulary.Merge (inside_words?) / Amendment.Reader.Targets (quoted_paths)
+    affected: 4
+    fix: "bd0ff6de"
+    status: fixed
 ---
 
 # Session: CV-S06: Amending-Law Reader (ACTIVE)
@@ -185,7 +191,9 @@ Population: 1,171 family changes the law's text states (both sources 1,094; law 
 
 | 32 | 50 OK / 0 WRONG / 0 doubtful | 33 / 33 OK | PASS, no NEW. Noted, not a fault: a words insertion "In section 53 … at the appropriate place insert" lands on s.53 as named, while definitions "In regulation 2—" land on reg.2(1) where the merge joins legislation.gov.uk's record; SI 2013/602 Sch.2 para 57(2)(e) drafting slip ("In section 13(1)(a)" heading over "in subsection (4)"), read right (KD). |
 
-The pool restarts after this fix: seeds 32 onward. Pooled after seed 32: changes 0/50 (one-sided 95% upper 5.8%), pairs 0/33 (8.7%).
+| 33 | 49 OK / 1 WRONG / 0 doubtful | 38 / 39 OK | FAIL, 1 NEW: HSWA s.51A(2)(c) (2011 c.13 Sch.16 para 119(2)(b), "in paragraph (c), for “…” substitute “means— (i) … (ii) …”") stored as (c) substituted whole. The quote's (c)(ii) whole-provision claim joined the feed's words change on (c) through the merge, and the quote's lone "(i)" read only as s.51A(2)(i). Fixed (`bd0ff6de`): the merge keeps a whole provision made below a words change as its own change; a quoted lone i/v/x under a lettered paragraph reads as its numeral too. Pre-flight: about 20 family rules gain the missing (x)(i) target. Chain 3 (restore point `cv-s06-seed33`): read pass 56 laws changed; family changes: s.51A(2)(a) and (c) now words with own (i)/(ii), HSWA s.23(4) the same shape (SI 2005/1541, SSI 2006/475); level conflicts 38 → 33; golden 26/27 (CV-S05f). |
+
+The pool restarts after this fix: seeds 32 onward (and again after seed 33's fix: seeds 34 onward, under the revised check). Pooled after seed 32: changes 0/50 (one-sided 95% upper 5.8%), pairs 0/33 (8.7%).
 
 ## Starting point (2026-10-28, from run-07's family chain)
 

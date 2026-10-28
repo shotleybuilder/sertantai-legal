@@ -119,3 +119,4 @@ OH&S (first family, 2026-10-28 →). The session is `.claude/sessions/change-voc
 |---|---|---|
 | 1 | 31 | FAIL, 1 NEW (changes 49/50, pairs 47/48): a skipped-level CLML id (HSWA `section-28-f-i`) left a stray partial reading on s.28; fixed `35f29731` |
 | 2 | 32 | PASS, no NEW (changes 50/50, pairs 33/33) |
+| 3 | 33 | FAIL, 1 NEW (changes 49/50, pairs 38/39): a quote's whole sub-provision folded into a words change on its parent by the merge (HSWA s.51A(2)(c)); fixed `bd0ff6de`. Next rounds use the revised check (strata A/D/L) |
