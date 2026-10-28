@@ -76,7 +76,7 @@ The session does not close until its results pass.
 - ✅ Census of the 211 disagreements (B4–B7 found; the rest legislation.gov.uk, the merge's, or right; no renumbering) (65 law text only, 60 unjoined, 86 value): each classed backlog / reader misread / join miss / legislation.gov.uk fault; renumbering (C4) as a class
 - ✅ Fix batch B1–B7; acceptance chain (2026-10-28): disagreements 211 → 142, family rules diff clean, golden from inputs 26/27 (RTA s.4(6): CV-S05f, known limit)
 - ✅ Precision check: `mix lat.amending_check` (0b40fa64), skill `amending-reader-check` (1648bbba)
-- ⬜ Agent seeds until the statistical rule passes (pooled 95% upper < 2% changes, < 5% pairs)
+- ⬜ Revised check (agreement over A, D and L in full, agent sample of A): `--strata` in `mix lat.amending_check`, skill updated, seeds 31–33 classed; then rounds until it passes
 - ⬜ Quality statement and coverage table; CV-00 recipe step 6
 - ⏸️ The reader's yield over the feed (2,658 read with no rule): not chased (CV-07)
 
@@ -150,6 +150,30 @@ Restore point `cv-s06-batch1` (amendment_rules, extent_rules, provision_changes,
 - **Golden:** `--check` scores 19 golden laws outside the family from their stored changes (27/27). From inputs (`--golden`): 26/27. The failure, RTA 1988 s.4(6) (repealed everywhere from 2006; expected in force in Scotland), is not this batch. SOCPA 2005 Sch.7 para 27(4), "The repeal of section 4(8) extends also to Scotland", is unread since CV-S05 round 6, so the bound is withheld. Before that the paragraph silently took the E+W default. A bound per amending provision can't be right for both s.4(6) and s.4(8) (para 27(2) repeals both), so the faithful fix is extent rows naming the amended target: **CV-S05f** (PENDING, Jason 2026-10-28: straight after S06's agent seeds). Known limit until then.
 - **Lesson:** a golden law outside the family is scored from stored changes by `--check`. Every acceptance chain must also run `--golden` from inputs, or a reader change upstream goes unseen. CV-S05's closing golden runs missed this one.
 - Catalogue fixtures regenerated, effect ids shortened in the pruned XML (`Patterns.Example.export`): 81 patterns, 185 examples.
+
+## Revised check: agreement first, agents where the feed can't vouch (Jason 2026-10-28: "yes, write up the revised check")
+
+**Why.** Random seeds of 50 put about 49 of each 50 on changes legislation.gov.uk also states. That is the part already best evidenced: a misread there must be matched by the same misread in an independent source to look right. The risk sits where the feed can't vouch: changes only the law's text states, and disagreements. The census already found most of this session's misreads (B1–B7) this way. Seeds 31–33's three NEW came from a law-text-only change (31) and a merged change hiding a level conflict (33).
+
+**Strata** of the population P (the family's changes the law's text states; 1,168 at seed 32):
+- **A, agreeing:** stated by both sources, joined, with no value conflict on operation or level (like for like: `Conflicts`' equivalences: law insert vs markup Substitution, words repeal vs "repealed in part").
+- **D, disagreeing:** every census item. Value conflicts on operation or level, unjoined law-text changes, and law-text changes beside legislation.gov.uk's on a nearby provision.
+- **L, law text only:** no legislation.gov.uk record on the change (`uncovered :derived`, plus law-text changes standing alone).
+
+**The check, per round:**
+1. **Agreement (automatic, all of A):** `mix lat.amending_check --strata` counts A, D and L, and the agreement rate on operation, level, target and amending law between the law's text and the feed/markup on every both-sourced change. It is published as a quality figure.
+2. **D and L in full (no sampling):** every item classed, as in the census: our misread (fix), legislation.gov.uk coarse or unrecorded (known), the merge's (CV-S07), or the law's own slip. Large classes by pattern, the rest one by one; the agent checks L in batches of 50.
+3. **A by sample:** an agent sample of 50 from A per round, for shared blind spots (a misread both sources happen to share, or one the merge hides).
+
+**Pass:**
+- D and L: no misread left unfixed or unclassed. A full census has no sampling error, so its count is exact.
+- A: the pooled agent samples since the last fix batch give a one-sided 95% upper bound under 2% for wrong changes and under 5% for wrong pairs.
+- Overall wrong-change rate, bounded: (D∪L misreads left, 0) + 2% × |A| over |P|, which is under 2%.
+- Golden from inputs, all-pass bar the known limits (CV-S05f).
+
+**Seeds already done count by stratum.** Seeds 31–33's items are classed A/D/L after chain 3; agreeing items checked clean join A's pool if no fix since touched them. The pool restarts after the seed-33 batch, as the rule says.
+
+**Also for CV-S05f (extent):** the same agreement measure. `law_text.extent` (the extent reader's bound) against the feed's `effect_extent` and `territorial_application`, like for like, over every bounded change. Then agents on the disagreements and on the changes with no feed extent.
 
 ## Agent seeds
 

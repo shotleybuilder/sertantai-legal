@@ -21,6 +21,7 @@ Found by CV-S06's golden run from inputs (2026-10-28): RTA 1988 s.4(6) fails, re
 - ⬜ Design: an extent row naming the amended target (law and provision), matched by target in `Extent.Lookup` (`of_change` with the change's target), stored in `extent_rules`
 - ⬜ Read the forms: "The repeal of X extends …", "The repeals in Y relating to …", "The amendments of the Z Act extend …"; and SOCPA Sch.7's own-paragraph forms not read ("This paragraph extends to the whole of the United Kingdom", "… extends also to Scotland", "… has the same extent as that Act", "… (but not to Scotland)")
 - ⬜ Golden from inputs 27/27; extent check and catalogue; one chain
+- ⬜ Agreement measure (CV-S06's revised check, Jason 2026-10-28): the extent reader's bound (`law_text.extent`) against the feed's `effect_extent` / `territorial_application`, like for like, over every bounded change; agents on the disagreements and on changes with no feed extent. Added to the quality statement
 
 ## Dependencies
 

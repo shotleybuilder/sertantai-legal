@@ -20,10 +20,22 @@ Ask Jason before the runs that write or take long; say how long each takes. Rest
 3. **Read pass** (writes `amendment_rules`; tens of minutes, one law at a time): `mix lat.amending --read`.
 4. **Rebuild** (writes `provision_changes`, claims): `mix lat.vocabulary --check --family "F"`; then **golden from inputs**, always: `mix lat.vocabulary --golden` (~5 min). `--check` scores golden laws outside the family from their stored changes, which hides an upstream reader change (CV-S06, RTA 1988 s.4(6)).
 5. **Census** (seconds): `mix lat.vocabulary --conflicts --family "F" --all`; law text only (`uncovered :derived`), unjoined, and value conflicts classed: backlog (legislation.gov.uk unapplied or unrecorded), reader misread (fix), join (CV-S07), legislation.gov.uk's (markup coarse, `amended` with no operation).
-6. **Sample** on a seed never used for this family (record it): `mix lat.amending_check --family "F" --sample $S/a.json --n 50 --seed N` (seconds; repeat into `b.json` and `cmp` for repeatability).
-7. **Agent check:** a general-purpose agent with the prompt below on `$S/a.json`.
+6. **Strata and agreement** (seconds): `mix lat.amending_check --family "F" --strata`. It counts the population in three strata:
+   - **A, agreeing:** both sources state the change, joined, no value conflict on operation or level;
+   - **D, disagreeing:** the census items;
+   - **L, law text only.**
 
-**Statistical pass rule** (Jason 2026-10-28; decided before the round): pool the seeds since the last fix batch, every NEW fixed; exact one-sided 95% upper bounds (Clopper–Pearson). Pass when wrong changes are under 2% and wrong (amended law, amending law) pairs under 5%. Record the pooled numbers and a quality statement (CV-S05's model).
+   It gives the agreement rate on operation, level, target and amending law over every both-sourced change, which is a published quality figure.
+7. **D and L in full:** every item classed (as step 5); L by agent in batches of 50 (`--stratum L`).
+8. **A by sample**, on a seed never used for this family (record it): `mix lat.amending_check --family "F" --stratum A --sample $S/a.json --n 50 --seed N`; repeat into `b.json` and `cmp`. A general-purpose agent with the prompt below checks it.
+
+**Pass** (revised by Jason 2026-10-28; the statistical rule decided before the round):
+- D and L: no misread left unfixed or unclassed. A full census is exact.
+- A: pool the samples since the last fix batch, every NEW fixed; the exact one-sided 95% upper bounds (Clopper–Pearson) must be under 2% for wrong changes and under 5% for wrong pairs.
+- Overall, the wrong-change rate is then bounded by 2% × |A| / |P|.
+- Golden from inputs passes, bar the logged known limits.
+
+Record the strata, the agreement rate, the pooled numbers and a quality statement (CV-S05's model).
 
 Only NEW defects go to Jason, explained with the amending law's words and the stored rows.
 
