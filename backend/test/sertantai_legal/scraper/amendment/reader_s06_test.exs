@@ -227,4 +227,84 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderS06Test do
       assert targets([r], ["s.51A", "s.51A(1)", "s.51A(2)"]) == ["s.51A"]
     end
   end
+
+  describe "round 4 (D and L in full)" do
+    test "a quoted limb of a definition is words in the provision defining (COSHH reg.2(1), SI 2015/21 reg.12(2)(i)(ii))" do
+      coshh =
+        Reader.law_ref(
+          "UK_uksi_2002_2677",
+          "The Control of Substances Hazardous to Health Regulations",
+          "reg"
+        )
+
+      d =
+        doc(
+          ~s|<P1 id="regulation-12"><P1para><Text>The Control of Substances Hazardous to Health Regulations 2002 are amended as follows.</Text><P2 id="regulation-12-2"><P2para><Text>In regulation 2(1)—</Text><P3 id="regulation-12-2-i"><P3para><Text>in the definition of “substance hazardous to health”—</Text><P4 id="regulation-12-2-i-ii"><P4para><Text>for paragraph (a), substitute—</Text><BlockAmendment><P4><Pnumber>a</Pnumber><P4para><Text>which meets the criteria;</Text></P4para></P4></BlockAmendment></P4para></P4></P3para></P3></P2para></P2></P1para></P1>|,
+          "UK_uksi_2015_21"
+        )
+
+      rules = read(d, "regulation-12-2-i-ii", coshh)
+
+      level = fn known ->
+        for {_key, target, claims} <- AmendingLaw.read(rules, %{}, known),
+            %{attribute: :level, value: v} <- claims,
+            uniq: true,
+            do: {target, v}
+      end
+
+      # no row for the limb: words in reg.2(1), never reg.2(1) substituted whole
+      assert level.(["reg.2", "reg.2(1)"]) == [{"reg.2(1)", :words}]
+      # the limb held as a row: it is substituted whole, once
+      assert level.(["reg.2", "reg.2(1)", "reg.2(1)(a)"]) == [{"reg.2(1)(a)", :provision}]
+    end
+
+    test "a quote numbering its provision in its text is that provision, not the anchor (SI 1989/682 reg.5(3), SI 2009/606 reg.2(4))" do
+      law =
+        Reader.law_ref(
+          "UK_uksi_1989_682",
+          "The Health and Safety Information for Employees Regulations",
+          "reg"
+        )
+
+      d =
+        doc(
+          ~s|<P1 id="regulation-2"><P1para><Text>The Health and Safety Information for Employees Regulations 1989 are amended as follows.</Text><P2 id="regulation-2-4"><P2para><Text>After regulation 5(3)(b) insert the following—</Text><BlockAmendment><P2para><Text>; or (c) information as to how any of his employees may obtain the information.</Text></P2para></BlockAmendment></P2para></P2></P1para></P1>|,
+          "UK_uksi_2009_606"
+        )
+
+      assert [%Rule{targets: ["reg.5(3)(c)"], operation: :inserted, level: :provision}] =
+               read(d, "regulation-2-4", law)
+    end
+
+    test "listed sections each keep their own brackets, and a Schedule entry beside them is no target (SI 1974/1941 reg.5(1))" do
+      emas = Reader.law_ref("UK_ukpga_1972_28", "Employment Medical Advisory Service Act", "s")
+
+      d =
+        doc(
+          p1(
+            "regulation-5-1",
+            "In the Employment Medical Advisory Service Act 1972, (“the 1972 Act”) sections 7, 8(2) and the entry in Schedule 2 relating to section 124(2) of the 1961 Act are hereby repealed."
+          ),
+          "UK_uksi_1974_1941"
+        )
+
+      assert [%Rule{targets: ["s.7", "s.8(2)"], operation: :repealed, level: :provision}] =
+               read(d, "regulation-5-1", emas)
+    end
+
+    test "a repeals-table line repealing a provision with its joining word is the provision whole (1989 c.29 Sch.7 on HSWA s.27(2)(b))" do
+      d =
+        Doc.new("UK_ukpga_1989_29", [
+          ~s|<Legislation><Primary><Schedules><Schedule id="schedule-7"><Tabular><table><tbody><tr><th>Chapter</th><th>Short title</th><th>Extent of repeal</th></tr><tr><td>1974 c. 37</td><td>Health and Safety at Work etc. Act 1974</td><td><Para><Text>Section 27(2)(b) and the word “or” immediately preceding it.</Text></Para><Para><Text>Section 1(1)(d) and the word “and” preceding it.</Text></Para><Para><Text>In section 2(1), the word “or”.</Text></Para></td></tr></tbody></table></Tabular></Schedule></Schedules></Primary></Legislation>|
+        ])
+
+      hswa = Reader.law_ref("UK_ukpga_1974_37", "Health and Safety at Work etc. Act", "s")
+      rules = Reader.repeal_table(d, "schedule-7", [hswa])
+      level = fn t -> for r <- rules, t in r.targets, do: r.level end
+
+      assert level.("s.27(2)(b)") == [:provision]
+      assert level.("s.1(1)(d)") == [:provision]
+      assert level.("s.2(1)") == [:words]
+    end
+  end
 end

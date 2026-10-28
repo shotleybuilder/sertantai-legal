@@ -151,6 +151,18 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
     |> Regex.replace(s, fn m -> if m =~ ~r/^[“"]/u or not (m =~ ~r/\s/u), do: m, else: "" end)
   end
 
+  @schedule_entry ~r/,?\s*(?:and\s+)?the\s+entr(?:y|ies)\s+in\s+Schedule\s+[0-9A-Z]+\s+relating\s+to\s+.*?(?=\s+(?:are|is|shall|be)\b|[;:]|$)/u
+
+  @doc """
+  The text without an entry in the amended law's Schedule repealed beside
+  its sections ("sections 7, 8(2) and the entry in Schedule 2 relating to
+  section 124(2) of the 1961 Act are hereby repealed": SI 1974/1941
+  reg.5(1)): a Schedule's (not parsed, v0.1), and the section it names is
+  another law's — neither a target nor words in one
+  """
+  @spec no_schedule_entries(String.t()) :: String.t()
+  def no_schedule_entries(s), do: Regex.replace(@schedule_entry, s, "")
+
   @doc """
   The text without its captions, brackets inside them too ("… 1990
   (provisions to which subsections (1) to (4) are subject)—": no place;

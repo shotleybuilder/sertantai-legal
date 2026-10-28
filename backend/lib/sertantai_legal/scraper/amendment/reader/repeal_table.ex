@@ -82,12 +82,17 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTable do
          String.contains?(LawNamed.norm(cells), LawNamed.norm("#{law.title} #{law.year}")))
   end
 
+  # a provision repealed with the word joining it ("Section 27(2)(b) and
+  # the word “or” immediately preceding it": Electricity Act 1989 Sch. 7)
+  # is the provision whole, as in an instruction (CV-S06 B6, round 4)
+  @joining_word ~r/(\))\s*,?\s*\(?and\s+the\s+(?:words?\s+)?[“"][^”"]{1,12}[”"]\s*\)?\s*(?:(?:which\s+(?:precedes|follows)|immediately\s+(?:preceding|following|before|after)|preceding|following|before|after)\s+(?:it|them)|at\s+the\s+end\b[^.;]*)/u
+
   # "Section 36." / "Sections 41 to 43." / "Section 28(5) and (5A)." /
   # "In section 11A(1), paragraphs (a) and (b)." / "In section 57(1), the words …"
   defp line_targets(line) do
     case Regex.run(
            ~r/^(?:In )?[Ss]ections? (\d+[A-Z]*)((?:\([^)]*\))*)(?: to (\d+[A-Z]*))?(.*)$/,
-           line
+           Regex.replace(@joining_word, line, "\\1")
          ) do
       [_, n, subs, to, rest] ->
         subs = Brackets.plain_brackets(subs)

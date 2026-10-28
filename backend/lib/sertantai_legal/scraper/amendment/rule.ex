@@ -22,7 +22,11 @@ defmodule SertantaiLegal.Scraper.Amendment.Rule do
   - `treatment`: `:instruction` (a provision named: its brackets are
     readings of one place, every combination listed) · `:quoted` (the
     provisions a quote makes: one tree) · `:repeal_table` (CV-S06 B5:
-    the change vocabulary takes a quote's top, a named place's deepest).
+    the change vocabulary takes a quote's top, a named place's deepest) ·
+    `:in_definition` (a place named inside a definition, "in the
+    definition of “x”— for paragraph (a) substitute": as `:instruction`,
+    but where the law holds no row for the place the change is words in
+    the provision defining; CV-S06 round 4).
 
   `to_text/1` is the readable form (`mix lat.amending`); `to_row/1` /
   `from_row/1` the table's (`amendment_rules`). Pure.
@@ -33,7 +37,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Rule do
 
   @type operation :: :inserted | :substituted | :repealed | :renumbered
   @type level :: :provision | :words
-  @type treatment :: :instruction | :quoted | :repeal_table
+  @type treatment :: :instruction | :quoted | :repeal_table | :in_definition
   @type source :: %{law: String.t(), ref: String.t() | nil, text: String.t() | nil}
   @type t :: %__MODULE__{
           amends: String.t(),
@@ -51,7 +55,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Rule do
              &{Atom.to_string(&1), &1}
            )
   @levels [:provision, :words]
-  @treatments [:instruction, :quoted, :repeal_table]
+  @treatments [:instruction, :quoted, :repeal_table, :in_definition]
 
   @doc "A rule from its fields; raises `ArgumentError` on a value outside the schema."
   @spec new(keyword() | map()) :: t()

@@ -105,8 +105,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
   defp inserted({:xmlElement, _, _, _, _, _, _, _, children, _, _, _}),
     do: children |> Enum.flat_map(&in_quote(&1, false, [])) |> Enum.uniq()
 
-  defp in_quote({:xmlElement, :BlockAmendment, _, _, _, _, _, _, children, _, _, _}, _, path),
-    do: Enum.flat_map(children, &in_quote(&1, true, path))
+  defp in_quote({:xmlElement, :BlockAmendment, _, _, _, _, _, _, children, _, _, _} = b, _, path) do
+    case Enum.flat_map(children, &in_quote(&1, true, path)) do
+      [] -> plain_number(b, path)
+      numbered -> numbered
+    end
+  end
 
   defp in_quote({:xmlElement, _, _, _, _, _, _, _, children, _, _, _}, true, path) do
     case number(children) do
@@ -126,6 +130,19 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
   end
 
   defp in_quote(_node, _quoted, _path), do: []
+
+  # a quote numbering its provision in its text, not as a Pnumber ("After
+  # regulation 5(3)(b) insert the following— ; or (c) information …": SI
+  # 2009/606 reg.2(3), CV-S06 round 4): the number it opens with, after
+  # any joining words
+  @plain_number ~r/^\s*(?:[;,]\s*)?(?:(?:or|and)\s+)?\(([0-9]+[A-Z]*|[a-z]{1,4})\)\s+\S/u
+
+  defp plain_number(block, path) do
+    case Regex.run(@plain_number, Doc.text(block)) do
+      [_, n] -> [path ++ [n]]
+      nil -> []
+    end
+  end
 
   # a provision's own number: its Pnumber child
   defp number(children) do

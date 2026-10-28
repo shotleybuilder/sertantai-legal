@@ -130,6 +130,33 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
   def named_refs(_text, _op, p, n, named),
     do: for(c <- Brackets.combos(named), do: Brackets.ref(p, [n | c]))
 
+  @listed ~r/\b(?i:sections?|regulations?|articles?|rules?)\s+(\d+[A-Z]*(?:\([0-9A-Za-z]+\))*(?:\s*(?:,|and|or)\s*\d+[A-Z]*(?:\([0-9A-Za-z]+\))*)+)/u
+
+  @doc """
+  The brackets for provision `n` of a clause naming several: a bare number
+  listed beside numbers carrying brackets of their own is whole ("sections
+  7, 8(2) … are hereby repealed": s.7, never s.7(2); SI 1974/1941
+  reg.5(1)); else the clause's brackets (`named`), whose readings the rows
+  held decide.
+  """
+  @spec named_for(map(), String.t()) :: [String.t()]
+  def named_for(%{text: text, named: named}, n) do
+    if n in bare_listed(text.instruction), do: [], else: named
+  end
+
+  # a written list mixing bare numbers and numbers with brackets ("sections
+  # 7, 8(2)"): its bare numbers, outside quoted words and captions
+  defp bare_listed(instruction) do
+    for [list] <-
+          Regex.scan(@listed, instruction |> Clauses.unquote_words() |> Clauses.no_captions(),
+            capture: :all_but_first
+          ),
+        items = Regex.scan(~r/(\d+[A-Z]*)((?:\([0-9A-Za-z]+\))*)/u, list, capture: :all_but_first),
+        Enum.any?(items, &match?([_, ""], &1)) and Enum.any?(items, &(not match?([_, ""], &1))),
+        [m, ""] <- items,
+        do: m
+  end
+
   @doc """
   A rule for `law` (nil when the clause reaches no target).
   """

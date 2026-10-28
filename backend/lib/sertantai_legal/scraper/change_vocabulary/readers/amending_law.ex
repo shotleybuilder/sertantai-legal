@@ -52,15 +52,25 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
   def read(rules, commencement \\ %{}, known \\ nil, extents \\ %{}) do
     known = known && MapSet.new(known)
 
+    # where a provision's quote and its named place reach one row, the
+    # quote says what it is ("for paragraph (a) substitute— (a) …": the
+    # row (a) substituted whole, not words in it; CV-S06 round 4)
+    quoted =
+      for %Rule{treatment: :quoted, source: %{law: law, ref: ref}} = r <- rules,
+          t <- targets(r, known),
+          into: MapSet.new(),
+          do: {"#{law}:#{ref}", t}
+
     # a target the amended law doesn't contain is a misread, not a fact
     for %Rule{source: %{law: law, ref: ref}} = r <- rules,
-        target <- targets(r, known) do
+        target <- targets(r, known),
+        r.treatment == :quoted or not MapSet.member?(quoted, {"#{law}:#{ref}", target}) do
       key = "#{law}:#{ref}"
 
       {key, target,
        Enum.concat([
          Claim.new(:law_text, :operation, r.operation, key),
-         Claim.new(:law_text, :level, r.level, key),
+         Claim.new(:law_text, :level, level(r, target), key),
          Claim.new(:law_text, :by, law, key),
          Claim.new(:commencement, :date, date(Map.get(commencement, law, []), ref), key),
          # where the amending law applies (its application clause; CV-07),
@@ -106,6 +116,25 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
       |> deepest_only()
     end
   end
+
+  # a definition's limb the law holds no row for: words in the provision
+  # defining, never it whole (the target a held ancestor of the place named,
+  # not a respelling of it: its last bracket differs)
+  defp level(%Rule{treatment: :in_definition, level: :provision, targets: ts}, target) do
+    ts = Enum.uniq(ts)
+    fulls = Enum.reject(ts, fn t -> Enum.any?(ts, &(&1 != t and spells?(t, &1))) end)
+
+    fallen? =
+      target not in fulls and
+        Enum.all?(
+          Enum.filter(fulls, &spells?(target, &1)),
+          &(List.last(brackets(&1)) != List.last(brackets(target)))
+        )
+
+    if fallen?, do: :words, else: :provision
+  end
+
+  defp level(%Rule{level: level}, _target), do: level
 
   # a place resolved beside a deeper one it holds is no change of its own
   # ("paragraphs (a)(i) and (ii) of paragraph (5)": never also (5))

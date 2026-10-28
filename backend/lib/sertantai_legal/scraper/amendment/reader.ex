@@ -225,6 +225,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   # ("omit “either”; and at the end insert—") its own level, brackets and
   # numbers; the quote is the clause's that introduces it
   defp rules(text, texts, law, source, terms) do
+    text = %{text | instruction: Clauses.no_schedule_entries(text.instruction)}
     p = @prefix[law.kind]
     tops = text.inserted |> Enum.map(&hd/1) |> Enum.uniq()
     clauses = text |> Clauses.clauses() |> LawNamed.scoped(texts, law, terms)
@@ -267,13 +268,25 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
             for(
               n <- c.numbers,
               n not in tops,
-              t <- Targets.named_refs(c.text, op, p, n, c.named),
+              t <- Targets.named_refs(c.text, op, p, n, Targets.named_for(c, n)),
               uniq: true,
               do: t
             ),
           do: Targets.rule(law, targets, op, source)
 
-    Enum.reject([quoted | named], &is_nil/1)
+    Enum.reject([quoted | Enum.map(named, &in_definition(&1, text))], &is_nil/1)
+  end
+
+  # under a parent naming a definition ("in the definition of “x”— for
+  # paragraph (a), substitute— (a) …") the place named is a limb of the
+  # definition (`:in_definition`: words in the provision defining where the
+  # law holds no row for it; CV-S06 round 4, COSHH reg.2(1) by SI 2015/21)
+  defp in_definition(nil, _text), do: nil
+
+  defp in_definition(rule, text) do
+    if Enum.any?(text.parents, &(Clauses.uncaptioned(&1) =~ ~r/\bdefinitions?\b/i)),
+      do: %{rule | treatment: :in_definition},
+      else: rule
   end
 
   # ── repeals tables (Reader.RepealTable) ─────────────────────────────

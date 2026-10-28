@@ -27,7 +27,7 @@
       ]
     },
     "instruction|inserted|block|body|named|rules:inserted:provision": {
-      "count": 152,
+      "count": 154,
       "examples": [
         "UK_asc_2026_5/UK_ukpga_1974_37/schedule-3-paragraph-1",
         "UK_nisr_2000_87/UK_nisr_1993_20/regulation-4-3",
@@ -109,12 +109,6 @@
         "UK_ukpga_2013_32/UK_ukpga_1974_37/schedule-12-paragraph-15-3",
         "UK_ukpga_2022_30/UK_ukpga_1974_37/schedule-1-paragraph-8-2",
         "UK_uksi_2011_1885/UK_uksi_2009_1348/regulation-15-2-a"
-      ]
-    },
-    "instruction|inserted|words|body|named|rules:inserted:provision": {
-      "count": 2,
-      "examples": [
-        "UK_uksi_2009_606/UK_uksi_1989_682/regulation-2-3"
       ]
     },
     "instruction|inserted|words|body|named|rules:inserted:words": {
@@ -239,15 +233,10 @@
       ]
     },
     "instruction|repealed|none|schedule|named|rules:repealed:provision": {
-      "count": 2,
+      "count": 3,
       "examples": [
         "UK_asp_2003_8/UK_ukpga_1974_37/schedule-6-paragraph-9",
-        "UK_ukpga_1974_37/UK_ukpga_1972_28/section-60-5"
-      ]
-    },
-    "instruction|repealed|none|schedule|named|rules:repealed:words": {
-      "count": 1,
-      "examples": [
+        "UK_ukpga_1974_37/UK_ukpga_1972_28/section-60-5",
         "UK_uksi_1974_1941/UK_ukpga_1972_28/regulation-5-1"
       ]
     },
@@ -559,7 +548,7 @@
       ]
     },
     "table|repealed|none|body|named|rules:repealed:provision": {
-      "count": 12,
+      "count": 14,
       "examples": [
         "UK_ssi_2006_475/UK_ukpga_1974_37/schedule-2",
         "UK_ssi_2009_319/UK_ukpga_1961_34/schedule-3",
@@ -575,7 +564,7 @@
       ]
     },
     "table|repealed|none|body|named|rules:repealed:words": {
-      "count": 11,
+      "count": 9,
       "examples": [
         "UK_asp_2008_5/UK_ukpga_1963_41/schedule-3",
         "UK_ukpga_1973_65/UK_ukpga_1961_34/schedule-29",
@@ -593,10 +582,10 @@
   },
   "totals": {
     "amending_laws": 453,
-    "examples": 185,
+    "examples": 184,
     "not_alone": 0,
     "not_held": 1,
-    "patterns": 81,
+    "patterns": 79,
     "provisions": 3285,
     "unclassified": 0
   }
