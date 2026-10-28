@@ -432,7 +432,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPatterns do
   def outcome(sets) do
     sets
     |> Enum.map(fn {key, target, claims} ->
-      {key, target, Enum.reject(claims, &(&1.source == :markup and &1.attribute == :note))}
+      {key, target,
+       Enum.reject(claims, &(&1.source == :markup and &1.attribute in [:note, :note_digest]))}
     end)
     |> FeedPatterns.outcome()
     |> Enum.sort()

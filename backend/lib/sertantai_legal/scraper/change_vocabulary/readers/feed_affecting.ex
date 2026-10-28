@@ -8,7 +8,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.FeedAffecting do
   never found in its extent list). Pure.
   """
 
-  @refs ~r/\b(?:Sch\.\s*(\d+[A-Z]*)(?:\s+Pt\.\s*(\d+[A-Z]*))?(?:\s+para\.\s*(\d+[A-Z]*(?:\([^)]+\))*))?|(s|reg|art)\.\s*(\d+[A-Z]*(?:\([^)]+\))*))/u
+  # (an unnumbered Schedule's paragraph, "Sch. para. 3(1)(b)": CV-S07 round 3)
+  @refs ~r/\b(?:Sch\.\s*(\d+[A-Z]*)?(?:\s*Pt\.\s*(\d+[A-Z]*|[IVXLC]+))?(?:\s*para\.\s*(\d+[A-Z]*(?:\([^)]+\))*))?|(s|reg|art)\.\s*(\d+[A-Z]*(?:\([^)]+\))*))/u
 
   @doc ~S"""
   Every provision named: "Sch. 7 para. 27(2) Sch. 17 Pt. 2" →
@@ -20,15 +21,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.FeedAffecting do
   def refs(text) do
     @refs
     |> Regex.scan(text)
+    |> Enum.map(&(&1 ++ List.duplicate("", 6 - length(&1))))
     |> Enum.map(fn
-      [_, sch, "", ""] -> "sch.#{sch}"
-      [_, sch, pt, ""] -> "sch.#{sch}.pt.#{pt}"
-      [_, sch, "", para] -> "sch.#{sch}.para.#{para}"
-      [_, sch, _pt, para] -> "sch.#{sch}.para.#{para}"
-      [_, "", "", "", kind, n] -> "#{prefix(kind)}.#{n}"
-      [_, sch] -> "sch.#{sch}"
-      [_, sch, pt] -> "sch.#{sch}.pt.#{pt}"
-      _ -> nil
+      [_, "", "", "", kind, n] when kind != "" -> "#{prefix(kind)}.#{n}"
+      [_, "", _pt, para | _] when para != "" -> "sch.para.#{para}"
+      [_, "", _, _ | _] -> nil
+      [_, sch, "", "" | _] -> "sch.#{sch}"
+      [_, sch, pt, "" | _] -> "sch.#{sch}.pt.#{pt}"
+      [_, sch, _pt, para | _] -> "sch.#{sch}.para.#{para}"
     end)
     |> Enum.reject(&is_nil/1)
   end

@@ -118,4 +118,25 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.PointerTest do
     assert Pointer.refs_in("reg. 2(2)(a)") == [{:regulation, "2", ["2", "a"]}]
     assert Pointer.refs_in(nil) == []
   end
+
+  describe "CV-S07 round 3: an unnumbered Schedule's paragraph, in braces" do
+    test "\"{Sch. Pt. 1 para. 8(a)(i)}\" and \"Sch. para. 8(a)(ii)\" (HSWA s.28(3)(c)(ii) by SI 2004/1822)" do
+      refs = fn t ->
+        %{text: t, citation_law: "UK_uksi_2004_1822"}
+        |> Pointer.parse()
+        |> Map.get(:provisions)
+        |> Enum.flat_map(&Pointer.to_refs/1)
+      end
+
+      assert refs.(
+               "Words substituted (14.7.2004) by The X Order 2004 (S.I. 2004/1822), art. 2, {Sch. Pt. 1 para. 8(a)(i)}"
+             ) ==
+               ["art.2", "sch.para.8(a)(i)"]
+
+      assert refs.(
+               "Words substituted (14.7.2004) by The X Order 2004 (S.I. 2004/1822), art. 2, Sch. para. 8(a)(ii)"
+             ) ==
+               ["art.2", "sch.para.8(a)(ii)"]
+    end
+  end
 end

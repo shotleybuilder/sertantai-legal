@@ -354,6 +354,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
       # (its copies in each version share it), and a change wholly in a
       # heading
       Claim.new(:markup, :note, first.note, change_id),
+      Claim.new(:markup, :note_digest, get_in(cited, [first.note, :digest]), change_id),
       Claim.new(:markup, :heading, if(Enum.all?(occ, & &1.heading?), do: true), change_id)
     ])
   end
@@ -412,10 +413,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     for c <- xpath(doc, ~x"//Commentary"l),
         id = xpath(c, ~x"./@id"s),
         id != "",
-        entry = cited_entry(c),
-        entry != nil,
         into: %{},
-        do: {id, entry}
+        do: {id, cited_entry(c)}
   end
 
   # a note with a `Citation` link: its law, and the provisions it names; a
@@ -423,23 +422,34 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
   # 2, decision 3: "S.I. 2004/ 1822" — never the change's `by`)
   defp cited_entry(c) do
     citation = xpath(c, ~x"(.//Citation[@URI])[1]"e)
+    # the note's words, normalised: copies of one note in each version of a
+    # provision carry their own ids but the same words (HSWA s.28: E+W, S,
+    # NI; CV-S07 round 3) — a pointer for identity only
+    digest = digest(Doc.text(c))
 
     case citation && Regex.run(~r"/id/([a-z]+)/(\d{4})/(\d+)", xpath(citation, ~x"./@URI"s)) do
       [_, type, year, num] ->
         law = "UK_#{type}_#{year}_#{num}"
         refs = pointers(c, xpath(citation, ~x"./@id"s), law)
-        %{law: law, refs: if(refs != [], do: refs)}
+        %{law: law, refs: if(refs != [], do: refs), digest: digest}
 
       _ ->
         case NoteLaw.law(Doc.text(c)) do
           nil ->
-            nil
+            %{digest: digest}
 
           law ->
             refs = pointers(c, "", law)
-            %{text_law: law, refs: if(refs != [], do: refs)}
+            %{text_law: law, refs: if(refs != [], do: refs), digest: digest}
         end
     end
+  end
+
+  defp digest(text) do
+    normal = text |> String.downcase() |> String.replace(~r/\s+/u, " ") |> String.trim()
+
+    if normal != "",
+      do: :crypto.hash(:md5, normal) |> Base.encode16(case: :lower) |> binary_part(0, 12)
   end
 
   defp pointers(commentary, citation_id, law) do

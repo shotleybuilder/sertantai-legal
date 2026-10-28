@@ -221,6 +221,9 @@
     "UK_anaw_2016_3/a51c463354": [
       {
         "claims": {
+          "feed.affecting": [
+            "sch.para.20(2)"
+          ],
           "feed.applied": true,
           "feed.by": "UK_asc_2024_6",
           "feed.date": "2024-11-16",
@@ -1130,6 +1133,9 @@
     "UK_anaw_2017_3/e9d4c9b148": [
       {
         "claims": {
+          "feed.affecting": [
+            "sch.para.4(a)"
+          ],
           "feed.applied": true,
           "feed.by": "UK_wsi_2018_101",
           "feed.date": "2018-04-01",
@@ -1181,6 +1187,9 @@
     "UK_anaw_2017_3/fab91127fa": [
       {
         "claims": {
+          "feed.affecting": [
+            "sch.para.2(a)"
+          ],
           "feed.applied": true,
           "feed.by": "UK_wsi_2018_101",
           "feed.date": "2018-04-01",
@@ -10999,6 +11008,9 @@
     "UK_nisi_2003_419/14f23108c4": [
       {
         "claims": {
+          "feed.affecting": [
+            "sch.para.25"
+          ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2025_381",
           "feed.date": "2025-04-06",
@@ -16022,7 +16034,8 @@
       {
         "claims": {
           "feed.affecting": [
-            "reg.2"
+            "reg.2",
+            "sch.para.1"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1999_1756",
@@ -16155,6 +16168,9 @@
     "UK_ukpga_1962_58/9cf02d0457": [
       {
         "claims": {
+          "feed.affecting": [
+            "sch.para.1(2)"
+          ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2017_16",
           "feed.date": "2017-02-02",
@@ -16173,6 +16189,9 @@
       },
       {
         "claims": {
+          "feed.affecting": [
+            "sch.para.1(2)"
+          ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2017_16",
           "feed.date": "2017-02-02",
@@ -16193,6 +16212,9 @@
     "UK_ukpga_1962_58/a210000bf8": [
       {
         "claims": {
+          "feed.affecting": [
+            "sch.para.1(b)"
+          ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_973",
           "feed.level": "provision",
@@ -16447,7 +16469,8 @@
       {
         "claims": {
           "feed.affecting": [
-            "reg.2"
+            "reg.2",
+            "sch.para.5(7)(a)(b)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2000_746",
@@ -16461,7 +16484,8 @@
       {
         "claims": {
           "feed.affecting": [
-            "reg.2"
+            "reg.2",
+            "sch.para.5(7)(a)(b)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2000_746",
@@ -16475,7 +16499,8 @@
       {
         "claims": {
           "feed.affecting": [
-            "reg.2"
+            "reg.2",
+            "sch.para.5(7)(a)(b)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2000_746",
@@ -16489,7 +16514,8 @@
       {
         "claims": {
           "feed.affecting": [
-            "reg.2"
+            "reg.2",
+            "sch.para.5(7)(a)(b)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2000_746",
@@ -16522,7 +16548,8 @@
       {
         "claims": {
           "feed.affecting": [
-            "reg.3"
+            "reg.3",
+            "sch.para.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1995_269",
@@ -16536,7 +16563,8 @@
       {
         "claims": {
           "feed.affecting": [
-            "reg.3"
+            "reg.3",
+            "sch.para.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1995_269",
@@ -18927,6 +18955,9 @@
     "UK_ukpga_1972_70/eb06f6a704": [
       {
         "claims": {
+          "feed.affecting": [
+            "sch.para.3(g)"
+          ],
           "feed.applied": false,
           "feed.by": "UK_uksi_2026_1011",
           "feed.date": "2026-10-05",
@@ -19777,7 +19808,8 @@
       {
         "claims": {
           "feed.affecting": [
-            "reg.2"
+            "reg.2",
+            "sch.para.3"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1995_789",
@@ -21466,7 +21498,8 @@
       {
         "claims": {
           "feed.affecting": [
-            "reg.2"
+            "reg.2",
+            "sch.para.2"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_878",
@@ -23698,7 +23731,8 @@
       {
         "claims": {
           "feed.affecting": [
-            "s.3(1)"
+            "s.3(1)",
+            "sch.para.5(3)"
           ],
           "feed.applied": true,
           "feed.by": "UK_ukpga_1994_11",
@@ -23754,7 +23788,8 @@
       {
         "claims": {
           "feed.affecting": [
-            "reg.2"
+            "reg.2",
+            "sch.para.4"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_878",
@@ -23789,7 +23824,8 @@
       {
         "claims": {
           "feed.affecting": [
-            "reg.2"
+            "reg.2",
+            "sch.para.5(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_878",
@@ -33538,7 +33574,8 @@
       {
         "claims": {
           "feed.affecting": [
-            "reg.2"
+            "reg.2",
+            "sch.para.6(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_878",
@@ -33552,7 +33589,8 @@
       {
         "claims": {
           "feed.affecting": [
-            "reg.2"
+            "reg.2",
+            "sch.para.6(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_878",
@@ -33566,7 +33604,8 @@
       {
         "claims": {
           "feed.affecting": [
-            "reg.2"
+            "reg.2",
+            "sch.para.6(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_878",
@@ -33580,7 +33619,8 @@
       {
         "claims": {
           "feed.affecting": [
-            "reg.2"
+            "reg.2",
+            "sch.para.6(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_878",
@@ -33594,7 +33634,8 @@
       {
         "claims": {
           "feed.affecting": [
-            "reg.2"
+            "reg.2",
+            "sch.para.6(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_878",
@@ -33608,7 +33649,8 @@
       {
         "claims": {
           "feed.affecting": [
-            "reg.2"
+            "reg.2",
+            "sch.para.6(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_878",
@@ -33622,7 +33664,8 @@
       {
         "claims": {
           "feed.affecting": [
-            "reg.2"
+            "reg.2",
+            "sch.para.6(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_878",
@@ -33636,7 +33679,8 @@
       {
         "claims": {
           "feed.affecting": [
-            "reg.2"
+            "reg.2",
+            "sch.para.6(a)"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_878",
@@ -34540,6 +34584,9 @@
     "UK_ukpga_1992_12/dcc1a02046": [
       {
         "claims": {
+          "feed.affecting": [
+            "sch.para.3(2)(a)"
+          ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2004_2744",
           "feed.date": "2004-11-15",
@@ -36124,6 +36171,9 @@
     "UK_ukpga_1993_9/356763530e": [
       {
         "claims": {
+          "feed.affecting": [
+            "sch.para.65"
+          ],
           "feed.applied": true,
           "feed.by": "UK_asp_2001_7",
           "feed.level": "provision",
@@ -36710,7 +36760,8 @@
       {
         "claims": {
           "feed.affecting": [
-            "reg.2"
+            "reg.2",
+            "sch.para.7"
           ],
           "feed.applied": true,
           "feed.by": "UK_uksi_1996_878",
@@ -51514,6 +51565,9 @@
     "UK_uksi_2000_3184/d0b4da2c69": [
       {
         "claims": {
+          "feed.affecting": [
+            "sch.para.14(d)"
+          ],
           "feed.applied": false,
           "feed.by": "UK_uksi_2001_2885",
           "feed.date": "2001-09-05",
@@ -52545,6 +52599,9 @@
     "UK_uksi_2008_1597/96e4c7f4b6": [
       {
         "claims": {
+          "feed.affecting": [
+            "sch.para.1"
+          ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2011_2157",
           "feed.date": "2011-12-15",
@@ -53563,6 +53620,9 @@
     "UK_uksi_2015_595/162f54c3c2": [
       {
         "claims": {
+          "feed.affecting": [
+            "sch.para.2(5)"
+          ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2017_402",
           "feed.date": "2017-04-15",
@@ -53578,6 +53638,9 @@
       },
       {
         "claims": {
+          "feed.affecting": [
+            "sch.para.2(5)"
+          ],
           "feed.applied": true,
           "feed.by": "UK_uksi_2017_402",
           "feed.date": "2017-04-15",

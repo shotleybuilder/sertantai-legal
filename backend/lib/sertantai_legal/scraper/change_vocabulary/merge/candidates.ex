@@ -37,11 +37,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge.Candidates do
   @doc """
   Markup-only changes of one note on one provision as one change: the
   first by key (an effect id before a legacy ChangeId), the others its
-  aliases, their claims once.
+  aliases, their claims once. One note is its words (`:note_digest`), else
+  its id: copies in each version of a provision carry their own ids (HSWA
+  s.28, round 3). Never EU markup, whose generic notes ("c000001") are
+  shared by distinct changes (Directive 98/24 art.2(b)(i), (b)(iii)).
   """
   @spec collapse([Change.t()]) :: [Change.t()]
   def collapse(changes) do
-    {notes, rest} = Enum.split_with(changes, &(note(&1) != nil and markup_only?(&1)))
+    {notes, rest} =
+      Enum.split_with(changes, &(note(&1) != nil and markup_only?(&1) and not eu?(&1.key)))
 
     collapsed =
       notes
@@ -62,7 +66,23 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge.Candidates do
   @spec base(String.t()) :: String.t()
   def base(key), do: key |> String.split("@", parts: 2) |> hd()
 
-  defp note(c), do: Change.value(c, :markup, :note)
+  @doc """
+  The event a candidate records: its effect id (stages together); legacy
+  markup's, its note — one note's pieces on a provision and below it are
+  one event (HSWA s.16: 15 Substitutions on one note, round 3).
+  """
+  @spec event(Change.t()) :: term()
+  def event(c) do
+    if markup_only?(c) and EffectIndex.effect_id(c.key) == nil and not eu?(c.key) and
+         note(c) != nil,
+       do: {:note, note(c)},
+       else: base(c.key)
+  end
+
+  defp note(c), do: Change.value(c, :markup, :note_digest) || Change.value(c, :markup, :note)
+
+  # EU markup's own ids ("O002001M001")
+  defp eu?(key), do: key =~ ~r/^O\d+M\d+/
 
   defp markup_only?(c),
     do: Change.values(c, :feed, :by) == [] and Change.values(c, :law_text, :by) == []

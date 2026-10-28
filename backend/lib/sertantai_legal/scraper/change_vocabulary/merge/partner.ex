@@ -37,13 +37,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge.Partner do
   def choose(orphan, candidates) do
     events =
       candidates
-      |> Enum.group_by(&Candidates.base(&1.key))
+      |> Enum.group_by(&Candidates.event/1)
       |> Map.values()
       |> Enum.filter(&same_day?(orphan, &1))
       |> Enum.filter(&provision?(orphan, &1))
       |> Enum.filter(&family?(orphan, &1))
-      |> narrow(&(operation(main(&1)) == operation(orphan)))
-      |> narrow(&(heading?(orphan) or not Enum.any?(&1, fn c -> heading?(c) end)))
+      # (the family waived for one amending provision, its own still first:
+      # HSWA s.53(1), round 3)
+      |> narrow(&(Merge.family(operation(main(&1))) == Merge.family(operation(orphan))))
+      |> narrow(&same_operation?(orphan, main(&1)))
+      |> narrow(&(Enum.any?(&1, fn c -> heading?(c) end) == heading?(orphan)))
+      # (an effect placed here only because its finer place has no row ranks
+      # below one placed here: REACH art.14(2), round 3)
+      |> narrow(&(not Enum.any?(&1, fn c -> Change.values(c, :feed, :finer_unheld) != [] end)))
 
     case events do
       [one] -> one
@@ -70,6 +76,23 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge.Partner do
       Enum.find(pool, &Merge.marked?/1) ||
       Enum.min_by(pool, &abs(depth(&1.target) - depth(orphan.target)))
   end
+
+  # one operation: a removal in part is a removal; the markup shows a
+  # substitution as an insertion (`Conflicts` `@agree`)
+  defp same_operation?(a, b) do
+    {x, y} = {plain(operation(a)), plain(operation(b))}
+
+    x == y or
+      ({x, y} in [{:substituted, :inserted}, {:inserted, :substituted}] and
+         (markup_op?(a) or markup_op?(b)))
+  end
+
+  defp plain(:repealed_in_part), do: :repealed
+  defp plain(op), do: op
+
+  defp markup_op?(c),
+    do:
+      Change.values(c, :law_text, :operation) == [] and Change.values(c, :feed, :operation) == []
 
   # a narrowing applies only where it leaves one or more
   defp narrow(events, keep) when length(events) > 1 do
@@ -146,11 +169,34 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge.Partner do
         List.flatten(Change.values(c, :feed, :affecting) ++ Change.values(c, :markup, :affecting))
       end)
 
+  # one amending provision within the other: brackets ("para. 8(a)(i)" in
+  # "para. 8"), a Schedule's Part or paragraph in the Schedule
+  # ("sch.15.pt.1" in "sch.15", round 3); an Order's articles are named
+  # "art." by a note and "reg." by the feed (SSI 2010/428, round 3)
   defp related?(refs, named),
     do:
       Enum.any?(named, fn a ->
-        Enum.any?(refs, &(a in LatRef.ancestors(&1) or &1 in LatRef.ancestors(a)))
+        Enum.any?(refs, &(within?(a, &1) or within?(&1, a)))
       end)
+
+  defp within?(a, b), do: canonical(a) in Enum.map(chain(b), &canonical/1)
+
+  defp chain(ref) do
+    bare = String.replace(ref, ~r/\(.*$/, "")
+    parts = String.split(bare, ".")
+
+    dotted =
+      for n <- 2..length(parts)//2,
+          n <= length(parts),
+          do: parts |> Enum.take(n) |> Enum.join(".")
+
+    Enum.uniq(
+      LatRef.ancestors(ref) ++
+        dotted ++ (dotted |> Enum.map(&String.replace(&1, ~r/\.pt\.[^.]+/, "")))
+    )
+  end
+
+  defp canonical(ref), do: String.replace(ref, ~r/^(?:art|reg|rule)\./, "p.")
 
   defp operation(c),
     do:

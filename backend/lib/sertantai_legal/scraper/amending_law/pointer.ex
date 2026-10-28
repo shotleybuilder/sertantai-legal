@@ -117,7 +117,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Pointer do
   defp refs(tail) do
     tail
     |> String.split(",")
-    |> Enum.map(&String.trim/1)
+    # (a pointer in braces: "{Sch. Pt. 1 para. 8(a)(i)}", CV-S07 round 3)
+    |> Enum.map(
+      &(&1
+        |> String.trim()
+        |> String.trim_leading("{")
+        |> String.trim_trailing("}")
+        |> String.trim())
+    )
     |> Enum.reduce({[], nil}, fn token, {acc, last} ->
       case ref(token, last) do
         nil -> {acc, last}
@@ -163,6 +170,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Pointer do
   when it names no number.
   """
   @spec to_ref(tuple()) :: String.t() | nil
+  # an unnumbered Schedule's paragraph, as the markup's structured pointers
+  # name it ("Sch. para. 8(a)(ii)" → "sch.para.8(a)(ii)": CV-S07 round 3)
+  def to_ref({:schedule, nil, _part, para, subs}) when is_binary(para),
+    do: "sch.para.#{para}#{brackets(subs)}"
+
   def to_ref({:schedule, nil, _part, _para, _subs}), do: nil
 
   def to_ref({:schedule, n, _part, para, subs}) when is_binary(para),
@@ -191,15 +203,24 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Pointer do
         {kind, n, subs} -> {subs, &{kind, n, &1}}
       end
 
-    case Enum.find_index(Enum.chunk_every(subs, 2, 1, :discard), fn [a, b] ->
-           kind(a) == kind(b)
-         end) do
+    case Enum.find_index(Enum.chunk_every(subs, 2, 1, :discard), fn [a, b] -> listed?(a, b) end) do
       nil ->
         List.wrap(to_ref(ref))
 
       i ->
         {path, items} = Enum.split(subs, i)
         for item <- items, r = to_ref(rebuild.(path ++ [item])), r != nil, do: r
+    end
+  end
+
+  # two brackets of one kind in a row are list items, letters only where
+  # the second follows the first ("9(b)(c)": items; "8(a)(i)": a path —
+  # (i) the roman below (a), CV-S07 round 3)
+  defp listed?(a, b) do
+    case {kind(a), kind(b)} do
+      {:letter, :letter} -> String.to_charlist(b) == Enum.map(String.to_charlist(a), &(&1 + 1))
+      {k, k} -> true
+      _ -> false
     end
   end
 
