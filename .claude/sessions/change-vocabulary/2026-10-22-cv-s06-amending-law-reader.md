@@ -53,6 +53,12 @@ bugs:
     affected: 1
     fix: "not in this batch (one provision); a list's bare numbers are whole, a Schedule entry's section is not the law's"
     status: open
+  - pattern: "A named place's partial readings kept beside its held one when the amended law's CLML skips a level (HSWA s.28(3)(f)(i) is section-28-f-i): 'paragraph (f)(i) of subsection (3)' gave s.28(3) and s.28(f)(i); the s.28(3) change was then placed on s.28 (seed 31 NEW, ssi 2008/339 art.5(2))"
+    category: reader misread (target)
+    module: ChangeVocabulary.Readers.AmendingLaw (targets) / ChangeVocabulary.build
+    affected: 6
+    fix: "each full reading resolved to its longest held spelling, shallower places dropped; law-text targets respelt to rows via xml_ids (35f29731)"
+    status: fixed
 ---
 
 # Session: CV-S06: Amending-Law Reader (ACTIVE)
@@ -69,7 +75,7 @@ The session does not close until its results pass.
 - ✅ Catalogue (B1–B3 found; statuses after the fix batch): `mix lat.amendment_patterns` over the family's read instruction sentences, classed by form, examples pinned in a test; new forms decided
 - ✅ Census of the 211 disagreements (B4–B7 found; the rest legislation.gov.uk, the merge's, or right; no renumbering) (65 law text only, 60 unjoined, 86 value): each classed backlog / reader misread / join miss / legislation.gov.uk fault; renumbering (C4) as a class
 - ✅ Fix batch B1–B7; acceptance chain (2026-10-28): disagreements 211 → 142, family rules diff clean, golden from inputs 26/27 (RTA s.4(6): CV-S05f, known limit)
-- ⬜ Precision check: `mix lat.amending_check --family F --sample --n 50 --seed N`, agent prompt in a skill (`amending-reader-check`)
+- ✅ Precision check: `mix lat.amending_check` (0b40fa64), skill `amending-reader-check` (1648bbba)
 - ⬜ Agent seeds until the statistical rule passes (pooled 95% upper < 2% changes, < 5% pairs)
 - ⬜ Quality statement and coverage table; CV-00 recipe step 6
 - ⏸️ The reader's yield over the feed (2,658 read with no rule): not chased (CV-07)
@@ -144,6 +150,16 @@ Restore point `cv-s06-batch1` (amendment_rules, extent_rules, provision_changes,
 - **Golden:** `--check` scores 19 golden laws outside the family from their stored changes (27/27). From inputs (`--golden`): 26/27. The failure, RTA 1988 s.4(6) (repealed everywhere from 2006; expected in force in Scotland), is not this batch. SOCPA 2005 Sch.7 para 27(4), "The repeal of section 4(8) extends also to Scotland", is unread since CV-S05 round 6, so the bound is withheld. Before that the paragraph silently took the E+W default. A bound per amending provision can't be right for both s.4(6) and s.4(8) (para 27(2) repeals both), so the faithful fix is extent rows naming the amended target: **CV-S05f** (PENDING, Jason 2026-10-28: straight after S06's agent seeds). Known limit until then.
 - **Lesson:** a golden law outside the family is scored from stored changes by `--check`. Every acceptance chain must also run `--golden` from inputs, or a reader change upstream goes unseen. CV-S05's closing golden runs missed this one.
 - Catalogue fixtures regenerated, effect ids shortened in the pruned XML (`Patterns.Example.export`): 81 patterns, 185 examples.
+
+## Agent seeds
+
+Population: 1,171 family changes the law's text states (both sources 1,094; law text only 77). The statistical rule pools seeds after the last fix batch.
+
+| Seed | Changes | Pairs | Result |
+|---|---|---|---|
+| 31 | 49 OK / 1 WRONG / 0 doubtful | 47 / 48 OK | FAIL, 1 NEW: ssi 2008/339 art.5(2) "In paragraph (f)(i) of subsection (3) …" stored a change on HSWA s.28. HSWA's CLML names s.28(3)(f)(i) `section-28-f-i`, so the reading s.28(3) survived beside s.28(f)(i), and placement lifted it to s.28. Fixed (`35f29731`): the longest held spelling of each reading, law-text targets respelt via `xml_ids`. Pre-flight: 6 of 6,214 family and golden rules change, all intended. Chain 2: law text only 32 → 29, unjoined 45; golden 26/27 (CV-S05f). |
+
+The pool restarts after this fix: seeds 32 onward.
 
 ## Starting point (2026-10-28, from run-07's family chain)
 
