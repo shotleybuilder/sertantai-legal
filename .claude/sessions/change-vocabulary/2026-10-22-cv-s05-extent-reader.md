@@ -1509,6 +1509,16 @@ Acceptance run and seed 20 next.
      - **Checks:** 23 tests; two whole-store pre-flights, 15 laws changed, all checked.
      - **Chain:** golden 27/27; checks PASS (our faults 0); claims +13, 1989/38's GB-only amendments now E+W+S, which is right; census run-07 nothing new that is real; full suite 9,190.
      - **Restore point and snapshots:** restore point `cv-s05-before-seed20-batch`; snapshots `r6b.rules15`, `r6b.claims16`.
+   - ❌ **Seed 21 (2026-10-28): FAIL, 1 NEW wrong bound.** Laws 49 OK / 1 WRONG; changes 49 OK / 1 doubtful (a label).
+     - **NEW:** ukpga 2008/20 s.3(4), "This Act extends to … (except that an amendment or repeal made by this Act has the same extent as the provision to which it relates)": the bracket was dropped. Its 9 amendments were bound to the UK, 7 of them to HSWA Part I (GB only).
+     - **Fixed** (`Same` `@bracket_same`, a test). It's the only law in the store with this wording.
+     - **Chain:** only 2008/20 changed; the 9 wrong bounds are gone (`same`); golden 27/27; checks PASS; catalogue and census unchanged.
+     - **Restore point and snapshot:** restore point `cv-s05-before-seed21-fix`; snapshot `r6b.claims17`.
+     - **No bound effect, for the closing bugs:**
+       - 1987/43's s.5(5)–(7) row carries `source_ref` s.49, not s.5;
+       - a change by the law's own Schedule key is labelled `same_or_not_named`, not `same`;
+       - SI 2013/1506 reg.3(3)'s unread row includes the qualifier's object;
+       - 2015/20 s.114(2) is withheld whole, its plain items included.
    - close CV-S05 (frontmatter, bugs, lessons);
    - close CV-S05d: run-01 to run-05 evidence, and the permanent read-only mix task decided (build, or defer to a PENDING session);
    - the application scope hand-off stays PENDING; the Pointer/Locator naming stays on the v0.2 list (#169);
