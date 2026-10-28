@@ -86,6 +86,11 @@ Known classes (label a finding with one; otherwise NEW):
 - KS a Schedule/Annex change (schedules unparsed, v0.1): its row is missing, never NEW.
 - KJ2 (CV-S06) several law-text changes with an identical feed effect by the same law left apart: a split, WRONG
   (count it), not NEW.
+- KM-EU (Jason 2026-10-28) one EU markup change (one ChangeId) covering the words of several points the feed records
+  as separate effects (REACH): left apart by design, OK.
+- KX an event by another amending law ("as inserted by" chains: SI 2020/1460 amending SI 2019/696's insertion):
+  not this merge's, OK.
+For a joined change also check that a markup note's cited provision is related to the feed's affecting provision.
 
 Output: a compact table, one row per item: #, law, target, by, OK/WRONG/doubtful, note (only when not OK: one line,
 kind over-join/split/misplaced, the partner or the stray claim, a known class or NEW). Then counts (changes
@@ -100,4 +105,5 @@ OH&S (first family, 2026-10-28 →). The session is `.claude/sessions/change-voc
 
 | Round | Seed | Result |
 |---|---|---|
-| 1 | 41 (J) | Strata J 2,023 / U 45 / C 62; join rate law text 89.9%, markup 77.6% |
+| 1 | 41 (J) | Strata J 2,023 / U 45 / C 62; join rate law text 89.9%, markup 77.6%. FAIL: J 44/50, U 1/45, C 5/62 (+5 doubtful), all splits (identity: URI ids, unmatched markup ids, copies as rivals, amending provision unused) |
+| 2 | 42 (J) | Fix effada69 (change identity, `docs/CHANGE-IDENTITY-DESIGN.md`). Strata J 2,048 / U 22 / C 26; join rate law text 91.7%, markup 83.6% |
