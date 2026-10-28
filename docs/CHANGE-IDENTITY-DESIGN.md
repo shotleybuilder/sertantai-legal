@@ -69,7 +69,7 @@ Data flow, all within `ChangeVocabulary`, with no new table. `Merge` (330 lines 
 - `Merge.Partner`: the partner choice below.
 
 1. **Feed (`ChangesFeed` parses, `Readers.Feed` carries).** `ChangesFeed` parses the effect id in `URI` into the `Effect` struct (`uri_id`). Where it differs from `EffectId`, `Readers.Feed` carries it as a claim (`:feed, :uri_id`). The merge maps a markup key equal to a `URI` id onto the feed's key and keeps the markup id as an alias. *Fixes cause 1.*
-2. **Markup reader (`Readers.Markup`).** Carry the note id as a claim (`:markup, :note`), a pointer for identity. Read the cited law from the note's text when it has no `Citation` URI ("S.I. 2004/ 1822", HSWA s.28(5)(b) `d29p11427`). See Open question 3: today a note's citation is also the last fallback for the stored `by`.
+2. **Markup reader (`Readers.Markup`).** Carry the note id as a claim (`:markup, :note`), a pointer for identity. Read the cited law from the note's text when it has no `Citation` URI ("S.I. 2004/ 1822", HSWA s.28(5)(b) `d29p11427`), as an identity-only pointer (`:markup, :cited_text`), never `by` (Decision 3).
 3. **`Merge.Candidates`, before joining.**
    - Group markup changes by (note, law) on each provision: copies (version repeats, several ChangeIds on one note) become one candidate with aliases.
    - Group a feed effect's stages (keys `id@date`) as one candidate.
@@ -141,7 +141,13 @@ Measures the design can't define for itself: the strata are computed from the me
 - A restore point of `provision_changes`, `provision_change_claims`, `amendment_rules` and `extent_rules` before the read pass and rebuild (`nas-backup.sh --tables … --tag cv-s07-round2`).
 - The code reverts by commit. The merge holds no state of its own.
 
-## Open questions (Jason decides)
+## Decisions (Jason, 2026-10-28)
+
+1. **The "repealed" Addition:** join by provision. Where the amending provision matches, the markup joins the law text's removal across families, and the law text's operation wins by evidence. With no law-text record the markup's "inserted" stands, as a known limit.
+2. **EU REACH coarse markup:** leave apart as a known class (KM-EU), counted as such by the check.
+3. **A note's cited law as stored `by`:** kept as the last fallback and documented as the one named exception: the note's structured `Citation` link, never its free text. So the stray-space read ("S.I. 2004/ 1822", from the note's words) is an identity-only pointer (`:markup, :cited_text`). It is never in `Evidence`'s `by`.
+
+## Open questions (decided above)
 
 1. **The "repealed" Addition** (HSWA s.84(5), s.1(1)(d); 1972/28 s.5(1)). Markup reads it as an insertion and the note says repealed. This design joins it to the law text's removal by the amending provision, where the family differs and the provision matches. The law text's operation then wins by evidence. Without a law-text record the markup's "inserted" stands, and reading the note's verb is ruled out. Is the join-by-provision enough, or should the markup reader look at what the Addition wraps?
 2. **EU REACH coarse markup:** leave apart as a known class, or join one markup change to several feed events (one change per feed event, the markup as each one's placement)?
