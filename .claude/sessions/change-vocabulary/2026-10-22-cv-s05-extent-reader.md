@@ -1495,6 +1495,20 @@ Acceptance run and seed 20 next.
 5. **Close-out:**
    - ✅ 2026-10-28: CV-S05d closed. The census mix task is PENDING in `2026-10-28-cv-s05e-census-mix-task.md` (Jason: "Close; PENDING task").
    - CV-S05 stays open (Jason 2026-10-28: "Keep it open") to fix seed 20's three observations: one batch, one chain, then seed 21.
+   - ✅ **Seed 20 batch (`84dd509c`; evidence `cv-s05d…/run-07`).**
+     - **The three observations:**
+       - 1989/38's exception list whose items are another subsection's ("With the exception of the provisions mentioned in subsection (6) …"), also 1986/31;
+       - "Subsection(s) (N) … do not extend …" statements read (CPA 1987 s.5(8); 1980/65, 1988/52, 1990/42, 1990/43, 2004/20, 2007/15);
+       - `extent_check` labels a no-bound change by its own amending provisions (`none:same`).
+     - **Found by the catalogue review and the pre-flight:**
+       - 2008/4 "(and the related repeals in Schedule 28)" withheld, not the whole Schedule;
+       - 2009/26 "… and subsection (2) of that section extends to Scotland only";
+       - 1963/11 "shall be construed … notwithstanding … do not extend" no statement;
+       - 2003/39 Sch.8's "Sub-paragraph (1) …" (a silent drop the first pre-flight caught);
+       - `Credit` counting a paragraph's own sub-paragraph rows as own.
+     - **Checks:** 23 tests; two whole-store pre-flights, 15 laws changed, all checked.
+     - **Chain:** golden 27/27; checks PASS (our faults 0); claims +13, 1989/38's GB-only amendments now E+W+S, which is right; census run-07 nothing new that is real; full suite 9,190.
+     - **Restore point and snapshots:** restore point `cv-s05-before-seed20-batch`; snapshots `r6b.rules15`, `r6b.claims16`.
    - close CV-S05 (frontmatter, bugs, lessons);
    - close CV-S05d: run-01 to run-05 evidence, and the permanent read-only mix task decided (build, or defer to a PENDING session);
    - the application scope hand-off stays PENDING; the Pointer/Locator naming stays on the v0.2 list (#169);
