@@ -48,15 +48,18 @@ Stored data (repo root /var/home/jason/Desktop/sertantai-legal, backend/ for dat
 - Amending law text: backend/data/cache/clml/{type}/{year}/{number}/body/data.xml.gz and .../schedules/data.xml.gz
   (UK_uksi_2008_1597 → uksi/2008/1597). Elements carry id="regulation-3-a" etc.
 - The amended law's rows: PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -Atc
-  "select section_id from legal_articles where law_name='LAW' and section_id like 'LAW:reg.5%' order by sort_key"
+  "select section_id, source_xml_id from legal_articles where law_name='LAW' and section_id like 'LAW:reg.5%' order by sort_key"
+  (a row's source_xml_id is legislation.gov.uk's own id; an id may skip a level, e.g. section-28-f-i for s.28(3)(f)(i):
+  the reader names the target as the CLML spells it, then it is respelt to the row through source_xml_id.)
 - The reader's rules: amendment_rules (amends, source_law, source_ref, operation, level, treatment, targets).
 
 What the reader intends:
 - The law: the amended law named by the instruction, its context, its headings or the text before it.
 - Targets: refs in LAT's grammar (s.N(x), reg.N(x), art.N EU). A quote's provisions are its targets, the
-  top of the quote being the change (an inserted s.51A with its subsections is s.51A). A named place with
-  brackets ("subsection (6)(e)", "In subsection (5), paragraphs (b) and (c)") is the deepest place the law
-  holds. Words changes land on the deepest provision named.
+  top of the quote being the change (an inserted s.51A with its subsections is s.51A; a quote with several tops,
+  e.g. "(2) … (2A) …", makes each top a change). A named place with brackets ("subsection (6)(e)", "In subsection
+  (5), paragraphs (b) and (c)") is the deepest place the law holds; a rule's targets list every bracket combination,
+  of which only the deepest held become changes. Words changes land on the deepest provision named.
 - Operation: insert/add → inserted; substitute → substituted; omit/repeal/revoke/cease to have effect →
   repealed. Level: words where the instruction changes words, definitions, entries, a heading or a mark
   (full stop, comma); provision where it changes whole provisions (a provision omitted with its joining
