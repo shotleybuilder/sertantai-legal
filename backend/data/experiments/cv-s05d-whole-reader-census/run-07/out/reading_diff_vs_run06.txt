@@ -1,0 +1,56 @@
+
+15 laws changed of 3358
+## UK_ukpga_1980_65
+  - unread None: s.69(1A),s.69(1B)
+  + only S: s.69(1A),s.69(1B)
+  classes list:only:S+1, sweep:noise:other+1, unread:not_read-1
+## UK_ukpga_1986_31
+  + also NI: s.2(4),s.29,s.30,s.31,s.32,s.33,s.34,s.35,s.68,s.72..s.74,s.78..s.82,s.85
+## UK_ukpga_1987_43
+  - unread None: s.5(5),s.5(6),s.5(7)
+  + not S: s.5(5),s.5(6),s.5(7)
+  classes list:not:S+1, unread:not_read-1
+## UK_ukpga_1988_52
+  - unread None: s.34(2)
+  + not S: s.34(2),s.34A
+  classes list:not:S+1, unread:provision_extent-1
+## UK_ukpga_1989_38
+  - unread None: s.10(1),s.10(2),s.10(6),s.22(5),s.27,s.29(3),s.29(4),s.30,sch.3,sch.5.para.2,sch.6,sch.7
+  + also NI: s.10(6),s.27,s.30,sch.5.para.2
+  classes exception+1, unread:in_clause-1
+## UK_ukpga_1990_42
+  - unread None: s.166(1),s.166(2)
+  + not S: s.166(1),s.166(2)
+  classes list:not:S+1, unread:not_read-1
+## UK_ukpga_1990_43
+  - unread None: s.78P(10),s.78P(11),s.78P(12),s.78P(13),s.78P(3),s.78P(4),s.78P(5),s.78P(6),s.78P(7),s.78P(8),s.78P(9)
+  + not S: s.78P(10),s.78P(11),s.78P(12),s.78P(13),s.78P(3),s.78P(4),s.78P(5),s.78P(6),s.78P(7),s.78P(8),s.78P(9)
+  classes list:not:S+1, sweep:noise:other+4, unread:not_read-1
+## UK_ukpga_2003_39
+  - unread None: sch.8.para.70,sch.8.para.78,sch.8.para.91
+  + not NI: sch.8.para.70(1),sch.8.para.91(3); only E+W: sch.8.para.78(1)
+  classes list:not:NI+2, list:only:E+W+1, unread:not_read-3
+## UK_ukpga_2004_20
+  - unread None: s.117(3)
+  + only NI: s.117(3)
+  classes list:only:NI+1, unread:not_read-1
+## UK_ukpga_2006_16
+  - unread None: sch.11.para.72,sch.11.para.76
+  + unread None: sch.11.para.72(2),sch.11.para.76(3)
+  classes unread:not_read-2, unread:other_provision+2
+## UK_ukpga_2007_15
+  - unread None: s.139(1),s.139(2)
+  + only E+W: s.139(1),s.139(2)
+  classes list:only:E+W+1, unread:not_read-1
+## UK_ukpga_2008_4
+  - unread None: s.79(2),s.79(3)
+  + only E+W: s.79(2),s.79(3); unread None: sch.28
+  classes list:only:E+W+1, unread:not_read-1
+## UK_ukpga_2009_26
+  - unread None: s.105(1),s.105(3),s.105(4),s.105(5),s.115(1),s.115(3)
+  + named S+NI: s.105(1),s.105(3),s.105(4),s.105(5); only S: s.105(2)
+  classes list:named:S+NI+1, unread:in_clause-1
+## UK_ukpga_2012_10
+  + unread None: s.148(1)
+## UK_ukpga_2013_22
+  + unread None: s.43,s.61(15)
