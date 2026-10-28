@@ -106,3 +106,4 @@ OH&S (first family, 2026-10-28 →). The session is `.claude/sessions/change-voc
 | Round | Seed | Result |
 |---|---|---|
 | 1 | 31 | FAIL, 1 NEW (changes 49/50, pairs 47/48): a skipped-level CLML id (HSWA `section-28-f-i`) left a stray partial reading on s.28; fixed `35f29731` |
+| 2 | 32 | PASS, no NEW (changes 50/50, pairs 33/33) |
