@@ -67,7 +67,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Statements do
       case String.split(
              s,
              Regex.compile!(
-               "(?:[,;]\\s*|\\s+)and\\s+(?=(?:#{@provision_word}|sub-?sections?\\s+\\(|this\\s+(?:section|regulation|article|Part|Chapter)\\b)(?:[^,;]*?\\b(?:extends?|extend)\\b|[^;]*?\\bha(?:s|ve)\\s+the\\s+same\\s+extent\\b))|,\\s*but\\s+(?=(?:#{@provision_word}|this\\s+(?:sub-?section|regulation|article|sub-?paragraph|paragraph)\\b)[^,;]*?\\bappl(?:y|ies)\\b)",
+               "(?:[,;]\\s*|\\s+)and\\s+(?=(?:#{@provision_word}|the\\s+provisions\\s+of\\s+(?:Schedules?|Parts?|sections?)\\s+[\\dIVXL]|sub-?sections?\\s+\\(|this\\s+(?:section|regulation|article|Part|Chapter)\\b)(?:[^,;]*?\\b(?:extends?|extend)\\b|[^;]*?\\bha(?:s|ve)\\s+the\\s+same\\s+extent\\b))|,\\s*but\\s+(?=(?:#{@provision_word}|this\\s+(?:sub-?section|regulation|article|sub-?paragraph|paragraph)\\b)[^,;]*?\\bappl(?:y|ies)\\b)",
                "iu"
              ),
              parts: 2

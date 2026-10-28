@@ -388,7 +388,6 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
       for text <- [
             "Sections 128(4) and 132(3) of that Act shall continue to extend to Scotland.",
             "Part X of, and Schedule 9 to, the 1989 Act shall cease to extend to England and Wales.",
-            "Section 1(2) and Schedule 1 extend to Northern Ireland so far as they amend the House of Commons Disqualification Act 1975.",
             "Parts 1 to 7 extend to England and Wales only, except that an amendment effected by any of those Parts has the same extent as the provision amended.",
             "Sections 1 and 2 above, and Schedule 1 to this Act (except paragraph 12), shall not extend to Northern Ireland."
           ] do

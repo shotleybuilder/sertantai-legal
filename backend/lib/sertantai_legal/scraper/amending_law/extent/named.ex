@@ -30,6 +30,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Named do
       do: {named_kind(m), Places.places(m["places"]), refs}
     ) ++
       excluding(unit_sentences, doc) ++
+      qualified_after(unit_sentences, doc) ++
       qualified(unit_sentences, doc) ++ asides(unit_sentences, doc)
   end
 
@@ -44,6 +45,31 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Named do
         s,
         ""
       )
+
+  # a statement qualified after its places withheld, never dropped to the
+  # default: "the provisions of Schedules 3 and 4 (…) extend to Scotland so
+  # far as they relate to enactments which so extend" (ukpga 1996/23
+  # s.108(3), CV-S05 seed 22 NEW-1)
+  defp qualified_after(unit_sentences, doc) do
+    for {ref, s} <- unit_sentences,
+        s =
+          Regex.replace(
+            ~r/^\s*the\s+provisions\s+of\s+(?=(?:Schedules?|Parts?|sections?)\s)/iu,
+            s,
+            ""
+          ),
+        not Regex.match?(Forms.heading(), s),
+        not Regex.match?(Forms.part_not(), s),
+        [{at, len} | _] <- [Regex.run(Forms.named(), s, return: :index)],
+        m = Regex.named_captures(Forms.named(), s),
+        tail = binary_part(s, at + len, byte_size(s) - at - len),
+        tail =~ ~r/^\s*,?\s*(?:so\s+far\s+as|in\s+so\s+far|insofar|to\s+the\s+extent)\b/iu,
+        subj = described_out(m["subj"]),
+        refs = Enum.uniq(RefList.parse(subj, ref) ++ Parts.parts(subj, doc, ref)),
+        refs != [],
+        uniq: true,
+        do: {:unread, nil, refs}
+  end
 
   # a plain statement's qualified aside withheld, never dropped: "Part 6
   # (including Schedule 13 so far as it relates to Part 6) extends to …"

@@ -23,11 +23,17 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.NamedTest do
   test "never another law's, a mention, a qualified or excepted extent" do
     for text <- [
           "Sections 128(4) and 132(3) of that Act shall continue to extend to Scotland.",
-          "Section 1(2) and Schedule 1 extend to Northern Ireland so far as they amend the House of Commons Disqualification Act 1975.",
           "Sections 1 and 2 above, and Schedule 1 to this Act (except paragraph 12), shall not extend to Northern Ireland."
         ] do
       assert named("UK_ukpga_2000_1", text) == [], text
     end
+  end
+
+  test "a statement qualified after its places is withheld, never dropped (CV-S05 seed 22)" do
+    assert named(
+             "UK_ukpga_2000_1",
+             "Section 1(2) and Schedule 1 extend to Northern Ireland so far as they amend the House of Commons Disqualification Act 1975."
+           ) == [{:unread, nil, ["s.1(2)", "sch.1"]}]
   end
 
   test "never a provision named in a bracketed description (NEW-C)" do

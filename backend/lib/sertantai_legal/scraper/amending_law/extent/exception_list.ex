@@ -184,14 +184,52 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ExceptionList do
     end
   end
 
-  @doc "The provisions each statement excepts, as `{:also, place, refs}`."
-  @spec lists(String.t(), String.t() | nil, Doc.t()) :: [{:also, String.t(), [String.t()]}]
+  @doc """
+  The provisions each statement excepts, as `{:also, place, refs}`; an
+  item stating its own extent in brackets as that (`{:only, place, refs}`:
+  "(d) section 27 (which extends only to Northern Ireland)", ukpga 1989/38
+  s.30(6), CV-S05 seed 22 NEW-2).
+  """
+  @spec lists(String.t(), String.t() | nil, Doc.t()) :: [
+          {:also | :only, String.t(), [String.t()]}
+        ]
   def lists(clause, clause_ref, doc) do
     for st <- statements(clause),
-        refs = refs(st, clause_ref, doc),
-        refs != [],
-        do: {:also, st.places, refs}
+        list <- own_extents(st, clause_ref, doc) ++ also(st, clause_ref, doc),
+        do: list
   end
+
+  @own_extent ~r/^(?<item>[^()]*?)\s*\(\s*which\s+extends?\s+only\s+to\s+(?<places>[^()]+?)\s*\)\s*$/iu
+
+  defp also(st, clause_ref, doc) do
+    case refs(%{st | items: without_own_extents(st.items)}, clause_ref, doc) do
+      [] -> []
+      refs -> [{:also, st.places, refs}]
+    end
+  end
+
+  defp own_extents(st, clause_ref, doc) do
+    for item <- items(st.items),
+        m = Regex.named_captures(@own_extent, String.trim(item)),
+        m != nil,
+        refs = ListItems.refs(m["item"], clause_ref, doc),
+        refs != [],
+        do: {:only, Places.places(m["places"]), refs}
+  end
+
+  defp without_own_extents(items) do
+    items
+    |> String.split(~r/(?=;)/u)
+    |> Enum.reject(&(String.trim(String.trim_leading(&1, ";")) =~ @own_extent))
+    |> Enum.join()
+  end
+
+  defp items(text),
+    do:
+      for(
+        i <- String.split(text, ";"),
+        do: Regex.replace(~r/^\s*(?:and\s*)?\(?[a-z]{1,2}\)?\s+/u, i, "")
+      )
 
   # each item, plainly; "this section" the clause's own provision
   defp refs(st, clause_ref, doc) do

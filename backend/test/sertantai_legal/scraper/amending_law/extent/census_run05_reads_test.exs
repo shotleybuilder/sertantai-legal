@@ -296,7 +296,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.CensusRun05ReadsTest do
       also = refs(e, :also, "NI")
       assert "s.10(6)" in also
       assert "sch.5.para.2" in also
-      assert "s.27" in also
+      assert {"NI", ["s.27"]} in rows(e, :only)
       assert "s.30" in also
       refute "s.10(1)" in also
       refute "s.22(5)" in also
@@ -382,5 +382,41 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.CensusRun05ReadsTest do
 
     assert e.default == "E+W+S+NI"
     assert {nil, ["*"]} in rows(e, :same)
+  end
+
+  describe "seed 22 NEW" do
+    test "NEW-1: a second statement qualified after its places is withheld (ukpga 1996/23 s.108(3))" do
+      e =
+        read(
+          "UK_ukpga_1996_23",
+          words([89, 90, 91]) <>
+            p1(
+              "section-108",
+              "The provisions of this Act extend to England and Wales and, except as mentioned below, to Northern Ireland. Sections 89, 90 and 91 (consumer arbitration agreements) extend to Scotland and the provisions of Schedules 3 and 4 (consequential amendments and repeals) extend to Scotland so far as they relate to enactments which so extend, subject as follows."
+            )
+        )
+
+      assert {"S", ["s.89", "s.90", "s.91"]} in rows(e, :named)
+      assert "sch.3" in refs(e, :unread, nil)
+      assert "sch.4" in refs(e, :unread, nil)
+    end
+
+    test "NEW-2: an exception list's item stating its own extent in brackets (ukpga 1989/38 s.30(6)(d))" do
+      e =
+        read(
+          "UK_ukpga_1989_38",
+          words([10, 27]) <>
+            p2s("section-30", [
+              {"5",
+               "With the exception of the provisions mentioned in subsection (6), this Act does not extend to Northern Ireland."},
+              {"6",
+               "Those provisions are— b section 10(6); d section 27 (which extends only to Northern Ireland); and e this section."}
+            ])
+        )
+
+      assert {"NI", ["s.27"]} in rows(e, :only)
+      assert "s.10(6)" in refs(e, :also, "NI")
+      refute "s.27" in refs(e, :also, "NI")
+    end
   end
 end
