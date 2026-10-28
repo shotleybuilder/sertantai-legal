@@ -19,7 +19,7 @@ Found by CV-S06's golden run from inputs (2026-10-28): RTA 1988 s.4(6) fails, re
 
 - ✅ Measure: 20 target-named statements in 14 amending laws; 2 bear on OH&S changes (SOCPA Sch.7 para 27(4), EPA 1990 Sch.16 Pt III); 89 unread Schedule own-paragraph rows in 47 laws (see Measure)
 - ✅ Design: target statements `{kind, place, scope, law, refs}` (new `Extent.Targeted`), rows `target_<kind>` with a new `amends` column, matched in `Lookup.of_change/3` by the change's law and target; own-paragraph forms widened (see Design)
-- ⬜ Read the forms: "The repeal of X extends …", "The repeals in Y relating to …", "The amendments of the Z Act extend …"; and SOCPA Sch.7's own-paragraph forms not read ("This paragraph extends to the whole of the United Kingdom", "… extends also to Scotland", "… has the same extent as that Act", "… (but not to Scotland)")
+- ✅ Read the forms (6ecbc958, check fix 26d91b7e): `Extent.Targeted` + `Extent.ChangeTarget`, `amends` column; own-paragraph forms widened; catalogue 10 new patterns, 8 examples re-read (see Build)
 - ⬜ Golden from inputs 27/27; extent check and catalogue; one chain
 - ⬜ Agreement measure (CV-S06's revised check, Jason 2026-10-28): the extent reader's bound (`law_text.extent`) against the feed's `effect_extent` / `territorial_application`, like for like, over every bounded change; agents on the disagreements and on changes with no feed extent. Added to the quality statement
 
@@ -116,4 +116,33 @@ The callers pass the change: `Readers.Feed.extent/3` passes `law_name`, the targ
 - `ReadVersion` coverage takes the new module.
 
 **Acceptance:** the extent catalogue diff reviewed (`mix lat.extent_patterns`, only target and own-paragraph classes change); `lat.extent_check` with our faults 0; golden from inputs 27/27; one chain (read pass, rebuild, golden).
+
+## Build (2026-10-28)
+
+**Code** (6ecbc958):
+- `Extent.Targeted` (214 lines) reads the statements;
+- `Extent.ChangeTarget` (125) applies them to a change (`Lookup.of_change/3`; `/2` unchanged);
+- `extent_rules.amends` (an Ash migration);
+- rows `target_<kind>`;
+- `Patterns` classes `target:<kind>:<code>` and `unread:target` (the latter withholds, as before);
+- `Feed.read/8` and `NoteDate.extent_claims/3` pass the change's law, title and target.
+
+Register titles carry no year ("Road Traffic Act"), so a named law is matched on its name plus the year from the law's id. `patterns.ex` (522 lines) and `feed.ex` (518) were already over 300 before this change; this session added under 20 lines to each.
+
+**Tests:** 24 new (`targeted_test`, `own_paragraph_test`, `lookup_test` of_change/3, `rows_test`). amending_law suite 1,647 pass.
+
+**Catalogue** (`mix lat.extent_patterns --accept`, 7m41s; the first run was restarted in parallel once Jason closed the VM).
+- 10 new patterns accepted, 1 gone (`…|only|-|unread:in_clause`, now `target:only:…`).
+- 8 examples read differently, each checked against its sentence and right: 1990/43 Pt I, 1996/23, 1996/47, 2003/44, 2005/15 para 49, 2010/23, 2012/9, 2015/2.
+- Pre-flight found and fixed two misreads before acceptance:
+  - SI 2012/2404 reg.4 "The amendment in Schedule 1": the law's own Schedule. With no law named, a target statement is only read in a Schedule paragraph.
+  - 2003/44 s.337 "The repeals in Part 4 of Schedule 37 relating to— (a) the … Act": the scope is the Part and the targets are the laws.
+
+**Known limits logged:**
+- SI 2008/948 Sch.2 has the paragraph id `wrapper2n1`, so its statement's scope never meets a feed ref (not OH&S). This is a parser naming tell-tale.
+- The exception and lead-in forms listed in Design.
+
+**Extent check (OH&S):**
+- The first run reported 384 `stale`: the check compared a hard-coded column list without `amends`. Fixed to use `Store.compared/0` (26d91b7e).
+- Now 5 stale: exactly the OH&S amending laws whose reading changed (EPA 1990, Arbitration 1996, SOCPA 2005, ERRA 2013, AFA 2015). They clear when their extent rows are written.
 
