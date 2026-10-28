@@ -1,32 +1,81 @@
 ---
 session: 'CV-S05d: Whole-Reader Census'
-status: suspended
+status: closed
 opened: '2026-10-27'
+closed: '2026-10-28'
+outcome: success
 parent: change-vocabulary/2026-10-22-cv-s05-extent-reader.md
-enables:
-  - change-vocabulary/2026-10-27-application-scope-handoff.md (PENDING: scope sentences to fractalaw)
+
+summary: >
+  An independent mention-finder (Python, no reader code) censused every extent sentence of 3,358 laws against the
+  stored reading. It found the misreads the agent sampling kept missing (S1-S17, then R1-R13), which CV-S05 round 13
+  and the run-05 fix batch fixed. Silent candidates fell from 129 (run-01) to 57 (run-06), each one triaged.
+
+decisions:
+  - what: Check the reader with a finder sharing none of its code
+    why: CV-S05c's census used the reader's own parser and labelled dropped items "KX by design"; the shared blind spot was measured in run-02
+    result: "S1-S17 (~65 laws) and R1-R16 found; recall bench 10/10 on rounds 9-12 agent NEW"
+  - what: Application to cases is fitness scope (class KA), handed to fractalaw
+    why: "Jason 2026-10-27: fractalaw drills into application rules; the extent reader stays territorial"
+    result: PENDING session application-scope-handoff; scope.tsv extract
+  - what: Finder names Schedules as the reader does (unnumbered sch, the triple sch.N.pt.R.para.M)
+    why: the reader's Schedule naming changed in round 13; unnamed refs were finder-side
+    result: "unnamed 793 -> 320 (run-05)"
+  - what: The permanent read-only mix task goes to a PENDING session (Jason 2026-10-28)
+    why: the Python prototype in the run folders works; porting it is its own deliverable
+    result: PENDING session cv-s05e-census-mix-task
+
+metrics:
+  census: { run01_silent: 129, run03_silent: 113, run04_silent: 64, run05_silent: 64, run06_silent: 57, run05_unnamed: 320, run06_unnamed: 329, laws: 3358 }
+  bench: { run01: "10/10", run06: "5/10 (the other 5 now fixed live)" }
+
+lessons:
+  - title: A check that shares the reader's code shares its blind spots
+    detail: CV-S05c's default-sentence check parsed with RefList and saw only qualified items as dropped; the independent finder showed unqualified items dropped in 13 laws (S1).
+    tag: tooling
+  - title: A census beats agent sampling for the long tail
+    detail: Seeds 9-17 kept finding tail wordings one at a time; one census run listed ~65 laws' worth by wording, and after the fixes the agent seed 20 found no NEW.
+    tag: tooling
+  - title: When the reader's naming changes, the finder must change with it
+    detail: Round 13's Schedule triple raised unnamed refs 234 -> 793, all finder-side; naming Schedule Parts as the reader does brought them to 320.
+    tag: tooling
+  - title: Run the census on the last dump when only the finder changes
+    detail: run-05 reused the acceptance dump (behaviour-identical code), so the finder fix and the triage took seconds, not a cold cache rebuild.
+    tag: tooling
+
 bugs:
   - pattern: "Extent census run-01 confirmed wrong bounds: 2017/3 s.182(2)(v) 'this Chapter' dropped (R10 NEW-3 still open); 1977/45 s.65(10)(b) 'subsections (1), (3) and (6) to (10) of this section' and (d) s.65(4),(5) dropped; 1999/9 s.17(c) same-extent item dropped; 1999/28 s.43 default S (text S+NI); 2010/29 s.49 'extends only to E+W, except that—' no default; 1968/64, 1968/60, 1936/49 'not extend to Scotland or, . . . to NI' default E+W+NI"
     category: extent_reader
     module: Extent (Lists, Named, Default, Same)
     affected: 9 laws
     fix: "CV-S05 round 13, from the census's counted shapes"
-    status: open
+    status: fixed
   - pattern: "Extent census run-01 over-reach and lost sub-letters: 2007/28 'Part 1, 8, … of Schedule 18' read as the Act's own Parts (s.1 → same; 109 refs); 2014/2 qualifier object s.46 read as UK; 1980/66 'Subsection (3)(a)' stored s.264(3) + s.264(a); 1990/8 'Subsection (2)(aa)' stored s.70(2)"
     category: extent_reader
     module: Extent (Same, ListItems, RefList, Applies)
     affected: 4 laws
     fix: "CV-S05 round 13"
-    status: open
+    status: fixed
   - pattern: "Extent census run-03 fix list S1-S17 (~65 laws; run-03/out/triage.md): exception-list items dropped (S1, 13 laws); RefList sub-letter runs (S2, 8); owner read as whole provision (S13, 9); or-lists / 'Part N of Schedule M' in same subjects (S3, 4); qualified companions dropped not withheld (S4, 7); own subsections/self/Chapter dropped (S5, 6); two statements in a sentence (S6, 6); whole-law default (S7, 3); territorial application unread (S8, 5); qualified read whole (S9, 2); '. . .' in number lists (S10, 3); locator read whole (S11); same item dropped (S12); 'cease to apply' inverted (S14); bracket then bare number (S15); reference read as item (S16, 2); other law's sections in an SI list (S17, 2)"
     category: extent_reader
     module: Extent (Lists, ListItems, Named, Same, Applies, Default), RefList
     affected: 65 laws
     fix: "CV-S05 round 13, then re-run this census (run-04) as its check"
-    status: open
+    status: fixed
+
+artifacts:
+  - backend/data/experiments/cv-s05d-whole-reader-census/run-01 .. run-06
+  - backend/data/experiments/cv-s05d-whole-reader-census/run-05/out/triage.md
+
+depends_on:
+  - 2026-10-27-cv-s05c-shape-mining.md
+
+enables:
+  - change-vocabulary/2026-10-27-application-scope-handoff.md (PENDING: scope sentences to fractalaw)
+  - change-vocabulary/2026-10-28-cv-s05e-census-mix-task.md (PENDING: the census as a read-only mix task)
 ---
 
-# Session: CV-S05d: Whole-Reader Census (SUSPENDED)
+# Session: CV-S05d: Whole-Reader Census (CLOSED)
 
 > **Suspended 2026-10-27** (Jason: "I don't need to look at the list"): the fix list S1–S17 (`run-03/out/triage.md`) is handed to CV-S05 round 13. Resume for run-04, the census re-run as round 13's check, then decide the permanent mix task.
 
@@ -46,16 +95,16 @@ Aim: census every sentence and every reader, checked independently of the reader
 - ✅ An independent mention-finder (`finder.py`, scratchpad prototype; Jason 2026-10-27: "start cv-s05d"): a deliberately simple scanner sharing no code with the reader (no `RefList`, `Parts`, `Forms`). It records every provision a sentence names (with sub-letters, "34 (f)", "in regulation 16, paragraphs (4) and (5)") and every place and verb ("extend", "apply").
 - ✅ The test, per sentence (`census.py`): everything named lands in a stored row of the right kind and place, or in an unread row (withheld); nothing is stored that the sentence doesn't name; a provision named narrower than what's stored is a candidate.
 - ✅ Prototype by count (run-01; Jason 2026-10-27 "start cv-s05d"): recall 10/10 on rounds 9–12 agent NEW; 11 confirmed wrong-bound laws the agent rounds hadn't found or had recorded as fixed
-- ⬜ Population: all catalogue sentences of every class (default, list, named, same, application, own paragraph, exception, unread), plus the sweep's 520 uncaught sentences, noise labels included.
-- ⬜ Noise-bin audit: each sweep label checked by the same test; anything naming our provisions with a place and an extend or apply verb is flagged, not trusted.
+- ⏸️ (deferred to the PENDING mix-task session: the census covers the catalogue sentences and the sweep's uncaught ones; every class as its own population is the task's) Population: all catalogue sentences of every class (default, list, named, same, application, own paragraph, exception, unread), plus the sweep's 520 uncaught sentences, noise labels included.
+- ⏸️ (deferred to the PENDING mix-task session; run-01 audited the bin once, KA came of it) Noise-bin audit: each sweep label checked by the same test; anything naming our provisions with a place and an extend or apply verb is flagged, not trusted.
 - ✅ (run-02) Census rule: an "apply" statement whose place is qualified by "other than" / "except" / "any [thing] in", or names things or persons within a place, counts as scope (class KA, extract for fractalaw), not a reader candidate (run-02)
 - ✅ (run-02/03) Silent candidates and over-reach triaged by wording, S1–S17, each confirmed on a law with `Extent.of`; handed to CV-S05 round 13 (Jason 2026-10-27: "I don't need to look at the list - we should have a clear idea about what right looks like by now")
 - ✅ run-04 (`a75e80b8`): census after round 13 — silent 113 → 64, unnamed 358 → 234; the fix-list laws read as their text states; round 13's own regressions found and fixed before the final run
 - ✅ run-05 (CV-S05 strategy step 1): the finder names Schedule Parts as the reader does (unnamed 793 → 320); every silent and unnamed item triaged: R1–R16 real, Q1 for Jason (`run-05/out/triage.md`)
 - ✅ run-06: census after CV-S05's run-05 fix batch: silent 64 → 57, nothing new that is real; pre-flight reading diff stored
 - ✅ run-03: finder misses fixed; over-reach list reviewed in full; the fix list S1–S17 consolidated (`run-03/out/triage.md`)
-- ✅ run-01 stored; ⬜ Store each later run as evidence (`backend/data/experiments/cv-s05d-whole-reader-census/run-NN/`, as CV-S05c: manifest, scripts, input, outputs, README; scan for effect ids; commit by path in one step).
-- ⬜ If it earns its place, build it as a read-only mix task (pure modules and tests) to run every round.
+- ✅ run-01 to run-06 stored; ✅ Store each later run as evidence (`backend/data/experiments/cv-s05d-whole-reader-census/run-NN/`, as CV-S05c: manifest, scripts, input, outputs, README; scan for effect ids; commit by path in one step).
+- ⏸️ (it earned it; Jason 2026-10-28: PENDING session `2026-10-28-cv-s05e-census-mix-task.md`) If it earns its place, build it as a read-only mix task (pure modules and tests) to run every round.
 
 ## Dependencies
 

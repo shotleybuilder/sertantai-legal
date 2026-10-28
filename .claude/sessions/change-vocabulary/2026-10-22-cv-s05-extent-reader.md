@@ -1493,6 +1493,8 @@ Acceptance run and seed 20 next.
    - A NEW that places a wrong bound or silently drops: fix it with tests and fresh reads, one acceptance chain, seed 21.
    - Doubtful findings with no wrong bound: log them as known; they never block.
 5. **Close-out:**
+   - ✅ 2026-10-28: CV-S05d closed. The census mix task is PENDING in `2026-10-28-cv-s05e-census-mix-task.md` (Jason: "Close; PENDING task").
+   - CV-S05 stays open (Jason 2026-10-28: "Keep it open") to fix seed 20's three observations: one batch, one chain, then seed 21.
    - close CV-S05 (frontmatter, bugs, lessons);
    - close CV-S05d: run-01 to run-05 evidence, and the permanent read-only mix task decided (build, or defer to a PENDING session);
    - the application scope hand-off stays PENDING; the Pointer/Locator naming stays on the v0.2 list (#169);
