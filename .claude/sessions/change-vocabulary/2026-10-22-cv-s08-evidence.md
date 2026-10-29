@@ -95,7 +95,8 @@ The session does not close until its results pass.
 - ✅ Fix plan agreed (Jason 2026-10-29): operation, feed above markup; every class fixed in CV-S08 in one batch (logged against its reader)
 - ✅ Fix batch 1 code (595ce2df): every class but the open residue; tests 9,507 pass; catalogues reviewed
 - ✅ Fix batch 1 applied: restore point `cv-s08-fix1`, commencement re-read, read pass, rebuild; golden from inputs 27/27
-- ⬜ Round 2 (seed 52): V 21 in full, D 70 by pattern, A 150
+- ✅ Round 2 (seed 52): FAIL — V 15/21 (1 wrong value, 5 false conflicts), D 41/70, A 147/150 (1 wrong: EU list item)
+- ⬜ Fix batch 2; round 3
 - ✅ The table re-reviewed with Jason (2026-10-29, on round 1's evidence): operation, the feed above the markup
 - ⬜ Value conflicts checked on a sample: level vs markup/feed, operation, date (OH&S family: 63)
 - ⬜ A Gemini review of the evaluator (CV-04)
@@ -227,3 +228,36 @@ Catalogue readings reviewed:
 - **Read pass:** 28 laws changed. A preview showed 13 of them were "after the entry for “X” insert", which is a place, not words replaced. That was fixed (1afed139), and a second pass changed 13 laws. Rules 42,799 throughout.
 - **Rebuild:** OH&S rebuilt. Golden from inputs 27/27.
 - **Strata after:** V 63 → 21, D 829 → 85, A 1,927 → 1,987. commenced_by now comes from commencement on 21,116 OH&S changes, up from 19,384 (the commencements alone).
+
+## Round 2 (2026-10-29, seed 52): FAIL
+
+Nine agents: V 21, D 70 by pattern (3 batches), A 150 (5 × 30; the redraw is identical by `cmp`).
+
+**Gap rule (adjudicated for one pool):** a value no table source claims is a coverage gap, not WRONG. Examples: commenced_by with no commencement claim, or no date from any source. Agents graded these both ways, so they are regraded here. Gaps are listed with their cause.
+
+| Stratum | OK | WRONG | doubtful |
+|---|---|---|---|
+| V (21, full) | 15 | 6: 1 wrong value (NISR 2003/152 Sch.7, KC-sch), 5 false conflicts | 0 |
+| D (70 of 85) | 41 | 25 | 4 |
+| A (150) | 147 | 1 (Directive 98/24 Art 2(b)(ii), EU list item) | 2 |
+
+A: 1 wrong in 150 gives a 95% upper bound of 3.1%, above the 2% pass mark.
+
+**Faults found:**
+- **False conflicts:**
+  - the feed's level for a parent (s.51A(2)(c), s.23(4)) on the law text's new child ((c)(i), (b)): the child carried no feed placement;
+  - the feed's partial first stage against the law's full date where the completion is a separate feed record (HSWA s.47(7)).
+- **D level, the markup reader:**
+  - **(a) Regression from batch 1:** new text round all of a provision, its number outside, read as words (ukpga 1995/15 s.1(2A) inserted whole).
+  - **(b)** An EU Article repealed whole, with only its Title wrapped and its text dots (Directives 2002/44, 2006/25, 2003/10).
+  - **(c)** Points omitted to dots given words through the Forestry-Act "beside" exception (REACH Art 77(2)).
+  - **(d) EU list items:** the markup places an id-less `ListItem` (`NumberOverride`) on the Article, while the feed's same event sits on the child row (REACH Art 3(18), CLP Art 2(17)…). That gives a words duplicate on the parent, and CLP Art 23(e)'s ";" joined to (f).
+- **Merge:** a definitions list outside its P2 (SI 2002/2677 reg.2) leaves one feed effect in two changes.
+- **The feed's type error** (REACH Art 138(1) "inserted" for "for … substitute") wins with no law-text claim. The amending reader did not read Sch.1 para 95(3)(d).
+- **Commencement gaps (KC-sch):**
+  - a schedule commenced through its introducing provision: Energy Act 2013 Sch.12 via s.116 (Part 3); NISR 2003/152 Sch.7 via reg.15(2);
+  - an order in the store not read as rules: SI 1995/2950;
+  - SOCPA s.178 bare numbers after a parenthesis.
+  
+  Energy Act 2013: 85 changes, all with commenced_by null.
+- **Seen, outside the sample:** commencement rows at a law's own date on provisions inserted later (SI 2008/1597 reg.16A–C; ukpga 1995/15 s.1(2A)).
