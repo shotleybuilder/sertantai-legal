@@ -47,11 +47,29 @@ bugs:
     affected: 3
     fix: "', and' one separator in the noun list (595ce2df)"
     status: fixed
+  - pattern: "EU list items with no id (NumberOverride) placed on the Article as words, the feed's same event on the child row (REACH Art 3(18), CLP Art 2(17), Art 23(e)/(f))"
+    category: markup reader
+    module: Readers.Markup.ListItems
+    affected: 13
+    fix: "Place on the item's own row (provision id + number); whole when the change covers its text (d72ce36d)"
+    status: fixed
+  - pattern: "Markup level regression (batch 1): an Addition round all of a provision's text, number outside, read as words; EU Article repealed with only its Title wrapped read as words; note-only placement on a dotted row given 'beside' words"
+    category: markup reader
+    module: Readers.Markup / Merge.Precise
+    affected: 9
+    fix: "Additions whole, Substitutions with number outside words; a Repeal on an emptied row whole; :omitted flag (d72ce36d)"
+    status: fixed
+  - pattern: "Feed level from a parent compared on the law text's fan-out child; the feed's earlier partial stage compared with the law's full date (completion in a separate record)"
+    category: evidence table
+    module: Readers.Feed / Conflicts
+    affected: 5
+    fix: "feed.placed on every record; an earlier partial stage is like for like (d72ce36d)"
+    status: fixed
   - pattern: "A schedule's commencement not traced through its introducing regulation (NISR 2003/152 Sch.7 Pt II via reg.15(2)); 'This section has effect from' unread (LGA 1985 s.84(3)); SOCPA s.178(1)(a) bare numbers after a parenthesis dropped"
     category: commencement reader
     module: Commencement.OwnClause / Readers.AmendingLaw
     affected: 2
-    fix: "Schedule → the provision giving it effect; read 'has effect from'; list items past a parenthesis"
+    fix: "Schedule → the provision giving it effect: Commencement.ScheduleEffect (d72ce36d). Still open: 'has effect from'; list items past a parenthesis"
     status: open
   - pattern: "Markup level: Substitution of a provision's whole text with its number outside read as provision; ';' remainder; Part <Number> wrapped still words; EU ListItem NumberOverride / id-less list own text; Correction wrapper"
     category: markup reader
@@ -96,7 +114,9 @@ The session does not close until its results pass.
 - ✅ Fix batch 1 code (595ce2df): every class but the open residue; tests 9,507 pass; catalogues reviewed
 - ✅ Fix batch 1 applied: restore point `cv-s08-fix1`, commencement re-read, read pass, rebuild; golden from inputs 27/27
 - ✅ Round 2 (seed 52): FAIL — V 15/21 (1 wrong value, 5 false conflicts), D 41/70, A 147/150 (1 wrong: EU list item)
-- ⬜ Fix batch 2; round 3
+- ✅ Gap rule kept; KC-sch fixed in batch 2 (Jason 2026-10-29)
+- ✅ Fix batch 2 code (d72ce36d), tests 9,510 pass
+- ⬜ Fix batch 2 applied (restore point `cv-s08-fix2`); round 3
 - ✅ The table re-reviewed with Jason (2026-10-29, on round 1's evidence): operation, the feed above the markup
 - ⬜ Value conflicts checked on a sample: level vs markup/feed, operation, date (OH&S family: 63)
 - ⬜ A Gemini review of the evaluator (CV-04)
@@ -261,3 +281,19 @@ A: 1 wrong in 150 gives a 95% upper bound of 3.1%, above the 2% pass mark.
   
   Energy Act 2013: 85 changes, all with commenced_by null.
 - **Seen, outside the sample:** commencement rows at a law's own date on provisions inserted later (SI 2008/1597 reg.16A–C; ukpga 1995/15 s.1(2A)).
+
+## Fix batch 2 (2026-10-29, code d72ce36d)
+
+| Class | Fix | Where |
+|---|---|---|
+| EU list items | an id-less `ListItem` with `NumberOverride` placed on its own row (the provision's id and its number), whole when a change covers its text | `Readers.Markup.ListItems` (new) |
+| Markup level (and batch 1's regression) | new text round all of a provision is whole; a Substitution with the number outside is words; a Repeal on a row whose text is gone is whole | `Readers.Markup.whole?/4` |
+| Note-only on an emptied row | `{:markup, :omitted, true}`; never the "beside" words | `Readers.Markup`, `Merge.Precise` |
+| Feed level on a fan-out child | every feed record carries `feed.placed` (its own target) | `Readers.Feed`, `Evidence.placed_here?/1` |
+| Stage dates | the feed's earlier partial stage is no conflict with the law's full date | `Conflicts.like?/5` |
+| D selection | a feed level placed elsewhere is no disagreement | `EvidenceStrata` |
+| KC-sch | "Schedule N … has effect" / "amended in accordance with that Part" read as `:schedule_effect` rules (the introducer and its containers). The evaluator leaves them out; the amending-law reader dates a Schedule paragraph by its introducer where nothing more specific dates it. A Schedule Part becomes its paragraphs from the document (NISR 2003/152 Sch.7 Pt II = paras 8–9). | `Commencement.ScheduleEffect` (new), `Readers.AmendingCommencement` (split from `Readers.AmendingLaw`, now 253 lines), `LawStart` provision catalogue |
+
+The catalogue changes were reviewed:
+- **markup:** 9 readings (EU Articles repealed whole; list items on their own rows; s.78 repealed whole);
+- **markup:** 230 `omitted` flags (order only otherwise).
