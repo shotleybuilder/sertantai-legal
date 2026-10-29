@@ -19,7 +19,8 @@ The session does not close until its results pass.
 - ⬜ Provision facts: exists_from/to — when a provision itself exists (deferred from CV-S07, Jason 2026-10-29; carried from CV-04)
 - ✅ Define what good looks like (agreed 2026-10-29: strata G/S/T/R, fold-fault bound, golden ~50) (the acceptance check): a hand-checked sample from the OH&S core family, and the measures, each defined in words with a test
 - ✅ Build the strata and samples: `mix lat.label_check` (ff1f97c7)
-- ⬜ The `label-check` skill (agent prompt, known classes, seed history); then round 1 (ask Jason before any long run)
+- ✅ The `label-check` skill: check prompt, golden-drafting prompt, known classes, seed history
+- ⬜ Round 1 (ask Jason before any long run)
 - ⬜ The golden set is big enough to trust: 27 provisions today; grow to about 50, at least one per S shape, OH&S first; agents draft them, Gemini reviews, Jason signs off
 - ⬜ Golden expected tiers per period, and the start's tier from its source (deferred in CV-04)
 - ⬜ A row commenced only through some of its children reads in force, not in force partly (open bug, V1-01)
@@ -123,3 +124,15 @@ Application (C6) has no rows. `ancestor` first counted every commencement on an 
 **Pointers to check in round 1** (not findings yet):
 - The undated start covers 20 laws. LawStart leaves them undated: 15 EU directives, plus REACH and CLP (`eu_publication_relative`), and `by_order` / `no_clause`.
 - 2,048 rows are reached by a change no source dates. The fold leaves these out (`Label.fold`, which takes dated changes only), so the gap is not visible on the label.
+
+## Growing the golden set (2026-10-29)
+
+24 candidates were chosen from the probe draws (S seed 90, R seed 91, T seed 92). These probe seeds are never used for R. Each S shape has at least one candidate, as do two plain random rows and two T classes. Agents drafted them blind, from the sources only, never seeing the fold or today's label (`label-check` skill, golden-drafting prompt), in four batches:
+- **A:** SI 1999/3242 reg.3(3) (C4) and reg.12(2) (C5); 1963/41 s.76 and s.91 (parts); 1984/3 s.1A(b) and s.1(6B) (`in_force_for`).
+- **B:** SI 2013/1471 reg.15(5)(b); CLP Art 2(17); SI 2008/2337 reg.5 (C1/C12); SI 2008/1597 reg.19(1)(b)(ii)[NI] (C3); NISR 2007/31 reg.3(6) (D3); REACH Art 140.
+- **C:** NISR 1997/248 reg.11(9); SI 1989/462 reg.7(2); 2007/19 s.2(1)(d); SI 2009/1348 reg.19B(5)(b); SI 1977/500 reg.4A(1)(c); SI 1981/917 reg.8(2).
+- **D:** SI 2015/51 reg.33; 1937/67 s.108(1)(a); Directive 90/269 Art 8b(1); 1961/34 s.127(3); SI 1974/2068 reg.12; SI 2008/1597 reg.7(5)(b)[NI].
+
+**Pointers from the probes** (to judge in round 1, not findings yet):
+- Territorial versions carry the wrong territory: SI 2008/1597 reg.7(5)(b)[NI] and reg.13(2)[NI] show E+W+S, and HSWA s.51A(2C)[E+W] shows E+W+S. This is the open todo on versions.
+- Some rows have no territory at all: 1937/67, SI 2025/661 and SI 2004/1309.
