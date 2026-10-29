@@ -650,6 +650,12 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
   # itself would loop: Petroleum Act 1998 s.52)
   defp own_refs(subject, rows, base, follow? \\ true) do
     law = base |> String.split(":", parts: 2) |> hd()
+    # a provision's description in brackets names no Part or Chapter of its
+    # own ("section 114(1) (power to make transitional provision in relation
+    # to Part 3)": Energy Act 2013 s.156(3), CV-S08 round 2); an aside
+    # breaks no list ("sections 117(7) (and section 117(6) …), 158, 167":
+    # SOCPA 2005 s.178(1)(a))
+    plain = Regex.replace(~r/\s\((?=[^()]*\s)[^()]*\)/u, subject, "")
     prefix = base |> provision() |> String.split(".", parts: 2) |> hd()
     held = MapSet.new(rows, & &1.section_id)
 
@@ -666,13 +672,15 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
       end
 
     nouns =
-      for [_, _noun, list] <- Regex.scan(@noun, subject),
+      for s <- Enum.uniq([subject, plain]),
+          [_, _noun, list] <- Regex.scan(@noun, s),
           ref <- list_refs(list, prefix, rows),
+          uniq: true,
           do: ref
 
     # "Chapter 1 of Part 6": that Chapter only; else a Part
     chapters =
-      for [_, c, p] <- Regex.scan(@chapter_of_part, subject),
+      for [_, c, p] <- Regex.scan(@chapter_of_part, plain),
           r <- rows,
           same_part?(Map.get(r, :part), p),
           same_part?(Map.get(r, :chapter), c),
@@ -687,7 +695,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
       end
 
     lone_chapters =
-      for [_, c] <- Regex.scan(~r/\bChapters?\s+(\w+)\b(?!\s+of\s+Part)/, subject),
+      for [_, c] <- Regex.scan(~r/\bChapters?\s+(\w+)\b(?!\s+of\s+Part)/, plain),
           own_part != nil,
           r <- rows,
           same_part?(Map.get(r, :part), own_part),
@@ -699,7 +707,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
     # (never in an item "in Schedule 15, Part III and Part V(1) and (5)":
     # that Schedule's Parts — Access to Justice Act 1999 s.108(3)(f))
     parts =
-      for [_, list] <- Regex.scan(@part, Regex.replace(@chapter_of_part, subject, "")),
+      for [_, list] <- Regex.scan(@part, Regex.replace(@chapter_of_part, plain, "")),
           not Regex.match?(~r/^\W*in\s+Schedule\s+\d+[A-Z]*\s*,/i, subject),
           p <- part_list(list),
           r <- rows,

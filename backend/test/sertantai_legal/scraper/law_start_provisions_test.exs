@@ -131,6 +131,27 @@ defmodule SertantaiLegal.Scraper.LawStartProvisionsTest do
     assert {:provision_dated, ~D[2005-04-06], ~w[reg.2(a) reg.2(c) reg.2(h) reg.4(b)]} in got
   end
 
+  test "a description in brackets names no Part (Energy Act 2013 s.156(3), CV-S08 round 2)" do
+    got =
+      assign(
+        [
+          {"s.156",
+           "This Act comes into force on such day as the Secretary of State may by order appoint."},
+          {"s.156(3)",
+           "Section 114(1) (power to make transitional provision in relation to Part 3) and section 118 (review of Part 3) come into force on the day on which this Act is passed."},
+          {"s.114", "", "3"},
+          {"s.114(1)", "", "3"},
+          {"s.116", "", "3"},
+          {"s.118", "", "3"}
+        ],
+        type: "ukpga",
+        made: ~D[2013-12-18]
+      )
+
+    assert Enum.any?(got, fn {_, _, rows} -> "s.114(1)" in rows and "s.118" in rows end)
+    refute Enum.any?(got, fn {t, _, rows} -> t == :provision_dated and "s.116" in rows end)
+  end
+
   test "\"except …\" is subtracted from the remaining provisions (asp 2003/8)" do
     got =
       assign(

@@ -137,7 +137,9 @@ defmodule Mix.Tasks.Lat.Commencement do
           input = clause_input(law)
 
           {:ok, n} =
-            Store.write(law, OwnClause.rules(law, input) ++ ScheduleEffect.rules(law, input.rows),
+            Store.write(
+              law,
+              OwnClause.rules(law, input) ++ ScheduleEffect.rules(law, input.rows, doc(law)),
               treatments: OwnClause.treatments()
             )
 

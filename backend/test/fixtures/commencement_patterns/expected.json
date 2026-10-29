@@ -2808,7 +2808,7 @@
     "UK_ukpga_1989_42/12abd57799": {
       "class": "rules:provision_qualified",
       "rules": [
-        "s.1, s.2, s.9, s.10, s.13, s.14, s.15, s.16, s.17, s.18, s.19, s.20, s.24, s.140, s.141, s.142, s.143, s.144, s.145, s.156, s.159, s.160, s.162, s.164, s.165, s.168, s.169, s.170, s.171, s.172, s.173, s.175, s.176, s.177, s.178, s.179, s.180, s.182, s.183, s.185, s.186, s.194, pt.IX, pt.II, pt.III, pt.IV, pt.V except sch.11.para.104..sch.11.para.106 — appointed (by order) — everywhere, in relation to — provision_qualified"
+        "s.1, s.2, s.9, s.10, s.13, s.14, s.15, s.16, s.17, s.18, s.19, s.20, s.24, s.140, s.141, s.142, s.143, s.144, s.145, s.156, s.159, s.160, s.162, s.164, s.165, s.168, s.169, s.170, s.171, s.172, s.173, s.175, s.176, s.177, s.178, s.179, s.180, s.182, s.183, s.185, s.186, s.194, pt.IX, pt.II, pt.III, pt.IV, pt.V, pt.VII, pt.VIII except sch.11.para.104..sch.11.para.106 — appointed (by order) — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_ukpga_1989_42/566701af2b": {
@@ -3312,7 +3312,7 @@
     "UK_ukpga_1996_53/c958a7d804": {
       "class": "rules:provision_qualified",
       "rules": [
-        "s.126, s.127, s.128, s.129, s.130, s.141, s.142, s.143, s.144, s.145, s.147, sch.3.pt.III, pt.IV — 1996-09-24 — everywhere, in relation to — provision_qualified"
+        "s.126, s.127, s.128, s.129, s.130, s.141, s.142, s.143, s.144, s.145, s.147, sch.3.pt.III — 1996-09-24 — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_ukpga_1996_6/3fd30b192f": {
@@ -3796,7 +3796,7 @@
     "UK_ukpga_2003_30/7414a047d1": {
       "class": "rules:provision_qualified",
       "rules": [
-        "s.2, s.4 — appointed (by order) — everywhere, in relation to — provision_qualified"
+        "s.2, s.4, s.5 — appointed (by order) — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_ukpga_2003_30/ea169a19c2": {
@@ -5345,7 +5345,7 @@
     "UK_uksi_1988_1324/b4a2789b10": {
       "class": "rules:provision_qualified",
       "rules": [
-        "reg.6 — unread — everywhere, in relation to — provision_qualified"
+        "reg.6, reg.11, reg.12, reg.13, reg.15 — unread — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_uksi_1988_819/043d67cc51": {
