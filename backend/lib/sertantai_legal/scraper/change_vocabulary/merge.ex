@@ -81,8 +81,36 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
     |> Enum.reduce(by_target, &join(&1, &2, below))
     |> Map.values()
     |> List.flatten()
+    |> one_key_unfed()
     |> Kernel.++(own)
     |> Kernel.++(applied)
+  end
+
+  # An event no feed records, placed on several provisions, is one key: the
+  # law-text record's they share (HSWA s.22(1), (2): one CPA 1987 Sch.3
+  # para 2(a) instruction, a legacy ChangeId on each — two keys before;
+  # CV-S07 round 7). Its markup ids stay aliases.
+  defp one_key_unfed(changes) do
+    shared =
+      changes
+      |> Enum.filter(&(Change.values(&1, :feed, :by) == []))
+      |> Enum.flat_map(fn c ->
+        for a <- c.aliases, String.contains?(a, ":"), do: {a, c.target}
+      end)
+      |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
+      |> Enum.filter(fn {_, targets} -> length(Enum.uniq(targets)) > 1 end)
+      |> Map.new(fn {k, _} -> {k, true} end)
+
+    Enum.map(changes, fn c ->
+      case Change.values(c, :feed, :by) == [] &&
+             Enum.find(c.aliases, &Map.has_key?(shared, &1)) do
+        key when is_binary(key) and key != c.key ->
+          %{c | key: key, aliases: Enum.uniq([key | c.aliases])}
+
+        _ ->
+          c
+      end
+    end)
   end
 
   # One effect id is one event, wherever its sources place it. The markup
@@ -306,7 +334,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
     cond do
       Change.values(orphan, :law_text, :by) != [] ->
         (Change.values(c, :feed, :by) != [] or marked?(c)) and
-          Change.values(c, :law_text, :by) == []
+          (Change.values(c, :law_text, :by) == [] or named_apart?(orphan, c))
 
       EffectIndex.effect_id(orphan.key) != nil ->
         Change.values(c, :feed, :by) != [] and not marked?(c)
@@ -314,6 +342,24 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
       true ->
         Change.values(c, :feed, :by) != [] and not Enum.any?(c.aliases, &legacy?/1)
     end
+  end
+
+  # a second law-text record of one event: the feed's effect names both
+  # amending provisions, this one apart from the one joined ("Sch. 6 para.
+  # 33 Sch. 7": a paragraph and its repeals Schedule; OSRPA 1963 s.90 by
+  # Licensing Act 2003 — KJ2, round 6) — never otherwise (no snowball)
+  defp named_apart?(orphan, c) do
+    named = c |> Change.values(:feed, :affecting) |> List.flatten()
+    own = Partner.refs(orphan)
+
+    joined =
+      for k <- c.aliases,
+          String.contains?(k, ":"),
+          r <- Partner.refs(%Change{key: k, target: nil}),
+          do: r
+
+    length(named) > 1 and own != [] and Enum.all?(own, &(&1 in named)) and
+      Enum.all?(own, &(&1 not in joined))
   end
 
   # a markup change id with no effect id ("d29p11050", "M_F_…"); the law's

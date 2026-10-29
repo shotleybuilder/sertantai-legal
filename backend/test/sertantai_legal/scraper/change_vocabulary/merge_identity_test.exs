@@ -533,5 +533,67 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeIdentityTest do
 
       assert "O031001M011" in holding(changes, effect_id("p")).aliases
     end
+
+    test "an effect naming a paragraph and its repeals Schedule takes both law-text records (OSRPA 1963 s.90, Licensing Act 2003 Sch.6 para 33, Sch.7; KJ2)" do
+      changes =
+        Merge.merge([
+          feed(effect_id("a"), "s.90(1)", :repealed, "UK_ukpga_2003_17", [
+            "sch.6.para.33",
+            "sch.7"
+          ]),
+          text(
+            "UK_ukpga_2003_17:schedule-6-paragraph-33",
+            "s.90(1)",
+            :repealed,
+            "UK_ukpga_2003_17"
+          ),
+          text("UK_ukpga_2003_17:schedule-7", "s.90", :repealed, "UK_ukpga_2003_17")
+        ])
+
+      assert [%{aliases: aliases}] = changes
+      assert "UK_ukpga_2003_17:schedule-7" in aliases
+    end
+
+    test "never a second law-text record the effect doesn't name (no snowball: RTA 1988 s.89)" do
+      changes =
+        Merge.merge([
+          feed(effect_id("a"), "s.89", :substituted, "UK_ukpga_1991_40", ["s.17(1)"]),
+          text("UK_ukpga_1991_40:section-17-1", "s.89", :substituted, "UK_ukpga_1991_40"),
+          text("UK_ukpga_1991_40:section-17-2", "s.89", :substituted, "UK_ukpga_1991_40")
+        ])
+
+      assert length(changes) == 2
+    end
+
+    test "an event no feed records, on sibling provisions, is one key: its law-text record's (HSWA s.22(1), (2) by CPA 1987 Sch.3 para 2(a))" do
+      changes =
+        Merge.merge([
+          markup("d29p2188", "s.22(1)", :inserted, "UK_ukpga_1987_43", [
+            {:markup, :affecting, ["sch.3.para.2(a)"]}
+          ]),
+          markup("d29p2198", "s.22(2)", :inserted, "UK_ukpga_1987_43", [
+            {:markup, :affecting, ["sch.3.para.2(a)"]}
+          ]),
+          text(
+            "UK_ukpga_1987_43:schedule-3-paragraph-2-a",
+            "s.22(1)",
+            :substituted,
+            "UK_ukpga_1987_43"
+          ),
+          text(
+            "UK_ukpga_1987_43:schedule-3-paragraph-2-a",
+            "s.22(2)",
+            :substituted,
+            "UK_ukpga_1987_43"
+          )
+        ])
+
+      assert changes |> Enum.map(& &1.key) |> Enum.uniq() == [
+               "UK_ukpga_1987_43:schedule-3-paragraph-2-a"
+             ]
+
+      assert length(changes) == 2
+      assert "d29p2188" in Enum.flat_map(changes, & &1.aliases)
+    end
   end
 end
