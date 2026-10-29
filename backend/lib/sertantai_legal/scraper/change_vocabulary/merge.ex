@@ -355,7 +355,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
     joined =
       for k <- c.aliases,
           String.contains?(k, ":"),
-          r <- Partner.refs(%Change{key: k, target: nil}),
+          r <- Partner.key_refs(k),
           do: r
 
     length(named) > 1 and own != [] and Enum.all?(own, &(&1 in named)) and

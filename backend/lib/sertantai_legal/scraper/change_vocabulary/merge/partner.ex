@@ -175,12 +175,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge.Partner do
   "law:element id"), else the provisions its note cites (markup).
   """
   @spec refs(Change.t()) :: [String.t()]
-  def refs(orphan) do
-    with [_, id] <- String.split(AmendingLaw.provision_key(orphan.key), ":", parts: 2),
+  def refs(%Change{key: key} = orphan) do
+    case key_refs(key) do
+      [] -> Change.values(orphan, :markup, :affecting) |> List.flatten()
+      refs -> refs
+    end
+  end
+
+  @doc "The amending provision a law-text record's key names (\"law:element id\"), as refs; [] for another key."
+  @spec key_refs(String.t()) :: [String.t()]
+  def key_refs(key) do
+    with [_, id] <- String.split(AmendingLaw.provision_key(key), ":", parts: 2),
          ref when ref != nil <- Order.ref(id) do
       [ref]
     else
-      _ -> Change.values(orphan, :markup, :affecting) |> List.flatten()
+      _ -> []
     end
   end
 
