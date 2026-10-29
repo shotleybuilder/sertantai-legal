@@ -112,6 +112,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
            ) == {"substituted", "words substituted"}
 
     assert op.("after “regulation 3” insert “or 4”") == {"inserted", "words inserted"}
+
+    assert op.("after the entry for “public analyst” there shall be inserted — .") ==
+             {"inserted", "words inserted"}
   end
 
   test "Target: the text names the row's law and provision — else no match" do

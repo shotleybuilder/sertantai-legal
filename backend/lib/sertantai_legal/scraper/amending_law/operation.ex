@@ -23,8 +23,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Operation do
   @provision_with_word ~r/\b(?:sections?|subsections?|regulations?|paragraphs?|sub-?paragraphs?|articles?|heads?|points?)\s+\d*[A-Z]*(?:\([^)\s]+\))+\s+\(?and\s+the\s+(?:words?\s+)?[“"][^”"]{1,12}[”"]\s*(?:\)\s*)?(?:which\s+(?:precedes|follows)|immediately\s+(?:preceding|following|before|after)|preceding|following|before|after|at\s+the\s+end)/iu
 
   # "for “X” insert “Y”": quoted words replaced, a substitution (SI 2023/284
-  # reg.15(2)(a), CV-S08 round 1)
-  @for_insert ~r/\bfor\s+(?:the\s+words?\s+)?[“"][^”"]+[”"]\s*,?\s*(?:there\s+(?:shall\s+be|is)\s+)?insert(?:ed)?\b/iu
+  # reg.15(2)(a), CV-S08 round 1) — never "after the entry for “X” insert",
+  # a place
+  @for_insert ~r/(?<!entry\s)(?<!entries\s)(?<!definition\s)\bfor\s+(?:the\s+words?\s+)?[“"][^”"]+[”"]\s*,?\s*(?:there\s+(?:shall\s+be|is)\s+)?insert(?:ed)?\b/iu
 
   @doc "The instruction's operation and effect type; nil for none."
   @spec of(Text.t()) :: {String.t(), String.t()} | nil
