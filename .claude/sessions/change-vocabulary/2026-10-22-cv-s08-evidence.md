@@ -117,7 +117,8 @@ The session does not close until its results pass.
 - ✅ Gap rule kept; KC-sch fixed in batch 2 (Jason 2026-10-29)
 - ✅ Fix batch 2 code (d72ce36d), tests 9,510 pass
 - ✅ Fix batch 2 applied (restore point `cv-s08-fix2`); the bracketed-description fix (d229ba7b); golden from inputs 27/27
-- ⬜ Round 3 (seed 53): V 15, D 44, A 150
+- ✅ Round 3 (seed 53): FAIL — V 12/15 (3 false conflicts), D 36/44, A 146/150 (1 wrong)
+- ⬜ Fix batch 3; round 4
 - ✅ The table re-reviewed with Jason (2026-10-29, on round 1's evidence): operation, the feed above the markup
 - ⬜ Value conflicts checked on a sample: level vs markup/feed, operation, date (OH&S family: 63)
 - ⬜ A Gemini review of the evaluator (CV-04)
@@ -317,3 +318,28 @@ The cause: s.156(3)(i) "section 114(1) (power to make transitional provision in 
 - **Strata:** V 15, D 51, A 2,041.
 - **Energy Act 2013:** 56 changes now commenced by SI 2014/251 on 2014-04-01; 28 are dated by the feed with no commenced_by (gaps).
 - **NISR 1997/248 reg.20:** 2003-05-30.
+
+## Round 3 (2026-10-29, seed 53): FAIL, much closer
+
+Eight agents: V 15, D 44 (2 batches), A 150 (5 × 30; the redraw is identical).
+
+| Stratum | OK | WRONG | doubtful |
+|---|---|---|---|
+| V (15, full) | 12 | 3 false conflicts (no wrong value) | 0 |
+| D (44 of 51) | 36 | 6 | 2 |
+| A (150) | 146 | 1 (Factories Act s.174(1): legacy `Addition` read inserted; the law, Sch.3 unparsed, substitutes) | 3 |
+
+A: 1 wrong in 150 gives a 95% upper bound of 3.1%. Gaps (commenced_by, mostly) are listed by cause in each batch.
+
+**Faults:**
+- **V (all three):** a whole-regulation substitution's heading has its own ChangeId under the same effect (SI 2009/1348 regs 19, 20, 24). It claims words beside the whole provision.
+- **D, markup level:**
+  - "covers all the text" is unreliable both ways. A Substitution covering all of Art 7(8): the law says "For paragraph 8 substitute", so provision. An Addition covering all of reg.3(3)(e): the feed and law say words.
+  - An Addition on an EU point later omitted to dots read as words (REACH Art 3(43)).
+  - EU feed "Sentence 2" / "Unnumbered Paragraph" is words.
+- **D, merge:** an EU chapeau word change (generic note) joined to the feed's Point replacement; the point's own markup left as a second change (REACH Art 119(1)(a), 56(6)(b)).
+- **Doubtful (merge):** COSHH 2002 reg.2: a definitions list outside its P2 makes one event two changes. REACH `article-2-6--d`: an empty id segment makes a phantom row and a duplicate.
+- **A:** legacy SIF markup (`d29p…`) `Addition` read as inserted where the law substitutes (Factories Act s.174(1)) or repeals (V: HSWA s.1(1)(d), s.84(5), ukpga 1972/28 s.5(1); law text won there).
+- **Commencement:** SOCPA s.178(1)(a) still drops 158, 167 … (the aside holds nested brackets). Laws whose commencement section was repealed to dots fall back to Royal Assent (EPCA 1978, doubtful).
+
+**Out of sample:** 48 SI 2015/994 rules stored as commencing SI 2015/1637 (a title-prefix match); commencement orders held but not read (KC-order).
