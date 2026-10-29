@@ -122,7 +122,8 @@ The session does not close until its results pass.
 - ✅ Fix batch 3 code (a541f728), tests 9,515 pass
 - ✅ Fix batch 3 applied (restore point `cv-s08-fix3`); golden from inputs caught Forestry Act s.1(4)(a); legacy Addition round the number = inserted (Jason; 3511120d); golden 27/27
 - ✅ Round 4 (seed 54): A PASS 150/150 (95% upper 1.98%; pairs 0/81, 3.6%); V 8/12 (4 false conflicts), D 32/39 (4 NEW + KMV, KF-type)
-- ⬜ Fix batch 4 (legacy operations weak, EU number wrap weak, merge depth order); A carried over if its 150 chosen values are unchanged; round 5 V and D
+- ✅ Fix batch 4 (e1aded30): legacy operations never contradict; EU number wrap covers; the merge joins the deepest markup first. Golden 27/27; A's 150 chosen values unchanged (A carried over)
+- ⬜ Round 5 (seed 55): V 8, D 35
 - ✅ The table re-reviewed with Jason (2026-10-29, on round 1's evidence): operation, the feed above the markup
 - ⬜ Value conflicts checked on a sample: level vs markup/feed, operation, date (OH&S family: 63)
 - ⬜ A Gemini review of the evaluator (CV-04)
@@ -411,3 +412,16 @@ Gaps, by cause (not WRONG):
 - CLP's "mixtures" chapeau markup was joined to the feed's Point replacement (REACH Art 56(6)(b), 119(1)(a)), and the point's own markup was left as a second change (a merge fault).
 
 **For Jason:** the two-link "as amended by" chains (REACH by SI 2019/1144, itself amended by SI 2020/1577) credit the middle link, as KX says.
+
+## Fix batch 4 (2026-10-29, code e1aded30)
+
+| Class | Fix | Where |
+|---|---|---|
+| Legacy operations (V) | a legacy markup operation fills a gap, never contradicts the law (no conflict) | `Conflicts.like?/5` |
+| EU number wrap (D) | EU consolidation markup round the number is `level_covering` (below the feed) | `Markup.Level` |
+| Chapeau join (D) | the merge joins the deepest markup first | `Merge` |
+
+- **Catalogue:** markup, 17 readings.
+- **Checks:** tests 9,519; restore point `cv-s08-fix4`; OH&S rebuild; golden from inputs 27/27.
+- **Strata:** V 8, D 40, A 2,019.
+- **A carries over:** the 150 round-4 A items' chosen values (operation, level, date, by, territory, partial, saved, commenced_by) were compared before and after the batch: 0 of 150 changed. A's round 4 pass (1.98%; pairs 3.6%) stands under the rule "items unchanged since checked".
