@@ -118,7 +118,9 @@ The session does not close until its results pass.
 - ✅ Fix batch 2 code (d72ce36d), tests 9,510 pass
 - ✅ Fix batch 2 applied (restore point `cv-s08-fix2`); the bracketed-description fix (d229ba7b); golden from inputs 27/27
 - ✅ Round 3 (seed 53): FAIL — V 12/15 (3 false conflicts), D 36/44, A 146/150 (1 wrong)
-- ⬜ Fix batch 3; round 4
+- ✅ Legacy markup Addition claims no operation (Jason 2026-10-29)
+- ✅ Fix batch 3 code (a541f728), tests 9,515 pass
+- ⬜ Fix batch 3 applied (restore point `cv-s08-fix3`); round 4
 - ✅ The table re-reviewed with Jason (2026-10-29, on round 1's evidence): operation, the feed above the markup
 - ⬜ Value conflicts checked on a sample: level vs markup/feed, operation, date (OH&S family: 63)
 - ⬜ A Gemini review of the evaluator (CV-04)
@@ -343,3 +345,32 @@ A: 1 wrong in 150 gives a 95% upper bound of 3.1%. Gaps (commenced_by, mostly) a
 - **Commencement:** SOCPA s.178(1)(a) still drops 158, 167 … (the aside holds nested brackets). Laws whose commencement section was repealed to dots fall back to Royal Assent (EPCA 1978, doubtful).
 
 **Out of sample:** 48 SI 2015/994 rules stored as commencing SI 2015/1637 (a title-prefix match); commencement orders held but not read (KC-order).
+
+## Fix batch 3 (2026-10-29, code a541f728)
+
+| Class | Fix | Where |
+|---|---|---|
+| Markup level both ways | Three kinds of level claim. **Sure whole:** the number is wrapped, or a Repeal (or a dotted Addition) sits on a row whose text is gone. **Sure words:** the change covers part of the text. **Covering** (`:level_covering`): the change covers all the words with the number outside, ranked below the feed. | `Readers.Markup.Level` (new), `Evidence` |
+| Heading wrapper | A heading's own record beside its provision's whole one claims no level. | `Markup.Level.heading_wrappers/1` |
+| Legacy Addition | Places the change, claims no operation (Jason). 810 changes store-wide took "inserted" from it alone. | `Readers.Markup` |
+| Definitions list after a lead-in | The list is the lead-in paragraph's (COSHH 2002 reg.2(1)). | `Markup.ListItems.lead_in/2` |
+| Empty id segment | `article-2-6--d` is Art 2(6)(d). | `Ref.from_clml/2` |
+| EU feed parts | "Sentence N", "Unnumbered Paragraph", "L N" are words. | `Readers.Feed` |
+| Nested aside | An aside with its own brackets breaks no list (SOCPA s.178(1)(a)). | `LawStart.Provisions` |
+
+**Catalogues reviewed:**
+- **markup, 141 changes:**
+  - 119 legacy operations dropped;
+  - 16 covering levels;
+  - 3 lead-in lists;
+  - 3 heading wrappers.
+- **feed, 20 changes:** EU sentence parts.
+
+**Left open (logged):**
+- a feed Type error with no law-text claim (REACH Art 138(1));
+- KM-EU chapeau joins (REACH Art 119(1)(a), 56(6)(b));
+- moved words;
+- commencement orders held but unread (KC-order);
+- SI 2015/1637's misattributed order rules;
+- a repealed commencement section falling back to Royal Assent;
+- "has effect from".
