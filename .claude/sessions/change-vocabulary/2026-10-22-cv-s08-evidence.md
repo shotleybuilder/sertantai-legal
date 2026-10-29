@@ -1,9 +1,69 @@
 ---
 session: 'CV-S08: Evidence'
-status: active
+status: closed
 release: v0.1
 opened: '2026-10-22'
+closed: '2026-10-29'
+outcome: success
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
+
+summary: >
+  The evidence step passes for OH&S on the statistical rule decided before round 1: after four fix batches,
+  round 5 has V 8/8, D wrong only in logged classes, and A 150/150 (95% upper 1.98%; pairs 0/81, 3.6%) carried
+  from round 4 with its chosen values unchanged; golden from inputs 27/27. The table now ranks the feed above the
+  markup for operation, reads the markup's level in three tiers, compares like with like, and commences Schedules
+  with the provision that gives them effect.
+
+decisions:
+  - what: Operation order — the feed above the markup (law text and commencement first)
+    why: Round 1 D, the feed's 'substituted' right 12/12 against the markup's Addition (how legislation.gov.uk marks a substitution's new words)
+    result: Jason 2026-10-29; D operation patterns hold from round 2
+  - what: Gap rule — a value no table source claims is a coverage gap, not WRONG
+    why: Agents graded missing commenced_by both ways in round 2; one pool needs one rule
+    result: Jason 2026-10-29; gaps published by cause in the quality statement
+  - what: Fix every class in CV-S08 in batches, logged against its reader
+    why: The evidence check surfaces readers' faults through wrong chosen values; one round per batch
+    result: Jason 2026-10-29; four batches, readers' catalogues reviewed each time
+  - what: KC-sch fixed in batch 2 — a Schedule commenced with its introducing provision
+    why: NISR 2003/152 Sch.7 wrong date; Energy Act 2013 Sch.12 (56 changes) no commenced_by
+    result: Commencement.ScheduleEffect; 2,702 rules; Energy Act Sch.12 commenced by SI 2014/251
+  - what: Legacy markup Addition — no operation inside the text; round the number, inserted; never contradicts the law
+    why: SIF-era Additions wrap text under a note whatever the change; golden Forestry Act s.1(4)(a) needs the insertion where nothing else speaks
+    result: "Jason 2026-10-29 (twice: no operation, then number wrapped = inserted); V false conflicts gone in round 5"
+  - what: Two-link 'as amended by' chains credit the feed's affecting law
+    why: KX — the law whose words the provision now carries; the chain stays a pointer
+    result: Jason 2026-10-29
+  - what: Gemini review of the evaluator deferred
+    why: Jason 2026-10-29 at close
+    result: todo marked deferred
+
+metrics:
+  strata_final: { changes: 26492, V: 8, D: 40, A: 2019 }
+  rounds: { r1: "V 27/63, D 42/102, A 47/50", r2: "V 15/21, D 41/70, A 147/150", r3: "V 12/15, D 36/44, A 146/150", r4: "V 8/12, D 32/39, A 150/150", r5: "V 8/8, D 32/35 (wrong only classed)" }
+  a_pass: { wrong: 0, n: 150, upper95: 0.0198, pairs_wrong: 0, pairs: 81, pairs_upper95: 0.036, seed: 54 }
+  value_conflicts: { start: 69, end: 8 }
+  derived_disagreements: { start: 829, end: 40 }
+  winners_final: { operation: "commencement 17652, feed 5028, law_text 1177, markup 180, none 2430", level: "commencement 17652, feed 4169, law_text 1177, markup 1119, none 2350", date: "commencement 19449, feed 5892, parts 8, none 1126", by: "feed 7284, law_text 1177, markup 237, none 17769", territory: "feed 1609, law_text 949, markup 43, law 2, none 23864" }
+  gaps_text_changes: { text_changes: 4573, no_date: 609, dated_no_commenced_by: 2841, commenced_by: 1123 }
+  golden: "27/27 from inputs"
+
+lessons:
+  - title: Golden from inputs caught a decision's side effect the agents could not
+    detail: Dropping legacy Addition operations removed the 1999 credit on Forestry Act 1967 s.1(4)(a); the sample checks never drew it. The refined rule (number wrapped = inserted) came from the golden set, not a sample.
+    tag: data
+  - title: A fix to one reader exposes another's fault — pre-flight the strata, not just the tests
+    detail: Commencing Schedules through their introducer took V from 21 to 70; 56 were one Energy Act 2013 misread ('Part 3' in a bracketed description) the new path routed onto Sch.12. The strata count before drawing caught it.
+    tag: data
+  - title: A markup signal can be right both ways — rank it, don't flip it
+    detail: '"Covers all the text" was whole for Art 7(8) and words for reg.3(3)(e); batch 1 and batch 2 flipped the rule and each broke the other case. A weak tier below the feed ended it.'
+    tag: data
+  - title: Carry a pass over by comparing chosen values, not claims
+    detail: Batch 4 changed claims (legacy operations, EU levels) but none of the 150 A chosen values; a before/after snapshot of the sample let A stand and saved a 5-agent round.
+    tag: tooling
+  - title: Agents need the grading rules for gaps written down
+    detail: Round 2 agents scored missing commenced_by both as WRONG and OK; the gap rule went into the skill prompt after Jason's decision.
+    tag: tooling
+
 bugs:
   - pattern: "Operation order: markup Addition (inserted) outranks the feed's substituted; the feed is right 12/12 (every amending text says substitute)"
     category: evidence table
@@ -69,7 +129,7 @@ bugs:
     category: commencement reader
     module: Commencement.OwnClause / Readers.AmendingLaw
     affected: 2
-    fix: "Schedule → the provision giving it effect: Commencement.ScheduleEffect (d72ce36d). Still open: 'has effect from'; list items past a parenthesis"
+    fix: "Schedule → the provision giving it effect: Commencement.ScheduleEffect (d72ce36d); list items past an aside (d229ba7b, a541f728). Still open: 'has effect from' (LGA 1985 s.84(3))"
     status: open
   - pattern: "Markup level: Substitution of a provision's whole text with its number outside read as provision; ';' remainder; Part <Number> wrapped still words; EU ListItem NumberOverride / id-less list own text; Correction wrapper"
     category: markup reader
@@ -93,11 +153,80 @@ bugs:
     category: merge
     module: ChangeVocabulary.Merge
     affected: 4
-    fix: "Per case; KX: cut to the chained amending provision's extent (all four left open: one case each)"
+    fix: "EU ';' join and chapeau joins fixed (list items on their rows d72ce36d; deepest markup joins first e1aded30). Open: KX territory (cut to the later law's extent: SI 2008/1597 reg.3), the alias (SI 1995/2038 reg.6(8)), a KX chain change left apart from the base law's own-text change (SI 2008/1597)"
     status: open
+  - pattern: "Legacy markup (d29p…, M_F_…) Addition read as inserted whatever the change (Factories Act s.174(1) substituted; HSWA s.84(5), s.1(1)(d) repealed); its operation reported as a conflict with the law"
+    category: markup reader
+    module: Readers.Markup / Conflicts
+    affected: 810
+    fix: "Inside the text no operation; round the number inserted (Jason; golden Forestry Act s.1(4)(a)); a legacy operation never contradicts the law (a541f728, 3511120d, e1aded30). Factories s.174(1) stays inserted until its Schedule is read (KS)"
+    status: fixed
+  - pattern: "Markup level from 'covers all the text' wrong both ways; EU consolidation markup wraps the number on partial replacements; a heading's own ChangeId beside a whole substitution claims words"
+    category: markup reader
+    module: Readers.Markup.Level
+    affected: 40
+    fix: "Sure / covering / words tiers, covering below the feed; EU number wrap covering; heading wrappers claim no level (a541f728, e1aded30)"
+    status: fixed
+  - pattern: "Energy Act 2013 s.156(3) read 'Part 3' from a provision's bracketed description; SOCPA s.178(1)(a) aside broke the list"
+    category: commencement reader
+    module: LawStart.Provisions
+    affected: 56
+    fix: "Bracketed descriptions name no Part; nested asides break no list (d229ba7b, a541f728)"
+    status: fixed
+  - pattern: "Definitions list outside its P2 (COSHH 2002 reg.2(1)) and an empty CLML id segment (REACH article-2-6--d): one event as two changes"
+    category: markup reader / ref
+    module: Markup.ListItems.lead_in / Ref.from_clml
+    affected: 13
+    fix: "a541f728"
+    status: fixed
+  - pattern: "Feed Type error wins where the law's text makes no claim (REACH Art 138(1): feed 'inserted', para 95(3)(d) substitutes); moved words carried as renumbered (SI 1999/3242 reg.3(3))"
+    category: evidence table
+    module: Evidence (KF-type, KMV)
+    affected: 2
+    fix: "Read the amending provision (para 95(3)(d) has no rule); a 'moved' operation in the vocabulary"
+    status: open
+  - pattern: "Commencement orders held in the store but not read as rules (SI 1995/2950, 1997/1097, 2006/266, 2013/1869, 2016/603, 2020/1662; SSI 2009/319, 2013/51); SI 2015/994's 48 rules stored as commencing SI 2015/1637 (title-prefix match); a repealed commencement section falls back to Royal Assent (EPCA 1978)"
+    category: commencement reader
+    module: Commencement.Orders / LawStart
+    affected: 60
+    fix: "Read held orders' Schedules; resolve 'the Act' by the order's enabling Act; no Royal Assent default where the commencement section is gone"
+    status: open
+  - pattern: "Amending reader coverage: no rules at all for SI 2015/1682, SI 1999/2024, SI 2015/1637; no claim for whole-instrument revocations, 'in regulations 4 to 11, in each place', some plain body instructions (SI 2023/247 reg.4(b)(ii), SI 2020/660 reg.4, SI 2024/322 reg.15)"
+    category: amending reader
+    module: Amendment.Reader / ReadPass
+    affected: 2841
+    fix: "Coverage (CV-S06/CV-07): commenced_by gaps follow from it (2,841 OH&S text changes dated with no commenced_by)"
+    status: open
+  - pattern: "EU markup inside unnumbered ListItems placed on the Article, not its point (Directive 98/24 art.2(b)(i), (b)(iii))"
+    category: markup reader
+    module: ChangeVocabulary.Readers.Markup (placement)
+    affected: 4
+    fix: "Markup.ListItems: id-less EU list items on their own rows (d72ce36d)"
+    status: fixed
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/evidence_strata.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/evidence_sample.ex
+  - backend/lib/mix/tasks/lat.evidence_check.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/merge/precise.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/feed_savings.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/readers/amending_commencement.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/readers/markup/list_items.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/readers/markup/level.ex
+  - backend/lib/sertantai_legal/scraper/commencement/schedule_effect.ex
+  - .claude/skills/evidence-check/SKILL.md
+
+depends_on:
+  - 2026-10-22-cv-s07-merge.md
+  - 2026-10-22-cv-s06-amending-law-reader.md
+  - 2026-10-22-cv-s04-commencement-reader.md
+
+enables:
+  - CV-S09 label fold (the merged changes' values are trusted on OH&S)
+  - CV-S05g extent agreement measure
 ---
 
-# Session: CV-S08: Evidence (ACTIVE)
+# Session: CV-S08: Evidence (CLOSED)
 
 ## Problem
 
@@ -125,9 +254,9 @@ The session does not close until its results pass.
 - ✅ Fix batch 4 (e1aded30): legacy operations never contradict; EU number wrap covers; the merge joins the deepest markup first. Golden 27/27; A's 150 chosen values unchanged (A carried over)
 - ✅ Round 5 (seed 55): V 8/8; D 32/35, its wrong values only in logged classes (KX-territory, KF-type), 1 doubtful; with A carried over: PASS by the rule decided before round 1
 - ✅ The table re-reviewed with Jason (2026-10-29, on round 1's evidence): operation, the feed above the markup
-- ⬜ Value conflicts checked on a sample: level vs markup/feed, operation, date (OH&S family: 63)
-- ⬜ A Gemini review of the evaluator (CV-04)
-- ⬜ Fix until the check passes reliably; record the result
+- ✅ Value conflicts checked in full every round (V: 63 → 8)
+- ⏸️ A Gemini review of the evaluator (CV-04) (deferred — Jason 2026-10-29)
+- ✅ Fixed until the check passed (round 5); quality statement below
 
 ## Dependencies
 
@@ -450,3 +579,31 @@ Three agents: V 8 in full; D 35 of 40 by pattern (2 batches). A carried over fro
 - **Golden from inputs:** 27/27. Met.
 
 **Coverage found (not this step's pass):** three amending laws hold no amendment rules at all: SI 2015/1682, SI 1999/2024, SI 2015/1637. Their changes rest on the feed and markup alone. This is the amending reader's coverage (CV-S06/CV-07). The SI Schedules of laws that were read are read (SI 2019/758: 95 rules).
+
+## Quality statement (OH&S, 2026-10-29)
+
+Each attribute of a merged change comes from the evidence table:
+- **operation:** the law's text, its commencement, then legislation.gov.uk's feed, then its markup;
+- **level:** the markup only where it is sure, below the feed where its change merely covers the words;
+- **date and commenced_by:** the law's commencement;
+- **by:** the law's text, then the feed.
+
+Disagreements between the law and legislation.gov.uk are reported like for like.
+
+**Checked by agents against the sources' own records:**
+- **Agreeing changes (A, 2,019):** 150 sampled, 0 wrong. 95% upper bound 1.98% wrong changes; 3.6% wrong (law, amending law) pairs.
+- **Every reported disagreement (V, 8):** real, and the law's side right.
+- **Markup–feed disagreements (D, 40), each pattern judged:** the rules hold, except two logged classes:
+  - a feed Type error where the amending provision is unread;
+  - a chain's territory cut to the later law's extent.
+
+**Coverage, stated apart (gaps, not errors).** Of 4,573 OH&S text changes:
+- 609 have no date from any source;
+- 2,841 are dated with no commencing law named, because the amending law's text makes no claim (Schedules of laws not read, three amending laws with no rules, plain instructions missed) or the order is held but unread;
+- 1,123 name the law that commenced them.
+
+**Known limits:**
+- moved words carried as "renumbered";
+- Schedules of amended laws unparsed (v0.1);
+- "has effect from" unread;
+- legacy markup cannot tell a whole provision substituted from one inserted.

@@ -143,3 +143,7 @@ OH&S (first family, 2026-10-29 →). The session is `.claude/sessions/change-voc
 | Round | Seed | Result |
 |---|---|---|
 | 1 | 51 (A, D) | Strata V 63 / D 829 (16 patterns) / A 1,927. FAIL: V 27/63 (19 wrong values, 15 false conflicts), D 42/102, A 47/50; operation order, unlike comparisons, note-only level, commencement fallback and commenced_by, reader levels |
+| 2 | 52 | Fix 595ce2df + 1afed139. V 21 / D 85 / A 1,987. FAIL: V 15/21, D 41/70, A 147/150 (EU list items, markup level regression, fan-out feed level, KC-sch) |
+| 3 | 53 | Fix d72ce36d + d229ba7b (ScheduleEffect; bracketed descriptions). V 15 / D 51 / A 2,041. FAIL: V 12/15 (heading wrappers), D 36/44, A 146/150 (legacy Addition) |
+| 4 | 54 | Fix a541f728 + 3511120d (Markup.Level tiers; legacy rule refined by golden). V 12 / D 44 / A 2,011. A **PASS** 150/150 (1.98%; pairs 0/81, 3.6%); V 8/12 (legacy operations), D 32/39 (EU number wrap, chapeau join) |
+| 5 | 55 (V, D) | Fix e1aded30; A carried over (0/150 chosen values changed). V 8/8; D 32/35, wrong only in logged classes (KX-territory, KF-type). **PASS** |
