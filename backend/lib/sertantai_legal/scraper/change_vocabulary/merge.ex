@@ -27,7 +27,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Claim}
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Merge.{Candidates, Partner}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Merge.{Candidates, Partner, Precise}
   alias SertantaiLegal.Scraper.{EffectIndex, LatRef}
 
   @doc """
@@ -48,7 +48,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
           aliases: Enum.uniq([key | Enum.map(sets, &elem(&1, 1))])
         }
       end)
-      |> precise()
+      |> Precise.precise()
       |> Candidates.collapse()
       |> Enum.split_with(&(Change.values(&1, :feed, :by) != []))
 
@@ -113,52 +113,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
     end)
   end
 
-  # One effect id is one event, wherever its sources place it. The markup
-  # places it precisely (the evidence table's target order): a markup
-  # change with no feed claims of its own takes the event's feed facts
-  # (date, law, territory) from the feed's change of the same id — on a
-  # provision above it, or beside it (Forestry Act 1967 s.1(4)(a): the
-  # "and" SI 2019/734 omits, which the feed records on s.1(4)(b)). A feed
-  # change with the markup's below it is the coarser record and goes.
-  defp precise(changes) do
-    changes
-    |> Enum.group_by(& &1.key)
-    |> Enum.flat_map(fn {_key, group} ->
-      {marked, fed_only} = Enum.split_with(group, &marked?/1)
-      # the event's facts, from the first change of it the feed records
-      facts =
-        case Enum.find(group, &(Change.values(&1, :feed, :by) != [])) do
-          nil -> []
-          c -> Enum.filter(c.claims, &(&1.source in [:feed, :law]))
-        end
-
-      # where the feed names the event (with or without markup there)
-      fed_targets = for c <- group, Change.values(c, :feed, :by) != [], do: c.target
-
-      marked =
-        Enum.map(marked, fn m ->
-          m = if Change.values(m, :feed, :by) == [], do: %{m | claims: m.claims ++ facts}, else: m
-
-          # placed only by its note ref, on a provision the feed doesn't
-          # name: the change there is in its words (the "and" in s.1(4)(a))
-          if Change.values(m, :markup, :operation) == [] and m.target not in fed_targets,
-            do: %{m | claims: m.claims ++ Claim.new(:markup, :level, :words, m.key)},
-            else: m
-        end)
-
-      kept =
-        Enum.reject(fed_only, fn f ->
-          Enum.any?(marked, &(f.target in tl(LatRef.ancestors(&1.target))))
-        end)
-
-      marked ++ kept
-    end)
-  end
-
   @doc "True when the CLML change markup places the change."
   @spec marked?(Change.t()) :: boolean()
-  def marked?(c),
-    do: Change.values(c, :markup, :operation) != [] or Change.values(c, :markup, :placed) != []
+  defdelegate marked?(c), to: Precise
 
   # An unkeyed change joins the one event of the same operation family by
   # the same law on its provision, above it or below it (the law it names,
@@ -215,10 +172,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
              do: Claim.new(:feed, :named_at, match.target, match.key),
              else: []
 
+        # where the feed placed the event, when moved: its level speaks for
+        # that provision only (CV-S08 round 1: the feed's "words" on
+        # s.11(4)(b) is no claim on the new s.11(4)(i))
+        fed_at =
+          if target != match.target and Change.values(match, :feed, :by) != [] and
+               Change.values(match, :feed, :placed) == [],
+             do: Claim.new(:feed, :placed, match.target, match.key),
+             else: []
+
         joined = %{
           match
           | target: target,
-            claims: match.claims ++ orphan.claims ++ placed ++ named_at,
+            claims: match.claims ++ orphan.claims ++ placed ++ named_at ++ fed_at,
             aliases: match.aliases ++ orphan.aliases
         }
 

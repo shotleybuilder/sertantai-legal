@@ -22,11 +22,17 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Operation do
 
   @provision_with_word ~r/\b(?:sections?|subsections?|regulations?|paragraphs?|sub-?paragraphs?|articles?|heads?|points?)\s+\d*[A-Z]*(?:\([^)\s]+\))+\s+\(?and\s+the\s+(?:words?\s+)?[“"][^”"]{1,12}[”"]\s*(?:\)\s*)?(?:which\s+(?:precedes|follows)|immediately\s+(?:preceding|following|before|after)|preceding|following|before|after|at\s+the\s+end)/iu
 
+  # "for “X” insert “Y”": quoted words replaced, a substitution (SI 2023/284
+  # reg.15(2)(a), CV-S08 round 1)
+  @for_insert ~r/\bfor\s+(?:the\s+words?\s+)?[“"][^”"]+[”"]\s*,?\s*(?:there\s+(?:shall\s+be|is)\s+)?insert(?:ed)?\b/iu
+
   @doc "The instruction's operation and effect type; nil for none."
   @spec of(Text.t()) :: {String.t(), String.t()} | nil
   def of(%Text{instruction: s}) do
     found =
-      for {re, op} <- @verbs, [{pos, _} | _] <- [Regex.run(re, s, return: :index)], do: {pos, op}
+      for {re, op} <- verbs(s),
+          [{pos, _} | _] <- [Regex.run(re, s, return: :index)],
+          do: {pos, op}
 
     case Enum.min_by(found, &elem(&1, 0), fn -> nil end) do
       nil -> nil
@@ -43,7 +49,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Operation do
   @spec of_quoted(Text.t()) :: {String.t(), String.t()} | nil
   def of_quoted(%Text{instruction: s} = t) do
     found =
-      for {re, op} <- Enum.take(@verbs, 2),
+      for {re, op} <- Enum.take(verbs(s), 2),
           [{pos, _} | _] <- [Regex.run(re, s, return: :index)],
           do: {pos, op}
 
@@ -51,6 +57,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Operation do
       nil -> of(t)
       {_, op} -> {op, if(words?(s), do: "words #{op}", else: op)}
     end
+  end
+
+  # an insertion verb replacing quoted words reads as a substitution
+  defp verbs(s) do
+    if Regex.match?(@for_insert, s),
+      do: [{@for_insert, "substituted"} | tl(@verbs)],
+      else: @verbs
   end
 
   # quoted or named words, definitions or entries (LR-41: SI 2009/2861 reg.

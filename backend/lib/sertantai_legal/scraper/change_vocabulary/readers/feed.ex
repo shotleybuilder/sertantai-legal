@@ -254,7 +254,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
       # in so far as not already in force: HSWA 1974 s.47(5)): a removal
       # in part at each partial stage, the removal at the full one
       {:repealed, [_, _ | _] = stages} ->
-        if level(EffectVerb.type(e.type)) == :provision,
+        if type_level(EffectVerb.type(e.type)) == :provision,
           do: staged_removal(e, stages),
           else: text_staged(e, stages)
 
@@ -281,7 +281,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
         partial? = Qualification.partial?(q)
 
         claims =
-          if op == :repealed and partial? and level(EffectVerb.type(e.type)) == :provision,
+          if op == :repealed and partial? and type_level(EffectVerb.type(e.type)) == :provision,
             do:
               Enum.reject(claims(e), &(&1.attribute == :operation)) ++
                 Claim.new(:feed, :operation, :repealed_in_part, id),
@@ -491,8 +491,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   defp claims(%Effect{effect_id: id} = e) do
     Enum.concat([
       Claim.new(:feed, :operation, operation(e), id),
-      Claim.new(:feed, :level, level(EffectVerb.type(e.type)), id),
-      Claim.new(:feed, :territory, code(e.territorial_application), id),
+      Claim.new(:feed, :level, level(e), id),
+      Claim.new(
+        :feed,
+        :territory,
+        code(e.territorial_application) || type_territory(e.type),
+        id
+      ),
       Claim.new(:feed, :effect_extent, code(e.effect_extent), id),
       Claim.new(:feed, :date, e.in_force_date, id),
       Claim.new(:feed, :prospective, if(e.prospective, do: true), id),
@@ -515,8 +520,44 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   # entry in its table, punctuation, its heading
   @words_level ~r/^\s*(?:words?|sums?|figures?|entry|entries|comma|semi[- ]?colon|full stop|hyphen|symbol|punctuation|formula|number|label|definitions?)\b|\bheading\b/i
 
-  defp level(type) do
+  # the part of a provision the feed names after it ("reg. 6 heading",
+  # "Art. 119(2)(g) Text", "Art. 4(1) Indent 2"): its words (CV-S08 round
+  # 1) — never a cross-heading, nor a provision inserted "and cross-heading"
+  @words_part ~r/(?:\btext|\bindent(?:\s+\d+)?|(?<!cross-|cross |and )\bheading)\s*$/i
+
+  # no level where the feed states no operation ("amended", "modified":
+  # CV-S08 round 1, HSWA s.28(3)(a))
+  defp level(%Effect{type: type, affected_provisions: text} = e) do
+    cond do
+      operation(e) == nil -> nil
+      String.match?(text || "", @words_part) -> :words
+      true -> type_level(EffectVerb.type(type))
+    end
+  end
+
+  defp type_level(type) do
     if String.match?(type || "", @words_level), do: :words, else: :provision
+  end
+
+  # where the type says the change applies: "repealed in part (EW)",
+  # "words substituted (S.)" (CV-S08 round 1: HSWA s.28(5)(b))
+  @type_territory ~r/\(((?:\s*(?:E|W|S|N\.?\s?I)\.?\s*)+)\)\s*$/
+
+  defp type_territory(nil), do: nil
+
+  defp type_territory(type) do
+    case Regex.run(@type_territory, type) do
+      [_, t] ->
+        t
+        |> String.replace(~r/N\.?\s?I\.?/, "N")
+        |> String.replace(~r/[.\s]/, "")
+        |> String.graphemes()
+        |> Enum.map(&Map.fetch!(%{"E" => "E", "W" => "W", "S" => "S", "N" => "NI"}, &1))
+        |> Enum.join("+")
+
+      nil ->
+        nil
+    end
   end
 
   defp code(nil), do: nil

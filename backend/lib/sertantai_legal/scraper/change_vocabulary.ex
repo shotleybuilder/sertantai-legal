@@ -13,7 +13,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   orchestrator; pure.
   """
 
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{Evidence, Label, Merge, Placement}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Evidence, FeedSavings, Label, Merge, Placement}
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Ref}
   alias SertantaiLegal.Scraper.LatRef
 
@@ -39,7 +39,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   law's `Commencement.Rule`s; `:own_commencement`, the law's own
   `Commencement.Rule`s and `:own_context` its row structure
   (`OwnClause.context/1`); `:effect_uris`, the feed's re-keyed effects
-  (`FeedUris`: URI id → effect id, for the merge); `:extents`, each amending Act's extent clause read
+  (`FeedUris`: URI id → effect id, for the merge); `:effect_savings`, savings given as ranges
+  (`FeedSavings`); `:extents`, each amending Act's extent clause read
   (`AmendingLaw.Extent`); `:title`, the law's title — its own place;
   `:passed`, `:act_title` and `:continuations` for its own sunset
   (`Readers.Expiry`); `:xml_ids`, each LAT row's `source_xml_id` → its ref
@@ -243,7 +244,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
 
     changes =
       (Feed.read(
-         effects,
+         FeedSavings.apply(effects, Keyword.get(opts, :effect_savings, %{})),
          law_name,
          Markup.order(xml),
          Keyword.get(opts, :commencement, %{}),

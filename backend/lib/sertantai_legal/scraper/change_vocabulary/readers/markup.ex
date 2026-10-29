@@ -298,7 +298,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
        ) do
     id = attr(attrs, :id) |> renumbered(el, ctx)
     path = if id && row_id?(id, ctx), do: path ++ [id], else: path
-    flags = if name == :Pnumber, do: [:number | flags], else: flags
+    # a provision's number, or a group's (a Part, Chapter or EU Title:
+    # SI 2009/1348 Pt.4A inserted whole, CV-S08 round 1)
+    flags = if name in [:Pnumber, :Number], do: [:number | flags], else: flags
 
     flags =
       if name == :Footnote and attr(attrs, :id),
@@ -368,12 +370,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     first = hd(occ)
     repeal = Enum.find(occ, &(&1.kind == :Repeal))
 
-    # whole provision: the change wraps its number, or all the text under it
-    # (1988/52 s.4(6): a RetainText Repeal round the text, not the number;
-    # Coronavirus Act 2020 s.78: round every sub-provision)
+    # whole provision: the change wraps its number, or a removal all the
+    # text under it (1988/52 s.4(6): a RetainText Repeal round the text, not
+    # the number; Coronavirus Act 2020 s.78: round every sub-provision). New
+    # text round all of a provision's words, its number outside, is a words
+    # change ("for 'the … Regulations 2006' substitute '… 2012'" in
+    # reg.12(5)(b), whose text is that title: CV-S08 round 1)
+    # A retained substitution's new version (its Addition, the Repeal's
+    # SubstitutionRef: Consumer Credit Act 1974 s.86B(12)) is a removal's
+    # pair: whole when it covers the text.
     whole? =
       Enum.any?(occ, &(&1.number? and (target == "*" or List.last(&1.path) == target))) or
-        covers_own_text?(occ, Map.get(own, target))
+        ((first.kind == :Repeal or Enum.any?(occ, &(&1.change_id != change_id))) and
+           covers_own_text?(occ, Map.get(own, target)))
 
     operation =
       cond do

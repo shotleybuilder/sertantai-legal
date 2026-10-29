@@ -44,7 +44,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.EvidenceStrataTest do
 
     assert [{_, :D}] = EvidenceStrata.classify([c])
     assert EvidenceStrata.disagreements(c) == [{:operation, [:inserted], [:substituted]}]
-    assert EvidenceSample.pattern(c) == "operation inserted/substituted inserted"
+    assert EvidenceSample.pattern(c) == "operation inserted/substituted substituted"
   end
 
   test "a primary claim settles a markup–feed difference: no derived disagreement" do

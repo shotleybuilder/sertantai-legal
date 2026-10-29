@@ -558,6 +558,8 @@ defmodule Mix.Tasks.Lat.Vocabulary do
         }
       end
 
+    pages = feed_pages(law)
+
     [
       rules: rules,
       commencement: commencement,
@@ -565,7 +567,8 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       extents_unread: unread |> Map.keys() |> Enum.sort(),
       passed: passed,
       act_title: title && String.replace(title, ~r/\s*\(repealed[^)]*\)\s*$/i, ""),
-      effect_uris: effect_uris(law),
+      effect_uris: SertantaiLegal.Scraper.ChangeVocabulary.FeedUris.from_pages(pages),
+      effect_savings: SertantaiLegal.Scraper.ChangeVocabulary.FeedSavings.from_pages(pages),
       continuations: continuations,
       own_commencement: own,
       own_context: own_context,
@@ -613,15 +616,14 @@ defmodule Mix.Tasks.Lat.Vocabulary do
     Enum.reject(stored, &(&1.source.law in stale)) ++ List.flatten(read)
   end
 
-  # the feed's re-keyed effects, from the law's stored pages (`FeedUris`,
-  # CV-S07 round 2)
-  defp effect_uris(law) do
+  # the law's stored feed pages, raw: the re-keyed effects (`FeedUris`,
+  # CV-S07 round 2) and savings given as ranges (`FeedSavings`, CV-S08)
+  defp feed_pages(law) do
     [_, type, year, number] = String.split(law, "_", parts: 4)
 
     type
     |> SertantaiLegal.Scraper.LegislationGovUk.ClmlStore.feed_files(year, number)
     |> Enum.map(&(&1 |> File.read!() |> :zlib.gunzip()))
-    |> SertantaiLegal.Scraper.ChangeVocabulary.FeedUris.from_pages()
   end
 
   # the law's title: its own place (a devolved law's territory)

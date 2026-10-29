@@ -111,6 +111,24 @@ defmodule SertantaiLegal.Scraper.LawStartProvisionsTest do
     assert got == [{:provision_dated, ~D[2025-09-15], ~w[reg.17 reg.18 reg.18(1) reg.19]}]
   end
 
+  test "\", and\" separates a list's items (SI 2004/3386 reg.1, CV-S08 round 1)" do
+    got =
+      assign([
+        {"reg.1",
+         "These Regulations come into force on 17th January 2005, except for regulations 2(a), (c) and (h), and 4(b), which shall come into force on 6th April 2005."},
+        "reg.2",
+        "reg.2(a)",
+        "reg.2(b)",
+        "reg.2(c)",
+        "reg.2(h)",
+        "reg.4",
+        "reg.4(a)",
+        "reg.4(b)"
+      ])
+
+    assert {:provision_dated, ~D[2005-04-06], ~w[reg.2(a) reg.2(c) reg.2(h) reg.4(b)]} in got
+  end
+
   test "\"except …\" is subtracted from the remaining provisions (asp 2003/8)" do
     got =
       assign(

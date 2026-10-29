@@ -9,8 +9,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Conflicts do
     the same attribute that differ (`values/1`). Like for like only: the
     markup shows a substitution as an insertion (`@agree`), the law
     commencing a change is not the law making it (`commenced_by` apart),
-    and words the law's text changes in a provision are a whole provision
-    where the change sits below it (`:placed`).
+    words the law's text changes in a provision are a whole provision
+    where the change sits below it (`:placed`), the feed's level speaks
+    only for the provision it names, its "in part" is words omitted, and
+    its first stage is not the completing date (`like?/5`).
   - `:unjoined` — a change only the law's text states beside a change only
     legislation.gov.uk states, by the same law, on the same provision or
     one above or below it: likely one event the merge left as two (both
@@ -61,8 +63,27 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Conflicts do
         other != value,
         {attribute, value, other} not in @agree,
         not placed_above?(c, attribute, value, other),
+        like?(c, s, attribute, value, other),
         do: {attribute, {source, value}, {s, other}}
   end
+
+  # like for like (CV-S08 round 1): the feed's level speaks only for the
+  # provision it placed the event on (its "words" on s.11(4)(b) is no claim
+  # on the new s.11(4)(i)); its "in part" is the law's words omitted; its
+  # first stage ("for specified purposes") is not the date the law brings
+  # the change fully into force — the feed's own completing date is
+  defp like?(c, :feed, :level, :words, :provision),
+    do: Evidence.placed_here?(c) and Change.value(c, :feed, :operation) != :repealed_in_part
+
+  defp like?(c, :feed, :level, _value, _other), do: Evidence.placed_here?(c)
+
+  defp like?(c, _s, :operation, :repealed, :repealed_in_part),
+    do: Change.value(c, :law_text, :level) != :words
+
+  defp like?(c, :feed, :date, value, _other),
+    do: value not in Change.values(c, :feed, :date_full)
+
+  defp like?(_c, _s, _attribute, _value, _other), do: true
 
   # the law's text named a provision above where the change sits: its
   # words there are a whole provision here

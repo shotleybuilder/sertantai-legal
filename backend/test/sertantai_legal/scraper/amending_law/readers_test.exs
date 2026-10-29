@@ -105,6 +105,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
     assert op.("In section 3, omit the words “the public”.") == {"repealed", "words repealed"}
     assert op.("For section 4 substitute—") == {"substituted", "substituted"}
     assert op.("The 1989 Act is amended as follows.") == nil
+
+    # quoted words replaced with an insertion verb (SI 2023/284 reg.15(2)(a), CV-S08)
+    assert op.(
+             "in paragraph (2), for “or by a network emergency co-ordinator” insert “, by a network emergency co-ordinator or by an emergency reporting service provider”"
+           ) == {"substituted", "words substituted"}
+
+    assert op.("after “regulation 3” insert “or 4”") == {"inserted", "words inserted"}
   end
 
   test "Target: the text names the row's law and provision — else no match" do

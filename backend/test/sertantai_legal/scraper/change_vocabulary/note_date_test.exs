@@ -47,7 +47,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.NoteDateTest do
 
     assert [
              %Claim{source: :commencement, attribute: :date, value: ~D[1989-09-01]},
-             %Claim{attribute: :via, value: :note}
+             %Claim{attribute: :via, value: :note},
+             # the law whose rule dated it (CV-S08 round 1)
+             %Claim{attribute: :commenced_by, value: "UK_ukpga_1989_22"}
            ] =
              NoteDate.claims(c, commencement())
   end
@@ -107,7 +109,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.NoteDateTest do
       ]
     }
 
-    assert [%Claim{value: ~D[1989-09-01]}, %Claim{attribute: :via, value: :feed}] =
+    assert [
+             %Claim{value: ~D[1989-09-01]},
+             %Claim{attribute: :via, value: :feed},
+             %Claim{attribute: :commenced_by, value: "UK_ukpga_1989_22"}
+           ] =
              NoteDate.claims(c, commencement())
   end
 

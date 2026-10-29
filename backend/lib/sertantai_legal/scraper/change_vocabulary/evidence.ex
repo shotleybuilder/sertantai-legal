@@ -81,16 +81,24 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
   }
 
   @table [
-    # the primary text first; then the feed's "in part" outranks a whole-provision Repeal in the markup
-    # (Jason 2026-10-11: "revoked in part will not mean full revocation")
+    # the primary text first; then the feed above the markup (Jason
+    # 2026-10-29, CV-S08 round 1: the markup's Addition is how
+    # legislation.gov.uk marks a substitution's new words — the feed's
+    # "substituted" was right 12 of 12; its "in part" outranks a
+    # whole-provision Repeal, Jason 2026-10-11)
     operation: [
       {:law_text, :operation},
       {:commencement, :operation},
-      {:feed, :operation, :in_part},
-      {:markup, :operation},
-      {:feed, :operation}
+      {:feed, :operation},
+      {:markup, :operation}
     ],
-    level: [{:law_text, :level}, {:commencement, :level}, {:markup, :level}, {:feed, :level}],
+    # the feed's level speaks only for the provision it names
+    level: [
+      {:law_text, :level},
+      {:commencement, :level},
+      {:markup, :level},
+      {:feed, :level, :placed_here}
+    ],
     retained: [{:markup, :retained}],
     # where the change applies: the feed's application, the markup's Extent,
     # an effect extent narrower than the provision, then the affecting law's
@@ -106,7 +114,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
       {:law, :competence, :insertion}
     ],
     date: [{:commencement, :date}, {:law_text, :date}, {:feed, :date_first}, {:feed, :date}],
-    # a commencement stage that doesn't complete the provision
+    # a commencement stage that doesn't complete the provision — the
+    # date's own source's (`with_date/2`)
     partial: [{:commencement, :partial}, {:feed, :partial}],
     # a removal with savings (D3: repealed_saved)
     saved: [{:feed, :savings, :non_empty}],
@@ -138,6 +147,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
       @table
       |> Map.new(fn {attribute, order} -> {attribute, first(c, order, extent, facts)} end)
       |> bound(c, extent)
+      |> partial_with_date()
 
     value = &elem(chosen[&1], 0)
 
@@ -194,6 +204,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
     end
   end
 
+  # partial is the date's: a date from the law (its commencement, its own
+  # text) with no partial claim of its own is the date the change is in
+  # force, never the feed's earlier stage ("for specified purposes",
+  # CV-S08 round 1: HSWA s.47(4), 2013-10-01 with the feed's partial)
+  defp partial_with_date(%{date: {_, date_source}, partial: {_, partial_source}} = chosen)
+       when date_source != nil and partial_source != nil and date_source != partial_source,
+       do: %{chosen | partial: {nil, nil}}
+
+  defp partial_with_date(chosen), do: chosen
+
   defp first(change, order, extent, facts) do
     Enum.find_value(order, {nil, nil}, fn entry ->
       {source, attribute, condition} =
@@ -216,7 +236,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
 
   @doc """
   The table's named conditions:
-  - `:in_part` — the claim is a removal in part
+  - `:placed_here` — the feed placed the event on the change's own
+    provision (`placed_here?/1`)
   - `:non_empty` — the list claim has an item
   - `:insertion` — the change inserts text
   - `:narrower_than_provision` — the territory doesn't cover the provision's extent
@@ -226,8 +247,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
     than the provision's extent
   """
   @spec condition?(atom(), term(), %{change: Change.t(), extent: String.t() | nil}) :: boolean()
-  def condition?(:in_part, operation, _context), do: operation == :repealed_in_part
   def condition?(:non_empty, list, _context), do: list != []
+  def condition?(:placed_here, _level, %{change: c}), do: placed_here?(c)
 
   def condition?(:insertion, _territory, %{change: c}),
     do:
@@ -249,4 +270,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
 
     operation == :repealed and retained == true and not Territory.covers?(territory, extent)
   end
+
+  @doc """
+  True when the feed placed the change's event on its own provision: a
+  feed record joined to a change on another provision (the law's text
+  below it, the markup's beside it) carries where the feed placed it
+  (`{:feed, :placed, target}`), and its level speaks for that provision.
+  """
+  @spec placed_here?(Change.t()) :: boolean()
+  def placed_here?(%Change{} = c), do: Change.values(c, :feed, :placed) in [[], [c.target]]
 end

@@ -96,10 +96,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
          Claim.new(:law_text, :operation, r.operation, key),
          Claim.new(:law_text, :level, level(r, target), key),
          Claim.new(:law_text, :by, law, key),
-         Claim.new(:commencement, :date, date(Map.get(commencement, law, []), ref), key),
+         commenced(Map.get(commencement, law, []), ref, key),
          # where the amending law applies (its application clause; CV-07),
          # or the amending provision's own (CV-S05 round 7)
-         Claim.new(:law_text, :territory, application(extents, law, ref), key)
+         Claim.new(
+           :law_text,
+           :territory,
+           applies_to(r.source.text) || application(extents, law, ref),
+           key
+         )
        ])}
     end
   end
@@ -111,6 +116,26 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
   """
   @spec provision_key(String.t()) :: String.t()
   def provision_key(key), do: key |> String.split("#", parts: 2) |> hd()
+
+  # the version the instruction names: "in paragraph (b) as it applies to
+  # Scotland" (Environment Act 1995 Sch.22 para.30(6), CV-S08 round 1)
+  @applies_to ~r/\bas\s+(?:it|they)\s+appl(?:y|ies)\s+(?:in\s+relation\s+)?to\s+(England\s+and\s+Wales|Scotland|Northern\s+Ireland|Wales|England)\b/i
+  @codes %{
+    "england and wales" => "E+W",
+    "scotland" => "S",
+    "northern ireland" => "NI",
+    "wales" => "W",
+    "england" => "E"
+  }
+
+  defp applies_to(text) when is_binary(text) do
+    case Regex.run(@applies_to, text) do
+      [_, place] -> Map.get(@codes, place |> String.downcase() |> String.replace(~r/\s+/, " "))
+      nil -> nil
+    end
+  end
+
+  defp applies_to(_text), do: nil
 
   defp application(extents, law, ref) do
     case Map.get(extents, law) do
@@ -228,11 +253,49 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
   `commenced_on/2` dates by, for saying why it doesn't.
   """
   @spec commencement([CRule.t()], String.t()) :: Evaluator.result() | nil
+  # An Act's Royal Assent (`:act_enactment`) is a default: it dates only a
+  # provision no other rule reaches — an order's or the clause's own rule
+  # wins over it (CV-S08 round 1: Employment Rights Act 2025 Sch.12 by SI
+  # 2026/954, 1 October 2026, not Royal Assent; PJA 2006 Sch.15)
   def commencement(rules, ref) do
     case Enum.reject(rules, &(&1.treatment in @not_text)) do
-      [] -> nil
-      text -> Evaluator.evaluate(text, Order.ref(ref) || ref, Order.context())
+      [] ->
+        nil
+
+      text ->
+        at = Order.ref(ref) || ref
+        {assent, rest} = Enum.split_with(text, &(&1.treatment == :act_enactment))
+
+        case rest != [] and assent != [] and Evaluator.evaluate(rest, at, Order.context()) do
+          %{entries: [_ | _]} = result -> result
+          _ -> Evaluator.evaluate(text, at, Order.context())
+        end
     end
+  end
+
+  @doc """
+  The law whose rule brought the provision fully into force (an order, or
+  the amending law's own clause): the commencement's `commenced_by`, apart
+  from the law making the change (CV-S08 round 1: HSWA s.27(5), inserted
+  by the Building Safety Act 2022, commenced by SI 2022/561).
+  """
+  @spec commenced_by(Evaluator.result() | nil) :: String.t() | nil
+  def commenced_by(%{full_from: %Date{} = full, entries: entries}) do
+    Enum.find_value(entries, fn
+      %{date: ^full, rule: %{source: %{law: law}}} when is_binary(law) -> law
+      _ -> nil
+    end)
+  end
+
+  def commenced_by(_result), do: nil
+
+  # when the amending provision came fully into force, and by which law
+  defp commenced(rules, ref, key) do
+    result = commencement(rules, ref)
+    date = result && result.full_from
+
+    Claim.new(:commencement, :date, date, key) ++
+      if(date, do: Claim.new(:commencement, :commenced_by, commenced_by(result), key), else: [])
   end
 
   # when the amending provision came fully into force by the law's own text

@@ -42,7 +42,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
     case why(c, commencement) do
       {:dated, date, via} ->
         Claim.new(:commencement, :date, date, c.key) ++
-          Claim.new(:commencement, :via, via, c.key)
+          Claim.new(:commencement, :via, via, c.key) ++
+          Claim.new(:commencement, :commenced_by, commenced_by(c, commencement), c.key)
 
       _ ->
         []
@@ -66,14 +67,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
   """
   @spec why(Change.t(), %{String.t() => [Rule.t()]}) :: why()
   def why(%Change{} = c, commencement) do
-    law = Change.value(c, :feed, :by) || Change.value(c, :markup, :cited)
-
-    # the feed's named provisions, else the note's
-    {refs, via} =
-      case Change.values(c, :feed, :affecting) |> List.flatten() do
-        [] -> {Change.values(c, :markup, :affecting) |> List.flatten(), :note}
-        feed -> {feed, :feed}
-      end
+    {law, refs, via} = pointer(c)
 
     cond do
       not undated?(c) -> :not_a_gap
@@ -81,6 +75,31 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
       refs == [] -> {:undated, :no_pointer}
       Map.get(commencement, law, []) == [] -> {:undated, :rules_not_held}
       true -> at(Map.fetch!(commencement, law), deepest(refs), via)
+    end
+  end
+
+  # the amending law and the provisions the feed names, else the note's
+  defp pointer(c) do
+    law = Change.value(c, :feed, :by) || Change.value(c, :markup, :cited)
+
+    case Change.values(c, :feed, :affecting) |> List.flatten() do
+      [] -> {law, Change.values(c, :markup, :affecting) |> List.flatten(), :note}
+      feed -> {law, feed, :feed}
+    end
+  end
+
+  # the law whose rule dated it (one date over every provision named)
+  defp commenced_by(c, commencement) do
+    {law, refs, _via} = pointer(c)
+    rules = Map.get(commencement, law, [])
+
+    refs
+    |> deepest()
+    |> Enum.map(&AmendingLaw.commenced_by(AmendingLaw.commencement(rules, &1)))
+    |> Enum.uniq()
+    |> case do
+      [by] -> by
+      _ -> nil
     end
   end
 

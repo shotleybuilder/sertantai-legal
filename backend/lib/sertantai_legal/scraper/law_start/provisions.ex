@@ -31,7 +31,9 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
   # "… on the following dates—", "… come into force—")
   @open_clause ~r/into\s+(?:force|operation)\s*(?:as follows|on the following dates?)?\s*[—–:-]?\s*$/iu
   @except ~r/,?\s*\b(?:except|other than|with the exception of)\b/i
-  @noun ~r/\b(sections?|regulations?|articles?|rules?)\s+((?:(?:\s*(?:,|and|to|–|-)\s*)?(?:\d+[A-Z]*(?:\([^)]+\))*|\([^)]+\)(?:\([^)]+\))*))+)/i
+  # (", and" one separator: "regulations 2(a), (c) to (f) and (h), and
+  # 4(b)" — SI 2004/3386 reg.1, CV-S08 round 1)
+  @noun ~r/\b(sections?|regulations?|articles?|rules?)\s+((?:(?:\s*(?:,\s*and|,|and|to|–|-)\s*)?(?:\d+[A-Z]*(?:\([^)]+\))*|\([^)]+\)(?:\([^)]+\))*))+)/i
   # (never a Schedule's Part: "Part III of Schedule 16 and, in Part IX of
   # that Schedule" — EPA 1990 s.164(2), CV-S04 round 4)
   @part ~r/(?<![Ii]n\s)\bParts?\s+((?>(?:(?:\s*(?:,|and|to)\s*)?[0-9]+[A-Z]?|(?:\s*(?:,|and|to)\s*)?[IVXL]+[A-Z]?)+))\b(?!\s+(?:of|to)\s+(?:that\s+|the\s+)?Schedule)/

@@ -51,4 +51,38 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.EvidenceTest do
     assert c.resolved.date == ~D[2020-02-01]
     assert c.resolved.tiers.date == :primary
   end
+
+  test "the feed's operation outranks the markup's (an Addition marks a substitution's new words)" do
+    c =
+      change([{:markup, :operation, :inserted}, {:feed, :operation, :substituted}])
+      |> Evidence.resolve(nil)
+
+    assert c.resolved.operation == :substituted
+    assert c.resolved.sources.operation == :feed
+  end
+
+  test "the feed's level speaks only for the provision it placed the event on" do
+    c =
+      change([{:feed, :level, :words}, {:feed, :placed, "s.1(4)(b)"}])
+      |> Map.put(:target, "s.1(4)(b)(i)")
+      |> Evidence.resolve(nil)
+
+    assert c.resolved.sources.level == nil
+
+    here = change([{:feed, :level, :words}, {:feed, :placed, "s.1"}]) |> Evidence.resolve(nil)
+    assert here.resolved.level == :words
+  end
+
+  test "partial is the date's: the law's commencement date is not the feed's earlier stage" do
+    c =
+      change([
+        {:commencement, :date, ~D[2013-10-01]},
+        {:feed, :date, ~D[2013-04-25]},
+        {:feed, :partial, true}
+      ])
+      |> Evidence.resolve(nil)
+
+    assert c.resolved.date == ~D[2013-10-01]
+    refute c.resolved.partial
+  end
 end
