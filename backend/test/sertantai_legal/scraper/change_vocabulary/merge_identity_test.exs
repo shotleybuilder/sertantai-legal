@@ -467,5 +467,71 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeIdentityTest do
 
       refute Enum.any?(changes, &(&1.key == effect_id("a") and &1.target == "s.60(1)"))
     end
+
+    test "a note's pieces join its event whatever order they come in (HSWA s.16, note c19946601, round 5 J)" do
+      note = [
+        {:markup, :note, "c19946601"},
+        {:markup, :note_digest, "d16"},
+        {:markup, :affecting, ["art.8"]}
+      ]
+
+      for order <- [:pieces_first, :parent_first] do
+        pieces =
+          [
+            markup("d29p1618", "s.16(8)", :substituted, "UK_uksi_2008_960", note),
+            markup("d29p1502", "s.16(2)", :substituted, "UK_uksi_2008_960", note),
+            markup("d29p1467", "s.16(1)(b)", :substituted, "UK_uksi_2008_960", note),
+            markup("d29p1449", "s.16(1)", :substituted, "UK_uksi_2008_960", note)
+          ]
+
+        # (keys sort the processing order: the parent last, as on HSWA)
+        parent = markup("d29p9999", "s.16", :substituted, "UK_uksi_2008_960", note)
+        sets = if order == :pieces_first, do: pieces ++ [parent], else: [parent | pieces]
+
+        changes =
+          Merge.merge([
+            feed(effect_id("a"), "s.16", :substituted, "UK_uksi_2008_960", ["art.8"]) | sets
+          ])
+
+        assert Enum.all?(changes, &(&1.key == effect_id("a"))),
+               "#{order}: " <> inspect(Enum.map(changes, &{&1.key, &1.target}))
+      end
+    end
+
+    test "a note's many pieces all join its event, in whatever order a large law processes them (HSWA s.16)" do
+      note = [
+        {:markup, :note, "c19946601"},
+        {:markup, :note_digest, "d16"},
+        {:markup, :affecting, ["art.8"]}
+      ]
+
+      pieces =
+        for n <- 1..40,
+            do:
+              markup("d29p#{1000 + n * 7}", "s.16(#{n})", :substituted, "UK_uksi_2008_960", note)
+
+      changes =
+        Merge.merge([
+          feed(effect_id("a"), "s.16", :substituted, "UK_uksi_2008_960", ["art.8"]) | pieces
+        ])
+
+      apart = Enum.reject(changes, &(&1.key == effect_id("a")))
+      assert apart == [], "#{length(apart)} apart: " <> inspect(Enum.map(apart, & &1.target))
+    end
+
+    test "several left: the event on the record's own provision before one below it (REACH art.14(2), round 5)" do
+      changes =
+        Merge.merge([
+          feed(effect_id("p"), "art.Article 14(2)", :substituted, "UK_eur_2008_1272", []),
+          feed(effect_id("b"), "art.Article 14(2)(b)", :substituted, "UK_eur_2008_1272", []),
+          set("O031001M011", "art.Article 14(2)", [
+            {:markup, :operation, :substituted},
+            {:markup, :level, :provision},
+            {:markup, :cited, "UK_eur_2008_1272"}
+          ])
+        ])
+
+      assert "O031001M011" in holding(changes, effect_id("p")).aliases
+    end
   end
 end

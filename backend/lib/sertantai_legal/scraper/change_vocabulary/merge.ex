@@ -177,10 +177,20 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
             do: Claim.new(:law_text, :placed, orphan.target, orphan.key),
             else: []
 
+        # where the feed named the event, when markup below moves it there:
+        # the note's other pieces find the event by it (HSWA s.16: the first
+        # piece moved the event to s.16(1), and pieces on s.16(2) … (8) lost
+        # it — round 5 J; a pointer for identity, no attribute's value)
+        named_at =
+          if target != match.target and Change.values(orphan, :law_text, :by) == [] and
+               Change.values(match, :feed, :named_at) == [],
+             do: Claim.new(:feed, :named_at, match.target, match.key),
+             else: []
+
         joined = %{
           match
           | target: target,
-            claims: match.claims ++ orphan.claims ++ placed,
+            claims: match.claims ++ orphan.claims ++ placed ++ named_at,
             aliases: match.aliases ++ orphan.aliases
         }
 
@@ -268,8 +278,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
            |> Enum.find(fn c ->
              c.key != orphan.key and Change.values(c, :feed, :by) != [] and
                digest in Change.values(c, :markup, :note_digest) and
-               (c.target in LatRef.ancestors(orphan.target) or
-                  orphan.target in LatRef.ancestors(c.target))
+               Enum.any?([c.target | Change.values(c, :feed, :named_at)], fn t ->
+                 t in LatRef.ancestors(orphan.target) or orphan.target in LatRef.ancestors(t)
+               end)
            end) do
       facts = Enum.filter(joined.claims, &(&1.source in [:feed, :law]))
 

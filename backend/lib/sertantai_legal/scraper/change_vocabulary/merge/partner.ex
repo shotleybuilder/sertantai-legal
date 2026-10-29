@@ -67,6 +67,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge.Partner do
       # (an effect placed here only because its finer place has no row ranks
       # below one placed here: REACH art.14(2), round 3)
       |> narrow(&(not Enum.any?(&1, fn c -> Change.values(c, :feed, :finer_unheld) != [] end)))
+      # (then the event on the record's own provision before one above or
+      # below it: a whole-paragraph markup is the paragraph's effect, not a
+      # point's — REACH art.14(2), round 5)
+      |> narrow(&Enum.any?(&1, fn c -> c.target == orphan.target end))
 
     case events do
       [one] -> one
