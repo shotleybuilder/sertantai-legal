@@ -116,7 +116,8 @@ The session does not close until its results pass.
 - ✅ Round 2 (seed 52): FAIL — V 15/21 (1 wrong value, 5 false conflicts), D 41/70, A 147/150 (1 wrong: EU list item)
 - ✅ Gap rule kept; KC-sch fixed in batch 2 (Jason 2026-10-29)
 - ✅ Fix batch 2 code (d72ce36d), tests 9,510 pass
-- ⬜ Fix batch 2 applied (restore point `cv-s08-fix2`); round 3
+- ✅ Fix batch 2 applied (restore point `cv-s08-fix2`); the bracketed-description fix (d229ba7b); golden from inputs 27/27
+- ⬜ Round 3 (seed 53): V 15, D 44, A 150
 - ✅ The table re-reviewed with Jason (2026-10-29, on round 1's evidence): operation, the feed above the markup
 - ⬜ Value conflicts checked on a sample: level vs markup/feed, operation, date (OH&S family: 63)
 - ⬜ A Gemini review of the evaluator (CV-04)
@@ -297,3 +298,22 @@ A: 1 wrong in 150 gives a 95% upper bound of 3.1%, above the 2% pass mark.
 The catalogue changes were reviewed:
 - **markup:** 9 readings (EU Articles repealed whole; list items on their own rows; s.78 repealed whole);
 - **markup:** 230 `omitted` flags (order only otherwise).
+
+### Applied (2026-10-29)
+
+**First apply:** 2,702 `schedule_effect` rules; golden 27/27. But V rose from 21 to 70. Of those, 56 were Energy Act 2013 Sch.12 dated 2013-12-18 (Royal Assent).
+
+The cause: s.156(3)(i) "section 114(1) (power to make transitional provision in relation to Part 3)" was read as bringing in Part 3 itself, and Sch.12 then took that date through s.116(1).
+
+**The fix (d229ba7b):** a provision's description in brackets names no Part or Chapter. An aside in brackets also no longer breaks a list (SOCPA 2005 s.178(1)(a): 158, 167 … now read). Four commencement catalogue readings improve:
+- SI 1988/1324 regs 11–15;
+- Water Act 1989 Parts VII and VIII;
+- Housing Grants Act 1996, no Part IV;
+- ukpga 2003/30 s.5.
+
+`--read` now passes the document too, so a Schedule Part resolves to its paragraphs.
+
+**Second apply:** own clauses 2,654 rules; amending laws 4,062 rules; rebuild; golden 27/27.
+- **Strata:** V 15, D 51, A 2,041.
+- **Energy Act 2013:** 56 changes now commenced by SI 2014/251 on 2014-04-01; 28 are dated by the feed with no commenced_by (gaps).
+- **NISR 1997/248 reg.20:** 2003-05-30.

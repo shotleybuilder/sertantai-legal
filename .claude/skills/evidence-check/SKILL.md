@@ -113,10 +113,12 @@ Known classes (label a finding with one; otherwise NEW):
 - KX an "as amended by" chain: the note cites one law, the feed's effect another (REACH: SI 2019/758 amended by SI
   2019/1144 before it came into force): by = the feed's affecting law, OK.
 - KS a Schedule/Annex change (schedules unparsed, v0.1): never NEW.
-- Round 1 classes left open (logged; label, don't count as NEW): KC-sch a schedule commenced through its introducing
-  provision (NISR 2003/152 Sch.7 via reg.15(2)); KC-effect "This section has effect from …" unread; KL-EU-list EU
-  list items (NumberOverride / no id) read as words; KX-territory a chain's territory cut to the later law's extent;
-  KMV moved words ("repositioned") carried as the feed's renumbered.
+- Open classes (logged; label, don't count as NEW): KC-effect "This section has effect from …" unread;
+  KC-order an order held in the store but not read as rules (SI 1995/2950); KX-territory a chain's territory cut to
+  the later law's extent; KMV moved words ("repositioned") carried as the feed's renumbered; KF-type a feed Type
+  error winning where the law's text makes no claim (REACH Art 138(1)).
+- Gap rule (Jason 2026-10-29): a value no table source claims (commenced_by with no commencement claim, no date
+  from any source) is a coverage GAP, not WRONG: list it with its cause.
 - Like for like (not a conflict): the markup's Addition vs substituted; the feed's "in part" vs the law's words
   omitted; the feed's first stage ("for specified purposes") vs the law's full date when the feed's own completing
   date (date_full) agrees.
