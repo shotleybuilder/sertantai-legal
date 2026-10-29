@@ -60,12 +60,15 @@ commencement provisions or orders ("commencement": date, commenced_by, partial).
 CLML change markup in the amended law's text ("markup": Addition/Substitution/Repeal with a commentary note; its
 note's cited law is "cited") and the changes feed ("feed": one effect per event; by = the affecting law). The
 evidence table chooses each attribute (first source in order with a claim wins):
-- operation: law_text, commencement, feed only if it says repealed_in_part, markup, feed
-- level (words or whole provision): law_text, commencement, markup, feed
+- operation: law_text, commencement, feed, markup (Jason 2026-10-29: the markup's Addition marks a substitution's
+  new words)
+- level (words or whole provision): law_text, commencement, markup, feed — the feed's only where it placed the event
+  on this provision (a "feed.placed" claim names where it did, when the merge moved it)
 - territory: law_text, feed, markup, feed effect_extent if narrower than the provision; then cut to the amending
   law's extent (law_text extent)
 - date: commencement, law_text, feed date_first, feed date
-- partial: commencement, feed; saved: feed savings; retained: markup
+- partial: commencement, feed — the date's own source's (a date from the law is the full date)
+- saved: feed savings; retained: markup
 - by (the law making the change): law_text, feed, markup cited (a note's cited law: the one documented fallback)
 - commenced_by: commencement (the law bringing it into force, apart from by)
 Notes are pointers, never facts: a note may point to where to look (the amending provision), never give a value
@@ -110,6 +113,13 @@ Known classes (label a finding with one; otherwise NEW):
 - KX an "as amended by" chain: the note cites one law, the feed's effect another (REACH: SI 2019/758 amended by SI
   2019/1144 before it came into force): by = the feed's affecting law, OK.
 - KS a Schedule/Annex change (schedules unparsed, v0.1): never NEW.
+- Round 1 classes left open (logged; label, don't count as NEW): KC-sch a schedule commenced through its introducing
+  provision (NISR 2003/152 Sch.7 via reg.15(2)); KC-effect "This section has effect from …" unread; KL-EU-list EU
+  list items (NumberOverride / no id) read as words; KX-territory a chain's territory cut to the later law's extent;
+  KMV moved words ("repositioned") carried as the feed's renumbered.
+- Like for like (not a conflict): the markup's Addition vs substituted; the feed's "in part" vs the law's words
+  omitted; the feed's first stage ("for specified purposes") vs the law's full date when the feed's own completing
+  date (date_full) agrees.
 
 Output: a compact table, one row per item: #, law, target, by, OK/WRONG/doubtful, note (only when not OK: one line,
 the attribute, chosen vs right value, the source that should win, a known class or NEW). For D, a line per pattern:

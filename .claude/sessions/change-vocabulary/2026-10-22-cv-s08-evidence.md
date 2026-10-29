@@ -10,66 +10,72 @@ bugs:
     module: ChangeVocabulary.Evidence
     affected: 14
     fix: "Feed above markup for operation (an Addition alone is how legislation.gov.uk marks a substitution's new words); markup Substitution vs feed inserted splits 2/2 — only the law's text settles it"
-    status: open
+    status: fixed
   - pattern: "Level conflicts compared unlike for unlike: the feed's level for a parent or sibling at a child target; repealed_in_part vs repealed words"
     category: evidence table
     module: ChangeVocabulary.Conflicts
     affected: 12
     fix: "Compare a feed level only where its affected provision is the change's target; repealed_in_part = repealed at words"
-    status: open
+    status: fixed
   - pattern: "Date conflicts compared unlike for unlike: the feed's first stage 'for specified purposes' (enabling powers) against the full commencement date; partial=true beside the completing date"
     category: evidence table
     module: ChangeVocabulary.Conflicts / Evidence
     affected: 7
     fix: "Compare first with first, full with full; partial judged at the chosen date"
-    status: open
+    status: fixed
   - pattern: "Merge.precise/1 gives a note-ref-only placement a markup level :words — a level from a note (commencement stages, whole provisions repealed as dots, Pt modified)"
     category: pointer as fact
     module: ChangeVocabulary.Merge
     affected: 672
     fix: "A note-only placement claims no level; level falls to the feed"
-    status: open
+    status: fixed
   - pattern: "commenced_by never emitted on an amendment change dated by commencement (the rule's source law dropped)"
     category: commencement reader
     module: Readers.AmendingLaw / Readers.Feed
     affected: 3688
     fix: "Emit {:commencement, :commenced_by, rule.source.law} with the date when it differs from by"
-    status: open
+    status: fixed
   - pattern: "act_enactment 'all' rule (Royal Assent) outranks specific or by-order rules (ERA 2025 sch.12, PJA 2006 sch.15, Courts Act 2004 sch.1, Children (Scotland) Act 1995)"
     category: commencement reader
     module: Commencement
     affected: 11
     fix: "No act_enactment default for an Act whose commencement section defers to orders; a refs rule always beats all; no date → no claim (feed wins)"
-    status: open
-  - pattern: "Commencement exception list drops a last item naming another regulation ('and 4(b)'); a schedule not traced through its introducing regulation; 'This section has effect from' unread; SOCPA s.178 bare numbers dropped"
+    status: fixed
+  - pattern: "Commencement exception list drops a last item after ', and' ('and 4(b)', 'and 17(1) to (3)')"
     category: commencement reader
-    module: Commencement.OwnClause
+    module: LawStart.Provisions
     affected: 3
-    fix: "New base number per list item; schedule → introducing provision's rule; read 'has effect from'"
+    fix: "', and' one separator in the noun list (595ce2df)"
+    status: fixed
+  - pattern: "A schedule's commencement not traced through its introducing regulation (NISR 2003/152 Sch.7 Pt II via reg.15(2)); 'This section has effect from' unread (LGA 1985 s.84(3)); SOCPA s.178(1)(a) bare numbers after a parenthesis dropped"
+    category: commencement reader
+    module: Commencement.OwnClause / Readers.AmendingLaw
+    affected: 2
+    fix: "Schedule → the provision giving it effect; read 'has effect from'; list items past a parenthesis"
     status: open
   - pattern: "Markup level: Substitution of a provision's whole text with its number outside read as provision; ';' remainder; Part <Number> wrapped still words; EU ListItem NumberOverride / id-less list own text; Correction wrapper"
     category: markup reader
     module: Readers.Markup
     affected: 15
-    fix: "Provision only when the element wraps the number (Pnumber, Number, NumberOverride) or the whole element; look through Correction wrappers"
-    status: open
+    fix: "Number (group) counts; whole text only for a removal or a retained substitution's new version (595ce2df). Open: EU ListItem NumberOverride / id-less list own text (REACH Art 3 10A/10B, CLP Art 23(f))"
+    status: fixed
   - pattern: "Feed reader: savings in a SectionRange dropped (store-wide 3,510 range-only); Type 'amended' gives level provision; '… heading', '… Text', 'Indent N' read as provision; '(EW)' in Type not read as extent"
     category: feed reader
     module: LegislationGovUk.ChangesFeed / Readers.Feed
     affected: 3510
     fix: "Savings .//Section/@Ref and range ends; 'amended' no level; suffixes → words; parenthesised extent → effect extent"
-    status: open
+    status: fixed
   - pattern: "Amending reader: 'for X insert Y' read as inserted (is substituted); 'as it applies to Scotland / E+W' not read as territory"
     category: amending reader
     module: Amendment.Reader
     affected: 3
     fix: "for <quoted> insert = substituted; 'as it applies to X' a law_text territory claim"
-    status: open
+    status: fixed
   - pattern: "Merge: an alias joins two events (SI 1995/2038 reg.6(8)); an EU ';' Substitution joined to an addition effect (CLP Art 23(f)); a substitution split Repeal+Addition left as a duplicate (SI 1998/494 reg.4(3)(e)n1); KX territory cut to the later law's extent"
     category: merge
     module: ChangeVocabulary.Merge
     affected: 4
-    fix: "Per case; KX: cut to the chained amending provision's extent"
+    fix: "Per case; KX: cut to the chained amending provision's extent (all four left open: one case each)"
     status: open
 ---
 
@@ -86,8 +92,11 @@ The session does not close until its results pass.
 - ✅ Define what good looks like (Jason 2026-10-29: "Agree, build it"): strata V, D and A; pass rule below
 - ✅ Build the acceptance check (`mix lat.evidence_check`, `evidence-check` skill; code 00d9b63d)
 - ✅ Round 1 (seed 51): FAIL — V 27/63 OK, D 42/102, A 47/50; faults classed below
-- ⬜ Fix plan agreed with Jason (evidence table here; reader faults: where)
-- ⬜ The table re-reviewed with Jason after the source-use balance (CV-07)
+- ✅ Fix plan agreed (Jason 2026-10-29): operation, feed above markup; every class fixed in CV-S08 in one batch (logged against its reader)
+- ✅ Fix batch 1 code (595ce2df): every class but the open residue; tests 9,507 pass; catalogues reviewed
+- ✅ Fix batch 1 applied: restore point `cv-s08-fix1`, commencement re-read, read pass, rebuild; golden from inputs 27/27
+- ⬜ Round 2 (seed 52): V 21 in full, D 70 by pattern, A 150
+- ✅ The table re-reviewed with Jason (2026-10-29, on round 1's evidence): operation, the feed above the markup
 - ⬜ Value conflicts checked on a sample: level vs markup/feed, operation, date (OH&S family: 63)
 - ⬜ A Gemini review of the evaluator (CV-04)
 - ⬜ Fix until the check passes reliably; record the result
@@ -174,3 +183,47 @@ Nine agents (V 3 × 21, D 4 × ~26, A 2 × 25).
 - **The amending reader:** "for X insert Y"; "as it applies to X".
 - **The merge (4 cases):** an alias joining two events, an EU ";" Substitution, a split substitution's duplicate, a KX territory.
 - **Vocabulary:** moved words ("renumbered"/"repositioned") have no operation (SI 1999/3242 reg.3(3)).
+
+## Fix batch 1 (2026-10-29, code 595ce2df)
+
+| Class | Fix | Where |
+|---|---|---|
+| Operation order | the feed above the markup (Jason) | `Evidence` |
+| Feed level on another provision | `{:feed, :placed, target}` where the merge moves a feed record; the feed's level counts only there (`:placed_here`) | `Merge`, `Merge.Precise`, `Evidence`, `Conflicts` |
+| Partial at a later date | partial is the date's own source's | `Evidence` |
+| Unlike conflicts | in part = words omitted; the feed's first stage is not its completing date | `Conflicts.like?/5` |
+| Note as level | a note-only placement claims no level, except beside the provision the feed names (Forestry Act s.1(4)(a)) | `Merge.Precise` (split from `Merge`, 346 lines) |
+| Royal Assent default | dates only what no other rule reaches | `Readers.AmendingLaw.commencement/2` |
+| commenced_by | the rule's law, with every commencement date (law text and note pointer) | `Readers.AmendingLaw`, `Readers.NoteDate` |
+| ", and" in a list | one separator | `LawStart.Provisions` |
+| Markup level | a group's `Number` is its number; new words round all of a provision's text are words (a removal or a retained substitution's new version stays whole) | `Readers.Markup` |
+| Feed level | none without an operation ("amended"); "… heading/Text/Indent" are words (never a cross-heading) | `Readers.Feed` |
+| Feed savings ranges | read from the raw pages (`ParserVersion` untouched) | `FeedSavings` |
+| Feed bracketed territory | "(EW)", "(S)" in the type | `Readers.Feed` |
+| for X insert Y | substituted | `AmendingLaw.Operation` |
+| as it applies to X | the law text's territory | `Readers.AmendingLaw` |
+
+Catalogue readings reviewed:
+- **feed:** 676 levels plus 15 territories;
+- **markup:** 26 (16 group rows become provision; 10 "Words … substituted" become words);
+- **amendment:** 2 ("for … insert on each occasion");
+- **commencement:** 1 (SI 2026/318: reg.16(3)–(5) now read).
+
+**Left open** (logged):
+- a schedule commenced through its introducing provision;
+- "has effect from";
+- EU list items;
+- KX territory;
+- three single merge cases;
+- moved words, which now take the feed's "renumbered".
+
+### Applied (2026-10-29)
+
+- **Restore point:** `cv-s08-fix1` (commencement, amendment and extent rules; provision changes and claims).
+- **Commencement re-read:**
+  - own clauses: 1,066 laws, 1,623 rules;
+  - amending laws: 1,541 laws, 2,391 rules.
+  - No errors. SI 2004/3386 now holds reg.4(b).
+- **Read pass:** 28 laws changed. A preview showed 13 of them were "after the entry for “X” insert", which is a place, not words replaced. That was fixed (1afed139), and a second pass changed 13 laws. Rules 42,799 throughout.
+- **Rebuild:** OH&S rebuilt. Golden from inputs 27/27.
+- **Strata after:** V 63 → 21, D 829 → 85, A 1,927 → 1,987. commenced_by now comes from commencement on 21,116 OH&S changes, up from 19,384 (the commencements alone).
