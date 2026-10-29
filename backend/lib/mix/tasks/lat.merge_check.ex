@@ -101,7 +101,26 @@ defmodule Mix.Tasks.Lat.MergeCheck do
 
     for {source, {met, n}} <- Enum.sort(rate),
         do: Mix.shell().info("  #{source}: #{met}/#{n} (#{pct(met, n)})")
+
+    spread =
+      for {law, changes} <- by_law,
+          {key, tops} <- MergeStrata.spread(changes),
+          do: {law, key, tops}
+
+    Mix.shell().info(
+      "\nkeys under more than 3 top provisions (an over-join's shape, to read): #{length(spread)}"
+    )
+
+    for {law, key, tops} <- Enum.take(Enum.sort_by(spread, &(-length(elem(&1, 2)))), 15),
+        do:
+          Mix.shell().info(
+            "  #{law} #{short(key)}: #{length(tops)} (#{tops |> Enum.take(5) |> Enum.join(", ")}…)"
+          )
   end
+
+  # an effect id's last six characters (never printed whole)
+  defp short("key-" <> rest), do: "key-…" <> String.slice(rest, -6, 6)
+  defp short(key), do: key
 
   defp stratum(nil), do: nil
   defp stratum(s) when s in ~w(J U C), do: String.to_atom(s)

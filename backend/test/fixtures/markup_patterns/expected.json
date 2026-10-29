@@ -4492,17 +4492,7 @@
         "target": "art.Article 9"
       }
     ],
-    "UK_eudr_1989_654/9e31dd8d21": [
-      {
-        "claims": {
-          "markup.cited": "UK_eur_2019_1243",
-          "markup.level": "words",
-          "markup.operation": "inserted"
-        },
-        "key": "O002001M002-f00008",
-        "target": "*"
-      }
-    ],
+    "UK_eudr_1989_654/9e31dd8d21": [],
     "UK_eudr_1989_656/3eeddaad6a": [
       {
         "claims": {
@@ -4513,17 +4503,7 @@
         "target": "art.Article 1(2)"
       }
     ],
-    "UK_eudr_1989_656/5ad6579ee9": [
-      {
-        "claims": {
-          "markup.cited": "UK_eur_2019_1243",
-          "markup.level": "words",
-          "markup.operation": "inserted"
-        },
-        "key": "O002001M002-f00009",
-        "target": "*"
-      }
-    ],
+    "UK_eudr_1989_656/5ad6579ee9": [],
     "UK_eudr_1989_656/62f730e65d": [
       {
         "claims": {
@@ -4575,17 +4555,7 @@
         "target": "art.Article 8b"
       }
     ],
-    "UK_eudr_1990_269/9e31dd8d21": [
-      {
-        "claims": {
-          "markup.cited": "UK_eur_2019_1243",
-          "markup.level": "words",
-          "markup.operation": "inserted"
-        },
-        "key": "O002001M002-f00008",
-        "target": "*"
-      }
-    ],
+    "UK_eudr_1990_269/9e31dd8d21": [],
     "UK_eudr_1992_57/3eeddaad6a": [
       {
         "claims": {

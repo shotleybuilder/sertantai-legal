@@ -21,6 +21,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeStrata do
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Conflicts, Merge}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Merge.Candidates
   alias SertantaiLegal.Scraper.LatRef
 
   @type stratum :: :J | :U | :C
@@ -79,6 +80,24 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeStrata do
       {s, {Enum.count(stated, &(:feed in sources(&1))), length(stated)}}
     end)
   end
+
+  @doc """
+  Keys placed under more than `max` top provisions (an over-join's shape:
+  one effect's key on unrelated articles — REACH, round 4 J batch 3): each
+  `{key, tops}`. A range ("ss. 11-13") spreads legitimately; a tell-tale to
+  read, never a failure by itself.
+  """
+  @spec spread([Change.t()], pos_integer()) :: [{String.t(), [String.t()]}]
+  def spread(changes, max \\ 3) do
+    changes
+    |> Enum.filter(&text?/1)
+    |> Enum.group_by(&Candidates.base(&1.key), &top(&1.target))
+    |> Enum.map(fn {key, tops} -> {key, Enum.uniq(tops)} end)
+    |> Enum.filter(fn {_, tops} -> length(tops) > max end)
+  end
+
+  defp top(target),
+    do: target |> LatRef.ancestors() |> List.last() |> String.replace(~r/\(.*$/, "")
 
   @doc "The sources stating the change (an operation claim), of the feed, markup and law text."
   @spec sources(Change.t()) :: [atom()]

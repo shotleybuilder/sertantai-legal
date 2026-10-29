@@ -440,5 +440,32 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeIdentityTest do
 
       assert "M_F_8a49" in holding(changes, effect_id("s")).aliases
     end
+
+    test "an EU generic note's pieces never join one effect across the law (REACH c000002 by EU 2008/1272)" do
+      note = [{:markup, :note, "c000002"}, {:markup, :note_digest, "generic"}]
+
+      changes =
+        Merge.merge([
+          feed(effect_id("a"), "art.Article 59(3)", :substituted, "UK_eur_2008_1272", []),
+          markup("O003001M007", "art.Article 59(3)", :substituted, "UK_eur_2008_1272", note),
+          markup("O003001M066", "art.Article 31(1)", :substituted, "UK_eur_2008_1272", note),
+          markup("O003001M093", "art.Article 9(4)", :substituted, "UK_eur_2008_1272", note)
+        ])
+
+      assert Enum.count(changes, &(&1.key == effect_id("a"))) == 1
+    end
+
+    test "a note's piece joins the event only on its own line of provisions (UK legacy notes too)" do
+      note = [{:markup, :note_digest, "n"}, {:markup, :affecting, ["art.16(4)(b)"]}]
+
+      changes =
+        Merge.merge([
+          feed(effect_id("a"), "s.50(3)", :substituted, "UK_uksi_2008_960", ["art.16(4)(b)"]),
+          markup("d29p4939", "s.50(3)", :substituted, "UK_uksi_2008_960", note),
+          markup("d29p9999", "s.60(1)", :substituted, "UK_uksi_2008_960", note)
+        ])
+
+      refute Enum.any?(changes, &(&1.key == effect_id("a") and &1.target == "s.60(1)"))
+    end
   end
 end

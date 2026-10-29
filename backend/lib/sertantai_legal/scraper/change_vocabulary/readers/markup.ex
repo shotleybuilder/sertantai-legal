@@ -134,6 +134,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     {placed, occurrences} =
       doc |> occurrences([], [], ctx) |> Enum.split_with(&Map.has_key?(&1, :placement))
 
+    {footnote_refs, occurrences} = Enum.split_with(occurrences, &Map.has_key?(&1, :footnote_ref))
+    occurrences = in_footnotes(occurrences, footnote_refs)
+
     changes =
       occurrences
       |> group_changes(cited, own, ctx)
@@ -151,6 +154,35 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
           do: {key, ref, Claim.new(:markup, :placed, true, key)}
 
     changes ++ placements
+  end
+
+  # a change inside a footnote sits where the footnote is referenced, and an
+  # EU footnote's change ("O003001M002-f00006") is part of its own
+  # ("O003001M002"): the footnote holds a citation the change inserted
+  # (Directive 92/85 Art 13a(4); CV-S07 round 5 — it was a change to the
+  # whole law, "*"). A footnote no provision references places nothing.
+  defp in_footnotes(occurrences, refs) do
+    at = Map.new(refs, &{&1.footnote_ref, &1.path})
+
+    Enum.flat_map(occurrences, fn
+      %{footnote: nil} = o ->
+        [o]
+
+      %{footnote: f} = o ->
+        case Map.get(at, f) do
+          nil ->
+            []
+
+          path ->
+            [
+              %{
+                o
+                | path: path,
+                  change_id: String.replace(o.change_id, ~r/^(O\d+M\d+)-f\d+$/, "\\1")
+              }
+            ]
+        end
+    end)
   end
 
   @doc """
@@ -267,6 +299,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     id = attr(attrs, :id) |> renumbered(el, ctx)
     path = if id && row_id?(id, ctx), do: path ++ [id], else: path
     flags = if name == :Pnumber, do: [:number | flags], else: flags
+
+    flags =
+      if name == :Footnote and attr(attrs, :id),
+        do: [{:footnote, attr(attrs, :id)} | flags],
+        else: flags
+
     title_path = if name == :P1group, do: path ++ List.wrap(group_provision(el)), else: path
 
     own =
@@ -275,6 +313,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
         # text (its id, not its note's words)
         name == :CommentaryRef and String.starts_with?(attr(attrs, :Ref) || "", "key-") ->
           [%{placement: attr(attrs, :Ref), path: path}]
+
+        # where a footnote is referenced (its changes are placed there)
+        name == :FootnoteRef and attr(attrs, :Ref) != nil ->
+          [%{footnote_ref: attr(attrs, :Ref), path: path}]
 
         true ->
           []
@@ -292,6 +334,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
               extent: attr(attrs, :Extent),
               note: attr(attrs, :CommentaryRef),
               heading?: :heading in flags,
+              footnote:
+                Enum.find_value(flags, fn f ->
+                  with {:footnote, id} <- f, do: id, else: (_ -> nil)
+                end),
               text: letters(el)
             }
           ]

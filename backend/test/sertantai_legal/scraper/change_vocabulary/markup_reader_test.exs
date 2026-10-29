@@ -190,4 +190,26 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupReaderTest do
 
     assert [{_, "reg.38(3)", %{operation: :inserted}}] = read(body)
   end
+
+  test "CV-S07 round 5: a change in a footnote is placed where the footnote is referenced, part of its change (Directive 92/85 Art 13a(4) by EU 2019/1243)" do
+    xml = """
+    <Legislation><Body>
+    <P1group><Title>Article 13a</Title><P1 id="article-13a"><Pnumber>13a</Pnumber>
+    <P2 id="article-13a-4"><Pnumber>4</Pnumber><P2para><Text><Addition ChangeId="O003001M002" CommentaryRef="c000002">Words citing a Regulation<FootnoteRef Ref="f00006"/>.</Addition></Text></P2para></P2>
+    </P1></P1group>
+    </Body>
+    <Footnotes><Footnote id="f00006"><FootnoteText><Para><Text><Addition ChangeId="O003001M002-f00006" CommentaryRef="c000002">OJ L 123, 12.5.2016, p. 1.</Addition></Text></Para></FootnoteText></Footnote>
+    <Footnote id="f00099"><FootnoteText><Para><Text><Addition ChangeId="O003001M009-f00099" CommentaryRef="c000002">Never referenced.</Addition></Text></Para></FootnoteText></Footnote></Footnotes>
+    </Legislation>
+    """
+
+    keys =
+      xml
+      |> Markup.read("UK_eudr_1992_85", %{})
+      |> Enum.map(fn {key, target, _} -> {key, target} end)
+
+    refute Enum.any?(keys, fn {_, target} -> target == "*" end)
+    refute Enum.any?(keys, fn {key, _} -> String.contains?(key, "-f") end)
+    assert Enum.any?(keys, &match?({"O003001M002", _}, &1))
+  end
 end

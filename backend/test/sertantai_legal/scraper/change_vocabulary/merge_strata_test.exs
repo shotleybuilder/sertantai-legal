@@ -118,4 +118,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeStrataTest do
 
     assert MergeStrata.join_rate(changes) == %{law_text: {1, 2}, markup: {0, 0}}
   end
+
+  test "spread: a key under more than three top provisions (an over-join's shape)" do
+    changes =
+      merged(
+        for(n <- 1..4, do: feed("key-a", "reg.#{n}(1)", :substituted, [])) ++
+          [
+            feed("key-b", "reg.5(1)", :substituted, []),
+            feed("key-b", "reg.5(2)", :substituted, [])
+          ]
+      )
+
+    assert [{"key-a", tops}] = MergeStrata.spread(changes)
+    assert length(tops) == 4
+  end
 end

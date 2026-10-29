@@ -81,8 +81,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge.Candidates do
 
   defp note(c), do: Change.value(c, :markup, :note_digest) || Change.value(c, :markup, :note)
 
-  # EU markup's own ids ("O002001M001")
-  defp eu?(key), do: key =~ ~r/^O\d+M\d+/
+  @doc "True for EU markup's own change ids (\"O002001M001\", its footnotes' \"…-f00006\")."
+  @spec eu?(String.t()) :: boolean()
+  def eu?(key), do: key =~ ~r/^O\d+M\d+/
 
   defp markup_only?(c),
     do: Change.values(c, :feed, :by) == [] and Change.values(c, :law_text, :by) == []

@@ -254,8 +254,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
   # a piece has joined an effect, every other piece is the event's placement
   # where it sits, with the event's feed facts (HSWA s.50(3): note
   # c19974541's Substitutions on s.50(3), (a) and (b); CV-S07 round 4)
+  # — only on the piece's own line of provisions, and never an EU generic
+  # note ("Substituted by Regulation (EC) No 1272/2008": REACH c000002, ~144
+  # separate replacements; round 4 J batch 3)
   defp joined_note(orphan, by_target) do
-    with [digest | _] <- Change.values(orphan, :markup, :note_digest),
+    with false <- Candidates.eu?(orphan.key),
+         [digest | _] <- Change.values(orphan, :markup, :note_digest),
          true <- Change.values(orphan, :law_text, :by) == [],
          %Change{} = joined <-
            by_target
@@ -263,7 +267,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
            |> List.flatten()
            |> Enum.find(fn c ->
              c.key != orphan.key and Change.values(c, :feed, :by) != [] and
-               digest in Change.values(c, :markup, :note_digest)
+               digest in Change.values(c, :markup, :note_digest) and
+               (c.target in LatRef.ancestors(orphan.target) or
+                  orphan.target in LatRef.ancestors(c.target))
            end) do
       facts = Enum.filter(joined.claims, &(&1.source in [:feed, :law]))
 
