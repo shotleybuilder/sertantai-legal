@@ -425,7 +425,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     # the note's words, normalised: copies of one note in each version of a
     # provision carry their own ids but the same words (HSWA s.28: E+W, S,
     # NI; CV-S07 round 3) — a pointer for identity only
-    digest = digest(Doc.text(c))
+    digest = NoteLaw.digest(Doc.text(c))
 
     case citation && Regex.run(~r"/id/([a-z]+)/(\d{4})/(\d+)", xpath(citation, ~x"./@URI"s)) do
       [_, type, year, num] ->
@@ -443,13 +443,6 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
             %{text_law: law, refs: if(refs != [], do: refs), digest: digest}
         end
     end
-  end
-
-  defp digest(text) do
-    normal = text |> String.downcase() |> String.replace(~r/\s+/u, " ") |> String.trim()
-
-    if normal != "",
-      do: :crypto.hash(:md5, normal) |> Base.encode16(case: :lower) |> binary_part(0, 12)
   end
 
   defp pointers(commentary, citation_id, law) do

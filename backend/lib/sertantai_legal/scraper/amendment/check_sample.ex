@@ -83,6 +83,7 @@ defmodule SertantaiLegal.Scraper.Amendment.CheckSample do
 
     (refs ++ c.aliases ++ [c.key])
     |> Enum.filter(&(is_binary(&1) and &1 =~ @source_key))
+    |> Enum.map(&SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw.provision_key/1)
     |> Enum.uniq()
   end
 

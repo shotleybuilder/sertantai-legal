@@ -23,4 +23,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteLawTest do
 
     assert NoteLaw.law("Words substituted") == nil
   end
+
+  test "one note's copies in each version are one digest, savings asides apart (HSWA s.28(5)(b), 1989 c.15 Sch.25 para 46(b))" do
+    a =
+      "S. 28(5)(b) substituted (1.9.1989) by Water Act 1989 (c. 15, SIF 130), s. 190, Sch. 25 para. 46(b) (with ss. 58(7), 101(1), 141(6), 160(1)(2)(4), 163, 189(4)–(10), 190, 193(1), Sch. 26 paras. 3(1)(2), 17, 40(4), 57(6), 58)"
+
+    b =
+      "S. 28(5)(b) substituted (1.9.1989) by Water Act 1989 (c. 15, SIF 130), s. 190, Sch. 25 para. 46(b) (with ss. 58(7), 101(1), 141(6), 160(1)(2)(4), 163, 189(4), (10), 190, 193(1), Sch. 26 paras. 3(1)(2), 17, 40(4), 57(6), 58)"
+
+    assert NoteLaw.digest(a) == NoteLaw.digest(b)
+    refute NoteLaw.digest(a) == NoteLaw.digest(String.replace(a, "para. 46(b)", "para. 46(a)"))
+    assert NoteLaw.digest("  ") == nil
+  end
 end

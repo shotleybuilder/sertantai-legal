@@ -149,7 +149,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Conflicts do
   defp rule_refs(changes) do
     for c <- changes,
         Change.values(c, :law_text, :by) != [],
-        [law, id] <- [String.split(c.key, ":", parts: 2)],
+        [law, id] <- [
+          String.split(
+            SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw.provision_key(c.key),
+            ":",
+            parts: 2
+          )
+        ],
         ref = Order.ref(id),
         ref != nil,
         reduce: %{} do

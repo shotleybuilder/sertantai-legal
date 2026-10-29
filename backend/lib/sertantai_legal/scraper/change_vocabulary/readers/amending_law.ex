@@ -61,11 +61,35 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
           into: MapSet.new(),
           do: {"#{law}:#{ref}", t}
 
+    # one provision making several operations on one row ("after “a
+    # notifier” add “or applicant” and for “2001” substitute “2015”": NISR
+    # 2015/339 reg.34(2)(b)) makes a record of each, its key the provision's
+    # and the operation (`provision_key/1` reads the provision back; CV-S07
+    # round 3)
+    several =
+      for %Rule{source: %{law: law, ref: ref}} = r <- rules,
+          t <- targets(r, known),
+          r.treatment == :quoted or not MapSet.member?(quoted, {"#{law}:#{ref}", t}),
+          reduce: %{} do
+        acc ->
+          Map.update(
+            acc,
+            {"#{law}:#{ref}", t},
+            MapSet.new([r.operation]),
+            &MapSet.put(&1, r.operation)
+          )
+      end
+
     # a target the amended law doesn't contain is a misread, not a fact
     for %Rule{source: %{law: law, ref: ref}} = r <- rules,
         target <- targets(r, known),
         r.treatment == :quoted or not MapSet.member?(quoted, {"#{law}:#{ref}", target}) do
-      key = "#{law}:#{ref}"
+      provision = "#{law}:#{ref}"
+
+      key =
+        if MapSet.size(Map.get(several, {provision, target}, MapSet.new())) > 1,
+          do: "#{provision}##{r.operation}",
+          else: provision
 
       {key, target,
        Enum.concat([
@@ -79,6 +103,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
        ])}
     end
   end
+
+  @doc """
+  The amending provision a law-text record's key names ("law:element id"),
+  without the operation one provision's several records carry
+  ("UK_nisr_2015_339:regulation-34-2-b#inserted").
+  """
+  @spec provision_key(String.t()) :: String.t()
+  def provision_key(key), do: key |> String.split("#", parts: 2) |> hd()
 
   defp application(extents, law, ref) do
     case Map.get(extents, law) do

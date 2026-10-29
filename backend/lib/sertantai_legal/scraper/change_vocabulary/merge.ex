@@ -189,7 +189,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
         |> place(joined)
 
       _ ->
-        case joined_instruction(orphan, by_target) do
+        case joined_instruction(orphan, by_target) || joined_note(orphan, by_target) do
           nil -> Map.update(by_target, orphan.target, [orphan], &[orphan | &1])
           event -> place(by_target, event)
         end
@@ -245,6 +245,34 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
           claims: facts ++ orphan.claims,
           aliases: Enum.uniq([joined.key, orphan.key])
         }
+    else
+      _ -> nil
+    end
+  end
+
+  # One note's pieces over a provision and its children are one event: when
+  # a piece has joined an effect, every other piece is the event's placement
+  # where it sits, with the event's feed facts (HSWA s.50(3): note
+  # c19974541's Substitutions on s.50(3), (a) and (b); CV-S07 round 4)
+  defp joined_note(orphan, by_target) do
+    with [digest | _] <- Change.values(orphan, :markup, :note_digest),
+         true <- Change.values(orphan, :law_text, :by) == [],
+         %Change{} = joined <-
+           by_target
+           |> Map.values()
+           |> List.flatten()
+           |> Enum.find(fn c ->
+             c.key != orphan.key and Change.values(c, :feed, :by) != [] and
+               digest in Change.values(c, :markup, :note_digest)
+           end) do
+      facts = Enum.filter(joined.claims, &(&1.source in [:feed, :law]))
+
+      %Change{
+        key: joined.key,
+        target: orphan.target,
+        claims: facts ++ orphan.claims,
+        aliases: Enum.uniq([joined.key | orphan.aliases])
+      }
     else
       _ -> nil
     end

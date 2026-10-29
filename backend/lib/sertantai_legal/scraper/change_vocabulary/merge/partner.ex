@@ -29,15 +29,31 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge.Partner do
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Merge}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Merge.Candidates
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw
   alias SertantaiLegal.Scraper.Commencement.Order
   alias SertantaiLegal.Scraper.LatRef
 
   @doc "The placements of the one event `orphan` records, or nil."
   @spec choose(Change.t(), [Change.t()]) :: [Change.t()] | nil
   def choose(orphan, candidates) do
+    # a note one of whose pieces joined an effect is that effect's event
+    # (HSWA s.50(3): note c19974541 on s.50(3), (a) and (b), one piece joined
+    # the feed's effect — round 4)
+    joined_notes =
+      for c <- candidates,
+          not match?({:note, _}, Candidates.event(c)),
+          d <- Change.values(c, :markup, :note_digest),
+          into: %{},
+          do: {d, Candidates.event(c)}
+
     events =
       candidates
-      |> Enum.group_by(&Candidates.event/1)
+      |> Enum.group_by(fn c ->
+        case Candidates.event(c) do
+          {:note, d} -> Map.get(joined_notes, d, {:note, d})
+          e -> e
+        end
+      end)
       |> Map.values()
       |> Enum.filter(&same_day?(orphan, &1))
       |> Enum.filter(&provision?(orphan, &1))
@@ -45,7 +61,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge.Partner do
       # (the family waived for one amending provision, its own still first:
       # HSWA s.53(1), round 3)
       |> narrow(&(Merge.family(operation(main(&1))) == Merge.family(operation(orphan))))
-      |> narrow(&same_operation?(orphan, main(&1)))
+      |> narrow(&(plain(operation(main(&1))) == plain(operation(orphan))))
+      |> narrow(&agrees?(orphan, main(&1)))
       |> narrow(&(Enum.any?(&1, fn c -> heading?(c) end) == heading?(orphan)))
       # (an effect placed here only because its finer place has no row ranks
       # below one placed here: REACH art.14(2), round 3)
@@ -77,14 +94,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge.Partner do
       Enum.min_by(pool, &abs(depth(&1.target) - depth(orphan.target)))
   end
 
-  # one operation: a removal in part is a removal; the markup shows a
-  # substitution as an insertion (`Conflicts` `@agree`)
-  defp same_operation?(a, b) do
+  # (a removal in part is a removal) the exact operation first; then the
+  # markup's Addition for a substitution (`Conflicts` `@agree`) — only a
+  # markup insertion meets a substitution, never the reverse (COSHH reg.2(1)
+  # by SI 2009/716: a markup Substitution keeps the substituted event, round 4)
+  defp agrees?(a, b) do
     {x, y} = {plain(operation(a)), plain(operation(b))}
 
-    x == y or
-      ({x, y} in [{:substituted, :inserted}, {:inserted, :substituted}] and
-         (markup_op?(a) or markup_op?(b)))
+    x == y or (x == :inserted and y == :substituted and markup_op?(a)) or
+      (y == :inserted and x == :substituted and markup_op?(b))
   end
 
   defp plain(:repealed_in_part), do: :repealed
@@ -154,7 +172,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge.Partner do
   """
   @spec refs(Change.t()) :: [String.t()]
   def refs(orphan) do
-    with [_, id] <- String.split(orphan.key, ":", parts: 2),
+    with [_, id] <- String.split(AmendingLaw.provision_key(orphan.key), ":", parts: 2),
          ref when ref != nil <- Order.ref(id) do
       [ref]
     else

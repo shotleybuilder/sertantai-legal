@@ -359,4 +359,86 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeIdentityTest do
       assert [_] = changes
     end
   end
+
+  describe "round 3 finding" do
+    alias SertantaiLegal.Scraper.Amendment.Rule
+    alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw
+
+    test "one amending provision's two operations on one row are two records, each joining its own event (NISR 2015/339 reg.34(2)(b))" do
+      rule = fn op ->
+        Rule.new(
+          amends: "UK_nisr_2012_255",
+          targets: ["reg.8(1)"],
+          operation: op,
+          level: :words,
+          source: %{law: "UK_nisr_2015_339", ref: "regulation-34-2-b", text: nil},
+          treatment: :instruction
+        )
+      end
+
+      sets = AmendingLaw.read([rule.(:inserted), rule.(:substituted)])
+      keys = sets |> Enum.map(&elem(&1, 0)) |> Enum.uniq()
+      assert length(keys) == 2
+
+      assert Enum.all?(
+               keys,
+               &(AmendingLaw.provision_key(&1) == "UK_nisr_2015_339:regulation-34-2-b")
+             )
+
+      changes =
+        Merge.merge(
+          [
+            feed(effect_id("a"), "reg.8(1)", :inserted, "UK_nisr_2015_339", ["reg.34(2)(b)"]),
+            feed(effect_id("s"), "reg.8(1)", :substituted, "UK_nisr_2015_339", ["reg.34(2)(b)"])
+          ] ++ sets
+        )
+
+      assert length(changes) == 2
+      added = holding(changes, effect_id("a"))
+
+      assert Enum.map(
+               Enum.filter(
+                 added.claims,
+                 &(&1.source == :law_text and &1.attribute == :operation)
+               ),
+               & &1.value
+             ) == [:inserted]
+
+      substituted = holding(changes, effect_id("s"))
+      assert Enum.any?(substituted.claims, &(&1.source == :law_text and &1.value == :substituted))
+    end
+  end
+
+  describe "round 3 findings (round 4 fixes)" do
+    test "a note's pieces join the event one of them joined, each its placement; the law's text then joins (HSWA s.50(3), SI 2008/960 art.16(4)(b))" do
+      note = [{:markup, :note_digest, "n50"}, {:markup, :affecting, ["art.16(4)(b)"]}]
+
+      changes =
+        Merge.merge([
+          feed(effect_id("a"), "s.50(3)", :substituted, "UK_uksi_2008_960", ["art.16(4)(b)"]),
+          markup("d29p4939", "s.50(3)", :substituted, "UK_uksi_2008_960", note),
+          markup("d29p4956", "s.50(3)(a)", :substituted, "UK_uksi_2008_960", note),
+          markup("d29p4970", "s.50(3)(b)", :substituted, "UK_uksi_2008_960", note),
+          text("UK_uksi_2008_960:article-16-4-b", "s.50(3)", :substituted, "UK_uksi_2008_960")
+        ])
+
+      assert Enum.all?(changes, &(&1.key == effect_id("a"))),
+             inspect(Enum.map(changes, &{&1.key, &1.target}))
+
+      assert "UK_uksi_2008_960:article-16-4-b" in Enum.flat_map(changes, & &1.aliases)
+    end
+
+    test "the agreement after the exact operation, and only a markup insertion for a substitution (COSHH reg.2(1), SI 2009/716 Sch.6)" do
+      changes =
+        Merge.merge([
+          feed(effect_id("s"), "reg.2(1)", :substituted, "UK_uksi_2009_716", ["sch.6"]),
+          feed(effect_id("i"), "reg.2(1)", :inserted, "UK_uksi_2009_716", ["sch.6"]),
+          markup("M_F_8a49", "reg.2(1)", :substituted, "UK_uksi_2009_716", [
+            {:markup, :affecting, ["sch.6"]}
+          ])
+        ])
+
+      assert "M_F_8a49" in holding(changes, effect_id("s")).aliases
+    end
+  end
 end
