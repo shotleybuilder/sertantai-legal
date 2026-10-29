@@ -92,12 +92,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
       {:feed, :operation},
       {:markup, :operation}
     ],
-    # the feed's level speaks only for the provision it names
+    # the feed's level speaks only for the provision it names; the
+    # markup's covering all of a provision's words, its number outside, is
+    # below the feed (CV-S08 round 3: whole both ways)
     level: [
       {:law_text, :level},
       {:commencement, :level},
       {:markup, :level},
-      {:feed, :level, :placed_here}
+      {:feed, :level, :placed_here},
+      {:markup, :level_covering}
     ],
     retained: [{:markup, :retained}],
     # where the change applies: the feed's application, the markup's Extent,

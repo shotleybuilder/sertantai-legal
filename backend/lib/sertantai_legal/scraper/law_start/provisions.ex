@@ -655,7 +655,9 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
     # to Part 3)": Energy Act 2013 s.156(3), CV-S08 round 2); an aside
     # breaks no list ("sections 117(7) (and section 117(6) …), 158, 167":
     # SOCPA 2005 s.178(1)(a))
-    plain = Regex.replace(~r/\s\((?=[^()]*\s)[^()]*\)/u, subject, "")
+    plain =
+      Regex.replace(~r/\s\((?=(?:[^()]|\([^()]*\))*\s)(?:[^()]|\([^()]*\))*\)/u, subject, "")
+
     prefix = base |> provision() |> String.split(".", parts: 2) |> hd()
     held = MapSet.new(rows, & &1.section_id)
 

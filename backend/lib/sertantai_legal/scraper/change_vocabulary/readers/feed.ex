@@ -528,7 +528,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   # the part of a provision the feed names after it ("reg. 6 heading",
   # "Art. 119(2)(g) Text", "Art. 4(1) Indent 2"): its words (CV-S08 round
   # 1) — never a cross-heading, nor a provision inserted "and cross-heading"
-  @words_part ~r/(?:\btext|\bindent(?:\s+\d+)?|(?<!cross-|cross |and )\bheading)\s*$/i
+  # (EU: "Sentence 2", "Unnumbered Paragraph 2", ".2 L2": words of the
+  # paragraph, which has no row of its own: CV-S08 round 3)
+  @words_part ~r/(?:\btext|\bindent(?:\s+\d+)?|(?<!cross-|cross |and )\bheading|\bsentence\s+\d+|\bunnumbered\s+paragraph(?:\s+\d+)?|\bL\d+)\s*$/i
 
   # no level where the feed states no operation ("amended", "modified":
   # CV-S08 round 1, HSWA s.28(3)(a))

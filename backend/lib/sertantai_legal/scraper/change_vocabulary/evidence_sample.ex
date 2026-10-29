@@ -18,7 +18,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.EvidenceSample do
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Evidence, EvidenceStrata, MergeStrata}
 
   # the claims beside the table's own that judging a value needs
-  @context ~w(date_first cited affecting extent effect_extent via placed savings note)a
+  @context ~w(date_first cited affecting extent effect_extent via placed savings note level_covering omitted heading)a
 
   @doc "One sampled change (`{law, change, stratum}`) as an item."
   @spec item({String.t(), Change.t(), atom()}, pos_integer()) :: map()

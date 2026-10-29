@@ -23,7 +23,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Pointer}
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Claim, Ref}
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup.ListItems
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup.{Level, ListItems}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteLaw
   alias SertantaiLegal.Scraper.EffectIndex
   alias SertantaiLegal.Scraper.Commencement.Order
@@ -150,6 +150,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     changes =
       occurrences
       |> group_changes(cited, ctx)
+      |> Level.heading_wrappers()
 
     # an effect placed by its note ref on a provision where no change
     # element of it sits
@@ -168,6 +169,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
 
     changes ++ placements
   end
+
+  # a legacy ChangeId: neither an effect id nor an EU change id
+  defp legacy?(change_id),
+    do: EffectIndex.effect_id(key(change_id)) == nil and not (change_id =~ ~r/^O\d+M\d+/)
 
   # a provision whose text is gone (the omission dots): a whole removal the
   # note marks, never its words (REACH Art 77(2)(b), CV-S08 round 2)
@@ -267,7 +272,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
         # each of them (finding H), as under a group
         if provision?(id, ctx) and
              (Enum.any?(occ, &(length(&1.path) == depth)) or
-                covers_own_text?(occ, Map.get(ctx.own, id))) do
+                Level.covers?(occ, Map.get(ctx.own, id))) do
           [{name(id, ctx), id, occ}]
         else
           occ
@@ -364,14 +369,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
           []
         end
 
-    own ++
-      Enum.flat_map(children, fn
-        {:xmlElement, :Title, _, _, _, _, _, _, _, _, _, _} = title ->
-          occurrences(title, title_path, [:heading | flags], ctx)
+    {found, _prev} =
+      Enum.flat_map_reduce(children, nil, fn
+        {:xmlElement, :Title, _, _, _, _, _, _, _, _, _, _} = title, prev ->
+          {occurrences(title, title_path, [:heading | flags], ctx), prev}
 
-        child ->
-          occurrences(child, path, flags, ctx)
+        {:xmlElement, _, _, _, _, _, _, _, _, _, _, _} = child, prev ->
+          lead = ListItems.lead_in(prev, child)
+          at = if lead && row_id?(lead, ctx), do: path ++ [lead], else: path
+          {occurrences(child, at, flags, ctx), child}
+
+        child, prev ->
+          {occurrences(child, path, flags, ctx), prev}
       end)
+
+    own ++ found
   end
 
   defp occurrences(_other, _path, _flags, _ctx), do: []
@@ -387,19 +399,22 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     first = hd(occ)
     repeal = Enum.find(occ, &(&1.kind == :Repeal))
 
-    whole? = whole?(change_id, occ, target, ctx)
-
     operation =
       cond do
         repeal && repeal.paired -> :substituted
         first.kind == :Repeal -> :repealed
         first.kind == :Substitution -> :substituted
+        # legacy markup (`d29p…`, `M_F_…`) wraps changed text in an
+        # Addition whatever the change: it places the change, never says
+        # what it was (Jason 2026-10-29, CV-S08 round 3: Factories Act
+        # s.174(1) substituted, HSWA s.84(5) repealed)
+        legacy?(change_id) -> nil
         true -> :inserted
       end
 
     Enum.concat([
       Claim.new(:markup, :operation, operation, change_id),
-      Claim.new(:markup, :level, if(whole?, do: :provision, else: :words), change_id),
+      Level.claims(occ, target, ctx, change_id),
       Claim.new(
         :markup,
         :retained,
@@ -418,33 +433,6 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
       Claim.new(:markup, :heading, if(Enum.all?(occ, & &1.heading?), do: true), change_id)
     ])
   end
-
-  # Whole provision: the change wraps its number; or it removes all the
-  # text under it (1988/52 s.4(6): a RetainText Repeal round the text, not
-  # the number; Coronavirus Act 2020 s.78: round every sub-provision), or
-  # its words are gone and the repeal sits on its heading (an EU Article
-  # repealed, its text dots: Directive 2002/44 Art 12, CV-S08 round 2); or
-  # new text covers all of it (s.1(2A) inserted, its number outside) —
-  # except a Substitution with the number outside, which replaces the words
-  # ("for 'the … Regulations 2006' substitute '… 2012'" in reg.12(5)(b),
-  # whose text is that title: CV-S08 round 1), unless it is a retained
-  # substitution's new version or an EU list item, whose number no change
-  # can wrap
-  defp whole?(change_id, occ, target, ctx) do
-    first = hd(occ)
-    own = Map.get(ctx.own, target)
-
-    Enum.any?(occ, &(&1.number? and (target == "*" or List.last(&1.path) == target))) or
-      (first.kind == :Repeal and own == "") or
-      ((first.kind != :Substitution or Enum.any?(occ, &(&1.change_id != change_id)) or
-          MapSet.member?(ctx.items, target)) and covers_own_text?(occ, own))
-  end
-
-  defp covers_own_text?(_occ, nil), do: false
-  defp covers_own_text?(_occ, ""), do: false
-
-  defp covers_own_text?(occ, own_text),
-    do: String.contains?(occ |> Enum.map(& &1.text) |> Enum.join(), own_text)
 
   # the text under each provision (not its own number or title), letters
   # and digits only — to tell a change round all of it

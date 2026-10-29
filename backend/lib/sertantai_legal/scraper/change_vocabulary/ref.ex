@@ -15,9 +15,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Ref do
 
   @doc "The LAT ref for CLML id `id` in law `law_name`; nil for none."
   @spec from_clml(String.t(), String.t() | nil) :: String.t() | nil
+  # an empty segment names no level ("article-2-6--d", REACH: its row is
+  # art.Article 2(6)(d); CV-S08 round 3)
+  def from_clml(id, law_name) do
+    if is_binary(id) and String.contains?(id, "--"),
+      do: id |> String.replace(~r/-{2,}/, "-") |> clml(law_name),
+      else: clml(id, law_name)
+  end
+
   # an EU annex, named as a whole ("annex-XVII-part-2" → "annex.XVII"):
   # annexes, like schedules, are not parsed into LAT (a known v0.1 limit)
-  def from_clml("annex-" <> rest, _law_name) do
+  defp clml("annex-" <> rest, _law_name) do
     case Regex.run(~r/^([IVXLC]+|\d+[A-Z]*)\b/, rest) do
       [_, n] -> "annex." <> n
       nil -> nil
@@ -26,14 +34,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Ref do
 
   # a rule is named as a regulation ("rule-2-da" → "reg.2(da)"), as the
   # parse names Rules' rows (catalogue review H)
-  def from_clml("rule-" <> rest, law_name), do: from_clml("regulation-" <> rest, law_name)
+  defp clml("rule-" <> rest, law_name), do: clml("regulation-" <> rest, law_name)
 
   # an EU Section is a group of articles, not a provision ("section-III")
-  def from_clml("section-" <> _ = id, law_name) do
+  defp clml("section-" <> _ = id, law_name) do
     if eu?(law_name), do: nil, else: from_clml_provision(id, law_name)
   end
 
-  def from_clml(id, law_name), do: from_clml_provision(id, law_name)
+  defp clml(id, law_name), do: from_clml_provision(id, law_name)
 
   @doc """
   True for a group's id — a Part, Chapter, Title, cross-heading, or an EU

@@ -65,4 +65,26 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup.ListItems do
       _ -> nil
     end)
   end
+
+  @doc """
+  The id of the provision a list follows as its lead-in ("In these
+  Regulations—" closing before its definitions list: COSHH 2002 reg.2(1),
+  CV-S08 round 3), when `list` is a list with no id of its own; else nil.
+  """
+  @spec lead_in(tuple() | nil, tuple()) :: String.t() | nil
+  def lead_in(
+        {:xmlElement, _, _, _, _, _, _, prev_attrs, _, _, _, _} = prev,
+        {:xmlElement, name, _, _, _, _, _, attrs, _, _, _, _}
+      )
+      when name in [:UnorderedList, :OrderedList] do
+    with nil <- attr(attrs, :id),
+         id when is_binary(id) <- attr(prev_attrs, :id),
+         true <- prev |> Doc.text() |> String.trim() |> String.match?(~r/[—:–-]$/u) do
+      id
+    else
+      _ -> nil
+    end
+  end
+
+  def lead_in(_prev, _list), do: nil
 end

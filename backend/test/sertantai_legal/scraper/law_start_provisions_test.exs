@@ -152,6 +152,27 @@ defmodule SertantaiLegal.Scraper.LawStartProvisionsTest do
     refute Enum.any?(got, fn {t, _, rows} -> t == :provision_dated and "s.116" in rows end)
   end
 
+  test "an aside holding its own brackets breaks no list (SOCPA 2005 s.178(1)(a), CV-S08 round 3)" do
+    got =
+      assign(
+        [
+          {"s.178",
+           "This Act comes into force on such day as the Secretary of State may by order appoint."},
+          {"s.178(1)",
+           "Sections 117(7) (and section 117(6) so far as relates to it), 158 and 167 come into force on the day on which this Act is passed."},
+          "s.117",
+          "s.117(6)",
+          "s.117(7)",
+          "s.158",
+          "s.167"
+        ],
+        type: "ukpga",
+        made: ~D[2005-04-07]
+      )
+
+    assert Enum.any?(got, fn {_, _, rows} -> "s.158" in rows and "s.167" in rows end)
+  end
+
   test "\"except …\" is subtracted from the remaining provisions (asp 2003/8)" do
     got =
       assign(

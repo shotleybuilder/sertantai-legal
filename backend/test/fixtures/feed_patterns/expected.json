@@ -6118,7 +6118,7 @@
           "feed.applied": true,
           "feed.by": "UK_eur_2019_1243",
           "feed.date": "2019-07-26",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "substituted",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -6186,7 +6186,7 @@
           "feed.applied": true,
           "feed.by": "UK_eur_2019_1243",
           "feed.date": "2019-07-26",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "substituted",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -6328,7 +6328,7 @@
         "claims": {
           "feed.applied": true,
           "feed.by": "UK_eudr_2019_983",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "inserted",
           "feed.prospective": true,
           "feed.savings": []
@@ -6455,7 +6455,7 @@
           "feed.applied": true,
           "feed.by": "UK_eur_2019_1243",
           "feed.date": "2019-07-26",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "substituted",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -6628,7 +6628,7 @@
         "claims": {
           "feed.applied": true,
           "feed.by": "UK_eudr_2018_851",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "substituted",
           "feed.prospective": true,
           "feed.savings": []
@@ -6689,7 +6689,7 @@
           "feed.applied": true,
           "feed.by": "UK_eudr_2014_52",
           "feed.date": "2014-05-15",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "substituted",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -6705,7 +6705,7 @@
           "feed.applied": true,
           "feed.by": "UK_eudr_2014_52",
           "feed.date": "2014-05-15",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "substituted",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -7367,7 +7367,7 @@
         "claims": {
           "feed.applied": true,
           "feed.by": "UK_eur_2013_1259",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "substituted",
           "feed.prospective": true,
           "feed.savings": []
@@ -7400,7 +7400,7 @@
         "claims": {
           "feed.applied": true,
           "feed.by": "UK_eur_2013_1259",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "substituted",
           "feed.prospective": true,
           "feed.savings": []
@@ -8359,7 +8359,7 @@
         "claims": {
           "feed.applied": true,
           "feed.by": "UK_eur_2008_1272",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "substituted",
           "feed.prospective": true,
           "feed.savings": []
@@ -8406,7 +8406,7 @@
         "claims": {
           "feed.applied": true,
           "feed.by": "UK_eur_2008_1272",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "substituted",
           "feed.prospective": true,
           "feed.savings": []
@@ -8420,7 +8420,7 @@
         "claims": {
           "feed.applied": true,
           "feed.by": "UK_eur_2008_1272",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "substituted",
           "feed.prospective": true,
           "feed.savings": []
@@ -8911,7 +8911,7 @@
           "feed.applied": true,
           "feed.by": "UK_eur_2020_1054",
           "feed.date": "2020-08-20",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "inserted",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -8975,7 +8975,7 @@
         "claims": {
           "feed.applied": true,
           "feed.by": "UK_eur_2014_165",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "substituted",
           "feed.prospective": true,
           "feed.savings": []
@@ -9054,7 +9054,7 @@
         "claims": {
           "feed.applied": true,
           "feed.by": "UK_eur_2014_1297",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "inserted",
           "feed.prospective": true,
           "feed.savings": []
@@ -9337,7 +9337,7 @@
         "claims": {
           "feed.applied": true,
           "feed.by": "UK_eur_2013_254",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "inserted",
           "feed.prospective": true,
           "feed.savings": []
@@ -9698,7 +9698,7 @@
         "claims": {
           "feed.applied": true,
           "feed.by": "UK_eur_2015_140",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "substituted",
           "feed.prospective": true,
           "feed.savings": []
@@ -9849,7 +9849,7 @@
           "feed.applied": true,
           "feed.by": "UK_eur_2020_1054",
           "feed.date": "2020-08-20",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "substituted",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -9919,7 +9919,7 @@
           "feed.applied": true,
           "feed.by": "UK_eur_2020_1054",
           "feed.date": "2020-08-20",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "substituted",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -9935,7 +9935,7 @@
           "feed.applied": true,
           "feed.by": "UK_eur_2020_1054",
           "feed.date": "2020-08-20",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "inserted",
           "feed.partial": false,
           "feed.qualification": "complete",
