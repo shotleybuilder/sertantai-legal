@@ -123,7 +123,7 @@ The session does not close until its results pass.
 - ✅ Fix batch 3 applied (restore point `cv-s08-fix3`); golden from inputs caught Forestry Act s.1(4)(a); legacy Addition round the number = inserted (Jason; 3511120d); golden 27/27
 - ✅ Round 4 (seed 54): A PASS 150/150 (95% upper 1.98%; pairs 0/81, 3.6%); V 8/12 (4 false conflicts), D 32/39 (4 NEW + KMV, KF-type)
 - ✅ Fix batch 4 (e1aded30): legacy operations never contradict; EU number wrap covers; the merge joins the deepest markup first. Golden 27/27; A's 150 chosen values unchanged (A carried over)
-- ⬜ Round 5 (seed 55): V 8, D 35
+- ✅ Round 5 (seed 55): V 8/8; D 32/35, its wrong values only in logged classes (KX-territory, KF-type), 1 doubtful; with A carried over: PASS by the rule decided before round 1
 - ✅ The table re-reviewed with Jason (2026-10-29, on round 1's evidence): operation, the feed above the markup
 - ⬜ Value conflicts checked on a sample: level vs markup/feed, operation, date (OH&S family: 63)
 - ⬜ A Gemini review of the evaluator (CV-04)
@@ -425,3 +425,28 @@ Gaps, by cause (not WRONG):
 - **Checks:** tests 9,519; restore point `cv-s08-fix4`; OH&S rebuild; golden from inputs 27/27.
 - **Strata:** V 8, D 40, A 2,019.
 - **A carries over:** the 150 round-4 A items' chosen values (operation, level, date, by, territory, partial, saved, commenced_by) were compared before and after the batch: 0 of 150 changed. A's round 4 pass (1.98%; pairs 3.6%) stands under the rule "items unchanged since checked".
+
+## Round 5 (2026-10-29, seed 55): PASS
+
+Three agents: V 8 in full; D 35 of 40 by pattern (2 batches). A carried over from round 4.
+
+| Stratum | OK | WRONG | doubtful | Pairs |
+|---|---|---|---|---|
+| V (8, full) | 8 | 0 | 0 | 7 OK |
+| D (35 of 40) | 32 | 2, both in logged open classes: KX-territory (SI 2008/1597 reg.3 heading), KF-type (REACH Art 138(1)) | 1 (SI 1992/2793 reg.2(2): "for X insert Y" in an unread Schedule) | 17/2/1 |
+| A (150, round 4) | 150 | 0 | 0 | 81 OK |
+
+**D patterns, the table's rule:**
+- **by cited/affecting:** the feed holds (KX), 20 of 20.
+- **operation inserted/substituted:** the feed holds (KA), 10 of 10.
+- **level:** the markup holds where its change sits in the text.
+- **operation substituted/inserted:** only the law's text settles it. With the text unread, one is the feed's own error (KF-type).
+- **moved words:** KMV.
+
+**Pass rule:**
+- **V:** no wrong winner or false conflict. Met.
+- **D:** no wrong pattern left unfixed or unclassed. Met: two classed items, both logged as open.
+- **A:** the pooled 95% upper bounds are under 2% for changes and 5% for pairs. Met: 1.98% and 3.6%.
+- **Golden from inputs:** 27/27. Met.
+
+**Coverage found (not this step's pass):** three amending laws hold no amendment rules at all: SI 2015/1682, SI 1999/2024, SI 2015/1637. Their changes rest on the feed and markup alone. This is the amending reader's coverage (CV-S06/CV-07). The SI Schedules of laws that were read are read (SI 2019/758: 95 rules).
