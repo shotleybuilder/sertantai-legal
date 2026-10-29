@@ -169,9 +169,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
     |> Enum.reverse()
   end
 
-  # its own changes; provision-level changes on an ancestor, or on the
-  # whole law ("*")
-  defp reaches?(%Change{target: target, resolved: r}, id) do
+  @doc """
+  True when the change reaches provision `id`: its own changes, and
+  provision-level changes on an ancestor or on the whole law (`"*"`) —
+  never a child's (C9).
+  """
+  @spec reaches?(Change.t(), String.t()) :: boolean()
+  def reaches?(%Change{target: target, resolved: r}, id) do
     target == id or
       (r.level == :provision and (target == "*" or target in tl(LatRef.ancestors(id))))
   end

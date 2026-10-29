@@ -61,9 +61,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.EvidenceSample do
 
   defp join(vs), do: vs |> Enum.uniq() |> Enum.map_join("+", &str/1)
 
-  defp chosen(%Change{resolved: nil}), do: nil
+  @doc "Each chosen attribute's value and the source it came from (also the label check's, CV-S09)."
+  @spec chosen(Change.t()) :: map() | nil
+  def chosen(%Change{resolved: nil}), do: nil
 
-  defp chosen(%Change{resolved: r}) do
+  def chosen(%Change{resolved: r}) do
     for {attribute, source} <- r.sources,
         into: %{},
         do:
@@ -91,7 +93,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.EvidenceSample do
 
   defp why(c, :A), do: %{"contested" => Enum.map(EvidenceStrata.contested(c), &to_string/1)}
 
-  defp claims(c) do
+  @doc "Every source's claims on the table's attributes and their context, each with its ref."
+  @spec claims(Change.t()) :: map()
+  def claims(c) do
     attributes =
       Keyword.keys(Evidence.table()) ++ @context
 
@@ -112,8 +116,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.EvidenceSample do
   end
 
   # an effect id's last six characters (never written whole)
-  defp short("key-" <> rest), do: "key-…" <> String.slice(rest, -6, 6)
-  defp short(key), do: key
+  @doc "An effect id shortened to its last six characters (never committed whole)."
+  @spec short(String.t()) :: String.t()
+  def short("key-" <> rest), do: "key-…" <> String.slice(rest, -6, 6)
+  def short(key), do: key
 
   defp str(nil), do: nil
   defp str("key-" <> _ = key), do: short(key)
