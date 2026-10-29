@@ -58,4 +58,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupLevelTest do
   test "an empty id segment names no level (REACH article-2-6--d)" do
     assert Ref.from_clml("article-2-6--d-i", "UK_eur_2006_1907") == "art.Article 2(6)(d)(i)"
   end
+
+  test "EU consolidation markup round the number covers, below the feed (REACH Art 77(2)(e) first sentence)" do
+    xml =
+      ~s(<Legislation><P3 id="article-77-2-e"><Pnumber><Substitution ChangeId="O003001M009">e</Substitution></Pnumber><P3para><Text><Substitution ChangeId="O003001M009">first sentence replaced;</Substitution> second sentence kept.</Text></P3para></P3></Legislation>)
+
+    c =
+      xml
+      |> Markup.read("UK_eur_2006_1907")
+      |> Enum.flat_map(&elem(&1, 2))
+      |> Map.new(&{&1.attribute, &1.value})
+
+    assert c[:level_covering] == :provision
+    refute Map.has_key?(c, :level)
+  end
 end

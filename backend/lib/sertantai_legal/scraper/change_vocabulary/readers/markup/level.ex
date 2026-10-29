@@ -31,18 +31,34 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup.Level do
     own = Map.get(ctx.own, target)
 
     cond do
-      sure_whole?(occ, target, own) -> Claim.new(:markup, :level, :provision, change_id)
-      covers?(occ, own) -> Claim.new(:markup, :level_covering, :provision, change_id)
-      true -> Claim.new(:markup, :level, :words, change_id)
+      sure_whole?(occ, target, own) ->
+        Claim.new(:markup, :level, :provision, change_id)
+
+      covers?(occ, own) or number_covered?(occ, target) ->
+        Claim.new(:markup, :level_covering, :provision, change_id)
+
+      true ->
+        Claim.new(:markup, :level, :words, change_id)
     end
   end
 
+  # (EU consolidation markup, "O…M…", opens its change before the number
+  # whenever the replaced text starts the provision — REACH Art 77(2)(e)'s
+  # first sentence, Art 14(4)'s introductory words, round 4 — so its
+  # number is no sure sign: it covers)
   defp sure_whole?(occ, target, own) do
-    Enum.any?(occ, &(&1.number? and (target == "*" or List.last(&1.path) == target))) or
+    (not eu?(hd(occ)) and
+       Enum.any?(occ, &(&1.number? and (target == "*" or List.last(&1.path) == target)))) or
       (own == "" and
          (hd(occ).kind == :Repeal or
             (hd(occ).kind == :Addition and Enum.all?(occ, &(&1.text == "")))))
   end
+
+  defp eu?(%{change_id: id}), do: id =~ ~r/^O\d+M\d+/
+
+  # an EU change round the number covers the provision (below the feed)
+  defp number_covered?(occ, target),
+    do: eu?(hd(occ)) and Enum.any?(occ, &(&1.number? and List.last(&1.path) == target))
 
   @doc "True when the occurrences' text covers all of the row's own text (letters and digits)."
   @spec covers?([map()], String.t() | nil) :: boolean()

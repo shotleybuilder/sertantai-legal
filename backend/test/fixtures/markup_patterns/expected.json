@@ -4651,7 +4651,7 @@
       {
         "claims": {
           "markup.cited": "UK_eudr_2007_30",
-          "markup.level": "provision",
+          "markup.level_covering": "provision",
           "markup.operation": "inserted"
         },
         "key": "O002001M001",
@@ -4682,7 +4682,7 @@
       {
         "claims": {
           "markup.cited": "UK_eur_2019_1243",
-          "markup.level": "provision",
+          "markup.level_covering": "provision",
           "markup.operation": "inserted"
         },
         "key": "O002001M002",
@@ -4691,7 +4691,7 @@
       {
         "claims": {
           "markup.cited": "UK_eur_2019_1243",
-          "markup.level": "provision",
+          "markup.level_covering": "provision",
           "markup.operation": "inserted"
         },
         "key": "O002001M002",
@@ -4702,7 +4702,7 @@
       {
         "claims": {
           "markup.cited": "UK_eur_2019_1243",
-          "markup.level": "provision",
+          "markup.level_covering": "provision",
           "markup.operation": "substituted"
         },
         "key": "O002001M001",
@@ -4725,7 +4725,7 @@
       {
         "claims": {
           "markup.cited": "UK_eur_2019_1243",
-          "markup.level": "provision",
+          "markup.level_covering": "provision",
           "markup.operation": "inserted"
         },
         "key": "O002001M002",
@@ -4734,7 +4734,7 @@
       {
         "claims": {
           "markup.cited": "UK_eur_2019_1243",
-          "markup.level": "provision",
+          "markup.level_covering": "provision",
           "markup.operation": "inserted"
         },
         "key": "O002001M002",
@@ -4745,7 +4745,7 @@
       {
         "claims": {
           "markup.cited": "UK_eur_2019_1243",
-          "markup.level": "provision",
+          "markup.level_covering": "provision",
           "markup.operation": "substituted"
         },
         "key": "O002001M001",
@@ -4756,7 +4756,7 @@
       {
         "claims": {
           "markup.cited": "UK_eur_2019_1243",
-          "markup.level": "provision",
+          "markup.level_covering": "provision",
           "markup.operation": "inserted"
         },
         "key": "O002001M002",
@@ -4765,7 +4765,7 @@
       {
         "claims": {
           "markup.cited": "UK_eur_2019_1243",
-          "markup.level": "provision",
+          "markup.level_covering": "provision",
           "markup.operation": "inserted"
         },
         "key": "O002001M002",
@@ -4787,7 +4787,7 @@
       {
         "claims": {
           "markup.cited": "UK_eur_2019_1243",
-          "markup.level": "provision",
+          "markup.level": "words",
           "markup.operation": "inserted"
         },
         "key": "O002001M002",
@@ -4798,7 +4798,7 @@
       {
         "claims": {
           "markup.cited": "UK_eur_2019_1243",
-          "markup.level": "provision",
+          "markup.level_covering": "provision",
           "markup.operation": "substituted"
         },
         "key": "O002001M001",
@@ -4819,7 +4819,7 @@
       {
         "claims": {
           "markup.cited": "UK_eudr_2014_27",
-          "markup.level": "provision",
+          "markup.level_covering": "provision",
           "markup.operation": "substituted"
         },
         "key": "O002001M001",
@@ -4830,7 +4830,7 @@
       {
         "claims": {
           "markup.cited": "UK_eudn_2018_853",
-          "markup.level": "provision",
+          "markup.level_covering": "provision",
           "markup.operation": "substituted"
         },
         "key": "O003001M003",
@@ -4928,7 +4928,7 @@
       {
         "claims": {
           "markup.cited": "UK_eudr_2018_851",
-          "markup.level": "provision",
+          "markup.level_covering": "provision",
           "markup.operation": "inserted"
         },
         "key": "O003002M059",
@@ -4937,7 +4937,7 @@
       {
         "claims": {
           "markup.cited": "UK_eudr_2018_851",
-          "markup.level": "provision",
+          "markup.level_covering": "provision",
           "markup.operation": "inserted"
         },
         "key": "O003002M059",
@@ -4948,7 +4948,7 @@
       {
         "claims": {
           "markup.cited": "UK_eur_2019_1243",
-          "markup.level": "provision",
+          "markup.level": "words",
           "markup.operation": "inserted"
         },
         "key": "O001001M003",
@@ -4959,7 +4959,7 @@
       {
         "claims": {
           "markup.cited": "UK_eudr_2018_2002",
-          "markup.level": "provision",
+          "markup.level_covering": "provision",
           "markup.operation": "inserted"
         },
         "key": "O003001M004",
@@ -4968,7 +4968,7 @@
       {
         "claims": {
           "markup.cited": "UK_eudr_2018_2002",
-          "markup.level": "provision",
+          "markup.level_covering": "provision",
           "markup.operation": "inserted"
         },
         "key": "O003001M004",
@@ -5265,7 +5265,7 @@
       {
         "claims": {
           "markup.cited": "UK_eudr_2009_31",
-          "markup.level": "provision",
+          "markup.level_covering": "provision",
           "markup.operation": "inserted"
         },
         "key": "O004001M002",
@@ -5737,7 +5737,7 @@
       {
         "claims": {
           "markup.cited": "UK_eur_2008_1272",
-          "markup.level": "provision",
+          "markup.level_covering": "provision",
           "markup.operation": "substituted"
         },
         "key": "O007001M011",
@@ -5762,7 +5762,7 @@
       {
         "claims": {
           "markup.cited": "UK_eur_2008_1272",
-          "markup.level": "provision",
+          "markup.level_covering": "provision",
           "markup.operation": "substituted"
         },
         "key": "O003001M009",
@@ -6243,7 +6243,7 @@
       {
         "claims": {
           "markup.cited": "UK_eur_2018_1975",
-          "markup.level": "provision",
+          "markup.level_covering": "provision",
           "markup.operation": "substituted"
         },
         "key": "O014001M001",
@@ -6252,7 +6252,7 @@
       {
         "claims": {
           "markup.cited": "UK_eur_2018_1975",
-          "markup.level": "provision",
+          "markup.level_covering": "provision",
           "markup.operation": "substituted"
         },
         "key": "O014001M001",
@@ -6261,7 +6261,7 @@
       {
         "claims": {
           "markup.cited": "UK_eur_2018_1975",
-          "markup.level": "provision",
+          "markup.level_covering": "provision",
           "markup.operation": "substituted"
         },
         "key": "O014001M001",

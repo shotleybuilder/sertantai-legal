@@ -103,4 +103,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.EvidenceTest do
 
     assert [{:date, _, _}] = whole.resolved.conflicts
   end
+
+  test "a legacy markup operation fills a gap but never contradicts the law (HSWA s.84(5))" do
+    c =
+      %Change{
+        key: "d29p6848",
+        target: "s.84(5)",
+        claims:
+          Claim.new(:law_text, :operation, :repealed, "UK_ukpga_1992_15:schedule-2") ++
+            Claim.new(:markup, :operation, :inserted, "d29p6848")
+      }
+      |> Evidence.resolve(nil)
+
+    assert c.resolved.operation == :repealed
+    assert c.resolved.conflicts == []
+  end
 end

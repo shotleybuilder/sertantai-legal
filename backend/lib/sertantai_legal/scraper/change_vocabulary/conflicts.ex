@@ -77,6 +77,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Conflicts do
 
   defp like?(c, :feed, :level, _value, _other), do: Evidence.placed_here?(c)
 
+  # legacy markup (d29p…, M_F_…) wraps text under a note whatever the
+  # change (round 4: an Addition round a provision repealed but still
+  # shown, HSWA s.84(5)): its operation fills a gap, never contradicts
+  defp like?(c, :markup, :operation, _value, other),
+    do:
+      Enum.any?(
+        c.claims,
+        &(&1.source == :markup and &1.attribute == :operation and &1.value == other and
+            not legacy?(&1.ref))
+      )
+
   defp like?(c, _s, :operation, :repealed, :repealed_in_part),
     do: Change.value(c, :law_text, :level) != :words
 
@@ -89,6 +100,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Conflicts do
                is_struct(other, Date) and Date.compare(other, value) == :lt)
 
   defp like?(_c, _s, _attribute, _value, _other), do: true
+
+  defp legacy?(ref) when is_binary(ref), do: ref =~ ~r/^(?:d\d+p\d+|M_F_|V_NI_)/
+  defp legacy?(_ref), do: false
 
   # the law's text named a provision above where the change sits: its
   # words there are a whole provision here

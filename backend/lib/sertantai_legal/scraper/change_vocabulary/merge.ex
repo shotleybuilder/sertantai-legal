@@ -76,8 +76,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
     below = below(Map.keys(by_target) ++ Enum.map(markup ++ law_text, & &1.target))
 
     # markup first, so the law's text meets it (joined to a feed record, or
-    # standing alone, marked)
-    (markup ++ law_text)
+    # standing alone, marked); the deepest first, so a change on the feed's
+    # own provision joins before one in the provision's lead-in above it
+    # (CLP's "mixtures" in REACH Art 56(6)'s chapeau had taken the feed's
+    # Point (b) replacement: CV-S08 round 4)
+    (Enum.sort_by(markup, &(-length(LatRef.ancestors(&1.target)))) ++ law_text)
     |> Enum.reduce(by_target, &join(&1, &2, below))
     |> Map.values()
     |> List.flatten()
