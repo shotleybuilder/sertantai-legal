@@ -13,7 +13,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge.Precise do
   repealed as dots, a Part modified, all made "words"). The one exception
   is a note on a provision beside the one the feed names — the "and" SI
   2019/734 omits from Forestry Act 1967 s.1(4)(a), which the feed records
-  on s.1(4)(b): the change there is in its words.
+  on s.1(4)(b): the change there is in its words — unless the provision's
+  text is gone (`:omitted`, its text the omission dots: REACH Art 77(2)(b),
+  whose sibling the feed names, CV-S08 round 2).
 
   Pure.
   """
@@ -52,9 +54,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge.Precise do
               do: %{m | claims: m.claims ++ here(facts, m.target)},
               else: m
 
-          if Change.values(m, :markup, :operation) == [] and beside?(m.target, fed_targets),
-            do: %{m | claims: m.claims ++ Claim.new(:markup, :level, :words, m.key)},
-            else: m
+          if Change.values(m, :markup, :operation) == [] and
+               Change.values(m, :markup, :omitted) == [] and beside?(m.target, fed_targets),
+             do: %{m | claims: m.claims ++ Claim.new(:markup, :level, :words, m.key)},
+             else: m
         end)
 
       kept =

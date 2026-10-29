@@ -70,14 +70,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
         {target, ranged?} <- targets(e, law_name, flat, xml_ids),
         {target, unheld} = finer(target, e, law_name, held),
         {key, claims} <- changes(e),
-        do:
-          {key, target,
-           claims ++
-             Claim.new(:feed, :ranged, if(ranged?, do: true), id) ++
-             Claim.new(:feed, :finer_unheld, unheld, id) ++
-             commenced_by(claims, e, commencement) ++
-             extent(e, extents, claims, %{law: law_name, title: title, target: target}) ++
-             affecting(e)}
+        do: {
+          key,
+          target,
+          # where the feed placed it: its level speaks for this provision
+          # only, wherever the merge moves the event (CV-S08 round 2)
+          claims ++
+            Claim.new(:feed, :ranged, if(ranged?, do: true), id) ++
+            Claim.new(:feed, :placed, target, id) ++
+            Claim.new(:feed, :finer_unheld, unheld, id) ++
+            commenced_by(claims, e, commencement) ++
+            extent(e, extents, claims, %{law: law_name, title: title, target: target}) ++
+            affecting(e)
+        }
   end
 
   @eu ~w(eur eudr eudn)

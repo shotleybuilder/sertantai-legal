@@ -128,7 +128,10 @@ defmodule SertantaiLegal.Scraper.LawStart do
      "Jason 2026-10-16 (LR-34 D2); CR-03"},
     {:provision_unread, false,
      "a sentence whose provisions or date the reader can't resolve: listed for the law, no effect",
-     "LR-34"}
+     "LR-34"},
+    {:schedule_effect, false,
+     "\"Schedule N … has effect\" (or \"amended in accordance with that Part\") in a provision: an amending provision in the Schedule comes into force with it, where nothing more specific dates it (`Commencement.ScheduleEffect`)",
+     "Jason 2026-10-29 (CV-S08 round 2)"}
   ]
 
   @doc "The provision-level treatments (LR-34): `{treatment, affects rows?, rule, decided}`."

@@ -59,6 +59,9 @@ defmodule SertantaiLegal.Scraper.Commencement.Evaluator do
 
     entries =
       rules
+      # a Schedule's introducing provision is no date of its own
+      # (`Commencement.ScheduleEffect`; read by the amending-law reader)
+      |> Enum.reject(&(&1.treatment == :schedule_effect))
       |> Enum.group_by(& &1.source.law)
       |> Enum.flat_map(fn {_source, rs} -> most_specific(rs, chain, ctx) end)
       |> Enum.map(fn {r, role} ->

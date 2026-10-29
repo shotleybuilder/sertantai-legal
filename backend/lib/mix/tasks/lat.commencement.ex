@@ -41,6 +41,7 @@ defmodule Mix.Tasks.Lat.Commencement do
     Order,
     Orders,
     OwnClause,
+    ScheduleEffect,
     Rule,
     Store
   }
@@ -136,7 +137,9 @@ defmodule Mix.Tasks.Lat.Commencement do
           input = clause_input(law)
 
           {:ok, n} =
-            Store.write(law, OwnClause.rules(law, input), treatments: OwnClause.treatments())
+            Store.write(law, OwnClause.rules(law, input) ++ ScheduleEffect.rules(law, input.rows),
+              treatments: OwnClause.treatments()
+            )
 
           n
         end,
@@ -190,7 +193,11 @@ defmodule Mix.Tasks.Lat.Commencement do
               input = ChangeCollector.law_start_input(law, OwnClause.doc_rows(d))
 
               {:ok, n} =
-                Store.write(law, OwnClause.rules(law, input), treatments: OwnClause.treatments())
+                Store.write(
+                  law,
+                  OwnClause.rules(law, input) ++ ScheduleEffect.rules(law, input.rows, d),
+                  treatments: OwnClause.treatments()
+                )
 
               n
           end

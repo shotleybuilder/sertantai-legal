@@ -48,7 +48,9 @@ defmodule SertantaiLegal.Scraper.LawStartProvisionsTest do
 
   test "the catalogue lists each provision treatment once" do
     ids = Enum.map(LawStart.provision_catalogue(), &elem(&1, 0))
-    assert ids == ~w(provision_dated provision_by_order provision_qualified provision_unread)a
+
+    assert ids ==
+             ~w(provision_dated provision_by_order provision_qualified provision_unread schedule_effect)a
   end
 
   test "named exceptions with a made-relative date (uksi 2015/1947 art. 1(3))" do

@@ -23,6 +23,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Pointer}
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Claim, Ref}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup.ListItems
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteLaw
   alias SertantaiLegal.Scraper.EffectIndex
   alias SertantaiLegal.Scraper.Commencement.Order
@@ -127,8 +128,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
       |> Enum.flat_map(fn {id, n} -> if n > 1, do: [id], else: [] end)
       |> MapSet.new()
 
-    own = own_texts(doc)
-    ctx = %{law: law_name, xml_ids: xml_ids, repeated: repeated, own: own}
+    items = ListItems.own_texts(doc, law_name)
+    own = Map.merge(own_texts(doc), items)
+
+    ctx = %{
+      law: law_name,
+      xml_ids: xml_ids,
+      repeated: repeated,
+      own: own,
+      items: MapSet.new(Map.keys(items))
+    }
+
     cited = cited(doc)
 
     {placed, occurrences} =
@@ -139,7 +149,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
 
     changes =
       occurrences
-      |> group_changes(cited, own, ctx)
+      |> group_changes(cited, ctx)
 
     # an effect placed by its note ref on a provision where no change
     # element of it sits
@@ -151,10 +161,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
           ref != nil,
           not MapSet.member?(marked, {key, ref}),
           uniq: true,
-          do: {key, ref, Claim.new(:markup, :placed, true, key)}
+          do:
+            {key, ref,
+             Claim.new(:markup, :placed, true, key) ++
+               Claim.new(:markup, :omitted, omitted(List.last(path), ctx), key)}
 
     changes ++ placements
   end
+
+  # a provision whose text is gone (the omission dots): a whole removal the
+  # note marks, never its words (REACH Art 77(2)(b), CV-S08 round 2)
+  defp omitted(id, ctx), do: if(Map.get(ctx.own, id) == "", do: true)
 
   # a change inside a footnote sits where the footnote is referenced, and an
   # EU footnote's change ("O003001M002-f00006") is part of its own
@@ -201,7 +218,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
   # a retained substitution's new words (an Addition the Repeal's
   # SubstitutionRef names) are the same change as the old words: one
   # substitution (catalogue finding D)
-  defp group_changes(occurrences, cited, own, ctx) do
+  defp group_changes(occurrences, cited, ctx) do
     substituted =
       for %{substitution_ref: ref, change_id: id} <- occurrences,
           ref != nil,
@@ -214,7 +231,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
       key = key(change_id)
 
       for {ref, xml_id, group} <- placements(change_id, occ, ctx),
-          do: {key, ref, claims(change_id, group, xml_id, cited, own)}
+          do: {key, ref, claims(change_id, group, xml_id, cited, ctx)}
     end)
   end
 
@@ -296,7 +313,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
          flags,
          ctx
        ) do
-    id = attr(attrs, :id) |> renumbered(el, ctx)
+    id = attr(attrs, :id) |> renumbered(el, ctx) || ListItems.id(name, attrs, path, ctx.law)
     path = if id && row_id?(id, ctx), do: path ++ [id], else: path
     # a provision's number, or a group's (a Part, Chapter or EU Title:
     # SI 2009/1348 Pt.4A inserted whole, CV-S08 round 1)
@@ -366,23 +383,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     end
   end
 
-  defp claims(change_id, occ, target, cited, own) do
+  defp claims(change_id, occ, target, cited, ctx) do
     first = hd(occ)
     repeal = Enum.find(occ, &(&1.kind == :Repeal))
 
-    # whole provision: the change wraps its number, or a removal all the
-    # text under it (1988/52 s.4(6): a RetainText Repeal round the text, not
-    # the number; Coronavirus Act 2020 s.78: round every sub-provision). New
-    # text round all of a provision's words, its number outside, is a words
-    # change ("for 'the … Regulations 2006' substitute '… 2012'" in
-    # reg.12(5)(b), whose text is that title: CV-S08 round 1)
-    # A retained substitution's new version (its Addition, the Repeal's
-    # SubstitutionRef: Consumer Credit Act 1974 s.86B(12)) is a removal's
-    # pair: whole when it covers the text.
-    whole? =
-      Enum.any?(occ, &(&1.number? and (target == "*" or List.last(&1.path) == target))) or
-        ((first.kind == :Repeal or Enum.any?(occ, &(&1.change_id != change_id))) and
-           covers_own_text?(occ, Map.get(own, target)))
+    whole? = whole?(change_id, occ, target, ctx)
 
     operation =
       cond do
@@ -412,6 +417,27 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
       Claim.new(:markup, :note_digest, get_in(cited, [first.note, :digest]), change_id),
       Claim.new(:markup, :heading, if(Enum.all?(occ, & &1.heading?), do: true), change_id)
     ])
+  end
+
+  # Whole provision: the change wraps its number; or it removes all the
+  # text under it (1988/52 s.4(6): a RetainText Repeal round the text, not
+  # the number; Coronavirus Act 2020 s.78: round every sub-provision), or
+  # its words are gone and the repeal sits on its heading (an EU Article
+  # repealed, its text dots: Directive 2002/44 Art 12, CV-S08 round 2); or
+  # new text covers all of it (s.1(2A) inserted, its number outside) —
+  # except a Substitution with the number outside, which replaces the words
+  # ("for 'the … Regulations 2006' substitute '… 2012'" in reg.12(5)(b),
+  # whose text is that title: CV-S08 round 1), unless it is a retained
+  # substitution's new version or an EU list item, whose number no change
+  # can wrap
+  defp whole?(change_id, occ, target, ctx) do
+    first = hd(occ)
+    own = Map.get(ctx.own, target)
+
+    Enum.any?(occ, &(&1.number? and (target == "*" or List.last(&1.path) == target))) or
+      (first.kind == :Repeal and own == "") or
+      ((first.kind != :Substitution or Enum.any?(occ, &(&1.change_id != change_id)) or
+          MapSet.member?(ctx.items, target)) and covers_own_text?(occ, own))
   end
 
   defp covers_own_text?(_occ, nil), do: false

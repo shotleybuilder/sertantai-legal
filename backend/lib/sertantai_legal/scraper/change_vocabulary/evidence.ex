@@ -278,5 +278,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
   (`{:feed, :placed, target}`), and its level speaks for that provision.
   """
   @spec placed_here?(Change.t()) :: boolean()
-  def placed_here?(%Change{} = c), do: Change.values(c, :feed, :placed) in [[], [c.target]]
+  def placed_here?(%Change{} = c) do
+    case Change.values(c, :feed, :placed) do
+      [] -> true
+      placed -> c.target in placed
+    end
+  end
 end

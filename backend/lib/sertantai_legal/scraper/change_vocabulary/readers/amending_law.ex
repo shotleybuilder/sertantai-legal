@@ -27,16 +27,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
   alias SertantaiLegal.Scraper.Amendment.Rule
   alias SertantaiLegal.Scraper.ChangeVocabulary.Claim
   alias SertantaiLegal.Scraper.Commencement.{Evaluator, Order}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingCommencement
   alias SertantaiLegal.Scraper.Commencement.Rule, as: CRule
   alias SertantaiLegal.Scraper.LatRef
-
-  # rules that are not the amending law's own text: the feed's records
-  # (derived); a staged clause's earliest date is the law's start, not when
-  # a provision came in (CR-06). An Act's Royal Assent is its own: since
-  # CV-S04 an Act with a clause has the clause's rule, so a Royal Assent
-  # rule is an Act with none, in force on Royal Assent (Interpretation Act
-  # 1978 s.4; Jason 2026-10-23)
-  @not_text [:feed_commencement, :clause_staged]
 
   @doc """
   Claim sets `{key, target, claims}` from the rules amending a law, dated
@@ -96,7 +89,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
          Claim.new(:law_text, :operation, r.operation, key),
          Claim.new(:law_text, :level, level(r, target), key),
          Claim.new(:law_text, :by, law, key),
-         commenced(Map.get(commencement, law, []), ref, key),
+         AmendingCommencement.claims(Map.get(commencement, law, []), ref, key),
          # where the amending law applies (its application clause; CV-07),
          # or the amending provision's own (CV-S05 round 7)
          Claim.new(
@@ -238,71 +231,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
     end
   end
 
-  @doc """
-  When the amending provision `ref` came fully into force by its law's own
-  text (`rules`: the amending law's commencement rules; the feed's records,
-  an Act's Royal Assent and a staged clause's start left out). Nil when
-  they don't say.
-  """
+  @doc "When the amending provision `ref` came fully into force by its law's own text (`AmendingCommencement`)."
   @spec commenced_on([CRule.t()], String.t()) :: Date.t() | nil
-  def commenced_on(rules, ref), do: date(rules, ref)
+  defdelegate commenced_on(rules, ref), to: AmendingCommencement
 
-  @doc """
-  The amending provision `ref`'s commencement by its law's own text (the
-  evaluator's result), or nil when the law holds no text rules: what
-  `commenced_on/2` dates by, for saying why it doesn't.
-  """
+  @doc "The amending provision's commencement by its law's text (`AmendingCommencement`)."
   @spec commencement([CRule.t()], String.t()) :: Evaluator.result() | nil
-  # An Act's Royal Assent (`:act_enactment`) is a default: it dates only a
-  # provision no other rule reaches — an order's or the clause's own rule
-  # wins over it (CV-S08 round 1: Employment Rights Act 2025 Sch.12 by SI
-  # 2026/954, 1 October 2026, not Royal Assent; PJA 2006 Sch.15)
-  def commencement(rules, ref) do
-    case Enum.reject(rules, &(&1.treatment in @not_text)) do
-      [] ->
-        nil
+  defdelegate commencement(rules, ref), to: AmendingCommencement
 
-      text ->
-        at = Order.ref(ref) || ref
-        {assent, rest} = Enum.split_with(text, &(&1.treatment == :act_enactment))
-
-        case rest != [] and assent != [] and Evaluator.evaluate(rest, at, Order.context()) do
-          %{entries: [_ | _]} = result -> result
-          _ -> Evaluator.evaluate(text, at, Order.context())
-        end
-    end
-  end
-
-  @doc """
-  The law whose rule brought the provision fully into force (an order, or
-  the amending law's own clause): the commencement's `commenced_by`, apart
-  from the law making the change (CV-S08 round 1: HSWA s.27(5), inserted
-  by the Building Safety Act 2022, commenced by SI 2022/561).
-  """
+  @doc "The law whose rule brought the provision fully into force (`AmendingCommencement`)."
   @spec commenced_by(Evaluator.result() | nil) :: String.t() | nil
-  def commenced_by(%{full_from: %Date{} = full, entries: entries}) do
-    Enum.find_value(entries, fn
-      %{date: ^full, rule: %{source: %{law: law}}} when is_binary(law) -> law
-      _ -> nil
-    end)
-  end
-
-  def commenced_by(_result), do: nil
-
-  # when the amending provision came fully into force, and by which law
-  defp commenced(rules, ref, key) do
-    result = commencement(rules, ref)
-    date = result && result.full_from
-
-    Claim.new(:commencement, :date, date, key) ++
-      if(date, do: Claim.new(:commencement, :commenced_by, commenced_by(result), key), else: [])
-  end
-
-  # when the amending provision came fully into force by the law's own text
-  defp date(rules, ref) do
-    case commencement(rules, ref) do
-      nil -> nil
-      r -> r.full_from
-    end
-  end
+  defdelegate commenced_by(result), to: AmendingCommencement
 end

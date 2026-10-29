@@ -85,4 +85,22 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.EvidenceTest do
     assert c.resolved.date == ~D[2013-10-01]
     refute c.resolved.partial
   end
+
+  test "the feed's earlier partial stage is no conflict with the law's full date" do
+    c =
+      change([
+        {:commencement, :date, ~D[2013-10-01]},
+        {:feed, :date, ~D[2013-04-25]},
+        {:feed, :partial, true}
+      ])
+      |> Evidence.resolve(nil)
+
+    assert c.resolved.conflicts == []
+
+    whole =
+      change([{:commencement, :date, ~D[2013-10-01]}, {:feed, :date, ~D[2013-04-25]}])
+      |> Evidence.resolve(nil)
+
+    assert [{:date, _, _}] = whole.resolved.conflicts
+  end
 end

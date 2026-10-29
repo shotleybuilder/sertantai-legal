@@ -52,6 +52,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.EvidenceStrata do
   def disagreements(%Change{} = c) do
     for {attribute, markup_attribute} <- @derived_pairs,
         primary(c, attribute) == [],
+        # the feed's level speaks only where it placed the event
+        attribute != :level or Evidence.placed_here?(c),
         m = Change.values(c, :markup, markup_attribute),
         f = Change.values(c, :feed, attribute),
         m != [] and f != [],

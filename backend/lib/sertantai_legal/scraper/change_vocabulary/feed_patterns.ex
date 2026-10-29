@@ -418,7 +418,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedPatterns do
   """
   @spec outcome([set()]) :: [map()]
   def outcome(sets) do
-    for {key, target, claims} <- sets do
+    # (where the feed placed it is the target itself: not repeated)
+    for {key, target, claims} <- sets,
+        claims = Enum.reject(claims, &(&1.source == :feed and &1.attribute == :placed)) do
       %{
         "key" => key,
         "target" => target,

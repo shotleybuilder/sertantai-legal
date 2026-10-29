@@ -80,8 +80,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Conflicts do
   defp like?(c, _s, :operation, :repealed, :repealed_in_part),
     do: Change.value(c, :law_text, :level) != :words
 
-  defp like?(c, :feed, :date, value, _other),
-    do: value not in Change.values(c, :feed, :date_full)
+  # (an earlier stage the feed marks partial — its completion a record of
+  # its own, HSWA s.47(7) — is no claim on the full date either)
+  defp like?(c, :feed, :date, value, other),
+    do:
+      value not in Change.values(c, :feed, :date_full) and
+        not (Change.value(c, :feed, :partial) == true and is_struct(value, Date) and
+               is_struct(other, Date) and Date.compare(other, value) == :lt)
 
   defp like?(_c, _s, _attribute, _value, _other), do: true
 
