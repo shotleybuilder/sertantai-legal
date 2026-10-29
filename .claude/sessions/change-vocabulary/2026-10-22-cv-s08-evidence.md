@@ -121,7 +121,8 @@ The session does not close until its results pass.
 - ✅ Legacy markup Addition claims no operation (Jason 2026-10-29)
 - ✅ Fix batch 3 code (a541f728), tests 9,515 pass
 - ✅ Fix batch 3 applied (restore point `cv-s08-fix3`); golden from inputs caught Forestry Act s.1(4)(a); legacy Addition round the number = inserted (Jason; 3511120d); golden 27/27
-- ⬜ Round 4 (seed 54): V 12, D 39, A 150
+- ✅ Round 4 (seed 54): A PASS 150/150 (95% upper 1.98%; pairs 0/81, 3.6%); V 8/12 (4 false conflicts), D 32/39 (4 NEW + KMV, KF-type)
+- ⬜ Fix batch 4 (legacy operations weak, EU number wrap weak, merge depth order); A carried over if its 150 chosen values are unchanged; round 5 V and D
 - ✅ The table re-reviewed with Jason (2026-10-29, on round 1's evidence): operation, the feed above the markup
 - ⬜ Value conflicts checked on a sample: level vs markup/feed, operation, date (OH&S family: 63)
 - ⬜ A Gemini review of the evaluator (CV-04)
@@ -384,3 +385,29 @@ A: 1 wrong in 150 gives a 95% upper bound of 3.1%. Gaps (commenced_by, mostly) a
 - **Strata:** V 12, D 44, A 2,011.
 
 Factories Act s.174(1) is a whole subsection replaced through an unparsed Schedule. It stays "inserted": a known limit until schedules are read (KS).
+
+## Round 4 (2026-10-29, seed 54): A passes; V and D do not
+
+Eight agents: V 12, D 39 (2 batches), A 150 (5 × 30; the redraw is identical).
+
+| Stratum | OK | WRONG | doubtful | Pairs |
+|---|---|---|---|---|
+| V (12, full) | 8 | 4 false conflicts (every chosen value right) | 0 | 7/11 |
+| D (39 of 44) | 32 | 6 (4 NEW, KMV, KF-type) | 1 | — |
+| **A (150)** | **150** | **0** | **0** | **81 distinct, 0 wrong** |
+
+**A: PASS.** 0 wrong in 150 gives a 95% Clopper–Pearson upper bound of 1.98% (< 2%). Pairs: 0 in 81, upper bound 3.6% (< 5%).
+
+Gaps, by cause (not WRONG):
+- commenced_by where the amending law's text makes no claim: Schedules (KS); EU amenders; amending-reader misses (SI 2023/247, SI 2020/660, SI 2024/322 reg.15, SI 2022/8 reg.6 "in each place", NISR 2012/179 reg.33(1) "… are revoked");
+- orders held but not read (SSI 2009/319, SI 2013/1869, SI 2016/603, SI 2020/1662, SI 2006/266);
+- SOCPA s.178(1)'s qualifier read over the whole list;
+- EU dates found only in Comments.
+
+**V, the cause:** legacy markup operations compared with the law. These are Additions round the number of provisions repealed but still shown (HSWA s.84(5), s.1(1)(d); ukpga 1972/28 s.5(1)), and a legacy `M_F_` Substitution wrapping a later modern one (HSWA s.38).
+
+**D, NEW:**
+- EU consolidation markup wraps the number on a partial replacement: REACH Art 77(2)(e) first sentence; Art 14(4) introductory sentence.
+- CLP's "mixtures" chapeau markup was joined to the feed's Point replacement (REACH Art 56(6)(b), 119(1)(a)), and the point's own markup was left as a second change (a merge fault).
+
+**For Jason:** the two-link "as amended by" chains (REACH by SI 2019/1144, itself amended by SI 2020/1577) credit the middle link, as KX says.
