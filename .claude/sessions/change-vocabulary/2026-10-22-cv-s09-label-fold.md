@@ -18,7 +18,8 @@ The session does not close until its results pass.
 
 - ⬜ Provision facts: exists_from/to — when a provision itself exists (deferred from CV-S07, Jason 2026-10-29; carried from CV-04)
 - ✅ Define what good looks like (agreed 2026-10-29: strata G/S/T/R, fold-fault bound, golden ~50) (the acceptance check): a hand-checked sample from the OH&S core family, and the measures, each defined in words with a test
-- ⬜ Build the acceptance check; run it (ask Jason before any long run)
+- ✅ Build the strata and samples: `mix lat.label_check` (ff1f97c7)
+- ⬜ The `label-check` skill (agent prompt, known classes, seed history); then round 1 (ask Jason before any long run)
 - ⬜ The golden set is big enough to trust: 27 provisions today; grow to about 50, at least one per S shape, OH&S first; agents draft them, Gemini reviews, Jason signs off
 - ⬜ Golden expected tiers per period, and the start's tier from its source (deferred in CV-04)
 - ⬜ A row commenced only through some of its children reads in force, not in force partly (open bug, V1-01)
@@ -65,3 +66,60 @@ AGREED by Jason, 2026-10-29, before round 1:
 - share prospective, partly in force and repealed today;
 - share with a gap, by reason;
 - share whose current period rests on derived evidence.
+
+## The strata (2026-10-29, ff1f97c7)
+
+`mix lat.label_check --family "OH&S: Occupational" --strata` folds every provision row of the family from its stored changes, the way `--golden --stored` does, in about 2m45s (not seconds: each law's CLML is parsed for the markup's facts). The modules:
+- `LabelSource`: database reads and the fold;
+- `LabelStrata`: shapes, differences and the draw (pure, 15 tests);
+- `LabelSample`: the agent's item.
+
+A row's provisions are `legal_articles` rows other than signatures, headings and tables.
+
+149 laws are folded, 20,371 rows, none failed. Current status:
+
+| status | rows |
+|---|---|
+| in force | 18,485 |
+| repealed and saved | 833 |
+| prospective | 730 |
+| repealed | 288 |
+| partly in force | 35 |
+
+**S shapes** (a row can have several):
+
+| shape | rows |
+|---|---|
+| prospective | 4,708 |
+| text change | 3,484 |
+| ancestor's text change or repeal | 3,381 |
+| undated start (C10) | 2,988 |
+| undated change | 2,048 |
+| repealed | 1,121 |
+| version (C3) | 787 |
+| territory narrowed (C1, C12) | 540 |
+| several laws in a day (C5) | 127 |
+| partly in force | 64 |
+| `in_force_for` | 13 |
+| parts | 6 |
+| renumbered (C4) | 1 |
+
+Application (C6) has no rows. `ancestor` first counted every commencement on an ancestor (15,783 rows, which says nothing), so it was narrowed to text changes and repeals. An S probe (seed 90, `--per 10`) drew 88 rows; no full effect id is in the file.
+
+**T classes** (today's label differs):
+
+| class | rows |
+|---|---|
+| history only | 9,154 |
+| no label today | 2,200 |
+| `in_force_from` | 2,129 |
+| `in_force_from` + territory | 874 |
+| `in_force_from` + `changed_by` | 860 |
+| territory | 355 |
+| status + `changed_by` + territory | 295 |
+| status + `in_force_from` | 242 |
+| other classes | about 410 |
+
+**Pointers to check in round 1** (not findings yet):
+- The undated start covers 20 laws. LawStart leaves them undated: 15 EU directives, plus REACH and CLP (`eu_publication_relative`), and `by_order` / `no_clause`.
+- 2,048 rows are reached by a change no source dates. The fold leaves these out (`Label.fold`, which takes dated changes only), so the gap is not visible on the label.
