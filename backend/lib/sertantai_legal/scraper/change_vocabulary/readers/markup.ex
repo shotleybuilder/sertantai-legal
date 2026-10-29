@@ -401,15 +401,27 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
 
     operation =
       cond do
-        repeal && repeal.paired -> :substituted
-        first.kind == :Repeal -> :repealed
-        first.kind == :Substitution -> :substituted
+        repeal && repeal.paired ->
+          :substituted
+
+        first.kind == :Repeal ->
+          :repealed
+
+        first.kind == :Substitution ->
+          :substituted
+
         # legacy markup (`d29p…`, `M_F_…`) wraps changed text in an
-        # Addition whatever the change: it places the change, never says
-        # what it was (Jason 2026-10-29, CV-S08 round 3: Factories Act
-        # s.174(1) substituted, HSWA s.84(5) repealed)
-        legacy?(change_id) -> nil
-        true -> :inserted
+        # Addition whatever the change: inside the text it places the
+        # change, never says what it was (Jason 2026-10-29, CV-S08 round 3:
+        # HSWA s.84(5) repealed); round the provision's number, a whole
+        # provision came with it — inserted (Forestry Act 1967 s.1(4)(a),
+        # SI 1999/1747; a whole provision replaced, Factories Act s.174(1),
+        # stays a known limit until schedules are read)
+        legacy?(change_id) and not Enum.any?(occ, &(&1.number? and List.last(&1.path) == target)) ->
+          nil
+
+        true ->
+          :inserted
       end
 
     Enum.concat([

@@ -29,13 +29,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupLevelTest do
     refute Map.has_key?(c, :level)
   end
 
-  test "a legacy Addition places the change but claims no operation" do
+  test "a legacy Addition inside the text places the change but claims no operation" do
+    xml =
+      ~s(<Legislation><P1 id="regulation-3"><Pnumber>3</Pnumber><P1para><Text>None of <Addition ChangeId="d29p2">the provisions</Addition> shall apply.</Text></P1para></P1></Legislation>)
+
+    refute Map.has_key?(claims(xml, "reg.3"), :operation)
+  end
+
+  test "a legacy Addition round the number is a whole provision inserted (Forestry Act 1967 s.1(4)(a))" do
     xml =
       ~s(<Legislation><P1 id="regulation-3"><Pnumber><Addition ChangeId="d29p2">3</Addition></Pnumber><P1para><Text><Addition ChangeId="d29p2">None of the provisions shall apply.</Addition></Text></P1para></P1></Legislation>)
 
     c = claims(xml, "reg.3")
-    assert c[:level] == :provision
-    refute Map.has_key?(c, :operation)
+    assert {c[:operation], c[:level]} == {:inserted, :provision}
   end
 
   test "a heading's own record beside its provision's whole record claims no level" do

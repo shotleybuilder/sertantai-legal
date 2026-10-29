@@ -589,7 +589,8 @@
             "reg.128(2)"
           ],
           "markup.cited": "UK_uksi_2016_1030",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "M_F_75c75ef7-8315-4863-9eed-9789bfd154af-1635169985890",
         "target": "s.84(aa)"
@@ -920,7 +921,8 @@
     "UK_apni_1957_25/be1b906522": [
       {
         "claims": {
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d30p85",
         "target": "s.1(4)"
@@ -930,7 +932,8 @@
       {
         "claims": {
           "markup.cited": "UK_ukpga_2001_10",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d30p249",
         "target": "s.4(8)"
@@ -943,10 +946,10 @@
             "s.1(2)(b)"
           ],
           "markup.cited": "UK_nia_2008_5",
-          "markup.level": "provision"
+          "markup.level": "words"
         },
         "key": "d29p172",
-        "target": "s.2A(1)(c)"
+        "target": "s.2A(1)(b)"
       },
       {
         "claims": {
@@ -954,10 +957,11 @@
             "s.1(2)(b)"
           ],
           "markup.cited": "UK_nia_2008_5",
-          "markup.level": "words"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p172",
-        "target": "s.2A(1)(b)"
+        "target": "s.2A(1)(c)"
       }
     ],
     "UK_apni_1967_36/a0303bf20d": [
@@ -997,14 +1001,16 @@
     "UK_apni_1967_36/e9ec3d4ac2": [
       {
         "claims": {
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p441",
         "target": "s.3A"
       },
       {
         "claims": {
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p441",
         "target": "s.3B"
@@ -3141,7 +3147,8 @@
       {
         "claims": {
           "markup.cited": "UK_asp_2003_15",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "M_F_15537265-7ad8-4bc8-a551-3d4d39bf61e3-1442318241306",
         "target": "s.64(3n1)"
@@ -6831,7 +6838,8 @@
       {
         "claims": {
           "markup.cited": "UK_ukpga_1982_53",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p249",
         "target": "reg.3A"
@@ -6841,7 +6849,8 @@
       {
         "claims": {
           "markup.cited": "UK_ukpga_1982_53",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p387",
         "target": "reg.5(1)"
@@ -6849,7 +6858,8 @@
       {
         "claims": {
           "markup.cited": "UK_ukpga_1982_53",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p387",
         "target": "reg.5(1A)"
@@ -6869,7 +6879,8 @@
       {
         "claims": {
           "markup.cited": "UK_ukpga_2004_33",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p177",
         "target": "reg.2(2B)"
@@ -6889,7 +6900,8 @@
       {
         "claims": {
           "markup.cited": "UK_ukpga_2004_33",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p153",
         "target": "reg.2(2)(fa)"
@@ -6921,7 +6933,8 @@
             "sch.12.para.13(1)"
           ],
           "markup.cited": "UK_nisi_2006_3336",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p2894",
         "target": "reg.30(3)(c)(iii)"
@@ -6930,7 +6943,8 @@
     "UK_nisi_1978_1039/34b45bf419": [
       {
         "claims": {
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p2639",
         "target": "reg.27A"
@@ -7073,7 +7087,8 @@
     "UK_nisi_1978_1039/614b76eded": [
       {
         "claims": {
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p1038",
         "target": "reg.12(2A)"
@@ -7222,7 +7237,8 @@
     "UK_nisi_1978_1039/6df2a77862": [
       {
         "claims": {
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p1315",
         "target": "reg.15(1)(bb)"
@@ -7249,21 +7265,24 @@
     "UK_nisi_1978_1039/e41cd5a467": [
       {
         "claims": {
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p1066",
         "target": "reg.12(5)"
       },
       {
         "claims": {
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p1066",
         "target": "reg.12(6)"
       },
       {
         "claims": {
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p1066",
         "target": "reg.12(7)"
@@ -7369,7 +7388,8 @@
     "UK_nisi_1979_1709/d05e2fff4c": [
       {
         "claims": {
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p1249",
         "target": "reg.13(3)"
@@ -7378,7 +7398,8 @@
     "UK_nisi_1979_1709/d771b1e5ae": [
       {
         "claims": {
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p1458",
         "target": "reg.15A"
@@ -7388,7 +7409,8 @@
       {
         "claims": {
           "markup.cited": "UK_ukpga_1990_42",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p5329",
         "target": "reg.90(1)"
@@ -7396,7 +7418,8 @@
       {
         "claims": {
           "markup.cited": "UK_ukpga_1990_42",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p5329",
         "target": "reg.90(1A)"
@@ -7404,7 +7427,8 @@
       {
         "claims": {
           "markup.cited": "UK_ukpga_1990_42",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p5329",
         "target": "reg.90(1B)"
@@ -7453,14 +7477,16 @@
     "UK_nisi_1981_1675/61f10d9cbc": [
       {
         "claims": {
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p2087",
         "target": "reg.32(1)(b)(iii)(aa)"
       },
       {
         "claims": {
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p2087",
         "target": "reg.32(1)(b)(iii)(bb)"
@@ -7470,7 +7496,8 @@
       {
         "claims": {
           "markup.cited": "UK_ukpga_1995_35",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p9780",
         "target": "reg.158A"
@@ -7609,18 +7636,19 @@
     "UK_nisi_1983_764/23f6763b36": [
       {
         "claims": {
-          "markup.level": "provision"
-        },
-        "key": "d29p2846",
-        "target": "reg.33A"
-      },
-      {
-        "claims": {
           "markup.heading": true,
           "markup.level": "words"
         },
         "key": "d29p2846",
         "target": "h.33A"
+      },
+      {
+        "claims": {
+          "markup.level": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "d29p2846",
+        "target": "reg.33A"
       }
     ],
     "UK_nisi_1983_764/6e1d467078": [
@@ -7639,7 +7667,8 @@
             "s.11(2)"
           ],
           "markup.cited": "UK_nia_2011_9",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p2988",
         "target": "reg.35(1)(da)"
@@ -7650,7 +7679,8 @@
             "s.11(2)"
           ],
           "markup.cited": "UK_nia_2011_9",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p2988",
         "target": "reg.35(1)(db)"
@@ -7659,7 +7689,8 @@
     "UK_nisi_1984_703/199cf214a7": [
       {
         "claims": {
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p342",
         "target": "reg.5(2)"
@@ -7686,10 +7717,10 @@
             "sch.para.9(3)(b)"
           ],
           "markup.cited": "UK_uksi_2023_1386",
-          "markup.level": "provision"
+          "markup.level": "words"
         },
         "key": "M_F_84a5bdf6-892b-4fc4-d5da-73c966f1edac-1707384655697",
-        "target": "reg.32(15)(c)"
+        "target": "reg.32(15)(b)"
       },
       {
         "claims": {
@@ -7697,25 +7728,14 @@
             "sch.para.9(3)(b)"
           ],
           "markup.cited": "UK_uksi_2023_1386",
-          "markup.level": "words"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "M_F_84a5bdf6-892b-4fc4-d5da-73c966f1edac-1707384655697",
-        "target": "reg.32(15)(b)"
+        "target": "reg.32(15)(c)"
       }
     ],
     "UK_nisi_1989_1341/1972b5bfef": [
-      {
-        "claims": {
-          "markup.affecting": [
-            "reg.1(3)",
-            "reg.7(a)(ii)"
-          ],
-          "markup.cited": "UK_nisi_2003_1247",
-          "markup.level": "provision"
-        },
-        "key": "d29p4989",
-        "target": "reg.39(1)(a)(iv)"
-      },
       {
         "claims": {
           "markup.affecting": [
@@ -7727,6 +7747,19 @@
         },
         "key": "d29p4989",
         "target": "reg.39(1)(a)(iii)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.1(3)",
+            "reg.7(a)(ii)"
+          ],
+          "markup.cited": "UK_nisi_2003_1247",
+          "markup.level": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "d29p4989",
+        "target": "reg.39(1)(a)(iv)"
       }
     ],
     "UK_nisi_1989_1341/3180b60a4d": [
@@ -7736,7 +7769,8 @@
             "reg.9(2)(c)"
           ],
           "markup.cited": "UK_nisi_2007_288",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p1936",
         "target": "reg.17(2)(a)(iii)"
@@ -8053,7 +8087,8 @@
             "reg.2(2)"
           ],
           "markup.cited": "UK_nisr_2009_412",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p5814",
         "target": "reg.24A(1)(b)(i)"
@@ -8064,7 +8099,8 @@
             "reg.2(2)"
           ],
           "markup.cited": "UK_nisr_2009_412",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p5814",
         "target": "reg.24A(1)(b)(ii)"
@@ -8075,7 +8111,8 @@
             "reg.2(2)"
           ],
           "markup.cited": "UK_nisr_2009_412",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p5814",
         "target": "reg.24A(2)(a)"
@@ -8086,7 +8123,8 @@
             "reg.2(2)"
           ],
           "markup.cited": "UK_nisr_2009_412",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p5814",
         "target": "reg.24A(2)(b)"
@@ -8097,7 +8135,8 @@
             "reg.2(2)"
           ],
           "markup.cited": "UK_nisr_2009_412",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p5814",
         "target": "reg.24A(3)(a)"
@@ -8108,7 +8147,8 @@
             "reg.2(2)"
           ],
           "markup.cited": "UK_nisr_2009_412",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p5814",
         "target": "reg.24A(3)(b)"
@@ -8118,7 +8158,8 @@
       {
         "claims": {
           "markup.cited": "UK_ukpga_2002_40",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p4407",
         "target": "reg.15A"
@@ -8126,7 +8167,8 @@
       {
         "claims": {
           "markup.cited": "UK_ukpga_2002_40",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p4407",
         "target": "reg.15B"
@@ -8248,7 +8290,8 @@
             "reg.2(1)"
           ],
           "markup.cited": "UK_nisr_2015_247",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p7111",
         "target": "reg.55EA"
@@ -8259,7 +8302,8 @@
             "reg.2(1)"
           ],
           "markup.cited": "UK_nisr_2015_247",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p7111",
         "target": "reg.55EB"
@@ -8288,7 +8332,8 @@
             "reg.36"
           ],
           "markup.cited": "UK_nisr_2011_155",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p897",
         "target": "reg.6A"
@@ -8299,7 +8344,8 @@
             "reg.36"
           ],
           "markup.cited": "UK_nisr_2011_155",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p897",
         "target": "reg.6B"
@@ -8338,7 +8384,8 @@
             "sch.12.para.49(2)"
           ],
           "markup.cited": "UK_nisi_2006_3336",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p878",
         "target": "reg.16A"
@@ -8349,7 +8396,8 @@
             "sch.12.para.49(2)"
           ],
           "markup.cited": "UK_nisi_2006_3336",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p878",
         "target": "reg.16B"
@@ -9686,7 +9734,19 @@
             "reg.4(5)"
           ],
           "markup.cited": "UK_nisr_2011_365",
-          "markup.level": "provision"
+          "markup.level": "words"
+        },
+        "key": "M_F_60fed00f-e2a4-4fac-9621-73f3a53fac22-1708334892468",
+        "target": "reg.3(l)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.4(5)"
+          ],
+          "markup.cited": "UK_nisr_2011_365",
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "M_F_60fed00f-e2a4-4fac-9621-73f3a53fac22-1708334892468",
         "target": "reg.3(m)"
@@ -9697,21 +9757,11 @@
             "reg.4(5)"
           ],
           "markup.cited": "UK_nisr_2011_365",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "M_F_60fed00f-e2a4-4fac-9621-73f3a53fac22-1708334892468",
         "target": "reg.3(n)"
-      },
-      {
-        "claims": {
-          "markup.affecting": [
-            "reg.4(5)"
-          ],
-          "markup.cited": "UK_nisr_2011_365",
-          "markup.level": "words"
-        },
-        "key": "M_F_60fed00f-e2a4-4fac-9621-73f3a53fac22-1708334892468",
-        "target": "reg.3(l)"
       }
     ],
     "UK_nisr_2010_59/49608acd4b": [
@@ -10811,7 +10861,8 @@
     "UK_ukpga_1875_17/0f881225ce": [
       {
         "claims": {
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p1278",
         "target": "s.33"
@@ -11297,7 +11348,8 @@
             "sch.16"
           ],
           "markup.cited": "UK_ukpga_1999_33",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "c6281461",
         "target": "s.28(1)(b)"
@@ -11310,7 +11362,8 @@
             "sch.1.para.3"
           ],
           "markup.cited": "UK_ukpga_1986_16",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "c6279771-1553684480097",
         "target": "s.5(2)"
@@ -11339,7 +11392,8 @@
             "sch.6.para.30"
           ],
           "markup.cited": "UK_ukpga_1972_11",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p3575",
         "target": "s.46(3)(i)"
@@ -11350,7 +11404,8 @@
             "sch.6.para.30"
           ],
           "markup.cited": "UK_ukpga_1972_11",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p3575",
         "target": "s.46(3)(ii)"
@@ -11415,10 +11470,11 @@
             "reg.1(1)"
           ],
           "markup.cited": "UK_uksi_1988_1729",
-          "markup.level": "provision"
+          "markup.heading": true,
+          "markup.level": "words"
         },
         "key": "d30p834",
-        "target": "s.34"
+        "target": "h.34"
       },
       {
         "claims": {
@@ -11426,11 +11482,11 @@
             "reg.1(1)"
           ],
           "markup.cited": "UK_uksi_1988_1729",
-          "markup.heading": true,
-          "markup.level": "words"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d30p834",
-        "target": "h.34"
+        "target": "s.34"
       }
     ],
     "UK_ukpga_1959_54/1ec347df8a": [
@@ -11734,7 +11790,8 @@
             "sch.2.para.2(13)"
           ],
           "markup.cited": "UK_uksi_2000_3251",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p1923",
         "target": "s.21A(1)(c)"
@@ -11827,7 +11884,8 @@
             "sch.1.para.6"
           ],
           "markup.cited": "UK_uksi_2000_1937",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p704",
         "target": "s.10B"
@@ -11854,7 +11912,8 @@
             "sch.para.21(2)"
           ],
           "markup.cited": "UK_ukpga_1995_8",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "c652524",
         "target": "s.22(1)(a)"
@@ -12167,10 +12226,10 @@
             "sch.9.para.60(5)(a)(ii)"
           ],
           "markup.cited": "UK_ukpga_1984_54",
-          "markup.level": "provision"
+          "markup.level": "words"
         },
         "key": "d30p3560",
-        "target": "s.54(1)(f)"
+        "target": "s.54(1)(e)(ii)"
       },
       {
         "claims": {
@@ -12178,10 +12237,11 @@
             "sch.9.para.60(5)(a)(ii)"
           ],
           "markup.cited": "UK_ukpga_1984_54",
-          "markup.level": "words"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d30p3560",
-        "target": "s.54(1)(e)(ii)"
+        "target": "s.54(1)(f)"
       }
     ],
     "UK_ukpga_1968_13/09693dbcbe": [
@@ -12218,7 +12278,8 @@
             "sch.26"
           ],
           "markup.cited": "UK_uksi_1999_2908",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p1470",
         "target": "s.20A"
@@ -12356,7 +12417,8 @@
             "sch.15"
           ],
           "markup.cited": "UK_ukpga_1990_43",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p48592",
         "target": "s.69(4)(ffff)"
@@ -12380,7 +12442,8 @@
             "s.57(2)(5)"
           ],
           "markup.cited": "UK_ukpga_1985_67",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "c15307951-1569413484438",
         "target": "s.9B"
@@ -12734,7 +12797,8 @@
             "sch.13.para.43(3)"
           ],
           "markup.cited": "UK_ukpga_1974_44",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d30p3259",
         "target": "s.34(3n1)"
@@ -12998,7 +13062,8 @@
             "s.74(2)"
           ],
           "markup.cited": "UK_ukpga_1999_29",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "c779949",
         "target": "s.25(1)(aaa)"
@@ -13073,10 +13138,10 @@
             "s.132(a)(ii)"
           ],
           "markup.cited": "UK_ukpga_1994_33",
-          "markup.level": "provision"
+          "markup.level": "words"
         },
         "key": "d29p9549",
-        "target": "s.212A(2)(c)"
+        "target": "s.212A(2)(b)(ii)"
       },
       {
         "claims": {
@@ -13084,10 +13149,11 @@
             "s.132(a)(ii)"
           ],
           "markup.cited": "UK_ukpga_1994_33",
-          "markup.level": "words"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p9549",
-        "target": "s.212A(2)(b)(ii)"
+        "target": "s.212A(2)(c)"
       }
     ],
     "UK_ukpga_1976_57/f8fd6daf86": [
@@ -13097,7 +13163,8 @@
             "reg.5(schedule)(4)(paragraph)(2)(5)"
           ],
           "markup.cited": "UK_uksi_1996_1974",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p4531",
         "target": "s.59(1An1)"
@@ -13188,7 +13255,8 @@
             "s.31"
           ],
           "markup.cited": "UK_ukpga_1990_19",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p4669",
         "target": "s.12A"
@@ -13210,7 +13278,8 @@
             "sch.9.para.19(18)"
           ],
           "markup.cited": "UK_ukpga_1990_19",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p142046",
         "target": "s.93(1)(bbn1)"
@@ -13482,7 +13551,8 @@
             "sch.2.para.68(5)(a)"
           ],
           "markup.cited": "UK_uksi_1999_1820",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "V_NI_09062e4b-6c10-7781-9124-eda036ad6be8-eea07fbaeb3c7",
         "target": "s.30(2A)"
@@ -13496,6 +13566,7 @@
           ],
           "markup.cited": "UK_nia_2016_27",
           "markup.level": "provision",
+          "markup.operation": "inserted",
           "markup.territory": "NI"
         },
         "key": "V_NI_93d34fa1-6df6-3e97-481e-517d430a6069-2c184401639f7",
@@ -13559,6 +13630,7 @@
           ],
           "markup.cited": "UK_asp_2013_7",
           "markup.level": "provision",
+          "markup.operation": "inserted",
           "markup.territory": "S"
         },
         "key": "V_S_043b19df-7f2f-7e1a-a027-795649b3945b-2dac867dcd282",
@@ -13706,7 +13778,8 @@
             "sch.6.para.11(2)(c)"
           ],
           "markup.cited": "UK_asp_2004_6",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p29236",
         "target": "s.13(1)(a)(ii)"
@@ -14070,7 +14143,8 @@
             "s.82(6)"
           ],
           "markup.cited": "UK_ukpga_2007_11",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p15317",
         "target": "s.114(2)(b)(i)"
@@ -14081,7 +14155,8 @@
             "s.82(6)"
           ],
           "markup.cited": "UK_ukpga_2007_11",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p15317",
         "target": "s.114(2)(b)(ii)"
@@ -14092,7 +14167,8 @@
             "s.82(6)"
           ],
           "markup.cited": "UK_ukpga_2007_11",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p15317",
         "target": "s.114(2)(d)"
@@ -14103,7 +14179,8 @@
             "s.82(6)"
           ],
           "markup.cited": "UK_ukpga_2007_11",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p15317",
         "target": "s.114(2)(e)"
@@ -14114,7 +14191,8 @@
             "s.82(6)"
           ],
           "markup.cited": "UK_ukpga_2007_11",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p15317",
         "target": "s.114(2A)"
@@ -14125,7 +14203,8 @@
             "s.82(6)"
           ],
           "markup.cited": "UK_ukpga_2007_11",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p15317",
         "target": "s.114(3)"
@@ -14136,7 +14215,8 @@
             "s.82(6)"
           ],
           "markup.cited": "UK_ukpga_2007_11",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p15317",
         "target": "s.114(4)"
@@ -14147,7 +14227,8 @@
             "s.82(6)"
           ],
           "markup.cited": "UK_ukpga_2007_11",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p15317",
         "target": "s.114(5)"
@@ -14878,7 +14959,8 @@
             "sch.5.para.29"
           ],
           "markup.cited": "UK_ukpga_1998_36",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p13125",
         "target": "s.403ZA"
@@ -14889,7 +14971,8 @@
             "sch.5.para.29"
           ],
           "markup.cited": "UK_ukpga_1998_36",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p13125",
         "target": "s.403ZB"
@@ -14900,7 +14983,8 @@
             "sch.5.para.29"
           ],
           "markup.cited": "UK_ukpga_1998_36",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p13125",
         "target": "s.403ZC"
@@ -14911,7 +14995,8 @@
             "sch.5.para.29"
           ],
           "markup.cited": "UK_ukpga_1998_36",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p13125",
         "target": "s.403ZD"
@@ -14922,7 +15007,8 @@
             "sch.5.para.29"
           ],
           "markup.cited": "UK_ukpga_1998_36",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p13125",
         "target": "s.403ZE"
@@ -14935,7 +15021,8 @@
             "sch.6.para.19(1)"
           ],
           "markup.cited": "UK_ukpga_1995_4",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p12657",
         "target": "s.379A"
@@ -14946,7 +15033,8 @@
             "sch.6.para.19(1)"
           ],
           "markup.cited": "UK_ukpga_1995_4",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p12657",
         "target": "s.379B"
@@ -14959,7 +15047,8 @@
             "s.97(1)"
           ],
           "markup.cited": "UK_ukpga_1993_34",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p15034",
         "target": "s.444B"
@@ -14976,7 +15065,8 @@
             "sch.4.para.106(2)"
           ],
           "markup.cited": "UK_ukpga_2017_32",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p28075",
         "target": "s.826(7AA)(a)"
@@ -14987,7 +15077,8 @@
             "sch.4.para.106(2)"
           ],
           "markup.cited": "UK_ukpga_2017_32",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p28075",
         "target": "s.826(7AA)(b)"
@@ -14998,7 +15089,8 @@
             "sch.4.para.106(2)"
           ],
           "markup.cited": "UK_ukpga_2017_32",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p28075",
         "target": "s.826(7AA)(c)"
@@ -15011,7 +15103,8 @@
             "sch.30.para.1"
           ],
           "markup.cited": "UK_ukpga_1996_8",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p16923",
         "target": "s.508An1"
@@ -15022,7 +15115,8 @@
             "sch.30.para.1"
           ],
           "markup.cited": "UK_ukpga_1996_8",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p16923",
         "target": "s.508Bn1"
@@ -15252,7 +15346,8 @@
             "sch.6"
           ],
           "markup.cited": "UK_ukpga_1989_22",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p201416",
         "target": "pt.IVn2"
@@ -15676,14 +15771,16 @@
     "UK_ukpga_1990_42/da603277d3": [
       {
         "claims": {
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p5268",
         "target": "s.42A"
       },
       {
         "claims": {
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p5268",
         "target": "s.42B"
@@ -15873,7 +15970,8 @@
             "sch.2.para.15(4)(a)"
           ],
           "markup.cited": "UK_uksi_2002_2626",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p21690",
         "target": "s.265(1)(a)n2"
@@ -15882,7 +15980,8 @@
     "UK_ukpga_1990_8/50ca219324": [
       {
         "claims": {
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p142161",
         "target": "pt.II.ch.III"
@@ -16352,18 +16451,19 @@
     "UK_ukpga_1991_56/87ec7189fd": [
       {
         "claims": {
-          "markup.level": "provision"
-        },
-        "key": "d29p14344",
-        "target": "s.63A"
-      },
-      {
-        "claims": {
           "markup.heading": true,
           "markup.level": "words"
         },
         "key": "d29p14344",
         "target": "h.63A"
+      },
+      {
+        "claims": {
+          "markup.level": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "d29p14344",
+        "target": "s.63A"
       }
     ],
     "UK_ukpga_1991_56/9cb8959b4e": [
@@ -16383,7 +16483,19 @@
             "sch.8.para.4(5)"
           ],
           "markup.cited": "UK_ukpga_2003_37",
-          "markup.level": "provision"
+          "markup.level": "words"
+        },
+        "key": "d29p5680",
+        "target": "s.18(4)(a)(ii)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.8.para.4(5)"
+          ],
+          "markup.cited": "UK_ukpga_2003_37",
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p5680",
         "target": "s.18(4)(a)(iii)"
@@ -16394,21 +16506,11 @@
             "sch.8.para.4(5)"
           ],
           "markup.cited": "UK_ukpga_2003_37",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p5680",
         "target": "s.18(4)(a)(iv)"
-      },
-      {
-        "claims": {
-          "markup.affecting": [
-            "sch.8.para.4(5)"
-          ],
-          "markup.cited": "UK_ukpga_2003_37",
-          "markup.level": "words"
-        },
-        "key": "d29p5680",
-        "target": "s.18(4)(a)(ii)"
       }
     ],
     "UK_ukpga_1991_56/cc0268de57": [
@@ -16428,7 +16530,8 @@
     "UK_ukpga_1991_56/fa6c9c41fe": [
       {
         "claims": {
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p13312",
         "target": "s.53(2A)n1"
@@ -17661,7 +17764,8 @@
             "s.32(4)"
           ],
           "markup.cited": "UK_ukpga_2007_25",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "M_F_bd575cbf-fc8f-4174-8527-6b26ecf45ddd",
         "target": "s.49A"
@@ -17674,7 +17778,8 @@
             "sch.12.para.20"
           ],
           "markup.cited": "UK_ukpga_2011_21",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "M_F_be1907ab-e50e-49be-beae-c44ab2e72f44-1536162136053",
         "target": "s.33O"
@@ -17685,7 +17790,8 @@
             "sch.12.para.20"
           ],
           "markup.cited": "UK_ukpga_2011_21",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "M_F_be1907ab-e50e-49be-beae-c44ab2e72f44-1536162136053",
         "target": "s.33P"
@@ -17728,7 +17834,8 @@
             "sch.10.para.4(3)"
           ],
           "markup.cited": "UK_uksi_2000_323",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p2480",
         "target": "s.36(2A)n1"
@@ -17816,28 +17923,32 @@
     "UK_ukpga_1995_21/ca3dbfbbee": [
       {
         "claims": {
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p13522",
         "target": "pt.VI.ch.V"
       },
       {
         "claims": {
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p13522",
         "target": "s.182A"
       },
       {
         "claims": {
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p13522",
         "target": "s.182B"
       },
       {
         "claims": {
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p13522",
         "target": "s.182C"
@@ -17866,7 +17977,8 @@
             "sch.2.para.5"
           ],
           "markup.cited": "UK_uksi_2011_2632",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "M_F_0e6abad3-e6bb-448a-8a9d-ff1a35d1baab",
         "target": "s.13A"
@@ -17986,7 +18098,8 @@
             "sch.para.1"
           ],
           "markup.cited": "UK_asp_2015_12",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "M_F_86c5916a-ed92-49de-f892-02872165b5af-1503184796131",
         "target": "s.271(1)(c)(iiia)"
@@ -18094,7 +18207,20 @@
             "sch.8.para.23"
           ],
           "markup.cited": "UK_uksi_2006_1031",
-          "markup.level": "provision"
+          "markup.heading": true,
+          "markup.level": "words"
+        },
+        "key": "d29p12950",
+        "target": "h.98ZA"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.8.para.23"
+          ],
+          "markup.cited": "UK_uksi_2006_1031",
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p12950",
         "target": "s.98ZA"
@@ -18105,7 +18231,8 @@
             "sch.8.para.23"
           ],
           "markup.cited": "UK_uksi_2006_1031",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p12950",
         "target": "s.98ZB"
@@ -18116,7 +18243,8 @@
             "sch.8.para.23"
           ],
           "markup.cited": "UK_uksi_2006_1031",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p12950",
         "target": "s.98ZC"
@@ -18127,7 +18255,8 @@
             "sch.8.para.23"
           ],
           "markup.cited": "UK_uksi_2006_1031",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p12950",
         "target": "s.98ZD"
@@ -18138,7 +18267,8 @@
             "sch.8.para.23"
           ],
           "markup.cited": "UK_uksi_2006_1031",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p12950",
         "target": "s.98ZE"
@@ -18149,7 +18279,8 @@
             "sch.8.para.23"
           ],
           "markup.cited": "UK_uksi_2006_1031",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p12950",
         "target": "s.98ZF"
@@ -18160,7 +18291,8 @@
             "sch.8.para.23"
           ],
           "markup.cited": "UK_uksi_2006_1031",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p12950",
         "target": "s.98ZG"
@@ -18171,22 +18303,11 @@
             "sch.8.para.23"
           ],
           "markup.cited": "UK_uksi_2006_1031",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p12950",
         "target": "s.98ZH"
-      },
-      {
-        "claims": {
-          "markup.affecting": [
-            "sch.8.para.23"
-          ],
-          "markup.cited": "UK_uksi_2006_1031",
-          "markup.heading": true,
-          "markup.level": "words"
-        },
-        "key": "d29p12950",
-        "target": "h.98ZA"
       }
     ],
     "UK_ukpga_1996_18/1d847c0a13": [
@@ -18248,7 +18369,8 @@
             "sch.5.para.5(3)"
           ],
           "markup.cited": "UK_ukpga_1999_26",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p14191",
         "target": "s.105(7C)"
@@ -18259,7 +18381,8 @@
             "sch.5.para.5(3)"
           ],
           "markup.cited": "UK_ukpga_1999_26",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p14191",
         "target": "s.105(7C)(a)"
@@ -18270,7 +18393,8 @@
             "sch.5.para.5(3)"
           ],
           "markup.cited": "UK_ukpga_1999_26",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p14191",
         "target": "s.105(7C)(b)"
@@ -18401,7 +18525,8 @@
             "s.40(5)"
           ],
           "markup.cited": "UK_ukpga_2004_24",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "d29p14091",
         "target": "s.105(2A)"
@@ -18749,7 +18874,8 @@
             "s.165(2)"
           ],
           "markup.cited": "UK_ukpga_2005_15",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "M_F_6430d0ad-a61f-1613728925980",
         "target": "s.120A(6)"
@@ -22025,7 +22151,8 @@
             "art.6(b)"
           ],
           "markup.cited": "UK_uksi_1999_1014",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "M_F_d0dc0fc4-8374-43b0-b186-9407c7f39db9-1606936956052",
         "target": "reg.5(2n1)"
@@ -24809,7 +24936,8 @@
             "reg.10(b)"
           ],
           "markup.cited": "UK_uksi_2012_3119",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "V_W_03431229-f6f8-02a6-d44c-cd172b31f387-b13de91782b85",
         "target": "reg.17(5)"
@@ -25612,7 +25740,8 @@
             "reg.9(2)(a)"
           ],
           "markup.cited": "UK_uksi_2014_490",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "M_F_b8b531e5-d828-4003-d4e8-38b8cfebe176-1578044021404",
         "target": "reg.346(2)(c)(xxviiid)"
@@ -25801,7 +25930,8 @@
             "reg.9(2)(a)"
           ],
           "markup.cited": "UK_uksi_2014_490",
-          "markup.level": "provision"
+          "markup.level": "provision",
+          "markup.operation": "inserted"
         },
         "key": "M_F_5dbd89e2-ec40-4e83-b577-eb8fc8c453b0-1578044011949",
         "target": "reg.346(2)(c)(xxviiib)"
@@ -27043,6 +27173,7 @@
           ],
           "markup.cited": "UK_uksi_2018_98",
           "markup.level": "provision",
+          "markup.operation": "inserted",
           "markup.territory": "E+S"
         },
         "key": "V_ES_722d1814-084a-3aa9-603b-11061b59b3af-0ee40cfdbb476",
@@ -28307,6 +28438,7 @@
           ],
           "markup.cited": "UK_ssi_2021_493",
           "markup.level": "provision",
+          "markup.operation": "inserted",
           "markup.territory": "S"
         },
         "key": "V_S_8827bf46-01b1-7730-31ed-a929dc13dd6e-ee47b568cb210",
