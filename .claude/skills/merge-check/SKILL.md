@@ -90,7 +90,12 @@ Known classes (label a finding with one; otherwise NEW):
   as separate effects (REACH): left apart by design, OK.
 - KX an event by another amending law ("as inserted by" chains: SI 2020/1460 amending SI 2019/696's insertion):
   not this merge's, OK.
-For a joined change also check that a markup note's cited provision is related to the feed's affecting provision.
+- KL-EU-list EU markup in unnumbered ListItems placed on the Article (Directive 98/24 art.2): a markup reader limit, logged.
+- KN a note citing a provision that doesn't exist (Factories Act s.171 heading "3(1)(d)"): a visible split, OK.
+- KP legislation.gov.uk puts body markup under a heading effect's id (SI 2008/1597 reg.21): OK.
+- KR-range a feed range or nested markup reaching a row inserted later (SI 2009/1348 19A–19F, OLA 1984 s.1(6AA), HSWA s.11(4AA)): reader bugs, logged.
+For a joined change also check that a markup note's cited provision is related to the feed's affecting provision, and
+whether the same event sits under another key on a sibling provision (outside `beside`).
 
 Output: a compact table, one row per item: #, law, target, by, OK/WRONG/doubtful, note (only when not OK: one line,
 kind over-join/split/misplaced, the partner or the stray claim, a known class or NEW). Then counts (changes
@@ -106,4 +111,9 @@ OH&S (first family, 2026-10-28 →). The session is `.claude/sessions/change-voc
 | Round | Seed | Result |
 |---|---|---|
 | 1 | 41 (J) | Strata J 2,023 / U 45 / C 62; join rate law text 89.9%, markup 77.6%. FAIL: J 44/50, U 1/45, C 5/62 (+5 doubtful), all splits (identity: URI ids, unmatched markup ids, copies as rivals, amending provision unused) |
-| 2 | 42 (J) | Fix effada69 (change identity, `docs/CHANGE-IDENTITY-DESIGN.md`). Strata J 2,048 / U 22 / C 26; join rate law text 91.7%, markup 83.6% |
+| 2 | 42 (J) | Fix effada69 (change identity, `docs/CHANGE-IDENTITY-DESIGN.md`). Strata J 2,048 / U 22 / C 26; join rate law text 91.7%, markup 83.6%. FAIL: J 49/50, U 1/22, C 9/26 (Schedule relatedness, note copies by words, note pieces, heading both ways, EU generic notes, finer-unheld, art./reg.) |
+| 3 | 43 (J) | Fix 49aed471. U 4, C 20. FAIL: J 49/50 (two operations of one provision), U 1/4, C 14/20 |
+| 4 | 44 (J ×3) | Fix 4db22749. U 1, C 9. U+C 10/10; J 145/150 FAIL (joined_note over-joined EU generic notes; EU footnotes on '*') |
+| 5 | 45 (J ×3) | Fix 6bd64edb; spread tell-tale added. J 149/150 FAIL (order-dependent note pieces); U+C 16/18 (REACH art.14(2)); spread 31/32 (feed range bug, logged) |
+| 6 | 46 (J ×3) | Fix 03516b35. U+C 14/14; J 148/150 FAIL (KJ2; a feed-less event's sibling keys) |
+| 7 | 47 (J ×3) | Fix d641bef3. J 149/150, 0 wrong, 1 doubtful (a markup-reader placement on a later-inserted row: counted OK, Jason) → changes 1.98%, pairs 2.64%. U+C and spread carried over (unchanged). **PASS** |

@@ -16,6 +16,7 @@ The session does not close until its results pass.
 
 ## Todo
 
+- ⬜ Provision facts: exists_from/to — when a provision itself exists (deferred from CV-S07, Jason 2026-10-29; carried from CV-04)
 - ⬜ Define what good looks like (the acceptance check): a hand-checked sample from the OH&S core family, and the measures, each defined in words with a test
 - ⬜ Build the acceptance check; run it (ask Jason before any long run)
 - ⬜ The golden set is big enough to trust: 27 provisions today; grown, OH&S family first
