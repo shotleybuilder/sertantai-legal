@@ -125,4 +125,4 @@ OH&S (first family, 2026-10-29 →). The session is `.claude/sessions/change-voc
 
 | Round | Seed | Result |
 |---|---|---|
-| 1 | 51 (A, D) | Strata V 63 / D 829 (16 patterns) / A 1,927; samples drawn (V 63, D 102, A 50; A repeatable by cmp) |
+| 1 | 51 (A, D) | Strata V 63 / D 829 (16 patterns) / A 1,927. FAIL: V 27/63 (19 wrong values, 15 false conflicts), D 42/102, A 47/50; operation order, unlike comparisons, note-only level, commencement fallback and commenced_by, reader levels |
