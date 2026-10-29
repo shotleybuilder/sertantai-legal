@@ -62,8 +62,11 @@ note's cited law is "cited") and the changes feed ("feed": one effect per event;
 evidence table chooses each attribute (first source in order with a claim wins):
 - operation: law_text, commencement, feed, markup (Jason 2026-10-29: the markup's Addition marks a substitution's
   new words)
-- level (words or whole provision): law_text, commencement, markup, feed — the feed's only where it placed the event
-  on this provision (a "feed.placed" claim names where it did, when the merge moved it)
+- level (words or whole provision): law_text, commencement, markup (sure: number wrapped, part of the text, or a
+  removal on an emptied row), feed — the feed's only where it placed the event on this provision ("feed.placed") —
+  then markup level_covering (a change covering all the words, its number outside: whole or words, below the feed)
+- legacy markup (d29p…, M_F_…): an Addition round the provision's number is inserted; inside the text it claims no
+  operation (Jason 2026-10-29)
 - territory: law_text, feed, markup, feed effect_extent if narrower than the provision; then cut to the amending
   law's extent (law_text extent)
 - date: commencement, law_text, feed date_first, feed date

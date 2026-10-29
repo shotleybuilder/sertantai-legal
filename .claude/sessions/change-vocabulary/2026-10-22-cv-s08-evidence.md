@@ -120,7 +120,8 @@ The session does not close until its results pass.
 - ✅ Round 3 (seed 53): FAIL — V 12/15 (3 false conflicts), D 36/44, A 146/150 (1 wrong)
 - ✅ Legacy markup Addition claims no operation (Jason 2026-10-29)
 - ✅ Fix batch 3 code (a541f728), tests 9,515 pass
-- ⬜ Fix batch 3 applied (restore point `cv-s08-fix3`); round 4
+- ✅ Fix batch 3 applied (restore point `cv-s08-fix3`); golden from inputs caught Forestry Act s.1(4)(a); legacy Addition round the number = inserted (Jason; 3511120d); golden 27/27
+- ⬜ Round 4 (seed 54): V 12, D 39, A 150
 - ✅ The table re-reviewed with Jason (2026-10-29, on round 1's evidence): operation, the feed above the markup
 - ⬜ Value conflicts checked on a sample: level vs markup/feed, operation, date (OH&S family: 63)
 - ⬜ A Gemini review of the evaluator (CV-04)
@@ -374,3 +375,12 @@ A: 1 wrong in 150 gives a 95% upper bound of 3.1%. Gaps (commenced_by, mostly) a
 - SI 2015/1637's misattributed order rules;
 - a repealed commencement section falling back to Royal Assent;
 - "has effect from".
+
+### Applied (2026-10-29)
+
+- **Commencement re-read:** own clauses 2,654 rules; amending laws 4,062. Rebuild done.
+- **Golden from inputs failed 26/27:** Forestry Act 1967 s.1(4)(a) lost its 1999 credit (SI 1999/1747). The insertion is known only from a legacy Addition wrapping the whole paragraph, number included, with no feed record.
+- **Jason's decision:** a legacy Addition round the provision's number claims inserted; inside the text, nothing (3511120d). 83 catalogue readings came back. Golden is 27/27 again; the rebuild is done.
+- **Strata:** V 12, D 44, A 2,011.
+
+Factories Act s.174(1) is a whole subsection replaced through an unparsed Schedule. It stays "inserted": a known limit until schedules are read (KS).
