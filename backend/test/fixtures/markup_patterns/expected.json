@@ -11419,7 +11419,7 @@
           ],
           "markup.cited": "UK_ukpga_2011_13",
           "markup.in_versions": [
-            "S"
+            "E+W"
           ],
           "markup.level": "words",
           "markup.operation": "inserted"
@@ -11451,7 +11451,7 @@
           ],
           "markup.cited": "UK_ukpga_2011_13",
           "markup.in_versions": [
-            "S"
+            "E+W"
           ],
           "markup.level": "words",
           "markup.operation": "inserted"
@@ -11710,7 +11710,7 @@
           ],
           "markup.cited": "UK_ukpga_2004_21",
           "markup.in_versions": [
-            "S"
+            "E+W"
           ],
           "markup.level": "words",
           "markup.operation": "substituted"
@@ -11725,7 +11725,7 @@
           ],
           "markup.cited": "UK_ukpga_2004_21",
           "markup.in_versions": [
-            "S"
+            "E+W"
           ],
           "markup.level": "words",
           "markup.operation": "substituted"
@@ -11920,7 +11920,7 @@
           ],
           "markup.cited": "UK_ukpga_2004_21",
           "markup.in_versions": [
-            "S"
+            "E+W"
           ],
           "markup.level": "words",
           "markup.operation": "inserted"
@@ -12282,7 +12282,7 @@
           ],
           "markup.cited": "UK_uksi_2004_1662",
           "markup.in_versions": [
-            "S"
+            "E+W+NI"
           ],
           "markup.level": "words",
           "markup.operation": "substituted"
@@ -12347,8 +12347,7 @@
           ],
           "markup.cited": "UK_uksi_2012_1659",
           "markup.in_versions": [
-            "E+W+S",
-            "NI"
+            "E+W+S"
           ],
           "markup.level": "provision",
           "markup.operation": "inserted"
@@ -12519,7 +12518,7 @@
           ],
           "markup.cited": "UK_ukpga_2015_20",
           "markup.in_versions": [
-            "S"
+            "E+W+NI"
           ],
           "markup.level": "words",
           "markup.operation": "inserted"
@@ -12534,28 +12533,28 @@
           ],
           "markup.cited": "UK_ukpga_2015_20",
           "markup.in_versions": [
-            "S"
-          ],
-          "markup.level": "words",
-          "markup.operation": "inserted"
-        },
-        "key": "key-E",
-        "target": "s.10(1)(iii)"
-      },
-      {
-        "claims": {
-          "markup.affecting": [
-            "sch.8.para.2(2)"
-          ],
-          "markup.cited": "UK_ukpga_2015_20",
-          "markup.in_versions": [
-            "S"
+            "E+W+NI"
           ],
           "markup.level": "words",
           "markup.operation": "inserted"
         },
         "key": "key-E",
         "target": "s.10(1)(iii)(a)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.8.para.2(2)"
+          ],
+          "markup.cited": "UK_ukpga_2015_20",
+          "markup.in_versions": [
+            "S"
+          ],
+          "markup.level": "words",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "s.10(1)(iii)"
       },
       {
         "claims": {
@@ -12681,7 +12680,7 @@
           ],
           "markup.cited": "UK_uksi_2012_1659",
           "markup.in_versions": [
-            "NI"
+            "E+W+S"
           ],
           "markup.level": "words",
           "markup.operation": "inserted"
@@ -12984,8 +12983,7 @@
           ],
           "markup.cited": "UK_wsi_2013_755",
           "markup.in_versions": [
-            "E+W",
-            "S"
+            "E+W"
           ],
           "markup.level": "words",
           "markup.operation": "inserted"
@@ -14497,13 +14495,13 @@
           ],
           "markup.cited": "UK_ukpga_2026_23",
           "markup.in_versions": [
-            "S"
+            "E+W"
           ],
           "markup.level": "words",
           "markup.operation": "inserted"
         },
         "key": "key-E",
-        "target": "s.105(2A)"
+        "target": "s.105(3)"
       },
       {
         "claims": {
@@ -14518,7 +14516,7 @@
           "markup.operation": "inserted"
         },
         "key": "key-E",
-        "target": "s.105(3)"
+        "target": "s.105(2A)"
       },
       {
         "claims": {
@@ -14544,8 +14542,7 @@
           ],
           "markup.cited": "UK_ukpga_2008_26",
           "markup.in_versions": [
-            "E+W",
-            "S"
+            "E+W"
           ],
           "markup.level": "provision",
           "markup.operation": "inserted",
@@ -14553,6 +14550,22 @@
         },
         "key": "key-E",
         "target": "s.63(5)(an1)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "s.68(2)"
+          ],
+          "markup.cited": "UK_ukpga_2008_26",
+          "markup.in_versions": [
+            "E+W"
+          ],
+          "markup.level": "words",
+          "markup.operation": "inserted",
+          "markup.territory": "E+W+S"
+        },
+        "key": "key-E",
+        "target": "s.63(5)(a)"
       },
       {
         "claims": {
@@ -14569,22 +14582,6 @@
         },
         "key": "key-E",
         "target": "s.63(5)(aa)"
-      },
-      {
-        "claims": {
-          "markup.affecting": [
-            "s.68(2)"
-          ],
-          "markup.cited": "UK_ukpga_2008_26",
-          "markup.in_versions": [
-            "S"
-          ],
-          "markup.level": "words",
-          "markup.operation": "inserted",
-          "markup.territory": "E+W+S"
-        },
-        "key": "key-E",
-        "target": "s.63(5)(a)"
       },
       {
         "claims": {
@@ -15322,7 +15319,7 @@
           ],
           "markup.cited": "UK_ukpga_2015_6",
           "markup.in_versions": [
-            "S"
+            "E+W+NI"
           ],
           "markup.level": "provision",
           "markup.operation": "inserted"
@@ -15337,28 +15334,28 @@
           ],
           "markup.cited": "UK_ukpga_2015_6",
           "markup.in_versions": [
-            "S"
-          ],
-          "markup.level": "provision",
-          "markup.operation": "inserted"
-        },
-        "key": "key-E",
-        "target": "s.133(5)(g)"
-      },
-      {
-        "claims": {
-          "markup.affecting": [
-            "s.15(2)(b)"
-          ],
-          "markup.cited": "UK_ukpga_2015_6",
-          "markup.in_versions": [
-            "S"
+            "E+W+NI"
           ],
           "markup.level": "words",
           "markup.operation": "inserted"
         },
         "key": "key-E",
         "target": "s.133(5)(f)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "s.15(2)(b)"
+          ],
+          "markup.cited": "UK_ukpga_2015_6",
+          "markup.in_versions": [
+            "S"
+          ],
+          "markup.level": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "s.133(5)(g)"
       },
       {
         "claims": {
@@ -15402,8 +15399,7 @@
           ],
           "markup.cited": "UK_ukpga_2026_24",
           "markup.in_versions": [
-            "E+W+NI",
-            "S"
+            "E+W+NI"
           ],
           "markup.level": "words",
           "markup.operation": "inserted"
@@ -15643,6 +15639,19 @@
             "reg.3"
           ],
           "markup.cited": "UK_uksi_2011_1043",
+          "markup.heading": true,
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.17"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.3"
+          ],
+          "markup.cited": "UK_uksi_2011_1043",
           "markup.in_versions": [
             "E+W"
           ],
@@ -15696,22 +15705,6 @@
         },
         "key": "key-E",
         "target": "s.17(2)(b)"
-      },
-      {
-        "claims": {
-          "markup.affecting": [
-            "reg.3"
-          ],
-          "markup.cited": "UK_uksi_2011_1043",
-          "markup.heading": true,
-          "markup.in_versions": [
-            "E+W"
-          ],
-          "markup.level": "words",
-          "markup.operation": "substituted"
-        },
-        "key": "key-E",
-        "target": "s.17"
       }
     ],
     "UK_ukpga_1990_18/0bc347bdfc": [
@@ -16016,7 +16009,7 @@
           ],
           "markup.cited": "UK_uksi_2014_1638",
           "markup.in_versions": [
-            "S+NI"
+            "E+W"
           ],
           "markup.level": "words",
           "markup.operation": "substituted"
@@ -19030,7 +19023,7 @@
           ],
           "markup.cited": "UK_ukpga_2005_15",
           "markup.in_versions": [
-            "NI"
+            "E+W+S"
           ],
           "markup.level": "words",
           "markup.operation": "substituted"
@@ -19926,7 +19919,7 @@
           ],
           "markup.cited": "UK_uksi_2023_1424",
           "markup.in_versions": [
-            "S"
+            "E+W+NI"
           ],
           "markup.level": "words",
           "markup.operation": "substituted"
@@ -22762,7 +22755,7 @@
           ],
           "markup.cited": "UK_uksi_2009_1890",
           "markup.in_versions": [
-            "S"
+            "E+W+NI"
           ],
           "markup.level": "words",
           "markup.operation": "substituted"
@@ -23021,8 +23014,7 @@
           ],
           "markup.cited": "UK_uksi_2019_685",
           "markup.in_versions": [
-            "E+W+S",
-            "NI"
+            "E+W+S"
           ],
           "markup.level": "provision",
           "markup.operation": "substituted"
@@ -23706,7 +23698,7 @@
           ],
           "markup.cited": "UK_uksi_2019_696",
           "markup.in_versions": [
-            "NI"
+            "E+W+S"
           ],
           "markup.level": "words",
           "markup.operation": "substituted"
@@ -24605,6 +24597,19 @@
             "sch.12.para.21(a)"
           ],
           "markup.cited": "UK_uksi_2019_696",
+          "markup.heading": true,
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.21"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.12.para.21(a)"
+          ],
+          "markup.cited": "UK_uksi_2019_696",
           "markup.in_versions": [
             "E+W+S"
           ],
@@ -24733,22 +24738,6 @@
         },
         "key": "key-E",
         "target": "reg.21(4)"
-      },
-      {
-        "claims": {
-          "markup.affecting": [
-            "sch.12.para.21(a)"
-          ],
-          "markup.cited": "UK_uksi_2019_696",
-          "markup.heading": true,
-          "markup.in_versions": [
-            "E+W+S"
-          ],
-          "markup.level": "words",
-          "markup.operation": "substituted"
-        },
-        "key": "key-E",
-        "target": "reg.21"
       }
     ],
     "UK_uksi_2008_1597/c84a6a8c94": [
@@ -25585,6 +25574,19 @@
             "sch.3.para.9(3)"
           ],
           "markup.cited": "UK_uksi_2020_1460",
+          "markup.heading": true,
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.18"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.3.para.9(3)"
+          ],
+          "markup.cited": "UK_uksi_2020_1460",
           "markup.in_versions": [
             "E+W+S"
           ],
@@ -25728,25 +25730,22 @@
         },
         "key": "key-E",
         "target": "reg.18(8)"
-      },
+      }
+    ],
+    "UK_uksi_2011_1881/d8aea2b60c": [
       {
         "claims": {
           "markup.affecting": [
-            "sch.3.para.9(3)"
+            "sch.15.para.26(b)"
           ],
-          "markup.cited": "UK_uksi_2020_1460",
+          "markup.cited": "UK_uksi_2019_696",
           "markup.heading": true,
-          "markup.in_versions": [
-            "E+W+S"
-          ],
           "markup.level": "words",
           "markup.operation": "substituted"
         },
         "key": "key-E",
-        "target": "reg.18"
-      }
-    ],
-    "UK_uksi_2011_1881/d8aea2b60c": [
+        "target": "reg.39"
+      },
       {
         "claims": {
           "markup.affecting": [
@@ -25821,22 +25820,6 @@
         },
         "key": "key-E",
         "target": "reg.39(4)"
-      },
-      {
-        "claims": {
-          "markup.affecting": [
-            "sch.15.para.26(b)"
-          ],
-          "markup.cited": "UK_uksi_2019_696",
-          "markup.heading": true,
-          "markup.in_versions": [
-            "E+W+S"
-          ],
-          "markup.level": "words",
-          "markup.operation": "substituted"
-        },
-        "key": "key-E",
-        "target": "reg.39"
       }
     ],
     "UK_uksi_2011_1881/f5e0659d6f": [
@@ -28821,7 +28804,7 @@
           ],
           "markup.cited": "UK_uksi_2024_20",
           "markup.in_versions": [
-            "S"
+            "E+W"
           ],
           "markup.level": "provision",
           "markup.operation": "inserted"
@@ -28882,7 +28865,7 @@
           ],
           "markup.cited": "UK_uksi_2024_20",
           "markup.in_versions": [
-            "S"
+            "E+W"
           ],
           "markup.level": "provision",
           "markup.operation": "inserted"

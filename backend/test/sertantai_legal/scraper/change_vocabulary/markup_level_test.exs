@@ -96,4 +96,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupLevelTest do
     assert "art.Article 3(A1)" in targets
     refute "art.Article 3" in targets
   end
+
+  test "the version whose own text carries a change, though the versions share an id (SI 2008/1597 reg.14(1))" do
+    xml =
+      ~s(<Legislation><P1 id="regulation-14"><Pnumber>14</Pnumber><P1para><P2 DocumentURI="http://www.legislation.gov.uk/uksi/2008/1597/regulation/14/1/england+wales+scotland" id="regulation-14-1"><Pnumber>1</Pnumber><P2para><Text>A <Substitution ChangeId="key-gb">GB words</Substitution>.</Text></P2para></P2><P2 DocumentURI="http://www.legislation.gov.uk/uksi/2008/1597/regulation/14/1/ni" id="regulation-14-1"><Pnumber>1</Pnumber><P2para><Text>A <Substitution ChangeId="key-ni">NI words</Substitution>.</Text></P2para></P2></P1para></P1></Legislation>)
+
+    by_key =
+      xml
+      |> Markup.read("UK_uksi_2008_1597")
+      |> Map.new(fn {k, _t, cl} ->
+        {k, Enum.find_value(cl, &(&1.attribute == :in_versions && &1.value))}
+      end)
+
+    assert by_key["key-gb"] == ["E+W+S"]
+    assert by_key["key-ni"] == ["NI"]
+  end
 end

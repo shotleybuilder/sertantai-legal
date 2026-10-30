@@ -132,8 +132,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
       repeated: repeated,
       own: own,
       items: MapSet.new(Map.keys(items)),
-      kept_children: KeptChildren.read(doc),
-      version_of: Versions.territories(doc)
+      kept_children: KeptChildren.read(doc)
     }
 
     cited = cited(doc)
@@ -321,6 +320,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     # SI 2009/1348 Pt.4A inserted whole, CV-S08 round 1)
     flags = if name in [:Pnumber, :Number], do: [:number | flags], else: flags
 
+    # the territorial version whose text this is (the nearest: CV-S09 round 8)
+    flags =
+      case Versions.uri_territory(attr(attrs, :DocumentURI)) do
+        nil -> flags
+        t -> [{:version, t} | flags]
+      end
+
     flags =
       if name == :Footnote and attr(attrs, :id),
         do: [{:footnote, attr(attrs, :id)} | flags],
@@ -349,6 +355,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
               kind: name,
               path: path,
               number?: :number in flags,
+              version: Enum.find_value(flags, fn f -> match?({:version, _}, f) && elem(f, 1) end),
               retain: attr(attrs, :RetainText) == "true",
               paired: attr(attrs, :SubstitutionRef) != nil,
               substitution_ref: attr(attrs, :SubstitutionRef),
@@ -445,8 +452,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     ])
   end
 
-  defp in_versions(occ, ctx) do
-    case for(o <- occ, id <- o.path, t = Map.get(ctx.version_of, id), uniq: true, do: t) do
+  defp in_versions(occ, _ctx) do
+    case for(%{version: t} <- occ, t != nil, uniq: true, do: t) do
       [] -> nil
       ts -> Enum.sort(ts)
     end
