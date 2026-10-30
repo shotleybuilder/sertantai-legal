@@ -748,3 +748,7 @@ Upstream faults are about 17 of 150: U10 (6), U12 (4), U13, U1, V9, the HSWA s.5
 - Still live: U1, U5, U10, U12, U13, U14, U15, V9, K-legacy.
 
 **Tier questions (doubtful, several agents):** a repealed_saved status tier when `saved` comes from the feed; a commenced_by tier when `by` comes from the feed.
+
+### Decisions for batch 8 (Jason 2026-10-30)
+
+- **Scope:** fold M1 (the version's own text at the split, from per-version markup evidence), EW, NN; then recheck the changed R rows and fresh S/T draws. Upstream classes wait for a separate reader session.
