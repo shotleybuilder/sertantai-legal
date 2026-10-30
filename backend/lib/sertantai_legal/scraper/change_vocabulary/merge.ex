@@ -140,6 +140,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
           law == nil or by(c) == law,
           other_source?(orphan, c),
           not inside_words?(orphan, c),
+          not new_child?(orphan, c),
           do: c
 
     events =
@@ -208,6 +209,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
   # its own change, never folded into the words change ("in paragraph (c),
   # for “…” substitute— (i) … (ii) …": (c)(ii) substituted whole had joined
   # the feed's words change on (c), and made (c) whole — CV-S06 seed 33)
+  # the law's text inserting a new provision under one another change
+  # substitutes is its own change, never the parent's (CV-S09 round 7: SI
+  # 2015/767 substituting SI 2010/2214 reg.36 with a new (3) — the (3)
+  # inserted had made reg.36 itself read inserted in 2015)
+  defp new_child?(orphan, c) do
+    Change.value(orphan, :law_text, :operation) == :inserted and
+      Change.value(orphan, :law_text, :level) == :provision and
+      c.target in tl(LatRef.ancestors(orphan.target)) and
+      :substituted in (Change.values(c, :feed, :operation) ++
+                         Change.values(c, :markup, :operation))
+  end
+
   defp inside_words?(orphan, c) do
     Change.value(orphan, :law_text, :level) == :provision and
       c.target in tl(LatRef.ancestors(orphan.target)) and

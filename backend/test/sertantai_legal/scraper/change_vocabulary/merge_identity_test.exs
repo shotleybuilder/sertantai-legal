@@ -7,7 +7,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeIdentityTest do
   """
   use ExUnit.Case, async: true
 
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{Claim, Merge}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Claim, Merge}
 
   defp set(key, target, claims),
     do:
@@ -118,6 +118,26 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeIdentityTest do
       ])
 
     assert "d29p5797" in holding(changes, effect_id("a")).aliases
+  end
+
+  test "the law's text inserting a new provision under a substituted one stays its own change (SI 2015/767 on SI 2010/2214 reg.36)" do
+    changes =
+      Merge.merge([
+        feed(effect_id("a"), "reg.36", :substituted, "UK_uksi_2015_767", ["reg.9"]),
+        set(effect_id("a"), "reg.36", [
+          {:markup, :operation, :inserted},
+          {:markup, :level, :provision}
+        ]),
+        set("UK_uksi_2015_767:regulation-9#inserted", "reg.36(3)", [
+          {:law_text, :operation, :inserted},
+          {:law_text, :level, :provision},
+          {:law_text, :by, "UK_uksi_2015_767"},
+          {:law_text, :date, ~D[2020-12-31]}
+        ])
+      ])
+
+    parent = holding(changes, effect_id("a"))
+    refute :inserted in Change.values(parent, :law_text, :operation)
   end
 
   test "an operation-less feed effect ('amended') joins by its amending provision (HSWA s.52(1), 1997 c.42 s.2)" do
