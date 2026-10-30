@@ -269,3 +269,21 @@ R has 6 of 50 rows wrong in the fold (12%), across 6 laws. That is far over the 
 | U10 | SI 2015/51 |
 
 Tests: 9,547 (1 fixed: `Version` now covers `label/*`).
+
+## Round 2 (2026-10-30; seeds S 111, T 112, R 113)
+
+- **Restore point:** `provision_changes` and `provision_change_claims`, tag `cv-s09-batch1`.
+- **Rebuild:** OH&S rebuilt (`--build --family`); 145 laws, 26,475 changes, no errors.
+- **Golden from the store: 36/50.** The extra failures (SI 2012/3038, SI 2016/1105, SI 2017/544) are laws outside the family whose stored changes date from 2026-10-22, so they are stale. Golden from inputs (39/50) is the authority.
+- **Current status:**
+
+  | status | rows |
+  |---|---|
+  | in force | 19,076 |
+  | repealed and saved | 1,001 |
+  | repealed | 286 |
+  | partly in force | 8 |
+  | prospective | 0 |
+
+  All 730 rows prospective in round 1 were NISR made versions (U11).
+- **Draws:** S 86 rows; T 148 rows, of which the agents check 4 per class (65); R 150 rows, all checked, by 16 agents.

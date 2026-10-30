@@ -67,12 +67,17 @@ into label periods, in date order from the row's start:
 - territory: the provision's extent (legal_articles.extent_code), narrowed by its own application clause (C6) or
   the legislative context of the Act it amends (C11); a repeal for one territory takes that territory out and the row
   stays in_force where it remains (C1; repealed but saved in one territory likewise, C12).
-- in_force_from / changed_by (D1): the date the CURRENT TEXT took effect and the laws that made that version. A
-  commencement is a version (its date; its commencing law, or [] when the law itself commenced it). A text change
-  (substituted, inserted, renumbered, words repealed) on the row, or a provision-level one on an ancestor, opens a
-  version (its date; every law changing the text that day, C5). A renumbering opens a period (C4). A territorial
-  repeal opens a period but changes neither in_force_from nor changed_by. Both are empty while prospective or partly
-  in force. Repealed: in_force_from nil, changed_by the repealing laws.
+- in_force_from / changed_by / commenced_by (D1; Jason 2026-10-30): in_force_from = the date the CURRENT TEXT took
+  effect; changed_by = the laws that MADE that text ([] for the law's original text; the inserting or substituting
+  laws, every one that day, C5); commenced_by = the law that brought it into force apart from those (a commencing
+  order: SI 1974/1439 for HSWA s.78; [] when the law, or the changing law, commenced itself). A commencement is a
+  version (in_force_from its date, changed_by unchanged, commenced_by the order). A text change (substituted,
+  inserted, renumbered, words repealed) on the row, or a provision-level one on an ancestor, opens a version. A
+  renumbering opens a period (C4). A territorial repeal opens a period but changes none of the three. All three are
+  empty while prospective or partly in force. Repealed: in_force_from nil, changed_by the repealing laws.
+- A provision exists from its insertion: a row inserted after its law's start (own or ancestor whole insertion)
+  starts then, never at the law's start. The most specific commencement governs: an ancestor's commencement never
+  reaches a provision with commencements of its own.
 - A change to a child never opens a period on its parent (C9). A day that changes no field opens no period.
 - A commencement for one territory ("for E.W.S.", an order applying to England only): in_force there, territory
   that territory; each later territory's commencement is a version that widens it (C13, Jason 2026-10-30).
@@ -121,6 +126,14 @@ S: also say, per shape, whether the fold's rule for that shape holds across its 
 Known classes (label a finding with one; otherwise NEW):
 - KS a Schedule/Annex row or change (schedules unparsed, v0.1): never NEW.
 - KC10 a start no source dates (C10): a gap.
+- Logged in round 1 and deferred (label, don't count as NEW): K8 C8 not applied to EU law after 2020-12-31 (needs
+  the Windsor Framework source); U1 an amending law revoked before its change took effect still credited (SI 2017/238,
+  SI 2018/1377); U3 "to which section N relates" read as commencing N (SI 1964/191); U12 KU-missing — a repeal or
+  change stated only in a schedule table, a consolidation, or dated only by the law where no stored change holds it;
+  U10 KU-ext — no row extent, or an instrument's application clause / Act extent clause / conditional NI extension
+  not applied; U13 a Welsh order named uksi for wsi; U14 KF-type a feed Type winning for a modification or misplaced
+  effect; U15 an order's carve-out ("except in relation to …") read as a full commencement (OSRPA s.76, s.91); U5 a
+  subsection's second commencement rule not stored (HSWA s.10(1), s.11(6) 1975).
 - From CV-S08 (upstream, open): KC-order (orders held, not read); KX-territory (a chain's territory cut to the later
   law's extent); KMV (moved words carried as renumbered); KF-type (a feed Type error winning).
 
@@ -172,4 +185,6 @@ OH&S (first family, 2026-10-29 →). The session is `.claude/sessions/change-voc
 | Round | Seed | Result |
 |---|---|---|
 | golden | — | Grown to 50 (39 laws) on 2026-10-30, using the golden-drafting prompt, a Gemini review and Jason's rulings (C13, C14, D3, rule 9) |
+| 1 | 101 (S), 102 (T), 103 (R) | Golden 35/50. Agents S 84 / T 64 / R 50: R 6/50 wrong in the fold (12%). FAIL. Fold F1–F8 and upstream U1–U15 classed |
+| 2 | 111 (S), 112 (T), 113 (R) | Fix 55705654 (fold F1–F3, F5–F8; U2, U6, U7, U8, U11). Golden from inputs 39/50 (the 11 failures are deferred classes) |
 | probe | 90 (S), 91 (R), 92 (T) | Strata built (ff1f97c7): 149 laws, 20,371 rows. Probes were used only to choose golden candidates, so these seeds are never used for R |
