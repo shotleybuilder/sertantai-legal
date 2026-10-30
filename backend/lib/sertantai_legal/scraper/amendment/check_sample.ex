@@ -14,6 +14,7 @@ defmodule SertantaiLegal.Scraper.Amendment.CheckSample do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Text}
   alias SertantaiLegal.Scraper.Amendment.ReadLaw
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Draw
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Store}
 
   @source_key ~r/^(UK_[^:]+):(.+)$/
@@ -30,12 +31,8 @@ defmodule SertantaiLegal.Scraper.Amendment.CheckSample do
   @doc "`n` of `population` at random by `seed`, in a stable order."
   @spec draw([{String.t(), Change.t()}], pos_integer(), integer()) :: [{String.t(), Change.t()}]
   def draw(population, n, seed) do
-    :rand.seed(:exsss, {seed, 6, 6})
-
-    population
-    |> Enum.sort_by(fn {law, c} -> {law, c.target, c.key} end)
-    |> Enum.shuffle()
-    |> Enum.take(n)
+    Draw.seed({seed, 6, 6})
+    Draw.shuffled(population, n, fn {law, c} -> {law, c.target, c.key} end)
   end
 
   @doc "One sampled change as a checkable item (JSON-ready map)."

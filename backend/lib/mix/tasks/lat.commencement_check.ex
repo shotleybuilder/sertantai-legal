@@ -29,6 +29,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
 
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Ref, Store}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Draw
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.{AmendingLaw, NoteDate, OwnCommencement}
   alias SertantaiLegal.Scraper.Commencement.{OwnClause, Rule}
   alias SertantaiLegal.Scraper.Commencement.Store, as: Rules
@@ -345,18 +346,18 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
   # stratified: round-robin over the outcomes, random within each (fixed
   # seed; `--seed N` draws another)
   defp sample(rows, gaps, file, n, seed) do
-    :rand.seed(:exsss, if(seed, do: {seed, seed, seed}, else: {2026, 10, 23}))
+    Draw.seed(if(seed, do: {seed, seed, seed}, else: {2026, 10, 23}))
 
     picked_rows =
       rows
       |> Enum.sort_by(&{&1.law, &1.id})
-      |> stratified(&{&1.outcome, &1.yardstick}, n)
+      |> Draw.round_robin(&{&1.outcome, &1.yardstick}, n)
       |> Enum.map(&row_item/1)
 
     picked_gaps =
       gaps
       |> Enum.sort_by(&{&1.law, &1.change.key, &1.change.target})
-      |> stratified(&class/1, n)
+      |> Draw.round_robin(&class/1, n)
       |> Enum.map(&gap_item/1)
 
     File.write!(file, Jason.encode!(%{rows: picked_rows, gaps: picked_gaps}, pretty: true))
@@ -364,22 +365,6 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
     Mix.shell().info(
       "\nsample of #{length(picked_rows)} rows and #{length(picked_gaps)} gaps written to #{file}"
     )
-  end
-
-  defp stratified(items, by, n) do
-    groups =
-      items
-      |> Enum.group_by(by)
-      |> Enum.sort_by(&inspect(elem(&1, 0)))
-      |> Enum.map(fn {_, xs} -> Enum.shuffle(xs) end)
-
-    groups
-    |> Stream.unfold(fn
-      [] -> nil
-      gs -> {Enum.map(gs, &hd/1), gs |> Enum.map(&tl/1) |> Enum.reject(&(&1 == []))}
-    end)
-    |> Enum.flat_map(& &1)
-    |> Enum.take(n)
   end
 
   defp row_item(r) do

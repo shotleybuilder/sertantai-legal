@@ -22,6 +22,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelStrata do
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Label}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Draw
   alias SertantaiLegal.Scraper.Territory
 
   @text_changes [:substituted, :inserted, :renumbered]
@@ -120,7 +121,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelStrata do
           {String.t(), String.t()}
         ]
   def draw(rows, n, seed) do
-    :rand.seed(:exsss, {seed, 9, 9})
-    rows |> Enum.sort() |> Enum.shuffle() |> Enum.take(n)
+    Draw.seed({seed, 9, 9})
+    Draw.shuffled(rows, n, & &1)
   end
 end

@@ -16,6 +16,7 @@ defmodule Mix.Tasks.Lat.FeedCheck do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.LatRef
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Placement, Ref}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Draw
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.{Feed, Markup}
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed
 
@@ -249,8 +250,8 @@ defmodule Mix.Tasks.Lat.FeedCheck do
   # a reproducible random sample (fixed seed; `--seed N` draws another):
   # each effect as the feed states it, beside what the reader made of it
   defp sample(results, file, n, seed) do
-    :rand.seed(:exsss, if(seed, do: {seed, seed, seed}, else: {2026, 10, 22}))
-    picked = results |> Enum.sort_by(&{&1.law, &1.effect.effect_id}) |> Enum.take_random(n)
+    Draw.seed(if(seed, do: {seed, seed, seed}, else: {2026, 10, 22}))
+    picked = Draw.take_random(results, n, &{&1.law, &1.effect.effect_id})
 
     rows =
       for r <- picked do

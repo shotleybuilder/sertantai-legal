@@ -97,7 +97,9 @@ defmodule Mix.Tasks.Lat.MergeCheck do
       |> Enum.map(&MergeStrata.join_rate/1)
       |> Enum.reduce(%{}, &Map.merge(&2, &1, fn _, {a1, n1}, {a2, n2} -> {a1 + a2, n1 + n2} end))
 
-    Mix.shell().info("\njoin rate (met a feed effect), of #{length(text)} stored changes:")
+    Mix.shell().info(
+      "\njoin rate: of each source's text changes, those a feed effect states too (#{length(text)} stored changes):"
+    )
 
     for {source, {met, n}} <- Enum.sort(rate),
         do: Mix.shell().info("  #{source}: #{met}/#{n} (#{pct(met, n)})")

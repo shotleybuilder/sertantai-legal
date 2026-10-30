@@ -17,6 +17,7 @@ defmodule Mix.Tasks.Lat.MarkupCheck do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.ChangeVocabulary.{MarkupPatterns, MarkupPlacement, Ref}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Draw
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed
 
   @shortdoc "Every markup change accounted for; a sample for checking (read-only)"
@@ -223,8 +224,8 @@ defmodule Mix.Tasks.Lat.MarkupCheck do
   # a reproducible random sample (fixed seed; `--seed N` draws another):
   # each change as the markup states it, beside what the reader made of it
   defp sample(results, file, n, seed) do
-    :rand.seed(:exsss, if(seed, do: {seed, seed, seed}, else: {2026, 10, 23}))
-    picked = results |> Enum.sort_by(&{&1.law, &1.change.key}) |> Enum.take_random(n)
+    Draw.seed(if(seed, do: {seed, seed, seed}, else: {2026, 10, 23}))
+    picked = Draw.take_random(results, n, &{&1.law, &1.change.key})
 
     rows =
       for r <- picked do

@@ -38,6 +38,7 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.{Extent, SweepForm}
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Lookup, ReadCache, Store}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Draw
   alias SertantaiLegal.Scraper.LawRunner
   alias SertantaiLegal.Scraper.LawRunner.Guard
 
@@ -340,11 +341,11 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
 
   defp sample(opts, rows, change_rows) do
     n = opts[:n] || 50
-    :rand.seed(:exsss, {opts[:seed] || 1, 2, 3})
+    Draw.seed({opts[:seed] || 1, 2, 3})
 
     laws =
       rows
-      |> stratified(&key/1, n)
+      |> Draw.equal_share(&key/1, n)
       |> Enum.map(fn r ->
         %{
           "law" => r.law,
@@ -365,7 +366,7 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
 
     changes =
       change_rows
-      |> stratified(& &1.outcome, n)
+      |> Draw.equal_share(& &1.outcome, n)
       |> Enum.map(fn c ->
         %{
           "law" => c.law,
@@ -387,19 +388,5 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
     Mix.shell().info(
       "\nsample: #{length(laws)} laws, #{length(changes)} changes → #{opts[:sample]}"
     )
-  end
-
-  # every kind seen: an equal share per kind, the rest at random
-  defp stratified(items, kind, n) do
-    groups = Enum.group_by(items, kind)
-    share = max(div(n, max(map_size(groups), 1)), 1)
-
-    first =
-      groups
-      |> Enum.sort()
-      |> Enum.flat_map(fn {_, g} -> g |> Enum.shuffle() |> Enum.take(share) end)
-
-    rest = (items -- first) |> Enum.shuffle() |> Enum.take(max(n - length(first), 0))
-    Enum.take(first ++ rest, n)
   end
 end
