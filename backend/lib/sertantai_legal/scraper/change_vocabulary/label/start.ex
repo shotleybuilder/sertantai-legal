@@ -90,17 +90,30 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Start do
       end
 
     # the text in force at the start: the original, or the law that
-    # inserted or substituted it that day (D1); its own whole insertion
-    # made it, whether or not any source dates it (Forestry Act 1967
-    # s.1(4)(a), inserted by SI 1999/1747)
+    # inserted or substituted it that day (D1). A whole insertion no source
+    # dates made it too — its own (Forestry Act 1967 s.1(4)(a), SI 1999/1747)
+    # or its ancestor's (HSWA s.25A(1), CPA 1987: CV-S09 round 2) — and an
+    # undated substitution of it after that insertion made its text since
+    # (CLP Art 25(7): inserted by Regulation 2017/542, replaced by 2020/11)
+    undated = undated_makers(id, changes)
+
     made =
-      Enum.filter(changes, fn c ->
-        (c.target == id and insertion?(c) and c.resolved.date == nil) or
-          (c in reaching and on_start?.(c) and c.resolved.operation in Facts.text_changes())
-      end)
+      Enum.filter(reaching, &(on_start?.(&1) and &1.resolved.operation in Facts.text_changes())) ++
+        undated
+
+    # an amendment to the amending law before it took effect made it too (C5)
+    made =
+      if made == [],
+        do: [],
+        else: made ++ Enum.filter(reaching, &(on_start?.(&1) and Facts.earlier_amendment?(&1)))
 
     text_by = Facts.by(made, self)
-    in_force? = status == :in_force and Map.get(provision, :start_dated, true)
+
+    # an undated maker leaves the start's own date unknown when the start
+    # is only its law's (C10), never the law's commencement
+    in_force? =
+      status == :in_force and Map.get(provision, :start_dated, true) and
+        not (undated != [] and Map.get(provision, :start_from_law, false))
 
     %{
       valid_from: start,
@@ -114,14 +127,60 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Start do
           else: []
         ),
       territory: territory(provision, own_insertion, territorial, changes, id),
-      tiers:
-        Map.new(
-          ~w(status in_force_from changed_by commenced_by territory)a,
-          &{&1, Map.get(provision, :start_tier)}
-        ),
+      tiers: tiers(provision, own_insertion, start_day, made, territorial),
       _text_by: text_by
     }
   end
+
+  # each field's tier from the changes behind it (CV-S09 round 2: an
+  # inserted provision's start rests on its insertion's sources); a field
+  # nothing changed rests on the provision's start (`:start_tier`)
+  defp tiers(provision, own_insertion, start_day, made, territorial) do
+    base =
+      Map.new(
+        ~w(status in_force_from changed_by commenced_by territory)a,
+        &{&1, Map.get(provision, :start_tier)}
+      )
+
+    behind = Enum.reject([own_insertion | start_day], &is_nil/1)
+
+    base
+    |> set(:status, behind)
+    |> set(:in_force_from, behind ++ made)
+    |> set(:changed_by, made)
+    |> set(:commenced_by, behind ++ made)
+    |> set(:territory, Enum.reject([own_insertion | territorial], &is_nil/1))
+  end
+
+  defp set(tiers, _field, []), do: tiers
+  defp set(tiers, field, changes), do: Facts.tiers(tiers, [field], Enum.uniq(changes))
+
+  # the undated whole changes that made its text: its own undated
+  # substitutions, else an undated whole insertion of it or an ancestor
+  defp undated_makers(id, changes) do
+    undated =
+      Enum.filter(
+        changes,
+        &(&1.resolved.date == nil and &1.resolved.level == :provision and
+            SertantaiLegal.Scraper.ChangeVocabulary.Label.reaches?(&1, id))
+      )
+
+    case Enum.filter(undated, &(&1.target == id and &1.resolved.operation == :substituted)) do
+      [] -> Enum.filter(undated, &insertion?/1) |> nearest()
+      substitutions -> substitutions
+    end
+  end
+
+  # the insertion on the nearest provision: its own, else its closest ancestor's
+  defp nearest([]), do: []
+
+  defp nearest(insertions) do
+    deepest = insertions |> Enum.map(&depth(&1.target)) |> Enum.max()
+    Enum.filter(insertions, &(depth(&1.target) == deepest))
+  end
+
+  defp depth("*"), do: 0
+  defp depth(target), do: length(SertantaiLegal.Scraper.LatRef.ancestors(target))
 
   @doc "The law's application clauses not in force at the start (they apply on their day)."
   @spec applied_later(String.t(), Date.t(), [Change.t()]) :: [Change.t()]

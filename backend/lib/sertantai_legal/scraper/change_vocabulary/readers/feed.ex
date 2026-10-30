@@ -248,7 +248,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
          Claim.new(:feed, :date, date, id),
          Claim.new(:feed, :partial, Qualification.partial?(qualification), id),
          Claim.new(:feed, :by, e.affecting, id),
-         stage_facts(e, qualification)
+         stage_facts(e, qualification, date)
        ])}
     end
   end
@@ -326,7 +326,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
              Claim.new(:feed, :date, date, id),
              Claim.new(:feed, :partial, Qualification.partial?(qualification), id),
              Claim.new(:feed, :by, e.affecting, id),
-             stage_facts(e, qualification)
+             stage_facts(e, qualification, date)
            ])}
         end
     ]
@@ -349,12 +349,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
         ],
         else: []
 
+    # each partial stage removes it in part, for purposes: partly in force
+    # (C7), the text kept until the full stage (CV-S09 round 2: HSWA
+    # s.47(5), ERRA 2013 "for specified purposes" then 1 Oct 2013)
     in_part =
       for {date, _} <- partial do
         {"#{id}@#{date}",
          Enum.reject(claims(e), &(&1.attribute in [:date, :operation])) ++
            Claim.new(:feed, :operation, :repealed_in_part, id) ++
-           Claim.new(:feed, :date, date, id)}
+           Claim.new(:feed, :date, date, id) ++
+           Claim.new(:feed, :partial, true, id)}
       end
 
     # no full stage: every stage removes it in part, the first keeping the key
@@ -370,9 +374,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   # the territory its qualification names ("for E.W.S.") — `in_force_for`,
   # or excepts — `in_force_except` — and what else it says
   # (`Qualification.classes/1`), for the label fold to read (CV-S09)
-  defp stage_facts(%Effect{effect_id: id} = e, qualification),
+  defp stage_facts(%Effect{effect_id: id} = e, qualification, date \\ nil),
     do:
       Enum.concat([
+        Claim.new(:feed, :commenced_by, commencing(e, date), id),
         Claim.new(:feed, :effect_extent, code(e.effect_extent), id),
         Claim.new(:feed, :savings, e.savings, id),
         qualification_facts(qualification, id)
@@ -394,6 +399,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
     case Qualification.classes(qualification) do
       ["none"] -> nil
       classes -> Enum.join(classes, " + ")
+    end
+  end
+
+  # the order its stage on `date` names (InForce CommencingURI); with no
+  # date, its only stage's
+  defp commencing(%Effect{in_force: entries}, date) do
+    entries = entries || []
+
+    case date do
+      nil -> entries |> Enum.map(&Map.get(&1, :commencing)) |> Enum.find(& &1)
+      d -> Enum.find_value(entries, &(&1.date == d && Map.get(&1, :commencing)))
     end
   end
 
@@ -515,6 +531,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
       Claim.new(:feed, :effect_extent, code(e.effect_extent), id),
       Claim.new(:feed, :date, e.in_force_date, id),
       Claim.new(:feed, :prospective, if(e.prospective, do: true), id),
+      Claim.new(:feed, :commenced_by, commencing(e, e.in_force_date), id),
+      Claim.new(
+        :feed,
+        :earlier_amendment,
+        if(EffectVerb.earlier_amendment?(e.type), do: true),
+        id
+      ),
       Claim.new(:feed, :applied, e.applied, id),
       Claim.new(:feed, :savings, e.savings, id),
       Claim.new(:feed, :by, e.affecting, id),

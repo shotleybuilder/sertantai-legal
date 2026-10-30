@@ -46,7 +46,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
           optional(:start_dated) => boolean(),
           optional(:start_tier) => :primary | :derived,
           optional(:version) => String.t(),
-          optional(:version_start) => Date.t() | nil
+          optional(:version_start) => Date.t() | nil,
+          optional(:shows_text) => boolean(),
+          optional(:start_from_law) => boolean()
         }
 
   @private [:_text_by]
@@ -63,10 +65,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
       |> Enum.filter(&reaches?(&1, id))
       |> Enum.filter(&(&1.resolved.date != nil))
       |> Enum.filter(&(version == nil or Facts.overlaps?(&1.resolved.territory, version)))
-      |> nearest_commencements()
 
     # it begins when it exists: its law's start, or a later insertion
     born = Start.start(start, reaching)
+
+    # a commencement before it existed never reaches it (its law's own
+    # record for a provision inserted later: CROW s.1A(a), CV-S09 round 2);
+    # of the rest, the most specific governs
+    reaching =
+      reaching
+      |> Enum.reject(
+        &(&1.resolved.operation == :commenced and Date.compare(&1.resolved.date, born) == :lt)
+      )
+      |> nearest_commencements()
 
     provision =
       if born == start,
@@ -74,7 +85,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
         else: %{provision | start: born} |> Map.put(:start_dated, true)
 
     later? = &(Date.compare(&1, born) == :gt)
-    ctx = %{self: Map.get(provision, :law), extent: provision.extent}
+
+    ctx = %{
+      self: Map.get(provision, :law),
+      extent: provision.extent,
+      shows_text: Map.get(provision, :shows_text, false)
+    }
 
     # the day the versions split is a day of its own (C3)
     split_day = if version_start && later?.(version_start), do: [{version_start, []}], else: []
@@ -134,6 +150,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
   @spec reaches?(Change.t(), String.t()) :: boolean()
   def reaches?(%Change{target: target, resolved: r}, id) do
     target == id or
-      (r.level == :provision and (target == "*" or target in tl(LatRef.ancestors(id))))
+      (r.level == :provision and level_stated?(r) and
+         (target == "*" or target in tl(LatRef.ancestors(id))))
   end
+
+  # a whole-provision change reaches what lies under it only when a source
+  # says it is whole: a level no source states is the table's default, no
+  # evidence (CV-S09 round 2: the markup placed CROW s.13(2)'s Addition,
+  # wrapping s.1(6A)-(6C), on s.1 itself — unstated, it had reached all of s.1)
+  defp level_stated?(%{sources: sources}) when is_map(sources),
+    do: Map.fetch(sources, :level) != {:ok, nil}
+
+  defp level_stated?(_r), do: true
 end

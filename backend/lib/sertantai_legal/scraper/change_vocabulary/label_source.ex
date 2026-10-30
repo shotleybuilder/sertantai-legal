@@ -39,7 +39,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
 
       provisions =
         Map.new(extents, fn {id, extent} ->
-          {id, %{extent: extent, start: start || ~D[1900-01-01], start_dated: start != nil}}
+          {id,
+           %{
+             extent: extent,
+             start: start || ~D[1900-01-01],
+             start_dated: start != nil,
+             # the law's start, not the provision's own
+             start_from_law: true
+           }}
         end)
 
       labels =

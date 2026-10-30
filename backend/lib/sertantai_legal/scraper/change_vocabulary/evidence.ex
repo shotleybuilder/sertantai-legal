@@ -125,7 +125,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
     # the law making the change; the law bringing it into force is apart
     # (a commencing order is not the law that made the change)
     by: [{:law_text, :by}, {:feed, :by}, {:markup, :cited}],
-    commenced_by: [{:commencement, :commenced_by}]
+    # the order the law's text or a read order names, else the one the
+    # feed's stage names (CommencingURI: SI 2006/378 for HSWA s.51A(2)(b),
+    # CV-S09 round 2) — derived
+    commenced_by: [{:commencement, :commenced_by}, {:feed, :commenced_by}]
   ]
 
   @doc "The tier of a claim source: `:primary` (the legal text) or `:derived`."

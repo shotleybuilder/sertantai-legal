@@ -15,6 +15,9 @@
 # 2021/30 s.8, CROW s.1A(b) and s.1(6B). SI 1977/500 reg.4A(1)(c) corrected to
 # E+W+S: its inserting SI 1992/2051 is a GB instrument (C14).
 #
+# CV-S09 batch 2: commencing orders the feed names (InForce CommencingURI) —
+# TCPA s.284(3)(a) 2009 by SI 2009/400; EUWA s.6 heading 2024 by SI 2023/1363.
+#
 # Source: data/reports/change-vocabulary/golden/ (golden-set.md, expected-batch{1,2,3}.md),
 # signed off by Gemini 2026-10-21 (data/code-reviews/2026-10-21-cv-01-golden-set-gemini.md;
 # its AMEND lines applied), normalised to D1. 25 golden provisions plus SI 2010/404
@@ -399,7 +402,7 @@
         valid_from: ~D[2009-04-06],
         in_force_from: ~D[2009-04-06],
         changed_by: ["UK_ukpga_2008_29"],
-        commenced_by: [],
+        commenced_by: ["UK_uksi_2009_400"],
         territory: "E+W",
         valid_to: ~D[2015-09-06]
       },
@@ -804,7 +807,7 @@
         valid_from: ~D[2024-01-01],
         in_force_from: ~D[2024-01-01],
         changed_by: ["UK_ukpga_2023_28"],
-        commenced_by: [],
+        commenced_by: ["UK_uksi_2023_1363"],
         territory: "E+W+S+NI",
         valid_to: nil
       }

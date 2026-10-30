@@ -41,33 +41,42 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Parts do
         c.target == part,
         c.resolved.operation == :commenced,
         c.resolved.date != nil,
-        do: {c.resolved.date, c.resolved.partial, Change.credit(c)}
+        do: {c.resolved.date, c.resolved.partial, Change.credit(c), c.resolved.sources[:date]}
   end
 
   defp parent_stages(id, stages) do
     first = stages |> List.flatten() |> Enum.map(&elem(&1, 0)) |> Enum.min(Date)
+
+    # the parts' own source: derived when any part's date is (CV-S09 round
+    # 2: HSWA and OSRPA parts, all read from the orders, had read derived)
+    source =
+      stages
+      |> List.flatten()
+      |> Enum.map(&elem(&1, 3))
+      |> Enum.reject(&is_nil/1)
+      |> Enum.find(:commencement, &(Evidence.tier(&1) == :derived))
 
     fulls =
       Enum.map(stages, fn s ->
         s |> Enum.reject(&elem(&1, 1)) |> Enum.min_by(&elem(&1, 0), Date, fn -> nil end)
       end)
 
-    partial = synthetic(id, first, true, nil)
+    partial = synthetic(id, first, true, nil, source)
 
     case Enum.any?(fulls, &is_nil/1) do
       true ->
         [partial]
 
       false ->
-        {date, _, by} = Enum.max_by(fulls, &elem(&1, 0), Date)
+        {date, _, by, _} = Enum.max_by(fulls, &elem(&1, 0), Date)
 
         if Date.compare(first, date) == :lt,
-          do: [partial, synthetic(id, date, false, by)],
-          else: [synthetic(id, date, false, by)]
+          do: [partial, synthetic(id, date, false, by, source)],
+          else: [synthetic(id, date, false, by, source)]
     end
   end
 
-  defp synthetic(id, date, partial?, by) do
+  defp synthetic(id, date, partial?, by, source) do
     %Change{
       key: "parts:#{id}@#{date}",
       target: id,
@@ -80,8 +89,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Parts do
         retained: false,
         partial: partial?,
         saved: false,
-        sources: %{date: :parts},
-        tiers: %{date: :derived}
+        sources: %{date: source, partial: source, commenced_by: source},
+        tiers: Map.new(~w(date partial commenced_by)a, &{&1, Evidence.tier(source)})
       }
     }
   end

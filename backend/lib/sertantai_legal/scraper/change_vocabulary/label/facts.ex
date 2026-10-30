@@ -79,6 +79,23 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Facts do
     end
   end
 
+  @doc """
+  True for a dated change the markup marks in the provision's text with no
+  operation of its own — a legacy Addition inside the text claims none
+  (CV-S08, Jason 2026-10-29), yet its words changed: a version (CV-S09
+  round 2: Factories Act 1961 s.125(6), SI 1988/1655). A feed
+  modification or application carries no markup, so never.
+  """
+  @spec marked_text?(Change.t()) :: boolean()
+  def marked_text?(%Change{resolved: r} = c),
+    do:
+      r.operation == nil and r.level == :words and r.date != nil and
+        Enum.any?(c.claims, &(&1.source == :markup))
+
+  @doc "True for an amendment to an earlier amending provision (the feed's \"… in earlier amending provision\")."
+  @spec earlier_amendment?(Change.t()) :: boolean()
+  def earlier_amendment?(c), do: Change.value(c, :feed, :earlier_amendment) == true
+
   @doc "True for a commencement that brings the provision fully into force where it reaches."
   @spec full?(Change.t()) :: boolean()
   def full?(c), do: not c.resolved.partial or territory_only(c) != nil
@@ -100,7 +117,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Facts do
     Enum.reduce(repeals, territory, fn
       _c, :gone -> :gone
       %{resolved: %{territory: nil}}, _t -> :gone
-      c, t -> Territory.subtract(t || "E+W+S+NI", c.resolved.territory) || :gone
+      # where it extends is unknown: a repeal leaves no remainder to invent
+      # (CV-S09 round 2: SI 1987/605, revoked E+W+S, had read in force NI)
+      _c, nil -> :gone
+      c, t -> Territory.subtract(t, c.resolved.territory) || :gone
     end)
   end
 
@@ -119,7 +139,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Facts do
     territory: [:territory],
     in_force_from: [:date],
     changed_by: [:by],
-    commenced_by: [:commenced_by]
+    commenced_by: [:commenced_by, :by]
   }
 
   @doc "The period's tiers with `fields` set from `changes`."
@@ -133,6 +153,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Facts do
             t != nil,
             uniq: true,
             do: t
+
+      # a territory one commencement is for is the feed's word (C13)
+      stated =
+        if field == :territory and Enum.any?(changes, &territory_only/1),
+          do: [:derived | stated],
+          else: stated
 
       tier =
         cond do

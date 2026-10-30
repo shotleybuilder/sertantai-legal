@@ -259,4 +259,110 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
                valid: ~D[1997-05-20]
              })
   end
+
+  describe "batch 2 (CV-S09 round 2)" do
+    test "an undated whole insertion on an ancestor: the inserting law, no date when the start is only the law's (HSWA s.25A(1))" do
+      changes = [change("s.25A", :inserted, nil, by: "UK_ukpga_1987_43")]
+
+      assert [
+               %{
+                 status: :in_force,
+                 in_force_from: nil,
+                 changed_by: ["UK_ukpga_1987_43"]
+               }
+             ] =
+               fold("s.25A(1)", changes, %{
+                 law: "UK_ukpga_1974_37",
+                 start: ~D[1974-07-31],
+                 start_from_law: true
+               })
+    end
+
+    test "a repealed provision comes back with its ancestor's later whole substitution, where it shows text (SI 2022/1378 reg.9(9))" do
+      changes = [
+        change("reg.9(9)", :repealed, ~D[2023-04-01], by: "UK_uksi_2023_247"),
+        change("reg.9", :substituted, ~D[2024-04-01], by: "UK_uksi_2024_322")
+      ]
+
+      provision = %{law: "UK_uksi_2022_1378", start: ~D[2022-12-21], extent: "E+W+S"}
+
+      assert [_, %{status: :repealed}, %{status: :in_force, changed_by: ["UK_uksi_2024_322"]}] =
+               fold("reg.9(9)", changes, Map.put(provision, :shows_text, true))
+
+      assert [_, %{status: :repealed}] = fold("reg.9(9)", changes, provision)
+    end
+
+    test "an undated substitution after an undated insertion made its text (CLP Art 25(7))" do
+      changes = [
+        change("art.Article 25(7)", :inserted, nil, by: "UK_eur_2017_542"),
+        change("art.Article 25(7)", :substituted, nil, by: "UK_eur_2020_11")
+      ]
+
+      assert [%{changed_by: ["UK_eur_2020_11"]}] =
+               fold("art.Article 25(7)", changes, %{law: "UK_eur_2008_1272"})
+    end
+
+    test "an unknown extent leaves no remainder to a territorial repeal (SI 1987/605)" do
+      changes = [
+        change("*", :repealed, ~D[1988-05-17], by: "UK_uksi_1988_712", territory: "E+W+S")
+      ]
+
+      assert [_, %{status: :repealed, territory: "nowhere"}] =
+               fold("reg.5", changes, %{
+                 law: "UK_uksi_1987_605",
+                 extent: nil,
+                 start: ~D[1987-05-01]
+               })
+    end
+
+    test "a change the markup marks in the text with no operation of its own is a version (Factories Act 1961 s.125(6))" do
+      c =
+        change("s.125(6)", nil, ~D[1989-01-01],
+          level: :words,
+          by: "UK_uksi_1988_1655",
+          claims: [{:markup, :level, :words}]
+        )
+
+      assert [_, %{in_force_from: ~D[1989-01-01], changed_by: ["UK_uksi_1988_1655"]}] =
+               fold("s.125(6)", [c])
+    end
+
+    test "an earlier amendment to the amending law made the text too (C5; REACH Art 127E)" do
+      changes = [
+        change("art.Article 127E", :inserted, ~D[2020-12-31], by: "UK_uksi_2019_758"),
+        change("art.Article 127E", nil, ~D[2020-12-31],
+          key: "earlier",
+          by: "UK_uksi_2019_858",
+          claims: [{:feed, :earlier_amendment, true}]
+        )
+      ]
+
+      assert [%{changed_by: ["UK_uksi_2019_758", "UK_uksi_2019_858"]}] =
+               fold("art.Article 127E(8)(c)(i)", changes, %{
+                 law: "UK_eur_2006_1907",
+                 start: ~D[2006-12-18]
+               })
+    end
+
+    test "a change whose level no source states never reaches what lies under it" do
+      c = change("s.1", :inserted, ~D[2004-09-19], sources: %{operation: :feed, level: nil})
+      assert [%{valid_from: ~D[1984-05-13]}] = fold("s.1(1)(a)", [c])
+    end
+
+    test "the start's tiers come from the changes behind it" do
+      c =
+        change("reg.2A", :inserted, ~D[2020-12-31], by: "UK_uksi_2019_696")
+        |> then(&%{&1 | resolved: %{&1.resolved | tiers: %{date: :derived, by: :primary}}})
+
+      [first] =
+        Label.fold(
+          "reg.2A(1)",
+          %{law: "UK_uksi_2008_1597", extent: "E+W+S", start: ~D[2009-12-29]},
+          [c]
+        )
+
+      assert first.tiers.in_force_from == :derived
+      assert first.tiers.changed_by == :primary
+    end
+  end
 end

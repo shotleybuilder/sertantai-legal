@@ -35,6 +35,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.Application, as: ApplicationReader
 
+  alias SertantaiLegal.Scraper.LatRef
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
   alias SertantaiLegal.Scraper.{LawTerritory, Territory}
 
@@ -72,21 +73,29 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
       {base, version} = version(id)
 
       provision =
-        %{law: law_name, prospective: prospective?(facts, base), valid: valid}
+        %{
+          law: law_name,
+          prospective: prospective?(facts, base),
+          valid: valid,
+          shows_text: get_in(facts, [base, :shows_text]) == true
+        }
         |> Map.merge(provision)
         |> own_territory(law_name, Keyword.get(opts, :title))
 
       # a territorial version's label is its base provision's, from the
-      # union of its versions' territories, narrowed at the split (C3)
+      # union of the versions on it and the provisions holding it, narrowed
+      # where they first split (C3; CV-S09 round 2: SI 2008/1597
+      # reg.16(11)(b)[NI], whose reg.16 GB version is a repealed stub;
+      # HSWA s.28 [E+W], whose own version starts later than [S] and [NI])
       provision =
-        case {version, get_in(facts, [base, :versions])} do
+        case {version, versions(facts, base)} do
           {nil, _} ->
             provision
 
-          {v, [_ | _] = vs} ->
+          {v, {[_ | _] = vs, starts}} ->
             %{provision | extent: Territory.union(vs)}
             |> Map.put(:version, v)
-            |> Map.put(:version_start, get_in(facts, [base, :version_starts, v]))
+            |> Map.put(:version_start, Enum.min(starts, Date, fn -> nil end))
 
           {v, _} ->
             Map.put(provision, :version, v)
@@ -99,14 +108,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   # a range reaches only provisions that existed at its date: one inserted
   # later is not in it (V1-05: TCPA 1990 s.78(4BA), inserted 2017 inside a
   # 2015 range "s.78(4B)-(4D)")
+  # The provision's latest insertion is its birth: a range's own copy on a
+  # row inserted later is no evidence of it (CV-S09 round 2: SI 2009/1348
+  # "reg. 19A-19F" of 2011 placed on reg.19BB, inserted 2020)
   defp existing(changes) do
     inserted =
-      for c <- changes,
-          c.resolved.operation == :inserted,
-          c.resolved.level == :provision,
-          c.resolved.date != nil,
-          into: %{},
-          do: {c.target, c.resolved.date}
+      changes
+      |> Enum.filter(
+        &(&1.resolved.operation == :inserted and &1.resolved.level == :provision and
+            &1.resolved.date != nil)
+      )
+      |> Enum.group_by(& &1.target, & &1.resolved.date)
+      |> Map.new(fn {target, dates} -> {target, Enum.max(dates, Date)} end)
 
     Enum.reject(changes, fn c ->
       Change.value(c, :feed, :ranged) == true and
@@ -274,6 +287,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   end
 
   defp intersect(a, b), do: Territory.subtract(a, Territory.subtract(a, b) || "") || a
+
+  # the versions on `base` and on the provisions holding it, and the days
+  # they start
+  defp versions(facts, base) do
+    held = base |> LatRef.ancestors() |> Enum.map(&Map.get(facts, &1, %{}))
+
+    {held |> Enum.flat_map(&Map.get(&1, :versions, [])) |> Enum.uniq(),
+     held |> Enum.flat_map(&(&1 |> Map.get(:version_starts, %{}) |> Map.values()))}
+  end
 
   # "reg.14(1)[NI]" → {"reg.14(1)", "NI"}
   defp version(id) do

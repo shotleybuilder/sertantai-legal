@@ -87,9 +87,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedFactsTest do
         }
       ])
 
+    # the partial stage says so: partly in force, its text kept (CV-S09 round 2)
     assert Enum.sort(read(e)) == [
              {"key-1", :repealed, :provision, ~D[2013-10-01], nil},
-             {"key-1@2013-04-25", :repealed_in_part, :provision, ~D[2013-04-25], nil}
+             {"key-1@2013-04-25", :repealed_in_part, :provision, ~D[2013-04-25], true}
            ]
   end
 

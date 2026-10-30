@@ -3900,6 +3900,7 @@
           "feed.applied": true,
           "feed.by": "UK_ssi_2019_175",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "S",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -4099,6 +4100,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2017_407",
           "feed.date": "2017-04-10",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -4247,6 +4249,7 @@
           "feed.applied": true,
           "feed.by": "UK_ssi_2019_113",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "S",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -5340,6 +5343,7 @@
           "feed.applied": true,
           "feed.by": "UK_ssi_2023_127",
           "feed.date": "2024-04-01",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "S",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -6898,6 +6902,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1590",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -6975,6 +6980,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1590",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -7248,6 +7254,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1504",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -7286,6 +7293,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1504",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -7324,6 +7332,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1504",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -8162,6 +8171,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1577",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -8210,6 +8220,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1577",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -8227,6 +8238,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1577",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -8244,6 +8256,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1577",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -8261,6 +8274,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1577",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -8408,6 +8422,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1577",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -8555,6 +8570,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1577",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -8573,6 +8589,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1577",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -8612,6 +8629,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1577",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -8682,6 +8700,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1577",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -9045,6 +9064,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1567",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -9153,6 +9173,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1567",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.heading": true,
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -9183,6 +9204,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1567",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.heading": true,
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -9281,6 +9303,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1567",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -9405,6 +9428,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1616",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -9444,6 +9468,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1616",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -9482,6 +9507,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1567",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -9497,6 +9523,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1567",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -9512,6 +9539,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1567",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -13637,6 +13665,7 @@
           "feed.applied": true,
           "feed.by": "UK_ssi_2017_214",
           "feed.date": "2017-06-30",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "S",
           "feed.heading": true,
           "feed.partial": false,
@@ -13796,6 +13825,7 @@
           "feed.applied": false,
           "feed.by": "UK_ssi_2017_214",
           "feed.date": "2017-06-30",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "S",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -14955,6 +14985,7 @@
           "feed.date": "2012-06-18",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E",
@@ -14971,6 +15002,7 @@
           "feed.date": "2012-11-05",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E@2012-11-05",
@@ -14987,6 +15019,7 @@
           "feed.date": "2013-05-28",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E@2013-05-28",
@@ -15279,6 +15312,7 @@
           "feed.effect_extent": "E+W",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E",
@@ -15296,6 +15330,7 @@
           "feed.effect_extent": "E+W",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E@2004-11-10",
@@ -16560,6 +16595,7 @@
           "feed.date": "2012-06-18",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E",
@@ -16576,6 +16612,7 @@
           "feed.date": "2012-11-05",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E@2012-11-05",
@@ -16592,6 +16629,7 @@
           "feed.date": "2013-05-28",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E@2013-05-28",
@@ -17360,6 +17398,7 @@
           "feed.applied": true,
           "feed.by": "UK_nisr_2010_323",
           "feed.date": "2010-10-11",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -17508,6 +17547,7 @@
           "feed.effect_extent": "E+W",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E",
@@ -17525,6 +17565,7 @@
           "feed.effect_extent": "E+W",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E@2004-11-10",
@@ -17557,6 +17598,7 @@
           "feed.date": "2010-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E",
@@ -17572,6 +17614,7 @@
           "feed.date": "2011-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E@2011-04-01",
@@ -17813,6 +17856,7 @@
           "feed.date": "2015-03-26",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E@2015-03-26",
@@ -17828,6 +17872,7 @@
           "feed.date": "2015-04-20",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E@2015-04-20",
@@ -18811,6 +18856,7 @@
           "feed.date": "2012-06-18",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -18828,6 +18874,7 @@
           "feed.date": "2012-11-05",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -18845,6 +18892,7 @@
           "feed.date": "2013-05-28",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -18862,6 +18910,7 @@
           "feed.date": "2012-06-18",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -18879,6 +18928,7 @@
           "feed.date": "2012-11-05",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -18896,6 +18946,7 @@
           "feed.date": "2013-05-28",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -18913,6 +18964,7 @@
           "feed.date": "2012-06-18",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -18930,6 +18982,7 @@
           "feed.date": "2012-11-05",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -18947,6 +19000,7 @@
           "feed.date": "2013-05-28",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -20303,6 +20357,7 @@
           "feed.effect_extent": "E+W",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": [
             "section-49-1",
             "section-49-1",
@@ -20323,6 +20378,7 @@
           "feed.effect_extent": "E+W",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": [
             "section-49-1",
             "section-49-1",
@@ -20343,6 +20399,7 @@
           "feed.effect_extent": "E+W",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": [
             "section-49-1",
             "section-49-1",
@@ -20363,6 +20420,7 @@
           "feed.effect_extent": "E+W",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": [
             "section-49-1",
             "section-49-1",
@@ -20658,6 +20716,7 @@
           "feed.date": "2010-01-12",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -20692,6 +20751,7 @@
           "feed.date": "2010-01-12",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -20726,6 +20786,7 @@
           "feed.date": "2010-01-12",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -20760,6 +20821,7 @@
           "feed.date": "2010-01-12",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -20812,6 +20874,7 @@
           "feed.date": "2013-06-25",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E@2013-06-25",
@@ -22311,6 +22374,7 @@
           ],
           "feed.applied": false,
           "feed.by": "UK_asc_2025_3",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W",
           "feed.prospective": true,
           "feed.savings": [],
@@ -22842,6 +22906,7 @@
           "feed.applied": true,
           "feed.by": "UK_ssi_2026_162",
           "feed.date": "2026-03-26",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "S",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -22919,6 +22984,7 @@
           "feed.date": "2010-04-06",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E",
@@ -22935,6 +23001,7 @@
           "feed.date": "2010-07-26",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E@2010-07-26",
@@ -23046,6 +23113,7 @@
           "feed.applied": true,
           "feed.by": "UK_ssi_2006_446",
           "feed.date": "2006-10-01",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -23707,6 +23775,7 @@
           "feed.applied": true,
           "feed.by": "UK_ukla_2004_1",
           "feed.date": "2004-07-13",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -24922,6 +24991,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2017_400",
           "feed.date": "2017-04-07",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -24971,6 +25041,7 @@
           "feed.applied": true,
           "feed.by": "UK_ukpga_2020_12",
           "feed.date": "2020-04-27",
+          "feed.earlier_amendment": true,
           "feed.partial": false,
           "feed.qualification": "retrospective",
           "feed.savings": [
@@ -25343,6 +25414,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_496",
           "feed.date": "2013-04-01",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -25433,6 +25505,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2017_1119",
           "feed.date": "2017-12-08",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -25472,6 +25545,7 @@
           "feed.applied": false,
           "feed.by": "UK_uksi_2020_1350",
           "feed.date": "2020-12-28",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.partial": true,
           "feed.qualification": "in accordance with + provisions",
@@ -25706,6 +25780,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2013_496",
           "feed.date": "2013-04-01",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -25969,6 +26044,7 @@
           ],
           "feed.applied": false,
           "feed.by": "UK_uksi_2023_1286",
+          "feed.earlier_amendment": true,
           "feed.prospective": true,
           "feed.savings": []
         },
@@ -27006,6 +27082,7 @@
           "feed.applied": true,
           "feed.by": "UK_ukla_2012_2",
           "feed.date": "2012-05-27",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -27194,6 +27271,7 @@
           "feed.applied": false,
           "feed.by": "UK_asc_2023_3",
           "feed.date": "2024-11-04",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -33744,6 +33822,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2008_1579",
           "feed.date": "2008-07-08",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.heading": true,
           "feed.partial": false,
@@ -33891,6 +33970,7 @@
           "feed.date": "2003-11-27",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E",
@@ -33906,6 +33986,7 @@
           "feed.date": "2004-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E@2004-04-01",
@@ -35309,6 +35390,7 @@
           "feed.applied": true,
           "feed.by": "UK_ssi_2026_4",
           "feed.date": "2026-01-16",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "S",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -35475,6 +35557,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1393",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -35491,6 +35574,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1393",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -35793,6 +35877,7 @@
           "feed.date": "2003-11-27",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E",
@@ -35808,6 +35893,7 @@
           "feed.date": "2004-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E@2004-04-01",
@@ -36025,6 +36111,7 @@
           "feed.effect_extent": "E+W+S+NI",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E@2004-04-01",
@@ -36041,6 +36128,7 @@
           "feed.effect_extent": "E+W+S+NI",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E@2004-04-01",
@@ -36057,6 +36145,7 @@
           "feed.effect_extent": "E+W+S+NI",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E@2006-04-01",
@@ -36089,6 +36178,7 @@
           "feed.effect_extent": "E+W+S+NI",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E@2004-04-01",
@@ -36105,6 +36195,7 @@
           "feed.effect_extent": "E+W+S+NI",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E@2004-04-01",
@@ -36121,6 +36212,7 @@
           "feed.effect_extent": "E+W+S+NI",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E@2006-04-01",
@@ -38058,6 +38150,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2026_236",
           "feed.date": "2026-03-10",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -38285,6 +38378,7 @@
           ],
           "feed.applied": false,
           "feed.by": "UK_nia_2022_4",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "NI",
           "feed.prospective": true,
           "feed.savings": []
@@ -38373,6 +38467,7 @@
           "feed.applied": true,
           "feed.by": "UK_wsi_2020_1044",
           "feed.date": "2020-09-29",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -38971,6 +39066,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2008_1579",
           "feed.date": "2008-07-08",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -41089,6 +41185,7 @@
           "feed.applied": true,
           "feed.by": "UK_ssi_2009_256",
           "feed.date": "2009-08-02",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "S",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -42336,6 +42433,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2023_1147",
           "feed.date": "2023-10-31",
+          "feed.earlier_amendment": true,
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -42663,6 +42761,7 @@
           "feed.effect_extent": "E+W+S+NI",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": [
             "schedule-9",
             "schedule-9-paragraph-7",
@@ -42684,6 +42783,7 @@
           "feed.effect_extent": "E+W+S+NI",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": [
             "schedule-9",
             "schedule-9-paragraph-7",
@@ -42705,6 +42805,7 @@
           "feed.effect_extent": "E+W+S+NI",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": [
             "schedule-9",
             "schedule-9-paragraph-7",
@@ -42985,6 +43086,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2008_1579",
           "feed.date": "2008-07-08",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.heading": true,
           "feed.partial": false,
@@ -43240,6 +43342,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2023_1185",
           "feed.date": "2023-12-06",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -43450,6 +43553,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2024_1234",
           "feed.date": "2025-01-01",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -44218,6 +44322,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -44252,6 +44357,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -44286,6 +44392,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -44320,6 +44427,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -44354,6 +44462,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -44388,6 +44497,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -44422,6 +44532,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -44456,6 +44567,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -44490,6 +44602,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -44524,6 +44637,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -44558,6 +44672,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -44592,6 +44707,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -44626,6 +44742,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -44660,6 +44777,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -44694,6 +44812,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -44728,6 +44847,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -44762,6 +44882,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -44796,6 +44917,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -44830,6 +44952,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -44864,6 +44987,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -44898,6 +45022,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -44932,6 +45057,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -44966,6 +45092,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -45000,6 +45127,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -45034,6 +45162,7 @@
           "feed.date": "2009-04-01",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -45840,6 +45969,7 @@
           "feed.applied": true,
           "feed.by": "UK_nisr_2024_78",
           "feed.date": "2024-03-27",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -47285,6 +47415,7 @@
           "feed.date": "2016-10-17",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E@2016-10-17",
@@ -47300,6 +47431,7 @@
           "feed.date": "2017-03-13",
           "feed.level": "provision",
           "feed.operation": "repealed_in_part",
+          "feed.partial": true,
           "feed.savings": []
         },
         "key": "E@2017-03-13",
@@ -48126,6 +48258,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1586",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -48142,6 +48275,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1586",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -50903,6 +51037,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_786",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -50921,6 +51056,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_786",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -52890,6 +53026,7 @@
           "feed.applied": true,
           "feed.by": "UK_uksi_2020_1460",
           "feed.date": "2020-12-31",
+          "feed.earlier_amendment": true,
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []

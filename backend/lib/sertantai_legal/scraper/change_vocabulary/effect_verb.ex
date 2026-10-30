@@ -57,6 +57,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.EffectVerb do
     |> String.trim()
   end
 
+  @earlier ~r/\b(?:in|to)\s+(?:an?\s+)?earlier\s+(?:amending|affecting)\s+provision/i
+
+  @doc """
+  True for an amendment to an earlier amending provision ("substituted in
+  earlier amending provision S.I. 2019/758, Sch. 2"): it changed the text
+  that amending law made (C5, Jason 2026-10-30) — never its revocation
+  ("revocation of earlier amending provision": no operation).
+  """
+  @spec earlier_amendment?(String.t() | nil) :: boolean()
+  def earlier_amendment?(nil), do: false
+  def earlier_amendment?(type), do: Regex.match?(@earlier, type) and not no_operation?(type)
+
   @doc """
   Whether the type says nothing was done to the affected provision: the
   repeal of an affecting provision, a saving, a transitional provision, an

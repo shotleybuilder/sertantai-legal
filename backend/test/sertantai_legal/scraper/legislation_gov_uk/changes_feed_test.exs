@@ -240,24 +240,27 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeedTest do
 
     # LR-07: every InForce entry, in order ("Other" reads OtherQualification)
     assert effect.in_force == [
-             %{date: nil, prospective: true, qualification: nil, applied: false},
+             %{date: nil, prospective: true, qualification: nil, applied: false, commencing: nil},
              %{
                date: ~D[2021-03-15],
                prospective: false,
                qualification: "for specified purposes",
-               applied: true
+               applied: true,
+               commencing: nil
              },
              %{
                date: ~D[2022-12-26],
                prospective: false,
                qualification: "for E.W. in so far as not already in force",
-               applied: nil
+               applied: nil,
+               commencing: nil
              },
              %{
                date: ~D[2030-01-01],
                prospective: false,
                qualification: "for N.I.",
-               applied: false
+               applied: false,
+               commencing: nil
              }
            ]
   end

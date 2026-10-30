@@ -143,7 +143,8 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
           date: Date.t() | nil,
           prospective: boolean(),
           qualification: String.t() | nil,
-          applied: boolean() | nil
+          applied: boolean() | nil,
+          commencing: String.t() | nil
         }
 
   @doc "Parse one feed page: its effects and whether more pages follow."
@@ -174,7 +175,8 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
           prospective: ~x"./@Prospective"s,
           qualification: ~x"./@Qualification"s,
           other_qualification: ~x"./@OtherQualification"s,
-          applied: ~x"./@Applied"s
+          applied: ~x"./@Applied"s,
+          commencing_uri: ~x"./@CommencingURI"s
         ],
         savings: ~x"./*[local-name()='Savings']/*[local-name()='Section']/@Ref"ls,
         affected_refs: ~x"./*[local-name()='AffectedProvisions']//*[@Ref]/@Ref"ls,
@@ -361,7 +363,9 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
       date: date,
       prospective: f.prospective == "true",
       qualification: blank(q),
-      applied: bool(f.applied)
+      applied: bool(f.applied),
+      # the order that brought this stage into force (CV-S09 round 2)
+      commencing: f |> Map.get(:commencing_uri) |> blank() |> law_name()
     }
   end
 
