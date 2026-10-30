@@ -825,4 +825,100 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
       assert Label.reaches?(%{c | target: "s.50"}, "s.50(4)n1")
     end
   end
+
+  describe "batch 9 (CV-S09 round 9)" do
+    test "on the split a change whose markup sits in other versions only is not the version's text, its territory unstated (HSWA s.51A(2)(c)[S])" do
+      words =
+        change("s.51A(2)(c)", :substituted, ~D[2012-01-16],
+          level: :words,
+          by: "UK_ukpga_2011_13",
+          commenced_by: "UK_uksi_2011_3019"
+        )
+        |> with_claims([{:markup, :in_versions, ["E+W"]}])
+
+      periods =
+        fold("s.51A(2)(c)", [words], %{
+          law: "UK_ukpga_1974_37",
+          start: ~D[1998-07-01],
+          extent: "E+W+S",
+          version: "S",
+          version_start: ~D[2013-10-07]
+        })
+
+      # the shared history keeps it (the union's text, round 7)
+      assert %{changed_by: ["UK_ukpga_2011_13"]} =
+               Enum.find(periods, &(&1.valid_from == ~D[2012-01-16]))
+
+      assert %{territory: "S", in_force_from: ~D[1998-07-01], changed_by: []} =
+               List.last(periods)
+    end
+
+    test "inserted the same day by laws for different territories: the history before the split is their union (HSWA s.23(4)(a)[S])" do
+      changes = [
+        change("s.23(4)(a)", :inserted, ~D[2006-10-01],
+          by: "UK_uksi_2005_1541",
+          territory: "E+W"
+        ),
+        change("s.23(4)(a)", :inserted, ~D[2006-10-01], by: "UK_ssi_2006_475", territory: "S")
+      ]
+
+      periods =
+        fold("s.23(4)(a)", changes, %{
+          law: "UK_ukpga_1974_37",
+          start: ~D[1975-01-01],
+          extent: "E+W+S",
+          version: "S",
+          version_start: ~D[2018-07-30]
+        })
+
+      assert [first | _] = periods
+
+      assert %{
+               valid_from: ~D[2006-10-01],
+               territory: "E+W+S",
+               changed_by: ["UK_ssi_2006_475", "UK_uksi_2005_1541"]
+             } = first
+
+      assert %{territory: "S"} = List.last(periods)
+    end
+
+    test "a version split the day its territory is repealed: repealed, not its own territory in force (HSWA s.14(7)[NI])" do
+      saved = fn c -> %{c | resolved: %{c.resolved | saved: true}} end
+
+      changes = [
+        change("s.14(7)", :repealed, ~D[2017-06-15], by: "UK_uksi_2016_1142", territory: "E+W+NI")
+        |> then(saved),
+        change("s.14(7)", :repealed, ~D[2017-06-15], by: "UK_asp_2016_2", territory: "S")
+      ]
+
+      assert %{status: :repealed_saved, territory: "NI", changed_by: ["UK_uksi_2016_1142"]} =
+               List.last(
+                 fold("s.14(7)", changes, %{
+                   law: "UK_ukpga_1974_37",
+                   start: ~D[1975-01-01],
+                   extent: "E+W+S+NI",
+                   version: "NI",
+                   version_start: ~D[2017-06-15]
+                 })
+               )
+    end
+
+    test "revoked except for some purposes, its text gone: repealed (saved), not partly in force (SI 2009/716 reg.15)" do
+      revoked =
+        change("reg.15", :repealed_in_part, ~D[2015-06-01],
+          by: "UK_uksi_2013_1506",
+          partial: true
+        )
+        |> then(&%{&1 | resolved: %{&1.resolved | saved: true}})
+
+      provision = %{law: "UK_uksi_2009_716", start: ~D[2009-04-06], extent: "E+W+S"}
+
+      assert %{status: :repealed_saved, changed_by: ["UK_uksi_2013_1506"]} =
+               List.last(fold("reg.15", [revoked], provision))
+
+      # its text still showing: partly in force for those purposes (C7)
+      assert %{status: :in_force_partial} =
+               List.last(fold("reg.15", [revoked], Map.put(provision, :shows_text, true)))
+    end
+  end
 end

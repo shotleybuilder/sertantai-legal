@@ -159,10 +159,25 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
          do: {[], removals},
          else: {removals, []}
 
+    # a removal of the provision itself kept for some purposes, its text
+    # gone from the revised law and not retained: removed, the purposes a
+    # saving (D3; CV-S09 round 9: SI 2009/716 reg.15, revoked "except to
+    # the extent that they continue to apply for the purposes of enforcing
+    # reg. 12", its text dots)
+    {gone_in_part, in_part_rest} =
+      Enum.split_with(
+        of.(:repealed_in_part),
+        &(&1.target == ctx.id and &1.resolved.level == :provision and &1.resolved.partial and
+            not &1.resolved.retained and
+            not Map.get(ctx, :shows_text, false) and revised?(ctx, date))
+      )
+
+    removals = removals ++ gone_in_part
+
     # a removal in part: partly in force only with its text retained or
     # staged for purposes (C7); with the words gone, a words repeal
     {in_part, words_gone} =
-      Enum.split_with(of.(:repealed_in_part), &(&1.resolved.retained or &1.resolved.partial))
+      Enum.split_with(in_part_rest, &(&1.resolved.retained or &1.resolved.partial))
 
     territory =
       current.territory
@@ -331,50 +346,5 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
     t = territorial |> Enum.map(&Facts.territory_only/1) |> Territory.union()
     widened = if status == :prospective, do: t, else: Territory.union([territory || t, t])
     if is_binary(extent), do: Facts.intersect(widened, extent), else: widened
-  end
-
-  @doc """
-  A territorial version's split from its base (C3): on the day the versions
-  split, or when a text change confined to its territory takes effect,
-  from then its own territory.
-  """
-  @spec split(map(), Date.t(), [map()], String.t() | nil, Date.t() | nil) :: map()
-  def split(period, _date, _day, nil, _version_start), do: period
-
-  def split(%{status: s} = period, _date, _day, _v, _vs) when s in [:repealed, :repealed_saved],
-    do: period
-
-  def split(period, date, day, version, version_start) do
-    on_split? = version_start != nil and Date.compare(date, version_start) == :eq
-
-    confined? =
-      Enum.any?(day, fn c ->
-        c.resolved.operation in Facts.text_changes() and c.resolved.territory != nil and
-          Territory.covers?(version, c.resolved.territory)
-      end)
-
-    # on the split the version's own territory (C3), whatever narrowed the
-    # shared history (C14: HSWA s.28(9)[NI], inserted by an E+W+S Act, had
-    # never split: CV-S09 round 4); a confined change narrows it
-    narrowed =
-      cond do
-        on_split? -> version
-        is_binary(period.territory) -> Facts.intersect(period.territory, version)
-        true -> nil
-      end
-
-    # the split rests on the markup's versions: derived
-    if (on_split? or confined?) and narrowed != nil and narrowed != period.territory,
-      do: %{
-        period
-        | territory: narrowed,
-          tiers:
-            Map.put(
-              period.tiers,
-              :territory,
-              if(on_split?, do: :derived, else: period.tiers[:territory])
-            )
-      },
-      else: period
   end
 end

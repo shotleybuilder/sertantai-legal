@@ -23,7 +23,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Change
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Label.{Day, Facts, Start}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Label.{Day, Facts, Start, Version}
   alias SertantaiLegal.Scraper.LatRef
 
   @type period :: %{
@@ -138,8 +138,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
     |> Enum.reduce([first], fn {date, day}, [current | rest] ->
       next =
         current
+        |> Version.enter(date, version, version_start)
         |> Day.apply(date, day, ctx)
-        |> Day.split(date, day, version, version_start)
+        |> Version.split(date, day, version, version_start)
         |> own_text_on(date, version_start, own_text)
 
       # a day that changes no label field opens no period
@@ -188,11 +189,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
   # version's own text carries it (its markup there: SI 2008/1597
   # reg.21(2)(a)[NI], SI 2015/1682's E+W+S words in the NI text)
   defp for_version?(c, provision, version) do
-    territory =
-      if Map.get(provision, :own_only), do: version, else: then_territory(c, provision, version)
+    in_versions = List.flatten(Change.values(c, :markup, :in_versions))
 
-    Facts.overlaps?(c.resolved.territory, territory) or
-      Enum.any?(List.flatten(Change.values(c, :markup, :in_versions)), &(&1 == version))
+    cond do
+      version in in_versions ->
+        true
+
+      # the version's own text: a change no territory places, its markup
+      # in other versions only, is not in it (CV-S09 round 9: HSWA
+      # s.51A(2)(c)[S], 2011 c.13's words only in the E+W text)
+      Map.get(provision, :own_only) ->
+        in_versions == [] and Facts.overlaps?(c.resolved.territory, version)
+
+      true ->
+        Facts.overlaps?(c.resolved.territory, then_territory(c, provision, version))
+    end
   end
 
   defp own_text_at_split(id, provision, changes, version, %Date{} = split)

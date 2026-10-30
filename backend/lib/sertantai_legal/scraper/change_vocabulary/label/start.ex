@@ -212,8 +212,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Start do
 
     # its own insertion's territory, or an undated one's (C14)
     t =
-      case (own_insertion || Undated.insertion(id, changes, Map.get(provision, :law)) ||
-              %{resolved: %{territory: nil}}).resolved.territory do
+      case insertion_territory(own_insertion, changes, id, provision) do
         t when is_binary(t) and is_binary(extent) -> Facts.intersect(extent, t)
         t when is_binary(t) -> t
         _ -> extent
@@ -229,6 +228,28 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Start do
 
     {at_start, _} = applications(changes, id, provision.start)
     Enum.reduce(at_start, t, &Facts.apply_to(&2, &1.resolved.territory))
+  end
+
+  # its insertions' territory: laws inserting it the same day for different
+  # territories insert it in their union (CV-S09 round 9: HSWA s.23(4)(a),
+  # SI 2005/1541 for E+W and SSI 2006/475 for S on 2006-10-01)
+  defp insertion_territory(nil, changes, id, provision),
+    do:
+      (Undated.insertion(id, changes, Map.get(provision, :law)) || %{resolved: %{territory: nil}}).resolved.territory
+
+  defp insertion_territory(own, changes, id, _provision) do
+    same_day =
+      Enum.filter(
+        changes,
+        &(insertion?(&1) and &1.resolved.date == own.resolved.date and
+            SertantaiLegal.Scraper.ChangeVocabulary.Label.reaches?(&1, id))
+      )
+
+    ts = Enum.map(same_day, & &1.resolved.territory)
+
+    if own.resolved.territory != nil and Enum.all?(ts, &is_binary/1),
+      do: SertantaiLegal.Scraper.Territory.union(ts),
+      else: own.resolved.territory
   end
 
   # a version that has already split at the start is its own territory (C3)
