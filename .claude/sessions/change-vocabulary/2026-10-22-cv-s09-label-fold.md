@@ -752,3 +752,19 @@ Upstream faults are about 17 of 150: U10 (6), U12 (4), U13, U1, V9, the HSWA s.5
 ### Decisions for batch 8 (Jason 2026-10-30)
 
 - **Scope:** fold M1 (the version's own text at the split, from per-version markup evidence), EW, NN; then recheck the changed R rows and fresh S/T draws. Upstream classes wait for a separate reader session.
+
+### Fix batch 8 (9df8a019, 51fbd1aa)
+
+- **M1:** on a version's split, in_force_from, changed_by and commenced_by are what the version's own territory or own text carries.
+  - The markup now records which territorial versions' text holds each change (`markup.in_versions`), taken from the element holding it. A provision's versions may share an id (SI 2008/1597 reg.14(1)), so the id alone can't say.
+  - HSWA s.23(4)[NI] is back to its 1975 text; SI 2008/1597 reg.21(2)(a)[NI] keeps SI 2015/1682.
+- **EW:** a words amendment to an earlier amending provision never reaches below its target; the feed gives those Types their level.
+- **NN:** a disambiguated row's own number is not a provision holding it.
+- **Golden:** the first run was 40/50 (reg.14(1)[NI]: versions sharing an id had all mapped to NI). After 51fbd1aa it is 41/50, the same 9.
+- **Catalogues:** 56 feed examples gain `feed.level`; 60 markup examples gain `markup.in_versions` (order the only other difference).
+- **Tests:** 9,612.
+
+## Round 9 (2026-10-30)
+
+- **Restore point:** tag `cv-s09-batch8`. Rebuild clean.
+- **Recheck:** R re-folded with seed 153; fresh S (seed 181) and T (seed 182).

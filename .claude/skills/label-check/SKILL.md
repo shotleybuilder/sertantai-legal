@@ -116,6 +116,10 @@ into label periods, in date order from the row's start:
   substitution leaves in_force_from unknown (nil) until its order is held; a whole substitution's quote no longer
   making a provision's old numbers ends them (repealed by the substituting law, same day); a feed Type "… by S.I. Y
   … (as substituted/amended)" credits Y too (C5).
+- Batch 8 rules: on a version's split, in_force_from/changed_by/commenced_by are what the version's own territory or
+  its own text carries (markup in that version's element), never the shared history's other texts; a words
+  amendment to an earlier amending provision never reaches below its target; a disambiguated row's own number
+  (s.50(4) for s.50(4)n1) is not a provision holding it.
 - C8 NOW APPLIED from a held Windsor Framework Annex 2 list (ChangeVocabulary.Windsor: REACH 1907/2006, CLP
   1272/2008): a UK law's change to a listed instrument from 2020-12-31 reaches E+W+S only (NI keeps the EU text); a
   GB-only text change makes the row E+W+S. Judge REACH/CLP rows by this (no longer K8). Other EU law: unchanged.
@@ -251,4 +255,6 @@ OH&S (first family, 2026-10-29 →). The session is `.claude/sessions/change-voc
 | 7 | — | Fix 15d23c79, 4155fd92 (K1, containers, SN2/SQ, WL, EP, NJ, IR) + commencement re-read + read pass; S/T recheck |
 | 7r | 153 (R recheck), 161 (S), 162 (T) | R: 6 changed rows OK — PASS holds; S/T 3 fold (L1, L2, L3) |
 | 8 | 153 (R recheck), 171 (S), 172 (T) | Fix a2ac4ed0, 16dd2226 (L1–L3, undated, N2, AS, BI, LI, CJ) + 8 orders fetched; golden 41/50 |
+| 8r | 153/171/172 | R 1/150 (M1, a batch 7 regression) — FAIL; S/T 3 fold (EW, NN) |
+| 9 | 153 (R recheck), 181 (S), 182 (T) | Fix 9df8a019, 51fbd1aa (M1, EW, NN); golden 41/50 |
 | probe | 90 (S), 91 (R), 92 (T) | Strata built (ff1f97c7): 149 laws, 20,371 rows. Probes were used only to choose golden candidates, so these seeds are never used for R |
