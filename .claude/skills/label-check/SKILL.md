@@ -97,6 +97,15 @@ into label periods, in date order from the row's start:
   both laws); its own repeal of unstated level with its text still showing is a words repeal; an undated ancestor
   substitution on an undated start made its text; a markup-only insertion credits its law but its own law's
   commencements still reach it (only an insertion the law text or feed states shows it was not in its own law).
+- Batch 5 rules: a whole change on a Part/Title/Chapter holding the row reaches it (its containers); the current
+  text's makers keep their tier when a later commencement credits them; on an undated start an undated words repeal
+  is credited; an insertion opening the row gives the start its status/territory tiers even with an own undated
+  substitution beside it; an undated substitution on a dated start needs a date (Jason 2026-10-30: "We do need a
+  date, cannot have 1995 text as never in force") — dated from the amending provision's own commencement; still
+  undated only where that commencement order is not held (an upstream gap, not a fold fault). Readers: a
+  substitution's quote numbering more than the instruction names inserts the new numbers ("for (2) substitute (2),
+  (2A), (2B)": (2A), (2B) inserted); a number wrap leaving a child with its own number untouched is not the whole
+  provision; a commencement of a part with no row commences the row holding it, partly.
 - C8 NOW APPLIED from a held Windsor Framework Annex 2 list (ChangeVocabulary.Windsor: REACH 1907/2006, CLP
   1272/2008): a UK law's change to a listed instrument from 2020-12-31 reaches E+W+S only (NI keeps the EU text); a
   GB-only text change makes the row E+W+S. Judge REACH/CLP rows by this (no longer K8). Other EU law: unchanged.
@@ -162,6 +171,13 @@ Known classes (label a finding with one; otherwise NEW):
   subsection's second commencement rule not stored (HSWA s.10(1), s.11(6) 1975).
 - From CV-S08 (upstream, open): KC-order (orders held, not read); KX-territory (a chain's territory cut to the later
   law's extent); KMV (moved words carried as renumbered); KF-type (a feed Type error winning).
+- From CV-S09 rounds 4–5 (upstream, open): V9 "in each place it occurs" over a range placed too wide; KP-1AA HSWA
+  s.50(1AA)'s paragraphs filed as s.50(a)-(c) (CLML ids skip 1AA); KF-later the feed's later "so far as not already
+  in force" InForce date dropped; KEU-eif an undated EU change dated only by the amending regulation's
+  entry-into-force article (EUR-Lex date in Comments, a pointer); K-legacy d29p/M_F_ legacy Additions read as
+  law-less insertions (pointers to repeals in notes); KO-two an order commencing two Acts with rules attached to
+  both (SI 1996/396); KC-order also: an undated substitution whose amending law's commencement order is not held
+  (CPA 1987 by SI 1987/1680).
 
 Output: a compact table, one row per item: #, law, row, OK / WRONG-fold / WRONG-upstream / gap / doubtful, note (only
 when not OK: one line: period, field, fold value vs right value, rule or step, known class or NEW). Then per S shape
@@ -219,4 +235,6 @@ OH&S (first family, 2026-10-29 →). The session is `.claude/sessions/change-voc
 | 4 | 131 (S), 132 (T), 133 (R) | Fix 8196eb87 (H1–H7, M1). Golden from inputs 39/50 |
 | 4r | 131/132/133 | Agents: R 2/150 fold + 1 K8 — FAIL; I1–I8 classed |
 | 5 | 141 (S), 142 (T), 143 (R) | Fix e1653920 (I1–I8, Windsor C8, gerunds, EU para/BIS) + read pass (24 laws). Golden from inputs 41/50 |
+| 5r | 141/142/143 | Agents: R 2/150 fold (J1 Part reach, J2 tier) — FAIL; S/T 3 fold (J3, J4, J5 rule) |
+| 6 | 151 (S), 152 (T), 153 (R) | Fix 10f81665 (J1–J5, SN, PN, N1, N2, HA) + commencement re-read + read pass |
 | probe | 90 (S), 91 (R), 92 (T) | Strata built (ff1f97c7): 149 laws, 20,371 rows. Probes were used only to choose golden candidates, so these seeds are never used for R |

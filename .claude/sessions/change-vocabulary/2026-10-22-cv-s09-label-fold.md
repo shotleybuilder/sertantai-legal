@@ -566,3 +566,46 @@ Upstream faults are about 17 of 150: U10 (6), U12 (4), U13, U1, V9, the HSWA s.5
 
 - **Scope:** fold J1–J5, plus the reader fixes SN, N1, N2, HA and PN; then one full read pass, a rebuild and round 6.
 - **J5:** "We do need a date, cannot have 1995 text as never in force". An undated substitution on a dated start is credited, and its date must be found (the amending provision's own commencement), not left blank.
+
+### Fix batch 5 (10f81665)
+
+- **Fold:**
+  - **J1:** a whole change on a Part or Chapter holding the row reaches it. The row's containers come from `legal_articles` part/chapter (`Label.containers/2`), with Part numerals matched either way ("pt.I" = "pt.1").
+  - **J2:** the current text's makers keep their tier when a later commencement credits them (`_text_from`).
+  - **J3:** an undated words repeal is credited on an undated start.
+  - **J4:** an own undated substitution no longer hides the insertion that opens the row (its start tiers).
+- **J5 dating:** `LatRef` ranges whose ends sit at different depths ("paragraphs 11(2) to 13", SI 1996/396) now cover what lies between. EA 1995 sch.10 para.12 is dated 1996-04-01, so HSWA s.28(10)'s substitution has its date.
+  - HSWA s.6(4)'s CPA 1987 substitution stays undated: CPA's 1987–88 orders (SI 1987/1680) are in neither its feed nor the local store. A one-hop fetch is for Jason.
+- **Readers:**
+  - **SN:** a substitution's quote numbering more than the instruction names: the new numbers are inserted (`Amendment.Reader.NewNumbers`).
+  - **PN:** a number wrap is not the whole provision when a child keeps its own number and carries none of the change (`Markup.KeptChildren`). Numbered provisions only; groups wrap only Number and Title.
+  - **N1:** a rule naming a part with no row commences the row holding it, partly (HSWA s.83(1) on 1974-10-01).
+  - **N2:** a numbered bracket after a lettered one climbs ("68(1)(c) and (2)" → s.68(2)).
+  - **HA:** "Except so far as …, X shall not come into force until D" is read (HAA 1995 s.5(2)).
+  - Not a fault: OSRPA s.68 is commenced whole by SI 1964/191 Sch.1 Pt II ("Sections 63 to 73"); the agent read Pt 5 only.
+- **Catalogues:** corrected outcomes accepted (markup 2, order 3, commencement 2). Regression list: ERRA 2013.
+- **Tests:** 9,586.
+
+## Round 6 (2026-10-30)
+
+- **Restore point:** `amendment_rules`, `extent_rules`, `provision_changes`, `provision_change_claims` and `commencement_rules`, tag `cv-s09-batch5`.
+- **Preview of the regression set:** 338 laws, 70 changed (rules 24,056 → 24,258), each a substitution split into substituted and inserted. Checked: Marine and Coastal Access Act 2009 s.217(1), Policing and Crime Act 2017 s.14(2) and s.120.
+- **Commencement re-read:**
+  - `--read --all`: 1,066 laws, 1 min 47 s;
+  - `--read-amending`: 1,541 laws, 1 min 44 s;
+  - `--read-orders`, and `--read-orders --law` for the 149 family laws.
+  - Rules 44,951 → 44,994. The diff is N2 corrections, HA's 2 rules, old "schedule" source refs renamed "sch", and SI 1997/1535's 37 rules (an order the stored rules predate).
+  - Doubtful, upstream: SI 1996/396 Sch.2 rules (s.116(4)(a), s.165(9)(a), Sch.32) are attached to both the 1994 Act and EA 1995; EA 1995 has no Sch.32.
+- **Read pass** (`mix lat.amending --read`, 11 min 51 s): 2,102 laws read, 141 changed, rules 42,888 → 43,245. Every change is a substitution split (−N, +2N); no other class.
+- **Golden from inputs: 41/50**, the same 9 failures as batch 4 (U12, U15, U13, U1, U10 classes); no regression.
+- **Rebuild:** OH&S, 149 laws, no errors, 53 s.
+- **Strata:** S 13 shapes, T 17 classes, 20,371 rows.
+
+  | status | rows |
+  |---|---|
+  | in force | 19,074 |
+  | repealed and saved | 1,022 |
+  | repealed | 269 |
+  | partly in force | 6 |
+
+- **Draws:** seeds S 151, T 152, R 153. S 81 rows; T 151 (64 checked, 4 per class); R 150, with the 30-row repeat identical. 16 agents; the prompt carries batch 5 rules and the open upstream classes from rounds 4–5.
