@@ -86,7 +86,14 @@ into label periods, in date order from the row's start:
   provisions holding it; the split is the earliest of their starts (RestrictStartDate).
 - A whole-provision change reaches what lies under it only when a source states its level.
 - C5 includes an amendment to the amending law before it took effect ("… in earlier amending provision").
-- TIERS COUNT (from round 3): each period's tier per field must match the sources behind it — primary when every
+- Batch 3 rules: a provision starts at the LATEST whole insertion of it or an ancestor (it exists once everything
+  holding it exists); an undated whole insertion by another law means its own law's commencements never reach it
+  (in_force_from nil, changed_by the inserter, C14 territory); an undated whole repeal with its text gone reads
+  repealed; a repealed provision comes back only where the text was revised (dct:valid) on or after the reviving
+  change; an earlier amendment to the amending law reaches what lies under it; on an undated start an undated
+  words change is credited (Jason 2026-10-30); NISR 1999/150-style "modifications" are rule 9 (Jason 2026-10-30).
+- TIERS COUNT (from round 3): a field's tier changes only with its value; an emptied field (nil or []) has no tier;
+  a version split's territory is derived (markup); a commencement date found via the feed or a note is derived. each period's tier per field must match the sources behind it — primary when every
   change setting that field rests on the law's text or a read order, derived when any rests on the feed or markup;
   the start period's from the changes that open it (an insertion, a start-day commencement), else nil.
 - A change to a child never opens a period on its parent (C9). A day that changes no field opens no period.
@@ -200,4 +207,6 @@ OH&S (first family, 2026-10-29 →). The session is `.claude/sessions/change-voc
 | 2 | 111 (S), 112 (T), 113 (R) | Fix 55705654 (fold F1–F3, F5–F8; U2, U6, U7, U8, U11). Golden from inputs 39/50 (the 11 failures are deferred classes) |
 | 2r | 111/112/113 | Agents: R 3/150 fold (excl. K8, tiers) — FAIL; G1–G7, V1–V11 classed |
 | 3 | 121 (S), 122 (T), 123 (R) | Fix 88b87d03 (G1–G7, V1–V3, C5 earlier). Golden from inputs 39/50. Tiers judged |
+| 3r | 121/122/123 | Agents: R 2/150 fold (tiers counted) — FAIL; H1–H6, M1 classed |
+| 4 | 131 (S), 132 (T), 133 (R) | Fix 8196eb87 (H1–H7, M1). Golden from inputs 39/50 |
 | probe | 90 (S), 91 (R), 92 (T) | Strata built (ff1f97c7): 149 laws, 20,371 rows. Probes were used only to choose golden candidates, so these seeds are never used for R |

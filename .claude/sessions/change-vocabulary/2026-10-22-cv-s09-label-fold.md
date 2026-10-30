@@ -437,3 +437,19 @@ Passing needs 0/150 (1.98%), so round 3 fails. There are no K8 rows in R this ti
 - **Refactor:** `Label.Undated` is split out of `Label.Start` for module size.
 - **Tests:** 9,563.
 - **Golden:** 39/50, the same 11 deferred classes.
+
+## Round 4 (2026-10-30; seeds S 131, T 132, R 133)
+
+- **Restore point:** tag `cv-s09-batch3`.
+- **Rebuild:** OH&S rebuilt, 149 laws, no errors.
+- **Golden from the store: 34/50** (laws outside the family are stale); golden from inputs is 39/50.
+- **Current status:**
+
+  | status | rows |
+  |---|---|
+  | in force | 18,978 |
+  | repealed and saved | 1,022 |
+  | repealed | 365 |
+  | partly in force | 6 |
+
+- **Draws:** S 89 rows, T 150 (4 per class checked), R 150. 16 agents.
