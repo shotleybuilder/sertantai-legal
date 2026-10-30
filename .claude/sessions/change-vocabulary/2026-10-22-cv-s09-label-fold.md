@@ -453,3 +453,35 @@ Passing needs 0/150 (1.98%), so round 3 fails. There are no K8 rows in R this ti
   | partly in force | 6 |
 
 - **Draws:** S 89 rows, T 150 (4 per class checked), R 150. 16 agents.
+
+### Round 4 agent check: FAIL (close)
+
+16 agents; per-batch notes in the scratchpad (`r4/findings.md`).
+
+**R (150 rows, seed 133): 2 fold faults**, plus 1 K8 row (REACH Art 93(3), omitted for GB on 2020-12-31, in force in NI under C8):
+- **I1, tier:** a same-day NI repeal of the whole law tiered the GB row's fields derived (SI 2008/1597 reg.12B(2)(c)).
+- **I2, start:** the legacy guard blocked REACH Art 139A's dated 2020 insertion, because its key is M_F_.
+
+Upstream faults are about 15 of 150, mostly U10 and U12, then U14, U1 and U5.
+
+**S, T:** tiers (T-nowhere, C14 undated), version territory after a split under C14, the H2 risk, the same-day repeal/substitution tie, and an undated ancestor substitution.
+
+**Fold classes for batch 4:**
+
+| # | class | evidence |
+|---|---|---|
+| I1 | tier each field only from the changes that set it; leave out changes whose territory is disjoint from the row's | SI 2008/1597 reg.12A, reg.12B (2027) |
+| I2 | narrow the legacy guard to `d…p…` keys (old Acts' pointers, U9), not M_F_ | REACH Art 139A |
+| I3 | **H2 risk:** an undated insertion counts (a maker; drops the law's commencements) only when the law text or the feed states its operation, never the markup alone (legacy Additions mark substitutions) | HSWA s.15(1), s.43(6) (EPA 1975 "for subsection (1) substitute") |
+| I4 | after a version's split, its territory is the version's own extent (replace, not intersect); C14 narrows only the shared history | HSWA s.28(9)[NI] |
+| I5 | tiers: territory set without a stated territory ("nowhere", revival, C14 from an undated insertion) takes the operation tier of the changes setting it | NISR 2007/31 reg.25(3); SI 2022/1378 reg.9(3); HSWA s.15(1) |
+| I6 | an undated whole substitution of an ancestor is credited on an undated start | REACH Art 40(1)(a) |
+| I7 | a same-day whole repeal and whole substitution, where the revised text shows the substitution: the substitution governs (C5 both) | CLP Art 45(4) |
+| I8 | an own-target repeal with an unstated level, on a row still showing text, is a words repeal | SI 2018/816 reg.23(1)(a)(ii) |
+
+**Upstream, new:**
+- the amending reader misses gerund verbs ("by substituting", "by deleting"; SI 2002/2174);
+- the feed reader loses EU "para. N" and "BIS" (CLP Art 54, Directive 91/383 Art 10a);
+- U5 is still live;
+- the U9 OSRPA ss.4–16 legacy "insertions";
+- a law held only as enacted should be flagged, not labelled in force.
