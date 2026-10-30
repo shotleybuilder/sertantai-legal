@@ -529,3 +529,35 @@ Upstream faults are about 15 of 150, mostly U10 and U12, then U14, U1 and U5.
   | partly in force | 6 |
 
 - **Draws:** S 94 rows, T 151 (4 per class checked), R 150. 16 agents; C8 is judged with the Windsor list.
+
+### Round 5 agent check: FAIL (close)
+
+16 agents; per-batch notes in the scratchpad (`r5/findings.md`).
+
+**R (150 rows, seed 143): 2 fold faults** (2 laws), so R fails (the bound needs 0/150):
+- **J1, reach:** a Part/Title whole insertion (REACH pt.15A by SI 2019/758) doesn't reach the articles under it: `LatRef.ancestors` knows bracket levels only, so REACH Art 139B misses its C5 maker.
+- **J2, tier:** changed_by credited from an undated markup maker on a commencement day carries a nil tier (HSWA s.43(6)): `_text_by` travels without its tier.
+
+Upstream faults are about 17 of 150: U10 (6), U12 (4), U13, U1, V9, the HSWA s.50(1AA) parse ids, an undated EU change dated only by the amending regulation's entry-into-force article.
+
+**S (94 rows): 2 fold faults; T (151 rows): 1 fold fault (tier only).**
+
+**Fold classes for batch 5:**
+
+| # | class | evidence |
+|---|---|---|
+| J1 | Part/Title/Chapter whole changes reach the rows inside them (row containers from `legal_articles`) | REACH Art 139B (pt.15A) |
+| J2 | the undated maker's tier travels with it (`_text_tier`) | HSWA s.43(6) |
+| J3 | on an undated start, an undated words-level repeal is credited like a words substitution (`Undated.words/2` leaves out `:repealed`; `Day` already counts it) | CLP Art 54 (EU 2019/1243) |
+| J4 | the start period's status and territory tiers come from the insertion that opens it, whatever else sits on the day | CLP Art 25(7) |
+| J5 | **rule question:** an undated substitution (own or ancestor) on a dated start — credit its law with in_force_from nil and commenced_by [] (a gap), or drop it as now? | HSWA s.28(10)[E+W] (EA 1995), s.6(4)(d) (CPA 1987); S4 accepted the drop for s.6(9) |
+
+**Upstream, new:**
+- **SN (amending reader/merge):** "for subsection (2) substitute (2), (2A), (2B)" reads (2A), (2B) as substituted; a number the target didn't hold is inserted (HSWA s.47(2B), ERRA 2013), so the HSWA 1975 commencement reaches 2013 text.
+- **N1 (commencement reader):** a commencement of a sub-provision with no row is lost or placed whole on the parent; it should land on the nearest ancestor, partial (HSWA s.83(1), OSRPA s.68).
+- **N2 (commencement reader):** "68(1)(c) and (2)" reads s.68(1)(2); also OSRPA s.43(9)(10)…(14).
+- **HA (commencement reader):** "shall not come into force until 1st April 1996" (Health Authorities Act 1995 s.5(2)) not read; the Royal Assent default dated HSWA s.78(8)(d)'s repeal.
+- **PN (markup/merge):** a Substitution wrapping the parent's Pnumber raised the feed's reg.3(1) substitution to reg.3 (NISR 2004/241 reg.3(2), NISR 2007/291).
+- Known still live: U12 (SLR and order repeals in notes only), U10 (HSWA s.84(1), EA 1995 E.W.S.), U5, U15, U3, U13, U14.
+
+**Doubtful, for Jason:** a pre-split one-territory words change (S only) on a shared E+W+S+NI history opens no version (HSWA s.28(3)(f)(i)); a narrower-extent words substitution narrowing the row (C14 for words).
