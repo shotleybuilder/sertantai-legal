@@ -77,7 +77,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.CoverageTest do
         change("d", "art.Article 5(1)", :substituted, [:feed]),
         change("e", "s.9(1)", :substituted, [:feed]),
         change("f", "s.10", :substituted, [:feed]),
-        change("g", "s.11", :substituted, [:feed])
+        change("g", "s.11", :substituted, [:feed]),
+        change("h", "annex.XVII", :repealed, [:feed])
       ]
 
       conflicts = [
@@ -85,14 +86,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.CoverageTest do
         %{kind: :uncovered, missing: :primary, key: "d", target: "art.Article 5(1)"},
         %{kind: :uncovered, missing: :primary, key: "e", target: "s.9(1)"},
         %{kind: :unread, key: "f", target: "s.10"},
+        %{kind: :uncovered, missing: :primary, key: "h", target: "annex.XVII"},
         %{kind: :uncovered, missing: :derived, key: "b", target: "s.2"}
       ]
 
       assert Coverage.law_text_coverage(changes, conflicts) == %{
-               total: 7,
+               total: 8,
                law_and_derived: 1,
                law_only: 1,
-               read_no_rule_schedule: 1,
+               read_no_rule_schedule: 2,
                read_no_rule_eu_article: 1,
                read_no_rule_body: 1,
                not_read: 1,

@@ -14,7 +14,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.Coverage do
     not "joined" (any two sources, `MergeStrata` J).
   - `law_text_coverage/2` (CV-S06): the derived-only changes placed by the
     conflict report's entry for each: the amending provision read with no
-    rule (by target: Schedule, EU article, body), not read, or other
+    rule (by target: a Schedule or EU annex, unparsed in v0.1; an EU
+    article; else the body), not read, or other
     (beside an unjoined law-text change, or the amending law not indexed).
   - `dating/1` (CV-S08): what dates a change.
   - `territory_groups/1` (CV-S05): the extent check's "territory from"
@@ -100,7 +101,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.Coverage do
 
   defp derived_place(c, %{kind: :uncovered, missing: :primary}) do
     cond do
-      String.starts_with?(c.target, "sch.") -> :read_no_rule_schedule
+      String.starts_with?(c.target, ["sch.", "annex."]) -> :read_no_rule_schedule
       String.starts_with?(c.target, "art.") -> :read_no_rule_eu_article
       true -> :read_no_rule_body
     end
