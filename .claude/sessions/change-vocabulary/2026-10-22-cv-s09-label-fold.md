@@ -341,3 +341,30 @@ Upstream faults are about 17 of 150 rows, mostly U10 extent and U12 missing repe
 Still deferred: K8/C8 (Windsor), U1, U3, U5, U10, U12, U13, U14, U15.
 
 **A ruling is needed:** do "in earlier amending provision" effects (an amendment to the amending law before it took effect) count in `changed_by` (C5)? REACH Art 127E: SI 2019/858 substituted SI 2019/758's Sch.2 text before it took effect.
+
+### Decisions for batch 2 (Jason 2026-10-30)
+
+- **Scope:** fold G1–G7, plus V1–V4 and the V11 check. V5–V10 and the U classes stay logged for a later reader batch.
+- **Tiers count from round 3**, as the definition of good says: any field of any period. G7 fixes them.
+- **C5, an earlier amendment:** a law that amended the amending law before it took effect also made the current text, so it is credited in `changed_by`, but only where the earlier amendment changed text that reaches the row (REACH Art 127E: [SI 2019/758, SI 2019/858]).
+
+### Fix batch 2 (88b87d03): golden from inputs 39/50
+
+**Fold:**
+- G1–G7 are done.
+- A markup-marked words change with no operation is now a version (V4, done in the fold so that the CV-S08 legacy-Addition ruling stands).
+- C5 earlier amendments are credited.
+- A whole-provision change reaches its descendants only when a source states its level. This replaces V11: U2's fix did hold; the s.1 copy came from the markup placing CROW's Addition on s.1, with an unstated level (10 such changes in OH&S).
+
+**Readers:**
+- V1: staged-removal partial stages are now marked partial.
+- V2: a range is never placed on a row inserted after it (latest insertion).
+- V3: the feed's CommencingURI becomes a derived `commenced_by`; the evidence table takes it after commencement.
+
+**Catalogue:** 73 examples accepted, adding only `commenced_by`, `earlier_amendment` and the staged-removal `partial`.
+
+**Golden:** TCPA s.284(3)(a) (SI 2009/400) and EUWA s.6 (SI 2023/1363) take the commencing orders the feed names. The 11 failures are the same deferred classes.
+
+**Tests:** 9,555.
+
+**For later:** `readers/feed.ex` is 605 lines (it was 573 before this session); decompose it in the reader batch.
