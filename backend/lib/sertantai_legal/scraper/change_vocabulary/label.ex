@@ -50,7 +50,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
           optional(:shows_text) => boolean(),
           optional(:start_from_law) => boolean(),
           optional(:containers) => [String.t()],
-          optional(:own_only) => boolean()
+          optional(:own_only) => boolean(),
+          optional(:windsor) => boolean()
         }
 
   @private [:_text_by, :_text_from]
