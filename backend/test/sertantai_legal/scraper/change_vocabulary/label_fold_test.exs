@@ -365,4 +365,114 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
       assert first.tiers.changed_by == :primary
     end
   end
+
+  describe "batch 3 (CV-S09 round 3)" do
+    test "it exists once everything holding it exists: the latest insertion starts it (HSWA s.51A(2E)(b))" do
+      changes = [
+        change("s.51A", :inserted, ~D[1998-07-01], by: "UK_ukpga_1997_42"),
+        change("s.51A(2E)", :inserted, ~D[2005-04-07], by: "UK_ukpga_2005_15")
+      ]
+
+      assert [%{valid_from: ~D[2005-04-07], changed_by: ["UK_ukpga_2005_15"]}] =
+               fold("s.51A(2E)(b)", changes, %{law: "UK_ukpga_1974_37", start: ~D[1974-07-31]})
+    end
+
+    test "an undated insertion by another law: its law's own commencements never reach it (HSWA s.34(6), Gas Act 1986)" do
+      changes = [
+        change("s.34(6)", :inserted, nil, by: "UK_ukpga_1986_44", territory: "E+W+S"),
+        change("s.34(6)", :commenced, ~D[1975-01-01],
+          key: "UK_ukpga_1974_37:commencement:s.34(6)@1975-01-01",
+          commenced_by: "UK_uksi_1974_1439"
+        )
+      ]
+
+      assert [
+               %{
+                 status: :in_force,
+                 in_force_from: nil,
+                 changed_by: ["UK_ukpga_1986_44"],
+                 commenced_by: [],
+                 territory: "E+W+S"
+               }
+             ] =
+               fold("s.34(6)", changes, %{
+                 law: "UK_ukpga_1974_37",
+                 start: ~D[1974-07-31],
+                 extent: "E+W+S+NI",
+                 start_from_law: true
+               })
+    end
+
+    test "an undated whole repeal with its text gone: repealed (CLP Art 25(5))" do
+      changes = [change("art.Article 25(5)", :repealed, nil, by: "UK_eur_2011_286")]
+
+      assert [%{status: :repealed, territory: "nowhere", changed_by: ["UK_eur_2011_286"]}] =
+               fold("art.Article 25(5)", changes, %{
+                 law: "UK_eur_2008_1272",
+                 start: ~D[1900-01-01],
+                 start_dated: false,
+                 shows_text: false
+               })
+    end
+
+    test "it comes back only where the text was revised after the change (NISR 1993/37 reg.3(1)(d))" do
+      changes = [
+        change("reg.3(1)(d)", :repealed, ~D[2015-06-01], by: "UK_nisr_2015_223"),
+        change("reg.3", :substituted, ~D[2017-02-01], by: "UK_nisr_2016_427")
+      ]
+
+      p = %{law: "UK_nisr_1993_37", start: ~D[1993-03-08], extent: "NI", shows_text: true}
+
+      assert [_, %{status: :repealed}] =
+               fold("reg.3(1)(d)", changes, Map.put(p, :valid, ~D[1993-02-01]))
+
+      assert [_, _, %{status: :in_force}] =
+               fold("reg.3(1)(d)", changes, Map.put(p, :valid, ~D[2026-01-01]))
+    end
+
+    test "an undated words change on an undated start made its text (REACH Art 118(2)(c))" do
+      c =
+        change("art.Article 118(2)(c)", :substituted, nil, level: :words, by: "UK_eur_2008_1272")
+
+      assert [%{changed_by: ["UK_eur_2008_1272"], in_force_from: nil}] =
+               fold("art.Article 118(2)(c)", [c], %{
+                 law: "UK_eur_2006_1907",
+                 start: ~D[1900-01-01],
+                 start_dated: false
+               })
+    end
+
+    test "a field's tier changes only with its value; an emptied field has none" do
+      commenced =
+        change("reg.2", :commenced, ~D[1997-07-01])
+        |> then(&%{&1 | resolved: %{&1.resolved | tiers: %{date: :primary}}})
+
+      repeal =
+        change("reg.2", :repealed, ~D[2006-08-01], by: "UK_nisr_2006_173")
+        |> then(
+          &%{
+            &1
+            | resolved: %{
+                &1.resolved
+                | tiers: %{date: :derived, by: :derived, operation: :derived}
+              }
+          }
+        )
+
+      [_, gone] =
+        Label.fold(
+          "reg.2(4)(b)(iv)",
+          %{law: "UK_nisr_1997_248", extent: "NI", start: ~D[1997-07-01]},
+          [
+            commenced,
+            repeal
+          ]
+        )
+
+      assert gone.status == :repealed
+      assert gone.tiers.commenced_by == nil
+      assert gone.tiers.in_force_from == nil
+      assert gone.tiers.changed_by == :derived
+    end
+  end
 end

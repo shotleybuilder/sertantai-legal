@@ -27,13 +27,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Start do
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Change
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Label.Facts
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Label.{Facts, Undated}
 
   @legacy ~r/^(?:d\d+p\d+|M_F_)/
 
   @doc """
-  The day the provision begins: its start, or a later whole-provision
-  insertion reaching it (on it or an ancestor), the earliest.
+  The day the provision begins: its start, or the latest later
+  whole-provision insertion reaching it — on it or an ancestor: it exists
+  once it and everything holding it exist (CV-S09 round 3: HSWA
+  s.51A(2E)(b), inserted 2005 inside the s.51A of 1998).
   """
   @spec start(Date.t(), [Change.t()]) :: Date.t()
   def start(start, reaching) do
@@ -42,7 +44,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Start do
       &(insertion?(&1) and Date.compare(&1.resolved.date, start) == :gt and not legacy_only?(&1))
     )
     |> Enum.map(& &1.resolved.date)
-    |> Enum.min(Date, fn -> start end)
+    |> Enum.max(Date, fn -> start end)
   end
 
   @doc """
@@ -95,7 +97,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Start do
     # or its ancestor's (HSWA s.25A(1), CPA 1987: CV-S09 round 2) — and an
     # undated substitution of it after that insertion made its text since
     # (CLP Art 25(7): inserted by Regulation 2017/542, replaced by 2020/11)
-    undated = undated_makers(id, changes)
+    undated = Undated.makers(id, changes)
+
+    # on a start no source dates (C10), an undated change in its words made
+    # its text too (Jason 2026-10-30: REACH Art 118(2)(c), CLP's "mixture")
+    undated =
+      if Map.get(provision, :start_dated, true),
+        do: undated,
+        else: undated ++ Undated.words(id, changes)
 
     made =
       Enum.filter(reaching, &(on_start?.(&1) and &1.resolved.operation in Facts.text_changes())) ++
@@ -109,13 +118,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Start do
 
     text_by = Facts.by(made, self)
 
+    # an undated whole repeal with its text gone: repealed from a start no
+    # source dates (CV-S09 round 3: CLP Art 25(5), deleted by Regulation
+    # (EU) 286/2011, the feed undated); repealed for one territory, in
+    # force where it remains (C1)
+    gone = Undated.repeals(id, changes, provision)
+
     # an undated maker leaves the start's own date unknown when the start
     # is only its law's (C10), never the law's commencement
     in_force? =
       status == :in_force and Map.get(provision, :start_dated, true) and
         not (undated != [] and Map.get(provision, :start_from_law, false))
 
-    %{
+    period = %{
       valid_from: start,
       valid_to: nil,
       status: status,
@@ -130,7 +145,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Start do
       tiers: tiers(provision, own_insertion, start_day, made, territorial),
       _text_by: text_by
     }
+
+    period |> Undated.repealed_at_start(gone, self) |> empty_untiered()
   end
+
+  # an empty field rests on nothing: no tier
+  defp empty_untiered(period),
+    do: %{
+      period
+      | tiers:
+          Map.new(period.tiers, fn {f, t} ->
+            {f, if(Map.get(period, f) in [nil, []], do: nil, else: t)}
+          end)
+    }
 
   # each field's tier from the changes behind it (CV-S09 round 2: an
   # inserted provision's start rests on its insertion's sources); a field
@@ -155,32 +182,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Start do
   defp set(tiers, _field, []), do: tiers
   defp set(tiers, field, changes), do: Facts.tiers(tiers, [field], Enum.uniq(changes))
 
-  # the undated whole changes that made its text: its own undated
-  # substitutions, else an undated whole insertion of it or an ancestor
-  defp undated_makers(id, changes) do
-    undated =
-      Enum.filter(
-        changes,
-        &(&1.resolved.date == nil and &1.resolved.level == :provision and
-            SertantaiLegal.Scraper.ChangeVocabulary.Label.reaches?(&1, id))
-      )
-
-    case Enum.filter(undated, &(&1.target == id and &1.resolved.operation == :substituted)) do
-      [] -> Enum.filter(undated, &insertion?/1) |> nearest()
-      substitutions -> substitutions
-    end
-  end
-
-  # the insertion on the nearest provision: its own, else its closest ancestor's
-  defp nearest([]), do: []
-
-  defp nearest(insertions) do
-    deepest = insertions |> Enum.map(&depth(&1.target)) |> Enum.max()
-    Enum.filter(insertions, &(depth(&1.target) == deepest))
-  end
-
-  defp depth("*"), do: 0
-  defp depth(target), do: length(SertantaiLegal.Scraper.LatRef.ancestors(target))
+  @doc "The nearest undated whole insertion of `id` by another law (`Label.Undated.insertion/3`)."
+  @spec undated_insertion(String.t(), [Change.t()], String.t() | nil) :: Change.t() | nil
+  defdelegate undated_insertion(id, changes, self), to: Undated, as: :insertion
 
   @doc "The law's application clauses not in force at the start (they apply on their day)."
   @spec applied_later(String.t(), Date.t(), [Change.t()]) :: [Change.t()]
@@ -193,8 +197,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Start do
   defp territory(provision, own_insertion, territorial, changes, id) do
     extent = provision.extent
 
+    # its own insertion's territory, or an undated one's (C14)
     t =
-      case own_insertion && own_insertion.resolved.territory do
+      case (own_insertion || Undated.insertion(id, changes, Map.get(provision, :law)) ||
+              %{resolved: %{territory: nil}}).resolved.territory do
         t when is_binary(t) and is_binary(extent) -> Facts.intersect(extent, t)
         t when is_binary(t) -> t
         _ -> extent

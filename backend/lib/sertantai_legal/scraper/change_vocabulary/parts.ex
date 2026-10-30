@@ -47,21 +47,24 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Parts do
   defp parent_stages(id, stages) do
     first = stages |> List.flatten() |> Enum.map(&elem(&1, 0)) |> Enum.min(Date)
 
-    # the parts' own source: derived when any part's date is (CV-S09 round
-    # 2: HSWA and OSRPA parts, all read from the orders, had read derived)
-    source =
+    # each record's source: derived when any part stage on its own date is
+    # (CV-S09 rounds 2–3: HSWA s.11's 1974 stages, all read from the order,
+    # had read derived from a later-inserted part's feed stage)
+    source = fn date ->
       stages
       |> List.flatten()
+      |> Enum.filter(&(elem(&1, 0) == date))
       |> Enum.map(&elem(&1, 3))
       |> Enum.reject(&is_nil/1)
       |> Enum.find(:commencement, &(Evidence.tier(&1) == :derived))
+    end
 
     fulls =
       Enum.map(stages, fn s ->
         s |> Enum.reject(&elem(&1, 1)) |> Enum.min_by(&elem(&1, 0), Date, fn -> nil end)
       end)
 
-    partial = synthetic(id, first, true, nil, source)
+    partial = synthetic(id, first, true, nil, source.(first))
 
     case Enum.any?(fulls, &is_nil/1) do
       true ->
@@ -71,8 +74,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Parts do
         {date, _, by, _} = Enum.max_by(fulls, &elem(&1, 0), Date)
 
         if Date.compare(first, date) == :lt,
-          do: [partial, synthetic(id, date, false, by, source)],
-          else: [synthetic(id, date, false, by, source)]
+          do: [partial, synthetic(id, date, false, by, source.(date))],
+          else: [synthetic(id, date, false, by, source.(date))]
     end
   end
 

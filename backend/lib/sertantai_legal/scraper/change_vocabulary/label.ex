@@ -72,10 +72,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
     # a commencement before it existed never reaches it (its law's own
     # record for a provision inserted later: CROW s.1A(a), CV-S09 round 2);
     # of the rest, the most specific governs
+    # made by another law's undated insertion, it was never in its own
+    # law's text: that law's commencements never reach it
+    self = Map.get(provision, :law)
+
+    own_law? =
+      born == start and is_binary(self) and Start.undated_insertion(id, changes, self) != nil
+
     reaching =
       reaching
       |> Enum.reject(
-        &(&1.resolved.operation == :commenced and Date.compare(&1.resolved.date, born) == :lt)
+        &(&1.resolved.operation == :commenced and
+            (Date.compare(&1.resolved.date, born) == :lt or
+               (own_law? and String.starts_with?(&1.key, self <> ":commencement:"))))
       )
       |> nearest_commencements()
 
@@ -89,7 +98,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
     ctx = %{
       self: Map.get(provision, :law),
       extent: provision.extent,
-      shows_text: Map.get(provision, :shows_text, false)
+      shows_text: Map.get(provision, :shows_text, false),
+      valid: Map.get(provision, :valid)
     }
 
     # the day the versions split is a day of its own (C3)
@@ -148,9 +158,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
   never a child's (C9).
   """
   @spec reaches?(Change.t(), String.t()) :: boolean()
-  def reaches?(%Change{target: target, resolved: r}, id) do
+  def reaches?(%Change{target: target, resolved: r} = c, id) do
     target == id or
-      (r.level == :provision and level_stated?(r) and
+      (((r.level == :provision and level_stated?(r)) or Facts.earlier_amendment?(c)) and
          (target == "*" or target in tl(LatRef.ancestors(id))))
   end
 

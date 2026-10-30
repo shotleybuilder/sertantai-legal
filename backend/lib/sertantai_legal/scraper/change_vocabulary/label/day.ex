@@ -32,13 +32,44 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
   alias SertantaiLegal.Scraper.ChangeVocabulary.Label.Facts
   alias SertantaiLegal.Scraper.Territory
 
-  @doc "The period after `day`'s changes on `date` (`ctx`: `:self`, `:extent`)."
+  @doc """
+  The period after `day`'s changes on `date` (`ctx`: `:self`, `:extent`,
+  `:shows_text`, `:valid`). A field's tier changes only with its value:
+  from the day's changes that set it, nil when it is emptied (CV-S09
+  round 3).
+  """
   @spec apply(map(), Date.t(), [map()], map()) :: map()
+  def apply(current, date, day, ctx) do
+    next = change(current, date, day, ctx)
+    %{next | tiers: retier(current, next, day)}
+  end
+
+  @fields ~w(status territory in_force_from changed_by commenced_by)a
+
+  # each field whose value changed takes its tier from the day's changes
+  # that act (an operation, a marked text change, an earlier amendment);
+  # an emptied field has none; an unchanged field keeps its tier
+  defp retier(current, next, day) do
+    acting =
+      Enum.filter(
+        day,
+        &(&1.resolved.operation != nil or Facts.marked_text?(&1) or Facts.earlier_amendment?(&1))
+      )
+
+    Enum.reduce(@fields, next.tiers, fn f, tiers ->
+      cond do
+        Map.get(next, f) == Map.get(current, f) -> Map.put(tiers, f, Map.get(current.tiers, f))
+        Map.get(next, f) in [nil, []] -> Map.put(tiers, f, nil)
+        true -> Facts.tiers(tiers, [f], acting)
+      end
+    end)
+  end
+
   # repealed, it comes back only when its text does: a later whole
   # substitution or insertion of it or an ancestor, where it still shows
   # text today (CV-S09 round 2: SI 2022/1378 reg.9(9), omitted 2023, back
   # with reg.9's 2024 substitution)
-  def apply(%{status: s} = current, date, day, ctx) when s in [:repealed, :repealed_saved] do
+  defp change(%{status: s} = current, date, day, ctx) when s in [:repealed, :repealed_saved] do
     back =
       Enum.filter(
         day,
@@ -46,7 +77,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
             not &1.resolved.partial)
       )
 
-    if back != [] and Map.get(ctx, :shows_text, false) do
+    # the text shows it only if it was valid after this change: an
+    # unrevised body still shows what was repealed (CV-S09 round 3: NISR
+    # 1993/37 reg.3(1)(d), its body valid 1993)
+    revised? =
+      case Map.get(ctx, :valid) do
+        %Date{} = valid -> Date.compare(valid, date) != :lt
+        _ -> true
+      end
+
+    if back != [] and Map.get(ctx, :shows_text, false) and revised? do
       makers = Facts.makers(back, ctx.self)
       t = back |> Enum.map(& &1.resolved.territory) |> Enum.find(&is_binary/1)
 
@@ -70,7 +110,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
     end
   end
 
-  def apply(current, date, day, ctx) do
+  defp change(current, date, day, ctx) do
     self = ctx.self
     of = fn op -> Enum.filter(day, &(&1.resolved.operation == op)) end
     commenced = of.(:commenced)
@@ -230,8 +270,20 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
           Territory.covers?(version, c.resolved.territory)
       end)
 
-    if (on_split? or confined?) and is_binary(period.territory),
-      do: %{period | territory: Facts.intersect(period.territory, version)},
+    narrowed = if is_binary(period.territory), do: Facts.intersect(period.territory, version)
+
+    # the split rests on the markup's versions: derived
+    if (on_split? or confined?) and narrowed != nil and narrowed != period.territory,
+      do: %{
+        period
+        | territory: narrowed,
+          tiers:
+            Map.put(
+              period.tiers,
+              :territory,
+              if(on_split?, do: :derived, else: period.tiers[:territory])
+            )
+      },
       else: period
   end
 end

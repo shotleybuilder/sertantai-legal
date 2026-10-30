@@ -228,6 +228,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
            Keyword.get(opts, :continuations, [])
          ))
       |> Merge.merge(uris: Keyword.get(opts, :effect_uris, %{}))
+      |> Merge.OwnCommencement.join(law_name)
       # a gap no source fills: the amending law's commencement (the date)
       # and extent at the provision the note names (CV-07)
       |> Enum.map(fn c ->

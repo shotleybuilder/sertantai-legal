@@ -142,6 +142,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Facts do
     commenced_by: [:commenced_by, :by]
   }
 
+  # a commencement found through a pointer (the feed's or a note's: the
+  # law's own text at the provision legislation.gov.uk names) rests on
+  # legislation.gov.uk for its place: derived (CV-S09 round 3)
+  defp pointed(c, a, :primary) when a in [:date, :commenced_by] do
+    if Change.value(c, :commencement, :via) in [:note, :feed], do: :derived, else: :primary
+  end
+
+  defp pointed(_c, _a, t), do: t
+
   @doc "The period's tiers with `fields` set from `changes`."
   @spec tiers(map(), [atom()], [Change.t()]) :: map()
   def tiers(current, fields, changes) do
@@ -152,7 +161,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Facts do
             t = Map.get(c.resolved.tiers, a),
             t != nil,
             uniq: true,
-            do: t
+            do: pointed(c, a, t)
 
       # a territory one commencement is for is the feed's word (C13)
       stated =
