@@ -47,20 +47,38 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
   @fields ~w(status territory in_force_from changed_by commenced_by)a
 
   # each field whose value changed takes its tier from the day's changes
-  # that act (an operation, a marked text change, an earlier amendment);
-  # an emptied field has none; an unchanged field keeps its tier
+  # that set it — never from one beyond its territory (CV-S09 round 4: an
+  # NI repeal of the whole law had tiered a GB row); an emptied field has
+  # none; an unchanged field keeps its tier
   defp retier(current, next, day) do
-    acting =
+    day = Enum.filter(day, &Facts.overlaps?(&1.resolved.territory, current.territory))
+    op = & &1.resolved.operation
+
+    text =
       Enum.filter(
         day,
-        &(&1.resolved.operation != nil or Facts.marked_text?(&1) or Facts.earlier_amendment?(&1))
+        &(op.(&1) in [:substituted, :inserted, :renumbered, :repealed_in_part] or
+            (op.(&1) == :repealed and &1.resolved.level == :words) or Facts.marked_text?(&1) or
+            Facts.earlier_amendment?(&1))
       )
+
+    commenced = Enum.filter(day, &(op.(&1) == :commenced))
+    removed = Enum.filter(day, &(op.(&1) == :repealed and &1.resolved.level == :provision))
+    applied = Enum.filter(day, &(op.(&1) == :applied))
+
+    setters = %{
+      status: commenced ++ removed ++ text,
+      territory: removed ++ applied ++ commenced ++ text,
+      in_force_from: text ++ commenced,
+      changed_by: text ++ removed,
+      commenced_by: commenced ++ text
+    }
 
     Enum.reduce(@fields, next.tiers, fn f, tiers ->
       cond do
         Map.get(next, f) == Map.get(current, f) -> Map.put(tiers, f, Map.get(current.tiers, f))
         Map.get(next, f) in [nil, []] -> Map.put(tiers, f, nil)
-        true -> Facts.tiers(tiers, [f], acting)
+        true -> Facts.tiers(tiers, [f], setters[f])
       end
     end)
   end
@@ -80,13 +98,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
     # the text shows it only if it was valid after this change: an
     # unrevised body still shows what was repealed (CV-S09 round 3: NISR
     # 1993/37 reg.3(1)(d), its body valid 1993)
-    revised? =
-      case Map.get(ctx, :valid) do
-        %Date{} = valid -> Date.compare(valid, date) != :lt
-        _ -> true
-      end
-
-    if back != [] and Map.get(ctx, :shows_text, false) and revised? do
+    if back != [] and Map.get(ctx, :shows_text, false) and revised?(ctx, date) do
       makers = Facts.makers(back, ctx.self)
       t = back |> Enum.map(& &1.resolved.territory) |> Enum.find(&is_binary/1)
 
@@ -116,7 +128,28 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
     commenced = of.(:commenced)
     territorial = Enum.filter(commenced, &Facts.territory_only/1)
 
-    {removals, word_repeals} = Enum.split_with(of.(:repealed), &(&1.resolved.level == :provision))
+    # a whole repeal whose level no source states, of a provision that still
+    # shows its text, removed words (CV-S09 round 4: SI 2018/816
+    # reg.23(1)(a)(ii), "reg. 23(1)(b) and word")
+    {removals, word_repeals} =
+      Enum.split_with(
+        of.(:repealed),
+        &(&1.resolved.level == :provision and
+            not (unstated_level?(&1) and &1.target == ctx.id and Map.get(ctx, :shows_text, false)))
+      )
+
+    # a whole repeal and a whole substitution the same day, the revised
+    # text showing the substitution: the substitution governs, both laws
+    # made it (C5; CV-S09 round 4: CLP Art 45(4), SI 2019/720 as substituted
+    # by SI 2020/1567)
+    {removals, superseded} =
+      if removals != [] and Map.get(ctx, :shows_text, false) and revised?(ctx, date) and
+           Enum.any?(
+             day,
+             &(&1.resolved.operation == :substituted and &1.resolved.level == :provision)
+           ),
+         do: {[], removals},
+         else: {removals, []}
 
     # a removal in part: partly in force only with its text retained or
     # staged for purposes (C7); with the words gone, a words repeal
@@ -144,6 +177,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
     # SI 2019/858)
     earlier = if versions != [], do: Enum.filter(day, &Facts.earlier_amendment?/1), else: []
 
+    # EU law kept in NI (C8): the UK's text change makes the GB text; the
+    # provision as labelled is GB's from then (CLP Art 2(17))
+    territory =
+      if Map.get(ctx, :windsor, false) and versions != [] and is_binary(territory) and
+           Enum.all?(versions, &(&1.resolved.territory == "E+W+S")),
+         do: Facts.intersect(territory, "E+W+S"),
+         else: territory
+
     # whole new text, fully in force, replaces a partly-commenced one
     replaced? =
       Enum.any?(
@@ -162,7 +203,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
       end
 
     text_by =
-      if versions != [], do: Facts.makers(versions ++ earlier, self), else: current._text_by
+      if versions != [],
+        do: Facts.makers(versions ++ earlier ++ superseded, self),
+        else: current._text_by
 
     cond do
       # repealed with savings: saved where it was in force (D3)
@@ -234,6 +277,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
     end
   end
 
+  defp revised?(ctx, date) do
+    case Map.get(ctx, :valid) do
+      %Date{} = valid -> Date.compare(valid, date) != :lt
+      _ -> true
+    end
+  end
+
+  defp unstated_level?(%{resolved: %{sources: sources}}) when is_map(sources),
+    do: Map.fetch(sources, :level) == {:ok, nil}
+
+  defp unstated_level?(_c), do: false
+
   defp territory_back(extent, t) when is_binary(extent) and is_binary(t),
     do: Facts.intersect(extent, t)
 
@@ -270,7 +325,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
           Territory.covers?(version, c.resolved.territory)
       end)
 
-    narrowed = if is_binary(period.territory), do: Facts.intersect(period.territory, version)
+    # on the split the version's own territory (C3), whatever narrowed the
+    # shared history (C14: HSWA s.28(9)[NI], inserted by an E+W+S Act, had
+    # never split: CV-S09 round 4); a confined change narrows it
+    narrowed =
+      cond do
+        on_split? -> version
+        is_binary(period.territory) -> Facts.intersect(period.territory, version)
+        true -> nil
+      end
 
     # the split rests on the markup's versions: derived
     if (on_split? or confined?) and narrowed != nil and narrowed != period.territory,

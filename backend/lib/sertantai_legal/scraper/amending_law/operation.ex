@@ -12,10 +12,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Operation do
 
   alias SertantaiLegal.Scraper.AmendingLaw.Text
 
+  # older drafting uses the gerund ("by substituting for paragraph (3)",
+  # "by deleting regulation 6(3)": SI 2002/2174, CV-S09 round 4)
   @verbs [
-    {~r/\bsubstitut(?:ed|e)\b/i, "substituted"},
-    {~r/\binsert(?:ed)?\b|\badd(?:ed)?\b/i, "inserted"},
-    {~r/cease to have effect|\bomit(?:ted)?\b|\brepealed\b|\brevoked\b/i, "repealed"}
+    {~r/\bsubstitut(?:ed|e|ing)\b/i, "substituted"},
+    {~r/\binsert(?:ed|ing)?\b|\badd(?:ed|ing)?\b/i, "inserted"},
+    {~r/cease to have effect|\bomit(?:ted|ting)?\b|\bdelet(?:e|ed|ing)\b|\brepealed\b|\brevoked\b/i,
+     "repealed"}
   ]
 
   @heading_or_mark ~r/\bfor\s+the\s+(?:italic\s+)?(?:cross[- ]?)?heading\b(?!\s+and\b)|\b(?:for|omit)\s+the\s+(?:full\s+stop|comma|semi-?colon|colon)\b|\binsert\s+a\s+(?:full\s+stop|comma|semi-?colon|colon)\b(?!\s+and\b)/iu
@@ -25,7 +28,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Operation do
   # "for “X” insert “Y”": quoted words replaced, a substitution (SI 2023/284
   # reg.15(2)(a), CV-S08 round 1) — never "after the entry for “X” insert",
   # a place
-  @for_insert ~r/(?<!entry\s)(?<!entries\s)(?<!definition\s)\bfor\s+(?:the\s+words?\s+)?[“"][^”"]+[”"]\s*,?\s*(?:there\s+(?:shall\s+be|is)\s+)?insert(?:ed)?\b/iu
+  @for_insert ~r/(?<!entry\s)(?<!entries\s)(?<!definition\s)\bfor\s+(?:the\s+words?\s+)?[“"][^”"]+[”"]\s*,?\s*(?:there\s+(?:shall\s+be|is)\s+)?insert(?:ed|ing)?\b/iu
 
   @doc "The instruction's operation and effect type; nil for none."
   @spec of(Text.t()) :: {String.t(), String.t()} | nil

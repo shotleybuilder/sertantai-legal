@@ -63,7 +63,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Undated do
   def insertion(id, changes, self) do
     id
     |> makers(changes)
-    |> Enum.find(&(insertion?(&1) and &1.resolved.by not in [nil, self]))
+    |> Enum.find(&(stated_insertion?(&1) and &1.resolved.by not in [nil, self]))
   end
 
   @doc "The undated whole changes that made its text: its own undated substitutions, else the nearest undated whole insertion."
@@ -103,5 +103,29 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Undated do
   defp depth("*"), do: 0
   defp depth(target), do: length(SertantaiLegal.Scraper.LatRef.ancestors(target))
 
+  @doc """
+  On a start no source dates, the nearest undated whole substitution of an
+  ancestor made its text, unless its own undated makers already did (CV-S09
+  round 4: REACH Art 40(1)(a), Art 40(1) substituted by CLP).
+  """
+  @spec ancestor_substitutions(String.t(), [Change.t()], [Change.t()]) :: [Change.t()]
+  def ancestor_substitutions(_id, _changes, [_ | _]), do: []
+
+  def ancestor_substitutions(id, changes, []) do
+    changes
+    |> Enum.filter(
+      &(&1.resolved.date == nil and &1.resolved.operation == :substituted and
+          &1.resolved.level == :provision and &1.target != id and Label.reaches?(&1, id))
+    )
+    |> nearest()
+  end
+
   defp insertion?(c), do: c.resolved.operation == :inserted and c.resolved.level == :provision
+
+  # an insertion the law's text or the feed states: a legacy markup Addition
+  # alone credits its law (CV-S08, Jason 2026-10-29: number wrapped =
+  # inserted; Forestry Act 1967 s.1(4)(a)) but is no proof the provision
+  # was never in its own law — it also marks substitutions (EPA 1975
+  # Sch.15 "for subsection (1) substitute" on HSWA s.15(1): CV-S09 round 4)
+  defp stated_insertion?(c), do: insertion?(c) and c.resolved.sources[:operation] != :markup
 end

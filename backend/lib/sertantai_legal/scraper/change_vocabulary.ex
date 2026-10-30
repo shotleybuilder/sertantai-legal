@@ -22,7 +22,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
     Placement
   }
 
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Ref}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Ref, Windsor}
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.{
     AmendingLaw,
@@ -68,6 +68,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
       Keyword.get_lazy(opts, :changes, fn ->
         build(law_name, xml, effects, provisions, opts, facts)
       end)
+      # EU law the Windsor Framework keeps in NI: the UK's changes reach GB (C8)
+      |> Windsor.confine(law_name)
 
     Map.new(provisions, fn {id, provision} ->
       {base, version} = version(id)
@@ -77,7 +79,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
           law: law_name,
           prospective: prospective?(facts, base),
           valid: valid,
-          shows_text: get_in(facts, [base, :shows_text]) == true
+          shows_text: get_in(facts, [base, :shows_text]) == true,
+          windsor: Windsor.listed?(law_name)
         }
         |> Map.merge(provision)
         |> own_territory(law_name, Keyword.get(opts, :title))

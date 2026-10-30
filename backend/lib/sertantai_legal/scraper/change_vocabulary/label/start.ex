@@ -29,7 +29,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Start do
   alias SertantaiLegal.Scraper.ChangeVocabulary.Change
   alias SertantaiLegal.Scraper.ChangeVocabulary.Label.{Facts, Undated}
 
-  @legacy ~r/^(?:d\d+p\d+|M_F_)/
+  # old Acts' commentary pointers (d29p…, d30p…): their Additions also mark
+  # repeals and substitutions (OSRPA 1963 ss.4–16); never M_F_, which marks
+  # real insertions (REACH Art 139A, CV-S09 round 4)
+  @legacy ~r/^d\d+p\d+/
 
   @doc """
   The day the provision begins: its start, or the latest later
@@ -104,7 +107,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Start do
     undated =
       if Map.get(provision, :start_dated, true),
         do: undated,
-        else: undated ++ Undated.words(id, changes)
+        else:
+          undated ++
+            Undated.words(id, changes) ++ Undated.ancestor_substitutions(id, changes, undated)
 
     made =
       Enum.filter(reaching, &(on_start?.(&1) and &1.resolved.operation in Facts.text_changes())) ++
@@ -142,7 +147,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Start do
           else: []
         ),
       territory: territory(provision, own_insertion, territorial, changes, id),
-      tiers: tiers(provision, own_insertion, start_day, made, territorial),
+      tiers:
+        tiers(
+          provision,
+          own_insertion || Undated.insertion(id, changes, self),
+          start_day,
+          made,
+          territorial
+        ),
       _text_by: text_by
     }
 
@@ -212,7 +224,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Start do
         ts -> narrow(t, SertantaiLegal.Scraper.Territory.union(ts))
       end
 
-    t = narrow(t, version_at_start(provision))
+    t = version_at_start(provision) || t
 
     {at_start, _} = applications(changes, id, provision.start)
     Enum.reduce(at_start, t, &Facts.apply_to(&2, &1.resolved.territory))

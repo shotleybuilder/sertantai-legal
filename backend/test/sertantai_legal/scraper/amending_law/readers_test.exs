@@ -89,6 +89,18 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
              {"repealed", "words repealed"}
   end
 
+  test "Operation: older drafting's gerunds (SI 2002/2174 reg.6, CV-S09 round 4)" do
+    op = fn s -> Operation.of(%Text{id: "x", instruction: s}) end
+
+    assert op.("in regulation 25, by substituting for paragraph (3) the following paragraph—") ==
+             {"substituted", "substituted"}
+
+    assert op.("by deleting regulation 6(3);") == {"repealed", "repealed"}
+
+    assert op.("by inserting after paragraph (1) the following paragraph—") ==
+             {"inserted", "inserted"}
+  end
+
   test "Operation: the drafting verb, words-level when words are quoted or named" do
     op = fn s -> Operation.of(%Text{id: "x", instruction: s}) end
 

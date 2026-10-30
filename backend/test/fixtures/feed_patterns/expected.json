@@ -6290,7 +6290,7 @@
           "feed.applied": true,
           "feed.by": "UK_eudr_2018_645",
           "feed.finer_unheld": "art.Article 9(1)",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "substituted",
           "feed.prospective": true,
           "feed.savings": []
@@ -6996,7 +6996,7 @@
           "feed.applied": true,
           "feed.by": "UK_eur_2013_1258",
           "feed.finer_unheld": "art.Article 2(j)",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "inserted",
           "feed.prospective": true,
           "feed.savings": []
@@ -7459,7 +7459,7 @@
           "feed.applied": true,
           "feed.by": "UK_eur_2013_1259",
           "feed.finer_unheld": "art.Article 26(3BI)",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "inserted",
           "feed.prospective": true,
           "feed.savings": []
@@ -7535,7 +7535,7 @@
           "feed.applied": true,
           "feed.by": "UK_eur_2013_1259",
           "feed.finer_unheld": "art.Article 26(3TR)",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "inserted",
           "feed.prospective": true,
           "feed.savings": []
@@ -7591,7 +7591,7 @@
           "feed.applied": true,
           "feed.by": "UK_eur_2014_660",
           "feed.finer_unheld": "art.Article 2(35BI)",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "inserted",
           "feed.prospective": true,
           "feed.savings": []
@@ -7854,7 +7854,7 @@
           "feed.applied": true,
           "feed.by": "UK_eur_2014_660",
           "feed.finer_unheld": "art.Article 50(4TR)",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "inserted",
           "feed.prospective": true,
           "feed.savings": []
@@ -7869,7 +7869,7 @@
           "feed.applied": true,
           "feed.by": "UK_eur_2014_660",
           "feed.finer_unheld": "art.Article 50(4SX)",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "inserted",
           "feed.prospective": true,
           "feed.savings": []
@@ -7884,7 +7884,7 @@
           "feed.applied": true,
           "feed.by": "UK_eur_2014_660",
           "feed.finer_unheld": "art.Article 50(4QQ)",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "inserted",
           "feed.prospective": true,
           "feed.savings": []
@@ -8036,7 +8036,7 @@
           "feed.applied": true,
           "feed.by": "UK_eur_2014_660",
           "feed.finer_unheld": "art.Article 50(4QT)",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "inserted",
           "feed.prospective": true,
           "feed.savings": []
@@ -8524,7 +8524,7 @@
           "feed.applied": true,
           "feed.by": "UK_eur_2008_1272",
           "feed.finer_unheld": "art.Article 14(2)(e)",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "substituted",
           "feed.prospective": true,
           "feed.savings": []
@@ -8963,7 +8963,7 @@
           "feed.by": "UK_eur_2020_1054",
           "feed.date": "2024-12-31",
           "feed.finer_unheld": "art.Article 16(3)",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "substituted",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -8979,7 +8979,7 @@
           "feed.applied": true,
           "feed.by": "UK_eur_2014_165",
           "feed.finer_unheld": "art.Article 3(a)(bi)",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "inserted",
           "feed.prospective": true,
           "feed.savings": []
@@ -8995,7 +8995,7 @@
           "feed.by": "UK_eur_2020_1054",
           "feed.date": "2020-08-20",
           "feed.finer_unheld": "art.Article 13(1)(r)",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "inserted",
           "feed.partial": false,
           "feed.qualification": "complete",
@@ -9155,7 +9155,7 @@
           "feed.applied": true,
           "feed.by": "UK_eur_2019_1243",
           "feed.finer_unheld": "art.Article 54(3)",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "repealed",
           "feed.prospective": true,
           "feed.savings": []
@@ -9588,7 +9588,7 @@
           "feed.applied": true,
           "feed.by": "UK_eur_2018_394",
           "feed.finer_unheld": "art.Article 10(5)(b)",
-          "feed.level": "provision",
+          "feed.level": "words",
           "feed.operation": "substituted",
           "feed.prospective": true,
           "feed.savings": []

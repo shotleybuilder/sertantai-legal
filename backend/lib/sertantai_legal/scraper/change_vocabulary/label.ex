@@ -96,9 +96,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
     later? = &(Date.compare(&1, born) == :gt)
 
     ctx = %{
+      id: base_id(id),
       self: Map.get(provision, :law),
       extent: provision.extent,
       shows_text: Map.get(provision, :shows_text, false),
+      windsor: Map.get(provision, :windsor, false),
       valid: Map.get(provision, :valid)
     }
 
@@ -135,6 +137,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
   end
 
   defp visible(period), do: Map.drop(period, [:tiers | @private])
+
+  defp base_id(id), do: String.replace(id, ~r/\[[^\]]+\]$/, "")
 
   # the most specific commencement governs: a provision commenced in its
   # own right takes no ancestor's (an order commencing s.2(1) "except

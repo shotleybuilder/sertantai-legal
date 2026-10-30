@@ -136,7 +136,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Facts do
   # not on any attribute of the change)
   @field_attributes %{
     status: [:operation, :date, :partial],
-    territory: [:territory],
+    # where it applies rests on the change itself when it names no
+    # territory ("nowhere" after a repeal; a revival): CV-S09 round 4
+    territory: [:territory, :operation],
     in_force_from: [:date],
     changed_by: [:by],
     commenced_by: [:commenced_by, :by]

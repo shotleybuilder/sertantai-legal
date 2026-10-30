@@ -475,4 +475,101 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
       assert gone.tiers.changed_by == :derived
     end
   end
+
+  describe "batch 4 (CV-S09 round 4)" do
+    test "a field's tier never comes from a change beyond the row's territory (an NI repeal the same day)" do
+      sub =
+        change("reg.12B", :substituted, ~D[2027-01-20], by: "UK_uksi_2026_867")
+        |> then(&%{&1 | resolved: %{&1.resolved | tiers: %{date: :primary, by: :primary}}})
+
+      ni =
+        change("*", :repealed, ~D[2027-01-20], key: "ni", by: "UK_uksi_2026_867", territory: "NI")
+        |> then(&%{&1 | resolved: %{&1.resolved | tiers: %{date: :derived, by: :derived}}})
+
+      [_, last] =
+        Label.fold(
+          "reg.12B(2)(c)",
+          %{law: "UK_uksi_2008_1597", extent: "E+W+S", start: ~D[2020-12-31]},
+          [
+            sub,
+            ni
+          ]
+        )
+
+      assert last.tiers.changed_by == :primary
+      assert last.tiers.in_force_from == :primary
+    end
+
+    test "an insertion only the markup claims credits its law, but its own law's commencement stands (a legacy Addition marks substitutions too)" do
+      c =
+        change("s.15(1)", :inserted, nil,
+          by: "UK_ukpga_1975_71",
+          key: "d29p1270",
+          sources: %{operation: :markup}
+        )
+
+      assert [%{status: :prospective}, %{status: :in_force, changed_by: ["UK_ukpga_1975_71"]}] =
+               fold("s.15(1)", [c, change("s.15(1)", :commenced, ~D[1974-10-01])], %{
+                 law: "UK_ukpga_1974_37",
+                 start: ~D[1974-07-31],
+                 start_from_law: true
+               })
+    end
+
+    test "on the split a version takes its own territory, whatever narrowed the shared history (HSWA s.28(9)[NI])" do
+      c = change("s.28(9)", :inserted, ~D[1976-01-01], by: "UK_ukpga_1975_71", territory: "E+W+S")
+
+      assert [_, %{valid_from: ~D[2018-04-21], territory: "NI"}] =
+               fold("s.28(9)[NI]", [c], %{
+                 law: "UK_ukpga_1974_37",
+                 start: ~D[1974-07-31],
+                 extent: "E+W+S+NI",
+                 version: "NI",
+                 version_start: ~D[2018-04-21]
+               })
+    end
+
+    test "a same-day whole repeal and substitution, the revised text showing it: the substitution governs (CLP Art 45(4))" do
+      changes = [
+        change("art.Article 45(4)", :repealed, ~D[2020-12-31],
+          key: "rep",
+          by: "UK_uksi_2019_720"
+        ),
+        change("art.Article 45(4)", :substituted, ~D[2020-12-31],
+          key: "sub",
+          by: "UK_uksi_2020_1567"
+        )
+      ]
+
+      assert [_, %{status: :in_force, changed_by: ["UK_uksi_2019_720", "UK_uksi_2020_1567"]}] =
+               fold("art.Article 45(4)", changes, %{
+                 law: "UK_eur_2008_1272",
+                 start: ~D[2008-12-16],
+                 shows_text: true,
+                 valid: ~D[2026-05-21]
+               })
+    end
+
+    test "its own repeal whose level no source states, the text still showing: words repealed" do
+      c =
+        change("reg.23(1)(a)(ii)", :repealed, ~D[2020-12-31],
+          by: "UK_uksi_2019_1347",
+          sources: %{operation: :feed, level: nil}
+        )
+
+      assert [_, %{status: :in_force, in_force_from: ~D[2020-12-31]}] =
+               fold("reg.23(1)(a)(ii)", [c], %{law: "UK_uksi_2018_816", shows_text: true})
+    end
+
+    test "an undated ancestor substitution on an undated start made its text (REACH Art 40(1)(a))" do
+      c = change("art.Article 40(1)", :substituted, nil, by: "UK_eur_2008_1272")
+
+      assert [%{changed_by: ["UK_eur_2008_1272"], in_force_from: nil}] =
+               fold("art.Article 40(1)(a)", [c], %{
+                 law: "UK_eur_2006_1907",
+                 start: ~D[1900-01-01],
+                 start_dated: false
+               })
+    end
+  end
 end

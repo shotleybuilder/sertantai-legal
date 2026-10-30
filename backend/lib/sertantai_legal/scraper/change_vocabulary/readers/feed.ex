@@ -74,8 +74,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
           key,
           target,
           # where the feed placed it: its level speaks for this provision
-          # only, wherever the merge moves the event (CV-S08 round 2)
-          claims ++
+          # only, wherever the merge moves the event (CV-S08 round 2); on an
+          # article holding the finer part it names, it changes part of it
+          # (CV-S09 round 4: "Art. 54 para. 3" on CLP Art 54, unheld)
+          part_of(claims, unheld, id) ++
             Claim.new(:feed, :ranged, if(ranged?, do: true), id) ++
             Claim.new(:feed, :placed, target, id) ++
             Claim.new(:feed, :finer_unheld, unheld, id) ++
@@ -96,6 +98,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   defp finer(target, %Effect{affected_provisions: text, affected_refs: refs}, law, held) do
     with true <- eu?(law) and length(List.wrap(refs)) == 1,
          "art.Article " <> number <- target,
+         # "Art. 10 BIS" names Article 10a (bis, ter, quater: a, b, c)
+         nil <- bis(number, text, held),
          [_, ^number, tail] <- Regex.run(~r/^\s*Art\.\s*(\w+)\s*(.*)$/u, text || ""),
          [_ | _] = parts <- finer_parts(tail) do
       candidates = parts |> Enum.scan(target, &(&2 <> "(" <> &1 <> ")"))
@@ -104,9 +108,32 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
 
       {deepest || target, if(full != deepest, do: full)}
     else
+      {"art.Article " <> _ = lettered, nil} -> {lettered, nil}
       _ -> {target, nil}
     end
   end
+
+  @bis %{"bis" => "a", "ter" => "b", "quater" => "c", "quinquies" => "d"}
+
+  # "Art. 10 BIS" → {"art.Article 10a", nil} when we hold Article 10a
+  defp bis(number, text, held) do
+    with [_, ^number, word] <-
+           Regex.run(~r/^\s*Art\.\s*(\w+)\s+(bis|ter|quater|quinquies)\b/iu, text || ""),
+         letter = @bis[String.downcase(word)],
+         id = "art.Article " <> number <> letter,
+         true <- MapSet.member?(held, id) do
+      {id, nil}
+    else
+      _ -> nil
+    end
+  end
+
+  defp part_of(claims, nil, _id), do: claims
+
+  defp part_of(claims, _unheld, id),
+    do:
+      Enum.reject(claims, &(&1.source == :feed and &1.attribute == :level)) ++
+        Claim.new(:feed, :level, :words, id)
 
   defp eu?(nil), do: false
   defp eu?(law), do: Enum.at(String.split(law, "_"), 1) in @eu
