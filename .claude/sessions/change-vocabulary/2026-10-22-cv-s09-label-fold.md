@@ -807,4 +807,42 @@ Upstream faults are about 17 of 150: U10 (6), U12 (4), U13, U1, V9, the HSWA s.5
 - **O5:** a removal of the provision itself kept for some purposes (staged), not retained, its text gone from the revised law, is repealed, saved when a saving is named (D3).
 - **Golden from inputs:** 27/27; the extended set is 41/50, the same 9 upstream failures.
 - **Tests:** 3,082 change-vocabulary tests pass.
-- **Next:** a rebuild of the OH&S store, then round 10: re-fold R (seed 153) and recheck its changed rows, with fresh S and T draws.
+- **O2 (Jason 2026-10-30, d809e65f):** a row inserted into a provision its own law has not yet commenced is prospective until that law commences it (2007/19 s.7(3)(aa): prospective 2008-04-01, in force 2008-04-06 by SI 2008/401).
+
+## Round 10 (2026-10-30)
+
+- **Restore point:** tag `cv-s09-batch9`. Rebuild clean, in 52 s.
+- **R:** re-folded with seed 153. None of the 150 rows changed since round 9, so the pool stays at **0/150 rows, 0/73 laws: PASS.**
+- **Draws:** S seed 191 (91 rows), T seed 192 (66 checked, 4 per class of 17). 7 agents; notes in the scratchpad (`r10/findings.md`).
+
+### Round 10 agent check: S clean; T 4 fold faults in 3 patterns
+
+**S (91 rows): 0 fold faults.**
+- One agent claimed SI 1989/462 reg.7(2)(b). I reclassed it as upstream V8 (round 2, still open), because the store holds SI 1989/2367's whole substitution of reg.7 with no date. A change with no date after a dated start can't be placed in time; extended golden reg.7(2) fails for the same reason.
+
+**T (66 rows): 4 fold faults, 3 patterns.**
+
+| # | fault | evidence |
+|---|---|---|
+| Q1 | a whole substitution whose new text no longer holds the row read as a new version | CLP Art 37A: SI 2026/484 replaced Arts 37 and 37A with one Art 37. The feed reads 37A as substituted; the markup places the change with its text gone |
+| Q2 | **regression from batch 9 O5:** a removal for specified purposes, later finished by the same law, read repealed from the first step (the text gone is the later step's) | HSWA s.47(5), s.47(1)(b): omitted by ERRA 2013 for specified purposes 2013-04-25, wholly 2013-10-01 |
+| Q3 | a text change confined to the version narrowed the shared history although laws changed the text the same day for the other territories | HSWA s.51A(3)(b)[S]: asp 2012/8 (S) and SI 2013/602 (E+W+NI) on 2013-04-01; the versions split 2013-10-07 |
+
+**Upstream, new:**
+- **P6 (commencement reader):** SI 1995/2950 reg.2(1)'s list "paragraphs 1, 2 (except sub-paragraphs (2) and (9)(b)), 3 to 7, …" is cut at the "(except …)". HSWA s.28(10)[S] is dated 1996 by SI 1996/396, when SI 1995/2950 makes it 1995-11-23.
+- **K-legacy, wider than first logged:** OSRPA's legacy Addition round s.6 cites SI 1992/3004, so it isn't law-less. It is read as a dated insertion by the law that repealed the section.
+- **KS:** CLP Art 37(7)–(9) were new in SI 2019/720's substituted Art 37 (its schedule isn't held).
+- **WL-reach, cause found:** once the feed effect is placed per regulation, the "*" law-text rule has no "*" change left to join.
+- Still live: U1, U3, U5, U10, U12, U13, U15, V8, K-legacy, KO-two, KC10, TR.
+
+### Fix batch 10 (7f8b8a59)
+
+- **Q1:** a whole substitution of the row itself, its markup placing the change with its text gone and the revised law not showing it, is its repeal by the substituting law.
+- **Q2:** O5 applies only when no later removal of the provision follows; until then the row is partly in force (C7).
+- **Q3:** a change confined to the version narrows the row only when the day's other text changes stay inside the version too.
+- **Checks:**
+  - **Golden from inputs:** 27/27; the extended set is 41/50.
+  - **Tests:** 3,085 pass.
+  - **The four faulty rows from inputs:** s.47(5) is partly in force 2013-04-25 to 2013-10-01, then repealed_saved. s.51A(3)(b)[S] is E+W+S in 2013 and S from the split. SI 2009/716 reg.15 is repealed_saved 2015 (O5 holds).
+- **Rebuild:** clean (restore point tag `cv-s09-batch10`).
+- **R:** re-folded; 0 of 150 rows changed.
