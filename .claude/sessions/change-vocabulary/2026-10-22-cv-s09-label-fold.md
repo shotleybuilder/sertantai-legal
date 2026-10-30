@@ -768,3 +768,5 @@ Upstream faults are about 17 of 150: U10 (6), U12 (4), U13, U1, V9, the HSWA s.5
 
 - **Restore point:** tag `cv-s09-batch8`. Rebuild clean.
 - **Recheck:** R re-folded with seed 153; fresh S (seed 181) and T (seed 182).
+- **Draws done** (scratchpad `r9/`): R has 10 rows changed since round 6 (`rchanged.json`; new since round 8: REACH Art 127E(8)(c)(i), from EW). S has 88 rows (s1–s4), T has 66 (t1–t3). **Next:** build `r9/prompt.txt` from the skill, run 8 agents (the changed R rows plus S1–S4 and T1–T3), then pool.
+- **Pushed** 2026-10-30 (origin/main 1a764dee). The pre-push dialyzer had caught `Label.provision` missing `:windsor`; fixed in 1a764dee.
