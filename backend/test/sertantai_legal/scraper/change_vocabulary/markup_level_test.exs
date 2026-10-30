@@ -87,4 +87,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupLevelTest do
     assert c[:level_covering] == :provision
     refute Map.has_key?(c, :level)
   end
+
+  test "an EU list point numbered \"A1.\" is its own row: an addition inside it is placed there, not on the Article (REACH Art 3)" do
+    xml =
+      ~s(<Legislation><P1 id="article-3"><Pnumber>3</Pnumber><P1para><Text>For the purposes of this Regulation:</Text><OrderedList><ListItem NumberOverride="A1."><Para><Text><Addition ChangeId="key-x">the appropriate authority means the Secretary of State;</Addition></Text></Para></ListItem><ListItem NumberOverride="1."><Para><Text>substance means a chemical element;</Text></Para></ListItem></OrderedList></P1para></P1></Legislation>)
+
+    targets = xml |> Markup.read("UK_eur_2006_1907") |> Enum.map(&elem(&1, 1))
+    assert "art.Article 3(A1)" in targets
+    refute "art.Article 3" in targets
+  end
 end

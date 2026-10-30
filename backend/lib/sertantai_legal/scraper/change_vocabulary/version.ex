@@ -15,6 +15,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Version do
       lib/sertantai_legal/scraper/change_vocabulary/*.ex
       lib/sertantai_legal/scraper/change_vocabulary/readers/*.ex
       lib/sertantai_legal/scraper/change_vocabulary/readers/markup/*.ex
+      lib/sertantai_legal/scraper/change_vocabulary/readers/amending_law/*.ex
       lib/sertantai_legal/scraper/change_vocabulary/merge/*.ex
       lib/sertantai_legal/scraper/change_vocabulary/label/*.ex
       lib/sertantai_legal/scraper/change_vocabulary/store/*.ex

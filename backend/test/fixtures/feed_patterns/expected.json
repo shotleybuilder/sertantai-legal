@@ -6938,6 +6938,25 @@
             "reg.4(2)(b)"
           ],
           "feed.applied": true,
+          "feed.by": "UK_uksi_2019_16",
+          "feed.date": "2020-12-31",
+          "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "provision",
+          "feed.operation": "inserted",
+          "feed.partial": false,
+          "feed.qualification": "complete",
+          "feed.ranged": true,
+          "feed.savings": []
+        },
+        "key": "E#made",
+        "target": "art.Article 3(3)"
+      },
+      {
+        "claims": {
+          "feed.affecting": [
+            "reg.4(2)(b)"
+          ],
+          "feed.applied": true,
           "feed.by": "UK_uksi_2020_1590",
           "feed.date": "2020-12-31",
           "feed.effect_extent": "E+W+S+NI",
@@ -6957,6 +6976,25 @@
             "reg.4(2)(b)"
           ],
           "feed.applied": true,
+          "feed.by": "UK_uksi_2019_16",
+          "feed.date": "2020-12-31",
+          "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "provision",
+          "feed.operation": "inserted",
+          "feed.partial": false,
+          "feed.qualification": "complete",
+          "feed.ranged": true,
+          "feed.savings": []
+        },
+        "key": "E#made",
+        "target": "art.Article 3(3A)"
+      },
+      {
+        "claims": {
+          "feed.affecting": [
+            "reg.4(2)(b)"
+          ],
+          "feed.applied": true,
           "feed.by": "UK_uksi_2020_1590",
           "feed.date": "2020-12-31",
           "feed.effect_extent": "E+W+S+NI",
@@ -6968,6 +7006,25 @@
           "feed.savings": []
         },
         "key": "E",
+        "target": "art.Article 3(3B)"
+      },
+      {
+        "claims": {
+          "feed.affecting": [
+            "reg.4(2)(b)"
+          ],
+          "feed.applied": true,
+          "feed.by": "UK_uksi_2019_16",
+          "feed.date": "2020-12-31",
+          "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "provision",
+          "feed.operation": "inserted",
+          "feed.partial": false,
+          "feed.qualification": "complete",
+          "feed.ranged": true,
+          "feed.savings": []
+        },
+        "key": "E#made",
         "target": "art.Article 3(3B)"
       }
     ],
@@ -7143,6 +7200,24 @@
           "feed.savings": []
         },
         "key": "E",
+        "target": "art.Article 1(1)(g)"
+      },
+      {
+        "claims": {
+          "feed.affecting": [
+            "reg.11(2)"
+          ],
+          "feed.applied": true,
+          "feed.by": "UK_uksi_2019_642",
+          "feed.date": "2020-12-31",
+          "feed.effect_extent": "E+W+S",
+          "feed.level": "words",
+          "feed.operation": "substituted",
+          "feed.partial": false,
+          "feed.qualification": "complete",
+          "feed.savings": []
+        },
+        "key": "E#made",
         "target": "art.Article 1(1)(g)"
       }
     ],
@@ -52165,6 +52240,24 @@
         },
         "key": "E",
         "target": "sch.4.para.2.3.1"
+      },
+      {
+        "claims": {
+          "feed.affecting": [
+            "reg.5(13)(a)"
+          ],
+          "feed.applied": true,
+          "feed.by": "UK_uksi_2019_345",
+          "feed.date": "2020-12-31",
+          "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "words",
+          "feed.operation": "substituted",
+          "feed.partial": false,
+          "feed.qualification": "complete",
+          "feed.savings": []
+        },
+        "key": "E#made",
+        "target": "sch.4.para.2.3.1"
       }
     ],
     "UK_uksi_2011_3066/daa05b455d": [
@@ -52184,6 +52277,24 @@
           "feed.savings": []
         },
         "key": "E",
+        "target": "sch.4.para.2.4(c)(iii)"
+      },
+      {
+        "claims": {
+          "feed.affecting": [
+            "reg.5(13)(c)"
+          ],
+          "feed.applied": true,
+          "feed.by": "UK_uksi_2019_345",
+          "feed.date": "2020-12-31",
+          "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "words",
+          "feed.operation": "substituted",
+          "feed.partial": false,
+          "feed.qualification": "complete",
+          "feed.savings": []
+        },
+        "key": "E#made",
         "target": "sch.4.para.2.4(c)(iii)"
       }
     ],

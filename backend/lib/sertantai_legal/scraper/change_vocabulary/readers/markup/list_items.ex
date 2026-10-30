@@ -23,7 +23,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup.ListItems do
     with true <- eu?(law),
          nil <- attr(attrs, :id),
          number when is_binary(number) <- attr(attrs, :NumberOverride),
-         [_, n] <- Regex.run(~r/^\s*\(?([0-9]+[A-Za-z]*|[a-z]{1,4})\)?\.?\s*$/, number) do
+         # ("A1.", "A2.": REACH Art 3's points inserted before (1) — CV-S09 round 7)
+         [_, n] <- Regex.run(~r/^\s*\(?([A-Z]?[0-9]+[A-Za-z]*|[a-z]{1,4})\)?\.?\s*$/, number) do
       List.last(path) <> "-" <> n
     else
       _ -> nil

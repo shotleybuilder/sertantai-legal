@@ -113,12 +113,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
     end
   end
 
-  @bis %{"bis" => "a", "ter" => "b", "quater" => "c", "quinquies" => "d"}
+  # ("BI" too: "Art. 14 BI", Directive 2006/25 by 2013/64 — CV-S09 round 7)
+  @bis %{"bis" => "a", "bi" => "a", "ter" => "b", "quater" => "c", "quinquies" => "d"}
 
   # "Art. 10 BIS" → {"art.Article 10a", nil} when we hold Article 10a
   defp bis(number, text, held) do
     with [_, ^number, word] <-
-           Regex.run(~r/^\s*Art\.\s*(\w+)\s+(bis|ter|quater|quinquies)\b/iu, text || ""),
+           Regex.run(~r/^\s*Art\.\s*(\w+)\s+(bis|bi|ter|quater|quinquies)\b/iu, text || ""),
          letter = @bis[String.downcase(word)],
          id = "art.Article " <> number <> letter,
          true <- MapSet.member?(held, id) do
@@ -262,9 +263,29 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
         commencements(e, stages)
 
       _ ->
-        amendments(e)
+        amendments(e) |> with_maker(e)
     end
   end
+
+  # the earlier amending law the Type names as making the words (C5): a
+  # record of its own beside the effect, the same facts, its law the maker
+  defp with_maker([{key, claims} | _] = records, %Effect{} = e) do
+    case EffectVerb.made_by(e.type) do
+      maker when is_binary(maker) and maker != e.affecting ->
+        made =
+          Enum.map(claims, fn
+            %Claim{source: :feed, attribute: :by} = c -> %{c | value: maker}
+            c -> c
+          end)
+
+        records ++ [{key <> "#made", made}]
+
+      _ ->
+        records
+    end
+  end
+
+  defp with_maker(records, _e), do: records
 
   defp commencements(%Effect{effect_id: id} = e, stages) do
     for {date, qualification} <- stages do

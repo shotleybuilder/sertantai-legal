@@ -69,6 +69,24 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.EffectVerb do
   def earlier_amendment?(nil), do: false
   def earlier_amendment?(type), do: Regex.match?(@earlier, type) and not no_operation?(type)
 
+  @made_by ~r/^\s*(?:words?|provision|entry|definition|\w+)?\s*(?:inserted|substituted|added)\s+by\s+(S\.I\.|S\.R\.)\s*(\d{4})\/(\d+)\b.*?\(as\s+(?:substituted|amended|inserted)\)\s*$/i
+
+  @doc """
+  The earlier amending law a text change's Type names as making the words,
+  as later amended ("words inserted by S.I. 2019/720, Sch. 2 para. 15(b)
+  (as substituted)", the effect by SI 2020/1567: CLP Art 4(5), CV-S09 round
+  7) — that law made the text too (C5); nil for none.
+  """
+  @spec made_by(String.t() | nil) :: String.t() | nil
+  def made_by(nil), do: nil
+
+  def made_by(type) do
+    case Regex.run(@made_by, type) do
+      [_, kind, year, n] -> "UK_#{if kind =~ ~r/R/i, do: "nisr", else: "uksi"}_#{year}_#{n}"
+      _ -> nil
+    end
+  end
+
   @doc """
   Whether the type says nothing was done to the affected provision: the
   repeal of an affecting provision, a saving, a transitional provision, an

@@ -94,7 +94,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedTargetsTest do
       "article-25" => "art.Article 25",
       "article-25-7" => "art.Article 25(7)",
       "article-23" => "art.Article 23",
-      "article-2" => "art.Article 2"
+      "article-2" => "art.Article 2",
+      "article-14" => "art.Article 14",
+      "article-14a" => "art.Article 14a"
     }
 
     defp finer(text, ref) do
@@ -105,6 +107,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedTargetsTest do
     test "para. and Point read down to the deepest row we hold" do
       assert finer("Art. 56 para. 6 Point (b)", "article-56") == {"art.Article 56(6)(b)", nil}
       assert finer("Art. 25 para. 7", "article-25") == {"art.Article 25(7)", nil}
+    end
+
+    test "\"Art. 14 BI\" is Article 14a, as \"BIS\" is (Directive 2006/25 by 2013/64, CV-S09 round 7)" do
+      assert finer("Art. 14 BI", "article-14") == {"art.Article 14a", nil}
+      assert finer("Art. 14 BIS", "article-14") == {"art.Article 14a", nil}
     end
 
     test "a finer form we don't hold: on the deepest we do, flagged as a tell-tale" do

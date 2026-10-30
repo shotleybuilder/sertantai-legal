@@ -28,6 +28,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
   alias SertantaiLegal.Scraper.ChangeVocabulary.Claim
   alias SertantaiLegal.Scraper.Commencement.{Evaluator, Order}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingCommencement
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw.Dropped
   alias SertantaiLegal.Scraper.Commencement.Rule, as: CRule
   alias SertantaiLegal.Scraper.LatRef
 
@@ -74,30 +75,49 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
       end
 
     # a target the amended law doesn't contain is a misread, not a fact
-    for %Rule{source: %{law: law, ref: ref}} = r <- rules,
-        target <- targets(r, known),
-        r.treatment == :quoted or not MapSet.member?(quoted, {"#{law}:#{ref}", target}) do
-      provision = "#{law}:#{ref}"
+    records =
+      for %Rule{source: %{law: law, ref: ref}} = r <- rules,
+          target <- targets(r, known),
+          r.treatment == :quoted or not MapSet.member?(quoted, {"#{law}:#{ref}", target}) do
+        provision = "#{law}:#{ref}"
 
-      key =
-        if MapSet.size(Map.get(several, {provision, target}, MapSet.new())) > 1,
-          do: "#{provision}##{r.operation}",
-          else: provision
+        key =
+          if MapSet.size(Map.get(several, {provision, target}, MapSet.new())) > 1,
+            do: "#{provision}##{r.operation}",
+            else: provision
 
-      {key, target,
+        {key, target,
+         Enum.concat([
+           Claim.new(:law_text, :operation, r.operation, key),
+           Claim.new(:law_text, :level, level(r, target), key),
+           Claim.new(:law_text, :by, law, key),
+           AmendingCommencement.claims(Map.get(commencement, law, []), ref, key),
+           # where the amending law applies (its application clause; CV-07),
+           # or the amending provision's own (CV-S05 round 7)
+           Claim.new(
+             :law_text,
+             :territory,
+             applies_to(r.source.text) || application(extents, law, ref),
+             key
+           )
+         ])}
+      end
+
+    records ++ dropped(rules, commencement, known)
+  end
+
+  # the rows a whole substitution's quote no longer makes: repealed by the
+  # substituting law, the same day (CV-S09 round 7, `AmendingLaw.Dropped`)
+  defp dropped(rules, commencement, known) do
+    for {%Rule{source: %{law: law, ref: ref}}, row} <- Dropped.rows(rules, known) do
+      key = "#{law}:#{ref}#dropped"
+
+      {key, row,
        Enum.concat([
-         Claim.new(:law_text, :operation, r.operation, key),
-         Claim.new(:law_text, :level, level(r, target), key),
+         Claim.new(:law_text, :operation, :repealed, key),
+         Claim.new(:law_text, :level, :provision, key),
          Claim.new(:law_text, :by, law, key),
-         AmendingCommencement.claims(Map.get(commencement, law, []), ref, key),
-         # where the amending law applies (its application clause; CV-07),
-         # or the amending provision's own (CV-S05 round 7)
-         Claim.new(
-           :law_text,
-           :territory,
-           applies_to(r.source.text) || application(extents, law, ref),
-           key
-         )
+         AmendingCommencement.claims(Map.get(commencement, law, []), ref, key)
        ])}
     end
   end

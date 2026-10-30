@@ -128,6 +128,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Facts do
   @spec overlaps?(String.t() | nil, String.t() | nil) :: boolean()
   def overlaps?(nil, _territory), do: true
   def overlaps?(_t, nil), do: true
+  # nothing left (a whole repeal the same day): no change applies
+  def overlaps?(_t, :gone), do: false
   def overlaps?(t, territory), do: not Territory.disjoint?(t, territory)
 
   # each field's tier from the attributes that set it, over the changes

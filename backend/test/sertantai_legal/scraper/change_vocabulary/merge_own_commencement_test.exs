@@ -56,4 +56,24 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeOwnCommencementTest do
 
     assert length(OwnCommencement.join([own, order, later], @law)) == 3
   end
+
+  test "the feed's coming into force by the order the reader read joins it (ukpga 2007/19 s.2(4), SI 2008/401)" do
+    law = "UK_ukpga_2007_19"
+
+    own =
+      change("#{law}:commencement:s.2(4)@2008-04-06", "s.2(4)", [
+        {:commencement, :date, ~D[2008-04-06]},
+        {:commencement, :commenced_by, "UK_uksi_2008_401"}
+      ])
+
+    feed =
+      change("k-feed", "s.2(4)", [
+        {:feed, :operation, :commenced},
+        {:feed, :by, "UK_uksi_2008_401"},
+        {:feed, :date, ~D[2008-04-06]}
+      ])
+
+    assert [joined] = OwnCommencement.join([own, feed], law)
+    assert "k-feed" in joined.aliases
+  end
 end
