@@ -3902,6 +3902,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "S",
+          "feed.level": "words",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -4102,6 +4103,7 @@
           "feed.date": "2017-04-10",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": [
@@ -4251,6 +4253,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "S",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -5345,6 +5348,7 @@
           "feed.date": "2024-04-01",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "S",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -6904,6 +6908,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "words",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -7039,6 +7044,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -7331,6 +7337,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -7370,6 +7377,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S",
+          "feed.level": "words",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -7409,6 +7417,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -8248,6 +8257,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "words",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -8297,6 +8307,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.ranged": true,
@@ -8315,6 +8326,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.ranged": true,
@@ -8333,6 +8345,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.ranged": true,
@@ -8351,6 +8364,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.ranged": true,
@@ -8499,6 +8513,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -8647,6 +8662,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -8666,6 +8682,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "words",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -8706,6 +8723,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "words",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -8777,6 +8795,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "words",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -9140,6 +9159,7 @@
           "feed.by": "UK_uksi_2020_1567",
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
+          "feed.level": "words",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -9250,6 +9270,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.heading": true,
+          "feed.level": "words",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -9281,6 +9302,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.heading": true,
+          "feed.level": "words",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -9379,6 +9401,7 @@
           "feed.by": "UK_uksi_2020_1567",
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -9505,6 +9528,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "words",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -9545,6 +9569,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "words",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -9583,6 +9608,7 @@
           "feed.by": "UK_uksi_2020_1567",
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -9599,6 +9625,7 @@
           "feed.by": "UK_uksi_2020_1567",
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -9615,6 +9642,7 @@
           "feed.by": "UK_uksi_2020_1567",
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -13743,6 +13771,7 @@
           "feed.earlier_amendment": true,
           "feed.effect_extent": "S",
           "feed.heading": true,
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -13902,6 +13931,7 @@
           "feed.date": "2017-06-30",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "S",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -17475,6 +17505,7 @@
           "feed.date": "2010-10-11",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "NI",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -22451,6 +22482,7 @@
           "feed.by": "UK_asc_2025_3",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W",
+          "feed.level": "words",
           "feed.prospective": true,
           "feed.savings": [],
           "feed.territory": "W"
@@ -22983,6 +23015,7 @@
           "feed.date": "2026-03-26",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "S",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -23190,6 +23223,7 @@
           "feed.date": "2006-10-01",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -23852,6 +23886,7 @@
           "feed.date": "2004-07-13",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -25068,6 +25103,7 @@
           "feed.date": "2017-04-07",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -25117,6 +25153,7 @@
           "feed.by": "UK_ukpga_2020_12",
           "feed.date": "2020-04-27",
           "feed.earlier_amendment": true,
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "retrospective",
           "feed.savings": [
@@ -25491,6 +25528,7 @@
           "feed.date": "2013-04-01",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": [
@@ -25582,6 +25620,7 @@
           "feed.date": "2017-12-08",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -25622,6 +25661,7 @@
           "feed.date": "2020-12-28",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "provision",
           "feed.partial": true,
           "feed.qualification": "in accordance with + provisions",
           "feed.savings": [
@@ -25857,6 +25897,7 @@
           "feed.date": "2013-04-01",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": [
@@ -26120,6 +26161,7 @@
           "feed.applied": false,
           "feed.by": "UK_uksi_2023_1286",
           "feed.earlier_amendment": true,
+          "feed.level": "provision",
           "feed.prospective": true,
           "feed.savings": []
         },
@@ -27159,6 +27201,7 @@
           "feed.date": "2012-05-27",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -27348,6 +27391,7 @@
           "feed.date": "2024-11-04",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": [
@@ -33900,6 +33944,7 @@
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.heading": true,
+          "feed.level": "words",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -35467,6 +35512,7 @@
           "feed.date": "2026-01-16",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "S",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -35634,6 +35680,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -35651,6 +35698,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -38227,6 +38275,7 @@
           "feed.date": "2026-03-10",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -38455,6 +38504,7 @@
           "feed.by": "UK_nia_2022_4",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "NI",
+          "feed.level": "words",
           "feed.prospective": true,
           "feed.savings": []
         },
@@ -38544,6 +38594,7 @@
           "feed.date": "2020-09-29",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": [
@@ -39143,6 +39194,7 @@
           "feed.date": "2008-07-08",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -41262,6 +41314,7 @@
           "feed.date": "2009-08-02",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "S",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -42509,6 +42562,7 @@
           "feed.by": "UK_uksi_2023_1147",
           "feed.date": "2023-10-31",
           "feed.earlier_amendment": true,
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -43164,6 +43218,7 @@
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
           "feed.heading": true,
+          "feed.level": "words",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -43419,6 +43474,7 @@
           "feed.date": "2023-12-06",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -43630,6 +43686,7 @@
           "feed.date": "2025-01-01",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": [
@@ -46046,6 +46103,7 @@
           "feed.date": "2024-03-27",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "NI",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -48335,6 +48393,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -48352,6 +48411,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S+NI",
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -51114,6 +51174,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S",
+          "feed.level": "words",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -51133,6 +51194,7 @@
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
           "feed.effect_extent": "E+W+S",
+          "feed.level": "words",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []
@@ -53138,6 +53200,7 @@
           "feed.by": "UK_uksi_2020_1460",
           "feed.date": "2020-12-31",
           "feed.earlier_amendment": true,
+          "feed.level": "provision",
           "feed.partial": false,
           "feed.qualification": "complete",
           "feed.savings": []

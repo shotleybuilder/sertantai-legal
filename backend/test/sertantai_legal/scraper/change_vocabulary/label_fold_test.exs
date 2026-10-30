@@ -702,11 +702,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
     defp tiered7(c, tiers), do: %{c | resolved: %{c.resolved | tiers: tiers}}
 
     test "the history a version shares before its split takes a change narrower than the version (SI 2008/1597 reg.21(2)(a)[NI])" do
+      # (the NI version's own text carries it: its markup there, round 8)
       c =
         change("reg.21(2)(a)", :substituted, ~D[2015-10-16],
           level: :words,
           by: "UK_uksi_2015_1682",
           territory: "E+W+S"
+        )
+        |> then(
+          &%{
+            &1
+            | claims: [
+                %Claim{source: :markup, attribute: :in_versions, value: ["NI"], ref: "k"}
+                | &1.claims
+              ]
+          }
         )
 
       periods =
@@ -757,6 +767,62 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
                    prospective: true
                  })
                )
+    end
+  end
+
+  describe "batch 8 (CV-S09 round 8)" do
+    defp with_claims(c, claims),
+      do: %{
+        c
+        | claims:
+            c.claims ++
+              for(
+                {src, a, v} <- claims,
+                do: %Claim{source: src, attribute: a, value: v, ref: "k"}
+              )
+      }
+
+    test "on the split a version's text is what its own territory or own text carries (HSWA s.23(4)[NI]; SI 2008/1597 reg.21(2)(a)[NI])" do
+      ew =
+        change("s.23(4)", :substituted, ~D[2006-10-01],
+          level: :words,
+          by: "UK_uksi_2005_1541",
+          territory: "E+W"
+        )
+        |> with_claims([{:markup, :in_versions, ["E+W", "S"]}])
+
+      provision = %{
+        law: "UK_ukpga_1974_37",
+        start: ~D[1975-01-01],
+        extent: "E+W+S+NI",
+        version: "NI",
+        version_start: ~D[2018-07-30]
+      }
+
+      assert %{territory: "NI", in_force_from: ~D[1975-01-01], changed_by: []} =
+               List.last(fold("s.23(4)", [ew], provision))
+
+      carried = ew |> with_claims([{:markup, :in_versions, ["NI"]}])
+
+      assert %{territory: "NI", in_force_from: ~D[2006-10-01], changed_by: ["UK_uksi_2005_1541"]} =
+               List.last(fold("s.23(4)", [carried], provision))
+    end
+
+    test "a words amendment to an earlier amending provision on a Title reaches no row under it (REACH Art 127P(4B), SI 2020/1313)" do
+      words =
+        change("pt.14A", nil, ~D[2020-12-31], level: :words, by: "UK_uksi_2020_1313")
+        |> with_claims([{:feed, :earlier_amendment, true}])
+
+      refute Label.reaches?(%{words | target: "*"}, "art.Article 127P(4B)(a)")
+
+      whole = %{words | resolved: %{words.resolved | level: :provision}, target: "*"}
+      assert Label.reaches?(whole, "art.Article 127P(4B)(a)")
+    end
+
+    test "a disambiguated row's own number is not a provision holding it (HSWA s.50(4)n1)" do
+      c = change("s.50(4)", :inserted, ~D[2014-04-01], by: "UK_ukpga_2013_32")
+      refute Label.reaches?(c, "s.50(4)n1")
+      assert Label.reaches?(%{c | target: "s.50"}, "s.50(4)n1")
     end
   end
 end

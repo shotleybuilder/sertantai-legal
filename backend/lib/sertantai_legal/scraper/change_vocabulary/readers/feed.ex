@@ -616,7 +616,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   # CV-S08 round 1, HSWA s.28(3)(a))
   defp level(%Effect{type: type, affected_provisions: text} = e) do
     cond do
-      operation(e) == nil -> nil
+      # (an amendment to an earlier amending provision has no operation on
+      # this provision, but its words or whole level says what it reaches:
+      # CV-S09 round 8, SI 2020/1313 "words substituted in earlier amending
+      # provision S.I. 2019/758, Sch. 2" on REACH Title 14A)
+      operation(e) == nil and not EffectVerb.earlier_amendment?(type) -> nil
       String.match?(text || "", @words_part) -> :words
       true -> type_level(EffectVerb.type(type))
     end

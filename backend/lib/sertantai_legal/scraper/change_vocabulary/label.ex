@@ -49,7 +49,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
           optional(:version_start) => Date.t() | nil,
           optional(:shows_text) => boolean(),
           optional(:start_from_law) => boolean(),
-          optional(:containers) => [String.t()]
+          optional(:containers) => [String.t()],
+          optional(:own_only) => boolean()
         }
 
   @private [:_text_by, :_text_from]
@@ -69,10 +70,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
       changes
       |> Enum.filter(&reaches?(&1, id))
       |> Enum.filter(&(&1.resolved.date != nil))
-      |> Enum.filter(
-        &(version == nil or
-            Facts.overlaps?(&1.resolved.territory, then_territory(&1, provision, version)))
-      )
+      |> Enum.filter(&(version == nil or for_version?(&1, provision, version)))
+
+    # on the split the version's own text: its fields as the changes its own
+    # territory or its own text carries made them, never the shared
+    # history's other texts (CV-S09 round 8: HSWA s.23(4)[NI], its NI text
+    # HSWA's own, had kept the E+W and S words changes of 2006)
+    own_text = own_text_at_split(id, provision, changes, version, version_start)
 
     # it begins when it exists: its law's start, or a later insertion
     born = Start.start(start, reaching)
@@ -135,6 +139,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
         current
         |> Day.apply(date, day, ctx)
         |> Day.split(date, day, version, version_start)
+        |> own_text_on(date, version_start, own_text)
 
       # a day that changes no label field opens no period
       if visible(next) == visible(current),
@@ -177,6 +182,49 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
     end)
   end
 
+  # a change counts for a version where its territory overlaps the
+  # version's own — the union's before the split (Jason, round 7) — or the
+  # version's own text carries it (its markup there: SI 2008/1597
+  # reg.21(2)(a)[NI], SI 2015/1682's E+W+S words in the NI text)
+  defp for_version?(c, provision, version) do
+    territory =
+      if Map.get(provision, :own_only), do: version, else: then_territory(c, provision, version)
+
+    Facts.overlaps?(c.resolved.territory, territory) or
+      Enum.any?(List.flatten(Change.values(c, :markup, :in_versions)), &(&1 == version))
+  end
+
+  defp own_text_at_split(id, provision, changes, version, %Date{} = split)
+       when is_binary(version) do
+    if Map.get(provision, :own_only),
+      do: nil,
+      else:
+        id
+        |> fold(Map.put(provision, :own_only, true), changes)
+        |> Enum.find(fn p ->
+          Date.compare(p.valid_from, split) != :gt and
+            (p.valid_to == nil or Date.compare(p.valid_to, split) == :gt)
+        end)
+  end
+
+  defp own_text_at_split(_id, _provision, _changes, _version, _split), do: nil
+
+  @text_fields [:in_force_from, :changed_by, :commenced_by]
+
+  defp own_text_on(period, date, %Date{} = split, %{status: :in_force} = own) do
+    if Date.compare(date, split) == :eq and period.status == :in_force do
+      %{
+        Map.merge(period, Map.take(own, @text_fields))
+        | tiers: Map.merge(period.tiers, Map.take(own.tiers, @text_fields)),
+          _text_by: own.changed_by
+      }
+    else
+      period
+    end
+  end
+
+  defp own_text_on(period, _date, _split, _own), do: period
+
   # the territory the row had on the change's day: the versions' union
   # before they split, the version's own from then
   defp then_territory(%Change{resolved: %{date: date}}, provision, version) do
@@ -212,13 +260,26 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
   @doc """
   True when the change reaches provision `id`: its own changes, and
   provision-level changes on an ancestor or on the whole law (`"*"`) —
-  never a child's (C9).
+  never a child's (C9). An amendment to an earlier amending provision
+  reaches what lies under it unless it is in words (CV-S09 round 8).
   """
   @spec reaches?(Change.t(), String.t()) :: boolean()
   def reaches?(%Change{target: target, resolved: r} = c, id) do
     target == id or
-      (((r.level == :provision and level_stated?(r)) or Facts.earlier_amendment?(c)) and
-         (target == "*" or target in tl(LatRef.ancestors(id))))
+      (((r.level == :provision and level_stated?(r)) or
+          (Facts.earlier_amendment?(c) and r.level != :words)) and
+         (target == "*" or target in above(id)))
+  end
+
+  # the provisions holding it: a disambiguated row's own number is another
+  # provision of that number, never one holding it (CV-S09 round 8: HSWA
+  # s.50(4)n1, the old s.50(4)-(5), had taken the 2014 insertion of the new
+  # s.50(4) as its ancestor's and started in 2014)
+  defp above(id) do
+    case Regex.run(~r/^(.*[)0-9A-Za-z])n\d+$/, id) do
+      [_, same] -> id |> LatRef.ancestors() |> tl() |> List.delete(same)
+      nil -> tl(LatRef.ancestors(id))
+    end
   end
 
   # a whole-provision change reaches what lies under it only when a source

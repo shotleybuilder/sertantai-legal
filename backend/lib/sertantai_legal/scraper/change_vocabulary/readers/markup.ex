@@ -132,7 +132,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
       repeated: repeated,
       own: own,
       items: MapSet.new(Map.keys(items)),
-      kept_children: KeptChildren.read(doc)
+      kept_children: KeptChildren.read(doc),
+      version_of: Versions.territories(doc)
     }
 
     cited = cited(doc)
@@ -438,8 +439,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
       # heading
       Claim.new(:markup, :note, first.note, change_id),
       Claim.new(:markup, :note_digest, get_in(cited, [first.note, :digest]), change_id),
-      Claim.new(:markup, :heading, if(Enum.all?(occ, & &1.heading?), do: true), change_id)
+      Claim.new(:markup, :heading, if(Enum.all?(occ, & &1.heading?), do: true), change_id),
+      # the territorial versions whose own text carries it (CV-S09 round 8)
+      Claim.new(:markup, :in_versions, in_versions(occ, ctx), change_id)
     ])
+  end
+
+  defp in_versions(occ, ctx) do
+    case for(o <- occ, id <- o.path, t = Map.get(ctx.version_of, id), uniq: true, do: t) do
+      [] -> nil
+      ts -> Enum.sort(ts)
+    end
   end
 
   # the text under each provision (not its own number or title), letters

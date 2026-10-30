@@ -52,6 +52,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup.Versions do
     end)
   end
 
+  @doc """
+  Each versioned element's CLML id → its territory (`section-23n1-4` →
+  "NI"): which version's own text a change sits in (CV-S09 round 8).
+  """
+  @spec territories(tuple()) :: %{String.t() => String.t()}
+  def territories(doc) do
+    for el <- xpath(doc, ~x"//*[@id][@DocumentURI]"l),
+        territory = el |> xpath(~x"./@DocumentURI"s) |> territory(),
+        territory != nil,
+        into: %{},
+        do: {xpath(el, ~x"./@id"s), territory}
+  end
+
   # each versioned element's start: the concurrent group holding it (a
   # nested group, later in document order, overrides its parent's). xmerl
   # elements keep no ancestors, so the groups are walked downwards
