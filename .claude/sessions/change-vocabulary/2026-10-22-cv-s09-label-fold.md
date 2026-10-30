@@ -1,7 +1,65 @@
 ---
 session: 'CV-S09: Label Fold'
-status: active
+status: closed
 release: v0.1
+opened: '2026-10-22'
+closed: '2026-10-30'
+outcome: success
+parent: change-vocabulary/2026-10-21-cv-00-meta.md
+
+summary: >
+  The change vocabulary's label fold passes its acceptance check on the OH&S core family (round 11):
+  golden 27/27 from inputs, no fold fault in 160 S/T rows, R 0/150 rows and 0/73 laws (95% upper 1.98% / 4.02%).
+  Ten fix batches; upstream faults (about 11% of random rows end to end) are classed for a reader session.
+
+decisions:
+  - what: Golden goes back to the original 27 for this workflow pass; the 23 drafted in CV-S09 move to golden_extended.exs and gate the next pass from step 1
+    why: Growing golden mid-workflow judged step 9 by cases steps 1-8 never saw (Jason 2026-10-30); all 9 extended failures are upstream
+    result: G 27/27; extended 41/50
+  - what: commenced_by is a label of its own, apart from changed_by (the text's makers)
+    why: Golden had applied the D1 correction unevenly (HSWA s.78 vs 2021/30 s.8)
+    result: golden migrated; every round's agents confirm the split
+  - what: Containers (Parts, Chapters) are repealed on the day their last child is
+    why: NISR 1997/248 Pt IV stayed in force with all its regulations revoked (Jason, round 6)
+    result: Label.Containers; holds in rounds 7-11
+  - what: A quote's numbers the instruction doesn't name are inserted; numbers a whole substitution's quote no longer makes are repealed
+    why: Jason "quote alone is evidence" (round 6); SI 2026/867 reg.12A (round 7)
+    result: NewNumbers, AmendingLaw.Dropped
+  - what: Union territory before a version's split; the version's own text (per-version markup) from it
+    why: L1 (round 7) and its M1 regression (round 8); versions can share element ids (SI 2008/1597 reg.14(1))
+    result: Label.Version; holds rounds 9-11 after O1/O3/O4/Q3
+  - what: An insertion into a provision its own law has not yet commenced is prospective until that law commences it
+    why: Jason ruling on O2 (2007/19 s.7(3)(aa), round 9)
+    result: Start.host_prospective?
+  - what: An undated change after a dated start (V8) is upstream, not a fold fault
+    why: The fold can't place it in time; the reader must attach the amending law's whole-law date (Jason, round 10)
+    result: SI 1989/462 reg.7 logged under V8
+
+metrics:
+  golden: { original: 27, original_pass: 27, extended: 50, extended_pass: 41 }
+  r_pool: { rows: 150, laws: 73, fold_wrong: 0, upper_rows: "1.98%", upper_laws: "4.02%", seed: 153 }
+  round_11: { rows_checked: 160, fold_wrong: 0, upstream_wrong: 41, gap: 4, doubtful: 7 }
+  end_to_end_r_round6: { rows: 150, upstream_wrong: 17, share: "11%" }
+  fix_batches: 10
+  tests_change_vocabulary: 3085
+
+lessons:
+  - title: Never grow the golden set in the middle of a workflow pass
+    detail: Golden grew 27 to 50 at the start of step 9; the new provisions failed only on upstream readers that steps 2-8 had already passed without them, so G could never pass. Keep golden fixed per pass; new provisions start the next pass from step 1.
+    tag: tooling
+  - title: A fold rule keyed on today's text must check for a later step of the same removal
+    detail: Batch 9's "kept for some purposes, text gone -> repealed" fired on the first, partial step of a staged repeal (HSWA s.47(5), ERRA 2013), because the text gone is the later step's. Round 10 caught it. Test multi-step removals whenever a rule reads the revised text.
+    tag: data
+  - title: Territorial versions can share element ids; take a change's version from the element holding it
+    detail: Mapping markup to versions by id put SI 2008/1597 reg.14(1)'s changes in every version; golden fell to 40/50 until the version came from the enclosing element's DocumentURI.
+    tag: data
+  - title: Re-fold the earlier rounds' draws after a fix batch to see exactly which checked rows changed
+    detail: Re-drawing the same seeds after batch 10 showed it changed only the 4 faulty rows, so the recheck was 4 rows plus fresh draws rather than the whole earlier sample.
+    tag: tooling
+  - title: Each fresh S/T draw kept finding 1-4 fold faults until round 11
+    detail: Rounds 6-10 each found new fold patterns in fresh draws (mostly territorial versions and removals). Fresh draws every round, not repeats, are what surfaced them; budget for several rounds per family until the rules settle.
+    tag: data
+
 bugs:
   - pattern: "EU directives (eudr) after IP completion day: no rule fits all. A directive's end depends on whether the Windsor Framework keeps it in NI (Jason 2026-10-30). Needs that source; golden Directive 90/269 Art 8b(1) is held out"
     category: label
@@ -9,11 +67,62 @@ bugs:
     affected: 15 OH&S directives
     fix: "Hold the Windsor Framework source (which directives continue in NI); the rule per directive to agree with Jason"
     status: open
-opened: '2026-10-22'
-parent: change-vocabulary/2026-10-21-cv-00-meta.md
+  - pattern: "A row commenced only through some of the children it is above reads in force, not in force partly (V1-01)"
+    category: label
+    module: ChangeVocabulary.Label (parts)
+    affected: unknown
+    fix: "The fold's parts rule (CV-S09); remaining failures are commencement-reader classes U5, U15"
+    status: fixed
+  - pattern: "Amending reader misses forms: a quote's last item / 'by substituting for paragraph (3) the following' (QL/QB); 'Sections 34 to 38 … are repealed' (RR); 'is amended as follows' lead-in (LA); 'in regulation 5(3)— … adding (c)' read as reg.3 (P3); NI verbs 'by deleting', 'by adding … the following' (P7)"
+    category: upstream (CV-S09)
+    module: Amendment.Reader
+    affected: HSWA s.6(1)(d), SI 2000/128, SI 2004/3363, SI 1992/3004 reg.3, NISR 2003/423
+    fix: "One reader session; preview + regression, one read pass"
+    status: open
+  - pattern: "Feed reader: '#made' twin placed only on a range's ends (P8); 'substituted for Art. 15(1)' over 'Art. 15(1)(1A)' reads (1A) substituted not inserted (P10); 'omitted in earlier amending provision' given provision level (P5); 'revoked in part' placed on another law's provision (P4)"
+    category: upstream (CV-S09)
+    module: ChangeVocabulary.Readers.Feed
+    affected: CLP Art 2(39)-(42), REACH Art 15(1A), REACH Art 3(A2), HSWA s.48
+    fix: "Spread with_maker over the record's targets; extra numbers inserted; level from the law text"
+    status: open
+  - pattern: "Merge/placement: NISR 2012/179's whole-law '*' rule has no '*' change to join once the feed effect is placed per regulation (WL-reach); an 'in each place' words change kept on the parent while its successor sits on the children (P9)"
+    category: upstream (CV-S09)
+    module: ChangeVocabulary.Merge
+    affected: NISR 2007/31 (40 changes), NISR 2010/160 reg.28
+    fix: "Attach a '*' law-text rule to every change carrying its feed effect; place 'each place' changes on the children holding the words"
+    status: open
+  - pattern: "Commencement reader: an order list cut at '(except …)' (SI 1995/2950, P6); 'section 10(6) and (7) (so far as aforesaid)' read as {s.10(6)}; an NI-only order rule never emitted (TR); a catch-all 'so far as not already in force' order dating provisions earlier orders (not held) brought in (SI 1997/134, KC-order); an amending law's whole-law date not attached to its undated substitution (V8, SI 1989/2367)"
+    category: upstream (CV-S09)
+    module: Commencement.Order / Commencement.Amending
+    affected: HSWA s.10, s.28(10)[S]; 2007/19 s.2(1)(d); EA 1989 repeals; SI 1989/462 reg.4, reg.7
+    fix: "Read past parenthetical exceptions; emit NI rules; leave catch-all dates unknown where earlier orders are missing; attach whole-law dates"
+    status: open
+  - pattern: "Schedules of amending laws not held (KS): SI 2019/720 Sch 2's substituted CLP articles make new numbers that get no insertion (Art 2(15), 37(7)-(9), 52(5)-(6)); EPA 1975 Sch.15 (HSWA s.28(9))"
+    category: upstream (CV-S09)
+    module: CLML store / Amendment.Reader
+    affected: CLP-wide; HSWA s.28(9)
+    fix: "Fetch the amending laws' schedules (one hop), then read"
+    status: open
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/label.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/label/ (start, day, facts, undated, containers, version)
+  - backend/lib/mix/tasks/lat.label_check.ex
+  - backend/test/fixtures/change_vocabulary/golden.exs
+  - backend/test/fixtures/change_vocabulary/golden_extended.exs
+  - backend/test/sertantai_legal/scraper/change_vocabulary/label_fold_test.exs
+  - .claude/skills/label-check/SKILL.md
+
+depends_on:
+  - 2026-10-22-cv-s08-evidence.md
+
+enables:
+  - CV-S10 Measures
+  - The upstream reader session (the classes above)
+  - The workflow's next pass from step 1 on the extended golden
 ---
 
-# Session: CV-S09: Label Fold (ACTIVE)
+# Session: CV-S09: Label Fold (CLOSED)
 
 ## Problem
 
@@ -23,17 +132,17 @@ The session does not close until its results pass.
 
 ## Todo
 
-- ⬜ Provision facts: exists_from/to — when a provision itself exists (deferred from CV-S07, Jason 2026-10-29; carried from CV-04)
+- ⏸️ Provision facts: exists_from/to — when a provision itself exists (deferred from CV-S07, Jason 2026-10-29; carried from CV-04) (deferred at close: not needed for the pass; to CV-S10/CV-05)
 - ✅ Define what good looks like (agreed 2026-10-29: strata G/S/T/R, fold-fault bound, golden ~50) (the acceptance check): a hand-checked sample from the OH&S core family, and the measures, each defined in words with a test
 - ✅ Build the strata and samples: `mix lat.label_check` (ff1f97c7)
 - ✅ The `label-check` skill: check prompt, golden-drafting prompt, known classes, seed history
-- ⬜ Round 1 (ask Jason before any long run)
-- ✅ The golden set is big enough to trust: grown to 50 (39 laws) on 2026-10-30. Drafted blind, reviewed by Gemini, rulings by Jason. Directive 90/269 Art 8b(1) is held out until the Windsor Framework source exists
-- ⬜ Golden expected tiers per period, and the start's tier from its source (deferred in CV-04)
-- ⬜ A row commenced only through some of its children reads in force, not in force partly (open bug, V1-01)
-- ⬜ A commencement for one territory ("for E.W.S.", "for N.I."): the feed reader carries it as `in_force_for` (CV-S02 D5). The fold should read it as in force there, not "partly in force" everywhere (2 effects in the OH&S family)
-- ⬜ A change placed on territorial versions (`placed_versions`: the bare `s.51A(2E)(a)` held as [E+W] and [S]) changes only the versions its extent reaches (HSWA s.51A(2E)(a): effect extent E+W+N.I., markup only in [E+W]; SI 2008/1597 reg.12(1)(b)(iv)): confirm the fold narrows by the carried extent (CV-S02 final check)
-- ⬜ Fix until the check passes reliably; record the result
+- ✅ Round 1 (ask Jason before any long run); rounds 1–11 run
+- ✅ The golden set is big enough to trust: grown to 50 (39 laws) on 2026-10-30; the 23 new ones held apart in `golden_extended.exs` for the workflow's next pass (Jason 2026-10-30). Drafted blind, reviewed by Gemini, rulings by Jason. Directive 90/269 Art 8b(1) is held out until the Windsor Framework source exists
+- ⏸️ Golden expected tiers per period, and the start's tier from its source (deferred in CV-04) (deferred at close: the two tier questions to rule first)
+- ✅ A row commenced only through some of its children reads in force, not in force partly (open bug, V1-01): the fold's parts rule holds in every round; its remaining failures are upstream (U5, U15)
+- ✅ A commencement for one territory ("for E.W.S.", "for N.I."): the feed reader carries it as `in_force_for` (CV-S02 D5). The fold should read it as in force there, not "partly in force" everywhere (2 effects in the OH&S family)
+- ✅ A change placed on territorial versions (`placed_versions`: the bare `s.51A(2E)(a)` held as [E+W] and [S]) changes only the versions its extent reaches (HSWA s.51A(2E)(a): effect extent E+W+N.I., markup only in [E+W]; SI 2008/1597 reg.12(1)(b)(iv)): confirm the fold narrows by the carried extent (CV-S02 final check)
+- ✅ Fix until the check passes reliably; record the result (round 11 PASS, 2026-10-30)
 
 ## Dependencies
 
