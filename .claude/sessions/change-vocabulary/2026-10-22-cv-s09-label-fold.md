@@ -772,3 +772,39 @@ Upstream faults are about 17 of 150: U10 (6), U12 (4), U13, U1, V9, the HSWA s.5
 - **Pushed** 2026-10-30 (origin/main 1a764dee). The pre-push dialyzer had caught `Label.provision` missing `:windsor`; fixed in 1a764dee.
 - **G back to the original 27** (c1fa6a1c, Jason 2026-10-30): golden from inputs **27/27, G passes**. The extended 23 stay in the read-pass regression.
 - **What's left to close:** round 9's agent check (R's 10 changed rows; S 88, T 66). If no fold fault is found, S/T and R pass.
+
+### Round 9 agent check: R still passes; S/T 4 fold faults, all fixed (batch 9)
+
+8 agents; notes in the scratchpad (`r9/findings.md`). The prompt now carries round 8's open upstream classes and the two unruled tier questions.
+
+**R:** the 10 changed rows hold no fold fault (5 OK, 4 doubtful on the tier questions, 1 upstream: QL on HSWA s.6(1)(d)). Pooled R stays at **0/150 rows, 0/73 laws: PASS.**
+
+**S (88 rows): 2 fold faults. T (66 rows): 2 fold faults.** All four are in how a version or a removal is folded:
+
+| # | fault | evidence |
+|---|---|---|
+| O1 | the M1 own-text fold (batch 8) let in a change no territory places although its markup sits only in another version's text | HSWA s.51A(2)(c)[S]: 2011 c.13's words only in the E+W text, but the S version kept them from its 2013 split |
+| O3 | two laws inserting a row the same day for different territories: the start took one inserter's territory, not their union (C14) | HSWA s.23(4)(a): SI 2005/1541 (E+W) and SSI 2006/475 (S), 2006; read S before the 2018 split |
+| O4 | a version split on the day its territory is repealed: the split's own territory replaced the remainder after the repeal | HSWA s.14(7)[NI]: SI 2016/1142 repealed it E+W+NI (saved) the day the NI version starts; it read in force NI |
+| O5 | a removal kept for some purposes with its text gone read partly in force (C7 needs the text retained) | SI 2009/716 reg.15: revoked 2015 "except to the extent that they continue to apply for the purposes of enforcing reg. 12" |
+
+**Upstream, new:**
+- **P3:** SI 2002/2174 "in regulation 5(3)— … adding (c)" stored as a whole insertion of reg.3 on SI 1992/3004 (the "(3)" read without its lead-in; near LA).
+- **P4:** a feed "revoked in part s. 48" by SI 1996/1513 reg.13 lands on HSWA s.48, but reg.13 amends SI 1977/500 reg.3(1).
+- **P5:** a feed "omitted in earlier amending provision" on REACH Art 3(A2) gets the provision level; SI 2020/1577 reg.4(6)(b) omits "the text after (d)", words.
+- **U13, Scottish form:** the markup cites UK_uksi_2006_475 for SSI 2006/475; the duplicate stays unjoined.
+- Still live: U5, U10, U12, U13, U14, U15, K-legacy, KS, KC10, KEU-eif, QL, WL-reach, TR.
+
+**Rule question (doubtful, not counted):**
+- **O2:** 2007/19 s.7(3)(aa) was inserted on 2008-04-01 by SI 2008/912 into s.7, which was still prospective until 2008-04-06 (SI 2008/401). The fold reads it in force from 2008-04-01. The agent proposed that an insertion into a host not yet in force is prospective until the host commences.
+- The tier questions stand. One agent noted that SI 2008/1597's NI saving is in the law's own text (reg.15(2), "Despite paragraph (1)…"), so its primary status tier is supported.
+
+### Fix batch 9 (1379daa2)
+
+- **O1:** a change no territory places, whose markup sits in other versions only, is not in the version's own text.
+- **O3:** laws inserting a row the same day insert it in their union (C14).
+- **O4:** `Label.Version.enter` sets the version's territory before the split day's changes, so a repeal that day reaches it. `Label.Version` is split from `Label.Day`, which was over 300 lines.
+- **O5:** a removal of the provision itself kept for some purposes (staged), not retained, its text gone from the revised law, is repealed, saved when a saving is named (D3).
+- **Golden from inputs:** 27/27; the extended set is 41/50, the same 9 upstream failures.
+- **Tests:** 3,082 change-vocabulary tests pass.
+- **Next:** a rebuild of the OH&S store, then round 10: re-fold R (seed 153) and recheck its changed rows, with fresh S and T draws.
