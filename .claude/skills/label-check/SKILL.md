@@ -194,6 +194,15 @@ Known classes (label a finding with one; otherwise NEW):
   both (SI 1996/396); KC-order also: an undated substitution whose amending law's commencement order is not held
   (CPA 1987 by SI 1987/1680).
 
+- From CV-S09 round 8 (upstream, open, for a separate reader session): QL/QB a quote's last item, or "by substituting
+  for paragraph (3) the following paragraph", gets no inserted rule (HSWA s.6(1)(d); SI 1992/3004 reg.25(3)); RR
+  "Sections 34 to 38 of the Factories Act 1961 are repealed" not read (SI 2000/128); LA an "is amended as follows"
+  lead-in not carried (SI 2004/3363); TR an NI-only order rule held but no commencement change emitted (2007 c.19
+  s.2(1)(d)); WL-reach NISR 2012/179's "*" rule not reaching NISR 2007/31's changes; Parts a parent's full
+  commencement blocked when a part was inserted later (HSWA s.11(4A)). Tier questions not yet ruled (say doubtful,
+  not WRONG): a repealed_saved status tier when `saved` comes from the feed; a commenced_by tier when `by` comes
+  from the feed.
+
 Output: a compact table, one row per item: #, law, row, OK / WRONG-fold / WRONG-upstream / gap / doubtful, note (only
 when not OK: one line: period, field, fold value vs right value, rule or step, known class or NEW). Then per S shape
 (or T class) a line: does the rule hold. Then counts (rows OK / WRONG-fold / WRONG-upstream / gap / doubtful; laws
