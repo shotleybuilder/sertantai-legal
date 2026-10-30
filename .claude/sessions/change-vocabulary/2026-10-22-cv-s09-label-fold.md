@@ -641,3 +641,24 @@ Upstream faults are about 17 of 150: U10 (6), U12 (4), U13, U1, V9, the HSWA s.5
 - **Scope:** fold K1, plus the reader and merge fixes SN2, WL, EP, NJ and IR; then a read pass and a rebuild. S and T rows are rechecked; R stays pooled where its rows are unchanged.
 - **Containers:** a Part, Chapter or Title is repealed (or repealed_saved) on the day its last child is repealed, credited to the repealing laws (an exception to C9 for containers; NISR 1997/248 Pt IV).
 - **New children:** a substitution's quote alone is evidence. A child the quote numbers under a whole substitution starts at the substitution, unless the replaced text shows it existed (SI 1977/500 reg.4(1)(g)(i); CLP Art 37(6)(b), (9)(d)).
+
+### Fix batch 6 (15d23c79, 4155fd92)
+
+- **Fold:**
+  - **K1:** a body held only as made (no `dct:valid`) shows no later change; a revived period takes its tiers from the change bringing it back.
+  - **Containers:** a Part, Chapter or Title is repealed (saved) on the day its last child is (`Label.Containers`).
+- **Readers and merge:**
+  - **SN2 and SQ:** only the numbers an instruction names stay substituted; every other number its quote makes is inserted, children included (`NewNumbers`).
+  - **WL:** a whole law revoked by name is one rule on "*" (`Reader.WholeLaw`): SI 2026/867, NISR 2012/179, 2012 c.7 s.56(2).
+  - **EP:** one words effect's places share the law-text and commencement claims read on their provision (`Merge.Shared`).
+  - **NJ:** a note citing the wrong paragraph never keeps a dated record apart from the one event on its provision that day (`Merge.Partner`).
+  - **IR:** an order line split inside its aside is one line. An aside naming another law never eats the list, and a qualifying one leaves the item partly in force (SI 1991/1042, SI 1995/852, SI 2008/1864, SI 1991/2728).
+- **Catalogues:** corrected outcomes accepted (amendment 6, order 3). Regression list: SI 2014/469, SI 2026/867, NISR 2012/179.
+- **Tests:** 9,596.
+- **Found while re-reading:** order rules read by `--read-orders --law` (105 laws) are refreshed only by that path, so batch 5's N2 corrections to SI 1991/1042 had not reached the store. Every order-sourced law is now re-read by name.
+
+## Round 7 (2026-10-30)
+
+- **Restore point:** tag `cv-s09-batch6`.
+- **Preview of the regression set:** 339 laws, 149 changed (rules 24,258 → 24,616): 144 splits, 3 whole-law rules, 2 merged quoted rules (SI 1992/3036, 2005 c.15), all checked.
+- **Commencement re-read:** `--read --all`, `--read-amending`, `--read-orders`, and `--read-orders --law` for every order-sourced law. The diff is the IR/N2 corrections, WSI 2008/3171's new rules and SI 1991/2728's aside.

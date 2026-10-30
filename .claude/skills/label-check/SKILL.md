@@ -106,6 +106,11 @@ into label periods, in date order from the row's start:
   substitution's quote numbering more than the instruction names inserts the new numbers ("for (2) substitute (2),
   (2A), (2B)": (2A), (2B) inserted); a number wrap leaving a child with its own number untouched is not the whole
   provision; a commencement of a part with no row commences the row holding it, partly.
+- Batch 6 rules: a body held only as made (no dct:valid) is no evidence of a later change (no revival on it); a
+  revived period takes its tiers from the reviving change; a Part/Chapter/Title is repealed (saved) on the day its
+  last child is (Jason 2026-10-30); under a substitution only the numbers the instruction names are substituted —
+  every other number its quote makes, children included, is inserted (Jason: the quote alone is evidence); a whole
+  law revoked by name is the law text's own repeal of "*" (primary).
 - C8 NOW APPLIED from a held Windsor Framework Annex 2 list (ChangeVocabulary.Windsor: REACH 1907/2006, CLP
   1272/2008): a UK law's change to a listed instrument from 2020-12-31 reaches E+W+S only (NI keeps the EU text); a
   GB-only text change makes the row E+W+S. Judge REACH/CLP rows by this (no longer K8). Other EU law: unchanged.
@@ -237,4 +242,6 @@ OH&S (first family, 2026-10-29 →). The session is `.claude/sessions/change-voc
 | 5 | 141 (S), 142 (T), 143 (R) | Fix e1653920 (I1–I8, Windsor C8, gerunds, EU para/BIS) + read pass (24 laws). Golden from inputs 41/50 |
 | 5r | 141/142/143 | Agents: R 2/150 fold (J1 Part reach, J2 tier) — FAIL; S/T 3 fold (J3, J4, J5 rule) |
 | 6 | 151 (S), 152 (T), 153 (R) | Fix 10f81665 (J1–J5, SN, PN, N1, N2, HA) + commencement re-read + read pass |
+| 6r | 151/152/153 | Agents: R 0/150 fold, 0/73 laws — R PASS (UB 1.98%, 4.02%); S/T 1 fold (K1) |
+| 7 | — | Fix 15d23c79, 4155fd92 (K1, containers, SN2/SQ, WL, EP, NJ, IR) + commencement re-read + read pass; S/T recheck |
 | probe | 90 (S), 91 (R), 92 (T) | Strata built (ff1f97c7): 149 laws, 20,371 rows. Probes were used only to choose golden candidates, so these seeds are never used for R |
