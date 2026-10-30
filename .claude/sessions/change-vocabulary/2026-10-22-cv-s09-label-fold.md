@@ -635,3 +635,9 @@ Upstream faults are about 17 of 150: U10 (6), U12 (4), U13, U1, V9, the HSWA s.5
 **Rule questions for Jason:**
 1. A Part whose every regulation is revoked (NISR 1997/248 Pt IV) stays in force under C9. Should a container be repealed once its last child is, or should container rows not be labelled?
 2. Is a substitution's quote alone evidence that a child is new (SI 1977/500 reg.4(1)(g)(i) cites a 2013 Act; the made text is not held)?
+
+### Decisions for batch 6 (Jason 2026-10-30)
+
+- **Scope:** fold K1, plus the reader and merge fixes SN2, WL, EP, NJ and IR; then a read pass and a rebuild. S and T rows are rechecked; R stays pooled where its rows are unchanged.
+- **Containers:** a Part, Chapter or Title is repealed (or repealed_saved) on the day its last child is repealed, credited to the repealing laws (an exception to C9 for containers; NISR 1997/248 Pt IV).
+- **New children:** a substitution's quote alone is evidence. A child the quote numbers under a whole substitution starts at the substitution, unless the replaced text shows it existed (SI 1977/500 reg.4(1)(g)(i); CLP Art 37(6)(b), (9)(d)).
