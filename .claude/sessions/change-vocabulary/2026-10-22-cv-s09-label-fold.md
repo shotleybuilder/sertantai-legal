@@ -723,3 +723,28 @@ Upstream faults are about 17 of 150: U10 (6), U12 (4), U13, U1, V9, the HSWA s.5
 - **Golden from inputs:** 41/50, the same 9 failures.
 - **Rebuild:** clean.
 - **Recheck:** R is re-folded with seed 153 (the changed rows go to an agent); fresh S (seed 171) and T (seed 172) draws.
+
+### Round 8 agent check: R fails again on a batch 7 regression; S/T 3 fold faults
+
+8 agents; notes in the scratchpad (`r8/findings.md`).
+
+**R:** 9 rows changed since round 6. 6 are OK; 1 is a fold fault, so the pool is **1/150 and R fails**.
+- **M1 (regression from batch 7 L1):** HSWA s.23(4)[NI] keeps the shared history's E+W and S words changes (2006) after its 2018 split, although the NI text is HSWA's original. L1 counts the union before the split. That is right for SI 2008/1597 reg.21(2)(a)[NI], whose NI text carries the 2015 change, and wrong here. The tell is the version's own text: whether the change's markup sits in the NI version element (`section-23n1-4` holds none). A plain "version's own territory at the split" reset would undo L1, so the fix needs per-version markup evidence (the Markup reader's version element ids).
+
+**S (84 rows): 0 fold faults. T (66 rows): 3 fold faults.**
+
+| # | class | evidence |
+|---|---|---|
+| EW | a "words … in earlier amending provision" change placed on a Title reaches every row under it (`reaches?/2` lets any earlier amendment reach descendants; the feed leaves its level unstated) | REACH Art 127P(4B)(a), (4B)(b)(i): SI 2020/1313 |
+| NN | an "nN" row's stripped form counts as its ancestor (`LatRef.ancestors` strips the disambiguator), so a later insertion of the same number starts it | HSWA s.50(4)n1 (the old s.50(4)–(5)) |
+
+**Upstream, new:**
+- **QL / QB:** a quote's last item, or the form "by substituting for paragraph (3) the following paragraph", gets no inserted rule (HSWA s.6(1)(d); SI 1992/3004 reg.25(3)).
+- **RR:** "Sections 34 to 38 of the Factories Act 1961 are repealed" is not read (SI 2000/128).
+- **LA:** "Section 28 … is amended as follows" lead-in not carried (SI 2004/3363).
+- **TR:** an NI-territory order rule held but no commencement change emitted (2007 c.19 s.2(1)(d)).
+- **Whole law:** NISR 2012/179's "*" rule is in `amendment_rules` but not reaching NISR 2007/31's changes.
+- **Latent:** `Parts` blocks a parent's full commencement when a part was inserted later (HSWA s.11(4A)).
+- Still live: U1, U5, U10, U12, U13, U14, U15, V9, K-legacy.
+
+**Tier questions (doubtful, several agents):** a repealed_saved status tier when `saved` comes from the feed; a commenced_by tier when `by` comes from the feed.
