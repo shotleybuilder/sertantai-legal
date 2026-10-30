@@ -698,3 +698,28 @@ Upstream faults are about 17 of 150: U10 (6), U12 (4), U13, U1, V9, the HSWA s.5
 - **L1:** union before the split. In the shared history, a change counts if it overlaps the territory the row then had (C3); after the split, only the version's own.
 - **Undated substitution, order not held:** fetch the order (one hop: SI 1987/1680 for CPA 1987, SI 1996/3146 for 1996 c.23) so it dates; until it is held, in_force_from is nil.
 - **Scope:** fold L1–L3 and the undated-substitution rule, plus N2, AS, BI, LI and CJ; one read pass, a rebuild and an S/T recheck.
+
+### Fix batch 7 (a2ac4ed0, 16dd2226)
+
+- **Fold (a2ac4ed0):**
+  - **L1:** before the split, a change counts by the union territory (Jason).
+  - **L2:** a container's repeal keeps a field's tier where its value stays.
+  - **L3:** a whole repeal read as words tiers its in_force_from.
+  - **Undated substitution:** another law's undated whole substitution leaves in_force_from unknown on the commencement until its order is held.
+- **Readers and merge (16dd2226):**
+  - **N2:** a whole substitution's quote no longer making a provision's old numbers ends them (`AmendingLaw.Dropped`; conservative: rows under a provision the quote makes stay).
+  - **AS:** a feed Type "… by S.I. Y … (as substituted)" credits Y (C5), as a sibling record (`EffectVerb.made_by/1`).
+  - **BI:** "Art. 14 BI" is Article 14a.
+  - **LI:** an EU list point "A1." is its own row.
+  - **CJ:** the feed's commencement by the order the reader read joins it.
+- **Orders fetched (Jason):** CPA 1987's SI 1987/1680, 1988/2041 and 1988/2076, and the Water Act 1989's five orders, are now held and read. CPA Sch.3 is in force 1988-03-01, which dates HSWA s.6 and s.22's substitutions. SI 1996/3146 (1996 c.23) was already held and is now read.
+- **Catalogue:** 4 feed examples accepted (AS).
+- **Tests:** 9,608.
+- **No amendment read pass:** batch 7 changed no amendment-reader code.
+
+## Round 8 (2026-10-30)
+
+- **Restore point:** tag `cv-s09-batch7`.
+- **Golden from inputs:** 41/50, the same 9 failures.
+- **Rebuild:** clean.
+- **Recheck:** R is re-folded with seed 153 (the changed rows go to an agent); fresh S (seed 171) and T (seed 172) draws.

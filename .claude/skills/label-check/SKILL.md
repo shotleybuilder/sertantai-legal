@@ -111,6 +111,11 @@ into label periods, in date order from the row's start:
   last child is (Jason 2026-10-30); under a substitution only the numbers the instruction names are substituted —
   every other number its quote makes, children included, is inserted (Jason: the quote alone is evidence); a whole
   law revoked by name is the law text's own repeal of "*" (primary).
+- Batch 7 rules: before a version's split a change counts by the union territory the row then had (Jason
+  2026-10-30); a container's repeal keeps a field's tier where its value stays; another law's undated whole
+  substitution leaves in_force_from unknown (nil) until its order is held; a whole substitution's quote no longer
+  making a provision's old numbers ends them (repealed by the substituting law, same day); a feed Type "… by S.I. Y
+  … (as substituted/amended)" credits Y too (C5).
 - C8 NOW APPLIED from a held Windsor Framework Annex 2 list (ChangeVocabulary.Windsor: REACH 1907/2006, CLP
   1272/2008): a UK law's change to a listed instrument from 2020-12-31 reaches E+W+S only (NI keeps the EU text); a
   GB-only text change makes the row E+W+S. Judge REACH/CLP rows by this (no longer K8). Other EU law: unchanged.
@@ -244,4 +249,6 @@ OH&S (first family, 2026-10-29 →). The session is `.claude/sessions/change-voc
 | 6 | 151 (S), 152 (T), 153 (R) | Fix 10f81665 (J1–J5, SN, PN, N1, N2, HA) + commencement re-read + read pass |
 | 6r | 151/152/153 | Agents: R 0/150 fold, 0/73 laws — R PASS (UB 1.98%, 4.02%); S/T 1 fold (K1) |
 | 7 | — | Fix 15d23c79, 4155fd92 (K1, containers, SN2/SQ, WL, EP, NJ, IR) + commencement re-read + read pass; S/T recheck |
+| 7r | 153 (R recheck), 161 (S), 162 (T) | R: 6 changed rows OK — PASS holds; S/T 3 fold (L1, L2, L3) |
+| 8 | 153 (R recheck), 171 (S), 172 (T) | Fix a2ac4ed0, 16dd2226 (L1–L3, undated, N2, AS, BI, LI, CJ) + 8 orders fetched; golden 41/50 |
 | probe | 90 (S), 91 (R), 92 (T) | Strata built (ff1f97c7): 149 laws, 20,371 rows. Probes were used only to choose golden candidates, so these seeds are never used for R |
