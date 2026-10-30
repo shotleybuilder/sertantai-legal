@@ -920,5 +920,31 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
       assert %{status: :in_force_partial} =
                List.last(fold("reg.15", [revoked], Map.put(provision, :shows_text, true)))
     end
+
+    test "inserted into a provision not yet in force: prospective until its law commences it (2007/19 s.7(3)(aa), Jason 2026-10-30)" do
+      changes = [
+        change("s.7(3)(aa)", :inserted, ~D[2008-04-01], by: "UK_uksi_2008_912"),
+        change("s.7(3)(aa)", :commenced, ~D[2008-04-06],
+          key: "UK_ukpga_2007_19:commencement:s.7(3)(aa)@2008-04-06",
+          commenced_by: "UK_uksi_2008_401"
+        )
+      ]
+
+      assert [
+               %{valid_from: ~D[2008-04-01], status: :prospective, changed_by: []},
+               %{
+                 valid_from: ~D[2008-04-06],
+                 status: :in_force,
+                 in_force_from: ~D[2008-04-06],
+                 changed_by: ["UK_uksi_2008_912"],
+                 commenced_by: ["UK_uksi_2008_401"]
+               }
+             ] =
+               fold("s.7(3)(aa)", changes, %{
+                 law: "UK_ukpga_2007_19",
+                 start: ~D[2007-07-26],
+                 extent: "E+W+S+NI"
+               })
+    end
   end
 end

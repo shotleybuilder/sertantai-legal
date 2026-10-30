@@ -72,6 +72,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Start do
         markup_prospective?(provision, own_insertion, start_day) ->
           :prospective
 
+        # inserted into a provision its own law has not yet brought into
+        # force: prospective until that law commences it (Jason 2026-10-30,
+        # CV-S09 round 9: 2007/19 s.7(3)(aa), inserted 2008-04-01 into s.7,
+        # in force 2008-04-06)
+        own_insertion != nil and host_prospective?(commenced, self, start) ->
+          :prospective
+
         own_insertion != nil ->
           if Facts.full?(own_insertion), do: :in_force, else: :in_force_partial
 
@@ -294,6 +301,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Start do
   end
 
   defp insertion?(c), do: c.resolved.operation == :inserted and c.resolved.level == :provision
+
+  # its own law commences it only after the start, never on or before
+  defp host_prospective?(_commenced, nil, _start), do: false
+
+  defp host_prospective?(commenced, self, start) do
+    own = Enum.filter(commenced, &String.starts_with?(&1.key, self <> ":commencement:"))
+
+    own != [] and Enum.all?(own, &(Date.compare(&1.resolved.date, start) == :gt))
+  end
 
   # an insertion only a legacy markup Addition claims (its operation a
   # pointer: CV-S08, Jason 2026-10-29)
