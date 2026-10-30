@@ -1,16 +1,18 @@
 ---
-session: 'CV-S11: Store and Build'
+session: 'CV-S12: Store and Build'
 status: pending
 release: v0.1
 opened: '2026-10-22'
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
 ---
 
-# Session: CV-S11: Store and Build (PENDING)
+# Session: CV-S12: Store and Build (PENDING)
 
 ## Problem
 
-Step 11 of the change-vocabulary workflow (CV-00; Jason 2026-10-22: "restate the aim of each step in the workflow and know what good looks like. Build the step until it is reliably good. Then move on"). Aim: Repeatable, fast enough, and it shows what is stale.
+Step 12 of the change-vocabulary workflow (CV-00; Jason 2026-10-22: "restate the aim of each step in the workflow and know what good looks like. Build the step until it is reliably good. Then move on"). Aim: Repeatable, fast enough, and it shows what is stale.
+
+Renumbered from CV-S11 on 2026-10-30 (Jason): the retrospective is step 11.
 
 The session does not close until its results pass.
 
