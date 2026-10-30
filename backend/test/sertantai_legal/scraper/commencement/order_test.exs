@@ -644,6 +644,21 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
           ],
           do: assert(p in scope, p)
     end
+
+    test "an aside naming another law keeps its item partly in force when it qualifies it (SI 1991/2728 art.3)" do
+      act = %{law: "UK_ukpga_1991_34", title: "Planning and Compensation Act", year: "1991"}
+
+      rules =
+        Order.rules(
+          Doc.new("UK_uksi_1991_2728", [
+            ~s|<Legislation><Secondary><Body><P1 id="article-3"><P1para><Text>The following provisions of the Planning and Compensation Act 1991 shall come into force on 2nd January 1992—</Text><UnorderedList><ListItem><Para><Text>section 30 (except for the purposes of any inquiry in respect of an order under section 98 or 103 of the Town and Country Planning Act 1990);</Text></Para></ListItem><ListItem><Para><Text>section 70.</Text></Para></ListItem></UnorderedList></P1para></P1></Body></Secondary></Legislation>|
+          ]),
+          act
+        )
+
+      assert Enum.any?(rules, &(&1.scope == ["s.30"] and &1.purposes != nil))
+      refute Enum.any?(rules, &(is_list(&1.scope) and "s.98" in &1.scope))
+    end
   end
 
   describe "CV-S04 orders catalogue" do

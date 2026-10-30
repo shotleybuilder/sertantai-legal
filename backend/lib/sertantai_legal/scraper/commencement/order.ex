@@ -806,7 +806,17 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     out <> aside
   end
 
-  defp keep_aside(aside), do: if(Regex.match?(@law_named, aside), do: "", else: aside)
+  # (a qualifying aside leaves its item partly in force: "section 30 (except
+  # for the purposes of any inquiry … under section 98 … of the 1990 Act)":
+  # SI 1991/2728 art.3)
+  defp keep_aside(aside) do
+    cond do
+      not Regex.match?(@law_named, aside) -> aside
+      Regex.match?(@full, aside) -> ""
+      Regex.match?(@partial, aside) -> " (for certain purposes)"
+      true -> ""
+    end
+  end
 
   # the items of a list at its top-level commas and semicolons
   defp split_items(text) do
