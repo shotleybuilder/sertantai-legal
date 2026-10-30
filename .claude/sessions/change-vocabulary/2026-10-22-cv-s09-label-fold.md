@@ -384,3 +384,43 @@ Still deferred: K8/C8 (Windsor), U1, U3, U5, U10, U12, U13, U14, U15.
   | partly in force | 6 |
 
 - **Draws:** S 86 rows; T 145 rows (4 per class are checked); R 150 rows. 16 agents; tiers are judged from this round.
+
+### Round 3 agent check: FAIL (close)
+
+16 agents, with tiers judged; per-batch notes in the scratchpad (`r3/findings.md`).
+
+**R** (150 rows, seed 123): 2 fold faults in 2 laws.
+- HSWA s.34(6): an undated insertion by another law still takes the Act's own commencement.
+- NISR 1997/248 reg.2(4)(b)(iv): a repeal keeps the previous `commenced_by` tier.
+
+| round | R fold faults | one-sided 95% upper bound |
+|---|---|---|
+| round 2 (excl. K8, tiers) | 3/150 | — |
+| round 3 (tiers counted) | 2/150 | about 4.1% |
+
+Passing needs 0/150 (1.98%), so round 3 fails. There are no K8 rows in R this time. Upstream faults are about 20 of 150, mostly U10 extent and U12 missing repeals; some rows are U13, U14, U1 and the merge's duplicate commencement.
+
+**S and T:** the fold faults are mostly tiers, plus K8 (6 rows, CLP and REACH), one start bug and one revive input.
+
+**Fold classes for batch 3:**
+
+| # | class | evidence |
+|---|---|---|
+| H1 | **bug:** `Start.start` takes the earliest later insertion among the row and its ancestors; it must be the latest (the nearest inserted ancestor) | HSWA s.51A(2E)(b), inserted 2005 inside the s.51A of 1998 |
+| H2 | an undated whole insertion by another law: the law's own commencements don't reach the row; C14 territory | HSWA s.34(6), Gas Act 1986; about 287 such joins |
+| H3 | an undated whole-provision repeal is dropped; it should read repealed (undated) | CLP Art 25(5), EU 286/2011 |
+| H4 | tiers: a field is tiered only when its value changes or clears; an empty field has a nil tier; a markup split's territory is derived; a commencement claim "via feed" or "via note" is derived; a parts record is tiered from the stages on its own date | S2, S4, T1, R5, R9 |
+| H5 | revive only when the text's valid day is on or after the reviving change (an unrevised body still shows text) | NISR 1993/37 reg.3(1)(d) |
+| H6 | an earlier amendment (C5) reaches descendants whatever its level | REACH Art 127A(2) under pt.14A |
+
+**Upstream classes newly evidenced:**
+- **M1:** the merge doesn't join the feed's "commenced by the law itself" effect with the commencement reader's record. Tier only, but tiers count now. NISR 2003/34, NISR 1999/305, SI 1992/3004, SI 1997/1713.
+- **SF:** "X(1A) substituted for X(1)" and "Art 45(4)-(6) substituted for Art 45(4)": the new numbers are insertions (REACH Art 15(1A), CLP Art 45(5)).
+- **V10:** "rev. and replaced" is dropped (SI 1997/2505).
+- **Doubtful:** an Act whose own commencement clause is repealed falls back to Royal Assent (1920/65).
+- **Education Act 1996 s.583(3):** a carve-out in the Act's own clause.
+
+**Open, doubtful:**
+- Credit an undated words-level change on an undated start (REACH Art 118(2)(c))?
+- Is NISR 1999/150 (a "Modifications" regulation that is a permanent renaming) rule 9 or a text change?
+- The shared pre-split history filters out changes not overlapping the version's own territory.
