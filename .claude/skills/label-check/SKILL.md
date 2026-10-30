@@ -127,6 +127,11 @@ into label periods, in date order from the row's start:
   provision itself kept for some purposes, not retained and its text gone, is repealed (saved where a saving is
   named); a row inserted into a provision its own law has not yet commenced is prospective until that law commences
   it (Jason 2026-10-30).
+- Batch 10 rules: the purpose-kept removal rule applies only when no later removal of the provision follows (until
+  then partly in force, C7); a text change confined to a version narrows the row only when that day's other text
+  changes stay inside the version too (same-day changes for other territories keep the union); a whole substitution
+  of the row whose markup places the change with the text gone, the revised law not showing it, is the row's repeal
+  by the substituting law.
 - C8 NOW APPLIED from a held Windsor Framework Annex 2 list (ChangeVocabulary.Windsor: REACH 1907/2006, CLP
   1272/2008): a UK law's change to a listed instrument from 2020-12-31 reaches E+W+S only (NI keeps the EU text); a
   GB-only text change makes the row E+W+S. Judge REACH/CLP rows by this (no longer K8). Other EU law: unchanged.
@@ -212,6 +217,11 @@ Known classes (label a finding with one; otherwise NEW):
   (SI 2002/2174 on SI 1992/3004); P4 a feed "revoked in part" placed on the wrong law's provision (SI 1996/1513
   reg.13 on HSWA s.48); P5 a feed "omitted in earlier amending provision" given provision level where the law omits
   words (REACH Art 3(A2), SI 2020/1577 reg.4(6)(b)); U13 Scottish form (markup cites uksi for an SSI, unjoined).
+- From CV-S09 round 10 (upstream, open): P6 an order's list cut at "(except …)" (SI 1995/2950 reg.2(1), HSWA
+  s.28(10)); K-legacy includes legacy Additions citing a law (OSRPA s.6, SI 1992/3004: read as an insertion by the
+  repealing law); V8 an amending law's whole-law date not attached to its undated substitution (SI 1989/2367 on SI
+  1989/462 reg.7: the fold cannot place it; upstream, Jason 2026-10-30); KS CLP Art 37(7)-(9) new in SI 2019/720's
+  substituted Art 37.
 
 Output: a compact table, one row per item: #, law, row, OK / WRONG-fold / WRONG-upstream / gap / doubtful, note (only
 when not OK: one line: period, field, fold value vs right value, rule or step, known class or NEW). Then per S shape
