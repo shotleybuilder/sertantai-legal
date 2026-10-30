@@ -134,6 +134,12 @@ the right source and whether the table's rule holds. Then counts (changes OK/WRO
 pattern with evidence (the records quoted: feed effect fields, markup and commentary words, amending words, the
 commencement rule; why the value is wrong; the table rule that would fix it in general). Be rigorous and skeptical:
 WRONG needs evidence; say doubtful rather than guess. Under 1200 words.
+
+Then, after the report (not counted in the word limit), a line VERDICTS and on the lines after it one JSON
+object, the round's verdict file (CV-S10; `mix lat.verdicts` pools them):
+{"step": "evidence", "family": "FAMILY", "stratum": "STRATUM", "seed": SEED, "round": ROUND, "items": [
+ {"id": ID, "group": GROUP, "verdict": "ok|wrong|doubtful|gap", "fault": FAULT, "pattern": "<class or null>"}]}
+One entry per item, in the sample's order. id "<law>|<target>|<by>"; group the pair "<law>|<by>"; fault for a wrong item: "known" with a logged class, "own" otherwise; null when not wrong.
 ```
 
 ## History

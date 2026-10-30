@@ -4,6 +4,19 @@ status: active
 release: v0.1
 opened: '2026-10-22'
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
+bugs:
+  - pattern: "S01 sources gate fails today: 103 needed documents not fetched (OH&S, 2026-10-30), 96 of them EU amenders of REACH (70) and CLP (26) — territory bodies and introductions; 7 UK. CV-S01 passed with 0; the needs grew with later steps and nothing re-ran the gate"
+    category: workflow / sources gate
+    module: mix lat.sources (CV-S01); CV-S12 'sources check re-run after each rebuild'
+    affected: 103
+    fix: "Jason to decide the fetch (EU territory isn't read, KE); re-run the gate in the next pass from step 1; CV-S12's automatic re-run"
+    status: open
+  - pattern: "mix tasks over ~300 lines: lat.extent_check 404, lat.commencement_check 446, lat.sources 383 (logic inline: tallies untested)"
+    category: module size
+    module: lat.extent_check, lat.commencement_check, lat.sources
+    affected: 3
+    fix: "move the tallies into pure modules with tests (CV-S11 improve)"
+    status: open
 ---
 
 # Session: CV-S10: Measures (ACTIVE)
@@ -21,13 +34,13 @@ Jason 2026-10-30: "We run S10 to pass making sure it's replicable and supported 
 - ✅ Inventory every figure the workflow prints or quotes, by step (task, function, definition, test or none; ad-hoc figures in quality statements)
 - ✅ Define what good looks like (agreed 2026-10-30: below)
 - ⬜ Measure register: every published figure (quality statements S05–S09, pass rules, CV-07), with name, definition, command, function, test
-- ⬜ The 95% bound in code (Clopper–Pearson), tested against known values
-- ⬜ Verdict files: a JSON format for agent verdicts (seed, item, verdict, class); the step skills' prompts write it; a mix task pools a step's verdicts since the last fix and prints the bounds and the end-to-end figure
-- ⬜ The figures worked out by hand put into code: S05/S06 coverage tables, S08 dating coverage, CV-07 "both sources"
-- ⬜ Names: one meaning per name ("both sources", "disagreeing", agreement's copied rules, `Conflicts.report` inputs); the S07 join-rate header fixed
-- ⬜ Replicable: a reproducibility test per draw (`CheckSample.draw` too); each run records its seeds; two runs over the same store diffed identical
-- ⬜ Coverage and the conflict report: "who states a change" from the claims of the change itself (fixed in CV-07 `41f9afe0`; earlier figures overstated); defined and tested
-- ⬜ The coverage figures quoted in CV-07 re-baselined (golden both-sources 22%, OH&S family 13%)
+- ✅ The 95% bound in code (Clopper–Pearson), tested against known values (`Measures.Bound`, `4224bd90`)
+- ⬜ Verdict files: a JSON format for agent verdicts (seed, item, verdict, class); the step skills' prompts write it; a mix task pools a step's verdicts since the last fix and prints the bounds and the end-to-end figure (format and `mix lat.verdicts` done `4224bd90`; the skills' prompts to follow)
+- ✅ The figures worked out by hand put into code: S05/S06 coverage tables, S08 dating coverage, CV-07 "both sources" (`mix lat.measures`, `27d98ac9`); small totals in their tasks (`a7037b3c`)
+- ⬜ Names: one meaning per name ("both sources", "disagreeing", agreement's copied rules, `Conflicts.report` inputs); the S07 join-rate header fixed (header fixed `27d98ac9`; `Conflicts.report` inputs change no figure; names in the register)
+- ✅ Replicable: a reproducibility test per draw (`Measures.Draw`, every check); two runs over the same store identical, and a third after the refactor (`27d98ac9`); seeds recorded in the verdict files
+- ✅ Coverage and the conflict report: "who states a change" from the claims of the change itself (fixed in CV-07 `41f9afe0`; earlier figures overstated); defined and tested (`Coverage.stated_by/1`; agrees with `lat.amending_check` exactly: 1,396 = 1,235 + 161)
+- ✅ The coverage figures quoted in CV-07 re-baselined (golden 22% → 24.0%, OH&S family 13% → 25.9%)
 - ⬜ Hand check: an agent checks a sample of each classifying measure against the sources (stated by, join, agreement, strata)
 - ⬜ A `measures-check` skill: the register, the commands, how to rerun for a family
 - ⬜ Fix until the check passes reliably; record the result
@@ -86,3 +99,108 @@ Every figure the workflow prints (`lat.sources`, the eight `lat.*_check` tasks, 
    - CV-07's "both sources" 22% / 13% (this session's re-baseline);
    - S09's end-to-end 17/150 and S05's 3/150 laws (tallied from agent verdicts);
    - CV-07's "agree 96–100%".
+
+## The bound and the verdict files (2026-10-30)
+
+**`Measures.Bound`** (`4224bd90`): the exact one-sided Clopper–Pearson upper bound. It reproduces every bound the step sessions published by hand, to two places:
+- 0/150 → 1.98%; 0/73 → 4.02%; 0/160 → 1.85%; 0/86 → 3.42%; 0/112 → 2.64%; 0/81 → 3.63%;
+- S05's laws 3/150 → 5.09%, recorded then as 5.1%, marginal against the 5% limit and accepted by Jason (2026-10-28); a test keeps it visible as a miss;
+- S05's pool over seeds 17–22: 10/300 → 5.59%, 1/300 → 1.57%.
+
+Under 2% needs at least 149 clean items (0/148 is 2.004%).
+
+**Verdict files** (`Measures.Verdicts`, `mix lat.verdicts`): one JSON per agent batch, with step, family, stratum, seed, round, and per item its id, group (law or pair), verdict (ok / wrong / doubtful / gap), fault for a wrong item (own / upstream / known) and pattern. Pooling counts each item once, the latest round's verdict standing.
+- Counted against the bound: wrong items whose fault is `own`.
+- End to end: every wrong item.
+- Gaps and doubtful items are listed apart.
+
+Files go under `backend/data/reports/change-vocabulary/verdicts/` (NAS-backed, not in git, because items may carry effect ids). Earlier rounds kept their verdicts only as hand tallies in prose, so they aren't backfilled: those passes stand as recorded, with their bounds now confirmed by code. A demo file shaped like S09's R pool printed 0/150 (1.98%), 0/73 (4.02%), end to end 17/150 (11.33%), PASS.
+
+## Register of published figures (draft, 2026-10-30)
+
+Every figure in a step's closing summary, metrics or quality statement, and each skill's pass rule. Drafted by a read-only agent; two of its inconsistency claims spot-checked and confirmed (S01's table sums to 1,203; CV-07's level disagreement of 7.0% contradicts "agree 96–100%"). Source: **T** = a task prints it (label checked in the source); **AV** = agent verdicts (now `mix lat.verdicts`, from the next round on); **H** = worked out by hand.
+
+| Step | Name | Published | Source |
+|---|---|---|---|
+| S01 | sources_needed_by_category; sources_failures; register_feed_differences | 7 categories; 0; 0 | T `lat.sources` |
+| S01 | sources_needed_total | 1,253 (table sums to 1,203) | H |
+| S02 | feed_effects_placement; feed_our_faults; feed_tell_tales | 6,568 effects / 149 laws; 0; 16/10/1/5 | T `lat.feed_check` |
+| S02 | feed_agent_placement_facts | 50/50, 50/50 | AV |
+| S03 | markup_changes_placement; markup_our_faults; markup_keys_vs_feed; markup_catalogue | 1,808 / 79 laws; 0; 1,178/594/36; 745 patterns | T `lat.markup_check`, `lat.markup_patterns` |
+| S03 | markup_agent_placement_facts | 50/50 | AV |
+| S03 | legacy_pointer_share | 94.3%; 89.8%; 99.4% | H |
+| S04 | commencement_rows_outcome; commencement_our_faults; commencement_gaps_by_reason | dated 16,430 …; 0; 7 classes | T `lat.commencement_check` |
+| S04 | commencement_by_order_all | 164 (by_order 158 + partly 6) | H |
+| S04 | order_statements_read | 1,951/2,901 (67%) | H from `lat.order_patterns` |
+| S04 | commencement_agent_round4 | NEW 0 | AV |
+| S05 | extent_changes_wrong_pooled; extent_laws_wrong_pooled | 0/150 (2.0%); 3/150 (5.1%) | AV |
+| S05 | extent_coverage_by_source; extent_no_bound_share | 4,967: law 62.8% …; ~31% | T `lat.extent_check`, regrouped by H |
+| S05 | extent_our_faults | 0 | T |
+| S06 | lawtext_stated_population; lawtext_strata_ADL; lawtext_agreement_with_lgu | 1,174; A 1,063 / D 77 / L 34; by/operation/level/target | T `lat.amending_check` |
+| S06 | lawtext_A_pooled; lawtext_DL_full | 0/160 (1.85%), pairs 0/86 (3.42%); 0/111 | AV |
+| S06 | lawtext_overall_bound | ≈1.7% | H |
+| S06 | lawtext_coverage_table | 4,911: law text 23.9%, Schedule 831, EU 654, body 1,150, unread 661, other 441 | H, partly T |
+| S07 | merge_strata_JUC (joined_any_two); join_rate_law_text; join_rate_markup; overjoin_spread_keys | J 2,082 / U 1 / C 13; 93.4%; 85.0%; 32 | T `lat.merge_check` |
+| S07 | merge_J_pooled | 0/150 (1.98%), pairs 0/112 (2.64%) | AV |
+| S08 | evidence_strata_VDA; evidence_winners | V 8 / D 40 / A 2,019; per attribute | T `lat.evidence_check` |
+| S08 | evidence_A_pooled; evidence_V_D_verdict | 0/150 (1.98%), pairs 0/81 (3.6%); V 8/8, D wrong only in classed patterns | AV |
+| S08 | evidence_date_gaps | 609 / 2,841 / 1,123 of 4,573 | H |
+| S09 | label_R_pooled; label_ST_fold_faults; label_end_to_end_R | 0/150 (1.98%), 0/73 (4.02%); 0 in 160; 17/150 (11%) | AV |
+| S02–S09 | golden_from_inputs; golden_extended | 27/27 (26/27 at S06); 41/50 | T `lat.vocabulary --golden [--extended]` |
+| CV-07 | stated_by_law_and_derived (family, golden); stated_law_text_only; stated_lgu_only | 611/4,619 (13%), 3,242/15,020 (22%); 133; 3,875 | H |
+| CV-07 | both_state_attribute_agreement | "agree 96–100%" (its own table: level 93%) | H |
+
+**Worked out by hand (H), and the code that would print them:**
+- `lat.sources`: a needed total.
+- `lat.commencement_check`: by_order + partly.
+- `lat.order_patterns`: statements read.
+- `lat.markup_patterns`: legacy pointer share.
+- `lat.extent_check`: the coverage regrouping and shares.
+- `lat.amending_check` or `lat.vocabulary`: the law-text coverage split by target (Schedule / EU article / body / unread / other, from `Conflicts`).
+- `lat.evidence_check`: the date gaps over text changes.
+- `lat.vocabulary`: CV-07's stated-by split.
+- The derived bounds (overall ≈1.7%, "≥98%") are arithmetic on AV bounds.
+
+**Published with two values or definitions (to settle in the register, not by editing closed sessions):**
+1. S01 needed documents: 1,253 in the frontmatter, but the table sums to 1,203.
+2. "OH&S text changes": 4,619 (CV-07), 4,967 (S05), 4,911 (S06), 4,573 (S08). Merged changes: 26,492 (S08), 26,475 (S09).
+3. Law-text population: 1,174 (S06, S07 round 1), 1,177 (S07 round 7).
+4. "Both sources" has three meanings: 611 (CV-07: operation claimed by law and derived), 1,095 (S06: `stated_by` both), 2,082 (S07: any two sources).
+5. "Law text only" has four values: 133 (CV-07, before its correction), 79 (S06 alone), 34 (S06 stratum L), 84 (CV-07 conflicts).
+6. "A / agreeing": 1,063 law-text changes agreeing (S06), 2,019 changes several sources claim (S08).
+7. S09's S/T denominator: 160 (with 4 rechecked rows), 156.
+8. S04 by order: 158, 164 with the 6 partly.
+9. CV-07's "agree 96–100%" against its own 93% for level.
+10. CV-07's frontmatter mixes before (133) and after (611) its correction; golden text changes 15,014 against 15,020.
+11. S05 "at least about 95%" of laws against an upper bound of 5.09% (94.9%).
+12. "Golden from inputs" is 26/27 at S06 (its logged limit) and 27/27 elsewhere.
+
+Most of these are different moments (the store moved between steps) or different populations under one word. The register fixes each by a distinct name and the code that prints it; values that move with the store are stated with their run, not as constants.
+
+## Replicability (2026-10-30)
+
+Every check's sample drawn at seed 901 on OH&S, twice on the code as it stood, then once after moving every draw into `Measures.Draw` (`27d98ac9`). Script and timings are in the `measures-check` skill; a pass takes about 8 min.
+- **Samples:** all 10 byte-identical across the three passes: feed, markup, commencement, extent, amending A, merge J, evidence A and D, label R and S. The refactor keeps every seed tuple and algorithm, so seeds recorded in earlier rounds still draw their samples.
+- **Printed figures:** identical, once log lines, compile lines, output paths and one machine-state line (the extent check's free memory) are filtered out.
+- **Found:** the extent check's draw takes its rows unsorted. Its order is stable today (identical runs), but the draw module's doc says callers must pass a stable order; logged for CV-S11 rather than changed, since changing it would move recorded seeds.
+- **`Conflicts.report` inputs:** the strata modules call it without the read pass's pointers, but read only its `:unjoined` entries, which don't depend on them, so no figure differs.
+
+## Measures in code (2026-10-30)
+
+`mix lat.measures --family F | --golden [--extended]` (`27d98ac9`, ~4 s family, ~7 s golden), from `Measures.Coverage` (pure, tested) and `Measures.Source` (the inputs, with the read pass's pointers).
+
+| Figure | Published | Today (OH&S) | Today (golden laws) |
+|---|---|---|---|
+| Text changes | 4,573–4,967 by step | 4,763 | 14,800 (21 laws) |
+| stated_by_law_and_derived | CV-07: 13% family, 22% golden | 1,235 (25.9%) | 3,554 (24.0%) |
+| law only / derived only | CV-07: 133 / 3,875 | 161 / 3,367 | 914 / 10,332 |
+| Law-text coverage: read, no rule (Schedule / EU article / body) | S06: 831 / 654 / 1,150 | 615 / 655 / 1,319 | 2,296 / 683 / 4,917 |
+| not read / other | S06: 661 / 441 | 490 / 288 | 424 / 2,012 |
+| Dating: undated / dated, no commenced_by / commenced_by named | S08: 609 / 2,841 / 1,123 | 579 / 2,694 / 1,490 | 2,911 / 11,363 / 526 |
+| Territory (`lat.extent_check`, grouped): law text / follows enactment / law type not read / no powers / unread / competence | S05: 3,117 / 299 / 573 / 450 / 328 / 149 | 3,072 / 270 / 554 / 415 / 272 / 151 | — |
+
+**One definition, two names:** today `lat.amending_check` prints 1,396 law-text changes (both 1,235, alone 161), exactly `Coverage.stated_by_split`. So S06's "both" and CV-07's "both sources" share a meaning (`stated_by_law_and_derived`); S07's J ("joined", any two sources) is the other. Published values differ because the store moved between steps (reader fixes in S06–S09), not because of the definitions.
+
+**Totals now printed by their tasks** (`a7037b3c`): `lat.sources` needed total (1,160 today); `lat.commencement_check` left to orders (164); `lat.order_patterns` statements read into rules (2,298 of 3,496 today; S04 published 1,951 of 2,901); `lat.markup_patterns` pointer shares (checked on two laws; the corpus run is ~16 min, not run).
+
+**Found:** `lat.sources --family` fails today with 103 documents not fetched (bug logged above): the S01 gate isn't re-run as later steps add needs.

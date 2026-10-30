@@ -142,6 +142,12 @@ facts OK/WRONG/doubtful, note (only when not OK: one line, with K# or NEW). Then
 dimension, and the NEW defects with items and concrete evidence (feed value vs reader value,
 DB/text check). Be rigorous and skeptical — this is an acceptance gate; WRONG needs evidence;
 say doubtful rather than guess. Under 900 words.
+
+Then, after the report (not counted in the word limit), a line VERDICTS and on the lines after it one JSON
+object, the round's verdict file (CV-S10; `mix lat.verdicts` pools them):
+{"step": "feed", "family": "FAMILY", "stratum": "STRATUM", "seed": SEED, "round": ROUND, "items": [
+ {"id": ID, "group": GROUP, "verdict": "ok|wrong|doubtful|gap", "fault": FAULT, "pattern": "<class or null>"}]}
+One entry per item, in the sample's order. id "<law>|<effect_id last 6>"; group the law; fault for a wrong item: "known" with a K# class, "own" for NEW; null otherwise.
 ```
 
 ## History

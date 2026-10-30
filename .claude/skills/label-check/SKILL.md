@@ -228,6 +228,12 @@ when not OK: one line: period, field, fold value vs right value, rule or step, k
 (or T class) a line: does the rule hold. Then counts (rows OK / WRONG-fold / WRONG-upstream / gap / doubtful; laws
 WRONG-fold), then each NEW pattern with evidence (the records quoted; why the period is wrong; the general rule that
 would fix it). Be rigorous and skeptical: WRONG needs evidence; say doubtful rather than guess. Under 1200 words.
+
+Then, after the report (not counted in the word limit), a line VERDICTS and on the lines after it one JSON
+object, the round's verdict file (CV-S10; `mix lat.verdicts` pools them):
+{"step": "label", "family": "FAMILY", "stratum": "STRATUM", "seed": SEED, "round": ROUND, "items": [
+ {"id": ID, "group": GROUP, "verdict": "ok|wrong|doubtful|gap", "fault": FAULT, "pattern": "<class or null>"}]}
+One entry per item, in the sample's order. id "<law>|<row>"; group the law; WRONG-fold is wrong with fault "own", WRONG-upstream wrong with fault "upstream" (its step's class as pattern), gap is "gap"; null fault otherwise.
 ```
 
 ## Golden drafting prompt (growing the golden set)

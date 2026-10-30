@@ -240,6 +240,12 @@ Output: a compact table per section, one row per item: #, law (and change key_ta
 not OK: one line, with a known class or NEW). Then counts per section, then the NEW defects with concrete evidence
 (quoted words, provision ids, stored rows, why the reading is wrong). Be rigorous and skeptical: WRONG needs evidence;
 say doubtful rather than guess. Under 1000 words.
+
+Then, after the report (not counted in the word limit), a line VERDICTS and on the lines after it one JSON
+object, the round's verdict file (CV-S10; `mix lat.verdicts` pools them):
+{"step": "extent", "family": "FAMILY", "stratum": "STRATUM", "seed": SEED, "round": ROUND, "items": [
+ {"id": ID, "group": GROUP, "verdict": "ok|wrong|doubtful|gap", "fault": FAULT, "pattern": "<class or null>"}]}
+One entry per item, in the sample's order. Two objects, one per section: stratum "laws" (id and group the law) and stratum "changes" (id "<law>|<target>|<key_tail>", group the amending law). Fault for a wrong item: "known" with a known class, "own" for NEW; null otherwise. Pool each apart: changes at the default limits, laws with `--limit 0.05`.
 ```
 
 ## History

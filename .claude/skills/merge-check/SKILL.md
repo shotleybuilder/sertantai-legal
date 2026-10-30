@@ -102,6 +102,12 @@ kind over-join/split/misplaced, the partner or the stray claim, a known class or
 OK/WRONG/doubtful; pairs), then each NEW pattern with evidence (the records quoted: feed effect fields, markup
 ChangeId and commentary words, amending words; why the merge is wrong; the rule that would fix it in general).
 Be rigorous and skeptical: WRONG needs evidence; say doubtful rather than guess. Under 1200 words.
+
+Then, after the report (not counted in the word limit), a line VERDICTS and on the lines after it one JSON
+object, the round's verdict file (CV-S10; `mix lat.verdicts` pools them):
+{"step": "merge", "family": "FAMILY", "stratum": "STRATUM", "seed": SEED, "round": ROUND, "items": [
+ {"id": ID, "group": GROUP, "verdict": "ok|wrong|doubtful|gap", "fault": FAULT, "pattern": "<class or null>"}]}
+One entry per item, in the sample's order. id "<law>|<target>|<by>"; group the pair "<law>|<by>"; fault for a wrong item: "known" with a known class, "own" for NEW; null otherwise.
 ```
 
 ## History

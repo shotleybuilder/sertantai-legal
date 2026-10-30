@@ -46,6 +46,7 @@ Use the round-2 prompt in `.claude/sessions/change-vocabulary/2026-10-22-cv-s03-
 - **Rules:** keys, the paired substitution, placement (row ids only, heading groups via `heading_of`, whole only when the change touches the provision's own number, heading or text or covers all its text, else per child; groups split, repeated ids by Pnumber), names, operation, level, retained, territory, and `cited`/`affecting` from the note's Operative `CitationSubRef`s.
 - **Known patterns:** K1, K3, K9, M1–M3, P1.
 - **Output:** a table with placement and facts per item, counts, and NEW defects with evidence. Under 900 words.
+- **Verdicts (CV-S10):** append to the prompt the VERDICTS block from `feed-reader-check` (step "markup"; id "<law>|<key last 6>"; group the law), so `mix lat.verdicts` can pool the round.
 
 ## History
 
