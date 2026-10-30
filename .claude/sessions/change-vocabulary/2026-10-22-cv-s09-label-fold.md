@@ -485,3 +485,27 @@ Upstream faults are about 15 of 150, mostly U10 and U12, then U14, U1 and U5.
 - U5 is still live;
 - the U9 OSRPA ss.4–16 legacy "insertions";
 - a law held only as enacted should be flagged, not labelled in force.
+
+### Decisions for batch 4 (Jason 2026-10-30)
+
+- **Scope:** fold I1–I8, plus two small reader fixes: amending-reader gerunds, and the EU "para. N" / BIS forms in the feed reader.
+- **C8:** hold a small Windsor Framework Annex 2 list, checked by Jason.
+
+### Fix batch 4 (e1653920): golden from inputs 41/50
+
+- **Fold:**
+  - I1–I8 are done.
+  - I3 is split: a markup-only insertion still credits its law (CV-S08 ruling, Forestry s.1(4)(a)), but only a stated insertion drops the law's own commencements (H2).
+- **C8:**
+  - The new module `ChangeVocabulary.Windsor` lists REACH and CLP with their Annex 2 citations.
+  - CLP is at Annex 2, heading 23, indent 11 (a GOV.UK explanatory memorandum, COM(2025) 822). REACH is listed under heading 23, with no indent found yet.
+  - Both are `checked: false` until Jason checks them.
+  - The UK's changes from 2020-12-31 reach GB only; a GB-only text change narrows the row to E+W+S.
+  - REACH Art 140 and CLP Art 2(17) now pass golden.
+- **Readers:**
+  - the amending reader's gerunds ("by substituting", "by deleting");
+  - the feed reader gives the words level to an unheld finer part; "BIS" maps to "a".
+- **Catalogues:** 15 feed examples and 3 amendment examples accepted.
+- **Tests:** 9,573.
+- **Golden 41/50:** the 9 failures are U12 (3), U15 (2), U13 (2), U1 and U10.
+- **Note:** the amending-reader change stales `amendment_rules` (ReaderVersion). A rebuild reads stale amending laws from their text, so it is slower; one full `mix lat.amending --read` pass is per the reader-fix-loop rule.
