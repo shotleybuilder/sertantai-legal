@@ -287,3 +287,57 @@ Tests: 9,547 (1 fixed: `Version` now covers `label/*`).
 
   All 730 rows prospective in round 1 were NISR made versions (U11).
 - **Draws:** S 86 rows; T 148 rows, of which the agents check 4 per class (65); R 150 rows, all checked, by 16 agents.
+
+### Round 2 agent check: FAIL
+
+16 agents; per-batch notes in the scratchpad (`r2/findings.md`).
+
+**R** (150 rows, seed 113):
+
+| count | fold faults | 95% one-sided upper bound |
+|---|---|---|
+| excluding K8 and tiers | 3 / 150, 3 laws | about 5.1% |
+| including deferred K8 | about 10 / 150 | — |
+
+The three non-K8 fold faults are:
+- HSWA s.28(3)(c)(i)[E+W]: the split date;
+- SI 2008/1597 reg.16(11)(b)[NI]: the pre-split extent;
+- HSWA s.25A(1): an undated ancestor insertion.
+
+Upstream faults are about 17 of 150 rows, mostly U10 extent and U12 missing repeals. Round 1 was 6/50 excluding tiers, so the fold rate has dropped from 12% to 2%, but it is still over the 2% bound.
+
+**S** (86 rows) and **T** (65 rows): every fold class found is either already in R or listed below.
+
+**Tiers.** The agents differed: some counted the start period's null tiers as WRONG, others as the deferred todo. Every first period has null tiers, including those opened by an insertion, and synthetic "parts" commencements are tiered derived. This is to be fixed in batch 2; the counts above exclude tiers.
+
+**Fold classes for batch 2:**
+
+| # | class | evidence |
+|---|---|---|
+| G1 | versions: the pre-split extent and split date from the nearest versioned ancestor's versions (union of all; earliest sibling start), not the row's own id | SI 2008/1597 reg.16 [NI] children (sibling version a stub, up to about 730 [NI] rows); HSWA s.28 [E+W] 2023 against [S]/[NI] 2018 |
+| G2 | an undated whole insertion on an ancestor: C10 start (in_force_from nil), changed_by the inserting law | HSWA s.25A(1) (CPA 1987) |
+| G3 | a repealed row revived by a later whole substitution or insertion of it or an ancestor | SI 2022/1378 reg.9(3), reg.9(9) (omitted 2023, reg.9 substituted 2024) |
+| G4 | an undated own substitution after an undated insertion is credited | CLP Art 25(7) |
+| G5 | a nil extent never yields a remainder: take the law's root extent, else no territory left after a territorial repeal | SI 2008/2337, SI 1987/605 rows read "in force NI" |
+| G6 | the most-specific rule ignores commencements dated before the row's start (a later-inserted row's law-start record) | CROW s.1A(a), s.1(6A)(b) and others; golden s.1A(b) |
+| G7 | tiers: the start period's from the changes behind it; parts records from their children's; commenced_by tiered | all inserted starts; HSWA and OSRPA parts |
+
+**Upstream classes found in round 2:**
+
+| # | class | evidence |
+|---|---|---|
+| V1 | the feed's `staged_removal` gives no partial claim on its partial stages, so F7 reads them as words gone (regression risk) | HSWA s.47(5), s.47(1)(b) |
+| V2 | a range expanded over rows inserted later than the range | SI 2009/1348 reg.19BB under "reg. 19A-19F" (2011) |
+| V3 | the feed's InForce CommencingURI is not carried as commenced_by | HSWA s.51A(2)(b), SI 2006/378 |
+| V4 | markup-only Addition words changes stored with no operation (83 in OH&S) | Factories 1961 s.125(6) |
+| V5 | a words substitution that creates new sub-paragraphs is stored as substituted, not inserted | HSWA s.11(4)(ii); NISR 2010/160 reg.3(m) |
+| V6 | nested Additions: the outer range ChangeId credited to a later insertion | CROW s.1(6AA) |
+| V7 | commencement: "Except so far as … X shall not come into force until D" missed | HAA 1995 s.5(2) |
+| V8 | an amending law's single whole-law clause date is not attached to its undated change | SI 1989/2367 on SI 1989/462 reg.7 (golden reg.7(2)) |
+| V9 | a parent-level "in each place it occurs" words change is not placed on children | SI 1975/335 reg.5(1) |
+| V10 | legacy free-text feed revocations ("rev. and replaced") are not placed at "*" | SI 1997/2505 |
+| V11 | U2 may persist: CROW s.1 still holds the range insertion 24f25d | to check |
+
+Still deferred: K8/C8 (Windsor), U1, U3, U5, U10, U12, U13, U14, U15.
+
+**A ruling is needed:** do "in earlier amending provision" effects (an amendment to the amending law before it took effect) count in `changed_by` (C5)? REACH Art 127E: SI 2019/858 substituted SI 2019/758's Sch.2 text before it took effect.
