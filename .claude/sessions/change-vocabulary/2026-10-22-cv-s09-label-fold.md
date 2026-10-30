@@ -609,3 +609,29 @@ Upstream faults are about 17 of 150: U10 (6), U12 (4), U13, U1, V9, the HSWA s.5
   | partly in force | 6 |
 
 - **Draws:** seeds S 151, T 152, R 153. S 81 rows; T 151 (64 checked, 4 per class); R 150, with the 30-row repeat identical. 16 agents; the prompt carries batch 5 rules and the open upstream classes from rounds 4–5.
+
+### Round 6 agent check: R PASSES; one S/T fold fault
+
+16 agents; per-batch notes in the scratchpad (`r6/findings.md`).
+
+**R (150 rows, seed 153, 73 laws): 0 fold faults.** At the one-sided 95% Clopper–Pearson bound that is 1.98% of rows (< 2%) and 4.02% of laws (< 5%), so **R passes**. Upstream (end to end): 17 of 150 rows wrong (11%), mostly U10 and U12, then U1, K-legacy and three new reader patterns.
+
+**S (81 rows): 0 fold faults. T (64 rows): 1 fold fault.**
+- **K1, revival on a made-only body:** NISR 1993/37 reg.3(1)(d) was repealed in 2015 and revived by reg.3's 2017 substitution, though the new reg.3(1) has no (d). The stored body is the made text (no `dct:valid`), and `Day.revised?/2` treats a nil valid as revised. The revived period's tiers are also nil, because `retier` filters the day by overlap with the current territory "nowhere".
+
+**Upstream, new:**
+
+| # | class | evidence |
+|---|---|---|
+| SN2 | the batch 5 `NewNumbers` guard: when no quoted number equals the named one ("for (1) substitute (1A)…(1D)"), all stayed substituted | SI 1998/494 reg.6(1B), SI 2014/469 |
+| SD | a whole substitution whose quote holds numbers the replaced text lacked (descendants) | CLP Art 37(6)(b), (9)(d), SI 2026/484 |
+| SQ | the same for a substituted paragraph's own children, with the made text not held (rule question) | SI 1977/500 reg.4(1)(g)(i) |
+| WL | whole-instrument revocation ("The X Regulations are revoked") not read by the amending reader: all 9 "*" repeals derive their tiers from the feed | SI 2008/1597 by SI 2026/867 |
+| EP | "for each reference" words change: the law_text and commencement claims sit on the parent only, so per-place changes take derived tiers | HSWA s.16, SI 2008/960 art.8 |
+| NJ | a markup change's note-derived affecting ref (wrong paragraph) blocks the join, and the duplicate derives tiers | HSWA s.55(6)(b), SI 2008/960 art.18(3)/(4) |
+| IR | "in so far as it relates to paragraphs 1, 2, 6, 11 to 14 … 29 and 30 of Schedule 15": the scope is cut to its last pair | SI 1991/1042 art.2(1) (EPA 1990 Sch.15 para.14(a) on HSWA s.5(1)) |
+| U5 | still live: the 1975 rules "so far as it relates to the Executive" never complete s.10, s.11 | HSWA s.10, s.11, s.11(6) |
+
+**Rule questions for Jason:**
+1. A Part whose every regulation is revoked (NISR 1997/248 Pt IV) stays in force under C9. Should a container be repealed once its last child is, or should container rows not be labelled?
+2. Is a substitution's quote alone evidence that a child is new (SI 1977/500 reg.4(1)(g)(i) cites a 2013 Act; the made text is not held)?
