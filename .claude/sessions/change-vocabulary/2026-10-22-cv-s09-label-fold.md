@@ -692,3 +692,9 @@ Upstream faults are about 17 of 150: U10 (6), U12 (4), U13, U1, V9, the HSWA s.5
 - Still live: U1, U5, U10, U12, U13, U14, U15, V9, KC-order (Water Act 1989 s.194(3); SI 1996/3146).
 
 **Rule questions:** L1 (the shared history before a split includes a narrower change); an undated whole substitution on a dated start, its order not held (HSWA s.22(4), CPA 1987) currently shows the start's date beside the later maker.
+
+### Decisions for batch 7 (Jason 2026-10-30)
+
+- **L1:** union before the split. In the shared history, a change counts if it overlaps the territory the row then had (C3); after the split, only the version's own.
+- **Undated substitution, order not held:** fetch the order (one hop: SI 1987/1680 for CPA 1987, SI 1996/3146 for 1996 c.23) so it dates; until it is held, in_force_from is nil.
+- **Scope:** fold L1–L3 and the undated-substitution rule, plus N2, AS, BI, LI and CJ; one read pass, a rebuild and an S/T recheck.
