@@ -368,3 +368,19 @@ Still deferred: K8/C8 (Windsor), U1, U3, U5, U10, U12, U13, U14, U15.
 **Tests:** 9,555.
 
 **For later:** `readers/feed.ex` is 605 lines (it was 573 before this session); decompose it in the reader batch.
+
+## Round 3 (2026-10-30; seeds S 121, T 122, R 123)
+
+- **Restore point:** tag `cv-s09-batch2`.
+- **Rebuild:** OH&S rebuilt, 149 laws, no errors.
+- **Golden from the store: 34/50.** The extra failures are laws outside the family with stale stored changes: SI 2012/3038, SI 2016/1105, SI 2017/544, and TCPA s.284(3)(a) and EUWA s.6, whose changes predate V3. Golden from inputs (39/50) stands.
+- **Current status:**
+
+  | status | rows |
+  |---|---|
+  | in force | 19,008 |
+  | repealed and saved | 1,022 |
+  | repealed | 335 |
+  | partly in force | 6 |
+
+- **Draws:** S 86 rows; T 145 rows (4 per class are checked); R 150 rows. 16 agents; tiers are judged from this round.

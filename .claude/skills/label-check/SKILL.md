@@ -76,8 +76,19 @@ into label periods, in date order from the row's start:
   renumbering opens a period (C4). A territorial repeal opens a period but changes none of the three. All three are
   empty while prospective or partly in force. Repealed: in_force_from nil, changed_by the repealing laws.
 - A provision exists from its insertion: a row inserted after its law's start (own or ancestor whole insertion)
-  starts then, never at the law's start. The most specific commencement governs: an ancestor's commencement never
-  reaches a provision with commencements of its own.
+  starts then, never at the law's start; an undated whole insertion (own or ancestor) credits its law with
+  in_force_from nil when only the law's start is known (C10); an undated own substitution after it made its text.
+  The most specific commencement governs: an ancestor's commencement never reaches a provision with commencements
+  of its own, and a commencement before the provision existed never reaches it.
+- A repealed provision comes back when a later whole substitution or insertion of it or an ancestor restores its
+  text (it shows text today). An unknown extent leaves no remainder to a territorial repeal.
+- Territorial versions: the history before the split has the union of the versions on the provision and on the
+  provisions holding it; the split is the earliest of their starts (RestrictStartDate).
+- A whole-provision change reaches what lies under it only when a source states its level.
+- C5 includes an amendment to the amending law before it took effect ("… in earlier amending provision").
+- TIERS COUNT (from round 3): each period's tier per field must match the sources behind it — primary when every
+  change setting that field rests on the law's text or a read order, derived when any rests on the feed or markup;
+  the start period's from the changes that open it (an insertion, a start-day commencement), else nil.
 - A change to a child never opens a period on its parent (C9). A day that changes no field opens no period.
 - A commencement for one territory ("for E.W.S.", an order applying to England only): in_force there, territory
   that territory; each later territory's commencement is a version that widens it (C13, Jason 2026-10-30).
@@ -187,4 +198,6 @@ OH&S (first family, 2026-10-29 →). The session is `.claude/sessions/change-voc
 | golden | — | Grown to 50 (39 laws) on 2026-10-30, using the golden-drafting prompt, a Gemini review and Jason's rulings (C13, C14, D3, rule 9) |
 | 1 | 101 (S), 102 (T), 103 (R) | Golden 35/50. Agents S 84 / T 64 / R 50: R 6/50 wrong in the fold (12%). FAIL. Fold F1–F8 and upstream U1–U15 classed |
 | 2 | 111 (S), 112 (T), 113 (R) | Fix 55705654 (fold F1–F3, F5–F8; U2, U6, U7, U8, U11). Golden from inputs 39/50 (the 11 failures are deferred classes) |
+| 2r | 111/112/113 | Agents: R 3/150 fold (excl. K8, tiers) — FAIL; G1–G7, V1–V11 classed |
+| 3 | 121 (S), 122 (T), 123 (R) | Fix 88b87d03 (G1–G7, V1–V3, C5 earlier). Golden from inputs 39/50. Tiers judged |
 | probe | 90 (S), 91 (R), 92 (T) | Strata built (ff1f97c7): 149 laws, 20,371 rows. Probes were used only to choose golden candidates, so these seeds are never used for R |
