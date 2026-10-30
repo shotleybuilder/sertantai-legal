@@ -29,6 +29,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
   laws that made the current text whatever its status. Pure.
   """
 
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Change
   alias SertantaiLegal.Scraper.ChangeVocabulary.Label.Facts
   alias SertantaiLegal.Scraper.Territory
 
@@ -40,9 +41,25 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
   """
   @spec apply(map(), Date.t(), [map()], map()) :: map()
   def apply(current, date, day, ctx) do
+    day = Enum.map(day, &taken_away(&1, date, ctx))
     next = change(current, date, day, ctx)
     %{next | tiers: retier(current, next, day)}
   end
+
+  # a whole substitution of the provision whose new text no longer holds
+  # it — the markup places the change on it with its text gone, and the
+  # revised law no longer shows it — is its repeal by the substituting law
+  # (CV-S09 round 10: CLP Arts 37 and 37A replaced by one Art 37 by SI
+  # 2026/484, the feed reading Art 37A substituted: batch 7's rule from the
+  # markup where no quote is read)
+  defp taken_away(%{resolved: %{operation: :substituted, level: :provision} = r} = c, date, ctx) do
+    if c.target == ctx.id and Change.value(c, :markup, :omitted) == true and
+         not Map.get(ctx, :shows_text, false) and revised?(ctx, date),
+       do: %{c | resolved: %{r | operation: :repealed}},
+       else: c
+  end
+
+  defp taken_away(c, _date, _ctx), do: c
 
   @fields ~w(status territory in_force_from changed_by commenced_by)a
 
@@ -163,12 +180,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
     # gone from the revised law and not retained: removed, the purposes a
     # saving (D3; CV-S09 round 9: SI 2009/716 reg.15, revoked "except to
     # the extent that they continue to apply for the purposes of enforcing
-    # reg. 12", its text dots)
+    # reg. 12", its text dots) — unless a later removal finishes it: the
+    # text gone is that one's (CV-S09 round 10: HSWA s.47(5), omitted by
+    # ERRA 2013 for specified purposes 2013-04-25, wholly 2013-10-01)
+    finished_later? =
+      Enum.any?(Map.get(ctx, :removal_dates, []), &(Date.compare(&1, date) == :gt))
+
     {gone_in_part, in_part_rest} =
       Enum.split_with(
         of.(:repealed_in_part),
         &(&1.target == ctx.id and &1.resolved.level == :provision and &1.resolved.partial and
-            not &1.resolved.retained and
+            not finished_later? and not &1.resolved.retained and
             not Map.get(ctx, :shows_text, false) and revised?(ctx, date))
       )
 

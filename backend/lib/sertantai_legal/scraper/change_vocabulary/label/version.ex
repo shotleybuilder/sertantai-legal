@@ -43,11 +43,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Version do
   def split(period, _date, day, version, _version_start) do
     # a change confined to the version narrows it (its own territory from
     # the split is `enter/4`'s)
+    # — and only when the day's other text changes stay within it too: laws
+    # changing the text the same day for other territories keep the union
+    # (CV-S09 round 10: HSWA s.51A(3)(b), asp 2012/8 for S and SI 2013/602
+    # for E+W+NI on 2013-04-01, months before the versions split)
+    text = Enum.filter(day, &(&1.resolved.operation in Facts.text_changes()))
+
     confined? =
-      Enum.any?(day, fn c ->
-        c.resolved.operation in Facts.text_changes() and c.resolved.territory != nil and
-          Territory.covers?(version, c.resolved.territory)
-      end)
+      Enum.any?(text, fn c ->
+        c.resolved.territory != nil and Territory.covers?(version, c.resolved.territory)
+      end) and
+        Enum.all?(text, fn c ->
+          c.resolved.territory == nil or Territory.covers?(version, c.resolved.territory)
+        end)
 
     narrowed = if is_binary(period.territory), do: Facts.intersect(period.territory, version)
 

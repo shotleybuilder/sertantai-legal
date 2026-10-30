@@ -115,7 +115,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
       shows_text: Map.get(provision, :shows_text, false),
       windsor: Map.get(provision, :windsor, false),
       # nil: the body held is the made text (no dct:valid); :unknown: not given
-      valid: Map.get(provision, :valid, :unknown)
+      valid: Map.get(provision, :valid, :unknown),
+      # the days a whole removal reaches it
+      removal_dates:
+        for(
+          c <- reaching,
+          c.resolved.operation in [:repealed, :repealed_in_part] and
+            c.resolved.level == :provision,
+          do: c.resolved.date
+        )
     }
 
     # the day the versions split is a day of its own (C3)

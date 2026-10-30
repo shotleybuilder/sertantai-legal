@@ -882,6 +882,56 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
       assert %{territory: "S"} = List.last(periods)
     end
 
+    test "words changed the same day for the version's territory and for others: the history keeps the union (HSWA s.51A(3)(b)[S], round 10)" do
+      changes = [
+        change("s.51A(3)(b)", :substituted, ~D[2013-04-01],
+          level: :words,
+          by: "UK_asp_2012_8",
+          territory: "S"
+        ),
+        change("s.51A(3)(b)", :substituted, ~D[2013-04-01],
+          level: :words,
+          by: "UK_uksi_2013_602",
+          territory: "E+W+NI"
+        )
+      ]
+
+      periods =
+        fold("s.51A(3)(b)", changes, %{
+          law: "UK_ukpga_1974_37",
+          start: ~D[1998-07-01],
+          extent: "E+W+S",
+          version: "S",
+          version_start: ~D[2013-10-07]
+        })
+
+      assert %{territory: "E+W+S"} = Enum.find(periods, &(&1.valid_from == ~D[2013-04-01]))
+      assert %{territory: "S"} = List.last(periods)
+    end
+
+    test "a whole substitution whose new text no longer holds it, its text gone: repealed by the substituting law (CLP Art 37A, round 10)" do
+      sub =
+        change("art.Article 37A", :substituted, ~D[2026-05-21],
+          by: "UK_uksi_2026_484",
+          territory: "E+W+S"
+        )
+        |> with_claims([{:markup, :placed, true}, {:markup, :omitted, true}])
+
+      provision = %{
+        law: "UK_eur_2008_1272",
+        start: ~D[2020-12-31],
+        extent: "E+W+S",
+        valid: ~D[2026-05-21]
+      }
+
+      assert %{status: :repealed, territory: "nowhere", changed_by: ["UK_uksi_2026_484"]} =
+               List.last(fold("art.Article 37A", [sub], provision))
+
+      # its text still showing: the new text holds it, a version
+      assert %{status: :in_force, changed_by: ["UK_uksi_2026_484"]} =
+               List.last(fold("art.Article 37A", [sub], Map.put(provision, :shows_text, true)))
+    end
+
     test "a version split the day its territory is repealed: repealed, not its own territory in force (HSWA s.14(7)[NI])" do
       saved = fn c -> %{c | resolved: %{c.resolved | saved: true}} end
 
@@ -915,6 +965,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
 
       assert %{status: :repealed_saved, changed_by: ["UK_uksi_2013_1506"]} =
                List.last(fold("reg.15", [revoked], provision))
+
+      # removed wholly later by the same law: partly in force until then
+      # (round 10: HSWA s.47(5), ERRA 2013)
+      whole =
+        change("reg.15", :repealed, ~D[2016-01-01], by: "UK_uksi_2013_1506")
+        |> then(&%{&1 | resolved: %{&1.resolved | saved: true}})
+
+      assert [_, %{status: :in_force_partial}, %{status: :repealed_saved}] =
+               fold("reg.15", [revoked, whole], provision)
 
       # its text still showing: partly in force for those purposes (C7)
       assert %{status: :in_force_partial} =
