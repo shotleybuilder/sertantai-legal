@@ -64,7 +64,7 @@ AGREED by Jason, 2026-10-29, before round 1:
 **The agent check.** Each row is judged against the law's sources: its CLML text and markup, the feed's records, and the amending laws' text and commencement. Every period and field gets OK, WRONG (fold or upstream, with evidence) or gap. The prompt goes in a new `label-check` skill.
 
 **Pass rule** (agreed 2026-10-29, before round 1):
-- **G:** from inputs, all pass, at the grown size.
+- **G:** from inputs, all pass, at the grown size. **Revised (Jason 2026-10-30, after round 9's draws):** the original 27. Growing golden mid-workflow was a mistake: the 23 new provisions judged this step by cases steps 1–8 never saw. They are held apart in `golden_extended.exs` (`--golden --extended`) and gate the workflow's next pass, from step 1. All 27 originals passed in every round; the 9 extended failures are all upstream (U12 ×3, U15 ×2, U13 ×2, U1, U10).
 - **S and T:** no shape or class with a fold fault left unfixed or unclassed.
 - **R:** the pooled rows since the last fix under 2% wrong rows and under 5% wrong laws, at the 95% Clopper–Pearson upper bound.
 - **Upstream faults** are fixed in batches like fold faults. Their rate is published in the quality statement as the end-to-end figure.
@@ -770,3 +770,5 @@ Upstream faults are about 17 of 150: U10 (6), U12 (4), U13, U1, V9, the HSWA s.5
 - **Recheck:** R re-folded with seed 153; fresh S (seed 181) and T (seed 182).
 - **Draws done** (scratchpad `r9/`): R has 10 rows changed since round 6 (`rchanged.json`; new since round 8: REACH Art 127E(8)(c)(i), from EW). S has 88 rows (s1–s4), T has 66 (t1–t3). **Next:** build `r9/prompt.txt` from the skill, run 8 agents (the changed R rows plus S1–S4 and T1–T3), then pool.
 - **Pushed** 2026-10-30 (origin/main 1a764dee). The pre-push dialyzer had caught `Label.provision` missing `:windsor`; fixed in 1a764dee.
+- **G back to the original 27** (c1fa6a1c, Jason 2026-10-30): golden from inputs **27/27, G passes**. The extended 23 stay in the read-pass regression.
+- **What's left to close:** round 9's agent check (R's 10 changed rows; S 88, T 66). If no fold fault is found, S/T and R pass.

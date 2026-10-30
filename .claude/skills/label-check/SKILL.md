@@ -33,6 +33,7 @@ All steps are read-only. Each `lat.label_check` run folds the whole family, whic
 
 1. **Strata:** `mix lat.label_check --family "F" --strata`. It prints the S shapes, the T classes and the current status counts. Record them.
 2. **G, golden from inputs:** `mix lat.vocabulary --golden` (about 3 minutes). Every provision must pass.
+   Golden is fixed for a workflow pass: never grow it mid-workflow (Jason 2026-10-30). New provisions go in `golden_extended.exs` (`--golden --extended`) and gate the next pass from step 1.
 3. **S by shape:** `--stratum S --sample $S/s.json --per 10 --seed N`. One rule acts on all of a shape's rows, so judge each shape as a whole.
 4. **T by class:** `--stratum T --sample $S/t.json --per 10 --seed N`. This only draws the rows. Classing every difference is CV-06's shadow run.
 5. **R at random:** use a seed never used for this family, and record it. Run `--stratum R --sample $S/r.json --n 30 --seed N`, then `--skip 30`, `--skip 60` and so on, up to 5 × 30. Repeat one batch into a second file and `cmp` the two.
@@ -202,7 +203,7 @@ would fix it). Be rigorous and skeptical: WRONG needs evidence; say doubtful rat
 
 ## Golden drafting prompt (growing the golden set)
 
-Drafters see only the law, the provision and the stored sources. They never see the fold's periods or today's label, so the expected periods are independent of what is being tested. Draft in batches of about 6 provisions. Then send the drafts to a Gemini review, apply its AMENDs, and get Jason's sign-off before anything enters `golden.exs`.
+Drafters see only the law, the provision and the stored sources. They never see the fold's periods or today's label, so the expected periods are independent of what is being tested. Draft in batches of about 6 provisions. Then send the drafts to a Gemini review, apply its AMENDs, and get Jason's sign-off before anything enters `golden_extended.exs` (it joins `golden.exs` when the workflow next starts from step 1).
 
 ```
 You are drafting the expected label periods for a golden test set of a legal-data service (CV-S09). Your periods
@@ -241,6 +242,7 @@ OH&S (first family, 2026-10-29 →). The session is `.claude/sessions/change-voc
 | Round | Seed | Result |
 |---|---|---|
 | golden | — | Grown to 50 (39 laws) on 2026-10-30, using the golden-drafting prompt, a Gemini review and Jason's rulings (C13, C14, D3, rule 9) |
+| golden | — | 2026-10-30, after round 9's draws: back to the original 27 for this pass; the 23 new ones held in `golden_extended.exs` for the next pass from step 1 |
 | 1 | 101 (S), 102 (T), 103 (R) | Golden 35/50. Agents S 84 / T 64 / R 50: R 6/50 wrong in the fold (12%). FAIL. Fold F1–F8 and upstream U1–U15 classed |
 | 2 | 111 (S), 112 (T), 113 (R) | Fix 55705654 (fold F1–F3, F5–F8; U2, U6, U7, U8, U11). Golden from inputs 39/50 (the 11 failures are deferred classes) |
 | 2r | 111/112/113 | Agents: R 3/150 fold (excl. K8, tiers) — FAIL; G1–G7, V1–V11 classed |
