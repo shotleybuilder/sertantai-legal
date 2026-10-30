@@ -40,7 +40,7 @@ All steps are read-only. Each `lat.label_check` run folds the whole family, whic
 6. **Agents** run in batches of about 15 rows (items are large), with the prompt below.
 
 **Pass** (Jason 2026-10-29, decided before round 1):
-- **G:** passes from inputs at the grown size (about 50).
+- **G:** passes from inputs on `golden.exs` (the 27 the workflow pass began with; the extended set waits for the next pass).
 - **S and T:** no shape or class has a fold fault left unfixed or unclassed.
 - **R:** the pooled rows since the last fix, keeping only rows whose periods are unchanged since they were checked, are under 2% wrong rows and under 5% wrong laws, at the 95% Clopper–Pearson upper bound. Fold faults only.
 
@@ -121,6 +121,12 @@ into label periods, in date order from the row's start:
   its own text carries (markup in that version's element), never the shared history's other texts; a words
   amendment to an earlier amending provision never reaches below its target; a disambiguated row's own number
   (s.50(4) for s.50(4)n1) is not a provision holding it.
+- Batch 9 rules: a change no territory places whose markup sits only in other versions' text is not in a version's own
+  text; laws inserting a row the same day for different territories insert it in their union (C14); on the split day
+  the version takes its own territory before that day's changes, so a repeal that day reaches it; a removal of the
+  provision itself kept for some purposes, not retained and its text gone, is repealed (saved where a saving is
+  named); a row inserted into a provision its own law has not yet commenced is prospective until that law commences
+  it (Jason 2026-10-30).
 - C8 NOW APPLIED from a held Windsor Framework Annex 2 list (ChangeVocabulary.Windsor: REACH 1907/2006, CLP
   1272/2008): a UK law's change to a listed instrument from 2020-12-31 reaches E+W+S only (NI keeps the EU text); a
   GB-only text change makes the row E+W+S. Judge REACH/CLP rows by this (no longer K8). Other EU law: unchanged.
@@ -202,6 +208,10 @@ Known classes (label a finding with one; otherwise NEW):
   commencement blocked when a part was inserted later (HSWA s.11(4A)). Tier questions not yet ruled (say doubtful,
   not WRONG): a repealed_saved status tier when `saved` comes from the feed; a commenced_by tier when `by` comes
   from the feed.
+- From CV-S09 round 9 (upstream, open): P3 an item under "in regulation 5(3)—" read as a whole insertion of reg.3
+  (SI 2002/2174 on SI 1992/3004); P4 a feed "revoked in part" placed on the wrong law's provision (SI 1996/1513
+  reg.13 on HSWA s.48); P5 a feed "omitted in earlier amending provision" given provision level where the law omits
+  words (REACH Art 3(A2), SI 2020/1577 reg.4(6)(b)); U13 Scottish form (markup cites uksi for an SSI, unjoined).
 
 Output: a compact table, one row per item: #, law, row, OK / WRONG-fold / WRONG-upstream / gap / doubtful, note (only
 when not OK: one line: period, field, fold value vs right value, rule or step, known class or NEW). Then per S shape
