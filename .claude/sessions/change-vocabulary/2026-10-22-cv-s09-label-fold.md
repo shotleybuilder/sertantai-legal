@@ -509,3 +509,23 @@ Upstream faults are about 15 of 150, mostly U10 and U12, then U14, U1 and U5.
 - **Tests:** 9,573.
 - **Golden 41/50:** the 9 failures are U12 (3), U15 (2), U13 (2), U1 and U10.
 - **Note:** the amending-reader change stales `amendment_rules` (ReaderVersion). A rebuild reads stale amending laws from their text, so it is slower; one full `mix lat.amending --read` pass is per the reader-fix-loop rule.
+
+## Round 5 (2026-10-30; seeds S 141, T 142, R 143)
+
+- **Restore point:** `amendment_rules`, `extent_rules`, `provision_changes` and `provision_change_claims`, tag `cv-s09-batch4`.
+- **Read pass:**
+  - preview of the regression set: 3 laws changed, all gerunds;
+  - full `mix lat.amending --read`: 2,102 laws read, 24 changed, rules 42,799 → 42,888;
+  - the only removals are 2 rules (SI 1996/1592, SI 2006/1521), each replaced by finer ones.
+- **Rebuild:** OH&S, 149 laws, no errors.
+- **Golden:** 36/50 from the store (stale laws outside the family); 41/50 from inputs.
+- **Current status:**
+
+  | status | rows |
+  |---|---|
+  | in force | 19,073 |
+  | repealed and saved | 1,022 |
+  | repealed | 270 |
+  | partly in force | 6 |
+
+- **Draws:** S 94 rows, T 151 (4 per class checked), R 150. 16 agents; C8 is judged with the Windsor list.

@@ -92,6 +92,14 @@ into label periods, in date order from the row's start:
   repealed; a repealed provision comes back only where the text was revised (dct:valid) on or after the reviving
   change; an earlier amendment to the amending law reaches what lies under it; on an undated start an undated
   words change is credited (Jason 2026-10-30); NISR 1999/150-style "modifications" are rule 9 (Jason 2026-10-30).
+- Batch 4 rules: on a version's split its territory is the version's own (C14 narrows only the shared history); a
+  same-day whole repeal and substitution, the revised text showing the substitution: the substitution governs (C5
+  both laws); its own repeal of unstated level with its text still showing is a words repeal; an undated ancestor
+  substitution on an undated start made its text; a markup-only insertion credits its law but its own law's
+  commencements still reach it (only an insertion the law text or feed states shows it was not in its own law).
+- C8 NOW APPLIED from a held Windsor Framework Annex 2 list (ChangeVocabulary.Windsor: REACH 1907/2006, CLP
+  1272/2008): a UK law's change to a listed instrument from 2020-12-31 reaches E+W+S only (NI keeps the EU text); a
+  GB-only text change makes the row E+W+S. Judge REACH/CLP rows by this (no longer K8). Other EU law: unchanged.
 - TIERS COUNT (from round 3): a field's tier changes only with its value; an emptied field (nil or []) has no tier;
   a version split's territory is derived (markup); a commencement date found via the feed or a note is derived. each period's tier per field must match the sources behind it — primary when every
   change setting that field rests on the law's text or a read order, derived when any rests on the feed or markup;
@@ -209,4 +217,6 @@ OH&S (first family, 2026-10-29 →). The session is `.claude/sessions/change-voc
 | 3 | 121 (S), 122 (T), 123 (R) | Fix 88b87d03 (G1–G7, V1–V3, C5 earlier). Golden from inputs 39/50. Tiers judged |
 | 3r | 121/122/123 | Agents: R 2/150 fold (tiers counted) — FAIL; H1–H6, M1 classed |
 | 4 | 131 (S), 132 (T), 133 (R) | Fix 8196eb87 (H1–H7, M1). Golden from inputs 39/50 |
+| 4r | 131/132/133 | Agents: R 2/150 fold + 1 K8 — FAIL; I1–I8 classed |
+| 5 | 141 (S), 142 (T), 143 (R) | Fix e1653920 (I1–I8, Windsor C8, gerunds, EU para/BIS) + read pass (24 laws). Golden from inputs 41/50 |
 | probe | 90 (S), 91 (R), 92 (T) | Strata built (ff1f97c7): 149 laws, 20,371 rows. Probes were used only to choose golden candidates, so these seeds are never used for R |
