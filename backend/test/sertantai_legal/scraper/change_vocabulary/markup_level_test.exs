@@ -29,6 +29,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupLevelTest do
     refute Map.has_key?(c, :level)
   end
 
+  test "a number wrapped but a child left with its own number and text: not the whole provision (NISR 2004/241 reg.3)" do
+    xml =
+      ~s(<Legislation><P1 id="regulation-3"><Pnumber><Substitution ChangeId="key-a">3</Substitution></Pnumber><P1para><P2 id="regulation-3-1"><Pnumber><Substitution ChangeId="key-a">1</Substitution></Pnumber><P2para><Text><Substitution ChangeId="key-a">New text.</Substitution></Text></P2para></P2><P2 id="regulation-3-2"><Pnumber>2</Pnumber><P2para><Text>Old text.</Text></P2para></P2></P1para></P1></Legislation>)
+
+    # the event's one markup place is its top; the feed places it on reg.3(1)
+    assert claims(xml, "reg.3")[:level] == :words
+  end
+
+  test "a child inserted later, its number wrapped by its own change, never undoes a whole substitution" do
+    xml =
+      ~s(<Legislation><P1 id="regulation-3"><Pnumber><Substitution ChangeId="key-a">3</Substitution></Pnumber><P1para><P2 id="regulation-3-1"><Pnumber><Substitution ChangeId="key-a">1</Substitution></Pnumber><P2para><Text><Substitution ChangeId="key-a">New text.</Substitution></Text></P2para></P2><P2 id="regulation-3-1A"><Pnumber><Addition ChangeId="key-b">1A</Addition></Pnumber><P2para><Text><Addition ChangeId="key-b">Later text.</Addition></Text></P2para></P2></P1para></P1></Legislation>)
+
+    assert claims(xml, "reg.3")[:level] == :provision
+  end
+
   test "a legacy Addition inside the text places the change but claims no operation" do
     xml =
       ~s(<Legislation><P1 id="regulation-3"><Pnumber>3</Pnumber><P1para><Text>None of <Addition ChangeId="d29p2">the provisions</Addition> shall apply.</Text></P1para></P1></Legislation>)

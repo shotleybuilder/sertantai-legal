@@ -41,7 +41,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
   alias SertantaiLegal.Scraper.{ChangeVocabulary, LatRef, LatStagedParser}
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.Store, as: ExtentStore
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{Conflicts, Ref, Store}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Conflicts, LabelSource, Ref, Store}
 
   @shortdoc "A law's changes, evidence and labels through the change vocabulary; build the change register"
 
@@ -379,10 +379,18 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       |> LatStagedParser.law_effects(store: :only)
       |> LatStagedParser.with_affecting_territory(law)
 
+    containers = LabelSource.containers(law)
+
     provisions =
       Map.new(
         entries,
-        &{&1.id, %{extent: &1.extent, start: &1.start, start_dated: not &1.undecidable}}
+        &{&1.id,
+         %{
+           extent: &1.extent,
+           start: &1.start,
+           start_dated: not &1.undecidable,
+           containers: Map.get(containers, &1.id, [])
+         }}
       )
 
     given =
@@ -685,13 +693,20 @@ defmodule Mix.Tasks.Lat.Vocabulary do
         _ -> Mix.raise("no law start for #{law}")
       end
 
+    containers = LabelSource.containers(law)
+
     Map.new(ids, fn id ->
       %{rows: rows} =
         Repo.query!("SELECT extent_code FROM legal_articles WHERE section_id = $1", [
           "#{law}:#{id}"
         ])
 
-      {id, %{extent: rows |> List.first() |> List.wrap() |> List.first(), start: start}}
+      {id,
+       %{
+         extent: rows |> List.first() |> List.wrap() |> List.first(),
+         start: start,
+         containers: Map.get(containers, id, [])
+       }}
     end)
   end
 

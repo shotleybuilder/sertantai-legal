@@ -38,10 +38,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
       changes = Store.for_law(law) |> Enum.map(&%{&1 | target: Ref.canonical(&1.target)})
 
       provisions =
-        Map.new(extents, fn {id, extent} ->
+        Map.new(extents, fn {id, {extent, containers}} ->
           {id,
            %{
              extent: extent,
+             containers: containers,
              start: start || ~D[1900-01-01],
              start_dated: start != nil,
              # the law's start, not the provision's own
@@ -72,12 +73,29 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
   defp extents(law) do
     %{rows: rows} =
       Repo.query!(
-        "SELECT section_id, extent_code FROM legal_articles WHERE law_name = $1 " <>
+        "SELECT section_id, extent_code, part, chapter FROM legal_articles WHERE law_name = $1 " <>
           "AND section_id IS NOT NULL AND NOT (section_type = ANY($2))",
         [law, @not_provisions]
       )
 
-    Map.new(rows, fn [sid, extent] -> {sid |> unprefix(law) |> Ref.canonical(), extent} end)
+    Map.new(rows, fn [sid, extent, part, chapter] ->
+      {sid |> unprefix(law) |> Ref.canonical(), {extent, Label.containers(part, chapter)}}
+    end)
+  end
+
+  @doc "Each row of `law` → its containers (`Label.containers/2`), as the parse named it."
+  @spec containers(String.t()) :: %{String.t() => [String.t()]}
+  def containers(law) do
+    %{rows: rows} =
+      Repo.query!(
+        "SELECT section_id, part, chapter FROM legal_articles WHERE law_name = $1 " <>
+          "AND section_id IS NOT NULL",
+        [law]
+      )
+
+    Map.new(rows, fn [sid, part, chapter] ->
+      {unprefix(sid, law), Label.containers(part, chapter)}
+    end)
   end
 
   defp start(law) do

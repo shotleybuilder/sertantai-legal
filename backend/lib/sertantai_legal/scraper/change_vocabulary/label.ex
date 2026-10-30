@@ -48,14 +48,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
           optional(:version) => String.t(),
           optional(:version_start) => Date.t() | nil,
           optional(:shows_text) => boolean(),
-          optional(:start_from_law) => boolean()
+          optional(:start_from_law) => boolean(),
+          optional(:containers) => [String.t()]
         }
 
-  @private [:_text_by]
+  @private [:_text_by, :_text_from]
 
   @doc "The periods of provision `id` from resolved changes."
   @spec fold(String.t(), provision(), [Change.t()]) :: [period()]
   def fold(id, %{start: start} = provision, changes) do
+    changes = within(changes, Map.get(provision, :containers, []))
     version = Map.get(provision, :version)
     version_start = Map.get(provision, :version_start)
 
@@ -134,6 +136,38 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
     end)
     |> Enum.reverse()
     |> Enum.map(&Map.drop(&1, @private))
+  end
+
+  @doc """
+  A row's containers, nearest first, from its `legal_articles` Part and
+  Chapter: "15A", nil → ["pt.15A"]; "I", "1" → ["pt.I.ch.1", "pt.I"].
+  """
+  @spec containers(String.t() | nil, String.t() | nil) :: [String.t()]
+  def containers(nil, _chapter), do: []
+  def containers(part, nil), do: ["pt.#{part}"]
+  def containers(part, chapter), do: ["pt.#{part}.ch.#{chapter}", "pt.#{part}"]
+
+  # a whole change on a Part or Chapter holding the row reaches it as one
+  # on the whole law would — as stated, never as nearer than its own
+  # (CV-S09 round 5: REACH Art 139B, in Title XVA inserted by SI 2019/758;
+  # `LatRef.ancestors` holds bracket levels only)
+  defp within(changes, []), do: changes
+
+  defp within(changes, containers) do
+    held = Enum.map(containers, &part_arabic/1)
+    Enum.map(changes, &if(part_arabic(&1.target) in held, do: %{&1 | target: "*"}, else: &1))
+  end
+
+  # a Part written either way: "pt.I" is "pt.1" (both in the changes)
+  @numerals ~w(I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII XIX XX)
+
+  defp part_arabic(ref) do
+    Regex.replace(~r/^pt\.([IVX]+)(?=$|[.A-Z])/, ref, fn whole, numeral ->
+      case Enum.find_index(@numerals, &(&1 == numeral)) do
+        nil -> whole
+        i -> "pt.#{i + 1}"
+      end
+    end)
   end
 
   defp visible(period), do: Map.drop(period, [:tiers | @private])

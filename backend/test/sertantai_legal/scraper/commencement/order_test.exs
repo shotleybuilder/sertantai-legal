@@ -601,6 +601,16 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
                hswa_rules([{"Section 33(1)(a) and (b).", "Offences."}])
     end
 
+    test "a number after a letter climbs to the numbered level (OSRPA 1963 by SI 1964/191, CV-S09 round 5)" do
+      assert [%{scope: ["s.65..s.67", "s.68(1)(c)", "s.68(2)", "s.70"]}] =
+               hswa_rules([{"Sections 65 to 67, 68(1)(c) and (2) and 70.", "Offences."}])
+
+      assert [%{scope: ["s.43(2)..s.43(8)", "s.43(9)(b)", "s.43(9)(c)", "s.43(10)..s.43(14)"]}] =
+               hswa_rules([
+                 {"Section 43(2) to (8), (9)(b) and (c) and (10) to (14).", "Buildings."}
+               ])
+    end
+
     test "another law's provisions after its title and a dash are not the Act's; \"the following repeals\" is part of a Schedule" do
       assert [%{scope: ["sch.10"], purposes: :in_relation_to}] =
                hswa_rules([

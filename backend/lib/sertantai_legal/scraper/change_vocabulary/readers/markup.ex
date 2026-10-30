@@ -23,7 +23,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Pointer}
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Claim, Ref}
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup.{Level, ListItems, Versions}
+
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup.{
+    KeptChildren,
+    Level,
+    ListItems,
+    Versions
+  }
+
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteLaw
   alias SertantaiLegal.Scraper.EffectIndex
   alias SertantaiLegal.Scraper.Commencement.Order
@@ -124,7 +131,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
       xml_ids: xml_ids,
       repeated: repeated,
       own: own,
-      items: MapSet.new(Map.keys(items))
+      items: MapSet.new(Map.keys(items)),
+      kept_children: KeptChildren.read(doc)
     }
 
     cited = cited(doc)

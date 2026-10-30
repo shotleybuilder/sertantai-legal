@@ -18,6 +18,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.OwnCommencement do
   alias SertantaiLegal.Scraper.ChangeVocabulary.Claim
   alias SertantaiLegal.Scraper.Commencement.{Evaluator, Order}
   alias SertantaiLegal.Scraper.Commencement.Rule
+  alias SertantaiLegal.Scraper.LatRef
 
   # a staged clause's law-level rule is the law's start (its earliest
   # stage, LR-33), not when a provision came in (CR-06; EUWA 2018 s.6)
@@ -35,11 +36,37 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.OwnCommencement do
   def read(rules, law_name, ids, ctx \\ Order.context(), extents \\ %{}) do
     text = Enum.reject(rules, &(&1.treatment in @not_text))
 
-    for id <- ids,
-        text != [],
-        result = Evaluator.evaluate(text, id, Map.put(ctx, :extent, Map.get(extents, id))),
-        {date, partial?, by} <- stages(result, law_name),
-        do: {"#{law_name}:commencement:#{id}@#{date}", id, claims(law_name, date, partial?, by)}
+    own =
+      for id <- ids,
+          text != [],
+          result = Evaluator.evaluate(text, id, Map.put(ctx, :extent, Map.get(extents, id))),
+          {date, partial?, by} <- stages(result, law_name),
+          do: {"#{law_name}:commencement:#{id}@#{date}", id, claims(law_name, date, partial?, by)}
+
+    own ++ unheld(text, law_name, ids, ctx, own)
+  end
+
+  # a rule naming a provision the law holds no row for (its text gone:
+  # HSWA s.83(1), SI 1974/1439, of a repealed s.83) commences the nearest
+  # row holding it — partly, as only that part came in (CV-S09 round 5);
+  # never on a date the row has its own stage
+  defp unheld(text, law_name, ids, ctx, own) do
+    held = MapSet.new(ids)
+    staged = MapSet.new(own, &elem(&1, 0))
+
+    for %Rule{scope: scope} <- text,
+        is_list(scope),
+        ref <- scope,
+        part = ref |> String.split("..") |> hd(),
+        not MapSet.member?(held, part),
+        row = Enum.find(tl(LatRef.ancestors(part)), &MapSet.member?(held, &1)),
+        row != nil,
+        result = Evaluator.evaluate(text, part, ctx),
+        {date, _partial?, by} <- stages(result, law_name),
+        key = "#{law_name}:commencement:#{row}@#{date}",
+        not MapSet.member?(staged, key),
+        uniq: true,
+        do: {key, row, claims(law_name, date, true, by)}
   end
 
   @type outcome ::

@@ -70,7 +70,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
       status: commenced ++ removed ++ text,
       territory: removed ++ applied ++ commenced ++ text,
       in_force_from: text ++ commenced,
-      changed_by: text ++ removed,
+      # the current text's makers, though made on an earlier day (CV-S09
+      # round 5: HSWA s.43(6), its undated maker credited on a commencement)
+      changed_by:
+        if(text ++ removed == [], do: Map.get(current, :_text_from, []), else: text ++ removed),
       commenced_by: commenced ++ text
     }
 
@@ -115,7 +118,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
               [:status, :territory, :in_force_from, :changed_by, :commenced_by],
               back
             ),
-          _text_by: makers
+          _text_by: makers,
+          _text_from: back
       }
     else
       current
@@ -202,10 +206,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
         true -> current.status
       end
 
-    text_by =
+    {text_by, text_from} =
       if versions != [],
-        do: Facts.makers(versions ++ earlier ++ superseded, self),
-        else: current._text_by
+        do:
+          {Facts.makers(versions ++ earlier ++ superseded, self),
+           versions ++ earlier ++ superseded},
+        else: {current._text_by, Map.get(current, :_text_from, [])}
 
     cond do
       # repealed with savings: saved where it was in force (D3)
@@ -244,7 +250,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
             changed_by: [],
             commenced_by: [],
             tiers: Facts.tiers(current.tiers, [:status, :territory], day),
-            _text_by: text_by
+            _text_by: text_by,
+            _text_from: text_from
         }
 
       versions != [] or
@@ -262,7 +269,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
             in_force_from: date,
             changed_by: text_by,
             commenced_by: Facts.commencers(versions ++ commenced, text_by, self),
-            _text_by: text_by
+            _text_by: text_by,
+            _text_from: text_from
         }
 
       territory != current.territory ->

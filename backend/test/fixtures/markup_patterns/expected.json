@@ -457,7 +457,7 @@
             "reg.15(a)"
           ],
           "markup.cited": "UK_wsi_2026_24",
-          "markup.level": "provision",
+          "markup.level": "words",
           "markup.operation": "inserted"
         },
         "key": "key-E",
@@ -9199,7 +9199,7 @@
             "sch.6.para.8"
           ],
           "markup.cited": "UK_nisr_2007_291",
-          "markup.level": "provision",
+          "markup.level": "words",
           "markup.operation": "substituted"
         },
         "key": "key-E",

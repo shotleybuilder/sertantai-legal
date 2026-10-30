@@ -77,4 +77,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.OwnCommencementTest do
     assert OwnCommencement.fault?(:no_rules)
     refute OwnCommencement.fault?(:eu_directive)
   end
+
+  test "a rule naming a part with no row commences the row holding it, partly (HSWA s.83(1), its text gone)" do
+    rules = [
+      rule(["s.83(1)"], {:date, ~D[1974-10-01]}),
+      rule(["s.83"], {:date, ~D[1975-01-01]})
+    ]
+
+    stages =
+      for {_key, target, claims} <- OwnCommencement.read(rules, @law, ["s.83", "s.84"]),
+          do:
+            {target, Enum.find_value(claims, &(&1.attribute == :date && &1.value)),
+             Enum.find_value(claims, false, &(&1.attribute == :partial && &1.value))}
+
+    assert {"s.83", ~D[1974-10-01], true} in stages
+    assert {"s.83", ~D[1975-01-01], false} in stages
+    refute Enum.any?(stages, &(elem(&1, 0) == "s.84"))
+  end
 end

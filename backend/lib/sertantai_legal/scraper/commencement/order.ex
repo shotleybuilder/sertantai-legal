@@ -1142,12 +1142,32 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
   # the brackets `b` in place of as many of `last`'s own: "33(1)(a)" + "(b)"
   # → "33(1)(b)"; "2(1)" + "(3)" → "2(3)"
+  # A number after a letter climbs to the numbered level: "68(1)(c) and
+  # (2)" → 68(2), "43(9)(b) and (c) and (10)" → 43(10) (OSRPA 1963 by SI
+  # 1964/191, CV-S09 round 5)
   defp sibling(last, b) do
     depth = length(Regex.scan(~r/\(/, b))
     brackets = Regex.scan(~r/\([0-9A-Za-z]+\)/, last) |> List.flatten()
     number = String.replace(last, ~r/\(.*$/, "")
-    keep = Enum.take(brackets, max(length(brackets) - depth, 0))
-    number <> Enum.join(keep) <> b
+    at = max(length(brackets) - depth, 0)
+
+    at =
+      if depth == 1 and numbered?(b) and at < length(brackets) and
+           not numbered?(Enum.at(brackets, at)),
+         do: numbered_at(Enum.take(brackets, at), at),
+         else: at
+
+    number <> Enum.join(Enum.take(brackets, at)) <> b
+  end
+
+  defp numbered?(bracket), do: bracket =~ ~r/^\(\d/
+
+  # the last numbered bracket's place, else where it was
+  defp numbered_at(brackets, at) do
+    case brackets |> Enum.with_index() |> Enum.filter(&numbered?(elem(&1, 0))) do
+      [] -> at
+      found -> found |> List.last() |> elem(1)
+    end
   end
 
   # ── Schedule tables ──────────────────────────

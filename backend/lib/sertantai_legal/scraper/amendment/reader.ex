@@ -34,6 +34,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   alias SertantaiLegal.Scraper.Amendment.Reader.{
     Clauses,
     LawNamed,
+    NewNumbers,
     RepealTable,
     Scope,
     Targets
@@ -274,7 +275,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
             ),
           do: Targets.rule(law, targets, op, source)
 
-    Enum.reject([quoted | Enum.map(named, &in_definition(&1, text))], &is_nil/1)
+    named = Enum.map(named, &in_definition(&1, text))
+    Enum.reject(NewNumbers.split(quoted, named) ++ named, &is_nil/1)
   end
 
   # under a parent naming a definition ("in the definition of “x”— for

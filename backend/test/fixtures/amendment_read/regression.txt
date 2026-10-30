@@ -42,3 +42,4 @@ UK_ukpga_1990_43  # repeals table "Section 1(1)(d) and the word “and” preced
 UK_ukpga_1989_38  # repeals table "Section 27(2)(b) and the word “or” immediately preceding it" read as words (CV-S06 round 4, 2026-10-28)
 UK_uksi_1974_1941 # "sections 7, 8(2) and the entry in Schedule 2 relating to section 124(2) …": s.7(2) and s.124(2) words (CV-S06 round 4, 2026-10-28)
 UK_nisr_2015_339  # CV-S07 round 2: 'after “a notifier” add “or applicant” and for “2001” substitute “2015”' — 'add' an insertion, two rules (reg.34(2)(b))
+UK_ukpga_2013_24  # CV-S09 round 5 (SN): s.69(3) "for subsection (2) substitute (2), (2A), (2B)" on HSWA s.47 — new numbers inserted

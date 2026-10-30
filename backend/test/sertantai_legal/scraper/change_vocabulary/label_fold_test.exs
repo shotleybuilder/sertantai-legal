@@ -572,4 +572,94 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
                })
     end
   end
+
+  describe "batch 5 (CV-S09 round 5)" do
+    defp tiered(c, tiers), do: %{c | resolved: %{c.resolved | tiers: tiers}}
+
+    test "an undated words repeal on an undated start made its text (CLP Art 54, EU 2019/1243)" do
+      c = change("art.Article 54", :repealed, nil, level: :words, by: "UK_eur_2019_1243")
+
+      assert [%{status: :in_force, changed_by: ["UK_eur_2019_1243"], in_force_from: nil}] =
+               fold("art.Article 54", [c], %{
+                 law: "UK_eur_2008_1272",
+                 start: ~D[1900-01-01],
+                 start_dated: false
+               })
+    end
+
+    test "the start's status and territory tiers come from the insertion opening it, an own substitution beside it (CLP Art 25(7))" do
+      changes = [
+        change("art.Article 25(7)", :inserted, nil,
+          by: "UK_eur_2017_542",
+          sources: %{operation: :feed}
+        )
+        |> tiered(%{operation: :derived, by: :derived, territory: :derived}),
+        change("art.Article 25(7)", :substituted, nil,
+          by: "UK_eur_2020_11",
+          sources: %{operation: :feed}
+        )
+        |> tiered(%{operation: :derived, by: :derived})
+      ]
+
+      [first] =
+        Label.fold(
+          "art.Article 25(7)",
+          %{
+            law: "UK_eur_2008_1272",
+            extent: "E+W+S+NI",
+            start: ~D[1900-01-01],
+            start_dated: false
+          },
+          changes
+        )
+
+      assert first.changed_by == ["UK_eur_2020_11"]
+      assert first.tiers.status == :derived
+      assert first.tiers.territory == :derived
+    end
+
+    test "the current text's makers keep their tier when a later commencement credits them (HSWA s.43(6))" do
+      changes = [
+        change("s.43(6)", :inserted, nil, by: "UK_ukpga_1975_71", sources: %{operation: :markup})
+        |> tiered(%{operation: :derived, by: :derived}),
+        change("s.43(6)", :commenced, ~D[1975-01-01], commenced_by: "UK_uksi_1974_1439")
+        |> tiered(%{date: :primary, commenced_by: :primary})
+      ]
+
+      periods =
+        Label.fold(
+          "s.43(6)",
+          %{law: "UK_ukpga_1974_37", extent: "E+W+S", start: ~D[1974-07-31], prospective: true},
+          changes
+        )
+
+      last = List.last(periods)
+      assert last.changed_by == ["UK_ukpga_1975_71"]
+      assert last.tiers.changed_by == :derived
+    end
+
+    test "a whole insertion of the Part holding it reaches it (REACH Art 139B, Title XVA)" do
+      c = change("pt.15A", :inserted, ~D[2020-12-31], by: "UK_uksi_2019_758", territory: "E+W+S")
+
+      assert [%{valid_from: ~D[2020-12-31], changed_by: ["UK_uksi_2019_758"], territory: "E+W+S"}] =
+               fold("art.Article 139B(1)", [c], %{
+                 law: "UK_eur_2006_1907",
+                 extent: "E+W+S+NI",
+                 containers: Label.containers("15A", nil)
+               })
+
+      # not held by it: never reached
+      assert [%{changed_by: []}] = fold("art.Article 139B(1)", [c], %{containers: ["pt.15"]})
+    end
+
+    test "containers come nearest first, a Part written either way" do
+      assert Label.containers("I", "1") == ["pt.I.ch.1", "pt.I"]
+      assert Label.containers(nil, "1") == []
+
+      c = change("pt.1", :repealed, ~D[2000-01-01], by: "UK_ukpga_1999_1")
+
+      assert [_, %{status: :repealed}] =
+               fold("s.3(1)", [c], %{containers: Label.containers("I", nil)})
+    end
+  end
 end

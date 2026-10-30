@@ -34,6 +34,34 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderTest do
     assert "UK_ukpga_1956_52:s.7(1)(b)" in reached(rules, "s.7(1)(b)")
   end
 
+  test "a substitution quoting more numbers than it names: the new ones are inserted (ERRA 2013 s.69(3) on HSWA s.47)" do
+    d =
+      doc(
+        ~S|<P1 id="section-5"><P1para><P2 id="section-5-1"><P2para><Text>In section 7 of the principal Act for subsection (2) substitute—</Text><BlockAmendment><P2><Pnumber>2</Pnumber><P2para><Text>new 2</Text><P3><Pnumber>a</Pnumber><P3para><Text>new 2a</Text></P3para></P3></P2para></P2><P2><Pnumber>2A</Pnumber><P2para><Text>new 2A</Text><P3><Pnumber>a</Pnumber><P3para><Text>new 2A(a)</Text></P3para></P3></P2para></P2></BlockAmendment></P2para></P2></P1para></P1>|
+      )
+
+    rules =
+      Reader.instruction(
+        d,
+        "section-5-1",
+        %{"the principal act" => %{law: "UK_ukpga_1956_52", title: "Clean Air Act 1956"}},
+        [@clean_air]
+      )
+
+    op = fn sid ->
+      for r <- rules,
+          {:ok, _} <- [Evaluator.reach(r, "UK_ukpga_1956_52:" <> sid)],
+          uniq: true,
+          do: r.operation
+    end
+
+    assert op.("s.7(2)") == [:substituted]
+    assert op.("s.7(2)(a)") == [:substituted]
+    assert :inserted in op.("s.7(2A)")
+    refute :substituted in op.("s.7(2A)")
+    assert op.("s.7(2A)(a)") == [:inserted]
+  end
+
   test "an EU law's Annex paragraphs are never its Articles; its Titles still are (SI 2019/758)" do
     reach =
       Reader.law_ref(
@@ -478,7 +506,8 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderTest do
           ~S|In section 7 of the principal Act (right to advance payment of compensation) for subsection (5) there is substituted—</Text><BlockAmendment><P2><Pnumber>4A</Pnumber><P2para><Text>new</Text></P2para></P2><P2><Pnumber>5</Pnumber><P2para><Text>new</Text></P2para></P2></BlockAmendment>|
         )
 
-      assert {"s.7(4A)", :substituted, :provision} in t
+      # the new (4A) is inserted: only (5) was replaced (CV-S09 round 5)
+      assert {"s.7(4A)", :inserted, :provision} in t
       assert {"s.7(5)", :substituted, :provision} in t
       refute Enum.any?(t, fn {r, _, _} -> r in ["s.7(5)(4A)", "s.7(5)(5)", "s.4A"] end)
     end

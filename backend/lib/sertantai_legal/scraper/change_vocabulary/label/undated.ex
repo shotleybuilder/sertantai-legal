@@ -60,21 +60,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Undated do
   inserted by the Gas Act 1986, had read commenced in 1975). nil if none.
   """
   @spec insertion(String.t(), [Change.t()], String.t() | nil) :: Change.t() | nil
+  # an own undated substitution beside it doesn't hide it (CV-S09 round 5:
+  # CLP Art 25(7), inserted by 2017/542 then replaced by 2020/11, lost its
+  # start's tiers)
   def insertion(id, changes, self) do
     id
-    |> makers(changes)
+    |> whole(changes)
+    |> Enum.filter(&insertion?/1)
+    |> nearest()
     |> Enum.find(&(stated_insertion?(&1) and &1.resolved.by not in [nil, self]))
   end
 
   @doc "The undated whole changes that made its text: its own undated substitutions, else the nearest undated whole insertion."
   @spec makers(String.t(), [Change.t()]) :: [Change.t()]
   def makers(id, changes) do
-    undated =
-      Enum.filter(
-        changes,
-        &(&1.resolved.date == nil and &1.resolved.level == :provision and
-            Label.reaches?(&1, id))
-      )
+    undated = whole(id, changes)
 
     case Enum.filter(undated, &(&1.target == id and &1.resolved.operation == :substituted)) do
       [] -> Enum.filter(undated, &insertion?/1) |> nearest()
@@ -82,14 +82,27 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Undated do
     end
   end
 
-  @doc "Its own undated words-level text changes."
+  # the undated whole-provision changes reaching it
+  defp whole(id, changes),
+    do:
+      Enum.filter(
+        changes,
+        &(&1.resolved.date == nil and &1.resolved.level == :provision and
+            Label.reaches?(&1, id))
+      )
+
+  @doc """
+  Its own undated words-level text changes — a words repeal among them, as
+  on a dated day (CV-S09 round 5: CLP Art 54, paras 3–4 deleted by EU
+  2019/1243).
+  """
   @spec words(String.t(), [Change.t()]) :: [Change.t()]
   def words(id, changes),
     do:
       Enum.filter(
         changes,
         &(&1.target == id and &1.resolved.date == nil and &1.resolved.level == :words and
-            &1.resolved.operation in Facts.text_changes())
+            &1.resolved.operation in [:repealed | Facts.text_changes()])
       )
 
   # the insertion on the nearest provision: its own, else its closest ancestor's

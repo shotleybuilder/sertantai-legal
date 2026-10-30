@@ -3221,8 +3221,11 @@
       ]
     },
     "UK_ukpga_1995_17/c9c0503222": {
-      "class": "none",
-      "rules": []
+      "class": "rules:provision_dated+provision_qualified",
+      "rules": [
+        "s.5(1), sch.3 — 1995-06-28 — everywhere, in relation to — provision_qualified",
+        "s.5(1), sch.3 — 1996-04-01 — everywhere, fully — provision_dated"
+      ]
     },
     "UK_ukpga_1995_21/772d4956f8": {
       "class": "none",
@@ -5503,7 +5506,7 @@
     "UK_uksi_1995_1983/0639e34a41": {
       "class": "rules:provision_dated",
       "rules": [
-        "reg.1, reg.4, sch.22.para.4, sch.22.para.31, sch.22.para.42, sch.22.para.213(1), sch.22.para.213(2)(b), sch.22.para.213(2)(3), sch.22.para.223(1)(c) — 1995-07-28 — everywhere, fully — provision_dated"
+        "reg.1, reg.4, sch.22.para.4, sch.22.para.31, sch.22.para.42, sch.22.para.213(1), sch.22.para.213(2)(b), sch.22.para.213(3), sch.22.para.223(1)(c) — 1995-07-28 — everywhere, fully — provision_dated"
       ]
     },
     "UK_uksi_1995_1983/4b21b97507": {

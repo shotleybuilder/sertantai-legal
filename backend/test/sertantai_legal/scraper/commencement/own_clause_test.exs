@@ -387,6 +387,24 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClauseTest do
       assert Enum.any?(rules, &(&1.scope == ["s.6"] and match?({:appointed, _}, &1.when)))
     end
 
+    test "\"Except so far as relating to … of another Act, subsection (1) … shall not come into force until\": dated, partly from the start (Health Authorities Act 1995 s.5(2))" do
+      {rules, rs} =
+        read(
+          [
+            {"s.8", "This Act comes into force on the day on which it is passed."},
+            {"s.5(1)", "The enactments mentioned in Schedule 3 are repealed."},
+            {"s.5(2)",
+             "Except so far as relating to the repeal in section 18(3) of the National Health Service Act 1977, subsection (1) (and Schedule 3) shall not come into force until 1st April 1996."}
+          ],
+          type: "ukpga",
+          made: ~D[1995-06-28],
+          head: ~s(<ukm:EnactmentDate Date="1995-06-28"/>)
+        )
+
+      assert date_of(rules, rs, "UK_x:s.5(1)") == ~D[1996-04-01]
+      refute Enum.any?(rules, &(is_list(&1.scope) and "s.18(3)" in &1.scope))
+    end
+
     test "Schedules and Parts named, a lead-in, \"is to come into force\" (LGRA 1997 s.34)" do
       {rules, rs} =
         read(

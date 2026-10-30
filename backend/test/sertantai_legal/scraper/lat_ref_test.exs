@@ -26,4 +26,28 @@ defmodule SertantaiLegal.Scraper.LatRefTest do
       assert LatRef.covers?("s.9..s.11", "s.10", ctx)
     end
   end
+
+  describe "covers?/3: ends at different depths (CV-S09 batch 5)" do
+    # SI 1996/396: "Schedule 10 paragraphs 11(2) to 13" (EA 1995 sch.10
+    # para.12 substituted HSWA s.28(10))
+    test "from a subparagraph to a paragraph" do
+      r = "sch.10.para.11(2)..sch.10.para.13"
+      assert LatRef.covers?(r, "sch.10.para.12")
+      assert LatRef.covers?(r, "sch.10.para.13")
+      assert LatRef.covers?(r, "sch.10.para.11(3)")
+      refute LatRef.covers?(r, "sch.10.para.11(1)")
+      refute LatRef.covers?(r, "sch.10.para.11")
+      refute LatRef.covers?(r, "sch.10.para.14")
+    end
+
+    test "from a paragraph to a subparagraph" do
+      r = "s.4..s.6(2)"
+      assert LatRef.covers?(r, "s.4")
+      assert LatRef.covers?(r, "s.5")
+      assert LatRef.covers?(r, "s.6(1)")
+      refute LatRef.covers?(r, "s.6")
+      refute LatRef.covers?(r, "s.6(3)")
+      refute LatRef.covers?(r, "s.7")
+    end
+  end
 end

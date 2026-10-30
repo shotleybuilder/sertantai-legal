@@ -155,7 +155,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Start do
           made,
           territorial
         ),
-      _text_by: text_by
+      _text_by: text_by,
+      _text_from: made
     }
 
     period |> Undated.repealed_at_start(gone, self) |> empty_untiered()

@@ -109,13 +109,53 @@ defmodule SertantaiLegal.Scraper.LatRef do
   end
 
   defp in_range?(el, from, to, ctx) do
-    if String.contains?(el, "(") != String.contains?(from, "(") do
-      false
-    else
-      case ctx[:order] && ordered_between(ctx[:order], el, from, to) do
-        nil -> numeric_between?(el, from, to)
-        between? -> between?
-      end
+    cond do
+      String.contains?(from, "(") != String.contains?(to, "(") ->
+        mixed_between?(el, from, to)
+
+      String.contains?(el, "(") != String.contains?(from, "(") ->
+        false
+
+      true ->
+        same_depth_between?(el, from, to, ctx)
+    end
+  end
+
+  # ends at different depths ("paragraphs 11(2) to 13": SI 1996/396): the
+  # whole provisions strictly between the ends' provisions, the end
+  # provision given whole, and the parts of a provision given in part from
+  # (or up to) the end's part
+  defp mixed_between?(el, from, to) do
+    {fp, tp, ep} = {top(from), top(to), top(el)}
+
+    case {el == ep, from == fp} do
+      {true, from_whole?} ->
+        with {p, k} <- key(el), {^p, a} <- key(fp), {^p, b} <- key(tp) do
+          (a < k or (from_whole? and a == k)) and (k < b or (to == tp and k == b))
+        else
+          _ -> false
+        end
+
+      {false, _} ->
+        cond do
+          ep == fp and from != fp -> part_from?(el, from)
+          ep == tp and to != tp -> part_from?(to, el)
+          true -> false
+        end
+    end
+  end
+
+  # `a` at or after `b`, both parts of one provision
+  defp part_from?(a, b) do
+    with {p, k} <- key(a), {^p, j} <- key(b), do: j <= k, else: (_ -> false)
+  end
+
+  defp top(ref), do: String.replace(ref, ~r/\(.*$/, "")
+
+  defp same_depth_between?(el, from, to, ctx) do
+    case ctx[:order] && ordered_between(ctx[:order], el, from, to) do
+      nil -> numeric_between?(el, from, to)
+      between? -> between?
     end
   end
 

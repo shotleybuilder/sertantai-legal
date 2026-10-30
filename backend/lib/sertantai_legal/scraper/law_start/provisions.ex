@@ -313,7 +313,18 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
     with %Date{} <- start,
          [_, subject, _qualifier, until] <- Regex.run(@not_until, s),
          {_, %Date{} = d} <- Clause.tail_date("on " <> String.trim(until), made) do
-      subject = String.replace(subject, ~r/^\s*(?:\(\w+\)\s*)?subject\s+to\s+[^,]+,\s*/i, "")
+      # "Subject to section 8, …"; "Except so far as relating to the repeal
+      # in section 18(3) of the National Health Service Act 1977, subsection
+      # (1) (and Schedule 3) shall not come into force until 1st April 1996"
+      # (Health Authorities Act 1995 s.5(2), CV-S09 round 5): the carve-out
+      # in force from the start, partly, as any "not until"
+      subject =
+        String.replace(
+          subject,
+          ~r/^\s*(?:\(\w+\)\s*)?(?:subject\s+to|except\s+(?:so\s+far\s+as|in\s+so\s+far\s+as|as)|save\s+(?:so\s+far\s+as|as))\s+[^,]+,\s*/i,
+          ""
+        )
+
       refs = weighted_refs(subject, rows, base)
 
       kind =

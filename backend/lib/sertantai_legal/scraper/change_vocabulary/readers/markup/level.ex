@@ -31,7 +31,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup.Level do
     own = Map.get(ctx.own, target)
 
     cond do
-      sure_whole?(occ, target, own) ->
+      sure_whole?(occ, target, own) and not leaves_a_child?(occ, target, ctx) ->
         Claim.new(:markup, :level, :provision, change_id)
 
       covers?(occ, own) or number_covered?(occ, target) ->
@@ -52,6 +52,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup.Level do
       (own == "" and
          (hd(occ).kind == :Repeal or
             (hd(occ).kind == :Addition and Enum.all?(occ, &(&1.text == "")))))
+  end
+
+  # a child that keeps its own number and carries none of the change: the
+  # number wrap was the provision "included" in a change to another child
+  # (`Markup.KeptChildren`; NISR 2004/241 reg.3)
+  defp leaves_a_child?(occ, target, ctx) do
+    ctx
+    |> Map.get(:kept_children, %{})
+    |> Map.get(target, [])
+    |> Enum.any?(fn child -> not Enum.any?(occ, &(child in &1.path)) end)
   end
 
   defp eu?(%{change_id: id}), do: id =~ ~r/^O\d+M\d+/
