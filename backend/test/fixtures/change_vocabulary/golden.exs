@@ -8,6 +8,13 @@
 # the feed or the law names a saving; rule 9 covers a modification drafted as a
 # substitution. Directive 90/269 Art 8b(1) held out (directives: Windsor Framework).
 #
+# CV-S09 batch 1 (Jason 2026-10-30): `commenced_by` is a label of its own — the law
+# that brought the current text into force apart from the laws that made it (a
+# commencing order); `changed_by` keeps the text's makers. Periods moved to it:
+# HSWA s.78, TCPA s.78(4BA), 2006/16 s.73, 2007/19 s.2(1)(d), 2018/16 s.6,
+# 2021/30 s.8, CROW s.1A(b) and s.1(6B). SI 1977/500 reg.4A(1)(c) corrected to
+# E+W+S: its inserting SI 1992/2051 is a GB instrument (C14).
+#
 # Source: data/reports/change-vocabulary/golden/ (golden-set.md, expected-batch{1,2,3}.md),
 # signed off by Gemini 2026-10-21 (data/code-reviews/2026-10-21-cv-01-golden-set-gemini.md;
 # its AMEND lines applied), normalised to D1. 25 golden provisions plus SI 2010/404
@@ -71,6 +78,7 @@
         valid_from: ~D[2010-04-01],
         in_force_from: ~D[2010-04-01],
         changed_by: [],
+        commenced_by: [],
         territory: "E+W",
         valid_to: ~D[2023-10-01]
       },
@@ -79,6 +87,7 @@
         valid_from: ~D[2023-10-01],
         in_force_from: ~D[2010-04-01],
         changed_by: [],
+        commenced_by: [],
         territory: "W",
         valid_to: ~D[2026-07-01]
       },
@@ -87,6 +96,7 @@
         valid_from: ~D[2026-07-01],
         in_force_from: ~D[2026-07-01],
         changed_by: ["UK_wsi_2025_1320"],
+        commenced_by: [],
         territory: "W",
         valid_to: nil
       }
@@ -105,6 +115,7 @@
         valid_from: ~D[2010-04-01],
         in_force_from: ~D[2010-04-01],
         changed_by: [],
+        commenced_by: [],
         territory: "E+W",
         valid_to: ~D[2023-10-01]
       },
@@ -113,6 +124,7 @@
         valid_from: ~D[2023-10-01],
         in_force_from: ~D[2010-04-01],
         changed_by: [],
+        commenced_by: [],
         territory: "W",
         valid_to: ~D[2026-07-01]
       },
@@ -121,6 +133,7 @@
         valid_from: ~D[2026-07-01],
         in_force_from: ~D[2026-07-01],
         changed_by: ["UK_wsi_2025_1320"],
+        commenced_by: [],
         territory: "W",
         valid_to: ~D[2026-07-20]
       },
@@ -129,6 +142,7 @@
         valid_from: ~D[2026-07-20],
         in_force_from: ~D[2026-07-20],
         changed_by: ["UK_wsi_2026_112"],
+        commenced_by: [],
         territory: "W",
         valid_to: nil
       }
@@ -147,6 +161,7 @@
         valid_from: ~D[2010-04-01],
         in_force_from: ~D[2010-04-01],
         changed_by: [],
+        commenced_by: [],
         territory: "E+W",
         valid_to: ~D[2023-10-01]
       },
@@ -155,6 +170,7 @@
         valid_from: ~D[2023-10-01],
         in_force_from: ~D[2010-04-01],
         changed_by: [],
+        commenced_by: [],
         territory: "W",
         valid_to: nil
       }
@@ -174,6 +190,7 @@
         valid_from: ~D[1999-07-01],
         in_force_from: ~D[1999-07-01],
         changed_by: ["UK_uksi_1999_1747"],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: ~D[2013-04-01]
       },
@@ -182,6 +199,7 @@
         valid_from: ~D[2013-04-01],
         in_force_from: ~D[2013-04-01],
         changed_by: ["UK_wsi_2013_755"],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: ~D[2019-04-01]
       },
@@ -190,6 +208,7 @@
         valid_from: ~D[2019-04-01],
         in_force_from: ~D[2019-04-01],
         changed_by: ["UK_uksi_2019_734"],
+        commenced_by: [],
         territory: "E+W",
         valid_to: nil
       }
@@ -209,6 +228,7 @@
         valid_from: ~D[2013-04-01],
         in_force_from: ~D[2013-04-01],
         changed_by: ["UK_wsi_2013_755"],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: ~D[2019-04-01]
       },
@@ -217,6 +237,7 @@
         valid_from: ~D[2019-04-01],
         in_force_from: ~D[2013-04-01],
         changed_by: ["UK_wsi_2013_755"],
+        commenced_by: [],
         territory: "E+W",
         valid_to: nil
       }
@@ -236,6 +257,7 @@
         valid_from: ~D[2020-03-25],
         in_force_from: ~D[2020-03-25],
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+NI",
         valid_to: ~D[2021-12-09]
       },
@@ -244,6 +266,7 @@
         valid_from: ~D[2021-12-09],
         in_force_from: ~D[2020-03-25],
         changed_by: [],
+        commenced_by: [],
         territory: "W+NI",
         valid_to: ~D[2022-03-25]
       },
@@ -252,6 +275,7 @@
         valid_from: ~D[2022-03-25],
         in_force_from: ~D[2020-03-25],
         changed_by: [],
+        commenced_by: [],
         territory: "NI",
         valid_to: ~D[2024-03-25]
       },
@@ -260,6 +284,7 @@
         valid_from: ~D[2024-03-25],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "nowhere",
         valid_to: nil
       }
@@ -279,6 +304,7 @@
         valid_from: ~D[2016-12-08],
         in_force_from: ~D[2016-12-08],
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S+NI",
         valid_to: ~D[2020-12-31]
       },
@@ -287,6 +313,7 @@
         valid_from: ~D[2020-12-31],
         in_force_from: ~D[2020-12-31],
         changed_by: ["UK_uksi_2020_678"],
+        commenced_by: [],
         territory: "NI",
         valid_to: nil
       }
@@ -306,6 +333,7 @@
         valid_from: ~D[2015-09-06],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "W",
         valid_to: ~D[2017-05-05]
       },
@@ -313,7 +341,8 @@
         status: :in_force,
         valid_from: ~D[2017-05-05],
         in_force_from: ~D[2017-05-05],
-        changed_by: ["UK_wsi_2017_546"],
+        changed_by: ["UK_anaw_2015_4"],
+        commenced_by: ["UK_wsi_2017_546"],
         territory: "W",
         valid_to: nil
       }
@@ -332,6 +361,7 @@
         valid_from: ~D[2010-10-01],
         in_force_from: ~D[2010-10-01],
         changed_by: [],
+        commenced_by: [],
         territory: "E+W",
         valid_to: ~D[2023-10-01]
       },
@@ -340,6 +370,7 @@
         valid_from: ~D[2023-10-01],
         in_force_from: ~D[2010-10-01],
         changed_by: [],
+        commenced_by: [],
         territory: "W",
         valid_to: nil
       }
@@ -359,6 +390,7 @@
         valid_from: ~D[1990-08-24],
         in_force_from: ~D[1990-08-24],
         changed_by: [],
+        commenced_by: [],
         territory: "E+W",
         valid_to: ~D[2009-04-06]
       },
@@ -367,6 +399,7 @@
         valid_from: ~D[2009-04-06],
         in_force_from: ~D[2009-04-06],
         changed_by: ["UK_ukpga_2008_29"],
+        commenced_by: [],
         territory: "E+W",
         valid_to: ~D[2015-09-06]
       },
@@ -375,6 +408,7 @@
         valid_from: ~D[2015-09-06],
         in_force_from: ~D[2015-09-06],
         changed_by: ["UK_anaw_2015_4"],
+        commenced_by: [],
         territory: "E+W",
         valid_to: nil
       }
@@ -393,6 +427,7 @@
         valid_from: ~D[2006-03-30],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: ~D[2007-04-01]
       },
@@ -400,7 +435,8 @@
         status: :in_force,
         valid_from: ~D[2007-04-01],
         in_force_from: ~D[2007-04-01],
-        changed_by: ["UK_uksi_2007_816"],
+        changed_by: [],
+        commenced_by: ["UK_uksi_2007_816"],
         territory: "E+W+S",
         valid_to: ~D[2012-07-02]
       },
@@ -409,6 +445,7 @@
         valid_from: ~D[2012-07-02],
         in_force_from: nil,
         changed_by: ["UK_uksi_2012_1658"],
+        commenced_by: [],
         territory: "nowhere",
         valid_to: nil
       }
@@ -428,6 +465,7 @@
         valid_from: ~D[1989-07-06],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: ~D[2025-11-01]
       },
@@ -436,6 +474,7 @@
         valid_from: ~D[2025-11-01],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "E+W",
         valid_to: nil
       }
@@ -454,6 +493,7 @@
         valid_from: ~D[1974-07-31],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S+NI",
         valid_to: ~D[2014-06-30]
       },
@@ -462,6 +502,7 @@
         valid_from: ~D[2014-06-30],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+NI",
         valid_to: nil
       }
@@ -481,6 +522,7 @@
         valid_from: ~D[1974-07-31],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: ~D[1975-04-01]
       },
@@ -489,6 +531,7 @@
         valid_from: ~D[1975-04-01],
         in_force_from: ~D[1975-04-01],
         changed_by: [],
+        commenced_by: ["UK_uksi_1974_1439"],
         territory: "E+W+S",
         valid_to: ~D[2006-10-01]
       },
@@ -497,6 +540,7 @@
         valid_from: ~D[2006-10-01],
         in_force_from: nil,
         changed_by: ["UK_ssi_2006_475", "UK_uksi_2005_1541"],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: nil
       }
@@ -515,6 +559,7 @@
         valid_from: ~D[1993-05-27],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S+NI",
         valid_to: ~D[1993-08-27]
       },
@@ -523,6 +568,7 @@
         valid_from: ~D[1993-08-27],
         in_force_from: ~D[1993-08-27],
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S+NI",
         valid_to: ~D[2010-04-06]
       },
@@ -531,6 +577,7 @@
         valid_from: ~D[2010-04-06],
         in_force_from: ~D[1993-08-27],
         changed_by: [],
+        commenced_by: [],
         territory: "S+NI",
         valid_to: ~D[2018-09-01]
       },
@@ -539,6 +586,7 @@
         valid_from: ~D[2018-09-01],
         in_force_from: ~D[1993-08-27],
         changed_by: [],
+        commenced_by: [],
         territory: "NI",
         valid_to: nil
       }
@@ -558,6 +606,7 @@
         valid_from: ~D[2000-05-04],
         in_force_from: ~D[2000-05-04],
         changed_by: [],
+        commenced_by: [],
         territory: "E+W",
         valid_to: ~D[2005-07-16]
       },
@@ -566,6 +615,7 @@
         valid_from: ~D[2005-07-16],
         in_force_from: ~D[2005-07-16],
         changed_by: ["UK_uksi_2005_894", "UK_wsi_2005_1806"],
+        commenced_by: [],
         territory: "E+W",
         valid_to: nil
       }
@@ -584,6 +634,7 @@
         valid_from: ~D[1988-11-15],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: ~D[1989-05-15]
       },
@@ -592,6 +643,7 @@
         valid_from: ~D[1989-05-15],
         in_force_from: ~D[1989-05-15],
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: ~D[2006-01-01]
       },
@@ -600,6 +652,7 @@
         valid_from: ~D[2006-01-01],
         in_force_from: ~D[1989-05-15],
         changed_by: [],
+        commenced_by: [],
         territory: "S",
         valid_to: nil
       }
@@ -619,6 +672,7 @@
         valid_from: ~D[2020-03-25],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S+NI",
         valid_to: nil
       }
@@ -638,6 +692,7 @@
         valid_from: ~D[2019-12-14],
         in_force_from: ~D[2019-12-14],
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S+NI",
         valid_to: ~D[2020-12-31]
       },
@@ -646,6 +701,7 @@
         valid_from: ~D[2020-12-31],
         in_force_from: ~D[2019-12-14],
         changed_by: [],
+        commenced_by: [],
         territory: "NI",
         valid_to: nil
       }
@@ -664,6 +720,7 @@
         valid_from: ~D[2017-05-05],
         in_force_from: ~D[2017-05-05],
         changed_by: [],
+        commenced_by: [],
         territory: "W",
         valid_to: ~D[2024-11-04]
       },
@@ -672,6 +729,7 @@
         valid_from: ~D[2024-11-04],
         in_force_from: ~D[2024-11-04],
         changed_by: ["UK_wsi_2024_924"],
+        commenced_by: [],
         territory: "W",
         valid_to: nil
       }
@@ -690,6 +748,7 @@
         valid_from: ~D[2021-11-09],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "E+W",
         valid_to: ~D[2022-01-24]
       },
@@ -697,7 +756,8 @@
         status: :in_force,
         valid_from: ~D[2022-01-24],
         in_force_from: ~D[2022-01-24],
-        changed_by: ["UK_uksi_2022_48"],
+        changed_by: [],
+        commenced_by: ["UK_uksi_2022_48"],
         territory: "E+W",
         valid_to: nil
       }
@@ -717,6 +777,7 @@
         valid_from: ~D[2018-06-26],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S+NI",
         valid_to: ~D[2018-07-04]
       },
@@ -725,6 +786,7 @@
         valid_from: ~D[2018-07-04],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S+NI",
         valid_to: ~D[2020-12-31]
       },
@@ -732,7 +794,8 @@
         status: :in_force,
         valid_from: ~D[2020-12-31],
         in_force_from: ~D[2020-12-31],
-        changed_by: ["UK_uksi_2020_1622"],
+        changed_by: [],
+        commenced_by: ["UK_uksi_2020_1622"],
         territory: "E+W+S+NI",
         valid_to: ~D[2024-01-01]
       },
@@ -741,6 +804,7 @@
         valid_from: ~D[2024-01-01],
         in_force_from: ~D[2024-01-01],
         changed_by: ["UK_ukpga_2023_28"],
+        commenced_by: [],
         territory: "E+W+S+NI",
         valid_to: nil
       }
@@ -759,6 +823,7 @@
         valid_from: ~D[2009-12-29],
         in_force_from: ~D[2009-12-29],
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S+NI",
         valid_to: ~D[2011-04-22]
       },
@@ -767,6 +832,7 @@
         valid_from: ~D[2011-04-22],
         in_force_from: ~D[2011-04-22],
         changed_by: ["UK_uksi_2011_1043"],
+        commenced_by: [],
         territory: "E+W+S+NI",
         valid_to: ~D[2020-12-31]
       },
@@ -775,6 +841,7 @@
         valid_from: ~D[2020-12-31],
         in_force_from: ~D[2020-12-31],
         changed_by: ["UK_uksi_2019_696"],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: nil
       }
@@ -794,6 +861,7 @@
         valid_from: ~D[2009-12-29],
         in_force_from: ~D[2009-12-29],
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S+NI",
         valid_to: ~D[2011-04-22]
       },
@@ -802,6 +870,7 @@
         valid_from: ~D[2011-04-22],
         in_force_from: ~D[2011-04-22],
         changed_by: ["UK_uksi_2011_1043"],
+        commenced_by: [],
         territory: "E+W+S+NI",
         valid_to: ~D[2020-12-31]
       },
@@ -810,6 +879,7 @@
         valid_from: ~D[2020-12-31],
         in_force_from: ~D[2020-12-31],
         changed_by: ["UK_uksi_2020_1112"],
+        commenced_by: [],
         territory: "NI",
         valid_to: ~D[2027-01-20]
       },
@@ -818,6 +888,7 @@
         valid_from: ~D[2027-01-20],
         in_force_from: nil,
         changed_by: ["UK_uksi_2026_867"],
+        commenced_by: [],
         territory: "NI",
         valid_to: nil
       }
@@ -836,6 +907,7 @@
         valid_from: ~D[2010-10-01],
         in_force_from: ~D[2010-10-01],
         changed_by: [],
+        commenced_by: [],
         territory: "E+W",
         valid_to: ~D[2015-10-01]
       },
@@ -844,6 +916,7 @@
         valid_from: ~D[2015-10-01],
         in_force_from: ~D[2015-10-01],
         changed_by: ["UK_uksi_2015_767"],
+        commenced_by: [],
         territory: "E",
         valid_to: nil
       }
@@ -863,6 +936,7 @@
         valid_from: ~D[2020-12-31],
         in_force_from: ~D[2020-12-31],
         changed_by: ["UK_uksi_2020_1369"],
+        commenced_by: [],
         territory: "NI",
         valid_to: ~D[2021-05-01]
       },
@@ -871,6 +945,7 @@
         valid_from: ~D[2021-05-01],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "NI",
         valid_to: nil
       }
@@ -889,6 +964,7 @@
         valid_from: ~D[2022-04-28],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S+NI",
         valid_to: nil
       }
@@ -907,6 +983,7 @@
         valid_from: ~D[1999-12-29],
         in_force_from: ~D[1999-12-29],
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: ~D[2003-10-27]
       },
@@ -915,6 +992,7 @@
         valid_from: ~D[2003-10-27],
         in_force_from: ~D[2003-10-27],
         changed_by: ["UK_uksi_2003_2457"],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: ~D[2015-10-01]
       },
@@ -923,6 +1001,7 @@
         valid_from: ~D[2015-10-01],
         in_force_from: ~D[2015-10-01],
         changed_by: ["UK_uksi_2015_1637"],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: nil
       }
@@ -942,6 +1021,7 @@
         valid_from: ~D[1963-07-31],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: ~D[1964-05-01]
       },
@@ -950,6 +1030,7 @@
         valid_from: ~D[1964-05-01],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: ~D[1991-01-01]
       },
@@ -958,6 +1039,7 @@
         valid_from: ~D[1991-01-01],
         in_force_from: nil,
         changed_by: ["UK_ukpga_1990_43"],
+        commenced_by: [],
         territory: "nowhere",
         valid_to: nil
       }
@@ -977,6 +1059,7 @@
         valid_from: ~D[1963-07-31],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: ~D[1964-02-18]
       },
@@ -985,6 +1068,7 @@
         valid_from: ~D[1964-02-18],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: nil
       }
@@ -1003,7 +1087,8 @@
         status: :in_force,
         valid_from: ~D[2004-09-19],
         in_force_from: ~D[2004-09-19],
-        changed_by: ["UK_uksi_2004_2173"],
+        changed_by: ["UK_ukpga_2000_37"],
+        commenced_by: ["UK_uksi_2004_2173"],
         territory: "E",
         valid_to: ~D[2005-05-28]
       },
@@ -1011,7 +1096,8 @@
         status: :in_force,
         valid_from: ~D[2005-05-28],
         in_force_from: ~D[2005-05-28],
-        changed_by: ["UK_wsi_2005_423"],
+        changed_by: ["UK_ukpga_2000_37"],
+        commenced_by: ["UK_wsi_2005_423"],
         territory: "E+W",
         valid_to: nil
       }
@@ -1029,7 +1115,8 @@
         status: :in_force,
         valid_from: ~D[2004-09-19],
         in_force_from: ~D[2004-09-19],
-        changed_by: ["UK_uksi_2004_2173"],
+        changed_by: ["UK_ukpga_2000_37"],
+        commenced_by: ["UK_uksi_2004_2173"],
         territory: "E",
         valid_to: ~D[2005-05-28]
       },
@@ -1037,7 +1124,8 @@
         status: :in_force,
         valid_from: ~D[2005-05-28],
         in_force_from: ~D[2005-05-28],
-        changed_by: ["UK_wsi_2005_423"],
+        changed_by: ["UK_ukpga_2000_37"],
+        commenced_by: ["UK_wsi_2005_423"],
         territory: "E+W",
         valid_to: nil
       }
@@ -1056,6 +1144,7 @@
         valid_from: ~D[1999-12-29],
         in_force_from: ~D[1999-12-29],
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: ~D[2006-10-01]
       },
@@ -1064,6 +1153,7 @@
         valid_from: ~D[2006-10-01],
         in_force_from: ~D[2006-10-01],
         changed_by: ["UK_ssi_2006_457", "UK_uksi_2005_1541"],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: nil
       }
@@ -1083,6 +1173,7 @@
         valid_from: ~D[2017-04-06],
         in_force_from: ~D[2017-04-06],
         changed_by: ["UK_uksi_2017_304"],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: nil
       }
@@ -1102,6 +1193,7 @@
         valid_from: ~D[2008-12-16],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S+NI",
         valid_to: ~D[2020-12-31]
       },
@@ -1110,6 +1202,7 @@
         valid_from: ~D[2020-12-31],
         in_force_from: ~D[2020-12-31],
         changed_by: ["UK_uksi_2019_720", "UK_uksi_2020_1567"],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: nil
       }
@@ -1128,6 +1221,7 @@
         valid_from: ~D[2008-10-01],
         in_force_from: ~D[2008-10-01],
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: ~D[2009-04-06]
       },
@@ -1136,6 +1230,7 @@
         valid_from: ~D[2009-04-06],
         in_force_from: nil,
         changed_by: ["UK_uksi_2009_716"],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: nil
       }
@@ -1155,6 +1250,7 @@
         valid_from: ~D[2009-12-29],
         in_force_from: ~D[2009-12-29],
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S+NI",
         valid_to: ~D[2020-12-31]
       },
@@ -1163,6 +1259,7 @@
         valid_from: ~D[2020-12-31],
         in_force_from: ~D[2009-12-29],
         changed_by: [],
+        commenced_by: [],
         territory: "NI",
         valid_to: ~D[2027-01-20]
       },
@@ -1171,6 +1268,7 @@
         valid_from: ~D[2027-01-20],
         in_force_from: nil,
         changed_by: ["UK_uksi_2026_867"],
+        commenced_by: [],
         territory: "NI",
         valid_to: nil
       }
@@ -1189,6 +1287,7 @@
         valid_from: ~D[2007-03-01],
         in_force_from: ~D[2007-03-01],
         changed_by: [],
+        commenced_by: [],
         territory: "NI",
         valid_to: ~D[2012-05-28]
       },
@@ -1197,6 +1296,7 @@
         valid_from: ~D[2012-05-28],
         in_force_from: nil,
         changed_by: ["UK_nisr_2012_179"],
+        commenced_by: [],
         territory: "NI",
         valid_to: nil
       }
@@ -1216,6 +1316,7 @@
         valid_from: ~D[2006-12-18],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S+NI",
         valid_to: ~D[2020-12-31]
       },
@@ -1224,6 +1325,7 @@
         valid_from: ~D[2020-12-31],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "NI",
         valid_to: nil
       }
@@ -1242,6 +1344,7 @@
         valid_from: ~D[1997-07-01],
         in_force_from: ~D[1997-07-01],
         changed_by: [],
+        commenced_by: [],
         territory: "NI",
         valid_to: ~D[2006-08-01]
       },
@@ -1250,6 +1353,7 @@
         valid_from: ~D[2006-08-01],
         in_force_from: nil,
         changed_by: ["UK_nisr_2006_173"],
+        commenced_by: [],
         territory: "NI",
         valid_to: nil
       }
@@ -1269,6 +1373,7 @@
         valid_from: ~D[1989-04-20],
         in_force_from: ~D[1989-04-20],
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: ~D[1990-01-29]
       },
@@ -1277,6 +1382,7 @@
         valid_from: ~D[1990-01-29],
         in_force_from: ~D[1990-01-29],
         changed_by: ["UK_uksi_1989_2367"],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: nil
       }
@@ -1295,6 +1401,7 @@
         valid_from: ~D[2007-07-26],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S+NI",
         valid_to: ~D[2011-09-01]
       },
@@ -1302,7 +1409,8 @@
         status: :in_force,
         valid_from: ~D[2011-09-01],
         in_force_from: ~D[2011-09-01],
-        changed_by: ["UK_uksi_2011_1867"],
+        changed_by: [],
+        commenced_by: ["UK_uksi_2011_1867"],
         territory: "E+W+S",
         valid_to: ~D[2012-09-03]
       },
@@ -1310,7 +1418,8 @@
         status: :in_force,
         valid_from: ~D[2012-09-03],
         in_force_from: ~D[2012-09-03],
-        changed_by: ["UK_nisr_2012_286"],
+        changed_by: [],
+        commenced_by: ["UK_nisr_2012_286"],
         territory: "E+W+S+NI",
         valid_to: nil
       }
@@ -1329,6 +1438,7 @@
         valid_from: ~D[2011-10-24],
         in_force_from: ~D[2011-10-24],
         changed_by: ["UK_uksi_2011_1885"],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: nil
       }
@@ -1347,7 +1457,8 @@
         valid_from: ~D[1993-01-01],
         in_force_from: ~D[1993-01-01],
         changed_by: ["UK_uksi_1992_2051"],
-        territory: "E+W+S+NI",
+        commenced_by: [],
+        territory: "E+W+S",
         valid_to: ~D[2014-04-01]
       },
       %{
@@ -1355,7 +1466,8 @@
         valid_from: ~D[2014-04-01],
         in_force_from: ~D[2014-04-01],
         changed_by: ["UK_uksi_2014_469"],
-        territory: "E+W+S+NI",
+        commenced_by: [],
+        territory: "E+W+S",
         valid_to: nil
       }
     ],
@@ -1374,6 +1486,7 @@
         valid_from: ~D[1982-07-01],
         in_force_from: ~D[1982-07-01],
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: ~D[2015-04-06]
       },
@@ -1382,6 +1495,7 @@
         valid_from: ~D[2015-04-06],
         in_force_from: ~D[2015-04-06],
         changed_by: ["UK_uksi_2014_3248"],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: nil
       }
@@ -1401,6 +1515,7 @@
         valid_from: ~D[2015-04-06],
         in_force_from: ~D[2015-04-06],
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: nil
       }
@@ -1420,6 +1535,7 @@
         valid_from: ~D[1937-07-30],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: ~D[1938-07-01]
       },
@@ -1428,6 +1544,7 @@
         valid_from: ~D[1938-07-01],
         in_force_from: ~D[1938-07-01],
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: ~D[1962-04-01]
       },
@@ -1436,6 +1553,7 @@
         valid_from: ~D[1962-04-01],
         in_force_from: nil,
         changed_by: ["UK_ukpga_1961_34"],
+        commenced_by: [],
         territory: "nowhere",
         valid_to: nil
       }
@@ -1455,6 +1573,7 @@
         valid_from: ~D[1961-06-22],
         in_force_from: nil,
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: ~D[1962-04-01]
       },
@@ -1463,6 +1582,7 @@
         valid_from: ~D[1962-04-01],
         in_force_from: ~D[1962-04-01],
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: ~D[1975-01-01]
       },
@@ -1471,6 +1591,7 @@
         valid_from: ~D[1975-01-01],
         in_force_from: ~D[1975-01-01],
         changed_by: ["UK_uksi_1974_1941"],
+        commenced_by: [],
         territory: "E+W+S",
         valid_to: ~D[1996-09-02]
       },
@@ -1479,6 +1600,7 @@
         valid_from: ~D[1996-09-02],
         in_force_from: nil,
         changed_by: ["UK_uksi_1996_1592"],
+        commenced_by: [],
         territory: "nowhere",
         valid_to: nil
       }
@@ -1497,6 +1619,7 @@
         valid_from: ~D[1975-01-01],
         in_force_from: ~D[1975-01-01],
         changed_by: [],
+        commenced_by: [],
         territory: "S",
         valid_to: nil
       }
@@ -1515,6 +1638,7 @@
         valid_from: ~D[2009-12-29],
         in_force_from: ~D[2009-12-29],
         changed_by: [],
+        commenced_by: [],
         territory: "E+W+S+NI",
         valid_to: ~D[2020-12-31]
       },
@@ -1523,6 +1647,7 @@
         valid_from: ~D[2020-12-31],
         in_force_from: ~D[2009-12-29],
         changed_by: [],
+        commenced_by: [],
         territory: "NI",
         valid_to: ~D[2027-01-20]
       },
@@ -1531,6 +1656,7 @@
         valid_from: ~D[2027-01-20],
         in_force_from: nil,
         changed_by: ["UK_uksi_2026_867"],
+        commenced_by: [],
         territory: "NI",
         valid_to: nil
       }

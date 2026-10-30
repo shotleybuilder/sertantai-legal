@@ -157,7 +157,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
     resolved =
       %Resolved{
         operation: value.(:operation),
-        level: value.(:level) || :provision,
+        # no table source: the feed's own level before a default (CV-S09
+        # round 1: a feed "word deleted" placed on the paragraph above had
+        # read as the whole of SI 1992/3004 reg.5(3)(a) repealed)
+        level: value.(:level) || Change.value(c, :feed, :level) || :provision,
         territory: value.(:territory),
         date: value.(:date),
         by: value.(:by),

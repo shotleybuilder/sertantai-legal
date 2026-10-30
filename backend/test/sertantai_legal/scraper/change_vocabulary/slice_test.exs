@@ -31,13 +31,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.SliceTest do
     |> Map.new(fn {id, periods} -> {id, Enum.map(periods, &Map.delete(&1, :tiers))} end)
   end
 
-  defp period(from, to, status, in_force_from, changed_by, territory),
+  # `commenced_by`: the law bringing it into force apart from the laws
+  # making its text (Jason 2026-10-30); none in these cases
+  defp period(from, to, status, in_force_from, changed_by, territory, commenced_by \\ []),
     do: %{
       valid_from: from,
       valid_to: to,
       status: status,
       in_force_from: in_force_from,
       changed_by: changed_by,
+      commenced_by: commenced_by,
       territory: territory
     }
 

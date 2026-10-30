@@ -23,7 +23,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Pointer}
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Claim, Ref}
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup.{Level, ListItems}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup.{Level, ListItems, Versions}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteLaw
   alias SertantaiLegal.Scraper.EffectIndex
   alias SertantaiLegal.Scraper.Commencement.Order
@@ -53,16 +53,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
           into: %{},
           do: {ref, %{prospective: true}}
 
-    versions =
-      for el <- xpath(doc, ~x"//*[@id][@DocumentURI]"l),
-          territory = el |> xpath(~x"./@DocumentURI"s) |> version_territory(),
-          territory != nil,
-          ref = el |> xpath(~x"./@id"s) |> Ref.from_clml(law_name),
-          ref != nil do
-        {ref, territory}
-      end
-      |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
-      |> Map.new(fn {ref, ts} -> {ref, %{versions: Enum.uniq(ts)}} end)
+    # territorial versions and the day each starts (C3)
+    versions = Versions.facts(doc, law_name)
 
     # a provision still showing words (letters or numbers, not only "…"):
     # a removal there is retained elsewhere (V1-04)
@@ -79,22 +71,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     |> Enum.reduce(&Map.merge(&2, &1, fn _ref, a, b -> Map.merge(a, b) end))
   end
 
-  @places %{
-    "england" => "E",
-    "wales" => "W",
-    "scotland" => "S",
-    "ni" => "NI",
-    "northern-ireland" => "NI"
-  }
-
-  # ".../regulation/14/1/england+wales+scotland" → "E+W+S"; nil for an
-  # unversioned URI
-  defp version_territory(uri) do
-    last = uri |> String.split("/") |> List.last() |> to_string()
-    parts = String.split(last, "+")
-
-    if parts != [] and Enum.all?(parts, &Map.has_key?(@places, &1)),
-      do: parts |> Enum.map(&@places[&1]) |> SertantaiLegal.Scraper.Territory.union()
+  @doc """
+  The day the text held is valid at (`dct:valid`): its Prospective
+  markers say what was not yet in force then (CV-S09 round 1: a made
+  version, NISR 1997/248, valid 1997-05-20, marks everything prospective
+  before its 1997-07-01 commencement). nil when it states none.
+  """
+  @spec valid(String.t()) :: Date.t() | nil
+  def valid(xml) do
+    with [_, d] <- Regex.run(~r/<dct:valid>(\d{4}-\d{2}-\d{2})</, xml),
+         {:ok, date} <- Date.from_iso8601(d),
+         do: date,
+         else: (_ -> nil)
   end
 
   @doc "The document's provision ids (CLML) in document order, for ranges."

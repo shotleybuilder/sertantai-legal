@@ -56,6 +56,9 @@ defmodule SertantaiLegal.Scraper.EffectFacts do
   # feeds): EU types, older abbreviations, misspellings
   @words [
     {~r/\b(?:deleted|deletion)\b/i, "omitted"},
+    # EUR-Lex "abolition": the text deleted (CLP Art 25(5), Regulation (EU)
+    # 286/2011; CV-S09 round 1)
+    {~r/\babolition\b/i, "omitted"},
     {~r/\b(?:replacement|replaced)\b/i, "substituted"},
     # EUR-Lex "completion": text added (Directive 2006/21 adds an activity
     # to Directive 2004/35 Annex III; Jason 2026-10-23)

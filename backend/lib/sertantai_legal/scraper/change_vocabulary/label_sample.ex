@@ -46,6 +46,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSample do
       "status" => str(p.status),
       "in_force_from" => str(p.in_force_from),
       "changed_by" => p.changed_by,
+      "commenced_by" => Map.get(p, :commenced_by, []),
       "territory" => p.territory,
       "tiers" => p |> Map.get(:tiers, %{}) |> Map.new(fn {k, v} -> {to_string(k), str(v)} end)
     }

@@ -13,9 +13,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   orchestrator; pure.
   """
 
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{Evidence, FeedSavings, Label, Merge, Placement}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{
+    Evidence,
+    FeedSavings,
+    Label,
+    Merge,
+    Parts,
+    Placement
+  }
+
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Ref}
-  alias SertantaiLegal.Scraper.LatRef
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.{
     AmendingLaw,
@@ -53,6 +60,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   def labels(law_name, xml, effects, provisions, opts \\ []) do
     {provisions, opts} = canonical(provisions, opts)
     facts = Markup.provisions(xml, law_name)
+    valid = Markup.valid(xml)
 
     # the changes given (read back from `provision_changes`), else built
     changes =
@@ -64,7 +72,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
       {base, version} = version(id)
 
       provision =
-        %{law: law_name, prospective: prospective?(facts, base)}
+        %{law: law_name, prospective: prospective?(facts, base), valid: valid}
         |> Map.merge(provision)
         |> own_territory(law_name, Keyword.get(opts, :title))
 
@@ -72,89 +80,20 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
       # union of its versions' territories, narrowed at the split (C3)
       provision =
         case {version, get_in(facts, [base, :versions])} do
-          {nil, _} -> provision
-          {v, [_ | _] = vs} -> %{provision | extent: Territory.union(vs)} |> Map.put(:version, v)
-          {v, _} -> Map.put(provision, :version, v)
+          {nil, _} ->
+            provision
+
+          {v, [_ | _] = vs} ->
+            %{provision | extent: Territory.union(vs)}
+            |> Map.put(:version, v)
+            |> Map.put(:version_start, get_in(facts, [base, :version_starts, v]))
+
+          {v, _} ->
+            Map.put(provision, :version, v)
         end
 
       {id, Label.fold(base, provision, changes)}
     end)
-  end
-
-  # A provision commenced through its parts (EUWA 2018 s.6: s.6(7) on
-  # 2018-07-04, s.6(1)-(6) on 2020-12-31): partly in force from the first
-  # part's commencement, fully once every part is — credited to the law of
-  # the last. Only for a provision with no full commencement of its own.
-  defp parent_commencements(changes, provisions, order) do
-    for {id, _} <- provisions,
-        {base, _} = version(id),
-        not own_full?(changes, base),
-        parts = Enum.filter(order, &(parent(&1) == base)) |> Enum.uniq(),
-        parts != [],
-        stages = Enum.map(parts, &stages(changes, &1)),
-        Enum.any?(stages, &(&1 != [])),
-        change <- parent_stages(base, stages),
-        uniq: true,
-        do: change
-  end
-
-  defp own_full?(changes, id),
-    do:
-      Enum.any?(changes, fn c ->
-        c.target == id and c.resolved.operation == :commenced and not c.resolved.partial
-      end)
-
-  defp parent(ref), do: ref |> LatRef.ancestors() |> Enum.at(1)
-
-  # a part's dated commencements: [{date, partial?, by}]
-  defp stages(changes, part) do
-    for c <- changes,
-        c.target == part,
-        c.resolved.operation == :commenced,
-        c.resolved.date != nil,
-        do: {c.resolved.date, c.resolved.partial, Change.credit(c)}
-  end
-
-  defp parent_stages(id, stages) do
-    first = stages |> List.flatten() |> Enum.map(&elem(&1, 0)) |> Enum.min(Date)
-
-    fulls =
-      Enum.map(stages, fn s ->
-        s |> Enum.reject(&elem(&1, 1)) |> Enum.min_by(&elem(&1, 0), Date, fn -> nil end)
-      end)
-
-    partial = synthetic(id, first, true, nil)
-
-    case Enum.any?(fulls, &is_nil/1) do
-      true ->
-        [partial]
-
-      false ->
-        {date, _, by} = Enum.max_by(fulls, &elem(&1, 0), Date)
-
-        if Date.compare(first, date) == :lt,
-          do: [partial, synthetic(id, date, false, by)],
-          else: [synthetic(id, date, false, by)]
-    end
-  end
-
-  defp synthetic(id, date, partial?, by) do
-    %Change{
-      key: "parts:#{id}@#{date}",
-      target: id,
-      resolved: %Evidence.Resolved{
-        operation: :commenced,
-        level: :words,
-        territory: nil,
-        date: date,
-        by: by,
-        retained: false,
-        partial: partial?,
-        saved: false,
-        sources: %{date: :parts},
-        tiers: %{date: :derived}
-      }
-    }
   end
 
   # a range reaches only provisions that existed at its date: one inserted
@@ -209,8 +148,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
     do: if(Keyword.get(opts, key), do: Keyword.update!(opts, key, f), else: opts)
 
   defp build(law_name, xml, effects, provisions, opts, facts) do
+    # the document's provisions as our rows name them (one namer, CV-S02):
+    # "section-76-12" is OSRPA s.76(1), its (1)(2) repealed into one element
+    xml_ids = Keyword.get(opts, :xml_ids, %{})
+
     order =
-      xml |> Markup.order() |> Enum.map(&Ref.from_clml(&1, law_name)) |> Enum.reject(&is_nil/1)
+      xml
+      |> Markup.order()
+      |> Enum.map(&(Map.get(xml_ids, &1) || Ref.from_clml(&1, law_name)))
+      |> Enum.reject(&is_nil/1)
 
     # the law's text names provisions as the CLML ids spell them; a row
     # whose id skips a level is named by the parse ("section-28-f-i" is
@@ -231,13 +177,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
       )
       |> Enum.map(fn {key, target, claims} -> {key, Map.get(respelt, target, target), claims} end)
 
-    # the law's own commencement, for each provision asked about (its base),
-    # in the law's row structure and the provision's extent
+    # the law's own commencement, for each of its rows when given (a
+    # provision commenced through its parts needs its parts': OSRPA 1963
+    # s.76, CV-S09 round 1), else each provision asked about (its base), in
+    # the law's row structure and the provision's extent
     own =
       OwnCommencement.read(
         Keyword.get(opts, :own_commencement, []),
         law_name,
-        provisions |> Map.keys() |> Enum.map(&elem(version(&1), 0)) |> Enum.uniq(),
+        (Keyword.get(opts, :rows) || Map.keys(provisions))
+        |> Enum.map(&elem(version(&1), 0))
+        |> Enum.uniq(),
         Keyword.get(opts, :own_context, SertantaiLegal.Scraper.Commencement.Order.context()),
         base_extents(provisions)
       )
@@ -288,7 +238,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
       # row (CV-S02); only with the law's full set of rows
       |> below_rows(Keyword.get(opts, :rows), facts)
 
-    changes ++ parent_commencements(changes, provisions, order)
+    changes ++
+      Parts.commencements(changes, Enum.map(Map.keys(provisions), &elem(version(&1), 0)), order)
   end
 
   # a provision's extent by its base: its own row's, else the versions'

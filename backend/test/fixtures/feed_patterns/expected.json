@@ -3009,6 +3009,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "provisions",
           "feed.savings": [
             "section-36"
           ]
@@ -3605,6 +3606,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes",
           "feed.savings": []
         },
         "key": "E",
@@ -3662,6 +3664,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes",
           "feed.savings": []
         },
         "key": "E",
@@ -4513,6 +4516,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -4550,6 +4554,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -4587,6 +4592,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -4624,6 +4630,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -4684,6 +4691,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes",
           "feed.savings": []
         },
         "key": "E",
@@ -4720,6 +4728,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "provisions",
           "feed.savings": []
         },
         "key": "E",
@@ -4867,6 +4876,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes",
           "feed.savings": []
         },
         "key": "E",
@@ -6091,6 +6101,8 @@
         "claims": {
           "feed.applied": true,
           "feed.by": "UK_eudr_2014_27",
+          "feed.level": "provision",
+          "feed.operation": "repealed",
           "feed.prospective": true,
           "feed.savings": []
         },
@@ -6133,6 +6145,8 @@
         "claims": {
           "feed.applied": true,
           "feed.by": "UK_eur_2008_1137",
+          "feed.level": "provision",
+          "feed.operation": "repealed",
           "feed.prospective": true,
           "feed.savings": []
         },
@@ -6215,6 +6229,8 @@
         "claims": {
           "feed.applied": true,
           "feed.by": "UK_eudr_2014_27",
+          "feed.level": "provision",
+          "feed.operation": "repealed",
           "feed.prospective": true,
           "feed.savings": []
         },
@@ -9042,6 +9058,8 @@
         "claims": {
           "feed.applied": true,
           "feed.by": "UK_eur_2011_286",
+          "feed.level": "provision",
+          "feed.operation": "repealed",
           "feed.prospective": true,
           "feed.savings": []
         },
@@ -9351,6 +9369,8 @@
         "claims": {
           "feed.applied": true,
           "feed.by": "UK_eur_2013_1087",
+          "feed.level": "provision",
+          "feed.operation": "repealed",
           "feed.prospective": true,
           "feed.savings": []
         },
@@ -16996,6 +17016,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes",
           "feed.savings": []
         },
         "key": "E",
@@ -17639,6 +17660,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes",
           "feed.savings": []
         },
         "key": "E",
@@ -17688,6 +17710,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes",
           "feed.savings": []
         },
         "key": "E",
@@ -19773,9 +19796,11 @@
           "feed.by": "UK_ukpga_1995_25",
           "feed.date": "2003-04-01",
           "feed.date_first": "2003-04-01",
+          "feed.in_force_for": "S",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": false,
+          "feed.qualification": "complete + territory",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -19827,9 +19852,11 @@
           "feed.by": "UK_ukpga_1995_25",
           "feed.date": "2003-04-01",
           "feed.date_first": "2003-04-01",
+          "feed.in_force_for": "S",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": false,
+          "feed.qualification": "complete + territory",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -19881,9 +19908,11 @@
           "feed.by": "UK_ukpga_1995_25",
           "feed.date": "2003-04-01",
           "feed.date_first": "2003-04-01",
+          "feed.in_force_for": "S",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": false,
+          "feed.qualification": "complete + territory",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -19935,9 +19964,11 @@
           "feed.by": "UK_ukpga_1995_25",
           "feed.date": "2003-04-01",
           "feed.date_first": "2003-04-01",
+          "feed.in_force_for": "S",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": false,
+          "feed.qualification": "complete + territory",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -20354,9 +20385,11 @@
           "feed.date_first": "2004-10-01",
           "feed.effect_extent": "E+W",
           "feed.heading": true,
+          "feed.in_force_for": "E",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory",
           "feed.savings": []
         },
         "key": "E",
@@ -20438,6 +20471,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes",
           "feed.savings": [
             "section-49-1",
             "section-49-1",
@@ -20504,6 +20538,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes",
           "feed.savings": [
             "section-49-1",
             "section-49-1",
@@ -21602,9 +21637,11 @@
           "feed.date": "2003-02-12",
           "feed.date_first": "2003-02-12",
           "feed.effect_extent": "E+W",
+          "feed.in_force_for": "E",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + provisions",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -21659,9 +21696,11 @@
           "feed.date": "2003-02-12",
           "feed.date_first": "2003-02-12",
           "feed.effect_extent": "E+W",
+          "feed.in_force_for": "E",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + provisions",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -21716,9 +21755,11 @@
           "feed.date": "2003-02-12",
           "feed.date_first": "2003-02-12",
           "feed.effect_extent": "E+W",
+          "feed.in_force_for": "E",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + provisions",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -21773,9 +21814,11 @@
           "feed.date": "2003-02-12",
           "feed.date_first": "2003-02-12",
           "feed.effect_extent": "E+W",
+          "feed.in_force_for": "E",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + provisions",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -21866,9 +21909,11 @@
           "feed.date": "2006-05-02",
           "feed.date_first": "2006-05-02",
           "feed.effect_extent": "E+W",
+          "feed.in_force_for": "E",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + time of day",
           "feed.savings": []
         },
         "key": "E",
@@ -21963,9 +22008,11 @@
           "feed.date": "2003-02-12",
           "feed.date_first": "2003-02-12",
           "feed.effect_extent": "E+W",
+          "feed.in_force_for": "E",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + provisions",
           "feed.savings": []
         },
         "key": "E",
@@ -21999,9 +22046,11 @@
           "feed.date": "2003-02-12",
           "feed.date_first": "2003-02-12",
           "feed.effect_extent": "E+W",
+          "feed.in_force_for": "E",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + provisions",
           "feed.savings": []
         },
         "key": "E",
@@ -22423,9 +22472,11 @@
           "feed.date": "2005-09-27",
           "feed.date_first": "2005-09-27",
           "feed.effect_extent": "E+W",
+          "feed.in_force_for": "E",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + provisions",
           "feed.savings": []
         },
         "key": "E",
@@ -22477,9 +22528,11 @@
           "feed.date": "2005-09-27",
           "feed.date_first": "2005-09-27",
           "feed.effect_extent": "E+W",
+          "feed.in_force_for": "E",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + provisions",
           "feed.savings": []
         },
         "key": "E",
@@ -22687,6 +22740,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes + provisions",
           "feed.savings": []
         },
         "key": "E",
@@ -23049,9 +23103,11 @@
           "feed.date": "2007-07-23",
           "feed.date_first": "2007-07-23",
           "feed.effect_extent": "E+W",
+          "feed.in_force_for": "E",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + provisions",
           "feed.savings": []
         },
         "key": "E",
@@ -23103,9 +23159,11 @@
           "feed.date": "2007-07-23",
           "feed.date_first": "2007-07-23",
           "feed.effect_extent": "E+W",
+          "feed.in_force_for": "E",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + provisions",
           "feed.savings": []
         },
         "key": "E",
@@ -23728,6 +23786,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": false,
+          "feed.qualification": "other",
           "feed.savings": []
         },
         "key": "E",
@@ -23780,9 +23839,11 @@
           "feed.date": "2023-04-06",
           "feed.date_first": "2023-04-06",
           "feed.effect_extent": "E+W",
+          "feed.in_force_except": "W",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + purposes + except",
           "feed.savings": []
         },
         "key": "E",
@@ -23963,9 +24024,11 @@
           "feed.date": "2022-06-28",
           "feed.date_first": "2022-06-28",
           "feed.effect_extent": "E+W",
+          "feed.in_force_for": "E",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + purposes + provisions",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -24019,9 +24082,11 @@
           "feed.date": "2022-06-28",
           "feed.date_first": "2022-06-28",
           "feed.effect_extent": "E+W",
+          "feed.in_force_for": "E",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + purposes + provisions",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -24075,9 +24140,11 @@
           "feed.date": "2022-06-28",
           "feed.date_first": "2022-06-28",
           "feed.effect_extent": "E+W",
+          "feed.in_force_for": "E",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + purposes + provisions",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -25795,9 +25862,11 @@
           "feed.by": "UK_ukpga_2013_22",
           "feed.date": "2015-03-02",
           "feed.date_first": "2015-03-02",
+          "feed.in_force_for": "E+W",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory",
           "feed.savings": []
         },
         "key": "E",
@@ -26719,6 +26788,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes",
           "feed.savings": [
             "section-111"
           ]
@@ -27150,6 +27220,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes",
           "feed.savings": []
         },
         "key": "E",
@@ -27185,6 +27256,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes",
           "feed.savings": []
         },
         "key": "E",
@@ -32424,6 +32496,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "provisions",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -32494,6 +32567,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "provisions",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -32564,6 +32638,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "provisions",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -32678,9 +32753,11 @@
           "feed.date": "2005-08-24",
           "feed.date_first": "2005-08-24",
           "feed.heading": true,
+          "feed.in_force_for": "E",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + except + dated scope",
           "feed.savings": [
             "section-43-5",
             "section-111"
@@ -33148,6 +33225,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "provisions",
           "feed.savings": []
         },
         "key": "E",
@@ -33330,6 +33408,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "except + provisions",
           "feed.savings": []
         },
         "key": "E",
@@ -36114,6 +36193,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes + provisions",
           "feed.savings": []
         },
         "key": "E",
@@ -38992,6 +39072,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes",
           "feed.savings": []
         },
         "key": "E",
@@ -39042,9 +39123,11 @@
           "feed.date": "2006-04-01",
           "feed.date_first": "2006-04-01",
           "feed.effect_extent": "E+W+S+NI",
+          "feed.in_force_for": "S",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + except + provisions",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -39194,9 +39277,11 @@
           "feed.date": "2006-04-01",
           "feed.date_first": "2006-04-01",
           "feed.effect_extent": "E+W+S+NI",
+          "feed.in_force_for": "S",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + except + provisions",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -39346,9 +39431,11 @@
           "feed.date": "2006-04-01",
           "feed.date_first": "2006-04-01",
           "feed.effect_extent": "E+W+S+NI",
+          "feed.in_force_for": "S",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + except + provisions",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -39498,9 +39585,11 @@
           "feed.date": "2006-04-01",
           "feed.date_first": "2006-04-01",
           "feed.effect_extent": "E+W+S+NI",
+          "feed.in_force_for": "S",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + except + provisions",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -39650,9 +39739,11 @@
           "feed.date": "2006-04-01",
           "feed.date_first": "2006-04-01",
           "feed.effect_extent": "E+W+S+NI",
+          "feed.in_force_for": "S",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + except + provisions",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -39802,9 +39893,11 @@
           "feed.date": "2006-04-01",
           "feed.date_first": "2006-04-01",
           "feed.effect_extent": "E+W+S+NI",
+          "feed.in_force_for": "S",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + except + provisions",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -39954,9 +40047,11 @@
           "feed.date": "2006-04-01",
           "feed.date_first": "2006-04-01",
           "feed.effect_extent": "E+W+S+NI",
+          "feed.in_force_for": "S",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + except + provisions",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -40106,9 +40201,11 @@
           "feed.date": "2006-04-01",
           "feed.date_first": "2006-04-01",
           "feed.effect_extent": "E+W+S+NI",
+          "feed.in_force_for": "S",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + except + provisions",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -40258,9 +40355,11 @@
           "feed.date": "2006-04-01",
           "feed.date_first": "2006-04-01",
           "feed.effect_extent": "E+W+S+NI",
+          "feed.in_force_for": "S",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + except + provisions",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -40410,9 +40509,11 @@
           "feed.date": "2006-04-01",
           "feed.date_first": "2006-04-01",
           "feed.effect_extent": "E+W+S+NI",
+          "feed.in_force_for": "S",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + except + provisions",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -40562,9 +40663,11 @@
           "feed.date": "2006-04-01",
           "feed.date_first": "2006-04-01",
           "feed.effect_extent": "E+W+S+NI",
+          "feed.in_force_for": "S",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + except + provisions",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -40714,9 +40817,11 @@
           "feed.date": "2006-04-01",
           "feed.date_first": "2006-04-01",
           "feed.effect_extent": "E+W+S+NI",
+          "feed.in_force_for": "S",
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "territory + except + provisions",
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -42319,6 +42424,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes",
           "feed.savings": []
         },
         "key": "E",
@@ -42403,6 +42509,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes",
           "feed.savings": []
         },
         "key": "E",
@@ -45108,6 +45215,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes",
           "feed.savings": []
         },
         "key": "E",
@@ -45186,6 +45294,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes",
           "feed.savings": []
         },
         "key": "E",
@@ -45790,6 +45899,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes",
           "feed.savings": []
         },
         "key": "E",
@@ -45999,6 +46109,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes",
           "feed.savings": []
         },
         "key": "E",
@@ -46195,6 +46306,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": true,
+          "feed.qualification": "purposes",
           "feed.savings": []
         },
         "key": "E",
@@ -50360,6 +50472,7 @@
           "feed.level": "provision",
           "feed.operation": "inserted",
           "feed.partial": false,
+          "feed.qualification": "other",
           "feed.savings": [
             "regulation-12",
             "regulation-13"

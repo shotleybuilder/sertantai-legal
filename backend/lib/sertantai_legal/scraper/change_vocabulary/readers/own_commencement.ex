@@ -38,8 +38,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.OwnCommencement do
     for id <- ids,
         text != [],
         result = Evaluator.evaluate(text, id, Map.put(ctx, :extent, Map.get(extents, id))),
-        {date, partial?} <- stages(result),
-        do: {"#{law_name}:commencement:#{id}@#{date}", id, claims(law_name, date, partial?)}
+        {date, partial?, by} <- stages(result, law_name),
+        do: {"#{law_name}:commencement:#{id}@#{date}", id, claims(law_name, date, partial?, by)}
   end
 
   @type outcome ::
@@ -116,11 +116,22 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.OwnCommencement do
     end
   end
 
-  defp stages(%{full_from: full, partial_from: partial}) do
-    Enum.reject([{partial, true}, {full, false}], &is_nil(elem(&1, 0)))
+  # each stage with the law whose rule dates it: an order the law's notes
+  # cite (SI 1974/1439 commencing HSWA s.78), else the law itself (CV-S09
+  # round 1: an order's law was lost, so `commenced_by` read the Act)
+  defp stages(%{full_from: full, partial_from: partial, entries: entries}, law) do
+    for {date, partial?} <- [{partial, true}, {full, false}], date != nil do
+      by =
+        Enum.find_value(entries, law, fn
+          %{date: ^date, rule: %{source: %{law: l}}} when is_binary(l) -> l
+          _ -> nil
+        end)
+
+      {date, partial?, by}
+    end
   end
 
-  defp claims(law, date, partial?) do
+  defp claims(law, date, partial?, by) do
     ref = "#{law}:commencement"
 
     Enum.concat([
@@ -128,7 +139,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.OwnCommencement do
       Claim.new(:commencement, :level, :provision, ref),
       Claim.new(:commencement, :date, date, ref),
       Claim.new(:commencement, :partial, partial?, ref),
-      Claim.new(:commencement, :commenced_by, law, ref)
+      Claim.new(:commencement, :commenced_by, by, ref)
     ])
   end
 end

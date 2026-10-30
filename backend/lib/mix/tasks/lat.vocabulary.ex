@@ -660,7 +660,8 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
   defp line(p),
     do:
-      "#{p.valid_from} → #{p.valid_to || "…"}  #{p.status}  from #{p.in_force_from}  by #{inspect(p.changed_by)}  #{p.territory}"
+      "#{p.valid_from} → #{p.valid_to || "…"}  #{p.status}  from #{p.in_force_from}  by #{inspect(p.changed_by)}" <>
+        "#{if Map.get(p, :commenced_by, []) != [], do: "  commenced by #{inspect(p.commenced_by)}"}  #{p.territory}"
 
   defp clml(law) do
     [_, type, year, num] = String.split(law, "_", parts: 4)

@@ -316,7 +316,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
       {id,
        claims(e) ++
          Claim.new(:feed, :date_first, first, id) ++
-         Claim.new(:feed, :partial, Qualification.partial?(q), id)}
+         Claim.new(:feed, :partial, Qualification.partial?(q), id) ++
+         qualification_facts(q, id)}
       | for {date, qualification} <- later do
           {"#{id}@#{date}",
            Enum.concat([
@@ -442,6 +443,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
     # title-V-chapter-1; "Sch. 1" "para. 2"): a ref another of the effect's
     # refs extends is part of that path, not a target (D4)
     refs = Enum.reject(refs, fn r -> Enum.any?(refs, &String.starts_with?(&1, r <> "-")) end)
+
+    # likewise a range's ends: "s. 1(6A)-(6C)" links section-1 with the
+    # range section-1-6A..section-1-6C — s.1 is its path, not a target
+    # (CV-S09 round 1: CROW s.13(2)'s insertion had also reached all of s.1)
+    range_ends = Enum.flat_map(ranges, fn {a, b} -> [a, b] end)
+
+    refs =
+      Enum.reject(refs, fn r -> Enum.any?(range_ends, &String.starts_with?(&1, r <> "-")) end)
 
     whole? =
       refs == [] and ranges == [] and
