@@ -232,3 +232,40 @@ R has 6 of 50 rows wrong in the fold (12%), across 6 laws. That is far over the 
 | U12 | KU-missing: a repeal in a schedule table or by consolidation is not stored | amending reader (KS) | SI 1974/1943 Sch.1, SI 1975/1011, the 1961 consolidation |
 | U13 | law identity: UK_uksi_2005_423 for UK_wsi_2005_423 | commencement | CROW Wales order |
 | U14 | KF-type: a feed "words substituted" or "revoked in part" wins for a modification or a misplaced effect | evidence | NISR 1999/150 on NISR 1995/491; SI 1996/1513 on HSWA s.48 |
+
+### Decisions for batch 1 (Jason 2026-10-30)
+
+- **`commenced_by` becomes a label of its own.** `changed_by` holds the laws that made the current text, and `commenced_by` the law that brought it into force: the commencing order, or [] when the law commenced itself. A commencement still opens a version (`in_force_from` its date). Golden is updated to match. This supersedes the 2026-10-21 D1 correction that put the commencing law in `changed_by`. Golden had applied it unevenly: HSWA s.78 had [] after SI 1974/1439, while 2021/30 s.8 credited SI 2022/48.
+- **Batch 1 scope:** fold F1–F8, plus the small upstream fixes U1, U2, U3, U6, U7, U8, U11 and U13. U4, U5, U9, U10, U12 and U14 stay open, as classes for later batches.
+
+### Fix batch 1 (55705654): golden from inputs 39/50
+
+**Fold:**
+- `Label` is split into `Label.Start`, `Label.Day` and `Label.Facts`, plus `ChangeVocabulary.Parts`.
+- **Done:** F1 (starts at its insertion, C14), F2 (versions split on their own day; n-suffixed ids join their base), F3 (C13), F5, F6, F7 and F8 (parts named as our rows).
+- **New:** the most specific commencement governs. An ancestor's commencement never reaches a provision commenced in its own right (2007/19 s.2(1)(d); this is U4 handled in the fold).
+- **New:** `commenced_by` is its own label.
+
+**Upstream done:** U2, U6, U7, U8 and U11; the first stage of a staged insertion now carries its qualification; the own-commencement read covers every row.
+
+**Deferred:**
+- **F4 (C8)** needs the Windsor Framework source, the same as the directives bug: which EU instruments still apply in NI. REACH Art 140 and CLP Art 2(17) fail until then.
+- **U1** (revoked amender), **U3** (relative clause), **U13** (`uksi`/`wsi` naming of orders; the law-itself check is fixed in `Facts.same_law?`) and the new **U15** (an order's carve-out "except in relation to …", OSRPA s.76 and s.91) all need commencement-store or source work.
+
+**Golden corrections, with evidence:**
+- The `commenced_by` migration: HSWA s.78, TCPA s.78(4BA), 2006/16 s.73, 2007/19, 2018/16 s.6, 2021/30 s.8 and the CROW rows.
+- SI 1977/500 reg.4A(1)(c) becomes E+W+S. The inserting SI 1992/2051 is a GB HSWA instrument, so C14 applies; the draft had followed the CLML.
+- The feed-pattern catalogue accepts 44 examples: 39 first-stage qualification claims and 5 "abolition" effects.
+
+**The 11 golden failures**, all upstream or deferred:
+
+| class | provisions |
+|---|---|
+| C8 | REACH Art 140, CLP Art 2(17) |
+| U12 | 1937/67, 1961/34, 1989/462 |
+| U15 + U12 | OSRPA s.76, s.91 |
+| U13 | CROW ×2 |
+| U1 | SI 2013/1471 |
+| U10 | SI 2015/51 |
+
+Tests: 9,547 (1 fixed: `Version` now covers `label/*`).
