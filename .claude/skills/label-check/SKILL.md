@@ -74,6 +74,14 @@ into label periods, in date order from the row's start:
   repeal opens a period but changes neither in_force_from nor changed_by. Both are empty while prospective or partly
   in force. Repealed: in_force_from nil, changed_by the repealing laws.
 - A change to a child never opens a period on its parent (C9). A day that changes no field opens no period.
+- A commencement for one territory ("for E.W.S.", an order applying to England only): in_force there, territory
+  that territory; each later territory's commencement is a version that widens it (C13, Jason 2026-10-30).
+- Inserted text takes the inserting law's narrower extent or application (C14).
+- repealed_saved when the feed or the law names a saving; whether the saving reaches the row is not judged (D3).
+- "Modified", "applied", "continued" — even a modification drafted as "for regulation X substitute" — is not a text
+  change and opens no version (rule 9).
+- EU retained law (C8): a GB-only text change leaves NI with the EU text (the GB row's territory E+W+S). EU
+  directives after 2020-12-31: no rule yet (open; depends on the Windsor Framework) — note, never WRONG.
 - Territorial versions carry the shared history before the split, with that time's full territory (C3).
 - The start: the law's commencement (law_start). When no source dates it (an order not held, EU directives), the
   label starts in_force with in_force_from nil (C10), never a Royal Assent default.
@@ -163,4 +171,5 @@ OH&S (first family, 2026-10-29 →). The session is `.claude/sessions/change-voc
 
 | Round | Seed | Result |
 |---|---|---|
+| golden | — | Grown to 50 (39 laws) on 2026-10-30, using the golden-drafting prompt, a Gemini review and Jason's rulings (C13, C14, D3, rule 9) |
 | probe | 90 (S), 91 (R), 92 (T) | Strata built (ff1f97c7): 149 laws, 20,371 rows. Probes were used only to choose golden candidates, so these seeds are never used for R |

@@ -2,6 +2,13 @@
 session: 'CV-S09: Label Fold'
 status: active
 release: v0.1
+bugs:
+  - pattern: "EU directives (eudr) after IP completion day: no rule fits all. A directive's end depends on whether the Windsor Framework keeps it in NI (Jason 2026-10-30). Needs that source; golden Directive 90/269 Art 8b(1) is held out"
+    category: label
+    module: ChangeVocabulary.Label (and a Windsor Framework source)
+    affected: 15 OH&S directives
+    fix: "Hold the Windsor Framework source (which directives continue in NI); the rule per directive to agree with Jason"
+    status: open
 opened: '2026-10-22'
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
 ---
@@ -21,7 +28,7 @@ The session does not close until its results pass.
 - ✅ Build the strata and samples: `mix lat.label_check` (ff1f97c7)
 - ✅ The `label-check` skill: check prompt, golden-drafting prompt, known classes, seed history
 - ⬜ Round 1 (ask Jason before any long run)
-- ⬜ The golden set is big enough to trust: 27 provisions today; grow to about 50, at least one per S shape, OH&S first; agents draft them, Gemini reviews, Jason signs off
+- ✅ The golden set is big enough to trust: grown to 50 (39 laws) on 2026-10-30. Drafted blind, reviewed by Gemini, rulings by Jason. Directive 90/269 Art 8b(1) is held out until the Windsor Framework source exists
 - ⬜ Golden expected tiers per period, and the start's tier from its source (deferred in CV-04)
 - ⬜ A row commenced only through some of its children reads in force, not in force partly (open bug, V1-01)
 - ⬜ A commencement for one territory ("for E.W.S.", "for N.I."): the feed reader carries it as `in_force_for` (CV-S02 D5). The fold should read it as in force there, not "partly in force" everywhere (2 effects in the OH&S family)
@@ -136,3 +143,28 @@ Application (C6) has no rows. `ancestor` first counted every commencement on an 
 **Pointers from the probes** (to judge in round 1, not findings yet):
 - Territorial versions carry the wrong territory: SI 2008/1597 reg.7(5)(b)[NI] and reg.13(2)[NI] show E+W+S, and HSWA s.51A(2C)[E+W] shows E+W+S. This is the open todo on versions.
 - Some rows have no territory at all: 1937/67, SI 2025/661 and SI 2004/1309.
+
+### Review and sign-off (2026-10-30)
+
+Gemini 2.5 Pro reviewed all 24 drafts against C1–C12 (`backend/data/code-reviews/2026-10-30-cv-s09-golden-gemini.md`). It approved 15, amended 8 and found 1 undecidable.
+
+**Taken:**
+- s.76's `changed_by` is the EPA 1990 alone, because the 1976 repeal was of its children (C9).
+- CLP Art 2(17) is E+W+S from 2020-12-31: C8 applies to any GB-only text change, not only omissions.
+- C14: inserted text takes the inserting law's narrower extent (SI 2013/1471 reg.15(5)(b)).
+- C6 covers instrument-wide application clauses (SI 2015/51 reg.33).
+- A repeal by consolidation (Factories Act 1937 → 1961) is labelled as drafted.
+
+**Contested:**
+- **The commencement AMENDs** to 1984/3 s.1A(b), s.1(6B) and 2007/19 s.2(1)(d). Gemini keeps `in_force_from` at the first commencement and credits the inserting law. That contradicts D1 as Jason corrected it on 2026-10-21: a commencement is a version, with its own date and its own law.
+
+**Jason's rulings (2026-10-30):**
+- **C13:** a commencement for one territory is in force there, and each commencement is a version (D1). So a later territory's commencement widens the territory and opens a version.
+- **D3 stands:** repealed_saved applies when the feed or the law names a saving. Whether the saving reaches the row is not judged. Gemini's AMEND to SI 2008/2337 reg.5 and its "undecidable" for NISR 1997/248 reg.11(9) are not taken.
+- **Rule 9 covers** a modification drafted as a substitution ("shall be modified as follows … for regulation 8 substitute"). It is not a version (SI 1981/917 reg.8(2)).
+- **EU directives after 2020-12-31:** "None of the 3 is right for Windsor and right for everything else." A directive's end depends on whether the Windsor Framework keeps it in NI. Directive 90/269 Art 8b(1) is held out of golden until that source is held (open bug below).
+
+**Pointers for round 1** (from the drafts, not findings yet):
+- **The law's start for the Factories Act 1937 is 1937-07-30** (Royal Assent), but its s.160(2) commences it on 1938-07-01. This is upstream, in LawStart.
+- **A parent repealed through its children** (OSRPA s.76: (1)–(2) in 1977, (3) in 1991). Under C9 the children's repeals open nothing on the parent, so the fold may never repeal s.76. This is the repeal twin of "commenced through its parts".
+- **No row extent** for the 1937/67, 1989/462, 1974/2068 and 2008/2337 rows: `legal_articles` has none. The Act's extent clause or the application clause gives one. This is upstream, in the extent reader.
