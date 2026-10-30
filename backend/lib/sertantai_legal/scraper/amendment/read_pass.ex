@@ -157,7 +157,13 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadPass do
       |> Enum.map(&(&1 |> String.replace(~r/#.*/, "") |> String.trim()))
       |> Enum.reject(&(&1 == ""))
 
-    {golden, _} = Code.eval_file("test/fixtures/change_vocabulary/golden.exs")
+    # both golden sets: the extended one (CV-S09) waits for the workflow's
+    # next pass, but its amending laws stay in the regression
+    golden =
+      Enum.flat_map(
+        ~w(golden golden_extended),
+        &elem(Code.eval_file("test/fixtures/change_vocabulary/#{&1}.exs"), 0)
+      )
 
     behind_golden =
       for law <- golden |> Enum.map(& &1.law) |> Enum.uniq(),

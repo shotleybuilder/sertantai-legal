@@ -11,10 +11,13 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       mix lat.vocabulary --golden --law X  # one golden law only
       mix lat.vocabulary --golden --stored # the same, folding the stored changes
       mix lat.vocabulary --golden --stored --tiers  # with each period's tier per field
+      mix lat.vocabulary --golden --extended  # with the 23 CV-S09 provisions (golden_extended.exs)
 
   `--golden` reads `test/fixtures/change_vocabulary/golden.exs` (the signed-off
   golden set, normalised to D1) and compares each provision's vocabulary label
   with its expected periods — the change-vocabulary scoreboard (CV-03).
+  `--extended` adds `golden_extended.exs`: the 23 provisions drafted in CV-S09,
+  held apart until the workflow runs again from step 1 (Jason 2026-10-30).
 
   The change register (CV-04): `--build` writes a law's merged changes,
   for every LAT row, to `provision_changes` (one law at a time, each in its
@@ -56,6 +59,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
           check: :boolean,
           provision: :keep,
           golden: :boolean,
+          extended: :boolean,
           workers: :integer,
           build: :boolean,
           stored: :boolean,
@@ -78,7 +82,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
   defp laws(opts, task) do
     cond do
       opts[:golden] ->
-        golden_laws()
+        golden_laws(opts)
 
       opts[:family] ->
         Repo.query!(
@@ -114,7 +118,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
     conflict_totals(laws)
 
     stale =
-      for l <- golden_laws(),
+      for l <- golden_laws(opts),
           v =
             Repo.query!(
               "SELECT DISTINCT code_version FROM provision_changes WHERE law_name = $1",
@@ -365,10 +369,16 @@ defmodule Mix.Tasks.Lat.Vocabulary do
   end
 
   @golden "test/fixtures/change_vocabulary/golden.exs"
+  @golden_extended "test/fixtures/change_vocabulary/golden_extended.exs"
 
-  defp golden_laws do
-    {cases, _} = Code.eval_file(@golden)
-    cases |> Enum.map(& &1.law) |> Enum.uniq()
+  # the golden set; with --extended, the CV-S09 provisions too
+  defp golden_cases(opts) do
+    files = if opts[:extended], do: [@golden, @golden_extended], else: [@golden]
+    Enum.flat_map(files, &elem(Code.eval_file(&1), 0))
+  end
+
+  defp golden_laws(opts) do
+    opts |> golden_cases() |> Enum.map(& &1.law) |> Enum.uniq()
   end
 
   defp golden_law({law, entries}, opts) do
@@ -407,7 +417,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
   defp golden(opts) do
     Mix.Task.run("app.start")
-    {cases, _} = Code.eval_file(@golden)
+    cases = golden_cases(opts)
 
     # each golden law read where the machine allows several at once
     # (`LawRunner.Guard`), in order (run time, 2026-10-25)
