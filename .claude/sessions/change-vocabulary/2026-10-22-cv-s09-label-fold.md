@@ -662,3 +662,9 @@ Upstream faults are about 17 of 150: U10 (6), U12 (4), U13, U1, V9, the HSWA s.5
 - **Restore point:** tag `cv-s09-batch6`.
 - **Preview of the regression set:** 339 laws, 149 changed (rules 24,258 → 24,616): 144 splits, 3 whole-law rules, 2 merged quoted rules (SI 1992/3036, 2005 c.15), all checked.
 - **Commencement re-read:** `--read --all`, `--read-amending`, `--read-orders`, and `--read-orders --law` for every order-sourced law. The diff is the IR/N2 corrections, WSI 2008/3171's new rules and SI 1991/2728's aside.
+- **Read pass:** 11 min 31 s, 2,102 laws, no errors. 365 splits and 7 whole-law rules (each source text checked: "The 1975 Act is repealed", "the 2010 Order and the 2011 Order are revoked", …), plus 2 merged quoted rules.
+- **Golden from inputs, first run: 40/50.** SI 2010/2214 reg.36[E] regressed: SI 2015/767's newly inserted reg.36(3) joined the reg.36 substitution event and made reg.36 read inserted. Fixed in 4d05da01: a new provision the law's text inserts under a substituted one stays its own change.
+- **Golden from inputs after the fix: 41/50**, the same 9 upstream failures as batch 5.
+- **Rebuild:** OH&S, 149 laws, no errors. Status: in force 19,066; repealed and saved 1,029; repealed 270; partly in force 6.
+- **R:** re-folded with seed 153; 6 of 150 rows changed (SN2 SI 1998/494 reg.6(1B); WL SI 2008/1597 ×3 [NI]; EP HSWA s.16(2); containers NISR 1997/248 Pt IV). Those 6 are rechecked; the other 144 stay pooled.
+- **S and T, fresh draws:** seeds S 161 (84 rows), T 162 (66 checked, 4 per class). 8 agents.
