@@ -424,3 +424,16 @@ Passing needs 0/150 (1.98%), so round 3 fails. There are no K8 rows in R this ti
 - Credit an undated words-level change on an undated start (REACH Art 118(2)(c))?
 - Is NISR 1999/150 (a "Modifications" regulation that is a permanent renaming) rule 9 or a text change?
 - The shared pre-split history filters out changes not overlapping the version's own territory.
+
+### Decisions for batch 3 (Jason 2026-10-30)
+
+- **Scope:** fold H1–H6, plus the M1 merge join (the law's own commencement joined with the feed's copy, since tiers count).
+- **H7:** on an undated start (C10), an undated words-level change on the row is credited in `changed_by`. On a dated start it stays a gap.
+- **NISR 1999/150** ("Modifications", a permanent renaming): rule 9, no version. It joins U14 for the reader batch.
+
+### Fix batch 3 (8196eb87): golden from inputs 39/50
+
+- **Done:** H1–H7 and M1 (the new module `Merge.OwnCommencement`, which joins a feed self-commencement with the reader's record of it).
+- **Refactor:** `Label.Undated` is split out of `Label.Start` for module size.
+- **Tests:** 9,563.
+- **Golden:** 39/50, the same 11 deferred classes.
