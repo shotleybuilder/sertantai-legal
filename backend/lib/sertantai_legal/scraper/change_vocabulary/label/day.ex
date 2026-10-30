@@ -71,7 +71,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
     setters = %{
       status: commenced ++ removed ++ text,
       territory: removed ++ applied ++ commenced ++ text,
-      in_force_from: text ++ commenced,
+      # (a whole repeal read as words, its level unstated: SI 2018/816
+      # reg.23(1)(a)(ii), CV-S09 round 7)
+      in_force_from: text ++ commenced ++ removed,
       # the current text's makers, though made on an earlier day (CV-S09
       # round 5: HSWA s.43(6), its undated maker credited on a commencement)
       changed_by:
@@ -268,7 +270,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
               ),
             status: status,
             territory: territory,
-            in_force_from: date,
+            in_force_from: if(undated_maker?(text_from, self), do: nil, else: date),
             changed_by: text_by,
             commenced_by: Facts.commencers(versions ++ commenced, text_by, self),
             _text_by: text_by,
@@ -290,6 +292,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
   # a body held only as made (no dct:valid) is no evidence of any later
   # change (CV-S09 round 6: NISR 1993/37 reg.3(1)(d), repealed 2015, had come
   # back with reg.3's 2017 substitution, whose reg.3(1) has no (d))
+  # the current text made by another law's whole substitution no source
+  # dates (its order not held): when it took effect is unknown, never the
+  # commencement of the text it replaced (Jason 2026-10-30, CV-S09 round 7:
+  # HSWA s.22(4), CPA 1987)
+  defp undated_maker?(text_from, self),
+    do:
+      Enum.any?(
+        text_from,
+        &(&1.resolved.date == nil and &1.resolved.operation == :substituted and
+            &1.resolved.level == :provision and &1.resolved.by not in [nil, self])
+      )
+
   defp revised?(ctx, date) do
     case Map.get(ctx, :valid, :unknown) do
       %Date{} = valid -> Date.compare(valid, date) != :lt

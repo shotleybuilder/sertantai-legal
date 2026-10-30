@@ -697,4 +697,66 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
       assert back.tiers.changed_by == :primary
     end
   end
+
+  describe "batch 7 (CV-S09 round 7)" do
+    defp tiered7(c, tiers), do: %{c | resolved: %{c.resolved | tiers: tiers}}
+
+    test "the history a version shares before its split takes a change narrower than the version (SI 2008/1597 reg.21(2)(a)[NI])" do
+      c =
+        change("reg.21(2)(a)", :substituted, ~D[2015-10-16],
+          level: :words,
+          by: "UK_uksi_2015_1682",
+          territory: "E+W+S"
+        )
+
+      periods =
+        fold("reg.21(2)(a)", [c], %{
+          law: "UK_uksi_2008_1597",
+          start: ~D[2009-12-29],
+          extent: "E+W+S+NI",
+          version: "NI",
+          version_start: ~D[2020-12-31]
+        })
+
+      assert %{valid_from: ~D[2015-10-16], changed_by: ["UK_uksi_2015_1682"]} =
+               Enum.find(periods, &(&1.valid_from == ~D[2015-10-16]))
+
+      assert %{territory: "NI", changed_by: ["UK_uksi_2015_1682"]} = List.last(periods)
+    end
+
+    test "a whole repeal read as words tiers its in_force_from (SI 2018/816 reg.23(1)(a)(ii))" do
+      c =
+        change("reg.23(1)(a)(ii)", :repealed, ~D[2020-12-31],
+          by: "UK_uksi_2019_1347",
+          sources: %{level: nil}
+        )
+        |> tiered7(%{date: :derived, by: :derived})
+
+      [_, v] =
+        Label.fold(
+          "reg.23(1)(a)(ii)",
+          %{law: "UK_uksi_2018_816", extent: "E+W+S", start: ~D[2018-09-01], shows_text: true},
+          [c]
+        )
+
+      assert v.in_force_from == ~D[2020-12-31]
+      assert v.tiers.in_force_from == :derived
+    end
+
+    test "text another law substituted, undated, leaves its in_force_from unknown on the commencement (HSWA s.22(4), CPA 1987)" do
+      changes = [
+        change("s.22(4)", :substituted, nil, by: "UK_ukpga_1987_43"),
+        change("s.22(4)", :commenced, ~D[1975-01-01], commenced_by: "UK_uksi_1974_1439")
+      ]
+
+      assert %{status: :in_force, in_force_from: nil, changed_by: ["UK_ukpga_1987_43"]} =
+               List.last(
+                 fold("s.22(4)", changes, %{
+                   law: "UK_ukpga_1974_37",
+                   start: ~D[1974-07-31],
+                   prospective: true
+                 })
+               )
+    end
+  end
 end

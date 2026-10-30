@@ -61,12 +61,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
     version = Map.get(provision, :version)
     version_start = Map.get(provision, :version_start)
 
-    # a territorial version takes only the changes that can apply to it
+    # a territorial version takes only the changes that can apply to it:
+    # its own territory's from the split, the union's in the history it
+    # shares before it (C3; Jason 2026-10-30, CV-S09 round 7: SI 2015/1682's
+    # E+W+S words in SI 2008/1597 reg.21(2)(a), 2015, are in the NI text)
     reaching =
       changes
       |> Enum.filter(&reaches?(&1, id))
       |> Enum.filter(&(&1.resolved.date != nil))
-      |> Enum.filter(&(version == nil or Facts.overlaps?(&1.resolved.territory, version)))
+      |> Enum.filter(
+        &(version == nil or
+            Facts.overlaps?(&1.resolved.territory, then_territory(&1, provision, version)))
+      )
 
     # it begins when it exists: its law's start, or a later insertion
     born = Start.start(start, reaching)
@@ -169,6 +175,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
         i -> "pt.#{i + 1}"
       end
     end)
+  end
+
+  # the territory the row had on the change's day: the versions' union
+  # before they split, the version's own from then
+  defp then_territory(%Change{resolved: %{date: date}}, provision, version) do
+    case Map.get(provision, :version_start) do
+      %Date{} = split ->
+        if Date.compare(date, split) == :lt, do: provision.extent || version, else: version
+
+      _ ->
+        version
+    end
   end
 
   defp visible(period), do: Map.drop(period, [:tiers | @private])

@@ -60,4 +60,22 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelContainersTest do
     assert closed["pt.IV"] == labels["pt.IV"]
     assert closed["reg.14"] == labels["reg.14"]
   end
+
+  test "a field whose value stays keeps its tier (NISR 2009/238 Pt 2: NI saved, NI before)" do
+    labels = %{
+      "pt.2" => [p(@start, :in_force, iff: @start, tiers: %{territory: nil})],
+      "reg.12" => [
+        p(@start, :in_force),
+        p(~D[2018-06-01], :repealed_saved,
+          by: ["UK_nisr_2013_206"],
+          tiers: %{status: :derived, territory: :primary}
+        )
+      ]
+    }
+
+    [_, gone] = Containers.close(labels, %{"reg.12" => ["pt.2"]})["pt.2"]
+    assert gone.territory == "NI"
+    assert gone.tiers.territory == nil
+    assert gone.tiers.status == :derived
+  end
 end
