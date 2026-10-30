@@ -256,6 +256,9 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
       shell.info("  #{n}  #{k} (#{length(ls)} laws)#{fault}")
     end
 
+    by_order = Enum.count(rows, &(&1.outcome in [:by_order, :by_order_partly]))
+    shell.info("  (left to orders, by_order + by_order_partly: #{by_order})")
+
     shell.info("\nagainst the law's own feed (a yardstick):")
 
     for {k, n} <- rows |> Enum.frequencies_by(& &1.yardstick) |> Enum.sort_by(&(-elem(&1, 1))),

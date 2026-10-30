@@ -269,6 +269,14 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
           |> Enum.sort_by(&(-elem(&1, 1))),
         do: shell.info("  #{n}  #{k}")
 
+    {read, all} =
+      Enum.reduce(acc.patterns, {0, 0}, fn {k, e}, {read, all} ->
+        rules? = k |> String.split("|") |> List.last() |> String.starts_with?("rules")
+        {read + if(rules?, do: e.count, else: 0), all + e.count}
+      end)
+
+    shell.info("  (read into rules: #{read} of #{all})")
+
     new = for p <- Map.keys(acc.patterns), not Map.has_key?(held["patterns"], p), do: p
     gone = for p <- Map.keys(held["patterns"]), not Map.has_key?(acc.patterns, p), do: p
 

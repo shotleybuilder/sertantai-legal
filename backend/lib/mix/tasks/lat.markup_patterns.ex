@@ -248,6 +248,8 @@ defmodule Mix.Tasks.Lat.MarkupPatterns do
     |> Enum.sort()
     |> Enum.each(fn {d, n} -> shell.info("  #{d}: #{n}") end)
 
+    pointer_shares(acc.patterns, shell)
+
     shell.info(
       "examples not held, reading differently alone than in their law: #{length(acc.mismatch)}"
     )
@@ -287,4 +289,36 @@ defmodule Mix.Tasks.Lat.MarkupPatterns do
       shell.info("\naccepted: #{length(new)} new patterns written to #{path}")
     end
   end
+
+  # CV-S03's pointer shares: of the legacy and the effect-id changes, how
+  # many carry a cited law, and how many the amending provisions too
+  defp pointer_shares(patterns, shell) do
+    counts = for {"pointers: " <> v, %{count: n}} <- patterns, do: {v, n}
+    shell.info("pointers (changes):")
+
+    for kind <- ["legacy", "effect id"] do
+      mine = for {v, n} <- counts, String.starts_with?(v, kind <> " |"), do: {v, n}
+      total = mine |> Enum.map(&elem(&1, 1)) |> Enum.sum()
+
+      cited =
+        for {v, n} <- mine,
+            not String.ends_with?(v, "no cited law"),
+            reduce: 0,
+            do: (acc -> acc + n)
+
+      both =
+        for {v, n} <- mine,
+            String.ends_with?(v, "amending provisions"),
+            reduce: 0,
+            do: (acc -> acc + n)
+
+      shell.info(
+        "  #{kind}: #{total}; a cited law #{cited} (#{share(cited, total)}); " <>
+          "with the amending provisions #{both} (#{share(both, total)})"
+      )
+    end
+  end
+
+  defp share(_n, 0), do: "n/a"
+  defp share(n, total), do: :erlang.float_to_binary(100 * n / total, decimals: 1) <> "%"
 end

@@ -38,7 +38,7 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.{Extent, SweepForm}
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Lookup, ReadCache, Store}
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Draw
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.{Coverage, Draw}
   alias SertantaiLegal.Scraper.LawRunner
   alias SertantaiLegal.Scraper.LawRunner.Guard
 
@@ -325,6 +325,13 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
           change_rows |> Enum.frequencies_by(& &1.outcome) |> Enum.sort_by(&(-elem(&1, 1))),
         do: shell.info("  #{pad(n)}  #{k}")
 
+    groups = change_rows |> Enum.frequencies_by(& &1.outcome) |> Coverage.territory_groups()
+    shell.info("\ngrouped (CV-S05's table):")
+
+    for k <-
+          ~w(law_text follows_enactment feed_or_markup law_type_not_read no_powers unread_statement competence_only no_amending_law other)a,
+        do: shell.info("  #{pad(groups[k])}  #{pct(groups[k], groups.total)}  #{k}")
+
     shell.info(
       if faults == [],
         do: "\nPASS (amending laws: our faults 0)",
@@ -336,6 +343,11 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
   defp key(%{basis: b}), do: b
 
   defp pad(n), do: String.pad_leading(to_string(n), 5)
+
+  defp pct(_n, 0), do: "  n/a"
+
+  defp pct(n, total),
+    do: String.pad_leading(:erlang.float_to_binary(100 * n / total, decimals: 1) <> "%", 6)
 
   # ── sample ───────────────────────────────────────────────────────────
 

@@ -345,6 +345,12 @@ defmodule Mix.Tasks.Lat.Sources do
       )
     end
 
+    needed =
+      for c <- r.order, counts = r.counts[c], counts != nil, reduce: 0 do
+        acc -> acc + (counts |> Map.values() |> Enum.sum())
+      end
+
+    Mix.shell().info("  needed, all categories: #{needed}")
     Mix.shell().info("\nfailures: #{length(r.failures)}")
 
     for f <- if(opts[:all], do: r.failures, else: Enum.take(r.failures, 20)),
