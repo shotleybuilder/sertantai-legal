@@ -561,3 +561,8 @@ Upstream faults are about 17 of 150: U10 (6), U12 (4), U13, U1, V9, the HSWA s.5
 - Known still live: U12 (SLR and order repeals in notes only), U10 (HSWA s.84(1), EA 1995 E.W.S.), U5, U15, U3, U13, U14.
 
 **Doubtful, for Jason:** a pre-split one-territory words change (S only) on a shared E+W+S+NI history opens no version (HSWA s.28(3)(f)(i)); a narrower-extent words substitution narrowing the row (C14 for words).
+
+### Decisions for batch 5 (Jason 2026-10-30)
+
+- **Scope:** fold J1–J5, plus the reader fixes SN, N1, N2, HA and PN; then one full read pass, a rebuild and round 6.
+- **J5:** "We do need a date, cannot have 1995 text as never in force". An undated substitution on a dated start is credited, and its date must be found (the amending provision's own commencement), not left blank.
