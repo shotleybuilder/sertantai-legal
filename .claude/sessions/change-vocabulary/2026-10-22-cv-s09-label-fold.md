@@ -168,3 +168,67 @@ Gemini 2.5 Pro reviewed all 24 drafts against C1–C12 (`backend/data/code-revie
 - **The law's start for the Factories Act 1937 is 1937-07-30** (Royal Assent), but its s.160(2) commences it on 1938-07-01. This is upstream, in LawStart.
 - **A parent repealed through its children** (OSRPA s.76: (1)–(2) in 1977, (3) in 1991). Under C9 the children's repeals open nothing on the parent, so the fold may never repeal s.76. This is the repeal twin of "commenced through its parts".
 - **No row extent** for the 1937/67, 1989/462, 1974/2068 and 2008/2337 rows: `legal_articles` has none. The Act's extent clause or the application clause gives one. This is upstream, in the extent reader.
+
+## Round 1 (2026-10-30; seeds S 101, T 102, R 103)
+
+Draws (`mix lat.label_check`, run in parallel with golden):
+- **S:** 84 rows (`--per 10`);
+- **T:** 144 rows (`--per 10`). The agents check the first 4 per class (64);
+- **R:** 150 rows. The agents check the first 50; the rest are kept for the pooled rounds after the fixes.
+
+**G, golden from inputs: 35/50.** All 27 original provisions pass; 15 of the 23 new ones fail.
+
+| class | provisions | where |
+|---|---|---|
+| K8: C8 not applied (GB omission reads repealed nowhere; GB substitution keeps NI) | REACH Art 140, CLP Art 2(17) | fold |
+| KV: version split on its start not made, and the other version's one-territory repeal narrows this one | SI 2008/1597 reg.19(1)(b)(ii)[NI], reg.7(5)(b)[NI] | fold |
+| K13: one-territory commencement | 1984/3 s.1A(b), s.1(6B); 2007/19 s.2(1)(d) | fold, and s.1A(b) reads prospective then partial |
+| KP: commenced through its parts not read | OSRPA 1963 s.76, s.91 | upstream (SI 1964/191's rules?) |
+| KU-missing: a change the law states, no stored change | 1937/67 (1961 consolidation repeal), 1961/34 s.127(3) (1975 words repeal), 1989/462 reg.7(2) (1990 substitution, feed undated) | upstream |
+| KU-ext: territory from C6/C14 not applied | SI 2015/51 reg.33 (GB), SI 2013/1471 reg.15(5)(b) (C14) | upstream |
+| changed_by credits a revoked inserter | SI 2013/1471 reg.15(5)(b) (SI 2017/238) | upstream (evidence/merge) |
+| KU-start: the made version's Status="Prospective" read as the row prospective | NISR 1997/248 reg.11(9) | markup reader |
+
+### Round 1 agent check: FAIL
+
+There were 10 agents (the per-batch notes are kept in the scratchpad as `r1/findings.md`).
+
+| stratum | rows | OK | WRONG-fold | WRONG-upstream | gap | doubtful |
+|---|---|---|---|---|---|---|
+| S | 84 | 18 | 44 | 13 | 7 | 2 |
+| T (4 per class) | 64 | 19 | 23 | 14 | 8 | 0 |
+| R (first 50 of 150) | 50 | 27 | 6 | 9 | 8 | 0 |
+
+R has 6 of 50 rows wrong in the fold (12%), across 6 laws. That is far over the 2% bound, so round 1 fails. Golden is 35/50.
+
+**Fold classes** (each one rule; they are batch 1's fold fixes):
+
+| # | class | evidence | rule |
+|---|---|---|---|
+| F1 | KI-insert: a row inserted after the law's start is labelled from the law's start; this is a regression, since today's labels start them right | about 60 rows across S, T and R; all 23 of 23 inserted rows in R. Golden missed it because each case gives its own `start` | the row starts at the provision-level insertion (on itself or its nearest inserted ancestor), with the inserting law's territory (C14); an undated insertion gives an undated start (C10); the law's own commencement never reaches an inserted row (the commencement reader also writes `LAW:commencement:<row>@start` for them) |
+| F2 | KV: versions not split at their start (RestrictStartDate), and the other version's one-territory repeal narrows this one; n-suffixed version ids (section-28n2-7-a) are left out of the base's union | about 20 rows: SI 2008/1597, HSWA s.51A, s.28, s.23, s.16, s.14, s.43A | split at the version's start (C3); a repeal reaches only the versions its territory overlaps; gather every version of the base |
+| F3 | K13: a one-territory commencement | 1984/3 s.1 rows; 2007/19 s.2(1)(d) | in force there, each commencement a version (C13) |
+| F4 | K8: C8 for GB-only changes to EU law | REACH and CLP rows | a GB-only change (insert, substitute, omit) on 2020-12-31 or later leaves NI with the EU text |
+| F5 | NEW-A: a whole substitution, fully commenced (on the row or an ancestor), doesn't end in_force_partial, and every later version is swallowed | HSWA s.10, s.11, s.11(6)(b) (SI 2008/960) | it opens a version: in_force, its date and its law |
+| F6 | NEW-B: a partial commencement on the start day reads prospective | SI 1992/3004, SI 2005/1643, NISR 2006/1 | commencements on the start day apply before "a later commencement reaches it" |
+| F7 | NEW-C: repealed_in_part read as C7 when the words are gone (not retained) | Factories 1961 s.125(2)(j), s.127(2)(j), s.127(5); 129 changes in 17 laws | C7 only when the text is retained or the removal is for one purpose; otherwise it is a words repeal, a version |
+| F8 | KP: commenced through its parts, read wrong | OSRPA s.76 | partial from the first part's commencement |
+
+**Upstream classes** (fixed in the owning step's code, in batch 1 where small):
+
+| # | class | step | evidence |
+|---|---|---|---|
+| U1 | an amending law revoked before its change took effect is still credited (C5) | evidence/merge | SI 2018/1377 (revoked by NISR 2020/330 reg.13), SI 2017/238 |
+| U2 | a range insertion is also stored on its common parent | feed/merge | key …24f25d "s.1(6A)-(6C)" also on s.1; about 6 parents |
+| U3 | "to which section 51 … relates" read as commencing s.51 | commencement reader | SI 1964/191 art.2 |
+| U4 | a general commencement excepting a child is stored as full on its ancestors | commencement | SI 2008/401 / 2007/19 s.2(1)(d) |
+| U5 | a second commencement rule for a subsection scope is not stored as a change | commencement → changes | HSWA s.10(1), s.10(6), s.11(6) on 1975-01-01; OSRPA s.91(4) on 1990 |
+| U6 | an order's commencing law is not carried as commenced_by (98 of 99 order-schedule commencements) | commencement | SI 1974/1439 on HSWA |
+| U7 | level defaults to provision with no source, so a "word deleted" becomes a whole repeal | evidence | SI 1992/3004 reg.5(3)(a) |
+| U8 | feed Type "abolition" is not mapped (25 EU effects) | feed reader | CLP Art 25(5) |
+| U9 | a legacy Addition round original text "repealed … with saving" is read as an insertion | evidence (legacy rule) | OSRPA ss.4–16 (d30p…) |
+| U10 | extent: a conditional NI clause; rows with no extent; C6/C11/C14 not applied | extent reader | Employment Act 1989 s.30(6); 1937/67; 1957/31; SI 2025/1110; SI 2015/51 |
+| U11 | KU-start: a made version's Status="Prospective" taken as the row prospective | markup reader | NISR 1997/248, 1999/304, 1999/305, 1999/13 |
+| U12 | KU-missing: a repeal in a schedule table or by consolidation is not stored | amending reader (KS) | SI 1974/1943 Sch.1, SI 1975/1011, the 1961 consolidation |
+| U13 | law identity: UK_uksi_2005_423 for UK_wsi_2005_423 | commencement | CROW Wales order |
+| U14 | KF-type: a feed "words substituted" or "revoked in part" wins for a modification or a misplaced effect | evidence | NISR 1999/150 on NISR 1995/491; SI 1996/1513 on HSWA s.48 |
