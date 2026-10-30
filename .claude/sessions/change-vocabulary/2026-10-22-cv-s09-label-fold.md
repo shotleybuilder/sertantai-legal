@@ -668,3 +668,27 @@ Upstream faults are about 17 of 150: U10 (6), U12 (4), U13, U1, V9, the HSWA s.5
 - **Rebuild:** OH&S, 149 laws, no errors. Status: in force 19,066; repealed and saved 1,029; repealed 270; partly in force 6.
 - **R:** re-folded with seed 153; 6 of 150 rows changed (SN2 SI 1998/494 reg.6(1B); WL SI 2008/1597 ×3 [NI]; EP HSWA s.16(2); containers NISR 1997/248 Pt IV). Those 6 are rechecked; the other 144 stay pooled.
 - **S and T, fresh draws:** seeds S 161 (84 rows), T 162 (66 checked, 4 per class). 8 agents.
+
+### Round 7 agent check: R still passes; S/T 3 fold faults
+
+8 agents; per-batch notes in the scratchpad (`r7/findings.md`).
+
+**R:** the 6 changed rows are all right; each change is a correction. Pooled R stays at **0/150 rows and 0/73 laws: PASS.**
+
+**S (84 rows) and T (66 rows): 3 fold faults.**
+
+| # | class | evidence |
+|---|---|---|
+| L1 | before a version's split, a change is tested against the version's own territory, so a narrower change in the shared history is dropped (the round 3/6 open question). The NI version's own markup carries SI 2015/1682's 2015 words change | SI 2008/1597 reg.21(2)(a)[NI] |
+| L2 | tier: the container rule (batch 6) sets the territory tier though the territory value is unchanged | NISR 2009/238 Pt 2 |
+| L3 | tier: an unstated-level own repeal read as words opens a version with no in_force_from tier | SI 2018/816 reg.23(1)(a)(ii) |
+
+**Upstream, new:**
+- **N2:** a whole substitution whose quote drops the old provision's children leaves them alive; the mirror of the batch 6 rule (SI 2026/867 reg.12A; NISR 2016/427 on NISR 1999/304 reg.9(5)).
+- **AS:** a feed Type "words inserted by S.I. 2019/720 … (as substituted)" is an earlier amendment (C5) not read (CLP Art 4(5)).
+- **BI:** "Art. 14 BI" (spaced) is placed on Art 14, not Art 14a (16+ EU effects).
+- **LI:** EU list points with NumberOverride ("A1.", "A2.") are placed on the article as words (REACH Art 3).
+- **CJ (tiers):** 411 feed commencement effects are left unjoined from the reader's same-day commencement by the same order.
+- Still live: U1, U5, U10, U12, U13, U14, U15, V9, KC-order (Water Act 1989 s.194(3); SI 1996/3146).
+
+**Rule questions:** L1 (the shared history before a split includes a narrower change); an undated whole substitution on a dated start, its order not held (HSWA s.22(4), CPA 1987) currently shows the start's date beside the later maker.
