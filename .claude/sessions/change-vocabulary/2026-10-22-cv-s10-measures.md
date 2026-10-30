@@ -17,6 +17,30 @@ bugs:
     affected: 3
     fix: "move the tallies into pure modules with tests (CV-S11 improve)"
     status: open
+  - pattern: "Law-text coverage put EU annex targets (annex.*) in the body group; annexes are unparsed like Schedules (K1)"
+    category: measure definition
+    module: Measures.Coverage.law_text_coverage/2
+    affected: 252
+    fix: "annex. grouped with sch. (9e2f19b6)"
+    status: fixed
+  - pattern: "Amending reader '#dropped' repeal attributes sub-provisions inserted later (by another law) to the earlier substituting law: SI 2011/1885 reg.7(1) substitutes reg.19 of SI 2009/1348 with (1)-(2); (3)-(4) inserted later by SI 2020/1111 reg.8(4) are stored as repealed by 2011/1885 (siblings 19(1A), 19(3), 19(4) alike)"
+    category: upstream / amending reader (CV-S06)
+    module: Amendment reader, the '#dropped' rows
+    affected: 
+    fix: "a dropped row must have existed under the substituted text at the substituting law's date (not compared with today's text)"
+    status: open
+  - pattern: "Markup ChangeIds at schedule-part wrapper ids carry no markup claim (Repeal/Addition pairs; SI 2008/1597 sch.2.pt.9, sch.2.pt.11): J and markup coverage understated"
+    category: upstream / markup reader (CV-S03)
+    module: ChangeVocabulary.Readers.Markup (schedule paragraph-wrapper ids)
+    affected: 
+    fix: "place markup on schedule-part wrappers (schedule-N-part-P-paragraph-wrapperXnY) as the Part"
+    status: open
+  - pattern: "Feed effect 'HSWA s.48 revoked in part' by SI 1996/1513 reg.13 looks false: reg.13 omits words from SI 1977/500 reg.3(1); 1996/1513 touches s.48 only by reg.11 (applied with modifications, its own feed effect)"
+    category: upstream / legislation.gov.uk feed error
+    module: (feed; derived tier)
+    affected: 1
+    fix: "report to legislation.gov.uk or a known-feed-error list; the law text, where read, should outrank it"
+    status: open
 ---
 
 # Session: CV-S10: Measures (ACTIVE)
@@ -33,18 +57,18 @@ Jason 2026-10-30: "We run S10 to pass making sure it's replicable and supported 
 
 - ✅ Inventory every figure the workflow prints or quotes, by step (task, function, definition, test or none; ad-hoc figures in quality statements)
 - ✅ Define what good looks like (agreed 2026-10-30: below)
-- ⬜ Measure register: every published figure (quality statements S05–S09, pass rules, CV-07), with name, definition, command, function, test
+- ✅ Measure register (in the `measures-check` skill): every published figure (quality statements S05–S09, pass rules, CV-07), with name, definition, command, function, test
 - ✅ The 95% bound in code (Clopper–Pearson), tested against known values (`Measures.Bound`, `4224bd90`)
-- ⬜ Verdict files: a JSON format for agent verdicts (seed, item, verdict, class); the step skills' prompts write it; a mix task pools a step's verdicts since the last fix and prints the bounds and the end-to-end figure (format and `mix lat.verdicts` done `4224bd90`; the skills' prompts to follow)
+- ✅ Verdict files: a JSON format for agent verdicts (seed, item, verdict, class); the step skills' prompts write it; a mix task pools a step's verdicts since the last fix and prints the bounds and the end-to-end figure (`4224bd90`; prompts `da28c2f8`; first used by this session's hand check)
 - ✅ The figures worked out by hand put into code: S05/S06 coverage tables, S08 dating coverage, CV-07 "both sources" (`mix lat.measures`, `27d98ac9`); small totals in their tasks (`a7037b3c`)
-- ⬜ Names: one meaning per name ("both sources", "disagreeing", agreement's copied rules, `Conflicts.report` inputs); the S07 join-rate header fixed (header fixed `27d98ac9`; `Conflicts.report` inputs change no figure; names in the register)
+- ✅ Names: one meaning per name ("both sources", "disagreeing", agreement's copied rules, `Conflicts.report` inputs); the S07 join-rate header fixed (header fixed `27d98ac9`; `Conflicts.report` inputs change no figure; names in the register)
 - ✅ Replicable: a reproducibility test per draw (`Measures.Draw`, every check); two runs over the same store identical, and a third after the refactor (`27d98ac9`); seeds recorded in the verdict files
 - ✅ Coverage and the conflict report: "who states a change" from the claims of the change itself (fixed in CV-07 `41f9afe0`; earlier figures overstated); defined and tested (`Coverage.stated_by/1`; agrees with `lat.amending_check` exactly: 1,396 = 1,235 + 161)
 - ✅ The coverage figures quoted in CV-07 re-baselined (golden 22% → 24.0%, OH&S family 13% → 25.9%)
-- ⬜ Hand check: an agent checks a sample of each classifying measure against the sources (stated by, join, agreement, strata)
-- ⬜ A `measures-check` skill: the register, the commands, how to rerun for a family
+- ✅ Hand check: an agent checks a sample of each classifying measure against the sources (stated by, coverage, dating, merge stratum): 50 text changes, 0 classed wrong after one measure fault found and fixed (annex)
+- ✅ A `measures-check` skill: the register, the commands, how to rerun for a family
 - ⬜ Fix until the check passes reliably; record the result
-- ⬜ Hand the register and the figures' history across rounds to CV-S11 (retrospective)
+- ✅ Hand the register and the figures' history across rounds to CV-S11 (retrospective): its "Inputs from CV-S10" section
 
 ## Dependencies
 
@@ -204,3 +228,12 @@ Every check's sample drawn at seed 901 on OH&S, twice on the code as it stood, t
 **Totals now printed by their tasks** (`a7037b3c`): `lat.sources` needed total (1,160 today); `lat.commencement_check` left to orders (164); `lat.order_patterns` statements read into rules (2,298 of 3,496 today; S04 published 1,951 of 2,901); `lat.markup_patterns` pointer shares (checked on two laws; the corpus run is ~16 min, not run).
 
 **Found:** `lat.sources --family` fails today with 103 documents not fetched (bug logged above): the S01 gate isn't re-run as later steps add needs.
+
+## Hand check (2026-10-30)
+
+A seeded sample of 50 OH&S text changes (seed `{911, 10, 10}`, drawn twice, byte-identical; script `scratchpad/s10/hand_sample.exs`) with the classes `Measures.Coverage` and `MergeStrata` give each: who states it, law-text coverage, dating, merge stratum. Two agents judged each class against the feed, the markup, the amending law's words and the stored rows. Verdict files: `backend/data/reports/change-vocabulary/verdicts/measures/ohs/` (the first written in the new format).
+
+- **Before the agents:** reading the first item, I found the coverage measure put EU annex targets in the body group. Fixed (`9e2f19b6`): annex grouped with Schedule, both unparsed. The family's Schedule group goes 615 → 867 (S06 published 831), body 1,319 → 1,067 (S06: 1,150).
+- **Agents, on the fixed code:** 0 of 50 classed wrong by the measures. Upstream: 1 wrong (a false `#dropped` repeal), 2 gaps (markup ChangeIds with no claim), 1 feed error with no class effect. All four logged as open bugs above.
+- `mix lat.verdicts --dir …`: items 0/50 (95% upper 5.82%), laws 0/20; end to end 1/50. Its PASS line uses the step checks' 2% limit, which this check doesn't claim: its agreed rule is "no item classed wrong".
+- **What the agents confirmed:** every feed key exists on its stated provision; every markup claim's ChangeId sits at its target; every dated change's date matches the feed's InForce; every J is one event (including operation-family pairs such as feed "substituted" against markup Addition).

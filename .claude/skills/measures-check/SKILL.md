@@ -66,7 +66,44 @@ On OH&S (2026-10-30) a pass takes about 8 min: label about 3 min each, the rest 
 
 ## Register
 
-TO BE COMPLETED at CV-S10's close from the draft in the session doc (`2026-10-22-cv-s10-measures.md`, "Register of published figures").
+Each published figure: its name, what it counts, the command printing it and the code computing it. **T** = printed by a task, **V** = pooled from verdict files by `mix lat.verdicts`. Figures that move with the store are quoted with their run (date, code commit), never as constants.
+
+**One name, one meaning:**
+- `stated_by_law_and_derived`: the change's *operation* is claimed by the law's text and by legislation.gov.uk. This is S06's "both" and CV-07's "both sources". A gap the law fills on another attribute doesn't count.
+- `joined_any_two`: S07's J, stated by any two sources (markup and feed with no law text included). It is never called "both".
+- `lawtext_disagreeing` (S06's D: a conflict on operation, level or by, or unjoined) is distinct from `evidence_value_conflict` (S08's V: a conflict on any attribute).
+- `agreement_with_lgu` (S06): a law-text value matches any feed or markup value over the changes both state. It uses its own like-for-like list, simpler than `Conflicts`' like?/5, so it is not the conflict count's complement.
+- `text_changes`: merged changes whose chosen operation is inserted, substituted, repealed, repealed_in_part or renumbered (`Measures.Coverage.text?/1`). The extent check's population is its own: text changes with an amending law to read.
+
+| Step | Name | Counts | Source | Code (test) |
+|---|---|---|---|---|
+| S01 | sources_needed / sources_failures | documents a family needs, by category; needed and not held, without reason | T `lat.sources` ("needed, all categories"; "failures") | `Sources.report/3` (sources_test) |
+| S02 | feed_effects_placement / feed_our_faults / feed_tell_tales | feed effects by placement outcome; fault outcomes; finer forms not held | T `lat.feed_check` | `Placement.fault?` (placement_test) |
+| S03 | markup_changes_placement / markup_our_faults / markup_keys_vs_feed | markup changes by outcome; faults; keys in the feed, not in it, legacy | T `lat.markup_check` | `MarkupPlacement` (markup_placement_test) |
+| S03 | legacy_pointer_share | legacy markup changes whose note gives a cited law (and amending provisions) | T `lat.markup_patterns` ("pointers (changes)") | `MarkupPatterns.pointers` |
+| S04 | commencement_rows_outcome / commencement_left_to_orders / commencement_gaps | rows by own-commencement outcome; by_order + by_order_partly; undated changes by class | T `lat.commencement_check` | `OwnCommencement` (own_commencement_test), `NoteDate.why/2` |
+| S04 | order_statements_read | order statements read into rules, of all | T `lat.order_patterns` ("read into rules") | `Commencement.Order` |
+| S05 | extent_territory_groups | text changes by where their territory comes from (law text, follows the enactment, feed/markup, law type not read, no powers, unread statement, competence only, no amending law, other) | T `lat.extent_check` ("grouped") | `Coverage.territory_groups/1` (coverage_test) |
+| S06 | lawtext_stated / lawtext_strata_ADL / agreement_with_lgu | changes the law's text states (both / alone); A, D, L; agreement per attribute | T `lat.amending_check --strata` | `CheckSample.stated_by`, `CheckStrata` (check_strata_test) |
+| S06 | lawtext_coverage | text changes: stated_by_law_and_derived, law only; derived only, read with no rule (Schedule or annex / EU article / body), not read, other | T `lat.measures` | `Coverage.law_text_coverage/2` (coverage_test) |
+| S07 | merge_strata_JUC / join_rate_{law_text,markup} / overjoin_spread_keys | J (joined_any_two), U, C; a source's text changes a feed effect states too; keys under more than 3 top provisions | T `lat.merge_check --strata` | `MergeStrata` (merge_strata_test) |
+| S08 | evidence_strata_VDA / evidence_winners | V, D, A; the winning source per attribute | T `lat.evidence_check --strata` | `EvidenceStrata` (evidence_strata_test) |
+| S08 | dating | text changes: undated, dated with no commenced_by, commenced_by named | T `lat.measures` | `Coverage.dating/1` (coverage_test) |
+| S09 | label_strata | S shapes, T classes | T `lat.label_check --strata` | `LabelStrata` (label_strata_test) |
+| CV-07 | stated_by_split | text changes by `stated_by` (family or golden laws) | T `lat.measures [--golden]` | `Coverage.stated_by/1` (coverage_test) |
+| all | golden_from_inputs / golden_extended | golden provisions passing from inputs | T `lat.vocabulary --golden [--extended]` | |
+| S02–S09 | <step>_pooled (items, groups) / end_to_end | wrong items with the step's own fault and wrong groups since the last fix, with 95% upper bounds; every wrong item | V `lat.verdicts` | `Measures.Bound`, `Measures.Verdicts` (bound_test, verdicts_test) |
+| S10 | measures_hand_check | text changes whose measure classes an agent found wrong (rule: none) | V `lat.verdicts` (ignore its 2% PASS line) | — |
+
+**Derived statements** (arithmetic on V; state the inputs beside them): S05's "at least 98% of changes" is 1 − the changes bound. S06's overall ≈1.7% is A's bound × |A| / |law-text changes|.
+
+**Published values before CV-S10** were worked out by hand from earlier stores. Where they differ from today's, the store moved. The 2026-10-30 comparison is in the CV-S10 session ("Measures in code"). S01's 1,253 doesn't sum: its table gives 1,203.
+
+## Pass (Jason 2026-10-30)
+
+- Every published figure is in the register, printed by code, with a test.
+- Samples and printed figures replicate (draw twice, compare).
+- The hand check finds no item classed wrong.
 
 ## History
 
