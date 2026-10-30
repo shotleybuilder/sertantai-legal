@@ -846,3 +846,44 @@ Upstream faults are about 17 of 150: U10 (6), U12 (4), U13, U1, V9, the HSWA s.5
   - **The four faulty rows from inputs:** s.47(5) is partly in force 2013-04-25 to 2013-10-01, then repealed_saved. s.51A(3)(b)[S] is E+W+S in 2013 and S from the split. SI 2009/716 reg.15 is repealed_saved 2015 (O5 holds).
 - **Rebuild:** clean (restore point tag `cv-s09-batch10`).
 - **R:** re-folded; 0 of 150 rows changed.
+
+## Round 11 (2026-10-30): PASS
+
+- **Restore point:** tag `cv-s09-batch10`. Rebuild clean.
+- **Draws:** S seed 201 (90 rows) and T seed 202 (66 checked, 4 per class of 17). The round 10 draws (S 191, T 192) were re-folded: batch 10 changed exactly the 4 faulty rows, and those went to their own agent. 8 agents; notes in the scratchpad (`r11/findings.md`).
+
+### Round 11 agent check: no fold fault
+
+| stratum | rows | OK | WRONG-fold | WRONG-upstream | gap | doubtful |
+|---|---|---|---|---|---|---|
+| changed (the round 10 faults) | 4 | 2 | 0 | 0 | 0 | 2 |
+| S | 90 | 58 | 0 | 30 | 1 | 1 |
+| T | 66 | 48 | 0 | 11 | 3 | 4 |
+
+- **The four batch 10 rows** hold: CLP Art 37A is repealed_saved by SI 2026/484; HSWA s.47(5) and s.47(1)(b) are partly in force 2013-04-25 to 2013-10-01; s.51A(3)(b)[S] keeps E+W+S until its split. Their doubts are the open tier question only.
+- **Every doubtful row** is one of the two unruled tier questions (repealed_saved when `saved` comes from the feed; commenced_by when `by` comes from the feed).
+- **Upstream, new** (for the reader session):
+  - **P7:** the amending reader misses NI verbs ("by deleting", "by adding … the following") and some en-dash insertions (NISR 2003/423 reg.6 on NISR 1993/37); the values are right but the tiers derived.
+  - **P8:** the feed's `#made` twin is placed only on a range's ends (CLP Art 2(38)–(43): 2(39)–(42) lose SI 2019/720).
+  - **P9:** an "in each place" words change is kept on the parent while its successor sits on the children (NISR 2010/160 reg.28: 2019/6 then 2020/222).
+  - **P10:** the feed's "substituted for Art. 15(1)" over "Art. 15(1)(1A)" reads (1A) as substituted, not inserted (REACH; the amending reader doesn't read EU targets).
+  - **KC-order, catch-all form:** SI 1997/134 ("so far as not already in force") dates Employment Act 1989 provisions 1997 where SI 1990/189, not held, probably brought them in.
+  - **KS, CLP-wide:** SI 2019/720 Sch 2's substituted articles make new numbers that get no insertion (Art 2(15)(b), Art 52(5)–(6), Art 37(7)–(9)).
+  - **Commencement reader:** "section 10(6) and (7) (so far as aforesaid)" is read as {s.10(6)}.
+
+### Pass
+
+| criterion | rule (agreed 2026-10-29; G revised 2026-10-30) | result |
+|---|---|---|
+| G | golden from inputs, all pass (`golden.exs`, the pass's 27) | **27/27** |
+| S and T | no shape or class with a fold fault left unfixed or unclassed | **round 11: 0 fold faults in 160 rows; every earlier one fixed and tested** |
+| R | pooled rows since the last fix under 2% wrong rows and 5% wrong laws at the 95% Clopper–Pearson upper bound | **0/150 rows (upper 1.98%), 0/73 laws (upper 4.02%)** |
+
+**CV-S09 passes on the OH&S core family.**
+
+### Quality statement (OH&S core family, 2026-10-30)
+
+- **The fold:** on 150 random rows (seed 153, 73 laws), no row's label is wrong because of the fold. At 95% confidence, at most 1.98% of rows and 4.02% of laws carry a fold fault. The golden set (27 provisions, drafted from the sources and signed off) passes in full from inputs.
+- **End to end:** the labels are only as right as the changes they fold. On the same 150 rows (round 6), 17 (11%) were wrong because of upstream faults, mostly missing extents (U10) and repeals no reader holds (U12). The S and T draws, chosen where rules act or labels changed, run higher: in round 11, 41 of 156 rows. These faults are classed and logged for the reader session; none is a fold fault.
+- **Tiers:** two tier questions are open (repealed_saved status when the saving comes from the feed; commenced_by when its law comes from the feed). The values are right; only the tier is in doubt.
+- **The extended golden set** (23 more provisions, `golden_extended.exs`) is 41/50 with the 27; its 9 failures are upstream. It gates the workflow's next pass, from step 1.
