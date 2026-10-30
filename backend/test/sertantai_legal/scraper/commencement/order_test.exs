@@ -620,6 +620,32 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
     end
   end
 
+  describe "CV-S09 round 6: a list item split inside its aside (SI 1991/1042 art.2(1))" do
+    test "the item's halves are one line; an aside naming another law never eats the list" do
+      act = %{law: "UK_ukpga_1990_43", title: "Environmental Protection Act", year: "1990"}
+
+      rules =
+        Order.rules(
+          Doc.new("UK_uksi_1991_1042", [
+            ~s|<Legislation><Secondary><Body><P1 id="article-2"><P1para><P2 id="article-2-1"><P2para><Text>The following provisions of the Environmental Protection Act 1990 shall come into force on 1st April 1991—</Text><UnorderedList><ListItem><Para><Text>section 156;</Text></Para></ListItem><ListItem><Para><Text>section 162(1) in so far as it relates to paragraphs 1, 2, 16(1), (2) (in so far as it inserts a new paragraph(v) in section 31(2)(b) of the Control of</Text></Para></ListItem><ListItem><Para><Text>Pollution Act 1974) and (3), 20, 29 and 30 of Schedule 15;</Text></Para></ListItem></UnorderedList></P2para></P2></P1para></P1></Body></Secondary></Legislation>|
+          ]),
+          act
+        )
+
+      scope = rules |> Enum.flat_map(&List.wrap(&1.scope)) |> Enum.filter(&is_binary/1)
+
+      for p <- [
+            "sch.15.para.1",
+            "sch.15.para.2",
+            "sch.15.para.16(1)",
+            "sch.15.para.16(3)",
+            "sch.15.para.20",
+            "sch.15.para.30"
+          ],
+          do: assert(p in scope, p)
+    end
+  end
+
   describe "CV-S04 orders catalogue" do
     defp doc_of(law, body, schedules \\ ""),
       do:

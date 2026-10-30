@@ -107,6 +107,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeIdentityTest do
     refute "d29p4939" in holding(changes, effect_id("a")).aliases
   end
 
+  test "a note citing the wrong paragraph never keeps a record apart from the one event on its provision that day (HSWA s.55(6)(b), SI 2008/960 art.18(3)/(4))" do
+    changes =
+      Merge.merge([
+        feed(effect_id("a"), "s.55(6)(b)", :substituted, "UK_uksi_2008_960", ["art.18(4)"]),
+        markup("d29p5797", "s.55(6)(b)", :substituted, "UK_uksi_2008_960", [
+          {:markup, :affecting, ["art.18(3)"]},
+          {:commencement, :date, ~D[2020-12-31]}
+        ])
+      ])
+
+    assert "d29p5797" in holding(changes, effect_id("a")).aliases
+  end
+
   test "an operation-less feed effect ('amended') joins by its amending provision (HSWA s.52(1), 1997 c.42 s.2)" do
     changes =
       Merge.merge([

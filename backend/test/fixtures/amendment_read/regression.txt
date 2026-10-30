@@ -43,3 +43,6 @@ UK_ukpga_1989_38  # repeals table "Section 27(2)(b) and the word “or” immedi
 UK_uksi_1974_1941 # "sections 7, 8(2) and the entry in Schedule 2 relating to section 124(2) …": s.7(2) and s.124(2) words (CV-S06 round 4, 2026-10-28)
 UK_nisr_2015_339  # CV-S07 round 2: 'after “a notifier” add “or applicant” and for “2001” substitute “2015”' — 'add' an insertion, two rules (reg.34(2)(b))
 UK_ukpga_2013_24  # CV-S09 round 5 (SN): s.69(3) "for subsection (2) substitute (2), (2A), (2B)" on HSWA s.47 — new numbers inserted
+UK_uksi_2014_469  # CV-S09 round 6 (SN2/SQ): "For paragraph (1) substitute— (1A)…(1D)" (SI 1998/494 reg.6), "(g)… (i)… (ii)" (SI 1977/500 reg.4(1)(g)) — new numbers inserted
+UK_uksi_2026_867  # CV-S09 round 6 (WL): reg.15(1) "The Supply of Machinery (Safety) Regulations 2008 are revoked" — a whole-law rule
+UK_nisr_2012_179  # CV-S09 round 6 (WL): reg.33(1) two Regulations revoked by name — a whole-law rule each

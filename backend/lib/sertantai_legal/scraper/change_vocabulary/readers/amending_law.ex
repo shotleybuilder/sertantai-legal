@@ -149,6 +149,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
   # s.15(6)(e), never s.15(6) — CV-S06 B5; HSWA's CLML names s.28(3)(f)(i)
   # "section-28-f-i", so "paragraph (f)(i) of subsection (3)" is s.28(f)(i),
   # never also s.28(3) — CV-S06 seed 31 NEW); siblings stay apart
+  # the whole law (`Reader.WholeLaw`): never a row's ref
+  defp targets(%Rule{targets: ["*"]}, _known), do: ["*"]
+
   defp targets(%Rule{targets: targets} = r, known) do
     ts = Enum.uniq(targets)
     held? = &(known == nil or MapSet.member?(known, &1))

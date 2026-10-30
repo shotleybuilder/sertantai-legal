@@ -106,6 +106,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
 
       {id, Label.fold(base, provision, changes)}
     end)
+    # a Part, Chapter or Title goes with its last child (Jason 2026-10-30)
+    |> Label.Containers.close(
+      Map.new(provisions, fn {id, p} -> {id, Map.get(p, :containers, []) -- [id]} end)
+    )
   end
 
   # a range reaches only provisions that existed at its date: one inserted

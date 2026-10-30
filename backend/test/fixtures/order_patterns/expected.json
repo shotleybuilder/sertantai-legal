@@ -706,7 +706,7 @@
         "s.95 — 1991-04-01 — everywhere, fully — order_date",
         "s.96(1) — 1991-04-01 — everywhere, fully — order_date",
         "s.98(3), s.98(4) — 1991-04-01 — everywhere, fully — order_date",
-        "sch.15.para.29, sch.15.para.30 — 1991-04-01 — everywhere, fully — order_date",
+        "sch.15.para.1, sch.15.para.2, sch.15.para.6, sch.15.para.11..sch.15.para.14, sch.15.para.15(6)..sch.15.para.15(9), sch.15.para.16(1), sch.15.para.16(2), sch.15.para.16(3), sch.15.para.20, sch.15.para.22, sch.15.para.23, sch.15.para.28, sch.15.para.29, sch.15.para.30 — 1991-04-01 — everywhere, fully — order_date",
         "sch.16.pt.IV — 1991-04-01 — everywhere, fully — order_date"
       ]
     },
@@ -1057,7 +1057,7 @@
       "class": "rules+partial",
       "rules": [
         "s.66(6) — 1995-04-03 — everywhere, in relation to — order_schedule",
-        "sch.16.para.57(1)..sch.16.para.57(5), sch.16.para.82(1)..sch.16.para.82(4), sch.16.para.82(5) — 1995-04-03 — everywhere, fully — order_schedule"
+        "sch.16.para.57(1)..sch.16.para.57(5), sch.16.para.82(1)..sch.16.para.82(4), sch.16.para.82(5), sch.16.para.84, sch.16.para.85, sch.16.para.86, sch.16.para.88, sch.16.para.96, sch.16.para.97, sch.16.para.106 — 1995-04-03 — everywhere, fully — order_schedule"
       ]
     },
     "UK_uksi_1995_852/b9ca37405a": {
@@ -1500,7 +1500,7 @@
     "UK_uksi_2008_1864/062944ce7a": {
       "class": "rules",
       "rules": [
-        "s.46, pt.2 — 2008-07-31 — everywhere, fully — order_date"
+        "s.46 — 2008-07-31 — everywhere, fully — order_date"
       ]
     },
     "UK_uksi_2008_2714/34d2cbfea5": {

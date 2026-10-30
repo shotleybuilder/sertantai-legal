@@ -37,7 +37,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
     NewNumbers,
     RepealTable,
     Scope,
-    Targets
+    Targets,
+    WholeLaw
   }
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Operation, ScheduleRefs, Text}
@@ -133,13 +134,12 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   def instruction(doc, id, terms, laws) do
     case Text.of(doc, id) do
       %Text{} = text ->
-        text
-        |> set_out(doc)
-        |> of_text(Doc.title(doc, id), terms, Scope.laws(doc, id, text, terms, laws), %{
-          law: doc.law_name,
-          ref: id,
-          text: text.instruction
-        })
+        source = %{law: doc.law_name, ref: id, text: text.instruction}
+
+        WholeLaw.rules(text, terms, laws, source) ++
+          (text
+           |> set_out(doc)
+           |> of_text(Doc.title(doc, id), terms, Scope.laws(doc, id, text, terms, laws), source))
 
       _ ->
         []

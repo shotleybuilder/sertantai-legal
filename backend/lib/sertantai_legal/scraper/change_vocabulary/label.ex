@@ -103,7 +103,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
       extent: provision.extent,
       shows_text: Map.get(provision, :shows_text, false),
       windsor: Map.get(provision, :windsor, false),
-      valid: Map.get(provision, :valid)
+      # nil: the body held is the made text (no dct:valid); :unknown: not given
+      valid: Map.get(provision, :valid, :unknown)
     }
 
     # the day the versions split is a day of its own (C3)

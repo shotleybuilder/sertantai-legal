@@ -662,4 +662,39 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
                fold("s.3(1)", [c], %{containers: Label.containers("I", nil)})
     end
   end
+
+  describe "batch 6 (CV-S09 round 6)" do
+    defp tiered6(c, tiers), do: %{c | resolved: %{c.resolved | tiers: tiers}}
+
+    test "a body held only as made shows no later change: a repealed provision stays repealed (NISR 1993/37 reg.3(1)(d))" do
+      changes = [
+        change("reg.3(1)(d)", :repealed, ~D[2015-06-01], by: "UK_nisr_2015_223"),
+        change("reg.3", :substituted, ~D[2017-02-01], by: "UK_nisr_2016_427")
+      ]
+
+      provision = %{law: "UK_nisr_1993_37", start: ~D[1993-03-08], extent: "NI", shows_text: true}
+
+      assert [_, %{status: :repealed, changed_by: ["UK_nisr_2015_223"]}] =
+               fold("reg.3(1)(d)", changes, Map.put(provision, :valid, nil))
+    end
+
+    test "a provision coming back takes its tiers from the change bringing it back" do
+      changes = [
+        change("reg.9(9)", :repealed, ~D[2023-04-01], by: "UK_uksi_2023_247"),
+        change("reg.9", :substituted, ~D[2024-04-01], by: "UK_uksi_2024_322", territory: "E+W+S")
+        |> tiered6(%{operation: :primary, by: :primary, date: :primary, territory: :primary})
+      ]
+
+      [_, _, back] =
+        Label.fold(
+          "reg.9(9)",
+          %{law: "UK_uksi_2022_1378", start: ~D[2022-12-21], extent: "E+W+S", shows_text: true},
+          changes
+        )
+
+      assert back.status == :in_force
+      assert back.tiers.status == :primary
+      assert back.tiers.changed_by == :primary
+    end
+  end
 end

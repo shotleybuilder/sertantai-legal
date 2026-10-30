@@ -56,10 +56,55 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderTest do
     end
 
     assert op.("s.7(2)") == [:substituted]
-    assert op.("s.7(2)(a)") == [:substituted]
+    # under the number named: the quote alone shows it new (Jason 2026-10-30)
+    assert :inserted in op.("s.7(2)(a)")
     assert :inserted in op.("s.7(2A)")
     refute :substituted in op.("s.7(2A)")
     assert op.("s.7(2A)(a)") == [:inserted]
+  end
+
+  test "a whole law revoked by name is one rule on the whole law; a provision of it is not (SI 2026/867 reg.15(1))" do
+    read = fn text ->
+      d =
+        doc(
+          ~s|<P1 id="section-5"><P1para><P2 id="section-5-1"><P2para><Text>#{text}</Text></P2para></P2></P1para></P1>|
+        )
+
+      Reader.instruction(d, "section-5-1", %{}, [@clean_air])
+    end
+
+    assert [%{targets: ["*"], operation: :repealed, level: :provision}] =
+             read.("The Clean Air Act 1956 is repealed.")
+
+    refute Enum.any?(
+             read.("Section 5 of the Clean Air Act 1956 is repealed."),
+             &(&1.targets == ["*"])
+           )
+  end
+
+  test "a substitution none of whose quoted numbers is the one named: all inserted (SI 2014/469 on SI 1998/494 reg.6(1))" do
+    d =
+      doc(
+        ~S|<P1 id="section-5"><P1para><P2 id="section-5-1"><P2para><Text>In section 7 of the principal Act for subsection (1) substitute—</Text><BlockAmendment><P2><Pnumber>1A</Pnumber><P2para><Text>new 1A</Text></P2para></P2><P2><Pnumber>1B</Pnumber><P2para><Text>new 1B</Text></P2para></P2></BlockAmendment></P2para></P2></P1para></P1>|
+      )
+
+    rules =
+      Reader.instruction(
+        d,
+        "section-5-1",
+        %{"the principal act" => %{law: "UK_ukpga_1956_52", title: "Clean Air Act 1956"}},
+        [@clean_air]
+      )
+
+    op = fn sid ->
+      for r <- rules,
+          {:ok, _} <- [Evaluator.reach(r, "UK_ukpga_1956_52:" <> sid)],
+          uniq: true,
+          do: r.operation
+    end
+
+    assert op.("s.7(1)") == [:substituted]
+    assert op.("s.7(1B)") == [:inserted]
   end
 
   test "an EU law's Annex paragraphs are never its Articles; its Titles still are (SI 2019/758)" do

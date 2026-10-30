@@ -224,7 +224,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
         words = Text.words_of(order, id),
         Regex.match?(@cif, words) or Regex.match?(@appointed, words) or
           Regex.match?(@appointed_is, words),
-        lines = order |> Doc.element(id) |> Doc.lines() |> Enum.map(&clean_line/1),
+        lines = order |> Doc.element(id) |> Doc.lines() |> join_open() |> Enum.map(&clean_line/1),
         {pre, head, rest} = split_head(lines),
         head != nil,
         {date, inline} <- List.wrap(statement(head, made)),
@@ -765,6 +765,49 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     end
   end
 
+  # a line whose bracket is still open goes on in the next: legislation.gov.uk
+  # splits one item across list items inside its aside ("… section 31(2)(b)
+  # of the Control of" | "Pollution Act 1974) and (3), 20, …": SI 1991/1042
+  # art.2(1), CV-S09 round 6)
+  defp join_open(lines) do
+    lines
+    |> Enum.reduce([], fn
+      line, [prev | rest] = acc ->
+        if open?(prev), do: [prev <> " " <> line | rest], else: [line | acc]
+
+      line, [] ->
+        [line]
+    end)
+    |> Enum.reverse()
+  end
+
+  defp open?(line),
+    do: length(String.split(line, "(")) > length(String.split(line, ")"))
+
+  # an aside naming another law qualifies its item only: "16(1), (2) (in so
+  # far as it inserts a new paragraph (v) in section 31(2)(b) of the
+  # Control of Pollution Act 1974) and (3), 20, …" — the other law's tail
+  # had eaten the list to its end (SI 1991/1042 art.2(1), CV-S09 round 6)
+  @law_named ~r/\b(?:Act|Order|Regulations|Measure)\s+\d{4}\b/u
+
+  defp drop_law_asides(line) do
+    {out, aside, _} =
+      line
+      |> String.graphemes()
+      |> Enum.reduce({"", "", 0}, fn
+        "(", {o, _a, 0} -> {o, "(", 1}
+        "(", {o, a, d} -> {o, a <> "(", d + 1}
+        ")", {o, a, 1} -> {o <> keep_aside(a <> ")"), "", 0}
+        ")", {o, a, d} when d > 1 -> {o, a <> ")", d - 1}
+        ch, {o, a, 0} -> {o <> ch, a, 0}
+        ch, {o, a, d} -> {o, a <> ch, d}
+      end)
+
+    out <> aside
+  end
+
+  defp keep_aside(aside), do: if(Regex.match?(@law_named, aside), do: "", else: aside)
+
   # the items of a list at its top-level commas and semicolons
   defp split_items(text) do
     {items, cur, _} =
@@ -911,6 +954,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     line =
       line
       |> String.replace(@quoted, " ")
+      |> drop_law_asides()
       |> String.split(~r/;\s*/u)
       |> Enum.reject(fn item ->
         case Regex.run(@ends_other_law, item) do

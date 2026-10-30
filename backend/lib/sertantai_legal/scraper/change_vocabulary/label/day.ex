@@ -51,7 +51,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
   # NI repeal of the whole law had tiered a GB row); an emptied field has
   # none; an unchanged field keeps its tier
   defp retier(current, next, day) do
-    day = Enum.filter(day, &Facts.overlaps?(&1.resolved.territory, current.territory))
+    # a provision coming back from "nowhere": the changes where it returns
+    where = if current.territory == "nowhere", do: next.territory, else: current.territory
+    day = Enum.filter(day, &Facts.overlaps?(&1.resolved.territory, where))
     op = & &1.resolved.operation
 
     text =
@@ -285,10 +287,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
     end
   end
 
+  # a body held only as made (no dct:valid) is no evidence of any later
+  # change (CV-S09 round 6: NISR 1993/37 reg.3(1)(d), repealed 2015, had come
+  # back with reg.3's 2017 substitution, whose reg.3(1) has no (d))
   defp revised?(ctx, date) do
-    case Map.get(ctx, :valid) do
+    case Map.get(ctx, :valid, :unknown) do
       %Date{} = valid -> Date.compare(valid, date) != :lt
-      _ -> true
+      nil -> false
+      :unknown -> true
     end
   end
 

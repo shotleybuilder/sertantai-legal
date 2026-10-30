@@ -56,7 +56,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge.Partner do
       end)
       |> Map.values()
       |> Enum.filter(&same_day?(orphan, &1))
-      |> Enum.filter(&provision?(orphan, &1))
+      |> by_provision(orphan)
       |> Enum.filter(&family?(orphan, &1))
       # (the family waived for one amending provision, its own still first:
       # HSWA s.53(1), round 3)
@@ -145,6 +145,44 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge.Partner do
       {%Date{} = a, %Date{} = b} -> Date.compare(a, b) == :eq
       _ -> nil
     end
+  end
+
+  # the amending provision must agree where both sides name it — unless the
+  # record's only name is its note's (a pointer) and the law's own text
+  # places one event on the record's provision, the same day: the note cites
+  # the wrong paragraph (CV-S09 round 6: HSWA s.55(6)(b), note "art. 18(3)"
+  # of SI 2008/960, whose art.18(4) the law's text shows making the change)
+  defp by_provision(events, orphan) do
+    case Enum.filter(events, &provision?(orphan, &1)) do
+      [] when events != [] ->
+        if key_refs(orphan.key) == [] and Change.values(orphan, :law_text, :by) == [] do
+          case Enum.filter(events, &stated_here?(&1, orphan)) do
+            [one] -> [one]
+            _ -> []
+          end
+        else
+          []
+        end
+
+      kept ->
+        kept
+    end
+  end
+
+  defp stated_here?(placements, orphan),
+    do:
+      Enum.any?(placements, fn c ->
+        c.target == orphan.target and
+          (Change.values(c, :law_text, :by) != [] or Change.values(c, :feed, :by) != []) and
+          dated_alike?(orphan, c)
+      end)
+
+  # both dated, the same day (the record's date by its law, or its own
+  # commencement found)
+  defp dated_alike?(orphan, c) do
+    a = Change.value(orphan, :law_text, :date) || Change.value(orphan, :commencement, :date)
+    b = Change.value(c, :feed, :date) || Change.value(c, :commencement, :date)
+    match?(%Date{}, a) and match?(%Date{}, b) and Date.compare(a, b) == :eq
   end
 
   defp provision?(orphan, placements) do
