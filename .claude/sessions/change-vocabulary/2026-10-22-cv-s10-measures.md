@@ -1,9 +1,66 @@
 ---
 session: 'CV-S10: Measures'
-status: active
+status: closed
 release: v0.1
 opened: '2026-10-22'
+closed: '2026-10-31'
+outcome: success
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
+
+summary: >
+  Every figure the change-vocabulary workflow publishes is now defined once (a register in the measures-check skill),
+  printed by code and tested: the 95% pass bound and the pool across seeds from agent verdict files (mix lat.verdicts),
+  coverage, dating and who-states-a-change (mix lat.measures), and the totals steps had summed by hand. Every check's
+  sample is drawn by one tested module with its seed and algorithm unchanged, and samples and figures replicate
+  byte for byte; a hand check of 50 classified text changes found none wrong after one measure fault was fixed.
+
+decisions:
+  - what: Scope is the published figures (quality statements, pass rules, closing metrics), not every printed tally
+    why: Jason 2026-10-30; the diagnostic counts nobody quotes would multiply the work several times
+    result: about 25 register entries; other tallies keep their task's label
+  - what: Agent verdicts saved as JSON files per batch, pooled by a task into the bounds and the end-to-end figure
+    why: every pass decision S05-S09 was tallied and bounded by hand from agents' prose tables (Jason 2026-10-30)
+    result: Measures.Bound reproduces every published bound to two places; the check prompts end with a VERDICTS block; files under backend/data/reports/change-vocabulary/verdicts/ (NAS, not git, effect ids)
+  - what: Where one word means different things, rename and keep both, not unify
+    why: unifying would move strata membership in steps that already passed (Jason 2026-10-30)
+    result: stated_by_law_and_derived (S06 'both' = CV-07 'both sources', proven equal on today's store) vs joined_any_two (S07 J), and the others named apart
+  - what: Keep each check's seed tuple and draw algorithm exactly when moving them into Measures.Draw
+    why: a recorded seed only replicates its sample if both stay; proven by drawing before and after
+    result: all ten samples byte-identical across three passes
+  - what: S01 gate failure (103 not fetched) deferred to the next pass from step 1
+    why: 96 are EU amenders whose territory isn't read (KE); S12 makes the re-run automatic (Jason 2026-10-31)
+    result: logged open
+  - what: Close on 0 of 50 classed wrong, not widen to a 2% bound
+    why: the agreed rule for the hand check was "no item classed wrong" (Jason 2026-10-31)
+    result: closed PASS
+
+metrics:
+  bounds_reproduced: { "0/150": "1.98%", "0/73": "4.02%", "3/150": "5.09%", "0/160": "1.85%", "0/86": "3.42%", "0/112": "2.64%", "0/81": "3.63%", "10/300": "5.59%", "1/300": "1.57%" }
+  replicability: { checks: 10, passes: 3, samples_identical: 10, printed_identical: 10, pass_minutes: 8 }
+  hand_check: { items: 50, measure_wrong: 0, upstream_wrong: 1, gaps: 2, measure_faults_fixed_before: 1, seed: 911 }
+  ohs_today: { text_changes: 4763, stated_by_law_and_derived: "1235 (25.9%)", law_only: 161, derived_only: 3367, cv07_published: "13%" }
+  golden_today: { laws: 21, text_changes: 14800, stated_by_law_and_derived: "3554 (24.0%)", cv07_published: "22%" }
+  ohs_law_text_coverage: { read_no_rule_schedule_or_annex: 867, read_no_rule_eu_article: 655, read_no_rule_body: 1067, not_read: 490, other: 288 }
+  ohs_dating: { undated: 579, dated_no_commenced_by: 2694, commenced_by_named: 1490 }
+  ohs_territory_groups: { law_text: 3072, follows_enactment: 270, feed_or_markup: 1, law_type_not_read: 554, no_powers: 415, unread_statement: 272, competence_only: 151, no_amending_law: 23, other: 5 }
+
+lessons:
+  - title: Every pass bound in five steps was worked out by hand; nothing caught it until a step asked for numbers to believe
+    detail: The skills held the pass rule in words and each session did the Clopper-Pearson arithmetic and the seed pooling by hand. They were right (all reproduce), but nothing could rerun them. Verdicts as data, bounds as code, from the first round of a check.
+    tag: tooling
+  - title: A published figure without its run is a constant that silently ages
+    detail: '"OH&S text changes" was 4,573, 4,619, 4,911 and 4,967 in four sessions: different stores and populations under one name. Quote a figure with its run (date, commit) and its register name.'
+    tag: data
+  - title: A passed gate stays passed only if something re-runs it
+    detail: S01 passed with 0 failures on 2026-10-22; by 2026-10-30 later steps had added 103 needs nobody fetched. Rerun earlier gates at each step's close, or automatically (CV-S12).
+    tag: data
+  - title: Prove a refactor of a sampler by drawing before and after, not by tests alone
+    detail: Unit tests showed the shared draw reproducible; only drawing every real sample twice before and once after showed the old seeds still draw the same items (and that the extent draw relies on the store's row order being stable).
+    tag: tooling
+  - title: Reading one sample item before launching agents found the only measure fault
+    detail: The first hand-check item (an EU annex) was grouped as body. Looking at a sample yourself first is cheap and catches definition faults agents would only describe.
+    tag: tooling
+
 bugs:
   - pattern: "S01 sources gate fails today: 103 needed documents not fetched (OH&S, 2026-10-30), 96 of them EU amenders of REACH (70) and CLP (26) — territory bodies and introductions; 7 UK. CV-S01 passed with 0; the needs grew with later steps and nothing re-ran the gate"
     category: workflow / sources gate
@@ -41,9 +98,28 @@ bugs:
     affected: 1
     fix: "report to legislation.gov.uk or a known-feed-error list; the law text, where read, should outrank it"
     status: open
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/measures/bound.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/measures/verdicts.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/measures/draw.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/measures/coverage.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/measures/source.ex
+  - backend/lib/mix/tasks/lat.verdicts.ex
+  - backend/lib/mix/tasks/lat.measures.ex
+  - backend/test/sertantai_legal/scraper/change_vocabulary/measures/
+  - .claude/skills/measures-check/SKILL.md
+  - backend/data/reports/change-vocabulary/verdicts/measures/ohs/
+
+depends_on:
+  - change-vocabulary/2026-10-22-cv-s09-label-fold
+
+enables:
+  - CV-S11 Retrospective (the register and the findings are its inputs)
+  - verdict files and computed bounds for every check round from now on
 ---
 
-# Session: CV-S10: Measures (ACTIVE)
+# Session: CV-S10: Measures (CLOSED)
 
 ## Problem
 
@@ -67,7 +143,7 @@ Jason 2026-10-30: "We run S10 to pass making sure it's replicable and supported 
 - ✅ The coverage figures quoted in CV-07 re-baselined (golden 22% → 24.0%, OH&S family 13% → 25.9%)
 - ✅ Hand check: an agent checks a sample of each classifying measure against the sources (stated by, coverage, dating, merge stratum): 50 text changes, 0 classed wrong after one measure fault found and fixed (annex)
 - ✅ A `measures-check` skill: the register, the commands, how to rerun for a family
-- ⬜ Fix until the check passes reliably; record the result
+- ✅ Fix until the check passes reliably; record the result (PASS 2026-10-31: register, code, tests, replicable, hand check 0/50)
 - ✅ Hand the register and the figures' history across rounds to CV-S11 (retrospective): its "Inputs from CV-S10" section
 
 ## Dependencies
