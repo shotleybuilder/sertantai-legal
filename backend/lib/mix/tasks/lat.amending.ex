@@ -21,6 +21,7 @@ defmodule Mix.Tasks.Lat.Amending do
       mix lat.amending --read --preview --amending A,B   # read, report what would change, write nothing
       mix lat.amending --read --preview --all    # every amending law, stale or not (a refactor's zero-diff gate)
       mix lat.amending --read --preview --regression     # the regression set (test/fixtures/amendment_read/regression.txt + the golden laws' amending laws)
+      mix lat.amending --fetch-enacted --amending A,B    # the repeals Schedules their revised text leaves out, as enacted or made (CV-06a; a fetch: ask first)
 
   Each changed amending law is reported (`ReadReport`: rules removed and
   added per amended law, the provisions behind them), then a summary.
@@ -46,7 +47,7 @@ defmodule Mix.Tasks.Lat.Amending do
   alias SertantaiLegal.Scraper.LawRunner.Guard
 
   alias SertantaiLegal.Scraper.AmendingLaw.Extent
-  alias SertantaiLegal.Scraper.Amendment.{ReadPass, ReadReport, Rule, Store}
+  alias SertantaiLegal.Scraper.Amendment.{EnactedFetch, ReadPass, ReadReport, Rule, Store}
 
   @shortdoc "Print a law's amendment rules; read amending laws into rules"
 
@@ -64,7 +65,8 @@ defmodule Mix.Tasks.Lat.Amending do
           workers: :integer,
           preview: :boolean,
           regression: :boolean,
-          all: :boolean
+          all: :boolean,
+          fetch_enacted: :boolean
         ]
       )
 
@@ -72,6 +74,9 @@ defmodule Mix.Tasks.Lat.Amending do
     Logger.configure(level: :warning)
 
     cond do
+      opts[:fetch_enacted] && opts[:amending] ->
+        fetch_enacted(opts[:amending])
+
       opts[:extents] ->
         extents(opts)
 
@@ -85,6 +90,22 @@ defmodule Mix.Tasks.Lat.Amending do
         Mix.raise(
           "usage: mix lat.amending --law X | --read [--amending A,B] [--limit N] | --extents --law X | --extents --amending A,B"
         )
+    end
+  end
+
+  # the repeals Schedules the revised text leaves out, as enacted or made
+  # (CV-06a): fetched for the amending laws named only
+  defp fetch_enacted(amending) do
+    for law <- String.split(amending, ",", trim: true) do
+      results = EnactedFetch.run(law)
+
+      Mix.shell().info(
+        "#{law}: " <>
+          if(results == [],
+            do: "nothing wanted",
+            else: Enum.map_join(results, ", ", fn {id, r} -> "#{id} #{inspect(r)}" end)
+          )
+      )
     end
   end
 

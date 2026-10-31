@@ -104,6 +104,27 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ClmlStore do
   def law_docs(law, opts \\ []),
     do: law |> law_files(opts) |> Enum.map(&(&1 |> File.read!() |> :zlib.gunzip()))
 
+  @doc """
+  A law's Schedules as enacted or made, held where the revised text leaves
+  them out (an empty or missing repeals schedule: CV-06a): stored apart,
+  under `enacted/`, so storing the revised text never removes them and the
+  readers' `law_files/2` never mixes them in.
+  """
+  @spec enacted_files(String.t(), keyword()) :: [String.t()]
+  def enacted_files(law, opts \\ []) do
+    with_root(opts, [], fn root ->
+      case String.split(law, "_", parts: 4) do
+        [_, t, y, n] ->
+          Path.join([root, t, y, n, "enacted", "**", "data.xml.gz"])
+          |> Path.wildcard()
+          |> Enum.sort()
+
+        _ ->
+          []
+      end
+    end)
+  end
+
   @doc "A law's stored changes-feed pages, in page order (none when not stored)."
   @spec feed_files(String.t(), String.t(), String.t(), keyword()) :: [String.t()]
   def feed_files(type, year, number, opts \\ []) do
@@ -137,8 +158,7 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ClmlStore do
   """
   @spec digest(String.t(), keyword()) :: String.t()
   def digest(law, opts \\ []) do
-    law
-    |> law_files(opts)
+    (law_files(law, opts) ++ enacted_files(law, opts))
     |> Enum.map(&:erlang.md5(File.read!(&1)))
     |> :erlang.term_to_binary()
     |> then(&:crypto.hash(:sha256, &1))

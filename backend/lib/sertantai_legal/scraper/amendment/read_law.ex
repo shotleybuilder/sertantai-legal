@@ -19,7 +19,7 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadLaw do
   """
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Locator, Pointer}
+  alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Enacted, Locator, Pointer}
   alias SertantaiLegal.Scraper.Amendment.{Collect, Reader, Rule}
   alias SertantaiLegal.Scraper.EffectKind
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
@@ -39,7 +39,22 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadLaw do
   def doc(amending) do
     case ClmlStore.law_docs(amending) do
       [] -> nil
-      xmls -> Doc.new(amending, xmls)
+      xmls -> with_enacted(amending, xmls, Doc.new(amending, xmls))
+    end
+  end
+
+  # a repeals Schedule as enacted, held where the revised text leaves it
+  # out, read in its place — never over a revised Schedule with text
+  # (`AmendingLaw.Enacted`, CV-06a)
+  defp with_enacted(amending, xmls, doc) do
+    case for(
+           file <- ClmlStore.enacted_files(amending),
+           id = Enacted.id(file),
+           id && Enacted.empty?(doc, id),
+           do: file |> File.read!() |> :zlib.gunzip()
+         ) do
+      [] -> doc
+      enacted -> Doc.new(amending, xmls ++ enacted)
     end
   end
 
