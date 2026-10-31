@@ -66,3 +66,26 @@ Judged on the original 27 golden (Jason 2026-10-31).
 
 `[law]`: the change stands on the law (its text, its clause, an order read); `[lgu]`: legislation.gov.uk only.
 
+## Round 1 (2026-10-31, seed 601, 13 agents × 30 rows)
+
+Verdicts: `backend/data/reports/change-vocabulary/verdicts/cv06/ohs/round-1-seed-601-b*.json`; `mix lat.verdicts`: own 53/390 (95% upper 16.8%), groups 14/59; end to end 61/390; gaps 4; doubtful 4. **Old label: wrong 365/390, right 10, unsure 15.**
+
+Own-fault classes (fix list; rows):
+
+| # | Class | Rows | Where |
+|---|---|---|---|
+| R1 | A whole substitution's history reaches sub-provisions only a later text has (CLP Art 37(7),(9); SI 2008/1597 reg.12B(1)(b),(3)(b),(6)); rows the new text drops carry on (NISR 1997/248 reg.20(1)(a)); a substituted paragraph's children read as inserted, history dropped (NISR 1999/305 reg.11(2)); a repeal with the substitution ignored (SI 1999/3242 reg.22(2)) | 15 | fold (Label.Start/Day) and amending reader |
+| R2 | Savings the amending law's text states not read: repealed, should be repealed_saved (SI 1992/3004 reg.27(2) for OSRPA; "except for the purposes of …" FA s.161, s.168) | 8 | amending reader (saved) |
+| R3 | A staged commencement schedule not read (SI 1989/2169 Sch.1 Pt I: reg.26 from 1.7.1994, dated 1990 from lrt metadata) | 5 | commencement reader |
+| R4 | A version split dated at the version's start, not when the texts diverge (HSWA s.16 2006 vs 2015) | 5 | fold (Label.Version) |
+| R5 | Part/heading rows lose their own words changes (`Label.within` rewrites a Part row's own changes to "*"); an EU container loses dated history | 5 | fold (Label.within) |
+| R6 | Territory of the amending provision: E+W-only Acts (SOCPA 2005, Building Act 1984) given E+W+S; "amendments extend as the amended provision" (P&JA 2006 s.54(5)) not read; a GB-only change applied to the NI version | 4 | extent reader / fold |
+| R7 | Undated text changes dropped (EPA 1975 Sch.15 para.15(1); 1998 c.8 dated by its rule but not reaching) | 3 | merge/fold |
+| R8 | A change stated by feed, markup and law text not reaching the row (NISR 2010/160 reg.28 by 2020/222); a parent's words change not reaching its child in history | 2 | merge |
+| R9 | A feed effect misplaced ("word deleted reg. 5(3)" merged as reg.3 inserted, SI 1992/3004) | 2 | merge |
+| R10 | Singles: unapplied prospective change blanks in_force_from; revoked-before-in-force amender (2018/1377, U1); words repeal read as whole (OSRPA s.52(5)); undated repeal at the law's start (HSWA s.70); a `#2` row reached by nothing | 5 | various |
+
+Known (not counted): the cv-06a list (s.8, s.34), KC-order (1920 c.65 ×2); **HSWA s.30 rows** (repeal by EPA 1975 Sch.18 not read, markup wraps s.30 in an Addition) — not on the list: add. Upstream: s.48 feed "revoked in part" really an application.
+
+Doubtful to decide: whole-section substitution and the history before it (HSWA s.11(1)); a commencement default to Royal Assent where the Act's own commencement section is repealed (1985 c.9).
+
