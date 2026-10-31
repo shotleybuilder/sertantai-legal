@@ -161,5 +161,35 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTableTest do
       assert for(r <- rules, do: {r.amends, r.targets}) |> Enum.sort() ==
                [{"UK_ukpga_1954_70", ["s.1"]}, {"UK_ukpga_1961_34", ["s.37"]}]
     end
+
+    test "the law in a Schedule's TitleBlock (SI 1974/1941 Sch. 1, as legislation.gov.uk marks it up)" do
+      d =
+        Doc.new("UK_uksi_1974_1941", [
+          ~S|<Legislation><Secondary><Schedules><Schedule id="schedule-1"><Number>SCHEDULE 1</Number><TitleBlock><Title>REPEALS—THE FACTORIES ACT 1961</Title></TitleBlock><ScheduleBody><Tabular><table><tbody>| <>
+            ~S|<tr><th>Provision</th><th>Extent of repeal</th></tr><tr><td>Section 1.</td><td>Subsection (5).</td></tr>| <>
+            ~S|</tbody></table></Tabular></ScheduleBody></Schedule></Schedules></Secondary></Legislation>|
+        ])
+
+      assert targets(RepealTable.repeal_table(d, "schedule-1", [@mines, @factories]), :provision) ==
+               ["s.1(5)"]
+    end
+
+    test "a list of sections is each section; a qualification's brackets name nothing (SI 1989/2169, 1992/2932, 1992/2793)" do
+      d =
+        table("UK_uksi_1989_2169", "schedule-6", "SCHEDULE 6", [
+          ["Chapter", "Short title", "Extent of repeal"],
+          [
+            "1961 c. 34.",
+            "The Factories Act 1961.",
+            "Sections 32, 33, 35 and 36.<br/>Sections 12 to 16, 17 and 19.<br/>Sections 125(2)(a), 127(2)(c).<br/>Section 72 except insofar as the prohibition applies to any person (4)."
+          ]
+        ])
+
+      assert targets(RepealTable.repeal_table(d, "schedule-6", [@factories]), :provision) ==
+               Enum.sort(
+                 ["s.12..s.16", "s.17", "s.19", "s.32", "s.33", "s.35", "s.36", "s.72"] ++
+                   ["s.125(2)", "s.125(2)(a)", "s.125(a)", "s.127(2)", "s.127(2)(c)", "s.127(c)"]
+               )
+    end
   end
 end

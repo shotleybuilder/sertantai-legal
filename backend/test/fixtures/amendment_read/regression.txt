@@ -53,3 +53,6 @@ UK_uksi_1988_1657  # "Column 1 | Column 2" above one-law tables, the law in each
 UK_uksi_1976_2004  # unnumbered "Sch." pointer → id schedule; one-law table (CV-06a U12)
 UK_uksi_1976_2005  # unnumbered Schedule; numbered row "1 | 2" above a one-law table (CV-06a U12)
 UK_ukpga_2020_17  # header "Provision" over rows naming laws: a law-column table (CV-06a U12)
+UK_uksi_1989_2169  # a list of sections "Sections 32, 33, 35 and 36." each read; "Sections 125(2)(a), 127(2)(c)." (CV-06a U12)
+UK_uksi_1992_2793  # a qualification's brackets name nothing: "Section 23 except insofar as …" is s.23 (CV-06a U12)
+UK_uksi_2014_486  # a long list of Factories Act and OSRPA sections in one line (CV-06a U12)

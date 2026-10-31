@@ -23,7 +23,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTable do
 
       tables ->
         for {law_of, lines} <- Enum.flat_map(tables, &rows(&1, laws)),
-            line <- lines,
+            listed <- lines,
+            line <- ProvisionTable.split_list(listed),
             {targets, level} <- List.wrap(line_targets(line)),
             do:
               Rule.new(
@@ -81,12 +82,20 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTable do
   # every table with the title of the innermost container (the element,
   # or a Part / Schedule in it with a Title) holding it
   defp headed_tables(el) do
-    containers = [el | xpath(el, ~x".//*[./*[local-name()='Title']]"l)]
+    containers = [
+      el | xpath(el, ~x".//*[./*[local-name()='Title' or local-name()='TitleBlock']]"l)
+    ]
 
     # containers come in document order, the innermost last
     titles =
       for c <- containers,
-          title = c |> xpath(~x"./*[local-name()='Title']"l) |> Enum.map_join(" ", &Doc.text/1),
+          # a Schedule's title sits in its TitleBlock (SI 1974/1941 Sch. 1)
+          title =
+            c
+            |> xpath(
+              ~x"./*[local-name()='Title'] | ./*[local-name()='TitleBlock']/*[local-name()='Title']"l
+            )
+            |> Enum.map_join(" ", &Doc.text/1),
           table <- xpath(c, ~x".//*[local-name()='table']"l),
           reduce: %{},
           do: (acc -> Map.put(acc, table, title))
@@ -183,7 +192,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTable do
             {words_targets(n, subs, located(rest)), :words}
 
           true ->
-            whole_targets(n, subs ++ Brackets.plain_brackets(rest))
+            whole_targets(n, subs ++ Brackets.plain_brackets(ProvisionTable.unqualified(rest)))
         end
 
       _ ->

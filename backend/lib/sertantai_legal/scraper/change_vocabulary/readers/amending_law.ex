@@ -173,7 +173,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
   defp targets(%Rule{targets: ["*"]}, _known), do: ["*"]
 
   defp targets(%Rule{targets: targets} = r, known) do
-    ts = Enum.uniq(targets)
+    ts = targets |> Enum.flat_map(&in_range(&1, known)) |> Enum.uniq()
     held? = &(known == nil or MapSet.member?(known, &1))
 
     if r.level == :provision and r.treatment == :quoted do
@@ -188,6 +188,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
       |> Enum.uniq()
       |> deepest_only()
     end
+  end
+
+  # a range ("Sections 61 to 74.": s.61..s.74, a repeals table) is each
+  # provision the law holds in it, at the ends' depth (CV-06a: HSWA ss.61–74
+  # by the Building Act 1984 had been dropped, a range never a held row)
+  defp in_range(t, nil), do: [t]
+
+  defp in_range(t, known) do
+    if String.contains?(t, ".."),
+      do: known |> Enum.filter(&LatRef.covers?(t, &1)) |> Enum.sort(),
+      else: [t]
   end
 
   # a definition's limb the law holds no row for: words in the provision

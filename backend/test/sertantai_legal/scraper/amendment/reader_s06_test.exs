@@ -193,6 +193,12 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderS06Test do
       assert targets([r], ["s.15", "s.15(6)", "s.15(6)(e)"]) == ["s.15(6)(e)"]
     end
 
+    test "a range is each provision held in it, at its depth (CV-06a: HSWA ss.61–74, Building Act 1984 Sch. 7)" do
+      r = rule(["s.61..s.74"], :repeal_table)
+      known = ["s.60", "s.61", "s.61(1)", "s.62", "s.74", "s.75"]
+      assert targets([r], known) |> Enum.sort() == ["s.61", "s.62", "s.74"]
+    end
+
     test "a reading the law doesn't hold falls back to the place it does" do
       r = rule(["s.15(6)", "s.15(e)", "s.15(6)(e)"], :instruction)
       assert targets([r], ["s.15", "s.15(6)"]) == ["s.15(6)"]

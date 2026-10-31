@@ -26,6 +26,43 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.ProvisionTable do
   @spec provision?(String.t()) :: boolean()
   def provision?(cell), do: Regex.match?(@provision, String.trim(cell))
 
+  # one item of a list of sections: "32", "125(2)(a)", "12 to 16"
+  @item ~S"\d+[A-Z]*(?:\([^)]*\))*(?:\s+to\s+\d+[A-Z]*(?:\([^)]*\))*)?"
+  @list Regex.compile!(
+          "^Sections\\s+(#{@item}(?:(?:\\s*,\\s*|\\s*,?\\s+and\\s+)#{@item})+)\\s*\\.?\\s*$"
+        )
+
+  @doc """
+  A line listing whole sections ("Sections 32, 33, 35 and 36.", "Sections
+  12 to 16, 17 and 19.", "Sections 125(2)(a), 127(2)(c).") as a line each
+  ("Section 32.", "Sections 12 to 16."); any other line as it is (CV-06a:
+  only the first had been read).
+  """
+  @spec split_list(String.t()) :: [String.t()]
+  def split_list(line) do
+    case Regex.run(@list, String.trim(line)) do
+      [_, items] ->
+        items
+        |> String.split(~r/\s*,\s*(?:and\s+)?|\s+and\s+/)
+        |> Enum.map(fn item ->
+          if item =~ ~r/\bto\b/, do: "Sections #{item}.", else: "Section #{item}."
+        end)
+
+      nil ->
+        [line]
+    end
+  end
+
+  @doc "A line's qualification cut off (\"Section 23 except insofar as …\"): its brackets name no target."
+  @spec unqualified(String.t()) :: String.t()
+  def unqualified(line),
+    do:
+      String.replace(
+        line,
+        ~r/\s*,?\s+(?:except|save|(?:in\s+)?so\s+far\s+as|insofar\s+as)\b.*$/s,
+        "."
+      )
+
   @doc "The row restated as repeals-table lines; [] when the provision cell names no section."
   @spec lines(String.t(), String.t()) :: [String.t()]
   def lines(provision, extent) do
