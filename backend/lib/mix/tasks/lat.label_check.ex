@@ -18,7 +18,13 @@ defmodule Mix.Tasks.Lat.LabelCheck do
   use Mix.Task
 
   alias SertantaiLegal.Scraper.Amendment.PatternSource
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{LabelSample, LabelSource, LabelStrata}
+
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{
+    LabelPeriods,
+    LabelSample,
+    LabelSource,
+    LabelStrata
+  }
 
   @shortdoc "The label check's strata and samples for a family (read-only)"
 
@@ -122,6 +128,20 @@ defmodule Mix.Tasks.Lat.LabelCheck do
           do: if(p, do: to_string(p.status), else: "no periods")
 
     tally("\ncurrent status (rows):", status)
+
+    # the periods as timeline rows (CV-05): the table's rules hold
+    timeline =
+      Enum.flat_map(rows, fn {law, row, _, _} ->
+        LabelPeriods.periods(law, row.sid, row.periods, row.reaching)
+      end)
+
+    violations = LabelPeriods.violations(timeline)
+
+    Mix.shell().info(
+      "\ntimeline rows: #{length(timeline)} periods, #{length(violations)} breaking the table's rules"
+    )
+
+    tally("  by rule:", for({_, why} <- violations, do: to_string(why)))
   end
 
   defp tally(title, items) do

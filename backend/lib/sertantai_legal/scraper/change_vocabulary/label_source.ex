@@ -11,17 +11,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
   - the changes: `provision_changes` (`Store.for_law/1`);
   - today's label (`lat_label_timeline`), for stratum T.
 
+  `timeline/1` gives the same periods in the timeline's shape
+  (`LabelPeriods`, CV-05), beside the register's (`LabelTimeline.build/2`).
+
   Reads the database and the local CLML store; writes nothing.
   """
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.ChangeVocabulary
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Label, Ref, Store}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Label, LabelPeriods, Ref, Store}
 
   @not_provisions ~w(signed heading table)
 
   @type row :: %{
           id: String.t(),
+          sid: String.t(),
           extent: String.t() | nil,
           start: Date.t() | nil,
           periods: [Label.period()],
@@ -38,7 +42,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
       changes = Store.for_law(law) |> Enum.map(&%{&1 | target: Ref.canonical(&1.target)})
 
       provisions =
-        Map.new(extents, fn {id, {extent, containers}} ->
+        Map.new(extents, fn {id, {_sid, extent, containers}} ->
           {id,
            %{
              extent: extent,
@@ -60,6 +64,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
 
         %{
           id: id,
+          sid: extents |> Map.fetch!(id) |> elem(0),
           extent: p.extent,
           start: start,
           periods: Map.get(labels, id, []),
@@ -67,6 +72,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
           today: Map.get(today, id, [])
         }
       end
+    end
+  end
+
+  @doc """
+  The law's label timeline from its stored changes, in the timeline's shape
+  (`LabelPeriods`): each provision row's periods under its stored
+  section_id. `{:error, why}` when the law can't be folded.
+  """
+  @spec timeline(String.t()) :: {:ok, [map()]} | {:error, atom()}
+  def timeline(law) do
+    with [_ | _] = rows <- rows(law) do
+      {:ok, Enum.flat_map(rows, &LabelPeriods.periods(law, &1.sid, &1.periods, &1.reaching))}
+    else
+      [] -> {:ok, []}
+      {:error, _} = error -> error
     end
   end
 
@@ -79,7 +99,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
       )
 
     Map.new(rows, fn [sid, extent, part, chapter] ->
-      {sid |> unprefix(law) |> Ref.canonical(), {extent, Label.containers(part, chapter)}}
+      {sid |> unprefix(law) |> Ref.canonical(), {sid, extent, Label.containers(part, chapter)}}
     end)
   end
 
@@ -100,8 +120,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
 
   defp start(law) do
     case Repo.query!(
+           # the law's own record, never a provision-level one held at law
+           # level (`provision_unread`: 39 laws, CV-05) — as `LabelTimeline.law_start/1`
            "SELECT effective_from FROM lat_change_log WHERE law_name = $1 " <>
-             "AND collector = 'commencement' AND section_id IS NULL LIMIT 1",
+             "AND collector = 'commencement' AND section_id IS NULL " <>
+             "AND effect_type NOT LIKE 'provision\\_%' LIMIT 1",
            [law]
          ) do
       %{rows: [[%Date{} = d]]} -> d
