@@ -38,6 +38,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
   def rows(law) do
     with {:ok, xml} <- clml(law) do
       start = start(law)
+      made = made(law)
       extents = extents(law)
       changes = Store.for_law(law) |> Enum.map(&%{&1 | target: Ref.canonical(&1.target)})
 
@@ -47,8 +48,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
            %{
              extent: extent,
              containers: containers,
-             start: start || ~D[1900-01-01],
+             start: start || LabelPeriods.undated_start(),
              start_dated: start != nil,
+             # the law's making (LR-39): prospective from it until its start
+             made: made,
              # the law's start, not the provision's own
              start_from_law: true
            }}
@@ -125,6 +128,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
            "SELECT effective_from FROM lat_change_log WHERE law_name = $1 " <>
              "AND collector = 'commencement' AND section_id IS NULL " <>
              "AND effect_type NOT LIKE 'provision\\_%' LIMIT 1",
+           [law]
+         ) do
+      %{rows: [[%Date{} = d]]} -> d
+      _ -> nil
+    end
+  end
+
+  # an SI's made date, else an Act's Royal Assent (as `LabelTimeline.made_date/1`)
+  defp made(law) do
+    case Repo.query!(
+           "SELECT coalesce(md_made_date, md_enactment_date) FROM uk_lrt WHERE name = $1 LIMIT 1",
            [law]
          ) do
       %{rows: [[%Date{} = d]]} -> d

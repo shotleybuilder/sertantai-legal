@@ -7,11 +7,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelPeriods do
 
   - `status` as its string;
   - `changed_by` one law, as compliance reads it today: the last the fold
-    lists (the makers of the current text share its day);
+    lists (the makers of the current text share its day), else the law
+    that commenced it — the old labels' meaning (CV-06);
     `changed_by_all` every law, `commenced_by` the commencing laws apart
     from them (Jason 2026-10-31: add, don't replace);
-  - `territory` "nowhere" empty on a repeal (the table's meaning: empty
-    with repealed is nowhere), kept with any other status;
+  - a repeal (repealed, repealed_saved) as the table records it (Jason
+    2026-10-31, CV-06: keep the table's rule): `in_force_from` the day
+    it took effect, `territory` empty (nowhere); "nowhere" with any
+    other status is kept;
+  - a law with no start (`undated_start/0`, the fold's placeholder): no
+    period from it — before the first dated day the row is unknown, as
+    the table has it (no row);
   - `change_ids` the keys of the reaching changes dated on the period's
     first day.
 
@@ -26,23 +32,31 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelPeriods do
   @repealed ~w(repealed repealed_saved)a
   @statuses ~w(in_force in_force_partial prospective repealed repealed_saved)
 
+  @undated ~D[1900-01-01]
+
+  @doc "The start a law with none is folded from (C10): a placeholder, never a label."
+  @spec undated_start() :: Date.t()
+  def undated_start, do: @undated
+
   @doc "A row's fold periods as timeline rows for `section_id` of `law`."
   @spec periods(String.t(), String.t(), [Label.period()], [Change.t()]) :: [map()]
   def periods(law, section_id, periods, reaching) do
     by_day = Enum.group_by(reaching, & &1.resolved.date, & &1.key)
 
-    for p <- periods do
+    for p <- periods, p.valid_from != @undated do
+      repeal? = p.status in @repealed
+
       %{
         law_name: law,
         section_id: section_id,
         valid_from: p.valid_from,
         valid_to: p.valid_to,
         status: Atom.to_string(p.status),
-        in_force_from: p.in_force_from,
-        changed_by: List.last(p.changed_by),
+        in_force_from: if(repeal?, do: p.valid_from, else: p.in_force_from),
+        changed_by: List.last(p.changed_by) || List.last(Map.get(p, :commenced_by, [])),
         changed_by_all: p.changed_by,
         commenced_by: Map.get(p, :commenced_by, []),
-        territory: territory(p.status, p.territory),
+        territory: if(repeal?, do: nil, else: p.territory),
         change_ids: by_day |> Map.get(p.valid_from, []) |> Enum.sort()
       }
     end
@@ -74,7 +88,4 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelPeriods do
 
     Enum.sort(per_period ++ overlaps)
   end
-
-  defp territory(status, "nowhere") when status in @repealed, do: nil
-  defp territory(_status, territory), do: territory
 end

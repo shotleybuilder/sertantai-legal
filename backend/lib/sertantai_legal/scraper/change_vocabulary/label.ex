@@ -23,7 +23,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Change
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Label.{Day, Facts, Start, Version}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Label.{Day, Facts, Made, Start, Version}
   alias SertantaiLegal.Scraper.LatRef
 
   @type period :: %{
@@ -51,7 +51,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
           optional(:start_from_law) => boolean(),
           optional(:containers) => [String.t()],
           optional(:own_only) => boolean(),
-          optional(:windsor) => boolean()
+          optional(:windsor) => boolean(),
+          optional(:made) => Date.t() | nil
         }
 
   @private [:_text_by, :_text_from]
@@ -158,6 +159,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
     end)
     |> Enum.reverse()
     |> Enum.map(&Map.drop(&1, @private))
+    # made, not yet in force (LR-39): only from the law's own start
+    |> Made.from(%{provision | start: start}, born, reaching)
   end
 
   @doc """

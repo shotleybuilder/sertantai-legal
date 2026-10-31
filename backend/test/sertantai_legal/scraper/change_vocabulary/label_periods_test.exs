@@ -84,6 +84,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelPeriodsTest do
     assert row.commenced_by == ["UK_uksi_2006_9"]
   end
 
+  test "changed_by, with no law making the text, is the law that commenced it" do
+    [row] =
+      LabelPeriods.periods(
+        @law,
+        @sid,
+        [period(~D[2008-04-06], :in_force, commenced_by: ["UK_uksi_2008_401"])],
+        []
+      )
+
+    assert {row.changed_by, row.changed_by_all} == {"UK_uksi_2008_401", []}
+  end
+
   test "change_ids: the reaching changes dated on the period's first day" do
     reaching = [
       change("b", ~D[2006-10-01]),
@@ -106,20 +118,37 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelPeriodsTest do
     assert second.change_ids == ["a", "b"]
   end
 
-  test "nowhere is empty on a repeal (the table's own meaning), kept otherwise" do
-    [repealed, revived] =
+  test "a repeal as the table records it: in force from its day, territory empty" do
+    [repealed, saved, revived] =
       LabelPeriods.periods(
         @law,
         @sid,
         [
           period(~D[2001-01-01], :repealed, to: ~D[2002-01-01], territory: "nowhere"),
-          period(~D[2002-01-01], :in_force, territory: "nowhere")
+          period(~D[2002-01-01], :repealed_saved, to: ~D[2003-01-01], territory: "NI"),
+          period(~D[2003-01-01], :in_force, territory: "nowhere")
         ],
         []
       )
 
-    assert repealed.territory == nil
+    assert {repealed.in_force_from, repealed.territory} == {~D[2001-01-01], nil}
+    assert {saved.in_force_from, saved.territory} == {~D[2002-01-01], nil}
     assert revived.territory == "nowhere"
+  end
+
+  test "no period from the placeholder start of a law with none" do
+    rows =
+      LabelPeriods.periods(
+        @law,
+        @sid,
+        [
+          period(LabelPeriods.undated_start(), :in_force, to: ~D[2020-12-31]),
+          period(~D[2020-12-31], :in_force, in_force_from: ~D[2020-12-31])
+        ],
+        []
+      )
+
+    assert Enum.map(rows, & &1.valid_from) == [~D[2020-12-31]]
   end
 
   describe "violations/1: the table's rules" do
