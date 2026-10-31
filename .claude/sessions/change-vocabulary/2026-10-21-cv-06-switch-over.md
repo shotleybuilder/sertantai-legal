@@ -89,3 +89,35 @@ Known (not counted): the cv-06a list (s.8, s.34), KC-order (1920 c.65 ×2); **HS
 
 Doubtful to decide: whole-section substitution and the history before it (HSWA s.11(1)); a commencement default to Royal Assent where the Act's own commencement section is repealed (1985 c.9).
 
+**Decisions after round 1 (Jason 2026-10-31):** fix in batches, keep the 2% rule; batch 1 = R1–R5 (38 of 53). A whole substitution of a provision keeps the history before it: HSWA s.11(1) is in force from 1974 under its earlier wording, a new period from 2008 changed by the 2008 law ("In force from 1974").
+
+**Decision (Jason 2026-10-31, reconciling the 2026-10-30 quote ruling with HSWA s.11(1)): "Evidence it existed."** A sub-provision existed before its parent was substituted only where a source shows it: a dated change to it (or under it) before then, or an earlier text holding it (the text held predating the substitution; an earlier quote; the as-enacted text). Otherwise it begins at the substitution that first makes it. The 2026-10-30 ruling stands wherever there is no such evidence.
+
+## Fix batch 1 (2026-10-31, commit c8fbfe4e; golden 27/27)
+
+- **R1** `Label.Existence`: a sub-provision begins at the latest whole substitution above it unless a source shows it was there (the text held predates it — the made text predates all; a change to it or under it before then; a repeal of it that day, unless it is inserted that day); a quote's insertion of a provision so shown is a substitution of its text; its own whole repeal outranks a same-day substitution above it. `Dropped`: a quoted provision listing no items, the quote reading items as deep elsewhere, drops its old items (NISR 2003/152 reg.20). Checked on CLP Art 37(9)(a), SI 2008/1597 reg.12B(1)(b), NISR 1999/305 reg.11(2)(a), HSWA s.11(1), SI 1999/3242 reg.22(2), NISR 1997/248 reg.20(1)(a).
+- **R2** `Reader.Savings` → `amendment_rules.saved` (migration `20261031191507`) → a `:law_text` savings claim, ranked before the feed's.
+- **R3** `LawStart.ScheduleClause`: a clause "in accordance with the provisions of Part I of Schedule 1" reads that Part's sentences (SI 1989/2169: reg.26 / Sch.6 fully in force 1994-07-01, partly 1991). No LAT law uses the form; amending laws re-read with `--read-amending`.
+- **R4** `Label.Version.diverged/3`: a version split starts when a text change under it first reaches part of the union only.
+- **R5** a Part row is never its own container.
+
+Applied (Jason "all of it"): restore point `cv-06-before-batch1`; `lat.amending --read`; `lat.commencement --read-amending`; OH&S rebuild; round 2 draw seed 602.
+
+## Round 2 (2026-10-31, seed 602, 14 agents × 30 rows; after batch 1)
+
+`mix lat.verdicts` (verdicts/cv06/ohs/r2): own 58/405 (95% upper 17.5%), groups 12/60; end to end 64/405; gaps 7; doubtful 1. **Old label: wrong 387/405, right 5.** Round 1 was own 53/390 (13.6%): batch 1 fixed its classes on the rows it targeted (every R1/R3/R4/R5 example re-checked right), but the new draw found further classes, and batch 1's existence rule introduced two of them.
+
+Own-fault classes (rows):
+
+| # | Class | Rows |
+|---|---|---|
+| S1 | Existence too strict: a commencement naming the sub-provision (SI 1974/1439 "Section 10(1)", "Section 11(1) to (3)") or a dated change with no resolved operation is not counted as evidence; a `Dropped` repeal of a later-made row counts as its own evidence (SI 2009/1348 reg.19(1A), 20(5)) | 9 |
+| S2 | Savings forms still unread: "The whole section except …" (fixed in 2dd26eb7, unapplied), "except in so far as …" (fixed, uncommitted), "except in relation to investigations …" | 9 |
+| S3 | Territory: `Windsor.confine` lost when a parent's whole substitution passes down (REACH Art 51(3), 93(1)(a), 129(2)(a); CLP Art 45(5)(d)); an E+W+S amending law (SI 2026/484 reg.1(2), 2022 c.30 s.169(3)) applied UK-wide; a GB amendment credited on the NI version | 10 |
+| S4 | No prospective period before a commencement by order (NISI 1997/1774, made 1997-07-22, by SR 1998/235) | 6 |
+| S5 | Undated or misdated changes: an amending law's change placed at the amended law's commencement, before the amending law existed (EPA 1975 Sch.15; Building Act 1984 s.64, s.70); text changes missed (ERDRA 1998 "employment tribunal", NICA 1973, HCDA 1975, Water Act 1989) | 9 |
+| S6 | A parent's change not reaching its children (REACH Art 3(36)(a)–(d) words insertion; NISR 1997/455 reg.3(1)(ii), reg.2(1)) — round 1's R8 | 5 |
+| S7 | Insertions dated from the host's commencement (FA 1961 s.10A(3)(b), s.125(8); OLA (NI) 1957 s.1(4)) | 3 |
+| S8 | Version history: HSWA s.43A[NI] gets the 1974 start; s.51A versions split late | 4 |
+| S9 | Singles: commencement "so far as it relates to …" read as a range (OSRPA s.83); staged repeal by premises (PUWER 1992); feed effect on a stray marker; changed_by from a parent's change; revoked-before-in-force amender; unapplied prospective change | 6 |
+
