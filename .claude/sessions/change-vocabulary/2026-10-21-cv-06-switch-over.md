@@ -22,7 +22,7 @@ Judged on the original 27 golden (Jason 2026-10-31).
 ## Todo
 
 - ✅ Causes: `LabelShadow.cause/5` (tests), `mix lat.label_shadow --family F [--cause C --sample FILE --n N --seed S]`; OH&S counts below
-- ⬜ Pass rule per cause (bound, sample sizes), agreed with Jason before the first draw
+- ✅ Pass rule (Jason 2026-10-31, "15 a cause + pooled bound"): 15 rows of each cause with 50+ rows, 30 from the small causes pooled; a cause passes with no sampled row new-wrong by its own fault; pooled 95% upper bound on own-fault rows under 2%; golden 27/27. The 39 known-limit rows keep their old label (Jason). Skill `switch-over-check`
 - ✅ U12 first (Jason 2026-10-31): CV-06a closed — 113 of the 152 rows now hold their repeal; 39 a named known limit (`cv-06a-known-limits.md`): how the switch treats them is decided here
 - ⬜ The CV-05 gaps, as causes or fixed first: rows left to orders we don't hold (J6), pending and unapplied changes (J4), no gap list, headings and signatures unfolded
 - ⬜ Rounds: per cause a seeded sample, agent verdicts pooled (`mix lat.verdicts`), fixes batched, until every cause passes
