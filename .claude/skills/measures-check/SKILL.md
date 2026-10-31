@@ -93,6 +93,9 @@ Each published figure: its name, what it counts, the command printing it and the
 | CV-07 | stated_by_split | text changes by `stated_by` (family or golden laws) | T `lat.measures [--golden]` | `Coverage.stated_by/1` (coverage_test) |
 | all | golden_from_inputs / golden_extended | golden provisions passing from inputs | T `lat.vocabulary --golden [--extended]` | |
 | S02–S09 | <step>_pooled (items, groups) / end_to_end | wrong items with the step's own fault and wrong groups since the last fix, with 95% upper bounds; every wrong item | V `lat.verdicts` | `Measures.Bound`, `Measures.Verdicts` (bound_test, verdicts_test) |
+| S11 | build_repeatable | laws whose stored changes differ between two builds from the same inputs (digest: key, target, aliases, claims in order, resolved values) | T `lat.changes_digest`, compared with `cmp` | `ChangeDigest` (change_digest_test) |
+| S11 | build_time | the build's wall time | T `lat.vocabulary --build` ("built N laws in") | |
+| S11 | changes_stale | built laws stale by reason; laws holding LAT with no build | T `lat.stale` ("change register") | `ChangeStaleness`, `Store.Inputs` (change_staleness_test, store_inputs_db_test) |
 | S10 | measures_hand_check | text changes whose measure classes an agent found wrong (rule: none) | V `lat.verdicts` (ignore its 2% PASS line) | — |
 
 **Derived statements** (arithmetic on V; state the inputs beside them): S05's "at least 98% of changes" is 1 − the changes bound. S06's overall ≈1.7% is A's bound × |A| / |law-text changes|.
