@@ -20,6 +20,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Locator do
   def ids(doc, {:schedule, number, _part, para, subs}) when is_binary(number),
     do: path(doc, "schedule-#{number}-paragraph-#{para}", subs)
 
+  # a law's only Schedule, unnumbered ("S.I. 1976/2004, Sch.": id
+  # `schedule`, its paragraphs `schedule-paragraph-N`; CV-06a)
+  def ids(doc, {:schedule, nil, _part, nil, _subs}), do: held(doc, ["schedule"])
+
+  def ids(doc, {:schedule, nil, _part, para, subs}),
+    do: path(doc, "schedule-paragraph-#{para}", subs)
+
   def ids(doc, {kind, number, subs}) when is_map_key(@prefix, kind),
     do: path(doc, "#{@prefix[kind]}-#{number}", subs)
 

@@ -46,3 +46,10 @@ UK_ukpga_2013_24  # CV-S09 round 5 (SN): s.69(3) "for subsection (2) substitute 
 UK_uksi_2014_469  # CV-S09 round 6 (SN2/SQ): "For paragraph (1) substitute— (1A)…(1D)" (SI 1998/494 reg.6), "(g)… (i)… (ii)" (SI 1977/500 reg.4(1)(g)) — new numbers inserted
 UK_uksi_2026_867  # CV-S09 round 6 (WL): reg.15(1) "The Supply of Machinery (Safety) Regulations 2008 are revoked" — a whole-law rule
 UK_nisr_2012_179  # CV-S09 round 6 (WL): reg.33(1) two Regulations revoked by name — a whole-law rule each
+UK_uksi_1974_1941  # one-law repeals table "Provision | Extent of repeal", the law in the schedule title (CV-06a U12)
+UK_uksi_1974_1943  # one-law repeals table, Factories Act 1961 and OSRPA 1963 (CV-06a U12)
+UK_uksi_1992_2932  # column-numbering row "(1) | (2) | (3)" above the header (CV-06a U12)
+UK_uksi_1988_1657  # "Column 1 | Column 2" above one-law tables, the law in each Part's title (CV-06a U12)
+UK_uksi_1976_2004  # unnumbered "Sch." pointer → id schedule; one-law table (CV-06a U12)
+UK_uksi_1976_2005  # unnumbered Schedule; numbered row "1 | 2" above a one-law table (CV-06a U12)
+UK_ukpga_2020_17  # header "Provision" over rows naming laws: a law-column table (CV-06a U12)

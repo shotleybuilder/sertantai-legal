@@ -127,15 +127,15 @@
     "UK_ukpga_2022_30/UK_ukpga_1974_37/schedule-1-paragraph-8-2": "instruction|inserted|words|body|named|none",
     "UK_ukpga_2022_31/UK_ukpga_1974_37/schedule-1-paragraph-1-1": "instruction|substituted|none|body|unnamed|none",
     "UK_ukpga_2023_28/UK_eur_2008_1272/schedule-1": "table|repealed|none|body|unnamed|none",
-    "UK_uksi_1974_1941/UK_ukpga_1961_34/schedule-1": "table|repealed|none|body|unnamed|none",
+    "UK_uksi_1974_1941/UK_ukpga_1961_34/schedule-1": "table|repealed|none|body|unnamed|rules:repealed:provision+words",
     "UK_uksi_1974_1941/UK_ukpga_1961_34/schedule-2-paragraph-14": "instruction|substituted|block|body|unnamed|none",
     "UK_uksi_1974_1941/UK_ukpga_1961_34/schedule-2-paragraph-2": "modification|-|none|body|unnamed|none",
     "UK_uksi_1974_1941/UK_ukpga_1961_34/schedule-2-paragraph-3": "instruction|substituted|words|body|unnamed|none",
     "UK_uksi_1974_1941/UK_ukpga_1961_34/schedule-2-paragraph-4": "instruction|inserted|words|body|unnamed|none",
     "UK_uksi_1974_1941/UK_ukpga_1972_28/regulation-5-1": "instruction|repealed|none|schedule|named|rules:repealed:provision",
-    "UK_uksi_1974_1943/UK_ukpga_1963_41/schedule-1": "table|repealed|none|body|unnamed|none",
+    "UK_uksi_1974_1943/UK_ukpga_1963_41/schedule-1": "table|repealed|none|body|unnamed|rules:repealed:provision+words",
     "UK_uksi_1974_1943/UK_ukpga_1963_41/schedule-2-paragraph-1": "instruction|substituted|words|body|unnamed|none",
-    "UK_uksi_1981_917/UK_ukpga_1961_34/schedule-1": "no_verb|-|words|body|named|none",
+    "UK_uksi_1981_917/UK_ukpga_1961_34/schedule-1": "table|repealed|none|body|named|rules:repealed:provision",
     "UK_uksi_1988_1657/UK_ukpga_1961_34/regulation-19-1": "instruction|repealed|none|body|unnamed|none",
     "UK_uksi_1995_2036/UK_uksi_1992_3004/schedule-3": "instruction|inserted|block|body|unnamed|none",
     "UK_uksi_1995_3162/UK_ukpga_1961_34/article-2": "instruction|substituted|none|body|unnamed|none",
@@ -262,6 +262,7 @@
     "table|repealed|none|body|named|rules:repealed:provision": "accepted",
     "table|repealed|none|body|named|rules:repealed:provision+words": "accepted",
     "table|repealed|none|body|named|rules:repealed:words": "accepted",
-    "table|repealed|none|body|unnamed|none": "accepted"
+    "table|repealed|none|body|unnamed|none": "accepted",
+    "table|repealed|none|body|unnamed|rules:repealed:provision+words": "accepted"
   }
 }

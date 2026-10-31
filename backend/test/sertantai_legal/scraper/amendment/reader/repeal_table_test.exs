@@ -46,4 +46,120 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTableTest do
     refute RepealTable.repeal_table?(d, "section-1")
     assert Reader.repeal_table?(d, "schedule-19")
   end
+
+  describe "CV-06a (U12): tables the header test missed" do
+    defp table(law, id, title, rows) do
+      cells = fn row -> Enum.map_join(row, "", &"<td>#{&1}</td>") end
+
+      Doc.new(law, [
+        ~s(<Legislation><Secondary><Schedules><Schedule id="#{id}"><Title>#{title}</Title><Tabular><table><tbody>) <>
+          Enum.map_join(rows, "", &"<tr>#{cells.(&1)}</tr>") <>
+          ~s(</tbody></table></Tabular></Schedule></Schedules></Secondary></Legislation>)
+      ])
+    end
+
+    defp targets(rules, level),
+      do: rules |> Enum.filter(&(&1.level == level)) |> Enum.flat_map(& &1.targets) |> Enum.sort()
+
+    @factories Reader.law_ref("UK_ukpga_1961_34", "Factories Act", "s")
+    @mines Reader.law_ref("UK_ukpga_1954_70", "Mines and Quarries Act", "s")
+
+    test "a column-numbering row above the header (SI 1992/2932 Sch. 1)" do
+      d =
+        table("UK_uksi_1992_2932", "schedule-1", "SCHEDULE 1 REPEALS", [
+          ["(1)", "(2)", "(3)"],
+          ["Chapter", "Short title", "Extent of repeal"],
+          ["1961 c. 34 .", "The Factories Act 1961.", "Sections 12 to 16."]
+        ])
+
+      assert RepealTable.repeal_table?(d, "schedule-1")
+
+      assert targets(RepealTable.repeal_table(d, "schedule-1", [@factories]), :provision) == [
+               "s.12..s.16"
+             ]
+    end
+
+    test "\"Column 1 | Column 2\" above a one-law table (SI 1988/1657 Sch. 8)" do
+      d =
+        table(
+          "UK_uksi_1988_1657",
+          "schedule-8",
+          "SCHEDULE 8 REPEALS PART I repeals of the provisions of the mines and quarries act 1954",
+          [
+            ["Column 1", "Column 2"],
+            ["Provision", "Extent of repeal"],
+            ["Section 112.", "The whole section."]
+          ]
+        )
+
+      assert targets(RepealTable.repeal_table(d, "schedule-8", [@factories, @mines]), :provision) ==
+               ["s.112"]
+    end
+
+    test "one law's provisions, the law in the schedule's title (SI 1974/1941, 1975/1012, 1976/2005)" do
+      d =
+        table("UK_uksi_1974_1941", "schedule-1", "SCHEDULE 1 REPEALS—THE FACTORIES ACT 1961", [
+          ["Provision", "Extent of repeal"],
+          ["Section 1.", "Subsection (5)."],
+          ["Section 9 and 10.", "The whole section in each case."],
+          ["Sections 40 to 52.", "The whole section in each case."],
+          [
+            "Section 42.",
+            "Subsections (11) and (12). Subsection (13) except in relation to offences committed before 1st January 1977."
+          ],
+          ["Section 53.", "The whole section, so far as still in operation."],
+          [
+            "Section 125.",
+            "In subsection (2), paragraph (h) and the words in paragraph (j) “and the provisions”."
+          ],
+          ["Section 119", "The words “ (notwithstanding that a certificate)”."]
+        ])
+
+      rules = RepealTable.repeal_table(d, "schedule-1", [@mines, @factories])
+      assert Enum.all?(rules, &(&1.amends == "UK_ukpga_1961_34"))
+
+      assert targets(rules, :provision) ==
+               Enum.sort([
+                 "s.1(5)",
+                 "s.9",
+                 "s.10",
+                 "s.40..s.52",
+                 "s.42(11)",
+                 "s.42(12)",
+                 "s.42(13)",
+                 "s.53",
+                 "s.125(2)(h)"
+               ])
+
+      assert targets(rules, :words) == ["s.119", "s.125(2)(j)"]
+    end
+
+    test "one law's provisions, no law named and several laws: nothing read" do
+      d =
+        table("UK_uksi_1974_1941", "schedule-1", "SCHEDULE 1 REPEALS", [
+          ["Provision", "Extent of repeal"],
+          ["Section 1.", "Subsection (5)."]
+        ])
+
+      assert RepealTable.repeal_table(d, "schedule-1", [@mines, @factories]) == []
+
+      assert targets(RepealTable.repeal_table(d, "schedule-1", [@factories]), :provision) == [
+               "s.1(5)"
+             ]
+    end
+
+    test "a header \"Provision\" over rows naming laws is a law-column table (Sentencing Act 2020 Sch. 29)" do
+      d =
+        table("UK_ukpga_2020_17", "schedule-29", "SCHEDULE 29 Repeals and revocations", [
+          ["Provision", "Extent of repeal or revocation"],
+          ["Factories Act 1961 (c. 34)", "Section 37."],
+          ["Mines and Quarries Act 1954 (c. 70)", "Section 1."]
+        ])
+
+      rules = RepealTable.repeal_table(d, "schedule-29", [@factories, @mines])
+
+      assert for(r <- rules, do: {r.amends, r.targets}) |> Enum.sort() ==
+               [{"UK_ukpga_1954_70", ["s.1"]}, {"UK_ukpga_1961_34", ["s.37"]}]
+    end
+  end
 end

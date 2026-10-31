@@ -12,25 +12,22 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTable do
 
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.Amendment.{Reader, Rule}
-  alias SertantaiLegal.Scraper.Amendment.Reader.{Brackets, Clauses, LawNamed}
+  alias SertantaiLegal.Scraper.Amendment.Reader.{Brackets, Clauses, LawNamed, ProvisionTable}
 
   @doc "The rules a repeals table (`id` in `doc`: a Schedule of repeals) states for `laws`; [] when not a table."
   @spec repeal_table(Doc.t(), String.t(), [Reader.law_ref()]) :: [Rule.t()]
   def repeal_table(doc, id, laws) do
-    case table_rows(Doc.element(doc, id)) do
+    case tables(Doc.element(doc, id)) do
       nil ->
         []
 
-      rows ->
-        for {law_cells, lines} <- rows,
-            law <- laws,
-            law.kind == :section,
-            table_law?(law_cells, law),
+      tables ->
+        for {law_of, lines} <- Enum.flat_map(tables, &rows(&1, laws)),
             line <- lines,
             {targets, level} <- List.wrap(line_targets(line)),
             do:
               Rule.new(
-                amends: law.law_name,
+                amends: law_of.law_name,
                 targets: targets,
                 operation: :repealed,
                 level: level,
@@ -42,23 +39,96 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTable do
 
   @doc "True when the element is a repeals table."
   @spec repeal_table?(Doc.t(), String.t()) :: boolean()
-  def repeal_table?(doc, id), do: table_rows(Doc.element(doc, id)) != nil
+  def repeal_table?(doc, id), do: tables(Doc.element(doc, id)) != nil
 
-  defp table_rows(nil), do: nil
+  # each repeals table in the element: `{heading, header, rows}` — its
+  # heading the title of the nearest Part or Schedule holding it, its
+  # header the first row naming "Extent of repeal" (a column-numbering row
+  # "(1) | (2) | (3)" or "Column 1 | Column 2" may come first: SI
+  # 1992/2932, SI 1988/1657; CV-06a); nil when there is none
+  defp tables(nil), do: nil
 
-  defp table_rows(el) do
-    trs = xpath(el, ~x".//*[local-name()='tr']"l)
-    cells = Enum.map(trs, &xpath(&1, ~x"./*[local-name()='td' or local-name()='th']"l))
-    header = cells |> List.first([]) |> Enum.map_join(" ", &Doc.text/1)
+  defp tables(el) do
+    {found, _} =
+      el
+      |> headed_tables()
+      |> Enum.flat_map_reduce(nil, fn {heading, table}, previous ->
+        trs = xpath(table, ~x".//*[local-name()='tr']"l)
+        cells = Enum.map(trs, &xpath(&1, ~x"./*[local-name()='td' or local-name()='th']"l))
 
-    if header =~ ~r/Extent of (?:repeal|revocation)/i do
-      for row <- tl(cells), length(row) in [2, 3] do
-        {law_cells, [extent]} = Enum.split(row, -1)
+        case Enum.find_index(Enum.take(cells, 3), &header?/1) do
+          nil when previous != nil ->
+            # a table continuing the one before it (no header of its own:
+            # Electricity Act 1989 Sch. 18) takes its header and heading
+            {[put_elem(previous, 2, cells)], previous}
 
-        {Enum.map_join(law_cells, " ", &Doc.text/1),
-         extent |> Doc.lines() |> Enum.flat_map(&entries/1)}
+          nil ->
+            {[], nil}
+
+          at ->
+            header = cells |> Enum.at(at) |> Enum.map_join(" ", &Doc.text/1)
+            t = {heading, header, Enum.drop(cells, at + 1)}
+            {[t], t}
+        end
+      end)
+
+    if found != [], do: found
+  end
+
+  defp header?(row),
+    do: Enum.map_join(row, " ", &Doc.text/1) =~ ~r/Extent of (?:repeal|revocation)/i
+
+  # every table with the title of the innermost container (the element,
+  # or a Part / Schedule in it with a Title) holding it
+  defp headed_tables(el) do
+    containers = [el | xpath(el, ~x".//*[./*[local-name()='Title']]"l)]
+
+    # containers come in document order, the innermost last
+    titles =
+      for c <- containers,
+          title = c |> xpath(~x"./*[local-name()='Title']"l) |> Enum.map_join(" ", &Doc.text/1),
+          table <- xpath(c, ~x".//*[local-name()='table']"l),
+          reduce: %{},
+          do: (acc -> Map.put(acc, table, title))
+
+    for table <- xpath(el, ~x".//*[local-name()='table']"l), do: {titles[table], table}
+  end
+
+  # a law column ("Chapter | Short title | Extent of repeal"): each row's
+  # law named in its cells; one law's provisions ("Provision | Extent of
+  # repeal"): the law the heading names, else the only law given
+  defp rows({heading, _header, rows}, laws) do
+    sections = Enum.filter(laws, &(&1.kind == :section))
+
+    if one_law?(rows) do
+      case Enum.filter(sections, &table_law?(heading, &1)) do
+        [law] -> [{law, provision_lines(rows)}]
+        [] when length(sections) == 1 -> [{hd(sections), provision_lines(rows)}]
+        _ -> []
       end
+    else
+      for row <- rows,
+          length(row) in [2, 3],
+          {law_cells, [extent]} = Enum.split(row, -1),
+          cells = Enum.map_join(law_cells, " ", &Doc.text/1),
+          law <- sections,
+          table_law?(cells, law),
+          do: {law, extent |> Doc.lines() |> Enum.flat_map(&entries/1)}
     end
+  end
+
+  # its rows name sections, not laws ("Section 3. | Subsection (3)."): a
+  # header "Provision" alone doesn't say (Sentencing Act 2020 Sch. 29 names
+  # a law in each row under it)
+  defp one_law?(rows) do
+    firsts = for [first | _] <- rows, text = Doc.text(first), text != "", do: text
+    firsts != [] and Enum.count(firsts, &ProvisionTable.provision?/1) * 2 > length(firsts)
+  end
+
+  defp provision_lines(rows) do
+    for [provision, extent] <- rows,
+        line <- ProvisionTable.lines(Doc.text(provision), Doc.text(extent)),
+        do: line
   end
 
   # a new entry after a full stop ("Sections 75 to 84.Section 103.In section
