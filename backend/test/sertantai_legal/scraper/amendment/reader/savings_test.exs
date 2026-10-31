@@ -13,6 +13,10 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.SavingsTest do
              "Section 161(1)(a) except in relation to offences committed before 1st January 1975."
            )
 
+    assert Savings.line?(
+             "The whole section except in so far as it enables orders to be made otherwise than by statutory instrument."
+           )
+
     refute Savings.line?("Sections 73 to 75, so far as not repealed by Schedule 28.")
     refute Savings.line?("The whole section, so far as still in operation.")
     refute Savings.line?("Section 37.")

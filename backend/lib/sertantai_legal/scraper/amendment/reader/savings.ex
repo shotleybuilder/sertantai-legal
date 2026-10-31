@@ -21,7 +21,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Savings do
 
   alias SertantaiLegal.Scraper.Amendment.Reader.LawNamed
 
-  @qualified ~r/\b(?:except|save)\s+(?:in\s+relation\s+to|for\s+the\s+purposes?\s+of|as\s+respects|so\s+far\s+as\s+(?:it|they)\s+(?:relates?|appl(?:y|ies))|(?:in\s+)?so\s+far\s+as\s+(?:it|they)\s+(?:relates?|appl(?:y|ies)))\b/i
+  @qualified ~r/\b(?:except|save)\s+(?:in\s+relation\s+to|for\s+the\s+purposes?\s+of|as\s+respects|so\s+far\s+as\s+(?:it|they)\s+(?:relates?|appl(?:y|ies))|(?:in\s+)?so\s+far\s+as\b|insofar\s+as\b)/i
 
   @nothing ~r/\bNothing\s+in\s+(?:this|these)\s+(?:regulations?|sections?|articles?|paragraphs?|Schedules?)\b[^.]{0,200}?\baffects?\b[^.]*/i
 
