@@ -9,6 +9,13 @@ defmodule Mix.Tasks.Lat.LabelShadow do
 
       mix lat.label_shadow --family "OH&S: Occupational"
       mix lat.label_shadow --family F --cause "today: status" --sample FILE --n 20 --seed N
+      mix lat.label_shadow --family F --strata --sample DIR --seed N   # the check's draw (CV-06)
+
+  `--strata` draws the switch-over check's sample (Jason 2026-10-31): `--per`
+  rows (15) of each cause with at least `--min` rows (50), and `--small`
+  rows (30) from the smaller causes pooled, written to DIR as agent
+  batches of about `--batch` rows (30): `b1.json`, `b2.json` … The draw is
+  `Measures.Draw.shuffled` per cause, in cause order, after one seed.
   """
   use Mix.Task
 
@@ -25,11 +32,22 @@ defmodule Mix.Tasks.Lat.LabelShadow do
   def run(args) do
     {opts, _, _} =
       OptionParser.parse(args,
-        strict: [family: :string, cause: :string, sample: :string, n: :integer, seed: :integer]
+        strict: [
+          family: :string,
+          cause: :string,
+          sample: :string,
+          n: :integer,
+          seed: :integer,
+          strata: :boolean,
+          per: :integer,
+          min: :integer,
+          small: :integer,
+          batch: :integer
+        ]
       )
 
     family = opts[:family] || Mix.raise(@usage)
-    if opts[:sample] && !opts[:cause], do: Mix.raise(@usage)
+    if opts[:sample] && !opts[:cause] && !opts[:strata], do: Mix.raise(@usage)
 
     Mix.Task.run("app.start")
     Logger.configure(level: :warning)
@@ -55,7 +73,44 @@ defmodule Mix.Tasks.Lat.LabelShadow do
     for {c, n} <- causes |> Enum.frequencies() |> Enum.sort_by(fn {c, n} -> {-n, c} end),
         do: Mix.shell().info("  #{n}\t#{c}")
 
-    if path = opts[:sample], do: sample(rows, opts[:cause], path, opts)
+    cond do
+      opts[:strata] && opts[:sample] -> strata(rows, opts[:sample], opts)
+      path = opts[:sample] -> sample(rows, opts[:cause], path, opts)
+      true -> :ok
+    end
+  end
+
+  defp strata(rows, dir, opts) do
+    {per, min, small} = {opts[:per] || 15, opts[:min] || 50, opts[:small] || 30}
+    seed = opts[:seed] || 1
+    Draw.seed({seed, 6, 6})
+
+    by_cause =
+      rows
+      |> Enum.filter(fn {_, _, _, c} -> c != nil end)
+      |> Enum.group_by(fn {_, _, _, c} -> c end)
+
+    {big, little} = Enum.split_with(by_cause, fn {_, rs} -> length(rs) >= min end)
+    key = fn {law, r, _, _} -> {law, r.id} end
+
+    drawn =
+      Enum.flat_map(Enum.sort(big), fn {_, rs} -> Draw.shuffled(rs, per, key) end) ++
+        (little |> Enum.flat_map(&elem(&1, 1)) |> Draw.shuffled(small, key))
+
+    File.mkdir_p!(dir)
+
+    drawn
+    |> Enum.with_index(1)
+    |> Enum.map(fn {{law, r, new, c}, i} -> item(i, law, r, new, c) end)
+    |> Enum.chunk_every(opts[:batch] || 30)
+    |> Enum.with_index(1)
+    |> Enum.each(fn {items, b} ->
+      File.write!(Path.join(dir, "b#{b}.json"), Jason.encode!(items, pretty: true))
+    end)
+
+    Mix.shell().info(
+      "strata: #{length(drawn)} rows (#{length(big)} causes × #{per}, #{small} from #{length(little)} small causes; seed #{seed}) → #{dir}"
+    )
   end
 
   defp sample(rows, cause, path, opts) do
