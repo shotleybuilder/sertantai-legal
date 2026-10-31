@@ -15,7 +15,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Store do
   """
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Claim, Evidence, Version}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Claim, Evidence, Store, Version}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Store.Codec
 
   defdelegate encode(value), to: Codec
@@ -105,6 +105,38 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Store do
       """,
       [law, %{code_version: version, inputs: inputs, changes: changes, claims: claims}]
     )
+  end
+
+  @doc """
+  Each built law's latest build (its `changes_built` event): the code
+  version and the inputs recorded (`Store.Inputs`), as atoms.
+  """
+  @spec builds() :: %{String.t() => %{code_version: String.t() | nil, inputs: map()}}
+  def builds do
+    %{rows: rows} =
+      Repo.query!(
+        """
+        SELECT DISTINCT ON (law_name) law_name, provenance
+        FROM lat_events WHERE event = 'changes_built'
+        ORDER BY law_name, at DESC, id DESC
+        """,
+        [],
+        timeout: :infinity
+      )
+
+    known = Map.new(Store.Inputs.keys(), &{to_string(&1), &1})
+
+    Map.new(rows, fn [law, p] ->
+      inputs = for {k, v} <- p["inputs"] || %{}, a = known[k], into: %{}, do: {a, v}
+
+      {law,
+       %{
+         code_version: p["code_version"],
+         inputs: inputs,
+         affecting: get_in(p, ["inputs", "affecting"]),
+         commencement_sources: get_in(p, ["inputs", "commencement_sources"])
+       }}
+    end)
   end
 
   @doc "`law`'s stored changes, resolved, with tiers and conflicts derived."

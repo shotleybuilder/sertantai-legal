@@ -27,7 +27,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       mix lat.vocabulary --build --golden  # every golden-set law
       mix lat.vocabulary --build --laws A,B
       mix lat.vocabulary --build --family "OH&S: Occupational / Personal Safety"
-      mix lat.vocabulary --check --family "OH&S: Occupational"   # build, conflict counts, golden from the store — one app start
+      mix lat.vocabulary --check --family "OH&S: Occupational"   # build, conflict counts, golden from the store, the sources gate — one app start
       mix lat.vocabulary --conflicts --law UK_ukpga_1990_8 [--all]
                                            # where the law's text and legislation.gov.uk disagree
 
@@ -134,6 +134,11 @@ defmodule Mix.Tasks.Lat.Vocabulary do
         )
 
     golden(Keyword.put(opts, :stored, true))
+
+    # the sources gate re-run on what was built: the stored changes name
+    # the documents the labels need (CV-S01; found failing in CV-S10)
+    Mix.shell().info("\nsources held, for the laws built:")
+    Mix.Task.run("lat.sources", ["--laws", Enum.join(laws, ",")])
   end
 
   defp conflict_totals(laws) do
@@ -216,21 +221,29 @@ defmodule Mix.Tasks.Lat.Vocabulary do
     workers = SertantaiLegal.Scraper.LawRunner.Guard.workers(workers: opts[:workers])
     counter = :counters.new(1, [])
 
-    SertantaiLegal.Scraper.LawRunner.run(
-      laws,
-      fn law -> :timer.tc(fn -> build_one(law) end) end,
-      fn law, result ->
-        :counters.add(counter, 1, 1)
+    {us, _} =
+      :timer.tc(fn ->
+        SertantaiLegal.Scraper.LawRunner.run(
+          laws,
+          fn law -> :timer.tc(fn -> build_one(law) end) end,
+          fn law, result ->
+            :counters.add(counter, 1, 1)
 
-        line =
-          case result do
-            {us, line} when is_binary(line) -> "#{line} (#{div(us, 1_000_000)} s)"
-            other -> "FAILED #{inspect(other)}"
-          end
+            line =
+              case result do
+                {us, line} when is_binary(line) -> "#{line} (#{div(us, 1_000_000)} s)"
+                other -> "FAILED #{inspect(other)}"
+              end
 
-        Mix.shell().info("  [#{:counters.get(counter, 1)}/#{length(laws)}] #{law}: #{line}")
-      end,
-      workers: workers
+            Mix.shell().info("  [#{:counters.get(counter, 1)}/#{length(laws)}] #{law}: #{line}")
+          end,
+          workers: workers
+        )
+      end)
+
+    # build_time (CV-S11): the wall time of the whole build
+    Mix.shell().info(
+      "built #{length(laws)} laws in #{Float.round(us / 1_000_000, 1)} s (#{workers} workers)"
     )
   end
 
@@ -274,48 +287,13 @@ defmodule Mix.Tasks.Lat.Vocabulary do
     )
   end
 
-  # what the build read, for staleness: each input's latest reading
+  # what the build read, for staleness (`Store.Inputs`, `ChangeStaleness`)
   defp inputs(law, effects, opts) do
     affecting = effects |> Enum.map(& &1.affecting) |> Enum.reject(&is_nil/1) |> Enum.uniq()
-    sources = Map.keys(opts[:commencement])
 
-    latest = fn sql, params ->
-      case Repo.query!(sql, params).rows do
-        [[%DateTime{} = t]] -> DateTime.to_iso8601(t)
-        [[%NaiveDateTime{} = t]] -> NaiveDateTime.to_iso8601(t)
-        _ -> nil
-      end
-    end
-
-    [_, type, year, num] = String.split(law, "_", parts: 4)
-    dir = "data/cache/clml/#{type}/#{year}/#{num}/body"
-
-    meta = fn file ->
-      case File.read(Path.join(dir, file)) do
-        {:ok, json} -> Jason.decode!(json)
-        _ -> %{}
-      end
-    end
-
-    feed =
-      Path.wildcard(Path.join(dir, "data.feed.page-*.gz.meta.json"))
-      |> Enum.map(&(&1 |> File.read!() |> Jason.decode!() |> Map.get("fetched_at")))
-      |> Enum.max(fn -> nil end)
-
-    %{
-      clml_valid: meta.("data.xml.gz.meta.json")["dct_valid"],
-      feed_fetched: feed,
-      amendment_rules:
-        latest.("SELECT max(read_at) FROM amendment_rules WHERE amends = $1", [law]),
-      commencement_rules:
-        latest.(
-          "SELECT max(read_at) FROM commencement_rules WHERE commences = $1 OR source_law = ANY($2)",
-          [law, sources]
-        ),
-      extent_rules:
-        latest.("SELECT max(read_at) FROM extent_rules WHERE source_law = ANY($1)", [affecting]),
-      extents_unread: opts[:extents_unread]
-    }
+    law
+    |> Store.Inputs.of(affecting, Map.keys(opts[:commencement]))
+    |> Map.put(:extents_unread, opts[:extents_unread])
   end
 
   defp show(opts) do
@@ -625,10 +603,14 @@ defmodule Mix.Tasks.Lat.Vocabulary do
         rules
       end
 
+    # never read by the read pass, or read by other code or from other text
+    {unread, outdated} = Enum.split_with(stale, &(Index.get(&1) == nil))
+
     if stale != [],
       do:
         Mix.shell().info(
-          "  #{length(stale)} amending laws read from their text (stored rules stale: mix lat.amending --read)"
+          "  #{length(stale)} amending laws read from their text: #{length(unread)} not read by the read pass, " <>
+            "#{length(outdated)} with stale stored rules (mix lat.amending --read)"
         )
 
     Enum.reject(stored, &(&1.source.law in stale)) ++ List.flatten(read)
