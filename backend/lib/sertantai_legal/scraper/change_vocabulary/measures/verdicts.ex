@@ -115,7 +115,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.Verdicts do
   end
 
   @doc "The 95% upper bounds of a tally and whether both are under their limits."
-  @spec verdict(%{items: count(), groups: count()}, float(), float()) :: %{
+  @spec verdict(
+          %{:items => count(), :groups => count(), optional(atom()) => term()},
+          float(),
+          float()
+        ) :: %{
           items_upper: float() | nil,
           groups_upper: float() | nil,
           pass: boolean()
