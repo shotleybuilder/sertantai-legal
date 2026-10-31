@@ -83,8 +83,21 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.ProvisionTable do
 
   defp range(n, m, entry) do
     if entry =~ ~r/^The\s+whole\b/i,
-      do: "Sections #{n} to #{m}.",
+      do: "Sections #{n} to #{m}" <> qualification(entry),
       else: line(n, entry)
+  end
+
+  # what follows "The whole section (in each case)": a saving or limit kept
+  # on the line ("… except for the purposes of section 135", CV-06 batch 2)
+  defp qualification(entry) do
+    case Regex.run(
+           ~r/^The\s+whole\s+sections?(?:\s+in\s+each\s+case)?\s*,?\s*(.*?)\.?\s*$/is,
+           entry
+         ) do
+      [_, ""] -> "."
+      [_, rest] -> " " <> rest <> "."
+      nil -> "."
+    end
   end
 
   # "Subsection (5)." → "Section 1(5)."; "Subsections (11) and (12)." →
@@ -93,7 +106,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.ProvisionTable do
   defp line(n, entry) do
     cond do
       entry =~ ~r/^The\s+whole\b/i ->
-        "Section #{n}."
+        "Section #{n}" <> qualification(entry)
 
       match = Regex.run(~r/^Subsections?\s+(\(.*)$/s, entry) ->
         "Section #{n}#{Enum.at(match, 1)}"

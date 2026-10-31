@@ -42,4 +42,29 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.SavingsTest do
     assert for(r <- rules, into: %{}, do: {r.amends, r.saved}) ==
              %{"UK_ukpga_1961_34" => false, "UK_ukpga_1963_41" => true}
   end
+
+  test "a one-law table's saving stays on its line; a bracket range before a saving is still a range (SI 1974/1941)" do
+    alias SertantaiLegal.Scraper.Amendment.Reader.ProvisionTable
+
+    assert ProvisionTable.lines(
+             "Section 168.",
+             "The whole section except for the purposes of section 135."
+           ) ==
+             ["Section 168 except for the purposes of section 135."]
+
+    assert ProvisionTable.lines("Section 120.", "The whole section.") == ["Section 120."]
+    assert Savings.line?("Section 168 except for the purposes of section 135.")
+
+    d =
+      Doc.new("UK_uksi_1974_1941", [
+        ~S|<Legislation><Secondary><Schedules><Schedule id="schedule-1"><TitleBlock><Title>REPEALS—THE FACTORIES ACT 1961</Title></TitleBlock><Tabular><table><tbody><tr><th>Provision</th><th>Extent of repeal</th></tr><tr><td>Section 146.</td><td>Subsections (1) to (4) except for the purposes of section 148.</td></tr></tbody></table></Tabular></Schedule></Schedules></Secondary></Legislation>|
+      ])
+
+    [rule] =
+      RepealTable.repeal_table(d, "schedule-1", [
+        Reader.law_ref("UK_ukpga_1961_34", "Factories Act", "s")
+      ])
+
+    assert {rule.targets, rule.saved} == {["s.146(1)..s.146(4)"], true}
+  end
 end

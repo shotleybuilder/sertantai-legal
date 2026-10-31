@@ -198,7 +198,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTable do
   @bracket_range ~r/^[Ss]ection (\d+[A-Z]*)((?:\([^)]*\))*)\(([0-9A-Za-z]+)\) to \(([0-9A-Za-z]+)\)((?:\s*(?:,|and)\s*\([0-9A-Za-z]+\))*)\s*\.?\s*$/
 
   defp line_targets(line) do
-    case Regex.run(@bracket_range, line) do
+    case Regex.run(@bracket_range, ProvisionTable.unqualified(line)) do
       [_, n, subs, from, to, listed] ->
         base = [n | Brackets.plain_brackets(subs)]
 
