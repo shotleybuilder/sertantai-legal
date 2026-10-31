@@ -30,6 +30,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Change
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Label.Existence
   alias SertantaiLegal.Scraper.ChangeVocabulary.Label.Facts
   alias SertantaiLegal.Scraper.Territory
 
@@ -41,7 +42,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
   """
   @spec apply(map(), Date.t(), [map()], map()) :: map()
   def apply(current, date, day, ctx) do
-    day = Enum.map(day, &taken_away(&1, date, ctx))
+    day = day |> Enum.map(&taken_away(&1, date, ctx)) |> Existence.own_repeal_first(ctx.id)
     next = change(current, date, day, ctx)
     %{next | tiers: retier(current, next, day)}
   end

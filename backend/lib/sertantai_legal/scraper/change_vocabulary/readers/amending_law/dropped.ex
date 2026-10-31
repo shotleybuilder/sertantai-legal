@@ -56,11 +56,27 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw.Dropped do
 
   defp under?(row, named), do: named in tl(LatRef.ancestors(row))
 
-  # the quote makes it, or a provision holding it below the one named
-  defp made?(row, named, quoted),
-    do:
+  # the quote makes it; or a provision holding it below the one named — kept
+  # where that provision lists items of its own (an item the quote may not
+  # list: CV-S09 round 7) or the quote is read no deeper than the row; a
+  # quoted provision with no items, where the quote lists items as deep
+  # elsewhere, has none (CV-06 round 1, R1: NISR 2003/152's reg.20 quotes
+  # (3)(a)–(g), so its (1) and (2) hold no (a))
+  defp made?(row, named, quoted) do
+    holder =
       row
       |> LatRef.ancestors()
+      |> tl()
       |> Enum.take_while(&(&1 != named))
-      |> Enum.any?(&MapSet.member?(quoted, &1))
+      |> Enum.find(&MapSet.member?(quoted, &1))
+
+    MapSet.member?(quoted, row) or
+      (holder != nil and
+         (Enum.any?(quoted, &under?(&1, holder)) or shallow?(quoted, named, depth(row))))
+  end
+
+  defp shallow?(quoted, named, depth),
+    do: not Enum.any?(quoted, &(under?(&1, named) and depth(&1) >= depth))
+
+  defp depth(ref), do: length(LatRef.ancestors(ref))
 end

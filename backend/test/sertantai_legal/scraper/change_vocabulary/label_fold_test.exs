@@ -182,7 +182,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
              %{status: :prospective},
              %{status: :in_force_partial},
              %{status: :in_force, in_force_from: ~D[2008-04-01], changed_by: ["UK_uksi_2008_960"]}
-           ] = fold("s.10(1)", changes, %{start: ~D[1974-07-31], law: "UK_ukpga_1974_37"})
+           ] =
+             fold("s.10(1)", changes, %{
+               start: ~D[1974-07-31],
+               law: "UK_ukpga_1974_37",
+               # the text held predates the substitution: s.10(1) was there
+               valid: ~D[2005-01-01]
+             })
   end
 
   describe "a removal in part (C7)" do
@@ -489,7 +495,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
       [_, last] =
         Label.fold(
           "reg.12B(2)(c)",
-          %{law: "UK_uksi_2008_1597", extent: "E+W+S", start: ~D[2020-12-31]},
+          %{
+            law: "UK_uksi_2008_1597",
+            extent: "E+W+S",
+            start: ~D[2020-12-31],
+            valid: ~D[2026-01-01]
+          },
           [
             sub,
             ni
@@ -1004,6 +1015,104 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
                  start: ~D[2007-07-26],
                  extent: "E+W+S+NI"
                })
+    end
+  end
+
+  describe "CV-06 round 1 (R5): a Part row keeps its own heading changes" do
+    test "words substituted in a Part's heading open a period on it; a change on the Part holding a row still reaches the row" do
+      heading =
+        change("pt.3", :substituted, ~D[2020-12-31], level: :words, by: "UK_uksi_2019_1347")
+
+      assert [
+               _,
+               %{
+                 valid_from: ~D[2020-12-31],
+                 in_force_from: ~D[2020-12-31],
+                 changed_by: ["UK_uksi_2019_1347"]
+               }
+             ] =
+               fold("pt.3", [heading], %{containers: ["pt.3"]})
+
+      whole = change("pt.3", :repealed, ~D[2021-01-01], by: "UK_uksi_2020_9")
+
+      assert [_, %{valid_from: ~D[2021-01-01], status: :repealed}] =
+               fold("reg.10", [whole], %{containers: ["pt.3"]})
+    end
+  end
+
+  describe "CV-06 round 1 (R4): versions part when their texts do" do
+    alias SertantaiLegal.Scraper.ChangeVocabulary.Label.Version
+
+    test "the first day a change under the versioned provision reaches part of its territory only" do
+      gb = change("s.16(1A)", :inserted, ~D[2006-04-01], territory: "E+W+S")
+      both = change("s.16(2)", :substituted, ~D[2001-01-01], territory: "E+W+S+NI")
+      assert Version.diverged("s.16", "E+W+S+NI", [both, gb]) == ~D[2006-04-01]
+    end
+
+    test "the day's changes together covering the union, an unknown territory, or a change elsewhere: no split" do
+      s = change("s.51A(3)(b)", :substituted, ~D[2013-04-01], territory: "S")
+      rest = change("s.51A(3)(b)", :substituted, ~D[2013-04-01], territory: "E+W+NI")
+      unknown = change("s.51A(4)", :substituted, ~D[2014-01-01])
+      elsewhere = change("s.52", :substituted, ~D[2012-01-01], territory: "S")
+      assert Version.diverged("s.51A", "E+W+S+NI", [s, rest, unknown, elsewhere]) == nil
+    end
+  end
+
+  describe "CV-06 round 1 (R1): evidence it existed (Jason 2026-10-31)" do
+    test "no evidence: it begins at the substitution above it that makes it (CLP Art 37(9))" do
+      changes = [
+        change("art.Article 37", :substituted, ~D[2020-12-31], by: "UK_uksi_2019_720"),
+        change("art.Article 37", :substituted, ~D[2026-05-21], by: "UK_uksi_2026_484")
+      ]
+
+      assert [%{valid_from: ~D[2026-05-21], status: :in_force, changed_by: ["UK_uksi_2026_484"]}] =
+               fold("art.Article 37(9)(a)", changes, %{
+                 start: ~D[1900-01-01],
+                 law: "UK_eur_2008_1272"
+               })
+    end
+
+    test "a change to it before the substitution: it was there, its history kept (HSWA s.11(1))" do
+      changes = [
+        change("s.11", :commenced, ~D[1974-10-01]),
+        change("s.11(1)", :substituted, ~D[2006-04-01], level: :words, by: "UK_ukpga_2005_14"),
+        change("s.11", :substituted, ~D[2008-04-01], by: "UK_uksi_2008_960")
+      ]
+
+      periods = fold("s.11(1)", changes, %{start: ~D[1974-07-31], law: "UK_ukpga_1974_37"})
+      assert %{valid_from: ~D[1974-07-31]} = hd(periods)
+      assert %{valid_from: ~D[2008-04-01], changed_by: ["UK_uksi_2008_960"]} = List.last(periods)
+    end
+
+    test "a quote's insertion of a row in the made text held: its text substituted, history kept (NISR 1999/305 reg.11(2)(a))" do
+      changes = [
+        change("reg.11", :commenced, ~D[1999-09-20]),
+        change("reg.11(2)(a)", :inserted, ~D[2003-11-03], by: "UK_nisr_2003_423")
+      ]
+
+      periods =
+        fold("reg.11(2)(a)", changes, %{
+          start: ~D[1999-09-20],
+          law: "UK_nisr_1999_305",
+          valid: nil
+        })
+
+      assert %{valid_from: ~D[1999-09-20], status: :in_force} = hd(periods)
+      assert %{valid_from: ~D[2003-11-03], changed_by: ["UK_nisr_2003_423"]} = List.last(periods)
+    end
+  end
+
+  describe "CV-06 round 1 (R1): its own repeal the day its parent is substituted" do
+    test "repealed, not remade (SI 1999/3242 reg.22(2) by SI 2003/2457)" do
+      changes = [
+        change("reg.22", :commenced, ~D[1999-12-29]),
+        change("reg.22", :substituted, ~D[2003-10-27], by: "UK_uksi_2003_2457"),
+        change("reg.22(2)", :repealed, ~D[2003-10-27], by: "UK_uksi_2003_2457")
+      ]
+
+      periods = fold("reg.22(2)", changes, %{start: ~D[1999-12-29], law: "UK_uksi_1999_3242"})
+      assert %{valid_from: ~D[1999-12-29], status: :in_force} = hd(periods)
+      assert %{valid_from: ~D[2003-10-27], status: :repealed} = List.last(periods)
     end
   end
 end

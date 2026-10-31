@@ -120,12 +120,23 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
           rows,
           &%{
             section_id: &1.section_id,
-            text: Map.get(&1, :text),
+            # a clause handing over to a Schedule reads its sentences (CV-06 R3)
+            text: schedule_clause(law_name, Map.get(&1, :text)),
             part: Map.get(&1, :part),
             chapter: Map.get(&1, :chapter)
           }
         )
     }
+  end
+
+  defp schedule_clause(law_name, text) do
+    with {_, _} <- SertantaiLegal.Scraper.LawStart.ScheduleClause.redirect(text),
+         [_, type, year, number] <- String.split(law_name, "_", parts: 4),
+         {:ok, gz} <- File.read("data/cache/clml/#{type}/#{year}/#{number}/schedules/data.xml.gz") do
+      SertantaiLegal.Scraper.LawStart.ScheduleClause.inline(text, :zlib.gunzip(gz))
+    else
+      _ -> text
+    end
   end
 
   defp schedule_tables(law_name, rows) do

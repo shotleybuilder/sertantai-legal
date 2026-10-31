@@ -19,6 +19,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Rule do
   - `level`: `:provision` (reaches the rows inside each target) · `:words`
     (the named provision only — never a container's descendants).
   - `source`: `%{law, ref, text}` — the amending provision read, verbatim.
+  - `saved`: the amending law's text saves the repeal (`Reader.Savings`,
+    CV-06): repealed with savings.
   - `treatment`: `:instruction` (a provision named: its brackets are
     readings of one place, every combination listed) · `:quoted` (the
     provisions a quote makes: one tree) · `:repeal_table` (CV-S06 B5:
@@ -33,7 +35,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Rule do
   """
 
   @enforce_keys [:amends, :targets, :operation, :level, :source, :treatment]
-  defstruct [:amends, :targets, :operation, :level, :source, :treatment]
+  defstruct [:amends, :targets, :operation, :level, :source, :treatment, saved: false]
 
   @type operation :: :inserted | :substituted | :repealed | :renumbered
   @type level :: :provision | :words
@@ -45,7 +47,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Rule do
           operation: operation(),
           level: level(),
           source: source(),
-          treatment: treatment()
+          treatment: treatment(),
+          saved: boolean()
         }
 
   @operations [:inserted, :substituted, :repealed, :renumbered]
@@ -106,7 +109,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Rule do
       source_law: r.source.law,
       source_ref: r.source.ref,
       source_text: r.source.text,
-      treatment: Atom.to_string(r.treatment)
+      treatment: Atom.to_string(r.treatment),
+      saved: r.saved
     }
   end
 
@@ -119,7 +123,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Rule do
       operation: operation(row.operation),
       level: atom!(row.level, @levels),
       source: %{law: row.source_law, ref: row.source_ref, text: row.source_text},
-      treatment: atom!(row.treatment, @treatments)
+      treatment: atom!(row.treatment, @treatments),
+      saved: Map.get(row, :saved) == true
     )
   end
 

@@ -23,7 +23,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Change
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Label.{Day, Facts, Made, Start, Version}
+
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Label.{
+    Day,
+    Existence,
+    Facts,
+    Made,
+    Start,
+    Version
+  }
+
   alias SertantaiLegal.Scraper.LatRef
 
   @type period :: %{
@@ -60,7 +69,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
   @doc "The periods of provision `id` from resolved changes."
   @spec fold(String.t(), provision(), [Change.t()]) :: [period()]
   def fold(id, %{start: start} = provision, changes) do
-    changes = within(changes, Map.get(provision, :containers, []))
+    # a Part or Chapter row is never its own container: its heading's own
+    # changes stay on it (CV-06 round 1, R5: CLP Title V, REACH Title XIII)
+    containers =
+      Enum.reject(
+        Map.get(provision, :containers, []),
+        &(part_arabic(&1) == part_arabic(base_id(id)))
+      )
+
+    changes = within(changes, containers)
     version = Map.get(provision, :version)
     version_start = Map.get(provision, :version_start)
 
@@ -81,7 +98,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
     own_text = own_text_at_split(id, provision, changes, version, version_start)
 
     # it begins when it exists: its law's start, or a later insertion
-    born = Start.start(start, reaching)
+    # a quote's insertion of a provision a source shows was there is a
+    # substitution of its text; a whole substitution above it begins it
+    # unless a source shows it was there before (Jason 2026-10-31, R1)
+    valid = Map.get(provision, :valid, :unknown)
+    reaching = Existence.reread(id, reaching, changes, valid)
+    born = Existence.born(id, Start.start(start, reaching), reaching, changes, valid)
 
     # a commencement before it existed never reaches it (its law's own
     # record for a provision inserted later: CROW s.1A(a), CV-S09 round 2);

@@ -91,6 +91,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
            Claim.new(:law_text, :operation, r.operation, key),
            Claim.new(:law_text, :level, level(r, target), key),
            Claim.new(:law_text, :by, law, key),
+           # a repeal its own text saves (`Reader.Savings`, CV-06 R2)
+           if(r.saved, do: Claim.new(:law_text, :savings, [r.source.text], key), else: []),
            AmendingCommencement.claims(Map.get(commencement, law, []), ref, key),
            # where the amending law applies (its application clause; CV-07),
            # or the amending provision's own (CV-S05 round 7)

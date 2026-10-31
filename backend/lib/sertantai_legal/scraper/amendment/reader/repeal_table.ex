@@ -10,9 +10,16 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTable do
 
   import SweetXml
 
-  alias SertantaiLegal.Scraper.AmendingLaw.Doc
+  alias SertantaiLegal.Scraper.AmendingLaw.{Doc, ScheduleRefs}
   alias SertantaiLegal.Scraper.Amendment.{Reader, Rule}
-  alias SertantaiLegal.Scraper.Amendment.Reader.{Brackets, Clauses, LawNamed, ProvisionTable}
+
+  alias SertantaiLegal.Scraper.Amendment.Reader.{
+    Brackets,
+    Clauses,
+    LawNamed,
+    ProvisionTable,
+    Savings
+  }
 
   @doc "The rules a repeals table (`id` in `doc`: a Schedule of repeals) states for `laws`; [] when not a table."
   @spec repeal_table(Doc.t(), String.t(), [Reader.law_ref()]) :: [Rule.t()]
@@ -22,6 +29,12 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTable do
         []
 
       tables ->
+        # a saving in the provision giving the Schedule effect (R2)
+        intro =
+          with ref when ref != nil <- ScheduleRefs.reference(doc, id),
+               el when el != nil <- Doc.element(doc, ref),
+               do: Doc.text(el)
+
         for {law_of, lines} <- Enum.flat_map(tables, &rows(&1, laws)),
             listed <- lines,
             line <- ProvisionTable.split_list(listed),
@@ -33,7 +46,10 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTable do
                 operation: :repealed,
                 level: level,
                 source: %{law: doc.law_name, ref: id, text: line},
-                treatment: :repeal_table
+                treatment: :repeal_table,
+                saved:
+                  Savings.line?(listed) or
+                    Savings.intro?(intro, law_of.title, law_of.year)
               )
     end
   end

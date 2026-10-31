@@ -58,6 +58,13 @@ defmodule SertantaiLegal.Legal.AmendmentRule do
     attribute(:source_law, :string, allow_nil?: false, public?: true)
     attribute(:source_ref, :string, public?: true)
 
+    attribute(:saved, :boolean,
+      allow_nil?: false,
+      default: false,
+      public?: true,
+      description: "the amending law's text saves the repeal (CV-06): repealed with savings"
+    )
+
     attribute(:source_text, :string,
       public?: true,
       description: "the amending provision, verbatim"

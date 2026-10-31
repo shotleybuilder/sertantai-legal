@@ -98,7 +98,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
           {v, {[_ | _] = vs, starts}} ->
             %{provision | extent: Territory.union(vs)}
             |> Map.put(:version, v)
-            |> Map.put(:version_start, Enum.min(starts, Date, fn -> nil end))
+            # the texts may part before legislation.gov.uk's versions start
+            |> Map.put(
+              :version_start,
+              Enum.min(
+                Enum.reject(
+                  [Label.Version.diverged(base, Territory.union(vs), changes) | starts],
+                  &is_nil/1
+                ),
+                Date,
+                fn -> nil end
+              )
+            )
 
           {v, _} ->
             Map.put(provision, :version, v)

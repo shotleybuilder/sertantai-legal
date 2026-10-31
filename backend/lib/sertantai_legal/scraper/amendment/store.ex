@@ -10,7 +10,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Store do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.Amendment.Rule
 
-  @columns ~w(amends targets operation level source_law source_ref source_text treatment)a
+  @columns ~w(amends targets operation level source_law source_ref source_text treatment saved)a
 
   @doc "Replace the rules read from `source_law` with `rules`. Returns `{:ok, count}`."
   @spec write(String.t(), [Rule.t()]) :: {:ok, non_neg_integer()}

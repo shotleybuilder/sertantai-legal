@@ -6,7 +6,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Version do
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Label.Facts
-  alias SertantaiLegal.Scraper.Territory
+  alias SertantaiLegal.Scraper.{LatRef, Territory}
 
   @doc """
   On the day a territorial version splits (C3), the period as that version
@@ -28,6 +28,33 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Version do
     if Date.compare(date, version_start) == :eq and period.territory != version,
       do: %{period | territory: version, tiers: Map.put(period.tiers, :territory, :derived)},
       else: period
+  end
+
+  @doc """
+  The first day the versions' texts diverge (C3; CV-06 round 1, R4): a
+  dated text change on `base` or under it applying to part of the
+  versions' territory `union` only, and that day's changes there not
+  covering all of it (HSWA s.16: s.16(1A) inserted for E+W+S on 2006-04-01,
+  though legislation.gov.uk starts its versions in 2015). Nil when none.
+  """
+  @spec diverged(String.t(), String.t() | nil, [map()]) :: Date.t() | nil
+  def diverged(_base, nil, _changes), do: nil
+
+  def diverged(base, union, changes) do
+    changes
+    |> Enum.filter(fn c ->
+      c.resolved.date != nil and c.resolved.operation in Facts.text_changes() and
+        base in LatRef.ancestors(c.target)
+    end)
+    |> Enum.group_by(& &1.resolved.date)
+    |> Enum.filter(fn {_date, day} ->
+      territories = Enum.map(day, & &1.resolved.territory)
+
+      Enum.all?(territories, &is_binary/1) and
+        Territory.subtract(union, Territory.union(territories)) not in [nil, ""]
+    end)
+    |> Enum.map(&elem(&1, 0))
+    |> Enum.min(Date, fn -> nil end)
   end
 
   @doc """

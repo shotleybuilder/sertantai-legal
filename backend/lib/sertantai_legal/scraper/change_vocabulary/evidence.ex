@@ -121,7 +121,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
     # date's own source's (`with_date/2`)
     partial: [{:commencement, :partial}, {:feed, :partial}],
     # a removal with savings (D3: repealed_saved)
-    saved: [{:feed, :savings, :non_empty}],
+    saved: [{:law_text, :savings, :non_empty}, {:feed, :savings, :non_empty}],
     # the law making the change; the law bringing it into force is apart
     # (a commencing order is not the law that made the change)
     by: [{:law_text, :by}, {:feed, :by}, {:markup, :cited}],

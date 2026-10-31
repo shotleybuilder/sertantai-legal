@@ -46,4 +46,31 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.AmendingLawDroppedTest do
     rules = [rule(["reg.12A(9)"], :inserted, :quoted)]
     assert Dropped.rows(rules, MapSet.new(["reg.12A", "reg.12A(8)"])) == []
   end
+
+  test "a quoted provision with no items, the quote reading items as deep elsewhere: its old items go (NISR 2003/152 reg.20)" do
+    rules = [
+      rule(
+        ["reg.20", "reg.20(1)", "reg.20(2)", "reg.20(3)", "reg.20(3)(a)", "reg.20(3)(g)"],
+        :substituted,
+        :quoted
+      )
+    ]
+
+    known =
+      MapSet.new([
+        "reg.20",
+        "reg.20(1)",
+        "reg.20(1)(a)",
+        "reg.20(2)",
+        "reg.20(2)(b)",
+        "reg.20(3)"
+      ])
+
+    dropped = rules |> Dropped.rows(known) |> Enum.map(&elem(&1, 1)) |> Enum.sort()
+    assert dropped == ["reg.20(1)(a)", "reg.20(2)(b)"]
+
+    # read no deeper than (1): its old items may be there
+    shallow = [rule(["reg.20", "reg.20(1)", "reg.20(2)", "reg.20(3)"], :substituted, :quoted)]
+    assert shallow |> Dropped.rows(known) |> Enum.map(&elem(&1, 1)) == []
+  end
 end
