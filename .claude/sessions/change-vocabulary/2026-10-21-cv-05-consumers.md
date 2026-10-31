@@ -21,7 +21,7 @@ Part of the change-vocabulary architecture shift (CV-00): the parse's territory 
 
 ## Dependencies
 
-- ⬜ CV-S01–S12 passed (the workflow steps, 2026-10-22)
+- ⬜ CV-S01–S11 passed (the workflow steps, 2026-10-22; S12 Retrospective comes after CV-06)
 
 - ⬜ the previous CV session closed (each widens the slice)
 

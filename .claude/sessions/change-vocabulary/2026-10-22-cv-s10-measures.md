@@ -28,7 +28,7 @@ decisions:
     why: a recorded seed only replicates its sample if both stay; proven by drawing before and after
     result: all ten samples byte-identical across three passes
   - what: S01 gate failure (103 not fetched) deferred to the next pass from step 1
-    why: 96 are EU amenders whose territory isn't read (KE); S12 makes the re-run automatic (Jason 2026-10-31)
+    why: 96 are EU amenders whose territory isn't read (KE); S11 (Store and build) makes the re-run automatic (Jason 2026-10-31)
     result: logged open
   - what: Close on 0 of 50 classed wrong, not widen to a 2% bound
     why: the agreed rule for the hand check was "no item classed wrong" (Jason 2026-10-31)
@@ -52,7 +52,7 @@ lessons:
     detail: '"OH&S text changes" was 4,573, 4,619, 4,911 and 4,967 in four sessions: different stores and populations under one name. Quote a figure with its run (date, commit) and its register name.'
     tag: data
   - title: A passed gate stays passed only if something re-runs it
-    detail: S01 passed with 0 failures on 2026-10-22; by 2026-10-30 later steps had added 103 needs nobody fetched. Rerun earlier gates at each step's close, or automatically (CV-S12).
+    detail: S01 passed with 0 failures on 2026-10-22; by 2026-10-30 later steps had added 103 needs nobody fetched. Rerun earlier gates at each step's close, or automatically (CV-S11 Store and build).
     tag: data
   - title: Prove a refactor of a sampler by drawing before and after, not by tests alone
     detail: Unit tests showed the shared draw reproducible; only drawing every real sample twice before and once after showed the old seeds still draw the same items (and that the extent draw relies on the store's row order being stable).
@@ -64,15 +64,15 @@ lessons:
 bugs:
   - pattern: "S01 sources gate fails today: 103 needed documents not fetched (OH&S, 2026-10-30), 96 of them EU amenders of REACH (70) and CLP (26) — territory bodies and introductions; 7 UK. CV-S01 passed with 0; the needs grew with later steps and nothing re-ran the gate"
     category: workflow / sources gate
-    module: mix lat.sources (CV-S01); CV-S12 'sources check re-run after each rebuild'
+    module: mix lat.sources (CV-S01); CV-S11 'sources check re-run after each rebuild'
     affected: 103
-    fix: "Jason to decide the fetch (EU territory isn't read, KE); re-run the gate in the next pass from step 1; CV-S12's automatic re-run"
+    fix: "Jason to decide the fetch (EU territory isn't read, KE); re-run the gate in the next pass from step 1; CV-S11's automatic re-run"
     status: open
   - pattern: "mix tasks over ~300 lines: lat.extent_check 404, lat.commencement_check 446, lat.sources 383 (logic inline: tallies untested)"
     category: module size
     module: lat.extent_check, lat.commencement_check, lat.sources
     affected: 3
-    fix: "move the tallies into pure modules with tests (CV-S11 improve)"
+    fix: "move the tallies into pure modules with tests (CV-S12 retrospective, improve)"
     status: open
   - pattern: "Law-text coverage put EU annex targets (annex.*) in the body group; annexes are unparsed like Schedules (K1)"
     category: measure definition
@@ -115,7 +115,7 @@ depends_on:
   - change-vocabulary/2026-10-22-cv-s09-label-fold
 
 enables:
-  - CV-S11 Retrospective (the register and the findings are its inputs)
+  - CV-S12 Retrospective (the register and the findings are its inputs)
   - verdict files and computed bounds for every check round from now on
 ---
 
@@ -127,7 +127,7 @@ Step 10 of the change-vocabulary workflow (CV-00; Jason 2026-10-22: "restate the
 
 The session does not close until its results pass.
 
-Jason 2026-10-30: "We run S10 to pass making sure it's replicable and supported with a skill and then a retrospective as S11. Measures can be an input into S11." So the pass needs the same figures from the same inputs on a rerun, and a skill that any family can follow. The measures feed CV-S11's drop, add, keep, improve.
+Jason 2026-10-30: "We run S10 to pass making sure it's replicable and supported with a skill and then a retrospective as S11. Measures can be an input into S11." So the pass needs the same figures from the same inputs on a rerun, and a skill that any family can follow. The measures feed the retrospective's (now CV-S12) drop, add, keep, improve.
 
 ## Todo
 
@@ -144,7 +144,7 @@ Jason 2026-10-30: "We run S10 to pass making sure it's replicable and supported 
 - ✅ Hand check: an agent checks a sample of each classifying measure against the sources (stated by, coverage, dating, merge stratum): 50 text changes, 0 classed wrong after one measure fault found and fixed (annex)
 - ✅ A `measures-check` skill: the register, the commands, how to rerun for a family
 - ✅ Fix until the check passes reliably; record the result (PASS 2026-10-31: register, code, tests, replicable, hand check 0/50)
-- ✅ Hand the register and the figures' history across rounds to CV-S11 (retrospective): its "Inputs from CV-S10" section
+- ✅ Hand the register and the figures' history across rounds to CV-S12 (retrospective): its "Inputs from CV-S10" section
 
 ## Dependencies
 
@@ -162,7 +162,7 @@ Jason 2026-10-30: "We run S10 to pass making sure it's replicable and supported 
 4. **Replicable:** two runs over the same store print identical figures (diffed). Every draw is reproducible from its seed (a test per draw, including `CheckSample.draw`). Each run records the seeds it drew.
 5. **Hand-checked:** for the classifying measures (stated by, join, agreement, strata), an agent checks a sample of items against the sources. The pass is no item classed wrong.
 
-**Pass:** every published figure meets 1–5; the CV-07 figures re-baselined by the new code; the `measures-check` skill runs the whole set for a family. The register and the figures' history across rounds go to CV-S11.
+**Pass:** every published figure meets 1–5; the CV-07 figures re-baselined by the new code; the `measures-check` skill runs the whole set for a family. The register and the figures' history across rounds go to CV-S12 (retrospective).
 
 ## Inventory (2026-10-30)
 
@@ -282,7 +282,7 @@ Most of these are different moments (the store moved between steps) or different
 Every check's sample drawn at seed 901 on OH&S, twice on the code as it stood, then once after moving every draw into `Measures.Draw` (`27d98ac9`). Script and timings are in the `measures-check` skill; a pass takes about 8 min.
 - **Samples:** all 10 byte-identical across the three passes: feed, markup, commencement, extent, amending A, merge J, evidence A and D, label R and S. The refactor keeps every seed tuple and algorithm, so seeds recorded in earlier rounds still draw their samples.
 - **Printed figures:** identical, once log lines, compile lines, output paths and one machine-state line (the extent check's free memory) are filtered out.
-- **Found:** the extent check's draw takes its rows unsorted. Its order is stable today (identical runs), but the draw module's doc says callers must pass a stable order; logged for CV-S11 rather than changed, since changing it would move recorded seeds.
+- **Found:** the extent check's draw takes its rows unsorted. Its order is stable today (identical runs), but the draw module's doc says callers must pass a stable order; logged for CV-S12 (retrospective) rather than changed, since changing it would move recorded seeds.
 - **`Conflicts.report` inputs:** the strata modules call it without the read pass's pointers, but read only its `:unjoined` entries, which don't depend on them, so no figure differs.
 
 ## Measures in code (2026-10-30)

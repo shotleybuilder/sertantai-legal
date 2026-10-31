@@ -23,7 +23,7 @@ Part of the change-vocabulary architecture shift (CV-00): corpus dry run against
 
 ## Dependencies
 
-- ⬜ CV-S01–S12 passed (the workflow steps, 2026-10-22)
+- ⬜ CV-S01–S11 passed (the workflow steps, 2026-10-22; S12 Retrospective comes after CV-06)
 
 - ✅ CV-01 signed off by Jason
 - ⬜ CV-05 closed
