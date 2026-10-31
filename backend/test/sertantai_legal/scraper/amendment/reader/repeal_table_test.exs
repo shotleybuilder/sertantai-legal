@@ -191,5 +191,33 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTableTest do
                    ["s.125(2)", "s.125(2)(a)", "s.125(a)", "s.127(2)", "s.127(2)(c)", "s.127(c)"]
                )
     end
+
+    test "a range of brackets and those after it (\"Section 146(2) to (5) and (7).\")" do
+      d =
+        table("UK_ukpga_2009_23", "schedule-22", "SCHEDULE 22 Repeals", [
+          ["Chapter", "Short title", "Extent of repeal"],
+          ["1961 c. 34.", "The Factories Act 1961.", "Section 146(2) to (5) and (7)."]
+        ])
+
+      assert targets(RepealTable.repeal_table(d, "schedule-22", [@factories]), :provision) ==
+               ["s.146(2)..s.146(5)", "s.146(7)"]
+    end
+
+    test "header-less rows in a Schedule of repeals are law, title, extent (Electricity Act 1989 Sch. 18)" do
+      d =
+        table("UK_ukpga_1989_29", "schedule-18", "SCHEDULE 18 Repeals", [
+          ["1961 c. 34.", "The Factories Act 1961.", "Section 90(2)."]
+        ])
+
+      assert targets(RepealTable.repeal_table(d, "schedule-18", [@factories]), :provision) ==
+               ["s.90(2)"]
+
+      no_title =
+        table("UK_ukpga_1989_29", "schedule-1", "SCHEDULE 1", [
+          ["1961 c. 34.", "x", "Section 90(2)."]
+        ])
+
+      assert RepealTable.repeal_table(no_title, "schedule-1", [@factories]) == []
+    end
   end
 end

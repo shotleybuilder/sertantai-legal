@@ -63,8 +63,17 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTable do
             # Electricity Act 1989 Sch. 18) takes its header and heading
             {[put_elem(previous, 2, cells)], previous}
 
+          # no header anywhere, in a Schedule of repeals (Electricity Act
+          # 1989 Sch. 18): its three-column rows are law, title, extent
           nil ->
-            {[], nil}
+            if heading =~ ~r/\b(?:repeals?|revocations?)\b/i and
+                 Enum.any?(cells, &(length(&1) == 3)),
+               do:
+                 (
+                   t = {heading, "Chapter Short title Extent of repeal", cells}
+                   {[t], t}
+                 ),
+               else: {[], nil}
 
           at ->
             header = cells |> Enum.at(at) |> Enum.map_join(" ", &Doc.text/1)
@@ -168,7 +177,25 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTable do
 
   # "Section 36." / "Sections 41 to 43." / "Section 28(5) and (5A)." /
   # "In section 11A(1), paragraphs (a) and (b)." / "In section 57(1), the words …"
+  # "Section 146(2) to (5) and (7).": a range of brackets and the brackets
+  # listed after it, whole provisions (CV-06a; read as (2), (5), (7) before)
+  @bracket_range ~r/^[Ss]ection (\d+[A-Z]*)((?:\([^)]*\))*)\(([0-9A-Za-z]+)\) to \(([0-9A-Za-z]+)\)((?:\s*(?:,|and)\s*\([0-9A-Za-z]+\))*)\s*\.?\s*$/
+
   defp line_targets(line) do
+    case Regex.run(@bracket_range, line) do
+      [_, n, subs, from, to, listed] ->
+        base = [n | Brackets.plain_brackets(subs)]
+
+        {[Brackets.ref("s", base ++ [from]) <> ".." <> Brackets.ref("s", base ++ [to])] ++
+           for(b <- Brackets.plain_brackets(listed), do: Brackets.ref("s", base ++ [b])),
+         :provision}
+
+      nil ->
+        line_targets_named(line)
+    end
+  end
+
+  defp line_targets_named(line) do
     case Regex.run(
            ~r/^(?:In )?[Ss]ections? (\d+[A-Z]*)((?:\([^)]*\))*)(?: to (\d+[A-Z]*))?(.*)$/,
            Regex.replace(@joining_word, line, "\\1")

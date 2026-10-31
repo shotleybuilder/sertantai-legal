@@ -56,3 +56,5 @@ UK_ukpga_2020_17  # header "Provision" over rows naming laws: a law-column table
 UK_uksi_1989_2169  # a list of sections "Sections 32, 33, 35 and 36." each read; "Sections 125(2)(a), 127(2)(c)." (CV-06a U12)
 UK_uksi_1992_2793  # a qualification's brackets name nothing: "Section 23 except insofar as …" is s.23 (CV-06a U12)
 UK_uksi_2014_486  # a long list of Factories Act and OSRPA sections in one line (CV-06a U12)
+UK_ukpga_1989_29  # header-less rows in a Schedule of repeals (Sch. 18) are law, title, extent (CV-06a U12)
+UK_ukpga_1982_30  # a range of brackets in a table line "Section 63(1) to (4)." (CV-06a U12)
