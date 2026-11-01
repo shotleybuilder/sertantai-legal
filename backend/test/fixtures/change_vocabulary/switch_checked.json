@@ -3259,8 +3259,16 @@
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
       "law": "UK_nisi_1997_1774",
-      "note": "S.R. 1998/235 commences whole Order 1.7.1998",
+      "note": "made 1997-07-22, commenced by S.R. 1998/235 on 1998-07-01: the prospective period from its making added (Made.by_order; LR-39, Jason 'add it'; the round-2 note on reg.7)",
       "periods": [
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "prospective",
+          "territory": "NI",
+          "valid_from": "1997-07-22",
+          "valid_to": "1998-07-01"
+        },
         {
           "changed_by": "UK_nisr_1998_235",
           "in_force_from": "1998-07-01",
@@ -3295,8 +3303,16 @@
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
       "law": "UK_nisi_1997_1774",
-      "note": "1.7.1998",
+      "note": "made 1997-07-22, commenced by S.R. 1998/235 on 1998-07-01: the prospective period from its making added (Made.by_order; LR-39, Jason 'add it'; the round-2 note on reg.7)",
       "periods": [
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "prospective",
+          "territory": "NI",
+          "valid_from": "1997-07-22",
+          "valid_to": "1998-07-01"
+        },
         {
           "changed_by": "UK_nisr_1998_235",
           "in_force_from": "1998-07-01",
@@ -3331,8 +3347,16 @@
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
       "law": "UK_nisi_1997_1774",
-      "note": "unamended; 1.7.1998",
+      "note": "made 1997-07-22, commenced by S.R. 1998/235 on 1998-07-01: the prospective period from its making added (Made.by_order; LR-39, Jason 'add it'; the round-2 note on reg.7)",
       "periods": [
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "prospective",
+          "territory": "NI",
+          "valid_from": "1997-07-22",
+          "valid_to": "1998-07-01"
+        },
         {
           "changed_by": "UK_nisr_1998_235",
           "in_force_from": "1998-07-01",
@@ -3367,8 +3391,16 @@
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
       "law": "UK_nisi_1997_1774",
-      "note": "amendments fall in child paragraphs; 1.7.1998",
+      "note": "made 1997-07-22, commenced by S.R. 1998/235 on 1998-07-01: the prospective period from its making added (Made.by_order; LR-39, Jason 'add it'; the round-2 note on reg.7)",
       "periods": [
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "prospective",
+          "territory": "NI",
+          "valid_from": "1997-07-22",
+          "valid_to": "1998-07-01"
+        },
         {
           "changed_by": "UK_nisr_1998_235",
           "in_force_from": "1998-07-01",
@@ -3385,8 +3417,16 @@
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
       "law": "UK_nisi_1997_1774",
-      "note": "unamended; 1.7.1998",
+      "note": "made 1997-07-22, commenced by S.R. 1998/235 on 1998-07-01: the prospective period from its making added (Made.by_order; LR-39, Jason 'add it'; the round-2 note on reg.7)",
       "periods": [
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "prospective",
+          "territory": "NI",
+          "valid_from": "1997-07-22",
+          "valid_to": "1998-07-01"
+        },
         {
           "changed_by": "UK_nisr_1998_235",
           "in_force_from": "1998-07-01",
