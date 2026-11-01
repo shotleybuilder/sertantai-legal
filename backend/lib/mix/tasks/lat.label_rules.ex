@@ -2,7 +2,8 @@ defmodule Mix.Tasks.Lat.LabelRules do
   @moduledoc """
   The switch-over's rules over every row of a family (CV-06,
   `ChangeVocabulary.LabelRules`): breaches by rule, the known-limit rows
-  apart (`backend/data/reports/change-vocabulary/cv-06a-known-limits.md`).
+  apart (`backend/data/reports/change-vocabulary/cv-06a-known-limits.md`) and
+  the named date gaps (`cv-06-date-gaps.md`).
   `--list RULE` names each breach of one rule. Read-only.
 
       mix lat.label_rules --family "OH&S: Occupational" [--list before_amender]
@@ -15,7 +16,8 @@ defmodule Mix.Tasks.Lat.LabelRules do
   alias SertantaiLegal.Scraper.ChangeVocabulary.Label.Existence
 
   @shortdoc "The switch-over's rules over a family's rows (read-only)"
-  @known "data/reports/change-vocabulary/cv-06a-known-limits.md"
+  # the named known limits and date gaps (Jason 2026-11-01)
+  @known ~w(data/reports/change-vocabulary/cv-06a-known-limits.md data/reports/change-vocabulary/cv-06-date-gaps.md)
 
   @impl Mix.Task
   def run(args) do
@@ -99,12 +101,10 @@ defmodule Mix.Tasks.Lat.LabelRules do
   end
 
   defp known do
-    case File.read(@known) do
-      {:ok, text} ->
-        ~r/^\| (UK_[^ |]+) \|/m |> Regex.scan(text) |> Enum.map(&List.last/1) |> MapSet.new()
-
-      _ ->
-        MapSet.new()
-    end
+    for file <- @known,
+        {:ok, text} <- [File.read(file)],
+        [_, sid] <- Regex.scan(~r/^\| (UK_[^ |]+) \|/m, text),
+        into: MapSet.new(),
+        do: sid
   end
 end
