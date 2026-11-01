@@ -12931,7 +12931,7 @@
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
       "law": "UK_ukpga_1974_37",
-      "note": "misses 1998 c.8 s.1(2)(a) 'employment tribunal' substitution, dated 1.8.1998 by 1998/1658 rule (Part I)",
+      "note": "fixed as its checker's note asks (CV-06 batch 5: ERDRA 1998's change dated by SI 1998/1658, 1998-08-01; reviewed 2026-11-01) (was to fix: misses 1998 c.8 s.1(2)(a) 'employment tribunal' substitution, dated 1.8.1998 by 1998/1658 rule (Part I))",
       "periods": [
         {
           "changed_by": null,
@@ -12947,17 +12947,25 @@
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "1975-01-01",
+          "valid_to": "1998-08-01"
+        },
+        {
+          "changed_by": "UK_ukpga_1998_8",
+          "in_force_from": "1998-08-01",
+          "status": "in_force",
+          "territory": "E+W+S+NI",
+          "valid_from": "1998-08-01",
           "valid_to": null
         }
       ],
       "round": 1,
       "section_id": "UK_ukpga_1974_37:s.24(2)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
       "law": "UK_ukpga_1974_37",
-      "note": "'employment tribunal' substituted by ERDRA 1998 s.1(2)(a), SI 1998/1658 1998-08-01; undated change not applied",
+      "note": "fixed as its checker's note asks (CV-06 batch 5: ERDRA 1998's change dated by SI 1998/1658, 1998-08-01; reviewed 2026-11-01) (was to fix: 'employment tribunal' substituted by ERDRA 1998 s.1(2)(a), SI 1998/1658 1998-08-01; undated change not applied)",
       "periods": [
         {
           "changed_by": null,
@@ -12973,12 +12981,20 @@
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "1975-01-01",
+          "valid_to": "1998-08-01"
+        },
+        {
+          "changed_by": "UK_ukpga_1998_8",
+          "in_force_from": "1998-08-01",
+          "status": "in_force",
+          "territory": "E+W+S+NI",
+          "valid_from": "1998-08-01",
           "valid_to": null
         }
       ],
       "round": 2,
       "section_id": "UK_ukpga_1974_37:s.24(4)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "history: status",
