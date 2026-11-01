@@ -12061,22 +12061,14 @@
     {
       "cause": "history: old prospective from the law's making",
       "law": "UK_ukpga_1974_37",
-      "note": "begins 2008 (no source earlier); single text E+W+S+NI until versions split 2017-06-15 per markup",
+      "note": "versions split when their section's texts first part (Jason 2026-11-01: \"when the section parts\") (was: begins 2008 (no source earlier); single text E+W+S+NI until versions split 2017-06-15 per markup)",
       "periods": [
         {
           "changed_by": "UK_uksi_2008_960",
           "in_force_from": "2008-04-01",
           "status": "in_force",
-          "territory": "E+W+S+NI",
-          "valid_from": "2008-04-01",
-          "valid_to": "2017-06-15"
-        },
-        {
-          "changed_by": "UK_uksi_2008_960",
-          "in_force_from": "2008-04-01",
-          "status": "in_force",
           "territory": "E+W+S",
-          "valid_from": "2017-06-15",
+          "valid_from": "2008-04-01",
           "valid_to": null
         }
       ],
@@ -12087,7 +12079,7 @@
     {
       "cause": "history: start earlier",
       "law": "UK_ukpga_1974_37",
-      "note": "s.14 commenced 1.1.1975 by SI 1974/1439 Sch.2; (2) substituted 2008",
+      "note": "versions split when their section's texts first part (Jason 2026-11-01: \"when the section parts\") (was: s.14 commenced 1.1.1975 by SI 1974/1439 Sch.2; (2) substituted 2008)",
       "periods": [
         {
           "changed_by": null,
@@ -12103,22 +12095,22 @@
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "1975-01-01",
+          "valid_to": "2006-04-01"
+        },
+        {
+          "changed_by": "UK_uksi_1974_1439",
+          "in_force_from": "1975-01-01",
+          "status": "in_force",
+          "territory": "E+W+S",
+          "valid_from": "2006-04-01",
           "valid_to": "2008-04-01"
         },
         {
           "changed_by": "UK_uksi_2008_960",
           "in_force_from": "2008-04-01",
           "status": "in_force",
-          "territory": "E+W+S+NI",
-          "valid_from": "2008-04-01",
-          "valid_to": "2017-06-15"
-        },
-        {
-          "changed_by": "UK_uksi_2008_960",
-          "in_force_from": "2008-04-01",
-          "status": "in_force",
           "territory": "E+W+S",
-          "valid_from": "2017-06-15",
+          "valid_from": "2008-04-01",
           "valid_to": null
         }
       ],
@@ -12129,7 +12121,7 @@
     {
       "cause": "history: status",
       "law": "UK_ukpga_1974_37",
-      "note": "SI 1974/1439 Sch.2: s.14 on 1.1.1975",
+      "note": "versions split when their section's texts first part (Jason 2026-11-01: \"when the section parts\") (was: SI 1974/1439 Sch.2: s.14 on 1.1.1975)",
       "periods": [
         {
           "changed_by": null,
@@ -12145,22 +12137,22 @@
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "1975-01-01",
+          "valid_to": "2006-04-01"
+        },
+        {
+          "changed_by": "UK_uksi_1974_1439",
+          "in_force_from": "1975-01-01",
+          "status": "in_force",
+          "territory": "E+W+S",
+          "valid_from": "2006-04-01",
           "valid_to": "2008-04-01"
         },
         {
           "changed_by": "UK_uksi_2008_960",
           "in_force_from": "2008-04-01",
           "status": "in_force",
-          "territory": "E+W+S+NI",
-          "valid_from": "2008-04-01",
-          "valid_to": "2017-06-15"
-        },
-        {
-          "changed_by": "UK_uksi_2008_960",
-          "in_force_from": "2008-04-01",
-          "status": "in_force",
           "territory": "E+W+S",
-          "valid_from": "2017-06-15",
+          "valid_from": "2008-04-01",
           "valid_to": null
         }
       ],
@@ -12171,7 +12163,7 @@
     {
       "cause": "history: status",
       "law": "UK_ukpga_1974_37",
-      "note": "SI 1974/1439 Sch.2: s.14 on 1.1.1975",
+      "note": "versions split when their section's texts first part (Jason 2026-11-01: \"when the section parts\") (was: SI 1974/1439 Sch.2: s.14 on 1.1.1975)",
       "periods": [
         {
           "changed_by": null,
@@ -12187,22 +12179,22 @@
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "1975-01-01",
+          "valid_to": "2006-04-01"
+        },
+        {
+          "changed_by": "UK_uksi_1974_1439",
+          "in_force_from": "1975-01-01",
+          "status": "in_force",
+          "territory": "NI",
+          "valid_from": "2006-04-01",
           "valid_to": "2008-04-01"
         },
         {
           "changed_by": "UK_uksi_2008_960",
           "in_force_from": "2008-04-01",
           "status": "in_force",
-          "territory": "E+W+S+NI",
-          "valid_from": "2008-04-01",
-          "valid_to": "2017-06-15"
-        },
-        {
-          "changed_by": "UK_uksi_2008_960",
-          "in_force_from": "2008-04-01",
-          "status": "in_force",
           "territory": "NI",
-          "valid_from": "2017-06-15",
+          "valid_from": "2008-04-01",
           "valid_to": null
         }
       ],
@@ -12213,7 +12205,7 @@
     {
       "cause": "history: status",
       "law": "UK_ukpga_1974_37",
-      "note": "1974/1439 Sch.2 s.14 1.1.1975; split 2017-06-15",
+      "note": "versions split when their section's texts first part (Jason 2026-11-01: \"when the section parts\") (was: 1974/1439 Sch.2 s.14 1.1.1975; split 2017-06-15)",
       "periods": [
         {
           "changed_by": null,
@@ -12229,22 +12221,22 @@
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "1975-01-01",
+          "valid_to": "2006-04-01"
+        },
+        {
+          "changed_by": "UK_uksi_1974_1439",
+          "in_force_from": "1975-01-01",
+          "status": "in_force",
+          "territory": "E+W+S",
+          "valid_from": "2006-04-01",
           "valid_to": "2008-04-01"
         },
         {
           "changed_by": "UK_uksi_2008_960",
           "in_force_from": "2008-04-01",
           "status": "in_force",
-          "territory": "E+W+S+NI",
-          "valid_from": "2008-04-01",
-          "valid_to": "2017-06-15"
-        },
-        {
-          "changed_by": "UK_uksi_2008_960",
-          "in_force_from": "2008-04-01",
-          "status": "in_force",
           "territory": "E+W+S",
-          "valid_from": "2017-06-15",
+          "valid_from": "2008-04-01",
           "valid_to": null
         }
       ],
@@ -12255,7 +12247,7 @@
     {
       "cause": "history: status",
       "law": "UK_ukpga_1974_37",
-      "note": "1974/1439 Sch.2 s.14 1.1.1975; version split 2017-06-15, earlier E+W+S+NI",
+      "note": "versions split when their section's texts first part (Jason 2026-11-01: \"when the section parts\") (was: 1974/1439 Sch.2 s.14 1.1.1975; version split 2017-06-15, earlier E+W+S+NI)",
       "periods": [
         {
           "changed_by": null,
@@ -12271,22 +12263,22 @@
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "1975-01-01",
+          "valid_to": "2006-04-01"
+        },
+        {
+          "changed_by": "UK_uksi_1974_1439",
+          "in_force_from": "1975-01-01",
+          "status": "in_force",
+          "territory": "NI",
+          "valid_from": "2006-04-01",
           "valid_to": "2008-04-01"
         },
         {
           "changed_by": "UK_uksi_2008_960",
           "in_force_from": "2008-04-01",
           "status": "in_force",
-          "territory": "E+W+S+NI",
-          "valid_from": "2008-04-01",
-          "valid_to": "2017-06-15"
-        },
-        {
-          "changed_by": "UK_uksi_2008_960",
-          "in_force_from": "2008-04-01",
-          "status": "in_force",
           "territory": "NI",
-          "valid_from": "2017-06-15",
+          "valid_from": "2008-04-01",
           "valid_to": null
         }
       ],
@@ -12297,7 +12289,7 @@
     {
       "cause": "today: in_force_from new later (commenced [law])",
       "law": "UK_ukpga_1974_37",
-      "note": "Sch.2 s.14 1.1.1975; NI split at version RestrictStartDate 2017-06-15",
+      "note": "versions split when their section's texts first part (Jason 2026-11-01: \"when the section parts\") (was: Sch.2 s.14 1.1.1975; NI split at version RestrictStartDate 2017-06-15)",
       "periods": [
         {
           "changed_by": null,
@@ -12313,14 +12305,14 @@
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "1975-01-01",
-          "valid_to": "2017-06-15"
+          "valid_to": "2006-04-01"
         },
         {
           "changed_by": "UK_uksi_1974_1439",
           "in_force_from": "1975-01-01",
           "status": "in_force",
           "territory": "NI",
-          "valid_from": "2017-06-15",
+          "valid_from": "2006-04-01",
           "valid_to": null
         }
       ],
@@ -12433,7 +12425,7 @@
     {
       "cause": "today: in_force_from new later (substituted [law])",
       "law": "UK_ukpga_1974_37",
-      "note": "commenced 1974-10-01 (SI 1974/1439 Sch.1); 'the Executive' substituted 1.4.2008 by SI 2008/960 art.8",
+      "note": "versions split when their section's texts first part (Jason 2026-11-01: \"when the section parts\") (was: commenced 1974-10-01 (SI 1974/1439 Sch.1); 'the Executive' substituted 1.4.2008 by SI 2008/960 art.8)",
       "periods": [
         {
           "changed_by": null,
@@ -12449,22 +12441,22 @@
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "1974-10-01",
+          "valid_to": "2006-04-01"
+        },
+        {
+          "changed_by": "UK_uksi_1974_1439",
+          "in_force_from": "1974-10-01",
+          "status": "in_force",
+          "territory": "NI",
+          "valid_from": "2006-04-01",
           "valid_to": "2008-04-01"
         },
         {
           "changed_by": "UK_uksi_2008_960",
           "in_force_from": "2008-04-01",
           "status": "in_force",
-          "territory": "E+W+S+NI",
-          "valid_from": "2008-04-01",
-          "valid_to": "2015-07-19"
-        },
-        {
-          "changed_by": "UK_uksi_2008_960",
-          "in_force_from": "2008-04-01",
-          "status": "in_force",
           "territory": "NI",
-          "valid_from": "2015-07-19",
+          "valid_from": "2008-04-01",
           "valid_to": null
         }
       ],
@@ -12601,7 +12593,7 @@
     {
       "cause": "today: in_force_from new later (substituted [law])",
       "law": "UK_ukpga_1974_37",
-      "note": "as row 1",
+      "note": "versions split when their section's texts first part (Jason 2026-11-01: \"when the section parts\") (was: as row 1)",
       "periods": [
         {
           "changed_by": null,
@@ -12617,22 +12609,22 @@
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "1974-10-01",
+          "valid_to": "2006-04-01"
+        },
+        {
+          "changed_by": "UK_uksi_1974_1439",
+          "in_force_from": "1974-10-01",
+          "status": "in_force",
+          "territory": "NI",
+          "valid_from": "2006-04-01",
           "valid_to": "2008-04-01"
         },
         {
           "changed_by": "UK_uksi_2008_960",
           "in_force_from": "2008-04-01",
           "status": "in_force",
-          "territory": "E+W+S+NI",
-          "valid_from": "2008-04-01",
-          "valid_to": "2015-07-19"
-        },
-        {
-          "changed_by": "UK_uksi_2008_960",
-          "in_force_from": "2008-04-01",
-          "status": "in_force",
           "territory": "NI",
-          "valid_from": "2015-07-19",
+          "valid_from": "2008-04-01",
           "valid_to": null
         }
       ],
@@ -12643,7 +12635,7 @@
     {
       "cause": "today: in_force_from new later (substituted [law])",
       "law": "UK_ukpga_1974_37",
-      "note": "as row 1",
+      "note": "versions split when their section's texts first part (Jason 2026-11-01: \"when the section parts\") (was: as row 1)",
       "periods": [
         {
           "changed_by": null,
@@ -12659,22 +12651,22 @@
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "1974-10-01",
+          "valid_to": "2006-04-01"
+        },
+        {
+          "changed_by": "UK_uksi_1974_1439",
+          "in_force_from": "1974-10-01",
+          "status": "in_force",
+          "territory": "E+W+S",
+          "valid_from": "2006-04-01",
           "valid_to": "2008-04-01"
         },
         {
           "changed_by": "UK_uksi_2008_960",
           "in_force_from": "2008-04-01",
           "status": "in_force",
-          "territory": "E+W+S+NI",
-          "valid_from": "2008-04-01",
-          "valid_to": "2015-07-19"
-        },
-        {
-          "changed_by": "UK_uksi_2008_960",
-          "in_force_from": "2008-04-01",
-          "status": "in_force",
           "territory": "E+W+S",
-          "valid_from": "2015-07-19",
+          "valid_from": "2008-04-01",
           "valid_to": null
         }
       ],
@@ -12685,7 +12677,7 @@
     {
       "cause": "today: in_force_from new later (substituted [law])",
       "law": "UK_ukpga_1974_37",
-      "note": "as row 1",
+      "note": "versions split when their section's texts first part (Jason 2026-11-01: \"when the section parts\") (was: as row 1)",
       "periods": [
         {
           "changed_by": null,
@@ -12701,22 +12693,22 @@
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "1974-10-01",
+          "valid_to": "2006-04-01"
+        },
+        {
+          "changed_by": "UK_uksi_1974_1439",
+          "in_force_from": "1974-10-01",
+          "status": "in_force",
+          "territory": "NI",
+          "valid_from": "2006-04-01",
           "valid_to": "2008-04-01"
         },
         {
           "changed_by": "UK_uksi_2008_960",
           "in_force_from": "2008-04-01",
           "status": "in_force",
-          "territory": "E+W+S+NI",
-          "valid_from": "2008-04-01",
-          "valid_to": "2015-07-19"
-        },
-        {
-          "changed_by": "UK_uksi_2008_960",
-          "in_force_from": "2008-04-01",
-          "status": "in_force",
           "territory": "NI",
-          "valid_from": "2015-07-19",
+          "valid_from": "2008-04-01",
           "valid_to": null
         }
       ],
@@ -13043,22 +13035,14 @@
     {
       "cause": "today: in_force_from old undated, new inserted [law]",
       "law": "UK_ukpga_1974_37",
-      "note": "s.28(3)(f) inserted 1.1.2005 by SI 2004/3363 art 5(2); old 2003-03-22 is SI 2003/403 applying s.28",
+      "note": "versions split when their section's texts first part (Jason 2026-11-01: \"when the section parts\") (was: s.28(3)(f) inserted 1.1.2005 by SI 2004/3363 art 5(2); old 2003-03-22 is SI 2003/403 applying s.28)",
       "periods": [
         {
           "changed_by": "UK_uksi_2004_3363",
           "in_force_from": "2005-01-01",
           "status": "in_force",
-          "territory": "E+W+S+NI",
-          "valid_from": "2005-01-01",
-          "valid_to": "2018-04-21"
-        },
-        {
-          "changed_by": "UK_uksi_2004_3363",
-          "in_force_from": "2005-01-01",
-          "status": "in_force",
           "territory": "E+W",
-          "valid_from": "2018-04-21",
+          "valid_from": "2005-01-01",
           "valid_to": null
         }
       ],
@@ -13069,7 +13053,7 @@
     {
       "cause": "today: in_force_from old undated, new inserted [law]",
       "law": "UK_ukpga_1974_37",
-      "note": "commenced 1.1.1975 (SI 1974/1439), 1995 c.25, subst 2008/960, WSI 2013/755, 2013 c.32 on 1.4.2014; all sourced",
+      "note": "versions split when their section's texts first part (Jason 2026-11-01: \"when the section parts\") (was: commenced 1.1.1975 (SI 1974/1439), 1995 c.25, subst 2008/960, WSI 2013/755, 2013 c.32 on 1.4.2014; all sourced)",
       "periods": [
         {
           "changed_by": null,
@@ -13085,13 +13069,21 @@
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "1975-01-01",
+          "valid_to": "1988-03-15"
+        },
+        {
+          "changed_by": "UK_uksi_1974_1439",
+          "in_force_from": "1975-01-01",
+          "status": "in_force",
+          "territory": "S",
+          "valid_from": "1988-03-15",
           "valid_to": "1996-04-01"
         },
         {
           "changed_by": "UK_ukpga_1995_25",
           "in_force_from": "1996-04-01",
           "status": "in_force",
-          "territory": "E+W+S+NI",
+          "territory": "S",
           "valid_from": "1996-04-01",
           "valid_to": "2008-04-01"
         },
@@ -13099,7 +13091,7 @@
           "changed_by": "UK_uksi_2008_960",
           "in_force_from": "2008-04-01",
           "status": "in_force",
-          "territory": "E+W+S+NI",
+          "territory": "S",
           "valid_from": "2008-04-01",
           "valid_to": "2013-04-01"
         },
@@ -13107,7 +13099,7 @@
           "changed_by": "UK_wsi_2013_755",
           "in_force_from": "2013-04-01",
           "status": "in_force",
-          "territory": "E+W+S+NI",
+          "territory": "S",
           "valid_from": "2013-04-01",
           "valid_to": "2014-04-01"
         },
@@ -13115,16 +13107,8 @@
           "changed_by": "UK_ukpga_2013_32",
           "in_force_from": "2014-04-01",
           "status": "in_force",
-          "territory": "E+W+S+NI",
-          "valid_from": "2014-04-01",
-          "valid_to": "2018-04-21"
-        },
-        {
-          "changed_by": "UK_ukpga_2013_32",
-          "in_force_from": "2014-04-01",
-          "status": "in_force",
           "territory": "S",
-          "valid_from": "2018-04-21",
+          "valid_from": "2014-04-01",
           "valid_to": null
         }
       ],
@@ -13203,22 +13187,14 @@
     {
       "cause": "today: in_force_from old undated, new inserted [law]",
       "law": "UK_ukpga_1974_37",
-      "note": "s.28(9A) inserted 1.1.2005 by SI 2004/3363 art 5(4); old 2003-03-22 start is an application effect",
+      "note": "versions split when their section's texts first part (Jason 2026-11-01: \"when the section parts\") (was: s.28(9A) inserted 1.1.2005 by SI 2004/3363 art 5(4); old 2003-03-22 start is an application effect)",
       "periods": [
         {
           "changed_by": "UK_uksi_2004_3363",
           "in_force_from": "2005-01-01",
           "status": "in_force",
-          "territory": "E+W+S+NI",
-          "valid_from": "2005-01-01",
-          "valid_to": "2018-04-21"
-        },
-        {
-          "changed_by": "UK_uksi_2004_3363",
-          "in_force_from": "2005-01-01",
-          "status": "in_force",
           "territory": "S",
-          "valid_from": "2018-04-21",
+          "valid_from": "2005-01-01",
           "valid_to": null
         }
       ],
@@ -13461,13 +13437,13 @@
     {
       "cause": "history: territory",
       "law": "UK_ukpga_1974_37",
-      "note": "2003 text E+W+S+N.I.; RA 2005 substitution Extent E+W+S; NI keeps 2003 text",
+      "note": "versions split when their section's texts first part (Jason 2026-11-01: \"when the section parts\") (was: 2003 text E+W+S+N.I.; RA 2005 substitution Extent E+W+S; NI keeps 2003 text)",
       "periods": [
         {
           "changed_by": "UK_ukpga_2003_20",
           "in_force_from": "2003-09-10",
           "status": "in_force",
-          "territory": "E+W+S+NI",
+          "territory": "E+W+S",
           "valid_from": "2003-09-10",
           "valid_to": "2006-02-07"
         },
@@ -13581,22 +13557,14 @@
     {
       "cause": "history: territory",
       "law": "UK_ukpga_1974_37",
-      "note": "pre-2015 E+W+S+NI follows Part I extent markup and RTSA 2003 s.121(2); HSWA s.84(1) makes old E+W+S arguable",
+      "note": "versions split when their section's texts first part (Jason 2026-11-01: \"when the section parts\") (was: pre-2015 E+W+S+NI follows Part I extent markup and RTSA 2003 s.121(2); HSWA s.84(1) makes old E+W+S arguable)",
       "periods": [
         {
           "changed_by": "UK_ukpga_2003_20",
           "in_force_from": "2003-09-10",
           "status": "in_force",
-          "territory": "E+W+S+NI",
-          "valid_from": "2003-09-10",
-          "valid_to": "2015-10-16"
-        },
-        {
-          "changed_by": "UK_ukpga_2003_20",
-          "in_force_from": "2003-09-10",
-          "status": "in_force",
           "territory": "E+W+S",
-          "valid_from": "2015-10-16",
+          "valid_from": "2003-09-10",
           "valid_to": null
         }
       ],
@@ -14019,7 +13987,7 @@
     {
       "cause": "history: in_force_from",
       "law": "UK_ukpga_1974_37",
-      "note": "inserted 7.4.2005 SOCPA s.158; repealed 1.4.2007; pre-split union territory",
+      "note": "versions split when their section's texts first part (Jason 2026-11-01: \"when the section parts\") (was: inserted 7.4.2005 SOCPA s.158; repealed 1.4.2007; pre-split union territory)",
       "periods": [
         {
           "changed_by": "UK_ukpga_2005_15",
@@ -14027,6 +13995,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "2005-04-07",
+          "valid_to": "2006-04-01"
+        },
+        {
+          "changed_by": "UK_ukpga_2005_15",
+          "in_force_from": "2005-04-07",
+          "status": "in_force",
+          "territory": "E+W",
+          "valid_from": "2006-04-01",
           "valid_to": "2007-04-01"
         },
         {
@@ -14045,7 +14021,7 @@
     {
       "cause": "today: in_force_from old undated, new substituted [law]",
       "law": "UK_ukpga_1974_37",
-      "note": "inserted 7.4.2005 SOCPA s.158 (extends S, in force on passing); substituted 7.10.2013 CCA 2013",
+      "note": "versions split when their section's texts first part (Jason 2026-11-01: \"when the section parts\") (was: inserted 7.4.2005 SOCPA s.158 (extends S, in force on passing); substituted 7.10.2013 CCA 2013)",
       "periods": [
         {
           "changed_by": "UK_ukpga_2005_15",
@@ -14053,6 +14029,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "2005-04-07",
+          "valid_to": "2006-04-01"
+        },
+        {
+          "changed_by": "UK_ukpga_2005_15",
+          "in_force_from": "2005-04-07",
+          "status": "in_force",
+          "territory": "S",
+          "valid_from": "2006-04-01",
           "valid_to": "2013-10-07"
         },
         {
@@ -14097,7 +14081,7 @@
     {
       "cause": "today: in_force_from old undated, new inserted [law]",
       "law": "UK_ukpga_1974_37",
-      "note": "s.51A(2A)-(2F) inserted 7.4.2005 by 2005 c.15 s.158 (E+W+S); E+W/S versions split 2013-10-07",
+      "note": "versions split when their section's texts first part (Jason 2026-11-01: \"when the section parts\") (was: s.51A(2A)-(2F) inserted 7.4.2005 by 2005 c.15 s.158 (E+W+S); E+W/S versions split 2013-10-07)",
       "periods": [
         {
           "changed_by": "UK_ukpga_2005_15",
@@ -14105,14 +14089,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "2005-04-07",
-          "valid_to": "2013-10-07"
+          "valid_to": "2006-04-01"
         },
         {
           "changed_by": "UK_ukpga_2005_15",
           "in_force_from": "2005-04-07",
           "status": "in_force",
           "territory": "E+W",
-          "valid_from": "2013-10-07",
+          "valid_from": "2006-04-01",
           "valid_to": null
         }
       ],
@@ -14123,7 +14107,7 @@
     {
       "cause": "today: in_force_from old undated, new substituted [law]",
       "law": "UK_ukpga_1974_37",
-      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: E+W and S texts diverge 2013-04-01 (2013/602 vs asp 2012/8) but E+W+S kept to markup's 2013-10-07 (R4 residual))",
+      "note": "versions split when their section's texts first part (Jason 2026-11-01: \"when the section parts\") (was: fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: E+W and S texts diverge 2013-04-01 (2013/602 vs asp 2012/8) but E+W+S kept to markup's 2013-10-07 (R4 residual)))",
       "periods": [
         {
           "changed_by": "UK_ukpga_1997_42",
@@ -14131,6 +14115,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1998-07-01",
+          "valid_to": "2006-04-01"
+        },
+        {
+          "changed_by": "UK_ukpga_1997_42",
+          "in_force_from": "1998-07-01",
+          "status": "in_force",
+          "territory": "E+W",
+          "valid_from": "2006-04-01",
           "valid_to": "2013-04-01"
         },
         {

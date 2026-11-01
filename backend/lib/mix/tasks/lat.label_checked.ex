@@ -62,8 +62,14 @@ defmodule Mix.Tasks.Lat.LabelChecked do
 
         case {id in ids, Map.fetch(current, id)} do
           {true, {:ok, now}} ->
-            # a row once to fix keeps the fault its checker named, beside the why
-            note = if r["status"] == "to_fix", do: "#{why} (was to fix: #{r["note"]})", else: why
+            # a row keeps what its checker found, beside the why
+            note =
+              case r["status"] do
+                "to_fix" -> "#{why} (was to fix: #{r["note"]})"
+                "accepted" -> "#{why} (was: #{r["note"]})"
+                _ -> why
+              end
+
             %{r | "status" => "accepted", "periods" => Checked.norm(now), "note" => note}
 
           {true, :error} ->

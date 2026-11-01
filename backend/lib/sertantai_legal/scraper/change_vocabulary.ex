@@ -104,7 +104,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
               :version_start,
               Enum.min(
                 Enum.reject(
-                  [Label.Version.diverged(base, vs, changes) | starts],
+                  [Label.Version.diverged(base, vs, changes, facts) | starts],
                   &is_nil/1
                 ),
                 Date,

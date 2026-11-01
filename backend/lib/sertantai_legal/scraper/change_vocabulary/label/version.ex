@@ -40,6 +40,26 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Version do
   evidence: SI 2015/1682 reads E+W+S, yet its words are in SI 2008/1597's
   NI text (round 2). Nil when none.
   """
+  @spec diverged(String.t(), [String.t()], [map()], map()) :: Date.t() | nil
+  def diverged(base, versions, changes, facts),
+    do: diverged(top(base, facts), versions, changes)
+
+  @doc """
+  The highest provision holding `base` that has versions (`facts`: each
+  row's `:versions`): its texts part for every row under it (CV-06 round 2:
+  HSWA s.16(1)(b)[E+W+S] parts when s.16 does, 2006-04-01, though its own
+  words change only later).
+  """
+  @spec top(String.t(), map()) :: String.t()
+  def top(base, facts) do
+    base
+    |> LatRef.ancestors()
+    |> Enum.filter(&match?([_, _ | _], facts |> Map.get(&1, %{}) |> Map.get(:versions, [])))
+    |> List.last()
+    |> Kernel.||(base)
+  end
+
+  @doc "`diverged/4` on `base` itself (its own versions, whatever holds it)."
   @spec diverged(String.t(), [String.t()], [map()]) :: Date.t() | nil
   def diverged(_base, versions, _changes) when length(versions) < 2, do: nil
 

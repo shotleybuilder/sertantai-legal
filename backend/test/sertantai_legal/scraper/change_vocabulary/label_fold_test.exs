@@ -1056,6 +1056,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
         )
 
       assert Version.diverged("s.16", ["E+W+S", "NI"], [both, gb]) == ~D[2006-04-01]
+
+      # a row under it parts when the versioned section does (s.16(1)(b))
+      facts = %{"s.16" => %{versions: ["E+W+S", "NI"]}}
+      assert Version.top("s.16(1)(b)", facts) == "s.16"
+      assert Version.diverged("s.16(1)(b)", ["E+W+S", "NI"], [both, gb], facts) == ~D[2006-04-01]
+      assert Version.diverged("s.16(1)(b)", ["E+W+S", "NI"], [both, gb]) == nil
     end
 
     test "a territory without the markup, a change in every version, or elsewhere: no split (SI 2015/1682 in SI 2008/1597's NI text)" do
