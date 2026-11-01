@@ -1234,20 +1234,20 @@
     {
       "cause": "today: in_force_from old undated, new substituted [law]",
       "law": "UK_eur_2006_1907",
-      "note": "Art 129 wholly substituted by UK SI 2019/758 31.12.2020; territory E+W+S+NI, C8 gives E+W+S",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: Art 129 wholly substituted by UK SI 2019/758 31.12.2020; territory E+W+S+NI, C8 gives E+W+S)",
       "periods": [
         {
           "changed_by": "UK_uksi_2019_758",
           "in_force_from": "2020-12-31",
           "status": "in_force",
-          "territory": "E+W+S+NI",
+          "territory": "E+W+S",
           "valid_from": "2020-12-31",
           "valid_to": null
         }
       ],
       "round": 2,
       "section_id": "UK_eur_2006_1907:art.Article 129(2)(a)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: territory Windsor E+W+S+NI→E+W+S",
@@ -1962,20 +1962,20 @@
     {
       "cause": "today: in_force_from old undated, new substituted [law]",
       "law": "UK_eur_2006_1907",
-      "note": "Art 51 wholly substituted by UK SI 2019/758 31.12.2020; territory E+W+S+NI, C8 gives E+W+S",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: Art 51 wholly substituted by UK SI 2019/758 31.12.2020; territory E+W+S+NI, C8 gives E+W+S)",
       "periods": [
         {
           "changed_by": "UK_uksi_2019_758",
           "in_force_from": "2020-12-31",
           "status": "in_force",
-          "territory": "E+W+S+NI",
+          "territory": "E+W+S",
           "valid_from": "2020-12-31",
           "valid_to": null
         }
       ],
       "round": 2,
       "section_id": "UK_eur_2006_1907:art.Article 51(3)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: territory Windsor E+W+S+NI→E+W+S",
@@ -2367,20 +2367,20 @@
     {
       "cause": "today: in_force_from old undated, new substituted [law]",
       "law": "UK_eur_2006_1907",
-      "note": "Art 93(1) substituted by UK SI 2019/758 31.12.2020; territory E+W+S+NI, C8 gives E+W+S (confine lost via parent)",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: Art 93(1) substituted by UK SI 2019/758 31.12.2020; territory E+W+S+NI, C8 gives E+W+S (confine lost via parent))",
       "periods": [
         {
           "changed_by": "UK_uksi_2019_758",
           "in_force_from": "2020-12-31",
           "status": "in_force",
-          "territory": "E+W+S+NI",
+          "territory": "E+W+S",
           "valid_from": "2020-12-31",
           "valid_to": null
         }
       ],
       "round": 2,
       "section_id": "UK_eur_2006_1907:art.Article 93(1)(a)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from old undated, new substituted [law]",
@@ -2412,11 +2412,20 @@
     {
       "cause": "today: new unknown, old in_force",
       "law": "UK_eur_2006_1907",
-      "note": "Title XIII heading 'PROVISION OF INFORMATION' substituted 31.12.2020 by SI 2019/758; Part row's own words change dropped (Label.within)",
-      "periods": [],
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: Title XIII heading 'PROVISION OF INFORMATION' substituted 31.12.2020 by SI 2019/758; Part row's own words change dropped (Label.within))",
+      "periods": [
+        {
+          "changed_by": "UK_uksi_2019_758",
+          "in_force_from": "2020-12-31",
+          "status": "in_force",
+          "territory": "E+W+S",
+          "valid_from": "2020-12-31",
+          "valid_to": null
+        }
+      ],
       "round": 1,
       "section_id": "UK_eur_2006_1907:pt.XIII",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from old undated, new repealed [law]",
@@ -2733,16 +2742,8 @@
     {
       "cause": "today: territory Windsor E+W+S+NI→E+W+S",
       "law": "UK_eur_2008_1272",
-      "note": "Art 37 as substituted by SI 2019/720 (as amended by SI 2020/1567) had paras 1-5 only; this sub-provision first exists in the Art 37 substituted by SI 2026/484 from 2026-05-21, yet new labels it in_force from 2020-12-31 (old: prospective from 2020, also wrong)",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: Art 37 as substituted by SI 2019/720 (as amended by SI 2020/1567) had paras 1-5 only; this sub-provision first exists in the Art 37 substituted by SI 2026/484 from 2026-05-21, yet new labels it in_force from 2020-12-31 (old: prospective from 2020, also wrong))",
       "periods": [
-        {
-          "changed_by": "UK_uksi_2020_1567",
-          "in_force_from": "2020-12-31",
-          "status": "in_force",
-          "territory": "E+W+S",
-          "valid_from": "2020-12-31",
-          "valid_to": "2026-05-21"
-        },
         {
           "changed_by": "UK_uksi_2026_484",
           "in_force_from": "2026-05-21",
@@ -2754,57 +2755,49 @@
       ],
       "round": 1,
       "section_id": "UK_eur_2008_1272:art.Article 37(5)(c)(iv)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "history: old prospective from the law's making",
       "law": "UK_eur_2008_1272",
-      "note": "territory E+W+S per SI 2026/484 reg.1(2) and [E+W+S:] markup; label E+W+S+NI (R6-type)",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: territory E+W+S per SI 2026/484 reg.1(2) and [E+W+S:] markup; label E+W+S+NI (R6-type))",
       "periods": [
         {
           "changed_by": "UK_uksi_2026_484",
           "in_force_from": "2026-05-21",
           "status": "in_force",
-          "territory": "E+W+S+NI",
+          "territory": "E+W+S",
           "valid_from": "2026-05-21",
           "valid_to": null
         }
       ],
       "round": 2,
       "section_id": "UK_eur_2008_1272:art.Article 37(7)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "history: old prospective from the law's making",
       "law": "UK_eur_2008_1272",
-      "note": "territory E+W+S per SI 2026/484 reg.1(2) and [E+W+S:] markup; label E+W+S+NI (R6-type)",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: territory E+W+S per SI 2026/484 reg.1(2) and [E+W+S:] markup; label E+W+S+NI (R6-type))",
       "periods": [
         {
           "changed_by": "UK_uksi_2026_484",
           "in_force_from": "2026-05-21",
           "status": "in_force",
-          "territory": "E+W+S+NI",
+          "territory": "E+W+S",
           "valid_from": "2026-05-21",
           "valid_to": null
         }
       ],
       "round": 2,
       "section_id": "UK_eur_2008_1272:art.Article 37(8)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: territory Windsor E+W+S+NI→E+W+S",
       "law": "UK_eur_2008_1272",
-      "note": "Art 37 as substituted by SI 2019/720 (as amended by SI 2020/1567) had paras 1-5 only; this sub-provision first exists in the Art 37 substituted by SI 2026/484 from 2026-05-21, yet new labels it in_force from 2020-12-31 (old: prospective from 2020, also wrong)",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: Art 37 as substituted by SI 2019/720 (as amended by SI 2020/1567) had paras 1-5 only; this sub-provision first exists in the Art 37 substituted by SI 2026/484 from 2026-05-21, yet new labels it in_force from 2020-12-31 (old: prospective from 2020, also wrong))",
       "periods": [
-        {
-          "changed_by": "UK_uksi_2020_1567",
-          "in_force_from": "2020-12-31",
-          "status": "in_force",
-          "territory": "E+W+S",
-          "valid_from": "2020-12-31",
-          "valid_to": "2026-05-21"
-        },
         {
           "changed_by": "UK_uksi_2026_484",
           "in_force_from": "2026-05-21",
@@ -2816,57 +2809,49 @@
       ],
       "round": 1,
       "section_id": "UK_eur_2008_1272:art.Article 37(9)(a)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "history: old prospective from the law's making",
       "law": "UK_eur_2008_1272",
-      "note": "history right (2019/720 Art 37 had paras 1-5); territory: SI 2026/484 reg.1(2) extends E+W+S, text marked [E+W+S:], label E+W+S+NI (R6-type)",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: history right (2019/720 Art 37 had paras 1-5); territory: SI 2026/484 reg.1(2) extends E+W+S, text marked [E+W+S:], label E+W+S+NI (R6-type))",
       "periods": [
         {
           "changed_by": "UK_uksi_2026_484",
           "in_force_from": "2026-05-21",
           "status": "in_force",
-          "territory": "E+W+S+NI",
+          "territory": "E+W+S",
           "valid_from": "2026-05-21",
           "valid_to": null
         }
       ],
       "round": 2,
       "section_id": "UK_eur_2008_1272:art.Article 37(9)(d)(i)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "history: old prospective from the law's making",
       "law": "UK_eur_2008_1272",
-      "note": "territory E+W+S per SI 2026/484 reg.1(2) and [E+W+S:] markup; label E+W+S+NI (R6-type)",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: territory E+W+S per SI 2026/484 reg.1(2) and [E+W+S:] markup; label E+W+S+NI (R6-type))",
       "periods": [
         {
           "changed_by": "UK_uksi_2026_484",
           "in_force_from": "2026-05-21",
           "status": "in_force",
-          "territory": "E+W+S+NI",
+          "territory": "E+W+S",
           "valid_from": "2026-05-21",
           "valid_to": null
         }
       ],
       "round": 2,
       "section_id": "UK_eur_2008_1272:art.Article 37(9)(d)(ii)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: territory Windsor E+W+S+NI→E+W+S",
       "law": "UK_eur_2008_1272",
-      "note": "Art 37 as substituted by SI 2019/720 (as amended by SI 2020/1567) had paras 1-5 only; this sub-provision first exists in the Art 37 substituted by SI 2026/484 from 2026-05-21, yet new labels it in_force from 2020-12-31 (old: prospective from 2020, also wrong)",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: Art 37 as substituted by SI 2019/720 (as amended by SI 2020/1567) had paras 1-5 only; this sub-provision first exists in the Art 37 substituted by SI 2026/484 from 2026-05-21, yet new labels it in_force from 2020-12-31 (old: prospective from 2020, also wrong))",
       "periods": [
-        {
-          "changed_by": "UK_uksi_2020_1567",
-          "in_force_from": "2020-12-31",
-          "status": "in_force",
-          "territory": "E+W+S",
-          "valid_from": "2020-12-31",
-          "valid_to": "2026-05-21"
-        },
         {
           "changed_by": "UK_uksi_2026_484",
           "in_force_from": "2026-05-21",
@@ -2878,7 +2863,7 @@
       ],
       "round": 1,
       "section_id": "UK_eur_2008_1272:art.Article 37(9)(d)(iv)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: status repealed→repealed_saved (none dated)",
@@ -2945,20 +2930,20 @@
     {
       "cause": "today: in_force_from old undated, new substituted [law]",
       "law": "UK_eur_2008_1272",
-      "note": "Art 45(4)-(6) substituted by UK SI 2019/720 (as subst. 2020/1567) 31.12.2020; territory E+W+S+NI, C8 gives E+W+S",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: Art 45(4)-(6) substituted by UK SI 2019/720 (as subst. 2020/1567) 31.12.2020; territory E+W+S+NI, C8 gives E+W+S)",
       "periods": [
         {
           "changed_by": "UK_uksi_2020_1567",
           "in_force_from": "2020-12-31",
           "status": "in_force",
-          "territory": "E+W+S+NI",
+          "territory": "E+W+S",
           "valid_from": "2020-12-31",
           "valid_to": null
         }
       ],
       "round": 2,
       "section_id": "UK_eur_2008_1272:art.Article 45(5)(d)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: status repealed→in_force (repealed [law])",
@@ -3179,11 +3164,28 @@
     {
       "cause": "today: new unknown, old in_force",
       "law": "UK_eur_2008_1272",
-      "note": "Title V heading words substituted 31.12.2020 by SI 2019/720, words omitted 21.5.2026 by SI 2026/484; Label.within rewrites a Part row's own changes to '*' so words changes are dropped",
-      "periods": [],
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: Title V heading words substituted 31.12.2020 by SI 2019/720, words omitted 21.5.2026 by SI 2026/484; Label.within rewrites a Part row's own changes to '*' so words changes are dropped)",
+      "periods": [
+        {
+          "changed_by": "UK_uksi_2020_1567",
+          "in_force_from": "2020-12-31",
+          "status": "in_force",
+          "territory": "E+W+S",
+          "valid_from": "2020-12-31",
+          "valid_to": "2026-05-21"
+        },
+        {
+          "changed_by": "UK_uksi_2026_484",
+          "in_force_from": "2026-05-21",
+          "status": "in_force",
+          "territory": "E+W+S",
+          "valid_from": "2026-05-21",
+          "valid_to": null
+        }
+      ],
       "round": 1,
       "section_id": "UK_eur_2008_1272:pt.V",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from new undated (in_force)",
@@ -3206,11 +3208,20 @@
     {
       "cause": "today: new unknown, old in_force",
       "law": "UK_eur_2008_1272",
-      "note": "Title VI heading substituted 31.12.2020 by SI 2019/720, dropped (Label.within); old's 2023-12-31 period by 2023/1344 is a child's change",
-      "periods": [],
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: Title VI heading substituted 31.12.2020 by SI 2019/720, dropped (Label.within); old's 2023-12-31 period by 2023/1344 is a child's change)",
+      "periods": [
+        {
+          "changed_by": "UK_uksi_2019_720",
+          "in_force_from": "2020-12-31",
+          "status": "in_force",
+          "territory": "E+W+S",
+          "valid_from": "2020-12-31",
+          "valid_to": null
+        }
+      ],
       "round": 1,
       "section_id": "UK_eur_2008_1272:pt.VI",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
@@ -3241,8 +3252,16 @@
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
       "law": "UK_nisi_1997_1774",
-      "note": "no prospective period 1997-07-22 to 1998-07-01",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: no prospective period 1997-07-22 to 1998-07-01)",
       "periods": [
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "prospective",
+          "territory": "NI",
+          "valid_from": "1997-07-22",
+          "valid_to": "1998-07-01"
+        },
         {
           "changed_by": "UK_nisr_1998_235",
           "in_force_from": "1998-07-01",
@@ -3254,7 +3273,7 @@
       ],
       "round": 2,
       "section_id": "UK_nisi_1997_1774:reg.1(1)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
@@ -3285,8 +3304,16 @@
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
       "law": "UK_nisi_1997_1774",
-      "note": "no prospective period 1997-07-22 to 1998-07-01; today right",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: no prospective period 1997-07-22 to 1998-07-01; today right)",
       "periods": [
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "prospective",
+          "territory": "NI",
+          "valid_from": "1997-07-22",
+          "valid_to": "1998-07-01"
+        },
         {
           "changed_by": "UK_nisr_1998_235",
           "in_force_from": "1998-07-01",
@@ -3298,7 +3325,7 @@
       ],
       "round": 2,
       "section_id": "UK_nisi_1997_1774:reg.3",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
@@ -3329,8 +3356,16 @@
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
       "law": "UK_nisi_1997_1774",
-      "note": "no prospective period 1997-07-22 to 1998-07-01",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: no prospective period 1997-07-22 to 1998-07-01)",
       "periods": [
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "prospective",
+          "territory": "NI",
+          "valid_from": "1997-07-22",
+          "valid_to": "1998-07-01"
+        },
         {
           "changed_by": "UK_nisr_1998_235",
           "in_force_from": "1998-07-01",
@@ -3342,7 +3377,7 @@
       ],
       "round": 2,
       "section_id": "UK_nisi_1997_1774:reg.7",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
@@ -3373,8 +3408,16 @@
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
       "law": "UK_nisi_1997_1774",
-      "note": "made 1997-07-22, art.1(2) by order, SR 1998/235 1 Jul 1998: no prospective period before 1998-07-01",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: made 1997-07-22, art.1(2) by order, SR 1998/235 1 Jul 1998: no prospective period before 1998-07-01)",
       "periods": [
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "prospective",
+          "territory": "NI",
+          "valid_from": "1997-07-22",
+          "valid_to": "1998-07-01"
+        },
         {
           "changed_by": "UK_nisr_1998_235",
           "in_force_from": "1998-07-01",
@@ -3386,7 +3429,7 @@
       ],
       "round": 2,
       "section_id": "UK_nisi_1997_1774:reg.7(1)(d)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
@@ -3443,8 +3486,16 @@
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
       "law": "UK_nisi_1997_1774",
-      "note": "no prospective period 1997-07-22 to 1998-07-01",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: no prospective period 1997-07-22 to 1998-07-01)",
       "periods": [
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "prospective",
+          "territory": "NI",
+          "valid_from": "1997-07-22",
+          "valid_to": "1998-07-01"
+        },
         {
           "changed_by": "UK_nisr_1998_235",
           "in_force_from": "1998-07-01",
@@ -3456,13 +3507,21 @@
       ],
       "round": 2,
       "section_id": "UK_nisi_1997_1774:reg.7(3)(c)#2",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
       "law": "UK_nisi_1997_1774",
-      "note": "no prospective period 1997-07-22 to 1998-07-01",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: no prospective period 1997-07-22 to 1998-07-01)",
       "periods": [
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "prospective",
+          "territory": "NI",
+          "valid_from": "1997-07-22",
+          "valid_to": "1998-07-01"
+        },
         {
           "changed_by": "UK_nisr_1998_235",
           "in_force_from": "1998-07-01",
@@ -3474,7 +3533,7 @@
       ],
       "round": 2,
       "section_id": "UK_nisi_1997_1774:reg.8(2)(a)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "history: start earlier",
@@ -5090,7 +5149,7 @@
     {
       "cause": "today: status prospective→in_force (none dated)",
       "law": "UK_nisr_1997_248",
-      "note": "substituted reg.20(1) has no sub-paragraphs; (1)(a) ended 2003-05-30",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: substituted reg.20(1) has no sub-paragraphs; (1)(a) ended 2003-05-30)",
       "periods": [
         {
           "changed_by": null,
@@ -5111,20 +5170,20 @@
         {
           "changed_by": "UK_nisr_2003_152",
           "in_force_from": "2003-05-30",
-          "status": "in_force",
-          "territory": "NI",
+          "status": "repealed",
+          "territory": null,
           "valid_from": "2003-05-30",
           "valid_to": null
         }
       ],
       "round": 1,
       "section_id": "UK_nisr_1997_248:reg.20(1)(a)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: status prospective→in_force (none dated)",
       "law": "UK_nisr_1997_248",
-      "note": "substituted reg.20(1) has no sub-paragraphs; (1)(b) ended 2003-05-30",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: substituted reg.20(1) has no sub-paragraphs; (1)(b) ended 2003-05-30)",
       "periods": [
         {
           "changed_by": null,
@@ -5145,15 +5204,15 @@
         {
           "changed_by": "UK_nisr_2003_152",
           "in_force_from": "2003-05-30",
-          "status": "in_force",
-          "territory": "NI",
+          "status": "repealed",
+          "territory": null,
           "valid_from": "2003-05-30",
           "valid_to": null
         }
       ],
       "round": 1,
       "section_id": "UK_nisr_1997_248:reg.20(1)(b)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: status prospective→in_force (none dated)",
@@ -5192,7 +5251,7 @@
     {
       "cause": "today: status prospective→in_force (none dated)",
       "law": "UK_nisr_1997_248",
-      "note": "2003/152 Sch.7 para.9 substitutes whole reg.20; new (2) has no (b); row ended 2003-05-30, not in_force by 2003/152",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: 2003/152 Sch.7 para.9 substitutes whole reg.20; new (2) has no (b); row ended 2003-05-30, not in_force by 2003/152)",
       "periods": [
         {
           "changed_by": null,
@@ -5213,15 +5272,15 @@
         {
           "changed_by": "UK_nisr_2003_152",
           "in_force_from": "2003-05-30",
-          "status": "in_force",
-          "territory": "NI",
+          "status": "repealed",
+          "territory": null,
           "valid_from": "2003-05-30",
           "valid_to": null
         }
       ],
       "round": 1,
       "section_id": "UK_nisr_1997_248:reg.20(2)(b)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: status prospective→repealed (repealed [law])",
@@ -6246,8 +6305,24 @@
     {
       "cause": "today: status prospective→in_force (none dated)",
       "law": "UK_nisr_1999_305",
-      "note": "2003/423 reg.7(b) substitutes para (2), read as inserting (2)(a); drops prospective 1999-06-29 and in_force 1999-09-20..2003-11-03",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: 2003/423 reg.7(b) substitutes para (2), read as inserting (2)(a); drops prospective 1999-06-29 and in_force 1999-09-20..2003-11-03)",
       "periods": [
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "prospective",
+          "territory": "NI",
+          "valid_from": "1999-06-29",
+          "valid_to": "1999-09-20"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": "1999-09-20",
+          "status": "in_force",
+          "territory": "NI",
+          "valid_from": "1999-09-20",
+          "valid_to": "2003-11-03"
+        },
         {
           "changed_by": "UK_nisr_2003_423",
           "in_force_from": "2003-11-03",
@@ -6259,13 +6334,29 @@
       ],
       "round": 1,
       "section_id": "UK_nisr_1999_305:reg.11(2)(a)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: status prospective→in_force (none dated)",
       "law": "UK_nisr_1999_305",
-      "note": "2003/423 reg.7(b) substitutes para (2), read as inserting (2)(b); 1999-2003 history dropped",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: 2003/423 reg.7(b) substitutes para (2), read as inserting (2)(b); 1999-2003 history dropped)",
       "periods": [
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "prospective",
+          "territory": "NI",
+          "valid_from": "1999-06-29",
+          "valid_to": "1999-09-20"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": "1999-09-20",
+          "status": "in_force",
+          "territory": "NI",
+          "valid_from": "1999-09-20",
+          "valid_to": "2003-11-03"
+        },
         {
           "changed_by": "UK_nisr_2003_423",
           "in_force_from": "2003-11-03",
@@ -6277,7 +6368,7 @@
       ],
       "round": 1,
       "section_id": "UK_nisr_1999_305:reg.11(2)(b)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: status prospective→in_force (commenced [law])",
@@ -8338,24 +8429,8 @@
     {
       "cause": "today: old unknown, new in_force",
       "law": "UK_ukpga_1961_34",
-      "note": "s.10A wholly inserted (Addition d29p340) by 1972 c.28, in force 1973-02-01 (SI 1973/28); new has prospective/in_force periods from 1961-1973",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: s.10A wholly inserted (Addition d29p340) by 1972 c.28, in force 1973-02-01 (SI 1973/28); new has prospective/in_force periods from 1961-1973)",
       "periods": [
-        {
-          "changed_by": null,
-          "in_force_from": null,
-          "status": "prospective",
-          "territory": "E+W+S",
-          "valid_from": "1961-06-22",
-          "valid_to": "1962-04-01"
-        },
-        {
-          "changed_by": null,
-          "in_force_from": "1962-04-01",
-          "status": "in_force",
-          "territory": "E+W+S",
-          "valid_from": "1962-04-01",
-          "valid_to": "1973-02-01"
-        },
         {
           "changed_by": "UK_ukpga_1972_28",
           "in_force_from": "1973-02-01",
@@ -8367,12 +8442,12 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1961_34:s.10A(3)(b)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: old unknown, new repealed",
       "law": "UK_ukpga_1961_34",
-      "note": "SI 1974/1941 Sch.1 repeals s.11 'except in so far as it enables orders to be made otherwise than by statutory instrument': should be saved, not plain repealed",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: SI 1974/1941 Sch.1 repeals s.11 'except in so far as it enables orders to be made otherwise than by statutory instrument': should be saved, not plain repealed)",
       "periods": [
         {
           "changed_by": null,
@@ -8393,7 +8468,7 @@
         {
           "changed_by": "UK_uksi_1974_1941",
           "in_force_from": "1975-01-01",
-          "status": "repealed",
+          "status": "repealed_saved",
           "territory": null,
           "valid_from": "1975-01-01",
           "valid_to": null
@@ -8401,12 +8476,12 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1961_34:s.11(1)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: old unknown, new repealed",
       "law": "UK_ukpga_1961_34",
-      "note": "same s.11 exception (orders otherwise than by SI) not read",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: same s.11 exception (orders otherwise than by SI) not read)",
       "periods": [
         {
           "changed_by": null,
@@ -8427,7 +8502,7 @@
         {
           "changed_by": "UK_uksi_1974_1941",
           "in_force_from": "1975-01-01",
-          "status": "repealed",
+          "status": "repealed_saved",
           "territory": null,
           "valid_from": "1975-01-01",
           "valid_to": null
@@ -8435,7 +8510,7 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1961_34:s.11(1)(a)(ii)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "history: status",
@@ -8628,24 +8703,8 @@
     {
       "cause": "today: old unknown, new in_force",
       "law": "UK_ukpga_1961_34",
-      "note": "s.125(8) added 1989-01-01 by SI 1988/1655 (markup Addition d29p2460 covers the number); new has an in-force period from 1962-1989",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: s.125(8) added 1989-01-01 by SI 1988/1655 (markup Addition d29p2460 covers the number); new has an in-force period from 1962-1989)",
       "periods": [
-        {
-          "changed_by": null,
-          "in_force_from": null,
-          "status": "prospective",
-          "territory": "E+W+S",
-          "valid_from": "1961-06-22",
-          "valid_to": "1962-04-01"
-        },
-        {
-          "changed_by": null,
-          "in_force_from": "1962-04-01",
-          "status": "in_force",
-          "territory": "E+W+S",
-          "valid_from": "1962-04-01",
-          "valid_to": "1989-01-01"
-        },
         {
           "changed_by": "UK_uksi_1988_1655",
           "in_force_from": "1989-01-01",
@@ -8657,7 +8716,7 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1961_34:s.125(8)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from old undated, new repealed [law]",
@@ -9070,7 +9129,7 @@
     {
       "cause": "today: old unknown, new repealed",
       "law": "UK_ukpga_1961_34",
-      "note": "SI 1974/1941 Sch.1: 'whole section except in relation to offences under sections 40 to 52, 135 and 146(4)'; 1976/2004 also saves: should be repealed_saved",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: SI 1974/1941 Sch.1: 'whole section except in relation to offences under sections 40 to 52, 135 and 146(4)'; 1976/2004 also saves: should be repealed_saved)",
       "periods": [
         {
           "changed_by": null,
@@ -9091,7 +9150,7 @@
         {
           "changed_by": "UK_uksi_1974_1941",
           "in_force_from": "1975-01-01",
-          "status": "repealed",
+          "status": "repealed_saved",
           "territory": null,
           "valid_from": "1975-01-01",
           "valid_to": null
@@ -9099,12 +9158,12 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1961_34:s.156(1)(a)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: old unknown, new repealed",
       "law": "UK_ukpga_1961_34",
-      "note": "s.156 repeal saved for offences under ss.40-52, 135, 146(4) (1974/1941 Sch.1): should be repealed_saved",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: s.156 repeal saved for offences under ss.40-52, 135, 146(4) (1974/1941 Sch.1): should be repealed_saved)",
       "periods": [
         {
           "changed_by": null,
@@ -9125,7 +9184,7 @@
         {
           "changed_by": "UK_uksi_1974_1941",
           "in_force_from": "1975-01-01",
-          "status": "repealed",
+          "status": "repealed_saved",
           "territory": null,
           "valid_from": "1975-01-01",
           "valid_to": null
@@ -9133,7 +9192,7 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1961_34:s.156(2)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from old undated, new repealed [law]",
@@ -9172,7 +9231,7 @@
     {
       "cause": "today: old unknown, new repealed",
       "law": "UK_ukpga_1961_34",
-      "note": "SI 1974/1941 Sch.1 ss.160-161 saving (offences before 1.1.1975, ss.40-52, 135) not read",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: SI 1974/1941 Sch.1 ss.160-161 saving (offences before 1.1.1975, ss.40-52, 135) not read)",
       "periods": [
         {
           "changed_by": null,
@@ -9193,7 +9252,7 @@
         {
           "changed_by": "UK_uksi_1974_1941",
           "in_force_from": "1975-01-01",
-          "status": "repealed",
+          "status": "repealed_saved",
           "territory": null,
           "valid_from": "1975-01-01",
           "valid_to": null
@@ -9201,12 +9260,12 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1961_34:s.160(2)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: old unknown, new repealed",
       "law": "UK_ukpga_1961_34",
-      "note": "SI 1974/1941 Sch.1 repeals s.161 except re offences before 1.1.1975 and under ss.40-52, 135; saving dropped: repealed_saved 1975-1986 at least",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: SI 1974/1941 Sch.1 repeals s.161 except re offences before 1.1.1975 and under ss.40-52, 135; saving dropped: repealed_saved 1975-1986 at least)",
       "periods": [
         {
           "changed_by": null,
@@ -9227,7 +9286,7 @@
         {
           "changed_by": "UK_uksi_1974_1941",
           "in_force_from": "1975-01-01",
-          "status": "repealed",
+          "status": "repealed_saved",
           "territory": null,
           "valid_from": "1975-01-01",
           "valid_to": null
@@ -9235,12 +9294,12 @@
       ],
       "round": 1,
       "section_id": "UK_ukpga_1961_34:s.161(1)(a)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: old unknown, new repealed",
       "law": "UK_ukpga_1961_34",
-      "note": "SI 1974/1941 Sch.1: ss.160-161 'whole section in each case except in relation to offences committed before 1st January 1975 and offences under sections 40 to 52 and 135': saved",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: SI 1974/1941 Sch.1: ss.160-161 'whole section in each case except in relation to offences committed before 1st January 1975 and offences under sections 40 to 52 and 135': saved)",
       "periods": [
         {
           "changed_by": null,
@@ -9261,7 +9320,7 @@
         {
           "changed_by": "UK_uksi_1974_1941",
           "in_force_from": "1975-01-01",
-          "status": "repealed",
+          "status": "repealed_saved",
           "territory": null,
           "valid_from": "1975-01-01",
           "valid_to": null
@@ -9269,7 +9328,7 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1961_34:s.161(4)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "history: status",
@@ -9410,7 +9469,7 @@
     {
       "cause": "today: status in_force→repealed (repealed [law])",
       "law": "UK_ukpga_1961_34",
-      "note": "SI 1974/1941 Sch.1: 'The whole section except for the purposes of section 135' - should be repealed_saved from 1.1.1975; amendment_rules saved=f (R2 form not read)",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: SI 1974/1941 Sch.1: 'The whole section except for the purposes of section 135' - should be repealed_saved from 1.1.1975; amendment_rules saved=f (R2 form not read))",
       "periods": [
         {
           "changed_by": null,
@@ -9431,7 +9490,7 @@
         {
           "changed_by": "UK_uksi_1974_1941",
           "in_force_from": "1975-01-01",
-          "status": "repealed",
+          "status": "repealed_saved",
           "territory": null,
           "valid_from": "1975-01-01",
           "valid_to": null
@@ -9439,7 +9498,7 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1961_34:s.168",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from old undated, new repealed [law]",
@@ -9716,7 +9775,7 @@
     {
       "cause": "today: old unknown, new repealed",
       "law": "UK_ukpga_1961_34",
-      "note": "SI 1989/2169 Sch.1 Pt I para.3: repeal in force 1.7.1994, not 1.7.1990",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: SI 1989/2169 Sch.1 Pt I para.3: repeal in force 1.7.1994, not 1.7.1990)",
       "periods": [
         {
           "changed_by": null,
@@ -9732,20 +9791,20 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1962-04-01",
-          "valid_to": "1990-07-01"
+          "valid_to": "1994-07-01"
         },
         {
           "changed_by": "UK_uksi_1989_2169",
-          "in_force_from": "1990-07-01",
+          "in_force_from": "1994-07-01",
           "status": "repealed",
           "territory": null,
-          "valid_from": "1990-07-01",
+          "valid_from": "1994-07-01",
           "valid_to": null
         }
       ],
       "round": 1,
       "section_id": "UK_ukpga_1961_34:s.32(2)(e)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: old unknown, new repealed",
@@ -9826,7 +9885,7 @@
     {
       "cause": "today: old unknown, new repealed",
       "law": "UK_ukpga_1961_34",
-      "note": "SI 1989/2169 Sch.1 Pt I para.3: reg.26 (Sch.6 Pt I repeals) in force 1.7.1994, not 1.7.1990",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: SI 1989/2169 Sch.1 Pt I para.3: reg.26 (Sch.6 Pt I repeals) in force 1.7.1994, not 1.7.1990)",
       "periods": [
         {
           "changed_by": null,
@@ -9842,20 +9901,20 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1962-04-01",
-          "valid_to": "1990-07-01"
+          "valid_to": "1994-07-01"
         },
         {
           "changed_by": "UK_uksi_1989_2169",
-          "in_force_from": "1990-07-01",
+          "in_force_from": "1994-07-01",
           "status": "repealed",
           "territory": null,
-          "valid_from": "1990-07-01",
+          "valid_from": "1994-07-01",
           "valid_to": null
         }
       ],
       "round": 1,
       "section_id": "UK_ukpga_1961_34:s.33(5)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: old unknown, new repealed",
@@ -9920,7 +9979,7 @@
     {
       "cause": "today: in_force_from old undated, new repealed [law]",
       "law": "UK_ukpga_1961_34",
-      "note": "SI 1989/2169 Sch.1 Pt I para.3: reg.26 (Sch.6 Pt I repeals) in force 1.7.1994, not 1.7.1990 (lrt_metadata rule used)",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: SI 1989/2169 Sch.1 Pt I para.3: reg.26 (Sch.6 Pt I repeals) in force 1.7.1994, not 1.7.1990 (lrt_metadata rule used))",
       "periods": [
         {
           "changed_by": null,
@@ -9936,20 +9995,20 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1962-04-01",
-          "valid_to": "1990-07-01"
+          "valid_to": "1994-07-01"
         },
         {
           "changed_by": "UK_uksi_1989_2169",
-          "in_force_from": "1990-07-01",
+          "in_force_from": "1994-07-01",
           "status": "repealed",
           "territory": null,
-          "valid_from": "1990-07-01",
+          "valid_from": "1994-07-01",
           "valid_to": null
         }
       ],
       "round": 1,
       "section_id": "UK_ukpga_1961_34:s.35",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: status in_force→repealed (repealed [law])",
@@ -10218,7 +10277,7 @@
     {
       "cause": "today: in_force_from old undated, new repealed [law]",
       "law": "UK_ukpga_1961_34",
-      "note": "SI 1974/1941 Sch.1: 'whole section except in relation to investigations commenced before 1st January 1975' = repealed_saved (R2 residual)",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: SI 1974/1941 Sch.1: 'whole section except in relation to investigations commenced before 1st January 1975' = repealed_saved (R2 residual))",
       "periods": [
         {
           "changed_by": null,
@@ -10239,7 +10298,7 @@
         {
           "changed_by": "UK_uksi_1974_1941",
           "in_force_from": "1975-01-01",
-          "status": "repealed",
+          "status": "repealed_saved",
           "territory": null,
           "valid_from": "1975-01-01",
           "valid_to": null
@@ -10247,12 +10306,12 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1961_34:s.84",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: old unknown, new repealed",
       "law": "UK_ukpga_1963_41",
-      "note": "SI 1992/3004 reg.27(2) saving (s.90(4)) not read; should be repealed_saved",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: SI 1992/3004 reg.27(2) saving (s.90(4)) not read; should be repealed_saved)",
       "periods": [
         {
           "changed_by": null,
@@ -10273,7 +10332,7 @@
         {
           "changed_by": "UK_uksi_1992_3004",
           "in_force_from": "1996-01-01",
-          "status": "repealed",
+          "status": "repealed_saved",
           "territory": null,
           "valid_from": "1996-01-01",
           "valid_to": null
@@ -10281,7 +10340,7 @@
       ],
       "round": 1,
       "section_id": "UK_ukpga_1963_41:s.10(2)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: old unknown, new repealed_saved",
@@ -10822,7 +10881,7 @@
     {
       "cause": "today: old unknown, new repealed",
       "law": "UK_ukpga_1963_41",
-      "note": "SI 1992/3004 reg.27(2) saves OSRPA ss.4-16 as applied by s.90(4) (in force); should be repealed_saved, saving in law text not read",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: SI 1992/3004 reg.27(2) saves OSRPA ss.4-16 as applied by s.90(4) (in force); should be repealed_saved, saving in law text not read)",
       "periods": [
         {
           "changed_by": null,
@@ -10843,7 +10902,7 @@
         {
           "changed_by": "UK_uksi_1992_3004",
           "in_force_from": "1996-01-01",
-          "status": "repealed",
+          "status": "repealed_saved",
           "territory": null,
           "valid_from": "1996-01-01",
           "valid_to": null
@@ -10851,7 +10910,7 @@
       ],
       "round": 1,
       "section_id": "UK_ukpga_1963_41:s.5(3)(a)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from new earlier (repealed [law])",
@@ -11196,7 +11255,7 @@
     {
       "cause": "today: old unknown, new repealed",
       "law": "UK_ukpga_1963_41",
-      "note": "SI 1992/3004 reg.27(2) saving (s.90(4)) not read; should be repealed_saved",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: SI 1992/3004 reg.27(2) saving (s.90(4)) not read; should be repealed_saved)",
       "periods": [
         {
           "changed_by": null,
@@ -11217,7 +11276,7 @@
         {
           "changed_by": "UK_uksi_1992_3004",
           "in_force_from": "1996-01-01",
-          "status": "repealed",
+          "status": "repealed_saved",
           "territory": null,
           "valid_from": "1996-01-01",
           "valid_to": null
@@ -11225,7 +11284,7 @@
       ],
       "round": 1,
       "section_id": "UK_ukpga_1963_41:s.8(4)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "history: status",
@@ -11332,7 +11391,7 @@
     {
       "cause": "today: old unknown, new repealed",
       "law": "UK_ukpga_1963_41",
-      "note": "SI 1992/3004 reg.27(2) saving (s.90(4)) not read; should be repealed_saved",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: SI 1992/3004 reg.27(2) saving (s.90(4)) not read; should be repealed_saved)",
       "periods": [
         {
           "changed_by": null,
@@ -11353,7 +11412,7 @@
         {
           "changed_by": "UK_uksi_1992_3004",
           "in_force_from": "1996-01-01",
-          "status": "repealed",
+          "status": "repealed_saved",
           "territory": null,
           "valid_from": "1996-01-01",
           "valid_to": null
@@ -11361,7 +11420,7 @@
       ],
       "round": 1,
       "section_id": "UK_ukpga_1963_41:s.9(1)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: status in_force→repealed (repealed [law])",
@@ -13226,8 +13285,24 @@
     {
       "cause": "history: old prospective from the law's making",
       "law": "UK_ukpga_1974_37",
-      "note": "1995 c.40 changed s.33(2) 1996-04-01 (S) (operation unresolved, ignored): existed; should be in force 1975-01-01, new text 2009-01-16",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: 1995 c.40 changed s.33(2) 1996-04-01 (S) (operation unresolved, ignored): existed; should be in force 1975-01-01, new text 2009-01-16)",
       "periods": [
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "prospective",
+          "territory": "E+W+S+NI",
+          "valid_from": "1974-07-31",
+          "valid_to": "1975-01-01"
+        },
+        {
+          "changed_by": "UK_uksi_1974_1439",
+          "in_force_from": "1975-01-01",
+          "status": "in_force",
+          "territory": "E+W+S+NI",
+          "valid_from": "1975-01-01",
+          "valid_to": "2009-01-16"
+        },
         {
           "changed_by": "UK_ukpga_2008_20",
           "in_force_from": "2009-01-16",
@@ -13239,7 +13314,7 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1974_37:s.33(2)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from new earlier (commenced [law])",
@@ -13664,7 +13739,7 @@
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
       "law": "UK_ukpga_1974_37",
-      "note": "undated EPA 1975 Sch.15 para.15(1) substitution ('authority making the regulations') dropped; date a gap",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: undated EPA 1975 Sch.15 para.15(1) substitution ('authority making the regulations') dropped; date a gap)",
       "periods": [
         {
           "changed_by": null,
@@ -13680,17 +13755,25 @@
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "1975-01-01",
+          "valid_to": "1975-11-12"
+        },
+        {
+          "changed_by": "UK_ukpga_1975_71",
+          "in_force_from": "1975-11-12",
+          "status": "in_force",
+          "territory": "E+W+S+NI",
+          "valid_from": "1975-11-12",
           "valid_to": null
         }
       ],
       "round": 1,
       "section_id": "UK_ukpga_1974_37:s.49(2)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
       "law": "UK_ukpga_1974_37",
-      "note": "undated EPA 1975 Sch.15 para.15(1) substitution dropped; changed_by should be 1975_71 (date a gap)",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: undated EPA 1975 Sch.15 para.15(1) substitution dropped; changed_by should be 1975_71 (date a gap))",
       "periods": [
         {
           "changed_by": null,
@@ -13706,12 +13789,20 @@
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "1975-01-01",
+          "valid_to": "1975-11-12"
+        },
+        {
+          "changed_by": "UK_ukpga_1975_71",
+          "in_force_from": "1975-11-12",
+          "status": "in_force",
+          "territory": "E+W+S+NI",
+          "valid_from": "1975-11-12",
           "valid_to": null
         }
       ],
       "round": 1,
       "section_id": "UK_ukpga_1974_37:s.49(3)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "history: old prospective from the law's making",
@@ -13786,7 +13877,7 @@
     {
       "cause": "today: in_force_from old undated, new substituted [law]",
       "law": "UK_ukpga_1974_37",
-      "note": "2006 SOCPA Sch.4 para.20 substitution extends E+W only (s.179(2)); Scottish version keeps original (b); new gives E+W+S for 2006-2013",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: 2006 SOCPA Sch.4 para.20 substitution extends E+W only (s.179(2)); Scottish version keeps original (b); new gives E+W+S for 2006-2013)",
       "periods": [
         {
           "changed_by": "UK_ukpga_1997_42",
@@ -13800,7 +13891,7 @@
           "changed_by": "UK_ukpga_2005_15",
           "in_force_from": "2006-04-01",
           "status": "in_force",
-          "territory": "E+W+S",
+          "territory": "E+W",
           "valid_from": "2006-04-01",
           "valid_to": "2013-10-07"
         },
@@ -13815,7 +13906,7 @@
       ],
       "round": 1,
       "section_id": "UK_ukpga_1974_37:s.51A(2)(b)[E+W]",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from old undated, new inserted [law]",
@@ -13984,7 +14075,7 @@
     {
       "cause": "today: in_force_from old undated, new substituted [law]",
       "law": "UK_ukpga_1974_37",
-      "note": "E+W and S texts diverge 2013-04-01 (2013/602 vs asp 2012/8) but E+W+S kept to markup's 2013-10-07 (R4 residual)",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: E+W and S texts diverge 2013-04-01 (2013/602 vs asp 2012/8) but E+W+S kept to markup's 2013-10-07 (R4 residual))",
       "periods": [
         {
           "changed_by": "UK_ukpga_1997_42",
@@ -13998,27 +14089,19 @@
           "changed_by": "UK_uksi_2013_602",
           "in_force_from": "2013-04-01",
           "status": "in_force",
-          "territory": "E+W+S",
-          "valid_from": "2013-04-01",
-          "valid_to": "2013-10-07"
-        },
-        {
-          "changed_by": "UK_uksi_2013_602",
-          "in_force_from": "2013-04-01",
-          "status": "in_force",
           "territory": "E+W",
-          "valid_from": "2013-10-07",
+          "valid_from": "2013-04-01",
           "valid_to": null
         }
       ],
       "round": 2,
       "section_id": "UK_ukpga_1974_37:s.51A(3)(b)[E+W]",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from old undated, new other [law]",
       "law": "UK_ukpga_1974_37",
-      "note": "E+W/S versions part 1.4.2006 (SOCPA Sch.4 para.20 (2)(b) E+W only; S version keeps NCIS text); new splits 1.4.2007 (R6-type)",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: E+W/S versions part 1.4.2006 (SOCPA Sch.4 para.20 (2)(b) E+W only; S version keeps NCIS text); new splits 1.4.2007 (R6-type))",
       "periods": [
         {
           "changed_by": "UK_ukpga_1997_42",
@@ -14026,20 +14109,20 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1998-07-01",
-          "valid_to": "2007-04-01"
+          "valid_to": "2006-04-01"
         },
         {
           "changed_by": "UK_ukpga_1997_42",
           "in_force_from": "1998-07-01",
           "status": "in_force",
           "territory": "E+W",
-          "valid_from": "2007-04-01",
+          "valid_from": "2006-04-01",
           "valid_to": null
         }
       ],
       "round": 2,
       "section_id": "UK_ukpga_1974_37:s.51A[E+W]",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from new later (substituted [law])",
@@ -14244,20 +14327,28 @@
     {
       "cause": "today: in_force_from new earlier (none dated)",
       "law": "UK_ukpga_1974_37",
-      "note": "undated law_text repeal put at 1974-07-31; Building Act 1984 s.134(2) comes into force 1 Dec 1984",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: undated law_text repeal put at 1974-07-31; Building Act 1984 s.134(2) comes into force 1 Dec 1984)",
       "periods": [
         {
-          "changed_by": "UK_ukpga_1984_55",
+          "changed_by": null,
           "in_force_from": "1974-07-31",
+          "status": "in_force",
+          "territory": "E+W",
+          "valid_from": "1974-07-31",
+          "valid_to": "1984-12-01"
+        },
+        {
+          "changed_by": "UK_ukpga_1984_55",
+          "in_force_from": "1984-12-01",
           "status": "repealed",
           "territory": null,
-          "valid_from": "1974-07-31",
+          "valid_from": "1984-12-01",
           "valid_to": null
         }
       ],
       "round": 2,
       "section_id": "UK_ukpga_1974_37:s.64",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: status in_force→repealed (none dated)",
@@ -14478,7 +14569,7 @@
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
       "law": "UK_ukpga_1974_37",
-      "note": "substituted by EPA 1975 (enacted 1975-11-12) Sch.15 para.19 but dated 1974-10-01; true date a gap",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: substituted by EPA 1975 (enacted 1975-11-12) Sch.15 para.19 but dated 1974-10-01; true date a gap)",
       "periods": [
         {
           "changed_by": null,
@@ -14489,17 +14580,25 @@
           "valid_to": "1974-10-01"
         },
         {
-          "changed_by": "UK_ukpga_1975_71",
+          "changed_by": "UK_uksi_1974_1439",
           "in_force_from": "1974-10-01",
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "1974-10-01",
+          "valid_to": "1975-11-12"
+        },
+        {
+          "changed_by": "UK_ukpga_1975_71",
+          "in_force_from": "1975-11-12",
+          "status": "in_force",
+          "territory": "E+W+S+NI",
+          "valid_from": "1975-11-12",
           "valid_to": null
         }
       ],
       "round": 2,
       "section_id": "UK_ukpga_1974_37:s.80(5)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
@@ -16778,16 +16877,8 @@
     {
       "cause": "history: start later",
       "law": "UK_uksi_1992_3004",
-      "note": "same misread of 2002/2174 (reg.5(3) word deletion merged as reg.3 inserted); (8)(d) probably only from 2015 substitution",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: same misread of 2002/2174 (reg.5(3) word deletion merged as reg.3 inserted); (8)(d) probably only from 2015 substitution)",
       "periods": [
-        {
-          "changed_by": "UK_uksi_2002_2174",
-          "in_force_from": "2002-09-17",
-          "status": "in_force",
-          "territory": "E+W+S",
-          "valid_from": "2002-09-17",
-          "valid_to": "2015-04-06"
-        },
         {
           "changed_by": "UK_uksi_2014_3248",
           "in_force_from": "2015-04-06",
@@ -16799,7 +16890,7 @@
       ],
       "round": 1,
       "section_id": "UK_uksi_1992_3004:reg.3(8)(d)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "history: new prospective from the law's making",
@@ -17880,16 +17971,8 @@
     {
       "cause": "history: start earlier",
       "law": "UK_uksi_2008_1597",
-      "note": "2020 reg.12B(1) had no (b); (1)(b) exists only from 2024 substitution",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: 2020 reg.12B(1) had no (b); (1)(b) exists only from 2024 substitution)",
       "periods": [
-        {
-          "changed_by": "UK_uksi_2020_1460",
-          "in_force_from": "2020-12-31",
-          "status": "in_force",
-          "territory": "E+W+S",
-          "valid_from": "2020-12-31",
-          "valid_to": "2024-10-01"
-        },
         {
           "changed_by": "UK_uksi_2024_696",
           "in_force_from": "2024-10-01",
@@ -17909,21 +17992,13 @@
       ],
       "round": 1,
       "section_id": "UK_uksi_2008_1597:reg.12B(1)(b)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "history: start earlier",
       "law": "UK_uksi_2008_1597",
-      "note": "2020 reg.12B (2020/1460 Sch.3 para.7(5)) was 'Expiry of regulation 12A' with only (1),(2)(a)-(b); (3)(b) exists only from 2024",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: 2020 reg.12B (2020/1460 Sch.3 para.7(5)) was 'Expiry of regulation 12A' with only (1),(2)(a)-(b); (3)(b) exists only from 2024)",
       "periods": [
-        {
-          "changed_by": "UK_uksi_2020_1460",
-          "in_force_from": "2020-12-31",
-          "status": "in_force",
-          "territory": "E+W+S",
-          "valid_from": "2020-12-31",
-          "valid_to": "2024-10-01"
-        },
         {
           "changed_by": "UK_uksi_2024_696",
           "in_force_from": "2024-10-01",
@@ -17943,21 +18018,13 @@
       ],
       "round": 1,
       "section_id": "UK_uksi_2008_1597:reg.12B(3)(b)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "history: start earlier",
       "law": "UK_uksi_2008_1597",
-      "note": "false 2020-2024 period (2020 12B had no (6)); 2027 repealed_saved right (new 12B ends at (4); 2026/867 reg.3 saving)",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: false 2020-2024 period (2020 12B had no (6)); 2027 repealed_saved right (new 12B ends at (4); 2026/867 reg.3 saving))",
       "periods": [
-        {
-          "changed_by": "UK_uksi_2020_1460",
-          "in_force_from": "2020-12-31",
-          "status": "in_force",
-          "territory": "E+W+S",
-          "valid_from": "2020-12-31",
-          "valid_to": "2024-10-01"
-        },
         {
           "changed_by": "UK_uksi_2024_696",
           "in_force_from": "2024-10-01",
@@ -17977,7 +18044,7 @@
       ],
       "round": 1,
       "section_id": "UK_uksi_2008_1597:reg.12B(6)(a)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "history: status",
@@ -20202,7 +20269,7 @@
     {
       "cause": "today: in_force_from new earlier (commenced [law])",
       "law": "UK_uksi_2018_816",
-      "note": "Pt.3 heading word 'Approved' substituted 31.12.2020 by S.I. 2019/1347 (in row's changes: feed+law_text+markup) but new keeps 2018-07-30, changed_by none",
+      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: Pt.3 heading word 'Approved' substituted 31.12.2020 by S.I. 2019/1347 (in row's changes: feed+law_text+markup) but new keeps 2018-07-30, changed_by none)",
       "periods": [
         {
           "changed_by": null,
@@ -20218,12 +20285,20 @@
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "2018-07-30",
+          "valid_to": "2020-12-31"
+        },
+        {
+          "changed_by": "UK_uksi_2019_1347",
+          "in_force_from": "2020-12-31",
+          "status": "in_force",
+          "territory": "E+W+S+NI",
+          "valid_from": "2020-12-31",
           "valid_to": null
         }
       ],
       "round": 1,
       "section_id": "UK_uksi_2018_816:pt.3",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: status repealed→in_force (repealed [law])",

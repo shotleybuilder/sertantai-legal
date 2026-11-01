@@ -62,7 +62,9 @@ defmodule Mix.Tasks.Lat.LabelChecked do
 
         case {id in ids, Map.fetch(current, id)} do
           {true, {:ok, now}} ->
-            %{r | "status" => "accepted", "periods" => Checked.norm(now), "note" => why}
+            # a row once to fix keeps the fault its checker named, beside the why
+            note = if r["status"] == "to_fix", do: "#{why} (was to fix: #{r["note"]})", else: why
+            %{r | "status" => "accepted", "periods" => Checked.norm(now), "note" => note}
 
           {true, :error} ->
             Mix.raise("#{id}: no current label")
