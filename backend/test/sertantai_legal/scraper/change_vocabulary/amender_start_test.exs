@@ -61,4 +61,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.AmenderStartTest do
 
     assert AmenderStart.claims(prospective, rules()) == []
   end
+
+  test "an Act's Royal Assent only when nothing else dates it (ERDRA 1998: orders from 1 August 1998)" do
+    assent = %{rule({:date, ~D[1998-04-08]}) | treatment: :act_enactment}
+    order = rule({:date, ~D[1998-08-01]})
+
+    assert AmenderStart.first_start([assent, order]) == ~D[1998-08-01]
+    assert AmenderStart.first_start([assent]) == ~D[1998-04-08]
+  end
 end

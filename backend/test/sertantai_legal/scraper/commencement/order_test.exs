@@ -596,6 +596,11 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
       assert Enum.map(rules, & &1.scope) == [["s.47"], ["s.53"]]
     end
 
+    test "\"Part I of the 1998 Act except section 4\": the Part, the section excepted (SI 1998/1658)" do
+      assert [%{scope: ["pt.I"], except: ["s.4"]}] =
+               hswa_rules([{"Part I except section 4.", "Employment tribunals."}])
+    end
+
     test "\"33(1)(a) and (b)\": the sibling at its own depth" do
       assert [%{scope: ["s.33(1)(a)", "s.33(1)(b)"]}] =
                hswa_rules([{"Section 33(1)(a) and (b).", "Offences."}])

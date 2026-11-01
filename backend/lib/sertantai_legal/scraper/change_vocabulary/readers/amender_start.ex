@@ -33,12 +33,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmenderStart do
 
   @doc "The earliest day `rules` (a law's commencement rules) date; nil when none is dated."
   @spec first_start([Rule.t()]) :: Date.t() | nil
+  # the Act's Royal Assent only when nothing else dates it: an Act whose
+  # provisions wait for orders came in by them (ERDRA 1998 s.17: its
+  # changes to HSWA s.24 on 1 August 1998 by SI 1998/1658, never its
+  # Royal Assent of 8 April: CV-06 round 2)
   def first_start(rules) do
-    rules
-    |> Enum.flat_map(fn
-      %Rule{when: {:date, %Date{} = d}} -> [d]
-      _ -> []
-    end)
+    dated = for %Rule{when: {:date, %Date{} = d}} = r <- rules, do: {r.treatment, d}
+
+    case Enum.reject(dated, &(elem(&1, 0) == :act_enactment)) do
+      [] -> dated
+      others -> others
+    end
+    |> Enum.map(&elem(&1, 1))
     |> Enum.min(Date, fn -> nil end)
   end
 

@@ -1841,9 +1841,9 @@
       "rules": []
     },
     "UK_uksi_2016_920/4fb8728f0b": {
-      "class": "rules+partial",
+      "class": "rules",
       "rules": [
-        "s.30..s.36, pt.2 — 2016-10-01 — everywhere, in relation to — order_date",
+        "pt.2 except s.30..s.36 — 2016-10-01 — everywhere, fully — order_date",
         "sch.1, pt.1 — 2016-10-01 — everywhere, fully — order_date",
         "sch.2, pt.3 — 2016-10-01 — everywhere, fully — order_date"
       ]

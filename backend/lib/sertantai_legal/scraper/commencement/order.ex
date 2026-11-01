@@ -675,6 +675,16 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
     sch = schedule_context(line, sch)
 
+    # "Part I of the 1998 Act except section 4" (SI 1998/1658): the Part,
+    # the section excepted — never both commenced (CV-06 round 2)
+    {own, excepted} =
+      case Regex.split(~r/\s+except\s+(?=(?:sections?|regulations?|articles?)\s+\d)/i, own,
+             parts: 2
+           ) do
+        [main, ex] -> {main, refs(strip_parentheticals(ex), sch)}
+        [_] -> {own, []}
+      end
+
     # "… the following paragraphs of Schedule 22— 1, 3, 5 to 12": a bare
     # list on the line, or a line of only numbers under such a heading
     own_refs =
@@ -725,9 +735,10 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
       end
 
     own_item =
-      case except_subsections(own, own_refs) do
-        nil -> {own_refs, own_purposes, territory}
-        except -> {own_refs, nil, territory, except}
+      case {excepted, except_subsections(own, own_refs)} do
+        {[_ | _], _} -> {own_refs, nil, territory, excepted}
+        {[], nil} -> {own_refs, own_purposes, territory}
+        {[], except} -> {own_refs, nil, territory, except}
       end
 
     case related == "" and bare_items(own, sch, territory) do
