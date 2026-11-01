@@ -19805,7 +19805,7 @@
     {
       "cause": "history: start earlier",
       "law": "UK_uksi_2009_1348",
-      "note": "no source shows a made reg.20(5); 2009-11 existence rests on the Dropped repeal of (5)(b) (row 5); should begin 2011-10-24",
+      "note": "the feed records SI 2011/1885 revoking reg.20(5)(a),(b): a made reg.20(5) existed (Jason 2026-11-01: accept) (was to fix: no source shows a made reg.20(5); 2009-11 existence rests on the Dropped repeal of (5)(b) (row 5); should begin 2011-10-24)",
       "periods": [
         {
           "changed_by": null,
@@ -19842,12 +19842,12 @@
       ],
       "round": 2,
       "section_id": "UK_uksi_2009_1348:reg.20(5)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "history: start earlier",
       "law": "UK_uksi_2009_1348",
-      "note": "2011 reg.20(5) quote has no items; (b) made by 2020/1111; 2009-11 existence rests only on Dropped repeal of today's row",
+      "note": "the feed records SI 2011/1885 revoking reg.20(5)(a),(b): a made reg.20(5) existed (Jason 2026-11-01: accept) (was to fix: 2011 reg.20(5) quote has no items; (b) made by 2020/1111; 2009-11 existence rests only on Dropped repeal of today's row)",
       "periods": [
         {
           "changed_by": null,
@@ -19892,7 +19892,7 @@
       ],
       "round": 2,
       "section_id": "UK_uksi_2009_1348:reg.20(5)(b)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "history: start earlier",
