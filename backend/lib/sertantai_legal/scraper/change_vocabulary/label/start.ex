@@ -254,7 +254,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Start do
 
     ts = Enum.map(same_day, & &1.resolved.territory)
 
-    if own.resolved.territory != nil and Enum.all?(ts, &is_binary/1),
+    if own.resolved.territory != nil and ts != [] and Enum.all?(ts, &is_binary/1),
       do: SertantaiLegal.Scraper.Territory.union(ts),
       else: own.resolved.territory
   end

@@ -39,6 +39,28 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Existence do
   end
 
   @doc """
+  The day `id` begins (`born/5`) and `reaching` with the substitution above
+  it that begins it read as its insertion: the text it begins with is that
+  law's, in that law's territory (CV-06 round 2: CLP Art 52(1), begun by SI
+  2019/720's Art 52 on 2020-12-31, is GB's by the Windsor rule, C8).
+  """
+  @spec begin(String.t(), Date.t(), [Change.t()], [Change.t()], Date.t() | nil | :unknown) ::
+          {Date.t(), [Change.t()]}
+  def begin(id, born, reaching, changes, valid) do
+    begun = born(id, born, reaching, changes, valid)
+
+    if Date.compare(begun, born) == :gt,
+      do:
+        {begun,
+         Enum.map(reaching, fn c ->
+           if ancestor_substitution?(c, id) and c.resolved.date == begun,
+             do: %{c | resolved: %{c.resolved | operation: :inserted}},
+             else: c
+         end)},
+      else: {begun, reaching}
+  end
+
+  @doc """
   `reaching` with each insertion of `id` that it predates (by the evidence
   above) read as a substitution of its text: the quote remade a provision
   that was there (NISR 1999/305 reg.11(2)(a), in the made text of 1999,
@@ -111,7 +133,27 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Existence do
             &1.resolved.date == date)
       )
 
-  defp on_it?(c, id), do: c.target == id or id in LatRef.ancestors(c.target)
+  # on it or under it; or on a later item of the same list ("(b)" when it is
+  # "(a)": SI 2009/1348 reg.32(1)(b), changed in 2011, shows a (1)(a) then)
+  defp on_it?(c, id),
+    do: c.target == id or id in LatRef.ancestors(c.target) or later_sibling?(c.target, id)
+
+  defp later_sibling?(target, id) do
+    with [_, parent, own] <- Regex.run(~r/^(.*)\(([^()]+)\)$/, id),
+         [_, ^parent, other] <- Regex.run(~r/^(.*)\(([^()]+)\)$/, target) do
+      later?(own, other)
+    else
+      _ -> false
+    end
+  end
+
+  defp later?(a, b) do
+    cond do
+      a =~ ~r/^\d+$/ and b =~ ~r/^\d+$/ -> String.to_integer(b) > String.to_integer(a)
+      a =~ ~r/^[a-hj-z]$/ and b =~ ~r/^[a-hj-z]$/ -> b > a
+      true -> false
+    end
+  end
 
   defp ancestor_substitution?(c, id) do
     c.resolved.operation == :substituted and c.resolved.level == :provision and

@@ -5,6 +5,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Version do
   narrows it. Split from `Label.Day` (CV-S09 round 9). Pure.
   """
 
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Change
   alias SertantaiLegal.Scraper.ChangeVocabulary.Label.Facts
   alias SertantaiLegal.Scraper.{LatRef, Territory}
 
@@ -32,28 +33,26 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Version do
 
   @doc """
   The first day the versions' texts diverge (C3; CV-06 round 1, R4): a
-  dated text change on `base` or under it applying to part of the
-  versions' territory `union` only, and that day's changes there not
-  covering all of it (HSWA s.16: s.16(1A) inserted for E+W+S on 2006-04-01,
-  though legislation.gov.uk starts its versions in 2015). Nil when none.
+  dated text change on `base` or under it whose change markup sits in some
+  of the `versions` and not the others (HSWA s.16: s.16(1A), inserted for
+  E+W+S on 2006-04-01, is in the [E+W+S] text only, though
+  legislation.gov.uk starts its versions in 2015). A territory alone is no
+  evidence: SI 2015/1682 reads E+W+S, yet its words are in SI 2008/1597's
+  NI text (round 2). Nil when none.
   """
-  @spec diverged(String.t(), String.t() | nil, [map()]) :: Date.t() | nil
-  def diverged(_base, nil, _changes), do: nil
+  @spec diverged(String.t(), [String.t()], [map()]) :: Date.t() | nil
+  def diverged(_base, versions, _changes) when length(versions) < 2, do: nil
 
-  def diverged(base, union, changes) do
+  def diverged(base, versions, changes) do
     changes
     |> Enum.filter(fn c ->
-      c.resolved.date != nil and c.resolved.operation in Facts.text_changes() and
-        base in LatRef.ancestors(c.target)
-    end)
-    |> Enum.group_by(& &1.resolved.date)
-    |> Enum.filter(fn {_date, day} ->
-      territories = Enum.map(day, & &1.resolved.territory)
+      in_versions = c |> Change.values(:markup, :in_versions) |> List.flatten()
 
-      Enum.all?(territories, &is_binary/1) and
-        Territory.subtract(union, Territory.union(territories)) not in [nil, ""]
+      c.resolved.date != nil and c.resolved.operation in Facts.text_changes() and
+        base in LatRef.ancestors(c.target) and in_versions != [] and
+        Enum.any?(versions, &(&1 not in in_versions))
     end)
-    |> Enum.map(&elem(&1, 0))
+    |> Enum.map(& &1.resolved.date)
     |> Enum.min(Date, fn -> nil end)
   end
 

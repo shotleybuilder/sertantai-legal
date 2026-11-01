@@ -1043,18 +1043,33 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
   describe "CV-06 round 1 (R4): versions part when their texts do" do
     alias SertantaiLegal.Scraper.ChangeVocabulary.Label.Version
 
-    test "the first day a change under the versioned provision reaches part of its territory only" do
-      gb = change("s.16(1A)", :inserted, ~D[2006-04-01], territory: "E+W+S")
-      both = change("s.16(2)", :substituted, ~D[2001-01-01], territory: "E+W+S+NI")
-      assert Version.diverged("s.16", "E+W+S+NI", [both, gb]) == ~D[2006-04-01]
+    test "the first day a change under the versioned provision is marked up in some versions' text only" do
+      gb =
+        change("s.16(1A)", :inserted, ~D[2006-04-01],
+          territory: "E+W+S",
+          claims: [{:markup, :in_versions, ["E+W+S"]}]
+        )
+
+      both =
+        change("s.16(2)", :substituted, ~D[2001-01-01],
+          claims: [{:markup, :in_versions, ["E+W+S", "NI"]}]
+        )
+
+      assert Version.diverged("s.16", ["E+W+S", "NI"], [both, gb]) == ~D[2006-04-01]
     end
 
-    test "the day's changes together covering the union, an unknown territory, or a change elsewhere: no split" do
-      s = change("s.51A(3)(b)", :substituted, ~D[2013-04-01], territory: "S")
-      rest = change("s.51A(3)(b)", :substituted, ~D[2013-04-01], territory: "E+W+NI")
-      unknown = change("s.51A(4)", :substituted, ~D[2014-01-01])
-      elsewhere = change("s.52", :substituted, ~D[2012-01-01], territory: "S")
-      assert Version.diverged("s.51A", "E+W+S+NI", [s, rest, unknown, elsewhere]) == nil
+    test "a territory without the markup, a change in every version, or elsewhere: no split (SI 2015/1682 in SI 2008/1597's NI text)" do
+      gb_only = change("reg.21(2)(a)", :substituted, ~D[2015-10-16], territory: "E+W+S")
+
+      every =
+        change("reg.21(2)", :substituted, ~D[2014-04-01],
+          claims: [{:markup, :in_versions, ["E+W+S", "NI"]}]
+        )
+
+      elsewhere =
+        change("reg.22", :substituted, ~D[2012-01-01], claims: [{:markup, :in_versions, ["NI"]}])
+
+      assert Version.diverged("reg.21", ["E+W+S", "NI"], [gb_only, every, elsewhere]) == nil
     end
   end
 
@@ -1113,6 +1128,38 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
       periods = fold("reg.22(2)", changes, %{start: ~D[1999-12-29], law: "UK_uksi_1999_3242"})
       assert %{valid_from: ~D[1999-12-29], status: :in_force} = hd(periods)
       assert %{valid_from: ~D[2003-10-27], status: :repealed} = List.last(periods)
+    end
+  end
+
+  describe "CV-06 round 2: what begins it, and its siblings" do
+    test "begun by a substitution above it: that change's territory (CLP Art 52(1), Windsor GB)" do
+      sub =
+        change("art.Article 52", :substituted, ~D[2020-12-31],
+          by: "UK_uksi_2019_720",
+          territory: "E+W+S"
+        )
+
+      assert [%{valid_from: ~D[2020-12-31], territory: "E+W+S", changed_by: ["UK_uksi_2019_720"]}] =
+               fold("art.Article 52(1)", [sub], %{
+                 start: ~D[1900-01-01],
+                 extent: "E+W+S+NI",
+                 law: "UK_eur_2008_1272"
+               })
+    end
+
+    test "a later item of its list changed before: it was there (SI 2009/1348 reg.32(1)(a))" do
+      changes = [
+        change("reg.32(1)(b)", :substituted, ~D[2011-10-24],
+          level: :words,
+          by: "UK_uksi_2011_1885"
+        ),
+        change("reg.32(1)", :substituted, ~D[2014-04-01], by: "UK_uksi_2014_469")
+      ]
+
+      assert %{valid_from: ~D[2009-07-01]} =
+               hd(
+                 fold("reg.32(1)(a)", changes, %{start: ~D[2009-07-01], law: "UK_uksi_2009_1348"})
+               )
     end
   end
 end

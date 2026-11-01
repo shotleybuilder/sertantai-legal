@@ -103,7 +103,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
     # unless a source shows it was there before (Jason 2026-10-31, R1)
     valid = Map.get(provision, :valid, :unknown)
     reaching = Existence.reread(id, reaching, changes, valid)
-    born = Existence.born(id, Start.start(start, reaching), reaching, changes, valid)
+    {born, reaching} = Existence.begin(id, Start.start(start, reaching), reaching, changes, valid)
 
     # a commencement before it existed never reaches it (its law's own
     # record for a provision inserted later: CROW s.1A(a), CV-S09 round 2);
