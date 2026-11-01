@@ -1143,6 +1143,32 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
     end
   end
 
+  describe "CV-06 round 2 (R10): a prospective change never applied" do
+    test "makes nothing: the dated insertion's law alone, its date kept (HSWA s.51A(2B))" do
+      changes = [
+        change("s.51A(2B)", :inserted, nil,
+          by: "UK_ukpga_2002_30",
+          sources: %{operation: :feed},
+          claims: [
+            {:feed, :prospective, true},
+            {:feed, :applied, false},
+            {:feed, :operation, :inserted}
+          ]
+        ),
+        change("s.51A(2B)", :inserted, ~D[2005-04-07], by: "UK_ukpga_2005_15")
+      ]
+
+      assert [
+               %{
+                 valid_from: ~D[2005-04-07],
+                 in_force_from: ~D[2005-04-07],
+                 changed_by: ["UK_ukpga_2005_15"]
+               }
+             ] =
+               fold("s.51A(2B)", changes, %{start: ~D[1974-07-31], law: "UK_ukpga_1974_37"})
+    end
+  end
+
   describe "CV-06 round 1 (R1): its own repeal the day its parent is substituted" do
     test "repealed, not remade (SI 1999/3242 reg.22(2) by SI 2003/2457)" do
       changes = [

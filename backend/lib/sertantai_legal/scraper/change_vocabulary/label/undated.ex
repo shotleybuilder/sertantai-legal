@@ -82,14 +82,22 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Undated do
     end
   end
 
-  # the undated whole-provision changes reaching it
+  # the undated whole-provision changes reaching it — never one the feed
+  # holds prospective and unapplied: not in the text, it made nothing yet
+  # (PRA 2002 s.95's insertion of HSWA s.51A(2A)–(2B), never in force:
+  # CV-06 round 2, R10)
   defp whole(id, changes),
     do:
       Enum.filter(
         changes,
         &(&1.resolved.date == nil and &1.resolved.level == :provision and
-            Label.reaches?(&1, id))
+            Label.reaches?(&1, id) and not pending?(&1))
       )
+
+  defp pending?(c),
+    do:
+      Change.values(c, :feed, :prospective) == [true] and
+        Change.values(c, :feed, :applied) == [false]
 
   @doc """
   Its own undated words-level text changes — a words repeal among them, as
