@@ -240,6 +240,16 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderTest do
              Reader.read(d, "schedule-15-paragraph-14-b", %{}, [@clean_air])
   end
 
+  test "a Schedule's law named one hop back (SI 2019/758: \"The Clean Air Act 1956 is amended in accordance with regulations 3 to 5\" over \"… in accordance with Schedule 1\")" do
+    d =
+      Doc.new("UK_uksi_2019_758", [
+        ~S|<Legislation><Secondary><Body><P1 id="regulation-2"><P1para><Text>The Clean Air Act 1956 is amended in accordance with regulations 3 to 5.</Text></P1para></P1><P1 id="regulation-3"><P1para><Text>Sections 1 to 15 are amended in accordance with Schedule 1.</Text></P1para></P1></Body><Schedules><Schedule id="schedule-1"><ScheduleBody><P1 id="schedule-1-paragraph-4"><P1para><Text>In section 7(2), for “a” substitute “b”.</Text></P1para></P1></ScheduleBody></Schedule></Schedules></Secondary></Legislation>|
+      ])
+
+    assert [%{targets: ["s.7(2)"], operation: :substituted}] =
+             Reader.read(d, "schedule-1-paragraph-4", %{}, [@clean_air])
+  end
+
   test "a term named in brackets is not words changed (1989 c.27 s.1(1): \"for section 18 of the … Act 1956 (“the 1956 Act”)\")" do
     d =
       doc(

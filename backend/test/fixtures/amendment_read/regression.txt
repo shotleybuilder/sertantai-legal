@@ -66,3 +66,4 @@ UK_uksi_1974_1943  # "MODIFICATIONS—THE OFFICES, SHOPS AND RAILWAY PREMISES AC
 UK_uksi_1988_1655  # reg.23 "shall be modified as follows—" read by its items; "add the following subsections" quotes (CV-06 batch 2)
 UK_ukpga_1990_43  # Sch.15 para.14 as enacted: "amended by the insertion— (b) after subsection (4), of the following subsections" (CV-06 batch 2)
 UK_ukpga_1992_15  # s.4 as enacted; "Part I of the … Act 1974 (“the 1974 Act”)" defines the Act (CV-06 batch 2)
+UK_uksi_2019_758  # the Schedule's law named one hop back (reg.2 → reg.3 → Sch.1); EU "paragraph 36" is (36) (CV-06 batch 5)

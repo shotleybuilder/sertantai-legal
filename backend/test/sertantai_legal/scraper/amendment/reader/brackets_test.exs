@@ -35,4 +35,16 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.BracketsTest do
     for p <- [["5"], ["5", "b"], ["5", "c"], ["b"], ["c"]], do: assert(p in paths, inspect(p))
     refute [] in paths
   end
+
+  test "an EU Article's numbered paragraphs bracketed as its rows (SI 2019/758 on REACH Art 3)" do
+    assert Brackets.eu_paragraphs("In paragraph 36, at the end insert—", :article) ==
+             "In paragraph (36), at the end insert—"
+
+    assert Brackets.eu_paragraphs("In paragraphs 11, 13 and 14, for", :article) ==
+             "In paragraphs (11), (13) and (14), for"
+
+    assert Brackets.eu_paragraphs("omit paragraph 4a.", :article) == "omit paragraph (4a)."
+    assert Brackets.eu_paragraphs("In paragraph (2)(b)", :article) == "In paragraph (2)(b)"
+    assert Brackets.eu_paragraphs("In paragraph 36", :section) == "In paragraph 36"
+  end
 end

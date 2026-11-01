@@ -73,6 +73,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
                 |> Clauses.unquote_words()
                 |> own_part(law, terms)
                 |> Clauses.no_captions()
+                |> Brackets.eu_paragraphs(law.kind)
           })
 
         named = if c == first, do: own, else: Brackets.above(place, own) ++ own

@@ -177,17 +177,19 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
       [prefix, n] ->
         naming = ~r/\bSchedules? (?:[\dA-Z]+(?:,| and| to) )*#{Regex.escape(n)}\b/
 
-        body =
+        naming_ids =
           doc.ids
           |> Stream.reject(&String.starts_with?(&1, "schedule-"))
-          |> Stream.map(&words_of(doc, &1))
-          |> Stream.filter(&Regex.match?(naming, &1))
+          |> Stream.filter(&Regex.match?(naming, words_of(doc, &1)))
+
+        body = Stream.map(naming_ids, &words_of(doc, &1))
 
         earlier
         |> Stream.filter(&String.starts_with?(&1, prefix))
         |> words_stream(doc)
         |> Stream.concat(outer)
         |> Stream.concat(body)
+        |> Stream.concat(Stream.flat_map(naming_ids, &pointing(doc, &1)))
 
       nil ->
         part_start = doc.parts |> Enum.filter(fn {i, _} -> i < at end) |> List.last()
@@ -204,6 +206,40 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
           |> words_stream(doc)
         )
     end
+  end
+
+  # the body's words pointing to the provision giving the Schedule effect:
+  # "The REACH Regulation is amended in accordance with regulations 3 to 5"
+  # over "Titles 1 to 15 are amended in accordance with Schedule 1" (SI
+  # 2019/758 regs 2–3: CV-06 round 2) — one hop
+  defp pointing(doc, id) do
+    case Regex.run(~r/^(regulation|section|article)-(\d+)$/, id) do
+      [_, kind, n] ->
+        n = String.to_integer(n)
+        cites = ~r/\b#{kind}s?\s+((?:\d+[A-Z]*(?:\s*,\s*|\s+and\s+|\s+to\s+))*\d+[A-Z]*)/i
+
+        for other <- doc.ids,
+            other != id,
+            Regex.match?(~r/^#{kind}-\d+$/, other),
+            w = words_of(doc, other),
+            Enum.any?(Regex.scan(cites, w, capture: :all_but_first), &covers?(hd(&1), n)),
+            do: w
+
+      _ ->
+        []
+    end
+  end
+
+  defp covers?(list, n) do
+    list
+    |> String.split(~r/\s*,\s*|\s+and\s+/)
+    |> Enum.any?(fn item ->
+      case Regex.run(~r/^(\d+)[A-Z]*(?:\s+to\s+(\d+))?/, item) do
+        [_, a] -> String.to_integer(a) == n
+        [_, a, b] -> String.to_integer(a) <= n and n <= String.to_integer(b)
+        _ -> false
+      end
+    end)
   end
 
   defp words_stream(ids, doc),
