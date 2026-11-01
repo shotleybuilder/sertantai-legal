@@ -25,19 +25,19 @@
       ]
     },
     "instruction|inserted|block|body|named|none": {
-      "count": 13,
+      "count": 11,
       "examples": [
-        "UK_nisr_2005_397/UK_nisr_1999_305/regulation-13-2",
-        "UK_nisr_2015_223/UK_nisr_1993_37/regulation-4-5",
         "UK_ukpga_2013_32/UK_ukpga_1974_37/schedule-12-paragraph-15-4"
       ]
     },
     "instruction|inserted|block|body|named|rules:inserted:provision": {
-      "count": 154,
+      "count": 156,
       "examples": [
         "UK_asc_2026_5/UK_ukpga_1974_37/schedule-3-paragraph-1",
         "UK_nisr_2000_87/UK_nisr_1993_20/regulation-4-3",
-        "UK_nisr_2007_135/UK_nisr_2005_279/regulation-2-3"
+        "UK_nisr_2005_397/UK_nisr_1999_305/regulation-13-2",
+        "UK_nisr_2007_135/UK_nisr_2005_279/regulation-2-3",
+        "UK_nisr_2015_223/UK_nisr_1993_37/regulation-4-5"
       ]
     },
     "instruction|inserted|block|body|named|rules:inserted:words": {
@@ -126,11 +126,16 @@
       ]
     },
     "instruction|inserted|words|body|unnamed|none": {
-      "count": 40,
+      "count": 39,
       "examples": [
-        "UK_uksi_1974_1941/UK_ukpga_1961_34/schedule-2-paragraph-4",
         "UK_uksi_2016_1154/UK_uksi_2015_483/schedule-29-paragraph-85-2-b",
         "UK_uksi_2019_720/UK_eur_2008_1272/schedule-2-paragraph-36"
+      ]
+    },
+    "instruction|inserted|words|body|unnamed|rules:inserted:words": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1974_1941/UK_ukpga_1961_34/schedule-2-paragraph-4"
       ]
     },
     "instruction|inserted|words|schedule|named|none": {
@@ -344,11 +349,16 @@
       ]
     },
     "instruction|substituted|block|body|unnamed|none": {
-      "count": 62,
+      "count": 61,
       "examples": [
         "UK_ukpga_1975_71/UK_ukpga_1974_37/schedule-15-paragraph-6",
-        "UK_uksi_1974_1941/UK_ukpga_1961_34/schedule-2-paragraph-14",
         "UK_uksi_2019_1144/UK_eur_2006_1907/regulation-3-3"
+      ]
+    },
+    "instruction|substituted|block|body|unnamed|rules:substituted:provision": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1974_1941/UK_ukpga_1961_34/schedule-2-paragraph-14"
       ]
     },
     "instruction|substituted|block|schedule|named|none": {
@@ -424,9 +434,14 @@
       ]
     },
     "instruction|substituted|words|body|unnamed|none": {
-      "count": 277,
+      "count": 275,
       "examples": [
-        "UK_ukpga_1998_8/UK_ukpga_1974_37/section-1-2-a",
+        "UK_ukpga_1998_8/UK_ukpga_1974_37/section-1-2-a"
+      ]
+    },
+    "instruction|substituted|words|body|unnamed|rules:substituted:words": {
+      "count": 2,
+      "examples": [
         "UK_uksi_1974_1941/UK_ukpga_1961_34/schedule-2-paragraph-3",
         "UK_uksi_1974_1943/UK_ukpga_1963_41/schedule-2-paragraph-1"
       ]

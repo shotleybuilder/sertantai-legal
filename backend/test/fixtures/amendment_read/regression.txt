@@ -61,3 +61,8 @@ UK_ukpga_1982_30  # a range of brackets in a table line "Section 63(1) to (4)." 
 UK_ukpga_1975_71  # repeals Schedule 18 empty in the revised text, read as enacted (enacted/, CV-06a U12)
 UK_ukpga_1973_36  # repeals Schedule 6 read as enacted (CV-06a U12)
 UK_ukpga_1972_28  # "shall have effect as if the following section were inserted after section 10" inserts FA 1961 s.10A (CV-06 batch 2)
+UK_uksi_1974_1941  # a capitals Schedule heading names the law; one section's subsection clauses each a line with its own saving; "in so far as it extends to NI" saves nothing (CV-06 batch 2)
+UK_uksi_1974_1943  # "MODIFICATIONS—THE OFFICES, SHOPS AND RAILWAY PREMISES ACT 1963" names the law (CV-06 batch 2)
+UK_uksi_1988_1655  # reg.23 "shall be modified as follows—" read by its items; "add the following subsections" quotes (CV-06 batch 2)
+UK_ukpga_1990_43  # Sch.15 para.14 as enacted: "amended by the insertion— (b) after subsection (4), of the following subsections" (CV-06 batch 2)
+UK_ukpga_1992_15  # s.4 as enacted; "Part I of the … Act 1974 (“the 1974 Act”)" defines the Act (CV-06 batch 2)

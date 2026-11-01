@@ -131,6 +131,27 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   end
 
   @doc """
+  An item whose verb is its parent's noun ("Section 5 … shall be amended by
+  the insertion— … (b) after subsection (4), of the following
+  subsections—": EPA 1990 Sch. 15 para. 14, CV-06 S7) with the verb before
+  its words ("insert after subsection (4), …"); any other text as it is.
+  """
+  @parent_noun ~r/\bby\s+the\s+(insertion|substitution|omission)\b[^—–]*[—–]\s*$/iu
+  @noun_verb %{"insertion" => "insert", "substitution" => "substitute", "omission" => "omit"}
+
+  @spec with_parent_verb(Text.t()) :: Text.t()
+  def with_parent_verb(%Text{parents: [parent | _], instruction: i} = text) do
+    with nil <- Operation.of(text),
+         [_, noun] <- Regex.run(@parent_noun, parent) do
+      %{text | instruction: @noun_verb[String.downcase(noun)] <> " " <> i}
+    else
+      _ -> text
+    end
+  end
+
+  def with_parent_verb(text), do: text
+
+  @doc """
   The instruction without its bracketed captions ("In section 118 (… of
   revoked or suspended licences), after subsection (4) insert—": the verb
   is "insert", not the caption's "revoked" — SI 1998/1420; "(“the 1984
@@ -223,5 +244,17 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
       ^t -> t
       fewer -> unnest(fewer)
     end
+  end
+
+  @doc """
+  A text set in capitals, each word capitalised ("MODIFICATIONS—THE FACTORIES
+  ACT 1961" → "Modifications—The Factories Act 1961"), so a title in it reads
+  as one; any other text as it is.
+  """
+  @spec uncapped(String.t()) :: String.t()
+  def uncapped(t) do
+    if t =~ ~r/\p{Lu}{2}/u and not (t =~ ~r/\p{Ll}/u),
+      do: Regex.replace(~r/\p{L}+/u, t, &String.capitalize/1),
+      else: t
   end
 end

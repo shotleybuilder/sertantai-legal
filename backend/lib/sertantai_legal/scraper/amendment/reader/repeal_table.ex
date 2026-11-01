@@ -48,7 +48,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTable do
                 source: %{law: doc.law_name, ref: id, text: line},
                 treatment: :repeal_table,
                 saved:
-                  Savings.line?(listed) or
+                  Savings.line?(line) or
                     Savings.intro?(intro, law_of.title, law_of.year)
               )
     end

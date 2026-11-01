@@ -206,6 +206,40 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderTest do
     assert Enum.any?(rules, &("s.10A" in &1.targets))
   end
 
+  test "a provision changing nothing itself is read by its items; \"add the following subsections\" quotes them (SI 1988/1655 reg.23)" do
+    d =
+      doc(
+        ~S|<P1 id="regulation-23"><P1para><Text>Section 7 of the Clean Air Act 1956 shall be modified as follows—</Text><P3 id="regulation-23-a"><Pnumber>a</Pnumber><P3para><Text>after subsection (6) add the following subsections:</Text><BlockAmendment><P4><Pnumber>7</Pnumber><P4para><Text>new 7</Text></P4para></P4><P4><Pnumber>8</Pnumber><P4para><Text>new 8</Text></P4para></P4></BlockAmendment></P3para></P3></P1para></P1>|
+      )
+
+    rules = Reader.read(d, "regulation-23", %{}, [@clean_air])
+
+    assert [%{targets: ["s.7(7)", "s.7(8)"], operation: :inserted, level: :provision}] = rules
+  end
+
+  test "a heading in capitals names its law (SI 1974/1943 Sch. 2: \"MODIFICATIONS—THE CLEAN AIR ACT 1956\")" do
+    d =
+      Doc.new("UK_uksi_1974_1943", [
+        ~S|<Legislation><Secondary><Schedules><Schedule id="schedule-2"><TitleBlock><Title>MODIFICATIONS—THE CLEAN AIR ACT 1956</Title></TitleBlock><ScheduleBody><P1 id="schedule-2-paragraph-1"><Pnumber>1</Pnumber><P1para><Text>In section 4(4), for the words “a” there shall be substituted the words “b”.</Text></P1para></P1></ScheduleBody></Schedule></Schedules></Secondary></Legislation>|
+      ])
+
+    assert [%{targets: ["s.4(4)"], operation: :substituted, level: :words}] =
+             Reader.read(d, "schedule-2-paragraph-1", %{}, [@clean_air])
+  end
+
+  test "an item's verb is its parent's noun (\"shall be amended by the insertion— … (b) after subsection (4), of the following subsections—\": EPA 1990 Sch. 15 para. 14)" do
+    d =
+      doc(
+        ~S|<P1 id="schedule-15-paragraph-14"><P1para><Text>Section 7 of the Clean Air Act 1956 shall be amended by the insertion—</Text><P3 id="schedule-15-paragraph-14-a"><Pnumber>a</Pnumber><P3para><Text>in subsection (1), at the beginning, of the words “Subject to subsection (5) below,”; and</Text></P3para></P3><P3 id="schedule-15-paragraph-14-b"><Pnumber>b</Pnumber><P3para><Text>after subsection (4), of the following subsections—</Text><BlockAmendment><P2><Pnumber>5</Pnumber><P2para><Text>new 5</Text></P2para></P2></BlockAmendment></P3para></P3></P1para></P1>|
+      )
+
+    assert [%{targets: ["s.7(1)"], operation: :inserted, level: :words}] =
+             Reader.read(d, "schedule-15-paragraph-14-a", %{}, [@clean_air])
+
+    assert [%{targets: ["s.7(5)"], operation: :inserted, level: :provision}] =
+             Reader.read(d, "schedule-15-paragraph-14-b", %{}, [@clean_air])
+  end
+
   test "a term named in brackets is not words changed (1989 c.27 s.1(1): \"for section 18 of the … Act 1956 (“the 1956 Act”)\")" do
     d =
       doc(

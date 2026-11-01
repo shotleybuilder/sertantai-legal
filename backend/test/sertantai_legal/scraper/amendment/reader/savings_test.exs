@@ -20,6 +20,22 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.SavingsTest do
     refute Savings.line?("Sections 73 to 75, so far as not repealed by Schedule 28.")
     refute Savings.line?("The whole section, so far as still in operation.")
     refute Savings.line?("Section 37.")
+    # where the repeal reaches, not a saving (SI 1974/1941 on FA 1961 s.77(2))
+    refute Savings.line?("Section 77(2) except in so far as it extends to Northern Ireland.")
+  end
+
+  test "one section's subsection clauses each a line with its own saving (SI 1974/1941 on FA 1961 s.164)" do
+    alias SertantaiLegal.Scraper.Amendment.Reader.ProvisionTable
+
+    assert ProvisionTable.split_list(
+             "Section 164(1) and (2) except in relation to offences under section 135; subsection (3); and subsections (5) and (7) except in relation to offences under section 135."
+           ) == [
+             "Section 164(1) and (2) except in relation to offences under section 135.",
+             "Section 164(3).",
+             "Section 164(5) and (7) except in relation to offences under section 135."
+           ]
+
+    assert ProvisionTable.split_list("Section 37.") == ["Section 37."]
   end
 
   test "the provision giving the Schedule effect saves the law named, not another" do

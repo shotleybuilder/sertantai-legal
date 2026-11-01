@@ -87,11 +87,22 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   @spec read(Doc.t(), String.t(), map(), [law_ref()]) :: [Rule.t()]
   def read(doc, id, terms, laws) do
     cond do
-      repeal_table?(doc, id) -> repeal_table(doc, id, laws)
-      provision?(id) -> instruction(doc, id, terms, laws)
-      true -> []
+      repeal_table?(doc, id) ->
+        repeal_table(doc, id, laws)
+
+      provision?(id) ->
+        with([] <- instruction(doc, id, terms, laws), do: items(doc, id, terms, laws))
+
+      true ->
+        []
     end
   end
+
+  # a pointer to a provision whose own words change nothing ("Section 125
+  # of the Factories Act 1961 shall be modified as follows—"): its items do
+  # (SI 1988/1655 reg.23(a)–(c), CV-06 S7)
+  defp items(doc, id, terms, laws),
+    do: Enum.flat_map(Doc.children(doc, id), &read(doc, &1, terms, laws))
 
   defp provision?(id),
     do: Regex.match?(~r/^(?:section|regulation|article|rule)-|^schedule-[^-]+-paragraph-/, id)
@@ -100,34 +111,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   @spec references(Doc.t()) :: %{String.t() => String.t()}
   defdelegate references(doc), to: ScheduleRefs
 
-  @doc """
-  Each Schedule paragraph's Part, by the paragraph's id
-  (`schedule-4-paragraph-10` → `schedule-4-part-III`): an order may date a
-  Part ("Section 9 and Part III of Schedule 4": SI 1999/2830, AR-12), and a
-  paragraph's id doesn't carry it.
-  """
+  @doc "Each Schedule paragraph's Part, by the paragraph's id (`AmendingLaw.ScheduleRefs.parts/1`)."
   @spec parts(Doc.t()) :: %{String.t() => String.t()}
-  def parts(doc) do
-    doc.ids
-    |> Enum.reduce({%{}, nil}, fn id, {acc, part} ->
-      cond do
-        id =~ ~r/^schedule-[^-]+$/ ->
-          {acc, nil}
-
-        id =~ ~r/^schedule-[^-]+-part-[^-]+$/ ->
-          {acc, id}
-
-        part != nil and String.starts_with?(id, schedule_of(part) <> "-paragraph-") ->
-          {Map.put(acc, id, part), part}
-
-        true ->
-          {acc, part}
-      end
-    end)
-    |> elem(0)
-  end
-
-  defp schedule_of(part), do: part |> String.split("-part-") |> hd()
+  defdelegate parts(doc), to: ScheduleRefs
 
   @doc "The provision giving effect to a Schedule (`AmendingLaw.ScheduleRefs.reference/2`)."
   @spec reference(Doc.t(), String.t()) :: String.t() | nil
@@ -142,6 +128,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
 
         WholeLaw.rules(text, terms, laws, source) ++
           (text
+           |> Clauses.with_parent_verb()
            |> set_out(doc)
            |> of_text(Doc.title(doc, id), terms, Scope.laws(doc, id, text, terms, laws), source))
 
@@ -214,7 +201,10 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
         # …)" under "The Offshore Safety Act 1992 shall be amended":
         # Petroleum Act 1998 Sch. 4 para 33)
         uncaptioned = Enum.map(texts, &Clauses.uncaptioned/1)
-        named = LawNamed.named(Stream.concat(uncaptioned ++ List.wrap(title), before), terms)
+        # a heading in capitals names its law too ("SCHEDULE 2 MODIFICATIONS—THE
+        # FACTORIES ACT 1961": SI 1974/1941, CV-06 S7)
+        titles = Enum.map(List.wrap(title), &Clauses.uncapped/1)
+        named = LawNamed.named(Stream.concat(uncaptioned ++ titles, before), terms)
 
         for law <- laws,
             Enum.any?(named, &LawNamed.law_named?(&1, law)),

@@ -82,10 +82,25 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.DefinedTerms do
       # "In the Town and Country Planning Act 1990": the title, not the words before it
       t
       |> String.replace(~r/^(?:(?:In|Under|By|For|To|Of|And|The|the|of|and) )+/u, "")
+      |> of_the_act(term)
       |> String.trim()
     else
       _ -> nil
     end
+  end
+
+  # a term naming an Act stands for the Act, not the Part before its title
+  # ("Part I of the Health and Safety at Work etc. Act 1974 (“the 1974
+  # Act”)": Offshore Safety Act 1992 s.1(1), CV-06 S7)
+  defp of_the_act(t, term) do
+    if term =~ ~r/\b(?:Act|Regulations|Order|Rules|Measure)$/u,
+      do:
+        String.replace(
+          t,
+          ~r/^(?:(?:Part|Chapter|section|Schedule)\s+\w+\s+(?:to|of)\s+(?:the\s+)?)/u,
+          ""
+        ),
+      else: t
   end
 
   defp law(uri) do

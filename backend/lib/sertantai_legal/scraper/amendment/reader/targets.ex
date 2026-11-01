@@ -100,11 +100,12 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
   @doc """
   The clause whose quote follows ("… and after that subsection insert—"),
   else the first quoting one; "at the end there shall be added—" quotes
-  too (RTA 1991 s.18(1), AR-10)
+  too (RTA 1991 s.18(1), AR-10), and "after subsection (6) add the
+  following subsections:" (SI 1988/1655 reg.23(c), CV-06 S7)
   """
   @spec quoting_clause([clause()]) :: clause() | nil
   def quoting_clause(clauses) do
-    quoting = Enum.filter(clauses, &(&1.text.instruction =~ ~r/insert|substitut|\badded\b/i))
+    quoting = Enum.filter(clauses, &(&1.text.instruction =~ ~r/insert|substitut|\badd(?:ed)?\b/i))
 
     Enum.find(quoting, List.first(quoting), fn c ->
       Clauses.captionless(c.text).instruction =~ ~r/[—–:]\s*[;.,]?\s*$/u

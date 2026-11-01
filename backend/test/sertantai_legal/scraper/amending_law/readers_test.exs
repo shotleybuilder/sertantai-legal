@@ -263,6 +263,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
              )["the principal act"] == %{law: nil, title: "Town and Country Planning Act 1990"}
     end
 
+    test "a term naming an Act after \"Part I of\" its title means the Act (Offshore Safety Act 1992 s.1(1): “the 1974 Act”)" do
+      assert terms_of(
+               ~s(The general purposes of Part I of the Health and Safety at Work etc. Act 1974 \(“<Term id="t1">the 1974 Act</Term>”\) shall include—)
+             )["the 1974 act"] == %{law: nil, title: "Health and Safety at Work etc. Act 1974"}
+    end
+
     test "a title in apposition with short words and brackets in it (1995/25 Sch. 22 para 30: “the 1974 Act”)" do
       for {title, words} <- [
             {"Health and Safety at Work etc. Act 1974",

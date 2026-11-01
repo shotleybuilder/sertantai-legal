@@ -40,6 +40,36 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.ProvisionTable do
   """
   @spec split_list(String.t()) :: [String.t()]
   def split_list(line) do
+    case subsections(String.trim(line)) do
+      [_ | _] = pieces -> pieces
+      nil -> listed(line)
+    end
+  end
+
+  # one section's subsections in clauses, each with its own saving
+  # ("Section 164(1) and (2) except in relation to …; subsection (3); and
+  # subsections (5) and (7) except in relation to offences under section
+  # 135.": SI 1974/1941 on the Factories Act 1961, CV-06 S7) — a line each
+  # ("Section 164(3).", "Section 164(5) and (7) except …")
+  defp subsections(line) do
+    with [_, n] <- Regex.run(~r/^Section\s+(\d+[A-Z]*)\(/, line),
+         [first | rest] when rest != [] <- String.split(line, ~r/\s*;\s*/),
+         true <- Enum.all?(rest, &(&1 =~ ~r/^(?:and\s+)?subsections?\s+\(/i)) do
+      [
+        String.trim_trailing(first, ".") <> "."
+        | Enum.map(rest, fn piece ->
+            piece
+            |> String.replace(~r/^(?:and\s+)?subsections?\s+/i, "Section #{n}")
+            |> String.trim_trailing(".")
+            |> Kernel.<>(".")
+          end)
+      ]
+    else
+      _ -> nil
+    end
+  end
+
+  defp listed(line) do
     case Regex.run(@list, String.trim(line)) do
       [_, items] ->
         items

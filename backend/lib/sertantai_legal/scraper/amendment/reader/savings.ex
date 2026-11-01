@@ -14,14 +14,16 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Savings do
     (SI 1992/3004 reg.27(2)).
 
   "so far as not repealed by …", "so far as still in operation" limit what
-  is repealed; they save nothing.
+  is repealed; they save nothing; nor "except in so far as it extends to
+  Northern Ireland" (SI 1974/1941 on the Factories Act 1961 s.77(2)): where
+  the repeal reaches.
 
   Pure.
   """
 
   alias SertantaiLegal.Scraper.Amendment.Reader.LawNamed
 
-  @qualified ~r/\b(?:except|save)\s+(?:in\s+relation\s+to|for\s+the\s+purposes?\s+of|as\s+respects|so\s+far\s+as\s+(?:it|they)\s+(?:relates?|appl(?:y|ies))|(?:in\s+)?so\s+far\s+as\b|insofar\s+as\b)/i
+  @qualified ~r/\b(?:except|save)\s+(?:in\s+relation\s+to|for\s+the\s+purposes?\s+of|as\s+respects|so\s+far\s+as\s+(?:it|they)\s+(?:relates?|appl(?:y|ies))|(?:in\s+)?so\s+far\s+as\b(?!\s+(?:it|they)\s+extends?\b)|insofar\s+as\b(?!\s+(?:it|they)\s+extends?\b))/i
 
   @nothing ~r/\bNothing\s+in\s+(?:this|these)\s+(?:regulations?|sections?|articles?|paragraphs?|Schedules?)\b[^.]{0,200}?\baffects?\b[^.]*/i
 
