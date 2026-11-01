@@ -11613,8 +11613,24 @@
     {
       "cause": "history: old prospective from the law's making",
       "law": "UK_ukpga_1974_37",
-      "note": "SI 1974/1439 Sch.1 'Section 10(2) to (4)' 1974-10-01: existed before 2008 substitution",
+      "note": "fixed as its checker's note asks (CV-06 batch 3: an order naming the row is evidence it existed; a quote's dropped rows are not; reviewed 2026-11-01) (was to fix: SI 1974/1439 Sch.1 'Section 10(2) to (4)' 1974-10-01: existed before 2008 substitution)",
       "periods": [
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "prospective",
+          "territory": "E+W+S+NI",
+          "valid_from": "1974-07-31",
+          "valid_to": "1974-10-01"
+        },
+        {
+          "changed_by": "UK_uksi_1974_1439",
+          "in_force_from": "1974-10-01",
+          "status": "in_force",
+          "territory": "E+W+S+NI",
+          "valid_from": "1974-10-01",
+          "valid_to": "2008-04-01"
+        },
         {
           "changed_by": "UK_uksi_2008_960",
           "in_force_from": "2008-04-01",
@@ -11626,7 +11642,7 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1974_37:s.10(2)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "history: old prospective from the law's making",
@@ -11667,8 +11683,24 @@
     {
       "cause": "history: old prospective from the law's making",
       "law": "UK_ukpga_1974_37",
-      "note": "SI 1974/1439 Sch.1 'Section 11(1) to (3)' 1974-10-01: existed; 2008 insertion should read as substitution",
+      "note": "fixed as its checker's note asks (CV-06 batch 3: an order naming the row is evidence it existed; a quote's dropped rows are not; reviewed 2026-11-01) (was to fix: SI 1974/1439 Sch.1 'Section 11(1) to (3)' 1974-10-01: existed; 2008 insertion should read as substitution)",
       "periods": [
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "prospective",
+          "territory": "E+W+S+NI",
+          "valid_from": "1974-07-31",
+          "valid_to": "1974-10-01"
+        },
+        {
+          "changed_by": "UK_uksi_1974_1439",
+          "in_force_from": "1974-10-01",
+          "status": "in_force",
+          "territory": "E+W+S+NI",
+          "valid_from": "1974-10-01",
+          "valid_to": "2008-04-01"
+        },
         {
           "changed_by": "UK_uksi_2008_960",
           "in_force_from": "2008-04-01",
@@ -11680,7 +11712,7 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1974_37:s.11(2)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "history: old prospective from the law's making",
@@ -11739,8 +11771,24 @@
     {
       "cause": "history: old prospective from the law's making",
       "law": "UK_ukpga_1974_37",
-      "note": "SI 1974/1439 Sch.2 'Section 11(4) and (5)' 1975-01-01: existed; history before 2008 dropped",
+      "note": "fixed as its checker's note asks (CV-06 batch 3: an order naming the row is evidence it existed; a quote's dropped rows are not; reviewed 2026-11-01) (was to fix: SI 1974/1439 Sch.2 'Section 11(4) and (5)' 1975-01-01: existed; history before 2008 dropped)",
       "periods": [
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "prospective",
+          "territory": "E+W+S+NI",
+          "valid_from": "1974-07-31",
+          "valid_to": "1975-01-01"
+        },
+        {
+          "changed_by": "UK_uksi_1974_1439",
+          "in_force_from": "1975-01-01",
+          "status": "in_force",
+          "territory": "E+W+S+NI",
+          "valid_from": "1975-01-01",
+          "valid_to": "2008-04-01"
+        },
         {
           "changed_by": "UK_uksi_2008_960",
           "in_force_from": "2008-04-01",
@@ -11752,7 +11800,7 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1974_37:s.11(4)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "history: old prospective from the law's making",
@@ -19341,32 +19389,8 @@
     {
       "cause": "history: start earlier",
       "law": "UK_uksi_2009_1348",
-      "note": "2011 reg.19 quote holds (1)-(2); 2020/1111 inserts (1A) after (1); 2009-11 period from Dropped repeal of today's row",
+      "note": "fixed as its checker's note asks (CV-06 batch 3: an order naming the row is evidence it existed; a quote's dropped rows are not; reviewed 2026-11-01) (was to fix: 2011 reg.19 quote holds (1)-(2); 2020/1111 inserts (1A) after (1); 2009-11 period from Dropped repeal of today's row)",
       "periods": [
-        {
-          "changed_by": null,
-          "in_force_from": null,
-          "status": "prospective",
-          "territory": "E+W+S",
-          "valid_from": "2009-05-27",
-          "valid_to": "2009-07-01"
-        },
-        {
-          "changed_by": null,
-          "in_force_from": "2009-07-01",
-          "status": "in_force",
-          "territory": "E+W+S",
-          "valid_from": "2009-07-01",
-          "valid_to": "2011-10-24"
-        },
-        {
-          "changed_by": "UK_uksi_2011_1885",
-          "in_force_from": "2011-10-24",
-          "status": "repealed",
-          "territory": null,
-          "valid_from": "2011-10-24",
-          "valid_to": "2020-12-31"
-        },
         {
           "changed_by": "UK_uksi_2020_1111",
           "in_force_from": "2020-12-31",
@@ -19378,7 +19402,7 @@
       ],
       "round": 2,
       "section_id": "UK_uksi_2009_1348:reg.19(1A)",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "history: start later",
