@@ -1099,6 +1099,26 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
       assert %{valid_from: ~D[2008-04-01], changed_by: ["UK_uksi_2008_960"]} = List.last(periods)
     end
 
+    test "an order naming the row commences it before the substitution: it was there (HSWA s.10(2), SI 1974/1439)" do
+      changes = [
+        change("s.10(2)", :commenced, ~D[1974-10-01],
+          commenced_by: "UK_uksi_1974_1439",
+          claims: [{:commencement, :named, true}]
+        ),
+        change("s.10", :substituted, ~D[2008-04-01], by: "UK_uksi_2008_960")
+      ]
+
+      periods = fold("s.10(2)", changes, %{start: ~D[1974-07-31], law: "UK_ukpga_1974_37"})
+      assert %{valid_from: ~D[1974-07-31]} = hd(periods)
+      assert %{valid_from: ~D[2008-04-01]} = List.last(periods)
+
+      # read down from s.10, not named: no evidence, it begins in 2008
+      unnamed = [change("s.10(2)", :commenced, ~D[1974-10-01]) | tl(changes)]
+
+      assert [%{valid_from: ~D[2008-04-01]}] =
+               fold("s.10(2)", unnamed, %{start: ~D[1974-07-31], law: "UK_ukpga_1974_37"})
+    end
+
     test "a quote's insertion of a row in the made text held: its text substituted, history kept (NISR 1999/305 reg.11(2)(a))" do
       changes = [
         change("reg.11", :commenced, ~D[1999-09-20]),

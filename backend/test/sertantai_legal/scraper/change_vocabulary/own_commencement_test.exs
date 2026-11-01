@@ -94,4 +94,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.OwnCommencementTest do
     assert {"s.83", ~D[1975-01-01], false} in stages
     refute Enum.any?(stages, &(elem(&1, 0) == "s.84"))
   end
+
+  test "an order naming the row, or a range at its depth, says so (named); read down from above, not (SI 1974/1439 on HSWA s.10(2))" do
+    named? = fn rules, id ->
+      rules
+      |> OwnCommencement.read(@law, [id])
+      |> Enum.flat_map(&elem(&1, 2))
+      |> Enum.any?(&(&1.attribute == :named and &1.value == true))
+    end
+
+    assert named?.([rule(["s.10(2)..s.10(4)"], {:date, ~D[1974-10-01]})], "s.10(2)")
+    assert named?.([rule(["s.10(2)"], {:date, ~D[1974-10-01]})], "s.10(2)")
+    refute named?.([rule(["s.10"], {:date, ~D[1974-10-01]})], "s.10(2)")
+    refute named?.([rule(:all, {:date, ~D[1974-10-01]})], "s.10(2)")
+  end
 end

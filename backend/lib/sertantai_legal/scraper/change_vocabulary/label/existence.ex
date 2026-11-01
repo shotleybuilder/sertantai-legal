@@ -9,7 +9,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Existence do
     nil, the made text, predates every change) — its rows were there;
   - a dated change to it, or to a provision under it, before then (a
     commencement is no evidence: the law's clause is read down to every
-    row, CV-S04).
+    row, CV-S04) — unless the order names the row itself (`:named`: "Section
+    10(2) to (4)", SI 1974/1439 on HSWA, before the 2008 substitution of
+    s.10: CV-06 round 2, S1).
 
   Otherwise it begins at the substitution that first makes it (Jason
   2026-10-30: the quote alone is evidence it is new): CLP Art 37(9),
@@ -83,8 +85,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Existence do
   def existed?(id, date, changes, valid) do
     (match?(%Date{}, valid) and Date.compare(valid, date) == :lt) or
       Enum.any?(changes, fn c ->
-        c.resolved.date != nil and on_it?(c, id) and
-          c.resolved.operation not in [:commenced, :applied, nil] and
+        # a quote's dropped rows (`AmendingLaw.Dropped`) are derived from
+        # the quote, no source that the row was there (SI 2009/1348
+        # reg.20(5)(b): CV-06 round 2)
+        not String.ends_with?(c.key, "#dropped") and
+          c.resolved.date != nil and on_it?(c, id) and
+          (c.resolved.operation not in [:commenced, :applied, nil] or
+             (c.target == id and Change.values(c, :commencement, :named) == [true])) and
           case Date.compare(c.resolved.date, date) do
             :lt ->
               true

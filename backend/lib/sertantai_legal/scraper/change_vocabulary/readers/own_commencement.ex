@@ -41,7 +41,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.OwnCommencement do
           text != [],
           result = Evaluator.evaluate(text, id, Map.put(ctx, :extent, Map.get(extents, id))),
           {date, partial?, by} <- stages(result, law_name),
-          do: {"#{law_name}:commencement:#{id}@#{date}", id, claims(law_name, date, partial?, by)}
+          do:
+            {"#{law_name}:commencement:#{id}@#{date}", id,
+             claims(law_name, date, partial?, by) ++ named(result, date, id, law_name)}
 
     own ++ unheld(text, law_name, ids, ctx, own)
   end
@@ -157,6 +159,31 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.OwnCommencement do
       {date, partial?, by}
     end
   end
+
+  # the order names the row itself — it or a range at its depth ("Section
+  # 10(2) to (4)": SI 1974/1439 on HSWA), never a provision above it read
+  # down: a source that the row was there then (CV-06 round 2, S1)
+  defp named(%{entries: entries}, date, id, law) do
+    named? =
+      Enum.any?(entries, fn
+        %{date: ^date, rule: %Rule{scope: scope}} when is_list(scope) ->
+          Enum.any?(scope, &names?(&1, id))
+
+        _ ->
+          false
+      end)
+
+    if named?, do: Claim.new(:commencement, :named, true, "#{law}:commencement"), else: []
+  end
+
+  defp names?(ref, id) do
+    case String.split(ref, "..", parts: 2) do
+      [from, _to] -> depth(from) == depth(id) and LatRef.covers?(ref, id)
+      [_] -> ref == id
+    end
+  end
+
+  defp depth(ref), do: length(LatRef.ancestors(ref))
 
   defp claims(law, date, partial?, by) do
     ref = "#{law}:commencement"
