@@ -5,6 +5,19 @@ release: v0.1
 opened: '2026-10-21'
 started: '2026-10-31'
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
+bugs:
+  - pattern: "A container whose verb follows its items (\"In section 17— (a) … (d) …, shall cease to have effect\") read as a whole repeal of the section"
+    category: amendment reader
+    module: Amendment.Reader / AmendingLaw.Text
+    affected: 1 known (LGSA 1994 Sch.13 para.119(10) on Water Act 1980 s.17)
+    fix: "a container with its own items and a trailing verb: read each item with the verb; never the container whole"
+    status: open
+  - pattern: "\"except in so far as it extends to Northern Ireland\" on a repeal: its territory not read (repeal labelled everywhere)"
+    category: amendment reader
+    module: Amendment.Reader.RepealTable
+    affected: 1 known (SI 1974/1941 on FA 1961 s.77(2))
+    fix: "read the line's territorial limit as the rule's territory (GB)"
+    status: open
 ---
 
 # Session: CV-06: Switch-over and Measure (ACTIVE)
@@ -25,7 +38,8 @@ Judged on the original 27 golden (Jason 2026-10-31).
 - ✅ Pass rule (Jason 2026-10-31, "15 a cause + pooled bound"): 15 rows of each cause with 50+ rows, 30 from the small causes pooled; a cause passes with no sampled row new-wrong by its own fault; pooled 95% upper bound on own-fault rows under 2%; golden 27/27. The 39 known-limit rows keep their old label (Jason). Skill `switch-over-check`
 - ✅ U12 first (Jason 2026-10-31): CV-06a closed — 113 of the 152 rows now hold their repeal; 39 a named known limit (`cv-06a-known-limits.md`): how the switch treats them is decided here
 - ⬜ The CV-05 gaps, as causes or fixed first: rows left to orders we don't hold (J6), pending and unapplied changes (J4), no gap list, headings and signatures unfolded
-- ⬜ Rounds: per cause a seeded sample, agent verdicts pooled (`mix lat.verdicts`), fixes batched, until every cause passes
+- ⬜ Rounds: fixes batched until the code pass holds (batch 2 against the rules, below) (checked rows all match, rules 0 breaches, golden 27/27); agents only to find new classes (Jason 2026-11-01)
+- ⬜ The code pass: `switch_checked.json` + `mix lat.label_checked`; `LabelRules` + its check
 - ⬜ The writer: `LabelRefresh` takes `LabelSource.timeline/1` for the switched families (one setting); migration for `changed_by_all`, `commenced_by`; the law's start off `lat_change_log`
 - ⬜ Dry run on OH&S → Jason → restore point (`lat_label_timeline`) → write; the other families' labels unchanged (diff 0)
 - ⬜ Skill: the switch-over check for the next family (recipe step 12 in CV-00)
@@ -121,3 +135,37 @@ Own-fault classes (rows):
 | S8 | Version history: HSWA s.43A[NI] gets the 1974 start; s.51A versions split late | 4 |
 | S9 | Singles: commencement "so far as it relates to …" read as a range (OSRPA s.83); staged repeal by premises (PUWER 1992); feed effect on a stray marker; changed_by from a parent's change; revoked-before-in-force amender; unapplied prospective change | 6 |
 
+## The pass, decided by code (Jason 2026-11-01: "a pass that doesn't rely on agents"; "rules + checked rows")
+
+Agents find problems; code decides the pass:
+1. **Checked rows** (`test/fixtures/change_vocabulary/switch_checked.json`): every row an agent judged in rounds 1–2. Judged right: its periods then are the accepted label. Judged wrong: to fix, its expected label written from the agent's sourced note when its fix lands. `mix lat.label_checked` compares the current labels with every accepted one: pass = all match, none left to fix (known limits apart).
+2. **Rules** (`LabelRules`): each fault class a check over every row of the family (an amending law's change dated before that law was made; a period before the row's insertion; a UK change after 2020-12-31 to a Windsor Annex 2 law reaching NI; a law made before its start with no prospective period; a saved repeal not repealed_saved; …): pass = 0 breaches outside the named known limits.
+3. Golden 27/27.
+
+Replaces the per-cause agent sample and the pooled bound as the pass (decided 2026-10-31); `mix lat.verdicts` stays as a finding tool.
+
+## Fix batch 2 against the rules (2026-11-01, commits c0066de5, 3cb1349c)
+
+First rules run on OH&S (stored changes): 76 rows breach — before_amender 32, before_insertion 22, no_made_period 27 (overlapping).
+
+- **before_amender** (32): an undated change by a later law sat at the row's start. Fix (Jason: "amending law's first start"): `Readers.AmenderStart` dates it at the amending law's earliest dated commencement rule (`commencement :via amender_first_start`). Needs the rebuild.
+- **no_made_period** (27 → 0 on stored changes): a law brought in by orders, no start held. Fix: `Label.Made.by_order` — it begins at its making, prospective, when a dated commencement follows.
+- **before_insertion** (22): rows only old-style markup (d29p… Additions) called inserted, which the fold ignores, because that markup also marks substitutions (OSRPA ss.4–16). Jason: "fetch as-enacted, then decide". The amending law's text now decides each:
+  - FA 1961 s.10A (9 rows): EMASA 1972 s.3 "shall have effect as if the following section were inserted" — was read as a modification.
+  - FA 1961 s.125(7)–(9): SI 1988/1655 reg.23 "shall be modified as follows—" read by its items; "add the following subsections" quotes.
+  - FA 1961 s.182(9) (substituted, not inserted) and OSRPA s.4(4) (words substituted): SI 1974/1941, 1974/1943 Sch. 2 "MODIFICATIONS—THE … ACT" — a heading in capitals now names the law.
+  - FA 1961 s.164(5),(7): a repeal with a saving, not an insertion — one table line's subsection clauses now each a line with its own saving.
+  - HSWA s.5(5)–(7): EPA 1990 Sch.15 para.14 is repealed in the revised text: fetched as enacted (`Enacted.wanted` now takes repealed provisions too, 9 for EPA 1990, 1 for OSA 1992); "amended by the insertion— (b) …, of the following subsections" takes its parent's verb.
+  - HSWA s.15(6)(e): OSA 1992 s.4 as enacted; "Part I of the … Act 1974 (“the 1974 Act”)" defines the Act.
+  - A legacy Addition the law text also claims now moves the start (`Label.Start.legacy_only?`).
+- Also: "except in so far as it extends to Northern Ireland" is no saving (FA 1961 s.77(2): where the repeal reaches; its territory not yet read — later).
+- Regression preview: 99 of 367 laws gain rules (25,037 → 26,305). Most are container pointers ("In section 48(8)— (a) … (b) …") whose items are now read; samples from 5 laws checked against the text, all right.
+- Found, not fixed (pre-existing): a container whose verb comes after its items ("In section 17— (a) … (d) …, shall cease to have effect": LGSA 1994 Sch.13 para.119(10)) is read as a whole repeal of s.17.
+
+### Batch 2 applied (2026-11-01; restore point `cv06-batch2-apply`: amendment_rules, extent_rules, provision_changes)
+
+- Read pass: 2,102 laws, 208 changed, rules 44,702 → 46,694; one law lost rules — SI 1974/1941's Sch.2 paras 12–13, credited before to EMASA 1972, now to FA 1961 (right: "In section 176(1) …" of the Factories Act).
+- Golden first 25/27: AmenderStart dated a repeal the feed marks prospective (Planning (Wales) Act 2026 on TCPA s.78(4BA), s.284(3)(a)). Fixed (1c7363a4): never for a change marked prospective. Golden 27/27.
+- Rules on OH&S: 76 → 6 rows breaching (before_amender 6). before_insertion 0; 34 rows listed apart as `legacy_unconfirmed` (4d8da976): only old markup says inserted, AmenderStart now dates them, the fold rightly doesn't move their start — most are EPA 1975 Sch.15 substitutions of HSWA (s.15(1), s.30, s.43(6), s.80(4)–(5)); a few look like real insertions with no law text read (HSWA s.28(10) 1988, APNI 1957 s.4(8) 2001, NISI 1997/1774 reg.7(3)(a),(aa) 2000).
+- before_amender 6: an undated law-text change whose amending law's commencement rules aren't held (HSWA s.34(6) by the Gas Act 1986; s.51A(2) by PRA 2002; OSRPA s.90(2) by the Electricity Act 1989; SI 1989/462 regs 4, 7 by SI 1989/2367): credited from the row's start. To decide: date at the amending law's making as the lower bound, or a gap.
+- Checked rows: 617 match, 5 changed → accepted (NISI 1997/1774: the made period added, as the round-2 note on reg.7 asks), 103 to fix, 5 to decide, 13 known, 1 upstream.
