@@ -13895,62 +13895,62 @@
     {
       "cause": "today: in_force_from old undated, new inserted [law]",
       "law": "UK_ukpga_1974_37",
-      "note": "2005-2012 period in_force with in_force_from empty; (2A) inserted wholly in force 7.4.2005 by 2005 c.15 s.158; unapplied prospective 2002 c.30 s.95 substitution should not blank it; today (2012-01-16, 2011 c.13) right",
+      "note": "fixed as its checker's note asks (CV-06 batch 4: a prospective change never applied is not credited; in force from 2005-04-07; reviewed 2026-11-01) (was to fix: 2005-2012 period in_force with in_force_from empty; (2A) inserted wholly in force 7.4.2005 by 2005 c.15 s.158; unapplied prospective 2002 c.30 s.95 substitution should not blank it; today (2012-01-16, 2011 c.13) right)",
       "periods": [
         {
           "changed_by": "UK_ukpga_2005_15",
-          "in_force_from": null,
+          "in_force_from": "2005-04-07",
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "2005-04-07",
+          "valid_to": "2006-04-01"
+        },
+        {
+          "changed_by": "UK_ukpga_2005_15",
+          "in_force_from": "2005-04-07",
+          "status": "in_force",
+          "territory": "E+W",
+          "valid_from": "2006-04-01",
           "valid_to": "2012-01-16"
         },
         {
           "changed_by": "UK_ukpga_2011_13",
           "in_force_from": "2012-01-16",
           "status": "in_force",
-          "territory": "E+W+S",
-          "valid_from": "2012-01-16",
-          "valid_to": "2013-10-07"
-        },
-        {
-          "changed_by": "UK_ukpga_2011_13",
-          "in_force_from": "2012-01-16",
-          "status": "in_force",
           "territory": "E+W",
-          "valid_from": "2013-10-07",
+          "valid_from": "2012-01-16",
           "valid_to": null
         }
       ],
       "round": 1,
       "section_id": "UK_ukpga_1974_37:s.51A(2A)[E+W]",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: changed_by old none",
       "law": "UK_ukpga_1974_37",
-      "note": "in_force_from blank; should be 7.4.2005 (SOCPA s.158(1)); blanked by never-applied prospective PRA 2002 s.95 effects (R10-type)",
+      "note": "fixed as its checker's note asks (CV-06 batch 4: a prospective change never applied is not credited; in force from 2005-04-07; reviewed 2026-11-01) (was to fix: in_force_from blank; should be 7.4.2005 (SOCPA s.158(1)); blanked by never-applied prospective PRA 2002 s.95 effects (R10-type))",
       "periods": [
         {
           "changed_by": "UK_ukpga_2005_15",
-          "in_force_from": null,
+          "in_force_from": "2005-04-07",
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "2005-04-07",
-          "valid_to": "2013-10-07"
+          "valid_to": "2006-04-01"
         },
         {
           "changed_by": "UK_ukpga_2005_15",
-          "in_force_from": null,
+          "in_force_from": "2005-04-07",
           "status": "in_force",
           "territory": "E+W",
-          "valid_from": "2013-10-07",
+          "valid_from": "2006-04-01",
           "valid_to": null
         }
       ],
       "round": 2,
       "section_id": "UK_ukpga_1974_37:s.51A(2B)[E+W]",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "history: in_force_from",
