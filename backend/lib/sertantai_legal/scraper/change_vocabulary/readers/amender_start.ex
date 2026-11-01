@@ -6,7 +6,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmenderStart do
   partly into force — the earliest date that law's own commencement rules
   state (the Building Act 1984's Sch.7 repeals of HSWA ss.61–71: in force
   in part from 1 December 1984, the rest by an order not read). The last
-  gap-filler, after `NoteDate`; the claim says so (`via:
+  gap-filler, after `NoteDate`, never for a change marked prospective;
+  the claim says so (`via:
   "amender_first_start"`), a derived date.
 
   Pure.
@@ -41,7 +42,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmenderStart do
     |> Enum.min(Date, fn -> nil end)
   end
 
-  defp undated?(c), do: Enum.all?(@dates, fn {s, a} -> Change.values(c, s, a) in [[], [nil]] end)
+  # undated, and never one a source marks prospective: not in force yet
+  # (Planning (Wales) Act 2026's repeal of TCPA 1990 s.78(4BA), golden)
+  defp undated?(c),
+    do:
+      Enum.all?(@dates, fn {s, a} -> Change.values(c, s, a) in [[], [nil]] end) and
+        true not in (Change.values(c, :feed, :prospective) ++
+                       Change.values(c, :markup, :prospective))
 
   defp amending_laws(c) do
     (Change.values(c, :law_text, :by) ++

@@ -50,4 +50,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.AmenderStartTest do
     assert AmenderStart.claims(dated, rules()) == []
     assert AmenderStart.claims(change([{:law_text, :by, "UK_ukpga_1999_1"}]), rules()) == []
   end
+
+  test "a change the feed marks prospective is not in force yet: nothing (Planning (Wales) Act 2026 on TCPA s.78(4BA))" do
+    prospective =
+      change([
+        {:feed, :by, "UK_ukpga_1984_55"},
+        {:feed, :operation, :repealed},
+        {:feed, :prospective, true}
+      ])
+
+    assert AmenderStart.claims(prospective, rules()) == []
+  end
 end
