@@ -20,12 +20,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.ChangeVocabulary
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Label, LabelPeriods, Ref, Store}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup
 
   @not_provisions ~w(signed heading table)
 
   @type row :: %{
           id: String.t(),
           sid: String.t(),
+          made: Date.t() | nil,
+          valid: Date.t() | nil | :unknown,
+          changes: [Change.t()],
           extent: String.t() | nil,
           start: Date.t() | nil,
           periods: [Label.period()],
@@ -39,6 +43,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
     with {:ok, xml} <- clml(law) do
       start = start(law)
       made = made(law)
+      valid = Markup.valid(xml)
       extents = extents(law)
       changes = Store.for_law(law) |> Enum.map(&%{&1 | target: Ref.canonical(&1.target)})
 
@@ -72,6 +77,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
           start: start,
           periods: Map.get(labels, id, []),
           reaching: Enum.filter(changes, &Label.reaches?(&1, base)),
+          # the law's making and the text's date, for the rules (CV-06)
+          made: made,
+          valid: valid,
+          changes: changes,
           today: Map.get(today, id, [])
         }
       end
