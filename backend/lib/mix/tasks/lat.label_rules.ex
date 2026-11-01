@@ -50,7 +50,7 @@ defmodule Mix.Tasks.Lat.LabelRules do
     by_rule = Enum.group_by(breaches, fn {_, {rule, _}} -> rule end)
 
     Mix.shell().info(
-      "#{length(rows)} rows; breaching #{breaches |> Enum.map(&elem(&1, 0).sid) |> Enum.uniq() |> length()}"
+      "#{length(rows)} rows; breaching #{breaches |> Enum.reject(&(elem(elem(&1, 1), 0) in LabelRules.informational())) |> Enum.map(&elem(&1, 0).sid) |> Enum.uniq() |> length()} (#{Enum.join(LabelRules.informational(), ", ")} listed apart)"
     )
 
     for {rule, bs} <- Enum.sort(by_rule),
@@ -59,7 +59,9 @@ defmodule Mix.Tasks.Lat.LabelRules do
             "  #{rule}: #{bs |> Enum.map(&elem(&1, 0).sid) |> Enum.uniq() |> length()} rows"
           )
 
-    if Enum.empty?(by_rule), do: Mix.shell().info("PASSED"), else: Mix.shell().info("NOT PASSED")
+    failing = Map.drop(by_rule, LabelRules.informational())
+
+    if Enum.empty?(failing), do: Mix.shell().info("PASSED"), else: Mix.shell().info("NOT PASSED")
 
     if name = opts[:list] do
       for {r, {_rule, why}} <- Map.get(by_rule, String.to_atom(name), []),

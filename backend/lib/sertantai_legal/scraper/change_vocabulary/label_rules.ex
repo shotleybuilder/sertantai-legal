@@ -17,6 +17,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelRules do
   - `:saved_not_saved` — a repeal its law's text saves, labelled repealed
     (R2, S2).
 
+  Not a breach, listed apart: `:legacy_unconfirmed` — a period before an
+  insertion only legacy markup claims, which the fold doesn't trust (that
+  markup also marks substitutions: HSWA s.30 by EPA 1975), no amending-law
+  text read for it (CV-06 batch 2).
+
   `ctx`: `made` (the row's law's making), `law_start`, `eu` (EU law: no
   made period, its start unknown before its first dated change), `windsor`
   (listed?), `made_of` (law → its making), `existed` (the
@@ -26,6 +31,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelRules do
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Change
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Label.Start
 
   @ip_completion ~D[2020-12-31]
 
@@ -75,9 +81,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelRules do
         not ctx.existed.(c.resolved.date),
         uniq: true,
         do:
-          {:before_insertion,
+          {if(Start.legacy_only?(c), do: :legacy_unconfirmed, else: :before_insertion),
            "inserted #{c.resolved.date} by #{c.resolved.by}, period from #{first}"}
   end
+
+  @doc "The rules listed apart, never failing the pass."
+  @spec informational() :: [atom()]
+  def informational, do: [:legacy_unconfirmed]
 
   defp windsor_ni(_periods, %{windsor: false}), do: []
 

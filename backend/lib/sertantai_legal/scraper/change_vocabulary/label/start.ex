@@ -311,11 +311,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Start do
     own != [] and Enum.all?(own, &(Date.compare(&1.resolved.date, start) == :gt))
   end
 
-  # an insertion only a legacy markup Addition claims (its operation a
-  # pointer: CV-S08, Jason 2026-10-29)
-  # … unless the amending law's text or the feed states it too (FA 1961
-  # s.10A, inserted by EMASA 1972: CV-06 round 2, S7)
-  defp legacy_only?(c),
+  @doc """
+  True for an insertion only a legacy markup Addition claims (its operation
+  a pointer: CV-S08, Jason 2026-10-29) — unless the amending law's text or
+  the feed states it too (FA 1961 s.10A, inserted by EMASA 1972: CV-06
+  round 2, S7).
+  """
+  @spec legacy_only?(Change.t()) :: boolean()
+  def legacy_only?(c),
     do:
       c.resolved.sources[:operation] == :markup and Regex.match?(@legacy, c.key) and
         Change.values(c, :law_text, :operation) == [] and

@@ -16,7 +16,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelRulesTest do
 
   defp change(op, date, opts \\ []),
     do: %Change{
-      key: "k",
+      key: Keyword.get(opts, :key, "k"),
       target: "s.1",
       resolved: %Evidence.Resolved{
         operation: op,
@@ -27,7 +27,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelRulesTest do
         retained: false,
         partial: false,
         saved: Keyword.get(opts, :saved, false),
-        sources: %{}
+        sources: Keyword.get(opts, :sources, %{})
       }
     }
 
@@ -59,6 +59,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelRulesTest do
              existed: fn _ -> true end
            }) ==
              []
+  end
+
+  test "an insertion only legacy markup claims is listed apart, not a breach (HSWA s.30 by EPA 1975)" do
+    legacy = change(:inserted, ~D[1975-11-12], key: "d29p3170", sources: %{operation: :markup})
+    assert rules([p(~D[1974-07-31], :in_force)], [legacy]) == [:legacy_unconfirmed]
+    assert :legacy_unconfirmed in LabelRules.informational()
   end
 
   test "a UK change to a Windsor law from 2020-12-31 reaching NI" do
