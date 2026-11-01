@@ -12383,7 +12383,7 @@
     {
       "cause": "today: in_force_from new later (substituted [law])",
       "law": "UK_ukpga_1974_37",
-      "note": "history: territory split 2015-07-19 not 2006-04-01; today right",
+      "note": "fixed as its checker's note asks (CV-06 batch 4: versions split when their section's texts part; reviewed 2026-11-01) (was to fix: history: territory split 2015-07-19 not 2006-04-01; today right)",
       "periods": [
         {
           "changed_by": null,
@@ -12399,28 +12399,28 @@
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "1974-10-01",
+          "valid_to": "2006-04-01"
+        },
+        {
+          "changed_by": "UK_uksi_1974_1439",
+          "in_force_from": "1974-10-01",
+          "status": "in_force",
+          "territory": "E+W+S",
+          "valid_from": "2006-04-01",
           "valid_to": "2008-04-01"
         },
         {
           "changed_by": "UK_uksi_2008_960",
           "in_force_from": "2008-04-01",
           "status": "in_force",
-          "territory": "E+W+S+NI",
-          "valid_from": "2008-04-01",
-          "valid_to": "2015-07-19"
-        },
-        {
-          "changed_by": "UK_uksi_2008_960",
-          "in_force_from": "2008-04-01",
-          "status": "in_force",
           "territory": "E+W+S",
-          "valid_from": "2015-07-19",
+          "valid_from": "2008-04-01",
           "valid_to": null
         }
       ],
       "round": 1,
       "section_id": "UK_ukpga_1974_37:s.16(1)(b)[E+W+S]",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from new later (substituted [law])",
@@ -12467,7 +12467,7 @@
     {
       "cause": "today: in_force_from new later (substituted [law])",
       "law": "UK_ukpga_1974_37",
-      "note": "history: territory split dated 2015-07-19 (version start), versions diverge 1.4.2006 (Railways Act 2005 s.16(1A) E.W.S.); today right",
+      "note": "fixed as its checker's note asks (CV-06 batch 4: versions split when their section's texts part; reviewed 2026-11-01) (was to fix: history: territory split dated 2015-07-19 (version start), versions diverge 1.4.2006 (Railways Act 2005 s.16(1A) E.W.S.); today right)",
       "periods": [
         {
           "changed_by": null,
@@ -12483,33 +12483,33 @@
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "1974-10-01",
-          "valid_to": "2008-04-01"
+          "valid_to": "2006-04-01"
         },
         {
-          "changed_by": "UK_uksi_2008_960",
-          "in_force_from": "2008-04-01",
+          "changed_by": "UK_uksi_1974_1439",
+          "in_force_from": "1974-10-01",
           "status": "in_force",
-          "territory": "E+W+S+NI",
-          "valid_from": "2008-04-01",
-          "valid_to": "2015-07-19"
+          "territory": "E+W+S",
+          "valid_from": "2006-04-01",
+          "valid_to": "2008-04-01"
         },
         {
           "changed_by": "UK_uksi_2008_960",
           "in_force_from": "2008-04-01",
           "status": "in_force",
           "territory": "E+W+S",
-          "valid_from": "2015-07-19",
+          "valid_from": "2008-04-01",
           "valid_to": null
         }
       ],
       "round": 1,
       "section_id": "UK_ukpga_1974_37:s.16(2)(b)[E+W+S]",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from new later (substituted [law])",
       "law": "UK_ukpga_1974_37",
-      "note": "history: territory split 2015-07-19 not 2006-04-01; today right",
+      "note": "fixed as its checker's note asks (CV-06 batch 4: versions split when their section's texts part; reviewed 2026-11-01) (was to fix: history: territory split 2015-07-19 not 2006-04-01; today right)",
       "periods": [
         {
           "changed_by": null,
@@ -12525,33 +12525,33 @@
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "1974-10-01",
-          "valid_to": "2008-04-01"
+          "valid_to": "2006-04-01"
         },
         {
-          "changed_by": "UK_uksi_2008_960",
-          "in_force_from": "2008-04-01",
+          "changed_by": "UK_uksi_1974_1439",
+          "in_force_from": "1974-10-01",
           "status": "in_force",
-          "territory": "E+W+S+NI",
-          "valid_from": "2008-04-01",
-          "valid_to": "2015-07-19"
+          "territory": "NI",
+          "valid_from": "2006-04-01",
+          "valid_to": "2008-04-01"
         },
         {
           "changed_by": "UK_uksi_2008_960",
           "in_force_from": "2008-04-01",
           "status": "in_force",
           "territory": "NI",
-          "valid_from": "2015-07-19",
+          "valid_from": "2008-04-01",
           "valid_to": null
         }
       ],
       "round": 1,
       "section_id": "UK_ukpga_1974_37:s.16(2)[NI]",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from new later (substituted [law])",
       "law": "UK_ukpga_1974_37",
-      "note": "history: territory split 2015-07-19 not 2006-04-01; today right",
+      "note": "fixed as its checker's note asks (CV-06 batch 4: versions split when their section's texts part; reviewed 2026-11-01) (was to fix: history: territory split 2015-07-19 not 2006-04-01; today right)",
       "periods": [
         {
           "changed_by": null,
@@ -12567,28 +12567,28 @@
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "1974-10-01",
+          "valid_to": "2006-04-01"
+        },
+        {
+          "changed_by": "UK_uksi_1974_1439",
+          "in_force_from": "1974-10-01",
+          "status": "in_force",
+          "territory": "E+W+S",
+          "valid_from": "2006-04-01",
           "valid_to": "2008-04-01"
         },
         {
           "changed_by": "UK_uksi_2008_960",
           "in_force_from": "2008-04-01",
           "status": "in_force",
-          "territory": "E+W+S+NI",
-          "valid_from": "2008-04-01",
-          "valid_to": "2015-07-19"
-        },
-        {
-          "changed_by": "UK_uksi_2008_960",
-          "in_force_from": "2008-04-01",
-          "status": "in_force",
           "territory": "E+W+S",
-          "valid_from": "2015-07-19",
+          "valid_from": "2008-04-01",
           "valid_to": null
         }
       ],
       "round": 1,
       "section_id": "UK_ukpga_1974_37:s.16(3)[E+W+S]",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from new later (substituted [law])",
@@ -13471,88 +13471,56 @@
     {
       "cause": "today: in_force_from new earlier (none dated)",
       "law": "UK_ukpga_1974_37",
-      "note": "NI version is the RTSA 2003 text (10.9.2003); new gives in_force_from 1974-07-31, no changed_by after the 2006 split",
+      "note": "fixed as its checker's note asks (CV-06 batch 4: versions split when their section's texts part; reviewed 2026-11-01) (was to fix: NI version is the RTSA 2003 text (10.9.2003); new gives in_force_from 1974-07-31, no changed_by after the 2006 split)",
       "periods": [
         {
           "changed_by": "UK_ukpga_2003_20",
           "in_force_from": "2003-09-10",
           "status": "in_force",
-          "territory": "E+W+S+NI",
-          "valid_from": "2003-09-10",
-          "valid_to": "2006-02-07"
-        },
-        {
-          "changed_by": null,
-          "in_force_from": "1974-07-31",
-          "status": "in_force",
           "territory": "NI",
-          "valid_from": "2006-02-07",
+          "valid_from": "2003-09-10",
           "valid_to": null
         }
       ],
       "round": 2,
       "section_id": "UK_ukpga_1974_37:s.43A(2)(a)[NI]",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from new earlier (none dated)",
       "law": "UK_ukpga_1974_37",
-      "note": "post-2015 split period in_force_from 1974-07-31, changed_by empty; s.43A inserted 10.9.2003 by 2003 c.20",
+      "note": "fixed as its checker's note asks (CV-06 batch 4: versions split when their section's texts part; reviewed 2026-11-01) (was to fix: post-2015 split period in_force_from 1974-07-31, changed_by empty; s.43A inserted 10.9.2003 by 2003 c.20)",
       "periods": [
         {
           "changed_by": "UK_ukpga_2003_20",
           "in_force_from": "2003-09-10",
           "status": "in_force",
-          "territory": "E+W+S+NI",
-          "valid_from": "2003-09-10",
-          "valid_to": "2015-10-16"
-        },
-        {
-          "changed_by": null,
-          "in_force_from": "1974-07-31",
-          "status": "in_force",
           "territory": "NI",
-          "valid_from": "2015-10-16",
+          "valid_from": "2003-09-10",
           "valid_to": null
         }
       ],
       "round": 2,
       "section_id": "UK_ukpga_1974_37:s.43A(5)(b)[NI]",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from new earlier (none dated)",
       "law": "UK_ukpga_1974_37",
-      "note": "NI text unamended since 2003 c.20; new applies E+W+S-only 2005 c.14 change to NI and dates today 1974-07-31, before insertion",
+      "note": "fixed as its checker's note asks (CV-06 batch 4: versions split when their section's texts part; reviewed 2026-11-01) (was to fix: NI text unamended since 2003 c.20; new applies E+W+S-only 2005 c.14 change to NI and dates today 1974-07-31, before insertion)",
       "periods": [
         {
           "changed_by": "UK_ukpga_2003_20",
           "in_force_from": "2003-09-10",
           "status": "in_force",
-          "territory": "E+W+S+NI",
-          "valid_from": "2003-09-10",
-          "valid_to": "2006-02-07"
-        },
-        {
-          "changed_by": "UK_ukpga_2005_14",
-          "in_force_from": "2006-02-07",
-          "status": "in_force",
-          "territory": "E+W+S+NI",
-          "valid_from": "2006-02-07",
-          "valid_to": "2015-10-16"
-        },
-        {
-          "changed_by": null,
-          "in_force_from": "1974-07-31",
-          "status": "in_force",
           "territory": "NI",
-          "valid_from": "2015-10-16",
+          "valid_from": "2003-09-10",
           "valid_to": null
         }
       ],
       "round": 1,
       "section_id": "UK_ukpga_1974_37:s.43A(5)[NI]",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "history: territory",
@@ -14055,28 +14023,20 @@
     {
       "cause": "today: in_force_from old undated, new inserted [law]",
       "law": "UK_ukpga_1974_37",
-      "note": "2007-2013 territory E+W; P&JA 2006 s.54(5) amendments extend as the provision amended (E+W+S); S version holds (g); today right",
+      "note": "fixed as its checker's note asks (CV-06 batch 4: versions split when their section's texts part; reviewed 2026-11-01) (was to fix: 2007-2013 territory E+W; P&JA 2006 s.54(5) amendments extend as the provision amended (E+W+S); S version holds (g); today right)",
       "periods": [
         {
           "changed_by": "UK_ukpga_2006_48",
           "in_force_from": "2007-04-01",
           "status": "in_force",
-          "territory": "E+W",
-          "valid_from": "2007-04-01",
-          "valid_to": "2013-10-07"
-        },
-        {
-          "changed_by": "UK_ukpga_2006_48",
-          "in_force_from": "2007-04-01",
-          "status": "in_force",
           "territory": "S",
-          "valid_from": "2013-10-07",
+          "valid_from": "2007-04-01",
           "valid_to": null
         }
       ],
       "round": 1,
       "section_id": "UK_ukpga_1974_37:s.51A(2E)(g)[S]",
-      "status": "to_fix"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from old undated, new inserted [law]",
