@@ -171,3 +171,18 @@ First rules run on OH&S (stored changes): 76 rows breach — before_amender 32, 
 - Checked rows: 617 match, 5 changed → accepted (NISI 1997/1774: the made period added, as the round-2 note on reg.7 asks), 103 to fix, 5 to decide, 13 known, 1 upstream.
 - before_amender 6 → named date gaps (Jason 2026-11-01: "Named gap"): `backend/data/reports/change-vocabulary/cv-06-date-gaps.md`, listed apart by `mix lat.label_rules`. **Rules on OH&S: PASSED** (0 breaching; legacy_unconfirmed 34 listed apart). How the writer labels a gap row is decided with the writer.
 - Next: the 103 checked rows to fix.
+
+## The 103 checked rows to fix (2026-11-01)
+
+- Reviewed each row's current label against its checker's note: 60 now do what the note asks (batches 1–3) — accepted with `--accept`, which now keeps the checker's note beside the why (6ea54afd, plus 4).
+- Batch 3 (87e3e60e): an order naming the row (it, or a range at its depth) is evidence it existed (HSWA s.10(2), s.11(2), s.11(4)); a quote's dropped rows are no evidence (SI 2009/1348 reg.19(1A)). Golden 27/27, rules PASSED, checked rows 682 match.
+- **43 left**, by class:
+  1. Commencement detail (7): HSWA s.10(1) two stages (Commission 1974, Executive 1975) shown partial only; s.24(2),(4) dated 1998-04-08, the order says 1998-08-01; s.28(5)(b)[E+W] Water Act 1989 date/territory; s.70, s.70(1) never in force before the 1984 repeal; OSRPA s.83 "so far as it relates to" read as a range; FA 1961 s.13 staged repeal (PUWER 1992).
+  2. Version territory (12): HSWA s.13(3), s.16 ×4 (versions part 2006, split shown 2015), s.43A[NI] ×3, s.51A(2E)(g)[S]; OSRPA s.9(6); SI 2008/1597 reg.2(2)[NI]; CLP pt.V.ch.2.
+  3. A never-applied prospective change blanking in_force_from (2): HSWA s.51A(2A), (2B).
+  4. A parent's change not reaching its children (5): REACH Art 3(36)(a),(c),(d), Art 77(A3)(b)#2; APNI 1957 s.1(4).
+  5. Changes missed (7): NISR 1993/20 reg.3(3)(a), 1997/455 reg.2(1), reg.3(1)(ii), 2010/160 reg.28; OSRPA s.52(5), s.91(3); HSWA s.84(1)(b).
+  6. An amender that never took effect (2): NISR 1999/90 reg.2(1), 2003/34 reg.7(12).
+  7. Misread or misplaced changes (4): REACH Art 3(A2)(c) changed_by; SI 1992/3004 reg.3(1) (SI 2002/2174 reg.6 read whole: its items' quotes taken as targets); SI 2002/2677 reg.7(9)(b) stray marker; SI 1999/3242 reg.22(2).
+  8. Legacy markup (1): HSWA s.28(9)[S].
+  9. Checker's note disputed by a source (2): SI 2009/1348 reg.20(5), (5)(b) — the feed records SI 2011/1885 revoking reg.20(5)(a),(b), so a made (5) existed: to decide.
