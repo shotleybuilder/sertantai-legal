@@ -193,6 +193,19 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderTest do
     assert Enum.all?(rules, &(&1.operation == :inserted))
   end
 
+  test "older drafting inserts by \"shall have effect as if the following section were inserted\" (EMASA 1972 s.3)" do
+    d =
+      doc(
+        ~S|<P1 id="section-3"><P1para><Text>The Clean Air Act 1956 shall have effect as if the following section were inserted after section 10 thereof:—</Text><BlockAmendment><P1><Pnumber>10A</Pnumber><P1para><Text>new</Text></P1para></P1></BlockAmendment></P1para></P1>|
+      )
+
+    rules = Reader.instruction(d, "section-3", %{}, [@clean_air])
+
+    assert rules != []
+    assert Enum.all?(rules, &(&1.operation == :inserted and &1.level == :provision))
+    assert Enum.any?(rules, &("s.10A" in &1.targets))
+  end
+
   test "a term named in brackets is not words changed (1989 c.27 s.1(1): \"for section 18 of the … Act 1956 (“the 1956 Act”)\")" do
     d =
       doc(

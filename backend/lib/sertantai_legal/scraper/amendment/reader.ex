@@ -54,6 +54,10 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   # "shall have effect as if … were omitted", "be read as if": a
   # modification, not an amendment (SI 1974/2013 Sch. 2 para. 15)
   @modification ~r/\b(?:have effect|be read|be construed) as if\b/i
+  # … but older drafting inserts a provision so ("The Factories Act 1961
+  # shall have effect as if the following section were inserted after
+  # section 10 thereof:— 10A": EMASA 1972 s.3, CV-06 S7); its target is held
+  @as_if_inserted ~r/\bhave effect as if the following (?:sections?|subsections?|regulations?|paragraphs?) (?:were|was) inserted\b/i
 
   # "The provisions set out in Part I of Schedule 4 shall be substituted for
   # Part VIII of …" (EReA 1999 s.7), "The section set out in Part I of
@@ -196,7 +200,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
           Rule.t()
         ]
   def of_text(%Text{} = text, title, terms, laws, source) do
-    case if(text.instruction =~ @modification, do: nil, else: Clauses.operation(text)) do
+    case if(modification?(text.instruction), do: nil, else: Clauses.operation(text)) do
       {_, _} ->
         texts =
           Enum.map([text.instruction | Enum.reverse(text.context)], &Clauses.unquote_words/1)
@@ -298,4 +302,6 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
 
   @doc "True when the element is a repeals table."
   defdelegate repeal_table?(doc, id), to: RepealTable
+
+  defp modification?(s), do: s =~ @modification and not (s =~ @as_if_inserted)
 end

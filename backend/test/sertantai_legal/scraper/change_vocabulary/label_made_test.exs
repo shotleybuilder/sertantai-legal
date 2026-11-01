@@ -79,4 +79,22 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelMadeTest do
     assert Made.from(periods, provision(made: nil), @start, []) == periods
     assert Made.from(periods, provision(start_dated: false), @start, []) == periods
   end
+
+  describe "a law commenced by an order, no start held (S4)" do
+    test "from its making, prospective, when a dated commencement follows; else unchanged" do
+      p = %{
+        law: "UK_nisi_1997_1774",
+        start: ~D[1900-01-01],
+        start_dated: false,
+        made: ~D[1997-07-22],
+        extent: "NI"
+      }
+
+      order = commenced("UK_nisi_1997_1774:commencement:reg.3@1998-07-01", date: ~D[1998-07-01])
+
+      assert %{start: ~D[1997-07-22], start_dated: true} = Made.by_order(p, [order])
+      assert Made.by_order(p, []) == p
+      assert Made.by_order(%{p | law: "UK_eur_2006_1907"}, [order]).start_dated == false
+    end
+  end
 end

@@ -68,7 +68,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
 
   @doc "The periods of provision `id` from resolved changes."
   @spec fold(String.t(), provision(), [Change.t()]) :: [period()]
-  def fold(id, %{start: start} = provision, changes) do
+  def fold(id, provision, changes) do
     # a Part or Chapter row is never its own container: its heading's own
     # changes stay on it (CV-06 round 1, R5: CLP Title V, REACH Title XIII)
     containers =
@@ -78,6 +78,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
       )
 
     changes = within(changes, containers)
+    # a law commenced by an order, no start held: from its making (S4)
+    provision = Made.by_order(provision, Enum.filter(changes, &reaches?(&1, base_id(id))))
+    start = provision.start
     version = Map.get(provision, :version)
     version_start = Map.get(provision, :version_start)
 

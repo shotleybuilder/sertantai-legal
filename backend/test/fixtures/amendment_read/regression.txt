@@ -60,3 +60,4 @@ UK_ukpga_1989_29  # header-less rows in a Schedule of repeals (Sch. 18) are law,
 UK_ukpga_1982_30  # a range of brackets in a table line "Section 63(1) to (4)." (CV-06a U12)
 UK_ukpga_1975_71  # repeals Schedule 18 empty in the revised text, read as enacted (enacted/, CV-06a U12)
 UK_ukpga_1973_36  # repeals Schedule 6 read as enacted (CV-06a U12)
+UK_ukpga_1972_28  # "shall have effect as if the following section were inserted after section 10" inserts FA 1961 s.10A (CV-06 batch 2)

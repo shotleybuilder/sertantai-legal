@@ -25,6 +25,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Ref, Windsor}
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.{
+    AmenderStart,
     AmendingLaw,
     Expiry,
     Feed,
@@ -260,6 +261,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
                   title: Keyword.get(opts, :act_title)
                 })
         }
+      end)
+      # the last gap: a later law's change no source dates, at the earliest
+      # day that law came into force (Jason 2026-11-01, CV-06)
+      |> Enum.map(fn c ->
+        %{c | claims: c.claims ++ AmenderStart.claims(c, Keyword.get(opts, :commencement, %{}))}
       end)
       |> Enum.map(
         &Evidence.resolve(&1, extent(provisions, &1.target), Map.get(facts, &1.target, %{}))
