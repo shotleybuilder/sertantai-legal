@@ -64,3 +64,6 @@ config :sertantai_legal, :clml_store_dir, nil
 # LAT parses don't load a law's effects (changes feed) in tests: no fetches;
 # tests pass effects explicitly (LR-03)
 config :sertantai_legal, :lat_effects, false
+
+# no family switched to the change vocabulary under test (CV-06): tests set it
+config :sertantai_legal, label_families: []
