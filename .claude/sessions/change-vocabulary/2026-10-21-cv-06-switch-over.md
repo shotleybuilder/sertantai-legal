@@ -29,7 +29,7 @@ Judged on the original 27 golden (Jason 2026-10-31).
 - ⬜ The CV-05 gaps, as causes or fixed first: rows left to orders we don't hold (J6), pending and unapplied changes (J4), no gap list, headings and signatures unfolded
 - ✅ Rounds: fixes batched until the code pass holds (batches 2–5, below) — **the code pass holds on OH&S (2026-11-02)** (checked rows all match, rules 0 breaches, golden 27/27); agents only to find new classes (Jason 2026-11-01)
 - ✅ The code pass: `switch_checked.json` + `mix lat.label_checked`; `LabelRules` + its check
-- ⬜ The writer: `LabelRefresh` takes `LabelSource.timeline/1` for the switched families (one setting); migration for `changed_by_all`, `commenced_by`; the law's start off `lat_change_log`
+- ✅ The writer: `LabelRefresh` takes `LabelSource.timeline/1` for the switched families (one setting); migration for `changed_by_all`, `commenced_by`; the law's start stays on `lat_change_log` for v0.1 (Jason 2026-11-02)
 - ⬜ Dry run on OH&S → Jason → restore point (`lat_label_timeline`) → write; the other families' labels unchanged (diff 0)
 - ⬜ Skill: the switch-over check for the next family (recipe step 12 in CV-00)
 
@@ -198,3 +198,25 @@ Much of rounds 2–5 fixed earlier steps' code to make checked rows pass, where 
 | CV-S04 commencement | ScheduleClause; "except section 4" in orders; a commencement naming the row (`:named`); the order re-read |
 | CV-S09 label fold | evidence it existed (Existence); Dropped no evidence; version split at the section's divergence; a pending prospective change made nothing; Made (LR-39, by_order); AmenderStart and its first start |
 | CV-06 own | LabelPeriods, LabelSource, LabelShadow, the code pass (LabelRules, Checked, `lat.label_rules`, `lat.label_checked`), known limits and date gaps |
+
+## The writer (2026-11-02)
+
+Jason 2026-11-02: the 39 missing-repeal rows (CV-06a) and the named date gaps keep the old label; every other row, the 43 named known limits included, takes the new one. The law's start stays read from the register for v0.1 (the refresh still writes `lat_change_log` for OH&S); retiring it goes with the old path.
+
+- 736f86a9: the per-law build moved out of `mix lat.vocabulary` into `ChangeVocabulary.Build` + `ChangeVocabulary.Primary` — behaviour-preserving (`provision_changes` digest identical over OH&S's 149 laws).
+- 1331b0cb: `LabelSwitch` (the `:label_families` setting, empty until a family is applied; `merge_kept/3`; `timeline/2` refuses rows breaking the table's rules), `KnownLimits` (the two lists), `LabelRefresh` builds and writes a switched law's timeline, migration `20261102190600` (`changed_by_all`, `commenced_by`, applied to dev), `mix lat.label_switch` (dry run; `--apply` through `LabelRefresh`), `LabelSwitchReport`.
+
+### Dry run (OH&S: Occupational / Personal Safety)
+
+149 laws folded, none failed; 18,684 rows, 9,903 differ from today's labels; periods 30,024 → 38,677 (history the register didn't hold).
+
+| Today | old | new |
+|---|---|---|
+| in_force | 16,273 | 16,998 |
+| in_force_partial | 6 | 1 |
+| prospective | 1,116 | 0 |
+| repealed | 461 | 513 |
+| repealed_saved | 494 | 925 |
+| unknown (no period) | 334 | 247 |
+
+The 1,116 prospective rows today are the register's: the NISRs whose made version marks every row prospective (NISR 1997/248, 1999/305, 2003/35, …) were never moved to in force — the new method has them in force from their commencement (checked rows accepted). repealed_saved 494 → 925: the savings read from the amending laws' text (R2). Per law: `backend/data/reports/change-vocabulary/cv-06-dry-run.csv`.
