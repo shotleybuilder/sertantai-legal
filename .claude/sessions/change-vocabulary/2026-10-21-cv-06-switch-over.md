@@ -18,6 +18,12 @@ bugs:
     affected: 1 known (SI 1974/1941 on FA 1961 s.77(2))
     fix: "read the line's territorial limit as the rule's territory (GB)"
     status: open
+  - pattern: "EU law gets no change from its amending SIs' own text: rules name art.N, rows art.Article N, so all drop as misreads; and a quoted Article's numbered paragraphs are read as Articles (For Article 22 substitute— … 1. 2. → art.1, art.2)"
+    category: amendment reader / change vocabulary
+    module: ChangeVocabulary (EU target spelling) + Amendment.Reader (EU quotes)
+    affected: every EU law's amending-SI rules (REACH, CLP …); 5 OH&S checked rows
+    fix: "fix the EU quote numbering first (quoted Article N's paragraphs are N(1), N(2)); then respell art.N → art.Article N before AmendingLaw.read; re-check EU checked rows"
+    status: open
 ---
 
 # Session: CV-06: Switch-over and Measure (ACTIVE)
