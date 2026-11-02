@@ -5,25 +5,8 @@ release: v0.1
 opened: '2026-10-21'
 started: '2026-10-31'
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
-bugs:
-  - pattern: "A container whose verb follows its items (\"In section 17— (a) … (d) …, shall cease to have effect\") read as a whole repeal of the section"
-    category: amendment reader
-    module: Amendment.Reader / AmendingLaw.Text
-    affected: 1 known (LGSA 1994 Sch.13 para.119(10) on Water Act 1980 s.17)
-    fix: "a container with its own items and a trailing verb: read each item with the verb; never the container whole"
-    status: open
-  - pattern: "\"except in so far as it extends to Northern Ireland\" on a repeal: its territory not read (repeal labelled everywhere)"
-    category: amendment reader
-    module: Amendment.Reader.RepealTable
-    affected: 1 known (SI 1974/1941 on FA 1961 s.77(2))
-    fix: "read the line's territorial limit as the rule's territory (GB)"
-    status: open
-  - pattern: "EU law gets no change from its amending SIs' own text: rules name art.N, rows art.Article N, so all drop as misreads; and a quoted Article's numbered paragraphs are read as Articles (For Article 22 substitute— … 1. 2. → art.1, art.2)"
-    category: amendment reader / change vocabulary
-    module: ChangeVocabulary (EU target spelling) + Amendment.Reader (EU quotes)
-    affected: every EU law's amending-SI rules (REACH, CLP …); 5 OH&S checked rows
-    fix: "fix the EU quote numbering first (quoted Article N's paragraphs are N(1), N(2)); then respell art.N → art.Article N before AmendingLaw.read; re-check EU checked rows"
-    status: open
+enables:
+  - change-vocabulary/2026-11-02-cv-06b-routed-fixes.md
 ---
 
 # Session: CV-06: Switch-over and Measure (ACTIVE)
@@ -204,3 +187,14 @@ First rules run on OH&S (stored changes): 76 rows breach — before_amender 32, 
 - Rows to decide: s.11(1), SI 2002/2677 reg.7(7)(c), SI 2009/1348 reg.23(2) settled by Jason's rulings; OSRPA s.71(2) not a text change (Jason); HSWA s.79 a named date gap (Jason).
 - **Pass:** golden 27/27; `mix lat.label_rules` PASSED (0 breaching; 32 legacy_unconfirmed and 7 date gaps listed apart); `mix lat.label_checked` PASSED (700 match, 43 known, 1 upstream).
 - Next: the writer.
+
+## Scope correction (Jason 2026-11-02: "boiling the ocean")
+
+Much of rounds 2–5 fixed earlier steps' code to make checked rows pass, where CV-06's purpose is to explain the differences and switch. The fixes already made stay (tested, golden 27/27), recorded by owning step; from here CV-06 changes only its own code (the writer, the check tools), and faults owned by earlier steps are named and routed to **CV-06b** (`2026-11-02-cv-06b-routed-fixes.md`, pending; the open bugs moved there).
+
+| Owning step | Fixes made in CV-06 |
+|---|---|
+| CV-S06 amendment reader | repeal tables (per table, header search, continuation, one-law form, ranges, savings); "as if … were inserted"; a capitals Schedule heading names its law; a pointer to a provision changing nothing reads its items; "add the following"; an item's verb from its parent's noun; "Part I of the … Act (“the 1974 Act”)"; repealed provisions fetched as enacted; one section's subsection clauses; the territorial "so far as it extends to"; a Schedule's law one hop back; EU "paragraph 36"; three read passes |
+| CV-S04 commencement | ScheduleClause; "except section 4" in orders; a commencement naming the row (`:named`); the order re-read |
+| CV-S09 label fold | evidence it existed (Existence); Dropped no evidence; version split at the section's divergence; a pending prospective change made nothing; Made (LR-39, by_order); AmenderStart and its first start |
+| CV-06 own | LabelPeriods, LabelSource, LabelShadow, the code pass (LabelRules, Checked, `lat.label_rules`, `lat.label_checked`), known limits and date gaps |
