@@ -43,8 +43,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
   alias SertantaiLegal.Repo
 
   alias SertantaiLegal.Scraper.{ChangeVocabulary, LatRef, LatStagedParser}
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.Store, as: ExtentStore
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{Conflicts, LabelSource, Ref, Store}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Build, Conflicts, LabelSource, Store}
 
   @shortdoc "A law's changes, evidence and labels through the change vocabulary; build the change register"
 
@@ -225,7 +224,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       :timer.tc(fn ->
         SertantaiLegal.Scraper.LawRunner.run(
           laws,
-          fn law -> :timer.tc(fn -> build_one(law) end) end,
+          fn law -> :timer.tc(fn -> Build.law(law) end) end,
           fn law, result ->
             :counters.add(counter, 1, 1)
 
@@ -247,55 +246,6 @@ defmodule Mix.Tasks.Lat.Vocabulary do
     )
   end
 
-  defp build_one(law) do
-    xml = clml(law)
-
-    effects =
-      law
-      |> LatStagedParser.law_effects(store: :only)
-      |> LatStagedParser.with_affecting_territory(law)
-
-    all = rows(law)
-    opts = law |> primary(effects) |> Keyword.merge(rows: Map.keys(all), xml_ids: xml_ids(law))
-    changes = ChangeVocabulary.changes(law, xml, effects, all, opts)
-    {:ok, n} = Store.write(law, changes, inputs(law, effects, opts))
-    "#{n.changes} changes, #{n.claims} claims"
-  end
-
-  # every LAT row of the law, with its extent (the change's bound)
-  defp rows(law) do
-    %{rows: rows} =
-      Repo.query!(
-        "SELECT section_id, extent_code FROM legal_articles WHERE law_name = $1 AND section_id IS NOT NULL",
-        [law]
-      )
-
-    for [sid, ext] <- rows,
-        into: %{},
-        do: {String.replace_prefix(sid, law <> ":", ""), %{extent: ext}}
-  end
-
-  # each LAT row's XML id → its ref, as the parse named it (versions share
-  # their base: "section-23" → "s.23")
-  defp xml_ids(law) do
-    Ref.xml_ids(
-      law,
-      Repo.query!(
-        "SELECT section_id, source_xml_id FROM legal_articles WHERE law_name = $1 AND source_xml_id IS NOT NULL",
-        [law]
-      ).rows
-    )
-  end
-
-  # what the build read, for staleness (`Store.Inputs`, `ChangeStaleness`)
-  defp inputs(law, effects, opts) do
-    affecting = effects |> Enum.map(& &1.affecting) |> Enum.reject(&is_nil/1) |> Enum.uniq()
-
-    law
-    |> Store.Inputs.of(affecting, Map.keys(opts[:commencement]))
-    |> Map.put(:extents_unread, opts[:extents_unread])
-  end
-
   defp show(opts) do
     law = opts[:law] || Mix.raise("--law is required")
     ids = Keyword.get_values(opts, :provision)
@@ -303,7 +253,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
     Mix.Task.run("app.start")
 
-    xml = clml(law)
+    xml = Build.clml(law)
 
     effects =
       law
@@ -314,8 +264,8 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
     opts =
       law
-      |> primary(effects)
-      |> Keyword.merge(rows: law |> rows() |> Map.keys(), xml_ids: xml_ids(law))
+      |> Build.primary(effects)
+      |> Keyword.merge(rows: law |> Build.rows() |> Map.keys(), xml_ids: Build.xml_ids(law))
 
     changes = ChangeVocabulary.changes(law, xml, effects, provisions, opts)
     labels = ChangeVocabulary.labels(law, xml, effects, provisions, opts)
@@ -360,7 +310,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
   end
 
   defp golden_law({law, entries}, opts) do
-    xml = clml(law)
+    xml = Build.clml(law)
 
     effects =
       law
@@ -383,11 +333,11 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
     given =
       if opts[:stored],
-        do: [changes: Store.for_law(law), title: title(law)],
+        do: [changes: Store.for_law(law), title: Build.title(law)],
         else:
           law
-          |> primary(effects)
-          |> Keyword.merge(rows: law |> rows() |> Map.keys(), xml_ids: xml_ids(law))
+          |> Build.primary(effects)
+          |> Keyword.merge(rows: law |> Build.rows() |> Map.keys(), xml_ids: Build.xml_ids(law))
 
     labels = ChangeVocabulary.labels(law, xml, effects, provisions, given)
     Enum.map(entries, &{&1, labels[&1.id]})
@@ -448,202 +398,6 @@ defmodule Mix.Tasks.Lat.Vocabulary do
     Mix.shell().info("\n#{passed} / #{length(results)} golden provisions pass")
   end
 
-  # the amending laws' own text: their stored rules, and each one's
-  # commencement rules
-  defp primary(law, effects) do
-    stored_rules = SertantaiLegal.Scraper.Amendment.Store.for_law(law)
-
-    # the stored rules stand only where read by this reader from the text
-    # held now; a stale amending law is read again here, for this law, at
-    # the provisions this law's notes and feed point to (never stale rules:
-    # run time, 2026-10-25)
-    rules = fresh_rules(law, effects, stored_rules)
-
-    # each amending law's commencement rules: the rules' sources and the
-    # feed's affecting laws
-    # … and the laws the notes cite: a change no source dates is dated from
-    # its amending law at the provision its note names (CV-07)
-    cited =
-      Repo.query!(
-        """
-        SELECT DISTINCT coalesce(citation_law, changed_by) FROM amendment_annotations
-        WHERE law_name = $1 AND code_type = 'amendment' AND coalesce(citation_law, changed_by) ~ '^UK_'
-        """,
-        [law]
-      ).rows
-      |> List.flatten()
-
-    commencement =
-      (Enum.map(rules, & &1.source.law) ++ Enum.map(effects, & &1.affecting) ++ cited)
-      |> Enum.reject(&is_nil/1)
-      |> Enum.uniq()
-      |> Map.new(&{&1, SertantaiLegal.Scraper.Commencement.Store.for_law(&1)})
-
-    title = title(law)
-
-    # each affecting law's own extent clause (Act or SI): read into `extent_rules`,
-    # else from its CLML held (named: `mix lat.amending --extents`)
-    acts =
-      effects
-      |> Enum.map(& &1.affecting)
-      |> Kernel.++(Enum.map(rules, & &1.source.law))
-      |> Kernel.++(cited)
-      |> Enum.reject(&is_nil/1)
-      |> Enum.uniq()
-      |> Enum.filter(&ExtentStore.reads?/1)
-
-    stored = ExtentStore.for_laws(acts)
-
-    # (the reading kept between runs: `Extent.ReadCache`, run time 2026-10-25)
-    unread =
-      for law <- acts,
-          not Map.has_key?(stored, law),
-          reading = SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCache.law(law),
-          reading != nil,
-          into: %{},
-          do: {law, reading.read}
-
-    if unread != %{},
-      do:
-        Mix.shell().info(
-          "  #{map_size(unread)} Acts' extent clauses not in extent_rules (read from CLML): mix lat.amending --extents --law #{law}"
-        )
-
-    extents = Map.merge(stored, unread)
-
-    own = SertantaiLegal.Scraper.Commencement.Store.for_law(law)
-
-    # the law's row structure, for its own commencement (Parts, Chapters,
-    # document order: CV-S04)
-    own_context =
-      Repo.query!(
-        "SELECT section_id, part, chapter FROM legal_articles WHERE law_name = $1 ORDER BY position",
-        [law]
-      ).rows
-      |> Enum.map(fn [s, p, c] -> %{section_id: s, part: p, chapter: c} end)
-      |> SertantaiLegal.Scraper.Commencement.OwnClause.context()
-
-    # when it was passed (an Act's Royal Assent), for its own sunset
-    passed =
-      Enum.find_value(own, fn r ->
-        with :act_enactment <- r.treatment, {:date, d} <- r.when, do: d, else: (_ -> nil)
-      end)
-
-    # the orders continuing it, from their CLML held (the feed names them:
-    # "continued until …"), each with its territory
-    continuations =
-      for law_c <-
-            effects
-            |> Enum.filter(&(&1.type =~ ~r/\bcontinu/i))
-            |> Enum.map(& &1.affecting)
-            |> Enum.uniq(),
-          [_, t, y, n] <- [String.split(law_c, "_", parts: 4)],
-          [path | _] <- [Path.wildcard("data/cache/clml/#{t}/#{y}/#{n}/body/data.xml.gz")] do
-        doc =
-          SertantaiLegal.Scraper.AmendingLaw.Doc.new(law_c, [
-            path |> File.read!() |> :zlib.gunzip()
-          ])
-
-        %{
-          law: law_c,
-          text:
-            doc.roots
-            |> Enum.map(&SertantaiLegal.Scraper.AmendingLaw.Doc.text/1)
-            |> Enum.join(" "),
-          territory: SertantaiLegal.Scraper.LawTerritory.territory(law_c, register_extent(law_c))
-        }
-      end
-
-    pages = feed_pages(law)
-
-    [
-      rules: rules,
-      commencement: commencement,
-      extents: extents,
-      extents_unread: unread |> Map.keys() |> Enum.sort(),
-      passed: passed,
-      act_title: title && String.replace(title, ~r/\s*\(repealed[^)]*\)\s*$/i, ""),
-      effect_uris: SertantaiLegal.Scraper.ChangeVocabulary.FeedUris.from_pages(pages),
-      effect_savings: SertantaiLegal.Scraper.ChangeVocabulary.FeedSavings.from_pages(pages),
-      continuations: continuations,
-      own_commencement: own,
-      own_context: own_context,
-      title: title
-    ]
-  end
-
-  # the law's amendment rules: stored where the amending law's index is
-  # fresh, else read now from the text held (`Amendment.ReadLaw`)
-  defp fresh_rules(law, effects, stored) do
-    alias SertantaiLegal.Scraper.Amendment.{Index, ReadLaw}
-    alias SertantaiLegal.Scraper.AmendingLaw.Pointer
-
-    by_feed = for e <- effects, ReadLaw.text_effect?(e), do: e
-
-    amending =
-      (Enum.map(stored, & &1.source.law) ++ Enum.map(by_feed, & &1.affecting))
-      |> Enum.filter(&(is_binary(&1) and &1 =~ ~r/^UK_/))
-      |> Enum.uniq()
-
-    stale = Enum.reject(amending, &Index.fresh?(&1, Index.get(&1)))
-    ref = if stale != [], do: ReadLaw.law_ref(law)
-
-    read =
-      for a <- stale, doc = ReadLaw.doc(a), doc != nil do
-        refs =
-          ReadLaw.note_refs(a, ReadLaw.notes(a, law)) ++
-            for(
-              e <- by_feed,
-              e.affecting == a,
-              r <- Pointer.refs_in(e.affecting_provisions),
-              do: r
-            )
-
-        {rules, _ids} = ReadLaw.rules(doc, [ref], refs)
-        rules
-      end
-
-    # never read by the read pass, or read by other code or from other text
-    {unread, outdated} = Enum.split_with(stale, &(Index.get(&1) == nil))
-
-    if stale != [],
-      do:
-        Mix.shell().info(
-          "  #{length(stale)} amending laws read from their text: #{length(unread)} not read by the read pass, " <>
-            "#{length(outdated)} with stale stored rules (mix lat.amending --read)"
-        )
-
-    Enum.reject(stored, &(&1.source.law in stale)) ++ List.flatten(read)
-  end
-
-  # the law's stored feed pages, raw: the re-keyed effects (`FeedUris`,
-  # CV-S07 round 2) and savings given as ranges (`FeedSavings`, CV-S08)
-  defp feed_pages(law) do
-    [_, type, year, number] = String.split(law, "_", parts: 4)
-
-    type
-    |> SertantaiLegal.Scraper.LegislationGovUk.ClmlStore.feed_files(year, number)
-    |> Enum.map(&(&1 |> File.read!() |> :zlib.gunzip()))
-  end
-
-  # the law's title: its own place (a devolved law's territory)
-  defp title(law) do
-    case Repo.query!("SELECT title_en FROM uk_lrt WHERE name = $1 LIMIT 1", [law]) do
-      %{rows: [[t]]} -> t
-      _ -> nil
-    end
-  end
-
-  defp register_extent(law) do
-    case SertantaiLegal.Repo.query!(
-           "SELECT title_en, geo_extent FROM uk_lrt WHERE name = $1 LIMIT 1",
-           [law]
-         ) do
-      %{rows: [[t, g]]} -> SertantaiLegal.Scraper.LawTerritory.extent(t, g)
-      _ -> nil
-    end
-  end
-
   defp tier_line(nil), do: ""
 
   defp tier_line(tiers) do
@@ -662,15 +416,6 @@ defmodule Mix.Tasks.Lat.Vocabulary do
     do:
       "#{p.valid_from} → #{p.valid_to || "…"}  #{p.status}  from #{p.in_force_from}  by #{inspect(p.changed_by)}" <>
         "#{if Map.get(p, :commenced_by, []) != [], do: "  commenced by #{inspect(p.commenced_by)}"}  #{p.territory}"
-
-  defp clml(law) do
-    [_, type, year, num] = String.split(law, "_", parts: 4)
-
-    case Path.wildcard("data/cache/clml/#{type}/#{year}/#{num}/body/data.xml.gz") do
-      [path | _] -> path |> File.read!() |> :zlib.gunzip()
-      [] -> Mix.raise("no stored CLML body for #{law}")
-    end
-  end
 
   defp provisions(law, ids) do
     %{rows: start_rows} =
