@@ -4,7 +4,7 @@
     {
       "cause": "today: old unknown, new in_force",
       "law": "UK_apni_1957_25",
-      "note": "whole s.1(4) is a markup Addition (pointer 1983 NI 18, not held); new dates it from the 1957 Act's start; should be unknown",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — a change no source we read holds (amending text not read, or as enacted only) (was to fix: whole s.1(4) is a markup Addition (pointer 1983 NI 18, not held); new dates it from the 1957 Act's start; should be unknown)",
       "periods": [
         {
           "changed_by": null,
@@ -17,7 +17,7 @@
       ],
       "round": 2,
       "section_id": "UK_apni_1957_25:s.1(4)",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "today: in_force_from old undated, new substituted [lgu]",
@@ -1764,29 +1764,29 @@
     {
       "cause": "today: new unknown, old in_force",
       "law": "UK_eur_2006_1907",
-      "note": "inserted 2020-12-31 by SI 2019/758 Sch.1 para.4(11) as part of 3(36)'s words insertion; not reached",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — EU law text: the amending SIs' rules never reach EU rows (art.N vs art.Article N; quoted Articles numbered as Articles) (was to fix: inserted 2020-12-31 by SI 2019/758 Sch.1 para.4(11) as part of 3(36)'s words insertion; not reached)",
       "periods": [],
       "round": 2,
       "section_id": "UK_eur_2006_1907:art.Article 3(36)(a)",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "today: new unknown, old in_force",
       "law": "UK_eur_2006_1907",
-      "note": "inserted 2020-12-31 by SI 2019/758 Sch.1 para.4(11) as part of 3(36)'s words insertion; not reached",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — EU law text: the amending SIs' rules never reach EU rows (art.N vs art.Article N; quoted Articles numbered as Articles) (was to fix: inserted 2020-12-31 by SI 2019/758 Sch.1 para.4(11) as part of 3(36)'s words insertion; not reached)",
       "periods": [],
       "round": 2,
       "section_id": "UK_eur_2006_1907:art.Article 3(36)(c)",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "today: new unknown, old in_force",
       "law": "UK_eur_2006_1907",
-      "note": "points (a)-(d) inserted 2020-12-31 by SI 2019/758 Sch.1 para.4(11) (law text quote, markup Addition, feed 'Art. 3(36) words inserted'); change does not reach the child",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — EU law text: the amending SIs' rules never reach EU rows (art.N vs art.Article N; quoted Articles numbered as Articles) (was to fix: points (a)-(d) inserted 2020-12-31 by SI 2019/758 Sch.1 para.4(11) (law text quote, markup Addition, feed 'Art. 3(36) words inserted'); change does not reach the child)",
       "periods": [],
       "round": 2,
       "section_id": "UK_eur_2006_1907:art.Article 3(36)(d)",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "today: in_force_from old undated, new inserted [law]",
@@ -1827,7 +1827,7 @@
     {
       "cause": "today: in_force_from old undated, new other [law]",
       "law": "UK_eur_2006_1907",
-      "note": "changed_by should be 2019/758; SI 2020/1577 reg.4(6) only omits A2(d) and text after (d)",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — EU law text: the amending SIs' rules never reach EU rows (art.N vs art.Article N; quoted Articles numbered as Articles) (was to fix: changed_by should be 2019/758; SI 2020/1577 reg.4(6) only omits A2(d) and text after (d))",
       "periods": [
         {
           "changed_by": "UK_uksi_2020_1577",
@@ -1840,7 +1840,7 @@
       ],
       "round": 2,
       "section_id": "UK_eur_2006_1907:art.Article 3(A2)(c)",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "today: new unknown, old in_force",
@@ -2214,11 +2214,11 @@
     {
       "cause": "today: new unknown, old in_force",
       "law": "UK_eur_2006_1907",
-      "note": "Arts 77(A1)-(A7) inserted 31.12.2020 by SI 2019/758 (Addition on this element); no change reaches the #2 row (upstream duplicate id article-77-A3-b); old changed_by null",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — upstream structure (duplicate or missing ids, K3/K4) (was to fix: Arts 77(A1)-(A7) inserted 31.12.2020 by SI 2019/758 (Addition on this element); no change reaches the #2 row (upstream duplicate id article-77-A3-b); old changed_by null)",
       "periods": [],
       "round": 1,
       "section_id": "UK_eur_2006_1907:art.Article 77(A3)(b)#2",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "today: status repealed→in_force (repealed [law])",
@@ -3190,7 +3190,7 @@
     {
       "cause": "today: in_force_from new undated (in_force)",
       "law": "UK_eur_2008_1272",
-      "note": "drops dated 31.12.2020-21.5.2026 GB in-force period (2019/720); labels GB heading in force in NI only, undated",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — EU law text: the amending SIs' rules never reach EU rows (art.N vs art.Article N; quoted Articles numbered as Articles) (was to fix: drops dated 31.12.2020-21.5.2026 GB in-force period (2019/720); labels GB heading in force in NI only, undated)",
       "periods": [
         {
           "changed_by": null,
@@ -3203,7 +3203,7 @@
       ],
       "round": 1,
       "section_id": "UK_eur_2008_1272:pt.V.ch.2",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "today: new unknown, old in_force",
@@ -3687,7 +3687,7 @@
     {
       "cause": "today: in_force_from new later (substituted [law])",
       "law": "UK_nisr_1993_20",
-      "note": "history misses 2000/375 Sch.10 para.3 (8.1.2001) substituting the IR 1985 reference in (a); today right",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — a change no source we read holds (amending text not read, or as enacted only) (was to fix: history misses 2000/375 Sch.10 para.3 (8.1.2001) substituting the IR 1985 reference in (a); today right)",
       "periods": [
         {
           "changed_by": null,
@@ -3716,7 +3716,7 @@
       ],
       "round": 1,
       "section_id": "UK_nisr_1993_20:reg.3(3)(a)",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "today: in_force_from new later (substituted [law])",
@@ -5633,7 +5633,7 @@
     {
       "cause": "today: status prospective→in_force (none dated)",
       "law": "UK_nisr_1997_455",
-      "note": "R8: 2007/247 Sch.10 para.4 substitutes 'responsible person' (a)(vi) from 2007-05-21 (feed targets reg.2(1)(a)(vi), no row); missing, period 2006-2016 should split; today right",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — upstream structure (duplicate or missing ids, K3/K4) (was to fix: R8: 2007/247 Sch.10 para.4 substitutes 'responsible person' (a)(vi) from 2007-05-21 (feed targets reg.2(1)(a)(vi), no row); missing, period 2006-2016 should split; today right)",
       "periods": [
         {
           "changed_by": null,
@@ -5710,7 +5710,7 @@
       ],
       "round": 2,
       "section_id": "UK_nisr_1997_455:reg.2(1)",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "today: status prospective→in_force (none dated)",
@@ -5749,7 +5749,7 @@
     {
       "cause": "today: status prospective→in_force (none dated)",
       "law": "UK_nisr_1997_455",
-      "note": "R8: 1999/150 substitutes 'the Executive' for 'the Department' in reg.3; row text holds 'to the Department'; no 1999-04-01 period",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — a change no source we read holds (amending text not read, or as enacted only) (was to fix: R8: 1999/150 substitutes 'the Executive' for 'the Department' in reg.3; row text holds 'to the Department'; no 1999-04-01 period)",
       "periods": [
         {
           "changed_by": null,
@@ -5778,7 +5778,7 @@
       ],
       "round": 2,
       "section_id": "UK_nisr_1997_455:reg.3(1)(ii)",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "today: status prospective→in_force (none dated)",
@@ -6777,7 +6777,7 @@
     {
       "cause": "today: in_force_from new later (substituted [lgu])",
       "law": "UK_nisr_1999_90",
-      "note": "SI 2019/720 Sch.1 para.2 omitted by SI 2020/1567 Sch.1 para.2 before it took effect (feed Applied=false); new still makes a 31.12.2020 period",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — an amending provision withdrawn before it took effect (the amending law's own changes not read) (was to fix: SI 2019/720 Sch.1 para.2 omitted by SI 2020/1567 Sch.1 para.2 before it took effect (feed Applied=false); new still makes a 31.12.2020 period)",
       "periods": [
         {
           "changed_by": null,
@@ -6878,7 +6878,7 @@
       ],
       "round": 2,
       "section_id": "UK_nisr_1999_90:reg.2(1)",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "history: new prospective from the law's making",
@@ -6927,7 +6927,7 @@
     {
       "cause": "today: in_force_from new later (inserted [law])",
       "law": "UK_nisr_2003_34",
-      "note": "2018/1377 revoked immediately before IP completion day by NISR 2020/330 reg 13; its 31.12.2020 changes never took effect",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — an amending provision withdrawn before it took effect (the amending law's own changes not read) (was to fix: 2018/1377 revoked immediately before IP completion day by NISR 2020/330 reg 13; its 31.12.2020 changes never took effect)",
       "periods": [
         {
           "changed_by": "UK_uksi_2018_390",
@@ -6948,7 +6948,7 @@
       ],
       "round": 1,
       "section_id": "UK_nisr_2003_34:reg.7(12)",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "history: start later",
@@ -7729,7 +7729,7 @@
     {
       "cause": "today: in_force_from new later (substituted [law])",
       "law": "UK_nisr_2010_160",
-      "note": "misses S.R. 2020/222 reg.2(4) substitution in reg.28 (16.11.2020), in feed, markup and law text",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — a change no source we read holds (amending text not read, or as enacted only) (was to fix: misses S.R. 2020/222 reg.2(4) substitution in reg.28 (16.11.2020), in feed, markup and law text)",
       "periods": [
         {
           "changed_by": null,
@@ -7758,7 +7758,7 @@
       ],
       "round": 1,
       "section_id": "UK_nisr_2010_160:reg.28",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "history: new prospective from the law's making",
@@ -8925,7 +8925,7 @@
     {
       "cause": "today: in_force_from old undated, new repealed [law]",
       "law": "UK_ukpga_1961_34",
-      "note": "PUWER 1992 reg.1(3): repeal for pre-1993 equipment only from 1.1.1997; read as whole repeal 1.1.1993",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — commencement detail (staged or qualified commencements and repeals) (was to fix: PUWER 1992 reg.1(3): repeal for pre-1993 equipment only from 1.1.1997; read as whole repeal 1.1.1993)",
       "periods": [
         {
           "changed_by": null,
@@ -8954,7 +8954,7 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1961_34:s.13",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "today: in_force_from old undated, new repealed [law]",
@@ -10915,7 +10915,7 @@
     {
       "cause": "today: in_force_from new earlier (repealed [law])",
       "law": "UK_ukpga_1963_41",
-      "note": "1974/1943 Sch 1 repeals only words in s.52(5); whole repeal 1.4.1990 by 1989/1903 reg 7(1)",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — a change no source we read holds (amending text not read, or as enacted only) (was to fix: 1974/1943 Sch 1 repeals only words in s.52(5); whole repeal 1.4.1990 by 1989/1903 reg 7(1))",
       "periods": [
         {
           "changed_by": null,
@@ -10944,7 +10944,7 @@
       ],
       "round": 1,
       "section_id": "UK_ukpga_1963_41:s.52(5)",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "today: old unknown, new repealed_saved",
@@ -11323,7 +11323,7 @@
     {
       "cause": "history: status",
       "law": "UK_ukpga_1963_41",
-      "note": "1964/191 Sch.1 Pt II s.83(3) (so far as relates to s.29(2),(4),(5)) 1.5.1964 misread as range {s.83(3)..s.29(2),s.29(4)}; new prospective until 1.8.1964, should be in_force_partial from 1.5.1964",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — commencement detail (staged or qualified commencements and repeals) (was to fix: 1964/191 Sch.1 Pt II s.83(3) (so far as relates to s.29(2),(4),(5)) 1.5.1964 misread as range {s.83(3)..s.29(2),s.29(4)}; new prospective until 1.8.1964, should be in_force_partial from 1.5.1964)",
       "periods": [
         {
           "changed_by": null,
@@ -11352,7 +11352,7 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1963_41:s.83",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "today: in_force_from old undated, new repealed [law]",
@@ -11425,7 +11425,7 @@
     {
       "cause": "today: status in_force→repealed (repealed [law])",
       "law": "UK_ukpga_1963_41",
-      "note": "reg.27(2) saving not read (should be repealed_saved; S amended 2009); Building Act 1984 E+W-only substitution labelled E+W+S 1984-1996",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — a change's own territory on an unversioned row (R6) (was to fix: reg.27(2) saving not read (should be repealed_saved; S amended 2009); Building Act 1984 E+W-only substitution labelled E+W+S 1984-1996)",
       "periods": [
         {
           "changed_by": null,
@@ -11470,7 +11470,7 @@
       ],
       "round": 1,
       "section_id": "UK_ukpga_1963_41:s.9(6)",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "today: in_force_from new later (commenced [law])",
@@ -11501,7 +11501,7 @@
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
       "law": "UK_ukpga_1963_41",
-      "note": "NICA 1973 Sch.6 Pt I (as enacted) repeals words from 'except' in s.91(3), effective on passing 1973-07-18; missed",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — a change no source we read holds (amending text not read, or as enacted only) (was to fix: NICA 1973 Sch.6 Pt I (as enacted) repeals words from 'except' in s.91(3), effective on passing 1973-07-18; missed)",
       "periods": [
         {
           "changed_by": null,
@@ -11522,7 +11522,7 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1963_41:s.91(3)",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "today: old unknown, new repealed",
@@ -11595,7 +11595,7 @@
     {
       "cause": "history: old prospective from the law's making",
       "law": "UK_ukpga_1974_37",
-      "note": "SI 1974/1439 names 'Section 10(1)' (Commission 1974-10-01, Executive 1975-01-01): existed before 2008 substitution; Existence ignores named commencements",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — commencement detail (staged or qualified commencements and repeals) (was to fix: SI 1974/1439 names 'Section 10(1)' (Commission 1974-10-01, Executive 1975-01-01): existed before 2008 substitution; Existence ignores named commencements)",
       "periods": [
         {
           "changed_by": "UK_uksi_2008_960",
@@ -11608,7 +11608,7 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1974_37:s.10(1)",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "history: old prospective from the law's making",
@@ -11665,8 +11665,32 @@
     {
       "cause": "history: old prospective from the law's making",
       "law": "UK_ukpga_1974_37",
-      "note": "current period right; 1974-2008 left unknown though s.11(1) commenced 1.10.1974 and was amended 1.4.2006 (2005 c.14): depends on whether wholesale substitution resets history",
+      "note": "decided by Jason's rulings: s.11(1) in force from 1974 (2026-10-31); a row under a whole substitution begins there unless a source shows it existed (\"evidence it existed\")",
       "periods": [
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "prospective",
+          "territory": "E+W+S+NI",
+          "valid_from": "1974-07-31",
+          "valid_to": "1974-10-01"
+        },
+        {
+          "changed_by": "UK_uksi_1974_1439",
+          "in_force_from": "1974-10-01",
+          "status": "in_force",
+          "territory": "E+W+S+NI",
+          "valid_from": "1974-10-01",
+          "valid_to": "2006-04-01"
+        },
+        {
+          "changed_by": "UK_ukpga_2005_14",
+          "in_force_from": "2006-04-01",
+          "status": "in_force",
+          "territory": "E+W+S+NI",
+          "valid_from": "2006-04-01",
+          "valid_to": "2008-04-01"
+        },
         {
           "changed_by": "UK_uksi_2008_960",
           "in_force_from": "2008-04-01",
@@ -11678,7 +11702,7 @@
       ],
       "round": 1,
       "section_id": "UK_ukpga_1974_37:s.11(1)",
-      "status": "to_decide"
+      "status": "accepted"
     },
     {
       "cause": "history: old prospective from the law's making",
@@ -11957,7 +11981,7 @@
     {
       "cause": "history: old prospective from the law's making",
       "law": "UK_ukpga_1974_37",
-      "note": "history right; 2022 words change E+W+S only (2022 c.30 s.169(3)) applied to E+W+S+NI row (R6-type)",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — a change's own territory on an unversioned row (R6) (was to fix: history right; 2022 words change E+W+S only (2022 c.30 s.169(3)) applied to E+W+S+NI row (R6-type))",
       "periods": [
         {
           "changed_by": "UK_uksi_2008_960",
@@ -11978,7 +12002,7 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1974_37:s.13(3)",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "history: old prospective from the law's making",
@@ -13135,7 +13159,7 @@
     {
       "cause": "today: in_force_from old undated, new substituted [law]",
       "law": "UK_ukpga_1974_37",
-      "note": "Water Act 1989 Sch.25 para.46(b) substitution (dated 1989 by SI 1989/1561) dropped; E+W text holds its words (R7)",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — commencement detail (staged or qualified commencements and repeals) (was to fix: Water Act 1989 Sch.25 para.46(b) substitution (dated 1989 by SI 1989/1561) dropped; E+W text holds its words (R7))",
       "periods": [
         {
           "changed_by": null,
@@ -13164,12 +13188,12 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1974_37:s.28(5)(b)[E+W]",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
       "law": "UK_ukpga_1974_37",
-      "note": "inserted by EPA 1975 Sch.15 para.9 but dated 1975-01-01, before EPA's enactment; true date a gap",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — legacy markup: substitution or insertion unconfirmed (was to fix: inserted by EPA 1975 Sch.15 para.9 but dated 1975-01-01, before EPA's enactment; true date a gap)",
       "periods": [
         {
           "changed_by": null,
@@ -13198,7 +13222,7 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1974_37:s.28(9)[S]",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "today: in_force_from old undated, new inserted [law]",
@@ -14369,7 +14393,7 @@
     {
       "cause": "today: status in_force→repealed (none dated)",
       "law": "UK_ukpga_1974_37",
-      "note": "repeal by Building Act 1984 Sch 7 right, but dated 1974-07-31 (law start): never-in-force history; should be unknown/1984",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — commencement detail (staged or qualified commencements and repeals) (was to fix: repeal by Building Act 1984 Sch 7 right, but dated 1974-07-31 (law start): never-in-force history; should be unknown/1984)",
       "periods": [
         {
           "changed_by": "UK_ukpga_1984_55",
@@ -14382,12 +14406,12 @@
       ],
       "round": 1,
       "section_id": "UK_ukpga_1974_37:s.70",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "today: in_force_from old undated, new none dated",
       "law": "UK_ukpga_1974_37",
-      "note": "Building Act 1984 Sch.7 repeal in force 1.12.1984 (s.134(2)); new dates it at law start 1974-07-31 (R10 as logged)",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — commencement detail (staged or qualified commencements and repeals) (was to fix: Building Act 1984 Sch.7 repeal in force 1.12.1984 (s.134(2)); new dates it at law start 1974-07-31 (R10 as logged))",
       "periods": [
         {
           "changed_by": "UK_ukpga_1984_55",
@@ -14400,7 +14424,7 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1974_37:s.70(1)",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "today: status repealed→in_force (no repeal held)",
@@ -14619,7 +14643,7 @@
     {
       "cause": "today: in_force_from old undated, new commenced [law]",
       "law": "UK_ukpga_1974_37",
-      "note": "markup '. . .' words repealed by HCDA 1975 Sch.3 (Royal Assent 1975-05-08, unconfirmed); no change read",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — a change no source we read holds (amending text not read, or as enacted only) (was to fix: markup '. . .' words repealed by HCDA 1975 Sch.3 (Royal Assent 1975-05-08, unconfirmed); no change read)",
       "periods": [
         {
           "changed_by": null,
@@ -14640,7 +14664,7 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1974_37:s.84(1)(b)",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "today: old unknown, new in_force",
@@ -16867,7 +16891,7 @@
     {
       "cause": "history: start later",
       "law": "UK_uksi_1992_3004",
-      "note": "feed effect key-… is 'word deleted reg. 5(3)' by 2002/2174, merged as 'reg.3 inserted'; 2002/2174 reg.6 never touches reg.3; in force 1.1.1993",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — upstream structure (duplicate or missing ids, K3/K4) (was to fix: feed effect key-… is 'word deleted reg. 5(3)' by 2002/2174, merged as 'reg.3 inserted'; 2002/2174 reg.6 never touches reg.3; in force 1.1.1993)",
       "periods": [
         {
           "changed_by": "UK_uksi_2002_2174",
@@ -16888,7 +16912,7 @@
       ],
       "round": 1,
       "section_id": "UK_uksi_1992_3004:reg.3(1)",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "history: start later",
@@ -17393,7 +17417,7 @@
     {
       "cause": "history: start earlier",
       "law": "UK_uksi_1999_3242",
-      "note": "2003/2457 reg.6 replaces reg.22 with one unnumbered paragraph; merged reg.22(2) repeal 2003-10-27 ignored, label in_force 2003-2006",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — commencement detail (staged or qualified commencements and repeals) (was to fix: 2003/2457 reg.6 replaces reg.22 with one unnumbered paragraph; merged reg.22(2) repeal 2003-10-27 ignored, label in_force 2003-2006)",
       "periods": [
         {
           "changed_by": null,
@@ -17438,7 +17462,7 @@
       ],
       "round": 1,
       "section_id": "UK_uksi_1999_3242:reg.22(2)",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "history: start earlier",
@@ -17503,24 +17527,8 @@
     {
       "cause": "history: start earlier",
       "law": "UK_uksi_2002_2677",
-      "note": "whole of para (7) substituted 2005; no local source shows whether the 2002 para (7) had a (c)",
+      "note": "decided by Jason's rulings: s.11(1) in force from 1974 (2026-10-31); a row under a whole substitution begins there unless a source shows it existed (\"evidence it existed\")",
       "periods": [
-        {
-          "changed_by": null,
-          "in_force_from": null,
-          "status": "prospective",
-          "territory": "E+W+S",
-          "valid_from": "2002-10-24",
-          "valid_to": "2002-11-21"
-        },
-        {
-          "changed_by": null,
-          "in_force_from": "2002-11-21",
-          "status": "in_force",
-          "territory": "E+W+S",
-          "valid_from": "2002-11-21",
-          "valid_to": "2005-04-06"
-        },
         {
           "changed_by": "UK_uksi_2004_3386",
           "in_force_from": "2005-04-06",
@@ -17532,12 +17540,12 @@
       ],
       "round": 1,
       "section_id": "UK_uksi_2002_2677:reg.7(7)(c)",
-      "status": "to_decide"
+      "status": "accepted"
     },
     {
       "cause": "today: in_force_from old undated, new repealed [lgu]",
       "law": "UK_uksi_2002_2677",
-      "note": "SI 2018/1370 reg.7(4) omits words in reg.7(12) only (feed: reg.7(12)); merge attached it to a stray markup marker in 7(9)(b)",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — upstream structure (duplicate or missing ids, K3/K4) (was to fix: SI 2018/1370 reg.7(4) omits words in reg.7(12) only (feed: reg.7(12)); merge attached it to a stray markup marker in 7(9)(b))",
       "periods": [
         {
           "changed_by": null,
@@ -17566,7 +17574,7 @@
       ],
       "round": 2,
       "section_id": "UK_uksi_2002_2677:reg.7(9)(b)",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "history: start earlier",
@@ -18513,7 +18521,7 @@
     {
       "cause": "today: in_force_from old undated, new repealed [law]",
       "law": "UK_uksi_2008_1597",
-      "note": "NI text 31.12.2020 changed_by 2020/852 (amends GB SI 2019/696) not 2020/1112 (R6); 2015-10-16 GB-only split doubtful (NI text holds ORR words)",
+      "note": "known limit (Jason 2026-11-02: fix by class, then name the rest) — a change's own territory on an unversioned row (R6) (was to fix: NI text 31.12.2020 changed_by 2020/852 (amends GB SI 2019/696) not 2020/1112 (R6); 2015-10-16 GB-only split doubtful (NI text holds ORR words))",
       "periods": [
         {
           "changed_by": null,
@@ -18574,7 +18582,7 @@
       ],
       "round": 2,
       "section_id": "UK_uksi_2008_1597:reg.2(2)[NI]",
-      "status": "to_fix"
+      "status": "known"
     },
     {
       "cause": "history: territory",
@@ -19899,24 +19907,8 @@
     {
       "cause": "history: start earlier",
       "law": "UK_uksi_2009_1348",
-      "note": "whole of reg.23 substituted 2020; 2009 numbering not in local sources",
+      "note": "decided by Jason's rulings: s.11(1) in force from 1974 (2026-10-31); a row under a whole substitution begins there unless a source shows it existed (\"evidence it existed\")",
       "periods": [
-        {
-          "changed_by": null,
-          "in_force_from": null,
-          "status": "prospective",
-          "territory": "E+W+S",
-          "valid_from": "2009-05-27",
-          "valid_to": "2009-07-01"
-        },
-        {
-          "changed_by": null,
-          "in_force_from": "2009-07-01",
-          "status": "in_force",
-          "territory": "E+W+S",
-          "valid_from": "2009-07-01",
-          "valid_to": "2020-12-31"
-        },
         {
           "changed_by": "UK_uksi_2020_1111",
           "in_force_from": "2020-12-31",
@@ -19928,7 +19920,7 @@
       ],
       "round": 1,
       "section_id": "UK_uksi_2009_1348:reg.23(2)",
-      "status": "to_decide"
+      "status": "accepted"
     },
     {
       "cause": "history: start earlier",
