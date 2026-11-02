@@ -16,8 +16,6 @@ defmodule Mix.Tasks.Lat.LabelRules do
   alias SertantaiLegal.Scraper.ChangeVocabulary.Label.Existence
 
   @shortdoc "The switch-over's rules over a family's rows (read-only)"
-  # the named known limits and date gaps (Jason 2026-11-01)
-  @known ~w(data/reports/change-vocabulary/cv-06a-known-limits.md data/reports/change-vocabulary/cv-06-date-gaps.md)
 
   @impl Mix.Task
   def run(args) do
@@ -100,11 +98,5 @@ defmodule Mix.Tasks.Lat.LabelRules do
     Map.new(found, fn [l, d] -> {l, d} end)
   end
 
-  defp known do
-    for file <- @known,
-        {:ok, text} <- [File.read(file)],
-        [_, sid] <- Regex.scan(~r/^\| (UK_[^ |]+) \|/m, text),
-        into: MapSet.new(),
-        do: sid
-  end
+  defp known, do: SertantaiLegal.Scraper.ChangeVocabulary.KnownLimits.sids()
 end

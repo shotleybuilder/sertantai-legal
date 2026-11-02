@@ -20,6 +20,8 @@ defmodule SertantaiLegal.Legal.LatLabelTimeline do
     source dates it ("date unknown"); never an older date in its place.
   - No row for a date means unknown (implied; no "unknown" rows).
   - Rebuilt per law (delete + insert) after each change collection; UK only.
+    A family switched to the change vocabulary (CV-06) is built from its
+    merged changes (`ChangeVocabulary.LabelSource`) instead.
 
   Read by compliance (drill-down status badge, v0.1) through the delta sync.
   """
@@ -75,7 +77,28 @@ defmodule SertantaiLegal.Legal.LatLabelTimeline do
         "when the current text took effect. Empty: with status prospective / in_force_partial, not fully in force; with in_force, the text changed and no source dates it (\"date unknown\")"
     )
 
-    attribute(:changed_by, :string, public?: true)
+    attribute(:changed_by, :string,
+      public?: true,
+      description:
+        "the law that made the current text (the last of changed_by_all), else the law that commenced it"
+    )
+
+    # CV-06 (Jason 2026-10-31: "add, don't replace"): every law, and the
+    # commencing laws apart; written for the families labelled by the
+    # change vocabulary, empty for the rest
+    attribute(:changed_by_all, {:array, :string},
+      allow_nil?: false,
+      default: [],
+      public?: true,
+      description: "every law that made the current text"
+    )
+
+    attribute(:commenced_by, {:array, :string},
+      allow_nil?: false,
+      default: [],
+      public?: true,
+      description: "the laws that brought it into force apart from those that made its text"
+    )
 
     attribute(:territory, :string,
       public?: true,

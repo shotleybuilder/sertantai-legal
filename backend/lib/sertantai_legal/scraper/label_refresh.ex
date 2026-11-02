@@ -2,7 +2,9 @@ defmodule SertantaiLegal.Scraper.LabelRefresh do
   @moduledoc """
   After a LAT parse, the law's labels follow (lat-refactor LR-25): its change
   register (`ChangeCollector`: collect → fidelity gate → write) and then its
-  label timeline (`LabelTimeline`: build → write). `LatStagedParser` calls
+  label timeline (`LabelTimeline`: build → write) — for a family switched to
+  the change vocabulary, built from its merged changes instead
+  (`ChangeVocabulary.Build`, `LabelSwitch`; CV-06). `LatStagedParser` calls
   `run/2` once the rows, notes and cause are persisted — the one parse path
   (LR-28) — so no parse leaves a stale register or timeline behind.
 
@@ -19,6 +21,7 @@ defmodule SertantaiLegal.Scraper.LabelRefresh do
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.{ChangeCollector, LabelProjection, LabelTimeline, LabelVersion}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Build, LabelSwitch}
 
   @doc """
   Rebuild a law's register and timeline. `opts`: `parsed` — the parse's
@@ -30,7 +33,8 @@ defmodule SertantaiLegal.Scraper.LabelRefresh do
            ChangeCollector.collect(law_name, Keyword.take(opts, [:parsed])),
          [] <- ChangeCollector.fidelity(by, per_row, ChangeCollector.db_order(law_name)),
          {:ok, _} <- ChangeCollector.write(law_name, by),
-         %{periods: periods} <- LabelTimeline.build(law_name, LabelProjection.uk_today()),
+         %{periods: old} <- LabelTimeline.build(law_name, LabelProjection.uk_today()),
+         {:ok, periods} <- periods(law_name, old),
          {:ok, _} <- LabelTimeline.write(law_name, periods, LabelTimeline.code_version()) do
       record_success(law_name, %{
         records: by |> Map.values() |> Enum.map(&length/1) |> Enum.sum(),
@@ -42,6 +46,18 @@ defmodule SertantaiLegal.Scraper.LabelRefresh do
     end
   rescue
     e -> fail(law_name, {:exception, Exception.message(e)})
+  end
+
+  # a law in a family switched to the change vocabulary (CV-06): its
+  # merged changes built from this parse, its timeline from them, the named
+  # known limits keeping the register's (`ChangeVocabulary.LabelSwitch`)
+  defp periods(law_name, old) do
+    if LabelSwitch.switched?(law_name) do
+      Build.law(law_name)
+      LabelSwitch.timeline(law_name, old)
+    else
+      {:ok, old}
+    end
   end
 
   defp fail(law_name, reason) do

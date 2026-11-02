@@ -12,6 +12,12 @@ config :sertantai_legal,
   ash_domains: [SertantaiLegal.Api],
   generators: [timestamp_type: :utc_datetime]
 
+# The families whose labels come from the change vocabulary (CV-06,
+# `ChangeVocabulary.LabelSwitch`): every other law keeps the change
+# register's. Set when a family's switch-over is applied, with Jason's
+# approval of its dry run (`mix lat.label_switch`).
+config :sertantai_legal, label_families: []
+
 # Configures the endpoint
 config :sertantai_legal, SertantaiLegalWeb.Endpoint,
   url: [host: "localhost"],

@@ -389,8 +389,9 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
 
       periods
       |> Enum.map(fn p ->
+        # a register period (struct) or a change-vocabulary row (map, CV-06)
         p
-        |> Map.from_struct()
+        |> then(&if(is_struct(&1), do: Map.from_struct(&1), else: &1))
         |> Map.merge(%{id: Ecto.UUID.bingenerate(), code_version: code_version, built_at: now})
       end)
       |> Enum.chunk_every(2000)
