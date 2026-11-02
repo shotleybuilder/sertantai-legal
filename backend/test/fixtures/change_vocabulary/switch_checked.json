@@ -11153,7 +11153,7 @@
     {
       "cause": "today: in_force_from old undated, new repealed [law]",
       "law": "UK_ukpga_1963_41",
-      "note": "SI 1974/1943 Sch.2 para.12 substitutes words in s.71(2) 1.1.1975 as a 'modification'; whether it is a text change is a policy call",
+      "note": "not a text change (Jason 2026-11-02): SI 1974/1943 Sch.2 para.12, a modification legislation.gov.uk never applied; the revised text stands",
       "periods": [
         {
           "changed_by": null,
@@ -11182,7 +11182,7 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1963_41:s.71(2)",
-      "status": "to_decide"
+      "status": "accepted"
     },
     {
       "cause": "history: status",
@@ -14549,7 +14549,7 @@
     {
       "cause": "today: in_force_from old undated, new repealed [law]",
       "law": "UK_ukpga_1974_37",
-      "note": "repeal dated 11.3.1985 by Royal Assent default; 1985 c.9 has a s.34 Commencement (text repealed in store); true date (1.7.1985, from memory) in no local source",
+      "note": "known limit — named date gap (Jason 2026-11-02; cv-06-date-gaps.md) (was to decide: repeal dated 11.3.1985 by Royal Assent default; 1985 c.9 has a s.34 Commencement (text repealed in store); true date (1.7.1985, from memory) in no local source)",
       "periods": [
         {
           "changed_by": null,
@@ -14578,7 +14578,7 @@
       ],
       "round": 1,
       "section_id": "UK_ukpga_1974_37:s.79",
-      "status": "to_decide"
+      "status": "known"
     },
     {
       "cause": "today: in_force_from new later (commenced [law])",
