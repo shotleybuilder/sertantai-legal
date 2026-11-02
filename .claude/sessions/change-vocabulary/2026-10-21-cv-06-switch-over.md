@@ -30,7 +30,7 @@ Judged on the original 27 golden (Jason 2026-10-31).
 - ✅ Rounds: fixes batched until the code pass holds (batches 2–5, below) — **the code pass holds on OH&S (2026-11-02)** (checked rows all match, rules 0 breaches, golden 27/27); agents only to find new classes (Jason 2026-11-01)
 - ✅ The code pass: `switch_checked.json` + `mix lat.label_checked`; `LabelRules` + its check
 - ✅ The writer: `LabelRefresh` takes `LabelSource.timeline/1` for the switched families (one setting); migration for `changed_by_all`, `commenced_by`; the law's start stays on `lat_change_log` for v0.1 (Jason 2026-11-02)
-- ⬜ Dry run on OH&S → Jason → restore point (`lat_label_timeline`) → write; the other families' labels unchanged (diff 0)
+- ✅ Dry run on OH&S → Jason ("Apply", 2026-11-02) → restore point `cv06-switch-apply` (`lat_label_timeline`, `lat_change_log`, `provision_changes`) → write
 - ⬜ Skill: the switch-over check for the next family (recipe step 12 in CV-00)
 
 ## Dependencies
@@ -220,3 +220,9 @@ Jason 2026-11-02: the 39 missing-repeal rows (CV-06a) and the named date gaps ke
 | unknown (no period) | 334 | 247 |
 
 The 1,116 prospective rows today are the register's: the NISRs whose made version marks every row prospective (NISR 1997/248, 1999/305, 2003/35, …) were never moved to in force — the new method has them in force from their commencement (checked rows accepted). repealed_saved 494 → 925: the savings read from the amending laws' text (R2). Per law: `backend/data/reports/change-vocabulary/cv-06-dry-run.csv`.
+
+### Applied (2026-11-02)
+
+`label_families` set to OH&S: Occupational / Personal Safety (c8c643cd; none under test); `mix lat.label_switch --apply`: 149 laws written through `LabelRefresh`, none failed, 7 m 35 s. Today's status counts as the dry run's exactly; 38,714 periods; `changed_by_all` set on 5,831.
+
+After it: golden 27/27; rules PASSED; checked rows 696 match, 4 changed (FA 1961 s.1(3)(b), s.5, s.6, s.60(1): in force 1962–1996 now "date unknown"). Cause: the refresh re-collected three laws' starts from their own commencement clause (FA 1961 1961-06-22 → 1962-04-01; UK_ukpga_1937_67 → 1938-07-01; UK_ukpga_1957_31 → 1958-01-01 — the register had held Royal Assent). With FA 1961's start now its commencement day, an undated legacy-markup insertion on the row (d29p…, no law named) counts as the text's maker at the start, so the date blanks — 50 FA 1961 periods. The start correction is right; the maker rule is the fold's (CV-S09) → CV-06b.

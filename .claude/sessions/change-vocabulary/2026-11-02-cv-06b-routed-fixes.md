@@ -43,6 +43,7 @@ The CV-06 switch-over check (checked rows + rules on OH&S) found faults whose fi
 - ⬜ CV-S04 commencement: staged or qualified commencements and repeals, 7 rows (HSWA s.10(1), s.28(5)(b)[E+W], s.70, s.70(1); FA 1961 s.13; OSRPA s.83 — the open bracket "(so far as it relates to section 29(2), (4) and (5)" read as a range; SI 1999/3242 reg.22(2))
 - ⬜ CV-S09 fold: a change's own territory on an unversioned row, 3 rows (HSWA s.13(3); OSRPA s.9(6); SI 2008/1597 reg.2(2)[NI])
 - ⬜ CV-S03/S08 markup: legacy Additions — insertion or substitution unconfirmed: 32 rows listed apart by `mix lat.label_rules` (`legacy_unconfirmed`), 1 checked row (HSWA s.28(9)[S])
+- ⬜ CV-S09 fold: an undated legacy-markup insertion (d29p…, no law) counted as the text's maker at the start blanks in_force_from — FA 1961 after its start moved to 1962-04-01 (50 periods; 4 checked rows: s.1(3)(b), s.5, s.6, s.60(1)); `Undated.makers` should skip `Start.legacy_only?` insertions
 - ⬜ Upstream structure (legislation.gov.uk), 4 rows: REACH Art 77(A3)(b)#2, NISR 1997/455 reg.2(1), SI 1992/3004 reg.3(1), SI 2002/2677 reg.7(9)(b) — report or accept as limits
 - ⬜ Date gaps (`backend/data/reports/change-vocabulary/cv-06-date-gaps.md`, 7 rows): read each amending law's commencement when held
 
