@@ -1,6 +1,6 @@
 defmodule Mix.Tasks.Lat.Sources do
   @moduledoc """
-  Sources held (change vocabulary CV-S01): for a scope, the documents its
+  Sources held (LAT Change Pipeline, step: Sources): for a scope, the documents its
   labels need against what the local store holds — sliced by the gap the
   feed leaves (read from the feed and the stored changes: re-run after a
   rebuild), every missing or stale document named with its status, and each
@@ -24,8 +24,7 @@ defmodule Mix.Tasks.Lat.Sources do
   alias SertantaiLegal.Scraper.{EffectKind, LatScope, Sources}
   alias SertantaiLegal.Scraper.AmendingLaw.Pointer
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.Store, as: ExtentStore
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Store}
-  alias SertantaiLegal.Scraper.Commencement.Order
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Store
 
   @text_ops ~w(inserted substituted repealed repealed_in_part renumbered)a
   alias SertantaiLegal.Scraper.EnactedBy.EnablingCache
@@ -106,15 +105,7 @@ defmodule Mix.Tasks.Lat.Sources do
   end
 
   defp fetch_one(%{part: part, law: law, status: status}) do
-    [_, type, year, number] = String.split(law, "_", parts: 4)
-
-    path =
-      case part do
-        :body -> "/#{type}/#{year}/#{number}/body/data.xml"
-        :schedules -> "/#{type}/#{year}/#{number}/schedules/data.xml"
-        path when is_binary(path) -> path
-      end
-
+    path = Sources.doc_path(law, part)
     mode = if status == :stale, do: :refresh, else: :prefer
 
     case Client.fetch_xml(path, store: mode) do
@@ -167,21 +158,11 @@ defmodule Mix.Tasks.Lat.Sources do
 
     # its amending laws and the gaps the feed leaves, from the stored
     # changes (`mix lat.vocabulary --build`)
-    changes = Enum.filter(Store.for_law(law), &(&1.resolved.operation in @text_ops))
-
-    amenders =
-      changes
-      |> Enum.flat_map(&[&1.resolved.by, Change.value(&1, :markup, :cited)])
-      |> Enum.reject(&is_nil/1)
-      |> Enum.uniq()
-
-    gaps =
-      for c <- changes,
-          by = c.resolved.by || Change.value(c, :markup, :cited),
-          by != nil,
-          gap = gap(c),
-          gap != nil,
-          do: %{by: by, gap: gap, provisions: provisions(c)}
+    %{amenders: amenders, gaps: gaps} =
+      law
+      |> Store.for_law()
+      |> Enum.filter(&(&1.resolved.operation in @text_ops))
+      |> Sources.change_facts()
 
     register =
       case Repo.query!(
@@ -201,34 +182,6 @@ defmodule Mix.Tasks.Lat.Sources do
       gaps: gaps,
       register: register
     }
-  end
-
-  # gap A: the feed records the change with no date; gap B: the feed
-  # doesn't record it (no feed claim of its operation)
-  defp gap(c) do
-    cond do
-      Change.values(c, :feed, :operation) == [] -> :b
-      Change.values(c, :feed, :date) == [] and Change.values(c, :feed, :date_first) == [] -> :a
-      true -> nil
-    end
-  end
-
-  # the amending provisions named: the feed's, the note's, or the law's own
-  # (a rule's key, "law:element id")
-  defp provisions(c) do
-    named = Change.value(c, :feed, :affecting) || Change.value(c, :markup, :affecting)
-
-    cond do
-      named != nil ->
-        named
-
-      true ->
-        for a <- c.aliases,
-            [_, id] <- [String.split(a, ":", parts: 2)],
-            ref = Order.ref(id),
-            ref != nil,
-            do: ref
-    end
   end
 
   # whether an amending law states its extent (extent_rules); an SI's
@@ -308,29 +261,10 @@ defmodule Mix.Tasks.Lat.Sources do
   end
 
   defp status(%{part: part, law: law}, valid) do
-    [_, type, year, number] = String.split(law, "_", parts: 4)
-
-    path =
-      case part do
-        :body -> "/#{type}/#{year}/#{number}/body/data.xml"
-        :schedules -> "/#{type}/#{year}/#{number}/schedules/data.xml"
-        path when is_binary(path) -> path
-      end
-
-    case ClmlStore.get(path) do
-      {:ok, _, meta} ->
-        {register_valid, register_updated} = Map.get(valid, law, {nil, nil})
-
-        if Sources.stale?(meta, register_valid, register_updated, DateTime.utc_now()),
-          do: :stale,
-          else: :held
-
-      {:missing, _} ->
-        :absent
-
-      :none ->
-        :not_fetched
-    end
+    law
+    |> Sources.doc_path(part)
+    |> ClmlStore.get()
+    |> Sources.document_status(Map.get(valid, law, {nil, nil}), DateTime.utc_now())
   end
 
   defp print(r, opts) do

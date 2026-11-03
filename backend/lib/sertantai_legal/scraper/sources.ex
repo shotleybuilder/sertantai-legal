@@ -32,6 +32,8 @@ defmodule SertantaiLegal.Scraper.Sources do
   a difference fails until explained.
   """
 
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Change
+  alias SertantaiLegal.Scraper.Commencement.Order
   alias SertantaiLegal.Scraper.LatRef
 
   @act_types ~w(ukpga asp anaw asc nia apni)
@@ -193,4 +195,79 @@ defmodule SertantaiLegal.Scraper.Sources do
       pass: failures == [] and differences == []
     }
   end
+
+  @doc "A needed document's store path: a law's body, its schedules, or a path as given."
+  @spec doc_path(String.t(), atom() | String.t()) :: String.t()
+  def doc_path(law, part) do
+    [_, type, year, number] = String.split(law, "_", parts: 4)
+
+    case part do
+      :body -> "/#{type}/#{year}/#{number}/body/data.xml"
+      :schedules -> "/#{type}/#{year}/#{number}/schedules/data.xml"
+      path when is_binary(path) -> path
+    end
+  end
+
+  @doc """
+  A law's text changes (stored changes, `mix lat.vocabulary --build`) read
+  for what its sources need: its amending laws, and the gaps the feed
+  leaves — `:a` the feed records the change with no date, `:b` the feed
+  doesn't record it — each with its amending law and the amending
+  provisions named (the feed's, the note's, or the law's own rule key).
+  """
+  @spec change_facts([Change.t()]) :: %{amenders: [String.t()], gaps: [gap()]}
+  def change_facts(changes) do
+    amenders =
+      changes
+      |> Enum.flat_map(&[&1.resolved.by, Change.value(&1, :markup, :cited)])
+      |> Enum.reject(&is_nil/1)
+      |> Enum.uniq()
+
+    gaps =
+      for c <- changes,
+          by = c.resolved.by || Change.value(c, :markup, :cited),
+          by != nil,
+          gap = gap(c),
+          gap != nil,
+          do: %{by: by, gap: gap, provisions: provisions(c)}
+
+    %{amenders: amenders, gaps: gaps}
+  end
+
+  defp gap(c) do
+    cond do
+      Change.values(c, :feed, :operation) == [] -> :b
+      Change.values(c, :feed, :date) == [] and Change.values(c, :feed, :date_first) == [] -> :a
+      true -> nil
+    end
+  end
+
+  defp provisions(c) do
+    named = Change.value(c, :feed, :affecting) || Change.value(c, :markup, :affecting)
+
+    cond do
+      named != nil ->
+        named
+
+      true ->
+        for a <- c.aliases,
+            [_, id] <- [String.split(a, ":", parts: 2)],
+            ref = Order.ref(id),
+            ref != nil,
+            do: ref
+    end
+  end
+
+  @doc """
+  A stored document's status from the store's answer (`ClmlStore.get/1`):
+  held and fresh, stale against the register's `{valid date, updated}`,
+  absent (a stored 404), or not fetched.
+  """
+  @spec document_status(term(), {Date.t() | nil, NaiveDateTime.t() | nil}, DateTime.t()) ::
+          status()
+  def document_status({:ok, _, meta}, {register_valid, register_updated}, now),
+    do: if(stale?(meta, register_valid, register_updated, now), do: :stale, else: :held)
+
+  def document_status({:missing, _}, _register, _now), do: :absent
+  def document_status(:none, _register, _now), do: :not_fetched
 end

@@ -180,4 +180,61 @@ defmodule SertantaiLegal.Scraper.SourcesTest do
       assert Sources.stale?(copy(nil, ~U[2026-08-01 09:00:00Z]), nil, nil, @now)
     end
   end
+
+  describe "the loader's facts, read pure" do
+    alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Claim}
+
+    defp change(by, claims, aliases \\ []) do
+      %Change{
+        key: "k",
+        target: "s.1",
+        resolved: %{by: by, operation: :substituted},
+        aliases: aliases,
+        claims: for({s, a, v} <- claims, do: %Claim{source: s, attribute: a, value: v, ref: "k"})
+      }
+    end
+
+    test "doc_path/2: a law's body, its schedules, or a path as given" do
+      assert Sources.doc_path("UK_ukpga_1974_37", :body) == "/ukpga/1974/37/body/data.xml"
+
+      assert Sources.doc_path("UK_uksi_2008_1597", :schedules) ==
+               "/uksi/2008/1597/schedules/data.xml"
+
+      assert Sources.doc_path("UK_uksi_2008_1597", "/x/y") == "/x/y"
+    end
+
+    test "document_status/3: held, stale, absent, not fetched" do
+      now = ~U[2026-11-03 12:00:00Z]
+      fresh = %{dct_valid: ~D[2026-10-01], fetched_at: ~U[2026-10-30 00:00:00Z]}
+      assert Sources.document_status({:ok, "xml", fresh}, {~D[2026-09-01], nil}, now) == :held
+      assert Sources.document_status({:ok, "xml", fresh}, {~D[2026-10-20], nil}, now) == :stale
+      assert Sources.document_status({:missing, %{}}, {nil, nil}, now) == :absent
+      assert Sources.document_status(:none, {nil, nil}, now) == :not_fetched
+    end
+
+    test "change_facts/1: amending laws, and gap A (undated in the feed) or B (not in the feed)" do
+      undated =
+        change("UK_uksi_2000_1", [
+          {:feed, :operation, :substituted},
+          {:feed, :affecting, ["reg. 2"]}
+        ])
+
+      unrecorded =
+        change(nil, [{:markup, :cited, "UK_uksi_2001_2"}, {:markup, :affecting, ["reg. 3"]}])
+
+      dated =
+        change("UK_uksi_2002_3", [
+          {:feed, :operation, :substituted},
+          {:feed, :date, ~D[2002-01-01]}
+        ])
+
+      facts = Sources.change_facts([undated, unrecorded, dated])
+      assert facts.amenders == ["UK_uksi_2000_1", "UK_uksi_2001_2", "UK_uksi_2002_3"]
+
+      assert facts.gaps == [
+               %{by: "UK_uksi_2000_1", gap: :a, provisions: ["reg. 2"]},
+               %{by: "UK_uksi_2001_2", gap: :b, provisions: ["reg. 3"]}
+             ]
+    end
+  end
 end
