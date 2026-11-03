@@ -10,8 +10,8 @@
   > **Issue #18 (2026-02-06)**: Documented derived year/month columns for date grouping in TableKit.
   > **Issue #39 (2026-03-06)**: Added 7 fitness columns for applicability matching (person, process, place, plant, property, sector, detail).
   > **Making Detection (2026-02-24)**: Added 4 making classification columns for AI-assisted function detection.
-  > **Issue #60 (2026-03-27)**: Simplified live status to "changes-primary, metadata-override". Removed 4 columns: `live_from_metadata`, `live_conflict`, `live_conflict_detail`, `live_source`. Removed `repeal_revoke` parser stage (redundant with metadata stage). See [Live Status Values](./LIVE_STATUS_VALUES.md).
-  > **Making Review (2026-05-17)**: Added `making_review` and `making_review_at` columns for human-AI review stage, separating auto-detection from manual review. See [Function Values](./FUNCTION_VALUES.md).
+  > **Issue #60 (2026-03-27)**: Simplified live status to "changes-primary, metadata-override". Removed 4 columns: `live_from_metadata`, `live_conflict`, `live_conflict_detail`, `live_source`. Removed `repeal_revoke` parser stage (redundant with metadata stage). See [Live Status Values](LIVE_STATUS_VALUES.md).
+  > **Making Review (2026-05-17)**: Added `making_review` and `making_review_at` columns for human-AI review stage, separating auto-detection from manual review. See [Function Values](FUNCTION_VALUES.md).
   
   The `uk_lrt` table stores metadata for UK legislation including acts, statutory instruments, and regulations. This is shared reference data accessible to all tenants.
 
@@ -343,7 +343,7 @@
   - **Metadata** (title marker from Stage 1) overrides only when it definitively says revoked
   - Rule: if metadata says `❌ Revoked` → revoked (definitive). Otherwise → use changes result.
   
-  See [Live Status Values](./LIVE_STATUS_VALUES.md) for full rules, classification logic, and data provenance.
+  See [Live Status Values](LIVE_STATUS_VALUES.md) for full rules, classification logic, and data provenance.
   
   | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
   |--------|---------------|---------------|------|:--------:|---------|-------|
@@ -533,8 +533,8 @@
 
 ## Related Documents
 
-- [Family Values](./FAMILY_VALUES.md) - Valid family classifications
-- [Function Values](./FUNCTION_VALUES.md) - Making, Amending, Revoking, Commencing, Enacting
-- [Holder Values](./HOLDER_VALUES.md) - Actor taxonomy for duty/rights/responsibility/power holders
-- [Live Status Values](./LIVE_STATUS_VALUES.md) - Rules governing live status determination and all related columns
-- [Purpose Values](./PURPOSE_VALUES.md) - Purpose and duty_type taxonomy
+- [Family Values](FAMILY_VALUES.md) - Valid family classifications
+- [Function Values](FUNCTION_VALUES.md) - Making, Amending, Revoking, Commencing, Enacting
+- [Holder Values](HOLDER_VALUES.md) - Actor taxonomy for duty/rights/responsibility/power holders
+- [Live Status Values](LIVE_STATUS_VALUES.md) - Rules governing live status determination and all related columns
+- [Purpose Values](PURPOSE_VALUES.md) - Purpose and duty_type taxonomy

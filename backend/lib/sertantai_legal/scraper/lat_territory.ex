@@ -1,7 +1,7 @@
 defmodule SertantaiLegal.Scraper.LatTerritory do
   @moduledoc """
   Where a LAT row's words apply (LAT Parser Refactor, LR-02; design
-  `docs/LAT-PARSER-REFACTOR-DESIGN.md`, rules `docs/LAT-QA-SAMPLE-SPEC.md`).
+  `docs/lat/LAT-PARSER-REFACTOR-DESIGN.md`, rules `docs/lat/LAT-QA-SAMPLE-SPEC.md`).
 
   One rule for every change: its territory is its `Extent` attribute in
   legislation.gov.uk's markup (`territory/1`). Notes are never a source;
@@ -69,7 +69,7 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
   @doc """
   A change's territory: its `Extent` attribute — where legislation.gov.uk's
   markup says the change applies — normalised; nil when the markup names
-  none. Notes are never a source (`docs/LEGISLATION-GOV-UK-NOTE-TYPOLOGY.md`
+  none. Notes are never a source (`docs/lat-change-pipeline/LEGISLATION-GOV-UK-NOTE-TYPOLOGY.md`
   §3: notes are hints); territory the markup doesn't carry comes from the
   effects layer (lat-refactor LR-03).
   """

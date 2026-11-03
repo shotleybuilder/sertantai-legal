@@ -2,7 +2,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge.Partner do
   @moduledoc """
   The one event an id-less record (the amending law's text, legacy or
   unmatched markup) is a record of, among the candidates near it by the
-  same amending law (CV-S07 round 2, `docs/CHANGE-IDENTITY-DESIGN.md`).
+  same amending law (CV-S07 round 2, `docs/lat-change-pipeline/CHANGE-IDENTITY-DESIGN.md`).
   The candidates are grouped into events by effect id, stages together
   (`Candidates.base/1`), then narrowed in order:
 

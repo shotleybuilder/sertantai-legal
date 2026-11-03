@@ -2,7 +2,7 @@ defmodule SertantaiLegal.Legal.Lat.Transforms do
   @moduledoc """
   Pure transform functions for converting Airtable CSV rows into LAT schema rows.
 
-  Implements the 16-step pipeline from `docs/LAT-TRANSFORMS-FOR-SERTANTAI.md`.
+  Implements the 16-step pipeline from `docs/lat/LAT-TRANSFORMS-FOR-SERTANTAI.md`.
   All functions are pure (no DB access) so they can be tested independently
   and reused by the parser (Phase 3).
   """

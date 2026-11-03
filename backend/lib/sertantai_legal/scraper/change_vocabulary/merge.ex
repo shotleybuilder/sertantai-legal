@@ -17,7 +17,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
   3. An event is its key wherever placed; several same-day events by one
      law are told apart by the amending provision the feed names (CV-04).
 
-  Identity (CV-S07 round 2, `docs/CHANGE-IDENTITY-DESIGN.md`): an effect's
+  Identity (CV-S07 round 2, `docs/lat-change-pipeline/CHANGE-IDENTITY-DESIGN.md`): an effect's
   `URI` id is its id too (`uris`); a markup effect id no feed record holds
   is id-less; each source's copies of one event are one candidate
   (`Merge.Candidates`); the partner is chosen by day, amending provision,

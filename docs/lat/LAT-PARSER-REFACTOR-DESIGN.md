@@ -1,6 +1,6 @@
 # LAT Parser Refactor — Design (territory first)
 
-Status: draft for review (2026-10-09). Context: LAT hand-off to fractalaw (`.claude/sessions/lat-handoff/`), QA spec `docs/LAT-QA-SAMPLE-SPEC.md`.
+Status: draft for review (2026-10-09). Context: LAT hand-off to fractalaw (`.claude/sessions/lat-handoff/`), QA spec `docs/lat/LAT-QA-SAMPLE-SPEC.md`.
 
 ## Why
 

@@ -256,8 +256,8 @@ sertantai-legal:
 ## Documentation
 
 - **[CLAUDE.md](./CLAUDE.md)** - Development guide for AI assistants
-- **[docs/MIGRATION_PLAN.md](./docs/MIGRATION_PLAN.md)** - Migration roadmap
-- **[docs/QUICKSTART.md](./docs/QUICKSTART.md)** - Getting started
+- **[docs/archive/MIGRATION_PLAN.md](./docs/MIGRATION_PLAN.md)** - Migration roadmap
+- **[docs/platform/QUICKSTART.md](./docs/QUICKSTART.md)** - Getting started
 
 ## License
 

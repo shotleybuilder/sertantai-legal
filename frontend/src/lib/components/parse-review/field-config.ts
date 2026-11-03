@@ -1,7 +1,7 @@
 /**
  * Field configuration for ParseReviewModal
  *
- * Derived from docs/LRT-SCHEMA.md v0.7
+ * Derived from docs/register/LRT-SCHEMA.md v0.7
  * Field labels use "Friendly Name" column from schema
  * Field order matches table order in schema document
  */

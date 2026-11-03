@@ -1,7 +1,7 @@
 defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedUris do
   @moduledoc """
   The feed effects whose `URI` names another id than their `EffectId`
-  (CV-S07 round 2, `docs/CHANGE-IDENTITY-DESIGN.md`): legislation.gov.uk
+  (CV-S07 round 2, `docs/lat-change-pipeline/CHANGE-IDENTITY-DESIGN.md`): legislation.gov.uk
   re-keys an effect when it corrects it and keeps the first id in `URI`
   (33,894 of 251,692 stored effects); the change markup carries that one
   (NISR 2004/222 reg.2(1): `EffectId …c4575c`, `URI …abb9d4`). The merge

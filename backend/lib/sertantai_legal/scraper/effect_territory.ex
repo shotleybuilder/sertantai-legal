@@ -1,7 +1,7 @@
 defmodule SertantaiLegal.Scraper.EffectTerritory do
   @moduledoc """
   A change's territory from its effect and its markup (lat-refactor LR-03;
-  plan `docs/LAT-EFFECTS-LAYER-PLAN.md`, decisions by Jason 2026-10-09).
+  plan `docs/lat/LAT-EFFECTS-LAYER-PLAN.md`, decisions by Jason 2026-10-09).
 
   `claim/4` — in this order:
   1. the effect's territorial application — where the change applies;

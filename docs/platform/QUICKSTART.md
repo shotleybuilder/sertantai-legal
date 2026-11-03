@@ -265,8 +265,8 @@ mix compile
 - `docker-compose.dev.yml` - Local dev services (PostgreSQL, ElectricSQL)
 
 **Documentation**:
-- `docs/MIGRATION_PLAN.md` - Complete migration roadmap
-- `docs/BLUEPRINT.md` - Technical architecture guide (from starter)
+- `docs/archive/MIGRATION_PLAN.md` - Complete migration roadmap
+- `docs/platform/BLUEPRINT.md` - Technical architecture guide (from starter)
 - `CLAUDE.md` - Development guidelines
 - `usage-rules.md` - Code standards
 

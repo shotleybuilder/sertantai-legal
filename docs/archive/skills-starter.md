@@ -347,7 +347,7 @@ You should add your own skills for:
 - [Agent Skills Blog Post](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills) - Anthropic Engineering
 - [CLAUDE.md](../CLAUDE.md) - High-level codebase overview
 - [usage-rules.md](../usage-rules.md) - Enforced coding patterns
-- [docs/BLUEPRINT.md](BLUEPRINT.md) - Technical architecture guide
+- [docs/platform/BLUEPRINT.md](BLUEPRINT.md) - Technical architecture guide
 
 ---
 

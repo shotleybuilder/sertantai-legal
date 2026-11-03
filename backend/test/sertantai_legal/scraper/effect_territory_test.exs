@@ -1,6 +1,6 @@
 defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
   @moduledoc """
-  Territory from the effects layer (LR-03; plan `docs/LAT-EFFECTS-LAYER-PLAN.md`).
+  Territory from the effects layer (LR-03; plan `docs/lat/LAT-EFFECTS-LAYER-PLAN.md`).
   Effects are hand-built from real feed records (1974/40 s.101, s.30).
   """
   use ExUnit.Case, async: true

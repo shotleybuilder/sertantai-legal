@@ -86,6 +86,6 @@ Records with `duty_type` always have `purpose` too (both come from taxa parsing)
 
 ## Related
 
-- [Function Values](./FUNCTION_VALUES.md) - Making, Amending, Revoking, etc.
+- [Function Values](FUNCTION_VALUES.md) - Making, Amending, Revoking, etc.
 - `backend/lib/sertantai_legal/legal/taxa/purpose_classifier.ex` - PurposeClassifier implementation
 - `scripts/data/split_duty_type_purpose.exs` - Splits combined Airtable duty_type into purpose + duty_type

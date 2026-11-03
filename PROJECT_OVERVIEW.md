@@ -318,8 +318,8 @@ SHARED_TOKEN_SECRET=${SHARED_TOKEN_SECRET}
 | Document | Purpose |
 |----------|---------|
 | **CLAUDE.md** | Development patterns, AI assistant guide |
-| **docs/MIGRATION_PLAN.md** | Detailed migration roadmap |
-| **docs/QUICKSTART.md** | Getting started quickly |
+| **docs/archive/MIGRATION_PLAN.md** | Detailed migration roadmap |
+| **docs/platform/QUICKSTART.md** | Getting started quickly |
 | **usage-rules.md** | Code standards enforcement |
 
 ## Success Metrics

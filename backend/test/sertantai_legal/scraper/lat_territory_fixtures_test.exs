@@ -3,7 +3,7 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
   Territory fixture suite (LAT Parser Refactor, LR-01): one case per
   territory path × source, asserting what the parse gives a reader — row
   `text` (brackets) and `excluded_extent`. Design:
-  `docs/LAT-PARSER-REFACTOR-DESIGN.md`; decisions: lat-refactor meta Q1–Q6.
+  `docs/lat/LAT-PARSER-REFACTOR-DESIGN.md`; decisions: lat-refactor meta Q1–Q6.
 
   The rule under test: a change's territory is its `Extent` attribute, else
   its commentary note's territory, else none; both are kept when both exist

@@ -116,7 +116,7 @@ The complete AI-friendly development environment consists of three key component
 - [ ] **Commands** - `.claude/commands/` for session/issue management (workflow automation)
 - [ ] **Tidewave MCP** - `.mcp.json` for Model Context Protocol integration (live project data access)
 - [ ] **README.md** - Comprehensive project documentation
-- [ ] **Usage guide** - `docs/use-of-template.md` for template adoption
+- [ ] **Usage guide** - `docs/archive/use-of-template.md` for template adoption
 
 **What is Tidewave MCP?**
 Tidewave is a Model Context Protocol (MCP) server that gives AI assistants like Claude direct access to your running Phoenix application's data and context. Instead of just reading static files, the AI can query your live database schema, resource definitions, and application state.
@@ -135,8 +135,8 @@ CLAUDE.md                         # Development guide
 .mcp.json                         # Tidewave MCP configuration
 README.md                         # Project overview
 scripts/deployment/README.md      # Deployment guide
-docs/skills-starter.md            # Skills introduction
-docs/use-of-template.md          # Template usage guide
+docs/archive/skills-starter.md            # Skills introduction
+docs/archive/use-of-template.md          # Template usage guide
 ```
 
 **Tidewave MCP Setup**:

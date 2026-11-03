@@ -1,7 +1,7 @@
 defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge.Candidates do
   @moduledoc """
   Each source's records of one event as one candidate, before the merge
-  joins sources (CV-S07 round 2, `docs/CHANGE-IDENTITY-DESIGN.md`):
+  joins sources (CV-S07 round 2, `docs/lat-change-pipeline/CHANGE-IDENTITY-DESIGN.md`):
 
   - `rekey/2`: a markup record keyed by a feed effect's `URI` id takes the
     effect's own id (legislation.gov.uk re-keys a corrected effect and

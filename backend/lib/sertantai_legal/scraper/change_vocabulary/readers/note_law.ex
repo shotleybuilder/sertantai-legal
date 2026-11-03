@@ -4,7 +4,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteLaw do
   round 2): "… by The Health and Safety at Work etc. Act 1974 (Application
   outside Great Britain) Order 2004 (S.I. 2004/ 1822), art. 2" → 
   `UK_uksi_2004_1822`. A pointer for identity only (Jason 2026-10-28,
-  `docs/CHANGE-IDENTITY-DESIGN.md` decision 3): the merge may use it to find
+  `docs/lat-change-pipeline/CHANGE-IDENTITY-DESIGN.md` decision 3): the merge may use it to find
   the record's event, never as the change's `by`. Pure.
   """
 

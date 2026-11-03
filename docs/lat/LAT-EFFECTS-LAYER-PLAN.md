@@ -1,6 +1,6 @@
 # LAT Effects Layer — Plan (LR-03)
 
-Status: agreed 2026-10-09 after Gemini review (`backend/data/code-reviews/2026-10-09-lr03-effects-plan-gemini.md`) and Jason's decisions (below). Context: LAT parser refactor (`.claude/sessions/lat-refactor/`), note typology `docs/LEGISLATION-GOV-UK-NOTE-TYPOLOGY.md`.
+Status: agreed 2026-10-09 after Gemini review (`backend/data/code-reviews/2026-10-09-lr03-effects-plan-gemini.md`) and Jason's decisions (below). Context: LAT parser refactor (`.claude/sessions/lat-refactor/`), note typology `docs/lat-change-pipeline/LEGISLATION-GOV-UK-NOTE-TYPOLOGY.md`.
 
 ## Background
 

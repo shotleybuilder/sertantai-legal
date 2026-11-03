@@ -1,7 +1,7 @@
 defmodule SertantaiLegal.Scraper.LatTerritoryCheck do
   @moduledoc """
   Pre-write sanity checks on a law's parsed LAT territory (lat-refactor
-  LR-03; plan `docs/LAT-EFFECTS-LAYER-PLAN.md` §8). Each finding is a rule
+  LR-03; plan `docs/lat/LAT-EFFECTS-LAYER-PLAN.md` §8). Each finding is a rule
   breaking in the output, not a guess at the answer:
 
   - `:excluded_outside_extent` — `excluded_extent` names a territory the

@@ -1,7 +1,7 @@
 defmodule SertantaiLegal.Scraper.EffectIndex do
   @moduledoc """
   A law's effects (legislation.gov.uk changes feed, `ChangesFeed.Effect`)
-  indexed for the LAT (lat-refactor LR-03; plan `docs/LAT-EFFECTS-LAYER-PLAN.md`).
+  indexed for the LAT (lat-refactor LR-03; plan `docs/lat/LAT-EFFECTS-LAYER-PLAN.md`).
 
   Handles:
   - `new/1` — by effect id and by structured affected ref (`section-101`)

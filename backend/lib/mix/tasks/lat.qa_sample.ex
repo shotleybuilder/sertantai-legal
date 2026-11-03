@@ -2,7 +2,7 @@ defmodule Mix.Tasks.Lat.QaSample do
   @moduledoc """
   A reproducible, stratified random sample of LAT rows for an eyeball QA
   against the CLML store (LAT parser coverage II; spec
-  `docs/LAT-QA-SAMPLE-SPEC.md`).
+  `docs/lat/LAT-QA-SAMPLE-SPEC.md`).
 
       mix lat.qa_sample                      # 100 rows, seed = today
       mix lat.qa_sample --n 150 --seed qa1

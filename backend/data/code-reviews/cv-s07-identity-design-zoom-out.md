@@ -1,4 +1,4 @@
-# Zoom-out review: docs/CHANGE-IDENTITY-DESIGN.md (reviewer subagent, 2026-10-28)
+# Zoom-out review: docs/lat-change-pipeline/CHANGE-IDENTITY-DESIGN.md (reviewer subagent, 2026-10-28)
 
 1. **Major: pointers are already stored, and `:markup :cited` already decides a value.**
    - `Store` writes every claim (store.ex:60-73): `markup cited` 7,228 rows, `markup affecting` 6,296.

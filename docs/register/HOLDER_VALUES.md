@@ -276,7 +276,7 @@ Both writers produce identical `{"tag": true, ...}` JSONB format. The taxa parse
 
 ## Related Documents
 
-- [LRT Schema](./LRT-SCHEMA.md) - Full schema reference
-- [Function Values](./FUNCTION_VALUES.md) - Function field taxonomy
-- [Purpose Values](./PURPOSE_VALUES.md) - Purpose and duty_type taxonomy
+- [LRT Schema](LRT-SCHEMA.md) - Full schema reference
+- [Function Values](FUNCTION_VALUES.md) - Function field taxonomy
+- [Purpose Values](PURPOSE_VALUES.md) - Purpose and duty_type taxonomy
 - [Actor Definitions](../backend/lib/sertantai_legal/legal/taxa/actor_definitions.ex) - Regex patterns for actor detection
