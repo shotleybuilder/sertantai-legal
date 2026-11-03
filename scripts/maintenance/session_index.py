@@ -231,13 +231,16 @@ MAX_LINES = 300
 
 
 def warn_if_long(filepath: Path, sessions_dir: Path):
-    """Warn when an open session doc passes MAX_LINES: split it or move logs to report files."""
+    """Warn when an open session doc's body (frontmatter excluded) passes MAX_LINES:
+    split it or move logs to report files."""
     if "archive" in filepath.relative_to(sessions_dir).parts:
         return
     fm = parse_frontmatter(filepath) or {}
     if fm.get("status") == "closed":
         return
-    lines = filepath.read_text(encoding="utf-8").count("\n")
+    text = filepath.read_text(encoding="utf-8")
+    body = re.sub(r"^---\s*\n.*?\n---\s*\n", "", text, count=1, flags=re.DOTALL)
+    lines = body.count("\n")
     if lines > MAX_LINES:
         print(
             f"  WARN: {filepath.relative_to(sessions_dir)} is {lines} lines (> {MAX_LINES}): "
