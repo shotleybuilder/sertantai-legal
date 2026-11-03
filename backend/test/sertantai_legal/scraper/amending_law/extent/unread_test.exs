@@ -3,7 +3,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.UnreadTest do
 
   alias SertantaiLegal.ExtentDoc
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Extent}
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Lookup, Unread}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Lookup, Units, Unread}
 
   # a law of sections 1–9 and Schedules 1–3 (paragraphs 1–3 each), with
   # the sentence under test as `id`'s own words
@@ -29,6 +29,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.UnreadTest do
       "<Legislation><Primary><Body>#{own}#{sections}</Body>#{schedules}</Primary></Legislation>"
     ])
   end
+
+  defp p1(id, text), do: ExtentDoc.p1(id, text)
 
   defp subject(id, ref, text), do: Unread.subject(text, ref, doc(id, text))
 
@@ -184,5 +186,27 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.UnreadTest do
     # stating none but an unread statement: its powers don't decide either
     e = %Extent{lists: [{:unread, nil, ["*"]}], powers: "E+W+S"}
     assert Lookup.of(e, "reg.4") == nil
+  end
+
+  test "another Act's provisions in a repeals list are never the law's own (ERRA 2013 s.102(6))" do
+    doc =
+      ExtentDoc.doc(
+        "UK_ukpga_2013_24",
+        p1("section-67", "Words.") <>
+          p1(
+            "section-102",
+            "The repeals of the following provisions in Schedule 20 extend to England and Wales only— (a) section 67 of the Agriculture Act 1967, (b) paragraph 32 of Schedule 2 to the Social Security (Consequential Provisions) Act 1975."
+          ) <> ~s|<P1 id="schedule-20"><P1para><Text>Repeals.</Text></P1para></P1>|
+      )
+
+    s =
+      doc
+      |> Units.unit_sentences()
+      |> Enum.find_value(fn
+        {"s.102", s} -> s
+        _ -> nil
+      end)
+
+    refute "s.67" in Extent.Unread.subject(s, "s.102", doc)
   end
 end

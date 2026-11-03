@@ -6,6 +6,19 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.OwnParagraphTest do
   use ExUnit.Case, async: true
 
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.OwnParagraph
+  alias SertantaiLegal.ExtentDoc
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent
+
+  defp read(law, body), do: Extent.read(ExtentDoc.doc(law, body))
+  defp p1(id, text), do: ExtentDoc.p1(id, text)
+  defp rows(e, kind), do: for({^kind, place, refs} <- e.lists ++ e.applies, do: {place, refs})
+
+  defp p2s(id, subs),
+    do:
+      ~s(<P1 id="#{id}">) <>
+        Enum.map_join(subs, fn {n, text} ->
+          ~s(<P2 id="#{id}-#{n}"><Pnumber>#{n}</Pnumber><P2para><Text>#{text}</Text></P2para></P2>)
+        end) <> "</P1>"
 
   test "round 11's forms stay" do
     assert OwnParagraph.list(
@@ -59,5 +72,51 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.OwnParagraphTest do
              "This paragraph extends to England and Wales and to the territorial waters adjacent to England and Wales.",
              "sch.7.para.1"
            ) == nil
+  end
+
+  describe "a Schedule paragraph's own extent, read whole" do
+    defp sch_para(sch, para, text),
+      do:
+        ~s(<Schedule id="schedule-#{sch}"><Pnumber>#{sch}</Pnumber><ScheduleBody>) <>
+          ~s(<P1 id="schedule-#{sch}-paragraph-#{para}"><Pnumber>#{para}</Pnumber><P1para><Text>#{text}</Text></P1para></P1>) <>
+          "</ScheduleBody></Schedule>"
+
+    test "\"This paragraph does not extend to Northern Ireland\", \"… extends only to England and Wales\" (ukpga 2003/39 Sch.8)" do
+      e =
+        read(
+          "UK_ukpga_2003_39",
+          p1("section-1", "This Act extends to England and Wales, Scotland and Northern Ireland.") <>
+            sch_para(8, 27, "This paragraph does not extend to Northern Ireland.") <>
+            sch_para(9, 13, "This paragraph extends only to England and Wales.")
+        )
+
+      assert {:not, "NI", ["sch.8.para.27"]} in e.lists
+      assert {:only, "E+W", ["sch.9.para.13"]} in e.lists
+      assert Extent.of(e, "sch.8.para.27") == "E+W+S"
+    end
+
+    test "never with more after the places (ukpga 2006/16 Sch.11 para 97)" do
+      e =
+        read(
+          "UK_ukpga_2006_16",
+          sch_para(
+            11,
+            97,
+            "This paragraph extends only to England and Wales and to the territorial waters adjacent to England and Wales."
+          )
+        )
+
+      refute Enum.any?(e.lists, &match?({_, _, ["sch.11.para.97"]}, &1))
+    end
+  end
+
+  test "\"Sub-paragraph (1) does not extend to Northern Ireland\" in a Schedule paragraph (ukpga 2003/39 Sch.8 para 70)" do
+    e =
+      read(
+        "UK_ukpga_2003_39",
+        ~s(<Schedule id="schedule-8">#{p2s("schedule-8-paragraph-70", [{"1", "Words."}, {"2", "Sub-paragraph (1) does not extend to Northern Ireland."}])}</Schedule>)
+      )
+
+    assert {"NI", ["sch.8.para.70(1)"]} in rows(e, :not)
   end
 end

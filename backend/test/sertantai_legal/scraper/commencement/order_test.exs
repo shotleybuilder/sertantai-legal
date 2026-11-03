@@ -505,7 +505,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
     assert %{full_from: ~D[1992-07-27]} = dated(rules, "section-4-1")
   end
 
-  describe "CV-S04: the whole Act" do
+  describe "the whole Act" do
     test "the Act named as the item: all of it (SI 1973/28: EMAS Act 1972)" do
       act = %{
         law: "UK_ukpga_1972_28",
@@ -571,7 +571,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
     end
   end
 
-  describe "CV-S04: Schedule table items (SI 1974/1439, HSWA 1974)" do
+  describe "Schedule table items (SI 1974/1439, HSWA 1974)" do
     @hswa %{law: "UK_ukpga_1974_37", title: "Health and Safety at Work etc. Act", year: "1974"}
 
     defp hswa_rules(rows) do
@@ -625,7 +625,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
     end
   end
 
-  describe "CV-S09 round 6: a list item split inside its aside (SI 1991/1042 art.2(1))" do
+  describe "a list item split inside its aside (SI 1991/1042 art.2(1))" do
     test "the item's halves are one line; an aside naming another law never eats the list" do
       act = %{law: "UK_ukpga_1990_43", title: "Environmental Protection Act", year: "1990"}
 
@@ -666,7 +666,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
     end
   end
 
-  describe "CV-S04 orders catalogue" do
+  describe "forms: the appointed day, the Act so far as not in force, a table's Schedule" do
     defp doc_of(law, body, schedules \\ ""),
       do:
         Doc.new(law, [
@@ -729,7 +729,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
     end
   end
 
-  describe "CV-S04 agent round 2" do
+  describe "an item's own qualifier stays on it" do
     test "N1: a bare Schedule list's own qualifier stays on its item (SI 1996/186 reg.3)" do
       act = %{law: "UK_ukpga_1995_25", title: "Environment Act", year: "1995"}
 
@@ -761,7 +761,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
     end
   end
 
-  describe "CV-S04 agent round 3" do
+  describe "what an appointed day for one provision leaves to it" do
     test "\"The day appointed for the purpose of section 18(2) … shall be D\": what s.18(2) leaves to it (SI 1996/218)" do
       act = %{law: "UK_ukpga_1995_45", title: "Gas Act", year: "1995"}
 
@@ -790,7 +790,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
     end
   end
 
-  describe "CV-S04 agent round 3: order items" do
+  describe "order items: \"insofar\", repeal descriptions" do
     test "\"insofar\": a whole-Act commencement (SI 1998/1542) and an item partly (SI 2006/1680)" do
       act = %{law: "UK_ukpga_1997_42", title: "Police (Health and Safety) Act", year: "1997"}
 
@@ -821,7 +821,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
     end
   end
 
-  describe "CV-S04 agent round 4" do
+  describe "each item's qualifier, quoted words, repeal lists, a Schedule's Part" do
     @epa %{law: "UK_ukpga_1990_43", title: "Environmental Protection Act", year: "1990"}
 
     defp epa_order(text),

@@ -344,7 +344,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
     end
   end
 
-  describe "CV-S05 catalogue forms" do
+  describe "catalogue forms: named provisions, same extent, a Part's own clause, list headings" do
     defp law(law, provisions) do
       body =
         Enum.map_join(provisions, "\n", fn {id, text} ->
@@ -487,7 +487,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
     end
   end
 
-  describe "CV-S05 agent round 1 (N1–N16)" do
+  describe "defaults, lists and application read from the law's own words" do
     defp read_xml(law, body),
       do:
         Extent.read(
@@ -790,7 +790,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
     end
   end
 
-  describe "CV-S05 agent round 2" do
+  describe "places joined, list order, a Part outside the clause, and qualified list items" do
     defp read2(law, body),
       do:
         Extent.read(
@@ -962,7 +962,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
     end
   end
 
-  describe "CV-S05 agent round 3" do
+  describe "a Westminster Act extending to Northern Ireland, an application's own, a list's own extent over a same list" do
     defp read3(law, body),
       do:
         Extent.read(
@@ -1046,7 +1046,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
     end
   end
 
-  describe "CV-S05 agent round 4" do
+  describe "same-extent wordings, lettered statements and compounds, an exception not parsed" do
     defp read4(law, body),
       do:
         Extent.read(

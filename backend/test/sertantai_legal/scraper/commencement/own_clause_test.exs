@@ -227,7 +227,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClauseTest do
     assert rules == []
   end
 
-  describe "CV-S04: an Act whose start is its Royal Assent still has its clause's rules" do
+  describe "an Act whose start is its Royal Assent still has its clause's rules" do
     @assent ~s(<ukm:EnactmentDate Date="1974-07-31"/>)
 
     test "a whole Act left to orders: appointed by order, not Royal Assent (HSWA 1974 s.85(2))" do
@@ -268,7 +268,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClauseTest do
     end
   end
 
-  describe "CV-S04: the law's text is primary for its provisions" do
+  describe "the law's text is primary for its provisions" do
     test "the clause's date over the register's (NISR 1997/455 reg.1: the register holds reg.1(2)'s earlier date)" do
       {rules, rs} =
         read(
@@ -329,7 +329,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClauseTest do
     end
   end
 
-  describe "CV-S04: items in a sentence" do
+  describe "items in a sentence" do
     test "a bracketed qualifier is only its item's (SI 2015/21 reg.1(2))" do
       {rules, rs} =
         read([
@@ -368,7 +368,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClauseTest do
     end
   end
 
-  describe "CV-S04 catalogue: forms the reader missed" do
+  describe "statements elsewhere, lead-ins and dates" do
     test "a statement in another provision, read in its own (Access to Justice Act 1999 s.7(3)-like)" do
       {rules, rs} =
         read(
@@ -541,7 +541,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClauseTest do
     end
   end
 
-  describe "CV-S04 catalogue run 2: more forms" do
+  describe "more lead-ins and general clauses" do
     test "lead-ins: \"Except as mentioned in …\", a bracket before the clause (EA 1995 s.125(3))" do
       {rules, rs} =
         read(
@@ -663,7 +663,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClauseTest do
     end
   end
 
-  describe "CV-S04 catalogue run 3: general clauses with exceptions" do
+  describe "general clauses with exceptions" do
     @act ~s(<ukm:EnactmentDate Date="2003-07-17"/>)
 
     test "a bracketed exception with its own date (Communications Act 2003 s.411(2))" do
@@ -710,7 +710,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClauseTest do
     end
   end
 
-  describe "CV-S04 agent round 2: clauses" do
+  describe "unread clauses and except lists" do
     test "N4: an Act's own commencement words unread leave it unread, never Royal Assent" do
       {rules, _} =
         read(
@@ -776,7 +776,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClauseTest do
     end
   end
 
-  describe "CV-S04 agent round 3: clauses" do
+  describe "an except list at the front of a clause" do
     test "an except list at the front; \"Except as otherwise expressly provided\"; \"which extend to Great Britain\"" do
       {rules, rs} =
         read(

@@ -2,6 +2,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.DefaultTest do
   use ExUnit.Case, async: true
 
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.Default
+  alias SertantaiLegal.ExtentDoc
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent
+
+  defp read(law, body), do: Extent.read(ExtentDoc.doc(law, body))
+  defp p1(id, text), do: ExtentDoc.p1(id, text)
+  defp words(ns, kind \\ "section"), do: Enum.map_join(ns, &p1("#{kind}-#{&1}", "Words."))
+  defp part(n, ids, kind \\ "section"), do: ~s(<Part id="part-#{n}">#{words(ids, kind)}</Part>)
 
   test "what one sentence states: a default, a list heading, a Part not extending, nothing" do
     assert Default.statement(
@@ -36,5 +43,55 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.DefaultTest do
   test "a clause's default: \"does not extend\" is the rest of the UK" do
     assert Default.default("This Act does not extend to Northern Ireland.") == "E+W+S"
     assert Default.default("Words.") == nil
+  end
+
+  test "the clause is the first section stating a default, not a list before it (ukpga 1981/45 ss.31, 32)" do
+    e =
+      read(
+        "UK_ukpga_1981_45",
+        part("I", 1..2) <>
+          ~s(<Part id="part-II">) <>
+          p1("section-30", "Words.") <>
+          p1(
+            "section-31",
+            "The following provisions of this Act do not extend to Scotland, namely— (a) Part I."
+          ) <>
+          p1("section-32", "It is hereby declared that this Act extends to Northern Ireland.") <>
+          "</Part>"
+      )
+
+    assert {e.ref, e.default} == {"s.32", "E+W+S+NI"}
+    assert {:not, "S", ["s.1", "s.2"]} in e.lists
+    assert Extent.of(e, "s.30") == "E+W+S+NI"
+  end
+
+  describe "a whole-law default" do
+    test "\"This Act extends to Scotland (subject to subsection (6)) and Northern Ireland\" (ukpga 1999/28 s.43)" do
+      e =
+        read(
+          "UK_ukpga_1999_28",
+          p1(
+            "section-43",
+            "This Act extends to Scotland (subject to subsection (6)) and Northern Ireland."
+          )
+        )
+
+      assert e.default == "S+NI"
+    end
+
+    test "\"This Act extends only to England and Wales, except that— (a) section 46(1) extends to Scotland only, …\" (ukpga 2010/29 s.49)" do
+      e =
+        read(
+          "UK_ukpga_2010_29",
+          words([1, 46]) <>
+            p1(
+              "section-49",
+              "This Act extends only to England and Wales, except that—a section 46(1) extends to Scotland only,b paragraph 43 of Schedule 4 extends to England and Wales and Scotland."
+            )
+        )
+
+      assert e.default == "E+W"
+      assert Extent.of(e, "s.46(1)") == "S"
+    end
   end
 end

@@ -266,7 +266,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
              })
   end
 
-  describe "batch 2 (CV-S09 round 2)" do
+  describe "undated changes and the start's tiers" do
     test "an undated whole insertion on an ancestor: the inserting law, no date when the start is only the law's (HSWA s.25A(1))" do
       changes = [change("s.25A", :inserted, nil, by: "UK_ukpga_1987_43")]
 
@@ -372,7 +372,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
     end
   end
 
-  describe "batch 3 (CV-S09 round 3)" do
+  describe "when it exists, undated repeals and words changes, a field's tier" do
     test "it exists once everything holding it exists: the latest insertion starts it (HSWA s.51A(2E)(b))" do
       changes = [
         change("s.51A", :inserted, ~D[1998-07-01], by: "UK_ukpga_1997_42"),
@@ -482,7 +482,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
     end
   end
 
-  describe "batch 4 (CV-S09 round 4)" do
+  describe "tiers, markup-only insertions, same-day changes" do
     test "a field's tier never comes from a change beyond the row's territory (an NI repeal the same day)" do
       sub =
         change("reg.12B", :substituted, ~D[2027-01-20], by: "UK_uksi_2026_867")
@@ -584,7 +584,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
     end
   end
 
-  describe "batch 5 (CV-S09 round 5)" do
+  describe "start tiers from the insertion opening it, makers' tiers kept, containers" do
     defp tiered(c, tiers), do: %{c | resolved: %{c.resolved | tiers: tiers}}
 
     test "an undated words repeal on an undated start made its text (CLP Art 54, EU 2019/1243)" do
@@ -674,7 +674,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
     end
   end
 
-  describe "batch 6 (CV-S09 round 6)" do
+  describe "a body held only as made, a provision coming back" do
     defp tiered6(c, tiers), do: %{c | resolved: %{c.resolved | tiers: tiers}}
 
     test "a body held only as made shows no later change: a repealed provision stays repealed (NISR 1993/37 reg.3(1)(d))" do
@@ -709,7 +709,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
     end
   end
 
-  describe "batch 7 (CV-S09 round 7)" do
+  describe "shared history before a split, whole repeals read as words, undated substituted text" do
     defp tiered7(c, tiers), do: %{c | resolved: %{c.resolved | tiers: tiers}}
 
     test "the history a version shares before its split takes a change narrower than the version (SI 2008/1597 reg.21(2)(a)[NI])" do
@@ -781,7 +781,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
     end
   end
 
-  describe "batch 8 (CV-S09 round 8)" do
+  describe "a version's text on the split" do
     defp with_claims(c, claims),
       do: %{
         c
@@ -837,7 +837,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
     end
   end
 
-  describe "batch 9 (CV-S09 round 9)" do
+  describe "split histories and texts gone" do
     test "on the split a change whose markup sits in other versions only is not the version's text, its territory unstated (HSWA s.51A(2)(c)[S])" do
       words =
         change("s.51A(2)(c)", :substituted, ~D[2012-01-16],
@@ -1018,7 +1018,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
     end
   end
 
-  describe "CV-06 round 1 (R5): a Part row keeps its own heading changes" do
+  describe "a Part row keeps its own heading changes" do
     test "words substituted in a Part's heading open a period on it; a change on the Part holding a row still reaches the row" do
       heading =
         change("pt.3", :substituted, ~D[2020-12-31], level: :words, by: "UK_uksi_2019_1347")
@@ -1040,7 +1040,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
     end
   end
 
-  describe "CV-06 round 1 (R4): versions part when their texts do" do
+  describe "versions part when their texts do" do
     alias SertantaiLegal.Scraper.ChangeVocabulary.Label.Version
 
     test "the first day a change under the versioned provision is marked up in some versions' text only" do
@@ -1079,7 +1079,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
     end
   end
 
-  describe "CV-06 round 1 (R1): evidence it existed (Jason 2026-10-31)" do
+  describe "evidence it existed (Jason 2026-10-31)" do
     test "no evidence: it begins at the substitution above it that makes it (CLP Art 37(9))" do
       changes = [
         change("art.Article 37", :substituted, ~D[2020-12-31], by: "UK_uksi_2019_720"),
@@ -1143,7 +1143,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
     end
   end
 
-  describe "CV-06 round 2 (R10): a prospective change never applied" do
+  describe "a prospective change never applied" do
     test "makes nothing: the dated insertion's law alone, its date kept (HSWA s.51A(2B))" do
       changes = [
         change("s.51A(2B)", :inserted, nil,
@@ -1169,7 +1169,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
     end
   end
 
-  describe "CV-06 round 1 (R1): its own repeal the day its parent is substituted" do
+  describe "its own repeal the day its parent is substituted" do
     test "repealed, not remade (SI 1999/3242 reg.22(2) by SI 2003/2457)" do
       changes = [
         change("reg.22", :commenced, ~D[1999-12-29]),
@@ -1183,7 +1183,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
     end
   end
 
-  describe "CV-06 round 2: what begins it, and its siblings" do
+  describe "what begins it, and its siblings" do
     test "begun by a substitution above it: that change's territory (CLP Art 52(1), Windsor GB)" do
       sub =
         change("art.Article 52", :substituted, ~D[2020-12-31],

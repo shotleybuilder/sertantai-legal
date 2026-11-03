@@ -47,7 +47,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTableTest do
     assert Reader.repeal_table?(d, "schedule-19")
   end
 
-  describe "CV-06a (U12): tables the header test missed" do
+  describe "repeals tables the header test missed" do
     defp table(law, id, title, rows) do
       cells = fn row -> Enum.map_join(row, "", &"<td>#{&1}</td>") end
 

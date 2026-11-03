@@ -91,4 +91,16 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.UnitsTest do
     assert [unit] = Units.units(doc, "section-17")
     assert unit =~ "extend to England and Wales and Scotland"
   end
+
+  test "\"of that Schedule\" is the law's own Schedule named before, never another Act's (ERRA 2013 s.102)" do
+    assert Units.unlettered(
+             "(a) paragraphs 1 to 4 of Schedule 6 extend …; (b) paragraph 9 of that Schedule extends …"
+           ) =~
+             "paragraph 9 of Schedule 6 extends"
+
+    assert Units.unlettered(
+             "paragraph 2 of Schedule 2 to the Social Security Act 1975, and paragraph 4 of that Schedule"
+           ) =~
+             "of that Schedule"
+  end
 end

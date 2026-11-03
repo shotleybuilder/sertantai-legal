@@ -117,4 +117,24 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefListTest do
       refute RefList.covers?("sch.4.pt.1", "sch.4.pt.2.para.3")
     end
   end
+
+  test "a range before a describing bracket: \"section 14(3) to (5) (acknowledgment …)\" (ukpga 2011/16 s.120)" do
+    assert RefList.parse("section 14(3) to (5) (acknowledgment of green deal plan)") ==
+             ~w[s.14(3) s.14(4) s.14(5)]
+
+    assert RefList.parse("section 29(1) to (3) (and section 29(4) has effect accordingly)")
+           |> Enum.take(3) == ~w[s.29(1) s.29(2) s.29(3)]
+  end
+
+  test "each \"in Schedule N, paragraphs …\" its own Schedule's; \"by virtue of subsection (6)\" no item" do
+    assert RefList.parse(
+             "in Schedule 2, paragraphs 2, 5 and 7(3), in Schedule 4, paragraphs 1, 2 and 4."
+           ) ==
+             ~w[sch.2.para.2 sch.2.para.5 sch.2.para.7(3) sch.4.para.1 sch.4.para.2 sch.4.para.4]
+
+    assert RefList.parse(
+             "any provision which extends to England and Wales only by virtue of subsection (6) or (7)",
+             "s.119"
+           ) == []
+  end
 end
