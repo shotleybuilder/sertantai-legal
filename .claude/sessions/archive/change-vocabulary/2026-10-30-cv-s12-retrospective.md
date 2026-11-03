@@ -1,13 +1,70 @@
 ---
 session: 'Retrospective: Process Reset after the Change Vocabulary'
-status: pending
+status: closed
 release: v0.1
 opened: '2026-10-30'
+closed: '2026-11-03'
+outcome: success
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
-depends_on: ["change-vocabulary/2026-10-22-cv-s10-measures", "change-vocabulary/2026-10-22-cv-s11-store-build", "change-vocabulary/2026-10-21-cv-06-switch-over"]
+summary: >
+  Reviewed the two-week change-vocabulary workflow (one family, 33 sessions, 623 commits) against Jason's 14
+  reflections and reset the process: steps named (LAT Change Pipeline), planned in plan mode, checked in code,
+  bugs parked by owning step, decisions in plain words against one aim; docs organised and the pipeline documented;
+  165 sessions archived. Next: code reduction, then the next family.
+decisions:
+  - what: Name the whole the LAT Change Pipeline and its 13 steps in words; no codes
+    why: two numbering schemes and colliding class codes confused the person steering the work
+    result: WORKFLOW.md, GLOSSARY.md (former codes), session-start, memory
+  - what: Every step starts in plan mode with a fixed pass rule, frozen golden, out of scope, time box, at most 8 todos
+    why: pass rules changed about four times; steps fixed in advance ran in 5-7 rounds against 13
+    result: session-start "Step session"; memory plan-mode-steps
+  - what: Checks in code; agents do approved work; any agent check small and costed
+    why: about 120 agent runs in the label fold alone; two switch-over rounds got worse; costs never recorded
+    result: check skills headed with the rule; memory checks-in-code; this session's agents costed (about 1.44M tokens)
+  - what: Bugs carry their owning step and are parked, never fixed in another step's session
+    why: earlier steps' code was fixed inside later ones ("boiling the ocean")
+    result: bug-raise skill, step column in sessions.db, 13 GitHub step labels, 53 parked bugs
+  - what: One aim (binds-today); the rest are principles for delivering it
+    why: Jason 2026-11-03 - "item 1 is the aim - remaining items are rules/heuristics for how to deliver it"; law-text-wins states the law is the authority when we use it, coverage-from-lgu decides whether we need to
+    result: AIMS.md confirmed; RULES.md rules cite what they serve
+  - what: Carry RULES.md's 17 open decisions into the plans of the steps they touch
+    why: Jason chose to close the retrospective now
+    result: recorded in RULES.md "Open decisions"
+  - what: Code reduction next, before the next family
+    why: Jason 2026-11-03
+    result: lat-change-pipeline/2026-11-03-code-reduction.md (pending, planned in plan mode)
+metrics:
+  workflow: { days: 14, families: 1, sessions: 33, session_lines: 10863, commits: 623 }
+  code: { tests_before: 2902, tests_after: 3975, test_lines_added: 280000, lib_lines_added: 40000, new_modules: 175 }
+  archive: { sessions_archived: 165, open_sessions_archived: 0 }
+  docs: { rules: 90, open_decisions: 17, principles: 6 }
+  agents_this_session: { runs: 7, tokens_k: 1444 }
+lessons:
+  - title: Keep the design as a current document; sessions are history
+    detail: The CV-01 design was sound but its evidence order was overturned twice and lived only in session logs; no one could see the whole. docs/lat-change-pipeline/ now holds the current truth.
+    tag: tooling
+  - title: Rulings need a register and an arbiter
+    detail: About 330 ad-hoc "Jason" rulings conflicted (changed_by had four meanings). One aim plus principles, and RULES.md by data scope, make each decision checkable.
+    tag: tooling
+  - title: Drafting docs from sessions finds real faults
+    detail: Writing DATA-ARCHITECTURE, RULES and worked examples surfaced six live faults (unordered start query, no staleness signal for switched labels, display-name family match, alphabetical changed_by, unchecked Windsor list, three labels to confirm).
+    tag: data
+artifacts:
+  - docs/README.md
+  - docs/lat-change-pipeline/
+  - scripts/maintenance/session_index.py
+  - .claude/skills/bug-raise/SKILL.md
+  - .claude/commands/session-start.md
+  - .claude/commands/session-close.md
+  - .claude/sessions/lat-change-pipeline/2026-11-03-parked-bugs.md
+  - .claude/sessions/lat-change-pipeline/2026-11-03-code-reduction.md
+depends_on:
+  - change-vocabulary/2026-10-21-cv-06-switch-over
+enables:
+  - lat-change-pipeline/2026-11-03-code-reduction.md
 ---
 
-# Session: Retrospective: Process Reset after the Change Vocabulary (PENDING)
+# Session: Retrospective: Process Reset after the Change Vocabulary (CLOSED)
 
 ## Problem
 
@@ -26,7 +83,7 @@ Each action names where it is baked in. Order matters: process first, then the a
 - ✅ 5. **Bug register by owning step**: `step` field on every bug (sessions.db + GitHub label `step:<name>`); a `bug-raise` skill; park, never chase; revisit when the step reopens → skill, `session_index.py`, GitHub labels, memory
 - ✅ 6. **Consolidate open bugs** into the register: the ~50 open change-vocabulary bugs, CV-06b, the label fold's upstream classes, deduplicated and each tagged to its step
 - ✅ 7. **Aims (the arbiters)**: a short written list of what the labels are for; every rule decided against them → `docs/lat-change-pipeline/AIMS.md`
-- ⬜ 8. **Unpack the rulings**: gather every "Jason …" ruling (~330 mentions), mark each kept, superseded or in conflict, resolve the conflicts against the aims with Jason → rules register
+- ⏸️ 8. (gathered into RULES.md; 17 open decisions carried to the plans of the steps they touch — Jason 2026-11-03) **Unpack the rulings**: gather every "Jason …" ruling (~330 mentions), mark each kept, superseded or in conflict, resolve the conflicts against the aims with Jason → rules register
 - ✅ 9. **Rules register by data scope**, in plain words: status, in force from, territory, changed by / commenced by, existence and versions, dating gaps, source authority, known limits → `docs/lat-change-pipeline/RULES.md`, each rule with its aim, an example, code and test
 - ✅ 10. **Decision format**: questions to Jason as question, the aim it serves, options, recommendation, in the session doc in plain words; no cryptic terminal one-liners → memory, `CLAUDE.md`
 - ✅ 11. **Developer docs**: overview of the abstraction with one worked example per source kind; data architecture; glossary; workflow by name; rewrite `scraper/CLAUDE.md` → `docs/lat-change-pipeline/`
@@ -35,7 +92,7 @@ Each action names where it is baked in. Order matters: process first, then the a
 - ✅ 14. **Tests by pattern**: test classes, not provisions; fold per-round test files into class tests; golden frozen per pass; a test review → `docs/lat-change-pipeline/TESTING.md`, memory
 - ✅ 15. **Checks in code, agents to do the work**: rewrite the 10 `*-check` skills code-first (rules + checked-row fixtures + catalogues, as the switch-over ended); agents execute approved plans or run as separate parallel sessions per step; any agent check small and costed → skills, memory, `CLAUDE.md`
 - ✅ 16. Retire stale memories and skills the reset supersedes (pass-rule, agent-check and session memories; old step codes in skills)
-- ⬜ 17. Decide what comes next on the new process: the routed fixes (CV-06b) or the next family
+- ✅ 17. (Jason 2026-11-03: code reduction next, then the next family) Decide what comes next on the new process: the routed fixes (CV-06b) or the next family
 
 ## Dependencies
 
@@ -115,7 +172,12 @@ The work was planned in plan mode (`~/.claude/plans/gleaming-doodling-matsumoto.
 | 3 | Draft the docs | 300k (README/WORKFLOW/GLOSSARY) + 318k (AIMS/RULES) + 156k (DATA-ARCHITECTURE/TESTING) |
 | **7** | **Total** | **about 1.44M** |
 
-**Left for Jason:**
+**Jason 2026-11-03:**
+- AIMS confirmed, restructured: one aim (`binds-today`), the rest principles. `law-text-wins` states the law is the authority when we use it; where legislation.gov.uk's coverage is sufficient, the law's text isn't needed.
+- The 17 open decisions are carried.
+- Next: code reduction, then the next family.
+
+**Was left for Jason:**
 - confirm AIMS;
 - decide RULES' 17 open decisions (or carry them);
 - action 17, what comes next.
