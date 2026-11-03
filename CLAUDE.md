@@ -54,7 +54,18 @@ When in doubt, **run hooks** (omit `--no-verify`).
 
 ### Module Decomposition
 
-When a module exceeds ~300 lines or mixes pure logic with DB/IO:
+Size is judged on **functions**, not files. Elixir reads best as small functions in well-scoped modules.
+
+- **Functions:** Credo's function checks at its defaults are enforced as a ratchet. The pre-commit hook runs `mix credo diff` against HEAD and fails on any new issue: cyclomatic complexity over 9, nesting over 2, or arity over 8. Existing issues are fixed when their module is next worked on, never in a sweep. When a function grows, split it into named functions: pattern-match in function heads, pipe, extract private helpers.
+- **Modules: one concept each.** The `@moduledoc` says what the module is in one sentence, and its public functions are its API. If the doc needs an "and", that is the split line. Line count is only a prompt to ask the question; a long module holding one concept (a catalogue of forms) stays whole.
+- **Elixir's own patterns** ([design](https://hexdocs.pm/elixir/design-anti-patterns.html) and [code](https://hexdocs.pm/elixir/code-anti-patterns.html) anti-patterns):
+  - unrelated multi-clause functions become separately named functions;
+  - long parameter lists become a struct or options;
+  - structs replace primitives for domain concepts;
+  - a `with` keeps to its success path;
+  - code asserts the shapes it expects.
+
+When a module mixes pure logic with DB/IO, or holds more than one concept:
 
 1. **Separate pure from impure** — pure functions (string manipulation, regex, data transformation) go in dedicated modules. DB queries, file I/O, HTTP calls go in their own modules.
 2. **Thin orchestrator** — the top-level module coordinates sub-modules, handles logging and options. No business logic.

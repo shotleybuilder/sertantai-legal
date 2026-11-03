@@ -165,6 +165,35 @@ check_compilation() {
     return 0
 }
 
+# Check 4b: function size ratchet (Credo's function checks, new issues only)
+# Size is judged on functions, not files: complexity and nesting at Credo's
+# defaults (backend/.credo.exs). Existing issues are left until their module
+# is next worked on; a commit may not add one. `mix credo diff` compares the
+# working tree with HEAD, so another lane's unstaged edits count too.
+check_credo_ratchet() {
+    STAGED_LIB=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^backend/lib/.*\.ex$' || true)
+    if [ -z "$STAGED_LIB" ]; then
+        return 0
+    fi
+
+    print_status "Checking functions added or changed stay small (credo diff vs HEAD)..."
+    cd backend
+    NEW=$(mix credo diff --from-git-ref HEAD \
+        --only Refactor.CyclomaticComplexity,Refactor.Nesting,Refactor.FunctionArity \
+        --files-included "lib/**/*.ex" 2>&1 | grep -E '^\+ ┃' || true)
+    cd ..
+
+    if echo "$NEW" | grep -qE '\.ex:[0-9]+'; then
+        print_error "New function-size issues (complexity > 9, nesting > 2, or arity > 8):"
+        echo "$NEW"
+        print_info "Split the function into small, named functions (pattern-match in heads, pipe, extract private helpers)"
+        return 1
+    fi
+
+    print_success "No new function-size issues"
+    return 0
+}
+
 # Check 4: Credo (Static Analysis)
 check_credo() {
     print_status "Running static analysis (mix credo)..."
@@ -406,6 +435,7 @@ main() {
     echo ""
 
     check_credo || EXIT_CODE=1
+    check_credo_ratchet || EXIT_CODE=1
     echo ""
 
     check_ash_codegen || EXIT_CODE=1

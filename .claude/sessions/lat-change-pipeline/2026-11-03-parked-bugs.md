@@ -322,7 +322,7 @@ bugs:
   module: lat.extent_check, lat.commencement_check, lat.sources
   affected: 3
   fix: move the tallies into pure modules with tests (CV-S12 retrospective, improve)
-  status: open
+  status: fixed
   step: Measures
   moved_from: 2026-10-22-cv-s10-measures
 - pattern: mix lat.vocabulary is 705 lines (debug view, build, check, conflicts, golden in one task)
@@ -330,7 +330,7 @@ bugs:
   module: mix lat.vocabulary
   affected: 1
   fix: split the build, check and golden into modules (CV-S12 retrospective, improve)
-  status: open
+  status: fixed
   step: Store and build
   moved_from: 2026-10-22-cv-s11-store-build
 - pattern: 'The new source emits no gap list (old: no_start, undated_change, commenced_by_order, pending_change …)'

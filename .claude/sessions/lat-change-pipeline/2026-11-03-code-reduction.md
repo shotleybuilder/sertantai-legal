@@ -58,8 +58,8 @@ bugs:
     fix: Sort the groups by kind before printing
     step: Store and build
     status: open
-  - pattern: mix lat.sources (317) and mix lat.vocabulary (385) still over ~300 lines after thinning
-    category: long-task
+  - pattern: mix lat.sources and mix lat.vocabulary still hold their own reads inline (feed statuses and amending facts; the debug view), untested
+    category: logic-in-task
     module: lat.sources, lat.vocabulary
     affected: 2
     fix: Move the feed-status and amending-facts reads, and the debug view's reads, into their modules
