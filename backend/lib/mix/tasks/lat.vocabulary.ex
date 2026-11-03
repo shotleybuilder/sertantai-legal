@@ -1,6 +1,6 @@
 defmodule Mix.Tasks.Lat.Vocabulary do
   @moduledoc """
-  A law read through the change vocabulary (change-vocabulary CV-02), for
+  A law read through the LAT Change Pipeline's change records, for
   debugging: each change with its claims, the value each attribute took
   and the source that won, and the label periods — beside today's stored
   label. Reads the local CLML store and feed cache only.
@@ -43,7 +43,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
   alias SertantaiLegal.Repo
 
   alias SertantaiLegal.Scraper.{ChangeVocabulary, LatRef, LatStagedParser}
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{Build, Conflicts, LabelSource, Store}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Build, Conflicts, Golden, LabelSource, Store}
 
   @shortdoc "A law's changes, evidence and labels through the change vocabulary; build the change register"
 
@@ -81,7 +81,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
   defp laws(opts, task) do
     cond do
       opts[:golden] ->
-        golden_laws(opts)
+        Golden.laws(opts)
 
       opts[:family] ->
         Repo.query!(
@@ -117,7 +117,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
     conflict_totals(laws)
 
     stale =
-      for l <- golden_laws(opts),
+      for l <- Golden.laws(opts),
           v =
             Repo.query!(
               "SELECT DISTINCT code_version FROM provision_changes WHERE law_name = $1",
@@ -147,12 +147,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
         changes = Store.for_law(law)
         Conflicts.report(changes, pointers(changes))
       end)
-      |> Enum.frequencies_by(fn
-        %{kind: :value, attribute: a} -> {:value, a}
-        %{kind: :uncovered, missing: m} -> {:uncovered, m}
-        %{kind: k} -> k
-      end)
-      |> Enum.sort_by(&(-elem(&1, 1)))
+      |> Conflicts.counts()
 
     Mix.shell().info("\nconflicts over #{length(laws)} laws:")
     for {k, n} <- counts, do: Mix.shell().info("  #{n}  #{inspect(k)}")
@@ -186,14 +181,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
       report = Conflicts.report(changes, pointers(changes))
 
-      counts =
-        report
-        |> Enum.frequencies_by(fn
-          %{kind: :value, attribute: a, primary: {ps, _}, derived: {ds, _}} -> {:value, a, ps, ds}
-          %{kind: :uncovered, missing: m} -> {:uncovered, m}
-          %{kind: k} -> k
-        end)
-        |> Enum.sort()
+      counts = Conflicts.counts(report, detail: true)
 
       Mix.shell().info("\n## #{law}: #{length(changes)} changes, #{length(report)} conflicts")
       for {k, n} <- counts, do: Mix.shell().info("  #{n}  #{inspect(k)}")
@@ -290,62 +278,15 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       end
 
       Mix.shell().info("vocabulary label:")
-      for p <- labels[id], do: Mix.shell().info("  " <> line(p))
+      for p <- labels[id], do: Mix.shell().info("  " <> Golden.line(p))
       Mix.shell().info("stored label today:")
-      for p <- stored(law, id), do: Mix.shell().info("  " <> line(p))
+      for p <- stored(law, id), do: Mix.shell().info("  " <> Golden.line(p))
     end
-  end
-
-  @golden "test/fixtures/change_vocabulary/golden.exs"
-  @golden_extended "test/fixtures/change_vocabulary/golden_extended.exs"
-
-  # the golden set; with --extended, the CV-S09 provisions too
-  defp golden_cases(opts) do
-    files = if opts[:extended], do: [@golden, @golden_extended], else: [@golden]
-    Enum.flat_map(files, &elem(Code.eval_file(&1), 0))
-  end
-
-  defp golden_laws(opts) do
-    opts |> golden_cases() |> Enum.map(& &1.law) |> Enum.uniq()
-  end
-
-  defp golden_law({law, entries}, opts) do
-    xml = Build.clml(law)
-
-    effects =
-      law
-      |> LatStagedParser.law_effects(store: :only)
-      |> LatStagedParser.with_affecting_territory(law)
-
-    containers = LabelSource.containers(law)
-
-    provisions =
-      Map.new(
-        entries,
-        &{&1.id,
-         %{
-           extent: &1.extent,
-           start: &1.start,
-           start_dated: not &1.undecidable,
-           containers: Map.get(containers, &1.id, [])
-         }}
-      )
-
-    given =
-      if opts[:stored],
-        do: [changes: Store.for_law(law), title: Build.title(law)],
-        else:
-          law
-          |> Build.primary(effects)
-          |> Keyword.merge(rows: law |> Build.rows() |> Map.keys(), xml_ids: Build.xml_ids(law))
-
-    labels = ChangeVocabulary.labels(law, xml, effects, provisions, given)
-    Enum.map(entries, &{&1, labels[&1.id]})
   end
 
   defp golden(opts) do
     Mix.Task.run("app.start")
-    cases = golden_cases(opts)
+    cases = Golden.cases(opts)
 
     # each golden law read where the machine allows several at once
     # (`LawRunner.Guard`), in order (run time, 2026-10-25)
@@ -358,7 +299,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       |> Enum.sort_by(&elem(&1, 0))
       |> Task.async_stream(
         fn {law, _} = group ->
-          {us, rows} = :timer.tc(fn -> golden_law(group, opts) end)
+          {us, rows} = :timer.tc(fn -> Golden.law_labels(group, opts) end)
           Mix.shell().info("  #{law}: #{div(us, 1_000_000)} s")
           rows
         end,
@@ -369,8 +310,8 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       |> Enum.flat_map(fn {:ok, rows} -> rows end)
 
     for {c, with_tiers} <- results do
-      got = Enum.map(with_tiers || [], &Map.delete(&1, :tiers))
-      mark = if got == c.periods, do: "PASS", else: "FAIL"
+      got = Golden.untiered(with_tiers)
+      mark = if Golden.pass?(c, with_tiers), do: "PASS", else: "FAIL"
 
       Mix.shell().info(
         "#{mark}  #{c.law} #{c.id}  — #{c.case}#{if c.undecidable, do: " (undecidable)", else: ""}"
@@ -379,43 +320,20 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       # each period's tier per field: the law's text (P) or legislation.gov.uk (D)
       if opts[:tiers] do
         for p <- with_tiers || [],
-            do: Mix.shell().info("      " <> line(p) <> "   " <> tier_line(p[:tiers]))
+            do:
+              Mix.shell().info("      " <> Golden.line(p) <> "   " <> Golden.tier_line(p[:tiers]))
       end
 
       if got != c.periods do
         Mix.shell().info("    expected:")
-        for p <- c.periods, do: Mix.shell().info("      " <> line(p))
+        for p <- c.periods, do: Mix.shell().info("      " <> Golden.line(p))
         Mix.shell().info("    got:")
-        for p <- got, do: Mix.shell().info("      " <> line(p))
+        for p <- got, do: Mix.shell().info("      " <> Golden.line(p))
       end
     end
 
-    passed =
-      Enum.count(results, fn {c, got} ->
-        Enum.map(got || [], &Map.delete(&1, :tiers)) == c.periods
-      end)
-
-    Mix.shell().info("\n#{passed} / #{length(results)} golden provisions pass")
+    Mix.shell().info("\n#{Golden.passed(results)} / #{length(results)} golden provisions pass")
   end
-
-  defp tier_line(nil), do: ""
-
-  defp tier_line(tiers) do
-    tiers
-    |> Enum.sort()
-    |> Enum.map_join(" ", fn {f, t} ->
-      "#{f}:#{case t do
-        :primary -> "P"
-        :derived -> "D"
-        nil -> "-"
-      end}"
-    end)
-  end
-
-  defp line(p),
-    do:
-      "#{p.valid_from} → #{p.valid_to || "…"}  #{p.status}  from #{p.in_force_from}  by #{inspect(p.changed_by)}" <>
-        "#{if Map.get(p, :commenced_by, []) != [], do: "  commenced by #{inspect(p.commenced_by)}"}  #{p.territory}"
 
   defp provisions(law, ids) do
     %{rows: start_rows} =

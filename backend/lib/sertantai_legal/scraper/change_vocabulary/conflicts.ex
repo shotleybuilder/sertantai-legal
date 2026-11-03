@@ -268,4 +268,32 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Conflicts do
     |> Enum.map(&Evidence.tier(&1.source))
     |> Enum.uniq()
   end
+
+  @doc """
+  A report's conflicts counted by kind: a value conflict by its attribute
+  (with `detail: true`, also by the primary and derived sources), an
+  uncovered change by what it misses. Most first; with `detail: true`,
+  sorted by key.
+  """
+  @spec counts([map()], keyword()) :: [{term(), pos_integer()}]
+  def counts(report, opts \\ []) do
+    detail? = Keyword.get(opts, :detail, false)
+
+    counted =
+      Enum.frequencies_by(report, fn
+        %{kind: :value, attribute: a, primary: {ps, _}, derived: {ds, _}} when detail? ->
+          {:value, a, ps, ds}
+
+        %{kind: :value, attribute: a} ->
+          {:value, a}
+
+        %{kind: :uncovered, missing: m} ->
+          {:uncovered, m}
+
+        %{kind: k} ->
+          k
+      end)
+
+    if detail?, do: Enum.sort(counted), else: Enum.sort_by(counted, &(-elem(&1, 1)))
+  end
 end
