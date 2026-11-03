@@ -1,12 +1,12 @@
 # LAT Change Pipeline: the aim and its principles
 
-Confirmed by Jason 2026-11-03 (retrospective): **there is one aim, `binds-today`.** The six items after it are not aims. They are principles for how the pipeline delivers it.
+Confirmed by Jason 2026-11-03 (retrospective): **there is one aim, `binds-on-date`: the time machine.** The six items after it are not aims. They are principles for how the pipeline delivers it.
 
 Every rule in `RULES.md` serves the aim through one or more principles. A rule that serves none is a smell. When two rules pull apart, the aim decides, then the principles in the order below. Each item has a short name, and `RULES.md` cites rules by it.
 
-## The aim — `binds-today`: tell the user whether a provision binds them
+## The aim — `binds-on-date`: the time machine
 
-The label tells a compliance user whether a provision binds them today, since when, where, and which law made it so. Its periods show the same for any past date.
+For any date the user picks, the label tells them whether a provision binds them on that date, since when, where, and which law made it so. "Today" means the day the user picks, not literally today's date (Jason 2026-11-03: "we are building the time machine"). This is why the labels are periods over time (`lat_label_timeline`), not a single current value. `lat_labels_today` is just the time machine set to the current date.
 - **Why:** this is what the labels are for. Compliance reads `lat_label_timeline`, and nothing else matters if that is wrong.
 - **From:** `notes-are-hints` memory ("Purpose: high-quality provision labels", 2026-10-12); the label fold's aim (`2026-10-22-cv-s09-label-fold.md`); the consumers step (`2026-10-21-cv-05-consumers.md`, 2026-10-31).
 
@@ -50,7 +50,7 @@ A fault is fixed in the step whose code owns it, at its source, by class. A one-
 
 ## When principles pull apart
 
-`binds-today` is the purpose and decides first.
+`binds-on-date` is the purpose and decides first.
 - `unknown-over-guess` and `law-text-wins` decide how a value is chosen.
 - `coverage-from-lgu` and `one-record-per-change` decide how the pipeline is built. In practice `coverage-from-lgu` decides *whether* we read the law, and `law-text-wins` decides *what happens when we do*.
 - `prove-one-family` and `fix-where-owned` decide how the work is run.
