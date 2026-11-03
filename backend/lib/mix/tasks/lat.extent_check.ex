@@ -1,7 +1,8 @@
 defmodule Mix.Tasks.Lat.ExtentCheck do
   @moduledoc """
-  The extent and application reader's check (change vocabulary CV-S05), for
-  a family:
+  The extent and application reader's check (LAT Change Pipeline, step:
+  Extent reader), for a family. The check itself is `Extent.Check` (pure);
+  this task reads the DB and the read cache, and prints.
 
   1. **Amending laws:** every law changing the family's laws (the stored
      changes' `by`) accounted for — its extent basis as the reader reads it
@@ -36,9 +37,8 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
   use Mix.Task
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.AmendingLaw.{Extent, SweepForm}
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Lookup, ReadCache, Store}
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.{Coverage, Draw}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Check, Powers, ReadCache, Store}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Draw
   alias SertantaiLegal.Scraper.LawRunner
   alias SertantaiLegal.Scraper.LawRunner.Guard
 
@@ -90,7 +90,7 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
       end
 
     by_law = Map.new(rows, &{&1.law, &1})
-    change_rows = Enum.map(changes, &change_row(&1, by_law))
+    change_rows = Enum.map(changes, &Check.change_row(&1, by_law))
 
     report(rows, change_rows)
     if opts[:sample], do: sample(opts, rows, change_rows)
@@ -148,132 +148,14 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
 
     cond do
       not Store.reads?(law) ->
-        %{
-          law: law,
-          basis: "none",
-          why: "type_not_read",
-          fault: nil,
-          unread: %{},
-          uncaught: [],
-          words: nil
-        }
+        Check.unread_law(law, "type_not_read")
 
       reading == nil ->
-        %{
-          law: law,
-          basis: "none",
-          why: "not_held",
-          fault: nil,
-          unread: %{},
-          uncaught: [],
-          words: nil
-        }
+        Check.unread_law(law, "not_held")
 
       true ->
-        read = reading.read
-        classes = reading.classes
-        e = SertantaiLegal.Scraper.AmendingLaw.Extent.Powers.with_powers(read, law, cached: true)
-        {basis, why} = basis(e, law)
-
-        unread =
-          classes
-          # (every unread class, list_partial and provision_* too: CV-S05 round 8)
-          |> Enum.filter(fn {_, _, c} -> String.starts_with?(c, "unread:") end)
-          |> Enum.frequencies_by(&elem(&1, 2))
-
-        fault =
-          cond do
-            stored == nil -> "not_stored"
-            MapSet.new(stored) != rows(e, law) -> "stale"
-            true -> nil
-          end
-
-        %{
-          law: law,
-          basis: basis,
-          why: why,
-          fault: fault,
-          unread: unread,
-          # the sweep's sentences the catalogue misses, with their form
-          # (CV-S05a)
-          uncaught: for({ref, s, _net} <- reading.uncaught, do: {ref, s, SweepForm.form(s)}),
-          extent: e,
-          words: e.text || words(classes)
-        }
-    end
-  end
-
-  defp basis(%Extent{} = e, law) do
-    cond do
-      e.default -> {"clause", nil}
-      e.lists != [] -> {"lists", nil}
-      e.application -> {"application", nil}
-      e.powers -> {"powers", nil}
-      e.competence -> {"competence", nil}
-      act?(law) -> {"none", "no_clause"}
-      true -> {"none", "no_powers"}
-    end
-  end
-
-  # the reading as the rows `mix lat.amending --extents` writes, as a set
-  # (compared with the rows stored, never through `from_rows/1`: N9)
-  defp rows(%Extent{} = e, law),
-    do:
-      e
-      |> Extent.to_rows(law)
-      |> Enum.map(&Map.take(&1, Store.compared()))
-      |> MapSet.new()
-
-  # the law's first extent or application words, where it states none read
-  defp words(classes) do
-    Enum.find_value(classes, fn {ref, s, _} -> "#{ref}: #{s}" end)
-  end
-
-  defp act?(law), do: (String.split(law, "_") |> Enum.at(1)) in ~w(ukpga asp anaw asc nia apni)
-
-  # ── text changes ─────────────────────────────────────────────────────
-
-  defp change_row(c, by_law) do
-    has = fn prefix -> Enum.find(c.claims, &String.starts_with?(&1, prefix)) end
-
-    outcome =
-      cond do
-        has.("law_text:territory=") -> "territory:law"
-        has.("law_text:extent=") -> "bound:law"
-        has.("feed:territory=") -> "territory:feed"
-        has.("markup:territory=") -> "territory:markup"
-        c.by == nil -> "none:no_amending_law"
-        true -> "none:" <> none_why(Map.get(by_law, c.by), c.affecting)
-      end
-
-    Map.put(c, :outcome, outcome)
-  end
-
-  defp none_why(nil, _), do: "no_amending_law"
-  defp none_why(%{basis: "none", why: why}, _), do: "law_" <> why
-  defp none_why(%{basis: "competence"}, _), do: "competence_only"
-
-  # the change's own amending provisions first: one following the
-  # enactment it changes is `same`, whatever else the law leaves unread
-  # (CPA 1987 Sch.3, CV-S05 seed 20); a statement of the law's left unread
-  # withholds its provisions' bound, never the default (CV-S05 round 6)
-  defp none_why(%{extent: %Extent{lists: lists} = e} = row, affecting) do
-    cond do
-      affecting != [] and Lookup.of_change(e, affecting) == :same -> "same"
-      Enum.any?(lists, &match?({:unread, _, _}, &1)) -> "unread_statement"
-      true -> none_listed(row)
-    end
-  end
-
-  defp none_why(_, _), do: "unknown"
-
-  # (a same list first: a provision following the enactment it changes is
-  # no provision left unnamed — round 6 D4)
-  defp none_listed(%{extent: %Extent{lists: lists, default: d}}) do
-    cond do
-      Enum.any?(lists, &match?({:same, _, _}, &1)) -> "same_or_not_named"
-      d == nil and lists != [] -> "not_named"
-      true -> "provision_not_named"
+        e = Powers.with_powers(reading.read, law, cached: true)
+        Check.law_row(law, reading, e, stored)
     end
   end
 
@@ -281,66 +163,46 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
 
   defp report(rows, change_rows) do
     shell = Mix.shell()
+    t = Check.tallies(rows, change_rows)
 
     shell.info("\n#{length(rows)} amending laws — extent basis:")
+    for {k, n} <- t.bases, do: shell.info("  #{pad(n)}  #{k}")
 
-    for {k, n} <- rows |> Enum.frequencies_by(&key/1) |> Enum.sort_by(&(-elem(&1, 1))),
-        do: shell.info("  #{pad(n)}  #{k}")
-
-    faults = Enum.filter(rows, & &1.fault)
-    shell.info("\nour faults (stored extent_rules against the reading now): #{length(faults)}")
-
-    for {f, n} <- Enum.frequencies_by(faults, & &1.fault), do: shell.info("  #{pad(n)}  #{f}")
-    for r <- Enum.take(faults, 15), do: shell.info("    #{r.law} #{r.fault}")
-
-    unread =
-      Enum.reduce(rows, %{}, fn r, acc -> Map.merge(acc, r.unread, fn _, a, b -> a + b end) end)
-
-    with_unread = Enum.count(rows, &(&1.unread != %{}))
+    shell.info("\nour faults (stored extent_rules against the reading now): #{length(t.faults)}")
+    for {f, n} <- t.fault_kinds, do: shell.info("  #{pad(n)}  #{f}")
+    for r <- Enum.take(t.faults, 15), do: shell.info("    #{r.law} #{r.fault}")
 
     shell.info(
-      "\nthe laws' own extent sentences left unread (catalogue classes, counted): #{with_unread} laws"
+      "\nthe laws' own extent sentences left unread (catalogue classes, counted): #{t.with_unread} laws"
     )
 
-    for {c, n} <- Enum.sort_by(unread, &(-elem(&1, 1))), do: shell.info("  #{pad(n)}  #{c}")
-
-    uncaught = for r <- rows, {ref, s, form} <- r.uncaught, do: {r.law, ref, s, form}
-    misses = Enum.filter(uncaught, fn {_, _, _, form} -> SweepForm.read?(form) end)
+    for {c, n} <- t.unread, do: shell.info("  #{pad(n)}  #{c}")
 
     shell.info(
-      "\nextent sentences the catalogue misses (the sweep, CV-S05a): #{length(uncaught)} in " <>
-        "#{uncaught |> Enum.map(&elem(&1, 0)) |> Enum.uniq() |> length()} laws; " <>
-        "#{length(misses)} in a form the reader is to read"
+      "\nextent sentences the catalogue misses (the sweep, CV-S05a): #{length(t.uncaught)} in " <>
+        "#{t.uncaught_laws} laws; " <>
+        "#{length(t.misses)} in a form the reader is to read"
     )
 
-    for {f, n} <- uncaught |> Enum.frequencies_by(&elem(&1, 3)) |> Enum.sort_by(&(-elem(&1, 1))),
-        do: shell.info("  #{pad(n)}  #{f}")
+    for {f, n} <- t.uncaught_forms, do: shell.info("  #{pad(n)}  #{f}")
 
-    for {law, ref, s, form} <- misses,
+    for {law, ref, s, form} <- t.misses,
         do: shell.info("    #{law} #{ref} (#{form}): #{String.slice(s, 0, 140)}")
 
     shell.info("\n#{length(change_rows)} text changes — territory from:")
+    for {k, n} <- t.outcomes, do: shell.info("  #{pad(n)}  #{k}")
 
-    for {k, n} <-
-          change_rows |> Enum.frequencies_by(& &1.outcome) |> Enum.sort_by(&(-elem(&1, 1))),
-        do: shell.info("  #{pad(n)}  #{k}")
-
-    groups = change_rows |> Enum.frequencies_by(& &1.outcome) |> Coverage.territory_groups()
     shell.info("\ngrouped (CV-S05's table):")
 
-    for k <-
-          ~w(law_text follows_enactment feed_or_markup law_type_not_read no_powers unread_statement competence_only no_amending_law other)a,
-        do: shell.info("  #{pad(groups[k])}  #{pct(groups[k], groups.total)}  #{k}")
+    for k <- Check.groups(),
+        do: shell.info("  #{pad(t.groups[k])}  #{pct(t.groups[k], t.groups.total)}  #{k}")
 
     shell.info(
-      if faults == [],
+      if t.faults == [],
         do: "\nPASS (amending laws: our faults 0)",
-        else: "\nFAIL (our faults #{length(faults)})"
+        else: "\nFAIL (our faults #{length(t.faults)})"
     )
   end
-
-  defp key(%{basis: "none", why: why}), do: "none: #{why}"
-  defp key(%{basis: b}), do: b
 
   defp pad(n), do: String.pad_leading(to_string(n), 5)
 
@@ -355,42 +217,8 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
     n = opts[:n] || 50
     Draw.seed({opts[:seed] || 1, 2, 3})
 
-    laws =
-      rows
-      |> Draw.equal_share(&key/1, n)
-      |> Enum.map(fn r ->
-        %{
-          "law" => r.law,
-          "basis" => key(r),
-          "default" => r[:extent] && r.extent.default,
-          "application" => r[:extent] && r.extent.application,
-          "powers" => r[:extent] && r.extent.powers,
-          "competence" => r[:extent] && r.extent.competence,
-          "lists" =>
-            for(
-              {k, p, items} <- (r[:extent] && r.extent.lists) || [],
-              do: %{"kind" => to_string(k), "place" => p, "items" => Enum.take(items, 20)}
-            ),
-          "clause" => r.words,
-          "unread" => r.unread
-        }
-      end)
-
-    changes =
-      change_rows
-      |> Draw.equal_share(& &1.outcome, n)
-      |> Enum.map(fn c ->
-        %{
-          "law" => c.law,
-          "target" => c.target,
-          "operation" => c.operation,
-          "by" => c.by,
-          "territory" => c.territory,
-          "outcome" => c.outcome,
-          "claims" => c.claims,
-          "key_tail" => String.slice(c.key || "", -6, 6)
-        }
-      end)
+    laws = rows |> Draw.equal_share(&Check.key/1, n) |> Enum.map(&Check.law_item/1)
+    changes = change_rows |> Draw.equal_share(& &1.outcome, n) |> Enum.map(&Check.change_item/1)
 
     File.write!(
       opts[:sample],
