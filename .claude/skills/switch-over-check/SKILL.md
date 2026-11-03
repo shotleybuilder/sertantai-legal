@@ -1,7 +1,15 @@
 ---
 name: Switch-over Check
-description: The switch-over's acceptance check (CV-06) for one family. It sorts every provision whose new label (from the merged changes) differs from today's stored label into a cause, draws a seeded sample per cause, and has agents judge each against the law, pooled into a pass bound. Use it before a family's labels switch to the new method.
+description: The switch-over's acceptance check for one family. It sorts every provision whose new label (from the merged changes) differs from today's stored label into a cause, draws a seeded sample per cause, and has agents judge each against the law, pooled into a pass bound. Use it before a family's labels switch to the new method.
 ---
+
+> **LAT Change Pipeline — step: Switch-over.** Where it sits, its inputs, outputs and pass rule: `docs/lat-change-pipeline/WORKFLOW.md`. Terms and former codes (CV-…): `docs/lat-change-pipeline/GLOSSARY.md`.
+>
+> **Process (retrospective, 2026-11-03):**
+> - Plan the step in plan mode first, with its pass rule fixed and golden frozen (`session-start`, step session).
+> - The check is code first: table rules, checked-row fixtures, pattern catalogues, golden from inputs.
+> - The agent check below is used only to find NEW classes, on a small sample, and its token cost is recorded in the session. It is not a repeated pass gate.
+> - Bugs in another step's code are raised with `bug-raise` and parked, never fixed here.
 
 # Switch-over Check (CV-06, per family)
 

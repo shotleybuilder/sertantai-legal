@@ -12,7 +12,7 @@ summary: >
 
 ## Context
 
-Phase 1 created the `lat` table (31 columns, citation-based PK). Phase 2 imports ~99K content rows from 17 Airtable category CSV files into it. The CSVs use a legacy schema with different column names, acronym-laden IDs, and interleaved annotation rows. A 16-step transform pipeline (`docs/LAT-TRANSFORMS-FOR-SERTANTAI.md`) must be applied.
+Phase 1 created the `lat` table (31 columns, citation-based PK). Phase 2 imports ~99K content rows from 17 Airtable category CSV files into it. The CSVs use a legacy schema with different column names, acronym-laden IDs, and interleaved annotation rows. A 16-step transform pipeline (`docs/lat/LAT-TRANSFORMS-FOR-SERTANTAI.md`) must be applied.
 
 ## Data Profile
 

@@ -1,7 +1,15 @@
 ---
 name: Store Build Check
-description: The change register's acceptance check (CV-S11) for one family. It proves the build repeatable (two builds, digests compared), times it, shows what is stale (mix lat.stale, with an agent hand check of a seeded sample), and re-runs the sources gate after the build. Use it when a family reaches step 11, and after any change to the build or the store.
+description: The change register's acceptance check for one family. It proves the build repeatable (two builds, digests compared), times it, shows what is stale (mix lat.stale, with an agent hand check of a seeded sample), and re-runs the sources gate after the build. Use it when a family reaches step 11, and after any change to the build or the store.
 ---
+
+> **LAT Change Pipeline — step: Store and build.** Where it sits, its inputs, outputs and pass rule: `docs/lat-change-pipeline/WORKFLOW.md`. Terms and former codes (CV-…): `docs/lat-change-pipeline/GLOSSARY.md`.
+>
+> **Process (retrospective, 2026-11-03):**
+> - Plan the step in plan mode first, with its pass rule fixed and golden frozen (`session-start`, step session).
+> - The check is code first: table rules, checked-row fixtures, pattern catalogues, golden from inputs.
+> - The agent check below is used only to find NEW classes, on a small sample, and its token cost is recorded in the session. It is not a repeated pass gate.
+> - Bugs in another step's code are raised with `bug-raise` and parked, never fixed here.
 
 # Store Build Check (CV-S11, per family)
 

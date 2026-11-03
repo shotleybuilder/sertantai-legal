@@ -19,6 +19,7 @@ When archiving old sessions and rebuilding the SQLite index. Run this periodical
 | `--root .` | Repository root (required) |
 | `--archive` | Archive sessions closed >30 days via `git mv` |
 | `--archive-days N` | Override the 30-day default |
+| `--paths DIR…` | With `--archive`: also archive every closed session in these folders, whatever its age (e.g. a finished workflow's folder) |
 | `--db PATH` | Override SQLite path (default: `.claude/sessions/sessions.db`) |
 
 ## Usage
@@ -58,7 +59,8 @@ sqlite3 .claude/sessions/sessions.db "SELECT id, title, status FROM sessions WHE
 
 ### Archive Behavior
 
-- Sessions closed >30 days move to `.claude/sessions/archive/` (flat, no subdirectory mirroring)
+- Sessions closed >30 days move to `.claude/sessions/archive/`, keeping their folder (`archive/<folder>/<file>`; root-level files go straight into `archive/`), so same-named files never collide
+- Never archive a session that is not closed (pending, suspended, active stay where they are)
 - Uses `git mv` to preserve history (`git log --follow` recovers full content)
 - SQLite retains complete frontmatter for discovery even after archival
 
@@ -66,7 +68,7 @@ sqlite3 .claude/sessions/sessions.db "SELECT id, title, status FROM sessions WHE
 
 ```
 .claude/sessions/
-├── archive/                # sessions closed >30 days (flat)
+├── archive/                # sessions closed >30 days, by folder
 ├── baserow/                # Baserow integration sessions
 ├── baserow-app/            # Baserow app sessions
 ├── qq-requirements/        # QQ requirements sessions

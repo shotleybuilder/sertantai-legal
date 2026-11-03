@@ -25,7 +25,7 @@ decisions:
     result: 15 cases wait for effects (LR-03), 2 for savings (LR-07); ~4,500 note-derived exclusions removed pending effects
   - what: Research before rules — official legislation.gov.uk docs + corpus typology of notes
     why: Jason asked for the meaning of notes, not a guess
-    result: docs/LEGISLATION-GOV-UK-NOTE-TYPOLOGY.md (bare (X.) = Extent 97.8%; dated "for X." = commencement)
+    result: docs/lat-change-pipeline/LEGISLATION-GOV-UK-NOTE-TYPOLOGY.md (bare (X.) = Extent 97.8%; dated "for X." = commencement)
 
 metrics:
   corpus_diff_rows: { run1: 8035, run4: 4841, run6: 3504, run8_markup_only: 4927 }
@@ -51,8 +51,8 @@ artifacts:
   - backend/lib/sertantai_legal/scraper/territory.ex
   - backend/lib/sertantai_legal/scraper/lat_parser.ex
   - backend/lib/sertantai_legal/scraper/lat_diff_class.ex
-  - docs/LEGISLATION-GOV-UK-NOTE-TYPOLOGY.md
-  - docs/LAT-QA-SAMPLE-SPEC.md
+  - docs/lat-change-pipeline/LEGISLATION-GOV-UK-NOTE-TYPOLOGY.md
+  - docs/lat/LAT-QA-SAMPLE-SPEC.md
   - backend/data/reports/lat-refactor/lr02-diff.csv
   - backend/data/reports/lat-refactor/lr02-lost-exclusions-spotcheck.csv
   - backend/data/code-reviews/2026-10-09-lr02-acceptance-gemini.md
@@ -124,7 +124,7 @@ Run 4: 4,841 rows in 40 classes. Agent review of 167 rows sampled per class (`da
 
 ## Notes grounded (2026-10-09)
 
-Jason asked for the research, not a guess: `docs/LEGISLATION-GOV-UK-NOTE-TYPOLOGY.md` (official sources + corpus). Bare "(X.)" in an F note = where the change applies (= Extent attribute, 97.8% agreement); dated "date for X." = where it is in force. Jason: "clean up code built on mistaken model of Notes. Go LR-02".
+Jason asked for the research, not a guess: `docs/lat-change-pipeline/LEGISLATION-GOV-UK-NOTE-TYPOLOGY.md` (official sources + corpus). Bare "(X.)" in an F note = where the change applies (= Extent attribute, 97.8% agreement); dated "date for X." = where it is in force. Jason: "clean up code built on mistaken model of Notes. Go LR-02".
 - **New `NoteTerritory`** (pure, grounded): `applies/1` (bare / spelled-out), `in_force/1` (dated qualifiers; purposes ignored; catch-alls everywhere; except X → all but X). The old `from_note` cases migrated into its tests.
 - **`Territory` cleaned** to set operations only: `from_note`, `note_territories`, clause/dated-part/bracket heuristics deleted (they mixed the two forms).
 - **`LatTerritory.territory/2`**: attribute (+ disjoint bare clauses) → bare clauses → in-force territory only for changes that remove text (retained repeal, substitution pair). Insertions never take a dated territory (commencement → status).

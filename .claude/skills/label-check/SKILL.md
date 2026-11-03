@@ -1,7 +1,15 @@
 ---
 name: Label Check
-description: The change vocabulary's label-fold acceptance check (CV-S09) for one family. It covers the golden set from inputs (G), the rows each fold rule acts on (S, by shape), the rows where the fold differs from today's label (T, by class) and random rows (R), with Claude agents judging each label period against the law's own sources. It also holds the golden-drafting prompt for growing the golden set. Use it for each fix round and each new family.
+description: The LAT Change Pipeline's label-fold acceptance check for one family. It covers the golden set from inputs (G), the rows each fold rule acts on (S, by shape), the rows where the fold differs from today's label (T, by class) and random rows (R), with Claude agents judging each label period against the law's own sources. It also holds the golden-drafting prompt for growing the golden set. Use it for each fix round and each new family.
 ---
+
+> **LAT Change Pipeline — step: Label fold.** Where it sits, its inputs, outputs and pass rule: `docs/lat-change-pipeline/WORKFLOW.md`. Terms and former codes (CV-…): `docs/lat-change-pipeline/GLOSSARY.md`.
+>
+> **Process (retrospective, 2026-11-03):**
+> - Plan the step in plan mode first, with its pass rule fixed and golden frozen (`session-start`, step session).
+> - The check is code first: table rules, checked-row fixtures, pattern catalogues, golden from inputs.
+> - The agent check below is used only to find NEW classes, on a small sample, and its token cost is recorded in the session. It is not a repeated pass gate.
+> - Bugs in another step's code are raised with `bug-raise` and parked, never fixed here.
 
 # Label Check (CV-S09, per family)
 

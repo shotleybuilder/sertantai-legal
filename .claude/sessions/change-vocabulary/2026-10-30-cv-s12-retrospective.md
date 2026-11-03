@@ -19,28 +19,106 @@ Jason's reflections (2026-11-03) are the brief: names not codes; plan mode befor
 
 Each action names where it is baked in. Order matters: process first, then the aims and rules, then docs, then clean-up.
 
-- ⬜ 1. Agree these recommendations with Jason (keep, change or drop each)
-- ⬜ 2. **Step names, not codes**: rename the workflow steps by name in a workflow doc; session files by family and step name; no codes in anything Jason reads → `session-start` skill, memory, `docs/change-vocabulary/WORKFLOW.md`
-- ⬜ 3. **Plan mode before each step**: the step plan (aim, scope, pass rule, golden frozen, out of scope, time box, ≤ 8 todos) agreed in plan mode, written to the session → `session-start` skill (step variant), memory
-- ⬜ 4. **Session size and scope**: one step for one family per session; todos fixed at plan; new work to a parking list; round logs to report files; warn over 300 lines → `session-start`/`session-close` skills, `session_index.py` warning
-- ⬜ 5. **Bug register by owning step**: `step` field on every bug (sessions.db + GitHub label `step:<name>`); a `bug-raise` skill; park, never chase; revisit when the step reopens → skill, `session_index.py`, GitHub labels, memory
-- ⬜ 6. **Consolidate open bugs** into the register: the ~50 open change-vocabulary bugs, CV-06b, the label fold's upstream classes, deduplicated and each tagged to its step
-- ⬜ 7. **Aims (the arbiters)**: a short written list of what the labels are for; every rule decided against them → `docs/change-vocabulary/AIMS.md`
+- ✅ 1. Agree these recommendations with Jason (keep, change or drop each)
+- ✅ 2. **Step names, not codes**: rename the workflow steps by name in a workflow doc; session files by family and step name; no codes in anything Jason reads → `session-start` skill, memory, `docs/lat-change-pipeline/WORKFLOW.md`
+- ✅ 3. **Plan mode before each step**: the step plan (aim, scope, pass rule, golden frozen, out of scope, time box, ≤ 8 todos) agreed in plan mode, written to the session → `session-start` skill (step variant), memory
+- ✅ 4. **Session size and scope**: one step for one family per session; todos fixed at plan; new work to a parking list; round logs to report files; warn over 300 lines → `session-start`/`session-close` skills, `session_index.py` warning
+- ✅ 5. **Bug register by owning step**: `step` field on every bug (sessions.db + GitHub label `step:<name>`); a `bug-raise` skill; park, never chase; revisit when the step reopens → skill, `session_index.py`, GitHub labels, memory
+- ✅ 6. **Consolidate open bugs** into the register: the ~50 open change-vocabulary bugs, CV-06b, the label fold's upstream classes, deduplicated and each tagged to its step
+- ✅ 7. **Aims (the arbiters)**: a short written list of what the labels are for; every rule decided against them → `docs/lat-change-pipeline/AIMS.md`
 - ⬜ 8. **Unpack the rulings**: gather every "Jason …" ruling (~330 mentions), mark each kept, superseded or in conflict, resolve the conflicts against the aims with Jason → rules register
-- ⬜ 9. **Rules register by data scope**, in plain words: status, in force from, territory, changed by / commenced by, existence and versions, dating gaps, source authority, known limits → `docs/change-vocabulary/RULES.md`, each rule with its aim, an example, code and test
-- ⬜ 10. **Decision format**: questions to Jason as question, the aim it serves, options, recommendation, in the session doc in plain words; no cryptic terminal one-liners → memory, `CLAUDE.md`
-- ⬜ 11. **Developer docs**: overview of the abstraction with one worked example per source kind; data architecture; glossary; workflow by name; rewrite `scraper/CLAUDE.md` → `docs/change-vocabulary/`
-- ⬜ 12. **Data architecture clean-up** (each with Jason's go): 209 snapshot tables (5.2 GB) after a NAS backup; a restore-point policy (named schema, dropped at session close); orphans (`law_change_snapshots`, `rp9` schema); the plan to retire `lat_change_log` and `LabelProjection`
-- ⬜ 13. **Rabbit-hole rule**: triage threshold for fixing in-step (in the step's scope and a class over a set size); single-law wordings and legislation.gov.uk data errors become named known limits → memory, step plan template, `RULES.md` known limits
-- ⬜ 14. **Tests by pattern**: test classes, not provisions; fold per-round test files into class tests; golden frozen per pass; a test review → `docs/change-vocabulary/TESTING.md`, memory
-- ⬜ 15. **Checks in code, agents to do the work**: rewrite the 10 `*-check` skills code-first (rules + checked-row fixtures + catalogues, as the switch-over ended); agents execute approved plans or run as separate parallel sessions per step; any agent check small and costed → skills, memory, `CLAUDE.md`
-- ⬜ 16. Retire stale memories and skills the reset supersedes (pass-rule, agent-check and session memories; old step codes in skills)
+- ✅ 9. **Rules register by data scope**, in plain words: status, in force from, territory, changed by / commenced by, existence and versions, dating gaps, source authority, known limits → `docs/lat-change-pipeline/RULES.md`, each rule with its aim, an example, code and test
+- ✅ 10. **Decision format**: questions to Jason as question, the aim it serves, options, recommendation, in the session doc in plain words; no cryptic terminal one-liners → memory, `CLAUDE.md`
+- ✅ 11. **Developer docs**: overview of the abstraction with one worked example per source kind; data architecture; glossary; workflow by name; rewrite `scraper/CLAUDE.md` → `docs/lat-change-pipeline/`
+- ⏸️ 12. (documented in DATA-ARCHITECTURE.md, restore-point policy PROPOSED; drops moved to the Code Reduction session, each with Jason's go) **Data architecture clean-up** (each with Jason's go): 209 snapshot tables (5.2 GB) after a NAS backup; a restore-point policy (named schema, dropped at session close); orphans (`law_change_snapshots`, `rp9` schema); the plan to retire `lat_change_log` and `LabelProjection`
+- ✅ 13. **Rabbit-hole rule**: triage threshold for fixing in-step (in the step's scope and a class over a set size); single-law wordings and legislation.gov.uk data errors become named known limits → memory, step plan template, `RULES.md` known limits
+- ✅ 14. **Tests by pattern**: test classes, not provisions; fold per-round test files into class tests; golden frozen per pass; a test review → `docs/lat-change-pipeline/TESTING.md`, memory
+- ✅ 15. **Checks in code, agents to do the work**: rewrite the 10 `*-check` skills code-first (rules + checked-row fixtures + catalogues, as the switch-over ended); agents execute approved plans or run as separate parallel sessions per step; any agent check small and costed → skills, memory, `CLAUDE.md`
+- ✅ 16. Retire stale memories and skills the reset supersedes (pass-rule, agent-check and session memories; old step codes in skills)
 - ⬜ 17. Decide what comes next on the new process: the routed fixes (CV-06b) or the next family
 
 ## Dependencies
 
 - ✅ CV-S10 Measures, CV-S11 Store and build, CV-05, CV-06 closed (CV-06 2026-11-03)
-- ⬜ Jason's agreement to the recommendations (todo 1)
+- ✅ Jason's agreement to the recommendations (2026-11-03: "the retrospective action plan in the session is okay")
+
+## Done (2026-11-03)
+
+Jason accepted the action plan, adding five points:
+- archive sessions;
+- organise docs;
+- address code bloat explicitly;
+- name the 13 steps, now the **LAT Change Pipeline**;
+- implement every action that needs no step session, then close.
+
+The work was planned in plan mode (`~/.claude/plans/gleaming-doodling-matsumoto.md`) and approved.
+
+**Sessions**
+- `session_index.py` (8e85ddb4, then the body-only length warning):
+  - bugs carry `step`;
+  - the archive keeps folders;
+  - `--paths` archives a finished folder;
+  - open sessions over 300 body lines are warned.
+- 165 sessions archived: closed over a month, plus every closed session of change-vocabulary and v01-pipeline. No open session was archived.
+- The pending pipeline sessions moved to `lat-change-pipeline/`, retitled by name. CV-00 meta closed.
+
+**Process**
+- `session-start` gained a "Step session" section: plan mode, the name, scope held with a parking list, small, the decision format, agents.
+- `session-close` gained a docs check and `step:` on bugs.
+- `session-archive` documents the new flags.
+- New `bug-raise` skill.
+- 13 GitHub `step:` labels; `github-create-issue` lists them.
+- 10 check skills carry the step-name header and the agent rule.
+- Root `CLAUDE.md` has a "LAT Change Pipeline" section; `scraper/CLAUDE.md` describes the two label paths.
+
+**Memory**
+- New:
+  - plan-mode-steps;
+  - names-not-codes;
+  - decision-format;
+  - rabbit-hole-triage;
+  - checks-in-code;
+  - the pipeline docs reference.
+- Rewritten: find/fix by owner, parser tell-tales, backup (restore points, no DB copies), session scope.
+- Removed: statistical pass rule, check prompts in skills, step until pass.
+
+**Docs** (aa4a15b9)
+- `docs/` organised by area, with `docs/README.md` as the index.
+- `docs/lat-change-pipeline/` holds:
+  - README (overview, three worked examples on HSWA);
+  - WORKFLOW (13 steps);
+  - AIMS (7 aims, DRAFT);
+  - RULES (90 rules, 17 open decisions);
+  - DATA-ARCHITECTURE;
+  - GLOSSARY (former codes);
+  - TESTING;
+  - the four moved guides.
+
+**Bugs**
+- `lat-change-pipeline/2026-11-03-parked-bugs.md`: 47 open bugs from the archived sessions, deduplicated and tagged by step (sources marked `moved`).
+- 6 more the drafting found:
+  - the new path reads the law's start from the old register, unordered;
+  - switched labels have no staleness signal;
+  - the family switch matches the display name;
+  - changed_by is chosen alphabetically;
+  - three written labels to confirm;
+  - the unchecked Windsor list.
+- The switch-over's routed fixes have their `step:` tags.
+
+**Code bloat:** `lat-change-pipeline/2026-11-03-code-reduction.md` (pending), with the measured inventory, to be planned in plan mode.
+
+**Agent cost**, recorded per the new rule:
+
+| Agents | Job | Tokens |
+|---|---|---|
+| 4 | Read the evidence | 194k + 258k + 146k + 72k |
+| 3 | Draft the docs | 300k (README/WORKFLOW/GLOSSARY) + 318k (AIMS/RULES) + 156k (DATA-ARCHITECTURE/TESTING) |
+| **7** | **Total** | **about 1.44M** |
+
+**Left for Jason:**
+- confirm AIMS;
+- decide RULES' 17 open decisions (or carry them);
+- action 17, what comes next.
 
 ## Evidence (2026-11-03)
 
@@ -59,7 +137,7 @@ Gathered by four read-only agents over the 33 session docs under the meta plan (
 | "Jason" mentions in the sessions | ~330 |
 | Open bugs | 76 in the index, 50 from this workflow |
 | Snapshot tables in the dev DB | 209, 5.2 GB, no registry |
-| Developer docs on the vocabulary | one (`docs/CHANGE-IDENTITY-DESIGN.md`, merge identity only); `scraper/CLAUDE.md` describes the old path |
+| Developer docs on the vocabulary | one (`docs/lat-change-pipeline/CHANGE-IDENTITY-DESIGN.md`, merge identity only); `scraper/CLAUDE.md` describes the old path |
 
 What worked and must stay:
 - **The code-decided pass** (table rules + checked-row fixture + golden), which ended the switch-over in hours after agent rounds had stalled.
@@ -152,7 +230,7 @@ Proposals:
 
 The abstraction — semi-structured feed, structured markup and unstructured law text, read into one change record, merged, weighed and folded into labels — is explained only in the CV-01 draft. Its evidence order was overturned twice since. `scraper/CLAUDE.md` mentions the vocabulary zero times.
 
-`docs/change-vocabulary/` will hold:
+`docs/lat-change-pipeline/` will hold:
 
 | Doc | What it covers |
 |---|---|

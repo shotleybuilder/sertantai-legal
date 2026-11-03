@@ -1,7 +1,15 @@
 ---
 name: Extent Reader Check
-description: The change vocabulary's extent and application reader acceptance check (CV-S05) for one family of laws — the extent catalogue, the extent check (our faults 0), golden, and a Claude agent checking a stratified sample of 50 amending laws and 50 text changes against the laws' own words. Use for each fix round and each new family; only misreads and silent drops are NEW.
+description: The LAT Change Pipeline's extent and application reader acceptance check for one family of laws — the extent catalogue, the extent check (our faults 0), golden, and a Claude agent checking a stratified sample of 50 amending laws and 50 text changes against the laws' own words. Use for each fix round and each new family; only misreads and silent drops are NEW.
 ---
+
+> **LAT Change Pipeline — step: Extent reader.** Where it sits, its inputs, outputs and pass rule: `docs/lat-change-pipeline/WORKFLOW.md`. Terms and former codes (CV-…): `docs/lat-change-pipeline/GLOSSARY.md`.
+>
+> **Process (retrospective, 2026-11-03):**
+> - Plan the step in plan mode first, with its pass rule fixed and golden frozen (`session-start`, step session).
+> - The check is code first: table rules, checked-row fixtures, pattern catalogues, golden from inputs.
+> - The agent check below is used only to find NEW classes, on a small sample, and its token cost is recorded in the session. It is not a repeated pass gate.
+> - Bugs in another step's code are raised with `bug-raise` and parked, never fixed here.
 
 # Extent Reader Check (CV-S05, per family)
 

@@ -1,7 +1,15 @@
 ---
 name: Measures Check
-description: The change vocabulary's measures (CV-S10) for one family. It prints every published figure from code (coverage, dating, who states a change, the pass bounds from agent verdict files), proves the samples and printed figures replicable (draw twice, compare), and holds the register defining each figure. Use it when a step closes, for a quality statement, and for each new family.
+description: The LAT Change Pipeline's measures for one family. It prints every published figure from code (coverage, dating, who states a change, the pass bounds from agent verdict files), proves the samples and printed figures replicable (draw twice, compare), and holds the register defining each figure. Use it when a step closes, for a quality statement, and for each new family.
 ---
+
+> **LAT Change Pipeline — step: Measures.** Where it sits, its inputs, outputs and pass rule: `docs/lat-change-pipeline/WORKFLOW.md`. Terms and former codes (CV-…): `docs/lat-change-pipeline/GLOSSARY.md`.
+>
+> **Process (retrospective, 2026-11-03):**
+> - Plan the step in plan mode first, with its pass rule fixed and golden frozen (`session-start`, step session).
+> - The check is code first: table rules, checked-row fixtures, pattern catalogues, golden from inputs.
+> - The agent check below is used only to find NEW classes, on a small sample, and its token cost is recorded in the session. It is not a repeated pass gate.
+> - Bugs in another step's code are raised with `bug-raise` and parked, never fixed here.
 
 # Measures Check (CV-S10, per family)
 

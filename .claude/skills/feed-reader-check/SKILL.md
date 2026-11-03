@@ -1,7 +1,15 @@
 ---
 name: Feed Reader Check
-description: The change vocabulary's feed-reader acceptance check (CV-S02) for one family of laws — the prerequisites gate, the placement count, repeatability, golden, and a Claude agent checking a random sample of 50 effects against the feed and the law text. Use for every new family; only defects with no known pattern go to Jason.
+description: The LAT Change Pipeline's feed-reader acceptance check for one family of laws — the prerequisites gate, the placement count, repeatability, golden, and a Claude agent checking a random sample of 50 effects against the feed and the law text. Use for every new family; only defects with no known pattern go to Jason.
 ---
+
+> **LAT Change Pipeline — step: Feed reader.** Where it sits, its inputs, outputs and pass rule: `docs/lat-change-pipeline/WORKFLOW.md`. Terms and former codes (CV-…): `docs/lat-change-pipeline/GLOSSARY.md`.
+>
+> **Process (retrospective, 2026-11-03):**
+> - Plan the step in plan mode first, with its pass rule fixed and golden frozen (`session-start`, step session).
+> - The check is code first: table rules, checked-row fixtures, pattern catalogues, golden from inputs.
+> - The agent check below is used only to find NEW classes, on a small sample, and its token cost is recorded in the session. It is not a repeated pass gate.
+> - Bugs in another step's code are raised with `bug-raise` and parked, never fixed here.
 
 # Feed Reader Check (CV-S02, per family)
 

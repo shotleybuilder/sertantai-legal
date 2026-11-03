@@ -1,7 +1,15 @@
 ---
 name: Merge Check
-description: The change vocabulary's merge acceptance check (CV-S07) for one family — strata of merged changes (joined J, unjoined U, candidates C), the join rate, and Claude agents judging whether each merged change is one real event and each event one change. Use for each fix round and each new family.
+description: The LAT Change Pipeline's merge acceptance check for one family — strata of merged changes (joined J, unjoined U, candidates C), the join rate, and Claude agents judging whether each merged change is one real event and each event one change. Use for each fix round and each new family.
 ---
+
+> **LAT Change Pipeline — step: Merge.** Where it sits, its inputs, outputs and pass rule: `docs/lat-change-pipeline/WORKFLOW.md`. Terms and former codes (CV-…): `docs/lat-change-pipeline/GLOSSARY.md`.
+>
+> **Process (retrospective, 2026-11-03):**
+> - Plan the step in plan mode first, with its pass rule fixed and golden frozen (`session-start`, step session).
+> - The check is code first: table rules, checked-row fixtures, pattern catalogues, golden from inputs.
+> - The agent check below is used only to find NEW classes, on a small sample, and its token cost is recorded in the session. It is not a repeated pass gate.
+> - Bugs in another step's code are raised with `bug-raise` and parked, never fixed here.
 
 # Merge Check (CV-S07, per family)
 
@@ -117,7 +125,7 @@ OH&S (first family, 2026-10-28 →). The session is `.claude/sessions/change-voc
 | Round | Seed | Result |
 |---|---|---|
 | 1 | 41 (J) | Strata J 2,023 / U 45 / C 62; join rate law text 89.9%, markup 77.6%. FAIL: J 44/50, U 1/45, C 5/62 (+5 doubtful), all splits (identity: URI ids, unmatched markup ids, copies as rivals, amending provision unused) |
-| 2 | 42 (J) | Fix effada69 (change identity, `docs/CHANGE-IDENTITY-DESIGN.md`). Strata J 2,048 / U 22 / C 26; join rate law text 91.7%, markup 83.6%. FAIL: J 49/50, U 1/22, C 9/26 (Schedule relatedness, note copies by words, note pieces, heading both ways, EU generic notes, finer-unheld, art./reg.) |
+| 2 | 42 (J) | Fix effada69 (change identity, `docs/lat-change-pipeline/CHANGE-IDENTITY-DESIGN.md`). Strata J 2,048 / U 22 / C 26; join rate law text 91.7%, markup 83.6%. FAIL: J 49/50, U 1/22, C 9/26 (Schedule relatedness, note copies by words, note pieces, heading both ways, EU generic notes, finer-unheld, art./reg.) |
 | 3 | 43 (J) | Fix 49aed471. U 4, C 20. FAIL: J 49/50 (two operations of one provision), U 1/4, C 14/20 |
 | 4 | 44 (J ×3) | Fix 4db22749. U 1, C 9. U+C 10/10; J 145/150 FAIL (joined_note over-joined EU generic notes; EU footnotes on '*') |
 | 5 | 45 (J ×3) | Fix 6bd64edb; spread tell-tale added. J 149/150 FAIL (order-dependent note pieces); U+C 16/18 (REACH art.14(2)); spread 31/32 (feed range bug, logged) |

@@ -39,7 +39,8 @@ bugs:
     module: <which module needs fixing>
     affected: <count of affected records>
     fix: <suggested fix approach>
-    status: <open | fixed>
+    step: <owning step name>
+    status: <open | fixed | moved>
 
 artifacts:
   - <path to file created or modified>
@@ -70,6 +71,10 @@ enables:
 5. **Update the session heading**: Change `(ACTIVE)` or `(SUSPENDED)` to `(CLOSED)` in the `# Session:` line.
 
 6. **Mark deferred items**: Any incomplete work items should be changed from `⬜` to `⏸️` with a note like `(deferred — reason)`.
+
+6a. **Docs and parked items** (required):
+   - Answer in the session: "Which doc did this session change?" — a rule decided goes into `docs/lat-change-pipeline/RULES.md`; a table or flow change into `DATA-ARCHITECTURE.md`; a new term into `GLOSSARY.md`. If none, say why.
+   - Every bug carries `step:` (its owning step). Each item left in the `## Parking list` becomes a bug entry with its step, or is dropped with a reason.
 
 7. **Write directly**: Do not present the draft to the user for review — write the frontmatter straight to the file. The user can review the diff in git if needed.
 

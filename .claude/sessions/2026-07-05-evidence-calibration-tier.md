@@ -218,8 +218,8 @@ Completed in `2026-07-07-evidence-schema-baserow.md`:
 ### Phase 6: Documentation
 - [ ] Finalise `docs/EVIDENCE-SCHEMA.md` — canonical L4 entity model (created in Phase 2.0, refined through implementation)
 - [ ] Update `docs/EVIDENCE-VAULT-PATTERNS.md` with final design (two tables, Type-A/B, no confidence)
-- [ ] Update `docs/BASEROW-SCHEMA.md` with new tables/relationships
-- [ ] Update `docs/BASEROW-TEMPLATES.md` with new/modified templates
+- [ ] Update `docs/baserow/BASEROW-SCHEMA.md` with new tables/relationships
+- [ ] Update `docs/baserow/BASEROW-TEMPLATES.md` with new/modified templates
 - [ ] Write `docs/CALIBRATION-REGIME.md` — fractalaw mechanism layer + workflow design
 - [ ] Close issues in EVIDENCE-VAULT-CRITIQUE.md (mark resolved/deferred)
 - [ ] Note: L1–L3 canonical schemas to be extracted *from* Baserow templates in a future session (reverse of the L4 approach)
@@ -300,7 +300,7 @@ This creates a lightweight audit trail on the Gap record — 80% of the value of
 - `docs/EVIDENCE-VAULT-CRITIQUE.md`
 - `docs/EVIDENCE-VAULT-PATTERNS.md`
 - `docs/BASEROW-CONTROLS-DESIGN.md`
-- `docs/BASEROW-SCHEMA.md`
+- `docs/baserow/BASEROW-SCHEMA.md`
 - `docs/reviews/2026-07-05-gemini-evidence-calibration-review.md` — Gemini initial review
 - `docs/reviews/2026-07-05-gemini-evidence-right-of-reply.md` — Gemini right of reply (3 overturns + 3 open issues)
 - SMS Form Dialectic (all rounds, especially build_spec_draft_v0.1.md)

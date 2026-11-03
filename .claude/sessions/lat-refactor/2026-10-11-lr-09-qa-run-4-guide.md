@@ -14,7 +14,7 @@ Wave 4 (LR-06) wrote LR-02–LR-07 into the dev DB, and the DB equals a fresh pa
 
 ## Todo
 
-- ⬜ Two samples, new seeds (`mix lat.qa_sample`), read-only agents per `docs/LAT-QA-SAMPLE-SPEC.md`
+- ⬜ Two samples, new seeds (`mix lat.qa_sample`), read-only agents per `docs/lat/LAT-QA-SAMPLE-SPEC.md`
 - ⬜ Findings classified against the known-limits list (compiled in LR-12); verdict against the agreed pass mark (LR-12)
 - ⬜ If fail: fix test-first → targeted wave (dry run → Jason → apply) → new seeds; repeat
 - ⬜ Jason accepts the verdict → LH-05

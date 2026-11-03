@@ -151,7 +151,7 @@ enables:
 
 Dependency order (no cycles): Xml ← Inline ← Text ← {Ids, Refs, Effects} ← Walker ← LatParser; Rows depends only on Xml-free data (row maps).
 
-### Departures from the design table (`docs/LAT-PARSER-REFACTOR-DESIGN.md` §4)
+### Departures from the design table (`docs/lat/LAT-PARSER-REFACTOR-DESIGN.md` §4)
 
 - **Inline split from Text**: Text alone would be ~530 lines; inline rendering (change markup → segments) is a feature of its own and is what LatTerritory consumes.
 - **Rows** for the post-walk pipeline: the design put section ids / parallels / disambiguation in Ids, but those work on row maps, not XML — a different input and a different test style.

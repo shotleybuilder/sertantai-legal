@@ -15,9 +15,9 @@ summary: >
 decisions:
   - what: Claim order — markup if disjoint from the (unioned) application (reported), else territorial application, else markup Extent, else in-force qualifications (removals), else effect extent only when narrower than the row's, else no claim
     why: Jason after Gemini's critical review; markup lags the effects layer, but a disjoint markup is a parallel change keyed to the wrong effect
-    result: docs/LAT-EFFECTS-LAYER-PLAN.md; EffectTerritory.claim/5
+    result: docs/lat/LAT-EFFECTS-LAYER-PLAN.md; EffectTerritory.claim/5
   - what: Notes never read for territory; NoteTerritory parked unused as its own feature
-    why: Jason — notes aren't law and editors can change them; docs/LEGISLATION-GOV-UK-NOTE-TYPOLOGY.md §3
+    why: Jason — notes aren't law and editors can change them; docs/lat-change-pipeline/LEGISLATION-GOV-UK-NOTE-TYPOLOGY.md §3
     result: no note-derived territory in the parse
   - what: Rule 3 — an applied whole-provision repeal/insertion effect applies as an outermost change when none of the provision's markup joins an effect
     why: 1974/40 s.101 (no Repeal element), 1974/37 s.78 (legacy ids); Jason "yes, when unjoinable"
@@ -115,7 +115,7 @@ artifacts:
   - backend/lib/mix/tasks/lat.fetch_effects.ex
   - backend/lib/mix/tasks/lat.text_diff.ex
   - backend/priv/repo/migrations/20261009111041_add_territory_provenance.exs
-  - docs/LAT-EFFECTS-LAYER-PLAN.md
+  - docs/lat/LAT-EFFECTS-LAYER-PLAN.md
   - backend/data/reports/lat-refactor/lr03-diff-run8.csv
   - backend/data/code-reviews/2026-10-09-lr03-effects-plan-gemini.md
   - backend/data/code-reviews/2026-10-09-lr03-acceptance-gemini.md
@@ -144,7 +144,7 @@ Rescoped 2026-10-09 (Jason: "we're going the wrong way in the chain"). Changes t
 
 ## Todo
 
-- ✅ Plan agreed: `docs/LAT-EFFECTS-LAYER-PLAN.md` (Gemini critical review + Jason's decisions)
+- ✅ Plan agreed: `docs/lat/LAT-EFFECTS-LAYER-PLAN.md` (Gemini critical review + Jason's decisions)
 - ✅ Probe: changes-feed cache — keep each effect's id; coverage by law and by year; join rates effect ↔ note (`Commentary/@id` = effect id for `key-` notes) and effect ↔ markup `ChangeId`; legacy (`c…`) notes with no effect
 - ✅ Whole-provision changes not marked in the text, from effects (AffectedProvisions refs + territorial application) → `excluded_extent` (rule 3; pending fixtures green or asserted gaps)
 - ✅ Change territory from effects for elements without `Extent` (notes not used at all — Jason's principle; `NoteTerritory` parked)

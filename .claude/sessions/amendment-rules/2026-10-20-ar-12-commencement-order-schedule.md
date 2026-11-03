@@ -70,7 +70,7 @@ SI 1999/2830 reg.2(2) commences "the provisions of the Act specified in Part II 
 
 - ✅ Count commencement rules whose source text points to the order's own Schedule ("specified in … Schedule N to this Order")
 - ✅ Read the order's Schedule rows as the scope (tests first); never the commenced Act's Schedule
-- ⏸️ Read-pass the affected orders (deferred to the AR measure run: full `--read-orders`); pilot done on ERA 1996; docs/COMMENCEMENT-GUIDE.md gap note with the guide
+- ⏸️ Read-pass the affected orders (deferred to the AR measure run: full `--read-orders`); pilot done on ERA 1996; docs/lat-change-pipeline/COMMENCEMENT-GUIDE.md gap note with the guide
 
 ## Dependencies
 

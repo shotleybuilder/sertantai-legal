@@ -1,7 +1,15 @@
 ---
 name: Amending Reader Check
-description: The change vocabulary's amending-law reader acceptance check (CV-S06) for one family of laws — the amending provisions' catalogue, the census of disagreements with legislation.gov.uk, golden from inputs, and a Claude agent checking a seeded sample of 50 changes the amending law's text states against that text. Use for each fix round and each new family; only misreads are NEW.
+description: The LAT Change Pipeline's amending-law reader acceptance check for one family of laws — the amending provisions' catalogue, the census of disagreements with legislation.gov.uk, golden from inputs, and a Claude agent checking a seeded sample of 50 changes the amending law's text states against that text. Use for each fix round and each new family; only misreads are NEW.
 ---
+
+> **LAT Change Pipeline — step: Amending-law reader.** Where it sits, its inputs, outputs and pass rule: `docs/lat-change-pipeline/WORKFLOW.md`. Terms and former codes (CV-…): `docs/lat-change-pipeline/GLOSSARY.md`.
+>
+> **Process (retrospective, 2026-11-03):**
+> - Plan the step in plan mode first, with its pass rule fixed and golden frozen (`session-start`, step session).
+> - The check is code first: table rules, checked-row fixtures, pattern catalogues, golden from inputs.
+> - The agent check below is used only to find NEW classes, on a small sample, and its token cost is recorded in the session. It is not a repeated pass gate.
+> - Bugs in another step's code are raised with `bug-raise` and parked, never fixed here.
 
 # Amending Reader Check (CV-S06, per family)
 

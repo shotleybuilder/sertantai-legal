@@ -38,8 +38,8 @@ artifacts:
   - backend/test/sertantai_legal/scraper/lat_diff_class_test.exs
   - backend/lib/mix/tasks/lat.text_diff.ex
   - backend/test/test_helper.exs
-  - docs/LAT-QA-SAMPLE-SPEC.md
-  - docs/LAT-PARSER-REFACTOR-DESIGN.md
+  - docs/lat/LAT-QA-SAMPLE-SPEC.md
+  - docs/lat/LAT-PARSER-REFACTOR-DESIGN.md
   - backend/data/reports/lat-refactor/lr01-baseline.csv
 
 depends_on:

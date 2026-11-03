@@ -193,7 +193,7 @@ bugs:
   fix: render Number, ListItem numbering, AppendText after the block
   status: open
 artifacts:
-- docs/LAT-QA-SAMPLE-SPEC.md
+- docs/lat/LAT-QA-SAMPLE-SPEC.md
 - backend/lib/mix/tasks/lat.qa_sample.ex
 - backend/lib/mix/tasks/lat.backfill_titles.ex
 - backend/lib/mix/tasks/lat.reorder_notes.ex
@@ -226,7 +226,7 @@ The rest of the parser audit (2026-10-07) after the list-text bug and #174 were 
 - ✅ Retained repeals (`Repeal RetainText`): `repealed_extent` on 7,015 rows / 103 laws, 1,963 rows → repealed_saved, 536 rows text repaired (133 bracketed territorial wording, 402 empty → [Repealed]/[Revoked], 1 spacing), all `correction`
 - ✅ Remaining parse bugs closed in place (Jason 2026-10-08, §6): territorial words/insertions bracketed, `excluded_extent`, amending text «…», tables, signatures, P2group/P3group titles, alternative versions, #165 schedules, partial-status misfires; P5 already in P4 text; footnotes #176 and figures #177 left out (future enhancements); prelims/RestrictStart/EndDate not provision text
 - ✅ One re-parse wave, offline from the store: 1,056 laws, 97% of enriched rows carried, verified (LAT = parser output); 1 control mapping left for Jason (EU 2008/1272 Art. 37A)
-- ✅ (run 1 done; follow-up → lat-handoff meta) Randomised eyeball QA of LAT records by a Claude agent against the CLML store (spec `docs/LAT-QA-SAMPLE-SPEC.md`, sampler `mix lat.qa_sample`); its findings gate the hand-off
+- ✅ (run 1 done; follow-up → lat-handoff meta) Randomised eyeball QA of LAT records by a Claude agent against the CLML store (spec `docs/lat/LAT-QA-SAMPLE-SPEC.md`, sampler `mix lat.qa_sample`); its findings gate the hand-off
 - ⏸️ (moved to lat-handoff LH-05) fractalaw contract (frame columns `title`, `excluded_extent`; manifest `title_hash`, `notes_hash`; vectors) — built after QA, one message; don't flag fractalaw until Jason says
 
 ## Dependencies
@@ -360,7 +360,7 @@ Post-wave verification: `mix lat.status` 0 to change; offline diff of all laws (
 
 Jason: a Claude agent runs a randomised QA sample of LAT records against the XML store — an eyeball QA, with a spec; the fractalaw contract folds into it as the values it will receive (not the transport/hashes).
 
-- Spec: `docs/LAT-QA-SAMPLE-SPEC.md` — the rendering rules the LAT applies (so the agent judges against them), checks T1 text … T8 identity, verdicts pass/minor/defect/unsure, outputs `findings.csv` + `summary.md`, read-only.
+- Spec: `docs/lat/LAT-QA-SAMPLE-SPEC.md` — the rendering rules the LAT applies (so the agent judges against them), checks T1 text … T8 identity, verdicts pass/minor/defect/unsure, outputs `findings.csv` + `summary.md`, read-only.
 - Sampler: `mix lat.qa_sample --n N --seed S` — strata (plain 28%, title, territorial brackets, amending text, excluded_extent, repealed_saved, in_force_partial, repealed, table, signed, structural, qualified ids, placed notes), md5(seed||id) order so a seed is reproducible; packets carry the stored row, its notes with their `<Commentary>`, the row's XML fragment (own id, the enclosing provision for tables, the SignedSection for signatures) and store paths. Read-only, offline.
 
 ### QA run qa-2026-10-08 — not ready (2026-10-08)

@@ -62,7 +62,8 @@ bugs:
     module: <which module needs fixing>
     affected: <count of affected records, if known>
     fix: "Suggested fix approach"
-    status: <open | fixed>
+    step: <owning step name, e.g. "Amending-law reader" — see the bug-raise skill>
+    status: <open | fixed | moved>
 ```
 
 For "fix bugs" sessions, query open bugs at the start:
@@ -72,6 +73,38 @@ sqlite3 .claude/sessions/sessions.db \
 ```
 
 When fixing a bug from a previous session, add a `bugs` entry with `status: fixed` in the current session's frontmatter — the indexer picks up the latest status on rebuild.
+
+## Step session (LAT Change Pipeline, or any planned multi-step workflow)
+
+A session that runs one step of the LAT Change Pipeline for one family (steps and checks: `docs/lat-change-pipeline/WORKFLOW.md`). These rules come from the 2026-11-03 retrospective: two weeks on one family, sessions of 1,000+ lines, scope that grew mid-step, and pass rules that moved.
+
+1. **Plan mode first.** Enter plan mode before any work. The plan states:
+   - **Aim:** one sentence, tied to `docs/lat-change-pipeline/AIMS.md`.
+   - **Inputs and outputs:** tables and files read and written.
+   - **Pass rule:** fixed now, and checked in code first (table rules, checked-row fixtures, catalogues, golden from inputs).
+   - **Golden and fixtures:** frozen for the step.
+   - **Out of scope:** above all, other steps' code.
+   - **Time box.**
+   - **Todos:** at most 8.
+
+   Jason approves it at ExitPlanMode. The todos go into the session as approved.
+2. **Name, not code.** Title "<Family>: <Step name>" (e.g. "OH&S: Merge"); file `.claude/sessions/lat-change-pipeline/<date>-<family>-<step-name>.md`. No codes in anything written for Jason.
+3. **Scope held.**
+   - New work found mid-step goes to a `## Parking list` section, one line each with its owning step, never to the todos.
+   - A bug in another step's code is raised with the `bug-raise` skill and parked; never fixed in-step unless Jason says so for that bug.
+   - Changing the pass rule, golden or scope means a new plan, approved again.
+4. **Small.**
+   - Per-round logs (agent verdicts, batch notes, long tables) go to report files under `backend/data/reports/`; the session holds decisions, results and pointers.
+   - The index warns over 300 lines.
+   - A split is its own named session, never a letter suffix.
+5. **Decisions** go to Jason in plain words, written in the session doc first:
+   - the question;
+   - the aim it bears on;
+   - the options;
+   - a recommendation.
+
+   The terminal question points to it. The decision is recorded in `docs/lat-change-pipeline/RULES.md` if it is a rule.
+6. **Agents** carry out approved plan items or run a step as a separate session. An agent check is used only to find new classes, on a small sample, and its token cost is recorded.
 
 ## Resume a PENDING or SUSPENDED session
 
@@ -99,7 +132,7 @@ Jason may run more than one Claude on this project at once, each on a separate t
 
 ## Conventions
 
-- **File naming**: `YYYY-MM-DD-<slug>.md` — date is when the session opened, not when work started
+- **File naming**: `YYYY-MM-DD-<slug>.md` — date is when the session opened, not when work started. The slug is a name, never a code (no `cv-s05f`)
 - **Statuses**: `ACTIVE` (current work), `PENDING` (scoped but not started), `SUSPENDED` (started, paused with reason), `CLOSED` (done, has YAML frontmatter)
 - **Work items**: `⬜` pending, `✅` done, `⏸️` deferred, `❌` abandoned
 - **One session = one coherent piece of work**. If scope expands, split into a new session and link via depends_on/enables

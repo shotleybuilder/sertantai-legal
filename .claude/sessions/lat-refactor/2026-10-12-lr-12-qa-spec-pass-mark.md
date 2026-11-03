@@ -10,7 +10,7 @@ parent: lat-refactor/2026-10-09-lr-00-meta.md
 
 ## Problem
 
-Plan step 3 (LR-00 meta). `docs/LAT-QA-SAMPLE-SPEC.md` predates the refactor: its status, territory and notes rules read facts from note text, so QA agents would mark correct rows as defects. It must state the rules of the signed guide (LR-11), and the pass mark must be fixed before QA run 4 so the verdict can't move.
+Plan step 3 (LR-00 meta). `docs/lat/LAT-QA-SAMPLE-SPEC.md` predates the refactor: its status, territory and notes rules read facts from note text, so QA agents would mark correct rows as defects. It must state the rules of the signed guide (LR-11), and the pass mark must be fixed before QA run 4 so the verdict can't move.
 
 ## Todo
 

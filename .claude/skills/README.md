@@ -8,4 +8,4 @@ To see what exists:
 grep -H '^description:' .claude/skills/*/SKILL.md
 ```
 
-Background on writing skills: [docs/skills-starter.md](../../docs/skills-starter.md).
+Background on writing skills: [docs/archive/skills-starter.md](../../docs/skills-starter.md).

@@ -86,6 +86,15 @@ For significant refactors, review the plan before implementation and the result 
 
 Save reviews to `backend/data/code-reviews/` (`-rN` for re-runs; commit with `git add -f`). Triage each finding as Taken or Contested (with evidence) in the session doc. See `.claude/review-standards/README.md`.
 
+## LAT Change Pipeline
+
+The LAT Change Pipeline turns legislation.gov.uk's changes feed, change markup and legal text into provision labels (status, in force from, territory, changed by) in `lat_label_timeline`. It runs in 13 named steps. Docs: `docs/lat-change-pipeline/`. Read `README.md` and `RULES.md` before pipeline work; `docs/README.md` indexes all docs.
+
+- **A step is a session**, started in plan mode. The plan fixes the aim, the pass rule, golden and scope (`session-start`, "Step session"). Steps and sessions are named in words, never codes.
+- **Checks are code first**: table rules, checked rows, pattern catalogues and golden from inputs. Agents carry out approved plan work; an agent check is small and costed.
+- **Bugs are parked by owning step** with the `bug-raise` skill, never fixed in another step's session.
+- **Decisions for Jason** go in the session doc in plain words: the question, the aim it bears on (`AIMS.md`), the options and a recommendation. A decided rule goes into `RULES.md`.
+
 ## Quick Reference
 
 ### Development Commands
