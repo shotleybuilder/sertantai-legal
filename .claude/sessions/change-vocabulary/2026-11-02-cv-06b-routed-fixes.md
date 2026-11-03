@@ -45,6 +45,7 @@ The CV-06 switch-over check (checked rows + rules on OH&S) found faults whose fi
 - ⬜ CV-S03/S08 markup: legacy Additions — insertion or substitution unconfirmed: 32 rows listed apart by `mix lat.label_rules` (`legacy_unconfirmed`), 1 checked row (HSWA s.28(9)[S])
 - ⬜ CV-S09 fold: an undated legacy-markup insertion (d29p…, no law) counted as the text's maker at the start blanks in_force_from — FA 1961 after its start moved to 1962-04-01 (50 periods; 4 checked rows: s.1(3)(b), s.5, s.6, s.60(1)); `Undated.makers` should skip `Start.legacy_only?` insertions
 - ⬜ Upstream structure (legislation.gov.uk), 4 rows: REACH Art 77(A3)(b)#2, NISR 1997/455 reg.2(1), SI 1992/3004 reg.3(1), SI 2002/2677 reg.7(9)(b) — report or accept as limits
+- ⬜ CV-05 gaps (from CV-06, open bugs in CV-05): rows left to orders we don't hold (J6), pending and unapplied changes (J4), no gap list, headings and signatures unfolded
 - ⬜ Date gaps (`backend/data/reports/change-vocabulary/cv-06-date-gaps.md`, 7 rows): read each amending law's commencement when held
 
 ## Dependencies

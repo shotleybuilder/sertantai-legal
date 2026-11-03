@@ -1,15 +1,89 @@
 ---
 session: 'CV-06: Switch-over and Measure'
-status: active
+status: closed
 release: v0.1
 opened: '2026-10-21'
 started: '2026-10-31'
+closed: '2026-11-03'
+outcome: success
 parent: change-vocabulary/2026-10-21-cv-00-meta.md
+
+summary: >
+  OH&S: Occupational / Personal Safety switched to labels folded from merged changes: 149 laws written
+  through LabelRefresh, none failed; 38,714 periods. Pass decided by code: golden 27/27, label rules
+  passed, checked rows 696 match / 47 known / 1 upstream. Faults owned by earlier steps routed to CV-06b.
+
+decisions:
+  - what: Switch by family through one setting (label_families); the old path stays for v0.1
+    why: other families have not passed steps 1-11
+    result: OH&S only; every other law keeps the old labels
+  - what: The pass decided by code (checked rows + LabelRules + golden), agents only to find new classes
+    why: Jason 2026-11-01 "a pass that doesn't rely on agents"; agent rounds were slow and noisy
+    result: lat.label_checked + lat.label_rules, both PASSED before and after the apply
+  - what: Earlier steps' faults named and routed, not fixed in-step
+    why: Jason 2026-11-02 "boiling the ocean"
+    result: CV-06b pending (reader, commencement, fold faults; 47 known-limit rows)
+  - what: Missing repeals (39) and named date gaps (7) keep the register's label; law start stays on lat_change_log for v0.1
+    why: Jason 2026-11-02
+    result: KnownLimits merged into the written timeline
+  - what: Land CV-06 with FA 1961's 4 changed rows as known limits; skip the next-family skill
+    why: Jason 2026-11-03 "finish sensibly so we can run the retrospective"; the process is about to change
+    result: CV-06 closed; skill deferred to after CV-S12
+
+metrics:
+  causes_start: { rows: 20371, agree: 10479, differ_today: 5382, history_only: 4510 }
+  agent_round_1: { own_fault: "53/390", upper_95: "16.8%", old_label_wrong: "365/390" }
+  code_pass: { checked_rows: 744, match: 696, known: 47, upstream: 1, golden: "27/27", rules: passed }
+  apply: { laws: 149, failed: 0, minutes: 7.6, periods: 38714, changed_by_all_set: 5831 }
+  status_today_new: { in_force: 16998, partial: 1, prospective: 0, repealed: 513, repealed_saved: 925, unknown: 247 }
+  elapsed: { opened: "2026-10-21", started: "2026-10-31", closed: "2026-11-03" }
+
+lessons:
+  - title: A switch-over step drifted into re-fixing earlier steps
+    detail: >
+      Rounds 2-5 fixed reader, commencement and fold code to make checked rows pass, where the step's
+      purpose was to explain differences and switch. Jason stopped it ("boiling the ocean"). Ownership
+      of each fault by workflow step must be decided before fixing, and routed when not the step's.
+    tag: tooling
+  - title: Agent sampling rounds gave way to a code-decided pass
+    detail: >
+      Agent rounds (13-14 agents x 30 rows) found classes but were slow and their bound hard to close.
+      Hand-checked rows frozen in a fixture plus table rules, re-run in seconds, made the pass repeatable.
+    tag: tooling
+  - title: Writing labels through the real refresh re-collects inputs the shadow did not
+    detail: >
+      The apply re-read three laws' starts from their own clauses (FA 1961 Royal Assent -> 1962-04-01),
+      which exposed a fold rule (undated legacy insertions as makers) and changed 4 checked rows.
+      Shadow comparisons should use the same input collection as the writer.
+    tag: data
+  - title: Two numbering schemes (CV-NN sessions, CV-SNN steps) confused the person steering the work
+    detail: CV-06 (step 12b) vs CV-S06 (step 6). For CV-S12 Retrospective.
+    tag: tooling
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/label_switch.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/known_limits.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/build.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/primary.ex
+  - backend/lib/sertantai_legal/scraper/label_refresh.ex
+  - backend/lib/mix/tasks/lat.label_switch.ex
+  - backend/lib/mix/tasks/lat.label_checked.ex
+  - backend/lib/mix/tasks/lat.label_rules.ex
+  - backend/priv/repo/migrations/20261102190600_label_timeline_changed_by_all.exs
+  - backend/test/fixtures/change_vocabulary/switch_checked.json
+  - backend/data/reports/change-vocabulary/cv-06-date-gaps.md
+  - backend/data/reports/change-vocabulary/cv-06-dry-run.csv
+
+depends_on:
+  - 2026-10-21-cv-05-consumers.md
+  - 2026-10-31-cv-06a-repeal-tables.md
+
 enables:
   - change-vocabulary/2026-11-02-cv-06b-routed-fixes.md
+  - change-vocabulary/2026-10-30-cv-s12-retrospective.md
 ---
 
-# Session: CV-06: Switch-over and Measure (ACTIVE)
+# Session: CV-06: Switch-over and Measure (CLOSED)
 
 ## Problem
 
@@ -26,12 +100,12 @@ Judged on the original 27 golden (Jason 2026-10-31).
 - ✅ Causes: `LabelShadow.cause/5` (tests), `mix lat.label_shadow --family F [--cause C --sample FILE --n N --seed S]`; OH&S counts below
 - ✅ Pass rule (Jason 2026-10-31, "15 a cause + pooled bound"): 15 rows of each cause with 50+ rows, 30 from the small causes pooled; a cause passes with no sampled row new-wrong by its own fault; pooled 95% upper bound on own-fault rows under 2%; golden 27/27. The 39 known-limit rows keep their old label (Jason). Skill `switch-over-check`
 - ✅ U12 first (Jason 2026-10-31): CV-06a closed — 113 of the 152 rows now hold their repeal; 39 a named known limit (`cv-06a-known-limits.md`): how the switch treats them is decided here
-- ⬜ The CV-05 gaps, as causes or fixed first: rows left to orders we don't hold (J6), pending and unapplied changes (J4), no gap list, headings and signatures unfolded
+- ⏸️ (deferred to CV-06b — already in the written labels as known gaps) The CV-05 gaps, as causes or fixed first: rows left to orders we don't hold (J6), pending and unapplied changes (J4), no gap list, headings and signatures unfolded
 - ✅ Rounds: fixes batched until the code pass holds (batches 2–5, below) — **the code pass holds on OH&S (2026-11-02)** (checked rows all match, rules 0 breaches, golden 27/27); agents only to find new classes (Jason 2026-11-01)
 - ✅ The code pass: `switch_checked.json` + `mix lat.label_checked`; `LabelRules` + its check
 - ✅ The writer: `LabelRefresh` takes `LabelSource.timeline/1` for the switched families (one setting); migration for `changed_by_all`, `commenced_by`; the law's start stays on `lat_change_log` for v0.1 (Jason 2026-11-02)
 - ✅ Dry run on OH&S → Jason ("Apply", 2026-11-02) → restore point `cv06-switch-apply` (`lat_label_timeline`, `lat_change_log`, `provision_changes`) → write
-- ⬜ Skill: the switch-over check for the next family (recipe step 12 in CV-00)
+- ⏸️ (deferred — written after CV-S12 changes the process; Jason 2026-11-03) Skill: the switch-over check for the next family (recipe step 12 in CV-00)
 
 ## Dependencies
 
@@ -226,3 +300,7 @@ The 1,116 prospective rows today are the register's: the NISRs whose made versio
 `label_families` set to OH&S: Occupational / Personal Safety (c8c643cd; none under test); `mix lat.label_switch --apply`: 149 laws written through `LabelRefresh`, none failed, 7 m 35 s. Today's status counts as the dry run's exactly; 38,714 periods; `changed_by_all` set on 5,831.
 
 After it: golden 27/27; rules PASSED; checked rows 696 match, 4 changed (FA 1961 s.1(3)(b), s.5, s.6, s.60(1): in force 1962–1996 now "date unknown"). Cause: the refresh re-collected three laws' starts from their own commencement clause (FA 1961 1961-06-22 → 1962-04-01; UK_ukpga_1937_67 → 1938-07-01; UK_ukpga_1957_31 → 1958-01-01 — the register had held Royal Assent). With FA 1961's start now its commencement day, an undated legacy-markup insertion on the row (d29p…, no law named) counts as the text's maker at the start, so the date blanks — 50 FA 1961 periods. The start correction is right; the maker rule is the fold's (CV-S09) → CV-06b.
+
+### Landed (2026-11-03)
+
+Jason: "finish sensibly so we can run the retrospective". FA 1961 s.1(3)(b), s.5, s.6, s.60(1) made known limits (09ca8a1a); `mix lat.label_checked` PASSED (696 match, 47 known, 1 upstream). CV-05 gaps to CV-06b; the next-family skill waits for CV-S12. Closed.
