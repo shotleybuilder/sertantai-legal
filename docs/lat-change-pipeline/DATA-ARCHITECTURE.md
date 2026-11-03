@@ -206,7 +206,15 @@ There are three ways, none registered in one place:
 
 The `r6b` schema (30 tables, 169 MB) was not in the earlier audit. Both `r6b` and `rp9` hold copies of pipeline tables with no code reference.
 
-### The 208 snapshot tables by prefix
+### Cleared 2026-11-03
+
+All 240 snapshot tables were archived to the NAS, then dropped with Jason's go. That was 209 in `public` (including `law_change_snapshots`) plus schemas `r6b` (30) and `rp9` (1). The database went from 7.9 GB to 2.6 GB.
+- **Archive:** `snapshots/archive/2026-11-03-snapshot-tables.dump` (pg_dump custom format, 844 MB), with the table list beside it.
+- **Restore one table:** `pg_restore -d sertantai_legal_dev -t <table> <dump>`.
+
+The tables below are as they stood before the drop.
+
+### The 208 snapshot tables by prefix (before 2026-11-03)
 
 Measured with a `CASE` over `pg_class.relname` in the public schema, `pg_total_relation_size`:
 
@@ -226,7 +234,10 @@ Measured with a `CASE` over `pg_class.relname` in the public schema, `pg_total_r
 
 For scale: the whole public schema is 7,743 MB; the snapshots are two thirds of it.
 
-### Policy (PROPOSED)
+### Policy (PROPOSED; the old tables are cleared, the writers are not yet changed)
+
+Tasks that still create restore tables in `public`: `live.recompute`, `live.apply_effects`, `drrp.remap`, `extent.resolve`. Moving them to the restore schema below is parked on the code-reduction session's list.
+
 
 1. **One schema.** Every in-DB copy goes into a schema named `restore` (`restore.<tag>__<table>`), never into `public`. Code that makes copies (`LatReparse` and the live tasks) takes the schema from one helper.
 2. **A registry.** A table `restore.points` with `tag`, `taken_at`, `session` (session file), `tables`, `rows`, `nas_path`, `dropped_at`. The helper writes it; `nas-backup.sh --tables --tag` writes a row too.
