@@ -8395,7 +8395,7 @@
     {
       "cause": "today: old unknown, new repealed",
       "law": "UK_ukpga_1961_34",
-      "note": "FA start 1.4.1962; repealed 1.1.1996 by SI 1992/3004 Sch.2 Pt I (1993 partial stage for new workplaces not shown)",
+      "note": "known limit (Jason 2026-11-03: land CV-06; fix routed to CV-06b) — an undated legacy-markup insertion counted as the text's maker at the law's start blanks in_force_from (CV-S09 fold, Undated.makers) (was accepted: FA start 1.4.1962; repealed 1.1.1996 by SI 1992/3004 Sch.2 Pt I (1993 partial stage for new workplaces not shown))",
       "periods": [
         {
           "changed_by": null,
@@ -8424,7 +8424,7 @@
       ],
       "round": 1,
       "section_id": "UK_ukpga_1961_34:s.1(3)(b)",
-      "status": "accepted"
+      "status": "known"
     },
     {
       "cause": "today: old unknown, new in_force",
@@ -10013,7 +10013,7 @@
     {
       "cause": "today: status in_force→repealed (repealed [law])",
       "law": "UK_ukpga_1961_34",
-      "note": "FA in force 1.4.1962 (s.185(2)); repealed 1.1.1996 by SI 1992/3004 reg.27(1) Sch.2 Pt I; 1993 new-workplace stage not shown",
+      "note": "known limit (Jason 2026-11-03: land CV-06; fix routed to CV-06b) — an undated legacy-markup insertion counted as the text's maker at the law's start blanks in_force_from (CV-S09 fold, Undated.makers) (was accepted: FA in force 1.4.1962 (s.185(2)); repealed 1.1.1996 by SI 1992/3004 reg.27(1) Sch.2 Pt I; 1993 new-workplace stage not shown)",
       "periods": [
         {
           "changed_by": null,
@@ -10042,12 +10042,12 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1961_34:s.5",
-      "status": "accepted"
+      "status": "known"
     },
     {
       "cause": "today: old unknown, new repealed",
       "law": "UK_ukpga_1961_34",
-      "note": "SI 1992/3004 Sch.2 Pt I, fully 1.1.1996; no FA saving",
+      "note": "known limit (Jason 2026-11-03: land CV-06; fix routed to CV-06b) — an undated legacy-markup insertion counted as the text's maker at the law's start blanks in_force_from (CV-S09 fold, Undated.makers) (was accepted: SI 1992/3004 Sch.2 Pt I, fully 1.1.1996; no FA saving)",
       "periods": [
         {
           "changed_by": null,
@@ -10076,12 +10076,12 @@
       ],
       "round": 2,
       "section_id": "UK_ukpga_1961_34:s.6",
-      "status": "accepted"
+      "status": "known"
     },
     {
       "cause": "today: old unknown, new repealed",
       "law": "UK_ukpga_1961_34",
-      "note": "repealed 1.1.1996 by SI 1992/3004 Sch.2 Pt I",
+      "note": "known limit (Jason 2026-11-03: land CV-06; fix routed to CV-06b) — an undated legacy-markup insertion counted as the text's maker at the law's start blanks in_force_from (CV-S09 fold, Undated.makers) (was accepted: repealed 1.1.1996 by SI 1992/3004 Sch.2 Pt I)",
       "periods": [
         {
           "changed_by": null,
@@ -10110,7 +10110,7 @@
       ],
       "round": 1,
       "section_id": "UK_ukpga_1961_34:s.60(1)",
-      "status": "accepted"
+      "status": "known"
     },
     {
       "cause": "today: in_force_from old undated, new repealed [law]",
