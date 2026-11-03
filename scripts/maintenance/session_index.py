@@ -9,6 +9,8 @@ Usage:
     /usr/bin/python3 scripts/maintenance/session_index.py                    # default: .claude/sessions/
     /usr/bin/python3 scripts/maintenance/session_index.py --root /path/to/repo
     /usr/bin/python3 scripts/maintenance/session_index.py --archive          # also archive old sessions
+    /usr/bin/python3 scripts/maintenance/session_index.py --archive --paths change-vocabulary
+                                       # also archive every closed session in these folders, any age
 """
 
 import argparse
@@ -81,6 +83,7 @@ CREATE TABLE bugs (
     module TEXT,
     affected INTEGER,
     fix TEXT,
+    step TEXT,
     status TEXT DEFAULT 'open'
 );
 
@@ -90,9 +93,11 @@ CREATE INDEX idx_lessons_tag ON lessons(tag);
 CREATE INDEX idx_dependencies_direction ON dependencies(direction);
 CREATE INDEX idx_bugs_status ON bugs(status);
 CREATE INDEX idx_bugs_module ON bugs(module);
+CREATE INDEX idx_bugs_step ON bugs(step);
 
 -- View: effective bug status. A bug is "open" only if no session has marked it "fixed".
--- Matches on exact pattern text — the pattern is the bug's identity.
+-- Matches on exact pattern text — the pattern is the bug's identity. A bug whose
+-- entry was moved to another session (status "moved") is listed there, not here.
 CREATE VIEW open_bugs AS
 SELECT b.*
 FROM bugs b
@@ -191,8 +196,8 @@ def index_session(conn: sqlite3.Connection, filepath: Path, sessions_dir: Path):
     for b in fm.get("bugs") or []:
         if isinstance(b, dict):
             conn.execute(
-                "INSERT INTO bugs (session_id, pattern, category, module, affected, fix, status) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO bugs (session_id, pattern, category, module, affected, fix, step, status) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     sid,
                     b.get("pattern", ""),
@@ -200,6 +205,7 @@ def index_session(conn: sqlite3.Connection, filepath: Path, sessions_dir: Path):
                     b.get("module"),
                     b.get("affected"),
                     b.get("fix"),
+                    b.get("step"),
                     b.get("status", "open"),
                 ),
             )
@@ -221,6 +227,25 @@ def index_session(conn: sqlite3.Connection, filepath: Path, sessions_dir: Path):
     return True
 
 
+MAX_LINES = 300
+
+
+def warn_if_long(filepath: Path, sessions_dir: Path):
+    """Warn when an open session doc passes MAX_LINES: split it or move logs to report files."""
+    if "archive" in filepath.relative_to(sessions_dir).parts:
+        return
+    fm = parse_frontmatter(filepath) or {}
+    if fm.get("status") == "closed":
+        return
+    lines = filepath.read_text(encoding="utf-8").count("\n")
+    if lines > MAX_LINES:
+        print(
+            f"  WARN: {filepath.relative_to(sessions_dir)} is {lines} lines (> {MAX_LINES}): "
+            "move round logs to report files or split the session",
+            file=sys.stderr,
+        )
+
+
 def build_index(sessions_dir: Path, db_path: Path):
     """Scan all session docs and build the SQLite index."""
     conn = sqlite3.connect(str(db_path))
@@ -238,6 +263,7 @@ def build_index(sessions_dir: Path, db_path: Path):
             indexed += 1
         else:
             skipped += 1
+        warn_if_long(filepath, sessions_dir)
 
     conn.commit()
 
@@ -255,8 +281,10 @@ def build_index(sessions_dir: Path, db_path: Path):
     return indexed
 
 
-def archive_old_sessions(sessions_dir: Path, days: int = 30):
-    """Move sessions closed >N days ago to archive/ subdirectory via git mv."""
+def archive_old_sessions(sessions_dir: Path, days: int = 30, paths: list[str] | None = None):
+    """Move sessions closed >N days ago to archive/ via git mv, keeping their folder
+    (archive/<folder>/<file>) so files of the same name never collide. Closed
+    sessions under any folder named in `paths` are archived whatever their age."""
     cutoff = date.today() - timedelta(days=days)
     archive_dir = sessions_dir / "archive"
     moved = []
@@ -272,18 +300,23 @@ def archive_old_sessions(sessions_dir: Path, days: int = 30):
         if fm.get("status") != "closed":
             continue
 
-        closed = fm.get("closed")
-        if closed is None:
-            continue
-
-        closed_date = closed if isinstance(closed, date) else date.fromisoformat(str(closed))
-        if closed_date >= cutoff:
-            continue
-
-        # Flat archive — all files go directly into archive/
         rel = filepath.relative_to(sessions_dir)
-        archive_dir.mkdir(parents=True, exist_ok=True)
-        target = archive_dir / filepath.name
+        named = bool(paths) and rel.parts[0] in paths
+
+        closed = fm.get("closed")
+        if closed is None and not named:
+            continue
+
+        if not named:
+            closed_date = closed if isinstance(closed, date) else date.fromisoformat(str(closed))
+            if closed_date >= cutoff:
+                continue
+
+        target = archive_dir / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if target.exists():
+            print(f"  WARN: {target} exists, {rel} not archived", file=sys.stderr)
+            continue
 
         try:
             subprocess.run(
@@ -331,6 +364,12 @@ def main():
         default=30,
         help="Archive cutoff in days (default: 30)",
     )
+    parser.add_argument(
+        "--paths",
+        nargs="+",
+        default=None,
+        help="With --archive: folders under .claude/sessions whose closed sessions are archived at any age",
+    )
     args = parser.parse_args()
 
     root = args.root.resolve()
@@ -345,7 +384,7 @@ def main():
     print(f"Database: {db_path}")
 
     if args.archive:
-        archive_old_sessions(sessions_dir, args.archive_days)
+        archive_old_sessions(sessions_dir, args.archive_days, args.paths)
 
     build_index(sessions_dir, db_path)
 
