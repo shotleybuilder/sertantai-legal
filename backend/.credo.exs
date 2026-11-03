@@ -56,14 +56,14 @@
           ## Refactoring Opportunities
           {Credo.Check.Refactor.CondStatements, priority: :low, exit_status: 0},
           {Credo.Check.Refactor.CyclomaticComplexity,
-           priority: :normal, max_complexity: 12, exit_status: 0},
+           priority: :normal, max_complexity: 9, exit_status: 0},
           {Credo.Check.Refactor.FunctionArity, priority: :low, max_arity: 8, exit_status: 0},
           {Credo.Check.Refactor.LongQuoteBlocks, priority: :low, exit_status: 0},
           {Credo.Check.Refactor.MatchInCondition, priority: :low, exit_status: 0},
           {Credo.Check.Refactor.MapInto, priority: :low, exit_status: 0},
           {Credo.Check.Refactor.NegatedConditionsInUnless, priority: :normal, exit_status: 0},
           {Credo.Check.Refactor.NegatedConditionsWithElse, priority: :low, exit_status: 0},
-          {Credo.Check.Refactor.Nesting, priority: :normal, max_nesting: 3, exit_status: 0},
+          {Credo.Check.Refactor.Nesting, priority: :normal, max_nesting: 2, exit_status: 0},
           {Credo.Check.Refactor.UnlessWithElse, priority: :normal, exit_status: 0},
           {Credo.Check.Refactor.WithClauses, priority: :low, exit_status: 0},
 
