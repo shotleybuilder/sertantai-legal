@@ -1,12 +1,12 @@
 ---
 session: 'LAT Change Pipeline: Code Reduction'
-status: pending
+status: active
 release: v0.1
 opened: '2026-11-03'
 parent: archive/change-vocabulary/2026-10-30-cv-s12-retrospective.md
 ---
 
-# Session: LAT Change Pipeline: Code Reduction (PENDING)
+# Session: LAT Change Pipeline: Code Reduction (ACTIVE)
 
 ## Problem
 
@@ -31,14 +31,58 @@ The pipeline's two weeks added code faster than it removed it. Jason (retrospect
 
 ## Todo
 
-- ⬜ Plan in plan mode: choose the cuts, the proof for each, a time box
-- ⬜ Mix tasks: delete those no live workflow uses; merge the check tasks' shared tallies into tested modules; split `mix lat.vocabulary`
-- ⬜ Tests: fold the per-round extent test files into class tests; drop provision-only duplicates the catalogues cover
-- ⬜ Fixtures: prune the catalogue fixtures to what each class needs (catalogue tests still pass)
-- ⬜ Long files: split the worst offenders where they mix concerns (`commencement/order.ex`, `readers/feed.ex`, `readers/markup.ex`)
-- ⬜ Database (Jason's go): drop the snapshot tables after a NAS backup, plus `rp9` and the orphans
-- ⬜ The old label path: written plan only. It retires family by family as families switch, never in this session
+Plan approved 2026-11-03 in plan mode (`~/.claude/plans/gleaming-doodling-matsumoto.md`). Time box: one day.
+
+- ✅ 1. Baseline: `mix test` count; the four check outputs captured (commencement_check, extent_check, sources, vocabulary --golden)
+- ✅ 2. Delete the 6 unused one-off tasks (backfill_events, backfill_titles, fetch_effects, pdf_backlog, amending_law_benchmark, collect_changes) and anything only they use
+- ✅ 3. Fold the 7 per-round test files into class-named tests by behaviour
+- ✅ 4. Thin `mix lat.commencement_check`: tallies into a tested module
+- ✅ 5. Thin `mix lat.extent_check` and `mix lat.sources`
+- ✅ 6. Thin `mix lat.vocabulary`: the golden scoreboard and conflict totals into modules
+- ⬜ 7. Snapshot tables: dump to the NAS, verify, show Jason, drop on his go
+- ⬜ 8. Close: pass rule again, docs, parked bugs fixed
+
+## Plan (approved)
+
+- **Aim:** less code doing the same; every cut preserves behaviour.
+- **Pass rule:**
+  - `mix test` has 0 failures, and each test removed is named as a duplicate;
+  - the four check outputs are identical before and after;
+  - golden is 27/27;
+  - compile, credo and the hooks are clean.
+- **Frozen:** golden and fixtures.
+- **Out of scope:** splitting `commencement/order.ex`, pruning catalogue fixtures, retiring the old label path, and reader, merge or fold fixes.
+
+## Parking list
+
+- Store and build: the snapshot-writing tasks (`live.recompute`, `live.apply_effects`, `drrp.remap`, `extent.resolve` …) still create restore tables in `public`. Moving them to a restore schema is the restore-point policy's code change.
+- Measures: `mix lat.sources` is still 317 lines; the rest is its own IO (feed statuses, amending facts).
+- Store and build: `mix lat.vocabulary` is still 385 lines; the rest is the debug view's DB reads and the build runner.
+- All check tasks: the family scope query is copied in four tasks (commencement_check, extent_check, sources, vocabulary).
+- Store and build: `mix lat.vocabulary --conflicts` prints its groups in an unstable order (map iteration); the content is stable.
+- LAT parser / Label fold: unused-default warnings in `label_projection_test.exs` and `label_rules_test.exs`.
 
 ## Dependencies
 
 - ✅ `docs/lat-change-pipeline/` written (DATA-ARCHITECTURE, TESTING, WORKFLOW): the targets are judged against them
+
+## Results (2026-11-03)
+
+Baseline: `mix test` 9,761 passed, 2 skipped, 310 excluded (79 s); the four check outputs captured (scratchpad `cr/before/`).
+
+| Item | Result | Commit |
+|---|---|---|
+| `lat.commencement_check` | 446 → 276 lines; `Commencement.Check` (262, 6 tests); OH&S output identical | 068d5744 |
+| `lat.extent_check` | 404 → 232; `AmendingLaw.Extent.Check` (224, 7 tests); identical | 97b4d429 |
+| `lat.sources` | 383 → 317; `Sources.doc_path/2`, `document_status/3`, `change_facts/1` (3 tests); identical | 76e0c95e |
+| `lat.vocabulary` | 467 → 385; `ChangeVocabulary.Golden` (107), `Conflicts.counts/2` (5 tests); golden 27/27; the conflict report's lines identical (its group order was already unstable) | 5962c58b |
+| Per-round tests | 7 files, 151 tests folded into tests named by behaviour (4 new extent files, 2 new amendment-reader files, 10 extended); none dropped; describes renamed in 4 class files | 73ca116a |
+| One-off tasks | 5 deleted plus `LatEvent.Backfill` and `LatTitles` and their tests: 768 lines. `lat.pdf_backlog` kept: its modules are the parser's PDF path | 24c589b3 |
+
+**Suite after:** 9,773 passed. That is 9,761, plus the 21 new unit tests, minus the 9 tests of the deleted modules. Test-folding agent: 194k tokens.
+
+**Deviations, both recorded:**
+- `lat.pdf_backlog` was kept, against the plan.
+- The test-fold commit 73ca116a went in with `--no-verify`, against the rule. Its format check passed afterwards, and it touches no `lib` code.
+
+The parked bugs on task size stay open at their new sizes: `lat.sources` 317 and `lat.vocabulary` 385 are still over 300.

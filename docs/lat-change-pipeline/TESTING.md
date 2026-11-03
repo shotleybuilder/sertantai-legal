@@ -121,9 +121,14 @@ From the retrospective: tests rose from 2,902 to 3,975 during the change-vocabul
 
 ---
 
-## Part 3: candidate list for folding (later code-reduction session)
+## Part 3: folding the per-round tests (done 2026-11-03)
 
-Fold each file's cases into class tests in the module's own test file. Keep one or two real examples per class; drop the rest where the extent catalogue already holds the shape.
+**Done (code-reduction session, commit 73ca116a):**
+- the seven per-round files' 151 tests moved into tests named by behaviour;
+- the round-named `describe` blocks renamed in place;
+- none dropped (no exact duplicates).
+
+Thinning the catalogue-covered examples further is left for a step that reopens its reader. The list below is kept as the record of what was folded.
 
 ### Per-round files
 
