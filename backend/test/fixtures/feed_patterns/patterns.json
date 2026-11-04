@@ -65,11 +65,11 @@
       ]
     },
     "eu_finer: (x) → held": {
-      "count": 2024,
+      "count": 2179,
       "examples": [
+        "UK_eudn_2009_491/3ca190ee21",
         "UK_eudr_1989_391/92c8373d33",
-        "UK_eudr_1989_654/35c7c12950",
-        "UK_eudr_1989_656/1018dd5c16"
+        "UK_eudr_1989_654/35c7c12950"
       ]
     },
     "eu_finer: (x)(x) and semicolon → held": {
@@ -85,11 +85,11 @@
       ]
     },
     "eu_finer: (x)(x) → held": {
-      "count": 385,
+      "count": 395,
       "examples": [
+        "UK_eudn_2009_491/f910c0ee9d",
         "UK_eur_2004_273/d297934280",
-        "UK_eur_2004_852/260ee0c1c8",
-        "UK_eur_2005_111/2639ffb2bd"
+        "UK_eur_2004_725/37c30a3198"
       ]
     },
     "eu_finer: (x)(x)(x) → held": {
@@ -230,7 +230,7 @@
       ]
     },
     "eu_finer: Point x) → held": {
-      "count": 10,
+      "count": 11,
       "examples": [
         "UK_eudr_2004_37/f0349662ba",
         "UK_eur_2004_273/6cefdb76e2",
@@ -303,11 +303,11 @@
       ]
     },
     "eu_finer: heading → article": {
-      "count": 105,
+      "count": 110,
       "examples": [
+        "UK_eur_2004_725/0a66febacb",
         "UK_eur_2004_852/5bbc01a6f1",
-        "UK_eur_2006_1013/e319ec03b3",
-        "UK_eur_2006_166/dca36042b3"
+        "UK_eur_2006_1013/e319ec03b3"
       ]
     },
     "eu_finer: para. N Indent N → held": {
@@ -442,11 +442,19 @@
       ]
     },
     "level: :provision": {
-      "count": 169951,
+      "count": 128647,
       "examples": [
         "UK_anaw_2016_3/7eaca66a95",
         "UK_anaw_2017_2/19657e8208",
         "UK_anaw_2017_3/c85f74f3c0"
+      ]
+    },
+    "level: nil": {
+      "count": 48789,
+      "examples": [
+        "UK_anaw_2016_3/d240ad712b",
+        "UK_anaw_2017_2/388143f26c",
+        "UK_anaw_2017_3/8d1d6bff69"
       ]
     },
     "level: words | ": {
@@ -455,26 +463,25 @@
         "UK_uksi_1990_2179/0301d59b56"
       ]
     },
-    "level: words | comma": {
-      "count": 46,
+    "level: words | amendment": {
+      "count": 1,
       "examples": [
+        "UK_uksi_2010_2215/d2b1af6d35"
+      ]
+    },
+    "level: words | comma": {
+      "count": 47,
+      "examples": [
+        "UK_eur_2009_391/84702be350",
         "UK_nisr_1993_20/7e4138d058",
-        "UK_nisr_2008_170/64bce47090",
-        "UK_ssi_2006_3/fa84221c5e"
+        "UK_nisr_2008_170/64bce47090"
       ]
     },
     "level: words | definition": {
-      "count": 6,
+      "count": 2,
       "examples": [
         "UK_ukpga_1978_3/dfc47e0c6f",
-        "UK_ukpga_1992_14/f3480b6bfb",
-        "UK_ukpga_1992_52/4762015fd5"
-      ]
-    },
-    "level: words | definitions": {
-      "count": 1,
-      "examples": [
-        "UK_ukpga_1998_46/2055e7720e"
+        "UK_uksi_2012_3030/6ce356ac96"
       ]
     },
     "level: words | entries": {
@@ -486,7 +493,7 @@
       ]
     },
     "level: words | entry": {
-      "count": 187,
+      "count": 192,
       "examples": [
         "UK_asp_2010_8/8296efdb6d",
         "UK_nisi_2006_1254/20abf67e2b",
@@ -530,10 +537,41 @@
         "UK_asp_2003_2/f03e14e16a"
       ]
     },
+    "level: words | inserted": {
+      "count": 149,
+      "examples": [
+        "UK_anaw_2017_2/ac84e36402",
+        "UK_asp_2005_13/18fcf5d7f6",
+        "UK_eudr_2000_54/86d16acafb"
+      ]
+    },
+    "level: words | modification": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_1992_12/7dccb30b7d",
+        "UK_ukpga_2001_2/8f64d1b714"
+      ]
+    },
+    "level: words | omitted": {
+      "count": 15,
+      "examples": [
+        "UK_eur_2006_1013/0da704df18",
+        "UK_ukpga_1986_45/5405cb2b64",
+        "UK_ukpga_2000_23/6bd71e7c4a"
+      ]
+    },
     "level: words | punctuation": {
       "count": 1,
       "examples": [
         "UK_ukpga_1984_27/42ece39983"
+      ]
+    },
+    "level: words | repealed": {
+      "count": 26,
+      "examples": [
+        "UK_eudr_2009_161/97fb923f2e",
+        "UK_eudr_2012_27/517030ba99",
+        "UK_eur_2006_1907/ddcfb36e26"
       ]
     },
     "level: words | semi-colon": {
@@ -552,8 +590,16 @@
         "UK_uksi_1996_1527/909b1facd7"
       ]
     },
+    "level: words | substituted": {
+      "count": 523,
+      "examples": [
+        "UK_asp_2005_13/d636a7bacb",
+        "UK_asp_2009_12/dea0d3e629",
+        "UK_asp_2012_8/998dda0399"
+      ]
+    },
     "level: words | sum": {
-      "count": 648,
+      "count": 639,
       "examples": [
         "UK_eur_2008_340/0c6d64ec6f",
         "UK_nisr_2004_416/3de852977e",
@@ -576,7 +622,7 @@
       ]
     },
     "level: words | word": {
-      "count": 13311,
+      "count": 13699,
       "examples": [
         "UK_anaw_2016_3/e2348256df",
         "UK_anaw_2017_2/e8f3bc5dde",
@@ -584,7 +630,7 @@
       ]
     },
     "level: words | words": {
-      "count": 65699,
+      "count": 68220,
       "examples": [
         "UK_anaw_2016_3/57d25ccf10",
         "UK_anaw_2017_2/a6d6c2c88c",
@@ -592,7 +638,7 @@
       ]
     },
     "linkage: no ref + bare word → ?": {
-      "count": 221,
+      "count": 237,
       "examples": [
         "UK_apni_1967_36/715996d67d",
         "UK_asp_2005_5/cac4c8e249",
@@ -600,7 +646,7 @@
       ]
     },
     "linkage: no ref → ?": {
-      "count": 5441,
+      "count": 5607,
       "examples": [
         "UK_anaw_2017_2/ed5ee99fe8",
         "UK_apni_1969_6/fed85f8a42",
@@ -608,7 +654,7 @@
       ]
     },
     "linkage: one": {
-      "count": 153720,
+      "count": 159856,
       "examples": [
         "UK_anaw_2016_3/7eaca66a95",
         "UK_anaw_2017_2/a6d6c2c88c",
@@ -616,7 +662,7 @@
       ]
     },
     "linkage: one + bare word": {
-      "count": 783,
+      "count": 903,
       "examples": [
         "UK_asc_2023_2/c2573fd813",
         "UK_asp_2019_15/4efe1b8e38",
@@ -624,7 +670,7 @@
       ]
     },
     "linkage: one → ?": {
-      "count": 1684,
+      "count": 1752,
       "examples": [
         "UK_asp_2000_4/1d57b3e66b",
         "UK_asp_2003_2/e4e350fdd1",
@@ -632,7 +678,7 @@
       ]
     },
     "linkage: pieces": {
-      "count": 67473,
+      "count": 71421,
       "examples": [
         "UK_anaw_2016_3/e1a5ef34ab",
         "UK_anaw_2017_2/19657e8208",
@@ -648,7 +694,7 @@
       ]
     },
     "linkage: pieces and siblings": {
-      "count": 3852,
+      "count": 4013,
       "examples": [
         "UK_asc_2023_3/3778ce0189",
         "UK_asp_2000_4/f997adb6a8",
@@ -671,7 +717,7 @@
       ]
     },
     "linkage: pieces → ?": {
-      "count": 333,
+      "count": 350,
       "examples": [
         "UK_anaw_2017_2/d9d8a4c004",
         "UK_asp_2003_2/862d810610",
@@ -679,7 +725,7 @@
       ]
     },
     "linkage: siblings": {
-      "count": 14214,
+      "count": 14627,
       "examples": [
         "UK_anaw_2016_3/d240ad712b",
         "UK_anaw_2017_2/404d599c3f",
@@ -702,7 +748,7 @@
       ]
     },
     "linkage: siblings → ?": {
-      "count": 37,
+      "count": 28,
       "examples": [
         "UK_ukpga_1972_70/1c363451d5",
         "UK_ukpga_1980_65/53a3b8b2b8",
@@ -710,7 +756,7 @@
       ]
     },
     "linkage: whole law": {
-      "count": 2178,
+      "count": 2244,
       "examples": [
         "UK_anaw_2017_3/8d1d6bff69",
         "UK_asc_2023_3/880bb79af0",
@@ -718,15 +764,15 @@
       ]
     },
     "linkage: whole law + bare word": {
-      "count": 20,
+      "count": 21,
       "examples": [
         "UK_uksi_1974_2040/bac2e6cddc",
         "UK_uksi_1974_2068/4fee2b05bf",
-        "UK_uksi_2002_2686/8ff53c3c8d"
+        "UK_uksi_1997_347/ca13c5d8f0"
       ]
     },
     "qualification: complete": {
-      "count": 175824,
+      "count": 183538,
       "examples": [
         "UK_anaw_2016_3/8159ae5133",
         "UK_anaw_2017_2/39dbae84c7",
@@ -734,8 +780,9 @@
       ]
     },
     "qualification: complete + except + dated scope": {
-      "count": 2,
+      "count": 3,
       "examples": [
+        "UK_ukpga_1999_22/418104390e",
         "UK_ukpga_2012_10/62c909a654"
       ]
     },
@@ -827,7 +874,7 @@
       ]
     },
     "qualification: dated scope": {
-      "count": 773,
+      "count": 774,
       "examples": [
         "UK_ukpga_1974_7/3d696527e7",
         "UK_ukpga_1986_53/316a93fdd5",
@@ -835,8 +882,9 @@
       ]
     },
     "qualification: dated scope + provisions": {
-      "count": 24,
+      "count": 70,
       "examples": [
+        "UK_ukpga_2003_44/2f41b4896b",
         "UK_ukpga_2012_10/a978ce8cb1",
         "UK_ukpga_2013_22/c2462fb8e4"
       ]
@@ -850,21 +898,22 @@
       ]
     },
     "qualification: except + dated scope": {
-      "count": 5,
+      "count": 18,
       "examples": [
         "UK_ukpga_1984_22/41559e2cd9",
-        "UK_ukpga_2003_43/17dd528de9",
-        "UK_ukpga_2012_10/03df176e40"
+        "UK_ukpga_1999_22/418104390e",
+        "UK_ukpga_2003_43/17dd528de9"
       ]
     },
     "qualification: except + in accordance with + dated scope": {
-      "count": 1,
+      "count": 7,
       "examples": [
+        "UK_ukpga_2003_44/120b71d4c5",
         "UK_ukpga_2012_10/b4f804fe12"
       ]
     },
     "qualification: except + provisions": {
-      "count": 76,
+      "count": 77,
       "examples": [
         "UK_ukpga_1875_17/4173ed32fe",
         "UK_ukpga_1975_51/35ee0bde98",
@@ -878,7 +927,7 @@
       ]
     },
     "qualification: in accordance with": {
-      "count": 13231,
+      "count": 13445,
       "examples": [
         "UK_eur_2008_1272/50d17f7f84",
         "UK_eur_2012_965/36f2e58ea6",
@@ -910,7 +959,7 @@
       ]
     },
     "qualification: none": {
-      "count": 188,
+      "count": 195,
       "examples": [
         "UK_nisr_2007_247/2fdac33ca8",
         "UK_ssi_2009_140/0ae062bf77",
@@ -978,6 +1027,12 @@
       "count": 1,
       "examples": [
         "UK_ukpga_1980_45/352ac51060"
+      ]
+    },
+    "qualification: other | brings paras N, N into force only": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2003_44/b5d698fff3"
       ]
     },
     "qualification: other | but the amending order ceases to have effect on N.N.N": {
@@ -1092,7 +1147,7 @@
       ]
     },
     "qualification: prospective": {
-      "count": 79460,
+      "count": 84097,
       "examples": [
         "UK_anaw_2016_3/7eaca66a95",
         "UK_anaw_2017_2/19657e8208",
@@ -1108,7 +1163,7 @@
       ]
     },
     "qualification: purposes": {
-      "count": 14006,
+      "count": 14769,
       "examples": [
         "UK_anaw_2016_3/6408252035",
         "UK_anaw_2017_2/8554589ee8",
@@ -1124,8 +1179,9 @@
       ]
     },
     "qualification: purposes + dated scope + provisions": {
-      "count": 3,
+      "count": 17,
       "examples": [
+        "UK_ukpga_2003_44/ab10db894e",
         "UK_ukpga_2012_10/90d38cf469"
       ]
     },
@@ -1145,11 +1201,11 @@
       ]
     },
     "qualification: purposes + except + provisions": {
-      "count": 6,
+      "count": 7,
       "examples": [
+        "UK_ukpga_2003_44/73b907e6bb",
         "UK_ukpga_2006_28/f98fe8923c",
-        "UK_ukpga_2006_46/615acd1182",
-        "UK_uksi_2009_716/0814ba67e2"
+        "UK_ukpga_2006_46/615acd1182"
       ]
     },
     "qualification: purposes + except + time of day + provisions": {
@@ -1159,7 +1215,7 @@
       ]
     },
     "qualification: purposes + in accordance with": {
-      "count": 28,
+      "count": 56,
       "examples": [
         "UK_ukpga_1994_23/2a81dbff75",
         "UK_ukpga_1998_36/589ef8311c",
@@ -1167,7 +1223,7 @@
       ]
     },
     "qualification: purposes + provisions": {
-      "count": 24,
+      "count": 38,
       "examples": [
         "UK_ukpga_1982_45/56b118c9db",
         "UK_ukpga_1991_56/503e8e3f28",
@@ -1201,7 +1257,7 @@
       ]
     },
     "qualification: retrospective": {
-      "count": 352,
+      "count": 354,
       "examples": [
         "UK_ukpga_1986_45/377735d8f1",
         "UK_ukpga_1990_8/5229c474c9",
@@ -1209,7 +1265,7 @@
       ]
     },
     "qualification: territory": {
-      "count": 6601,
+      "count": 6741,
       "examples": [
         "UK_asp_2012_8/ebb4103531",
         "UK_ukpga_1875_17/54efbc206e",
@@ -1257,7 +1313,7 @@
       ]
     },
     "qualification: territory + purposes": {
-      "count": 1230,
+      "count": 1242,
       "examples": [
         "UK_ukpga_1936_49/b88b27a0a0",
         "UK_ukpga_1961_64/1c580a5b16",
@@ -1265,7 +1321,7 @@
       ]
     },
     "qualification: territory + purposes + dated scope": {
-      "count": 54,
+      "count": 55,
       "examples": [
         "UK_ukpga_1992_14/403ff266db",
         "UK_ukpga_1994_19/3aaa9a2d22",
@@ -1305,7 +1361,7 @@
       ]
     },
     "qualification: time of day": {
-      "count": 2204,
+      "count": 2439,
       "examples": [
         "UK_asp_2000_4/3920971431",
         "UK_asp_2003_2/a0dda96a1f",
@@ -1320,7 +1376,7 @@
       ]
     },
     "range: ends kept": {
-      "count": 4020,
+      "count": 3637,
       "examples": [
         "UK_anaw_2017_2/5e7753d6bb",
         "UK_asc_2023_3/3778ce0189",
@@ -1328,7 +1384,7 @@
       ]
     },
     "range: none": {
-      "count": 241987,
+      "count": 252821,
       "examples": [
         "UK_anaw_2016_3/7eaca66a95",
         "UK_anaw_2017_2/19657e8208",
@@ -1336,7 +1392,7 @@
       ]
     },
     "range: spanned": {
-      "count": 4063,
+      "count": 4715,
       "examples": [
         "UK_anaw_2016_3/d240ad712b",
         "UK_anaw_2017_2/50cb4fd1f4",
@@ -1352,18 +1408,19 @@
       ]
     },
     "ref: annex → bare word": {
-      "count": 8,
+      "count": 9,
       "examples": [
         "UK_eudr_2009_161/97fb923f2e",
-        "UK_eur_2005_111/b8aff9c8fb"
+        "UK_eur_2005_111/b8aff9c8fb",
+        "UK_eur_2014_788/514394a6b3"
       ]
     },
     "ref: annex-N → annex.N": {
-      "count": 1841,
+      "count": 1847,
       "examples": [
+        "UK_eudn_2009_491/86f45839ba",
         "UK_eudr_1992_58/8362473616",
-        "UK_eudr_1992_85/0d3ca6c65d",
-        "UK_eudr_2000_54/89114ddc73"
+        "UK_eudr_1992_85/0d3ca6c65d"
       ]
     },
     "ref: annex-N → annex.N (range end)": {
@@ -1381,7 +1438,7 @@
       ]
     },
     "ref: annex-N → piece of a path": {
-      "count": 364,
+      "count": 366,
       "examples": [
         "UK_eur_2004_852/faa4298c32",
         "UK_eur_2006_1013/640fa384ba",
@@ -1416,7 +1473,7 @@
       ]
     },
     "ref: annex-N-paragraph-N → annex.N": {
-      "count": 141,
+      "count": 143,
       "examples": [
         "UK_eur_2004_852/faa4298c32",
         "UK_eur_2006_1013/a77a9230db",
@@ -1452,16 +1509,23 @@
       ]
     },
     "ref: annex-N-part-N → piece of a path": {
-      "count": 6,
+      "count": 10,
       "examples": [
         "UK_eur_2006_1013/04ec052981",
-        "UK_eur_2006_1907/a84cfeccf3"
+        "UK_eur_2006_1907/a84cfeccf3",
+        "UK_eur_2009_391/a306d0482b"
       ]
     },
     "ref: annex-N-part-N(+1) → annex.N": {
       "count": 2,
       "examples": [
         "UK_eur_2006_1013/9fca99a572"
+      ]
+    },
+    "ref: annex-N-part-N-paragraph-N → annex.N": {
+      "count": 4,
+      "examples": [
+        "UK_eur_2009_391/a306d0482b"
       ]
     },
     "ref: annex-N-part-N-section-N → annex.N": {
@@ -1491,7 +1555,7 @@
       ]
     },
     "ref: article → bare word": {
-      "count": 12,
+      "count": 13,
       "examples": [
         "UK_eur_2012_965/373a978bb7",
         "UK_ukpga_1986_45/01e0ce77bc",
@@ -1505,11 +1569,11 @@
       ]
     },
     "ref: article-N → art.Article N": {
-      "count": 1031,
+      "count": 1105,
       "examples": [
+        "UK_eudn_2009_491/1496160bf8",
         "UK_eudr_1989_391/085a421945",
-        "UK_eudr_1989_654/918d3a3eef",
-        "UK_eudr_1989_656/ccb0816371"
+        "UK_eudr_1989_654/918d3a3eef"
       ]
     },
     "ref: article-N → art.Article N (our row's id)": {
@@ -1519,7 +1583,7 @@
       ]
     },
     "ref: article-N → art.Article N (range end)": {
-      "count": 14,
+      "count": 15,
       "examples": [
         "UK_eur_2006_1013/547d3de966",
         "UK_eur_2006_1907/56b6b7b064",
@@ -1549,11 +1613,11 @@
       ]
     },
     "ref: article-N(+1) → art.Article N(+1)": {
-      "count": 2149,
+      "count": 2305,
       "examples": [
+        "UK_eudn_2009_491/3ca190ee21",
         "UK_eudr_1989_391/92c8373d33",
-        "UK_eudr_1989_654/35c7c12950",
-        "UK_eudr_1989_656/1018dd5c16"
+        "UK_eudr_1989_654/35c7c12950"
       ]
     },
     "ref: article-N(+1) → art.Article N(+1) (range end)": {
@@ -1565,7 +1629,7 @@
       ]
     },
     "ref: article-N(+1) → reg.N(+1)": {
-      "count": 1636,
+      "count": 1637,
       "examples": [
         "UK_nisi_1979_1709/2a7bd3bc3d",
         "UK_nisi_1983_150/e266b1287c",
@@ -1599,11 +1663,11 @@
       ]
     },
     "ref: article-N(+2) → art.Article N(+2)": {
-      "count": 396,
+      "count": 406,
       "examples": [
+        "UK_eudn_2009_491/f910c0ee9d",
         "UK_eur_2004_273/d297934280",
-        "UK_eur_2004_852/260ee0c1c8",
-        "UK_eur_2005_111/2639ffb2bd"
+        "UK_eur_2004_725/37c30a3198"
       ]
     },
     "ref: article-N(+2) → art.Article N(+2) (range end)": {
@@ -1711,7 +1775,7 @@
       ]
     },
     "ref: chapter-N-crossheading-* → none": {
-      "count": 122,
+      "count": 142,
       "examples": [
         "UK_asp_2010_8/2896f3ecb4",
         "UK_ukpga_1986_45/3d56d66bb0",
@@ -1775,7 +1839,7 @@
       ]
     },
     "ref: paragraph-N → none": {
-      "count": 182,
+      "count": 189,
       "examples": [
         "UK_eur_2006_1907/d21e498414",
         "UK_nia_2009_1/0cecb30672",
@@ -1791,7 +1855,7 @@
       ]
     },
     "ref: paragraph-N(+1) → none": {
-      "count": 184,
+      "count": 186,
       "examples": [
         "UK_eur_2006_1907/d7067fbc06",
         "UK_ssi_2004_428/d313a5d7e7",
@@ -1807,13 +1871,14 @@
       ]
     },
     "ref: paragraph-N(+1) → piece of a path": {
-      "count": 1,
+      "count": 2,
       "examples": [
-        "UK_ukpga_1982_45/77975d74b7"
+        "UK_ukpga_1982_45/77975d74b7",
+        "UK_ukpga_1995_4/49f33d2a5d"
       ]
     },
     "ref: paragraph-N(+2) → none": {
-      "count": 61,
+      "count": 63,
       "examples": [
         "UK_ukpga_1982_45/826a566a59",
         "UK_ukpga_1989_15/fe7b4c13e3",
@@ -1834,7 +1899,7 @@
       ]
     },
     "ref: part → bare word": {
-      "count": 10,
+      "count": 11,
       "examples": [
         "UK_ukpga_1972_70/4589e38432",
         "UK_ukpga_1973_65/d82cf7e623",
@@ -1850,7 +1915,7 @@
       ]
     },
     "ref: part-N → none": {
-      "count": 914,
+      "count": 932,
       "examples": [
         "UK_asp_2000_4/1d57b3e66b",
         "UK_asp_2003_2/e4e350fdd1",
@@ -1858,22 +1923,35 @@
       ]
     },
     "ref: part-N → none (range end)": {
-      "count": 26,
+      "count": 27,
       "examples": [
         "UK_ukpga_1986_45/da8486af75",
+        "UK_ukpga_1999_22/a5075121c9",
         "UK_ukpga_2006_46/a299541a6b"
       ]
     },
     "ref: part-N → piece of a path": {
-      "count": 531,
+      "count": 549,
       "examples": [
         "UK_anaw_2017_2/19657e8208",
         "UK_asp_2003_2/862d810610",
         "UK_asp_2004_6/7bd123db60"
       ]
     },
+    "ref: part-N → pt.... (our row's id)": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2003_3049/1ca1442c09"
+      ]
+    },
+    "ref: part-N → pt....#N (our row's id)": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2003_3049/894975cee4"
+      ]
+    },
     "ref: part-N → pt.N (our row's id)": {
-      "count": 829,
+      "count": 835,
       "examples": [
         "UK_anaw_2017_2/a6d6c2c88c",
         "UK_asc_2023_3/74b837e9f1",
@@ -1895,7 +1973,7 @@
       ]
     },
     "ref: part-N-chapter-N → none": {
-      "count": 360,
+      "count": 378,
       "examples": [
         "UK_anaw_2017_2/d9d8a4c004",
         "UK_asp_2003_2/862d810610",
@@ -1919,7 +1997,7 @@
       ]
     },
     "ref: part-N-chapter-N-crossheading-* → none": {
-      "count": 373,
+      "count": 398,
       "examples": [
         "UK_ukpga_1986_45/7d26714580",
         "UK_ukpga_1992_12/89e3f34310",
@@ -1951,7 +2029,7 @@
       ]
     },
     "ref: part-N-crossheading-* → h.N (our row's id)": {
-      "count": 441,
+      "count": 442,
       "examples": [
         "UK_anaw_2016_3/4e1bfc09c7",
         "UK_asp_2005_3/2e8d395f5f",
@@ -1959,7 +2037,7 @@
       ]
     },
     "ref: part-N-crossheading-* → none": {
-      "count": 427,
+      "count": 436,
       "examples": [
         "UK_asp_2000_4/f42df2d811",
         "UK_asp_2013_5/bfba930ad7",
@@ -1984,6 +2062,12 @@
       "count": 1,
       "examples": [
         "UK_ukpga_1984_27/9747b8aeb2"
+      ]
+    },
+    "ref: part-N-part-N → none": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2003_44/7f97048d14"
       ]
     },
     "ref: part-N-part-N → piece of a path": {
@@ -2041,9 +2125,11 @@
       ]
     },
     "ref: regulation → bare word": {
-      "count": 1,
+      "count": 3,
       "examples": [
-        "UK_uksi_1988_1048/c2a8211ecc"
+        "UK_uksi_1988_1048/c2a8211ecc",
+        "UK_uksi_1998_2241/60f6f9af92",
+        "UK_uksi_2012_2267/1d9e85a613"
       ]
     },
     "ref: regulation-N → piece of a path": {
@@ -2060,7 +2146,7 @@
       ]
     },
     "ref: regulation-N → reg.N": {
-      "count": 9589,
+      "count": 11088,
       "examples": [
         "UK_nisr_1991_446/b9e6aea026",
         "UK_nisr_1991_509/56a79466d9",
@@ -2068,7 +2154,7 @@
       ]
     },
     "ref: regulation-N → reg.N (range end)": {
-      "count": 124,
+      "count": 140,
       "examples": [
         "UK_nisr_1991_446/278a5e8f55",
         "UK_nisr_1993_20/c3484bd2d7",
@@ -2082,7 +2168,7 @@
       ]
     },
     "ref: regulation-N(+1) → reg.N(+1)": {
-      "count": 10364,
+      "count": 11147,
       "examples": [
         "UK_nisr_1991_446/1ccbfef028",
         "UK_nisr_1991_509/f71acd2e51",
@@ -2096,7 +2182,7 @@
       ]
     },
     "ref: regulation-N(+1) → reg.N(+1) (range end)": {
-      "count": 251,
+      "count": 268,
       "examples": [
         "UK_nisr_1991_446/377ae2bd6b",
         "UK_nisr_1995_345/160c0fb459",
@@ -2132,7 +2218,7 @@
       ]
     },
     "ref: regulation-N(+2) → reg.N(+2)": {
-      "count": 4210,
+      "count": 4516,
       "examples": [
         "UK_nisr_1991_509/2ed3a88e58",
         "UK_nisr_1993_20/91f832b96f",
@@ -2140,7 +2226,7 @@
       ]
     },
     "ref: regulation-N(+2) → reg.N(+2) (range end)": {
-      "count": 75,
+      "count": 82,
       "examples": [
         "UK_nisr_1991_509/ee8cadbdfd",
         "UK_ssi_2006_90/c02d6357ad",
@@ -2156,7 +2242,7 @@
       ]
     },
     "ref: regulation-N(+3) → reg.N(+3)": {
-      "count": 805,
+      "count": 861,
       "examples": [
         "UK_nisr_1991_509/6026ced3dc",
         "UK_nisr_1997_248/45c05fb3cc",
@@ -2164,19 +2250,19 @@
       ]
     },
     "ref: regulation-N(+3) → reg.N(+3) (range end)": {
-      "count": 10,
+      "count": 11,
       "examples": [
         "UK_nisr_1997_248/3fd8feb23c",
         "UK_uksi_1989_1796/706920a7cf",
-        "UK_uksi_2008_1597/431a20fc75"
+        "UK_uksi_1998_1011/70605615c6"
       ]
     },
     "ref: regulation-N(+4) → reg.N(+4)": {
-      "count": 33,
+      "count": 36,
       "examples": [
         "UK_nisr_1997_248/c7ab2781c5",
         "UK_ssi_2006_3/21ca78ef06",
-        "UK_uksi_2009_890/a5341332a4"
+        "UK_uksi_1993_3138/d82c49d6dd"
       ]
     },
     "ref: regulation-ulations → reg.ulations": {
@@ -2203,11 +2289,11 @@
       ]
     },
     "ref: rule-N(+1) → reg.N(+1)": {
-      "count": 21,
+      "count": 22,
       "examples": [
+        "UK_uksi_1997_347/7021c79223",
         "UK_uksi_1998_1941/b9b4adff5b",
-        "UK_uksi_2002_2686/136386b5b6",
-        "UK_uksi_2006_641/941598b08d"
+        "UK_uksi_2002_2686/136386b5b6"
       ]
     },
     "ref: rule-N(+1) → reg.N(+1) (range end)": {
@@ -2233,7 +2319,7 @@
       ]
     },
     "ref: schedule → bare word": {
-      "count": 171,
+      "count": 186,
       "examples": [
         "UK_apni_1967_36/715996d67d",
         "UK_asp_2011_9/8f5eeff33d",
@@ -2241,7 +2327,7 @@
       ]
     },
     "ref: schedule → piece of a path": {
-      "count": 656,
+      "count": 768,
       "examples": [
         "UK_asc_2023_2/c2573fd813",
         "UK_asp_2019_15/4efe1b8e38",
@@ -2249,7 +2335,7 @@
       ]
     },
     "ref: schedule-N → piece of a path": {
-      "count": 68809,
+      "count": 72883,
       "examples": [
         "UK_anaw_2016_3/e1a5ef34ab",
         "UK_anaw_2017_2/620b769b7f",
@@ -2284,7 +2370,7 @@
       ]
     },
     "ref: schedule-N → sch.N": {
-      "count": 5162,
+      "count": 5294,
       "examples": [
         "UK_apni_1969_6/4a3d363595",
         "UK_asp_2000_4/1355a77644",
@@ -2292,7 +2378,7 @@
       ]
     },
     "ref: schedule-N → sch.N (range end)": {
-      "count": 45,
+      "count": 47,
       "examples": [
         "UK_nisr_1997_248/96bac54f4a",
         "UK_ssi_1999_1/2436017c8c",
@@ -2358,7 +2444,7 @@
       ]
     },
     "ref: schedule-N-crossheading-* → sch.N": {
-      "count": 363,
+      "count": 369,
       "examples": [
         "UK_asc_2023_3/06fdcde05a",
         "UK_asp_2005_3/b3f32ca970",
@@ -2432,7 +2518,7 @@
       ]
     },
     "ref: schedule-N-paragraph-N → sch.N.para.N": {
-      "count": 44705,
+      "count": 48012,
       "examples": [
         "UK_anaw_2016_3/e1a5ef34ab",
         "UK_anaw_2017_2/620b769b7f",
@@ -2440,7 +2526,7 @@
       ]
     },
     "ref: schedule-N-paragraph-N → sch.N.para.N (range end)": {
-      "count": 665,
+      "count": 729,
       "examples": [
         "UK_asc_2023_3/96d87d9a2e",
         "UK_asp_2003_2/27cf77544d",
@@ -2483,7 +2569,7 @@
       ]
     },
     "ref: schedule-N-paragraph-N(+1) → sch.N.para.N(+1)": {
-      "count": 14691,
+      "count": 15149,
       "examples": [
         "UK_asc_2023_3/3778ce0189",
         "UK_asp_2000_4/04e593d2f7",
@@ -2491,7 +2577,7 @@
       ]
     },
     "ref: schedule-N-paragraph-N(+1) → sch.N.para.N(+1) (range end)": {
-      "count": 702,
+      "count": 718,
       "examples": [
         "UK_asc_2023_3/3778ce0189",
         "UK_asp_2000_4/f997adb6a8",
@@ -2557,7 +2643,7 @@
       ]
     },
     "ref: schedule-N-paragraph-N(+2) → sch.N.para.N(+2)": {
-      "count": 5932,
+      "count": 6169,
       "examples": [
         "UK_asc_2023_3/cf0f6445c0",
         "UK_asp_2000_4/a320d12d0f",
@@ -2565,7 +2651,7 @@
       ]
     },
     "ref: schedule-N-paragraph-N(+2) → sch.N.para.N(+2) (range end)": {
-      "count": 82,
+      "count": 84,
       "examples": [
         "UK_ukpga_1981_69/8af2ae0f6a",
         "UK_ukpga_1986_44/6b6c1b9983",
@@ -2586,7 +2672,7 @@
       ]
     },
     "ref: schedule-N-paragraph-N(+3) → sch.N.para.N(+3)": {
-      "count": 498,
+      "count": 515,
       "examples": [
         "UK_asp_2003_3/03b7775437",
         "UK_asp_2005_13/11963fe570",
@@ -2602,7 +2688,7 @@
       ]
     },
     "ref: schedule-N-paragraph-N(+4) → sch.N.para.N(+4)": {
-      "count": 14,
+      "count": 15,
       "examples": [
         "UK_ukpga_1994_39/6aae8d1a6d",
         "UK_ukpga_1995_25/3fdf4caaab",
@@ -2665,7 +2751,7 @@
       ]
     },
     "ref: schedule-N-part-N → piece of a path": {
-      "count": 1833,
+      "count": 1847,
       "examples": [
         "UK_nisr_1995_340/6efdcfd7b9",
         "UK_nisr_1996_119/0f60072028",
@@ -2679,7 +2765,7 @@
       ]
     },
     "ref: schedule-N-part-N → sch.N.pt.N": {
-      "count": 3616,
+      "count": 3688,
       "examples": [
         "UK_asp_2002_3/46219b74cf",
         "UK_asp_2008_5/aa17312bc9",
@@ -2701,11 +2787,11 @@
       ]
     },
     "ref: schedule-N-part-N(+1) → sch.N.pt.N": {
-      "count": 20,
+      "count": 22,
       "examples": [
+        "UK_ukpga_1995_4/d345a91503",
         "UK_ukpga_1997_16/0f1ecb6134",
-        "UK_ukpga_1999_16/ac057e3964",
-        "UK_ukpga_2000_19/f43ad86924"
+        "UK_ukpga_1999_16/ac057e3964"
       ]
     },
     "ref: schedule-N-part-N(+2) → sch.N.pt.N": {
@@ -2728,11 +2814,11 @@
       ]
     },
     "ref: schedule-N-part-N-chapter-N → sch.N.pt.N": {
-      "count": 102,
+      "count": 104,
       "examples": [
         "UK_ssi_2018_219/b1ab208b3c",
-        "UK_uksi_2016_1154/afe31fb45b",
-        "UK_uksi_2016_765/21fa1c6f8a"
+        "UK_uksi_1998_2070/8e0211a369",
+        "UK_uksi_2016_1154/afe31fb45b"
       ]
     },
     "ref: schedule-N-part-N-chapter-N → sch.N.pt.N (range end)": {
@@ -2779,7 +2865,7 @@
       ]
     },
     "ref: schedule-N-part-N-crossheading-* → sch.N.pt.N": {
-      "count": 437,
+      "count": 445,
       "examples": [
         "UK_anaw_2016_3/f34c3a584c",
         "UK_asp_2003_3/6a374c9938",
@@ -2883,7 +2969,7 @@
       ]
     },
     "ref: schedule-N-part-N-paragraph-N → sch.N.pt.N.para.N": {
-      "count": 880,
+      "count": 892,
       "examples": [
         "UK_nisr_1995_340/6efdcfd7b9",
         "UK_nisr_1996_119/130dc0755b",
@@ -2891,7 +2977,7 @@
       ]
     },
     "ref: schedule-N-part-N-paragraph-N → sch.N.pt.N.para.N (range end)": {
-      "count": 25,
+      "count": 27,
       "examples": [
         "UK_ukpga_1973_65/c3063814ff",
         "UK_ukpga_1980_65/48f27563b0",
@@ -3149,8 +3235,20 @@
         "UK_ukpga_1991_46/6b52c5ecd7"
       ]
     },
+    "ref: schedule-para → piece of a path": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_1981_569/06913db068"
+      ]
+    },
+    "ref: schedule-para-section-N → sch.para": {
+      "count": 2,
+      "examples": [
+        "UK_uksi_1981_569/06913db068"
+      ]
+    },
     "ref: schedule-paragraph-N → sch.para.N": {
-      "count": 472,
+      "count": 574,
       "examples": [
         "UK_asc_2023_2/c2573fd813",
         "UK_asp_2019_15/4efe1b8e38",
@@ -3166,7 +3264,7 @@
       ]
     },
     "ref: schedule-paragraph-N(+1) → sch.para.N(+1)": {
-      "count": 101,
+      "count": 103,
       "examples": [
         "UK_asp_2019_17/408cb4c6e8",
         "UK_ssi_2007_251/9ac8fe99e1",
@@ -3196,26 +3294,33 @@
       ]
     },
     "ref: schedule-part-N → piece of a path": {
-      "count": 14,
+      "count": 25,
       "examples": [
+        "UK_uksi_1998_2411/410bc4c839",
         "UK_uksi_2016_1026/c888dad1f0",
-        "UK_uksi_2016_588/bbc33f7c40",
-        "UK_uksi_2020_41/5949e538b0"
+        "UK_uksi_2016_588/bbc33f7c40"
       ]
     },
     "ref: schedule-part-N → sch.pt.N": {
-      "count": 49,
+      "count": 56,
       "examples": [
         "UK_ssi_2004_508/8b3743f519",
-        "UK_uksi_1989_682/311d077b0f",
-        "UK_uksi_1998_1941/6fefdc4e1b"
+        "UK_uksi_1972_1701/19ff0667ce",
+        "UK_uksi_1989_682/311d077b0f"
+      ]
+    },
+    "ref: schedule-part-N → sch.pt.N.": {
+      "count": 4,
+      "examples": [
+        "UK_uksi_1998_2411/a76b36f150"
       ]
     },
     "ref: schedule-part-N-paragraph-N → sch.pt.N.para.N": {
-      "count": 12,
+      "count": 24,
       "examples": [
-        "UK_uksi_2016_1026/c888dad1f0",
-        "UK_uksi_2016_588/bbc33f7c40"
+        "UK_uksi_1998_1258/393d05a019",
+        "UK_uksi_1998_2411/410bc4c839",
+        "UK_uksi_2016_1026/c888dad1f0"
       ]
     },
     "ref: schedule-part-N-paragraph-N → sch.pt.N.para.wrapper1n1": {
@@ -3230,10 +3335,19 @@
         "UK_uksi_2020_41/187391657f"
       ]
     },
-    "ref: schedule-schedule-paragraph-N → sch.schedule.para.N": {
-      "count": 2,
+    "ref: schedule-part-N-paragraph-N(+1) → sch.pt.N.para.N(+1)": {
+      "count": 6,
       "examples": [
-        "UK_ukpga_1991_46/55bea048c2"
+        "UK_uksi_1972_1701/ae26bf0a5e",
+        "UK_uksi_1998_2411/a76b36f150"
+      ]
+    },
+    "ref: schedule-schedule-paragraph-N → sch.schedule.para.N": {
+      "count": 6,
+      "examples": [
+        "UK_ukpga_1991_46/55bea048c2",
+        "UK_uksi_1981_569/c312348d3b",
+        "UK_uksi_1981_570/477b432db8"
       ]
     },
     "ref: section → bare word": {
@@ -3245,7 +3359,7 @@
       ]
     },
     "ref: section → piece of a path": {
-      "count": 56,
+      "count": 57,
       "examples": [
         "UK_ukpga_1936_49/2e27a2b439",
         "UK_ukpga_1968_47/cc2b646ace",
@@ -3454,7 +3568,7 @@
       ]
     },
     "ref: section-N → s.N": {
-      "count": 49821,
+      "count": 51208,
       "examples": [
         "UK_anaw_2016_3/d240ad712b",
         "UK_anaw_2017_2/13b290a11e",
@@ -3462,7 +3576,7 @@
       ]
     },
     "ref: section-N → s.N (range end)": {
-      "count": 2524,
+      "count": 2567,
       "examples": [
         "UK_anaw_2016_3/d240ad712b",
         "UK_apni_1969_6/1d754bf6d0",
@@ -3508,7 +3622,7 @@
       ]
     },
     "ref: section-N(+1) → s.N(+1)": {
-      "count": 52783,
+      "count": 54102,
       "examples": [
         "UK_anaw_2016_3/6931257bbf",
         "UK_anaw_2017_2/1bcaa7c723",
@@ -3524,7 +3638,7 @@
       ]
     },
     "ref: section-N(+1) → s.N(+1) (range end)": {
-      "count": 3029,
+      "count": 3115,
       "examples": [
         "UK_anaw_2016_3/8adb2ebd51",
         "UK_anaw_2017_2/50cb4fd1f4",
@@ -3661,7 +3775,7 @@
       ]
     },
     "ref: section-N(+2) → s.N(+2)": {
-      "count": 21772,
+      "count": 22502,
       "examples": [
         "UK_anaw_2016_3/7eaca66a95",
         "UK_anaw_2017_2/a4ecaa59c9",
@@ -3676,7 +3790,7 @@
       ]
     },
     "ref: section-N(+2) → s.N(+2) (range end)": {
-      "count": 334,
+      "count": 344,
       "examples": [
         "UK_anaw_2017_2/5e7753d6bb",
         "UK_asp_2000_4/f979e62beb",
@@ -3702,7 +3816,7 @@
       ]
     },
     "ref: section-N(+3) → s.N(+3)": {
-      "count": 1622,
+      "count": 1685,
       "examples": [
         "UK_anaw_2017_2/d97f1016b8",
         "UK_asc_2023_3/adffe5c431",
@@ -3710,7 +3824,7 @@
       ]
     },
     "ref: section-N(+3) → s.N(+3) (range end)": {
-      "count": 25,
+      "count": 26,
       "examples": [
         "UK_asp_2003_1/771017c2ae",
         "UK_asp_2003_2/9499500c82",
@@ -3738,11 +3852,11 @@
       ]
     },
     "ref: signature → bare word": {
-      "count": 20,
+      "count": 24,
       "examples": [
         "UK_eur_1991_3254/25960fa8c2",
         "UK_eur_2004_273/327edeba00",
-        "UK_eur_2004_852/aa06f0fc03"
+        "UK_eur_2004_725/9dff6a0f16"
       ]
     },
     "ref: title → bare word": {
@@ -3778,7 +3892,7 @@
       ]
     },
     "staging: :commenced | stages 0 | full stage false": {
-      "count": 6135,
+      "count": 7778,
       "examples": [
         "UK_anaw_2016_3/32fbb3e00b",
         "UK_anaw_2017_2/4d2d9abccc",
@@ -3786,7 +3900,7 @@
       ]
     },
     "staging: :commenced | stages 1 | full stage false": {
-      "count": 11352,
+      "count": 11990,
       "examples": [
         "UK_anaw_2016_3/6408252035",
         "UK_anaw_2017_2/9e6763b3b8",
@@ -3794,7 +3908,7 @@
       ]
     },
     "staging: :commenced | stages 1 | full stage true": {
-      "count": 48524,
+      "count": 51314,
       "examples": [
         "UK_anaw_2016_3/d7acf0321d",
         "UK_anaw_2017_2/281aa595ec",
@@ -3832,7 +3946,7 @@
       ]
     },
     "staging: :inserted | stages 0 | full stage false": {
-      "count": 4102,
+      "count": 4182,
       "examples": [
         "UK_anaw_2017_2/d9d8a4c004",
         "UK_asc_2023_3/25a967166a",
@@ -3840,7 +3954,7 @@
       ]
     },
     "staging: :inserted | stages 1 | full stage false": {
-      "count": 951,
+      "count": 971,
       "examples": [
         "UK_anaw_2017_2/8554589ee8",
         "UK_asc_2023_3/adffe5c431",
@@ -3848,7 +3962,7 @@
       ]
     },
     "staging: :inserted | stages 1 | full stage true": {
-      "count": 35849,
+      "count": 37283,
       "examples": [
         "UK_anaw_2016_3/2fe6f615d2",
         "UK_anaw_2017_2/c09cd2bb14",
@@ -3856,7 +3970,7 @@
       ]
     },
     "staging: :inserted | stages 2 | full stage false": {
-      "count": 710,
+      "count": 718,
       "examples": [
         "UK_asp_2002_3/0df431a6d6",
         "UK_asp_2003_2/736e7a3bf5",
@@ -3864,7 +3978,7 @@
       ]
     },
     "staging: :inserted | stages 2 | full stage true": {
-      "count": 2457,
+      "count": 2480,
       "examples": [
         "UK_asp_2002_3/f45a70037f",
         "UK_asp_2003_2/6856e096c8",
@@ -3872,7 +3986,7 @@
       ]
     },
     "staging: :inserted | stages 3+ | full stage false": {
-      "count": 69,
+      "count": 70,
       "examples": [
         "UK_ukpga_1978_30/5d3e4ad6f0",
         "UK_ukpga_1980_66/08b030a270",
@@ -3880,7 +3994,7 @@
       ]
     },
     "staging: :inserted | stages 3+ | full stage true": {
-      "count": 419,
+      "count": 454,
       "examples": [
         "UK_ukpga_1972_66/0c90a8e34f",
         "UK_ukpga_1974_40/526c32dfa6",
@@ -3904,7 +4018,7 @@
       ]
     },
     "staging: :renumbered | stages 1 | full stage true": {
-      "count": 439,
+      "count": 448,
       "examples": [
         "UK_anaw_2017_3/fab91127fa",
         "UK_asp_2003_3/6db0c14be4",
@@ -3920,7 +4034,7 @@
       ]
     },
     "staging: :renumbered | stages 2 | full stage true": {
-      "count": 15,
+      "count": 16,
       "examples": [
         "UK_asp_2005_13/80110e18ca",
         "UK_ukpga_1981_69/92c99bf853",
@@ -3941,7 +4055,7 @@
       ]
     },
     "staging: :repealed | stages 0 | full stage false": {
-      "count": 3615,
+      "count": 3732,
       "examples": [
         "UK_anaw_2016_3/f34c3a584c",
         "UK_anaw_2017_2/19657e8208",
@@ -3949,7 +4063,7 @@
       ]
     },
     "staging: :repealed | stages 1 | full stage false": {
-      "count": 254,
+      "count": 257,
       "examples": [
         "UK_ukpga_1967_10/b8be2e24b7",
         "UK_ukpga_1968_73/b2cea62dc2",
@@ -3957,7 +4071,7 @@
       ]
     },
     "staging: :repealed | stages 1 | full stage true": {
-      "count": 26087,
+      "count": 27474,
       "examples": [
         "UK_anaw_2016_3/a51c463354",
         "UK_anaw_2017_2/39dbae84c7",
@@ -3965,7 +4079,7 @@
       ]
     },
     "staging: :repealed | stages 2 | full stage false": {
-      "count": 160,
+      "count": 165,
       "examples": [
         "UK_ukpga_1965_57/6c9e8c482c",
         "UK_ukpga_1968_73/8c3328f452",
@@ -3973,7 +4087,7 @@
       ]
     },
     "staging: :repealed | stages 2 | full stage true": {
-      "count": 920,
+      "count": 949,
       "examples": [
         "UK_asp_2003_2/275b5c7fa1",
         "UK_asp_2010_8/f202de8a17",
@@ -3989,7 +4103,7 @@
       ]
     },
     "staging: :repealed | stages 3+ | full stage true": {
-      "count": 165,
+      "count": 174,
       "examples": [
         "UK_ukpga_1936_49/73995a28f7",
         "UK_ukpga_1972_66/ae88edbae6",
@@ -3997,7 +4111,7 @@
       ]
     },
     "staging: :repealed_in_part | stages 0 | full stage false": {
-      "count": 1034,
+      "count": 1045,
       "examples": [
         "UK_eudr_1998_24/a1bcb2f081",
         "UK_eur_2006_166/6fda9af82a",
@@ -4005,7 +4119,7 @@
       ]
     },
     "staging: :repealed_in_part | stages 1 | full stage false": {
-      "count": 369,
+      "count": 377,
       "examples": [
         "UK_asp_2012_8/ebb4103531",
         "UK_nisr_2007_31/1e12aff822",
@@ -4013,7 +4127,7 @@
       ]
     },
     "staging: :repealed_in_part | stages 1 | full stage true": {
-      "count": 55,
+      "count": 56,
       "examples": [
         "UK_nisr_1999_304/8abdc28b3d",
         "UK_ukpga_1980_66/05e40551c3",
@@ -4021,7 +4135,7 @@
       ]
     },
     "staging: :repealed_in_part | stages 2 | full stage false": {
-      "count": 321,
+      "count": 324,
       "examples": [
         "UK_ukpga_1947_41/6243277a88",
         "UK_ukpga_1971_40/c46e645729",
@@ -4035,7 +4149,7 @@
       ]
     },
     "staging: :repealed_in_part | stages 3+ | full stage false": {
-      "count": 57,
+      "count": 64,
       "examples": [
         "UK_ukpga_1883_3/66401068ac",
         "UK_ukpga_1968_27/7a24c92a1c",
@@ -4043,7 +4157,7 @@
       ]
     },
     "staging: :substituted | stages 0 | full stage false": {
-      "count": 3502,
+      "count": 3553,
       "examples": [
         "UK_anaw_2016_3/7eaca66a95",
         "UK_anaw_2017_2/404d599c3f",
@@ -4051,7 +4165,7 @@
       ]
     },
     "staging: :substituted | stages 1 | full stage false": {
-      "count": 763,
+      "count": 791,
       "examples": [
         "UK_anaw_2017_2/5cad95579f",
         "UK_ukpga_1967_10/b8133d08ac",
@@ -4059,7 +4173,7 @@
       ]
     },
     "staging: :substituted | stages 1 | full stage true": {
-      "count": 47424,
+      "count": 49240,
       "examples": [
         "UK_anaw_2016_3/8159ae5133",
         "UK_anaw_2017_2/7e7613d080",
@@ -4067,7 +4181,7 @@
       ]
     },
     "staging: :substituted | stages 2 | full stage false": {
-      "count": 916,
+      "count": 917,
       "examples": [
         "UK_ukpga_1875_17/54efbc206e",
         "UK_ukpga_1957_31/2a61f64275",
@@ -4075,7 +4189,7 @@
       ]
     },
     "staging: :substituted | stages 2 | full stage true": {
-      "count": 1943,
+      "count": 1995,
       "examples": [
         "UK_asp_2002_3/354834308e",
         "UK_asp_2003_2/e1a81969eb",
@@ -4091,7 +4205,7 @@
       ]
     },
     "staging: :substituted | stages 3+ | full stage true": {
-      "count": 384,
+      "count": 403,
       "examples": [
         "UK_ukpga_1961_64/1c580a5b16",
         "UK_ukpga_1972_66/437498ac55",
@@ -4099,7 +4213,7 @@
       ]
     },
     "staging: nil | stages 0 | full stage false": {
-      "count": 20721,
+      "count": 21026,
       "examples": [
         "UK_anaw_2016_3/d240ad712b",
         "UK_anaw_2017_2/ed5ee99fe8",
@@ -4107,7 +4221,7 @@
       ]
     },
     "staging: nil | stages 1 | full stage false": {
-      "count": 208,
+      "count": 209,
       "examples": [
         "UK_asp_2008_5/b35b2b51c8",
         "UK_ukpga_1972_70/373e3eec9d",
@@ -4115,7 +4229,7 @@
       ]
     },
     "staging: nil | stages 1 | full stage true": {
-      "count": 28923,
+      "count": 29359,
       "examples": [
         "UK_anaw_2017_2/388143f26c",
         "UK_anaw_2017_3/8d1d6bff69",
@@ -4131,7 +4245,7 @@
       ]
     },
     "staging: nil | stages 2 | full stage true": {
-      "count": 429,
+      "count": 561,
       "examples": [
         "UK_asp_2010_8/00e8b3e8e8",
         "UK_asp_2016_20/75add87104",
@@ -4155,7 +4269,7 @@
       ]
     },
     "verb: :commenced | coming into force": {
-      "count": 66393,
+      "count": 71464,
       "examples": [
         "UK_anaw_2016_3/d7acf0321d",
         "UK_anaw_2017_2/281aa595ec",
@@ -4170,7 +4284,7 @@
       ]
     },
     "verb: :inserted | added": {
-      "count": 2257,
+      "count": 2318,
       "examples": [
         "UK_asp_2002_3/9fb9139ca5",
         "UK_asp_2003_2/c38e857aaf",
@@ -4203,7 +4317,7 @@
       ]
     },
     "verb: :inserted | inserted": {
-      "count": 42289,
+      "count": 43829,
       "examples": [
         "UK_anaw_2016_3/2fe6f615d2",
         "UK_anaw_2017_2/d9d8a4c004",
@@ -4342,7 +4456,7 @@
       ]
     },
     "verb: :renumbered | renumbered as": {
-      "count": 310,
+      "count": 320,
       "examples": [
         "UK_asp_2009_12/8b78ea5c5d",
         "UK_asp_2009_6/cecb385f2e",
@@ -4448,7 +4562,7 @@
       ]
     },
     "verb: :repealed | omitted": {
-      "count": 18624,
+      "count": 19460,
       "examples": [
         "UK_anaw_2016_3/a51c463354",
         "UK_anaw_2017_2/19657e8208",
@@ -4462,7 +4576,7 @@
       ]
     },
     "verb: :repealed | repealed": {
-      "count": 11888,
+      "count": 12547,
       "examples": [
         "UK_apni_1969_6/e8c3382eaf",
         "UK_asp_2000_4/f83b236b15",
@@ -4496,7 +4610,7 @@
       ]
     },
     "verb: :repealed | revoked": {
-      "count": 478,
+      "count": 533,
       "examples": [
         "UK_eur_2004_273/8b414f6257",
         "UK_eur_2005_111/dc5d158d88",
@@ -4557,7 +4671,7 @@
       ]
     },
     "verb: :repealed_in_part | omitted": {
-      "count": 261,
+      "count": 265,
       "examples": [
         "UK_ukpga_1972_70/dd2dd4e4c4",
         "UK_ukpga_1975_23/66b9965f29",
@@ -4565,7 +4679,7 @@
       ]
     },
     "verb: :repealed_in_part | repealed": {
-      "count": 479,
+      "count": 493,
       "examples": [
         "UK_asp_2012_8/ebb4103531",
         "UK_ukpga_1875_17/4173ed32fe",
@@ -4573,7 +4687,7 @@
       ]
     },
     "verb: :repealed_in_part | repealed in part": {
-      "count": 979,
+      "count": 989,
       "examples": [
         "UK_eudr_1998_24/a1bcb2f081",
         "UK_eur_2006_166/6fda9af82a",
@@ -4615,7 +4729,7 @@
       ]
     },
     "verb: :repealed_in_part | revoked in part": {
-      "count": 45,
+      "count": 47,
       "examples": [
         "UK_nisi_1992_1728/1671006c22",
         "UK_nisr_1999_304/8abdc28b3d",
@@ -4679,7 +4793,7 @@
       ]
     },
     "verb: :substituted | substituted": {
-      "count": 52959,
+      "count": 54851,
       "examples": [
         "UK_anaw_2016_3/7eaca66a95",
         "UK_anaw_2017_2/404d599c3f",
@@ -4693,7 +4807,7 @@
       ]
     },
     "verb: :substituted | substituted for": {
-      "count": 1614,
+      "count": 1681,
       "examples": [
         "UK_apni_1967_36/b8530ad460",
         "UK_asp_2000_4/2e8359f600",
@@ -4715,7 +4829,7 @@
       ]
     },
     "verb: :substituted | substituted for and word": {
-      "count": 28,
+      "count": 29,
       "examples": [
         "UK_ukpga_1973_51/ff34fe741c",
         "UK_ukpga_1988_52/634b5a1464",
@@ -4896,7 +5010,7 @@
       ]
     },
     "verb: :substituted | substituted for word": {
-      "count": 72,
+      "count": 73,
       "examples": [
         "UK_asp_2003_2/69923f21ac",
         "UK_nisr_2008_170/64bce47090",
@@ -4904,14 +5018,15 @@
       ]
     },
     "verb: :substituted | substituted for word in": {
-      "count": 3,
+      "count": 5,
       "examples": [
         "UK_ukpga_1976_57/7d33bf442c",
-        "UK_ukpga_1984_27/8ff8db2461"
+        "UK_ukpga_1984_27/8ff8db2461",
+        "UK_ukpga_1999_22/65061fa2a2"
       ]
     },
     "verb: :substituted | substituted for words": {
-      "count": 190,
+      "count": 194,
       "examples": [
         "UK_anaw_2016_3/d060597e4a",
         "UK_asp_2002_3/f3c72e22aa",
@@ -4947,19 +5062,11 @@
       ]
     },
     "verb: nil | ": {
-      "count": 6784,
+      "count": 6878,
       "examples": [
         "UK_asp_2000_4/143d7e2b6c",
         "UK_asp_2002_3/281679215e",
         "UK_nisi_1992_1728/c26ed060b1"
-      ]
-    },
-    "verb: nil | abolition": {
-      "count": 18,
-      "examples": [
-        "UK_eudr_1994_33/f2a88011d4",
-        "UK_eudr_1994_63/d840db6390",
-        "UK_eudr_1998_24/af603c036f"
       ]
     },
     "verb: nil | affecting instrument extended to": {
@@ -4969,7 +5076,7 @@
       ]
     },
     "verb: nil | am": {
-      "count": 70,
+      "count": 71,
       "examples": [
         "UK_ssi_1999_1/fb119beb47",
         "UK_ssi_2002_167/cf23ff656c",
@@ -4977,7 +5084,7 @@
       ]
     },
     "verb: nil | amended": {
-      "count": 3696,
+      "count": 3753,
       "examples": [
         "UK_eur_2004_852/d17063f211",
         "UK_eur_2006_1907/23706914c4",
@@ -5003,7 +5110,7 @@
       ]
     },
     "verb: nil | amendment": {
-      "count": 162,
+      "count": 163,
       "examples": [
         "UK_eudr_1992_58/df33809f57",
         "UK_eudr_1994_63/f087dc5938",
@@ -5031,7 +5138,7 @@
       ]
     },
     "verb: nil | amendment to earlier affecting provision": {
-      "count": 1703,
+      "count": 1732,
       "examples": [
         "UK_asp_2003_3/ba739bdc86",
         "UK_asp_2004_6/7bd123db60",
@@ -5108,7 +5215,7 @@
       ]
     },
     "verb: nil | amendment to earlier commencing": {
-      "count": 86,
+      "count": 93,
       "examples": [
         "UK_anaw_2017_2/ed5ee99fe8",
         "UK_ukpga_1972_70/976626a57c",
@@ -5116,11 +5223,11 @@
       ]
     },
     "verb: nil | amendment to earlier commencing and": {
-      "count": 3,
+      "count": 5,
       "examples": [
         "UK_ukpga_2003_37/f9ffdab70b",
-        "UK_ukpga_2006_46/ea125c0be7",
-        "UK_ukpga_2013_24/914df79bde"
+        "UK_ukpga_2003_44/5b9bda72cd",
+        "UK_ukpga_2006_46/ea125c0be7"
       ]
     },
     "verb: nil | amendment to earlier commencing and and": {
@@ -5226,7 +5333,7 @@
       ]
     },
     "verb: nil | applied": {
-      "count": 15700,
+      "count": 15842,
       "examples": [
         "UK_asc_2023_3/880bb79af0",
         "UK_asp_2000_4/f283f403c1",
@@ -5242,7 +5349,7 @@
       ]
     },
     "verb: nil | applied in part": {
-      "count": 287,
+      "count": 289,
       "examples": [
         "UK_eur_2016_2031/cdc4743f5e",
         "UK_ssi_2019_421/1e413307fc",
@@ -5257,7 +5364,7 @@
       ]
     },
     "verb: nil | appointed day": {
-      "count": 85,
+      "count": 86,
       "examples": [
         "UK_asp_2000_4/aa72d73d9d",
         "UK_asp_2002_3/035f1f767d",
@@ -5352,7 +5459,7 @@
       ]
     },
     "verb: nil | commencement order": {
-      "count": 4869,
+      "count": 5011,
       "examples": [
         "UK_apni_1969_6/fed85f8a42",
         "UK_asp_2000_4/511b0cc18e",
@@ -5418,15 +5525,15 @@
       ]
     },
     "verb: nil | continuation of earlier affecting provision": {
-      "count": 3,
+      "count": 11,
       "examples": [
+        "UK_ukpga_2003_44/dda9d08e76",
         "UK_ukpga_2005_15/32066049b3",
-        "UK_ukpga_2007_15/247f244cb1",
-        "UK_ukpga_2009_25/fbda5ba7ac"
+        "UK_ukpga_2007_15/247f244cb1"
       ]
     },
     "verb: nil | continued": {
-      "count": 85,
+      "count": 86,
       "examples": [
         "UK_asp_2010_8/44afae8325",
         "UK_ukpga_1972_70/debdebd10b",
@@ -5538,7 +5645,7 @@
       ]
     },
     "verb: nil | excluded": {
-      "count": 3496,
+      "count": 3593,
       "examples": [
         "UK_anaw_2017_2/388143f26c",
         "UK_asc_2023_3/97b73932b1",
@@ -5546,7 +5653,7 @@
       ]
     },
     "verb: nil | excluded in part": {
-      "count": 182,
+      "count": 187,
       "examples": [
         "UK_asp_2010_8/6a659299a8",
         "UK_eur_2009_1005/1d160092f4",
@@ -5591,8 +5698,14 @@
         "UK_ukpga_1997_50/6a1ddaf8da"
       ]
     },
+    "verb: nil | ext": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1979_97/58e2e16590"
+      ]
+    },
     "verb: nil | extended": {
-      "count": 867,
+      "count": 885,
       "examples": [
         "UK_nisi_2003_419/422f2a0c6b",
         "UK_ukpga_1883_3/bfb41f8ddf",
@@ -5851,11 +5964,11 @@
       ]
     },
     "verb: nil | having effect as specified": {
-      "count": 124,
+      "count": 127,
       "examples": [
+        "UK_ukpga_1995_4/f350b91dbc",
         "UK_ukpga_2003_14/79f8c24041",
-        "UK_ukpga_2006_25/8b448668bd",
-        "UK_ukpga_2007_11/d916e494cb"
+        "UK_ukpga_2006_25/8b448668bd"
       ]
     },
     "verb: nil | in become": {
@@ -5867,7 +5980,7 @@
     "verb: nil | incorporated": {
       "count": 3,
       "examples": [
-        "UK_ukpga_1995_21/1ad5f15e21"
+        "UK_ukpga_1995_21/b95a5146d5"
       ]
     },
     "verb: nil | incorporated in part": {
@@ -5944,6 +6057,12 @@
         "UK_uksi_1992_223/f04f6806a1"
       ]
     },
+    "verb: nil | modification of earlier affecting provision": {
+      "count": 6,
+      "examples": [
+        "UK_ukpga_2003_44/7054caa58f"
+      ]
+    },
     "verb: nil | modification of earlier affecting provision ii,": {
       "count": 1,
       "examples": [
@@ -5964,6 +6083,12 @@
         "UK_ukpga_2001_2/8f64d1b714"
       ]
     },
+    "verb: nil | modification to saving for effects of": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2003_44/7de10ccc51"
+      ]
+    },
     "verb: nil | modifications": {
       "count": 2,
       "examples": [
@@ -5971,7 +6096,7 @@
       ]
     },
     "verb: nil | modified": {
-      "count": 6407,
+      "count": 6597,
       "examples": [
         "UK_asc_2023_3/8aba82b946",
         "UK_asp_2000_4/e9560d4765",
@@ -5979,7 +6104,7 @@
       ]
     },
     "verb: nil | modified in part": {
-      "count": 62,
+      "count": 70,
       "examples": [
         "UK_ukpga_1968_27/c6b0f4b60a",
         "UK_ukpga_1972_70/eb06f6a704",
@@ -6013,8 +6138,9 @@
       ]
     },
     "verb: nil | power applied": {
-      "count": 1,
+      "count": 2,
       "examples": [
+        "UK_ukpga_2003_44/deb1b7d95f",
         "UK_ukpga_2006_11/00a2871e3c"
       ]
     },
@@ -6033,7 +6159,7 @@
       ]
     },
     "verb: nil | power extended": {
-      "count": 21,
+      "count": 23,
       "examples": [
         "UK_ukpga_1984_27/4b224cb6d4",
         "UK_ukpga_1989_6/b97d223d7c",
@@ -6044,6 +6170,12 @@
       "count": 1,
       "examples": [
         "UK_ukpga_1972_68/461568d99a"
+      ]
+    },
+    "verb: nil | power modified": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2003_44/f34a115583"
       ]
     },
     "verb: nil | power restricted": {
@@ -6059,7 +6191,7 @@
       ]
     },
     "verb: nil | power to amend conferred": {
-      "count": 139,
+      "count": 142,
       "examples": [
         "UK_anaw_2017_3/8d1d6bff69",
         "UK_eur_2006_1907/1b2e35540f",
@@ -6067,7 +6199,7 @@
       ]
     },
     "verb: nil | power to amend or apply conferred": {
-      "count": 11,
+      "count": 12,
       "examples": [
         "UK_ukpga_1984_27/d3761f99cc",
         "UK_ukpga_1992_52/b7fc9ce82e",
@@ -6313,7 +6445,7 @@
       ]
     },
     "verb: nil | power to modified": {
-      "count": 24,
+      "count": 25,
       "examples": [
         "UK_ukpga_1971_59/6cedaf439a",
         "UK_ukpga_1972_52/1275b582f3",
@@ -6453,7 +6585,7 @@
       ]
     },
     "verb: nil | referred to": {
-      "count": 32,
+      "count": 33,
       "examples": [
         "UK_ukpga_1965_57/0180f321c3",
         "UK_ukpga_1969_57/3177acc8c8",
@@ -6480,14 +6612,15 @@
       ]
     },
     "verb: nil | repealed of affecting provision": {
-      "count": 2,
+      "count": 38,
       "examples": [
+        "UK_ukpga_2003_44/f603371eb3",
         "UK_ukpga_2005_15/418ae30b32",
         "UK_ukpga_2007_15/637fd9cadc"
       ]
     },
     "verb: nil | restricted": {
-      "count": 926,
+      "count": 930,
       "examples": [
         "UK_asc_2023_3/b02237b1fd",
         "UK_asp_2016_20/4d98bc2459",
@@ -6647,7 +6780,7 @@
       ]
     },
     "verb: nil | savings for effects of": {
-      "count": 44,
+      "count": 46,
       "examples": [
         "UK_ukpga_1972_70/cfb980a939",
         "UK_ukpga_1984_55/dfe0a4d8d4",
@@ -6737,11 +6870,11 @@
       ]
     },
     "verb: nil | substituted in earlier amending provision": {
-      "count": 550,
+      "count": 553,
       "examples": [
         "UK_eur_1991_3254/795a24b503",
-        "UK_eur_2004_852/90ca365a60",
-        "UK_eur_2006_1907/d52458dfa4"
+        "UK_eur_2004_725/9a079c9012",
+        "UK_eur_2004_852/90ca365a60"
       ]
     },
     "verb: nil | substitution": {
@@ -6789,7 +6922,7 @@
       ]
     },
     "verb: nil | text amended": {
-      "count": 46,
+      "count": 47,
       "examples": [
         "UK_nisi_1983_150/e0cfe2689b",
         "UK_nisi_2003_419/8dd7f5aea6",
@@ -6831,7 +6964,7 @@
       ]
     },
     "verb: nil | transfer of functions": {
-      "count": 381,
+      "count": 398,
       "examples": [
         "UK_apni_1970_10/bb184656dc",
         "UK_asp_2004_6/ed4d9ff4aa",
@@ -6851,11 +6984,11 @@
       ]
     },
     "verb: nil | transfer of functions in part": {
-      "count": 4,
+      "count": 6,
       "examples": [
         "UK_ukpga_1968_73/d44b3c0b6d",
-        "UK_ukpga_2004_20/f2753f27c1",
-        "UK_ukpga_2006_46/6e1e8cbb36"
+        "UK_ukpga_1991_52/e684a395af",
+        "UK_ukpga_1999_22/4ad29df437"
       ]
     },
     "verb: nil | transfer of obligations": {
@@ -6934,12 +7067,12 @@
     }
   },
   "totals": {
-    "effects": 251692,
-    "examples": 1659,
+    "effects": 262918,
+    "examples": 1697,
     "excluded": {
-      "legacy dated type": 1622
+      "legacy dated type": 1745
     },
-    "patterns": 1005,
+    "patterns": 1023,
     "unclassified": 0
   }
 }

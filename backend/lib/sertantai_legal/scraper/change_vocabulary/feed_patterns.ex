@@ -394,7 +394,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedPatterns do
             date: date(f["date"]),
             prospective: f["prospective"],
             qualification: f["qualification"],
-            applied: f["applied"]
+            applied: f["applied"],
+            # the order its stage names, for `commenced_by`
+            commencing: f["commencing"]
           }
         end,
       prospective: e["prospective"],

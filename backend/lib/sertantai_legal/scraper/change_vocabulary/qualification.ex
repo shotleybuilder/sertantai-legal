@@ -36,7 +36,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Qualification do
 
   # each class a qualification can name, by its words
   @classes [
-    {"purposes", ~r/\bpurposes?\b/i},
+    # a power to make regulations is a purpose (CJA 2003 s.254(6A), Jason 2026-11-04)
+    {"purposes", ~r/\bpurposes?\b|\bfor enabling the exercise of\b/i},
     {"except", ~r/\bexcept\b/i},
     {"time of day",
      ~r/\bat \d|a\.m\.|p\.m\.|\bimmediately (?:before|after)\b|\b(?:beginning|end) of the day\b/i},

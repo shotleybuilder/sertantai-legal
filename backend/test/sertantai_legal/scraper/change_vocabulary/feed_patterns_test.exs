@@ -97,6 +97,28 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedPatternsTest do
       assert FeedPatterns.target_shape("*") == "*"
     end
 
+    test "an example keeps each stage's commencing order (encode, decode)" do
+      e = %SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect{
+        effect_id: "E",
+        affecting: "UK_asp_2007_10",
+        type: "substituted",
+        in_force: [
+          %{
+            date: ~D[2008-04-01],
+            prospective: false,
+            qualification: "wholly in force",
+            applied: true,
+            commencing: "UK_ssi_2008_49"
+          }
+        ]
+      }
+
+      ctx = %{law: "UK_asp_2000_4", order: [], xml_ids: %{}, rows: []}
+      json = e |> FeedPatterns.encode(ctx) |> Jason.encode!() |> Jason.decode!()
+      {decoded, _} = FeedPatterns.decode(json)
+      assert [%{commencing: "UK_ssi_2008_49"}] = decoded.in_force
+    end
+
     test "legacy dated types are excluded" do
       e = %SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect{
         effect_id: "E",
