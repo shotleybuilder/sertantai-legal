@@ -65,6 +65,14 @@ bugs:
     fix: "skip the snapshot when no law in the batch has rows, or use a restore schema / nas-backup --tables; Jason to drop the four empty tables"
     step: "LAT parser"
     status: open
+    issue: 189
+  - pattern: "mix live.fetch_effects crashes encoding a range target as JSON (Jason.Encoder not implemented for Tuple: {\"regulation-9-2A\", \"regulation-9-2C\"}), so the 4 repealed-text laws' feeds can't be cached for live.apply_effects"
+    category: effects-cache-range-tuple
+    module: Scraper.LiveStatus.EffectsBackfill (fetch cache write)
+    affected: unknown (any law whose feed holds a range)
+    fix: "write ranges as two-item lists in the cache JSON"
+    step: "Register"
+    status: open
 artifacts:
   - backend/lib/sertantai_legal/scraper/making_laws.ex
   - backend/lib/mix/tasks/lat.making_laws.ex
