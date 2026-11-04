@@ -19,6 +19,7 @@ LAT Change Pipeline steps (`docs/lat-change-pipeline/WORKFLOW.md`):
 
 | Step | GitHub label |
 |---|---|
+| Making laws | `step:making-laws` |
 | Sources | `step:sources` |
 | Feed reader | `step:feed-reader` |
 | Markup reader | `step:markup-reader` |
@@ -41,6 +42,8 @@ Outside the pipeline, use the area as the step: "LAT parser", "Definitions", "Re
 
    | Module | Owning step |
    |---|---|
+   | `making_laws*`, `legal/making.ex`, `taxa/making_resolver.ex` | Making laws |
+   | `sources*` | Sources |
    | `change_vocabulary/readers/feed*` | Feed reader |
    | `readers/markup*` | Markup reader |
    | `commencement/`, `readers/*commencement*` | Commencement reader |

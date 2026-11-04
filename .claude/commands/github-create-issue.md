@@ -1,7 +1,7 @@
 Create a GitHub Issue using `gh` CLI.
 
 ---
-**LABEL LIST LAST UPDATED**: 2026-11-03
+**LABEL LIST LAST UPDATED**: 2026-11-04
 **Repository**: shotleybuilder/sertantai-legal
 
 **CURRENT LABELS**:
@@ -16,7 +16,7 @@ Create a GitHub Issue using `gh` CLI.
 - `question` - Further information is requested
 - `security` - Security-related issues
 - `wontfix` - This will not be worked on
-- `step:<name>` - LAT Change Pipeline step that owns the fix (13: `step:sources`, `step:feed-reader`, `step:markup-reader`, `step:commencement-reader`, `step:extent-reader`, `step:amending-law-reader`, `step:merge`, `step:evidence`, `step:label-fold`, `step:measures`, `step:store-and-build`, `step:labels-side-by-side`, `step:switch-over`). A pipeline bug carries `bug` + its step label; see the `bug-raise` skill.
+- `step:<name>` - LAT Change Pipeline step that owns the fix (14: `step:making-laws`, `step:sources`, `step:feed-reader`, `step:markup-reader`, `step:commencement-reader`, `step:extent-reader`, `step:amending-law-reader`, `step:merge`, `step:evidence`, `step:label-fold`, `step:measures`, `step:store-and-build`, `step:labels-side-by-side`, `step:switch-over`). A pipeline bug carries `bug` + its step label; see the `bug-raise` skill.
 
 ---
 

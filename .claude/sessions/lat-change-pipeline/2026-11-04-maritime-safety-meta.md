@@ -15,6 +15,7 @@ The second family through the LAT Change Pipeline, and the first under the proce
 ## Todo
 
 - ✅ Family: TRANSPORT: Maritime Safety; scope: the 16 laws with LAT rows (Decision 1)
+- ⬜ Making laws (new step 0, ACTIVE: `2026-11-04-maritime-safety-making-laws.md`)
 - ⬜ Sources
 - ⬜ Feed reader
 - ⬜ Markup reader
@@ -34,7 +35,7 @@ The second family through the LAT Change Pipeline, and the first under the proce
 
 - ✅ OH&S switched (2026-11-02); retrospective and code reduction closed (2026-11-03)
 - ✅ Process: `session-start` "Step session", `docs/lat-change-pipeline/WORKFLOW.md`, `AIMS.md`, `RULES.md`
-- ✅ The family's LAT rows: 16 laws, as held (Decision 1)
+- ⬜ Making laws step passed: the family's making laws decided from their text and given LAT rows (Decision 2)
 
 ## How this session runs
 
@@ -49,6 +50,7 @@ One row per step, filled when the step session closes. Agent tokens are those of
 
 | Step | Session | Opened | Closed | Days | Pass rule met | Plan changes | Bugs parked | Agent tokens | Commits |
 |---|---|---|---|---|---|---|---|---|---|
+| Making laws | making-laws | 2026-11-04 | | | | | | | |
 | Sources | | | | | | | | | |
 | Feed reader | | | | | | | | | |
 | Markup reader | | | | | | | | | |
@@ -68,5 +70,14 @@ One row per step, filled when the step session closes. Agent tokens are those of
 ### 1. Which family, and its missing LAT rows — DECIDED 2026-11-04
 
 - **Family:** `💙 TRANSPORT: Maritime Safety` (Jason).
-- **Scope:** the 16 laws with LAT rows now (Jason). LAT stores rows only for in-force making laws; that is a basic design rule. Amending and commencing laws that set no duties are read from the XML store, not given rows.
+- **Scope:** the 16 laws with LAT rows now (Jason). LAT stores rows only for in-force making laws; that is a basic design rule. Amending and commencing laws that set no duties are read from the XML store, not given rows. Superseded in part by Decision 2: the scope grows to the laws the Making laws step decides making.
 - **Fact for Jason, not acted on:** the register marks 109 of the family's laws as in-force or part-revoked making laws (`is_making`), and 15 of them have rows. One has rows but is marked not-making (part revoked). The other 94 are outside this run. Whether they need parsing is a LAT parser question, outside the pipeline's 13 steps.
+
+### 2. Making laws decided before Sources — DECIDED 2026-11-04
+
+Jason, 2026-11-04: a law with no LAT rows marked in force and making is an estimate (the detector scores metadata and title; fractalaw reads the text for the final call). So the family's LAT rows depend on that call, and this dependency comes before Sources. Question: can the law's own text, read by the pipeline's readers, decide it without fractalaw?
+
+- **The 158 live laws without rows (corrected 2026-11-04):** 94 marked making, 93 by `legacy_drrp` (old duty types) and 1 by `legacy_is_making`. 64 marked not making: 57 by `legacy_is_making`, 5 by human review and 2 by fractalaw. My first note said "detector only", which was wrong: the detector's scores are stored, but older tiers decide. None of the 151 estimates was read from the law's text, so both sides are checked.
+- **Held:** the XML store has the body of 6 of the 94. It holds what the pipeline needed (the laws with rows, and their amenders), not the family's other laws.
+- **Probe on the 6 (rough text count, P1 groups, quoted inserted text removed):** 5 read as making, for example Load Line 1998, with 32 provisions stating "shall/must" and 3 amending. One is amending only: Port State Control (Amendment) Regulations 2003, with 2 amending provisions and none stating a requirement. The estimate is wrong there.
+- **Decided (Jason):** a formal step, **Making laws** (step 0, before Sources). Each live law is decided from its own text with the pipeline's readers, with no dependency on fractalaw. The verdict is a new `law_text` tier in `MakingResolver`, below human review and fractalaw's enrichment, above every estimate. The laws decided making are then parsed into LAT. Docs: WORKFLOW.md step 0. Session: `2026-11-04-maritime-safety-making-laws.md`.

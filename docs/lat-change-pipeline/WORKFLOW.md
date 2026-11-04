@@ -1,6 +1,6 @@
 # LAT Change Pipeline: Workflow
 
-The pipeline has 13 steps. Each step has one job and a check that says whether the job is done well enough to move on. A family of laws goes through the steps in order; a step trusts the steps before it. What the pipeline is for, and three changes traced end to end, are in the [README](README.md). Terms are in the [Glossary](GLOSSARY.md).
+The pipeline has 14 steps, numbered from 0: Making laws (added 2026-11-04, before the second family) comes before Sources, so the later steps keep their numbers. Each step has one job and a check that says whether the job is done well enough to move on. A family of laws goes through the steps in order; a step trusts the steps before it. What the pipeline is for, and three changes traced end to end, are in the [README](README.md). Terms are in the [Glossary](GLOSSARY.md).
 
 All commands run from `backend/`. `F` is the family name as the register spells it, e.g. `"OH&S: Occupational / Personal Safety"`.
 
@@ -10,6 +10,7 @@ All commands run from `backend/`. `F` is the family name as the register spells 
 
 | # | Step | Writes | Check skill |
 |---|---|---|---|
+| 0 | Making laws | the making text verdict in `legal_register` (through `Making.record`); LAT rows for the laws decided making (a parse, with Jason's go) | none (`mix lat.making_laws`) |
 | 1 | Sources | the CLML store (fetch, with Jason's go) | none (`mix lat.sources`) |
 | 2 | Feed reader | feed claims (via the build) | `feed-reader-check` |
 | 3 | Markup reader | markup claims (via the build) | `markup-reader-check` |
@@ -27,6 +28,27 @@ All commands run from `backend/`. `F` is the family name as the register spells 
 Steps 2–8 all land in the change register through one build (`mix lat.vocabulary --check --family F`), so "writes" there means what the step contributes to it.
 
 ---
+
+## 0. Making laws
+
+**Aim.** Every live law in the family (in force or part revoked) is decided making or not from its own text, and each making law has LAT rows. LAT holds rows only for in-force making laws, and every later step places changes on those rows; a making law without rows drops out of every step and gets no labels.
+
+**Why a step.** For a law without rows, `is_making` is an estimate: the metadata detector, legacy duty types, or a value set before the resolver. Fractalaw's DRRP reading is finer but slow to arrive. On Maritime Safety, 158 of 174 live laws had no rows and none of their estimates had been read from the text.
+
+**Inputs.** The register (`legal_register`: family, live, the making fields), the CLML store (each law's body) and `legal_articles` (which laws have rows).
+
+**Outputs.** A verdict per law (`making`, `not_making`, or none with a reason) in `making_text_verdict` and `making_text_reason`, recorded through `Making.record`. The resolver's `law_text` tier ranks below a human review and fractalaw's enrichment, and above every estimate. A report, `backend/data/reports/making-laws/<family>.csv`. Then LAT rows for the laws newly decided making.
+
+**The rule.** A law is read provision by provision, outside quoted inserted text:
+- **not making:** every operative provision is an amending instruction, a revocation, a commencement, or standard wording (citation, interpretation, extent, application, review, transitional);
+- **making:** at least one own provision states a requirement ("shall" or "must") outside quoted text and outside a modification ("shall have effect as if");
+- **no verdict, to Jason's list:** powers only ("may"), no XML upstream, or text not read.
+
+**Check.** `mix lat.making_laws --family F` (read-only; `--fetch` fetches missing bodies, `--apply` records the verdicts; ask Jason first for both). The checked laws (human review and fractalaw verdicts in the family) are a fixture test.
+
+**Pass rule (Maritime Safety, first use).** The rule is unit-tested by kind; the classifier agrees with every checked law, or each disagreement is decided by Jason; every live law has a verdict or is on the list, and the list is at most 10% of the family; two runs give the same report; every law decided making has LAT rows after the parse, or is named with a reason.
+
+**Skill.** None.
 
 ## 1. Sources
 
@@ -291,18 +313,19 @@ Session files: `.claude/sessions/lat-change-pipeline/<date>-<family>-<step-name>
 
 ## Running a new family
 
-1. **Prerequisites.** The family's laws are parsed into LAT; the golden set for the pass is frozen. Note which laws hold no LAT rows (out of scope).
-2. **Sources** until the gate passes (fetches only with Jason's go).
-3. **Feed reader**, then **Markup reader**: catalogues first, then the gates, then a small agent sample for new classes.
-4. **Commencement reader**: both catalogues, the re-read, the check.
-5. **Extent reader**: sweep and catalogue, the extents written, the check.
-6. **Amending-law reader**: catalogue, pre-flight, one read pass, rebuild, golden from inputs, strata.
-7. **Merge**, then **Evidence**: strata and their checks after a rebuild.
-8. **Label fold**: golden from inputs, then S, T and R.
-9. **Measures**: every figure the family's steps publish, printed by code and replicated.
-10. **Store and build**: two builds, digests compared, staleness, the sources gate re-run.
-11. **Labels side by side**: the new timeline beside the old, 0 rule breaks, differences counted.
-12. **Switch-over**: causes, checked rows, rules, golden; dry run → Jason → restore point → add the family to `:label_families` → `mix lat.label_switch --apply`.
+1. **Prerequisites.** The golden set for the pass is frozen.
+2. **Making laws**: every live law decided from its text; the making laws parsed into LAT (fetch and parse with Jason's go).
+3. **Sources** until the gate passes (fetches only with Jason's go).
+4. **Feed reader**, then **Markup reader**: catalogues first, then the gates, then a small agent sample for new classes.
+5. **Commencement reader**: both catalogues, the re-read, the check.
+6. **Extent reader**: sweep and catalogue, the extents written, the check.
+7. **Amending-law reader**: catalogue, pre-flight, one read pass, rebuild, golden from inputs, strata.
+8. **Merge**, then **Evidence**: strata and their checks after a rebuild.
+9. **Label fold**: golden from inputs, then S, T and R.
+10. **Measures**: every figure the family's steps publish, printed by code and replicated.
+11. **Store and build**: two builds, digests compared, staleness, the sources gate re-run.
+12. **Labels side by side**: the new timeline beside the old, 0 rule breaks, differences counted.
+13. **Switch-over**: causes, checked rows, rules, golden; dry run → Jason → restore point → add the family to `:label_families` → `mix lat.label_switch --apply`.
 
 After a reader fix, rebuild (`mix lat.vocabulary --check --family F`, then `--golden`) so the change register reflects it before the next step looks at it. Each family's new forms extend the catalogues. Steps are batched across families only once families stop surfacing new defects.
 

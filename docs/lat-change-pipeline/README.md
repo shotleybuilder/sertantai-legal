@@ -9,7 +9,7 @@ The LAT Change Pipeline works out, for every provision of a law we hold as LAT (
 
 The labels are written to `lat_label_timeline`, one row per period. That table is what the compliance product reads to tell a user whether a provision binds them today, since when and where.
 
-This page explains the idea, the 13 steps, and three changes traced from source to label. Words in **bold** on first use are defined in the [Glossary](GLOSSARY.md).
+This page explains the idea, the 14 steps, and three changes traced from source to label. Words in **bold** on first use are defined in the [Glossary](GLOSSARY.md).
 
 ## Why it exists
 
@@ -60,9 +60,11 @@ flowchart LR
 
 The primary readers store what they read as rules first (`amendment_rules`, `commencement_rules`, `extent_rules`); the build turns rules and the derived sources into claims. Every source document is held locally in the CLML store (`backend/data/cache/clml/`), so the pipeline never needs the internet to rebuild.
 
-## The 13 steps
+## The 14 steps
 
-Each step has one job and its own check. The order matters: a step trusts the steps before it. [WORKFLOW.md](WORKFLOW.md) gives each step's inputs, outputs, check and pass rule.
+Each step has one job and its own check. The order matters: a step trusts the steps before it. [WORKFLOW.md](WORKFLOW.md) gives each step's inputs, outputs, check and pass rule. Step 0 was added on 2026-11-04, before the second family; the others keep their numbers.
+
+**0. Making laws.** Decides each live law in the family making or not from its own text: changes only (amending, revoking, commencing) is not making; one own requirement ("shall", "must") is making; powers only or no text goes to Jason. The verdict is recorded through `Making.record` as the `law_text` tier, below a human review and fractalaw's enrichment, above every estimate. The laws decided making are then parsed into LAT, since every later step places changes on LAT rows. Module `MakingLaws`; task `mix lat.making_laws --family F` (`--fetch`, `--apply` with Jason's go).
 
 **1. Sources.** Makes sure every document the later steps need is held locally: each law's own text and feed, and the amending laws, commencement orders and enabling Acts that the feed's gaps point to. Reads the register and the CLML store; fetches only with Jason's go. Module `Sources`; task `mix lat.sources --family F` (`--fetch` to fetch).
 
@@ -200,7 +202,7 @@ The row's territory stays its own extent (E+W+S+NI, from the CLML) after a words
 
 | Document | What it covers |
 |---|---|
-| [WORKFLOW.md](WORKFLOW.md) | The 13 steps in order: aim, inputs, outputs, check, pass rule, skill; how a step is run; running a new family |
+| [WORKFLOW.md](WORKFLOW.md) | The 14 steps in order: aim, inputs, outputs, check, pass rule, skill; how a step is run; running a new family |
 | [GLOSSARY.md](GLOSSARY.md) | Terms, and the former codes used in archived sessions |
 | [AIMS.md](AIMS.md) | What the labels are for; every rule is judged against these |
 | [RULES.md](RULES.md) | The rules in plain words, by data scope: status, in force from, territory, changed by, existence, dating gaps, source authority, known limits |

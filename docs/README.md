@@ -4,7 +4,7 @@ Developer documentation for sertantai-legal, the admin data workbench (see the r
 
 | Folder | What it covers | Start with |
 |---|---|---|
-| [`lat-change-pipeline/`](lat-change-pipeline/) | The LAT Change Pipeline. It turns legislation.gov.uk's changes feed, change markup and legal text into provision labels (status, in force from, territory, changed by), in 13 named steps. Also: aims, rules, data architecture, glossary (including the former CV-… codes), testing, and the commencement, amendment, change-identity and note-typology guides | [`README.md`](lat-change-pipeline/README.md), then [`RULES.md`](lat-change-pipeline/RULES.md) |
+| [`lat-change-pipeline/`](lat-change-pipeline/) | The LAT Change Pipeline. It turns legislation.gov.uk's changes feed, change markup and legal text into provision labels (status, in force from, territory, changed by), in 14 named steps. Also: aims, rules, data architecture, glossary (including the former CV-… codes), testing, and the commencement, amendment, change-identity and note-typology guides | [`README.md`](lat-change-pipeline/README.md), then [`RULES.md`](lat-change-pipeline/RULES.md) |
 | [`lat/`](lat/) | LAT (Legal Article Text): the parsed rows of each law. Schema, transforms, parser refactor design, QA sample spec, effects layer plan | [`LAT-SCHEMA-FOR-SERTANTAI.md`](lat/LAT-SCHEMA-FOR-SERTANTAI.md) |
 | [`register/`](register/) | The legal register (LRT): schema and the value sets of its fields (family, function, holder, purpose, extent, law type, live status) | [`LRT-SCHEMA.md`](register/LRT-SCHEMA.md) |
 | [`platform/`](platform/) | The service as a whole: blueprint, quick start, sync architecture, TanStack DB / ElectricSQL stack | [`BLUEPRINT.md`](platform/BLUEPRINT.md) |
