@@ -9,7 +9,7 @@ defmodule SertantaiLegal.Scraper.MakingLaws do
 
   - `:change` — it amends, revokes, modifies ("shall have effect as if") or
     commences another law or provision (the amending-law reader's clause
-    operations and repeals tables);
+    operations and repeals tables; the commencement reader's sentence forms);
   - `:requirement` — it states "shall" or "must" on someone, once standard
     phrases are set aside;
   - `:power` — "may";
@@ -23,6 +23,7 @@ defmodule SertantaiLegal.Scraper.MakingLaws do
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Text}
   alias SertantaiLegal.Scraper.Amendment.Reader.{Clauses, RepealTable}
+  alias SertantaiLegal.Scraper.Commencement.SentencePatterns
   alias SertantaiLegal.Scraper.LatParser.Xml
 
   @type kind :: :change | :requirement | :power | :standard
@@ -39,17 +40,18 @@ defmodule SertantaiLegal.Scraper.MakingLaws do
   # as the amendment reader's: a modification, not an amendment
   @modification ~r/\b(?:have effect|be read|be construed) as if\b/i
   @amended ~r/\b(?:is|are|shall be) (?:further |hereby )?(?:amended|modified)\b|\b(?:amended|modified) (?:as follows|in accordance with)\b|\b(?:is|are|shall be) (?:hereby )?revoked\b|\brevocations?\b/i
-  @commences ~r/\bcomes? into force\b|\bcoming into force\b|\bappointed day\b/i
-  # the law's own: its first words name it ("These Regulations …", "This Order
-  # may be cited … and comes into force"), never "the Schedule to this Order"
-  @own_commencement ~r/^(?:These|This) (?:Regulations|Order|Rules|Act|Scheme|Instrument)\b[^.]*\bcomes? into force\b/
+  @appointed_day ~r/\bappointed day\b/i
+  # a commencement of the law itself names it first ("These Regulations …",
+  # "This Order may be cited … and comes into force"), never "the Schedule
+  # to this Order"
+  @names_itself ~r/^(?:These|This) (?:Regulations|Order|Rules|Act|Scheme|Instrument)\b/
 
   # phrases using "shall", "must" or "may" that state no requirement or power
   @standard_phrases [
     ~r/\bmay be (?:cited|referred to)\b/i,
     ~r/\bwherever (?:they|it|he|she) may be\b/i,
     ~r/\b(?:as the case may be|as (?:nearly|near|soon) as may be)\b/i,
-    ~r/\b(?:shall|must)(?: not| each| also)? (?:be (?:construed|read|treated|deemed|taken|cited|guilty|liable|known)|affect|have (?:the same )?(?:effect|meaning)|mean|include|(?:not )?apply|cease|continue|come into force|expire)\b/i,
+    ~r/\b(?:shall|must)(?: not| each| also)? (?:be (?:construed|read|treated|deemed|taken|cited|guilty|liable|known)|affect|have (?:the same )?(?:effect|meaning)|mean|include|(?:not )?apply|cease|continue|expire)\b/i,
     ~r/\bshall be (?:amended|inserted|substituted|omitted|revoked|repealed|added|renumbered|deleted|left out)\b/i
   ]
   @requirement ~r/\b(?:shall|must)\b/i
@@ -101,17 +103,34 @@ defmodule SertantaiLegal.Scraper.MakingLaws do
 
     cond do
       change?(doc, id, text, words) -> :change
+      commencement(words) == :own -> :standard
       unstandard(words) =~ @requirement -> :requirement
       unstandard(words) =~ @power -> :power
-      words =~ @commences and not (words =~ @own_commencement) -> :change
       true -> :standard
     end
   end
 
   defp change?(doc, id, text, words) do
-    words =~ @modification or words =~ @amended or RepealTable.repeal_table?(doc, id) or
-      Enum.any?(Clauses.clauses(text), &Clauses.operation/1)
+    words =~ @modification or words =~ @amended or commencement(words) == :other or
+      RepealTable.repeal_table?(doc, id) or Enum.any?(Clauses.clauses(text), &Clauses.operation/1)
   end
+
+  # commencement words are the commencement reader's (`SentencePatterns`):
+  # a statement that the law itself comes into force (`:own`), that
+  # something else does or an appointed day (`:other`), else nil
+  defp commencement(words) do
+    cond do
+      words =~ @appointed_day -> :other
+      not commencement_statement?(words) -> nil
+      words =~ @names_itself -> :own
+      true -> :other
+    end
+  end
+
+  defp commencement_statement?(words),
+    do:
+      SentencePatterns.commencement_words?(words) and
+        SentencePatterns.form(words).role == "statement"
 
   defp own_words(doc, id), do: doc |> Text.of(id) |> own_words()
   defp own_words(nil), do: ""

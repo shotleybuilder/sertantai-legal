@@ -23,7 +23,7 @@ defmodule SertantaiLegal.Sync.Delta.Config do
                    current_responsibility_holder current_power_holder claim_holder
                    liability_holder protected_holder) ++
         ~w(is_making_reason is_making_source is_making_decided_at making_classification_source
-           making_enriched_at making_enrichment_verdict) ++
+           making_enriched_at making_enrichment_verdict making_text_verdict making_text_reason) ++
         ~w(application_regions application_source application_evidence application_clause) ++
         ~w(lat_scope lat_hash struct_hash live_evidence document_status) ++
         ~w(definitions_parsed_at enabling_provisions geo_extent_source),
