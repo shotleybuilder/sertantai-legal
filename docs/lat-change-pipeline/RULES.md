@@ -31,6 +31,35 @@ The fold works out a tier for each field (`primary` = the legal text, `derived` 
 
 ---
 
+## 0. Making laws
+
+Step 0 (added 2026-11-04). Code: `backend/lib/sertantai_legal/scraper/making_laws.ex` (`MakingLaws`), task `mix lat.making_laws`; tests `backend/test/sertantai_legal/scraper/making_laws_test.exs` and `making_laws_checked_test.exs`. Origin: `.claude/sessions/lat-change-pipeline/2026-11-04-maritime-safety-making-laws.md`.
+
+### `making-from-own-text`
+A law is making when at least one of its own provisions states a requirement ("shall" or "must") on someone, read outside quoted inserted text and outside standard phrases ("shall be construed", "shall apply", "shall be guilty", "shall not affect" and the rest). One such provision makes the whole law making, whatever else it amends.
+- **Example:** SI 2026/306 (EPIRB and PLB Registration… (Amendment) Regulations): reg. 5(1) "The owner and master of a ship must ensure that every EPIRB … is registered". It is making, despite "(Amendment)" in its title.
+- **Serves:** `binds-on-date`, `law-text-wins` · **Code:** `MakingLaws.kind/2`, `classify/1` · **Test:** `making_laws_test` "an own requirement", "mixed" · **Origin:** making-laws (Jason 2026-11-04)
+
+### `changes-only-is-not-making`
+A law whose operative provisions all change other laws (amend, revoke, modify, or commence them) is not making. Duties in the text it inserts belong to the law it amends.
+- **Example:** Port State Control (Amendment) Regulations 2003 (SI 2003/1636): every provision amends or modifies the 1995 Regulations. Its old duty types had said making.
+- **Serves:** `binds-on-date`, `law-text-wins` · **Code:** `MakingLaws.kind/2` (the amending-law reader's clause operations and repeals tables) · **Test:** `making_laws_test` "amending only", "inserted text stating a duty" · **Origin:** making-laws (Jason 2026-11-04)
+
+### `no-making-verdict-without-text`
+Powers only ("may"), changes with powers, standard wording only (for example, text that is all repealed), or no text held gives no verdict. The stored value stands, and the law goes to Jason's list.
+- **Example:** Merchant Shipping (Port State Control) Regulations 2011: every regulation is ". . .". The register marks it in force (parked against the register).
+- **Serves:** `unknown-over-guess` · **Code:** `MakingLaws.classify/1` · **Test:** `making_laws_test` "powers only", "standard wording only", "no text" · **Origin:** making-laws (Jason 2026-11-04)
+
+### `law-text-below-review-and-enrichment`
+The text verdict is the resolver's `law_text` tier. It ranks below a human review and fractalaw's DRRP enrichment, and above every estimate: legacy duty types, triage, legacy `is_making` and the detector. Each tier it overrules is kept as dissent.
+- **Example:** SI 2026/306's review said not making against its text; the review was corrected to making (Jason), not overruled by the text tier.
+- **Serves:** `law-text-wins`, `unknown-over-guess` · **Code:** `Taxa.MakingResolver` (`@tiers`), `Legal.Making.evidence/1` · **Test:** `making_resolver_test` "the law's text …" · **Origin:** making-laws (Jason 2026-11-04)
+
+### `lat-rows-for-making-laws-only`
+LAT holds rows only for live making laws. Laws that only amend or commence are read from the XML store, never given rows. The Making laws step decides which laws are making and parses them before Sources.
+- **Example:** Maritime Safety: 117 making (16 with rows before the step; 101 parsed in it), 51 not making.
+- **Serves:** `binds-on-date` · **Code:** `mix lat.making_laws`, `mix lat.reparse --store only` · **Test:** pass rule 5 of the step · **Origin:** maritime-safety-meta Decision 1 (Jason 2026-11-04)
+
 ## 1. Status
 
 ### `five-statuses`

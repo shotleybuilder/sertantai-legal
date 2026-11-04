@@ -15,7 +15,7 @@ The second family through the LAT Change Pipeline, and the first under the proce
 ## Todo
 
 - ✅ Family: TRANSPORT: Maritime Safety; scope: the 16 laws with LAT rows (Decision 1)
-- ⬜ Making laws (new step 0, ACTIVE: `2026-11-04-maritime-safety-making-laws.md`)
+- ✅ Making laws (step 0): 117 making, all with LAT rows; closed 2026-11-04
 - ⬜ Sources
 - ⬜ Feed reader
 - ⬜ Markup reader
@@ -35,7 +35,7 @@ The second family through the LAT Change Pipeline, and the first under the proce
 
 - ✅ OH&S switched (2026-11-02); retrospective and code reduction closed (2026-11-03)
 - ✅ Process: `session-start` "Step session", `docs/lat-change-pipeline/WORKFLOW.md`, `AIMS.md`, `RULES.md`
-- ⬜ Making laws step passed: the family's making laws decided from their text and given LAT rows (Decision 2)
+- ✅ Making laws step passed: 117 making laws decided from their text, all with LAT rows (Decision 2)
 
 ## How this session runs
 
@@ -50,7 +50,7 @@ One row per step, filled when the step session closes. Agent tokens are those of
 
 | Step | Session | Opened | Closed | Days | Pass rule met | Plan changes | Bugs parked | Agent tokens | Commits |
 |---|---|---|---|---|---|---|---|---|---|
-| Making laws | making-laws | 2026-11-04 | | | | | | | |
+| Making laws | making-laws | 2026-11-04 | 2026-11-04 | 1 | yes, all 6 | 0 | 2 (Register, LAT parser) | 0 | 12 |
 | Sources | | | | | | | | | |
 | Feed reader | | | | | | | | | |
 | Markup reader | | | | | | | | | |
