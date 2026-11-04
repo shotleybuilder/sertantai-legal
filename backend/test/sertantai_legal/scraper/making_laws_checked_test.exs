@@ -43,7 +43,13 @@ defmodule SertantaiLegal.Scraper.MakingLawsCheckedTest do
     {"UK_uksi_2003_1636", :not_making, :law_text}
   ]
 
+  # its review says not making; its text: "must ensure that every EPIRB …
+  # is registered" (reg. 5(1)) — Jason decides (session, Decision 1)
+  @to_decide ["UK_uksi_2026_306"]
+
   for {law, verdict, by} <- @checked do
+    if law in @to_decide, do: @tag(:pending)
+
     test "#{law} is #{verdict} (#{by})" do
       law = unquote(law)
       result = MakingLaws.classify(Doc.new(law, ClmlStore.law_docs(law, root: @root)))
