@@ -37,6 +37,24 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedTargetsTest do
              ["pt.I.ch.1"]
   end
 
+  test "a Part the feed numbers otherwise than the text: Roman for Arabic, letter case (SI 1997/2962 Pt. 7; SI 2014/1613 Pt. 10A)" do
+    ids = %{"part-VI" => "pt.VI", "part-VII" => "pt.VII"}
+    assert targets(effect("Pt. 7", ["part-7"]), "UK_uksi_1997_2962", ids) == ["pt.VII"]
+
+    ids = %{"part-10a" => "pt.10A", "part-10b" => "pt.10B"}
+    assert targets(effect("Pt. 10A", ["part-10A"]), "UK_uksi_2014_1613", ids) == ["pt.10A"]
+  end
+
+  test "a Part no row holds stays unplaced (SI 1997/1510 Pt. 6: no Part VI in the text)" do
+    ids = %{"part-I" => "pt.I", "part-V" => "pt.V"}
+    assert targets(effect("Pt. 6", ["part-6"]), "UK_uksi_1997_1510", ids) == ["?"]
+  end
+
+  test "an unnumbered Schedule's paragraph is the Schedule's (SI 1998/2411 \"Sch. Pt. I. para. 1\")" do
+    e = effect("Sch. Pt. I. para. 1", ["schedule", "paragraph-1"])
+    assert targets(e, "UK_uksi_1998_2411", %{}) == ["sch.para.1"]
+  end
+
   test "our rows' name first; the reader's own converter for ids they don't know" do
     assert targets(effect("reg. 3", ["regulation-3"]), "UK_uksi_2008_1597", %{}) == ["reg.3"]
   end

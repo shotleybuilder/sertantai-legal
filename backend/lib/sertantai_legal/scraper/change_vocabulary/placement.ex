@@ -25,7 +25,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
     - `:ref_ambiguous` — the feed's ref names a part found under several
       ("chapter-2" in a law with a Chapter 2 in three Titles): the feed's
       own;
-    - `:not_in_text` — not in the current text (gone, or not yet applied);
+    - `:not_in_text` — not in the current text (gone, or not yet applied),
+      including a Part, Chapter or Title the text's group ids (`groups`,
+      when given) don't hold;
     - `:refs_not_converted` — refs given, none converted (the reader's
       fault);
     - `:row_missing` — in the text, but no row of its own nor any held
@@ -38,6 +40,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
           :placed | :placed_versions | :placed_ancestor | :whole_law | {:unplaced, atom()}
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Claim}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.FeedGroup
   alias SertantaiLegal.Scraper.LatRef
 
   @faults [:refs_not_converted]
@@ -60,28 +63,39 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
           }
         ) :: outcome()
   def classify(effect, targets, held) do
-    bases = MapSet.new(held.rows, &String.replace(&1, ~r/\[[^\]]+\]$/, ""))
+    cond do
+      "*" in targets -> :whole_law
+      # no ref naming an element (none, or bare words: "rule", "introduction")
+      targets == ["?"] -> unconverted(effect, held)
+      true -> landing(effect, targets, held)
+    end
+  end
+
+  # refs the reader named no provision from
+  defp unconverted(effect, held) do
+    # an element id joins a kind and a number ("annex-XVII", "part-4")
+    refs = Enum.filter(List.wrap(effect.affected_refs), &(&1 =~ ~r/[-\d]/))
 
     cond do
-      "*" in targets ->
-        :whole_law
+      refs == [] ->
+        {:unplaced, :not_a_provision}
 
-      # no ref naming an element (none, or bare words: "rule", "introduction")
-      targets == ["?"] ->
-        # an element id joins a kind and a number ("annex-XVII", "part-4")
-        refs = Enum.filter(List.wrap(effect.affected_refs), &(&1 =~ ~r/[-\d]/))
+      Enum.all?(refs, &ambiguous?(&1, Map.get(held, :xml_ids, %{}))) ->
+        {:unplaced, :ref_ambiguous}
 
-        cond do
-          refs == [] ->
-            {:unplaced, :not_a_provision}
+      Enum.all?(refs, &group_not_in_text?(&1, held)) ->
+        {:unplaced, :not_in_text}
 
-          Enum.all?(refs, &ambiguous?(&1, Map.get(held, :xml_ids, %{}))) ->
-            {:unplaced, :ref_ambiguous}
+      true ->
+        {:unplaced, :refs_not_converted}
+    end
+  end
 
-          true ->
-            {:unplaced, :refs_not_converted}
-        end
+  # on rows we hold, else in a schedule we don't parse, else in the text
+  defp landing(effect, targets, held) do
+    bases = MapSet.new(held.rows, &base/1)
 
+    cond do
       Enum.any?(targets, &MapSet.member?(held.rows, &1)) ->
         :placed
 
@@ -91,10 +105,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
       not held.schedules? and Enum.all?(targets, &schedule?/1) ->
         {:unplaced, :schedule_not_parsed}
 
-      Enum.any?(targets, &(MapSet.member?(held.clml, &1) and held_ancestor(&1, held.rows) != nil)) ->
+      true ->
+        in_text(effect, targets, held)
+    end
+  end
+
+  defp in_text(effect, targets, held) do
+    in_clml = Enum.filter(targets, &MapSet.member?(held.clml, &1))
+
+    cond do
+      Enum.any?(in_clml, &(held_ancestor(&1, held.rows) != nil)) ->
         :placed_ancestor
 
-      Enum.any?(targets, &MapSet.member?(held.clml, &1)) ->
+      in_clml != [] ->
         {:unplaced, :row_missing}
 
       # the feed's ref isn't in the text, but the text marks the change
@@ -178,6 +201,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
   # "title-II-chapter-2" and "title-III-chapter-2"): the feed doesn't say which
   defp ambiguous?(ref, xml_ids),
     do: xml_ids |> Map.keys() |> Enum.count(&String.ends_with?(&1, "-" <> ref)) > 1
+
+  # a Part, Chapter or Title the text (its group ids, when given) doesn't
+  # hold, however the feed numbers it (SI 1997/1510 "Pt. 6": Parts I–V)
+  defp group_not_in_text?(ref, %{groups: groups}),
+    do: FeedGroup.group?(ref) and not FeedGroup.held?(ref, groups)
+
+  defp group_not_in_text?(_ref, _held), do: false
 
   # a schedule, or an EU annex (the same role, the same limit)
   defp schedule?(target),

@@ -54,6 +54,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.PlacementTest do
     refute Placement.fault?(:ref_ambiguous)
   end
 
+  test "a Part the text doesn't hold, however the feed numbers it: not in text (SI 1997/1510 Pt. 6)" do
+    held = Map.put(@held, :groups, ["part-I", "part-V"])
+
+    assert Placement.classify(effect("Pt. 6", ["part-6"]), ["?"], held) ==
+             {:unplaced, :not_in_text}
+
+    # one the text holds, unconverted, stays our fault
+    assert Placement.classify(effect("Pt. 5", ["part-5"]), ["?"], held) ==
+             {:unplaced, :refs_not_converted}
+
+    # without the text's groups, nothing is presumed gone
+    assert Placement.classify(effect("Pt. 6", ["part-6"]), ["?"], @held) ==
+             {:unplaced, :refs_not_converted}
+  end
+
   test "gone from the current text; in the text but no row and no held ancestor: the parse's tell-tale (#182)" do
     assert Placement.classify(effect("reg. 5A"), ["reg.5A"], @held) == {:unplaced, :not_in_text}
     assert Placement.classify(effect("reg. 4"), ["reg.4"], @held) == {:unplaced, :row_missing}

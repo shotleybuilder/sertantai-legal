@@ -17,7 +17,7 @@ defmodule Mix.Tasks.Lat.FeedCheck do
   alias SertantaiLegal.Scraper.LatRef
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Placement, Ref}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Draw
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.{Feed, Markup}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.{Feed, FeedGroup, Markup}
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed
 
   @shortdoc "Every feed effect accounted for; a sample for checking (read-only)"
@@ -180,6 +180,9 @@ defmodule Mix.Tasks.Lat.FeedCheck do
           order |> Enum.map(&Ref.from_clml(&1, law)) |> Enum.reject(&is_nil/1) |> MapSet.new(),
         schedules?: Enum.any?(rows, &String.starts_with?(&1, "sch.")),
         xml_ids: xml_ids,
+        # the Parts, Chapters and Titles in the text, for a group the feed
+        # names that the text doesn't hold
+        groups: Enum.filter(order, &FeedGroup.group?/1),
         # the effects the text marks as made (change markup only)
         marked: Placement.marked(xml)
       }

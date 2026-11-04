@@ -21,7 +21,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Claim, EffectVerb, Qualification}
   alias SertantaiLegal.Scraper.AmendingLaw
   alias SertantaiLegal.Scraper.ChangeVocabulary.Ref
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.FeedAffecting
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.{FeedAffecting, FeedGroup}
   alias SertantaiLegal.Scraper.Commencement.{Evaluator, Order}
   alias SertantaiLegal.Scraper.EffectTarget
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
@@ -495,13 +495,25 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
          xml_ids
        ) do
     ranges = ranges || []
+    {bare, refs} = refs(refs, ranges, text, xml_ids)
 
+    whole? =
+      refs == [] and ranges == [] and
+        (String.match?(text || "", @whole_law) or Enum.any?(bare, &String.match?(&1, @whole_law)))
+
+    if whole?, do: [{"*", false}], else: provisions(refs, ranges, law, flat, xml_ids)
+  end
+
+  # the effect's refs that are targets, and its bare words apart
+  defp refs(refs, ranges, text, xml_ids) do
     # a bare word in the refs ("Rules", "rule", "introduction") names no
     # element: the instrument's kind is the whole law, any other none
     {bare, refs} =
       refs
       |> List.wrap()
       |> Enum.split_with(&(not Map.has_key?(xml_ids, &1) and not (&1 =~ ~r/[-\d]/)))
+
+    refs = unnumbered_schedule(refs, bare, text)
 
     # one path linked in pieces ("Title 5" → title-V, "Ch. 1" →
     # title-V-chapter-1; "Sch. 1" "para. 2"): a ref another of the effect's
@@ -513,43 +525,54 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
     # (CV-S09 round 1: CROW s.13(2)'s insertion had also reached all of s.1)
     range_ends = Enum.flat_map(ranges, fn {a, b} -> [a, b] end)
 
-    refs =
-      Enum.reject(refs, fn r -> Enum.any?(range_ends, &String.starts_with?(&1, r <> "-")) end)
+    {bare,
+     Enum.reject(refs, fn r -> Enum.any?(range_ends, &String.starts_with?(&1, r <> "-")) end)}
+  end
 
-    whole? =
-      refs == [] and ranges == [] and
-        (String.match?(text || "", @whole_law) or Enum.any?(bare, &String.match?(&1, @whole_law)))
+  # the provisions named and spanned, as our rows name them
+  defp provisions(refs, ranges, law, flat, xml_ids) do
+    ends = Enum.flat_map(ranges, fn {a, b} -> [a, b] end)
+    # the provisions at the range's own depth: a whole-provision change
+    # reaches what lies under each
+    spanned =
+      for {a, b} <- ranges,
+          id <- EffectTarget.span(flat, a, b),
+          depth(id) == depth(a),
+          do: {id, true}
 
-    if whole? do
-      [{"*", false}]
-    else
-      ends = Enum.flat_map(ranges, fn {a, b} -> [a, b] end)
-      # the provisions at the range's own depth: a whole-provision change
-      # reaches what lies under each
-      spanned =
-        for {a, b} <- ranges,
-            id <- EffectTarget.span(flat, a, b),
-            depth(id) == depth(a),
-            do: {id, true}
+    named = for id <- List.wrap(refs), id not in ends, do: {id, false}
+    # a range the document can't span keeps its ends
+    ends_kept = if spanned == [], do: Enum.map(ends, &{&1, false}), else: []
 
-      named = for id <- List.wrap(refs), id not in ends, do: {id, false}
-      # a range the document can't span keeps its ends
-      ends_kept = if spanned == [], do: Enum.map(ends, &{&1, false}), else: []
-
-      (named ++ spanned ++ ends_kept)
-      # as our rows name it (the parse's own `source_xml_id`), else the
-      # reader's converter — one namer (CV-S02)
-      |> Enum.map(fn {id, r} -> {Map.get(xml_ids, id) || Ref.from_clml(id, law), r} end)
-      |> Enum.reject(&is_nil(elem(&1, 0)))
-      |> Enum.uniq_by(&elem(&1, 0))
-      |> case do
-        # no provision we hold (a cross-heading): the event's facts are
-        # kept, unplaced ("?"), for the markup that places it (EUWA s.6's
-        # heading, 2024)
-        [] -> [{"?", false}]
-        targets -> targets
-      end
+    (named ++ spanned ++ ends_kept)
+    |> Enum.map(fn {id, r} -> {name(id, law, xml_ids), r} end)
+    |> Enum.reject(&is_nil(elem(&1, 0)))
+    |> Enum.uniq_by(&elem(&1, 0))
+    |> case do
+      # no provision we hold (a cross-heading): the event's facts are
+      # kept, unplaced ("?"), for the markup that places it (EUWA s.6's
+      # heading, 2024)
+      [] -> [{"?", false}]
+      targets -> targets
     end
+  end
+
+  # as our rows name it (the parse's own `source_xml_id`), else the reader's
+  # converter — one namer (CV-S02); a group the feed numbers otherwise than
+  # the text, by its kinds and numbers (FeedGroup)
+  defp name(id, law, xml_ids),
+    do: Map.get(xml_ids, id) || Ref.from_clml(id, law) || FeedGroup.ref(id, xml_ids)
+
+  # an unnumbered Schedule's paragraph ("Sch. Pt. I. para. 1", refs
+  # "schedule" + "paragraph-1": SI 1998/2411) is the Schedule's
+  defp unnumbered_schedule(refs, bare, text) do
+    if "schedule" in bare and String.match?(text || "", ~r/^\s*Sch\.\s+(?!\d)/),
+      do:
+        Enum.map(
+          refs,
+          &if(String.starts_with?(&1, "paragraph-"), do: "schedule-" <> &1, else: &1)
+        ),
+      else: refs
   end
 
   # an Act of a devolved legislature makes law only within its competence
