@@ -68,6 +68,14 @@ Steps 2–8 all land in the change register through one build (`mix lat.vocabula
 
 On OH&S it passed on 2026-10-22. When later steps added needs, the gate failed again at Store and build (565 failures, deferred to the next pass): a passed step is not re-checked unless something re-runs its gate.
 
+**Run the gate after one build (from Maritime Safety, 2026-11-04).** The territory, dates and backlog needs come from the stored changes, so a family with none built shows only own text and feeds. The order is:
+1. fetch the feeds;
+2. build the family's changes once (`mix lat.vocabulary --build --family F`, after a restore point of `provision_changes,provision_change_claims,lat_events`);
+3. gate, and fetch what fails;
+4. one more round for needs the fetch itself adds (an introduction naming enabling Acts).
+
+On Maritime Safety, the build took the needs from 235 to 682, and three fetch rounds held them all. A feed whose register statistics are newer than it needs refetching and its law rebuilding; that added 4 needs.
+
 **Skill.** None. The `nas-data-sync` skill covers the store itself.
 
 ## 2. Feed reader
