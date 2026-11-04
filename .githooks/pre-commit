@@ -177,8 +177,11 @@ check_credo_ratchet() {
     fi
 
     print_status "Checking functions added or changed stay small (credo diff vs HEAD)..."
+    # credo diff checks HEAD out with git; under `git commit -- <paths>` the
+    # hook's GIT_INDEX_FILE is git's temporary index, and that checkout reset
+    # it to HEAD, so the commit went in empty (2026-11-04, 284de4cb)
     cd backend
-    NEW=$(mix credo diff --from-git-ref HEAD \
+    NEW=$(env -u GIT_INDEX_FILE mix credo diff --from-git-ref HEAD \
         --only Refactor.CyclomaticComplexity,Refactor.Nesting,Refactor.FunctionArity \
         --files-included "lib/**/*.ex" 2>&1 | grep -E '^\+ ┃' || true)
     cd ..
