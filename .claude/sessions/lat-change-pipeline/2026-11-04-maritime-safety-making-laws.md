@@ -35,7 +35,7 @@ lessons:
     detail: mix credo diff checks HEAD out with git; under `git commit -- <paths>` GIT_INDEX_FILE is git's temporary index and was reset to HEAD, so a code commit went in empty while the hook printed pass. Always check `git show --name-only` after a hooked commit; fixed by unsetting GIT_INDEX_FILE for credo.
     tag: tooling
   - title: Title words mislead the making estimate both ways
-    detail: "(Amendment)" SIs that make their own duties (2026/306) and amending-only SIs with old duty types (Port State Control (Amendment) 2003) — 25 of 151 estimates were wrong. The law's provisions decide it in seconds once the text is held.
+    detail: '"(Amendment)" SIs that make their own duties (2026/306) and amending-only SIs with old duty types (Port State Control (Amendment) 2003) — 25 of 151 estimates were wrong. The law''s provisions decide it in seconds once the text is held.'
     tag: data
   - title: The architecture tests hold the step to its owners
     detail: a new "comes into force" regex failed the one-commencement-path test; reusing Commencement.SentencePatterns kept the verdicts and fixed 9 reasons ("shall come into operation" counted as a requirement).
