@@ -11,6 +11,7 @@ defmodule SertantaiLegal.Legal.Taxa.MakingResolver do
   |----------------|-------------------------------------------------|-----------------------------------------------|
   | `:review`      | `making_review` (human)                         | making → true, not_making → false             |
   | `:enrichment`  | fractalaw DRRP enrichment verdict               | making → true, empowering / no_obligations → false |
+  | `:law_text`    | the law's own text read by `Scraper.MakingLaws` (LAT Change Pipeline, step: Making laws) | making → true, not_making → false |
   | `:legacy_drrp` | `duty_type` with no enrichment provenance       | Duty/Responsibility → true, else none |
   | `:triage`      | fractalaw triage classification                 | making → true, not_making → false, uncertain → none |
   | `:legacy_is_making` | `is_making` stored before the resolver (no `is_making_source`) — curated legacy value | its value |
@@ -38,6 +39,7 @@ defmodule SertantaiLegal.Legal.Taxa.MakingResolver do
     @enforce_keys [
       :review,
       :enrichment,
+      :law_text,
       :legacy_duty_types,
       :triage,
       :legacy_is_making,
@@ -49,6 +51,7 @@ defmodule SertantaiLegal.Legal.Taxa.MakingResolver do
     @type t :: %__MODULE__{
             review: String.t() | nil,
             enrichment: String.t() | nil,
+            law_text: String.t() | nil,
             legacy_duty_types: [String.t()] | nil,
             triage: String.t() | nil,
             legacy_is_making: boolean() | nil,
@@ -65,6 +68,7 @@ defmodule SertantaiLegal.Legal.Taxa.MakingResolver do
     @type tier ::
             :review
             | :enrichment
+            | :law_text
             | :legacy_drrp
             | :triage
             | :legacy_is_making
@@ -80,7 +84,7 @@ defmodule SertantaiLegal.Legal.Taxa.MakingResolver do
 
   @making_duty_types ["Duty", "Responsibility"]
   @empowering_duty_types ["Right", "Power"]
-  @tiers [:review, :enrichment, :legacy_drrp, :triage, :legacy_is_making, :detector]
+  @tiers [:review, :enrichment, :law_text, :legacy_drrp, :triage, :legacy_is_making, :detector]
 
   @doc """
   Resolve `is_making` from the evidence. See the moduledoc for precedence.
@@ -145,7 +149,7 @@ defmodule SertantaiLegal.Legal.Taxa.MakingResolver do
   defp verdict(:legacy_is_making, %{legacy_is_making: value}) when is_boolean(value),
     do: {value, "legacy_is_making: #{value} (set before the resolver, no recorded source)"}
 
-  defp verdict(tier, evidence) when tier in [:triage, :detector] do
+  defp verdict(tier, evidence) when tier in [:law_text, :triage, :detector] do
     case Map.fetch!(evidence, tier) do
       "making" -> {true, "#{tier}: making"}
       "not_making" -> {false, "#{tier}: not_making"}

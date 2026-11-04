@@ -174,6 +174,7 @@ defmodule SertantaiLegal.Legal.Making do
     %Evidence{
       review: record[:making_review],
       enrichment: record[:making_enrichment_verdict],
+      law_text: record[:making_text_verdict],
       legacy_duty_types: duty_type_values(record[:duty_type]),
       triage: triage,
       legacy_is_making: legacy_is_making(record),

@@ -11,6 +11,7 @@ defmodule SertantaiLegal.Legal.Taxa.MakingResolverTest do
         %{
           review: nil,
           enrichment: nil,
+          law_text: nil,
           legacy_duty_types: nil,
           triage: nil,
           legacy_is_making: nil,
@@ -37,6 +38,36 @@ defmodule SertantaiLegal.Legal.Taxa.MakingResolverTest do
       decision = MakingResolver.resolve(evidence(enrichment: "making", triage: "not_making"))
 
       assert %Decision{is_making: true, source: :enrichment, dissent: [:triage]} = decision
+    end
+
+    test "the law's text (step: Making laws) sits below review and enrichment" do
+      assert %Decision{is_making: true, source: :review, dissent: [:law_text]} =
+               MakingResolver.resolve(evidence(review: "making", law_text: "not_making"))
+
+      assert %Decision{is_making: true, source: :enrichment, dissent: [:law_text]} =
+               MakingResolver.resolve(evidence(enrichment: "making", law_text: "not_making"))
+    end
+
+    test "the law's text beats every estimate, with their dissent kept" do
+      decision =
+        MakingResolver.resolve(
+          evidence(
+            law_text: "not_making",
+            legacy_duty_types: ["Duty"],
+            triage: "making",
+            legacy_is_making: true,
+            detector: "making"
+          )
+        )
+
+      assert %Decision{is_making: false, source: :law_text} = decision
+      assert decision.reason == "law_text: not_making"
+      assert decision.dissent == [:legacy_drrp, :triage, :legacy_is_making, :detector]
+    end
+
+    test "no text verdict defers to the tiers below" do
+      assert %Decision{source: :legacy_is_making} =
+               MakingResolver.resolve(evidence(law_text: nil, legacy_is_making: false))
     end
 
     test "enrichment empowering (Rights/Powers only) is not Making" do

@@ -263,6 +263,10 @@ defmodule SertantaiLegal.Legal.MakingTest do
   end
 
   describe "evidence/1" do
+    test "the text verdict is law_text evidence" do
+      assert %{law_text: "not_making"} = Making.evidence(%{making_text_verdict: "not_making"})
+    end
+
     test "is_making with no recorded source is legacy evidence" do
       assert Making.evidence(current(%{is_making: false})).legacy_is_making == false
     end

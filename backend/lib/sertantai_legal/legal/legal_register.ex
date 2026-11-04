@@ -656,11 +656,28 @@ defmodule SertantaiLegal.Legal.LegalRegister do
       description("When the enrichment verdict was last recorded")
     end
 
+    attribute :making_text_verdict, :string do
+      allow_nil?(true)
+      constraints(match: ~r/\A(making|not_making)\z/)
+
+      description(
+        "Verdict read from the law's own text (LAT Change Pipeline, step: Making laws; `mix lat.making_laws`): making or not_making; nil when the text gives none"
+      )
+    end
+
+    attribute :making_text_reason, :string do
+      allow_nil?(true)
+
+      description(
+        "Why the text verdict (\"changes only\", \"3 own requirements (first regulation-4)\", \"powers only\")"
+      )
+    end
+
     attribute :is_making_source, :string do
       allow_nil?(true)
 
       description(
-        "MakingResolver tier that decided is_making: review, enrichment, legacy_drrp, triage, detector or default"
+        "MakingResolver tier that decided is_making: review, enrichment, law_text, legacy_drrp, triage, legacy_is_making, detector or default"
       )
     end
 
@@ -965,6 +982,8 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :making_classification_source,
         :making_enrichment_verdict,
         :making_enriched_at,
+        :making_text_verdict,
+        :making_text_reason,
         :is_making_source,
         :is_making_reason,
         :is_making_decided_at,
@@ -1096,6 +1115,8 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :making_classification_source,
         :making_enrichment_verdict,
         :making_enriched_at,
+        :making_text_verdict,
+        :making_text_reason,
         :is_making_source,
         :is_making_reason,
         :is_making_decided_at,
