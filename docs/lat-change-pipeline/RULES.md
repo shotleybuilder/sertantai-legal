@@ -85,7 +85,8 @@ A row inserted into a provision that its own law has not yet brought into force 
 ### `partial-commencement-is-partial`
 A commencement for some purposes only makes the provision partly in force. One on the start day makes it partly in force from the start, not prospective.
 - **Example:** SI 1992/3004 reg.20(2).
-- **Serves:** `binds-on-date` · **Code:** `Label.Start.period/4`, `Label.Day.apply/4` · **Test:** `label_fold_test` "a partial commencement on the start day" · **Origin:** `cv-s09-label-fold` (round 1, 2026-10-30)
+- **Purposes include powers:** a stage in force only "for enabling the exercise of power to make regulations" is for some purposes (CJA 2003 s.254(6A)).
+- **Serves:** `binds-on-date` · **Code:** `Label.Start.period/4`, `Label.Day.apply/4`; `Qualification` (purposes class) · **Test:** `label_fold_test` "a partial commencement on the start day"; `qualification_test` · **Origin:** `cv-s09-label-fold` (round 1, 2026-10-30); purposes include powers: Jason 2026-11-04, `maritime-safety-feed-reader` Decision 2
 
 ### `commencement-for-one-territory`
 A commencement for one territory puts the provision in force there and widens where it is in force. Each such commencement opens a new period.

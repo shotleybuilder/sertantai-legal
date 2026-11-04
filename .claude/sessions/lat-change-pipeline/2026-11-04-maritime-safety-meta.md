@@ -17,7 +17,7 @@ The second family through the LAT Change Pipeline, and the first under the proce
 - ✅ Family: TRANSPORT: Maritime Safety; scope: the 16 laws with LAT rows (Decision 1)
 - ✅ Making laws (step 0): 117 making, all with LAT rows; closed 2026-11-04
 - ✅ Sources: gate PASS after a build, 682 needs held or absent; closed 2026-11-04
-- ⬜ Feed reader
+- ✅ Feed reader: our faults 10 → 0, catalogue gap fixed (Decision 1), agent clean; closed 2026-11-04
 - ⬜ Markup reader
 - ⬜ Commencement reader
 - ⬜ Extent reader
@@ -52,7 +52,7 @@ One row per step, filled when the step session closes. Agent tokens are those of
 |---|---|---|---|---|---|---|---|---|---|
 | Making laws | making-laws | 2026-11-04 | 2026-11-04 | 1 | yes, all 6 | 0 | 2 (Register, LAT parser) | 0 | 12 |
 | Sources | sources | 2026-11-04 | 2026-11-04 | 1 | yes, all 4 | 0 | 0 | 0 | 1 |
-| Feed reader | | | | | | | | | |
+| Feed reader | feed-reader | 2026-11-04 | 2026-11-04 | 1 | yes, all 6 | 0 | 1 (LAT parser) | 98,791 | 3 |
 | Markup reader | | | | | | | | | |
 | Commencement reader | | | | | | | | | |
 | Extent reader | | | | | | | | | |
