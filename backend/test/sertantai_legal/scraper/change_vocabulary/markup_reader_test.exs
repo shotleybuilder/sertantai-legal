@@ -101,6 +101,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupReaderTest do
     assert Markup.key("d29p1234") == "d29p1234"
   end
 
+  test "an EU footnote's change has its own change's key (Regulation 391/2009 \"O003001M004-f00011\")" do
+    assert Markup.key("O003001M004-f00011") == "O003001M004"
+    assert Markup.key("O003001M004") == "O003001M004"
+  end
+
   describe "G: the note's amending provisions, from its structured pointers" do
     defp note(text) do
       ~s|<Commentaries><Commentary id="c1" Type="F"><Para><Text>#{text}</Text></Para></Commentary></Commentaries>|

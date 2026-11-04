@@ -196,25 +196,32 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
               %{
                 o
                 | path: path,
-                  change_id: String.replace(o.change_id, ~r/^(O\d+M\d+)-f\d+$/, "\\1")
+                  change_id: eu_footnote_parent(o.change_id)
               }
             ]
         end
     end)
   end
 
+  # an EU footnote's change id: its own change's id, "-f" and the footnote
+  @eu_footnote ~r/^(O\d+M\d+)-f\d+$/
+
   @doc """
   A change's key: the effect id its ChangeId carries (`key-<hex>`, whatever
-  follows it: `-1473449269178`, `-1790691857434/2`), else the ChangeId
-  (a legacy id: `d29p1234`, `M_F_…`).
+  follows it: `-1473449269178`, `-1790691857434/2`); an EU footnote's
+  change, its own change's id (`O003001M004-f00011` → `O003001M004`);
+  else the ChangeId (a legacy id: `d29p1234`, `M_F_…`).
   """
   @spec key(String.t()) :: String.t()
   def key(change_id) do
-    case Regex.run(~r/^key-[0-9a-f]{32}/, change_id) do
-      [effect] -> effect
-      nil -> EffectIndex.effect_id(change_id) || change_id
+    cond do
+      effect = Regex.run(~r/^key-[0-9a-f]{32}/, change_id) -> hd(effect)
+      change_id =~ @eu_footnote -> eu_footnote_parent(change_id)
+      true -> EffectIndex.effect_id(change_id) || change_id
     end
   end
+
+  defp eu_footnote_parent(change_id), do: String.replace(change_id, @eu_footnote, "\\1")
 
   # a retained substitution's new words (an Addition the Repeal's
   # SubstitutionRef names) are the same change as the old words: one
