@@ -58,6 +58,7 @@ bugs:
     fix: "check live status against the held text; mark revoked where every provision is repealed"
     step: "Register"
     status: open
+    issue: 190
   - pattern: "mix lat.reparse creates lat_reparse_<tag> snapshot tables in public even for laws with no rows (4 empty tables left from this step: lat_reparse_making_pilot[_cm], lat_reparse_making_maritime[_cm])"
     category: restore-points
     module: Scraper.LatReparse.snapshot!/2
@@ -73,6 +74,7 @@ bugs:
     fix: "write ranges as two-item lists in the cache JSON"
     step: "Register"
     status: open
+    issue: 190
 artifacts:
   - backend/lib/sertantai_legal/scraper/making_laws.ex
   - backend/lib/mix/tasks/lat.making_laws.ex
