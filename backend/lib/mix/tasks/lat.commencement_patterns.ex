@@ -162,14 +162,7 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
     input = ChangeCollector.law_start_input(law, rows)
     read = OwnClause.read(law, input)
 
-    found = SentencePatterns.sentences(rows)
-
-    sentences =
-      for {{row_id, s}, {_, _, left}} <- Enum.zip(found, Leftovers.for_law(rows, read, found)),
-          f = SentencePatterns.form(s),
-          # another instrument's commencement names none of the law's own
-          left = if(f.subject == "instrument", do: [], else: left),
-          do: {row_id, s, f, SentencePatterns.outcome(s, read), left}
+    sentences = Leftovers.sentences(rows, read)
 
     {:ok, %{input: input, sentences: sentences, reach: reach(law, source, rows)}}
   rescue
@@ -193,9 +186,9 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
   defp law_patterns(law, %{input: input, sentences: sentences, reach: reach}, acc) do
     acc = %{acc | laws: acc.laws + 1}
 
-    for {row_id, s, f, o, left} <- sentences, reduce: acc do
+    for %{row: row_id, sentence: s, outcome: o, pattern: key, leftovers: left} <- sentences,
+        reduce: acc do
       acc ->
-        key = SentencePatterns.key(f, o.class)
         id = example_id(law, row_id, s)
 
         acc = %{

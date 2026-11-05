@@ -140,14 +140,11 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
     acc = %{acc | orders: acc.orders + 1}
     {reach, acc} = reach(act_law, acc)
 
-    for unit <- OrderPatterns.units(doc), reduce: acc do
+    for %{unit: unit, outcome: o, pattern: key, leftovers: left} <-
+          Leftovers.order_units(doc, rules),
+        reduce: acc do
       acc ->
-        f = OrderPatterns.form(unit)
-        o = OrderPatterns.outcome(unit, rules)
-        key = OrderPatterns.key(f, o.class)
         id = example_id(order, unit)
-
-        left = leftovers_of(unit, rules)
 
         acc = %{
           acc
@@ -177,31 +174,6 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
 
         acc = %{acc | units: acc.units + 1}
         if take?, do: example(acc, key, id, order, act, doc, unit, o), else: acc
-    end
-  end
-
-  # the order's own commencement and a table's header commence none of the
-  # Act; a table row's provisions are its first cell (the next is a subject)
-  defp leftovers_of(%{kind: kind}, _rules) when kind in ["own", "table_header"], do: []
-
-  defp leftovers_of(unit, rules) do
-    text = if unit.kind == "table", do: unit.text |> String.split(" | ") |> hd(), else: unit.text
-    own = OrderPatterns.own_rules(unit, rules)
-
-    cond do
-      # the order's own articles ("This article and article 2 come into force …")
-      text =~ ~r/^\W*(?:This|These)\s+(?:articles?|Order|regulations?|Regulations)\b/ or
-        text =~
-          ~r/^\W*The\s+(?:remaining\s+|other\s+|following\s+)?provisions\s+of\s+this\s+(?:Order|instrument)\b/ or
-          text =~ ~r/^\W*Articles?\s+\d[^.]*?\b(?:comes?|shall\s+come)\s+into\b/ ->
-        []
-
-      # a statement bringing in its Schedule's table: the rows' rules use its words
-      own == [] and text =~ ~r/\bSchedule\b|\bcolumn\b/ ->
-        Leftovers.of(text, rules, &Order.refs_in/1)
-
-      true ->
-        Leftovers.of(text, own, &Order.refs_in/1)
     end
   end
 

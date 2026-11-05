@@ -30,7 +30,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
   alias SertantaiLegal.Scraper.ChangeVocabulary.Store
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Draw
-  alias SertantaiLegal.Scraper.Commencement.{Check, OwnClause}
+  alias SertantaiLegal.Scraper.Commencement.{Check, FamilyLeftovers, Leftovers, OwnClause}
   alias SertantaiLegal.Scraper.Commencement.Store, as: Rules
   alias SertantaiLegal.Scraper.LawStart
 
@@ -67,9 +67,67 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
 
     if opts[:sample], do: sample(rows, gaps, opts[:sample], opts[:n] || 50, opts[:seed])
 
+    gate = leftovers_gate(laws, gaps, opts)
     faults = length(Check.faults(rows))
-    Mix.shell().info("\n#{if faults == 0, do: "PASS", else: "FAIL"} (rows: our faults #{faults})")
+    unnamed = length(gate.failing)
+
+    Mix.shell().info(
+      "\n#{if faults == 0 and gate.pass?, do: "PASS", else: "FAIL"} (rows: our faults #{faults}; leftovers not named: #{unnamed})"
+    )
   end
+
+  # ── the leftovers gate ──────────────────────────────────────────────
+
+  # the commencement leftovers reaching the family (Decision 1 (c), Jason
+  # 2026-11-05): its laws' own clauses, their orders held, and the held
+  # amending laws its undated changes point to; each must be named
+  # (`known:` in `leftovers.json`)
+  defp leftovers_gate(laws, gaps, opts) do
+    amenders =
+      gaps
+      |> Enum.map(& &1.amender)
+      |> Enum.reject(&(is_nil(&1) or &1 in laws))
+      |> Enum.frequencies()
+      |> Map.drop(lat_laws())
+
+    gate = laws |> FamilyLeftovers.for_family(amenders) |> Leftovers.gate()
+    shell = Mix.shell()
+
+    shell.info(
+      "\nleftovers reaching the family (words of a commencement statement no rule uses):"
+    )
+
+    for {k, n} <- Enum.sort(gate.counts), do: shell.info("  #{n}  #{k}")
+
+    for i <- Enum.take(gate.failing, if(opts[:all], do: 9999, else: 30)),
+        do:
+          shell.info(
+            "  #{i.reach} #{i.source} #{i.law} #{i.ref}: #{Enum.join(i.words, " · ")} [#{i.status || "no status"}]"
+          )
+
+    path = "data/reports/commencement-reader/gate-#{slug(opts)}-#{Date.utc_today()}.txt"
+    File.mkdir_p!(Path.dirname(path))
+
+    File.write!(
+      path,
+      Enum.map_join(gate.failing, "\n", fn i ->
+        "#{i.reach}\t#{i.source}\t#{i.law}\t#{i.ref}\t#{Enum.join(i.words, " · ")}\t#{i.status || "no status"}\t#{i.shape}"
+      end) <> "\n"
+    )
+
+    shell.info("gate report: #{path}")
+    gate
+  end
+
+  defp lat_laws,
+    do: Repo.query!("SELECT DISTINCT law_name FROM legal_articles").rows |> List.flatten()
+
+  defp slug(opts),
+    do:
+      (opts[:family] || "laws")
+      |> String.downcase()
+      |> String.replace(~r/[^a-z0-9]+/, "-")
+      |> String.trim("-")
 
   defp scope(opts) do
     cond do

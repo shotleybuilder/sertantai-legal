@@ -274,5 +274,38 @@ defmodule SertantaiLegal.Scraper.Commencement.LeftoversTest do
              ) ==
                []
     end
+
+    test "the order power's own words, finer scope, \"those sections are\" (1963 c.41, SI 2009/2260, SI 1998/604)" do
+      refs = own_refs(rows(~w[s.1 s.190 s.190(1) s.190(2) s.190(3)]))
+
+      s =
+        "This Act shall come into operation on such day as the Minister may by order appoint, and different days may be appointed in relation to premises of different classes."
+
+      assert Leftovers.of(
+               s,
+               [rule(:all, {:appointed, "by order"}, s, treatment: :by_order)],
+               refs
+             ) ==
+               []
+
+      s =
+        "This Act shall come into force on such day as Her Majesty may by Order in Council appoint; and a later day may be appointed for the purposes of section 190 than that appointed for the purposes of the other provisions of this Act."
+
+      assert Leftovers.of(
+               s,
+               [rule(:all, {:appointed, "by order"}, s, treatment: :by_order)],
+               refs
+             ) ==
+               []
+
+      s = "Subsections (1) to (3) of section 190 shall come into force on 1st October 2009."
+      held = [rule(["s.190(1)", "s.190(2)", "s.190(3)"], {:date, ~D[2009-10-01]}, s)]
+      assert Leftovers.of(s, held, refs) == []
+
+      s =
+        "Section 190 (in so far as those sections are not already in force) shall come into force on 1st July 1998."
+
+      assert Leftovers.of(s, [rule(["s.190"], {:date, ~D[1998-07-01]}, s)], refs) == []
+    end
   end
 end

@@ -27,7 +27,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
   extractor, given as `refs`, leaves them out). Pure.
   """
 
-  alias SertantaiLegal.Scraper.Commencement.Rule
+  alias SertantaiLegal.Scraper.Commencement.{Order, OrderPatterns, Rule, SentencePatterns}
   alias SertantaiLegal.Scraper.LawStart.{Clause, Provisions}
 
   @type leftover :: %{
@@ -40,7 +40,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
           "\\b\\d{1,2}\\s*(?:st|nd|rd|th)?\\s+(?:day\\s+of\\s+)?(?:#{Enum.join(@months, "|")}),?\\s+\\d{4}\\b"
         )
   @except ~r/\b(?:except(?:\s+for)?|other\s+than|apart\s+from|save\s+that)\s+([^,;]+?)(?=\s*(?:,|;|\bwhich\b|\b(?:shall|comes?|is\s+to|are\s+to)\b|$))/i
-  @completing ~r/\b(?:(?:(?:in\s+)?so\s+far|insofar|to\s+the\s+extent)\s+(?:as|that)\s+(?:(?:it\s+is|they\s+are|it\s+has|they\s+have)\s+)?not\s+(?:already\s+|yet\s+|previously\s+|then\s+)?(?:been\s+)?(?:in\s+force|commenced|brought\s+into\s+force)|for\s+all\s+(?:other\s+|remaining\s+)?purposes)\b/i
+  @completing ~r/\b(?:(?:(?:in\s+)?so\s+far|insofar|to\s+the\s+extent)\s+(?:as|that)\s+(?:(?:it|they|th(?:at|ose|ese)\s+[\w-]+)\s+(?:is|are|has|have)\s+)?not\s+(?:already\s+|yet\s+|previously\s+|then\s+)?(?:been\s+)?(?:in\s+force|commenced|brought\s+into\s+force)|for\s+all\s+(?:other\s+|remaining\s+)?purposes)\b/i
   @qualifier ~r/\b(?:in\s+relation\s+to|for\s+the\s+purposes?\s+of|(?:in\s+)?so\s+far\s+as|insofar\s+as|to\s+the\s+extent\s+that)\b/i
   @relative ~r/\bthe\s+(?:\w+\s+)?day\s+after\b|\blaid\b|\bnotified\b|\bthe\s+end\s+of\s+the\s+period\b/i
 
@@ -160,7 +160,17 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
   defp qualifiers(s, rules) do
     partial? = Enum.any?(rules, &(not Rule.full?(&1)))
 
-    case Regex.run(@qualifier, Regex.replace(@completing, s, "")) do
+    # (never the order power's own words: "different days may be appointed
+    # … in relation to premises of different classes": 1963 c.41 s.91(2))
+    text =
+      s
+      |> String.replace(@completing, "")
+      |> String.replace(
+        ~r/\b(?:different|a\s+later|an\s+earlier)\s+days?\s+may\s+be\s+appointed\b[^.;]*/i,
+        ""
+      )
+
+    case Regex.run(@qualifier, text) do
       [words] when not partial? -> [%{kind: :qualifier, words: words}]
       _ -> []
     end
@@ -239,6 +249,154 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
       {row_id, sentence, of(text, own, refs)}
     end
   end
+
+  @type statement :: %{
+          row: String.t(),
+          sentence: String.t(),
+          form: map(),
+          outcome: map(),
+          pattern: String.t(),
+          leftovers: [leftover()]
+        }
+
+  @doc """
+  Each commencement sentence of a law's `rows` as the catalogue classes it
+  (`SentencePatterns`: form, outcome, pattern key) with its leftovers,
+  given the law's reading — the one reading the catalogue and the family
+  gate share. Another instrument's commencement has none (it names none
+  of the law's own provisions).
+  """
+  @spec sentences([map()], map()) :: [statement()]
+  def sentences(rows, read) do
+    found = SentencePatterns.sentences(rows)
+
+    for {{row_id, s}, {_, _, left}} <- Enum.zip(found, for_law(rows, read, found)) do
+      f = SentencePatterns.form(s)
+      o = SentencePatterns.outcome(s, read)
+
+      %{
+        row: row_id,
+        sentence: s,
+        form: f,
+        outcome: o,
+        pattern: SentencePatterns.key(f, o.class),
+        # (a mention the catalogue classes so, as SI 2015/1947 reg.96(7))
+        leftovers: if(f.subject == "instrument" or f.role == "mention", do: [], else: left)
+      }
+    end
+  end
+
+  @doc """
+  Each statement of a commencement order (`OrderPatterns.units/1`) as the
+  order catalogue classes it, with its leftovers given the order's `rules`.
+  """
+  @spec order_units(SertantaiLegal.Scraper.AmendingLaw.Doc.t(), [Rule.t()]) :: [map()]
+  def order_units(doc, rules) do
+    for unit <- OrderPatterns.units(doc) do
+      f = OrderPatterns.form(unit)
+      o = OrderPatterns.outcome(unit, rules)
+
+      %{
+        unit: unit,
+        form: f,
+        outcome: o,
+        pattern: OrderPatterns.key(f, o.class),
+        leftovers: order_leftovers(unit, rules)
+      }
+    end
+  end
+
+  # the order's own commencement and a table's header commence none of the
+  # Act; a table row's provisions are its first cell (the next is a subject)
+  defp order_leftovers(%{kind: kind}, _rules) when kind in ["own", "table_header"], do: []
+
+  defp order_leftovers(unit, rules) do
+    text = if unit.kind == "table", do: unit.text |> String.split(" | ") |> hd(), else: unit.text
+    own = OrderPatterns.own_rules(unit, rules)
+
+    cond do
+      own_articles?(text) -> []
+      # a statement bringing in its Schedule's table: the rows' rules use its words
+      own == [] and text =~ ~r/\bSchedule\b|\bcolumn\b/ -> of(text, rules, &Order.refs_in/1)
+      true -> of(text, own, &Order.refs_in/1)
+    end
+  end
+
+  # the order's own articles ("This article and article 2 come into force …",
+  # "The following provisions of this Order …", "Article 3 comes into force …")
+  defp own_articles?(text),
+    do:
+      text =~ ~r/^\W*(?:This|These)\s+(?:articles?|Order|regulations?|Regulations)\b/ or
+        text =~
+          ~r/^\W*The\s+(?:remaining\s+|other\s+|following\s+)?provisions\s+of\s+this\s+(?:Order|instrument)\b/ or
+        text =~ ~r/^\W*Articles?\s+\d[^.]*?\b(?:comes?|shall\s+come)\s+into\b/
+
+  # ── the review: a statement's status ────────────────────────────────
+
+  @doc "A leftover group's reviewed status (`leftovers.json`), nil when it has none."
+  @spec status(String.t(), map()) :: String.t() | nil
+  def status(shape, reviewed), do: Map.get(reviewed, shape)
+
+  @doc "True for a status that names the leftover as a known limit (the family gate passes it)."
+  @spec named?(String.t() | nil) :: boolean()
+  def named?("known: " <> _), do: true
+  def named?(_status), do: false
+
+  # ── the family gate ─────────────────────────────────────────────────
+
+  @type item :: %{
+          source: :own | :order | :amending,
+          law: String.t(),
+          ref: String.t(),
+          shape: String.t(),
+          words: [String.t()],
+          reach: integer(),
+          status: String.t() | nil
+        }
+
+  @doc "A leftover reaching a family: where it is, its group's shape, its words, reach and status."
+  @spec item(
+          atom(),
+          String.t(),
+          String.t(),
+          String.t(),
+          [leftover()],
+          integer(),
+          String.t() | nil
+        ) ::
+          item()
+  def item(source, law, ref, shape, leftovers, reach, status),
+    do: %{
+      source: source,
+      law: law,
+      ref: ref,
+      shape: shape,
+      words: Enum.map(leftovers, & &1.words),
+      reach: reach,
+      status: status
+    }
+
+  @doc """
+  The family gate over its leftovers: `pass?` when every one is named
+  (`known:`); the failing ones (`fix:`, `check:`, no status) widest reach
+  first; counts by status.
+  """
+  @spec gate([item()]) :: %{pass?: boolean(), failing: [item()], counts: map()}
+  def gate(items) do
+    failing =
+      items |> Enum.reject(&named?(&1.status)) |> Enum.sort_by(&{-&1.reach, &1.law, &1.ref})
+
+    %{
+      pass?: failing == [],
+      failing: failing,
+      counts: Enum.frequencies_by(items, &status_kind(&1.status))
+    }
+  end
+
+  defp status_kind("known: " <> _), do: :known
+  defp status_kind("fix: " <> _), do: :fix
+  defp status_kind("check: " <> _), do: :check
+  defp status_kind(_none), do: :unreviewed
 
   # ── groups, ranked by reach ─────────────────────────────────────────
 
@@ -343,6 +501,13 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
   defp schedule?(ref), do: String.starts_with?(ref, ["sch", "annex"])
 
   # a ref is used by a scope or exception naming it or a provision holding it
+  # — or its subsections the rules name ("Subsections (1) to (3) … of section
+  # 190": SI 2009/2260, the rules s.190(1)…)
   defp covered?(ref, used),
-    do: Enum.any?(used, &(ref == &1 or String.starts_with?(ref, [&1 <> "(", &1 <> "."])))
+    do:
+      Enum.any?(
+        used,
+        &(ref == &1 or String.starts_with?(ref, [&1 <> "(", &1 <> "."]) or
+            String.starts_with?(&1, ref <> "("))
+      )
 end
