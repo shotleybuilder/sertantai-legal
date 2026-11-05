@@ -314,6 +314,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
           Regex.match?(@cif, head),
           [subject, tail] = Regex.split(@cif, head, parts: 2),
           {apart, subject} = apart(subject),
+          {subject, excepted} = rest_of(subject),
           subject
           # "The Petroleum Act 1998 (hereinafter referred to as “the Act”)"
           |> String.replace(
@@ -329,7 +330,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
         Rule.new(
           commences: :pending,
           scope: :all,
-          except: listed(order, id, apart),
+          except: listed(order, id, apart) ++ excepted,
           when: {:date, d},
           source: %{law: order.law_name, ref: source_ref(id), text: squash(head)},
           treatment: :order_date
@@ -341,6 +342,18 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     |> Enum.reverse()
     |> Enum.uniq_by(&{&1.scope, &1.except, &1.when})
     |> Enum.reverse()
+  end
+
+  # "The rest of the Act, except sections 85 to 87, …" (SI 1996/3146
+  # art.3): the Act, less the provisions excepted — {"the Act", their refs}
+  @rest_of ~r/^\s*(?:the\s+)?(?:rest|remainder)\s+of\s+(.+?)(?:\s*,?\s+except\s+((?:sections?|regulations?|articles?|paragraphs?|Schedules?)\s+[^,]+?))?\s*,?\s*$/i
+
+  defp rest_of(subject) do
+    case Regex.run(@rest_of, subject) do
+      [_, act] -> {act, []}
+      [_, act, except] -> {act, refs(strip_parentheticals(except), nil)}
+      nil -> {subject, []}
+    end
   end
 
   defp apart(subject) do

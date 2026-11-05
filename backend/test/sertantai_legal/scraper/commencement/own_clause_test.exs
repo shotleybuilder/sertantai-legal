@@ -816,4 +816,134 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClauseTest do
       assert date_of(rules, rs, "UK_x:reg.2") == ~D[1996-10-01]
     end
   end
+
+  describe "Maritime Safety forms (2026-11-05)" do
+    test "list items: \"except for regulations 4 and 14, on …\" is the rest (SI 1993/1213 reg.1)" do
+      {rules, rs} =
+        read(
+          [
+            {"reg.1",
+             "These Regulations may be cited as the X Regulations 1993 and shall come into force:"},
+            {"reg.1(a)", "except for regulations 4 and 14, on 1st June 1993"},
+            {"reg.1(b)", "regulations 4 and 14, on 1st October 1993."},
+            "reg.2",
+            "reg.4",
+            "reg.14"
+          ],
+          lrt_date: ~D[1993-06-01]
+        )
+
+      provisions = Enum.reject(rules, &(&1.treatment == :clause_staged))
+      at = &Evaluator.evaluate(provisions, &1, OwnClause.context(rs))
+      assert %{full_from: ~D[1993-06-01], partial_from: nil} = at.("UK_x:reg.2")
+      assert %{full_from: ~D[1993-10-01]} = at.("UK_x:reg.4")
+      assert %{full_from: ~D[1993-10-01]} = at.("UK_x:reg.14")
+      # the commencement provision, with the law
+      assert %{full_from: ~D[1993-06-01]} = at.("UK_x:reg.1")
+    end
+
+    test "two statements run together: \"… on 31st December 2012 the remaining regulations come into force on …\" (SI 2012/3152 reg.1(2))" do
+      {rules, rs} =
+        read([
+          {"reg.1(1)", "These Regulations may be cited as the X Regulations 2012."},
+          {"reg.1(2)",
+           "Regulations 2 and 4 come into force on 31st December 2012 the remaining regulations come into force on 12th January 2013."},
+          "reg.2",
+          "reg.3",
+          "reg.4",
+          "reg.5"
+        ])
+
+      assert date_of(rules, rs, "UK_x:reg.2") == ~D[2012-12-31]
+      assert date_of(rules, rs, "UK_x:reg.4") == ~D[2012-12-31]
+      assert date_of(rules, rs, "UK_x:reg.3") == ~D[2013-01-12]
+      assert date_of(rules, rs, "UK_x:reg.5") == ~D[2013-01-12]
+      # the commencement provision, with the law (its earliest date)
+      assert date_of(rules, rs, "UK_x:reg.1") == ~D[2012-12-31]
+    end
+
+    test "\"other than regulations 7 and 9 to 14, … ; regulations 7 and 9 to 14 come into force on …\" (SI 2018/1107 reg.1(2))" do
+      {rules, rs} =
+        read(
+          [
+            {"reg.1(1)", "These Regulations may be cited as the X Regulations 2018."},
+            {"reg.1(2)",
+             "These Regulations, other than regulations 7 and 9 to 14, come into force on 30th November 2018; regulations 7 and 9 to 14 come into force on 30th November 2019."}
+          ] ++ Enum.map(2..15, &"reg.#{&1}"),
+          lrt_date: ~D[2018-11-30]
+        )
+
+      assert date_of(rules, rs, "UK_x:reg.2") == ~D[2018-11-30]
+      assert date_of(rules, rs, "UK_x:reg.8") == ~D[2018-11-30]
+      assert date_of(rules, rs, "UK_x:reg.15") == ~D[2018-11-30]
+      assert date_of(rules, rs, "UK_x:reg.7") == ~D[2019-11-30]
+      assert date_of(rules, rs, "UK_x:reg.9") == ~D[2019-11-30]
+      assert date_of(rules, rs, "UK_x:reg.14") == ~D[2019-11-30]
+    end
+
+    test "list items opening with their date: the law partly in for a purpose, fully for all other purposes (SI 2004/1495 reg.1)" do
+      {rules, rs} =
+        read(
+          [
+            {"reg.1",
+             "These Regulations may be cited as the X Regulations 2004 and shall come into force —"},
+            {"reg.1(a)", "from 1st July 2004 for international shipping; and"},
+            {"reg.1(b)", "on 1st July 2005 for all other purposes."},
+            "reg.2",
+            "reg.5"
+          ],
+          lrt_date: ~D[2004-07-01]
+        )
+
+      provisions = Enum.reject(rules, &(&1.treatment == :clause_staged))
+      at = &Evaluator.evaluate(provisions, &1, OwnClause.context(rs))
+      assert %{partial_from: ~D[2004-07-01], full_from: ~D[2005-07-01]} = at.("UK_x:reg.2")
+      assert %{partial_from: ~D[2004-07-01], full_from: ~D[2005-07-01]} = at.("UK_x:reg.5")
+      assert %{full_from: ~D[2004-07-01], partial_from: nil} = at.("UK_x:reg.1")
+    end
+
+    test "an exception tied to another law's commencement: subtracted, its words kept unread (SI 2012/2267 reg.1(2))" do
+      {rules, rs} =
+        read(
+          [
+            {"reg.1(1)", "These Regulations may be cited as the X Regulations 2012."},
+            {"reg.1(2)",
+             "These Regulations come into force on 5th October 2012 except for regulation 3(3)(b) which comes into force on the date of commencement of Part 9A and Schedule 11ZA of the Merchant Shipping Act 1995."},
+            "reg.2",
+            "reg.3",
+            "reg.3(3)",
+            "reg.3(3)(a)",
+            "reg.3(3)(b)"
+          ],
+          lrt_date: ~D[2012-10-05]
+        )
+
+      assert date_of(rules, rs, "UK_x:reg.2") == ~D[2012-10-05]
+      assert date_of(rules, rs, "UK_x:reg.3(3)(a)") == ~D[2012-10-05]
+      assert date_of(rules, rs, "UK_x:reg.3(3)(b)") == nil
+      assert Enum.any?(rules, &(&1.scope == ["reg.3(3)(b)"] and &1.when == :unread))
+    end
+
+    test "\"except that— (a) in relation to noise …, these Regulations shall come into force on …\": the law partly from its start, fully from then (SI 2007/3075 reg.1)" do
+      {rules, rs} =
+        read(
+          [
+            {"reg.1",
+             "These Regulations may be cited as the X Regulations 2007 and shall come into force on 23rd February 2008, except that—"},
+            {"reg.1(a)",
+             "in relation to noise arising from the provision of music and entertainment on ships, these Regulations shall come into force on 6th April 2008; and"},
+            {"reg.1(b)",
+             "in relation to sea-going ships regulation 7(4) and (5) shall come into force on 6th April 2011."},
+            "reg.2",
+            "reg.7",
+            "reg.7(4)"
+          ],
+          lrt_date: ~D[2008-02-23]
+        )
+
+      at = &Evaluator.evaluate(rules, &1, OwnClause.context(rs))
+      assert %{partial_from: ~D[2008-02-23], full_from: ~D[2008-04-06]} = at.("UK_x:reg.2")
+      assert %{partial_from: ~D[2008-02-23], full_from: ~D[2011-04-06]} = at.("UK_x:reg.7(4)")
+    end
+  end
 end

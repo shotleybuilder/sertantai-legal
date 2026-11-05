@@ -108,4 +108,30 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.OwnCommencementTest do
     refute named?.([rule(["s.10"], {:date, ~D[1974-10-01]})], "s.10(2)")
     refute named?.([rule(:all, {:date, ~D[1974-10-01]})], "s.10(2)")
   end
+
+  test "a cross-heading no rule names commences with the first provision under it in force (MS & Maritime Security Act 1997 h.17)" do
+    rules = [
+      rule(:all, {:appointed, "by order"}, treatment: :by_order),
+      rule(["s.17", "s.18"], {:date, ~D[1997-07-17]}, treatment: :order_date),
+      rule(["s.24"], {:date, ~D[1997-03-19]})
+    ]
+
+    ctx =
+      Map.put(
+        SertantaiLegal.Scraper.Commencement.Order.context(),
+        :order,
+        ~w(s.16 h.17 s.17 s.18 h.24 s.24)
+      )
+
+    {:dated, %{full_from: ~D[1997-07-17]}} = OwnCommencement.outcome(rules, @law, "h.17", ctx)
+    {:dated, %{full_from: ~D[1997-03-19]}} = OwnCommencement.outcome(rules, @law, "h.24", ctx)
+
+    assert [{_, "h.17", _}] =
+             rules
+             |> OwnCommencement.read(@law, ["h.17"], ctx)
+             |> Enum.filter(&(elem(&1, 1) == "h.17"))
+
+    # a heading a rule names keeps its own; one whose provisions are undated stays so
+    assert {:by_order, _} = OwnCommencement.outcome(Enum.take(rules, 1), @law, "h.17", ctx)
+  end
 end

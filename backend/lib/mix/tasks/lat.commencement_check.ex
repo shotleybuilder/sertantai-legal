@@ -173,13 +173,16 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
   end
 
   # the law's own feed's coming-into-force records, by target: its first
-  # and full dates
+  # and full dates — any stored change carrying a feed claim, as Merge joins
+  # an agreeing feed record into the own-clause change (its key)
   defp feed_commenced(law) do
     Repo.query!(
       """
-      SELECT target, min(date), min(date) FILTER (WHERE NOT partial) FROM provision_changes
-      WHERE law_name = $1 AND operation = 'commenced' AND key NOT LIKE '%:commencement:%'
-        AND date IS NOT NULL GROUP BY target
+      SELECT target, min(date), min(date) FILTER (WHERE NOT partial) FROM provision_changes pc
+      WHERE law_name = $1 AND operation = 'commenced' AND date IS NOT NULL
+        AND EXISTS (SELECT 1 FROM provision_change_claims c
+                    WHERE c.change_id = pc.id AND c.source = 'feed')
+      GROUP BY target
       """,
       [law]
     ).rows

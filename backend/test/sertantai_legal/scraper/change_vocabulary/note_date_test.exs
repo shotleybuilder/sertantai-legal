@@ -269,4 +269,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.NoteDateTest do
       assert NoteDate.why(two, rules) == {:undated, :provisions_disagree}
     end
   end
+
+  test "a change only the amending law's own text records: that law, at its own provision (Maritime Safety: MCAA 2009 Sch.21 para.34)" do
+    c = %{
+      change([{:law_text, :operation, :substituted}, {:law_text, :by, "UK_ukpga_1989_22"}])
+      | key: "UK_ukpga_1989_22:schedule-3-paragraph-8"
+    }
+
+    assert [%Claim{attribute: :date, value: ~D[1989-09-01]} | _] =
+             NoteDate.claims(c, commencement())
+
+    assert NoteDate.why(c, %{}) == {:undated, :rules_not_held}
+  end
 end

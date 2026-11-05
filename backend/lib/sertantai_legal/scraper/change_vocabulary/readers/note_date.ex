@@ -18,7 +18,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Claim}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw
-  alias SertantaiLegal.Scraper.Commencement.Rule
+  alias SertantaiLegal.Scraper.Commencement.{Order, Rule}
   alias SertantaiLegal.Scraper.LatRef
 
   @dated [{:feed, :date}, {:feed, :date_first}, {:commencement, :date}, {:law_text, :date}]
@@ -78,13 +78,26 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
     end
   end
 
-  # the amending law and the provisions the feed names, else the note's
+  # the amending law and the provisions the feed names, else the note's;
+  # else the amending law's own text, by its provision the change's key
+  # holds ("UK_ukpga_2009_25:schedule-21-paragraph-34": Maritime Safety)
   defp pointer(c) do
     law = Change.value(c, :feed, :by) || Change.value(c, :markup, :cited)
 
-    case Change.values(c, :feed, :affecting) |> List.flatten() do
-      [] -> {law, Change.values(c, :markup, :affecting) |> List.flatten(), :note}
-      feed -> {law, feed, :feed}
+    case {law, Change.values(c, :feed, :affecting) |> List.flatten()} do
+      {nil, []} -> own_text_pointer(c)
+      {law, []} -> {law, Change.values(c, :markup, :affecting) |> List.flatten(), :note}
+      {law, feed} -> {law, feed, :feed}
+    end
+  end
+
+  defp own_text_pointer(c) do
+    with law when is_binary(law) <- Change.value(c, :law_text, :by),
+         [^law, id] <- String.split(c.key, ":", parts: 2),
+         ref when is_binary(ref) <- Order.ref(id) do
+      {law, [ref], :law_text}
+    else
+      _ -> {nil, [], :note}
     end
   end
 

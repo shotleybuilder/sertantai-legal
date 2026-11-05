@@ -26,7 +26,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
 
   @cif ~r/\b(?:shall\s+(?:,[^,]{0,160},\s*)?)?(?:comes?|came)\s+into\s+(?:force|operation)\b/i
   @qualified ~r/\b(?:so far as|in so far as|insofar as|for the purposes? of|in relation to|with respect to|to the extent|for (?:all )?other purposes|into\s+(?:force|operation)\s+in\s+(?:England|Wales|Scotland|Northern Ireland|Great Britain)\b)\b/i
-  @remaining ~r/\b(?:remaining provisions|remainder|the rest of this|other provisions|all (?:other )?(?:provisions|regulations|articles|sections|rules)|provisions of this \w+(?: \([^)]*\))?,? except|preceding (?:provisions|Parts|sections|regulations|articles)|^\s*(?:\(\w+\)\s*)?otherwise\b|^\s*(?:\(\w+\)\s*)?(?:Subject to [^,]+,\s*)?the provisions of this)/i
+  @remaining ~r/\b(?:remaining (?:provisions|regulations|articles|sections|rules)|remainder|the rest of this|other provisions|all (?:other )?(?:provisions|regulations|articles|sections|rules)|provisions of this \w+(?: \([^)]*\))?,? except|preceding (?:provisions|Parts|sections|regulations|articles)|^\s*(?:\(\w+\)\s*)?otherwise\b|^\s*(?:\(\w+\)\s*)?(?:Subject to [^,]+,\s*)?the provisions of this)/i
   # a general clause left open for its list ("… come into force as follows—",
   # "… on the following dates—", "… come into force—")
   @open_clause ~r/into\s+(?:force|operation)\s*(?:as follows|on the following dates?)?\s*[—–:-]?\s*$/iu
@@ -101,6 +101,16 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
             ) ->
           Enum.at(m, 1)
 
+        # "… come into force on 5th October 2012 except for regulation
+        # 3(3)(b) which comes into force on the date of commencement of Part
+        # 9A …" (SI 2012/2267 reg.1(2))
+        m =
+            Regex.run(
+              ~r/\bexcept\s+(?:for\s+)?((?:sections?|regulations?|articles?|rules?)\s+[^,]+?)\s*,?\s+which\s+(?:shall\s+)?comes?\s+into\s+(?:force|operation)\b/iu,
+              text
+            ) ->
+          Enum.at(m, 1)
+
         # "Except for section 26 and this section the provisions of this Act
         # shall not come into force until …" (Road Traffic (Driver
         # Licensing) Act 1988-like, ukpga 1988/45)
@@ -135,7 +145,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
   defp elsewhere(rows, made, clause, start) do
     for row <- rows,
         provision(row.section_id) != clause,
-        s <- sentences(row),
+        s <- Enum.flat_map(sentences(row), &statements/1),
         Regex.match?(@cif, s),
         not Clause.mention?(s),
         not Clause.general?(s),
@@ -255,16 +265,40 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
         s <- sentences(row),
         Regex.match?(@cif, s),
         not Clause.mention?(s),
-        g <-
-          if(squash(s) == clause,
-            do: except_which(s, row, rows, made, base),
-            else: clause_sentence_groups(s, row, rows, made, base, start)
-          ),
+        g <- sentence_statements(s, clause, row, rows, made, base, start),
         do: g
   end
 
+  # a sentence of two statements run together, each with its own "into
+  # force" ("…, other than regulations 7 and 9 to 14, come into force on
+  # 30th November 2018; regulations 7 and 9 to 14 come into force on 30th
+  # November 2019": SI 2018/1107 reg.1(2); "… on 31st December 2012 the
+  # remaining regulations come into force on …": SI 2012/3152 reg.1(2)) is
+  # read a statement at a time; the law's start is still the first's
+  # (after ";" only a statement naming numbered provisions: never a list's
+  # next item or "; but otherwise …")
+  @statement_break ~r/(?:;\s*(?:and\s+)?(?=(?:regulations?|articles?|sections?|rules?)\s+\d)|(?<=\d{4})\s+(?=(?:the\s+)?(?:remaining|rest)\b))(?=[^;]*\binto\s+(?:force|operation)\b)/i
+
+  defp sentence_statements(s, clause, row, rows, made, base, start) do
+    [first | later] = statements(s)
+
+    own =
+      if squash(s) == clause or squash(first) == clause,
+        do: except_which(s, row, rows, made, base),
+        else: clause_sentence_groups(first, row, rows, made, base, start)
+
+    own ++ Enum.flat_map(later, &clause_sentence_groups(&1, row, rows, made, base, start))
+  end
+
+  defp statements(s) do
+    case Regex.split(@statement_break, s) do
+      [_one] = whole -> whole
+      pieces -> if Enum.all?(pieces, &Regex.match?(@cif, &1)), do: pieces, else: [s]
+    end
+  end
+
   @except_which [
-    ~r/\bexcept\s+(.+?)\s+which\s+shall\s+(?:come|be\s+brought)\s+into\s+(?:force|operation)\s+(.+?)\.?$/i,
+    ~r/\bexcept\s+(.+?)\s+which\s+(?:shall\s+(?:come|be\s+brought)|comes)\s+into\s+(?:force|operation)\s+(.+?)\.?$/i,
     # "… except for this section, section 74 above and paragraphs 76(8)(a)
     # and 135 of Schedule 22 to this Act (which come into force on the
     # passing of this Act) …" (EA 1995 s.125(3))
@@ -281,16 +315,24 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
     ~r/\bsave\s+that\s+(.+?)\s+shall\s+come\s+into\s+(?:force|operation)\s+(.+?)[;.]?$/i
   ]
 
+  # (an undated exception kept only for numbered provisions of its own:
+  # never "the repeal of the entry … in Part II of Schedule 1 to the House
+  # of Commons Disqualification Act 1975": Ports Act 1981)
+  @own_numbered ~r/^\s*(?:for\s+)?(?:sections?|regulations?|articles?|rules?)\s+\d[\w()]*(?:\s*(?:,|and|to)\s*\d?[\w()]*)*\s*$/i
+
+  # the exception's own date; one the reader can't date ("on the date of
+  # commencement of Part 9A … of the Merchant Shipping Act 1995": SI
+  # 2012/2267 reg.1(2)) is kept, unread, so it's never the law's date
   defp except_which(s, row, rows, made, base) do
     with [_, subject, tail] <- Enum.find_value(@except_which, &Regex.run(&1, s)),
          [_ | _] = refs <- weighted_refs(subject, rows, base),
-         {:provision_dated, %Date{} = d} <- tail_treatment(tail, made) do
+         {treatment, d} <- except_date(tail, subject, made) do
       [
         %{
           kind: :named,
           refs: refs,
           excluded: [],
-          treatment: :provision_dated,
+          treatment: treatment,
           date: d,
           qualified_date: nil,
           evidence: row.section_id,
@@ -299,6 +341,13 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
       ]
     else
       _ -> []
+    end
+  end
+
+  defp except_date(tail, subject, made) do
+    case tail_treatment(tail, made) do
+      {:provision_dated, %Date{} = d} -> {:provision_dated, d}
+      _ -> if Regex.match?(@own_numbered, subject), do: {:provision_unread, nil}
     end
   end
 
@@ -359,19 +408,46 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
   # sentences of their own (V1-02)
   defp clause_sentence_groups(s, row, rows, made, base, start) do
     with nil <- not_until(s, row, rows, made, base, start),
+         nil <- later_for(s, row, made, start),
          [] <- except_which(s, row, rows, made, base) do
       clause_sentence_groups(s, row, rows, made, base)
     end
   end
+
+  # "… shall come into force on 23rd February 2008, except that— (a) in
+  # relation to noise arising from …, these Regulations shall come into
+  # force on 6th April 2008" (SI 2007/3075 reg.1(a)): the law later for some
+  # purposes — as "not until": in partly from its start, fully from that
+  # date. (A place is a territory's own date, never this: `@by_country`.)
+  @later_for ~r/^\W*(?:\(\w+\)\s*)?(?:in\s+relation\s+to|for\s+the\s+purposes?\s+of|in\s+the\s+case\s+of|as\s+respects)\s+([^,]+),\s*(?:these\s+(?:Regulations|Rules)|this\s+(?:Order|Act|Measure)|they|it)\s+(?:shall\s+)?comes?\s+into\s+(?:force|operation)\s+(.+?)$/is
+  @place ~r/^(?:England|Wales|Scotland|Northern Ireland|Great Britain|England and Wales)$/i
+
+  defp later_for(s, row, made, %Date{} = start) do
+    with [_, purpose, tail] <- Regex.run(@later_for, String.trim(s)),
+         false <- Regex.match?(@place, String.trim(purpose)),
+         tail = String.replace(tail, ~r/[\s;,.]*(?:and|or)?\s*$/i, ""),
+         {:provision_dated, %Date{} = d} <- tail_treatment(tail, made),
+         :gt <- Date.compare(d, start) do
+      g = %{kind: :remaining, refs: [], excluded: [], evidence: row.section_id, text: s}
+
+      [
+        Map.merge(g, %{treatment: :provision_qualified, date: nil, qualified_date: start}),
+        Map.merge(g, %{treatment: :provision_dated, date: d, qualified_date: nil})
+      ]
+    else
+      _ -> nil
+    end
+  end
+
+  defp later_for(_s, _row, _made, _start), do: nil
 
   defp clause_sentence_groups(s, row, rows, made, base) do
     cond do
       Clause.general?(s) and Regex.match?(@open_clause, s) ->
         for item <- children(row, rows),
             not Regex.match?(@cif, item.text || ""),
-            {subject, tail, _date} <- [Clause.item_split(item.text, made)],
-            subject != "",
-            g <- groups("#{subject} come into force #{tail}", item, rows, made, base),
+            {subject, tail, date} <- [Clause.item_split(item.text, made)],
+            g <- open_item(subject, tail, date, item, rows, made, base),
             do: g
 
       # another general sentence in the clause than the law's start: the
@@ -385,6 +461,44 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
       true ->
         groups(s, row, rows, made, base)
     end
+  end
+
+  # an item of a general clause's list: its subject's provisions; "except
+  # for regulations 4 and 14, on …" the rest less those (SI 1993/1213
+  # reg.1(a)); an item opening with its date, the whole law — fully "for all
+  # other purposes", else partly, for the purpose or place it names ("from
+  # 1st July 2004 for international shipping": SI 2004/1495 reg.1(a))
+  defp open_item("", tail, date, item, _rows, _made, _base) do
+    whole? = tail =~ ~r/\bfor\s+all\s+(?:other\s+)?purposes\b/i
+
+    rest =
+      String.replace(tail, ~r/^(?:on|from)\s+\S+\s+\S+,?\s+\d{4}[\s;,.]*(?:and|or)?\s*$/i, "")
+
+    partial? = not whole? and rest != ""
+
+    [
+      %{
+        kind: :remaining,
+        refs: [],
+        excluded: [],
+        treatment: if(partial?, do: :provision_qualified, else: :provision_dated),
+        date: if(partial?, do: nil, else: date),
+        qualified_date: if(partial?, do: date),
+        evidence: item.section_id,
+        text: item.text
+      }
+    ]
+  end
+
+  defp open_item(subject, tail, _date, item, rows, made, base) do
+    subject =
+      String.replace(
+        subject,
+        ~r/^(?:except|other\s+than|apart\s+from)\b/i,
+        "the remaining provisions \\0"
+      )
+
+    groups("#{subject} come into force #{tail}", item, rows, made, base)
   end
 
   # … partly where it is qualified ("for the purpose of …", "in relation to

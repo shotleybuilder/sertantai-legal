@@ -289,11 +289,6 @@
     "row": "UK_asp_2001_2:s.51(1)",
     "sentence": "A charging scheme shall not come into force unless the order making it has been submitted to and confirmed by the Scottish Ministers; and a variation or revocation of such a charging scheme shall not take effect until the order making the variation or revocation has been so submitted and confirmed."
   },
-  "UK_asp_2001_2/e6450aeb9f": {
-    "law": "UK_asp_2001_2",
-    "row": "UK_asp_2001_2:s.31(4)(a)",
-    "sentence": "set out the scheme and the date on which it is to come into operation; and"
-  },
   "UK_asp_2001_2/f581c2b8c1": {
     "law": "UK_asp_2001_2",
     "row": "UK_asp_2001_2:s.13D(1)(c)",
@@ -1104,11 +1099,6 @@
     "row": "UK_nisr_2007_321:reg.43(2)",
     "sentence": "Subject to the following provisions of this regulation, a continuing application shall have effect on and after the date regulation 6 comes into operation as if it were an application made to the Authority for, as the case may be,— and in each of sub-paragraphs (a) to (b) the reference to Article 10 of the 1992 Order shall be a reference to that Article as it had effect on or after that date."
   },
-  "UK_nisr_2007_321/88c762c27e": {
-    "law": "UK_nisr_2007_321",
-    "row": "UK_nisr_2007_321:reg.1(1)",
-    "sentence": "These Regulations may be cited as the Electricity Regulations (Northern Ireland) 2007 and, subject to paragraphs (2) and (3) shall come into operation forthwith."
-  },
   "UK_nisr_2007_321/b079a257d4": {
     "law": "UK_nisr_2007_321",
     "row": "UK_nisr_2007_321:reg.58(4)",
@@ -1473,11 +1463,6 @@
     "law": "UK_ssi_2020_154",
     "row": "UK_ssi_2020_154:reg.1(4)",
     "sentence": "Part 3 comes into force on 1 January 2022."
-  },
-  "UK_ssi_2020_434/558205abbf": {
-    "law": "UK_ssi_2020_434",
-    "row": "UK_ssi_2020_434:reg.1",
-    "sentence": "These Regulations may be cited as the Environmental Protection (Disposal of Polychlorinated Biphenyls and other Dangerous Substances) (Scotland) Amendment Regulations 2020and come into force on 14 February 2021."
   },
   "UK_ssi_2022_136/3e6af5f115": {
     "law": "UK_ssi_2022_136",
@@ -2374,6 +2359,11 @@
     "row": "UK_ukpga_1982_30:s.13(9)(b)",
     "sentence": "if it provides for the coming into force of section 15 below, specify the descriptions of persons in relation to whom that section is to come into force."
   },
+  "UK_ukpga_1982_37/f2e229d12a": {
+    "law": "UK_ukpga_1982_37",
+    "row": "UK_ukpga_1982_37:s.15(2)",
+    "sentence": "This Act comes into force on such day as the Secretary of State may appoint by order made by statutory instrument."
+  },
   "UK_ukpga_1982_39/d252e32603": {
     "law": "UK_ukpga_1982_39",
     "row": "UK_ukpga_1982_39:s.151(2)",
@@ -2498,11 +2488,6 @@
     "law": "UK_ukpga_1985_51",
     "row": "UK_ukpga_1985_51:s.88(8)",
     "sentence": "A scheme shall not come into force before the abolition date but shall continue in force until the end of at least two financial years after that in which it is made."
-  },
-  "UK_ukpga_1985_67/2e3709d9eb": {
-    "law": "UK_ukpga_1985_67",
-    "row": "UK_ukpga_1985_67:s.59(6)",
-    "sentence": "If the Secretary of State is not satisfied that a scheme submitted under subsection (3) above accords with any such advice given by him as is mentioned in subsection (4) above, or would do so with appropriate modifications, he may, after consultation with the Executive and with the Passenger Transport Authority for the area in question, instead of approving the scheme substitute for it a scheme of his own, to come into force on such date as may be specified in the scheme."
   },
   "UK_ukpga_1985_67/5a7f6eccf4": {
     "law": "UK_ukpga_1985_67",
@@ -2758,11 +2743,6 @@
     "law": "UK_ukpga_1988_40",
     "row": "UK_ukpga_1988_40:s.34(7)(b)",
     "sentence": "shall come into force on such date as may be specified in the scheme."
-  },
-  "UK_ukpga_1988_40/39a0848091": {
-    "law": "UK_ukpga_1988_40",
-    "row": "UK_ukpga_1988_40:s.133(3)",
-    "sentence": "The reference in subsection (2)(a) above to higher education or further education (or both) shall be read, in the case of an institution which ceased to exist before the date on which section 120 of this Act comes into force, as a reference to further education within the meaning of section 41 of the 1944 Act as that section had effect immediately before that date and in any other case the reference to further education shall be read as a reference to further education within the meaning of section 41 of the 1944 Act as that section had effect on that date."
   },
   "UK_ukpga_1988_40/4aa977d51c": {
     "law": "UK_ukpga_1988_40",
@@ -3083,6 +3063,16 @@
     "law": "UK_ukpga_1991_40",
     "row": "UK_ukpga_1991_40:s.74(6)",
     "sentence": "Levels of additional parking charges set in accordance with this section may only come into force in accordance with section 74A below."
+  },
+  "UK_ukpga_1991_52/69162f33dc": {
+    "law": "UK_ukpga_1991_52",
+    "row": "UK_ukpga_1991_52:s.9(7)",
+    "sentence": "Confirmation of a scheme shall be given by an order made by the Minister; and a scheme so confirmed takes effect on the date on which the order confirming it comes into force or on such date as may be specified in that order."
+  },
+  "UK_ukpga_1991_52/de0032ab83": {
+    "law": "UK_ukpga_1991_52",
+    "row": "UK_ukpga_1991_52:s.12(8)",
+    "sentence": "Any scheme made by the Secretary of State under this section shall be made by order; and a scheme so made takes effect on the date on which the order in question comes into force or on such date as may be specified in that order."
   },
   "UK_ukpga_1991_56/0e1e8923ac": {
     "law": "UK_ukpga_1991_56",
@@ -4044,11 +4034,6 @@
     "row": "UK_ukpga_2004_24:s.59(2)",
     "sentence": "This section and sections 42, 43, 56 and 58 shall come into force on the day on which this Act is passed."
   },
-  "UK_ukpga_2004_33/136c7553b5": {
-    "law": "UK_ukpga_2004_33",
-    "row": "UK_ukpga_2004_33:s.263(8)(c)",
-    "sentence": "section 252 comes into force in accordance with provision made by the Department of Finance and Personnel, after consulting the Secretary of State,"
-  },
   "UK_ukpga_2004_33/1fdf71ae6f": {
     "law": "UK_ukpga_2004_33",
     "row": "UK_ukpga_2004_33:s.263(10)(c)",
@@ -4248,11 +4233,6 @@
     "law": "UK_ukpga_2006_51",
     "row": "UK_ukpga_2006_51:s.27(5)",
     "sentence": "Where any enactment passed, or subordinate legislation made, before the coming into force of this section refers to regulations under subsection (2) of section 2 of the European Communities Act 1972, a Minister of the Crown may by order or regulations amend the enactment or subordinate legislation so that it includes a reference to any order, rules or scheme under that subsection."
-  },
-  "UK_ukpga_2006_52/c6e0721e25": {
-    "law": "UK_ukpga_2006_52",
-    "row": "UK_ukpga_2006_52:s.380(6)",
-    "sentence": "If any provision made by or under this Act is to come into force before the day on which section 61 of the Criminal Justice and Court Services Act 2000 (c. 43) (abolition of certain custodial sentences for young offenders) comes into force (or fully into force), an order under subsection (4) may provide for custodial punishments specified in the order to be available in respect of offenders who are convicted aged 18 or over but under 21."
   },
   "UK_ukpga_2007_17/3cbd747162": {
     "law": "UK_ukpga_2007_17",
@@ -4494,6 +4474,16 @@
     "row": "UK_ukpga_2009_26:s.112(1)",
     "sentence": "Schedule 7 (which contains minor and consequential amendments and repeals and revocations of provisions which are superseded or no longer required or which have not been brought into force) has effect."
   },
+  "UK_ukpga_2010_10/6d3a47bb20": {
+    "law": "UK_ukpga_2010_10",
+    "row": "UK_ukpga_2010_10:s.19(5)",
+    "sentence": "Regulations under this section which add circumstances may provide that section 1 of this Act applies in cases involving those circumstances in which either or both of the following occurred in relation to a person before the day on which the regulations come into force—"
+  },
+  "UK_ukpga_2010_10/8978b9f975": {
+    "law": "UK_ukpga_2010_10",
+    "row": "UK_ukpga_2010_10:s.19(6)(b)",
+    "sentence": "provide that section 1 of this Act applies in a case involving those circumstances in which both of the events mentioned in subsection (5)(a) and (b) occurred in relation to a person before the day on which the regulations come into force,"
+  },
   "UK_ukpga_2010_15/583ab088dd": {
     "law": "UK_ukpga_2010_15",
     "row": "UK_ukpga_2010_15:s.61(9)",
@@ -4563,11 +4553,6 @@
     "law": "UK_ukpga_2011_16",
     "row": "UK_ukpga_2011_16:s.121(4)",
     "sentence": "The following provisions come into force on the day on which this Act is passed—"
-  },
-  "UK_ukpga_2011_16/32268d10f3": {
-    "law": "UK_ukpga_2011_16",
-    "row": "UK_ukpga_2011_16:s.121(1)",
-    "sentence": "The provisions of this Act come into force on such day as the Secretary of State may by order made by statutory instrument appoint, subject to subsections (2) to (5)."
   },
   "UK_ukpga_2011_16/5bbc98e588": {
     "law": "UK_ukpga_2011_16",
@@ -4648,6 +4633,11 @@
     "law": "UK_ukpga_2013_22",
     "row": "UK_ukpga_2013_22:s.19(6)",
     "sentence": "A replacement designation under the new section 102(7C) may be made in respect of a remand ordered before this section comes into force, and the amendments made by this section have effect for the purpose of making a replacement designation in any such case; but, in such a case, the substitution of B for the previously-designated authority (and any entitlement to repayment under new section 102(7H)) does not have effect as respects any time before this section comes into force."
+  },
+  "UK_ukpga_2013_23/d20bb688ad": {
+    "law": "UK_ukpga_2013_23",
+    "row": "UK_ukpga_2013_23:s.13(3)",
+    "sentence": "Sections 1 to 6 come into force in Scotland on such day or days as the Scottish Ministers may by order appoint."
   },
   "UK_ukpga_2013_27/e13a38c9d5": {
     "law": "UK_ukpga_2013_27",
@@ -5104,11 +5094,6 @@
     "row": "UK_ukpga_2022_32:s.76(4)(a)",
     "sentence": "any direction given under section 143(1) of the Police Reform and Social Responsibility Act 2011 before the day on which this section came into force,"
   },
-  "UK_ukpga_2022_32/b06cd49424": {
-    "law": "UK_ukpga_2022_32",
-    "row": "UK_ukpga_2022_32:s.65(1)(a)",
-    "sentence": "a person is convicted of an offence within subsection (5) which was committed on or after the day on which this section comes into force,"
-  },
   "UK_ukpga_2022_32/b80a7a738c": {
     "law": "UK_ukpga_2022_32",
     "row": "UK_ukpga_2022_32:s.141(1)(b)",
@@ -5143,6 +5128,31 @@
     "law": "UK_ukpga_2022_46",
     "row": "UK_ukpga_2022_46:s.76(2)",
     "sentence": "Regulations under this section may (among other things) make any adaptations of any provisions of this Act brought into force that appear to be appropriate in consequence of other provisions of this Act not yet having come into force."
+  },
+  "UK_ukpga_2022_7/23489512be": {
+    "law": "UK_ukpga_2022_7",
+    "row": "UK_ukpga_2022_7:s.131(2)",
+    "sentence": "Part 1 (so far as not brought into force under subsection (1)) comes into force as follows—"
+  },
+  "UK_ukpga_2022_7/75bcd6f5bb": {
+    "law": "UK_ukpga_2022_7",
+    "row": "UK_ukpga_2022_7:s.131(3)",
+    "sentence": "Part 2 comes into force at the end of the period of two months beginning with the day on which this Act is passed."
+  },
+  "UK_ukpga_2022_7/8b002a37c0": {
+    "law": "UK_ukpga_2022_7",
+    "row": "UK_ukpga_2022_7:s.131(2)(f)",
+    "sentence": "Chapter 4, including sections 109 and 110 so far as they apply for purposes not mentioned in paragraphs (a) to (e), comes into force on 1 April 2022."
+  },
+  "UK_ukpga_2022_7/cfa3fb10c2": {
+    "law": "UK_ukpga_2022_7",
+    "row": "UK_ukpga_2022_7:s.90(2)(d)",
+    "sentence": "the pension scheme established for certain employees of the Secret Intelligence Service which came into operation on 1 January 1946 and was amended on 1 September 1957 and 1 July 1964."
+  },
+  "UK_ukpga_2022_7/d493445e43": {
+    "law": "UK_ukpga_2022_7",
+    "row": "UK_ukpga_2022_7:s.131(1)",
+    "sentence": "Any provision of, or amendment made by, Part 1 or 3, so far as it— comes into force on the day on which this Act is passed."
   },
   "UK_ukpga_2023_50/40d57d9176": {
     "law": "UK_ukpga_2023_50",
@@ -5339,6 +5349,36 @@
     "row": "UK_ukpga_2025_5:s.17(4)",
     "sentence": "The following provisions come into force on such day as the Welsh Ministers may by regulations appoint—"
   },
+  "UK_ukpga_2026_18/017acb9d6e": {
+    "law": "UK_ukpga_2026_18",
+    "row": "UK_ukpga_2026_18:s.44(2)",
+    "sentence": "See Schedule 7 for consequential amendments coming into force on 1 January 2027."
+  },
+  "UK_ukpga_2026_18/871cdaa0e1": {
+    "law": "UK_ukpga_2026_18",
+    "row": "UK_ukpga_2026_18:s.175(2)",
+    "sentence": "Any provision of, or amendment made by, Parts 1 to 3 so far as it confers a power to make regulations or relates to the exercise of the power, comes into force on the day on which this Act is passed."
+  },
+  "UK_ukpga_2026_18/87ccd93d5b": {
+    "law": "UK_ukpga_2026_18",
+    "row": "UK_ukpga_2026_18:s.176(4)",
+    "sentence": "This Part comes into force on the day on which this Act is passed, apart from section 167 and Schedule 21 which come into force on such day as the Secretary of State may by regulations appoint."
+  },
+  "UK_ukpga_2026_18/d8a72ed0a1": {
+    "law": "UK_ukpga_2026_18",
+    "row": "UK_ukpga_2026_18:s.175(3)",
+    "sentence": "The following (which relate to the age of sale of tobacco etc) come into force on 1 January 2027 (so far as not in force by virtue of subsection (2))—"
+  },
+  "UK_ukpga_2026_18/e47844d9d8": {
+    "law": "UK_ukpga_2026_18",
+    "row": "UK_ukpga_2026_18:s.175(1)",
+    "sentence": "Parts 1 to 4 of this Act (sale and distribution etc) come into force at the end of the period of 6 months beginning with the day on which it is passed, except as provided by subsections (2) to (8) ."
+  },
+  "UK_ukpga_2026_18/ec06c02ca9": {
+    "law": "UK_ukpga_2026_18",
+    "row": "UK_ukpga_2026_18:s.44(1)",
+    "sentence": "See Schedule 6 for consequential amendments coming into force at the end of the period of 6 months beginning with the day on which this Act is passed."
+  },
   "UK_ukpga_2026_23/0ef1f36a10": {
     "law": "UK_ukpga_2026_23",
     "row": "UK_ukpga_2026_23:s.108(1)(a)",
@@ -5409,6 +5449,11 @@
     "row": "UK_uksi_1974_2013:reg.7(3)",
     "sentence": "Except as provided in regulation 3 of these Regulations, regulations, rules and orders made or having effect under any provision repealed by these Regulations and in force immediately before the coming into operation of these Regulations shall continue in force notwithstanding the repeal of that provision."
   },
+  "UK_uksi_1981_569/fa0d18ed3a": {
+    "law": "UK_uksi_1981_569",
+    "row": "UK_uksi_1981_569:reg.1(1)",
+    "sentence": "These Regulations may be cited as the Merchant Shipping (Official Log Books) Regulations 1981 and shall come into operation: (a) for the purposes of paragraphs 8 and 9 of Part I of the Schedule, 1st September 1981 (b) for all other purposes 1st May 1981."
+  },
   "UK_uksi_1983_978/2ff032e101": {
     "law": "UK_uksi_1983_978",
     "row": "UK_uksi_1983_978:reg.4(2)",
@@ -5448,6 +5493,11 @@
     "law": "UK_uksi_1987_37",
     "row": "UK_uksi_1987_37:reg.34(2)",
     "sentence": "If an application for an explosives licence is made before 6th April 1988, then explosives may be carried or handled in circumstances where, but for the provisions of this paragraph, an explosives licence would be required, until such time as the licence is issued or refused or until 31st December 1991 whichever is the earlier, if the explosives are carried or handled in accordance with the byelaws relating to such explosives which were in force immediately before the coming into operation of these Regulations or, in the case of military explosives, in accordance with the Conveyance in Harbours of Military Explosives Regulations 1977 as in force immediately before the coming into operation of these Regulations."
+  },
+  "UK_uksi_1987_408/a34431d6b0": {
+    "law": "UK_uksi_1987_408",
+    "row": "UK_uksi_1987_408:reg.7",
+    "sentence": "A British Seaman’s Card issued after the coming into operation of these Regulations shall be valid until the end of the period of ten years from the date of issue: provided that, if at the end of such period, the holder is not present in the United Kingdom, his British Seaman’s Card shall remain valid until he first returns to the United Kingdom or the expiry of a further 12 months from the date of expiry, whichever is the sooner."
   },
   "UK_uksi_1987_676/ac8d814ea2": {
     "law": "UK_uksi_1987_676",
@@ -5494,15 +5544,15 @@
     "row": "UK_uksi_1989_1671:reg.5(2)(b)",
     "sentence": "Sub-paragraph (a) of this paragraph shall not apply until 13th September 1992 to a person who has been employed as a medically trained person on an offshore installation (including any time spent away from such installation on leave or training courses) throughout the two years immediately preceding the coming into force of these Regulations."
   },
+  "UK_uksi_1989_2169/aaa9fde839": {
+    "law": "UK_uksi_1989_2169",
+    "row": "UK_uksi_1989_2169:reg.1",
+    "sentence": "These Regulations may be cited as the Pressure Systems and Transportable Gas Containers Regulations 1989 and shall come into force in accordance with the provisions of Part I of Schedule 1."
+  },
   "UK_uksi_1989_992/67eb102335": {
     "law": "UK_uksi_1989_992",
     "row": "UK_uksi_1989_992:reg.7(6)",
     "sentence": "Subject to the amendments made by Schedule 2 to this Order, any reference in any instrument, contract or other document (including any such document or form as is referred to in paragraph (5) above) to the Business Statistics Office of the Department of Trade and Industry or to the Central Statistical Office (including any reference which is to be construed as such a reference) shall be construed after the coming into force of this Order as a reference to the transferred CSO."
-  },
-  "UK_uksi_1990_144/0ae654b5d1": {
-    "law": "UK_uksi_1990_144",
-    "row": "UK_uksi_1990_144:reg.3",
-    "sentence": "The amendments mentioned in regulation 2 above shall have effect only in relation to driving licences which come into force on or after 1st June 1990 (or, in their application to licences to drive a motor vehicle granted under the law of Northern Ireland, to such licences which come into force on or after 1st January 1991)."
   },
   "UK_uksi_1990_2594/6b679a3a0f": {
     "law": "UK_uksi_1990_2594",
@@ -5564,6 +5614,11 @@
     "row": "UK_uksi_1992_3107:reg.1(2)",
     "sentence": "These Regulations shall come into force on 1st January 1996 for the purposes of— and on 1st January 1993 for all other purposes."
   },
+  "UK_uksi_1993_1213/cde15d2801": {
+    "law": "UK_uksi_1993_1213",
+    "row": "UK_uksi_1993_1213:reg.1",
+    "sentence": "These Regulations may be cited as the Merchant Shipping (Local Passenger Vessels) (Masters' Licences and Hours, Manning and Training) Regulations 1993 and shall come into force:"
+  },
   "UK_uksi_1993_3039/3cb5afe6c9": {
     "law": "UK_uksi_1993_3039",
     "row": "UK_uksi_1993_3039:reg.1",
@@ -5578,11 +5633,6 @@
     "law": "UK_uksi_1994_1096",
     "row": "UK_uksi_1994_1096:reg.3(3)",
     "sentence": "Where an activity falls within article 2(2)(d) (whether or not it also falls within any other sub-paragraph of article 2(2)), the relevant provisions shall come into force for the purposes of their applicaton to that activity on the day immediatelyfollowing the prescribed date in relation to the process in question."
-  },
-  "UK_uksi_1994_1096/1cb5890046": {
-    "law": "UK_uksi_1994_1096",
-    "row": "UK_uksi_1994_1096:reg.2(2)",
-    "sentence": "The provisions of the Environmental Protection Act 1990 set out in paragraph (3) below shall come into force on 1st May 1994, save for the purposes of their application to the following activities—"
   },
   "UK_uksi_1994_1096/4df7fee11c": {
     "law": "UK_uksi_1994_1096",
@@ -5633,6 +5683,11 @@
     "law": "UK_uksi_1994_656",
     "row": "UK_uksi_1994_656:reg.2",
     "sentence": "In these Regulations— “the Act” means the Building Societies Act 1986; “the accounting year 1994-95” means the period of 12 months ending on31st March 1995; “amalgamation” means an amalgamation under section 93 of the Act; “operative date” means the date on which these Regulations come into force; “registered”, in relation to any time, means having the status of a society registered or deemed to be registered under the Act at that time; “the relevant year” means the period of 12 months ending on 31st December 1993; “society” means a building society; and “transfer of engagements” means a transfer of engagements under section 94 of the Act."
+  },
+  "UK_uksi_1995_1802/2e10aa4be1": {
+    "law": "UK_uksi_1995_1802",
+    "row": "UK_uksi_1995_1802:reg.5(2)",
+    "sentence": "In the case of a ship which, on the date on which these Regulations come into force, is on a voyage, there may be kept on board the ship, in place of the medical stores required by regulation 4 to be kept on board it, the medical stores as it would be required to have on board if the Regulations referred to in regulation 1(2) had not been revoked; but this paragraph shall cease to apply to a ship at the time it arrives at a port in the United Kingdom or at the expiration of six months from the date on which these Regulations come into force, whichever shall be the earlier."
   },
   "UK_uksi_1995_1804/4566b615c9": {
     "law": "UK_uksi_1995_1804",
@@ -5724,10 +5779,40 @@
     "row": "UK_uksi_1996_972:reg.26(2)",
     "sentence": "Subject to paragraph (3) of this regulation, the 1980 Regulations shall continue to have effect in relation to any special waste in respect of which the consignment note (within the meaning of those Regulations) was furnished or is treated as having been furnished to the Agency, in accordance with regulation 4 of those Regulations, before the coming into force of these Regulations."
   },
+  "UK_uksi_1997_1509/a808b6b9d2": {
+    "law": "UK_uksi_1997_1509",
+    "row": "UK_uksi_1997_1509:reg.2(4)",
+    "sentence": "Any approval given pursuant to these Regulations shall be given in writing and shall specify the date when it is to come into force and the conditions (if any) of which it is given."
+  },
+  "UK_uksi_1998_1011/7b2e7ef56b": {
+    "law": "UK_uksi_1998_1011",
+    "row": "UK_uksi_1998_1011:reg.45(7)",
+    "sentence": "A modification or replacement of Chapter II-2 of the Convention has effect at the time such modification or replacement comes into force in accordance with Article VIII of the Convention."
+  },
+  "UK_uksi_1998_1258/b01e770dee": {
+    "law": "UK_uksi_1998_1258",
+    "row": "UK_uksi_1998_1258:reg.1",
+    "sentence": "This Order may be cited as the Merchant Shipping (Convention on Limitation of Liability for Maritime Claims) (Amendment) Order 1998 and shall come into force on the date, to be notified in the London, Edinburgh and Belfast Gazettes, on which the Protocol of 1996 to amend the Convention on Limitation of Liability for Maritime Claims 1976 enters into force in respect of the United Kingdom."
+  },
   "UK_uksi_1998_1833/367cb23c8a": {
     "law": "UK_uksi_1998_1833",
     "row": "UK_uksi_1998_1833:reg.11(5)(a)",
     "sentence": "if the worker’s employment began on or before the date on which these Regulations come into force, on 5th October 1998; or"
+  },
+  "UK_uksi_1998_2514/321d3de46b": {
+    "law": "UK_uksi_1998_2514",
+    "row": "UK_uksi_1998_2514:reg.2(5)",
+    "sentence": "Any approval given pursuant to these Regulations shall be given in writing and shall specify the date when it is to come into force and the conditions (if any) on which it is given."
+  },
+  "UK_uksi_1998_2514/4cd1a3c229": {
+    "law": "UK_uksi_1998_2514",
+    "row": "UK_uksi_1998_2514:reg.1(1)",
+    "sentence": "These Regulations may be cited as the Merchant Shipping (Passenger Ship Construction: Ships of Classes I, II and II(A)) Regulations 1998 and shall come into force on 12th November."
+  },
+  "UK_uksi_1998_2515/e29f4ad2f9": {
+    "law": "UK_uksi_1998_2515",
+    "row": "UK_uksi_1998_2515:reg.2(5)",
+    "sentence": "Any approval given pursuant to these Regulations shall be given in writing and shall specify the date it is to come into force and the conditions (if any) on which it is given."
   },
   "UK_uksi_1998_3178/c1b58d544b": {
     "law": "UK_uksi_1998_3178",
@@ -5748,6 +5833,11 @@
     "law": "UK_uksi_1999_1593",
     "row": "UK_uksi_1999_1593:reg.1(1)",
     "sentence": "This Order may be cited as the Scotland Act 1998 (Transitory and Transitional Provisions) (Orders subject to Special Parliamentary Procedure) Order 1999 and shall come into force when section 94 of the 1998 Act comes into force."
+  },
+  "UK_uksi_1999_2722/3b2a8809ca": {
+    "law": "UK_uksi_1999_2722",
+    "row": "UK_uksi_1999_2722:reg.1(3)",
+    "sentence": "Where a ship to which the Merchant Shipping (Musters and Training) Regulations 1986 apply is in the course of a voyage on 29th October 1999, those Regulations shall continue to apply to that ship until the end of that voyage and these Regulations shall come into force in relation to that ship at the end of that voyage."
   },
   "UK_uksi_1999_3323/33c56a34b7": {
     "law": "UK_uksi_1999_3323",
@@ -5844,6 +5934,11 @@
     "row": "UK_uksi_2000_730:reg.13(1)",
     "sentence": "Subject to paragraph (7) below, each public telecommunications network operator shall, in relation to all interfaces in use by the operator at the time this regulation comes into force, notify such interfaces to the Director and publish within 90 days of this regulation coming into force, in an accurate and adequate manner, the technical specifications of the interfaces in accordance with paragraph (5) below."
   },
+  "UK_uksi_2000_90/f6b277a1d5": {
+    "law": "UK_uksi_2000_90",
+    "row": "UK_uksi_2000_90:reg.1",
+    "sentence": "This Order may be cited as the Health Act 1999 (Supplementary, Consequential etc. Provisions) Order 2000 and shall come into force for the purposes of article 3(2) on 1st April 2000 and for all other purposes on 8th February 2000."
+  },
   "UK_uksi_2001_1149/c5531e96ea": {
     "law": "UK_uksi_2001_1149",
     "row": "UK_uksi_2001_1149:reg.1(3)",
@@ -5853,11 +5948,6 @@
     "law": "UK_uksi_2001_1701",
     "row": "UK_uksi_2001_1701:reg.1(2)",
     "sentence": "This regulation, regulations 2 and 14 shall come into force on 4th June 2001, except that regulation 2(1)(b) shall not have effect until the date of the coming into force of the Decision by the EEA Joint Committee by which the application of the Directive is extended to the EEA."
-  },
-  "UK_uksi_2001_1701/df42d20ba3": {
-    "law": "UK_uksi_2001_1701",
-    "row": "UK_uksi_2001_1701:reg.1(3)",
-    "sentence": "The remaining regulations shall come into force on 3rd July 2001."
   },
   "UK_uksi_2001_2237/0d6b246890": {
     "law": "UK_uksi_2001_2237",
@@ -5899,11 +5989,6 @@
     "row": "UK_uksi_2002_2665:reg.2(10)",
     "sentence": "Where any provision of these Regulations is equivalent to a provision which applied to any network, or part of a network, immediately before the coming into force of these Regulations by virtue of the Electricity Supply Regulations 1988, any approval, authority or exemption granted or given under or pursuant to the latter provision which was in force immediately before the coming into force of these Regulations shall continue in force and shall have effect as if granted or given under or pursuant to the former provision but shall cease to have effect one year after the coming into force of these Regulations."
   },
-  "UK_uksi_2002_2776/fd78e0bbd3": {
-    "law": "UK_uksi_2002_2776",
-    "row": "UK_uksi_2002_2776:reg.1",
-    "sentence": "These Regulations may be cited as the Dangerous Substances and Explosive Atmospheres Regulations 2002 and shall come into force—"
-  },
   "UK_uksi_2002_3135/3c52a360b8": {
     "law": "UK_uksi_2002_3135",
     "row": "UK_uksi_2002_3135:reg.1(2)",
@@ -5933,6 +6018,11 @@
     "law": "UK_uksi_2003_2155",
     "row": "UK_uksi_2003_2155:reg.2(1)",
     "sentence": "In any Act or instrument amended by this Order— “electronic communications apparatus” has the same meaning as in the electronic communications code; “the electronic communications code” has the same meaning as in Chapter 1 of Part 2 of the Act; “electronic communications code network” means— so much of an electronic communications network or conduit system provided by an electronic communications code operator as is not excluded from the application of the electronic communications code by a direction under section 106 of the Act; and an electronic communications network which the Secretary of State or a Northern Ireland department is providing or proposing to provide; “electronic communications code operator” means a person in whose case the electronic communications code is applied by a direction under section 106 of the Act; “electronic communications network” and “electronic communications service” each has the same meaning as in the Act; “former PTO” means a person— who is a provider of a public electronic communications network or a public electronic communications service which, immediately before the date on which the repeal by the Act of section 7 of the Telecommunications Act 1984 comes into force, was designated as a public telecommunication system under section 9 of that Act; and who, immediately before that date, was authorised to provide that network or service by a licence to which section 8 of that Act applied; “operator”, in relation to an electronic communications code network, means— the electronic communications code operator providing that network; or the Secretary of State or a Northern Ireland department, to the extent that they are providing or proposing to provide that network; “provide” and cognate expressions, in relation to an electronic communications network, an electronic communications service or associated facilities, are to be construed in accordance with section 32(4) of the Act; “public electronic communications network” and “public electronic communications service” each has the same meaning as in Chapter 1 of Part 2 of the Act."
+  },
+  "UK_uksi_2003_2559/1f2ce2634e": {
+    "law": "UK_uksi_2003_2559",
+    "row": "UK_uksi_2003_2559:reg.1",
+    "sentence": "This Order may be cited as the Merchant Shipping (Oil Pollution Compensation Limits) Order 2003 and shall come into force on 1st November 2003 in relation to occurrences on or after that date."
   },
   "UK_uksi_2003_2635/2a3ef80dd7": {
     "law": "UK_uksi_2003_2635",
@@ -6064,6 +6154,11 @@
     "row": "UK_uksi_2005_2929:reg.1(1)",
     "sentence": "The title of this Order is the Fire and Rescue Services Act 2004 (Consequential Amendments) (Wales) Order 2005 and comes into force on 25 October 2005."
   },
+  "UK_uksi_2005_881/8b1b387e9d": {
+    "law": "UK_uksi_2005_881",
+    "row": "UK_uksi_2005_881:reg.1(1)",
+    "sentence": "These Regulations may be cited as the Merchant Shipping (Accident Reporting and Investigation) Regulations 2005 and shall come into force on 18th April 2005, save that the references to “civil partner” in the definition of “pleasure vessel” in paragraph (1) of regulation 2 shall not apply in relation to any time before section 1 of the Civil Partnership Act 2004 comes into force."
+  },
   "UK_uksi_2005_894/b6a12656c9": {
     "law": "UK_uksi_2005_894",
     "row": "UK_uksi_2005_894:reg.1(1)",
@@ -6079,11 +6174,6 @@
     "row": "UK_uksi_2006_1177:reg.1(2)",
     "sentence": "Subject to paragraph (3), these Regulations shall come into force in England on the day on which sections 47 to 50 of the Countryside and Rights of Way Act 2000 come into force in England."
   },
-  "UK_uksi_2006_1244/47c62619e5": {
-    "law": "UK_uksi_2006_1244",
-    "row": "UK_uksi_2006_1244:reg.1(3)",
-    "sentence": "The date on which these Regulations are to come into force shall be notified by the Secretary of State in the London, Edinburgh and Belfast Gazettes."
-  },
   "UK_uksi_2006_1244/758228e835": {
     "law": "UK_uksi_2006_1244",
     "row": "UK_uksi_2006_1244:reg.1(4)",
@@ -6093,6 +6183,11 @@
     "law": "UK_uksi_2006_1244",
     "row": "UK_uksi_2006_1244:reg.1(2)",
     "sentence": "Subject to paragraph (4), these Regulations shall come into force on the day on which the International Convention on Civil Liability for Bunker Oil Pollution Damage 2001 comes into force in respect of the United Kingdom."
+  },
+  "UK_uksi_2006_1265/6d044c41bb": {
+    "law": "UK_uksi_2006_1265",
+    "row": "UK_uksi_2006_1265:reg.1(2)",
+    "sentence": "This Order comes into force on the day on which the Supplementary Fund Protocol enters into force in respect of the United Kingdom."
   },
   "UK_uksi_2006_1521/5ba98f823f": {
     "law": "UK_uksi_2006_1521",
@@ -6209,6 +6304,11 @@
     "row": "UK_uksi_2009_1941:reg.1(2)",
     "sentence": "The provisions of this Order come into force on 1st October 2009."
   },
+  "UK_uksi_2009_3348/edc13cc319": {
+    "law": "UK_uksi_2009_3348",
+    "row": "UK_uksi_2009_3348:reg.2(1)",
+    "sentence": "Articles 3 to 21, 23 and 24 of this Order come into force on the commencement of section 13 of the Legal Services Act 2007."
+  },
   "UK_uksi_2009_41/f0c2757bcf": {
     "law": "UK_uksi_2009_41",
     "row": "UK_uksi_2009_41:reg.1",
@@ -6239,6 +6339,11 @@
     "row": "UK_uksi_2010_1001:reg.26(3)",
     "sentence": "Between the date when these Regulations come into force and 31st December 2014, the Secretary of State must draw up and implement an air quality plan if levels of PM2.5 in ambient air exceed a level calculated by applying the margin of tolerance set out in Schedule 2 to the limit value."
   },
+  "UK_uksi_2010_1110/7de7397996": {
+    "law": "UK_uksi_2010_1110",
+    "row": "UK_uksi_2010_1110:reg.1(3)",
+    "sentence": "Regulations , and come into force on 26th April 2010."
+  },
   "UK_uksi_2010_1148/0b71a126a7": {
     "law": "UK_uksi_2010_1148",
     "row": "UK_uksi_2010_1148:reg.1",
@@ -6253,6 +6358,11 @@
     "law": "UK_uksi_2010_231",
     "row": "UK_uksi_2010_231:reg.1(3)",
     "sentence": "Except as provided for by paragraph (2), the provisions of this Order which confer powers enabling rules or orders to be made, or which enable standards or requirements to be set by the Council, come into force on the making of this Order, but for the purpose only of the exercise of those powers."
+  },
+  "UK_uksi_2010_2984/c13e5f1ae0": {
+    "law": "UK_uksi_2010_2984",
+    "row": "UK_uksi_2010_2984:reg.1",
+    "sentence": "These Regulations may be cited as the Merchant Shipping and Fishing Vessels (Health and Safety at Work) (Asbestos) Regulations 2010 and they come into force on 10th January 2011."
   },
   "UK_uksi_2010_490/5cfc41c325": {
     "law": "UK_uksi_2010_490",
@@ -6484,6 +6594,16 @@
     "row": "UK_uksi_2015_21:reg.1(3)",
     "sentence": "The remainder of these Regulations come into force on 1st June 2015."
   },
+  "UK_uksi_2015_410/a0adfb0663": {
+    "law": "UK_uksi_2015_410",
+    "row": "UK_uksi_2015_410:reg.52(1)",
+    "sentence": "This regulation applies to a person who, immediately before these Regulations come into force —"
+  },
+  "UK_uksi_2015_508/3c2f820827": {
+    "law": "UK_uksi_2015_508",
+    "row": "UK_uksi_2015_508:reg.3(6)",
+    "sentence": "A modification or replacement of Chapter XIV, the Polar Code or the SOLAS Convention has effect at the time such modification or replacement comes into force in accordance with Article VIII of the SOLAS Convention."
+  },
   "UK_uksi_2015_51/e416c6a8d8": {
     "law": "UK_uksi_2015_51",
     "row": "UK_uksi_2015_51:reg.1",
@@ -6619,11 +6739,6 @@
     "row": "UK_uksi_2017_469:reg.1(3)",
     "sentence": "Otherwise this Order comes into force on 8th May 2017."
   },
-  "UK_uksi_2017_547/1dd098065e": {
-    "law": "UK_uksi_2017_547",
-    "row": "UK_uksi_2017_547:reg.8(1)",
-    "sentence": "Paragraph (2) applies where any of the following occurs in relation to an application made before these Regulations come into force—"
-  },
   "UK_uksi_2017_701/356fd1405b": {
     "law": "UK_uksi_2017_701",
     "row": "UK_uksi_2017_701:reg.1(3)",
@@ -6644,14 +6759,29 @@
     "row": "UK_uksi_2018_110:reg.16",
     "sentence": "(3) For the purposes of sub-paragraph (1)— “Tranche A generator” means a generator— (a) with a rated thermal input equal to or greater than 1 megawatt and less than 50 megawatts— (i) which came into operation before 1st December 2016, (ii) which is the subject of a capacity agreement arising from the 2014 or 2015 capacity auctions (whether or not the generator came into operation before 1st December 2016), or (iii) for which a Feed-in Tariff preliminary accreditation application was received by the Gas and Electricity Markets Authority before 1st December 2016; (b) with a rated thermal input of less than 1 megawatt— (i) which is the subject of a capacity agreement arising from the 2014, 2015 or 2016 capacity auctions (whether or not the generator came into operation before 1st December 2016), (ii) for which a Feed-in Tariff preliminary accreditation application was received by the Gas and Electricity Markets Authority before 1st December 2017; or (iii) which is the subject of an agreement to provide balancing services entered into before 31st October 2017, provided that a generator ceases to be a Tranche A generator if it is the subject of a capacity agreement, or an agreement for provision of balancing services, where that agreement is entered into after 31st October 2017 and remains in force after 31st December 2018; “Tranche B generator” means any generator which is not a Tranche A generator or an excluded generator (and includes a specified generator which has ceased to be a Tranche A generator)."
   },
+  "UK_uksi_2018_1104/1f03716ca1": {
+    "law": "UK_uksi_2018_1104",
+    "row": "UK_uksi_2018_1104:reg.5(1)",
+    "sentence": "Subject to paragraph (2), where an application for a service or other function for which a fee is payable under these Regulations is made before the day they come into force, but the service or function is provided on or after that date, the fee payable in respect of that service or function is the fee prescribed immediately before the coming into force of these Regulations."
+  },
+  "UK_uksi_2018_1104/bd07a28c8c": {
+    "law": "UK_uksi_2018_1104",
+    "row": "UK_uksi_2018_1104:reg.1(2)",
+    "sentence": "Subject to paragraph (3), these Regulations cease to have effect at the end of the period of ten years beginning with the day on which they come into force."
+  },
   "UK_uksi_2018_1149/5d7b47b3da": {
     "law": "UK_uksi_2018_1149",
     "row": "UK_uksi_2018_1149:reg.1(3)",
     "sentence": "Regulations 2 to 4 , 24, 70 and 71 come into force on exit day."
   },
-  "UK_uksi_2018_1232/d4ccbe6192": {
-    "law": "UK_uksi_2018_1232",
-    "row": "UK_uksi_2018_1232:reg.1(2)",
+  "UK_uksi_2018_1202/9dd0684715": {
+    "law": "UK_uksi_2018_1202",
+    "row": "UK_uksi_2018_1202:reg.1(3)",
+    "sentence": "This Regulation and regulation 2 come into force on the 22nd day after the day on which these Regulations are laid."
+  },
+  "UK_uksi_2018_1202/e7e09f8dab": {
+    "law": "UK_uksi_2018_1202",
+    "row": "UK_uksi_2018_1202:reg.1(2)",
     "sentence": "Subject to paragraph (3), these Regulations come into force on exit day."
   },
   "UK_uksi_2018_1251/1535f5c7d0": {
@@ -6678,16 +6808,6 @@
     "law": "UK_uksi_2018_369",
     "row": "UK_uksi_2018_369:reg.1(2)",
     "sentence": "Subject to paragraph (3), these Regulations come into force 21 days after the day on which they are made."
-  },
-  "UK_uksi_2018_396/44d7ccc28f": {
-    "law": "UK_uksi_2018_396",
-    "row": "UK_uksi_2018_396:reg.1",
-    "sentence": "These Regulations may be cited as the Landfill Tax (Miscellaneous Provisions) Regulations 2018, come into force on 1st April 2018, and take effect in respect of disposals made or treated as made on or after that date."
-  },
-  "UK_uksi_2018_407/358316cb01": {
-    "law": "UK_uksi_2018_407",
-    "row": "UK_uksi_2018_407:reg.2(4)",
-    "sentence": "The amendment made by paragraph (2), insofar as it relates to Part XI of the Employment Rights Act 1996, only has effect in relation to employees who on or after the date on which these Regulations come into force—"
   },
   "UK_uksi_2018_407/8b14b0a456": {
     "law": "UK_uksi_2018_407",
@@ -6739,20 +6859,10 @@
     "row": "UK_uksi_2019_1423:reg.1",
     "sentence": "These Regulations may be cited as the European Union (Withdrawal) Act 2018 (Exit Day) (Amendment) (No. 3) Regulations 2019 and come into force immediately after they are made."
   },
-  "UK_uksi_2019_1440/04c9a01a1c": {
-    "law": "UK_uksi_2019_1440",
-    "row": "UK_uksi_2019_1440:reg.1(2)",
-    "sentence": "This regulation and regulations 3(2)(g) and (l), 4(4) and (5), 15(3), 18(3) to (5), 20, 24(3), 25 and 26 come into force 21 days after the day on which these Regulations are laid."
-  },
   "UK_uksi_2019_1440/54d023d971": {
     "law": "UK_uksi_2019_1440",
     "row": "UK_uksi_2019_1440:reg.1(2B)",
     "sentence": "The following regulations come into force on 1st February 2020—"
-  },
-  "UK_uksi_2019_1440/67b547417d": {
-    "law": "UK_uksi_2019_1440",
-    "row": "UK_uksi_2019_1440:reg.1(1)",
-    "sentence": "These Regulations may be cited as the Greenhouse Gas Emissions Trading Scheme (Amendment) (No. 3) Regulations 2019 and come into force in accordance with paragraphs (2) to (4)."
   },
   "UK_uksi_2019_1440/67b98c060c": {
     "law": "UK_uksi_2019_1440",
@@ -6809,6 +6919,11 @@
     "row": "UK_uksi_2019_414:reg.1(2)",
     "sentence": "They come into force as follows—"
   },
+  "UK_uksi_2019_42/047b52b573": {
+    "law": "UK_uksi_2019_42",
+    "row": "UK_uksi_2019_42:reg.4(4)(a)",
+    "sentence": "amendments to the Introduction and Chapter 2 of Part II-A of that Code are adopted, brought into force and take effect in accordance with article 16 of the Convention as applicable to amendments to an Annex to that Convention; and"
+  },
   "UK_uksi_2019_421/6eed66fc93": {
     "law": "UK_uksi_2019_421",
     "row": "UK_uksi_2019_421:reg.1(4)",
@@ -6818,6 +6933,11 @@
     "law": "UK_uksi_2019_453",
     "row": "UK_uksi_2019_453:reg.1(2)",
     "sentence": "Parts 1 and 2 come into force on the 22nd day after the day on which these Regulations are made."
+  },
+  "UK_uksi_2019_509/f15e1a6619": {
+    "law": "UK_uksi_2019_509",
+    "row": "UK_uksi_2019_509:reg.1(3)",
+    "sentence": "Regulations 3(a)(i), (iii) and (iv), and (b), 6(a), 8, 9, 11, 12, 14 to 22, 24, 26 to 28 and 29(a)(i) and (ii) come into force on exit day."
   },
   "UK_uksi_2019_539/d03b5cbce7": {
     "law": "UK_uksi_2019_539",
@@ -6869,6 +6989,11 @@
     "row": "UK_uksi_2019_775:reg.10(3)(a)",
     "sentence": "for the definition of “the Good Manufacturing Practice Directive” substitute— «“the Good Manufacturing Practice Directive” means— (a) in the case of a medicinal product manufactured or assembled in, or imported into, Great Britain— (i) Commission Directive 2003/94/EC laying down the principles and guidelines of good manufacturing practice for medicinal products for human use and for investigational medicinal products for human use, as modified by Schedule 2A, or (ii) if Regulations have been made under the powers in regulation B17(1), and have come into force, those Regulations; (b) in the case of a medicinal product manufactured or assembled in, or imported into, Northern Ireland, Commission Directive 2003/94/EC laying down the principles and guidelines of good manufacturing practice for medicinal products for human use and for investigational medicinal products for human use;»;"
   },
+  "UK_uksi_2019_808/68dfed0de4": {
+    "law": "UK_uksi_2019_808",
+    "row": "UK_uksi_2019_808:reg.1(2)",
+    "sentence": "These Regulations come into force on whichever is the later of exit day or the 22nd day after the day on which they are laid before Parliament."
+  },
   "UK_uksi_2019_859/ae4fc17648": {
     "law": "UK_uksi_2019_859",
     "row": "UK_uksi_2019_859:reg.1",
@@ -6898,11 +7023,6 @@
     "law": "UK_uksi_2020_1265",
     "row": "UK_uksi_2020_1265:reg.34M(6A)",
     "sentence": "The regulator must recalculate the aviation free allocation entitlement for the 2023, 2024 and 2025 scheme years in relation to each person who had made an application under article 34L (“A”) before article 34L(7) came into force, to take into account any historical aviation activity level attributable to A due to aviation activity within paragraph 1(1)(c) of Schedule 1 immediately before 1st January 2021."
-  },
-  "UK_uksi_2020_1339/5b3da4fff6": {
-    "law": "UK_uksi_2020_1339",
-    "row": "UK_uksi_2020_1339:reg.1(4)",
-    "sentence": "Regulation 3 comes into force on IP completion day."
   },
   "UK_uksi_2020_1339/acd65f988c": {
     "law": "UK_uksi_2020_1339",
@@ -7084,6 +7204,21 @@
     "row": "UK_uksi_2022_1037:reg.1(2)",
     "sentence": "These Regulations come into force on the 22nd day after the day on which they are made."
   },
+  "UK_uksi_2022_1218/8e25720d67": {
+    "law": "UK_uksi_2022_1218",
+    "row": "UK_uksi_2022_1218:reg.1(1)",
+    "sentence": "These Regulations may be cited as the Merchant Shipping (Additional Safety Measures for Bulk Carriers) Regulations 2022 and come into force on the 22nd day after the day on which they are made."
+  },
+  "UK_uksi_2022_1269/d40c9b97d6": {
+    "law": "UK_uksi_2022_1269",
+    "row": "UK_uksi_2022_1269:reg.1(b)",
+    "sentence": "come into force on the 22nd day after the day on which they are made;"
+  },
+  "UK_uksi_2022_1342/1e1c24bf7a": {
+    "law": "UK_uksi_2022_1342",
+    "row": "UK_uksi_2022_1342:reg.1(1)",
+    "sentence": "These Regulations may be cited as the Merchant Shipping (Standards of Training, Certification and Watchkeeping) Regulations 2022 and come into force on the 22nd day after the day on which they are made."
+  },
   "UK_uksi_2022_500/0f91418d33": {
     "law": "UK_uksi_2022_500",
     "row": "UK_uksi_2022_500:reg.3",
@@ -7103,6 +7238,11 @@
     "law": "UK_uksi_2023_284",
     "row": "UK_uksi_2023_284:reg.1(3)",
     "sentence": "Otherwise, these Regulations come into force on 6th April 2023."
+  },
+  "UK_uksi_2023_568/96b229f061": {
+    "law": "UK_uksi_2023_568",
+    "row": "UK_uksi_2023_568:reg.1(1)",
+    "sentence": "These Regulations may be cited as the Merchant Shipping (Fire Protection) Regulations 2023 and come into force on the 22nd day after the day on which they are made."
   },
   "UK_uksi_2023_588/5c4befeb3f": {
     "law": "UK_uksi_2023_588",
@@ -7159,11 +7299,6 @@
     "row": "UK_uksi_2024_41:reg.1(1)",
     "sentence": "These Regulations may be cited as the Higher-Risk Buildings (Keeping and Provision of Information etc.) (England) Regulations 2024 and come into force at the same time as section 83 of the 2022 Act comes into force."
   },
-  "UK_uksi_2024_49/7a8046ed55": {
-    "law": "UK_uksi_2024_49",
-    "row": "UK_uksi_2024_49:reg.1(2)",
-    "sentence": "These Regulations come into force on the day on which paragraph 3 of Part 2 of Schedule 14 to the Environment Act 2021 comes into force."
-  },
   "UK_uksi_2024_504/4d49a4d188": {
     "law": "UK_uksi_2024_504",
     "row": "UK_uksi_2024_504:reg.1(2)",
@@ -7189,6 +7324,11 @@
     "row": "UK_uksi_2025_1227:reg.2(1)",
     "sentence": "In this Order, unless otherwise stated— “the 1961 Act” means the Land Compensation Act 1961; “the 1965 Act” means the Compulsory Purchase Act 1965; “the 1968 Act” means the Port of London Act 1968; “the 1980 Act” means the Highways Act 1980; “the 1981 Act” means the Compulsory Purchase (Vesting Declarations) Act 1981; “the 1984 Act” means the Road Traffic Regulation Act 1984; “the 1990 Act” means the Town and Country Planning Act 1990; “the 1991 Act” means the New Roads and Street Works Act 1991; “the 1994 agreement” means the agreement made under section 106 (planning obligations) of the 1990 Act between the Mayor and Burgesses of the London Borough of Bexley and TWUL dated 21 July 1994; “the 2005 Agreement” means the agreement made under section 106 (planning obligations) of the 1990 Act between the Mayor and Burgesses of the London Borough of Bexley, Tilfen Land Limited and Gallions Housing Association Limited dated 24 January 2005; “the 2008 Act” means the Planning Act 2008; “the 2009 Act” means the Marine and Coastal Access Act 2009; “access and rights of way plan” means the plan of that description referred to in Schedule 13 (documents and plans to be certified) certified by the Secretary of State as the access and rights of way plan for the purposes of this Order; “address” includes any number or address used for the purposes of electronic transmission; “AOD” means above ordnance datum; “apparatus” has the same meaning as in Part 3 (street works in England and Wales) of the 1991 Act save that “apparatus” further includes pipelines (and parts of them), heat pipework, aerial markers, cathodic protection test posts, field boundary markers, transformer rectifier kiosks, electricity cables, telecommunications equipment and electricity cabinets; “authorised development” means the development described in Schedule 1 (authorised development) and any other development within the meaning of section 32 (meaning of “development”) of the 2008 Act authorised by this Order; “authorised navigational channel of the river Thames” means the authorised navigational channel of the river Thames located within the boundaries of the authorised navigational channel shown on the works plans; “authorised person” means an employee, agent, contractor or subcontractor of the London Borough of Bexley; “book of reference” means the document of that description referred to in Schedule 13 (documents and plans to be certified) certified by the Secretary of State as the book of reference for the purposes of this Order; “Belvedere Power Station jetty” means the existing jetty, conveyor bridge, intake shaft (but not the intake tunnel) and associated piles, dolphins and supports contained within plots 1-107, 1-110, 1-111 and 1-118 on the land plans, and the associated barge berth located within plot 1-113; ... “building” includes any structure or erection or any part of a building, structure or erection; “business day” means any day apart from Saturday, Sunday or any statutory English bank or public holiday; “carriageway” has the same meaning as in the 1980 Act; “commence” means beginning to carry out any material operation, as defined in section 155 (when development begins) of the 2008 Act, comprised in or carried out for the purposes of the authorised development other than the permitted preliminary works and the words “commencement” and “commenced” are to be construed accordingly; “commissioning” means the process of assuring that all systems and components of the authorised development or part of the authorised development (which are installed or installation is near to completion) are tested to verify that they function and are operable in accordance with design objectives, specifications and operational requirements of the undertaker and “commission” is to be construed accordingly; “compulsory acquisition notice” means a notice served in accordance with section 134 (notice of authorisation of compulsory acquisition) of the 2008 Act; “crossness local nature reserve” means the crossness local nature reserve as designated at the date of the making of this Order; “crossness local nature reserve as extended” means the land marked on the extended crossness local nature reserve plan as ‘Extended Crossness (LNR)’; “date of final commissioning” means the date on which the commissioning of the authorised development (or any part of the authorised development as the context requires) is completed as notified as such by the undertaker to the relevant planning authority pursuant to requirement 6 (notice of date of final commissioning); “deemed marine licence” means the marine licence set out in Schedule 11 (deemed marine licence); “design principles and design code” means the document of that description referred to in Schedule 13 (documents and plans to be certified) certified by the Secretary of State as the design principles and design code for the purposes of this Order; “electronic communication” has the meaning given in section 15(1) (general interpretation) of the Electronic Communications Act 2000; “electronic transmission” means a communication transmitted— (a) by means of an electronic communications network; or (b) by other means provided it is in an electronic form; “environmental statement” means the document of that description referred to in Schedule 13 (documents and plans to be certified) certified by the Secretary of State as the environmental statement for the purposes of this Order; “extended crossness local nature reserve plan” means the document of that description referred to in Schedule 13 (documents and plans to be certified) certified by the Secretary of State as the extended crossness local nature reserve plan for the purposes of this Order; “flood risk activity” has the same meaning as in the Environmental Permitting (England and Wales) Regulations 2016; “flood risk assessment” means the document of that description referred to in Schedule 13 (documents and plans to be certified) certified by the Secretary of State as the flood risk assessment for the purposes of this Order; “footpath” and “footway” have the same meaning as in the 1980 Act; “framework construction traffic management plan” means the document of that description referred to in Schedule 13 (documents and plans to be certified) certified by the Secretary of State as the framework construction traffic management plan for the purposes of this Order; “highway” and “highway authority” have the same meaning as in the 1980 Act; “land plans” means the plans of that description referred to in Schedule 13 (documents and plans to be certified) certified by the Secretary of State as the land plans for the purposes of this Order; “lead local flood authority” has the meaning in section 6(7) (other definitions) of the Flood and Water Management Act 2010; “limits of deviation” means— (a) the limits of deviation shown for each numbered work on the works plans; and (b) in the case of Work No. 4C, dredging to a depth of – 11.00m chart datum and within the dredging co-ordinates shown on the works plans; “maintain” includes inspect, repair, adjust, alter, remove, refurbish, reconstruct, replace and improve any part of the authorised development, but only insofar as such activities do not give rise to any materially new or materially different environmental effects to those identified in the environmental statement and “maintenance” and “maintaining” are to be construed accordingly; “Middleton Jetty” means the structures labelled as forming the Middleton Jetty as shown on the works plans; “MMO” means the Marine Management Organisation; “Order land” means the land shown on the land plans which is within the limits of land to be acquired or used and is described in the book of reference; “Order limits” means the limits of land to be acquired permanently or used temporarily as shown on the land plans, and the limits of land within which the authorised development, as shown on the works plans, may be carried out; “outline landscape, biodiversity, access and recreation delivery strategy” means the document of that description referred to in Schedule 13 (documents and plans to be certified) certified by the Secretary of State as the outline landscape, biodiversity, access and recreation delivery strategy for the purposes of this Order; “outline code of construction practice” means the document of that description referred to in Schedule 13 (documents and plans to be certified) certified by the Secretary of State as the outline code of construction practice for the purposes of this Order; “outline drainage strategy” means the document of that description referred to in Schedule 13 (documents and plans to be certified) certified by the Secretary of State as the outline drainage strategy for the purposes of this Order; “outline emergency preparedness and response plan” means the document of that description referred to in Schedule 13 (documents and plans to be certified) certified by the Secretary of State as the outline emergency preparedness and response plan for the purposes of this Order; “outline lighting strategy” means the document of that description referred to in Schedule 13 (documents and plans to be certified) certified by the Secretary of State as the outline lighting strategy for the purposes of this Order; “outline site waste management plan” means the document of that description referred to in Schedule 13 (documents and plans to be certified) certified by the Secretary of State as the outline site waste management plan for the purposes of this Order; “owner”, in relation to land, has the same meaning as in section 7 (interpretation) of the Acquisition of Land Act 1981; “permit scheme” means the permit scheme contained in the Schedule to the Traffic Management (London Borough of Bexley) Permit Scheme 2012 or any replacement permit scheme which applies to streets within the Order limits that is made under Part 3 (Permit Schemes) of the Traffic Management Act 2004; “permitted preliminary works” means environmental surveys and monitoring, investigations for the purpose of assessing ground conditions (including the making of trial boreholes), archaeological surveys and investigations, the creation of new ditches and the enhancement of existing ditches, receipt and erection of construction plant and equipment, erection of any temporary means of enclosure, the temporary display of site notices or advertisements, establishment of laydown areas and welfare facilities, erection of construction fencing, diversion and laying of underground apparatus, site clearance including vegetation clearance, and Work No. 3; “the PLA” means the Port of London Authority; “PLA General Directions” means the general directions made under section 111 of the 1968 Act and under the provisions of the Pilotage Act 1987 which came into force on 1 November 2024; “Port of London Harbour Revision Order” means any harbour revision order made pursuant to the application for the harbour revision order under section 14 of the Harbours Act 1964(d) submitted by the PLA to the Marine Management Organisation on 7 April 2020; “Pre-2032 WRWA Underlease Determination Event” means, during the period prior to (and including) 4 October 2032, the termination of the WRWA Underlease (otherwise than in circumstances where the WRWA Lease is terminated at the same time as the WRWA Underlease); “preliminary navigation risk assessment” means the document of that description referred to in Schedule 13 (documents and plans to be certified) certified by the Secretary of State as the preliminary navigation risk assessment for the purposes of this Order; “Post-2032 WRWA Underlease Determination Event” means, during the period from (and including) 5 October 2032, the termination of the WRWA Underlease (otherwise than in circumstances where the WRWA Lease is terminated at the same time as the WRWA Underlease); “relevant planning authority” means the London Borough of Bexley; “relevant highway authority” means the London Borough of Bexley; “Riverside 1” means the energy from waste facility that is operated by RRRL; “Riverside 2” means the energy from waste facility to be constructed and operated pursuant to Work No. 1 of the REP Order; “REPL” means Riverside Energy Park Limited (company number 11536739) whose registered office is at Level 5, 10 Dominion Street, London, EC2M 2EF, together with its successors in title from time to time of the freehold of any part of the REPL land (as defined in Schedule 12 Part 8 paragraph 108) save to the extent that any such successor in title is the undertaker; “REP Order” means the Riverside Energy Park Order 2020; “requirements” means those matters set out in Schedule 2 (requirements); “RRRL” means Riverside Resource Recovery Limited (company number 03723386) whose registered office is at Level 5, 10 Dominion Street, London, EC2M 2EF, together with its successors in title from time to time of the freehold of any part of the RRRL land (as defined in Schedule 12 Part 9 paragraph 120) save to the extent that any such successor in title is the undertaker; “RRRL Entity” means (on a several basis) each of RRRL, and— (a) prior to the earlier to occur of a Pre-2032 WRWA Underlease Determination Event and 5 October 2032, WRWA (for the purposes of paragraphs 122(a) and 130 of Part 9 of Schedule 12 only); (b) where a Pre-2032 WRWA Underlease Determination Event has occurred, WRWA (for any period in which WRWA (or WRWA’s nominee) is not a successor in title to RRRL in respect of the freehold of all the RRRL land which is held by RRRL immediately prior to the Pre-2032 WRWA Underlease Determination Event); (c) where a Pre-2032 WRWA Underlease Determination Event has occurred, WRWA (or its nominee) (for any period in which WRWA (or WRWA’s nominee) has ownership of RRRL or is a successor in title to RRRL in respect of the freehold of RRRL land); and (d) where a Post-2032 WRWA Underlease Determination Event has occurred, WRWA (for the duration of the WRWA Lease) unless and until the WRWA Underlease is restored; “statutory undertaker” means any person falling within section 127(8) (statutory undertakers’ land) of the 2008 Act and includes a public communications provider defined by section 151(1) (interpretation of Chapter I) of the Communications Act 2003; “street” means a street within the meaning of section 48 (streets, street works and undertakers) of the 1991 Act, together with land on the verge of a street or between two carriageways, and includes any public right of way and “street” includes any part of a street; “street authority”, in relation to a street, has the same meaning as in Part 3 (street works in England and Wales) of the 1991 Act; “TWUL” means Thames Water Utilities Limited (company number 02366661) whose registered office is at Clearwater Court, Vastern Road, Reading, Berkshire RG1 8DB; “traffic regulation measures plan” means the document of that description referred to in Schedule 13 (documents and plans to be certified) certified by the Secretary of State as the traffic regulation measures plan for the purposes of this Order; “undertaker” means, subject to articles 9 (benefit of this Order) and 10 (consent to transfer benefit of this Order), Cory Environmental Holdings Limited (company number 05360864) whose registered office is at Level 5, 10 Dominion Street, London, England, EC2M 2EF; “watercourse” includes all rivers, streams, creeks, ditches, drains, canals, cuts, culverts, dykes, sluices, sewers and passages through which water flows except a public sewer or drain; “WRWA” means the Western Riverside Waste Authority of Smugglers Way Transfer Station, Smugglers Way, Wandsworth, London, SW18 1JS; “WRWA Lease” means the lease between RRRL and WRWA dated 31 July 2008, as amended from time to time; “WRWA Underlease” means the underlease between WRWA and RRRL dated 31 July 2008, as amended from time to time; and “works plans” means the plans of that description referred to in Schedule 13 (documents and plans to be certified) certified by the Secretary of State as the works plans for the purposes of this Order."
   },
+  "UK_uksi_2025_1298/52d7fae75d": {
+    "law": "UK_uksi_2025_1298",
+    "row": "UK_uksi_2025_1298:reg.10(4)",
+    "sentence": "Where a cargo ship to which paragraph (3) applies has not been subjected to its first intermediate survey or renewal survey during the period beginning with 1st July 2024 and ending immediately before the day on which these Regulations come into force, that ship need not comply with the requirements of paragraph (3)(b) until immediately before the date of such intermediate survey or renewal survey, whichever occurs first."
+  },
   "UK_uksi_2025_418/0cc997f39e": {
     "law": "UK_uksi_2025_418",
     "row": "UK_uksi_2025_418:reg.1(2)",
@@ -7208,11 +7348,6 @@
     "law": "UK_uksi_2026_15",
     "row": "UK_uksi_2026_15:reg.1(3)",
     "sentence": "In so far as they are not already in force, these Regulations come into force on 6th April 2026."
-  },
-  "UK_uksi_2026_194/3f7b8dd941": {
-    "law": "UK_uksi_2026_194",
-    "row": "UK_uksi_2026_194:reg.4(3)",
-    "sentence": "A modification or replacement of a Chapter of the SOLAS Convention or of the ISM Code or of Part 1 or 2 of the RO Code has effect at the time such modification or replacement comes into force in accordance with Article VIII of the SOLAS Convention."
   },
   "UK_uksi_2026_318/2e7ee06c54": {
     "law": "UK_uksi_2026_318",
@@ -7238,11 +7373,6 @@
     "law": "UK_uksi_2026_386",
     "row": "UK_uksi_2026_386:reg.1(3)",
     "sentence": "A provision of these Regulations specified in Column 1 of the table in Schedule 1 comes into force— whichever is the later."
-  },
-  "UK_uksi_2026_484/9619442b05": {
-    "law": "UK_uksi_2026_484",
-    "row": "UK_uksi_2026_484:reg.1(1)",
-    "sentence": "These Regulations may be cited as the Chemicals (Health and Safety) (Amendment, Consequential and Transitional Provision) Regulations 2026 and come into force on the 21st day after the day on which they are made."
   },
   "UK_uksi_2026_74/7f7011c2df": {
     "law": "UK_uksi_2026_74",

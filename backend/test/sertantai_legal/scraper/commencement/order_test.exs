@@ -894,4 +894,18 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
       refute LatRef.covers?("sch.16.pt.2", "sch.16.pt.I")
     end
   end
+
+  test "\"The rest of the Act, except sections 85 to 87, shall come into force on …\": the Act but those, never those (SI 1996/3146 art.3)" do
+    rules =
+      Order.rules(
+        order(
+          ~s(<P1 id="article-3"><P1para><Text>The rest of the Act, except sections 85 to 87, shall come into force on 31st January 1997.</Text></P1para></P1>)
+        ),
+        @act
+      )
+
+    assert lines(rules) == ["all except s.85..s.87 — 1997-01-31 — everywhere, fully — order_date"]
+    assert dated(rules, "section-107-1") == %{full_from: ~D[1997-01-31], partial_from: nil}
+    assert dated(rules, "section-86") == %{full_from: nil, partial_from: nil}
+  end
 end

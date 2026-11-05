@@ -111,17 +111,51 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
 
     # a staged clause's law-level rule is LawStart's earliest date (LR-33 P1);
     # whether it should reach rows no sentence names is open (CR-03 question)
+    rules =
+      List.wrap(law_rule(law_name, by_clause, table_refs ++ excepted)) ++
+        assent_rules(law_name, law, by_clause, excepted -- named(groups)) ++
+        ((Enum.flat_map(groups, &group_rule(law_name, preceding(&1, rows))) ++
+            own_words(law_name, rows, input))
+         # a provision's own words read as a sentence too: once
+         |> Enum.uniq_by(&{&1.scope, &1.except, &1.when, &1.territory, &1.purposes}))
+
     %{
       law: law,
-      rules:
-        List.wrap(law_rule(law_name, by_clause, table_refs ++ excepted)) ++
-          assent_rules(law_name, law, by_clause, excepted -- named(groups)) ++
-          ((Enum.flat_map(groups, &group_rule(law_name, preceding(&1, rows))) ++
-              own_words(law_name, rows, input))
-           # a provision's own words read as a sentence too: once
-           |> Enum.uniq_by(&{&1.scope, &1.except, &1.when, &1.territory, &1.purposes})),
+      rules: rules ++ clause_own(law_name, rules),
       unread: Enum.filter(groups, &(&1.kind == :unread))
     }
+  end
+
+  # the commencement provision commences with the law, never with `rest`:
+  # where no rule dates it — the law's rule staged, or none for the whole
+  # law — on the clause's earliest date (SI 1993/1213, SI 2004/1495, SI
+  # 2012/3152 reg.1; the feed has SI 2012/3152's with "the remaining
+  # regulations": a yardstick difference)
+  defp clause_own(law_name, rules) do
+    whole? = Enum.any?(rules, &(&1.scope == :all and &1.treatment != :clause_staged))
+    named = rules |> Enum.flat_map(&List.wrap(if is_list(&1.scope), do: &1.scope)) |> MapSet.new()
+    dates = for %Rule{when: {:date, %Date{} = d}} <- rules, do: d
+
+    clauses =
+      for %Rule{scope: :rest, except: except, source: %{ref: ref}} <- rules,
+          not whole?,
+          dates != [],
+          is_binary(ref),
+          clause = provision(ref),
+          clause in except,
+          not MapSet.member?(named, clause),
+          uniq: true,
+          do: {clause, ref}
+
+    for {clause, ref} <- clauses,
+        do:
+          Rule.new(
+            commences: law_name,
+            scope: [clause],
+            when: {:date, Enum.min(dates, Date)},
+            source: source(law_name, ref, "the commencement provision, with the law"),
+            treatment: :provision_dated
+          )
   end
 
   @this ~r/^(?:\(\w+\)\s*)?This\s+(?:section|regulation|article|rule)\s+(?:shall\s+)?(?:comes?|came)\s+into\s+(?:force|operation)\s+(.+?)\.?$/i

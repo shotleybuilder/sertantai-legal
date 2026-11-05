@@ -632,6 +632,9 @@ The named missing-repeal rows and the named date gaps keep the old register's la
 | Amending laws' schedules not held | CLP-wide; HSWA s.28(9) | Missed insertions | `cv-s09-label-fold` bugs | 2026-10-30 |
 | Headings and signature blocks not folded | e.g. HSWA 1974 7 of 1,035 rows | Old periods only | `cv-05-consumers` | 2026-10-31 |
 | Application to cases (scope) not read | 61 laws | Not territory; handed to fractalaw | `application-scope-handoff` | Jason 2026-10-27 |
+| A laid-relative commencement ("on the 22nd day after the day on which these Regulations are laid": SI 2018/1221 reg.2) | Maritime Safety: 2 changes | Undated (`no_text_rules`) | `2026-11-05-maritime-safety-commencement-reader` Decision 1 (C) | Jason 2026-11-05 |
+| A tax Act's year of effect ("has effect in relation to tax for the year 1992-93 …": TCGA 1992 s.289(1)) | Maritime Safety: 17 changes | Dated by Royal Assent (1992-03-06) | same, Decision 1 (D) | Jason 2026-11-05 |
+| A legislation.gov.uk note pointer with note words in it ("s.26(5)(6)(subst.1982 c 36 s 39(2)") | Maritime Safety: 1 change | Falls to the law's by-order rule | same, Decision 1 (F) | Jason 2026-11-05 |
 
 ---
 
