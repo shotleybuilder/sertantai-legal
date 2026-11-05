@@ -308,4 +308,147 @@ defmodule SertantaiLegal.Scraper.Commencement.LeftoversTest do
       assert Leftovers.of(s, [rule(["s.190"], {:date, ~D[1998-07-01]}, s)], refs) == []
     end
   end
+
+  describe "the check's own errors (reader misses, 2026-11-05)" do
+    test "not commencement statements of the law's provisions" do
+      refs = own_refs(rows(~w[s.4 s.8 s.55 s.55(1) s.64 s.64(2) s.97]))
+
+      for s <- [
+            "But retained EU law is not deficient merely because it does not contain any modification of EU law which is adopted or notified, comes into force or only applies on or after IP completion day.",
+            "For the purposes of this Act, the Concession shall be taken to have come into operation or (as the case may be) to have expired or terminated on the relevant date specified in any notice published under this section in relation to the Concession.",
+            "References in subsections (1) to (5) to provision made by or under this Part are to be treated, where particular provision made by or under this Part comes into force on a particular day for a particular purpose, as references to so much of such provision as comes into force on that day for that purpose.",
+            "in the case where the enactment provides that the byelaws shall not come into force unless they have been confirmed or approved by some government department, byelaws made thereunder in relation to seaplanes shall not be confirmed or approved by that department.",
+            "An instrument made in pursuance of paragraph (a) of subsection (2) above shall not come into force until it is published in the prescribed manner."
+          ] do
+        assert Leftovers.of(s, [], refs) == [], s
+      end
+    end
+
+    test "table cells: completing words, a purpose after \"except\", other Acts' repeals (SI 1974/1439)" do
+      refs = &Order.refs_in/1
+      full = fn s, scope -> [rule(scope, {:date, ~D[1975-01-01]}, s)] end
+
+      partly = fn s, scope ->
+        [rule(scope, {:date, ~D[1975-01-01]}, s, purposes: :in_relation_to)]
+      end
+
+      s = "Section 32 (except so far as already in operation)."
+      assert Leftovers.of(s, full.(s, ["s.32"]), refs) == []
+      s = "Section 83(3) (except as already in operation)."
+      assert Leftovers.of(s, full.(s, ["s.83(3)"]), refs) == []
+      s = "Section 47 (except in relation to sections 2 to 8)."
+      assert Leftovers.of(s, partly.(s, ["s.47"]), refs) == []
+
+      # legislation.gov.uk's own text leaves the bracket open (SI 1964/191)
+      s = "Section 83(3) (so far as it relates to section 29(2), (4) and (5)"
+      assert Leftovers.of(s, partly.(s, ["s.83(3)"]), refs) == []
+
+      # an amendment whose only "comes into force" is in its quoted words
+      s =
+        "In section 183A (protection of prohibitions and restrictions etc on processing: relevant enactments), in subsection (4), for “the day on which section 106(2) of the Data (Use and Access) Act 2025 comes into force” substitute “20th August 2025”."
+
+      assert Leftovers.of(s, [], &Order.refs_in/1) == []
+
+      s = "In Section 65(1)(b), the words “section 48,”."
+      assert Leftovers.of(s, full.(s, ["s.65(1)(b)"]), refs) == []
+
+      s =
+        "Schedule 10, the following repeals:— The Employment Medical Advisory Service Act 1972- sections 1 and 6 and Schedule 1."
+
+      assert Leftovers.of(s, partly.(s, ["sch.10"]), refs) == []
+    end
+
+    test "a statement naming only provisions outside the law's held rows reaches none (2023 c.55 s.255(2)(d), a scoped LAT)" do
+      rows = rows(~w[s.255 s.255(2) s.255(2)(d) s.256])
+
+      s =
+        "section 58 comes into force at the end of the period of two months beginning with the day on which this Act is passed;"
+
+      read = %{
+        law: %SertantaiLegal.Scraper.LawStart{treatment: :act_enactment},
+        rules: [],
+        unread: []
+      }
+
+      assert [{_, _, []}] = Leftovers.for_law(rows, read, [{"UK_x:s.255(2)(d)", s}])
+    end
+
+    test "a mention, another Act's provision, a pointer, an application rule (1994 c.21, NISR 2012/286, NISR 2020/330, SI 2005/881)" do
+      refs = own_refs(rows(~w[reg.1 reg.1(3) reg.2 s.8 s.9]))
+
+      s =
+        "Nothing shall be vested in any person by virtue of subsection (3) above which would by virtue of section 9 below have been excluded, had the Order in Council come into force before the restructuring date, from the interests and rights."
+
+      assert Leftovers.of(s, [], refs) == []
+
+      s =
+        "Section 2(1)(d) of the Corporate Manslaughter and Corporate Homicide Act 2007 (duty owed to a person in custody to be a relevant duty of care) shall come into force on 3rd September 2012."
+
+      assert Leftovers.of(s, [], refs) == []
+
+      s =
+        "Except as provided for in paragraph (3), these Regulations come into operation on IP completion day."
+
+      held = [rule(:all, {:date, ~D[2020-12-31]}, s, treatment: :clause_named_day)]
+      assert Leftovers.of(s, held, refs) == []
+
+      s =
+        "These Regulations may be cited as the Merchant Shipping (Accident Reporting and Investigation) Regulations 2005 and shall come into force on 18th April 2005, save that the references to “civil partner” in the definition of “pleasure vessel” in paragraph (1) of regulation 2 shall not apply in relation to any time before section 1 of the Civil Partnership Act 2004 comes into force."
+
+      assert Leftovers.of(
+               s,
+               [rule(:all, {:date, ~D[2005-04-18]}, s, treatment: :clause_date)],
+               refs
+             ) == []
+    end
+
+    test "the Order appointing the day \"may provide\": the order's power, not a qualifier (1971 c.19 s.6(5))" do
+      s =
+        "This Act shall come into force on such day as Her Majesty may by Order in Council appoint, and, for the purposes of the transition from the law in force immediately before the day appointed under this subsection to the provisions of this Act, the Order appointing the day may provide that those provisions shall have effect subject to such transitional provisions as may be contained in the Order."
+
+      assert Leftovers.of(
+               s,
+               [rule(:all, {:appointed, "by order"}, s, treatment: :by_order)],
+               own_refs(rows(~w[s.6]))
+             ) == []
+    end
+
+    defp order_doc(body),
+      do:
+        SertantaiLegal.Scraper.AmendingLaw.Doc.new("UK_uksi_2005_442", [
+          ~s|<Legislation><Secondary><Body><P1 id="article-1"><P1para><Text>In this Order “<Term id="t">the Act</Term>” means the Clean Neighbourhoods and Environment Act 2005.</Text></P1para></P1>#{body}</Body></Secondary></Legislation>|
+        ])
+
+    defp left_by_unit(doc) do
+      act = %{
+        law: "UK_ukpga_2005_16",
+        title: "Clean Neighbourhoods and Environment Act",
+        year: "2005"
+      }
+
+      for %{unit: u, leftovers: [_ | _] = l} <- Leftovers.order_units(doc, Order.rules(doc, act)),
+          do: {u.id, Enum.map(l, & &1.words)}
+    end
+
+    test "an article and its first paragraph are one statement, counted once" do
+      doc =
+        order_doc(
+          ~s|<P1 id="article-2"><Pnumber>2</Pnumber><P1para><P2 id="article-2-1"><Pnumber>1</Pnumber><P2para><Text>The provisions of the Act specified in Schedule 1 shall come into force on 1st March 2005.</Text></P2para></P2><P2 id="article-2-2"><Pnumber>2</Pnumber><P2para><Text>The provisions of the Act specified in Schedule 2 shall come into force on 31st March 2005.</Text></P2para></P2></P1para></P1>|
+        )
+
+      assert doc |> left_by_unit() |> Enum.map(&elem(&1, 0)) |> Enum.sort() ==
+               ["article-2-1", "article-2-2"]
+    end
+
+    test "the order's own paragraphs and its own commencement are not the Act's" do
+      doc =
+        order_doc(
+          ~s|<P1 id="article-3"><Pnumber>3</Pnumber><P1para><P2 id="article-3-1"><Pnumber>1</Pnumber><P2para><Text>Section 5 of the Act shall come into force on 1st April 2005.</Text></P2para></P2><P2 id="article-3-2"><Pnumber>2</Pnumber><P2para><Text>Paragraphs (1) and (2) shall come into force on 1st October 2005.</Text></P2para></P2><P2 id="article-3-3"><Pnumber>3</Pnumber><P2para><Text>This paragraph, paragraph (1) and the transitional provisions in article 6 come into force on 18th February 2006.</Text></P2para></P2></P1para></P1>| <>
+            ~s|<P1 id="article-4"><Pnumber>4</Pnumber><P1para><P2 id="article-4-1"><Pnumber>1</Pnumber><P2para><Text>This Order—</Text><P3 id="article-4-1-a"><Pnumber>a</Pnumber><P3para><Text>may be cited as the Clean Neighbourhoods and Environment Act 2005 (Commencement No. 2) Order 2005, and</Text></P3para></P3><P3 id="article-4-1-b"><Pnumber>b</Pnumber><P3para><Text>comes into force on 12th January 2006.</Text></P3para></P3></P2para></P2></P1para></P1>| <>
+            ~s|<P1 id="article-5"><Pnumber>5</Pnumber><P1para><Text>The title of this Order is the Clean Neighbourhoods and Environment Act 2005 (Commencement No. 2) Order 2005 and it comes into force on 25 April 2005.</Text></P1para></P1>|
+        )
+
+      assert left_by_unit(doc) == []
+    end
+  end
 end

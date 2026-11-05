@@ -562,4 +562,55 @@ defmodule SertantaiLegal.Scraper.LawStartProvisionsTest do
              t == :provision_dated and d == ~D[2026-07-01] and "reg.2" in rows
            end)
   end
+
+  describe "dated exceptions (reader misses, 2026-11-05)" do
+    test "\"except that regulation 14(2) shall come into force on … and regulation 16(7) shall come into force on …\" (SI 1988/1655)" do
+      got =
+        assign([
+          {"reg.1",
+           "These Regulations may be cited as the Docks Regulations 1988 and shall come into force on 1st January 1989, except that regulation 14(2) shall come into force on 1st January 1993 and regulation 16(7) shall come into force on 1st September 1990."},
+          "reg.14",
+          "reg.14(2)",
+          "reg.16",
+          "reg.16(7)"
+        ])
+
+      assert {:provision_dated, ~D[1993-01-01], ["reg.14(2)"]} in got
+      assert {:provision_dated, ~D[1990-09-01], ["reg.16(7)"]} in got
+    end
+
+    test "\"with the exception of articles 18 and 23 which shall come into force on …\" (SI 2000/311)" do
+      got =
+        assign([
+          {"reg.1",
+           "This Order may be cited as the Competition Act 1998 (Transitional) Order 2000 and shall come into force on 1st March 2000 (“the starting date”) with the exception of articles 18 and 23 which shall come into force on 1st March 2005."},
+          "reg.18",
+          "reg.23"
+        ])
+
+      assert {:provision_dated, ~D[2005-03-01], ["reg.18", "reg.23"]} in got
+    end
+
+    test "\"The following provisions— section 8, section 317(6) …, shall come into force on such day as …\": the items before the verb (1996 c.56 s.583(3))" do
+      got =
+        assign(
+          [
+            {"s.583(3)",
+             "The following provisions— section 8, section 317(6), section 348 and section 582(1) so far as relating thereto, shall come into force on such day as the Secretary of State may by order appoint."},
+            "s.8",
+            "s.317",
+            "s.317(6)",
+            "s.348",
+            "s.582",
+            "s.582(1)"
+          ],
+          type: "ukpga",
+          made: ~D[1996-12-24]
+        )
+
+      assert Enum.any?(got, fn {t, _, rows} -> t == :provision_by_order and "s.348" in rows end)
+
+      assert Enum.any?(got, fn {t, _, rows} -> t == :provision_by_order and "s.317(6)" in rows end)
+    end
+  end
 end

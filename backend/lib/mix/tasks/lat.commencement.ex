@@ -250,13 +250,13 @@ defmodule Mix.Tasks.Lat.Commencement do
       for law <- amending_acts(), a = act(law), do: {law, Orders.for_act(law, a.title, a.year)}
 
     all = lists |> Enum.flat_map(&elem(&1, 1)) |> Enum.uniq()
-    missing = Enum.reject(all, &held?/1)
+    missing = Enum.reject(all, &order_held?/1)
     dir = "data/reports/commencement-rules"
     File.mkdir_p!(dir)
     File.write!(Path.join(dir, "orders_missing.txt"), Enum.join(missing, "\n") <> "\n")
 
     Mix.shell().info(
-      "#{length(lists)} Acts, #{length(all)} commencement orders, #{length(missing)} not held → #{dir}/orders_missing.txt (mix clml.fetch --laws …)"
+      "#{length(lists)} Acts, #{length(all)} commencement orders, #{length(missing)} not held → #{dir}/orders_missing.txt (mix clml.fetch --whole --laws …)"
     )
   end
 
@@ -386,6 +386,18 @@ defmodule Mix.Tasks.Lat.Commencement do
       [_, _, _, _] -> ClmlStore.law_files(law) != []
       _ -> false
     end
+  end
+
+  # an order is held with its body and its schedules — the table its
+  # article brings in ("specified in column 1 of the Schedule to this
+  # Order": SI 1976/731) — or a stored 404 where it has none (Decision 1,
+  # Jason 2026-11-05: 31 orders were held without their Schedule)
+  defp order_held?(law) do
+    held?(law) and
+      case String.split(law, "_", parts: 4) do
+        [_, t, y, n] -> ClmlStore.get("/#{t}/#{y}/#{n}/schedules/data.xml") != :none
+        _ -> false
+      end
   end
 
   defp doc(law) do

@@ -82,7 +82,7 @@ defmodule SertantaiLegal.Scraper.Commencement.FamilyLeftovers do
           Leftovers.sentences(rows, read) do
       shape = Leftovers.shape(pattern, left)
 
-      Leftovers.item(source, law, row, shape, left, reach, Leftovers.status(shape, reviewed))
+      Leftovers.item(source, law, row, shape, left, reach, Leftovers.status(shape, reviewed, row))
     end
   end
 
@@ -91,10 +91,16 @@ defmodule SertantaiLegal.Scraper.Commencement.FamilyLeftovers do
     act = %{law: law, title: title(law), year: law |> String.split("_") |> Enum.at(2)}
     reach = length(lat_rows(law))
 
+    # (an order legislation.gov.uk lists for the law but which commences
+    # another Act is read for that one: SI 1995/965, the 1970 Act's, listed
+    # for the 1995 Act)
     for order <- order_names(law),
+        # (a law is never its own order: NISR 2012/286)
+        order != law,
         xmls = ClmlStore.law_docs(order),
         xmls != [],
         doc = Doc.new(order, xmls),
+        Order.commences?(doc, act),
         %{unit: unit, pattern: pattern, leftovers: [_ | _] = left} <-
           Leftovers.order_units(doc, Order.rules(doc, act)) do
       shape = Leftovers.shape(pattern, left)
@@ -106,7 +112,7 @@ defmodule SertantaiLegal.Scraper.Commencement.FamilyLeftovers do
         shape,
         left,
         reach,
-        Leftovers.status(shape, reviewed)
+        Leftovers.status(shape, reviewed, "#{order}:#{unit.id}")
       )
     end
   end

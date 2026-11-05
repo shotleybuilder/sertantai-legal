@@ -42,4 +42,16 @@ defmodule SertantaiLegal.Scraper.Commencement.FamilyLeftoversTest do
     assert Enum.map(gate.failing, & &1.status) == ["check: open", nil, "fix: reads nothing"]
     assert gate.counts == %{known: 1, fix: 1, check: 1, unreviewed: 1}
   end
+
+  test "a statement named apart from its group: its own status first (a laid-relative day in a group with real misses)" do
+    reviewed = %{
+      "shape" => "fix: half-read",
+      "shape @ UK_uksi_2018_1221:reg.2" => "known: laid-relative (C)"
+    }
+
+    assert Leftovers.status("shape", reviewed, "UK_uksi_2018_1221:reg.2") ==
+             "known: laid-relative (C)"
+
+    assert Leftovers.status("shape", reviewed, "UK_uksi_2019_145:reg.1(2)") == "fix: half-read"
+  end
 end

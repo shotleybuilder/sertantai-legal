@@ -46,6 +46,12 @@
       "class": "none",
       "rules": []
     },
+    "UK_nisr_2012_286/e1ab42039e": {
+      "class": "rules+partial",
+      "rules": [
+        "s.2(1)(d) — 2012-09-03 — NI, fully — order_date"
+      ]
+    },
     "UK_nisr_2012_307/35bb52e738": {
       "class": "rules+partial",
       "rules": [
@@ -65,15 +71,15 @@
         "sch.11.pt.4 — 2020-04-02 — NI, fully — order_date"
       ]
     },
-    "UK_nisr_2022_54/1697095dea": {
+    "UK_nisr_2022_54/7d6686e47f": {
+      "class": "none",
+      "rules": []
+    },
+    "UK_nisr_2022_54/88d64403a0": {
       "class": "rules+partial",
       "rules": [
         "s.48, sch.2 — 2022-07-25 — NI, in relation to — order_date"
       ]
-    },
-    "UK_nisr_2022_54/7d6686e47f": {
-      "class": "none",
-      "rules": []
     },
     "UK_ssi_1999_133/1efd484f54": {
       "class": "rules+partial",
@@ -132,7 +138,7 @@
         "s.92, s.93, s.94(4) — 2006-05-11 — S, fully — order_date"
       ]
     },
-    "UK_ssi_2006_243/b7a4307c00": {
+    "UK_ssi_2006_243/89037c1630": {
       "class": "none",
       "rules": []
     },
@@ -159,6 +165,10 @@
       "class": "none",
       "rules": []
     },
+    "UK_ssi_2007_10/2b362b4c3d": {
+      "class": "none",
+      "rules": []
+    },
     "UK_ssi_2007_10/3f3b870a78": {
       "class": "rules+partial",
       "rules": [
@@ -172,11 +182,7 @@
         "sch.14.pt.3 — 2007-01-29 — S, fully — order_date"
       ]
     },
-    "UK_ssi_2007_10/41a15c4d0d": {
-      "class": "none",
-      "rules": []
-    },
-    "UK_ssi_2007_10/41caad367e": {
+    "UK_ssi_2007_10/faa62d0b36": {
       "class": "none",
       "rules": []
     },
@@ -201,7 +207,7 @@
       "class": "none",
       "rules": []
     },
-    "UK_ssi_2011_122/46b6707b98": {
+    "UK_ssi_2011_122/bda76fa2f8": {
       "class": "none",
       "rules": []
     },
@@ -213,7 +219,7 @@
       "class": "none",
       "rules": []
     },
-    "UK_ssi_2012_191/c51ba95cff": {
+    "UK_ssi_2012_191/04b5b04933": {
       "class": "none",
       "rules": []
     },
@@ -225,11 +231,11 @@
       "class": "none",
       "rules": []
     },
-    "UK_ssi_2012_253/a1b77c609a": {
+    "UK_ssi_2012_253/62cfb6b5f7": {
       "class": "none",
       "rules": []
     },
-    "UK_ssi_2012_253/f252da555f": {
+    "UK_ssi_2012_253/a1b77c609a": {
       "class": "none",
       "rules": []
     },
@@ -247,7 +253,7 @@
         "s.34..s.37 — 2013-12-21 — S, fully — order_date"
       ]
     },
-    "UK_ssi_2013_51/37a7760d14": {
+    "UK_ssi_2013_51/797475480f": {
       "class": "none",
       "rules": []
     },
@@ -255,7 +261,7 @@
       "class": "none",
       "rules": []
     },
-    "UK_ssi_2015_139/5402a87cc9": {
+    "UK_ssi_2015_139/8b37540e19": {
       "class": "none",
       "rules": []
     },
@@ -272,7 +278,7 @@
         "s.38 — 2015-02-16 — S, fully — order_date"
       ]
     },
-    "UK_ssi_2015_73/9d5cf97b80": {
+    "UK_ssi_2015_73/747a3629c4": {
       "class": "rules+partial",
       "rules": [
         "s.120(1), sch.22 — 2015-04-01 — S, in relation to — order_date",
@@ -315,8 +321,12 @@
       "rules": []
     },
     "UK_uksi_1964_1045/12820db005": {
-      "class": "none",
-      "rules": []
+      "class": "rules+partial",
+      "rules": [
+        "s.24(1)..s.24(3), s.24(7), s.24(9), s.25, s.26 — 1964-12-01 — everywhere, fully — order_date",
+        "s.83(1) — 1964-12-01 — everywhere, in relation to — order_date",
+        "s.83(2) — 1964-12-01 — everywhere, fully — order_date"
+      ]
     },
     "UK_uksi_1964_191/06c8893938": {
       "class": "rules",
@@ -362,6 +372,36 @@
       "class": "rules+partial",
       "rules": [
         "s.18, sch.6 — 1972-08-15 — everywhere, in relation to — order_date"
+      ]
+    },
+    "UK_uksi_1972_1763/15f8f6457e": {
+      "class": "rules",
+      "rules": [
+        "s.52 — 1973-01-01 — everywhere, fully — order_schedule"
+      ]
+    },
+    "UK_uksi_1972_1763/2437830f5c": {
+      "class": "rules",
+      "rules": [
+        "s.1..s.5 — 1973-01-01 — everywhere, fully — order_schedule"
+      ]
+    },
+    "UK_uksi_1972_1763/3047bddf0a": {
+      "class": "rules",
+      "rules": [
+        "s.26(1) — 1973-01-01 — everywhere, fully — order_schedule"
+      ]
+    },
+    "UK_uksi_1972_1763/6e68c5ee39": {
+      "class": "rules",
+      "rules": [
+        "s.46 — 1973-01-01 — everywhere, fully — order_schedule"
+      ]
+    },
+    "UK_uksi_1972_1763/71428ad9e1": {
+      "class": "rules+partial",
+      "rules": [
+        "s.29 — 1973-01-01 — NI, fully — order_schedule"
       ]
     },
     "UK_uksi_1972_1763/8952cb30fa": {
@@ -471,6 +511,12 @@
       "class": "none",
       "rules": []
     },
+    "UK_uksi_1974_1439/3361a11cee": {
+      "class": "rules",
+      "rules": [
+        "s.29 — 1974-10-01 — everywhere, fully — order_schedule"
+      ]
+    },
     "UK_uksi_1974_1439/66bc26b4ae": {
       "class": "none",
       "rules": []
@@ -479,13 +525,6 @@
       "class": "rules",
       "rules": [
         "s.1 — 1974-10-01 — everywhere, fully — order_schedule"
-      ]
-    },
-    "UK_uksi_1974_1439/8c4930d560": {
-      "class": "rules",
-      "rules": [
-        "s.10(2)..s.10(4) — 1974-10-01 — everywhere, fully — order_schedule",
-        "s.10(6) — 1974-10-01 — everywhere, fully — order_schedule"
       ]
     },
     "UK_uksi_1974_1439/b3e3d23428": {
@@ -539,6 +578,24 @@
         "s.34 — 1976-04-01 — everywhere, fully — order_date"
       ]
     },
+    "UK_uksi_1976_731/0d8fc9c047": {
+      "class": "rules+partial",
+      "rules": [
+        "pt.1, sch.4.para.14(1)(c) — 1976-06-14 — everywhere, in relation to — order_schedule"
+      ]
+    },
+    "UK_uksi_1976_731/5cc212595e": {
+      "class": "none",
+      "rules": []
+    },
+    "UK_uksi_1977_1365/a0cee92980": {
+      "class": "none",
+      "rules": []
+    },
+    "UK_uksi_1977_1365/aa58cbf659": {
+      "class": "none",
+      "rules": []
+    },
     "UK_uksi_1977_1365/b819d5e2f0": {
       "class": "none",
       "rules": []
@@ -547,7 +604,31 @@
       "class": "none",
       "rules": []
     },
+    "UK_uksi_1977_1426/f59c16dd65": {
+      "class": "none",
+      "rules": []
+    },
     "UK_uksi_1977_1682/77239507ee": {
+      "class": "none",
+      "rules": []
+    },
+    "UK_uksi_1977_336/50ec22c424": {
+      "class": "rules+partial",
+      "rules": [
+        "s.14(9)(10) — 1977-04-01 — E+W, fully — order_schedule"
+      ]
+    },
+    "UK_uksi_1977_336/5cc212595e": {
+      "class": "none",
+      "rules": []
+    },
+    "UK_uksi_1977_336/994ba7f634": {
+      "class": "rules+partial",
+      "rules": [
+        "sch.11.pt.I — 1977-04-01 — everywhere, in relation to — order_schedule"
+      ]
+    },
+    "UK_uksi_1977_336/c119c4881f": {
       "class": "none",
       "rules": []
     },
@@ -555,7 +636,7 @@
       "class": "none",
       "rules": []
     },
-    "UK_uksi_1978_712/c995242127": {
+    "UK_uksi_1978_712/f0ade8fd87": {
       "class": "rules",
       "rules": [
         "s.62 — 1978-06-19 — everywhere, fully — order_date"
@@ -575,6 +656,22 @@
       "class": "rules",
       "rules": [
         "s.29, s.30, s.31 — 1982-09-06 — everywhere, fully — order_date"
+      ]
+    },
+    "UK_uksi_1982_243/35b14563c8": {
+      "class": "none",
+      "rules": []
+    },
+    "UK_uksi_1982_243/5b9f216d67": {
+      "class": "rules+partial",
+      "rules": [
+        "sch.9, sch.9.para.3(3) — 1982-03-29 — everywhere, in relation to — order_schedule"
+      ]
+    },
+    "UK_uksi_1982_243/d91087e52d": {
+      "class": "rules+partial",
+      "rules": [
+        "sch.13 — 1982-03-29 — everywhere, in relation to — order_schedule"
       ]
     },
     "UK_uksi_1982_990/ec5e904625": {
@@ -601,23 +698,17 @@
         "s.32, s.41 — 1983-02-28 — everywhere, fully — order_date"
       ]
     },
+    "UK_uksi_1984_853/80dc29776a": {
+      "class": "none",
+      "rules": []
+    },
     "UK_uksi_1985_579/e1ff154e7a": {
       "class": "rules",
       "rules": [
         "s.48 — 1985-05-20 — everywhere, fully — order_date"
       ]
     },
-    "UK_uksi_1985_70/f7fccf4fee": {
-      "class": "rules+partial",
-      "rules": [
-        "s.50, s.94(2)(a)(ii) — 1985-01-31 — E+W, fully — order_date"
-      ]
-    },
-    "UK_uksi_1987_1680/86071ffa07": {
-      "class": "none",
-      "rules": []
-    },
-    "UK_uksi_1987_1680/db5c3b05ec": {
+    "UK_uksi_1987_1680/e3ff657295": {
       "class": "none",
       "rules": []
     },
@@ -747,15 +838,15 @@
         "sch.23.para.4 — 1991-05-31 — S, in relation to — order_date"
       ]
     },
-    "UK_uksi_1991_2067/b0519a11eb": {
-      "class": "none",
-      "rules": []
-    },
     "UK_uksi_1991_2272/093223aab0": {
       "class": "rules",
       "rules": [
         "s.83 — 1991-10-25 — everywhere, fully — order_date"
       ]
+    },
+    "UK_uksi_1991_2286/0f6c75a817": {
+      "class": "none",
+      "rules": []
     },
     "UK_uksi_1991_2286/5e2f3b3eaa": {
       "class": "rules+partial",
@@ -763,20 +854,10 @@
         "s.47 — 1991-10-21 — S, fully — order_schedule"
       ]
     },
-    "UK_uksi_1991_2286/61db4fffb3": {
+    "UK_uksi_1991_2633/9f06a1488a": {
       "class": "rules+partial",
       "rules": [
-        "s.27 — 1991-10-21 — S, fully — order_schedule"
-      ]
-    },
-    "UK_uksi_1991_2286/cb81ccfd2b": {
-      "class": "none",
-      "rules": []
-    },
-    "UK_uksi_1991_2286/ecbfd01a80": {
-      "class": "rules+partial",
-      "rules": [
-        "s.28 — 1991-10-21 — S, fully — order_schedule"
+        "sch.10.para.2 — 1991-11-27 — everywhere, in relation to — order_schedule"
       ]
     },
     "UK_uksi_1991_2905/2baa996ab7": {
@@ -784,28 +865,6 @@
       "rules": [
         "s.69, s.69(1), s.69(3) — 1992-01-02 — everywhere, fully — order_schedule"
       ]
-    },
-    "UK_uksi_1991_2905/3a7cdee96f": {
-      "class": "rules",
-      "rules": [
-        "sch.7.para.2, sch.7.para.4 — 1992-01-02 — everywhere, fully — order_schedule"
-      ]
-    },
-    "UK_uksi_1991_2905/4e26164c85": {
-      "class": "rules",
-      "rules": [
-        "s.285 — 1992-01-02 — everywhere, fully — order_schedule"
-      ]
-    },
-    "UK_uksi_1991_2905/93f6858c5a": {
-      "class": "rules",
-      "rules": [
-        "sch.19.para.1990, sch.19.para.8 — 1992-01-02 — everywhere, fully — order_schedule"
-      ]
-    },
-    "UK_uksi_1991_2905/95f05dc66a": {
-      "class": "none",
-      "rules": []
     },
     "UK_uksi_1991_685/0e6a20c8a5": {
       "class": "rules+partial",
@@ -878,12 +937,6 @@
         "sch.4.pt.I — 1993-01-01 — everywhere, fully — order_date"
       ]
     },
-    "UK_uksi_1992_2984/22517ca027": {
-      "class": "rules",
-      "rules": [
-        "s.78 — 1993-01-01 — everywhere, fully — order_schedule"
-      ]
-    },
     "UK_uksi_1992_2984/35e0773f80": {
       "class": "rules+partial",
       "rules": [
@@ -904,12 +957,6 @@
       "class": "rules+partial",
       "rules": [
         "s.55 — 1992-11-28 — everywhere, for making secondary legislation — order_schedule"
-      ]
-    },
-    "UK_uksi_1992_2990/36164ac8ea": {
-      "class": "rules+partial",
-      "rules": [
-        "s.112, s.112(1) — 1992-11-30 — S, fully — order_schedule"
       ]
     },
     "UK_uksi_1992_2990/7ad281e93d": {
@@ -934,7 +981,13 @@
       "class": "none",
       "rules": []
     },
-    "UK_uksi_1993_1461/3883731075": {
+    "UK_uksi_1992_421/8ef1d660c7": {
+      "class": "rules",
+      "rules": [
+        "sch.8 — 1992-04-01 — everywhere, fully — order_schedule"
+      ]
+    },
+    "UK_uksi_1993_1461/a3db412c22": {
       "class": "rules",
       "rules": [
         "s.67 — 1993-07-05 — everywhere, fully — order_date"
@@ -984,11 +1037,21 @@
       ]
     },
     "UK_uksi_1994_1096/0d4e92754b": {
-      "class": "rules",
+      "class": "rules+partial",
       "rules": [
         "pt.I — 1994-05-01 — everywhere, fully — order_date",
         "pt.I — 1994-05-01 — everywhere, fully — order_date",
-        "s.33(1)(a), s.33(1)(b) — 1994-05-01 — everywhere, fully — order_date"
+        "s.162(1) — 1994-05-01 — everywhere, in relation to — order_date",
+        "s.162(2) — 1994-05-01 — everywhere, in relation to — order_date",
+        "s.33 — 1994-05-01 — everywhere, in relation to — order_date",
+        "s.33(1)(a), s.33(1)(b) — 1994-05-01 — everywhere, fully — order_date",
+        "s.35..s.40 — 1994-05-01 — everywhere, in relation to — order_date",
+        "s.42 — 1994-05-01 — everywhere, in relation to — order_date",
+        "s.43 — 1994-05-01 — everywhere, in relation to — order_date",
+        "s.44 — 1994-05-01 — everywhere, in relation to — order_date",
+        "s.57 — 1994-05-01 — everywhere, in relation to — order_date",
+        "sch.15.para.26 — 1994-05-01 — everywhere, in relation to — order_date",
+        "sch.16.pt.II — 1994-05-01 — everywhere, in relation to — order_date"
       ]
     },
     "UK_uksi_1994_1096/389dd8fb5c": {
@@ -1023,23 +1086,10 @@
         "s.41 — 1994-03-16 — everywhere, fully — order_date"
       ]
     },
-    "UK_uksi_1995_2490/8e7c1ee707": {
-      "class": "rules+partial",
-      "rules": [
-        "s.1(3) — 1995-10-01 — everywhere, in relation to — order_schedule",
-        "sch.2.para.13 — 1995-10-01 — everywhere, fully — order_schedule"
-      ]
-    },
-    "UK_uksi_1995_2490/cddfaa35c9": {
+    "UK_uksi_1995_2490/db8c82b2f1": {
       "class": "rules",
       "rules": [
         "pt.I — 1995-10-01 — everywhere, fully — order_date"
-      ]
-    },
-    "UK_uksi_1995_3198/581de7d9a0": {
-      "class": "rules+partial",
-      "rules": [
-        "s.20(1) — 1996-04-01 — W, fully — order_schedule"
       ]
     },
     "UK_uksi_1995_3198/95b0780403": {
@@ -1048,14 +1098,7 @@
         "pt.I — 1996-04-01 — everywhere, fully — order_date"
       ]
     },
-    "UK_uksi_1995_852/586fa005d8": {
-      "class": "rules+partial",
-      "rules": [
-        "s.66(6) — 1995-04-03 — everywhere, in relation to — order_schedule",
-        "sch.16.para.57(1)..sch.16.para.57(5), sch.16.para.82(1)..sch.16.para.82(4), sch.16.para.82(5), sch.16.para.84, sch.16.para.85, sch.16.para.86, sch.16.para.88, sch.16.para.96, sch.16.para.97, sch.16.para.106 — 1995-04-03 — everywhere, fully — order_schedule"
-      ]
-    },
-    "UK_uksi_1995_852/b9ca37405a": {
+    "UK_uksi_1995_852/d15f510401": {
       "class": "rules",
       "rules": [
         "pt.I — 1995-04-03 — everywhere, fully — order_date"
@@ -1065,11 +1108,11 @@
       "class": "none",
       "rules": []
     },
-    "UK_uksi_1996_1943/304c3fd935": {
+    "UK_uksi_1995_965/c632a6d3a3": {
       "class": "none",
       "rules": []
     },
-    "UK_uksi_1996_2560/253e3f2625": {
+    "UK_uksi_1996_1943/304c3fd935": {
       "class": "none",
       "rules": []
     },
@@ -1162,10 +1205,6 @@
         "all — 1998-07-01 — everywhere, fully — order_date"
       ]
     },
-    "UK_uksi_1998_1658/8b16605f7d": {
-      "class": "none",
-      "rules": []
-    },
     "UK_uksi_1998_2532/40075f2bb0": {
       "class": "rules",
       "rules": [
@@ -1193,12 +1232,6 @@
         "s.60 — 1998-07-01 — everywhere, fully — order_date"
       ]
     },
-    "UK_uksi_1998_604/c1df6dea92": {
-      "class": "rules+partial",
-      "rules": [
-        "s.120(1) — 1998-04-01 — everywhere, in relation to — order_date"
-      ]
-    },
     "UK_uksi_1998_967/55fa49029d": {
       "class": "none",
       "rules": []
@@ -1217,7 +1250,7 @@
       "class": "none",
       "rules": []
     },
-    "UK_uksi_1999_161/ca8abeb0ed": {
+    "UK_uksi_1999_161/9bf2aff027": {
       "class": "rules+all",
       "rules": [
         "all — 1999-02-15 — everywhere, fully — order_date"
@@ -1250,13 +1283,19 @@
       "class": "none",
       "rules": []
     },
+    "UK_uksi_2000_1648/8dba30ea8f": {
+      "class": "rules",
+      "rules": [
+        "sch.27.para.11 — 2000-07-03 — everywhere, fully — order_schedule"
+      ]
+    },
     "UK_uksi_2000_1986/107ba46b99": {
       "class": "rules+partial",
       "rules": [
         "s.57 — 2000-07-14 — S, fully — order_date"
       ]
     },
-    "UK_uksi_2000_2543/82bd0f1258": {
+    "UK_uksi_2000_2543/c3bddd4b91": {
       "class": "rules",
       "rules": [
         "sch.4.para.3 — 2000-10-02 — everywhere, fully — order_date"
@@ -1274,17 +1313,13 @@
       "class": "none",
       "rules": []
     },
-    "UK_uksi_2000_2974/546345eca3": {
-      "class": "none",
-      "rules": []
-    },
     "UK_uksi_2000_2974/ba2830dfae": {
       "class": "rules+partial",
       "rules": [
         "s.20(5), s.20(6) — 2000-11-07 — everywhere, in relation to — order_schedule"
       ]
     },
-    "UK_uksi_2000_2974/f03b52f0df": {
+    "UK_uksi_2000_2974/f1eaa2cdb1": {
       "class": "none",
       "rules": []
     },
@@ -1298,7 +1333,7 @@
       "class": "none",
       "rules": []
     },
-    "UK_uksi_2000_2994/ab907165d7": {
+    "UK_uksi_2000_2994/e16bdf22b5": {
       "class": "none",
       "rules": []
     },
@@ -1317,10 +1352,6 @@
       "rules": []
     },
     "UK_uksi_2000_801/5594fcf35c": {
-      "class": "none",
-      "rules": []
-    },
-    "UK_uksi_2000_801/911acd5be5": {
       "class": "none",
       "rules": []
     },
@@ -1411,7 +1442,7 @@
         "sch.7 — 2004-04-01 — everywhere, fully — order_schedule"
       ]
     },
-    "UK_uksi_2004_759/0a6e8eb928": {
+    "UK_uksi_2004_759/409029688c": {
       "class": "rules",
       "rules": [
         "s.48, s.49, s.50(1), s.50(5), s.51(1)..s.51(3), s.51(5), s.51(6), s.52(1)..s.52(4), s.52(6), s.52(7), s.53..s.57, s.60, s.61, s.64..s.68, s.103, s.106, s.124, s.126, s.128, s.130, s.132, s.134, s.136..s.138 — 2004-04-01 — everywhere, fully — order_date"
@@ -1423,6 +1454,12 @@
         "s.96 — 2005-07-01 — everywhere, in relation to — order_date"
       ]
     },
+    "UK_uksi_2005_1521/c16f624058": {
+      "class": "rules",
+      "rules": [
+        "s.132..s.137 — 2005-08-01 — everywhere, fully — order_date"
+      ]
+    },
     "UK_uksi_2005_1521/f060799f5f": {
       "class": "rules",
       "rules": [
@@ -1431,19 +1468,13 @@
         "s.166(2) — 2005-07-01 — everywhere, fully — order_date"
       ]
     },
-    "UK_uksi_2005_1521/fe37360fe1": {
-      "class": "rules",
-      "rules": [
-        "s.132..s.137 — 2005-08-01 — everywhere, fully — order_date"
-      ]
-    },
     "UK_uksi_2005_2081/e1ba031bda": {
       "class": "rules+partial",
       "rules": [
         "s.116 — 2005-08-24 — everywhere, in relation to — order_date"
       ]
     },
-    "UK_uksi_2005_2965/14aa0cbe0d": {
+    "UK_uksi_2005_2965/44b0898fd2": {
       "class": "rules+partial",
       "rules": [
         "s.179 — 2006-04-01 — everywhere, in relation to — order_date"
@@ -1453,7 +1484,7 @@
       "class": "none",
       "rules": []
     },
-    "UK_uksi_2006_1013/6928c6a6ba": {
+    "UK_uksi_2006_1013/b502033f47": {
       "class": "none",
       "rules": []
     },
@@ -1461,7 +1492,7 @@
       "class": "none",
       "rules": []
     },
-    "UK_uksi_2006_1361/c04c902af4": {
+    "UK_uksi_2006_1361/106f955800": {
       "class": "rules+partial",
       "rules": [
         "s.104, sch.5.pt.10 — 2006-08-04 — E, fully — order_date"
@@ -1482,7 +1513,7 @@
         "sch.10 — 2007-01-29 — everywhere, fully — order_date"
       ]
     },
-    "UK_uksi_2007_2053/7058ec08cd": {
+    "UK_uksi_2007_2053/4a6ec3df87": {
       "class": "none",
       "rules": []
     },
@@ -1524,13 +1555,13 @@
       "class": "none",
       "rules": []
     },
-    "UK_uksi_2008_401/11c5d6dff5": {
+    "UK_uksi_2008_401/2de25f66ff": {
       "class": "rules+all",
       "rules": [
         "all except s.2(1)(d), s.10 — 2008-04-06 — everywhere, fully — order_date"
       ]
     },
-    "UK_uksi_2009_2273/082f802ccd": {
+    "UK_uksi_2009_2273/949ac71f61": {
       "class": "none",
       "rules": []
     },
@@ -1553,16 +1584,24 @@
         "sch.26.para.10(1), sch.26.para.10(2), sch.26.para.10(3), sch.26.para.10(5) — 2010-07-06 — everywhere, fully — order_date"
       ]
     },
-    "UK_uksi_2010_1966/2b66a3c69c": {
-      "class": "none",
-      "rules": []
-    },
     "UK_uksi_2010_1966/4fd5365854": {
       "class": "rules+partial",
       "rules": [
         "sch.26.para.10(1), sch.26.para.10(2), sch.26.para.10(3), sch.26.para.10(5) — 2010-08-04 — everywhere, fully — order_date",
         "sch.26.para.6 — 2010-08-04 — everywhere, fully — order_date",
         "sch.26.para.6 — 2010-08-04 — everywhere, in relation to — order_date"
+      ]
+    },
+    "UK_uksi_2010_1966/9dfafa997e": {
+      "class": "rules+partial",
+      "rules": [
+        "s.116(3) — 2010-08-04 — everywhere, for making secondary legislation — order_date",
+        "s.189 — 2010-08-04 — everywhere, for making secondary legislation — order_date",
+        "s.38(8) — 2010-08-04 — everywhere, for making secondary legislation — order_date",
+        "s.6(6) — 2010-08-04 — everywhere, for making secondary legislation — order_date",
+        "s.80(8) — 2010-08-04 — everywhere, for making secondary legislation — order_date",
+        "s.83(11) — 2010-08-04 — everywhere, for making secondary legislation — order_date",
+        "s.94(12) — 2010-08-04 — everywhere, for making secondary legislation — order_date"
       ]
     },
     "UK_uksi_2010_2169/6afc4c2fdb": {
@@ -1698,7 +1737,7 @@
         "s.86 — 2012-04-06 — everywhere, fully — order_date"
       ]
     },
-    "UK_uksi_2012_57/5d4038f347": {
+    "UK_uksi_2012_57/fb010b2837": {
       "class": "none",
       "rules": []
     },
@@ -1849,9 +1888,13 @@
         "sch.2, pt.3 — 2016-10-01 — everywhere, fully — order_date"
       ]
     },
-    "UK_uksi_2017_273/932d634d51": {
-      "class": "none",
-      "rules": []
+    "UK_uksi_2017_273/934fa9d80e": {
+      "class": "rules",
+      "rules": [
+        "s.73 — 2017-03-10 — everywhere, fully — order_date",
+        "s.74 — 2017-03-10 — everywhere, fully — order_date",
+        "s.75 — 2017-03-10 — everywhere, fully — order_date"
+      ]
     },
     "UK_uksi_2017_942/8e5d999cf8": {
       "class": "rules",
@@ -1915,7 +1958,7 @@
       "class": "none",
       "rules": []
     },
-    "UK_uksi_2024_1226/2b9b5cc383": {
+    "UK_uksi_2024_1226/19f316453e": {
       "class": "none",
       "rules": []
     },
@@ -2018,15 +2061,7 @@
         "s.99 — 2025-12-19 — everywhere, fully — order_date"
       ]
     },
-    "UK_uksi_2025_272/ea5952cbde": {
-      "class": "none",
-      "rules": []
-    },
-    "UK_uksi_2026_169/e91f7ed55c": {
-      "class": "none",
-      "rules": []
-    },
-    "UK_uksi_2026_3/c7b631ba05": {
+    "UK_uksi_2026_169/7254ec15bb": {
       "class": "none",
       "rules": []
     },
@@ -2036,6 +2071,10 @@
         "s.104 — 2026-06-17 — everywhere, fully — order_date",
         "s.57 — 2026-06-17 — everywhere, fully — order_date"
       ]
+    },
+    "UK_uksi_2026_641/818dfaf799": {
+      "class": "none",
+      "rules": []
     },
     "UK_uksi_2026_690/37b5177c20": {
       "class": "none",
@@ -2079,7 +2118,6 @@
     "appointed_is|date|-|-|-|none": "pending: a column table's purposes or provisions",
     "appointed_is|date|-|-|-|rules": "accepted",
     "appointed_is|date|-|-|-|rules+partial": "accepted",
-    "appointed_is|date|-|-|other_law|none": "accepted",
     "appointed_is|date|-|-|other_law|rules": "accepted",
     "appointed_is|date|-|-|other_law|rules+partial": "accepted",
     "appointed_is|date|-|full|-|none": "pending: \"the day appointed for the coming into force of … is …\" not read",
@@ -2103,10 +2141,8 @@
     "following|date|-|full|-|none": "pending: a form the order reader doesn't read yet",
     "following|date|-|full|-|rules": "accepted",
     "following|date|-|full|-|rules+partial": "accepted",
-    "following|date|qualified|-|-|none": "pending: a form the order reader doesn't read yet",
     "following|date|qualified|-|-|rules": "accepted",
     "following|date|qualified|-|-|rules+partial": "accepted",
-    "following|date|qualified|-|other_law|rules": "accepted",
     "following|date|qualified|-|other_law|rules+partial": "accepted",
     "following|date|qualified|full|-|none": "pending: a form the order reader doesn't read yet",
     "following|date|qualified|full|-|rules": "accepted",
@@ -2162,6 +2198,7 @@
     "inline|made_relative|qualified|-|-|none": "pending: a form the order reader doesn't read yet",
     "inline|made_relative|qualified|-|-|rules+partial": "accepted",
     "inline|made_relative|qualified|-|other_law|none": "accepted",
+    "inline|made_relative|qualified|-|other_law|rules+partial": "accepted",
     "inline|made_relative|qualified|full|-|none": "pending: a form the order reader doesn't read yet",
     "inline|made_relative|qualified|full|-|rules+partial": "accepted",
     "inline|none|-|-|-|none": "pending: a column table's purposes or provisions",
@@ -2189,6 +2226,7 @@
     "schedule_intro|none|-|-|other_law|none": "accepted",
     "table_header|none|-|-|-|none": "accepted",
     "table|date|-|-|-|none": "pending: a table row not read (its Schedule unnamed, or a qualifier or form not read)",
+    "table|date|-|-|-|rules": "accepted",
     "table|date|qualified|-|-|rules+partial": "accepted",
     "table|date|qualified|-|other_law|none": "accepted",
     "table|date|qualified|-|other_law|rules+partial": "accepted",

@@ -27,34 +27,6 @@
     "laws": 1,
     "reach": 3028
   },
-  "statement|except_as|whole|present|by_order|plain|law:by_order | left: exception": {
-    "count": 3,
-    "examples": [
-      {
-        "law": "UK_asc_2023_4",
-        "row": "UK_asc_2023_4:s.56(4)",
-        "words": [
-          "s.56(1)"
-        ]
-      },
-      {
-        "law": "UK_asc_2026_4",
-        "row": "UK_asc_2026_4:s.46(4)",
-        "words": [
-          "s.46(1)"
-        ]
-      },
-      {
-        "law": "UK_uksi_2010_231",
-        "row": "UK_uksi_2010_231:reg.1(5)",
-        "words": [
-          "reg.1(2)"
-        ]
-      }
-    ],
-    "laws": 3,
-    "reach": 64
-  },
   "statement|except_as|whole|present|date|plain|law:clause_date | left: exception": {
     "count": 1,
     "examples": [
@@ -82,20 +54,6 @@
     ],
     "laws": 1,
     "reach": 1
-  },
-  "statement|except_as|whole|present|named_day|plain|law:clause_named_day | left: exception": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_nisr_2020_330",
-        "row": "UK_nisr_2020_330:reg.1(2)",
-        "words": [
-          "reg.1(3)"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 72
   },
   "statement|except_as|whole|shall|by_order|plain|law:by_order | left: exception": {
     "count": 1,
@@ -140,19 +98,13 @@
     "laws": 1,
     "reach": 2
   },
-  "statement|none|following|not_until|by_order|plain|unread | left: provision": {
+  "statement|none|following|not_until|by_order|plain|rules:provision_by_order | left: provision": {
     "count": 1,
     "examples": [
       {
         "law": "UK_ukpga_1994_20",
         "row": "UK_ukpga_1994_20:s.9(3)",
         "words": [
-          "s.2",
-          "s.3",
-          "s.4",
-          "s.5",
-          "s.9",
-          "s.9(2)",
           "s.1"
         ]
       }
@@ -453,84 +405,6 @@
     "laws": 1,
     "reach": 3
   },
-  "statement|none|following|shall|by_order|qualified|none | left: exception+provision+qualifier": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_ukpga_1986_44",
-        "row": "UK_ukpga_1986_44:s.68(2)",
-        "words": [
-          "s.1",
-          "s.2",
-          "pt.I",
-          "s.66",
-          "s.67(1)",
-          "s.67(2)",
-          "s.67(3)",
-          "s.67(4)",
-          "so far as"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 2617
-  },
-  "statement|none|following|shall|by_order|qualified|none | left: provision+qualifier": {
-    "count": 3,
-    "examples": [
-      {
-        "law": "UK_ukpga_1984_12",
-        "row": "UK_ukpga_1984_12:s.110(2)",
-        "words": [
-          "s.2",
-          "s.3",
-          "s.4",
-          "pt.II",
-          "pt.III",
-          "pt.IV",
-          "s.93",
-          "s.94",
-          "s.95",
-          "s.97",
-          "s.98",
-          "s.99",
-          "s.101",
-          "s.102",
-          "s.103",
-          "s.106",
-          "s.109(1)",
-          "s.109(2)",
-          "s.109(4)",
-          "s.109(6)",
-          "so far as"
-        ]
-      },
-      {
-        "law": "UK_ukpga_1994_29",
-        "row": "UK_ukpga_1994_29:s.94(2)",
-        "words": [
-          "pt.IV",
-          "s.93",
-          "so far as"
-        ]
-      },
-      {
-        "law": "UK_ukpga_1996_56",
-        "row": "UK_ukpga_1996_56:s.583(3)",
-        "words": [
-          "s.8",
-          "s.317(6)",
-          "s.348",
-          "s.528",
-          "s.582(1)",
-          "s.582(2)",
-          "so far as"
-        ]
-      }
-    ],
-    "laws": 3,
-    "reach": 18
-  },
   "statement|none|following|shall|date|plain|none | left: date": {
     "count": 1,
     "examples": [
@@ -662,35 +536,6 @@
     "laws": 1,
     "reach": 6
   },
-  "statement|none|following|shall|made_relative|qualified|none | left: provision+qualifier": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_ukpga_1986_50",
-        "row": "UK_ukpga_1986_50:s.88(5)",
-        "words": [
-          "s.37",
-          "s.61",
-          "s.63",
-          "s.70",
-          "s.76",
-          "s.81",
-          "s.83",
-          "s.84",
-          "s.85",
-          "s.86(1)",
-          "s.86(2)",
-          "s.87",
-          "s.88",
-          "s.89",
-          "s.90",
-          "so far as"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 1
-  },
   "statement|none|following|shall|made_relative|qualified|rules:provision_dated+provision_qualified | left: provision": {
     "count": 1,
     "examples": [
@@ -705,98 +550,26 @@
     "laws": 1,
     "reach": 8
   },
-  "statement|none|following|shall|none|qualified|none | left: provision+qualifier": {
+  "statement|none|following|shall|none|qualified|rules:provision_qualified | left: provision": {
     "count": 2,
     "examples": [
       {
         "law": "UK_ukpga_1986_44",
         "row": "UK_ukpga_1986_44:s.68(3)",
         "words": [
-          "pt.II",
-          "s.67(3)",
-          "s.67(4)",
-          "so far as"
+          "pt.II"
         ]
       },
       {
         "law": "UK_ukpga_1984_12",
         "row": "UK_ukpga_1984_12:s.110(3)",
         "words": [
-          "pt.V",
-          "s.109(4)",
-          "s.109(6)",
-          "so far as"
+          "pt.V"
         ]
       }
     ],
     "laws": 2,
     "reach": 2627
-  },
-  "statement|none|following|shall|period|qualified|law:clause_staged | left: exception+provision+qualifier": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_ukpga_1981_69",
-        "row": "UK_ukpga_1981_69:s.74(2)",
-        "words": [
-          "s.29",
-          "s.30",
-          "s.31[E+W]",
-          "s.31",
-          "s.31[S]",
-          "s.32[E+W]",
-          "s.32",
-          "s.72(4)",
-          "pt.II",
-          "s.59",
-          "s.60",
-          "s.61",
-          "s.62",
-          "s.65",
-          "s.66",
-          "pt.IV",
-          "s.73(1)",
-          "so far as"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 2678
-  },
-  "statement|none|following|shall|period|qualified|none | left: provision+qualifier+relative_day": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_ukpga_1988_33",
-        "row": "UK_ukpga_1988_33:s.171(6)",
-        "words": [
-          "s.44",
-          "s.45",
-          "s.46",
-          "s.47",
-          "s.48",
-          "s.58",
-          "s.64",
-          "s.68",
-          "s.69",
-          "s.134",
-          "s.135",
-          "s.136",
-          "s.138",
-          "s.139",
-          "s.140",
-          "s.158",
-          "s.160",
-          "s.161",
-          "s.170",
-          "s.171(2)",
-          "so far as",
-          "the end of the period"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 8
   },
   "statement|none|named|not_until|date|plain|none | left: date+provision": {
     "count": 2,
@@ -834,21 +607,6 @@
     ],
     "laws": 1,
     "reach": 165
-  },
-  "statement|none|named|present|by_order|qualified|none | left: provision+qualifier": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_ukpga_2015_11",
-        "row": "UK_ukpga_2015_11:s.54(10)",
-        "words": [
-          "s.54(3)",
-          "So far as"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 13
   },
   "statement|none|named|present|by_order|qualified|none | left: qualifier": {
     "count": 1,
@@ -925,7 +683,7 @@
     "reach": 320
   },
   "statement|none|named|present|date|plain|none | left: date": {
-    "count": 6,
+    "count": 2,
     "examples": [
       {
         "law": "UK_uksi_2009_41",
@@ -935,22 +693,15 @@
         ]
       },
       {
-        "law": "UK_uksi_2010_2984",
-        "row": "UK_uksi_2010_2984:reg.1",
+        "law": "UK_ssi_2020_434",
+        "row": "UK_ssi_2020_434:reg.1",
         "words": [
-          "10th January 2011"
-        ]
-      },
-      {
-        "law": "UK_uksi_2010_2987",
-        "row": "UK_uksi_2010_2987:reg.1",
-        "words": [
-          "10th January 2011"
+          "14 February 2021"
         ]
       }
     ],
-    "laws": 6,
-    "reach": 641
+    "laws": 2,
+    "reach": 148
   },
   "statement|none|named|present|date|plain|none | left: date+exception": {
     "count": 1,
@@ -968,21 +719,6 @@
     ],
     "laws": 1,
     "reach": 1
-  },
-  "statement|none|named|present|date|plain|none | left: date+provision": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_uksi_2016_733",
-        "row": "UK_uksi_2016_733:reg.5",
-        "words": [
-          "31st October 2016",
-          "reg.9"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 39
   },
   "statement|none|named|present|date|plain|rules:provision_dated | left: date": {
     "count": 2,
@@ -1064,7 +800,7 @@
     "reach": 220
   },
   "statement|none|named|present|date|qualified|none | left: date+provision+qualifier": {
-    "count": 4,
+    "count": 1,
     "examples": [
       {
         "law": "UK_uksi_2010_724",
@@ -1075,19 +811,10 @@
           "reg.35",
           "For the purposes of"
         ]
-      },
-      {
-        "law": "UK_uksi_2004_827",
-        "row": "UK_uksi_2004_827:reg.3(f)",
-        "words": [
-          "29th March 2004",
-          "reg.2",
-          "in so far as"
-        ]
       }
     ],
-    "laws": 2,
-    "reach": 426
+    "laws": 1,
+    "reach": 384
   },
   "statement|none|named|present|date|qualified|none | left: date+qualifier": {
     "count": 1,
@@ -1192,20 +919,6 @@
     "laws": 2,
     "reach": 412
   },
-  "statement|none|named|present|made_relative|plain|law:clause_unread | left: relative_day": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_uksi_2018_407",
-        "row": "UK_uksi_2018_407:reg.1(1)",
-        "words": [
-          "the 22nd day after"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 3
-  },
   "statement|none|named|present|made_relative|plain|none | left: date": {
     "count": 1,
     "examples": [
@@ -1219,34 +932,6 @@
     ],
     "laws": 1,
     "reach": 46
-  },
-  "statement|none|named|present|made_relative|plain|none | left: relative_day": {
-    "count": 4,
-    "examples": [
-      {
-        "law": "UK_uksi_2022_1218",
-        "row": "UK_uksi_2022_1218:reg.1(1)",
-        "words": [
-          "the 22nd day after"
-        ]
-      },
-      {
-        "law": "UK_uksi_2022_1342",
-        "row": "UK_uksi_2022_1342:reg.1(1)",
-        "words": [
-          "the 22nd day after"
-        ]
-      },
-      {
-        "law": "UK_uksi_2023_568",
-        "row": "UK_uksi_2023_568:reg.1(1)",
-        "words": [
-          "the 22nd day after"
-        ]
-      }
-    ],
-    "laws": 4,
-    "reach": 1264
   },
   "statement|none|named|present|made_relative|plain|rules:provision_dated | left: exception": {
     "count": 2,
@@ -1338,21 +1023,6 @@
     ],
     "laws": 1,
     "reach": 67
-  },
-  "statement|none|named|present|made_relative|qualified|none | left: date+qualifier": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_ukpga_2015_11",
-        "row": "UK_ukpga_2015_11:s.54(9)",
-        "words": [
-          "1 January 2016",
-          "So far as"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 13
   },
   "statement|none|named|present|made_relative|qualified|none | left: qualifier": {
     "count": 8,
@@ -1680,18 +1350,11 @@
     "reach": 172
   },
   "statement|none|named|present|period|plain|unread | left: relative_day": {
-    "count": 9,
+    "count": 2,
     "examples": [
       {
         "law": "UK_ukpga_2011_16",
         "row": "UK_ukpga_2011_16:s.121(5)(a)",
-        "words": [
-          "the end of the period"
-        ]
-      },
-      {
-        "law": "UK_ukpga_2023_55",
-        "row": "UK_ukpga_2023_55:s.255(2)(d)",
         "words": [
           "the end of the period"
         ]
@@ -1704,23 +1367,8 @@
         ]
       }
     ],
-    "laws": 3,
-    "reach": 2144
-  },
-  "statement|none|named|present|period|qualified|none | left: qualifier+relative_day": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_ukpga_2023_55",
-        "row": "UK_ukpga_2023_55:s.255(3)(a)",
-        "words": [
-          "so far as",
-          "the end of the period"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 408
+    "laws": 2,
+    "reach": 1736
   },
   "statement|none|named|present|tied|plain|law:clause_unread | left: date": {
     "count": 1,
@@ -1735,20 +1383,6 @@
     ],
     "laws": 1,
     "reach": 6
-  },
-  "statement|none|named|present|tied|plain|none | left: provision": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_ukpga_1994_21",
-        "row": "UK_ukpga_1994_21:s.8(4)",
-        "words": [
-          "s.9"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 22
   },
   "statement|none|named|present|tied|plain|rules:provision_dated | left: provision": {
     "count": 1,
@@ -1861,38 +1495,6 @@
     "laws": 1,
     "reach": 17
   },
-  "statement|none|named|shall|date|plain|law:clause_date | left: date+exception+provision": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_uksi_1988_1655",
-        "row": "UK_uksi_1988_1655:reg.1",
-        "words": [
-          "1st January 1993",
-          "1st September 1990",
-          "reg.14(2)",
-          "reg.16(7)"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 3
-  },
-  "statement|none|named|shall|date|plain|law:clause_date | left: date+provision": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_uksi_2005_1803",
-        "row": "UK_uksi_2005_1803:reg.1(1)",
-        "words": [
-          "5th December 2005",
-          "reg.43(2)"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 442
-  },
   "statement|none|named|shall|date|plain|law:clause_unread | left: date": {
     "count": 1,
     "examples": [
@@ -1908,15 +1510,8 @@
     "reach": 316
   },
   "statement|none|named|shall|date|plain|none | left: date": {
-    "count": 13,
+    "count": 11,
     "examples": [
-      {
-        "law": "UK_nisr_2012_286",
-        "row": "UK_nisr_2012_286:reg.2",
-        "words": [
-          "3rd September 2012"
-        ]
-      },
       {
         "law": "UK_uksi_1991_2539",
         "row": "UK_uksi_1991_2539:reg.1",
@@ -1930,10 +1525,17 @@
         "words": [
           "1st July 2007"
         ]
+      },
+      {
+        "law": "UK_nisr_2012_187",
+        "row": "UK_nisr_2012_187:reg.3",
+        "words": [
+          "31st October 2012"
+        ]
       }
     ],
-    "laws": 13,
-    "reach": 151
+    "laws": 11,
+    "reach": 147
   },
   "statement|none|named|shall|date|plain|rules:provision_dated | left: date": {
     "count": 1,
@@ -2029,21 +1631,6 @@
     "laws": 1,
     "reach": 2
   },
-  "statement|none|named|shall|date|qualified|law:clause_date | left: exception+qualifier": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_uksi_2005_881",
-        "row": "UK_uksi_2005_881:reg.1(1)",
-        "words": [
-          "reg.2",
-          "in relation to"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 197
-  },
   "statement|none|named|shall|date|qualified|none | left: date": {
     "count": 1,
     "examples": [
@@ -2076,7 +1663,7 @@
     "reach": 60
   },
   "statement|none|named|shall|date|qualified|none | left: date+qualifier": {
-    "count": 3,
+    "count": 1,
     "examples": [
       {
         "law": "UK_uksi_1994_1096",
@@ -2085,18 +1672,10 @@
           "1st May 1994",
           "for the purposes of"
         ]
-      },
-      {
-        "law": "UK_uksi_2006_1281",
-        "row": "UK_uksi_2006_1281:reg.3",
-        "words": [
-          "7th June 2006",
-          "in relation to"
-        ]
       }
     ],
-    "laws": 2,
-    "reach": 17
+    "laws": 1,
+    "reach": 12
   },
   "statement|none|named|shall|date|qualified|rules:provision_qualified | left: date": {
     "count": 2,
@@ -2246,20 +1825,6 @@
     "laws": 1,
     "reach": 4
   },
-  "statement|none|other|not_until|made_relative|plain|none | left: provision": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_ukpga_1982_16",
-        "row": "UK_ukpga_1982_16:s.64(3)",
-        "words": [
-          "s.64(2)"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 1440
-  },
   "statement|none|other|present|by_order|plain|none | left: provision": {
     "count": 3,
     "examples": [
@@ -2400,27 +1965,6 @@
     "laws": 1,
     "reach": 63
   },
-  "statement|none|other|present|made_relative|plain|unread | left: relative_day": {
-    "count": 2,
-    "examples": [
-      {
-        "law": "UK_uksi_2022_1269",
-        "row": "UK_uksi_2022_1269:reg.1(b)",
-        "words": [
-          "the 22nd day after"
-        ]
-      },
-      {
-        "law": "UK_uksi_2023_861",
-        "row": "UK_uksi_2023_861:reg.1(b)",
-        "words": [
-          "the 21st day after"
-        ]
-      }
-    ],
-    "laws": 2,
-    "reach": 169
-  },
   "statement|none|other|present|made_relative|qualified|none | left: provision+qualifier": {
     "count": 3,
     "examples": [
@@ -2444,20 +1988,6 @@
         "row": "UK_ukpga_2018_16:s.25(2)(c)",
         "words": [
           "for the purposes of"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 480
-  },
-  "statement|none|other|present|named_day|plain|none | left: relative_day": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_ukpga_2018_16",
-        "row": "UK_ukpga_2018_16:s.8(4)",
-        "words": [
-          "notified"
         ]
       }
     ],
@@ -2528,20 +2058,6 @@
     "laws": 2,
     "reach": 4079
   },
-  "statement|none|other|shall_not|made_relative|qualified|none | left: qualifier": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_ukpga_1982_16",
-        "row": "UK_ukpga_1982_16:s.97(6)(a)",
-        "words": [
-          "in relation to"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 1440
-  },
   "statement|none|other|shall|by_order|plain|none | left: exception+provision+relative_day": {
     "count": 1,
     "examples": [
@@ -2600,20 +2116,6 @@
     "laws": 1,
     "reach": 2
   },
-  "statement|none|parts|present|by_order|qualified|none | left: qualifier": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_ukpga_1981_56",
-        "row": "UK_ukpga_1981_56:s.40(4)",
-        "words": [
-          "so far as"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 165
-  },
   "statement|none|parts|present|date|plain|law:clause_staged | left: date": {
     "count": 1,
     "examples": [
@@ -2627,52 +2129,6 @@
     ],
     "laws": 1,
     "reach": 53
-  },
-  "statement|none|parts|present|date|qualified|none | left: date+qualifier": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_ukpga_1998_36",
-        "row": "UK_ukpga_1998_36:s.38(3)",
-        "words": [
-          "1st April 1998",
-          "So far as"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 5
-  },
-  "statement|none|parts|present|made_relative|plain|none | left: provision+relative_day": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_uksi_2019_453",
-        "row": "UK_uksi_2019_453:reg.1(2)",
-        "words": [
-          "pt.1",
-          "pt.2",
-          "the 22nd day after"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 197
-  },
-  "statement|none|parts|present|none|plain|none | left: provision": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_ukpga_2014_21",
-        "row": "UK_ukpga_2014_21:s.55(6)",
-        "words": [
-          "s.55(1)",
-          "pt.1"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 1029
   },
   "statement|none|parts|present|none|plain|unread | left: provision+relative_day": {
     "count": 1,
@@ -2706,20 +2162,6 @@
     ],
     "laws": 1,
     "reach": 10
-  },
-  "statement|none|parts|present|period|plain|unread | left: relative_day": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_ukpga_2023_55",
-        "row": "UK_ukpga_2023_55:s.255(6)",
-        "words": [
-          "the end of the period"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 408
   },
   "statement|none|parts|present|tied|plain|unread | left: provision": {
     "count": 2,
@@ -3108,17 +2550,14 @@
     "laws": 1,
     "reach": 99
   },
-  "statement|none|this|present|made_relative|qualified|none | left: provision+qualifier+relative_day": {
+  "statement|none|this|present|made_relative|qualified|rules:provision_qualified | left: provision": {
     "count": 1,
     "examples": [
       {
         "law": "UK_uksi_2018_1392",
         "row": "UK_uksi_2018_1392:reg.1(3)",
         "words": [
-          "reg.1",
-          "reg.4",
-          "in so far as",
-          "the 22nd day after"
+          "reg.4"
         ]
       }
     ],
@@ -3695,48 +3134,6 @@
     "laws": 1,
     "reach": 13
   },
-  "statement|none|whole|present|made_relative|plain|law:clause_unread | left: relative_day": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_uksi_2018_1413",
-        "row": "UK_uksi_2018_1413:reg.1(1)",
-        "words": [
-          "the 14th day after"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 13
-  },
-  "statement|none|whole|present|made_relative|plain|none | left: relative_day": {
-    "count": 3,
-    "examples": [
-      {
-        "law": "UK_uksi_2022_1037",
-        "row": "UK_uksi_2022_1037:reg.1(2)",
-        "words": [
-          "the 22nd day after"
-        ]
-      },
-      {
-        "law": "UK_uksi_2024_221",
-        "row": "UK_uksi_2024_221:reg.1(2)",
-        "words": [
-          "the 28th day after"
-        ]
-      },
-      {
-        "law": "UK_uksi_2026_563",
-        "row": "UK_uksi_2026_563:reg.1(2)",
-        "words": [
-          "the 21st day after"
-        ]
-      }
-    ],
-    "laws": 3,
-    "reach": 18
-  },
   "statement|none|whole|present|made_relative|plain|unread | left: provision": {
     "count": 2,
     "examples": [
@@ -3778,20 +3175,6 @@
     ],
     "laws": 1,
     "reach": 146
-  },
-  "statement|none|whole|present|named_day|plain|law:clause_date | left: exception": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_ssi_2019_273",
-        "row": "UK_ssi_2019_273:reg.1(2)",
-        "words": [
-          "pt.3"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 34
   },
   "statement|none|whole|present|named_day|plain|law:clause_unread | left: relative_day": {
     "count": 1,
@@ -3856,21 +3239,6 @@
     "laws": 1,
     "reach": 146
   },
-  "statement|none|whole|present|none|qualified|none | left: provision+qualifier": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_ukpga_1987_53",
-        "row": "UK_ukpga_1987_53:s.4(3)",
-        "words": [
-          "s.4",
-          "For the purposes of"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 527
-  },
   "statement|none|whole|shall|by_order|plain|law:by_order | left: exception": {
     "count": 1,
     "examples": [
@@ -3900,49 +3268,6 @@
     ],
     "laws": 1,
     "reach": 396
-  },
-  "statement|none|whole|shall|by_order|qualified|law:by_order | left: qualifier": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_ukpga_1971_19",
-        "row": "UK_ukpga_1971_19:s.6(5)",
-        "words": [
-          "for the purposes of"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 1
-  },
-  "statement|none|whole|shall|date|plain|law:clause_date | left: date+provision": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_uksi_2000_311",
-        "row": "UK_uksi_2000_311:reg.1",
-        "words": [
-          "1st March 2005",
-          "reg.18"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 8
-  },
-  "statement|none|whole|shall|date|plain|law:clause_date | left: exception": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_uksi_1996_1529",
-        "row": "UK_uksi_1996_1529:reg.1",
-        "words": [
-          "reg.4"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 2
   },
   "statement|none|whole|shall|date|plain|none | left: date": {
     "count": 2,
@@ -4228,21 +3553,6 @@
     ],
     "laws": 1,
     "reach": 4
-  },
-  "statement|subject_to|parts|present|made_relative|plain|none | left: provision+relative_day": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_uksi_2026_881",
-        "row": "UK_uksi_2026_881:reg.1(3)",
-        "words": [
-          "pt.2",
-          "the 28th day after"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 1
   },
   "statement|subject_to|this|present|none|plain|none | left: provision": {
     "count": 1,

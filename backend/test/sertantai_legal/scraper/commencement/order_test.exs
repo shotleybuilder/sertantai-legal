@@ -908,4 +908,189 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
     assert dated(rules, "section-107-1") == %{full_from: ~D[1997-01-31], partial_from: nil}
     assert dated(rules, "section-86") == %{full_from: nil, partial_from: nil}
   end
+
+  describe "Schedule tables (reader misses, 2026-11-05)" do
+    test "a Schedule with no date of its own: the article bringing it in dates it (SI 1976/731 art.3)" do
+      rules =
+        Order.rules(
+          order(~S"""
+          <P1 id="article-3"><P1para><Text>The provisions of the Railways Act 1993 which are specified in column 1 of the Schedule to this order and which relate to the subject matter specified in column 2 thereof shall come into force on 14th June 1976.</Text></P1para></P1>
+          <Schedules><Schedule id="schedule"><TitleBlock><Title>SCHEDULE</Title></TitleBlock><ScheduleBody><Tabular><table><tbody>
+          <tr><td>Section 3</td><td>Prohibition of unlicensed disposal of waste</td></tr>
+          <tr><td>Section 5</td><td>Licences to dispose of waste</td></tr>
+          </tbody></table></Tabular></ScheduleBody></Schedule></Schedules>
+          """),
+          @act
+        )
+
+      assert %{full_from: ~D[1976-06-14]} = dated(rules, "section-3")
+      assert %{full_from: ~D[1976-06-14]} = dated(rules, "section-5")
+    end
+
+    test "dated Appendix parts with no table don't hide the Schedule's own table (SI 1977/1365)" do
+      rules =
+        Order.rules(
+          order(~S"""
+          <Schedules><Schedule id="schedule"><TitleBlock><Title>PROVISIONS OF THE RAILWAYS ACT 1993 COMING INTO FORCE ON 8TH SEPTEMBER 1977</Title></TitleBlock><ScheduleBody><Tabular><table><tbody>
+          <tr><td>Section 31(1).</td><td>Increase of fines for certain summary offences.</td></tr>
+          </tbody></table></Tabular>
+          <Part id="schedule-part-1"><Title>PROVISIONS OF SCHEDULE 12 TO THE RAILWAYS ACT 1993 COMING INTO FORCE ON 8TH SEPTEMBER 1977</Title><P><Text>So much of Schedule 12 as amends the following enactments.</Text></P></Part>
+          <Part id="schedule-part-2"><Title>REPEALS COMING INTO FORCE ON 8TH SEPTEMBER 1977</Title><Tabular><table><tbody><tr><td>1948 c. 58</td><td>Criminal Justice Act 1948.</td><td>In section 19(3), the words.</td></tr></tbody></table></Tabular></Part>
+          </ScheduleBody></Schedule></Schedules>
+          """),
+          @act
+        )
+
+      assert %{full_from: ~D[1977-09-08]} = dated(rules, "section-31-1")
+    end
+
+    test "a Schedule listing its provisions as items, not a table (SI 2005/1444 Sch. 1; Parts: SI 2002/1014)" do
+      rules =
+        Order.rules(
+          order(~S"""
+          <Schedules><Schedule id="schedule-1"><Number>SCHEDULE 1</Number><TitleBlock><Title>PROVISIONS COMING INTO FORCE ON 8TH JUNE 2005</Title></TitleBlock><Reference>Article 2(1)</Reference><ScheduleBody><P><UnorderedList Decoration="none">
+          <ListItem><Para><Text>Section 1(2).</Text></Para></ListItem>
+          <ListItem><Para><Text>Section 6(1) to (3).</Text></Para></ListItem>
+          </UnorderedList></P></ScheduleBody></Schedule></Schedules>
+          """),
+          @act
+        )
+
+      assert %{full_from: ~D[2005-06-08]} = dated(rules, "section-1-2")
+      assert %{full_from: ~D[2005-06-08]} = dated(rules, "section-6-3")
+      assert %{full_from: nil} = dated(rules, "section-1-3")
+
+      rules =
+        Order.rules(
+          order(~S"""
+          <P1 id="article-2"><P1para><P2 id="article-2-1"><P2para><Text>The provisions of the Act set out in Part 1 of the Schedule hereto shall come into force on 1st May 2002.</Text></P2para></P2><P2 id="article-2-2"><P2para><Text>The provisions of the Act set out in Part 2 of the Schedule hereto shall come into force on 1st June 2002.</Text></P2para></P2></P1para></P1>
+          <Schedules><Schedule id="schedule"><Number>SCHEDULE</Number><ScheduleBody>
+          <Part id="schedule-part-1"><Number>PART 1</Number><P><UnorderedList><ListItem><Para><Text>Section 7.</Text></Para></ListItem></UnorderedList></P></Part>
+          <Part id="schedule-part-2"><Number>PART 2</Number><P><UnorderedList><ListItem><Para><Text>Section 9.</Text></Para></ListItem></UnorderedList></P></Part>
+          </ScheduleBody></Schedule></Schedules>
+          """),
+          @act
+        )
+
+      assert %{full_from: ~D[2002-05-01]} = dated(rules, "section-7")
+      assert %{full_from: ~D[2002-06-01]} = dated(rules, "section-9")
+    end
+  end
+
+  describe "items in other paragraphs (reader misses, 2026-11-05)" do
+    test "statements in lettered paragraphs (SI 1964/1045 art.1(a), (b))" do
+      rules =
+        Order.rules(
+          order(~S"""
+          <P1 id="article-2"><P1para><Text>Except as provided by Article 3 of this Order—</Text>
+          <P3 id="article-2-a"><P3para><Text>the following provisions (which relate to first aid) of the Act shall come into operation on 1st December 1964, that is to say—</Text><Text>sections 24(1) to (3), 25 and 26;</Text><Text>section 83(1) (so far as it relates to the above-mentioned provisions of section 24) and (2);</Text></P3para></P3>
+          <P3 id="article-2-b"><P3para><Text>the following provisions (which also relate to first aid) of the Act shall come into operation on 1st September 1965, that is to say—</Text><Text>section 24(4) to (6).</Text></P3para></P3></P1para></P1>
+          """),
+          @act
+        )
+
+      assert %{full_from: ~D[1964-12-01]} = dated(rules, "section-25")
+      assert %{full_from: nil, partial_from: ~D[1964-12-01]} = dated(rules, "section-83-1")
+      assert %{full_from: ~D[1964-12-01]} = dated(rules, "section-83-2")
+      assert %{full_from: ~D[1965-09-01]} = dated(rules, "section-24-5")
+    end
+
+    test "\"listed in paragraph (2) below\" (SI 1994/2025 art.3)" do
+      rules =
+        Order.rules(
+          order(~S"""
+          <P1 id="article-3"><P1para><P2 id="article-3-1"><P2para><Text>The provisions of the Act which are listed in paragraph (2) below shall come into force on 8th August 1994.</Text></P2para></P2>
+          <P2 id="article-3-2"><P2para><Text>The provisions referred to in paragraph (1) above are—</Text>
+          <P3 id="article-3-2-a"><P3para><Text>section 41 (metropolitan police: assistant commissioners);</Text></P3para></P3>
+          <P3 id="article-3-2-b"><P3para><Text>section 46 (interpretation of Part I);</Text></P3para></P3></P2para></P2></P1para></P1>
+          """),
+          @act
+        )
+
+      assert %{full_from: ~D[1994-08-08]} = dated(rules, "section-41")
+      assert %{full_from: ~D[1994-08-08]} = dated(rules, "section-46")
+    end
+
+    test "the statement's qualifier carries to the items; purposes set out elsewhere are no items (SI 1994/1096, SI 2012/873)" do
+      rules =
+        Order.rules(
+          order(~S"""
+          <P1 id="article-2"><P1para><P2 id="article-2-2"><P2para><Text>The provisions of the Act set out in paragraph (3) below shall come into force on 1st May 1994, save for the purposes of their application to the following activities—</Text>
+          <P3 id="article-2-2-a"><P3para><Text>the disposal of waste;</Text></P3para></P3></P2para></P2>
+          <P2 id="article-2-3"><P2para><Text>The provisions referred to in paragraph (2) above are sections 33 and 57.</Text></P2para></P2></P1para></P1>
+          <P1 id="article-3"><P1para><P2 id="article-3-1"><P2para><Text>Section 7 comes into force on 1st June 1994 so far as is necessary for the purposes set out in paragraph (2).</Text></P2para></P2>
+          <P2 id="article-3-2"><P2para><Text>The purposes are interpreting any provision of Part 1.</Text></P2para></P2></P1para></P1>
+          """),
+          @act
+        )
+
+      assert %{full_from: nil, partial_from: ~D[1994-05-01]} = dated(rules, "section-57")
+      refute Enum.any?(rules, &(&1.scope == ["pt.1"]))
+    end
+
+    test "\"specified in the following paragraphs of this regulation\" (SI 2025/272 reg.2)" do
+      rules =
+        Order.rules(
+          order(~S"""
+          <P1 id="regulation-2"><P1para><P2 id="regulation-2-1"><P2para><Text>The provisions of the Act specified in the following paragraphs of this regulation come into force on 6th April 2025.</Text></P2para></P2>
+          <P2 id="regulation-2-2"><P2para><Text>Part 3 (enforcement of consumer protection law).</Text></P2para></P2>
+          <P2 id="regulation-2-3"><P2para><Text>Section 327(2).</Text></P2para></P2></P1para></P1>
+          """),
+          @act
+        )
+
+      assert %{full_from: ~D[2025-04-06]} = dated(rules, "section-327-2")
+    end
+  end
+
+  describe "what a table is not (reader misses, 2026-11-05)" do
+    test "\"section 10(6) and (7) (so far as aforesaid)\": both subsections, partly (SI 1974/1439 Sch. 2)" do
+      rules =
+        Order.rules(
+          order(~S"""
+          <Schedules><Schedule id="schedule"><TitleBlock><Title>Provisions coming into force on 1st January 1975</Title></TitleBlock><ScheduleBody><Tabular><table><tbody>
+          <tr><td>Section 10(5) and section 10(6) and (7) (so far as aforesaid).</td><td>Constitution and status of Executive.</td></tr>
+          </tbody></table></Tabular></ScheduleBody></Schedule></Schedules>
+          """),
+          @act
+        )
+
+      assert %{full_from: ~D[1975-01-01]} = dated(rules, "section-10-5")
+      assert %{full_from: nil, partial_from: ~D[1975-01-01]} = dated(rules, "section-10-6")
+      assert %{full_from: nil, partial_from: ~D[1975-01-01]} = dated(rules, "section-10-7")
+    end
+
+    test "an Appendix of repealed Acts by chapter is no provision of the Schedule (SI 1995/965)" do
+      rules =
+        Order.rules(
+          order(~S"""
+          <Schedules><Schedule id="schedule"><Reference>Article 2</Reference><TitleBlock><Title>Provisions coming into force on 1st May 1995</Title></TitleBlock><ScheduleBody><Tabular><table><tbody>
+          <tr><td>Section 51</td><td>Restriction on employment of persons under 18 on board ship.</td></tr>
+          <tr><td>Schedule 5, so far as it relates to the repeals set out in the Appendix to this Schedule</td><td>Enactments repealed.</td></tr>
+          </tbody></table></Tabular>
+          <Appendix id="schedule-appendix-1"><Tabular><table><tbody>
+          <tr><td>1894 c. 60.</td><td>The Merchant Shipping Act 1894.</td><td>Part II.</td></tr>
+          </tbody></table></Tabular></Appendix></ScheduleBody></Schedule></Schedules>
+          """),
+          @act
+        )
+
+      assert lines(rules) |> Enum.map(&hd(String.split(&1, " — "))) == ["s.51", "sch.5"]
+    end
+
+    test "an order commences the Act it names, never another it was listed for" do
+      doc =
+        order(
+          ~S|<P1 id="article-2"><P1para><Text>Section 3 of the Act shall come into force on 1st May 1995.</Text></P1para></P1>|
+        )
+
+      assert Order.commences?(doc, @act)
+
+      refute Order.commences?(doc, %{
+               law: "UK_ukpga_1995_21",
+               title: "Merchant Shipping Act",
+               year: "1995"
+             })
+    end
+  end
 end

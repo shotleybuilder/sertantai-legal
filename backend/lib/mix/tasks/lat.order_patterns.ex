@@ -95,8 +95,10 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
       |> Enum.map(&List.to_tuple/1)
 
     (listed ++ stored)
-    |> Enum.uniq_by(&elem(&1, 0))
+    |> Enum.uniq()
     |> Enum.filter(fn {order, act} -> order != act and held?(order) end)
+    |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
+    |> Enum.map(fn {order, acts} -> {order, commenced(order, acts)} end)
     |> then(fn ps ->
       case only do
         nil -> ps
@@ -111,6 +113,15 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
       [_, t, y, n] -> File.exists?("data/cache/clml/#{t}/#{y}/#{n}/body/data.xml.gz")
       _ -> false
     end
+  end
+
+  # each held order once, with an Act it commences (SI 1995/965 is listed
+  # for the 1995 Act but commences the 1970 Act's provisions)
+  defp commenced(_order, [act]), do: act
+
+  defp commenced(order, acts) do
+    d = doc(order)
+    Enum.find(acts, hd(acts), &Order.commences?(d, act(&1)))
   end
 
   defp doc(law) do

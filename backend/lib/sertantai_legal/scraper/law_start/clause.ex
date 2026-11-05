@@ -64,12 +64,14 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
       "is"
     ),
     Regex.compile!(
+      # ("… Regulations 2010 and they come into force on 10th January 2011":
+      # SI 2010/2984)
       # "… and subject to paragraphs (2) and (3) shall come into force on
       # 1st January 2000" (Quarries Regulations 1999 reg.1(1), CV-S04)
       # (", which extend to Great Britain," between: SI 1996/1513)
       ~S"\b(?:this|these)\s+" <>
         @instrument <>
-        ~S"(?:\s*,[^,]{0,80},)?\s+may be cited as\b.{0,300}?\band(?:\s+subject\s+to\s+[^,]{1,160}?(?=\s+shall\b))?" <>
+        ~S"(?:\s*,[^,]{0,80},)?\s+may be cited as\b.{0,300}?\band(?:\s+(?:they|it))?(?:\s+subject\s+to\s+[^,]{1,160}?(?=\s+shall\b))?" <>
         @aside <> @cif <> ~S"\s*(.*)$",
       "is"
     ),
@@ -170,7 +172,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
   }
 
   @made ~S"(?:(?:the\s+(?:day|date)\s+(?:(?:on\s+which|of)\s+)?)?(?:it\s+is|they\s+are|they\s+were|(?:(?:this|these)\s+[A-Za-z ]+?|the\s+(?:Order|Regulations|Rules|Act|Scheme|Measure|Instrument))\s+(?:is|are|was|were))\s+(?:made|passed)|(?:the\s+)?(?:making|passing)\s+(?:of\s+(?:this|these)\s+[A-Za-z ]+|thereof)|its\s+(?:making|passing)|(?:the\s+day\s+(?:on\s+which\s+)?)?(?:this\s+Act\s+receives\s+)?Royal\s+Assent|receiving\s+Royal\s+Assent|the\s+(?:day|date)\s+of\s+Royal\s+Assent|the\s+Bill\s+for\s+this\s+Act\s+receives\s+Royal\s+Assent|that\s+on\s+which\s+(?:it|this\s+Act)\s+is\s+passed|the\s+(?:day|date)\s+of\s+(?:the\s+)?(?:passing|making)\s+(?:thereof|of\s+(?:this|these)\s+[A-Za-z ]+))"
-  @number ~S"(\d+|[a-z]+(?:[- ][a-z]+)?)"
+  @number ~S"(\d+(?:st|nd|rd|th)?|[a-z]+(?:[- ][a-z]+)?)"
 
   @doc """
   The law's start from its commencement clause; nil when it has none. `act?`:
@@ -581,7 +583,8 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
     n = String.downcase(n)
 
     case Integer.parse(n) do
-      {i, ""} ->
+      # (a numeric ordinal: "the 22nd day after …", SI 2022/1342)
+      {i, suffix} when suffix in ["", "st", "nd", "rd", "th"] ->
         i
 
       _ ->

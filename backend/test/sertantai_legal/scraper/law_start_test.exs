@@ -383,6 +383,16 @@ defmodule SertantaiLegal.Scraper.LawStartTest do
     end
   end
 
+  describe "citation sentences (reader misses, 2026-11-05)" do
+    test "\"… may be cited as … and they come into force on …\" (SI 2010/2984)" do
+      assert %{treatment: :clause_date, date: ~D[2011-01-10]} =
+               start("uksi", [
+                 {"reg.1",
+                  "These Regulations may be cited as the Merchant Shipping and Fishing Vessels (Health and Safety at Work) (Asbestos) Regulations 2010 and they come into force on 10th January 2011."}
+               ])
+    end
+  end
+
   describe "made-relative counting" do
     @made ~D[1987-07-21]
 
@@ -403,6 +413,14 @@ defmodule SertantaiLegal.Scraper.LawStartTest do
 
       assert Clause.tail_date("six months after the date on which they are made", @made) ==
                {:clause_made_relative, ~D[1988-01-21]}
+    end
+
+    test "a numeric ordinal: \"on the 22nd day after the day on which they are made\" (SI 2022/1342)" do
+      assert Clause.tail_date(
+               "on the 22nd day after the day on which they are made",
+               ~D[2022-12-19]
+             ) ==
+               {:clause_made_relative, ~D[2023-01-10]}
     end
 
     test "a period from the day excludes it (+1 day); beginning with the day includes it" do

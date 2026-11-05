@@ -2704,11 +2704,6 @@
     "row": "UK_ukpga_1988_33:s.171(7)",
     "sentence": "Section 162 above shall come into force— whichever is the later."
   },
-  "UK_ukpga_1988_33/9f70c9eedb": {
-    "law": "UK_ukpga_1988_33",
-    "row": "UK_ukpga_1988_33:s.171(5)",
-    "sentence": "The following provisions shall come into force on the day this Act is passed— section 66; section 67; section 103(1), so far as it relates— section 129; section 132, so far as it relates to the Local Government Finance Act 1982; section 141; section 142; section 143; section 144; section 149; section 166; section 167; section 168; section 169; subsection (1) of section 170, so far as relating to the following— section 112A(1) of the Land Registration Act 1925; the extension of references in the Children and Young Persons Act 1933 to the offences mentioned in Schedule 1 to that Act so as to include offences under Part I of the Child Abduction Act 1984; the Visiting Forces Act 1952; section 67(6) of the Criminal Justice Act 1967; section 29 of the Children and Young Persons Act 1969; section 6(1) of the Juries Act 1974; sections 171 and 368 of and Schedule 1 to the Criminal Procedure (Scotland) Act 1975; the Child Care Act 1980; sections 37 and 133 of the Magistrates’ Courts Act 1980; section 52(7) of the Civic Government (Scotland) Act 1982; the Criminal Justice Act 1982; the Police and Criminal Evidence Act 1984; the Prosecution of Offences Act 1985; the Criminal Justice Act 1987; the Criminal Justice (Scotland) Act 1987; subsection (2) of that section, so far as relating to the following— section 49 of the Criminal Justice Act 1967; section 29 of the Children and Young Persons Act 1969; the Criminal Justice Act 1987; this section; sections 172 and 173."
-  },
   "UK_ukpga_1988_39/3bd2941b71": {
     "law": "UK_ukpga_1988_39",
     "row": "UK_ukpga_1988_39:s.1(6)(c)",
@@ -3394,6 +3389,11 @@
     "row": "UK_ukpga_1996_53:s.150(2)",
     "sentence": "The following provisions of this Act come into force at the end of the period of two months beginning with the date on which this Act is passed— sections 126 to 130 (financial assistance for regeneration and development), section 141 (existing housing grants: meaning of exempt disposal), section 142 (home energy efficiency schemes), sections 143 to 145 (residuary bodies), Part III of Schedule 3 (repeals consequential on Part IV) and section 147 so far as relating to that Part."
   },
+  "UK_ukpga_1996_56/0e77c432f2": {
+    "law": "UK_ukpga_1996_56",
+    "row": "UK_ukpga_1996_56:s.583(3)",
+    "sentence": "The following provisions— section 8, section 317(6), section 348, section 528, Part II of Schedule 37 and section 582(1) so far as relating thereto, and Part II of Schedule 38 and section 582(2) so far as relating thereto, shall come into force on such day as the Secretary of State may by order appoint; and different days may be appointed for different provisions and for different purposes."
+  },
   "UK_ukpga_1996_6/3fd30b192f": {
     "law": "UK_ukpga_1996_6",
     "row": "UK_ukpga_1996_6:s.39(1)",
@@ -4033,6 +4033,11 @@
     "law": "UK_ukpga_2004_24",
     "row": "UK_ukpga_2004_24:s.59(2)",
     "sentence": "This section and sections 42, 43, 56 and 58 shall come into force on the day on which this Act is passed."
+  },
+  "UK_ukpga_2004_33/136c7553b5": {
+    "law": "UK_ukpga_2004_33",
+    "row": "UK_ukpga_2004_33:s.263(8)(c)",
+    "sentence": "section 252 comes into force in accordance with provision made by the Department of Finance and Personnel, after consulting the Secretary of State,"
   },
   "UK_ukpga_2004_33/1fdf71ae6f": {
     "law": "UK_ukpga_2004_33",
@@ -6359,11 +6364,6 @@
     "row": "UK_uksi_2010_231:reg.1(3)",
     "sentence": "Except as provided for by paragraph (2), the provisions of this Order which confer powers enabling rules or orders to be made, or which enable standards or requirements to be set by the Council, come into force on the making of this Order, but for the purpose only of the exercise of those powers."
   },
-  "UK_uksi_2010_2984/c13e5f1ae0": {
-    "law": "UK_uksi_2010_2984",
-    "row": "UK_uksi_2010_2984:reg.1",
-    "sentence": "These Regulations may be cited as the Merchant Shipping and Fishing Vessels (Health and Safety at Work) (Asbestos) Regulations 2010 and they come into force on 10th January 2011."
-  },
   "UK_uksi_2010_490/5cfc41c325": {
     "law": "UK_uksi_2010_490",
     "row": "UK_uksi_2010_490:reg.1(4)",
@@ -6373,11 +6373,6 @@
     "law": "UK_uksi_2010_490",
     "row": "UK_uksi_2010_490:reg.1(3)",
     "sentence": "In regulation 6 (relevant authorities in relation to marine areas and European marine sites), paragraph (i) (inshore fisheries and conservation authority) comes into force immediately after section 153 of the Marine Act (management of inshore fisheries) comes into force."
-  },
-  "UK_uksi_2010_493/1f9447a867": {
-    "law": "UK_uksi_2010_493",
-    "row": "UK_uksi_2010_493:reg.1(b)",
-    "sentence": "come into force on the day after the day on which they are made, and"
   },
   "UK_uksi_2010_724/657995aa39": {
     "law": "UK_uksi_2010_724",
@@ -6453,6 +6448,11 @@
     "law": "UK_uksi_2012_3039",
     "row": "UK_uksi_2012_3039:reg.1(3)",
     "sentence": "The following provisions come into force for the purposes specified on the day after the day on which these Regulations are made—"
+  },
+  "UK_uksi_2012_3152/49f4f014b6": {
+    "law": "UK_uksi_2012_3152",
+    "row": "UK_uksi_2012_3152:reg.1(2)",
+    "sentence": "Regulations 2 and 4 come into force on 31st December 2012 the remaining regulations come into force on 12th January 2013."
   },
   "UK_uksi_2012_801/2b3e4cbe6f": {
     "law": "UK_uksi_2012_801",
@@ -6749,11 +6749,6 @@
     "row": "UK_uksi_2017_701:reg.1(6)",
     "sentence": "These Regulations come into force for all other purposes on 3rd January 2018."
   },
-  "UK_uksi_2018_1091/7ee6ca12a7": {
-    "law": "UK_uksi_2018_1091",
-    "row": "UK_uksi_2018_1091:reg.1",
-    "sentence": "These Regulations may be cited as the Civil Aviation Act 1982 (Amendment) (EU Exit) Regulations 2018 and they come into force on exit day."
-  },
   "UK_uksi_2018_110/044035f073": {
     "law": "UK_uksi_2018_110",
     "row": "UK_uksi_2018_110:reg.16",
@@ -6794,25 +6789,15 @@
     "row": "UK_uksi_2018_1370:reg.1(1)",
     "sentence": "These Regulations may be cited as the Health and Safety (Amendment) (EU Exit) Regulations 2018 and come into force on exit day."
   },
-  "UK_uksi_2018_1392/0e6b0b6df0": {
-    "law": "UK_uksi_2018_1392",
-    "row": "UK_uksi_2018_1392:reg.1(3)",
-    "sentence": "This regulation, paragraphs 9(c) and 17 of Schedule 1 and regulation 4, in so far as it relates to those paragraphs, come into force on the 22nd day after the day on which these Regulations are made."
-  },
-  "UK_uksi_2018_1413/7358cccc6d": {
-    "law": "UK_uksi_2018_1413",
-    "row": "UK_uksi_2018_1413:reg.1(1)",
-    "sentence": "This Order may be cited as the Human Fertilisation and Embryology Act 2008 (Remedial) Order 2018 and comes into force on the 14th day after the day on which it is made."
-  },
   "UK_uksi_2018_369/d8283a8d4b": {
     "law": "UK_uksi_2018_369",
     "row": "UK_uksi_2018_369:reg.1(2)",
     "sentence": "Subject to paragraph (3), these Regulations come into force 21 days after the day on which they are made."
   },
-  "UK_uksi_2018_407/8b14b0a456": {
-    "law": "UK_uksi_2018_407",
-    "row": "UK_uksi_2018_407:reg.1(1)",
-    "sentence": "These Regulations may be cited as the Seafarers (Insolvency, Collective Redundancies and Information and Consultation Miscellaneous Amendments) Regulations 2018 and come into force on the 22nd day after the day on which they are made."
+  "UK_uksi_2018_396/44d7ccc28f": {
+    "law": "UK_uksi_2018_396",
+    "row": "UK_uksi_2018_396:reg.1",
+    "sentence": "These Regulations may be cited as the Landfill Tax (Miscellaneous Provisions) Regulations 2018, come into force on 1st April 2018, and take effect in respect of disposals made or treated as made on or after that date."
   },
   "UK_uksi_2018_42/5b218a3d45": {
     "law": "UK_uksi_2018_42",
@@ -6929,11 +6914,6 @@
     "row": "UK_uksi_2019_421:reg.1(4)",
     "sentence": "The remainder of these Regulations come into force on 1st September 2019."
   },
-  "UK_uksi_2019_453/a5470dcf33": {
-    "law": "UK_uksi_2019_453",
-    "row": "UK_uksi_2019_453:reg.1(2)",
-    "sentence": "Parts 1 and 2 come into force on the 22nd day after the day on which these Regulations are made."
-  },
   "UK_uksi_2019_509/f15e1a6619": {
     "law": "UK_uksi_2019_509",
     "row": "UK_uksi_2019_509:reg.1(3)",
@@ -6958,11 +6938,6 @@
     "law": "UK_uksi_2019_598",
     "row": "UK_uksi_2019_598:reg.9(1)",
     "sentence": "Any person who had a duty under Schedule 2 to the 2009 Regulations prior to these Regulations coming into force must continue to comply with the provisions of that Schedule, as that Schedule had effect before the amendments made in regulations 7 and 8, until the relevant day."
-  },
-  "UK_uksi_2019_645/eee8f41531": {
-    "law": "UK_uksi_2019_645",
-    "row": "UK_uksi_2019_645:reg.1",
-    "sentence": "These Regulations may be cited as the Aviation Safety (Amendment etc.) (EU Exit) Regulations 2019 and they come into force on exit day."
   },
   "UK_uksi_2019_703/8cff0cc2b3": {
     "law": "UK_uksi_2019_703",
@@ -7199,25 +7174,10 @@
     "row": "UK_uksi_2021_745:reg.1(3)",
     "sentence": "The remainder of these Regulations come into force the day after the day on which they are made."
   },
-  "UK_uksi_2022_1037/889e04dc7c": {
-    "law": "UK_uksi_2022_1037",
-    "row": "UK_uksi_2022_1037:reg.1(2)",
-    "sentence": "These Regulations come into force on the 22nd day after the day on which they are made."
-  },
-  "UK_uksi_2022_1218/8e25720d67": {
-    "law": "UK_uksi_2022_1218",
-    "row": "UK_uksi_2022_1218:reg.1(1)",
-    "sentence": "These Regulations may be cited as the Merchant Shipping (Additional Safety Measures for Bulk Carriers) Regulations 2022 and come into force on the 22nd day after the day on which they are made."
-  },
   "UK_uksi_2022_1269/d40c9b97d6": {
     "law": "UK_uksi_2022_1269",
     "row": "UK_uksi_2022_1269:reg.1(b)",
     "sentence": "come into force on the 22nd day after the day on which they are made;"
-  },
-  "UK_uksi_2022_1342/1e1c24bf7a": {
-    "law": "UK_uksi_2022_1342",
-    "row": "UK_uksi_2022_1342:reg.1(1)",
-    "sentence": "These Regulations may be cited as the Merchant Shipping (Standards of Training, Certification and Watchkeeping) Regulations 2022 and come into force on the 22nd day after the day on which they are made."
   },
   "UK_uksi_2022_500/0f91418d33": {
     "law": "UK_uksi_2022_500",
@@ -7239,11 +7199,6 @@
     "row": "UK_uksi_2023_284:reg.1(3)",
     "sentence": "Otherwise, these Regulations come into force on 6th April 2023."
   },
-  "UK_uksi_2023_568/96b229f061": {
-    "law": "UK_uksi_2023_568",
-    "row": "UK_uksi_2023_568:reg.1(1)",
-    "sentence": "These Regulations may be cited as the Merchant Shipping (Fire Protection) Regulations 2023 and come into force on the 22nd day after the day on which they are made."
-  },
   "UK_uksi_2023_588/5c4befeb3f": {
     "law": "UK_uksi_2023_588",
     "row": "UK_uksi_2023_588:reg.1(2)",
@@ -7253,11 +7208,6 @@
     "law": "UK_uksi_2023_854",
     "row": "UK_uksi_2023_854:reg.1(2)",
     "sentence": "These Regulations come into force immediately after section 162 of the Health and Care Act 2022 comes into force."
-  },
-  "UK_uksi_2023_861/eefd134bd0": {
-    "law": "UK_uksi_2023_861",
-    "row": "UK_uksi_2023_861:reg.1(b)",
-    "sentence": "come into force on the 21st day after the day on which they are made; and"
   },
   "UK_uksi_2023_907/c0ad4596d3": {
     "law": "UK_uksi_2023_907",

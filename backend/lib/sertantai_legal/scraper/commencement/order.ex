@@ -73,7 +73,8 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
       type_territory = type_territory(order.law_name) || title_territory(order)
 
       (statements(order, aliases) ++
-         whole_act(order, aliases) ++ appointed_for(order, aliases) ++ tables(order, act))
+         whole_act(order, aliases) ++
+         appointed_for(order, aliases) ++ tables(order, act) ++ schedule_lists(order, aliases))
       |> Enum.map(fn r ->
         %{r | commences: act.law, territory: r.territory || head_territory(r) || type_territory}
       end)
@@ -175,7 +176,9 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
   # ── does the order commence the Act ─────────────────────────────────
 
-  defp commences?(order, act) do
+  @doc "True when the order commences `act` (its \"the Act\", else its title named in its words)."
+  @spec commences?(Doc.t(), act()) :: boolean()
+  def commences?(order, act) do
     case DefinedTerms.of(order)["the act"] do
       %{law: law} when is_binary(law) -> law == act.law
       %{title: t} when is_binary(t) -> named?(t, act)
@@ -219,8 +222,12 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   defp statements(order, aliases) do
     made = made(order)
 
+    # (a lettered paragraph is a statement of its own where the article's
+    # words state none: "Except as provided by Article 2 of this Order— (a)
+    # the following provisions … shall come into operation on 1st December
+    # 1964 …; (b) …": SI 1964/1045)
     for id <- order.ids,
-        String.match?(id, ~r/^(?:article|regulation)-\d+[A-Z]*(?:-\d+[A-Z]*)?$/),
+        String.match?(id, ~r/^(?:article|regulation)-\d+[A-Z]*(?:-\d+[A-Z]*|-[a-z])?$/),
         words = Text.words_of(order, id),
         Regex.match?(@cif, words) or Regex.match?(@appointed, words) or
           Regex.match?(@appointed_is, words),
@@ -234,7 +241,9 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
         # are other provisions' repeals, never commenced by it
         rest = if(head =~ @entries_head, do: [], else: rest),
         items = Enum.reject(pre ++ [clean_line(inline) | rest], &(&1 == "")),
-        rule <- item_rules(items, aliases, date, order.law_name, id, head),
+        rule <-
+          item_rules(items, aliases, date, order.law_name, id, head) ++
+            elsewhere_rules(order, id, head, aliases, date),
         do: rule
   end
 
@@ -380,6 +389,100 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
       el ->
         el |> Doc.lines() |> Enum.flat_map(&refs(strip_parentheticals(&1), nil)) |> Enum.uniq()
     end
+  end
+
+  # a paragraph's statement whose items are in other paragraphs: "listed in
+  # paragraph (2) below" (SI 1994/2025 art.3(1)), "specified in article 3
+  # below" (SI 1994/3188), "specified in the following paragraphs of this
+  # regulation" (SI 2025/272 reg.2(1)) — those paragraphs' lines, less a
+  # head pointing back ("The provisions referred to in paragraph (1) above
+  # are—")
+  @elsewhere_para ~r/\b(?:listed|specified|referred\s+to|set\s+out|mentioned)\s+in\s+paragraph\s+\((\d+[A-Z]?)\)/i
+  @elsewhere_article ~r/\b(?:listed|specified|referred\s+to|set\s+out|mentioned)\s+in\s+(article|regulation)\s+(\d+[A-Z]*)\s+below\b/i
+  @following_paras ~r/\b(?:in|by)\s+the\s+following\s+paragraphs\b/i
+  @points_back ~r/^\W*(?:The\s+)?(?:provisions?|enactments?)?\s*referred\s+to\s+in\s+(?:paragraph|article|regulation)\b[^.;]*?\b(?:are|is)\b\s*[—–:-]*/i
+
+  # the items another paragraph lists, each with the statement's own
+  # qualifier ("… set out in paragraph (3) below shall come into force on
+  # 1st May 1994, save for the purposes of their application to the
+  # following activities": SI 1994/1096 art.2(2))
+  defp elsewhere_rules(order, id, head, aliases, date) do
+    case elsewhere(order, id, head) do
+      [] ->
+        []
+
+      lines ->
+        qualifier = head_qualifier(head)
+
+        lines
+        |> item_rules(aliases, date, order.law_name, id, head)
+        |> Enum.map(&%{&1 | purposes: &1.purposes || qualifier})
+    end
+  end
+
+  defp head_qualifier(head) do
+    if Regex.match?(@partial, head) and not Regex.match?(@full, head),
+      do: purposes(head)
+  end
+
+  defp elsewhere(order, id, head) do
+    for other <- pointed_to(order, id, head),
+        el = Doc.element(order, other),
+        el != nil,
+        line <- el |> Doc.lines() |> join_open() |> Enum.map(&clean_line/1),
+        line = line |> String.replace(@points_back, "") |> String.trim(),
+        line != "",
+        do: line
+  end
+
+  # (never what an exception points to: "… except the provisions listed in
+  # paragraph (2)" — those are left out, `listed/3`: SI 2008/401)
+  defp pointed_to(order, id, head) do
+    subject = head |> String.split(@cif, parts: 2) |> hd()
+
+    if subject =~
+         ~r/\bpurposes?\s+(?:\w+\s+){0,3}(?:listed|specified|referred\s+to|set\s+out|mentioned)\s+in\b/i or
+         head =~
+           ~r/\b(?:except|other\s+than|apart\s+from)\b[^.;]*?\b(?:listed|specified|referred\s+to|set\s+out|mentioned)\s+in\s+(?:paragraph|article|regulation)\b/i,
+       do: [],
+       else: pointed_to_items(order, id, subject)
+  end
+
+  defp pointed_to_items(order, id, head) do
+    case Regex.run(~r/^((?:article|regulation)-\d+[A-Z]*)-\d+[A-Z]*$/, id) do
+      [_, parent] -> paragraphs_pointed(order, id, parent, head)
+      nil -> articles_pointed(head)
+    end
+  end
+
+  defp paragraphs_pointed(order, id, parent, head) do
+    case Regex.run(@elsewhere_para, head) do
+      [_, n] ->
+        [parent <> "-" <> n]
+
+      nil ->
+        if Regex.match?(@following_paras, head),
+          do: later_paragraphs(order, id, parent),
+          else: articles_pointed(head)
+    end
+  end
+
+  defp articles_pointed(head) do
+    case Regex.run(@elsewhere_article, head) do
+      [_, kind, n] -> [String.downcase(kind) <> "-" <> n]
+      nil -> []
+    end
+  end
+
+  defp later_paragraphs(order, id, parent) do
+    n = id |> String.split("-") |> List.last() |> Integer.parse() |> elem(0)
+
+    Enum.filter(order.ids, fn other ->
+      case Regex.run(~r/^#{Regex.escape(parent)}-(\d+)[A-Z]*$/, other) do
+        [_, m] -> String.to_integer(m) > n
+        _ -> false
+      end
+    end)
   end
 
   # {items before the statement, the statement line, the lines after}: an
@@ -627,7 +730,10 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
            String.replace(list, ~r/\((?:[^()]|\([^()]*\))*\)/u, "") =~
              ~r/\b(?:Schedule|paragraph|Part)s?\b/,
          items =
-           list |> split_items() |> Enum.flat_map(&String.split(&1, ~r/\s+and\s+(?![^()]*\))/u)),
+           list
+           |> split_items()
+           |> Enum.flat_map(&String.split(&1, ~r/\s+and\s+(?![^()]*\))/u))
+           |> bare_brackets(),
          true <- length(items) > 1 do
       # "… of the Landfill Tax (Scotland) Act 2014 (so far as not then in
       # force)": the list's own qualifier, for items without theirs (SSI 2015/17)
@@ -666,6 +772,23 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
       _ -> nil
     end
   end
+
+  # a bare "(7)" after an item: one item with it where that has no qualifier
+  # of its own ("10(6) and (7) (so far as aforesaid)", its qualifier both's:
+  # SI 1974/1439), else its section's own ("83(1) (so far as it relates to
+  # …) and (2)": s.83(2) fully, SI 1964/1045)
+  defp bare_brackets(items), do: items |> Enum.reduce([], &bare_bracket/2) |> Enum.reverse()
+
+  defp bare_bracket(item, [prev | rest] = acc) do
+    with [_, number] <- Regex.run(~r/^(\d+[A-Z]*)/u, prev),
+         true <- item =~ ~r/^\(\w+\)/u do
+      if bracket_of(prev), do: [number <> item | acc], else: [prev <> " and " <> item | rest]
+    else
+      _ -> [item | acc]
+    end
+  end
+
+  defp bare_bracket(item, []), do: [item]
 
   # an item's own qualifier: its bracket with words in it
   defp bracket_of(item) do
@@ -1297,6 +1420,39 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
           )
   end
 
+  # a Schedule (or each of its Parts) listing the provisions as items, not a
+  # table: "SCHEDULE 1 PROVISIONS COMING INTO FORCE ON 8TH JUNE 2005 Article
+  # 2(1) — Section 1(2). Section 1(3), except paragraph (e). …" (SI
+  # 2005/1444), dated as a table is (its title, its Reference, the article
+  # bringing it in); a Schedule with Parts is read by its Parts
+  defp schedule_lists(order, aliases) do
+    for id <- order.ids,
+        String.match?(id, ~r/^schedule(-\d+[A-Z]*)?(?:-part-[IVXL\d]+[A-Z]?)?$/),
+        not has_parts?(order, id),
+        el = Doc.element(order, id),
+        table_rows(el) == [],
+        date = schedule_date(order, el),
+        date != nil,
+        head = "Schedule list #{id}",
+        rule <- item_rules(list_lines(el), aliases, date, order.law_name, id, head),
+        do: %{rule | treatment: :order_schedule}
+  end
+
+  defp has_parts?(order, id),
+    do: Enum.any?(order.ids, &String.match?(&1, ~r/^#{Regex.escape(id)}-part-[IVXL\d]+[A-Z]?$/))
+
+  # the items, never the Schedule's number, title or Reference
+  defp list_lines(el) do
+    el
+    |> xpath(
+      ~x"./*[not(local-name()='Number' or local-name()='Title' or local-name()='TitleBlock' or local-name()='Reference')]"l
+    )
+    |> Enum.flat_map(&Doc.lines/1)
+    |> join_open()
+    |> Enum.map(&clean_line/1)
+    |> Enum.reject(&(&1 == ""))
+  end
+
   # a table cell's provisions, each with its own qualifier: "Section 11(4)
   # and (5) and Section 11(6) (so far as aforesaid)" → "Section 11(4) and
   # (5)" fully, "Section 11(6) (so far as aforesaid)" partly (SI 1974/1439,
@@ -1374,13 +1530,23 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     end
   end
 
+  # Parts dated in their titles, each read alone; an Appendix Part with no
+  # table of provisions — a list, or a repeals table of other Acts
+  # (Chapter | Short Title | Extent of repeal) — leaves the Schedule's own
+  # table to it (SI 1977/1365)
   defp dated_parts?(order, id) do
     not String.contains?(id, "-part-") and
       Enum.any?(order.ids, fn part ->
         String.match?(part, ~r/^#{Regex.escape(id)}-part-[IVXL\d]+[A-Z]?$/) and
-          part_date(order, part) != nil
+          part_date(order, part) != nil and
+          order |> Doc.element(part) |> table_rows() |> Enum.any?(&provision_row?/1)
       end)
   end
+
+  defp provision_row?({first, _}),
+    do:
+      first =~
+        ~r/^\W*(?:sub-?)?(?:sections?|schedules?|parts?|paragraphs?|in\s+(?:section|schedule))\b/i
 
   defp part_date(order, id) do
     order
@@ -1417,6 +1583,11 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     el
     |> xpath(~x".//*[local-name()='tbody']/*[local-name()='tr']"l)
     |> Enum.map(fn tr -> tr |> xpath(~x"./*[local-name()='td']"l) |> Enum.map(&Doc.text/1) end)
+    # a repealed Act by its chapter ("1894 c. 60.": an Appendix of repeals,
+    # SI 1995/965) is no provision of the Act's
+    |> Enum.reject(fn cells ->
+      List.first(cells, "") =~ ~r/^[\w&.,\s]{0,40}\bc\.\s*\d+\s*\.?\s*$/
+    end)
     |> Enum.reduce({[], nil}, fn
       [first | rest], {acc, parent} ->
         purpose = List.first(rest)
@@ -1451,7 +1622,47 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
     case parse_dates(title) do
       [d] -> d
-      _ -> article_date(order, el)
+      _ -> article_date(order, el) || intro_date(order, el)
+    end
+  end
+
+  # a Schedule with no date and no Reference: the one date of the articles
+  # bringing it in ("The provisions … specified in column 1 of the Schedule
+  # to this order … shall come into force on 14th June 1976": SI 1976/731)
+  defp intro_date(order, el) do
+    id = xpath(el, ~x"./@id"s)
+    names = if String.contains?(id, "-part-"), do: part_named(id), else: schedule_named(id)
+
+    order.ids
+    |> Enum.filter(&String.match?(&1, ~r/^(?:article|regulation)-\d+[A-Z]*(?:-\d+[A-Z]*)?$/))
+    |> Enum.map(&Text.words_of(order, &1))
+    |> Enum.filter(&(Regex.match?(@cif, &1) and Regex.match?(names, &1)))
+    |> Enum.flat_map(&parse_dates/1)
+    |> Enum.uniq()
+    |> case do
+      [d] -> d
+      _ -> nil
+    end
+  end
+
+  defp schedule_named("schedule"),
+    do:
+      ~r/\bthe\s+Schedule\b(?!\s+\d)(?:\s+(?:to\s+th(?:is|e)\s+(?:Order|order|Regulations)|hereto))?(?!\s+to\s+the\s+(?:\d{4}\s+|said\s+|principal\s+)?Act)/
+
+  defp schedule_named("schedule-" <> n),
+    do:
+      ~r/\bSchedule\s+#{Regex.escape(n)}\b(?!\s+to\s+the\s+(?:\d{4}\s+|said\s+|principal\s+)?Act)/
+
+  defp schedule_named(_id), do: ~r/(?!)/
+
+  # "Part 1 of the Schedule hereto" (SI 2002/1014), "Part I of Schedule 2"
+  defp part_named("schedule-part-" <> p),
+    do: ~r/\bPart\s+#{Regex.escape(p)}\s+of\s+the\s+Schedule\b(?!\s+\d)/
+
+  defp part_named("schedule-" <> rest) do
+    case String.split(rest, "-part-") do
+      [n, p] -> ~r/\bPart\s+#{Regex.escape(p)}\s+of\s+Schedule\s+#{Regex.escape(n)}\b/
+      _ -> nil
     end
   end
 

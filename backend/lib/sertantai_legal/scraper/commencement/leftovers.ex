@@ -27,6 +27,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
   extractor, given as `refs`, leaves them out). Pure.
   """
 
+  alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.Commencement.{Order, OrderPatterns, Rule, SentencePatterns}
   alias SertantaiLegal.Scraper.LawStart.{Clause, Provisions}
 
@@ -39,8 +40,8 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
   @date Regex.compile!(
           "\\b\\d{1,2}\\s*(?:st|nd|rd|th)?\\s+(?:day\\s+of\\s+)?(?:#{Enum.join(@months, "|")}),?\\s+\\d{4}\\b"
         )
-  @except ~r/\b(?:except(?:\s+for)?|other\s+than|apart\s+from|save\s+that)\s+([^,;]+?)(?=\s*(?:,|;|\bwhich\b|\b(?:shall|comes?|is\s+to|are\s+to)\b|$))/i
-  @completing ~r/\b(?:(?:(?:in\s+)?so\s+far|insofar|to\s+the\s+extent)\s+(?:as|that)\s+(?:(?:it|they|th(?:at|ose|ese)\s+[\w-]+)\s+(?:is|are|has|have)\s+)?not\s+(?:already\s+|yet\s+|previously\s+|then\s+)?(?:been\s+)?(?:in\s+force|commenced|brought\s+into\s+force)|for\s+all\s+(?:other\s+|remaining\s+)?purposes)\b/i
+  @except ~r/\b(?:except(?:\s+for)?|other\s+than|apart\s+from|save\s+that)\s+(?!(?:in\s+relation\s+to|(?:in\s+)?so\s+far\s+as|insofar\s+as|to\s+the\s+extent|for\s+the\s+purposes?\s+of|as\s+(?:already|aforesaid))\b)([^,;]+?)(?=\s*(?:,|;|\bwhich\b|\b(?:shall|comes?|is\s+to|are\s+to)\b|$))/i
+  @completing ~r/\b(?:(?:(?:in\s+)?so\s+far|insofar|to\s+the\s+extent)\s+(?:as|that)\s+(?:(?:it|they|th(?:at|ose|ese)\s+[\w-]+)\s+(?:is|are|has|have)\s+)?not\s+(?:already\s+|yet\s+|previously\s+|then\s+)?(?:been\s+)?(?:in\s+force|commenced|brought\s+into\s+force)|for\s+all\s+(?:other\s+|remaining\s+)?purposes|except\s+(?:(?:in\s+)?so\s+far\s+)?as\s+(?:it\s+is\s+|they\s+are\s+)?already\s+in\s+(?:force|operation)|except\s+as\s+aforesaid)\b/i
   @qualifier ~r/\b(?:in\s+relation\s+to|for\s+the\s+purposes?\s+of|(?:in\s+)?so\s+far\s+as|insofar\s+as|to\s+the\s+extent\s+that)\b/i
   @relative ~r/\bthe\s+(?:\w+\s+)?day\s+after\b|\blaid\b|\bnotified\b|\bthe\s+end\s+of\s+the\s+period\b/i
 
@@ -53,12 +54,38 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
   # code's amendments, arrangements, a notice — never the law's own
   # provisions ("The regulations required by subsection (1) must come into
   # force …": asp 2010/5 s.38(2)); "These Regulations" is the law
-  @instrument ~r/^\W*(?:(?:the|any|an?|such)\s+)?(?:[\w-]+\s+){0,3}(?:regulations|orders?|schemes?|codes?(?:\s+of\s+practice)?|arrangements|amendments|notices?|directions?|byelaws|determinations?|designations?)\b(?!\s*\d|\s+of\s+this\s+(?:Act|Order))[^.;]{0,160}?\b(?:must|shall|may|will)?\s*(?:comes?|come)\s+into\b/i
+  @instrument ~r/^\W*(?:(?:the|any|an?|such)\s+)?(?:[\w-]+\s+){0,3}(?:regulations|orders?|schemes?|codes?(?:\s+of\s+practice)?|arrangements|amendments|notices?|directions?|byelaws|determinations?|designations?|instruments?)\b(?!\s*\d|\s+of\s+this\s+(?:Act|Order))[^.;]{0,160}?\b(?:must|shall|may|will)?\s*(?:comes?|come)\s+into\b/i
 
   # a pointer to where something else is provided, never what is excepted
   # or named ("Except as provided by subsection (2)", "Subject to
   # subsection (2)", "in accordance with …": s.183(1) of 2017 c.3)
-  @pointer ~r/\b(?:except\s+as\s+(?:otherwise\s+)?(?:provided|mentioned|specified|set\s+out)\s+(?:by|in|under)|subject\s+to|in\s+accordance\s+with|(?:as|to\s+the\s+extent)\s+(?:provided|mentioned|specified)\s+(?:by|in|under))\s+[^,;]*/i
+  @pointer ~r/\b(?:except\s+as\s+(?:otherwise\s+)?(?:provided|mentioned|specified|set\s+out)\s+(?:for\s+)?(?:by|in|under)|subject\s+to|in\s+accordance\s+with|(?:as|to\s+the\s+extent)\s+(?:provided|mentioned|specified)\s+(?:by|in|under))\s+[^,;]*/i
+
+  # the order's power over its own transition, never a qualifier of the
+  # day: "…, and, for the purposes of the transition …, the Order
+  # appointing the day may provide that …" (1971 c.19 s.6(5))
+  @order_may ~r/[,;]\s*and,?\s+[^;]*?\bthe\s+(?:Order|order|instrument)\s+(?:appointing|bringing)\b[^;]*?\bmay\s+(?:provide|make|contain)\b.*$/is
+
+  # (also another Act's provision an order of the family's commences: NISR
+  # 2012/286 "Section 2(1)(d) of the Corporate Manslaughter … Act 2007 shall
+  # come into force …"; a counterfactual mention: "had the Order in Council
+  # come into force before …", 1994 c.21 s.8(4))
+  # something else coming into force, or its terms: a deemed day of a
+  # thing that is no provision ("the Concession shall be taken to have
+  # come into operation": 1987 c.53 s.4(3)), EU law (2018 c.16 s.8(4)), a
+  # reading rule ("References in subsections (1) to (5) to provision …":
+  # 2014 c.21 s.55(6)), what another enactment provides (1982 c.16 s.97(6))
+  @not_ours ~r/^\W*(?:for\s+the\s+purposes\s+of\s+this\s+(?:Act|Part),\s*)?the\s+(?!(?:provisions?|sections?|Act|Part|Schedule|regulations?|articles?)\b)[a-z][\w-]*\s+(?:shall|is\s+to)\s+be\s+(?:taken|treated|deemed)\s+to\s+have\s+come\s+into\b|\bEU\s+law\b[^.;]*\bcomes?\s+into\b|^\W*References?\s+in\s+(?:sub)?(?:sections?|paragraphs?|regulations?)\b|\b(?:enactment|Act|order|instrument)\s+provides\s+that\b[^.;]*\bcome\s+into\b|^\W*(?:Sections?|Regulations?|Articles?|Paragraphs?|Schedules?|Parts?)\s+[\w()]+(?:\s*(?:,|and|to)\s*[\w()]+)*\s+of\s+the\s+(?:[A-Z][\w(),'-]*\s+){1,14}(?:Act|Order|Regulations)(?:\s+\([^)]*\))?\s+\d{4}\b[^.;]*?\b(?:shall\s+)?comes?\s+into\b|\bhad\s+the\s+[^.;]{1,60}?\bcome\s+into\s+(?:force|operation)\b/i
+
+  # the entries a repeal names are other Acts' provisions ("Schedule 10, the
+  # following repeals:— The Employment Medical Advisory Service Act 1972-
+  # sections 1 and 6 …": SI 1974/1439 Sch. 2)
+  # how a provision applies, never when it comes in ("…, save that the
+  # references to “civil partner” in … regulation 2 shall not apply in
+  # relation to any time before …": SI 2005/881 reg.1(1))
+  @not_applying ~r/,?\s*save\s+that\b[^.;]*?\bshall\s+not\s+apply\b.*$/is
+
+  @repeal_entries ~r/\bthe\s+following\s+(?:repeals|entries)\b.*$/is
 
   # no time stated and no rule read: a condition or description, never a
   # statement ("… until section 55 comes into force")
@@ -72,10 +99,22 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
   """
   @spec of(String.t(), [Rule.t()], (String.t() -> [String.t()])) :: [leftover()]
   def of(statement, rules, refs) do
-    statement = Regex.replace(@pointer, statement, ",")
+    statement =
+      @pointer
+      |> Regex.replace(statement, ",")
+      |> then(&Regex.replace(@order_may, &1, "."))
+      |> then(&Regex.replace(@repeal_entries, &1, ""))
+      |> then(&Regex.replace(@not_applying, &1, "."))
+      # quoted words are words, never provisions ("the words “section 48,”":
+      # SI 1996/1609)
+      |> then(&Regex.replace(~r/“[^”]*”/u, &1, "“”"))
+      |> close_brackets()
 
-    if Clause.mention?(statement) or power?(statement) or instrument?(statement) or
-         no_when?(statement, rules) do
+    # (a commencement only in quoted words is an amendment's text: SI
+    # 2026/82 reg.12(2))
+    if not (statement =~ ~r/\binto\s+(?:force|operation)\b/i) or Clause.mention?(statement) or
+         power?(statement) or instrument?(statement) or
+         Regex.match?(@not_ours, statement) or no_when?(statement, rules) do
       []
     else
       (dates(statement, rules) ++
@@ -84,6 +123,16 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
          qualifiers(statement, rules) ++ relative_days(statement, rules))
       |> Enum.uniq()
     end
+  end
+
+  @relates_to ~r/\b(?:(?:in\s+)?so\s+far|insofar)\s+as\s+(?:it|they)\s+relates?\s+to\s+[^);]*/i
+
+  # a bracket the text leaves open closes at its end (legislation.gov.uk's
+  # "Section 83(3) (so far as it relates to section 29(2), (4) and (5)": SI
+  # 1964/191)
+  defp close_brackets(s) do
+    open = length(String.split(s, "(")) - length(String.split(s, ")"))
+    if open > 0, do: s <> String.duplicate(")", open), else: s
   end
 
   defp power?(s), do: Regex.match?(@power, s)
@@ -138,6 +187,14 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
     excepted = for [_, words] <- Regex.scan(@except, s), ref <- refs.(words), do: ref
     # "the following provisions of Part 1 …": the Part is where they are
     container? = s =~ ~r/\bprovisions\s+of\s+(?:Parts?|Chapters?)\b/i
+
+    # what a partial rule's qualifier relates to is its object, never
+    # commenced ("Section 83(3) (so far as it relates to section 29(2), (4)
+    # and (5))": SI 1964/191)
+    s =
+      if Enum.any?(rules, &(not Rule.full?(&1))),
+        do: Regex.replace(@relates_to, s, ""),
+        else: s
 
     for segment <- @except |> Regex.replace(s, ",") |> segments(),
         ref <- refs.(segment),
@@ -246,8 +303,18 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
     for {row_id, sentence} <- sentences do
       {text, own} = statement(row_id, sentence, rows, read)
       refs = &Provisions.refs_in(&1, rows, provision(row_id))
-      {row_id, sentence, of(text, own, refs)}
+
+      if own == [] and outside?(text, refs),
+        do: {row_id, sentence, []},
+        else: {row_id, sentence, of(text, own, refs)}
     end
+  end
+
+  # a statement naming provisions none of which the law's rows hold (a
+  # scoped LAT: 2023 c.55 holds 408 rows, never s.58) reaches no row
+  defp outside?(text, refs) do
+    subject = text |> String.split(~r/\binto\s+(?:force|operation)\b/i, parts: 2) |> hd()
+    Order.refs_in(subject) != [] and refs.(subject) == []
   end
 
   @type statement :: %{
@@ -290,9 +357,11 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
   Each statement of a commencement order (`OrderPatterns.units/1`) as the
   order catalogue classes it, with its leftovers given the order's `rules`.
   """
-  @spec order_units(SertantaiLegal.Scraper.AmendingLaw.Doc.t(), [Rule.t()]) :: [map()]
+  @spec order_units(Doc.t(), [Rule.t()]) :: [map()]
   def order_units(doc, rules) do
-    for unit <- OrderPatterns.units(doc) do
+    units = OrderPatterns.units(doc)
+
+    for unit <- units, not repeats_paragraph?(unit, units) do
       f = OrderPatterns.form(unit)
       o = OrderPatterns.outcome(unit, rules)
 
@@ -301,9 +370,27 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
         form: f,
         outcome: o,
         pattern: OrderPatterns.key(f, o.class),
-        leftovers: order_leftovers(unit, rules)
+        leftovers: if(own_lead?(doc, unit), do: [], else: order_leftovers(unit, rules))
       }
     end
+  end
+
+  # an article whose first line is its first paragraph's ("… 1st March
+  # 2005. 2"): one statement, the paragraph's (SI 2005/442 art.2)
+  defp repeats_paragraph?(%{id: id, text: text}, units) do
+    Enum.any?(units, fn %{id: other, text: t} ->
+      String.starts_with?(other, id <> "-") and t != "" and String.starts_with?(text, t)
+    end)
+  end
+
+  # the tail of the order's own "This Order— (a) may be cited as …, and (b)
+  # comes into force on …" (SI 2009/3345 art.1)
+  defp own_lead?(doc, %{text: text, id: id}) do
+    text =~ ~r/^\W*(?:shall\s+)?comes?\s+into\b/i and
+      doc
+      |> Doc.element(id)
+      |> Doc.lines()
+      |> Enum.any?(&(&1 =~ ~r/^\W*(?:\d+\s+)*(?:This|These)\s+(?:Order|Regulations)\s*[—–-]/))
   end
 
   # the order's own commencement and a table's header commence none of the
@@ -325,17 +412,27 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
   # the order's own articles ("This article and article 2 come into force …",
   # "The following provisions of this Order …", "Article 3 comes into force …")
   defp own_articles?(text),
+    # its own paragraphs, its title ("Paragraphs (1) and (2) shall come
+    # into force …": SI 2005/2714; "This paragraph, paragraph (3) …": SI
+    # 2025/1370; "The title of these Regulations is …": WSI 2024/447)
     do:
       text =~ ~r/^\W*(?:This|These)\s+(?:articles?|Order|regulations?|Regulations)\b/ or
         text =~
           ~r/^\W*The\s+(?:remaining\s+|other\s+|following\s+)?provisions\s+of\s+this\s+(?:Order|instrument)\b/ or
-        text =~ ~r/^\W*Articles?\s+\d[^.]*?\b(?:comes?|shall\s+come)\s+into\b/
+        text =~ ~r/^\W*Articles?\s+\d[^.]*?\b(?:comes?|shall\s+come)\s+into\b/ or
+        text =~
+          ~r/^\W*(?:Paragraphs?\s+\(\d+[A-Z]?\)|This\s+paragraph\b|The\s+title\s+of\s+th(?:is|ese)\b)/
 
   # ── the review: a statement's status ────────────────────────────────
 
-  @doc "A leftover group's reviewed status (`leftovers.json`), nil when it has none."
-  @spec status(String.t(), map()) :: String.t() | nil
-  def status(shape, reviewed), do: Map.get(reviewed, shape)
+  @doc """
+  A leftover's reviewed status (`leftovers.json`), nil when it has none: a
+  statement named apart from its group (`"<shape> @ <row>"`: a laid-relative
+  day, limit C, beside the group's real misses) first, else its group's.
+  """
+  @spec status(String.t(), map(), String.t() | nil) :: String.t() | nil
+  def status(shape, reviewed, row \\ nil),
+    do: Map.get(reviewed, "#{shape} @ #{row}") || Map.get(reviewed, shape)
 
   @doc "True for a status that names the leftover as a known limit (the family gate passes it)."
   @spec named?(String.t() | nil) :: boolean()

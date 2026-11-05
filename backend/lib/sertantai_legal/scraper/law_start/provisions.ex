@@ -312,8 +312,17 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
     # s.211(2)); "… save that regulations 9 and 12(1)(b) shall come into
     # force on 1st April 1994" (SI 1988/1729): CV-S04
     ~r/\bdoes\s+not\s+apply\s+to\s+(.+?),?\s+which\s+(?:shall\s+)?comes?\s+into\s+(?:force|operation)\s+(.+?)\.?$/i,
-    ~r/\bsave\s+that\s+(.+?)\s+shall\s+come\s+into\s+(?:force|operation)\s+(.+?)[;.]?$/i
+    ~r/\b(?:save|except)\s+that\s+(.+?)\s+shall\s+come\s+into\s+(?:force|operation)\s+(.+?)[;.]?$/i,
+    # "… with the exception of articles 18, 23 … which shall come into force
+    # on 1st March 2005" (SI 2000/311); "…, apart from section 167 and
+    # Schedule 21 which come into force on such day as …" (2026 c.18)
+    ~r/\b(?:with\s+the\s+exception\s+of|apart\s+from)\s+(.+?)\s+which\s+(?:shall\s+)?comes?\s+into\s+(?:force|operation)\s+(.+?)\.?$/i
   ]
+
+  # a second dated exception chained on: "… except that regulation 14(2)
+  # shall come into force on 1st January 1993 and regulation 16(7) shall come
+  # into force on 1st September 1990" (SI 1988/1655)
+  @and_dated ~r/^(.+?)\s+and\s+((?:regulations?|sections?|articles?|rules?)\s+\d.+?)\s+shall\s+come\s+into\s+(?:force|operation)\s+(.+?)$/i
 
   # (an undated exception kept only for numbered provisions of its own:
   # never "the repeal of the entry … in Part II of Schedule 1 to the House
@@ -324,23 +333,31 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
   # commencement of Part 9A … of the Merchant Shipping Act 1995": SI
   # 2012/2267 reg.1(2)) is kept, unread, so it's never the law's date
   defp except_which(s, row, rows, made, base) do
-    with [_, subject, tail] <- Enum.find_value(@except_which, &Regex.run(&1, s)),
-         [_ | _] = refs <- weighted_refs(subject, rows, base),
-         {treatment, d} <- except_date(tail, subject, made) do
-      [
-        %{
-          kind: :named,
-          refs: refs,
-          excluded: [],
-          treatment: treatment,
-          date: d,
-          qualified_date: nil,
-          evidence: row.section_id,
-          text: s
-        }
-      ]
-    else
-      _ -> []
+    case Enum.find_value(@except_which, &Regex.run(&1, s)) do
+      [_, subject, tail] ->
+        for {subject, tail} <- chained(subject, tail),
+            [_ | _] = refs <- [weighted_refs(subject, rows, base)],
+            {treatment, d} <- [except_date(tail, subject, made)],
+            do: %{
+              kind: :named,
+              refs: refs,
+              excluded: [],
+              treatment: treatment,
+              date: d,
+              qualified_date: nil,
+              evidence: row.section_id,
+              text: s
+            }
+
+      nil ->
+        []
+    end
+  end
+
+  defp chained(subject, tail) do
+    case Regex.run(@and_dated, tail) do
+      [_, first, next, rest] -> [{subject, first} | chained(next, rest)]
+      nil -> [{subject, tail}]
     end
   end
 
@@ -590,8 +607,10 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
     }
 
     if subject =~ ~r/\bthe following\b/i do
+      {head, before} = head_and_items(subject)
+
       items =
-        [inline | Enum.map(children(row, rows), &(&1.text || ""))]
+        [before, inline | Enum.map(children(row, rows), &(&1.text || ""))]
         |> Enum.join("; ")
         |> String.split(~r/;\s*/, trim: true)
 
@@ -619,7 +638,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
       }
 
       # a list whose items are all qualified is only the qualified group
-      [classify(named, subject <> " " <> tail), listed]
+      [classify(named, head <> " " <> tail), listed]
       |> Enum.reject(&(&1.treatment == :provision_qualified and &1.refs == []))
       |> Enum.reject(&(&1.kind == :unread and plain == [] and qualified != []))
     else
@@ -698,6 +717,16 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
       refs(subject_out, rows, relative_base(refs, base))
 
     [classify(%{g | refs: refs, excluded: excluded}, sentence, subject)]
+  end
+
+  # the items may come before the verb: "The following provisions— section
+  # 8, section 317(6) …, shall come into force on such day as …" (1996 c.56
+  # s.583(3), 1994 c.29 s.94(2)); the list is classed by its head alone
+  defp head_and_items(subject) do
+    case Regex.split(~r/(?<=[—–])\s*/u, subject, parts: 2) do
+      [head, items] -> {head, String.trim_trailing(items, ",")}
+      _ -> {subject, ""}
+    end
   end
 
   defp classify(g, qualifiable, subject \\ "") do

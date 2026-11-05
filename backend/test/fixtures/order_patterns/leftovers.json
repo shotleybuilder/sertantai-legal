@@ -67,5 +67,9 @@
   "whole_act|date|-|-|other_law|none | left: date": "fix: reads nothing — date left (class, not reviewed one by one; 1 statements, reach 57)",
   "whole_act|date|qualified|-|-|rules | left: qualifier": "fix: half-read — qualifier left (class, not reviewed one by one; 2 statements, reach 956)",
   "whole_act|date|qualified|full|-|none | left: date": "fix: reads nothing — date left (class, not reviewed one by one; 1 statements, reach 18)",
-  "whole_act|made_relative|qualified|-|other_law|rules | left: qualifier": "fix: \"for the purpose of enabling regulations to be made\" read as full (SI 2010/2191)"
+  "whole_act|made_relative|qualified|-|other_law|rules | left: qualifier": "fix: \"for the purpose of enabling regulations to be made\" read as full (SI 2010/2191)",
+  "following|none|qualified|-|-|none | left: provision": "known: one-order wording — \"do not come into force in relation to a shipping matter … until regulations under section 30(1) … come into force\" (SI 2010/2317 art.10(4)), a negative staging tied to regulations (RULES.md: one-law commencement wordings)",
+  "table|date|-|-|-|rules | left: date": "known: one-order aside — \"(but not section 31(1) which come into force on 8th September 1977)\" dates an earlier order's commencement (SI 1978/712) (RULES.md: one-law commencement wordings)",
+  "table|none|-|-|other_law|rules | left: provision": "check: quoted words read as provisions (\"the words “section 48,”\": SI 1996/1609) — fixed in Leftovers (reader misses, 2026-11-05)",
+  "inline|date|-|-|-|none | left: provision": "check: an amendment's quoted \"comes into force\" read as a statement (SI 2026/82 reg.12(2)) — fixed in Leftovers (reader misses, 2026-11-05)"
 }
