@@ -22,6 +22,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.RowsTest do
       introduced_by: %{"sch.7" => "s.111"},
       application: "E",
       powers: "E+W+S",
+      stated: "E+W+S+NI",
       competence: "E+W",
       targets: [
         %{kind: :also, place: "S", scope: "sch.7.para.27", law: nil, refs: ["s.4(8)"]},

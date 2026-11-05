@@ -25,6 +25,18 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Default do
 
   @place_list Places.place_list()
 
+  # the law itself "extends to Northern Ireland", with no "only"
+  @whole_to_ni ~r/\b(?:this|these)\s+(?:Act|Regulations|Order|Rules)\s+(?:shall\s+)?(?:also\s+)?extends?\s+to\s+Northern\s+Ireland\b(?!\s+only)/iu
+
+  # the whole law "shall not extend to" a place (`narrowed/3`)
+  @whole_not Regex.compile!(
+               "\\bthis\\s+Act\\s+(?:does|shall)\\s+not\\s+extend\\s+to\\s+((?>#{@place_list}))",
+               "u"
+             )
+
+  # "This Act, except section 4, extends to Northern Ireland" (`except_first/1`)
+  @except_first ~r/\b((?:This|These)\s+(?:Act|Regulations|Order|Rules)),\s*((?:except|save|apart\s+from|other\s+than)\s+(?:for\s+)?[^,()]+?),\s*((?:shall\s+)?extends?\s+(?:only\s+)?to\s+[^,;.]+?)(?=\s*(?:\.|$))/u
+
   @doc """
   What one sentence of an extent clause states, in the reader's terms
   (CV-S05, the catalogue's outcome): `{:default, code}` (the law's own
@@ -44,7 +56,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Default do
   # (an Act of the UK Parliament's "This Act extends to Northern Ireland"
   # is the UK, as `read/1` reads it: `type` the law's type code)
   def statement(sentence, type) do
-    case statement_alone(sentence) do
+    case sentence |> except_first() |> statement_alone() do
       {:default, d} -> {:default, westminster(d, sentence, type)}
       other -> other
     end
@@ -103,9 +115,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Default do
   @doc "A default of \"NI\" in an Act of the UK Parliament is the UK, unless it says \"only\"."
   @spec westminster(String.t() | nil, String.t(), String.t() | nil) :: String.t() | nil
   def westminster("NI", clause, "ukpga") do
-    if clause =~ ~r/\bNorthern\s+Ireland\s+only\b|\bonly\s+to\s+Northern\s+Ireland\b/iu,
-      do: "NI",
-      else: "E+W+S+NI"
+    cond do
+      # the default's own sentence first: "only" in another subsection's
+      # list ("Section 6 and Part 5 extend to Northern Ireland only") is
+      # not the default's (ukpga 2005/4 s.147, 2026-11-05)
+      clause =~ @whole_to_ni -> "E+W+S+NI"
+      clause =~ ~r/\bNorthern\s+Ireland\s+only\b|\bonly\s+to\s+Northern\s+Ireland\b/iu -> "NI"
+      true -> "E+W+S+NI"
+    end
   end
 
   def westminster(default, _clause, _type), do: default
@@ -150,6 +167,47 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Default do
       true ->
         nil
     end
+  end
+
+  @doc """
+  The default narrowed by the whole law's "not extend" in a later section
+  of the clauses (`clauses`: `{ref, text}`): "…; but except as aforesaid
+  …, this Act shall not extend to Northern Ireland" after s.146's "… shall
+  not extend to Scotland" (ukpga 1983/20 s.147: E+W, not E+W+NI;
+  2026-11-05). The provisions its own sentence names are read where they
+  are (withheld while unread).
+  """
+  @spec narrowed(String.t() | nil, [{String.t(), String.t()}], String.t() | nil) ::
+          String.t() | nil
+  def narrowed(nil, _clauses, _clause_ref), do: nil
+
+  def narrowed(default, clauses, clause_ref) do
+    for {ref, text} <- clauses,
+        ref != clause_ref,
+        [_, place] <- Regex.scan(@whole_not, text),
+        reduce: default do
+      d -> Territory.subtract(d, Places.places(place)) || d
+    end
+  end
+
+  @doc """
+  A law's exception stated before its verb, moved after it, as the
+  default-with-exceptions form reads it: "This Act, except section 4,
+  extends to Northern Ireland" → "This Act extends to Northern Ireland,
+  except section 4" (ukpga 1997/28 s.30, 1998/17 s.53: Maritime Safety,
+  2026-11-05), wherever the sentence stands in the text. Any other words
+  unchanged.
+  """
+  @spec except_first(String.t()) :: String.t()
+  def except_first(sentence) do
+    Regex.replace(@except_first, sentence, fn whole, subj, exc, verb ->
+      # only a plain exception: a qualified one ("except in so far as it
+      # relates to …", "except so far as Schedule 4 amends …") is left as
+      # it stands, unread (ukpga 1975/30 s.39, 1981/67 s.35)
+      if exc =~ ~r/\b(?:so\s+far|insofar|which|where|relat\w*|amends?)\b/iu,
+        do: whole,
+        else: "#{subj} #{verb}, #{exc}"
+    end)
   end
 
   # the places as one run: a bracket of its own out ("extends to Scotland

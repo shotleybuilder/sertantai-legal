@@ -17,7 +17,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
 
   An SI stating no extent extends as far as its enabling powers
   (`from_powers/2`: each enabling provision by its parent Act's extent
-  clause; CV-07), used only where it states none (`powers`).
+  clause; CV-07), used only where it states none (`powers`). An Act
+  stating no extent clause and no lists takes the extent legislation.gov.uk
+  states on the whole Act (`stated`; Decision 3, Jason 2026-11-05).
 
   A Schedule extends as the section introducing it ("111 Schedule 7 … has
   effect"), unless the clause names it. `read/1` takes the Act's document;
@@ -60,6 +62,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
             application: nil,
             applies: [],
             powers: nil,
+            stated: nil,
             competence: nil,
             targets: []
 
@@ -75,6 +78,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
           application: String.t() | nil,
           applies: [{applies_kind(), String.t(), [String.t()]}],
           powers: String.t() | nil,
+          stated: String.t() | nil,
           competence: String.t() | nil,
           targets: [Targeted.t()]
         }
@@ -95,7 +99,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
              |> Units.own_words()
              |> Doc.lines()
              |> Enum.join(" ")
-             |> Units.unlettered()}
+             |> Units.unlettered()
+             |> Default.except_first()}
 
     # built once: the named and same-extent readers both walk them
     unit_sentences = Units.unit_sentences(doc)
@@ -119,7 +124,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
         Default.default(text) != nil
       end)
 
-    default = Default.westminster(Default.default(clause), clause, doc.type)
+    default =
+      Default.default(clause)
+      |> Default.westminster(clause, doc.type)
+      |> Default.narrowed(clauses, clause_ref)
+
     # a provision's own application, and an "extends and applies" extent
     applies = Applies.applies(doc)
 
@@ -225,6 +234,6 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   defdelegate competence_only?(e), to: Lookup
 
   @doc "An SI's extent from its enabling powers (`Extent.Lookup.from_powers/2`)."
-  @spec from_powers([map()], %{String.t() => t()}) :: String.t() | nil
-  defdelegate from_powers(provisions, parents), to: Lookup
+  @spec from_powers([map()], %{String.t() => t()}, map()) :: String.t() | nil
+  defdelegate from_powers(provisions, parents, stated \\ %{}), to: Lookup
 end

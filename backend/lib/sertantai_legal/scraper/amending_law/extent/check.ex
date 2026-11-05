@@ -14,7 +14,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Check do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Extent, SweepForm}
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Lookup, Store}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Lookup, Store, Unread}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Coverage
 
   @groups ~w(law_text follows_enactment feed_or_markup law_type_not_read no_powers unread_statement competence_only no_amending_law other)a
@@ -24,7 +24,16 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Check do
   @doc "A law whose type the reader doesn't read, or whose text isn't held."
   @spec unread_law(String.t(), String.t()) :: map()
   def unread_law(law, why),
-    do: %{law: law, basis: "none", why: why, fault: nil, unread: %{}, uncaught: [], words: nil}
+    do: %{
+      law: law,
+      basis: "none",
+      why: why,
+      fault: nil,
+      unread: %{},
+      withholding: [],
+      uncaught: [],
+      words: nil
+    }
 
   @doc """
   A law's row from its cached reading (`ReadCache.law/1`), its extent with
@@ -55,6 +64,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Check do
       why: why,
       fault: fault,
       unread: unread,
+      # the statements that withhold a bound (`Extent.Unread`), for the gate
+      withholding:
+        for(
+          {ref, s, c} <- classes,
+          c in Unread.classes(),
+          do: "#{ref}: #{String.slice(s, 0, 200)} (#{c})"
+        ),
       # the sweep's sentences the catalogue misses, with their form
       uncaught: for({ref, s, _net} <- reading.uncaught, do: {ref, s, SweepForm.form(s)}),
       extent: e,
@@ -70,6 +86,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Check do
       e.lists != [] -> {"lists", nil}
       e.application -> {"application", nil}
       e.powers -> {"powers", nil}
+      e.stated -> {"stated", nil}
       e.competence -> {"competence", nil}
       act?(law) -> {"none", "no_clause"}
       true -> {"none", "no_powers"}
@@ -129,15 +146,46 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Check do
   # enactment it changes is `same`, whatever else the law leaves unread
   # (CPA 1987 Sch.3); a statement of the law's left unread withholds its
   # provisions' bound, never the default
-  defp none_why(%{extent: %Extent{lists: lists} = e} = row, affecting) do
+  defp none_why(%{extent: %Extent{} = e} = row, affecting) do
     cond do
       affecting != [] and Lookup.of_change(e, affecting) == :same -> "same"
-      Enum.any?(lists, &match?({:unread, _, _}, &1)) -> "unread_statement"
+      withheld?(e, affecting) -> "unread_statement"
+      no_powers?(e, row) -> "law_no_powers"
       true -> none_listed(row)
     end
   end
 
   defp none_why(_, _), do: "unknown"
+
+  # an unread statement withholds the change's bound only where the
+  # reading without it would bound the change (a statement on another
+  # provision leaves the law's own cause: SI 2009/1941 sch.1 para.84,
+  # 2026-11-05); with no amending provision known, any may
+  defp withheld?(%Extent{lists: lists} = e, affecting) do
+    unread? = Enum.any?(lists, &match?({:unread, _, _}, &1))
+
+    cond do
+      not unread? ->
+        false
+
+      affecting == [] ->
+        true
+
+      true ->
+        is_binary(
+          Lookup.of_change(
+            %{e | lists: Enum.reject(lists, &match?({:unread, _, _}, &1))},
+            affecting
+          )
+        )
+    end
+  end
+
+  # an SI stating no default and no powers read, its lists naming others
+  defp no_powers?(%Extent{default: nil, powers: nil, stated: nil, competence: nil}, %{law: law}),
+    do: not act?(law)
+
+  defp no_powers?(_e, _row), do: false
 
   # (a same list first: a provision following the enactment it changes is
   # no provision left unnamed)

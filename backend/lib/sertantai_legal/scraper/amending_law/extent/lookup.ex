@@ -29,8 +29,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lookup do
   @spec of(Extent.t(), String.t()) :: String.t() | :same | nil
   # stating none, an SI extends as far as its enabling powers (`powers`),
   # else a devolved instrument as far as its legislature (`competence`)
-  def of(%Extent{default: nil, lists: [], powers: powers, competence: c}, _ref),
-    do: powers || c
+  # (an Act stating no clause: the extent stated on the whole Act, `stated`:
+  # Decision 3, 2026-11-05)
+  def of(%Extent{default: nil, lists: []} = e, _ref), do: implied(e)
 
   # with no default, only a list naming the provision decides ("The
   # following provisions of this Act extend to England and Wales only—")
@@ -74,7 +75,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lookup do
     # those that narrow (Police and Justice Act 2006 s.54: CV-S05 C)
     naming
     |> Enum.sort_by(fn {kind, _, _} -> Map.fetch!(@apply_order, kind) end)
-    |> Enum.reduce_while(e.default || e.powers || e.competence, fn
+    |> Enum.reduce_while(e.default || implied(e), fn
       {:same, _, _}, _acc ->
         {:halt, :same}
 
@@ -172,6 +173,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lookup do
   # a devolved legislature's instruments extend no further than its
   # competence (a Welsh Minister's SI forms part of the law of England and
   # Wales)
+  # an extent the law doesn't state but has: its powers, the extent stated
+  # on the whole Act (an Act stating no clause), its legislature's competence
+  defp implied(%Extent{powers: p, stated: st, competence: c}), do: p || st || c
+
   @competence %{
     "nisr" => "NI",
     "nisi" => "NI",
@@ -205,7 +210,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lookup do
   Forestry Act 1967 s.1(1A)).
   """
   @spec competence_only?(Extent.t()) :: boolean()
-  def competence_only?(%Extent{default: nil, lists: [], powers: nil, competence: c}),
+  def competence_only?(%Extent{default: nil, lists: [], powers: nil, stated: nil, competence: c}),
     do: c != nil
 
   def competence_only?(%Extent{}), do: false
@@ -215,24 +220,49 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lookup do
   it can reach only as far as the provisions that empower it. `provisions`
   are its enabling provisions (`EnactedBy.EnablingCache`: per parent law,
   its sections and schedules); each is placed by its parent Act's own
-  extent clause (`parents`: law → `Extent.t()`). The union of them; nil when any
-  parent is unread or places a provision nowhere known (all or nothing: a
-  partial union would understate the SI's reach), or none is named.
+  extent clause (`parents`: law → `Extent.t()`). A parent stating no extent
+  at all (no default, no lists) takes, for each provision, the extent
+  legislation.gov.uk states on the provision (`stated`: `{law, ref}` →
+  code, `Extent.StatedExtent`; Decision 2, Jason 2026-11-05: the European
+  Communities Act 1972 s.2). The union of them; nil when any parent is
+  unread or places a provision nowhere known (all or nothing: a partial
+  union would understate the SI's reach), or none is named.
   """
-  @spec from_powers([map()], %{String.t() => Extent.t()}) :: String.t() | nil
-  def from_powers([], _parents), do: nil
+  @spec from_powers([map()], %{String.t() => Extent.t()}, %{
+          {String.t(), String.t()} => String.t()
+        }) :: String.t() | nil
+  def from_powers(provisions, parents, stated \\ %{})
+  def from_powers([], _parents, _stated), do: nil
 
-  def from_powers(provisions, parents) do
+  def from_powers(provisions, parents, stated) do
     extents =
-      for %{"law" => law} = p <- provisions,
-          ref <-
-            Enum.map(p["sections"] || [], &"s.#{&1}") ++
-              Enum.map(p["schedules"] || [], &"sch.#{&1}"),
-          do: with(%Extent{} = e <- Map.get(parents, law), do: of(powers_extent(e), ref))
+      for {law, ref} <- powers_refs(provisions),
+          do: with(%Extent{} = e <- Map.get(parents, law), do: powers_of(e, law, ref, stated))
 
     if extents != [] and Enum.all?(extents, &is_binary/1),
       do: Territory.union(extents)
   end
+
+  @doc "Each enabling provision as `{parent law, ref}` (\"s.2\", \"sch.3\")."
+  @spec powers_refs([map()]) :: [{String.t(), String.t()}]
+  def powers_refs(provisions) do
+    for %{"law" => law} = p <- provisions,
+        ref <-
+          Enum.map(p["sections"] || [], &"s.#{&1}") ++
+            Enum.map(p["schedules"] || [], &"sch.#{&1}"),
+        do: {law, ref}
+  end
+
+  # (a parent with lists but no default may leave a statement on the
+  # provision unread: that withholds it, never the stated extent)
+  defp powers_of(%Extent{default: nil, lists: []} = e, law, ref, stated) do
+    case of(powers_extent(e), ref) do
+      nil -> Map.get(stated, {law, ref})
+      read -> read
+    end
+  end
+
+  defp powers_of(e, _law, ref, _stated), do: of(powers_extent(e), ref)
 
   # a parent Act's extent at its enabling sections: what "every amendment
   # the law makes" follows (a `*` same or unread list) is no enabling

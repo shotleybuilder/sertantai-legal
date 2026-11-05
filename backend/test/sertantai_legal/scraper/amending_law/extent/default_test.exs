@@ -38,6 +38,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.DefaultTest do
 
     assert Default.statement("This Order extends to Northern Ireland.", "nisr") ==
              {:default, "NI"}
+
+    # "only" in another subsection's list is not the default's (ukpga 2005/4 s.147)
+    clause =
+      "(1) Sections 7, 8 and 9 extend to England and Wales only. (2) Section 6 and Part 5 extend to Northern Ireland only. (4) Subject to subsections (1) to (3), this Act extends to Northern Ireland."
+
+    assert Default.westminster("NI", clause, "ukpga") == "E+W+S+NI"
   end
 
   test "a clause's default: \"does not extend\" is the rest of the UK" do
@@ -92,6 +98,50 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.DefaultTest do
 
       assert e.default == "E+W"
       assert Extent.of(e, "s.46(1)") == "S"
+    end
+
+    test "\"This Act, except section 4, extends to Northern Ireland\": the exception before the verb (ukpga 1997/28 s.30, 1998/17 s.53)" do
+      e =
+        read(
+          "UK_ukpga_1997_28",
+          words([1, 4, 9]) <>
+            p1("section-30", "This Act, except section 4, extends to Northern Ireland.")
+        )
+
+      assert e.default == "E+W+S+NI"
+      assert Extent.of(e, "s.4") == "E+W+S"
+      assert Extent.of(e, "s.9") == "E+W+S+NI"
+
+      assert Default.statement(
+               "This Act, except for sections 7 and 8, extends to Northern Ireland.",
+               "ukpga"
+             ) ==
+               {:default, "E+W+S+NI"}
+
+      # a qualified exception is left as it stands, unread (ukpga 1975/30 s.39)
+      qualified =
+        "This Act, except paragraph 5 of Schedule 3 and except in so far as it relates to the House of Commons Disqualification Act 1975, extends to Scotland only."
+
+      assert Default.except_first(qualified) == qualified
+    end
+
+    test "a later section's \"this Act shall not extend to Northern Ireland\" narrows the default (ukpga 1983/20 ss.146, 147)" do
+      e =
+        read(
+          "UK_ukpga_1983_20",
+          words([1, 81, 144]) <>
+            p1(
+              "section-146",
+              "Sections 80 and 144 above shall extend to Scotland together with any amendment or repeal by this Act of any enactment which so extends; but, except as aforesaid, this Act shall not extend to Scotland."
+            ) <>
+            p1(
+              "section-147",
+              "Sections 81 and 144 above shall extend to Northern Ireland; but except as aforesaid and except so far as it relates to the interpretation or commencement of the said provisions, this Act shall not extend to Northern Ireland."
+            )
+        )
+
+      assert e.default == "E+W"
+      assert Extent.of(e, "s.1") == "E+W"
     end
   end
 end

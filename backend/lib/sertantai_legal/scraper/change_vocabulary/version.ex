@@ -43,11 +43,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Version do
       lib/sertantai_legal/scraper/lat_parser/xml.ex
       lib/sertantai_legal/scraper/legislation_gov_uk/changes_feed.ex
     ),
-    # the commencement reader's checks — the leftovers and the family gate's
-    # gathering — never what a build reads (2026-11-05)
+    # the readers' checks — the commencement leftovers, its family gate's
+    # gathering, the extent family gate — never what a build reads
+    # (2026-11-05)
     except: ~w(
       lib/sertantai_legal/scraper/commencement/leftovers.ex
       lib/sertantai_legal/scraper/commencement/family_leftovers.ex
+      lib/sertantai_legal/scraper/amending_law/extent/withheld.ex
     ),
     # the libraries that shape what is read (XML parsing, the stored
     # caches' JSON), not the whole mix.lock: another dependency's bump

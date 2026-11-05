@@ -49,6 +49,30 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.CheckTest do
     end
   end
 
+  describe "change_row/2: an unread statement withholds only what it covers (2026-11-05)" do
+    @c %{claims: [], by: "X", affecting: ["sch.1.para.37"]}
+
+    test "a statement on another provision leaves the law's own cause: an SI with no powers read (SI 2009/1941)" do
+      e = %Extent{lists: [{:unread, nil, ["sch.1.para.84"]}]}
+      row = %{basis: "lists", extent: e, law: "UK_uksi_2009_1941"}
+      assert Check.change_row(@c, %{"X" => row}).outcome == "none:law_no_powers"
+    end
+
+    test "a statement on the change's own provision withholds it" do
+      e = %Extent{default: "E+W", lists: [{:unread, nil, ["sch.1"]}]}
+      row = %{basis: "clause", extent: e, law: "UK_ukpga_2000_1"}
+      assert Check.change_row(@c, %{"X" => row}).outcome == "none:unread_statement"
+    end
+
+    test "with no amending provision known, any unread statement may withhold it" do
+      e = %Extent{default: "E+W", lists: [{:unread, nil, ["s.9"]}]}
+      row = %{basis: "clause", extent: e, law: "UK_ukpga_2000_1"}
+
+      assert Check.change_row(%{@c | affecting: []}, %{"X" => row}).outcome ==
+               "none:unread_statement"
+    end
+  end
+
   test "tallies/2 counts bases, faults and the text changes' outcomes" do
     rows = [
       %{law: "A", basis: "clause", fault: nil, unread: %{"unread:list" => 2}, uncaught: []},

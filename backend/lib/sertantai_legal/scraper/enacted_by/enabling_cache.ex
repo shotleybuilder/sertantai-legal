@@ -10,6 +10,7 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingCache do
 
   alias SertantaiLegal.Scraper.EnactedBy
   alias SertantaiLegal.Scraper.EnactedBy.EnablingProvisions
+  alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
 
   @cache Path.join(["data", "cache", "enabling"])
 
@@ -43,6 +44,58 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingCache do
     end
   end
 
+  @doc """
+  The provisions parsed from the introduction held in the CLML store, never
+  fetching: `{:ok, provisions}`, or `:not_held` where no introduction is
+  stored (the usual path, else the made version where the usual one is the
+  repealed placeholder).
+  """
+  @spec from_store(String.t()) :: {:ok, [map()]} | :not_held
+  def from_store(name) do
+    with ["UK", type, year | number] when number != [] <- String.split(name, "_"),
+         {:ok, %{text: text, urls: urls}} <-
+           stored_introduction(type, year, Enum.join(number, "_")) do
+      {:ok, provisions(text, urls)}
+    else
+      _ -> :not_held
+    end
+  end
+
+  @doc """
+  Re-parses the cached provisions from the held introduction (`from_store/1`)
+  and writes them: `{:ok, provisions}`, or `:not_held` (the cache untouched).
+  """
+  @spec reparse(String.t()) :: {:ok, [map()]} | :not_held
+  def reparse(name) do
+    case from_store(name) do
+      {:ok, ps} -> {:ok, store(Path.join(@cache, name <> ".json"), ps)}
+      :not_held -> :not_held
+    end
+  end
+
+  defp stored_introduction(type, year, number) do
+    case stored_enacting(EnactedBy.introduction_path(type, year, number)) do
+      {:ok, %{text: text}} = ok ->
+        if placeholder?(text), do: stored_enacting(made_path(type, year, number)), else: ok
+
+      _ ->
+        stored_enacting(made_path(type, year, number))
+    end
+  end
+
+  defp stored_enacting(path) do
+    case ClmlStore.get(path) do
+      {:ok, xml, _meta} -> {:ok, EnactedBy.parse_enacting_xml(xml)}
+      _ -> :none
+    end
+  end
+
+  defp provisions(text, urls) do
+    text
+    |> EnablingProvisions.parse(urls, titles(text))
+    |> Enum.map(&%{"law" => &1.law, "sections" => &1.sections, "schedules" => &1.schedules})
+  end
+
   defp store(path, ps) do
     File.mkdir_p!(@cache)
     File.write!(path, Jason.encode!(ps))
@@ -53,9 +106,7 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingCache do
     with ["UK", type, year | number] when number != [] <- String.split(name, "_"),
          number = Enum.join(number, "_"),
          {:ok, %{text: text, urls: urls}} <- introduction(type, year, number) do
-      text
-      |> EnablingProvisions.parse(urls, titles(text))
-      |> Enum.map(&%{"law" => &1.law, "sections" => &1.sections, "schedules" => &1.schedules})
+      provisions(text, urls)
     else
       _ -> []
     end

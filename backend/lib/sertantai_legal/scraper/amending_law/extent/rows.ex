@@ -70,10 +70,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Rows do
         row.(Map.fetch!(@applies_rows, kind), place, items, nil, nil, i)
       end)
 
-    powers = if e.powers, do: [row.("powers", e.powers, [], nil, nil, 0)], else: []
-
-    competence =
-      if e.competence, do: [row.("competence", e.competence, [], nil, nil, 0)], else: []
+    # the extents implied, not stated: powers, the whole Act's, competence
+    implied =
+      for {kind, place} <- [powers: e.powers, stated: e.stated, competence: e.competence],
+          place != nil,
+          do: row.(to_string(kind), place, [], nil, nil, 0)
 
     # the target statements: `source_ref` their scope, `amends` the law named
     targets =
@@ -87,11 +88,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Rows do
       targets ++
       applies ++
       provision_applies ++
-      powers ++
-      competence ++
+      implied ++
       for {sch, sec} <- Enum.sort(e.introduced_by),
           do: row.("introduces", nil, [sch], sec, nil, 0)
   end
+
+  defp place_of(rows, kind), do: Enum.find_value(rows, &(&1.kind == kind && &1.place))
 
   @doc "The extent from its `extent_rules` rows; nil when there are none (not read)."
   @spec from_rows([map()]) :: Extent.t() | nil
@@ -117,7 +119,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Rows do
           do: {kind, r.place, r.items}
         ),
       corresponds: Enum.any?(rows, &(&1.kind == "corresponds")),
-      application: Enum.find_value(rows, &(&1.kind == "applies" && &1.place)),
+      application: place_of(rows, "applies"),
       applies:
         for(
           r <- Enum.sort_by(rows, & &1.position),
@@ -125,8 +127,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Rows do
           kind != nil,
           do: {kind, r.place, r.items}
         ),
-      powers: Enum.find_value(rows, &(&1.kind == "powers" && &1.place)),
-      competence: Enum.find_value(rows, &(&1.kind == "competence" && &1.place)),
+      powers: place_of(rows, "powers"),
+      stated: place_of(rows, "stated"),
+      competence: place_of(rows, "competence"),
       targets:
         for(
           r <- Enum.sort_by(rows, & &1.position),

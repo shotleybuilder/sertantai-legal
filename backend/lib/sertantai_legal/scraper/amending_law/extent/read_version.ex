@@ -26,7 +26,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadVersion do
       lib/sertantai_legal/scraper/application_clause.ex
       lib/sertantai_legal/scraper/territory.ex
     ),
-    # the step's check (its tallies reach the change vocabulary's measures),
-    # never what an extent reading depends on
-    except: ~w(lib/sertantai_legal/scraper/amending_law/extent/check.ex)
+    # the step's check (its tallies reach the change vocabulary's measures)
+    # and its family gate (the commencement gate's statuses), never what an
+    # extent reading depends on
+    except: ~w(
+      lib/sertantai_legal/scraper/amending_law/extent/check.ex
+      lib/sertantai_legal/scraper/amending_law/extent/withheld.ex
+    )
 end

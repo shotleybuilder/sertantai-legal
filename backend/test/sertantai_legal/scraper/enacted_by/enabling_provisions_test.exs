@@ -213,4 +213,191 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingProvisionsTest do
       assert "european communities act 1972" in t
     end
   end
+
+  describe "forms the parser missed (Maritime Safety: Extent reader, 2026-11-05; real clauses)" do
+    @msa %{"merchant shipping act 1995" => "UK_ukpga_1995_21"}
+
+    test "a footnote marker inside the clause, the Act named before it as 'that Act' (SI 2018/155)" do
+      text =
+        "The Secretary of State, after consulting the persons referred to in section 86(4) of the Merchant Shipping Act 1995 f00001 , and in exercise of the powers conferred by section 85(1) to (1B), (3) and (5) to (7), section 86(1), section 302(1) and section 306A of that Act, and with the consent of the Treasury f00002 , makes the following Regulations:"
+
+      urls = %{
+        "f00001" => ["http://www.legislation.gov.uk/id/ukpga/1995/21"],
+        "f00002" => ["http://www.legislation.gov.uk/id/uksi/1995/269"]
+      }
+
+      assert EnablingProvisions.parse(text, urls, @msa) == [
+               %{law: "UK_ukpga_1995_21", sections: ["85", "86", "302", "306A"], schedules: []}
+             ]
+    end
+
+    test "'of that Act' followed by an amendment footnote (SI 2000/2687, 2001/1638)" do
+      text =
+        "The Secretary of State for the Environment, Transport and the Regions, after consulting the persons referred to in section 86(4) of the Merchant Shipping Act 1995 f00001 , in exercise of the powers conferred by section 85(1)(a) and (b), (3) and (5) to (7) and section 86(1) of that Act f00002 and of all other powers enabling him in that behalf, hereby makes the following Regulations:"
+
+      urls = %{
+        "f00001" => ["http://www.legislation.gov.uk/id/ukpga/1995/21"],
+        "f00002" => ["http://www.legislation.gov.uk/id/ukpga/1997/28"]
+      }
+
+      assert EnablingProvisions.parse(text, urls, @msa) == [
+               %{law: "UK_ukpga_1995_21", sections: ["85", "86"], schedules: []}
+             ]
+
+      text =
+        "The Secretary of State, after such consultation as is required by section 86(4) of the Merchant Shipping Act 1995 f00001 , in exercise of the powers conferred upon him by sections 85(1)(a) and (b), (3) and (7) and 86(1) of that Act f00002 hereby makes the following Regulations:"
+
+      assert EnablingProvisions.parse(text, urls, @msa) == [
+               %{law: "UK_ukpga_1995_21", sections: ["85", "86"], schedules: []}
+             ]
+    end
+
+    test "the Act before the clause named by its marker, not its register title (SI 2022/241)" do
+      text =
+        "The Secretary of State f00001 , considering that the requirements of section 45(2) of the Sanctions and Money-Laundering Act 2018 f00002 are met, makes the following Regulations in exercise of the powers conferred by sections 1, 5, 6(1) to (6), 45 and 62(6) of, and paragraphs 2(b) and 27 of Schedule 1 to, that Act:"
+
+      urls = %{"f00002" => ["http://www.legislation.gov.uk/id/ukpga/2018/13"]}
+
+      assert EnablingProvisions.parse(text, urls, %{}) == [
+               %{law: "UK_ukpga_2018_13", sections: ["1", "5", "6", "45", "62"], schedules: ["1"]}
+             ]
+    end
+
+    test "'(hereinafter called “the Act”)' and 'of the Act' (SI 1995/1900)" do
+      text =
+        "The Secretary of State for Transport, after consulting with the organisations referred to in section 99(2) of the Merchant Shipping Act 1970 f00001 (hereinafter called “the Act”), in exercise of powers conferred by section 71 of the Act and now vested in him f00002 , and of all other powers enabling him in that behalf, hereby makes the following Regulations:"
+
+      urls = %{
+        "f00001" => ["http://www.legislation.gov.uk/id/ukpga/1970/36"],
+        "f00002" => ["http://www.legislation.gov.uk/id/uksi/1970/1537"]
+      }
+
+      assert EnablingProvisions.parse(text, urls, %{}) == [
+               %{law: "UK_ukpga_1970_36", sections: ["71"], schedules: []}
+             ]
+    end
+
+    test "'the said section 2(2)' after the designation (SI 1999/1704)" do
+      text =
+        "Whereas the Secretary of State is a Minister designated f00001 for the purpose of section 2(2) of the European Communities Act 1972 f00002 in relation to measures relating to the safety of ships; Now, therefore, the Secretary of State for the Environment, Transport and the Regions, in exercise of the powers conferred by the said section 2(2) and of all other powers enabling him in that behalf, hereby makes the following Regulations:"
+
+      urls = %{
+        "f00001" => ["http://www.legislation.gov.uk/id/uksi/1993/595"],
+        "f00002" => ["http://www.legislation.gov.uk/id/ukpga/1972/68"]
+      }
+
+      assert EnablingProvisions.parse(text, urls, %{}) == [
+               %{law: "UK_ukpga_1972_68", sections: ["2"], schedules: []}
+             ]
+    end
+
+    test "an Act in plain words, then sections whose list carries footnote markers (SI 2016/1061)" do
+      text =
+        "The Secretary of State is a Minister designated f00001 in relation to measures relating to maritime transport for the purpose of section 2(2) of the European Communities Act 1972 f00002 . The Secretary of State in exercise of the powers conferred by section 2(2) of the European Communities Act 1972 and by sections 185(2C) f00003 and 306A f00004 of the Merchant Shipping Act 1995 f00005 , makes the following Order."
+
+      urls = %{
+        "f00002" => ["http://www.legislation.gov.uk/id/ukpga/1972/68"],
+        "f00003" => ["http://www.legislation.gov.uk/id/uksi/2014/1614"],
+        "f00004" => ["http://www.legislation.gov.uk/id/ukpga/1997/28"],
+        "f00005" => ["http://www.legislation.gov.uk/id/ukpga/1995/21"]
+      }
+
+      titles = Map.put(@msa, "european communities act 1972", "UK_ukpga_1972_68")
+
+      assert EnablingProvisions.parse(text, urls, titles) == [
+               %{law: "UK_ukpga_1972_68", sections: ["2"], schedules: []},
+               %{law: "UK_ukpga_1995_21", sections: ["185", "306A"], schedules: []}
+             ]
+    end
+
+    test "'the said section 2(2)' of the Act it was named in, after 'that Act' (SI 2004/1266)" do
+      text =
+        "The Secretary of State, after consulting the persons referred to in section 86(4) of the Merchant Shipping Act 1995 f00001 , in exercise of the powers conferred upon him by sections 85, 86 and 267 of that Act, and being a Minister designated f00002 for the purposes of section 2(2) of the European Communities Act 1972 f00003 in relation to measures relating to the safety of ships, in exercise of the powers conferred upon him by the said section 2(2), hereby makes the following Regulations:"
+
+      urls = %{
+        "f00001" => ["http://www.legislation.gov.uk/id/ukpga/1995/21"],
+        "f00002" => ["http://www.legislation.gov.uk/id/uksi/1993/595"],
+        "f00003" => ["http://www.legislation.gov.uk/id/ukpga/1972/68"]
+      }
+
+      assert [
+               %{law: "UK_ukpga_1995_21", sections: ["85", "86", "267"]},
+               %{law: "UK_ukpga_1972_68", sections: ["2"]} | _
+             ] = EnablingProvisions.parse(text, urls, @msa)
+    end
+
+    test "a marker after an Order cites it: its Schedule is never the next Act's (SR 2010/160)" do
+      text =
+        "The Department makes the following Regulations in exercise of the powers conferred by Articles 17(1) to (6), 40(2) to (4), 55(2) of, and paragraphs 1, 2 and 19 of Schedule 3 to, the Health and Safety at Work (Northern Ireland) Order 1978 f00003 as read with paragraph 1A of Schedule 2 to the European Communities Act 1972 f00004 ."
+
+      urls = %{
+        "f00003" => ["http://www.legislation.gov.uk/id/nisi/1978/1039"],
+        "f00004" => ["http://www.legislation.gov.uk/id/ukpga/1972/68"]
+      }
+
+      assert EnablingProvisions.parse(text, urls, %{}) == [
+               %{law: "UK_ukpga_1972_68", sections: [], schedules: ["2"]}
+             ]
+    end
+
+    test "after the recitals: 'Now, therefore …' holds the powers clause (SI 2004/3363, 2002/794)" do
+      text =
+        "Whereas a draft of this Order has been approved by resolution of each House of Parliament in pursuance of section 82(2) of the Freedom of Information Act 2000 f00001 ; Now, therefore, the Secretary of State, in exercise of the powers conferred f00002 by section 75 of the Freedom of Information Act 2000, hereby makes the following Order:"
+
+      urls = %{
+        "f00001" => ["http://www.legislation.gov.uk/id/ukpga/2000/36"],
+        "f00002" => ["http://www.legislation.gov.uk/id/uksi/2003/1887"]
+      }
+
+      titles = %{"freedom of information act 2000" => "UK_ukpga_2000_36"}
+
+      assert EnablingProvisions.parse(text, urls, titles) == [
+               %{law: "UK_ukpga_2000_36", sections: ["75"], schedules: []}
+             ]
+    end
+
+    test "a purpose after the clause is no power: '— for the purpose of giving effect …' (SI 2014/1637)" do
+      text =
+        "The Secretary of State makes these Regulations in exercise of the powers conferred upon him by sections 15(1), (2) and 82(3)(a) of, and paragraphs 1(1) and 15(1) of Schedule 3 to, the Health and Safety at Work etc. Act 1974 f00001 (“the 1974 Act”)— for the purpose of giving effect without modifications to proposals submitted to him by the Health and Safety Executive under section 11(3) f00002 of the 1974 Act, the Executive having consulted in accordance with section 50(3) f00003 of that Act."
+
+      urls = %{
+        "f00001" => ["http://www.legislation.gov.uk/id/ukpga/1974/37"],
+        "f00002" => ["http://www.legislation.gov.uk/id/ukpga/2013/32"],
+        "f00003" => ["http://www.legislation.gov.uk/id/ukpga/2013/32"]
+      }
+
+      assert EnablingProvisions.parse(text, urls, %{}) == [
+               %{law: "UK_ukpga_1974_37", sections: ["15", "82"], schedules: ["3"]}
+             ]
+    end
+
+    test "'of the 1995 Act' defined after its title, and 'every other power' (SI 2002/2201, SR 2003/454)" do
+      text =
+        "Whereas the Secretary of State is a Minister designated f00001 for the purpose of section 2(2) of the European Communities Act 1972 (“the 1972 Act ”) f00002 ; And whereas the Regulations are made in the exercise of powers conferred by section 43 of the Merchant Shipping Act 1995 (“the 1995 Act ”) f00003 ; Now, therefore, the Secretary of State, in exercise of the powers conferred by sections 85(1)(a) and 86(1) of the 1995 Act and section 2(2) of the 1972 Act and of every other power enabling him in that behalf, hereby makes the following Regulations:"
+
+      urls = %{
+        "f00002" => ["http://www.legislation.gov.uk/id/ukpga/1972/68"],
+        "f00003" => ["http://www.legislation.gov.uk/id/ukpga/1995/21"]
+      }
+
+      assert EnablingProvisions.parse(text, urls, %{}) == [
+               %{law: "UK_ukpga_1995_21", sections: ["85", "86"], schedules: []},
+               %{law: "UK_ukpga_1972_68", sections: ["2"], schedules: []}
+             ]
+    end
+
+    test "'of the said Act of 1995' (SI 1999/3281)" do
+      text =
+        "The Secretary of State, after consulting with the organisations referred to in section 306(4) of the Merchant Shipping Act 1995 f00001 , in exercise of the powers conferred by section 80(1), (2) and (3) of the said Act of 1995 f00002 , and of all other powers enabling him in that behalf, hereby makes the following Regulations:"
+
+      urls = %{
+        "f00001" => ["http://www.legislation.gov.uk/id/ukpga/1995/21"],
+        "f00002" => ["http://www.legislation.gov.uk/id/ukpga/1997/28"]
+      }
+
+      assert EnablingProvisions.parse(text, urls, %{}) == [
+               %{law: "UK_ukpga_1995_21", sections: ["80"], schedules: []}
+             ]
+    end
+  end
 end

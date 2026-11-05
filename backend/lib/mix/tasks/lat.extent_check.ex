@@ -24,7 +24,13 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
      law's basis (`same` where it follows the enactment it changes;
      `unread_statement` where the law has a statement left unread, which
      withholds its provisions' bound: `Extent.Unread`).
-  3. With `--sample FILE`, a reproducible sample of each (`--n` each,
+  3. **The family gate** (Decision 1, Jason 2026-11-05): every text change
+     with no bound, by cause and amending law (`Extent.Withheld`), with
+     its words (the law's unread statements, or why it has no powers) and
+     its reviewed status (`test/fixtures/extent_patterns/withheld.json`).
+     PASS only with our faults 0, no sweep miss in a `read:` form, and
+     every cause named `known:`.
+  4. With `--sample FILE`, a reproducible sample of each (`--n` each,
      stratified so every kind is seen), with the words behind each, for
      checking.
 
@@ -37,12 +43,14 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
   use Mix.Task
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Check, Powers, ReadCache, Store}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Check, Powers, ReadCache, Store, Withheld}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Draw
   alias SertantaiLegal.Scraper.LawRunner
   alias SertantaiLegal.Scraper.LawRunner.Guard
 
   @shortdoc "Every amending law's extent and every text change's territory accounted for (read-only)"
+
+  @withheld "test/fixtures/extent_patterns/withheld.json"
 
   @text_ops ~w(inserted substituted repealed repealed_in_part renumbered)
 
@@ -92,7 +100,9 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
     by_law = Map.new(rows, &{&1.law, &1})
     change_rows = Enum.map(changes, &Check.change_row(&1, by_law))
 
-    report(rows, change_rows)
+    gate = change_rows |> Withheld.items(by_law, reviewed()) |> Withheld.gate()
+
+    report(rows, change_rows, gate)
     if opts[:sample], do: sample(opts, rows, change_rows)
   end
 
@@ -155,22 +165,57 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
 
       true ->
         e = Powers.with_powers(reading.read, law, cached: true)
-        Check.law_row(law, reading, e, stored)
+        law |> Check.law_row(reading, e, stored) |> with_powers_why()
     end
   end
 
+  # why an SI stating no default has no extent from its powers, for the
+  # gate (its lists, if any, naming other provisions)
+  defp with_powers_why(
+         %{extent: %{default: nil, powers: nil, stated: nil, competence: nil}, law: law} = row
+       ) do
+    if Powers.act?(law), do: row, else: Map.put(row, :powers_why, Powers.why_none(law))
+  end
+
+  defp with_powers_why(row), do: row
+
   # ── report ───────────────────────────────────────────────────────────
 
-  defp report(rows, change_rows) do
-    shell = Mix.shell()
+  defp reviewed do
+    case File.read(@withheld) do
+      {:ok, body} -> Jason.decode!(body)
+      _ -> %{}
+    end
+  end
+
+  defp report(rows, change_rows, gate) do
     t = Check.tallies(rows, change_rows)
 
+    report_laws(rows, t)
+    report_sentences(t)
+    report_changes(change_rows, t)
+    report_gate(gate)
+
+    pass? = t.faults == [] and t.misses == [] and gate.pass?
+
+    Mix.shell().info(
+      "\n#{if pass?, do: "PASS", else: "FAIL"} (amending laws: our faults #{length(t.faults)}; " <>
+        "sweep misses #{length(t.misses)}; no-bound causes not named: #{length(gate.failing)})"
+    )
+  end
+
+  defp report_laws(rows, t) do
+    shell = Mix.shell()
     shell.info("\n#{length(rows)} amending laws — extent basis:")
     for {k, n} <- t.bases, do: shell.info("  #{pad(n)}  #{k}")
 
     shell.info("\nour faults (stored extent_rules against the reading now): #{length(t.faults)}")
     for {f, n} <- t.fault_kinds, do: shell.info("  #{pad(n)}  #{f}")
     for r <- Enum.take(t.faults, 15), do: shell.info("    #{r.law} #{r.fault}")
+  end
+
+  defp report_sentences(t) do
+    shell = Mix.shell()
 
     shell.info(
       "\nthe laws' own extent sentences left unread (catalogue classes, counted): #{t.with_unread} laws"
@@ -188,7 +233,10 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
 
     for {law, ref, s, form} <- t.misses,
         do: shell.info("    #{law} #{ref} (#{form}): #{String.slice(s, 0, 140)}")
+  end
 
+  defp report_changes(change_rows, t) do
+    shell = Mix.shell()
     shell.info("\n#{length(change_rows)} text changes — territory from:")
     for {k, n} <- t.outcomes, do: shell.info("  #{pad(n)}  #{k}")
 
@@ -196,12 +244,20 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
 
     for k <- Check.groups(),
         do: shell.info("  #{pad(t.groups[k])}  #{pct(t.groups[k], t.groups.total)}  #{k}")
+  end
 
-    shell.info(
-      if t.faults == [],
-        do: "\nPASS (amending laws: our faults 0)",
-        else: "\nFAIL (our faults #{length(t.faults)})"
-    )
+  # the family gate: each text change with no bound, by cause and amending
+  # law, reviewed in withheld.json (Decision 1, 2026-11-05)
+  defp report_gate(gate) do
+    shell = Mix.shell()
+    counts = Enum.map_join(gate.counts, ", ", fn {k, n} -> "#{k} #{n}" end)
+    shell.info("\ntext changes with no bound, by cause (#{@withheld}): #{counts}")
+    shell.info("not named (widest reach first): #{length(gate.failing)}")
+
+    for i <- gate.failing do
+      shell.info("  #{pad(i.reach)}  #{i.shape} @ #{i.law}  [#{i.status || "no status"}]")
+      for w <- Enum.take(i.words, 4), do: shell.info("           #{String.slice(w, 0, 200)}")
+    end
   end
 
   defp pad(n), do: String.pad_leading(to_string(n), 5)

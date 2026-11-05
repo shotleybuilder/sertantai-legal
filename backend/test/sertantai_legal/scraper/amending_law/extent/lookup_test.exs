@@ -47,6 +47,35 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.LookupTest do
     assert Lookup.from_powers([], parents) == nil
   end
 
+  test "a parent Act stating no extent: its enabling provision's stated extent (Decision 2, 2026-11-05)" do
+    eca = %{"UK_ukpga_1972_68" => %Extent{}}
+    stated = %{{"UK_ukpga_1972_68", "s.2"} => "E+W+S+NI"}
+    powers = [%{"law" => "UK_ukpga_1972_68", "sections" => ["2"]}]
+
+    assert Lookup.from_powers(powers, eca, stated) == "E+W+S+NI"
+    assert Lookup.from_powers(powers, eca) == nil
+
+    # a parent with a clause keeps it; one not read gets nothing
+    msa = %{"UK_ukpga_1972_68" => %Extent{default: "E+W"}}
+    assert Lookup.from_powers(powers, msa, stated) == "E+W"
+    assert Lookup.from_powers(powers, %{}, stated) == nil
+
+    # a parent with lists but no default: its own words only (an unread
+    # statement withholds)
+    listed = %{"UK_ukpga_1972_68" => %Extent{lists: [{:unread, nil, ["s.2"]}]}}
+    assert Lookup.from_powers(powers, listed, stated) == nil
+
+    # all or nothing still: a provision with neither
+    two = powers ++ [%{"law" => "UK_ukpga_1972_68", "sections" => ["3"]}]
+    assert Lookup.from_powers(two, eca, stated) == nil
+  end
+
+  test "an Act stating no clause: its whole-Act stated extent, after powers, before competence (Decision 3)" do
+    assert Lookup.of(%Extent{stated: "E+W+S+NI"}, "s.3") == "E+W+S+NI"
+    assert Lookup.of(%Extent{powers: "E+W", stated: "E+W+S+NI"}, "s.3") == "E+W"
+    refute Lookup.competence_only?(%Extent{stated: "S", competence: "S"})
+  end
+
   test "a change's territory: a repeals schedule follows the provision it corresponds to" do
     e = %Extent{default: "E+W", corresponds: true, lists: [{:same, nil, ["sch.17"]}]}
     assert Lookup.of_change(e, ["sch.7.para.27(2)", "sch.17.pt.2"]) == "E+W"

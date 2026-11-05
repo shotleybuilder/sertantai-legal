@@ -209,6 +209,7 @@ defmodule Mix.Tasks.Lat.Amending do
       cond do
         e.default -> e.default
         e.powers -> "#{e.powers} (by its enabling powers)"
+        e.stated -> "#{e.stated} (stated on the whole Act)"
         e.competence -> "#{e.competence} (by its legislature's competence)"
         true -> "no clause"
       end
