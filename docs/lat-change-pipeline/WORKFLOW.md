@@ -76,6 +76,8 @@ On OH&S it passed on 2026-10-22. When later steps added needs, the gate failed a
 
 On Maritime Safety, the build took the needs from 235 to 682, and three fetch rounds held them all. A feed whose register statistics are newer than it needs refetching and its law rebuilding; that added 4 needs.
 
+**A commencement order is held with its schedules** (Jason 2026-11-05). An order's article often brings in "the provisions specified in column 1 of the Schedule to this Order": the Schedule is the order's table, and without it the order reader reads nothing. Fetch orders with `mix clml.fetch --whole --laws …` (body and schedules); a plain `mix clml.fetch` fetches a LAT scope, the body only. An order counts as held when its schedules are stored, or stored as missing (legislation.gov.uk has none: its `ScheduleParagraphs` is 0). `mix lat.commencement --read-orders` lists the orders not held so in `data/reports/commencement-rules/orders_missing.txt`. On 2026-11-05, 31 orders' Schedules were missing (54 statements read as nothing, among them Maritime Safety's SI 1995/965), and 510 held orders had no schedules record.
+
 **Skill.** None. The `nas-data-sync` skill covers the store itself.
 
 ## 2. Feed reader
@@ -119,7 +121,7 @@ On Maritime Safety, the build took the needs from 235 to 682, and three fetch ro
 
 **Aim.** The law's own commencement clause and the orders made under it give each provision dated `commenced` changes (staged when it came in partly first), and give an otherwise undated change the date its amending provision came into force.
 
-**Inputs.** The law's text, the commencement orders held, the amending laws' commencement provisions, and pointers (feed affecting provisions, notes) to the amending provision.
+**Inputs.** The law's text, the commencement orders held (body and schedules: step 1), the amending laws' commencement provisions, and pointers (feed affecting provisions, notes) to the amending provision.
 
 **Outputs.** `commencement_rules`; commencement claims (`date`, `partial`, `commenced_by`, and `via` when a pointer led to the date).
 

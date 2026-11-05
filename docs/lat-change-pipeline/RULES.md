@@ -635,6 +635,8 @@ The named missing-repeal rows and the named date gaps keep the old register's la
 | A laid-relative commencement ("on the 22nd day after the day on which these Regulations are laid": SI 2018/1221 reg.2) | Maritime Safety: 2 changes | Undated (`no_text_rules`) | `2026-11-05-maritime-safety-commencement-reader` Decision 1 (C) | Jason 2026-11-05 |
 | A tax Act's year of effect ("has effect in relation to tax for the year 1992-93 …": TCGA 1992 s.289(1)) | Maritime Safety: 17 changes | Dated by Royal Assent (1992-03-06) | same, Decision 1 (D) | Jason 2026-11-05 |
 | A legislation.gov.uk note pointer with note words in it ("s.26(5)(6)(subst.1982 c 36 s 39(2)") | Maritime Safety: 1 change | Falls to the law's by-order rule | same, Decision 1 (F) | Jason 2026-11-05 |
+| One-law commencement wordings: a form found in one law (or its NI twin) below the triage size, named in the leftovers check rather than chased — a sector-only deferral (SI 2005/1643, NISR 2006/1 reg.15(3)), a treaty day notified in the Gazettes (SI 1998/1258), a list with no dash (SI 2002/3153), a bracketed "apart from" (1998 c.8 s.17(1)), and the others listed | Maritime Safety and OH&S: 12 statements | As read (often undated) | `leftovers.json` `known:` statuses ("RULES.md: one-law commencement wordings"); `2026-11-05-commencement-leftovers-reader-misses` | plan triage rule, 2026-11-05 |
+| Provisions named by power or as Schedule entries, not by number ("so much of any provision of this Act as authorises the making of any order": ICTA 1988 s.843(3), SSCBA 1992 s.289(2); Schedule entries, SI 2003/835) | 3 statements | Undated by the clause | same | 2026-11-05 |
 
 ---
 

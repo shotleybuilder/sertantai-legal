@@ -26,12 +26,13 @@ Ask Jason before the long runs; say what each writes.
 1. **Catalogues** (read-only over the corpus; writes their fixtures and reports):
    - `mix lat.commencement_patterns` (own-clause sentences, about 10 min, one law at a time while a VM runs) and `mix lat.order_patterns` (about 30 s).
    - Each prints its patterns against `expected.json` (new patterns: accept, fix or `pending:`; held expectations never move without Jason) and its **leftovers by shape**, ranked by reach. The report goes to `backend/data/reports/commencement-reader/leftovers[-orders]-<date>.txt`.
-   - Review every leftover group with no status into `leftovers.json`: `fix:` (a reader miss), `known:` (a named limit, also in `RULES.md` known limits) or `check:` (the check's own error: fix it in `Commencement.Leftovers` with a test). `LeftoversReviewTest` fails on a group with no status.
+   - Review every leftover group with no status into `leftovers.json`: `fix:` (a reader miss), `known:` (a named limit, also in `RULES.md` known limits) or `check:` (the check's own error: fix it in `Commencement.Leftovers` with a test). `LeftoversReviewTest` fails on a group with no status. A statement under a decided limit in a group with real misses is named apart: `"<shape> @ <row>": "known: …"` (a laid-relative day, limit C); its group stays `fix:`.
    - **Freeze code while a catalogue runs**: it loads modules lazily, so an edit mid-run gives a mixed run.
 2. **Fixes** (TDD, in the readers): a failing unit test per form first; `--fresh` shows the effect without writes (`mix lat.commencement_check --family F --fresh`).
 3. **Re-read and rebuild** (ask first; restore point of `commencement_rules`, `provision_changes`, `provision_change_claims`, `lat_events`):
    - `mix lat.commencement --read --law <family's laws>`;
    - `mix lat.commencement --read-orders --law <family's laws>` — **this searches legislation.gov.uk's title search for a law with no cached order list**: name it in the plan;
+   - the orders it lists as not held (`data/reports/commencement-rules/orders_missing.txt`): `mix clml.fetch --whole --laws …` — an order is held with its schedules, its table (WORKFLOW.md step 1); a fetch, ask first;
    - `mix lat.commencement --read-amending --law <held amenders> --workers 1`;
    - `mix lat.vocabulary --build --family F`.
 4. **The check and its gate:** `mix lat.commencement_check --family F [--all]`:
