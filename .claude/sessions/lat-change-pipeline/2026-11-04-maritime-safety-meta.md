@@ -19,7 +19,7 @@ The second family through the LAT Change Pipeline, and the first under the proce
 - ✅ Sources: gate PASS after a build, 682 needs held or absent; closed 2026-11-04
 - ✅ Feed reader: our faults 10 → 0, catalogue gap fixed (Decision 1), agent clean; closed 2026-11-04
 - ✅ Markup reader
-- ⬜ Commencement reader
+- ✅ Commencement reader
 - ⬜ Extent reader
 - ⬜ Amending-law reader
 - ⬜ Merge
@@ -54,7 +54,7 @@ One row per step, filled when the step session closes. Agent tokens are those of
 | Sources | sources | 2026-11-04 | 2026-11-04 | 1 | yes, all 4 | 0 | 0 | 0 | 1 |
 | Feed reader | feed-reader | 2026-11-04 | 2026-11-04 | 1 | yes, all 6 | 0 | 1 (LAT parser) | 98,791 | 3 |
 | Markup reader | markup-reader | 2026-11-04 | 2026-11-04 | 1 | yes, all 6 | 0 | 1 (Markup reader: catalogue examples rotate) | 138,275 | 2 |
-| Commencement reader | | | | | | | | | |
+| Commencement reader | commencement-reader | 2026-11-05 | 2026-11-05 | 1 | yes, by Decision 2 (agent rounds stopped at 2; 1 test failure the Extent reader's) | 0 | 3 (Feed reader, Extent reader, Sources) | 273,926 | 2 |
 | Extent reader | | | | | | | | | |
 | Amending-law reader | | | | | | | | | |
 | Merge | | | | | | | | | |
