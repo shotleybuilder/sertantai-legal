@@ -105,10 +105,10 @@ bugs:
   category: version-coverage-extent-check
   module: lib/sertantai_legal/scraper/amending_law/extent/read_version.ex
   affected: 1 test (mix test 9,919/9,920)
-  fix: Move the check's tallies out of the reader's version (extent/check.ex is a check, not the reader), or add the reached
-    files to ReadVersion's patterns
+  fix: SourceVersion takes except:; Extent.ReadVersion excepts extent/check.ex (the step's check, not the reader) — fixed
+    2026-11-05 on Jason's say, to unblock the push
   step: Extent reader
-  status: open
+  status: fixed
 - pattern: 'Clause forms new with Maritime Safety not read: two statements in one sentence ("…; regulations 7 and 9 to 14
     come into force on …", "… 2012 the remaining regulations come into force on …"), "the remaining regulations", an "except
     for …" list item, a list item opening with its date (purpose-staged), the commencement provision nothing dates (SI 1993/1213,
