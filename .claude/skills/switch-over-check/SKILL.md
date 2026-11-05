@@ -9,6 +9,7 @@ description: The switch-over's acceptance check for one family. It sorts every p
 > - Plan the step in plan mode first, with its pass rule fixed and golden frozen (`session-start`, step session).
 > - The check is code first: table rules, checked-row fixtures, pattern catalogues, golden from inputs.
 > - The agent check below is used only to find NEW classes, on a small sample, and its token cost is recorded in the session. It is not a repeated pass gate.
+> - **One agent pass at most, never sample → fix → resample** (Jason 2026-11-05, Maritime Safety: two rounds, 274k tokens, whack-a-mole). The forms it finds become a code check that finds the rest of their class over the corpus: as the commencement catalogues' leftovers (words of a statement no reading uses, ranked by reach: WORKFLOW.md step 4). Where a step has such a check, run it first and label its groups; the agent only labels what it can't.
 > - Bugs in another step's code are raised with `bug-raise` and parked, never fixed here.
 
 # Switch-over Check (CV-06, per family)
@@ -29,7 +30,7 @@ All steps are read-only. Ask Jason before the draws (each about 3 min) and befor
 2. **Draw** (replicable): `mix lat.label_shadow --family "F" --strata --sample DIR --seed N`, twice with one seed into two directories; `diff -r` must show nothing. A new seed per round.
 3. **Agents:** one per batch file (`DIR/bK.json`, about 30 rows), with the prompt below. Save each VERDICTS block as `backend/data/reports/change-vocabulary/verdicts/cv06/<family-slug>/round-<R>-seed-<N>-b<K>.json`.
 4. **Pool:** `mix lat.verdicts --dir <that directory>` over the files since the last fix.
-5. **Fix:** each new-wrong item with fault `own` opens a fix for its cause (batched: one rebuild per round); that cause is drawn again on a new seed.
+5. **Fix:** each new-wrong item with fault `own` opens a fix for its cause (batched: one rebuild per round); the fix is checked by a code check over the whole family for that cause, never a fresh draw (2026-11-05).
 
 **Pass (Jason 2026-10-31):** no sampled row of a cause has the new label wrong by its own fault; the pooled 95% upper bound on own-fault rows is under 2%; golden 27/27. Rows on the named known-limit list keep their old label at the switch (Jason: "keep their old label").
 

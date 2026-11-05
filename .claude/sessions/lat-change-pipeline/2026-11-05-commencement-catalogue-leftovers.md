@@ -74,7 +74,8 @@ bugs:
   affected: 4 groups (top 20s)
   fix: power phrase, SentencePatterns role, finer-scope coverage, completing "those … are"
   step: Commencement reader
-  status: open
+  status: moved
+  moved_to: 2026-11-05-commencement-leftovers-family-gate.md
 - pattern: Own-clause and order statements read as nothing or half-read, ranked in leftovers.json (orders’ tables "specified
     in column 1 of the Schedule" unread, 123 statements; qualifiers read as full, 27; "This Act (apart from this section and
     section 56(1)) …" no exception)
@@ -83,7 +84,8 @@ bugs:
   affected: 632 statements (403 sentences, 229 order)
   fix: by class, widest reach first (Decision 1 c), after the family gate
   step: Commencement reader
-  status: open
+  status: moved
+  moved_to: 2026-11-05-commencement-leftovers-reader-misses.md
 artifacts:
 - backend/lib/sertantai_legal/scraper/commencement/leftovers.ex
 - backend/test/sertantai_legal/scraper/commencement/leftovers_test.exs
@@ -95,8 +97,8 @@ artifacts:
 depends_on:
 - 2026-11-05-maritime-safety-commencement-reader.md
 enables:
-- 'Commencement reader: the family leftovers gate (lat.commencement_check)'
-- 'Commencement reader: fix the leftover classes by reach'
+- 2026-11-05-commencement-leftovers-family-gate.md (pending)
+- 2026-11-05-commencement-leftovers-reader-misses.md (pending)
 ---
 
 # Session: Commencement catalogue: leftovers (CLOSED)
@@ -165,6 +167,11 @@ Among them are classes already parked from OH&S (an order list cut at "(except �
   - (b) **Gate by family.** `lat.commencement_check` prints the leftovers reaching the family's laws, and a step passes when each is fixed or named. Fixing is done step by step for each family.
   - (c) **(b) now, then (a)**: the gate first, so the next family (Maritime's later steps, or the next family's Commencement reader) sees its own list; then (a) as its own session.
 - **Recommendation:** (c). The gate makes the step's pass rule code over every statement. Then (a) works down the corpus list by reach, never by sample.
+
+## Deferred
+
+- ⏸️ The 4 open check errors → `2026-11-05-commencement-leftovers-family-gate.md` (pending).
+- ⏸️ The `fix` classes by reach → `2026-11-05-commencement-leftovers-reader-misses.md` (pending).
 
 ## Parking list
 

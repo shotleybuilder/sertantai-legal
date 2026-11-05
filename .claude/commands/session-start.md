@@ -104,7 +104,7 @@ A session that runs one step of the LAT Change Pipeline for one family (steps an
    - a recommendation.
 
    The terminal question points to it. The decision is recorded in `docs/lat-change-pipeline/RULES.md` if it is a rule.
-6. **Agents** carry out approved plan items or run a step as a separate session. An agent check is used only to find new classes, on a small sample, and its token cost is recorded.
+6. **Agents** carry out approved plan items or run a step as a separate session. An agent check is used only to find new classes, on a small sample, and its token cost is recorded. One agent pass at most, never sample → fix → resample (2026-11-05): what it finds becomes a code check over the corpus (as the commencement catalogues' leftovers), and a plan never says "a fix is followed by a fresh sample".
 
 ## Resume a PENDING or SUSPENDED session
 
