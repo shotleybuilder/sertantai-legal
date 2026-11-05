@@ -26,7 +26,7 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
-  alias SertantaiLegal.Scraper.Commencement.{Order, OrderPatterns}
+  alias SertantaiLegal.Scraper.Commencement.{Leftovers, Order, OrderPatterns}
 
   @shortdoc "Commencement orders' pattern catalogue, as test fixtures (read-only)"
 
@@ -74,7 +74,9 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
       patterns: %{},
       examples: %{},
       mismatch: [],
-      too_large: []
+      too_large: [],
+      leftovers: %{},
+      reach: %{}
     }
 
   # {order, act}: each held order once, with the Act its list or rules name
@@ -136,6 +138,7 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
     act = act(act_law)
     rules = Order.rules(doc, act)
     acc = %{acc | orders: acc.orders + 1}
+    {reach, acc} = reach(act_law, acc)
 
     for unit <- OrderPatterns.units(doc), reduce: acc do
       acc ->
@@ -143,6 +146,21 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
         o = OrderPatterns.outcome(unit, rules)
         key = OrderPatterns.key(f, o.class)
         id = example_id(order, unit)
+
+        left = leftovers_of(unit, rules)
+
+        acc = %{
+          acc
+          | leftovers:
+              Leftovers.add(
+                acc.leftovers,
+                Leftovers.shape(key, left),
+                order,
+                unit.id,
+                left,
+                reach
+              )
+        }
 
         entry = Map.get(acc.patterns, key, %{count: 0, examples: []})
 
@@ -159,6 +177,53 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
 
         acc = %{acc | units: acc.units + 1}
         if take?, do: example(acc, key, id, order, act, doc, unit, o), else: acc
+    end
+  end
+
+  # the order's own commencement and a table's header commence none of the
+  # Act; a table row's provisions are its first cell (the next is a subject)
+  defp leftovers_of(%{kind: kind}, _rules) when kind in ["own", "table_header"], do: []
+
+  defp leftovers_of(unit, rules) do
+    text = if unit.kind == "table", do: unit.text |> String.split(" | ") |> hd(), else: unit.text
+    own = OrderPatterns.own_rules(unit, rules)
+
+    cond do
+      # the order's own articles ("This article and article 2 come into force …")
+      text =~ ~r/^\W*(?:This|These)\s+(?:articles?|Order|regulations?|Regulations)\b/ or
+        text =~
+          ~r/^\W*The\s+(?:remaining\s+|other\s+|following\s+)?provisions\s+of\s+this\s+(?:Order|instrument)\b/ or
+          text =~ ~r/^\W*Articles?\s+\d[^.]*?\b(?:comes?|shall\s+come)\s+into\b/ ->
+        []
+
+      # a statement bringing in its Schedule's table: the rows' rules use its words
+      own == [] and text =~ ~r/\bSchedule\b|\bcolumn\b/ ->
+        Leftovers.of(text, rules, &Order.refs_in/1)
+
+      true ->
+        Leftovers.of(text, own, &Order.refs_in/1)
+    end
+  end
+
+  # what an order's leftovers reach: the Act's LAT rows, else the changes
+  # the Act's notes record on ours (once per Act)
+  defp reach(act, %{reach: cache} = acc) do
+    case cache do
+      %{^act => n} ->
+        {n, acc}
+
+      _ ->
+        %{rows: [[rows, notes]]} =
+          Repo.query!(
+            """
+            SELECT (SELECT count(*) FROM legal_articles WHERE law_name = $1),
+                   (SELECT count(*) FROM amendment_annotations WHERE coalesce(citation_law, changed_by) = $1)
+            """,
+            [act]
+          )
+
+        n = if rows > 0, do: rows, else: notes
+        {n, put_in(acc.reach[act], n)}
     end
   end
 
@@ -229,6 +294,11 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
       Path.join(dir, "examples.json"),
       Files.encode(Map.new(acc.examples, fn {id, x} -> {id, x.json} end))
     )
+
+    File.write!(
+      Path.join(dir, "leftover_groups.json"),
+      Files.encode(Leftovers.to_json(acc.leftovers))
+    )
   end
 
   # ── report, accept ───────────────────────────────────────────────────
@@ -277,6 +347,8 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
 
     shell.info("  (read into rules: #{read} of #{all})")
 
+    leftovers(acc.leftovers, dir)
+
     new = for p <- Map.keys(acc.patterns), not Map.has_key?(held["patterns"], p), do: p
     gone = for p <- Map.keys(held["patterns"]), not Map.has_key?(acc.patterns, p), do: p
 
@@ -301,5 +373,24 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
       File.write!(path, Files.encode(%{"patterns" => statuses, "examples" => examples}))
       shell.info("\naccepted: #{length(new)} new patterns written to #{path}")
     end
+  end
+
+  # the words no rule uses, by shape, widest reach first; reviewed in
+  # `leftovers.json`, the report under data/reports
+  defp leftovers(groups, dir) do
+    ranked = Leftovers.ranked(groups)
+
+    reviewed =
+      case File.read(Path.join(dir, "leftovers.json")) do
+        {:ok, body} -> Jason.decode!(body)
+        _ -> %{}
+      end
+
+    Enum.each(Leftovers.summary(ranked, reviewed), fn line -> Mix.shell().info(line) end)
+
+    path = "data/reports/commencement-reader/leftovers-orders-#{Date.utc_today()}.txt"
+    File.mkdir_p!(Path.dirname(path))
+    File.write!(path, Enum.join(Leftovers.lines(ranked), "\n") <> "\n")
+    Mix.shell().info("report: #{path}")
   end
 end

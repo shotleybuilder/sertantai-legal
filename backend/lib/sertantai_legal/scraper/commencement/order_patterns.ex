@@ -181,23 +181,8 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderPatterns do
   cell; the outcome class and each rule's readable line (no source), sorted.
   """
   @spec outcome(unit(), [Rule.t()]) :: %{class: String.t(), rules: [String.t()]}
-  def outcome(%{kind: kind, id: id, text: text}, rules) do
-    ref = Order.ref(id) || id
-    first = text |> String.split(" | ", parts: 2) |> hd()
-
-    mine =
-      Enum.filter(rules, fn r ->
-        source = r.source.ref || ""
-
-        case kind do
-          "table" ->
-            source == ref and String.starts_with?(squash(r.source.text || ""), first)
-
-          _ ->
-            (source == ref or String.starts_with?(source, ref <> "(")) and
-              String.starts_with?(squash(r.source.text || ""), String.slice(text, 0, 60))
-        end
-      end)
+  def outcome(unit, rules) do
+    mine = own_rules(unit, rules)
 
     class =
       case mine do
@@ -211,6 +196,27 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderPatterns do
       end
 
     %{class: class, rules: mine |> Enum.map(&line/1) |> Enum.sort()}
+  end
+
+  @doc "The rules the order reader read from `unit`: from its article (or table row), its words first."
+  @spec own_rules(unit(), [Rule.t()]) :: [Rule.t()]
+  def own_rules(%{kind: kind, id: id, text: text}, rules) do
+    ref = Order.ref(id) || id
+    first = text |> String.split(" | ", parts: 2) |> hd()
+
+    Enum.filter(rules, &from_unit?(&1, kind, ref, first, text))
+  end
+
+  # a table row's rules: its own row, its first cell; an article's: the
+  # article (or a paragraph of it), its opening words
+  defp from_unit?(r, "table", ref, first, _text),
+    do: r.source.ref == ref and String.starts_with?(squash(r.source.text || ""), first)
+
+  defp from_unit?(r, _kind, ref, _first, text) do
+    source = r.source.ref || ""
+
+    (source == ref or String.starts_with?(source, ref <> "(")) and
+      String.starts_with?(squash(r.source.text || ""), String.slice(text, 0, 60))
   end
 
   defp line(%Rule{} = r), do: r |> Rule.to_text() |> String.split(" — #{r.source.law} ") |> hd()

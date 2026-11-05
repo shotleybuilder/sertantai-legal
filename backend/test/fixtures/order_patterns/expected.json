@@ -1087,6 +1087,12 @@
         "sch.16.pt.I — 1996-12-16 — everywhere, in relation to — order_date"
       ]
     },
+    "UK_uksi_1996_3146/373a9433e8": {
+      "class": "rules+all",
+      "rules": [
+        "all except s.85..s.87 — 1997-01-31 — everywhere, fully — order_date"
+      ]
+    },
     "UK_uksi_1996_3146/54568464a1": {
       "class": "none",
       "rules": []
@@ -2139,6 +2145,7 @@
     "inline|date|-|full|other_law|rules+partial": "accepted",
     "inline|date|qualified|-|-|none": "pending: a column table's purposes or provisions",
     "inline|date|qualified|-|-|rules": "accepted",
+    "inline|date|qualified|-|-|rules+all": "accepted",
     "inline|date|qualified|-|-|rules+partial": "accepted",
     "inline|date|qualified|-|other_law|none": "accepted",
     "inline|date|qualified|-|other_law|rules+partial": "accepted",

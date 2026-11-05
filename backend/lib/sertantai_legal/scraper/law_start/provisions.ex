@@ -756,6 +756,15 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
     end
   end
 
+  @doc """
+  The law's own provisions `text` names, bare ("reg.7", "pt.II"), as this
+  reader names them over `rows` from the provision `base` — for checks that
+  must name refs the same way (`Commencement.Leftovers`).
+  """
+  @spec refs_in(String.t(), [map()], String.t()) :: [String.t()]
+  def refs_in(text, rows, base),
+    do: text |> refs(rows, base) |> Enum.map(&(&1 |> String.split(":", parts: 2) |> List.last()))
+
   # the references a subject names, as section_id prefixes or containers
   defp refs(subject, rows, base),
     do: subject |> weighted_refs(rows, base) |> Enum.map(&elem(&1, 0))

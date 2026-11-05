@@ -2507,9 +2507,9 @@
   },
   "UK_uksi_1995_965/1d37ca90d1": {
     "act": {
-      "law": "UK_ukpga_1995_21",
+      "law": "UK_ukpga_1970_36",
       "title": "Merchant Shipping Act",
-      "year": "1995"
+      "year": "1970"
     },
     "order": "UK_uksi_1995_965",
     "unit": {
@@ -2574,6 +2574,20 @@
       "text": "Section 162(2) of the Environmental Protection Act 1990 shall come into force on 16th December 1996 in so far as it relates to the following repeals in Part I of Schedule 16 to that Act and the repeals extend to England and Wales:"
     },
     "xml": "<Legislation xmlns:dc=\"http://purl.org/dc/elements/1.1/\"><dc:title>The Environmental Protection Act 1990 (Commencement No. 18) Order 1996</dc:title><Made Date=\"1996-11-28\"/><Secondary><Body><P1 DocumentURI=\"http://www.legislation.gov.uk/uksi/1996/3056/article/1/made\" IdURI=\"http://www.legislation.gov.uk/id/uksi/1996/3056/article/1\" id=\"article-1\">\n<Pnumber>1</Pnumber>\n<P1para>\n<Text>This Order may be cited as the Environmental Protection Act 1990 (Commencement <Abbreviation Expansion=\"Number\">No.</Abbreviation> 18) Order 1996.</Text>\n</P1para>\n</P1><P1 DocumentURI=\"http://www.legislation.gov.uk/uksi/1996/3056/article/2/made\" IdURI=\"http://www.legislation.gov.uk/id/uksi/1996/3056/article/2\" id=\"article-2\">\n<Pnumber>2</Pnumber>\n<P1para>\n<Text>Section 162(2) of the Environmental Protection Act 1990 shall come into force on 16th December 1996 in so far as it relates to the following repeals in Part I of Schedule 16 to that Act and the repeals extend to England and Wales:</Text>\n<UnorderedList Decoration=\"dash\">\n<ListItem>\n<Para>\n<Text>the repeal of the whole of the Alkali, &amp;c. Works Regulation Act 1906<FootnoteRef Ref=\"f00002\"/> so far as unrepealed;</Text>\n</Para>\n</ListItem>\n<ListItem>\n<Para>\n<Text>the repeal of section 1(1)(d) and the word “and” preceding it and section 5 of the Health and Safety at Work <Abbreviation Expansion=\"et cetera\" xml:lang=\"la\">etc.</Abbreviation> Act 1974<FootnoteRef Ref=\"f00003\"/>;</Text>\n</Para>\n</ListItem>\n<ListItem>\n<Para>\n<Text>the repeal, in section 79(10) of the Environmental Protection Act 1990, of the words following “Part I”.</Text>\n</Para>\n</ListItem>\n</UnorderedList>\n</P1para>\n</P1></Body></Secondary></Legislation>"
+  },
+  "UK_uksi_1996_3146/373a9433e8": {
+    "act": {
+      "law": "UK_ukpga_1996_23",
+      "title": "Arbitration Act",
+      "year": "1996"
+    },
+    "order": "UK_uksi_1996_3146",
+    "unit": {
+      "id": "article-3",
+      "kind": "inline",
+      "text": "The rest of the Act, except sections 85 to 87, shall come into force on 31st January 1997."
+    },
+    "xml": "<Legislation xmlns:dc=\"http://purl.org/dc/elements/1.1/\"><dc:title>The Arbitration Act 1996 (Commencement No.1) Order 1996</dc:title><Made Date=\"1996-12-16\"/><Secondary><Body><P1 DocumentURI=\"http://www.legislation.gov.uk/uksi/1996/3146/article/1/made\" IdURI=\"http://www.legislation.gov.uk/id/uksi/1996/3146/article/1\" id=\"article-1\">\n<Pnumber>1</Pnumber>\n<P1para>\n<Text>This Order may be cited as the Arbitration Act 1996 (Commencement <Abbreviation Expansion=\"Number\">No.</Abbreviation> 1) Order 1996.</Text>\n</P1para>\n</P1><P1 DocumentURI=\"http://www.legislation.gov.uk/uksi/1996/3146/article/2/made\" IdURI=\"http://www.legislation.gov.uk/id/uksi/1996/3146/article/2\" id=\"article-2\">\n<Pnumber>2</Pnumber>\n<P1para>\n<Text>The provisions of the Arbitration Act 1996 (“<Abbreviation Expansion=\"Arbitration Act 1996 c. 23\">the Act</Abbreviation>”) listed in Schedule 1 to this Order shall come into force on the day after this Order is made.</Text>\n</P1para>\n</P1><P1 DocumentURI=\"http://www.legislation.gov.uk/uksi/1996/3146/article/3/made\" IdURI=\"http://www.legislation.gov.uk/id/uksi/1996/3146/article/3\" id=\"article-3\">\n<Pnumber>3</Pnumber>\n<P1para>\n<Text>The rest of the Act, except sections 85 to 87, shall come into force on 31st January 1997.</Text>\n</P1para>\n</P1><P1 DocumentURI=\"http://www.legislation.gov.uk/uksi/1996/3146/article/4/made\" IdURI=\"http://www.legislation.gov.uk/id/uksi/1996/3146/article/4\" id=\"article-4\">\n<Pnumber>4</Pnumber>\n<P1para>\n<Text>The transitional provisions in Schedule 2 to this Order shall have effect.</Text>\n</P1para>\n</P1></Body></Secondary></Legislation>"
   },
   "UK_uksi_1996_3146/54568464a1": {
     "act": {

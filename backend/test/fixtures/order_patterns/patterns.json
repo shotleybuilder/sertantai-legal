@@ -481,7 +481,7 @@
       ]
     },
     "inline|date|qualified|-|-|none": {
-      "count": 27,
+      "count": 26,
       "examples": [
         "UK_ssi_2012_253/a1b77c609a",
         "UK_ssi_2025_170/3e70cc0fc1",
@@ -494,6 +494,12 @@
         "UK_uksi_1993_1461/3883731075",
         "UK_uksi_2022_561/eca1f5176b",
         "UK_uksi_2023_362/f8c6a0c542"
+      ]
+    },
+    "inline|date|qualified|-|-|rules+all": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_1996_3146/373a9433e8"
       ]
     },
     "inline|date|qualified|-|-|rules+partial": {
@@ -1176,9 +1182,9 @@
     }
   },
   "totals": {
-    "examples": 344,
+    "examples": 345,
     "orders": 678,
-    "patterns": 167,
+    "patterns": 168,
     "too_large": 181,
     "unclassified": 0,
     "units": 3496

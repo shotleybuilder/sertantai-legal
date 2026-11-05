@@ -31,7 +31,7 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.ChangeCollector
   alias SertantaiLegal.Scraper.LawRunner.Guard
-  alias SertantaiLegal.Scraper.Commencement.{OwnClause, SentencePatterns}
+  alias SertantaiLegal.Scraper.Commencement.{Leftovers, OwnClause, SentencePatterns}
 
   @shortdoc "Own commencement sentences' pattern catalogue, as test fixtures (read-only)"
 
@@ -101,7 +101,8 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
       examples: %{},
       laws_inputs: %{},
       mismatch: [],
-      too_large: []
+      too_large: [],
+      leftovers: %{}
     }
 
   # every law holding LAT, then the amending laws held as CLML with none
@@ -161,22 +162,47 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
     input = ChangeCollector.law_start_input(law, rows)
     read = OwnClause.read(law, input)
 
-    sentences =
-      for {row_id, s} <- SentencePatterns.sentences(rows),
-          do: {row_id, s, SentencePatterns.form(s), SentencePatterns.outcome(s, read)}
+    found = SentencePatterns.sentences(rows)
 
-    {:ok, %{input: input, sentences: sentences}}
+    sentences =
+      for {{row_id, s}, {_, _, left}} <- Enum.zip(found, Leftovers.for_law(rows, read, found)),
+          f = SentencePatterns.form(s),
+          # another instrument's commencement names none of the law's own
+          left = if(f.subject == "instrument", do: [], else: left),
+          do: {row_id, s, f, SentencePatterns.outcome(s, read), left}
+
+    {:ok, %{input: input, sentences: sentences, reach: reach(law, source, rows)}}
   rescue
     error -> {:error, Exception.message(error)}
   end
 
-  defp law_patterns(law, %{input: input, sentences: sentences}, acc) do
+  # what a law's leftovers reach: its LAT rows, or (an amending law) the
+  # changes its notes record on ours
+  defp reach(_law, :lat, rows), do: length(rows)
+
+  defp reach(law, :clml, _rows) do
+    %{rows: [[n]]} =
+      Repo.query!(
+        "SELECT count(*) FROM amendment_annotations WHERE coalesce(citation_law, changed_by) = $1",
+        [law]
+      )
+
+    n
+  end
+
+  defp law_patterns(law, %{input: input, sentences: sentences, reach: reach}, acc) do
     acc = %{acc | laws: acc.laws + 1}
 
-    for {row_id, s, f, o} <- sentences, reduce: acc do
+    for {row_id, s, f, o, left} <- sentences, reduce: acc do
       acc ->
         key = SentencePatterns.key(f, o.class)
         id = example_id(law, row_id, s)
+
+        acc = %{
+          acc
+          | leftovers:
+              Leftovers.add(acc.leftovers, Leftovers.shape(key, left), law, row_id, left, reach)
+        }
 
         entry = Map.get(acc.patterns, key, %{count: 0, examples: []})
         laws = Enum.map(entry.examples, &law_of/1)
@@ -296,6 +322,11 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
 
     # one law a line: its rows are many and short
     File.write!(Path.join(dir, "laws.json"), lines(acc.laws_inputs))
+
+    File.write!(
+      Path.join(dir, "leftover_groups.json"),
+      Files.encode(Leftovers.to_json(acc.leftovers))
+    )
   end
 
   defp lines(map) do
@@ -346,6 +377,8 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
           |> Enum.sort_by(&(-elem(&1, 1))),
         do: shell.info("  #{n}  #{class}")
 
+    leftovers(acc.leftovers, dir)
+
     new = for p <- Map.keys(acc.patterns), not Map.has_key?(held["patterns"], p), do: p
     gone = for p <- Map.keys(held["patterns"]), not Map.has_key?(acc.patterns, p), do: p
 
@@ -370,6 +403,25 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
 
       File.write!(path, Files.encode(%{"patterns" => statuses, "examples" => examples}))
       shell.info("\naccepted: #{length(new)} new patterns written to #{path}")
+    end
+  end
+
+  # the words no rule uses, by shape, widest reach first; reviewed in
+  # `leftovers.json` (fix / known / check), the report under data/reports
+  defp leftovers(groups, dir) do
+    ranked = Leftovers.ranked(groups)
+    Enum.each(Leftovers.summary(ranked, reviewed(dir)), fn line -> Mix.shell().info(line) end)
+
+    path = "data/reports/commencement-reader/leftovers-#{Date.utc_today()}.txt"
+    File.mkdir_p!(Path.dirname(path))
+    File.write!(path, Enum.join(Leftovers.lines(ranked), "\n") <> "\n")
+    Mix.shell().info("report: #{path}")
+  end
+
+  defp reviewed(dir) do
+    case File.read(Path.join(dir, "leftovers.json")) do
+      {:ok, body} -> Jason.decode!(body)
+      _ -> %{}
     end
   end
 end

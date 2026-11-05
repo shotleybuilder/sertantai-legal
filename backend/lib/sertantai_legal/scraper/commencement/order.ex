@@ -1063,6 +1063,17 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
   @list ~S"((?:(?:\s*(?:,|and|to|–|-)\s*)?(?:\d+[A-Z]*(?:\([0-9A-Za-z]+\))*|\([0-9A-Za-z]+\)(?:\([0-9A-Za-z]+\))*))+)"
 
+  @doc "The Act's provisions an order's `text` names, as this reader names them (\"s.85..s.87\"): for checks (`Commencement.Leftovers`)."
+  @spec refs_in(String.t()) :: [String.t()]
+  def refs_in(text) do
+    # (another law: "of the Health and Safety at Work etc. Act 1974"; "the
+    # Act", the one commenced, has no year)
+    if text =~
+         ~r/\b(?:of|to|into)\s+the\s+[^,;]{0,120}?\b(?:Act|Order|Regulations|Measure)\s+\d{4}\b/,
+       do: [],
+       else: text |> strip_parentheticals() |> refs(nil)
+  end
+
   defp refs(text, sch) do
     {of_section, text} = subsections_of(text)
 
