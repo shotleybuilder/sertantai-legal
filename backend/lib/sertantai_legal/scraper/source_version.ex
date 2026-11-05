@@ -30,12 +30,13 @@ defmodule SertantaiLegal.Scraper.SourceVersion do
     |> binary_part(0, 12)
   end
 
-  @doc "The files matched by `patterns`, relative to the backend root, sorted."
-  @spec files([String.t()]) :: [String.t()]
-  def files(patterns) do
+  @doc "The files matched by `patterns`, less those in `except`, relative to the backend root, sorted."
+  @spec files([String.t()], [String.t()]) :: [String.t()]
+  def files(patterns, except \\ []) do
     patterns
     |> Enum.flat_map(&Path.wildcard(Path.join(@root, &1)))
     |> Enum.map(&Path.relative_to(&1, @root))
+    |> Enum.reject(&(&1 in except))
     |> Enum.sort()
   end
 
@@ -71,9 +72,10 @@ defmodule SertantaiLegal.Scraper.SourceVersion do
   defmacro __using__(opts) do
     quote bind_quoted: [
             patterns: Keyword.fetch!(opts, :patterns),
+            except: Keyword.get(opts, :except, []),
             deps: Keyword.get(opts, :deps, [])
           ] do
-      @source_files SertantaiLegal.Scraper.SourceVersion.files(patterns)
+      @source_files SertantaiLegal.Scraper.SourceVersion.files(patterns, except)
       for f <- @source_files,
           do: @external_resource(SertantaiLegal.Scraper.SourceVersion.path(f))
 

@@ -25,5 +25,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadVersion do
       lib/sertantai_legal/scraper/lat_parser/xml.ex
       lib/sertantai_legal/scraper/application_clause.ex
       lib/sertantai_legal/scraper/territory.ex
-    )
+    ),
+    # the step's check (its tallies reach the change vocabulary's measures),
+    # never what an extent reading depends on
+    except: ~w(lib/sertantai_legal/scraper/amending_law/extent/check.ex)
 end
