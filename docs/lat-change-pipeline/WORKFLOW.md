@@ -126,13 +126,13 @@ On Maritime Safety, the build took the needs from 235 to 682, and three fetch ro
 **Check today.**
 1. Both catalogues: `mix lat.commencement_patterns` (own commencement sentences, about 12 min) and `mix lat.order_patterns` (orders, about 30 s), until `CommencementPatternsTest` and `OrderPatternsTest` pass. Each also reports its **leftovers** (`Commencement.Leftovers`): the words of a statement that bear on a date (a date, a provision, an exception, a qualifier, a relative day) that no rule read from it uses, grouped and ranked by the rows they reach, every group reviewed in `leftovers.json` (`LeftoversReviewTest`). This replaces agent rounds as the way to find a family's new forms (2026-11-05).
 2. The readers' re-read (ask first): `mix lat.commencement`, then the rebuild.
-3. `mix lat.commencement_check --family F`: every row dated, left to an order, or undated with a reason; our faults 0.
+3. `mix lat.commencement_check --family F`: every row dated, left to an order, or undated with a reason; our faults 0. Its **leftovers gate** lists every leftover reaching the family (its laws' own clauses, the orders held for them, its held amending laws), each with its group's status; PASS needs every one `known:`.
 4. Golden. At most one agent pass, and only to label leftover groups; never sample, fix, resample (Jason 2026-11-05).
-5. Next (Decision 1, 2026-11-05): `lat.commencement_check --family F` prints the leftovers reaching the family's laws; the step passes when each is fixed or named.
+5. Repeatable: two `--sample` runs on one seed, identical.
 
-**Pass rule as last used** (the stopping rule, 2026-10-24). Rows: our faults 0; golden all-pass; the agent sample finds no new defect; every remaining gap sits in a counted, pending class. A new family's own forms extend the catalogues.
+**Pass rule** (Decision 1 (c), Jason 2026-11-05). `lat.commencement_check --family F` prints PASS: our faults 0 and every leftover reaching the family named (`known:`); every leftover group reviewed (`LeftoversReviewTest`); the catalogue tests pass; repeatable; golden all-pass. No agent rounds. (Before: the stopping rule of 2026-10-24, on an agent sample.)
 
-**Skill.** None yet; the steps above are the recipe. Background: [COMMENCEMENT-GUIDE.md](COMMENCEMENT-GUIDE.md).
+**Skill.** `commencement-reader-check`. Background: [COMMENCEMENT-GUIDE.md](COMMENCEMENT-GUIDE.md).
 
 ## 5. Extent reader
 

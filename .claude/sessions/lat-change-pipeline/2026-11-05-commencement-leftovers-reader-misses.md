@@ -20,11 +20,13 @@ The leftovers check (`2026-11-05-commencement-catalogue-leftovers`) ranks the co
 - ⬜ Half-read own clauses: a bracketed "apart from" not subtracted ("This Act (apart from this section and section 56(1)) …"), "This section and the following provisions …": 154 statements
 - ⬜ The parked OH&S classes the check now counts (an order list cut at "(except …)"; "section 10(6) and (7) (so far as aforesaid)")
 - ⬜ Each class: catalogues re-run, held expectations unmoved, its groups gone from `leftovers.json`; golden 27/27
+- ⬜ The families' gate lists to clear: Maritime Safety 18 (`gate-transport-maritime-safety-2026-11-05.txt`: the made-relative "22nd day after … made" in 4 laws, SI 1995/965), OH&S 24 (`gate-oh-s-occupational-2026-11-05.txt`: SI 1974/1439's tables)
+- ⬜ One check error left (1971 c.19 s.6(5): "the Order appointing the day may provide …")
 - ⬜ Close
 
 ## Dependencies
 
-- ⬜ `2026-11-05-commencement-leftovers-family-gate`
+- ✅ `2026-11-05-commencement-leftovers-family-gate` (closed 2026-11-05)
 - ✅ `2026-11-05-commencement-catalogue-leftovers`
 
 ## Parking list
