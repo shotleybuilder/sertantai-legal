@@ -218,6 +218,20 @@ A sentence saying where provisions extend that is not read in full is recorded a
 - **Example:** SOCPA 2005 Sch.7 para 27(4) ("The repeal of section 4(8) extends also to Scotland") gave no bound until a later round read it.
 - **Serves:** `unknown-over-guess` · **Code:** `AmendingLaw.Extent.Unread` · **Test:** `amending_law/extent_test` · **Origin:** Jason 2026-10-26, `cv-s05-extent-reader` (round 6)
 
+### `powers-of-an-act-stating-no-extent`
+An SI that states no extent extends as far as its enabling provisions. Each provision is placed by its parent Act's own extent clause. Where the parent Act states no extent at all (no default and no lists), the provision takes the extent legislation.gov.uk states on it (`RestrictExtent`). The rule stays all or nothing: one provision with neither leaves the SI unbound.
+- **Example:** the European Communities Act 1972 has no extent clause. Its s.2 is stated E+W+S+N.I., so the 45 Maritime Safety SIs made under s.2(2) are bound to the UK, where before they had no territory.
+- **Serves:** `law-text-wins`, `unknown-over-guess` · **Code:** `AmendingLaw.Extent.StatedExtent`, `Extent.Lookup.from_powers/3`, `Extent.Powers` · **Test:** `amending_law/extent/stated_extent_test`, `lookup_test` "a parent Act stating no extent" · **Origin:** Jason 2026-11-05, Decision 2, `maritime-safety-extent-reader`
+
+### `act-stating-no-clause-takes-whole-act-extent`
+legislation.gov.uk often states an Act's extent once, on the whole Act (its root element), and on no provision. An Act stating no extent clause and no lists takes that whole-Act extent:
+- as an enabling Act, for a provision that states none of its own;
+- as an amending Act, as its changes' bound, but only where none of its provisions states a different extent.
+
+The order is: the law's own default and lists, then an SI's powers, then this stated extent, then a devolved legislature's competence.
+- **Example:** the Merchant Shipping (Pollution) Act 2006 states E+W+S+N.I. only on the whole Act. SI 2006/1265, made under its s.1, and the Wreck Removal Convention Act 2011's changes to the Merchant Shipping Act 1995 are bound to the UK, where before they had no territory.
+- **Serves:** `law-text-wins`, `binds-on-date` · **Code:** `Extent.StatedExtent` (`root/1`, `uniform/1`), `Extent.stated`, `Extent.Lookup.of/2`, `Extent.Powers` · **Test:** `amending_law/extent/stated_extent_test`, `lookup_test` "an Act stating no clause" · **Origin:** Jason 2026-11-05, Decision 3, `maritime-safety-extent-reader`
+
 ### `insertion-takes-inserting-territory`
 Inserted text takes the inserting law's narrower territory. Laws inserting the same row on the same day for different territories insert it in their union.
 - **Example:** HSWA 1974 s.23(4)(a): SI 2005/1541 inserts it for E+W and SSI 2006/475 for S, so it is E+W+S.
@@ -636,6 +650,9 @@ The named missing-repeal rows and the named date gaps keep the old register's la
 | A tax Act's year of effect ("has effect in relation to tax for the year 1992-93 …": TCGA 1992 s.289(1)) | Maritime Safety: 17 changes | Dated by Royal Assent (1992-03-06) | same, Decision 1 (D) | Jason 2026-11-05 |
 | A legislation.gov.uk note pointer with note words in it ("s.26(5)(6)(subst.1982 c 36 s 39(2)") | Maritime Safety: 1 change | Falls to the law's by-order rule | same, Decision 1 (F) | Jason 2026-11-05 |
 | One-law commencement wordings: a form found in one law (or its NI twin) below the triage size, named in the leftovers check rather than chased — a sector-only deferral (SI 2005/1643, NISR 2006/1 reg.15(3)), a treaty day notified in the Gazettes (SI 1998/1258), a list with no dash (SI 2002/3153), a bracketed "apart from" (1998 c.8 s.17(1)), and the others listed | Maritime Safety and OH&S: 12 statements | As read (often undated) | `leftovers.json` `known:` statuses ("RULES.md: one-law commencement wordings"); `2026-11-05-commencement-leftovers-reader-misses` | plan triage rule, 2026-11-05 |
+| One-law extent wordings: a form found in one law below the triage size, named in the extent gate (`withheld.json`) rather than chased. Examples: a qualified list item ("so far as relating to paragraphs 9 and 68 …", 2015 c.20 s.114), "(including paragraph 1, but not the rest, of Schedule 14)" (1999 c.22 s.109), lettered per-subsection extents ("In this section— (a) subsection (1) shall extend …", 2003 c.39 ss.100–101), a subject-matter extent ("To the extent that these Regulations concern the importation of …", SI 2005/1082) | Maritime Safety: 9 laws, 15 changes | No bound (unread withholds) | `withheld.json` `known:` statuses; `2026-11-05-maritime-safety-extent-reader` | plan triage rule, 2026-11-05 |
+| An SI's introduction with no powers clause on legislation.gov.uk (the designation or draft-approval recital only, or no preamble: SI 2011/1043, 1999/1820, 1977/445) | Maritime Safety: 3 changes | No bound from powers | `withheld.json` | 2026-11-05 |
+| An enabling Act not on legislation.gov.uk (stored as a 404: the Merchant Shipping (Registration, etc.) Act 1993, repealed 1996) | Maritime Safety: SI 1994/541, 24 changes | No bound from powers | `withheld.json` | 2026-11-05 |
 | Provisions named by power or as Schedule entries, not by number ("so much of any provision of this Act as authorises the making of any order": ICTA 1988 s.843(3), SSCBA 1992 s.289(2); Schedule entries, SI 2003/835) | 3 statements | Undated by the clause | same | 2026-11-05 |
 
 ---

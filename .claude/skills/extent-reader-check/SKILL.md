@@ -39,29 +39,25 @@ Ask Jason before the runs that write; say how long each takes. Take a restore po
 
    `--out DIR` writes elsewhere and compares against an empty catalogue, so its "examples reading differently" is always 0. Use the fixtures for the review.
 2. **Extents** (writes `extent_rules`; ~1 min warm, ~5 cold): `mix lat.amending --extents --amending <every law in extent_rules> --cached`. It never fetches, and writes only the laws whose reading changed (`Extent.Store.write_read/3`).
-3. **Rebuild and golden** (writes `provision_changes`, claims; ~2–3 min): `mix lat.vocabulary --check --family "F"`. Golden must stay all-pass.
-4. **The check** (read-only, seconds): `mix lat.extent_check --family "F"` must PASS (our faults 0: stored rows match the reading). Its sweep section lists every uncaught sentence of the family's amending laws in a `read:` form: each is a miss, and there must be none.
-   - Trace the change in `bound:law` and in each `none:` reason against the round before. Snapshot the law_text extent claims first (`create table r6b.claimsN as …`) and diff lost / changed / gained by `by`.
-   - Every movement needs a reason in the text.
-5. **Repeatable sample**, on a seed never used before for this family (record it):
-   ```bash
-   S=<scratchpad>
-   mix lat.extent_check --family "F" --sample $S/a.json --n 50 --seed N
-   mix lat.extent_check --family "F" --sample $S/b.json --n 50 --seed N
-   cmp $S/a.json $S/b.json   # identical
-   ```
-6. **Agent check:** launch a general-purpose agent with the prompt below on `$S/a.json`.
+3. **Rebuild** (writes `provision_changes`, claims; minutes): `mix lat.vocabulary --build --family "F"`, then golden (`mix lat.vocabulary --golden --workers 1`), which must stay all-pass.
+4. **The check and gate** (read-only, about 80 s): `mix lat.extent_check --family "F"`. It must end PASS:
+   - our faults 0 (stored rows match the reading);
+   - no sweep miss in a `read:` form;
+   - every no-bound cause named.
 
-**Statistical pass rule** (Jason 2026-10-28, CV-S05 close): one clean seed is weak evidence (at a 2% residual rate a 50-law sample is clean 36% of the time). Pool the seeds since the last fix batch, with every NEW fixed, and state exact one-sided 95% upper bounds (Clopper–Pearson). Pass when wrong-bound changes are under 2% and laws under 5%. Decide the rule before the round, and record the pooled numbers and the coverage table, as CV-S05's "Quality statement" does.
+   The gate section ("text changes with no bound, by cause") lists each cause and amending law, widest reach first (`Extent.Withheld`). Each comes with its words: the law's unread statements, or why it has no powers (`Powers.why_none/1`). Review each in `backend/test/fixtures/extent_patterns/withheld.json`:
+   - `fix: <why>` for a form to read;
+   - `known: <why>` for a by-design cause, a one-law wording, or a legislation.gov.uk error (listed in RULES.md's known limits);
+   - `check: <why>` where it is not yet decided.
 
-**Pass** (decided by Jason 2026-10-27; see CV-S05 "Pass bar: decided"):
-- census (CV-S05c's commands as the next run, `backend/data/experiments/cv-s05c-shape-mining/run-NN/`): classes A–F at
-  zero in list sentences, apart from logged known residuals;
-- the check shows our faults 0, and no uncaught sentence in a `read:` form (the sweep);
-- golden is all-pass; the catalogue test passes;
-- the agent finds no NEW that places a wrong bound on a sampled provision or change, and no silent drop.
+   Keys are `"<cause> @ <law>"`, else the cause alone. Fix by cause, test first, widest reach first.
+5. **The powers parser** (only when `EnactedBy.EnablingProvisions` changes): parse every held introduction before and after (`EnablingCache.from_store/1`) and diff. Gains are allowed; check each other change in its text. Then re-parse the changed SIs offline (`EnablingCache.reparse/1`).
 
-Record each round in the family's step session. Only NEW defects go to Jason, explained with the law's own words and the stored rows.
+**Pass** (Decision 1, Jason 2026-11-05, Maritime Safety): the gate's PASS; the catalogue test (`ExtentPatternsTest`); every form fixed with its unit test; golden all-pass. **No agent rounds.** The agent prompt below is kept for one pass at most, on a small sample, to find new classes. What it finds becomes a gate cause or a catalogue class, never a resample.
+
+The statistical rule (2026-10-28, OH&S) is superseded. It pooled seeds and held 95% upper bounds under 2% of changes and 5% of laws.
+
+Record each run in the family's step session. Decisions go to Jason, explained with the law's own words and the stored rows.
 
 If the round changed the **amendment reader** too, its one full read pass (`mix lat.amending --read`, ~6 min) comes before step 3, its report traced law by law (see `backend/lib/sertantai_legal/scraper/CLAUDE.md`).
 
@@ -283,3 +279,8 @@ OH&S (first family, 2026-10-24 →). The session is `.claude/sessions/change-voc
 - Run-05 fix batch, seed 20 (2026-10-28): laws 49 OK / 0 WRONG / 1 doubtful (1975/21, KT); changes 49 / 0 / 1 (CPA 1987 Sch.3 change labelled `none:unread_statement` where the lookup is `:same`: a label only). **PASS: no NEW.** Withheld observations, not NEW: 1989/38 s.29(5)–(6) cross-subsection exception list unread whole (plain items withheld with it); CPA 1987 s.5(8) "Subsections (5) to (7) above shall not extend to Scotland" stored unread.
 - Seed 21 (2026-10-28): laws 49 OK / 1 WRONG, changes 49 / 0 / 1: FAIL. NEW: 2008/20 s.3(4)'s bracketed "(except that an amendment or repeal made by this Act has the same extent as the provision to which it relates)" was dropped, so its amendments were bound to the UK. Fixed (`Same`).
 - Seed 22 (2026-10-28): laws 47 / 2 WRONG / 1 doubtful, changes 49 / 0 / 1: FAIL, 2 NEW. 1996/23 s.108(3), a statement qualified after its places, was dropped to the default; 1989/38 s.30(6)(d)'s "(which extends only to Northern Ireland)" was read as also. Both fixed (`157abd4d`). **CV-S05 closed on the statistical rule:** seeds 20–22 pooled, changes 0/150 (upper 2.0%), laws 3/150 (upper 5.1%).
+
+Maritime Safety (second family, 2026-11-05): the code gate replaces the agent rounds (Decision 1). The session is `.claude/sessions/lat-change-pipeline/2026-11-05-maritime-safety-extent-reader.md`.
+- **Powers parser.** 8 forms fixed. The diff covered the 365 held introductions: 23 gains and 34 corrections, each checked.
+- **The 1972 Act.** It states no extent, so its SIs are placed by its stated extent (Decision 2).
+- **Result.** No-powers SIs fell from 77 to 13.

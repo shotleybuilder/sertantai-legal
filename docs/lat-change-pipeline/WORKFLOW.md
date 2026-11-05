@@ -78,6 +78,10 @@ On Maritime Safety, the build took the needs from 235 to 682, and three fetch ro
 
 **A commencement order is held with its schedules** (Jason 2026-11-05). An order's article often brings in "the provisions specified in column 1 of the Schedule to this Order": the Schedule is the order's table, and without it the order reader reads nothing. Fetch orders with `mix clml.fetch --whole --laws …` (body and schedules); a plain `mix clml.fetch` fetches a LAT scope, the body only. An order counts as held when its schedules are stored, or stored as missing (legislation.gov.uk has none: its `ScheduleParagraphs` is 0). `mix lat.commencement --read-orders` lists the orders not held so in `data/reports/commencement-rules/orders_missing.txt`. On 2026-11-05, 31 orders' Schedules were missing (54 statements read as nothing, among them Maritime Safety's SI 1995/965), and 510 held orders had no schedules record.
 
+**An SI's introduction is held only when it is stored** (Maritime Safety: Extent reader, 2026-11-05). The Extent reader reads an SI's enabling powers from its made introduction, through the enabling cache (`data/cache/enabling/<law>.json`).
+- **The bug.** `lat.sources` counts the introduction held whenever that cache file exists, even when it is `[]`: a fetch that failed, or one from before the CLML store. On 2026-11-05, 12 Maritime amenders were in that state, with their powers unreadable. This is parked as a Sources bug, `enabling-cache-empty-counts-held`.
+- **Until it is fixed,** fetch with `EnablingCache.get(law, retry_empty: true)`. Re-parse a held introduction offline with `EnablingCache.reparse/1`, which never fetches.
+
 **Skill.** None. The `nas-data-sync` skill covers the store itself.
 
 ## 2. Feed reader
@@ -138,21 +142,28 @@ On Maritime Safety, the build took the needs from 235 to 682, and three fetch ro
 
 ## 5. Extent reader
 
-**Aim.** Where each amending law's changes apply is read from its own words; a statement that can't be read fully gives no territory, never a default.
+**Aim.** Where each amending law's changes apply is read from its own words. A statement that can't be read fully gives no territory, never a default.
 
-**Inputs.** The amending laws' text (body and schedules), SIs' introductions and enabling Acts.
+**Inputs.** The amending laws' text (body and schedules), SIs' introductions (the enabling cache) and their enabling Acts.
 
 **Outputs.** `extent_rules` per amending law; law-text territory and extent claims on each change.
 
-**Check today.**
-1. Recall sweep: `mix lat.extent_sweep --family F` finds sentences the catalogue doesn't class.
-2. Catalogue: `mix lat.extent_patterns --accept`, then review the fixture diff.
-3. Extents: `mix lat.amending --extents --amending <laws> --cached` (writes `extent_rules`).
-4. Rebuild and golden: `mix lat.vocabulary --check --family F`.
-5. `mix lat.extent_check --family F`: our faults 0, and no uncaught sentence in a readable form.
-6. Repeatable sample, and an agent on 50 amending laws and 50 text changes per seed.
+**Check.**
+1. **Recall sweep.** `mix lat.extent_sweep --family F` finds sentences the catalogue doesn't class.
+2. **Catalogue.** `mix lat.extent_patterns --accept`, then review the fixture diff.
+3. **Extents.** `mix lat.amending --extents --amending <laws> --cached` writes `extent_rules`, reading the enabling parents first. Take a restore point of `extent_rules` before it.
+4. **Rebuild.** `mix lat.vocabulary --build --family F`.
+5. **The check and gate.** `mix lat.extent_check --family F` (seconds, read-only). It lists every family text change with no bound, by cause and amending law (`Extent.Withheld`). Each cause carries its words: the law's unread statements, or why it has no powers (introduction not held, no powers clause read, a parent not read, a provision placed nowhere). Each has a status in `test/fixtures/extent_patterns/withheld.json`: `fix:`, `known:` or `check:`, keyed `"<cause> @ <law>"` or by cause. The statuses work as the commencement gate's do.
+6. **Golden:** `mix lat.vocabulary --golden`.
 
-**Pass rule as last used** (statistical, 2026-10-28). Pool the seeds since the last fix batch, with every new defect fixed. The 95% upper bound of changes with a wrong territory must be under 2%, and of amending laws under 5%. Also: the census classes at zero apart from logged residuals; the check at our faults 0; golden all-pass. Publish the coverage table and a quality statement.
+**Pass rule** (Decision 1, Jason 2026-11-05, Maritime Safety: Extent reader):
+- `lat.extent_check --family F` prints PASS: our faults 0, no sweep miss in a `read:` form, and every no-bound cause named `known:`;
+- the catalogue test passes (`ExtentPatternsTest`), and every form fixed has its unit test;
+- golden all-pass.
+
+No agent rounds. Before this, the rule was statistical (2026-10-28): pooled agent seeds, with 95% upper bounds under 2% of changes and 5% of laws.
+
+**An SI's powers** (Maritime Safety, 2026-11-05). An SI that states no extent extends as far as its enabling provisions. Each provision is placed by its parent Act's extent clause; a parent stating no extent at all takes the extent legislation.gov.uk states on the provision (RULES.md `powers-of-an-act-stating-no-extent`). Whenever the powers parser (`EnactedBy.EnablingProvisions`) changes, diff its parse of every held introduction before and after, and check each change in its text.
 
 **Skill.** `extent-reader-check`.
 
