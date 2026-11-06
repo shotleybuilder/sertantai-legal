@@ -141,13 +141,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.Coverage do
     "none:law_no_powers" => :no_powers,
     "none:unread_statement" => :unread_statement,
     "none:competence_only" => :competence_only,
-    "none:no_amending_law" => :no_amending_law
+    "none:no_amending_law" => :no_amending_law,
+    "none:law_no_clause" => :no_clause
   }
+
+  @group_names ~w(law_text follows_enactment feed_or_markup law_type_not_read no_powers unread_statement competence_only no_amending_law no_clause other)a
+
+  @doc "CV-S05's groups in their printed order, `other` last."
+  @spec territory_group_names() :: [atom()]
+  def territory_group_names, do: @group_names
 
   @doc """
   CV-S05's table: the extent check's "territory from" outcome counts
   grouped (`bound:law` and `territory:law` are the law's text; `same` and
-  `same_or_not_named` follow the enactment; any other `none:` is other).
+  `same_or_not_named` follow the enactment; `law_no_clause`, an Act with
+  no extent clause, is `no_clause`; any other `none:` is other).
   """
   @spec territory_groups(%{String.t() => non_neg_integer()}) :: %{atom() => non_neg_integer()}
   def territory_groups(counts) do

@@ -98,10 +98,33 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Gate.Evidence do
     end
   end
 
+  @no_rules "; amending law has no commencement rules"
+
+  @doc """
+  Each attribute's gaps (`gaps/2`) summed: the total, and those whose
+  amending law has no commencement rules (Maritime Safety: Measures: the
+  published totals were summed by hand, and wrong).
+  """
+  @spec gap_totals(%{{atom(), String.t()} => pos_integer()}) :: %{
+          atom() => %{total: non_neg_integer(), no_rules: non_neg_integer()}
+        }
+  def gap_totals(gaps) do
+    Enum.reduce(gaps, %{}, fn {{a, cause}, n}, acc ->
+      no_rules = if String.ends_with?(cause, @no_rules), do: n, else: 0
+
+      Map.update(
+        acc,
+        a,
+        %{total: n, no_rules: no_rules},
+        &%{total: &1.total + n, no_rules: &1.no_rules + no_rules}
+      )
+    end)
+  end
+
   defp gap_cause(c, :commenced_by, %MapSet{} = ruled) do
     if MapSet.member?(ruled, by(c)),
       do: held(c),
-      else: held(c) <> "; amending law has no commencement rules"
+      else: held(c) <> @no_rules
   end
 
   defp gap_cause(c, _a, _ruled), do: held(c)

@@ -43,6 +43,7 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
   use Mix.Task
 
   alias SertantaiLegal.Repo
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source, as: Scope
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Check, Powers, ReadCache, Store, Withheld}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Draw
   alias SertantaiLegal.Scraper.LawRunner
@@ -68,7 +69,7 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
       opts[:family] ||
         Mix.raise("usage: mix lat.extent_check --family F [--sample FILE --n N --seed S]")
 
-    laws = family_laws(family)
+    laws = Scope.family_laws(family)
     changes = text_changes(laws)
 
     amending =
@@ -104,17 +105,6 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
 
     report(rows, change_rows, gate)
     if opts[:sample], do: sample(opts, rows, change_rows)
-  end
-
-  defp family_laws(family) do
-    Repo.query!(
-      """
-      SELECT name FROM uk_lrt WHERE family LIKE '%' || $1 || '%'
-        AND name IN (SELECT DISTINCT law_name FROM legal_articles) ORDER BY name
-      """,
-      [family]
-    ).rows
-    |> List.flatten()
   end
 
   # each text change with its territory claims, by source

@@ -13,19 +13,32 @@ defmodule Mix.Tasks.Lat.Measures do
 
       mix lat.measures --family "OH&S: Occupational"
       mix lat.measures --golden [--extended]
+      mix lat.measures --family F --sample FILE --n 50 --seed S   # the hand-check sample
+
+  `--sample` writes the hand-check sample (`Measures.HandSample`): text
+  changes drawn on the seed, each with the classes the measures give it.
   """
   use Mix.Task
 
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.{Coverage, Source}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.{Coverage, HandSample, Source}
 
   @shortdoc "The change vocabulary's coverage figures for a family or the golden laws (read-only)"
 
-  @usage "usage: mix lat.measures --family F | --golden [--extended]"
+  @usage "usage: mix lat.measures --family F | --golden [--extended] [--sample FILE --n N --seed S]"
 
   @impl Mix.Task
   def run(args) do
     {opts, _, _} =
-      OptionParser.parse(args, strict: [family: :string, golden: :boolean, extended: :boolean])
+      OptionParser.parse(args,
+        strict: [
+          family: :string,
+          golden: :boolean,
+          extended: :boolean,
+          sample: :string,
+          n: :integer,
+          seed: :integer
+        ]
+      )
 
     Mix.Task.run("app.start")
     Logger.configure(level: :warning)
@@ -37,11 +50,14 @@ defmodule Mix.Tasks.Lat.Measures do
         true -> Mix.raise(@usage)
       end
 
-    {changes, conflicts} =
-      Enum.reduce(laws, {[], []}, fn law, {cs, fs} ->
+    by_law =
+      Enum.map(laws, fn law ->
         changes = Source.changes(law)
-        {changes ++ cs, Source.conflicts(changes) ++ fs}
+        {law, changes, Source.conflicts(changes)}
       end)
+
+    changes = Enum.flat_map(by_law, &elem(&1, 1))
+    conflicts = Enum.flat_map(by_law, &elem(&1, 2))
 
     split = Coverage.stated_by_split(changes)
     table = Coverage.law_text_coverage(changes, conflicts)
@@ -59,6 +75,19 @@ defmodule Mix.Tasks.Lat.Measures do
     what dates a text change (CV-S08):
     #{rows(dating, ~w(undated dated_no_commenced_by commenced_by_named)a, dating.total)}\
     """)
+
+    if path = opts[:sample], do: sample(by_law, path, opts)
+  end
+
+  defp sample(by_law, path, opts) do
+    seed = opts[:seed] || 1
+    population = HandSample.population(by_law)
+    items = HandSample.draw(population, opts[:n] || 50, seed)
+    File.write!(path, Jason.encode!(items, pretty: true))
+
+    IO.puts(
+      "\nsample: #{length(items)} of #{length(population)} text changes (seed #{seed}) → #{path}"
+    )
   end
 
   defp rows(counts, keys, total) do

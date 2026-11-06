@@ -125,6 +125,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.CoverageTest do
   end
 
   describe "territory_groups/1 (CV-S05's table)" do
+    test "an Act with no extent clause is its own group, not other (Maritime Safety: Measures, the hand check)" do
+      assert %{no_clause: 13, other: 0} = Coverage.territory_groups(%{"none:law_no_clause" => 13})
+    end
+
+    test "the groups in their printed order, other last" do
+      assert List.last(Coverage.territory_group_names()) == :other
+      assert :no_clause in Coverage.territory_group_names()
+    end
+
     test "groups the extent check's outcome counts" do
       counts = %{
         "bound:law" => 3093,
@@ -152,7 +161,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.CoverageTest do
                unread_statement: 328,
                competence_only: 149,
                no_amending_law: 42,
-               other: 6
+               no_clause: 4,
+               other: 2
              }
     end
   end

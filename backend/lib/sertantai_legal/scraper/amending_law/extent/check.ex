@@ -17,8 +17,6 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Check do
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Lookup, Store, Unread}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Coverage
 
-  @groups ~w(law_text follows_enactment feed_or_markup law_type_not_read no_powers unread_statement competence_only no_amending_law other)a
-
   # ── amending laws ────────────────────────────────────────────────────
 
   @doc "A law whose type the reader doesn't read, or whose text isn't held."
@@ -231,7 +229,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Check do
 
   @doc "The order the grouped table prints its groups in."
   @spec groups() :: [atom()]
-  def groups, do: @groups
+  def groups, do: Coverage.territory_group_names()
 
   # ── sample items ─────────────────────────────────────────────────────
 

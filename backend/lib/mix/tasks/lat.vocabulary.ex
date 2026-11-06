@@ -41,6 +41,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
   use Mix.Task
 
   alias SertantaiLegal.Repo
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source, as: Scope
 
   alias SertantaiLegal.Scraper.{ChangeVocabulary, LatRef, LatStagedParser}
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Build, Conflicts, Golden, LabelSource, Store}
@@ -84,14 +85,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
         Golden.laws(opts)
 
       opts[:family] ->
-        Repo.query!(
-          """
-          SELECT name FROM uk_lrt WHERE family LIKE '%' || $1 || '%'
-            AND name IN (SELECT DISTINCT law_name FROM legal_articles) ORDER BY name
-          """,
-          [opts[:family]]
-        ).rows
-        |> List.flatten()
+        Scope.family_laws(opts[:family])
 
       opts[:laws] ->
         String.split(opts[:laws], ",", trim: true)

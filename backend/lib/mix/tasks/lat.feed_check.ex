@@ -14,6 +14,7 @@ defmodule Mix.Tasks.Lat.FeedCheck do
   use Mix.Task
 
   alias SertantaiLegal.Repo
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source, as: Scope
   alias SertantaiLegal.Scraper.LatRef
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Placement, Ref}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Draw
@@ -131,14 +132,7 @@ defmodule Mix.Tasks.Lat.FeedCheck do
   defp scope(opts) do
     cond do
       opts[:family] ->
-        Repo.query!(
-          """
-          SELECT name FROM uk_lrt WHERE family LIKE '%' || $1 || '%'
-            AND name IN (SELECT DISTINCT law_name FROM legal_articles) ORDER BY name
-          """,
-          [opts[:family]]
-        ).rows
-        |> List.flatten()
+        Scope.family_laws(opts[:family])
 
       opts[:laws] ->
         String.split(opts[:laws], ",", trim: true)

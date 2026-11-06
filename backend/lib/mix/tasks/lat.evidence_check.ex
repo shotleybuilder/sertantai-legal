@@ -141,14 +141,25 @@ defmodule Mix.Tasks.Lat.EvidenceCheck do
       for w <- Enum.take(i.words, 4), do: shell.info("           #{w}")
     end
 
-    shell.info("\ngaps, a value no source claims (attribute, sources the change holds):")
-
-    for {{a, held}, n} <- all |> Gate.gaps(ruled()) |> Enum.sort_by(fn {k, n} -> {-n, k} end),
-        do: shell.info("  #{pad(n)}  #{a}  #{held}")
+    report_gaps(all)
 
     shell.info(
       "\n#{if gate.pass?, do: "PASS", else: "FAIL"} (groups not named: #{length(gate.failing)})"
     )
+  end
+
+  defp report_gaps(changes) do
+    shell = Mix.shell()
+    shell.info("\ngaps, a value no source claims (attribute, sources the change holds):")
+    gaps = Gate.gaps(changes, ruled())
+
+    for {{a, held}, n} <- Enum.sort_by(gaps, fn {k, n} -> {-n, k} end),
+        do: shell.info("  #{pad(n)}  #{a}  #{held}")
+
+    shell.info("gaps by attribute (total; amending law has no commencement rules):")
+
+    for {a, t} <- gaps |> Gate.gap_totals() |> Enum.sort_by(fn {a, t} -> {-t.total, a} end),
+        do: shell.info("  #{pad(t.total)}  #{a}  (#{t.no_rules})")
   end
 
   # an operation or level conflict of the law's text: its status in the

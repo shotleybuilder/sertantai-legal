@@ -114,4 +114,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Gate.EvidenceTest do
 
     assert %{{:commenced_by, "feed"} => 1} = Gate.gaps([c], MapSet.new([@by]))
   end
+
+  test "gap totals: each attribute's gaps, and those whose amending law has no commencement rules (Maritime Safety: Measures)" do
+    gaps = %{
+      {:commenced_by, "feed+law_text; amending law has no commencement rules"} => 3,
+      {:commenced_by, "feed+law_text"} => 2,
+      {:commenced_by, "feed; amending law has no commencement rules"} => 1,
+      {:date, "feed+law_text"} => 4
+    }
+
+    assert Gate.gap_totals(gaps) == %{
+             commenced_by: %{total: 6, no_rules: 4},
+             date: %{total: 4, no_rules: 0}
+           }
+  end
 end
