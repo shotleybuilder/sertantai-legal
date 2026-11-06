@@ -59,14 +59,14 @@ bugs:
     category: sources-gate-not-rerun
     module: mix lat.sources (--fetch, ask Jason)
     affected: 11
-    fix: "Fetch the 11 (mix lat.sources --family F --fetch, ask Jason first); 2 of the Extent reader's unnamed causes rest on them"
+    fix: "Fetched (Jason 2026-11-06): 9, then the 2 that had returned HTTP 500 on a retry; 10 are absent (legislation.gov.uk has no Schedules for them). Gate PASS, 0 failures"
     step: Sources
-    status: open
+    status: fixed
   - pattern: "The extent gate fails today: 4 no-bound causes not named (7 text changes), new since the step passed (9a9d0e26) — the Amending-law reader's read pass moved the store (e.g. UK_ukpga_2009_25 unread_statement ×3; UK_uksi_2006_2190 same_or_not_named ×2 and UK_ukpga_1992_52 law_no_clause ×1 rest on documents not fetched)"
     category: extent-gate-not-rerun
     module: test/fixtures/extent_patterns/withheld.json
     affected: 7
-    fix: "Name the 4 causes in withheld.json after the Sources fetch"
+    fix: "After the fetch (2026-11-06): UK_ukpga_1992_52's body is held, so its stored extent_rules are stale (our faults 1) and its cause reads unread_statement; re-read its extent (mix lat.amending --extents, a store write), then name the 4 causes in withheld.json"
     step: Extent reader
     status: open
   - pattern: "The amending gate fails today: 1 group not named — MSA 1995 s.173(7)(a)(i), inserted by SI 2006/1265 (no operation from legislation.gov.uk: inserted provision), appeared with Merge's rebuild (93599e6d) after the step passed (f18affb2)"
@@ -281,3 +281,16 @@ The hand sample redraws the same 50 items. Its classes move only on items 2, 16,
   - `mix test` 10,172 passed, 2 skipped;
   - Credo diff clean;
   - OH&S `lat.measures` moved only by the read-set fix (above).
+
+## After close: the Sources fetch (Jason, 2026-11-06)
+
+Run with `mix lat.sources --family F --fetch`:
+- 9 of the 11 fetched; 2 returned HTTP 500 from legislation.gov.uk and fetched on a retry;
+- 10 of the 11 are absent: legislation.gov.uk holds no Schedules for them;
+- the gate re-run: PASS, 0 failures of 673.
+
+The extent check after the fetch:
+- still 4 causes not named;
+- now 1 "our fault": UK_ukpga_1992_52's body is held, so its stored extent rules are stale.
+
+Both are the Extent reader's, parked: re-read its extent, then name the causes.
