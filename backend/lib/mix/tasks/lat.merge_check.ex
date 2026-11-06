@@ -7,19 +7,29 @@ defmodule Mix.Tasks.Lat.MergeCheck do
   and with `--sample FILE` a reproducible random sample of one stratum with
   what judging each merge needs (`ChangeVocabulary.MergeSample`) for the
   `merge-check` agent; `--skip N` the next batch of the same draw.
-  Read-only.
+  `--gate [--all]`: the family gate (`ChangeVocabulary.MergeGate`; Decision
+  1, Maritime Safety: Merge), each merge decision by cause and amending law,
+  reviewed in `test/fixtures/merge/merges.json`; `--all` prints every group,
+  else the groups not named. Read-only.
 
       mix lat.merge_check --family "OH&S: Occupational" --strata
+      mix lat.merge_check --family F --gate [--all]
       mix lat.merge_check --family F --stratum J --sample FILE --n 50 --seed N [--skip 50]
   """
   use Mix.Task
 
-  alias SertantaiLegal.Scraper.Amendment.{CheckSample, PatternSource}
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{MergeSample, MergeStrata, Store}
+  alias SertantaiLegal.Scraper.Amendment.{CheckSample, Disagreement, PatternSource}
+  alias SertantaiLegal.Scraper.Amendment.Store, as: Rules
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{MergeGate, MergeSample, MergeStrata, Store}
+  alias SertantaiLegal.Scraper.Commencement.Leftovers
 
   @shortdoc "The merge check's strata and samples for a family (read-only)"
 
-  @usage "usage: mix lat.merge_check --family F [--strata] " <>
+  @reviewed "test/fixtures/merge/merges.json"
+  # the amending-law reader's gate: an operation conflict it named
+  @reader_reviewed "test/fixtures/amendment_patterns/disagreements.json"
+
+  @usage "usage: mix lat.merge_check --family F [--strata] [--gate [--all]] " <>
            "[--sample FILE --stratum J|U|C --n N --seed S --skip K]"
 
   @impl Mix.Task
@@ -29,6 +39,9 @@ defmodule Mix.Tasks.Lat.MergeCheck do
         strict: [
           family: :string,
           strata: :boolean,
+          gate: :boolean,
+          all: :boolean,
+          by_design: :boolean,
           sample: :string,
           stratum: :string,
           n: :integer,
@@ -52,31 +65,105 @@ defmodule Mix.Tasks.Lat.MergeCheck do
     Mix.shell().info("#{length(laws)} laws; text changes in a stratum: #{length(classified)}")
 
     if opts[:strata], do: strata(classified, by_law)
+    if opts[:gate], do: gate(by_law, opts[:all])
+    if path = opts[:sample], do: sample(path, opts, classified, by_law, stratum)
+  end
 
-    if path = opts[:sample] do
-      seed = opts[:seed] || 1
-      strata = Map.new(classified, fn {law, c, s} -> {{law, c.key, c.target}, s} end)
+  defp sample(path, opts, classified, by_law, stratum) do
+    seed = opts[:seed] || 1
+    strata = Map.new(classified, fn {law, c, s} -> {{law, c.key, c.target}, s} end)
 
-      population = for {law, c, s} <- classified, stratum in [nil, s], do: {law, c}
+    population =
+      for {law, c, s} <- classified,
+          stratum in [nil, s],
+          by_design?(c, s, opts[:by_design]),
+          do: {law, c}
 
-      items =
-        population
-        |> CheckSample.draw(length(population), seed)
-        |> Enum.drop(opts[:skip] || 0)
-        |> Enum.take(opts[:n] || 50)
-        |> Enum.with_index(1)
-        |> Enum.map(fn {{law, c}, i} ->
-          MergeSample.item({law, c, strata[{law, c.key, c.target}]}, by_law[law], i)
-        end)
+    items =
+      population
+      |> CheckSample.draw(length(population), seed)
+      |> Enum.drop(opts[:skip] || 0)
+      |> Enum.take(opts[:n] || 50)
+      |> Enum.with_index(1)
+      |> Enum.map(fn {{law, c}, i} ->
+        MergeSample.item({law, c, strata[{law, c.key, c.target}]}, by_law[law], i)
+      end)
 
-      File.write!(path, Jason.encode!(items, pretty: true))
+    File.write!(path, Jason.encode!(items, pretty: true))
 
-      Mix.shell().info(
-        "sample: #{length(items)} of #{length(population)} changes (seed #{seed}, stratum " <>
-          "#{stratum || "all"}, skip #{opts[:skip] || 0}) → #{path}"
-      )
+    Mix.shell().info(
+      "sample: #{length(items)} of #{length(population)} changes (seed #{seed}, stratum " <>
+        "#{stratum || "all"}, skip #{opts[:skip] || 0}) → #{path}"
+    )
+  end
+
+  # the agent pass's population (Decision 1): the joins named by design
+  defp by_design?(c, s, true), do: s == :J and MergeGate.cause(c, :J) in MergeGate.by_design()
+  defp by_design?(_c, _s, _all), do: true
+
+  # the family gate: each merge decision by cause and amending law, reviewed
+  # in merges.json (Decision 1, 2026-11-06); an operation conflict takes the
+  # amending-law reader's status where its gate named it
+  defp gate(by_law, all?) do
+    shell = Mix.shell()
+    entries = Enum.flat_map(by_law, fn {law, changes} -> MergeGate.entries(law, changes) end)
+    items = MergeGate.items(entries, reviewed(@reviewed), reader_status(entries))
+    gate = MergeGate.gate(items)
+
+    counts = Enum.map_join(gate.counts, ", ", fn {k, n} -> "#{k} #{n}" end)
+    shell.info("\nmerge decisions by cause (#{@reviewed}): #{length(items)} groups; #{counts}")
+
+    for {cause, n} <-
+          items
+          |> Enum.group_by(& &1.shape, & &1.reach)
+          |> Enum.map(fn {k, ns} -> {k, Enum.sum(ns)} end)
+          |> Enum.sort_by(&(-elem(&1, 1))),
+        do: shell.info("  #{pad(n)}  #{cause}")
+
+    shown = if all?, do: Enum.sort_by(items, &{-&1.reach, &1.law, &1.shape}), else: gate.failing
+
+    shell.info(
+      "\n#{if all?, do: "every group", else: "not named"} (widest reach first): #{length(shown)}"
+    )
+
+    for i <- shown do
+      shell.info("  #{pad(i.reach)}  #{i.shape} @ #{i.law}  [#{i.status || "no status"}]")
+      for w <- Enum.take(i.words, 4), do: shell.info("           #{w}")
+    end
+
+    shell.info(
+      "\n#{if gate.pass?, do: "PASS", else: "FAIL"} (groups not named: #{length(gate.failing)})"
+    )
+  end
+
+  # an operation conflict's status in the amending-law reader's gate
+  defp reader_status(entries) do
+    reviewed = reviewed(@reader_reviewed)
+
+    rules =
+      for %{cause: "operation differs", law: law} <- entries,
+          uniq: true,
+          into: %{},
+          do: {law, Rules.for_law(law)}
+
+    fn
+      %{cause: "operation differs", change: c, by: by, law: law} ->
+        cause = Disagreement.cause(c, :D, Map.get(rules, law, []))
+        Leftovers.status(cause, reviewed, by)
+
+      _ ->
+        nil
     end
   end
+
+  defp reviewed(path) do
+    case File.read(path) do
+      {:ok, body} -> Jason.decode!(body)
+      _ -> %{}
+    end
+  end
+
+  defp pad(n), do: String.pad_leading(to_string(n), 5)
 
   defp strata(classified, by_law) do
     counts = Enum.frequencies_by(classified, &elem(&1, 2))

@@ -27,7 +27,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Claim}
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Merge.{Candidates, Partner, Precise, Shared}
+
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Merge.{
+    Candidates,
+    Copies,
+    Partner,
+    Precise,
+    Shared
+  }
+
   alias SertantaiLegal.Scraper.{EffectIndex, LatRef}
 
   @doc """
@@ -85,6 +93,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
     |> Map.values()
     |> List.flatten()
     |> one_key_unfed()
+    |> Copies.carry()
     |> Shared.spread()
     |> Kernel.++(own)
     |> Kernel.++(applied)
