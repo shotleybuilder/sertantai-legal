@@ -243,9 +243,22 @@ Before this, OH&S used agents over U and C in full and pooled J samples to the 9
 
 **Outputs.** The chosen value and winning source per attribute (stored on `provision_changes`); tiers and the conflict report are worked out on read.
 
-**Check today.** `mix lat.evidence_check --family F --strata` gives V (value conflicts: the law against legislation.gov.uk), D (markup against feed with no primary claim, by pattern) and A (several sources agreeing), and the winning source per attribute. V in full; D up to 10 per pattern (`--per 10`); A in samples on new seeds.
+**Check today.** `mix lat.evidence_check --family F --strata` gives V (value conflicts: the law against legislation.gov.uk), D (markup against feed with no primary claim, by pattern) and A (several sources agreeing), and the winning source per attribute.
 
-**Pass rule as last used** (2026-10-29). V and D: no wrong winner, false conflict or wrong pattern left unfixed or unclassed. A: pooled under 2% wrong changes and 5% wrong pairs at the 95% upper bound. Golden from inputs 27/27. A value no source claims is a gap, published by cause, not a fault.
+**The gate.** `mix lat.evidence_check --family F --gate [--all]` (`ChangeVocabulary.Gate.Evidence`) groups every V conflict and D disagreement by its attribute, its sides and the amending law: `"operation: law_text inserted against feed substituted @ <law>"`. Each group is named in `test/fixtures/evidence/evidence.json` (`known:`, `fix:` or `check:`).
+- An operation or level conflict of the law's text takes the Amending-law reader's status (`disagreements.json`), so nothing is reviewed twice.
+- The gaps (a text change's value no source claims) are printed by cause. They are a published figure, never a failure.
+
+**Pass rule** (Decision 1, Maritime Safety: Evidence, 2026-11-06; the shape picked for Merge):
+- the gate prints PASS;
+- **one agent pass** of 50 A changes on a new seed (`--stratum A --sample FILE --n 50 --seed N`), to find a class the grouping hides; what it finds becomes a code group, and there is no resample;
+- no regression in the families through (their V and D);
+- golden 27/27;
+- the winners, the gaps and a quality statement published.
+
+A wrong value chosen from a misread primary claim is the reader's: it is named `known:` with its parked bug. The table's order is judged, not the reading.
+
+Before this, OH&S used agents over V in full and D by pattern, and pooled A samples to the 95% bound (2026-10-29; 5 rounds).
 
 **Skill.** `evidence-check`.
 

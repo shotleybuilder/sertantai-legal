@@ -41,18 +41,33 @@ All steps are read-only.
    - **A, agreeing:** several sources claim an attribute, nothing flagged.
 
    It also prints the winning source per attribute, a published figure.
-2. **V in full:** `mix lat.evidence_check --family "F" --stratum V --sample $S/v.json --n 500 --seed N`; agents in batches of about 30.
-3. **D by pattern:** `--stratum D --sample $S/d.json --per 10 --seed N`, which takes up to 10 items of each pattern. The table applies one rule to all of a pattern's items, so a pattern is judged as a whole.
-4. **A by sample**, on a seed never used for this family (record it): `--stratum A --sample $S/a.json --n 50 --seed N`. Repeat into `a2.json` and `cmp`.
-5. **Golden from inputs** after any fix: `mix lat.vocabulary --golden` (~3 min).
+2. **The gate** (seconds): `mix lat.evidence_check --family "F" --gate [--all]` (`ChangeVocabulary.Gate.Evidence`).
+   - Every V conflict and D disagreement is grouped by attribute, sides and amending law. Each group is named in `backend/test/fixtures/evidence/evidence.json` (`known:`, `fix:` or `check:`).
+   - Operation and level conflicts of the law's text inherit the Amending-law reader's status (`disagreements.json`).
+   - Review each group left in the sources' own records, and write `backend/data/reports/evidence/<family>-gate-review-N.md`.
+   - A wrong value chosen from a misread primary claim is the reader's: name it `known:` with its parked bug (`bug-raise`).
+   - The gaps print last, by cause: a published figure.
+3. **One agent pass** over A, on a seed never used for this family (record it): `--stratum A --sample FILE --n 50 --seed N`. Use the prompt below. What it finds becomes a code group in the gate; there is no resample.
+4. **Golden from inputs** after any fix: `mix lat.vocabulary --golden --workers 1` (~5 min).
 
-**Pass** (Jason 2026-10-29, decided before round 1):
-- **V:** no wrong winner or false conflict left unfixed or unclassed.
-- **D:** no pattern whose chosen value is wrong left unfixed or unclassed.
-- **A:** the pooled samples since the last fix (items unchanged since checked) must be under 2% wrong changes and under 5% wrong (law, amending law) pairs, at the 95% Clopper–Pearson upper bound.
-- Golden from inputs passes.
+**Pass** (Decision 1, Maritime Safety: Evidence, 2026-11-06):
+- the gate prints PASS;
+- the one agent pass is done, its classes named in the gate, its token cost recorded;
+- the families through show no new V or D;
+- golden passes.
 
-Record the strata, the winners, the pooled numbers and a quality statement. Only NEW defects go to Jason, explained with the sources' own records.
+Record the strata, the winners, the gaps and a quality statement. Only NEW defects go to Jason, explained with the sources' own records.
+
+**Known classes from the gate** (Maritime Safety, 2026-11-06):
+- **by design:**
+  - the markup's Addition against the feed's substituted or renumbered;
+  - a renumbering's markup wrapping only the new number (words).
+- **parked:** `amending-law-start-misread` (Commencement reader). A purpose-limited start is read as the whole start, or an Act as starting at Royal Assent; the dates and commenced_by values then lose to a misread.
+- **gap cause, parked:** `amending-law-own-clause-unread` (Commencement reader). The amending law holds no commencement rules though its clause is stored. The gate's gaps name it.
+- **known limits (one change each):**
+  - two commencement claims, the first taken, not the earlier;
+  - a cross-heading's insertion read as words;
+  - legislation.gov.uk wrapping a number on a sentence's substitution.
 
 ## Agent prompt
 
@@ -127,13 +142,19 @@ Known classes (label a finding with one; otherwise NEW):
 - KX an "as amended by" chain: the note cites one law, the feed's effect another (REACH: SI 2019/758 amended by SI
   2019/1144 before it came into force): by = the feed's affecting law, OK.
 - KS a Schedule/Annex change (schedules unparsed, v0.1): never NEW.
+- KQ quote-new-numbers-are-inserted (RULES.md): a substitution's quote numbers the old provision lacked are inserted;
+  legislation.gov.uk records them substituted: OK by design.
+- KCOPY new paragraphs a joined change makes below it carry the event's key and feed dates (RULES.md
+  new-provisions-carry-their-event): OK by design.
+- KSTART (parked, Commencement reader, amending-law-start-misread): a purpose-limited start read as the whole start,
+  an Act's amending provisions read as starting at Royal Assent; counts WRONG (known) where the chosen date is wrong.
 - Open classes (logged; label, don't count as NEW): KC-effect "This section has effect from …" unread;
   KC-order an order held in the store but not read as rules (SI 1995/2950); KX-territory a chain's territory cut to
   the later law's extent; KMV moved words ("repositioned") carried as the feed's renumbered; KF-type a feed Type
   error winning where the law's text makes no claim (REACH Art 138(1)).
 - Gap rule (Jason 2026-10-29): a value no table source claims (commenced_by with no commencement claim, no date
   from any source) is a coverage GAP, not WRONG: list it with its cause.
-- Like for like (not a conflict): the markup's Addition vs substituted; the feed's "in part" vs the law's words
+- Like for like (not a conflict): the markup's Addition, or the feed's added/inserted, vs substituted; the feed's "in part" vs the law's words
   omitted; the feed's first stage ("for specified purposes") vs the law's full date when the feed's own completing
   date (date_full) agrees.
 
@@ -162,3 +183,11 @@ OH&S (first family, 2026-10-29 →). The session is `.claude/sessions/change-voc
 | 3 | 53 | Fix d72ce36d + d229ba7b (ScheduleEffect; bracketed descriptions). V 15 / D 51 / A 2,041. FAIL: V 12/15 (heading wrappers), D 36/44, A 146/150 (legacy Addition) |
 | 4 | 54 | Fix a541f728 + 3511120d (Markup.Level tiers; legacy rule refined by golden). V 12 / D 44 / A 2,011. A **PASS** 150/150 (1.98%; pairs 0/81, 3.6%); V 8/12 (legacy operations), D 32/39 (EU number wrap, chapeau join) |
 | 5 | 55 (V, D) | Fix e1aded30; A carried over (0/150 chosen values changed). V 8/8; D 32/35, wrong only in logged classes (KX-territory, KF-type). **PASS** |
+
+Maritime Safety (2026-11-06), on the code gate (Decision 1). The session is `.claude/sessions/lat-change-pipeline/2026-11-06-maritime-safety-evidence.md`.
+- Strata: V 180, D 13, A 3,180.
+- Gate PASS, 59 groups: 37 inherited from the Amending-law reader's gate, 22 reviewed.
+  - 100 wrong dates and commenced_by values, all from the parked Commencement-reader misread;
+  - 3 one-change known limits.
+- Agent pass, seed 56 (155,806 tokens): 29 OK, 1 wrong (known), 20 gaps, no new class.
+  - The gap cause `amending-law-own-clause-unread` (94 amending laws) is now a code group, parked.
