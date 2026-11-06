@@ -1,0 +1,16 @@
+{
+  "operation: markup inserted against feed substituted": "known: by design (Jason 2026-10-29): legislation.gov.uk's markup shows a substitution's new words as an Addition; the feed's operation wins where the law's text makes no claim",
+  "operation: markup inserted against feed renumbered": "known: by design: the markup shows a renumbering's new number as an Addition; the feed's renumbered wins",
+  "level: markup words against feed provision": "known: by design: a renumbering's markup wraps the new number only (words), the provision's text unchanged (s.273(1), s.214(1), reg.28(1))",
+  "level: markup words against feed provision @ UK_uksi_2006_1244": "known: one change (below triage): MSA 1995 cross-heading h.162 inserted, the markup's Addition round the heading's words read as words where the feed's provision is right (Markup reader's heading level; RULES.md known limits)",
+  "level: markup provision against feed words @ UK_uksi_2010_1075": "known: the markup wraps reg.4(2)(d) and (e) whole, number and text: substituted whole, the markup's level right and chosen",
+  "level: markup provision against feed words @ UK_uksi_2019_270": "known: one change (below triage), legislation.gov.uk's markup: EU 2009/391 Art 8(1)'s first sentence substituted (SI 2019/270 reg.3(8)(b)) with the number wrapped too, so read as the whole paragraph (RULES.md known limits)",
+  "operation: markup substituted against feed inserted @ UK_uksi_2019_270": "known: SI 2019/270 reg.3(8)(c)(i)(bb) inserts \"and\" (after (aa) omits the comma): the feed's inserted is right and chosen; the markup shows the pair as one Substitution",
+  "date: commencement against feed @ UK_uksi_2006_1244": "known: the Commencement reader's (parked: amending-law-start-misread): reg.1(4)'s purpose-limited 15 July 2006 start read as the whole start; legislation.gov.uk's 21 Nov 2008 (the Bunkers Convention's day, reg.1(2)) is right",
+  "date: commencement against feed @ UK_ukpga_2025_36": "known: the Commencement reader's (parked: amending-law-start-misread): s.57 read as starting on 18 Dec 2025; the feed's 18 Feb 2026 by SI 2026/3",
+  "commenced_by: commencement against feed @ UK_ukpga_2025_36": "known: the Commencement reader's (parked: amending-law-start-misread): commenced by SI 2026/3 (the feed), read as the Act itself",
+  "date: commencement against feed @ UK_ukpga_2006_36": "known: the Commencement reader's (parked: amending-law-start-misread): an Act's amending provision read as starting before legislation.gov.uk's date",
+  "date: commencement against feed @ UK_ukpga_2015_15": "known: the Commencement reader's (parked: amending-law-start-misread): Sch.4 para.29 read at Royal Assent (26 Mar 2015); the feed's 1 Oct 2015 by SI 2015/1630",
+  "commenced_by: commencement against feed @ UK_ukpga_2015_15": "known: the Commencement reader's (parked: amending-law-start-misread): commenced by SI 2015/1630 (the feed), read as the Act itself",
+  "date: commencement against feed @ UK_ukpga_2003_20": "known: one change (below triage): MSA 1995 s.311 repealed by both s.112(8) (10 Sep 2003) and Sch.8 (5 Jul 2004, SI 2004/1572); the table takes the first commencement claim, not the earlier (RULES.md known limits)"
+}

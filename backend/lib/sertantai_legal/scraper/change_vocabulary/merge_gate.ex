@@ -252,11 +252,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeGate do
     end)
   end
 
-  # a status every entry of the group inherits alike
+  # a status every entry of the group inherits alike, or named in each of
+  # several ways (each `known:`, their words kept)
   defp common(group, inherited) do
     case group |> Enum.map(inherited) |> Enum.uniq() do
       [status] -> status
-      _ -> nil
+      statuses -> if Enum.all?(statuses, &Leftovers.named?/1), do: Enum.join(statuses, " | ")
     end
   end
 
