@@ -170,4 +170,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelStrataTest do
     assert LabelStrata.draw(rows, 10, 7) == LabelStrata.draw(Enum.reverse(rows), 10, 7)
     refute LabelStrata.draw(rows, 10, 7) == LabelStrata.draw(rows, 10, 8)
   end
+
+  test "totals/1: every row in one class, the classes adding up to the rows (Labels side by side)" do
+    diffs = [nil, nil, "history", "no_today", "status", "changed_by+territory"]
+
+    assert LabelStrata.totals(diffs) == %{
+             rows: 6,
+             agree: 2,
+             differ_today: 2,
+             history_only: 1,
+             no_today: 1
+           }
+  end
 end

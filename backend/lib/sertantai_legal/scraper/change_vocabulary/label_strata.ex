@@ -16,6 +16,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelStrata do
     stored label (`lat_label_timeline`) — the current period's fields that
     differ, else `"history"`; `"no_today"` when today holds none. Today
     holds one `changed_by`: one of the fold's several laws (C5) agrees.
+    `totals/1` counts the rows of each class.
   - `draw/3`: a reproducible random draw of rows for a seed.
 
   Pure.
@@ -115,6 +116,26 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelStrata do
   defp territory(nil), do: nil
   defp territory("nowhere"), do: "nowhere"
   defp territory(t), do: Territory.normalize(t)
+
+  @doc """
+  The rows of each difference class (`difference/2`'s values): those that
+  agree, differ today, differ only in history, or have no stored label.
+  The four add up to `rows` (Labels side by side's baseline).
+  """
+  @spec totals([String.t() | nil]) :: %{atom() => non_neg_integer()}
+  def totals(differences) do
+    counts = Enum.frequencies_by(differences, &total_class/1)
+
+    Map.merge(
+      %{rows: length(differences), agree: 0, differ_today: 0, history_only: 0, no_today: 0},
+      counts
+    )
+  end
+
+  defp total_class(nil), do: :agree
+  defp total_class("history"), do: :history_only
+  defp total_class("no_today"), do: :no_today
+  defp total_class(_fields), do: :differ_today
 
   @doc "A reproducible random draw of `n` rows (`{law, id}`) for `seed`."
   @spec draw([{String.t(), String.t()}], non_neg_integer(), integer()) :: [

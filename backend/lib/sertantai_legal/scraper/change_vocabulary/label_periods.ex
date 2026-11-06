@@ -6,9 +6,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelPeriods do
   (`LabelProjection`):
 
   - `status` as its string;
-  - `changed_by` one law, as compliance reads it today: the last the fold
-    lists (the makers of the current text share its day), else the law
-    that commenced it — the old labels' meaning (CV-06);
+  - `changed_by` one law, as compliance reads it today: the law that
+    made the text, else the law that commenced it — the old labels'
+    meaning (CV-06). Among several makers (they share the text's day),
+    the principal one: never an amender of the amending law before it
+    took effect, unless only those made it; then the latest made, by year
+    and number (Maritime Safety: Labels side by side, Decision 1: REACH
+    Art 127E is SI 2019/758's, not SI 2020/1577's);
     `changed_by_all` every law, `commenced_by` the commencing laws apart
     from them (Jason 2026-10-31: add, don't replace);
   - a repeal (repealed, repealed_saved) as the table records it (Jason
@@ -28,6 +32,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelPeriods do
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Label}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Label.Facts
 
   @repealed ~w(repealed repealed_saved)a
   @statuses ~w(in_force in_force_partial prospective repealed repealed_saved)
@@ -53,12 +58,32 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelPeriods do
         valid_to: p.valid_to,
         status: Atom.to_string(p.status),
         in_force_from: if(repeal?, do: p.valid_from, else: p.in_force_from),
-        changed_by: List.last(p.changed_by) || List.last(Map.get(p, :commenced_by, [])),
+        changed_by: one_law(p.changed_by, reaching) || List.last(Map.get(p, :commenced_by, [])),
         changed_by_all: p.changed_by,
         commenced_by: Map.get(p, :commenced_by, []),
         territory: if(repeal?, do: nil, else: p.territory),
         change_ids: by_day |> Map.get(p.valid_from, []) |> Enum.sort()
       }
+    end
+  end
+
+  # the principal maker, then the latest made (Decision 1)
+  defp one_law([], _reaching), do: nil
+
+  defp one_law(makers, reaching) do
+    principal =
+      Enum.filter(makers, fn law ->
+        Enum.any?(reaching, &(&1.resolved.by == law and not Facts.earlier_amendment?(&1)))
+      end)
+
+    Enum.max_by(if(principal == [], do: makers, else: principal), &made/1)
+  end
+
+  # a law's year and number, e.g. UK_uksi_2019_858 → {2019, 858, name}
+  defp made(law) do
+    case Regex.run(~r/_(\d{4})_(\d+)$/, law) do
+      [_, year, number] -> {String.to_integer(year), String.to_integer(number), law}
+      nil -> {0, 0, law}
     end
   end
 

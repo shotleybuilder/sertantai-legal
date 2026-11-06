@@ -5,7 +5,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelPeriodsTest do
   """
   use ExUnit.Case, async: true
 
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Evidence, LabelPeriods}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Claim, Evidence, LabelPeriods}
 
   @law "UK_uksi_1999_3242"
   @sid "UK_uksi_1999_3242:reg.3(1)"
@@ -65,7 +65,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelPeriodsTest do
            }
   end
 
-  test "changed_by keeps one law, the last the fold lists; every law and the commencer kept apart" do
+  test "changed_by keeps one law, the latest made; every law and the commencer kept apart" do
     [row] =
       LabelPeriods.periods(
         @law,
@@ -82,6 +82,56 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelPeriodsTest do
     assert row.changed_by == "UK_uksi_2006_1000"
     assert row.changed_by_all == ["UK_uksi_2006_438", "UK_uksi_2006_1000"]
     assert row.commenced_by == ["UK_uksi_2006_9"]
+  end
+
+  # Maritime Safety: Labels side by side, Decision 1 (A): the principal
+  # maker, then the latest made
+  defp made_by(by, credit?) do
+    c = change("k-#{by}", ~D[2020-12-31])
+
+    %{
+      c
+      | resolved: %{c.resolved | by: by},
+        claims:
+          if(credit?,
+            do: [%Claim{source: :feed, attribute: :earlier_amendment, value: true, ref: "k"}],
+            else: []
+          )
+    }
+  end
+
+  defp one_law(makers, reaching) do
+    [row] =
+      LabelPeriods.periods(
+        @law,
+        @sid,
+        [period(~D[2020-12-31], :in_force, changed_by: makers)],
+        reaching
+      )
+
+    row.changed_by
+  end
+
+  test "changed_by: the law that made the text, never an amender of the amender (REACH Art 127E)" do
+    makers = ["UK_uksi_2019_758", "UK_uksi_2019_858", "UK_uksi_2020_1577"]
+
+    reaching = [
+      made_by("UK_uksi_2019_758", false),
+      made_by("UK_uksi_2019_858", true),
+      made_by("UK_uksi_2020_1577", true)
+    ]
+
+    assert one_law(makers, reaching) == "UK_uksi_2019_758"
+  end
+
+  test "changed_by: among the makers, the latest made by year then number, whatever the series" do
+    assert one_law(["UK_uksi_2019_1144", "UK_uksi_2019_858"], []) == "UK_uksi_2019_1144"
+    assert one_law(["UK_ssi_2006_457", "UK_uksi_2005_1541"], []) == "UK_ssi_2006_457"
+  end
+
+  test "changed_by: only credits make the text, the latest made of them" do
+    reaching = [made_by("UK_uksi_2019_858", true), made_by("UK_uksi_2020_1577", true)]
+    assert one_law(["UK_uksi_2019_858", "UK_uksi_2020_1577"], reaching) == "UK_uksi_2020_1577"
   end
 
   test "changed_by, with no law making the text, is the law that commenced it" do

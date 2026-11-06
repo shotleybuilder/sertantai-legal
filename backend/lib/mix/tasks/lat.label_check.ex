@@ -11,6 +11,10 @@ defmodule Mix.Tasks.Lat.LabelCheck do
   (default 10); R takes `--n` rows (default 30), `--skip N` the next batch
   of the same draw. Golden (G) is `mix lat.vocabulary --golden`.
 
+  `--strata` ends with Labels side by side's baseline: every row as agree,
+  differ today, differ only in history or no stored timeline
+  (`LabelStrata.totals/1`), and the gaps by shape.
+
   `--gate` (Maritime Safety: Label fold, Decision 1) groups every breach of
   the label rules and the table's rules by rule and law
   (`ChangeVocabulary.Gate.Label`), reviewed in
@@ -228,6 +232,23 @@ defmodule Mix.Tasks.Lat.LabelCheck do
     )
 
     tally("  by rule:", for({_, why} <- violations, do: to_string(why)))
+
+    # Labels side by side's baseline: every row in one class, and the gaps
+    # (a value no source gives) the old path listed per law
+    t = rows |> Enum.map(&elem(&1, 3)) |> LabelStrata.totals()
+
+    Mix.shell().info(
+      "\nside by side (rows): #{t.rows} = #{t.agree} agree + #{t.differ_today} differ today + " <>
+        "#{t.history_only} differ only in history + #{t.no_today} no stored timeline"
+    )
+
+    tally("\ngaps, a value no source gives (rows):", gap_items(rows))
+  end
+
+  defp gap_items(rows) do
+    for {shape, n} <- rows |> Enum.map(&elem(&1, 2)) |> Gate.gaps(),
+        _ <- 1..n,
+        do: to_string(shape)
   end
 
   defp tally(title, items) do
