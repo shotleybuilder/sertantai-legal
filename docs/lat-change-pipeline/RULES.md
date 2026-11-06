@@ -89,9 +89,9 @@ A commencement for some purposes only makes the provision partly in force. One o
 - **Serves:** `binds-on-date` · **Code:** `Label.Start.period/4`, `Label.Day.apply/4`; `Qualification` (purposes class) · **Test:** `label_fold_test` "a partial commencement on the start day"; `qualification_test` · **Origin:** `cv-s09-label-fold` (round 1, 2026-10-30); purposes include powers: Jason 2026-11-04, `maritime-safety-feed-reader` Decision 2
 
 ### `commencement-for-one-territory`
-A commencement for one territory puts the provision in force there and widens where it is in force. Each such commencement opens a new period.
-- **Example:** CROW 2000 s.13 is in force for England in 2004 and for Wales in 2005.
-- **Serves:** `binds-on-date` · **Code:** `Label.Day` (`commenced_for/4`), `Label.Facts.territory_only/1` · **Test:** `label_fold_test` "a commencement for one territory" · **Origin:** Jason 2026-10-30, `cv-s09-label-fold` (golden convention C13)
+A commencement for one territory puts the provision in force there and widens where it is in force. Each such commencement opens a new period. A wholly-for-one-territory commencement ("for W. in so far as not already in force") counts as one. A provision already partly in force everywhere stays partly in force until every territory is wholly commenced: one status per period, and never "in force" where it is only partly in force.
+- **Example:** CROW 2000 s.13 is in force for England in 2004 and for Wales in 2005. MSA 1995 s.85(8), partly in force from 2006-07-19: still partly in force after WSI 2007/204 (Wales, 2007-04-02), and in force everywhere from SI 2007/1375 (E, S, NI, 2007-07-01).
+- **Serves:** `binds-on-date`, `unknown-over-guess` · **Code:** `Label.Day` (`commenced_for/4`, `full_in/2`, `partial_until_all/3`), `Label.Facts.territory_only/1` · **Test:** `label_fold_test` "a commencement for one territory"; "a row partly in force, fully commenced one territory at a time" · **Origin:** Jason 2026-10-30, `cv-s09-label-fold` (golden convention C13); the partial case Jason 2026-11-06 (option A, Gemini Flash agreeing), `maritime-safety-label-fold` Decision 2
 
 ### `most-specific-commencement`
 A provision commenced in its own right takes no ancestor's commencement. Otherwise the nearest ancestor's applies, then the whole law's.

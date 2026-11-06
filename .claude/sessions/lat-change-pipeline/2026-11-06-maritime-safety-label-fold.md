@@ -190,7 +190,7 @@ Every value (status, dates, changed_by, commenced_by, territory) is right on the
 - the Feed reader's Part locator (106 rows start late);
 - the Commencement reader's amending laws: undated, misdated, and partial first stages dropped (21 changes).
 
-## Decision 2: a one-territory full commencement of a row already partly in force (for Jason, open)
+## Decision 2: a one-territory full commencement of a row already partly in force — DECIDED 2026-11-06: A, fix now (Jason)
 
 - **Question.** MSA 1995 s.85(8) is partly in force everywhere from 2006-07-19. Then WSI 2007/204 commences it fully for Wales on 2007-04-02, and SI 2007/1375 commences it fully for E, S and NI on 2007-07-01. Today the fold labels it fully in force everywhere from 2007-04-02, so for three months it overstates England, Scotland and NI. The rule (C13) covers a prospective row commenced for one territory, not a partial one.
 - **Aim:** `binds-on-date`, `unknown-over-guess`.
@@ -201,11 +201,16 @@ Every value (status, dates, changed_by, commenced_by, territory) is right on the
   - **D.** Name it a known limit and decide later.
 - **Recommendation: A.** Gemini Flash agrees (`backend/data/code-reviews/maritime-label-fold-c13-partial-gemini.md`). Its "better" option, one status per territory in one period, is a change to the timeline's shape: out of v0.1. Of its edge cases, a later repeal for one territory is already the rule `one-territory-repeal-narrows`. Under A, several territories commenced in turn stay partial until the last.
 - **Reach:** up to 5 Maritime rows (the `in_force_for` shape).
-- **If A:** a small fold fix (`Label.Day` `commenced_for/4`: a partial row whose territory isn't fully commenced stays partial), with a test and a pre-flight on MSA 1995. It would be a Label fold item, run when Jason says.
+- **Done (A, fixed now, Jason 2026-11-06):** two parts.
+  - `Facts.territory_only/1` reads "complete + territory" (wholly for one territory) as territorial. 71 changes in the store carry it; outside MSA 1995 they are in other families (TCPA 1990, Building Safety Act 2022, COPA 1974), none in OH&S.
+  - `Label.Day` (`full_in/2`, `partial_until_all/3`) keeps a partly-in-force row partial until the territories wholly commenced cover it. `change/4`'s own condition is untouched, so Credo's ratchet holds.
+  - Tests: `label_fold_test` "a row partly in force, fully commenced one territory at a time" (both cases); RULES.md `commencement-for-one-territory`.
+  - Results: MSA 1995 s.85(8) and (a)–(d) are partly in force 2006-07-19 → 2007-07-01, then in force everywhere, commenced_by SI 2007/1375 (`msa-s85-8-after.txt`). The MSA 1995 gate is PASS on the same 3 groups (`maritime-gate-3-msa.txt`); golden 27/27 (`golden-2.txt`); `mix test` 10,162 pass.
+  - Under A a partial period carries no commenced_by (`in-force-from-current-text`), so WSI 2007/204's day opens no period of its own.
 
 ## Parking list
 
-- Label fold: C13 after a partial period, now Decision 2 (open). A one-territory full commencement of a partly-in-force row (MSA 1995 s.85(8), WSI 2007/204 then SI 2007/1375) labels it in force everywhere from the first. The rules define only prospective → one territory. Up to 5 Maritime rows (the `in_force_for` shape).
+- Label fold: C13 after a partial period: Decision 2, decided A and fixed (2026-11-06). A one-territory full commencement of a partly-in-force row (MSA 1995 s.85(8), WSI 2007/204 then SI 2007/1375) labels it in force everywhere from the first. The rules define only prospective → one territory. Up to 5 Maritime rows (the `in_force_for` shape).
 - Feed reader: range-part-locator-placed (bug above).
 - Commencement reader: amending-law-staged-start-dropped (bug above).
 - Store and build: `label-in-build-version` (raised as a bug above, 2026-11-06). `ChangeVocabulary.Version` globs `change_vocabulary/label/*.ex` (and `label_rules.ex`, a check), so a fold-only fix (this step's `Label.Made`) marks every built law stale though no stored change differs. The fix: check whether anything the build stores reads the fold; if nothing does, move the fold's modules out of the version.
