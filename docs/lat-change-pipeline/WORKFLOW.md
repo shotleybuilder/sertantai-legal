@@ -325,14 +325,26 @@ Before this, OH&S used G, S and T by shape and R pooled to the 95% bound (2026-1
 
 **Outputs.** `provision_changes`, `provision_change_claims`, and a `changes_built` event per law in `lat_events` with the code version and its inputs' fingerprints.
 
-**Check today.**
+**Check today** (from Maritime Safety, 2026-11-06).
 1. Restore point: `./scripts/nas/nas-backup.sh --tables provision_changes,provision_change_claims,lat_events --tag <tag>`.
-2. Build A: `mix lat.vocabulary --check --laws <family and golden laws>`.
-3. `mix lat.changes_digest`; build B; digest again; `cmp`.
+2. Build A:
+   - first rebuild every other stale built law (`mix lat.stale --list`; `mix lat.vocabulary --build --laws …`), so golden scores fresh changes;
+   - then `mix lat.vocabulary --check --family F`: the build, conflict counts, golden from the store, and **every step's gate** (`mix lat.gates --family F`).
+3. `mix lat.changes_digest --built --out A.tsv`; build B (the same builds with `--build`); digest again; `cmp`.
 4. `mix lat.stale`: 0 built laws stale.
-5. Golden from inputs, and an agent hand check of a seeded sample of staleness verdicts.
+5. Golden from inputs, and one agent hand check of the staleness sample (`mix lat.stale --sample FILE --family F --seed S`, drawn twice and compared with `cmp`).
 
-**Pass rule as last used** (2026-10-31). Digests identical; build time accepted by Jason (the OH&S family builds in about 51 s); 0 stale after the build; the hand check finds no verdict wrong; golden all-pass.
+**Every step's gate.** A rebuild after a step closes can move that step's gate: on Maritime Safety, three gates that had passed failed unseen. So the build's check re-runs all nine. Each check task returns its result (`ChangeVocabulary.Gate.Step`), and `lat.gates` exits non-zero on any failure. A failure belongs to its step and is parked there, never fixed here. `--no-gates` skips the gates for a fix round; the label gate folds the family (about 12½ min).
+
+**The digest is of what is stored.** Values `Store.for_law` derives on read (tiers, conflicts) are not digested. A list built by iterating a map with atom keys comes out in atom-table order, which moves between runs (OTP 26+): on Maritime Safety it made 18 laws' digests differ with nothing stored moving.
+
+**Pass rule as last used** (Maritime Safety, 2026-11-06):
+- all 285 built laws' digests are identical across two builds;
+- build time accepted by Jason (Maritime: 117 laws in 39 s);
+- 0 stale after the build;
+- every failing gate is already parked with its owning step;
+- the hand check finds no verdict wrong;
+- golden all-pass.
 
 **Skill.** `store-build-check`.
 

@@ -1,6 +1,6 @@
 ---
 name: Store Build Check
-description: The change register's acceptance check for one family. It proves the build repeatable (two builds, digests compared), times it, shows what is stale (mix lat.stale, with an agent hand check of a seeded sample), and re-runs the sources gate after the build. Use it when a family reaches step 11, and after any change to the build or the store.
+description: The change register's acceptance check for one family. It proves the build repeatable (two builds, digests compared), times it, shows what is stale (mix lat.stale, with an agent hand check of a seeded sample), and re-runs every step's gate after the build (mix lat.gates). Use it when a family reaches step 11, and after any change to the build or the store.
 ---
 
 > **LAT Change Pipeline — step: Store and build.** Where it sits, its inputs, outputs and pass rule: `docs/lat-change-pipeline/WORKFLOW.md`. Terms and former codes (CV-…): `docs/lat-change-pipeline/GLOSSARY.md`.
@@ -26,14 +26,18 @@ The change register (`provision_changes`, `provision_change_claims`, the `change
 Ask Jason before the builds: they write the three tables. Say how long they take.
 
 1. **Restore point** (seconds): `./scripts/nas/nas-backup.sh --tables provision_changes,provision_change_claims,lat_events --tag <tag>`.
-2. **Build A with the check:** `mix lat.vocabulary --check --laws <the family's laws and the golden laws>`. This builds, prints the conflict counts and golden from the store, then re-runs the sources gate (`lat.sources`) on the laws built. The build prints its wall time (`build_time`).
-3. **Digest:** `mix lat.changes_digest --family "F" --golden --out A.tsv` (about 6 s).
-4. **Build B:** `mix lat.vocabulary --build --laws <the same>`, then digest to `B.tsv`. `cmp A.tsv B.tsv` must be identical (`build_repeatable`).
+2. **Build A with the check.** First rebuild every other built law that is stale (`mix lat.stale --list`; `mix lat.vocabulary --build --laws …`), so golden scores fresh changes. Then `mix lat.vocabulary --check --family "F"`: it builds the family, prints the conflict counts and golden from the store, and re-runs every step's gate (`mix lat.gates --family F`, below). The build prints its wall time (`build_time`).
+3. **Digest:** `mix lat.changes_digest --built --out A.tsv`: every built law, about 8 s. Two runs over one store must match.
+4. **Build B:** the same builds with `--build` (no gates), then digest to `B.tsv`. `cmp A.tsv B.tsv` must be identical (`build_repeatable`).
 5. **Staleness:** `mix lat.stale` (about 2 s). It must show 0 of the built laws stale; laws holding LAT with no build are counted apart. `--list` names each stale law with its reasons.
 6. **Golden from inputs:** `mix lat.vocabulary --golden` (about 3 min): all pass.
-7. **Hand check:** draw 20 built laws and 10 unbuilt ones with `Measures.Draw.shuffled` on a new seed, each with its latest build event, current code version, inputs taken now and verdict. Then run the agent below on that file. Save its VERDICTS block under `backend/data/reports/change-vocabulary/verdicts/s11/<family>/` and pool it with `mix lat.verdicts --dir`.
+7. **Hand check:** `mix lat.stale --sample FILE --family "F" --built 20 --unbuilt 10 --seed S` (`Measures.StaleSample`, seed tuple `{s, 11, 11}`) draws 20 of the family's built laws and 10 unbuilt laws from every law holding LAT, each with its latest build event, current code version, inputs taken now and verdict. Draw it twice and `cmp`. Then run the agent below on that file. Save its VERDICTS block under `backend/data/reports/change-vocabulary/verdicts/s11/<family>/` and pool it with `mix lat.verdicts --dir`.
 
-**Pass:** digests identical; build time accepted by Jason; 0 built laws stale after the build; the hand check finds no verdict wrong; golden all-pass. The sources gate's result is the S01 step's, printed here so a later step's new needs show up.
+**Pass:** digests identical; build time accepted by Jason; 0 built laws stale after the build; the hand check finds no verdict wrong; golden all-pass; every failing gate is already parked with its owning step.
+
+**Every step's gate** (`mix lat.gates --family F`, Maritime Safety 2026-11-06): a rebuild after a step closes can move that step's gate, so the build's check re-runs all nine (Sources, Feed, Markup, Commencement, Extent, Amending-law, Merge, Evidence, Label fold). Each check task returns its `ChangeVocabulary.Gate.Step`; one line per step, non-zero exit on any failure. A failure is its step's, parked there with `bug-raise`, never fixed here. The label gate folds the family (about 12½ min on Maritime); `--check --no-gates` skips them all for a fix round.
+
+**The build's version** (`ChangeVocabulary.Version`) covers only what a build reads. A step's check or a measure is never in it: put it in `except:` and `VersionCoverageTest` says whether the build reaches it (Maritime: `measures/*.ex` and seven sample-drawing checks taken out).
 
 **Reasons** (`ChangeStaleness`): `no_build`, `code_version` (`ChangeVocabulary.Version`), or an input moved: `lat_rows`, `law_text`, `feed`, `amendment_rules`, `commencement_rules`, `extent_rules` (`Store.Inputs`). An input the build didn't record counts as moved.
 
@@ -79,4 +83,8 @@ Be rigorous and skeptical; WRONG needs evidence. Under 700 words.
 
 ## History
 
+- Maritime Safety (2026-11-06). Two parked bugs fixed first: the measures were taken out of the build's version, and `lat.gates` now re-runs every step's gate.
+  - The first digests differed for 18 of 138 laws with nothing stored moving: the conflicts are derived on read, and `Conflicts.values` listed them in atom-table order (Decision 2, B, fixed).
+  - After the fix, all 285 digests are identical across two builds. Maritime builds 117 laws in 39 s; the big golden Acts are about 3 times slower with 4 workers (parked); 0 stale.
+  - Gates: 7 pass, and the 2 that fail are parked (Extent, Amending). Hand check at seed 1111. Session `.claude/sessions/lat-change-pipeline/2026-11-06-maritime-safety-store-and-build.md`.
 - OH&S (first family, 2026-10-31): 168 laws, digests identical, family build 51 s (family + golden 204 s, EPA 1990 alone 156 s; accepted, no cache), 0 stale after, hand check seed 1101 30/30. Session `.claude/sessions/change-vocabulary/2026-10-22-cv-s11-store-build.md`.

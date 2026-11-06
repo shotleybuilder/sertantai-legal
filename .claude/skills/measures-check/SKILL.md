@@ -113,7 +113,9 @@ Each published figure: its name, what it counts, the command printing it and the
 | CV-07 | stated_by_split | text changes by `stated_by` (family or golden laws) | T `lat.measures [--golden]` | `Coverage.stated_by/1` (coverage_test) |
 | all | golden_from_inputs / golden_extended | golden provisions passing from inputs | T `lat.vocabulary --golden [--extended]` | |
 | S02–S09 | <step>_pooled (items, groups) / end_to_end | wrong items with the step's own fault and wrong groups since the last fix, with 95% upper bounds; every wrong item | V `lat.verdicts` | `Measures.Bound`, `Measures.Verdicts` (bound_test, verdicts_test) |
-| S11 | build_repeatable | laws whose stored changes differ between two builds from the same inputs (digest: key, target, aliases, claims in order, resolved values) | T `lat.changes_digest`, compared with `cmp` | `ChangeDigest` (change_digest_test) |
+| S11 | build_repeatable | laws whose stored changes differ between two builds from the same inputs (digest: key, target, aliases, claims in order, resolved values as stored; not the tiers and conflicts derived on read) | T `lat.changes_digest --built`, compared with `cmp` | `ChangeDigest` (change_digest_test) |
+| S11 | gates_all | every step's gate re-run after the build: PASS/FAIL per step, with its failing count | T `lat.gates` (`lat.vocabulary --check --family`) | `Gate.Step` (gate/step_test) |
+| S11 | staleness_hand_check | the staleness sample's verdicts (seed tuple `{s, 11, 11}`) | V `verdicts/s11/<family>/`; sample `lat.stale --sample` | `Measures.StaleSample` (stale_sample_test) |
 | S11 | build_time | the build's wall time | T `lat.vocabulary --build` ("built N laws in") | |
 | S11 | changes_stale | built laws stale by reason; laws holding LAT with no build | T `lat.stale` ("change register") | `ChangeStaleness`, `Store.Inputs` (change_staleness_test, store_inputs_db_test) |
 | S10 | measures_hand_check | text changes whose measure classes an agent found wrong (rule: none); the sample's items carry the classes | T `lat.measures --sample` (draw, seed tuple `{s,10,10}`); V `lat.verdicts` (ignore its 2% PASS line) | `Measures.HandSample` (hand_sample_test) |
