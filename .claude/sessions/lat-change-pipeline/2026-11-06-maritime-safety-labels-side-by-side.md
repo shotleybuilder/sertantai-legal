@@ -139,4 +139,4 @@ This is the switch-over's baseline. (OH&S, 2026-10-31: 16,487 of 20,371 rows dif
 
 ## Parking list
 
-- Store and build: label-fold-in-build-version. `label_periods.ex` is in `ChangeVocabulary.Version`'s globs though no build reads it, so this step's change makes all 285 built laws stale on code version. This is the sibling of the bug already parked in Store and build; a rebuild clears it, and it is asked of Jason.
+- Store and build: label-fold-in-build-version. `label_periods.ex` is in `ChangeVocabulary.Version`'s globs though no build reads it, so this step's change makes all 285 built laws stale on code version. This is the sibling of the bug already parked in Store and build; a rebuild clears it, and it is asked of Jason. **Rebuilt** (Jason, after close): restore point `maritime-labels-side-by-side-rebuild`, then all 285 built laws in 13m28s (UK_ukpga_1990_8 alone took 532 s); `mix lat.stale` shows 0 of 285 stale at code 2b9a0c328709.
