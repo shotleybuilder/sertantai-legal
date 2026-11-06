@@ -76,6 +76,13 @@ bugs:
     fix: "Emit each earlier stage a held rule names for an inserted provision as a partial commencement change of it"
     step: Commencement reader
     status: open
+  - pattern: "ChangeVocabulary.Version hashes the label fold (change_vocabulary/label/*.ex, label_rules.ex) because change_vocabulary.ex's labels/5 reaches it (VersionCoverageTest), so a fold-only fix marks every built law stale in mix lat.stale though no stored change differs (after 33920924, Label.Made)"
+    category: label-in-build-version
+    module: change_vocabulary.ex (labels/5) and change_vocabulary/version.ex
+    affected: "every built law (both families) shows code-stale after any fold fix"
+    fix: "Move labels/5 out of change_vocabulary.ex into the label side, so the build's version stops reaching the fold; VersionCoverageTest then passes without the label globs"
+    step: Store and build
+    status: open
 ---
 
 # Session: Maritime Safety: Label fold (CLOSED)
@@ -183,10 +190,23 @@ Every value (status, dates, changed_by, commenced_by, territory) is right on the
 - the Feed reader's Part locator (106 rows start late);
 - the Commencement reader's amending laws: undated, misdated, and partial first stages dropped (21 changes).
 
+## Decision 2: a one-territory full commencement of a row already partly in force (for Jason, open)
+
+- **Question.** MSA 1995 s.85(8) is partly in force everywhere from 2006-07-19. Then WSI 2007/204 commences it fully for Wales on 2007-04-02, and SI 2007/1375 commences it fully for E, S and NI on 2007-07-01. Today the fold labels it fully in force everywhere from 2007-04-02, so for three months it overstates England, Scotland and NI. The rule (C13) covers a prospective row commenced for one territory, not a partial one.
+- **Aim:** `binds-on-date`, `unknown-over-guess`.
+- **Options:**
+  - **A.** Stay partly in force everywhere until every territory is full. The 2007-04-02 order still opens a version, with commenced_by WSI 2007/204. This understates Wales for three months and never overstates.
+  - **B.** In force in Wales only from 2007-04-02 (C13 as for a prospective row), widening on 2007-07-01. This drops the partial force in E, S and NI for those months.
+  - **C.** Keep today's union. This overstates E, S and NI.
+  - **D.** Name it a known limit and decide later.
+- **Recommendation: A.** Gemini Flash agrees (`backend/data/code-reviews/maritime-label-fold-c13-partial-gemini.md`). Its "better" option, one status per territory in one period, is a change to the timeline's shape: out of v0.1. Of its edge cases, a later repeal for one territory is already the rule `one-territory-repeal-narrows`. Under A, several territories commenced in turn stay partial until the last.
+- **Reach:** up to 5 Maritime rows (the `in_force_for` shape).
+- **If A:** a small fold fix (`Label.Day` `commenced_for/4`: a partial row whose territory isn't fully commenced stays partial), with a test and a pre-flight on MSA 1995. It would be a Label fold item, run when Jason says.
+
 ## Parking list
 
-- Label fold (decision for a later pass): C13 after a partial period. A one-territory full commencement of a partly-in-force row (MSA 1995 s.85(8), WSI 2007/204 then SI 2007/1375) labels it in force everywhere from the first. The rules define only prospective → one territory. Up to 5 Maritime rows (the `in_force_for` shape).
+- Label fold: C13 after a partial period, now Decision 2 (open). A one-territory full commencement of a partly-in-force row (MSA 1995 s.85(8), WSI 2007/204 then SI 2007/1375) labels it in force everywhere from the first. The rules define only prospective → one territory. Up to 5 Maritime rows (the `in_force_for` shape).
 - Feed reader: range-part-locator-placed (bug above).
 - Commencement reader: amending-law-staged-start-dropped (bug above).
-- Store and build: `label-in-build-version`. `ChangeVocabulary.Version` globs `change_vocabulary/label/*.ex` (and `label_rules.ex`, a check), so a fold-only fix (this step's `Label.Made`) marks every built law stale though no stored change differs. The fix: check whether anything the build stores reads the fold; if nothing does, move the fold's modules out of the version.
+- Store and build: `label-in-build-version` (raised as a bug above, 2026-11-06). `ChangeVocabulary.Version` globs `change_vocabulary/label/*.ex` (and `label_rules.ex`, a check), so a fold-only fix (this step's `Label.Made`) marks every built law stale though no stored change differs. The fix: check whether anything the build stores reads the fold; if nothing does, move the fold's modules out of the version.
 - Label fold, the fold's speed: 12–13½ minutes for Maritime's 24,434 rows against 6 for OH&S's 20,371 (MSA 1995's 3,585 rows, s.284's 100+ feed records). Recorded; `--laws` covers pre-flights.
