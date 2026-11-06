@@ -40,7 +40,7 @@ Read the file to be reviewed.
 ### Step 2: Build the API request
 
 ```bash
-# Gemini 2.5 Flash — fast, capable, good for review tasks
+# Gemini 2.5 Flash, always (Jason 2026-11-06: Flash, not Pro: much cheaper)
 MODEL="gemini-2.5-flash"
 API_URL="https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${GEMINI_API_KEY}"
 ```
@@ -104,7 +104,7 @@ those answers. If it found issues, summarise them.
 
 ## Standard review (`--standard <name>`)
 
-Build the prompt from files, in this order. Use `gemini-2.5-pro`, `maxOutputTokens` 8192.
+Build the prompt from files, in this order. Use `gemini-2.5-flash`, `maxOutputTokens` 8192.
 
 ```bash
 STD=.claude/review-standards/${STANDARD}.md
@@ -117,7 +117,7 @@ $(cat "$STD")
 ${FORMAT}"
 ```
 
-Then send `REVIEW_PROMPT` + `---` + the document as in Step 3, with `MODEL="gemini-2.5-pro"`.
+Then send `REVIEW_PROMPT` + `---` + the document as in Step 3, with `MODEL="gemini-2.5-flash"`.
 
 ## Default Review Prompt Template
 
@@ -167,8 +167,7 @@ produces tighter responses than open-ended "please review".
 
 ## Notes
 
-- Uses Gemini 2.5 Flash by default (fast, cheap, good reasoning)
-- For deeper review, switch to `gemini-2.5-pro`
+- Always use Gemini 2.5 Flash, for every review, standard or not (Jason 2026-11-06: Pro costs much more). Use Pro only when Jason asks for it for that review.
 - The `jq --arg` approach safely escapes all markdown in the document
 - Do NOT use jq `++` operator for string concatenation — it doesn't exist in jq
 - Response is plain text (Gemini returns markdown)

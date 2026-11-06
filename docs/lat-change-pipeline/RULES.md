@@ -117,6 +117,7 @@ A removal "in part" leaves the provision partly in force only when its text is k
 A modification ("shall have effect as if …", "be read as if …") changes no text and opens no period.
 - **Example:** SI 1981/917 reg.8(2): a 1993 "modified as follows … for regulation 8 substitute" is not a version (extended golden).
 - **Serves:** `binds-on-date`, `law-text-wins` · **Code:** `Amendment.Reader` (`@modification`); `Placement` (`@text_changes`); `Readers.Feed` ("modified" has no level) · **Test:** extended golden SI 1981/917 reg.8(2) · **Origin:** Jason 2026-10-22 ("I agree the logic"); Jason 2026-10-30, `cv-s09-label-fold`
+- **Forms** (Jason 2026-11-06, option A; Maritime Safety: Amending-law reader): "has effect as if", "shall have effect as if", "shall apply … as if", "applies … as if", "be read as if" and "be construed as if" are modifications, in the instruction's own words only. "as if" inside quoted or affected words is part of a real amendment ("omit 'and as if references …'", SI 2026/607; "before 'as if' insert", SI 2019/696). Deeming provisions and transitional savings ("shall continue to apply … as if …") are modifications. **One exception:** the older "shall have effect as if the following section(s) were inserted" (EMASA 1972 s.3 on Factories Act 1961 s.10A) is an insertion; legislation.gov.uk applies it as text. **Not yet in code:** `@modification` reads only "have effect|be read|be construed as if"; the fix is parked for the next Amending-law reader session (`as-if-modification-read-as-amendment`). Review: `backend/data/code-reviews/2026-11-06-as-if-modifications*.md`.
 - **Differs:** a pointer "Section 125 … shall be modified as follows—" now has its items read as insertions (SI 1988/1655 reg.23 on Factories Act 1961 s.125(7)–(9); `Amendment.Reader.items/4`, test `amendment/reader_test` "modified as follows"). See open decision 7.
 
 ---
@@ -771,6 +772,7 @@ Each item gives the rulings with their dates, what the code does now, the aim at
   - Fix `Undated.makers` in the fold step (it is routed to `cv-06b`).
 
 ### 7. Modifications vs amendments
+- **"as if" part ruled 2026-11-06** (Jason, option A): see `modification-is-not-a-change`, Forms. Still open: "modified as follows" followed by plain text amendments.
 - **Rulings:**
   - 2026-10-22: a modification changes no label.
   - 2026-10-30 ("rule 9"): "modified as follows … for regulation 8 substitute" is not a version (SI 1981/917 reg.8(2)).

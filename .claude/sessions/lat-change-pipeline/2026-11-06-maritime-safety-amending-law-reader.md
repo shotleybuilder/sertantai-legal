@@ -95,7 +95,7 @@ bugs:
     category: as-if-modification-read-as-amendment
     module: lib/sertantai_legal/scraper/amendment/reader.ex (@modification)
     affected: 66 stored rules in 17 amending laws (2 changes in Maritime Safety)
-    fix: 'widen @modification to "has effect" and "apply … as if", keeping @as_if_inserted (EMASA 1972 s.3, decided an insertion); cross-family: Jason to decide, then a full read pass'
+    fix: 'RULED 2026-11-06 (Jason, option A; Gemini review agreed): widen @modification to "has effect as if" and "shall apply / applies … as if", in the instruction''s own words only (never quoted or affected words), keeping @as_if_inserted (EMASA 1972 s.3); test first, field diff, one full read pass. Do it in the next Amending-law reader session. The real class is about 25 provisions in 8–9 laws (the 66-rule count included "as if" inside quoted words). RULES.md modification-is-not-a-change, Forms'
     step: Amending-law reader
     status: open
   - pattern: 'A quote taken as a provision''s body where its number is not the one named: "For Article 15a substitute— 1. 2." read as art.15(1), (2) (the numbers pattern reads 15a as 15); "for regulation 45 and its chapeau, substitute— 80 …" read as reg.45(80). Before this step both read as art.1/art.2 and reg.80, also wrong'
@@ -289,7 +289,7 @@ Every change was read against its amending provision's words and rules (`backend
 - Amending-law reader (OH&S EU laws): the new rules from the Citation fix name art.N, while EU rows are art.Article N, so they land on no row yet. This is the parked "EU law gets no change from its amending SIs' own text", now its targets half only.
 - Amending-law reader: quote-body-number-not-named, in 2 provisions of other families. The fix is written but held back, because it needs a third full read pass.
 - Amending-law reader: schedule-sub-paragraphs-read-as-sections (Finance Act 2003 on 2000 c.17), 3 provisions of other families.
-- Amending-law reader (cross-family, Jason): as-if-modification-read-as-amendment. "has effect as if" and "apply … as if" slip past the modification rule: 66 rules in 17 laws, 2 changes in Maritime.
+- Amending-law reader (ruled 2026-11-06, option A; do in the next session): as-if-modification-read-as-amendment. "has effect as if" and "apply … as if" slip past the modification rule: 66 rules in 17 laws, 2 changes in Maritime.
 
 ## The read pass (todo 2)
 
