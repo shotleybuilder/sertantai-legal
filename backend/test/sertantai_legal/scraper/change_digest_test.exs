@@ -39,6 +39,11 @@ defmodule SertantaiLegal.Scraper.ChangeDigestTest do
     assert ChangeDigest.of([swapped, b()]) != ChangeDigest.of([a(), b()])
   end
 
+  test "values derived on read (tiers, conflicts) are not digested: the digest is of what is stored (Maritime Safety: Store and build)" do
+    reordered = %{a() | resolved: %{a().resolved | conflicts: [:y, :x], tiers: %{}}}
+    assert ChangeDigest.of([reordered, b()]) == ChangeDigest.of([a(), b()])
+  end
+
   test "no changes" do
     assert ChangeDigest.of([]) == ChangeDigest.of([])
   end

@@ -26,6 +26,8 @@ defmodule Mix.Tasks.Lat.LabelCheck do
   """
   use Mix.Task
 
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Gate.Step
+
   alias SertantaiLegal.Scraper.Amendment.PatternSource
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.{
@@ -87,8 +89,9 @@ defmodule Mix.Tasks.Lat.LabelCheck do
     Mix.shell().info("#{laws} laws folded; #{length(rows)} rows; not folded: #{inspect(failed)}")
 
     if opts[:strata], do: strata(rows)
-    if opts[:gate], do: gate(rows, opts[:all])
+    step = if opts[:gate], do: gate(rows, opts[:all])
     if path = opts[:sample], do: sample(rows, stratum, path, opts)
+    step
   end
 
   defp only(laws, nil), do: laws
@@ -129,6 +132,8 @@ defmodule Mix.Tasks.Lat.LabelCheck do
     shell.info(
       "\n#{if gate.pass?, do: "PASS", else: "FAIL"} (groups not named: #{length(gate.failing)})"
     )
+
+    Step.new("Label fold", gate.pass?, length(gate.failing))
   end
 
   defp reviewed do

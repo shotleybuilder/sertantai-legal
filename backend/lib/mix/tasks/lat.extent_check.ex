@@ -42,6 +42,8 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
   """
   use Mix.Task
 
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Gate.Step
+
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source, as: Scope
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Check, Powers, ReadCache, Store, Withheld}
@@ -103,8 +105,9 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
 
     gate = change_rows |> Withheld.items(by_law, reviewed()) |> Withheld.gate()
 
-    report(rows, change_rows, gate)
+    step = report(rows, change_rows, gate)
     if opts[:sample], do: sample(opts, rows, change_rows)
+    step
   end
 
   # each text change with its territory claims, by source
@@ -192,6 +195,8 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
       "\n#{if pass?, do: "PASS", else: "FAIL"} (amending laws: our faults #{length(t.faults)}; " <>
         "sweep misses #{length(t.misses)}; no-bound causes not named: #{length(gate.failing)})"
     )
+
+    Step.new("Extent reader", pass?, length(t.faults) + length(t.misses) + length(gate.failing))
   end
 
   defp report_laws(rows, t) do

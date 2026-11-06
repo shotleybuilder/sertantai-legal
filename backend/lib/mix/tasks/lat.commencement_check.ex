@@ -25,6 +25,8 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
   """
   use Mix.Task
 
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Gate.Step
+
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source, as: Scope
 
@@ -75,6 +77,8 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
     Mix.shell().info(
       "\n#{if faults == 0 and gate.pass?, do: "PASS", else: "FAIL"} (rows: our faults #{faults}; leftovers not named: #{unnamed})"
     )
+
+    Step.new("Commencement reader", faults == 0 and gate.pass?, faults + unnamed)
   end
 
   # ── the leftovers gate ──────────────────────────────────────────────

@@ -19,7 +19,6 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Version do
       lib/sertantai_legal/scraper/change_vocabulary/merge/*.ex
       lib/sertantai_legal/scraper/change_vocabulary/label/*.ex
       lib/sertantai_legal/scraper/change_vocabulary/store/*.ex
-      lib/sertantai_legal/scraper/change_vocabulary/measures/*.ex
       lib/sertantai_legal/scraper/amending_law/*.ex
       lib/sertantai_legal/scraper/amending_law/extent/*.ex
       lib/sertantai_legal/scraper/amendment/*.ex
@@ -44,10 +43,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Version do
       lib/sertantai_legal/scraper/legislation_gov_uk/changes_feed.ex
     ),
     # the readers' checks — the commencement leftovers, its family gate's
-    # gathering, the extent, amending-law and merge family gates — never
-    # what a build reads (2026-11-05, 2026-11-06)
+    # gathering, the extent, amending-law and merge family gates, and the
+    # checks that draw samples (they reach the measures, which no build
+    # reads) — never what a build reads (2026-11-05, 2026-11-06)
     except: ~w(
       lib/sertantai_legal/scraper/amendment/disagreement.ex
+      lib/sertantai_legal/scraper/amendment/check_sample.ex
+      lib/sertantai_legal/scraper/amendment/check_strata.ex
+      lib/sertantai_legal/scraper/amending_law/extent/check.ex
+      lib/sertantai_legal/scraper/change_vocabulary/evidence_sample.ex
+      lib/sertantai_legal/scraper/change_vocabulary/label_sample.ex
+      lib/sertantai_legal/scraper/change_vocabulary/label_strata.ex
+      lib/sertantai_legal/scraper/change_vocabulary/merge_sample.ex
       lib/sertantai_legal/scraper/change_vocabulary/merge_gate.ex
       lib/sertantai_legal/scraper/commencement/leftovers.ex
       lib/sertantai_legal/scraper/commencement/family_leftovers.ex

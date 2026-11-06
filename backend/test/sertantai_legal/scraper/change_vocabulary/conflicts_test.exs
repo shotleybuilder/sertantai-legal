@@ -17,6 +17,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.ConflictsTest do
     |> Evidence.resolve("E+W")
   end
 
+  test "a value's conflicts come in a fixed source order, markup then feed, in every VM (Maritime Safety: Store and build: a map's atom keys iterate in atom-table order)" do
+    c =
+      change("k0", "reg.12", [
+        {:law_text, :operation, :repealed},
+        {:feed, :operation, :repealed_in_part},
+        {:markup, :operation, :repealed_in_part}
+      ])
+
+    assert [{:operation, _, {:markup, _}}, {:operation, _, {:feed, _}}] = Conflicts.values(c)
+  end
+
   test "like for like: a substitution the markup shows as an insertion is no conflict; a whole repeal against one in part is" do
     sub =
       change("k1", "s.280", [

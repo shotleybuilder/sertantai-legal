@@ -18,6 +18,8 @@ defmodule Mix.Tasks.Lat.MergeCheck do
   """
   use Mix.Task
 
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Gate.Step
+
   alias SertantaiLegal.Scraper.Amendment.{CheckSample, Disagreement, PatternSource}
   alias SertantaiLegal.Scraper.Amendment.Store, as: Rules
   alias SertantaiLegal.Scraper.ChangeVocabulary.{MergeGate, MergeSample, MergeStrata, Store}
@@ -65,8 +67,9 @@ defmodule Mix.Tasks.Lat.MergeCheck do
     Mix.shell().info("#{length(laws)} laws; text changes in a stratum: #{length(classified)}")
 
     if opts[:strata], do: strata(classified, by_law)
-    if opts[:gate], do: gate(by_law, opts[:all])
+    step = if opts[:gate], do: gate(by_law, opts[:all])
     if path = opts[:sample], do: sample(path, opts, classified, by_law, stratum)
+    step
   end
 
   defp sample(path, opts, classified, by_law, stratum) do
@@ -134,6 +137,8 @@ defmodule Mix.Tasks.Lat.MergeCheck do
     shell.info(
       "\n#{if gate.pass?, do: "PASS", else: "FAIL"} (groups not named: #{length(gate.failing)})"
     )
+
+    Step.new("Merge", gate.pass?, length(gate.failing))
   end
 
   # an operation conflict's status in the amending-law reader's gate

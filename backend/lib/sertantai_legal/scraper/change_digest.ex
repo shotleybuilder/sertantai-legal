@@ -3,10 +3,15 @@ defmodule SertantaiLegal.Scraper.ChangeDigest do
   A digest of a law's changes (CV-S11), for "same input, same output": two
   builds from the same inputs store the same changes when their digests
   match. Covers each change's key, target, aliases, claims (in order) and
-  resolved values; not the row ids or build times. Pure.
+  resolved values as stored; not the row ids or build times, nor what
+  `Store.for_law/1` derives on read (`tiers`, `conflicts`: the digest is of
+  the build's output; Maritime Safety: Store and build). Pure.
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Change
+
+  # derived on read, never stored
+  @derived [:tiers, :conflicts]
 
   @doc "16 hex characters over `changes`, whatever their order."
   @spec of([Change.t()]) :: String.t()
@@ -15,7 +20,7 @@ defmodule SertantaiLegal.Scraper.ChangeDigest do
     |> Enum.map(fn c ->
       {c.key, c.target, c.aliases,
        Enum.map(c.claims, &{&1.source, &1.attribute, &1.value, &1.ref}),
-       c.resolved && Map.from_struct(c.resolved)}
+       c.resolved && c.resolved |> Map.from_struct() |> Map.drop(@derived)}
     end)
     |> Enum.sort()
     |> :erlang.term_to_binary([:deterministic])

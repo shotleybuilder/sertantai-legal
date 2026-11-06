@@ -12,6 +12,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.Draw do
   | extent | `{s, 2, 3}` (default s = 1) | `equal_share/3`, laws then changes |
   | amending, merge, evidence | `{s, 6, 6}` | `shuffled/3` |
   | label | `{s, 9, 9}` | `shuffled/3` |
+  | measures' hand sample | `{s, 10, 10}` | `shuffled/3` |
+  | staleness (Store and build) | `{s, 11, 11}` | `shuffled/3`, built then unbuilt |
 
   `seed/1` seeds the process's generator; the draws after it use it in
   turn (a check drawing twice draws its second sample from where the

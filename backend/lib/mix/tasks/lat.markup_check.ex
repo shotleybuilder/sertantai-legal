@@ -14,6 +14,8 @@ defmodule Mix.Tasks.Lat.MarkupCheck do
   """
   use Mix.Task
 
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Gate.Step
+
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source, as: Scope
   alias SertantaiLegal.Scraper.ChangeVocabulary.{MarkupPatterns, MarkupPlacement, Ref}
@@ -69,6 +71,7 @@ defmodule Mix.Tasks.Lat.MarkupCheck do
     faults = Enum.filter(changes, &fault?/1)
     pass? = faults == [] and missing == []
     shell.info("\n#{if pass?, do: "PASS (placement)", else: "FAIL (placement)"}")
+    Step.new("Markup reader", pass?, length(faults) + length(missing))
   end
 
   defp fault?(%{outcome: {:unplaced, why}}), do: MarkupPlacement.fault?(why)

@@ -53,7 +53,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Conflicts do
   def values(%Change{resolved: nil}), do: []
 
   def values(%Change{resolved: r} = c) do
-    derived = for {s, :derived} <- Evidence.tiers(), s in @legislation_gov_uk, do: s
+    # from the list, not the tiers map: a map's atom keys iterate in
+    # atom-table order, which moves between VMs (Maritime Safety: Store and
+    # build, 2026-11-06)
+    derived = for s <- @legislation_gov_uk, Evidence.tier(s) == :derived, do: s
 
     for {attribute, source} <- Enum.sort(r.sources),
         Evidence.tier(source) == :primary,

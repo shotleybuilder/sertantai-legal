@@ -20,6 +20,8 @@ defmodule Mix.Tasks.Lat.Sources do
   """
   use Mix.Task
 
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Gate.Step
+
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source, as: Scope
   alias SertantaiLegal.Scraper.{EffectKind, LatScope, Sources}
@@ -69,6 +71,7 @@ defmodule Mix.Tasks.Lat.Sources do
     print(report, opts)
 
     if opts[:fetch], do: fetch(report.failures)
+    Step.new("Sources", report.pass, length(report.failures))
   end
 
   # --fetch: only the documents the check failed — a missing one fetched, a

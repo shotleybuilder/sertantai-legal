@@ -13,6 +13,8 @@ defmodule Mix.Tasks.Lat.FeedCheck do
   """
   use Mix.Task
 
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Gate.Step
+
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source, as: Scope
   alias SertantaiLegal.Scraper.LatRef
@@ -117,6 +119,7 @@ defmodule Mix.Tasks.Lat.FeedCheck do
 
     pass? = faults == [] and missing == []
     Mix.shell().info("\n#{if pass?, do: "PASS (placement)", else: "FAIL (placement)"}")
+    Step.new("Feed reader", pass?, length(faults) + length(missing))
   end
 
   # family laws whose LAT isn't held (not making, discarded): out of scope

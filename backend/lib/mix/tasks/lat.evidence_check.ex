@@ -22,6 +22,8 @@ defmodule Mix.Tasks.Lat.EvidenceCheck do
   """
   use Mix.Task
 
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Gate.Step
+
   alias SertantaiLegal.Scraper.Amendment.{CheckSample, Disagreement, PatternSource}
   alias SertantaiLegal.Scraper.Amendment.Store, as: Rules
 
@@ -80,9 +82,10 @@ defmodule Mix.Tasks.Lat.EvidenceCheck do
     )
 
     if opts[:strata], do: strata(classified, all)
-    if opts[:gate], do: gate(by_law, all, opts[:all])
+    step = if opts[:gate], do: gate(by_law, all, opts[:all])
 
     if path = opts[:sample], do: sample(path, opts, classified, stratum)
+    step
   end
 
   defp sample(path, opts, classified, stratum) do
@@ -146,6 +149,8 @@ defmodule Mix.Tasks.Lat.EvidenceCheck do
     shell.info(
       "\n#{if gate.pass?, do: "PASS", else: "FAIL"} (groups not named: #{length(gate.failing)})"
     )
+
+    Step.new("Evidence", gate.pass?, length(gate.failing))
   end
 
   defp report_gaps(changes) do

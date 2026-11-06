@@ -27,7 +27,8 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       mix lat.vocabulary --build --golden  # every golden-set law
       mix lat.vocabulary --build --laws A,B
       mix lat.vocabulary --build --family "OH&S: Occupational / Personal Safety"
-      mix lat.vocabulary --check --family "OH&S: Occupational"   # build, conflict counts, golden from the store, the sources gate — one app start
+      mix lat.vocabulary --check --family "OH&S: Occupational"   # build, conflict counts, golden from the store, every step's gate (mix lat.gates) — one app start
+      mix lat.vocabulary --check --family F --no-gates           # the same without the gates (a fix round; the label gate folds the family)
       mix lat.vocabulary --conflicts --law UK_ukpga_1990_8 [--all]
                                            # where the law's text and legislation.gov.uk disagree
 
@@ -57,6 +58,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
           laws: :string,
           family: :string,
           check: :boolean,
+          gates: :boolean,
           provision: :keep,
           golden: :boolean,
           extended: :boolean,
@@ -127,11 +129,25 @@ defmodule Mix.Tasks.Lat.Vocabulary do
         )
 
     golden(Keyword.put(opts, :stored, true))
+    gates(opts, laws)
+  end
 
-    # the sources gate re-run on what was built: the stored changes name
-    # the documents the labels need (CV-S01; found failing in CV-S10)
-    Mix.shell().info("\nsources held, for the laws built:")
-    Mix.Task.run("lat.sources", ["--laws", Enum.join(laws, ",")])
+  # every step's gate re-run on the family built: a rebuild can move an
+  # earlier step's (Maritime Safety, 2026-11-06). Laws named without a
+  # family get the sources gate only: the stored changes name the
+  # documents the labels need (CV-S01; found failing in CV-S10)
+  defp gates(opts, laws) do
+    cond do
+      opts[:gates] == false ->
+        Mix.shell().info("\ngates not re-run (--no-gates)")
+
+      opts[:family] ->
+        Mix.Task.run("lat.gates", ["--family", opts[:family]])
+
+      true ->
+        Mix.shell().info("\nsources held, for the laws built (every step's gate needs --family):")
+        Mix.Task.run("lat.sources", ["--laws", Enum.join(laws, ",")])
+    end
   end
 
   defp conflict_totals(laws) do

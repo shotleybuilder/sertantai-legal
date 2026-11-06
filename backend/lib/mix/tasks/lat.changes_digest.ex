@@ -6,20 +6,24 @@ defmodule Mix.Tasks.Lat.ChangesDigest do
   and its number of changes. Read-only.
 
       mix lat.changes_digest --family "OH&S: Occupational" --golden --out A.tsv
+      mix lat.changes_digest --built --out A.tsv   # every built law (Maritime Safety: Store and build)
   """
   use Mix.Task
 
   alias SertantaiLegal.Scraper.ChangeDigest
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Store
 
   @shortdoc "Each law's stored changes as a digest, to compare two builds (read-only)"
 
-  @usage "usage: mix lat.changes_digest [--family F] [--golden] --out FILE"
+  @usage "usage: mix lat.changes_digest [--family F] [--golden] [--built] --out FILE"
 
   @impl Mix.Task
   def run(args) do
     {opts, _, _} =
-      OptionParser.parse(args, strict: [family: :string, golden: :boolean, out: :string])
+      OptionParser.parse(args,
+        strict: [family: :string, golden: :boolean, built: :boolean, out: :string]
+      )
 
     out = opts[:out] || Mix.raise(@usage)
     Mix.Task.run("app.start")
@@ -28,6 +32,7 @@ defmodule Mix.Tasks.Lat.ChangesDigest do
     laws =
       ((opts[:family] && Source.family_laws(opts[:family])) || [])
       |> Enum.concat(if opts[:golden], do: Source.golden_laws(), else: [])
+      |> Enum.concat(if opts[:built], do: Map.keys(Store.builds()), else: [])
       |> Enum.uniq()
       |> Enum.sort()
 

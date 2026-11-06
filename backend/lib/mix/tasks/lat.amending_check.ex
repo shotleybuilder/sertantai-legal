@@ -20,6 +20,8 @@ defmodule Mix.Tasks.Lat.AmendingCheck do
   """
   use Mix.Task
 
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Gate.Step
+
   alias SertantaiLegal.Scraper.Amendment.{CheckSample, CheckStrata, Disagreement, PatternSource}
   alias SertantaiLegal.Scraper.Amendment.Store, as: Rules
   alias SertantaiLegal.Scraper.ChangeVocabulary.Store
@@ -67,9 +69,10 @@ defmodule Mix.Tasks.Lat.AmendingCheck do
     )
 
     if opts[:strata], do: strata(classified, by_law)
-    if opts[:gate], do: gate(classified, opts[:all])
+    step = if opts[:gate], do: gate(classified, opts[:all])
 
     if path = opts[:sample], do: sample(path, opts, classified, stratum)
+    step
   end
 
   defp sample(path, opts, classified, stratum) do
@@ -147,6 +150,8 @@ defmodule Mix.Tasks.Lat.AmendingCheck do
     shell.info(
       "\n#{if gate.pass?, do: "PASS", else: "FAIL"} (groups not named: #{length(gate.failing)})"
     )
+
+    Step.new("Amending-law reader", gate.pass?, length(gate.failing))
   end
 
   defp reviewed do
