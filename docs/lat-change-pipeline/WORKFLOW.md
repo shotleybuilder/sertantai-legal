@@ -270,9 +270,23 @@ Before this, OH&S used agents over V in full and D by pattern, and pooled A samp
 
 **Outputs.** Label periods (status, territory, in force from, changed by, commenced by, a tier per field). Pure: nothing is written at this step.
 
-**Check today.** `mix lat.label_check --family F --strata` gives S (rows each fold rule acts on, by shape), T (rows whose fold differs from today's label, by class) and R (random rows). G is golden from inputs on `golden.exs`. S and T are judged by shape and class (`--per 10`); R in 5 × 30 rows on a new seed.
+**Check today.** `mix lat.label_check --family F --strata` gives S (rows each fold rule acts on, by shape), T (rows whose fold differs from today's label, by class; recorded only, it is Labels side by side's) and R (random rows). G is golden from inputs on `golden.exs`.
 
-**Pass rule as last used** (2026-10-29; golden revised 2026-10-30). G: the 27 golden provisions all pass from inputs. S and T: no fold fault left unfixed or unclassed. R: pooled under 2% wrong rows and 5% wrong laws at the 95% upper bound, counting fold faults only. Upstream faults are logged with their owning step and published as the end-to-end figure. Golden is never grown during a pass: new provisions go to `golden_extended.exs` for the next pass.
+**The gate** (`--gate [--all]`, `ChangeVocabulary.Gate.Label`; Decision 1, Maritime Safety: Label fold, 2026-11-06). Every breach in the family's folded rows is grouped by rule and the row's law, `"<rule> @ <law>"`:
+- the label rules (`LabelRules`: before_amender, before_insertion, windsor_ni, no_made_period, saved_not_saved; legacy_unconfirmed listed apart);
+- the table's rules (`LabelPeriods.violations/1`);
+- the agent pass's classes as code: an empty field carrying a tier (`tier: empty field`), and a row started by a Part's or Chapter's insertion later than its own (`start: a container's insertion after its own`).
+
+Each group is named in `test/fixtures/label/labels.json` (`known:`, `fix:` or `check:`); OH&S's file-listed rows (`KnownLimits`) stay apart. The gaps (undated starts and changes) and the S shapes are printed, a published figure. `--laws L1,L2` folds only the laws named (a pre-flight in seconds; the family fold takes 6–13 minutes).
+
+**Pass rule** (Decision 1, Maritime Safety: Label fold, 2026-11-06; the shape picked for Merge):
+- the gate prints PASS;
+- **one agent pass** of about 45 rows (`--stratum SR --per 2 --n 23 --seed N`: S by shape, the rest at random, a new seed) in 3 batches, to find a class the code doesn't catch; a fold class becomes a gate check and is fixed by reach, an upstream one is parked; there is no resample;
+- no regression in the families through (their gate and current statuses);
+- golden 27/27;
+- the shapes, the gaps, the statuses and a quality statement published.
+
+Before this, OH&S used G, S and T by shape and R pooled to the 95% bound (2026-10-29; 10 rounds). Golden is never grown during a pass: new provisions go to `golden_extended.exs` for the next pass.
 
 **Skill.** `label-check`.
 
@@ -389,7 +403,7 @@ Session files: `.claude/sessions/lat-change-pipeline/<date>-<family>-<step-name>
 6. **Extent reader**: sweep and catalogue, the extents written, the check.
 7. **Amending-law reader**: the read pass current, catalogue, pre-flight, one read pass, rebuild, golden from inputs, strata, the gate.
 8. **Merge**, then **Evidence**: strata and their checks after a rebuild.
-9. **Label fold**: golden from inputs, then S, T and R.
+9. **Label fold**: the gate, one agent pass over S and R, golden from inputs.
 10. **Measures**: every figure the family's steps publish, printed by code and replicated.
 11. **Store and build**: two builds, digests compared, staleness, the sources gate re-run.
 12. **Labels side by side**: the new timeline beside the old, 0 rule breaks, differences counted.

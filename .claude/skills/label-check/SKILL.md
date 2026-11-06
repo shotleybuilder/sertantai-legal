@@ -1,6 +1,6 @@
 ---
 name: Label Check
-description: The LAT Change Pipeline's label-fold acceptance check for one family. It covers the golden set from inputs (G), the rows each fold rule acts on (S, by shape), the rows where the fold differs from today's label (T, by class) and random rows (R), with Claude agents judging each label period against the law's own sources. It also holds the golden-drafting prompt for growing the golden set. Use it for each fix round and each new family.
+description: The LAT Change Pipeline's label-fold acceptance check for one family: the code gate (every label-rule, table-rule, tier and start breach grouped by rule and law, named in labels.json), golden from inputs (G), and one agent pass over rows drawn by shape (S) and at random (R), judged against the law's own sources. It also holds the golden-drafting prompt for growing the golden set. Use it for each new family.
 ---
 
 > **LAT Change Pipeline — step: Label fold.** Where it sits, its inputs, outputs and pass rule: `docs/lat-change-pipeline/WORKFLOW.md`. Terms and former codes (CV-…): `docs/lat-change-pipeline/GLOSSARY.md`.
@@ -38,22 +38,26 @@ There are three kinds of finding:
 
 ## Steps
 
-All steps are read-only. Each `lat.label_check` run folds the whole family, which takes about 3 minutes for OH&S.
+All steps are read-only. Each `lat.label_check` run folds the whole family: about 6 minutes for OH&S, 13 for Maritime Safety. Ask Jason before each family run, and pre-flight on a few laws with `--laws L1,L2` (seconds).
 
-1. **Strata:** `mix lat.label_check --family "F" --strata`. It prints the S shapes, the T classes and the current status counts. Record them.
-2. **G, golden from inputs:** `mix lat.vocabulary --golden` (about 3 minutes). Every provision must pass.
+1. **Gate and strata in one run:** `mix lat.label_check --family "F" --gate --all --strata` (`Gate.Label`). It prints the S shapes, the T classes (recorded only: Labels side by side), the current statuses, the breach groups by rule and law, and the gaps. Review each group not named in the sources' own records, and name it in `test/fixtures/label/labels.json`:
+   - `fix:` a fold fault in the fold's own code, at or over the triage size (3 rows);
+   - `known:` one below it, a gap, or an upstream fault, with its owning step's parked bug (`bug-raise`).
+
+   A group named by rule alone is by design (`legacy_unconfirmed`).
+2. **G, golden from inputs:** `mix lat.vocabulary --golden --workers 1` (about 5 minutes). Every provision must pass.
    Golden is fixed for a workflow pass: never grow it mid-workflow (Jason 2026-10-30). New provisions go in `golden_extended.exs` (`--golden --extended`) and gate the next pass from step 1.
-3. **S by shape:** `--stratum S --sample $S/s.json --per 10 --seed N`. One rule acts on all of a shape's rows, so judge each shape as a whole.
-4. **T by class:** `--stratum T --sample $S/t.json --per 10 --seed N`. This only draws the rows. Classing every difference is CV-06's shadow run.
-5. **R at random:** use a seed never used for this family, and record it. Run `--stratum R --sample $S/r.json --n 30 --seed N`, then `--skip 30`, `--skip 60` and so on, up to 5 × 30. Repeat one batch into a second file and `cmp` the two.
-6. **Agents** run in batches of about 15 rows (items are large), with the prompt below.
+3. **One agent pass**, on a seed never used for this family: `--stratum SR --sample $S/a.json --per 2 --n 23 --seed N` (S by shape, two rows a shape, then 23 at random; about 45 rows). Split it into 3 batches of about 15 (items are large) and run the prompt below on each, in parallel. Record the tokens (Maritime Safety: 350k).
+4. **Finds into code:** a fold class becomes a gate check in `Gate.Label` (the made-period tier, the container start) and is fixed by reach (TDD); an upstream class is raised with its owning step and its group named `known:`. There is no resample.
 
-**Pass** (Jason 2026-10-29, decided before round 1):
-- **G:** passes from inputs on `golden.exs` (the 27 the workflow pass began with; the extended set waits for the next pass).
-- **S and T:** no shape or class has a fold fault left unfixed or unclassed.
-- **R:** the pooled rows since the last fix, keeping only rows whose periods are unchanged since they were checked, are under 2% wrong rows and under 5% wrong laws, at the 95% Clopper–Pearson upper bound. Fold faults only.
+**Pass** (Decision 1, Maritime Safety: Label fold, 2026-11-06):
+- the gate prints PASS on the family, every group named `known:`;
+- the one agent pass done, each class it found a gate check;
+- no regression in the families through: their gate PASS and current statuses unchanged, except by a fix explained;
+- golden 27/27 from inputs;
+- the shapes, gaps, statuses and a quality statement recorded.
 
-Upstream faults are fixed in the same batches, and their rate is published as the end-to-end figure. Record the strata, the pooled numbers and a quality statement. Only NEW defects go to Jason, explained with the sources' own records.
+Until Maritime Safety (OH&S, 2026-10-29): G, S and T by shape (`--per 10`) and R pooled to the 95% Clopper–Pearson bound (under 2% wrong rows, 5% wrong laws, fold faults only) over 10 rounds. That is the sample → fix → resample loop the 2026-11-05 rule forbids.
 
 ## Agent prompt (the check)
 
@@ -226,6 +230,7 @@ Known classes (label a finding with one; otherwise NEW):
   (SI 2002/2174 on SI 1992/3004); P4 a feed "revoked in part" placed on the wrong law's provision (SI 1996/1513
   reg.13 on HSWA s.48); P5 a feed "omitted in earlier amending provision" given provision level where the law omits
   words (REACH Art 3(A2), SI 2020/1577 reg.4(6)(b)); U13 Scottish form (markup cites uksi for an SSI, unjoined).
+- From Maritime Safety (2026-11-06): KMADE the made period, prospective from the law's making to its start, by design (LR-39); KMADE-tier its empty in_force_from carrying a tier (fixed; a gate check); KC-own an amending SI's own clause unread (no commenced_by, the feed's date or none); KC-start an amending law's start misread; KU-undated an amending law's change no source dates, credited from the row's start (C10); range-part-locator-placed a feed range's "(Pt. 6)" locator stored as the Part's insertion (MSA 1995 s.130A–130E, a gate group); amending-law-staged-start-dropped a purpose-limited first stage held but no partial commencement emitted (MSA 1995 Pt 9A); C13 after a partial period (a one-territory full commencement of a partly-in-force row: MSA 1995 s.85(8)) — a question, not WRONG.
 - From CV-S09 round 10 (upstream, open): P6 an order's list cut at "(except …)" (SI 1995/2950 reg.2(1), HSWA
   s.28(10)); K-legacy includes legacy Additions citing a law (OSRPA s.6, SI 1992/3004: read as an insertion by the
   repealing law); V8 an amending law's whole-law date not attached to its undated substitution (SI 1989/2367 on SI
@@ -304,3 +309,4 @@ OH&S (first family, 2026-10-29 →). The session is `.claude/sessions/change-voc
 | 8r | 153/171/172 | R 1/150 (M1, a batch 7 regression) — FAIL; S/T 3 fold (EW, NN) |
 | 9 | 153 (R recheck), 181 (S), 182 (T) | Fix 9df8a019, 51fbd1aa (M1, EW, NN); golden 41/50 |
 | probe | 90 (S), 91 (R), 92 (T) | Strata built (ff1f97c7): 149 laws, 20,371 rows. Probes were used only to choose golden candidates, so these seeds are never used for R |
+| Maritime Safety | 201 (SR: 20 S, 23 R) | Gate (Gate.Label) 6 groups → PASS: fold fault `Label.Made` words insertion on the start day (3 rows) fixed; 5 groups named. One agent pass, 3 batches, 350k tokens: 8 OK, 31 made-tier (fixed; gate check `tier: empty field`), 4 upstream (range-part-locator-placed → gate check, 106 rows; amending-law-staged-start-dropped, 21 changes). Session `.claude/sessions/lat-change-pipeline/2026-11-06-maritime-safety-label-fold.md` |

@@ -24,7 +24,7 @@ The second family through the LAT Change Pipeline, and the first under the proce
 - ✅ Amending-law reader: code gate PASS (83 groups named); A 1,273 → 1,348; 5 misread classes fixed (Decisions 1–3); closed 2026-11-06
 - ✅ Merge: code gate PASS (310 groups named), one agent pass; new paragraphs carry their event (Decisions 1–2); closed 2026-11-06
 - ✅ Evidence: code gate PASS (59 groups named, 37 inherited), one agent pass; no table fix; closed 2026-11-06
-- ⬜ Label fold
+- ✅ Label fold: code gate PASS (7 groups named), one agent pass; 2 fold faults in Label.Made fixed (Decision 1); closed 2026-11-06
 - ⬜ Measures
 - ⬜ Store and build
 - ⬜ Labels side by side
@@ -59,7 +59,7 @@ One row per step, filled when the step session closes. Agent tokens are those of
 | Amending-law reader | amending-law-reader | 2026-11-06 | 2026-11-06 | 1 | yes, all 4 (code gate, Decision 1) | 1 (Decision 3: a third full read pass) | 5 (Amending-law reader: as-if modifications, quote body number, Schedule sub-paragraphs, a law named in an aside; EU targets half) | 0 | 2 |
 | Merge | merge | 2026-11-06 | 2026-11-06 | 1 | yes, all 4 (code gate + one agent pass, Decision 1) | 0 (Decision 2 a fix within the plan) | 2 (Commencement reader: amending-law start; Amending-law reader: unnumbered list items) | 129,479 | 2 |
 | Evidence | evidence | 2026-11-06 | 2026-11-06 | 1 | yes, all 4 (code gate + one agent pass, Decision 1) | 1 (date conflicts named here, not inherited from Merge) | 1 (Commencement reader: amending-law own clause unread) | 155,806 | 2 |
-| Label fold | | | | | | | | | |
+| Label fold | label-fold | 2026-11-06 | 2026-11-06 | 1 | yes, all 4 (code gate + one agent pass, Decision 1) | 0 (the container check re-run on 4 laws, spliced) | 2 (Feed reader: range Part locator, 106 rows; Commencement reader: staged start dropped, 21 changes) | 350,424 | 2 |
 | Measures | | | | | | | | | |
 | Store and build | | | | | | | | | |
 | Labels side by side | | | | | | | | | |
