@@ -40,7 +40,7 @@ Each check skill's agent prompt ends with a VERDICTS block: one JSON object per 
 
     backend/data/reports/change-vocabulary/verdicts/<step>/<family-slug>/round-<N>-<stratum>-seed-<S>[-b<k>].json
 
-The directory is NAS-backed and not in git, since items may carry effect ids. Then pool the files since the step's last fix batch with `mix lat.verdicts --dir <that directory>`. Pass only the files since the last fix; an item checked twice counts once, the later round standing.
+The directory is NAS-backed and not in git, since items may carry effect ids. Save the block when the agent hands back, in the same step: Maritime Safety's passes saved none, and five were recovered later from the agents' hand-back messages; the rest are hand tallies, report only. Then pool the files since the step's last fix batch with `mix lat.verdicts --dir <that directory>`. Pass only the files since the last fix; an item checked twice counts once, the later round standing.
 
 - **Counted against the bound:** wrong items whose fault is `own`. A group (law or pair) is wrong when any of its items counts.
 - **End to end:** every wrong item, whoever's fault.
@@ -56,22 +56,28 @@ Every check's draw lives in `Measures.Draw`, with its seed tuple and algorithm u
 
 ```bash
 #!/bin/bash
-# draws.sh OUTDIR: every check's sample at seed 901, with its printed figures and run time
-O=$1; mkdir -p $O; cd backend; F="OH&S: Occupational"
+# draws.sh OUTDIR FAMILY SEED: every check's figures, strata, gate and sample at SEED, with run times
+O=$1; F=$2; SEED=${3:-902}; mkdir -p $O; cd backend
 run() { name=$1; shift; s=$(date +%s); mix "$@" > $O/$name.out 2> $O/$name.err; echo "$name exit=$? $(( $(date +%s) - s ))s" >> $O/times.txt; }
-run feed lat.feed_check --family "$F" --sample $O/feed.json --n 50 --seed 901
-run markup lat.markup_check --family "$F" --sample $O/markup.json --n 50 --seed 901
-run commencement lat.commencement_check --family "$F" --sample $O/commencement.json --n 50 --seed 901
-run extent lat.extent_check --family "$F" --sample $O/extent.json --n 50 --seed 901
-run amending lat.amending_check --family "$F" --sample $O/amending.json --n 50 --seed 901 --stratum A
-run merge lat.merge_check --family "$F" --stratum J --sample $O/merge.json --n 50 --seed 901
-run evidence_a lat.evidence_check --family "$F" --stratum A --sample $O/evidence_a.json --n 50 --seed 901
-run evidence_d lat.evidence_check --family "$F" --stratum D --sample $O/evidence_d.json --per 10 --seed 901
-run label_r lat.label_check --family "$F" --stratum R --sample $O/label_r.json --n 30 --seed 901
-run label_s lat.label_check --family "$F" --stratum S --sample $O/label_s.json --per 10 --seed 901
+run making lat.making_laws --family "$F" --out $O/making.csv
+run sources lat.sources --family "$F"
+run feed lat.feed_check --family "$F" --all --sample $O/feed.json --n 50 --seed $SEED
+run markup lat.markup_check --family "$F" --sample $O/markup.json --n 50 --seed $SEED
+run commencement lat.commencement_check --family "$F" --sample $O/commencement.json --n 50 --seed $SEED
+run extent lat.extent_check --family "$F" --sample $O/extent.json --n 50 --seed $SEED
+run amending lat.amending_check --family "$F" --strata --gate --sample $O/amending.json --n 50 --seed $SEED --stratum A
+run merge lat.merge_check --family "$F" --strata --gate --stratum J --sample $O/merge.json --n 50 --seed $SEED
+run evidence_a lat.evidence_check --family "$F" --strata --gate --stratum A --sample $O/evidence_a.json --n 50 --seed $SEED
+run evidence_d lat.evidence_check --family "$F" --stratum D --sample $O/evidence_d.json --per 10 --seed $SEED
+run label lat.label_check --family "$F" --strata --gate --stratum SR --sample $O/label.json --per 2 --n 23 --seed $SEED
+run measures lat.measures --family "$F" --sample $O/hand.json --n 50 --seed $SEED
 ```
 
-On OH&S (2026-10-30) a pass takes about 8 min: label about 3 min each, the rest 4–25 s each.
+Every check's gate runs too, so a pass is also the re-run of every step's gate: a rebuild after a step closes can move an earlier step's gate (Maritime Safety, 2026-11-06: Sources, Extent and Amending had passed and failed here). Compare two passes with `cmp` on the samples and `diff` on the `.out` files with log lines (`[info]`, `[warning]`, `[debug]`, `Compiling`) and paths filtered.
+
+On Maritime Safety (2026-11-06) a pass takes about 14 min: the label fold 12½ min, the rest 4–50 s each. On OH&S (2026-10-30, the older script) about 8 min.
+
+
 
 ## Register
 
@@ -86,26 +92,31 @@ Each published figure: its name, what it counts, the command printing it and the
 
 | Step | Name | Counts | Source | Code (test) |
 |---|---|---|---|---|
+| Step 0 | making_verdicts | live laws by verdict: making, not making (changes only), no verdict by why; disagreeing with the stored `is_making` | T `lat.making_laws` | `MakingLaws` (making_laws_test) |
 | S01 | sources_needed / sources_failures | documents a family needs, by category; needed and not held, without reason | T `lat.sources` ("needed, all categories"; "failures") | `Sources.report/3` (sources_test) |
 | S02 | feed_effects_placement / feed_our_faults / feed_tell_tales | feed effects by placement outcome; fault outcomes; finer forms not held | T `lat.feed_check` | `Placement.fault?` (placement_test) |
 | S03 | markup_changes_placement / markup_our_faults / markup_keys_vs_feed | markup changes by outcome; faults; keys in the feed, not in it, legacy | T `lat.markup_check` | `MarkupPlacement` (markup_placement_test) |
 | S03 | legacy_pointer_share | legacy markup changes whose note gives a cited law (and amending provisions) | T `lat.markup_patterns` ("pointers (changes)") | `MarkupPatterns.pointers` |
 | S04 | commencement_rows_outcome / commencement_left_to_orders / commencement_gaps | rows by own-commencement outcome; by_order + by_order_partly; undated changes by class | T `lat.commencement_check` | `OwnCommencement` (own_commencement_test), `NoteDate.why/2` |
 | S04 | order_statements_read | order statements read into rules, of all | T `lat.order_patterns` ("read into rules") | `Commencement.Order` |
-| S05 | extent_territory_groups | text changes by where their territory comes from (law text, follows the enactment, feed/markup, law type not read, no powers, unread statement, competence only, no amending law, other) | T `lat.extent_check` ("grouped") | `Coverage.territory_groups/1` (coverage_test) |
+| S05 | extent_territory_groups | text changes by where their territory comes from (law text, follows the enactment, feed/markup, law type not read, no powers, unread statement, competence only, no amending law, no extent clause (`no_clause`, Maritime Safety 2026-11-06; was other), other) | T `lat.extent_check` ("grouped") | `Coverage.territory_groups/1` (coverage_test) |
 | S06 | lawtext_stated / lawtext_strata_ADL / agreement_with_lgu | changes the law's text states (both / alone); A, D, L; agreement per attribute | T `lat.amending_check --strata` | `CheckSample.stated_by`, `CheckStrata` (check_strata_test) |
-| S06 | lawtext_coverage | text changes: stated_by_law_and_derived, law only; derived only, read with no rule (Schedule or annex / EU article / body), not read, other | T `lat.measures` | `Coverage.law_text_coverage/2` (coverage_test) |
+| S06 | lawtext_coverage | text changes: stated_by_law_and_derived, law only; derived only, read with no rule (Schedule or annex / EU article / body), not read, other. Read = a pointer whose provision, or one containing it, is in the amending law's stored text (`Source.read_pointers/2`; before 2026-11-06 every pointer counted, held or not) | T `lat.measures` | `Coverage.law_text_coverage/2`, `Source.read_pointers/2` (coverage_test, source_test) |
 | S07 | merge_strata_JUC / join_rate_{law_text,markup} / overjoin_spread_keys | J (joined_any_two), U, C; a source's text changes a feed effect states too; keys under more than 3 top provisions | T `lat.merge_check --strata` | `MergeStrata` (merge_strata_test) |
 | S08 | evidence_strata_VDA / evidence_winners | V, D, A; the winning source per attribute | T `lat.evidence_check --strata` | `EvidenceStrata` (evidence_strata_test) |
 | S08 | dating | text changes: undated, dated with no commenced_by, commenced_by named | T `lat.measures` | `Coverage.dating/1` (coverage_test) |
 | S09 | label_strata | S shapes, T classes | T `lat.label_check --strata` | `LabelStrata` (label_strata_test) |
+| S04–S09 | <step>_gate | a step's code gate: groups by cause (and law), by reviewed status (`known:`, `fix:`, `check:`, none); PASS when every group is `known:` | T commencement_check (leftovers), extent_check (withheld), `amending_check --gate`, `merge_check --gate`, `evidence_check --gate`, `label_check --gate` | `Leftovers.gate/1` (Withheld, Disagreement; family_leftovers_test, withheld_test, disagreement_test), `MergeGate.gate/1` (Gate.Evidence, Gate.Label; merge_gate_test, gate/evidence_test, gate/label_test) |
+| S05 | extent_bound_by_law | text changes whose territory is the amending law's extent at the amending provisions: the `bound:law` outcome alone (the law_text group adds `territory:law`) | T `lat.extent_check` ("territory from") | `Extent.Check` (extent/check_test) |
+| S08 | evidence_gaps | changes with an operation where no source claims an attribute: by (attribute, sources held), and totals by attribute with those whose amending law has no commencement rules | T `lat.evidence_check --gate` ("gaps by attribute") | `Gate.Evidence.gaps/2`, `gap_totals/1` (gate/evidence_test) |
+| S09 | label_statuses / label_gaps | rows by current status; periods and table breaks; rows with an undated start or an undated change | T `lat.label_check --strata --gate` | `LabelStrata`, `Gate.Label.gaps/1` (label_strata_test, gate/label_test) |
 | CV-07 | stated_by_split | text changes by `stated_by` (family or golden laws) | T `lat.measures [--golden]` | `Coverage.stated_by/1` (coverage_test) |
 | all | golden_from_inputs / golden_extended | golden provisions passing from inputs | T `lat.vocabulary --golden [--extended]` | |
 | S02–S09 | <step>_pooled (items, groups) / end_to_end | wrong items with the step's own fault and wrong groups since the last fix, with 95% upper bounds; every wrong item | V `lat.verdicts` | `Measures.Bound`, `Measures.Verdicts` (bound_test, verdicts_test) |
 | S11 | build_repeatable | laws whose stored changes differ between two builds from the same inputs (digest: key, target, aliases, claims in order, resolved values) | T `lat.changes_digest`, compared with `cmp` | `ChangeDigest` (change_digest_test) |
 | S11 | build_time | the build's wall time | T `lat.vocabulary --build` ("built N laws in") | |
 | S11 | changes_stale | built laws stale by reason; laws holding LAT with no build | T `lat.stale` ("change register") | `ChangeStaleness`, `Store.Inputs` (change_staleness_test, store_inputs_db_test) |
-| S10 | measures_hand_check | text changes whose measure classes an agent found wrong (rule: none) | V `lat.verdicts` (ignore its 2% PASS line) | — |
+| S10 | measures_hand_check | text changes whose measure classes an agent found wrong (rule: none); the sample's items carry the classes | T `lat.measures --sample` (draw, seed tuple `{s,10,10}`); V `lat.verdicts` (ignore its 2% PASS line) | `Measures.HandSample` (hand_sample_test) |
 
 **Derived statements** (arithmetic on V; state the inputs beside them): S05's "at least 98% of changes" is 1 − the changes bound. S06's overall ≈1.7% is A's bound × |A| / |law-text changes|.
 
@@ -120,3 +131,7 @@ Each published figure: its name, what it counts, the command printing it and the
 ## History
 
 - OH&S (first family, 2026-10-30), session `.claude/sessions/change-vocabulary/2026-10-22-cv-s10-measures.md`.
+- Maritime Safety (2026-11-06), session `.claude/sessions/lat-change-pipeline/2026-11-06-maritime-safety-measures.md`.
+  - The audit found three gates that had passed and now fail (Sources, Extent, Amending), all moved by later rebuilds, plus one figure summed by hand and wrong (Evidence's gaps).
+  - The hand check found three measure faults: the read set counted text not held, an order's art./reg. spelling, and a territory group unnamed.
+  - The first family whose gates `draws.sh` re-runs.

@@ -298,9 +298,22 @@ Before this, OH&S used G, S and T by shape and R pooled to the 95% bound (2026-1
 
 **Outputs.** Printed figures; the register of figures in the `measures-check` skill.
 
-**Check today.** `mix lat.measures --family F` (coverage and dating), `mix lat.verdicts --dir DIR` (pass bounds, end to end, gaps), each step's `--strata`. Replicability: draw every sample twice on one seed and compare (`draws.sh` in the skill). An agent hand-checks a seeded sample of each classifying measure.
+**Check today.** The audit and the gates come first, then the samples:
 
-**Pass rule as last used** (2026-10-30). Every published figure is in the register, printed by code and tested; samples and figures replicate byte for byte; the hand check finds nothing classed wrong.
+1. **Audit:** every figure the family's step sessions publish (closing `metrics:`), against today's store. A figure is the same; or moved, with the later commit that moved it named; or a finding. Before/after history, days, commits and tokens are out of scope.
+2. **Every step's gate, re-run:** `draws.sh FAMILY SEED` (in the skill) runs each step's check with its strata, gate and sample: Making laws, Sources, the five readers, Merge, Evidence, the label fold, and `lat.measures`. A gate that passed when its step closed can fail after a later rebuild. Such a gate is raised and parked with its step, never named here.
+3. **Replicable:** two passes of `draws.sh` on one seed. Samples are byte-identical (`cmp`); printed figures are identical once log lines are filtered out. The first pass runs before any code change.
+4. **Hand check:** one agent pass, 2 batches.
+   - The hand sample is `mix lat.measures --sample FILE --n 50 --seed S`: text changes with their classes (who states it, law-text coverage, dating, merge stratum).
+   - Ten items come from the extent check's sample, one per outcome, for the territory group.
+   - Save the VERDICTS blocks as verdict files when the agents hand back.
+   - A measure fault is fixed by TDD over the family, with no resample. An upstream fault is parked with its step.
+
+**Pass rule as last used** (Maritime Safety, 2026-11-06; OH&S's of 2026-10-30, fitted to one agent pass):
+- every in-scope figure is in the register, printed by code and tested, or marked "hand tally, report only";
+- samples and figures replicate;
+- the hand check finds nothing classed wrong by a measure once its faults are fixed;
+- no regression (`mix test`, golden).
 
 **Skill.** `measures-check`.
 

@@ -25,7 +25,7 @@ The second family through the LAT Change Pipeline, and the first under the proce
 - ✅ Merge: code gate PASS (310 groups named), one agent pass; new paragraphs carry their event (Decisions 1–2); closed 2026-11-06
 - ✅ Evidence: code gate PASS (59 groups named, 37 inherited), one agent pass; no table fix; closed 2026-11-06
 - ✅ Label fold: code gate PASS (7 groups named), one agent pass; 2 fold faults in Label.Made fixed (Decision 1); closed 2026-11-06
-- ⬜ Measures
+- ✅ Measures: every published figure audited, every gate re-run (3 that had passed fail today: parked); 3 measure faults fixed; replicable at seed 902; closed 2026-11-06
 - ⬜ Store and build
 - ⬜ Labels side by side
 - ⬜ Switch-over
@@ -60,7 +60,7 @@ One row per step, filled when the step session closes. Agent tokens are those of
 | Merge | merge | 2026-11-06 | 2026-11-06 | 1 | yes, all 4 (code gate + one agent pass, Decision 1) | 0 (Decision 2 a fix within the plan) | 2 (Commencement reader: amending-law start; Amending-law reader: unnumbered list items) | 129,479 | 2 |
 | Evidence | evidence | 2026-11-06 | 2026-11-06 | 1 | yes, all 4 (code gate + one agent pass, Decision 1) | 1 (date conflicts named here, not inherited from Merge) | 1 (Commencement reader: amending-law own clause unread) | 155,806 | 2 |
 | Label fold | label-fold | 2026-11-06 | 2026-11-06 | 1 | yes, all 4 (code gate + one agent pass, Decision 1) | 0 (the container check re-run on 4 laws, spliced) | 2 (Feed reader: range Part locator, 106 rows; Commencement reader: staged start dropped, 21 changes) | 350,424 | 2 |
-| Measures | | | | | | | | | |
+| Measures | measures | 2026-11-06 | 2026-11-06 | 1 | yes, all 4 | 0 (territory items drawn from the extent sample, same pass) | 6 (Sources: 11 to fetch; Extent reader, Amending-law reader: gates moved; Store and build: gates not re-run, measures in the version; Commencement reader: purpose-limited start, 93 changes; Merge: ids split) | 288,287 | 2 |
 | Store and build | | | | | | | | | |
 | Labels side by side | | | | | | | | | |
 | Switch-over | | | | | | | | | |
