@@ -1,6 +1,6 @@
 ---
 name: Amending Reader Check
-description: The LAT Change Pipeline's amending-law reader acceptance check for one family of laws — the amending provisions' catalogue, the census of disagreements with legislation.gov.uk, golden from inputs, and a Claude agent checking a seeded sample of 50 changes the amending law's text states against that text. Use for each fix round and each new family; only misreads are NEW.
+description: The LAT Change Pipeline's amending-law reader acceptance check for one family of laws — the read pass made current, the amending provisions' catalogue, golden from inputs, the strata, and the code gate (every change the law's text states that legislation.gov.uk contradicts or leaves unstated, grouped by cause and reviewed in disagreements.json). Use for each new family; only misreads are fixed.
 ---
 
 > **LAT Change Pipeline — step: Amending-law reader.** Where it sits, its inputs, outputs and pass rule: `docs/lat-change-pipeline/WORKFLOW.md`. Terms and former codes (CV-…): `docs/lat-change-pipeline/GLOSSARY.md`.
@@ -22,31 +22,36 @@ Prove the amendment reader (`Amendment.Reader`, `Reader.*`; claims via `ChangeVo
 
 ## Steps
 
-Ask Jason before the runs that write or take long; say how long each takes. Restore point before any write (`./scripts/nas/nas-backup.sh --tables amendment_rules,extent_rules,provision_changes,provision_change_claims --tag …`).
+Ask Jason before the runs that write or take long, and say how long each takes. Take a restore point before any write: `./scripts/nas/nas-backup.sh --tables amendment_rules,extent_rules,provision_changes,provision_change_claims,lat_events --tag …`, plus a tar of `backend/data/cache/amendment-index/`.
 
-1. **Catalogue** (read-only, ~3½ min with a VM running): `mix lat.amendment_patterns --family "F" --accept`. Review the diff of `backend/test/fixtures/amendment_patterns/expected.json`: every example reading differently checked in the amending law's text. Watch the rule patterns with a `schedule` place (each should give no rule unless a section or regulation is named too) and level mismatches (`words` quote, `provision` rules).
-2. **Pre-flight** for a fix: `mix lat.amending --read --preview --regression`, then a treatment-blind diff of the laws whose rule counts change (session CV-S06 "Fix batch"); every removal classed.
-3. **Read pass** (writes `amendment_rules`; tens of minutes, one law at a time): `mix lat.amending --read`.
-4. **Rebuild** (writes `provision_changes`, claims): `mix lat.vocabulary --check --family "F"`; then **golden from inputs**, always: `mix lat.vocabulary --golden` (~5 min). `--check` scores golden laws outside the family from their stored changes, which hides an upstream reader change (CV-S06, RTA 1988 s.4(6)).
-5. **Census** (seconds): `mix lat.vocabulary --conflicts --family "F" --all`; law text only (`uncovered :derived`), unjoined, and value conflicts classed: backlog (legislation.gov.uk unapplied or unrecorded), reader misread (fix), join (CV-S07), legislation.gov.uk's (markup coarse, `amended` with no operation).
-6. **Strata and agreement** (seconds): `mix lat.amending_check --family "F" --strata`. It counts the population in three strata:
-   - **A, agreeing:** both sources state the change, joined, no value conflict on operation or level;
-   - **D, disagreeing:** the census items;
-   - **L, law text only.**
+1. **The read pass current** (seconds to count; the read itself about a minute for ~250 laws). List the family's amending laws: notes' and feed's, with their text held. Count those `ReadPass.stale?` marks. A law pointing to one but not read for (given LAT rows since) makes it stale. Then `mix lat.amending --read --preview --amending <laws>` (writes nothing; check the report has only gains), then `mix lat.amending --read --amending <laws>`.
+2. **Strata and gate** (seconds, read-only):
+   ```bash
+   mix lat.amending_check --family "F" --strata
+   mix lat.amending_check --family "F" --gate --all
+   ```
+   Every D and L change is grouped by cause and amending law (`Amendment.Disagreement`). The causes come from the change and its rule:
+   - `quote-new-number` and `quote-dropped-number`, by design (RULES.md);
+   - `operation …` and `level …` conflicts;
+   - `unjoined` (Merge's);
+   - `no operation from legislation.gov.uk: …`;
+   - `law text only: …`.
+3. **Review every group** in the amending law's words, its rules and the CLML. A dump script gives each change with its provision's instruction (`AmendingLaw.Text`) and rules. Check the by-design classes by law too: a misread upstream (a lost Schedule lead-in) shows up as quote-dropped repeals. Name each group in `backend/test/fixtures/amendment_patterns/disagreements.json` as `fix:`, `known:` (by design, legislation.gov.uk's, Merge's, or a one-law wording under the triage size, listed in RULES.md) or `check:`. Write the reasons in a report under `backend/data/reports/amending-reader/`.
+4. **Fix the `fix:` classes, test first** (`test/sertantai_legal/scraper/amendment/reader/`). Pre-flight: `--read --preview --amending <family laws>` and `--read --preview --regression`. Then **diff old against new rules by field** (targets, level, operation), never by count alone. Class every change as gain, loss, level or added. A shared reader change reaches every family, so every loss is checked.
+5. **Catalogue** (~5–10 min): `mix lat.amendment_patterns --laws <every family's laws so far> --accept` (a `--family` run replaces the fixture). Review the diff of `expected.json`: every example reading differently is checked in the amending law's text.
+6. **Read pass and rebuild:** `mix lat.amending --read --amending <laws>`, then `mix lat.vocabulary --build --family "F"`. Then **golden from inputs**, always: `mix lat.vocabulary --golden --workers 1`.
+7. **Re-run the gate.** Name any new group. Check the earlier families' strata.
 
-   It gives the agreement rate on operation, level, target and amending law over every both-sourced change, which is a published quality figure.
-7. **D and L in full:** every item classed (as step 5); L by agent in batches of 50 (`--stratum L`).
-8. **A by sample**, on a seed never used for this family (record it): `mix lat.amending_check --family "F" --stratum A --sample $S/a.json --n 50 --seed N`; repeat into `b.json` and `cmp`. A general-purpose agent with the prompt below checks it.
+**Pass** (Decision 1, Jason 2026-11-06, Maritime Safety: Amending-law reader):
+- the read pass is current;
+- the gate prints PASS;
+- `AmendmentPatternsTest` passes, with each fixed form unit-tested;
+- golden all-pass;
+- no regression in the families already through.
 
-**Pass** (revised by Jason 2026-10-28; the statistical rule decided before the round):
-- D and L: no misread left unfixed or unclassed. A full census is exact.
-- A: pool the samples since the last fix batch, every NEW fixed; the exact one-sided 95% upper bounds (Clopper–Pearson) must be under 2% for wrong changes and under 5% for wrong pairs.
-- Overall, the wrong-change rate is then bounded by 2% × |A| / |P|.
-- Golden from inputs passes, bar the logged known limits.
+No agent pass. A is not sampled, because there both sources agree. Record the strata and the agreement rate.
 
-Record the strata, the agreement rate, the pooled numbers and a quality statement (CV-S05's model).
-
-Only NEW defects go to Jason, explained with the amending law's words and the stored rows.
+The agent prompt below is kept for a new class hunt only (one pass at most, costed).
 
 ## Agent prompt
 
@@ -136,3 +141,18 @@ OH&S (first family, 2026-10-28 →). The session is `.claude/sessions/change-voc
 | 3 | 33 | FAIL, 1 NEW (changes 49/50, pairs 38/39): a quote's whole sub-provision folded into a words change on its parent by the merge (HSWA s.51A(2)(c)); fixed `bd0ff6de`. Next rounds use the revised check (strata A/D/L) |
 | 4 | 34 (A) | Strata A 1,059 / D 81 / L 33. A: 50/50 (pooled 0/176). D+L in full: 7 wrong — NEW-1 a definition's limb with no row read whole (COSHH reg.2(1)), NEW-2 a quote numbered in its text ("; or (c)"), KR ×3. FAIL |
 | 5 | — | Fixed `91211e44`, `51088da8`; D+L changed items re-checked 14/14; A pooled (unchanged items) 0/160 (1.85%), pairs 0/86 (3.42%); golden 26/27 (CV-S05f). PASS |
+
+Maritime Safety (second family, 2026-11-06, `.claude/sessions/lat-change-pipeline/2026-11-06-maritime-safety-amending-law-reader.md`): the code gate replaced the agent rounds (Decision 1).
+- **Baseline:** A 1,273, D 103, L 165; 144 amending laws never read.
+- **The review** of 82 groups found 4 misread classes:
+  - a Schedule lead-in lost;
+  - a quote of a regulation's body;
+  - written lists of places;
+  - sentences read whole.
+- **A fifth after the rebuild:** a Citation's year dropped by the text reader.
+- **Other changes:** 8 one-law wordings named known; three full read passes (Decision 3).
+- **Final:** A 1,348, D 99, L 162; gate PASS (83 groups named); agreement on operation 94.2%, level 99.1%, target 97.7%; no agent tokens.
+- **Lessons:**
+  - diff old against new rules by field after every shared reader change, never by count;
+  - check the by-design classes by law (a lost lead-in shows up as quote-dropped repeals);
+  - run the gate again after the rebuild, because newly read laws bring new groups.

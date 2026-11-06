@@ -175,16 +175,33 @@ No agent rounds. Before this, the rule was statistical (2026-10-28): pooled agen
 
 **Outputs.** `amendment_rules`; law-text claims (operation, level, `by`).
 
-**Check today.**
-1. Catalogue: `mix lat.amendment_patterns --family F --accept`, every changed reading reviewed.
-2. Pre-flight for a fix: `mix lat.amending --read --preview --regression`.
-3. Read pass (writes `amendment_rules`; one law at a time): `mix lat.amending --read`.
-4. Rebuild, then golden from inputs: `mix lat.vocabulary --golden` (never only `--check`, which scores golden laws outside the family from stale stored changes).
-5. Census of disagreements: `mix lat.vocabulary --conflicts --family F --all`.
-6. Strata: `mix lat.amending_check --family F --strata` gives A (agreeing with legislation.gov.uk), D (disagreeing) and L (law text only), and the agreement rates.
-7. D and L checked in full; A by agent samples of 50 on new seeds.
+**Check.**
+1. **The read pass current.** `ReadPass.stale?` for every family amending law with its text held. A law that points to it but was not read for (given LAT rows since) makes it stale. Read with `mix lat.amending --read --amending <laws>`, one law at a time, after a `--preview`. Take a restore point of `amendment_rules`, `extent_rules` and the amendment index first.
+2. **Catalogue:** `mix lat.amendment_patterns --laws <every family's laws so far> --accept`. A `--family` run replaces the fixture, so the catalogue is run over every family's laws together (Decision 2, 2026-11-06). Every changed reading is reviewed.
+3. **Pre-flight for a fix:** `mix lat.amending --read --preview --amending <family laws>` and `--preview --regression`. Diff old against new rules by field (targets, level, operation) and class every change before the read pass.
+4. **Rebuild**, then golden from inputs: `mix lat.vocabulary --golden` (never only `--check`, which scores golden laws outside the family from stale stored changes).
+5. **Strata:** `mix lat.amending_check --family F --strata` gives:
+   - A, agreeing with legislation.gov.uk;
+   - D, disagreeing;
+   - L, law text only;
+   - and the agreement rates.
+6. **The gate:** `mix lat.amending_check --family F --gate [--all]` (seconds, read-only).
+   - **Grouping.** Every D and L change is grouped by cause and amending law (`Amendment.Disagreement`):
+     - `quote-new-number` and `quote-dropped-number`, by design;
+     - `operation …` and `level …` conflicts;
+     - `unjoined`;
+     - `no operation from legislation.gov.uk: …`;
+     - `law text only: …`.
+   - **Review.** Each group is read in the amending law's text and rows. Its status goes in `test/fixtures/amendment_patterns/disagreements.json`: `fix:`, `known:` or `check:`, keyed `"<cause> @ <amending law>"`, else by cause.
 
-**Pass rule as last used** (2026-10-28). D and L: no misread left unfixed or unclassed. A: pooled samples under 2% wrong changes and under 5% wrong (amended law, amending law) pairs at the 95% upper bound. Golden from inputs, bar logged limits.
+**Pass rule** (Decision 1, Jason 2026-11-06, Maritime Safety: Amending-law reader):
+- the read pass is current (no stale family amending law);
+- the gate prints PASS: every D and L group named `known:`;
+- the catalogue test passes over every family's laws, with each fixed form unit-tested;
+- golden all-pass;
+- no regression in the families already through (their strata).
+
+No agent rounds. A is not sampled: there the law's text and legislation.gov.uk agree, so an error needs both wrong together. Before this, D and L were checked in full by agents and A by pooled samples (2026-10-28).
 
 **Skill.** `amending-reader-check`. Background: [AMENDMENT-GUIDE.md](AMENDMENT-GUIDE.md).
 
@@ -341,7 +358,7 @@ Session files: `.claude/sessions/lat-change-pipeline/<date>-<family>-<step-name>
 4. **Feed reader**, then **Markup reader**: catalogues first, then the gates, then a small agent sample for new classes.
 5. **Commencement reader**: both catalogues, the re-read, the check.
 6. **Extent reader**: sweep and catalogue, the extents written, the check.
-7. **Amending-law reader**: catalogue, pre-flight, one read pass, rebuild, golden from inputs, strata.
+7. **Amending-law reader**: the read pass current, catalogue, pre-flight, one read pass, rebuild, golden from inputs, strata, the gate.
 8. **Merge**, then **Evidence**: strata and their checks after a rebuild.
 9. **Label fold**: golden from inputs, then S, T and R.
 10. **Measures**: every figure the family's steps publish, printed by code and replicated.
