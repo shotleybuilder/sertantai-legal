@@ -239,6 +239,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
             not &1.resolved.partial)
       )
 
+    # a partly-in-force row wholly commenced one territory at a time stays
+    # partial until every territory is (Decision 2, Maritime Safety: Label
+    # fold: MSA 1995 s.85(8), WSI 2007/204 then SI 2007/1375)
+    full_in = full_in(current, commenced)
+
     status =
       cond do
         Enum.any?(commenced, &Facts.full?/1) -> :in_force
@@ -247,6 +252,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
         in_part != [] and current.status == :in_force -> :in_force_partial
         true -> current.status
       end
+      |> partial_until_all(full_in, current)
 
     {text_by, text_from} =
       if versions != [],
@@ -295,6 +301,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
             _text_by: text_by,
             _text_from: text_from
         }
+        |> Map.put(:_full_in, full_in)
 
       versions != [] or
           (commenced != [] and (status != current.status or territory != current.territory)) ->
@@ -359,6 +366,27 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Day do
     do: Facts.intersect(extent, t)
 
   defp territory_back(extent, t), do: extent || t
+
+  # fully in force once the territories wholly commenced cover the row's
+  defp partial_until_all(status, nil, _current), do: status
+
+  defp partial_until_all(_status, full_in, current),
+    do: if(Territory.covers?(full_in, current.territory), do: :in_force, else: :in_force_partial)
+
+  # the territories a partly-in-force row is wholly in force in, with this
+  # day's wholly-for-one-territory commencements; nil when none applies
+  defp full_in(%{status: :in_force_partial} = current, commenced) do
+    full = Enum.filter(commenced, &Facts.full?/1)
+
+    if full != [] and Enum.all?(full, &Facts.territory_only/1),
+      do:
+        Territory.union(
+          [Map.get(current, :_full_in) | Enum.map(full, &Facts.territory_only/1)]
+          |> Enum.reject(&is_nil/1)
+        )
+  end
+
+  defp full_in(_current, _commenced), do: nil
 
   # a commencement for one territory: in force there — from nothing while
   # prospective, else widening where it is in force — within its extent

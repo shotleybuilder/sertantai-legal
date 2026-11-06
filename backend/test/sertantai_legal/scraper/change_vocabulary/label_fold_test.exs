@@ -160,6 +160,66 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
     end
   end
 
+  describe "a row partly in force, fully commenced one territory at a time (Decision 2, Maritime Safety: Label fold)" do
+    defp complete_for(t),
+      do: [{:feed, :in_force_for, t}, {:feed, :qualification, "complete + territory"}]
+
+    @msa %{law: "UK_ukpga_1995_21", extent: "E+W+S+NI", start: ~D[1996-01-01]}
+
+    # MSA 1995 s.85(8): inserted by 2006 c.28, partly in force; wholly for W
+    # (WSI 2007/204), then for E, S, NI (SI 2007/1375)
+    test "stays partly in force until every territory is fully in force (MSA 1995 s.85(8))" do
+      changes = [
+        change("s.85(8)", :inserted, ~D[2006-07-19], by: "UK_ukpga_2006_28", partial: true),
+        change("s.85(8)", :commenced, ~D[2007-04-02],
+          key: "k@2007-04",
+          by: "UK_ukpga_2006_28",
+          commenced_by: "UK_wsi_2007_204",
+          claims: complete_for("W")
+        ),
+        change("s.85(8)", :commenced, ~D[2007-07-01],
+          key: "k@2007-07",
+          by: "UK_ukpga_2006_28",
+          commenced_by: "UK_uksi_2007_1375",
+          claims: complete_for("E+S+NI")
+        )
+      ]
+
+      assert [
+               %{
+                 valid_from: ~D[2006-07-19],
+                 valid_to: ~D[2007-07-01],
+                 status: :in_force_partial,
+                 territory: "E+W+S+NI"
+               },
+               %{
+                 valid_from: ~D[2007-07-01],
+                 status: :in_force,
+                 in_force_from: ~D[2007-07-01],
+                 territory: "E+W+S+NI",
+                 commenced_by: ["UK_uksi_2007_1375"]
+               }
+             ] = fold("s.85(8)(c)", changes, @msa)
+    end
+
+    test "on a prospective row, wholly for one territory is in force there (C13)" do
+      changes = [
+        change("s.85(8)", :commenced, ~D[2007-04-02],
+          commenced_by: "UK_wsi_2007_204",
+          claims: complete_for("W")
+        )
+      ]
+
+      assert [%{status: :prospective}, %{status: :in_force, territory: "W"}] =
+               fold(
+                 "s.85(8)",
+                 changes,
+                 %{@msa | start: ~D[2007-01-01]} |> Map.put(:start_dated, true)
+               )
+               |> Enum.filter(&(&1.valid_from >= ~D[2007-01-01]))
+    end
+  end
+
   test "a partial commencement on the start day: partly in force, not prospective (SI 1992/3004 reg.20(2))" do
     changes = [
       change("reg.20(2)", :commenced, ~D[1993-01-01], partial: true),

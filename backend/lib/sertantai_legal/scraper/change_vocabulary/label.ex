@@ -64,7 +64,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
           optional(:made) => Date.t() | nil
         }
 
-  @private [:_text_by, :_text_from]
+  @private [:_text_by, :_text_from, :_full_in]
 
   @doc "The periods of provision `id` from resolved changes."
   @spec fold(String.t(), provision(), [Change.t()]) :: [period()]

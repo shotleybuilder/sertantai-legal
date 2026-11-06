@@ -66,13 +66,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Facts do
   @doc """
   The territory a commencement (or a staged insertion's first stage) is
   for, when that is all its qualification limits ("for E.", an order
-  applying in England only): in force there (C13). nil otherwise — a
-  partial commencement for purposes stays partial.
+  applying in England only; "for W. in so far as not already in force",
+  wholly there: Decision 2, Maritime Safety: Label fold): in force there
+  (C13). nil otherwise — a partial commencement for purposes stays
+  partial.
   """
   @spec territory_only(Change.t()) :: String.t() | nil
   def territory_only(c) do
     with t when is_binary(t) <- Change.value(c, :feed, :in_force_for),
-         q when q in [nil, "territory"] <- Change.value(c, :feed, :qualification) do
+         q when q in [nil, "territory", "complete + territory"] <-
+           Change.value(c, :feed, :qualification) do
       t
     else
       _ -> nil
