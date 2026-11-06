@@ -34,7 +34,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelMadeTest do
       target: "reg.18",
       resolved: %Evidence.Resolved{
         operation: Keyword.get(opts, :op, :commenced),
-        level: :provision,
+        level: Keyword.get(opts, :level, :provision),
         territory: nil,
         date: Keyword.get(opts, :date, @start),
         by: Keyword.get(opts, :by),
@@ -54,6 +54,29 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelMadeTest do
     assert {made.valid_from, made.valid_to, made.status} == {@made, @start, :prospective}
     assert made.in_force_from == nil and made.territory == "NI"
     assert first.valid_from == @start
+  end
+
+  test "the made period's emptied fields have no tier; its status and territory keep theirs (tier-per-field)" do
+    first = %{
+      in_force(@start)
+      | tiers: %{
+          status: :primary,
+          territory: :primary,
+          in_force_from: :primary,
+          changed_by: nil,
+          commenced_by: nil
+        }
+    }
+
+    [made, _] = Made.from([first], provision(), @start, [commenced(@own)])
+
+    assert made.tiers == %{
+             status: :primary,
+             territory: :primary,
+             in_force_from: nil,
+             changed_by: nil,
+             commenced_by: nil
+           }
   end
 
   test "a first period already prospective reaches back to the making" do
@@ -78,6 +101,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelMadeTest do
     assert Made.from(periods, provision(), ~D[1995-01-01], []) == periods
     assert Made.from(periods, provision(made: nil), @start, []) == periods
     assert Made.from(periods, provision(start_dated: false), @start, []) == periods
+  end
+
+  test "an insertion of words on the start day doesn't date the provision (SI 1993/3138 reg.81 by SI 1994/541)" do
+    words = commenced("z", op: :inserted, level: :words, by: "UK_uksi_1994_541")
+
+    assert [%{valid_from: @made, status: :prospective}, %{valid_from: @start}] =
+             Made.from([in_force(@start)], provision(), @start, [commenced(@own), words])
   end
 
   describe "a law commenced by an order, no start held (S4)" do

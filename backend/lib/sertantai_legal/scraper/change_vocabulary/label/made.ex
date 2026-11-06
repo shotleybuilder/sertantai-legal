@@ -6,13 +6,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Made do
 
   Only where nothing else dates the provision (as `LabelProjection` has
   it): the law's start is dated, the provision begins at it (no later
-  insertion), no insertion reaches it on that day, and no commencement but
-  its own law's clause reaches it (uksi 2017/469 art.1(1) and art.11).
+  insertion), no insertion of it reaches it on that day (an insertion of
+  words in it is no evidence it began then: SI 1993/3138 reg.81 by SI
+  1994/541, Maritime Safety: Label fold), and no commencement but its own
+  law's clause reaches it (uksi 2017/469 art.1(1) and art.11).
 
   Pure.
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Change
+
+  @emptied %{in_force_from: nil, changed_by: nil, commenced_by: nil}
 
   @doc """
   `periods` with a prospective period from `provision.made` to the first
@@ -59,17 +63,22 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Made do
   defp prepend([%{status: :prospective} = first | rest], made),
     do: [%{first | valid_from: made} | rest]
 
+  # the fields it empties have no tier (tier-per-field; the start's tiers
+  # were copied: Maritime Safety: Label fold, the agent pass)
   defp prepend([first | _] = periods, made) do
+    tiers = Map.merge(Map.get(first, :tiers, %{}), @emptied)
+
     [
-      %{
-        first
-        | valid_from: made,
-          valid_to: first.valid_from,
-          status: :prospective,
-          in_force_from: nil,
-          changed_by: [],
-          commenced_by: []
-      }
+      first
+      |> Map.merge(%{
+        valid_from: made,
+        valid_to: first.valid_from,
+        status: :prospective,
+        in_force_from: nil,
+        changed_by: [],
+        commenced_by: []
+      })
+      |> Map.put(:tiers, tiers)
       | periods
     ]
   end
@@ -77,9 +86,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Made do
   defp dated_otherwise?(reaching, self, born) do
     Enum.any?(reaching, fn c ->
       case c.resolved.operation do
-        :commenced -> not own_clause?(c, self)
-        op when op in [:inserted, :added] -> Date.compare(c.resolved.date, born) != :gt
-        _ -> false
+        :commenced ->
+          not own_clause?(c, self)
+
+        op when op in [:inserted, :added] ->
+          c.resolved.level != :words and Date.compare(c.resolved.date, born) != :gt
+
+        _ ->
+          false
       end
     end)
   end
