@@ -22,7 +22,7 @@ The second family through the LAT Change Pipeline, and the first under the proce
 - ✅ Commencement reader
 - ✅ Extent reader: code gate PASS; bound by the law's text 736 → 2,923 of 3,154 (Decisions 1–4); closed 2026-11-05
 - ✅ Amending-law reader: code gate PASS (83 groups named); A 1,273 → 1,348; 5 misread classes fixed (Decisions 1–3); closed 2026-11-06
-- ⬜ Merge
+- ✅ Merge: code gate PASS (310 groups named), one agent pass; new paragraphs carry their event (Decisions 1–2); closed 2026-11-06
 - ⬜ Evidence
 - ⬜ Label fold
 - ⬜ Measures
@@ -57,7 +57,7 @@ One row per step, filled when the step session closes. Agent tokens are those of
 | Commencement reader | commencement-reader | 2026-11-05 | 2026-11-05 | 1 | yes, by Decision 2 (agent rounds stopped at 2; 1 test failure the Extent reader's) | 0 | 3 (Feed reader, Extent reader, Sources) | 273,926 | 2 |
 | Extent reader | extent-reader | 2026-11-05 | 2026-11-05 | 1 | yes, all 4 (code gate, Decision 1) | 0 | 3 (Sources, Amending-law reader, OH&S Extent gate) | 0 | 2 |
 | Amending-law reader | amending-law-reader | 2026-11-06 | 2026-11-06 | 1 | yes, all 4 (code gate, Decision 1) | 1 (Decision 3: a third full read pass) | 5 (Amending-law reader: as-if modifications, quote body number, Schedule sub-paragraphs, a law named in an aside; EU targets half) | 0 | 2 |
-| Merge | | | | | | | | | |
+| Merge | merge | 2026-11-06 | 2026-11-06 | 1 | yes, all 4 (code gate + one agent pass, Decision 1) | 0 (Decision 2 a fix within the plan) | 2 (Commencement reader: amending-law start; Amending-law reader: unnumbered list items) | 129,479 | 2 |
 | Evidence | | | | | | | | | |
 | Label fold | | | | | | | | | |
 | Measures | | | | | | | | | |

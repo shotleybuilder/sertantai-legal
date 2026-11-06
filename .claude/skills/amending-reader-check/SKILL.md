@@ -11,6 +11,12 @@ description: The LAT Change Pipeline's amending-law reader acceptance check for 
 > - The agent check below is used only to find NEW classes, on a small sample, and its token cost is recorded in the session. It is not a repeated pass gate.
 > - **One agent pass at most, never sample → fix → resample** (Jason 2026-11-05, Maritime Safety: two rounds, 274k tokens, whack-a-mole). The forms it finds become a code check that finds the rest of their class over the corpus: as the commencement catalogues' leftovers (words of a statement no reading uses, ranked by reach: WORKFLOW.md step 4). Where a step has such a check, run it first and label its groups; the agent only labels what it can't.
 > - Bugs in another step's code are raised with `bug-raise` and parked, never fixed here.
+>
+> **Start here: the parked work.** The plan starts from this step's open bugs:
+> `sqlite3 .claude/sessions/sessions.db "SELECT category, pattern, affected, session_id FROM open_bugs WHERE step='Amending-law reader';"`
+> (rebuild the index first: `/usr/bin/python3 scripts/maintenance/session_index.py --root .`). Two are carried forward by name, to be done in the next session:
+> - **`as-if-modification-read-as-amendment`.** Ruled A (Jason 2026-11-06). "has effect / shall apply … as if" in the instruction's own words is a modification; EMASA 1972 s.3 is the one insertion (RULES.md `modification-is-not-a-change`). Session: `2026-11-06-maritime-safety-amending-law-reader.md`.
+> - **`unnumbered-list-items-collapsed`.** An amending provision's unnumbered list items (an `OrderedList` with `Start` > 1 and no ids) are read at the paragraph, one law-text change per operation for several events. For example, SI 2011/2616 Sch.1 para.2(c)–(i): 7 feed effects lose their law-text source. Number each item from `Start` plus its position and key it on its own. Found by Maritime Safety: Merge's agent pass (`2026-11-06-maritime-safety-merge.md`).
 
 # Amending Reader Check (CV-S06, per family)
 

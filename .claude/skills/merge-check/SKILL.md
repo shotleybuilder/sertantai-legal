@@ -12,7 +12,7 @@ description: The LAT Change Pipeline's merge acceptance check for one family —
 > - **One agent pass at most, never sample → fix → resample** (Jason 2026-11-05, Maritime Safety: two rounds, 274k tokens, whack-a-mole). The forms it finds become a code check that finds the rest of their class over the corpus: as the commencement catalogues' leftovers (words of a statement no reading uses, ranked by reach: WORKFLOW.md step 4). Where a step has such a check, run it first and label its groups; the agent only labels what it can't.
 > - Bugs in another step's code are raised with `bug-raise` and parked, never fixed here.
 
-# Merge Check (CV-S07, per family)
+# Merge Check (per family)
 
 ## Purpose
 
@@ -30,21 +30,42 @@ The readers' own values (operation, level, dates, territory) are their checks' (
 All steps are read-only. Ask Jason before the runs that write or take long.
 
 1. **Strata and join rate** (seconds): `mix lat.merge_check --family "F" --strata`.
-   - **J, joined:** two or more of feed, markup and law text state the change.
-   - **U, unjoined:** the conflict report's `:unjoined`: the law's text alone beside legislation.gov.uk's likely same event.
-   - **C, candidates:** a single-source change beside another source's single-source change, by the same law, of the same family, on the same provision or one above or below it.
+   - **J, joined:** two or more of the feed, the markup and the law's text state the change.
+   - **U, unjoined:** the conflict report's `:unjoined`, the law's text alone beside legislation.gov.uk's likely same event.
+   - **C, candidates:** a single-source change beside another source's single-source change (same law, same family, the same provision or one above or below it).
 
    The join rate (law-text and markup changes that met a feed effect) is a published figure.
-2. **U and C in full:** `mix lat.merge_check --family "F" --stratum U --sample $S/u.json --n 500 --seed N` (and C); agents in batches of about 30.
-3. **J by sample**, on a seed never used for this family (record it): `--stratum J --sample $S/j.json --n 50 --seed N`; repeat into `j2.json` and `cmp`.
-4. **Golden from inputs** after any fix: `mix lat.vocabulary --golden` (~3 min).
+2. **The gate** (seconds; Decision 1, Maritime Safety: Merge, 2026-11-06): `mix lat.merge_check --family "F" --gate [--all]` (`ChangeVocabulary.MergeGate`). Every merge decision is grouped by a cause from code, by amending law:
+   - J by how it joined:
+     - same effect id;
+     - the law's text naming legislation.gov.uk's own amending provision (the feed's, or a legacy note's);
+     - a legacy note naming the feed's;
+     - the weaker partner joins (related or unnamed provision, a legacy id);
+     - a `, dates differ` suffix where the feed's date is none of the law's commencement dates;
+   - the over-join tell-tales:
+     - one source's several records (`several markup records of one effect` and `two law-text records the feed names together` are by design);
+     - an operation conflict (its status inherited from the Amending-law reader's `disagreements.json`);
+     - legislation.gov.uk's unlike operations;
+   - the split groups: U, C, `markup alone`, and `law-text copy apart from its joined event`;
+   - each spread key: legislation.gov.uk's own effect over a range, or joined across provisions.
 
-**Pass** (Jason 2026-10-28, decided before round 1):
-- U and C: no wrong merge left unfixed or unclassed.
-- J: the pooled samples since the last fix (items unchanged since checked) must be under 2% wrong changes and under 5% wrong (law, amending law) pairs, at the 95% Clopper–Pearson upper bound.
-- Golden from inputs passes.
+   Review each group not named in the sources' records, and name it in `backend/test/fixtures/merge/merges.json` (`known:`, `fix:` or `check:`; `"<cause> @ <amending law>"`, else `"<cause>"` for by design). **PASS:** every group is `known:`. A `fix:` group is the Merge's own code, fixed test first by reach. Another step's fault is parked (`bug-raise`), and a one-law form below triage is a known limit.
+3. **One agent pass**, over the by-design groups only:
+   - `mix lat.merge_check --family "F" --stratum J --by-design --sample $S/j.json --n 50 --seed N`, on a seed never used for the family; repeat into `j2.json` and `cmp`;
+   - the prompt below;
+   - its token cost recorded.
 
-Record the strata, the join rate, the pooled numbers and a quality statement. Only NEW defects go to Jason, explained with the sources' own records.
+   Each class it finds becomes a gate group in code. **No resample.**
+4. **No regression:** the families through keep their U, C and spread (`--strata`). Where a fix stales their stored changes, rebuild only the laws holding the class (`--build --laws`).
+5. **Golden from inputs:** `mix lat.vocabulary --golden --workers 1` (~5 min).
+
+**Pass** (Decision 1, picked with Gemini 2026-11-06):
+- the gate gives PASS;
+- the agent pass done once, its classes in the gate;
+- no regression;
+- golden passes.
+
+Record the strata, the join rate and a quality statement. Before this, OH&S passed on agents over U and C in full and pooled J samples to the 95% bound (Jason 2026-10-28; History).
 
 ## Agent prompt
 
@@ -103,6 +124,14 @@ Known classes (label a finding with one; otherwise NEW):
 - KN a note citing a provision that doesn't exist (Factories Act s.171 heading "3(1)(d)"): a visible split, OK.
 - KP legislation.gov.uk puts body markup under a heading effect's id (SI 2008/1597 reg.21): OK.
 - KR-range a feed range or nested markup reaching a row inserted later (SI 2009/1348 19A–19F, OLA 1984 s.1(6AA), HSWA s.11(4AA)): reader bugs, logged.
+- KR2 (Maritime) the law's text stating one change twice (an operative section and the repeals Schedule) joined to the
+  feed's one effect naming both: OK.
+- KRN (Maritime) a renumbering whose markup shows the new number as an Addition: OK.
+- KC (Maritime) the law's commencement date read wrongly (a purpose-limited start as the whole start; an Act as starting
+  at Royal Assent): date only, the Commencement reader's, OK for the merge.
+- KCOPY (Maritime, fixed) new paragraphs a joined change makes below it carry the event's key and dates (Merge.Copies):
+  a copy left with its law-text key below a joined event is WRONG.
+- KLIST (Maritime) an amending provision's unnumbered list items read at the paragraph: the Amending-law reader's, logged.
 For a joined change also check that a markup note's cited provision is related to the feed's affecting provision, and
 whether the same event sits under another key on a sibling provision (outside `beside`).
 
@@ -132,3 +161,12 @@ OH&S (first family, 2026-10-28 →). The session is `.claude/sessions/change-voc
 | 5 | 45 (J ×3) | Fix 6bd64edb; spread tell-tale added. J 149/150 FAIL (order-dependent note pieces); U+C 16/18 (REACH art.14(2)); spread 31/32 (feed range bug, logged) |
 | 6 | 46 (J ×3) | Fix 03516b35. U+C 14/14; J 148/150 FAIL (KJ2; a feed-less event's sibling keys) |
 | 7 | 47 (J ×3) | Fix d641bef3. J 149/150, 0 wrong, 1 doubtful (a markup-reader placement on a later-inserted row: counted OK, Jason) → changes 1.98%, pairs 2.64%. U+C and spread carried over (unchanged). **PASS** |
+
+Maritime Safety (2026-11-06), the code gate (`.claude/sessions/lat-change-pipeline/2026-11-06-maritime-safety-merge.md`):
+
+- **Strata:** J 2,125, U 8, C 4. Join rate: law text 88.9%, markup 98.6%.
+- **The gate:** 310 groups. Five refinements were made in review. No merge fault was found.
+  - Every date disagreement (113) is one event. The date is the Commencement reader's (parked).
+- **One agent pass** (seed 51, 50 by-design changes, 129,479 tokens): 47 OK, 2 wrong, 1 doubtful. No over-join.
+  - New: the new paragraphs a joined change makes below it were left with the law-text key and no date (35 in the family; Decision 2, `Merge.Copies`).
+  - New: unnumbered list items collapsed (the Amending-law reader's, parked).

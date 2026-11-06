@@ -213,9 +213,25 @@ No agent rounds. A is not sampled: there the law's text and legislation.gov.uk a
 
 **Outputs.** Change records in `provision_changes` with their claims in `provision_change_claims`, each with its key and the aliases merged into it.
 
-**Check today.** `mix lat.merge_check --family F --strata` gives J (joined: two or more sources; over-join risk), U (law text alone beside legislation.gov.uk's likely same event; split risk) and C (single-source changes beside another source's; split risk), the join rate, and the spread tell-tale (keys under more than three top provisions). U and C are checked in full by agents; J in samples of 50 on new seeds.
+**Check today.** `mix lat.merge_check --family F --strata` gives J (joined: two or more sources; over-join risk), U (law text alone beside legislation.gov.uk's likely same event; split risk) and C (single-source changes beside another source's; split risk), the join rate, and the spread tell-tale (keys under more than three top provisions).
 
-**Pass rule as last used** (decided before round 1, 2026-10-28). U and C: no wrong merge left unfixed or unclassed. J: pooled under 2% wrong changes and under 5% wrong pairs at the 95% upper bound (at least 149 clean items). Golden from inputs 27/27. Publish the join rate and a quality statement.
+**The gate** (`--gate [--all]`, `ChangeVocabulary.MergeGate`; Decision 1, Maritime Safety: Merge, 2026-11-06). Every merge decision is grouped by a cause from code, by amending law:
+- joined changes by how they joined: same effect id; the law's text naming legislation.gov.uk's own amending provision; a legacy note naming the feed's; or the weaker partner joins;
+- with a `dates differ` suffix where legislation.gov.uk's date and the law's commencement differ;
+- the over-join tell-tales: one source's several records, an operation conflict (inherited from the Amending-law reader's gate) and legislation.gov.uk's unlike operations;
+- U, C and markup-only changes;
+- each spread key.
+
+Each group is reviewed once in the sources' records and named in `test/fixtures/merge/merges.json` (`known:`, `fix:` or `check:`). Causes named alone, never by law, are the by-design ones.
+
+**Pass rule** (Decision 1, picked with Gemini):
+- the gate prints PASS;
+- **one agent pass**, of 50 changes drawn from the by-design groups only (`--stratum J --by-design --sample FILE --n 50 --seed N`, a new seed), to find a class the grouping hides; what it finds becomes a code group, and there is no resample;
+- no regression in the families through (their U, C and spread);
+- golden 27/27;
+- the join rate and a quality statement published.
+
+Before this, OH&S used agents over U and C in full and pooled J samples to the 95% bound (2026-10-28; 7 rounds).
 
 **Skill.** `merge-check`. Design: [CHANGE-IDENTITY-DESIGN.md](CHANGE-IDENTITY-DESIGN.md).
 
