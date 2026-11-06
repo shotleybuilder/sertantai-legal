@@ -44,9 +44,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Version do
       lib/sertantai_legal/scraper/legislation_gov_uk/changes_feed.ex
     ),
     # the readers' checks — the commencement leftovers, its family gate's
-    # gathering, the extent family gate — never what a build reads
-    # (2026-11-05)
+    # gathering, the extent and amending-law family gates — never what a
+    # build reads (2026-11-05, 2026-11-06)
     except: ~w(
+      lib/sertantai_legal/scraper/amendment/disagreement.ex
       lib/sertantai_legal/scraper/commencement/leftovers.ex
       lib/sertantai_legal/scraper/commencement/family_leftovers.ex
       lib/sertantai_legal/scraper/amending_law/extent/withheld.ex

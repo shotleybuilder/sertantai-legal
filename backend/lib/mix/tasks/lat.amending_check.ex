@@ -8,20 +8,28 @@ defmodule Mix.Tasks.Lat.AmendingCheck do
   (agreeing, disagreeing, law text only; `Amendment.CheckStrata`) and the
   agreement with legislation.gov.uk over every both-sourced change;
   `--stratum A|D|L` samples one stratum, `--skip N` the next batch of the
-  same draw. Read-only.
+  same draw. `--gate` is the family gate (Decision 1, Jason 2026-11-06,
+  Maritime Safety: Amending-law reader): every D and L change grouped by
+  cause and amending law (`Amendment.Disagreement`), each with its reviewed
+  status (`test/fixtures/amendment_patterns/disagreements.json`); PASS only
+  when every group is named `known:`. Read-only.
 
       mix lat.amending_check --family "OH&S: Occupational" --strata
+      mix lat.amending_check --family F --gate [--all]
       mix lat.amending_check --family F --sample FILE --n 50 --seed N [--stratum A] [--skip 50]
   """
   use Mix.Task
 
-  alias SertantaiLegal.Scraper.Amendment.{CheckSample, CheckStrata, PatternSource}
+  alias SertantaiLegal.Scraper.Amendment.{CheckSample, CheckStrata, Disagreement, PatternSource}
+  alias SertantaiLegal.Scraper.Amendment.Store, as: Rules
   alias SertantaiLegal.Scraper.ChangeVocabulary.Store
 
   @shortdoc "The amendment reader's precision sample for a family (read-only)"
 
-  @usage "usage: mix lat.amending_check --family F [--strata] " <>
+  @usage "usage: mix lat.amending_check --family F [--strata] [--gate [--all]] " <>
            "[--sample FILE --n N --seed S --stratum A|D|L --skip K]"
+
+  @reviewed "test/fixtures/amendment_patterns/disagreements.json"
 
   @impl Mix.Task
   def run(args) do
@@ -34,7 +42,9 @@ defmodule Mix.Tasks.Lat.AmendingCheck do
           seed: :integer,
           strata: :boolean,
           stratum: :string,
-          skip: :integer
+          skip: :integer,
+          gate: :boolean,
+          all: :boolean
         ]
       )
 
@@ -57,25 +67,28 @@ defmodule Mix.Tasks.Lat.AmendingCheck do
     )
 
     if opts[:strata], do: strata(classified, by_law)
+    if opts[:gate], do: gate(classified, opts[:all])
 
-    if path = opts[:sample] do
-      seed = opts[:seed] || 1
+    if path = opts[:sample], do: sample(path, opts, classified, stratum)
+  end
 
-      items =
-        for({law, c, s} <- classified, stratum in [nil, s], do: {law, c})
-        |> CheckSample.draw(length(classified), seed)
-        |> Enum.drop(opts[:skip] || 0)
-        |> Enum.take(opts[:n] || 50)
-        |> Enum.with_index(1)
-        |> Enum.map(fn {lc, i} -> CheckSample.item(lc, i) end)
+  defp sample(path, opts, classified, stratum) do
+    seed = opts[:seed] || 1
 
-      File.write!(path, Jason.encode!(items, pretty: true))
+    items =
+      for({law, c, s} <- classified, stratum in [nil, s], do: {law, c})
+      |> CheckSample.draw(length(classified), seed)
+      |> Enum.drop(opts[:skip] || 0)
+      |> Enum.take(opts[:n] || 50)
+      |> Enum.with_index(1)
+      |> Enum.map(fn {lc, i} -> CheckSample.item(lc, i) end)
 
-      Mix.shell().info(
-        "sample: #{length(items)} changes (seed #{seed}, stratum #{stratum || "all"}, " <>
-          "skip #{opts[:skip] || 0}) → #{path}"
-      )
-    end
+    File.write!(path, Jason.encode!(items, pretty: true))
+
+    Mix.shell().info(
+      "sample: #{length(items)} changes (seed #{seed}, stratum #{stratum || "all"}, " <>
+        "skip #{opts[:skip] || 0}) → #{path}"
+    )
   end
 
   defp strata(classified, by_law) do
@@ -100,6 +113,50 @@ defmodule Mix.Tasks.Lat.AmendingCheck do
     for {attribute, {a, n}} <- Enum.sort(agreement),
         do: Mix.shell().info("  #{attribute}: #{a}/#{n} (#{pct(a, n)})")
   end
+
+  # the family gate: each D and L change by cause and amending law, reviewed
+  # in disagreements.json (Decision 1, 2026-11-06)
+  defp gate(classified, all?) do
+    shell = Mix.shell()
+    rows = for {law, c, s} <- classified, s in [:D, :L], do: {law, c, s}
+    rules = rows |> Enum.map(&elem(&1, 0)) |> Enum.uniq() |> Map.new(&{&1, Rules.for_law(&1)})
+    items = Disagreement.items(rows, rules, reviewed())
+    gate = Disagreement.gate(items)
+
+    counts = Enum.map_join(gate.counts, ", ", fn {k, n} -> "#{k} #{n}" end)
+    shell.info("\nD and L changes by cause (#{@reviewed}): #{length(items)} groups; #{counts}")
+
+    for {cause, n} <-
+          items
+          |> Enum.group_by(& &1.shape, & &1.reach)
+          |> Enum.map(fn {k, ns} -> {k, Enum.sum(ns)} end)
+          |> Enum.sort_by(&(-elem(&1, 1))),
+        do: shell.info("  #{pad(n)}  #{cause}")
+
+    shown = if all?, do: Enum.sort_by(items, &{-&1.reach, &1.law, &1.shape}), else: gate.failing
+
+    shell.info(
+      "\n#{if all?, do: "every group", else: "not named"} (widest reach first): #{length(shown)}"
+    )
+
+    for i <- shown do
+      shell.info("  #{pad(i.reach)}  #{i.shape} @ #{i.law}  [#{i.status || "no status"}]")
+      for w <- Enum.take(i.words, 4), do: shell.info("           #{w}")
+    end
+
+    shell.info(
+      "\n#{if gate.pass?, do: "PASS", else: "FAIL"} (groups not named: #{length(gate.failing)})"
+    )
+  end
+
+  defp reviewed do
+    case File.read(@reviewed) do
+      {:ok, body} -> Jason.decode!(body)
+      _ -> %{}
+    end
+  end
+
+  defp pad(n), do: String.pad_leading(to_string(n), 5)
 
   defp stratum(nil), do: nil
   defp stratum(s) when s in ~w(A D L), do: String.to_atom(s)

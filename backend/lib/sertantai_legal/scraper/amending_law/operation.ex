@@ -23,6 +23,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Operation do
 
   @heading_or_mark ~r/\bfor\s+the\s+(?:italic\s+)?(?:cross[- ]?)?heading\b(?!\s+and\b)|\b(?:for|omit)\s+the\s+(?:full\s+stop|comma|semi-?colon|colon)\b|\binsert\s+a\s+(?:full\s+stop|comma|semi-?colon|colon)\b(?!\s+and\b)/iu
 
+  # a part of a provision named by its words: "for the second sentence
+  # substitute", "omit the rest of paragraph (4)" (SI 2009/1941 Sch.1 para
+  # 152(2); SI 2017/879 reg.8(b): Maritime Safety, 2026-11-06) — the verb's
+  # own object, never a sentence beside whole provisions ("Omit Articles 17
+  # to 19 … and the final sentence following Article 19": SI 2019/270)
+  @words_part ~r/\b(?:omit|for|after|before)\s+the\s+(?:(?:first|second|third|fourth|fifth|last|final|penultimate)(?:\s+(?:and|to)\s+(?:first|second|third|fourth|fifth|last|final))?\s+(?:two\s+|three\s+)?sentences?|last\s+(?:two|three)\s+sentences|rest\s+of)\b/iu
+
   @provision_with_word ~r/\b(?:sections?|subsections?|regulations?|paragraphs?|sub-?paragraphs?|articles?|heads?|points?)\s+\d*[A-Z]*(?:\([^)\s]+\))+\s+\(?and\s+the\s+(?:words?\s+)?[“"][^”"]{1,12}[”"]\s*(?:\)\s*)?(?:which\s+(?:precedes|follows)|immediately\s+(?:preceding|following|before|after)|preceding|following|before|after|at\s+the\s+end)/iu
 
   # "for “X” insert “Y”": quoted words replaced, a substitution (SI 2023/284
@@ -86,5 +93,5 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Operation do
     do:
       not Regex.match?(@provision_with_word, s) and
         (Regex.match?(~r/[“"][^”"]+[”"]|\b(?:words?|definitions?|entr(?:y|ies))\b/u, s) or
-           Regex.match?(@heading_or_mark, s))
+           Regex.match?(@heading_or_mark, s) or Regex.match?(@words_part, s))
 end

@@ -14,12 +14,28 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Scope do
   # a provision of the amended law named by number (CV-S06: unicode, so a
   # non-breaking space counts; never a title's year, "Regulations 1997"
   # once "(Northern Ireland)" goes with the captions)
-  @provision_number ~r/\b(?:sections?|regulations?|articles?|rules?)\s+(?!(?:18|19|20)\d{2}\b(?!\())\d/iu
+  # — of the law's own kind: an Act's "Article 6" is a Convention's set out
+  # in its Schedule (SI 2016/1061 art.3(a) on MSA 1995 Sch.7, Maritime
+  # Safety 2026-11-06)
+  @provision_number Map.new(
+                      [
+                        section: "sections?",
+                        regulation: "regulations?",
+                        article: "articles?",
+                        rule: "rules?"
+                      ],
+                      fn {kind, word} ->
+                        {kind, ~r/\b#{word}\s+(?!(?:18|19|20)\d{2}\b(?!\())\d/iu}
+                      end
+                    )
   # the amending law's own Schedule: where the change is set out, not where
   # it is made ("The provisions set out in Part I of Schedule 4 shall be
   # substituted for Part VIII of …": EReA 1999 s.7; "Schedule 2 to this Act";
-  # "If … Part 2 of this Schedule is not in force, in subsection (6)—")
-  @own_schedule ~r/\bset\s+out\s+in\s+(?:Part\s+\w+\s+of\s+)?(?:the\s+)?Schedule(?:\s+[\dA-Z]+)?\b|\b(?:the\s+)?Schedule(?:\s+[\dA-Z]+)?\s+to\s+th(?:is|ese)\s+(?:Act|Regulations|Order|Rules|Measure)\b|\b(?:Part\s+\w+\s+of\s+)?this\s+Schedule\b/iu
+  # "If … Part 2 of this Schedule is not in force, in subsection (6)—") —
+  # never "as set out in", the amended law's own Schedule holding the text
+  # ("The text of the Convention as set out in Part 1 of Schedule 7 is
+  # amended as follows—": SI 2016/1061 art.3, Maritime Safety 2026-11-06)
+  @own_schedule ~r/(?<!\bas\s)\bset\s+out\s+in\s+(?:Part\s+\w+\s+of\s+)?(?:the\s+)?Schedule(?:\s+[\dA-Z]+)?\b|\b(?:the\s+)?Schedule(?:\s+[\dA-Z]+)?\s+to\s+th(?:is|ese)\s+(?:Act|Regulations|Order|Rules|Measure)\b|\b(?:Part\s+\w+\s+of\s+)?this\s+Schedule\b/iu
   # a place in a Schedule or Annex: "Schedule 2", "Annex 17", "the Schedule"
   @schedule_place ~r/\b(?:Schedule|Annex)\s+(?-i:[\dIVXLC]+[A-Z]*)\b|\b(?:in|of|for|to|omit)\s+the\s+Schedule\b/iu
 
@@ -45,8 +61,6 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Scope do
           |> String.replace(@own_schedule, ""))
       )
 
-    names_provision? = Enum.any?(own, &(&1 =~ @provision_number))
-
     # (its caption aside: "Schedule 2 (constitution etc. of the Health
     # and Safety Executive) is amended as follows", 2013 c.32 Sch.12 —
     # the caption's "etc." had ended the sentence)
@@ -56,8 +70,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Scope do
            context |> hd() |> Clauses.no_captions() =~
              ~r/^\s*(?:(?:Part|Paragraph)\s+\w+\s+of\s+)?Schedule\s+\d+[A-Z]*\b[^.]*?\bis\s+amended\b/iu)
 
-    if schedule? and not names_provision?,
-      do: [],
+    if schedule?,
+      do: Enum.filter(laws, fn law -> Enum.any?(own, &(&1 =~ @provision_number[law.kind])) end),
       else: laws
   end
 

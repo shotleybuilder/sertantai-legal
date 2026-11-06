@@ -259,14 +259,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
           op = Clauses.operation(c.text),
           op != nil,
           # an insertion reaches only what it quotes or names as inserted
-          targets =
-            for(
-              n <- c.numbers,
-              n not in tops,
-              t <- Targets.named_refs(c.text, op, p, n, Targets.named_for(c, n)),
-              uniq: true,
-              do: t
-            ),
+          targets = Targets.clause_targets(c, op, p, tops),
           do: Targets.rule(law, targets, op, source)
 
     named = Enum.map(named, &in_definition(&1, text))

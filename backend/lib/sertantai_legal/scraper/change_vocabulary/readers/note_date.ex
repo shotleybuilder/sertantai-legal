@@ -188,14 +188,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
   end
 
   # no provision named: the law's own extent (its clause, else its powers,
-  # else its legislature's competence) — never where its amendments follow
-  # the enactments they change, nor where it names provisions' extents
-  # without a default (which one isn't known): CV-S05 N16
+  # else the extent stated on the whole Act (Decision 3, Maritime Safety:
+  # Extent reader), else its legislature's competence) — never where its
+  # amendments follow the enactments they change, nor where it names
+  # provisions' extents without a default (which one isn't known): CV-S05 N16
   defp of(%{lists: lists} = e, [], _change) do
     cond do
       Enum.any?(lists, &match?({:same, _, _}, &1)) -> nil
-      e.default == nil and e.powers == nil and e.competence == nil and lists != [] -> nil
-      true -> e.default || e.powers || e.competence
+      own(e) == nil and lists != [] -> nil
+      true -> own(e)
     end
   end
 
@@ -205,6 +206,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
       _ -> nil
     end
   end
+
+  defp own(e), do: e.default || e.powers || e.stated || e.competence
 
   # (the key holds the provision's CLML id, "schedule-7": as a ref, "sch.7",
   # the way extent lists name it — CV-S05 round 8 NEW-1)

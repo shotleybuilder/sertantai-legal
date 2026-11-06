@@ -17,6 +17,18 @@
     "law": "UK_ukpga_1974_37",
     "words": "In the Health and Safety at Work etc. Act 1974, section 75 and Schedule 7 are repealed."
   },
+  "UK_asp_2005_5/UK_ukpga_1995_21/schedule-3-paragraph-18": {
+    "amending": "UK_asp_2005_5",
+    "id": "schedule-3-paragraph-18",
+    "law": "UK_ukpga_1995_21",
+    "words": "In section 135(1) of the Merchant Shipping Act 1995 (restrictions on transfer of oil at night), for “fire brigade” substitute ."
+  },
+  "UK_asp_2005_5/UK_ukpga_1997_28/schedule-4": {
+    "amending": "UK_asp_2005_5",
+    "id": "schedule-4",
+    "law": "UK_ukpga_1997_28",
+    "words": "(introduced by section 89(2))EnactmentExtent of repealThe Fire Services Act 1947 (c. 41)The whole Act except sections 26 to 27A.The Fire Services Act 1959 (c. 44)The whole Act except sections 8 to 10.The Town and Country Planning (Scotland) Act 1959 (c. 70)In paragraph 2 of the Fourth Schedule, the words “the Fire Services Act, 1947;”.The Local Government (Scotland) Act 1973 (c. 65)Section 56(9)(a"
+  },
   "UK_asp_2008_5/UK_ukpga_1963_41/schedule-2-paragraph-5-a": {
     "amending": "UK_asp_2008_5",
     "id": "schedule-2-paragraph-5-a",
@@ -35,11 +47,29 @@
     "law": "UK_ukpga_1974_37",
     "words": "in subsection (2E), for paragraph (a) substitute—,"
   },
-  "UK_asp_2012_8/UK_ukpga_1974_37/schedule-7-paragraph-49": {
-    "amending": "UK_asp_2012_8",
-    "id": "schedule-7-paragraph-49",
-    "law": "UK_ukpga_1974_37",
-    "words": "In section 23(4)(b) of the Health and Safety at Work etc. Act 1974 (consultation requirements relating to notices), for “relevant authority (as defined in section 6 of that Act) for the area where the premises are (or are to be) situated” substitute ."
+  "UK_asp_2014_3/UK_ukpga_1995_21/schedule-3-paragraph-6": {
+    "amending": "UK_asp_2014_3",
+    "id": "schedule-3-paragraph-6",
+    "law": "UK_ukpga_1995_21",
+    "words": "In section 136A of the Merchant Shipping Act 1995 (discharges etc. authorised under other enactments), after “1999” insert ."
+  },
+  "UK_asp_2015_13/UK_ukpga_1991_52/section-1-2-a": {
+    "amending": "UK_asp_2015_13",
+    "id": "section-1-2-a",
+    "law": "UK_ukpga_1991_52",
+    "words": "section 10 (schemes initiated by the Scottish Ministers),"
+  },
+  "UK_asp_2015_13/UK_ukpga_1991_52/section-1-3-b": {
+    "amending": "UK_asp_2015_13",
+    "id": "section-1-3-b",
+    "law": "UK_ukpga_1991_52",
+    "words": "in each of subsections (3)(a) and (6), the words “or 12(3)” are repealed."
+  },
+  "UK_asp_2015_13/UK_ukpga_1991_52/section-1-4": {
+    "amending": "UK_asp_2015_13",
+    "id": "section-1-4",
+    "law": "UK_ukpga_1991_52",
+    "words": "In section 37 (orders and regulations), in subsection (4), paragraphs (a) and (b) are repealed."
   },
   "UK_asp_2016_2/UK_ukpga_1974_37/schedule-2-paragraph-2-2": {
     "amending": "UK_asp_2016_2",
@@ -70,6 +100,12 @@
     "id": "section-8-1-b",
     "law": "UK_ukpga_2007_19",
     "words": "section 2 and Schedule 1;"
+  },
+  "UK_nisi_1995_1980/UK_ukpga_1970_36/article-150": {
+    "amending": "UK_nisi_1995_1980",
+    "id": "article-150",
+    "law": "UK_ukpga_1970_36",
+    "words": "Para. (2)—AmendmentsPara. (4)—Repeals"
   },
   "UK_nisi_2006_1254/UK_nisi_1993_3159/schedule-3-paragraph-19": {
     "amending": "UK_nisi_2006_1254",
@@ -107,6 +143,12 @@
     "law": "UK_nisr_1997_455",
     "words": ". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."
   },
+  "UK_nisr_1998_375/UK_nisr_1997_455/schedule-paragraph-4": {
+    "amending": "UK_nisr_1998_375",
+    "id": "schedule-paragraph-4",
+    "law": "UK_nisr_1997_455",
+    "words": ". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."
+  },
   "UK_nisr_1998_448/UK_nisr_1997_248/regulation-5": {
     "amending": "UK_nisr_1998_448",
     "id": "regulation-5",
@@ -119,11 +161,17 @@
     "law": "UK_nisr_1995_491",
     "words": "The statutory provisions specified in column 1 of the Schedule shall have effect subject to the modifications specified opposite thereto in column 3 of the Schedule."
   },
-  "UK_nisr_2000_119/UK_nisr_1997_248/regulation-12": {
-    "amending": "UK_nisr_2000_119",
-    "id": "regulation-12",
-    "law": "UK_nisr_1997_248",
-    "words": ". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."
+  "UK_nisr_1999_150/UK_nisr_1995_491/schedule": {
+    "amending": "UK_nisr_1999_150",
+    "id": "schedule",
+    "law": "UK_nisr_1995_491",
+    "words": "Regulation 2 Column 1Column 2Column 3TitleReferenceExtent of modification Factories Act (Northern Ireland) 19651965 c. 20 (N.I.); the relevant amending instruments are S.I. 1978 1039 (N.I. 9), S.R. 1979 No. 246, S.R. 1992 No. 461 and S.R. 1993 No. 366For the references to “the Department of Economic Development” in sections 23(3) and 28(2) and in the definition of “wet bulb temperature” in section"
+  },
+  "UK_nisr_1999_150/UK_nisr_1997_193/schedule": {
+    "amending": "UK_nisr_1999_150",
+    "id": "schedule",
+    "law": "UK_nisr_1997_193",
+    "words": "Regulation 2 Column 1Column 2Column 3TitleReferenceExtent of modification Factories Act (Northern Ireland) 19651965 c. 20 (N.I.); the relevant amending instruments are S.I. 1978 1039 (N.I. 9), S.R. 1979 No. 246, S.R. 1992 No. 461 and S.R. 1993 No. 366For the references to “the Department of Economic Development” in sections 23(3) and 28(2) and in the definition of “wet bulb temperature” in section"
   },
   "UK_nisr_2000_375/UK_nisr_1993_20/regulation-41-2-c": {
     "amending": "UK_nisr_2000_375",
@@ -135,7 +183,7 @@
     "amending": "UK_nisr_2000_375",
     "id": "schedule-10-paragraph-3",
     "law": "UK_nisr_1993_20",
-    "words": "In regulation 3(3) of the Personal Protective Equipment at Work Regulations (Northern Ireland) 1993, for the words “the Ionising Radiations Regulations (Northern Ireland) 1985” there shall be substituted “the Ionising Radiations Regulations (Northern Ireland) 2000 []”."
+    "words": "In regulation 3(3) of the Personal Protective Equipment at Work Regulations (Northern Ireland) 1993, for the words “the Ionising Radiations Regulations (Northern Ireland) 1985” there shall be substituted “the Ionising Radiations Regulations (Northern Ireland) 2000 [S.R. 2000 No. 375]”."
   },
   "UK_nisr_2000_375/UK_nisr_1997_455/schedule-10-paragraph-6": {
     "amending": "UK_nisr_2000_375",
@@ -147,13 +195,13 @@
     "amending": "UK_nisr_2000_375",
     "id": "schedule-10-paragraph-9-b",
     "law": "UK_nisr_1999_90",
-    "words": "in sub-paragraph (d) of paragraph 4 of Schedule 2, for the words “Schedule 3 to the Ionising Radiations Regulations (Northern Ireland) 1985” there shall be substituted “Schedule 1 to the Ionising Radiations Regulations (Northern Ireland) 2000 []”;"
+    "words": "in sub-paragraph (d) of paragraph 4 of Schedule 2, for the words “Schedule 3 to the Ionising Radiations Regulations (Northern Ireland) 1985” there shall be substituted “Schedule 1 to the Ionising Radiations Regulations (Northern Ireland) 2000 [S.R. 2000 No. 375]”;"
   },
   "UK_nisr_2000_388/UK_nisr_1995_491/schedule-3": {
     "amending": "UK_nisr_2000_388",
     "id": "schedule-3",
     "law": "UK_nisr_1995_491",
-    "words": "Regulation 29(2)Column 1Column 2Column 3Statutory ProvisionReferenceExtent of AmendmentNoteThe Regulations marked with an asterisk are referred to in the Preamble to these Regulations.Safety Representatives and Safety Committees Regulations (Northern Ireland) 1979; the relevant amending Regulations are In regulation 4A(1)(b), for the words “regulations 6(1) and 7(1)(b) of the Management of Health "
+    "words": "Regulation 29(2)Column 1Column 2Column 3Statutory ProvisionReferenceExtent of AmendmentNoteThe Regulations marked with an asterisk are referred to in the Preamble to these Regulations.Safety Representatives and Safety Committees Regulations (Northern Ireland) 1979S.R. 1979 No. 437; the relevant amending Regulations are S.R. 1992 No. 459In regulation 4A(1)(b), for the words “regulations 6(1) and 7("
   },
   "UK_nisr_2000_87/UK_nisr_1993_20/regulation-4-2": {
     "amending": "UK_nisr_2000_87",
@@ -166,18 +214,6 @@
     "id": "regulation-4-3",
     "law": "UK_nisr_1993_20",
     "words": "After paragraph (1), there shall be inserted the following paragraph— ."
-  },
-  "UK_nisr_2001_436/UK_nisr_1997_455/schedule-11-paragraph-8": {
-    "amending": "UK_nisr_2001_436",
-    "id": "schedule-11-paragraph-8",
-    "law": "UK_nisr_1997_455",
-    "words": ". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."
-  },
-  "UK_nisr_2002_34/UK_nisr_1997_248/schedule-3-paragraph-1": {
-    "amending": "UK_nisr_2002_34",
-    "id": "schedule-3-paragraph-1",
-    "law": "UK_nisr_1997_248",
-    "words": ". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."
   },
   "UK_nisr_2003_152/UK_nisr_1993_37/regulation-16-2": {
     "amending": "UK_nisr_2003_152",
@@ -209,11 +245,23 @@
     "law": "UK_nisr_2003_34",
     "words": "at the end of Schedule 1 there shall be added the following substances – ."
   },
-  "UK_nisr_2003_423/UK_nisr_1993_20/regulation-5-a": {
+  "UK_nisr_2003_423/UK_nisr_1993_20/regulation-5-b": {
     "amending": "UK_nisr_2003_423",
-    "id": "regulation-5-a",
+    "id": "regulation-5-b",
     "law": "UK_nisr_1993_20",
-    "words": "by substituting for sub-paragraphs (a) and (b) of paragraph (3) of regulation 4 the following sub-paragraphs – ;"
+    "words": "by adding to regulation 4 the following paragraph – ;"
+  },
+  "UK_nisr_2003_423/UK_nisr_1993_20/regulation-5-c-ii": {
+    "amending": "UK_nisr_2003_423",
+    "id": "regulation-5-c-ii",
+    "law": "UK_nisr_1993_20",
+    "words": "by substituting a semi-colon for the full stop at the end of sub-paragraph (c) and after that by adding the word “and”; and"
+  },
+  "UK_nisr_2003_423/UK_nisr_1993_20/regulation-5-d-ii": {
+    "amending": "UK_nisr_2003_423",
+    "id": "regulation-5-d-ii",
+    "law": "UK_nisr_1993_20",
+    "words": "by adding after sub-paragraph (c) the words “and shall ensure that such information is kept available to employees.”;"
   },
   "UK_nisr_2003_423/UK_nisr_1993_37/regulation-6-a": {
     "amending": "UK_nisr_2003_423",
@@ -221,17 +269,23 @@
     "law": "UK_nisr_1993_37",
     "words": "in regulation 2(1), by inserting, before the definition of “new workplace”, the following definition – ;"
   },
+  "UK_nisr_2003_423/UK_nisr_1993_37/regulation-6-c": {
+    "amending": "UK_nisr_2003_423",
+    "id": "regulation-6-c",
+    "law": "UK_nisr_1993_37",
+    "words": "by inserting after regulation 4 the following regulation – ;"
+  },
+  "UK_nisr_2003_423/UK_nisr_1993_37/regulation-6-h": {
+    "amending": "UK_nisr_2003_423",
+    "id": "regulation-6-h",
+    "law": "UK_nisr_1993_37",
+    "words": "in regulation 25, by substituting for paragraph (3) the following paragraph – ;"
+  },
   "UK_nisr_2004_196/UK_nisr_1997_455/regulation-2-2-a": {
     "amending": "UK_nisr_2004_196",
     "id": "regulation-2-2-a",
     "law": "UK_nisr_1997_455",
     "words": "at the end of the definition of “territorial waters”, the word “and” shall be omitted; and"
-  },
-  "UK_nisr_2004_196/UK_nisr_1997_455/regulation-2-2-b": {
-    "amending": "UK_nisr_2004_196",
-    "id": "regulation-2-2-b",
-    "law": "UK_nisr_1997_455",
-    "words": "there shall be inserted in the appropriate places in the alphabetical order of the definitions the following definitions – ."
   },
   "UK_nisr_2004_196/UK_nisr_1997_455/regulation-2-3": {
     "amending": "UK_nisr_2004_196",
@@ -245,17 +299,17 @@
     "law": "UK_nisr_2003_34",
     "words": "the definition of “maximum exposure limit” shall be omitted;"
   },
-  "UK_nisr_2005_165/UK_nisr_2003_34/regulation-3-a-v": {
-    "amending": "UK_nisr_2005_165",
-    "id": "regulation-3-a-v",
-    "law": "UK_nisr_2003_34",
-    "words": "after the definition of “workplace” there shall be added the following definition – ;"
-  },
   "UK_nisr_2005_165/UK_nisr_2003_34/regulation-3-d-ii": {
     "amending": "UK_nisr_2005_165",
     "id": "regulation-3-d-ii",
     "law": "UK_nisr_2003_34",
     "words": "paragraph (8) shall be omitted;"
+  },
+  "UK_nisr_2005_165/UK_nisr_2003_34/regulation-3-e": {
+    "amending": "UK_nisr_2005_165",
+    "id": "regulation-3-e",
+    "law": "UK_nisr_2003_34",
+    "words": "in regulation 9, for paragraph (1) there shall be substituted the following paragraph – ;"
   },
   "UK_nisr_2005_165/UK_nisr_2003_34/regulation-3-g-i": {
     "amending": "UK_nisr_2005_165",
@@ -275,11 +329,11 @@
     "law": "UK_nisr_2003_34",
     "words": "after Schedule 2 there shall be inserted the Schedule set out in the Schedule to these Regulations."
   },
-  "UK_nisr_2005_397/UK_nisr_1999_305/regulation-13-2": {
-    "amending": "UK_nisr_2005_397",
-    "id": "regulation-13-2",
-    "law": "UK_nisr_1999_305",
-    "words": "In the Provision and Use of Work Equipment Regulations (Northern Ireland) 1999, to the end of the list in regulation 12(5) add— ."
+  "UK_nisr_2005_165/UK_nisr_2003_34/schedule": {
+    "amending": "UK_nisr_2005_165",
+    "id": "schedule",
+    "law": "UK_nisr_2003_34",
+    "words": "Regulation 3(h) ."
   },
   "UK_nisr_2005_45/UK_nisr_1997_455/schedule-3-paragraph-4-b": {
     "amending": "UK_nisr_2005_45",
@@ -323,23 +377,17 @@
     "law": "UK_nisr_1997_455",
     "words": "In Schedule 7 (statutory provisions requiring the notification of events which are not required to be notified or reported under the Regulations), omit the entry relating to the Explosives Act 1875."
   },
+  "UK_nisr_2006_425/UK_ukpga_1995_21/schedule-6-paragraph-15": {
+    "amending": "UK_nisr_2006_425",
+    "id": "schedule-6-paragraph-15",
+    "law": "UK_ukpga_1995_21",
+    "words": "In Schedule 13 to the Merchant Shipping Act 1995 (consequential amendments), omit paragraph 5."
+  },
   "UK_nisr_2007_135/UK_nisr_2005_279/regulation-2-2-a-i": {
     "amending": "UK_nisr_2007_135",
     "id": "regulation-2-2-a-i",
     "law": "UK_nisr_2005_279",
     "words": "at the end of sub-paragraph (b), insert “or”; and"
-  },
-  "UK_nisr_2007_135/UK_nisr_2005_279/regulation-2-2-b": {
-    "amending": "UK_nisr_2007_135",
-    "id": "regulation-2-2-b",
-    "law": "UK_nisr_2005_279",
-    "words": "in paragraph (6), omit sub-paragraphs (a) and (b)."
-  },
-  "UK_nisr_2007_135/UK_nisr_2005_279/regulation-2-3": {
-    "amending": "UK_nisr_2007_135",
-    "id": "regulation-2-3",
-    "law": "UK_nisr_2005_279",
-    "words": "After regulation 14 (Duties of persons at work) insert— ."
   },
   "UK_nisr_2007_135/UK_nisr_2005_279/regulation-2-4-a": {
     "amending": "UK_nisr_2007_135",
@@ -359,29 +407,11 @@
     "law": "UK_nisr_1997_455",
     "words": "In regulation 2(1) (interpretation) of the Reporting of Injuries, Diseases and Dangerous Occurrences Regulations (Northern Ireland) 1997, for sub-paragraph (a)(vi) of the definition of “responsible person”, substitute—."
   },
-  "UK_nisr_2007_247/UK_nisr_2005_45/schedule-10-paragraph-6": {
-    "amending": "UK_nisr_2007_247",
-    "id": "schedule-10-paragraph-6",
-    "law": "UK_nisr_2005_45",
-    "words": "In the Diving at Work Regulations (Northern Ireland) 2005 omit paragraph 3 of Schedule 3."
-  },
-  "UK_nisr_2007_31/UK_nisr_1993_20/schedule-6": {
-    "amending": "UK_nisr_2007_31",
-    "id": "schedule-6",
-    "law": "UK_nisr_1993_20",
-    "words": "Regulation 35(2)Instruments amendedReferencesAmendments to have effectThe Personal Protective Equipment at Work Regulations (Northern Ireland) 1993In regulation 3(3)(c) for the words “the Control of Asbestos at Work Regulations (Northern Ireland) 1988” substitute “the Control of Asbestos Regulations (Northern Ireland) 2007The Health and Safety (Enforcing Authority) Regulations (Northern Ireland) 1"
-  },
   "UK_nisr_2007_31/UK_nisr_1999_90/schedule-6": {
     "amending": "UK_nisr_2007_31",
     "id": "schedule-6",
     "law": "UK_nisr_1999_90",
-    "words": "Regulation 35(2)Instruments amendedReferencesAmendments to have effectThe Personal Protective Equipment at Work Regulations (Northern Ireland) 1993In regulation 3(3)(c) for the words “the Control of Asbestos at Work Regulations (Northern Ireland) 1988” substitute “the Control of Asbestos Regulations (Northern Ireland) 2007The Health and Safety (Enforcing Authority) Regulations (Northern Ireland) 1"
-  },
-  "UK_nisr_2009_227/UK_nisr_2006_1/regulation-2-b": {
-    "amending": "UK_nisr_2009_227",
-    "id": "regulation-2-b",
-    "law": "UK_nisr_2006_1",
-    "words": "after sub-paragraph (b) add, “and shall comply with any requirement of the Personal Protective Equipment Regulations 2002 which is applicable to them.”."
+    "words": "Regulation 35(2)Instruments amendedReferencesAmendments to have effectThe Personal Protective Equipment at Work Regulations (Northern Ireland) 19931993 No. 20In regulation 3(3)(c) for the words “the Control of Asbestos at Work Regulations (Northern Ireland) 1988” substitute “the Control of Asbestos Regulations (Northern Ireland) 2007The Health and Safety (Enforcing Authority) Regulations (Northern"
   },
   "UK_nisr_2009_238/UK_nisr_1997_193/regulation-17": {
     "amending": "UK_nisr_2009_238",
@@ -413,12 +443,6 @@
     "law": "UK_nisr_2010_160",
     "words": "in sub-paragraph (1), after “consignor”, insert “and the carrier”; and"
   },
-  "UK_nisr_2011_365/UK_nisr_2010_160/regulation-4-4": {
-    "amending": "UK_nisr_2011_365",
-    "id": "regulation-4-4",
-    "law": "UK_nisr_2010_160",
-    "words": "In paragraph (k), at the end, omit “and”."
-  },
   "UK_nisr_2011_365/UK_nisr_2010_160/regulation-4-5": {
     "amending": "UK_nisr_2011_365",
     "id": "regulation-4-5",
@@ -430,18 +454,6 @@
     "id": "schedule-4",
     "law": "UK_nisr_1993_20",
     "words": "Regulation 33(2)Instruments amendedReferencesAmendments to have effectThe Personal Protective Equipment at Work Regulations (Northern Ireland) 1993S.R. 1993 No. 20In regulation 3(3)(c) for the words “the Control of Asbestos Regulations (Northern Ireland) 2007” substitute The Health and Safety (Enforcing Authority) Regulations (Northern Ireland) 1999S.R. 1999 No. 90In Schedule 2 paragraph 4A for th"
-  },
-  "UK_nisr_2012_179/UK_nisr_2007_31/regulation-33-1": {
-    "amending": "UK_nisr_2012_179",
-    "id": "regulation-33-1",
-    "law": "UK_nisr_2007_31",
-    "words": "The Control of Asbestos Regulations (Northern Ireland) 2007 and The Control of Asbestos (Amendment) Regulations (Northern Ireland) 2010 are revoked."
-  },
-  "UK_nisr_2012_255/UK_nisr_2010_60/regulation-13-1": {
-    "amending": "UK_nisr_2012_255",
-    "id": "regulation-13-1",
-    "law": "UK_nisr_2010_60",
-    "words": "Subject to paragraph (2), the Health and Safety (Fees) Regulations (Northern Ireland) 2010 are revoked."
   },
   "UK_nisr_2013_206/UK_nisr_2009_238/regulation-23": {
     "amending": "UK_nisr_2013_206",
@@ -459,13 +471,19 @@
     "amending": "UK_nisr_2013_206",
     "id": "schedule-3-paragraph-1",
     "law": "UK_nisr_2009_238",
-    "words": "In paragraph (ii) of the Preamble, for “Regulation of the European Parliament and of the Council of 17 June 2008 concerning the export and import of dangerous chemicals, of which Annexes I and V are as amended from time to time”, substitute ."
+    "words": "In paragraph (ii) of the Preamble, for “Regulation (EC) No 689/2008 of the European Parliament and of the Council of 17 June 2008 concerning the export and import of dangerous chemicals, of which Annexes I and V are as amended from time to time”, substitute ."
   },
-  "UK_nisr_2015_223/UK_nisr_1993_37/regulation-4-5": {
+  "UK_nisr_2014_280/UK_nisr_2012_255/schedule": {
+    "amending": "UK_nisr_2014_280",
+    "id": "schedule",
+    "law": "UK_nisr_2012_255",
+    "words": "Regulation 2(3)"
+  },
+  "UK_nisr_2015_223/UK_nisr_1993_37/regulation-4-2": {
     "amending": "UK_nisr_2015_223",
-    "id": "regulation-4-5",
+    "id": "regulation-4-2",
     "law": "UK_nisr_1993_37",
-    "words": "After regulation 3(4), add—"
+    "words": "For regulation 3(1)(a), substitute— ."
   },
   "UK_nisr_2015_223/UK_nisr_2005_279/regulation-5-3": {
     "amending": "UK_nisr_2015_223",
@@ -501,7 +519,7 @@
     "amending": "UK_nisr_2017_229",
     "id": "schedule-9-paragraph-9-2-a",
     "law": "UK_nisr_2010_160",
-    "words": "for “regulation 20 of the Ionising Radiations Regulations (Northern Ireland) 2000 (“”)” substitute “regulation 21 of the Ionising Radiations Regulations (Northern Ireland) 2017 (“”);"
+    "words": "for “regulation 20 of the Ionising Radiations Regulations (Northern Ireland) 2000 (“the 2000 Regulations”)” substitute “regulation 21 of the Ionising Radiations Regulations (Northern Ireland) 2017 (“the 2017 Regulations”);"
   },
   "UK_nisr_2017_229/UK_nisr_2010_160/schedule-9-paragraph-9-2-b": {
     "amending": "UK_nisr_2017_229",
@@ -533,6 +551,24 @@
     "law": "UK_nisr_2017_229",
     "words": "In the provisions specified in paragraph (3), for “another member State” substitute “a member State”."
   },
+  "UK_nisr_2020_4/UK_nisr_1996_511/schedule-paragraph-10": {
+    "amending": "UK_nisr_2020_4",
+    "id": "schedule-paragraph-10",
+    "law": "UK_nisr_1996_511",
+    "words": "After paragraph 3 insert— ."
+  },
+  "UK_nisr_2020_4/UK_uksi_2003_3049/schedule-paragraph-24-2": {
+    "amending": "UK_nisr_2020_4",
+    "id": "schedule-paragraph-24-2",
+    "law": "UK_uksi_2003_3049",
+    "words": "In regulation 4 after paragraph (b) insert— ."
+  },
+  "UK_nisr_2020_4/UK_uksi_2018_58/schedule-paragraph-64-2": {
+    "amending": "UK_nisr_2020_4",
+    "id": "schedule-paragraph-64-2",
+    "law": "UK_uksi_2018_58",
+    "words": "For paragraph (c) substitute— ."
+  },
   "UK_nisr_2024_161/UK_nisr_1993_20/regulation-2-2": {
     "amending": "UK_nisr_2024_161",
     "id": "regulation-2-2",
@@ -549,7 +585,7 @@
     "amending": "UK_ssi_2006_475",
     "id": "schedule-2",
     "law": "UK_ukpga_1974_37",
-    "words": "Article 2(2)EnactmentExtent of repealThe Theatres Act Section 15(4) and (7).In section 15(5), the words “or authorised employee of a relevant authority”.The Gaming Act In Schedule 2, in paragraph 2(2), the definition of “the appropriate authority”, and paragraph 21(1)(f).The Fire Precautions Act The whole Act subject to the savings made in articles 3 and 4.The Housing (Financial Provisions) (Scotl"
+    "words": "Article 2(2)EnactmentExtent of repealThe Theatres Act 1968 (c. 54)Section 15(4) and (7).In section 15(5), the words “or authorised employee of a relevant authority”.The Gaming Act 1968 (c. 65)In Schedule 2, in paragraph 2(2), the definition of “the appropriate authority”, and paragraph 21(1)(f).The Fire Precautions Act 1971 (c. 40)The whole Act subject to the savings made in articles 3 and 4.The H"
   },
   "UK_ssi_2009_319/UK_ukpga_1961_34/schedule-3": {
     "amending": "UK_ssi_2009_319",
@@ -557,11 +593,41 @@
     "law": "UK_ukpga_1961_34",
     "words": "Article 2(c)"
   },
+  "UK_ssi_2010_220/UK_ukpga_1961_34/schedule-paragraph-3-1-a": {
+    "amending": "UK_ssi_2010_220",
+    "id": "schedule-paragraph-3-1-a",
+    "law": "UK_ukpga_1961_34",
+    "words": "at the beginning insert “Nothing in any of sections 1 to 15 of and schedule 1 to the Arbitration (Scotland) Act 2010 or”;"
+  },
+  "UK_ukpga_1963_33/UK_ukpga_1961_34/schedule-18": {
+    "amending": "UK_ukpga_1963_33",
+    "id": "schedule-18",
+    "law": "UK_ukpga_1961_34",
+    "words": ""
+  },
+  "UK_ukpga_1970_36/UK_ukpga_1920_65/schedule-5": {
+    "amending": "UK_ukpga_1970_36",
+    "id": "schedule-5",
+    "law": "UK_ukpga_1920_65",
+    "words": "Section 100. ChapterShort TitleExtent of Repeal 57 & 58 Vict. c. 60.The Merchant Shipping Act 1894.In section 19, the words from \" each \" to \" cause \".In section 85(3), the words \" in the ship's official log book, and also \".Part II.Sections 268 to 270.Section 271(3).Sections 289 to 355.In section 356, paragraph (a).Sections 357 and 358.Section 359(2).In section 360, subsections (1) and (2).Sectio"
+  },
+  "UK_ukpga_1972_28/UK_ukpga_1961_34/schedule-3": {
+    "amending": "UK_ukpga_1972_28",
+    "id": "schedule-3",
+    "law": "UK_ukpga_1961_34",
+    "words": "Section 9.ProvisionExtent of RepealSection 85The whole sectionSection 99Subsection (4).Section 118The whole section.Section 119The words “ (notwithstanding that a certificate under section one hundred and eighteen of this Act is in force in respect of him)”.Section 125Subsection (3)(b) and the preceding “ and”, and subsection (4)(b) and the preceding “ or”.Section 126Subsection (2)(g).Section 127S"
+  },
   "UK_ukpga_1972_28/UK_ukpga_1961_34/section-3": {
     "amending": "UK_ukpga_1972_28",
     "id": "section-3",
     "law": "UK_ukpga_1961_34",
     "words": "The Factories Act 1961 shall have effect as if the following section were inserted after section 10 thereof:—"
+  },
+  "UK_ukpga_1973_36/UK_ukpga_1969_37/schedule-6": {
+    "amending": "UK_ukpga_1973_36",
+    "id": "schedule-6",
+    "law": "UK_ukpga_1969_37",
+    "words": "Section 41."
   },
   "UK_ukpga_1973_65/UK_ukpga_1961_34/schedule-29": {
     "amending": "UK_ukpga_1973_65",
@@ -617,41 +683,83 @@
     "law": "UK_ukpga_1974_37",
     "words": "The enactments specified in the Schedule to this Act are repealed to the extent mentioned in column 3 of that Schedule."
   },
-  "UK_ukpga_1982_30/UK_ukpga_1974_37/schedule-7": {
-    "amending": "UK_ukpga_1982_30",
-    "id": "schedule-7",
-    "law": "UK_ukpga_1974_37",
-    "words": "Section 47."
-  },
   "UK_ukpga_1984_55/UK_ukpga_1974_37/section-133-2": {
     "amending": "UK_ukpga_1984_55",
     "id": "section-133-2",
     "law": "UK_ukpga_1974_37",
     "words": "The enactments specified in Schedule 7 to this Act are repealed to the extent specified in the third column of that Schedule."
   },
-  "UK_ukpga_1985_51/UK_ukpga_1974_37/schedule-17": {
-    "amending": "UK_ukpga_1985_51",
-    "id": "schedule-17",
+  "UK_ukpga_1987_43/UK_ukpga_1974_37/schedule-3-paragraph-1-4": {
+    "amending": "UK_ukpga_1987_43",
+    "id": "schedule-3-paragraph-1-4",
     "law": "UK_ukpga_1974_37",
-    "words": "Section 102.ChapterShort titleExtent of repeal29 & 30 Vict. c. 122.The Metropolitan Commons Act 1866.In section 25, the words from “, and the” to “authority),”.In the first Schedule, the third column.61 & 62 Vict. c. 43.The Metropolitan Commons Act 1898.The whole Act.8 Edw. 7. c. 36.The Small Holdings and Allotments Act 1908.In section 61(1), the definition of “county”.15 & 16 Geo. 5. c. 21.The La"
+    "words": "In subsection (3) (duty of persons who erect or install articles for use at work)—"
   },
-  "UK_ukpga_1989_38/UK_ukpga_1961_34/schedule-7": {
-    "amending": "UK_ukpga_1989_38",
-    "id": "schedule-7",
-    "law": "UK_ukpga_1961_34",
-    "words": "Section 29(4)."
+  "UK_ukpga_1990_43/UK_ukpga_1974_37/schedule-15-paragraph-14-a": {
+    "amending": "UK_ukpga_1990_43",
+    "id": "schedule-15-paragraph-14-a",
+    "law": "UK_ukpga_1974_37",
+    "words": "in subsection (1), at the beginning, of the words “Subject to subsection (5) below,”; and"
+  },
+  "UK_ukpga_1990_43/UK_ukpga_1974_37/schedule-15-paragraph-14-b": {
+    "amending": "UK_ukpga_1990_43",
+    "id": "schedule-15-paragraph-14-b",
+    "law": "UK_ukpga_1974_37",
+    "words": "after subsection (4), of the following subsections—"
+  },
+  "UK_ukpga_1992_53/UK_ukpga_1974_37/schedule-3-paragraph-9": {
+    "amending": "UK_ukpga_1992_53",
+    "id": "schedule-3-paragraph-9",
+    "law": "UK_ukpga_1974_37",
+    "words": "In section 44(4) of the Health and Safety at Work etc. Act 1974—"
   },
   "UK_ukpga_1994_19/UK_ukpga_1974_37/schedule-9-paragraph-9": {
     "amending": "UK_ukpga_1994_19",
     "id": "schedule-9-paragraph-9",
     "law": "UK_ukpga_1974_37",
-    "words": "In section 53(1) of the Health and Safety at Work etc. Act 1974 (general interpretation of Part I), in the definition of “”, in paragraph (a) omit “and Wales” and after that paragraph insert—."
+    "words": "In section 53(1) of the Health and Safety at Work etc. Act 1974 (general interpretation of Part I), in the definition of “local authority”, in paragraph (a) omit “and Wales” and after that paragraph insert—."
   },
-  "UK_ukpga_1995_25/UK_ukpga_1974_37/schedule-24": {
-    "amending": "UK_ukpga_1995_25",
-    "id": "schedule-24",
-    "law": "UK_ukpga_1974_37",
-    "words": "Section 120.ReferenceShort title or titleExtent of repeal orrevocation. . .. . .. . .. . .6 Edw. 7. c. 14.The Alkali, &c, Works Regulation Act 1906.In section 9, the proviso to subsection (5).Section 25.In section 27(1), the definitions of the expressions “chief inspector” and “inspector”.In section 28(b), the words “other than offences under subsection four of section twelve of this Act”; in sub-"
+  "UK_ukpga_1994_28/UK_ukpga_1974_43/section-5-2-a": {
+    "amending": "UK_ukpga_1994_28",
+    "id": "section-5-2-a",
+    "law": "UK_ukpga_1974_43",
+    "words": "the word “1984” shall be omitted from the section 4A(1) of the 1974 Act and the paragraph 4(a) and (d) constituting Schedule 1 to the 1974 Act as respectively inserted and substituted by Part II of Schedule 4 to the 1988 Act; and"
+  },
+  "UK_ukpga_1994_28/UK_ukpga_1974_43/section-7-1": {
+    "amending": "UK_ukpga_1994_28",
+    "id": "section-7-1",
+    "law": "UK_ukpga_1974_43",
+    "words": "In section 8 of the Merchant Shipping Act 1974 (Acquisition by International Fund of rights of recipients of payments made by the Fund in cases of oil pollution damage)—"
+  },
+  "UK_ukpga_1994_28/UK_ukpga_1979_39/section-2-1": {
+    "amending": "UK_ukpga_1994_28",
+    "id": "section-2-1",
+    "law": "UK_ukpga_1979_39",
+    "words": "Section 20 of the Merchant Shipping Act 1979 (power by Order in Council to implement international conventions relating to pollution from ships, etc) shall have effect with the insertion in subsection (1), after paragraph (c), of the following paragraph—."
+  },
+  "UK_ukpga_1994_28/UK_ukpga_1979_39/section-3-2": {
+    "amending": "UK_ukpga_1994_28",
+    "id": "section-3-2",
+    "law": "UK_ukpga_1979_39",
+    "words": "In subsection (3)(a), in the list of enactments there specified, after the entry for the Merchant Shipping Act 1970, there shall be inserted the following entry— ."
+  },
+  "UK_ukpga_1994_28/UK_ukpga_1979_39/section-3-3": {
+    "amending": "UK_ukpga_1994_28",
+    "id": "section-3-3",
+    "law": "UK_ukpga_1979_39",
+    "words": "In subsection (4), after paragraph (a), there shall be inserted the following paragraph—."
+  },
+  "UK_ukpga_1995_22/UK_ukpga_1974_43/section-8": {
+    "amending": "UK_ukpga_1995_22",
+    "id": "section-8",
+    "law": "UK_ukpga_1974_43",
+    "words": "The enactments mentioned in the Schedule to this Act are hereby repealed to the extent specified in the third column of that Schedule."
+  },
+  "UK_ukpga_1995_3/UK_ukpga_1963_41/schedule-paragraph-6": {
+    "amending": "UK_ukpga_1995_3",
+    "id": "schedule-paragraph-6",
+    "law": "UK_ukpga_1963_41",
+    "words": "In section 84(2) of the Offices, Shops and Railway Premises Act 1963 and section 78(2) of the Office and Shop Premises Act (Northern Ireland) 1966 (exclusion of application of Act to visiting forces), after the word “Namibia” there shall be inserted the words ."
   },
   "UK_ukpga_1995_40/UK_ukpga_1974_37/schedule-1-paragraph-3-1": {
     "amending": "UK_ukpga_1995_40",
@@ -665,6 +773,84 @@
     "law": "UK_ukpga_1974_37",
     "words": "Part I of the Health and Safety at Work etc. Act 1974 (“the 1974 Act”) shall have effect as if section 58A of the Pipe-lines Act 1962 and section 22A(1)(c) of and paragraphs 17, 20 and 21 of Schedule 2B to the 1986 Act—"
   },
+  "UK_ukpga_1997_28/UK_ukpga_1995_21/schedule-1-paragraph-4-2": {
+    "amending": "UK_ukpga_1997_28",
+    "id": "schedule-1-paragraph-4-2",
+    "law": "UK_ukpga_1995_21",
+    "words": "In subsection (1)—"
+  },
+  "UK_ukpga_1997_28/UK_ukpga_1995_21/schedule-1-paragraph-5-6": {
+    "amending": "UK_ukpga_1997_28",
+    "id": "schedule-1-paragraph-5-6",
+    "law": "UK_ukpga_1995_21",
+    "words": "In subsection (4)—"
+  },
+  "UK_ukpga_1997_28/UK_ukpga_1995_21/schedule-1-paragraph-6-3-b": {
+    "amending": "UK_ukpga_1997_28",
+    "id": "schedule-1-paragraph-6-3-b",
+    "law": "UK_ukpga_1995_21",
+    "words": "after that sub-paragraph there is inserted—"
+  },
+  "UK_ukpga_1997_28/UK_ukpga_1995_21/schedule-1-paragraph-6-4-a": {
+    "amending": "UK_ukpga_1997_28",
+    "id": "schedule-1-paragraph-6-4-a",
+    "law": "UK_ukpga_1995_21",
+    "words": "in sub-paragraphs (1) and (2), for “any port in the United Kingdom” there is substituted , and"
+  },
+  "UK_ukpga_1997_28/UK_ukpga_1995_21/schedule-2-paragraph-2": {
+    "amending": "UK_ukpga_1997_28",
+    "id": "schedule-2-paragraph-2",
+    "law": "UK_ukpga_1995_21",
+    "words": "After Schedule 11 to the 1995 Act there is inserted—"
+  },
+  "UK_ukpga_1997_28/UK_ukpga_1995_21/schedule-3": {
+    "amending": "UK_ukpga_1997_28",
+    "id": "schedule-3",
+    "law": "UK_ukpga_1995_21",
+    "words": "Section 14(2)."
+  },
+  "UK_ukpga_1997_28/UK_ukpga_1995_21/schedule-6-paragraph-18-4": {
+    "amending": "UK_ukpga_1997_28",
+    "id": "schedule-6-paragraph-18-4",
+    "law": "UK_ukpga_1995_21",
+    "words": "In subsection (3) (which provides that all Orders in Council apart from those specified are to be subject to negative resolution procedure)—"
+  },
+  "UK_ukpga_1997_28/UK_ukpga_1995_21/schedule-6-paragraph-4-1": {
+    "amending": "UK_ukpga_1997_28",
+    "id": "schedule-6-paragraph-4-1",
+    "law": "UK_ukpga_1995_21",
+    "words": "With respect to applications made after the commencement of this paragraph, section 158 of the 1995 Act (limitation actions), including that section as set out in Schedule 4 to that Act, is amended as follows."
+  },
+  "UK_ukpga_1997_28/UK_ukpga_1995_21/schedule-6-paragraph-4-2": {
+    "amending": "UK_ukpga_1997_28",
+    "id": "schedule-6-paragraph-4-2",
+    "law": "UK_ukpga_1995_21",
+    "words": "In subsection (2)—"
+  },
+  "UK_ukpga_1997_28/UK_ukpga_1995_21/schedule-6-paragraph-9": {
+    "amending": "UK_ukpga_1997_28",
+    "id": "schedule-6-paragraph-9",
+    "law": "UK_ukpga_1995_21",
+    "words": "Section 202 of and Schedule 9 to the 1995 Act (transfer of local lighthouses from general lighthouse authorities to harbour authorities) (which are spent) are omitted."
+  },
+  "UK_ukpga_1997_28/UK_ukpga_1995_21/section-14-2": {
+    "amending": "UK_ukpga_1997_28",
+    "id": "section-14-2",
+    "law": "UK_ukpga_1995_21",
+    "words": "After Schedule 5 to the 1995 Act there is inserted, as Schedule 5A to that Act, the provision set out in Schedule 3."
+  },
+  "UK_ukpga_1997_28/UK_ukpga_1995_21/section-8-2": {
+    "amending": "UK_ukpga_1997_28",
+    "id": "section-8-2",
+    "law": "UK_ukpga_1995_21",
+    "words": "In subsection (1), for paragraphs (b) and (c) and the words following paragraph (c) there is substituted—"
+  },
+  "UK_ukpga_1997_28/UK_ukpga_1995_21/section-8-4-a": {
+    "amending": "UK_ukpga_1997_28",
+    "id": "section-8-4-a",
+    "law": "UK_ukpga_1995_21",
+    "words": "the words from “and regulations” to are omitted; and"
+  },
   "UK_ukpga_1997_42/UK_ukpga_1974_37/section-2": {
     "amending": "UK_ukpga_1997_42",
     "id": "section-2",
@@ -677,29 +863,23 @@
     "law": "UK_ukpga_1974_37",
     "words": "for the words “industrial tribunal” substitute ,"
   },
+  "UK_ukpga_1999_22/UK_ukpga_1995_21/schedule-13-paragraph-174": {
+    "amending": "UK_ukpga_1999_22",
+    "id": "schedule-13-paragraph-174",
+    "law": "UK_ukpga_1995_21",
+    "words": ""
+  },
   "UK_ukpga_2005_11/UK_ukpga_1974_37/schedule-4-paragraph-18-4": {
     "amending": "UK_ukpga_2005_11",
     "id": "schedule-4-paragraph-18-4",
     "law": "UK_ukpga_1974_37",
     "words": "The heading to that section becomes ."
   },
-  "UK_ukpga_2005_14/UK_ukpga_1974_37/schedule-13": {
-    "amending": "UK_ukpga_2005_14",
-    "id": "schedule-13",
-    "law": "UK_ukpga_1974_37",
-    "words": "Section 59"
-  },
   "UK_ukpga_2005_14/UK_ukpga_1974_37/schedule-3-paragraph-3-1-b": {
     "amending": "UK_ukpga_2005_14",
     "id": "schedule-3-paragraph-3-1-b",
     "law": "UK_ukpga_1974_37",
     "words": "after subsection (2) insert the subsection set out in sub-paragraph (2)."
-  },
-  "UK_ukpga_2008_20/UK_nisi_1998_1069/schedule-3-paragraph-5": {
-    "amending": "UK_ukpga_2008_20",
-    "id": "schedule-3-paragraph-5",
-    "law": "UK_nisi_1998_1069",
-    "words": "In Article 4 (offences), in paragraph (4)(f), for “, (2), (2A), (4) and (5)” there is substituted ."
   },
   "UK_ukpga_2008_20/UK_ukpga_1974_37/schedule-1": {
     "amending": "UK_ukpga_2008_20",
@@ -712,6 +892,12 @@
     "id": "section-1-2",
     "law": "UK_ukpga_1974_37",
     "words": "After Schedule 3 to that Act there is inserted the Schedule 3A set out in Schedule 1 to this Act."
+  },
+  "UK_ukpga_2009_25/UK_ukpga_1995_21/schedule-21-paragraph-35-3": {
+    "amending": "UK_ukpga_2009_25",
+    "id": "schedule-21-paragraph-35-3",
+    "law": "UK_ukpga_1995_21",
+    "words": "At the end of that section (which becomes subsection (1)) insert—"
   },
   "UK_ukpga_2013_32/UK_ukpga_1961_34/schedule-12-paragraph-53": {
     "amending": "UK_ukpga_2013_32",
@@ -731,11 +917,11 @@
     "law": "UK_ukpga_1974_37",
     "words": "In paragraph 2(2), at the beginning insert ."
   },
-  "UK_ukpga_2013_32/UK_ukpga_1974_37/schedule-12-paragraph-15-4": {
-    "amending": "UK_ukpga_2013_32",
-    "id": "schedule-12-paragraph-15-4",
-    "law": "UK_ukpga_1974_37",
-    "words": "After paragraph 2(3) insert—."
+  "UK_ukpga_2016_11/UK_ukpga_1995_21/section-56-2": {
+    "amending": "UK_ukpga_2016_11",
+    "id": "section-56-2",
+    "law": "UK_ukpga_1995_21",
+    "words": "In section 292 of the Merchant Shipping Act 1995 (general functions of the Secretary of State) after subsection (2) insert—"
   },
   "UK_ukpga_2020_17/UK_ukpga_1974_37/schedule-24-paragraph-443-1": {
     "amending": "UK_ukpga_2020_17",
@@ -760,6 +946,18 @@
     "id": "schedule-1",
     "law": "UK_eur_2008_1272",
     "words": "Section 1"
+  },
+  "UK_ukpga_2024_9/UK_ukpga_1974_37/schedule-paragraph-1": {
+    "amending": "UK_ukpga_2024_9",
+    "id": "schedule-paragraph-1",
+    "law": "UK_ukpga_1974_37",
+    "words": "In section 20 of the Health and Safety at Work etc Act 1974 (powers of inspectors), omit subsections (9) and (10)."
+  },
+  "UK_ukpga_2025_36/UK_uksi_2003_3049/schedule-12-paragraph-10-a": {
+    "amending": "UK_ukpga_2025_36",
+    "id": "schedule-12-paragraph-10-a",
+    "law": "UK_uksi_2003_3049",
+    "words": "in sub-paragraph (a), for “three” substitute ;"
   },
   "UK_uksi_1974_1941/UK_ukpga_1961_34/schedule-1": {
     "amending": "UK_uksi_1974_1941",
@@ -791,12 +989,6 @@
     "law": "UK_ukpga_1961_34",
     "words": "In sections 80(3), 82(2), 98(2), 129(6), 133(5), 138(4) and 158, after the word there shall be inserted the words ."
   },
-  "UK_uksi_1974_1941/UK_ukpga_1972_28/regulation-5-1": {
-    "amending": "UK_uksi_1974_1941",
-    "id": "regulation-5-1",
-    "law": "UK_ukpga_1972_28",
-    "words": "In the Employment Medical Advisory Service Act 1972, (“the 1972 Act”) sections 7, 8(2) and the entry in Schedule 2 relating to section 124(2) of the 1961 Act are hereby repealed."
-  },
   "UK_uksi_1974_1943/UK_ukpga_1963_41/schedule-1": {
     "amending": "UK_uksi_1974_1943",
     "id": "schedule-1",
@@ -809,29 +1001,83 @@
     "law": "UK_ukpga_1963_41",
     "words": "In section 4(4), for the words form the beginning of the subsection to there shall be substituted the words ."
   },
-  "UK_uksi_1981_917/UK_ukpga_1961_34/schedule-1": {
-    "amending": "UK_uksi_1981_917",
-    "id": "schedule-1",
+  "UK_uksi_1975_1011/UK_ukpga_1963_41/schedule": {
+    "amending": "UK_uksi_1975_1011",
+    "id": "schedule",
+    "law": "UK_ukpga_1963_41",
+    "words": "Regulation 2 ProvisionExtent of repeal Section 27.Subsection (1) and (2).Section 42.In subsection (5), the words .Section 47.The whole section.Section 51.The whole section.Section 60.Subsection (1), except as respects fire authorities.Section 79.The whole section."
+  },
+  "UK_uksi_1976_2004/UK_ukpga_1961_34/schedule": {
+    "amending": "UK_uksi_1976_2004",
+    "id": "schedule",
     "law": "UK_ukpga_1961_34",
-    "words": "Regulation 10(1) (1)(2)(3)Short titleChapterExtent of repeal The Mines and Quarries Act 1954.1954 c. 70; relevant amending instrument is S.I. 1974/2013.In section 115, the words and in paragraph (a) the words .The Agriculture (Safety, Health and Welfare Provisions) Act 1956.1956 c. 49.Section 6(1) and (4).The Factories Act 1961.1961 c. 34.Section 61.The Offices, Shops and Railway Premises Act 1963"
+    "words": "Regulation 2 ProvisionExtent of repeal Sections 40 to 52.The whole section in each case.Section 120.The whole section.Section 140.Subsection (2).Section 146.The whole section, so far as still in operation.Section 147.The whole section, so far as aforesaid.Section 148.The whole section.Section 156.The whole section except in relation to offences committed before 1st January 1977 and offences under "
   },
-  "UK_uksi_1988_1657/UK_ukpga_1961_34/regulation-19-1": {
-    "amending": "UK_uksi_1988_1657",
-    "id": "regulation-19-1",
-    "law": "UK_ukpga_1961_34",
-    "words": "The provisions of— are repealed to the extent set out in the entry opposite thereto in the corresponding entry in column 2 of the respective Part."
-  },
-  "UK_uksi_1995_2036/UK_uksi_1992_3004/schedule-3": {
-    "amending": "UK_uksi_1995_2036",
-    "id": "schedule-3",
-    "law": "UK_uksi_1992_3004",
-    "words": "Regulation 11 Column 1Column 2ProvisionExtent of modification Regulation 2 In paragraph (1) insert the following words as a sub-paragraph before the definition of “new workplace”— In paragraph (1) insert the following words as a sub-paragraph before the definition of “traffic route”— Regulation 3 Replace sub-paragraph (c) of paragraph (1) with the words . Regulation 3Revoke sub-paragraph (d) of pa"
-  },
-  "UK_uksi_1995_3162/UK_ukpga_1961_34/article-2": {
-    "amending": "UK_uksi_1995_3162",
+  "UK_uksi_1983_1106/UK_ukpga_1974_43/article-2": {
+    "amending": "UK_uksi_1983_1106",
     "id": "article-2",
+    "law": "UK_ukpga_1974_43",
+    "words": "The provisions of the Prevention of Oil Pollution Act 1971 (“the Act of 1971”) the Merchant Shipping Act 1974 and the instruments set out in the Schedule hereto are hereby repealed and revoked subject to the limitations (if any) specified in that Schedule."
+  },
+  "UK_uksi_1983_978/UK_ukpga_1961_34/regulation-3": {
+    "amending": "UK_uksi_1983_978",
+    "id": "regulation-3",
     "law": "UK_ukpga_1961_34",
-    "words": "In each enactment specified in column (2) in relation to which there is an entry in column (5), for the sum specified in column (5) there is substituted the sum specified in relation to it in column (4); and the fee payable in England and Wales under each of the enactments specified in column (2) in respect of a matter or case specified in column (3) is that specified in relation to that matter or"
+    "words": ""
+  },
+  "UK_uksi_1988_1655/UK_ukpga_1961_34/regulation-23": {
+    "amending": "UK_uksi_1988_1655",
+    "id": "regulation-23",
+    "law": "UK_ukpga_1961_34",
+    "words": "Section 125 of the Factories Act 1961 shall be modified as follows—"
+  },
+  "UK_uksi_1994_541/UK_uksi_1993_3138/regulation-16": {
+    "amending": "UK_uksi_1994_541",
+    "id": "regulation-16",
+    "law": "UK_uksi_1993_3138",
+    "words": "In Schedule 1, paragraph 1, for “European numerals” there shall be substituted “Arabic numerals”."
+  },
+  "UK_uksi_1994_541/UK_uksi_1993_3138/regulation-3-a": {
+    "amending": "UK_uksi_1994_541",
+    "id": "regulation-3-a",
+    "law": "UK_uksi_1993_3138",
+    "words": "for “of a British ship” there shall be substituted “of a ship registered on Part I of the Register”; and"
+  },
+  "UK_uksi_1994_541/UK_uksi_1993_3138/regulation-5": {
+    "amending": "UK_uksi_1994_541",
+    "id": "regulation-5",
+    "law": "UK_uksi_1993_3138",
+    "words": "In regulation 22(1) at the beginning there shall be inserted “Subject to regulation 25”."
+  },
+  "UK_uksi_1994_541/UK_uksi_1993_3138/regulation-9": {
+    "amending": "UK_uksi_1994_541",
+    "id": "regulation-9",
+    "law": "UK_uksi_1993_3138",
+    "words": "For regulation 60, and the heading, there shall be substituted:"
+  },
+  "UK_uksi_1996_1592/UK_ukpga_1961_34/schedule-9-paragraph-2-b-i": {
+    "amending": "UK_uksi_1996_1592",
+    "id": "schedule-9-paragraph-2-b-i",
+    "law": "UK_ukpga_1961_34",
+    "words": "the definition of “building operation” shall be deleted and the following substituted— ;"
+  },
+  "UK_uksi_1997_1911/UK_uksi_1997_346/regulation-2-a": {
+    "amending": "UK_uksi_1997_1911",
+    "id": "regulation-2-a",
+    "law": "UK_uksi_1997_346",
+    "words": "in regulation 2(1), after the definition of “IGC Code” the following definition shall be inserted:— ;"
+  },
+  "UK_uksi_1997_1911/UK_uksi_1997_346/regulation-2-b": {
+    "amending": "UK_uksi_1997_1911",
+    "id": "regulation-2-b",
+    "law": "UK_uksi_1997_346",
+    "words": "at the end of regulation 3(b), there shall be added “and which are less than 80 GT or under 24 metres in length”; and"
+  },
+  "UK_uksi_1997_2776/UK_uksi_1997_1713/schedule-2-paragraph-7-a": {
+    "amending": "UK_uksi_1997_2776",
+    "id": "schedule-2-paragraph-7-a",
+    "law": "UK_uksi_1997_1713",
+    "words": "in regulation 1(2), the definition of “diving operation” shall be deleted and replaced with the following definition— ; and"
   },
   "UK_uksi_1997_2776/UK_uksi_1997_1713/schedule-2-paragraph-7-b": {
     "amending": "UK_uksi_1997_2776",
@@ -839,29 +1085,125 @@
     "law": "UK_uksi_1997_1713",
     "words": "in regulation 2, there shall be substituted for paragraph (c) the following paragraph— ."
   },
+  "UK_uksi_1998_1691/UK_ukpga_1995_21/regulation-2-2": {
+    "amending": "UK_uksi_1998_1691",
+    "id": "regulation-2-2",
+    "law": "UK_ukpga_1995_21",
+    "words": "In subsection (1)—"
+  },
+  "UK_uksi_1998_1915/UK_uksi_1993_3138/regulation-3-a": {
+    "amending": "UK_uksi_1998_1915",
+    "id": "regulation-3-a",
+    "law": "UK_uksi_1993_3138",
+    "words": "the following definitions shall be inserted in the appropriate alphabetical positions— ; ;"
+  },
   "UK_uksi_1999_2024/UK_ukpga_1961_34/schedule-3": {
     "amending": "UK_uksi_1999_2024",
     "id": "schedule-3",
     "law": "UK_ukpga_1961_34",
     "words": "Regulation 47(3) Column 1Column 2ProvisionExtent of modification Section 174 Subsection (1) shall be omitted and replaced with the following—"
   },
-  "UK_uksi_2002_2174/UK_uksi_1981_917/regulation-2": {
+  "UK_uksi_1999_3281/UK_uksi_1987_408/regulation-2-3": {
+    "amending": "UK_uksi_1999_3281",
+    "id": "regulation-2-3",
+    "law": "UK_uksi_1987_408",
+    "words": "In regulation 20(1):"
+  },
+  "UK_uksi_1999_643/UK_uksi_1997_1509/regulation-10-a": {
+    "amending": "UK_uksi_1999_643",
+    "id": "regulation-10-a",
+    "law": "UK_uksi_1997_1509",
+    "words": "the existing paragraph (1) shall be renumbered (1)(a); and"
+  },
+  "UK_uksi_1999_860/UK_uksi_1977_500/schedule": {
+    "amending": "UK_uksi_1999_860",
+    "id": "schedule",
+    "law": "UK_uksi_1977_500",
+    "words": "Regulation 3(5)"
+  },
+  "UK_uksi_1999_992/UK_uksi_1998_1011/regulation-29-c": {
+    "amending": "UK_uksi_1999_992",
+    "id": "regulation-29-c",
+    "law": "UK_uksi_1998_1011",
+    "words": "after the definition of “equivalent material”, the following definition shall be inserted: ;"
+  },
+  "UK_uksi_1999_992/UK_uksi_1998_1011/regulation-29-f": {
+    "amending": "UK_uksi_1999_992",
+    "id": "regulation-29-f",
+    "law": "UK_uksi_1998_1011",
+    "words": "for the definition of “non-combustible material” there shall be substituted: ;"
+  },
+  "UK_uksi_1999_992/UK_uksi_1998_1011/regulation-31-a": {
+    "amending": "UK_uksi_1999_992",
+    "id": "regulation-31-a",
+    "law": "UK_uksi_1998_1011",
+    "words": "the following entries shall be inserted before the entry “Class II(A)”; Class IPassenger ships engaged on voyages any of which are long international voyages;Class IIPassenger ships engaged only on short international voyages;"
+  },
+  "UK_uksi_1999_992/UK_uksi_1998_1011/regulation-33": {
+    "amending": "UK_uksi_1999_992",
+    "id": "regulation-33",
+    "law": "UK_uksi_1998_1011",
+    "words": "For regulation 43 there shall be substituted: ."
+  },
+  "UK_uksi_2000_128/UK_ukpga_1961_34/regulation-18": {
+    "amending": "UK_uksi_2000_128",
+    "id": "regulation-18",
+    "law": "UK_ukpga_1961_34",
+    "words": ""
+  },
+  "UK_uksi_2000_1335/UK_uksi_1998_2241/regulation-15": {
+    "amending": "UK_uksi_2000_1335",
+    "id": "regulation-15",
+    "law": "UK_uksi_1998_2241",
+    "words": "In regulation 9(6)—"
+  },
+  "UK_uksi_2000_1335/UK_uksi_1998_2241/regulation-22": {
+    "amending": "UK_uksi_2000_1335",
+    "id": "regulation-22",
+    "law": "UK_uksi_1998_2241",
+    "words": "In regulation 14(1)—"
+  },
+  "UK_uksi_2000_1335/UK_uksi_1998_2241/regulation-25": {
+    "amending": "UK_uksi_2000_1335",
+    "id": "regulation-25",
+    "law": "UK_uksi_1998_2241",
+    "words": "In regulation 19(1)—"
+  },
+  "UK_uksi_2000_1335/UK_uksi_1998_2241/regulation-3": {
+    "amending": "UK_uksi_2000_1335",
+    "id": "regulation-3",
+    "law": "UK_uksi_1998_2241",
+    "words": "In regulation 2(1)—"
+  },
+  "UK_uksi_2000_1335/UK_uksi_1998_2241/regulation-3-h": {
+    "amending": "UK_uksi_2000_1335",
+    "id": "regulation-3-h",
+    "law": "UK_uksi_1998_2241",
+    "words": "in the definition of “Convention country”, for sub-paragraphs (a) and (b) there shall be substituted– ;"
+  },
+  "UK_uksi_2002_2125/UK_uksi_1998_2411/schedule-2-paragraph-4-a": {
+    "amending": "UK_uksi_2002_2125",
+    "id": "schedule-2-paragraph-4-a",
+    "law": "UK_uksi_1998_2411",
+    "words": "for the definition of “young person” in regulation 2(2) there shall be substituted—;"
+  },
+  "UK_uksi_2002_2174/UK_uksi_1992_3004/regulation-6": {
     "amending": "UK_uksi_2002_2174",
+    "id": "regulation-6",
+    "law": "UK_uksi_1992_3004",
+    "words": "The Workplace (Health, Safety and Welfare) Regulations 1992 shall be amended— “disabled person” has the meaning given by section 1 of the Disability Discrimination Act 1995; in the definition of “workplace” in regulation 2(1), by deleting the words “but shall not” to the end of the definition; by inserting after regulation 4 the following regulation— ; in regulation 5(3)— by deleting the word “and"
+  },
+  "UK_uksi_2004_1107/UK_uksi_2000_2687/regulation-2": {
+    "amending": "UK_uksi_2004_1107",
     "id": "regulation-2",
-    "law": "UK_uksi_1981_917",
-    "words": "Regulation 3 of the Health and Safety (First-Aid) Regulations 1981 shall be amended by adding the following paragraph— ."
+    "law": "UK_uksi_2000_2687",
+    "words": "For the definition of “the Directive” in regulation 2(1) (Interpretation) of the Merchant Shipping (Passenger Ships on Domestic Voyages) Regulations 2000 there shall be substituted: “the Directive” means Directive 98/18/EC of 17th March 1998 on Safety Rules and Standards for Passenger Ships as amended by Commission Directive 2002/25/EC of 5th March 2002 amending Council Directive 98/18/EC on safet"
   },
-  "UK_uksi_2004_3363/UK_ukpga_1974_37/article-5-2": {
-    "amending": "UK_uksi_2004_3363",
-    "id": "article-5-2",
-    "law": "UK_ukpga_1974_37",
-    "words": "In subsection (3), after paragraph (e), insert–"
-  },
-  "UK_uksi_2004_3363/UK_ukpga_1974_37/article-5-3": {
-    "amending": "UK_uksi_2004_3363",
-    "id": "article-5-3",
-    "law": "UK_ukpga_1974_37",
-    "words": "In subsection (5), after “disclosed in pursuance of”, insert “any of paragraphs (a) to (e) of”."
+  "UK_uksi_2004_2883/UK_uksi_2000_2687/regulation-2-1-a": {
+    "amending": "UK_uksi_2004_2883",
+    "id": "regulation-2-1-a",
+    "law": "UK_uksi_2000_2687",
+    "words": "after paragraph (c) in the definition of “the Directive” there shall be inserted: , and"
   },
   "UK_uksi_2005_1082/UK_uksi_2005_676/schedule-5-paragraph-45-4-b": {
     "amending": "UK_uksi_2005_1082",
@@ -875,17 +1217,59 @@
     "law": "UK_uksi_2005_676",
     "words": "after Part 6, insert —"
   },
-  "UK_uksi_2008_396/UK_ukpga_2007_19/article-2-2": {
-    "amending": "UK_uksi_2008_396",
-    "id": "article-2-2",
-    "law": "UK_ukpga_2007_19",
-    "words": "At the appropriate places, insert “Department for Business, Enterprise and Regulatory Reform”, “Department for Children, Schools and Families”, “Department for Innovation, Universities and Skills” and “Ministry of Justice (including the Scotland Office and the Wales Office)”."
+  "UK_uksi_2006_1244/UK_ukpga_1995_21/regulation-11-a": {
+    "amending": "UK_uksi_2006_1244",
+    "id": "regulation-11-a",
+    "law": "UK_ukpga_1995_21",
+    "words": "in subsection (1), for “owner” there is substituted “registered owner” and after “contamination” there is inserted “falling within subsection (2) of that section”; and"
+  },
+  "UK_uksi_2006_1244/UK_ukpga_1995_21/regulation-3-4": {
+    "amending": "UK_uksi_2006_1244",
+    "id": "regulation-3-4",
+    "law": "UK_ukpga_1995_21",
+    "words": "In subsection (2), after “Convention” (in the first place it appears), there is inserted “or the Bunkers Convention” and for “the Liability Convention” (in the second place it appears), there is substituted “that Convention”."
+  },
+  "UK_uksi_2006_1244/UK_ukpga_1995_21/regulation-6-4": {
+    "amending": "UK_uksi_2006_1244",
+    "id": "regulation-6-4",
+    "law": "UK_ukpga_1995_21",
+    "words": "In subsections (1) and (2), at the beginning there is inserted “Subject to subsection (2A),” and the words “other than a ship to which section 153 applies” are omitted."
+  },
+  "UK_uksi_2006_1265/UK_ukpga_1995_21/article-4-3-a": {
+    "amending": "UK_uksi_2006_1265",
+    "id": "article-4-3-a",
+    "law": "UK_ukpga_1995_21",
+    "words": "after “payable” insert ; and"
+  },
+  "UK_uksi_2006_1265/UK_ukpga_1995_21/schedule": {
+    "amending": "UK_uksi_2006_1265",
+    "id": "schedule",
+    "law": "UK_ukpga_1995_21",
+    "words": "Article 12 ."
+  },
+  "UK_uksi_2006_557/UK_uksi_1998_494/schedule-paragraph-6-4-a": {
+    "amending": "UK_uksi_2006_557",
+    "id": "schedule-paragraph-6-4-a",
+    "law": "UK_uksi_1998_494",
+    "words": "for paragraph 12 substitute— ; and"
+  },
+  "UK_uksi_2008_960/UK_ukpga_1974_37/schedule-1": {
+    "amending": "UK_uksi_2008_960",
+    "id": "schedule-1",
+    "law": "UK_ukpga_1974_37",
+    "words": "Article 20"
   },
   "UK_uksi_2008_960/UK_ukpga_1995_15/schedule-3": {
     "amending": "UK_uksi_2008_960",
     "id": "schedule-3",
     "law": "UK_ukpga_1995_15",
-    "words": "Article 22The enactments and instruments listed in column 1 below shall be amended to the extent set out in column 2.Column 1Column 2TitleExtent of amendmentExplosives Act In section 103, for “the Health and Safety Commission” substitute “the Health and Safety Executive”.Nuclear Installations Act In section 24A, for subsection (1) substitute—.Parliamentary Commissioner Act In Schedule 2, omit “The"
+    "words": "Article 22The enactments and instruments listed in column 1 below shall be amended to the extent set out in column 2.Column 1Column 2TitleExtent of amendmentExplosives Act 1875 (c.17)In section 103, for “the Health and Safety Commission” substitute “the Health and Safety Executive”.Nuclear Installations Act 1965 (c.57)In section 24A, for subsection (1) substitute—.Parliamentary Commissioner Act 19"
+  },
+  "UK_uksi_2009_3348/UK_uksi_2003_3049/article-23": {
+    "amending": "UK_uksi_2009_3348",
+    "id": "article-23",
+    "law": "UK_uksi_2003_3049",
+    "words": "In the provisions set out in the table in Schedule 2 to this Order, for “a barrister”, where it first occurs, to “the Courts and Legal Services Act 1990)” substitute “a person who, for the purposes of the Legal Services Act 2007), is an authorised person in relation to an activity which constitutes the exercise of a right of audience or the conduct of litigation (within the meaning of that Act)”."
   },
   "UK_uksi_2009_716/UK_uksi_1996_825/schedule-6": {
     "amending": "UK_uksi_2009_716",
@@ -893,11 +1277,23 @@
     "law": "UK_uksi_1996_825",
     "words": "Regulation 17Regulations to be amendedRegulations and Schedules to be amendedAmendments to be madeThe Pipelines Safety Regulations 1996 Paragraph 10 of Schedule 2For “regulation 5 of the Chemicals (Hazard Information and Packaging for Supply) Regulations 1994;” substitute “regulation 4 of the Chemicals (Hazard Information and Packaging for Supply) Regulations 2009;”.The Health and Safety (Enforcin"
   },
-  "UK_uksi_2011_1885/UK_uksi_2009_1348/regulation-15-2-a": {
-    "amending": "UK_uksi_2011_1885",
-    "id": "regulation-15-2-a",
-    "law": "UK_uksi_2009_1348",
-    "words": "in sub-paragraph (1), after “consignor”, insert ; and"
+  "UK_uksi_2010_680/UK_uksi_1990_660/schedule": {
+    "amending": "UK_uksi_2010_680",
+    "id": "schedule",
+    "law": "UK_uksi_1990_660",
+    "words": "Regulation 24Column 1Column 2The Merchant Shipping (Emergency Information for Passengers) Regulations 1990In regulation 3 at the beginning insert— “Subject to regulation 3A,”.After regulation 3 insert—“3A. These Regulations do not apply to passenger ships to which Merchant Shipping (Passenger Ships) (Safety Code for UK Categorised Waters) Regulations 2010 apply.”.The Merchant Shipping (Survey and "
+  },
+  "UK_uksi_2010_680/UK_uksi_1998_1011/schedule": {
+    "amending": "UK_uksi_2010_680",
+    "id": "schedule",
+    "law": "UK_uksi_1998_1011",
+    "words": "Regulation 24Column 1Column 2The Merchant Shipping (Emergency Information for Passengers) Regulations 1990In regulation 3 at the beginning insert— “Subject to regulation 3A,”.After regulation 3 insert—“3A. These Regulations do not apply to passenger ships to which Merchant Shipping (Passenger Ships) (Safety Code for UK Categorised Waters) Regulations 2010 apply.”.The Merchant Shipping (Survey and "
+  },
+  "UK_uksi_2010_976/UK_ukpga_2007_19/schedule-9-paragraph-2-2": {
+    "amending": "UK_uksi_2010_976",
+    "id": "schedule-9-paragraph-2-2",
+    "law": "UK_ukpga_2007_19",
+    "words": "In subsection (2), in the definition of “prescribed”, for “prescribed by an order made by the Secretary of State” substitute ."
   },
   "UK_uksi_2011_2131/UK_uksi_2009_716/schedule-4": {
     "amending": "UK_uksi_2011_2131",
@@ -905,23 +1301,53 @@
     "law": "UK_uksi_2009_716",
     "words": "Regulation 31(1) Regulations to be amendedRegulation and Schedule to be amendedAmendments to be made The Control of Pesticides Regulations 1986Regulation 2(1)After the definition of “provisional approval” insert— ““Regulation 1107/2009” means Regulation of the European Parliament and of the Council concerning the placing of plant protection products on the market and repealing Council Directives a"
   },
+  "UK_uksi_2011_2157/UK_uksi_2008_1597/schedule-paragraph-1": {
+    "amending": "UK_uksi_2011_2157",
+    "id": "schedule-paragraph-1",
+    "law": "UK_uksi_2008_1597",
+    "words": "For point 4 of the General Principles at the start of Annex I (Essential health and safety requirements relating to the design and construction of machinery) substitute— ."
+  },
+  "UK_uksi_2011_2157/UK_uksi_2008_1597/schedule-paragraph-2": {
+    "amending": "UK_uksi_2011_2157",
+    "id": "schedule-paragraph-2",
+    "law": "UK_uksi_2008_1597",
+    "words": "For the first, unnumbered, paragraph of section 2 of Annex I (Supplementary essential health and safety requirements for certain categories of machinery) substitute— ."
+  },
+  "UK_uksi_2011_2616/UK_uksi_2004_2110/schedule-1-paragraph-2": {
+    "amending": "UK_uksi_2011_2616",
+    "id": "schedule-1-paragraph-2",
+    "law": "UK_uksi_2004_2110",
+    "words": "In regulation 2 (interpretation), in paragraph (1)— “, as amended by Directive 2009/17/EC of the European Parliament and of the Council of 23 June 2009 and by Commission Directive 2011/15/EU of the 23rd February 2011;”; in the definition of “the IBC Code” for “1998” substitute “2007”; in the definition of “IMDG Code” for “2002” substitute “2010/11”; for the definition of the “ISM Code” substitute—"
+  },
   "UK_uksi_2012_632/UK_uksi_1992_2966/schedule-3": {
     "amending": "UK_uksi_2012_632",
     "id": "schedule-3",
     "law": "UK_uksi_1992_2966",
     "words": "Regulation 33(2)Instruments amendedReferencesAmendments to have effectThe Personal Protective Equipment at Work Regulations 1992SI 1992/2966In regulation 3(3)(c) for the words “the Control of Asbestos Regulations 2006” substitute “ the Control of Asbestos Regulations 2012 ”The Health and Safety (Enforcing Authority) Regulations 1998SI 1998/494In Schedule 2 paragraph 4A substitute the reference in "
   },
-  "UK_uksi_2013_1512/UK_uksi_2005_735/regulation-5-3": {
-    "amending": "UK_uksi_2013_1512",
-    "id": "regulation-5-3",
-    "law": "UK_uksi_2005_735",
-    "words": "After Schedule 8, add— ."
+  "UK_uksi_2013_1473/UK_uksi_2010_2984/regulation-2-3-b": {
+    "amending": "UK_uksi_2013_1473",
+    "id": "regulation-2-3-b",
+    "law": "UK_uksi_2010_2984",
+    "words": "in paragraph (8) (c) (ii) after “removal” delete “of” and insert “without deterioration of non-degraded”."
   },
   "UK_uksi_2013_1666/UK_uksi_2009_716/article-5-b": {
     "amending": "UK_uksi_2013_1666",
     "id": "article-5-b",
     "law": "UK_uksi_2009_716",
     "words": "in sub-paragraph (b) omit “; and” and insert a comma, and"
+  },
+  "UK_uksi_2014_1614/UK_uksi_1997_1508/regulation-10-2": {
+    "amending": "UK_uksi_2014_1614",
+    "id": "regulation-10-2",
+    "law": "UK_uksi_1997_1508",
+    "words": "In regulation 3(2) at the end of sub-paragraph (b) omit “and” and at the end of sub-paragraph (c) insert— ."
+  },
+  "UK_uksi_2014_3248/UK_uksi_2002_2677/schedule-4": {
+    "amending": "UK_uksi_2014_3248",
+    "id": "schedule-4",
+    "law": "UK_uksi_2002_2677",
+    "words": "Regulation 74(2) and (3)"
   },
   "UK_uksi_2015_51/UK_ukpga_1961_34/schedule-5": {
     "amending": "UK_uksi_2015_51",
@@ -965,29 +1391,41 @@
     "law": "UK_uksi_1998_2306",
     "words": "In Schedule 1 to the Provision and Use of Work Equipment Regulations 1998 omit the entry “The Pressure Equipment Regulations 1999” and in the appropriate place insert ."
   },
-  "UK_uksi_2016_1154/UK_uksi_2015_483/schedule-29-paragraph-85-2-b": {
-    "amending": "UK_uksi_2016_1154",
-    "id": "schedule-29-paragraph-85-2-b",
-    "law": "UK_uksi_2015_483",
-    "words": "in the appropriate place insert—."
-  },
   "UK_uksi_2016_721/UK_uksi_2009_1348/schedule-5-paragraph-10": {
     "amending": "UK_uksi_2016_721",
     "id": "schedule-5-paragraph-10",
     "law": "UK_uksi_2009_1348",
     "words": "In the Carriage of Dangerous Goods and Use of Transportable Pressure Equipment Regulations 2009, in regulation 7 (Additional security requirements for carriage by road), for paragraph (5)(a)(ii) substitute— ."
   },
+  "UK_uksi_2017_1149/UK_uksi_2003_3049/regulation-18": {
+    "amending": "UK_uksi_2017_1149",
+    "id": "regulation-18",
+    "law": "UK_uksi_2003_3049",
+    "words": "Omit regulation 14 (other special cases) and insert— ."
+  },
+  "UK_uksi_2018_1109/UK_uksi_1972_1701/regulation-5-2-a": {
+    "amending": "UK_uksi_2018_1109",
+    "id": "regulation-5-2-a",
+    "law": "UK_uksi_1972_1701",
+    "words": "in the definition of “seaman”, omit the words from “a” to “vessel” and substitute “every person employed, engaged or working in any capacity on board any fishing vessel, but does not include a person solely engaged as a pilot for the vessel”;"
+  },
+  "UK_uksi_2018_1109/UK_uksi_1997_2962/regulation-7-3-d": {
+    "amending": "UK_uksi_2018_1109",
+    "id": "regulation-7-3-d",
+    "law": "UK_uksi_1997_2962",
+    "words": "in paragraph (3)(b) omit “only” and at the end insert “and Group D ships”."
+  },
+  "UK_uksi_2018_1221/UK_uksi_1997_1509/regulation-3-1": {
+    "amending": "UK_uksi_2018_1221",
+    "id": "regulation-3-1",
+    "law": "UK_uksi_1997_1509",
+    "words": "In each of the regulations specified in paragraph (2), omit the definition of “EEA Agreement” and for the definition of “EEA State” substitute—."
+  },
   "UK_uksi_2018_321/UK_uksi_2013_1471/regulation-6-2": {
     "amending": "UK_uksi_2018_321",
     "id": "regulation-6-2",
     "law": "UK_uksi_2013_1471",
     "words": "In paragraph (6) of that regulation, omit sub-paragraph (d) and for sub-paragraph (g) substitute—"
-  },
-  "UK_uksi_2019_1144/UK_eur_2006_1907/regulation-3-3": {
-    "amending": "UK_uksi_2019_1144",
-    "id": "regulation-3-3",
-    "law": "UK_eur_2006_1907",
-    "words": "For sub-paragraph (4)(b) of paragraph 45 substitute—."
   },
   "UK_uksi_2019_1246/UK_uksi_2008_1597/regulation-11-a": {
     "amending": "UK_uksi_2019_1246",
@@ -1001,35 +1439,35 @@
     "law": "UK_uksi_2008_1597",
     "words": "after paragraph 24(2)(d) insert—;"
   },
-  "UK_uksi_2019_1347/UK_uksi_2018_816/regulation-3-a": {
-    "amending": "UK_uksi_2019_1347",
-    "id": "regulation-3-a",
-    "law": "UK_uksi_2018_816",
-    "words": "after the definition of “Regulation 2016/424/EU” insert—;"
+  "UK_uksi_2019_270/UK_eur_2009_391/regulation-3-8-b": {
+    "amending": "UK_uksi_2019_270",
+    "id": "regulation-3-8-b",
+    "law": "UK_eur_2009_391",
+    "words": "for the first sentence in paragraph 1, substitute–;"
   },
-  "UK_uksi_2019_696/UK_uksi_2008_1597/schedule-12-paragraph-23-13": {
-    "amending": "UK_uksi_2019_696",
-    "id": "schedule-12-paragraph-23-13",
-    "law": "UK_uksi_2008_1597",
-    "words": "For section 2.4.10(i) substitute—."
+  "UK_uksi_2019_649/UK_eur_2009_392/regulation-6-3-b": {
+    "amending": "UK_uksi_2019_649",
+    "id": "regulation-6-3-b",
+    "law": "UK_eur_2009_392",
+    "words": "in points (a), (b) and (c), omit “a Member State” in each place that it appears and substitute ; and"
   },
-  "UK_uksi_2019_720/UK_eur_2006_1907/schedule-2-paragraph-5-a": {
+  "UK_uksi_2019_649/UK_eur_2009_392/regulation-6-8": {
+    "amending": "UK_uksi_2019_649",
+    "id": "regulation-6-8",
+    "law": "UK_eur_2009_392",
+    "words": "In Article 9 (amendments)—"
+  },
+  "UK_uksi_2019_649/UK_eur_2009_392/regulation-6-9": {
+    "amending": "UK_uksi_2019_649",
+    "id": "regulation-6-9",
+    "law": "UK_eur_2009_392",
+    "words": "In Article 10 (committee procedure)—"
+  },
+  "UK_uksi_2019_720/UK_eur_2008_1272/schedule-2-paragraph-14": {
     "amending": "UK_uksi_2019_720",
-    "id": "schedule-2-paragraph-5-a",
-    "law": "UK_eur_2006_1907",
-    "words": "in point 1.3.1, for “Part 3 of Annex VI to Regulation ” substitute ;"
-  },
-  "UK_uksi_2019_720/UK_eur_2008_1272/schedule-2-paragraph-15-b": {
-    "amending": "UK_uksi_2019_720",
-    "id": "schedule-2-paragraph-15-b",
+    "id": "schedule-2-paragraph-14",
     "law": "UK_eur_2008_1272",
-    "words": "in paragraph 5, after “distributors” insert “who are established within Great Britain”;"
-  },
-  "UK_uksi_2019_720/UK_eur_2008_1272/schedule-2-paragraph-36": {
-    "amending": "UK_uksi_2019_720",
-    "id": "schedule-2-paragraph-36",
-    "law": "UK_eur_2008_1272",
-    "words": "After Article 38, insert—"
+    "words": "In Article 2—"
   },
   "UK_uksi_2019_720/UK_eur_2008_1272/schedule-2-paragraph-49-b-ii": {
     "amending": "UK_uksi_2019_720",
@@ -1037,23 +1475,11 @@
     "law": "UK_eur_2008_1272",
     "words": "in point (b), for “helpdesks” substitute and omit “by Member States”."
   },
-  "UK_uksi_2019_720/UK_eur_2008_1272/schedule-2-paragraph-57-4-g-ii": {
+  "UK_uksi_2019_720/UK_eur_2008_1272/schedule-2-paragraph-6-a": {
     "amending": "UK_uksi_2019_720",
-    "id": "schedule-2-paragraph-57-4-g-ii",
+    "id": "schedule-2-paragraph-6-a",
     "law": "UK_eur_2008_1272",
-    "words": "in Note K, omit “(Table 3.1) or the S-phrases (2-) 9-16 (Table 3.2)” and for “Part 3” substitute ;"
-  },
-  "UK_uksi_2019_758/UK_eur_2006_1907/schedule-3-paragraph-2-12": {
-    "amending": "UK_uksi_2019_758",
-    "id": "schedule-3-paragraph-2-12",
-    "law": "UK_eur_2006_1907",
-    "words": "For points 8.1.1.1 to 8.1.1.5 substitute—."
-  },
-  "UK_uksi_2020_1112/UK_uksi_2008_1597/schedule-4-paragraph-2-1-b-iv": {
-    "amending": "UK_uksi_2020_1112",
-    "id": "schedule-4-paragraph-2-1-b-iv",
-    "law": "UK_uksi_2008_1597",
-    "words": "after the definition of “put into service” insert—;"
+    "words": "in point 3.2.1(a)(ii) and (iii), for “Part 3 of Annex VI to Regulation (EC) No 1272/2008” substitute ;"
   },
   "UK_uksi_2020_1577/UK_eur_2006_1907/regulation-6": {
     "amending": "UK_uksi_2020_1577",
@@ -1061,34 +1487,34 @@
     "law": "UK_eur_2006_1907",
     "words": "After Schedule 2, insert— ."
   },
+  "UK_uksi_2020_501/UK_uksi_1999_2722/schedule-1-paragraph-10-b": {
+    "amending": "UK_uksi_2020_501",
+    "id": "schedule-1-paragraph-10-b",
+    "law": "UK_uksi_1999_2722",
+    "words": "in sub-paragraph (e), after the words “Merchant Shipping (High Speed Craft) Regulations 2004 apply” insert—."
+  },
   "UK_uksi_2020_676/UK_uksi_2008_1597/regulation-4-3-a": {
     "amending": "UK_uksi_2020_676",
     "id": "regulation-4-3-a",
     "law": "UK_uksi_2008_1597",
     "words": "for paragraph 4(a), substitute— ;"
   },
-  "UK_uksi_2021_1273/UK_uksi_2008_1597/regulation-8": {
-    "amending": "UK_uksi_2021_1273",
-    "id": "regulation-8",
-    "law": "UK_uksi_2008_1597",
-    "words": "In the provisions listed in Schedule 2, for “24 months” substitute ."
+  "UK_uksi_2022_1219/UK_uksi_2022_41/schedule": {
+    "amending": "UK_uksi_2022_1219",
+    "id": "schedule",
+    "law": "UK_uksi_2022_41",
+    "words": "Regulation 2"
   },
-  "UK_uksi_2021_904/UK_eur_2006_1907/regulation-7-2-a-ii": {
-    "amending": "UK_uksi_2021_904",
-    "id": "regulation-7-2-a-ii",
-    "law": "UK_eur_2006_1907",
-    "words": "before “medical devices”, in the first place that it occurs, insert “relevant”,"
+  "UK_uksi_2022_41/UK_uksi_2015_508/regulation-6-4-a": {
+    "amending": "UK_uksi_2022_41",
+    "id": "regulation-6-4-a",
+    "law": "UK_uksi_2015_508",
+    "words": "the existing text becomes paragraph (1);"
   },
   "UK_uksi_2023_247/UK_uksi_2022_1378/regulation-14": {
     "amending": "UK_uksi_2023_247",
     "id": "regulation-14",
     "law": "UK_uksi_2022_1378",
     "words": "In Schedule 4 (fees for examination or surveillance by an employment medical adviser), in column 1, after “The Work in Compressed Air Regulations” insert ."
-  },
-  "UK_uksi_2024_322/UK_uksi_2022_1378/regulation-6": {
-    "amending": "UK_uksi_2024_322",
-    "id": "regulation-6",
-    "law": "UK_uksi_2022_1378",
-    "words": "For Schedule 7 (fees payable in relation to the Explosives Regulations 2014, the 2014 Acetylene Regulations etc) substitute— ."
   }
 }

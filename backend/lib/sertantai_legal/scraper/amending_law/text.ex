@@ -44,6 +44,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
         }
 
   @notes ~w(Commentary CommentaryRef)a
+  @inline ~w(Citation CitationSubRef Term Abbreviation Acronym)a
   @numbers ~w(Pnumber Number Title)a
   @quoted ~w(InlineAmendment BlockAmendment)a
 
@@ -288,7 +289,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
       name in @numbers ->
         collect(children ++ [{:xmlText, [], 0, [], ~c" ", :text}], acc, in_quote)
 
-      not in_quote and Enum.any?(attrs, &(elem(&1, 1) == :id)) ->
+      # (an inline element with an id is words, not a provision: "Act
+      # <Citation id=…>2005 (asp 13)</Citation>" had lost its year, so a law
+      # named earlier read as the law amended — 2026 c.18 s.148 on MSA 1995;
+      # Maritime Safety 2026-11-06)
+      not in_quote and provision?(name, attrs) ->
         acc
 
       true ->
@@ -297,6 +302,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
   end
 
   defp node(_other, acc, _in_quote), do: acc
+
+  defp provision?(name, attrs),
+    do: name not in @inline and Enum.any?(attrs, &(elem(&1, 1) == :id))
 
   defp content({:xmlElement, _, _, _, _, _, _, _, children, _, _, _}), do: children
 

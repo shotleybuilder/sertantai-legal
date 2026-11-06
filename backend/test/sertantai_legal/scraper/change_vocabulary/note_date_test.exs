@@ -140,6 +140,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.NoteDateTest do
       assert [%Claim{value: "E+W+S"}] = NoteDate.extent_claims(c, %{"UK_uksi_2019_696" => @gb})
     end
 
+    test "with no provision named and no clause, the extent stated on the whole Act (Decision 3, Maritime Safety: Extent reader)" do
+      c = change([{:markup, :operation, :substituted}, {:markup, :cited, "UK_ukpga_2006_8"}])
+
+      assert [%Claim{value: "E+W+S+NI"}] =
+               NoteDate.extent_claims(c, %{"UK_ukpga_2006_8" => %Extent{stated: "E+W+S+NI"}})
+    end
+
     test "competence alone never confines an insertion only the feed records (CV-S05 round 3 D)" do
       c =
         change([

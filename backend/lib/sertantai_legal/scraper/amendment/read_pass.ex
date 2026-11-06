@@ -67,8 +67,9 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadPass do
 
   @doc """
   Whether `amending` is to be read again: its index is stale (another
-  reader, or the text held changed), or the feed points to provisions the
-  last reading didn't.
+  reader, or the text held changed), a law its notes or feed point from
+  was not read for (one given LAT rows since), or the feed points to
+  provisions the last reading didn't.
   """
   @spec stale?(String.t(), feed_entry() | nil) :: boolean()
   def stale?(amending, feed_entry) do
@@ -78,6 +79,9 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadPass do
       not Index.fresh?(amending, index) ->
         true
 
+      laws_new?(index, pointing_laws(amending, feed_entry)) ->
+        true
+
       feed_entry == nil ->
         false
 
@@ -85,6 +89,22 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadPass do
         read = MapSet.new(index["pointers"] || note_pointers(amending))
         not MapSet.subset?(MapSet.new(pointer_keys(feed_entry.refs)), read)
     end
+  end
+
+  @doc """
+  True when a law pointing to the amending law (`laws`) is not one its
+  index was read for: a law given LAT rows after the reading (the Ports
+  Act 1991, parsed in Maritime Safety's Making laws step, unread by 1992
+  c.12 Sch.10 para 24's stored rules; Maritime Safety: Amending-law
+  reader, 2026-11-06).
+  """
+  @spec laws_new?(map(), [String.t()]) :: boolean()
+  def laws_new?(index, laws),
+    do: not MapSet.subset?(MapSet.new(laws), MapSet.new(index["laws"] || []))
+
+  defp pointing_laws(amending, feed_entry) do
+    notes = amending |> ReadLaw.notes() |> Enum.map(& &1.law_name)
+    if feed_entry, do: notes ++ MapSet.to_list(feed_entry.laws), else: notes
   end
 
   @doc "Read `amending` (nothing written); nil when its text isn't held."

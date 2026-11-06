@@ -31,17 +31,40 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
   """
   @spec quoted_targets(clause(), String.t()) :: [String.t()]
   def quoted_targets(%{text: text, named: named, numbers: numbers}, p) do
-    if sections_quoted?(text) do
+    cond do
+      # "For regulation 10 there shall be substituted— (1) … (2)(a) …": the
+      # quote is the one provision named, from its paragraphs (SI 2000/1335
+      # reg.16, read as regs.1–8: Maritime Safety 2026-11-06)
+      body?(text, numbers) ->
+        for path <- text.inserted, uniq: true, do: Brackets.ref(p, [hd(numbers) | path])
+
       # "For section 99 substitute— 99 …", "After section 47B insert— 47C":
       # the quote's numbers are sections, never nested in one (AR-07)
-      for path <- text.inserted, provision_path?(path), uniq: true, do: Brackets.ref(p, path)
-    else
-      for path <- text.inserted,
-          t <- quoted_paths(path, named, numbers, p),
-          uniq: true,
-          do: t
+      sections_quoted?(text) ->
+        for path <- text.inserted, provision_path?(path), uniq: true, do: Brackets.ref(p, path)
+
+      true ->
+        quoted_targets(text, named, numbers, p)
     end
   end
+
+  defp quoted_targets(text, named, numbers, p) do
+    for path <- text.inserted,
+        t <- quoted_paths(path, named, numbers, p),
+        uniq: true,
+        do: t
+  end
+
+  # a substitution of one whole provision whose quote numbers none of its
+  # tops as it, nor grown from it
+  defp body?(%Text{inserted: [_ | _] = paths} = text, [n]) do
+    not String.contains?(n, "..") and
+      Clauses.captionless(text).instruction =~
+        ~r/\bfor\s+(?:the\s+)?(?:section|regulation|article|rule)\s+\d+[A-Z]*\b(?!\s*\()/i and
+      Enum.all?(paths, fn [top | _] -> top != n and not own_number?(top, [n]) end)
+  end
+
+  defp body?(_text, _numbers), do: false
 
   @doc """
   A quoted path's targets: - a provision of its own when no provision is
@@ -130,6 +153,145 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
 
   def named_refs(_text, _op, p, n, named),
     do: for(c <- Brackets.combos(named), do: Brackets.ref(p, [n | c]))
+
+  @doc """
+  A clause's named targets under each provision number it names, the
+  quote's own tops aside; a written list of places each carrying its own
+  brackets (`listed_places/1`) is read item by item.
+  """
+  @spec clause_targets(map(), {String.t(), String.t()}, String.t(), [String.t()]) :: [String.t()]
+  def clause_targets(c, op, p, tops) do
+    case op != {"inserted", "inserted"} && listed_places(c.text.instruction, p) do
+      [_ | _] = items ->
+        listed_targets(items, c, p, tops)
+
+      _ ->
+        for n <- c.numbers,
+            n not in tops,
+            t <- named_refs(c.text, op, p, n, named_for(c, n)),
+            uniq: true,
+            do: t
+    end
+  end
+
+  # each item its own place: its number (else the clause's), its brackets
+  # and the clause's brackets outside the list ("In regulations 6(6), 8(9),
+  # 12(2) and 15(1), in paragraph (a)": reg.8(9)(a), never reg.6(9) — SI
+  # 2005/1434 reg.2(3); "In subsections (1)(e), (5) and (9)(a)": never
+  # s.128(1)(a) — 2006 c.8 s.2(3); Maritime Safety 2026-11-06)
+  defp listed_targets(items, c, p, tops) do
+    rest = c.named -- Enum.flat_map(items, &elem(&1, 1))
+
+    for {n, brackets} <- items,
+        n <- if(n, do: [n], else: c.numbers),
+        n not in tops,
+        path <- [[] | Brackets.combos(brackets ++ rest)],
+        path != [] or brackets == [],
+        uniq: true,
+        do: Brackets.ref(p, [n | path])
+  end
+
+  @item "(?:\\d+[A-Z]*(?:\\s+to\\s+\\d+[A-Z]*)?(?:\\([0-9A-Za-z]+\\))*|(?:\\([0-9A-Za-z]+\\))+)"
+  @place_list Regex.compile!(
+                "\\b((?i:(?:sub-?)?(?:sections?|regulations?|paragraphs?|articles?|rules?)))\\s+(" <>
+                  @item <> "(?:\\s*(?:,|\\band\\b|\\bor\\b|\\bto\\b)\\s*" <> @item <> ")*)",
+                "u"
+              )
+
+  # the law's own provisions, by its prefix: a numbered list of any other
+  # ("in paragraphs 49(3)(b) and 73(2)(c)": the Insolvency Act 1986's
+  # Schedule B1, never ss.49, 73 — SI 2008/948 Sch.1 para 100(a)) is not
+  # its provisions
+  @own_word %{
+    "s" => ~r/^sections?$/i,
+    "reg" => ~r/^regulations?$/i,
+    "art" => ~r/^articles?$/i,
+    "rule" => ~r/^rules?$/i
+  }
+
+  @doc """
+  A written list of places whose items carry brackets of their own
+  ("regulations 6(6), 8(9), 12(2) and 15(1)", "subsections (1)(e), (5) and
+  (9)(a)"), quoted words and captions aside: each item's number (nil for a
+  bracket alone, which takes the one before's, else the clause's) and
+  brackets; [] for any other place (a plain "(5) and (6)" or "7, 8"
+  reads the same as before), and where numbered items are not the law's
+  own provisions (`p`, its prefix).
+  """
+  @spec listed_places(String.t(), String.t()) :: [{String.t() | nil, [String.t()]}]
+  def listed_places(instruction, p) do
+    plain = instruction |> Clauses.unquote_words() |> Clauses.no_captions()
+
+    # every list the clause writes ("section 84(1)(b), (2)(a) …; section
+    # 85(1) and (4) …": SI 1999/1820 Sch.2 para 116(4)), as the numbers it
+    # names are read; never a place alone ("In section 21(1), paragraph
+    # (a)(i), (iii)"; "Section 7 of the Gas Act 1986 and section 68(1) and
+    # (2) of the principal Act": another law's)
+    lists =
+      for [_, word, list] <- Regex.scan(@place_list, plain),
+          items = list_items(list),
+          do: %{own?: word =~ @own_word[p], items: items}
+
+    lists = Enum.filter(lists, &(length(&1.items) > 1))
+    items = Enum.flat_map(lists, & &1.items)
+
+    ours? = Enum.all?(lists, &(&1.own? or Enum.all?(&1.items, fn {n, _} -> n == nil end)))
+
+    if lists != [] and ours? and length(items) > 1 and own_brackets?(items),
+      do: items,
+      else: []
+  end
+
+  # a range of bare numbers stays one ("Sections 28 to 34, 41 …": asp
+  # 2004/6 Sch.7 para 4); a bracket alone is the item before's place at the
+  # levels above its own ("paragraph (a)(i), (iii) and (iv)": (a)(iii);
+  # "(1)(e), (5)": (5))
+  defp list_items(list) do
+    list = Regex.replace(~r/\b(\d+[A-Z]*)\s+to\s+(\d+[A-Z]*)\b(?!\s*\()/u, list, "\\1..\\2")
+
+    ~r/(\d+[A-Z]*(?:\.\.\d+[A-Z]*)?)?((?:\([0-9A-Za-z]+\))*)/u
+    |> Regex.scan(list, capture: :all_but_first)
+    |> Enum.reject(&(&1 in [["", ""], [""]]))
+    |> Enum.map_reduce({nil, []}, fn
+      [n, b], _prev when n != "" -> item(n, Brackets.plain_brackets(b))
+      [_, b], {n, before} -> item(n, inherit(before, Brackets.plain_brackets(b)))
+      [n], _prev -> item(n, [])
+    end)
+    |> elem(0)
+  end
+
+  defp item(n, brackets), do: {{n, brackets}, {n, brackets}}
+
+  defp inherit(before, own) do
+    top = own |> hd() |> Brackets.bracket_level()
+
+    before
+    |> Enum.zip(levels(before))
+    |> Enum.take_while(fn {_, level} -> level < top end)
+    |> Enum.map(&elem(&1, 0))
+    |> Kernel.++(own)
+  end
+
+  # a path's levels by position: a numeral after a letter is a
+  # sub-paragraph ("(a)(i)": (i) at level 2, never a letter)
+  defp levels(path) do
+    path
+    |> Enum.map_reduce(nil, fn b, prev ->
+      level =
+        if prev == 1 and b =~ ~r/^[ivx]+$/, do: 2, else: Brackets.bracket_level(b)
+
+      {level, level}
+    end)
+    |> elem(0)
+  end
+
+  # an item placed deeper than one bracket, or numbered items one at least
+  # with brackets (else the clause reads as before)
+  defp own_brackets?(items) do
+    Enum.any?(items, fn {_, b} -> length(b) > 1 end) or
+      (Enum.all?(items, &elem(&1, 0)) and Enum.any?(items, fn {_, b} -> b != [] end) and
+         items |> Enum.map(&elem(&1, 0)) |> Enum.uniq() |> length() > 1)
+  end
 
   @listed ~r/\b(?i:sections?|regulations?|articles?|rules?)\s+(\d+[A-Z]*(?:\([0-9A-Za-z]+\))*(?:\s*(?:,|and|or)\s*\d+[A-Z]*(?:\([0-9A-Za-z]+\))*)+)/u
 
