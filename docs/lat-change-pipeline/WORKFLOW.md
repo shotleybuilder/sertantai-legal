@@ -356,9 +356,19 @@ Before this, OH&S used G, S and T by shape and R pooled to the 95% bound (2026-1
 
 **Outputs.** Nothing written. A count of rows that agree, differ today, or differ only in history: the baseline for the switch-over. A retirement list for the old path (`backend/data/reports/change-vocabulary/cv-05-retirement-list.md`).
 
-**Check today.** `mix lat.label_check --family F --strata` ("timeline rows" and the T classes) and golden from inputs. No agent check: the conversion is a fixed mapping under unit tests (`label_periods_test`).
+**Check today.** `mix lat.label_check --family F --strata` (about 12 minutes on Maritime Safety), and golden from inputs. It prints:
+- the S shapes and the T differences by field;
+- "timeline rows", the periods breaking the table's rules (`LabelPeriods.violations/1`);
+- "side by side", each row in one class (`LabelStrata.totals/1`): agree, differ today, differ only in history, or no stored timeline;
+- the gaps by shape (`Gate.Label.gaps/1`), a value no source gives.
 
-**Pass rule as last used** (2026-10-31). Golden 27/27; 0 periods breaking the timeline table's rules (one period per row on any date, each non-empty, five statuses); differences counted. On OH&S: 28,307 periods, 0 breaks; 16,487 of 20,371 rows differed from today's labels.
+There is no agent check: the conversion is a fixed mapping under unit tests (`label_periods_test`, `label_strata_test`). Save the output as the switch-over's baseline, in `backend/data/reports/labels-side-by-side/<family>-strata.txt`.
+
+**Pass rule as used** (Maritime Safety, 2026-11-06). Golden 27/27; 0 periods breaking the table's rules; the four side-by-side totals printed and adding up to the rows folded; gaps printed by shape.
+- **On OH&S** (2026-10-31): 28,307 periods, 0 breaks; 16,487 of 20,371 rows differed from today's labels.
+- **On Maritime Safety:** 46,976 periods, 0 breaks. Of 24,434 rows, 18,898 agree, 2,350 differ today, 874 differ only in history, and 2,312 have no stored timeline.
+
+**The single `changed_by`** (decided here on 2026-11-06, Maritime Safety, Decision 1). Where several laws made the text, it is the principal maker, never an amender of the amending law, then the latest made (RULES `changed-by-one-law-for-compliance`). `label_periods.ex` is in the build's version, so a change to it marks every built law stale until a rebuild. That is Store and build's parked bug: the label fold sits in the build's version.
 
 **Skill.** None.
 
@@ -431,7 +441,7 @@ Session files: `.claude/sessions/lat-change-pipeline/<date>-<family>-<step-name>
 9. **Label fold**: the gate, one agent pass over S and R, golden from inputs.
 10. **Measures**: every figure the family's steps publish, printed by code and replicated.
 11. **Store and build**: two builds, digests compared, staleness, the sources gate re-run.
-12. **Labels side by side**: the new timeline beside the old, 0 rule breaks, differences counted.
+12. **Labels side by side**: the new timeline beside the old (`--strata`), 0 rule breaks, the side-by-side totals and gaps saved as the switch-over's baseline.
 13. **Switch-over**: causes, checked rows, rules, golden; dry run → Jason → restore point → add the family to `:label_families` → `mix lat.label_switch --apply`.
 
 After a reader fix, rebuild (`mix lat.vocabulary --check --family F`, then `--golden`) so the change register reflects it before the next step looks at it. Each family's new forms extend the catalogues. Steps are batched across families only once families stop surfacing new defects.

@@ -271,10 +271,9 @@ A law that amended the amending law before it took effect is credited too, where
 - **Serves:** `binds-on-date` · **Code:** `Label.Facts.commencers/3` · **Test:** `label_fold_test` "commenced_by: a commencing order, apart from the laws that made the text" · **Origin:** Jason 2026-10-30, `cv-s09-label-fold` (batch 1). This superseded the 2026-10-21 ruling that put the commencing law in `changed_by`.
 
 ### `changed-by-one-law-for-compliance`
-The table's single `changed_by` is the last law in `changed_by_all`, else the last law in `commenced_by`.
-- **Example:** SI 2000/1043 reg.11(3) writes `UK_wsi_2005_1806`.
-- **Serves:** `binds-on-date` · **Code:** `LabelPeriods.periods/4` · **Test:** `label_periods_test` "changed_by keeps one law, the last the fold lists"; "… is the law that commenced it" · **Origin:** Jason 2026-10-31 ("add, don't replace"), `cv-05-consumers`; `cv-06-switch-over` decisions (2026-10-31)
-- **Differs:** the list is sorted by name (`Facts.clean/2`), so "last" is alphabetical, not "the law that made the text". REACH Art 127E writes SI 2019/858, the amender of the amender. See open decision 1.
+The table's single `changed_by` is the law that made the text, else the last law in `commenced_by`. Among several makers it is the principal maker, never an amender of the amending law before that law took effect (an earlier-amendment credit), unless only credits made the text. Of those it is the latest made, by year and then number, whatever the series.
+- **Example:** REACH Art 127E(10) on 2020-12-31 writes SI 2019/758, the exit SI, not SI 2020/1577, which amended it before exit day. SI 1999/3242 reg.10(1)(c) on 2006-10-01 writes SSI 2006/457 over SI 2005/1541.
+- **Serves:** `binds-on-date` · **Code:** `LabelPeriods.periods/4` (`one_law/2`) · **Test:** `label_periods_test` "changed_by: the law that made the text, never an amender of the amender"; "… the latest made by year then number"; "… the law that commenced it" · **Origin:** Jason 2026-10-31 ("add, don't replace"), `cv-05-consumers`; Jason 2026-11-06, Maritime Safety: Labels side by side, Decision 1 (A; Gemini concurred). This closes open decision 1.
 
 ### `repeal-credits-the-repealer`
 On a repealed or repealed_saved period, `changed_by` holds the repealing laws.
@@ -695,7 +694,8 @@ Code comments and the golden file still cite the 2026-10 convention letters. Her
 
 Each item gives the rulings with their dates, what the code does now, the aim at stake, and a recommendation. Answer by number (keep, change or a different option).
 
-### 1. What `changed_by` means
+### 1. What `changed_by` means — DECIDED 2026-11-06
+- **Decided:** Jason 2026-11-06 (Maritime Safety: Labels side by side, Decision 1, A): the principal maker, then the latest made; see `changed-by-one-law-for-compliance`. The note below is kept as the record.
 - **Rulings:**
   - 2026-10-13 (D1): the laws that made the current text. A commencement is a version, and its law is credited.
   - 2026-10-21: golden normalised to D1, so the commencing order is in `changed_by` (HSWA s.78 had [], 2021 c.30 s.8 had SI 2022/48: applied unevenly).
