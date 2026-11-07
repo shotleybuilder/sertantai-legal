@@ -43,4 +43,17 @@ defmodule SertantaiLegal.Scraper.LabelTools.FamilyFoldTest do
     assert_received {:folded, "a"}
     assert_received {:folded, "b"}
   end
+
+  test "a law's rows come back sharing one list of its changes, not a copy each" do
+    changes = for i <- 1..50, do: %{key: "k#{i}", target: "s.#{i}"}
+
+    fold = fn law ->
+      for i <- 1..20, do: %{id: "#{law}-#{i}", changes: changes, reaching: Enum.take(changes, 2)}
+    end
+
+    [{"a", [first | rest] = rows}] = FamilyFold.rows(["a"], fold: fold, workers: 1)
+
+    assert rows == fold.("a")
+    for r <- rest, do: assert(:erts_debug.same(r.changes, first.changes))
+  end
 end
