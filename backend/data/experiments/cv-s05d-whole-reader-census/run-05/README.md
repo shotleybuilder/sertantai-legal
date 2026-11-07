@@ -23,3 +23,5 @@ R1 is a regression from the seed 19 fix: `Parts.schedule_parts` expands a Part t
 - `grepl.py LAW REGEX`: the stored sentences;
 - `detail.py`: `out/silent_detail.txt`;
 - `ugroups.py SKIP`: `out/unnamed_detail.txt`.
+
+**Superseded (2026-11-07, #192):** `mix lat.extent_census` runs `dump.exs`, `census.py`, `bench.py` and `rdiff.py` as one task, and its outputs are the same byte for byte (run-07, `ExtentCensusTest`). This folder stays as the record.

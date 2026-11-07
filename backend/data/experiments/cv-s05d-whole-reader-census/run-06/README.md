@@ -20,3 +20,5 @@
 - extent, feed and markup checks PASS (our faults 0);
 - `law_text` extent and territory claims unchanged against `r6b.claims15`;
 - catalogue: 1980/65's example accepted as `list:only:E+W`; 4 examples re-keyed (the Chapters text corrected, same classes); 2010/490's NI list now read; the feed catalogue's 31 Schedule-triple pattern renames from round 13 accepted (0 examples differ).
+
+**Superseded (2026-11-07, #192):** `mix lat.extent_census` runs `dump.exs`, `census.py`, `bench.py` and `rdiff.py` as one task, and its outputs are the same byte for byte (run-07, `ExtentCensusTest`). This folder stays as the record.

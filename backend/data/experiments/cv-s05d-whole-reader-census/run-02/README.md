@@ -33,3 +33,5 @@ Every silent candidate was triaged by hand, and a sample of each wording was con
 About 30 candidates are finder misses, to be fixed in run-03. Two are known (KD, KX), and about 18 are doubtful.
 
 The over-reach list (516 refs) has had a first pass only; it is roughly half real.
+
+**Superseded (2026-11-07, #192):** `mix lat.extent_census` runs `dump.exs`, `census.py`, `bench.py` and `rdiff.py` as one task, and its outputs are the same byte for byte (run-07, `ExtentCensusTest`). This folder stays as the record.

@@ -35,3 +35,5 @@ S1 and S6 also gained laws: 1991/65, 1982/49, 1973/26 (wrong default), 1987/27 a
 ## Left
 
 About 15 finder misses and about 12 doubtful candidates, listed in `out/triage.md`. Round 13's re-run of this census will show whether any of them hide a defect.
+
+**Superseded (2026-11-07, #192):** `mix lat.extent_census` runs `dump.exs`, `census.py`, `bench.py` and `rdiff.py` as one task, and its outputs are the same byte for byte (run-07, `ExtentCensusTest`). This folder stays as the record.

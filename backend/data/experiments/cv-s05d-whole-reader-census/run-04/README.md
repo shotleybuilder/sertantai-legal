@@ -22,3 +22,5 @@
 - 1 reference guard.
 
 **New unnamed refs:** all 39 are correct reads the finder can't name: "subsections (1) to (6) of section 11", Sch.18's Parts, "229 (and Schedule 22), 230", "Paragraphs (28) … of regulation 5", and the two exception clauses of 1973/26.
+
+**Superseded (2026-11-07, #192):** `mix lat.extent_census` runs `dump.exs`, `census.py`, `bench.py` and `rdiff.py` as one task, and its outputs are the same byte for byte (run-07, `ExtentCensusTest`). This folder stays as the record.

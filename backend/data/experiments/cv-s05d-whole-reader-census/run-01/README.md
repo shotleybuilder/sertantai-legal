@@ -84,3 +84,5 @@ The sweep's `noise:*` labels hold real application statements the reader never r
 - uksi 2025/1042 "apply to lessors of social homes in England";
 - uksi 2026/335 "apply to buildings and building work in England";
 - five "do not apply in relation to any building in Wales other than an excepted energy building" (2012/3119, 2013/1959, 2014/579, 2015/767, 2016/285). These are a scope question for Jason.
+
+**Superseded (2026-11-07, #192):** `mix lat.extent_census` runs `dump.exs`, `census.py`, `bench.py` and `rdiff.py` as one task, and its outputs are the same byte for byte (run-07, `ExtentCensusTest`). This folder stays as the record.

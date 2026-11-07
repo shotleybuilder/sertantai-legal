@@ -23,3 +23,5 @@ CV-S05d is closed. This run is CV-S05's check of the fix batch for seed 20's thr
 | Silent candidate sentences | 57 | 58 (+1 finder-side: 2009/26 "of section 105" owner) |
 | Unnamed stored refs | 329 (42 laws) | 360 (45 laws): +31 of the fixes' new reads (mentioned-subsection items, s.105's subsections) |
 | Recall bench | 5/10 | 5/10 |
+
+**Superseded (2026-11-07, #192):** `mix lat.extent_census` runs `dump.exs`, `census.py`, `bench.py` and `rdiff.py` as one task, and its outputs are the same byte for byte (run-07, `ExtentCensusTest`). This folder stays as the record.
