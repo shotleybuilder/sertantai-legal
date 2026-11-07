@@ -17,7 +17,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.ProvisionTable do
   """
 
   # "Section 1." / "Section 85" / "Sections 40 to 52." / "Section 9 and 10."
-  @provision ~r/^Sections?\s+(\d+[A-Z]*)(?:\s+(to|and)\s+(\d+[A-Z]*))?\s*\.?\s*$/
+  # / "Sections 61and 62" (glued in the source: SI 2014/3248 Sch. 3)
+  @provision ~r/^Sections?\s+(\d+[A-Z]*)(?:(?:\s+|(?<=\d)(?=and\s))(to|and)\s+(\d+[A-Z]*))?\s*\.?\s*$/
 
   # a new entry in the extent cell: "… (12). Subsection (13) except …"
   @entry ~r/\.\s+(?=Subsections?\s|In\s+subsection\b|The\s+whole\b|The\s+words?\b)/
@@ -111,8 +112,12 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.ProvisionTable do
     |> Enum.reject(&(&1 == ""))
   end
 
+  # the whole section: "The whole section (in each case)", "In full" (SI
+  # 2014/3248 Sch. 3)
+  @whole ~r/^(?:The\s+whole\b|In\s+full\b)/i
+
   defp range(n, m, entry) do
-    if entry =~ ~r/^The\s+whole\b/i,
+    if entry =~ @whole,
       do: "Sections #{n} to #{m}" <> qualification(entry),
       else: line(n, entry)
   end
@@ -135,7 +140,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.ProvisionTable do
   # other ("In subsection (2), …", "The words “…”.") → "In section 125, …"
   defp line(n, entry) do
     cond do
-      entry =~ ~r/^The\s+whole\b/i ->
+      entry =~ @whole ->
         "Section #{n}" <> qualification(entry)
 
       match = Regex.run(~r/^Subsections?\s+(\(.*)$/s, entry) ->

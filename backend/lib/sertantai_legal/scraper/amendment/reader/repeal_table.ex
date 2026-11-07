@@ -131,25 +131,87 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTable do
   # a law column ("Chapter | Short title | Extent of repeal"): each row's
   # law named in its cells; one law's provisions ("Provision | Extent of
   # repeal"): the law the heading names, else the only law given
+  # … and a table naming each enactment in a row of its own, its provisions
+  # under it (SI 2014/3248 Sch. 3: "Mines and Quarries Act 1954", then
+  # "Section 19 | In full"): the rows under a law line are that law's, and
+  # a law not held takes its rows with it, never to the only law given
+  # (OH&S: Amending-law reader repair, 2026-11-07)
   defp rows({heading, _header, rows}, laws) do
     sections = Enum.filter(laws, &(&1.kind == :section))
 
-    if one_law?(rows) do
-      case Enum.filter(sections, &table_law?(heading, &1)) do
-        [law] -> [{law, provision_lines(rows)}]
-        [] when length(sections) == 1 -> [{hd(sections), provision_lines(rows)}]
-        _ -> []
-      end
-    else
-      for row <- rows,
-          length(row) in [2, 3],
-          {law_cells, [extent]} = Enum.split(row, -1),
-          cells = Enum.map_join(law_cells, " ", &Doc.text/1),
-          law <- sections,
-          table_law?(cells, law),
-          do: {law, extent |> Doc.lines() |> Enum.flat_map(&entries/1)}
+    cond do
+      Enum.any?(rows, &(row_kind(&1) == :law_line)) -> named_rows(heading, rows, sections)
+      one_law?(rows) -> one_law_rows(heading, rows, sections)
+      true -> law_column_rows(rows, sections)
     end
   end
+
+  defp one_law_rows(heading, rows, sections) do
+    case Enum.filter(sections, &table_law?(heading, &1)) do
+      [law] -> [{law, provision_lines(rows)}]
+      [] when length(sections) == 1 -> [{hd(sections), provision_lines(rows)}]
+      _ -> []
+    end
+  end
+
+  defp law_column_rows(rows, sections) do
+    for row <- rows,
+        length(row) in [2, 3],
+        {law_cells, [extent]} = Enum.split(row, -1),
+        cells = Enum.map_join(law_cells, " ", &Doc.text/1),
+        law <- sections,
+        table_law?(cells, law),
+        do: {law, extent |> Doc.lines() |> Enum.flat_map(&entries/1)}
+  end
+
+  # the rows in order, each provision row the current law's: the law the
+  # heading names until the first law line, then each law line's (nil
+  # when it names a law not held: its rows are dropped)
+  defp named_rows(heading, rows, sections) do
+    first =
+      case Enum.filter(sections, &table_law?(heading, &1)) do
+        [law] -> law
+        _ -> nil
+      end
+
+    {found, _} =
+      Enum.flat_map_reduce(rows, first, fn row, law ->
+        named_row(row_kind(row), row, law, sections)
+      end)
+
+    found
+  end
+
+  defp named_row(:law_line, row, _law, sections),
+    do: {[], Enum.find(sections, &table_law?(row_text(row), &1))}
+
+  defp named_row(:provision, _row, nil, _sections), do: {[], nil}
+  defp named_row(:provision, row, law, _sections), do: {[{law, provision_lines([row])}], law}
+
+  # a row naming its law in its first cell sets the current law too
+  defp named_row(:law_row, row, _law, sections) do
+    found = law_column_rows([row], sections)
+    {found, Enum.find_value(found, &elem(&1, 0))}
+  end
+
+  defp named_row(_kind, _row, law, _sections), do: {[], law}
+
+  # a header ("Enactment | Extent of repeal", repeated mid-table), a law
+  # line (one cell naming no provision), a provision row, or a row naming
+  # its law in its first cell
+  defp row_kind(row) do
+    texts = row |> Enum.map(&Doc.text/1) |> Enum.reject(&(String.trim(&1) == ""))
+
+    cond do
+      header?(row) -> :header
+      match?([_], texts) and not ProvisionTable.provision?(hd(texts)) -> :law_line
+      length(row) == 2 and ProvisionTable.provision?(Doc.text(hd(row))) -> :provision
+      length(row) in [2, 3] -> :law_row
+      true -> :other
+    end
+  end
+
+  defp row_text(row), do: Enum.map_join(row, " ", &Doc.text/1)
 
   # its rows name sections, not laws ("Section 3. | Subsection (3)."): a
   # header "Provision" alone doesn't say (Sentencing Act 2020 Sch. 29 names

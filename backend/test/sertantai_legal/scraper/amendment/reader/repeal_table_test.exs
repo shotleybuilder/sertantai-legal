@@ -219,5 +219,60 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTableTest do
 
       assert RepealTable.repeal_table(no_title, "schedule-1", [@factories]) == []
     end
+
+    @hswa Reader.law_ref("UK_ukpga_1974_37", "Health and Safety at Work etc. Act", "s")
+    @tips Reader.law_ref("UK_ukpga_1969_10", "Mines and Quarries (Tips) Act", "s")
+
+    # SI 2014/3248 Sch. 3 as legislation.gov.uk gives it: each enactment
+    # named in a row of its own, its provisions under it; then rows naming
+    # their law in the first cell, a repeated header among them
+    defp mines_2014 do
+      table("UK_uksi_2014_3248", "schedule-3", "Repeals", [
+        ["Enactment", "Extent of repeal"],
+        ["Mines and Quarries Act 1954"],
+        ["Section 19", "In full"],
+        ["Section 28", "In full"],
+        ["Sections 36 and 37", "In full"],
+        ["Sections 39 to 46", "In full"],
+        ["Sections 61and 62", "In full"],
+        ["Section 141", "Subsection (5)"],
+        ["Schedule 3", "In full"],
+        ["Mines and Quarries (Tips) Act 1969"],
+        ["Sections 1 to 7", "In full"],
+        ["Section 10", "In full"],
+        [
+          "Health and Safety at Work etc. Act 1974",
+          "The entry relating to the Mines and Quarries (Tips) Act 1969 in Schedule 1"
+        ],
+        ["Enactment", "Extent of repeal"],
+        ["Judicial Pensions and Retirement Act 1993", "Section 26(8)(b)"]
+      ])
+    end
+
+    defp by_law(rules),
+      do: rules |> Enum.map(&{&1.amends, &1.targets, &1.level}) |> Enum.sort()
+
+    test "a row naming an enactment takes the rows under it; a law not held takes them with it (SI 2014/3248 Sch. 3)" do
+      # read for HSWA alone (the build's read of one law): the 1954 and
+      # 1969 Acts' sections are theirs, never HSWA's (HSWA's own line, an
+      # entry in its Schedule 1, is a form this reader doesn't read)
+      assert RepealTable.repeal_table(mines_2014(), "schedule-3", [@hswa]) == []
+
+      # ("Schedule 3 | In full" is a form this reader doesn't read)
+      assert by_law(RepealTable.repeal_table(mines_2014(), "schedule-3", [@hswa, @mines, @tips])) ==
+               Enum.sort([
+                 {"UK_ukpga_1954_70", ["s.19"], :provision},
+                 {"UK_ukpga_1954_70", ["s.28"], :provision},
+                 {"UK_ukpga_1954_70", ["s.36"], :provision},
+                 {"UK_ukpga_1954_70", ["s.37"], :provision},
+                 {"UK_ukpga_1954_70", ["s.39..s.46"], :provision},
+                 # "61and 62", glued in the source
+                 {"UK_ukpga_1954_70", ["s.61"], :provision},
+                 {"UK_ukpga_1954_70", ["s.62"], :provision},
+                 {"UK_ukpga_1954_70", ["s.141(5)"], :provision},
+                 {"UK_ukpga_1969_10", ["s.1..s.7"], :provision},
+                 {"UK_ukpga_1969_10", ["s.10"], :provision}
+               ])
+    end
   end
 end
