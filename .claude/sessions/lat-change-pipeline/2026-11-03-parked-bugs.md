@@ -395,7 +395,7 @@ bugs:
   affected: every switched law (149)
   fix: Add a :changes_version reason and count it in --strict
   step: Store and build
-  status: open
+  status: fixed
   issue: 193
   moved_from: docs/lat-change-pipeline/DATA-ARCHITECTURE.md (2026-11-03)
 - pattern: 'The family switch matches the display family name by substring (''💙 OH&S: Occupational / Personal Safety'' contains the setting); switched laws are stamped with the old path''s code version'
@@ -404,7 +404,7 @@ bugs:
   affected: 377 family laws
   fix: Match the family exactly by a stable key; stamp the new path's version
   step: Switch-over
-  status: open
+  status: fixed
   moved_from: docs/lat-change-pipeline/DATA-ARCHITECTURE.md (2026-11-03)
 - pattern: 'The single changed_by picks the alphabetically last law where several made the text (REACH Art 127E: SI 2019/858, the amender of the amender)'
   category: changed-by-alphabetical

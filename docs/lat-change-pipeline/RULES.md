@@ -60,6 +60,11 @@ LAT holds rows only for live making laws. Laws that only amend or commence are r
 - **Example:** Maritime Safety: 117 making (16 with rows before the step; 101 parsed in it), 51 not making.
 - **Serves:** `binds-on-date` · **Code:** `mix lat.making_laws`, `mix lat.reparse --store only` · **Test:** pass rule 5 of the step · **Origin:** maritime-safety-meta Decision 1 (Jason 2026-11-04)
 
+### `family-re-parses-its-parser-stale-laws`
+Each family's Making laws step re-parses its laws that were parsed by older parser code, after a read-only text diff (`mix lat.text_diff --laws … --store only`) shows what would move. So the parser backlog clears family by family, and no whole-corpus re-parse is needed.
+- **Example:** 165 of the 266 switched laws were parser-stale. The text diff moved 1 row (a duplicate heading in the Merchant Shipping Act 1979), and the re-parse re-stamped all 165.
+- **Serves:** `binds-on-date` · **Code:** `mix lat.text_diff`, `mix lat.reparse --store only` · **Test:** `lat.stale --strict --switched` · **Origin:** silent staleness #193, Decision 1 (Jason 2026-11-07)
+
 ## 1. Status
 
 ### `five-statuses`

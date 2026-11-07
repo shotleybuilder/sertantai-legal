@@ -333,7 +333,7 @@ Before this, OH&S used G, S and T by shape and R pooled to the 95% bound (2026-1
    - first rebuild every other stale built law (`mix lat.stale --list`; `mix lat.vocabulary --build --laws …`), so golden scores fresh changes;
    - then `mix lat.vocabulary --check --family F`: the build, conflict counts, golden from the store, and **every step's gate** (`mix lat.gates --family F`).
 3. `mix lat.changes_digest --built --out A.tsv`; build B (the same builds with `--build`); digest again; `cmp`.
-4. `mix lat.stale`: 0 built laws stale.
+4. `mix lat.stale --strict --switched` exits 0: no built law stale (an input, the code or a reader's readings), and no switched-family law's labels stale (#193). A reader reason is fixed by re-reading in the mode that wrote the readings (`lat.stale` prints it), then building.
 5. Golden from inputs, and one agent hand check of the staleness sample (`mix lat.stale --sample FILE --family F --seed S`, drawn twice and compared with `cmp`).
 
 **Every step's gate.** A rebuild after a step closes can move that step's gate: on Maritime Safety, three gates that had passed failed unseen. So the build's check re-runs all nine. Each check task returns its result (`ChangeVocabulary.Gate.Step`), and `lat.gates` exits non-zero on any failure. A failure belongs to its step and is parked there, never fixed here. `--no-gates` skips the gates for a fix round; the label gate folds the family (about 12½ min).

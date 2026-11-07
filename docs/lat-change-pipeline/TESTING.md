@@ -94,7 +94,7 @@ This pair (rules over every row plus a fixture of checked rows) is what ended th
 
 ### Other checks that are code
 
-`change_staleness_test.exs` and `label_staleness_test.exs` (pure, hand-built facts), `change_digest_test.exs` (build repeatable), and the `measures/` tests (bounds, draws, verdicts).
+`change_staleness_test.exs` and `label_staleness_test.exs` (pure, hand-built facts; the switched law's reasons), `store_inputs_db_test.exs` (each reading stamped by its reader, a planted older or NULL `reader_version` reported, `lat.stale --strict` and `--switched` exit non-zero on it; #193), `source_version_test.exs` (a file added under a pattern makes the version not `fresh?`), `change_digest_test.exs` (build repeatable), and the `measures/` tests (bounds, draws, verdicts).
 
 ---
 
