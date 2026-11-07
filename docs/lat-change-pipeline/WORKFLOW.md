@@ -356,7 +356,7 @@ Before this, OH&S used G, S and T by shape and R pooled to the 95% bound (2026-1
 
 **Outputs.** Nothing written. A count of rows that agree, differ today, or differ only in history: the baseline for the switch-over. A retirement list for the old path (`backend/data/reports/change-vocabulary/cv-05-retirement-list.md`).
 
-**Check today.** `mix lat.label_check --family F --strata` (about 12 minutes on Maritime Safety), and golden from inputs. It prints:
+**Check today.** `mix lat.label_check --family F --strata` (about 90 seconds cold on Maritime Safety, seconds once the fold cache is filled; see "The label tools fold once" below), and golden from inputs. It prints:
 - the S shapes and the T differences by field;
 - "timeline rows", the periods breaking the table's rules (`LabelPeriods.violations/1`);
 - "side by side", each row in one class (`LabelStrata.totals/1`): agree, differ today, differ only in history, or no stored timeline;
@@ -390,6 +390,8 @@ There is no agent check: the conversion is a fixed mapping under unit tests (`la
 4. **Golden** from inputs.
 5. **Dry run:** `mix lat.label_switch` (no write) → Jason → restore point (`lat_label_timeline`, `lat_change_log`, `provision_changes`, `provision_change_claims`, `lat_events`) → the family added to `:label_families` → `mix lat.label_switch --apply`.
 6. **After the apply:** the stored timeline compared with what the switch writes (`LabelSource.timeline/1`), law by law, known limits apart. `--strata` can't show this: it compares the fold's own periods, and the timeline's conventions (a repeal's day and empty territory, the commencer as `changed_by`, no unknown period before an EU law's first dated day) always differ from them.
+
+**The label tools fold once** (#191, 2026-11-07). `lat.label_shadow`, `lat.label_rules` (every `--list`) and `lat.label_check` fold a family's laws through one fold cache (`LabelTools.FoldCache`, `data/cache/label-fold/`), several at once under `LawRunner`'s guard (`LabelTools.FamilyFold`), with outputs in the laws' order. On Maritime Safety the first tool takes about 85 seconds and each one after it about 5 (each was about 12 minutes before). The cache key covers everything a fold reads: the code version, the law's latest build, its stored timeline, its rows, its register entry and its CLML body. So a rebuild, a relabel or a code change folds the law again. `--no-cache` folds each law afresh. The dry run (`lat.label_switch`) folds its laws in parallel, without the cache (about 80 seconds). Run heavy checks in a capped unit: `systemd-run --user --unit=NAME -p MemoryMax=14G -p MemorySwapMax=0 --working-directory=backend …`. A run that overruns is then killed alone, not the terminal (the OOM killer, 2026-11-07).
 
 **Pass rule as used** (Maritime Safety, 2026-11-07):
 - the causes saved;
