@@ -79,7 +79,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
 
     changes = within(changes, containers)
     # a law commenced by an order, no start held: from its making (S4)
-    provision = Made.by_order(provision, Enum.filter(changes, &reaches?(&1, base_id(id))))
+    base = base_id(id)
+    provision = Made.by_order(provision, Enum.filter(changes, &reaches?(&1, base)))
     start = provision.start
     version = Map.get(provision, :version)
     version_start = Map.get(provision, :version_start)
@@ -310,14 +311,28 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
   provision-level changes on an ancestor or on the whole law (`"*"`) —
   never a child's (C9). An amendment to an earlier amending provision
   reaches what lies under it unless it is in words (CV-S09 round 8).
+
+  A provision holding `id` begins as `id` does, so a target that doesn't
+  is turned away before the ancestors' regexes run: the fold tests every
+  change on every row, and those regexes were most of its time (#191,
+  2026-11-07: the Merchant Shipping Act 1995, 516 s a fold).
   """
   @spec reaches?(Change.t(), String.t()) :: boolean()
   def reaches?(%Change{target: target, resolved: r} = c, id) do
     target == id or
-      (((r.level == :provision and level_stated?(r)) or
-          (Facts.earlier_amendment?(c) and r.level != :words)) and
-         (target == "*" or target in above(id)))
+      ((target == "*" or (holds_prefix?(target, id) and target in above(id))) and
+         ((r.level == :provision and level_stated?(r)) or
+            (Facts.earlier_amendment?(c) and r.level != :words)))
   end
+
+  # every ancestor `LatRef.ancestors/1` gives is a prefix of the row's id,
+  # then perhaps a territorial tag: its part before any "[" begins the id
+  defp holds_prefix?(target, id) when is_binary(target) do
+    [head | _] = :binary.split(target, "[")
+    String.starts_with?(id, head)
+  end
+
+  defp holds_prefix?(_target, _id), do: false
 
   # the provisions holding it: a disambiguated row's own number is another
   # provision of that number, never one holding it (CV-S09 round 8: HSWA
