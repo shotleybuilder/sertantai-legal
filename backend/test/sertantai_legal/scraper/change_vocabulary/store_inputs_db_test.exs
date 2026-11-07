@@ -160,4 +160,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.StoreInputsDbTest do
     line = law <> "\tchanges: commencement_reader"
     assert_received {:mix_shell, :info, [^line]}
   end
+
+  test "mix lat.stale --strict --switched passes on fresh builds, and fails on a stale one" do
+    law = law()
+    CommencementStore.write("UK_uksi_2099_7007", [commencement(law, "UK_uksi_2099_7007")])
+    {:ok, _} = Store.write(law, [], Store.Inputs.of(law, [], []))
+
+    Mix.shell(Mix.Shell.Process)
+    on_exit(fn -> Mix.shell(Mix.Shell.IO) end)
+
+    Mix.Tasks.Lat.Stale.run(["--strict", "--switched"])
+
+    age("commencement_rules", "UK_uksi_2099_7007", nil)
+    assert catch_exit(Mix.Tasks.Lat.Stale.run(["--strict", "--switched"])) == {:shutdown, 1}
+  end
 end

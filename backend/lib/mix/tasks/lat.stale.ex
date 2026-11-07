@@ -10,6 +10,7 @@ defmodule Mix.Tasks.Lat.Stale do
       mix lat.stale                 # counts by reason
       mix lat.stale --list          # also each stale law and its reasons
       mix lat.stale --strict        # exit non-zero when any law is stale
+      mix lat.stale --strict --switched   # only the switched families' laws' labels count (with the change register)
       mix lat.stale --sample FILE --family F --built 20 --unbuilt 10 --seed S
                                     # the change register's staleness hand sample
 
@@ -41,6 +42,7 @@ defmodule Mix.Tasks.Lat.Stale do
         strict: [
           list: :boolean,
           strict: :boolean,
+          switched: :boolean,
           sample: :string,
           family: :string,
           built: :integer,
@@ -56,13 +58,19 @@ defmodule Mix.Tasks.Lat.Stale do
     facts = LabelStaleness.facts()
 
     stale =
-      for {law, facts} <- facts,
-          reasons = LabelStaleness.reasons(facts, current),
+      for {law, f} <- facts,
+          reasons = LabelStaleness.reasons(f, current),
           reasons != [],
           do: {law, reasons}
 
+    # the switched families' laws: their labels are served from the change
+    # register (Decision 1, #193); the old path's backlog is reported only
+    switched = for {law, %{switched: true}} <- facts, into: MapSet.new(), do: law
+    stale_switched = Enum.filter(stale, &MapSet.member?(switched, elem(&1, 0)))
+
     Mix.shell().info(
-      "parser #{current.parser}, labels #{current.labels}: #{length(stale)} stale laws"
+      "parser #{current.parser}, labels #{current.labels}: #{length(stale)} stale laws" <>
+        " (switched families: #{length(stale_switched)} of #{MapSet.size(switched)})"
     )
 
     stale
@@ -76,7 +84,9 @@ defmodule Mix.Tasks.Lat.Stale do
 
     stale_changes = changes(Enum.map(facts, &elem(&1, 0)), opts)
 
-    if opts[:strict] == true and (stale != [] or stale_changes != []),
+    counted = if opts[:switched], do: stale_switched, else: stale
+
+    if opts[:strict] == true and (counted != [] or stale_changes != []),
       do: exit({:shutdown, 1})
   end
 
