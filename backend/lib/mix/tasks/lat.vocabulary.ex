@@ -346,17 +346,8 @@ defmodule Mix.Tasks.Lat.Vocabulary do
   end
 
   defp provisions(law, ids) do
-    %{rows: start_rows} =
-      Repo.query!(
-        "SELECT effective_from FROM lat_change_log WHERE law_name = $1 AND collector = 'commencement' AND section_id IS NULL LIMIT 1",
-        [law]
-      )
-
-    start =
-      case start_rows do
-        [[%Date{} = d]] -> d
-        _ -> Mix.raise("no law start for #{law}")
-      end
+    # from inputs, as the build resolves it (`Build.start/1`), never the old register
+    start = Build.start(law).date || Mix.raise("no law start for #{law}")
 
     containers = LabelSource.containers(law)
 

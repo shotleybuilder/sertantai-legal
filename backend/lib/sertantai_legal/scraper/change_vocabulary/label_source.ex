@@ -6,8 +6,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
 
   - the rows: `legal_articles` provision rows (not signatures, headings
     or tables), each with its extent;
-  - the start: the law's law-level commencement (`lat_change_log`); a law
-    with none is a gap (C10), folded with its start undated;
+  - the start: the law's start as its latest build stored it
+    (`Store.start/1`, resolved by `LawStart`; never the old register's,
+    Maritime Safety: Switch-over); a start no source dates is a gap (C10),
+    folded undated, and a law built before starts were stored can't be
+    folded (`:start_not_built`: rebuild it);
   - the changes: `provision_changes` (`Store.for_law/1`);
   - today's label (`lat_label_timeline`), for stratum T.
 
@@ -40,8 +43,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
   @doc "Each provision row of `law` with its periods, the changes reaching it and today's label; `{:error, why}` when the law can't be folded."
   @spec rows(String.t()) :: [row()] | {:error, atom()}
   def rows(law) do
-    with {:ok, xml} <- clml(law) do
-      start = start(law)
+    with {:ok, xml} <- clml(law),
+         {:ok, start} <- start(law) do
       made = made(law)
       valid = Markup.valid(xml)
       extents = extents(law)
@@ -131,16 +134,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
   end
 
   defp start(law) do
-    case Repo.query!(
-           # the law's own record, never a provision-level one held at law
-           # level (`provision_unread`: 39 laws, CV-05) — as `LabelTimeline.law_start/1`
-           "SELECT effective_from FROM lat_change_log WHERE law_name = $1 " <>
-             "AND collector = 'commencement' AND section_id IS NULL " <>
-             "AND effect_type NOT LIKE 'provision\\_%' LIMIT 1",
-           [law]
-         ) do
-      %{rows: [[%Date{} = d]]} -> d
-      _ -> nil
+    case Store.start(law) do
+      {:ok, d} -> {:ok, d}
+      :none -> {:error, :start_not_built}
     end
   end
 

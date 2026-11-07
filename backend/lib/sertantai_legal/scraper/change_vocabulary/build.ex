@@ -4,7 +4,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Build do
   its LAT rows, its feed effects and the primary sources
   (`Primary`) read into `ChangeVocabulary.changes/5`, written to
   `provision_changes` (`Store.write/3`) with what the build read
-  (`Store.Inputs`). Moved out of `mix lat.vocabulary` (CV-06) so the label
+  (`Store.Inputs`) and the law's start (`start/1`). Moved out of `mix lat.vocabulary` (CV-06) so the label
   refresh can build a switched family's law after its parse.
 
   Reads the database and the local CLML store; `law/1` writes the law's
@@ -12,7 +12,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Build do
   """
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.{ChangeVocabulary, LatStagedParser}
+  alias SertantaiLegal.Scraper.{ChangeVocabulary, LatStagedParser, LawStart}
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Ref, Store}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Primary
 
@@ -37,9 +37,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Build do
     all = rows(law)
     opts = law |> primary(effects) |> Keyword.merge(rows: Map.keys(all), xml_ids: xml_ids(law))
     changes = ChangeVocabulary.changes(law, xml, effects, all, opts)
-    {:ok, n} = Store.write(law, changes, inputs(law, effects, opts))
+    {:ok, n} = Store.write(law, changes, inputs(law, effects, opts), start(law))
     "#{n.changes} changes, #{n.claims} claims"
   end
+
+  @doc """
+  The law's start, as `LawStart` resolves it from the law's register record,
+  CLML metadata and LAT rows: what the old register's commencement collector
+  records, read here so the label fold never reads the old register
+  (Maritime Safety: Switch-over, 2026-11-07).
+  """
+  @spec start(String.t()) :: LawStart.t()
+  def start(law), do: law |> LawStart.Input.of(LawStart.Input.rows(law)) |> LawStart.resolve()
 
   # every LAT row of the law, with its extent (the change's bound)
   @doc "Every LAT row of `law` with its extent."

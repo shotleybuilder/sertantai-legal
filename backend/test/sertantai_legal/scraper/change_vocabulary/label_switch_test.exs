@@ -54,6 +54,20 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSwitchTest do
     assert LabelSwitch.families() == []
   end
 
+  test "a family is switched by its exact name, the display marker dropped" do
+    fams = ["OH&S: Occupational / Personal Safety", "TRANSPORT: Maritime Safety"]
+
+    assert LabelSwitch.family_in?("💙 OH&S: Occupational / Personal Safety", fams)
+    assert LabelSwitch.family_in?("💙 TRANSPORT: Maritime Safety", fams)
+    assert LabelSwitch.family_in?("TRANSPORT: Maritime Safety", fams)
+    refute LabelSwitch.family_in?("💙 OH&S: Occupational", fams)
+    refute LabelSwitch.family_in?("💙 OH&S: Offshore Safety", fams)
+
+    refute LabelSwitch.family_in?("💙 OH&S: Occupational / Personal Safety", ["OH&S: Occupational"])
+
+    refute LabelSwitch.family_in?(nil, fams)
+  end
+
   test "the dry run's comparison: rows differing and today's status each way" do
     old = [
       %Period{law_name: "A", section_id: "A:s.1", valid_from: ~D[1975-01-01], status: "in_force"},

@@ -43,4 +43,32 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.StoreDbTest do
     assert [^one] = Store.for_law("UK_test_2099_1")
     assert one.resolved.conflicts != []
   end
+
+  defp register(name) do
+    [_, type, year, number] = String.split(name, "_")
+
+    SertantaiLegal.Legal.LegalRegister
+    |> Ash.Changeset.for_create(:create, %{
+      country: "uk",
+      name: name,
+      title_en: "Test",
+      type_code: type,
+      year: String.to_integer(year),
+      number: number
+    })
+    |> Ash.create!()
+  end
+
+  test "the law's start is stored with its build, and the latest build's is read" do
+    register("UK_uksi_2099_3")
+    assert Store.start("UK_uksi_2099_3") == :none
+
+    start = %SertantaiLegal.Scraper.LawStart{treatment: :lrt_metadata, date: ~D[2099-05-01]}
+    {:ok, _} = Store.write("UK_uksi_2099_3", [], %{}, start)
+    assert Store.start("UK_uksi_2099_3") == {:ok, ~D[2099-05-01]}
+
+    # a known limit: no date, but a start was resolved
+    {:ok, _} = Store.write("UK_uksi_2099_3", [], %{}, %{start | date: nil})
+    assert Store.start("UK_uksi_2099_3") == {:ok, nil}
+  end
 end

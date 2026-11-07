@@ -3,7 +3,8 @@ defmodule SertantaiLegal.Scraper.LabelRefresh do
   After a LAT parse, the law's labels follow (lat-refactor LR-25): its change
   register (`ChangeCollector`: collect → fidelity gate → write) and then its
   label timeline (`LabelTimeline`: build → write) — for a family switched to
-  the change vocabulary, built from its merged changes instead
+  the change vocabulary, its merged changes built and its timeline from them
+  instead, the old register neither written nor read
   (`ChangeVocabulary.Build`, `LabelSwitch`; CV-06). `LatStagedParser` calls
   `run/2` once the rows, notes and cause are persisted — the one parse path
   (LR-28) — so no parse leaves a stale register or timeline behind.
@@ -21,21 +22,48 @@ defmodule SertantaiLegal.Scraper.LabelRefresh do
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.{ChangeCollector, LabelProjection, LabelTimeline, LabelVersion}
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{Build, LabelSwitch}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Build, LabelSwitch, Version}
 
   @doc """
-  Rebuild a law's register and timeline. `opts`: `parsed` — the parse's
-  `%{rows, notes, effects}` (else the law is parsed from the store).
+  Rebuild a law's labels. A law in a switched family: its merged changes
+  built and its timeline written from them, the known-limit rows keeping
+  their stored periods; the old register is neither collected nor read
+  (Maritime Safety: Switch-over, 2026-11-07: its fidelity gate had blocked
+  the Merchant Shipping Act 1979's new labels). Any other law: its register
+  and its timeline from it. `opts`: `parsed` — the parse's
+  `%{rows, notes, effects}` (else the law is parsed from the store; the
+  register path only).
   """
   @spec run(String.t(), keyword()) :: :ok | {:error, term()}
   def run(law_name, opts \\ []) do
+    if LabelSwitch.switched?(law_name),
+      do: run_switched(law_name),
+      else: run_register(law_name, opts)
+  rescue
+    e -> fail(law_name, {:exception, Exception.message(e)})
+  end
+
+  # a switched family's law (CV-06): its merged changes, then its timeline
+  # from them (`LabelSwitch.timeline/2`), the known limits keeping their label
+  defp run_switched(law_name) do
+    Build.law(law_name)
+
+    with {:ok, periods} <- LabelSwitch.timeline(law_name, LabelSwitch.stored(law_name)),
+         {:ok, _} <- LabelTimeline.write(law_name, periods, code_version(true)) do
+      # no register records: the old register isn't written for it
+      record_success(law_name, %{records: 0, periods: length(periods)})
+    else
+      {:error, reason} -> fail(law_name, reason)
+    end
+  end
+
+  defp run_register(law_name, opts) do
     with {:ok, %{records: by, per_row: per_row}} <-
            ChangeCollector.collect(law_name, Keyword.take(opts, [:parsed])),
          [] <- ChangeCollector.fidelity(by, per_row, ChangeCollector.db_order(law_name)),
          {:ok, _} <- ChangeCollector.write(law_name, by),
-         %{periods: old} <- LabelTimeline.build(law_name, LabelProjection.uk_today()),
-         {:ok, periods} <- periods(law_name, old),
-         {:ok, _} <- LabelTimeline.write(law_name, periods, LabelTimeline.code_version()) do
+         %{periods: periods} <- LabelTimeline.build(law_name, LabelProjection.uk_today()),
+         {:ok, _} <- LabelTimeline.write(law_name, periods, code_version(false)) do
       record_success(law_name, %{
         records: by |> Map.values() |> Enum.map(&length/1) |> Enum.sum(),
         periods: length(periods)
@@ -44,21 +72,16 @@ defmodule SertantaiLegal.Scraper.LabelRefresh do
       [_ | _] = diffs -> fail(law_name, {:fidelity, length(diffs)})
       {:error, reason} -> fail(law_name, reason)
     end
-  rescue
-    e -> fail(law_name, {:exception, Exception.message(e)})
   end
 
-  # a law in a family switched to the change vocabulary (CV-06): its
-  # merged changes built from this parse, its timeline from them, the named
-  # known limits keeping the register's (`ChangeVocabulary.LabelSwitch`)
-  defp periods(law_name, old) do
-    if LabelSwitch.switched?(law_name) do
-      Build.law(law_name)
-      LabelSwitch.timeline(law_name, old)
-    else
-      {:ok, old}
-    end
-  end
+  @doc """
+  The code version stamped on a law's timeline: a switched law's is the
+  change vocabulary's (`ChangeVocabulary.Version`), the code its labels are
+  built by; any other law's is the register's (`LabelTimeline.code_version/0`).
+  """
+  @spec code_version(boolean()) :: String.t()
+  def code_version(true), do: Version.current()
+  def code_version(false), do: LabelTimeline.code_version()
 
   defp fail(law_name, reason) do
     Logger.error("[LabelRefresh] #{law_name}: #{inspect(reason)}")

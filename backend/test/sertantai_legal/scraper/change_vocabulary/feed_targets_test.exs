@@ -70,6 +70,58 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedTargetsTest do
     assert targets(effect("Preamble", ["introduction"]), "UK_uksi_2009_716", %{}) == ["?"]
   end
 
+  describe "a Part or Chapter in brackets beside a provision locates it, never a target" do
+    test "a range with its Part and Chapter (MSA 1995 \"s. 130A-130E (Pt. 6) (Ch. 1A)\" by the 1997 Act)" do
+      e = %{
+        effect("s. 130A-130E (Pt. 6) (Ch. 1A)", [
+          "section-130A",
+          "section-130E",
+          "part-VI",
+          "chapter-1A"
+        ])
+        | type: "added",
+          affected_ranges: [{"section-130A", "section-130E"}]
+      }
+
+      assert targets(e, "UK_ukpga_1995_21", %{"part-VI" => "pt.VI"}) == ["s.130A", "s.130E"]
+    end
+
+    test "one bracket naming Part and Chapter; a list of sections (UK_ukpga_1994_40 \"s. 41-57 (Pt. 1 Ch. 3)\")" do
+      ids = %{"part-I" => "pt.I", "part-I-chapter-III" => "pt.I.ch.III"}
+
+      e = %{
+        effect("s. 41-57 (Pt. 1 Ch. 3)", [
+          "section-41",
+          "section-57",
+          "part-I",
+          "part-I-chapter-III"
+        ])
+        | type: "repealed",
+          affected_ranges: [{"section-41", "section-57"}]
+      }
+
+      assert targets(e, "UK_ukpga_1994_40", ids) == ["s.41", "s.57"]
+
+      e =
+        effect("s. 27 28 (Pt. 3) 29 (Pt. 3)", [
+          "section-27",
+          "section-28",
+          "part-III",
+          "section-29"
+        ])
+
+      assert targets(e, "UK_ukpga_1986_63", %{"part-III" => "pt.III"}) == ["s.27", "s.28", "s.29"]
+    end
+
+    test "a Part named outside brackets stays a target (\"Pt. 4 heading\"; \"s. 13 Pt. 4\")" do
+      ids = %{"part-4" => "pt.4", "part-IV" => "pt.IV"}
+      assert targets(effect("Pt. 4 heading", ["part-4"]), "UK_uksi_2008_1597", ids) == ["pt.4"]
+
+      assert targets(effect("s. 13 Pt. 4", ["section-13", "part-IV"]), "UK_ukpga_1987_43", ids) ==
+               ["s.13", "pt.IV"]
+    end
+  end
+
   test "one path linked in pieces is one target; siblings stay two (D4)" do
     ids = %{"title-V" => "pt.V", "title-V-chapter-1" => "pt.V.ch.1"}
 

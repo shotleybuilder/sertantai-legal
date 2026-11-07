@@ -525,8 +525,30 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
     # (CV-S09 round 1: CROW s.13(2)'s insertion had also reached all of s.1)
     range_ends = Enum.flat_map(ranges, fn {a, b} -> [a, b] end)
 
-    {bare,
-     Enum.reject(refs, fn r -> Enum.any?(range_ends, &String.starts_with?(&1, r <> "-")) end)}
+    refs =
+      Enum.reject(refs, fn r -> Enum.any?(range_ends, &String.starts_with?(&1, r <> "-")) end)
+
+    {bare, located(refs, ranges, text)}
+  end
+
+  @container ~r/^(?:part|chapter|title)-/
+  @bracketed ~r/\((?:Pt|Ch|Title)\.?\s[^)]*\)/
+  @named ~r/\b(?:Pt|Ch|Title)\.?\s/
+
+  # a Part, Chapter or Title the feed gives in brackets beside a provision
+  # ("s. 130A-130E (Pt. 6) (Ch. 1A)": MSA 1995 by the 1997 Act) says where
+  # the provision sits; it is not a target (Maritime Safety switch-over,
+  # 2026-11-06: read as the whole of Part VI inserted). Only when every
+  # container the text names is in brackets ("s. 13 Pt. 4" keeps Pt. 4)
+  defp located(refs, ranges, text) do
+    {containers, provisions} = Enum.split_with(refs, &String.match?(&1, @container))
+    text = text || ""
+
+    if containers != [] and (provisions != [] or ranges != []) and
+         String.match?(text, @bracketed) and
+         not String.match?(String.replace(text, @bracketed, ""), @named),
+       do: provisions,
+       else: refs
   end
 
   # the provisions named and spanned, as our rows name them

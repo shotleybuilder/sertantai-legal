@@ -17,18 +17,20 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Store do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Claim, Evidence, Store, Version}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Store.Codec
+  alias SertantaiLegal.Scraper.LawStart
 
   defdelegate encode(value), to: Codec
   defdelegate decode(map), to: Codec
 
   @doc """
   Replace `law`'s changes with `changes` (resolved), and record the build
-  (`inputs`: what it was built from, for staleness). Returns `{:ok,
-  %{changes: n, claims: m}}`.
+  (`inputs`: what it was built from, for staleness; `start`: the law's
+  start as `LawStart` resolved it, which the label fold reads, `start/1`).
+  Returns `{:ok, %{changes: n, claims: m}}`.
   """
-  @spec write(String.t(), [Change.t()], map()) ::
+  @spec write(String.t(), [Change.t()], map(), LawStart.t() | nil) ::
           {:ok, %{changes: non_neg_integer(), claims: non_neg_integer()}}
-  def write(law, changes, inputs \\ %{}) do
+  def write(law, changes, inputs \\ %{}, start \\ nil) do
     version = Version.current()
     now = DateTime.utc_now()
 
@@ -88,7 +90,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Store do
         for chunk <- Enum.chunk_every(claim_rows, 5_000),
             do: Repo.insert_all("provision_change_claims", chunk)
 
-        record(law, version, inputs, length(changes_rows), length(claim_rows))
+        record(law, version, inputs, start, length(changes_rows), length(claim_rows))
         %{changes: length(changes_rows), claims: length(claim_rows)}
       end,
       timeout: :infinity
@@ -96,15 +98,46 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Store do
   end
 
   # the build, as a lat_event (as `LabelRefresh.record_success/2`)
-  defp record(law, version, inputs, changes, claims) do
+  defp record(law, version, inputs, start, changes, claims) do
     Repo.query!(
       """
       INSERT INTO lat_events (law_id, country, law_name, event, at, source, provenance)
       SELECT id, country, name, 'changes_built', now() AT TIME ZONE 'utc', 'change_vocabulary', $2
       FROM legal_register WHERE name = $1
       """,
-      [law, %{code_version: version, inputs: inputs, changes: changes, claims: claims}]
+      [
+        law,
+        %{code_version: version, inputs: inputs, changes: changes, claims: claims}
+        |> put_start(start)
+      ]
     )
+  end
+
+  defp put_start(provenance, nil), do: provenance
+
+  defp put_start(provenance, %LawStart{} = s),
+    do: Map.put(provenance, :start, %{date: s.date, treatment: s.treatment})
+
+  @doc """
+  The law's start as its latest build stored it: `{:ok, date}` (nil for a
+  start no source dates, a known limit), `:none` when no build recorded
+  one. The new path's start, never the old register's (Maritime Safety:
+  Switch-over, 2026-11-07).
+  """
+  @spec start(String.t()) :: {:ok, Date.t() | nil} | :none
+  def start(law) do
+    case Repo.query!(
+           """
+           SELECT provenance -> 'start' FROM lat_events
+           WHERE law_name = $1 AND event = 'changes_built'
+           ORDER BY at DESC, id DESC LIMIT 1
+           """,
+           [law]
+         ) do
+      %{rows: [[%{"date" => nil}]]} -> {:ok, nil}
+      %{rows: [[%{"date" => d}]]} -> {:ok, Date.from_iso8601!(d)}
+      _ -> :none
+    end
   end
 
   @doc """

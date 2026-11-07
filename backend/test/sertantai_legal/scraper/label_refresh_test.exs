@@ -49,4 +49,12 @@ defmodule SertantaiLegal.Scraper.LabelRefreshTest do
 
     assert reason =~ "fidelity"
   end
+
+  test "a switched law's timeline is stamped with the change vocabulary's version" do
+    assert LabelRefresh.code_version(true) ==
+             SertantaiLegal.Scraper.ChangeVocabulary.Version.current()
+
+    assert LabelRefresh.code_version(false) ==
+             SertantaiLegal.Scraper.LabelTimeline.code_version()
+  end
 end

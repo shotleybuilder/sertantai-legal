@@ -16,8 +16,11 @@ config :sertantai_legal,
 # `ChangeVocabulary.LabelSwitch`): every other law keeps the change
 # register's. Set when a family's switch-over is applied, with Jason's
 # approval of its dry run (`mix lat.label_switch`). OH&S applied 2026-11-02
-# (Jason: "Apply").
-config :sertantai_legal, label_families: ["OH&S: Occupational / Personal Safety"]
+# (Jason: "Apply"); Maritime Safety 2026-11-07 (Jason: "Apply"). A family is
+# matched by its exact name, the register's display marker dropped
+# (`LabelSwitch.family_in?/2`).
+config :sertantai_legal,
+  label_families: ["OH&S: Occupational / Personal Safety", "TRANSPORT: Maritime Safety"]
 
 # Configures the endpoint
 config :sertantai_legal, SertantaiLegalWeb.Endpoint,

@@ -11,7 +11,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSwitch do
   their old label (Jason 2026-11-02). Nothing is written when the table's
   rules break (`LabelPeriods.violations/1`).
 
-  `merge_kept/3` is pure; `switched?/1` and `timeline/2` read the database.
+  `merge_kept/3` and `family_in?/2` are pure; `switched?/1`, `stored/1` and
+  `timeline/2` read the database.
   """
 
   alias SertantaiLegal.Repo
@@ -32,9 +33,20 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSwitch do
         %{rows: rows} =
           Repo.query!("SELECT family FROM uk_lrt WHERE name = $1 AND family IS NOT NULL", [law])
 
-        Enum.any?(rows, fn [f] -> Enum.any?(fams, &String.contains?(f, &1)) end)
+        Enum.any?(rows, fn [f] -> family_in?(f, fams) end)
     end
   end
+
+  @doc """
+  True when `family` is one of `fams` by its exact name, the register's
+  display marker (`💙 `) dropped: never a substring, so a setting naming one
+  family switches no other.
+  """
+  @spec family_in?(String.t() | nil, [String.t()]) :: boolean()
+  def family_in?(nil, _fams), do: false
+
+  def family_in?(family, fams),
+    do: String.replace(family, ~r/^[^[:alnum:]]+/u, "") in fams
 
   @doc """
   A switched law's timeline: its merged changes' periods, a known limit's
@@ -51,6 +63,38 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSwitch do
       [_ | _] = violations -> {:error, {:violations, violations}}
       {:error, _} = error -> error
     end
+  end
+
+  @doc """
+  `law`'s stored timeline as rows the switch can keep: a switched law's
+  known-limit rows keep the label they have (`merge_kept/3`), so its
+  refresh never rebuilds the old register for them (Maritime Safety:
+  Switch-over, 2026-11-07). Lists the table holds as NULL read as `[]`.
+  """
+  @spec stored(String.t()) :: [map()]
+  def stored(law) do
+    %{rows: rows} =
+      Repo.query!(
+        "SELECT section_id, valid_from, valid_to, status, in_force_from, changed_by, territory, " <>
+          "change_ids, changed_by_all, commenced_by FROM lat_label_timeline WHERE law_name = $1 " <>
+          "ORDER BY section_id, valid_from",
+        [law]
+      )
+
+    for [sid, from, to, status, iff, by, ter, ids, all, cb] <- rows,
+        do: %{
+          law_name: law,
+          section_id: sid,
+          valid_from: from,
+          valid_to: to,
+          status: status,
+          in_force_from: iff,
+          changed_by: by,
+          territory: ter,
+          change_ids: ids || [],
+          changed_by_all: all || [],
+          commenced_by: cb || []
+        }
   end
 
   @doc """

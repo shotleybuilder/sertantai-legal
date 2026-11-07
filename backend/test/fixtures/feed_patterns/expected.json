@@ -28090,20 +28090,6 @@
           "feed.applied": true,
           "feed.by": "UK_ukpga_1994_19",
           "feed.prospective": true,
-          "feed.savings": []
-        },
-        "key": "E",
-        "target": "pt.III"
-      },
-      {
-        "claims": {
-          "feed.affecting": [
-            "s.20(3)",
-            "sch.5.pt.3"
-          ],
-          "feed.applied": true,
-          "feed.by": "UK_ukpga_1994_19",
-          "feed.prospective": true,
           "feed.ranged": true,
           "feed.savings": []
         },
@@ -42343,20 +42329,6 @@
       }
     ],
     "UK_ukpga_1998_17/036aa68f0e": [
-      {
-        "claims": {
-          "feed.affecting": [
-            "s.22(1)(c)(5)",
-            "sch.3.para.4(1)(b)"
-          ],
-          "feed.applied": true,
-          "feed.by": "UK_ukpga_1998_38",
-          "feed.prospective": true,
-          "feed.savings": []
-        },
-        "key": "E",
-        "target": "pt.IV"
-      },
       {
         "claims": {
           "feed.affecting": [

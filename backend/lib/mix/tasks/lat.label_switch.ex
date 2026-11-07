@@ -76,7 +76,7 @@ defmodule Mix.Tasks.Lat.LabelSwitch do
   end
 
   defp apply_switch(family, laws) do
-    Enum.any?(LabelSwitch.families(), &String.contains?(family, &1)) ||
+    LabelSwitch.family_in?(family, LabelSwitch.families()) ||
       Mix.raise("#{family} is not in the :label_families setting: set it (config) first")
 
     failed =
