@@ -162,3 +162,12 @@ Maritime Safety (second family, 2026-11-06, `.claude/sessions/lat-change-pipelin
   - diff old against new rules by field after every shared reader change, never by count;
   - check the by-design classes by law (a lost lead-in shows up as quote-dropped repeals);
   - run the gate again after the rebuild, because newly read laws bring new groups.
+
+### OH&S: Amending-law reader repair (2026-11-07)
+
+- **Fault:** found by Maritime Safety: Switch-over's checked rows. The Mines Regulations 2014 Sch. 3 names each enactment in a row of its own, and its rows had gone to HSWA, the only law held: 17 false whole-section repeals.
+- **Fixed:** law lines in `RepealTable.rows/2` (RULES `repeal-table-rows-follow-their-enactment`); "In full" is the whole section; glued "61and 62" is read.
+- **Result:** `--preview --all` changed 2 of 2,249 laws, both gains. Checked rows 696 match, OH&S rules 0, golden 27/27, no agent tokens.
+- **Lessons:**
+  - a reader edit moves the change register's code version, so all built laws rebuild (4 minutes for 285);
+  - the build reads a stale amender for one law only, so a fallback to "the only law given" shows up there and nowhere else.

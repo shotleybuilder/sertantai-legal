@@ -607,6 +607,11 @@ A repeal by a consolidating Act is labelled as the Act drafts it.
 - **Example:** the Factories Act 1937 is repealed by the 1961 Act.
 - **Serves:** `law-text-wins` · **Code:** no rule of its own. It needs the repeal read, and the 1937 case is a known limit (repeal tables not read) · **Test:** extended golden 1937/67 (failing, upstream) · **Origin:** Gemini golden review taken 2026-10-30, `cv-s09-label-fold`
 
+### `repeal-table-rows-follow-their-enactment`
+A repeals table that names an enactment in a row of its own gives the rows under it to that enactment, up to the next enactment named. When we don't hold that law, its rows go with it and are never given to another law. The rule holds whichever laws a read is for, all of them or only the law being built. "In full" is the whole section.
+- **Example:** the Mines Regulations 2014 (SI 2014/3248) Sch. 3 lists "Mines and Quarries Act 1954", then "Section 19 | In full" and its other sections, then "Mines and Quarries (Tips) Act 1969". These had been read as whole-section repeals of HSWA 1974, the only law held, so 17 HSWA sections were repealed from 2015-04-06.
+- **Serves:** `binds-on-date`, `law-text-wins` · **Code:** `Amendment.Reader.RepealTable.rows/2` (`named_rows/3`, `row_kind/1`), `Reader.ProvisionTable` (`@whole`) · **Test:** `repeal_table_test` "a row naming an enactment takes the rows under it …" · **Origin:** OH&S: Amending-law reader repair (2026-11-07), found by Maritime Safety: Switch-over's checked rows
+
 ---
 
 ## 10. Made, not yet in force

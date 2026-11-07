@@ -96,7 +96,8 @@ bugs:
     affected: "39 changes in 11 OH&S laws (17 on HSWA 1974: s.1, s.10, s.19, s.28 …); 6 OH&S checked rows changed; no Maritime law. Present before this step (restore point maritime-switch-over-feed-locator)"
     fix: "a repeals table's rows belong to the enactment named above them until the next enactment line; a law we don't hold takes its rows with it, never to the next law"
     step: Amending-law reader
-    status: open
+    status: fixed
+    fixed_in: lat-change-pipeline/2026-11-07-ohs-amending-law-reader-repair (law lines in RepealTable.rows/2; SI 2014/3248 now 0 HSWA whole-section repeals; checked rows 696 match)
   - pattern: "The new label path reads the law's start from the old register (lat_change_log) by a query with no ORDER BY (LabelSource.start/1); LabelRefresh still runs ChangeCollector and LabelTimeline.build for switched laws"
     category: start-from-old-register
     module: ChangeVocabulary.LabelSource / LabelRefresh
