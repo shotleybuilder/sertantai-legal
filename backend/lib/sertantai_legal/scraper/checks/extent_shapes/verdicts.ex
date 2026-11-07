@@ -85,8 +85,9 @@ defmodule SertantaiLegal.Scraper.Checks.ExtentShapes.Verdicts do
     end
   end
 
+  # `own` is never empty here: an item naming no provision is `no_refs`
   defp unread_or_withheld(own, withheld) do
-    if own != [] and Enum.all?(own, &covered?(withheld, &1)), do: "withheld", else: "unread"
+    if Enum.all?(own, &covered?(withheld, &1)), do: "withheld", else: "unread"
   end
 
   defp named(own, held, withheld) do

@@ -215,7 +215,7 @@ defmodule SertantaiLegal.Scraper.Checks.ExtentShapes.Mine do
     end)
   end
 
-  defp new_shape, do: %{n: 0, laws: MapSet.new(), classes: [], ex: []}
+  defp new_shape, do: %{n: 0, laws: %{}, classes: [], ex: []}
 
   defp add(e, i) do
     law = i.row["law"]
@@ -228,7 +228,7 @@ defmodule SertantaiLegal.Scraper.Checks.ExtentShapes.Mine do
     %{
       e
       | n: e.n + 1,
-        laws: MapSet.put(e.laws, law),
+        laws: Map.put(e.laws, law, true),
         classes: PyCompat.count(e.classes, i.row["class"]),
         ex: ex
     }
@@ -246,7 +246,7 @@ defmodule SertantaiLegal.Scraper.Checks.ExtentShapes.Mine do
             Enum.map_join(PyCompat.most_common(e.classes), "; ", fn {c, n} -> "#{c}×#{n}" end)
 
           ex = Enum.map_join(e.ex, " || ", fn {l, r, t} -> "#{l} #{r}: #{t}" end)
-          "#{i}\t#{kind}\t#{e.n}\t#{MapSet.size(e.laws)}\t#{classes}\t#{s}\t#{ex}\n"
+          "#{i}\t#{kind}\t#{e.n}\t#{map_size(e.laws)}\t#{classes}\t#{s}\t#{ex}\n"
         end)
     ]
   end
