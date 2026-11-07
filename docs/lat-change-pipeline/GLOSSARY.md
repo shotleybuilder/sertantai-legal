@@ -108,9 +108,9 @@ Archived sessions (`.claude/sessions/change-vocabulary/`) use codes. Pending one
 | CV-S05 | Extent reader | Step 5 ("extent and application reader") |
 | CV-S05a | Extent recall sweep | Finding extent sentences the catalogue missed |
 | CV-S05b | — | Never used |
-| CV-S05c | Extent shape mining | Classing dropped list items (census classes A–F) |
+| CV-S05c | Extent shape mining | Classing dropped list items (census classes A–F); `mix lat.extent_shapes` since 2026-11-07 (#192) |
 | CV-S05d | Extent whole-reader census | An independent finder compared with the reader over every law |
-| CV-S05e | Extent census as a task | The census as a mix task (pending) |
+| CV-S05e | Extent census as a task | The census as a mix task (pending: `2026-11-07-extent-census-as-a-task`) |
 | CV-S05f | Target-named extent statements | Extent statements naming the amended provision |
 | CV-S05g | Extent agreement measure | The reader's territory against the feed's (pending) |
 | CV-S06 | Amending-law reader | Step 6 |

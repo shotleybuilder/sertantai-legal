@@ -28,3 +28,5 @@ This run uses run-01's scripts unchanged (their checksums are in the manifest), 
 - **2009/23 s.323(2)(f)(iii)**, "section 314 (which inserts Part 4A into the Energy Act 2008 (c. 32))": dropped. `ListItems`' other-law test matches "into the … Act" because it has no word boundary.
 - **2015/7 s.56(2)(b)**, "an amendment or repeal made by Part 1, other than the amendment made by section 17(7), has the same extent as the provision to which it relates": a same-extent item with its own exception, unread.
 - **2008/4 s.152(c)**, "section 113 (together with such of the other provisions of Part 7 as relate to …)": s.113 dropped along with its describing bracket.
+
+**Superseded (2026-11-07, #192):** `mix lat.extent_shapes` runs this pipeline as one task, and its outputs are the same byte for byte. This folder stays as the record. Its scripts are retired when #192 closes.

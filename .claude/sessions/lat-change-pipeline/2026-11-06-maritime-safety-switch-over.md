@@ -317,3 +317,7 @@ After the known limits, a staleness rebuild (285 laws, 13 min, 0 stale; restore 
 - Store and build / Switch-over: check-run-time (GitHub #191). The label tools fold sequentially (about 12 min each, one core of 6) and each re-folds the family; the build has a long pole (UK_ukpga_1990_8, 417–532 s of 905 s). The proposal: profile first, fold once, bounded parallel folds, the biggest laws first. Where it slots in the workflow is open.
 - The pipeline's Python checks moved to Elixir (GitHub #192): the census, shape mining and store scans; Flow for whole-store scans, Task.async_stream for per-law folds (#191).
 - When (Jason, 2026-11-07): #191 and #192 are taken up after Maritime Safety is completed and before the next family. The other Python (QQ/BMS, Gemini, session maintenance) is dev tooling, not core logic.
+
+## Correction (2026-11-07)
+
+The store scan's figures above (310 bracketed effects in 50 laws; 15 unbracketed) came from a script whose greedy ref pattern read `FoundRef` and `err:Ref` as refs. With the feed's own `Ref`, as `mix lat.store_scan --form bracketed_container` now reads it, they are 328 in 52 laws and 20 in 16 (`2026-11-07-pipeline-checks-in-elixir`, Decision 2). The reader fix (`Readers.Feed.located/3`) reads refs through `ChangesFeed`, so it was never affected.

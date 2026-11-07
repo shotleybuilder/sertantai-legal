@@ -160,4 +160,10 @@ Counted with `grep -cE 'describe ".*(round|batch|R[0-9]|S0[0-9]|CV-S|LR-|seed|ru
 
 `label_projection_test.exs`, `label_timeline_test.exs`, `change_collector/*_test.exs` (4), `change_collector_cache_test.exs`, `change_collector_title_place_test.exs`, `effect_facts_test.exs`: retire with step 3 of the retirement plan in DATA-ARCHITECTURE.md (e). Keep `law_start*_test.exs` if `LawStart` survives as the source of the law's start.
 
-Risk to manage when folding: some per-round tests cite files under `backend/data/experiments/` (for example `round13_reads_test.exs` cites `cv-s05d-whole-reader-census/run-03/out/triage.md`). Those files are in git, but the folded tests should carry their example text inline, not a path.
+Risk to manage when folding: some per-round tests cited files under `backend/data/experiments/` (for example, `round13_reads_test.exs` cited `cv-s05d-whole-reader-census/run-03/out/triage.md`). The folded tests carry their example text inline instead. On 2026-11-07, no test reads `data/experiments/`.
+
+### Checks ported from Python (#192)
+
+A check ported from a Python script is proven on the script's own frozen run. The run's inputs are copied to `test/fixtures/<check>/`, and the test asserts the port's outputs carry the sha256 the run's manifest recorded. For example, `checks/extent_shapes_test.exs` covers run-03 of extent shape mining. Python's ways that change bytes (rounding half to even, `most_common` tie order, `json.dump` layout, code-point slices, `str.strip`'s whitespace) live in `Checks.PyCompat`. Two things a port must check rather than copy:
+- **the script's own faults:** the bracketed-Part scan's greedy ref pattern read `FoundRef` (Decision 2 of `2026-11-07-pipeline-checks-in-elixir`);
+- **its speed:** fields sliced from one large binary ran 2.6x slower than copies.

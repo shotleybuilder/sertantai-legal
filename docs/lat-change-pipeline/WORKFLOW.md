@@ -155,6 +155,7 @@ On Maritime Safety, the build took the needs from 235 to 682, and three fetch ro
 4. **Rebuild.** `mix lat.vocabulary --build --family F`.
 5. **The check and gate.** `mix lat.extent_check --family F` (seconds, read-only). It lists every family text change with no bound, by cause and amending law (`Extent.Withheld`). Each cause carries its words: the law's unread statements, or why it has no powers (introduction not held, no powers clause read, a parent not read, a provision placed nowhere). Each has a status in `test/fixtures/extent_patterns/withheld.json`: `fix:`, `known:` or `check:`, keyed `"<cause> @ <law>"` or by cause. The statuses work as the commencement gate's do.
 6. **Golden:** `mix lat.vocabulary --golden`.
+7. **Shapes**, when list items may be dropped: `mix lat.extent_shapes --out DIR` (about 2 minutes warm). Every catalogue sentence's lead and lettered items are masked into shapes and counted. Then come each list item's verdict against the reader's lists, each shape's review bucket, over-reach, and default sentences' unlisted items. These are CV-S05c's scripts as one task (#192), with outputs the same byte for byte as the Python run's.
 
 **Pass rule** (Decision 1, Jason 2026-11-05, Maritime Safety: Extent reader):
 - `lat.extent_check --family F` prints PASS: our faults 0, no sweep miss in a `read:` form, and every no-bound cause named `known:`;
@@ -432,7 +433,8 @@ Changing the pass rule, golden or scope means a new plan, approved again, not an
 - **table rules**: each fault class written as a check over every row of the family;
 - **checked-row fixtures**: rows already judged, with their accepted labels;
 - **pattern catalogues**: every form in the whole store, classed, with fixtures;
-- **golden from inputs**: the golden set rebuilt from the sources, never only from the store.
+- **golden from inputs**: the golden set rebuilt from the sources, never only from the store;
+- **store scans**: `mix lat.store_scan --form NAME [--list FILE]` runs one named form over every stored feed effect, each counted once (about 70 seconds). A new question about the store becomes a form under `Checks.StoreScan.Forms`, with tests, not a script written fresh in a session (#192). The first form is `bracketed_container`.
 
 **3. Agents only to find new classes.** An agent check is small, on a seeded sample, used to find classes the code doesn't yet know, and its token cost is recorded in the session. It is not a repeated pass gate. One pass at most, never sample → fix → resample (2026-11-05, Maritime Safety's Commencement reader: two rounds, 274k tokens, each finding a few one-law forms). What an agent finds becomes a code check that finds the rest of its class over the corpus, as the commencement catalogues' **leftovers** do (step 4: every word of a statement that bears on a date and that no rule uses, ranked by reach). A plan never says "a fix is followed by a fresh sample".
 

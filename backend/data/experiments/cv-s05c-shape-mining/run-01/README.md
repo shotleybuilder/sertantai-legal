@@ -90,3 +90,5 @@ All the round 10 list wordings show up as tail shapes. The empty lead is a findi
 **Spot-checked against the stored lists:**
 - ukpga 2015/7 s.56, 2020/16 s.24, 2025/18 s.141, 1972/11 s.30, 1989/15 s.194 and 1994/21 s.68: the named items are absent from every list.
 - uksi 2019/696 reg.3 is a doubtful candidate: the items are held as `not NI` while the sentence is read as named UK-wide.
+
+**Superseded (2026-11-07, #192):** `mix lat.extent_shapes` runs this pipeline as one task, and its outputs are the same byte for byte. This folder stays as the record. Its scripts are retired when #192 closes.
