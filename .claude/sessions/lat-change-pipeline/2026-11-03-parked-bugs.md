@@ -396,6 +396,7 @@ bugs:
   fix: Add a :changes_version reason and count it in --strict
   step: Store and build
   status: open
+  issue: 193
   moved_from: docs/lat-change-pipeline/DATA-ARCHITECTURE.md (2026-11-03)
 - pattern: 'The family switch matches the display family name by substring (''💙 OH&S: Occupational / Personal Safety'' contains the setting); switched laws are stamped with the old path''s code version'
   category: family-switch-by-display-name

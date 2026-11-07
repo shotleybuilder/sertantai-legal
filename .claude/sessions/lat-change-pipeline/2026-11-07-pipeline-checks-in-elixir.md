@@ -72,6 +72,7 @@ bugs:
   fix: '@external_resource on the pattern directories, or __mix_recompile__?/0 comparing the wildcard with the compiled list'
   step: Store and build
   status: open
+  issue: 193
 - pattern: 'Feed-page reads for whole-store scans are slow: ChangesFeed.parse (SweetXml/xmerl) ~1.9 ms an effect, 99.8% of a 70 s scan'
   category: feed-parse-slow-for-scans
   module: LegislationGovUk.ChangesFeed
