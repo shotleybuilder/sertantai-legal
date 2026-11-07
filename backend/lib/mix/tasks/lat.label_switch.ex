@@ -18,7 +18,7 @@ defmodule Mix.Tasks.Lat.LabelSwitch do
   """
   use Mix.Task
 
-  alias SertantaiLegal.Scraper.{LabelProjection, LabelRefresh, LabelTimeline}
+  alias SertantaiLegal.Scraper.{LabelProjection, LabelRefresh, LabelTimeline, LawRunner}
   alias SertantaiLegal.Scraper.Amendment.PatternSource
   alias SertantaiLegal.Scraper.ChangeVocabulary.{LabelSwitch, LabelSwitchReport}
 
@@ -38,12 +38,16 @@ defmodule Mix.Tasks.Lat.LabelSwitch do
   defp dry_run(laws) do
     today = LabelProjection.uk_today()
 
+    # several laws at once (`LawRunner`'s guard), the results in the laws'
+    # order (#191); a law that raises is not folded, as `{:error, why}` is
+    by_law =
+      LawRunner.run(laws, &dry_run_law(&1, today), fn _, _ -> :ok end)
+
     results =
       for law <- laws do
-        %{periods: old} = LabelTimeline.build(law, today)
-
-        case LabelSwitch.timeline(law, old) do
-          {:ok, new} -> {:ok, LabelSwitchReport.law(law, old, new, today)}
+        case by_law[law] do
+          {:ok, _} = ok -> ok
+          {:error, ^law, _} = error -> error
           {:error, why} -> {:error, law, why}
         end
       end
@@ -73,6 +77,15 @@ defmodule Mix.Tasks.Lat.LabelSwitch do
     )
 
     Mix.shell().info("per law: #{@csv}")
+  end
+
+  defp dry_run_law(law, today) do
+    %{periods: old} = LabelTimeline.build(law, today)
+
+    case LabelSwitch.timeline(law, old) do
+      {:ok, new} -> {:ok, LabelSwitchReport.law(law, old, new, today)}
+      {:error, why} -> {:error, law, why}
+    end
   end
 
   defp apply_switch(family, laws) do

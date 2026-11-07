@@ -11,6 +11,9 @@ defmodule Mix.Tasks.Lat.LabelShadow do
       mix lat.label_shadow --family F --cause "today: status" --sample FILE --n 20 --seed N
       mix lat.label_shadow --family F --strata --sample DIR --seed N   # the check's draw (CV-06)
 
+  Laws fold several at once through the fold cache (`LabelTools.FamilyFold`,
+  #191); `--no-cache` folds each afresh and writes no cache.
+
   `--strata` draws the switch-over check's sample (Jason 2026-10-31): `--per`
   rows (15) of each cause with at least `--min` rows (50), and `--small`
   rows (30) from the smaller causes pooled, written to DIR as agent
@@ -20,7 +23,8 @@ defmodule Mix.Tasks.Lat.LabelShadow do
   use Mix.Task
 
   alias SertantaiLegal.Scraper.Amendment.PatternSource
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{LabelPeriods, LabelShadow, LabelSource}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{LabelPeriods, LabelShadow}
+  alias SertantaiLegal.Scraper.LabelTools.FamilyFold
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Draw
   alias SertantaiLegal.Scraper.LabelProjection
 
@@ -42,7 +46,8 @@ defmodule Mix.Tasks.Lat.LabelShadow do
           per: :integer,
           min: :integer,
           small: :integer,
-          batch: :integer
+          batch: :integer,
+          cache: :boolean
         ]
       )
 
@@ -54,8 +59,7 @@ defmodule Mix.Tasks.Lat.LabelShadow do
     today = LabelProjection.uk_today()
 
     rows =
-      for law <- PatternSource.family_laws(family),
-          rs = LabelSource.rows(law),
+      for {law, rs} <- family |> PatternSource.family_laws() |> FamilyFold.rows(fold_opts(opts)),
           is_list(rs),
           r <- rs do
         new = LabelPeriods.periods(law, r.sid, r.periods, r.reaching)
@@ -79,6 +83,10 @@ defmodule Mix.Tasks.Lat.LabelShadow do
       true -> :ok
     end
   end
+
+  # each law folded once, several at once, through the fold cache (#191);
+  # `--no-cache` folds afresh
+  defp fold_opts(opts), do: [cache: Keyword.get(opts, :cache, true)]
 
   defp strata(rows, dir, opts) do
     {per, min, small} = {opts[:per] || 15, opts[:min] || 50, opts[:small] || 30}

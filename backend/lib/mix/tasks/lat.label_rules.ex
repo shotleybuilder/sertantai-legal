@@ -6,19 +6,25 @@ defmodule Mix.Tasks.Lat.LabelRules do
   the named date gaps (`cv-06-date-gaps.md`).
   `--list RULE` names each breach of one rule. Read-only.
 
-      mix lat.label_rules --family "OH&S: Occupational" [--list before_amender]
+      mix lat.label_rules --family "OH&S: Occupational" [--list before_amender] [--no-cache]
+
+  Laws fold several at once through the fold cache (`LabelTools.FamilyFold`,
+  #191), so a second `--list` reads the cache.
   """
   use Mix.Task
 
   alias SertantaiLegal.Scraper.Amendment.PatternSource
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{LabelPeriods, LabelRules, LabelSource}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{LabelPeriods, LabelRules}
+  alias SertantaiLegal.Scraper.LabelTools.FamilyFold
   alias SertantaiLegal.Scraper.ChangeVocabulary.LabelRules.Context
 
   @shortdoc "The switch-over's rules over a family's rows (read-only)"
 
   @impl Mix.Task
   def run(args) do
-    {opts, _, _} = OptionParser.parse(args, strict: [family: :string, list: :string])
+    {opts, _, _} =
+      OptionParser.parse(args, strict: [family: :string, list: :string, cache: :boolean])
+
     family = opts[:family] || Mix.raise("usage: mix lat.label_rules --family F [--list RULE]")
     Mix.Task.run("app.start")
     Logger.configure(level: :warning)
@@ -26,8 +32,10 @@ defmodule Mix.Tasks.Lat.LabelRules do
     known = known()
 
     rows =
-      for law <- PatternSource.family_laws(family),
-          rs = LabelSource.rows(law),
+      for {law, rs} <-
+            family
+            |> PatternSource.family_laws()
+            |> FamilyFold.rows(cache: Keyword.get(opts, :cache, true)),
           is_list(rs),
           r <- rs,
           do: Map.put(r, :law, law)

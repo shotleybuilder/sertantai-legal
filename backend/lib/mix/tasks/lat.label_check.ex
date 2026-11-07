@@ -20,7 +20,9 @@ defmodule Mix.Tasks.Lat.LabelCheck do
   (`ChangeVocabulary.Gate.Label`), reviewed in
   `test/fixtures/label/labels.json`; `--all` prints every group, else the
   groups not named; then the gaps by shape. `--laws L1,L2` folds only the
-  family's laws named (a pre-flight). Read-only.
+  family's laws named (a pre-flight). Laws fold several at once through
+  the fold cache (`LabelTools.FamilyFold`, #191); `--no-cache` folds each
+  afresh. Read-only.
 
       mix lat.label_check --family "OH&S: Occupational" --strata
       mix lat.label_check --family F --gate [--all] [--laws L1,L2]
@@ -38,9 +40,10 @@ defmodule Mix.Tasks.Lat.LabelCheck do
     KnownLimits,
     LabelPeriods,
     LabelSample,
-    LabelSource,
     LabelStrata
   }
+
+  alias SertantaiLegal.Scraper.LabelTools.FamilyFold
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Gate.Label, as: Gate
   alias SertantaiLegal.Scraper.ChangeVocabulary.LabelRules.Context
@@ -67,7 +70,8 @@ defmodule Mix.Tasks.Lat.LabelCheck do
           n: :integer,
           per: :integer,
           seed: :integer,
-          skip: :integer
+          skip: :integer,
+          cache: :boolean
         ]
       )
 
@@ -82,11 +86,10 @@ defmodule Mix.Tasks.Lat.LabelCheck do
       family
       |> PatternSource.family_laws()
       |> only(opts[:laws])
-      |> Enum.reduce({[], []}, fn law, {rows, failed} ->
-        case LabelSource.rows(law) do
-          {:error, why} -> {rows, [{law, why} | failed]}
-          rs -> {rows ++ Enum.map(rs, &classify(law, &1)), failed}
-        end
+      |> FamilyFold.rows(cache: Keyword.get(opts, :cache, true))
+      |> Enum.reduce({[], []}, fn
+        {law, {:error, why}}, {rows, failed} -> {rows, [{law, why} | failed]}
+        {law, rs}, {rows, failed} -> {rows ++ Enum.map(rs, &classify(law, &1)), failed}
       end)
 
     laws = rows |> Enum.map(&elem(&1, 0)) |> Enum.uniq() |> length()

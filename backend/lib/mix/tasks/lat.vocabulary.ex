@@ -217,6 +217,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
     # it exits
     workers = SertantaiLegal.Scraper.LawRunner.Guard.workers(workers: opts[:workers])
     counter = :counters.new(1, [])
+    weights = change_counts()
 
     {us, _} =
       :timer.tc(fn ->
@@ -234,7 +235,9 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
             Mix.shell().info("  [#{:counters.get(counter, 1)}/#{length(laws)}] #{law}: #{line}")
           end,
-          workers: workers
+          workers: workers,
+          # the heaviest laws first, so the longest isn't left to run alone (#191)
+          weight: &Map.get(weights, &1, 0)
         )
       end)
 
@@ -242,6 +245,18 @@ defmodule Mix.Tasks.Lat.Vocabulary do
     Mix.shell().info(
       "built #{length(laws)} laws in #{Float.round(us / 1_000_000, 1)} s (#{workers} workers)"
     )
+  end
+
+  # each built law's stored change count, its build's weight
+  defp change_counts do
+    %{rows: rows} =
+      SertantaiLegal.Repo.query!(
+        "SELECT law_name, count(*) FROM provision_changes GROUP BY law_name",
+        [],
+        timeout: :infinity
+      )
+
+    Map.new(rows, fn [law, n] -> {law, n} end)
   end
 
   defp show(opts) do
