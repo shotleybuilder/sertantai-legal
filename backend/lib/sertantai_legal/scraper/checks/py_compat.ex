@@ -70,6 +70,10 @@ defmodule SertantaiLegal.Scraper.Checks.PyCompat do
   @spec strip(String.t()) :: String.t()
   def strip(text), do: text |> lstrip_cps(@space) |> rstrip_cps(@space)
 
+  @doc "`text.rstrip()`: Python's whitespace off the end."
+  @spec rstrip(String.t()) :: String.t()
+  def rstrip(text), do: rstrip_cps(text, @space)
+
   @doc "`text.rstrip(chars)`: any of `chars` off the end."
   @spec rstrip(String.t(), String.t()) :: String.t()
   def rstrip(text, chars), do: rstrip_cps(text, String.to_charlist(chars))
