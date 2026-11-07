@@ -170,11 +170,11 @@ Source: `backend/data/reports/change-vocabulary/cv-05-retirement-list.md` (CV-05
 
 | # | Borrowed | Where | What replaces it before retirement |
 |---|---|---|---|
-| 1 | **The law's start**: `lat_change_log` law-level `commencement` record (written by `ChangeCollector.Commencement` from `LawStart`) | `LabelSource.start/1` (`SELECT effective_from FROM lat_change_log WHERE collector='commencement' AND section_id IS NULL AND effect_type NOT LIKE 'provision\_%' LIMIT 1`), `mix lat.vocabulary --golden` | Call `LawStart.resolve/1` directly in the build and store the start on the build (or in its own small table). No `ORDER BY` in the query today |
-| 2 | **The old labels for known limits**: `LabelSwitch.timeline/2` keeps the old path's periods for `KnownLimits.sids()` | `label_refresh.ex` passes `old` from `LabelTimeline.build` | Each known limit must be fixed or given an explicit "unknown" label in the new fold |
+| 1 | ~~**The law's start**~~ **Done 2026-11-07** | `Build.start/1` (`LawStart.resolve/1` over `LawStart.Input`) stored on the `changes_built` event (`Store.write/4`); `LabelSource.start/1` reads `Store.start/1`; golden calls `Build.start/1` | Done: equal to the old register's for all 285 built laws |
+| 2 | **The old labels for known limits**: `LabelSwitch.timeline/2` keeps their periods for `KnownLimits.sids()` | Since 2026-11-07 the stored ones (`LabelSwitch.stored/1`), no longer a rebuild of the old register | Each known limit must be fixed or given an explicit "unknown" label in the new fold |
 | 3 | **`amending_law` records**: `mix lat.commencement --orders/--read-orders` pick their Acts and orders from `lat_change_log WHERE collector='amending_law'` | `amending_acts/0`, `cited_orders/0` in `lat.commencement.ex` | Take them from `amendment_rules` / `provision_changes` |
-| 4 | `ChangeCollector.law_start_input/2` | `mix lat.commencement --read` | Move into `LawStart` or the commencement reader |
-| 5 | The old path always runs first | `LabelRefresh.run/2` runs `ChangeCollector` and `LabelTimeline.build` for every law | Branch before collecting, once 1 and 2 are done |
+| 4 | ~~`ChangeCollector.law_start_input/2`~~ **Done 2026-11-07** | Moved to `LawStart.Input.of/2`; `ChangeCollector` delegates | Done |
+| 5 | ~~The old path always runs first~~ **Done 2026-11-07** | `LabelRefresh.run/2` branches first: a switched law builds and writes from its merged changes only | Done |
 
 ### Gaps the new path has (from CV-05)
 

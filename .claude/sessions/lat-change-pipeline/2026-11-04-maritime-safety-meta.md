@@ -28,8 +28,9 @@ The second family through the LAT Change Pipeline, and the first under the proce
 - ✅ Measures: every published figure audited, every gate re-run (3 that had passed fail today: parked); 3 measure faults fixed; replicable at seed 902; closed 2026-11-06
 - ✅ Store and build
 - ✅ Labels side by side
-- ⬜ Switch-over
+- ✅ Switch-over: switched, 117 of 117 laws written and equal to the switch's; feed Part-locator fix (Decision 2, B); start stored with the build; 8 known limits; closed 2026-11-07
 - ⬜ Retrospective: compare against OH&S from the status table
+- ⬜ Tooling before the next family (Jason 2026-11-07): GitHub #192, the pipeline's Python checks moved to Elixir (store scan, shape mining, census), and #191, check run time (profile, fold once, bounded parallel folds)
 
 ## Dependencies
 
@@ -63,7 +64,7 @@ One row per step, filled when the step session closes. Agent tokens are those of
 | Measures | measures | 2026-11-06 | 2026-11-06 | 1 | yes, all 4 | 0 (territory items drawn from the extent sample, same pass) | 6 (Sources: 11 to fetch; Extent reader, Amending-law reader: gates moved; Store and build: gates not re-run, measures in the version; Commencement reader: purpose-limited start, 93 changes; Merge: ids split) | 288,287 | 2 |
 | Store and build | store-and-build | 2026-11-06 | 2026-11-06 | 1 | yes, all 8 | 1 (Decision 2: the digest of what is stored, and Evidence's conflict order fixed by Jason's leave) | 1 (Store and build: big golden Acts build 3x slower) | 58,398 | 2 |
 | Labels side by side | labels-side-by-side | 2026-11-06 | 2026-11-06 | 1 | yes, all 6 | 0 | 1 (Store and build: label fold in the build's version, all 285 laws stale after the change) | 3,726 (Gemini) | 2 |
-| Switch-over | | | | | | | | | |
+| Switch-over | switch-over | 2026-11-06 | 2026-11-07 | 2 | yes, all 7 (rule 6 by direct comparison, not `--strata`) | 3 (Decision 1 agent narrowed; Decision 2 feed fix in-step; the start bug fixed in-step) | 4 (Label fold 2, Commencement reader 1, Amending-law reader 1: Mines Regs → HSWA) + GitHub #191, #192 | 0 (Gemini 5,371) | 2 |
 
 ## Decisions
 

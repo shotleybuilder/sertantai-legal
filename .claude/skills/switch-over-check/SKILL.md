@@ -1,98 +1,65 @@
 ---
 name: Switch-over Check
-description: The switch-over's acceptance check for one family. It sorts every provision whose new label (from the merged changes) differs from today's stored label into a cause, draws a seeded sample per cause, and has agents judge each against the law, pooled into a pass bound. Use it before a family's labels switch to the new method.
+description: The switch-over's acceptance check for one family, decided by code. Every provision whose new label (from the merged changes) differs from today's stored label is sorted into a cause; the rules run over every row; the checked rows and golden are compared; then a dry run, Jason's go, a restore point and the apply. Use it before a family's labels switch to the new method.
 ---
 
-> **LAT Change Pipeline — step: Switch-over.** Where it sits, its inputs, outputs and pass rule: `docs/lat-change-pipeline/WORKFLOW.md`. Terms and former codes (CV-…): `docs/lat-change-pipeline/GLOSSARY.md`.
+> **LAT Change Pipeline — step: Switch-over.** Where it sits, its inputs, outputs and pass rule: `docs/lat-change-pipeline/WORKFLOW.md`. Terms: `docs/lat-change-pipeline/GLOSSARY.md`.
 >
 > **Process (retrospective, 2026-11-03):**
 > - Plan the step in plan mode first, with its pass rule fixed and golden frozen (`session-start`, step session).
-> - The check is code first: table rules, checked-row fixtures, pattern catalogues, golden from inputs.
-> - The agent check below is used only to find NEW classes, on a small sample, and its token cost is recorded in the session. It is not a repeated pass gate.
-> - **One agent pass at most, never sample → fix → resample** (Jason 2026-11-05, Maritime Safety: two rounds, 274k tokens, whack-a-mole). The forms it finds become a code check that finds the rest of their class over the corpus: as the commencement catalogues' leftovers (words of a statement no reading uses, ranked by reach: WORKFLOW.md step 4). Where a step has such a check, run it first and label its groups; the agent only labels what it can't.
-> - Bugs in another step's code are raised with `bug-raise` and parked, never fixed here.
+> - The pass is decided by code: causes, the rules over every row, the checked rows, golden and the dry run.
+> - An agent pass is used only where a large cause names no evidence for its new value, at most 2 batches, with its tokens recorded. One pass at most, never sample → fix → resample.
+> - Bugs in another step's code are raised with `bug-raise` and parked, unless Jason gives leave for that bug.
 
-# Switch-over Check (CV-06, per family)
+# Switch-over Check (per family)
 
 ## Purpose
 
-Before a family's labels come from the change vocabulary (`LabelSource.timeline/1`, the fold `ChangeVocabulary.Label` in the timeline's shape `LabelPeriods`) instead of the old register (`LabelProjection` over `lat_change_log`), every difference from today's stored label (`lat_label_timeline`) is explained:
-
-1. sorted into a **cause** by code (`LabelShadow.cause/5`): the first field that differs today (status, in_force_from, territory, changed_by) with the new side's deciding evidence, else the first period that differs in history;
-2. **sampled** per cause and judged by an agent against the law;
-3. **pooled** into a 95% bound (`mix lat.verdicts`).
-
-All steps are read-only. Ask Jason before the draws (each about 3 min) and before the agents run.
+Before a family's labels come from the change vocabulary (`LabelSource.timeline/1`, the fold in the timeline's shape, `LabelPeriods`) instead of the old register, every difference from today's stored label (`lat_label_timeline`) is explained. The family's timeline is then written by `LabelRefresh`.
 
 ## Steps
 
-1. **Causes:** `mix lat.label_shadow --family "F"` (about 3 min): rows that agree, differ today, differ in history only; the rows per cause.
-2. **Draw** (replicable): `mix lat.label_shadow --family "F" --strata --sample DIR --seed N`, twice with one seed into two directories; `diff -r` must show nothing. A new seed per round.
-3. **Agents:** one per batch file (`DIR/bK.json`, about 30 rows), with the prompt below. Save each VERDICTS block as `backend/data/reports/change-vocabulary/verdicts/cv06/<family-slug>/round-<R>-seed-<N>-b<K>.json`.
-4. **Pool:** `mix lat.verdicts --dir <that directory>` over the files since the last fix.
-5. **Fix:** each new-wrong item with fault `own` opens a fix for its cause (batched: one rebuild per round); the fix is checked by a code check over the whole family for that cause, never a fresh draw (2026-11-05).
+All are read-only until the apply. Ask Jason before the long runs, which take about 12 minutes each on Maritime Safety.
 
-**Pass (Jason 2026-10-31):** no sampled row of a cause has the new label wrong by its own fault; the pooled 95% upper bound on own-fault rows is under 2%; golden 27/27. Rows on the named known-limit list keep their old label at the switch (Jason: "keep their old label").
+1. **Causes:** `mix lat.label_shadow --family "F"`. This gives the rows that agree, differ today and differ in history only, and the rows per cause (the first field that differs, with the new side's deciding evidence). Save the output to `backend/data/reports/switch-over/<family>-shadow.txt`.
+2. **Look at the causes that name no evidence.** A cause like "in force later (none dated)" has no change behind its new value.
+   - Draw 12 rows of it: `--cause "<cause>" --sample FILE --n 12 --seed N`.
+   - Read them by hand: the changes reaching each row, the stored changes, then the feed or text they came from.
+   - A class over the plan's size (100 rows) goes to Jason as a decision.
+   - Maritime Safety's was the feed reader taking "s. 130A-130E (Pt. 6) (Ch. 1A)" as the whole of Part VI. It was fixed with leave (Decision 2, B).
+3. **Rules:** `mix lat.label_rules --family "F"`, then `--list RULE` for each rule breached. Every breach is fixed by its owning step, or, when its class is below the triage size, named as a known limit.
+   - Known limits are table files read by `KnownLimits` (section_id first). For Maritime Safety: `backend/data/reports/switch-over/maritime-safety-known-limits.md`.
+   - A known-limit row keeps its old label at the switch.
+   - `known_limits.ex` is in the build's version, so adding a file needs a staleness rebuild.
+4. **Checked rows:** `mix lat.label_checked --list`. Every row should match, apart from known and upstream rows.
+   - A row changed by a decided rule is accepted with the rule as the why: `--accept "LAW|SID,…" --why "…"`. Review the fixture's diff.
+   - A row changed by another step's fault is parked with that step and left as changed.
+   - To see what changed in each row, diff its periods field by field.
+5. **Golden:** `mix lat.vocabulary --golden`, 27/27, after any rebuild.
+6. **Dry run:** `mix lat.label_switch --family "F"`. Every law should fold, with none breaking the table's rules.
+   - It writes its per-law lines to `data/reports/change-vocabulary/cv-06-dry-run.csv`, which is OH&S's file. Move the family's copy to `switch-over/` and restore OH&S's from git.
+7. **Jason's go**, then:
+   - a restore point: `./scripts/nas/nas-backup.sh --tables lat_label_timeline,lat_change_log,provision_changes,provision_change_claims,lat_events --tag <tag>`;
+   - the family added to `config :sertantai_legal, :label_families`, by its exact name without the `💙 ` marker (`LabelSwitch.family_in?/2`);
+   - `mix lat.label_switch --family "F" --apply`.
+8. **After the apply:** compare the stored timeline with `LabelSource.timeline/1`, law by law, known limits apart. Every law written should be equal, row for row. For Maritime Safety this was a scratch script; a task for it is parked. `--strata` can't show this, because it compares the fold's own periods: a repeal's day and empty territory, the commencer as `changed_by`, and no unknown EU period always differ from them. Also run `mix lat.stale` (0) and look for laws the apply failed: a failed law keeps its old labels.
 
-**Sample (Jason 2026-10-31):** `--per 15` rows of each cause with at least `--min 50` rows, `--small 30` from the smaller causes pooled.
+**Pass:**
+- causes saved;
+- the rules show 0 breaches outside the named known limits;
+- the checked rows match (known, upstream, and other families' parked regressions apart);
+- golden 27/27;
+- the dry run folds every law with 0 rule breaks;
+- after the apply, the stored timeline equals the switch's, every law it wrote.
 
-## Conventions the new labels follow (decided in CV-06)
+## Conventions the new labels follow
 
 - A repeal as the table records it: `in_force_from` its day, territory empty (nowhere).
-- `changed_by` the law that made the current text, else the law that commenced it; `changed_by_all` every maker, `commenced_by` the commencing law apart.
-- A law with no start (EU law, C10): no period before the first dated day (unknown).
-- A law made, not yet in force (LR-39): prospective from its making to its start, where its own law commences the provision.
-
-## Agent prompt
-
-Fill in FILE, FAMILY, ROUND, SEED and K.
-
-```
-You are checking a legal-data service's switch of provision labels from an old method to a new one (CV-06
-acceptance check, family FAMILY). READ-ONLY: do not edit any file, do not fetch from the internet, do not write to
-the database, do not run mix tasks. You may read files, run read-only psql SELECTs and decompress local stored XML.
-Use /usr/bin/python3 for parsing.
-
-Input: FILE — rows whose new label differs from the old. Each: law, section_id, extent, law_start, cause (the code's
-classification of the first difference), old (the stored periods: valid_from, valid_to exclusive, status,
-in_force_from, changed_by, territory), new (the new periods, same fields plus changed_by_all and commenced_by) and
-changes (the merged changes reaching the row: target, operation, level, date, by, commenced_by, territory, sources).
-
-A label period: status in_force | in_force_partial | prospective | repealed | repealed_saved; in_force_from = when
-the current text took effect (empty while prospective or partly in force; on a repeal, the repeal's day); changed_by
-= the law that made the current text, else the law that commenced it; territory = where it applies ("E+W"); empty
-with a repeal means nowhere. No period = unknown. A law made but not yet in force: prospective from its making to its
-start. EU law with no known start: unknown before its first dated change. Today = 2026-10-31.
-
-Sources (the law's text is primary; notes are pointers only, never facts):
-- the amended law: backend/data/cache/clml/{type}/{year}/{number}/body/data.xml.gz (UK_ukpga_1974_37 → ukpga/1974/37)
-  — its text, its commencement clause, extent markup, and its notes (pointers to look further);
-- the amending law: the same path for the law in `by` (its body and schedules/data.xml.gz; a repeals Schedule as
-  enacted under enacted/schedule/N/);
-- the changes feed: backend/data/cache/clml/changes/affected/{type}/{year}/{number}/data.feed.page-N.gz;
-- DB: PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -Atc "..." — legal_articles
-  (section_id, text, extent_code, markup_status), amendment_annotations (notes), uk_lrt (md_made_date,
-  md_enactment_date), commencement_rules, amendment_rules.
-- Known limits: backend/data/reports/change-vocabulary/cv-06a-known-limits.md (rows whose repeal is not read: the
-  old label stays for them).
-
-For each row: decide what the label should be today and over its history, from the sources. Then judge the NEW
-label: ok (right, or right as far as the sources go), wrong, doubtful (you cannot decide: say why), or gap (no
-source gives the value). Also say whether the OLD label is right, wrong or unsure. For a wrong new label give the
-fault: own (the new method misreads or misses something the sources state), upstream (the sources themselves are
-wrong, e.g. legislation.gov.uk's own error), known (a row on the known-limit list, or a limit already logged: name
-it). Be rigorous and skeptical: WRONG needs evidence (quote the text or the record); say doubtful rather than guess.
-
-Output: a table, one row per item: n, law, row, cause (short), new ok/wrong/doubtful/gap, old right/wrong/unsure,
-note (one line when not ok: the evidence). Then the wrong items grouped by what went wrong. Under 900 words.
-
-Then, after the report (not counted in the word limit), a line VERDICTS and on the lines after it one JSON object:
-{"step": "switch", "family": "FAMILY", "stratum": "cause", "seed": SEED, "round": ROUND, "batch": K, "items": [
- {"id": "<law>|<section_id>", "group": "<law>", "verdict": "ok|wrong|doubtful|gap", "fault": "own|upstream|known|null",
-  "pattern": "<the row's cause>", "old": "right|wrong|unsure", "note": "<one line>"}]}
-One entry per item, in the file's order.
-```
+- `changed_by` is the law that made the current text, else the law that commenced it. Where several made it, it is the principal maker, then the latest made (RULES `changed-by-one-law-for-compliance`). `changed_by_all` holds every maker, and `commenced_by` the commencing law.
+- A law with no start (EU law): no period before the first dated day (unknown).
+- A law made, not yet in force: prospective from its making to its start, where its own law commences the provision.
 
 ## History
 
-- OH&S (first family, 2026-10-31), session `.claude/sessions/change-vocabulary/2026-10-21-cv-06-switch-over.md`. Before the first round: U12 fixed in CV-06a (113 of 152 missing repeals read; 39 a known limit).
+- **OH&S** (first family, 2026-10-31 to 11-02): per-cause agent samples and a pooled bound, replaced on 2026-11-01 by the code-decided pass. 696 checked rows, 47 known, 1 upstream. Session: `.claude/sessions/change-vocabulary/2026-10-21-cv-06-switch-over.md`.
+- **Maritime Safety** (2026-11-06/07): no agent pass. A hand look at two causes found the feed reader's Part VI fault (773 rows), fixed with leave. 8 rows were named as known limits. The OH&S checked rows found 51 `changed_by` rows that followed Decision 1, and a parked repeals-table regression (Mines Regulations 2014 on HSWA). Session: `.claude/sessions/lat-change-pipeline/2026-11-06-maritime-safety-switch-over.md`.

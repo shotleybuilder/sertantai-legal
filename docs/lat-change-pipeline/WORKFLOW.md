@@ -266,7 +266,7 @@ Before this, OH&S used agents over V in full and D by pattern, and pooled A samp
 
 **Aim.** A provision's resolved changes fold into the right label periods under the agreed conventions.
 
-**Inputs.** The stored changes (`provision_changes`), the LAT rows and their extents, and the law's start (still read from `lat_change_log`).
+**Inputs.** The stored changes (`provision_changes`), the LAT rows and their extents, and the law's start (stored with the build, `Store.start/1`).
 
 **Outputs.** Label periods (status, territory, in force from, changed by, commenced by, a tier per field). Pure: nothing is written at this step.
 
@@ -378,18 +378,36 @@ There is no agent check: the conversion is a fixed mapping under unit tests (`la
 
 **Inputs.** The new and old labels; the checked rows; the known-limit lists.
 
-**Outputs.** `lat_label_timeline` for the family, written by `LabelRefresh` (with `changed_by_all` and `commenced_by`); the family added to `config :sertantai_legal, :label_families`.
+**Outputs.**
+- `lat_label_timeline` for the family, written by `LabelRefresh` (with `changed_by_all` and `commenced_by`);
+- the family added, by its exact name, to `config :sertantai_legal, :label_families`;
+- the family's known-limit list, if any (`backend/data/reports/switch-over/<family>-known-limits.md`, read by `KnownLimits`).
 
-**Check today.**
-1. Causes: `mix lat.label_shadow --family F` sorts every differing row by its first difference and the evidence behind the new value.
-2. Checked rows: `mix lat.label_checked` compares current labels with every row an agent has judged (`test/fixtures/change_vocabulary/switch_checked.json`).
-3. Rules: `mix lat.label_rules` runs each fault class as a check over every row of the family (for example, a change dated before its amending law was made; a period before the row's insertion).
-4. Golden from inputs.
-5. Dry run: `mix lat.label_switch` (no write) → Jason → restore point (`lat_label_timeline`, `lat_change_log`, `provision_changes`) → the family added to `:label_families` → `mix lat.label_switch --apply`.
+**Check today** (skill `switch-over-check`):
+1. **Causes:** `mix lat.label_shadow --family F` sorts every differing row by its first difference and the evidence behind the new value. A cause that names no evidence is looked at by hand, 12 rows; a class over 100 rows goes to Jason.
+2. **Rules:** `mix lat.label_rules` runs each fault class as a check over every row of the family (for example, a change dated before its amending law was made; a period before the row's insertion). A breach is fixed by its owner, or, below the triage size, named as a known limit.
+3. **Checked rows:** `mix lat.label_checked` compares current labels with every row already judged (`test/fixtures/change_vocabulary/switch_checked.json`). A row changed by a decided rule is accepted with the rule as the why.
+4. **Golden** from inputs.
+5. **Dry run:** `mix lat.label_switch` (no write) → Jason → restore point (`lat_label_timeline`, `lat_change_log`, `provision_changes`, `provision_change_claims`, `lat_events`) → the family added to `:label_families` → `mix lat.label_switch --apply`.
+6. **After the apply:** the stored timeline compared with what the switch writes (`LabelSource.timeline/1`), law by law, known limits apart. `--strata` can't show this: it compares the fold's own periods, and the timeline's conventions (a repeal's day and empty territory, the commencer as `changed_by`, no unknown period before an EU law's first dated day) always differ from them.
 
-**Pass rule as last used** (decided by code, 2026-11-01). Checked rows all match, none left to fix (named known limits apart); the rules show 0 breaches outside the named known limits; golden 27/27. Rows on the known-limit lists (missing repeals, named date gaps) keep their old label. Agents were used only to find new classes. On OH&S: 696 checked rows match, 47 known, 1 upstream.
+**Pass rule as used** (Maritime Safety, 2026-11-07):
+- the causes saved;
+- the rules show 0 breaches outside the named known limits;
+- the checked rows match, apart from known and upstream rows and another family's parked regression;
+- golden 27/27;
+- the dry run folds every law with 0 rule breaks;
+- after the apply, the stored timeline equals the switch's, every law it wrote.
+- **On OH&S** (2026-11-02): 696 checked rows match, 47 known, 1 upstream.
+- **On Maritime Safety** (2026-11-07):
+  - **Part VI.** A hand look at one cause with no evidence (421 rows, "in force later, no change dated") found the feed reader taking "s. 130A-130E (Pt. 6) (Ch. 1A)" as the whole of MSA 1995 Part VI. It was fixed in the reader with leave (a bracketed Part is a locator), after a store scan (310 effects in 50 laws, 18 that move a label).
+  - **Known limits.** 8 rows that break the rules are named, in three classes parked with the Label fold and the Commencement reader.
+  - **Checked rows.** 51 of OH&S's checked rows changed `changed_by` by Decision 1 and were accepted. 6 HSWA rows show a parked repeals-table fault from the Mines Regulations 2014.
+  - **The apply.** The first apply wrote 116 of 117 laws. The Merchant Shipping Act 1979 failed the old register's fidelity gate, which `LabelRefresh` then still ran for switched laws.
+  - **The old register fix.** The start-from-old-register bug was fixed in this step (Jason's leave): the start is stored with the build, and a switched law's refresh no longer collects or reads the old register.
+  - **After the re-apply:** all 117 written, and their stored timelines equal the switch's, row for row. No agent was used.
 
-**Skill.** `switch-over-check`. It still describes the earlier per-cause agent sample and pooled bound; the code-decided pass above replaced it on 2026-11-01, and the next-family version of the skill is still to be written.
+**Skill.** `switch-over-check` (rewritten 2026-11-07 to the code-decided pass).
 
 ---
 
@@ -442,7 +460,7 @@ Session files: `.claude/sessions/lat-change-pipeline/<date>-<family>-<step-name>
 10. **Measures**: every figure the family's steps publish, printed by code and replicated.
 11. **Store and build**: two builds, digests compared, staleness, the sources gate re-run.
 12. **Labels side by side**: the new timeline beside the old (`--strata`), 0 rule breaks, the side-by-side totals and gaps saved as the switch-over's baseline.
-13. **Switch-over**: causes, checked rows, rules, golden; dry run → Jason → restore point → add the family to `:label_families` → `mix lat.label_switch --apply`.
+13. **Switch-over**: causes (a hand look at any cause with no evidence), rules to 0 outside named known limits, checked rows, golden; dry run → Jason → restore point → add the family to `:label_families` → `mix lat.label_switch --apply`; then the stored timeline compared with the switch's.
 
 After a reader fix, rebuild (`mix lat.vocabulary --check --family F`, then `--golden`) so the change register reflects it before the next step looks at it. Each family's new forms extend the catalogues. Steps are batched across families only once families stop surfacing new defects.
 

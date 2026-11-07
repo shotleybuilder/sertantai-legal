@@ -165,10 +165,10 @@ An Act with no commencement clause is in force on Royal Assent (Interpretation A
 - **Serves:** `law-text-wins`, `unknown-over-guess` · **Code:** `Readers.OwnCommencement`; `Readers.AmendingCommencement`; `Readers.AmenderStart.first_start/1` · **Test:** `amender_start_test` "an Act's Royal Assent only when nothing else dates it" · **Origin:** `cv-s08-evidence` (batch 1, 2026-10-29); `cv-06-switch-over` (batch 5, 2026-11-02)
 - **Differs:** an Act whose own commencement section is repealed still falls back to Royal Assent (HSWA 1974 s.79 by the 1985 c.9 repeal; 1920 c.65). See open decision 9.
 
-### `law-start-from-the-old-register`
-For v0.1 a law's own start is read from the old register's law-level commencement record (`lat_change_log`).
-- **Example:** the register held Royal Assent for the Factories Act 1961. The CV-06 refresh re-read its clause, giving 1962-04-01.
-- **Serves:** `prove-one-family` · **Code:** `LabelSource` (`start/1`) · **Test:** none (database read) · **Origin:** Jason 2026-11-02, `cv-06-switch-over`
+### `law-start-stored-with-the-build`
+A law's own start is resolved by `LawStart` in the build, from the same input the old register's collector reads (`LawStart.Input`), and stored on the build's `changes_built` event. The label fold and golden read that, never the old register.
+- **Example:** on 2026-11-07 the build's start equalled the old register's for all 285 built laws. The Factories Act 1961's is 1962-04-01, from its clause, not Royal Assent.
+- **Serves:** `one-record-per-change`, `binds-on-date` · **Code:** `ChangeVocabulary.Build.start/1`, `Store.write/4`, `Store.start/1`, `LabelSource` (`start/1`) · **Test:** `law_start/input_test`; `store_db_test` "the law's start is stored with its build" · **Origin:** Jason 2026-11-02, `cv-06-switch-over` (then read from `lat_change_log`); moved to the build 2026-11-07, Maritime Safety: Switch-over (Jason: "Fix the bug as held by this step")
 
 ---
 
@@ -368,6 +368,11 @@ A whole change on a Part, Chapter or Title reaches the rows inside it. A Part ro
   - REACH Art 139B, in Title XVA inserted by SI 2019/758.
   - CLP Title V keeps its heading change.
 - **Serves:** `binds-on-date` · **Code:** `Label.fold/3` (`within/2`), `Label.containers/2` · **Test:** `label_fold_test` "a whole insertion of the Part holding it reaches it"; "a Part row keeps its own heading changes" · **Origin:** `cv-s09-label-fold` (round 5); `cv-06-switch-over` (round 1)
+
+### `bracketed-part-is-a-locator`
+A Part, Chapter or Title that a feed effect names in brackets beside a provision or range ("s. 130A-130E (Pt. 6) (Ch. 1A)") says where the provision sits; it is not a target. The change goes on the provisions alone. A container named outside brackets ("Pt. 4 heading", "s. 13 Pt. 4") stays a target.
+- **Example:** MSA 1995: the 1997 Act's insertion of ss.130A–130E reached the whole of Part VI (773 rows, 529 losing their periods from 1996); it now reaches ss.130A–130E.
+- **Serves:** `binds-on-date`, `coverage-from-lgu` · **Code:** `Readers.Feed.located/3` · **Test:** `feed_targets_test` "a Part or Chapter in brackets beside a provision locates it, never a target" · **Origin:** Jason 2026-11-06, Maritime Safety: Switch-over, Decision 2 (B; Gemini concurred). The store holds 310 such effects in 50 laws, 18 of which move a label.
 
 ### `container-repealed-with-last-child`
 A Part, Chapter or Title is repealed (or repealed_saved) on the day its last child is, credited to the repealing laws. This is the one exception to `child-change-never-reaches-parent`.
@@ -809,12 +814,12 @@ Each item gives the rulings with their dates, what the code does now, the aim at
 - **Code:**
   - The narrowed rules apply in the readers.
   - An Act whose commencement section is repealed still falls back to Royal Assent (HSWA s.79 via 1985 c.9; 1920 c.65, open since 2026-10-30).
-  - The law's own start is read from the old register, which held Royal Assent for the Factories Act 1961 until the refresh.
+  - (Done 2026-11-07: the law's own start is stored with the build, `law-start-stored-with-the-build`.)
 - **Aim:** `unknown-over-guess`.
 - **Recommendation:**
   - Royal Assent is a start only for an Act that says nothing else, as enacted.
   - If the commencement section is repealed in the revised text, read the as-enacted section. If it is not held, the start is unknown.
-  - Move the law's start off `lat_change_log` when the old path retires.
+  - (Done 2026-11-07: the start is off `lat_change_log`.)
 
 ### 10. Golden: frozen or grown
 - **Rulings:**
