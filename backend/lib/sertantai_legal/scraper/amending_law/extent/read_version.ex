@@ -5,7 +5,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadVersion do
   document readers they use — never the amendment reader, so a change to it
   leaves `Extent.ReadCache` warm (run time 2026-10-26: the read pass re-read
   every law's extent after each reader change, 40% of a write pass).
-  `VersionCoverageTest` holds it to every module its files reach.
+  `VersionCoverageTest` holds it to every module its files reach: the
+  commencement effects, evaluator, `LatRef` and the changes feed since
+  `LawStart.Input` (2026-11-07, #192).
   """
 
   use SertantaiLegal.Scraper.SourceVersion,
@@ -20,6 +22,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadVersion do
       lib/sertantai_legal/scraper/amending_law/defined_terms.ex
       lib/sertantai_legal/scraper/commencement/order.ex
       lib/sertantai_legal/scraper/commencement/rule.ex
+      lib/sertantai_legal/scraper/commencement/effects.ex
+      lib/sertantai_legal/scraper/commencement/evaluator.ex
+      lib/sertantai_legal/scraper/lat_ref.ex
+      lib/sertantai_legal/scraper/legislation_gov_uk/changes_feed.ex
       lib/sertantai_legal/scraper/law_start.ex
       lib/sertantai_legal/scraper/law_start/*.ex
       lib/sertantai_legal/scraper/lat_parser/xml.ex
