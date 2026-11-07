@@ -113,6 +113,28 @@ defmodule SertantaiLegal.Scraper.LabelTools.FoldCacheTest do
       assert_received {:folded, _}
     end
 
+    test "a cached fold holding atoms not yet made is a hit, not folded again (#192)", %{dir: dir} do
+      fresh = "u" <> (:crypto.strong_rand_bytes(8) |> Base.encode16(case: :lower))
+      placeholder = String.duplicate("p", byte_size(fresh))
+      rows = [%{id: "s.1", changes: [], reaching: [], unseen: String.to_atom(placeholder)}]
+      packed = :erlang.term_to_binary({FoldCache.key(@inputs), FoldCache.pack(rows)})
+
+      bin =
+        :binary.replace(
+          packed,
+          <<119, byte_size(fresh), placeholder::binary>>,
+          <<119, byte_size(fresh), fresh::binary>>
+        )
+
+      File.mkdir_p!(dir)
+      File.write!(Path.join(dir, "UK_x.etf"), bin)
+      opts = [dir: dir, inputs: fn _ -> @inputs end, fold: counting_fold(folded())]
+
+      assert [%{unseen: atom}] = FoldCache.rows("UK_x", opts)
+      assert Atom.to_string(atom) == fresh
+      refute_received {:folded, _}
+    end
+
     test "cache: false always folds and writes nothing", %{dir: dir} do
       opts = [dir: dir, inputs: fn _ -> @inputs end, fold: counting_fold(folded()), cache: false]
 

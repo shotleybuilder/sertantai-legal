@@ -17,6 +17,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCache do
   same with or without the cache.
   """
 
+  require Logger
+
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Extent}
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Patterns, ReadVersion, Store, Sweep, Unread}
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
@@ -114,14 +116,26 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCache do
   # each file's path and a digest of its stored bytes
   defp fingerprint(files), do: for(f <- files, do: {f, :erlang.md5(File.read!(f))})
 
+  # never an executable term (sobelow). Atoms are allowed: a reading holds
+  # atoms that exist only once the reader's modules load, and `[:safe]`
+  # refused them in a fresh VM, so every such law was read again, silently
+  # (#192, 2026-11-07). A file that won't decode says so.
   defp read_file(path) do
     case File.read(path) do
-      # never an executable term, never a new atom (sobelow)
-      {:ok, bin} -> Plug.Crypto.non_executable_binary_to_term(bin, [:safe])
+      {:ok, bin} -> decode(path, bin)
       _ -> nil
     end
+  end
+
+  defp decode(path, bin) do
+    Plug.Crypto.non_executable_binary_to_term(bin)
   rescue
-    _ -> nil
+    e ->
+      Logger.warning(
+        "extent read cache: #{path} won't decode (#{Exception.message(e)}); reading again"
+      )
+
+      nil
   end
 
   # written to a temp file and renamed: never a partial copy

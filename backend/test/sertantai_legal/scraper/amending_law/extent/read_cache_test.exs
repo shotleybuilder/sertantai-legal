@@ -37,6 +37,35 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCacheTest do
     assert ReadCache.law("UK_ukpga_2001_1", opts).read.default == "S"
   end
 
+  # a cached term holding an atom this VM has never made: the placeholder's
+  # bytes swapped for a fresh name of the same length, so the test itself
+  # never creates the atom
+  defp with_unseen_atom(term) do
+    fresh = "u" <> (:crypto.strong_rand_bytes(8) |> Base.encode16(case: :lower))
+    placeholder = String.duplicate("p", byte_size(fresh))
+    bin = :erlang.term_to_binary(swap(term, String.to_atom(placeholder)))
+
+    {:binary.replace(
+       bin,
+       <<119, byte_size(fresh), placeholder::binary>>,
+       <<119, byte_size(fresh), fresh::binary>>
+     ), fresh}
+  end
+
+  defp swap({key, reading}, atom), do: {key, Map.put(reading, :unseen, atom)}
+
+  test "a cached reading holding atoms not yet made is a hit, not read again (#192)", %{
+    opts: opts
+  } do
+    ReadCache.law("UK_ukpga_2001_1", opts)
+    path = Path.join(opts[:dir], "UK_ukpga_2001_1.bin")
+    {bin, fresh} = path |> File.read!() |> :erlang.binary_to_term() |> with_unseen_atom()
+    File.write!(path, bin)
+
+    assert Atom.to_string(ReadCache.law("UK_ukpga_2001_1", opts).unseen) == fresh
+    assert File.read!(path) == bin
+  end
+
   test "no text held: nil, nothing cached", %{opts: opts} do
     assert ReadCache.law("UK_ukpga_2001_2", opts) == nil
     refute File.exists?(Path.join(opts[:dir], "UK_ukpga_2001_2.bin"))

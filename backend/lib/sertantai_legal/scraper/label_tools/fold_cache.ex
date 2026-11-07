@@ -16,6 +16,8 @@ defmodule SertantaiLegal.Scraper.LabelTools.FoldCache do
   it never stales a build.
   """
 
+  require Logger
+
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.ChangeVocabulary.{LabelSource, Version}
 
@@ -125,21 +127,28 @@ defmodule SertantaiLegal.Scraper.LabelTools.FoldCache do
     end
   end
 
-  # read as data only (no functions, no new atoms); a file that won't read
-  # so is a miss, and the law folds again
+  # read as data only (no functions). Atoms are allowed: rows hold atoms
+  # that exist only once the fold's modules load, and `[:safe]` would refuse
+  # them in a fresh VM (the extent read cache's silent misses, #192). A file
+  # that won't decode says so, and the law folds again
   defp cached(path, key) do
     with {:ok, bin} <- File.read(path),
-         {^key, packed} <- decode(bin) do
+         {^key, packed} <- decode(path, bin) do
       unpack(packed)
     else
       _ -> nil
     end
   end
 
-  defp decode(bin) do
-    Plug.Crypto.non_executable_binary_to_term(bin, [:safe])
+  defp decode(path, bin) do
+    Plug.Crypto.non_executable_binary_to_term(bin)
   rescue
-    ArgumentError -> nil
+    e ->
+      Logger.warning(
+        "label fold cache: #{path} won't decode (#{Exception.message(e)}); folding again"
+      )
+
+      nil
   end
 
   defp store(_path, _key, {:error, _} = error), do: error
