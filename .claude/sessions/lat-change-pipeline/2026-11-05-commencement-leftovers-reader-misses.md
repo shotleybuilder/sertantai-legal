@@ -19,10 +19,10 @@ decisions:
 - what: Revert two broad reader changes that moved held readings
   why: carrying a "the following provisions … for the purpose of …" head's qualifier to its items moved 15 held readings and
     broke 3 held tests; splitting qualified items at "except" moved 5 held readings
-  result: both forms stay fix: (parked below)
+  result: 'both forms stay "fix:" (parked below)'
 - what: A statement under a decided limit is named apart from its group ("<shape> @ <row>")
   why: laid-relative days (limit C) share groups with real misses (SI 2018/1221 beside SI 2019/145)
-  result: the gate passes on named statements; their groups stay fix:
+  result: 'the gate passes on named statements; their groups stay "fix:"'
 - what: One-law wordings below the triage size become known (RULES.md "One-law commencement wordings")
   why: the plan's triage rule (rabbit-hole rule)
   result: 12 statements named; plus "provisions named by power or as Schedule entries" (3)

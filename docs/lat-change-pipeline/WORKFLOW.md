@@ -4,7 +4,7 @@ The pipeline has 14 steps, numbered from 0: Making laws (added 2026-11-04, befor
 
 All commands run from `backend/`. `F` is the family name as the register spells it, e.g. `"OH&S: Occupational / Personal Safety"`.
 
-**Pass rules below are as last used, on OH&S (October–November 2026).** Several moved during that run: from "a clean agent sample", to "no new defect", to a statistical bound, and finally (at the switch-over) to a pass decided by code. Under the new process (see [How a step is run](#how-a-step-is-run)), each step's pass rule is fixed in its plan before work starts, and checked in code first.
+**Pass rules below are as last used, on OH&S (October–November 2026); Maritime Safety (2026-11-04 to 11-07) ran each step under a pass rule fixed in its plan.** Several moved during that run: from "a clean agent sample", to "no new defect", to a statistical bound, and finally (at the switch-over) to a pass decided by code. Under the new process (see [How a step is run](#how-a-step-is-run)), each step's pass rule is fixed in its plan before work starts, and checked in code first.
 
 ## The steps at a glance
 
@@ -461,6 +461,9 @@ Session files: `.claude/sessions/lat-change-pipeline/<date>-<family>-<step-name>
 11. **Store and build**: two builds, digests compared, staleness, the sources gate re-run.
 12. **Labels side by side**: the new timeline beside the old (`--strata`), 0 rule breaks, the side-by-side totals and gaps saved as the switch-over's baseline.
 13. **Switch-over**: causes (a hand look at any cause with no evidence), rules to 0 outside named known limits, checked rows, golden; dry run → Jason → restore point → add the family to `:label_families` → `mix lat.label_switch --apply`; then the stored timeline compared with the switch's.
+14. **Retrospective and housekeeping** (Maritime Safety, 2026-11-07): compare the family against the last one from the meta session's step-status table; a full NAS snapshot (`./scripts/nas/nas-backup.sh --archive`, then `import-snapshot.sh --verify-only`); every open bug owned by a step, with the index rebuilt and no YAML warnings; stale sessions closed; the meta session closed.
+
+**Gates run on the final code.** A gate passed early can fail once later steps change shared code (Measures found 3). Before a step closes, re-run the gates it depends on against the code being committed.
 
 After a reader fix, rebuild (`mix lat.vocabulary --check --family F`, then `--golden`) so the change register reflects it before the next step looks at it. Each family's new forms extend the catalogues. Steps are batched across families only once families stop surfacing new defects.
 

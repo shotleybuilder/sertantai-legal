@@ -78,7 +78,8 @@ bugs:
     affected: 0
     fix: "Added semicolon stripping to clean_definition/1"
     status: fixed
-  - pattern: "Section-level definitions not parsed — terms defined in substantive sections (not interpretation section) absent from parent"
+  - step: Definitions
+    pattern: "Section-level definitions not parsed — terms defined in substantive sections (not interpretation section) absent from parent"
     category: term_not_found
     module: DefinitionParser
     affected: 72

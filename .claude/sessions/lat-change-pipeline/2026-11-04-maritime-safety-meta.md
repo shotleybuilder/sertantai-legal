@@ -1,12 +1,48 @@
 ---
 session: 'LAT Change Pipeline: Maritime Safety — Meta Session'
 type: meta
-status: active
+status: closed
 opened: '2026-11-04'
+closed: '2026-11-07'
+outcome: success
 family: '💙 TRANSPORT: Maritime Safety'
+summary: 'The second family through the LAT Change Pipeline, the first under the 2026-11-03 process: all 14 steps in 4 days
+  (OH&S took 14), each step a planned session with its pass rule met. 117 laws switched over; 31 bugs fixed in their own step
+  and 34 parked by step. Retrospective in 2026-11-07-maritime-safety-retrospective.md.'
+decisions:
+- what: 'Family TRANSPORT: Maritime Safety; Making laws as a formal step 0 before Sources'
+  why: a law's making status was an estimate; the pipeline's readers can decide it from the law's own text
+  result: 117 making laws, all with LAT rows (from 16)
+- what: 'Tooling before the next family: #192 then #191, after the Mines Regulations 2014 → HSWA fault'
+  why: label checks fold sequentially (12 min each) and Python checks sit outside the Elixir code; the repeals-table fault
+    blocks any OH&S relabel
+  result: order and Family 3 (Environmental Protection) set in the retrospective
+metrics:
+  run:
+    days: 4
+    steps: 14
+    sessions: 18
+    session_lines: 3748
+    commits: 55
+    plan_changes: 6
+    agent_tokens: 1493386
+    gemini_tokens: 9097
+  bugs:
+    fixed_in_step: 31
+    parked: 34
+    moved: 2
+  switch:
+    laws: 117
+    known_limits: 8
+    golden: 27/27
+depends_on:
+- archive/change-vocabulary/2026-10-30-cv-s12-retrospective
+enables:
+- lat-change-pipeline/2026-11-07-maritime-safety-retrospective
+- 'Family 3: ENVIRONMENTAL PROTECTION'
 ---
 
-# Session: LAT Change Pipeline: Maritime Safety — Meta Session (ACTIVE)
+# Session: LAT Change Pipeline: Maritime Safety — Meta Session (CLOSED)
 
 ## Problem
 
@@ -29,8 +65,8 @@ The second family through the LAT Change Pipeline, and the first under the proce
 - ✅ Store and build
 - ✅ Labels side by side
 - ✅ Switch-over: switched, 117 of 117 laws written and equal to the switch's; feed Part-locator fix (Decision 2, B); start stored with the build; 8 known limits; closed 2026-11-07
-- ⬜ Retrospective: compare against OH&S from the status table
-- ⬜ Tooling before the next family (Jason 2026-11-07): GitHub #192, the pipeline's Python checks moved to Elixir (store scan, shape mining, census), and #191, check run time (profile, fold once, bounded parallel folds)
+- ✅ Retrospective: `2026-11-07-maritime-safety-retrospective.md` (4 days against 14; Decisions 1–3)
+- ⏸️ (carried: the order is in the retrospective's Decision 3, and the work in GitHub #192 and #191) Tooling before the next family (Jason 2026-11-07): GitHub #192, the pipeline's Python checks moved to Elixir (store scan, shape mining, census), and #191, check run time (profile, fold once, bounded parallel folds)
 
 ## Dependencies
 

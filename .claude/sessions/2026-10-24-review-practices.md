@@ -80,14 +80,16 @@ lessons:
     tag: tooling
 
 bugs:
-  - pattern: "Markup reader ignores a note linked by a child <CommentaryRef Ref=…/> (no CommentaryRef attribute), so cited and affecting are lost"
+  - step: Markup reader
+    pattern: "Markup reader ignores a note linked by a child <CommentaryRef Ref=…/> (no CommentaryRef attribute), so cited and affecting are lost"
     category: "markup reader"
     module: "change_vocabulary/readers/markup.ex (note: attr(attrs, :CommentaryRef) only, ~line 292)"
     affected: "201 ChangeIds in 44 stored laws (all legacy ids); seen as OH&S #27, #39 (UK_ukpga_1961_34 s.29, s.4)"
     fix: "Fall back to the first child CommentaryRef/@Ref of the change's occurrences"
     issue: 187
     status: open
-  - pattern: "An effect id held only in a change's CommentaryRef (ChangeId not key-…) is not used as the key, so a feed-recorded effect is treated as legacy"
+  - step: Markup reader
+    pattern: "An effect id held only in a change's CommentaryRef (ChangeId not key-…) is not used as the key, so a feed-recorded effect is treated as legacy"
     category: "markup reader (design question for Jason)"
     module: "change_vocabulary/readers/markup.ex (key rule)"
     affected: "5,598 elements in 54 stored laws (uksi/1996/1527: 2,020; ukpga/1997/50: 1,197); seen as OH&S #34"

@@ -68,7 +68,8 @@ bugs:
     affected: 0
     fix: "Added definition_is_law_name? check to Definition.new/1 — detects when definition text IS a law name and sets citation=true"
     status: fixed
-  - pattern: "Section-level definitions not parsed — terms defined in substantive sections (not interpretation section) absent from parent"
+  - step: Definitions
+    pattern: "Section-level definitions not parsed — terms defined in substantive sections (not interpretation section) absent from parent"
     category: term_not_found
     module: DefinitionParser
     affected: 72

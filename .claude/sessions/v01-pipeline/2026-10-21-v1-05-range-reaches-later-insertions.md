@@ -5,7 +5,8 @@ release: v0.1
 opened: '2026-10-21'
 parent: v01-pipeline/2026-10-21-v1-00-meta.md
 bugs:
-  - pattern: 'A range record reaches provisions inserted inside the range after its date: anaw 2015/4 "s.78(4B)-(4D) omitted" (2015) lands on TCPA 1990 s.78(4BA)-(4BB), inserted 2017, so they read repealed today though in force; 2008/29 "(4A)-(4D) inserted" (2012) gives them an in-force period from 2012'
+  - step: Old label path
+    pattern: 'A range record reaches provisions inserted inside the range after its date: anaw 2015/4 "s.78(4B)-(4D) omitted" (2015) lands on TCPA 1990 s.78(4BA)-(4BB), inserted 2017, so they read repealed today though in force; 2008/29 "(4A)-(4D) inserted" (2012) gives them an in-force period from 2012'
     category: register / effect target
     module: ChangeCollector range expansion (lat_change_log_rows) / EffectIndex.new (as_given span)
     affected: 'from 2002: 429 rows / 64 laws (inserted), 317 / 61 (substituted), 4 / 3 (repealed); older 658 / 488 / 62'

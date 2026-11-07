@@ -101,7 +101,8 @@ bugs:
     affected: 30
     fix: "New parser strategy needed for annex XML. See #152."
     status: open
-  - pattern: "Substantive section definitions not parsed — terms defined outside interpretation sections absent from parent"
+  - step: Definitions
+    pattern: "Substantive section definitions not parsed — terms defined outside interpretation sections absent from parent"
     category: term_not_found
     module: DefinitionParser
     affected: 1235

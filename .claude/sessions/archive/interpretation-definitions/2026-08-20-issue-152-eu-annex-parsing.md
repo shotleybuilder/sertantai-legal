@@ -83,7 +83,8 @@ bugs:
     affected: 0
     fix: "Added parse_annex/2 function extracting definitions from Division elements using curly-quote 'Term' means patterns. 52 defs from Reg 853/2004 Annex I."
     status: fixed
-  - pattern: "Welsh SI UK_wsi_2014_2303 has truncated definition text — empty quotes and bare parentheses produce 13 no_citation"
+  - step: Definitions
+    pattern: "Welsh SI UK_wsi_2014_2303 has truncated definition text — empty quotes and bare parentheses produce 13 no_citation"
     category: no_citation
     module: DefinitionParser
     affected: 13

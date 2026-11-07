@@ -51,7 +51,8 @@ bugs:
     affected: "rows with both notes and effects (unmeasured)"
     fix: "row facts from effects (and the amending law) only — LR-21"
     status: open
-  - pattern: "Provenance mislabelled or missing for note-derived values: changed_by when affecting is nil and the effect kind from the note Type labelled effect; '[Repealed]' from CommentaryRef presence labelled markup; change-log cause, renumbering renames and the manifest amended flag record none"
+  - step: Old label path
+    pattern: "Provenance mislabelled or missing for note-derived values: changed_by when affecting is nil and the effect kind from the note Type labelled effect; '[Repealed]' from CommentaryRef presence labelled markup; change-log cause, renumbering renames and the manifest amended flag record none"
     category: lat-provenance
     module: "change_facts.ex note/3 + kind/2, lat_parser/rows.ex mark_repealed/2, lat_change_log.ex, lat_cause/apply.ex, lat_hash/query.ex"
     affected: "6 paths"

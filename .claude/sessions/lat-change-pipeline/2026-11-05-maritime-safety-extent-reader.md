@@ -96,7 +96,7 @@ bugs:
   status: open
 - pattern: 'OH&S has not been rebuilt against the new extents (Decisions 2 and 3 bind more of its changes), and its extent gate lists 95 causes not named'
   category: ohs-extent-gate-review
-  module: test/fixtures/extent_patterns/withheld.json (OH&S causes); mix lat.vocabulary --build --family "OH&S: Occupational"
+  module: 'test/fixtures/extent_patterns/withheld.json (OH&S causes); mix lat.vocabulary --build --family "OH&S: Occupational"'
   affected: 95 causes
   fix: rebuild OH&S, re-run lat.extent_check, review each cause (fix or known)
   step: Extent reader

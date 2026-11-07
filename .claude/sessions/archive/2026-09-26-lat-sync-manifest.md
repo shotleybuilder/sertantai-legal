@@ -17,13 +17,15 @@ bugs:
     affected: 811
     fix: "Migration 20260926163414: revoked laws (live Revoked|Repealed|Abolished) get no next_action; new revoked column. On dev: lat_parse 2,706 → 2,430, lat_parse_or_review 983 → 456, review_lat_deleted 8 → 0"
     status: fixed
-  - pattern: "Fractalaw enriched revoked laws from stale hub LAT that legal no longer holds; 9 of the 11 #58 false→true flips are revoked (e.g. PPC 2000, Water Quality 2000, Solvent Emissions 2004, Renewables Obligation 2009)"
+  - step: fractalaw
+    pattern: "Fractalaw enriched revoked laws from stale hub LAT that legal no longer holds; 9 of the 11 #58 false→true flips are revoked (e.g. PPC 2000, Water Quality 2000, Solvent Emissions 2004, Renewables Obligation 2009)"
     category: sync
     module: fractalaw hub / #62 manifest
     affected: 9
     fix: "Fractalaw: don't enrich laws the manifest says legal doesn't hold; Jason to decide whether the 9 revoked Making flags stand"
     status: open
-  - pattern: "Suspicious live status: UK_ukpga_1949_97 (National Parks and Access to the Countryside Act 1949) and UK_ukpga_1949_74 (Coast Protection Act 1949) are marked Revoked; NPACA 1949 is largely in force. The register also still holds one regnal-year name (UK_ukpga_1961_Eliz2/9-10/62)"
+  - step: Register
+    pattern: "Suspicious live status: UK_ukpga_1949_97 (National Parks and Access to the Countryside Act 1949) and UK_ukpga_1949_74 (Coast Protection Act 1949) are marked Revoked; NPACA 1949 is largely in force. The register also still holds one regnal-year name (UK_ukpga_1961_Eliz2/9-10/62)"
     category: register_hygiene
     module: legal_register.live / naming (QQ-06)
     affected: 3

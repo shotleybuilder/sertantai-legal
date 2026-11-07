@@ -56,7 +56,8 @@ bugs:
     fix: Increased limit from 80 to 120 chars
     status: fixed
 
-  - pattern: Consolidated Act mismatch — 1974 Act not mapped to 1992 Consolidation Act
+  - step: Definitions
+    pattern: Consolidated Act mismatch — 1974 Act not mapped to 1992 Consolidation Act
     category: parent_not_in_lrt
     module: Indexes
     affected: 2

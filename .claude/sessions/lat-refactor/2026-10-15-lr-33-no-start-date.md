@@ -84,7 +84,8 @@ bugs:
   affected: 17018
   fix: dated clause before act_enactment in the catalogue
   status: fixed
-- pattern: uk_lrt.md_coming_into_force_date is sometimes an exception date or disagrees with the revised text (5 of 506 laws)
+- step: Register
+  pattern: uk_lrt.md_coming_into_force_date is sometimes an exception date or disagrees with the revised text (5 of 506 laws)
   category: register data
   module: uk_lrt metadata
   affected: 5

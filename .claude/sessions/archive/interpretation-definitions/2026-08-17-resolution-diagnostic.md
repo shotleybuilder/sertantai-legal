@@ -79,7 +79,8 @@ bugs:
     fix: "Preamble stripping regex anchors on 'of the'/'in the' but cuts at wrong boundary for compound titles"
     status: open
 
-  - pattern: "Consolidated Act mismatch — child cites 'Trade Union and Labour Relations Act 1974' but LRT has the 1992 Consolidation Act"
+  - step: Definitions
+    pattern: "Consolidated Act mismatch — child cites 'Trade Union and Labour Relations Act 1974' but LRT has the 1992 Consolidation Act"
     category: parent_not_in_lrt
     module: Indexes
     affected: 2

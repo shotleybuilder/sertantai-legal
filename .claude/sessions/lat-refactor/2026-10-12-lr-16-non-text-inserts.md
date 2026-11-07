@@ -11,7 +11,8 @@ bugs:
     affected: 22
     fix: "fixed by #174 and waves 2-4: 3,483 → 22 rows / 14 laws; the residue inserts forms, formulae or images (no text); schedules: LR-10"
     status: fixed
-  - pattern: "Amending provisions that insert a form, formula or image end 'insert—/substitute—' with nothing after: the inserted object isn't text"
+  - step: LAT parser
+    pattern: "Amending provisions that insert a form, formula or image end 'insert—/substitute—' with nothing after: the inserted object isn't text"
     category: lat-amending-text
     module: scraper/lat_parser
     affected: 22 rows / 14 laws

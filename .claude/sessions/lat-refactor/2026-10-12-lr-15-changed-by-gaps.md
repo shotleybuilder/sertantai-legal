@@ -5,7 +5,8 @@ release: v0.2
 opened: 2026-10-12
 parent: lat-refactor/2026-10-09-lr-00-meta.md
 bugs:
-  - pattern: "changed_by null when the note cites a bare SI number ('by 2002/794', 'SI 1992/2823') the register holds, no Citation markup, no effect"
+  - step: Old label path
+    pattern: "changed_by null when the note cites a bare SI number ('by 2002/794', 'SI 1992/2823') the register holds, no Citation markup, no effect"
     category: lat-change-facts
     module: AmendmentNote / ChangeFacts note fallback
     affected: 28 notes (recounted 2026-10-12; was 22)

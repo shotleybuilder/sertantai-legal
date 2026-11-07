@@ -17,7 +17,8 @@ bugs:
     affected: 'measure with the step-7 rows (retained repeals with no claim and a territorial affecting law)'
     fix: 'be338f00: a join gap, not step 8 — EffectIndex.with_orphans joins a legacy id spanning the law to its one whole-law repeal by the cited law; step 5 then claims S'
     status: fixed
-  - pattern: 'A range record ("ss. 78(4B)-(4D) omitted", anaw 2015/4, 2015) reaches provisions inserted inside the range later (s.78(4BA)-(4BB), 2017): the register and the parse join it by document order, so the rows read repealed today though in force, and an earlier range insertion (2008/29, (4A)-(4D)) gives them an in-force period from 2012'
+  - step: Old label path
+    pattern: 'A range record ("ss. 78(4B)-(4D) omitted", anaw 2015/4, 2015) reaches provisions inserted inside the range later (s.78(4BA)-(4BB), 2017): the register and the parse join it by document order, so the rows read repealed today though in force, and an earlier range insertion (2008/29, (4A)-(4D)) gives them an in-force period from 2012'
     category: register / effect target
     module: EffectIndex.new (as_given span) / ChangeCollector range expansion (lat_change_log_rows)
     affected: 'from 2002: 429 rows / 64 laws (inserted), 317 / 61 (substituted), 4 / 3 (repealed); older 658 / 488 / 62; text-change operations only'

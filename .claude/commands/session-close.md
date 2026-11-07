@@ -84,6 +84,8 @@ enables:
    ```
    This is idempotent — it drops and recreates all tables from the markdown source. The `--archive` flag can be added to also move sessions closed >30 days ago to `archive/`.
 
+   **Read its output.** A `WARN: YAML parse error` means the session was left out of the index, along with every bug it holds. The usual cause is an unquoted value that contains `: `. Quote the value and rebuild before you go on. Then confirm the session's bugs were indexed: `sqlite3 .claude/sessions/sessions.db "SELECT count(*) FROM bugs WHERE session_id LIKE '%<slug>%';"`. (Maritime retrospective, 2026-11-07: two closed sessions, the Maritime Extent reader and the commencement reader-misses, had dropped 10 bugs this way.)
+
 ## Definition session extras
 
 When closing a definition investigation or fix session (opened via `/session-definition-bugfind-start` or `/session-definition-bugfix-start`):

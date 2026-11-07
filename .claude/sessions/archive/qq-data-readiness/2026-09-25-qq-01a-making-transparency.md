@@ -199,7 +199,8 @@ bugs:
     affected: 39
     fix: "Re-review in QQ-01 (making_funnel.next_action = review_lat_deleted); re-parse LAT for any that stay Making"
     status: open
-  - pattern: "AU laws with making_review = 'making' but is_making null (au.apply_nsw_annotations never set is_making)"
+  - step: Register
+    pattern: "AU laws with making_review = 'making' but is_making null (au.apply_nsw_annotations never set is_making)"
     category: making-precedence
     module: mix au.apply_nsw_annotations
     affected: 685
