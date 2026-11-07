@@ -125,13 +125,21 @@ defmodule SertantaiLegal.Scraper.LabelTools.FoldCache do
     end
   end
 
+  # read as data only (no functions, no new atoms); a file that won't read
+  # so is a miss, and the law folds again
   defp cached(path, key) do
     with {:ok, bin} <- File.read(path),
-         {^key, packed} <- :erlang.binary_to_term(bin) do
+         {^key, packed} <- decode(bin) do
       unpack(packed)
     else
       _ -> nil
     end
+  end
+
+  defp decode(bin) do
+    Plug.Crypto.non_executable_binary_to_term(bin, [:safe])
+  rescue
+    ArgumentError -> nil
   end
 
   defp store(_path, _key, {:error, _} = error), do: error

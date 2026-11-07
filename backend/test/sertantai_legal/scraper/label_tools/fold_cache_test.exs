@@ -104,6 +104,15 @@ defmodule SertantaiLegal.Scraper.LabelTools.FoldCacheTest do
       assert_received {:folded, _}
     end
 
+    test "a file that isn't a cache entry is a miss, folded again", %{dir: dir} do
+      File.mkdir_p!(dir)
+      File.write!(Path.join(dir, "UK_x.etf"), "not a term")
+      opts = [dir: dir, inputs: fn _ -> @inputs end, fold: counting_fold(folded())]
+
+      assert FoldCache.rows("UK_x", opts) == folded()
+      assert_received {:folded, _}
+    end
+
     test "cache: false always folds and writes nothing", %{dir: dir} do
       opts = [dir: dir, inputs: fn _ -> @inputs end, fold: counting_fold(folded()), cache: false]
 
