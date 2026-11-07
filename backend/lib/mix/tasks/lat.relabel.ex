@@ -14,7 +14,7 @@ defmodule Mix.Tasks.Lat.Relabel do
       mix lat.relabel --stale --workers 1   # one law at a time (default: as many as LawRunner.Guard allows)
 
   Resumable: laws done are listed in `data/reports/lat-refactor/<tag>.done`
-  (default tag: `relabel_<LabelVersion>`, so a resume never skips a law
+  (default tag: `relabel_<LabelVersion>_<ChangeVocabulary.Version>`, so a resume never skips a law
   relabelled by older code). Never fetches.
   """
 
@@ -26,13 +26,20 @@ defmodule Mix.Tasks.Lat.Relabel do
     LabelRefresh,
     LabelStaleness,
     LabelVersion,
-    LawRunner,
-    ParserVersion
+    LawRunner
   }
+
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Version
 
   @shortdoc "Rebuild laws' register + timeline from the store (writes)"
 
-  @label_reasons [:labels_behind_parse, :labels_version, :labels_failed]
+  @label_reasons [
+    :labels_behind_parse,
+    :labels_version,
+    :labels_failed,
+    :timeline_version,
+    :labels_behind_changes
+  ]
 
   @impl Mix.Task
   def run(args) do
@@ -57,7 +64,13 @@ defmodule Mix.Tasks.Lat.Relabel do
     # resumable within one label code version only: a done file from an
     # earlier version's run must never skip a law now stale (LR-34: the
     # default `relabel.done` from LR-33's apply skipped all 1,066)
-    done_file = Path.join(dir, "#{opts[:tag] || "relabel_#{LabelVersion.current()}"}.done")
+    # (and one change vocabulary version: a switched law's labels are its, #193)
+    done_file =
+      Path.join(
+        dir,
+        "#{opts[:tag] || "relabel_#{LabelVersion.current()}_#{Version.current()}"}.done"
+      )
+
     done = if File.exists?(done_file), do: done_file |> File.read!() |> String.split(), else: []
     todo = laws -- done
     Mix.shell().info("#{length(todo)} laws (#{length(done)} done)")
@@ -89,7 +102,7 @@ defmodule Mix.Tasks.Lat.Relabel do
   end
 
   defp stale_for_labels do
-    current = %{parser: ParserVersion.current(), labels: LabelVersion.current()}
+    current = LabelStaleness.current()
 
     for {law, facts} <- LabelStaleness.facts(),
         Enum.any?(LabelStaleness.reasons(facts, current), &(&1 in @label_reasons)),

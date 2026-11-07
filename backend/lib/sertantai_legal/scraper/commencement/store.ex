@@ -3,11 +3,13 @@ defmodule SertantaiLegal.Scraper.Commencement.Store do
   The commencement ruleset's table, `commencement_rules` (CR-01): a source
   document's rules are written together (delete + insert by `source_law`),
   so they always match its latest reading; a law's rules are read back as
-  `Rule` structs. DB only — the rules themselves are `Commencement.Rule`.
+  `Rule` structs. Each row is stamped with the reader code that read it
+  (`Commencement.ReadVersion`, #193). DB only — the rules themselves are
+  `Commencement.Rule`.
   """
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.Commencement.Rule
+  alias SertantaiLegal.Scraper.Commencement.{ReadVersion, Rule}
 
   @columns ~w(commences scope_kind scope scope_except when_kind when_date when_basis when_offset
               when_detail territory purposes source_law source_ref source_text treatment)a
@@ -40,10 +42,10 @@ defmodule SertantaiLegal.Scraper.Commencement.Store do
       for row <- rows do
         Repo.query!(
           """
-          INSERT INTO commencement_rules (#{Enum.join(@columns, ", ")})
-          VALUES (#{1..length(@columns) |> Enum.map_join(", ", &"$#{&1}")})
+          INSERT INTO commencement_rules (#{Enum.join(@columns, ", ")}, reader_version)
+          VALUES (#{1..(length(@columns) + 1) |> Enum.map_join(", ", &"$#{&1}")})
           """,
-          Enum.map(@columns, &Map.fetch!(row, &1))
+          Enum.map(@columns, &Map.fetch!(row, &1)) ++ [ReadVersion.current()]
         )
       end
 

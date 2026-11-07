@@ -9,14 +9,26 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Store.Inputs do
   - `:law_text` — the stored law text's content (`ClmlStore.digest/2`)
   - `:feed` — the stored changes-feed pages' content
   - `:amendment_rules`, `:commencement_rules`, `:extent_rules` — each
-    store's latest `read_at` over the rows the build reads: the law's own,
-    its commencing laws' (`sources`), its amending laws' (`affecting`)
+    store's latest `read_at` over the rows the build reads: the amendment
+    rules on the law; the commencement rules commencing the law or a law
+    whose commencement it read (`sources`: the amending laws, their rules'
+    sources, the laws its notes cite); the extent rules of those laws and
+    its affecting laws
 
   `:affecting` and `:commencement_sources` are recorded too, so the rules
-  can be fingerprinted again without a build. DB and file reads only.
+  can be fingerprinted again without a build. `readers/3` says which of
+  those readings were made by other reader code (#193): `read_at` moves
+  only when a reading is written, so a reader fix that is never re-run
+  leaves the build looking current. DB and file reads only.
+
+  (#193: the commencement fingerprint read rules *from* `sources`, not
+  rules commencing them, so a re-read order moved nothing; the extent
+  fingerprint missed the rules' sources and cited laws the build reads.)
   """
 
   alias SertantaiLegal.Repo
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.ReadVersion, as: ExtentReadVersion
+  alias SertantaiLegal.Scraper.Commencement.ReadVersion, as: CommencementReadVersion
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
 
   @keys [:lat_rows, :law_text, :feed, :amendment_rules, :commencement_rules, :extent_rules]
@@ -35,15 +47,54 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Store.Inputs do
       amendment_rules:
         latest("SELECT max(read_at) FROM amendment_rules WHERE amends = $1", [law]),
       commencement_rules:
-        latest(
-          "SELECT max(read_at) FROM commencement_rules WHERE commences = $1 OR source_law = ANY($2)",
-          [law, sources]
-        ),
+        latest("SELECT max(read_at) FROM commencement_rules WHERE commences = ANY($1)", [
+          commenced(law, sources)
+        ]),
       extent_rules:
-        latest("SELECT max(read_at) FROM extent_rules WHERE source_law = ANY($1)", [affecting]),
+        latest("SELECT max(read_at) FROM extent_rules WHERE source_law = ANY($1)", [
+          extended(affecting, sources)
+        ]),
       affecting: Enum.sort(affecting),
       commencement_sources: Enum.sort(sources)
     }
+  end
+
+  @doc """
+  The readers whose readings the build read are by other reader code, or
+  were read before the code was recorded (`reader_version` nil):
+  `:commencement_reader` (`Commencement.ReadVersion`), `:extent_reader`
+  (`Extent.ReadVersion`). Taken now, never recorded. The amending laws' own
+  rules need no reason: the build reads a stale one from its text
+  (`Primary.primary/2`).
+  """
+  @spec readers(String.t(), [String.t()], [String.t()]) :: [
+          :commencement_reader | :extent_reader
+        ]
+  def readers(law, affecting, sources) do
+    [
+      {:commencement_reader,
+       other_code?("commencement_rules WHERE commences = ANY($1)", [
+         commenced(law, sources),
+         CommencementReadVersion.current()
+       ])},
+      {:extent_reader,
+       other_code?("extent_rules WHERE source_law = ANY($1)", [
+         extended(affecting, sources),
+         ExtentReadVersion.current()
+       ])}
+    ]
+    |> Enum.filter(&elem(&1, 1))
+    |> Enum.map(&elem(&1, 0))
+  end
+
+  defp commenced(law, sources), do: Enum.uniq([law | sources])
+  defp extended(affecting, sources), do: Enum.uniq(affecting ++ sources)
+
+  defp other_code?(from, params) do
+    Repo.query!(
+      "SELECT EXISTS (SELECT 1 FROM #{from} AND reader_version IS DISTINCT FROM $2)",
+      params
+    ).rows == [[true]]
   end
 
   defp lat_rows(law) do

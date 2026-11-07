@@ -94,6 +94,12 @@ defmodule SertantaiLegal.Legal.CommencementRule do
       public?(true)
       default(&DateTime.utc_now/0)
     end
+
+    attribute(:reader_version, :string,
+      public?: true,
+      description:
+        "the reader code that read it (`Commencement.ReadVersion`); nil: read before it was recorded, so stale (#193)"
+    )
   end
 
   actions do

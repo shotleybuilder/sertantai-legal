@@ -50,8 +50,14 @@ defmodule SertantaiLegal.Scraper.LabelRefresh do
 
     with {:ok, periods} <- LabelSwitch.timeline(law_name, LabelSwitch.stored(law_name)),
          {:ok, _} <- LabelTimeline.write(law_name, periods, code_version(true)) do
-      # no register records: the old register isn't written for it
-      record_success(law_name, %{records: 0, periods: length(periods)})
+      # no register records: the old register isn't written for it; the
+      # change vocabulary's version recorded, so `LabelStaleness` sees
+      # labels refreshed by other code (#193)
+      record_success(law_name, %{
+        records: 0,
+        periods: length(periods),
+        changes_version: Version.current()
+      })
     else
       {:error, reason} -> fail(law_name, reason)
     end
@@ -91,20 +97,24 @@ defmodule SertantaiLegal.Scraper.LabelRefresh do
 
   @doc """
   Record a refresh as a `labels_refreshed` lat_event: the labels version
-  (`LabelVersion`) and the counts written, in `provenance`. The staleness
+  (`LabelVersion`), the counts written and, for a switched law, the change
+  vocabulary's version (`changes_version`), in `provenance`. The staleness
   check reads it: a law with no refresh after its latest parse, or one built
   by older label code, is stale.
   """
-  @spec record_success(String.t(), %{records: non_neg_integer(), periods: non_neg_integer()}) ::
-          :ok
-  def record_success(law_name, %{records: records, periods: periods}) do
+  @spec record_success(String.t(), %{
+          required(:records) => non_neg_integer(),
+          required(:periods) => non_neg_integer(),
+          optional(:changes_version) => String.t()
+        }) :: :ok
+  def record_success(law_name, %{records: _, periods: _} = counts) do
     Repo.query!(
       """
       INSERT INTO lat_events (law_id, country, law_name, event, at, source, provenance)
       SELECT id, country, name, 'labels_refreshed', now() AT TIME ZONE 'utc', 'label_refresh', $2
       FROM legal_register WHERE name = $1
       """,
-      [law_name, %{labels_version: LabelVersion.current(), records: records, periods: periods}]
+      [law_name, Map.put(counts, :labels_version, LabelVersion.current())]
     )
 
     :ok

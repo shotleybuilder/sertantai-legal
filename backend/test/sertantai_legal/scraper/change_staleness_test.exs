@@ -53,4 +53,11 @@ defmodule SertantaiLegal.Scraper.ChangeStalenessTest do
 
     assert ChangeStaleness.inputs() == SertantaiLegal.Scraper.ChangeVocabulary.Store.Inputs.keys()
   end
+
+  test "readings it read made by other reader code come after the inputs (#193)" do
+    current = Map.put(@current, :readers, [:commencement_reader, :extent_reader])
+
+    assert ChangeStaleness.reasons(built(code_version: "v1"), current) ==
+             [:code_version, :commencement_reader, :extent_reader]
+  end
 end

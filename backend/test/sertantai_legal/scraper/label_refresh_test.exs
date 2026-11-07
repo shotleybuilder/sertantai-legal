@@ -57,4 +57,19 @@ defmodule SertantaiLegal.Scraper.LabelRefreshTest do
     assert LabelRefresh.code_version(false) ==
              SertantaiLegal.Scraper.LabelTimeline.code_version()
   end
+
+  test "a switched law's refresh records the change vocabulary's version (#193)" do
+    register("UK_uksi_2099_3")
+    version = SertantaiLegal.Scraper.ChangeVocabulary.Version.current()
+
+    :ok =
+      LabelRefresh.record_success("UK_uksi_2099_3", %{
+        records: 0,
+        periods: 4,
+        changes_version: version
+      })
+
+    assert %{rows: [[%{"changes_version" => ^version, "periods" => 4}]]} =
+             Repo.query!("SELECT provenance FROM lat_events WHERE law_name = 'UK_uksi_2099_3'")
+  end
 end

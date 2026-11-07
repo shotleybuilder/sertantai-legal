@@ -8,9 +8,13 @@ defmodule SertantaiLegal.Scraper.SourceVersion do
       use SertantaiLegal.Scraper.SourceVersion,
         patterns: ~w(lib/sertantai_legal/scraper/lat_parser.ex mix.lock)
 
-  defines `current/0` and `files/0`. Patterns are globs relative to the
-  backend root; each matched file is an `@external_resource`, so an edit
-  recompiles the module. Any edit, whitespace included, changes the version.
+  defines `current/0`, `files/0` and `fresh?/0`. Patterns are globs
+  relative to the backend root; each matched file is an
+  `@external_resource`, so an edit recompiles the module. Any edit,
+  whitespace included, changes the version. A file added or removed under a
+  pattern recompiles it too (`__mix_recompile__?/0`): the list is fixed at
+  compile time, so a new file was missed until something else recompiled
+  the module (#193: `Extent.ReadVersion` missed four files).
 
   `deps: ~w(sweet_xml)` adds only those dependencies' `mix.lock` entries,
   not the whole lock: another dependency's bump leaves the version as it is
@@ -75,6 +79,8 @@ defmodule SertantaiLegal.Scraper.SourceVersion do
             except: Keyword.get(opts, :except, []),
             deps: Keyword.get(opts, :deps, [])
           ] do
+      @source_patterns patterns
+      @source_except except
       @source_files SertantaiLegal.Scraper.SourceVersion.files(patterns, except)
       for f <- @source_files,
           do: @external_resource(SertantaiLegal.Scraper.SourceVersion.path(f))
@@ -91,6 +97,16 @@ defmodule SertantaiLegal.Scraper.SourceVersion do
       @doc "The files the version covers, relative to the backend root."
       @spec files() :: [String.t()]
       def files, do: @source_files
+
+      @doc "True when the patterns match the files compiled in: none added or removed since."
+      @spec fresh?() :: boolean()
+      def fresh?,
+        do:
+          SertantaiLegal.Scraper.SourceVersion.files(@source_patterns, @source_except) ==
+            @source_files
+
+      @doc false
+      def __mix_recompile__?, do: not fresh?()
     end
   end
 end

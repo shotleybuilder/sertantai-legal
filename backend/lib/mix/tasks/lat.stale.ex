@@ -2,7 +2,9 @@ defmodule Mix.Tasks.Lat.Stale do
   @moduledoc """
   Laws whose LAT or labels are stale (lat-refactor LR-25, `LabelStaleness`):
   parsed by other parser code, labels not refreshed since the parse, built
-  by other label code, or a failed refresh. 0 stale is part of every wave's
+  by other label code, or a failed refresh; a switched family's law also
+  when its labels were refreshed by other change-vocabulary code or before
+  its changes were last built (#193). 0 stale is part of every wave's
   verification.
 
       mix lat.stale                 # counts by reason
@@ -16,14 +18,15 @@ defmodule Mix.Tasks.Lat.Stale do
 
   The change register (`provision_changes`, CV-S11) is reported after them:
   the built laws stale by reason (`ChangeStaleness`: built by other code,
-  or an input moved since the build), and how many laws holding LAT have no
-  build. Fix: `mix lat.vocabulary --build`. It doesn't count towards
-  `--strict` until the labels read the change register (CV-06).
+  an input moved since the build, or readings it read made by other reader
+  code), and how many laws holding LAT have no build. Fix: re-read for a
+  reader reason, then `mix lat.vocabulary --build`. It counts towards
+  `--strict`: the switched families' labels are made from it (#193).
   """
 
   use Mix.Task
 
-  alias SertantaiLegal.Scraper.{ChangeStaleness, LabelStaleness, LabelVersion, ParserVersion}
+  alias SertantaiLegal.Scraper.{ChangeStaleness, LabelStaleness}
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Store, Version}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source, as: Scope
@@ -49,7 +52,7 @@ defmodule Mix.Tasks.Lat.Stale do
     Mix.Task.run("app.start")
     Logger.configure(level: :warning)
 
-    current = %{parser: ParserVersion.current(), labels: LabelVersion.current()}
+    current = LabelStaleness.current()
     facts = LabelStaleness.facts()
 
     stale =
@@ -71,10 +74,16 @@ defmodule Mix.Tasks.Lat.Stale do
     if opts[:list],
       do: for({law, reasons} <- stale, do: Mix.shell().info("#{law}\t#{Enum.join(reasons, ",")}"))
 
-    changes(Enum.map(facts, &elem(&1, 0)), opts)
+    stale_changes = changes(Enum.map(facts, &elem(&1, 0)), opts)
 
-    if opts[:strict] == true and stale != [], do: exit({:shutdown, 1})
+    if opts[:strict] == true and (stale != [] or stale_changes != []),
+      do: exit({:shutdown, 1})
   end
+
+  @fixes [
+    commencement_reader: "mix lat.commencement (the mode that wrote them), then build",
+    extent_reader: "mix lat.amending --extents --amending A,B, then build"
+  ]
 
   # the change register: each built law's reasons, from its inputs taken again
   defp changes(lat_laws, opts) do
@@ -84,8 +93,11 @@ defmodule Mix.Tasks.Lat.Stale do
     # each built law's reasons and its inputs taken now
     verdicts =
       Map.new(builds, fn {law, b} ->
-        inputs = Store.Inputs.of(law, b.affecting || [], b.commencement_sources || [])
-        {law, {ChangeStaleness.reasons(b, %{code_version: version, inputs: inputs}), inputs}}
+        {affecting, sources} = {b.affecting || [], b.commencement_sources || []}
+        inputs = Store.Inputs.of(law, affecting, sources)
+        readers = Store.Inputs.readers(law, affecting, sources)
+        current = %{code_version: version, inputs: inputs, readers: readers}
+        {law, {ChangeStaleness.reasons(b, current), inputs}}
       end)
 
     stale = for {law, {reasons, _}} <- Enum.sort(verdicts), reasons != [], do: {law, reasons}
@@ -93,16 +105,23 @@ defmodule Mix.Tasks.Lat.Stale do
     unbuilt = length(unbuilt_laws)
 
     Mix.shell().info(
-      "\nchange register, code #{version}: #{length(stale)} of #{map_size(builds)} built laws stale"
+      "\nchange register, code #{version}: #{length(stale)} of #{map_size(builds)} built laws stale" <>
+        " (#{no_changes(builds)} built with no changes)"
     )
 
     stale
     |> Enum.flat_map(&elem(&1, 1))
     |> Enum.frequencies()
     |> Enum.sort_by(fn {r, _} ->
-      Enum.find_index([:code_version | ChangeStaleness.inputs()], &(&1 == r))
+      Enum.find_index(
+        [:code_version | ChangeStaleness.inputs()] ++ Keyword.keys(@fixes),
+        &(&1 == r)
+      )
     end)
-    |> Enum.each(fn {reason, n} -> Mix.shell().info("  #{reason}: #{n}") end)
+    |> Enum.each(fn {reason, n} ->
+      fix = if f = @fixes[reason], do: "  (fix: #{f})", else: ""
+      Mix.shell().info("  #{reason}: #{n}#{fix}")
+    end)
 
     Mix.shell().info("  laws holding LAT with no build: #{unbuilt}")
 
@@ -114,6 +133,19 @@ defmodule Mix.Tasks.Lat.Stale do
         )
 
     if path = opts[:sample], do: sample(path, opts, verdicts, unbuilt_laws, version)
+    stale
+  end
+
+  # built laws holding no change: no `provision_changes` rows, so that
+  # table's law count is lower than the builds' (281 against 285, #193)
+  defp no_changes(builds) do
+    %{rows: [[n]]} =
+      Repo.query!(
+        "SELECT count(*) FROM unnest($1::text[]) l WHERE NOT EXISTS (SELECT 1 FROM provision_changes p WHERE p.law_name = l)",
+        [Map.keys(builds)]
+      )
+
+    n
   end
 
   # the hand sample (WORKFLOW.md step 11): built and unbuilt laws on a

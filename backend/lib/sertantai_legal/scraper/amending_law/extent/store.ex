@@ -3,12 +3,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Store do
   The extent ruleset's table, `extent_rules` (CV-04): an Act's extent
   clause is written together (delete + insert by `source_law`), so it
   always matches its latest reading, and read back as an
-  `AmendingLaw.Extent`. DB only — the reading is `AmendingLaw.Extent`.
+  `AmendingLaw.Extent`. Each row is stamped with the reader code that read
+  it (`Extent.ReadVersion`, #193). DB only — the reading is
+  `AmendingLaw.Extent`.
   """
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.Extent
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.Powers
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Powers, ReadVersion}
 
   @columns ~w(kind place items position source_law source_ref source_text amends)a
   # what `rows_for/1` reads back, compared before writing
@@ -49,11 +51,20 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Store do
         extent |> Extent.to_rows(source_law) |> Enum.map(&Map.take(&1, @compared)) |> MapSet.new()
 
     if same? do
+      # read again by this code, the same: stamped, read_at kept (no rebuild)
+      stamp(source_law)
       {:ok, length(Extent.to_rows(extent, source_law)), extent}
     else
       {:ok, n} = write(source_law, extent)
       {:ok, n, extent}
     end
+  end
+
+  defp stamp(source_law) do
+    Repo.query!(
+      "UPDATE extent_rules SET reader_version = $2 WHERE source_law = $1 AND reader_version IS DISTINCT FROM $2",
+      [source_law, ReadVersion.current()]
+    )
   end
 
   # replace `source_law`'s extent rules with `extent`
@@ -66,10 +77,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Store do
       for row <- rows do
         Repo.query!(
           """
-          INSERT INTO extent_rules (id, #{Enum.join(@columns, ", ")}, read_at)
-          VALUES (gen_random_uuid(), #{1..length(@columns) |> Enum.map_join(", ", &"$#{&1}")}, now())
+          INSERT INTO extent_rules (id, #{Enum.join(@columns, ", ")}, read_at, reader_version)
+          VALUES (gen_random_uuid(), #{1..length(@columns) |> Enum.map_join(", ", &"$#{&1}")}, now(), $#{length(@columns) + 1})
           """,
-          Enum.map(@columns, &Map.fetch!(row, &1))
+          Enum.map(@columns, &Map.fetch!(row, &1)) ++ [ReadVersion.current()]
         )
       end
 

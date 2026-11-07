@@ -11,6 +11,9 @@ defmodule SertantaiLegal.Scraper.ChangeStaleness do
     rows the build placed changes on), `:law_text` and `:feed` (the stored
     documents' content), `:amendment_rules`, `:commencement_rules`,
     `:extent_rules` (each store's latest reading the build read)
+  - a reader whose readings the build read are by other reader code
+    (`Store.Inputs.readers/3`, #193): `:commencement_reader`,
+    `:extent_reader` — re-read them, then build
 
   An input the build didn't record counts as moved: the build is older than
   the fingerprint, so nothing says it is current. A law with no reasons is
@@ -30,6 +33,8 @@ defmodule SertantaiLegal.Scraper.ChangeStaleness do
           | :amendment_rules
           | :commencement_rules
           | :extent_rules
+          | :commencement_reader
+          | :extent_reader
 
   @doc "The inputs compared, in the order their reasons are given."
   @spec inputs() :: [atom()]
@@ -37,9 +42,10 @@ defmodule SertantaiLegal.Scraper.ChangeStaleness do
 
   @doc """
   The reasons `build` is stale (empty: fresh). `current`: the code version
-  now and the law's inputs now.
+  now, the law's inputs now and (`readers:`, optional) the readers whose
+  readings it read are by other code.
   """
-  @spec reasons(build() | nil, build()) :: [reason()]
+  @spec reasons(build() | nil, map()) :: [reason()]
   def reasons(nil, _current), do: [:no_build]
 
   def reasons(build, current) do
@@ -50,6 +56,6 @@ defmodule SertantaiLegal.Scraper.ChangeStaleness do
           not Map.has_key?(build.inputs, i) or build.inputs[i] != current.inputs[i],
           do: i
 
-    code ++ moved
+    code ++ moved ++ Map.get(current, :readers, [])
   end
 end
