@@ -4,7 +4,11 @@ defmodule SertantaiLegal.Scraper.LawRunner.GuardTest do
   alias SertantaiLegal.Scraper.LawRunner.Guard
 
   defp probe(fields),
-    do: Map.merge(%{mem_available_kb: 29_000_000, busy: 0.5, cores: 6, heavy: []}, fields)
+    do:
+      Map.merge(
+        %{mem_available_kb: 29_000_000, cgroup_room_kb: nil, busy: 0.5, cores: 6, heavy: []},
+        fields
+      )
 
   test "a quiet machine: the maximum" do
     assert {4, why} = Guard.decide(probe(%{}))
@@ -28,5 +32,12 @@ defmodule SertantaiLegal.Scraper.LawRunner.GuardTest do
 
   test "state not readable: one at a time" do
     assert {1, _} = Guard.decide(probe(%{mem_available_kb: nil}))
+  end
+
+  test "a cgroup limit bounds it where its room is less than the machine's (#194)" do
+    assert {2, why} = Guard.decide(probe(%{cgroup_room_kb: 10_000_000}))
+    assert why =~ "under the cgroup's limit"
+    assert {4, why} = Guard.decide(probe(%{cgroup_room_kb: 40_000_000}))
+    refute why =~ "cgroup"
   end
 end

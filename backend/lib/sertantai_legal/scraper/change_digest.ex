@@ -13,6 +13,16 @@ defmodule SertantaiLegal.Scraper.ChangeDigest do
   # derived on read, never stored
   @derived [:tiers, :conflicts]
 
+  @doc """
+  A build's output as the label fold reads it (#194): the stored changes'
+  digest (`of/1`) and the law's start the build recorded, as 16 hex
+  characters. Recorded on `changes_built` and, for the build a timeline was
+  folded from, on `labels_refreshed`: labels are behind their changes when
+  the two differ, never because a build ran.
+  """
+  @spec build([Change.t()], map() | nil) :: String.t()
+  def build(changes, start), do: hex({of(changes), start})
+
   @doc "16 hex characters over `changes`, whatever their order."
   @spec of([Change.t()]) :: String.t()
   def of(changes) do
@@ -23,6 +33,11 @@ defmodule SertantaiLegal.Scraper.ChangeDigest do
        c.resolved && c.resolved |> Map.from_struct() |> Map.drop(@derived)}
     end)
     |> Enum.sort()
+    |> hex()
+  end
+
+  defp hex(term) do
+    term
     |> :erlang.term_to_binary([:deterministic])
     |> then(&:crypto.hash(:sha256, &1))
     |> Base.encode16(case: :lower)

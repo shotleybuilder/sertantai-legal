@@ -8,7 +8,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.CanonicalTest do
   use ExUnit.Case, async: true
 
   alias SertantaiLegal.Scraper.ChangeVocabulary
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Ref
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Fold, Ref}
 
   @nbsp "art.Article 2"
 
@@ -51,10 +51,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.CanonicalTest do
   end
 
   test "a row named with a non-breaking space meets the readers' name" do
+    provisions = %{@nbsp => %{extent: "E+W+S+NI", start: ~D[2012-12-28]}}
+
     labels =
-      ChangeVocabulary.labels("UK_eur_2012_1", @xml, [], %{
-        @nbsp => %{extent: "E+W+S+NI", start: ~D[2012-12-28]}
-      })
+      Fold.labels(
+        "UK_eur_2012_1",
+        @xml,
+        provisions,
+        ChangeVocabulary.changes("UK_eur_2012_1", @xml, [], provisions)
+      )
 
     assert Map.keys(labels) == ["art.Article 2"]
     assert Enum.map(labels["art.Article 2"], & &1.territory) == ["E+W+S+NI", "NI"]

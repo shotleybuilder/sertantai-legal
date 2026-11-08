@@ -21,8 +21,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
   """
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.ChangeVocabulary
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Label, LabelPeriods, Ref, Store}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Fold, Label, LabelPeriods, Ref, Store}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup
 
   @not_provisions ~w(signed heading table)
@@ -66,7 +65,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
         end)
 
       labels =
-        ChangeVocabulary.labels(law, xml, [], provisions, changes: changes, title: title(law))
+        Fold.labels(law, xml, provisions, changes, title: title(law))
 
       today = today(law)
 

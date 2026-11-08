@@ -5,9 +5,10 @@ defmodule SertantaiLegal.Scraper.LawRunner.Guard do
   the machine while a VM was open (Jason 2026-10-25); so a run looks
   before going parallel:
 
-  - **memory**: `MemAvailable` less a reserve, divided by the measured peak
-    of one law (the largest Acts: ~1.7 GB in their own process, ukpga
-    2010/4);
+  - **memory**: `MemAvailable`, or the room left under the run's cgroup
+    limit where that is less (`systemd-run -p MemoryMax=14G`: the machine's
+    free memory isn't the run's, #194), less a reserve, divided by the
+    measured peak of one law;
   - **load**: the cores not already busy, measured over half a second
     (`/proc/stat`; the 1-minute load average lags, still counting a run
     that has just finished);
@@ -28,7 +29,8 @@ defmodule SertantaiLegal.Scraper.LawRunner.Guard do
           mem_available_kb: non_neg_integer() | nil,
           busy: float() | nil,
           cores: pos_integer(),
-          heavy: [String.t()]
+          heavy: [String.t()],
+          cgroup_room_kb: non_neg_integer() | nil
         }
 
   @doc """
@@ -49,21 +51,35 @@ defmodule SertantaiLegal.Scraper.LawRunner.Guard do
         {1, "one at a time: system state not readable"}
 
       true ->
-        by_memory = div(max(probe.mem_available_kb - reserve, 0), per_law)
+        available = available(probe)
+        by_memory = div(max(available - reserve, 0), per_law)
         by_load = probe.cores - ceil(probe.busy)
         workers = [max, by_memory, by_load] |> Enum.min() |> max(1)
 
         {workers,
-         "#{workers} at once: #{gb(probe.mem_available_kb)} GB available (#{gb(reserve)} kept), " <>
+         "#{workers} at once: #{gb(available)} GB available#{under_cap(probe)} (#{gb(reserve)} kept), " <>
            "~#{gb(per_law)} GB a law; #{probe.busy} of #{probe.cores} cores busy; max #{max}"}
     end
   end
+
+  # the machine's free memory, or the cgroup's room where less
+  defp available(%{cgroup_room_kb: room, mem_available_kb: free}) when is_integer(room),
+    do: min(room, free)
+
+  defp available(probe), do: probe.mem_available_kb
+
+  defp under_cap(%{cgroup_room_kb: room, mem_available_kb: free})
+       when is_integer(room) and room < free,
+       do: " under the cgroup's limit"
+
+  defp under_cap(_probe), do: ""
 
   @doc "The machine's state now."
   @spec probe() :: probe()
   def probe do
     %{
       mem_available_kb: mem_available(),
+      cgroup_room_kb: cgroup_room(),
       busy: busy(),
       cores: System.schedulers_online(),
       heavy: heavy()
@@ -90,6 +106,36 @@ defmodule SertantaiLegal.Scraper.LawRunner.Guard do
     with {:ok, text} <- File.read("/proc/meminfo"),
          [_, kb] <- Regex.run(~r/^MemAvailable:\s+(\d+)\s+kB/m, text) do
       String.to_integer(kb)
+    else
+      _ -> nil
+    end
+  end
+
+  # the least room under any memory limit on this process's cgroup or its
+  # ancestors (cgroup v2: `memory.max` less `memory.current`); nil when none
+  # is set or readable
+  defp cgroup_room do
+    with {:ok, text} <- File.read("/proc/self/cgroup"),
+         [_, path] <- Regex.run(~r/^0::(\S+)$/m, text) do
+      path
+      |> ancestors()
+      |> Enum.map(&room/1)
+      |> Enum.reject(&is_nil/1)
+      |> Enum.min(fn -> nil end)
+    else
+      _ -> nil
+    end
+  end
+
+  defp ancestors("/"), do: ["/sys/fs/cgroup"]
+  defp ancestors(path), do: ["/sys/fs/cgroup" <> path | ancestors(Path.dirname(path))]
+
+  defp room(dir) do
+    with {:ok, max} <- File.read(Path.join(dir, "memory.max")),
+         {limit, _} <- Integer.parse(max),
+         {:ok, cur} <- File.read(Path.join(dir, "memory.current")),
+         {used, _} <- Integer.parse(cur) do
+      div(max(limit - used, 0), 1024)
     else
       _ -> nil
     end

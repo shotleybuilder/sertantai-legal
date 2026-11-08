@@ -3,9 +3,9 @@ defmodule Mix.Tasks.Lat.Stale do
   Laws whose LAT or labels are stale (lat-refactor LR-25, `LabelStaleness`):
   parsed by other parser code, labels not refreshed since the parse, built
   by other label code, or a failed refresh; a switched family's law also
-  when its labels were refreshed by other change-vocabulary code or before
-  its changes were last built (#193). 0 stale is part of every wave's
-  verification.
+  when its labels were folded by other fold code, from other changes than
+  its latest build's, or from other fold inputs (#193, #194). 0 stale is
+  part of every wave's verification.
 
       mix lat.stale                 # counts by reason
       mix lat.stale --list          # also each stale law and its reasons
@@ -15,19 +15,22 @@ defmodule Mix.Tasks.Lat.Stale do
                                     # the change register's staleness hand sample
 
   Fix: `mix lat.reparse` for `parser_version` / `no_parse_event` (the parse
-  refreshes the labels), `mix lat.relabel --stale` for the label reasons.
+  refreshes the labels); `mix lat.vocabulary --build --stale` for the
+  switched families (the changes, then the labels, stage by stage, #194);
+  `mix lat.relabel --stale` for the old path's label reasons.
 
   The change register (`provision_changes`, CV-S11) is reported after them:
   the built laws stale by reason (`ChangeStaleness`: built by other code,
   an input moved since the build, or readings it read made by other reader
   code), and how many laws holding LAT have no build. Fix: re-read for a
-  reader reason, then `mix lat.vocabulary --build`. It counts towards
+  reader reason, then `mix lat.vocabulary --build --stale`. It counts towards
   `--strict`: the switched families' labels are made from it (#193).
   """
 
   use Mix.Task
 
   alias SertantaiLegal.Scraper.{ChangeStaleness, LabelStaleness}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.StaleStages
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Store, Version}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source, as: Scope
@@ -101,14 +104,7 @@ defmodule Mix.Tasks.Lat.Stale do
     version = Version.current()
 
     # each built law's reasons and its inputs taken now
-    verdicts =
-      Map.new(builds, fn {law, b} ->
-        {affecting, sources} = {b.affecting || [], b.commencement_sources || []}
-        inputs = Store.Inputs.of(law, affecting, sources)
-        readers = Store.Inputs.readers(law, affecting, sources)
-        current = %{code_version: version, inputs: inputs, readers: readers}
-        {law, {ChangeStaleness.reasons(b, current), inputs}}
-      end)
+    verdicts = StaleStages.changes()
 
     stale = for {law, {reasons, _}} <- Enum.sort(verdicts), reasons != [], do: {law, reasons}
     unbuilt_laws = Enum.reject(lat_laws, &Map.has_key?(builds, &1))

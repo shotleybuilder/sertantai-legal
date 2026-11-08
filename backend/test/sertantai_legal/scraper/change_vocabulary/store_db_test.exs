@@ -71,4 +71,30 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.StoreDbTest do
     {:ok, _} = Store.write("UK_uksi_2099_3", [], %{}, %{start | date: nil})
     assert Store.start("UK_uksi_2099_3") == {:ok, nil}
   end
+
+  test "each build records its output's digest: a rebuild giving the same changes and start gives the same (#194)" do
+    register("UK_uksi_2099_4")
+    assert Store.digest("UK_uksi_2099_4") == nil
+
+    start = %SertantaiLegal.Scraper.LawStart{treatment: :lrt_metadata, date: ~D[2099-05-01]}
+
+    changes =
+      [change("key-b", "reg.2", [{:feed, :operation, :repealed}, {:feed, :date, ~D[2099-06-01]}])]
+      |> Enum.map(&Evidence.resolve(&1, "E+W"))
+
+    {:ok, _} = Store.write("UK_uksi_2099_4", changes, %{}, start)
+    first = Store.digest("UK_uksi_2099_4")
+    assert first =~ ~r/^[0-9a-f]{16}$/
+
+    # a reader edit that changes no output (a comment): the same digest, so
+    # no label is behind its changes
+    {:ok, _} = Store.write("UK_uksi_2099_4", changes, %{}, start)
+    assert Store.digest("UK_uksi_2099_4") == first
+
+    {:ok, _} = Store.write("UK_uksi_2099_4", changes, %{}, %{start | date: ~D[2099-05-02]})
+    refute Store.digest("UK_uksi_2099_4") == first
+
+    {:ok, _} = Store.write("UK_uksi_2099_4", [], %{}, start)
+    refute Store.digest("UK_uksi_2099_4") == first
+  end
 end

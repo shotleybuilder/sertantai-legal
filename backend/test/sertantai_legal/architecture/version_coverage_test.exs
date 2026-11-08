@@ -24,22 +24,27 @@ defmodule SertantaiLegal.Architecture.VersionCoverageTest do
     lib/sertantai_legal/scraper/source_version.ex
   )
 
-  for version <- [
-        SertantaiLegal.Scraper.ChangeVocabulary.Version,
-        SertantaiLegal.Scraper.Amendment.ReaderVersion,
-        SertantaiLegal.Scraper.LegislationGovUk.FeedVersion,
-        SertantaiLegal.Scraper.AmendingLaw.Extent.ReadVersion,
-        SertantaiLegal.Scraper.Commencement.ReadVersion
+  # each version, with the stores it reads or writes past (the labels
+  # stage's: the changes come fingerprinted by their digest, #194)
+  for {version, stop} <- [
+        {SertantaiLegal.Scraper.ChangeVocabulary.Version, []},
+        {SertantaiLegal.Scraper.ChangeVocabulary.FoldVersion,
+         SertantaiLegal.Scraper.ChangeVocabulary.FoldVersion.boundaries()},
+        {SertantaiLegal.Scraper.Amendment.ReaderVersion, []},
+        {SertantaiLegal.Scraper.LegislationGovUk.FeedVersion, []},
+        {SertantaiLegal.Scraper.AmendingLaw.Extent.ReadVersion, []},
+        {SertantaiLegal.Scraper.Commencement.ReadVersion, []}
       ] do
     test "#{inspect(version)} covers every module its files reach" do
       covered = unquote(version).files() |> Enum.map(&Path.relative_to_cwd/1) |> MapSet.new()
+      stop = @io ++ unquote(stop)
 
       missing =
         covered
         |> MapSet.to_list()
-        |> ModuleReach.reach(@io)
+        |> ModuleReach.reach(stop)
         |> MapSet.difference(covered)
-        |> Enum.reject(&(&1 in @io))
+        |> Enum.reject(&(&1 in stop))
 
       assert missing == [],
              "#{inspect(unquote(version))} misses (add to its patterns, or to @io if it only fetches or stores):\n  " <>

@@ -84,6 +84,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Ref do
   def canonical(ref), do: String.replace(ref, ~r/\p{Zs}/u, " ")
 
   @doc """
+  A ref and its territorial version: "reg.14(1)[NI]" → `{"reg.14(1)",
+  "NI"}`, a ref without one → `{ref, nil}`. The build and the fold both
+  read it.
+  """
+  @spec version(String.t()) :: {String.t(), String.t() | nil}
+  def version(id) do
+    case Regex.run(~r/^(.*)\[([^\]]+)\]$/, id) do
+      [_, base, v] -> {base, SertantaiLegal.Scraper.Territory.normalize(v)}
+      nil -> {id, nil}
+    end
+  end
+
+  @doc """
   Each LAT row's XML id → its ref (canonical, versions share their base:
   "section-23" → "s.23"), from `[section_id, source_xml_id]` rows — the
   parse's own naming, for the feed reader. One id can name several rows,

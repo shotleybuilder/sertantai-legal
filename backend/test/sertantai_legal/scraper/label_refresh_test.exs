@@ -50,26 +50,38 @@ defmodule SertantaiLegal.Scraper.LabelRefreshTest do
     assert reason =~ "fidelity"
   end
 
-  test "a switched law's timeline is stamped with the change vocabulary's version" do
+  test "a switched law's timeline is stamped with the fold's version (#194)" do
     assert LabelRefresh.code_version(true) ==
-             SertantaiLegal.Scraper.ChangeVocabulary.Version.current()
+             SertantaiLegal.Scraper.ChangeVocabulary.FoldVersion.current()
 
     assert LabelRefresh.code_version(false) ==
              SertantaiLegal.Scraper.LabelTimeline.code_version()
   end
 
-  test "a switched law's refresh records the change vocabulary's version (#193)" do
+  test "a switched law's refresh records the fold's version, the build folded and its inputs (#194)" do
     register("UK_uksi_2099_3")
-    version = SertantaiLegal.Scraper.ChangeVocabulary.Version.current()
+    version = SertantaiLegal.Scraper.ChangeVocabulary.FoldVersion.current()
 
     :ok =
       LabelRefresh.record_success("UK_uksi_2099_3", %{
         records: 0,
         periods: 4,
-        changes_version: version
+        fold_version: version,
+        changes_digest: "d1",
+        fold_inputs: "i1"
       })
 
-    assert %{rows: [[%{"changes_version" => ^version, "periods" => 4}]]} =
-             Repo.query!("SELECT provenance FROM lat_events WHERE law_name = 'UK_uksi_2099_3'")
+    assert %{
+             rows: [
+               [
+                 %{
+                   "fold_version" => ^version,
+                   "changes_digest" => "d1",
+                   "fold_inputs" => "i1",
+                   "periods" => 4
+                 }
+               ]
+             ]
+           } = Repo.query!("SELECT provenance FROM lat_events WHERE law_name = 'UK_uksi_2099_3'")
   end
 end

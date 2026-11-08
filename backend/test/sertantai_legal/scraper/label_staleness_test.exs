@@ -3,7 +3,7 @@ defmodule SertantaiLegal.Scraper.LabelStalenessTest do
 
   alias SertantaiLegal.Scraper.LabelStaleness
 
-  @current %{parser: "p2", labels: "l2", changes: "c2"}
+  @current %{parser: "p2", labels: "l2", fold: "f2"}
   @t0 ~N[2026-10-15 10:00:00]
   @t1 ~N[2026-10-15 10:00:05]
 
@@ -15,14 +15,27 @@ defmodule SertantaiLegal.Scraper.LabelStalenessTest do
       labels_version: "l2",
       failed_at: nil,
       switched: false,
-      changes_version: nil,
-      built_at: nil
+      fold_version: nil,
+      folded_digest: nil,
+      fold_inputs: nil,
+      fold_inputs_now: nil,
+      built_at: nil,
+      built_digest: nil
     }
 
-  # a switched family's law: refreshed by the current change-vocabulary
-  # code after its latest build
+  # a switched family's law: folded by the current fold code from its latest
+  # build's output, with today's fold inputs
   defp switched,
-    do: %{fresh() | switched: true, changes_version: "c2", built_at: ~N[2026-10-15 10:00:02]}
+    do: %{
+      fresh()
+      | switched: true,
+        fold_version: "f2",
+        folded_digest: "d1",
+        fold_inputs: "i1",
+        fold_inputs_now: "i1",
+        built_at: ~N[2026-10-15 10:00:02],
+        built_digest: "d1"
+    }
 
   test "a law parsed and relabelled by the current code is fresh" do
     assert LabelStaleness.reasons(fresh(), @current) == []
@@ -61,30 +74,52 @@ defmodule SertantaiLegal.Scraper.LabelStalenessTest do
     assert :no_parse_event in LabelStaleness.reasons(%{fresh() | parsed_at: nil}, @current)
   end
 
-  describe "a switched family's law (#193)" do
-    test "refreshed by the current change-vocabulary code after its latest build is fresh" do
+  describe "a switched family's law (#193, #194)" do
+    test "folded by the current fold code from its latest build's output is fresh" do
       assert LabelStaleness.reasons(switched(), @current) == []
     end
 
-    test "its labels are the change vocabulary's, so the old label code is not its reason" do
+    test "its labels are the fold's, so the old label code is not its reason" do
       assert LabelStaleness.reasons(%{switched() | labels_version: "l1"}, @current) == []
     end
 
-    test "refreshed by other change-vocabulary code, or before the version was recorded" do
-      assert LabelStaleness.reasons(%{switched() | changes_version: "c1"}, @current) ==
-               [:timeline_version]
+    test "folded by other fold code, or before the version was recorded" do
+      assert LabelStaleness.reasons(%{switched() | fold_version: "f1"}, @current) ==
+               [:fold_version]
 
-      assert LabelStaleness.reasons(%{switched() | changes_version: nil}, @current) ==
-               [:timeline_version]
+      assert LabelStaleness.reasons(%{switched() | fold_version: nil}, @current) ==
+               [:fold_version]
     end
 
-    test "its changes built again after the latest refresh (OH&S, 2026-11-02 to 11-07)" do
-      assert LabelStaleness.reasons(%{switched() | built_at: ~N[2026-10-15 10:00:09]}, @current) ==
+    test "a rebuild after the refresh giving the same output stales no label" do
+      later = %{switched() | built_at: ~N[2026-10-15 10:00:09]}
+      assert LabelStaleness.reasons(later, @current) == []
+    end
+
+    test "its latest build's output is not the one folded" do
+      assert LabelStaleness.reasons(%{switched() | built_digest: "d2"}, @current) ==
                [:labels_behind_changes]
     end
 
+    test "folded before digests were recorded (#194)" do
+      assert LabelStaleness.reasons(%{switched() | folded_digest: nil}, @current) ==
+               [:labels_behind_changes]
+
+      both_unrecorded = %{switched() | folded_digest: nil, built_digest: nil}
+      assert LabelStaleness.reasons(both_unrecorded, @current) == [:labels_behind_changes]
+    end
+
+    test "its rows, register record, text or known limits moved since the fold" do
+      assert LabelStaleness.reasons(%{switched() | fold_inputs_now: "i2"}, @current) ==
+               [:fold_inputs]
+
+      assert LabelStaleness.reasons(%{switched() | fold_inputs: nil}, @current) ==
+               [:fold_inputs]
+    end
+
     test "never built: no change build to be behind" do
-      assert LabelStaleness.reasons(%{switched() | built_at: nil}, @current) == []
+      assert LabelStaleness.reasons(%{switched() | built_at: nil, built_digest: nil}, @current) ==
+               []
     end
   end
 end

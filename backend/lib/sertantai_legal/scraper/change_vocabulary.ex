@@ -7,7 +7,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   - readers, one per source, emit claims (`Readers.Markup`, `Readers.Feed`)
   - `Merge` groups claims into changes by identity
   - `Evidence` chooses each attribute by one table
-  - `Label` folds a provision's changes into label periods
+  - `Label` folds a provision's changes into label periods, from
+    `ChangeVocabulary.Fold` (its own module and version, #194: the build
+    reaches none of it)
 
   CV-02 is the thin slice: two golden-set cases end to end. Thin
   orchestrator; pure.
@@ -16,13 +18,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   alias SertantaiLegal.Scraper.ChangeVocabulary.{
     Evidence,
     FeedSavings,
-    Label,
     Merge,
     Parts,
     Placement
   }
 
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Ref, Windsor}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Ref}
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.{
     AmenderStart,
@@ -36,93 +37,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.Application, as: ApplicationReader
 
-  alias SertantaiLegal.Scraper.LatRef
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
-  alias SertantaiLegal.Scraper.{LawTerritory, Territory}
-
-  @doc """
-  Label periods for each provision in `provisions` (id → `%{extent, start}`,
-  ids in LAT grammar without the law prefix), from the law's CLML, its feed
-  effects and — primary — the amending laws' own text (`opts`: `:rules`, the
-  stored `Amendment.Rule`s amending the law; `:commencement`, each amending
-  law's `Commencement.Rule`s; `:own_commencement`, the law's own
-  `Commencement.Rule`s and `:own_context` its row structure
-  (`OwnClause.context/1`); `:effect_uris`, the feed's re-keyed effects
-  (`FeedUris`: URI id → effect id, for the merge); `:effect_savings`, savings given as ranges
-  (`FeedSavings`); `:extents`, each amending Act's extent clause read
-  (`AmendingLaw.Extent`); `:title`, the law's title — its own place;
-  `:passed`, `:act_title` and `:continuations` for its own sunset
-  (`Readers.Expiry`); `:xml_ids`, each LAT row's `source_xml_id` → its ref
-  (the feed placed as the parse named it); `:rows`, every LAT row of the law (a change deeper
-  than them moves to the nearest held row: `Placement.retarget/3`); `:changes`, the law's changes already built (read
-  back from `provision_changes`: `Store.for_law/1`) — the fold alone.
-  """
-  @spec labels(String.t(), String.t(), [Effect.t()], %{String.t() => map()}, keyword()) ::
-          %{String.t() => [Label.period()]}
-  def labels(law_name, xml, effects, provisions, opts \\ []) do
-    {provisions, opts} = canonical(provisions, opts)
-    facts = Markup.provisions(xml, law_name)
-    valid = Markup.valid(xml)
-
-    # the changes given (read back from `provision_changes`), else built
-    changes =
-      Keyword.get_lazy(opts, :changes, fn ->
-        build(law_name, xml, effects, provisions, opts, facts)
-      end)
-      # EU law the Windsor Framework keeps in NI: the UK's changes reach GB (C8)
-      |> Windsor.confine(law_name)
-
-    Map.new(provisions, fn {id, provision} ->
-      {base, version} = version(id)
-
-      provision =
-        %{
-          law: law_name,
-          prospective: prospective?(facts, base),
-          valid: valid,
-          shows_text: get_in(facts, [base, :shows_text]) == true,
-          windsor: Windsor.listed?(law_name)
-        }
-        |> Map.merge(provision)
-        |> own_territory(law_name, Keyword.get(opts, :title))
-
-      # a territorial version's label is its base provision's, from the
-      # union of the versions on it and the provisions holding it, narrowed
-      # where they first split (C3; CV-S09 round 2: SI 2008/1597
-      # reg.16(11)(b)[NI], whose reg.16 GB version is a repealed stub;
-      # HSWA s.28 [E+W], whose own version starts later than [S] and [NI])
-      provision =
-        case {version, versions(facts, base)} do
-          {nil, _} ->
-            provision
-
-          {v, {[_ | _] = vs, starts}} ->
-            %{provision | extent: Territory.union(vs)}
-            |> Map.put(:version, v)
-            # the texts may part before legislation.gov.uk's versions start
-            |> Map.put(
-              :version_start,
-              Enum.min(
-                Enum.reject(
-                  [Label.Version.diverged(base, vs, changes, facts) | starts],
-                  &is_nil/1
-                ),
-                Date,
-                fn -> nil end
-              )
-            )
-
-          {v, _} ->
-            Map.put(provision, :version, v)
-        end
-
-      {id, Label.fold(base, provision, changes)}
-    end)
-    # a Part, Chapter or Title goes with its last child (Jason 2026-10-30)
-    |> Label.Containers.close(
-      Map.new(provisions, fn {id, p} -> {id, Map.get(p, :containers, []) -- [id]} end)
-    )
-  end
+  alias SertantaiLegal.Scraper.Territory
 
   # a range reaches only provisions that existed at its date: one inserted
   # later is not in it (V1-05: TCPA 1990 s.78(4BA), inserted 2017 inside a
@@ -153,7 +69,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   The law's merged, resolved changes — every reader's claims (the
   amending laws' text, the law's own commencement, application and expiry,
   the markup, the feed), merged by identity and chosen by the evidence
-  table: what `labels/5` folds, and what `mix lat.vocabulary` prints.
+  table: what `Fold.labels/5` folds, and what `mix lat.vocabulary` prints.
   """
   @spec changes(String.t(), String.t(), [Effect.t()], %{String.t() => map()}, keyword()) ::
           [Change.t()]
@@ -171,7 +87,6 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
       opts
       |> update_opt(:rows, fn rows -> Enum.map(rows, &Ref.canonical/1) end)
       |> update_opt(:xml_ids, fn ids -> Map.new(ids, fn {x, r} -> {x, Ref.canonical(r)} end) end)
-      |> update_opt(:changes, fn cs -> Enum.map(cs, &%{&1 | target: Ref.canonical(&1.target)}) end)
 
     {provisions, opts}
   end
@@ -218,7 +133,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
         Keyword.get(opts, :own_commencement, []),
         law_name,
         (Keyword.get(opts, :rows) || Map.keys(provisions))
-        |> Enum.map(&elem(version(&1), 0))
+        |> Enum.map(&elem(Ref.version(&1), 0))
         |> Enum.uniq(),
         Keyword.get(opts, :own_context, SertantaiLegal.Scraper.Commencement.Order.context()),
         base_extents(provisions)
@@ -277,14 +192,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
       |> below_rows(Keyword.get(opts, :rows), facts)
 
     changes ++
-      Parts.commencements(changes, Enum.map(Map.keys(provisions), &elem(version(&1), 0)), order)
+      Parts.commencements(
+        changes,
+        Enum.map(Map.keys(provisions), &elem(Ref.version(&1), 0)),
+        order
+      )
   end
 
   # a provision's extent by its base: its own row's, else the versions'
   # extents together (s.23[E+W] and s.23[S] → s.23 extends to E+W+S)
   defp base_extents(provisions) do
     provisions
-    |> Enum.group_by(fn {id, _} -> elem(version(id), 0) end, fn {_, p} -> p[:extent] end)
+    |> Enum.group_by(fn {id, _} -> elem(Ref.version(id), 0) end, fn {_, p} -> p[:extent] end)
     |> Map.new(fn {base, extents} ->
       case Map.get(provisions, base) do
         %{extent: e} when is_binary(e) -> {base, e}
@@ -300,39 +219,6 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
 
   defp below_rows(changes, rows, facts),
     do: Placement.retarget(changes, MapSet.new(rows), MapSet.new(Map.keys(facts)))
-
-  # a devolved law's own provisions apply in its territory (a Welsh SI
-  # extends to E+W, applies in W: SI 2017/544). The evidence is the law's
-  # own: its type, else the place in its title — never its register extent
-  defp own_territory(provision, law_name, title) do
-    case LawTerritory.territory(law_name, LawTerritory.title_place(title)) do
-      nil -> provision
-      t -> %{provision | extent: intersect(provision.extent || t, t)}
-    end
-  end
-
-  defp intersect(a, b), do: Territory.subtract(a, Territory.subtract(a, b) || "") || a
-
-  # the versions on `base` and on the provisions holding it, and the days
-  # they start
-  defp versions(facts, base) do
-    held = base |> LatRef.ancestors() |> Enum.map(&Map.get(facts, &1, %{}))
-
-    {held |> Enum.flat_map(&Map.get(&1, :versions, [])) |> Enum.uniq(),
-     held |> Enum.flat_map(&(&1 |> Map.get(:version_starts, %{}) |> Map.values()))}
-  end
-
-  # "reg.14(1)[NI]" → {"reg.14(1)", "NI"}
-  defp version(id) do
-    case Regex.run(~r/^(.*)\[([^\]]+)\]$/, id) do
-      [_, base, v] -> {base, Territory.normalize(v)}
-      nil -> {id, nil}
-    end
-  end
-
-  # the markup marks the provision, or an ancestor, prospective
-  defp prospective?(facts, id),
-    do: Enum.any?(SertantaiLegal.Scraper.LatRef.ancestors(id), &get_in(facts, [&1, :prospective]))
 
   defp extent(provisions, target), do: provisions |> Map.get(target, %{}) |> Map.get(:extent)
 end

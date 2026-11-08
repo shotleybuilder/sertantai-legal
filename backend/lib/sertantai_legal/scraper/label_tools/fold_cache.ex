@@ -5,21 +5,22 @@ defmodule SertantaiLegal.Scraper.LabelTools.FoldCache do
   each law once, not once per tool and per `--list` (#191, 2026-11-07).
 
   The file (`data/cache/label-fold/<law>.etf`) holds the fold under a key
-  of everything it reads (`inputs/1`): the change register's code version,
+  of everything it reads (`inputs/1`): the fold's code version,
   the law's latest build, its stored timeline, its rows, its register title
   and made date, and its CLML body. Any of them moving folds the law again.
   Rows share the law's change list, which `term_to_binary` would copy into
   every row, so the file holds the changes once and each row's reaching
   changes as their places in it (`pack/1`).
 
-  Lives outside the code version's modules (`ChangeVocabulary.Version`), so
-  it never stales a build.
+  Keyed on the fold's code (`FoldVersion`, #194: the fold is what it
+  caches; the changes come in by the build's event). Lives outside both
+  stages' versions, so it never stales a build or a label.
   """
 
   require Logger
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{LabelSource, Version}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{FoldVersion, LabelSource}
 
   @dir "data/cache/label-fold"
 
@@ -85,7 +86,7 @@ defmodule SertantaiLegal.Scraper.LabelTools.FoldCache do
   @spec inputs(String.t()) :: inputs()
   def inputs(law) do
     %{
-      version: Version.current(),
+      version: FoldVersion.current(),
       build:
         one("SELECT max(id) FROM lat_events WHERE law_name = $1 AND event = 'changes_built'", law),
       timeline:

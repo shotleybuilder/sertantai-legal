@@ -14,7 +14,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Golden do
   """
 
   alias SertantaiLegal.Scraper.{ChangeVocabulary, LatStagedParser}
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{Build, LabelSource, Store}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Build, Fold, LabelSource, Store}
 
   @golden "test/fixtures/change_vocabulary/golden.exs"
   @golden_extended "test/fixtures/change_vocabulary/golden_extended.exs"
@@ -66,7 +66,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Golden do
           |> Build.primary(effects)
           |> Keyword.merge(rows: law |> Build.rows() |> Map.keys(), xml_ids: Build.xml_ids(law))
 
-    labels = ChangeVocabulary.labels(law, xml, effects, provisions, given)
+    changes =
+      Keyword.get_lazy(given, :changes, fn ->
+        ChangeVocabulary.changes(law, xml, effects, provisions, given)
+      end)
+
+    labels = Fold.labels(law, xml, provisions, changes, given)
     Enum.map(entries, &{&1, labels[&1.id]})
   end
 

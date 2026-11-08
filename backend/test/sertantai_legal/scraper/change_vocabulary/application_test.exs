@@ -7,6 +7,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.ApplicationTest do
   use ExUnit.Case, async: true
 
   alias SertantaiLegal.Scraper.ChangeVocabulary
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Fold
 
   @xml ~S"""
   <Legislation RestrictExtent="E+W+S+N.I."><Secondary><Body>
@@ -16,8 +17,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.ApplicationTest do
   """
 
   defp labels(provisions) do
-    "UK_uksi_2012_3038"
-    |> ChangeVocabulary.labels(@xml, [], provisions)
+    law = "UK_uksi_2012_3038"
+
+    law
+    |> Fold.labels(@xml, provisions, ChangeVocabulary.changes(law, @xml, [], provisions))
     |> Map.new(fn {id, ps} ->
       {id, Enum.map(ps, &Map.take(&1, [:valid_from, :territory, :in_force_from]))}
     end)

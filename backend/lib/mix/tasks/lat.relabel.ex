@@ -14,7 +14,7 @@ defmodule Mix.Tasks.Lat.Relabel do
       mix lat.relabel --stale --workers 1   # one law at a time (default: as many as LawRunner.Guard allows)
 
   Resumable: laws done are listed in `data/reports/lat-refactor/<tag>.done`
-  (default tag: `relabel_<LabelVersion>_<ChangeVocabulary.Version>`, so a resume never skips a law
+  (default tag: `relabel_<LabelVersion>_<ChangeVocabulary.Version>_<FoldVersion>`, so a resume never skips a law
   relabelled by older code). Never fetches.
   """
 
@@ -29,7 +29,7 @@ defmodule Mix.Tasks.Lat.Relabel do
     LawRunner
   }
 
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Version
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{FoldVersion, Version}
 
   @shortdoc "Rebuild laws' register + timeline from the store (writes)"
 
@@ -37,8 +37,9 @@ defmodule Mix.Tasks.Lat.Relabel do
     :labels_behind_parse,
     :labels_version,
     :labels_failed,
-    :timeline_version,
-    :labels_behind_changes
+    :fold_version,
+    :labels_behind_changes,
+    :fold_inputs
   ]
 
   @impl Mix.Task
@@ -64,11 +65,12 @@ defmodule Mix.Tasks.Lat.Relabel do
     # resumable within one label code version only: a done file from an
     # earlier version's run must never skip a law now stale (LR-34: the
     # default `relabel.done` from LR-33's apply skipped all 1,066)
-    # (and one change vocabulary version: a switched law's labels are its, #193)
+    # (and one build and fold version: a switched law's labels are theirs,
+    # #193, #194)
     done_file =
       Path.join(
         dir,
-        "#{opts[:tag] || "relabel_#{LabelVersion.current()}_#{Version.current()}"}.done"
+        "#{opts[:tag] || "relabel_#{LabelVersion.current()}_#{Version.current()}_#{FoldVersion.current()}"}.done"
       )
 
     done = if File.exists?(done_file), do: done_file |> File.read!() |> String.split(), else: []

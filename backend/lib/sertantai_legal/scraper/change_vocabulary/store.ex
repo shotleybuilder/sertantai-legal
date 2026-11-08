@@ -6,7 +6,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Store do
   match its latest build, and read back as `Change` structs — what the
   label fold reads. Tiers and conflicts are not stored; they are derived on
   read (`Evidence.derive/1`). Each build is a `changes_built` lat_event
-  holding the code version and its inputs' fingerprints.
+  holding the code version, its inputs' fingerprints and its output's
+  digest (`changes_digest`: the changes as stored and the start, #194).
 
   DB only; claim values go through `Store.Codec`. Names read back
   (sources, attributes, operations) become atoms with `String.to_atom/1`:
@@ -17,7 +18,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Store do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Claim, Evidence, Store, Version}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Store.Codec
-  alias SertantaiLegal.Scraper.LawStart
+  alias SertantaiLegal.Scraper.{ChangeDigest, LawStart}
 
   defdelegate encode(value), to: Codec
   defdelegate decode(map), to: Codec
@@ -90,7 +91,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Store do
         for chunk <- Enum.chunk_every(claim_rows, 5_000),
             do: Repo.insert_all("provision_change_claims", chunk)
 
-        record(law, version, inputs, start, length(changes_rows), length(claim_rows))
+        # the output as stored, read back: what the label fold reads (#194)
+        digest = law |> for_law() |> ChangeDigest.build(start_map(start))
+        record(law, version, inputs, start, digest, {length(changes_rows), length(claim_rows)})
         %{changes: length(changes_rows), claims: length(claim_rows)}
       end,
       timeout: :infinity
@@ -98,7 +101,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Store do
   end
 
   # the build, as a lat_event (as `LabelRefresh.record_success/2`)
-  defp record(law, version, inputs, start, changes, claims) do
+  defp record(law, version, inputs, start, digest, {changes, claims}) do
     Repo.query!(
       """
       INSERT INTO lat_events (law_id, country, law_name, event, at, source, provenance)
@@ -107,16 +110,23 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Store do
       """,
       [
         law,
-        %{code_version: version, inputs: inputs, changes: changes, claims: claims}
+        %{
+          code_version: version,
+          inputs: inputs,
+          changes: changes,
+          claims: claims,
+          changes_digest: digest
+        }
         |> put_start(start)
       ]
     )
   end
 
   defp put_start(provenance, nil), do: provenance
+  defp put_start(provenance, start), do: Map.put(provenance, :start, start_map(start))
 
-  defp put_start(provenance, %LawStart{} = s),
-    do: Map.put(provenance, :start, %{date: s.date, treatment: s.treatment})
+  defp start_map(nil), do: nil
+  defp start_map(%LawStart{} = s), do: %{date: s.date, treatment: s.treatment}
 
   @doc """
   The law's start as its latest build stored it: `{:ok, date}` (nil for a
@@ -137,6 +147,25 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Store do
       %{rows: [[%{"date" => nil}]]} -> {:ok, nil}
       %{rows: [[%{"date" => d}]]} -> {:ok, Date.from_iso8601!(d)}
       _ -> :none
+    end
+  end
+
+  @doc """
+  The output digest `law`'s latest build recorded (`changes_digest`), nil
+  for a law never built or built before #194.
+  """
+  @spec digest(String.t()) :: String.t() | nil
+  def digest(law) do
+    case Repo.query!(
+           """
+           SELECT provenance ->> 'changes_digest' FROM lat_events
+           WHERE law_name = $1 AND event = 'changes_built'
+           ORDER BY at DESC, id DESC LIMIT 1
+           """,
+           [law]
+         ) do
+      %{rows: [[d]]} -> d
+      _ -> nil
     end
   end
 

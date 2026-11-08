@@ -27,10 +27,19 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       mix lat.vocabulary --build --golden  # every golden-set law
       mix lat.vocabulary --build --laws A,B
       mix lat.vocabulary --build --family "OH&S: Occupational / Personal Safety"
+      mix lat.vocabulary --build --stale   # what lat.stale lists, stage by stage (#194)
       mix lat.vocabulary --check --family "OH&S: Occupational"   # build, conflict counts, golden from the store, every step's gate (mix lat.gates) — one app start
       mix lat.vocabulary --check --family F --no-gates           # the same without the gates (a fix round; the label gate folds the family)
       mix lat.vocabulary --conflicts --law UK_ukpga_1990_8 [--all]
                                            # where the law's text and legislation.gov.uk disagree
+
+  `--build --stale` walks the two stages in order (#194): it rebuilds the
+  built laws whose changes are stale (`ChangeStaleness`), then folds again
+  the switched laws whose labels are stale (`LabelRefresh.refold/1`: the
+  fold's code, the changes' output digest or the fold's inputs moved) —
+  read after the rebuild, so a rebuild giving the same changes stales no
+  label — and refreshes those parsed or failed since. Labels whose parse is
+  stale are listed for `mix lat.reparse`.
 
   The affecting Acts' extent clauses come from `extent_rules` (`mix
   lat.amending --extents --law X`); an Act not read there is read from its
@@ -44,8 +53,17 @@ defmodule Mix.Tasks.Lat.Vocabulary do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source, as: Scope
 
-  alias SertantaiLegal.Scraper.{ChangeVocabulary, LatRef, LatStagedParser}
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{Build, Conflicts, Golden, LabelSource, Store}
+  alias SertantaiLegal.Scraper.{ChangeVocabulary, LabelRefresh, LatRef, LatStagedParser}
+
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{
+    Build,
+    Conflicts,
+    Fold,
+    Golden,
+    LabelSource,
+    StaleStages,
+    Store
+  }
 
   @shortdoc "A law's changes, evidence and labels through the change vocabulary; build the change register"
 
@@ -64,6 +82,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
           extended: :boolean,
           workers: :integer,
           build: :boolean,
+          stale: :boolean,
           stored: :boolean,
           conflicts: :boolean,
           all: :boolean,
@@ -209,43 +228,87 @@ defmodule Mix.Tasks.Lat.Vocabulary do
     Mix.Task.run("app.start")
     Logger.configure(level: :warning)
 
-    laws = laws(opts, "--build")
+    if opts[:stale], do: build_stale(opts), else: build_laws(laws(opts, "--build"), opts)
+  end
 
+  # the stages in order (#194): the changes, then the labels read afresh
+  defp build_stale(opts) do
+    laws = StaleStages.stale_changes()
+    Mix.shell().info("changes stage: #{length(laws)} built laws stale")
+    if laws != [], do: build_laws(laws, opts)
+
+    by_action =
+      Enum.group_by(
+        StaleStages.stale_labels(),
+        &StaleStages.label_action(elem(&1, 1)),
+        &elem(&1, 0)
+      )
+
+    [refold, refresh, reparse] =
+      Enum.map([:refold, :refresh, :reparse], &Map.get(by_action, &1, []))
+
+    Mix.shell().info(
+      "labels stage: #{length(refold)} switched laws to fold again, #{length(refresh)} to refresh" <>
+        ", #{length(reparse)} needing a re-parse (mix lat.reparse)"
+    )
+
+    label_run(refold, &LabelRefresh.refold/1, opts)
+    label_run(refresh, &LabelRefresh.run/1, opts)
+  end
+
+  defp label_run([], _f, _opts), do: :ok
+
+  defp label_run(laws, f, opts) do
+    {us, results} =
+      :timer.tc(fn ->
+        SertantaiLegal.Scraper.LawRunner.run(laws, f, fn _law, _result -> :ok end,
+          workers: opts[:workers]
+        )
+      end)
+
+    failed = for {law, r} <- results, r != :ok, do: law
+
+    Mix.shell().info(
+      "  #{length(laws)} labels in #{Float.round(us / 1_000_000, 1)} s; #{length(failed)} failed" <>
+        if(failed != [], do: " (labels_failed events): #{Enum.join(failed, ", ")}", else: "")
+    )
+  end
+
+  defp build_laws(laws, opts) do
     # several at once where the machine allows (`LawRunner.Guard`): each
     # law writes only its own changes, and reads no other law's (run time,
     # 2026-10-25); each in its own process, its parsed documents gone when
     # it exits
     workers = SertantaiLegal.Scraper.LawRunner.Guard.workers(workers: opts[:workers])
-    counter = :counters.new(1, [])
-    weights = change_counts()
-
-    {us, _} =
-      :timer.tc(fn ->
-        SertantaiLegal.Scraper.LawRunner.run(
-          laws,
-          fn law -> :timer.tc(fn -> Build.law(law) end) end,
-          fn law, result ->
-            :counters.add(counter, 1, 1)
-
-            line =
-              case result do
-                {us, line} when is_binary(line) -> "#{line} (#{div(us, 1_000_000)} s)"
-                other -> "FAILED #{inspect(other)}"
-              end
-
-            Mix.shell().info("  [#{:counters.get(counter, 1)}/#{length(laws)}] #{law}: #{line}")
-          end,
-          workers: workers,
-          # the heaviest laws first, so the longest isn't left to run alone (#191)
-          weight: &Map.get(weights, &1, 0)
-        )
-      end)
+    {us, _} = :timer.tc(fn -> run_builds(laws, workers, change_counts()) end)
 
     # build_time (CV-S11): the wall time of the whole build
     Mix.shell().info(
       "built #{length(laws)} laws in #{Float.round(us / 1_000_000, 1)} s (#{workers} workers)"
     )
   end
+
+  defp run_builds(laws, workers, weights) do
+    counter = :counters.new(1, [])
+
+    SertantaiLegal.Scraper.LawRunner.run(
+      laws,
+      fn law -> :timer.tc(fn -> Build.law(law) end) end,
+      fn law, result ->
+        :counters.add(counter, 1, 1)
+
+        Mix.shell().info(
+          "  [#{:counters.get(counter, 1)}/#{length(laws)}] #{law}: #{built_line(result)}"
+        )
+      end,
+      workers: workers,
+      # the heaviest laws first, so the longest isn't left to run alone (#191)
+      weight: &Map.get(weights, &1, 0)
+    )
+  end
+
+  defp built_line({us, line}) when is_binary(line), do: "#{line} (#{div(us, 1_000_000)} s)"
+  defp built_line(other), do: "FAILED #{inspect(other)}"
 
   # each built law's stored change count, its build's weight
   defp change_counts do
@@ -281,7 +344,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       |> Keyword.merge(rows: law |> Build.rows() |> Map.keys(), xml_ids: Build.xml_ids(law))
 
     changes = ChangeVocabulary.changes(law, xml, effects, provisions, opts)
-    labels = ChangeVocabulary.labels(law, xml, effects, provisions, opts)
+    labels = Fold.labels(law, xml, provisions, changes, opts)
 
     for id <- ids do
       Mix.shell().info(

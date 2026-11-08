@@ -12,6 +12,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.SliceTest do
   use ExUnit.Case, async: true
 
   alias SertantaiLegal.Scraper.ChangeVocabulary
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Fold
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
 
   defp effect(fields) do
@@ -27,7 +28,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.SliceTest do
   # the label fields (each period's tiers are asserted separately)
   defp labels(law, xml, effects, provisions) do
     law
-    |> ChangeVocabulary.labels(xml, effects, provisions)
+    |> Fold.labels(xml, provisions, ChangeVocabulary.changes(law, xml, effects, provisions))
     |> Map.new(fn {id, periods} -> {id, Enum.map(periods, &Map.delete(&1, :tiers))} end)
   end
 
