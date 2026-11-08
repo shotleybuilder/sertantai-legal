@@ -91,10 +91,11 @@ This pair (rules over every row plus a fixture of checked rows) is what ended th
 | `commencement_read_test.exs` | Only `LawStart` and the `Commencement` readers match commencement words |
 | `note_read_test.exs` | Notes are pointers, never facts: no module reads a fact from note text; only allow-listed modules read note text in SQL |
 | `version_coverage_test.exs` | Every module a reader depends on is covered by its version stamp, so a code change makes its output stale |
+| `stage_split_test.exs` | Each stage's version holds exactly the code that stage runs: the changes stage's (`ChangeVocabulary.Version`) what a build reaches, the labels stage's (`FoldVersion`) what the timeline path reaches. So a fold-only edit stales no built change (#194) |
 
 ### Other checks that are code
 
-`change_staleness_test.exs` and `label_staleness_test.exs` (pure, hand-built facts; the switched law's reasons), `store_inputs_db_test.exs` (each reading stamped by its reader, a planted older or NULL `reader_version` reported, `lat.stale --strict` and `--switched` exit non-zero on it; #193), `source_version_test.exs` (a file added under a pattern makes the version not `fresh?`), `change_digest_test.exs` (build repeatable), and the `measures/` tests (bounds, draws, verdicts).
+`change_staleness_test.exs` and `label_staleness_test.exs` (pure, hand-built facts; the switched law's reasons: a rebuild giving the same digest stales no label, #194), `stale_stages_test.exs` (what each stale label needs in the walk), `store_db_test.exs` (the output digest recorded on each build, the same for the same changes and start), `store_inputs_db_test.exs` (each reading stamped by its reader, a planted older or NULL `reader_version` reported, `lat.stale --strict` and `--switched` exit non-zero on it; #193), `source_version_test.exs` (a file added under a pattern makes the version not `fresh?`), `change_digest_test.exs` (build repeatable), and the `measures/` tests (bounds, draws, verdicts).
 
 ---
 

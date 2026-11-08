@@ -325,12 +325,12 @@ Before this, OH&S used G, S and T by shape and R pooled to the 95% bound (2026-1
 
 **Inputs.** Everything the build reads: LAT rows, law text, feed, and the three rules stores.
 
-**Outputs.** `provision_changes`, `provision_change_claims`, and a `changes_built` event per law in `lat_events` with the code version and its inputs' fingerprints.
+**Outputs.** `provision_changes`, `provision_change_claims`, and a `changes_built` event per law in `lat_events` with the code version, its inputs' fingerprints and its output's digest (`changes_digest`, #194).
 
 **Check today** (from Maritime Safety, 2026-11-06).
 1. Restore point: `./scripts/nas/nas-backup.sh --tables provision_changes,provision_change_claims,lat_events --tag <tag>`.
 2. Build A:
-   - first rebuild every other stale built law (`mix lat.stale --list`; `mix lat.vocabulary --build --laws …`), so golden scores fresh changes;
+   - first bring every other stale stage up to date with `mix lat.vocabulary --build --stale` (#194: the stale changes rebuilt, then the switched labels folded again where their changes' digest, the fold's code or its inputs moved), so golden scores fresh changes. Do this once per fix round (RULES `earlier-families-rebuild-once-per-round`);
    - then `mix lat.vocabulary --check --family F`: the build, conflict counts, golden from the store, and **every step's gate** (`mix lat.gates --family F`).
 3. `mix lat.changes_digest --built --out A.tsv`; build B (the same builds with `--build`); digest again; `cmp`.
 4. `mix lat.stale --strict --switched` exits 0: no built law stale (an input, the code or a reader's readings), and no switched-family law's labels stale (#193). A reader reason is fixed by re-reading in the mode that wrote the readings (`lat.stale` prints it), then building.
@@ -370,7 +370,7 @@ There is no agent check: the conversion is a fixed mapping under unit tests (`la
 - **On OH&S** (2026-10-31): 28,307 periods, 0 breaks; 16,487 of 20,371 rows differed from today's labels.
 - **On Maritime Safety:** 46,976 periods, 0 breaks. Of 24,434 rows, 18,898 agree, 2,350 differ today, 874 differ only in history, and 2,312 have no stored timeline.
 
-**The single `changed_by`** (decided here on 2026-11-06, Maritime Safety, Decision 1). Where several laws made the text, it is the principal maker, never an amender of the amending law, then the latest made (RULES `changed-by-one-law-for-compliance`). `label_periods.ex` is in the build's version, so a change to it marks every built law stale until a rebuild. That is Store and build's parked bug: the label fold sits in the build's version.
+**The single `changed_by`** (decided here on 2026-11-06, Maritime Safety, Decision 1). Where several laws made the text, it is the principal maker, never an amender of the amending law, then the latest made (RULES `changed-by-one-law-for-compliance`). `label_periods.ex` was in the build's version, so a change to it marked every built law stale. That was Store and build's parked bug. It was fixed by #194: the fold has its own version (`FoldVersion`), and a fold-only edit rebuilds no change.
 
 **Skill.** None.
 

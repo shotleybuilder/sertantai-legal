@@ -82,7 +82,8 @@ bugs:
     affected: "every built law (both families) shows code-stale after any fold fix"
     fix: "Move labels/5 out of change_vocabulary.ex into the label side, so the build's version stops reaching the fold; VersionCoverageTest then passes without the label globs"
     step: Store and build
-    status: open
+    status: fixed
+    issue: 194
 ---
 
 # Session: Maritime Safety: Label fold (CLOSED)

@@ -156,7 +156,7 @@ Risk: the verdict files that `mix lat.measures` turns into published pass bounds
 | Gaps reported | `no_start`, `commenced_by_order`, `pending_change`, `outstanding_effect` … (reports only) | None (nil fields; conflicts on `Resolved.conflicts`) | Old only |
 | Write labels | `LabelTimeline.write/3` | same | Shared |
 | Version stamp | `LabelVersion` → `labels_refreshed` event | `ChangeVocabulary.Version` → `changes_built` event | Two versions |
-| Staleness | `LabelStaleness` (`mix lat.stale`, counted by `--strict`) | `ChangeStaleness` (in `mix lat.stale`, not counted by `--strict`) | Two checks |
+| Staleness | `LabelStaleness` (`mix lat.stale`, counted by `--strict`) | `ChangeStaleness` and the labels stage's reasons (in `mix lat.stale`, counted by `--strict` since #193) | Two checks |
 
 Size of the old label path: 3,365 lines (`wc -l label_projection.ex label_timeline.ex change_collector.ex change_collector/*.ex law_start.ex effect_facts.ex label_refresh.ex label_staleness.ex label_version.ex`). The new path: 71 files, 11,030 lines under `scraper/change_vocabulary/`.
 
@@ -291,7 +291,7 @@ Two staleness checks, both reported by `mix lat.stale` (read-only):
 
 | Check | Module | Reads | Reasons | Counted by `--strict` |
 |---|---|---|---|---|
-| LAT and labels | `LabelStaleness` | latest `parsed`, `labels_refreshed`, `labels_failed` and `changes_built` events per law, and its family | `no_parse_event`, `parser_version`, `labels_behind_parse`, `labels_version` (old path only), `labels_failed`; a switched law also `timeline_version` (refreshed by other `ChangeVocabulary.Version`, recorded on `labels_refreshed`) and `labels_behind_changes` (#193) | Yes; `--switched` counts only the switched families' laws |
+| LAT and labels | `LabelStaleness` | latest `parsed`, `labels_refreshed`, `labels_failed` and `changes_built` events per law, and its family | `no_parse_event`, `parser_version`, `labels_behind_parse`, `labels_version` (old path only), `labels_failed`; a switched law also `fold_version` (folded by other `FoldVersion`), `labels_behind_changes` (the latest build's output digest is not the one folded) and `fold_inputs` (the fold's other inputs moved), all recorded on `labels_refreshed` (#193, #194) | Yes; `--switched` counts only the switched families' laws |
 | Change register | `ChangeStaleness` (pure) + `ChangeVocabulary.Store.builds/0` + `Store.Inputs.of/3` + `Store.Inputs.readers/3` | latest `changes_built` event per law | `no_build`, `code_version`, an input moved (`lat_rows`, `law_text`, `feed`, `amendment_rules`, `commencement_rules`, `extent_rules`), or readings it read made by other reader code (`commencement_reader`, `extent_reader`: `reader_version` on `commencement_rules` / `extent_rules`, `Commencement.ReadVersion` / `Extent.ReadVersion`) | Yes (#193) |
 
 **Readings carry their reader's version** (#193). The build reads stored readings, never the readers, so before #193 a reader fix that was never re-run left every rebuild looking current. Each commencement and extent rule now carries `reader_version`. NULL means it was read before the version was recorded, and counts as stale. An extent re-read that comes out the same updates only the stamp, so it needs no rebuild. Amendment readings need no stamp: the build reads a stale amending law from its text (`Primary.primary/2`). A version's file list recompiles when a file is added under its patterns (`SourceVersion.__mix_recompile__?/0`, `fresh?/0`).
@@ -300,4 +300,22 @@ What a `changes_built` event records (`lat_events.provenance`): `claims` count, 
 
 Measured (CV-S11, 2026-10-31): two builds of 168 laws gave identical digests (`mix lat.changes_digest`); 0 of 168 stale after the build; 898 laws hold LAT but have no build. Today 168 laws have a `changes_built` event and 164 hold rows in `provision_changes`.
 
-**Gap.** OH&S labels now come from `provision_changes`, but `LabelStaleness` does not yet know a `:changes_version` reason, and change staleness is outside `--strict`. A rebuild of a switched law's changes without a relabel leaves its labels stale with no signal. The fix is step 2 in (e).
+**Two stages, each stale on its own code and inputs** (#194):
+
+- **The changes stage** is the readers, merge and evidence, stored in `provision_changes`. Its version is `ChangeVocabulary.Version`: exactly the files a build reaches.
+- **The labels stage** is the fold, stored in `lat_label_timeline` for a switched law. Its version is `FoldVersion`: exactly the files the timeline path reaches (`LabelSwitch` → `LabelSource` → `Fold` → `Label`), stopping at the stores.
+- `StageSplitTest` holds both lists exact. A file both stages reach, such as `Readers.Markup` or `Territory`, is in both, so editing it stales both stages.
+- Each `changes_built` event records `changes_digest`: the stored changes and the law's start (`ChangeDigest.build/2`), read back in the write's transaction.
+- Each switched `labels_refreshed` event records three things:
+  - `fold_version`;
+  - the `changes_digest` it folded;
+  - `fold_inputs` (`FoldInputs`: the rows as the fold reads them, the made date and title, the CLML body's text and the known-limit rows).
+- So a fold-only edit stales labels only and rebuilds no change. A rebuild that gives the same output stales no label.
+- `mix lat.vocabulary --build --stale` walks the stages in order (`StaleStages`):
+  - it rebuilds the stale changes;
+  - it then reads the label staleness again;
+  - it folds labels again from the stored changes (`LabelRefresh.refold/1`), refreshes laws parsed since, and lists any law whose parse is stale.
+- Measured 2026-11-08, right after the split:
+  - 285 laws were rebuilt in 198 s, and 266 labels were re-folded in 95 s;
+  - all 285 change digests and all 1,145 timelines were byte-equal;
+  - golden stayed at 26/27, and `lat.stale --strict --switched` gave 0.

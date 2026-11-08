@@ -681,6 +681,13 @@ The named missing-repeal rows and the named date gaps keep the old register's la
 
 ---
 
+## 12. Store and build
+
+### `earlier-families-rebuild-once-per-round`
+During a step, gates and checks run on the family's own laws (`--family`, `--laws`). The families switched before it are brought up to date once per fix round, with `mix lat.vocabulary --build --stale`, before that round's regression gates. They are never rebuilt after each edit. The walk rebuilds only the stage an edit can change. A fold-only edit re-folds labels and rebuilds no change. A reader edit rebuilds every built law's changes, but folds labels again only where the output digest moved.
+- **Example:** after the split (#194), one walk rebuilt 285 laws in 198 s and re-folded 266 switched laws in 95 s. Every change digest and timeline was byte-equal, and `lat.stale --strict --switched` gave 0. The Maritime switch-over had paid four full rebuilds in one step.
+- **Serves:** `binds-on-date` · **Code:** `StaleStages`, `lat.vocabulary --build --stale`, `ChangeVocabulary.Version`, `FoldVersion` · **Test:** `architecture/stage_split_test.exs`, `stale_stages_test.exs` · **Origin:** stage versions #194 (scaling review item 1, Jason 2026-11-07)
+
 ## Convention letters in code comments
 
 Code comments and the golden file still cite the 2026-10 convention letters. Here they are by rule name:

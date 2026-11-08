@@ -61,7 +61,8 @@ bugs:
   affected: 1 law, every rebuild
   fix: profile Build.law/1 for UK_ukpga_1990_8 by phase, as the fold was
   step: Store and build
-  status: open
+  status: moved
+  moved_to: "profiled in #194 (2026-11-08-issue-194-stage-versions.md); the speed-up is readers-reparse-body there"
 - pattern: lat.label_switch's dry run writes the tracked data/reports/change-vocabulary/cv-06-dry-run.csv, overwriting another
     family's committed record
   category: dry-run-overwrites-record
