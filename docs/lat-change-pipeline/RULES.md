@@ -443,9 +443,10 @@ On a start no source dates, the row's undated words changes are credited, and so
 - **Serves:** `binds-on-date` · **Code:** `Label.Undated.words/2`, `ancestor_substitutions/3` · **Test:** `label_fold_test` "an undated words change on an undated start made its text" · **Origin:** Jason 2026-10-30, `cv-s09-label-fold` (batch 3)
 
 ### `undated-repeal-with-text-gone`
-An undated whole repeal of the row or an ancestor, where the text no longer shows, makes the row repealed from its start.
+An undated whole repeal of the row or an ancestor, where the text no longer shows, makes the row repealed from its start, unless the feed holds that repeal prospective and unapplied: then it makes nothing (`unapplied-prospective-makes-nothing`).
 - **Example:** CLP Art 25(5), deleted by Regulation (EU) 286/2011.
-- **Serves:** `binds-on-date` · **Code:** `Label.Undated.repeals/3`, `repealed_at_start/3` · **Test:** `label_fold_test` "an undated whole repeal with its text gone" · **Origin:** `cv-s09-label-fold` (round 3)
+- **Not:** Ports Act 1991 s.29, a heading row with no text of its own, whose repeal by the Local Government Act 2003 Sch.8 is prospective and unapplied (it read repealed from 1991).
+- **Serves:** `binds-on-date` · **Code:** `Label.Undated.repeals/3`, `repealed_at_start/3` · **Test:** `label_fold_test` "an undated whole repeal with its text gone", "an undated whole repeal never applied" · **Origin:** `cv-s09-label-fold` (round 3); `parked-owner-bugs` 2026-11-08
 
 ### `named-date-gap`
 Some rows have a change no source dates, and the amending law's commencement is not held. These are named date gaps: listed in a file, listed apart by the rules check, and kept on their old label.

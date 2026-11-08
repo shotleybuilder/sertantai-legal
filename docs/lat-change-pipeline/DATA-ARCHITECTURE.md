@@ -319,3 +319,4 @@ Measured (CV-S11, 2026-10-31): two builds of 168 laws gave identical digests (`m
   - 285 laws were rebuilt in 198 s, and 266 labels were re-folded in 95 s;
   - all 285 change digests and all 1,145 timelines were byte-equal;
   - golden stayed at 26/27, and `lat.stale --strict --switched` gave 0.
+- The build parses a law's body once (2026-11-08, `readers-reparse-body`). `ChangeVocabulary.changes/5` parses it, and the markup facts, order, markup, application and expiry readers read that one document (their string entry points stay for other callers). Before, the build parsed one body six times. 285 laws now rebuild in 93 s with all digests byte-equal, and the Town and Country Planning Act 1990 takes 69 s running four wide (112 s alone before).

@@ -66,7 +66,7 @@ bugs:
     affected: "every build; ~30 s of the 112 s slowest law"
     fix: "Parse the body once in the build and pass the document to each reader; prove byte-equal digests, re-time by phase, re-measure peaks"
     step: Store and build
-    status: open
+    status: fixed  # 2026-11-08-parked-owner-bugs
   - pattern: "ChangeVocabulary.Version hashed the label fold, so a fold-only fix marked every built law stale"
     category: label-in-build-version
     module: change_vocabulary.ex (labels/5) and change_vocabulary/version.ex

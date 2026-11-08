@@ -61,14 +61,14 @@ bugs:
     affected: 5 provisions (UK_ukpga_1991_52 s.29, s.29(1)-(4)); unknown corpus-wide
     fix: "An undated removal holds the provision's last dated period open (unknown from), never repeals from the start"
     step: Label fold
-    status: open
+    status: fixed  # 2026-11-08-parked-owner-bugs
   - pattern: "Golden UK_ukpga_1974_40 s.101 expects UNDECIDABLE (order not held), but today's order re-read reads SI 1988/818 as commencing it on 1988-06-06: golden 26/27"
     category: golden-order-now-held
     module: ChangeVocabulary.Golden (expectation) or Commencement.Order
     affected: 1 golden provision
     fix: "Check SI 1988/818 against s.101; if it commences it, update the golden expectation (Jason)"
     step: Commencement reader
-    status: open
+    status: fixed  # 2026-11-08-parked-owner-bugs
   - pattern: "A switched law's labels can go stale silently"
     category: switched-labels-staleness
     module: LabelStaleness / mix lat.stale

@@ -54,7 +54,7 @@ bugs:
     affected: 3 examples in 1 law (under a concurrent scan only)
     fix: "ORDER BY in the rows query (and markup's), then one --accept review of any example that moves"
     step: Feed reader
-    status: open
+    status: fixed  # 2026-11-08-parked-owner-bugs
 
 artifacts:
   - backend/lib/sertantai_legal/scraper/catalogue_cache.ex

@@ -70,7 +70,7 @@ bugs:
   affected: 1 file, each dry run
   fix: write the dry run's csv per family (cv-06-dry-run-<family>.csv) or to a --out path
   step: Switch-over
-  status: open
+  status: fixed  # 2026-11-08-parked-owner-bugs
 artifacts:
 - backend/lib/sertantai_legal/scraper/change_vocabulary/label.ex
 - backend/lib/sertantai_legal/scraper/label_tools/fold_cache.ex
