@@ -15,7 +15,7 @@ Environmental Protection is the third family through the LAT Change Pipeline, an
 ## Todo
 
 - ✅ Making laws (step 0): 116 making, all with LAT rows (63 parsed); 21 no verdict (5%); closed 2026-11-08
-- ⬜ Sources
+- ✅ Sources: gate PASS after a build, 1,422 needs held or absent; 16 register statistics re-scraped (2 laws became revoked: 114 live making); closed 2026-11-08
 - ⬜ Feed reader
 - ⬜ Markup reader
 - ⬜ Commencement reader
@@ -50,3 +50,4 @@ One row per step, filled when the step session closes. Agent tokens are those of
 | Step | Session | Opened | Closed | Days | Pass rule met | Plan changes | Bugs parked | Agent tokens | Commits |
 |---|---|---|---|---|---|---|---|---|---|
 | Making laws | making-laws | 2026-11-08 | 2026-11-08 | 1 | yes, all 6 | 0 (one classifier phrase moved to the commencement reader's words by the architecture test) | 2 (Commencement reader: EU "enter into force"; LAT parser: snapshot tables) + 3 not-making laws with rows (LAT parser, parking list) | 0 | 2 |
+| Sources | sources | 2026-11-08 | 2026-11-08 | 1 | yes, all 5 | 0 (the explained-differences fixture wired within the pass rule) | 2 (Register: statistics capped at 1,000; LAT parser: rows for 2 now-revoked laws) | 0 | 2 |
