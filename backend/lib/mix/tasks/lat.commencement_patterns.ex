@@ -8,8 +8,9 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
   its count and up to three real sentences (from different laws) as
   examples. Read-only over the DB and the stored law text; writes only the
   fixture directory. Laws are read several at once (`LawRunner.Guard`),
-  each law's sentences kept in `CatalogueCache` (`CommencementCatalogue.LawRead`,
-  #195), and taken in law order.
+  each law's sentences and the examples they give alone kept in
+  `CatalogueCache` (`CommencementCatalogue.LawRead`, #195), and taken in
+  law order (`CommencementCatalogue.LawScan`).
 
       mix lat.commencement_patterns                  # regenerate; report against the expectations
       mix lat.commencement_patterns --accept         # also accept new patterns as the reader reads them now
@@ -34,15 +35,12 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.ChangeCollector
   alias SertantaiLegal.Scraper.{CatalogueCache, LawRunner}
-  alias SertantaiLegal.Scraper.Commencement.{Leftovers, OwnClause, SentencePatterns}
-  alias SertantaiLegal.Scraper.CommencementCatalogue.LawRead
+  alias SertantaiLegal.Scraper.Commencement.{Leftovers, OwnClause}
+  alias SertantaiLegal.Scraper.CommencementCatalogue.{LawRead, LawScan}
 
   @shortdoc "Own commencement sentences' pattern catalogue, as test fixtures (read-only)"
 
   @dir "test/fixtures/commencement_patterns"
-  @per_pattern 3
-  # a law beyond this many rows holds no example needing every row's text
-  @max_full 1000
 
   @impl Mix.Task
   def run(args) do
@@ -74,44 +72,35 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
     # chosen in that order, so the catalogue is the same however many ran)
     cache = Keyword.get(opts, :cache, true)
 
-    {acc, sources} =
+    {acc, sources, merge_us} =
       laws
       |> LawRunner.ordered(
         fn {law, source} -> {law, law_read(law, source, cache)} end,
         workers: opts[:workers]
       )
       |> Stream.with_index(1)
-      |> Enum.reduce({new_acc(), []}, fn {{law, {read, from}}, i}, {acc, sources} ->
+      |> Enum.reduce({LawScan.new_acc(), [], 0}, fn {{law, {read, from}}, i},
+                                                    {acc, sources, us} ->
         if rem(i, 250) == 0, do: Mix.shell().info("  #{i}/#{length(laws)}")
-        {law_result(law, read, acc), [from | sources]}
+        {t, acc} = :timer.tc(fn -> law_result(law, read, acc) end)
+        {acc, [from | sources], us + t}
       end)
 
     Mix.shell().info(CatalogueCache.summary(sources))
+    # the serial part: the examples chosen and each law's merged and checked
+    Mix.shell().info("merge: #{div(merge_us, 1_000_000)} s")
     write(dir, acc)
     report(dir, acc, opts[:accept])
   end
 
   defp law_result(law, {:ok, read}, acc) do
-    law_patterns(law, read, acc)
+    LawScan.select(acc, law, read, read.outcomes)
   rescue
     error -> %{acc | unclassified: [{law, Exception.message(error)} | acc.unclassified]}
   end
 
   defp law_result(law, {:error, why}, acc),
     do: %{acc | unclassified: [{law, why} | acc.unclassified]}
-
-  defp new_acc,
-    do: %{
-      laws: 0,
-      sentences: 0,
-      unclassified: [],
-      patterns: %{},
-      examples: %{},
-      laws_inputs: %{},
-      mismatch: [],
-      too_large: [],
-      leftovers: %{}
-    }
 
   # every law holding LAT, then the amending laws held as CLML with none
   defp laws(nil) do
@@ -170,9 +159,12 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
   defp law_read(law, source, cache) do
     rows = rows(law, source)
     input = ChangeCollector.law_start_input(law, rows)
-    {sentences, from} = LawRead.law(law, rows, input, cache: cache)
 
-    {{:ok, %{input: input, sentences: sentences, reach: reach(law, source, rows)}}, from}
+    {%{sentences: sentences, outcomes: outcomes}, from} =
+      LawRead.law(law, rows, input, cache: cache)
+
+    read = %{input: input, sentences: sentences, outcomes: outcomes}
+    {{:ok, Map.put(read, :reach, reach(law, source, rows))}, from}
   rescue
     error -> {{:error, Exception.message(error)}, :read}
   end
@@ -190,111 +182,6 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
 
     n
   end
-
-  defp law_patterns(law, %{input: input, sentences: sentences, reach: reach}, acc) do
-    acc = %{acc | laws: acc.laws + 1}
-
-    for %{row: row_id, sentence: s, outcome: o, pattern: key, leftovers: left} <- sentences,
-        reduce: acc do
-      acc ->
-        id = example_id(law, row_id, s)
-
-        acc = %{
-          acc
-          | leftovers:
-              Leftovers.add(acc.leftovers, Leftovers.shape(key, left), law, row_id, left, reach)
-        }
-
-        entry = Map.get(acc.patterns, key, %{count: 0, examples: []})
-        laws = Enum.map(entry.examples, &law_of/1)
-
-        take? = length(entry.examples) < @per_pattern and law not in laws
-
-        acc = %{acc | sentences: acc.sentences + 1}
-
-        acc =
-          put_in(acc.patterns[key], %{
-            entry
-            | count: entry.count + 1,
-              examples: if(take?, do: entry.examples ++ [id], else: entry.examples)
-          })
-
-        if take?, do: example(acc, key, id, law, row_id, s, input, o), else: acc
-    end
-    |> merge_law(law, input)
-  end
-
-  # the law's examples share one input (`laws.json`), each checked to read
-  # alone as in the law still
-  defp merge_law(acc, law, input) do
-    ids = for {id, x} <- acc.examples, x.json["law"] == law, x[:input], do: id
-
-    case ids do
-      [] ->
-        acc
-
-      _ ->
-        merged = SentencePatterns.merge(input, Enum.map(ids, &acc.examples[&1].input))
-
-        Enum.reduce(ids, put_in(acc.laws_inputs[law], merged), fn id, acc ->
-          x = acc.examples[id]
-          got = SentencePatterns.read(law, merged, x.json["sentence"])
-
-          if %{"class" => got.class, "rules" => got.rules} == x.outcome,
-            do: put_in(acc.examples[id], Map.delete(x, :input)),
-            else: drop(acc, id, :mismatch)
-        end)
-    end
-  end
-
-  defp drop(acc, id, why) do
-    acc = %{acc | examples: Map.delete(acc.examples, id)}
-
-    patterns =
-      Map.new(acc.patterns, fn {p, e} -> {p, %{e | examples: List.delete(e.examples, id)}} end)
-
-    Map.update!(%{acc | patterns: patterns}, why, &[id | &1])
-  end
-
-  # the example at the smallest pruning that reads alone as in the law;
-  # none held when even every row reads differently, nor when a large law
-  # needs all its rows' text (too large to hold)
-  defp example(acc, key, id, law, row_id, s, input, outcome) do
-    held =
-      Enum.find_value([:tight, :named, :ids, :full], fn level ->
-        ex = SentencePatterns.example(row_id, input, level)
-        if SentencePatterns.read(law, ex, s) == outcome, do: {level, ex}
-      end)
-
-    case held do
-      {:full, _} when length(input.rows) > @max_full ->
-        not_held(acc, key, id, :too_large)
-
-      {_, ex} ->
-        put_in(acc.examples[id], %{
-          json: %{"law" => law, "row" => row_id, "sentence" => s},
-          input: ex,
-          outcome: %{"class" => outcome.class, "rules" => outcome.rules}
-        })
-
-      nil ->
-        not_held(acc, key, id, :mismatch)
-    end
-  end
-
-  defp not_held(acc, key, id, why) do
-    acc = put_in(acc.patterns[key].examples, List.delete(acc.patterns[key].examples, id))
-    Map.update!(acc, why, &[id | &1])
-  end
-
-  # a short hash of the sentence: the example's id
-  defp example_id(law, row_id, s),
-    do:
-      law <>
-        "/" <>
-        (:crypto.hash(:sha256, row_id <> s) |> Base.encode16(case: :lower) |> binary_part(0, 10))
-
-  defp law_of(id), do: id |> String.split("/") |> hd()
 
   # ── files ────────────────────────────────────────────────────────────
 

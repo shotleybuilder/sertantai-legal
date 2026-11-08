@@ -3,7 +3,7 @@ defmodule SertantaiLegal.Scraper.CommencementCatalogue.Version do
   The version of the code a law's commencement-catalogue reading depends
   on (`SourceVersion`, #195): the own-clause reader, the leftovers and the
   sentence patterns, the law reading that joins them
-  (`CommencementCatalogue.LawRead`) and what they reach. The reading's
+  (`CommencementCatalogue.LawRead`), the examples read alone (`LawScan`) and what they reach. The reading's
   `CatalogueCache` is keyed on it, so a change to any of them reads every
   law again; `VersionCoverageTest` holds it to every module its files
   reach.
@@ -21,6 +21,7 @@ defmodule SertantaiLegal.Scraper.CommencementCatalogue.Version do
       lib/sertantai_legal/scraper/commencement/rule.ex
       lib/sertantai_legal/scraper/commencement/sentence_patterns.ex
       lib/sertantai_legal/scraper/commencement_catalogue/law_read.ex
+      lib/sertantai_legal/scraper/commencement_catalogue/law_scan.ex
       lib/sertantai_legal/scraper/commencement_catalogue/version.ex
       lib/sertantai_legal/scraper/lat_parser/xml.ex
       lib/sertantai_legal/scraper/law_start.ex
