@@ -37,7 +37,7 @@ Tags: `test_helper.exs` excludes `:live` (makes HTTP calls) and `:pending` (know
 
 ### Pattern catalogues (the broad net)
 
-Each catalogue is mined from the whole corpus by a mix task, written to `test/fixtures/<name>/` as `patterns.json` (one entry per distinct shape), `examples.json` (real examples per shape), `expected.json` (the reviewed outcome per example and a status per pattern) and, for some, `laws.json` (the law text the examples need). One ExUnit file checks every example and that every pattern is reviewed.
+Each catalogue is mined from the whole corpus by a mix task, written to `test/fixtures/<name>/` as `patterns.json` (one entry per distinct shape), `examples.json` (real examples per shape), `expected.json` (the reviewed outcome per example and a status per pattern) and, for some, `laws.json` (the law text the examples need). One ExUnit file checks every example and that every pattern is reviewed. The feed, markup and commencement catalogues keep each law's result in `CatalogueCache`, keyed by the catalogue's code version and the law's inputs, so a re-run reads only what moved (#195).
 
 | Catalogue | Test file | Mix task | Patterns | Examples | Status | Fixture size |
 |---|---|---|---|---|---|---|
@@ -95,7 +95,7 @@ This pair (rules over every row plus a fixture of checked rows) is what ended th
 
 ### Other checks that are code
 
-`change_staleness_test.exs` and `label_staleness_test.exs` (pure, hand-built facts; the switched law's reasons: a rebuild giving the same digest stales no label, #194), `stale_stages_test.exs` (what each stale label needs in the walk), `store_db_test.exs` (the output digest recorded on each build, the same for the same changes and start), `store_inputs_db_test.exs` (each reading stamped by its reader, a planted older or NULL `reader_version` reported, `lat.stale --strict` and `--switched` exit non-zero on it; #193), `source_version_test.exs` (a file added under a pattern makes the version not `fresh?`), `change_digest_test.exs` (build repeatable), and the `measures/` tests (bounds, draws, verdicts).
+`change_staleness_test.exs` and `label_staleness_test.exs` (pure, hand-built facts; the switched law's reasons: a rebuild giving the same digest stales no label, #194), `stale_stages_test.exs` (what each stale label needs in the walk), `store_db_test.exs` (the output digest recorded on each build, the same for the same changes and start), `store_inputs_db_test.exs` (each reading stamped by its reader, a planted older or NULL `reader_version` reported, `lat.stale --strict` and `--switched` exit non-zero on it; #193), `source_version_test.exs` (a file added under a pattern makes the version not `fresh?`), `catalogue_cache_test.exs` (a hit is the result stored; changed inputs, a moved code version or an undecodable file read again; #195), `change_vocabulary/catalogue/law_scan_replay_test.exs` (feed and markup laws scanned alone and replayed in law order give the serial run's catalogue, including a slot a dropped example leaves and a full pattern still asking for another pattern's example), `change_digest_test.exs` (build repeatable), and the `measures/` tests (bounds, draws, verdicts).
 
 ---
 

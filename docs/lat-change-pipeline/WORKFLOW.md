@@ -93,7 +93,7 @@ On Maritime Safety, the build took the needs from 235 to 682, and three fetch ro
 **Outputs.** Feed claims per effect and target: operation, level, date or dated stages (keyed `effect id@date`), `by`, effect extent, territorial application, savings, `commenced_by`, and the affecting provision as a pointer.
 
 **Check today.**
-1. Pattern catalogue: `mix lat.feed_patterns` over every stored feed (about 8 min); each new pattern accepted, fixed, or marked pending until `feed_patterns_test.exs` passes.
+1. Pattern catalogue: `mix lat.feed_patterns` over every stored feed (about 2½ min cold, after a catalogue or reader edit; about 4 s warm: #195); each new pattern accepted, fixed, or marked pending until `feed_patterns_test.exs` passes.
 2. Gate and placement: `mix lat.feed_check --family F`; our faults must be 0.
 3. Repeatability: the same seed twice into two sample files, compared with `cmp`.
 4. Golden: `mix lat.vocabulary --golden`.
@@ -113,7 +113,7 @@ On Maritime Safety, the build took the needs from 235 to 682, and three fetch ro
 **Outputs.** Markup claims: operation, level, retained text, territory (`Extent`), and, for a legacy ChangeId, the note's cited law and amending provisions as identity pointers.
 
 **Check today.**
-1. Pattern catalogue: `mix lat.markup_patterns` (about 16 min); new patterns decided until `markup_patterns_test.exs` passes.
+1. Pattern catalogue: `mix lat.markup_patterns` (about 5½ min cold, about 5 s warm: #195); new patterns decided until `markup_patterns_test.exs` passes.
 2. Gate and placement: `mix lat.markup_check --family F --all`; our faults 0. It also counts the markup's keys against the feed (in the feed, not in it, legacy), for the Merge step.
 3. Repeatability, golden and an agent on 50 sampled changes, as for the feed.
 
@@ -130,7 +130,7 @@ On Maritime Safety, the build took the needs from 235 to 682, and three fetch ro
 **Outputs.** `commencement_rules`; commencement claims (`date`, `partial`, `commenced_by`, and `via` when a pointer led to the date).
 
 **Check today.**
-1. Both catalogues: `mix lat.commencement_patterns` (own commencement sentences, about 12 min) and `mix lat.order_patterns` (orders, about 30 s), until `CommencementPatternsTest` and `OrderPatternsTest` pass. Each also reports its **leftovers** (`Commencement.Leftovers`): the words of a statement that bear on a date (a date, a provision, an exception, a qualifier, a relative day) that no rule read from it uses, grouped and ranked by the rows they reach, every group reviewed in `leftovers.json` (`LeftoversReviewTest`). This replaces agent rounds as the way to find a family's new forms (2026-11-05).
+1. Both catalogues: `mix lat.commencement_patterns` (own commencement sentences, about 4½ min cold, about 4 min warm: #195) and `mix lat.order_patterns` (orders, about 30 s), until `CommencementPatternsTest` and `OrderPatternsTest` pass. Each also reports its **leftovers** (`Commencement.Leftovers`): the words of a statement that bear on a date (a date, a provision, an exception, a qualifier, a relative day) that no rule read from it uses, grouped and ranked by the rows they reach, every group reviewed in `leftovers.json` (`LeftoversReviewTest`). This replaces agent rounds as the way to find a family's new forms (2026-11-05).
 2. The readers' re-read (ask first): `mix lat.commencement`, then the rebuild.
 3. `mix lat.commencement_check --family F`: every row dated, left to an order, or undated with a reason; our faults 0. Its **leftovers gate** lists every leftover reaching the family (its laws' own clauses, the orders held for them, its held amending laws), each with its group's status; PASS needs every one `known:`.
 4. Golden. At most one agent pass, and only to label leftover groups; never sample, fix, resample (Jason 2026-11-05).
@@ -335,6 +335,8 @@ Before this, OH&S used G, S and T by shape and R pooled to the 95% bound (2026-1
 3. `mix lat.changes_digest --built --out A.tsv`; build B (the same builds with `--build`); digest again; `cmp`.
 4. `mix lat.stale --strict --switched` exits 0: no built law stale (an input, the code or a reader's readings), and no switched-family law's labels stale (#193). A reader reason is fixed by re-reading in the mode that wrote the readings (`lat.stale` prints it), then building.
 5. Golden from inputs, and one agent hand check of the staleness sample (`mix lat.stale --sample FILE --family F --seed S`, drawn twice and compared with `cmp`).
+
+**The whole-store catalogues read only what moved** (#195, 2026-11-08). `lat.feed_patterns`, `lat.markup_patterns` and `lat.commencement_patterns` keep each law's result in `CatalogueCache` (`data/cache/catalogues/`). The key is the catalogue's code version (`FeedPatterns.Version`, `MarkupPatterns.Version`, `CommencementCatalogue.Version`, held by `VersionCoverageTest`) plus a digest of the law's inputs: its stored files and rows, or for commencement its rows and start input. A re-run reads only the laws whose inputs or catalogue code moved, and prints `cache: N hits, M read`. Laws are read several at once under `LawRunner.Guard`, then taken in law order, so the catalogue is the one a serial run gives, byte for byte. A reader or catalogue edit pays one cold run. `--no-cache` reads every law afresh, and `--workers N` overrides the guard. Commencement's warm run is held up by its serial merge, which chooses and checks examples (about 170 s); that is the next session.
 
 **Every step's gate.** A rebuild after a step closes can move that step's gate: on Maritime Safety, three gates that had passed failed unseen. So the build's check re-runs all nine. Each check task returns its result (`ChangeVocabulary.Gate.Step`), and `lat.gates` exits non-zero on any failure. A failure belongs to its step and is parked there, never fixed here. `--no-gates` skips the gates for a fix round; the label gate folds the family (about 12½ min).
 

@@ -128,7 +128,7 @@ Sizes from `du -sh` (2026-11-03). `backend/data/` is gitignored (`.gitignore:38 
 | Store | Path | Size | What it holds | Git or NAS |
 |---|---|---|---|---|
 | CLML store | `backend/data/cache/clml/` | 193 MB (12,604 files: 6,224 `.gz`, 6,380 `.meta.json`) | Law text and feed pages by type/year/number (layout in (a)); `ukpga` 78 MB, `uksi` 48 MB, `changes/` 42 MB | NAS only |
-| Other caches | `backend/data/cache/{changes-feed, changes-feed-inforce, amendment-index, extent_reads, feed_effects, enabling}` + `amendment-index-2026-10-25.tar.gz` | 216 MB (52 + 52 + 61 + 14 + 13 + 11 + 13) | Older feed caches and read caches (`Extent.ReadCache`, amendment index) | NAS only |
+| Other caches | `backend/data/cache/{changes-feed, changes-feed-inforce, amendment-index, extent_reads, feed_effects, catalogues, enabling}` + `amendment-index-2026-10-25.tar.gz` | 216 MB (52 + 52 + 61 + 14 + 13 + 11 + 13) | Older feed caches and read caches (`Extent.ReadCache`, amendment index; `catalogues/`: each law's whole-store catalogue result, `CatalogueCache`, #195) | NAS only |
 | Reports | `backend/data/reports/` | 958 MB (801 MB of it `lat-refactor/`) | Dry runs, censuses, inventories, retirement list | NAS only, except 11 force-added files (`git ls-files backend/data/reports`) |
 | Verdicts | `backend/data/reports/change-vocabulary/verdicts/` | 476 KB | Agent check verdict files (cv06, measures, s11) that `mix lat.verdicts` / `lat.measures` read | NAS only |
 | Golden working files | `backend/data/reports/change-vocabulary/golden/` | 440 KB | Golden drafts (`expected-batch*.md`) | NAS only |
