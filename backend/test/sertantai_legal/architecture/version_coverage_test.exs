@@ -22,6 +22,7 @@ defmodule SertantaiLegal.Architecture.VersionCoverageTest do
     lib/sertantai_legal/scraper/lat_staged_parser.ex
     lib/sertantai_legal/scraper/enacted_by/enabling_cache.ex
     lib/sertantai_legal/scraper/source_version.ex
+    lib/sertantai_legal/scraper/catalogue_cache.ex
   )
 
   # each version, with the stores it reads or writes past (the labels
@@ -33,7 +34,11 @@ defmodule SertantaiLegal.Architecture.VersionCoverageTest do
         {SertantaiLegal.Scraper.Amendment.ReaderVersion, []},
         {SertantaiLegal.Scraper.LegislationGovUk.FeedVersion, []},
         {SertantaiLegal.Scraper.AmendingLaw.Extent.ReadVersion, []},
-        {SertantaiLegal.Scraper.Commencement.ReadVersion, []}
+        {SertantaiLegal.Scraper.Commencement.ReadVersion, []},
+        # the whole-store catalogues' (#195)
+        {SertantaiLegal.Scraper.ChangeVocabulary.FeedPatterns.Version, []},
+        {SertantaiLegal.Scraper.ChangeVocabulary.MarkupPatterns.Version, []},
+        {SertantaiLegal.Scraper.CommencementCatalogue.Version, []}
       ] do
     test "#{inspect(version)} covers every module its files reach" do
       covered = unquote(version).files() |> Enum.map(&Path.relative_to_cwd/1) |> MapSet.new()
@@ -56,7 +61,7 @@ defmodule SertantaiLegal.Architecture.VersionCoverageTest do
     {:ok, mods} = :application.get_key(:sertantai_legal, :modules)
     versions = for m <- mods, function_exported?(m, :fresh?, 0), do: m
 
-    assert length(versions) >= 7
+    assert length(versions) >= 10
     assert Enum.reject(versions, & &1.fresh?()) == []
   end
 end

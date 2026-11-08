@@ -56,6 +56,22 @@ defmodule SertantaiLegal.Scraper.LawRunner do
     end)
   end
 
+  @doc """
+  `fun.(item)` for each item, several at once (`opts[:workers]`, else the
+  guard's decision), as a stream of results in the items' order: for a
+  whole-store catalogue folding its laws in order (#195). An item holds
+  only what its law needs (its name, its rows), never a closure over every
+  law's data: each task copies what it is given (`Guard`'s copy rule).
+  """
+  @spec ordered(Enumerable.t(), (term() -> term()), keyword()) :: Enumerable.t()
+  def ordered(items, fun, opts \\ []) do
+    workers = Guard.workers(workers: Keyword.get(opts, :workers))
+
+    items
+    |> Task.async_stream(fun, max_concurrency: workers, ordered: true, timeout: :infinity)
+    |> Stream.map(fn {:ok, result} -> result end)
+  end
+
   defp heaviest_first(laws, nil), do: laws
   defp heaviest_first(laws, weight), do: Enum.sort_by(laws, weight, :desc)
 

@@ -7,11 +7,14 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
   reader made of it (`Commencement.SentencePatterns`), each pattern with
   its count and up to three real sentences (from different laws) as
   examples. Read-only over the DB and the stored law text; writes only the
-  fixture directory. One law at a time.
+  fixture directory. Laws are read several at once (`LawRunner.Guard`),
+  each law's sentences kept in `CatalogueCache` (`CommencementCatalogue.LawRead`,
+  #195), and taken in law order.
 
       mix lat.commencement_patterns                  # regenerate; report against the expectations
       mix lat.commencement_patterns --accept         # also accept new patterns as the reader reads them now
       mix lat.commencement_patterns --laws A,B --out DIR
+      mix lat.commencement_patterns --no-cache       # read every law afresh
 
   Files (`test/fixtures/commencement_patterns/`), as `lat.markup_patterns`:
   `patterns.json` (generated: totals, each pattern's count and examples),
@@ -30,8 +33,9 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.ChangeCollector
-  alias SertantaiLegal.Scraper.LawRunner.Guard
+  alias SertantaiLegal.Scraper.{CatalogueCache, LawRunner}
   alias SertantaiLegal.Scraper.Commencement.{Leftovers, OwnClause, SentencePatterns}
+  alias SertantaiLegal.Scraper.CommencementCatalogue.LawRead
 
   @shortdoc "Own commencement sentences' pattern catalogue, as test fixtures (read-only)"
 
@@ -44,7 +48,13 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
   def run(args) do
     {opts, _, _} =
       OptionParser.parse(args,
-        strict: [laws: :string, out: :string, accept: :boolean, workers: :integer]
+        strict: [
+          laws: :string,
+          out: :string,
+          accept: :boolean,
+          workers: :integer,
+          cache: :boolean
+        ]
       )
 
     Mix.Task.run("app.start")
@@ -62,35 +72,33 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
     # each law read where the machine allows several at once
     # (`LawRunner.Guard`), its results taken in law order (examples are
     # chosen in that order, so the catalogue is the same however many ran)
-    workers = Guard.workers(workers: opts[:workers])
+    cache = Keyword.get(opts, :cache, true)
 
-    acc =
+    {acc, sources} =
       laws
-      |> Task.async_stream(fn {law, source} -> {law, law_read(law, source)} end,
-        max_concurrency: workers,
-        ordered: true,
-        timeout: :infinity
+      |> LawRunner.ordered(
+        fn {law, source} -> {law, law_read(law, source, cache)} end,
+        workers: opts[:workers]
       )
-      |> Enum.with_index(1)
-      |> Enum.reduce(new_acc(), fn {{:ok, {law, read}}, i}, acc ->
+      |> Stream.with_index(1)
+      |> Enum.reduce({new_acc(), []}, fn {{law, {read, from}}, i}, {acc, sources} ->
         if rem(i, 250) == 0, do: Mix.shell().info("  #{i}/#{length(laws)}")
-
-        case read do
-          {:ok, read} ->
-            try do
-              law_patterns(law, read, acc)
-            rescue
-              error -> %{acc | unclassified: [{law, Exception.message(error)} | acc.unclassified]}
-            end
-
-          {:error, why} ->
-            %{acc | unclassified: [{law, why} | acc.unclassified]}
-        end
+        {law_result(law, read, acc), [from | sources]}
       end)
 
+    Mix.shell().info(CatalogueCache.summary(sources))
     write(dir, acc)
     report(dir, acc, opts[:accept])
   end
+
+  defp law_result(law, {:ok, read}, acc) do
+    law_patterns(law, read, acc)
+  rescue
+    error -> %{acc | unclassified: [{law, Exception.message(error)} | acc.unclassified]}
+  end
+
+  defp law_result(law, {:error, why}, acc),
+    do: %{acc | unclassified: [{law, why} | acc.unclassified]}
 
   defp new_acc,
     do: %{
@@ -156,17 +164,17 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
     OwnClause.doc_rows(doc)
   end
 
-  # a law's own reading, independent of every other law (run in parallel)
-  defp law_read(law, source) do
+  # a law's own reading, independent of every other law (run in parallel):
+  # its rows and start input gathered, its sentences read through the
+  # catalogue cache (#195)
+  defp law_read(law, source, cache) do
     rows = rows(law, source)
     input = ChangeCollector.law_start_input(law, rows)
-    read = OwnClause.read(law, input)
+    {sentences, from} = LawRead.law(law, rows, input, cache: cache)
 
-    sentences = Leftovers.sentences(rows, read)
-
-    {:ok, %{input: input, sentences: sentences, reach: reach(law, source, rows)}}
+    {{:ok, %{input: input, sentences: sentences, reach: reach(law, source, rows)}}, from}
   rescue
-    error -> {:error, Exception.message(error)}
+    error -> {{:error, Exception.message(error)}, :read}
   end
 
   # what a law's leftovers reach: its LAT rows, or (an amending law) the

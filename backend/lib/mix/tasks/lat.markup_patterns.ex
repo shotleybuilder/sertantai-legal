@@ -4,11 +4,17 @@ defmodule Mix.Tasks.Lat.MarkupPatterns do
   in every stored law text classed by what the markup reader decides
   (`ChangeVocabulary.MarkupPatterns`), each pattern with its count and up to
   three real changes (from different laws) as XML. Read-only over the
-  stored law text; writes only the fixture directory. One law at a time.
+  stored law text; writes only the fixture directory.
 
       mix lat.markup_patterns                  # regenerate; report against the expectations
       mix lat.markup_patterns --accept         # also accept new patterns as the reader reads them now
       mix lat.markup_patterns --laws A,B --out DIR
+      mix lat.markup_patterns --no-cache       # scan every law afresh
+      mix lat.markup_patterns --workers N      # else LawRunner.Guard decides
+
+  Each law is scanned alone, several at once, and kept in `CatalogueCache`
+  (`MarkupPatterns.LawRead`, #195): a re-run scans only the laws whose
+  text, rows or catalogue code moved, and prints the cache's hits.
 
   Files (`test/fixtures/markup_patterns/`), as `lat.feed_patterns`:
 
@@ -25,17 +31,25 @@ defmodule Mix.Tasks.Lat.MarkupPatterns do
   use Mix.Task
 
   alias Mix.Tasks.Lat.FeedPatterns, as: Files
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{MarkupPatterns, Ref}
+  alias SertantaiLegal.Scraper.{CatalogueCache, LawRunner}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.MarkupPatterns.{LawRead, LawScan}
 
   @shortdoc "The change markup's pattern catalogue, as test fixtures (read-only over the store)"
 
   @dir "test/fixtures/markup_patterns"
-  @per_pattern 3
 
   @impl Mix.Task
   def run(args) do
     {opts, _, _} =
-      OptionParser.parse(args, strict: [laws: :string, out: :string, accept: :boolean])
+      OptionParser.parse(args,
+        strict: [
+          laws: :string,
+          out: :string,
+          accept: :boolean,
+          cache: :boolean,
+          workers: :integer
+        ]
+      )
 
     Mix.Task.run("app.start")
     Logger.configure(level: :warning)
@@ -46,35 +60,27 @@ defmodule Mix.Tasks.Lat.MarkupPatterns do
     laws = laws(opts[:laws])
     rows = rows(Enum.map(laws, &elem(&1, 0)))
     Mix.shell().info("#{length(laws)} stored law texts")
+    cache = Keyword.get(opts, :cache, true)
 
-    acc =
+    # each law scanned alone, several at once and cached (#195), then taken
+    # in law order: the catalogue a serial run gives
+    {acc, sources} =
       laws
-      |> Enum.with_index(1)
-      |> Enum.reduce(new_acc(), fn {{law, path}, i}, acc ->
+      |> Enum.map(fn {law, path} -> {law, path, Map.get(rows, law, [])} end)
+      |> LawRunner.ordered(
+        fn {law, path, rows} -> {law, LawRead.law(law, path, rows, cache: cache)} end,
+        workers: opts[:workers]
+      )
+      |> Stream.with_index(1)
+      |> Enum.reduce({LawScan.new_acc(), []}, fn {{law, {unit, source}}, i}, {acc, sources} ->
         if rem(i, 250) == 0, do: Mix.shell().info("  #{i}/#{length(laws)}")
-
-        try do
-          law_patterns(law, path, Ref.xml_ids(law, Map.get(rows, law, [])), acc)
-        rescue
-          error ->
-            %{acc | unclassified: [{law, Exception.message(error)} | acc.unclassified]}
-        end
+        {LawScan.select(acc, law, unit), [source | sources]}
       end)
 
+    Mix.shell().info(CatalogueCache.summary(sources))
     write(dir, acc)
     report(dir, acc, opts[:accept])
   end
-
-  defp new_acc,
-    do: %{
-      laws: 0,
-      changes: 0,
-      unclassified: [],
-      patterns: %{},
-      examples: %{},
-      mismatch: [],
-      too_large: 0
-    }
 
   # every stored law text: UK_{type}_{year}_{number}
   defp laws(list) do
@@ -101,101 +107,6 @@ defmodule Mix.Tasks.Lat.MarkupPatterns do
     ).rows
     |> Enum.group_by(&hd/1, &tl/1)
   end
-
-  defp law_patterns(law, path, xml_ids, acc) do
-    doc =
-      path
-      |> File.read!()
-      |> :zlib.gunzip()
-      |> SweetXml.parse(quiet: true, namespace_conformant: false)
-
-    sets = SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup.read(doc, law, xml_ids)
-    by_key = Enum.group_by(sets, &elem(&1, 0))
-    changes = MarkupPatterns.changes(doc)
-
-    acc = %{acc | laws: acc.laws + 1}
-
-    changes
-    |> Enum.sort_by(&elem(&1, 0))
-    |> Enum.reduce(acc, fn {key, change}, acc ->
-      own = by_key |> Map.get(key, []) |> Enum.sort_by(fn {k, t, _} -> {k, t} end)
-      classify(law, doc, xml_ids, change, own, %{acc | changes: acc.changes + 1})
-    end)
-  end
-
-  defp classify(law, doc, xml_ids, change, sets, acc) do
-    patterns = change |> MarkupPatterns.patterns(sets) |> Enum.map(&MarkupPatterns.key/1)
-    id = example_id(law, change.key)
-
-    {acc, wanted?} =
-      Enum.reduce(patterns, {acc, false}, fn p, {acc, wanted?} ->
-        entry = Map.get(acc.patterns, p, %{count: 0, examples: []})
-        laws = Enum.map(entry.examples, &law_of/1)
-
-        take? =
-          id in entry.examples or
-            (length(entry.examples) < @per_pattern and law not in laws)
-
-        entry = %{
-          entry
-          | count: entry.count + 1,
-            examples:
-              if(take? and id not in entry.examples,
-                do: entry.examples ++ [id],
-                else: entry.examples
-              )
-        }
-
-        {put_in(acc.patterns[p], entry), wanted? or take?}
-      end)
-
-    if wanted? and not Map.has_key?(acc.examples, id),
-      do: example(id, law, doc, xml_ids, change, sets, acc),
-      else: acc
-  rescue
-    error -> %{acc | unclassified: [{law, Exception.message(error)} | acc.unclassified]}
-  catch
-    :exit, reason -> %{acc | unclassified: [{law, inspect(reason)} | acc.unclassified]}
-  end
-
-  # the example's XML, checked to read as the whole law does
-  defp example(id, law, doc, xml_ids, change, sets, acc) do
-    case MarkupPatterns.example(change, doc) do
-      nil ->
-        drop(acc, id) |> Map.update!(:too_large, &(&1 + 1))
-
-      {xml, named} ->
-        expected = sets |> MarkupPatterns.outcome() |> MarkupPatterns.rekey(change.key, named)
-        # the row names the example's ids need
-        xml_ids = Map.filter(xml_ids, fn {x, _} -> String.contains?(xml, ~s(id="#{x}")) end)
-        read = xml |> MarkupPatterns.read(named, law, xml_ids) |> MarkupPatterns.outcome()
-
-        # an example reading differently alone isn't held (a pruned one can)
-        if read == expected,
-          do:
-            put_in(acc.examples[id], %{
-              json: %{"law" => law, "key" => named, "xml" => xml, "xml_ids" => xml_ids},
-              outcome: expected
-            }),
-          else: acc |> drop(id) |> Map.update!(:mismatch, &[id | &1])
-    end
-  end
-
-  # an example too large to hold leaves the patterns that took it
-  defp drop(acc, id) do
-    patterns =
-      Map.new(acc.patterns, fn {p, e} -> {p, %{e | examples: List.delete(e.examples, id)}} end)
-
-    %{acc | patterns: patterns}
-  end
-
-  # a short hash of the key: never an effect id itself (push protection)
-  defp example_id(law, key),
-    do:
-      law <>
-        "/" <> (:crypto.hash(:sha256, key) |> Base.encode16(case: :lower) |> binary_part(0, 10))
-
-  defp law_of(id), do: id |> String.split("/") |> hd()
 
   # ── files ────────────────────────────────────────────────────────────
 
