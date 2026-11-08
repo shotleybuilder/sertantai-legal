@@ -1,0 +1,52 @@
+---
+session: 'LAT Change Pipeline: Environmental Protection — Meta Session'
+type: meta
+status: active
+opened: '2026-11-08'
+family: '💚 ENVIRONMENTAL PROTECTION'
+---
+
+# Session: LAT Change Pipeline: Environmental Protection — Meta Session (ACTIVE)
+
+## Problem
+
+Environmental Protection is the third family through the LAT Change Pipeline, and the last run before production hardening (Maritime Safety retrospective, Decision 3). It was chosen because its law is of a different kind from OH&S and Maritime Safety: Welsh, Scottish and Northern Ireland law, and EU retained environmental law. The register holds 395 live UK laws in the family, of which 59 have LAT rows; Making laws will add more. This session runs the delivery step by step and records each step's status for the retrospective. It stays ACTIVE until the family is switched over.
+
+## Todo
+
+- ✅ Making laws (step 0): 116 making, all with LAT rows (63 parsed); 21 no verdict (5%); closed 2026-11-08
+- ⬜ Sources
+- ⬜ Feed reader
+- ⬜ Markup reader
+- ⬜ Commencement reader
+- ⬜ Extent reader
+- ⬜ Amending-law reader
+- ⬜ Merge
+- ⬜ Evidence
+- ⬜ Label fold
+- ⬜ Measures
+- ⬜ Store and build
+- ⬜ Labels side by side
+- ⬜ Switch-over
+- ⬜ Retrospective and housekeeping
+
+## Dependencies
+
+- ✅ Maritime Safety switched (2026-11-07); retrospective closed with the order of work before Family 3 (Decision 3)
+- ✅ The work before Family 3: the Mines Regulations 2014 → HSWA repair, #192, #191, #193, #194, #195, the commencement catalogue in the parallel read, and the parked owner bugs (pushed e2cbf9f5)
+- ✅ Process: `session-start` "Step session", `docs/lat-change-pipeline/WORKFLOW.md` ("Running a new family"), `AIMS.md`, `RULES.md`
+
+## How this session runs
+
+- Each step is its own session, `.claude/sessions/lat-change-pipeline/<date>-environmental-protection-<step-name>.md`, titled "Environmental Protection: <Step name>". It is created when the step is reached, and starts in plan mode.
+- This session holds only: which step is running, each step's status row, the decisions that cross steps, and pointers. Step detail stays in the step session.
+- Each step's parked bugs (`open_bugs` by `step:`) and RULES.md's open decisions are read into that step's plan.
+- Scope: the family's UK laws. The register's family also holds 23 Australian laws, which legislation.gov.uk does not publish; they are outside the pipeline.
+
+## Step status
+
+One row per step, filled when the step session closes. Agent tokens are those of agent checks and agent-run plan items.
+
+| Step | Session | Opened | Closed | Days | Pass rule met | Plan changes | Bugs parked | Agent tokens | Commits |
+|---|---|---|---|---|---|---|---|---|---|
+| Making laws | making-laws | 2026-11-08 | 2026-11-08 | 1 | yes, all 6 | 0 (one classifier phrase moved to the commencement reader's words by the architecture test) | 2 (Commencement reader: EU "enter into force"; LAT parser: snapshot tables) + 3 not-making laws with rows (LAT parser, parking list) | 0 | 2 |

@@ -36,19 +36,21 @@ The fold works out a tier for each field (`primary` = the legal text, `derived` 
 Step 0 (added 2026-11-04). Code: `backend/lib/sertantai_legal/scraper/making_laws.ex` (`MakingLaws`), task `mix lat.making_laws`; tests `backend/test/sertantai_legal/scraper/making_laws_test.exs` and `making_laws_checked_test.exs`. Origin: `.claude/sessions/lat-change-pipeline/2026-11-04-maritime-safety-making-laws.md`.
 
 ### `making-from-own-text`
-A law is making when at least one of its own provisions states a requirement ("shall" or "must") on someone, read outside quoted inserted text and outside standard phrases ("shall be construed", "shall apply", "shall be guilty", "shall not affect" and the rest). One such provision makes the whole law making, whatever else it amends.
+A law is making when at least one of its own provisions states a requirement ("shall" or "must") on someone, read outside quoted inserted text and outside standard phrases ("shall be construed", "shall apply", "shall be guilty", "shall not affect", "shall extend to", "shall remain in force", "shall be conclusive evidence" and the rest, an aside between "shall" and its verb allowed), and outside commencement words the commencement reader reads as no statement of its own. One such provision makes the whole law making, whatever else it amends.
 - **Example:** SI 2026/306 (EPIRB and PLB Registration… (Amendment) Regulations): reg. 5(1) "The owner and master of a ship must ensure that every EPIRB … is registered". It is making, despite "(Amendment)" in its title.
-- **Serves:** `binds-on-date`, `law-text-wins` · **Code:** `MakingLaws.kind/2`, `classify/1` · **Test:** `making_laws_test` "an own requirement", "mixed" · **Origin:** making-laws (Jason 2026-11-04)
+- **Not:** the Food and Environment Protection Act 1985 (Guernsey) Order 1987, art. 3 "Part II … shall extend to the Bailiwick" (extent, not a requirement).
+- **Known limit:** a law that designates (areas, directives, enactments) states no "shall" and reads changes only or no verdict; a designation's own effect is left to a human review (SSI 2026/57, Environmental Protection Decision 1). A prohibition stated only as an offence ("A person who supplies … is guilty of an offence") is standard wording (NI Single-use Vapes Regulations 2024; 2 laws in Environmental Protection, below the triage size).
+- **Serves:** `binds-on-date`, `law-text-wins` · **Code:** `MakingLaws.kind/2`, `classify/1` · **Test:** `making_laws_test` "an own requirement", "mixed", "standard wording: extent, a commencement read as no statement, evidence, an aside after shall" · **Origin:** making-laws (Jason 2026-11-04); environmental-protection-making-laws (2026-11-08)
 
 ### `changes-only-is-not-making`
 A law whose operative provisions all change other laws (amend, revoke, modify, or commence them) is not making. Duties in the text it inserts belong to the law it amends.
-- **Example:** Port State Control (Amendment) Regulations 2003 (SI 2003/1636): every provision amends or modifies the 1995 Regulations. Its old duty types had said making.
+- **Example:** Port State Control (Amendment) Regulations 2003 (SI 2003/1636): every provision amends or modifies the 1995 Regulations. Its old duty types had said making. A commencement worded "the day appointed for the coming into force of …" (EPA 1990 (Commencement No. 19) Order 2012) is a change too. So is a law that only modifies another ("has effect as if"): SI 2006/2988, reviewed to not making (Jason, Environmental Protection Decision 2).
 - **Serves:** `binds-on-date`, `law-text-wins` · **Code:** `MakingLaws.kind/2` (the amending-law reader's clause operations and repeals tables) · **Test:** `making_laws_test` "amending only", "inserted text stating a duty" · **Origin:** making-laws (Jason 2026-11-04)
 
 ### `no-making-verdict-without-text`
-Powers only ("may"), changes with powers, standard wording only (for example, text that is all repealed), or no text held gives no verdict. The stored value stands, and the law goes to Jason's list.
+Powers only ("may"), changes with powers, standard wording only (for example, text that is all repealed), no text held, or no provisions upstream (legislation.gov.uk holds a scanned print only, `NumberOfProvisions="0"`: the Cremation Regulations 1952) gives no verdict. The stored value stands, and the law goes to Jason's list.
 - **Example:** Merchant Shipping (Port State Control) Regulations 2011: every regulation is ". . .". The register marks it in force (parked against the register).
-- **Serves:** `unknown-over-guess` · **Code:** `MakingLaws.classify/1` · **Test:** `making_laws_test` "powers only", "standard wording only", "no text" · **Origin:** making-laws (Jason 2026-11-04)
+- **Serves:** `unknown-over-guess` · **Code:** `MakingLaws.classify/1` · **Test:** `making_laws_test` "powers only", "standard wording only", "no text", "no provisions upstream" · **Origin:** making-laws (Jason 2026-11-04)
 
 ### `law-text-below-review-and-enrichment`
 The text verdict is the resolver's `law_text` tier. It ranks below a human review and fractalaw's DRRP enrichment, and above every estimate: legacy duty types, triage, legacy `is_making` and the detector. Each tier it overrules is kept as dissent.
@@ -57,7 +59,7 @@ The text verdict is the resolver's `law_text` tier. It ranks below a human revie
 
 ### `lat-rows-for-making-laws-only`
 LAT holds rows only for live making laws. Laws that only amend or commence are read from the XML store, never given rows. The Making laws step decides which laws are making and parses them before Sources.
-- **Example:** Maritime Safety: 117 making (16 with rows before the step; 101 parsed in it), 51 not making.
+- **Example:** Maritime Safety: 117 making (16 with rows before the step; 101 parsed in it), 51 not making. Environmental Protection: 116 making (53 with rows before; 63 parsed), 258 not making; only legislation.gov.uk's UK law is read (the family's 23 Australian laws are outside the pipeline).
 - **Serves:** `binds-on-date` · **Code:** `mix lat.making_laws`, `mix lat.reparse --store only` · **Test:** pass rule 5 of the step · **Origin:** maritime-safety-meta Decision 1 (Jason 2026-11-04)
 
 ### `family-re-parses-its-parser-stale-laws`
