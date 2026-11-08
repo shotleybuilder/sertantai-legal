@@ -17,6 +17,10 @@ defmodule Mix.Tasks.Lat.Sources do
   than a version the register could know of: `Sources.stale?/4`). The
   rules are `Sources`'; this task reads the
   facts.
+
+  A feed that differs from the register's statistics fails until it is
+  explained in `test/fixtures/sources/explained.json` (law → reason, each
+  reviewed; e.g. the register's own count capped).
   """
   use Mix.Task
 
@@ -67,7 +71,7 @@ defmodule Mix.Tasks.Lat.Sources do
             |> Sources.register_counts(f.effects)
             |> Map.merge(%{law: f.law, register: f.register})
 
-    report = Sources.report(statuses, comparisons)
+    report = Sources.report(statuses, comparisons, explained: explained())
     print(report, opts)
 
     if opts[:fetch], do: fetch(report.failures)
@@ -118,6 +122,16 @@ defmodule Mix.Tasks.Lat.Sources do
       # a 404 is stored as missing: legislation.gov.uk has none
       {:error, 404, _} -> :ok
       other -> other
+    end
+  end
+
+  @explained "test/fixtures/sources/explained.json"
+
+  # the register differences reviewed and explained, law → reason
+  defp explained do
+    case File.read(@explained) do
+      {:ok, body} -> Jason.decode!(body)
+      _ -> %{}
     end
   end
 
@@ -227,12 +241,8 @@ defmodule Mix.Tasks.Lat.Sources do
     |> Map.new(fn [n, d, u] -> {n, {d, u}} end)
   end
 
-  defp status(%{part: :introduction, law: law}, _valid) do
-    case EnablingCache.cached(law) do
-      {:ok, _} -> :held
-      :none -> :not_fetched
-    end
-  end
+  defp status(%{part: :introduction, law: law}, _valid),
+    do: Sources.introduction_status(EnablingCache.cached(law), stored_introduction(law))
 
   defp status(%{part: :feed, law: law}, _valid) do
     [_, type, year, number] = String.split(law, "_", parts: 4)
@@ -262,6 +272,13 @@ defmodule Mix.Tasks.Lat.Sources do
     |> Sources.doc_path(part)
     |> ClmlStore.get()
     |> Sources.document_status(Map.get(valid, law, {nil, nil}), DateTime.utc_now())
+  end
+
+  defp stored_introduction(law) do
+    case EnablingCache.from_store(law) do
+      {:ok, _} = held -> held
+      :not_held -> if EnablingCache.absent_upstream?(law), do: :absent, else: :not_held
+    end
   end
 
   defp print(r, opts) do

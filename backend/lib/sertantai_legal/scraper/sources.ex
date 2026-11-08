@@ -270,4 +270,20 @@ defmodule SertantaiLegal.Scraper.Sources do
 
   def document_status({:missing, _}, _register, _now), do: :absent
   def document_status(:none, _register, _now), do: :not_fetched
+
+  @doc """
+  An SI's introduction's status from its enabling cache
+  (`EnablingCache.cached/1`) and the introduction stored
+  (`EnablingCache.from_store/1`, or `:absent` where every path is a stored
+  404): held when the cache names powers, or when it is empty and the
+  introduction is stored (it names none); absent where legislation.gov.uk
+  has none; an empty cache with no introduction stored is a failed or
+  pre-store fetch, not fetched (`enabling-cache-empty-counts-held`).
+  """
+  @spec introduction_status({:ok, [map()]} | :none, {:ok, [map()]} | :absent | :not_held) ::
+          status()
+  def introduction_status({:ok, [_ | _]}, _stored), do: :held
+  def introduction_status({:ok, []}, {:ok, _}), do: :held
+  def introduction_status(_cached, :absent), do: :absent
+  def introduction_status(_cached, _stored), do: :not_fetched
 end

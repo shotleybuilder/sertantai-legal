@@ -62,6 +62,26 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingCache do
   end
 
   @doc """
+  Whether legislation.gov.uk has no introduction for the law: both its
+  introduction paths stored as missing (a 404), never fetching.
+  """
+  @spec absent_upstream?(String.t()) :: boolean()
+  def absent_upstream?(name) do
+    case String.split(name, "_") do
+      ["UK", type, year | number] when number != [] ->
+        number = Enum.join(number, "_")
+
+        Enum.all?(
+          [EnactedBy.introduction_path(type, year, number), made_path(type, year, number)],
+          &match?({:missing, _}, ClmlStore.get(&1))
+        )
+
+      _ ->
+        false
+    end
+  end
+
+  @doc """
   Re-parses the cached provisions from the held introduction (`from_store/1`)
   and writes them: `{:ok, provisions}`, or `:not_held` (the cache untouched).
   """

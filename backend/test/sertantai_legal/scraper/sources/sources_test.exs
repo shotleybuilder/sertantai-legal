@@ -212,6 +212,19 @@ defmodule SertantaiLegal.Scraper.SourcesTest do
       assert Sources.document_status(:none, {nil, nil}, now) == :not_fetched
     end
 
+    # enabling-cache-empty-counts-held (Maritime Safety: Extent reader): an
+    # empty cache is a failed or pre-store fetch unless the introduction is
+    # held and names no powers
+    test "introduction_status/2: an empty cache is held only when the introduction is stored" do
+      powers = [%{"law" => "UK_ukpga_1990_43", "provisions" => ["s.140"]}]
+      assert Sources.introduction_status({:ok, powers}, :not_held) == :held
+      assert Sources.introduction_status({:ok, []}, {:ok, []}) == :held
+      assert Sources.introduction_status({:ok, []}, :not_held) == :not_fetched
+      assert Sources.introduction_status(:none, :not_held) == :not_fetched
+      # legislation.gov.uk has no introduction (SI 1992/682: both paths 404)
+      assert Sources.introduction_status({:ok, []}, :absent) == :absent
+    end
+
     test "change_facts/1: amending laws, and gap A (undated in the feed) or B (not in the feed)" do
       undated =
         change("UK_uksi_2000_1", [
