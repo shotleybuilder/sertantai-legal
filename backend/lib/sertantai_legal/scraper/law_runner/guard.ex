@@ -8,7 +8,10 @@ defmodule SertantaiLegal.Scraper.LawRunner.Guard do
   - **memory**: `MemAvailable`, or the room left under the run's cgroup
     limit where that is less (`systemd-run -p MemoryMax=14G`: the machine's
     free memory isn't the run's, #194), less a reserve, divided by the
-    measured peak of one law;
+    measured peak of one law (#194, 2026-11-08, each alone in its own
+    unit: the Town and Country Planning Act 1990 1.9 GB, the next 1.2 GB,
+    the rest of the 10 heaviest under 0.75 GB; so 1.8 GB a law, the worst
+    law's, stays);
   - **load**: the cores not already busy, measured over half a second
     (`/proc/stat`; the 1-minute load average lags, still counting a run
     that has just finished);
