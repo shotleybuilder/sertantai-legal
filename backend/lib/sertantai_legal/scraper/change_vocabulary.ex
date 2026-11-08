@@ -75,7 +75,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
           [Change.t()]
   def changes(law_name, xml, effects, provisions, opts \\ []) do
     {provisions, opts} = canonical(provisions, opts)
-    build(law_name, xml, effects, provisions, opts, Markup.provisions(xml, law_name))
+    # the body parsed once, every reader reading the one document
+    # (`readers-reparse-body`: six parses of one body, ~30 s of the
+    # slowest build)
+    doc = SweetXml.parse(xml, quiet: true, namespace_conformant: false)
+    build(law_name, doc, effects, provisions, opts, Markup.provisions(doc, law_name))
   end
 
   # LAT's names in one spelling (`Ref.canonical/1`): the readers name from
@@ -94,14 +98,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   defp update_opt(opts, key, f),
     do: if(Keyword.get(opts, key), do: Keyword.update!(opts, key, f), else: opts)
 
-  defp build(law_name, xml, effects, provisions, opts, facts) do
+  defp build(law_name, doc, effects, provisions, opts, facts) do
     # the document's provisions as our rows name them (one namer, CV-S02):
     # "section-76-12" is OSRPA s.76(1), its (1)(2) repealed into one element
     xml_ids = Keyword.get(opts, :xml_ids, %{})
 
+    clml_order = Markup.order(doc)
+
     order =
-      xml
-      |> Markup.order()
+      clml_order
       |> Enum.map(&(Map.get(xml_ids, &1) || Ref.from_clml(&1, law_name)))
       |> Enum.reject(&is_nil/1)
 
@@ -143,19 +148,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
       (Feed.read(
          FeedSavings.apply(effects, Keyword.get(opts, :effect_savings, %{})),
          law_name,
-         Markup.order(xml),
+         clml_order,
          Keyword.get(opts, :commencement, %{}),
          Keyword.get(opts, :extents, %{}),
          Keyword.get(opts, :xml_ids, %{}),
          Keyword.get(opts, :rows),
          Keyword.get(opts, :act_title)
        ) ++
-         Markup.read(xml, law_name, Keyword.get(opts, :xml_ids, %{})) ++
+         Markup.read(doc, law_name, Keyword.get(opts, :xml_ids, %{})) ++
          amending ++
          own ++
-         ApplicationReader.read(xml, law_name) ++
+         ApplicationReader.read(doc, law_name) ++
          Expiry.read(
-           xml,
+           doc,
            law_name,
            Keyword.get(opts, :passed),
            Keyword.get(opts, :act_title),

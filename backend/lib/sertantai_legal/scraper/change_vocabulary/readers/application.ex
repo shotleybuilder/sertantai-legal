@@ -25,11 +25,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Application do
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Claim, Ref}
   alias SertantaiLegal.Scraper.Territory
 
-  @doc "Claim sets `{key, target, claims}` for the law's application clauses."
-  @spec read(String.t(), String.t()) :: [{String.t(), String.t(), [Claim.t()]}]
-  def read(xml, law_name) do
-    doc = SweetXml.parse(xml, quiet: true, namespace_conformant: false)
+  @doc "Claim sets `{key, target, claims}` for the law's application clauses; from the XML or its parsed document."
+  @spec read(String.t() | tuple(), String.t()) :: [{String.t(), String.t(), [Claim.t()]}]
+  def read(xml, law_name) when is_binary(xml),
+    do: xml |> SweetXml.parse(quiet: true, namespace_conformant: false) |> read(law_name)
 
+  def read(doc, law_name) do
     for el <- xpath(doc, ~x"//*[@id]"l),
         ref = el |> xpath(~x"./@id"s) |> Ref.from_clml(law_name),
         ref != nil,

@@ -36,12 +36,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Expiry do
 
   @type continuation :: %{law: String.t(), text: String.t(), territory: String.t() | nil}
 
-  @doc "Claim sets `{key, target, claims}` for the law's sunset and its continuations."
-  @spec read(String.t(), String.t(), Date.t() | nil, String.t() | nil, [continuation()]) ::
+  @doc "Claim sets `{key, target, claims}` for the law's sunset and its continuations; from the XML or its parsed document."
+  @spec read(String.t() | tuple(), String.t(), Date.t() | nil, String.t() | nil, [continuation()]) ::
           [{String.t(), String.t(), [Claim.t()]}]
-  def read(xml, law, passed, title, continuations) do
-    doc = SweetXml.parse(xml, quiet: true, namespace_conformant: false)
+  def read(xml, law, passed, title, continuations) when is_binary(xml),
+    do:
+      xml
+      |> SweetXml.parse(quiet: true, namespace_conformant: false)
+      |> read(law, passed, title, continuations)
 
+  def read(doc, law, passed, title, continuations) do
     # when it was passed: given, else its own document's EnactmentDate
     passed = passed || enacted(doc)
 

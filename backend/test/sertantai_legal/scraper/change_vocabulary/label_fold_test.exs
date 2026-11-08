@@ -1227,6 +1227,29 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
              ] =
                fold("s.51A(2B)", changes, %{start: ~D[1974-07-31], law: "UK_ukpga_1974_37"})
     end
+
+    test "an undated whole repeal never applied, its text gone: makes nothing (Ports Act 1991 s.29)" do
+      changes = [
+        change("s.29", :commenced, ~D[1991-07-25], commenced_by: "UK_ukpga_1991_52"),
+        change("s.29", :repealed, nil,
+          by: "UK_ukpga_2003_26",
+          sources: %{operation: :feed},
+          claims: [
+            {:feed, :prospective, true},
+            {:feed, :applied, false},
+            {:feed, :operation, :repealed}
+          ]
+        )
+      ]
+
+      assert [%{valid_from: ~D[1991-07-25], valid_to: nil, status: :in_force}] =
+               fold("s.29", changes, %{
+                 law: "UK_ukpga_1991_52",
+                 start: ~D[1991-07-25],
+                 extent: "E+W+S",
+                 shows_text: false
+               })
+    end
   end
 
   describe "its own repeal the day its parent is substituted" do

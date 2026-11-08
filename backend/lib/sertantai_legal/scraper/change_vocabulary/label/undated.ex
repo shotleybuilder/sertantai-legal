@@ -9,7 +9,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Undated do
   - its own undated substitution after that made its text since (CLP Art
     25(7)); on a start no source dates, an undated words change too (REACH
     Art 118(2)(c));
-  - an undated whole repeal with its text gone: repealed (CLP Art 25(5)).
+  - an undated whole repeal with its text gone: repealed (CLP Art 25(5)),
+    unless the feed holds it prospective and unapplied (Ports Act 1991 s.29).
 
   Pure.
   """
@@ -39,7 +40,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Undated do
     end
   end
 
-  @doc "Undated whole-provision repeals of it or an ancestor, where its text no longer shows."
+  @doc """
+  Undated whole-provision repeals of it or an ancestor, where its text no
+  longer shows — never one the feed holds prospective and unapplied: it
+  repealed nothing yet (Ports Act 1991 s.29, a heading row, by the Local
+  Government Act 2003 Sch.8 commenced by order: it read repealed from 1991).
+  """
   @spec repeals(String.t(), [Change.t()], map()) :: [Change.t()]
   def repeals(id, changes, provision) do
     if Map.get(provision, :shows_text, true),
@@ -49,7 +55,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Undated do
           changes,
           &(&1.resolved.date == nil and &1.resolved.operation == :repealed and
               &1.resolved.level == :provision and
-              Label.reaches?(&1, id))
+              Label.reaches?(&1, id) and not pending?(&1))
         )
   end
 

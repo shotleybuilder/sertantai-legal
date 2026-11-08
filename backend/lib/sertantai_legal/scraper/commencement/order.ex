@@ -1099,54 +1099,51 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   # ending in another law's name is that law's ("paragraph 17(4) of Schedule
   # 9, and paragraph 3(1) and (2) of Schedule 11, to the Local Government
   # (Wales) Act 1994": SI 1996/186) — CV-S04 round 4
+  # a table row naming only a Part by its title in brackets: "Part I (Waste
+  # on Land)"; a bare "Part II" is an item (SI 1991/2187 "Part II", "Part III")
+  @part_heading ~r/^\s*Part\s+(?:[IVXL]+|\d+)[A-Z]?\s*\([^()]*\s[^()]*\)\s*$/
+
+  # an item opening with another law's title: "The Public Health Act 1936,
+  # sections 72(1) to (5), and 73 to 76;" (SI 1988/818, the repeals its
+  # s.108(2) row names)
+  @opens_other_law ~r/^\s*(?:the\s+)?((?:[A-Z(][\w()',.-]*\s+){1,10}(?:Act|Order|Regulations|Measure)\s+\d{4})\s*,/u
+
+  # "sections 2 and 3 of the Gas Act 1986": another law's provisions
+  @other_law_provisions ~r/\b(?:sections?|paragraphs?|Schedules?|regulations?|articles?)\s+\d+[A-Z]*(?:\([0-9A-Za-z]+\))*(?:\s*(?:,|and|to)\s*(?:\d+[A-Z]*)?(?:\([0-9A-Za-z]+\))*)*(?:\s*\([^()]*\))?,?\s+(?:of|to|into)\s+(?:Schedule\s+\d+[A-Z]*\s+to\s+)?(?:the\s+)?((?:\d{4}\s+)?(?:[A-Z(][\w()',.-]*\s+){0,10}(?:(?:of|and|for|the|in|on|at|to|with|etc\.)\s+(?:[A-Z(][\w()',.-]*\s+){0,8})*(?:Act|Order|Regulations|Measure)(?:\s+\d{4})?)/u
+
   @quoted ~r/“[^”]*”|"[^"]*"|‘[^’]*’/u
   @ends_other_law ~r/,\s+to\s+the\s+((?:\d{4}\s+)?[A-Z(][\w()',.-]*(?:\s+(?:[A-Z(][\w()',.-]*|of|and|for|the|in|on|at|to|with|etc\.))*\s+(?:Act|Order|Regulations|Measure)(?:\s+\d{4})?)\s*[,.]?\s*$/u
 
   defp drop_other_laws(line, aliases) do
-    own? = fn law ->
-      Enum.any?(aliases, &String.contains?(norm("the " <> law), &1)) or
-        norm(law) in ["act", "the act"]
-    end
+    own? = &own_law?(&1, aliases)
 
     line =
       line
       |> String.replace(@quoted, " ")
       |> drop_law_asides()
       |> String.split(~r/;\s*/u)
-      |> Enum.reject(fn item ->
-        case Regex.run(@ends_other_law, item) do
-          [_, law] -> not own?.(law)
-          nil -> false
-        end
-      end)
+      |> Enum.reject(&other_law_item?(&1, own?))
       |> Enum.join("; ")
 
-    line =
-      Regex.replace(@other_law_tail, line, fn whole, law ->
-        if Enum.any?(aliases, &String.contains?(norm("the " <> law), &1)) or
-             norm(law) in ["act", "the act"],
-           do: whole,
-           else: ""
-      end)
+    keep_own = fn whole, law -> if own?.(law), do: whole, else: "" end
 
-    line =
-      Regex.replace(@titled, line, fn whole, law ->
-        if Enum.any?(aliases, &String.contains?(norm("the " <> law), &1)) or
-             norm(law) in ["act", "the act"],
-           do: whole,
-           else: ""
-      end)
+    Enum.reduce([@other_law_tail, @titled, @other_law_provisions], line, fn re, line ->
+      Regex.replace(re, line, keep_own)
+    end)
+  end
 
-    Regex.replace(
-      ~r/\b(?:sections?|paragraphs?|Schedules?|regulations?|articles?)\s+\d+[A-Z]*(?:\([0-9A-Za-z]+\))*(?:\s*(?:,|and|to)\s*(?:\d+[A-Z]*)?(?:\([0-9A-Za-z]+\))*)*(?:\s*\([^()]*\))?,?\s+(?:of|to|into)\s+(?:Schedule\s+\d+[A-Z]*\s+to\s+)?(?:the\s+)?((?:\d{4}\s+)?(?:[A-Z(][\w()',.-]*\s+){0,10}(?:(?:of|and|for|the|in|on|at|to|with|etc\.)\s+(?:[A-Z(][\w()',.-]*\s+){0,8})*(?:Act|Order|Regulations|Measure)(?:\s+\d{4})?)/u,
-      line,
-      fn whole, law ->
-        if Enum.any?(aliases, &String.contains?(norm("the " <> law), &1)) or
-             norm(law) in ["act", "the act"],
-           do: whole,
-           else: ""
-      end
-    )
+  # "the Act", or a name its aliases hold
+  defp own_law?(law, aliases),
+    do:
+      Enum.any?(aliases, &String.contains?(norm("the " <> law), &1)) or
+        norm(law) in ["act", "the act"]
+
+  # an item ending or opening with another law's name
+  defp other_law_item?(item, own?) do
+    case Regex.run(@ends_other_law, item) || Regex.run(@opens_other_law, item) do
+      [_, law] -> not own?.(law)
+      nil -> false
+    end
   end
 
   # the Schedule a line's bare paragraphs belong to
@@ -1321,7 +1318,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   defp list_refs(list, prefix) do
     tokens =
       Regex.scan(
-        ~r/(to|–|-(?=\s*\d))|(\d+[A-Z]*)((?:\([0-9A-Za-z]+\))*)|((?:\([0-9A-Za-z]+\))+)/,
+        ~r/(to|–|-(?=\s*[\d(]))|(\d+[A-Z]*)((?:\([0-9A-Za-z]+\))*)|((?:\([0-9A-Za-z]+\))+)/,
         list
       )
 
@@ -1607,15 +1604,24 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
       _, acc ->
         acc
     end)
-    |> then(fn {acc, parent} -> flush(acc, parent) end)
+    |> then(fn {acc, parent} -> flush_last(acc, parent) end)
     |> Enum.reverse()
   end
 
   # a row with no subject is a heading for the rows under it ("Section 44" over
   # "paragraph 3 …"); with none under it, it is an item itself (AR-15: SI
-  # 1999/2830 "Section 31 and in Schedule 7, …" has no subject cell)
-  defp flush(acc, {text, false}), do: [{text, ""} | acc]
+  # 1999/2830 "Section 31 and in Schedule 7, …" has no subject cell) — but a
+  # Part's name with rows after it groups them, never commences the Part (SI
+  # 1988/818 "Part VI (Miscellaneous and General)" over its sections had COPA
+  # 1974 s.101 in force)
+  defp flush(acc, {text, false}) do
+    if text =~ @part_heading, do: acc, else: [{text, ""} | acc]
+  end
+
   defp flush(acc, _parent), do: acc
+
+  defp flush_last(acc, {text, false}), do: [{text, ""} | acc]
+  defp flush_last(acc, _parent), do: acc
 
   defp schedule_date(order, el) do
     title = el |> xpath(~x"./TitleBlock/Title | ./Title"l) |> Enum.map_join(" ", &Doc.text/1)

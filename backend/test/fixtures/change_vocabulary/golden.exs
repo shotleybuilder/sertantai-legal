@@ -486,7 +486,8 @@
   %{
     id: "s.101",
     start: ~D[1974-07-31],
-    case: "UNDECIDABLE commencement (order not held, C10); Scottish repeal 2014 with no markup",
+    case:
+      "UNDECIDABLE commencement (no order held names it: SI 1988/818 does not, C10); Scottish repeal 2014 with no markup",
     law: "UK_ukpga_1974_40",
     periods: [
       %{

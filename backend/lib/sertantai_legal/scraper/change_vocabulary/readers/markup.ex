@@ -47,10 +47,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     per territory sharing the provision's id, told apart by their
     DocumentURI: `…/regulation/36/england`, `…/wales`; C3).
   """
-  @spec provisions(String.t(), String.t() | nil) :: %{String.t() => map()}
-  def provisions(xml, law_name \\ nil) do
-    doc = SweetXml.parse(xml, quiet: true, namespace_conformant: false)
+  @spec provisions(String.t() | tuple(), String.t() | nil) :: %{String.t() => map()}
+  def provisions(xml, law_name \\ nil)
 
+  def provisions(xml, law_name) when is_binary(xml),
+    do: xml |> SweetXml.parse(quiet: true, namespace_conformant: false) |> provisions(law_name)
+
+  def provisions(doc, law_name) do
     # the status sits on the provision or an element around it (a P1group
     # has no id: Building Safety Act 2022 s.138)
     prospective =
@@ -92,13 +95,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
          else: (_ -> nil)
   end
 
-  @doc "The document's provision ids (CLML) in document order, for ranges."
-  @spec order(String.t()) :: [String.t()]
-  def order(xml) do
-    xml
-    |> SweetXml.parse(quiet: true, namespace_conformant: false)
-    |> xpath(~x"//*[@id]/@id"sl)
-  end
+  @doc "The document's provision ids (CLML) in document order, for ranges; from the XML or its parsed document."
+  @spec order(String.t() | tuple()) :: [String.t()]
+  def order(xml) when is_binary(xml),
+    do: xml |> SweetXml.parse(quiet: true, namespace_conformant: false) |> order()
+
+  def order(doc), do: xpath(doc, ~x"//*[@id]/@id"sl)
 
   @doc """
   Claim sets `{key, target, claims}`, one per change id and provision; from

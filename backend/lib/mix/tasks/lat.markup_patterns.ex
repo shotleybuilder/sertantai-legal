@@ -99,10 +99,12 @@ defmodule Mix.Tasks.Lat.MarkupPatterns do
     end
   end
 
-  # each law's rows: [section_id, source_xml_id]
+  # each law's rows: [section_id, source_xml_id], in document order — a
+  # concurrent scan of legal_articles rotates an unordered query's rows
+  # (`catalogue-row-order`: UK_eur_2004_273's examples moved)
   defp rows(laws) do
     SertantaiLegal.Repo.query!(
-      "SELECT law_name, section_id, source_xml_id FROM legal_articles WHERE law_name = ANY($1)",
+      "SELECT law_name, section_id, source_xml_id FROM legal_articles WHERE law_name = ANY($1) ORDER BY law_name, position",
       [laws]
     ).rows
     |> Enum.group_by(&hd/1, &tl/1)

@@ -460,6 +460,31 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
     assert Enum.any?(rules, &(&1.source.text == "Section 44 paragraph 3 | Repeals"))
   end
 
+  test "a table's Part headings group its rows, never commence the Part; \"(1)-(9)\" is a range; another law's provisions under a row are not the Act's (SI 1988/818: COPA 1974 s.101 read in force)" do
+    rules =
+      Order.rules(
+        order(~S"""
+        <Schedules><Schedule id="schedule"><TitleBlock><Title>Provisions coming into force on 6th June 1988</Title></TitleBlock><ScheduleBody><Tabular><table><tbody>
+        <tr><td>Part I (Waste on Land)</td></tr>
+        <tr><td>Section 12(1)-(9) and (11)</td><td>Collection of waste</td></tr>
+        <tr><td>Section 27</td><td>Interference with refuse tips and dustbins etc.</td></tr>
+        <tr><td>Part VI (Miscellaneous and General)</td></tr>
+        <tr><td>Section 108(2), so far as it applies to the entries in Schedule 4 relating to the enactments specified below—</td><td>Repeals</td></tr>
+        <tr><td>The Public Health Act 1936, sections 72(1) to (5), and 73 to 76;</td></tr>
+        </tbody></table></Tabular></ScheduleBody></Schedule></Schedules>
+        """),
+        @act
+      )
+
+    refute Enum.any?(rules, &("pt.I" in &1.scope or "pt.VI" in &1.scope))
+    assert %{full_from: nil, partial_from: nil} = dated(rules, "section-101")
+    assert %{full_from: ~D[1988-06-06]} = dated(rules, "section-12-5")
+    assert %{full_from: nil, partial_from: nil} = dated(rules, "section-12-10")
+    assert %{full_from: ~D[1988-06-06]} = dated(rules, "section-27")
+    assert %{full_from: nil, partial_from: ~D[1988-06-06]} = dated(rules, "section-108-2")
+    assert %{full_from: nil, partial_from: nil} = dated(rules, "section-72-1")
+  end
+
   test "AR measure: \"Paragraphs 1 to 27(3) and 28 to 43 of Schedule 7, and section 22(1) so far as it relates thereto\": the paragraphs fully, the section partly (SI 1996/396)" do
     rules =
       Order.rules(
