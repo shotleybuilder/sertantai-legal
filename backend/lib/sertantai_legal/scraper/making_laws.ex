@@ -40,7 +40,8 @@ defmodule SertantaiLegal.Scraper.MakingLaws do
   # as the amendment reader's: a modification, not an amendment
   @modification ~r/\b(?:have effect|be read|be construed) as if\b/i
   @amended ~r/\b(?:is|are|shall be) (?:further |hereby )?(?:amended|modified)\b|\b(?:amended|modified) (?:as follows|in accordance with)\b|\b(?:is|are|shall be) (?:hereby )?revoked\b|\brevocations?\b/i
-  @appointed_day ~r/\bappointed day\b/i
+  # "the appointed day", or "the day appointed for the coming into force"
+  @appointed_day ~r/\b(?:appointed day|day appointed)\b/i
   # a commencement of the law itself names it first ("These Regulations …",
   # "This Order may be cited … and comes into force"), never "the Schedule
   # to this Order"
@@ -51,18 +52,28 @@ defmodule SertantaiLegal.Scraper.MakingLaws do
     ~r/\bmay be (?:cited|referred to)\b/i,
     ~r/\bwherever (?:they|it|he|she) may be\b/i,
     ~r/\b(?:as the case may be|as (?:nearly|near|soon) as may be)\b/i,
-    ~r/\b(?:shall|must)(?: not| each| also)? (?:be (?:construed|read|treated|deemed|taken|cited|guilty|liable|known)|affect|have (?:the same )?(?:effect|meaning)|mean|include|(?:not )?apply|cease|continue|expire)\b/i,
+    # an aside may stand between "shall" and its verb ("shall, unless the
+    # context otherwise requires, be construed")
+    ~r/\b(?:shall|must)(?:, [^,]+,)?(?: not| each| also)? (?:be (?:construed|read|treated|deemed|taken|cited|guilty|liable|known|conclusive|received)|affect|have (?:the same )?(?:effect|meaning)|mean|include|(?:not )?apply|cease|continue|expire|extend(?: and apply)?|remain in force)\b/i,
     ~r/\bshall be (?:amended|inserted|substituted|omitted|revoked|repealed|added|renumbered|deleted|left out)\b/i
   ]
   @requirement ~r/\b(?:shall|must)\b/i
   # lower case: "1st May 2020" is a date
   @power ~r/\bmay\b/
 
-  @doc "The law's verdict, why, and its provisions counted by kind (nil: no text held)."
+  @doc "The law's verdict, why, and its provisions counted by kind (nil: no text held; no provision ids: none upstream)."
   @spec classify(Doc.t() | nil) :: result()
   def classify(nil), do: %{verdict: nil, reason: "no text", counts: %{}, first: %{}}
 
   def classify(%Doc{} = doc) do
+    if Enum.any?(doc.ids, &(&1 =~ @provision)),
+      do: classify_provisions(doc),
+      else: %{verdict: nil, reason: "no provisions upstream", counts: %{}, first: %{}}
+  end
+
+  # legislation.gov.uk holds some laws as a scanned print only: the XML has
+  # no provisions (NumberOfProvisions="0")
+  defp classify_provisions(doc) do
     kinds = for id <- provisions(doc), do: {id, kind(doc, id)}
     counts = Enum.frequencies_by(kinds, &elem(&1, 1))
 
@@ -104,6 +115,9 @@ defmodule SertantaiLegal.Scraper.MakingLaws do
     cond do
       change?(doc, id, text, words) -> :change
       commencement(words) == :own -> :standard
+      # commencement words the reader reads as no statement ("Where …, the
+      # relevant provisions shall come into force for the purposes of …")
+      SentencePatterns.commencement_words?(words) -> :standard
       unstandard(words) =~ @requirement -> :requirement
       unstandard(words) =~ @power -> :power
       true -> :standard

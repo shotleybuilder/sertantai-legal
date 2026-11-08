@@ -1,6 +1,6 @@
 defmodule Mix.Tasks.Lat.MakingLaws do
   @moduledoc """
-  Making laws (LAT Change Pipeline, step: Making laws): each live law of a
+  Making laws (LAT Change Pipeline, step: Making laws): each live UK law of a
   family (in force or part revoked) decided making or not from its own text
   (`Scraper.MakingLaws`), against the `is_making` stored and the tier that
   decided it. Read-only unless `--fetch` or `--apply` (ask Jason first).
@@ -37,7 +37,13 @@ defmodule Mix.Tasks.Lat.MakingLaws do
     family = opts[:family] || Mix.raise("--family is required")
     Mix.Task.run("app.start")
 
-    laws = laws(family)
+    {laws, other} = Enum.split_with(laws(family), &String.starts_with?(&1.law, "UK_"))
+
+    # legislation.gov.uk publishes UK law only: the family's other laws are
+    # outside the pipeline
+    if other != [],
+      do: Mix.shell().info("#{length(other)} laws not UK law: out of scope, not read")
+
     if opts[:fetch], do: fetch(laws)
 
     rows = Enum.map(laws, &row/1)

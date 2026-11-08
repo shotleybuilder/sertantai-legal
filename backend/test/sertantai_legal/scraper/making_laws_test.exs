@@ -93,6 +93,21 @@ defmodule SertantaiLegal.Scraper.MakingLawsTest do
       assert MakingLaws.kind(d, "article-2") == :change
     end
 
+    # EPA 1990 (Commencement No. 19) Order 2012; Circular Economy (Scotland)
+    # Act 2024 (Commencement No. 1) Regulations 2025
+    test "a commencement worded \"the day appointed\", the date first or last" do
+      d =
+        si([
+          {"article-2",
+           "The day appointed for the coming into force of section 162(2) of the Environmental Protection Act 1990 is 6th April 2012."},
+          {"regulation-3",
+           "4 February 2025 is the day appointed for the coming into force of section 21 of the Act."}
+        ])
+
+      assert MakingLaws.kind(d, "article-2") == :change
+      assert MakingLaws.kind(d, "regulation-3") == :change
+    end
+
     test "an own requirement: shall or must on someone, the negative forms too" do
       d =
         si([
@@ -126,6 +141,40 @@ defmodule SertantaiLegal.Scraper.MakingLawsTest do
 
       for id <- ~w(regulation-1 regulation-2 regulation-3 regulation-4 regulation-5 regulation-6),
           do: assert(MakingLaws.kind(d, id) == :standard, id)
+    end
+
+    # Food and Environment Protection Act 1985 (Guernsey) Order 1987,
+    # Environmental Protection (Waste Recycling Payments) Regulations 1994,
+    # SI 1994/1096 art. 3(3)
+    test "standard wording: extent, a commencement read as no statement, evidence, an aside after shall" do
+      d =
+        si([
+          {"article-3",
+           "Part II of the Food and Environment Protection Act 1985 shall extend to the Bailiwick with the modifications specified in the Schedule to this Order."},
+          {"article-4",
+           "The provisions of the Act, modified as in Schedule 1, shall extend and apply to the Territories specified in Schedule 2."},
+          {"article-11",
+           "Where an activity falls within article 2(2)(d), the relevant provisions shall come into force for the purposes of their application to that activity on 1st May 1994."},
+          {"article-12",
+           "A licence granted before this Order shall remain in force for the rest of its period."},
+          {"article-13",
+           "A certificate given by the Governor shall be conclusive evidence of the matters stated in it, and a document purporting to be such a certificate shall, in any proceedings, be received in evidence."},
+          {"regulation-1-3",
+           "Any reference in these Regulations to a numbered regulation shall, unless the context otherwise requires, be construed as a reference to the regulation so numbered."}
+        ])
+
+      for id <- ~w(article-3 article-4 article-11 article-12 article-13 regulation-1-3),
+          do: assert(MakingLaws.kind(d, id) == :standard, id)
+    end
+
+    test "an aside after shall does not hide a requirement" do
+      d =
+        si([
+          {"regulation-4",
+           "The operator shall, before the first day of each year, send the return to the regulator."}
+        ])
+
+      assert MakingLaws.kind(d, "regulation-4") == :requirement
     end
   end
 
@@ -183,6 +232,17 @@ defmodule SertantaiLegal.Scraper.MakingLawsTest do
     test "standard wording only: no verdict" do
       assert %{verdict: nil, reason: "no operative provision"} =
                MakingLaws.classify(si([@citation, @interpretation]))
+    end
+
+    # the Cremation Regulations 1952: legislation.gov.uk holds the law as a
+    # scanned print only (NumberOfProvisions="0")
+    test "no provisions upstream: no verdict, said so" do
+      d =
+        Doc.new("UK_uksi_1952_1568", [
+          ~s(<Legislation NumberOfProvisions="0"><Secondary><Body/></Secondary></Legislation>)
+        ])
+
+      assert %{verdict: nil, reason: "no provisions upstream"} = MakingLaws.classify(d)
     end
 
     test "no text held: no verdict" do
