@@ -1,7 +1,7 @@
 {
   "patterns": {
     "extent:  → nil": {
-      "count": 77876,
+      "count": 85236,
       "examples": [
         "UK_anaw_2012_2/cc97f39499",
         "UK_anaw_2013_1/8c81537dc9",
@@ -15,7 +15,7 @@
       ]
     },
     "extent: E → E": {
-      "count": 272,
+      "count": 276,
       "examples": [
         "UK_ukpga_1936_49/c32a5cf4a6",
         "UK_ukpga_1947_48/238b1b8c1d",
@@ -23,11 +23,8 @@
       ]
     },
     "extent: E → nil": {
-      "count": 6,
-      "examples": [
-        "UK_ukpga_1974_7/8be6e289e9",
-        "UK_ukpga_1996_56/99ab624ece"
-      ]
+      "count": 1,
+      "examples": []
     },
     "extent: E+N.I. → E+NI": {
       "count": 1,
@@ -41,12 +38,20 @@
         "UK_uksi_2015_310/dc4fb6b5b8"
       ]
     },
-    "extent: E+W | unset → E+W": {
+    "extent: E+W | W → E+W": {
       "count": 1,
-      "examples": []
+      "examples": [
+        "UK_ukpga_2003_33/e550159e1b"
+      ]
+    },
+    "extent: E+W | unset → E+W": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_1996_18/93878ef2c2"
+      ]
     },
     "extent: E+W → E+W": {
-      "count": 971,
+      "count": 1001,
       "examples": [
         "UK_ukpga_1919_50/dee0325a12",
         "UK_ukpga_1959_54/1ec347df8a",
@@ -54,11 +59,9 @@
       ]
     },
     "extent: E+W → nil": {
-      "count": 5,
+      "count": 2,
       "examples": [
-        "UK_ukpga_1985_67/7a440a5ebd",
-        "UK_ukpga_1987_27/0b68ec9f47",
-        "UK_ukpga_1995_25/c1b6b27b04"
+        "UK_ukpga_1985_67/7a440a5ebd"
       ]
     },
     "extent: E+W+N.I → E+W+NI": {
@@ -89,7 +92,7 @@
       ]
     },
     "extent: E+W+S → E+W+S": {
-      "count": 404,
+      "count": 425,
       "examples": [
         "UK_ukpga_1875_17/92fd9b35f1",
         "UK_ukpga_1883_3/f400be69c6",
@@ -127,13 +130,6 @@
         "UK_ukpga_1968_73/17eff629f0",
         "UK_ukpga_1985_67/0450508f4d",
         "UK_ukpga_1993_11/f1a39db91d"
-      ]
-    },
-    "extent: E.W. → nil": {
-      "count": 4,
-      "examples": [
-        "UK_ukpga_1985_67/d0d971291d",
-        "UK_ukpga_2004_20/97f903da52"
       ]
     },
     "extent: E.W.N.I. → E+W+NI": {
@@ -198,8 +194,15 @@
         "UK_uksi_2012_1916/96a93ad784"
       ]
     },
+    "extent: S | unset → S": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1968_73/939aa0c0c5",
+        "UK_ukpga_1990_43/7fdb628554"
+      ]
+    },
     "extent: S → S": {
-      "count": 711,
+      "count": 764,
       "examples": [
         "UK_ukpga_1960_62/2ef8d576cd",
         "UK_ukpga_1961_34/64d9478ced",
@@ -207,11 +210,9 @@
       ]
     },
     "extent: S → nil": {
-      "count": 12,
+      "count": 10,
       "examples": [
-        "UK_ukpga_1962_58/02f98ecff9",
-        "UK_ukpga_1979_46/72b41b94f2",
-        "UK_ukpga_1981_69/8ca915c4fd"
+        "UK_ukpga_1979_46/72b41b94f2"
       ]
     },
     "extent: S. → S": {
@@ -229,7 +230,7 @@
       ]
     },
     "extent: W → W": {
-      "count": 230,
+      "count": 277,
       "examples": [
         "UK_mwa_2009_3/288e1bdfc8",
         "UK_ukpga_1967_10/af8f41142c",
@@ -237,7 +238,7 @@
       ]
     },
     "extent: unset → nil": {
-      "count": 95322,
+      "count": 104639,
       "examples": [
         "UK_anaw_2012_2/14df7ec603",
         "UK_anaw_2013_1/4f5f21c755",
@@ -258,7 +259,7 @@
       ]
     },
     "key: M_F_U-H": {
-      "count": 1943,
+      "count": 2270,
       "examples": [
         "UK_anaw_2013_1/4f5f21c755",
         "UK_anaw_2016_2/58dfacb812",
@@ -266,7 +267,7 @@
       ]
     },
     "key: ONMN": {
-      "count": 444,
+      "count": 457,
       "examples": [
         "UK_eudr_1989_391/87e10009e2",
         "UK_eudr_1989_654/3c7216ce00",
@@ -274,7 +275,7 @@
       ]
     },
     "key: ONMN + ONMN-fN": {
-      "count": 70,
+      "count": 74,
       "examples": [
         "UK_eudr_1989_654/62f730e65d",
         "UK_eudr_1989_656/62f730e65d",
@@ -294,13 +295,19 @@
       ]
     },
     "key: V_SNI_U-H": {
-      "count": 2,
+      "count": 1,
       "examples": [
         "UK_uksi_2007_1711/d8365a3234"
       ]
     },
+    "key: V_SNI_U-H + key-HEX-N": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2007_1711/f713bed005"
+      ]
+    },
     "key: V_S_U-H": {
-      "count": 232,
+      "count": 234,
       "examples": [
         "UK_ukpga_1964_29/8f05a8ab33",
         "UK_ukpga_1979_46/599fc8a49c",
@@ -315,7 +322,7 @@
       ]
     },
     "key: cN": {
-      "count": 76,
+      "count": 95,
       "examples": [
         "UK_ukpga_1949_76/2747cc1da9",
         "UK_ukpga_1963_11/e1fb34719b",
@@ -323,7 +330,7 @@
       ]
     },
     "key: cN-N": {
-      "count": 56,
+      "count": 57,
       "examples": [
         "UK_ukpga_1949_76/324a98eca3",
         "UK_ukpga_1960_62/a383ed7f6d",
@@ -331,11 +338,18 @@
       ]
     },
     "key: dNpN": {
-      "count": 25021,
+      "count": 26364,
       "examples": [
         "UK_apni_1957_25/ee763f4108",
         "UK_apni_1967_36/ef55d6a0ce",
         "UK_apni_1969_6/2ed938255f"
+      ]
+    },
+    "key: dNpN + key-HEX-N": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1968_73/939aa0c0c5",
+        "UK_ukpga_1990_43/7fdb628554"
       ]
     },
     "key: dNpN-N": {
@@ -343,7 +357,7 @@
       "examples": []
     },
     "key: key-HEX": {
-      "count": 73,
+      "count": 102,
       "examples": [
         "UK_ssi_2000_95/6950587d2d",
         "UK_ukpga_1983_54/b0dcb8330b",
@@ -351,14 +365,15 @@
       ]
     },
     "key: key-HEX + key-HEX-N": {
-      "count": 5,
+      "count": 6,
       "examples": [
         "UK_ukpga_1997_50/9489e2b6ce",
+        "UK_ukpga_2011_20/63636c8940",
         "UK_uksi_2019_775/49b2dea641"
       ]
     },
     "key: key-HEX-N": {
-      "count": 70133,
+      "count": 77849,
       "examples": [
         "UK_anaw_2012_2/14df7ec603",
         "UK_anaw_2013_1/14c33193bc",
@@ -370,11 +385,15 @@
       "examples": []
     },
     "key: key-HEX-N + key-HEX-N/N": {
-      "count": 25,
+      "count": 30,
+      "examples": []
+    },
+    "key: key-HEX-N-N": {
+      "count": 1,
       "examples": []
     },
     "key: note ref only": {
-      "count": 77876,
+      "count": 85236,
       "examples": [
         "UK_anaw_2012_2/cc97f39499",
         "UK_anaw_2013_1/8c81537dc9",
@@ -382,7 +401,7 @@
       ]
     },
     "level: nil": {
-      "count": 1617,
+      "count": 1748,
       "examples": [
         "UK_anaw_2016_2/b13e8fe234",
         "UK_anaw_2016_3/8159ae5133",
@@ -390,7 +409,7 @@
       ]
     },
     "level: none": {
-      "count": 77876,
+      "count": 85236,
       "examples": [
         "UK_anaw_2012_2/cc97f39499",
         "UK_anaw_2013_1/8c81537dc9",
@@ -398,7 +417,7 @@
       ]
     },
     "level: provision + words": {
-      "count": 1390,
+      "count": 1551,
       "examples": [
         "UK_anaw_2016_2/5371a38f36",
         "UK_anaw_2017_3/85097429f3",
@@ -406,7 +425,7 @@
       ]
     },
     "level: provision | all its text": {
-      "count": 33,
+      "count": 34,
       "examples": [
         "UK_asp_2005_5/7bd969e926",
         "UK_eudr_1994_63/c70d9eb30b",
@@ -414,7 +433,7 @@
       ]
     },
     "level: provision | number wrapped": {
-      "count": 29996,
+      "count": 33000,
       "examples": [
         "UK_anaw_2013_1/14c33193bc",
         "UK_anaw_2013_6/cc4d51a2e3",
@@ -422,7 +441,7 @@
       ]
     },
     "level: words": {
-      "count": 65246,
+      "count": 71412,
       "examples": [
         "UK_anaw_2012_2/14df7ec603",
         "UK_anaw_2013_1/4f5f21c755",
@@ -430,7 +449,7 @@
       ]
     },
     "operation: Addition → inserted": {
-      "count": 41288,
+      "count": 45466,
       "examples": [
         "UK_anaw_2013_1/14c33193bc",
         "UK_anaw_2013_6/f202a8913c",
@@ -438,7 +457,7 @@
       ]
     },
     "operation: Addition → nil": {
-      "count": 13120,
+      "count": 13815,
       "examples": [
         "UK_anaw_2016_2/58dfacb812",
         "UK_apni_1967_36/a0303bf20d",
@@ -452,7 +471,7 @@
       ]
     },
     "operation: Addition+Repeal(paired) → inserted + substituted": {
-      "count": 74,
+      "count": 79,
       "examples": [
         "UK_ukpga_1962_58/30e8c9fd2c",
         "UK_ukpga_1974_39/ec83720393",
@@ -464,7 +483,7 @@
       "examples": []
     },
     "operation: Addition+Repeal(paired) → substituted": {
-      "count": 643,
+      "count": 719,
       "examples": [
         "UK_anaw_2013_1/97091210dd",
         "UK_asp_2002_13/ca871af872",
@@ -488,7 +507,7 @@
       ]
     },
     "operation: Addition+Substitution → inserted + substituted": {
-      "count": 80,
+      "count": 93,
       "examples": [
         "UK_asp_2002_13/07cb40873a",
         "UK_ssi_2008_309/55dba0557a",
@@ -496,14 +515,14 @@
       ]
     },
     "operation: Repeal → nil": {
-      "count": 5,
+      "count": 6,
       "examples": [
         "UK_ukpga_1980_43/2a387024fe",
         "UK_ukpga_1988_1/fbcd6a5507"
       ]
     },
     "operation: Repeal → repealed": {
-      "count": 1255,
+      "count": 1351,
       "examples": [
         "UK_asp_2001_8/d96354fd20",
         "UK_asp_2003_7/678c1efb95",
@@ -511,7 +530,7 @@
       ]
     },
     "operation: Repeal(paired) → substituted": {
-      "count": 31,
+      "count": 10,
       "examples": [
         "UK_ukpga_1907_24/6a371e3625",
         "UK_ukpga_1947_48/238b1b8c1d",
@@ -529,7 +548,7 @@
       ]
     },
     "operation: Substitution → nil": {
-      "count": 185,
+      "count": 222,
       "examples": [
         "UK_asp_2001_8/bb8b5aae40",
         "UK_asp_2005_16/b3a3d093db",
@@ -537,7 +556,7 @@
       ]
     },
     "operation: Substitution → substituted": {
-      "count": 41585,
+      "count": 45968,
       "examples": [
         "UK_anaw_2012_2/14df7ec603",
         "UK_anaw_2013_1/4f5f21c755",
@@ -545,12 +564,16 @@
       ]
     },
     "operation: none": {
-      "count": 77876,
+      "count": 85236,
       "examples": [
         "UK_anaw_2012_2/cc97f39499",
         "UK_anaw_2013_1/8c81537dc9",
         "UK_anaw_2013_6/4b018f0414"
       ]
+    },
+    "placement: note refs only | ?-N → s.N(+1)": {
+      "count": 2,
+      "examples": []
     },
     "placement: note refs only | ?-N → s.N(+2)": {
       "count": 1,
@@ -579,7 +602,7 @@
       ]
     },
     "placement: note refs only | article-N → reg.N": {
-      "count": 3003,
+      "count": 3070,
       "examples": [
         "UK_nisi_1978_1039/b5dcafb05f",
         "UK_nisi_1979_1709/bba567eb5f",
@@ -670,7 +693,7 @@
       "examples": []
     },
     "placement: note refs only | article-N(+1) → reg.N(+1)": {
-      "count": 501,
+      "count": 503,
       "examples": [
         "UK_nisi_1978_1039/416633d67b",
         "UK_nisi_1979_1709/112160046b",
@@ -706,7 +729,7 @@
       ]
     },
     "placement: note refs only | article-N(+1) → split: reg.N(+2)": {
-      "count": 28,
+      "count": 29,
       "examples": [
         "UK_nisi_1989_1341/85acaab943",
         "UK_nisi_1996_275/9b1661cd78",
@@ -735,7 +758,7 @@
       ]
     },
     "placement: note refs only | article-N(+2) → reg.N(+2)": {
-      "count": 303,
+      "count": 305,
       "examples": [
         "UK_nisi_1978_1039/b5f8cd4681",
         "UK_nisi_1979_1709/9988b57db6",
@@ -805,6 +828,12 @@
         "UK_ukpga_2010_4/8a14440198"
       ]
     },
+    "placement: note refs only | chapter-N-crossheading-* → s.N": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1992_52/5360597dea"
+      ]
+    },
     "placement: note refs only | chapter-N-crossheading-* → split: s.N": {
       "count": 10,
       "examples": [
@@ -830,10 +859,11 @@
       ]
     },
     "placement: note refs only | crossheading-* → split: reg.N": {
-      "count": 2,
+      "count": 3,
       "examples": [
         "UK_uksi_2024_924/79160f9e6c",
-        "UK_wsi_2016_413/62abeaf245"
+        "UK_wsi_2016_413/62abeaf245",
+        "UK_wsi_2024_924/79160f9e6c"
       ]
     },
     "placement: note refs only | crossheading-* → split: s.N": {
@@ -852,7 +882,7 @@
       ]
     },
     "placement: note refs only | none → nowhere": {
-      "count": 36,
+      "count": 39,
       "examples": [
         "UK_eur_1991_3254/1106249412",
         "UK_eur_2004_273/327edeba00",
@@ -876,13 +906,13 @@
       "examples": []
     },
     "placement: note refs only | none → s.N": {
-      "count": 53,
+      "count": 87,
       "examples": [
         "UK_ukpga_1997_50/80de0fddf8"
       ]
     },
     "placement: note refs only | none → s.N(+1)": {
-      "count": 18,
+      "count": 20,
       "examples": [
         "UK_ukpga_1974_37/9b1a2213e0",
         "UK_ukpga_1980_65/8093dd38dd",
@@ -897,7 +927,7 @@
       ]
     },
     "placement: note refs only | none → split: art.Article N": {
-      "count": 8,
+      "count": 13,
       "examples": [
         "UK_eur_2006_561/3cfe7b0eeb",
         "UK_eur_2009_391/d2cb3510f0",
@@ -929,7 +959,7 @@
       "examples": []
     },
     "placement: note refs only | none → split: reg.N": {
-      "count": 94,
+      "count": 124,
       "examples": [
         "UK_nisr_1998_375/c76f29c962",
         "UK_nisr_1998_448/631634a945",
@@ -945,7 +975,7 @@
       "examples": []
     },
     "placement: note refs only | none → split: s.N": {
-      "count": 74,
+      "count": 78,
       "examples": [
         "UK_apni_1969_6/1d754bf6d0",
         "UK_asp_2001_3/1ffa7cd39b",
@@ -953,7 +983,7 @@
       ]
     },
     "placement: note refs only | none → split: s.N(+1)": {
-      "count": 3,
+      "count": 4,
       "examples": [
         "UK_ukpga_1988_33/0fc1141f82",
         "UK_ukpga_1997_50/1a1190ac3c"
@@ -975,7 +1005,7 @@
       ]
     },
     "placement: note refs only | none → split: s.N, s.N(+1), s.N(+2)": {
-      "count": 1,
+      "count": 2,
       "examples": []
     },
     "placement: note refs only | none → split: s.N, s.N(+2)": {
@@ -993,7 +1023,7 @@
       "examples": []
     },
     "placement: note refs only | part-N → nowhere": {
-      "count": 295,
+      "count": 484,
       "examples": [
         "UK_anaw_2016_2/556a66a1d8",
         "UK_nia_2011_25/3a71289a44",
@@ -1009,13 +1039,14 @@
       "examples": []
     },
     "placement: note refs only | part-N → pt.N": {
-      "count": 180,
+      "count": 188,
       "examples": [
+        "UK_ssi_2017_113/22c21d57d8",
         "UK_uksi_2005_894/242da01616"
       ]
     },
     "placement: note refs only | part-N → s.N": {
-      "count": 16,
+      "count": 21,
       "examples": []
     },
     "placement: note refs only | part-N → split: h.N, pt.N": {
@@ -1043,7 +1074,7 @@
       "examples": []
     },
     "placement: note refs only | part-N → split: pt.N, reg.N": {
-      "count": 11,
+      "count": 12,
       "examples": [
         "UK_ssi_2019_421/b680bae886",
         "UK_ssi_2020_154/78c6d9cb78",
@@ -1055,7 +1086,7 @@
       "examples": []
     },
     "placement: note refs only | part-N → split: pt.N, s.N": {
-      "count": 124,
+      "count": 134,
       "examples": [
         "UK_asp_2003_1/937556443b",
         "UK_ukpga_1981_29/d3681dd5a1",
@@ -1063,7 +1094,7 @@
       ]
     },
     "placement: note refs only | part-N → split: reg.N": {
-      "count": 58,
+      "count": 59,
       "examples": [
         "UK_nisi_1994_426/8d156314ef",
         "UK_nisr_2009_238/f283c336b5",
@@ -1077,7 +1108,7 @@
       ]
     },
     "placement: note refs only | part-N → split: s.N": {
-      "count": 366,
+      "count": 425,
       "examples": [
         "UK_apni_1969_6/cce3acea80",
         "UK_asp_2001_8/b2366578ad",
@@ -1089,7 +1120,7 @@
       "examples": []
     },
     "placement: note refs only | part-N-chapter-N → nowhere": {
-      "count": 161,
+      "count": 239,
       "examples": [
         "UK_anaw_2013_1/b15e9689dd",
         "UK_nia_2015_9/44e9744833",
@@ -1097,16 +1128,17 @@
       ]
     },
     "placement: note refs only | part-N-chapter-N → pt.N.ch.N": {
-      "count": 45,
+      "count": 48,
       "examples": [
         "UK_ukpga_2008_29/4bf57e3445",
         "UK_uksi_2012_3038/3006cad77b"
       ]
     },
     "placement: note refs only | part-N-chapter-N → s.N": {
-      "count": 11,
+      "count": 18,
       "examples": [
-        "UK_ukpga_1992_12/4290e08792"
+        "UK_ukpga_1992_12/4290e08792",
+        "UK_ukpga_1996_8/c00e369dc4"
       ]
     },
     "placement: note refs only | part-N-chapter-N → s.N(+2)": {
@@ -1120,7 +1152,7 @@
       "examples": []
     },
     "placement: note refs only | part-N-chapter-N → split: pt.N.ch.N, s.N": {
-      "count": 13,
+      "count": 14,
       "examples": []
     },
     "placement: note refs only | part-N-chapter-N → split: reg.N": {
@@ -1135,7 +1167,7 @@
       "examples": []
     },
     "placement: note refs only | part-N-chapter-N → split: s.N": {
-      "count": 241,
+      "count": 264,
       "examples": [
         "UK_anaw_2013_1/6a2fc65e60",
         "UK_apni_1969_6/52a68627ef",
@@ -1157,7 +1189,7 @@
       ]
     },
     "placement: note refs only | part-N-chapter-N-crossheading-* → nowhere": {
-      "count": 19,
+      "count": 21,
       "examples": [
         "UK_ukpga_1992_12/00f1e2ddf2",
         "UK_ukpga_1993_28/7c55a8be5a",
@@ -1171,7 +1203,7 @@
       ]
     },
     "placement: note refs only | part-N-chapter-N-crossheading-* → s.N": {
-      "count": 15,
+      "count": 18,
       "examples": [
         "UK_ukpga_2006_41/a2cf58a639",
         "UK_ukpga_2008_14/4df2c22b79",
@@ -1193,7 +1225,7 @@
       ]
     },
     "placement: note refs only | part-N-chapter-N-crossheading-* → split: s.N": {
-      "count": 232,
+      "count": 244,
       "examples": [
         "UK_asp_2011_9/fa6f8472d8",
         "UK_ukpga_1988_39/a7e5a975f5",
@@ -1217,14 +1249,15 @@
       "examples": []
     },
     "placement: note refs only | part-N-crossheading-* → h.N": {
-      "count": 4,
+      "count": 5,
       "examples": [
         "UK_nisi_1983_764/6e1d467078",
+        "UK_ukpga_1992_52/60f75f4bcb",
         "UK_ukpga_2003_21/404977d551"
       ]
     },
     "placement: note refs only | part-N-crossheading-* → nowhere": {
-      "count": 15,
+      "count": 20,
       "examples": [
         "UK_ukpga_1979_46/63fea93bb4",
         "UK_ukpga_1995_46/2ae6331f4e",
@@ -1232,7 +1265,7 @@
       ]
     },
     "placement: note refs only | part-N-crossheading-* → s.N": {
-      "count": 13,
+      "count": 16,
       "examples": [
         "UK_ukpga_1974_39/b8e5c0523b",
         "UK_ukpga_1979_46/055da361fb",
@@ -1268,7 +1301,7 @@
       ]
     },
     "placement: note refs only | part-N-crossheading-* → split: s.N": {
-      "count": 592,
+      "count": 639,
       "examples": [
         "UK_anaw_2015_4/fcaf75d520",
         "UK_asp_2002_3/a158203770",
@@ -1282,7 +1315,7 @@
       ]
     },
     "placement: note refs only | regulation-N → reg.N": {
-      "count": 10881,
+      "count": 12005,
       "examples": [
         "UK_nisr_1997_193/6c4446b3d1",
         "UK_nisr_1997_195/b13af3000f",
@@ -1290,7 +1323,7 @@
       ]
     },
     "placement: note refs only | regulation-N → reg.N(+1)": {
-      "count": 71,
+      "count": 72,
       "examples": [
         "UK_ssi_2000_95/6eef1aa294",
         "UK_uksi_1999_1148/e406e642ea",
@@ -1302,14 +1335,15 @@
       "examples": []
     },
     "placement: note refs only | regulation-N → split: reg.N": {
-      "count": 4,
+      "count": 6,
       "examples": [
+        "UK_nisr_2025_126/43c2cc5b5f",
         "UK_uksi_2013_388/f029eaf58c",
         "UK_uksi_2022_1378/87485bc31e"
       ]
     },
     "placement: note refs only | regulation-N → split: reg.N(+1)": {
-      "count": 137,
+      "count": 146,
       "examples": [
         "UK_nisr_2010_59/49608acd4b",
         "UK_ssi_2002_541/fc64fb5f29",
@@ -1322,6 +1356,12 @@
         "UK_uksi_2013_1478/4dfd16f672",
         "UK_uksi_2013_971/b94fb87a1b",
         "UK_uksi_2014_916/95cbef5698"
+      ]
+    },
+    "placement: note refs only | regulation-N → split: reg.N(+1), reg.N(+2), reg.N(+3)": {
+      "count": 1,
+      "examples": [
+        "UK_wsi_2019_245/3d54712023"
       ]
     },
     "placement: note refs only | regulation-N → split: reg.N(+2)": {
@@ -1337,7 +1377,7 @@
       ]
     },
     "placement: note refs only | regulation-N → split: reg.N, reg.N(+1)": {
-      "count": 45,
+      "count": 56,
       "examples": [
         "UK_nisr_2005_165/237cec2bf3",
         "UK_nisr_2006_205/93e4657e34",
@@ -1345,18 +1385,24 @@
       ]
     },
     "placement: note refs only | regulation-N → split: reg.N, reg.N(+1), reg.N(+2)": {
-      "count": 5,
+      "count": 7,
       "examples": [
         "UK_uksi_2018_1030/f1686fb11d",
         "UK_uksi_2026_318/387e083f1e"
       ]
     },
     "placement: note refs only | regulation-N → split: reg.N, reg.N(+1), reg.N(+2), reg.N(+3)": {
-      "count": 5,
+      "count": 6,
       "examples": []
     },
+    "placement: note refs only | regulation-N → split: reg.N, reg.N(+1), reg.N(+3)": {
+      "count": 1,
+      "examples": [
+        "UK_wsi_2019_245/e8e6199637"
+      ]
+    },
     "placement: note refs only | regulation-N → split: reg.N, reg.N(+2)": {
-      "count": 9,
+      "count": 11,
       "examples": [
         "UK_uksi_2012_2267/1774c8d118",
         "UK_uksi_2016_1093/bea14f4163",
@@ -1368,13 +1414,14 @@
       "examples": []
     },
     "placement: note refs only | regulation-N → split: reg.N, reg.N(+3)": {
-      "count": 3,
+      "count": 4,
       "examples": [
-        "UK_uksi_2018_1030/8b6c0861eb"
+        "UK_uksi_2018_1030/8b6c0861eb",
+        "UK_wsi_2019_245/40b233d735"
       ]
     },
     "placement: note refs only | regulation-N(+1) → reg.N(+1)": {
-      "count": 2019,
+      "count": 2130,
       "examples": [
         "UK_nisr_2000_375/84123fb88f",
         "UK_nisr_2003_34/9cf3ecad58",
@@ -1396,7 +1443,7 @@
       ]
     },
     "placement: note refs only | regulation-N(+1) → split: reg.N(+2)": {
-      "count": 84,
+      "count": 88,
       "examples": [
         "UK_nisr_2005_279/2ce0e6b210",
         "UK_nisr_2014_224/efd3a93da0",
@@ -1404,7 +1451,7 @@
       ]
     },
     "placement: note refs only | regulation-N(+1) → split: reg.N(+2), reg.N(+3)": {
-      "count": 4,
+      "count": 5,
       "examples": [
         "UK_uksi_1987_1968/709419425b",
         "UK_uksi_2015_1553/a7912faf5c",
@@ -1412,7 +1459,7 @@
       ]
     },
     "placement: note refs only | regulation-N(+2) → reg.N(+2)": {
-      "count": 996,
+      "count": 1040,
       "examples": [
         "UK_nisr_2003_34/d6aaaa011c",
         "UK_nisr_2005_279/0f5de24208",
@@ -1428,7 +1475,7 @@
       ]
     },
     "placement: note refs only | regulation-N(+2) → split: reg.N(+3)": {
-      "count": 6,
+      "count": 7,
       "examples": [
         "UK_ssi_2008_309/e646250e57",
         "UK_uksi_1986_1078/7333aa0116",
@@ -1460,7 +1507,7 @@
       ]
     },
     "placement: note refs only | regulation-N(+3) → reg.N(+3)": {
-      "count": 195,
+      "count": 210,
       "examples": [
         "UK_nisr_2008_170/39329fd6f6",
         "UK_nisr_2015_339/a20d1023fe",
@@ -1474,7 +1521,7 @@
       ]
     },
     "placement: note refs only | regulation-N(+4) → reg.N(+4)": {
-      "count": 15,
+      "count": 16,
       "examples": [
         "UK_uksi_1998_1011/caa956f057",
         "UK_uksi_2009_890/a5341332a4",
@@ -1530,7 +1577,7 @@
       ]
     },
     "placement: note refs only | section-N → s.N": {
-      "count": 36812,
+      "count": 40029,
       "examples": [
         "UK_anaw_2012_2/cc97f39499",
         "UK_anaw_2013_1/8c81537dc9",
@@ -1558,7 +1605,7 @@
       ]
     },
     "placement: note refs only | section-N → split: s.N(+1)": {
-      "count": 2588,
+      "count": 2879,
       "examples": [
         "UK_anaw_2012_2/3e8e96f1e5",
         "UK_anaw_2015_4/0ed1445401",
@@ -1580,7 +1627,7 @@
       ]
     },
     "placement: note refs only | section-N → split: s.N(+1), s.N(+2)": {
-      "count": 218,
+      "count": 241,
       "examples": [
         "UK_anaw_2016_2/15f5d256c3",
         "UK_asc_2021_1/beb784e054",
@@ -1588,9 +1635,10 @@
       ]
     },
     "placement: note refs only | section-N → split: s.N(+1), s.N(+2), s.N(+3)": {
-      "count": 9,
+      "count": 10,
       "examples": [
-        "UK_asp_2010_13/0d4ff50c44"
+        "UK_asp_2010_13/0d4ff50c44",
+        "UK_ukpga_2011_20/c1483dba5d"
       ]
     },
     "placement: note refs only | section-N → split: s.N(+1), s.N(+3)": {
@@ -1619,7 +1667,7 @@
       "examples": []
     },
     "placement: note refs only | section-N → split: s.N, s.N(+1)": {
-      "count": 48,
+      "count": 55,
       "examples": [
         "UK_asc_2023_3/daad8219ed",
         "UK_asc_2023_4/b042486460",
@@ -1627,13 +1675,13 @@
       ]
     },
     "placement: note refs only | section-N → split: s.N, s.N(+1), s.N(+2)": {
-      "count": 2,
+      "count": 3,
       "examples": [
         "UK_ukpga_2023_50/b273b5b1c0"
       ]
     },
     "placement: note refs only | section-N → split: s.N, s.N(+2)": {
-      "count": 1,
+      "count": 2,
       "examples": []
     },
     "placement: note refs only | section-N(+1) → s.362AZ12(+1)": {
@@ -1685,7 +1733,7 @@
       ]
     },
     "placement: note refs only | section-N(+1) → s.N(+1)": {
-      "count": 10608,
+      "count": 11867,
       "examples": [
         "UK_anaw_2012_2/96e6806c88",
         "UK_anaw_2013_1/f56c609a05",
@@ -1715,7 +1763,7 @@
       ]
     },
     "placement: note refs only | section-N(+1) → split: s.N(+1), s.N(+2)": {
-      "count": 27,
+      "count": 31,
       "examples": [
         "UK_asp_2000_4/6802d39db4",
         "UK_ukpga_1965_49/9b3e39e9f4",
@@ -1723,7 +1771,7 @@
       ]
     },
     "placement: note refs only | section-N(+1) → split: s.N(+2)": {
-      "count": 519,
+      "count": 577,
       "examples": [
         "UK_anaw_2016_2/f396934e9c",
         "UK_asc_2021_1/affe4e2014",
@@ -1731,12 +1779,16 @@
       ]
     },
     "placement: note refs only | section-N(+1) → split: s.N(+2), s.N(+3)": {
-      "count": 39,
+      "count": 44,
       "examples": [
         "UK_asp_2006_17/46da32595b",
         "UK_asp_2009_6/d6697a5944",
         "UK_asp_2011_6/f24919e51a"
       ]
+    },
+    "placement: note refs only | section-N(+1) → split: s.N(+3)": {
+      "count": 1,
+      "examples": []
     },
     "placement: note refs only | section-N(+1)-zzza → s.N(+2)": {
       "count": 1,
@@ -1757,11 +1809,17 @@
       ]
     },
     "placement: note refs only | section-N(+2) → s.N(+2)": {
-      "count": 4016,
+      "count": 4512,
       "examples": [
         "UK_anaw_2013_1/b0ed774e96",
         "UK_anaw_2016_2/92f3838b27",
         "UK_anaw_2016_3/a51c463354"
+      ]
+    },
+    "placement: note refs only | section-N(+2) → s.N(+2) (source suffix)": {
+      "count": 4,
+      "examples": [
+        "UK_ukpga_2002_40/1c9d30ec43"
       ]
     },
     "placement: note refs only | section-N(+2) → s.N(+3)": {
@@ -1778,7 +1836,7 @@
       ]
     },
     "placement: note refs only | section-N(+2) → split: s.N(+3)": {
-      "count": 45,
+      "count": 48,
       "examples": [
         "UK_asp_2005_5/a5dca54d92",
         "UK_asp_2009_12/9810c1db00",
@@ -1786,7 +1844,7 @@
       ]
     },
     "placement: note refs only | section-N(+3) → s.N(+3)": {
-      "count": 401,
+      "count": 444,
       "examples": [
         "UK_anaw_2016_2/cc94baa30d",
         "UK_asc_2024_3/72ad473ed7",
@@ -1853,11 +1911,11 @@
       "examples": []
     },
     "placement: one element | ?-N → reg.N(+2)": {
-      "count": 4,
+      "count": 5,
       "examples": []
     },
     "placement: one element | article-N → art.Article N": {
-      "count": 256,
+      "count": 258,
       "examples": [
         "UK_eudn_2009_491/0c59d38c9c",
         "UK_eudr_1994_63/ad4bd9fc45",
@@ -1884,7 +1942,7 @@
       "examples": []
     },
     "placement: one element | article-N → reg.N": {
-      "count": 199,
+      "count": 200,
       "examples": [
         "UK_nisi_1978_1039/3666dd96a1",
         "UK_nisi_1979_1709/1c1e1796bb",
@@ -1892,7 +1950,7 @@
       ]
     },
     "placement: one element | article-N → reg.N(+1)": {
-      "count": 87,
+      "count": 88,
       "examples": [
         "UK_nisi_1978_1039/f4224b0522",
         "UK_nisi_1979_1709/1380a58fc3",
@@ -1916,7 +1974,7 @@
       ]
     },
     "placement: one element | article-N(+1) → reg.N(+1)": {
-      "count": 1559,
+      "count": 1565,
       "examples": [
         "UK_nisi_1977_1251/58fea5979a",
         "UK_nisi_1978_1039/49d6727b10",
@@ -1946,7 +2004,7 @@
       ]
     },
     "placement: one element | article-N(+2) → reg.N(+2)": {
-      "count": 837,
+      "count": 847,
       "examples": [
         "UK_nisi_1977_1251/6e09b82cff",
         "UK_nisi_1978_1039/0423fce6f0",
@@ -1976,7 +2034,7 @@
       ]
     },
     "placement: one element | article-N(+3) → reg.N(+3)": {
-      "count": 114,
+      "count": 115,
       "examples": [
         "UK_nisi_1977_1251/e5a7bf03cf",
         "UK_nisi_1981_1675/dc3d1a0fd4",
@@ -2005,7 +2063,7 @@
       ]
     },
     "placement: one element | chapter-N-crossheading-* → nowhere": {
-      "count": 23,
+      "count": 32,
       "examples": [
         "UK_ukpga_1992_12/4b60d31e26",
         "UK_ukpga_1998_31/b8f8b99f8c",
@@ -2044,7 +2102,7 @@
       ]
     },
     "placement: one element | part-N → nowhere": {
-      "count": 54,
+      "count": 62,
       "examples": [
         "UK_ssi_2022_136/6985f202d3",
         "UK_ukpga_1965_49/5a949c8cfd",
@@ -2070,7 +2128,7 @@
       ]
     },
     "placement: one element | part-N-chapter-N → nowhere": {
-      "count": 51,
+      "count": 58,
       "examples": [
         "UK_ukpga_1982_27/8a923d89b3",
         "UK_ukpga_1988_1/c0df45f5e3",
@@ -2104,7 +2162,7 @@
       ]
     },
     "placement: one element | part-N-chapter-N-crossheading-* → nowhere": {
-      "count": 77,
+      "count": 98,
       "examples": [
         "UK_asp_2014_16/89bec8eb85",
         "UK_ukpga_1986_60/adb7c00aad",
@@ -2134,7 +2192,7 @@
       "examples": []
     },
     "placement: one element | part-N-crossheading-* → h.N": {
-      "count": 63,
+      "count": 62,
       "examples": [
         "UK_anaw_2016_3/4e1bfc09c7",
         "UK_ukpga_1968_73/5197becec9",
@@ -2146,7 +2204,7 @@
       "examples": []
     },
     "placement: one element | part-N-crossheading-* → nowhere": {
-      "count": 115,
+      "count": 148,
       "examples": [
         "UK_asp_2001_8/bb8b5aae40",
         "UK_asp_2005_16/b3a3d093db",
@@ -2190,7 +2248,7 @@
       ]
     },
     "placement: one element | regulation-N → reg.N": {
-      "count": 1036,
+      "count": 1074,
       "examples": [
         "UK_nisr_2004_416/bd9e66e1b4",
         "UK_nisr_2006_204/2f7d131f0e",
@@ -2198,7 +2256,7 @@
       ]
     },
     "placement: one element | regulation-N → reg.N(+1)": {
-      "count": 126,
+      "count": 130,
       "examples": [
         "UK_ssi_2000_95/ace68c15b1",
         "UK_ssi_2004_406/a053b4c54f",
@@ -2206,7 +2264,7 @@
       ]
     },
     "placement: one element | regulation-N(+1) → reg.N(+1)": {
-      "count": 5038,
+      "count": 5237,
       "examples": [
         "UK_nisr_2000_375/bb6492b16a",
         "UK_nisr_2003_34/36fbc285fb",
@@ -2222,7 +2280,7 @@
       ]
     },
     "placement: one element | regulation-N(+2) → reg.N(+2)": {
-      "count": 2449,
+      "count": 2581,
       "examples": [
         "UK_nisr_2000_388/9474443719",
         "UK_nisr_2003_34/26579ceef9",
@@ -2274,7 +2332,7 @@
       ]
     },
     "placement: one element | regulation-N(+3) → reg.N(+3)": {
-      "count": 519,
+      "count": 554,
       "examples": [
         "UK_nisr_2003_34/c804eb2d51",
         "UK_nisr_2004_416/007885343c",
@@ -2326,22 +2384,22 @@
         "UK_uksi_1986_1078/49b2946f82"
       ]
     },
-    "placement: one element | section-N → nowhere": {
-      "count": 4,
-      "examples": [
-        "UK_ukpga_1907_24/14bbbbb497",
-        "UK_ukpga_1962_58/02f98ecff9",
-        "UK_ukpga_1981_69/8ca915c4fd"
-      ]
-    },
     "placement: one element | section-N → s.14Z41": {
       "count": 1,
       "examples": [
         "UK_ukpga_2006_41/eaf2e2b482"
       ]
     },
+    "placement: one element | section-N → s.554Z10": {
+      "count": 1,
+      "examples": []
+    },
+    "placement: one element | section-N → s.554Z9": {
+      "count": 1,
+      "examples": []
+    },
     "placement: one element | section-N → s.N": {
-      "count": 2413,
+      "count": 2777,
       "examples": [
         "UK_anaw_2013_6/f202a8913c",
         "UK_anaw_2016_2/4d775b946f",
@@ -2349,7 +2407,7 @@
       ]
     },
     "placement: one element | section-N → s.N(+1)": {
-      "count": 157,
+      "count": 192,
       "examples": [
         "UK_asp_2003_3/517397ff13",
         "UK_asp_2003_7/4cb70dc474",
@@ -2362,13 +2420,9 @@
         "UK_ukpga_1980_65/58c6f2da99"
       ]
     },
-    "placement: one element | section-N(+1) → nowhere": {
-      "count": 11,
-      "examples": [
-        "UK_ukpga_1974_7/9023ff478d",
-        "UK_ukpga_1985_67/d0d971291d",
-        "UK_ukpga_1987_18/e893043185"
-      ]
+    "placement: one element | section-N → split: s.N(+1), s.N(+2)": {
+      "count": 1,
+      "examples": []
     },
     "placement: one element | section-N(+1) → s.206Z6(+1)": {
       "count": 1,
@@ -2380,6 +2434,36 @@
       "count": 1,
       "examples": [
         "UK_ukpga_2003_21/81d3365174"
+      ]
+    },
+    "placement: one element | section-N(+1) → s.554Z10(+1)": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_2003_1/d649828077"
+      ]
+    },
+    "placement: one element | section-N(+1) → s.554Z11(+1)": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_2003_1/ead877373c"
+      ]
+    },
+    "placement: one element | section-N(+1) → s.554Z11A(+1)": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2003_1/2d937826fd"
+      ]
+    },
+    "placement: one element | section-N(+1) → s.554Z12(+1)": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2003_1/34a914468e"
+      ]
+    },
+    "placement: one element | section-N(+1) → s.554Z9(+1)": {
+      "count": 7,
+      "examples": [
+        "UK_ukpga_2003_1/0ee9de0789"
       ]
     },
     "placement: one element | section-N(+1) → s.83Z1(+1)": {
@@ -2425,7 +2509,7 @@
       ]
     },
     "placement: one element | section-N(+1) → s.N(+1)": {
-      "count": 23426,
+      "count": 26053,
       "examples": [
         "UK_anaw_2012_2/14df7ec603",
         "UK_anaw_2013_1/4f5f21c755",
@@ -2433,7 +2517,7 @@
       ]
     },
     "placement: one element | section-N(+1) → s.N(+1) (source suffix)": {
-      "count": 14,
+      "count": 15,
       "examples": [
         "UK_asp_2012_5/1ff392427a",
         "UK_ukpga_1973_56/4c24828f4d",
@@ -2473,13 +2557,6 @@
         "UK_ukpga_1996_56/52e1eaef1d"
       ]
     },
-    "placement: one element | section-N(+2) → nowhere": {
-      "count": 3,
-      "examples": [
-        "UK_ukpga_1974_7/8be6e289e9",
-        "UK_ukpga_1990_8/deb36a96d7"
-      ]
-    },
     "placement: one element | section-N(+2) → s.10Z12(+2)": {
       "count": 1,
       "examples": [
@@ -2492,12 +2569,36 @@
         "UK_ukpga_2003_21/b9dff08480"
       ]
     },
+    "placement: one element | section-N(+2) → s.554Z10(+2)": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2003_1/cecd0cec88"
+      ]
+    },
+    "placement: one element | section-N(+2) → s.554Z6(+2)": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2003_1/33b1be4920"
+      ]
+    },
+    "placement: one element | section-N(+2) → s.554Z9(+2)": {
+      "count": 6,
+      "examples": [
+        "UK_ukpga_2003_1/3d3832efbe"
+      ]
+    },
     "placement: one element | section-N(+2) → s.N(+2)": {
-      "count": 12311,
+      "count": 13840,
       "examples": [
         "UK_anaw_2012_2/ad39c9ac2f",
         "UK_anaw_2013_1/7c453e229e",
         "UK_anaw_2013_6/1db72545fc"
+      ]
+    },
+    "placement: one element | section-N(+2) → s.N(+2) (source suffix)": {
+      "count": 5,
+      "examples": [
+        "UK_ukpga_2002_40/514085cc71"
       ]
     },
     "placement: one element | section-N(+2) → s.N(+3)": {
@@ -2514,7 +2615,7 @@
       ]
     },
     "placement: one element | section-N(+3) → s.N(+3)": {
-      "count": 1192,
+      "count": 1302,
       "examples": [
         "UK_anaw_2016_2/b13e8fe234",
         "UK_asc_2023_3/0910d44cf1",
@@ -2706,7 +2807,7 @@
       "examples": []
     },
     "placement: several elements | article-N → art.Article N": {
-      "count": 152,
+      "count": 157,
       "examples": [
         "UK_eudn_2009_491/5850c5a2cd",
         "UK_eudr_1989_391/80d815c4fd",
@@ -2726,7 +2827,7 @@
       "examples": []
     },
     "placement: several elements | article-N → reg.N": {
-      "count": 350,
+      "count": 354,
       "examples": [
         "UK_nisi_1977_1251/024f2922ca",
         "UK_nisi_1978_1039/34b45bf419",
@@ -2742,7 +2843,7 @@
       ]
     },
     "placement: several elements | article-N → split: art.Article N(+1)": {
-      "count": 94,
+      "count": 95,
       "examples": [
         "UK_eur_2004_273/00b50c5140",
         "UK_eur_2006_1907/95b6967811",
@@ -2775,7 +2876,7 @@
       ]
     },
     "placement: several elements | article-N → split: reg.N(+1)": {
-      "count": 236,
+      "count": 237,
       "examples": [
         "UK_nisi_1977_1251/3fad59ad10",
         "UK_nisi_1978_1039/e41cd5a467",
@@ -2819,7 +2920,7 @@
       ]
     },
     "placement: several elements | article-N(+1) → art.Article N(+1)": {
-      "count": 427,
+      "count": 432,
       "examples": [
         "UK_eudr_1992_57/3eeddaad6a",
         "UK_eudr_1992_58/80d815c4fd",
@@ -2827,7 +2928,7 @@
       ]
     },
     "placement: several elements | article-N(+1) → reg.N(+1)": {
-      "count": 856,
+      "count": 861,
       "examples": [
         "UK_nisi_1977_1251/6bc37ef4dd",
         "UK_nisi_1978_1039/614b76eded",
@@ -2926,7 +3027,7 @@
       ]
     },
     "placement: several elements | article-N(+2) → reg.N(+2)": {
-      "count": 371,
+      "count": 377,
       "examples": [
         "UK_nisi_1977_1251/700b89d100",
         "UK_nisi_1978_1039/6df2a77862",
@@ -2987,7 +3088,7 @@
       ]
     },
     "placement: several elements | article-N(+3) → reg.N(+3)": {
-      "count": 47,
+      "count": 48,
       "examples": [
         "UK_nisi_1978_1039/29faea5c39",
         "UK_nisi_1981_1675/7f5e000802",
@@ -3050,11 +3151,17 @@
       ]
     },
     "placement: several elements | chapter-N-crossheading-* → s.N": {
-      "count": 97,
+      "count": 118,
       "examples": [
         "UK_ukpga_1992_12/8e0b918144",
         "UK_ukpga_1996_52/43b4c7daf2",
         "UK_ukpga_1996_56/b0e67ac075"
+      ]
+    },
+    "placement: several elements | chapter-N-crossheading-* → s.N (source suffix)": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2000_22/f1f25627d7"
       ]
     },
     "placement: several elements | chapter-N-crossheading-* → split: h.N, s.N": {
@@ -3097,6 +3204,10 @@
       "count": 1,
       "examples": []
     },
+    "placement: several elements | chapter-N-crossheading-* → split: s.554Z11B, s.554Z11C, s.554Z11D, s.554Z11E, s.554Z11F, s.554Z11G": {
+      "count": 1,
+      "examples": []
+    },
     "placement: several elements | chapter-N-crossheading-* → split: s.65Z5, s.65Z6, s.65Z7": {
       "count": 1,
       "examples": []
@@ -3110,7 +3221,7 @@
       "examples": []
     },
     "placement: several elements | chapter-N-crossheading-* → split: s.N": {
-      "count": 72,
+      "count": 81,
       "examples": [
         "UK_ukpga_1992_12/2db429150e",
         "UK_ukpga_1992_13/532d332b0b",
@@ -3124,7 +3235,7 @@
       ]
     },
     "placement: several elements | crossheading-* → s.N": {
-      "count": 11,
+      "count": 12,
       "examples": [
         "UK_asp_2000_6/6915a59977",
         "UK_ukpga_1907_24/26f34e4dc8",
@@ -3167,7 +3278,7 @@
       "examples": []
     },
     "placement: several elements | none → *": {
-      "count": 14,
+      "count": 17,
       "examples": [
         "UK_eudr_1992_57/62f730e65d",
         "UK_eudr_2009_148/bc2df6b086",
@@ -3175,7 +3286,7 @@
       ]
     },
     "placement: several elements | none → art.Article N": {
-      "count": 24,
+      "count": 27,
       "examples": [
         "UK_eudr_1994_33/62fe1c39e2",
         "UK_eudr_1994_63/b06fd05d6a",
@@ -3183,7 +3294,7 @@
       ]
     },
     "placement: several elements | none → art.Article N(+1)": {
-      "count": 19,
+      "count": 20,
       "examples": [
         "UK_eudr_1998_24/00b50c5140",
         "UK_eudr_2004_37/bc2df6b086",
@@ -3282,7 +3393,7 @@
       "examples": []
     },
     "placement: several elements | none → split: reg.N": {
-      "count": 47,
+      "count": 57,
       "examples": [
         "UK_nisr_2000_388/31776d0986",
         "UK_ssi_2008_309/21326e4287",
@@ -3297,7 +3408,7 @@
       ]
     },
     "placement: several elements | none → split: reg.N(+1), reg.N(+2)": {
-      "count": 9,
+      "count": 10,
       "examples": [
         "UK_uksi_2001_3998/2a88141f10",
         "UK_uksi_2005_1803/a57d3e7f43",
@@ -3315,7 +3426,7 @@
       ]
     },
     "placement: several elements | none → split: reg.N, reg.N(+1), reg.N(+2)": {
-      "count": 4,
+      "count": 5,
       "examples": [
         "UK_nisr_2007_247/d1365f24c6",
         "UK_uksi_1991_724/fe92375a6b"
@@ -3330,7 +3441,7 @@
       "examples": []
     },
     "placement: several elements | none → split: s.N": {
-      "count": 19,
+      "count": 22,
       "examples": [
         "UK_ukpga_1960_62/a5c18f6355",
         "UK_ukpga_1981_53/fdde53f868",
@@ -3357,6 +3468,10 @@
         "UK_ukpga_1996_14/9115876dde"
       ]
     },
+    "placement: several elements | none → split: s.N(+1), s.N(+2), s.N(+3)": {
+      "count": 1,
+      "examples": []
+    },
     "placement: several elements | none → split: s.N(+1), s.N(+3)": {
       "count": 1,
       "examples": [
@@ -3378,8 +3493,10 @@
       ]
     },
     "placement: several elements | none → split: s.N, s.N(+1)": {
-      "count": 3,
-      "examples": []
+      "count": 5,
+      "examples": [
+        "UK_ukpga_1999_16/675d64be81"
+      ]
     },
     "placement: several elements | none → split: s.N, s.N(+1), s.N(+1) (source suffix), s.N(+2)": {
       "count": 1,
@@ -3394,7 +3511,7 @@
       "examples": []
     },
     "placement: several elements | none → split: s.N, s.N(+1), s.N(+2), s.N(+3)": {
-      "count": 7,
+      "count": 9,
       "examples": []
     },
     "placement: several elements | none → split: s.N, s.N(+2)": {
@@ -3438,7 +3555,7 @@
       ]
     },
     "placement: several elements | part-N → s.N": {
-      "count": 5,
+      "count": 6,
       "examples": [
         "UK_ukpga_1998_46/f4daddc6a8"
       ]
@@ -3456,7 +3573,7 @@
       "examples": []
     },
     "placement: several elements | part-N → split: h.N, pt.N, pt.N.ch.N, s.N": {
-      "count": 1,
+      "count": 2,
       "examples": []
     },
     "placement: several elements | part-N → split: h.N, pt.N, reg.N": {
@@ -3533,7 +3650,7 @@
       "examples": []
     },
     "placement: several elements | part-N → split: reg.N": {
-      "count": 154,
+      "count": 157,
       "examples": [
         "UK_nisi_2003_419/65aa399b7c",
         "UK_nisr_2012_192/e26410dee9",
@@ -3570,6 +3687,10 @@
       "count": 1,
       "examples": []
     },
+    "placement: several elements | part-N → split: reg.N, reg.N(+2)": {
+      "count": 1,
+      "examples": []
+    },
     "placement: several elements | part-N → split: s.10Z1, s.10Z10, s.10Z11, s.10Z12, s.10Z13, s.10Z14, s.10Z15, s.10Z16, s.10Z17, s.10Z18, s.10Z19, s.10Z2, s.10Z3, s.10Z4, s.10Z5, s.10Z6, s.10Z7, s.10Z8, s.10Z9, s.N": {
       "count": 1,
       "examples": []
@@ -3590,8 +3711,12 @@
       "count": 1,
       "examples": []
     },
+    "placement: several elements | part-N → split: s.554Z1, s.554Z10, s.554Z11, s.554Z11A, s.554Z11B, s.554Z11C, s.554Z11D, s.554Z11E, s.554Z11F, s.554Z11G, s.554Z12, s.554Z13, s.554Z14, s.554Z15, s.554Z16, s.554Z17, s.554Z18, s.554Z19, s.554Z2, s.554Z20, s.554Z21, s.554Z2A, s.554Z3, s.554Z4, s.554Z4A, s.554Z5, s.554Z6, s.554Z7, s.554Z8, s.554Z9, s.N": {
+      "count": 1,
+      "examples": []
+    },
     "placement: several elements | part-N → split: s.N": {
-      "count": 176,
+      "count": 193,
       "examples": [
         "UK_apni_1967_36/e9ec3d4ac2",
         "UK_asp_2000_4/59d377fba4",
@@ -3628,7 +3753,7 @@
       "examples": []
     },
     "placement: several elements | part-N → split: s.N, s.N(+1), s.N(+2)": {
-      "count": 6,
+      "count": 7,
       "examples": []
     },
     "placement: several elements | part-N-chapter → split: reg.N": {
@@ -3638,7 +3763,7 @@
       ]
     },
     "placement: several elements | part-N-chapter-N → nowhere": {
-      "count": 27,
+      "count": 30,
       "examples": [
         "UK_ukpga_1988_1/520f398cf3"
       ]
@@ -3722,6 +3847,10 @@
       "count": 1,
       "examples": []
     },
+    "placement: several elements | part-N-chapter-N → split: s.41Z1, s.N": {
+      "count": 1,
+      "examples": []
+    },
     "placement: several elements | part-N-chapter-N → split: s.508An1, s.508Bn1": {
       "count": 1,
       "examples": [
@@ -3732,17 +3861,29 @@
       "count": 1,
       "examples": []
     },
+    "placement: several elements | part-N-chapter-N → split: s.61Z1, s.61Z2, s.N": {
+      "count": 1,
+      "examples": []
+    },
     "placement: several elements | part-N-chapter-N → split: s.83Z1, s.83Z2, s.N": {
       "count": 1,
       "examples": []
     },
+    "placement: several elements | part-N-chapter-N → split: s.86Z1, s.86Z2, s.86Z3, s.86Z4, s.86Z5, s.86Z6, s.N": {
+      "count": 1,
+      "examples": []
+    },
     "placement: several elements | part-N-chapter-N → split: s.N": {
-      "count": 155,
+      "count": 195,
       "examples": [
         "UK_ukpga_1988_1/0ea0c76e02",
         "UK_ukpga_1990_42/da603277d3",
         "UK_ukpga_1992_12/3f970b65d3"
       ]
+    },
+    "placement: several elements | part-N-chapter-N → split: s.N (source suffix)": {
+      "count": 1,
+      "examples": []
     },
     "placement: several elements | part-N-chapter-N → split: s.N(+1), s.N(+2)": {
       "count": 3,
@@ -3773,7 +3914,7 @@
       "examples": []
     },
     "placement: several elements | part-N-chapter-N-crossheading-* → nowhere": {
-      "count": 16,
+      "count": 22,
       "examples": [
         "UK_ukpga_1988_1/ec5997c215",
         "UK_ukpga_1998_31/342c000ac5",
@@ -3781,7 +3922,7 @@
       ]
     },
     "placement: several elements | part-N-chapter-N-crossheading-* → s.N": {
-      "count": 36,
+      "count": 38,
       "examples": [
         "UK_asp_2001_2/a6861b1d71",
         "UK_ukpga_1988_1/2f9e0e7075",
@@ -3817,7 +3958,7 @@
       ]
     },
     "placement: several elements | part-N-chapter-N-crossheading-* → split: s.N": {
-      "count": 256,
+      "count": 296,
       "examples": [
         "UK_ukpga_1988_1/27b462a4b9",
         "UK_ukpga_1988_40/3d5063e274",
@@ -3832,6 +3973,12 @@
         "UK_ukpga_2007_15/db40b402ed"
       ]
     },
+    "placement: several elements | part-N-chapter-N-crossheading-* → split: s.N, s.N (source suffix)": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2003_1/757e1eebcc"
+      ]
+    },
     "placement: several elements | part-N-chapter-N-crossheading-* → split: s.N, s.N(+1), s.N(+2)": {
       "count": 1,
       "examples": []
@@ -3843,11 +3990,11 @@
       ]
     },
     "placement: several elements | part-N-crossheading-* → h.N": {
-      "count": 4,
+      "count": 5,
       "examples": []
     },
     "placement: several elements | part-N-crossheading-* → nowhere": {
-      "count": 26,
+      "count": 27,
       "examples": [
         "UK_nisi_1996_275/0c068dd66c",
         "UK_ukpga_1962_46/467d4eb2f1",
@@ -3867,7 +4014,7 @@
       "examples": []
     },
     "placement: several elements | part-N-crossheading-* → s.N": {
-      "count": 129,
+      "count": 149,
       "examples": [
         "UK_asp_2000_4/f42df2d811",
         "UK_asp_2001_8/46072363ba",
@@ -3937,7 +4084,7 @@
       ]
     },
     "placement: several elements | part-N-crossheading-* → split: s.N": {
-      "count": 392,
+      "count": 438,
       "examples": [
         "UK_anaw_2016_2/b8374bf4d5",
         "UK_asp_2001_8/0ead28fcb6",
@@ -3953,7 +4100,7 @@
       ]
     },
     "placement: several elements | part-N-crossheading-* → split: s.N(+1), s.N(+2)": {
-      "count": 6,
+      "count": 8,
       "examples": [
         "UK_ukpga_1968_73/fcea3d6da9",
         "UK_ukpga_1997_8/b6c0ef9efc",
@@ -3989,6 +4136,12 @@
         "UK_ukpga_1993_11/b370f28d70"
       ]
     },
+    "placement: several elements | part-N-section-N(+1) → s.N(+1) (source suffix)": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_1981_63/2ee968ffa6"
+      ]
+    },
     "placement: several elements | part-N-section-N(+2) → s.N(+2)": {
       "count": 5,
       "examples": [
@@ -3996,16 +4149,8 @@
         "UK_ukpga_1978_29/a769b5c4b9"
       ]
     },
-    "placement: several elements | regulation-N → *": {
-      "count": 1,
-      "examples": []
-    },
-    "placement: several elements | regulation-N → nowhere": {
-      "count": 1,
-      "examples": []
-    },
     "placement: several elements | regulation-N → reg.N": {
-      "count": 1399,
+      "count": 1454,
       "examples": [
         "UK_nisr_2000_375/a47e8b9fe8",
         "UK_nisr_2000_388/53fd488de9",
@@ -4013,7 +4158,7 @@
       ]
     },
     "placement: several elements | regulation-N → reg.N(+1)": {
-      "count": 179,
+      "count": 180,
       "examples": [
         "UK_ssi_2000_95/f4e7927611",
         "UK_ssi_2004_406/1b4d6808ea",
@@ -4021,7 +4166,7 @@
       ]
     },
     "placement: several elements | regulation-N → split: reg.N(+1)": {
-      "count": 663,
+      "count": 689,
       "examples": [
         "UK_nisr_2010_160/6a9a776a1e",
         "UK_nisr_2010_59/d20c3febcc",
@@ -4033,7 +4178,7 @@
       "examples": []
     },
     "placement: several elements | regulation-N → split: reg.N(+1), reg.N(+2)": {
-      "count": 71,
+      "count": 81,
       "examples": [
         "UK_nisr_2010_160/38848a08be",
         "UK_nisr_2017_90/1e0063c113",
@@ -4041,7 +4186,7 @@
       ]
     },
     "placement: several elements | regulation-N → split: reg.N(+1), reg.N(+2), reg.N(+3)": {
-      "count": 7,
+      "count": 8,
       "examples": [
         "UK_uksi_2006_599/baad3a8d90",
         "UK_uksi_2012_3032/cf06f7bf5a",
@@ -4055,7 +4200,7 @@
       ]
     },
     "placement: several elements | regulation-N → split: reg.N(+1), reg.N(+3)": {
-      "count": 4,
+      "count": 5,
       "examples": [
         "UK_ssi_2008_309/bc1937205e",
         "UK_uksi_2006_599/64ce0316a6",
@@ -4063,7 +4208,7 @@
       ]
     },
     "placement: several elements | regulation-N → split: reg.N(+2)": {
-      "count": 14,
+      "count": 15,
       "examples": [
         "UK_uksi_1999_1148/b75ab6612c",
         "UK_uksi_2004_1769/accbd7c20d",
@@ -4071,8 +4216,9 @@
       ]
     },
     "placement: several elements | regulation-N → split: reg.N(+2), reg.N(+3)": {
-      "count": 1,
+      "count": 2,
       "examples": [
+        "UK_ssi_2019_80/e259d13b1d",
         "UK_uksi_2008_1597/2d215debae"
       ]
     },
@@ -4110,7 +4256,7 @@
       "examples": []
     },
     "placement: several elements | regulation-N(+1) → reg.N(+1)": {
-      "count": 3370,
+      "count": 3523,
       "examples": [
         "UK_nisr_2000_375/e8b6c0f428",
         "UK_nisr_2000_388/109abd1172",
@@ -4126,7 +4272,7 @@
       ]
     },
     "placement: several elements | regulation-N(+1) → split: reg.N(+1), reg.N(+2)": {
-      "count": 43,
+      "count": 44,
       "examples": [
         "UK_nisr_2017_229/f8ba4b0712",
         "UK_uksi_1987_1968/cf731acfd1",
@@ -4140,14 +4286,15 @@
       ]
     },
     "placement: several elements | regulation-N(+1) → split: reg.N(+1), reg.N(+3)": {
-      "count": 3,
+      "count": 4,
       "examples": [
+        "UK_ssi_2017_113/681cee70d0",
         "UK_uksi_2013_3113/763ea4677f",
         "UK_uksi_2014_928/78fb3f74a4"
       ]
     },
     "placement: several elements | regulation-N(+1) → split: reg.N(+2)": {
-      "count": 327,
+      "count": 350,
       "examples": [
         "UK_nisr_2003_34/403c4acd9e",
         "UK_nisr_2006_425/2f3d599565",
@@ -4177,7 +4324,7 @@
       ]
     },
     "placement: several elements | regulation-N(+2) → reg.N(+2)": {
-      "count": 1058,
+      "count": 1104,
       "examples": [
         "UK_nisr_2000_388/acca606277",
         "UK_nisr_2003_34/40654fd043",
@@ -4192,7 +4339,7 @@
       ]
     },
     "placement: several elements | regulation-N(+2) → split: reg.N(+2), reg.N(+3)": {
-      "count": 8,
+      "count": 9,
       "examples": [
         "UK_uksi_2001_838/2441ceb968",
         "UK_uksi_2005_639/398e654a71",
@@ -4200,7 +4347,7 @@
       ]
     },
     "placement: several elements | regulation-N(+2) → split: reg.N(+3)": {
-      "count": 75,
+      "count": 80,
       "examples": [
         "UK_nisr_2015_339/d723a2f526",
         "UK_ssi_2000_95/3b6a5eb963",
@@ -4328,7 +4475,7 @@
       ]
     },
     "placement: several elements | regulation-N(+3) → reg.N(+3)": {
-      "count": 162,
+      "count": 175,
       "examples": [
         "UK_nisr_2008_170/67f41c499e",
         "UK_ssi_2002_541/843d0b53cf",
@@ -4353,6 +4500,12 @@
       "count": 1,
       "examples": [
         "UK_uksi_2012_3038/a3069f23b9"
+      ]
+    },
+    "placement: several elements | schedule-N-paragraph-N(+1) → sch.N.para.N(+1)": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2003_1/54d34812fc"
       ]
     },
     "placement: several elements | schedule-N-paragraph-N(+2) → sch.N.para.N(+2)": {
@@ -4380,13 +4533,6 @@
         "UK_uksi_1986_1078/63ae1e742f"
       ]
     },
-    "placement: several elements | section-N → nowhere": {
-      "count": 2,
-      "examples": [
-        "UK_ukpga_1907_24/d6696b311f",
-        "UK_ukpga_1990_43/2181d2004b"
-      ]
-    },
     "placement: several elements | section-N → s.105Z11": {
       "count": 1,
       "examples": [
@@ -4399,12 +4545,36 @@
         "UK_ukpga_1960_62/e5811814db"
       ]
     },
+    "placement: several elements | section-N → s.554Z10": {
+      "count": 1,
+      "examples": []
+    },
+    "placement: several elements | section-N → s.554Z11A": {
+      "count": 1,
+      "examples": []
+    },
+    "placement: several elements | section-N → s.554Z2A": {
+      "count": 1,
+      "examples": []
+    },
+    "placement: several elements | section-N → s.554Z4A": {
+      "count": 1,
+      "examples": []
+    },
+    "placement: several elements | section-N → s.554Z5": {
+      "count": 1,
+      "examples": []
+    },
+    "placement: several elements | section-N → s.554Z9": {
+      "count": 1,
+      "examples": []
+    },
     "placement: several elements | section-N → s.97Z1": {
       "count": 1,
       "examples": []
     },
     "placement: several elements | section-N → s.N": {
-      "count": 5181,
+      "count": 5866,
       "examples": [
         "UK_anaw_2013_1/0c933142cb",
         "UK_anaw_2013_6/2ff4bab657",
@@ -4418,7 +4588,7 @@
       ]
     },
     "placement: several elements | section-N → s.N(+1)": {
-      "count": 148,
+      "count": 182,
       "examples": [
         "UK_asp_2003_15/6945318cee",
         "UK_asp_2003_3/cbb0aa356d",
@@ -4428,6 +4598,24 @@
     "placement: several elements | section-N → split: reg.N(+1), s.N(+1), s.N(+1) (source suffix)": {
       "count": 1,
       "examples": []
+    },
+    "placement: several elements | section-N → split: s.554Z10(+1)": {
+      "count": 1,
+      "examples": []
+    },
+    "placement: several elements | section-N → split: s.554Z12(+1)": {
+      "count": 1,
+      "examples": []
+    },
+    "placement: several elements | section-N → split: s.554Z4(+1)": {
+      "count": 3,
+      "examples": []
+    },
+    "placement: several elements | section-N → split: s.554Z8(+1), s.554Z8(+2)": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2003_1/4494f40d6e"
+      ]
     },
     "placement: several elements | section-N → split: s.A2D2(+1)": {
       "count": 1,
@@ -4454,7 +4642,7 @@
       "examples": []
     },
     "placement: several elements | section-N → split: s.N(+1)": {
-      "count": 3587,
+      "count": 4049,
       "examples": [
         "UK_anaw_2016_2/783953ac92",
         "UK_anaw_2017_3/85097429f3",
@@ -4468,7 +4656,7 @@
       ]
     },
     "placement: several elements | section-N → split: s.N(+1), s.N(+1) (source suffix)": {
-      "count": 36,
+      "count": 41,
       "examples": [
         "UK_ukpga_1974_39/ec83720393",
         "UK_ukpga_1992_12/64fa2d2442",
@@ -4480,7 +4668,7 @@
       "examples": []
     },
     "placement: several elements | section-N → split: s.N(+1), s.N(+2)": {
-      "count": 295,
+      "count": 342,
       "examples": [
         "UK_asp_2002_3/883a3e492e",
         "UK_asp_2003_3/b6a2cffe75",
@@ -4488,7 +4676,7 @@
       ]
     },
     "placement: several elements | section-N → split: s.N(+1), s.N(+2), s.N(+3)": {
-      "count": 31,
+      "count": 33,
       "examples": [
         "UK_ukpga_1974_37/126200b457",
         "UK_ukpga_1978_30/a9a1e25ae2",
@@ -4496,7 +4684,7 @@
       ]
     },
     "placement: several elements | section-N → split: s.N(+1), s.N(+3)": {
-      "count": 7,
+      "count": 9,
       "examples": [
         "UK_ukpga_1986_44/8f7b299d45",
         "UK_ukpga_1996_52/f24c23ebe7",
@@ -4504,7 +4692,7 @@
       ]
     },
     "placement: several elements | section-N → split: s.N(+2)": {
-      "count": 29,
+      "count": 34,
       "examples": [
         "UK_asp_2009_12/2baa20542b",
         "UK_mwa_2009_3/36befbd5c6",
@@ -4519,15 +4707,21 @@
       ]
     },
     "placement: several elements | section-N → split: s.N, s.N(+1)": {
-      "count": 28,
+      "count": 33,
       "examples": [
         "UK_asp_2002_3/bdd9ec04e1",
         "UK_ukpga_1986_31/9e516f338a",
         "UK_ukpga_1991_56/7e2e28400e"
       ]
     },
+    "placement: several elements | section-N → split: s.N, s.N(+1) (source suffix)": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_1970_9/b5d189a9aa"
+      ]
+    },
     "placement: several elements | section-N → split: s.N, s.N(+1), s.N(+2)": {
-      "count": 27,
+      "count": 28,
       "examples": [
         "UK_ukpga_1990_16/a0ab70ccd8",
         "UK_ukpga_1990_42/161e3969e7",
@@ -4554,11 +4748,40 @@
       ]
     },
     "placement: several elements | section-N(+1) → nowhere": {
-      "count": 6,
+      "count": 2,
       "examples": [
         "UK_ukpga_1951_65/31df1d8fea",
-        "UK_ukpga_1968_73/91eeec24d2",
-        "UK_ukpga_1987_27/0b68ec9f47"
+        "UK_ukpga_1989_33/23136c8e67"
+      ]
+    },
+    "placement: several elements | section-N(+1) → s.554Z1(+1)": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2003_1/327dc2433a"
+      ]
+    },
+    "placement: several elements | section-N(+1) → s.554Z10(+1)": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_2003_1/03bd9c92fa"
+      ]
+    },
+    "placement: several elements | section-N(+1) → s.554Z2(+1)": {
+      "count": 3,
+      "examples": [
+        "UK_ukpga_2003_1/848ccda84d"
+      ]
+    },
+    "placement: several elements | section-N(+1) → s.554Z5(+1)": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2003_1/02d923de00"
+      ]
+    },
+    "placement: several elements | section-N(+1) → s.554Z9(+1)": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2003_1/ad2bec2367"
       ]
     },
     "placement: several elements | section-N(+1) → s.A2D7(+1)": {
@@ -4568,7 +4791,7 @@
       ]
     },
     "placement: several elements | section-N(+1) → s.N(+1)": {
-      "count": 13617,
+      "count": 15133,
       "examples": [
         "UK_anaw_2013_1/e0cb48191b",
         "UK_anaw_2016_2/a2e52cfe64",
@@ -4576,7 +4799,7 @@
       ]
     },
     "placement: several elements | section-N(+1) → s.N(+1) (source suffix)": {
-      "count": 39,
+      "count": 41,
       "examples": [
         "UK_asp_2003_15/b9661e23fb",
         "UK_ukcm_1947_2/df98edda5c",
@@ -4584,7 +4807,7 @@
       ]
     },
     "placement: several elements | section-N(+1) → s.N(+2)": {
-      "count": 28,
+      "count": 29,
       "examples": [
         "UK_asp_2005_13/4df32608a2",
         "UK_asp_2009_12/571efbf86e",
@@ -4616,14 +4839,15 @@
       ]
     },
     "placement: several elements | section-N(+1) → split: s.N(+1)": {
-      "count": 8,
+      "count": 11,
       "examples": [
+        "UK_ukpga_1994_23/53dc0ef5f9",
         "UK_ukpga_1996_56/b5c9c91ebe",
         "UK_ukpga_2000_27/1c71a734be"
       ]
     },
     "placement: several elements | section-N(+1) → split: s.N(+1), s.N(+2)": {
-      "count": 225,
+      "count": 243,
       "examples": [
         "UK_asc_2021_1/6d1c1e2e68",
         "UK_asp_2001_2/720d24237d",
@@ -4639,7 +4863,7 @@
       ]
     },
     "placement: several elements | section-N(+1) → split: s.N(+1), s.N(+3)": {
-      "count": 10,
+      "count": 11,
       "examples": [
         "UK_asp_2006_1/43040ef83a",
         "UK_ukpga_1973_65/3b54b332bf",
@@ -4647,7 +4871,7 @@
       ]
     },
     "placement: several elements | section-N(+1) → split: s.N(+2)": {
-      "count": 1900,
+      "count": 2127,
       "examples": [
         "UK_anaw_2016_2/5371a38f36",
         "UK_anaw_2016_3/d060597e4a",
@@ -4661,11 +4885,11 @@
       ]
     },
     "placement: several elements | section-N(+1) → split: s.N(+2), s.N(+2) (source suffix)": {
-      "count": 1,
+      "count": 2,
       "examples": []
     },
     "placement: several elements | section-N(+1) → split: s.N(+2), s.N(+3)": {
-      "count": 44,
+      "count": 52,
       "examples": [
         "UK_asp_2003_2/f8a31a61ae",
         "UK_ukpga_1967_86/85aa0e23c1",
@@ -4673,7 +4897,7 @@
       ]
     },
     "placement: several elements | section-N(+1) → split: s.N(+3)": {
-      "count": 9,
+      "count": 10,
       "examples": [
         "UK_ukpga_1973_26/281ef5ce87",
         "UK_ukpga_1991_56/9e7984cba4",
@@ -4704,12 +4928,22 @@
         "UK_ukpga_1968_73/292bf51031"
       ]
     },
-    "placement: several elements | section-N(+2) → nowhere": {
-      "count": 3,
+    "placement: several elements | section-N(+1)-iiia → s.N(+2)": {
+      "count": 1,
       "examples": [
-        "UK_ukpga_1995_25/c1b6b27b04",
-        "UK_ukpga_2003_21/33c606520d",
-        "UK_ukpga_2004_20/97f903da52"
+        "UK_ukpga_2023_30/b2e63c7f55"
+      ]
+    },
+    "placement: several elements | section-N(+2) → s.554Z10(+2)": {
+      "count": 2,
+      "examples": [
+        "UK_ukpga_2003_1/7445a0b5ea"
+      ]
+    },
+    "placement: several elements | section-N(+2) → s.554Z9(+2)": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2003_1/f16a4506a8"
       ]
     },
     "placement: several elements | section-N(+2) → s.65Z5(+2)": {
@@ -4725,7 +4959,7 @@
       ]
     },
     "placement: several elements | section-N(+2) → s.N(+2)": {
-      "count": 5146,
+      "count": 5693,
       "examples": [
         "UK_anaw_2013_1/14c33193bc",
         "UK_anaw_2013_6/cc4d51a2e3",
@@ -4733,9 +4967,11 @@
       ]
     },
     "placement: several elements | section-N(+2) → s.N(+2) (source suffix)": {
-      "count": 2,
+      "count": 6,
       "examples": [
-        "UK_ukpga_1981_29/c276a67b13"
+        "UK_ukpga_1981_29/c276a67b13",
+        "UK_ukpga_2002_40/2d0287ba8c",
+        "UK_ukpga_2003_1/7a250c76cb"
       ]
     },
     "placement: several elements | section-N(+2) → s.N(+3)": {
@@ -4750,18 +4986,14 @@
         "UK_ukpga_1947_48/ce0641c71f"
       ]
     },
-    "placement: several elements | section-N(+2) → split: s.N(+1), s.N(+2)": {
-      "count": 1,
-      "examples": []
-    },
     "placement: several elements | section-N(+2) → split: s.N(+2)": {
-      "count": 1,
+      "count": 2,
       "examples": [
         "UK_ukpga_1951_65/49290809af"
       ]
     },
     "placement: several elements | section-N(+2) → split: s.N(+2), s.N(+3)": {
-      "count": 10,
+      "count": 11,
       "examples": [
         "UK_asp_2006_1/094b432267",
         "UK_ukpga_1968_73/b6d001424c",
@@ -4769,7 +5001,7 @@
       ]
     },
     "placement: several elements | section-N(+2) → split: s.N(+3)": {
-      "count": 202,
+      "count": 218,
       "examples": [
         "UK_anaw_2017_3/d578cf6509",
         "UK_asp_2002_13/9e9d1b51ac",
@@ -4781,11 +5013,17 @@
       "examples": []
     },
     "placement: several elements | section-N(+2)-iiia → s.N(+3)": {
-      "count": 5,
+      "count": 6,
       "examples": [
         "UK_ukpga_1981_61/a73abd54c7",
         "UK_ukpga_1984_60/f9d90be6a2",
         "UK_ukpga_1995_46/198a42074c"
+      ]
+    },
+    "placement: several elements | section-N(+2)-viia → s.N(+3)": {
+      "count": 1,
+      "examples": [
+        "UK_ukpga_2002_40/224f56ebc9"
       ]
     },
     "placement: several elements | section-N(+2)-viiia → s.N(+3)": {
@@ -4795,7 +5033,7 @@
       ]
     },
     "placement: several elements | section-N(+3) → s.N(+3)": {
-      "count": 355,
+      "count": 397,
       "examples": [
         "UK_anaw_2016_2/8b59b53562",
         "UK_asp_2000_4/f66d641b1e",
@@ -4837,7 +5075,7 @@
       "examples": []
     },
     "pointers: effect id | cited law": {
-      "count": 29,
+      "count": 30,
       "examples": [
         "UK_asp_2002_13/01358206ff",
         "UK_ssi_2010_60/eb2225697b",
@@ -4845,7 +5083,7 @@
       ]
     },
     "pointers: effect id | cited law + amending provisions": {
-      "count": 69910,
+      "count": 77602,
       "examples": [
         "UK_anaw_2012_2/14df7ec603",
         "UK_anaw_2013_1/14c33193bc",
@@ -4853,7 +5091,7 @@
       ]
     },
     "pointers: effect id | no cited law": {
-      "count": 298,
+      "count": 359,
       "examples": [
         "UK_asp_2001_8/bb8b5aae40",
         "UK_asp_2007_12/e6cb097d95",
@@ -4861,7 +5099,7 @@
       ]
     },
     "pointers: legacy | cited law": {
-      "count": 1045,
+      "count": 1065,
       "examples": [
         "UK_apni_1957_25/ee763f4108",
         "UK_apni_1967_36/a78132fa6f",
@@ -4869,7 +5107,7 @@
       ]
     },
     "pointers: legacy | cited law + amending provisions": {
-      "count": 25390,
+      "count": 26953,
       "examples": [
         "UK_anaw_2013_1/4f5f21c755",
         "UK_anaw_2016_2/58dfacb812",
@@ -4877,7 +5115,7 @@
       ]
     },
     "pointers: legacy | no cited law": {
-      "count": 1610,
+      "count": 1736,
       "examples": [
         "UK_apni_1957_25/be1b906522",
         "UK_apni_1967_36/a0303bf20d",
@@ -4885,7 +5123,7 @@
       ]
     },
     "pointers: none": {
-      "count": 77876,
+      "count": 85236,
       "examples": [
         "UK_anaw_2012_2/cc97f39499",
         "UK_anaw_2013_1/8c81537dc9",
@@ -4893,7 +5131,7 @@
       ]
     },
     "retained: not a repeal": {
-      "count": 174137,
+      "count": 190803,
       "examples": [
         "UK_anaw_2012_2/cc97f39499",
         "UK_anaw_2013_1/4f5f21c755",
@@ -4901,13 +5139,13 @@
       ]
     },
     "retained: true → nil": {
-      "count": 2,
+      "count": 3,
       "examples": [
         "UK_ukpga_1980_43/2a387024fe"
       ]
     },
     "retained: true → true": {
-      "count": 1132,
+      "count": 1203,
       "examples": [
         "UK_asp_2001_8/d96354fd20",
         "UK_asp_2003_7/678c1efb95",
@@ -4919,7 +5157,7 @@
       "examples": []
     },
     "retained: true+unset → true": {
-      "count": 728,
+      "count": 809,
       "examples": [
         "UK_anaw_2013_1/97091210dd",
         "UK_asp_2002_13/ca871af872",
@@ -4927,7 +5165,7 @@
       ]
     },
     "retained: unset → false": {
-      "count": 154,
+      "count": 158,
       "examples": [
         "UK_eudr_1994_63/c70d9eb30b",
         "UK_eudr_1998_24/b6013302ba",
@@ -4941,7 +5179,7 @@
       ]
     },
     "where: heading": {
-      "count": 2566,
+      "count": 2876,
       "examples": [
         "UK_anaw_2013_1/fab41f35a3",
         "UK_anaw_2016_2/4d775b946f",
@@ -4949,7 +5187,7 @@
       ]
     },
     "where: heading + number": {
-      "count": 30,
+      "count": 31,
       "examples": [
         "UK_ukpga_1875_17/0f881225ce",
         "UK_ukpga_1962_58/c4ca9ba35d",
@@ -4961,11 +5199,11 @@
       "examples": []
     },
     "where: heading + number + outside provisions + text": {
-      "count": 8,
+      "count": 10,
       "examples": []
     },
     "where: heading + number + table + text": {
-      "count": 78,
+      "count": 88,
       "examples": [
         "UK_asp_2009_12/0929d4e95a",
         "UK_ukpga_1980_43/4a0b72d525",
@@ -4973,7 +5211,7 @@
       ]
     },
     "where: heading + number + text": {
-      "count": 6387,
+      "count": 7094,
       "examples": [
         "UK_anaw_2016_2/b8374bf4d5",
         "UK_anaw_2016_3/dc0b47f375",
@@ -4987,11 +5225,11 @@
       ]
     },
     "where: heading + table + text": {
-      "count": 5,
+      "count": 6,
       "examples": []
     },
     "where: heading + text": {
-      "count": 144,
+      "count": 154,
       "examples": [
         "UK_asc_2021_1/9cf5d1e26a",
         "UK_asp_2002_3/bdd9ec04e1",
@@ -4999,7 +5237,7 @@
       ]
     },
     "where: none": {
-      "count": 77876,
+      "count": 85236,
       "examples": [
         "UK_anaw_2012_2/cc97f39499",
         "UK_anaw_2013_1/8c81537dc9",
@@ -5007,7 +5245,7 @@
       ]
     },
     "where: number": {
-      "count": 506,
+      "count": 559,
       "examples": [
         "UK_anaw_2016_2/2f9b6a58b5",
         "UK_anaw_2017_3/fab91127fa",
@@ -5019,7 +5257,7 @@
       "examples": []
     },
     "where: number + outside provisions + text": {
-      "count": 290,
+      "count": 318,
       "examples": [
         "UK_apni_1970_10/a92ab4a611",
         "UK_eudn_2009_491/5850c5a2cd",
@@ -5034,7 +5272,7 @@
       ]
     },
     "where: number + table + text": {
-      "count": 20,
+      "count": 21,
       "examples": [
         "UK_nisi_1984_703/199cf214a7",
         "UK_ukpga_1973_26/0cbddaf016",
@@ -5042,7 +5280,7 @@
       ]
     },
     "where: number + text": {
-      "count": 25720,
+      "count": 28238,
       "examples": [
         "UK_anaw_2013_1/14c33193bc",
         "UK_anaw_2013_6/cc4d51a2e3",
@@ -5050,7 +5288,7 @@
       ]
     },
     "where: outside provisions": {
-      "count": 56,
+      "count": 59,
       "examples": [
         "UK_eudr_1994_63/ad4bd9fc45",
         "UK_eudr_2003_59/5db1385973",
@@ -5066,7 +5304,7 @@
       ]
     },
     "where: table": {
-      "count": 810,
+      "count": 983,
       "examples": [
         "UK_asc_2021_1/9d6032c5e3",
         "UK_asp_2004_8/bf2e75f433",
@@ -5074,7 +5312,7 @@
       ]
     },
     "where: table + text": {
-      "count": 4,
+      "count": 5,
       "examples": [
         "UK_ukpga_2009_1/e03b6340cc",
         "UK_uksi_2005_1806/5e0bb7655c",
@@ -5082,7 +5320,7 @@
       ]
     },
     "where: text": {
-      "count": 61627,
+      "count": 67272,
       "examples": [
         "UK_anaw_2012_2/14df7ec603",
         "UK_anaw_2013_1/4f5f21c755",
@@ -5091,11 +5329,11 @@
     }
   },
   "totals": {
-    "changes": 176158,
-    "examples": 1148,
-    "laws": 3726,
-    "patterns": 807,
-    "too_large": 655,
+    "changes": 192981,
+    "examples": 1180,
+    "laws": 4185,
+    "patterns": 853,
+    "too_large": 368,
     "unclassified": 0
   }
 }
