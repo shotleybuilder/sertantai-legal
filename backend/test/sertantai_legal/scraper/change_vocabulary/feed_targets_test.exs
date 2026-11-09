@@ -45,6 +45,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedTargetsTest do
     assert targets(effect("Pt. 10A", ["part-10A"]), "UK_uksi_2014_1613", ids) == ["pt.10A"]
   end
 
+  test "a lettered Part the feed numbers in Arabic, the text in Roman (EPA 1990 Pt. 2A, row pt.IIA)" do
+    ids = %{"part-II" => "pt.II", "part-IIA" => "pt.IIA", "part-III" => "pt.III"}
+    assert targets(effect("Pt. 2A", ["part-2A"]), "UK_ukpga_1990_43", ids) == ["pt.IIA"]
+    assert targets(effect("Pt. 2", ["part-2"]), "UK_ukpga_1990_43", ids) == ["pt.II"]
+  end
+
   test "a Part no row holds stays unplaced (SI 1997/1510 Pt. 6: no Part VI in the text)" do
     ids = %{"part-I" => "pt.I", "part-V" => "pt.V"}
     assert targets(effect("Pt. 6", ["part-6"]), "UK_uksi_1997_1510", ids) == ["?"]

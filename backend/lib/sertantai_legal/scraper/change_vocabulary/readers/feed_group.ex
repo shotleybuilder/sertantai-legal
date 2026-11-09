@@ -46,8 +46,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.FeedGroup do
   defp key(pairs), do: Enum.map(pairs, fn [kind, n] -> {kind, number(n)} end)
 
   # a Roman numeral is its value; any other number in one letter case
+  # Roman as Arabic, a letter after it kept ("IIA" = "2A": EPA 1990 Pt. 2A);
+  # the letter is never itself a Roman numeral, so "XI" stays 11
   defp number(n) do
-    if n =~ ~r/^[IVXL]+$/i, do: roman(String.upcase(n)), else: String.downcase(n)
+    case Regex.run(~r/^([IVXL]+)([A-HJ-KM-UWYZ]?)$/i, n) do
+      [_, r, letter] -> roman(String.upcase(r)) <> String.downcase(letter)
+      nil -> String.downcase(n)
+    end
   end
 
   @roman %{?I => 1, ?V => 5, ?X => 10, ?L => 50}

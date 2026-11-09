@@ -94,6 +94,41 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedFactsTest do
            ]
   end
 
+  test "a removal in stages: each stage credited to its own commencing order (EA 1995 Sch. 8 para. 8(5))" do
+    e =
+      effect("repealed", [
+        %{
+          date: ~D[2003-11-18],
+          qualification: "for E.",
+          prospective: false,
+          commencing: "UK_uksi_2003_2938"
+        },
+        %{
+          date: ~D[2003-11-27],
+          qualification: "for W.",
+          prospective: false,
+          commencing: "UK_wsi_2003_3034"
+        },
+        %{
+          date: ~D[2005-01-01],
+          qualification: "wholly in force",
+          prospective: false,
+          commencing: "UK_uksi_2004_3000"
+        }
+      ])
+
+    by =
+      for {key, _, claims} <- Feed.read([e], "UK_ukpga_1995_25"),
+          into: %{},
+          do: {key, Enum.find_value(claims, &(&1.attribute == :commenced_by and &1.value))}
+
+    assert by == %{
+             "key-1" => "UK_uksi_2004_3000",
+             "key-1@2003-11-18" => "UK_uksi_2003_2938",
+             "key-1@2003-11-27" => "UK_wsi_2003_3034"
+           }
+  end
+
   test "words substituted in stages: from the first stage, partly, complete at the full one — no commencement" do
     e =
       effect("words substituted", [

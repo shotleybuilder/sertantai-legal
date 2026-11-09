@@ -392,8 +392,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
     removal =
       if full,
         do: [
-          {id,
-           Enum.reject(claims(e), &(&1.attribute == :date)) ++ Claim.new(:feed, :date, full, id)}
+          {id, stage_claims(e, full, [:date])}
         ],
         else: []
 
@@ -403,9 +402,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
     in_part =
       for {date, _} <- partial do
         {"#{id}@#{date}",
-         Enum.reject(claims(e), &(&1.attribute in [:date, :operation])) ++
+         stage_claims(e, date, [:date, :operation]) ++
            Claim.new(:feed, :operation, :repealed_in_part, id) ++
-           Claim.new(:feed, :date, date, id) ++
            Claim.new(:feed, :partial, true, id)}
       end
 
@@ -414,6 +412,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
       {[], [{_, claims} | rest]} -> [{id, claims} | rest]
       _ -> removal ++ in_part
     end
+  end
+
+  # the effect's claims at one stage of a staged removal: that stage's date
+  # and the order commencing it (EA 1995 Sch. 8 para. 8(5): E then W), not
+  # the first stage's; `drop` the claims the stage sets itself
+  defp stage_claims(%Effect{effect_id: id} = e, date, drop) do
+    Enum.reject(claims(e), &(&1.attribute in [:commenced_by | drop])) ++
+      Claim.new(:feed, :date, date, id) ++
+      Claim.new(:feed, :commenced_by, commencing(e, date), id)
   end
 
   # what the feed says of a commencement stage beyond its date, carried as

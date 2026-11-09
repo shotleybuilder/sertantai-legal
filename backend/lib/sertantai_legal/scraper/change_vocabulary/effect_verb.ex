@@ -57,7 +57,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.EffectVerb do
     |> String.trim()
   end
 
-  @earlier ~r/\b(?:in|to)\s+(?:an?\s+)?earlier\s+(?:amending|affecting)\s+provision/i
+  # "… in earlier amending provision S.I. N/N", or the law named straight
+  # after ("… in earlier amending S.S.I. 2019/103": Environmental
+  # Protection, Feed reader Decision 2)
+  @earlier ~r/\b(?:in|to)\s+(?:an?\s+)?earlier\s+(?:amending|affecting)\s+(?:provision|legislation\b|S\.?\s?S?\.?\s?[IR]\b)/i
 
   @doc """
   True for an amendment to an earlier amending provision ("substituted in
@@ -102,7 +105,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.EffectVerb do
 
   def kind(type) do
     words = type(type)
-    if none?(words), do: "other", else: EffectFacts.kind(words, nil)
+
+    if none?(words) or earlier_amendment?(type),
+      do: "other",
+      else: EffectFacts.kind(words, nil)
   end
 
   # the words (already read) say nothing was done to the provision

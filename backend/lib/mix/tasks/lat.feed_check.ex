@@ -252,68 +252,70 @@ defmodule Mix.Tasks.Lat.FeedCheck do
   defp sample(results, file, n, seed) do
     Draw.seed(if(seed, do: {seed, seed, seed}, else: {2026, 10, 22}))
     picked = Draw.take_random(results, n, &{&1.law, &1.effect.effect_id})
-
-    rows =
-      for r <- picked do
-        e = r.effect
-
-        claim = fn attr ->
-          for c <- r.claims, c.source == :feed, c.attribute == attr, uniq: true, do: c.value
-        end
-
-        %{
-          law: r.law,
-          effect_id: e.effect_id,
-          feed: %{
-            type: e.type,
-            affected_provisions: e.affected_provisions,
-            affected_refs: e.affected_refs,
-            affecting: e.affecting,
-            affecting_provisions: e.affecting_provisions,
-            in_force:
-              Enum.map(
-                e.in_force || [],
-                &%{date: &1.date, prospective: &1.prospective, qualification: &1.qualification}
-              ),
-            in_force_date: e.in_force_date,
-            effect_extent: e.effect_extent,
-            territorial_application: e.territorial_application,
-            savings: Map.get(e, :savings)
-          },
-          reader: %{
-            targets: r.targets,
-            outcome: inspect(r.outcome),
-            operation: claim.(:operation),
-            date: claim.(:date),
-            by: claim.(:by),
-            effect_extent: claim.(:effect_extent),
-            territory: claim.(:territory),
-            savings: claim.(:savings),
-            partial: claim.(:partial),
-            # each change the reader made of it (a stage of a staged change
-            # is its own, keyed "id@date")
-            changes:
-              for {key, target, claims} <- r.sets do
-                v = fn a -> Enum.find_value(claims, &(&1.attribute == a and {:ok, &1.value})) end
-
-                %{
-                  key: key,
-                  target: target,
-                  operation: elem(v.(:operation) || {:ok, nil}, 1),
-                  level: elem(v.(:level) || {:ok, nil}, 1),
-                  date_first: elem(v.(:date_first) || {:ok, nil}, 1),
-                  date: elem(v.(:date) || {:ok, nil}, 1),
-                  partial: elem(v.(:partial) || {:ok, nil}, 1),
-                  effect_extent: elem(v.(:effect_extent) || {:ok, nil}, 1),
-                  in_force_for: elem(v.(:in_force_for) || {:ok, nil}, 1),
-                  savings: elem(v.(:savings) || {:ok, nil}, 1)
-                }
-              end
-          }
-        }
-      end
+    rows = Enum.map(picked, &sample_row/1)
 
     File.write!(file, Jason.encode!(rows, pretty: true))
     Mix.shell().info("\nsample of #{length(rows)} written to #{file}")
+  end
+
+  defp sample_row(%{effect: e} = r) do
+    claim = fn attr ->
+      for c <- r.claims, c.source == :feed, c.attribute == attr, uniq: true, do: c.value
+    end
+
+    %{
+      law: r.law,
+      effect_id: e.effect_id,
+      feed: feed_record(e),
+      reader: %{
+        targets: r.targets,
+        outcome: inspect(r.outcome),
+        operation: claim.(:operation),
+        date: claim.(:date),
+        by: claim.(:by),
+        effect_extent: claim.(:effect_extent),
+        territory: claim.(:territory),
+        savings: claim.(:savings),
+        partial: claim.(:partial),
+        # each change the reader made of it (a stage of a staged change
+        # is its own, keyed "id@date")
+        changes: for({key, target, claims} <- r.sets, do: change_row(key, target, claims))
+      }
+    }
+  end
+
+  # the effect as the feed states it
+  defp feed_record(e) do
+    %{
+      type: e.type,
+      affected_provisions: e.affected_provisions,
+      affected_refs: e.affected_refs,
+      affecting: e.affecting,
+      affecting_provisions: e.affecting_provisions,
+      in_force: Enum.map(e.in_force || [], &in_force_entry/1),
+      in_force_date: e.in_force_date,
+      effect_extent: e.effect_extent,
+      territorial_application: e.territorial_application,
+      savings: Map.get(e, :savings)
+    }
+  end
+
+  defp in_force_entry(entry) do
+    %{
+      date: entry.date,
+      prospective: entry.prospective,
+      qualification: entry.qualification,
+      commencing: Map.get(entry, :commencing)
+    }
+  end
+
+  @change_attributes ~w(operation level date_first date partial effect_extent in_force_for commenced_by savings)a
+
+  # one change: its key, target and the value of each fact (nil for none)
+  defp change_row(key, target, claims) do
+    @change_attributes
+    |> Map.new(fn a -> {a, Enum.find_value(claims, &(&1.attribute == a and {:ok, &1.value}))} end)
+    |> Map.new(fn {a, v} -> {a, elem(v || {:ok, nil}, 1)} end)
+    |> Map.merge(%{key: key, target: target})
   end
 end
