@@ -401,7 +401,7 @@
       ]
     },
     "level: nil": {
-      "count": 1748,
+      "count": 1777,
       "examples": [
         "UK_anaw_2016_2/b13e8fe234",
         "UK_anaw_2016_3/8159ae5133",
@@ -433,7 +433,7 @@
       ]
     },
     "level: provision | number wrapped": {
-      "count": 33000,
+      "count": 32699,
       "examples": [
         "UK_anaw_2013_1/14c33193bc",
         "UK_anaw_2013_6/cc4d51a2e3",
@@ -441,7 +441,7 @@
       ]
     },
     "level: words": {
-      "count": 71412,
+      "count": 71684,
       "examples": [
         "UK_anaw_2012_2/14df7ec603",
         "UK_anaw_2013_1/4f5f21c755",
@@ -449,7 +449,7 @@
       ]
     },
     "operation: Addition → inserted": {
-      "count": 45466,
+      "count": 45456,
       "examples": [
         "UK_anaw_2013_1/14c33193bc",
         "UK_anaw_2013_6/f202a8913c",
@@ -457,7 +457,7 @@
       ]
     },
     "operation: Addition → nil": {
-      "count": 13815,
+      "count": 13825,
       "examples": [
         "UK_anaw_2016_2/58dfacb812",
         "UK_apni_1967_36/a0303bf20d",
@@ -5333,7 +5333,7 @@
     "examples": 1180,
     "laws": 4185,
     "patterns": 853,
-    "too_large": 368,
+    "too_large": 367,
     "unclassified": 0
   }
 }

@@ -29,6 +29,24 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupLevelTest do
     refute Map.has_key?(c, :level)
   end
 
+  # Environmental Protection: Markup reader, Decision 3 (2026-11-09): SI
+  # 2006/2988 reg.5(6) "For subsection (7), substitute—" and the quoted
+  # subsection; a later Addition inserts quoted paragraphs (aa), (ab). Their
+  # numbers (no ids) are the quoted text's, never reg.5(6)'s own.
+  test "a number inside quoted text is not the provision's own: words (SI 2006/2988 reg.5(6))" do
+    xml =
+      ~s{<Legislation><P2 id="regulation-5-6"><Pnumber><Substitution ChangeId="key-s">6</Substitution></Pnumber><P2para><Text><Substitution ChangeId="key-s">For subsection (7), substitute—</Substitution></Text><BlockAmendment><P2><Pnumber><Substitution ChangeId="key-s">7</Substitution></Pnumber><P2para><Text><Substitution ChangeId="key-s">"Remediation" means—</Substitution></Text><P3><Pnumber><Substitution ChangeId="key-s"><Addition ChangeId="key-a">aa</Addition></Substitution></Pnumber><P3para><Text><Substitution ChangeId="key-s"><Addition ChangeId="key-a">members are identified;</Addition></Substitution></Text></P3para></P3><P3><Pnumber><Substitution ChangeId="key-s">a</Substitution></Pnumber><P3para><Text><Substitution ChangeId="key-s">the doing of anything.</Substitution></Text></P3para></P3></P2para></P2></BlockAmendment></P2para></P2></Legislation>}
+
+    by_key =
+      xml
+      |> Markup.read("UK_uksi_2000_1")
+      |> Map.new(fn {k, _t, c} -> {k, Map.new(c, &{&1.attribute, &1.value})} end)
+
+    assert by_key["key-a"][:level] == :words
+    # the substitution wrapping reg.5(6)'s own number stays whole
+    assert by_key["key-s"][:level] == :provision
+  end
+
   test "a number wrapped but a child left with its own number and text: not the whole provision (NISR 2004/241 reg.3)" do
     xml =
       ~s(<Legislation><P1 id="regulation-3"><Pnumber><Substitution ChangeId="key-a">3</Substitution></Pnumber><P1para><P2 id="regulation-3-1"><Pnumber><Substitution ChangeId="key-a">1</Substitution></Pnumber><P2para><Text><Substitution ChangeId="key-a">New text.</Substitution></Text></P2para></P2><P2 id="regulation-3-2"><Pnumber>2</Pnumber><P2para><Text>Old text.</Text></P2para></P2></P1para></P1></Legislation>)

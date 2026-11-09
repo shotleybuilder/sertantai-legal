@@ -302,6 +302,20 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     end
   end
 
+  # inside a BlockAmendment (quoted text) until a row id of its own
+  defp quoted(flags, :BlockAmendment, _row?), do: [:quoted | flags]
+  defp quoted(flags, _name, true), do: List.delete(flags, :quoted)
+  defp quoted(flags, _name, false), do: flags
+
+  # a provision's number, or a group's (a Part, Chapter or EU Title:
+  # SI 2009/1348 Pt.4A inserted whole, CV-S08 round 1); a number in quoted
+  # text is the quote's, never the provision's own (SI 2006/2988 reg.5(6),
+  # Environmental Protection: Markup reader, Decision 3)
+  defp number(flags, name) when name in [:Pnumber, :Number],
+    do: if(:quoted in flags, do: flags, else: [:number | flags])
+
+  defp number(flags, _name), do: flags
+
   # the ids every path shares, outermost first
   defp common(paths) do
     Enum.reduce(paths, fn p, acc ->
@@ -330,64 +344,82 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
          ctx
        ) do
     id = attr(attrs, :id) |> renumbered(el, ctx) || ListItems.id(name, attrs, path, ctx.law)
-    path = if id && row_id?(id, ctx), do: path ++ [id], else: path
-    # a provision's number, or a group's (a Part, Chapter or EU Title:
-    # SI 2009/1348 Pt.4A inserted whole, CV-S08 round 1)
-    flags = if name in [:Pnumber, :Number], do: [:number | flags], else: flags
+    row? = id != nil and row_id?(id, ctx)
+    path = if row?, do: path ++ [id], else: path
+    flags = element_flags(flags, name, attrs, row?)
+    title_path = if name == :P1group, do: path ++ List.wrap(group_provision(el)), else: path
 
-    # the territorial version whose text this is (the nearest: CV-S09 round 8)
+    refs(name, attrs, path) ++
+      change(name, attrs, el, path, flags) ++
+      in_children(children, path, title_path, flags, ctx)
+  end
+
+  defp occurrences(_other, _path, _flags, _ctx), do: []
+
+  # what an element tells its descendants: in quoted text, in a number, in
+  # a territorial version's text (the nearest: CV-S09 round 8), in a footnote
+  defp element_flags(flags, name, attrs, row?) do
+    flags = flags |> quoted(name, row?) |> number(name)
+
     flags =
       case Versions.uri_territory(attr(attrs, :DocumentURI)) do
         nil -> flags
         t -> [{:version, t} | flags]
       end
 
-    flags =
-      if name == :Footnote and attr(attrs, :id),
-        do: [{:footnote, attr(attrs, :id)} | flags],
-        else: flags
+    if name == :Footnote and attr(attrs, :id),
+      do: [{:footnote, attr(attrs, :id)} | flags],
+      else: flags
+  end
 
-    title_path = if name == :P1group, do: path ++ List.wrap(group_provision(el)), else: path
+  # a note ref carrying an effect id: where that event sits in the text
+  # (its id, not its note's words); where a footnote is referenced (its
+  # changes are placed there)
+  defp refs(:CommentaryRef, attrs, path) do
+    ref = attr(attrs, :Ref) || ""
+    if String.starts_with?(ref, "key-"), do: [%{placement: ref, path: path}], else: []
+  end
 
-    own =
-      cond do
-        # a note ref carrying an effect id: where that event sits in the
-        # text (its id, not its note's words)
-        name == :CommentaryRef and String.starts_with?(attr(attrs, :Ref) || "", "key-") ->
-          [%{placement: attr(attrs, :Ref), path: path}]
+  defp refs(:FootnoteRef, attrs, path) do
+    case attr(attrs, :Ref) do
+      nil -> []
+      ref -> [%{footnote_ref: ref, path: path}]
+    end
+  end
 
-        # where a footnote is referenced (its changes are placed there)
-        name == :FootnoteRef and attr(attrs, :Ref) != nil ->
-          [%{footnote_ref: attr(attrs, :Ref), path: path}]
+  defp refs(_name, _attrs, _path), do: []
 
-        true ->
-          []
-      end ++
-        if name in @changes and attr(attrs, :ChangeId) do
-          [
-            %{
-              change_id: attr(attrs, :ChangeId),
-              kind: name,
-              path: path,
-              number?: :number in flags,
-              version: Enum.find_value(flags, fn f -> match?({:version, _}, f) && elem(f, 1) end),
-              retain: attr(attrs, :RetainText) == "true",
-              paired: attr(attrs, :SubstitutionRef) != nil,
-              substitution_ref: attr(attrs, :SubstitutionRef),
-              extent: attr(attrs, :Extent),
-              note: attr(attrs, :CommentaryRef),
-              heading?: :heading in flags,
-              footnote:
-                Enum.find_value(flags, fn f ->
-                  with {:footnote, id} <- f, do: id, else: (_ -> nil)
-                end),
-              text: letters(el)
-            }
-          ]
-        else
-          []
-        end
+  # a change element's occurrence
+  defp change(name, attrs, el, path, flags) do
+    if name in @changes and attr(attrs, :ChangeId) do
+      [
+        %{
+          change_id: attr(attrs, :ChangeId),
+          kind: name,
+          path: path,
+          number?: :number in flags,
+          version: Enum.find_value(flags, fn f -> match?({:version, _}, f) && elem(f, 1) end),
+          retain: attr(attrs, :RetainText) == "true",
+          paired: attr(attrs, :SubstitutionRef) != nil,
+          substitution_ref: attr(attrs, :SubstitutionRef),
+          extent: attr(attrs, :Extent),
+          note: attr(attrs, :CommentaryRef),
+          heading?: :heading in flags,
+          footnote: Enum.find_value(flags, &footnote_of/1),
+          text: letters(el)
+        }
+      ]
+    else
+      []
+    end
+  end
 
+  defp footnote_of({:footnote, id}), do: id
+  defp footnote_of(_flag), do: nil
+
+  # a group's title belongs to the provision the group holds; an id-less
+  # list item sits under its lead-in's row
+  defp in_children(children, path, title_path, flags, ctx) do
     {found, _prev} =
       Enum.flat_map_reduce(children, nil, fn
         {:xmlElement, :Title, _, _, _, _, _, _, _, _, _, _} = title, prev ->
@@ -402,10 +434,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
           {occurrences(child, path, flags, ctx), prev}
       end)
 
-    own ++ found
+    found
   end
-
-  defp occurrences(_other, _path, _flags, _ctx), do: []
 
   defp group_provision(group) do
     case xpath(group, ~x"./*[@id][1]/@id"s) do

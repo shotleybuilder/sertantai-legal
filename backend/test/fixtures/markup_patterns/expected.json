@@ -13669,8 +13669,7 @@
             "s.82(6)"
           ],
           "markup.cited": "UK_ukpga_2007_11",
-          "markup.level": "provision",
-          "markup.operation": "inserted"
+          "markup.level": "words"
         },
         "key": "d29p15317",
         "target": "s.114(2)(b)(i)"
@@ -28003,7 +28002,7 @@
             "sch.2.para.120(f)(ii)"
           ],
           "markup.cited": "UK_uksi_2020_1488",
-          "markup.level": "provision",
+          "markup.level": "words",
           "markup.operation": "inserted"
         },
         "key": "key-E",
@@ -28015,7 +28014,7 @@
             "sch.2.para.120(f)(ii)"
           ],
           "markup.cited": "UK_uksi_2020_1488",
-          "markup.level": "provision",
+          "markup.level": "words",
           "markup.operation": "inserted"
         },
         "key": "key-E",
