@@ -28,12 +28,14 @@ Ask Jason before the long runs; say what each writes.
    - Each prints its patterns against `expected.json` (new patterns: accept, fix or `pending:`; held expectations never move without Jason) and its **leftovers by shape**, ranked by reach. The report goes to `backend/data/reports/commencement-reader/leftovers[-orders]-<date>.txt`.
    - Review every leftover group with no status into `leftovers.json`: `fix:` (a reader miss), `known:` (a named limit, also in `RULES.md` known limits) or `check:` (the check's own error: fix it in `Commencement.Leftovers` with a test). `LeftoversReviewTest` fails on a group with no status. A statement under a decided limit in a group with real misses is named apart: `"<shape> @ <row>": "known: …"` (a laid-relative day, limit C); its group stays `fix:`.
    - **Freeze code while a catalogue runs**: it loads modules lazily, so an edit mid-run gives a mixed run.
+   - **Dry-run into a scratch copy:** `--out DIR` after copying the fixtures there. A run writes the generated fixture files even without `--accept`. To tell this step's changes from laws the store has gained, run once more at the last commit's code (stash the reader files) into another scratch copy, and compare the leftover statements (Environmental Protection, 2026-11-09: three regressions found this way).
+   - **Held moves:** `--accept` keeps held readings as held. Write each agreed move from the reader with the task's encoder, then run the tests with `--include pending`.
 2. **Fixes** (TDD, in the readers): a failing unit test per form first; `--fresh` shows the effect without writes (`mix lat.commencement_check --family F --fresh`).
 3. **Re-read and rebuild** (ask first; restore point of `commencement_rules`, `provision_changes`, `provision_change_claims`, `lat_events`):
    - `mix lat.commencement --read --law <family's laws>`;
    - `mix lat.commencement --read-orders --law <family's laws>` — **this searches legislation.gov.uk's title search for a law with no cached order list**: name it in the plan;
    - the orders it lists as not held (`data/reports/commencement-rules/orders_missing.txt`): `mix clml.fetch --whole --laws …` — an order is held with its schedules, its table (WORKFLOW.md step 1); a fetch, ask first;
-   - `mix lat.commencement --read-amending --law <held amenders> --workers 1`;
+   - `mix lat.commencement --read-amending --law <held amenders> --workers 1` — amending laws only, never the commencement orders (the family gate leaves them out too);
    - `mix lat.vocabulary --build --family F`.
 4. **The check and its gate:** `mix lat.commencement_check --family F [--all]`:
    - rows: our faults (not reached, no rules) 0;
@@ -51,3 +53,4 @@ Ask Jason before the long runs; say what each writes.
 - OH&S (2026-10-23/24): the sentence and order catalogues; four agent rounds; the stopping rule. `.claude/sessions/archive/change-vocabulary/2026-10-22-cv-s04-commencement-reader.md`.
 - Maritime Safety (2026-11-05): two agent rounds found 10 one-law forms — the regression that led to the leftovers. `.claude/sessions/lat-change-pipeline/2026-11-05-maritime-safety-commencement-reader.md`.
 - The leftovers check (2026-11-05): `2026-11-05-commencement-catalogue-leftovers.md`; the family gate: `2026-11-05-commencement-leftovers-family-gate.md`.
+- Environmental Protection (2026-11-09): no agent pass. Rows' faults 0 on stored rules, 23 leftovers to 0 (5 named known), golden 27/27. Two catalogue dry runs into a scratch `--out`, one at the last commit's code, found three regressions before the accept. The stored check found an order-list overlap the fresh read cannot see. `.claude/sessions/lat-change-pipeline/2026-11-09-environmental-protection-commencement-reader.md`.

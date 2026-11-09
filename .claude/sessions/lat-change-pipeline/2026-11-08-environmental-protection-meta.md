@@ -18,7 +18,7 @@ Environmental Protection is the third family through the LAT Change Pipeline, an
 - ✅ Sources: gate PASS after a build, 1,422 needs held or absent; 16 register statistics re-scraped (2 laws became revoked: 114 live making); closed 2026-11-08
 - ✅ Feed reader: 11,674 effects, our faults 0, 6,386 placed; Decisions 1–4; three reader faults fixed; closed 2026-11-09
 - ✅ Markup reader: 3,251 changes, our faults 0 (from 134); a scoped law read for its scope; three reader-side fixes; Decisions 1–4; closed 2026-11-09
-- ⬜ Commencement reader
+- ✅ Commencement reader: 35,518 rows, our faults 0 on stored rules (from 9,954), leftovers 23 → 0; ten reader forms, two check errors, an order-store overlap fixed; Decisions 1–2; closed 2026-11-09
 - ⬜ Extent reader
 - ⬜ Amending-law reader
 - ⬜ Merge
@@ -53,3 +53,4 @@ One row per step, filled when the step session closes. Agent tokens are those of
 | Sources | sources | 2026-11-08 | 2026-11-08 | 1 | yes, all 5 | 0 (the explained-differences fixture wired within the pass rule) | 2 (Register: statistics capped at 1,000; LAT parser: rows for 2 now-revoked laws) | 0 | 2 |
 | Feed reader | feed-reader | 2026-11-08 | 2026-11-09 | 2 | yes, all 6 | 0 (one law's body fetched, Decision 1, within the sources-held rule) | 3 open (Sources: scoped law needs its body; Feed reader: same-date stages, removal stage territory) + Tooling (credo-diff leftovers, #197); 4 fixed | 86,078 | 2 |
 | Markup reader | markup-reader | 2026-11-09 | 2026-11-09 | 1 | yes, all 7 | 0 (the agent's new class fixed by Decision 3, a second cold catalogue run, within the pass rule) | 1 open (Tooling: the catalogue's full cold run is slow, #198) + 2 parking items (Feed reader: example rotation check; Markup reader: Z-number pattern names); 4 fixed | 152,593 | 5 |
+| Commencement reader | commencement-reader | 2026-11-09 | 2026-11-09 | 1 | yes, all 6 | 0 (two fixes after the stored check — an order-store overlap, schedule-only rules — and one order form, within the pass rule; a second catalogue dry run) | 4 open (Commencement reader: order list wrong law, cited-orders overlap, fresh read without schedule effects, amenders list); 3 fixed (2 parked from OH&S/Maritime) | 0 | 2 |

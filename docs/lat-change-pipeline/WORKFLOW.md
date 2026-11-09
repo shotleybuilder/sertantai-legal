@@ -162,6 +162,28 @@ On Maritime Safety, the build took the needs from 235 to 682, and three fetch ro
 
 **Pass rule** (Decision 1 (c), Jason 2026-11-05). `lat.commencement_check --family F` prints PASS: our faults 0 and every leftover reaching the family named (`known:`); every leftover group reviewed (`LeftoversReviewTest`); the catalogue tests pass; repeatable; golden all-pass. No agent rounds. (Before: the stopping rule of 2026-10-24, on an agent sample.)
 
+**Environmental Protection (2026-11-09).**
+- **Check:** 35,518 rows in 122 laws; on stored rules after the re-read, rows' faults 0 (9,954 before: 55 laws never read); 27,880 dated, 4,595 left to orders; every leftover reaching the family named (23 not named before).
+- **Reader fixes, each with a test:**
+  - a Part, or a heading with every provision left to an order, takes its provisions' outcome;
+  - a citation sentence's date (", shall come into force on …", "The title of these Regulations is …. They come into force …");
+  - a statement's exceptions with brackets inside, and "apart from", subtracted;
+  - a staged item opening with its purpose;
+  - "These provisions …—" heads its list;
+  - an item keeps its own provisions beside another Act's;
+  - a "the following" order head's qualifier reaches its items (the parked class), but never a completing or place head;
+  - an order's qualifier after a made-relative day;
+  - an order's whole-Act form after "Subject to article N, the provisions of";
+  - a law whose only text rules tie its Schedules keeps its outcome without them.
+- **The check's own errors fixed:** another law's provisions split by a dash or commas; "in relation to England" taken for a qualifier.
+- **The store:** an order listed for two laws kept only one law's rules, because its re-read replaced its rules by source alone. `Store.write/3` takes `commences:`.
+- **Catalogues:** 24 new patterns (12 pending, none reaching the family); 36 held readings moved (Decision 2), after a dry run at the last commit's code over the same store separated this step's changes from the store's new laws.
+- **Decision 1:** five one-law wordings named known limits.
+- **Re-read:** 113 order-list title searches.
+- **Lessons:**
+  - Run a catalogue's dry run with `--out` to a scratch copy, because a run writes the generated fixture files even without `--accept`.
+  - Give `--read-amending` only amending laws, never commencement orders.
+
 **Skill.** `commencement-reader-check`. Background: [COMMENCEMENT-GUIDE.md](COMMENCEMENT-GUIDE.md).
 
 ## 5. Extent reader
