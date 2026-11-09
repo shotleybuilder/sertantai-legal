@@ -25,6 +25,9 @@ defmodule Mix.Tasks.Lat.MarkupPatterns do
     example's expected outcome. `--accept` adds what's missing and drops
     what's no longer generated; it never changes a held expectation.
 
+  The last catalogue's held examples (in `patterns.json` and held in
+  `expected.json`) come first for their patterns (`LawScan`).
+
   `MarkupPatternsTest` runs every example through the reader against
   `expected.json`; a pattern with no status fails.
   """
@@ -61,6 +64,7 @@ defmodule Mix.Tasks.Lat.MarkupPatterns do
     rows = rows(Enum.map(laws, &elem(&1, 0)))
     Mix.shell().info("#{length(laws)} stored law texts")
     cache = Keyword.get(opts, :cache, true)
+    held = held_examples(dir)
 
     # each law scanned alone, several at once and cached (#195), then taken
     # in law order: the catalogue a serial run gives
@@ -68,11 +72,13 @@ defmodule Mix.Tasks.Lat.MarkupPatterns do
       laws
       |> Enum.map(fn {law, path} -> {law, path, Map.get(rows, law, [])} end)
       |> LawRunner.ordered(
-        fn {law, path, rows} -> {law, LawRead.law(law, path, rows, cache: cache)} end,
+        fn {law, path, rows} ->
+          {law, LawRead.law(law, path, rows, LawScan.held_for(held, law), cache: cache)}
+        end,
         workers: opts[:workers]
       )
       |> Stream.with_index(1)
-      |> Enum.reduce({LawScan.new_acc(), []}, fn {{law, {unit, source}}, i}, {acc, sources} ->
+      |> Enum.reduce({LawScan.new_acc(held), []}, fn {{law, {unit, source}}, i}, {acc, sources} ->
         if rem(i, 250) == 0, do: Mix.shell().info("  #{i}/#{length(laws)}")
         {LawScan.select(acc, law, unit), [source | sources]}
       end)
@@ -80,6 +86,22 @@ defmodule Mix.Tasks.Lat.MarkupPatterns do
     Mix.shell().info(CatalogueCache.summary(sources))
     write(dir, acc)
     report(dir, acc, opts[:accept])
+  end
+
+  # each pattern's examples in the last catalogue that hold an expectation
+  defp held_examples(dir) do
+    with {:ok, patterns} <- File.read(Path.join(dir, "patterns.json")),
+         {:ok, expected} <- File.read(Path.join(dir, "expected.json")) do
+      expected = Jason.decode!(expected)["examples"]
+
+      for {p, %{"examples" => ids}} <- Jason.decode!(patterns)["patterns"],
+          ids = Enum.filter(ids, &Map.has_key?(expected, &1)),
+          ids != [],
+          into: %{},
+          do: {p, ids}
+    else
+      _ -> %{}
+    end
   end
 
   # every stored law text: UK_{type}_{year}_{number}

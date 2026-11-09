@@ -13,6 +13,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPatterns.LawScan do
   alone, and where it is full the law takes nothing. So the scans run in
   parallel and are cached (`CatalogueCache`), and `select/3` over them in
   law order gives the catalogue a serial run gives.
+
+  A pattern's held examples (the last catalogue's, `held`) come first
+  (`catalogue-examples-rotate`, 2026-11-04): each reserves its slot until
+  its law is passed, a new example fills only the slots left and never
+  from a law holding one, and a held example no longer generated or
+  reading differently alone leaves its slot to a later law. A law's solo
+  scan knows its own held examples (`held_for/2`): it has at least the
+  room the run gives it, so its outcomes still hold every one asked.
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.MarkupPatterns
@@ -29,10 +37,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPatterns.LawScan do
   @type unit ::
           %{events: [event()], outcomes: %{non_neg_integer() => outcome()}} | %{error: String.t()}
 
-  @doc "An empty catalogue."
-  @spec new_acc() :: map()
-  def new_acc,
+  @doc "An empty catalogue; `held`: each pattern's held example ids."
+  @spec new_acc(%{String.t() => [String.t()]}) :: map()
+  def new_acc(held \\ %{}),
     do: %{
+      held: held,
       laws: 0,
       changes: 0,
       unclassified: [],
@@ -48,8 +57,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPatterns.LawScan do
   `unit/0`. `doc` is its parsed text, `xml_ids` its rows' XML ids
   (`Ref.xml_ids/2`). Raises where the serial run gave up on the whole law.
   """
-  @spec scan(String.t(), term(), %{String.t() => String.t()}) :: unit()
-  def scan(law, doc, xml_ids) do
+  @spec scan(String.t(), term(), %{String.t() => String.t()}, %{String.t() => [String.t()]}) ::
+          unit()
+  def scan(law, doc, xml_ids, held \\ %{}) do
     by_key = doc |> Markup.read(law, xml_ids) |> Enum.group_by(&elem(&1, 0))
 
     pairs =
@@ -65,8 +75,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPatterns.LawScan do
     examples = for {_, {i, fun}} <- pairs, into: %{}, do: {i, fun}
     events = Enum.map(pairs, &elem(&1, 0))
 
-    solo = select(new_acc(), law, events, &Map.fetch!(examples, &1).())
+    solo = select(new_acc(held), law, events, &Map.fetch!(examples, &1).())
     %{events: events, outcomes: solo.outcomes}
+  end
+
+  @doc "The held example ids of `law`'s own changes, by pattern."
+  @spec held_for(%{String.t() => [String.t()]}, String.t()) :: %{String.t() => [String.t()]}
+  def held_for(held, law) do
+    for {p, ids} <- held,
+        mine = Enum.filter(ids, &(law_of(&1) == law)),
+        mine != [],
+        into: %{},
+        do: {p, mine}
   end
 
   @doc """
@@ -98,7 +118,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPatterns.LawScan do
     {taken, wanted?} =
       Enum.reduce(patterns, {acc, false}, fn p, {acc, wanted?} ->
         entry = Map.get(acc.patterns, p, %{count: 0, examples: []})
-        take? = take?(entry, id, law)
+        take? = take?(entry, id, law, Map.get(acc.held, p, []))
         {put_in(acc.patterns[p], count(entry, id, take?)), wanted? or take?}
       end)
 
@@ -107,10 +127,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPatterns.LawScan do
       else: taken
   end
 
-  defp take?(entry, id, law),
-    do:
-      id in entry.examples or
-        (length(entry.examples) < @per_pattern and law not in Enum.map(entry.examples, &law_of/1))
+  defp take?(entry, id, law, held),
+    do: id in entry.examples or id in held or new?(entry, law, held)
+
+  # a new example: a slot neither taken nor reserved by a held example of
+  # a law not yet passed, from a law with none of the pattern's examples
+  defp new?(entry, law, held) do
+    reserved = Enum.count(held, &(&1 not in entry.examples and law_of(&1) >= law))
+
+    length(entry.examples) + reserved < @per_pattern and
+      law not in Enum.map(entry.examples ++ held, &law_of/1)
+  end
 
   defp count(entry, id, take?) do
     %{
