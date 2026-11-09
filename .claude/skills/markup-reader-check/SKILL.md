@@ -62,3 +62,14 @@ Use the round-2 prompt in `.claude/sessions/change-vocabulary/2026-10-22-cv-s03-
 - OH&S (first family, 2026-10-23), session `.claude/sessions/change-vocabulary/2026-10-22-cv-s03-markup-reader.md`:
   - **Catalogue:** fixes A–E. **Seed 1:** F (EU Sections), G (structured pointers), H (per-child placement), I (repeated ids by Pnumber).
   - **Seed 2:** placement 50/50, facts 46/50; the 4 were schedule pointer naming, fixed.
+- Environmental Protection (2026-11-09), `.claude/sessions/lat-change-pipeline/2026-11-09-environmental-protection-markup-reader.md`:
+  - **Check:** a scoped law's changes beyond its fragments are `outside_lat_scope`; the check's PASS counts note faults too.
+  - **Catalogue:** the paired-substitution key is shared (`Markup.substitutions/1`), and held examples come first on regeneration.
+  - **Seed 61** (152,593 tokens): placement 50/50, facts 49/50. A number inside quoted text was read as the provision's own; fixed.
+  - **Known patterns to add to the prompt:**
+    - `outside_lat_scope`;
+    - a paired substitution in two elements gives two claim sets on one row;
+    - L1 (#188);
+    - L2 (EU unnumbered list items);
+    - L3 (heading and kept-children readings).
+  - **Budget:** about 150k tokens.

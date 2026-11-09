@@ -507,6 +507,11 @@ If no source states the level, it reaches nothing below the row. An own repeal w
 - **Example:** SI 2018/816 reg.23(1)(a)(ii).
 - **Serves:** `law-text-wins` · **Code:** `Evidence` (`level`); `Readers.Markup.Level`; `Label.reaches?/2`; `Label.Day` · **Test:** `evidence_test` "the feed's level speaks only for the provision it placed the event on"; `markup_level_test` · **Origin:** `cv-s08-evidence` (batches 1 and 3, 2026-10-29); `cv-s09-label-fold` (round 4)
 
+### `quoted-number-is-not-own`
+The markup is sure of a whole provision only when the change wraps the provision's own number. A number inside quoted text (a BlockAmendment), with no row id of its own, belongs to the quote. A change that inserts quoted paragraphs changes the provision's words.
+- **Example:** SI 2006/2988 reg.5(6), "For subsection (7), substitute—": a later insertion of the quoted (aa) and (ab) is words in reg.5(6), as its note says. Also SI 2019/775 reg.153(6) and PACE 1984 s.114(2)(b)(i); 312 changes across the store.
+- **Serves:** `law-text-wins` · **Code:** `Readers.Markup` (`quoted/3`, `number/2`); `Readers.Markup.Level` · **Test:** `markup_level_test` "a number inside quoted text is not the provision's own" · **Origin:** Jason 2026-11-09, Environmental Protection: Markup reader, Decision 3 (found by the agent check, seed 61)
+
 ### `tier-per-field`
 Each label field takes its tier from the changes that set it. It is derived if any of them is derived. A commencement date found through a feed or note pointer is derived. An empty field has no tier.
 - **Example:** HSWA 1974 s.43(6): the text's makers keep their tier through a later commencement.
@@ -532,6 +537,11 @@ A new provision that a joined change makes below it (an amendment substituting w
 The feed and the markup give coverage. The law's text is read for territory, dates, its own clauses and changes not yet in the feed. Fetches go one hop out, whole documents counted, with Jason's go. An amendment to an amending law is one hop.
 - **Example:** CV-07 fetched and read the 144 OH&S amending laws; it did not widen the reader to match the feed's 7,448 changes.
 - **Serves:** `coverage-from-lgu` · **Code:** `mix lat.sources` (`Sources`, the CLML store) · **Test:** sources gate (`mix lat.sources --family F`) · **Origin:** Jason 2026-10-22, `cv-07-primary-coverage`; effects first (memory, 2026-10-18)
+
+### `read-a-law-for-our-scope`
+A law is read from our LAT rows to the law, never from the law to our rows. A scoped law (its LAT holds fragments only) is read for the scope we hold. A change beyond its fragments is outside our LAT scope: it is accounted for, but it is no row fault.
+- **Example:** the Aggregates Tax and Devolved Taxes Administration (Scotland) Act 2024 is in the LAT only for s.64, the commencement power its two commencement Regulations are made under. Its 131 commencements of ss.1–63 are `outside_lat_scope`.
+- **Serves:** `coverage-from-lgu` · **Code:** `MarkupPlacement.classify/3` (`held.scope`), `mix lat.markup_check` · **Test:** `markup_placement_test` "a scoped law: …" · **Origin:** Jason 2026-11-09, Environmental Protection: Markup reader, Decision 1 ("we are back-to-front … we should go from our LAT rows (our scope) to the law"). The Sources bug `scoped-law-body-not-needed` is the same direction at the fetch.
 
 ---
 

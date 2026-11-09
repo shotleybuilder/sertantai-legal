@@ -17,7 +17,7 @@ Environmental Protection is the third family through the LAT Change Pipeline, an
 - ✅ Making laws (step 0): 116 making, all with LAT rows (63 parsed); 21 no verdict (5%); closed 2026-11-08
 - ✅ Sources: gate PASS after a build, 1,422 needs held or absent; 16 register statistics re-scraped (2 laws became revoked: 114 live making); closed 2026-11-08
 - ✅ Feed reader: 11,674 effects, our faults 0, 6,386 placed; Decisions 1–4; three reader faults fixed; closed 2026-11-09
-- ⬜ Markup reader
+- ✅ Markup reader: 3,251 changes, our faults 0 (from 134); a scoped law read for its scope; three reader-side fixes; Decisions 1–4; closed 2026-11-09
 - ⬜ Commencement reader
 - ⬜ Extent reader
 - ⬜ Amending-law reader
@@ -52,3 +52,4 @@ One row per step, filled when the step session closes. Agent tokens are those of
 | Making laws | making-laws | 2026-11-08 | 2026-11-08 | 1 | yes, all 6 | 0 (one classifier phrase moved to the commencement reader's words by the architecture test) | 2 (Commencement reader: EU "enter into force"; LAT parser: snapshot tables) + 3 not-making laws with rows (LAT parser, parking list) | 0 | 2 |
 | Sources | sources | 2026-11-08 | 2026-11-08 | 1 | yes, all 5 | 0 (the explained-differences fixture wired within the pass rule) | 2 (Register: statistics capped at 1,000; LAT parser: rows for 2 now-revoked laws) | 0 | 2 |
 | Feed reader | feed-reader | 2026-11-08 | 2026-11-09 | 2 | yes, all 6 | 0 (one law's body fetched, Decision 1, within the sources-held rule) | 3 open (Sources: scoped law needs its body; Feed reader: same-date stages, removal stage territory) + Tooling (credo-diff leftovers, #197); 4 fixed | 86,078 | 2 |
+| Markup reader | markup-reader | 2026-11-09 | 2026-11-09 | 1 | yes, all 7 | 0 (the agent's new class fixed by Decision 3, a second cold catalogue run, within the pass rule) | 1 open (Tooling: the catalogue's full cold run is slow, #198) + 2 parking items (Feed reader: example rotation check; Markup reader: Z-number pattern names); 4 fixed | 152,593 | 5 |

@@ -128,7 +128,20 @@ On Maritime Safety, the build took the needs from 235 to 682, and three fetch ro
 2. Gate and placement: `mix lat.markup_check --family F --all`; our faults 0. It also counts the markup's keys against the feed (in the feed, not in it, legacy), for the Merge step.
 3. Repeatability, golden and an agent on 50 sampled changes, as for the feed.
 
-**Pass rule as last used.** Sources held; our faults 0; repeatable; golden all-pass; the agent finds nothing wrong outside the known patterns.
+**Pass rule as last used.** Sources held; our faults 0 for changes and for note placements (the check's PASS counts both since 2026-11-09); repeatable; golden all-pass; the agent finds nothing wrong outside the known patterns.
+
+**Environmental Protection (2026-11-09).**
+- **Check:** 3,251 changes in 72 laws, our faults 0; note placements 2,676, faults 0.
+  - A scoped law is read for its scope: `outside_lat_scope`, 131 for the Aggregates Tax and Devolved Taxes Administration (Scotland) Act 2024 (Decision 1, rule `read-a-law-for-our-scope`).
+- **Three reader-side fixes:**
+  - a substitution's new words listed under the Repeal's key by the reader, the check and the catalogue (`Markup.substitutions/1`);
+  - the catalogue's held examples kept first on regeneration;
+  - a number inside quoted text is not the provision's own (Decision 3, rule `quoted-number-is-not-own`).
+- **Catalogue:** 4,185 laws, 853 patterns, 55 new accepted.
+  - Held readings moved: 0 at the first run, 2 at the second (Decision 4).
+  - Each cold run took about 25 min, not #195's 329 s (#198).
+- **Plan the catalogue's cost:** a reader fix moves the catalogue's code version, so each fix after the catalogue costs one more cold run. Batch the step's own fixes before the first run.
+- **Agent:** seed 61, 152,593 tokens; placement 50/50, facts 49/50, one new class, fixed.
 
 **Skill.** `markup-reader-check`.
 
