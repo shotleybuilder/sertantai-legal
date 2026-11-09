@@ -381,6 +381,16 @@ A Part, Chapter or Title that a feed effect names in brackets beside a provision
 - **Example:** MSA 1995: the 1997 Act's insertion of ss.130A–130E reached the whole of Part VI (773 rows, 529 losing their periods from 1996); it now reaches ss.130A–130E.
 - **Serves:** `binds-on-date`, `coverage-from-lgu` · **Code:** `Readers.Feed.located/3` · **Test:** `feed_targets_test` "a Part or Chapter in brackets beside a provision locates it, never a target" · **Origin:** Jason 2026-11-06, Maritime Safety: Switch-over, Decision 2 (B; Gemini concurred). The store holds 310 such effects in 50 laws, 18 of which move a label.
 
+### `earlier-amendment-in-either-form`
+An amendment to an earlier amending law changes that law's provision, not this law's text: no operation, marked `earlier_amendment`. This holds whether the feed writes "… in earlier amending provision S.I. N/N" or names the law straight after "earlier amending" ("… in earlier amending S.S.I. 2019/103, reg. 10").
+- **Example:** SSI 2009/440 reg.15(3)(b): "words substituted in earlier amending S.S.I. 2019/103, reg. 10" by SI 2020/1091 was read as a substitution in reg.15(3)(b)'s own words.
+- **Serves:** `one-record-per-change` · **Code:** `EffectVerb.earlier_amendment?/1`, `EffectVerb.kind/1` (not `EffectKind`, which counts toward the parser's version) · **Test:** `effect_verb_earlier_test` · **Origin:** Jason 2026-11-09, Environmental Protection: Feed reader, Decision 2. The short form is 8 effects in the store: 7 in two Environmental Protection laws, none in OH&S or Maritime Safety.
+
+### `each-stage-its-own-order`
+Each stage of a change brought in by stages names the order that commenced it on that stage's date (`commenced_by`), never the first stage's. Where two orders commence one stage on the same date (one for E., one for W.), the stage names the first entry's order, a known limit until the stages are read by territory.
+- **Example:** Environment Act 1995 Sch. 8 para. 8(5): repealed for E. on 2003-11-18 by SI 2003/2938, for W. on 2003-11-27 by WSI 2003/3034. Both stages had been credited to SI 2003/2938.
+- **Serves:** `binds-on-date` · **Code:** `Readers.Feed` (`staged_removal/2`, `stage_claims/3`; commencements by `stage_facts/3`) · **Test:** `feed_facts_test` "a removal in stages: each stage credited to its own commencing order" · **Origin:** Jason 2026-11-09, Environmental Protection: Feed reader, Decision 4 (Gemini concurred). The fix reaches 50 effects in 4 Environmental Protection laws, 3 in one OH&S law and 1 in one Maritime Safety law.
+
 ### `container-repealed-with-last-child`
 A Part, Chapter or Title is repealed (or repealed_saved) on the day its last child is, credited to the repealing laws. This is the one exception to `child-change-never-reaches-parent`.
 - **Example:** NISR 1997/248 Pt IV.

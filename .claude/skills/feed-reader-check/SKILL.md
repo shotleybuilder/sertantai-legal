@@ -72,9 +72,9 @@ stored XML. Use /usr/bin/python3 for parsing (not grep with long context pattern
 
 Input: FILE — 50 randomly sampled legislation.gov.uk changes-feed effects. Each item: `feed`
 (type, affected_provisions text, affected_refs, affecting, affecting_provisions, in_force entries
-with date/qualification/prospective, effect_extent, territorial_application, savings) and `reader`
+with date/qualification/prospective/commencing, effect_extent, territorial_application, savings) and `reader`
 (targets, outcome, and `changes`: key, target, operation, level, date_first, date, partial,
-effect_extent, in_force_for, savings).
+effect_extent, in_force_for, commenced_by, savings).
 
 Stored data:
 - Feed pages: backend/data/cache/clml/changes/affected/{type}/{year}/{number}/data.feed.page-N.gz
@@ -164,3 +164,4 @@ One entry per item, in the sample's order. id "<law>|<effect_id last 6>"; group 
 - CV-S02b (2026-10-23): the catalogue over all 1,207 stored feeds (251,692 effects, 985 patterns) found readings no sample had reached, A–J. They are fixed in `ChangeVocabulary.EffectVerb` and `Qualification`. K10 is pending (16 patterns). The session is `.claude/sessions/change-vocabulary/2026-10-23-cv-s02b-feed-pattern-catalogue.md`.
 - OH&S (first family, 2026-10-22/23). Rounds: seed {2026,10,22} (defects A–F), seed 7 (D1–D5), seed 11 (49/50, NEW-A and NEW-B fixed), seed 13 (49/50, NEW-C deferred as K10, NEW-D fixed), seed 17. The session is `.claude/sessions/change-vocabulary/2026-10-22-cv-s02-feed-reader.md`.
 - CV-S02a (2026-10-23) fixed K2, K4, K5 and sensed K3 in the parser; the OH&S re-check after its re-parse: our faults 0, tell-tales 16 → 5 (all `not_found`, genuinely absent), golden 27/27. A new family's tell-tales of these kinds are now NEW.
+- Environmental Protection (2026-11-09): seed 53, placement 49/50, facts 48/50; two new classes fixed in-step (a staged removal's stages named the first order; a lettered Roman Part). The session is `.claude/sessions/lat-change-pipeline/2026-11-08-environmental-protection-feed-reader.md`.

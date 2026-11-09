@@ -103,6 +103,16 @@ On Maritime Safety, the build took the needs from 235 to 682, and three fetch ro
 
 **Pass rule as last used.** Sources held; our faults 0; repeatable; golden all-pass; the catalogue test passes; the agent finds nothing wrong outside the known patterns.
 
+**Environmental Protection (2026-11-09).**
+- **The check:** 11,674 effects in 122 laws; our faults 0; 6,386 placed.
+- **Fixed in-step:**
+  - an amendment to an earlier amending law written with the law named straight after "earlier amending" (`earlier-amendment-in-either-form`, Decision 2);
+  - each stage of a staged removal named its first stage's order (`each-stage-its-own-order`, Decision 4);
+  - a lettered Part numbered in Arabic by the feed and in Roman by the text ("Pt. 2A", row pt.IIA: 24 effects placed).
+- **The sample:** `--sample` now writes each change's `commenced_by` and each in-force entry's `commencing` order, so the agent audits them.
+- **A scoped law needs its body.** The build and the readers read the body, while Sources counted a scoped law's stored fragment as its own text. So the Aggregates Tax (Scotland) Act 2024 was built with 0 changes until its body was fetched (Decision 1). Parked against Sources: 82 scoped laws hold no body.
+- **Reader fixes leave stored changes one reading behind** until the family's build, and a switched family's laws until their refresh.
+
 **Skill.** `feed-reader-check`.
 
 ## 3. Markup reader
