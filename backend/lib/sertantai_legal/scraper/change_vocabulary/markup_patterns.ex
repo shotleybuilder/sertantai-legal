@@ -57,8 +57,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPatterns do
   """
   @spec changes(tuple()) :: %{String.t() => change()}
   def changes(doc) do
+    # a substitution's new words are listed with its Repeal, as the reader
+    # reads them (`Markup.substitutions/1`)
+    paired = Markup.substitutions(doc)
+
     doc
-    |> walk([], [])
+    |> walk([], [], paired)
     |> Enum.reverse()
     |> Enum.group_by(& &1.key)
     |> Map.new(fn {key, items} ->
@@ -67,14 +71,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPatterns do
     end)
   end
 
-  defp walk({:xmlElement, name, _, _, _, _, _, attrs, children, _, _, _} = el, stack, acc) do
+  defp walk({:xmlElement, name, _, _, _, _, _, attrs, children, _, _, _} = el, stack, acc, paired) do
     stack = stack ++ [el]
     a = attrs(attrs)
 
     acc =
       cond do
         name in @changes and a["ChangeId"] ->
-          key = Markup.key(a["ChangeId"])
+          key = Markup.key(Map.get(paired, a["ChangeId"], a["ChangeId"]))
           [%{key: key, change_id: a["ChangeId"], kind: name, attrs: a, stack: stack} | acc]
 
         name == :CommentaryRef and String.starts_with?(a["Ref"] || "", "key-") ->
@@ -84,10 +88,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPatterns do
           acc
       end
 
-    Enum.reduce(children, acc, &walk(&1, stack, &2))
+    Enum.reduce(children, acc, &walk(&1, stack, &2, paired))
   end
 
-  defp walk(_other, _stack, acc), do: acc
+  defp walk(_other, _stack, acc, _paired), do: acc
 
   @doc "The reader's claim sets for one change: `Markup.read/3`, its key only."
   @spec read(String.t() | tuple(), String.t(), String.t() | nil, %{String.t() => String.t()}) ::

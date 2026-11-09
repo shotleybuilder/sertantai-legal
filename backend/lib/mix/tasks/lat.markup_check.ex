@@ -21,6 +21,7 @@ defmodule Mix.Tasks.Lat.MarkupCheck do
   alias SertantaiLegal.Scraper.ChangeVocabulary.{MarkupPatterns, MarkupPlacement, Ref}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Draw
+  alias SertantaiLegal.Scraper.LatScope
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed
 
   @shortdoc "Every markup change accounted for; a sample for checking (read-only)"
@@ -68,7 +69,8 @@ defmodule Mix.Tasks.Lat.MarkupCheck do
 
     if opts[:sample], do: sample(changes, opts[:sample], opts[:n] || 50, opts[:seed])
 
-    faults = Enum.filter(changes, &fault?/1)
+    # our faults in changes and in note placements alike
+    faults = Enum.filter(results, &fault?/1)
     pass? = faults == [] and missing == []
     shell.info("\n#{if pass?, do: "PASS (placement)", else: "FAIL (placement)"}")
     Step.new("Markup reader", pass?, length(faults) + length(missing))
@@ -148,7 +150,12 @@ defmodule Mix.Tasks.Lat.MarkupCheck do
 
       xml_ids = Ref.xml_ids(law, row_ids)
 
-      held = %{rows: rows, schedules?: Enum.any?(rows, &String.starts_with?(&1, "sch."))}
+      held = %{
+        rows: rows,
+        schedules?: Enum.any?(rows, &String.starts_with?(&1, "sch.")),
+        scope: scope_ids(law)
+      }
+
       feed_ids = for e <- effects, e.effect_id != nil, into: MapSet.new(), do: e.effect_id
 
       sets = doc |> Markup.read(law, xml_ids) |> Enum.group_by(&elem(&1, 0))
@@ -174,6 +181,15 @@ defmodule Mix.Tasks.Lat.MarkupCheck do
     else
       {:text, _} -> {:missing, law, "law text (CLML body)"}
       {:feed, _} -> {:missing, law, "changes feed"}
+    end
+  end
+
+  # a scoped law's fragments as CLML ids ("section/64" → "section-64"); nil:
+  # the whole law
+  defp scope_ids(law) do
+    case LatScope.get(law) do
+      %{"fragments" => [_ | _] = fragments} -> Enum.map(fragments, &String.replace(&1, "/", "-"))
+      _ -> nil
     end
   end
 

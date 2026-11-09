@@ -134,7 +134,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
       repeated: repeated,
       own: own,
       items: MapSet.new(Map.keys(items)),
-      kept_children: KeptChildren.read(doc)
+      kept_children: KeptChildren.read(doc),
+      substitutions: substitutions(doc)
     }
 
     cited = cited(doc)
@@ -225,18 +226,23 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
 
   defp eu_footnote_parent(change_id), do: String.replace(change_id, @eu_footnote, "\\1")
 
-  # a retained substitution's new words (an Addition the Repeal's
-  # SubstitutionRef names) are the same change as the old words: one
-  # substitution (catalogue finding D)
-  defp group_changes(occurrences, cited, ctx) do
-    substituted =
-      for %{substitution_ref: ref, change_id: id} <- occurrences,
-          ref != nil,
-          into: %{},
-          do: {ref, id}
+  @doc """
+  A retained substitution's new words (an Addition the Repeal's
+  SubstitutionRef names) are the same change as the old words: one
+  substitution (catalogue finding D). Each new words' ChangeId → the
+  Repeal's, whatever either's key (EPA 1990 h.62: `d29p10005` →
+  `d29p10003`). The reader, the check and the catalogue group by it.
+  """
+  @spec substitutions(tuple()) :: %{String.t() => String.t()}
+  def substitutions(doc) do
+    for el <- xpath(doc, ~x"//*[@ChangeId and @SubstitutionRef]"l),
+        into: %{},
+        do: {xpath(el, ~x"./@SubstitutionRef"s), xpath(el, ~x"./@ChangeId"s)}
+  end
 
+  defp group_changes(occurrences, cited, ctx) do
     occurrences
-    |> Enum.group_by(&Map.get(substituted, &1.change_id, &1.change_id))
+    |> Enum.group_by(&Map.get(ctx.substitutions, &1.change_id, &1.change_id))
     |> Enum.flat_map(fn {change_id, occ} ->
       key = key(change_id)
 

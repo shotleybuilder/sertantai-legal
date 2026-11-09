@@ -22,7 +22,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPlacement do
     - `:id_not_converted` — under an id that names no row (the reader's
       fault);
     - `:row_missing` — on a provision in the text with no row of its own
-      nor any held ancestor.
+      nor any held ancestor;
+    - `:outside_lat_scope` — a scoped law (`LatScope` fragments, as CLML
+      ids in `held.scope`) unplaced beyond its fragments: we read a law for
+      the scope we hold, from our rows to the law (Jason 2026-11-09,
+      Environmental Protection: Markup reader, Decision 1).
 
   A change on several provisions is placed when every one is; else it
   takes the first unplaced reason. Pure.
@@ -48,11 +52,34 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPlacement do
   elements (`ids`, one list per element, outermost first) and what we hold
   (`rows`, `schedules?`).
   """
-  @spec classify([String.t()], [[String.t()]], %{rows: MapSet.t(), schedules?: boolean()}) ::
-          outcome()
-  def classify([], ids, held), do: nowhere(ids, held)
+  @spec classify([String.t()], [[String.t()]], %{
+          required(:rows) => MapSet.t(),
+          required(:schedules?) => boolean(),
+          optional(:scope) => [String.t()] | nil
+        }) :: outcome()
+  def classify(targets, ids, held) do
+    case placed(targets, ids, held) do
+      {:unplaced, why} = unplaced ->
+        if fault?(why) and outside_scope?(ids, held[:scope]),
+          do: {:unplaced, :outside_lat_scope},
+          else: unplaced
 
-  def classify(targets, _ids, held) do
+      outcome ->
+        outcome
+    end
+  end
+
+  # no scope: the whole law; else no element sits in or under a fragment
+  defp outside_scope?(_ids, nil), do: false
+
+  defp outside_scope?(ids, scope),
+    do: not Enum.any?(List.flatten(ids), fn id -> Enum.any?(scope, &in_fragment?(id, &1)) end)
+
+  defp in_fragment?(id, fragment), do: id == fragment or String.starts_with?(id, fragment <> "-")
+
+  defp placed([], ids, held), do: nowhere(ids, held)
+
+  defp placed(targets, _ids, held) do
     outcomes = Enum.map(targets, &target(&1, held))
 
     case Enum.find(outcomes, &match?({:unplaced, _}, &1)) do
