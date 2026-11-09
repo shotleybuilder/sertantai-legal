@@ -946,4 +946,125 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClauseTest do
       assert %{partial_from: ~D[2008-02-23], full_from: ~D[2011-04-06]} = at.("UK_x:reg.7(4)")
     end
   end
+
+  # Environmental Protection: Commencement reader (2026-11-09): a statement's
+  # exceptions, with brackets inside, never commence with it
+  describe "a whole-law or Part statement's exceptions" do
+    defp excepts(rules), do: for(r <- rules, r.except != [], do: {r.scope, Enum.sort(r.except)})
+
+    test "\"This Part, apart from section 45, comes into force …\" (asc 2026/4 s.46(1))" do
+      {rules, rs} =
+        read(
+          [
+            {"s.44", "", "4"},
+            {"s.45", "", "4"},
+            {"s.46(1)", "This Part, apart from section 45, comes into force on 1st May 2026.",
+             "4"},
+            {"s.46(2)", "Section 45 comes into force on 1st June 2026.", "4"}
+          ],
+          type: "asc"
+        )
+
+      assert date_of(rules, rs, "UK_x:s.44") == ~D[2026-05-01]
+      assert date_of(rules, rs, "UK_x:s.45") == ~D[2026-06-01]
+
+      refute Enum.any?(
+               rules,
+               &(is_list(&1.scope) and "s.45" in &1.scope and &1.when == {:date, ~D[2026-05-01]})
+             )
+    end
+
+    test "\"This Act, except Parts 1, 2 and 3 and section 26(2), comes into operation …\" (nia 2016/13 s.27(1))" do
+      {rules, _} =
+        read(
+          [
+            {"s.1", "", "1"},
+            {"s.26(2)", ""},
+            {"s.27(1)",
+             "This Act, except Parts 1, 2 and 3 and section 26(2), comes into operation on 1st May 2016."}
+          ],
+          type: "nia"
+        )
+
+      assert [{:all, except}] = excepts(rules)
+      assert "s.26(2)" in except and "pt.1" in except
+    end
+
+    test "\"These Regulations, except for regulation 4(3) and (4), come into force …\" (SI 2020/971 reg.1(2))" do
+      {rules, _} =
+        read([
+          "reg.4(3)",
+          "reg.4(4)",
+          {"reg.1(2)",
+           "These Regulations, except for regulation 4(3) and (4), come into force on 1st October 2020."}
+        ])
+
+      assert [{:all, ["reg.4(3)", "reg.4(4)"]}] = excepts(rules)
+    end
+
+    test "\"This Act (apart from this section and paragraph 6(2) and (5) of Schedule 5) shall come into force …\" (1999 c.28 s.43(2))" do
+      {rules, _} =
+        read(
+          [
+            "s.1",
+            {"s.43(2)",
+             "This Act (apart from this section and paragraph 6(2) and (5) of Schedule 5) shall come into force on such day as the Secretary of State may by order appoint; and different days may be appointed for different purposes."}
+          ],
+          type: "ukpga"
+        )
+
+      assert [{:all, except}] = excepts(rules)
+      assert "s.43" in except
+    end
+  end
+
+  # Environmental Protection: Commencement reader (2026-11-09)
+  describe "a staged clause's items and a list head" do
+    test "items opening with their purpose: partly for it, fully \"for all other purposes\" (SI 2006/2988 reg.1(2))" do
+      {rules, rs} =
+        read([
+          {"reg.1(2)", "These Regulations come into force—"},
+          {"reg.1(2)(a)",
+           "insofar as Part 2A of the 1990 Act empowers the National Assembly to make regulations or orders, give directions or issue guidance, or makes provision with respect to the exercise of any such power, on 16 November 2006; and"},
+          {"reg.1(2)(b)", "for all other purposes, on 10 December 2006."},
+          "reg.2"
+        ])
+
+      assert %{partial_from: ~D[2006-11-16], full_from: ~D[2006-12-10]} =
+               Evaluator.evaluate(rules, "UK_x:reg.2", OwnClause.context(rs))
+    end
+
+    test "\"These provisions come into force at the end of the period …—\" heads its list (2005 c.16 s.108(4))" do
+      {rules, rs} =
+        read(
+          [
+            "s.1",
+            "s.2",
+            "s.3",
+            "s.18",
+            "s.40",
+            {"s.108(4)",
+             "These provisions come into force at the end of the period of two months beginning with the day on which this Act is passed—"},
+            {"s.108(4)(a)",
+             "sections 3 to 5 and, in Part 1 of Schedule 5, the repeals to the Greater London Council (General Powers) Act 1982 (c i) and section 11 of the London Local Authorities Act 2004 (c. i);"},
+            {"s.108(4)(b)", "section 18;"},
+            {"s.108(4)(c)",
+             "sections 35 and 36, and in Part 4 of Schedule 5, the repeals to sections 1 and 2 of the Control of Pollution (Amendment) Act 1989 (c. 14);"},
+            {"s.108(4)(d)",
+             "section 40 and, in Part 4 of Schedule 5, the repeal to section 33 of the Environmental Protection Act 1990 (c. 43);"},
+            {"s.108(5)",
+             "The other provisions of this Act come into force on such day as the Secretary of State may by order appoint."}
+          ],
+          type: "ukpga",
+          made: ~D[2005-04-07]
+        )
+
+      # an item's own provisions, never another Act's it names
+      for sid <- ~w(s.3 s.18 s.40),
+          do: assert(date_of(rules, rs, "UK_x:" <> sid) == ~D[2005-06-07])
+
+      assert date_of(rules, rs, "UK_x:s.1") == nil
+      assert date_of(rules, rs, "UK_x:s.2") == nil
+    end
+  end
 end

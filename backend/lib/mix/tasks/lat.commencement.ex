@@ -315,7 +315,10 @@ defmodule Mix.Tasks.Lat.Commencement do
             Store.write(
               order,
               Order.rules(d, a) |> Order.resolve_appointed_for(Store.for_law(a.law)),
-              treatments: [:order_date, :order_schedule]
+              # (only its rules for this law: an order listed for two laws
+              # keeps the other's, SI 1996/186)
+              treatments: [:order_date, :order_schedule],
+              commences: a.law
             )
 
           n

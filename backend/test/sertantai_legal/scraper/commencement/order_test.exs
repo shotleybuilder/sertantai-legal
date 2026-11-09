@@ -1118,4 +1118,66 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
              })
     end
   end
+
+  # Environmental Protection: Commencement reader (2026-11-09): the parked
+  # "a head's qualifier does not reach its items"
+  describe "a \"the following\" head's qualifier reaches its items" do
+    test "\"… on 18th February 1993 but only insofar as they enable the Secretary of State to give directions—\" (SI 1993/274 art.2(2))" do
+      rules =
+        Order.rules(
+          order(
+            ~S|<P1 id="article-2"><P1para><P2 id="article-2-2"><P2para><Text>The following provisions of the Act shall come into force on 18th February 1993 but only insofar as they enable the Secretary of State to give directions— section 37(3); section 38(7); and section 66(7).</Text></P2para></P2></P1para></P1>|
+          ),
+          @act
+        )
+
+      assert %{full_from: nil, partial_from: ~D[1993-02-18]} = dated(rules, "section-37-3")
+      assert %{full_from: nil, partial_from: ~D[1993-02-18]} = dated(rules, "section-66-7")
+    end
+
+    test "\"…, for the purpose of making regulations and issuing guidance, on the day after the day on which this Order is made—\" (SI 2015/425 art.2)" do
+      d =
+        Doc.new("UK_uksi_2015_425", [
+          ~S|<Legislation><ukm:Metadata xmlns:ukm="http://www.legislation.gov.uk/namespaces/metadata"><ukm:SecondaryMetadata><ukm:Made Date="2015-03-02"/></ukm:SecondaryMetadata></ukm:Metadata><Secondary><Body><P1 id="article-1"><P1para><Text>In this Order “<Term id="t">the Act</Term>” means the Railways Act 1993.</Text></P1para></P1><P1 id="article-2"><P1para><Text>The following provisions of the Act come into force, for the purpose of making regulations and issuing guidance, on the day after the day on which this Order is made—</Text><P3 id="article-2-a"><P3para><Text>section 37 (enforcement powers); and</Text></P3para></P3><P3 id="article-2-b"><P3para><Text>section 46 (power to search and seize vehicles).</Text></P3para></P3></P1para></P1></Body></Secondary></Legislation>|
+        ])
+
+      rules = Order.rules(d, @act)
+      assert %{full_from: nil, partial_from: ~D[2015-03-03]} = dated(rules, "section-37")
+      assert [:for_making_secondary_legislation] = rules |> Enum.map(& &1.purposes) |> Enum.uniq()
+    end
+
+    test "a qualifier after a made-relative day is the subject's (SI 2009/1261 art.4)" do
+      d =
+        Doc.new("UK_uksi_2009_1261", [
+          ~S|<Legislation><ukm:Metadata xmlns:ukm="http://www.legislation.gov.uk/namespaces/metadata"><ukm:SecondaryMetadata><ukm:Made Date="2009-05-19"/></ukm:SecondaryMetadata></ukm:Metadata><Secondary><Body><P1 id="article-1"><P1para><Text>In this Order “<Term id="t">the Act</Term>” means the Railways Act 1993.</Text></P1para></P1><P1 id="article-4"><P1para><Text>Section 321 of the Act shall come into force on the day after this Order is made so far as it relates to the repeal of section 14(1)(b) of the Anti-social Behaviour Act 2003 (c.38).</Text></P1para></P1></Body></Secondary></Legislation>|
+        ])
+
+      assert %{full_from: nil, partial_from: ~D[2009-05-20]} =
+               dated(Order.rules(d, @act), "section-321")
+    end
+
+    test "\"Subject to article 3, the provisions of the … Act, so far as not then in force, shall come into force, for all purposes, on …\" (SSI 2006/19 art.2)" do
+      rules =
+        Order.rules(
+          order(
+            ~S|<P1 id="article-2"><P1para><Text>Subject to article 3, the provisions of the Railways Act 1993, so far as not then in force, shall come into force, for all purposes, on 20th February 2006.</Text></P1para></P1>|
+          ),
+          @act
+        )
+
+      assert %{full_from: ~D[2006-02-20]} = dated(rules, "section-12")
+    end
+
+    test "a head's place is its territory, never a qualifier" do
+      rules =
+        Order.rules(
+          order(
+            ~S|<P1 id="article-2"><P1para><Text>The following provisions of the Act come into force in relation to England on 6th April 2015— section 8 (charges schemes);</Text></P1para></P1>|
+          ),
+          @act
+        )
+
+      assert [%Rule{territory: "E", purposes: nil}] = rules
+    end
+  end
 end

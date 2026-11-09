@@ -42,6 +42,7 @@
   "inline|none|qualified|-|-|none | left: qualifier": "fix: reads nothing — qualifier left (class, not reviewed one by one; 1 statements, reach 42)",
   "inline|none|qualified|-|other_law|none | left: provision": "fix: \"in so far as they relate to the repeal of section 28(3)(b) of the Utilities Act 2000, shall come into force— (a) …\" read as nothing (SI 2005/2965)",
   "inline|none|qualified|full|-|none | left: provision": "fix: reads nothing — provision left (class, not reviewed one by one; 2 statements, reach 56)",
+  "inline|none|qualified|full|-|none | left: provision @ UK_wsi_2006_2797:article-3": "known: a day another instrument's start sets (\"section 2 … comes into force on the date on which the Highways Act 1980 (Gating Orders) (Wales) Regulations 2007 come into force\": WSI 2006/2797 art.3) — RULES.md known limits, one-statement commencement wordings (Decision 1, Environmental Protection: Commencement reader, 2026-11-09)",
   "inline|none|qualified|full|-|none | left: provision+qualifier": "fix: reads nothing — provision+qualifier left (class, not reviewed one by one; 1 statements, reach 68)",
   "items_first|date|-|-|-|none | left: date": "fix: reads nothing — date left (class, not reviewed one by one; 3 statements, reach 923)",
   "schedule_intro|date|-|-|-|none | left: date": "fix: a schedule-introducing article whose Schedule's table reads nothing (SI 1989/1557, 1996/1609, 2001/57)",
@@ -71,5 +72,7 @@
   "following|none|qualified|-|-|none | left: provision": "known: one-order wording — \"do not come into force in relation to a shipping matter … until regulations under section 30(1) … come into force\" (SI 2010/2317 art.10(4)), a negative staging tied to regulations (RULES.md: one-law commencement wordings)",
   "table|date|-|-|-|rules | left: date": "known: one-order aside — \"(but not section 31(1) which come into force on 8th September 1977)\" dates an earlier order's commencement (SI 1978/712) (RULES.md: one-law commencement wordings)",
   "table|none|-|-|other_law|rules | left: provision": "check: quoted words read as provisions (\"the words “section 48,”\": SI 1996/1609) — fixed in Leftovers (reader misses, 2026-11-05)",
-  "inline|date|-|-|-|none | left: provision": "check: an amendment's quoted \"comes into force\" read as a statement (SI 2026/82 reg.12(2)) — fixed in Leftovers (reader misses, 2026-11-05)"
+  "inline|date|-|-|-|none | left: provision": "check: an amendment's quoted \"comes into force\" read as a statement (SI 2026/82 reg.12(2)) — fixed in Leftovers (reader misses, 2026-11-05)",
+  "inline|date|qualified|full|other_law|none | left: date": "fix: reads nothing — date left (class, not reviewed one by one; 1 statements, reach 102)",
+  "inline|made_relative|qualified|full|-|none | left: provision+relative_day": "fix: reads nothing — provision+relative_day left (class, not reviewed one by one; 1 statements, reach 351)"
 }

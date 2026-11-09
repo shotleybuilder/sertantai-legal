@@ -430,6 +430,42 @@ defmodule SertantaiLegal.Scraper.Commencement.LeftoversTest do
           do: {u.id, Enum.map(l, & &1.words)}
     end
 
+    # Environmental Protection: Commencement reader (2026-11-09): the check's
+    # own errors, another law's provisions split from their Act by a range's
+    # dash or a list's commas, a repeal of another Act's section, and a
+    # limit on a scheme's day
+    test "another law's provisions in a range, a list, a repeal; a scheme's day (SI 2006/1176, SI 2015/425, 2007 c.28, 2000 c.21)" do
+      refs = &Order.refs_in/1
+      full = fn s, scope -> [rule(scope, {:date, ~D[2006-05-02]}, s)] end
+
+      s1 =
+        "The following provisions of the Act come into force on 2nd May 2006 immediately after the coming into force of sections 47–50 of the Countryside and Rights of Way Act 2000— section 66; section 67"
+
+      assert Leftovers.of(s1, full.(s1, ["s.66", "s.67"]), refs) == []
+
+      s2 =
+        "In Part 4 of Schedule 5 to the 2005 Act, the repeal of section 6 of the 1989 Act, so far as not already in force, comes into force on 2nd May 2006."
+
+      assert Leftovers.of(s2, full.(s2, ["sch.5.pt.4"]), refs) == []
+
+      s3 =
+        "The following provisions come into force on 2nd May 2006— sections 137, 140 and 210; the entries in Part 8 of Schedule 18 relating to sections 5, 6 and 28 of the Local Government Act 1999 and section 21 of the Local Government Act 2000 (c. 22)."
+
+      assert Leftovers.of(s3, full.(s3, ["s.137", "s.140", "s.210"]), refs) == []
+
+      s4 =
+        "The day specified by a scheme under subsection (2) or (3) for the scheme to come into force must not fall after the end of the period of 3 years starting with the day appointed under section 154 for the commencement of section 89."
+
+      assert Leftovers.of(s4, [], refs) == []
+    end
+
+    test "\"in relation to England\" is a place, never a qualifier (SI 2009/2096 art.2(2))" do
+      s =
+        "The following provisions of the 2008 Act shall come into force, in relation to England, on the commencement date—"
+
+      assert Leftovers.of(s, [], &Order.refs_in/1) == []
+    end
+
     test "an article and its first paragraph are one statement, counted once" do
       doc =
         order_doc(

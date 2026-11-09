@@ -51,6 +51,22 @@ defmodule SertantaiLegal.Scraper.Commencement.StoreTest do
     assert MapSet.new(Store.for_law("UK_ukpga_2014_21")) == MapSet.new([eff, text])
   end
 
+  # Environmental Protection: Commencement reader (2026-11-09): SI 1996/186
+  # commences the Environment Act 1995, and SI 1996/1030's order list also
+  # names it; read for SI 1996/1030 (no rules), it wiped the Act's 98 rules
+  test "commences: an order's re-read for one law keeps its rules for another" do
+    act = rule("UK_ukpga_1995_25", "UK_uksi_1996_186", ["s.41"], {:date, ~D[1996-04-01]})
+    assert {:ok, 1} = Store.write("UK_uksi_1996_186", [act], commences: "UK_ukpga_1995_25")
+
+    assert {:ok, 0} =
+             Store.write("UK_uksi_1996_186", [],
+               treatments: [:order_date],
+               commences: "UK_uksi_1996_1030"
+             )
+
+    assert Store.for_law("UK_ukpga_1995_25") == [act]
+  end
+
   test "a source's rules must all come from it" do
     assert_raise ArgumentError, fn ->
       Store.write("UK_uksi_2017_1", [rule("UK_ukpga_2014_21", "UK_wsi_2019_1", :all, :unread)])

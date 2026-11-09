@@ -391,6 +391,23 @@ defmodule SertantaiLegal.Scraper.LawStartTest do
                   "These Regulations may be cited as the Merchant Shipping and Fishing Vessels (Health and Safety at Work) (Asbestos) Regulations 2010 and they come into force on 10th January 2011."}
                ])
     end
+
+    # Environmental Protection: Commencement reader (2026-11-09)
+    test "\"… may be cited as …, shall come into force on … and shall extend …\" (SI 1996/1076)" do
+      assert %{treatment: :clause_date, date: ~D[1996-05-02]} =
+               start("uksi", [
+                 {"reg.1",
+                  "These Regulations may be cited as the Statutory Nuisance (Appeals) (Scotland) Regulations 1996, shall come into force on 2nd May 1996 and shall extend to Scotland only."}
+               ])
+    end
+
+    test "\"The title of these Regulations is …. They come into force on …\" (WSI 2009/995)" do
+      assert %{treatment: :clause_date, date: ~D[2009-05-06]} =
+               start("wsi", [
+                 {"reg.1(1)",
+                  "The title of these Regulations is the Environmental Damage (Prevention and Remediation) (Wales) Regulations 2009. They come into force on 6 May 2009."}
+               ])
+    end
   end
 
   describe "made-relative counting" do

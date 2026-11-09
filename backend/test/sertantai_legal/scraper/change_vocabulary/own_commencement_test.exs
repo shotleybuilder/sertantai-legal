@@ -134,4 +134,39 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.OwnCommencementTest do
     # a heading a rule names keeps its own; one whose provisions are undated stays so
     assert {:by_order, _} = OwnCommencement.outcome(Enum.take(rules, 1), @law, "h.17", ctx)
   end
+
+  # Environmental Protection: Commencement reader (2026-11-09): the
+  # Environment Act 2021 s.147 names Part 3's sections one by one under
+  # different days, never the Part; the Environment (Wales) Act 2016 s.88(3)
+  # leaves s.81 to an order, and no rule names its heading h.81
+  test "a Part no rule names commences with the first provision in it; a heading over provisions left to an order is left so too" do
+    rules = [
+      rule(["s.51"], {:date, ~D[2022-01-09]}),
+      rule(["s.50"], {:appointed, "by regulations"}, treatment: :provision_by_order),
+      rule(["s.81"], {:appointed, "by order"}, treatment: :provision_by_order)
+    ]
+
+    ctx =
+      Map.put(
+        SertantaiLegal.Scraper.Commencement.Order.context(),
+        :order,
+        ~w(pt.3 h.50 s.50 s.51 pt.7 h.81 s.81)
+      )
+
+    {:dated, %{full_from: ~D[2022-01-09]}} = OwnCommencement.outcome(rules, @law, "pt.3", ctx)
+    {:by_order, _} = OwnCommencement.outcome(rules, @law, "pt.7", ctx)
+    {:by_order, _} = OwnCommencement.outcome(rules, @law, "h.81", ctx)
+  end
+
+  # Environmental Protection: Commencement reader (2026-11-09): SI 2020/206,
+  # a staged clause read for its start only, with one Schedule tied to its
+  # regulation; the tie dates no row, so the law is still its start only
+  test "a law whose only text rules tie Schedules to their provisions is as it is without them" do
+    rules = [
+      rule(:all, {:date, ~D[2020-03-27]}, treatment: :clause_staged),
+      rule(["sch.4A"], {:with, "reg.48A"}, treatment: :schedule_effect)
+    ]
+
+    assert outcome(rules, "pt.1") == :staged_start_only
+  end
 end

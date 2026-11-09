@@ -241,11 +241,36 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
         # are other provisions' repeals, never commenced by it
         rest = if(head =~ @entries_head, do: [], else: rest),
         items = Enum.reject(pre ++ [clean_line(inline) | rest], &(&1 == "")),
+        q <- [list_qualifier(head)],
         rule <-
-          item_rules(items, aliases, date, order.law_name, id, head) ++
+          Enum.map(item_rules(items, aliases, date, order.law_name, id, head), &qualified(&1, q)) ++
             elsewhere_rules(order, id, head, aliases, date),
         do: rule
   end
+
+  # completing or a place, never a purpose: "so far as not already
+  # commenced" (SI 2024/35), "To the extent to which they have not already
+  # been commenced" (SI 2004/2593), "(in so far as not coming into force
+  # under article 2(9))" (SI 2010/2317), "Except to the extent that they
+  # extend to Scotland" (SI 2005/1521)
+  @head_completing ~r/\bnot\s+(?:already\s+|yet\s+|previously\s+)?(?:been\s+)?(?:commenced|brought\s+into\s+force|in\s+force|coming\s+into\s+force)\b|\bextends?\s+to\b/i
+  @head_place ~r/\b(?:in relation to|in|as respects)\s+(?:England and Wales|Great Britain|England|Wales|Scotland|Northern Ireland)\b/i
+
+  # a "the following" head's own qualifier, before its list, reaches each
+  # item with none of its own ("… on 18th February 1993 but only insofar as
+  # they enable the Secretary of State to give directions—": SI 1993/274
+  # art.2(2); "…, for the purpose of making regulations …, on the day after
+  # …—": SI 2015/425 art.2); its place is the territory, never a qualifier
+  defp list_qualifier(head) do
+    words = head |> String.split(~r/[—–]/u, parts: 2) |> hd()
+
+    if words =~ ~r/\bthe\s+following\b/i and not (words =~ @head_completing),
+      do: words |> String.replace(@head_place, "") |> head_qualifier()
+  end
+
+  defp qualified(rule, nil), do: rule
+  defp qualified(%Rule{purposes: nil} = rule, q), do: %{rule | purposes: q}
+  defp qualified(rule, _q), do: rule
 
   # ── the day a section of the Act appoints ───────────────────────────
 
@@ -302,7 +327,10 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   # ── the whole Act ───────────────────────────────────────────────────
 
   @apart ~r/^(?:apart\s+from|except(?:\s+for)?|other\s+than)\s+the\s+provisions\s+(?:mentioned|specified|listed|referred\s+to)\s+in\s+(paragraph|article)\s+\(?(\w+)\)?\s*,?\s*/i
-  @still ~r/\s*,?\s*(?:shall\s*)?,?\s*(?:(?:to\s+the\s+extent\s+that|in\s*so\s+far\s+as|insofar\s+as|so\s+far\s+as)\s+(?:(?:it\s+is|they\s+are)\s+)?not\s+(?:already|yet)\s+in\s+force)?\s*,?\s*$/i
+  @still ~r/\s*,?\s*(?:shall\s*)?,?\s*(?:(?:to\s+the\s+extent\s+that|in\s*so\s+far\s+as|insofar\s+as|so\s+far\s+as)\s+(?:(?:it\s+is|they\s+are)\s+)?not\s+(?:already|yet|then)\s+in\s+force)?\s*,?\s*$/i
+  # "Subject to article 3, the provisions of the … Act, so far as not then in
+  # force, shall come into force, for all purposes, on …" (SSI 2006/19 art.2)
+  @whole_lead ~r/^\W*(?:subject\s+to\s+(?:article|regulation|paragraph)\s+\(?\w+\)?\s*,\s*)?(?:the\s+)?(?:provisions\s+of\s+)?/i
 
   # an article whose statement's subject is the Act itself: the whole Act
   # from its date, but for the provisions another paragraph lists
@@ -323,6 +351,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
           Regex.match?(@cif, head),
           [subject, tail] = Regex.split(@cif, head, parts: 2),
           {apart, subject} = apart(subject),
+          subject = String.replace(subject, @whole_lead, ""),
           {subject, excepted} = rest_of(subject),
           subject
           # "The Petroleum Act 1998 (hereinafter referred to as “the Act”)"
@@ -545,10 +574,12 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
             # a qualifier after the date is the subject's ("Section 120(1) of,
             # and Schedule 22 to, the 1995 Act come into force on 1st April
             # 2015 in so far as they relate to paragraph 81 of Schedule 22":
-            # SSI 2015/73, CV-S04 round 4)
+            # SSI 2015/73, CV-S04 round 4; after a made-relative day, "… on the
+            # day after this Order is made so far as they relate to …": SI
+            # 2009/1261 art.4)
             after_date =
               case Regex.run(
-                     ~r/\b\d{4}\s*,?\s+((?:(?:in\s*)?so\s*far|insofar)\s+as\b[^—–:]*|to\s+the\s+extent\b[^—–:]*|for\s+the\s+purposes?\s+of\b[^—–:]*)/iu,
+                     ~r/(?:\b\d{4}|\bmade)\s*,?\s+((?:(?:in\s*)?so\s*far|insofar)\s+as\b[^—–:]*|to\s+the\s+extent\b[^—–:]*|for\s+the\s+purposes?\s+of\b[^—–:]*)/iu,
                      tail
                    ) do
                 [_, q] -> " " <> q
@@ -575,7 +606,18 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
         d
 
       [] ->
-        t = tail |> String.split(~r/[—–:]/u, parts: 2) |> hd() |> String.trim()
+        # (after a qualifier: ", for the purpose of making regulations …, on
+        # the day after …": SI 2015/425 art.2)
+        t =
+          tail
+          |> String.split(~r/[—–:]/u, parts: 2)
+          |> hd()
+          |> String.replace(
+            ~r/^\W*(?:for\s+the\s+purposes?\s+of|(?:in\s*)?so\s*far\s+as|insofar\s+as|to\s+the\s+extent)\b[^,]*,\s*/i,
+            ""
+          )
+          |> String.trim()
+
         t = if t =~ ~r/^on\b/i, do: t, else: "on " <> t
 
         case Clause.tail_date(t, made) do

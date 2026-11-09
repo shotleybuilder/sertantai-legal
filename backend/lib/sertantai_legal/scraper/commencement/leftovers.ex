@@ -43,6 +43,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
   @except ~r/\b(?:except(?:\s+for)?|other\s+than|apart\s+from|save\s+that)\s+(?!(?:in\s+relation\s+to|(?:in\s+)?so\s+far\s+as|insofar\s+as|to\s+the\s+extent|for\s+the\s+purposes?\s+of|as\s+(?:already|aforesaid))\b)([^,;]+?)(?=\s*(?:,|;|\bwhich\b|\b(?:shall|comes?|is\s+to|are\s+to)\b|$))/i
   @completing ~r/\b(?:(?:(?:in\s+)?so\s+far|insofar|to\s+the\s+extent)\s+(?:as|that)\s+(?:(?:it|they|th(?:at|ose|ese)\s+[\w-]+)\s+(?:is|are|has|have)\s+)?not\s+(?:already\s+|yet\s+|previously\s+|then\s+)?(?:been\s+)?(?:in\s+force|commenced|brought\s+into\s+force)|for\s+all\s+(?:other\s+|remaining\s+)?purposes|except\s+(?:(?:in\s+)?so\s+far\s+)?as\s+(?:it\s+is\s+|they\s+are\s+)?already\s+in\s+(?:force|operation)|except\s+as\s+aforesaid)\b/i
   @qualifier ~r/\b(?:in\s+relation\s+to|for\s+the\s+purposes?\s+of|(?:in\s+)?so\s+far\s+as|insofar\s+as|to\s+the\s+extent\s+that)\b/i
+  @place ~r/\b(?:in\s+relation\s+to|as\s+respects)\s+(?:England\s+and\s+Wales|Great\s+Britain|England|Wales|Scotland|Northern\s+Ireland)\b/i
   @relative ~r/\bthe\s+(?:\w+\s+)?day\s+after\b|\blaid\b|\bnotified\b|\bthe\s+end\s+of\s+the\s+period\b/i
 
   # a power to provide for something to come into force, never a statement
@@ -74,8 +75,10 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
   # thing that is no provision ("the Concession shall be taken to have
   # come into operation": 1987 c.53 s.4(3)), EU law (2018 c.16 s.8(4)), a
   # reading rule ("References in subsections (1) to (5) to provision …":
-  # 2014 c.21 s.55(6)), what another enactment provides (1982 c.16 s.97(6))
-  @not_ours ~r/^\W*(?:for\s+the\s+purposes\s+of\s+this\s+(?:Act|Part),\s*)?the\s+(?!(?:provisions?|sections?|Act|Part|Schedule|regulations?|articles?)\b)[a-z][\w-]*\s+(?:shall|is\s+to)\s+be\s+(?:taken|treated|deemed)\s+to\s+have\s+come\s+into\b|\bEU\s+law\b[^.;]*\bcomes?\s+into\b|^\W*References?\s+in\s+(?:sub)?(?:sections?|paragraphs?|regulations?)\b|\b(?:enactment|Act|order|instrument)\s+provides\s+that\b[^.;]*\bcome\s+into\b|^\W*(?:Sections?|Regulations?|Articles?|Paragraphs?|Schedules?|Parts?)\s+[\w()]+(?:\s*(?:,|and|to)\s*[\w()]+)*\s+of\s+the\s+(?:[A-Z][\w(),'-]*\s+){1,14}(?:Act|Order|Regulations)(?:\s+\([^)]*\))?\s+\d{4}\b[^.;]*?\b(?:shall\s+)?comes?\s+into\b|\bhad\s+the\s+[^.;]{1,60}?\bcome\s+into\s+(?:force|operation)\b/i
+  # 2014 c.21 s.55(6)), what another enactment provides (1982 c.16 s.97(6)),
+  # a limit on a scheme's day ("The day specified by a scheme … for the
+  # scheme to come into force must not fall after …": 2000 c.21 s.92(9))
+  @not_ours ~r/^\W*(?:for\s+the\s+purposes\s+of\s+this\s+(?:Act|Part),\s*)?the\s+(?!(?:provisions?|sections?|Act|Part|Schedule|regulations?|articles?)\b)[a-z][\w-]*\s+(?:shall|is\s+to)\s+be\s+(?:taken|treated|deemed)\s+to\s+have\s+come\s+into\b|\bEU\s+law\b[^.;]*\bcomes?\s+into\b|^\W*References?\s+in\s+(?:sub)?(?:sections?|paragraphs?|regulations?)\b|\b(?:enactment|Act|order|instrument)\s+provides\s+that\b[^.;]*\bcome\s+into\b|^\W*(?:Sections?|Regulations?|Articles?|Paragraphs?|Schedules?|Parts?)\s+[\w()]+(?:\s*(?:,|and|to)\s*[\w()]+)*\s+of\s+the\s+(?:[A-Z][\w(),'-]*\s+){1,14}(?:Act|Order|Regulations)(?:\s+\([^)]*\))?\s+\d{4}\b[^.;]*?\b(?:shall\s+)?comes?\s+into\b|\bhad\s+the\s+[^.;]{1,60}?\bcome\s+into\s+(?:force|operation)\b|\bfor\s+the\s+(?:scheme|order|regulations|instrument|code)\s+to\s+come\s+into\s+(?:force|operation)\b/i
 
   # the entries a repeal names are other Acts' provisions ("Schedule 10, the
   # following repeals:— The Employment Medical Advisory Service Act 1972-
@@ -86,6 +89,14 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
   @not_applying ~r/,?\s*save\s+that\b[^.;]*?\bshall\s+not\s+apply\b.*$/is
 
   @repeal_entries ~r/\bthe\s+following\s+(?:repeals|entries)\b.*$/is
+
+  # another law's provisions, before a range's dash or a list's commas part
+  # them from their Act ("sections 47–50 of the Countryside and Rights of
+  # Way Act 2000": SI 2006/1176 art.6; "relating to sections 5, 6 and 28 of
+  # the Local Government Act 1999": 2007 c.28 s.245(4)), and a repeal of
+  # another Act's provision ("the repeal of section 6 of the 1989 Act": SI
+  # 2015/425 art.4(3))
+  @other_law ~r/\b(?:(?:sub-?)?sections?|regulations?|paragraphs?|articles?)\s+[\w()]+(?:\s*(?:,|and|to|–|-)\s*[\w()]+)*\s+(?:of|to)\s+the\s+(?:\(?[A-Z][\w(),'.-]*\s+|(?:and|of|the|for|in|on|to|etc\.?)\s+){1,16}(?:Act|Order|Regulations|Measure)\s+\d{4}\b|\bthe\s+repeals?\s+(?:of|to|in)\s+[^,;]*?\bof\s+the\s+\d{4}\s+(?:Act|Order|Regulations)\b/u
 
   # no time stated and no rule read: a condition or description, never a
   # statement ("… until section 55 comes into force")
@@ -167,6 +178,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
   end
 
   defp exceptions(s, rules, refs) do
+    s = other_law(s)
     excepted = Enum.flat_map(rules, & &1.except)
     general? = Enum.any?(rules, &(&1.scope in [:all, :rest]))
 
@@ -183,6 +195,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
   end
 
   defp provisions(s, rules, refs) do
+    s = other_law(s)
     used = Enum.flat_map(rules, &(List.wrap(if is_list(&1.scope), do: &1.scope) ++ &1.except))
     excepted = for [_, words] <- Regex.scan(@except, s), ref <- refs.(words), do: ref
     # "the following provisions of Part 1 …": the Part is where they are
@@ -206,6 +219,8 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
         do: %{kind: :provision, words: ref}
   end
 
+  defp other_law(s), do: Regex.replace(@other_law, s, "another law")
+
   # one time for the whole law, stated once: the provisions it names come
   # in with it ("This section and sections 44 to 52 come into force on such
   # day as …", the Act wholly by order: asp 2009/12 s.100(2))
@@ -218,10 +233,12 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
     partial? = Enum.any?(rules, &(not Rule.full?(&1)))
 
     # (never the order power's own words: "different days may be appointed
-    # … in relation to premises of different classes": 1963 c.41 s.91(2))
+    # … in relation to premises of different classes": 1963 c.41 s.91(2);
+    # nor a place, "in relation to England": SI 2009/2096 art.2(2))
     text =
       s
       |> String.replace(@completing, "")
+      |> String.replace(@place, "")
       |> String.replace(
         ~r/\b(?:different|a\s+later|an\s+earlier)\s+days?\s+may\s+be\s+appointed\b[^.;]*/i,
         ""

@@ -69,9 +69,11 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
       # "… and subject to paragraphs (2) and (3) shall come into force on
       # 1st January 2000" (Quarries Regulations 1999 reg.1(1), CV-S04)
       # (", which extend to Great Britain," between: SI 1996/1513)
+      # (a comma for the "and": "… Regulations 1996, shall come into force on
+      # 2nd May 1996 and shall extend to Scotland only": SI 1996/1076)
       ~S"\b(?:this|these)\s+" <>
         @instrument <>
-        ~S"(?:\s*,[^,]{0,80},)?\s+may be cited as\b.{0,300}?\band(?:\s+(?:they|it))?(?:\s+subject\s+to\s+[^,]{1,160}?(?=\s+shall\b))?" <>
+        ~S"(?:\s*,[^,]{0,80},)?\s+may be cited as\b.{0,300}?(?:\band(?:\s+(?:they|it))?|,)(?:\s+subject\s+to\s+[^,]{1,160}?(?=\s+shall\b))?" <>
         @aside <> @cif <> ~S"\s*(.*)$",
       "is"
     ),
@@ -311,9 +313,12 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
   end
 
   defp pronoun(rows) do
+    # (or titled: "The title of these Regulations is …. They come into force
+    # on 6 May 2009": WSI 2009/995)
     cited =
       for r <- rows,
-          (Map.get(r, :text) || "") =~ ~r/\bmay be cited as\b/i,
+          (Map.get(r, :text) || "") =~
+            ~r/\bmay be cited as\b|\bThe\s+title\s+of\s+(?:this|these)\s+#{@instrument}\s+is\b/i,
           into: MapSet.new(),
           do: provision(r.section_id)
 

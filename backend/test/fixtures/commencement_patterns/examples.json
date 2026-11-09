@@ -199,6 +199,26 @@
     "row": "UK_asc_2023_4:s.56(3)",
     "sentence": "The following provisions of Schedule 2, and section 55 to the extent it relates to those provisions, also come into force at the end of the period of two months beginning with the day on which this Act receives Royal Assent—"
   },
+  "UK_asc_2024_6/6a09058941": {
+    "law": "UK_asc_2024_6",
+    "row": "UK_asc_2024_6:s.23(1)",
+    "sentence": "This section and sections 1, 16, 21, 22 and 24 and paragraph 13(3)(b) of the Schedule (and section 15 in so far as relating to paragraph 13(3)(b)) come into force on the day after the day on which this Act receives Royal Assent."
+  },
+  "UK_asc_2024_6/75757d8143": {
+    "law": "UK_asc_2024_6",
+    "row": "UK_asc_2024_6:s.23(2)",
+    "sentence": "The following provisions come into force at the end of the period of two months beginning with the day on this Act receives Royal Assent—"
+  },
+  "UK_asc_2024_6/8121aa4a63": {
+    "law": "UK_asc_2024_6",
+    "row": "UK_asc_2024_6:s.23(3)",
+    "sentence": "The following provisions come into force on 1 April 2025—"
+  },
+  "UK_asc_2024_6/95139d59fa": {
+    "law": "UK_asc_2024_6",
+    "row": "UK_asc_2024_6:s.23(5)",
+    "sentence": "The provisions referred to in subsection (6) come into force for the purposes referred to in that subsection on the day after the day on which this Act receives Royal Assent, but for all other purposes they come into force on a day (or days) appointed by the Welsh Ministers in an order made by statutory instrument."
+  },
   "UK_asc_2025_4/91f1a09402": {
     "law": "UK_asc_2025_4",
     "row": "UK_asc_2025_4:s.92(2)",
@@ -214,10 +234,30 @@
     "row": "UK_asc_2025_4:s.92(1)",
     "sentence": "This Part comes into force on the day after the day on which this Act receives Royal Assent."
   },
+  "UK_asc_2026_4/365da454e2": {
+    "law": "UK_asc_2026_4",
+    "row": "UK_asc_2026_4:s.46(2)",
+    "sentence": "The following provisions come into force at the end of the period of 2 months beginning with the day on which this Act receives Royal Assent—"
+  },
+  "UK_asc_2026_4/47c12dd280": {
+    "law": "UK_asc_2026_4",
+    "row": "UK_asc_2026_4:s.46(1)",
+    "sentence": "This Part, apart from section 45, comes into force on the day after the day on which this Act receives Royal Assent."
+  },
   "UK_asc_2026_4/b7675ecae3": {
     "law": "UK_asc_2026_4",
     "row": "UK_asc_2026_4:s.46(5)",
     "sentence": "If the provisions mentioned in subsection (6) have not come into force by the end of the period of 24 months beginning with the day on which this Act receives Royal Assent, they come into force at the end of that period."
+  },
+  "UK_asc_2026_4/c385dceade": {
+    "law": "UK_asc_2026_4",
+    "row": "UK_asc_2026_4:s.46(4)",
+    "sentence": "Except as provided for by subsections (1) to (3), and subject to subsection (5), the provisions of this Act come into force on a day appointed by the Welsh Ministers in an order made by Welsh statutory instrument."
+  },
+  "UK_asc_2026_4/eae80092c2": {
+    "law": "UK_asc_2026_4",
+    "row": "UK_asc_2026_4:s.46(3)",
+    "sentence": "Sections 3 to 5 come into force on 31 March 2027."
   },
   "UK_asc_2026_5/0a907e9f84": {
     "law": "UK_asc_2026_5",
@@ -379,11 +419,6 @@
     "row": "UK_asp_2003_7:s.89(2)",
     "sentence": "With the exception of— this Act comes into force on such day as the Scottish Ministers may by order appoint."
   },
-  "UK_asp_2003_7/b4fdc7dc14": {
-    "law": "UK_asp_2003_7",
-    "row": "UK_asp_2003_7:s.33(2)",
-    "sentence": "Subsection (1)(b)(i) applies in relation to prisoners repatriated to Scotland on or after the coming into force of this section any of whose sentences in the country or territory from which they are transferred were imposed on or after 1st October 1993."
-  },
   "UK_asp_2003_8/519d1b2bae": {
     "law": "UK_asp_2003_8",
     "row": "UK_asp_2003_8:s.59(1)",
@@ -539,6 +574,11 @@
     "row": "UK_asp_2010_9:s.18(2)",
     "sentence": "The provisions of this Act, except this section, come into force at the end of the period of 9 months beginning with the date of Royal Assent."
   },
+  "UK_asp_2011_12/aefef503cd": {
+    "law": "UK_asp_2011_12",
+    "row": "UK_asp_2011_12:s.16(2)",
+    "sentence": "This Part comes into force at the beginning of the day following the day on which the Bill for this Act receives Royal Assent."
+  },
   "UK_asp_2012_5/5a1a619f99": {
     "law": "UK_asp_2012_5",
     "row": "UK_asp_2012_5:s.123(2)",
@@ -689,6 +729,11 @@
     "row": "UK_eudr_1994_63:art.Article 5(3)(b)",
     "sentence": "new mobile containers which come into operation during the four years following the date referred to in Article 10."
   },
+  "UK_eudr_2018_645/3c9b31b5a3": {
+    "law": "UK_eudr_2018_645",
+    "row": "UK_eudr_2018_645:reg.3(1)",
+    "sentence": "Member States shall bring into force the laws, regulations and administrative provisions necessary to comply with this Directive by 23 May 2020, except for the laws, regulations and administrative provisions necessary to comply with point 6 of Article 1 of this Directive, which shall be brought into force by 23 May 2021."
+  },
   "UK_mwa_2009_3/ceee42e716": {
     "law": "UK_mwa_2009_3",
     "row": "UK_mwa_2009_3:s.12(2)",
@@ -729,6 +774,21 @@
     "row": "UK_nia_2009_4:s.15(1)",
     "sentence": "Section 6 and the repeals relating to Article 8 of the principal Order set out in the Schedule to this Order shall come into operation on such day as Article 8 of the principal Order comes into operation."
   },
+  "UK_nia_2011_23/4fb5d4d118": {
+    "law": "UK_nia_2011_23",
+    "row": "UK_nia_2011_23:s.21(3)",
+    "sentence": "(7) A notice under sub-paragraph (6) must specify the date on which the order is to come into force, being a date not earlier than— (a) the end of the period of 14 days beginning with the day on which the notice is given; and (b) the date referred to in sub-paragraph (5)(b)."
+  },
+  "UK_nia_2011_23/739747206b": {
+    "law": "UK_nia_2011_23",
+    "row": "UK_nia_2011_23:s.25(7)",
+    "sentence": "If the council resolves under Article 19 that Schedule 1 (as amended by section 24) is to apply in its district, the council may not in giving effect to paragraph 4(1) of Schedule 1 (as so amended) take into account charges payable in relation to shopping or luggage trolleys seized before the Schedule (as so amended) comes into operation in its district."
+  },
+  "UK_nia_2011_23/74bd06d608": {
+    "law": "UK_nia_2011_23",
+    "row": "UK_nia_2011_23:s.21(3)",
+    "sentence": "(5) A notice under sub-paragraph (4) must specify— (a) the land proposed to be designated; (b) the date on which it is proposed that the order is to come into force (which shall not be earlier than the end of a period of 28 days beginning with the day on which the notice is given); (c) the fact that objections may be made to the proposal, how they may be made and the period within which they may be made (being a period of at least 14 days beginning with the day on which the notice is given)."
+  },
   "UK_nia_2011_25/0b3122973d": {
     "law": "UK_nia_2011_25",
     "row": "UK_nia_2011_25:s.38(4)",
@@ -768,6 +828,26 @@
     "law": "UK_nia_2013_10",
     "row": "UK_nia_2013_10:s.49",
     "sentence": "This Act comes into operation on the day after the day on which this Act receives Royal Assent."
+  },
+  "UK_nia_2016_13/86486a85f8": {
+    "law": "UK_nia_2016_13",
+    "row": "UK_nia_2016_13:s.17(3)",
+    "sentence": "In paragraph (2) for the expression beginning “A district council” and ending “(b)” substitute “Where an order under Article 12 comes into operation, the district council which made the order shall”."
+  },
+  "UK_nia_2016_13/af569ae7f6": {
+    "law": "UK_nia_2016_13",
+    "row": "UK_nia_2016_13:s.27(1)",
+    "sentence": "This Act, except Parts 1, 2 and 3 and section 26(2), comes into operation on the day after Royal Assent."
+  },
+  "UK_nia_2016_13/b1a12dcbc8": {
+    "law": "UK_nia_2016_13",
+    "row": "UK_nia_2016_13:s.10(1)",
+    "sentence": "The Department must, within the period of two years beginning with the day on which this section comes into operation—"
+  },
+  "UK_nia_2016_13/f568b00604": {
+    "law": "UK_nia_2016_13",
+    "row": "UK_nia_2016_13:s.27(2)",
+    "sentence": "The provisions of Parts 1, 2 and 3 and section 26(2) come into operation on such day or days as the Department may by order appoint."
   },
   "UK_nia_2016_22/0e99913543": {
     "law": "UK_nia_2016_22",
@@ -869,25 +949,40 @@
     "row": "UK_nisi_1998_2795:reg.1(2)",
     "sentence": "This Order shall come into operation on such day or days as the Department may by order appoint."
   },
+  "UK_nisi_2002_3153/28ca86a4f7": {
+    "law": "UK_nisi_2002_3153",
+    "row": "UK_nisi_2002_3153:reg.6(4)(e)",
+    "sentence": "the holder of the licence shall be treated as having been an authorised person for the purposes of Article 5(1) of the 1997 Order during the interim period (or so much thereof as falls after the coming into operation of Article 5(1))."
+  },
+  "UK_nisi_2002_3153/7bd0e2ed09": {
+    "law": "UK_nisi_2002_3153",
+    "row": "UK_nisi_2002_3153:reg.1(2)",
+    "sentence": "Except as provided by paragraph (3), this Order comes into operation on the expiration of one month from the date on which it is made."
+  },
+  "UK_nisi_2002_3153/8098a81b1f": {
+    "law": "UK_nisi_2002_3153",
+    "row": "UK_nisi_2002_3153:reg.6(5)",
+    "sentence": "Nothing in this Article affects any criminal proceedings in which the accused has been convicted before the coming into operation of this Article."
+  },
+  "UK_nisi_2002_3153/aeb0e73f48": {
+    "law": "UK_nisi_2002_3153",
+    "row": "UK_nisi_2002_3153:reg.13(2)",
+    "sentence": "Where an order under Article 12 comes into operation, the district council which made the order shall prepare, in accordance with the following provisions, a written plan (in this Part referred to as an “action plan”) for the exercise by the council, in pursuit of the achievement of air quality standards and objectives in the designated area, of any powers exercisable by the council."
+  },
+  "UK_nisi_2002_3153/c5786c1e55": {
+    "law": "UK_nisi_2002_3153",
+    "row": "UK_nisi_2002_3153:reg.1(3)",
+    "sentence": "The following provisions come into operation on such day or days as the Department may by order appoint Part IV (together with Schedule 4); Article 53(2); Part III of Schedule 5 (together with so much of Article 53(1) as relates thereto); Schedule 6."
+  },
   "UK_nisi_2003_419/0db119a8a9": {
     "law": "UK_nisi_2003_419",
     "row": "UK_nisi_2003_419:reg.1(3)",
     "sentence": "The following provisions come into operation on the day after the day on which this Order is made—"
   },
-  "UK_nisi_2003_419/47bbd42a80": {
-    "law": "UK_nisi_2003_419",
-    "row": "UK_nisi_2003_419:reg.41A(8)",
-    "sentence": "In paragraphs (1) and (3)(b), the references to provisions in the Electricity Regulation designated under this Article are to be treated as including provisions of the 2009 Electricity Market Regulation that were designated under this Article before the coming into force of the Electricity and Gas (Internal Markets) Regulations 2020."
-  },
   "UK_nisi_2003_419/6dab17569c": {
     "law": "UK_nisi_2003_419",
     "row": "UK_nisi_2003_419:reg.64(1)",
     "sentence": "(1) Subject to the following provisions of this paragraph, a necessary wayleave granted under paragraph 10 shall be capable of being assigned if (and only if)— (a) in the case of a wayleave granted after the coming into operation of Article 64 of the Energy (Northern Ireland) Order 2003, a term to that effect is included in the wayleave; (b) in the case of a wayleave granted before that time, it is designated by the Department on an application made by the relevant licence holder."
-  },
-  "UK_nisi_2003_419/94850cfba3": {
-    "law": "UK_nisi_2003_419",
-    "row": "UK_nisi_2003_419:reg.58A(8)",
-    "sentence": "The power conferred by virtue of paragraph (1)(b) may not be exercised in relation to an order under Article 56 after the end of the period of two years beginning with the day on which the order comes into force."
   },
   "UK_nisi_2003_419/ff0e2fdb78": {
     "law": "UK_nisi_2003_419",
@@ -1019,6 +1114,21 @@
     "row": "UK_nisr_1999_90:reg.6(2)",
     "sentence": "The transfer of functions from the Department to the Executive by these Regulations shall not affect any appointment, direction, instruction, approval, requirement or authorisation made or given or other thing done by the Department before the date of coming into operation of these Regulations, but any such matter shall, if in force immediately before that date, continue in force to the like extent and subject to the like provisions as if it had been duly made, given or done by the Executive."
   },
+  "UK_nisr_2000_84/0ec3e2ba43": {
+    "law": "UK_nisr_2000_84",
+    "row": "UK_nisr_2000_84:reg.24(6)",
+    "sentence": "Where, before the date of coming into operation of these Regulations, a request to the Department to reconsider its decision under regulation 13 of the 1998 Regulations has been made but the Department has not reconsidered its decision, the request shall be treated as if it had been made under regulation 17."
+  },
+  "UK_nisr_2000_84/6ded4ca294": {
+    "law": "UK_nisr_2000_84",
+    "row": "UK_nisr_2000_84:reg.24(4)",
+    "sentence": "Where, before the date of coming into operation of these Regulations, the Department has received a request under regulation 6(1) of the 1998 Regulations but has not made any decision in relation to that request—"
+  },
+  "UK_nisr_2000_84/af8ba3acbd": {
+    "law": "UK_nisr_2000_84",
+    "row": "UK_nisr_2000_84:reg.24(8)(b)",
+    "sentence": "shall cease to have the effect stated in sub-paragraph (a) (without prejudice to the availability of a further reconsideration or opinion under these Regulations) on the expiry of the period of five years beginning with the date of coming into operation of these Regulations if the work relating to the project has not been completed within that period."
+  },
   "UK_nisr_2000_87/db3de02f2b": {
     "law": "UK_nisr_2000_87",
     "row": "UK_nisr_2000_87:reg.2",
@@ -1099,6 +1209,11 @@
     "row": "UK_nisr_2007_321:reg.43(2)",
     "sentence": "Subject to the following provisions of this regulation, a continuing application shall have effect on and after the date regulation 6 comes into operation as if it were an application made to the Authority for, as the case may be,— and in each of sub-paragraphs (a) to (b) the reference to Article 10 of the 1992 Order shall be a reference to that Article as it had effect on or after that date."
   },
+  "UK_nisr_2007_321/88c762c27e": {
+    "law": "UK_nisr_2007_321",
+    "row": "UK_nisr_2007_321:reg.1(1)",
+    "sentence": "These Regulations may be cited as the Electricity Regulations (Northern Ireland) 2007 and, subject to paragraphs (2) and (3) shall come into operation forthwith."
+  },
   "UK_nisr_2007_321/b079a257d4": {
     "law": "UK_nisr_2007_321",
     "row": "UK_nisr_2007_321:reg.58(4)",
@@ -1114,6 +1229,11 @@
     "row": "UK_nisr_2008_170:reg.1(3)",
     "sentence": "Each provision of these Regulations referred to in column (2) of the Table in the Schedule shall come into operation on the date referred to in column (1) of that Table, for the purposes referred to in column (3)."
   },
+  "UK_nisr_2009_252/0509a1b43a": {
+    "law": "UK_nisr_2009_252",
+    "row": "UK_nisr_2009_252:reg.1",
+    "sentence": "These Regulations may be cited as the Environmental Liability (Prevention and Remediation) Regulations (Northern Ireland) 2009 and come into operation on 24th July 2009."
+  },
   "UK_nisr_2009_35/bcb3fd3622": {
     "law": "UK_nisr_2009_35",
     "row": "UK_nisr_2009_35:reg.1",
@@ -1123,11 +1243,6 @@
     "law": "UK_nisr_2010_160",
     "row": "UK_nisr_2010_160:reg.9(4)",
     "sentence": "Any authorisation granted, or deemed to be granted, pursuant to regulation 36 of the 2006 Regulations that was in force immediately before the coming into operation of these Regulations shall be deemed to be an authorisation issued pursuant to paragraph (1) of this regulation and subject to the same conditions as were in force immediately before the coming into operation of these Regulations."
-  },
-  "UK_nisr_2010_160/ea4bd79182": {
-    "law": "UK_nisr_2010_160",
-    "row": "UK_nisr_2010_160:reg.31(2)",
-    "sentence": "The amendments made by those Regulations to other statutory provisions and having effect immediately before the coming into operation of paragraph (1) shall, subject to regulation 30, continue to have effect as if paragraph (1) had not been made."
   },
   "UK_nisr_2010_27/7befe09078": {
     "law": "UK_nisr_2010_27",
@@ -1148,11 +1263,6 @@
     "law": "UK_nisr_2011_365",
     "row": "UK_nisr_2011_365:reg.1",
     "sentence": "These Regulations may be cited as the Carriage of Dangerous Goods and Use of Transportable Pressure Equipment (Amendment) (Regulations) (Northern Ireland) 2011 and come into operation on 10th November 2011."
-  },
-  "UK_nisr_2012_177/cbea6040a9": {
-    "law": "UK_nisr_2012_177",
-    "row": "UK_nisr_2012_177:reg.1",
-    "sentence": "These Regulations may be cited as the Carriage of Explosives (Amendment) Regulations (Northern Ireland) 2012 and come into operation on 28 May 2012."
   },
   "UK_nisr_2012_179/7ce5cbcdb9": {
     "law": "UK_nisr_2012_179",
@@ -1209,11 +1319,6 @@
     "row": "UK_nisr_2016_427:reg.71(2)",
     "sentence": "Any action taken by the Executive or an inspector with respect to a mine in relation to any of the relevant statutory provisions in operation before the date these Regulations come into operation shall continue to have effect in relation to the mine operator so that it shall be the duty of the mine operator to carry out any remedial actions or operations that the owner, manager or principal employer of employees at the mine was under an obligation to carry out or achieve immediately before the date on which these Regulations came into operation."
   },
-  "UK_nisr_2016_427/6b7890f1f7": {
-    "law": "UK_nisr_2016_427",
-    "row": "UK_nisr_2016_427:reg.71(3)",
-    "sentence": "A document prepared by the owner, manager or an employer at a mine and sufficient for the purposes of the provision in column 1 of table 1 in operation immediately before the coming into operation of these Regulations may be relied upon by the mine operator as evidence that an assessment, process, procedure or scheme required by the corresponding provision of these Regulations in column 2 of table 1 has been made or is in place."
-  },
   "UK_nisr_2016_427/c01dd08529": {
     "law": "UK_nisr_2016_427",
     "row": "UK_nisr_2016_427:reg.2(1)",
@@ -1223,6 +1328,16 @@
     "law": "UK_nisr_2016_427",
     "row": "UK_nisr_2016_427:reg.6(5)",
     "sentence": "In the case of a mine which is in existence or under construction at the date these Regulations come into operation notification that has been made under section 118 of the 1969 Actis deemed to be notification under paragraph (1)."
+  },
+  "UK_nisr_2016_76/0ac149c70a": {
+    "law": "UK_nisr_2016_76",
+    "row": "UK_nisr_2016_76:reg.1(2)",
+    "sentence": "Subject to paragraph (3), this Order shall come into operation immediately before the transfer date."
+  },
+  "UK_nisr_2016_76/45a92d1ef7": {
+    "law": "UK_nisr_2016_76",
+    "row": "UK_nisr_2016_76:reg.1(3)",
+    "sentence": "Article 11 and Schedule 6 shall come into operation on the transfer date."
   },
   "UK_nisr_2017_229/a8e0308ba1": {
     "law": "UK_nisr_2017_229",
@@ -1238,6 +1353,21 @@
     "law": "UK_nisr_2019_185",
     "row": "UK_nisr_2019_185:reg.27(1)",
     "sentence": "Any person who had a duty under the Radiation (Emergency Preparedness and Public Information) Regulations (Northern Ireland) 2001 (“the 2001 Regulations”) prior to these Regulations coming into operation may continue to comply with the provisions of the 2001 Regulations instead of the provisions of these Regulations, notwithstanding the revocation made in regulation 26, until the end of 31st October 2020."
+  },
+  "UK_nisr_2020_304/0685665b97": {
+    "law": "UK_nisr_2020_304",
+    "row": "UK_nisr_2020_304:reg.1(2)",
+    "sentence": "These Regulations come into operation as follows."
+  },
+  "UK_nisr_2020_304/5b7cb92e1c": {
+    "law": "UK_nisr_2020_304",
+    "row": "UK_nisr_2020_304:reg.1(2)(a)",
+    "sentence": "this regulation andregulation4 come into operation immediately before IP completion day; and"
+  },
+  "UK_nisr_2020_304/888ab59597": {
+    "law": "UK_nisr_2020_304",
+    "row": "UK_nisr_2020_304:reg.1(2)(b)",
+    "sentence": "regulations 2 and 3 come into operation on IP completion day."
   },
   "UK_nisr_2020_330/4061c269a6": {
     "law": "UK_nisr_2020_330",
@@ -1258,6 +1388,11 @@
     "law": "UK_nisr_2022_30",
     "row": "UK_nisr_2022_30:reg.2",
     "sentence": "The day appointed for the coming into operation of the following provisions of the Damages (Return on Investment) Act (Northern Ireland) 2022 is 10th February 2022—"
+  },
+  "UK_nisr_2025_126/77ebfc0c1d": {
+    "law": "UK_nisr_2025_126",
+    "row": "UK_nisr_2025_126:reg.1",
+    "sentence": "These Regulations may be cited as the Environmental Protection (Single-use Vapes) (Amendment) Regulations (Northern Ireland) 2025 and come into operation in 29th July 2025."
   },
   "UK_ssi_2004_112/643cba9716": {
     "law": "UK_ssi_2004_112",
@@ -1369,6 +1504,11 @@
     "row": "UK_ssi_2009_404:reg.2(1)",
     "sentence": "The provision of the Act specified in column(1) of schedule1 (the subject matter of which is mentioned in column(2)) comes into force on 1stDecember 2009."
   },
+  "UK_ssi_2009_440/5863c93e87": {
+    "law": "UK_ssi_2009_440",
+    "row": "UK_ssi_2009_440:reg.1(1)",
+    "sentence": "These Regulations may be cited as the INSPIRE (Scotland) Regulations 2009 and come into force on 31st December 2009."
+  },
   "UK_ssi_2010_204/3b88ae06e6": {
     "law": "UK_ssi_2010_204",
     "row": "UK_ssi_2010_204:reg.1(1)",
@@ -1383,11 +1523,6 @@
     "law": "UK_ssi_2010_216",
     "row": "UK_ssi_2010_216:reg.1",
     "sentence": "These Regulations may be cited as the Carbon Accounting Scheme (Scotland) Regulations 2010 and come into force on the day after the day they are made."
-  },
-  "UK_ssi_2010_393/fea451b669": {
-    "law": "UK_ssi_2010_393",
-    "row": "UK_ssi_2010_393:reg.1",
-    "sentence": "These Regulations may be cited as the Fire Safety (Scotland) Amendment Regulations 2010 and come into force on 21st January 2011."
   },
   "UK_ssi_2010_60/5e5ab373d6": {
     "law": "UK_ssi_2010_60",
@@ -1424,15 +1559,15 @@
     "row": "UK_ssi_2015_384:reg.17",
     "sentence": "In relation to biomass used before 1st April 2016, paragraph 2 of Schedule A1A of the principal Order (as inserted by article 13 of, and Schedule 1 to, this Order) has effect as if for sub-paragraph (b)(iii) there were substituted— «(iii) the average greenhouse gas emissions from the relevant biomass used by the station to generate electricity during the period from the day this Order comes into force to 31st March 2016 are equal to, or less than, the relevant target.»."
   },
+  "UK_ssi_2019_130/9ed794bcaf": {
+    "law": "UK_ssi_2019_130",
+    "row": "UK_ssi_2019_130:reg.1(1)",
+    "sentence": "These Regulations may be cited as the Forestry (EU Exit) (Scotland) (Amendment etc.) Regulations 2019 and come into force—"
+  },
   "UK_ssi_2019_273/f3b3469946": {
     "law": "UK_ssi_2019_273",
     "row": "UK_ssi_2019_273:reg.1(2)",
     "sentence": "These Regulations come into force on 30 October 2019, apart from Part 3 which comes into force on exit day."
-  },
-  "UK_ssi_2019_276/408444e956": {
-    "law": "UK_ssi_2019_276",
-    "row": "UK_ssi_2019_276:reg.1(1)",
-    "sentence": "These Regulations may be cited as the Environmental Liability etc. (EU Exit) (Scotland) (Amendment) Regulations 2019 and come into force—"
   },
   "UK_ssi_2019_336/0873636bfa": {
     "law": "UK_ssi_2019_336",
@@ -1448,11 +1583,6 @@
     "law": "UK_ssi_2020_154",
     "row": "UK_ssi_2020_154:reg.1(5)",
     "sentence": "Parts 2 , 7 and 8, and regulations 19, 20 and 21 for all purposes and the remaining provisions of Part 5 come into force on 1 October 2027."
-  },
-  "UK_ssi_2020_154/d892c33958": {
-    "law": "UK_ssi_2020_154",
-    "row": "UK_ssi_2020_154:reg.1(3)",
-    "sentence": "In Part 5, regulations 22 to 25 come into force on 1 January 2021."
   },
   "UK_ssi_2020_154/e8352d9f06": {
     "law": "UK_ssi_2020_154",
@@ -1478,6 +1608,11 @@
     "law": "UK_ssi_2025_165",
     "row": "UK_ssi_2025_165:reg.1(4)",
     "sentence": "Subject to paragraph (5), the following regulations come into force on 1 June 2025—"
+  },
+  "UK_ssi_2025_165/cb18529c4d": {
+    "law": "UK_ssi_2025_165",
+    "row": "UK_ssi_2025_165:reg.1(5)",
+    "sentence": "Notwithstanding the coming into force of the regulations as specified in sub-paragraph (4), during the period between and including 1 June 2025 and 31 October 2025— … apply only insofar as they relate to the activities described in paragraph 1(1) of new schedule 18 of the 2018 Regulations to be inserted by schedule 9 of these Regulations, that is, the recovery of waste by application to land for the purpose of soil improvement, and the temporary storage of waste at the place where it is to be used for that purpose."
   },
   "UK_ssi_2025_417/6a5181cef4": {
     "law": "UK_ssi_2025_417",
@@ -1794,11 +1929,6 @@
     "row": "UK_ukpga_1971_78:s.21(5)",
     "sentence": "Any reference in this Part of this Act to the commencement of any provision thereof shall be construed as a reference to the day appointed for the coming into operation of that provision or, in the case of a provision which comes into operation on different days in different areas, shall, in relation to any area, be construed as a reference to the day appointed for the coming into operation of that provision in that area."
   },
-  "UK_ukpga_1971_78/4fcb0b17a4": {
-    "law": "UK_ukpga_1971_78",
-    "row": "UK_ukpga_1971_78:s.294(2)",
-    "sentence": "This section, any provisions of this Act which confer any power to make regulations or orders, or which (whether expressly or as construed in accordance with section 32(3) of the Interpretation Act 1889) confer any power to revoke or vary any regulations or orders, and any provisions of this Act relating to the exercise of any such power, shall come into operation on the passing of this Act; but no regulations or order shall be made under this Act so as to come into operation before the commencement date."
-  },
   "UK_ukpga_1971_78/51399517db": {
     "law": "UK_ukpga_1971_78",
     "row": "UK_ukpga_1971_78:s.207(1)",
@@ -1988,6 +2118,11 @@
     "law": "UK_ukpga_1974_50",
     "row": "UK_ukpga_1974_50:s.24(4)",
     "sentence": ". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . this Act shall come into operation on such day as the Secretary of State may by order made by statutory instrument appoint, and different days may be so appointed for different provisions and for different purposes; and an order bringing into operation any provision of Schedule 7 to this Act may contain such savings from the effect of the repeal concerned as the Secretary of State considers to be appropriate."
+  },
+  "UK_ukpga_1975_18/45ce07469a": {
+    "law": "UK_ukpga_1975_18",
+    "row": "UK_ukpga_1975_18:s.3(1)",
+    "sentence": "Provisions of— the 1973 Act, the National Insurance Act 1974, the National Insurance Measure (Northern Ireland) 1974, the Social Security Amendment Act 1974, and the Social Security Benefits Act 1975, which are made (whether by the Act or Measure itself or by an instrument made under an enactment) to come into force on 6th April 1975 do so in that order, except that paragraph 39 of Schedule 4 to the National Insurance Act 1974 and section 8(7) of the Social Security Benefits Act 1975 (both of which make minor amendments of the repeals Schedule to the 1973 Act) come into force before that Act."
   },
   "UK_ukpga_1975_18/bea9d5233b": {
     "law": "UK_ukpga_1975_18",
@@ -2824,11 +2959,6 @@
     "row": "UK_ukpga_1989_15:s.194(2)",
     "sentence": "This section, so much of this Act as confers any power to make subordinate legislation or makes provision with respect to the exercise of any such power and sections 29 and 30 above shall come into force on the passing of this Act."
   },
-  "UK_ukpga_1989_15/f9e4082fed": {
-    "law": "UK_ukpga_1989_15",
-    "row": "UK_ukpga_1989_15:s.191(2)(d)",
-    "sentence": "in the case of an order made after the transfer date, require provision contained in the order to be treated as if it came into force on that date."
-  },
   "UK_ukpga_1989_15/fc82619490": {
     "law": "UK_ukpga_1989_15",
     "row": "UK_ukpga_1989_15:s.4(1)(b)",
@@ -2908,11 +3038,6 @@
     "law": "UK_ukpga_1990_16",
     "row": "UK_ukpga_1990_16:s.60(2)",
     "sentence": "The following provisions shall come into force on the day on which this Act is passed, namely— section 13; section 51; and paragraphs 12 to 15 of Schedule 2 and, so far as relating to those paragraphs, section 52."
-  },
-  "UK_ukpga_1990_19/bee505f97e": {
-    "law": "UK_ukpga_1990_19",
-    "row": "UK_ukpga_1990_19:s.60(1)",
-    "sentence": "Subject to the following provisions of this section, on and after the day appointed for the coming into force of this subsection, no health service body shall be regarded as the servant or agent of the Crown or as enjoying any status, immunity or privilege of the Crown; and so far as concerns land in which the Secretary of State has an interest, at any time when— the interest of the Secretary of State shall be treated for the purposes of any enactment or rule of law relating to Crown land or interests as if it were an interest held otherwise than by the Secretary of State (or any other emanation of the Crown)."
   },
   "UK_ukpga_1990_42/6af74d97d8": {
     "law": "UK_ukpga_1990_42",
@@ -2998,11 +3123,6 @@
     "law": "UK_ukpga_1990_9",
     "row": "UK_ukpga_1990_9:s.94(2)",
     "sentence": "Except as provided in Schedule 4 to the Planning (Consequential Provisions) Act 1990, this Act shall come into force at the end of the period of three months beginning with the day on which it is passed."
-  },
-  "UK_ukpga_1990_9/a4b52695fd": {
-    "law": "UK_ukpga_1990_9",
-    "row": "UK_ukpga_1990_9:s.26C(6)",
-    "sentence": "An order may in particular make provision about the making, coming into force, variation and revocation of such a direction, including provision conferring powers on the Secretary of State in relation to directions by a local planning authority."
   },
   "UK_ukpga_1991_22/59a83f546a": {
     "law": "UK_ukpga_1991_22",
@@ -3609,11 +3729,6 @@
     "row": "UK_ukpga_1999_30:s.25(1)",
     "sentence": "If any amendment by the Family Law Act 1996 of Part II or IV of the Matrimonial Causes Act 1973 comes into force before the day on which any provision of this Part comes into force, the Lord Chancellor may by order make such consequential amendment of that provision as he thinks fit."
   },
-  "UK_ukpga_1999_30/dcf1c58dc1": {
-    "law": "UK_ukpga_1999_30",
-    "row": "UK_ukpga_1999_30:s.52(7)",
-    "sentence": "If no regulations under this section are in force on 6th April 2000, then until such time as any such regulations come into force—"
-  },
   "UK_ukpga_1999_9/5beaff5fee": {
     "law": "UK_ukpga_1999_9",
     "row": "UK_ukpga_1999_9:s.17(2)",
@@ -3844,11 +3959,6 @@
     "row": "UK_ukpga_2003_21:s.408(6)",
     "sentence": "In this section “the transitional period”, in relation to a provision brought into force as mentioned in subsection (1) by an order under section 411, means the period which—"
   },
-  "UK_ukpga_2003_22/adcf975ca8": {
-    "law": "UK_ukpga_2003_22",
-    "row": "UK_ukpga_2003_22:s.18(1)",
-    "sentence": "Sections 1 to 16 (and the Schedule) do not come into force until a day appointed by order made by the Secretary of State by statutory instrument; and different days may be appointed for different purposes."
-  },
   "UK_ukpga_2003_30/7414a047d1": {
     "law": "UK_ukpga_2003_30",
     "row": "UK_ukpga_2003_30:s.9(5)",
@@ -4058,11 +4168,6 @@
     "law": "UK_ukpga_2004_33",
     "row": "UK_ukpga_2004_33:s.263(8)(d)",
     "sentence": "subject to paragraph (e), section 254(1) and Schedule 24 come into force in accordance with provision made by order by the Secretary of State,"
-  },
-  "UK_ukpga_2004_33/ca4df4d56a": {
-    "law": "UK_ukpga_2004_33",
-    "row": "UK_ukpga_2004_33:s.263(8)(e)",
-    "sentence": "the provisions of Schedule 24 listed in subsection (9), and section 254(1) so far as relating to those provisions, come into force in accordance with provision made by the Department of Finance and Personnel, after consulting the Secretary of State, and"
   },
   "UK_ukpga_2004_33/d63385ee5e": {
     "law": "UK_ukpga_2004_33",
@@ -4284,6 +4389,11 @@
     "row": "UK_ukpga_2007_29:s.194C(4)",
     "sentence": "An order under section 194(8) that was in force immediately before section 48 of the Judicial Review and Courts Act 2022 came into force—"
   },
+  "UK_ukpga_2008_22/0d7040f3fe": {
+    "law": "UK_ukpga_2008_22",
+    "row": "UK_ukpga_2008_22:s.64(4)",
+    "sentence": "An order under this section may provide for any provision of this Act which comes into force before any other provision comes into force to have effect, until that other provision has come into force, with specified modifications."
+  },
   "UK_ukpga_2008_23/6c1a3259b0": {
     "law": "UK_ukpga_2008_23",
     "row": "UK_ukpga_2008_23:s.44(1)",
@@ -4308,11 +4418,6 @@
     "law": "UK_ukpga_2008_23",
     "row": "UK_ukpga_2008_23:s.44(2)(a)",
     "sentence": "paragraph 4 of Schedule 3 (which comes into force in accordance with subsection (9)); and"
-  },
-  "UK_ukpga_2008_25/276d903f7d": {
-    "law": "UK_ukpga_2008_25",
-    "row": "UK_ukpga_2008_25:s.173(9)",
-    "sentence": "An order under subsection (4) may provide for the following provisions to come into force with the substitution of “ the first anniversary of the date on which the person ceased to be of compulsory school age ” for “the age of 18”"
   },
   "UK_ukpga_2008_26/d0def73edc": {
     "law": "UK_ukpga_2008_26",
@@ -4469,11 +4574,6 @@
     "row": "UK_ukpga_2009_25:s.182(3)",
     "sentence": "The following provisions come into force on 1 January 2010—"
   },
-  "UK_ukpga_2009_26/95ad807ea3": {
-    "law": "UK_ukpga_2009_26",
-    "row": "UK_ukpga_2009_26:s.116(6)",
-    "sentence": "The following provisions come into force at the end of the period of 2 months beginning with the day on which this Act is passed—"
-  },
   "UK_ukpga_2009_26/dad40642c6": {
     "law": "UK_ukpga_2009_26",
     "row": "UK_ukpga_2009_26:s.112(1)",
@@ -4619,11 +4719,6 @@
     "row": "UK_ukpga_2012_19:s.110(4)",
     "sentence": "The day appointed for the coming into force of section 3 must fall on or after 1 April 2014, unless paragraph 3 of Schedule 10, or provision having equivalent effect, comes into force on or before the appointed day."
   },
-  "UK_ukpga_2012_9/1dae7fd194": {
-    "law": "UK_ukpga_2012_9",
-    "row": "UK_ukpga_2012_9:s.120(2)",
-    "sentence": "The provisions mentioned in subsection (3) come into force on such day as the Welsh Ministers may by order made by statutory instrument appoint; and different days may be appointed for different purposes."
-  },
   "UK_ukpga_2013_22/8c3fbba58a": {
     "law": "UK_ukpga_2013_22",
     "row": "UK_ukpga_2013_22:s.61(2)",
@@ -4643,11 +4738,6 @@
     "law": "UK_ukpga_2013_23",
     "row": "UK_ukpga_2013_23:s.13(3)",
     "sentence": "Sections 1 to 6 come into force in Scotland on such day or days as the Scottish Ministers may by order appoint."
-  },
-  "UK_ukpga_2013_27/e13a38c9d5": {
-    "law": "UK_ukpga_2013_27",
-    "row": "UK_ukpga_2013_27:s.35(2)",
-    "sentence": "Section 1(1) so far as it inserts the new section 62B, sections 4, 7, 9, 16, 19, 26, 32 and 33, this section and section 36, and Schedules 2 and 4, come into force on the day on which this Act is passed."
   },
   "UK_ukpga_2013_32/70076985fe": {
     "law": "UK_ukpga_2013_32",
@@ -4683,11 +4773,6 @@
     "law": "UK_ukpga_2014_21",
     "row": "UK_ukpga_2014_21:s.94(2)",
     "sentence": "The following provisions of this Act come into force at the end of the period of two months beginning with the day on which it is passed—"
-  },
-  "UK_ukpga_2014_26/00928ae7da": {
-    "law": "UK_ukpga_2014_26",
-    "row": "UK_ukpga_2014_26:s.198(2)",
-    "sentence": "The following provisions come into force on 1 December 2014—"
   },
   "UK_ukpga_2014_26/f8b47f8a7a": {
     "law": "UK_ukpga_2014_26",
@@ -4728,11 +4813,6 @@
     "law": "UK_ukpga_2015_26",
     "row": "UK_ukpga_2015_26:s.69(1)(a)",
     "sentence": "in the period beginning with the day on which the Pubs Code comes into force and ending with the following 31 March, if immediately before the Pubs Code comes into force the person was the landlord of 500 or more tied pubs;"
-  },
-  "UK_ukpga_2015_30/aedf9e0552": {
-    "law": "UK_ukpga_2015_30",
-    "row": "UK_ukpga_2015_30:s.61(3)",
-    "sentence": "This Part, other than section 57(1) and Schedule 5, comes into force on the day on which this Act is passed."
   },
   "UK_ukpga_2015_6/16aecf83d5": {
     "law": "UK_ukpga_2015_6",
@@ -4788,6 +4868,16 @@
     "law": "UK_ukpga_2015_9",
     "row": "UK_ukpga_2015_9:s.88(2)",
     "sentence": "The following provisions come into force on whatever day or days the Scottish Ministers appoint by regulations after consulting the Secretary of State—"
+  },
+  "UK_ukpga_2016_1/a9dbe6f650": {
+    "law": "UK_ukpga_2016_1",
+    "row": "UK_ukpga_2016_1:s.25(2)(a)",
+    "sentence": "so far as is necessary for the purpose of enabling the exercise, on or after the day on which this Act is passed, of any power to make provision by order or regulations made by statutory instrument, come into force on the day on which this Act is passed, and"
+  },
+  "UK_ukpga_2016_1/cc98c08f0b": {
+    "law": "UK_ukpga_2016_1",
+    "row": "UK_ukpga_2016_1:s.25(2)(b)",
+    "sentence": "come into force for remaining purposes, at the end of the period of two months beginning with the day on which this Act is passed."
   },
   "UK_ukpga_2016_11/58acdc46c3": {
     "law": "UK_ukpga_2016_11",
@@ -4858,11 +4948,6 @@
     "law": "UK_ukpga_2017_33",
     "row": "UK_ukpga_2017_33:s.4(2)",
     "sentence": "The other provisions of this Act come into force on the day on which this Act is passed."
-  },
-  "UK_ukpga_2018_12/071418b820": {
-    "law": "UK_ukpga_2018_12",
-    "row": "UK_ukpga_2018_12:s.212(1)",
-    "sentence": "Except as provided by subsections (2) and (3), this Act comes into force on such day as the Secretary of State may by regulations appoint."
   },
   "UK_ukpga_2018_12/0d42d5b369": {
     "law": "UK_ukpga_2018_12",
@@ -5014,6 +5099,11 @@
     "row": "UK_ukpga_2020_22:s.54(3)",
     "sentence": "The following provisions come into force on IP completion day—"
   },
+  "UK_ukpga_2020_27/140764de07": {
+    "law": "UK_ukpga_2020_27",
+    "row": "UK_ukpga_2020_27:s.17(5)(c)(ii)",
+    "sentence": "comes into force, or otherwise takes effect, on or after the day on which this section comes into force if it re-enacts or replicates (without substantive change) a legislative requirement in force or having effect immediately before that day;"
+  },
   "UK_ukpga_2020_7/432923a805": {
     "law": "UK_ukpga_2020_7",
     "row": "UK_ukpga_2020_7:s.87(2)",
@@ -5043,6 +5133,11 @@
     "law": "UK_ukpga_2021_24",
     "row": "UK_ukpga_2021_24:s.4(5)",
     "sentence": "Section 3 comes into force at the same time as section 1 comes fully into force in relation to premises in England."
+  },
+  "UK_ukpga_2021_26/3b8f71383c": {
+    "law": "UK_ukpga_2021_26",
+    "row": "UK_ukpga_2021_26:s.85(1)(a)",
+    "sentence": "comes into force on such day as the Treasury may by regulations appoint, and"
   },
   "UK_ukpga_2021_30/03d74f511b": {
     "law": "UK_ukpga_2021_30",
@@ -5159,6 +5254,21 @@
     "row": "UK_ukpga_2022_7:s.131(1)",
     "sentence": "Any provision of, or amendment made by, Part 1 or 3, so far as it— comes into force on the day on which this Act is passed."
   },
+  "UK_ukpga_2023_30/3c15c12af8": {
+    "law": "UK_ukpga_2023_30",
+    "row": "UK_ukpga_2023_30:s.336(4)",
+    "sentence": "The amendments made by this section are to be treated as having come into force immediately after the coming into force of Schedule 29 to FA 2021 in accordance with regulation 2(2)(a) of The Finance Act 2009, Finance (No. 3) Act 2010 and Finance Act 2021 (Value Added Tax) (Interest) (Appointed Days) Regulations 2022 ()."
+  },
+  "UK_ukpga_2023_30/a2cfb9742b": {
+    "law": "UK_ukpga_2023_30",
+    "row": "UK_ukpga_2023_30:s.348(3)",
+    "sentence": "The amendments made by subsection (1) come into force on the day on which this Act is passed."
+  },
+  "UK_ukpga_2023_30/ed28a19ca6": {
+    "law": "UK_ukpga_2023_30",
+    "row": "UK_ukpga_2023_30:s.120(2)",
+    "sentence": "The other provisions of this Part (so far as not brought into force by subsection (1)) come into force on such day or days as the Commissioners may by regulations appoint."
+  },
   "UK_ukpga_2023_50/40d57d9176": {
     "law": "UK_ukpga_2023_50",
     "row": "UK_ukpga_2023_50:s.95(1)",
@@ -5178,11 +5288,6 @@
     "law": "UK_ukpga_2023_50",
     "row": "UK_ukpga_2023_50:s.45(4)(b)",
     "sentence": "if the draft is so approved, the code of practice comes into force at the end of the period of 21 days beginning with the day on which it is issued;"
-  },
-  "UK_ukpga_2023_52/64b88cf8b8": {
-    "law": "UK_ukpga_2023_52",
-    "row": "UK_ukpga_2023_52:s.334(3)",
-    "sentence": "The following provisions come into force at the end of the period of 2 months beginning with the day on which this Act is passed—"
   },
   "UK_ukpga_2023_52/aedf270044": {
     "law": "UK_ukpga_2023_52",
@@ -5279,11 +5384,6 @@
     "row": "UK_ukpga_2024_13:s.252(3)",
     "sentence": "In this section— “the commencement date” means— (a) for the purposes of the saving by subsection (2) of Part 4A of the CPUTR 2008 (and other provisions of those Regulations so far as relating to that Part), the date on which the first regulations made under section 233 come into force; (b) for all other purposes, the date on which section 225 comes into force; “CPUTR 2008” means the Consumer Protection from Unfair Trading Regulations 2008 (S.I. 2008/1277)."
   },
-  "UK_ukpga_2024_13/ad79e2ec72": {
-    "law": "UK_ukpga_2024_13",
-    "row": "UK_ukpga_2024_13:s.310(5)",
-    "sentence": "Subsection (2) of section 293 applies, in the case of any special ADR arrangements made by an ADR provider before that subsection comes into force, as if the prohibition in it were a prohibition against the person who made the arrangements continuing to operate them, unless that person—"
-  },
   "UK_ukpga_2024_13/fadf91f966": {
     "law": "UK_ukpga_2024_13",
     "row": "UK_ukpga_2024_13:s.326(2)",
@@ -5324,11 +5424,6 @@
     "row": "UK_ukpga_2025_34:s.118(1)(k)",
     "sentence": "section 24 and Schedule 1 come into force at the end of the period of two months beginning with the day on which this Act is passed, except that paragraph 7 of Schedule 1 comes into force on such day as the Secretary of State may by regulations appoint;"
   },
-  "UK_ukpga_2025_34/c6bfe69db4": {
-    "law": "UK_ukpga_2025_34",
-    "row": "UK_ukpga_2025_34:s.118(2)(d)(ii)",
-    "sentence": "subsection (2) comes into force at the same time as section 102(1) of the Levelling-up and Regeneration Act 2023;"
-  },
   "UK_ukpga_2025_34/d1938f7a2c": {
     "law": "UK_ukpga_2025_34",
     "row": "UK_ukpga_2025_34:s.118(5)(f)",
@@ -5353,6 +5448,41 @@
     "law": "UK_ukpga_2025_5",
     "row": "UK_ukpga_2025_5:s.17(4)",
     "sentence": "The following provisions come into force on such day as the Welsh Ministers may by regulations appoint—"
+  },
+  "UK_ukpga_2026_11/171a9e9a83": {
+    "law": "UK_ukpga_2026_11",
+    "row": "UK_ukpga_2026_11:s.263(6)",
+    "sentence": "The amendments made by subsections (2) to (4) come into force on 1 April 2026 for the purposes for which Schedule 26 to FA 2021 is in force immediately before 1 April 2026 and have effect in relation to penalties assessed on or after 1 April 2026."
+  },
+  "UK_ukpga_2026_11/370aefb5bf": {
+    "law": "UK_ukpga_2026_11",
+    "row": "UK_ukpga_2026_11:s.250(2)",
+    "sentence": "Schedule 22 comes into force on 1 April 2026 and has effect in relation to acts or omissions on or after that date."
+  },
+  "UK_ukpga_2026_11/505fbb8825": {
+    "law": "UK_ukpga_2026_11",
+    "row": "UK_ukpga_2026_11:s.75(2)",
+    "sentence": "The amendment made by subsection (1) is treated as having come into force on 6 April 2025 (and has effect in relation to tax years ending before that date as it has effect in relation to later tax years)."
+  },
+  "UK_ukpga_2026_11/9f8454cd0f": {
+    "law": "UK_ukpga_2026_11",
+    "row": "UK_ukpga_2026_11:s.259(10)",
+    "sentence": "The other amendments made by this section come into force—"
+  },
+  "UK_ukpga_2026_11/a41f0596bf": {
+    "law": "UK_ukpga_2026_11",
+    "row": "UK_ukpga_2026_11:s.259(9)",
+    "sentence": "The amendments made by subsections (2)(c), (3) and (8)(b) come into force on the day on which this Act is passed."
+  },
+  "UK_ukpga_2026_11/a4cf12a78f": {
+    "law": "UK_ukpga_2026_11",
+    "row": "UK_ukpga_2026_11:s.259(10)(b)",
+    "sentence": "for any other purposes, at the same time as the Schedule being amended comes into force for those purposes."
+  },
+  "UK_ukpga_2026_11/ba83260b61": {
+    "law": "UK_ukpga_2026_11",
+    "row": "UK_ukpga_2026_11:s.262(9)",
+    "sentence": "The amendments made by this section come into force for any other purposes at the same time as Schedule 24 to FA 2021 comes into force for those other purposes."
   },
   "UK_ukpga_2026_18/017acb9d6e": {
     "law": "UK_ukpga_2026_18",
@@ -5413,11 +5543,6 @@
     "law": "UK_ukpga_2026_6",
     "row": "UK_ukpga_2026_6:s.32(1)",
     "sentence": "Except as provided in subsection (2), this Act comes into force on the day on which it is passed."
-  },
-  "UK_ukpga_2026_9/b635b893c5": {
-    "law": "UK_ukpga_2026_9",
-    "row": "UK_ukpga_2026_9:s.19(1)",
-    "sentence": "This Act, apart from section 1, comes into force on the day on which it is passed."
   },
   "UK_uksi_1956_1943/74de067fef": {
     "law": "UK_uksi_1956_1943",
@@ -5563,21 +5688,6 @@
     "law": "UK_uksi_1990_2594",
     "row": "UK_uksi_1990_2594:reg.1",
     "sentence": "This Order may be cited as the Hovercraft (Application of Enactments) (Amendment) Order 1990 and shall come into force on the fourteenth day after which it is made."
-  },
-  "UK_uksi_1991_1179/c3cf817982": {
-    "law": "UK_uksi_1991_1179",
-    "row": "UK_uksi_1991_1179:reg.1",
-    "sentence": "This Order may be cited as the Financial Assistance (UK 2000 Scotland) (Scotland) Order 1991, shall come into force on 11th June 1991 and shall extend to Scotland only."
-  },
-  "UK_uksi_1991_146/e9d425bfff": {
-    "law": "UK_uksi_1991_146",
-    "row": "UK_uksi_1991_146:reg.1",
-    "sentence": "This Order may be cited as the Financial Assistance (Sewerage Improvements) (Scotland) Order 1991, shall come into force on 1st March 1991 and shall extend to Scotland only."
-  },
-  "UK_uksi_1991_2539/ac1280c127": {
-    "law": "UK_uksi_1991_2539",
-    "row": "UK_uksi_1991_2539:reg.1",
-    "sentence": "These Regulations may be cited as the Control of Pollution (Radioactive Waste) (Scotland) Regulations 1991, shall come into force on 2nd December 1991 and shall extend to Scotland only."
   },
   "UK_uksi_1991_2728/aea5228687": {
     "law": "UK_uksi_1991_2728",
@@ -6194,6 +6304,16 @@
     "row": "UK_uksi_2006_1265:reg.1(2)",
     "sentence": "This Order comes into force on the day on which the Supplementary Fund Protocol enters into force in respect of the United Kingdom."
   },
+  "UK_uksi_2006_1281/f5acf643aa": {
+    "law": "UK_uksi_2006_1281",
+    "row": "UK_uksi_2006_1281:reg.2",
+    "sentence": "The following provisions of the 2004 Act shall come into force in relation to England and Wales on 7th June 2006—"
+  },
+  "UK_uksi_2006_1334/49cdcde7b7": {
+    "law": "UK_uksi_2006_1334",
+    "row": "UK_uksi_2006_1334:reg.1(b)",
+    "sentence": "come into force on the day after the day on which they are made;"
+  },
   "UK_uksi_2006_1521/5ba98f823f": {
     "law": "UK_uksi_2006_1521",
     "row": "UK_uksi_2006_1521:reg.4(1)",
@@ -6229,6 +6349,16 @@
     "row": "UK_uksi_2006_798:reg.1(b)",
     "sentence": "come into force on 6th April 2006;"
   },
+  "UK_uksi_2007_1388/0ef48e4df4": {
+    "law": "UK_uksi_2007_1388",
+    "row": "UK_uksi_2007_1388:reg.1(2)",
+    "sentence": "A modification made by a provision of Schedule 1 to this Order specified in the first column of the following table (and Article 2 so far as it relates to that provision) shall come into force at the time specified in the corresponding entry in the second column of the table— (1) Provisions of Schedule 1 (2) Coming into force Paragraph 98(1) and (4)The day after the day on which this Order is made Paragraph 17 Paragraph 89 Paragraph 90(a) and (b) Paragraph 91(a) Paragraph 92 Paragraph 93 Paragraph 94 Paragraph 99 Paragraph 100 Paragraph 122 Immediately after the ordinary election under section 3 of the Government of Wales Act 1998 held in 2007 All other provisionsImmediately after the end of the initial period"
+  },
+  "UK_uksi_2007_1388/7ed6121f84": {
+    "law": "UK_uksi_2007_1388",
+    "row": "UK_uksi_2007_1388:reg.1(3)",
+    "sentence": "Subject to paragraph (2) this Order comes into force on the day after the day on which it is made."
+  },
   "UK_uksi_2007_1519/8347e76382": {
     "law": "UK_uksi_2007_1519",
     "row": "UK_uksi_2007_1519:reg.1(1)",
@@ -6243,6 +6373,31 @@
     "law": "UK_uksi_2007_2154",
     "row": "UK_uksi_2007_2154:reg.2(3)",
     "sentence": "The following regulations shall come into force on 1st January 2008—"
+  },
+  "UK_uksi_2007_2194/23faecdccd": {
+    "law": "UK_uksi_2007_2194",
+    "row": "UK_uksi_2007_2194:reg.4(1)",
+    "sentence": "Section 1068 of the Companies Act 2006 (registrar’s requirements as to form, authentication and manner of delivery), other than subsection (5) (which is already wholly in force), comes into force on 15th December 2007 so far as necessary for the purposes of any regulations made before that date in implementation of Directive of the European Parliament and of the Council of 26th October 2005 on cross-border mergers of limited liability companies."
+  },
+  "UK_uksi_2007_2194/34010278fc": {
+    "law": "UK_uksi_2007_2194",
+    "row": "UK_uksi_2007_2194:reg.1(3)",
+    "sentence": "The provisions of this Order come into force as follows—"
+  },
+  "UK_uksi_2007_2194/368a2912de": {
+    "law": "UK_uksi_2007_2194",
+    "row": "UK_uksi_2007_2194:reg.5(1)",
+    "sentence": "The following provisions of the Companies Act 2006 (which have the effect of applying the provisions about control of political donations and expenditure to independent election candidates) come into force on 1st October 2008—"
+  },
+  "UK_uksi_2007_2194/87b030290f": {
+    "law": "UK_uksi_2007_2194",
+    "row": "UK_uksi_2007_2194:reg.2(3)",
+    "sentence": "The following provisions of the Companies Act 2006 come into force on 1st October 2007 so far as necessary for the purposes of the provisions mentioned in paragraphs (1) and (2)—"
+  },
+  "UK_uksi_2007_2194/b16aaa9d94": {
+    "law": "UK_uksi_2007_2194",
+    "row": "UK_uksi_2007_2194:reg.1(3)(e)",
+    "sentence": "other provisions of this Order come into force on the same date as the provisions (or repeals) in relation to which they apply."
   },
   "UK_uksi_2007_3075/ab626a40f6": {
     "law": "UK_uksi_2007_3075",
@@ -6264,6 +6419,11 @@
     "row": "UK_uksi_2007_79:reg.8(2)(b)",
     "sentence": "the application has not been determined at the date these Regulations come into force,"
   },
+  "UK_uksi_2007_901/662de825ad": {
+    "law": "UK_uksi_2007_901",
+    "row": "UK_uksi_2007_901:reg.1(b)",
+    "sentence": "come into force on 6th April 2007;"
+  },
   "UK_uksi_2007_961/6a696d23ba": {
     "law": "UK_uksi_2007_961",
     "row": "UK_uksi_2007_961:reg.1(1)",
@@ -6274,10 +6434,10 @@
     "row": "UK_uksi_2008_1911:reg.38A",
     "sentence": "(5) In this section “qualifying selection procedure” means— (a) in the case of an appointment for a financial year beginning on or after 17 June 2016 made after the Statutory Auditors and Third Country Auditors Regulations 2017 come into force— (i) if the LLP has an audit committee, a selection procedure that complies with the requirements of section 485A(4) and (5)(a) and (b), and (ii) if the LLP does not have an audit committee, a selection procedure that complies with the requirements of section 485B(4); (b) in any other case, a selection procedure that substantially meets the requirements of Article 16(2) to (5) of the Audit Regulation as it had effect immediately before IP completion day, having regard to the circumstances at the time (including whether the LLP had an audit committee).»"
   },
-  "UK_uksi_2008_2694/a2f6a2878d": {
-    "law": "UK_uksi_2008_2694",
-    "row": "UK_uksi_2008_2694:reg.1(b)",
-    "sentence": "come into force on 3rd November 2008, and"
+  "UK_uksi_2008_3243/cfcfb50a97": {
+    "law": "UK_uksi_2008_3243",
+    "row": "UK_uksi_2008_3243:reg.1(c)",
+    "sentence": "shall come into force on 23rd January 2009."
   },
   "UK_uksi_2008_948/52a18d41d6": {
     "law": "UK_uksi_2008_948",
@@ -6329,11 +6489,6 @@
     "row": "UK_uksi_2009_890:reg.1(2)(b)",
     "sentence": "Part 4 (portable batteries: obligations and rights of distributors and other economic operators), which comes into force on 1st February 2010."
   },
-  "UK_uksi_2009_995/1e1f1adf74": {
-    "law": "UK_uksi_2009_995",
-    "row": "UK_uksi_2009_995:reg.1(1)",
-    "sentence": "They come into force on 6 May 2009."
-  },
   "UK_uksi_2009_995/5f0e12bc60": {
     "law": "UK_uksi_2009_995",
     "row": "UK_uksi_2009_995:reg.8(1A)",
@@ -6373,6 +6528,11 @@
     "law": "UK_uksi_2010_490",
     "row": "UK_uksi_2010_490:reg.1(3)",
     "sentence": "In regulation 6 (relevant authorities in relation to marine areas and European marine sites), paragraph (i) (inshore fisheries and conservation authority) comes into force immediately after section 153 of the Marine Act (management of inshore fisheries) comes into force."
+  },
+  "UK_uksi_2010_501/443e5d7c27": {
+    "law": "UK_uksi_2010_501",
+    "row": "UK_uksi_2010_501:reg.1(1)",
+    "sentence": "These Regulations may be cited as the Charities Act 2006 (Principal Regulators of Exempt Charities) Regulations 2010 and come into force immediately after section 11(3) of the Charities Act 2006 comes into force."
   },
   "UK_uksi_2010_724/657995aa39": {
     "law": "UK_uksi_2010_724",
@@ -6434,10 +6594,25 @@
     "row": "UK_uksi_2012_1657:reg.1(2)",
     "sentence": "The following regulations come into force on the dates specified—"
   },
+  "UK_uksi_2012_1923/1585b84bee": {
+    "law": "UK_uksi_2012_1923",
+    "row": "UK_uksi_2012_1923:reg.1(2)",
+    "sentence": "The Order comes into force on the day after the day on which it is made, except as provided by paragraph ."
+  },
+  "UK_uksi_2012_1923/b5e78f4db1": {
+    "law": "UK_uksi_2012_1923",
+    "row": "UK_uksi_2012_1923:reg.1(3)",
+    "sentence": "In respect of the final entry (Public Bodies Act 2011) in the table of repeals in the Schedule, article comes into force on the second day after the day on which the Order is made."
+  },
   "UK_uksi_2012_2404/ded90aa303": {
     "law": "UK_uksi_2012_2404",
     "row": "UK_uksi_2012_2404:reg.5",
     "sentence": "The amendments made by Schedule 2 apply only in relation to a debt relief order the application for which is made after the coming into force of this Order, except for the amendments made by the provisions listed in article 6 and as provided in article 9."
+  },
+  "UK_uksi_2012_2654/d6c5495a3f": {
+    "law": "UK_uksi_2012_2654",
+    "row": "UK_uksi_2012_2654:reg.1(5)",
+    "sentence": "In respect of the final entry (Public Bodies Act 2011) in the table of repeals in the Schedule, article comes into force on 2nd April 2013."
   },
   "UK_uksi_2012_3038/85cbd7028a": {
     "law": "UK_uksi_2012_3038",
@@ -6478,11 +6653,6 @@
     "law": "UK_uksi_2013_1582",
     "row": "UK_uksi_2013_1582:reg.1(1)(b)",
     "sentence": "come into force on the day after the day on which they are made; and"
-  },
-  "UK_uksi_2013_1644/4512b35ad1": {
-    "law": "UK_uksi_2013_1644",
-    "row": "UK_uksi_2013_1644:reg.7(6)",
-    "sentence": "The first period ending on or after the date on which this Order comes into force for which annual reports are required to be made under section 55 of the Public Passenger Vehicles Act 1981 (annual report of traffic commissioners) is to be the period of one year immediately following the end of the last period, which ended before that date, in relation to which annual reports were required under that section."
   },
   "UK_uksi_2013_1959/202199d9a5": {
     "law": "UK_uksi_2013_1959",
@@ -6734,10 +6904,30 @@
     "row": "UK_uksi_2017_1285:reg.1(2)",
     "sentence": "Paragraphs 2 to 7, 9, 29 and 30 of the Schedule come into force immediately after Schedule 3 to the Digital Economy Act 2017 comes fully into force."
   },
+  "UK_uksi_2017_1312/228d835f2e": {
+    "law": "UK_uksi_2017_1312",
+    "row": "UK_uksi_2017_1312:reg.1(4)",
+    "sentence": "In relation to an offence under regulation 3(2), regulations 6 to 8 come into force 6 months after the day on which these Regulations are made."
+  },
+  "UK_uksi_2017_1312/5f25f64ea3": {
+    "law": "UK_uksi_2017_1312",
+    "row": "UK_uksi_2017_1312:reg.1(2)",
+    "sentence": "Except as provided in paragraphs (3) and (4), these Regulations come into force 21 days after the day on which they are made."
+  },
+  "UK_uksi_2017_1312/841b0be733": {
+    "law": "UK_uksi_2017_1312",
+    "row": "UK_uksi_2017_1312:reg.1(3)",
+    "sentence": "Paragraph (2) of regulation 3 and, so far as it relates to that paragraph, paragraph (3) of that regulation, and regulation 4, come into force 6 months after the day on which these Regulations are made."
+  },
   "UK_uksi_2017_469/2187c3973c": {
     "law": "UK_uksi_2017_469",
     "row": "UK_uksi_2017_469:reg.1(3)",
     "sentence": "Otherwise this Order comes into force on 8th May 2017."
+  },
+  "UK_uksi_2017_582/491f5297c7": {
+    "law": "UK_uksi_2017_582",
+    "row": "UK_uksi_2017_582:reg.43(1)",
+    "sentence": "Subject to paragraphs (2) and (3), the following must be dealt with under the 1999 Pipe-line Regulations as if they had not been amended by these Regulations— received by the Secretary of State before these Regulations come into force."
   },
   "UK_uksi_2017_701/356fd1405b": {
     "law": "UK_uksi_2017_701",
@@ -6778,6 +6968,11 @@
     "law": "UK_uksi_2018_1202",
     "row": "UK_uksi_2018_1202:reg.1(2)",
     "sentence": "Subject to paragraph (3), these Regulations come into force on exit day."
+  },
+  "UK_uksi_2018_1227/4ff8c41c43": {
+    "law": "UK_uksi_2018_1227",
+    "row": "UK_uksi_2018_1227:reg.2(2)",
+    "sentence": "Regulation and comes into force on 7th April 2019."
   },
   "UK_uksi_2018_1251/1535f5c7d0": {
     "law": "UK_uksi_2018_1251",
@@ -6834,6 +7029,16 @@
     "row": "UK_uksi_2019_1246:reg.1(3)",
     "sentence": "Subject to paragraph (4), Part 3 comes into force immediately before exit day."
   },
+  "UK_uksi_2019_1285/46a6141a41": {
+    "law": "UK_uksi_2019_1285",
+    "row": "UK_uksi_2019_1285:reg.1",
+    "sentence": "These Regulations may be cited as the Environmental Damage (Prevention and Remediation) (England) (Amendment) Regulations 2019 and come into force 21 days after the day on which they are laid."
+  },
+  "UK_uksi_2019_1350/6283d38851": {
+    "law": "UK_uksi_2019_1350",
+    "row": "UK_uksi_2019_1350:reg.1",
+    "sentence": "These Regulations may be cited as the Environment (Legislative Functions from Directives) (EU Exit) Regulations 2019 and come into force on exit day."
+  },
   "UK_uksi_2019_1354/a74b105f05": {
     "law": "UK_uksi_2019_1354",
     "row": "UK_uksi_2019_1354:reg.1(1)",
@@ -6848,11 +7053,6 @@
     "law": "UK_uksi_2019_1440",
     "row": "UK_uksi_2019_1440:reg.1(2B)",
     "sentence": "The following regulations come into force on 1st February 2020—"
-  },
-  "UK_uksi_2019_1440/67b98c060c": {
-    "law": "UK_uksi_2019_1440",
-    "row": "UK_uksi_2019_1440:reg.1(3)",
-    "sentence": "Regulation 27, which substitutes regulation 88 of the Greenhouse Gas Emissions Trading Scheme Regulations 2012 comes into force on 1st May 2020, to the extent that it relates to the making of arrangements under paragraph (6) of regulation 88 (as substituted), but otherwise comes into force on 1st January 2021."
   },
   "UK_uksi_2019_145/55260f1ef2": {
     "law": "UK_uksi_2019_145",
@@ -6899,11 +7099,6 @@
     "row": "UK_uksi_2019_306:reg.1(4)",
     "sentence": "Part 4 comes into force on exit day."
   },
-  "UK_uksi_2019_414/7996e56382": {
-    "law": "UK_uksi_2019_414",
-    "row": "UK_uksi_2019_414:reg.1(2)",
-    "sentence": "They come into force as follows—"
-  },
   "UK_uksi_2019_42/047b52b573": {
     "law": "UK_uksi_2019_42",
     "row": "UK_uksi_2019_42:reg.4(4)(a)",
@@ -6913,11 +7108,6 @@
     "law": "UK_uksi_2019_421",
     "row": "UK_uksi_2019_421:reg.1(4)",
     "sentence": "The remainder of these Regulations come into force on 1st September 2019."
-  },
-  "UK_uksi_2019_509/f15e1a6619": {
-    "law": "UK_uksi_2019_509",
-    "row": "UK_uksi_2019_509:reg.1(3)",
-    "sentence": "Regulations 3(a)(i), (iii) and (iv), and (b), 6(a), 8, 9, 11, 12, 14 to 22, 24, 26 to 28 and 29(a)(i) and (ii) come into force on exit day."
   },
   "UK_uksi_2019_539/d03b5cbce7": {
     "law": "UK_uksi_2019_539",
@@ -6933,6 +7123,11 @@
     "law": "UK_uksi_2019_544",
     "row": "UK_uksi_2019_544:reg.1(2)",
     "sentence": "This regulation and Part 3 come into force on the day before that on which exit day falls."
+  },
+  "UK_uksi_2019_584/b60e409dde": {
+    "law": "UK_uksi_2019_584",
+    "row": "UK_uksi_2019_584:reg.1",
+    "sentence": "These Regulations may be cited as the Environment (Miscellaneous Amendments) (Northern Ireland) (EU Exit) Regulations 2019 and shall come into force on exit day."
   },
   "UK_uksi_2019_598/740acca645": {
     "law": "UK_uksi_2019_598",
@@ -6954,11 +7149,6 @@
     "row": "UK_uksi_2019_734:reg.1(2)",
     "sentence": "This Order comes into force on the day on which section 81 of the Forestry and Land Management (Scotland) Act 2018 comes into force."
   },
-  "UK_uksi_2019_758/1953c9ac97": {
-    "law": "UK_uksi_2019_758",
-    "row": "UK_uksi_2019_758:reg.1(1)",
-    "sentence": "These Regulations may be cited as the REACH etc. (Amendment etc.) (EU Exit) Regulations 2019 and come into force on exit day."
-  },
   "UK_uksi_2019_775/d56c5e3769": {
     "law": "UK_uksi_2019_775",
     "row": "UK_uksi_2019_775:reg.10(3)(a)",
@@ -6978,6 +7168,11 @@
     "law": "UK_uksi_2020_1062",
     "row": "UK_uksi_2020_1062:reg.1(3)",
     "sentence": "The following regulations come into force on 6th April 2021—"
+  },
+  "UK_uksi_2020_1091/1f3ebf4f08": {
+    "law": "UK_uksi_2020_1091",
+    "row": "UK_uksi_2020_1091:reg.1(2)",
+    "sentence": "This regulation, and regulations 3 to 5, come into force immediately before IP completion day."
   },
   "UK_uksi_2020_1112/51fcaf92e4": {
     "law": "UK_uksi_2020_1112",
@@ -7013,6 +7208,11 @@
     "law": "UK_uksi_2020_1369",
     "row": "UK_uksi_2020_1369:reg.1(2)",
     "sentence": "These Regulations come into force immediately before IP completion day."
+  },
+  "UK_uksi_2020_1385/2ae8463ba8": {
+    "law": "UK_uksi_2020_1385",
+    "row": "UK_uksi_2020_1385:reg.1(4)",
+    "sentence": "The remainder of these Regulations come into force immediately before IP completion day."
   },
   "UK_uksi_2020_1419/e65d63521d": {
     "law": "UK_uksi_2020_1419",
@@ -7059,6 +7259,11 @@
     "row": "UK_uksi_2020_1528:reg.1(2)",
     "sentence": "This Part and Part 2 come into force immediately before IP completion day."
   },
+  "UK_uksi_2020_1531/6278cf38f4": {
+    "law": "UK_uksi_2020_1531",
+    "row": "UK_uksi_2020_1531:reg.1(2)",
+    "sentence": "These Regulations come into force immediately before 11 p.m. on 31st December 2020."
+  },
   "UK_uksi_2020_1540/34760d1bb2": {
     "law": "UK_uksi_2020_1540",
     "row": "UK_uksi_2020_1540:reg.1(4)",
@@ -7089,6 +7294,11 @@
     "row": "UK_uksi_2020_1593:reg.1(2)",
     "sentence": "Subject to paragraph (3), these Regulations come into force on IP completion day."
   },
+  "UK_uksi_2020_1620/0b1fb4a0b1": {
+    "law": "UK_uksi_2020_1620",
+    "row": "UK_uksi_2020_1620:reg.2(1)",
+    "sentence": "This Part and Part 5 come into force immediately before IP completion day."
+  },
   "UK_uksi_2020_1647/4f988cb0fc": {
     "law": "UK_uksi_2020_1647",
     "row": "UK_uksi_2020_1647:reg.1(2)",
@@ -7118,11 +7328,6 @@
     "law": "UK_uksi_2020_318",
     "row": "UK_uksi_2020_318:reg.1(2)(b)",
     "sentence": "regulations 3 to 6 come into force immediately before IP completion day;"
-  },
-  "UK_uksi_2020_559/765b7ad709": {
-    "law": "UK_uksi_2020_559",
-    "row": "UK_uksi_2020_559:reg.1(1)",
-    "sentence": "These Regulations may be cited as the Misuse of Drugs (Amendment) (England, Wales and Scotland) Regulations 2020 and come into force on the 21st day after the day on which they are laid before Parliament."
   },
   "UK_uksi_2020_660/b5a5693f93": {
     "law": "UK_uksi_2020_660",
@@ -7174,11 +7379,6 @@
     "row": "UK_uksi_2021_745:reg.1(3)",
     "sentence": "The remainder of these Regulations come into force the day after the day on which they are made."
   },
-  "UK_uksi_2022_1269/d40c9b97d6": {
-    "law": "UK_uksi_2022_1269",
-    "row": "UK_uksi_2022_1269:reg.1(b)",
-    "sentence": "come into force on the 22nd day after the day on which they are made;"
-  },
   "UK_uksi_2022_500/0f91418d33": {
     "law": "UK_uksi_2022_500",
     "row": "UK_uksi_2022_500:reg.3",
@@ -7213,6 +7413,11 @@
     "law": "UK_uksi_2023_907",
     "row": "UK_uksi_2023_907:reg.1(2)",
     "sentence": "These Regulations come into force at the same time as section 83 of the 2022 Act comes into force."
+  },
+  "UK_uksi_2023_96/8c196ec2d7": {
+    "law": "UK_uksi_2023_96",
+    "row": "UK_uksi_2023_96:reg.12(2)",
+    "sentence": "Subject to any determination under paragraph (3)(b), every AQSR monitoring station which was in operation immediately before the coming into force of this regulation is a monitoring station for the purposes of these Regulations."
   },
   "UK_uksi_2023_982/ac213f520e": {
     "law": "UK_uksi_2023_982",
@@ -7284,6 +7489,16 @@
     "row": "UK_uksi_2025_418:reg.1(2)",
     "sentence": "This regulation, and regulation 13(1) and (13), come into force on the day after the day on which these Regulations are made."
   },
+  "UK_uksi_2025_581/f3966d95cf": {
+    "law": "UK_uksi_2025_581",
+    "row": "UK_uksi_2025_581:reg.1(1)",
+    "sentence": "These Regulations may be cited as the Genetic Technology (Precision Breeding) Regulations 2025 and come into force on the day which falls six months after the day on which they are made."
+  },
+  "UK_uksi_2025_67/3527666a77": {
+    "law": "UK_uksi_2025_67",
+    "row": "UK_uksi_2025_67:reg.1(2)",
+    "sentence": "Except as provided in paragraph (3), these Regulations come into force on 1st October 2027."
+  },
   "UK_uksi_2025_878/f966628955": {
     "law": "UK_uksi_2025_878",
     "row": "UK_uksi_2025_878:reg.1(3)",
@@ -7354,11 +7569,6 @@
     "row": "UK_wsi_2009_995:reg.8(1A)",
     "sentence": "Paragraph (1) applies in relation to damage to marine waters as if, in sub-paragraph (a), for “the coming into force of these Regulations” there were substituted “19 July 2015”."
   },
-  "UK_wsi_2009_995/a5dfa91f01": {
-    "law": "UK_wsi_2009_995",
-    "row": "UK_wsi_2009_995:reg.1(1)",
-    "sentence": "They come into force on 6 May 2009."
-  },
   "UK_wsi_2010_1821/01f19a09cf": {
     "law": "UK_wsi_2010_1821",
     "row": "UK_wsi_2010_1821:reg.1",
@@ -7404,15 +7614,10 @@
     "row": "UK_wsi_2019_244:reg.1",
     "sentence": "The title of these Regulations is the Environmental Damage (Prevention and Remediation) (Wales) (Amendment) (EU Exit) Regulations 2019 and come into force on exit day."
   },
-  "UK_wsi_2019_414/8c69f70e68": {
-    "law": "UK_wsi_2019_414",
-    "row": "UK_wsi_2019_414:reg.1(2)",
-    "sentence": "They come into force as follows—"
-  },
-  "UK_wsi_2020_1339/5d7172177a": {
-    "law": "UK_wsi_2020_1339",
-    "row": "UK_wsi_2020_1339:reg.1(3)",
-    "sentence": "This regulation and regulation 2 come into force immediately before IP completion day."
+  "UK_wsi_2020_1215/a136f2f6d7": {
+    "law": "UK_wsi_2020_1215",
+    "row": "UK_wsi_2020_1215:reg.1(2)",
+    "sentence": "These Regulations come into force on IP completion day except for regulation 3 which comes into force immediately before IP completion day."
   },
   "UK_wsi_2020_1339/6bf8cc7b3d": {
     "law": "UK_wsi_2020_1339",
@@ -7428,11 +7633,6 @@
     "law": "UK_wsi_2024_207",
     "row": "UK_wsi_2024_207:reg.2",
     "sentence": "The following provisions of the 2022 Act come into force on 6 April 2024—"
-  },
-  "UK_wsi_2026_103/15a84eb16f": {
-    "law": "UK_wsi_2026_103",
-    "row": "UK_wsi_2026_103:reg.1(2)",
-    "sentence": "Except as provided in paragraphs (3) and (4), these Regulations come into force on 1 October 2027."
   },
   "UK_wsi_2026_18/8877fcf9d3": {
     "law": "UK_wsi_2026_18",

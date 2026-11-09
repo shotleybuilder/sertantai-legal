@@ -111,36 +111,59 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.OwnCommencement do
   def outcome(rules, law_name, id, ctx \\ Order.context()) do
     case Enum.reject(rules, &(&1.treatment in @not_text)) do
       [] -> {no_text(rules, law_name), nil}
-      text -> text |> evaluate(id, ctx) |> then(&{class(&1), &1})
+      text -> text |> evaluate(id, ctx) |> then(&{class(&1, rules, law_name, text), &1})
+    end
+  end
+
+  # a law whose only text rules tie its Schedules to their provisions is as
+  # it would be without them where they reach nothing (SI 2020/206: a staged
+  # clause's start, Schedule 4A with reg.48A)
+  defp class(result, rules, law_name, text) do
+    case class(result) do
+      :not_reached ->
+        if Enum.all?(text, &(&1.treatment == :schedule_effect)),
+          do: no_text(rules, law_name),
+          else: :not_reached
+
+      c ->
+        c
     end
   end
 
   # a cross-heading no rule dates commences with the first provision under
   # it to come in — its provisions those after it in the law's order, to the
   # next heading or Part (MS & Maritime Security Act 1997 h.17: ss.17–23 by
-  # SI 1997/1539, the heading left "by order")
+  # SI 1997/1539, the heading left "by order"); a Part, to the next Part
+  # (Environment Act 2021 Pt 3, its sections named one by one); with none
+  # dated, it is left as its first provision is (Environment (Wales) Act
+  # 2016 h.81, s.81 left to an order)
   defp evaluate(text, id, ctx) do
     result = Evaluator.evaluate(text, id, ctx)
 
-    with "h." <> _ <- id,
+    with true <- String.starts_with?(id, ["h.", "pt."]),
          nil <- result.full_from || result.partial_from,
-         [_ | _] = members <- heading_members(id, Map.get(ctx, :order, [])),
-         [first | _] <-
-           members
-           |> Enum.map(&Evaluator.evaluate(text, &1, ctx))
-           |> Enum.filter(&(&1.full_from || &1.partial_from))
-           |> Enum.sort_by(&(&1.partial_from || &1.full_from), Date) do
-      first
+         [_ | _] = members <- members(id, Map.get(ctx, :order, [])) do
+      results = Enum.map(members, &Evaluator.evaluate(text, &1, ctx))
+
+      results
+      |> Enum.filter(&(&1.full_from || &1.partial_from))
+      |> Enum.sort_by(&(&1.partial_from || &1.full_from), Date)
+      |> List.first(left(result, results))
     else
       _ -> result
     end
   end
 
-  defp heading_members(id, order) do
+  defp left(%{undated: []} = result, results), do: Enum.find(results, result, &(&1.undated != []))
+  defp left(result, _results), do: result
+
+  defp members(id, order) do
+    stop = if String.starts_with?(id, "pt."), do: ["pt."], else: ["h.", "pt."]
+
     order
     |> Enum.drop_while(&(&1 != id))
     |> Enum.drop(1)
-    |> Enum.take_while(&(not String.starts_with?(&1, ["h.", "pt."])))
+    |> Enum.take_while(&(not String.starts_with?(&1, stop)))
   end
 
   @doc "True for an outcome that is our fault (pass needs none)."

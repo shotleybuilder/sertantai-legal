@@ -18,6 +18,9 @@ defmodule SertantaiLegal.Scraper.Commencement.Store do
   Replace the rules read from `source_law` with `rules`. Returns `{:ok,
   count}`. `treatments:` replaces only rules of those treatments — two
   readers of one document (its feed effects, its text) keep each other's.
+  `commences:` replaces only its rules for that law — an order read for one
+  law keeps its rules for another (SI 1996/186, read for SI 1996/1030 as
+  well as for the Environment Act 1995).
   """
   @spec write(String.t(), [Rule.t()], keyword()) :: {:ok, non_neg_integer()}
   def write(source_law, rules, opts \\ []) do
@@ -28,16 +31,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Store do
     rows = Enum.map(rules, &Rule.to_row/1)
 
     Repo.transaction(fn ->
-      case Keyword.get(opts, :treatments) do
-        nil ->
-          Repo.query!("DELETE FROM commencement_rules WHERE source_law = $1", [source_law])
-
-        ts ->
-          Repo.query!(
-            "DELETE FROM commencement_rules WHERE source_law = $1 AND treatment = ANY($2)",
-            [source_law, Enum.map(ts, &to_string/1)]
-          )
-      end
+      delete(source_law, Keyword.get(opts, :treatments), Keyword.get(opts, :commences))
 
       for row <- rows do
         Repo.query!(
@@ -52,6 +46,28 @@ defmodule SertantaiLegal.Scraper.Commencement.Store do
       length(rows)
     end)
   end
+
+  defp delete(source_law, treatments, commences) do
+    {sql, args} =
+      Enum.reduce(
+        [
+          {"treatment", treatments && Enum.map(treatments, &to_string/1)},
+          {"commences", commences}
+        ],
+        {"DELETE FROM commencement_rules WHERE source_law = $1", [source_law]},
+        &filter/2
+      )
+
+    Repo.query!(sql, args)
+  end
+
+  defp filter({_column, nil}, acc), do: acc
+
+  defp filter({"treatment", ts}, {sql, args}),
+    do: {sql <> " AND treatment = ANY($#{length(args) + 1})", args ++ [ts]}
+
+  defp filter({column, v}, {sql, args}),
+    do: {sql <> " AND #{column} = $#{length(args) + 1}", args ++ [v]}
 
   @doc "The rules bringing `law_name`'s provisions into force, from every source."
   @spec for_law(String.t()) :: [Rule.t()]
