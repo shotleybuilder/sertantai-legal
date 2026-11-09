@@ -94,17 +94,17 @@ bugs:
     status: fixed
   - pattern: "Two orders commencing one stage on the same date (one for E., one for W.) give the stage the first entry's order, and the two stages share one key (Environment Act 1995 c.17 Sch. 1 paras 18, 26, 2004-04-01)"
     category: same-date-stages-one-key
-    module: Readers.Feed (staged keys id@date) / Merge
+    module: Readers.Feed (staged keys id@date, commencing/2)
     affected: unknown (1 catalogue example)
-    fix: "key and read stages by date and territory; a known limit until then (RULES each-stage-its-own-order)"
-    step: Merge
+    fix: "key each stage by date and its in-force entry (territory), each with its own order; a known limit until then (RULES each-stage-its-own-order)"
+    step: Feed reader
     status: open
   - pattern: "A staged removal's stages carry no in_force_for ('for E.' / 'for W.' in the qualification); the rule names it for commencements only (agent, doubtful)"
     category: removal-stage-territory
-    module: Readers.Feed (staged_removal/2) / Label fold
+    module: Readers.Feed (staged_removal/2, stage_claims/3)
     affected: "50 effects in 4 Environmental Protection laws (the several-order staged removals)"
-    fix: "decide in the Label fold whether a removal's stage territory is read; carry in_force_for on removal stages if so"
-    step: Label fold
+    fix: "carry each removal stage's in_force_for as read, as commencements do (readers carry, the fold means); the Label fold then decides what it means"
+    step: Feed reader
     status: open
   - pattern: "The pre-commit Credo ratchet (mix credo diff --from-git-ref HEAD) leaves a repo copy in /tmp/credo-diff-* on every run: 115 copies, 14 GB, filled the /tmp quota and failed the hook (2026-11-09)"
     category: credo-diff-tmp-leftovers
@@ -113,6 +113,7 @@ bugs:
     fix: "remove the run's /tmp/credo-diff-* after the check (trap), or clear copies older than an hour first"
     step: Tooling
     status: open
+    issue: 197
 artifacts:
   - backend/lib/sertantai_legal/scraper/change_vocabulary/effect_verb.ex
   - backend/lib/sertantai_legal/scraper/change_vocabulary/readers/feed.ex
@@ -171,8 +172,8 @@ Step 2 for Family 3. Each changes-feed effect of the family's 122 laws with LAT 
 
 ## Parking list
 
-- Tooling: credo-diff-tmp-leftovers — the pre-commit ratchet leaves a repo copy in /tmp each run (115, 14 GB, cleared with Jason's leave).
-- Merge: same-date-stages-one-key; Label fold: removal-stage-territory (frontmatter).
+- Tooling: credo-diff-tmp-leftovers — the pre-commit ratchet leaves a repo copy in /tmp each run (115, 14 GB, cleared with Jason's leave); #197.
+- Feed reader: same-date-stages-one-key; removal-stage-territory (frontmatter; reassigned from Merge and Label fold on 2026-11-09: the module that must change is the reader).
 
 - Store and build: the reader fixes of this step (Decisions 2 and 4, the lettered Part) leave stored changes one reading behind until rebuilt. That is 7 laws in this family (SSI 2009/440, SI 2009/3157, EPA 1990 and the 4 laws with several-order staged removals), plus 1 OH&S and 1 Maritime law (staged removals; both families switched). Rebuild at the family's build; refresh the two switched laws.
 - Feed reader (doubtful, agent): a staged removal's stages carry no `in_force_for` ("for E." / "for W."); the rule names it for commencements only. The territory is in the qualification, carried as read; whether removals should carry it is the Label fold's question.
