@@ -202,7 +202,10 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
     case if(no_change?(text), do: nil, else: Clauses.operation(text)) do
       {_, _} ->
         texts =
-          Enum.map([text.instruction | Enum.reverse(text.context)], &Clauses.unquote_words/1)
+          Enum.map(
+            [text.instruction | Enum.reverse(text.context)],
+            &(&1 |> Clauses.unquote_words() |> Clauses.no_effect_asides())
+          )
 
         before = Stream.map(text.before, &Clauses.unquote_words/1)
 
@@ -232,7 +235,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   # ("omit “either”; and at the end insert—") its own level, brackets and
   # numbers; the quote is the clause's that introduces it
   defp rules(text, texts, law, source, terms) do
-    entryless = Clauses.no_entry_names(text.instruction)
+    asideless = Clauses.no_effect_asides(text.instruction)
+    entryless = Clauses.no_entry_names(asideless)
 
     # a table's entry placed by nothing else in the instruction or its
     # parents ("omit the
@@ -246,7 +250,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
         &(&1 |> Clauses.unquote_words() |> Clauses.no_captions())
       )
 
-    if entryless != text.instruction and Targets.numbers(own, law.kind) == :none,
+    if entryless != asideless and Targets.numbers(own, law.kind) == :none,
       do: [],
       else:
         entry_rules(

@@ -97,10 +97,14 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   # "in paragraph (c)(ii) of that subsection—shall be omitted; (i) the
   # words “…”, and (ii) the word “…”": what is omitted is its list items,
   # all words (1995/25 Sch. 22 para 30(6)(b), run time 2026-10-26)
+  # (so too "In section 17 (…)— (a) in subsection (1), the words …; …
+  # shall cease to have effect": LGSA 1994 Sch.13 para 119(10), parked bug
+  # container-verb-after-items, 2026-11-10)
   defp words_listed?(%Text{instruction: i, items: [_ | _] = items}),
     do:
-      i =~ ~r/[—–]\s*(?:shall\s+be|are|is|be)\s+(?:omitted|repealed|revoked)\b/iu and
-        Enum.all?(items, &(&1 =~ ~r/^\s*the\s+words?\b/i))
+      i =~
+        ~r/[—–]\s*(?:(?:shall\s+be|are|is|be)\s+(?:omitted|repealed|revoked)\b|shall\s+cease\s+to\s+have\s+effect\b)/iu and
+        Enum.all?(items, &(&1 =~ ~r/^\s*(?:in\s+[^,;]+,\s*)?the\s+words?\b/i))
 
   defp words_listed?(_text), do: false
 
@@ -203,6 +207,14 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   @spec no_schedule_entries(String.t()) :: String.t()
   def no_schedule_entries(s), do: Regex.replace(@schedule_entry, s, "")
 
+  # ", as it has effect before section 5(8) of the Housing and Planning
+  # Act 2016 (c. 22) comes …," — an aside naming another law and its
+  # provisions, never the law or the place amended (asc 2023/3 Sch.13 para
+  # 72 on TCPA 1990 s.70(3); Amending-law reader: parked bugs, 2026-11-10).
+  # Up to the aside's closing comma: its words are the commencement
+  # readers' to read
+  @effect_aside ~r/,\s*as\s+(?:it\s+|they\s+)?(?:has|have|had)\s+effect\s+(?:before|after|until|apart\s+from)\b[^,;]*,/iu
+
   @entry_ref "\\d+[A-Z]*(?:\\s*\\([0-9A-Za-z]+\\))*"
   @entry_named Regex.compile!(
                  "\\b(the\\s+entr(?:y|ies)\\s+)(?:relating\\s+to|for)\\s+(?:sections?|regulations?|articles?|rules?|paragraphs?)\\s+" <>
@@ -220,6 +232,10 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   """
   @spec no_entry_names(String.t()) :: String.t()
   def no_entry_names(s), do: Regex.replace(@entry_named, s, "\\1")
+
+  @doc "The text without an aside saying when a provision has effect (`@effect_aside`)."
+  @spec no_effect_asides(String.t()) :: String.t()
+  def no_effect_asides(s), do: Regex.replace(@effect_aside, s, ",")
 
   @doc """
   The text without its captions, brackets inside them too ("… 1990

@@ -38,6 +38,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FoldVersion do
       lib/sertantai_legal/scraper/change_vocabulary/readers/note_law.ex
       lib/sertantai_legal/scraper/amending_law/defined_terms.ex
       lib/sertantai_legal/scraper/amending_law/doc.ex
+      lib/sertantai_legal/scraper/amending_law/doc/*.ex
       lib/sertantai_legal/scraper/amending_law/pointer.ex
       lib/sertantai_legal/scraper/amending_law/text.ex
       lib/sertantai_legal/scraper/commencement/order.ex

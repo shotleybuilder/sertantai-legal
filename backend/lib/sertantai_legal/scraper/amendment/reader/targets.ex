@@ -58,10 +58,14 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
 
   # a substitution of one whole provision whose quote numbers none of its
   # tops as it, nor grown from it
-  defp body?(%Text{inserted: [_ | _] = paths} = text, [n]) do
-    not String.contains?(n, "..") and
-      Clauses.captionless(text).instruction =~
-        ~r/\bfor\s+(?:the\s+)?(?:section|regulation|article|rule)\s+\d+[A-Z]*\b(?!\s*\()/i and
+  # — only for the number named exactly ("For Article 15a substitute— 1.
+  # 2." is never art.15's), and a quote starting at (1) or (a) ("for
+  # regulation 45 and its chapeau, substitute— 80 …" is never reg.45(80));
+  # Amending-law reader: parked bugs, 2026-11-10
+  @body_for ~r/\bfor\s+(?:the\s+)?(?:section|regulation|article|rule)\s+(\d+[A-Za-z]*)\b(?!\s*\()/iu
+  defp body?(%Text{inserted: [[first | _] | _] = paths} = text, [n]) do
+    not String.contains?(n, "..") and first in ["1", "a"] and
+      Regex.run(@body_for, Clauses.captionless(text).instruction, capture: :all_but_first) == [n] and
       Enum.all?(paths, fn [top | _] -> top != n and not own_number?(top, [n]) end)
   end
 
@@ -413,6 +417,12 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
     end
   end
 
+  # "(1)(b)(i) to (iii)": every bracket between, of one kind — numbers,
+  # letters or roman numerals (SI 2019/696 Sch.12 para 8(a) had read (i)
+  # and (iii) only; Amending-law reader: parked bugs, 2026-11-10)
+  @bracket_range ~r/\(([0-9]+|[a-z]{1,4})\)\s+to\s+\(([0-9]+|[a-z]{1,4})\)/u
+  @romans ~w(i ii iii iv v vi vii viii ix x xi xii xiii xiv xv xvi xvii xviii xix xx)
+
   @doc """
   The brackets a clause names: quoted words left out; "after paragraph
   (2)(b)" gives its parent; "(which becomes …)" left out.
@@ -433,7 +443,47 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
       end
     )
     |> String.replace(~r/\(which becomes [^()]*\([^)]*\)\)/i, "")
+    |> String.replace(@bracket_range, &expand_range/1)
     |> then(&for([b] <- Regex.scan(~r/\(([0-9A-Za-z]+)\)/, &1, capture: :all_but_first), do: b))
     |> Enum.filter(&Brackets.bracket?/1)
+  end
+
+  defp expand_range(m) do
+    [_, from, to] = Regex.run(@bracket_range, m)
+
+    case run(from, to) do
+      nil -> m
+      run -> Enum.map_join(run, " ", &"(#{&1})")
+    end
+  end
+
+  defp run(from, to) do
+    cond do
+      from =~ ~r/^\d+$/ and to =~ ~r/^\d+$/ ->
+        between(String.to_integer(from)..String.to_integer(to)//1, &Integer.to_string/1)
+
+      roman_range?(from, to) ->
+        sub(@romans, from, to)
+
+      from =~ ~r/^[a-z]$/ and to =~ ~r/^[a-z]$/ ->
+        between(:binary.first(from)..:binary.first(to)//1, &<<&1>>)
+
+      true ->
+        nil
+    end
+  end
+
+  # (i) to (iii) is roman; (a) to (i), (i) to (k) letters
+  defp roman_range?(from, to),
+    do: from in @romans and to in @romans and (from == "i" or to not in ~w(i v x))
+
+  defp between(range, f) when range.first <= range.last and range.last - range.first < 26,
+    do: Enum.map(range, f)
+
+  defp between(_range, _f), do: nil
+
+  defp sub(list, from, to) do
+    {a, b} = {Enum.find_index(list, &(&1 == from)), Enum.find_index(list, &(&1 == to))}
+    if a < b, do: Enum.slice(list, a..b), else: nil
   end
 end

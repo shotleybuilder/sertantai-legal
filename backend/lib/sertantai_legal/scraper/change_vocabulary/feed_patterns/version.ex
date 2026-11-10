@@ -12,6 +12,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedPatterns.Version do
     patterns: ~w(
       lib/sertantai_legal/scraper/amending_law/defined_terms.ex
       lib/sertantai_legal/scraper/amending_law/doc.ex
+      lib/sertantai_legal/scraper/amending_law/doc/*.ex
       lib/sertantai_legal/scraper/amending_law/extent.ex
       lib/sertantai_legal/scraper/amending_law/extent/amends.ex
       lib/sertantai_legal/scraper/amending_law/extent/application.ex

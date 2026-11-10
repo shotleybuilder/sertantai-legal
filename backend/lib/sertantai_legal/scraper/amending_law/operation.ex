@@ -70,11 +70,19 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Operation do
     end
   end
 
+  # "… shall be deleted and the following substituted", "deleted and
+  # replaced with the following definition—": one substitution (SI
+  # 1996/1592 Sch.9 para.3, SI 1997/2776 reg.2(a); Amending-law reader:
+  # parked bugs, 2026-11-10)
+  @delete_replace ~r/\b(?:delet|omitt)ed\s+and\s+(?:the\s+following\s+)?(?:substituted|replaced)\b/iu
+
   # an insertion verb replacing quoted words reads as a substitution
   defp verbs(s) do
-    if Regex.match?(@for_insert, s),
-      do: [{@for_insert, "substituted"} | tl(@verbs)],
-      else: @verbs
+    cond do
+      Regex.match?(@delete_replace, s) -> [{@delete_replace, "substituted"} | @verbs]
+      Regex.match?(@for_insert, s) -> [{@for_insert, "substituted"} | tl(@verbs)]
+      true -> @verbs
+    end
   end
 
   # quoted or named words, definitions or entries (LR-41: SI 2009/2861 reg.

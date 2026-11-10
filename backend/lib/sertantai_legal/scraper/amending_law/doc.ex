@@ -9,6 +9,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Doc do
 
   import SweetXml
 
+  alias SertantaiLegal.Scraper.AmendingLaw.Doc.ListItems
   alias SertantaiLegal.Scraper.LatParser.Xml
 
   @enforce_keys [:law_name, :type]
@@ -41,7 +42,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Doc do
   @doc "Parse a law's documents (`xmls`: body, Schedules)."
   @spec new(String.t(), [String.t()]) :: t()
   def new(law_name, xmls) do
-    roots = Enum.map(xmls, &SweetXml.parse(&1, quiet: true, namespace_conformant: false))
+    roots =
+      Enum.map(xmls, fn xml ->
+        xml |> SweetXml.parse(quiet: true, namespace_conformant: false) |> ListItems.number()
+      end)
+
     # document order (LR-41): an instruction's context is what precedes it
     # in its provision ("In section 10 …—", then "(a) …"); xmerl's `//` order
     # (each node's children in turn, kept until LR-41 for zero-diff) put a

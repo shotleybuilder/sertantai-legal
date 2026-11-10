@@ -13,6 +13,7 @@ defmodule SertantaiLegal.Scraper.CommencementCatalogue.Version do
     patterns: ~w(
       lib/sertantai_legal/scraper/amending_law/defined_terms.ex
       lib/sertantai_legal/scraper/amending_law/doc.ex
+      lib/sertantai_legal/scraper/amending_law/doc/*.ex
       lib/sertantai_legal/scraper/amending_law/text.ex
       lib/sertantai_legal/scraper/commencement/leftovers.ex
       lib/sertantai_legal/scraper/commencement/order.ex
