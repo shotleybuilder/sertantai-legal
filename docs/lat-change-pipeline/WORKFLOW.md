@@ -257,6 +257,17 @@ No agent rounds. Before this, the rule was statistical (2026-10-28): pooled agen
 
 No agent rounds. A is not sampled: there the law's text and legislation.gov.uk agree, so an error needs both wrong together. Before this, D and L were checked in full by agents and A by pooled samples (2026-10-28).
 
+**Environmental Protection** (2026-11-10). 304 of the family's 500 amending laws were stale, so write 1 (read pass and rebuild) comes first: 230 → 202 groups not named. The review finds most misreads hidden in the by-design groups (quote-dropped repeals of a Schedule's paragraphs, an Order's paragraphs read as articles). They are fixed together, then one write.
+- **Batch every fix before write 2.** Field diff (`rule_diff.exs`: stored rules against a fresh reading, by source, law, operation, level, treatment and targets) over the family's amenders and the regression set. Read every class of change, and fix over-reaches before any write.
+- **Review the field diff fully before the catalogue dry run.** Classes found in the catalogue afterwards (Decision 2) cost a second cold catalogue run.
+- **Any edit under the reader's files moves `ReaderVersion` and stales every amending law**, a refactor or a compiler-warning fix included. Run `mix compile --warnings-as-errors` (the hook's check) before the read pass, never after. So too `mix test test/sertantai_legal/architecture` (a "come into force" pattern belongs to the commencement readers; version coverage).
+- **Result:**
+  - the read pass current;
+  - the gate PASS, 240 groups named;
+  - A 2,950 → 3,192, D 396 → 391, L 536 → 391;
+  - Maritime's parked group named (PASS);
+  - OH&S 91 → 88 not named.
+
 **Skill.** `amending-reader-check`. Background: [AMENDMENT-GUIDE.md](AMENDMENT-GUIDE.md).
 
 ## 7. Merge

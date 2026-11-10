@@ -171,3 +171,27 @@ Maritime Safety (second family, 2026-11-06, `.claude/sessions/lat-change-pipelin
 - **Lessons:**
   - a reader edit moves the change register's code version, so all built laws rebuild (4 minutes for 285);
   - the build reads a stale amender for one law only, so a fallback to "the only law given" shows up there and nowhere else.
+
+### Environmental Protection: Amending-law reader (2026-11-10)
+
+- **Baseline:** A 2,950, D 396, L 536; 304 of 500 family amenders stale; gate 230 of 280 groups not named.
+- **Write 1** (stale read, rebuild): 202 not named. The review read every group in its amending provision's words.
+- **Fixed** (Decisions 1–2, 22 tests in `reader/environmental_protection_forms_test.exs`; RULES `amending-places-read-as-the-amended-law-numbers-them`, `commencement-and-level-forms-of-an-amending-provision`):
+  - an Order's articles under `reg.`;
+  - a Schedule's bare paragraphs and lead-ins;
+  - a commencement's "to be inserted";
+  - a context's roman sub-paragraph;
+  - a table's entries;
+  - a repeals table's "In section N—" items (18 laws);
+  - "in the appropriate place";
+  - inline quotes;
+  - amounts;
+  - a quote numbered in its title (7 laws);
+  - the carried-forward modification wording.
+- **Unnumbered list items:** re-parked, with no case in this family.
+- **Final:** A 3,192, D 391, L 391; gate PASS (240 groups); Maritime PASS (its parked group named); OH&S 91 → 88; no agent tokens.
+- **Lessons:**
+  - The field diff caught two over-reaches before any write: a definition's "comes into force", and an entry borrowing a sibling's section.
+  - The catalogue dry run went before the field-diff review ended, so a second cold run followed.
+  - A compiler-warning fix after the read pass moved `ReaderVersion` and staled every amender: run `mix compile --warnings-as-errors` before the read pass.
+  - The architecture tests (`test/sertantai_legal/architecture/`) failed only in the final `mix test`: a commencement pattern in the reader, then the version coverage. That cost two zero-diff re-reads. Run them with the reader suites before any write.

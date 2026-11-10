@@ -20,7 +20,7 @@ Environmental Protection is the third family through the LAT Change Pipeline, an
 - ✅ Markup reader: 3,251 changes, our faults 0 (from 134); a scoped law read for its scope; three reader-side fixes; Decisions 1–4; closed 2026-11-09
 - ✅ Commencement reader: 35,518 rows, our faults 0 on stored rules (from 9,954), leftovers 23 → 0; ten reader forms, two check errors, an order-store overlap fixed; Decisions 1–2; closed 2026-11-09
 - ✅ Extent reader: 8,243 changes, our faults 0 (from 295), causes not named 231 → 0 (139 known); bound by the law's text 45% → 74%; 15 wordings, the powers parser, a check error and one wrong bound fixed; Decisions 1–6; closed 2026-11-10
-- ⬜ Amending-law reader
+- ✅ Amending-law reader: gate PASS, 240 groups named (from 230 of 280 not named); A 2,950 → 3,192, L 536 → 391; 13 misread classes fixed (an Order's articles, a Schedule's paragraphs, repeals-table items, quotes numbered in titles, levels, the modification wording); Maritime's parked group named; Decisions 1–2; closed 2026-11-10
 - ⬜ Merge
 - ⬜ Evidence
 - ⬜ Label fold
@@ -55,3 +55,4 @@ One row per step, filled when the step session closes. Agent tokens are those of
 | Markup reader | markup-reader | 2026-11-09 | 2026-11-09 | 1 | yes, all 7 | 0 (the agent's new class fixed by Decision 3, a second cold catalogue run, within the pass rule) | 1 open (Tooling: the catalogue's full cold run is slow, #198) + 2 parking items (Feed reader: example rotation check; Markup reader: Z-number pattern names); 4 fixed | 152,593 | 5 |
 | Commencement reader | commencement-reader | 2026-11-09 | 2026-11-09 | 1 | yes, all 6 | 0 (two fixes after the stored check — an order-store overlap, schedule-only rules — and one order form, within the pass rule; a second catalogue dry run) | 4 open (Commencement reader: order list wrong law, cited-orders overlap, fresh read without schedule effects, amenders list); 3 fixed (2 parked from OH&S/Maritime) | 0 | 2 |
 | Extent reader | extent-reader | 2026-11-09 | 2026-11-10 | 2 | yes, all 6 | 0 (a second fix round and a second catalogue dry run after write 2, within the pass rule) | 1 open (Register: titles holding their year) + OH&S's stale build (existing parked bug) | 0 | 2 |
+| Amending-law reader | amending-law-reader | 2026-11-10 | 2026-11-10 | 1 | yes, all 7 | 0 (the catalogue's three level classes fixed by Decision 2 and a quote-title class found after write 2, within the pass rule; write 3 of 3 laws on Jason's go; two zero-diff re-reads for the reader version) | 0 new; 2 fixed (the modification wording, Maritime's gate group); unnumbered list items re-parked; OH&S gate 91 → 88 | 0 | 2 |
