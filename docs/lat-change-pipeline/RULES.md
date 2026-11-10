@@ -653,7 +653,12 @@ An amending instruction's place is read in the amended law's own numbering. A Sc
   - A repeals table's "In section 48—" over its list items is those items, never the whole section (2005 c.16 Sch.5).
   - A quote numbered only in its group's title ("45C Separate collection …", its Pnumber empty) is that number's provision (SSI 2012/148, asc 2026/4).
   - An "(i)" under a parent's letter is a sub-paragraph.
-- **Serves:** `law-text-wins` · **Code:** `Reader.law_ref/4` (`:order`), `Reader.Scope` (`bare_paragraph?`, `schedule_lead_in?`), `Clauses.no_entry_names/1`, `Reader.rules/5`, `RepealTable.lead_in_items/1`, `AmendingLaw.Text` (`titled/3`), `LawNamed.placed_by/3` · **Test:** `amendment/reader/environmental_protection_forms_test.exs` · **Origin:** Environmental Protection: Amending-law reader (2026-11-10)
+  - An id-less list of instructions under a provision ("(c) in the definition of “the IBC Code” for “1998” substitute “2007”;", numbered from the list's Start) is each item's own provision (SI 2011/2616 Sch.1 para.2; Amending-law reader: parked bugs). A list of places or words is its provision's words.
+  - A range of brackets is every bracket between ("subsections (1) to (5) are repealed", "(1)(b)(i) to (iii)").
+  - "In section 17— <items of words> shall cease to have effect" is those words, never the section (LGSA 1994 Sch.13).
+  - A quote is the body of the provision named only for that number exactly, starting at (1) or (a) ("For Article 15a substitute— 1. 2." is never art.15's; "for regulation 45 … substitute— 80" never reg.45(80)).
+  - An aside "as it has effect before … comes into force" names neither the law nor a place (asc 2023/3 Sch.13 para 72).
+- **Serves:** `law-text-wins` · **Code:** `Reader.law_ref/4` (`:order`), `Reader.Scope` (`bare_paragraph?`, `schedule_lead_in?`), `Clauses.no_entry_names/1`, `Reader.rules/5`, `RepealTable.lead_in_items/1`, `AmendingLaw.Text` (`titled/3`), `AmendingLaw.Doc.ListItems`, `Targets` (`@bracket_range`, `body?/2`), `Clauses` (`words_listed?`, `no_effect_asides/1`), `LawNamed.placed_by/3` · **Test:** `amendment/reader/environmental_protection_forms_test.exs`, `amendment/reader/parked_forms_test.exs` · **Origin:** Environmental Protection: Amending-law reader (2026-11-10)
 
 ### `commencement-and-level-forms-of-an-amending-provision`
 A commencement naming what an amendment inserts changes nothing. Words stay words however legislation.gov.uk marks them.
@@ -662,6 +667,7 @@ A commencement naming what an amendment inserts changes nothing. Words stay word
   - "in the appropriate place insert— <definition>" is words.
   - A quote marked as an inline amendment leaves an empty slot ("omit <quote>,", "after <quote> insert <quote>.") and is words, unless a provision named is what goes.
   - "the amount of £25 … substituted the amount of £50" is words.
+  - "the definition of “X” shall be deleted and the following substituted / replaced with the following definition—" is one substitution (SI 1996/1592, SI 1997/2776).
 - **Serves:** `law-text-wins` · **Code:** `Reader` (`no_change?/1`, `@commencing`), `Clauses.operation/1` (`words_inserted?`, `inline_words?`), `AmendingLaw.Operation` (`words?`) · **Test:** `environmental_protection_forms_test.exs` · **Origin:** Environmental Protection: Amending-law reader (2026-11-10)
 
 ### `repeal-table-rows-follow-their-enactment`

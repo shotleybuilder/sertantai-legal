@@ -28,7 +28,7 @@ Environmental Protection is the third family through the LAT Change Pipeline, an
 - ⬜ Store and build
 - ⬜ Labels side by side
 - ⬜ Switch-over
-- ⬜ Retrospective and housekeeping
+- ⬜ Retrospective and housekeeping (PENDING: `2026-11-10-environmental-protection-retrospective.md`, preliminary conclusions from the Amending-law reader day; then the review tooling session)
 
 ## Dependencies
 
