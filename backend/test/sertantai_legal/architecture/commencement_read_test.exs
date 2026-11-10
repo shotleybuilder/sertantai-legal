@@ -17,7 +17,11 @@ defmodule SertantaiLegal.Architecture.CommencementReadTest do
     # the feed's effect type "coming into force", not law text
     "sertantai_legal/scraper/effect_kind.ex" => "the feed's effect kind",
     # the feed's effect type "coming into operation" (CV-S02b review D), not law text
-    "sertantai_legal/scraper/change_vocabulary/effect_verb.ex" => "the feed reader's effect verb"
+    "sertantai_legal/scraper/change_vocabulary/effect_verb.ex" => "the feed reader's effect verb",
+    # a lead-in whose items the amending-law reader skips, never a date
+    # (Environmental Protection: Amending-law reader, 2026-11-10)
+    "sertantai_legal/scraper/amendment/reader/commencing.ex" =>
+      "the amending-law reader's skipped lead-in"
   }
 
   test "only the commencement readers match commencement words" do

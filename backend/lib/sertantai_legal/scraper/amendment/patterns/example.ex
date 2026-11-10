@@ -13,7 +13,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Patterns.Example do
   alias SertantaiLegal.Scraper.Amendment.{Patterns, Reader, Rule}
   alias SertantaiLegal.Scraper.LatParser.Xml
 
-  @kinds Map.new(~w(section regulation article rule)a, &{Atom.to_string(&1), &1})
+  @kinds Map.new(~w(section regulation article order rule)a, &{Atom.to_string(&1), &1})
 
   # the earlier top provisions tried, nearest first
   @max_earlier 40

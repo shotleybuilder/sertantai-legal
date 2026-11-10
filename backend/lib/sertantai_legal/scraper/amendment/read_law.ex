@@ -112,16 +112,18 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadLaw do
           nil
       end
 
-    prefix =
+    # the rows' prefix, and whether legislation.gov.uk numbers them as
+    # articles (an Order under reg.: `Reader.law_ref/4`)
+    {prefix, articles?} =
       case Repo.query!(
-             "SELECT substring(section_id from ':(s|reg|art|rule)\\.') FROM legal_articles WHERE law_name = $1 AND section_id ~ ':(s|reg|art|rule)\\.' LIMIT 1",
+             "SELECT substring(section_id from ':(s|reg|art|rule)\\.'), source_xml_id LIKE 'article-%' FROM legal_articles WHERE law_name = $1 AND section_id ~ ':(s|reg|art|rule)\\.' LIMIT 1",
              [law]
            ) do
-        %{rows: [[p]]} when is_binary(p) -> p
-        _ -> "s"
+        %{rows: [[p, a]]} when is_binary(p) -> {p, a == true}
+        _ -> {"s", false}
       end
 
-    Reader.law_ref(law, title, prefix)
+    Reader.law_ref(law, title, prefix, articles: articles?)
   end
 
   @doc """

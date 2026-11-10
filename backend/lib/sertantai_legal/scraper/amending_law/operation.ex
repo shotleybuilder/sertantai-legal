@@ -90,8 +90,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Operation do
   # end of sub-paragraph (a))") goes whole: the joining word is in its
   # neighbour (CV-S06 B6)
   defp words?(s),
+    # (an amount too: "For the amount of £25 … there shall be substituted
+    # the amount of £50", SSI 2003/268, Environmental Protection Decision 2)
     do:
       not Regex.match?(@provision_with_word, s) and
-        (Regex.match?(~r/[“"][^”"]+[”"]|\b(?:words?|definitions?|entr(?:y|ies))\b/u, s) or
+        (Regex.match?(
+           ~r/[“"][^”"]+[”"]|\b(?:words?|definitions?|entr(?:y|ies)|amounts?\s+of\s+£)/u,
+           s
+         ) or
            Regex.match?(@heading_or_mark, s) or Regex.match?(@words_part, s))
 end

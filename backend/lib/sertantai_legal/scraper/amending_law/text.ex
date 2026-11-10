@@ -109,7 +109,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
   defp in_quote({:xmlElement, :BlockAmendment, _, _, _, _, _, _, children, _, _, _} = b, _, path) do
     case Enum.flat_map(children, &in_quote(&1, true, path)) do
       [] -> plain_number(b, path)
-      numbered -> numbered
+      numbered -> titled(numbered, children, path)
     end
   end
 
@@ -131,6 +131,29 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
   end
 
   defp in_quote(_node, _quoted, _path), do: []
+
+  # a quote whose number is in its group's title, its own Pnumber empty
+  # or absent ("After article 4 insert— <P1group><Title>4A Policy making
+  # …</Title><P1><Pnumber/> … (1) … (2)": asc 2026/4 s.4(2); "After section
+  # 45B insert— <P2group><Title>45C Separate collection …</Title><P2>1 …":
+  # SSI 2012/148 reg.2(5)): every path the quote makes is that number's
+  # (7 amending laws; Environmental Protection, 2026-11-10)
+  @title_number ~r/^\s*(\d+[A-Z]*)\s+\S/u
+  defp titled(numbered, children, path) do
+    with [{:xmlElement, group, _, _, _, _, _, _, kids, _, _, _} | _] <- elements(children),
+         true <- group in [:P1group, :P2group],
+         {:xmlElement, :Title, _, _, _, _, _, _, _, _, _, _} = title <-
+           Enum.find(kids, &match?({:xmlElement, :Title, _, _, _, _, _, _, _, _, _, _}, &1)),
+         [_, n] <- Regex.run(@title_number, Doc.text(title)),
+         false <- Enum.any?(numbered, &(Enum.at(&1, length(path)) == n)) do
+      [path ++ [n] | Enum.map(numbered, &(path ++ [n] ++ Enum.drop(&1, length(path))))]
+    else
+      _ -> numbered
+    end
+  end
+
+  defp elements(nodes),
+    do: Enum.filter(nodes, &match?({:xmlElement, _, _, _, _, _, _, _, _, _, _, _}, &1))
 
   # a quote numbering its provision in its text, not as a Pnumber ("After
   # regulation 5(3)(b) insert the following— ; or (c) information …": SI

@@ -104,6 +104,19 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
 
   defp words_listed?(_text), do: false
 
+  # words quoted as inline amendments leave an empty slot in the
+  # instruction's own words ("omit <quote>," → "omit ,"; "after <quote>
+  # insert <quote>." → "after insert ."): the quote is words, unless a
+  # provision named is what goes ("omit sub-paragraph (d) and the <quote>
+  # preceding it") (SSI 2026/55, SSI 2025/165, NISR 2025/126;
+  # Environmental Protection, Decision 2)
+  @quote_slot ~r/\b(?:omit|after|before|for)\s*(?:[,;.]|$|(?=(?:insert|substitute)\b))/iu
+  @provision_object ~r/\b(?:omit|repeal|revoke|for)\s+(?:the\s+)?(?:sub-?)?(?:sections?|paragraphs?|regulations?|articles?|rules?|heads?)\s*\d*[A-Z]*\(/iu
+  defp inline_words?(%Text{quoted: q, inserted: [], instruction: i}) when q != "",
+    do: i =~ @quote_slot and not (i =~ @provision_object)
+
+  defp inline_words?(_text), do: false
+
   @doc """
   The instruction's operation, its captions aside; an insertion quoting no
   provision "at the end" / "at the appropriate place" — and naming no kind
@@ -114,21 +127,27 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   def operation(text) do
     case Operation.of(captionless(text)) do
       {verb, verb} = op when verb != "inserted" ->
-        if words_unnamed?(text.instruction) or words_listed?(text),
+        if words_unnamed?(text.instruction) or words_listed?(text) or inline_words?(text),
           do: {verb, "words #{verb}"},
           else: op
 
       {"inserted", "inserted"} = op ->
-        if text.inserted == [] and
-             text.instruction =~ ~r/\bat the (?:end|beginning|appropriate places?)\b/i and
-             not (text.instruction =~ @provision_named),
-           do: {"inserted", "words inserted"},
-           else: op
+        if words_inserted?(text), do: {"inserted", "words inserted"}, else: op
 
       op ->
         op
     end
   end
+
+  # an insertion quoting no provision at a place in the provision named
+  # ("in the appropriate place insert— <definition>": WSI 2013/755,
+  # Environmental Protection, Decision 2) or of inline-quoted words
+  defp words_inserted?(%Text{inserted: [], instruction: i} = text),
+    do:
+      (i =~ ~r/\b(?:at|in) the (?:end|beginning|appropriate places?)\b/i or inline_words?(text)) and
+        not (i =~ @provision_named)
+
+  defp words_inserted?(_text), do: false
 
   @doc """
   An item whose verb is its parent's noun ("Section 5 … shall be amended by
@@ -183,6 +202,24 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   """
   @spec no_schedule_entries(String.t()) :: String.t()
   def no_schedule_entries(s), do: Regex.replace(@schedule_entry, s, "")
+
+  @entry_ref "\\d+[A-Z]*(?:\\s*\\([0-9A-Za-z]+\\))*"
+  @entry_named Regex.compile!(
+                 "\\b(the\\s+entr(?:y|ies)\\s+)(?:relating\\s+to|for)\\s+(?:sections?|regulations?|articles?|rules?|paragraphs?)\\s+" <>
+                   @entry_ref <>
+                   "(?:\\s*(?:,|and|or|to)\\s*(?:" <> @entry_ref <> "|\\([0-9A-Za-z]+\\)))*",
+                 "iu"
+               )
+
+  @doc """
+  The text with a table's entry named by the provision it lists left as
+  "the entry" ("In section 160A, after the entry relating to section
+  45AA(10) insert—": s.160A's table, never s.45AA(10), asp 2024/13 s.15(3);
+  "in the second column of the entry for section 34CA, in paragraph (e)
+  omit": 2023 c.28 Sch.3 para 1(a); Environmental Protection F5, 2026-11-10)
+  """
+  @spec no_entry_names(String.t()) :: String.t()
+  def no_entry_names(s), do: Regex.replace(@entry_named, s, "\\1")
 
   @doc """
   The text without its captions, brackets inside them too ("… 1990

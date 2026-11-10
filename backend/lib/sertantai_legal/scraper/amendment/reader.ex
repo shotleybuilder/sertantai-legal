@@ -33,6 +33,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
 
   alias SertantaiLegal.Scraper.Amendment.Reader.{
     Clauses,
+    Commencing,
     LawNamed,
     NewNumbers,
     RepealTable,
@@ -48,12 +49,15 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
           title: String.t() | nil,
           year: String.t(),
           number: String.t(),
-          kind: :section | :regulation | :article | :rule
+          kind: :section | :regulation | :article | :order | :rule
         }
 
   # "shall have effect as if … were omitted", "be read as if": a
   # modification, not an amendment (SI 1974/2013 Sch. 2 para. 15)
-  @modification ~r/\b(?:have effect|be read|be construed) as if\b/i
+  # — "has effect as if", "shall apply … as if", "applies … as if",
+  # "shall continue to apply … as if" too, in the instruction's own words
+  # (Jason 2026-11-06, option A: SI 1995/3128 reg.10(3) on MSA 1995 s.97(1))
+  @modification ~r/\b(?:(?:have|has|having) effect|be read|be construed|appl(?:y|ies|ying)\b[^.;]{0,200}?)\s*,?\s+as if\b/i
   # … but older drafting inserts a provision so ("The Factories Act 1961
   # shall have effect as if the following section were inserted after
   # section 10 thereof:— 10A": EMASA 1972 s.3, CV-06 S7); its target is held
@@ -69,13 +73,21 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   # a bracket is a number, a letter or two, or a roman numeral — never a
   # word ("(interpretation)": a one-word caption, AR-07)
 
-  @prefix %{section: "s", regulation: "reg", article: "art", rule: "rule"}
+  # an Order's articles carry LAT's reg. prefix (`:order`: only an EU law's
+  # are art.), so "In article 11, for paragraphs (2) to (4)" is reg.11's
+  # (WSI 2013/755 on the Natural Resources Body for Wales Order 2012)
+  @prefix %{section: "s", regulation: "reg", article: "art", order: "reg", rule: "rule"}
 
-  @doc "The law ref of a law name and its title (`kind` from its LAT prefix: \"s\", \"reg\", …)."
-  @spec law_ref(String.t(), String.t() | nil, String.t()) :: law_ref()
-  def law_ref(law_name, title, prefix) do
+  @doc """
+  The law ref of a law name and its title (`kind` from its LAT prefix: "s",
+  "reg", …); `articles: true` for a `reg.` law whose provisions are articles
+  (an Order: kind `:order`).
+  """
+  @spec law_ref(String.t(), String.t() | nil, String.t(), keyword()) :: law_ref()
+  def law_ref(law_name, title, prefix, opts \\ []) do
     [_, _type, year, number] = String.split(law_name, "_", parts: 4)
     kind = %{"s" => :section, "reg" => :regulation, "art" => :article, "rule" => :rule}[prefix]
+    kind = if kind == :regulation and opts[:articles], do: :order, else: kind
     %{law_name: law_name, title: title, year: year, number: number, kind: kind || :section}
   end
 
@@ -187,7 +199,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
           Rule.t()
         ]
   def of_text(%Text{} = text, title, terms, laws, source) do
-    case if(modification?(text.instruction), do: nil, else: Clauses.operation(text)) do
+    case if(no_change?(text), do: nil, else: Clauses.operation(text)) do
       {_, _} ->
         texts =
           Enum.map([text.instruction | Enum.reverse(text.context)], &Clauses.unquote_words/1)
@@ -220,7 +232,33 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   # ("omit “either”; and at the end insert—") its own level, brackets and
   # numbers; the quote is the clause's that introduces it
   defp rules(text, texts, law, source, terms) do
-    text = %{text | instruction: Clauses.no_schedule_entries(text.instruction)}
+    entryless = Clauses.no_entry_names(text.instruction)
+
+    # a table's entry placed by nothing else in the instruction or its
+    # parents ("omit the
+    # entry for section 22;", "In the entry for sections 6A to 6E of the
+    # Road Traffic Act 1988, in the third column …"): its table's provision
+    # is not told, never a sibling's or the context's (Environmental
+    # Protection F5, 2026-11-10)
+    own =
+      Enum.map(
+        [entryless | Enum.map(text.parents, &Clauses.no_entry_names/1)],
+        &(&1 |> Clauses.unquote_words() |> Clauses.no_captions())
+      )
+
+    if entryless != text.instruction and Targets.numbers(own, law.kind) == :none,
+      do: [],
+      else:
+        entry_rules(
+          %{text | instruction: Clauses.no_schedule_entries(entryless)},
+          texts,
+          law,
+          source,
+          terms
+        )
+  end
+
+  defp entry_rules(text, texts, law, source, terms) do
     p = @prefix[law.kind]
     tops = text.inserted |> Enum.map(&hd/1) |> Enum.uniq()
     clauses = text |> Clauses.clauses() |> LawNamed.scoped(texts, law, terms)
@@ -287,4 +325,19 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   defdelegate repeal_table?(doc, id), to: RepealTable
 
   defp modification?(s), do: s =~ @modification and not (s =~ @as_if_inserted)
+
+  # a commencement naming what an amendment inserts changes nothing ("the
+  # following regulations come into force on 1 June 2025— regulation 6,
+  # insofar as new regulation 3(1)(a) … to be inserted into the 2018
+  # Regulations": SSI 2025/165 reg.1(4), Environmental Protection F3,
+  # 2026-11-10): a parent's commencing lead-in (`Reader.Commencing`)
+  # (in the instruction's own words: "omit “and as if references …”" is
+  # an amendment)
+  defp no_change?(%Text{instruction: i, parents: parents}) do
+    modification?(Clauses.unquote_words(i)) or
+      Enum.any?(
+        parents,
+        &(&1 |> Clauses.unquote_words() |> Commencing.lead_in?())
+      )
+  end
 end

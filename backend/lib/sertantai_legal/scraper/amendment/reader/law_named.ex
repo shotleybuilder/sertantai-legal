@@ -92,15 +92,22 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
   # paragraph (a) of subsection (3) …; (b) in paragraph (c)(ii) of that
   # subsection …" → (3))
   defp placed_by(%Text{} = c, named, context) do
-    from_parents =
-      Enum.reduce(c.parents, [], fn words, acc ->
-        brackets =
-          Targets.brackets(%Text{
-            id: nil,
-            instruction: words |> Clauses.unquote_words() |> Clauses.no_captions() |> lead_in()
-          })
+    held =
+      Enum.map(c.parents, fn words ->
+        Targets.brackets(%Text{
+          id: nil,
+          instruction: words |> Clauses.unquote_words() |> Clauses.no_captions() |> lead_in()
+        })
+      end)
 
-        top = top_level(named ++ acc, c.instruction)
+    # an "(i)" under a parent's letter is its sub-paragraph ("In paragraph
+    # (2)(e)— in paragraph (i), after “(f)” insert": reg.2(2)(e)(i), SI
+    # 2006/771 and WSI 2007/117, Environmental Protection F4, 2026-11-10)
+    lettered? = held |> List.flatten() |> Enum.any?(&(&1 =~ ~r/^[a-hj-uwyz]$/))
+
+    from_parents =
+      Enum.reduce(held, [], fn brackets, acc ->
+        top = top_level(named ++ acc, c.instruction, lettered?)
         acc ++ Enum.filter(brackets, &(Brackets.bracket_level(&1) < top))
       end)
 
@@ -143,9 +150,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
   # the highest level among the brackets found (5 when none): a bracket the
   # words call a sub-paragraph is one ("in sub-paragraph (i)" under "in
   # paragraph (b)—": (b)(i), though "i" alone reads as a letter)
-  defp top_level([], _instruction), do: 5
+  defp top_level([], _instruction, _lettered?), do: 5
 
-  defp top_level(brackets, instruction) do
+  defp top_level(brackets, instruction, lettered?) do
     subs =
       for [b] <-
             Regex.scan(~r/\bsub-paragraphs?\s+\(([a-z]+)\)/i, instruction,
@@ -154,7 +161,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
           do: b
 
     brackets
-    |> Enum.map(&if(&1 in subs, do: 2, else: Brackets.bracket_level(&1)))
+    |> Enum.map(
+      &if(&1 in subs or (lettered? and &1 in ~w(i v x)), do: 2, else: Brackets.bracket_level(&1))
+    )
     |> Enum.min()
   end
 

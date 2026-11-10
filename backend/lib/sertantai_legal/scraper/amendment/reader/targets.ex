@@ -23,6 +23,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
     section: "sections?",
     regulation: "regulations?",
     article: "articles?",
+    order: "articles?",
     rule: "rules?"
   }
   @doc """

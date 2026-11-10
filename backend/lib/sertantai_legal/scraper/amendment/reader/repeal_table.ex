@@ -161,7 +161,56 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTable do
         cells = Enum.map_join(law_cells, " ", &Doc.text/1),
         law <- sections,
         table_law?(cells, law),
-        do: {law, extent |> Doc.lines() |> Enum.flat_map(&entries/1)}
+        do: {law, extent |> Doc.lines() |> Enum.flat_map(&entries/1) |> lead_in_items()}
+  end
+
+  # "In section 48—" over its list items ("in subsection (4), the words
+  # …;", "subsection (7).") is those items in section 48, never the whole
+  # section (2005 c.16 Sch.5 on EPA 1990 ss.48, 51, 92, 150, 78L; the form
+  # is in 18 amending laws' tables: Environmental Protection, 2026-11-10)
+  @lead_in ~r/^In section (\d+[A-Z]*)((?:\([0-9A-Za-z]+\))*)\s*[—–]\s*$/u
+
+  defp lead_in_items(lines) do
+    {items, _} =
+      Enum.flat_map_reduce(lines, nil, fn line, lead ->
+        case {Regex.run(@lead_in, line), lead} do
+          {[_, n, subs], _} -> {[], {n, subs}}
+          {nil, {n, subs}} when line != "" -> lead_item(line, n, subs)
+          {nil, _} -> {[line], nil}
+        end
+      end)
+
+    items
+  end
+
+  # an item starts lower case; any other line ends the lead-in
+  defp lead_item(line, n, subs) do
+    # (its own label aside: "(a) in the words before paragraph (a), the
+    # words “163”;", 2002 c.30 Sch.8 on 1984 c.27 s.96(3))
+    item =
+      line
+      |> String.trim()
+      |> String.replace(~r/^\([a-z]{1,4}\)\s*/u, "")
+      |> String.replace(~r/(?:;|,)?\s*(?:and|or)?\s*$/u, "")
+
+    cond do
+      not (item =~ ~r/^\p{Ll}/u) ->
+        {[line], nil}
+
+      m =
+          Regex.run(
+            ~r/^in\s+(?:sub-?section|paragraph)\s+((?:\([0-9A-Za-z]+\))+)\s*,?\s*(.*)$/u,
+            item
+          ) ->
+        [_, b, rest] = m
+        {["In section #{n}#{subs}#{b}, #{rest}"], {n, subs}}
+
+      m = Regex.run(~r/^(?:sub-?sections?|paragraphs?)\s+(.*)$/u, item) ->
+        {["Section #{n}#{subs}#{List.last(m)}"], {n, subs}}
+
+      true ->
+        {["In section #{n}#{subs}, #{item}"], {n, subs}}
+    end
   end
 
   # the rows in order, each provision row the current law's: the law the

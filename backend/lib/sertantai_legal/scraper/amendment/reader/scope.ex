@@ -22,6 +22,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Scope do
                         section: "sections?",
                         regulation: "regulations?",
                         article: "articles?",
+                        order: "articles?",
                         rule: "rules?"
                       ],
                       fn {kind, word} ->
@@ -58,6 +59,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Scope do
         &(&1
           |> Clauses.unquote_words()
           |> Clauses.no_captions()
+          |> Clauses.no_entry_names()
           |> String.replace(@own_schedule, ""))
       )
 
@@ -68,11 +70,42 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Scope do
       Enum.any?(own, &(&1 =~ @schedule_place)) or
         (match?([first | _] when is_binary(first), context) and
            context |> hd() |> Clauses.no_captions() =~
-             ~r/^\s*(?:(?:Part|Paragraph)\s+\w+\s+of\s+)?Schedule\s+\d+[A-Z]*\b[^.]*?\bis\s+amended\b/iu)
+             ~r/^\s*(?:(?:Part|Paragraph)\s+\w+\s+of\s+)?Schedule\s+\d+[A-Z]*\b[^.]*?\bis\s+amended\b/iu) or
+        bare_paragraph?(own, laws) or schedule_lead_in?(context)
 
     if schedule?,
       do: Enum.filter(laws, fn law -> Enum.any?(own, &(&1 =~ @provision_number[law.kind])) end),
       else: laws
+  end
+
+  # a paragraph by a bare number ("In paragraph 1, for sub-paragraphs (2)
+  # to (6)", "After paragraph 7", "Paragraph 8 becomes paragraph 8(1)") is
+  # a Schedule's: a body provision's paragraphs are bracketed ("(1)") —
+  # never an EU law's, whose Articles number their paragraphs so
+  # (Environmental Protection, F2, 2026-11-10: 2006 c.16 s.61(2) had read
+  # as 1995 c.25 ss.2, 3)
+  @bare_paragraph ~r/\b(?:sub-)?paragraphs?\s+\d+[A-Z]*\b/iu
+  defp bare_paragraph?(own, laws),
+    do: Enum.all?(laws, &(&1.kind != :article)) and Enum.any?(own, &(&1 =~ @bare_paragraph))
+
+  # the nearest lead-in before the instruction decides where it is: a
+  # Schedule's ("Amend Schedule 7 to the Environment Act 1995 … as
+  # follows.", "Schedule 1 to that Act … shall be amended in accordance
+  # with …", "Schedule 2 is amended in accordance with paragraphs (7) to
+  # (10)", a later sibling: SI 2018/942 reg.8(6)) or a provision's ("In
+  # regulation 3B—"); an instruction complete in itself is no lead-in
+  @lead_in ~r/(?:[—–:]\s*$|\bamended\s+(?:as\s+follows|in\s+accordance\s+with)\b)/u
+  @schedule_lead ~r/^\s*(?:Amend\s+)?(?:(?:Part|Paragraph)\s+\w+\s+of\s+)?Schedule\s+\d+[A-Z]*\b|^\s*In\s+(?:Part\s+\w+\s+of\s+)?Schedule\s+\d+[A-Z]*\b/iu
+  @provision_lead ~r/^\s*(?:In\s+)?(?:sections?|regulations?|articles?|rules?)\s+\d/iu
+  defp schedule_lead_in?(context) do
+    context
+    |> Enum.reverse()
+    |> Enum.map(&Clauses.no_captions/1)
+    |> Enum.find(&(&1 =~ @lead_in and (&1 =~ @schedule_lead or &1 =~ @provision_lead)))
+    |> case do
+      nil -> false
+      lead -> lead =~ @schedule_lead
+    end
   end
 
   # an instruction under a heading amending an EU law's Annexes or
