@@ -182,6 +182,35 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeGateTest do
       assert {"law-text copy apart from its joined event", "s.271(6)(a)"} in found
     end
 
+    test "an instruction's joined event lent to a provision its effect doesn't name (the agent pass, EP: SSI 2005/658)" do
+      placed = set("key-a", "reg.21", [{:feed, :placed, "reg.21"}])
+
+      found =
+        causes([
+          text(@key, "reg.21", :substituted),
+          text(@key, "reg.30", :substituted),
+          feed("key-a", "reg.21", :substituted, ["sch.12.para.21(a)"]),
+          placed
+        ])
+
+      assert {"a joined event lent to a provision its effect doesn't name", "reg.30"} in found
+      assert {"same amending provision, same operation", "reg.21"} in found
+    end
+
+    test "a markup-only change beside a joined change of its law and operation (the agent pass, EP: SI 1996/1431)" do
+      assert causes([
+               set("d29p24693", "s.153(1)(ee)", [
+                 {:markup, :operation, :inserted},
+                 {:markup, :cited, @by},
+                 {:markup, :affecting, ["art.1"]}
+               ]),
+               feed("key-a", "s.153(1)(ee)", :inserted, ["art.2"]),
+               text("#{@by}:article-2", "s.153(1)(ee)", :inserted)
+             ])
+             |> Enum.map(&elem(&1, 0))
+             |> Enum.member?("markup alone beside its joined twin")
+    end
+
     test "a markup-only change with nothing beside it" do
       assert causes([markup("d29p11431", "reg.21", :substituted)]) ==
                [{"markup alone", "reg.21"}]

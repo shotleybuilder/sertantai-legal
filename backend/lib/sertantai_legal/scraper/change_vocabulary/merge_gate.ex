@@ -95,7 +95,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeGate do
           MergeStrata.sources(c) == [:markup],
           Merge.family(Change.value(c, :markup, :operation)) in [:text, :removal],
           not MapSet.member?(held, {c.key, c.target}),
-          do: entry(law, c, "markup alone")
+          do: entry(law, c, alone_cause(c, changes))
 
     spread =
       for {key, tops} <- MergeStrata.spread(changes) do
@@ -114,6 +114,25 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeGate do
 
     strata ++ alone ++ copies(law, changes) ++ spread
   end
+
+  # a markup-only change beside a joined change by its law, of its operation
+  # family, on its provision or one above or below it: one event the note's
+  # citation kept apart (the agent pass, Environmental Protection: SI
+  # 1996/1431 "arts. 1, 2" read as art.1)
+  defp alone_cause(c, changes) do
+    if Enum.any?(changes, &twin?(c, &1)),
+      do: "markup alone beside its joined twin",
+      else: "markup alone"
+  end
+
+  defp twin?(c, d) do
+    d.key != c.key and length(MergeStrata.sources(d)) > 1 and by(d) == by(c) and
+      related?(c.target, d.target) and
+      Merge.family(Change.value(d, :feed, :operation) || Change.value(d, :law_text, :operation)) ==
+        Merge.family(Change.value(c, :markup, :operation))
+  end
+
+  defp related?(a, b), do: a == b or a in LatRef.ancestors(b) or b in LatRef.ancestors(a)
 
   # a law-text record's copy on a provision below the one its key joined an
   # effect on, left apart (the agent pass, 2026-11-06: 2009 c.25 Sch.21
@@ -145,10 +164,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeGate do
       records(c, :law_text) > 1 -> law_text_records(c)
       records(c, :markup) > 1 -> markup_records(c)
       records(c, :feed) > 1 -> "two feed effects"
+      lent?(c) -> "a joined event lent to a provision its effect doesn't name"
       operation_conflict?(c) -> "operation differs"
       legislation_gov_uk_unlike?(c) -> "operations differ in legislation.gov.uk: " <> ops(c)
       true -> nil
     end
+  end
+
+  # an instruction's joined event lent to a provision the feed's effect
+  # places neither on it nor above or below it (`Merge` joined_instruction;
+  # the agent pass, Environmental Protection: SSI 2005/658 reg.2(2))
+  defp lent?(c) do
+    placed = for p <- Change.values(c, :feed, :placed), is_binary(p), p != "*", do: p
+
+    Change.values(c, :law_text, :by) != [] and placed != [] and
+      not Enum.any?(placed, &related?(&1, c.target))
   end
 
   # the law's text stating one change twice (an operative section and the

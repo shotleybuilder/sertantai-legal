@@ -256,14 +256,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
   # into s.65(1)(a) and (b)) is one event: when it has joined the event at
   # one, it is the event's placement at the others, with the event's
   # feed facts — not its markup, which is where it sits elsewhere (as the
-  # markup's placements are: `precise/1`)
+  # markup's placements are: `precise/1`) — never where the feed records
+  # the instruction per place, one effect each (EPA s.78G(3)(a): SSI 2005/658
+  # reg.2(2)'s s.78A(7)(b)(i) effect lent to a place reg.2(2) never names;
+  # the agent pass, Environmental Protection: Merge)
   defp joined_instruction(orphan, by_target) do
     with true <- Change.values(orphan, :law_text, :by) != [],
          %Change{} = joined <-
            by_target
            |> Map.values()
            |> List.flatten()
-           |> Enum.find(&(orphan.key in &1.aliases and &1.key != orphan.key)) do
+           |> Enum.find(&(orphan.key in &1.aliases and &1.key != orphan.key)),
+         false <- own_event_here?(orphan, joined, by_target) do
       facts = Enum.filter(joined.claims, &(&1.source in [:feed, :law]))
 
       # an event the feed doesn't record (legacy markup alone) has no facts
@@ -278,6 +282,24 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
     else
       _ -> nil
     end
+  end
+
+  # the feed records the joined event's amending provision per place: another
+  # effect by the same law names it, so each place joins its own effect or
+  # stays apart (SSI 2005/658 reg.2(2): one effect per listed provision)
+  defp own_event_here?(_orphan, joined, by_target) do
+    base = Candidates.base(joined.key)
+    named = joined |> Change.values(:feed, :affecting) |> List.flatten()
+    by = Change.values(joined, :feed, :by)
+
+    named != [] and
+      by_target
+      |> Map.values()
+      |> List.flatten()
+      |> Enum.any?(fn c ->
+        Candidates.base(c.key) != base and Enum.any?(Change.values(c, :feed, :by), &(&1 in by)) and
+          Enum.any?(List.flatten(Change.values(c, :feed, :affecting)), &(&1 in named))
+      end)
   end
 
   # One note's pieces over a provision and its children are one event: when

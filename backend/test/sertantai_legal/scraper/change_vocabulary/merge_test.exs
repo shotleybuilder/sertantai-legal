@@ -228,6 +228,26 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeTest do
     assert alone(changes) == []
   end
 
+  test "an instruction the feed records per place never lends one place's effect to another (EPA s.78G(3)(a), SSI 2005/658 reg.2(2))" do
+    key = "UK_ssi_2005_658:regulation-2-2"
+
+    changes =
+      Merge.merge([
+        text(key, "s.78A(7)(b)(i)", :substituted, "UK_ssi_2005_658"),
+        text(key, "s.78G(3)(a)", :substituted, "UK_ssi_2005_658"),
+        feed("key-a", "s.78A(7)(b)(i)", :substituted, "UK_ssi_2005_658", ["reg.2(2)"]),
+        feed("key-c", "s.78C(10)(b)", :substituted, "UK_ssi_2005_658", ["reg.2(2)"]),
+        feed("key-b", "s.78G(3)(a)", :substituted, "UK_ssi_2005_658", ["reg.2(6)(b)"])
+      ])
+
+    assert Enum.map(changes, &{&1.key, &1.target}) |> Enum.sort() == [
+             {key, "s.78G(3)(a)"},
+             {"key-a", "s.78A(7)(b)(i)"},
+             {"key-b", "s.78G(3)(a)"},
+             {"key-c", "s.78C(10)(b)"}
+           ]
+  end
+
   test "an instruction's placement where the event already sits is that change, not a second (TCPA 1990 s.97(1))" do
     changes =
       Merge.merge([
