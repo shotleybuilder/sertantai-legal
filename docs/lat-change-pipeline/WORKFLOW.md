@@ -298,6 +298,23 @@ Each group is reviewed once in the sources' records and named in `test/fixtures/
 
 Before this, OH&S used agents over U and C in full and pooled J samples to the 95% bound (2026-10-28; 7 rounds).
 
+**Environmental Protection** (2026-11-10). The changes were current after the Amending-law reader's last write, so no build comes first. The gate was at 99 groups not named (294 changes), and OH&S's at 83, parked. Both were reviewed in the sources' records together. Each change was checked by shape in code (one operation, and the note citing the change's law); each unjoined change and candidate was read with the changes beside it. That review found no Merge fault. Its splits were:
+- an Act read as starting at Royal Assent, kept apart by the day rule (the Commencement reader's);
+- list items read twice (the Amending-law reader's);
+- the feed's `#made` maker records carrying the later law's affecting provisions (the Feed reader's);
+- three merge forms of 1 to 3 changes, named known limits (Decision 1).
+
+**The one agent pass** (seed 61, 50 by-design changes, 179,044 tokens): 48 OK, 2 new classes, which the grouping had hidden.
+- **The Merge's own:** one instruction joined at one place lent that event's feed facts to places the feed records with effects of their own (SSI 2005/658 reg.2(2): key on 39 provisions). `joined_instruction` now lends nothing where another effect by the same law names the joined event's amending provision (Decision 3).
+  - The in-memory preview of 7 laws caught two over-strict first rules before any write.
+  - One restore point and one rebuild of the three families followed.
+- **The gate gained two causes:** "a joined event lent to a provision its effect doesn't name" (268 left, each checked mechanically: the instruction is the feed effect's own amending provision) and "markup alone beside its joined twin".
+- **Result:**
+  - Strata: EP J 4,667 / U 33 / C 17; join rate law text 86.0%, markup 95.8%.
+  - OH&S U 16 → 17: SI 2022/8 reg.6(a) at reg.10 is no longer lent another place's effect.
+  - Maritime U 6, C 4.
+  - All three gates PASS; golden 27/27.
+
 **Skill.** `merge-check`. Design: [CHANGE-IDENTITY-DESIGN.md](CHANGE-IDENTITY-DESIGN.md).
 
 ## 8. Evidence

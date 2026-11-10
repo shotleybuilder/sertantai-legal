@@ -170,3 +170,14 @@ Maritime Safety (2026-11-06), the code gate (`.claude/sessions/lat-change-pipeli
 - **One agent pass** (seed 51, 50 by-design changes, 129,479 tokens): 47 OK, 2 wrong, 1 doubtful. No over-join.
   - New: the new paragraphs a joined change makes below it were left with the law-text key and no date (35 in the family; Decision 2, `Merge.Copies`).
   - New: unnumbered list items collapsed (the Amending-law reader's, parked).
+
+Environmental Protection (2026-11-10), the code gate, with OH&S's parked gate (`.claude/sessions/lat-change-pipeline/2026-11-10-environmental-protection-merge.md`):
+
+- **Gate review:** 99 EP + 83 OH&S groups, each change checked by shape in a script, then U and C read with the changes beside them. 178 names; no Merge fault found by the review.
+- **One agent pass** (seed 61, 50 by-design changes, 179,044 tokens): 48 OK, 2 new classes.
+  - A joined event lent to places the feed records with effects of their own: `Merge.joined_instruction`, fixed (Decision 3), with one rebuild of the three families.
+  - A note citation read short: the Markup reader's, parked.
+
+  Both are now gate causes: "a joined event lent to a provision its effect doesn't name" and "markup alone beside its joined twin".
+- **Lesson:** a default name per cause ("markup alone: the feed holds no effect") hid a split the agent then found. A cause wide enough to hold two shapes needs splitting in code before it is named by default.
+- **Strata after:** EP J 4,667 / U 33 / C 17; OH&S U 17 (the fix's one place left apart); Maritime U 6 / C 4.

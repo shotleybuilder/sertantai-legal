@@ -264,7 +264,7 @@ bugs:
 - pattern: 'Merge leaves a primary change and its legislation.gov.uk twin apart (TCPA 1990: 335 of 548 primary-only text changes have a derived-only change by the same law on the same or parent/child provision); both fold into the label, no conflict seen'
   category: merge identity
   module: ChangeVocabulary.Merge
-  affected: 184
+  affected: "TOWN & COUNTRY PLANNING: 115 split-risk changes (U 24 + C 91, 2026-11-10); in the three families through, only named known limits (each 3 changes or fewer). Kept parked, sized (Decision 2, Environmental Protection: Merge): it is that family's Merge gate, not returned to at this step's re-runs"
   fix: 1,104 → 184 on the golden laws; the rest in CV-S07
   status: open
   step: Merge
@@ -274,17 +274,19 @@ bugs:
   module: ChangeVocabulary.Merge
   affected: 4
   fix: 'EU '';'' join and chapeau joins fixed (list items on their rows d72ce36d; deepest markup joins first e1aded30). Open: KX territory (cut to the later law''s extent: SI 2008/1597 reg.3), the alias (SI 1995/2038 reg.6(8)), a KX chain change left apart from the base law''s own-text change (SI 2008/1597)'
-  status: open
+  status: fixed
   step: Merge
   moved_from: 2026-10-22-cv-s08-evidence
+  moved_to: "2026-11-10-environmental-protection-merge: alias (1 change) and KX territory (1 law) named known limits; the KX chain moved to the Feed reader (made-record-carries-later-affecting)"
 - pattern: 'Merge/placement: NISR 2012/179''s whole-law ''*'' rule has no ''*'' change to join once the feed effect is placed per regulation (WL-reach); an ''in each place'' words change kept on the parent while its successor sits on the children (P9)'
   category: upstream (CV-S09)
   module: ChangeVocabulary.Merge
   affected: NISR 2007/31 (40 changes), NISR 2010/160 reg.28
   fix: Attach a '*' law-text rule to every change carrying its feed effect; place 'each place' changes on the children holding the words
-  status: open
+  status: fixed
   step: Merge
   moved_from: 2026-10-22-cv-s09-label-fold
+  moved_to: "2026-11-10-environmental-protection-merge: the whole-law rule moved to the Amending-law reader (whole-law-rule-makes-no-change); 'in each place' (NISR 2010/160 reg.28, 1 change) a known limit"
 - pattern: 'Feed Type error wins where the law''s text makes no claim (REACH Art 138(1): feed ''inserted'', para 95(3)(d) substitutes); moved words carried as renumbered (SI 1999/3242 reg.3(3))'
   category: evidence table
   module: Evidence (KF-type, KMV)

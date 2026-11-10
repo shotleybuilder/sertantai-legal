@@ -117,7 +117,8 @@ bugs:
     affected: 1 (hand check item 50; reach unknown)
     fix: "Count lone markup changes beside a two-source twin on the same provision or one above, by the same law"
     step: Merge
-    status: open
+    status: fixed
+    moved_to: "2026-11-10-environmental-protection-merge: legislation.gov.uk's own ids, 3 changes in 3 laws, a known limit; counted by the gate cause 'markup alone beside its joined twin'"
   - pattern: "Law-text coverage counted a pointer as read when the amending law's text holding it isn't stored (a Schedule fetched body-only): 'read, no rule' held changes never read (e.g. MSA 1991 c.52 s.41(3), FA 1995 Sch.29); and an order's 'art.' pointer missed the feed's 'reg.' name (MSA 1995 Sch.5 para.4(c))"
     category: read-set-not-held
     module: Measures.Source.pointers/1
