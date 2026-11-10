@@ -213,6 +213,12 @@ No agent rounds. Before this, the rule was statistical (2026-10-28): pooled agen
 
 **An SI's powers** (Maritime Safety, 2026-11-05). An SI that states no extent extends as far as its enabling provisions. Each provision is placed by its parent Act's extent clause; a parent stating no extent at all takes the extent legislation.gov.uk states on the provision (RULES.md `powers-of-an-act-stating-no-extent`). Whenever the powers parser (`EnactedBy.EnablingProvisions`) changes, diff its parse of every held introduction before and after, and check each change in its text.
 
+**Environmental Protection** (2026-11-09/10). 553 amending laws, 249 never written before, so write 1 comes first: the real gate is only known after it and the rebuild (231 → 96 causes). Then the readers are fixed by cause, widest first, in two rounds. Each round ends with one cold catalogue dry run to a scratch copy (with `expected.json` copied in, so its comparison is real), the held moves put to Jason, then `--accept` and a write.
+- **Don't edit `extent/` code between a dry run and `--accept`.** Any change stales `Extent.ReadVersion`, so the accept runs cold again (13 min, not 1).
+- **A powers-parser change also covers `EnablingCache`'s register title lookup.** The diff over every held introduction and the offline re-parse of the changed SIs (`EnablingCache.reparse/1`) both apply: the powers lookup reads the cache, not the introduction.
+- **Another family's check after a write:** its unnamed causes can be relabelled (no powers → provision not named) while its build is stale. Compare the causes by law against the reading before calling it worse.
+- **Result:** our faults 0, causes 231 → 0 not named (139 known), bound by the law's text 45% → 74%, no powers 662 → 115 changes.
+
 **Skill.** `extent-reader-check`.
 
 ## 6. Amending-law reader

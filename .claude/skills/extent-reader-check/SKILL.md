@@ -37,7 +37,7 @@ Ask Jason before the runs that write; say how long each takes. Take a restore po
    - each example reading differently, checked in the law's text, then updated by hand in `expected.json`;
    - the pattern counts by outcome (unread → read is a gain; read → unread needs a reason).
 
-   `--out DIR` writes elsewhere and compares against an empty catalogue, so its "examples reading differently" is always 0. Use the fixtures for the review.
+   `--out DIR` writes elsewhere and compares against `DIR/expected.json`. For a dry run, copy the fixtures into DIR first (`cp test/fixtures/extent_patterns/*.json DIR/`), so the comparison is real and the held expectations are untouched. Held moves go to Jason, then `--accept` (it keeps held classes) and the moves are written with `Mix.Tasks.Lat.FeedPatterns.encode`. Don't edit `extent/` code between the dry run and `--accept`: it stales the read cache, and the accept runs cold.
 2. **Extents** (writes `extent_rules`; ~1 min warm, ~5 cold): `mix lat.amending --extents --amending <every law in extent_rules> --cached`. It never fetches, and writes only the laws whose reading changed (`Extent.Store.write_read/3`).
 3. **Rebuild** (writes `provision_changes`, claims; minutes): `mix lat.vocabulary --build --family "F"`, then golden (`mix lat.vocabulary --golden --workers 1`), which must stay all-pass.
 4. **The check and gate** (read-only, about 80 s): `mix lat.extent_check --family "F"`. It must end PASS:
@@ -284,3 +284,13 @@ Maritime Safety (second family, 2026-11-05): the code gate replaces the agent ro
 - **Powers parser.** 8 forms fixed. The diff covered the 365 held introductions: 23 gains and 34 corrections, each checked.
 - **The 1972 Act.** It states no extent, so its SIs are placed by its stated extent (Decision 2).
 - **Result.** No-powers SIs fell from 77 to 13.
+
+Environmental Protection (third family, 2026-11-09/10). The session is `.claude/sessions/lat-change-pipeline/2026-11-09-environmental-protection-extent-reader.md`.
+- **Write 1 first.** 249 of the 553 amending laws were never written, so the real gate (96 causes, from 231) is known only after the write and rebuild.
+- **Readers, in two rounds by cause:**
+  - 15 wordings, with one check error and one wrong bound (a roman list running into the parent's next letter);
+  - the powers parser (a defined short name, a footnote naming the amending Act) and the register title lookup;
+  - Decision 2 (a parent naming the enabling section nowhere takes its stated extent);
+  - Decision 3 (a partly excepted provision in a widening list).
+- **Catalogue:** two cold dry runs to a scratch copy, with Decisions 5 and 6. 3 misreads are held `pending:` as known limits.
+- **Result.** PASS: causes 231 → 0 not named (139 known), bound by the law's text 45% → 74%, no powers 662 → 115 changes. Golden 27/27, `mix test` 10,569. No agent pass.
