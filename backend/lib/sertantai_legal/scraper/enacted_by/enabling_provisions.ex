@@ -44,6 +44,11 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingProvisions do
 
   @act_end ~r/(?<=\bAct\s\d{4})|(?<=\bthat\sAct)|(?<=\bthe\s\d{4}\sAct)/u
 
+  # an Act's short name, defined after its title and marker: "Act 1972
+  # f00001 (“the ECA 1972”)"
+  @short_name ~r/\bAct\s+(\d{4})\s+([fc]\d{5})\s*\(\s*[“"]\s*(the\s+[^”"()]*?)\s*[”"]\s*\)/u
+  # (the match starts at "Act": the title is read from the words before it)
+
   # a defined term after a title: "Act 1974 (“ the 1974 Act ”)"
   @defined_term ~r/\(\s*[“"]\s*the\s+[^”"()]*[”"]\s*\)/u
 
@@ -64,6 +69,7 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingProvisions do
 
       {clause, before} ->
         clause
+        |> short_names(before <> clause)
         |> String.replace(@defined_term, " ")
         |> chunks()
         |> Enum.flat_map_reduce(before, fn {chunk, marker}, so_far ->
@@ -87,7 +93,54 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingProvisions do
   # 185(2C) … of the Merchant Shipping Act 1995 f00005": SI 2016/1061)
   defp cited(chunk, uris, titles, context) do
     {earlier, last} = chunk |> String.split(@act_end) |> split_last_act()
-    by_title(Enum.join(earlier), titles, context) ++ provision(last, uris)
+    by_title(Enum.join(earlier), titles, context) ++ marked(last, uris, titles, context)
+  end
+
+  # a marker naming no law of the year cited is a footnote on another (the
+  # Act that amended it: "section 2(2) of, as read with paragraph 1A of
+  # Schedule 2 to, the European Communities Act 1972 f00005", f00005 the
+  # 2006 Act: SI 2007/1711): the Act by title
+  defp marked(last, uris, titles, context) do
+    case provision(last, uris) do
+      [] -> by_title(last, titles, context)
+      found -> found
+    end
+  end
+
+  # a short name the text defines for an Act ("Act 1972 f00001 (“the ECA
+  # 1972”)") cited in the clause ("section 2(2) of the ECA 1972": SI
+  # 2017/585) → the Act's title and marker; a term naming an Act ("the
+  # 1974 Act", "the Act") is read where it is cited
+  defp short_names(clause, text) do
+    @short_name
+    |> Regex.scan(text, return: :index)
+    |> Enum.map(fn [{at, _}, year, marker, term] ->
+      {binary_part(text, 0, at), part(text, year), part(text, marker), part(text, term)}
+    end)
+    |> Enum.reject(fn {_before, _year, _marker, term} -> term =~ ~r/\bAct\b/u end)
+    |> Enum.reduce(clause, fn {before, year, marker, term}, c ->
+      Regex.replace(
+        ~r/\b#{term_words(term)}\b(?!\s*[”"])/u,
+        c,
+        "the #{title(before)}Act #{year} #{marker}"
+      )
+    end)
+  end
+
+  defp part(text, {at, len}), do: binary_part(text, at, len)
+
+  # a term as cited, its year spaced or not ("the PPCA1999" cited "the
+  # PPCA 1999": WSI 2016/691)
+  defp term_words(term),
+    do: term |> Regex.escape() |> String.replace(~r/(?<=\D)(\d{4})$/u, "\\s*\\1")
+
+  # the title's words before "Act" at the definition: from its last
+  # "the" followed by title words only
+  defp title(before) do
+    case Regex.run(~r/\bthe\s+((?:(?:[A-Z][\w,.'()-]*|and|of|at|for|in|on|etc\.)\s+)+)$/u, before) do
+      [_, words] -> words
+      nil -> ""
+    end
   end
 
   # the pieces before the last one ending "Act YYYY", and that one (where

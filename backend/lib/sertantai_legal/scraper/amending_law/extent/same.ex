@@ -145,9 +145,18 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Same do
   # Scotland only" → same, and those paragraphs only there; any other
   # exception → the provisions' extent is unknown (`:unread`), never the
   # default (SI 2014/469 art.3(5): CV-S05 round 3 E)
+  @other_extent_provided ~r/^[^—–]*?(?:,?\s*except\s+where\s+contained\s+in\s+a\s+provision\s+for\s+which\s+a\s+different\s+extent\s+is\s+provided\s+by\s+this\s+(?:subsection|section)|\s*\(\s*except\s+where\s+otherwise\s+provided\s*\))\s*\.?\s*$/iu
+
   defp same_lists(refs, tail, ref) do
     cond do
       not Regex.match?(~r/^[^—–]*?\b(?:except|save|but)\b/iu, tail) ->
+        [{:same, nil, refs}]
+
+      # "except where contained in a provision for which a different
+      # extent is provided by this subsection": the lists naming those
+      # provisions outrank `same` already (Environment Act 2021 s.146(3)(e));
+      # "(except where otherwise provided)" (NERC Act 2006 s.108(7)(b))
+      Regex.match?(@other_extent_provided, tail) ->
         [{:same, nil, refs}]
 
       (m =

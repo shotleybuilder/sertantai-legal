@@ -57,10 +57,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Powers do
   defp whole_act(_e, _law), do: nil
 
   # the extent legislation.gov.uk states on each enabling provision of a
-  # parent stating none (Decision 2, 2026-11-05: `Extent.StatedExtent`)
+  # parent stating no default (Decision 2, 2026-11-05: `Extent.StatedExtent`;
+  # used only where the parent names the provision nowhere, Decision 2,
+  # 2026-11-09: `Lookup.from_powers/3`)
   defp stated(provisions, parents) do
     unstated =
-      for {law, %Extent{default: nil, lists: []}} <- parents, into: MapSet.new(), do: law
+      for {law, %Extent{default: nil}} <- parents, into: MapSet.new(), do: law
 
     docs = Map.new(unstated, &{&1, ClmlStore.law_docs(&1)})
 

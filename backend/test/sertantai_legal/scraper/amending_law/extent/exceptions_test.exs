@@ -491,7 +491,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ExceptionsTest do
     assert Extent.of(e, "s.100") == "E+W"
   end
 
-  test "\"section 153 except subsection (1)(k) and (m)\" is withheld, never dropped (ukpga 1990/43 s.164)" do
+  test "\"section 153 except subsection (1)(k) and (m)\": the section read, its excepted paragraphs narrowed back (ukpga 1990/43 s.164; Decision 3, 2026-11-09)" do
     e =
       read(
         "UK_ukpga_1990_43",
@@ -503,7 +503,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ExceptionsTest do
       )
 
     assert "s.141" in refs(e, :also, "NI")
-    assert "s.153" in refs(e, :unread, nil)
+    assert "s.153" in refs(e, :also, "NI")
+    refute "s.153" in refs(e, :unread, nil)
     refute "s.164(1)(k)" in refs(e, :unread, nil)
   end
 

@@ -400,4 +400,56 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingProvisionsTest do
              ]
     end
   end
+
+  describe "Environmental Protection: Extent reader (2026-11-09)" do
+    test "a short name the preamble defines (“the ECA 1972”), cited in the powers clause (SI 2017/585)" do
+      text =
+        "For the purposes of section 2(2) of the European Communities Act 1972 f00001 (“the ECA 1972”)— a the Secretary of State has been designated f00002 in relation to the environment; and b the Welsh Ministers have been designated f00003 in relation to measures relating to the requirement for an assessment of the impact on the environment of projects likely to have significant effects on the environment. The Secretary of State and the Welsh Ministers make these Regulations in exercise of the powers conferred by section 2(2) of the ECA 1972— the Welsh Ministers in relation to Wales, to the extent that they are designated to do so; and the Secretary of State, in every other respect."
+
+      urls = %{
+        "f00001" => [
+          "http://www.legislation.gov.uk/id/ukpga/1972/68",
+          "http://www.legislation.gov.uk/id/ukpga/2006/51",
+          "http://www.legislation.gov.uk/id/ukpga/2008/7"
+        ],
+        "f00002" => ["http://www.legislation.gov.uk/id/uksi/2008/301"],
+        "f00003" => ["http://www.legislation.gov.uk/id/uksi/2000/2812"]
+      }
+
+      assert EnablingProvisions.parse(text, urls, %{}) == [
+               %{law: "UK_ukpga_1972_68", sections: ["2"], schedules: []}
+             ]
+    end
+
+    test "short names cited as defined or with the year spaced (WSI 2016/691)" do
+      text =
+        "The Welsh Ministers have, in accordance with section 2(4) of the Pollution Prevention and Control Act 1999 f00001 (“the PPCA1999 ”), consulted— a the Natural Resources Body for Wales. The Welsh Ministers have, in accordance with section 27(2) and (4) of the Waste and Emissions Trading Act 2003 f00002 (“the WETA 2003 ”), consulted— a such bodies. The Welsh Ministers make these Regulations in exercise of the powers conferred by section 2 of and Schedule 1 to the PPCA 1999 , sections 11, 12, 13 and 36 of the WETA 2003."
+
+      urls = %{
+        "f00001" => ["http://www.legislation.gov.uk/id/ukpga/1999/24"],
+        "f00002" => ["http://www.legislation.gov.uk/id/ukpga/2003/33"]
+      }
+
+      assert EnablingProvisions.parse(text, urls, %{}) == [
+               %{law: "UK_ukpga_1999_24", sections: ["2"], schedules: ["1"]},
+               %{law: "UK_ukpga_2003_33", sections: ["11", "12", "13", "36"], schedules: []}
+             ]
+    end
+
+    test "a marker naming the Act that amended the one cited: the cited Act by title (SI 2007/1711)" do
+      text =
+        "The Secretary of State is designated for the purposes of section 2(2) of the European Communities Act 1972 f00001 in relation to measures relating to waste. The Secretary of State makes the following Regulations under the powers conferred on him by section 2(2) of, as read with paragraph 1A of Schedule 2 to, the European Communities Act 1972 f00005 :"
+
+      urls = %{
+        "f00001" => ["http://www.legislation.gov.uk/id/ukpga/1972/68"],
+        "f00005" => ["http://www.legislation.gov.uk/id/ukpga/2006/51"]
+      }
+
+      titles = %{"european communities act 1972" => "UK_ukpga_1972_68"}
+
+      assert EnablingProvisions.parse(text, urls, titles) == [
+               %{law: "UK_ukpga_1972_68", sections: ["2"], schedules: ["2"]}
+             ]
+    end
+  end
 end

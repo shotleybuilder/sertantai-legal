@@ -147,6 +147,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Check do
   defp none_why(%{extent: %Extent{} = e} = row, affecting) do
     cond do
       affecting != [] and Lookup.of_change(e, affecting) == :same -> "same"
+      affecting == [] and all_same?(e) -> "same"
       withheld?(e, affecting) -> "unread_statement"
       no_powers?(e, row) -> "law_no_powers"
       true -> none_listed(row)
@@ -178,6 +179,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Check do
         )
     end
   end
+
+  # every amendment the law makes follows its enactment, and nothing else
+  # is stated: any change of it does, its amending provision unknown (WSI
+  # 2013/755 art.1)
+  defp all_same?(%Extent{default: nil, lists: [_ | _] = lists}),
+    do: Enum.all?(lists, &match?({:same, _, ["*"]}, &1))
+
+  defp all_same?(_e), do: false
 
   # an SI stating no default and no powers read, its lists naming others
   defp no_powers?(%Extent{default: nil, powers: nil, stated: nil, competence: nil}, %{law: law}),

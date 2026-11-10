@@ -64,9 +64,45 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
   def units_with_ids(%Doc{} = doc, id) do
     children = numbered_children(doc, id)
 
-    for el_id <- if(children == [], do: [id], else: children),
-        text = doc |> Doc.element(el_id) |> own_words() |> Doc.lines() |> Enum.join(" "),
-        do: {el_id, text |> String.replace(~r/^\s*\d+[A-Z]*\s*(?=[A-Z(])/u, "") |> unlettered()}
+    for(
+      el_id <- if(children == [], do: [id], else: children),
+      text = doc |> Doc.element(el_id) |> own_words() |> Doc.lines() |> Enum.join(" "),
+      do: {el_id, text |> String.replace(~r/^\s*\d+[A-Z]*\s*(?=[A-Z(])/u, "") |> unlettered()}
+    )
+    |> law_pronouns()
+  end
+
+  @cited ~r/^\s*(?:\d+[A-Z]*\s+)?(These\s+Regulations|This\s+Order|These\s+Rules|This\s+Act)\s+may\s+be\s+cited\b/u
+  @pronoun_after ~r/((?:[.;]|^)\s*(?:\(?\d+[A-Z]*\)?\s+)?)(?:They|It)\s+(?=(?:shall\s+)?(?:extends?|appl(?:y|ies)|do(?:es)?\s+not\s+(?:extend|apply))\b)/u
+
+  # after the law's citation ("These Regulations may be cited as …"), a
+  # later unit's "They extend …" / "It applies …" is the law's own (SI
+  # 2018/575 reg.1(3), SI 2016/618, SI 2019/1517)
+  defp law_pronouns([{_, first} | _] = units) do
+    case Regex.run(
+           ~r/^\s*(These\s+Regulations|This\s+Order|These\s+Rules|This\s+Act)\s+may\s+be\s+cited\b/u,
+           first
+         ) do
+      [_, noun] ->
+        Enum.map(units, fn {id, text} ->
+          {id, Regex.replace(@pronoun_after, text, "\\1#{noun} ")}
+        end)
+
+      nil ->
+        units
+    end
+  end
+
+  defp law_pronouns([]), do: []
+
+  # the same within one provision's words: "1 These Regulations may be
+  # cited as …. 2 They come into force …. 3 They extend to England and
+  # Wales." (SI 2018/575 reg.1)
+  defp cited_pronouns(text) do
+    case Regex.run(@cited, text) do
+      [_, noun] -> Regex.replace(@pronoun_after, text, "\\1#{noun} ")
+      nil -> text
+    end
   end
 
   @doc """
@@ -128,9 +164,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
     |> lettered_places()
     |> lettered_verbs()
     |> there()
+    |> but_not()
+    |> cited_pronouns()
+    |> cited_extent()
+    |> no_provision()
     |> other_provisions()
     |> in_schedule()
     |> in_section()
+    |> in_part()
     |> chapters()
     |> ScheduleWords.resolve()
     |> PartLead.resolve()
@@ -201,6 +242,55 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
     end
   end
 
+  # "extend to England and Wales and Scotland (but not Northern Ireland)":
+  # the places named, the bracket restating them (2014 c.12 s.184(2), (3))
+  defp but_not(text),
+    do:
+      Regex.replace(
+        ~r/(\bextends?\s+(?:only\s+)?to\s+(?>#{Places.place_list()}))\s*\(\s*but\s+not\s+(?:to\s+)?(?>#{@places})\s*\)/u,
+        text,
+        "\\1"
+      )
+
+  # an extent in the citation sentence: "This Order may be cited as …,
+  # shall come into force on … and shall extend to Scotland only" → "…. This
+  # Order shall extend to Scotland only" (SIs 1991/146, 1991/1179); never
+  # across an exception ("and, other than paragraph 11 of the Schedule,
+  # shall extend …": SI 1996/973)
+  defp cited_extent(text),
+    do:
+      Regex.replace(
+        ~r/\b(This|These)\s+(Order|Regulations|Rules|Act)(\s+may\s+be\s+cited\s+as\b(?:(?!\b(?:other\s+than|except|apart\s+from|save|subject\s+to)\b)[^.])*?),?\s+(?:and\s+)?(shall\s+extend|extends?|extend)\s+to\b/u,
+        text,
+        "\\1 \\2\\3. \\1 \\2 \\4 to"
+      )
+
+  # "No provision of this Act extends to Northern Ireland" → "This Act
+  # does not extend to Northern Ireland" (Noise and Statutory Nuisance Act
+  # 1993 s.12(4))
+  defp no_provision(text),
+    do:
+      Regex.replace(
+        ~r/\bNo\s+provision\s+of\s+(?:this|these)\s+(Act|Regulations|Order)\s+(?:shall\s+)?extends?\s+to\b/u,
+        text,
+        "This \\1 does not extend to"
+      )
+
+  # "In Part 9 (miscellaneous), section 101 (…) extends also to …" (NERC
+  # Act 2006 s.108(6); 2011 c.25, 2015 c.26): the sections, the locator
+  # dropped (a section's number is the law's own; never a lead-in "In
+  # Part 5— (a) …")
+  defp in_part(text) do
+    if text =~ ~r/\bextends?\b/u,
+      do:
+        Regex.replace(
+          ~r/^(\s*(?:\d+[A-Z]*\s*)?)In\s+Part\s+[\dIVXLC]+[A-Z]*\s*(?:\([^()]*\)\s*)?,\s*(?=(?:sections?|regulations?|articles?)\s+\d)/u,
+          text,
+          "\\1"
+        ),
+      else: text
+  end
+
   defp lettered_places(text) do
     Regex.replace(
       ~r/\b(extends?|extend)(?:\s*\.)*((?:\s+only)?)\s+to\s*[—–]\s*\(?a\)?\s+(#{@places})((?:\s*,?\s*(?:and|or)?\s*\(?[b-e]\)?\s+(?:#{@places}))+)/u,
@@ -246,10 +336,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
   # "Section 7 extends to Northern Ireland, but the other provisions of
   # this Act do not extend to Northern Ireland" → "This Act, except—
   # Section 7, does not extend to Northern Ireland" (ukpga 1997/42 s.9(3),
-  # CV-S05 round 7 NEW-4)
+  # CV-S05 round 7 NEW-4); also "This section and sections 3 and 5 extend
+  # to Northern Ireland but, subject to subsections (6) to (8), the other
+  # provisions …" (PPC Act 1999 s.7(5): the subsections are read as their
+  # own statements)
   defp other_provisions(text) do
     Regex.replace(
-      ~r/((?:^|[.;:])\s*(?:\(?\d+[A-Z]*\)?\s*)?)((?:Sections?|Regulations?|Articles?|Parts?|Schedules?)\s[^,;.]+?)\s+extends?\s+(?:also\s+)?to\s+(#{@places}),?\s+but\s+the\s+other\s+provisions\s+of\s+this\s+(Act|Order|Regulations)\s+do\s+not\s+extend\s+to\s+\3\b/u,
+      ~r/((?:^|[.;:])\s*(?:\(?\d+[A-Z]*\)?\s*)?)((?:Sections?|Regulations?|Articles?|Parts?|Schedules?|This\s+section\s+and\s+sections?)\s[^,;.]+?)\s+extends?\s+(?:also\s+)?to\s+(#{@places}),?\s+but(?:\s*,\s*subject\s+to\s+subsections?\s+\(\d+[A-Z]*\)(?:\s+(?:to|and)\s+\(\d+[A-Z]*\))?\s*,)?\s+the\s+other\s+provisions\s+of\s+this\s+(Act|Order|Regulations)\s+do\s+not\s+extend\s+to\s+\3\b/u,
       text,
       "\\1This \\4, except— \\2, does not extend to \\3"
     )

@@ -9,6 +9,11 @@
     "ref": "s.17",
     "sentence": "Where a land management agreement is made with a person with a qualifying interest in land subject to the agreement which is not registered land, and the agreement provides that the provisions of this subsection have effect in relation to the agreement—a the agreement may be registered as a land charge under the Land Charges Act 1972 (c. 61) as if it were a charge affecting land falling within paragraph (ii) of Class D,b the provisions of section 4 of that Act (which relates to the effect of non-registration) apply as if the agreement were such a land charge, andc subject to the provisions of section 4 of that Act, the agreement is binding upon any successor of the person with the qualifying interest to the same extent as it is binding upon that person, despite the fact that it would not have been binding upon that successor apart from the provisions of this subsection."
   },
+  "UK_asc_2022_1/8f03e539d3": {
+    "law": "UK_asc_2022_1",
+    "ref": "s.144",
+    "sentence": "Subsections (2) and (3) of section 8 of the Education Act 1996 (c. 56) apply to determine, for the purposes of this Act, whether a person is of compulsory school age, so far as that section applies in relation to Wales."
+  },
   "UK_asp_2003_7/e78f7da06a": {
     "law": "UK_asp_2003_7",
     "ref": "s.70",
@@ -74,6 +79,16 @@
     "ref": "reg.14D",
     "sentence": "In determining an appeal the CMA must have regard, to the same extent as is required of the Authority, to the matters to which the Authority must have regard—a in the carrying out of its principal objective under Article 14 of the Energy Order; andb in the performance of its duties under that Article and Article 6B of the Energy Order."
   },
+  "UK_nisi_2002_3153/a54c0d6e3d": {
+    "law": "UK_nisi_2002_3153",
+    "ref": "reg.34",
+    "sentence": "Where a person having an estate in any land, by a management agreement grants or agrees to grant any right as respects the land, the grant or agreement shall be binding upon any person deriving title or otherwise claiming under the grantor to the same extent as it is binding upon the grantor notwithstanding that it would not have been binding upon that person apart from this paragraph."
+  },
+  "UK_nisi_2002_3153/fad05608ea": {
+    "law": "UK_nisi_2002_3153",
+    "ref": "reg.15",
+    "sentence": "In determining—a any appeal against, or reference or review of, a decision of a district council under regulations, orb any application transmitted from a district council under any such regulations, the body or person making the determination shall be bound by any direction given by the Department to the district council to the same extent as the council."
+  },
   "UK_nisi_2006_3336/17fdd5d7a0": {
     "law": "UK_nisi_2006_3336",
     "ref": "reg.159",
@@ -88,6 +103,21 @@
     "law": "UK_nisr_2009_238",
     "ref": "sch.8.pt.II",
     "sentence": "PART IIREVOCATIONS TO STATUTORY INSTRUMENTS THAT EXTEND TO NORTHERN IRELAND123Regulations revokedReferencesExtent of revocationThe Dangerous Substances and Preparations (Safety) (Amendment) Regulations 2007S.I. 2007/386Regulation 3The Export and Import of Dangerous Chemicals Regulations 2008S.I. 2008/2108Regulation 5, paragraphs (3) and (5)The REACH Enforcement Regulations 2008S.I. 2008/2852Paragraphs 1 to 4 of Part 5 of Schedule 10"
+  },
+  "UK_nisr_2011_127/2e124be2dd": {
+    "law": "UK_nisr_2011_127",
+    "ref": "reg.9D",
+    "sentence": "Article 7 is to be read as if—a before paragraph 1 there were inserted—A1 In this Article, the “list of waste” means the list contained in the Annex to Commission Decision 2000/532/EC, as that list has effect in Northern Ireland.;b in paragraph 1—i the first and second sentences were omitted;ii for the third sentence there were substituted “The list of waste shall, except as provided in Commission Decision 2000/532/EC, be binding as regards determination of the waste which is to be considered as hazardous waste or as non-hazardous waste.”;c paragraphs 2, 3, 6 and 7 were omitted."
+  },
+  "UK_nisr_2019_240/6ed55248ae": {
+    "law": "UK_nisr_2019_240",
+    "ref": "reg.2",
+    "sentence": "These Regulations extend to Northern Ireland only."
+  },
+  "UK_nisr_2020_304/0d5318a579": {
+    "law": "UK_nisr_2020_304",
+    "ref": "reg.1",
+    "sentence": "They apply to Northern Ireland only in so far as they do not deal with import and export controls and trade with any place outside the United Kingdom, within the meaning of paragraph 20 of Schedule 3 to the Northern Ireland Act 1998."
   },
   "UK_nisr_2020_330/898208e112": {
     "law": "UK_nisr_2020_330",
@@ -133,6 +163,11 @@
     "law": "UK_ssi_2010_60",
     "ref": "reg.31",
     "sentence": "For the purposes of this regulation, the order referred to in paragraph (3) is one whose only effect adverse to the interests of any person having an interest in the land or minerals comprised in the site is to restrict working rights in respect of the site to the same extent as the relevant restriction."
+  },
+  "UK_ssi_2013_177/16ede700f2": {
+    "law": "UK_ssi_2013_177",
+    "ref": "reg.1",
+    "sentence": "These Regulations extend to Scotland and insofar as they extend beyond Scotland they do so only as a matter of Scots law."
   },
   "UK_ssi_2021_50/3822bb6139": {
     "law": "UK_ssi_2021_50",
@@ -299,16 +334,6 @@
     "ref": "s.11",
     "sentence": "This Act . . . shall not extend to Northern Ireland."
   },
-  "UK_ukpga_1960_30/c6cf28b94b": {
-    "law": "UK_ukpga_1960_30",
-    "ref": "s.1",
-    "sentence": "Those provisions shall apply, in like manner and to the same extent as they do in relation to an occupier of premises and to persons entering thereon,—a in relation to a person occupying or having control of any fixed or moveable structure, including any vessel, vehicle or aircraft, and to persons entering thereon; andb in relation to an occupier of premises or a person occupying or having control of any such structure and to property thereon, including the property of persons who have not themselves entered on the premises or structure."
-  },
-  "UK_ukpga_1960_30/c94061ead4": {
-    "law": "UK_ukpga_1960_30",
-    "ref": "s.5",
-    "sentence": "This Act may be cited as the Occupiers’ Liability (Scotland) Act 1960, and shall extend to Scotland only."
-  },
   "UK_ukpga_1960_62/493e6027df": {
     "law": "UK_ukpga_1960_62",
     "ref": "s.32",
@@ -424,11 +449,6 @@
     "ref": "s.79",
     "sentence": "This Act, except section 59 thereof, shall not extend to Northern Ireland."
   },
-  "UK_ukpga_1968_47/ca30570b52": {
-    "law": "UK_ukpga_1968_47",
-    "ref": "s.61",
-    "sentence": "This Act may be cited as the Sewerage (Scotland) Act 1968 and shall extend to Scotland only."
-  },
   "UK_ukpga_1968_60/0f68ab8a93": {
     "law": "UK_ukpga_1968_60",
     "ref": "s.36",
@@ -508,6 +528,31 @@
     "law": "UK_ukpga_1969_35",
     "ref": "s.47",
     "sentence": "The provisions of this Act other than—a . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . c the repeals made in the House of Commons Disqualification Act 1957, shall not extend to Scotland."
+  },
+  "UK_ukpga_1970_9/169a27cfc9": {
+    "law": "UK_ukpga_1970_9",
+    "ref": "s.67",
+    "sentence": "Sections 65 and 66 above shall not apply in Scotland."
+  },
+  "UK_ukpga_1970_9/208a80913c": {
+    "law": "UK_ukpga_1970_9",
+    "ref": "s.107",
+    "sentence": "This section applies only in Scotland."
+  },
+  "UK_ukpga_1970_9/3b9174fff1": {
+    "law": "UK_ukpga_1970_9",
+    "ref": "s.66",
+    "sentence": "In this section as it applies in Northern Ireland the expression “county court” shall mean a county court held for a division under the County Courts (Northern Ireland) Order 1980."
+  },
+  "UK_ukpga_1970_9/747d89a105": {
+    "law": "UK_ukpga_1970_9",
+    "ref": "s.61",
+    "sentence": "This section extends only to Northern Ireland."
+  },
+  "UK_ukpga_1970_9/bd3467fa2c": {
+    "law": "UK_ukpga_1970_9",
+    "ref": "s.62",
+    "sentence": "This section does not extend to England and Wales."
   },
   "UK_ukpga_1971_10/28e35fa073": {
     "law": "UK_ukpga_1971_10",
@@ -1084,6 +1129,11 @@
     "ref": "s.7",
     "sentence": "Section 1 of this Act extends to Scotland and Northern Ireland but otherwise this Act extends to England and Wales only."
   },
+  "UK_ukpga_1981_22/19800ed760": {
+    "law": "UK_ukpga_1981_22",
+    "ref": "s.97",
+    "sentence": "Sections 93 and 95(6) above apply to Northern Ireland, and Schedule 6 to this Act, so far as it repeals provisions of the Diseases of Animals Act 1950 which applied to Northern Ireland, but apart from those provisions this Act does not extend to Northern Ireland."
+  },
   "UK_ukpga_1981_29/5464754d6e": {
     "law": "UK_ukpga_1981_29",
     "ref": "s.46",
@@ -1108,6 +1158,11 @@
     "law": "UK_ukpga_1981_56",
     "ref": "s.35",
     "sentence": "This section does not extend to Scotland."
+  },
+  "UK_ukpga_1981_63/8abe8346f3": {
+    "law": "UK_ukpga_1981_63",
+    "ref": "s.29A",
+    "sentence": "A photograph of any document furnished to the Commissioners for the purposes of this Act and certified by them to be such a photograph shall be admissible in any proceedings, whether civil or criminal, to the same extent as the document itself."
   },
   "UK_ukpga_1981_64/0a7c1d9178": {
     "law": "UK_ukpga_1981_64",
@@ -1448,11 +1503,6 @@
     "law": "UK_ukpga_1986_31",
     "ref": "s.21",
     "sentence": "4 . . . this section and section 22 apply to England and Wales only."
-  },
-  "UK_ukpga_1986_31/6db2ff4e65": {
-    "law": "UK_ukpga_1986_31",
-    "ref": "s.23",
-    "sentence": "This section applies to Scotland only."
   },
   "UK_ukpga_1986_44/0f031c3cdc": {
     "law": "UK_ukpga_1986_44",
@@ -1819,11 +1869,6 @@
     "ref": "sch.3",
     "sentence": "The Medicines Act 1968 (c. 67)8 In section 108 of the Medicines Act 1968 (enforcement in England and Wales)—a for the words “food and drugs authority”, in each place where they occur, there shall be substituted the words “ drugs authority ”; andb after subsection (11) there shall be inserted the following subsection—12 In this section “drugs authority” means—a as respects each London borough, metropolitan district or non-metropolitan county, the council of that borough, district or county; andb as respects the City of London (including the Temples), the Common Council of that City.9 In section 109 of that Act (enforcement in Scotland)—a paragraph (c) of subsection (2) shall cease to have effect; andb after that subsection there shall be inserted the following subsection—2A Subsection (12) of section 108 of this Act shall have effect in relation to Scotland as if for paragraphs (a) and (b) there were substituted the words “ an islands or district council ”.10 After section 115 of that Act there shall be inserted the following section— Facilities for microbiological examinations.115A A drugs authority or the council of a non-metropolitan district may provide facilities for microbiological examinations of drugs.11 In section 132(1) of that Act (interpretation), the definition of “food and drugs authority” shall cease to have effect and after the definition of “doctor” there shall be inserted the following definition— “drugs authority” has the meaning assigned to it by section 108(12) of this Act;.12 In paragraph 1(2) of Schedule 3 to that Act (sampling) for the words from “in relation to England and Wales” to “Food and Drugs (Scotland) Act 1956” there shall be substituted the words “ except in relation to Northern Ireland, has the meaning assigned to it by section 27 of the Food Safety Act 1990 ”."
   },
-  "UK_ukpga_1990_16/3aeb1d3a76": {
-    "law": "UK_ukpga_1990_16",
-    "ref": "sch.4",
-    "sentence": "Other regulations4 In so far as any existing regulations made under section 1 of the Importation of Milk Act 1983 have effect in relation to Great Britain, they shall have effect, after the commencement of the relevant repeal, as if made under section 18(1)(c) of this Act."
-  },
   "UK_ukpga_1990_16/9dbce3b46c": {
     "law": "UK_ukpga_1990_16",
     "ref": "sch.4",
@@ -2149,6 +2194,16 @@
     "ref": "s.94",
     "sentence": "Section 80 extends also to Scotland and Northern Ireland."
   },
+  "UK_ukpga_1992_14/150f8dcc42": {
+    "law": "UK_ukpga_1992_14",
+    "ref": "s.119",
+    "sentence": "Part I of this Act, sections 102 and 104 to 106 above and Schedule 10 to this Act extend to England and Wales only."
+  },
+  "UK_ukpga_1992_14/b1f13819dc": {
+    "law": "UK_ukpga_1992_14",
+    "ref": "s.119",
+    "sentence": "Part II of this Act, sections 107 to 112 above and Schedules 11 and 12 to this Act extend to Scotland only."
+  },
   "UK_ukpga_1992_31/faaabd9538": {
     "law": "UK_ukpga_1992_31",
     "ref": "s.2",
@@ -2164,6 +2219,11 @@
     "ref": "s.63",
     "sentence": "Subject to subsection (5) below, this Act extends to Scotland only."
   },
+  "UK_ukpga_1992_37/ad0f796330": {
+    "law": "UK_ukpga_1992_37",
+    "ref": "sch.9",
+    "sentence": "Education Reform Act 1988 (c. 40)10 In section 235 of the Education Reform Act 1988 (general interpretation) after subsection (5) there shall be inserted the following subsection—5A Any reference in any provision of this Act which extends to Scotland to a higher education funding council shall, in the application of that provision to Scotland, be construed as a reference to the Scottish Higher Education Funding Council."
+  },
   "UK_ukpga_1992_37/e8797d7565": {
     "law": "UK_ukpga_1992_37",
     "ref": "s.63",
@@ -2178,6 +2238,21 @@
     "law": "UK_ukpga_1992_43",
     "ref": "s.56",
     "sentence": "The following provisions of this Act do not extend to Scotland—a sections 26 to 36;b sections 39 to 47;c sections 50 to 52;d section 53(2) to (4); ande Schedules 1 and 2, so far as they affect any enactment which does not extend to Scotland."
+  },
+  "UK_ukpga_1992_52/15c0b15230": {
+    "law": "UK_ukpga_1992_52",
+    "ref": "s.242",
+    "sentence": "This section extends to England and Wales only."
+  },
+  "UK_ukpga_1992_52/7773c867f8": {
+    "law": "UK_ukpga_1992_52",
+    "ref": "s.301",
+    "sentence": "The following provisions of this Act extend to Northern Ireland—a sections 13 and 14 (provisions as to property held in trust for trade union), and section 129 (application of provisions to employers’ associations) so far as it applies those sections;b Chapter VI of Part I (application of funds for political objects), except sections 86 to 88 (duties of employer who deducts union contributions), for the purposes of the application of that Chapter to trade unions or unincorporated employers’ associations having their head or main office outside Northern Ireland;c section 287 (offshore employment);d section 294 (reciprocal arrangements with Northern Ireland);e Schedule 1 (repeals) so far as it relates to enactments which extend to Northern Ireland, other than the Conspiracy and Protection of Property Act 1875;f Schedules 2 and 3 (consequential amendments, transitional provisions and savings), so far as they relate to enactments which extend to Northern Ireland; but this Act does not otherwise extend there."
+  },
+  "UK_ukpga_1992_52/ab67a9f080": {
+    "law": "UK_ukpga_1992_52",
+    "ref": "s.301",
+    "sentence": "This Act extends to England and Wales and (apart from section 212A(6)) to Scotland."
   },
   "UK_ukpga_1993_11/b857e4239f": {
     "law": "UK_ukpga_1993_11",
@@ -2204,11 +2279,6 @@
     "ref": "sch.2.para.10",
     "sentence": "This Schedule shall have effect in relation to Scotland with the substitution for any reference to a justice of the peace of a reference to the sheriff."
   },
-  "UK_ukpga_1993_12/bb77d42544": {
-    "law": "UK_ukpga_1993_12",
-    "ref": "s.45",
-    "sentence": "This section extends to Northern Ireland only."
-  },
   "UK_ukpga_1993_19/619aca5401": {
     "law": "UK_ukpga_1993_19",
     "ref": "s.54",
@@ -2218,11 +2288,6 @@
     "law": "UK_ukpga_1993_28",
     "ref": "s.188",
     "sentence": "This Part, except this section, paragraph 3 of Schedule 21 and the repeals in the House of Commons Disqualification Act 1975 and the Northern Ireland Assembly Disqualification Act 1975, does not extend to Northern Ireland."
-  },
-  "UK_ukpga_1993_28/2e698995a2": {
-    "law": "UK_ukpga_1993_28",
-    "ref": "s.70",
-    "sentence": "In this section and section 73 as they apply in relation to England, “conservation area” and “local planning authority” have the same meaning as in the Planning (Listed Buildings and Conservation Areas) Act 1990; and in connection with the latter expression—a the expression “the planning Acts” in the Town and Country Planning Act 1990 as it applies in relation to England, shall be treated as including this Act; andb paragraphs 4 and 5 of Schedule 4 to the Planning (Listed Buildings and Conservation Areas) Act 1990 (further provisions as to exercise of functions by different authorities) shall apply in relation to functions under or by virtue of this section or section 73 of this Act as they apply in relation to functions under section 69 of that Act."
   },
   "UK_ukpga_1993_28/3cfacce75d": {
     "law": "UK_ukpga_1993_28",
@@ -2253,11 +2318,6 @@
     "law": "UK_ukpga_1993_28",
     "ref": "s.188",
     "sentence": "The following, namely—a Part I of this Act;b Chapter I of Part II of this Act; andc subject to subsection (6), Part III of this Act, extend to England and Wales only."
-  },
-  "UK_ukpga_1993_40/715b32c90b": {
-    "law": "UK_ukpga_1993_40",
-    "ref": "s.13",
-    "sentence": "No provision of this Act extends to Northern Ireland."
   },
   "UK_ukpga_1993_50/b4f21161c7": {
     "law": "UK_ukpga_1993_50",
@@ -2313,6 +2373,16 @@
     "law": "UK_ukpga_1994_21",
     "ref": "s.68",
     "sentence": "The following provisions of this Act do not extend to Scotland, that is to say—za sections 4A to 4C and Schedules 1A and 1B;a sections 49 and 50 and Schedule 7; andb so much of Schedules 9 and 11 as relates to enactments extending to England and Wales only."
+  },
+  "UK_ukpga_1994_22/8537fff859": {
+    "law": "UK_ukpga_1994_22",
+    "ref": "s.52",
+    "sentence": "A statement to which this section applies is admissible in any proceedings as evidence (or, in Scotland, sufficient evidence) of any fact stated in it with respect to matters prescribed by regulations made by the Secretary of State to the same extent as oral evidence of that fact is admissible in the proceedings."
+  },
+  "UK_ukpga_1994_22/e34cce5bc8": {
+    "law": "UK_ukpga_1994_22",
+    "ref": "s.52",
+    "sentence": "In this section as it has effect in England and Wales— “document” means anything in which information of any description is recorded; “copy”, in relation to a document, means anything onto which information recorded in the document has been copied, by whatever means and whether directly or indirectly; and “statement” means any representation of fact, however made."
   },
   "UK_ukpga_1994_29/30c3a21ebb": {
     "law": "UK_ukpga_1994_29",
@@ -2659,6 +2729,11 @@
     "ref": "s.14",
     "sentence": "This Act does not extend to Scotland."
   },
+  "UK_ukpga_1996_44/9e2aa943ca": {
+    "law": "UK_ukpga_1996_44",
+    "ref": "s.14",
+    "sentence": "Except for the repeals and amendments contained in paragraphs 3 and 4 of Schedule 1, and the related entries in Schedule 2, to this Act, which have the same extent as the Acts there repealed and amended, this Act extends to Scotland only."
+  },
   "UK_ukpga_1996_47/ffaa338a2a": {
     "law": "UK_ukpga_1996_47",
     "ref": "s.27",
@@ -2724,6 +2799,11 @@
     "ref": "s.31",
     "sentence": "Proceedings for an offence under any provision of this Act other than section 2 or 11 shall not be instituted except by or with the consent of the Secretary of State; but the preceding provisions of this subsection do not apply to Scotland."
   },
+  "UK_ukpga_1996_8/876e8378c4": {
+    "law": "UK_ukpga_1996_8",
+    "ref": "sch.5.pt.V",
+    "sentence": "Walking possession agreements241 This paragraph applies where—a in accordance with regulations under section 51 of the Finance Act 1997 (enforcement by distress) a distress is authorised to be levied on the goods and chattels of a person (a person in default) who has refused or neglected to pay any tax due from him or any amount recoverable as if it were tax due from him, andb the person levying the distress and the person in default have entered into a walking possession agreement.2 For the purposes of this paragraph a walking possession agreement is an agreement under which, in consideration of the property distrained upon being allowed to remain in the custody of the person in default and of the delaying of its sale, the person in default—a acknowledges that the property specified in the agreement is under distraint and held in walking possession, andb undertakes that, except with the consent of the Commissioners and subject to such conditions as they may impose, he will not remove or allow the removal of any of the specified property from the premises named in the agreement.3 If the person in default is in breach of the undertaking contained in a walking possession agreement, he is liable to a penalty equal to half of the tax or other amount referred to in sub-paragraph (1)(a) above.4 This paragraph extends only to Northern Ireland."
+  },
   "UK_ukpga_1997_11/6d313b9d44": {
     "law": "UK_ukpga_1997_11",
     "ref": "s.6",
@@ -2734,10 +2814,30 @@
     "ref": "s.6",
     "sentence": "This Act does not extend to England or Wales or Northern Ireland except (subject to subsection (6)) so far as it affects other enactments so extending."
   },
+  "UK_ukpga_1997_25/3f9035a724": {
+    "law": "UK_ukpga_1997_25",
+    "ref": "s.75",
+    "sentence": "In Schedule 6 to this Act, the repeal of section 70 of the Criminal Procedure and Investigations Act 1996 extends to England and Wales only."
+  },
+  "UK_ukpga_1997_25/957d884d9e": {
+    "law": "UK_ukpga_1997_25",
+    "ref": "s.75",
+    "sentence": "In Schedule 5 to this Act—a paragraphs 2 and 5 extend to England and Wales only; andb paragraph 9 extends to the United Kingdom."
+  },
+  "UK_ukpga_1997_25/d239acc0e2": {
+    "law": "UK_ukpga_1997_25",
+    "ref": "s.75",
+    "sentence": "Subject to subsections (3) and (4) below, any amendment, repeal or revocation contained in Schedule 5 or 6 to this Act has the same extent as the provision it amends, repeals or revokes."
+  },
   "UK_ukpga_1997_29/dac4730c6b": {
     "law": "UK_ukpga_1997_29",
     "ref": "s.35",
     "sentence": "Sections 1 to 4, 9 to 31 and Schedule 1 extend to England and Wales only."
+  },
+  "UK_ukpga_1997_48/2e422ba829": {
+    "law": "UK_ukpga_1997_48",
+    "ref": "s.65",
+    "sentence": "Section 4(3) and (5) of this Act shall extend to England and Wales, and section 37(4) of this Act shall extend to England and Wales and Northern Ireland."
   },
   "UK_ukpga_1997_50/0f0da52746": {
     "law": "UK_ukpga_1997_50",
@@ -2808,6 +2908,11 @@
     "law": "UK_ukpga_1998_37",
     "ref": "s.121",
     "sentence": "The following provisions also extend to Scotland, namely—a Chapter III of Part I;b section 36(3) to (5);bb sections 52A and 52B;c . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .d section 115;e paragraph 3 of Schedule 3 to this Act and section 52(6) above so far as relating to that paragraph;f . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .g paragraphs 1, 7(1) and (3), 14(1) and (2), 35, 36, 45, 135, 136 and 138 of Schedule 8 to this Act and section 119 above so far as relating to those paragraphs; andh this section."
+  },
+  "UK_ukpga_1998_38/4c334d210e": {
+    "law": "UK_ukpga_1998_38",
+    "ref": "sch.16.para.61",
+    "sentence": "Sub-paragraph (1) and paragraphs 64 to 66 extend only to England and Wales."
   },
   "UK_ukpga_1998_8/9a1bec3b90": {
     "law": "UK_ukpga_1998_8",
@@ -2884,15 +2989,15 @@
     "ref": "s.7",
     "sentence": "The amendment by this Act of any enactment extending to Northern Ireland also extends there."
   },
+  "UK_ukpga_1999_24/c066bc9dc9": {
+    "law": "UK_ukpga_1999_24",
+    "ref": "s.7",
+    "sentence": "This Act, except— This section and sections 3 and 5, does not extend to Northern Ireland."
+  },
   "UK_ukpga_1999_24/e7be082a6d": {
     "law": "UK_ukpga_1999_24",
     "ref": "s.7",
     "sentence": "The repeal by this Act of any enactment extending to Northern Ireland, except section 3(5) to (7) of the Environmental Protection Act 1990, also extends there."
-  },
-  "UK_ukpga_1999_24/f4b06dfdd3": {
-    "law": "UK_ukpga_1999_24",
-    "ref": "s.7",
-    "sentence": "This section and sections 3 and 5 extend to Northern Ireland but, subject to subsections (6) to (8), the other provisions of this Act do not extend to Northern Ireland."
   },
   "UK_ukpga_1999_26/62fa2e6eca": {
     "law": "UK_ukpga_1999_26",
@@ -2949,6 +3054,21 @@
     "ref": "s.79",
     "sentence": "Part X of, and Schedule 9 to, the 1989 Act shall cease to extend to England and Wales."
   },
+  "UK_ukpga_2000_17/744d676330": {
+    "law": "UK_ukpga_2000_17",
+    "ref": "sch.6.para.135",
+    "sentence": "A photograph of any document provided to the Commissioners for the purposes of this Schedule and certified by them to be such a photograph shall be admissible in any proceedings, whether civil or criminal, to the same extent as the document itself."
+  },
+  "UK_ukpga_2000_17/95dca2cafe": {
+    "law": "UK_ukpga_2000_17",
+    "ref": "sch.6.pt.VII",
+    "sentence": "Walking possession agreements901 This paragraph applies where—a in accordance with regulations under section 51 of the Finance Act 1997 (enforcement by distress), a distress is authorised to be levied on the goods and chattels of a person (“the person in default”) who has refused or neglected to pay an amount of levy due from him or an amount recoverable from him as if it were levy; andb the person levying the distress and the person in default have entered into a walking possession agreement.2 For the purposes of this paragraph a walking possession agreement is an agreement under which, in consideration of the property distrained upon being allowed to remain in the custody of the person in default and of the delaying of its sale, the person in default—a acknowledges that the property specified in the agreement is under distraint and held in walking possession; andb undertakes that, except with the consent of the Commissioners and subject to such conditions as they may impose, he will not remove or allow the removal of any of the specified property from the premises named in the agreement.3 Subject to sub-paragraph (4), if the person in default is in breach of the undertaking contained in a walking possession agreement, he shall be liable to a penalty equal to one half of the levy or other amount referred to in sub-paragraph (1)(a).4 The person in default shall not be liable to a penalty under sub-paragraph (3) if he satisfies the Commissioners or, on appeal, an appeal tribunal that there is a reasonable excuse for the breach in question.5 This paragraph extends only to Northern Ireland."
+  },
+  "UK_ukpga_2000_17/a0727b0216": {
+    "law": "UK_ukpga_2000_17",
+    "ref": "sch.6.pt.XII",
+    "sentence": "Evidence by certificate1351 In any proceedings a certificate of the Commissioners—a that a person was or was not at any time registered for the purposes of the levy, or b that any return required by regulations made under paragraph 41 has not been made or had not been made at any time,c . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .d . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . shall be evidence or, in Scotland, sufficient evidence of that fact.2 A photograph of any document provided to the Commissioners for the purposes of this Schedule and certified by them to be such a photograph shall be admissible in any proceedings, whether civil or criminal, to the same extent as the document itself.3 In any proceedings any document purporting to be a certificate under sub-paragraph (1) or (2) shall be taken to be such a certificate unless the contrary is shown."
+  },
   "UK_ukpga_2000_19/2c2e765dc7": {
     "law": "UK_ukpga_2000_19",
     "ref": "s.87",
@@ -2988,6 +3108,16 @@
     "law": "UK_ukpga_2000_21",
     "ref": "s.155",
     "sentence": "Section 107 extends to England and Wales and Northern Ireland."
+  },
+  "UK_ukpga_2000_22/65de18ecf8": {
+    "law": "UK_ukpga_2000_22",
+    "ref": "s.109",
+    "sentence": "This section, paragraphs 17 and 18 of Schedule 4 and paragraph 28 of Schedule 5 extend also to Scotland and Northern Ireland."
+  },
+  "UK_ukpga_2000_22/9e9e5f80b8": {
+    "law": "UK_ukpga_2000_22",
+    "ref": "s.109",
+    "sentence": "Sections 94 to 96, 105 and 108 extend also to Scotland."
   },
   "UK_ukpga_2000_32/2756d0fb43": {
     "law": "UK_ukpga_2000_32",
@@ -3038,6 +3168,11 @@
     "law": "UK_ukpga_2000_6",
     "ref": "s.167",
     "sentence": "The following provisions also extend to Scotland, namely— section 14; sections 44, 49 and 51(6); section 121(3); section 159; this section; and Schedule 4."
+  },
+  "UK_ukpga_2000_7/9feb41b30c": {
+    "law": "UK_ukpga_2000_7",
+    "ref": "s.9",
+    "sentence": "In the case of any matter which is not one of the reserved matters within the meaning of the Scotland Act 1998 or in respect of which functions are, by virtue of section 63 of that Act, exercisable by the Scottish Ministers instead of by or concurrently with a Minister of the Crown, this section and section 8 shall apply to Scotland subject to the following modifications—a subsections (1) and (2) of this section are omitted;b any reference to the appropriate Minister is to be read as a reference to the Secretary of State;c any power of the Secretary of State, by virtue of paragraph (b), to make an order under section 8 may also be exercised by the Scottish Ministers with the consent of the Secretary of State; andd where the Scottish Ministers make an order under section 8—i any reference to the Secretary of State (other than a reference in this subsection) shall be construed as a reference to the Scottish Ministers; andii any reference to Parliament or to a House of Parliament shall be construed as a reference to the Scottish Parliament."
   },
   "UK_ukpga_2001_10/279aeba3e1": {
     "law": "UK_ukpga_2001_10",
@@ -3204,6 +3339,16 @@
     "ref": "s.217",
     "sentence": "Except as provided by subsection (3), this Act extends to England and Wales only."
   },
+  "UK_ukpga_2002_40/5138ea9a85": {
+    "law": "UK_ukpga_2002_40",
+    "ref": "s.280",
+    "sentence": "Sections 256 to 265, 267, 269 and 272 extend only to England and Wales."
+  },
+  "UK_ukpga_2002_40/a7dae1675e": {
+    "law": "UK_ukpga_2002_40",
+    "ref": "s.280",
+    "sentence": "Sections 204, 248 to 255 and 270 extend only to England and Wales and Scotland (but subsection (3) of section 415A as inserted by section 270 extends only to England and Wales)."
+  },
   "UK_ukpga_2003_16/0c443ee546": {
     "law": "UK_ukpga_2003_16",
     "ref": "s.5",
@@ -3269,15 +3414,15 @@
     "ref": "s.129",
     "sentence": "Each of sections 123 and 124, so far as relating to any other provision of this Act, has the same extent as that other provision."
   },
+  "UK_ukpga_2003_29/1c4d627e79": {
+    "law": "UK_ukpga_2003_29",
+    "ref": "s.4",
+    "sentence": "In section 164 of the Environmental Protection Act 1990 (c. 43) (short title, commencement and extent), after subsection (4) there is inserted—4A Sections 45A, 45B and 47A do not extend to Scotland."
+  },
   "UK_ukpga_2003_30/0d7f85168e": {
     "law": "UK_ukpga_2003_30",
     "ref": "s.9",
     "sentence": "Except as provided in subsections (3) and (4), this Act extends to England and Wales, Scotland and Northern Ireland."
-  },
-  "UK_ukpga_2003_30/3af033cfd4": {
-    "law": "UK_ukpga_2003_30",
-    "ref": "s.9",
-    "sentence": "Sections 2, 3, 4, 5 and 7 extend to England and Wales only."
   },
   "UK_ukpga_2003_30/e338dc0d52": {
     "law": "UK_ukpga_2003_30",
@@ -3323,6 +3468,11 @@
     "law": "UK_ukpga_2003_37",
     "ref": "s.105",
     "sentence": "Section 36 and Schedule 3 extend also to Scotland and Northern Ireland."
+  },
+  "UK_ukpga_2003_38/09f4aa6a95": {
+    "law": "UK_ukpga_2003_38",
+    "ref": "s.96",
+    "sentence": "Part 5 and this Part do not extend to Northern Ireland."
   },
   "UK_ukpga_2003_39/17db0fe9fa": {
     "law": "UK_ukpga_2003_39",
@@ -3394,11 +3544,6 @@
     "ref": "sch.5.para.9Cn1",
     "sentence": "C1 Sub-paragraphs (3) and (3A) apply for the purposes of paragraphs 9A and 9B.2 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .3 “Information” means information held in any form. 3A Relevant court” has the same meaning as in Part 3 of this Schedule.3B In paragraphs 9A and 10 (as in the provisions of this Schedule which extend to England and Wales only)— “fines officer” has the meaning given by section 36; “P” has the meaning given by paragraph 1. 4 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .5 Nothing in paragraph 9A or 9B authorises the making of a disclosure which contravenes the data protection legislation. 6 In this paragraph, “the data protection legislation” has the same meaning as in the Data Protection Act 2018 (see section 3 of that Act)."
   },
-  "UK_ukpga_2003_39/e8cefe6ce3": {
-    "law": "UK_ukpga_2003_39",
-    "ref": "sch.8.para.13",
-    "sentence": "This paragraph extends only to England and Wales."
-  },
   "UK_ukpga_2003_39/f531a63c56": {
     "law": "UK_ukpga_2003_39",
     "ref": "sch.8.para.70",
@@ -3443,11 +3588,6 @@
     "law": "UK_ukpga_2003_44",
     "ref": "s.337",
     "sentence": "The provisions mentioned in subsection (11), so far as relating to proceedings before a particular service court, have the same extent as the Act under which the court is constituted."
-  },
-  "UK_ukpga_2004_20/167c9737d1": {
-    "law": "UK_ukpga_2004_20",
-    "ref": "s.187",
-    "sentence": "In this section references to section 33 of the 1989 Act are references to that section as it has effect in Scotland."
   },
   "UK_ukpga_2004_20/85a1b60184": {
     "law": "UK_ukpga_2004_20",
@@ -3539,15 +3679,15 @@
     "ref": "sch.7.para.48",
     "sentence": "This paragraph extends to the whole of the United Kingdom."
   },
-  "UK_ukpga_2005_15/2d1115a61f": {
-    "law": "UK_ukpga_2005_15",
-    "ref": "sch.7.pt.3",
-    "sentence": "International Criminal Court Act 2001 (c. 17)491 The International Criminal Court Act 2001 is amended as follows.2 In section 33 (entry, search and seizure), in subsection (2), for “a serious arrestable offence” substitute “ (in the case of Part 2 of the 1984 Act) to an indictable offence or (in the case of Part III of the 1989 Order) to a serious arrestable offence ”.3 In section 55 (meaning of “ancillary offence” under the law of England and Wales), in subsection (5), in each of paragraphs (a) and (b), for “an arrestable offence” substitute “ a relevant offence ”.4 This paragraph extends to England and Wales and to Northern Ireland (but not to Scotland)."
-  },
   "UK_ukpga_2005_15/3b1eca5f6b": {
     "law": "UK_ukpga_2005_15",
     "ref": "s.179",
     "sentence": "The following have the same extent as the enactments to which they relate—a section 55(1) and Schedule 2,b section 59 and Schedule 4,c section 109 and Schedule 6,d section 154,e section 159 and Schedule 11,f section 160 and Schedule 12,g section 161(5) (so far as it has effect for the purposes of Part 2 of Schedule 13) and that Part of Schedule 13,h section 163(3) and Schedule 14,i sections 169(5) and 170,j (subject to subsection (8)) section 174(2) and Schedule 17."
+  },
+  "UK_ukpga_2005_15/429ef3b19c": {
+    "law": "UK_ukpga_2005_15",
+    "ref": "sch.7.para.49",
+    "sentence": "This paragraph extends to England and Wales and to Northern Ireland."
   },
   "UK_ukpga_2005_15/6a3c445251": {
     "law": "UK_ukpga_2005_15",
@@ -3584,10 +3724,10 @@
     "ref": "s.173",
     "sentence": "Before exercising the power conferred by subsection (1) in relation to an enactment which extends to Scotland, the Secretary of State must consult the Scottish Ministers."
   },
-  "UK_ukpga_2005_15/ef1cd20fa6": {
+  "UK_ukpga_2005_15/f0dffd5fce": {
     "law": "UK_ukpga_2005_15",
-    "ref": "sch.7.para.49",
-    "sentence": "This paragraph extends to England and Wales and to Northern Ireland (but not to Scotland)."
+    "ref": "sch.7.pt.3",
+    "sentence": "International Criminal Court Act 2001 (c. 17)491 The International Criminal Court Act 2001 is amended as follows.2 In section 33 (entry, search and seizure), in subsection (2), for “a serious arrestable offence” substitute “ (in the case of Part 2 of the 1984 Act) to an indictable offence or (in the case of Part III of the 1989 Order) to a serious arrestable offence ”.3 In section 55 (meaning of “ancillary offence” under the law of England and Wales), in subsection (5), in each of paragraphs (a) and (b), for “an arrestable offence” substitute “ a relevant offence ”.4 This paragraph extends to England and Wales and to Northern Ireland."
   },
   "UK_ukpga_2005_4/6a74f15268": {
     "law": "UK_ukpga_2005_4",
@@ -3599,20 +3739,10 @@
     "ref": "s.17",
     "sentence": "Subsection (5) does not extend to Scotland except in relation to—a the doing of an act as an act of terrorism or for the purposes of terrorism; orb the possession or control of a substance for the purposes of terrorism."
   },
-  "UK_ukpga_2006_11/edbed1bb85": {
-    "law": "UK_ukpga_2006_11",
-    "ref": "s.39",
-    "sentence": "Subject to section 17(6), an amendment or repeal by this Act of another enactment has the same extent as the enactment amended or repealed."
-  },
   "UK_ukpga_2006_16/094869676a": {
     "law": "UK_ukpga_2006_16",
     "ref": "s.108",
     "sentence": "Except as provided by this section, this Act extends to England and Wales only."
-  },
-  "UK_ukpga_2006_16/1f4c66a602": {
-    "law": "UK_ukpga_2006_16",
-    "ref": "s.108",
-    "sentence": "In Part 9 (miscellaneous), section 101 (abolition of certain agricultural etc. committees) extends also to Scotland and Northern Ireland."
   },
   "UK_ukpga_2006_16/6ebbecd3d5": {
     "law": "UK_ukpga_2006_16",
@@ -3629,6 +3759,11 @@
     "ref": "s.108",
     "sentence": "Part 2 (nature conservation in the UK) extends also to Scotland and Northern Ireland."
   },
+  "UK_ukpga_2006_16/ac97f49542": {
+    "law": "UK_ukpga_2006_16",
+    "ref": "s.108",
+    "sentence": "section 101 (abolition of certain agricultural etc. committees) extends also to Scotland and Northern Ireland."
+  },
   "UK_ukpga_2006_16/e36ce857cd": {
     "law": "UK_ukpga_2006_16",
     "ref": "s.107",
@@ -3638,11 +3773,6 @@
     "law": "UK_ukpga_2006_18",
     "ref": "s.20",
     "sentence": "Subject to subsection (3), this Act extends to England and Wales and Scotland only."
-  },
-  "UK_ukpga_2006_19/08855355bd": {
-    "law": "UK_ukpga_2006_19",
-    "ref": "s.29",
-    "sentence": "Sections 4, 5, 7 to 9, 15 to 18 and 23 to 25 extend to England and Wales and Scotland only."
   },
   "UK_ukpga_2006_28/30f5098921": {
     "law": "UK_ukpga_2006_28",
@@ -3698,6 +3828,16 @@
     "law": "UK_ukpga_2006_38",
     "ref": "s.66",
     "sentence": "Section 54 and Schedule 4 and sections 55 to 58 extend to England and Wales and Northern Ireland only."
+  },
+  "UK_ukpga_2006_40/ae022ee40c": {
+    "law": "UK_ukpga_2006_40",
+    "ref": "s.190",
+    "sentence": "The following provisions extend also to Scotland and Northern Ireland— section 162; sections 181 and 182; sections 185 to 189, this section and section 191."
+  },
+  "UK_ukpga_2006_40/e7f4e2cb5d": {
+    "law": "UK_ukpga_2006_40",
+    "ref": "s.190",
+    "sentence": "Any amendment or repeal made by this Act, other than any amendment made by paragraph 2 of Schedule 10, has the same extent as the enactment amended or repealed."
   },
   "UK_ukpga_2006_41/42d390260b": {
     "law": "UK_ukpga_2006_41",
@@ -3779,11 +3919,6 @@
     "ref": "s.54",
     "sentence": "The following provisions extend also to Scotland and Northern Ireland— section 1(2)(b); Parts 5 and 6 of Schedule 1 (and section 1(3) so far as relating to those Parts); section 5 and Schedule 3; section 38; section 41."
   },
-  "UK_ukpga_2006_48/f9154d7673": {
-    "law": "UK_ukpga_2006_48",
-    "ref": "s.53",
-    "sentence": "The following provisions come into force in accordance with provision made by order by the Scottish Ministers—a sections 35 to 38 so far as they extend to Scotland;b paragraphs 17 to 19 and 29 of Schedule 14 so far as they extend to Scotland;c paragraph 25 of Schedule 14;d the repeals in Part 4 of Schedule 15 of—i provisions in section 13 of the Computer Misuse Act 1990 (c. 18);ii section 17(7) of that Act so far as it extends to Scotland;iii paragraph 77 of Schedule 4 to the Criminal Procedure (Consequential Provisions) (Scotland) Act 1995 (c. 40);e section 52 so far as relating to those paragraphs and repeals."
-  },
   "UK_ukpga_2006_49/559d48ab95": {
     "law": "UK_ukpga_2006_49",
     "ref": "s.62",
@@ -3793,6 +3928,11 @@
     "law": "UK_ukpga_2006_49",
     "ref": "s.62",
     "sentence": "Section 11(3) and Schedule 4, section 16 and section 51 extend only to England and Wales and Scotland."
+  },
+  "UK_ukpga_2006_50/d31ac6b400": {
+    "law": "UK_ukpga_2006_50",
+    "ref": "s.80",
+    "sentence": "Subsection (7) ... does not apply to—a . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .b the amendments made by Schedule 8 in the Police, Factories, &c. (Miscellaneous Provisions) Act 1916 (c. 31), orc the repeal made in that Act by Schedule 9, which extend to England and Wales only."
   },
   "UK_ukpga_2006_51/6a57a93b49": {
     "law": "UK_ukpga_2006_51",
@@ -4194,10 +4334,45 @@
     "ref": "s.120",
     "sentence": "Section 114 (power for Gas and Electricity Markets Authority to act on behalf of Northern Ireland authority in connection with scheme under section 113) extends to England and Wales, Scotland and Northern Ireland."
   },
+  "UK_ukpga_2011_20/7214e06ee4": {
+    "law": "UK_ukpga_2011_20",
+    "ref": "s.239",
+    "sentence": "Any amendment or repeal made by this Act in the Transport Act 1968, and the repeal of section 121(1) of the Local Government, Planning and Land Act 1980, extend to England and Wales only."
+  },
+  "UK_ukpga_2011_20/9a96404ddd": {
+    "law": "UK_ukpga_2011_20",
+    "ref": "s.239",
+    "sentence": "Section 129 extends also to Scotland, but only so far as required for the purpose mentioned in section 240(4) of the Planning Act 2008 (construction of certain cross-border pipelines)."
+  },
+  "UK_ukpga_2011_20/c493155cfc": {
+    "law": "UK_ukpga_2011_20",
+    "ref": "s.239",
+    "sentence": "Part 2, sections 233, 235, 236 and 238, this section and sections 240 and 241, and Schedule 24, extend also to Northern Ireland."
+  },
   "UK_ukpga_2011_21/a47fdd4488": {
     "law": "UK_ukpga_2011_21",
     "ref": "s.81",
     "sentence": "This Part extends to the whole of the United Kingdom."
+  },
+  "UK_ukpga_2011_25/2a0d23bbb1": {
+    "law": "UK_ukpga_2011_25",
+    "ref": "s.356",
+    "sentence": "In Part 6 (application of property cy-prs etc.)—a section 68(3) and (4) (amendment of Royal charters by Order in Council where body corporate the subject of a scheme), andb sections 96 to 104 (common investment or deposit funds), extend also to Northern Ireland."
+  },
+  "UK_ukpga_2011_25/7101bb630d": {
+    "law": "UK_ukpga_2011_25",
+    "ref": "s.356",
+    "sentence": "Chapter 1 of Part 1 (meaning of “charity” and “charitable purpose”: general)—a extends also to Scotland, but affects the law of Scotland only so far as mentioned in section 7;b extends also to Northern Ireland, but affects the law of Northern Ireland only so far as mentioned in section 8."
+  },
+  "UK_ukpga_2011_25/7685633121": {
+    "law": "UK_ukpga_2011_25",
+    "ref": "s.356",
+    "sentence": "Paragraph 2 of Schedule 7 (construction of references in enactments and documents to Charity Commissioners for England and Wales) extends also to Scotland and Northern Ireland."
+  },
+  "UK_ukpga_2011_25/8f4ae05fe4": {
+    "law": "UK_ukpga_2011_25",
+    "ref": "s.356",
+    "sentence": "sections 54 to 59 (disclosure of information to and by Commission) extend to the whole of the United Kingdom."
   },
   "UK_ukpga_2012_10/3025886264": {
     "law": "UK_ukpga_2012_10",
@@ -4309,16 +4484,6 @@
     "ref": "sch.24",
     "sentence": "Provisions that do not extend to Northern Ireland11 The relevant NCA provisions do not extend to Northern Ireland.2 The Secretary of State may, by order, provide that any other provision of Part 1 of this Act is not to extend to Northern Ireland.3 This paragraph is subject to paragraph 2."
   },
-  "UK_ukpga_2013_22/5395e0a5d1": {
-    "law": "UK_ukpga_2013_22",
-    "ref": "s.61",
-    "sentence": "Subsection (15) applies to section 43 only so far as the provisions amended extend to England and Wales or apply in relation to service offences."
-  },
-  "UK_ukpga_2013_22/78481de299": {
-    "law": "UK_ukpga_2013_22",
-    "ref": "s.61",
-    "sentence": "Except as provided by subsections (13) ..., an amendment, repeal or revocation has the same extent as the provision amended, repealed or revoked (ignoring extent by virtue of an Order in Council)."
-  },
   "UK_ukpga_2013_22/92627f7151": {
     "law": "UK_ukpga_2013_22",
     "ref": "sch.24.para.1",
@@ -4409,6 +4574,11 @@
     "ref": "s.155",
     "sentence": "Part 2 of Schedule 8 extends to England and Wales and Scotland only."
   },
+  "UK_ukpga_2014_12/25520ac0e5": {
+    "law": "UK_ukpga_2014_12",
+    "ref": "s.184",
+    "sentence": "The following provisions extend to England and Wales and Northern Ireland—a section 115 and Schedule 6;b section 132 and Schedule 7;c section 175."
+  },
   "UK_ukpga_2014_12/3005cd9179": {
     "law": "UK_ukpga_2014_12",
     "ref": "s.185",
@@ -4438,11 +4608,6 @@
     "law": "UK_ukpga_2014_12",
     "ref": "s.181",
     "sentence": "The Secretary of State may by order make consequential amendments to provisions contained in or made under any Act. “Consequential amendments” here means amendments that are consequential on any provision of this Act, other than the provisions listed in subsection (4) as they apply in Wales."
-  },
-  "UK_ukpga_2014_12/cd64a7007d": {
-    "law": "UK_ukpga_2014_12",
-    "ref": "s.184",
-    "sentence": "The following provisions extend to England and Wales and Scotland (but not Northern Ireland)—a sections 106(2)(a)(ii) and (6) and 107;b sections 108 to 110 and 112;c section 133(3);d section 178."
   },
   "UK_ukpga_2014_12/f19cfc3433": {
     "law": "UK_ukpga_2014_12",
@@ -4479,11 +4644,6 @@
     "ref": "s.140",
     "sentence": "Section 126(3) and (4), so far as relating to paragraphs 5, 56 to 62 and 64 of Schedule 7, extends to Northern Ireland."
   },
-  "UK_ukpga_2015_15/4de148cd1b": {
-    "law": "UK_ukpga_2015_15",
-    "ref": "s.99",
-    "sentence": "Chapter 3 of this Part extends only to England and Wales."
-  },
   "UK_ukpga_2015_2/056d3b73da": {
     "law": "UK_ukpga_2015_2",
     "ref": "s.96",
@@ -4504,10 +4664,10 @@
     "ref": "s.114",
     "sentence": "Paragraphs 4, 31(b) and (c), 32(2), 32(3) so far as relating to paragraphs 9 and 68 of Schedule 13 to the Merchant Shipping Act 1995, 32(4) and (5) and 39 of Schedule 23 extend only to England and Wales and Northern Ireland."
   },
-  "UK_ukpga_2015_26/0342d8ac44": {
+  "UK_ukpga_2015_26/b946a8537b": {
     "law": "UK_ukpga_2015_26",
     "ref": "s.163",
-    "sentence": "In Part 10, sections 144 to 146 and Schedule 11 extend to England and Wales and Scotland only."
+    "sentence": "sections 144 to 146 and Schedule 11 extend to England and Wales and Scotland only."
   },
   "UK_ukpga_2015_26/c675c61464": {
     "law": "UK_ukpga_2015_26",
@@ -4563,11 +4723,6 @@
     "law": "UK_ukpga_2015_7",
     "ref": "s.56",
     "sentence": "In Part 6 (energy)—a sections 38 and 39, sections 41 and 42, sections 51 to 53 and Schedules 6 and 7 extend to England and Wales and Scotland,b section 40 and section 49 extend to England and Wales, Scotland and Northern Ireland, andc sections 43 to 48 and section 50 extend to England and Wales only."
-  },
-  "UK_ukpga_2015_9/024e1a16f6": {
-    "law": "UK_ukpga_2015_9",
-    "ref": "s.87",
-    "sentence": "The following provisions extend to England and Wales and Northern Ireland (but not Scotland)—a section 38(2);b section 40;c section 69 and Schedule 3;d section 70(1);e sections 71 to 73."
   },
   "UK_ukpga_2015_9/83b93253e0": {
     "law": "UK_ukpga_2015_9",
@@ -4649,20 +4804,10 @@
     "ref": "s.123",
     "sentence": "Section 86(9)—a so far as it relates to section 22(4B)(e) of the Teaching and Higher Education Act 1998, also extends to Scotland and Northern Ireland;b so far as it relates to section 22(4B)(f), (g) and (h) of that Act, also extends to Northern Ireland."
   },
-  "UK_ukpga_2017_29/c6f7fcec3b": {
-    "law": "UK_ukpga_2017_29",
-    "ref": "s.123",
-    "sentence": "The following provisions also extend to Scotland and Northern Ireland—a section 25 (rating the quality of, and the standards applied to, higher education);b sections 79 and 80 (powers to obtain and use application-to-acceptance information);c section 83 (meaning of “English higher education provider” etc);d Part 3 (research);e this Part."
-  },
   "UK_ukpga_2017_3/68e931ac3e": {
     "law": "UK_ukpga_2017_3",
     "ref": "s.182",
     "sentence": "Except as provided by subsections (2) to (6), this Act extends only to England and Wales."
-  },
-  "UK_ukpga_2017_3/b340b0d4fd": {
-    "law": "UK_ukpga_2017_3",
-    "ref": "s.182",
-    "sentence": "The following provisions extend to England and Wales and Scotland (but not to Northern Ireland)—a section 6, so far as relating to paragraphs 11, 14, 20 to 22, 33, 35, 52, 55, 59 to 66, 72 to 75, 80 and 85 of Schedule 1, and those paragraphs;b section 7(8);c section 8(5) and (8);d section 9(3), so far as relating to paragraphs 30, 31, 33, 34, 48, 50, 74, 77, 80, 84 to 91, 99, 106 and 116 of Schedule 2, and those paragraphs;e section 29(8), so far as relating to paragraphs 6 to 14 of Schedule 7, and those paragraphs;f section 33(9), so far as relating to paragraphs 62 and 72 of Schedule 9, and those paragraphs;g section 39;h section 45, so far as relating to paragraphs 8, 12 and 17 of Schedule 12, and those paragraphs;i section 46(10), so far as relating to paragraphs 4 and 6 of Schedule 13, and those paragraphs;j section 49;k section 51, so far as relating to paragraphs (a), (b) and (d) of paragraph 7 of Schedule 14, and those paragraphs;l sections 84(2) to (5), 86 to 92 and 95;m sections 96(2) to (7), 98 to 104 and 106;n section 123;o sections 125 to 133."
   },
   "UK_ukpga_2017_30/ccb0e6b80e": {
     "law": "UK_ukpga_2017_30",
@@ -4688,11 +4833,6 @@
     "law": "UK_ukpga_2020_17",
     "ref": "s.413",
     "sentence": "The provisions specified in Schedule 29 are repealed or revoked so far as they extend to England and Wales only."
-  },
-  "UK_ukpga_2020_17/0c9a55c63e": {
-    "law": "UK_ukpga_2020_17",
-    "ref": "s.414",
-    "sentence": "The following provisions extend to England and Wales and Northern Ireland—a section 196 and Schedule 8 (transfer of youth rehabilitation orders to Northern Ireland);b section 351 (variation of sexual harm prevention order by court in Northern Ireland);c section 407 (regulations and rules) (but see subsection (7));d paragraph 12 of Schedule 23 (power to amend Schedule 8 in consequence of changes to the law in Northern Ireland)."
   },
   "UK_ukpga_2020_17/12730a9a59": {
     "law": "UK_ukpga_2020_17",
@@ -4733,11 +4873,6 @@
     "law": "UK_ukpga_2020_22",
     "ref": "s.53",
     "sentence": "— a Part 1 of Schedule 8 extends to Scotland only;b Part 2 of Schedule 8 extends to England and Wales only;c Part 3 of Schedule 8 extends to Northern Ireland only."
-  },
-  "UK_ukpga_2020_29/66d13783c4": {
-    "law": "UK_ukpga_2020_29",
-    "ref": "s.40",
-    "sentence": "Paragraph 2 of Schedule 4 extends to England and Wales and Scotland only."
   },
   "UK_ukpga_2020_7/171f40730e": {
     "law": "UK_ukpga_2020_7",
@@ -4838,11 +4973,6 @@
     "law": "UK_ukpga_2021_30",
     "ref": "s.146",
     "sentence": "In Part 1 of this Act (environmental governance)— a the following provisions extend to England and Wales— i Chapter 1 of Part 1 (improving the natural environment), except for sections 17 to 20; ii section 28 (monitoring and reporting on environmental improvement plans and targets); b sections 17 to 19 (policy statement on environmental principles) extend to England and Wales and Scotland; c the remaining provisions extend to England and Wales, Scotland and Northern Ireland."
-  },
-  "UK_ukpga_2021_30/fe80960415": {
-    "law": "UK_ukpga_2021_30",
-    "ref": "s.146",
-    "sentence": "Part 6 of this Act (nature and biodiversity) extends to England and Wales, except that— a the amendments made by Schedule 15 (biodiversity gain in nationally significant infrastructure projects) have the same extent as the provisions amended, and b section 116 and Schedule 17 (use of forest risk commodities in commercial activity) extend to England and Wales, Scotland and Northern Ireland."
   },
   "UK_ukpga_2022_25/07d9cdac5e": {
     "law": "UK_ukpga_2022_25",
@@ -5109,11 +5239,6 @@
     "ref": "reg.3",
     "sentence": "The following provisions of the 1991 Act (which extend to England and Wales only) shall come into force on 25th October 1991— a section 12(1), so far as it substitutes a new section 106 of the 1990 Act; b section 12(2) and (3); c section 32, so far as it relates to paragraphs 6, 9(2)(h), and 53(9) of Schedule 7."
   },
-  "UK_uksi_1991_2539/5073b00de3": {
-    "law": "UK_uksi_1991_2539",
-    "ref": "reg.1",
-    "sentence": "These Regulations may be cited as the Control of Pollution (Radioactive Waste) (Scotland) Regulations 1991, shall come into force on 2nd December 1991 and shall extend to Scotland only."
-  },
   "UK_uksi_1992_266/f09b991457": {
     "law": "UK_uksi_1992_266",
     "ref": "reg.2",
@@ -5163,6 +5288,11 @@
     "law": "UK_uksi_1995_2700",
     "ref": "reg.94",
     "sentence": "Save as otherwise expressly provided the naval, military and air force authorities and members of any visiting force and any international headquarters and the members thereof and property held or used for the purpose of such a force or headquarters shall be exempt from the provisions of this Order and of any regulations made thereunder to the same extent as if that force or headquarters formed part of the forces of Her Majesty raised in the United Kingdom and for the time being serving in Hong Kong."
+  },
+  "UK_uksi_1995_2742/f7a931da0e": {
+    "law": "UK_uksi_1995_2742",
+    "ref": "reg.1",
+    "sentence": "These Regulations may be cited as the Environmental Protection (Determination of Enforcing Authority Etc.) (Scotland) Amendment Regulations 1995, shall come into force on 10th November 1995 and shall extend to Scotland only."
   },
   "UK_uksi_1995_3128/0f54776bd6": {
     "law": "UK_uksi_1995_3128",
@@ -5224,10 +5354,10 @@
     "ref": "reg.3",
     "sentence": "These Regulations apply to United Kingdom ships wherever they may be, and to other ships whilst they are in United Kingdom waters."
   },
-  "UK_uksi_1999_1820/74fc7d7dab": {
-    "law": "UK_uksi_1999_1820",
-    "ref": "sch.2.para.88",
-    "sentence": "After section 1(5) (grants in respect of farm businesses), there is inserted– 6 In subsection (5) in the definition of “the appropriate authority” the words from “or, if it extends to more than one part,” to the end shall not extend to Scotland. ."
+  "UK_uksi_1999_1783/6d75186e41": {
+    "law": "UK_uksi_1999_1783",
+    "ref": "reg.1",
+    "sentence": "These Regulations apply to England and Wales."
   },
   "UK_uksi_1999_1820/bd4b73c9e0": {
     "law": "UK_uksi_1999_1820",
@@ -5243,6 +5373,21 @@
     "law": "UK_uksi_1999_1925",
     "ref": "reg.1",
     "sentence": "This Regulation, Regulation 2 and Regulations 8 to 11 extend to Northern Ireland."
+  },
+  "UK_uksi_1999_2228/3f8692dba6": {
+    "law": "UK_uksi_1999_2228",
+    "ref": "reg.1",
+    "sentence": "Regulations 3(4) and (5), 3A, 3B, 24(1)(za) and 26 and paragraph 1A of Schedule 2 apply in relation to projects in England only."
+  },
+  "UK_uksi_1999_2228/5a2ab6d97d": {
+    "law": "UK_uksi_1999_2228",
+    "ref": "reg.1",
+    "sentence": "Paragraph 2 of Schedule 2 applies in relation to projects in Wales only."
+  },
+  "UK_uksi_1999_2228/97548f11c6": {
+    "law": "UK_uksi_1999_2228",
+    "ref": "reg.1",
+    "sentence": "These Regulations apply to England and Wales , subject to paragraphs (3) and (4)."
   },
   "UK_uksi_1999_2920/a0011db9ff": {
     "law": "UK_uksi_1999_2920",
@@ -5374,11 +5519,6 @@
     "ref": "reg.34",
     "sentence": "Where a person having an estate in any land, by a management agreement grants or agrees to grant any right as respects the land, the grant or agreement shall be binding upon any person deriving title or otherwise claiming under the grantor to the same extent as it is binding upon the grantor notwithstanding that it would not have been binding upon that person apart from this paragraph."
   },
-  "UK_uksi_2003_1082/bc3560339d": {
-    "law": "UK_uksi_2003_1082",
-    "ref": "reg.1",
-    "sentence": "These Regulations may be cited as the Ammonium Nitrate Materials (High Nitrogen Content) Safety Regulations 2003, extend to Great Britain and come into force on 1st May 2003."
-  },
   "UK_uksi_2003_1998/6cc6d5240a": {
     "law": "UK_uksi_2003_1998",
     "ref": "sch.3.pt.4",
@@ -5393,11 +5533,6 @@
     "law": "UK_uksi_2004_1490",
     "ref": "reg.2",
     "sentence": "Article 7 is to be read as if—a before paragraph 1 there were inserted—A1 In this Article, the “list of waste” means the list contained in the Annex to Commission Decision 2000/532/EC, as that list has effect in Wales.;b in paragraph 1—i the first and second sentences were omitted;ii for the third sentence there were substituted “The list of waste shall, except as provided in Commission Decision 2000/532/EC, be binding as regards determination of the waste which is to be considered as hazardous waste or as non-hazardous waste.”;c paragraphs 2, 3, 6 and 7 were omitted."
-  },
-  "UK_uksi_2004_1713/1bde424f0d": {
-    "law": "UK_uksi_2004_1713",
-    "ref": "reg.3",
-    "sentence": "These Regulations apply to United Kingdom fishing vessels wherever they may be."
   },
   "UK_uksi_2004_1733/0decaa55d9": {
     "law": "UK_uksi_2004_1733",
@@ -5449,11 +5584,6 @@
     "ref": "reg.5",
     "sentence": "Except to the extent that they extend to Scotland, Chapter 1 (investigatory powers of the DPP, etc.) (sections 60 to 70) and Chapter 4 (protection of witnesses and other persons) (sections 82 to 94 and Schedule 5) of Part 2 of the Act shall come into force on 1st April 2006."
   },
-  "UK_uksi_2005_1806/d7c9a096dc": {
-    "law": "UK_uksi_2005_1806",
-    "ref": "reg.2A",
-    "sentence": "Article 7 is to be read as if—a before paragraph 1 there were inserted—A1 In this Article, the “list of waste” means the list contained in the Annex to Commission Decision 2000/532/EC, as that list has effect in Wales.”;b in paragraph 1—i the first and second sentences were omitted;ii for the third sentence, there were substituted “The list of waste shall, except as provided in Commission Decision 2000/532/EC, be binding as regards determination of the wastewhich is to be considered as hazardous waste or non-hazardous waste.”;c paragraphs 2, 3, 6 and 7 were omitted."
-  },
   "UK_uksi_2005_2060/119663aa27": {
     "law": "UK_uksi_2005_2060",
     "ref": "reg.1",
@@ -5499,6 +5629,11 @@
     "ref": "reg.19",
     "sentence": "After subsection (4), there is inserted— 4A In any proceedings brought against the insurer by virtue of this section in respect of liability under section 153A it shall be a defence (in addition to any defence affecting the owner’s liability) to prove that the discharge or escape, or (as the case may be) the threat of contamination, was due to the wilful misconduct of the owner himself. 4B The insurer may limit his liability in respect of claims in respect of liability under section 153A which are made against him by virtue of this section in like manner and to the same extent as the owner may limit his liability by virtue of section 185; but the insurer may do so whether or not the discharge or escape, or (as the case may be) the threat of contamination, resulted from any act or omission mentioned in Article 4 of the Convention set out in Part I of Schedule 7. 4C Where the owner and the insurer each apply to the court for the limitation of his liability (in relation to liability under section 153A) any sum paid into court in pursuance of either application shall be treated as paid also in pursuance of the other. ."
   },
+  "UK_uksi_2006_1382/8e52709065": {
+    "law": "UK_uksi_2006_1382",
+    "ref": "reg.1",
+    "sentence": "This Order may be cited as the Natural Environment and Rural Communities Act 2006 (Commencement No. 2) Order 2006 and extends to England and Wales."
+  },
   "UK_uksi_2006_1407/2e99257cdc": {
     "law": "UK_uksi_2006_1407",
     "ref": "reg.1",
@@ -5539,6 +5674,11 @@
     "ref": "reg.1",
     "sentence": "This Order applies in relation to England and Wales, except for article 3 which, insofar as it relates to the revocation of article 3 of the No.8 Order, applies in relation to England only."
   },
+  "UK_uksi_2006_934/b1b892d6e9": {
+    "law": "UK_uksi_2006_934",
+    "ref": "reg.1",
+    "sentence": "This Order may be cited as the Environment Act 1995 (Commencement No. 23) (England and Wales) Order 2006 and extends to England and Wales only."
+  },
   "UK_uksi_2007_1375/3f5826fbfd": {
     "law": "UK_uksi_2007_1375",
     "ref": "reg.1",
@@ -5554,6 +5694,11 @@
     "ref": "reg.1",
     "sentence": "In relation to section 13, this Order applies in relation to England and Wales."
   },
+  "UK_uksi_2007_1671/df04bb99b9": {
+    "law": "UK_uksi_2007_1671",
+    "ref": "reg.2",
+    "sentence": "This Order extends to England and Wales and Northern Ireland, except for article 3(a) which extends to England and Wales only."
+  },
   "UK_uksi_2007_1711/47547dc643": {
     "law": "UK_uksi_2007_1711",
     "ref": "reg.45",
@@ -5563,6 +5708,11 @@
     "law": "UK_uksi_2007_1711",
     "ref": "reg.59A",
     "sentence": "This regulation applies only in England and the English area."
+  },
+  "UK_uksi_2007_175/50cfef4d42": {
+    "law": "UK_uksi_2007_175",
+    "ref": "reg.1",
+    "sentence": "These Regulations may be cited as the Environmental Offences (Fixed Penalties) (Miscellaneous Provisions) Regulations 2007; they apply in England, and come into force on 6th April 2007."
   },
   "UK_uksi_2007_1843/1fd560df4c": {
     "law": "UK_uksi_2007_1843",
@@ -5578,6 +5728,11 @@
     "law": "UK_uksi_2007_1843",
     "ref": "reg.3",
     "sentence": "Regulations 6 and 7 also extend to any place (except Scotland) to which the enactments they amend extend."
+  },
+  "UK_uksi_2007_3492/ab6adeacc2": {
+    "law": "UK_uksi_2007_3492",
+    "ref": "reg.1",
+    "sentence": "This Order may be cited as the Road Safety Act 2006 (Commencement No. 2)(England and Wales) Order 2007 and extends to England and Wales only."
   },
   "UK_uksi_2007_390/f13ea4fb7e": {
     "law": "UK_uksi_2007_390",
@@ -5664,6 +5819,16 @@
     "ref": "reg.1",
     "sentence": "They apply in England, except regulations 3(a), 23, 24, 25(4) and 32 which extend to the United Kingdom ."
   },
+  "UK_uksi_2010_1159/190ec89f56": {
+    "law": "UK_uksi_2010_1159",
+    "ref": "reg.1",
+    "sentence": "These Regulations may be cited as the Environmental Civil Sanctions (Miscellaneous Amendments) (England) Regulations 2010; they apply in England and come into force on 6th April 2010."
+  },
+  "UK_uksi_2010_1159/d905449e1d": {
+    "law": "UK_uksi_2010_1159",
+    "ref": "reg.2",
+    "sentence": "The Sludge (Use in Agriculture) Regulations 1989 are amended by inserting the following after regulation 9—Civil sanctions101 The Environment Agency may impose a fixed monetary penalty, variable monetary penalty, restoration notice, compliance notice or stop notice, or accept an enforcement undertaking, in relation to an offence under regulation 9 for contravening a provision in the following Table of civil sanctions, as indicated in that Table, as if it were an offence under a provision specified in relation to that sanction in Schedule 5 to the Environmental Civil Sanctions (England) Order 2010.Table of civil sanctionsProvision of these RegulationsFixed monetary penaltyVariable monetary penaltyRestoration noticeCompliance noticeStop noticeEnforcement undertakingregulation 3NoYesYesYesYesYesregulation 4YesYesNoNoYesYesregulation 5YesYesNoNoNoYesregulation 6(1)NoYesNoYesNoYesregulation 7(1)NoYesNoYesNoYesregulation 7(2)YesYesNoYesNoYesregulation 8(3)(a)NoYesNoNoYesYesregulation 8(3)(b)NoYesYesNoYesYesregulation 8(4)NoYesYesNoYesYes2 The terms used in this regulation have the same meaning as in that Order.3 The provisions of that Order in relation to those sanctions apply as if they were provisions of these Regulations.4 This regulation applies only in England.."
+  },
   "UK_uksi_2010_1820/e6e51efb6e": {
     "law": "UK_uksi_2010_1820",
     "ref": "reg.1",
@@ -5749,11 +5914,6 @@
     "ref": "reg.1",
     "sentence": "The review shall relate to the operation of these Regulations as they have effect in relation to England ... only."
   },
-  "UK_uksi_2011_2131/40c78fb9fd": {
-    "law": "UK_uksi_2011_2131",
-    "ref": "reg.1",
-    "sentence": "Regulation 4 extends to the United Kingdom."
-  },
   "UK_uksi_2011_2131/56334f3466": {
     "law": "UK_uksi_2011_2131",
     "ref": "reg.1",
@@ -5784,15 +5944,15 @@
     "ref": "reg.4",
     "sentence": "The amendment in Schedule 1 extends to England and Wales only."
   },
+  "UK_uksi_2012_2654/90f9067e3c": {
+    "law": "UK_uksi_2012_2654",
+    "ref": "reg.1",
+    "sentence": "This Order extends to England and Wales, except as provided by paragraph (3)."
+  },
   "UK_uksi_2012_3006/45726230c1": {
     "law": "UK_uksi_2012_3006",
     "ref": "reg.1",
     "sentence": "In article 73 the removal of paragraph (f) in the table in section 56(6) of the Data Protection Act 1998 extends to England and Wales only."
-  },
-  "UK_uksi_2012_3006/615b4ee89f": {
-    "law": "UK_uksi_2012_3006",
-    "ref": "reg.1",
-    "sentence": "The amendments made to the Police Act 1997 by articles 13(2)(c), 52 and 53 extend to Northern Ireland only."
   },
   "UK_uksi_2012_3006/cdb5199e8a": {
     "law": "UK_uksi_2012_3006",
@@ -5809,15 +5969,15 @@
     "ref": "reg.34C",
     "sentence": "The obligations referred to in paragraph (2)(b) are that, before placing the EEE on the market, the importer—a complies with regulation 21; andb ensures that the manufacturer has done all of the following in relation to the EEE, in accordance with these Regulations as they apply in Northern Ireland—i carried out the conformity assessment procedure in accordance with regulation 12(1);ii drawn up the technical documentation; andiii affixed the CE marking."
   },
-  "UK_uksi_2012_3038/8ca2dd29a5": {
-    "law": "UK_uksi_2012_3038",
-    "ref": "reg.1A",
-    "sentence": "From 1st January 2021 these Regulations apply in Northern Ireland only, in relation to any emissions created on or after that date, from a regulated activity at an installation, by the generation of electricity in Northern Ireland for the single wholesale electricity market in Ireland and Northern Ireland."
-  },
   "UK_uksi_2012_718/dfa2fd50ec": {
     "law": "UK_uksi_2012_718",
     "ref": "reg.1",
     "sentence": "These Regulations extend to England and Wales, but do not apply in relation to any building in Wales other than an excepted energy building."
+  },
+  "UK_uksi_2012_811/ceca10a6a1": {
+    "law": "UK_uksi_2012_811",
+    "ref": "reg.1",
+    "sentence": "They extend to England and Wales."
   },
   "UK_uksi_2013_1465/5ae3ddaefc": {
     "law": "UK_uksi_2013_1465",
@@ -5964,6 +6124,11 @@
     "ref": "reg.1",
     "sentence": "Regulations 7 to 9 and 11 apply to England only."
   },
+  "UK_uksi_2015_168/633e2a5b39": {
+    "law": "UK_uksi_2015_168",
+    "ref": "reg.1",
+    "sentence": "They extend to Northern Ireland only in so far as they relate to import and export under the EU Regulation."
+  },
   "UK_uksi_2015_1693/c0bb7969dc": {
     "law": "UK_uksi_2015_1693",
     "ref": "reg.1",
@@ -5973,11 +6138,6 @@
     "law": "UK_uksi_2015_1693",
     "ref": "reg.1",
     "sentence": "Subject to paragraph (3), these Regulations apply to England only."
-  },
-  "UK_uksi_2015_1947/175fe64757": {
-    "law": "UK_uksi_2015_1947",
-    "ref": "reg.1",
-    "sentence": "Article 97 also extends to Scotland."
   },
   "UK_uksi_2015_21/0f396bfb1c": {
     "law": "UK_uksi_2015_21",
@@ -6064,10 +6224,25 @@
     "ref": "reg.2",
     "sentence": "Chapter 1 of Part 6 also extends to Northern Ireland in so far as it has effect for the purposes of regulation 103, to the extent that that regulation extends to Northern Ireland by virtue of paragraph (4)(c)."
   },
+  "UK_uksi_2017_1070/5b7d1a9cc4": {
+    "law": "UK_uksi_2017_1070",
+    "ref": "reg.1",
+    "sentence": "The amendments made by Schedule 3 extend to England and Wales only."
+  },
+  "UK_uksi_2017_1070/e207ddfc95": {
+    "law": "UK_uksi_2017_1070",
+    "ref": "reg.1",
+    "sentence": "— a Part 1 of Schedule 5 extends to Northern Ireland only; b Part 2 of Schedule 5 extends to Scotland only."
+  },
   "UK_uksi_2017_1200/f21357e316": {
     "law": "UK_uksi_2017_1200",
     "ref": "reg.9",
     "sentence": "Where the Agency proposes to take the action, sections 108, 109 and 110 of, and Schedule 18 to, the EA 1995 (as they apply in England) apply but as if—a in section 108 there were a reference to the purpose of taking action to ensure compliance with a relevant provision or provisions referred to in an enforcement notice at the end of the list of purposes in subsection (1);b in section 108 there were a reference to taking action to ensure compliance with a relevant provision or provisions referred to in an enforcement notice at the end of the list of powers in subsection (4);c in paragraph 6(1) of Schedule 18 the reference in the words before paragraph (a) to any power conferred by section 108(4)(a) or (b) or (5) of this Act included a reference to the power conferred by virtue of sub-paragraph (b) above."
+  },
+  "UK_uksi_2017_1312/9567a38cfa": {
+    "law": "UK_uksi_2017_1312",
+    "ref": "reg.1",
+    "sentence": "These Regulations extend to England and Wales, but apply in relation to England only."
   },
   "UK_uksi_2017_304/66e0ed8c14": {
     "law": "UK_uksi_2017_304",
@@ -6083,6 +6258,11 @@
     "law": "UK_uksi_2017_571",
     "ref": "reg.1",
     "sentence": "Regulations 60, 61 and 62 apply in relation to Scotland, Wales and Northern Ireland respectively ."
+  },
+  "UK_uksi_2017_592/8142453770": {
+    "law": "UK_uksi_2017_592",
+    "ref": "reg.1",
+    "sentence": "Regulation 24(5) applies in relation to projects in Wales only."
   },
   "UK_uksi_2017_702/6d5a9b99be": {
     "law": "UK_uksi_2017_702",
@@ -6108,6 +6288,11 @@
     "law": "UK_uksi_2018_1203",
     "ref": "reg.1",
     "sentence": "These Regulations apply to the United Kingdom, except for paragraph 1 of Schedule 3, which applies to Great Britain."
+  },
+  "UK_uksi_2018_575/fe701c3fe0": {
+    "law": "UK_uksi_2018_575",
+    "ref": "reg.1",
+    "sentence": "The following regulations apply in relation to England only— a regulation 2; b regulations 6 and 7; c regulation 9; d regulations 14 and 15; e regulations 25 and 26; f regulations 30 and 31."
   },
   "UK_uksi_2018_631/85e3cc881d": {
     "law": "UK_uksi_2018_631",
@@ -6139,6 +6324,11 @@
     "ref": "reg.1",
     "sentence": "Regulations 4(a) and (c), 20(4), 21(2) to (5), 22, 24, 27 and 31 do not apply in Wales."
   },
+  "UK_uksi_2019_1101/a87a640a0f": {
+    "law": "UK_uksi_2019_1101",
+    "ref": "reg.1",
+    "sentence": "These Regulations extend to Northern Ireland only."
+  },
   "UK_uksi_2019_1499/7589219dd3": {
     "law": "UK_uksi_2019_1499",
     "ref": "reg.1",
@@ -6159,15 +6349,25 @@
     "ref": "reg.1A",
     "sentence": "The amendments made by regulations 18 and 20 do not extend to Northern Ireland."
   },
-  "UK_uksi_2019_188/f486316499": {
-    "law": "UK_uksi_2019_188",
-    "ref": "reg.1A",
-    "sentence": "Subject to paragraph (2), the amendments made by Parts 2 and 3 have the same extent as the Regulations being amended."
+  "UK_uksi_2019_22/45f06bc06d": {
+    "law": "UK_uksi_2019_22",
+    "ref": "reg.1",
+    "sentence": "These Regulations, with the exception of regulation 8, extend to Great Britain."
+  },
+  "UK_uksi_2019_279/fd1eb3fe56": {
+    "law": "UK_uksi_2019_279",
+    "ref": "reg.1",
+    "sentence": "These regulations extend to Northern Ireland only."
   },
   "UK_uksi_2019_306/f8d91b5174": {
     "law": "UK_uksi_2019_306",
     "ref": "sch",
     "sentence": "SCHEDULENew Schedule A1 to the Plant Protection Products (Sustainable Use) Regulations 2012 Regulation 14(6) SCHEDULE A1Modification of the Directive Regulation 2(1)1 For the purposes of these Regulations, the Directive is to be read as follows.2 A reference in the Directive to “Member States”—a in Article 4, is to be read as a reference to the Ministers and the Department;b except in Article 8(6), is otherwise to be read as a reference to the appropriate United Kingdom competent authority.3 Article 3 is to be read as if in paragraph 10(b), for the words from “Directive 98/8/EC” to the end there were substituted “ Regulation (EU) No 528/2012 of the European Parliament and of the Council concerning the making available on the market and use of biocidal products ”.4 Article 4 is to be read as if—a in paragraph 1, in the fifth subparagraph, for the words from “Community” to the end substitute “ retained EU law on the use of pesticides ”; aa after paragraph 1 there were inserted—1A For the purposes of paragraph 1, “retained EU law on the use of pesticides” in relation to Northern Ireland includes any European Union legislation on the use of pesticides which has effect in Northern Ireland by virtue of the Protocol on Ireland/Northern Ireland in the EU withdrawal agreement.; b in paragraph 2—i the first subparagraph were omitted;ii in the second subparagraph, the words from “and any substantial” to the end were omitted;c paragraphs 3 and 4 were omitted;d in paragraph 5, the reference to Article 2 of Directive 2003/35/EC were a reference to that Article read in accordance with paragraph 16.5 Article 5 is to be read as if paragraph 3 were omitted.6 Article 6 is to be read as if—a in paragraph 1, in the third sentence, for the words from “as toxic” to the end there were substituted “ for acute toxicity, carcinogenicity, germ cell mutagenicity, or reproductive toxicity pursuant to Regulation 1272/2008 ”;b in paragraph 3, for “Community legislation” there were substituted “ retained EU law ”. c after paragraph 3 there were inserted—3A For the purposes of paragraph 3, “retained EU law on waste” in relation to Northern Ireland includes any European Union legislation on waste which has effect in Northern Ireland by virtue of the Protocol on Ireland/Northern Ireland in the EU withdrawal agreement.. 7 Article 7 is to be read as if paragraph 3 were omitted.8 Article 8 is to be read as if—a in paragraph 4, the second subparagraph were omitted;b in paragraph 6—i in the first subparagraph—aa for “Member States” there were substituted “ The appropriate United Kingdom competent authority ”;bb “and inform the Commission thereof” were omitted;ii in the second subparagraph—aa for “Member State” in the first place it occurs there were substituted “ appropriate United Kingdom competent authority ”;bb for “in other” there were substituted “ by the other appropriate United Kingdom competent authorities or ”;cc for “in another” there were substituted “ by another appropriate United Kingdom competent authority or by a ”;iii in the third subparagraph—aa for “Member States” in the first place it occurs there were substituted “ The appropriate United Kingdom competent authority ”;bb for “in other” there were substituted “ by other appropriate United Kingdom competent authorities or ”;c paragraph 7 were omitted.9 Article 9 is to be read as if—a in paragraph 2(b), for “Member State” there were substituted “ appropriate United Kingdom competent authority ”;b in paragraph 3, in the first subparagraph, for “shall designate the authorities competent for establishing” there were substituted “ must establish ”;c in paragraph 6, for “or Community law” there were substituted “law or, in relation to Northern Ireland, any European Union legislation which has effect in Northern Ireland by virtue of the Protocol on Ireland/Northern Ireland in the EU withdrawal agreement.”. 10 Article 11(2)(a) is to be read as if—a for “dangerous for the aquatic environment pursuant to Directive 1999/45/EC” there were substituted “ hazardous to the aquatic environment pursuant to Regulation 1272/2008 ”;b for “Article 16(3) of” there were substituted “ Annex 10 to ”.11 Article 12 is to be read as if for point (b) there were substituted—b the areas described in regulation 10(2)(c) of the Plant Protection Products (Sustainable Use) Regulations 2012;.12 Article 13 is to be read as if—a in paragraph 1(e), for “Community legislation” there were substituted “retained EU law”;b after paragraph 1 there were inserted—1A For the purposes of paragraph 1(e), “retained EU law on waste” in relation to Northern Ireland, includes any European Union legislation on waste which has effect in Northern Ireland by virtue of the Protocol on Ireland/Northern Ireland in the EU withdrawal agreement.. 13 Article 14 is to be read as if—a paragraph 3 were omitted;b in paragraph 4, the second subparagraph were omitted.14 Article 15 is to be read as if—a in paragraph 1—i in the first subparagraph—aa in the first sentence, “Harmonised” were omitted;bb in the second sentence, for “harmonised ones” there were substituted “ risk indicators in Annex IV ”;ii the second subparagraph were omitted;b in paragraph 2, in point (a)—i “harmonised” were omitted;ii for “the Community legislation concerning statistics on plant protection products” there were substituted—aa in relation to Northern Ireland, “Annex 4 to Directive 2009/128/EC”;bb otherwise, “Article 67(3) of Regulation (EC) No 1107/2009 of the European Parliament and of the Council”. c for paragraph 3 there were substituted—3 The appropriate United Kingdom competent authority must make available the results of the evaluations carried out pursuant to paragraph 2 to the public.;d paragraph 4 were omitted.15 Annex 1 is to be read as if, in paragraph 7 for “relieves” there were substituted “ topography ”. 15A1 Annex 4 is to be read as follows.2 Section 1 is to be read as if—a in the heading, “Harmonised” were omitted;b in the paragraph, “harmonised” were omitted”;c after the paragraph there were inserted— In this Annex, “approvals register” has the meaning given in Article 3(31B) of Regulation 1107/2009..3 Section 2 is to be read as if—a “Harmonised” in each place it occurs (including in the headings) were omitted;b in paragraph 1, in the first sentence, for the words from “provided to” to the end there were substituted— in relation to Northern Ireland, collected in accordance with Annex 4 to Directive 2009/128/EC, otherwise, collected in accordance with Article 67(3) of that Regulation.;c for paragraph 2(b) to (e) there were substituted—b the active substances in Group 1 (categories A and B)—i in relation to Northern Ireland, are those listed in Part D of the Annex to Commission Implementing Regulation (EU) No 540/2011;ii otherwise, are those listed as low-risk active substances in the approvals register;c the active substances in Group 2 (categories C and D)—i in relation to Northern Ireland, are those listed in Parts A and B of the Annex to Commission Implementing Regulation (EU) No 540/2011;ii otherwise, are those listed in the approvals register as active substances which are not basic substances, low-risk active substances or candidates for substitution;d the active substances in Group 3 (categories E and F)—i in relation to Northern Ireland, are those listed in Part E of the Annex to Commission Implementing Regulation (EU) No 540/2011;ii otherwise, are those listed as candidates for substitution in the approvals register;e the active substances in Group 4 (category G) are those not approved under Regulation (EC) No 1107/2009, and therefore not listed—i in relation to Northern Ireland, in the Annex to Commission Implementing Regulation (EU) No 540/2011;ii otherwise, in the approvals register;;d in Table 1, in Row (i)—i in the second column—aa after “listed” there were inserted “, in relation to Northern Ireland,”;bb at the end there were inserted “, or, otherwise, in the approvals register”;ii for the entry in the third column there were substituted— Active substances approved or deemed to be approved under Regulation (EC) No 1107/2009 which—a in relation to Northern Ireland—i do not fall in other categories, andii are listed in Parts A and B of the Annex to Implementing Regulation (EU) No 540/2011;b otherwise, are not basic substances, low-risk active substances or candidates for substitution and are listed in the approvals register;iii in the fourth and fifth columns—aa after “listed” there were inserted “, in relation to Northern Ireland,”;bb at the end there were inserted “, or, otherwise, in the approvals register”;e in paragraph 7—i for “Member States and the Commission” there were substituted “appropriate United Kingdom competent authority”;ii for “15(4)” there were substituted “15(3)”.4 Section 3 is to be read as if—a “Harmonised” in each place it occurs (including in the headings) were omitted;b in paragraph 1, in the first sentence, after “Regulation (EC) No 1107/2009” there were inserted “and, in relation to Northern Ireland only,”;c for paragraph 2(b) to (e) there were substituted—b the active substances in Group 1 (categories A and B)—i in relation to Northern Ireland, are those listed in Part D of the Annex to Commission Implementing Regulation (EU) No 540/2011;ii otherwise, are those listed as low-risk active substances in the approvals register;c the active substances in Group 2 (categories C and D)—i in relation to Northern Ireland, are those listed in Parts A and B of the Annex to Commission Implementing Regulation (EU) No 540/2011;ii otherwise, are those listed in the approvals register as active substances which are not basic substances, low-risk active substances or candidates for substitution;d the active substances in Group 3 (categories E and F)—i in relation to Northern Ireland, are those listed in Part E of the Annex to Commission Implementing Regulation (EU) No 540/2011;ii otherwise, are those listed as candidates for substitution in the approvals register;e the active substances in Group 4 (category G) are those not approved under Regulation (EC) No 1107/2009, and therefore not listed—i in relation to Northern Ireland, in the Annex to Commission Implementing Regulation (EU) No 540/2011;ii otherwise, in the approvals register;;d in Table 2, in row (i)—i in the second column—aa after “listed” there were inserted “, in relation to Northern Ireland,”;bb at the end there were inserted “, or, otherwise, in the approvals register”;ii for the entry in the third column there were substituted— Active substances approved or deemed to be approved under Regulation (EC) No 1107/2009 which—a in relation to Northern Ireland—i do not fall in other categories, andii are listed in Parts A and B of the Annex to Implementing Regulation (EU) No 540/2011;b otherwise, are not basic substances, low-risk active substances or candidates for substitution and are listed in the approvals register;iii in the fourth and fifth columns—aa after “listed” there were inserted “, in relation to Northern Ireland,”;bb at the end there were inserted “, or, otherwise, in the approvals register”;e in paragraph 6—i for “Member States and the Commission” there were substituted “appropriate United Kingdom competent authority”;ii for “15(4)” there were substituted “15(3)”. 16 For the purposes of paragraph 4(d), Article 2 of Directive 2003/35/EC is to be read as if—a a reference to Member States were a reference to the Ministers and the Department;b paragraph 5 were omitted."
+  },
+  "UK_uksi_2019_39/387001a6ea": {
+    "law": "UK_uksi_2019_39",
+    "ref": "sch",
+    "sentence": "SCHEDULENew Schedule 1A Regulation 2(8)SCHEDULE 1AModification of the Directives Regulation 3Modification of the Asbestos Directive11 For the purposes of these Regulations, the Asbestos Directive is to be read in accordance with this paragraph.2 When interpreting the Asbestos Directive for the purposes of these Regulations—a an expression used in the Directive that is defined in Part 1 of these Regulations has the meaning given in that Part, except for “waste” which has the meaning given in Article 2(5) of the Asbestos Directive read in accordance with sub-paragraph (3);b the competent authority is the regulator;c a reference to Member States is to be read as a reference to the regulator.3 Article 2(5) is to be read as if for “Article 1 of Directive 75/442/EEC ” there were substituted “ Article 3(1) of the Waste Framework Directive, as read with Articles 5 and 6 of that Directive ”.4 Article 3 is to be read as if paragraph 2 were omitted.5 Article 5 is to be read as if, in the first paragraph, in point (a), in the first subparagraph, in the second indent, for “competent authorities of the Member States” there were substituted “ regulator ”.6 Article 6 is to be read as if—a after paragraph 1 there were inserted—1A In paragraph 1, “regular intervals” means, for the purposes of a regulated facility to which Article 4 applies, intervals of not more than 6 months.;b paragraph 3 were omitted.7 Article 8 is to be read as if, in the words before the first indent, the words from “Without” to “Accession,” were omitted.8 The Annex is to be read as if, in Part B—a in Chapter 1, in paragraph 1, in the second subparagraph—i in the third sentence, for “controlling authority” there were substituted “ regulator ”;ii in the fourth sentence, for “a Member State” there were substituted “ the regulator ”;b in Chapter 2—i in the first paragraph, “subject to the provisions of Article 6(3) of the Directive,” were omitted;ii in the second paragraph, for the words from “using” to the end there were substituted “ in accordance with Article 7(6) of Directive 2009/148/EC of the European Parliament and of the Council on the protection of workers from the risks related to exposure to asbestos at work ”;iii in the third paragraph—aa in point 1, for “controlling authority” there were substituted “ regulator ”;bb in point 8, for the words from “conform” to the end there were substituted “ be conducted in accordance with Article 7(6) of Directive 2009/148/EC ”.Modification of the Basic Safety Standards Directive21 For the purposes of these Regulations, the Basic Safety Standards Directive is to be read in accordance with this paragraph.2 When interpreting the Basic Safety Standards Directive for the purposes of these Regulations, “radioactive waste” has the meaning given in paragraph 3 of Part 2 of Schedule 23.3 Article 4 is to be read as if—a in points (11), (34), (43), (47) and (57), for “competent authority” there were substituted “ regulator ”;b point (79) were omitted;c in point (86), for “competent authority” in both places it occurs substitute “ regulator ”.4 Article 12 is to be read as if, in paragraphs 1 and 2, for “Member States” there were substituted “ The appropriate authority ”.5 Article 30(4) is to be read as if—a in the first sentence, for “Member States” there were substituted “ The regulator ”;b in the third sentence for “Competent Authority” there were substituted “ regulator ”.6 Article 66 is to be read as if—a in paragraphs 1 and 2 , for “Member States” in each place it occurs there were substituted “ The regulator ”;b in paragraph 3, in the words before point (a), for “competent authority” there were substituted “ regulator ”.7 Articles 85 to 87 are to be read as if—a for “Member States” in each place it occurs there were substituted “ The regulator ”;b in Articles 85(3) and 86(4), for “competent authority” there were substituted “ regulator ”.8 Article 88 is to be read as if, in the words before point (a), for the words from “In addition” to “States” there were substituted “ The regulator ”.9 Article 89 is to be read as if—a in the first paragraph—i in the words before point (a)—aa for “Member States” there were substituted “ The regulator ”;bb for “competent authority” there were substituted “ regulator ”;ii in point (b), for “Member States” there were substituted “ the appropriate authority ”;b in the second paragraph, for “competent authority” there were substituted “ regulator ”.10 Article 90 is to be read as if—a in the heading, for “competent authority” there were substituted “ regulator ”;b in the first sentence, for “Member States shall ensure that the competent authority keeps” there were substituted “ The regulator must keep ”;c in the third sentence, for “competent authority” there were substituted “ regulator ”.11 Article 91 is to be read as if for “Member States” in both places it occurs there were substituted “ The regulator ”.12 Annex 7 is to be read as if—a in section 1, in the first sentence, for “competent authority” there were substituted “ regulator ”;b in section 2—i in points (c) and (d), “Community” were omitted;ii in point (e)—aa in the second sentence, for “Article 75” there were substituted “ regulation 7 of the Ionising Radiation (Basic Safety Standards) (Miscellaneous Provisions) Regulations 2018 ”;bb in the third sentence, for “competent authority” there were substituted “ regulator ”;c in section 3—i in point (d), for “Member States” there were substituted “ the appropriate authority ”;ii in point (e), in the first paragraph, in the fourth indent, in the third sentence, for “Member States” there were substituted “ The appropriate authority ”;d in Table A Part 1, in the final paragraph, for “competent authority” there were substituted “ appropriate authority ”.13 Annex 14 is to be read as if, in the form, in the note, for “Community” there were substituted “ United Kingdom ”.14 Annex 15 is to be read as if—a in point (b), for “Member States” there were substituted “ the regulator ”;b in points (d), (e) and (g), for “competent authority” in each place it occurs there were substituted “ regulator ”.Modification of the Batteries Directive31 For the purposes of these Regulations, the Batteries Directive is to be read in accordance with this paragraph.2 Article 2(2)(a) is to be read as if for “Member States' essential security interests” there were substituted “ the essential security interests of the United Kingdom ”.3 Article 3 is to be read as if—a in point (7), for “Article 1(1)(a) of Directive 2006/12/EC ” there were substituted “ Article 3(1) of the Waste Framework Directive, as read with Articles 5 and 6 of that Directive ”;b in point (9), for “Annex IIA to Directive 2006/12/EC” there were substituted “ Annex 1 to the Waste Framework Directive ”.Modification of the End-of-Life Vehicles Directive41 For the purposes of these Regulations, the End-of-Life Vehicles Directive is to be read in accordance with this paragraph.2 When interpreting the End-of-Life Vehicles Directive for the purposes of these Regulations—a an expression used in the Directive that is defined in Part 1 of these Regulations has the meaning given in that Part;b a reference to one or more member States in a provision imposing an obligation or conferring a discretion on a member State or member States is to be read as a reference to the appropriate authority, appropriate agency or local authority which, immediately before IP completion day, was responsible for the United Kingdom's compliance with that obligation or able to exercise that discretion so far as it related to England or Wales.3 Article 2 is to be read as if—a for paragraph 1 there were substituted—1 ‘vehicle’ means any motor vehicle;1A ‘waste’ means waste within the meaning of Article 3(1) of the Waste Framework Directive, as read with Articles 5 and 6 of that Directive;;b in paragraph 2, “within the meaning of Article 1(a) of Directive 75/442/EEC” were omitted;c paragraphs 8, 9 and 11 were omitted.4 Article 4(2) is to be read as if points (b) and (c) were omitted.5 Article 6 is to be read as if—a in paragraph 1, for “Directive 2008/98/EC of the European Parliament and of the Council” there were substituted “the Waste Framework Directive”; b in paragraph 3, in the words before point (a), for “establishment or undertaking” there were substituted “ operator ”.6 In Annex 2, in the table, in table foot note (2a), for the words from “Directive 2006/95/EC ” to the end there were substituted “the second subparagraph of Article 1 of Directive 2014/35/EU of the European Parliament and of the Council on the harmonisation of the laws of the Member States relating to the making available on the market of electrical equipment designed for use within certain voltage limits ,and for these purposes Annex 2 to Directive 2014/35/EU is to be read as if for “Member States participate” there were substituted “ United Kingdom participates ””.7 In sub-paragraph (2)(b), “local authority” means—a in England outside Greater London—i a district council,ii a county council, oriii the Council of the Isles of Scilly;b in Greater London—i the council of a London borough,ii the Common Council of the City of London,iii the Sub-Treasurer of the Inner Temple, oriv the Under-Treasurer of the Middle Temple;c in Wales—i a county council, orii a county borough council.Modification of the Energy Efficiency Directive51 For the purposes of these Regulations, the Energy Efficiency Directive is to be read in accordance with this paragraph.2 Annex 1 is to be read as if—a in Part 1—i in point (a)(i) and (ii), for “Member States” there were substituted “ the appropriate authority ”;ii in point (b), in the third paragraph—aa “If Member States introduce” were omitted;bb for the words from “, such default values” to the end there were substituted “ must be used if they have been published by the appropriate authority ”;iii in points (d) and (e), for “Member States” there were substituted “ The appropriate authority ”;b in Part 2, the final paragraph were omitted.3 Annex 2 is to be read as if—a in point (b), in the definition of “CHP Eη”, the final sentence were omitted;b in point (c)—i in the first paragraph, for “Member States may” there were substituted “ It is permissible to ”;ii in the second paragraph, in the definition of “Eη”, the final sentence were omitted;c in point (d)—i “Member States may use” were omitted;ii after “one year” there were inserted “ may be used ”;d in point (f), in the third paragraph, point 4 were omitted.4 Annex 9 is to be read as if, in Part 2—a the heading and the words before the first paragraph were omitted;b in the seventh paragraph, “for the purposes of Article 14(5)” were omitted;c the ninth and tenth paragraphs were omitted.Modification of the Industrial Emissions Directive61 For the purposes of these Regulations, the Industrial Emissions Directive is to be read in accordance with this paragraph.2 When interpreting the Industrial Emissions Directive for the purposes of these Regulations—a an expression used in the Directive that is defined in Part 1 of these Regulations has the meaning given in that Part, except for “installation” for the purposes of Schedules 7 and 14, and—i for the purposes of Schedule 7, “installation” means Part A installation;ii for the purposes of Schedule 14, “installation” means a stationary technical unit within which a solvent emission activity is carried out, and any other directly associated activities on the same site which have a technical connection with the solvent emission activity and which could have an effect on emission of volatile organic compounds;b except in point 5 of Annex 4 to the Directive, a reference to “Member States” is to be read as a reference to the competent authority;c the competent authority is—i for the purposes of exercising a judgement as to whether there is an overriding need to maintain energy supplies under Articles 30(6) and 37, the appropriate authority;ii otherwise, the regulator.3 Article 3 is to be read as if—a in point (1)—i for the purposes of Schedule 7 only, in the words before point (a), after “its compounds” there were inserted “ and any biological entity or micro-organism ”;ii in point (a), for the words from “Article 1” to the end there were substituted “ Article 4 of the Basic Safety Standards Directive ”;b points (2) to (4) were omitted;c in point (6), for “Union” there were substituted “ retained EU ”;d for points (7) and (8) there were substituted—7 ‘permit’ means environmental permit;8 ‘general binding rule’—i for the purposes of Schedules 15 and 17 to the Environmental Permitting (England and Wales) Regulations 2016, means emission limit values or other conditions, at least at sector level, that are adopted with the intention of being used directly to set permit conditions;ii otherwise, means a standard rule published under regulation 26 of the Environmental Permitting (England and Wales) Regulations 2016;;e in point (10)(b), for “Member State in question” there were substituted “ United Kingdom ”;f in point (11), after “Article 13” there were inserted “ as that Article had effect immediately before IP completion day ”;g in point (12), for “means a document” there were substituted “ except where Article 13(7) applies, means a document annexed to retained direct EU legislation made under Article 13(5) as that Article had effect immediately before IP completion day ”;h points (18) and (20) were omitted;i in point (23), for the words from “point 1 of Article 2” to the end there were substituted “ point 1 of the second subparagraph of Article 2 of Council Directive 2009/158/EC on animal health conditions governing intra-Community trade in, and imports from third countries of, poultry and hatching eggs ; ”;j point (25) were omitted;k in point (36), for the words from “point 26” to the end there were substituted “ Article 2(26) of Directive 2009/72/EC of the European Parliament and of the Council concerning common rules for the internal market in electricity ; ”;l points (37), (38), (40), (41) were omitted.4 Article 5 is to be read as if—a in paragraph 1, “or Union” were omitted;b in paragraph 3, a reference to a numbered Article of Directive 85/337/EEC were a reference to the EU-derived domestic legislation which transposed the same numbered Article of Directive 2011/92/EU of the European Parliament and of the Council on the assessment of the effects of certain public and private projects on the environment in respect of England and Wales.5 Article 7 is to be read as if, in the words before point (a), the words from “Directive 2004/35/EC ” to “damage” there were substituted “the Environmental Damage (Prevention and Remediation) (England) Regulations 2015 and the Environmental Damage (Prevention and Remediation) (Wales) Regulations 2009 ”.5A Article 9 is to be read as if—a in paragraph 2, for “Member States” there were substituted “ the competent authority ”;b in paragraph 4, for the words from “to 3 shall not” to the end, substitute “and 2 and the references to Annex 1 to Directive 2003/87/EC in both are to be read as if for “in a storage site permitted under Directive 2009/31/EC” in each place in which those words occur in that Annex, there were substituted “ in a storage site permitted under Chapter 3 of Part 1 of the Energy Act 2008 or other domestic legislation which immediately before IP completion day implemented Directive 2009/31/EC ” 6 Article 11(d) and (e) is to be read as if, for “Directive 2008/98/EC ” there were substituted “ the Waste Framework Directive ”.7 Article 12(2) is to be read as if—a for “Directive 85/337/EEC” there were substituted “ the EU-derived domestic legislation which transposed Directive 2011/92/EU in respect of England and Wales ”;b for “Directive 96/82/EC ”there were substituted “ the Control of Major Accident Hazards Regulations 2015 ”.8 Article 13 is to be read as if—a paragraphs 1 to 6 were omitted;b in paragraph 7, for the words from “Pending” to “paragraph 5, the” there were substituted “ In the absence of a BAT conclusion, any relevant ”.9 Article 14 is to be read as if—a in paragraph 4, the second sentence were omitted;b in paragraph 7, for “the legislation” there were substituted “ retained EU law ”.10 Article 15 is to be read as if—a in paragraph 3, in the words before point (a), “referred to in Article 13(5)” were omitted;b in paragraph 4, the fifth subparagraph were omitted.11 Article 21 is to be read as if—a in paragraph 1, for the words from “Member States” to “periodically reconsiders” there were substituted “ The competent authority must periodically reconsider ”;b in paragraph 3—i in the first subparagraph, in the words before point (a), for “decisions on BAT conclusions in accordance with Article 13(5)” there were substituted “ BAT conclusions ”;ii in the second subparagraph, “in accordance with Article 13(5)” were omitted.12 Article 22 is to be read as if—a in paragraph 1—i for the words from “Directive 2000/60/EC ”to “deterioration” there were substituted “ the legislation listed in paragraph 1A ”;ii for “Union” there were substituted “ retained EU ”;b after paragraph 1 there were inserted—1A The legislation referred to in paragraph 1 is—a the EU-derived domestic legislation which transposed Directive 2000/60/EC in respect of England and Wales ;b the Environmental Damage (Prevention and Remediation) (England) Regulations 2015;c the Environmental Damage (Prevention and Remediation) (Wales) Regulations 2009;d Schedule 22 to the Environmental Permitting (England and Wales) Regulations 2016 and the other EU-derived domestic legislation which transposed Directive 2006/118/EC in respect of England and Wales .;c in paragraph 2—i in the fourth subparagraph, for “Union” there were substituted “ retained EU ”;ii the fifth subparagraph were omitted.13 Article 23 is to be read as if—a in paragraph 4—i in the fourth subparagraph, point (c) were omitted;ii the fifth subparagraph were omitted;b in paragraph 6, in the second subparagraph, for the words from “Directive 2003/4/EC ”to “environmental information” there were substituted “ the Environmental Information Regulations 2004 ”.14 Article 24(4) is to be read as if, for “Article 4(1) and (2) of Directive 2003/4/EC” there were substituted “ the exceptions in Part 3 of the Environmental Information Regulations 2004 ”.15 Article 30 is to be read as if—a in paragraph 5 the second sub-paragraph were omitted;b in paragraph 6, the third subparagraph were omitted.16 Article 31 is to be read as if—a in paragraph 1, the words from “and with prior validation” to the end were omitted;b in paragraph 2, for “points 3.1 or” there were substituted “ point ”.17 Article 32 is to be read as if—a a reference to the plan or transitional national plan were a reference to the UK transitional plan prepared by the Secretary of State and submitted to the European Commission on 20th October 2015;b in paragraph 2, in the second subparagraph, the words “, pursuant in particular to the requirements of Directives 2001/80/EC and 2008/1/EC ,” were omitted;c in paragraph 3, the second subparagraph were omitted.18 Article 33 is to be read as if—a in paragraph 1—i in the words before point (a)—aa the reference to the transitional national plan were a reference to the UK transitional plan prepared by the Secretary of State and submitted to the European Commission on 20th October 2015;bb “referred to in Article 32” were omitted;ii at the end of point (b) there were inserted “and”;iii in point (c), the words “, pursuant in particular to the requirements of Directives 2001/80/EC and 2008/1/EC,” were omitted;iv point (d) (and the “and” immediately preceding it) were omitted;b in paragraph 2—i for “Commission” in both places it occurs there were substituted “ appropriate authority ”;ii in the first sentence, for “each Member State” substitute “ the regulator ”.19 Articles 34(1) and 35(1)(d) are to be read as if the words “, pursuant in particular to the requirements of Directives 2001/80/EC and 2008/1/EC,” were omitted.20 Article 42(2)(a)(iii) is to be read as if, for the words from “Regulation (EC) No 1774/2002” to the end there were substituted “ Regulation (EC) No 1069/2009 of the European Parliament and of the Council laying down health rules as regards animal by-products and derived products not intended for human consumption ”.21 Article 44(d) is to be read as if “and Union” were omitted.22 Article 45(1)(a) is to be read as if for “European Waste List established by” there were substituted “ List in ”.23 Article 50(3) is to be read as if, in the second subparagraph, for the words from “Article 2(2)” to the end there were substituted “ regulation 2(1) of the Sulphur Content of Liquid Fuels (England and Wales) Regulations 2007 ”.24 Article 51 is to be read as if—a in paragraph 1, the second sentence were omitted;b in paragraph 4—i for “Commission” there were substituted “ appropriate authority ”;ii the words from “as part” to the end were omitted.25 Article 52 is to be read as if—a in paragraph 2, for “European Waste List established by” there were substituted “ List in ”;b in paragraph 4(a), for “Directive 2008/98/EC” there were substituted “ the Waste Framework Directive ”.26 Article 55(2) is to be read as if, in the first sentence, for “report referred to in Article 72 shall include” there were substituted “ regulator must provide to the appropriate authority ”.27 Article 59 is to be read as if—a in paragraph 1, the second subparagraph were omitted;b in paragraph 4—i for “Commission” there were substituted “ appropriate authority ”;ii “in accordance with Article 72(2)” were omitted.28 Article 65(3) is to be read as if for “restrictions laid down in Article 4(1) and (2) of Directive 2003/4/EC” there were substituted “ exceptions in Part 3 of the Environmental Information Regulations 2004 ”.29 Annex 1 is to be read as if—a in the words before point 1, the second paragraph were omitted;b in point 5.3—i in point (a), in the words before point (i), for “Council Directive 91/271/EEC of 21 May 1991 concerning urban waste-water treatment” there were substituted “ the Urban Waste Water Treatment (England and Wales) Regulations 1994 ”;ii in point (b), in the words before point (i), for “Directive 91/271/EEC” there were substituted “ the Urban Waste Water Treatment (England and Wales) Regulations 1994 ”;c in point 5.4, the words from “, as defined” to “of waste” were omitted;d in point 6.9, for “Directive 2009/31/EC” there were substituted “ Chapter 3 of Part 1 of the Energy Act 2008 and other EU-derived domestic legislation which transposed Directive 2009/31/EC on the geological storage of carbon dioxide in relation to England and Wales ”;e in point 6.11, for “Directive 91/271/EEC” there were substituted “ the Urban Waste Water Treatment (England and Wales) Regulations 1994 ”.30 Annex 2 is to be read as if, in the Section headed “Water”, in paragraph 13, for “Directive 2000/60/EC” there were substituted “ the Water Framework Directive ”.31 Annex 4 is to be read as if—a in point 1(b), for the words from “consultations” to the end there were substituted “ a consultation in accordance with paragraph 10(2A)(a) of Schedule 5 to the Environmental Permitting (England and Wales) Regulations 2016 ”;b in point 2—i in point (a) “or authorities” were omitted;ii in point (b), for “Directive 2003/4/EC” there were substituted “ the Environmental Information Regulations 2004 ”;c in point 5, for “Member States” there were substituted “ appropriate authority ”.32 Annex 6 is to be read as if—a in Part 4—i in point 1, in the definition of “Vproc”, “Union or” were omitted;ii point 3.1 were omitted;b in Part 5, in entry 1 of the table, in the first column, after “defined in” there were inserted “ the third entry of Table 1 in ”;c in Part 6, in point 2.1(c), after “furans” there were inserted “ and dioxin-like polychlorinated biphenyls and polycyclic aromatic hydrocarbons ”, but only in the case of particular plants where the regulator can demonstrate that emissions of those additional substances are, or are likely to be, significant.Modification of the Landfill Directive71 For the purposes of these Regulations, the Landfill Directive is to be read in accordance with this paragraph.2 When interpreting the Landfill Directive for the purposes of these Regulations—a an expression used in the Directive that is defined in Part 1 of these Regulations has the meaning given in that Part;b “landfill permit” or “permit” means environmental permit;c “nature protection zone” means any—i European site (which has the meaning given in regulation 8 of the Conservation of Habitats and Species Regulations 2017), orii site of special scientific interest (which has the meaning given in section 52(1) of the Wildlife and Countryside Act 1981 );d a reference to one or more member States in a provision imposing an obligation or conferring a discretion on a member State or member States is to be read as a reference to the appropriate authority, appropriate agency or local authority which, immediately before IP completion day, was responsible for the United Kingdom's compliance with that obligation or able to exercise that discretion so far as it related to England or Wales;e the competent authority is the regulator.3 Article 1 is to be read as if—a in paragraph 1, the words from “With a view” to “thereof,” were omitted;b in paragraph 2, for “Directive 96/61/EC ”,in both places it occurs, there were substituted “ the Industrial Emissions Directive ”.4 Article 2 is to be read as if—a for point (a) there were substituted—a the definitions of ‘municipal waste’, ‘waste producer’, ‘waste holder’, ‘waste management’, ‘separate collection’, ‘preparing for re-use’ and ‘recycling’ in the Waste Framework Directive apply, with references to ‘waste’ in those definitions being interpreted in accordance with the definition of ‘waste’ in Part 1 of the Environmental Permitting (England and Wales) Regulations 2016;;b points (l), (p) and (r) were omitted. 5 Article 3 is to be read as if—a in paragraph 2, in the words before the first indent, “Without prejudice to existing Community legislation,” were omitted;b for paragraph 3 there were substituted—3 The management of extractive waste is excluded from the scope of this Directive where it falls within the scope of Schedule 20, or paragraph 8(a) or (b) of Schedule 22, to the Environmental Permitting (England and Wales) Regulations 2016.. 6 Article 5(3) is to be read as if—a in point (b), for “Annex III to Directive 91/689/EEC ” there were substituted “ Annex 3 to the Waste Framework Directive ”;b in point (c), for the words from “(property H9” to the end there were substituted “ by Annex 3 to the Waste Framework Directive ”;c in point (d)—i for “two years from the date laid down in Article 18(1)” there were substituted “ 16th July 2001 ”;ii for “five years from the date laid down in Article 18(1)” there were substituted “ from 16th July 2004 ”.d in point (f)—i after “waste”, in the first place it occurs, there were inserted “paper, metal, plastic and glass”;ii the words from “pursuant” to “Article 22 of that Directive” were omitted;ii for “Article 4 of that Directive” there were substituted “Article 4 of the Waste Framework Directive” 7 In Article 6, point (a) is to be read as if—a in the first paragraph, in the second sentence, for “may” there were substituted “does”;b in the second paragraph, for the words from “of Directive 2008/98/EC” to the end, there were substituted “set out in Part 1 of Schedule 1 to the Waste (England and Wales) Regulations 2011, or any objectives in retained EU law relating to the increase of preparing for re-use and recycling”. 8 Article 7 is to be read as if—a in the first subparagraph, in point (h)—i the reference to Council Directive 85/337/EEC of 27 June 1985 on the assessment of the effects of certain public and private projects on the environment were a reference to the EU-derived domestic legislation which transposed Directive 2011/92/EU in respect of England and Wales;iii the reference to Article 5 of Directive 85/337/EEC were a reference to the EU-derived domestic legislation which transposed Article 5 of Directive 2011/92/EU in respect of England and Wales;b in the second subparagraph, “and Community” were omitted.9 Article 8 is to be read as if—a in point (a)—i in point (i), “without prejudice to Article 3(4) and (5),” were omitted;ii in point (iv)—aa in the first sentence, “issued under the provisions of this Directive” were omitted;bb the final sentence were omitted;b in point (b), for “Article 7 of Directive 75/442/EEC” there were substituted “ regulation 7 of the Waste (England and Wales) Regulations 2011 ”.10 Article 9 is to be read as if, in the words before point (a), the words from “Specifying” to “Directive 96/61/EC,” were omitted.11 Article 10 is to be read as if for the words from “Council Directive 90/313/EEC ” to “environment” there were substituted “ the Environmental Information Regulations 2004 ”.12 Article 11(1) is to be read as if—a in point (b)—i in the first indent—aa for “Article 5(3) of Directive 91/689/EEC” there were substituted “ Article 19(2) of the Waste Framework Directive ”;bb for “Council Regulation” to the end there were substituted “ Regulation (EC) No 1013/2006 of the European Parliament and of the Council on shipments of waste ”;ii in the third indent, “and Community” were omitted;b in point (d), “without prejudice to the provisions of Regulation (EEC) No 259/93,” were omitted.13 Article 13(d) is to be read as if “Community or” were omitted.14 Article 14 is to be read as if—a in the words before point (a), for “within eight years after the date laid down in Article 18(1)” there were substituted “ by 16th July 2007 ”;b in point (a), for the words from “with a period” to “Article 18(1)” there were substituted “ by 16th July 2000 ”;c in point (c), for “within eight years after the date laid down in Article 18(1)” there were substituted “ by 16th July 2007 ”;d in point (d)—i in point (i), for “within one year after the date laid down in Article 18(1)” there were substituted “ by 16th July 2000 ”;ii in point (ii), for “within three years after the date laid down in Article 18(1)” there were substituted “ by 16th July 2002 ”.15 Annex 1 is to be read as if—a in Section 2, for the final sentence there were substituted “ The above provisions do not apply to inert landfills. ”;b in Section 3.3, omit the second paragraph;c in Section 3.4, for “Directive 80/68/EEC ” there were substituted “ the EU-derived domestic legislation which transposed Directive 2000/60/EC of the European Parliament and of the Council in respect of England and Wales ”;d . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .16 Annex 2 is to be read as if—a Section 1 were omitted;b in Section 2, in the second paragraph, the final sentence were omitted;c in Section 4, in the fourth and fifth paragraphs, for “covered by Directive 91/689/EEC” there were substituted “ classified as hazardous waste ”;d . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .17 Annex 3 is to be read as if—a in Section 2, in the table, in the first column, for “14.00 h CET” in both places it occurs there were substituted “1 p.m.”; b in Section 3, in the fourth paragraph, in the table, in table note 7, the words from “, and will report” to the end were omitted.18 In sub-paragraph (2)(d), “local authority” has the meaning given in paragraph 4(7).Modification of the Medium Combustion Plant Directive81 For the purposes of these Regulations, the Medium Combustion Plant Directive is to be read in accordance with this paragraph.2 When interpreting the Medium Combustion Plant Directive for the purposes of these Regulations—a except where defined in this paragraph, an expression used in the Directive that is defined in Part 1 of these Regulations has the meaning given in that Part;b the competent authority is the regulator;c “general binding rule” means a standard rule published under regulation 26;d a reference to “Member States” is to be read as a reference to the regulator;e “permit” means environmental permit;f a reference to Directive 2010/75/EU is to be read as if it were a reference to the Industrial Emissions Directive.3 Article 2 is to be read as if—a in paragraph 3(b), for “Directive 97/68/EC of the European Parliament and of the Council ” there were substituted “ Regulation (EU) 2016/1628 of the European Parliament and of the Council on requirements relating to gaseous and particulate pollutant emission limits and type-approval for internal combustion engines for non-road mobile machinery ”;b in paragraph 4, the second sentence were omitted.4 Article 3 is to be read as if points (1), (5) and (17) were omitted.5 Article 6 is to be read as if—a in paragraph 1, the second subparagraph were omitted;b paragraphs 8, 11 and 12 were omitted.6 Article 7 is to be read as if—a in paragraph 5(c), for “Article 6(8)” there were substituted “ paragraph 8(1) of Schedule 25A to the Environmental Permitting (England and Wales) Regulations 2016 ”;b in paragraph 7, in the first sentence, for “Article 8” there were substituted “ Article 8(2) and (3) ”.7 Annex 1 is to be read as if, in point 7, for “Article 6(8)” there were substituted “ paragraph 8(1) of Schedule 25A to the Environmental Permitting (England and Wales) Regulations 2016 ”.8 Annex 3 is to be read as if—a in Part 1, in point 2, for “Article 6(8)” in each place it occurs there were substituted “ paragraph 8(1) of Schedule 25A to the Environmental Permitting (England and Wales) Regulations 2016 ”;b in Part 2, in point 3, for “Article 6(11) and Article 6(12)” there were substituted “ paragraph 11(2) and (4) of Schedule 25A to the Environmental Permitting (England and Wales) Regulations 2016 ”.Modification of the Mining Waste Directive91 For the purposes of these Regulations, the Mining Waste Directive is to be read in accordance with this paragraph.2 When interpreting the Mining Waste Directive for the purposes of these Regulations—a except where defined in this paragraph, an expression used in the Directive that is defined in Part 1 of these Regulations has the meaning given in that Part;b “permit” means an environmental permit;c a reference to one or more member States in a provision imposing an obligation or conferring a discretion on a member State or member States is to be read as a reference to the appropriate authority, appropriate agency or local authority which, immediately before IP completion day, was responsible for the United Kingdom's compliance with that obligation or able to exercise that discretion so far as it related to England or Wales;d the competent authority is the regulator.3 Article 2 is to be read as if—a in paragraph 2(c), for “Directive 2000/60/EC” there were substituted “ the Water Framework Directive ”;b in paragraph 3, the second and third subparagraphs were omitted;c paragraph 4 were omitted.4 Article 3 is to be read as if—a points (1) and (2) were omitted;b in point (4), for the words from “the national law” to the end there were substituted “ national law ”;c in point (17), for “Directive 67/548/EEC or Directive 1999/45/EC ” there were substituted “ Regulation (EC) No 1272/2008 of the European Parliament and of the Council on classification, labelling and packaging of substances and mixtures ”;d in point (18), for “Article 2(11) of Directive 96/61/EC” there were substituted “ Article 3(10) of the Industrial Emissions Directive ”;e in point (19), for “Directive 2000/60/EC” there were substituted “ the Water Framework Directive ”;f point (24) were omitted;g in point (26), for the words from “the national law” to “operates” there were substituted “ national law ”;h point (27) were omitted.5 Article 5 is to be read as if—a in paragraph 2(a)(iii) and (b), “at Community level” were omitted;b in paragraph 3(g), for “Directive 2000/60/EC” there were substituted “ the EU-derived domestic legislation which transposed Directive 2000/60/EC of the European Parliament and of the Council in respect of England and Wales ”;c in paragraph 5, “national or Community” were omitted.6 Article 6 is to be read as if—a in paragraph 1, for “Directive 96/82/EC” there were substituted “ the Control of Major Accident Hazards Regulations 2015 ”;b in paragraph 2, the words from “Without prejudice” to “92/104/EEC,” were omitted.7 Article 7 is to be read as if—a in paragraph 1, in the second subparagraph, “national or Community” were omitted;b in paragraph 2(e), a reference to Directive 85/337/EEC were a reference to the EU-derived domestic legislation which transposed Directive 2011/92/EU in respect of England and Wales;c in paragraph 3(b), for “Article 7 of Directive 75/442/EC” there were substituted “ regulation 7 of the Waste (England and Wales) Regulations 2011 ”;d in paragraph 4, the third indent were omitted;e in paragraph 5, “and Community” were omitted.8 Article 8 is to be read as if—a in paragraph 1(b), for the words from “between” to the end there were substituted “ in accordance with paragraph 10(2A)(a) of Schedule 5 to the Environmental Permitting (England and Wales) Regulations 2016 ”;b in paragraph 2(b), for the words from “provisions” to “environmental information” there were substituted “ Environmental Information Regulations 2004 ”.9 Article 10(2) is to be read as if for “Directive 1999/31/EC ” there were substituted “ The Landfill Directive ”.10 Article 11(2)(a) is to be read as if—a “Community or” were omitted;b for “Directives 76/464/EEC , 80/68/EEC and 2000/60/EC” there were substituted “ the EU-derived domestic legislation which transposed Directive 2000/60/EC of the European Parliament and of the Council in respect of England and Wales ”.11 Article 12 is to be read as if—a in paragraph 4, “or Community” were omitted;b in paragraph 5, in the words before point (a)—i for “Community legislation” there were substituted “ retained EU law ”;ii for “Directives 76/464/EEC, 80/68/EEC and 2000/60/EC” there were substituted “ the EU-derived domestic legislation which transposed Directive 2000/60/EC of the European Parliament and of the Council in respect of England and Wales ”.12 Article 13 is to be read as if—a in paragraph 1, in the words before point (a)—i “Community” were omitted;ii for “Directive 2000/60/EC” there were substituted “ the EU-derived domestic legislation which transposed Directive 2000/60/EC of the European Parliament and of the Council in respect of England and Wales ”;b in paragraph 3, for “Directives 76/464/EEC, 80/68/EEC or 2000/60/EC” there were substituted “ the EU-derived domestic legislation which transposed Directive 2000/60/EC of the European Parliament and of the Council in respect of England and Wales ”;c in paragraph 4, for “Directives 76/464/EEC, 80/68/EEC and 2000/60/EC” there were substituted “ the EU-derived domestic legislation which transposed Directive 2000/60/EC of the European Parliament and of the Council in respect of England and Wales ”;d in paragraph 5, in the second sentence—i for “Community” there were substituted “ retained EU law ”;ii for “Directive 2000/60/EC” there were substituted “ the EU-derived domestic legislation which transposed Directive 2000/60/EC of the European Parliament and of the Council in respect of England and Wales ”.13 Article 20 is to be read as if, in the second sentence, the words from “, taking into account” to the end were omitted.14 Article 24(4) is to be read as if, in the second indent, “Community or” were omitted.15 Annex 3 is to be read as if—a in the second indent, for “Directive 91/689/EEC” there were substituted “ the Waste Framework Directive ”;b in the third indent, for “Directives 67/548/EEC or 1999/45/EC” there were substituted “ Regulation (EC) No 1272/2008 of the European Parliament and of the Council on classification, labelling and packaging of substances and mixtures ”.16 In sub-paragraph (2)(c), “local authority” has the meaning given in paragraph 4(7).Modification of PVR I101 For the purposes of these Regulations, PVR I is to be read in accordance with this paragraph.2 Article 2(k) is to be read as if for the words from “Chapter 1” to the end there were substituted “ regulation 3 of the Merchant Shipping (Technical Requirements for Inland Waterway Vessels) Regulations 2010 ”.3 Article 4 is to be read as if—a in paragraph 1, in the sixth subparagraph, the second and third sentences were omitted;b in paragraph 4, the second subparagraph were omitted.4 Annex 1 is to be read as if, in point 1, in the third sentence—a for “Member States” there were substituted “ The regulator ”;b “special landscape areas which have been designated by national authority” included the Broads, the New Forest and any National Park or Area of Outstanding Natural Beauty.5 Annex 2 is to be read as if—a in point 2—i in the second paragraph—aa in the words before the first indent, for “United Kingdom” there were substituted “ regulator ”;bb in the third indent, for “Commission” there were substituted “ appropriate authority ”;ii in the third paragraph, for “Member States' competent authorities” there were substituted “ regulator ”;b in points 3 and 4, for “Member States' competent authorities” there were substituted “ regulator ”.6 Annex 4 is to be read as if points 2.3, 3.2 and 3.5 were omitted.Modification of PVR II111 For the purposes of these Regulations, PVR II is to be read in accordance with this paragraph.2 Article 3(1) to (3) is to be read as if “Member States shall ensure that” were omitted.3 Article 4 is to be read as if—a in paragraph 1, for the words from “Member States” to “such systems is” there were substituted “ The petrol vapour capture efficiency of Stage II petrol vapour recovery systems must be ”;b in paragraph 2, the words from “With effect” to “Article 3,” were omitted.4 Article 5 is to be read as if—a “Member States shall ensure that”, in each place it occurs, were omitted;b in paragraph 1, for “is” there were substituted “ must be ”;c in paragraph 2, in the first sentence, for “is” there were substituted “ must be ”;d in paragraph 3, for “displays” there were substituted “ must display ”.Modification of the Waste Framework Directive121 For the purposes of these Regulations, the Waste Framework Directive is to be read in accordance with this paragraph.2 When interpreting the Waste Framework Directive for the purposes of these Regulations—a an expression used in the Directive that is defined in Part 1 of these Regulations has the meaning given in that Part;b “permit” means an environmental permit;c a reference to one or more member States in a provision imposing an obligation or conferring a discretion on a member State or member States is to be read as a reference to the appropriate authority, appropriate agency or local authority which, immediately before IP completion day, was responsible for the United Kingdom’s compliance with that obligation or able to exercise that discretion so far as it related to England or Wales;d the competent authority is the regulator. 3 Article 2 is to be read as if—a in paragraph 2—i in the words before point (a), for “other Community legislation” there were substituted “ retained EU law ”;ii in points (b) and (c), for “Regulation (EC) No 1774/2002” there were substituted “ Regulation (EC) No 1069/2009 ”;iii in point (d), for the words from “Directive 2006/21/EC ” to the end there were substituted “ the Mining Waste Directive ”;b in paragraph 3, the words from “Without prejudice” to “Community legislation,” were omitted.4 Article 3(20) is to be read as if for “Article 2(11) of Directive 96/61/EC” there were substituted “ Article 3(10) of the Industrial Emissions Directive ”.5 Article 4(2) is to be read as if the second subparagraph were omitted.6 Article 5 is to be read as if—a in paragraph 1, “Member States shall take appropriate measures to ensure that” were omitted;b after paragraph 1 there were inserted—1A Any decision as to whether a substance or object is a by-product must be made—a in accordance with any regulations setting out detailed criteria on the application of the conditions in paragraph 1 to specific substances or objects; andb having regard to any guidance published by the appropriate authority or the appropriate agency for the purposes of this Article.;c paragraphs 2 and 3 were omitted. 7 Article 6 is to be read as if—a in paragraph 1, “Member States shall take appropriate measures to ensure that” were omitted;b after paragraph 1 there were inserted—1A Any decision as to whether a substance or object has ceased to be waste must be made—a in accordance with any regulations or retained direct EU legislation setting out detailed criteria on the application of the conditions in paragraph 1 to specific types of waste; andb having regard to any guidance published by the appropriate authority or the appropriate agency for the purposes of this Article.;c in paragraph 2—i the first subparagraph were omitted;ii in the second subparagraph, for “Those detailed criteria” there were substituted “Any detailed criteria set out in guidance as referred to in paragraph 1A”;iii the third and fourth subparagraphs were omitted;d paragraph 3 were omitted;e in paragraph 4—i in the first subparagraph—aa in the first sentence, for the words from the beginning to “Member State”, there were substituted “Where criteria have not been set out as referred to in paragraph 1A(a), the appropriate agency”;bb the second sentence were omitted;ii in the second subparagraph—aa for “Member States” there were substituted “The appropriate agency”;bb “by competent authorities” were omitted. 8 Article 7 is to be read as if—a before paragraph 1 there were inserted—A1 In this Article, the “list of waste” means the list contained in the Annex to Commission Decision 2000/532/EC, as that list has effect in England or in Wales (as the case may be).;b in paragraph 1—i the first and second sentences were omitted;ii for the third sentence there were substituted “The list of waste shall, except as provided in Commission Decision 2000/532/EC, be binding as regards determination of the waste which is to be considered as hazardous waste or as non-hazardous waste.”;c paragraphs 2, 3, 6 and 7 were omitted. 9 Article 19(2) is to be read as if, for “a Member State” there were substituted “ the United Kingdom ”.9A Article 35(1) is to be read as if, for the second paragraph, there were substituted— They shall make that data available to the regulator through any electronic registry established for the reporting of such data or, if no such registry is in operation, in such form and manner as the regulator may specify.. 10 Annex 3 is to be read as if, in entry HP 9, in the second sentence, “in the Member States” were omitted.11 Annex 4a is to be read as if, in point 6, “, including through Union funds” were omitted. 12 In sub-paragraph (2)(c), “local authority” has the meaning given in paragraph 4(7).Modification of the Water Framework Directive131 For the purposes of these Regulations, the Water Framework Directive is to be read in accordance with this paragraph.2 Article 2 is to be read as if paragraph 30 were omitted.3 Article 11(3)(j) is to be read as if—a the reference to “Member States” were a reference to the appropriate authority or appropriate agency;b in the words after the final indent, for “established for that body of groundwater” there were substituted “ (which has the meaning given in regulation 2(1) of the Environmental Permitting (England and Wales) Regulations 2016) in relation to a river basin district ”.Modification of the WEEE Directive141 For the purposes of these Regulations, the WEEE Directive is to be read in accordance with this paragraph.2 A reference to one or more member States in a provision imposing an obligation or conferring a discretion on a member State or member States is to be read as a reference to the appropriate authority, appropriate agency or local authority which, immediately before IP completion day, was responsible for the United Kingdom's compliance with that obligation or able to exercise that discretion so far as it related to England or Wales.3 Article 2 is to be read as if—a paragraph 2 were omitted;b in paragraph 3(a), for “Member States” there were substituted “ the United Kingdom ”;c paragraph 5 were omitted.4 Article 3(1) is to be read as if—a after point (a) there were inserted—aa ‘waste’ means waste within the meaning of Article 3(1) of the Waste Framework Directive, as read with Articles 5 and 6 of that Directive;ab ‘hazardous waste’ has the meaning given by regulation 2(1) of the Environmental Permitting (England and Wales) Regulations 2016;;b in point (e), “within the meaning of Article 3(1) of Directive 2008/98/EC” were omitted;c in point (f)—i in the words before point (i), for the words from “distance communication” to the end, there were substituted “ by means of distance communication ”;ii in points (i) and (ii)—aa for “a Member State” there were substituted “ the United Kingdom ”;bb for “territory of that Member State” there were substituted “ United Kingdom ”;cc for point (iii) there were substituted—iii is established in the United Kingdom and places on the market, on a professional basis, EEE from another country; or;iii in point (iv), in the first subparagraph —aa for “a Member State” there were substituted “ the United Kingdom ”;bb “Member State or in a third” were omitted;d in point (j), for “a Member State” there were substituted “ the United Kingdom ”;e in point (k), for “territory of a Member State” there were substituted “ United Kingdom ”;f for points (m) to (o) there were substituted—m ‘medical device’ means a medical device within the meaning of regulation 2(1) or 69(1) of the Medical Devices Regulations 2002 which is EEE;n ‘in vitro diagnostic medical device’ means an in vitro diagnostic medical device within the meaning of regulation 2(1) or 137 of the Medical Devices Regulations 2002 which is EEE;o ‘active implantable medical device’ means an active implantable medical device within the meaning of regulation 2(1) , or the meaning determined in accordance with Schedule 9 to, of the Medical Devices Regulations 2002 which is EEE..5 Article 3(2) is to be read as if—a “ ‘hazardous waste’,” were omitted;b for “Directive 2008/98/EC” there were substituted “ the Waste Framework Directive ”.6 Article 8(5) is to be read as if the second to fifth subparagraphs were omitted.7 Article 9 is to be read as if—a in paragraph 3—i “or the registration referred to in paragraphs 1 and 2” were omitted;ii the words from “and for the” to the end were omitted;b after paragraph 3 there were inserted—4 In paragraph 3, “permit” means environmental permit..8 Annex 7 is to be read as if, in paragraph 1—a in the first subparagraph—i in the first indent, for the words from “Council Directive 96/59/EC ”to the end there were substituted “ the Environmental Protection (Disposal of Polychlorinated Biphenyls and other Dangerous Substances) (England and Wales) Regulations 2000 ”;ii in the thirteenth indent, for the words from “Commission Directive 97/69/EC ” to the end there were substituted “ Regulation (EC) No 1272/2008 of the European Parliament and of the Council on classification, labelling and packaging of substances and mixtures ”;iii in the fourteenth indent, for the words from “Article 3” to the end there were substituted “ Annex 7 to the Basic Safety Standards Directive ”;b in the second subparagraph, for “Directive 2008/98/EC” there were substituted “ the Waste Framework Directive ”.9 Annex 8 is to be read as if, in paragraph 1, in the words before the first indent, the words from “(without prejudice” to “landfill of waste)” were omitted.10 In sub-paragraph (2), “local authority” has the meaning given in paragraph 4(7).11 In sub-paragraph (4)(c)(i), “by means of distance communication” has the meaning given by regulation 3(1) of the Consumer Protection (Distance Selling) Regulations 2000 ."
   },
   "UK_uksi_2019_453/89d2ec1e80": {
     "law": "UK_uksi_2019_453",
@@ -6194,11 +6394,6 @@
     "ref": "reg.1",
     "sentence": "Regulation 6 does not apply in relation to Scotland."
   },
-  "UK_uksi_2019_74/506b0270c4": {
-    "law": "UK_uksi_2019_74",
-    "ref": "reg.2",
-    "sentence": "Any provision of these Regulations amending a provision in an enactment has the same extent as the provision being amended."
-  },
   "UK_uksi_2019_742/03ce5a39f3": {
     "law": "UK_uksi_2019_742",
     "ref": "reg.2",
@@ -6218,11 +6413,6 @@
     "law": "UK_uksi_2019_837",
     "ref": "reg.2",
     "sentence": "Part 5 extends to Northern Ireland."
-  },
-  "UK_uksi_2020_1444/d695fd64a9": {
-    "law": "UK_uksi_2020_1444",
-    "ref": "reg.1",
-    "sentence": "They extend to England and Wales, but apply in England only."
   },
   "UK_uksi_2020_1540/38ec440aab": {
     "law": "UK_uksi_2020_1540",
@@ -6269,11 +6459,6 @@
     "ref": "reg.2",
     "sentence": "Regulation 3(f) in so far as it commences section 89(1) and (3) to (7) extends to England and Wales and Scotland."
   },
-  "UK_uksi_2022_1174/8d47a4d587": {
-    "law": "UK_uksi_2022_1174",
-    "ref": "reg.2",
-    "sentence": "Part 5 of this Order extends to Scotland only."
-  },
   "UK_uksi_2022_1218/c3e6312e4e": {
     "law": "UK_uksi_2022_1218",
     "ref": "reg.11",
@@ -6283,6 +6468,21 @@
     "law": "UK_uksi_2022_1273",
     "ref": "reg.1",
     "sentence": "These Regulations, except for regulations 4, 5, 62(6) and 72(2)(a)(ii) and (iii), (b)(i), (c)(ii) and (iii), and (d)(ii), (iii) and (iv), extend to England and Wales, Scotland and Northern Ireland."
+  },
+  "UK_uksi_2022_1367/588f730520": {
+    "law": "UK_uksi_2022_1367",
+    "ref": "reg.1",
+    "sentence": "Regulation 4 applies in relation to Scotland only."
+  },
+  "UK_uksi_2022_1367/b781544d12": {
+    "law": "UK_uksi_2022_1367",
+    "ref": "reg.1",
+    "sentence": "Regulation 8 applies in relation to England and Scotland."
+  },
+  "UK_uksi_2022_1367/f11e68cf01": {
+    "law": "UK_uksi_2022_1367",
+    "ref": "reg.1",
+    "sentence": "Regulations 5 and 6 apply in relation to Wales only."
   },
   "UK_uksi_2022_293/550d56a436": {
     "law": "UK_uksi_2022_293",
@@ -6299,10 +6499,20 @@
     "ref": "reg.3",
     "sentence": "Regulations 4(a), 5(a) and 5(h) apply to England and Wales and Scotland and Northern Ireland."
   },
-  "UK_uksi_2022_547/16864811cc": {
-    "law": "UK_uksi_2022_547",
-    "ref": "reg.1",
-    "sentence": "These Regulations extend to England and Wales but apply in England only."
+  "UK_uksi_2023_1143/0296b261ec": {
+    "law": "UK_uksi_2023_1143",
+    "ref": "reg.4",
+    "sentence": "In that Schedule— a Part 1 lists subordinate legislation; b Part 2 lists retained direct EU legislation; c Part 3 lists retained direct EU legislation, which in accordance with regulation 3(3) is specified only insofar as it extends to Northern Ireland."
+  },
+  "UK_uksi_2023_1143/f68a6f3b04": {
+    "law": "UK_uksi_2023_1143",
+    "ref": "reg.3",
+    "sentence": "The specification by regulation 4 of an instrument listed in Parts 1 and 2 of Schedule 1 has the same extent as the instrument to which it relates."
+  },
+  "UK_uksi_2023_1286/77f3095a48": {
+    "law": "UK_uksi_2023_1286",
+    "ref": "reg.2",
+    "sentence": "Paragraphs 1, 2, 6 and 7 of Schedule 3 do not apply in relation to Wales."
   },
   "UK_uksi_2023_722/6431de17f0": {
     "law": "UK_uksi_2023_722",
@@ -6318,11 +6528,6 @@
     "law": "UK_uksi_2023_965",
     "ref": "reg.1",
     "sentence": "Regulation 3(2)(s) applies in England and Wales."
-  },
-  "UK_uksi_2024_1231/a87a640a0f": {
-    "law": "UK_uksi_2024_1231",
-    "ref": "reg.1",
-    "sentence": "These Regulations extend to Northern Ireland only."
   },
   "UK_uksi_2024_221/18abbd7bb1": {
     "law": "UK_uksi_2024_221",
@@ -6344,20 +6549,15 @@
     "ref": "reg.1",
     "sentence": "The amendments made by regulations 40, 41, 42, 44, 46 and 48 do not extend to Northern Ireland."
   },
-  "UK_uksi_2025_102/ec1362eb60": {
-    "law": "UK_uksi_2025_102",
-    "ref": "reg.1",
-    "sentence": "Regulations 39 and 40 apply to Wales only."
-  },
   "UK_uksi_2025_102/f58b2fad40": {
     "law": "UK_uksi_2025_102",
     "ref": "reg.1",
     "sentence": "Regulation 44 applies to Scotland only."
   },
-  "UK_uksi_2025_1244/a87a640a0f": {
-    "law": "UK_uksi_2025_1244",
-    "ref": "reg.1",
-    "sentence": "These Regulations extend to Northern Ireland only."
+  "UK_uksi_2025_154/392b16e43e": {
+    "law": "UK_uksi_2025_154",
+    "ref": "reg.2",
+    "sentence": "Part 2 extends to England and Wales."
   },
   "UK_uksi_2025_361/a289eba329": {
     "law": "UK_uksi_2025_361",
@@ -6369,10 +6569,20 @@
     "ref": "reg.2",
     "sentence": "The following provisions of these Regulations extend to England and Wales— a this Part and Parts 2 to 8; b Schedules 2 to 9, 11 and 12."
   },
-  "UK_uksi_2025_407/a87a640a0f": {
-    "law": "UK_uksi_2025_407",
+  "UK_uksi_2025_581/ad0beaf765": {
+    "law": "UK_uksi_2025_581",
     "ref": "reg.1",
-    "sentence": "These Regulations extend to Northern Ireland only."
+    "sentence": "Subject to paragraph (3), this Part, regulation 54 and Schedule 5 extend to England and Wales, Scotland and Northern Ireland."
+  },
+  "UK_uksi_2025_67/0455b07771": {
+    "law": "UK_uksi_2025_67",
+    "ref": "reg.2",
+    "sentence": "These Regulations extend to England and Wales and Northern Ireland."
+  },
+  "UK_uksi_2025_67/47d3c6529f": {
+    "law": "UK_uksi_2025_67",
+    "ref": "reg.2",
+    "sentence": "These Regulations apply only in England and Northern Ireland."
   },
   "UK_uksi_2025_82/98f57c8b59": {
     "law": "UK_uksi_2025_82",
@@ -6423,6 +6633,11 @@
     "law": "UK_uksi_2026_85",
     "ref": "reg.2",
     "sentence": "Regulation 4 extends to Scotland and Northern Ireland."
+  },
+  "UK_wsi_2010_1820/e6e51efb6e": {
+    "law": "UK_wsi_2010_1820",
+    "ref": "reg.1",
+    "sentence": "The title of these Regulations is the Environmental Civil Sanctions (Miscellaneous Amendments) (Wales) Regulations 2010; they apply in relation to Wales and come into force on 15 July 2010."
   },
   "UK_wsi_2013_747/b85b4b0467": {
     "law": "UK_wsi_2013_747",

@@ -70,6 +70,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lookup do
         do: Enum.reject(naming, &match?({k, _, _} when k in [:same, :unread], &1)),
         else: naming
 
+    naming = same_over_unread(naming, ref)
+
     # in a fixed order, whatever order they were stated or stored in: the
     # same extent, then the lists that set it, then those that widen, then
     # those that narrow (Police and Justice Act 2006 s.54: CV-S05 C)
@@ -105,6 +107,30 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lookup do
       {:not, place, _}, acc ->
         {:cont, Territory.subtract(acc, place)}
     end)
+  end
+
+  # a same list naming the provision as closely as an unread one is a
+  # statement read plainly of it, the unread its sentence's other words
+  # ("In this Part— (a) … so far as necessary, and (b) the amendments … in
+  # Schedules 11 and 12 have the same extent …": NERC Act 2006 s.108(7));
+  # an unread one naming it more closely keeps it withheld ("… section 37(6)
+  # extend …" beside Part 5's same extent: 2015 c.7 s.56(6))
+  defp same_over_unread(naming, ref) do
+    same = closest(naming, ref, :same)
+
+    if same != nil and same >= (closest(naming, ref, :unread) || 0),
+      do: Enum.reject(naming, &match?({:unread, _, _}, &1)),
+      else: naming
+  end
+
+  # how closely lists of `kind` name the provision: the longest item
+  # naming it or a provision holding it ("s.37(6)" over "s.37"); nil none
+  defp closest(naming, ref, kind) do
+    naming
+    |> Enum.filter(&match?({^kind, _, items} when items != ["*"], &1))
+    |> Enum.flat_map(fn {_, _, items} -> Enum.filter(items, &named?(ref, [&1])) end)
+    |> Enum.map(&byte_size/1)
+    |> Enum.max(fn -> nil end)
   end
 
   @doc """
@@ -253,16 +279,29 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lookup do
         do: {law, ref}
   end
 
-  # (a parent with lists but no default may leave a statement on the
-  # provision unread: that withholds it, never the stated extent)
-  defp powers_of(%Extent{default: nil, lists: []} = e, law, ref, stated) do
+  # a parent with no default naming the provision in none of its lists
+  # states nothing of it: the stated extent, as for an Act stating none
+  # (Decision 2, Environmental Protection: Extent reader, 2026-11-09: the
+  # Government of Wales Act 2006 s.150); a statement on it left unread, or
+  # one over the whole Act, withholds it, never the stated extent
+  defp powers_of(%Extent{default: nil} = e, law, ref, stated) do
     case of(powers_extent(e), ref) do
-      nil -> Map.get(stated, {law, ref})
+      nil -> if silent_on?(e, ref), do: Map.get(stated, {law, ref})
       read -> read
     end
   end
 
   defp powers_of(e, _law, ref, _stated), do: of(powers_extent(e), ref)
+
+  defp silent_on?(%Extent{lists: lists} = e, ref) do
+    candidates = [ref | containers(ref)] ++ introducing(e, ref)
+
+    not Enum.any?(lists, fn
+      {:unread, _, ["*"]} -> true
+      {_kind, _place, ["*"]} -> false
+      {_kind, _place, items} -> Enum.any?(candidates, &named?(&1, items))
+    end)
+  end
 
   # a parent Act's extent at its enabling sections: what "every amendment
   # the law makes" follows (a `*` same or unread list) is no enabling

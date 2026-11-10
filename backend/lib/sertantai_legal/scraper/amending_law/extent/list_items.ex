@@ -20,8 +20,17 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
     Units
   }
 
-  @typedoc "An item list read: the provisions named, excepted and withheld."
-  @type reading :: %{refs: [String.t()], excepted: [String.t()], unread: [String.t()]}
+  @typedoc """
+  An item list read: the provisions named, excepted and withheld; of those
+  withheld, the ones holding an excepted subdivision (`holding`), which a
+  list with a place reads (Decision 3, 2026-11-09).
+  """
+  @type reading :: %{
+          refs: [String.t()],
+          excepted: [String.t()],
+          unread: [String.t()],
+          holding: [String.t()]
+        }
 
   # a qualified aside: with the number it qualifies ("370 (so far as
   # relating to section 374)"), or alone where it adds one ("Schedule 2
@@ -82,7 +91,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
       refs: refs,
       excepted: readings |> Enum.flat_map(& &1.excepted) |> Enum.uniq(),
       unread:
-        (qualified ++ Enum.flat_map(readings, & &1.unread)) |> Enum.uniq() |> Kernel.--(refs)
+        (qualified ++ Enum.flat_map(readings, & &1.unread)) |> Enum.uniq() |> Kernel.--(refs),
+      holding:
+        readings |> Enum.flat_map(&Map.get(&1, :holding, [])) |> Enum.uniq() |> Kernel.--(refs)
     }
   end
 
@@ -246,7 +257,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ListItems do
   # is excepted withheld
   defp split_excepted(%{refs: refs, unread: unread}, excepted) do
     {held, partly} = ItemExceptions.apart(refs, excepted)
-    %{refs: held, excepted: excepted, unread: unread ++ partly}
+    %{refs: held, excepted: excepted, unread: unread ++ partly, holding: partly}
   end
 
   # an item read plainly, piece by piece: never a description of some of

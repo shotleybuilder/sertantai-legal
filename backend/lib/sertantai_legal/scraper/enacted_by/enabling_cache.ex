@@ -157,7 +157,8 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingCache do
   def made_path(type, year, number), do: "/#{type}/#{year}/#{number}/introduction/made/data.xml"
 
   # the Acts the powers clause names in plain words, by register title
-  # (title_en holds no year: "European Communities Act" + year)
+  # (title_en holds no year: "European Communities Act" + year; some hold
+  # it already, "Public Bodies Act 2011": SI 2013/755, 2026-11-09)
   defp titles(text) do
     case EnablingProvisions.titles(text) do
       [] ->
@@ -167,8 +168,11 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingCache do
         %{rows: rows} =
           SertantaiLegal.Repo.query!(
             """
-            SELECT lower(title_en || ' ' || year), name FROM uk_lrt
-            WHERE lower(title_en || ' ' || year) = ANY($1)
+            SELECT t, name FROM (
+              SELECT CASE WHEN title_en ~ (' ' || year || '$') THEN lower(title_en)
+                          ELSE lower(title_en || ' ' || year) END AS t, name, type_code
+              FROM uk_lrt) r
+            WHERE t = ANY($1)
               AND type_code IN ('ukpga', 'asp', 'anaw', 'asc', 'nia', 'apni', 'nisi')
             """,
             [wanted]

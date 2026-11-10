@@ -115,22 +115,26 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lists do
               do: item
 
         # (an item with its own exception, "section 153 except subsection
-        # (1)(k) and (m)": read as a list item, the provision holding the
-        # exception withheld; ukpga 1990/43 s.164, CV-S05 census run-05 R3)
+        # (1)(k) and (m)": read as a list item, ukpga 1990/43 s.164, CV-S05
+        # census run-05 R3; the provision holding the exception read, the
+        # excepted keeping the default: Decision 3, 2026-11-09)
         {own_except, plain} = Enum.split_with(items, &(&1 =~ ~r/\bexcept\b/iu))
         r = ListItems.read(Enum.join(own_except, "; "), clause_ref, doc)
+        place = Places.places(m["places"])
 
         refs =
           for(
             item <- plain,
             ref <- RefList.parse(item, clause_ref) ++ Parts.parts(item, doc, clause_ref),
             do: ref
-          ) ++ r.refs
+          ) ++ r.refs ++ r.holding
 
         refs = if m["self"] != "", do: [clause_ref | refs], else: refs
+        unread = r.unread -- r.holding
 
-        if(refs == [], do: [], else: [{:also, Places.places(m["places"]), Enum.uniq(refs)}]) ++
-          if(r.unread != [], do: [{:unread, nil, r.unread}], else: [])
+        if(refs == [], do: [], else: [{:also, place, Enum.uniq(refs)}]) ++
+          if(r.excepted != [], do: [{:except, place, r.excepted}], else: []) ++
+          if(unread != [], do: [{:unread, nil, unread}], else: [])
     end
   end
 
@@ -207,35 +211,49 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lists do
     |> Enum.chunk_every(2, 1, :discard)
     |> Enum.flat_map(fn [head, body] ->
       case Regex.run(Forms.heading(), head) do
-        nil ->
-          []
-
-        match ->
-          {body, sub_excepted} = item_exceptions(own_list(cut(body)), clause_ref, doc)
-          r = ListItems.read(body, clause_ref, doc)
-          excepted = Enum.uniq(sub_excepted ++ r.excepted)
-
-          self =
-            if head =~ ~r/^\s*This\s+\w+\s*,?\s+and\b|\(together\s+with\s+this\s+section\)/iu,
-              do: [clause_ref],
-              else: []
-
-          # (an excepted provision is never also in the list: "this Part,
-          # except— i sections 82 and 83 …", ukpga 2000/19 s.87, round 11;
-          # one only some of which is excepted is withheld)
-          {refs, partly} =
-            (self ++ r.refs)
-            |> Enum.reject(&(ItemExceptions.touched?(&1, excepted) == :excepted))
-            |> Enum.split_with(&(ItemExceptions.touched?(&1, excepted) == false))
-
-          unread = Enum.uniq(r.unread ++ partly)
-
-          if(refs == [], do: [], else: [{kind(match), place(match), refs}]) ++
-            if(excepted != [] and refs != [], do: [{:except, place(match), excepted}], else: []) ++
-            if(unread != [], do: [{:unread, nil, unread}], else: [])
+        nil -> []
+        match -> headed_list(head, body, match, clause_ref, doc)
       end
     end)
   end
+
+  defp headed_list(head, body, match, clause_ref, doc) do
+    {body, sub_excepted} = item_exceptions(own_list(cut(body)), clause_ref, doc)
+    r = ListItems.read(body, clause_ref, doc)
+    excepted = Enum.uniq(sub_excepted ++ r.excepted)
+
+    self =
+      if head =~ ~r/^\s*This\s+\w+\s*,?\s+and\b|\(together\s+with\s+this\s+section\)/iu,
+        do: [clause_ref],
+        else: []
+
+    # (an excepted provision is never also in the list: "this Part,
+    # except— i sections 82 and 83 …", ukpga 2000/19 s.87, round 11; one
+    # only some of which is excepted is withheld, but read in a list that
+    # widens, its excepted narrowed back to the default: Decision 3,
+    # 2026-11-09 — a list setting or narrowing the extent would carry them
+    # with their provision)
+    holding = if kind(match) == :also, do: r.holding, else: []
+
+    {refs, partly} =
+      (self ++ r.refs ++ holding)
+      |> Enum.reject(&(ItemExceptions.touched?(&1, excepted) == :excepted))
+      |> Enum.split_with(&(&1 in holding or ItemExceptions.touched?(&1, excepted) == false))
+
+    unread = Enum.uniq((r.unread -- holding) ++ partly)
+
+    entries(refs, {kind(match), place(match)}, excepted, unread)
+  end
+
+  defp entries([], _list, _excepted, unread), do: unread_entry(unread)
+
+  defp entries(refs, {kind, place}, excepted, unread),
+    do:
+      [{kind, place, refs}] ++
+        if(excepted != [], do: [{:except, place, excepted}], else: []) ++ unread_entry(unread)
+
+  defp unread_entry([]), do: []
+  defp unread_entry(unread), do: [{:unread, nil, unread}]
 
   # (no "also" or "only": widens a default, else decides — `:named`,
   # "The following provisions of these Regulations extend to England and
@@ -255,12 +273,24 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lists do
   # a list inside an enumerated item ("In this Act— … b the following
   # provisions extend to Northern Ireland namely— sections 38 to 40, …;c
   # section 31 …"): a body not starting with its own labels ends at the
-  # parent's next one (1977/45 s.65(10): CV-S05 N3)
+  # parent's next one (1977/45 s.65(10): CV-S05 N3); a body of roman items
+  # ends at the parent's next letter ("c the following provisions extend
+  # to England and Wales— i section 60 …; ii …; d section 71 …":
+  # Environment Act 2021 s.146(3))
   defp own_list(body) do
-    if body =~ ~r/^\s*[—–:]?\s*\(?z?[a-z]\d{0,2}\)?\s/u,
-      do: body,
-      else: body |> String.split(~r/;\s*(?:and\s+)?\(?[a-z]\)?\s+(?=[A-Za-z])/u, parts: 2) |> hd()
+    cond do
+      body =~ ~r/^\s*[—–:]?\s*\(?i\)?\s/u ->
+        up_to(body, ~r/;\s*(?:and\s+)?\(?[a-hj-uw-z]\)?\s+(?=[A-Za-z])/u)
+
+      body =~ ~r/^\s*[—–:]?\s*\(?z?[a-z]\d{0,2}\)?\s/u ->
+        body
+
+      true ->
+        up_to(body, ~r/;\s*(?:and\s+)?\(?[a-z]\)?\s+(?=[A-Za-z])/u)
+    end
   end
+
+  defp up_to(body, label), do: body |> String.split(label, parts: 2) |> hd()
 
   @doc "A list heading's place, from its match; nil for \"the same extent\"."
   @spec place([String.t()]) :: String.t() | nil

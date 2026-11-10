@@ -71,6 +71,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.CheckTest do
       assert Check.change_row(%{@c | affecting: []}, %{"X" => row}).outcome ==
                "none:unread_statement"
     end
+
+    test "with no amending provision known, a law whose every amendment follows its enactment gives same (WSI 2013/755)" do
+      e = %Extent{lists: [{:same, nil, ["*"]}]}
+      row = %{basis: "lists", extent: e, law: "UK_wsi_2013_755"}
+      assert Check.change_row(%{@c | affecting: []}, %{"X" => row}).outcome == "none:same"
+    end
   end
 
   test "tallies/2 counts bases, faults and the text changes' outcomes" do

@@ -70,6 +70,43 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.LookupTest do
     assert Lookup.from_powers(two, eca, stated) == nil
   end
 
+  test "a parent with lists and no default naming the provision nowhere: its stated extent (Environmental Protection, Decision 2, 2026-11-09)" do
+    # the Government of Wales Act 2006: lists only, none naming s.150
+    gowa = %{
+      "UK_ukpga_2006_32" => %Extent{
+        lists: [{:same, nil, ["*"]}, {:unread, nil, ["s.36(7)", "s.39"]}]
+      }
+    }
+
+    stated = %{{"UK_ukpga_2006_32", "s.150"} => "E+W"}
+    powers = [%{"law" => "UK_ukpga_2006_32", "sections" => ["150"]}]
+    assert Lookup.from_powers(powers, gowa, stated) == "E+W"
+
+    # a list naming it decides (the Finance Act 2001: sch.5 para.15 only NI)
+    fa = %{"UK_ukpga_2001_9" => %Extent{lists: [{:only, "NI", ["s.24"]}]}}
+    s24 = [%{"law" => "UK_ukpga_2001_9", "sections" => ["24"]}]
+    assert Lookup.from_powers(s24, fa, %{{"UK_ukpga_2001_9", "s.24"} => "UK"}) == "NI"
+
+    # an unread statement over the whole Act withholds (Finance Act 1973 s.59(5))
+    fa73 = %{"UK_ukpga_1973_51" => %Extent{lists: [{:unread, nil, ["*"]}]}}
+    s56 = [%{"law" => "UK_ukpga_1973_51", "sections" => ["56"]}]
+    assert Lookup.from_powers(s56, fa73, %{{"UK_ukpga_1973_51", "s.56"} => "E+W+S+NI"}) == nil
+  end
+
+  test "a same list naming the provision outranks a whole sentence's unread naming it too (NERC Act 2006 s.108(7): its (a) qualified, its (b) read)" do
+    e = %Extent{
+      default: "E+W",
+      lists: [
+        {:same, nil, ["sch.11", "sch.12"]},
+        {:unread, nil, ["s.105", "s.108", "sch.11", "sch.12"]}
+      ]
+    }
+
+    assert Lookup.of(e, "sch.12") == :same
+    assert Lookup.of(e, "sch.11.para.140") == :same
+    assert Lookup.of(e, "s.105") == nil
+  end
+
   test "an Act stating no clause: its whole-Act stated extent, after powers, before competence (Decision 3)" do
     assert Lookup.of(%Extent{stated: "E+W+S+NI"}, "s.3") == "E+W+S+NI"
     assert Lookup.of(%Extent{powers: "E+W", stated: "E+W+S+NI"}, "s.3") == "E+W"
