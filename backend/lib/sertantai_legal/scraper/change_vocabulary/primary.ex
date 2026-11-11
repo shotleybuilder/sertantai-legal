@@ -49,6 +49,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Primary do
 
     title = title(law)
 
+    # each affecting law's made (an SI) or passed (an Act) day: the feed's
+    # placeholder date for a stage "in accordance with" its clause (Decision
+    # 4, Environmental Protection: Evidence)
+    made = made(Enum.map(effects, & &1.affecting))
+
     # each affecting law's own extent clause (Act or SI): read into `extent_rules`,
     # else from its CLML held (named: `mix lat.amending --extents`)
     acts =
@@ -134,6 +139,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Primary do
       effect_uris: SertantaiLegal.Scraper.ChangeVocabulary.FeedUris.from_pages(pages),
       effect_savings: SertantaiLegal.Scraper.ChangeVocabulary.FeedSavings.from_pages(pages),
       continuations: continuations,
+      made: made,
       own_commencement: own,
       own_context: own_context,
       title: title
@@ -211,6 +217,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Primary do
          ) do
       %{rows: [[t, g]]} -> SertantaiLegal.Scraper.LawTerritory.extent(t, g)
       _ -> nil
+    end
+  end
+
+  defp made(laws) do
+    case laws |> Enum.reject(&is_nil/1) |> Enum.uniq() do
+      [] ->
+        %{}
+
+      names ->
+        Repo.query!(
+          "SELECT name, coalesce(md_made_date, md_enactment_date) FROM legal_register WHERE name = ANY($1)",
+          [names]
+        ).rows
+        |> Enum.reject(fn [_, d] -> is_nil(d) end)
+        |> Map.new(fn [n, d] -> {n, d} end)
     end
   end
 end

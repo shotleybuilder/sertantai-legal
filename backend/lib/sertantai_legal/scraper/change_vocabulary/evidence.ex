@@ -116,7 +116,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
       # an insertion by a devolved legislature's Act: its competence
       {:law, :competence, :insertion}
     ],
-    date: [{:commencement, :date}, {:law_text, :date}, {:feed, :date_first}, {:feed, :date}],
+    # the feed's date, never on its law's own made day where the stage is
+    # "in accordance with" that law's clause: a placeholder (Decision 4,
+    # Environmental Protection: Evidence; `Readers.AffectingMade`)
+    date: [
+      {:commencement, :date},
+      {:law_text, :date},
+      {:feed, :date_first, :not_made_day},
+      {:feed, :date, :not_made_day}
+    ],
     # a commencement stage that doesn't complete the provision — the
     # date's own source's (`with_date/2`)
     partial: [{:commencement, :partial}, {:feed, :partial}],
@@ -250,6 +258,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
   - `:non_empty` — the list claim has an item
   - `:insertion` — the change inserts text
   - `:narrower_than_provision` — the territory doesn't cover the provision's extent
+  - `:not_made_day` — not the affecting law's made day claimed for a
+    stage "in accordance with" its clause (`{:law, :made, date}`)
   - `:retained_removal_narrower` — the change removes text that is
     retained (the markup's RetainText; with no Repeal markup, the provision
     still showing its words: `shows_text`), and the territory is narrower
@@ -263,6 +273,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
     do:
       (Change.value(c, :law_text, :operation) || Change.value(c, :markup, :operation) ||
          Change.value(c, :feed, :operation)) == :inserted
+
+  def condition?(:not_made_day, date, %{change: c}), do: date != Change.value(c, :law, :made)
 
   def condition?(:narrower_than_provision, territory, %{extent: extent}),
     do: not Territory.covers?(territory, extent)

@@ -26,6 +26,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Ref}
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.{
+    AffectingMade,
     AmenderStart,
     AmendingLaw,
     Expiry,
@@ -186,6 +187,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
       # day that law came into force (Jason 2026-11-01, CV-06)
       |> Enum.map(fn c ->
         %{c | claims: c.claims ++ AmenderStart.claims(c, Keyword.get(opts, :commencement, %{}))}
+      end)
+      # the affecting law's made day where the feed's stage is "in
+      # accordance with" its clause: never a date (Decision 4, 2026-11-11)
+      |> Enum.map(fn c ->
+        %{c | claims: c.claims ++ AffectingMade.claims(c, Keyword.get(opts, :made, %{}))}
       end)
       |> Enum.map(
         &Evidence.resolve(&1, extent(provisions, &1.target), Map.get(facts, &1.target, %{}))
