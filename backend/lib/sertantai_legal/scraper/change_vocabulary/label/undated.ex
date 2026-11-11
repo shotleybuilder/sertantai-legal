@@ -41,6 +41,52 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Undated do
   end
 
   @doc """
+  `changes` with each undated whole repeal by a law made after `start`
+  dated: at that law's first dated record on its target or anything
+  holding it, else its making (`made_of`) — never from a start before the
+  repealer existed (Environmental Protection: Label fold, Decision 7: EPA
+  ss.30–50, s.143, repealed by EA 1995 Sch.24 with no source dating it).
+  The date is the fold's, a lower bound: tiered derived.
+  """
+  # only where its text no longer shows, as an undated repeal at the start
+  # (`repeals/3`): a row still showing its text was never repealed by it
+  @spec date_late_repeals([Change.t()], map()) :: [Change.t()]
+  def date_late_repeals(changes, %{start: start} = provision) do
+    made_of = Map.get(provision, :made_of, %{})
+
+    if map_size(made_of) > 0 and not Map.get(provision, :shows_text, true),
+      do: Enum.map(changes, &date_late_repeal(&1, changes, start, made_of)),
+      else: changes
+  end
+
+  defp date_late_repeal(
+         %Change{resolved: %{date: nil, operation: :repealed, level: :provision, by: by}} = c,
+         changes,
+         start,
+         made_of
+       )
+       when is_binary(by) do
+    with %Date{} = made <- Map.get(made_of, by),
+         :gt <- Date.compare(made, start),
+         %Date{} = d <- first_record(by, c.target, changes) || made do
+      %{c | resolved: %{c.resolved | date: d, tiers: Map.put(c.resolved.tiers, :date, :derived)}}
+    else
+      _ -> c
+    end
+  end
+
+  defp date_late_repeal(c, _changes, _start, _made_of), do: c
+
+  defp first_record(by, target, changes) do
+    held = [target, "*" | SertantaiLegal.Scraper.LatRef.ancestors(target)]
+
+    changes
+    |> Enum.filter(&(&1.resolved.by == by and &1.resolved.date != nil and &1.target in held))
+    |> Enum.map(& &1.resolved.date)
+    |> Enum.min(Date, fn -> nil end)
+  end
+
+  @doc """
   Undated whole-provision repeals of it or an ancestor, where its text no
   longer shows — never one the feed holds prospective and unapplied: it
   repealed nothing yet (Ports Act 1991 s.29, a heading row, by the Local

@@ -61,6 +61,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelRulesTest do
              []
   end
 
+  test "a later insertion for another version is no breach where its own insertion began it (EPA s.33(10)(a)[S])" do
+    own = change(:inserted, ~D[2005-01-21], by: "UK_ssi_2005_22")
+    other = change(:inserted, ~D[2006-05-15], by: "UK_uksi_2006_937")
+
+    assert rules([p(~D[2005-01-21], :in_force, territory: "S")], [own, other]) == []
+  end
+
   test "an insertion only legacy markup claims is listed apart, not a breach (HSWA s.30 by EPA 1975)" do
     legacy = change(:inserted, ~D[1975-11-12], key: "d29p3170", sources: %{operation: :markup})
     assert rules([p(~D[1974-07-31], :in_force)], [legacy]) == [:legacy_unconfirmed]

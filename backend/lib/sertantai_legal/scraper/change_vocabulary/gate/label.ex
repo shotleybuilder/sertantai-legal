@@ -17,7 +17,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Gate.Label do
     whole insertion later than every dated whole insertion of the row or
     its section (the agent pass: a feed range's "(Pt. 6)" locator placed
     as the Part's insertion, MSA 1995 s.130B(4)): `"start: a container's
-    insertion after its own"`.
+    insertion after its own"`;
+  - the agent pass's classes from Environmental Protection (2026-11-11): an
+    own commencement before the law's general start left prospective
+    (`"start: an own commencement before the law's start dropped"`), and an
+    ancestor insertion's narrower territory lost under the row's own
+    territory-less insertion (`"territory: an ancestor insertion's
+    territory lost"`).
 
   Rows are `LabelSource.rows/1`'s, checked on their periods as compliance
   gets them (`LabelPeriods.periods/4`); the rows named known limits
@@ -58,8 +64,82 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Gate.Label do
           do: {to_string(rule), why}
 
     table = for {_sid, why} <- LabelPeriods.violations(timeline), do: {"table: #{why}", "#{why}"}
-    rules ++ table ++ tiered(r.periods) ++ container_start(timeline, r)
+
+    rules ++
+      table ++
+      tiered(r.periods) ++
+      container_start(timeline, r) ++ early_own(r) ++ ancestor_territory(timeline, r)
   end
+
+  # the agent pass, Environmental Protection: Label fold (2026-11-11): the
+  # law's own clause commences the row before the law's general start, after
+  # its making, while the fold has it prospective then (WSI 2026/103 Part 7)
+  defp early_own(%{start: %Date{} = start, sid: sid} = r) do
+    law = sid |> String.split(":") |> hd()
+
+    early =
+      for c <- r.reaching,
+          c.resolved.operation == :commenced and
+            String.starts_with?(c.key, law <> ":commencement:"),
+          c.resolved.date != nil and Date.compare(c.resolved.date, start) == :lt,
+          not before_made?(c.resolved.date, Map.get(r, :made)),
+          do: c.resolved.date
+
+    case early do
+      [] ->
+        []
+
+      dates ->
+        day = Enum.min(dates, Date)
+
+        if Enum.any?(r.periods, &(&1.status == :prospective and spans?(&1, day))),
+          do: [
+            {"start: an own commencement before the law's start dropped",
+             "own clause #{day}, law start #{start}"}
+          ],
+          else: []
+    end
+  end
+
+  defp early_own(_r), do: []
+
+  defp before_made?(_date, nil), do: false
+  defp before_made?(date, made), do: Date.compare(date, made) == :lt
+
+  defp spans?(p, day),
+    do:
+      Date.compare(p.valid_from, day) != :gt and
+        (p.valid_to == nil or Date.compare(p.valid_to, day) == :gt)
+
+  # the agent pass (2026-11-11): the row's nearest whole insertion names no
+  # territory, an ancestor's names a narrower one, and the row begins wider
+  # (C14: SI 1999/2228 reg.3B(10)(b), reg.3B inserted for England only)
+  defp ancestor_territory([first | _], r) do
+    insertions =
+      Enum.filter(r.reaching, &(whole_insertion?(&1) and &1.target != "*"))
+      |> Enum.sort_by(&(-length(SertantaiLegal.Scraper.LatRef.ancestors(&1.target))))
+
+    with [%{resolved: %{territory: nil}} = own | above] <- insertions,
+         [t | _] <-
+           for(
+             c <- above,
+             c.target != own.target and is_binary(c.resolved.territory),
+             Date.compare(c.resolved.date, first.valid_from) != :gt,
+             do: c.resolved.territory
+           ),
+         true <-
+           is_binary(first.territory) and
+             not SertantaiLegal.Scraper.Territory.covers?(t, first.territory) do
+      [
+        {"territory: an ancestor insertion's territory lost",
+         "#{first.territory}, inserted for #{t}"}
+      ]
+    else
+      _ -> []
+    end
+  end
+
+  defp ancestor_territory([], _r), do: []
 
   defp container_start([], _r), do: []
 

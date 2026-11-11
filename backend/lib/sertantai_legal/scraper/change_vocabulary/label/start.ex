@@ -40,14 +40,104 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Start do
   once it and everything holding it exist (CV-S09 round 3: HSWA
   s.51A(2E)(b), inserted 2005 inside the s.51A of 1998).
   """
+  # a container's insertion (a Part or Chapter heading, its changes on
+  # "*") later than the row's own dated record never moves it: the row was
+  # there before the heading (Decision 5: EA 1995 s.11 in Pt I Ch 1A,
+  # inserted by WSI 2013/755)
   @spec start(Date.t(), [Change.t()]) :: Date.t()
   def start(start, reaching) do
+    own =
+      for c <- reaching,
+          c.target != "*",
+          c.resolved.operation in [:commenced, :inserted],
+          do: c.resolved.date
+
     reaching
     |> Enum.filter(
-      &(insertion?(&1) and Date.compare(&1.resolved.date, start) == :gt and not legacy_only?(&1))
+      &(insertion?(&1) and Date.compare(&1.resolved.date, start) == :gt and not legacy_only?(&1) and
+          not container_after_own?(&1, own))
     )
     |> Enum.map(& &1.resolved.date)
     |> Enum.max(Date, fn -> start end)
+  end
+
+  defp container_after_own?(%Change{target: "*"} = c, own),
+    do: Enum.any?(own, &(Date.compare(&1, c.resolved.date) == :lt))
+
+  defp container_after_own?(_c, _own), do: false
+
+  @doc """
+  `provision` begun at its own law's clause commencing it (or anything
+  holding it) before the law's general start, once the law is made (the
+  agent pass, Environmental Protection: Label fold: WSI 2026/103 Part 7 the
+  day after making, its general start 2027-10-01; SSI 2025/165 reg.1(3)).
+  """
+  @spec early_own(map(), [Change.t()]) :: map()
+  def early_own(%{law: law, start: %Date{} = start} = provision, reaching) when is_binary(law) do
+    made = Map.get(provision, :made)
+
+    early =
+      for c <- reaching,
+          c.resolved.operation == :commenced and
+            String.starts_with?(c.key, law <> ":commencement:"),
+          Date.compare(c.resolved.date, start) == :lt,
+          made == nil or Date.compare(c.resolved.date, made) != :lt,
+          do: c.resolved.date
+
+    # only where its start is its law's: a row's own later start (inserted
+    # 1999 into the Forestry Act 1967, golden) is never moved back
+    if early != [] and Map.get(provision, :start_dated, true) and
+         Map.get(provision, :start_from_law, false),
+       do: %{provision | start: Enum.min(early, Date)},
+       else: provision
+  end
+
+  def early_own(provision, _reaching), do: provision
+
+  @doc """
+  The day a provision another law inserted, no source dating it, begins:
+  that law's first dated record reaching it (the feed's records of EPA
+  Part IIA by EA 1995, from 1996-02-01), else that law's making
+  (`provision.made_of`), never before `born` (Environmental Protection:
+  Label fold, Decision 1).
+  """
+  @spec inserter_born(Date.t(), Change.t(), String.t(), [Change.t()], map()) :: Date.t()
+  def inserter_born(born, %Change{resolved: %{by: by}}, id, changes, provision) do
+    # on it or anything holding it: a record there shows its text existed
+    held = [id, "*" | SertantaiLegal.Scraper.LatRef.ancestors(id)]
+
+    dated =
+      for c <- changes,
+          c.resolved.by == by and c.resolved.date != nil and c.target in held,
+          do: c.resolved.date
+
+    case Enum.min(dated, Date, fn -> provision |> Map.get(:made_of, %{}) |> Map.get(by) end) do
+      %Date{} = d -> Enum.max([born, d], Date)
+      nil -> born
+    end
+  end
+
+  @doc """
+  A territorial version with no insertion of its own begins no earlier than
+  its sibling's dated insertion of the same number, the day it began in
+  that version unknown (`:start_undated`; Decision 4: EPA s.106(4A)[E+W],
+  inserted in the S text by SSI 2002/541).
+  """
+  @spec sibling_born(String.t(), Date.t(), [Change.t()], [Change.t()], map()) :: {Date.t(), map()}
+  def sibling_born(id, born, reaching, changes, provision) do
+    base = String.replace(id, ~r/\[[^\]]+\]$/, "")
+    # its number or one holding it (s.106(4B)(a), inserted as s.106(4B))
+    held = SertantaiLegal.Scraper.LatRef.ancestors(base)
+
+    sibling =
+      for c <- changes,
+          Map.get(provision, :version) != nil and c.target in held and insertion?(c),
+          c.resolved.date != nil and Date.compare(c.resolved.date, born) == :gt,
+          do: c.resolved.date
+
+    if sibling == [] or Enum.any?(reaching, &(insertion?(&1) and &1.target in held)),
+      do: {born, provision},
+      else: {Enum.min(sibling, Date), Map.put(provision, :start_undated, true)}
   end
 
   @doc """
@@ -57,57 +147,111 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Start do
   @spec period(String.t(), map(), [Change.t()], [Change.t()]) :: map()
   def period(id, %{start: start} = provision, changes, reaching) do
     self = Map.get(provision, :law)
+    f = start_facts(reaching, start)
+    status = status(provision, f, self, start)
+    made = makers(id, provision, changes, reaching, start)
+    text_by = Facts.by(made.all, self)
+
+    # an undated whole repeal with its text gone: repealed from a start no
+    # source dates (CV-S09 round 3: CLP Art 25(5), deleted by Regulation
+    # (EU) 286/2011, the feed undated); repealed for one territory, in
+    # force where it remains (C1)
+    gone = Undated.repeals(id, changes, provision)
+
+    # an undated maker leaves the start's own date unknown when the start
+    # is only its law's (C10), never the law's commencement
+    in_force? =
+      status == :in_force and start_known?(provision, made.undated) and
+        not by_order_undated?(provision, f)
+
+    period =
+      %{
+        valid_from: start,
+        valid_to: nil,
+        status: status,
+        in_force_from: if(in_force?, do: start),
+        territory: territory(provision, f.own_insertion, f.territorial, changes, id),
+        tiers:
+          tiers(
+            provision,
+            f.own_insertion || Undated.insertion(id, changes, self),
+            f.start_day,
+            made.all,
+            f.territorial
+          ),
+        _text_by: text_by,
+        _text_from: made.all
+      }
+      |> Map.merge(credits(status, text_by, f.start_day ++ made.all, self))
+
+    period |> Undated.repealed_at_start(gone, self) |> empty_untiered()
+  end
+
+  # what reaches it on and after the start
+  defp start_facts(reaching, start) do
     later? = &(Date.compare(&1.resolved.date, start) == :gt)
     on_start? = &(Date.compare(&1.resolved.date, start) == :eq)
-
     own_insertion = Enum.find(reaching, &(insertion?(&1) and on_start?.(&1)))
-    started? = Enum.any?(reaching, &(insertion?(&1) and not later?.(&1)))
     commenced = Enum.filter(reaching, &(&1.resolved.operation == :commenced))
     start_day = Enum.filter(commenced, on_start?)
-    later_commencement? = Enum.any?(commenced, later?)
-    territorial = Enum.filter([own_insertion | start_day], &(&1 && Facts.territory_only(&1)))
 
-    status =
-      cond do
-        markup_prospective?(provision, own_insertion, start_day) ->
-          :prospective
+    %{
+      own_insertion: own_insertion,
+      started?: Enum.any?(reaching, &(insertion?(&1) and not later?.(&1))),
+      commenced: commenced,
+      start_day: start_day,
+      later_commencement?: Enum.any?(commenced, later?),
+      territorial: Enum.filter([own_insertion | start_day], &(&1 && Facts.territory_only(&1)))
+    }
+  end
 
-        # inserted into a provision its own law has not yet brought into
-        # force: prospective until that law commences it (Jason 2026-10-30,
-        # CV-S09 round 9: 2007/19 s.7(3)(aa), inserted 2008-04-01 into s.7,
-        # in force 2008-04-06)
-        own_insertion != nil and host_prospective?(commenced, self, start) ->
-          :prospective
+  defp status(provision, f, self, start) do
+    cond do
+      markup_prospective?(provision, f.own_insertion, f.start_day) -> :prospective
+      f.own_insertion != nil -> insertion_status(f, self, start)
+      f.territorial != [] -> :in_force
+      true -> commencement_status(f)
+    end
+  end
 
-        own_insertion != nil ->
-          if Facts.full?(own_insertion), do: :in_force, else: :in_force_partial
+  # inserted into a provision its own law has not yet brought into force:
+  # prospective until that law commences it (Jason 2026-10-30, CV-S09 round
+  # 9: 2007/19 s.7(3)(aa), inserted 2008-04-01 into s.7, in force 2008-04-06)
+  defp insertion_status(f, self, start) do
+    cond do
+      host_prospective?(f.commenced, self, start) -> :prospective
+      Facts.full?(f.own_insertion) -> :in_force
+      true -> :in_force_partial
+    end
+  end
 
-        territorial != [] ->
-          :in_force
+  defp commencement_status(%{start_day: []} = f),
+    do: if(not f.started? and f.later_commencement?, do: :prospective, else: :in_force)
 
-        Enum.any?(start_day, &Facts.full?/1) and not later_commencement? ->
-          :in_force
+  defp commencement_status(%{later_commencement?: false} = f),
+    do: if(Enum.any?(f.start_day, &Facts.full?/1), do: :in_force, else: :in_force_partial)
 
-        start_day != [] and not later_commencement? ->
-          :in_force_partial
+  # full on the start day, then commenced again later: prospective unless
+  # an insertion started it
+  defp commencement_status(f) do
+    cond do
+      Enum.any?(f.start_day, &(not Facts.full?(&1))) -> :in_force_partial
+      f.started? -> :in_force
+      true -> :prospective
+    end
+  end
 
-        Enum.any?(start_day, &(not Facts.full?(&1))) ->
-          :in_force_partial
-
-        not started? and later_commencement? ->
-          :prospective
-
-        true ->
-          :in_force
-      end
-
-    # the text in force at the start: the original, or the law that
-    # inserted or substituted it that day (D1). A whole insertion no source
-    # dates made it too — its own (Forestry Act 1967 s.1(4)(a), SI 1999/1747)
-    # or its ancestor's (HSWA s.25A(1), CPA 1987: CV-S09 round 2) — and an
-    # undated substitution of it after that insertion made its text since
-    # (CLP Art 25(7): inserted by Regulation 2017/542, replaced by 2020/11)
-    undated = Undated.makers(id, changes)
+  # the text in force at the start: the original, or the law that inserted
+  # or substituted it that day (D1). A whole insertion no source dates made
+  # it too — its own (Forestry Act 1967 s.1(4)(a), SI 1999/1747) or its
+  # ancestor's (HSWA s.25A(1), CPA 1987: CV-S09 round 2) — and an undated
+  # substitution of it after that insertion made its text since (CLP Art
+  # 25(7): inserted by Regulation 2017/542, replaced by 2020/11) … never one
+  # by a law made after the start: it dates nothing (EPA s.126, substituted
+  # by 1999 c.28 with no source dating it)
+  defp makers(id, provision, changes, reaching, start) do
+    on_start? = &(Date.compare(&1.resolved.date, start) == :eq)
+    undated = id |> Undated.makers(changes) |> Enum.reject(&made_after?(&1, provision, start))
 
     # on a start no source dates (C10), an undated change in its words made
     # its text too (Jason 2026-10-30: REACH Art 118(2)(c), CLP's "mixture")
@@ -123,50 +267,34 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Start do
         undated
 
     # an amendment to the amending law before it took effect made it too (C5)
-    made =
-      if made == [],
-        do: [],
-        else: made ++ Enum.filter(reaching, &(on_start?.(&1) and Facts.earlier_amendment?(&1)))
+    earlier = Enum.filter(reaching, &(on_start?.(&1) and Facts.earlier_amendment?(&1)))
+    %{undated: undated, all: if(made == [], do: [], else: made ++ earlier)}
+  end
 
-    text_by = Facts.by(made, self)
+  # changed_by and commenced_by: only in force
+  defp credits(:in_force, text_by, behind, self),
+    do: %{changed_by: text_by, commenced_by: Facts.commencers(behind, text_by, self)}
 
-    # an undated whole repeal with its text gone: repealed from a start no
-    # source dates (CV-S09 round 3: CLP Art 25(5), deleted by Regulation
-    # (EU) 286/2011, the feed undated); repealed for one territory, in
-    # force where it remains (C1)
-    gone = Undated.repeals(id, changes, provision)
+  defp credits(_status, _text_by, _behind, _self), do: %{changed_by: [], commenced_by: []}
 
-    # an undated maker leaves the start's own date unknown when the start
-    # is only its law's (C10), never the law's commencement
-    in_force? =
-      status == :in_force and Map.get(provision, :start_dated, true) and
+  # the start's own day is known: dated, not a version's borrowed start,
+  # and not its law's start with an undated maker (C10)
+  defp start_known?(provision, undated),
+    do:
+      Map.get(provision, :start_dated, true) and not Map.get(provision, :start_undated, false) and
         not (undated != [] and Map.get(provision, :start_from_law, false))
 
-    period = %{
-      valid_from: start,
-      valid_to: nil,
-      status: status,
-      in_force_from: if(in_force?, do: start),
-      changed_by: if(status == :in_force, do: text_by, else: []),
-      commenced_by:
-        if(status == :in_force,
-          do: Facts.commencers(start_day ++ made, text_by, self),
-          else: []
-        ),
-      territory: territory(provision, own_insertion, territorial, changes, id),
-      tiers:
-        tiers(
-          provision,
-          own_insertion || Undated.insertion(id, changes, self),
-          start_day,
-          made,
-          territorial
-        ),
-      _text_by: text_by,
-      _text_from: made
-    }
+  # left by its own law to an order we don't hold, nothing dating the start
+  # itself (no insertion, no commencement that day): its in-force date is
+  # unknown (Decision 8, the parked J6)
+  defp by_order_undated?(provision, f),
+    do: Map.get(provision, :by_order, false) and f.own_insertion == nil and f.start_day == []
 
-    period |> Undated.repealed_at_start(gone, self) |> empty_untiered()
+  defp made_after?(c, provision, start) do
+    case provision |> Map.get(:made_of, %{}) |> Map.get(c.resolved.by) do
+      %Date{} = made -> Date.compare(made, start) == :gt
+      _ -> false
+    end
   end
 
   # an empty field rests on nothing: no tier
@@ -243,6 +371,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Start do
   defp insertion_territory(nil, changes, id, provision),
     do:
       (Undated.insertion(id, changes, Map.get(provision, :law)) || %{resolved: %{territory: nil}}).resolved.territory
+
+  # its own insertion names no territory: the nearest one holding it that
+  # does (C14; the agent pass, Environmental Protection: Label fold: SI
+  # 1999/2228 reg.3B(10)(b), reg.3B inserted for England only)
+  defp insertion_territory(%Change{resolved: %{territory: nil}} = own, changes, id, _provision) do
+    held = SertantaiLegal.Scraper.LatRef.ancestors(id)
+
+    changes
+    |> Enum.filter(
+      &(insertion?(&1) and &1.target in held and is_binary(&1.resolved.territory) and
+          &1.resolved.date != nil and Date.compare(&1.resolved.date, own.resolved.date) != :gt)
+    )
+    |> Enum.max_by(&length(SertantaiLegal.Scraper.LatRef.ancestors(&1.target)), fn -> own end)
+    |> then(& &1.resolved.territory)
+  end
 
   defp insertion_territory(own, changes, id, _provision) do
     same_day =

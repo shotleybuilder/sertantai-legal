@@ -1297,4 +1297,190 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelFoldTest do
                )
     end
   end
+
+  describe "Environmental Protection: Label fold (2026-11-11)" do
+    @ea "UK_ukpga_1995_25"
+
+    test "an undated insertion by a later law begins at that law's first dated record of it, its date unknown (Decision 1: EPA Part IIA by EA 1995 s.57)" do
+      changes = [
+        change("pt.IIA", :commenced, ~D[1990-11-01], by: @law, commenced_by: @law),
+        change("s.78A", :inserted, nil, by: @ea),
+        change("pt.IIA", nil, ~D[1996-02-01], by: @ea, commenced_by: "UK_uksi_1996_186")
+      ]
+
+      assert [%{valid_from: ~D[1996-02-01], in_force_from: nil, changed_by: [@ea]} | _] =
+               fold("s.78A(1)", changes, %{
+                 start: ~D[1990-11-01],
+                 start_from_law: true,
+                 containers: ["pt.IIA"]
+               })
+    end
+
+    test "with no dated record of the inserting law, it begins on that law's made day" do
+      changes = [change("s.10(3A)", :inserted, nil, by: @ea)]
+
+      assert [%{valid_from: ~D[1995-07-19], in_force_from: nil, changed_by: [@ea]}] =
+               fold("s.10(3A)", changes, %{
+                 start: ~D[1990-11-01],
+                 start_from_law: true,
+                 made_of: %{@ea => ~D[1995-07-19]}
+               })
+    end
+
+    test "an undated substitution by a law made after the start dates nothing: the start keeps its own maker (EPA s.126 by 1999 c.28)" do
+      changes = [change("s.126", :substituted, nil, by: "UK_ukpga_1999_28")]
+
+      assert [%{valid_from: ~D[1990-11-01], changed_by: []}] =
+               fold("s.126", changes, %{
+                 start: ~D[1990-11-01],
+                 made_of: %{"UK_ukpga_1999_28" => ~D[1999-11-11]}
+               })
+    end
+
+    test "a version with no insertion of its own begins no earlier than its sibling's, its date unknown (Decision 4: EPA s.106(4A)[E+W])" do
+      changes = [
+        change("s.106(4A)", :inserted, ~D[2002-12-05], by: "UK_ssi_2002_541", territory: "S")
+      ]
+
+      assert [%{valid_from: ~D[2002-12-05], in_force_from: nil}] =
+               fold("s.106(4A)[E+W]", changes, %{
+                 start: ~D[1990-11-01],
+                 extent: "E+W+S",
+                 version: "E+W",
+                 version_start: ~D[1990-11-01]
+               })
+    end
+
+    test "… or its sibling's insertion of a provision holding it (EPA s.106(4B)(a)[E+W], inserted as s.106(4B))" do
+      changes = [
+        change("s.106(4B)", :inserted, ~D[2002-12-05], by: "UK_ssi_2002_541", territory: "S")
+      ]
+
+      assert [%{valid_from: ~D[2002-12-05], in_force_from: nil}] =
+               fold("s.106(4B)(a)[E+W]", changes, %{
+                 start: ~D[1990-11-01],
+                 extent: "E+W+S",
+                 version: "E+W",
+                 version_start: ~D[1990-11-01]
+               })
+    end
+
+    test "the start's status as before the split of Start.period: a full start-day commencement with a later one, no insertion, stays prospective" do
+      changes = [
+        change("s.1", :commenced, ~D[1984-05-13], commenced_by: @law),
+        change("s.1", :commenced, ~D[1990-01-01], commenced_by: "UK_uksi_1990_1")
+      ]
+
+      assert [%{status: :prospective} | _] = fold("s.1", changes)
+
+      partial = change("s.1", :commenced, ~D[1984-05-13], commenced_by: @law, partial: true)
+
+      assert [%{status: :in_force_partial} | _] =
+               fold("s.1", [partial, List.last(changes)])
+    end
+
+    test "an undated whole repeal by a law made after the start repeals it from that law's first dated record, else its making (Decision 7: EPA s.143 by EA 1995)" do
+      changes = [
+        change("s.143", :commenced, ~D[1992-02-14], commenced_by: "UK_uksi_1992_266"),
+        change("s.143", :repealed, nil, by: @ea)
+      ]
+
+      assert [%{status: :prospective}, %{valid_from: ~D[1992-02-14], status: :in_force}, repealed] =
+               fold("s.143", changes, %{
+                 start: ~D[1990-11-01],
+                 shows_text: false,
+                 made_of: %{@ea => ~D[1995-07-19]}
+               })
+
+      assert {repealed.valid_from, repealed.status} == {~D[1995-07-19], :repealed}
+
+      # its text still showing, the undated repeal repealed nothing
+      assert Enum.all?(
+               fold("s.143", changes, %{
+                 start: ~D[1990-11-01],
+                 shows_text: true,
+                 made_of: %{@ea => ~D[1995-07-19]}
+               }),
+               &(&1.status != :repealed)
+             )
+    end
+
+    test "its own law's clause commencing it before the law's general start begins it then, prospective from the making (the agent pass: WSI 2026/103 Part 7, SSI 2025/165 reg.1(3))" do
+      own = "UK_wsi_2026_103"
+
+      changes = [
+        change("pt.7", :commenced, ~D[2026-03-26],
+          key: "#{own}:commencement:pt.7@2026-03-26",
+          commenced_by: own
+        )
+      ]
+
+      assert [
+               %{valid_from: ~D[2026-03-19], status: :prospective},
+               %{valid_from: ~D[2026-03-26], status: :in_force, in_force_from: ~D[2026-03-26]}
+             ] =
+               fold("reg.75", changes, %{
+                 law: own,
+                 start: ~D[2027-10-01],
+                 start_dated: true,
+                 start_from_law: true,
+                 made: ~D[2026-03-19],
+                 containers: ["pt.7"]
+               })
+    end
+
+    test "a row's own later start is never moved back to its law's earlier commencement (golden: Forestry Act 1967 s.1(4)(a), inserted 1999)" do
+      changes = [
+        change("s.1(4)(a)", :commenced, ~D[1967-03-22],
+          key: "UK_ukpga_1967_10:commencement:s.1(4)(a)@1967-03-22",
+          commenced_by: "UK_ukpga_1967_10"
+        )
+      ]
+
+      assert [%{valid_from: ~D[1999-07-01]} | _] =
+               fold("s.1(4)(a)", changes, %{law: "UK_ukpga_1967_10", start: ~D[1999-07-01]})
+    end
+
+    test "an ancestor's insertion territory narrows a row whose own insertion names none (C14; the agent pass: SI 1999/2228 reg.3B(10)(b))" do
+      changes = [
+        change("reg.3B(10)", :inserted, ~D[2017-05-16], by: "UK_uksi_2017_592"),
+        change("reg.3B", :inserted, ~D[2017-05-16], by: "UK_uksi_2017_592", territory: "E")
+      ]
+
+      assert [%{territory: "E"} | _] =
+               fold("reg.3B(10)(b)", changes, %{start: ~D[1999-09-14], extent: "E+W"})
+    end
+
+    test "a row its own law leaves to an order we don't hold: in force from the start, its in-force date unknown (Decision 8, the parked J6)" do
+      assert [%{status: :in_force, valid_from: ~D[1984-05-13], in_force_from: nil}] =
+               fold("s.5", [], %{by_order: true})
+
+      assert [%{in_force_from: ~D[1984-05-13]}] = fold("s.5", [])
+
+      # dated otherwise, by its insertion or a start-day commencement: its date stands
+      inserted = [change("s.5", :inserted, ~D[1990-01-01], by: "UK_uksi_1990_1")]
+
+      assert [%{in_force_from: ~D[1990-01-01]}] =
+               fold("s.5", inserted, %{by_order: true})
+
+      commenced = [change("s.5", :commenced, ~D[1984-05-13], commenced_by: "UK_uksi_1984_9")]
+
+      assert [%{in_force_from: ~D[1984-05-13]}] =
+               fold("s.5", commenced, %{by_order: true})
+    end
+
+    test "a container's later insertion never moves a row its own records date earlier (Decision 5: EA 1995 s.11 in Ch 1A by WSI 2013/755)" do
+      changes = [
+        change("s.11", :commenced, ~D[1996-04-01], commenced_by: "UK_uksi_1996_186"),
+        change("pt.I.ch.1A", :inserted, ~D[2013-04-01], by: "UK_wsi_2013_755")
+      ]
+
+      assert [%{valid_from: ~D[1995-07-19]} | _] =
+               fold("s.11(1)", changes, %{
+                 start: ~D[1995-07-19],
+                 law: @ea,
+                 containers: ["pt.I.ch.1A", "pt.I"]
+               })
+    end
+  end
 end

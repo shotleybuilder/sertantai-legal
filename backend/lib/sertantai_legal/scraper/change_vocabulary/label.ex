@@ -30,6 +30,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
     Facts,
     Made,
     Start,
+    Undated,
     Version
   }
 
@@ -77,11 +78,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
         &(part_arabic(&1) == part_arabic(base_id(id)))
       )
 
-    changes = within(changes, containers)
+    changes =
+      changes
+      |> within(containers)
+      |> Undated.date_late_repeals(provision)
+
     # a law commenced by an order, no start held: from its making (S4)
     base = base_id(id)
     provision = Made.by_order(provision, Enum.filter(changes, &reaches?(&1, base)))
-    start = provision.start
     version = Map.get(provision, :version)
     version_start = Map.get(provision, :version_start)
 
@@ -94,6 +98,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
       |> Enum.filter(&reaches?(&1, id))
       |> Enum.filter(&(&1.resolved.date != nil))
       |> Enum.filter(&(version == nil or for_version?(&1, provision, version)))
+
+    # its own law's clause may commence it before the law's general start
+    provision = Start.early_own(provision, reaching)
+    start = provision.start
 
     # on the split the version's own text: its fields as the changes its own
     # territory or its own text carries made them, never the shared
@@ -115,17 +123,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
     # made by another law's undated insertion, it was never in its own
     # law's text: that law's commencements never reach it
     self = Map.get(provision, :law)
-
-    own_law? =
-      born == start and is_binary(self) and Start.undated_insertion(id, changes, self) != nil
+    {born, provision, own_law?} = born_of(id, born, start, reaching, changes, provision)
 
     reaching =
       reaching
-      |> Enum.reject(
-        &(&1.resolved.operation == :commenced and
-            (Date.compare(&1.resolved.date, born) == :lt or
-               (own_law? and String.starts_with?(&1.key, self <> ":commencement:"))))
-      )
+      |> Enum.reject(&unreached_commencement?(&1, born, own_law?, self))
       |> nearest_commencements()
 
     provision =
@@ -187,6 +189,29 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
     |> Enum.map(&Map.drop(&1, @private))
     # made, not yet in force (LR-39): only from the law's own start
     |> Made.from(%{provision | start: start}, born, reaching)
+  end
+
+  defp unreached_commencement?(c, born, own_law?, self),
+    do:
+      c.resolved.operation == :commenced and
+        (Date.compare(c.resolved.date, born) == :lt or
+           (own_law? and String.starts_with?(c.key, self <> ":commencement:")))
+
+  # never before the law that made it existed: an undated insertion by a
+  # later law begins at that law's first dated record of it, else its
+  # making (Environmental Protection: Label fold, Decision 1); a version,
+  # at its sibling's insertion (Decision 4). `own_law?`: made by another
+  # law's undated insertion, so its own law's commencements never reach it
+  defp born_of(id, born, start, reaching, changes, provision) do
+    self = Map.get(provision, :law)
+    inserted = if is_binary(self), do: Start.undated_insertion(id, changes, self)
+    own_law? = born == start and inserted != nil
+
+    born =
+      if own_law?, do: Start.inserter_born(born, inserted, id, changes, provision), else: born
+
+    {born, provision} = Start.sibling_born(id, born, reaching, changes, provision)
+    {born, provision, own_law?}
   end
 
   @doc """

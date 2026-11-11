@@ -93,6 +93,63 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Gate.LabelTest do
            ]
   end
 
+  defp ch(key, target, op, date, territory \\ nil),
+    do: %Change{
+      key: key,
+      target: target,
+      resolved: %Evidence.Resolved{
+        operation: op,
+        level: :provision,
+        territory: territory,
+        date: date,
+        by: nil,
+        retained: false,
+        partial: false,
+        saved: false,
+        sources: %{}
+      }
+    }
+
+  test "an own commencement before the law's start, the row prospective then: `start: an own commencement before the law's start dropped` (the agent pass, EP: WSI 2026/103 reg.75)" do
+    early = ch("#{@law}:commencement:reg.75@1995-08-01", "reg.75", :commenced, ~D[1995-08-01])
+
+    prospective =
+      Map.put(p(~D[1995-07-01], status: :prospective, to: ~D[1996-01-01]), :in_force_from, nil)
+
+    dropped =
+      row("reg.75", [prospective, p(~D[1996-01-01])])
+      |> Map.merge(%{reaching: [early], start: ~D[1996-01-01], made: ~D[1995-07-01]})
+
+    kept =
+      row("reg.76", [
+        Map.put(p(~D[1995-07-01], status: :prospective, to: ~D[1995-08-01]), :in_force_from, nil),
+        p(~D[1995-08-01])
+      ])
+      |> Map.merge(%{reaching: [early], start: ~D[1996-01-01], made: ~D[1995-07-01]})
+
+    assert causes([dropped, kept]) == [
+             {"start: an own commencement before the law's start dropped", @law, "#{@law}:reg.75"}
+           ]
+  end
+
+  test "an ancestor's insertion narrower than the row's first territory, its own insertion with none: `territory: an ancestor insertion's territory lost` (the agent pass, EP: SI 1999/2228 reg.3B(10)(b))" do
+    ancestor = ch("a", "reg.3B", :inserted, ~D[2017-05-16], "E")
+    own = ch("b", "reg.3B(10)", :inserted, ~D[2017-05-16])
+    wide = Map.put(p(~D[2017-05-16]), :territory, "E+W")
+    narrow = Map.put(p(~D[2017-05-16]), :territory, "E")
+
+    assert causes([
+             %{row("reg.3B(10)(b)", [wide]) | reaching: [ancestor, own]},
+             %{row("reg.3B(10)(a)", [narrow]) | reaching: [ancestor, own]}
+           ]) == [
+             {"territory: an ancestor insertion's territory lost", @law, "#{@law}:reg.3B(10)(b)"}
+           ]
+
+    # a later insertion of the row itself is no ancestor's (EPA s.153(1)(aa))
+    again = ch("c", "reg.3B(10)", :inserted, ~D[2020-01-01], "E")
+    assert causes([%{row("reg.3B(10)(b)", [wide]) | reaching: [own, again]}]) == []
+  end
+
   test "a row listed as a known limit is left out" do
     early = row("s.20", [p(~D[1996-01-01], by: [@amender])])
     assert causes([early], MapSet.new(["#{@law}:s.20"])) == []

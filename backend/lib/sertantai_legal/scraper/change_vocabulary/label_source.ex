@@ -48,6 +48,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
       valid = Markup.valid(xml)
       extents = extents(law)
       changes = Store.for_law(law) |> Enum.map(&%{&1 | target: Ref.canonical(&1.target)})
+      made_of = made_of(changes)
+      by_order = by_order(law, Map.keys(extents))
 
       provisions =
         Map.new(extents, fn {id, {_sid, extent, containers}} ->
@@ -59,6 +61,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
              start_dated: start != nil,
              # the law's making (LR-39): prospective from it until its start
              made: made,
+             # each amending law's making: no undated change dates before it
+             made_of: made_of,
+             # left by its own law to an order we don't hold (Decision 8)
+             by_order: MapSet.member?(by_order, String.replace(id, ~r/\[[^\]]+\]$/, "")),
              # the law's start, not the provision's own
              start_from_law: true
            }}
@@ -147,6 +153,60 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
          ) do
       %{rows: [[%Date{} = d]]} -> d
       _ -> nil
+    end
+  end
+
+  # the rows its own law leaves to an order no rule held dates (J6:
+  # `OwnCommencement.outcome/4` `:by_order`; Environmental Protection:
+  # Label fold, Decision 8)
+  defp by_order(law, ids) do
+    case SertantaiLegal.Scraper.Commencement.Store.for_law(law) do
+      [] ->
+        MapSet.new()
+
+      rules ->
+        ctx = own_context(law)
+
+        for id <- ids,
+            base = String.replace(id, ~r/\[[^\]]+\]$/, ""),
+            match?(
+              {:by_order, _},
+              SertantaiLegal.Scraper.ChangeVocabulary.Readers.OwnCommencement.outcome(
+                rules,
+                law,
+                base,
+                ctx
+              )
+            ),
+            uniq: true,
+            into: MapSet.new(),
+            do: base
+    end
+  end
+
+  defp own_context(law) do
+    Repo.query!(
+      "SELECT section_id, part, chapter FROM legal_articles WHERE law_name = $1 ORDER BY position",
+      [law]
+    ).rows
+    |> Enum.map(fn [s, p, c] -> %{section_id: s, part: p, chapter: c} end)
+    |> SertantaiLegal.Scraper.Commencement.OwnClause.context()
+  end
+
+  # the making of each law the changes name (Environmental Protection:
+  # Label fold, Decision 1)
+  defp made_of(changes) do
+    case changes |> Enum.map(& &1.resolved.by) |> Enum.filter(&is_binary/1) |> Enum.uniq() do
+      [] ->
+        %{}
+
+      laws ->
+        Repo.query!(
+          "SELECT name, coalesce(md_made_date, md_enactment_date) FROM uk_lrt WHERE name = ANY($1)",
+          [laws]
+        ).rows
+        |> Enum.reject(fn [_, d] -> is_nil(d) end)
+        |> Map.new(fn [n, d] -> {n, d} end)
     end
   end
 

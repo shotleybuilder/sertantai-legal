@@ -73,17 +73,32 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelRules do
 
   defp before_insertion(periods, reaching, ctx) do
     first = hd(periods).valid_from
+    insertions = Enum.filter(reaching, &whole_insertion?/1)
 
-    for c <- reaching,
-        c.resolved.operation == :inserted and c.resolved.level == :provision,
-        c.resolved.date != nil,
+    # an insertion of the same provision dated on or before the first day
+    # began it there: a later one is another version's (EPA s.33(10)(a)[S],
+    # inserted for S by SSI 2005/22, for E+W by SI 2006/937)
+    begun? = fn c ->
+      Enum.any?(
+        insertions,
+        &(&1.target == c.target and Date.compare(&1.resolved.date, first) != :gt)
+      )
+    end
+
+    for c <- insertions,
         Date.compare(first, c.resolved.date) == :lt,
+        not begun?.(c),
         not ctx.existed.(c.resolved.date),
         uniq: true,
         do:
           {if(Start.legacy_only?(c), do: :legacy_unconfirmed, else: :before_insertion),
            "inserted #{c.resolved.date} by #{c.resolved.by}, period from #{first}"}
   end
+
+  defp whole_insertion?(c),
+    do:
+      c.resolved.operation == :inserted and c.resolved.level == :provision and
+        c.resolved.date != nil
 
   @doc "The rules listed apart, never failing the pass."
   @spec informational() :: [atom()]

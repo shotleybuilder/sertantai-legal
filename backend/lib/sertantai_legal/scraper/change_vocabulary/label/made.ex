@@ -99,9 +99,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Made do
   end
 
   defp own_clause?(_c, nil), do: false
-  # the law's own clause, never an order read into the same record
+  # the law's own clause, never an order read into the same record; the
+  # feed's record of the law's own commencement (by the law itself) is it
+  # too (Environmental Protection: Label fold, Decision 2: WSI 2010/1821,
+  # SI 2025/1218)
   defp own_clause?(c, self),
     do:
-      String.starts_with?(c.key, self <> ":commencement:") and
+      (String.starts_with?(c.key, self <> ":commencement:") or c.resolved.by == self) and
         c.resolved.commenced_by in [nil, self] and c.resolved.by in [nil, self]
 end

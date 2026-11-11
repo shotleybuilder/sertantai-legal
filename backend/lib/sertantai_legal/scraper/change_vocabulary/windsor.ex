@@ -22,13 +22,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Windsor do
       citation: "Windsor Framework Art 5(4), Annex 2, heading 23, indent 11",
       source:
         "https://assets.publishing.service.gov.uk/media/696e5c22719d837d69afc82e/EM_COM__2025__822_Final.pdf",
-      checked: false
+      checked: true,
+      checked_on: "Jason 2026-11-11 (Environmental Protection: Label fold, Decision 6)"
     },
     "UK_eur_2006_1907" => %{
       citation: "Windsor Framework Art 5(4), Annex 2, heading 23 (chemicals)",
       source:
         "https://www.niassembly.gov.uk/globalassets/committee-blocks/windsor-framework-democratic-scrutiny-committee/com2025822/annex-c-ukgem-822.pdf",
-      checked: false
+      checked: true,
+      checked_on: "Jason 2026-11-11 (Environmental Protection: Label fold, Decision 6)"
     }
   }
 
@@ -36,9 +38,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Windsor do
   @spec annex2() :: %{String.t() => map()}
   def annex2, do: @annex2
 
-  @doc "True for an instrument the Windsor Framework keeps in NI (Annex 2)."
+  @doc "True for an instrument the Windsor Framework keeps in NI (Annex 2), its entry checked by Jason (open decision 11)."
   @spec listed?(String.t() | nil) :: boolean()
-  def listed?(law), do: Map.has_key?(@annex2, law)
+  def listed?(law), do: match?(%{checked: true}, Map.get(@annex2, law))
 
   @doc """
   The law's changes with C8 applied: for a listed instrument, a change made
