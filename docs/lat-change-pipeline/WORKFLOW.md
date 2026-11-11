@@ -415,7 +415,7 @@ Before this, OH&S used G, S and T by shape and R pooled to the 95% bound (2026-1
 1. **Audit:** every figure the family's step sessions publish (closing `metrics:`), against today's store. A figure is the same; or moved, with the later commit that moved it named; or a finding. Before/after history, days, commits and tokens are out of scope.
 2. **Every step's gate, re-run:** `draws.sh FAMILY SEED` (in the skill) runs each step's check with its strata, gate and sample: Making laws, Sources, the five readers, Merge, Evidence, the label fold, and `lat.measures`. A gate that passed when its step closed can fail after a later rebuild. Such a gate is raised and parked with its step, never named here.
 3. **Replicable:** two passes of `draws.sh` on one seed. Samples are byte-identical (`cmp`); printed figures are identical once log lines are filtered out. The first pass runs before any code change.
-4. **Hand check:** one agent pass, 2 batches.
+4. **Hand check:** one agent pass, 2 batches, or none (Environmental Protection, Jason 2026-11-11). Without an agent pass, the hand sample still replicates, the measure-fault classes already found stay tested, and a few items are read by hand.
    - The hand sample is `mix lat.measures --sample FILE --n 50 --seed S`: text changes with their classes (who states it, law-text coverage, dating, merge stratum).
    - Ten items come from the extent check's sample, one per outcome, for the territory group.
    - Save the VERDICTS blocks as verdict files when the agents hand back.
@@ -426,6 +426,11 @@ Before this, OH&S used G, S and T by shape and R pooled to the 95% bound (2026-1
 - samples and figures replicate;
 - the hand check finds nothing classed wrong by a measure once its faults are fixed;
 - no regression (`mix test`, golden).
+
+**Environmental Protection (2026-11-11):**
+- No agent pass.
+- Four gates and verdicts had moved since their steps closed: Sources (feeds stale by age alone, Schedules needed since), Extent, Amending, and one Making laws verdict. Each is parked with its step.
+- The parked inline reads in `lat.sources` and `lat.vocabulary` moved into `Sources.Held` and `ChangeVocabulary.Show`, with tests.
 
 **Skill.** `measures-check`.
 

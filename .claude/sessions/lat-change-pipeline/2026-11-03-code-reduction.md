@@ -64,7 +64,8 @@ bugs:
     affected: 2
     fix: Move the feed-status and amending-facts reads, and the debug view's reads, into their modules
     step: Measures
-    status: open
+    status: fixed
+    moved_to: "2026-11-11-environmental-protection-measures: Sources.Held (the store and register reads) with Sources' pure feed_status/3, commencing_orders/2, clause?/2, register_stats/1; ChangeVocabulary.Show (--show) and Golden.older/3; tested"
 artifacts:
   - backend/lib/sertantai_legal/scraper/commencement/check.ex
   - backend/lib/sertantai_legal/scraper/amending_law/extent/check.ex
