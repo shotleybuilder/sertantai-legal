@@ -191,3 +191,9 @@ Maritime Safety (2026-11-06), on the code gate (Decision 1). The session is `.cl
   - 3 one-change known limits.
 - Agent pass, seed 56 (155,806 tokens): 29 OK, 1 wrong (known), 20 gaps, no new class.
   - The gap cause `amending-law-own-clause-unread` (94 amending laws) is now a code group, parked.
+
+Environmental Protection (2026-11-10/11), on the code gate. The session is `.claude/sessions/lat-change-pipeline/2026-11-10-environmental-protection-evidence.md`.
+- Strata: V 471, D 182, A 5,653. Gate PASS, 59 groups reviewed with OH&S's parked 14 and Maritime's 3. The table's order was right; 154 wrong values are the Commencement reader's and the Amending-law reader's (three new classes parked).
+- Agent pass, seed 62 (155,068 tokens): 36 OK, 12 gaps, 2 wrong. The new class, a feed date "in accordance with" its law's clause on the law's made day, was fixed in the table (Decision 4: `Readers.AffectingMade`, `:not_made_day`), then one rebuild.
+- Known classes added: KX (the "as amended by" chain), KW (a Welsh SI cited by its UK S.I. number), KPRE (an amendment before the amended law's own start), and the Commencement-reader classes KORD-WHOLE, KORD-PARTIAL and KEXCEPT.
+- Build and check with the family's full name ("OH&S: Occupational / Personal Safety"): the bare "OH&S" matches four families.

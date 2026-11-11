@@ -342,6 +342,23 @@ A wrong value chosen from a misread primary claim is the reader's: it is named `
 
 Before this, OH&S used agents over V in full and D by pattern, and pooled A samples to the 95% bound (2026-10-29; 5 rounds).
 
+**Environmental Protection** (2026-11-10/11). The changes were current after Merge's rebuild. The gate was at 43 groups not named, OH&S's parked group at 14 and Maritime's at 3 (new date groups since later rebuilds). All 60 were read together in the sources' own records: the feed effect, the markup's note, the amending words, and the commencement rule through the evaluator in the build's own context. The evidence table's order was right throughout.
+- **Wrong chosen values, 154, all another step's:** misread primary claims winning, as law-text-wins orders. Three new Commencement-reader classes were parked: an order's "in section 86— (i) …" read as the whole section (42); an order item's heading or a Welsh order read as partial (22); an own clause's excepted provisions left on the general date (22).
+- **By design and legislation.gov.uk's own:**
+  - the "as amended by" chain (105);
+  - a Welsh SI cited by its UK S.I. number, one law under two names (29, Decision 2: never matched by year and number);
+  - amendments made before the amended law's own start, and feed date slips.
+
+**The one agent pass** (seed 62, 50 A changes, 155,068 tokens): 36 OK, 12 gaps, 2 wrong, one new class. legislation.gov.uk dates a stage "in accordance with" its law's own clause on the day that law was made: a placeholder.
+- **Fixed in the table (Decision 4):** `Readers.AffectingMade` claims the affecting law's made or enactment day (`legal_register`) on such a stage, and `Evidence`'s `:not_made_day` never takes the feed's date on it (RULES `feed-placeholder-date-is-no-date`).
+- **Reach:** of 145 such records in the three families, 15 fall on the made day (SI 2016/562: 12; Finance Act 2026 Sch.14: 3).
+- **Checks:** the in-memory preview moved exactly those dates to gaps. Then a restore point and one rebuild.
+- **Result:**
+  - Strata: EP V 471 / D 182 / A 5,653; OH&S V 146 / D 38; Maritime V 195 / D 13.
+  - Gaps: EP date 380 → 391 (the placeholders), commenced_by 4,128.
+  - All three gates PASS; golden 27/27.
+- **Build with the full family name:** `--family "OH&S"` matches four OH&S families (189 laws); the step's family is "OH&S: Occupational / Personal Safety" (149). The bare name built 40 laws of the other three families for the first time (kept, Jason 2026-11-11).
+
 **Skill.** `evidence-check`.
 
 ## 9. Label fold

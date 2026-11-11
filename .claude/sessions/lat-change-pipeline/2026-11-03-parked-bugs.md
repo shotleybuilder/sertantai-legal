@@ -292,7 +292,8 @@ bugs:
   module: Evidence (KF-type, KMV)
   affected: 2
   fix: Read the amending provision (para 95(3)(d) has no rule); a 'moved' operation in the vocabulary
-  status: open
+  status: fixed
+  moved_to: "2026-11-10-environmental-protection-evidence: a named known limit, 1 change (REACH Art 138(1), SI 2019/758 Sch.1 para 95(3)(d)); the moved-words form is in no group of the three families"
   step: Evidence
   moved_from: 2026-10-22-cv-s08-evidence
 - pattern: Rows left to a commencement order we don't hold (J6, provision_by_order) fold as in force from the law's start, no gap

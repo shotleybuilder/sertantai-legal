@@ -118,7 +118,8 @@ bugs:
     affected: 23
     fix: "review each group known/fix/check"
     step: Evidence
-    status: open
+    status: fixed
+    moved_to: "2026-11-10-environmental-protection-evidence: 14 groups left by then, all named (gate PASS)"
   - pattern: "OH&S Label fold gate: 1 group not named (before_amender @ HSWA 1974 s.28(10), 6 rows), as at 2026-11-08"
     category: ohs-gate-label-fold
     module: test/fixtures/label/labels.json
