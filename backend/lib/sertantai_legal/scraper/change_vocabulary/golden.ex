@@ -11,8 +11,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Golden do
     `stored: true`, from its stored changes.
   - `pass?/2`, `passed/1`: a case against its expected periods (tiers aside).
   - `line/1`, `tier_line/1`: a period as the scoreboard prints it.
+  - `older/3`, `stored_versions/1`: the golden laws built by older code.
   """
 
+  alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.{ChangeVocabulary, LatStagedParser}
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Build, Fold, LabelSource, Store}
 
@@ -86,6 +88,27 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Golden do
   @doc "How many results pass."
   @spec passed([{map(), [map()] | nil}]) :: non_neg_integer()
   def passed(results), do: Enum.count(results, fn {c, got} -> pass?(c, got) end)
+
+  @doc """
+  The golden laws not built by the current code alone (`current`, the
+  build's version): their stored changes hold another version, or none.
+  `versions`: law → the code versions its stored changes hold.
+  """
+  @spec older([String.t()], %{String.t() => [String.t()]}, String.t()) :: [String.t()]
+  def older(laws, versions, current),
+    do: Enum.reject(laws, &(Map.get(versions, &1, []) == [current]))
+
+  @doc "The code versions each law's stored changes hold."
+  @spec stored_versions([String.t()]) :: %{String.t() => [String.t()]}
+  def stored_versions(laws) do
+    %{rows: rows} =
+      Repo.query!(
+        "SELECT DISTINCT law_name, code_version FROM provision_changes WHERE law_name = ANY($1)",
+        [laws]
+      )
+
+    Enum.group_by(rows, &hd/1, &List.last/1)
+  end
 
   @doc "A period as one line."
   @spec line(map()) :: String.t()

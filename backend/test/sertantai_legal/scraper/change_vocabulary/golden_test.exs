@@ -59,4 +59,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.GoldenTest do
              {{:value, :date, :law_text, :markup}, 1}
            ]
   end
+
+  test "older: the golden laws not built by the current code alone (none stored counts)" do
+    versions = %{"A" => ["v2"], "B" => ["v1", "v2"], "C" => ["v1"], "D" => []}
+
+    assert Golden.older(["A", "B", "C", "D", "E"], versions, "v2") == ["B", "C", "D", "E"]
+  end
 end

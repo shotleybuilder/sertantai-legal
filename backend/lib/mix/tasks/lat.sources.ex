@@ -15,8 +15,7 @@ defmodule Mix.Tasks.Lat.Sources do
   Statuses: `held` (fresh), `absent` (legislation.gov.uk has none: a stored
   404), `not_fetched`, `incomplete` (a feed missing pages), `stale` (older
   than a version the register could know of: `Sources.stale?/4`). The
-  rules are `Sources`'; this task reads the
-  facts.
+  rules are `Sources`'; the facts are read by `Sources.Held`.
 
   A feed that differs from the register's statistics fails until it is
   explained in `test/fixtures/sources/explained.json` (law → reason, each
@@ -26,16 +25,12 @@ defmodule Mix.Tasks.Lat.Sources do
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Gate.Step
 
-  alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source, as: Scope
-  alias SertantaiLegal.Scraper.{EffectKind, LatScope, Sources}
-  alias SertantaiLegal.Scraper.AmendingLaw.Pointer
+  alias SertantaiLegal.Scraper.Sources
+  alias SertantaiLegal.Scraper.Sources.Held
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.Store, as: ExtentStore
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Store
-
-  @text_ops ~w(inserted substituted repealed repealed_in_part renumbered)a
   alias SertantaiLegal.Scraper.EnactedBy.EnablingCache
-  alias SertantaiLegal.Scraper.LegislationGovUk.{ChangesFeed, Client, ClmlStore}
+  alias SertantaiLegal.Scraper.LegislationGovUk.{ChangesFeed, Client}
 
   @shortdoc "Sources a scope's labels need, against what is held (read-only)"
 
@@ -52,16 +47,16 @@ defmodule Mix.Tasks.Lat.Sources do
     laws = scope(opts)
     Mix.shell().info("#{length(laws)} laws in scope")
 
-    facts = Enum.map(laws, &law_facts/1)
+    facts = Enum.map(laws, &Held.law/1)
     amenders = facts |> Enum.flat_map(& &1.amenders) |> Enum.uniq()
     clauses = ExtentStore.for_laws(amenders)
-    amending = Map.new(amenders, &{&1, amending_facts(&1, clauses)})
+    amending = Map.new(amenders, &{&1, Held.amending(&1, clauses)})
 
     needs =
       facts |> Enum.flat_map(&Sources.needs(&1, amending)) |> Enum.uniq_by(&{&1.law, &1.part})
 
-    valid = valid_dates(Enum.map(needs, & &1.law))
-    statuses = Enum.map(needs, &{&1, status(&1, valid)})
+    valid = Held.valid_dates(Enum.map(needs, & &1.law))
+    statuses = Enum.map(needs, &{&1, Held.status(&1, valid)})
 
     # each feed counted as the register counts it
     comparisons =
@@ -148,139 +143,6 @@ defmodule Mix.Tasks.Lat.Sources do
     end
   end
 
-  # one law in scope: its documents, its feed's effects (store only), the
-  # laws its notes cite, the register's change statistics
-  defp law_facts(law) do
-    [_, type, year, number] = String.split(law, "_", parts: 4)
-    slash = "#{type}/#{year}/#{number}"
-
-    effects =
-      case ChangesFeed.fetch(type, year, number, store: :only) do
-        {:ok, es} ->
-          Enum.map(
-            es,
-            &%{affecting: &1.affecting, kind: EffectKind.kind(&1.type, nil), type: &1.type}
-          )
-
-        _ ->
-          []
-      end
-      |> Enum.reject(&is_nil(&1.affecting))
-
-    # its amending laws and the gaps the feed leaves, from the stored
-    # changes (`mix lat.vocabulary --build`)
-    %{amenders: amenders, gaps: gaps} =
-      law
-      |> Store.for_law()
-      |> Enum.filter(&(&1.resolved.operation in @text_ops))
-      |> Sources.change_facts()
-
-    register =
-      case Repo.query!(
-             ~s(SELECT "🔻_stats_affected_by_count", "🔻_stats_affected_by_laws_count" FROM uk_lrt WHERE name = $1),
-             [law]
-           ).rows do
-        [[e, l]] when is_integer(e) -> %{effects: e, laws: l}
-        _ -> nil
-      end
-
-    %{
-      law: law,
-      # a scoped law whose body is held reads the body (CV-S05 F)
-      scope: LatScope.fetch_paths(slash, LatScope.get(law), body_held?(slash)),
-      effects: effects,
-      amenders: amenders,
-      gaps: gaps,
-      register: register
-    }
-  end
-
-  # whether an amending law states its extent (extent_rules); an SI's
-  # enabling-power parents (the cache, never fetched); an Act's commencing
-  # orders and the provisions each commences (its own feed, store only)
-  defp amending_facts(law, clauses) do
-    [_, type, year, number] = String.split(law, "_", parts: 4)
-
-    clause =
-      case Map.get(clauses, law) do
-        %{default: d, lists: ls} -> d != nil or ls != []
-        _ -> false
-      end
-
-    enabling =
-      case EnablingCache.cached(law) do
-        {:ok, ps} -> ps |> Enum.map(& &1["law"]) |> Enum.uniq()
-        :none -> []
-      end
-
-    commencing =
-      case ChangesFeed.fetch(type, year, number, store: :only) do
-        {:ok, es} ->
-          for e <- es,
-              EffectKind.kind(e.type, nil) == "commenced",
-              is_binary(e.affecting),
-              e.affecting != law,
-              do: %{
-                order: e.affecting,
-                provisions:
-                  e.affected_provisions |> Pointer.refs_in() |> Enum.flat_map(&Pointer.to_refs/1)
-              }
-
-        _ ->
-          []
-      end
-
-    %{clause: clause, enabling: enabling, commencing: commencing}
-  end
-
-  # each law's register validity date and when its record last updated
-  defp valid_dates(laws) do
-    Repo.query!("SELECT name, md_dct_valid_date, updated_at FROM uk_lrt WHERE name = ANY($1)", [
-      Enum.uniq(laws)
-    ]).rows
-    |> Map.new(fn [n, d, u] -> {n, {d, u}} end)
-  end
-
-  defp status(%{part: :introduction, law: law}, _valid),
-    do: Sources.introduction_status(EnablingCache.cached(law), stored_introduction(law))
-
-  defp status(%{part: :feed, law: law}, _valid) do
-    [_, type, year, number] = String.split(law, "_", parts: 4)
-
-    case ChangesFeed.fetch(type, year, number, store: :only) do
-      {:ok, _} ->
-        # a feed carries no valid date: fresh while recently fetched
-        case ClmlStore.get(ChangesFeed.page_path(type, year, number, 1)) do
-          {:ok, _, meta} ->
-            if Sources.stale?(meta, nil, nil, DateTime.utc_now()), do: :stale, else: :held
-
-          _ ->
-            :held
-        end
-
-      _ ->
-        case ClmlStore.get(ChangesFeed.page_path(type, year, number, 1)) do
-          :none -> :not_fetched
-          {:missing, _} -> :absent
-          _ -> :incomplete
-        end
-    end
-  end
-
-  defp status(%{part: part, law: law}, valid) do
-    law
-    |> Sources.doc_path(part)
-    |> ClmlStore.get()
-    |> Sources.document_status(Map.get(valid, law, {nil, nil}), DateTime.utc_now())
-  end
-
-  defp stored_introduction(law) do
-    case EnablingCache.from_store(law) do
-      {:ok, _} = held -> held
-      :not_held -> if EnablingCache.absent_upstream?(law), do: :absent, else: :not_held
-    end
-  end
-
   defp print(r, opts) do
     Mix.shell().info("\nneeded against held, by category:")
 
@@ -320,12 +182,4 @@ defmodule Mix.Tasks.Lat.Sources do
 
     Mix.shell().info("\n#{if r.pass, do: "PASS", else: "FAIL"}")
   end
-
-  # the body held: a fragment is never fetched beside it (CV-S05 F)
-  defp body_held?(slash),
-    do:
-      match?(
-        {:ok, _, _},
-        SertantaiLegal.Scraper.LegislationGovUk.ClmlStore.get("/#{slash}/body/data.xml")
-      )
 end

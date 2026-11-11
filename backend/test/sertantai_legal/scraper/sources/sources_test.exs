@@ -250,4 +250,52 @@ defmodule SertantaiLegal.Scraper.SourcesTest do
              ]
     end
   end
+
+  describe "the loader's facts, read pure (Environmental Protection: Measures)" do
+    test "commencing_orders: an Act's orders and the provisions each commences, from its own feed" do
+      law = "UK_ukpga_2021_30"
+
+      effects = [
+        %{type: "coming into force", affecting: "UK_uksi_2022_1", affected_provisions: "s. 2"},
+        # its own commencement, an amendment, a record with no law: none an order
+        %{type: "coming into force", affecting: law, affected_provisions: "s. 3"},
+        %{type: "substituted", affecting: "UK_uksi_2022_2", affected_provisions: "s. 4"},
+        %{type: "coming into force", affecting: nil, affected_provisions: "s. 5"}
+      ]
+
+      assert [%{order: "UK_uksi_2022_1", provisions: [_ | _]}] =
+               Sources.commencing_orders(effects, law)
+    end
+
+    test "clause?: an amending law states its extent when its rules hold a default or a list" do
+      clauses = %{
+        "UK_uksi_2023_1" => %{default: "E+W", lists: []},
+        "UK_uksi_2023_2" => %{default: nil, lists: [%{}]},
+        "UK_uksi_2023_3" => %{default: nil, lists: []}
+      }
+
+      assert Sources.clause?(clauses, "UK_uksi_2023_1")
+      assert Sources.clause?(clauses, "UK_uksi_2023_2")
+      refute Sources.clause?(clauses, "UK_uksi_2023_3")
+      refute Sources.clause?(clauses, "UK_uksi_2023_4")
+    end
+
+    test "feed_status: fresh while recently fetched; else absent, not fetched or missing pages" do
+      now = ~U[2026-11-11 12:00:00Z]
+      page = fn fetched -> {:ok, "<feed/>", %{dct_valid: nil, fetched_at: fetched}} end
+
+      assert Sources.feed_status({:ok, []}, page.(~U[2026-11-01 00:00:00Z]), now) == :held
+      assert Sources.feed_status({:ok, []}, page.(~U[2026-09-01 00:00:00Z]), now) == :stale
+      assert Sources.feed_status({:ok, []}, :none, now) == :held
+      assert Sources.feed_status({:error, "x"}, :none, now) == :not_fetched
+      assert Sources.feed_status({:error, "x"}, {:missing, %{}}, now) == :absent
+      assert Sources.feed_status({:error, "x"}, page.(now), now) == :incomplete
+    end
+
+    test "register_stats: the register's change statistics, or nil when it holds none" do
+      assert Sources.register_stats([[12, 3]]) == %{effects: 12, laws: 3}
+      assert Sources.register_stats([[nil, nil]]) == nil
+      assert Sources.register_stats([]) == nil
+    end
+  end
 end

@@ -50,17 +50,16 @@ defmodule Mix.Tasks.Lat.Vocabulary do
   """
   use Mix.Task
 
-  alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source, as: Scope
 
-  alias SertantaiLegal.Scraper.{ChangeVocabulary, LabelRefresh, LatRef, LatStagedParser}
+  alias SertantaiLegal.Scraper.{ChangeVocabulary, LabelRefresh, LatStagedParser}
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.{
     Build,
     Conflicts,
     Fold,
     Golden,
-    LabelSource,
+    Show,
     StaleStages,
     Store
   }
@@ -131,15 +130,10 @@ defmodule Mix.Tasks.Lat.Vocabulary do
     laws = laws(opts, "--check")
     conflict_totals(laws)
 
+    golden = Golden.laws(opts)
+
     stale =
-      for l <- Golden.laws(opts),
-          v =
-            Repo.query!(
-              "SELECT DISTINCT code_version FROM provision_changes WHERE law_name = $1",
-              [l]
-            ).rows,
-          v != [[ChangeVocabulary.Version.current()]],
-          do: l
+      Golden.older(golden, Golden.stored_versions(golden), ChangeVocabulary.Version.current())
 
     if stale != [],
       do:
@@ -336,7 +330,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       |> LatStagedParser.law_effects(store: :only)
       |> LatStagedParser.with_affecting_territory(law)
 
-    provisions = provisions(law, ids)
+    provisions = Show.provisions(law, ids)
 
     opts =
       law
@@ -353,7 +347,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
 
       Mix.shell().info("changes reaching it:")
 
-      for c <- changes, c.target in [id, "*"] or c.target in tl(LatRef.ancestors(id)) do
+      for c <- Show.reaching(changes, id) do
         r = c.resolved
 
         Mix.shell().info(
@@ -368,7 +362,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       Mix.shell().info("vocabulary label:")
       for p <- labels[id], do: Mix.shell().info("  " <> Golden.line(p))
       Mix.shell().info("stored label today:")
-      for p <- stored(law, id), do: Mix.shell().info("  " <> Golden.line(p))
+      for p <- Show.stored(law, id), do: Mix.shell().info("  " <> Golden.line(p))
     end
   end
 
@@ -421,44 +415,5 @@ defmodule Mix.Tasks.Lat.Vocabulary do
     end
 
     Mix.shell().info("\n#{Golden.passed(results)} / #{length(results)} golden provisions pass")
-  end
-
-  defp provisions(law, ids) do
-    # from inputs, as the build resolves it (`Build.start/1`), never the old register
-    start = Build.start(law).date || Mix.raise("no law start for #{law}")
-
-    containers = LabelSource.containers(law)
-
-    Map.new(ids, fn id ->
-      %{rows: rows} =
-        Repo.query!("SELECT extent_code FROM legal_articles WHERE section_id = $1", [
-          "#{law}:#{id}"
-        ])
-
-      {id,
-       %{
-         extent: rows |> List.first() |> List.wrap() |> List.first(),
-         start: start,
-         containers: Map.get(containers, id, [])
-       }}
-    end)
-  end
-
-  defp stored(law, id) do
-    %{rows: rows} =
-      Repo.query!(
-        "SELECT valid_from, valid_to, status, in_force_from, changed_by, territory FROM lat_label_timeline WHERE section_id = $1 ORDER BY valid_from",
-        ["#{law}:#{id}"]
-      )
-
-    for [f, t, s, i, c, ter] <- rows,
-        do: %{
-          valid_from: f,
-          valid_to: t,
-          status: s,
-          in_force_from: i,
-          changed_by: c,
-          territory: ter
-        }
   end
 end

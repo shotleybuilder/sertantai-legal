@@ -32,9 +32,10 @@ defmodule SertantaiLegal.Scraper.Sources do
   a difference fails until explained.
   """
 
+  alias SertantaiLegal.Scraper.AmendingLaw.Pointer
   alias SertantaiLegal.Scraper.ChangeVocabulary.Change
   alias SertantaiLegal.Scraper.Commencement.Order
-  alias SertantaiLegal.Scraper.LatRef
+  alias SertantaiLegal.Scraper.{EffectKind, LatRef}
 
   @act_types ~w(ukpga asp anaw asc nia apni)
   @order ~w(own feed territory introduction enabling_parent dates backlog)a
@@ -286,4 +287,50 @@ defmodule SertantaiLegal.Scraper.Sources do
   def introduction_status({:ok, []}, {:ok, _}), do: :held
   def introduction_status(_cached, :absent), do: :absent
   def introduction_status(_cached, _stored), do: :not_fetched
+
+  @doc """
+  A feed's status from its fetch from the store (`ChangesFeed.fetch/4`,
+  `store: :only`) and the store's answer for its first page: a feed carries
+  no valid date, so it is fresh while recently fetched (`stale?/4`); one
+  not read whole is absent (a stored 404), not fetched, or missing pages.
+  """
+  @spec feed_status({:ok, list()} | term(), term(), DateTime.t()) :: status()
+  def feed_status({:ok, _}, {:ok, _, meta}, now),
+    do: if(stale?(meta, nil, nil, now), do: :stale, else: :held)
+
+  def feed_status({:ok, _}, _page, _now), do: :held
+  def feed_status(_feed, :none, _now), do: :not_fetched
+  def feed_status(_feed, {:missing, _}, _now), do: :absent
+  def feed_status(_feed, _page, _now), do: :incomplete
+
+  @doc """
+  An Act's commencing orders from its own feed's effects, each with the
+  provisions it commences: a commencement by another named law.
+  """
+  @spec commencing_orders([map()], String.t()) :: [%{order: String.t(), provisions: [String.t()]}]
+  def commencing_orders(effects, law) do
+    for e <- effects,
+        EffectKind.kind(e.type, nil) == "commenced",
+        is_binary(e.affecting),
+        e.affecting != law,
+        do: %{
+          order: e.affecting,
+          provisions:
+            e.affected_provisions |> Pointer.refs_in() |> Enum.flat_map(&Pointer.to_refs/1)
+        }
+  end
+
+  @doc "Whether an amending law states its extent: its stored rules hold a default or a list."
+  @spec clause?(%{String.t() => map()}, String.t()) :: boolean()
+  def clause?(clauses, law) do
+    case Map.get(clauses, law) do
+      %{default: d, lists: ls} -> d != nil or ls != []
+      _ -> false
+    end
+  end
+
+  @doc "The register's change statistics from its row (effects, laws), nil when it holds none."
+  @spec register_stats([[integer() | nil]]) :: %{effects: integer(), laws: integer()} | nil
+  def register_stats([[e, l]]) when is_integer(e), do: %{effects: e, laws: l}
+  def register_stats(_rows), do: nil
 end
