@@ -11,19 +11,19 @@ defmodule Mix.Tasks.Extent.Resolve do
       mix extent.resolve --apply              # snapshot, then write
 
   With `--apply`, `id, name, geo_extent, geo_region, geo_extent_source` are
-  first copied to `extent_backfill_snapshot_<YYYYMMDD>` (once per day). To
-  roll back:
+  first copied to `restore.extent_resolve_<YYYYMMDD_HHMM>__legal_register`
+  (`SertantaiLegal.Restore`). To roll back:
 
       UPDATE legal_register l SET geo_extent = s.geo_extent,
              geo_region = s.geo_region, geo_extent_source = s.geo_extent_source
-      FROM extent_backfill_snapshot_<YYYYMMDD> s WHERE s.id = l.id;
+      FROM restore.extent_resolve_<YYYYMMDD_HHMM>__legal_register s WHERE s.id = l.id;
 
   Report: `data/reports/extent/resolve-<timestamp>.csv`.
   """
 
   use Mix.Task
 
-  alias SertantaiLegal.Repo
+  alias SertantaiLegal.Restore
   alias SertantaiLegal.Scraper.ExtentBackfill
 
   @shortdoc "Re-resolve geo_extent from DB-held sources (dry run by default)"
@@ -124,13 +124,12 @@ defmodule Mix.Tasks.Extent.Resolve do
   end
 
   defp apply!(plans, now) do
-    snapshot = "extent_backfill_snapshot_" <> Calendar.strftime(now, "%Y%m%d")
-
-    Repo.query!("""
-    CREATE TABLE IF NOT EXISTS #{snapshot} AS
-    SELECT id, name, geo_extent, geo_region, geo_extent_source
-    FROM legal_register WHERE country = 'uk'
-    """)
+    snapshot =
+      Restore.copy!(
+        "extent_resolve_" <> Calendar.strftime(now, "%Y%m%d_%H%M"),
+        "legal_register",
+        "SELECT id, name, geo_extent, geo_region, geo_extent_source FROM legal_register WHERE country = 'uk'"
+      )
 
     written = ExtentBackfill.apply!(plans)
     applications = ExtentBackfill.apply_application!(plans)

@@ -17,10 +17,10 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
   that contradicts `live` (legacy "Current legislation" on a Revoked law) is
   replaced with a neutral one.
 
-  `plan/0` is read-only. `apply!/1` snapshots the four columns first.
+  `plan/0` is read-only. `apply!/2` copies the four columns first (`Restore`).
   """
 
-  alias SertantaiLegal.Repo
+  alias SertantaiLegal.{Repo, Restore}
   alias SertantaiLegal.Scraper.ChangeLogger
   alias SertantaiLegal.Scraper.LiveStatus
 
@@ -111,16 +111,16 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
   @spec refresh(String.t()) :: %{atom() => non_neg_integer()}
   def refresh(law_name), do: [names: [law_name]] |> plan() |> write()
 
-  @doc "Write every non-`:same` outcome, after snapshotting to `snapshot_table`."
+  @doc "Write every non-`:same` outcome, after copying the live columns under `tag` (`Restore`)."
   @spec apply!([Change.t()], String.t()) :: %{atom() => non_neg_integer()}
-  def apply!(changes, snapshot_table) do
+  def apply!(changes, tag) do
     {:ok, counts} =
       Repo.transaction(
         fn ->
-          Repo.query!(
-            "CREATE TABLE #{snapshot_table} AS SELECT id, country, name, live, live_description, live_from_changes, live_evidence, now() AS snapshot_at FROM legal_register WHERE country = 'uk'",
-            [],
-            timeout: :infinity
+          Restore.copy!(
+            tag,
+            "legal_register",
+            "SELECT id, country, name, live, live_description, live_from_changes, live_evidence, now() AS snapshot_at FROM legal_register WHERE country = 'uk'"
           )
 
           write(changes)

@@ -160,7 +160,7 @@ defmodule SertantaiLegal.Scraper.LiveStatus.RecomputeTest do
 
   test "apply!: snapshots, writes live/description/evidence together and logs live changes",
        ctx do
-    Recompute.plan() |> Recompute.apply!("live_status_snapshot_test")
+    Recompute.plan() |> Recompute.apply!("live_status_test")
 
     assert [@in_force, "In force", "in_force", 1] = db(ctx.coal)
     assert [@revoked, "Revoked", "territorial", 0] = db(ctx.scot)
@@ -170,7 +170,9 @@ defmodule SertantaiLegal.Scraper.LiveStatus.RecomputeTest do
     assert [@revoked, "Revoked by UK_uksi_2011_1524", "revoked", 0] = db(ctx.good)
 
     %{rows: [[live]]} =
-      Repo.query!("SELECT live FROM live_status_snapshot_test WHERE name = $1", [ctx.coal])
+      Repo.query!("SELECT live FROM restore.live_status_test__legal_register WHERE name = $1", [
+        ctx.coal
+      ])
 
     assert live == @revoked
   end

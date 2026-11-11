@@ -12,11 +12,11 @@ defmodule SertantaiLegal.Scraper.LiveStatus.EffectsBackfill do
      - re-resolve `geo_extent` where it has no source or only the type floor,
        with the `affected_effects` source (`ExtentResolver`).
 
-  `enrich_stats/2` is pure. `apply!/2` snapshots the columns it writes.
+  `enrich_stats/2` is pure. `apply!/2` copies the columns it writes first (`Restore`).
   """
 
   alias SertantaiLegal.Legal.ReadinessTiers
-  alias SertantaiLegal.Repo
+  alias SertantaiLegal.{Repo, Restore}
   alias SertantaiLegal.Scraper.ExtentResolver
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
@@ -276,16 +276,16 @@ defmodule SertantaiLegal.Scraper.LiveStatus.EffectsBackfill do
     end
   end
 
-  @doc "Write the planned stats and extents, after snapshotting them to `snapshot_table`."
+  @doc "Write the planned stats and extents, after copying them under `tag` (`Restore`)."
   @spec apply!([Change.t()], String.t()) :: %{stats: non_neg_integer(), extent: non_neg_integer()}
-  def apply!(changes, snapshot_table) do
+  def apply!(changes, tag) do
     {:ok, counts} =
       Repo.transaction(
         fn ->
-          Repo.query!(
-            ~s|CREATE TABLE #{snapshot_table} AS SELECT id, country, name, "🔻_rescinded_by_stats_per_law", geo_extent, geo_region, geo_extent_source, now() AS snapshot_at FROM legal_register WHERE country = 'uk'|,
-            [],
-            timeout: :infinity
+          Restore.copy!(
+            tag,
+            "legal_register",
+            ~s|SELECT id, country, name, "🔻_rescinded_by_stats_per_law", geo_extent, geo_region, geo_extent_source, now() AS snapshot_at FROM legal_register WHERE country = 'uk'|
           )
 
           Enum.reduce(changes, %{stats: 0, extent: 0}, fn c, acc ->

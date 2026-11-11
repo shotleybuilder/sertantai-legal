@@ -209,7 +209,8 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       Mix.shell().info("\n## #{law}: #{length(changes)} changes, #{length(report)} conflicts")
       for {k, n} <- counts, do: Mix.shell().info("  #{n}  #{inspect(k)}")
 
-      for {kind, items} <- Enum.group_by(report, & &1.kind),
+      # sorted: a map's atom keys iterate in atom-table order (OTP 26+)
+      for {kind, items} <- report |> Enum.group_by(& &1.kind) |> Enum.sort_by(&elem(&1, 0)),
           item <- if(opts[:all], do: items, else: Enum.take(items, 10)) do
         Mix.shell().info("    #{kind} " <> inspect(Map.drop(item, [:kind]), limit: 8))
       end

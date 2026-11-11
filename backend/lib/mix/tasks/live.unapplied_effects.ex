@@ -8,7 +8,7 @@ defmodule Mix.Tasks.Live.UnappliedEffects do
 
       mix live.unapplied_effects --fetch            # cache the feeds (resumable; read-only on the DB)
       mix live.unapplied_effects                    # dry run: matched / unapplied per law, totals
-      mix live.unapplied_effects --apply            # snapshot the column to unapplied_effects_snapshot_<stamp>, then write
+      mix live.unapplied_effects --apply            # copy the column to restore.unapplied_effects_<stamp>__legal_register, then write
       mix live.unapplied_effects --law UK_a,UK_b    # limit to named laws
 
   Feeds are cached in `data/cache/changes-feed-inforce/` (separate from the
@@ -17,7 +17,7 @@ defmodule Mix.Tasks.Live.UnappliedEffects do
 
   use Mix.Task
 
-  alias SertantaiLegal.Repo
+  alias SertantaiLegal.{Repo, Restore}
   alias SertantaiLegal.Scraper.LatEffects
   alias SertantaiLegal.Scraper.LiveStatus.EffectsBackfill
 
@@ -104,12 +104,14 @@ defmodule Mix.Tasks.Live.UnappliedEffects do
 
   defp apply!(plan) do
     changes = for p <- plan, p.cached?, p.new != p.stats, do: p
-    table = "unapplied_effects_snapshot_" <> Calendar.strftime(DateTime.utc_now(), "%Y%m%d_%H%M")
+    tag = "unapplied_effects_" <> Calendar.strftime(DateTime.utc_now(), "%Y%m%d_%H%M")
 
     Repo.transaction(
       fn ->
-        Repo.query!(
-          "CREATE TABLE #{table} AS SELECT name, #{@column} AS stats FROM legal_register WHERE name = ANY($1)",
+        Restore.copy!(
+          tag,
+          "legal_register",
+          "SELECT name, #{@column} AS stats FROM legal_register WHERE name = ANY($1)",
           [Enum.map(changes, & &1.name)]
         )
 
@@ -123,6 +125,6 @@ defmodule Mix.Tasks.Live.UnappliedEffects do
       timeout: :infinity
     )
 
-    Mix.shell().info("\nApplied: #{length(changes)} laws (snapshot #{table})")
+    Mix.shell().info("\nApplied: #{length(changes)} laws (restore copy under tag #{tag})")
   end
 end

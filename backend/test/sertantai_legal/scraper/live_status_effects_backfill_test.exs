@@ -165,7 +165,7 @@ defmodule SertantaiLegal.Scraper.LiveStatus.EffectsBackfillTest do
       assert EffectsBackfill.extent_change?(c)
 
       assert %{stats: 1, extent: 1} =
-               EffectsBackfill.apply!([c], "effects_backfill_snapshot_test")
+               EffectsBackfill.apply!([c], "effects_backfill_test")
 
       %{rows: [[extent, source, stats]]} =
         Repo.query!(
@@ -177,9 +177,12 @@ defmodule SertantaiLegal.Scraper.LiveStatus.EffectsBackfillTest do
       assert [%{"territorial_application" => "E"}] = stats["UK_uksi_2005_894"]["details"]
 
       %{rows: [[old]]} =
-        Repo.query!("SELECT geo_extent FROM effects_backfill_snapshot_test WHERE name = $1", [
-          ctx.name
-        ])
+        Repo.query!(
+          "SELECT geo_extent FROM restore.effects_backfill_test__legal_register WHERE name = $1",
+          [
+            ctx.name
+          ]
+        )
 
       assert old == "UK"
     end

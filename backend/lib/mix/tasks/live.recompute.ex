@@ -9,7 +9,7 @@ defmodule Mix.Tasks.Live.Recompute do
       mix live.recompute --batch 0  # dry run, laws of one fetch batch only
       mix live.recompute --batch 0 --with-effects   # preview with the batch's cached effects applied (in memory)
       mix live.recompute            # dry run
-      mix live.recompute --apply    # snapshot to live_status_snapshot_<YYYYMMDD>, then write
+      mix live.recompute --apply    # copy to restore.live_status_<stamp>__legal_register, then write
       mix live.recompute --trust-revoker-extent   # also trust UK-level revokers' recorded extent
 
   Report: `data/reports/live-status/recompute-<timestamp>.csv`.
@@ -52,11 +52,10 @@ defmodule Mix.Tasks.Live.Recompute do
     if opts[:apply] do
       suffix = if opts[:batch], do: "_b" <> String.replace(opts[:batch], ".", "_"), else: ""
 
-      table =
-        "live_status_snapshot_" <> Calendar.strftime(DateTime.utc_now(), "%Y%m%d_%H%M") <> suffix
+      tag = "live_status_" <> Calendar.strftime(DateTime.utc_now(), "%Y%m%d_%H%M") <> suffix
 
-      counts = Recompute.apply!(plan, table)
-      Mix.shell().info("\nApplied (snapshot #{table}): #{inspect(counts)}")
+      counts = Recompute.apply!(plan, tag)
+      Mix.shell().info("\nApplied (restore copy under tag #{tag}): #{inspect(counts)}")
     else
       Mix.shell().info("\nDry run: nothing written.")
     end

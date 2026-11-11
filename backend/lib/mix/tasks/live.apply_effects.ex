@@ -6,7 +6,7 @@ defmodule Mix.Tasks.Live.ApplyEffects do
   no source or only the type floor.
 
       mix live.apply_effects --batch 0            # dry run for one fetch batch
-      mix live.apply_effects --batch 0 --apply    # snapshot to effects_backfill_snapshot_<YYYYMMDD>[_<batch>], then write
+      mix live.apply_effects --batch 0 --apply    # copy to restore.effects_backfill_<stamp>[_<batch>]__legal_register, then write
       mix live.apply_effects                      # every cached law
 
   Then run `mix live.recompute`.
@@ -46,15 +46,15 @@ defmodule Mix.Tasks.Live.ApplyEffects do
     Mix.shell().info("\nExtent report: #{path}")
 
     if opts[:apply] do
-      table = snapshot_name("effects_backfill_snapshot", opts[:batch])
+      tag = restore_tag("effects_backfill", opts[:batch])
 
       counts =
         EffectsBackfill.apply!(
           Enum.filter(plan, &(&1.stats || EffectsBackfill.extent_change?(&1))),
-          table
+          tag
         )
 
-      Mix.shell().info("\nApplied (snapshot #{table}): #{inspect(counts)}")
+      Mix.shell().info("\nApplied (restore copy under tag #{tag}): #{inspect(counts)}")
     else
       Mix.shell().info("\nDry run: nothing written.")
     end
@@ -73,7 +73,7 @@ defmodule Mix.Tasks.Live.ApplyEffects do
     end
   end
 
-  defp snapshot_name(prefix, batch) do
+  defp restore_tag(prefix, batch) do
     suffix = if batch, do: "_b" <> String.replace(batch, ".", "_"), else: ""
     prefix <> "_" <> Calendar.strftime(DateTime.utc_now(), "%Y%m%d_%H%M") <> suffix
   end

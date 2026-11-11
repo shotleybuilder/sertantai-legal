@@ -17,13 +17,13 @@ defmodule Mix.Tasks.Drrp.Remap do
   from its stored actors (per-actor `drrp` when present).
 
       mix drrp.remap            # dry run: transitions and counts
-      mix drrp.remap --apply    # snapshot (id, drrp_types, actors) to drrp_remap_snapshot_<stamp>, then write
+      mix drrp.remap --apply    # copy (id, drrp_types, actors) to restore.drrp_remap_<stamp>__legal_articles, then write
   """
 
   use Mix.Task
 
   alias SertantaiLegal.Legal.Taxa.ActorDefinitions
-  alias SertantaiLegal.Repo
+  alias SertantaiLegal.{Repo, Restore}
   alias SertantaiLegal.Zenoh.ProvisionSubscriber
 
   @shortdoc "Re-map provision DRRP types by the holder (dry run by default)"
@@ -109,20 +109,22 @@ defmodule Mix.Tasks.Drrp.Remap do
   defp decode(a), do: a
 
   defp apply!(changes, law_changes) do
-    table = "drrp_remap_snapshot_" <> Calendar.strftime(DateTime.utc_now(), "%Y%m%d_%H%M")
+    tag = "drrp_remap_" <> Calendar.strftime(DateTime.utc_now(), "%Y%m%d_%H%M")
 
     Repo.transaction(
       fn ->
-        Repo.query!(
-          "CREATE TABLE #{table} AS SELECT section_id, law_name, drrp_types, actors FROM legal_articles WHERE section_id = ANY($1)",
-          [Enum.map(changes, &elem(&1, 0))],
-          timeout: :infinity
+        Restore.copy!(
+          tag,
+          "legal_articles",
+          "SELECT section_id, law_name, drrp_types, actors FROM legal_articles WHERE section_id = ANY($1)",
+          [Enum.map(changes, &elem(&1, 0))]
         )
 
-        Repo.query!(
-          "CREATE TABLE #{table}_lrt AS SELECT name, duty_type FROM legal_register WHERE name = ANY($1)",
-          [Enum.map(law_changes, &elem(&1, 0))],
-          timeout: :infinity
+        Restore.copy!(
+          tag,
+          "legal_register",
+          "SELECT name, duty_type FROM legal_register WHERE name = ANY($1)",
+          [Enum.map(law_changes, &elem(&1, 0))]
         )
 
         for {name, dt} <- law_changes,
@@ -144,7 +146,7 @@ defmodule Mix.Tasks.Drrp.Remap do
     )
 
     Mix.shell().info(
-      "\nApplied: #{length(changes)} rows, #{length(law_changes)} laws (snapshots #{table}, #{table}_lrt)"
+      "\nApplied: #{length(changes)} rows, #{length(law_changes)} laws (restore copies under tag #{tag})"
     )
   end
 end
