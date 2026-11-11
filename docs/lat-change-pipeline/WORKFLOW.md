@@ -387,6 +387,19 @@ Each group is named in `test/fixtures/label/labels.json` (`known:`, `fix:` or `c
 
 Before this, OH&S used G, S and T by shape and R pooled to the 95% bound (2026-10-29; 10 rounds). Golden is never grown during a pass: new provisions go to `golden_extended.exs` for the next pass.
 
+**Environmental Protection** (2026-11-11). The stored changes were as rebuilt at Evidence; the fold is outside the build's version, so no fold fix needs a rebuild. The gate began at 13 groups not named (1,440 rows), with OH&S's parked 1. The review found five classes, and the decisions fixed four in the fold (Decisions 1, 2, 4 and 5). The fifth, Welsh SIs held under UK SI names (440 rows), is parked with the Register (Decision 3). Decision 7 followed (undated repeals), then the agent pass, then Decisions 8 and 9 (the parked J6 and J4).
+- **Never before its maker (Decisions 1 and 7):** an undated insertion or repeal by a later law begins at that law's first dated record on the row or anything holding it, else its making (`made_of` from the register). EPA Part IIA by EA 1995: 674 rows had been labelled from 1990.
+- **The agent pass** (seed 211, 41 rows, 3 batches, 427,919 tokens): 24 OK, 2 fold classes, 11 upstream. The fold classes became gate checks, measured and fixed by reach: an own commencement before the law's general start dropped (1,720 rows in 4 laws), and an ancestor insertion's territory lost (10 rows in 4 laws). The upstream classes are parked with the Commencement reader, the Amending-law reader, the Feed reader and the Register.
+- **Caught by the checks, not the tests:**
+  - a status diff of OH&S at HEAD and now found Decision 7's first cut repealing a row that still shows its text;
+  - undated starts rising 1,227 beyond the measure showed Decision 8's first cut blanking dated starts;
+  - golden found the early-start rule moving a row's own later start back (Forestry Act 1967 s.1(4)(a)).
+- **Result:**
+  - Gate PASS for all three families (EP 8 groups named).
+  - Current statuses unchanged, except REACH Pt XI, now repealed as today's label has it.
+  - EP periods 68,074 → 69,135; undated starts EP +22, OH&S +12, Maritime +77 (Decision 8's gaps).
+  - Credo: `Label.fold` (13 → under 9) and `Start.period` (29 → under 9) split into named functions.
+
 **Skill.** `label-check`.
 
 ## 10. Measures

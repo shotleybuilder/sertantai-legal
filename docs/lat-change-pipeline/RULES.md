@@ -171,6 +171,21 @@ An Act brought in by orders we don't hold has no start date, never Royal Assent.
 - **Example:** Control of Pollution Act 1974 s.101 (golden: `in_force_from` empty).
 - **Serves:** `unknown-over-guess` · **Code:** `LabelSource` (start), `LabelPeriods.periods/4` (no period from the 1900-01-01 placeholder) · **Test:** `label_periods_test` "no period from the placeholder start" · **Origin:** golden convention C10 (`cv-01-architecture-review`, 2026-10-21); `cv-06-switch-over` (2026-10-31)
 
+### `left-to-an-order-date-unknown`
+A provision its own law leaves to an order we don't hold reads in force from the law's start, with its in-force date unknown (a counted gap). It never takes the law's start as its in-force date. A dated insertion or a start-day commencement still dates it.
+- **Example:** 157 rows in Environmental Protection, OH&S and Maritime Safety (`OwnCommencement` `:by_order`) read in force from the law's start with that day as in_force_from.
+- **Serves:** `unknown-over-guess` · **Code:** `LabelSource` (`by_order`), `Label.Start` (`by_order_undated?/2`) · **Test:** `label_fold_test` "a row its own law leaves to an order we don't hold" · **Origin:** Jason 2026-11-11, Environmental Protection: Label fold, Decision 8 (the parked J6)
+
+### `own-clause-early-start`
+A row its own law's clause commences before the law's general start, once the law is made, begins on that day: prospective from the making, in force from the clause's day.
+- **Example:** WSI 2026/103 brings Part 7 into force the day after it was made, though its general start is 2027-10-01 (1,720 rows in 4 laws).
+- **Serves:** `law-text-wins`, `binds-on-date` · **Code:** `Label.Start.early_own/2`; gate check `start: an own commencement before the law's start dropped` · **Test:** `label_fold_test` "its own law's clause commencing it before the law's general start" · **Origin:** the agent pass, Environmental Protection: Label fold (2026-11-11)
+
+### `feed-pending-dated-applies`
+A change the feed holds prospective and not yet applied applies on its date where the feed gives one. legislation.gov.uk's text lags; the date stands. An undated one changes nothing (`Undated.pending?`).
+- **Example:** 240 such changes in three families: 186 undated (skipped), 54 dated (applied).
+- **Serves:** `source-authority` · **Code:** `Label.Undated` (`pending?/1`) · **Test:** `label_fold_test` "never one the feed holds prospective and unapplied" · **Origin:** Jason 2026-11-11, Environmental Protection: Label fold, Decision 9 (the parked J4)
+
 ### `royal-assent-only-when-nothing-else`
 An Act with no commencement clause is in force on Royal Assent (Interpretation Act 1978 s.4). An amending Act's Royal Assent dates only what no other rule reaches. Its "first start" is its orders' earliest date, not its Royal Assent.
 - **Example:** ERDRA 1998's changes to HSWA 1974 s.24 date from 1998-08-01 (SI 1998/1658), not from Royal Assent on 8 April.
@@ -254,6 +269,11 @@ The order is: the law's own default and lists, then an SI's powers, then this st
 - **Example:** the Merchant Shipping (Pollution) Act 2006 states E+W+S+N.I. only on the whole Act. SI 2006/1265, made under its s.1, and the Wreck Removal Convention Act 2011's changes to the Merchant Shipping Act 1995 are bound to the UK, where before they had no territory.
 - **Serves:** `law-text-wins`, `binds-on-date` · **Code:** `Extent.StatedExtent` (`root/1`, `uniform/1`), `Extent.stated`, `Extent.Lookup.of/2`, `Extent.Powers` · **Test:** `amending_law/extent/stated_extent_test`, `lookup_test` "an Act stating no clause" · **Origin:** Jason 2026-11-05, Decision 3, `maritime-safety-extent-reader`
 
+### `ancestor-insertion-territory`
+A row whose own insertion names no territory takes the territory of the nearest insertion holding it that does.
+- **Example:** SI 1999/2228 reg.3B(10)(b): reg.3B was inserted by SI 2017/592 for England only, so the row is E, not E+W.
+- **Serves:** `law-text-wins` · **Code:** `Label.Start` (`insertion_territory/4`); gate check `territory: an ancestor insertion's territory lost` · **Test:** `label_fold_test` "an ancestor's insertion territory narrows a row" · **Origin:** the agent pass, Environmental Protection: Label fold (2026-11-11; 10 rows in 4 laws)
+
 ### `insertion-takes-inserting-territory`
 Inserted text takes the inserting law's narrower territory. Laws inserting the same row on the same day for different territories insert it in their union.
 - **Example:** HSWA 1974 s.23(4)(a): SI 2005/1541 inserts it for E+W and SSI 2006/475 for S, so it is E+W+S.
@@ -270,7 +290,7 @@ For an EU instrument the Windsor Framework keeps in NI, a UK change on or after 
   - CLP Art 2(17) is E+W+S from 2020-12-31.
   - REACH Art 140 is omitted for GB and stays in force in NI.
 - **Serves:** `binds-on-date`, `law-text-wins` · **Code:** `Windsor.confine/2`; `Label.Day` (`:windsor`); `LabelRules` (`:windsor_ni`) · **Test:** `windsor_test`; `label_rules_test` "a UK change to a Windsor law" · **Origin:** Jason 2026-10-30 ("Hold a small Windsor list"), `cv-s09-label-fold`
-- **Differs:** both entries (REACH, CLP) are `checked: false`, and `Windsor.listed?/1` ignores the flag. See open decision 11.
+- **Checked:** both entries (REACH, CLP) are checked by Jason (2026-11-11, Environmental Protection: Label fold, Decision 6), and `Windsor.listed?/1` requires the flag. This closes open decision 11.
 
 ---
 
@@ -336,6 +356,24 @@ A row is labelled from its law's start, or from the latest whole insertion of it
   - SI 2009/1348 reg.19B is labelled from 2011, not 2009.
   - HSWA 1974 s.51A(2E)(b) is labelled from 2005, inside an s.51A of 1998.
 - **Serves:** `binds-on-date` · **Code:** `Label.Start.start/2` · **Test:** `label_fold_test` "inserted later: from its insertion"; "the latest insertion starts it" · **Origin:** `cv-s09-label-fold` (rounds 1 and 3, 2026-10-30)
+
+### `never-before-its-maker`
+No period credits a law, or begins its text, before that law existed. An undated whole insertion by a later law begins the row at that law's first dated record on the row or anything holding it, else at its making, with in_force_from unknown. An undated whole repeal by a later law, its text gone, reads repealed from the same day. An undated substitution or other maker by a law made after a period's start is not credited to it.
+- **Examples:**
+  - EPA 1990 Part IIA, inserted by EA 1995 s.57 with no source dating it, begins in 1995, not 1990 (674 rows).
+  - EPA ss.30–50 and s.143, repealed by EA 1995 Sch.24, undated, read repealed from 1995, not 1990.
+  - EPA s.126, substituted by 1999 c.28 with no date: its 1991 text keeps its own maker.
+- **Serves:** `binds-on-date`, `unknown-over-guess` · **Code:** `Label.Start.inserter_born/5`, `made_after?/3`; `Label.Undated.date_late_repeals/2`; `LabelSource` (`made_of`) · **Test:** `label_fold_test` "Environmental Protection: Label fold (2026-11-11)" · **Origin:** Jason 2026-11-11, Environmental Protection: Label fold, Decisions 1 and 7 (the parked undated-change-before-its-law)
+
+### `version-begins-with-its-sibling`
+A territorial version with no insertion of its own begins no earlier than its sibling's dated insertion of the number, or of one holding it. Its in-force date is unknown.
+- **Example:** EPA s.106(4A)[E+W] and (4B)(a)[E+W], inserted in the S text by SSI 2002/541 on 2002-12-05, are not labelled from 1990.
+- **Serves:** `binds-on-date`, `unknown-over-guess` · **Code:** `Label.Start.sibling_born/5`; `LabelRules` (`before_insertion` skips another version's later insertion) · **Test:** `label_fold_test` "a version with no insertion of its own"; `label_rules_test` "a later insertion for another version" · **Origin:** Jason 2026-11-11, Environmental Protection: Label fold, Decision 4
+
+### `heading-insertion-never-restarts`
+A Part's or Chapter's insertion later than the row's own dated record (its commencement or insertion) never moves the row's start: the heading came round text already there.
+- **Example:** EA 1995 ss.11–16A, there since 1996 or 2002, under the Chapter 1A heading WSI 2013/755 inserted.
+- **Serves:** `binds-on-date` · **Code:** `Label.Start.start/2` (`container_after_own?/2`) · **Test:** `label_fold_test` "a container's later insertion never moves" · **Origin:** Jason 2026-11-11, Environmental Protection: Label fold, Decision 5
 
 ### `legacy-addition-never-moves-start`
 An insertion claimed only by old-style markup (`d…p…` ids) does not move the start, unless the amending law's text or the feed also says "inserted". Such rows are listed apart as `legacy_unconfirmed`.
@@ -690,6 +728,7 @@ A repeals table that names an enactment in a row of its own gives the rows under
 A provision its own law commences exists from the law's making and is prospective until its start. This applies only where nothing else dates the provision. An amendment inserting words in it on the start day does not date it: only an insertion of the provision does.
 - **Example:** SI 2017/469 art.1(1) and art.11. Words inserted on the start day: SI 1993/3138 reg.81 by SI 1994/541.
 - **Serves:** `binds-on-date` · **Code:** `Label.Made.from/4`; `LabelRules` (`:no_made_period`) · **Test:** `label_made_test` (including "an insertion of words on the start day doesn't date the provision"); `label_rules_test` · **Origin:** LR-39; Jason 2026-10-31 ("add it"), `cv-06-switch-over`; the words case `maritime-safety-label-fold` (2026-11-06)
+- **Own clause:** legislation.gov.uk's record of the law's own commencement (the law itself, no order) counts as its own clause and keeps the made period (WSI 2010/1821, SI 2025/1218: 232 rows; Jason 2026-11-11, Environmental Protection: Label fold, Decision 2; `Label.Made.own_clause?/2`).
 
 ### `law-commenced-by-order-begins-at-making`
 A law with no start held but commenced by an order begins at its making, prospective, when a dated commencement follows. Otherwise its start stays unknown.
@@ -743,6 +782,7 @@ The named missing-repeal rows and the named date gaps keep the old register's la
 | Merge forms below triage (Environmental Protection and OH&S), named in the merge gate (`merges.json`), each record kept visible: one event in two id-less records, the law's text and legacy markup, with no feed effect (the merge joins an id-less record only to one with an id: 1999 c.29 s.367(3), (5)); the feed naming the operative provision ("the Schedule has effect") while the law's text or markup names the Schedule — unrelated provisions, so left apart (SI 2023/149 reg.2(1) on EPA s.33(8)(a); SI 1996/3022 reg.2 on the Factories Act s.68); two law-text records for one feed effect, the second left apart (NISR 2017/86 reg.20(a)(ii)); legislation.gov.uk's own ids: markup effect ids its feed doesn't place (SI 1999/3206 reg.4(e), wsi 2013/755 Sch.4 para.94(2), SI 1995/2036 Sch.3), an affecting provision named "s.73" for reg.73 (SI 2005/894), an alias joining a later law's "amendment to earlier affecting provision" with a commencement id (SI 1995/2038 reg.6(8)); an "in each place" words change kept on the parent (NISR 2010/160 reg.28 by NISR 2019/6) | 3 + 2 + 1 changes (Decision 1); legislation.gov.uk's ids 5; in each place 1 | Both records kept apart, as read | `backend/data/reports/merge/environmental-protection-gate-review-1.md`, `ohs-gate-review-2026-11-10.md` | Jason 2026-11-10, Environmental Protection: Merge (Decision 1) |
 | One-change evidence forms below triage, named in the evidence gate (`evidence.json`): one change repealed by two provisions of one law commenced on different days, the table taking the first commencement claim not the earlier (2003 c.20 s.112(8) and Sch.8 on MSA 1995 s.311); a cross-heading's insertion read as words from the markup where the feed's provision is right (SI 2006/1244 on MSA 1995 h.162); legislation.gov.uk's markup wrapping a paragraph's number on a sentence's substitution, so the whole paragraph is chosen (SI 2019/270 reg.3(8)(b) on EU 2009/391 Art 8(1)) | Maritime Safety: 3 changes | Chosen as the table orders | `backend/data/reports/evidence/maritime-gate-review-1.md` | 2026-11-06 |
 | Evidence forms from legislation.gov.uk's own records (Environmental Protection, OH&S, Maritime Safety), named in the evidence gate (`evidence.json`): a note citing a Welsh SI by its UK S.I. number (Citation URI `uksi/2011/971`, "S.I. 2011/971") where the feed has `wsi/2011/971`, one law under two names, so a `by` disagreement is reported though the feed's name is chosen and right (Decision 2: laws are never matched by year and number alone); the feed dating an amendment at the amended law's own later start (SSI 2025/28 on SSI 2024/269; SI 2025/369 on SI 2025/278), the law's date chosen; a feed year slip (SI 1996/1592: 2006 for 1996) and other later feed dates (SI 1996/2092 reg.21(8); SI 2025/514's day count); a substitution worded "for X insert Y" (SI 2015/1637 Sch. para 3(a)) and the feed's Type error where the law's text holds no claim (SI 2019/758 Sch.1 para 95(3)(d) on REACH Art 138(1)), the feed's inserted chosen; two orders commencing one provision on one day for two territories, commenced_by holding one (2003 c.38: SI 2004/690 and WSI 2004/999) | Welsh SI citations 29 changes in 5 laws; later amended-law starts 11; feed dates 4; operation 2; two orders 2 | Chosen as the table orders; the conflict kept visible | `backend/data/reports/evidence/environmental-protection-gate-review-1.md` | Jason 2026-11-11, Environmental Protection: Evidence (Decisions 1–3) |
+| Label forms below triage (Environmental Protection), named in `labels.json`: SI 2025/1218's clause "18 months after the day on which they are made" gives 2027-05-18 while legislation.gov.uk's own record gives 2027-05-19, so the row reads prospective for the day; SSI 2025/165 reg.9's clause stage "subject to paragraph (5)" left on the general start; HSWA s.78's stored row extent E+W+S+NI where C11 gives E+W+S, so NI reads in force after the 2006 repeals (golden passes on its own extent) | 14 + 1 + 3 rows | As the fold reads them | `test/fixtures/label/labels.json`; the session | Jason 2026-11-11, Environmental Protection: Label fold |
 | One-row label forms below triage, named in the label gate (`labels.json`): an undated whole repeal beside a dated one reads repealed from the start (MSA 1970 s.42(1): 1992 c.52 dated, NISI 1995/1980 undated); an amending law's change the law's text alone states left undated while its other changes are dated (SI 1975/2220 reg.2 by SI 1998/929); one subsection's deemed day taken as an amending Act's start (1997 c.28 s.28(5): MSA 1995 s.284(4), s.85(3) dated 1996-09-15) | Maritime Safety: 4 rows | Credited from the start, or dated too early | `test/fixtures/label/labels.json` | 2026-11-06 |
 | An SI's introduction with no powers clause on legislation.gov.uk (the designation or draft-approval recital only, or no preamble: SI 2011/1043, 1999/1820, 1977/445) | Maritime Safety: 3 changes | No bound from powers | `withheld.json` | 2026-11-05 |
 | An enabling Act not on legislation.gov.uk (stored as a 404: the Merchant Shipping (Registration, etc.) Act 1993, repealed 1996) | Maritime Safety: SI 1994/541, 24 changes | No bound from powers | `withheld.json` | 2026-11-05 |
@@ -921,6 +961,7 @@ Each item gives the rulings with their dates, what the code does now, the aim at
   - The extended 23 join at the next family's pass, from the first step.
 
 ### 11. The Windsor list is relied on unchecked
+- **Closed 2026-11-11** (Environmental Protection: Label fold, Decision 6): Jason checked both entries; `Windsor.listed?/1` requires `checked: true`. EP's retained EU instruments are not listed (parked with the EU directives).
 - **Ruling:** 2026-10-30: "hold a small Windsor Framework Annex 2 list, checked by Jason".
 - **Code:**
   - Both entries are `checked: false`.

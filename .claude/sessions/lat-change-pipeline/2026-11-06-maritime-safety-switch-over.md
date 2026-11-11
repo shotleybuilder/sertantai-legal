@@ -75,7 +75,8 @@ bugs:
     affected: "5 Maritime rows (s.256A, s.256A(1), s.256A(2); EPA 1970 s.42(1); SI 1975/2220 reg.2); OH&S's named date gaps are the same class"
     fix: "an undated change dates nothing: the period before it keeps its own maker, and the change is a gap (unknown-over-guess)"
     step: Label fold
-    status: open
+    status: fixed
+    moved_to: "2026-11-11-environmental-protection-label-fold: Decisions 1 and 7 (EP 692 rows, OH&S 6)"
   - pattern: 'A change by an amending law dated by the commencement source before that law was made (MSA 1995 s.284(4), s.85(3): the 1997 Act''s change dated 1996-09-15; the Act was made 1997-03-19)'
     category: commencement-before-made
     module: Commencement (date resolution for amending-law changes)
@@ -89,7 +90,8 @@ bugs:
     affected: 1 row
     fix: "find why the start period is missing for this row (inserted? start read?)"
     step: Label fold
-    status: open
+    status: fixed
+    moved_to: "2026-11-11-environmental-protection-label-fold: named in labels.json (C10)"
   - pattern: 'A repeals table''s rows given to the wrong enactment: Mines Regulations 2014 Sch.3 Pt.1 repeals Mines and Quarries Act 1954 ss.19, 28, 30, 36-37 … "In full", read as whole-section repeals of HSWA 1974 (the table''s later entry) from 2015-04-06 E+W+S'
     category: repeal-table-wrong-enactment
     module: Amendment.Reader.RepealTable (AmendingLaw)

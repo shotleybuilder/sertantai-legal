@@ -301,7 +301,8 @@ bugs:
   module: ChangeVocabulary.Label.Start
   affected: 55
   fix: 'CV-06: read the by-order records into the fold (or a gap), measured against the old J6 rows (28,122 rows in 55 laws)'
-  status: open
+  status: fixed
+  moved_to: "2026-11-11-environmental-protection-label-fold: Decision 8, in force from the start with in_force_from unknown (157 rows)"
   step: Label fold
   moved_from: 2026-10-21-cv-05-consumers
 - pattern: Pending and unapplied changes (J4, LR-36) are read by the feed reader but used by no evidence rule or the fold
@@ -309,7 +310,8 @@ bugs:
   module: ChangeVocabulary.Label
   affected: null
   fix: 'CV-06: classify in the shadow diff; a fold rule if the old J4 is right'
-  status: open
+  status: fixed
+  moved_to: "2026-11-11-environmental-protection-label-fold: Decision 9, by design (240 changes: 186 undated skipped, 54 dated applied)"
   step: Label fold
   moved_from: 2026-10-21-cv-05-consumers
 - pattern: 'EU directives (eudr) after IP completion day: no rule fits all. A directive''s end depends on whether the Windsor Framework keeps it in NI (Jason 2026-10-30). Needs that source; golden Directive 90/269 Art 8b(1) is held out'
@@ -318,6 +320,7 @@ bugs:
   affected: 15 OH&S directives
   fix: Hold the Windsor Framework source (which directives continue in NI); the rule per directive to agree with Jason
   status: open
+  note: "2026-11-11-environmental-protection-label-fold: parked again, no Windsor Framework source per directive is held (Decision 6 added none); 15 OH&S directives"
   step: Label fold
   moved_from: 2026-10-22-cv-s09-label-fold
 - pattern: 'mix tasks over ~300 lines: lat.extent_check 404, lat.commencement_check 446, lat.sources 383 (logic inline: tallies untested)'
@@ -423,7 +426,8 @@ bugs:
   affected: 3 seen
   fix: Check each against golden and the fold; fix by class or name a known limit
   step: Label fold
-  status: open
+  status: fixed
+  moved_to: "2026-11-11-environmental-protection-label-fold: a named known limit (the row's stored extent E+W+S+NI where C11 gives E+W+S; 3 rows)"
   moved_from: docs/lat-change-pipeline/README.md worked examples (2026-11-03)
 - pattern: 'The Windsor Framework list is marked checked: false, but the code ignores the flag and 160 rows rely on it'
   category: windsor-list-unchecked
@@ -431,7 +435,8 @@ bugs:
   affected: 160
   fix: Jason checks the list (RULES.md open decision 11)
   step: Label fold
-  status: open
+  status: fixed
+  moved_to: "2026-11-11-environmental-protection-label-fold: Decision 6, both entries checked by Jason; listed?/1 requires the flag"
   moved_from: docs/lat-change-pipeline/RULES.md (2026-11-03)
 ---
 

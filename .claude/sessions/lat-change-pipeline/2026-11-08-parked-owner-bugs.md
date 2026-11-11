@@ -126,7 +126,8 @@ bugs:
     affected: 6 rows
     fix: "review the group known/fix/check"
     step: Label fold
-    status: open
+    status: fixed
+    moved_to: "2026-11-11-environmental-protection-label-fold: fixed by Decision 1"
 
 artifacts:
   - backend/lib/sertantai_legal/scraper/change_vocabulary/label/undated.ex
