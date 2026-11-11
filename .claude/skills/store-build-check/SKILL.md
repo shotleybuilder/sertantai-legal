@@ -87,4 +87,10 @@ Be rigorous and skeptical; WRONG needs evidence. Under 700 words.
   - The first digests differed for 18 of 138 laws with nothing stored moving: the conflicts are derived on read, and `Conflicts.values` listed them in atom-table order (Decision 2, B, fixed).
   - After the fix, all 285 digests are identical across two builds. Maritime builds 117 laws in 39 s; the big golden Acts are about 3 times slower with 4 workers (parked); 0 stale.
   - Gates: 7 pass, and the 2 that fail are parked (Extent, Amending). Hand check at seed 1111. Session `.claude/sessions/lat-change-pipeline/2026-11-06-maritime-safety-store-and-build.md`.
+- Environmental Protection (2026-11-11), with no agent pass (Jason).
+  - Two parked bugs fixed: restore copies now go to the `restore` schema (`SertantaiLegal.Restore`), and `--conflicts` groups print in a fixed order.
+  - 106 built laws were stale on older commencement readings. They were re-read in their own modes, then `--build --stale` ran (107 laws, and 266 switched labels refolded).
+  - All 445 digests are identical. EP built 122 laws in about 5½ min with 1 worker (VM up; EPA 1990 189 s, accepted). 0 stale.
+  - Gates: 6 pass, and the 3 that fail (Sources 69, Extent 2, Amending 4) were parked in Measures.
+  - Sample at seed 1211, byte-identical twice, 3 items checked by SQL. Golden 27/27. Session `.claude/sessions/lat-change-pipeline/2026-11-11-environmental-protection-store-and-build.md`.
 - OH&S (first family, 2026-10-31): 168 laws, digests identical, family build 51 s (family + golden 204 s, EPA 1990 alone 156 s; accepted, no cache), 0 stale after, hand check seed 1101 30/30. Session `.claude/sessions/change-vocabulary/2026-10-22-cv-s11-store-build.md`.

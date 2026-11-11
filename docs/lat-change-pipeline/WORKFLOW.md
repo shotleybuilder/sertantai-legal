@@ -465,6 +465,16 @@ Before this, OH&S used G, S and T by shape and R pooled to the 95% bound (2026-1
 - the hand check finds no verdict wrong;
 - golden all-pass.
 
+**Environmental Protection (2026-11-11):**
+- **No agent pass.** The staleness sample was drawn twice and compared with `cmp`, and 3 items were checked by SQL.
+- **106 built laws were stale on a reader reason:** commencement readings made by older reader code. Each was re-read in the mode that wrote it (`--read`, `--read-amending`, and `--read-orders` with laws named and without), which took under 2 min. Then `--build --stale` ran.
+- **The results:**
+  - all 445 digests identical across builds;
+  - 122 laws in about 5½ min with 1 worker while a VM ran, nearly 4 min of it EPA 1990 and the Environment Act 1995 (accepted, Decision 1);
+  - 0 stale;
+  - six gates pass, and the three that fail (Sources, Extent, Amending) were parked in Measures.
+- **The parked bugs fixed:** in-database restore copies now go to the `restore` schema (`SertantaiLegal.Restore`, DATA-ARCHITECTURE (f)), and `--conflicts` prints its groups in a fixed order.
+
 **Skill.** `store-build-check`.
 
 ## 12. Labels side by side

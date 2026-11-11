@@ -43,7 +43,8 @@ bugs:
     affected: 4 tasks
     fix: Write restore copies to a restore schema, listed, dropped at session close (DATA-ARCHITECTURE policy)
     step: Store and build
-    status: open
+    status: fixed
+    moved_to: lat-change-pipeline/2026-11-11-environmental-protection-store-and-build
   - pattern: The family scope query is copied in four check tasks (commencement_check, extent_check, sources, vocabulary)
     category: duplicated-scope-query
     module: lat.* check tasks
@@ -57,7 +58,8 @@ bugs:
     affected: 1
     fix: Sort the groups by kind before printing
     step: Store and build
-    status: open
+    status: fixed
+    moved_to: lat-change-pipeline/2026-11-11-environmental-protection-store-and-build
   - pattern: mix lat.sources and mix lat.vocabulary still hold their own reads inline (feed statuses and amending facts; the debug view), untested
     category: logic-in-task
     module: lat.sources, lat.vocabulary

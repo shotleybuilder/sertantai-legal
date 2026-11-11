@@ -234,13 +234,13 @@ Measured with a `CASE` over `pg_class.relname` in the public schema, `pg_total_r
 
 For scale: the whole public schema is 7,743 MB; the snapshots are two thirds of it.
 
-### Policy (PROPOSED; the old tables are cleared, the writers are not yet changed)
+### Policy (points 1 and 2 done 2026-11-11; points 3–5 PROPOSED)
 
-Tasks that still create restore tables in `public`: `live.recompute`, `live.apply_effects`, `drrp.remap`, `extent.resolve`. Moving them to the restore schema below is parked on the code-reduction session's list.
+`live.recompute`, `live.apply_effects`, `live.unapplied_effects`, `drrp.remap` and `extent.resolve` now copy into the `restore` schema through `SertantaiLegal.Restore` (Environmental Protection: Store and build). Still in `public`: `making.resolve` (parked with Making laws) and `LatReparse` (parked with LAT parser).
 
 
 1. **One schema.** Every in-DB copy goes into a schema named `restore` (`restore.<tag>__<table>`), never into `public`. Code that makes copies (`LatReparse` and the live tasks) takes the schema from one helper.
-2. **A registry.** A table `restore.points` with `tag`, `taken_at`, `session` (session file), `tables`, `rows`, `nas_path`, `dropped_at`. The helper writes it; `nas-backup.sh --tables --tag` writes a row too.
+2. **A registry.** A table `restore.points`, with one row per copy: `tag`, `copy`, `source`, `rows`, `taken_at`, `session`, `nas_path`, `dropped_at` (migration 20261111150000). The helper writes it. `nas-backup.sh --tables --tag` does not yet write a row.
 3. **NAS first, then drop.** At session close, each in-DB copy the session made is dumped to the NAS restore point folder (if not already) and dropped. The `session-close` skill lists the session's open points.
 4. **One-off clean-up**, with Jason's go: dump the 208 tables, `r6b`, `rp9` and `law_change_snapshots` to the NAS, verify checksums, drop them. Frees about 5.4 GB.
 5. **NAS retention.** Restore points older than 90 days and not named in an open session are moved to `archive/`.
