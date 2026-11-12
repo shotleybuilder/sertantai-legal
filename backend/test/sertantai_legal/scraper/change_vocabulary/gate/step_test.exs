@@ -35,4 +35,22 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Gate.StepTest do
              "FAIL  Label fold (no gate result returned)"
            ]
   end
+
+  test "a step's close fails on a moved gate, a changed checked row or a stale law, each by who takes it (Tooling: step-close check)" do
+    owner = "parked with the step whose change moved them"
+
+    for failed <- [
+          Step.new("Extent reader", false, 2),
+          Step.new("Checked rows", false, 22, owner: owner),
+          Step.new("Stale laws", false, 59, owner: "rebuild (Store and build)")
+        ] do
+      assert %{pass?: false, failing: [name]} =
+               Step.summary([Step.new("Sources", true), failed, Step.new("Merge", true)])
+
+      assert name == failed.step
+    end
+
+    %{lines: [line]} = Step.summary([Step.new("Checked rows", false, 22, owner: owner)])
+    assert line == "FAIL  Checked rows (22 failing; #{owner})"
+  end
 end

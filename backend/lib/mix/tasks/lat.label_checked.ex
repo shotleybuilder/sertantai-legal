@@ -3,7 +3,8 @@ defmodule Mix.Tasks.Lat.LabelChecked do
   The switch-over's checked rows against the current labels (CV-06,
   `ChangeVocabulary.Checked`): each accepted row matching or changed, and
   the rows left to fix, known, to decide or upstream. `--list` names each
-  changed and to-fix row. Read-only.
+  changed and to-fix row. Read-only. Returns its result
+  (`ChangeVocabulary.Gate.Step`, "Checked rows") for `mix lat.step_close`.
 
       mix lat.label_checked [--list]
       mix lat.label_checked --accept "LAW|SID,LAW|SID" --why "…"   # the current label becomes the expected one
@@ -14,9 +15,13 @@ defmodule Mix.Tasks.Lat.LabelChecked do
   use Mix.Task
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Checked, LabelPeriods, LabelSource}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Gate.Step
 
   @shortdoc "The switch-over's checked rows against the current labels (read-only)"
   @fixture "test/fixtures/change_vocabulary/switch_checked.json"
+
+  # a changed row is traced to the change that moved it, and parked there
+  @owner "parked with the step whose change moved them (traced with --list)"
 
   @impl Mix.Task
   def run(args) do
@@ -50,6 +55,9 @@ defmodule Mix.Tasks.Lat.LabelChecked do
           kind in [:changed, :missing, :to_fix, :to_decide],
           do: Mix.shell().info("#{kind}\t#{r["law"]}\t#{r["section_id"]}\t#{r["note"]}")
     end
+
+    failing = counts |> Map.drop([:match, :known, :upstream]) |> Map.values() |> Enum.sum()
+    Step.new("Checked rows", pass?, failing, owner: @owner)
   end
 
   defp accept(ids, current, why) do

@@ -11,6 +11,7 @@ defmodule Mix.Tasks.Lat.Stale do
       mix lat.stale --list          # also each stale law and its reasons
       mix lat.stale --strict        # exit non-zero when any law is stale
       mix lat.stale --strict --switched   # only the switched families' laws' labels count (with the change register)
+      mix lat.stale --family F      # also the family's stale laws, as a result (`mix lat.step_close`)
       mix lat.stale --sample FILE --family F --built 20 --unbuilt 10 --seed S
                                     # the change register's staleness hand sample
 
@@ -35,6 +36,11 @@ defmodule Mix.Tasks.Lat.Stale do
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Store, Version}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source, as: Scope
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.StaleSample
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Gate.Step
+
+  # the fix by reason is printed above; the re-parse is the LAT parser's,
+  # a re-read the reader's, the rebuild Store and build's
+  @owner "fix by the reasons above: re-parse (LAT parser), re-read (the reader), rebuild (Store and build)"
 
   @shortdoc "Report laws whose LAT or labels are stale"
 
@@ -88,9 +94,30 @@ defmodule Mix.Tasks.Lat.Stale do
     stale_changes = changes(Enum.map(facts, &elem(&1, 0)), opts)
 
     counted = if opts[:switched], do: stale_switched, else: stale
+    finish(opts, counted, stale_changes)
+  end
 
+  # `--strict` exits on any stale law counted; `--family` returns the family's
+  defp finish(opts, counted, stale_changes) do
     if opts[:strict] == true and (counted != [] or stale_changes != []),
       do: exit({:shutdown, 1})
+
+    if f = opts[:family], do: family(f, counted, stale_changes)
+  end
+
+  # one family's stale laws (Tooling: step-close check): its LAT and labels,
+  # and its built laws in the change register; the step's close result
+  defp family(family, stale, stale_changes) do
+    scope = MapSet.new(Scope.family_laws(family))
+    lat = for {law, _} <- stale, MapSet.member?(scope, law), do: law
+    changes = for {law, _} <- stale_changes, MapSet.member?(scope, law), do: law
+    laws = Enum.uniq(lat ++ changes)
+
+    Mix.shell().info(
+      "\n#{family}: #{length(laws)} stale laws (LAT or labels #{length(lat)}, change register #{length(changes)})"
+    )
+
+    Step.new("Stale laws", laws == [], length(laws), owner: @owner)
   end
 
   @fixes [

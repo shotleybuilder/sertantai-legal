@@ -11,13 +11,23 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Gate.Step do
   """
 
   @enforce_keys [:step, :pass?]
-  defstruct [:step, :pass?, failing: 0]
+  defstruct [:step, :pass?, :owner, failing: 0]
 
-  @type t :: %__MODULE__{step: String.t(), pass?: boolean(), failing: non_neg_integer()}
+  @type t :: %__MODULE__{
+          step: String.t(),
+          pass?: boolean(),
+          failing: non_neg_integer(),
+          owner: String.t() | nil
+        }
 
-  @doc "A step's result: `failing` counts what failed it (groups not named, faults)."
-  @spec new(String.t(), boolean(), non_neg_integer()) :: t()
-  def new(step, pass?, failing \\ 0), do: %__MODULE__{step: step, pass?: pass?, failing: failing}
+  @doc """
+  A check's result: `failing` counts what failed it (groups not named,
+  faults). A check that is no step's gate (the checked rows, stale laws)
+  names in `owner:` who takes its failures; a step's gate is its own.
+  """
+  @spec new(String.t(), boolean(), non_neg_integer(), keyword()) :: t()
+  def new(step, pass?, failing \\ 0, opts \\ []),
+    do: %__MODULE__{step: step, pass?: pass?, failing: failing, owner: opts[:owner]}
 
   @doc """
   The results in order: pass only when every step passed; the failing
@@ -42,8 +52,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Gate.Step do
 
   defp line(%__MODULE__{step: s, pass?: true}), do: "PASS  #{s}"
 
-  defp line(%__MODULE__{step: s, failing: n}),
+  defp line(%__MODULE__{step: s, failing: n, owner: nil}),
     do: "FAIL  #{s} (#{n} failing; owned by the #{s} step)"
+
+  defp line(%__MODULE__{step: s, failing: n, owner: owner}),
+    do: "FAIL  #{s} (#{n} failing; #{owner})"
 
   defp line({s, _}), do: "FAIL  #{s} (no gate result returned)"
 end

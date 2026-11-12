@@ -9,47 +9,42 @@ defmodule Mix.Tasks.Lat.Gates do
   A failure belongs to its step: it is parked there, never fixed here.
 
       mix lat.gates --family "TRANSPORT: Maritime Safety"
+      mix lat.gates --family F --through "Merge"   # only the gates up to a step
+
+  The steps and their gates are `ChangeVocabulary.Gate.Steps`. A step's
+  close runs them through that step with `mix lat.step_close`.
 
   `mix lat.vocabulary --check --family F` ends with it. The label gate
   folds the family (about 12½ min on Maritime Safety).
   """
   use Mix.Task
 
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Gate.Step
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Gate.{Step, Steps}
 
   @shortdoc "Re-run every step's gate for a family; fail when any fails"
 
-  # each step's check task and the arguments that run its gate
-  @steps [
-    {"Sources", "lat.sources", []},
-    {"Feed reader", "lat.feed_check", []},
-    {"Markup reader", "lat.markup_check", []},
-    {"Commencement reader", "lat.commencement_check", []},
-    {"Extent reader", "lat.extent_check", []},
-    {"Amending-law reader", "lat.amending_check", ["--gate"]},
-    {"Merge", "lat.merge_check", ["--gate"]},
-    {"Evidence", "lat.evidence_check", ["--gate"]},
-    {"Label fold", "lat.label_check", ["--gate"]}
-  ]
-
   @impl Mix.Task
   def run(args) do
-    {opts, _, _} = OptionParser.parse(args, strict: [family: :string])
-    family = opts[:family] || Mix.raise("usage: mix lat.gates --family F")
+    {opts, _, _} = OptionParser.parse(args, strict: [family: :string, through: :string])
+    family = opts[:family] || Mix.raise("usage: mix lat.gates --family F [--through STEP]")
+    gates = if s = opts[:through], do: Steps.through(s), else: Steps.gates()
 
-    results =
-      for {step, task, extra} <- @steps do
-        Mix.shell().info("\n── #{step} (mix #{task}) ──")
-        result(step, Mix.Task.rerun(task, ["--family", family | extra]))
-      end
-
-    summary = Step.summary(results)
+    summary = family |> results(gates) |> Step.summary()
     Mix.shell().info("\nevery step's gate, #{family}:")
     for l <- summary.lines, do: Mix.shell().info("  #{l}")
     Mix.shell().info("\n#{if summary.pass?, do: "PASS", else: "FAIL"} (gates)")
 
     if not summary.pass?, do: exit({:shutdown, 1})
     summary
+  end
+
+  @doc "Each gate's result for the family, its check task run as it runs alone."
+  @spec results(String.t(), [Steps.gate()]) :: [Step.t() | {String.t(), term()}]
+  def results(family, gates) do
+    for {step, task, extra} <- gates do
+      Mix.shell().info("\n── #{step} (mix #{task}) ──")
+      result(step, Mix.Task.rerun(task, ["--family", family | extra]))
+    end
   end
 
   defp result(_step, %Step{} = r), do: r
