@@ -30,4 +30,4 @@ Live items carried from the three meta sessions closed as superseded on 2026-11-
 
 - ✅ Family 3 (Environmental Protection) switched, and its retrospective closed (2026-11-12)
 - ✅ Before Family 3: the Mines Regulations 2014 repeals-table fault, then #192, then #191
-- ⬜ The review tooling, then a few QQ register families run one at a time with the backlog fixed, until the steps are reliable enough to run as one process (Environmental Protection retrospective, Decision 3)
+- ⬜ The review tooling, then a few QQ register families run one at a time with the backlog fixed, until the steps are reliable enough to run as one process (Environmental Protection retrospective, Decision 3): the last QQ family closes more bugs than it parks, its Measures re-run moves no gate, no step reopens a bug it closed, or after 4 QQ families (retrospectives review, Decision 1)

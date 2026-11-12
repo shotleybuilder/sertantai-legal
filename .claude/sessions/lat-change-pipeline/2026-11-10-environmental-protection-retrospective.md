@@ -211,6 +211,8 @@ From the session index, rebuilt today. "EP" is the family's step sessions, its m
 
 ## Decisions for Jason
 
+*Reviewed 2026-11-12 against the aims (`2026-11-12-retrospectives-review-against-aims.md`): Decisions 2 and 3's recommendations below rest on option A of Decision 1, which was not taken; they are restated there, with the exit figure for the QQ families, the pilot step (the Label fold) and a check line.*
+
 ### 1. The way of working for the remaining families — DECIDED 2026-11-12
 
 **Decided (Jason, 2026-11-12), his own option:** "We run a small number of Families from the QQ legal register one at a time to fix the bug backlog and improve reliability. Then do remaining register families." Each of those families runs the steps one at a time, and each step fixes its own parked bugs from the backlog (memory: parked bugs per step). Corpus-wide reader rounds (A) are not taken now.

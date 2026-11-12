@@ -615,11 +615,13 @@ Session files: `.claude/sessions/lat-change-pipeline/<date>-<family>-<step-name>
 
 **The order after Environmental Protection** (its retrospective, Jason 2026-11-12):
 1. the review tooling (`2026-11-10-amending-law-reader-review-tooling.md`);
-2. a few families from the QQ legal register, one at a time: each step fixes its own parked bugs from the backlog first, to cut the backlog and make the steps reliable;
+2. a few families from the QQ legal register, one at a time: each step fixes its own parked bugs from the backlog first, to cut the backlog and make the steps reliable. **They end** (retrospectives review, Decision 1, C) when the last QQ family closes more bugs than it parks, its Measures re-run moves no gate, and no step reopens a bug it closed, or after 4 QQ families, whichever comes first;
 3. production hardening: all the steps run as one process, only once they are reliable;
 4. the rest of the register's families.
 
-**Models per part** (the same retrospective, Decision 2): after the review tooling, one step of the next family is run as a scripted workflow, with code by Fable, the session and its pass/fail verdicts by Opus 5.5, and paperwork and report summaries by smaller models. It is measured against the last family's row for that step (tokens, time, anything missed) before any other step runs that way.
+**The check on this order** (retrospectives review, Decision 5): each QQ family's retrospective measures days per family (at most 6, the backlog fixing included), new reader bugs per family (falling from EP's 26) and open bugs (falling from 123).
+
+**Models per part** (the same retrospective, Decision 2; the step chosen by the retrospectives review, Decision 4): after the review tooling, the next family's **Label fold** (EP's costliest step, 428k agent tokens) is run as a scripted workflow, with code by Fable, the session and its pass/fail verdicts by Opus 5.5, and paperwork and report summaries by smaller models. It is measured against the last family's row for that step (tokens, time, anything missed) before any other step runs that way.
 
 **Size a fix by its reach** (Environmental Protection retrospective): count every change the fix's claim reaches, by an in-memory diff against the stored changes, never only the cases it is meant for. Decision 3 of EP's Switch-over was sized at 74 undated changes and reached every change commenced by territory; the Label fold's Decision 8 was sized at 157 rows and moved 1,227.
 

@@ -18,11 +18,10 @@ Jason (2026-11-10, on the third family): "how come we're creating scripts on the
 - ⬜ `mix lat.amending_check --gate --name-standard`: the standard statuses (no record, no operation, Merge's, "in part", application statements) proposed for unnamed groups, dry run by default, `--write` to apply (from `name_groups.py`); one-law wordings stay hand-written
 - ⬜ `mix lat.amending --law L --provision ID`: one provision's words and reading (from `probe.exs`)
 - ⬜ The step's write sequence written once in the skill (restore point; amendment read; commencement and extent re-reads when their versions move; rebuilds; golden), with the pre-flight checks before it (compile with warnings as errors, architecture tests)
-- ⬜ A pre-flight task (Environmental Protection retrospective): compile with warnings as errors, the architecture tests, golden from inputs and the checked rows (`label_checked`), as one command before any write or rebuild
-- ⬜ A step-close check task (the same retrospective): re-run the gates the step depends on, `label_checked`, and `lat.stale --list` for the family, so drift is caught at each close, not at Measures
+- ⬜ A pre-flight task (Environmental Protection retrospective): compile with warnings as errors, the architecture tests, golden from inputs and the checked rows (`label_checked`), as one command before any write or rebuild; extends `lat.label_check --laws` (already a fold pre-flight of named laws)
 - ⬜ Tests for each task; the skill and WORKFLOW step 6 point to the tasks; no scratch scripts in the next family's step
 
 ## Dependencies
 
-- ⬜ Amending-law reader: parked bugs (closed)
+- ✅ Amending-law reader: parked bugs (closed)
 - ✅ Environmental Protection: Retrospective (2026-11-12): this session comes first (Decision 3); the next families are a few from the QQ register, one at a time, each step fixing its parked bugs; then one step of the next family is piloted as a scripted workflow with a model per part (Decision 2), so these tasks are what that workflow calls
