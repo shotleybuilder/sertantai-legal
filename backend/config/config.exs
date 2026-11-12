@@ -20,7 +20,11 @@ config :sertantai_legal,
 # matched by its exact name, the register's display marker dropped
 # (`LabelSwitch.family_in?/2`).
 config :sertantai_legal,
-  label_families: ["OH&S: Occupational / Personal Safety", "TRANSPORT: Maritime Safety"]
+  label_families: [
+    "OH&S: Occupational / Personal Safety",
+    "TRANSPORT: Maritime Safety",
+    "ENVIRONMENTAL PROTECTION"
+  ]
 
 # Configures the endpoint
 config :sertantai_legal, SertantaiLegalWeb.Endpoint,
