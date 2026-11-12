@@ -5,6 +5,7 @@ defmodule Mix.Tasks.Lat.LabelSwitch do
 
       mix lat.label_switch --family "OH&S: Occupational / Personal Safety"            # dry run: writes nothing
       mix lat.label_switch --family F --out PATH                                      # dry run, its per-law csv to PATH
+      mix lat.label_switch --family F --stored                                        # after the apply: against the stored timeline
       mix lat.label_switch --family "OH&S: Occupational / Personal Safety" --apply    # write (restore point of lat_label_timeline first)
 
   The dry run folds each law's stored changes (`mix lat.vocabulary --build`
@@ -14,6 +15,12 @@ defmodule Mix.Tasks.Lat.LabelSwitch do
   per-law lines go to `--out`, else
   `data/reports/change-vocabulary/dry-run-<family>.csv` (one file a family:
   CV-06's committed `cv-06-dry-run.csv` is never overwritten).
+
+  `--stored` compares the switch's rows with the stored timeline
+  (`LabelSwitch.stored/1`) instead of the old register, every field the
+  switch writes (`changed_by_all`, `commenced_by` too): after the apply,
+  each law written shows 0 differing, known limits included (they keep
+  their stored rows). Its csv is `dry-run-<family>-stored.csv`.
 
   `--apply` refreshes each law through `LabelRefresh.run/2` with the family
   switched — the one write path — and needs the family in the
@@ -30,7 +37,9 @@ defmodule Mix.Tasks.Lat.LabelSwitch do
   @impl Mix.Task
   def run(args) do
     {opts, _, _} =
-      OptionParser.parse(args, strict: [family: :string, apply: :boolean, out: :string])
+      OptionParser.parse(args,
+        strict: [family: :string, apply: :boolean, out: :string, stored: :boolean]
+      )
 
     family = opts[:family] || Mix.raise("usage: mix lat.label_switch --family F [--apply]")
     Mix.Task.run("app.start")
@@ -39,23 +48,23 @@ defmodule Mix.Tasks.Lat.LabelSwitch do
 
     if opts[:apply],
       do: apply_switch(family, laws),
-      else: dry_run(laws, opts[:out] || csv(family))
+      else: dry_run(laws, opts[:out] || csv(family, opts[:stored]), opts[:stored] == true)
   end
 
   # the family's own dry-run file: "OH&S: Occupational / Personal Safety" →
   # dry-run-oh-s-occupational-personal-safety.csv
-  defp csv(family) do
+  defp csv(family, stored?) do
     slug = family |> String.downcase() |> String.replace(~r/[^a-z0-9]+/, "-") |> String.trim("-")
-    Path.join(@csv_dir, "dry-run-#{slug}.csv")
+    Path.join(@csv_dir, "dry-run-#{slug}#{if stored?, do: "-stored"}.csv")
   end
 
-  defp dry_run(laws, csv) do
+  defp dry_run(laws, csv, stored?) do
     today = LabelProjection.uk_today()
 
     # several laws at once (`LawRunner`'s guard), the results in the laws'
     # order (#191); a law that raises is not folded, as `{:error, why}` is
     by_law =
-      LawRunner.run(laws, &dry_run_law(&1, today), fn _, _ -> :ok end)
+      LawRunner.run(laws, &dry_run_law(&1, today, stored?), fn _, _ -> :ok end)
 
     results =
       for law <- laws do
@@ -95,13 +104,21 @@ defmodule Mix.Tasks.Lat.LabelSwitch do
     Mix.shell().info("per law: #{csv}")
   end
 
-  defp dry_run_law(law, today) do
-    %{periods: old} = LabelTimeline.build(law, today)
+  defp dry_run_law(law, today, stored?) do
+    {old, compared} = against(law, today, stored?)
 
     case LabelSwitch.timeline(law, old) do
-      {:ok, new} -> {:ok, LabelSwitchReport.law(law, old, new, today)}
+      {:ok, new} -> {:ok, LabelSwitchReport.law(law, old, new, today, compared)}
       {:error, why} -> {:error, law, why}
     end
+  end
+
+  # the stored timeline (after the apply), else the old register's
+  defp against(law, _today, true), do: {LabelSwitch.stored(law), :written}
+
+  defp against(law, today, false) do
+    %{periods: old} = LabelTimeline.build(law, today)
+    {old, :register}
   end
 
   defp apply_switch(family, laws) do

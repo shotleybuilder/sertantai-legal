@@ -15,6 +15,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Made do
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Change
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Label.Facts
 
   @emptied %{in_force_from: nil, changed_by: nil, commenced_by: nil}
 
@@ -102,9 +103,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label.Made do
   # the law's own clause, never an order read into the same record; the
   # feed's record of the law's own commencement (by the law itself) is it
   # too (Environmental Protection: Label fold, Decision 2: WSI 2010/1821,
-  # SI 2025/1218)
+  # SI 2025/1218), under either of a Welsh SI's names (Switch-over,
+  # Decision 1: SI 2020/206, its commencement by UK_wsi_2020_206)
   defp own_clause?(c, self),
     do:
-      (String.starts_with?(c.key, self <> ":commencement:") or c.resolved.by == self) and
-        c.resolved.commenced_by in [nil, self] and c.resolved.by in [nil, self]
+      (String.starts_with?(c.key, self <> ":commencement:") or
+         Facts.same_law?(c.resolved.by, self)) and
+        self_or_nil?(c.resolved.commenced_by, self) and self_or_nil?(c.resolved.by, self)
+
+  defp self_or_nil?(law, self), do: law == nil or Facts.same_law?(law, self)
 end

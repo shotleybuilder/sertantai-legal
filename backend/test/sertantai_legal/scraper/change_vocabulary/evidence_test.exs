@@ -118,4 +118,28 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.EvidenceTest do
     assert c.resolved.operation == :repealed
     assert c.resolved.conflicts == []
   end
+
+  describe "a territory-by-territory commencement's first stage dates only what nothing else does (Environmental Protection: Switch-over, Decision 3, B)" do
+    @staged [
+      {:law_text, :operation, :inserted},
+      {:commencement, :date_staged, ~D[2000-04-01]},
+      {:commencement, :partial_staged, true}
+    ]
+
+    test "alone: the first stage, partly in force (EA 1995 s.57 → EPA 1990 Part IIA)" do
+      r = Evidence.resolve(change(@staged), nil).resolved
+      assert {r.date, r.partial} == {~D[2000-04-01], true}
+    end
+
+    test "beside the feed's date: the feed's date, not partial (HSWA by the Railways Act 2005, 2006-04-01)" do
+      r =
+        change(
+          @staged ++ [{:feed, :date, ~D[2006-04-01]}, {:feed, :commenced_by, "UK_uksi_2006_266"}]
+        )
+        |> Evidence.resolve(nil)
+        |> Map.fetch!(:resolved)
+
+      assert {r.date, r.partial} == {~D[2006-04-01], false}
+    end
+  end
 end

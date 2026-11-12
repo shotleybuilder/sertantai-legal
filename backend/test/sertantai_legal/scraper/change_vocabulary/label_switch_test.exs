@@ -85,4 +85,20 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSwitchTest do
     assert r.today_new == %{"in_force" => 1, "repealed" => 1}
     assert %{laws: 1, differ: 1} = LabelSwitchReport.total([r])
   end
+
+  test "after the apply, against the stored timeline: every field the switch writes, changed_by_all and commenced_by too (lat.label_switch --stored)" do
+    stored = [row("A:s.1", ~D[1975-01-01], "UK_x"), row("A:s.2", ~D[1990-01-01], nil)]
+
+    new = [
+      row("A:s.1", ~D[1975-01-01], "UK_x"),
+      %{row("A:s.2", ~D[1990-01-01], nil) | commenced_by: ["UK_y"]}
+    ]
+
+    assert %{rows: 2, differ: 0} =
+             LabelSwitchReport.law("A", stored, stored, ~D[2026-11-12], :written)
+
+    assert %{differ: 1} = LabelSwitchReport.law("A", stored, new, ~D[2026-11-12], :written)
+    # the dry run against the old register compares the old path's fields only
+    assert %{differ: 0} = LabelSwitchReport.law("A", stored, new, ~D[2026-11-12])
+  end
 end

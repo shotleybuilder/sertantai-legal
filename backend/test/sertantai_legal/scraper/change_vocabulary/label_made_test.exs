@@ -125,6 +125,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelMadeTest do
     assert Made.from([in_force(@start)], provision(), @start, [order]) == [in_force(@start)]
   end
 
+  test "a Welsh SI held under its UK SI name: the feed's record of its own commencement under its Welsh name is its own clause (Environmental Protection: Switch-over, Decision 1: SI 2020/206)" do
+    p = provision(law: "UK_uksi_2020_206")
+    feed_own = commenced("key-feed", by: "UK_wsi_2020_206")
+    feed_own_cb = commenced("key-feed2", by: "UK_wsi_2020_206", commenced_by: "UK_uksi_2020_206")
+
+    assert [%{status: :prospective}, _] = Made.from([in_force(@start)], p, @start, [feed_own])
+    assert [%{status: :prospective}, _] = Made.from([in_force(@start)], p, @start, [feed_own_cb])
+
+    # another law numbered alike is still an order
+    other = commenced("key-other", by: "UK_ssi_2020_206")
+    assert Made.from([in_force(@start)], p, @start, [other]) == [in_force(@start)]
+  end
+
   describe "a law commenced by an order, no start held (S4)" do
     test "from its making, prospective, when a dated commencement follows; else unchanged" do
       p = %{

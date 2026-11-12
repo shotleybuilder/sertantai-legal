@@ -25,11 +25,40 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingCommencement d
   @spec claims([CRule.t()], String.t(), String.t()) :: [Claim.t()]
   def claims(rules, ref, key) do
     result = commencement(rules, ref)
-    date = result && result.full_from
 
-    Claim.new(:commencement, :date, date, key) ++
-      if(date, do: Claim.new(:commencement, :commenced_by, commenced_by(result), key), else: [])
+    case {result && result.full_from, first_territory(result)} do
+      {%Date{} = date, _} ->
+        Claim.new(:commencement, :date, date, key) ++
+          Claim.new(:commencement, :commenced_by, commenced_by(result), key)
+
+      # commenced territory by territory, never in full (EA 1995 s.57:
+      # England 2000, Scotland 2000, Wales 2001): from the first stage,
+      # partly in force, ranked after the feed's date so it dates only
+      # what nothing else does (Environmental Protection: Switch-over,
+      # Decision 3, B; HSWA's Railways Act 2005 changes keep 2006-04-01)
+      # — no commencing order: a stage's order would name the wrong law
+      # beside a later date the feed gives
+      {nil, %{date: date}} ->
+        Claim.new(:commencement, :date_staged, date, key) ++
+          Claim.new(:commencement, :partial_staged, true, key)
+
+      {nil, nil} ->
+        Claim.new(:commencement, :date, nil, key)
+    end
   end
+
+  # the earliest dated stage, when no rule dates it in full and the stages
+  # name more than one territory; an order for one territory alone is a
+  # devolved Act's whole reach, the feed's stages left to date it (golden:
+  # TCPA 1990 s.78(4BA) by anaw 2015/4, WSI 2017/546)
+  defp first_territory(%{full_from: nil, entries: entries}) do
+    stages = Enum.filter(entries, &(&1.date != nil and is_binary(&1.rule.territory)))
+
+    if stages |> Enum.map(& &1.rule.territory) |> Enum.uniq() |> length() > 1,
+      do: Enum.min_by(stages, & &1.date, Date)
+  end
+
+  defp first_territory(_result), do: nil
 
   @doc """
   When the amending provision `ref` came fully into force by its law's own

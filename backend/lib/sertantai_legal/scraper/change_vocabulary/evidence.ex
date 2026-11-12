@@ -123,11 +123,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
       {:commencement, :date},
       {:law_text, :date},
       {:feed, :date_first, :not_made_day},
-      {:feed, :date, :not_made_day}
+      {:feed, :date, :not_made_day},
+      # an amending provision commenced territory by territory, never in
+      # full: its first stage, only where nothing else dates the change
+      # (Environmental Protection: Switch-over, Decision 3, B)
+      {:commencement, :date_staged}
     ],
     # a commencement stage that doesn't complete the provision — the
     # date's own source's (`with_date/2`)
-    partial: [{:commencement, :partial}, {:feed, :partial}],
+    partial: [{:commencement, :partial}, {:feed, :partial}, {:commencement, :partial_staged}],
     # a removal with savings (D3: repealed_saved)
     saved: [{:law_text, :savings, :non_empty}, {:feed, :savings, :non_empty}],
     # the law making the change; the law bringing it into force is apart

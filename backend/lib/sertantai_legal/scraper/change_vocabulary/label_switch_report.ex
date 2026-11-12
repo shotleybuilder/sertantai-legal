@@ -3,10 +3,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSwitchReport do
   What a family's switch-over would write (CV-06 dry run): per law, the
   register's timeline beside the change vocabulary's — periods, rows whose
   periods differ, the rows kept (named known limits), and today's status
-  counts each way. Pure.
+  counts each way. After the apply, the same comparison against the stored
+  timeline (`:written`) checks every field the switch writes. Pure.
   """
 
   @fields ~w(valid_from valid_to status in_force_from changed_by territory)a
+  # what the switch writes beside them (the old register holds neither)
+  @written @fields ++ ~w(changed_by_all commenced_by)a
 
   @type law_report :: %{
           law: String.t(),
@@ -18,11 +21,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSwitchReport do
           today_new: map()
         }
 
-  @doc "One law's comparison of `old` (register periods) and `new` (the rows to write), as at `today`."
-  @spec law(String.t(), [map()], [map()], Date.t()) :: law_report()
-  def law(law, old, new, today) do
+  @doc """
+  One law's comparison of `old` and `new` (the rows to write), as at
+  `today`: `:register` compares the old register's fields (the dry run);
+  `:written` every field the switch writes (`old` the stored timeline,
+  `LabelSwitch.stored/1`: Environmental Protection, Switch-over).
+  """
+  @spec law(String.t(), [map()], [map()], Date.t(), :register | :written) :: law_report()
+  def law(law, old, new, today, compared \\ :register) do
+    fields = if compared == :written, do: @written, else: @fields
     old = Enum.map(old, &plain/1)
-    by = fn rows -> Enum.group_by(rows, & &1.section_id, &Map.take(&1, @fields)) end
+    by = fn rows -> Enum.group_by(rows, & &1.section_id, &Map.take(&1, fields)) end
     {o, n} = {by.(old), by.(new)}
     sids = MapSet.union(MapSet.new(Map.keys(o)), MapSet.new(Map.keys(n)))
 
