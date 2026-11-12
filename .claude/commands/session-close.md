@@ -76,6 +76,8 @@ enables:
    - Answer in the session: "Which doc did this session change?" — a rule decided goes into `docs/lat-change-pipeline/RULES.md`; a table or flow change into `DATA-ARCHITECTURE.md`; a new term into `GLOSSARY.md`. If none, say why.
    - Every bug carries `step:` (its owning step). Each item left in the `## Parking list` becomes a bug entry with its step, or is dropped with a reason.
 
+6b. **A pipeline step's close** (LAT Change Pipeline step sessions): before the frontmatter is written, run `mix lat.step_close --family "F" --step "<Step name>"` (read-only; minutes, about 12½ min more once the Label fold's gate is in; ask Jason first, as for any run). It re-runs every gate up to the step, the checked rows and the family's stale laws, and exits non-zero on any failure. Record its lines in the session. A failure is parked with the owner it names (`bug-raise`), never fixed in the closing step; the step closes only on PASS, or with each failure parked and Jason told.
+
 7. **Write directly**: Do not present the draft to the user for review — write the frontmatter straight to the file. The user can review the diff in git if needed.
 
 8. **Rebuild the session index**: After writing the frontmatter, rebuild the SQLite index so the new session is queryable:

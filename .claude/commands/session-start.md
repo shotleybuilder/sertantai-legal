@@ -88,6 +88,7 @@ A session that runs one step of the LAT Change Pipeline for one family (steps an
    - **Todos:** at most 8.
 
    Jason approves it at ExitPlanMode. The todos go into the session as approved.
+   The last todo before the close is the step's close check, `mix lat.step_close --family F --step S` (`session-close`, step 6b).
 2. **Name, not code.** Title "<Family>: <Step name>" (e.g. "OH&S: Merge"); file `.claude/sessions/lat-change-pipeline/<date>-<family>-<step-name>.md`. No codes in anything written for Jason.
 3. **Scope held.**
    - New work found mid-step goes to a `## Parking list` section, one line each with its owning step, never to the todos.

@@ -625,7 +625,7 @@ Session files: `.claude/sessions/lat-change-pipeline/<date>-<family>-<step-name>
 
 **Size a fix by its reach** (Environmental Protection retrospective): count every change the fix's claim reaches, by an in-memory diff against the stored changes, never only the cases it is meant for. Decision 3 of EP's Switch-over was sized at 74 undated changes and reached every change commenced by territory; the Label fold's Decision 8 was sized at 157 rows and moved 1,227.
 
-**Gates run on the final code.** A gate passed early can fail once later steps change shared code (Measures found 3). Before a step closes, re-run the gates it depends on against the code being committed.
+**Gates run on the final code.** A gate passed early can fail once later steps change shared code (Measures found 3). Before a step closes, re-run the gates it depends on against the code being committed: `mix lat.step_close --family F --step S` (Tooling: step-close check). It re-runs every gate up to the step (the map is `ChangeVocabulary.Gate.Steps`; `mix lat.gates --through S` runs the gates alone), the switch-over's checked rows (`lat.label_checked`) and the family's stale laws (`lat.stale --family F`, `--switched` at Switch-over), and exits non-zero on any failure, naming who takes it. A failure is parked with that owner, never fixed in the closing step. Read-only; minutes, about 12½ min more from the Label fold on.
 
 After a reader fix, rebuild (`mix lat.vocabulary --check --family F`, then `--golden`) so the change register reflects it before the next step looks at it. Each family's new forms extend the catalogues. Steps are batched across families only once families stop surfacing new defects.
 
