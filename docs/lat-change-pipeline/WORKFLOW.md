@@ -232,7 +232,7 @@ No agent rounds. Before this, the rule was statistical (2026-10-28): pooled agen
 **Check.**
 1. **The read pass current.** `ReadPass.stale?` for every family amending law with its text held. A law that points to it but was not read for (given LAT rows since) makes it stale. Read with `mix lat.amending --read --amending <laws>`, one law at a time, after a `--preview`. Take a restore point of `amendment_rules`, `extent_rules` and the amendment index first.
 2. **Catalogue:** `mix lat.amendment_patterns --laws <every family's laws so far> --accept`. A `--family` run replaces the fixture, so the catalogue is run over every family's laws together (Decision 2, 2026-11-06). Every changed reading is reviewed.
-3. **Pre-flight for a fix:** `mix lat.amending --read --preview --amending <family laws>` and `--preview --regression`. Diff old against new rules by field (targets, level, operation) and class every change before the read pass.
+3. **Pre-flight for a fix:** `mix lat.preflight --family F` (compile with warnings as errors, the architecture tests, golden from inputs, the checked rows), then `mix lat.amending --read --preview --amending <family laws> --diff FILE` and `--preview --regression --diff FILE`. The field diff (`Amendment.Review.RuleDiff`) groups old against new rules by the fields that differ; class every group before the read pass.
 4. **Rebuild**, then golden from inputs: `mix lat.vocabulary --golden` (never only `--check`, which scores golden laws outside the family from stale stored changes).
 5. **Strata:** `mix lat.amending_check --family F --strata` gives:
    - A, agreeing with legislation.gov.uk;
@@ -247,6 +247,7 @@ No agent rounds. Before this, the rule was statistical (2026-10-28): pooled agen
      - `no operation from legislation.gov.uk: …`;
      - `law text only: …`.
    - **Review.** Each group is read in the amending law's text and rows. Its status goes in `test/fixtures/amendment_patterns/disagreements.json`: `fix:`, `known:` or `check:`, keyed `"<cause> @ <amending law>"`, else by cause.
+   - **The review's tasks** (Amending-law reader: review tooling, 2026-11-12): `--gate --dump FILE` writes each group's changes with their provisions' words, rules and legislation.gov.uk's claims; `mix lat.amending --amending A --provision ID` probes one provision; `--gate --name-standard --review REPORT` proposes the standard wordings beside each group's words (a dry run; `--write` once Jason decides). The write sequence is in the `amending-reader-check` skill, step 6.
 
 **Pass rule** (Decision 1, Jason 2026-11-06, Maritime Safety: Amending-law reader):
 - the read pass is current (no stale family amending law);
@@ -258,7 +259,7 @@ No agent rounds. Before this, the rule was statistical (2026-10-28): pooled agen
 No agent rounds. A is not sampled: there the law's text and legislation.gov.uk agree, so an error needs both wrong together. Before this, D and L were checked in full by agents and A by pooled samples (2026-10-28).
 
 **Environmental Protection** (2026-11-10). 304 of the family's 500 amending laws were stale, so write 1 (read pass and rebuild) comes first: 230 → 202 groups not named. The review finds most misreads hidden in the by-design groups (quote-dropped repeals of a Schedule's paragraphs, an Order's paragraphs read as articles). They are fixed together, then one write.
-- **Batch every fix before write 2.** Field diff (`rule_diff.exs`: stored rules against a fresh reading, by source, law, operation, level, treatment and targets) over the family's amenders and the regression set. Read every class of change, and fix over-reaches before any write.
+- **Batch every fix before write 2.** Field diff (then `rule_diff.exs`, now `--read --preview --diff FILE`: stored rules against a fresh reading, by source, law, operation, level, treatment and targets) over the family's amenders and the regression set. Read every class of change, and fix over-reaches before any write.
 - **Review the field diff fully before the catalogue dry run.** Classes found in the catalogue afterwards (Decision 2) cost a second cold catalogue run.
 - **Any edit under the reader's files moves `ReaderVersion` and stales every amending law**, a refactor or a compiler-warning fix included. Run `mix compile --warnings-as-errors` (the hook's check) before the read pass, never after. So too `mix test test/sertantai_legal/architecture` (a "come into force" pattern belongs to the commencement readers; version coverage).
 - **Result:**
