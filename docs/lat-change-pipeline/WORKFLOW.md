@@ -496,6 +496,7 @@ There is no agent check: the conversion is a fixed mapping under unit tests (`la
 **Pass rule as used** (Maritime Safety, 2026-11-06). Golden 27/27; 0 periods breaking the table's rules; the four side-by-side totals printed and adding up to the rows folded; gaps printed by shape.
 - **On OH&S** (2026-10-31): 28,307 periods, 0 breaks; 16,487 of 20,371 rows differed from today's labels.
 - **On Maritime Safety:** 46,976 periods, 0 breaks. Of 24,434 rows, 18,898 agree, 2,350 differ today, 874 differ only in history, and 2,312 have no stored timeline.
+- **On Environmental Protection** (2026-11-12, no agent pass, two runs identical): 69,136 periods, 0 breaks. Of 35,766 rows, 13,229 agree, 17,872 differ today, 2,366 differ only in history, and 2,299 have no stored timeline. Territory alone is the largest class (7,736 rows), from the family's partial extents and territorial versions. The cold run took 7 min 53 s with 1 worker while a VM ran.
 
 **The single `changed_by`** (decided here on 2026-11-06, Maritime Safety, Decision 1). Where several laws made the text, it is the principal maker, never an amender of the amending law, then the latest made (RULES `changed-by-one-law-for-compliance`). `label_periods.ex` was in the build's version, so a change to it marked every built law stale. That was Store and build's parked bug. It was fixed by #194: the fold has its own version (`FoldVersion`), and a fold-only edit rebuilds no change.
 
