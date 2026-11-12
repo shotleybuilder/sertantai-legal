@@ -35,8 +35,8 @@ defmodule Mix.Tasks.Lat.StepClose do
     results =
       Gates.results(family, gates) ++
         [
-          check("Checked rows", "lat.label_checked", []),
-          check("Stale laws", "lat.stale", ["--family", family | stale_args(step)])
+          Gates.check("Checked rows", "lat.label_checked", []),
+          Gates.check("Stale laws", "lat.stale", ["--family", family | stale_args(step)])
         ]
 
     summary = Step.summary(results)
@@ -46,15 +46,6 @@ defmodule Mix.Tasks.Lat.StepClose do
 
     if not summary.pass?, do: exit({:shutdown, 1})
     summary
-  end
-
-  defp check(name, task, args) do
-    Mix.shell().info("\n── #{name} (mix #{task}) ──")
-
-    case Mix.Task.rerun(task, args) do
-      %Step{} = r -> r
-      other -> {name, other}
-    end
   end
 
   # once switched, the family's labels come from the change register alone

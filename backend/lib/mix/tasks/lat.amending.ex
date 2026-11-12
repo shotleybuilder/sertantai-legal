@@ -21,6 +21,8 @@ defmodule Mix.Tasks.Lat.Amending do
       mix lat.amending --read --preview --amending A,B   # read, report what would change, write nothing
       mix lat.amending --read --preview --all    # every amending law, stale or not (a refactor's zero-diff gate)
       mix lat.amending --read --preview --regression     # the regression set (test/fixtures/amendment_read/regression.txt + the golden laws' amending laws)
+      mix lat.amending --read --preview --amending A,B --diff FILE   # also each changed rule by field, grouped (`Amendment.Review.RuleDiff`)
+      mix lat.amending --amending A --provision ID        # one amending provision: its words, stored rules and a fresh reading (`Amendment.Review.Probe`)
       mix lat.amending --fetch-enacted --amending A,B    # the repeals Schedules their revised text leaves out, as enacted or made (CV-06a; a fetch: ask first)
 
   Each changed amending law is reported (`ReadReport`: rules removed and
@@ -47,7 +49,19 @@ defmodule Mix.Tasks.Lat.Amending do
   alias SertantaiLegal.Scraper.LawRunner.Guard
 
   alias SertantaiLegal.Scraper.AmendingLaw.Extent
-  alias SertantaiLegal.Scraper.Amendment.{EnactedFetch, ReadPass, ReadReport, Rule, Store}
+  alias SertantaiLegal.Scraper.AmendingLaw.Text
+
+  alias SertantaiLegal.Scraper.Amendment.{
+    Collect,
+    EnactedFetch,
+    ReadLaw,
+    ReadPass,
+    ReadReport,
+    Rule,
+    Store
+  }
+
+  alias SertantaiLegal.Scraper.Amendment.Review.{Probe, RuleDiff}
 
   @shortdoc "Print a law's amendment rules; read amending laws into rules"
 
@@ -66,7 +80,9 @@ defmodule Mix.Tasks.Lat.Amending do
           preview: :boolean,
           regression: :boolean,
           all: :boolean,
-          fetch_enacted: :boolean
+          fetch_enacted: :boolean,
+          diff: :string,
+          provision: :string
         ]
       )
 
@@ -74,8 +90,8 @@ defmodule Mix.Tasks.Lat.Amending do
     Logger.configure(level: :warning)
 
     cond do
-      opts[:fetch_enacted] && opts[:amending] ->
-        fetch_enacted(opts[:amending])
+      opts[:amending] && (opts[:fetch_enacted] || opts[:provision]) ->
+        one_amending(opts)
 
       opts[:extents] ->
         extents(opts)
@@ -88,7 +104,7 @@ defmodule Mix.Tasks.Lat.Amending do
 
       true ->
         Mix.raise(
-          "usage: mix lat.amending --law X | --read [--amending A,B] [--limit N] | --extents --law X | --extents --amending A,B"
+          "usage: mix lat.amending --law X | --read [--amending A,B] [--limit N] [--preview [--diff FILE]] | --amending A --provision ID | --extents --law X | --extents --amending A,B"
         )
     end
   end
@@ -107,6 +123,26 @@ defmodule Mix.Tasks.Lat.Amending do
           )
       )
     end
+  end
+
+  # --amending A with --fetch-enacted, or with --provision ID
+  defp one_amending(opts) do
+    if opts[:fetch_enacted],
+      do: fetch_enacted(opts[:amending]),
+      else: probe(opts[:amending], opts[:provision])
+  end
+
+  # one amending provision: its words, its stored rules, a fresh reading for
+  # the laws it is stored or noted against (one law parsed, nothing written)
+  defp probe(amending, id) do
+    stored = for r <- Store.for_source(amending), r.source.ref == id, do: r
+    doc = ReadLaw.doc(amending) || Mix.raise("#{amending}: not in the CLML store")
+
+    laws =
+      Enum.uniq(Enum.map(stored, & &1.amends) ++ Enum.map(ReadLaw.notes(amending), & &1.law_name))
+
+    fresh = Collect.read(doc, id, Enum.map(laws, &ReadLaw.law_ref/1))
+    for l <- Probe.lines(amending, id, Text.of(doc, id), stored, fresh), do: Mix.shell().info(l)
   end
 
   @doc "The printed lines for a law's rules."
@@ -223,22 +259,7 @@ defmodule Mix.Tasks.Lat.Amending do
     Mix.shell().info("reading the changes feeds of our LAT laws for their pointers …")
     feed = ReadPass.feed_pointers()
 
-    laws =
-      cond do
-        opts[:regression] ->
-          ReadPass.regression_laws()
-
-        opts[:amending] ->
-          String.split(opts[:amending], ",", trim: true)
-
-        opts[:all] ->
-          ReadPass.amending_laws(feed)
-
-        true ->
-          feed |> ReadPass.amending_laws() |> Enum.filter(&ReadPass.stale?(&1, Map.get(feed, &1)))
-      end
-
-    laws = if opts[:limit], do: Enum.take(laws, opts[:limit]), else: laws
+    laws = to_read(opts, feed)
     preview? = opts[:preview] == true
 
     Mix.shell().info(
@@ -260,7 +281,7 @@ defmodule Mix.Tasks.Lat.Amending do
 
           line =
             case result do
-              {diff, ids} -> "#{ids} provisions, #{diff.after} rules"
+              {diff, ids, _pairs} -> "#{ids} provisions, #{diff.after} rules"
               other -> "FAILED #{inspect(other)}"
             end
 
@@ -275,12 +296,44 @@ defmodule Mix.Tasks.Lat.Amending do
         weight: &ReadPass.weight/1
       )
 
-    diffs = for {a, {diff, _ids}} <- results, into: %{}, do: {a, diff}
+    diffs = for {a, {diff, _ids, _}} <- results, into: %{}, do: {a, diff}
     changed = diffs |> Enum.sort() |> Enum.flat_map(fn {a, d} -> ReadReport.lines(a, d) end)
 
     Mix.shell().info("\n#{if preview?, do: "would change", else: "changed"}:")
     for line <- changed, do: Mix.shell().info("  " <> line)
     Mix.shell().info(ReadReport.summary(diffs))
+    if path = opts[:diff], do: rule_diff(path, results)
+  end
+
+  # the amending laws a read pass takes: named, the regression set, every
+  # one, or those not read by this reader; `--limit` the first N
+  defp to_read(opts, feed) do
+    laws =
+      cond do
+        opts[:regression] ->
+          ReadPass.regression_laws()
+
+        opts[:amending] ->
+          String.split(opts[:amending], ",", trim: true)
+
+        opts[:all] ->
+          ReadPass.amending_laws(feed)
+
+        true ->
+          feed |> ReadPass.amending_laws() |> Enum.filter(&ReadPass.stale?(&1, Map.get(feed, &1)))
+      end
+
+    if opts[:limit], do: Enum.take(laws, opts[:limit]), else: laws
+  end
+
+  # each changed rule by field, grouped by field set, for review
+  defp rule_diff(path, results) do
+    groups =
+      RuleDiff.grouped(for {a, {_, _, pairs}} <- results, pairs != [], into: %{}, do: {a, pairs})
+
+    File.write!(path, Jason.encode!(groups, pretty: true))
+    Mix.shell().info("\nchanged rules by field (#{length(groups)} groups) → #{path}")
+    for l <- RuleDiff.lines(groups), do: Mix.shell().info(l)
   end
 
   # one amending law: its reading against its stored rules, stored unless a
@@ -290,11 +343,11 @@ defmodule Mix.Tasks.Lat.Amending do
 
     case ReadPass.read(amending, feed_entry) do
       nil ->
-        {ReadReport.diff(old, old), 0}
+        {ReadReport.diff(old, old), 0, []}
 
       r ->
         unless preview?, do: ReadPass.write(r, old)
-        {ReadReport.diff(old, r.rules), length(r.ids)}
+        {ReadReport.diff(old, r.rules), length(r.ids), RuleDiff.pairs(old, r.rules)}
     end
   end
 end

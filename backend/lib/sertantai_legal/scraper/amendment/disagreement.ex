@@ -48,11 +48,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Disagreement do
           [Leftovers.item()]
   def items(rows, rules_by_law, reviewed) do
     rows
-    |> Enum.group_by(fn {law, c, s} -> {cause(c, s, Map.get(rules_by_law, law, [])), by(c)} end)
+    |> groups(rules_by_law)
     |> Enum.map(fn {{cause, by}, changes} ->
-      words =
-        for {law, c, _} <- Enum.sort_by(changes, &{elem(&1, 0), elem(&1, 1).target}),
-            do: %{words: words(law, c)}
+      words = for {law, c} <- changes, do: %{words: words(law, c)}
 
       Leftovers.item(
         :amending,
@@ -63,6 +61,24 @@ defmodule SertantaiLegal.Scraper.Amendment.Disagreement do
         length(changes),
         Leftovers.status(cause, reviewed, by)
       )
+    end)
+  end
+
+  @doc """
+  The changes behind each group, by `{cause, amending law}`, each group's
+  `{amended law, change}` in amended law and target order (the gate's
+  items and the review dump, `Amendment.Review.GateDump`).
+  """
+  @spec groups([{String.t(), Change.t(), CheckStrata.stratum()}], %{String.t() => [Rule.t()]}) ::
+          %{{String.t(), String.t()} => [{String.t(), Change.t()}]}
+  def groups(rows, rules_by_law) do
+    rows
+    |> Enum.group_by(
+      fn {law, c, s} -> {cause(c, s, Map.get(rules_by_law, law, [])), by(c)} end,
+      fn {law, c, _} -> {law, c} end
+    )
+    |> Map.new(fn {k, changes} ->
+      {k, Enum.sort_by(changes, &{elem(&1, 0), elem(&1, 1).target})}
     end)
   end
 

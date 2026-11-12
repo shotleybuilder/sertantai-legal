@@ -40,13 +40,20 @@ defmodule Mix.Tasks.Lat.Gates do
 
   @doc "Each gate's result for the family, its check task run as it runs alone."
   @spec results(String.t(), [Steps.gate()]) :: [Step.t() | {String.t(), term()}]
-  def results(family, gates) do
-    for {step, task, extra} <- gates do
-      Mix.shell().info("\n── #{step} (mix #{task}) ──")
-      result(step, Mix.Task.rerun(task, ["--family", family | extra]))
+  def results(family, gates),
+    do: for({step, task, extra} <- gates, do: check(step, task, ["--family", family | extra]))
+
+  @doc """
+  One check task run as it runs alone, and its result; a task that
+  returns no `Step` fails by `name` (`mix lat.step_close`, `mix lat.preflight`).
+  """
+  @spec check(String.t(), String.t(), [String.t()]) :: Step.t() | {String.t(), term()}
+  def check(name, task, args) do
+    Mix.shell().info("\n── #{name} (mix #{task}) ──")
+
+    case Mix.Task.rerun(task, args) do
+      %Step{} = r -> r
+      other -> {name, other}
     end
   end
-
-  defp result(_step, %Step{} = r), do: r
-  defp result(step, other), do: {step, other}
 end

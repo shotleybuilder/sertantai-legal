@@ -50,6 +50,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
   """
   use Mix.Task
 
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Gate.Step
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source, as: Scope
 
   alias SertantaiLegal.Scraper.{ChangeVocabulary, LabelRefresh, LatStagedParser}
@@ -415,6 +416,12 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       end
     end
 
-    Mix.shell().info("\n#{Golden.passed(results)} / #{length(results)} golden provisions pass")
+    passed = Golden.passed(results)
+    Mix.shell().info("\n#{passed} / #{length(results)} golden provisions pass")
+
+    # the result for `mix lat.preflight`; a golden failure is the step's whose change moved it
+    Step.new("Golden", passed == length(results), length(results) - passed,
+      owner: "the change that moved it (golden is frozen)"
+    )
   end
 end

@@ -17,18 +17,32 @@ defmodule Mix.Tasks.Lat.AmendingCheck do
       mix lat.amending_check --family "OH&S: Occupational" --strata
       mix lat.amending_check --family F --gate [--all]
       mix lat.amending_check --family F --sample FILE --n 50 --seed N [--stratum A] [--skip 50]
+
+  The gate's review (Amending-law reader: review tooling):
+
+      mix lat.amending_check --family F --gate --dump FILE [--per 10]
+      mix lat.amending_check --family F --gate --name-standard --review REPORT [--write]
+
+  `--dump` writes each group with up to `--per` of its changes as
+  checkable items (`Amendment.Review.GateDump`; `--per 0` every change),
+  unnamed groups first. `--name-standard` proposes the standard status
+  for each unnamed group whose cause has one, citing the review report
+  the groups were read in (`Amendment.Review.StandardStatus`), and lists
+  the groups left to name by hand: a dry run. `--write` adds the
+  proposals to the reviewed statuses, only once Jason has decided.
   """
   use Mix.Task
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Gate.Step
 
   alias SertantaiLegal.Scraper.Amendment.{CheckSample, CheckStrata, Disagreement, PatternSource}
+  alias SertantaiLegal.Scraper.Amendment.Review.{GateDump, StandardStatus}
   alias SertantaiLegal.Scraper.Amendment.Store, as: Rules
   alias SertantaiLegal.Scraper.ChangeVocabulary.Store
 
   @shortdoc "The amendment reader's precision sample for a family (read-only)"
 
-  @usage "usage: mix lat.amending_check --family F [--strata] [--gate [--all]] " <>
+  @usage "usage: mix lat.amending_check --family F [--strata] [--gate [--all] [--dump FILE --per N] [--name-standard --review R [--write]]] " <>
            "[--sample FILE --n N --seed S --stratum A|D|L --skip K]"
 
   @reviewed "test/fixtures/amendment_patterns/disagreements.json"
@@ -46,7 +60,12 @@ defmodule Mix.Tasks.Lat.AmendingCheck do
           stratum: :string,
           skip: :integer,
           gate: :boolean,
-          all: :boolean
+          all: :boolean,
+          dump: :string,
+          per: :integer,
+          name_standard: :boolean,
+          review: :string,
+          write: :boolean
         ]
       )
 
@@ -69,7 +88,7 @@ defmodule Mix.Tasks.Lat.AmendingCheck do
     )
 
     if opts[:strata], do: strata(classified, by_law)
-    step = if opts[:gate], do: gate(classified, opts[:all])
+    step = if opts[:gate], do: gate(classified, opts)
 
     if path = opts[:sample], do: sample(path, opts, classified, stratum)
     step
@@ -119,12 +138,14 @@ defmodule Mix.Tasks.Lat.AmendingCheck do
 
   # the family gate: each D and L change by cause and amending law, reviewed
   # in disagreements.json (Decision 1, 2026-11-06)
-  defp gate(classified, all?) do
+  defp gate(classified, opts) do
+    all? = opts[:all]
     shell = Mix.shell()
     rows = for {law, c, s} <- classified, s in [:D, :L], do: {law, c, s}
     rules = rows |> Enum.map(&elem(&1, 0)) |> Enum.uniq() |> Map.new(&{&1, Rules.for_law(&1)})
     items = Disagreement.items(rows, rules, reviewed())
     gate = Disagreement.gate(items)
+    review(opts, rows, rules, gate)
 
     counts = Enum.map_join(gate.counts, ", ", fn {k, n} -> "#{k} #{n}" end)
     shell.info("\nD and L changes by cause (#{@reviewed}): #{length(items)} groups; #{counts}")
@@ -152,6 +173,54 @@ defmodule Mix.Tasks.Lat.AmendingCheck do
     )
 
     Step.new("Amending-law reader", gate.pass?, length(gate.failing))
+  end
+
+  # the gate's review tools: the dump, the standard statuses
+  defp review(opts, rows, rules, gate) do
+    if path = opts[:dump], do: dump(path, Disagreement.groups(rows, rules), opts[:per])
+    if opts[:name_standard], do: name_standard(gate.failing, opts)
+  end
+
+  defp dump(path, groups, per) do
+    per = if per == 0, do: :all, else: per || 10
+    out = GateDump.dump(groups, reviewed(), &CheckSample.item/2, per)
+    File.write!(path, Jason.encode!(out, pretty: true))
+    named = Enum.count(out, & &1["named"])
+
+    Mix.shell().info(
+      "\ndump: #{length(out)} groups (#{named} named), up to #{per} changes each → #{path}"
+    )
+  end
+
+  # the standard statuses proposed for the unnamed groups; written only on --write
+  defp name_standard(failing, opts) do
+    review =
+      opts[:review] ||
+        Mix.raise("--name-standard needs --review REPORT (where the groups were read)")
+
+    %{proposed: proposed, by_hand: by_hand} = StandardStatus.proposals(failing, review)
+
+    words = Map.new(failing, &{"#{&1.shape} @ #{&1.law}", Enum.take(&1.words, 3)})
+
+    # each proposal beside its group's words: a standard is read, never stamped
+    Mix.shell().info(
+      "\nstandard statuses proposed (read each group's words first): #{length(proposed)}"
+    )
+
+    for {k, v} <- proposed do
+      Mix.shell().info("  #{k}\n      #{v}")
+      for w <- words[k], do: Mix.shell().info("        #{w}")
+    end
+
+    Mix.shell().info("\nleft to name by hand: #{length(by_hand)}")
+    for k <- by_hand, do: Mix.shell().info("  #{k}")
+
+    if opts[:write] do
+      File.write!(@reviewed, StandardStatus.write(reviewed(), proposed))
+      Mix.shell().info("\nwrote #{length(proposed)} statuses → #{@reviewed}")
+    else
+      Mix.shell().info("\ndry run: nothing written (--write, once decided)")
+    end
   end
 
   defp reviewed do
