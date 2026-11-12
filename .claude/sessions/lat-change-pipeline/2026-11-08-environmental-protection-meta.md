@@ -1,12 +1,15 @@
 ---
 session: 'LAT Change Pipeline: Environmental Protection — Meta Session'
 type: meta
-status: active
+status: closed
 opened: '2026-11-08'
+closed: '2026-11-12'
+outcome: success
+summary: 'Environmental Protection through all 14 steps in 5 days (2026-11-08 to 11-12): 122 laws switched, every pass rule met, 0 plan changes; retrospective closed with the order of work after it.'
 family: '💚 ENVIRONMENTAL PROTECTION'
 ---
 
-# Session: LAT Change Pipeline: Environmental Protection — Meta Session (ACTIVE)
+# Session: LAT Change Pipeline: Environmental Protection — Meta Session (CLOSED)
 
 ## Problem
 
@@ -27,8 +30,8 @@ Environmental Protection is the third family through the LAT Change Pipeline, an
 - ✅ Measures: every published figure audited (same, moved with its commit, or parked); every check replicates at seed 1011; 4 gates or verdicts moved since their steps parked with them (Sources 69, Extent 2, Amending 4, one Making laws verdict); the inline reads of lat.sources and lat.vocabulary moved into tested modules; no agent pass; closed 2026-11-11
 - ✅ Store and build: all 445 digests identical; 0 stale after 106 stale on older commencement readings were re-read and rebuilt; build time accepted (122 laws, about 5½ min, 1 worker); 6 gates pass, 3 fail as parked in Measures; restore copies moved to the restore schema, `--conflicts` order fixed; no agent pass; closed 2026-11-11
 - ✅ Labels side by side: 69,136 periods, 0 breaking the table's rules; 35,766 rows = 13,229 agree + 17,872 differ today + 2,366 history only + 2,299 no stored timeline (baseline saved); territory alone the largest class (7,736); two runs identical; no code, no agent pass; closed 2026-11-12
-- ✅ Switch-over
-- ⬜ Retrospective and housekeeping (PENDING: `2026-11-10-environmental-protection-retrospective.md`, preliminary conclusions from the Amending-law reader day; then the review tooling session)
+- ✅ Switch-over: 122 of 122 laws written, the stored timeline equal to the switch's; closed 2026-11-12
+- ✅ Retrospective and housekeeping: `2026-11-10-environmental-protection-retrospective.md`; bugs 13 new closed, 41 new parked, 24 existing fixed, 79 existing parked; next the review tooling, then a few QQ register families one at a time; closed 2026-11-12
 
 ## Dependencies
 

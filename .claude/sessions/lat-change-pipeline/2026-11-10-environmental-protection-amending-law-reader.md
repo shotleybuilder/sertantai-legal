@@ -76,10 +76,13 @@ lessons:
 
 bugs:
   - pattern: "A modification read as an amendment: \"has effect as if\", \"shall apply in relation to … as if … were substituted\" slip past the modification rule (`@modification` reads only \"have effect|be read|be construed as if\") (e.g. SI 1995/3128 reg.10(3) on MSA 1995 s.97(1); 2020 c.7 Sch.7 on ERA 1996)"
+    step: Amending-law reader
     status: fixed
   - pattern: "The amending gate fails today: 1 group not named — MSA 1995 s.173(7)(a)(i), inserted by SI 2006/1265 (no operation from legislation.gov.uk: inserted provision), appeared with Merge's rebuild (93599e6d) after the step passed (f18affb2)"
+    step: Amending-law reader
     status: fixed
   - pattern: "OH&S Amending-law gate: 91 disagreement groups not named, as at 2026-11-08"
+    step: Amending-law reader
     status: open
     fix: "88 groups as at 2026-11-10 (the application claims now named by cause); OH&S's own Amending-law reader re-run names them"
 
