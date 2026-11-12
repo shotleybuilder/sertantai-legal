@@ -161,6 +161,11 @@ A feed stage qualified "in accordance with" its law's own clause, and dated on t
 - **Example:** HSWA 1974 s.47(4).
 - **Serves:** `law-text-wins` · **Code:** `Evidence` (`partial_with_date/1`) · **Test:** `evidence_test` "partial is the date's" · **Origin:** `cv-s08-evidence` (batch 1, 2026-10-29)
 
+### `territorial-stages-date-only-the-undated`
+An amending provision commenced territory by territory and never in full dates its changes from its first stage, partly in force. It does so only where no other source dates the change: the stage ranks after the feed's date, names no commencing order, and an order for one territory alone dates nothing, because that order is a devolved Act's whole reach.
+- **Example:** EA 1995 s.57 inserted EPA 1990 Part IIA, commenced for England on 2000-04-01, Scotland on 2000-07-14 and Wales in 2001. Part IIA is in force in part from 2000-04-01, no longer from EA 1995's making. HSWA's Railways Act 2005 changes keep the feed's 2006-04-01. TCPA 1990 s.78(4BA), by anaw 2015/4 for Wales only, keeps the feed's stages.
+- **Serves:** `binds-on-date`, `unknown-over-guess` · **Code:** `Readers.AmendingCommencement` (`claims/3`); `Evidence` (`{:commencement, :date_staged}`, `:partial_staged`) · **Test:** `amending_commencement_test` "commenced territory by territory"; `evidence_test` "a territory-by-territory commencement's first stage" · **Origin:** Environmental Protection: Switch-over, Decision 3 (B), Jason 2026-11-12; each later stage as its own change (A) is parked with the Amending-law reader
+
 ### `schedule-commences-with-its-introducer`
 A Schedule comes into force with the provision that gives it effect.
 - **Example:** Energy Act 2013 Sch.12 is commenced by SI 2014/251.
@@ -205,6 +210,11 @@ A law's own start is resolved by `LawStart` in the build, from the same input th
 A row's territory starts as its extent. It is narrowed by its insertion's territory, by a commencement for one territory, and by the law's application clauses in force then.
 - **Example:** SI 2013/1471 reg.15(5)(b) takes its inserting law's narrower extent.
 - **Serves:** `binds-on-date`, `law-text-wins` · **Code:** `Label.Start` (`territory/5`) · **Test:** `label_fold_test` "its insertion's territory (C14)" · **Origin:** `cv-s09-label-fold` (2026-10-30)
+
+### `devolved-law-applies-in-its-territory`
+A devolved law's own provisions apply where its type puts it (wsi, anaw, asc → W; ssi, asp → S; the NI types → NI), or else where its own title does ("(Wales)", "(England)", "(England and Northern Ireland)", "(Scotland)"). The evidence is the law's own type or title, never its register extent.
+- **Example:** SI 2017/544 extends to E+W and applies in W. Environmental Protection's 7,736 rows that differ on territory alone all come from this rule, against the old path's extent.
+- **Serves:** `binds-on-date`, `law-text-wins` · **Code:** `Fold.own_territory/3`, `LawTerritory.territory/3`, `LawTerritory.title_place/1` · **Test:** golden SI 2017/544 reg.1(1) · **Origin:** `cv-s09-label-fold`; written down at Environmental Protection: Switch-over (2026-11-12). The title place can come from a cited law's title: SI 2021/1309, 28 rows, to look at
 
 ### `law-text-sets-territory`
 A provision's own application clause, and its context in the law it amends, outrank the CLML's stated extent.

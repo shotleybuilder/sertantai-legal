@@ -27,7 +27,8 @@ All are read-only until the apply. Ask Jason before the long runs, which take ab
    - Read them by hand: the changes reaching each row, the stored changes, then the feed or text they came from.
    - A class over the plan's size (100 rows) goes to Jason as a decision.
    - Maritime Safety's was the feed reader taking "s. 130A-130E (Pt. 6) (Ch. 1A)" as the whole of Part VI. It was fixed with leave (Decision 2, B).
-3. **Rules:** `mix lat.label_rules --family "F"`, then `--list RULE` for each rule breached. Every breach is fixed by its owning step, or, when its class is below the triage size, named as a known limit.
+3. **Checked rows early:** run `mix lat.label_checked --list` before any fix too. A changed row from an earlier step's regression (for example, commencement re-reads) is then known before this step's fixes run (Environmental Protection, 2026-11-12: 22 rows from the 2026-11-10 re-reads).
+   **Rules:** `mix lat.label_rules --family "F"`, then `--list RULE` for each rule breached. Every breach is fixed by its owning step, or, when its class is below the triage size, named as a known limit.
    - Known limits are table files read by `KnownLimits` (section_id first). For Maritime Safety: `backend/data/reports/switch-over/maritime-safety-known-limits.md`.
    - A known-limit row keeps its old label at the switch.
    - `known_limits.ex` is in the build's version, so adding a file needs a staleness rebuild.
@@ -42,7 +43,7 @@ All are read-only until the apply. Ask Jason before the long runs, which take ab
    - a restore point: `./scripts/nas/nas-backup.sh --tables lat_label_timeline,lat_change_log,provision_changes,provision_change_claims,lat_events --tag <tag>`;
    - the family added to `config :sertantai_legal, :label_families`, by its exact name without the `💙 ` marker (`LabelSwitch.family_in?/2`);
    - `mix lat.label_switch --family "F" --apply`.
-8. **After the apply:** compare the stored timeline with `LabelSource.timeline/1`, law by law, known limits apart. Every law written should be equal, row for row. For Maritime Safety this was a scratch script; a task for it is parked. `--strata` can't show this, because it compares the fold's own periods: a repeal's day and empty territory, the commencer as `changed_by`, and no unknown EU period always differ from them. Also run `mix lat.stale` (0) and look for laws the apply failed: a failed law keeps its old labels.
+8. **After the apply:** `mix lat.label_switch --family "F" --stored` compares the stored timeline with the switch's, law by law, on every field the switch writes (`changed_by_all` and `commenced_by` too). Every law written should show 0 rows differing. `--strata` can't show this, because it compares the fold's own periods: a repeal's day and empty territory, the commencer as `changed_by`, and no unknown EU period always differ from them. Also run `mix lat.stale --strict --switched` (0) and look for laws the apply failed: a failed law keeps its old labels. A family switched for the first time can show parser-stale laws that weren't counted before. Text-diff them offline and re-parse them from the store (RULES `family-re-parses-its-parser-stale-laws`).
 
 **Pass:**
 - causes saved;
@@ -63,3 +64,16 @@ All are read-only until the apply. Ask Jason before the long runs, which take ab
 
 - **OH&S** (first family, 2026-10-31 to 11-02): per-cause agent samples and a pooled bound, replaced on 2026-11-01 by the code-decided pass. 696 checked rows, 47 known, 1 upstream. Session: `.claude/sessions/change-vocabulary/2026-10-21-cv-06-switch-over.md`.
 - **Maritime Safety** (2026-11-06/07): no agent pass. A hand look at two causes found the feed reader's Part VI fault (773 rows), fixed with leave. 8 rows were named as known limits. The OH&S checked rows found 51 `changed_by` rows that followed Decision 1, and a parked repeals-table regression (Mines Regulations 2014 on HSWA). Session: `.claude/sessions/lat-change-pipeline/2026-11-06-maritime-safety-switch-over.md`.
+- **Environmental Protection** (2026-11-12): no agent pass.
+  - **The territory class.** 7,736 rows differ on territory alone, all explained by one rule (`devolved-law-applies-in-its-territory`).
+  - **Fixed in-step with leave:**
+    - Welsh SIs under their UK names (`no_made_period`, 440 rows; Label fold);
+    - an amending provision commenced territory by territory (EPA 1990 Part IIA in force from 1995; Amending-law reader, Decision 3 B).
+  - **Two regressions the fix had, both caught by the checks:**
+    - golden caught a one-territory order dating a Welsh Act's change;
+    - the checked rows caught the stage outranking the feed's dates.
+  - **Known limits:** 15 rows.
+  - **Parked:** 22 checked rows from earlier steps.
+  - **The apply:** 122 of 122 written; `--stored` shows 0 differing.
+  - **After it:** 59 parser-stale laws re-parsed, with 0 rows changed.
+  - Session: `.claude/sessions/lat-change-pipeline/2026-11-12-environmental-protection-switch-over.md`.

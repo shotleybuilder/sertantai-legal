@@ -519,7 +519,7 @@ There is no agent check: the conversion is a fixed mapping under unit tests (`la
 3. **Checked rows:** `mix lat.label_checked` compares current labels with every row already judged (`test/fixtures/change_vocabulary/switch_checked.json`). A row changed by a decided rule is accepted with the rule as the why.
 4. **Golden** from inputs.
 5. **Dry run:** `mix lat.label_switch` (no write; its per-law csv goes to `data/reports/change-vocabulary/dry-run-<family>.csv`, or `--out PATH`) → Jason → restore point (`lat_label_timeline`, `lat_change_log`, `provision_changes`, `provision_change_claims`, `lat_events`) → the family added to `:label_families` → `mix lat.label_switch --apply`.
-6. **After the apply:** the stored timeline compared with what the switch writes (`LabelSource.timeline/1`), law by law, known limits apart. `--strata` can't show this: it compares the fold's own periods, and the timeline's conventions (a repeal's day and empty territory, the commencer as `changed_by`, no unknown period before an EU law's first dated day) always differ from them.
+6. **After the apply:** `mix lat.label_switch --family F --stored` compares the stored timeline with what the switch writes, law by law, on every field it writes (0 rows differing). `--strata` can't show this: it compares the fold's own periods, and the timeline's conventions (a repeal's day and empty territory, the commencer as `changed_by`, no unknown period before an EU law's first dated day) always differ from them.
 
 **The label tools fold once** (#191, 2026-11-07). `lat.label_shadow`, `lat.label_rules` (every `--list`) and `lat.label_check` fold a family's laws through one fold cache (`LabelTools.FoldCache`, `data/cache/label-fold/`), several at once under `LawRunner`'s guard (`LabelTools.FamilyFold`), with outputs in the laws' order. On Maritime Safety the first tool takes about 85 seconds and each one after it about 5 (each was about 12 minutes before). The cache key covers everything a fold reads: the code version, the law's latest build, its stored timeline, its rows, its register entry and its CLML body. So a rebuild, a relabel or a code change folds the law again. `--no-cache` folds each law afresh. The dry run (`lat.label_switch`) folds its laws in parallel, without the cache (about 80 seconds). Run heavy checks in a capped unit: `systemd-run --user --unit=NAME -p MemoryMax=14G -p MemorySwapMax=0 --working-directory=backend …`. A run that overruns is then killed alone, not the terminal (the OOM killer, 2026-11-07).
 
@@ -538,6 +538,23 @@ There is no agent check: the conversion is a fixed mapping under unit tests (`la
   - **The apply.** The first apply wrote 116 of 117 laws. The Merchant Shipping Act 1979 failed the old register's fidelity gate, which `LabelRefresh` then still ran for switched laws.
   - **The old register fix.** The start-from-old-register bug was fixed in this step (Jason's leave): the start is stored with the build, and a switched law's refresh no longer collects or reads the old register.
   - **After the re-apply:** all 117 written, and their stored timelines equal the switch's, row for row. No agent was used.
+- **On Environmental Protection** (2026-11-12):
+  - **The baseline.** 50% of rows differed today, against Maritime's 10%.
+  - **Territory.** The largest class (7,736 rows, territory alone) is one rule: a devolved law applies where its type or title puts it (RULES `devolved-law-applies-in-its-territory`).
+  - **A hand look** at each cause naming no evidence found:
+    - a shadow gap: a container's change isn't named as the evidence (parked here);
+    - the old path's false repeals (EA 1995 s.41);
+    - one fault class: EPA 1990 Part IIA in force from 1995.
+  - **Two fixes with leave:**
+    - Welsh SIs held under their UK names keep their prospective period (Label fold, 440 rows);
+    - an amending provision commenced territory by territory dates its changes from the first stage, partly in force, only where nothing else dates them (Amending-law reader, Decision 3 B; RULES `territorial-stages-date-only-the-undated`).
+  - **The checks caught the fix's two over-reaches before the apply:**
+    - golden: a one-territory order dating a Welsh Act's change;
+    - the checked rows: the stage outranking the feed's dates.
+  - **Known limits.** 15 rows in 2 classes are named.
+  - **Checked rows.** 22 OH&S checked rows changed by the 2026-11-10 commencement re-reads (SI 2005/1909 on HSWA) are parked with the Commencement reader.
+  - **The apply** wrote 122 of 122, and `mix lat.label_switch --stored` (new, replacing the scratch script) shows 0 rows differing.
+  - **Parser-stale laws.** 59 now counted by `lat.stale --strict --switched` were text-diffed (0 rows) and re-parsed from the store.
 
 **Skill.** `switch-over-check` (rewritten 2026-11-07 to the code-decided pass).
 
