@@ -67,6 +67,11 @@ Each family's Making laws step re-parses its laws that were parsed by older pars
 - **Example:** 165 of the 266 switched laws were parser-stale. The text diff moved 1 row (a duplicate heading in the Merchant Shipping Act 1979), and the re-parse re-stamped all 165.
 - **Serves:** `binds-on-date` · **Code:** `mix lat.text_diff`, `mix lat.reparse --store only` · **Test:** `lat.stale --strict --switched` · **Origin:** silent staleness #193, Decision 1 (Jason 2026-11-07)
 
+### `a-round-is-its-exact-families`
+A round of families runs each step once over all its families: `--family` takes the round's name, and the scope is the laws whose register family is exactly one of its names (the display marker dropped). A plain family name still matches as a substring, so earlier families' runs are unchanged.
+- **Example:** `--family "Fire and OH&S"` gives 100 laws with rows from five families; `--family "OH&S"` would have added the switched OH&S: Occupational / Personal Safety's 149.
+- **Serves:** `prove-one-family` · **Code:** `ChangeVocabulary.Rounds`, `Amendment.PatternSource.family_laws/1` and `family_filter/1` · **Test:** `rounds_test.exs`, `architecture/family_scope_test.exs` · **Origin:** round-scope (Jason 2026-11-13)
+
 ## 1. Status
 
 ### `five-statuses`

@@ -615,6 +615,8 @@ Session files: `.claude/sessions/lat-change-pipeline/<date>-<family>-<step-name>
 3. production hardening: all the steps run as one process, only once they are reliable;
 4. the rest of the register's families.
 
+**The first QQ round** (Jason 2026-11-13) takes five families together, in place of one at a time: FIRE, FIRE: Dangerous and Explosive Substances, OH&S: Gas & Electrical Safety, OH&S: Mines & Quarries and OH&S: Offshore Safety (meta session `2026-11-13-fire-and-ohs-meta.md`). Each step runs once over the round, `--family "Fire and OH&S"`; the round's exact family names are in `ChangeVocabulary.Rounds` (rule `a-round-is-its-exact-families`). The check line is per family: at most 6 days each, 30 for the round.
+
 **The check on this order** (retrospectives review, Decision 5): each QQ family's retrospective measures days per family (at most 6, the backlog fixing included), new reader bugs per family (falling from EP's 26) and open bugs (falling from 123).
 
 **Models per part** (Claude Model Plan, 2026-11-13, Decisions 1–4; this replaces the Label-fold-only pilot). Opus 5.5 is the session: the plan, Jason's decisions, the pass/fail verdict and the small fixes. The other parts go to named agents in `.claude/agents/`, each with its model fixed in its file:
