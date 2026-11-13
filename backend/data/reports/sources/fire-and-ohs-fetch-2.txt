@@ -1,0 +1,210 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+139 laws in scope
+
+needed against held, by category:
+  own: 139 — held 139
+  feed: 135 — held 135
+  territory: 406 — held 334, not_fetched 68, stale 4
+  introduction: 225 — held 138, not_fetched 87
+  enabling_parent: 20 — held 19, not_fetched 1
+  dates: 53 — absent 5, held 31, not_fetched 15, stale 2
+  backlog: 179 — absent 10, held 121, not_fetched 47, stale 1
+  needed, all categories: 1157
+
+failures: 225
+  not_fetched  territory  UK_nisr_2012_11 :body  (for UK_apni_1929_13)
+  stale  territory  UK_nisr_2015_223 :body  (for UK_apni_1929_13)
+  not_fetched  introduction  UK_nisr_2012_11 :introduction  (for UK_apni_1929_13)
+  not_fetched  territory  UK_ssi_2006_367 :body  (for UK_asp_2005_5)
+  not_fetched  territory  UK_asp_2016_21 :body  (for UK_asp_2005_5)
+  not_fetched  territory  UK_asp_2007_14 :body  (for UK_asp_2005_5)
+  not_fetched  territory  UK_ssi_2011_369 :body  (for UK_asp_2005_5)
+  not_fetched  territory  UK_asp_2015_6 :body  (for UK_asp_2005_5)
+  not_fetched  territory  UK_asp_2014_11 :body  (for UK_asp_2005_5)
+  not_fetched  introduction  UK_ssi_2006_367 :introduction  (for UK_asp_2005_5)
+  not_fetched  introduction  UK_ssi_2011_211 :introduction  (for UK_asp_2005_5)
+  not_fetched  introduction  UK_ssi_2011_369 :introduction  (for UK_asp_2005_5)
+  not_fetched  dates  UK_uksi_2008_3164 :schedules  (for UK_asp_2005_5)
+  not_fetched  dates  UK_uksi_2007_2472 :schedules  (for UK_asp_2005_5)
+  not_fetched  dates  UK_uksi_2012_2938 :schedules  (for UK_asp_2005_5)
+  not_fetched  dates  UK_uksi_2007_237 :schedules  (for UK_asp_2005_5)
+  not_fetched  backlog  UK_ssi_2006_367 :schedules  (for UK_asp_2005_5)
+  stale  backlog  UK_ssi_2013_51 :body  (for UK_asp_2005_5)
+  not_fetched  backlog  UK_ssi_2013_51 :schedules  (for UK_asp_2005_5)
+  not_fetched  backlog  UK_ssi_2012_253 :schedules  (for UK_asp_2005_5)
+
+feeds differing from the register's change statistics: 13
+  UK_asp_2012_8: effects 321 vs register 320; laws 18 vs 17
+  UK_nisr_1995_340: effects 54 vs register 52; laws 7 vs 6
+  UK_nisr_1995_345: effects 47 vs register 44; laws 7 vs 6
+  UK_nisr_1995_87: effects 6 vs register 3; laws 3 vs 2
+  UK_nisr_2004_63: effects 13 vs register 3; laws 4 vs 3
+  UK_nisr_2014_224: effects 63 vs register 12; laws 4 vs 3
+  UK_ukpga_1962_58: effects 182 vs register 175; laws 48 vs 47
+  UK_ukpga_1998_17: effects 393 vs register 391; laws 46 vs 45
+  UK_uksi_1989_971: effects 48 vs register 47; laws 14 vs 13
+  UK_uksi_1994_232: effects 7 vs register 8; laws 2 vs 3
+  UK_uksi_1997_735: effects 22 vs register 20; laws 14 vs 13
+  UK_uksi_2002_2665: effects 16 vs register 14; laws 8 vs 7
+  UK_uksi_2015_385: effects 17 vs register 15; laws 9 vs 8
+
+FAIL
+
+fetching 225 documents the check failed …
+  Fetching enacting data: /nisr/2012/11/made/introduction/data.xml
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+  Fetching enacting data: /ssi/2006/367/made/introduction/data.xml
+  Fetching enacting data: /ssi/2011/211/made/introduction/data.xml
+  Fetching enacting data: /ssi/2011/369/made/introduction/data.xml
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+  20/225
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+  Fetching enacting data: /ssi/2025/378/made/introduction/data.xml
+  Fetching enacting data: /ssi/2016/387/made/introduction/data.xml
+  Fetching enacting data: /ssi/2026/321/made/introduction/data.xml
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+  Fetching enacting data: /ssi/2016/142/made/introduction/data.xml
+  40/225
+  Fetching enacting data: /eudr/2010/61/made/introduction/data.xml
+  Fetching enacting data: /eudr/2010/61/introduction/made/data.xml
+  Fetching enacting data: /eudn/2015/974/made/introduction/data.xml
+  Fetching enacting data: /eudn/2015/974/introduction/made/data.xml
+  Fetching enacting data: /eudr/2018/1846/made/introduction/data.xml
+  Fetching enacting data: /eudr/2018/1846/introduction/made/data.xml
+  Fetching enacting data: /eudr/2014/103/made/introduction/data.xml
+  Fetching enacting data: /eudr/2014/103/introduction/made/data.xml
+  Fetching enacting data: /eudn/2015/217/made/introduction/data.xml
+  Fetching enacting data: /eudn/2015/217/introduction/made/data.xml
+  Fetching enacting data: /eudn/2013/218/made/introduction/data.xml
+  Fetching enacting data: /eudn/2013/218/introduction/made/data.xml
+  Fetching enacting data: /eudr/2020/1833/made/introduction/data.xml
+  Fetching enacting data: /eudr/2020/1833/introduction/made/data.xml
+  Fetching enacting data: /eudr/2012/45/made/introduction/data.xml
+  Fetching enacting data: /eudr/2012/45/introduction/made/data.xml
+  Fetching enacting data: /eudn/2018/936/made/introduction/data.xml
+  Fetching enacting data: /eudn/2018/936/introduction/made/data.xml
+  Fetching enacting data: /eudn/2017/695/made/introduction/data.xml
+  Fetching enacting data: /eudn/2017/695/introduction/made/data.xml
+  Fetching enacting data: /eudn/2019/1094/made/introduction/data.xml
+  Fetching enacting data: /eudn/2019/1094/introduction/made/data.xml
+  Fetching enacting data: /eudr/2016/2309/made/introduction/data.xml
+  Fetching enacting data: /eudr/2016/2309/introduction/made/data.xml
+  60/225
+  Fetching enacting data: /eudn/2016/629/made/introduction/data.xml
+  Fetching enacting data: /eudn/2016/629/introduction/made/data.xml
+  Fetching enacting data: /eudn/2020/1241/made/introduction/data.xml
+  Fetching enacting data: /eudn/2020/1241/introduction/made/data.xml
+  Fetching enacting data: /eudr/2018/217/made/introduction/data.xml
+  Fetching enacting data: /eudr/2018/217/introduction/made/data.xml
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+[warning] retry: got exception, will retry in 2000ms, 2 attempts left
+[warning] ** (Req.TransportError) timeout
+  Fetching enacting data: /eur/2018/1999/made/introduction/data.xml
+  Fetching enacting data: /eur/2018/1999/introduction/made/data.xml
+  Fetching enacting data: /nisr/2015/159/made/introduction/data.xml
+  Fetching enacting data: /nisr/2016/108/made/introduction/data.xml
+  Fetching enacting data: /nisr/2006/182/made/introduction/data.xml
+  Fetching enacting data: /nisr/2006/182/introduction/made/data.xml
+  Fetching enacting data: /nisr/2012/177/made/introduction/data.xml
+  Fetching enacting data: /nisr/2016/317/made/introduction/data.xml
+  Fetching enacting data: /nisr/2026/178/made/introduction/data.xml
+  Fetching enacting data: /nisr/2009/248/made/introduction/data.xml
+  Fetching enacting data: /nisr/2010/59/made/introduction/data.xml
+  80/225
+  Fetching enacting data: /nisr/2015/236/made/introduction/data.xml
+  Fetching enacting data: /nisr/2011/295/made/introduction/data.xml
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+  Fetching enacting data: /nisr/2014/47/made/introduction/data.xml
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+  Fetching enacting data: /nisr/2014/26/made/introduction/data.xml
+  Fetching enacting data: /nisr/2014/26/introduction/made/data.xml
+  Fetching enacting data: /nisr/2026/89/made/introduction/data.xml
+  Fetching enacting data: /uksi/2020/1371/made/introduction/data.xml
+  Fetching enacting data: /uksi/1974/1885/made/introduction/data.xml
+  Fetching enacting data: /uksi/1989/615/made/introduction/data.xml
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+[warning] retry: got exception, will retry in 2000ms, 2 attempts left
+[warning] ** (Req.TransportError) timeout
+  Fetching enacting data: /uksi/2015/1553/made/introduction/data.xml
+  Fetching enacting data: /uksi/2010/1554/made/introduction/data.xml
+  Fetching enacting data: /uksi/2010/1554/introduction/made/data.xml
+  100/225
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+  120/225
+  Fetching enacting data: /uksi/1970/1681/made/introduction/data.xml
+  Fetching enacting data: /uksi/1974/1986/made/introduction/data.xml
+  Fetching enacting data: /uksi/1974/595/made/introduction/data.xml
+  Fetching enacting data: /uksi/1975/1636/made/introduction/data.xml
+  Fetching enacting data: /uksi/1992/449/made/introduction/data.xml
+  Fetching enacting data: /uksi/2000/1937/made/introduction/data.xml
+  Fetching enacting data: /uksi/1999/742/made/introduction/data.xml
+  Fetching enacting data: /uksi/1996/825/made/introduction/data.xml
+  Fetching enacting data: /uksi/2009/1307/made/introduction/data.xml
+  Fetching enacting data: /uksi/2011/2305/made/introduction/data.xml
+  Fetching enacting data: /uksi/2017/16/made/introduction/data.xml
+  Fetching enacting data: /nisr/1993/384/made/introduction/data.xml
+  140/225
+  Fetching enacting data: /uksi/1993/1823/made/introduction/data.xml
+  Fetching enacting data: /uksi/2004/2043/made/introduction/data.xml
+  Fetching enacting data: /uksi/2007/290/made/introduction/data.xml
+  Fetching enacting data: /uksi/2018/797/made/introduction/data.xml
+  Fetching enacting data: /nisi/1998/3162/made/introduction/data.xml
+  Fetching enacting data: /nisi/1998/3162/introduction/made/data.xml
+  Fetching enacting data: /uksi/2000/311/made/introduction/data.xml
+  Fetching enacting data: /uksi/2009/818/made/introduction/data.xml
+  Fetching enacting data: /uksi/2017/469/made/introduction/data.xml
+  160/225
+  Fetching enacting data: /mwa/2009/2/made/introduction/data.xml
+  Fetching enacting data: /uksi/2018/226/made/introduction/data.xml
+  Fetching enacting data: /uksi/2000/3097/made/introduction/data.xml
+  Fetching enacting data: /uksi/2001/2551/made/introduction/data.xml
+  180/225
+  Fetching enacting data: /uksi/1998/608/made/introduction/data.xml
+  Fetching enacting data: /uksi/2003/2743/made/introduction/data.xml
+  Fetching enacting data: /uksi/2015/1673/made/introduction/data.xml
+  Fetching enacting data: /uksi/2007/41/made/introduction/data.xml
+  Fetching enacting data: /uksi/2022/740/made/introduction/data.xml
+  Fetching enacting data: /uksi/1999/547/made/introduction/data.xml
+  Fetching enacting data: /uksi/2010/1739/made/introduction/data.xml
+  Fetching enacting data: /uksi/2026/635/made/introduction/data.xml
+  Fetching enacting data: /uksi/2016/309/made/introduction/data.xml
+  Fetching enacting data: /uksi/2011/1825/made/introduction/data.xml
+  Fetching enacting data: /uksi/2002/2467/made/introduction/data.xml
+  200/225
+  Fetching enacting data: /uksi/2023/838/made/introduction/data.xml
+  Fetching enacting data: /uksi/2002/716/made/introduction/data.xml
+  Fetching enacting data: /uksi/2019/306/made/introduction/data.xml
+  Fetching enacting data: /uksi/2019/601/made/introduction/data.xml
+  Fetching enacting data: /wsi/2024/1268/made/introduction/data.xml
+  Fetching enacting data: /uksi/2010/807/made/introduction/data.xml
+  Fetching enacting data: /uksi/2015/627/made/introduction/data.xml
+  220/225
+  Fetching enacting data: /uksi/2026/40/made/introduction/data.xml
+  Fetching enacting data: /uksi/2018/807/made/introduction/data.xml
+  Fetching enacting data: /uksi/2019/1166/made/introduction/data.xml
+fetched 225, failed 0

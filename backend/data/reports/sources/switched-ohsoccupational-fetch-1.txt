@@ -1,0 +1,161 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+149 laws in scope
+
+needed against held, by category:
+  own: 149 — held 104, stale 45
+  feed: 147 — held 8, stale 139
+  territory: 448 — absent 1, held 382, not_fetched 47, stale 18
+  introduction: 286 — absent 1, held 231, not_fetched 54
+  enabling_parent: 30 — held 30
+  dates: 30 — absent 4, held 26
+  backlog: 134 — absent 13, held 114, not_fetched 7
+  needed, all categories: 1224
+
+failures: 310
+  stale  feed  UK_apni_1957_25 :feed  (for UK_apni_1957_25)
+  stale  feed  UK_eudr_1989_391 :feed  (for UK_eudr_1989_391)
+  not_fetched  introduction  UK_eur_2003_1882 :introduction  (for UK_eudr_1989_391)
+  stale  feed  UK_eudr_1989_654 :feed  (for UK_eudr_1989_654)
+  stale  feed  UK_eudr_1989_656 :feed  (for UK_eudr_1989_656)
+  stale  feed  UK_eudr_1990_269 :feed  (for UK_eudr_1990_269)
+  stale  feed  UK_eudr_1990_270 :feed  (for UK_eudr_1990_270)
+  stale  feed  UK_eudr_1991_383 :feed  (for UK_eudr_1991_383)
+  stale  feed  UK_eudr_1992_57 :feed  (for UK_eudr_1992_57)
+  stale  feed  UK_eudr_1992_85 :feed  (for UK_eudr_1992_85)
+  stale  feed  UK_eudr_1998_24 :feed  (for UK_eudr_1998_24)
+  stale  feed  UK_eudr_2002_44 :feed  (for UK_eudr_2002_44)
+  stale  feed  UK_eudr_2003_10 :feed  (for UK_eudr_2003_10)
+  stale  feed  UK_eudr_2006_25 :feed  (for UK_eudr_2006_25)
+  stale  feed  UK_eudr_2009_104 :feed  (for UK_eudr_2009_104)
+  stale  feed  UK_eudr_2009_161 :feed  (for UK_eudr_2009_161)
+  stale  feed  UK_eudr_2013_35 :feed  (for UK_eudr_2013_35)
+  not_fetched  territory  UK_eur_2018_1881 :body  (for UK_eur_2006_1907)
+  not_fetched  territory  UK_eur_2011_252 :body  (for UK_eur_2006_1907)
+  not_fetched  territory  UK_eur_2015_1494 :body  (for UK_eur_2006_1907)
+
+feeds differing from the register's change statistics: 0
+
+FAIL
+
+fetching 310 documents the check failed …
+  Fetching enacting data: /eur/2003/1882/made/introduction/data.xml
+  Fetching enacting data: /eur/2003/1882/introduction/made/data.xml
+  20/310
+  40/310
+  Fetching enacting data: /eur/2018/1881/made/introduction/data.xml
+  Fetching enacting data: /eur/2018/1881/introduction/made/data.xml
+  Fetching enacting data: /eur/2011/252/made/introduction/data.xml
+  Fetching enacting data: /eur/2011/252/introduction/made/data.xml
+  Fetching enacting data: /eur/2015/1494/made/introduction/data.xml
+  Fetching enacting data: /eur/2015/1494/introduction/made/data.xml
+  Fetching enacting data: /eur/2017/1510/made/introduction/data.xml
+  Fetching enacting data: /eur/2017/1510/introduction/made/data.xml
+  Fetching enacting data: /eur/2011/253/made/introduction/data.xml
+  Fetching enacting data: /eur/2011/253/introduction/made/data.xml
+  Fetching enacting data: /eur/2016/863/made/introduction/data.xml
+  Fetching enacting data: /eur/2016/863/introduction/made/data.xml
+  Fetching enacting data: /eur/2016/1017/made/introduction/data.xml
+  Fetching enacting data: /eur/2016/1017/introduction/made/data.xml
+  60/310
+  Fetching enacting data: /eur/2014/474/made/introduction/data.xml
+  Fetching enacting data: /eur/2014/474/introduction/made/data.xml
+  Fetching enacting data: /eur/2012/848/made/introduction/data.xml
+  Fetching enacting data: /eur/2012/848/introduction/made/data.xml
+  Fetching enacting data: /eur/2018/675/made/introduction/data.xml
+  Fetching enacting data: /eur/2018/675/introduction/made/data.xml
+  Fetching enacting data: /eur/2014/895/made/introduction/data.xml
+  Fetching enacting data: /eur/2014/895/introduction/made/data.xml
+  Fetching enacting data: /eur/2017/999/made/introduction/data.xml
+  Fetching enacting data: /eur/2017/999/introduction/made/data.xml
+  Fetching enacting data: /eur/2016/26/made/introduction/data.xml
+  Fetching enacting data: /eur/2016/26/introduction/made/data.xml
+  Fetching enacting data: /eur/2020/878/made/introduction/data.xml
+  Fetching enacting data: /eur/2020/878/introduction/made/data.xml
+  Fetching enacting data: /eur/2017/706/made/introduction/data.xml
+  Fetching enacting data: /eur/2017/706/introduction/made/data.xml
+  Fetching enacting data: /eur/2018/1513/made/introduction/data.xml
+  Fetching enacting data: /eur/2018/1513/introduction/made/data.xml
+  Fetching enacting data: /eur/2020/1149/made/introduction/data.xml
+  Fetching enacting data: /eur/2020/1149/introduction/made/data.xml
+  Fetching enacting data: /eur/2018/2005/made/introduction/data.xml
+  Fetching enacting data: /eur/2018/2005/introduction/made/data.xml
+  Fetching enacting data: /eur/2016/1005/made/introduction/data.xml
+  Fetching enacting data: /eur/2016/1005/introduction/made/data.xml
+  Fetching enacting data: /eur/2018/588/made/introduction/data.xml
+  Fetching enacting data: /eur/2018/588/introduction/made/data.xml
+  Fetching enacting data: /eur/2018/35/made/introduction/data.xml
+  Fetching enacting data: /eur/2018/35/introduction/made/data.xml
+  Fetching enacting data: /eur/2017/227/made/introduction/data.xml
+  Fetching enacting data: /eur/2017/227/introduction/made/data.xml
+  Fetching enacting data: /eur/2016/1688/made/introduction/data.xml
+  Fetching enacting data: /eur/2016/1688/introduction/made/data.xml
+  Fetching enacting data: /eur/2020/171/made/introduction/data.xml
+  Fetching enacting data: /eur/2020/171/introduction/made/data.xml
+  Fetching enacting data: /eur/2014/317/made/introduction/data.xml
+  Fetching enacting data: /eur/2014/317/introduction/made/data.xml
+  Fetching enacting data: /eur/2020/507/made/introduction/data.xml
+  Fetching enacting data: /eur/2020/507/introduction/made/data.xml
+  Fetching enacting data: /eur/2019/957/made/introduction/data.xml
+  Fetching enacting data: /eur/2019/957/introduction/made/data.xml
+  80/310
+  Fetching enacting data: /eur/2017/1000/made/introduction/data.xml
+  Fetching enacting data: /eur/2017/1000/introduction/made/data.xml
+  Fetching enacting data: /eur/2016/2235/made/introduction/data.xml
+  Fetching enacting data: /eur/2016/2235/introduction/made/data.xml
+  Fetching enacting data: /eur/2013/1272/made/introduction/data.xml
+  Fetching enacting data: /eur/2013/1272/introduction/made/data.xml
+  Fetching enacting data: /eur/2018/589/made/introduction/data.xml
+  Fetching enacting data: /eur/2018/589/introduction/made/data.xml
+  Fetching enacting data: /eur/2010/453/made/introduction/data.xml
+  Fetching enacting data: /eur/2010/453/introduction/made/data.xml
+  Fetching enacting data: /eur/2019/1148/made/introduction/data.xml
+  Fetching enacting data: /eur/2019/1148/introduction/made/data.xml
+  Fetching enacting data: /eur/2015/830/made/introduction/data.xml
+  Fetching enacting data: /eur/2015/830/introduction/made/data.xml
+  Fetching enacting data: /eur/2019/1691/made/introduction/data.xml
+  Fetching enacting data: /eur/2019/1691/introduction/made/data.xml
+  100/310
+  Fetching enacting data: /eur/2020/11/made/introduction/data.xml
+  Fetching enacting data: /eur/2020/11/introduction/made/data.xml
+  Fetching enacting data: /eur/2018/669/made/introduction/data.xml
+  Fetching enacting data: /eur/2018/669/introduction/made/data.xml
+  Fetching enacting data: /eur/2020/217/made/introduction/data.xml
+  Fetching enacting data: /eur/2020/217/introduction/made/data.xml
+  Fetching enacting data: /eur/2019/521/made/introduction/data.xml
+  Fetching enacting data: /eur/2019/521/introduction/made/data.xml
+  Fetching enacting data: /eur/2017/776/made/introduction/data.xml
+  Fetching enacting data: /eur/2017/776/introduction/made/data.xml
+  Fetching enacting data: /eur/2020/1413/made/introduction/data.xml
+  Fetching enacting data: /eur/2020/1413/introduction/made/data.xml
+  Fetching enacting data: /eur/2018/1480/made/introduction/data.xml
+  Fetching enacting data: /eur/2018/1480/introduction/made/data.xml
+  Fetching enacting data: /eur/2020/1676/made/introduction/data.xml
+  Fetching enacting data: /eur/2020/1676/introduction/made/data.xml
+  Fetching enacting data: /eur/2020/1677/made/introduction/data.xml
+  Fetching enacting data: /eur/2020/1677/introduction/made/data.xml
+  Fetching enacting data: /eur/2020/1182/made/introduction/data.xml
+  Fetching enacting data: /eur/2020/1182/introduction/made/data.xml
+  Fetching enacting data: /eur/2015/1221/made/introduction/data.xml
+  Fetching enacting data: /eur/2015/1221/introduction/made/data.xml
+  Fetching enacting data: /eur/2016/1179/made/introduction/data.xml
+  Fetching enacting data: /eur/2016/1179/introduction/made/data.xml
+  Fetching enacting data: /eur/2017/542/made/introduction/data.xml
+  Fetching enacting data: /eur/2017/542/introduction/made/data.xml
+  120/310
+  140/310
+  160/310
+  180/310
+  Fetching enacting data: /uksi/1975/1012/made/introduction/data.xml
+  Fetching enacting data: /uksi/1981/917/made/introduction/data.xml
+  Fetching enacting data: /uksi/2000/128/made/introduction/data.xml
+  Fetching enacting data: /uksi/1975/1011/made/introduction/data.xml
+  Fetching enacting data: /uksi/1976/2005/made/introduction/data.xml
+  200/310
+  220/310
+  240/310
+  260/310
+  280/310
+  300/310
+fetched 310, failed 0

@@ -1,0 +1,46 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+122 laws in scope
+
+needed against held, by category:
+  own: 122 — held 121, stale 1
+  feed: 117 — held 70, stale 47
+  territory: 548 — absent 1, held 546, stale 1
+  introduction: 279 — absent 1, held 278
+  enabling_parent: 62 — held 62
+  dates: 64 — absent 12, held 52
+  backlog: 175 — absent 57, held 97, not_fetched 17, stale 4
+  needed, all categories: 1367
+
+failures: 70
+  stale  feed  UK_anaw_2016_3 :feed  (for UK_anaw_2016_3)
+  stale  feed  UK_asc_2023_2 :feed  (for UK_asc_2023_2)
+  stale  feed  UK_asp_2005_15 :feed  (for UK_asp_2005_15)
+  stale  feed  UK_asp_2024_13 :feed  (for UK_asp_2024_13)
+  stale  feed  UK_eudr_2004_35 :feed  (for UK_eudr_2004_35)
+  stale  feed  UK_eudr_2008_105 :feed  (for UK_eudr_2008_105)
+  stale  feed  UK_eudr_2011_92 :feed  (for UK_eudr_2011_92)
+  stale  feed  UK_eur_2012_649 :feed  (for UK_eur_2012_649)
+  stale  feed  UK_eur_2019_2088 :feed  (for UK_eur_2019_2088)
+  stale  feed  UK_nisr_2003_97 :feed  (for UK_nisr_2003_97)
+  stale  feed  UK_nisr_2006_321 :feed  (for UK_nisr_2006_321)
+  stale  feed  UK_nisr_2011_239 :feed  (for UK_nisr_2011_239)
+  not_fetched  backlog  UK_nisr_2020_304 :schedules  (for UK_nisr_2011_239)
+  stale  feed  UK_nisr_2011_240 :feed  (for UK_nisr_2011_240)
+  not_fetched  backlog  UK_nisr_2025_126 :schedules  (for UK_nisr_2024_212)
+  stale  feed  UK_ssi_1999_1 :feed  (for UK_ssi_1999_1)
+  not_fetched  backlog  UK_ssi_2017_114 :schedules  (for UK_ssi_1999_1)
+  stale  feed  UK_ssi_2004_520 :feed  (for UK_ssi_2004_520)
+  stale  feed  UK_ssi_2009_266 :feed  (for UK_ssi_2009_266)
+  stale  feed  UK_ssi_2014_4 :feed  (for UK_ssi_2014_4)
+
+feeds differing from the register's change statistics: 0
+
+FAIL
+
+fetching 70 documents the check failed …
+  20/70
+  40/70
+  60/70
+fetched 70, failed 0

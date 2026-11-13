@@ -83,6 +83,17 @@ On Maritime Safety, the build took the needs from 235 to 682, and three fetch ro
 **An SI's introduction is held only when it is stored** (Maritime Safety: Extent reader, 2026-11-05). The Extent reader reads an SI's enabling powers from its made introduction, through the enabling cache (`data/cache/enabling/<law>.json`).
 - **Fixed 2026-11-08 (Environmental Protection: Sources).** `lat.sources` used to count the introduction held whenever that cache file existed, even as `[]`: a fetch that failed, or one from before the CLML store (12 Maritime amenders on 2026-11-05, `enabling-cache-empty-counts-held`). `Sources.introduction_status/2` now counts an empty cache as held only when the introduction is stored, and as absent when every introduction path is a stored 404 (SI 1992/682); otherwise not fetched, and `--fetch` retries it (`EnablingCache.get(law, retry_empty: true)`). Re-parse a held introduction offline with `EnablingCache.reparse/1`, which never fetches.
 
+**A scoped law needs its body** (Fire and OH&S: Sources, 2026-11-13). The build (`Build.body/1`) and the readers read a law's body, and a scoped law's rows are cut to its scope from that body. So its own-text need is the body, never its fragments (`Sources.own_paths/2`). Before the fix, Fire Precautions Act 1971 held its 4 fragments and no body, and would have built 0 changes without any failure; it built 249 once the body was fetched.
+
+**A round, and the switched families with it** (Fire and OH&S, 2026-11-13). The round's 139 laws went from 565 needs to 1,173 after the build, held after three fetch rounds plus one schedule, with 13 register differences re-scraped. One law became revoked at the re-scrape, rightly (SI 1994/232).
+
+The switched families' gates had failed again, mostly on sources stale by age: Occupational 330, Environmental Protection 71, Maritime 24. Jason chose to fetch and rebuild them in the step. After that, each was re-checked:
+- `mix lat.label_switch --family F --stored` shows the rows that would move;
+- golden and the checked rows are re-run;
+- `mix lat.stale --strict --switched` is re-run.
+
+A rebuild moves no switched label until `LabelRefresh` runs. Laws whose rows don't move are still stale by stamp, and refreshing them writes identical rows. A refreshed feed can change an effect's form. SI 2008/2337's whole-law revocation became one revocation per regulation with no level, which leaves 14 sub-rows in force (parked: Label fold).
+
 **Skill.** None. The `nas-data-sync` skill covers the store itself.
 
 ## 2. Feed reader

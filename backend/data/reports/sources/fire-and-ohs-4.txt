@@ -1,0 +1,36 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+139 laws in scope
+
+needed against held, by category:
+  own: 139 — held 139
+  feed: 135 — held 135
+  territory: 405 — held 405
+  introduction: 225 — held 225
+  enabling_parent: 36 — held 33, not_fetched 3
+  dates: 53 — absent 13, held 40
+  backlog: 179 — absent 30, held 149
+  needed, all categories: 1172
+
+failures: 3
+  not_fetched  enabling_parent  UK_asp_2014_10 :body  (for UK_asp_2012_8)
+  not_fetched  enabling_parent  UK_asp_2014_18 :body  (for UK_asp_2012_8)
+  not_fetched  enabling_parent  UK_ukpga_2025_20 :body  (for UK_uksi_2016_1107)
+
+feeds differing from the register's change statistics: 13
+  UK_asp_2012_8: effects 321 vs register 320; laws 18 vs 17
+  UK_nisr_1995_340: effects 54 vs register 52; laws 7 vs 6
+  UK_nisr_1995_345: effects 47 vs register 44; laws 7 vs 6
+  UK_nisr_1995_87: effects 6 vs register 3; laws 3 vs 2
+  UK_nisr_2004_63: effects 13 vs register 3; laws 4 vs 3
+  UK_nisr_2014_224: effects 63 vs register 12; laws 4 vs 3
+  UK_ukpga_1962_58: effects 182 vs register 175; laws 48 vs 47
+  UK_ukpga_1998_17: effects 393 vs register 391; laws 46 vs 45
+  UK_uksi_1989_971: effects 48 vs register 47; laws 14 vs 13
+  UK_uksi_1994_232: effects 7 vs register 8; laws 2 vs 3
+  UK_uksi_1997_735: effects 22 vs register 20; laws 14 vs 13
+  UK_uksi_2002_2665: effects 16 vs register 14; laws 8 vs 7
+  UK_uksi_2015_385: effects 17 vs register 15; laws 9 vs 8
+
+FAIL

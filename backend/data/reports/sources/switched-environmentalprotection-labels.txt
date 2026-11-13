@@ -1,0 +1,8 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+laws read 3 at once: 12.5 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.6 of 6 cores busy; max 4
+122 laws folded, 0 not; 34802 rows, 7 differ; periods 69521 → 69528
+today (old): %{"in_force" => 29195, "in_force_partial" => 2508, "prospective" => 1709, "repealed" => 741, "repealed_saved" => 649}
+today (new): %{"in_force" => 29195, "in_force_partial" => 2508, "prospective" => 1709, "repealed" => 741, "repealed_saved" => 649}
+per law: /tmp/claude-1000/-var-home-jason-Desktop-sertantai-legal/b76f3af3-b9b6-4d29-990b-1ac0dab89760/scratchpad/stored-environmentalprotection.csv

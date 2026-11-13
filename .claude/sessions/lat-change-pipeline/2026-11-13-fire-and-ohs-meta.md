@@ -16,7 +16,7 @@ This is the first QQ register round, and it takes five families together (Jason 
 
 - ✅ Tooling: round scope: `--family "Fire and OH&S"` gives exactly the five families (100 laws with rows, 219 live UK); closed 2026-11-13
 - ✅ Making laws (step 0): 133 making, 65 not making, 21 no verdict (9.6%); 40 laws parsed (34 safety-zone orders), the 100 parser-stale laws re-stamped (0 rows changed); step close Stale laws PASS, Checked rows 22 (parked in EP); closed 2026-11-13
-- ⬜ Sources
+- ✅ Sources (step 1): round gate PASS, 139 laws, 1,173 needs, 0 failures, 0 register differences; one build (29,288 changes); scoped-law body fix (Fire Precautions Act 1971); the three switched families refetched and rebuilt (Decision 1 b, gates PASS), 3 laws' labels applied (Decision 3 c); step close Sources PASS, Checked rows 22 (parked in EP), Stale laws 49 (parked: Commencement reader); closed 2026-11-13
 - ⬜ Feed reader
 - ⬜ Markup reader
 - ⬜ Commencement reader
@@ -52,3 +52,4 @@ One row per step, filled when its session closes. Agent tokens are given by mode
 | Step | Session | Opened | Closed | Days | Pass rule met | Plan changes | Bugs closed / parked | Agent tokens (model) | Commits |
 |---|---|---|---|---|---|---|---|---|---|
 | Making laws | fire-and-ohs-making-laws | 2026-11-13 | 2026-11-13 | 1 | yes, all 7 (7: Stale laws PASS; Checked rows 22 parked in EP) | 1 (the round's 100 parser-stale laws re-parsed, as RULES family-re-parses-its-parser-stale-laws; Jason's go) | 3 closed / 3 parked (LAT parser: 6 not-making laws with rows, lat_reparse tables #189; Register: edges after refile) | 0 by the step; clerk (Sonnet) 24,858 for this row (its commit stopped on a format check, done in the session) | 2 |
+| Sources | fire-and-ohs-sources | 2026-11-13 | 2026-11-13 | 1 | yes, all 6 (6: Sources PASS; Checked rows 22 parked in EP; Stale laws 49 parked with the Commencement reader) | 1 (the switched families fetched and rebuilt in the step, Jason's Decision 1 b) | 6 closed / 4 parked (Amending-law reader: schedules held not read; LAT parser: SI 1994/232 revoked with rows; Label fold: revocation listed per provision, SI 2008/2337; Commencement reader: 49 built laws) | 0 by the step; clerk (Sonnet) for this row and the commits | 2 |

@@ -1,0 +1,16 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+parser 4cf7d6e7fbc2, labels bc2b55cef4cb: 766 stale laws (switched families: 24 of 388)
+  fold_inputs: 20
+  labels_behind_changes: 5
+  labels_version: 742
+  parser_version: 742
+
+change register, code b0e3891480c3: 49 of 544 built laws stale (26 built with no changes)
+  law_text: 1
+  feed: 1
+  commencement_reader: 49  (fix: mix lat.commencement (the mode that wrote them), then build)
+  laws holding LAT with no build: 725
+
+ENVIRONMENTAL PROTECTION: 5 stale laws (LAT or labels 5, change register 0)

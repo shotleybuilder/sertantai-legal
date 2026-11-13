@@ -1,0 +1,45 @@
+
+── Sources (mix lat.sources) ──
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+[info] JWKS public key fetched successfully
+139 laws in scope
+
+needed against held, by category:
+  own: 139 — held 139
+  feed: 135 — held 135
+  territory: 405 — held 405
+  introduction: 225 — held 225
+  enabling_parent: 36 — held 36
+  dates: 53 — absent 13, held 40
+  backlog: 180 — absent 31, held 149
+  needed, all categories: 1173
+
+failures: 0
+
+feeds differing from the register's change statistics: 0
+
+PASS
+
+── Checked rows (mix lat.label_checked) ──
+744 checked rows: %{known: 47, match: 674, changed: 22, upstream: 1}
+NOT PASSED
+
+── Stale laws (mix lat.stale) ──
+parser 4cf7d6e7fbc2, labels bc2b55cef4cb: 742 stale laws (switched families: 0 of 388)
+  labels_version: 742
+  parser_version: 742
+
+change register, code b0e3891480c3: 49 of 544 built laws stale (26 built with no changes)
+  commencement_reader: 49  (fix: mix lat.commencement (the mode that wrote them), then build)
+  laws holding LAT with no build: 725
+
+Fire and OH&S: 49 stale laws (LAT or labels 0, change register 49)
+
+Sources's close, Fire and OH&S:
+  PASS  Sources
+  FAIL  Checked rows (22 failing; parked with the step whose change moved them (traced with --list))
+  FAIL  Stale laws (49 failing; fix by the reasons above: re-parse (LAT parser), re-read (the reader), rebuild (Store and build))
+
+FAIL (step close)

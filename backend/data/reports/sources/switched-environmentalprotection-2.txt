@@ -1,0 +1,21 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+122 laws in scope
+
+needed against held, by category:
+  own: 122 — held 122
+  feed: 117 — held 117
+  territory: 548 — absent 1, held 547
+  introduction: 279 — absent 1, held 278
+  enabling_parent: 62 — held 62
+  dates: 64 — absent 12, held 52
+  backlog: 175 — absent 68, held 107
+  needed, all categories: 1367
+
+failures: 0
+
+feeds differing from the register's change statistics: 1
+  UK_uksi_2015_1947: effects 91 vs register 81; laws 18 vs 17
+
+FAIL

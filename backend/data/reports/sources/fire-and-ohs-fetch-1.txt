@@ -1,0 +1,116 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+139 laws in scope
+
+needed against held, by category:
+  own: 139 — held 112, not_fetched 1, stale 26
+  feed: 138 — held 3, not_fetched 39, stale 96
+  territory: 133 — held 104, not_fetched 20, stale 9
+  introduction: 76 — held 47, not_fetched 29
+  enabling_parent: 13 — held 12, not_fetched 1
+  dates: 13 — absent 3, held 8, not_fetched 2
+  backlog: 53 — absent 1, held 46, not_fetched 6
+  needed, all categories: 565
+
+failures: 229
+  not_fetched  feed  UK_apni_1929_13 :feed  (for UK_apni_1929_13)
+  stale  feed  UK_apni_1969_6 :feed  (for UK_apni_1969_6)
+  not_fetched  territory  UK_nia_2016_21 :body  (for UK_apni_1969_6)
+  stale  feed  UK_apni_1970_10 :feed  (for UK_apni_1970_10)
+  stale  feed  UK_asc_2025_4 :feed  (for UK_asc_2025_4)
+  stale  feed  UK_asp_2005_5 :feed  (for UK_asp_2005_5)
+  stale  feed  UK_asp_2012_8 :feed  (for UK_asp_2012_8)
+  stale  feed  UK_eudr_1999_92 :feed  (for UK_eudr_1999_92)
+  stale  feed  UK_eudr_2008_68 :feed  (for UK_eudr_2008_68)
+  not_fetched  feed  UK_eudr_2013_30 :feed  (for UK_eudr_2013_30)
+  stale  feed  UK_eudr_2014_28 :feed  (for UK_eudr_2014_28)
+  stale  feed  UK_eudr_2014_34 :feed  (for UK_eudr_2014_34)
+  not_fetched  feed  UK_eur_2019_1148 :feed  (for UK_eur_2019_1148)
+  stale  feed  UK_nisi_1983_150 :feed  (for UK_nisi_1983_150)
+  stale  feed  UK_nisi_1992_1728 :feed  (for UK_nisi_1992_1728)
+  stale  feed  UK_nisi_2006_1254 :feed  (for UK_nisi_2006_1254)
+  stale  own  UK_nisr_1991_446 "/nisr/1991/446/body/data.xml"  (for UK_nisr_1991_446)
+  stale  feed  UK_nisr_1991_446 :feed  (for UK_nisr_1991_446)
+  stale  own  UK_nisr_1991_509 "/nisr/1991/509/body/data.xml"  (for UK_nisr_1991_509)
+  stale  feed  UK_nisr_1991_509 :feed  (for UK_nisr_1991_509)
+
+feeds differing from the register's change statistics: 30
+  UK_apni_1929_13: effects 0 vs register 15; laws 0 vs 11
+  UK_eudr_2013_30: effects 0 vs register 1; laws 0 vs 1
+  UK_nisr_1995_340: effects 54 vs register 52; laws 7 vs 6
+  UK_nisr_1995_345: effects 47 vs register 44; laws 7 vs 6
+  UK_nisr_1995_87: effects 6 vs register 3; laws 3 vs 2
+  UK_nisr_2013_48: effects 0 vs register 24; laws 0 vs 3
+  UK_nisr_2014_224: effects 63 vs register 12; laws 4 vs 3
+  UK_ssi_2005_342: effects 0 vs register 8; laws 0 vs 1
+  UK_ukpga_1962_58: effects 182 vs register 175; laws 48 vs 47
+  UK_ukpga_1998_17: effects 393 vs register 391; laws 46 vs 45
+  UK_uksi_1989_971: effects 48 vs register 47; laws 14 vs 13
+  UK_uksi_1994_232: effects 7 vs register 8; laws 2 vs 3
+  UK_uksi_1997_735: effects 0 vs register 20; laws 0 vs 13
+  UK_uksi_2000_2846: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_2001_2528: effects 0 vs register 4; laws 0 vs 2
+  UK_uksi_2002_2665: effects 16 vs register 14; laws 8 vs 7
+  UK_uksi_2005_1656: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_2005_3227: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_2007_1017: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_2007_1549: effects 0 vs register 1; laws 0 vs 1
+
+FAIL
+
+fetching 229 documents the check failed …
+  20/229
+  Fetching enacting data: /nisr/2007/165/made/introduction/data.xml
+  Fetching enacting data: /nisr/1996/228/made/introduction/data.xml
+  40/229
+[warning] retry: got response with status 502, will retry in 1000ms, 3 attempts left
+[warning] retry: got response with status 502, will retry in 2000ms, 2 attempts left
+[warning] retry: got response with status 502, will retry in 4000ms, 1 attempt left
+[warning] retry: got response with status 502, will retry in 1000ms, 3 attempts left
+[warning] retry: got response with status 502, will retry in 2000ms, 2 attempts left
+[warning] retry: got response with status 502, will retry in 4000ms, 1 attempt left
+  Fetching enacting data: /nisr/2008/21/made/introduction/data.xml
+  60/229
+  Fetching enacting data: /nisr/2022/9/made/introduction/data.xml
+  Fetching enacting data: /uksi/1974/2013/made/introduction/data.xml
+  Fetching enacting data: /uksi/1975/1102/made/introduction/data.xml
+  Fetching enacting data: /uksi/1979/318/made/introduction/data.xml
+  Fetching enacting data: /uksi/1992/2793/made/introduction/data.xml
+  Fetching enacting data: /uksi/2007/1894/made/introduction/data.xml
+  Fetching enacting data: /uksi/2007/1894/introduction/made/data.xml
+  Fetching enacting data: /uksi/2006/1031/made/introduction/data.xml
+  80/229
+  Fetching enacting data: /uksi/1991/724/made/introduction/data.xml
+  Fetching enacting data: /ukcm/2006/1/made/introduction/data.xml
+  Fetching enacting data: /ukcm/2006/1/introduction/made/data.xml
+  Fetching enacting data: /uksi/1995/738/made/introduction/data.xml
+  Fetching enacting data: /uksi/1996/913/made/introduction/data.xml
+  100/229
+  Fetching enacting data: /uksi/1996/192/made/introduction/data.xml
+  Fetching enacting data: /uksi/1996/192/introduction/made/data.xml
+  Fetching enacting data: /uksi/1995/2005/made/introduction/data.xml
+  Fetching enacting data: /uksi/1999/2550/made/introduction/data.xml
+  Fetching enacting data: /uksi/1999/2550/introduction/made/data.xml
+  Fetching enacting data: /uksi/1995/743/made/introduction/data.xml
+  120/229
+  Fetching enacting data: /uksi/2002/2175/made/introduction/data.xml
+  Fetching enacting data: /uksi/2002/2099/made/introduction/data.xml
+  Fetching enacting data: /uksi/2002/2099/introduction/made/data.xml
+  140/229
+  Fetching enacting data: /uksi/2012/2400/made/introduction/data.xml
+  Fetching enacting data: /uksi/2006/1521/made/introduction/data.xml
+  Fetching enacting data: /uksi/2009/639/made/introduction/data.xml
+  Fetching enacting data: /uksi/2007/3224/made/introduction/data.xml
+  160/229
+  180/229
+  Fetching enacting data: /uksi/2026/757/made/introduction/data.xml
+  Fetching enacting data: /uksi/2019/439/made/introduction/data.xml
+  Fetching enacting data: /uksi/2020/208/made/introduction/data.xml
+  200/229
+  Fetching enacting data: /uksi/2020/852/made/introduction/data.xml
+  Fetching enacting data: /uksi/2023/320/made/introduction/data.xml
+  220/229
+fetched 227, failed 2
+  UK_nisr_2004_63 :feed: {:error, "changes feed 502: Unexpected status 502 for /changes/affected/nisr/2004/63/data.feed?results-count=5000&page=1"}
+  UK_nisr_2006_205 :feed: {:error, "changes feed 502: Unexpected status 502 for /changes/affected/nisr/2006/205/data.feed?results-count=5000&page=1"}

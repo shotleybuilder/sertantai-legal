@@ -1,0 +1,27 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+744 checked rows: %{known: 47, match: 674, changed: 22, upstream: 1}
+NOT PASSED
+changed	UK_eur_2008_1272	UK_eur_2008_1272:art.Article 53a	omitted for GB 1.11.2022 (2022/1037); stays in NI under Windsor rule; insertion undated in feed
+changed	UK_eur_2008_1272	UK_eur_2008_1272:art.Article 53b	as Article 53a
+changed	UK_ukpga_1974_37	UK_ukpga_1974_37:s.11(1)	decided by Jason's rulings: s.11(1) in force from 1974 (2026-10-31); a row under a whole substitution begins there unless a source shows it existed ("evidence it existed")
+changed	UK_ukpga_1974_37	UK_ukpga_1974_37:s.14(1)[NI]	versions part when their texts do (CV-06 batch 2): the 2006 change is in one version's text only (markup); round 2's agents confirmed (b3 row 21, b5)
+changed	UK_ukpga_1974_37	UK_ukpga_1974_37:s.14(2)[E+W+S]	versions split when their section's texts first part (Jason 2026-11-01: "when the section parts") (was: s.14 commenced 1.1.1975 by SI 1974/1439 Sch.2; (2) substituted 2008)
+changed	UK_ukpga_1974_37	UK_ukpga_1974_37:s.14(3)[E+W+S]	versions split when their section's texts first part (Jason 2026-11-01: "when the section parts") (was: SI 1974/1439 Sch.2: s.14 on 1.1.1975)
+changed	UK_ukpga_1974_37	UK_ukpga_1974_37:s.14(3)[NI]	versions split when their section's texts first part (Jason 2026-11-01: "when the section parts") (was: SI 1974/1439 Sch.2: s.14 on 1.1.1975)
+changed	UK_ukpga_1974_37	UK_ukpga_1974_37:s.14(6)(a)[E+W+S]	versions split when their section's texts first part (Jason 2026-11-01: "when the section parts") (was: 1974/1439 Sch.2 s.14 1.1.1975; split 2017-06-15)
+changed	UK_ukpga_1974_37	UK_ukpga_1974_37:s.14(6)(b)[NI]	versions split when their section's texts first part (Jason 2026-11-01: "when the section parts") (was: 1974/1439 Sch.2 s.14 1.1.1975; version split 2017-06-15, earlier E+W+S+NI)
+changed	UK_ukpga_1974_37	UK_ukpga_1974_37:s.14(6)(c)[NI]	versions split when their section's texts first part (Jason 2026-11-01: "when the section parts") (was: Sch.2 s.14 1.1.1975; NI split at version RestrictStartDate 2017-06-15)
+changed	UK_ukpga_1974_37	UK_ukpga_1974_37:s.16(1)(b)[E+W+S]	fixed as its checker's note asks (CV-06 batch 4: versions split when their section's texts part; reviewed 2026-11-01) (was to fix: history: territory split 2015-07-19 not 2006-04-01; today right)
+changed	UK_ukpga_1974_37	UK_ukpga_1974_37:s.16(1)(b)[NI]	versions split when their section's texts first part (Jason 2026-11-01: "when the section parts") (was: commenced 1974-10-01 (SI 1974/1439 Sch.1); 'the Executive' substituted 1.4.2008 by SI 2008/960 art.8)
+changed	UK_ukpga_1974_37	UK_ukpga_1974_37:s.16(2)(b)[E+W+S]	fixed as its checker's note asks (CV-06 batch 4: versions split when their section's texts part; reviewed 2026-11-01) (was to fix: history: territory split dated 2015-07-19 (version start), versions diverge 1.4.2006 (Railways Act 2005 s.16(1A) E.W.S.); today right)
+changed	UK_ukpga_1974_37	UK_ukpga_1974_37:s.16(2)[NI]	fixed as its checker's note asks (CV-06 batch 4: versions split when their section's texts part; reviewed 2026-11-01) (was to fix: history: territory split 2015-07-19 not 2006-04-01; today right)
+changed	UK_ukpga_1974_37	UK_ukpga_1974_37:s.16(3)[E+W+S]	fixed as its checker's note asks (CV-06 batch 4: versions split when their section's texts part; reviewed 2026-11-01) (was to fix: history: territory split 2015-07-19 not 2006-04-01; today right)
+changed	UK_ukpga_1974_37	UK_ukpga_1974_37:s.16(4)[NI]	versions split when their section's texts first part (Jason 2026-11-01: "when the section parts") (was: as row 1)
+changed	UK_ukpga_1974_37	UK_ukpga_1974_37:s.16(5)[E+W+S]	versions split when their section's texts first part (Jason 2026-11-01: "when the section parts") (was: as row 1)
+changed	UK_ukpga_1974_37	UK_ukpga_1974_37:s.16(8)[NI]	versions split when their section's texts first part (Jason 2026-11-01: "when the section parts") (was: as row 1)
+changed	UK_ukpga_1974_37	UK_ukpga_1974_37:s.16[E+W+S]	versions part when their texts do (CV-06 batch 2): the 2006 change is in one version's text only (markup); round 2's agents confirmed (b3 row 21, b5)
+changed	UK_ukpga_1974_37	UK_ukpga_1974_37:s.18(5)(b)	SI 1974/1439 Sch.2: ss.18-20 on 1.1.1975
+changed	UK_ukpga_1974_37	UK_ukpga_1974_37:s.43A(2)(a)[E+W+S]	versions split when their section's texts first part (Jason 2026-11-01: "when the section parts") (was: 2003 text E+W+S+N.I.; RA 2005 substitution Extent E+W+S; NI keeps 2003 text)
+changed	UK_ukpga_1974_37	UK_ukpga_1974_37:s.64	fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: undated law_text repeal put at 1974-07-31; Building Act 1984 s.134(2) comes into force 1 Dec 1984)
