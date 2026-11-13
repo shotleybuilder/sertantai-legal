@@ -167,6 +167,43 @@ defmodule SertantaiLegal.Scraper.MakingLawsTest do
           do: assert(MakingLaws.kind(d, id) == :standard, id)
     end
 
+    # SSI 2006/475 art. 3, SI 1974/2013 reg. 6 (Fire and OH&S: Making laws)
+    test "standard wording: a lead-in's items, an aside of two parts" do
+      d =
+        Doc.new("UK_ssi_2006_1", [
+          ~s(<Legislation><Secondary><Body><P1 id="article-3"><P1para><Text>Notwithstanding the repeal by this Order of section 10 of the 1971 Act, a prohibition notice served under that section shall–</Text><P3 id="article-3-a"><Pnumber>a</Pnumber><P3para><Text>remain in effect, and</Text></P3para></P3><P3 id="article-3-b"><Pnumber>b</Pnumber><P3para><Text>be deemed to be a prohibition notice served under section 63 of the 2005 Act.</Text></P3para></P3></P1para></P1><P1 id="regulation-6"><P1para><Text>References in any enactment to the inspector for the district shall, except where the context otherwise requires, or where the reference is otherwise expressly amended, be construed as references to an inspector appointed under section 19 of the 1974 Act.</Text></P1para></P1></Body></Secondary></Legislation>)
+        ])
+
+      assert MakingLaws.kind(d, "article-3") == :standard
+      assert MakingLaws.kind(d, "regulation-6") == :standard
+    end
+
+    test "a lead-in's item can state the requirement" do
+      d =
+        Doc.new("UK_uksi_2020_2", [
+          ~s(<Legislation><Secondary><Body><P1 id="regulation-4"><P1para><Text>The operator shall–</Text><P3 id="regulation-4-a"><Pnumber>a</Pnumber><P3para><Text>remain in contact with the regulator, and</Text></P3para></P3><P3 id="regulation-4-b"><Pnumber>b</Pnumber><P3para><Text>send the return before 1st May.</Text></P3para></P3></P1para></P1></Body></Secondary></Legislation>)
+        ])
+
+      assert MakingLaws.kind(d, "regulation-4") == :requirement
+    end
+
+    # SI 2014/1253 art. 2 (Fire and OH&S: Making laws, Decision 1)
+    test "a designation: an offshore safety zone established" do
+      d =
+        si([
+          {"article-2",
+           "A safety zone is established around each installation specified in column 1 of the Schedule having a radius of five hundred metres."},
+          {"article-3",
+           "A safety zone is hereby established around the installation specified in the Schedule."}
+        ])
+
+      assert MakingLaws.kind(d, "article-2") == :designation
+      assert MakingLaws.kind(d, "article-3") == :designation
+
+      assert %{verdict: :making, reason: "2 designations (first article-2)"} =
+               MakingLaws.classify(d)
+    end
+
     test "an aside after shall does not hide a requirement" do
       d =
         si([

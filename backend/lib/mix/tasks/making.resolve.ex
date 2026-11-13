@@ -12,7 +12,8 @@ defmodule Mix.Tasks.Making.Resolve do
       mix making.resolve --apply                  # snapshot, then write
 
   With `--apply`, the Making columns are first copied to
-  `making_backfill_snapshot_<YYYYMMDD>` (created once per day), double-encoded
+  `restore.making_resolve_<YYYYMMDD_HHMM>__legal_register`
+  (`SertantaiLegal.Restore`, never `public`), double-encoded
   `making_detection_signals` strings are decoded, then each
   changed law is written through `Making.record/3` with `changed_by: "backfill"`,
   so every change is in `record_change_log`.
@@ -25,7 +26,7 @@ defmodule Mix.Tasks.Making.Resolve do
   alias SertantaiLegal.Legal.LegalRegister
   alias SertantaiLegal.Legal.Making
   alias SertantaiLegal.Legal.Making.Backfill
-  alias SertantaiLegal.Repo
+  alias SertantaiLegal.Restore
 
   @shortdoc "Re-resolve is_making through the Making resolver (dry run by default)"
 
@@ -112,16 +113,18 @@ defmodule Mix.Tasks.Making.Resolve do
   end
 
   defp apply!(plans, now) do
-    snapshot = "making_backfill_snapshot_" <> Calendar.strftime(now, "%Y%m%d")
-
-    Repo.query!("""
-    CREATE TABLE IF NOT EXISTS #{snapshot} AS
-    SELECT id, name, country, is_making, is_making_source, is_making_reason,
-           is_making_decided_at, making_review, making_enrichment_verdict,
-           making_classification, making_classification_source,
-           making_detection_signals, duty_type, record_change_log
-    FROM legal_register
-    """)
+    snapshot =
+      Restore.copy!(
+        "making_resolve_" <> Calendar.strftime(now, "%Y%m%d_%H%M"),
+        "legal_register",
+        """
+        SELECT id, name, country, is_making, is_making_source, is_making_reason,
+               is_making_decided_at, making_review, making_enrichment_verdict,
+               making_classification, making_classification_source,
+               making_detection_signals, duty_type, record_change_log
+        FROM legal_register
+        """
+      )
 
     repaired = Backfill.repair_signal_encoding!()
     Mix.shell().info("\nSnapshot: #{snapshot}. Decoded #{repaired} double-encoded signals.")

@@ -12,11 +12,13 @@ defmodule SertantaiLegal.Scraper.MakingLaws do
     operations and repeals tables; the commencement reader's sentence forms);
   - `:requirement` — it states "shall" or "must" on someone, once standard
     phrases are set aside;
+  - `:designation` — it establishes something with legal effect of its
+    own ("A safety zone is established around …": Fire and OH&S Decision 1);
   - `:power` — "may";
   - `:standard` — citation, the law's own commencement, interpretation,
     application, offences, and the rest.
 
-  A law with one own requirement is making; one with changes and no own
+  A law with one own requirement or designation is making; one with changes and no own
   requirement or power is not; powers only, or standard wording only, or
   no text, gives no verdict (unknown over guess: the law goes to Jason).
   """
@@ -26,7 +28,7 @@ defmodule SertantaiLegal.Scraper.MakingLaws do
   alias SertantaiLegal.Scraper.Commencement.SentencePatterns
   alias SertantaiLegal.Scraper.LatParser.Xml
 
-  @type kind :: :change | :requirement | :power | :standard
+  @type kind :: :change | :requirement | :designation | :power | :standard
   @type result :: %{
           verdict: :making | :not_making | nil,
           reason: String.t(),
@@ -52,12 +54,20 @@ defmodule SertantaiLegal.Scraper.MakingLaws do
     ~r/\bmay be (?:cited|referred to)\b/i,
     ~r/\bwherever (?:they|it|he|she) may be\b/i,
     ~r/\b(?:as the case may be|as (?:nearly|near|soon) as may be)\b/i,
-    # an aside may stand between "shall" and its verb ("shall, unless the
-    # context otherwise requires, be construed")
-    ~r/\b(?:shall|must)(?:, [^,]+,)?(?: not| each| also)? (?:be (?:construed|read|treated|deemed|taken|cited|guilty|liable|known|conclusive|received)|affect|have (?:the same )?(?:effect|meaning)|mean|include|(?:not )?apply|cease|continue|expire|extend(?: and apply)?|remain in force)\b/i,
+    # an aside of one or two parts may stand between "shall" and its verb
+    # ("shall, unless the context otherwise requires, be construed"; "shall,
+    # except where the context otherwise requires, or where the reference is
+    # otherwise expressly amended, be construed": SI 1974/2013 reg. 6)
+    ~r/\b(?:shall|must)(?:, [^,]+(?:, [^,]+)?,)?(?: not| each| also)? (?:be (?:construed|read|treated|deemed|taken|cited|guilty|liable|known|conclusive|received)|affect|have (?:the same )?(?:effect|meaning)|mean|include|(?:not )?apply|cease|continue|expire|extend(?: and apply)?|remain in (?:force|effect))\b/i,
     ~r/\bshall be (?:amended|inserted|substituted|omitted|revoked|repealed|added|renumbered|deleted|left out)\b/i
   ]
   @requirement ~r/\b(?:shall|must)\b/i
+  # a lead-in whose verb is in its list items
+  @lead_in ~r/\b(?:shall|must)\s*[–—-]\s*$/iu
+  # a designation with legal effect of its own: an offshore safety zone,
+  # where the Petroleum Act 1987 s.23 forbids entry (Jason 2026-11-13,
+  # Fire and OH&S: Making laws, Decision 1)
+  @designation ~r/\bsafety zones? (?:is|are) (?:hereby )?established\b/i
   # lower case: "1st May 2020" is a date
   @power ~r/\bmay\b/
 
@@ -89,6 +99,9 @@ defmodule SertantaiLegal.Scraper.MakingLaws do
   defp verdict(%{requirement: n}, first),
     do: {:making, "#{n} own requirement#{if n > 1, do: "s"} (first #{first.requirement})"}
 
+  defp verdict(%{designation: n}, first),
+    do: {:making, "#{n} designation#{if n > 1, do: "s"} (first #{first.designation})"}
+
   defp verdict(%{power: _, change: _}, _), do: {nil, "changes and powers"}
   defp verdict(%{power: _}, _), do: {nil, "powers only"}
   defp verdict(%{change: _}, _), do: {:not_making, "changes only"}
@@ -110,7 +123,7 @@ defmodule SertantaiLegal.Scraper.MakingLaws do
   @spec kind(Doc.t(), String.t()) :: kind()
   def kind(doc, id) do
     text = Text.of(doc, id)
-    words = own_words(text)
+    words = text |> own_words() |> with_items(text)
 
     cond do
       change?(doc, id, text, words) -> :change
@@ -118,6 +131,7 @@ defmodule SertantaiLegal.Scraper.MakingLaws do
       # commencement words the reader reads as no statement ("Where …, the
       # relevant provisions shall come into force for the purposes of …")
       SentencePatterns.commencement_words?(words) -> :standard
+      words =~ @designation -> :designation
       unstandard(words) =~ @requirement -> :requirement
       unstandard(words) =~ @power -> :power
       true -> :standard
@@ -149,6 +163,20 @@ defmodule SertantaiLegal.Scraper.MakingLaws do
   defp own_words(doc, id), do: doc |> Text.of(id) |> own_words()
   defp own_words(nil), do: ""
   defp own_words(%Text{instruction: i}), do: i |> Clauses.unquote_words() |> String.trim()
+
+  # a lead-in ending "shall–" takes its verb from each list item ("a
+  # prohibition notice … shall– (a) remain in effect, and (b) be deemed to
+  # be …": SSI 2006/475 art. 3), so each item is read as "shall <item>"
+  defp with_items(words, %Text{items: [_ | _] = items}) do
+    case Regex.split(@lead_in, words, include_captures: true, trim: true) do
+      [before, shall] -> before <> Enum.map_join(items, "; ", &"#{lead(shall)} #{&1}")
+      _ -> words
+    end
+  end
+
+  defp with_items(words, _), do: words
+
+  defp lead(shall), do: String.replace(shall, ~r/\s*[–—-]\s*$/u, "")
 
   defp unstandard(words), do: Enum.reduce(@standard_phrases, words, &Regex.replace(&1, &2, " "))
 

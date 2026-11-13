@@ -41,4 +41,23 @@ defmodule SertantaiLegal.RestoreTest do
                )
     end
   end
+
+  describe "copies outside Restore" do
+    # a table created by a task lands in public, against the restore-point
+    # policy; lat_reparse's snapshot is parked with the LAT parser (#189)
+    @parked ["sertantai_legal/restore.ex", "sertantai_legal/scraper/lat_reparse.ex"]
+
+    test "no task creates a copy table but through Restore.copy!/4" do
+      lib = Path.expand("../../lib", __DIR__)
+
+      offenders =
+        for path <- Path.wildcard(Path.join(lib, "**/*.ex")),
+            rel = Path.relative_to(path, lib),
+            rel not in @parked,
+            File.read!(path) =~ ~r/CREATE\s+TABLE\b[^\n]*\bAS\b/i,
+            do: rel
+
+      assert offenders == []
+    end
+  end
 end

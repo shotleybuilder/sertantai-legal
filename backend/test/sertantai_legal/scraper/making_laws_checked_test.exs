@@ -1,7 +1,7 @@
 defmodule SertantaiLegal.Scraper.MakingLawsCheckedTest do
   @moduledoc """
   The checked laws of the Making laws step (Maritime Safety, 2026-11-04;
-  Environmental Protection, 2026-11-08): every live law of each family whose verdict a human review or fractalaw's
+  Environmental Protection, 2026-11-08; Fire and OH&S, 2026-11-13): every live law of each family whose verdict a human review or fractalaw's
   DRRP enrichment decided, plus one wrong estimate found by reading the
   text. The classifier must agree with each, read from the local CLML
   store (`mix lat.making_laws --fetch` holds them). Frozen for the step.
@@ -111,7 +111,94 @@ defmodule SertantaiLegal.Scraper.MakingLawsCheckedTest do
     {"UK_ssi_2026_57", :not_making, :law_text},
     # its enrichment said making; reviewed to not making on its text, the
     # modifications of EPA 1990 Part 2A only (Jason 2026-11-08, Decision 2)
-    {"UK_uksi_2006_2988", :not_making, :review}
+    {"UK_uksi_2006_2988", :not_making, :review},
+    # Fire and OH&S (2026-11-13): the round's review and enrichment verdicts
+    {"UK_apni_1969_6", :making, :enrichment},
+    {"UK_apni_1970_10", :making, :enrichment},
+    {"UK_asp_2005_5", :making, :enrichment},
+    {"UK_eudr_1999_92", :making, :enrichment},
+    {"UK_eudr_2008_68", :making, :enrichment},
+    {"UK_eudr_2014_34", :making, :enrichment},
+    {"UK_nisi_1983_150", :making, :enrichment},
+    {"UK_nisi_1992_1728", :making, :enrichment},
+    {"UK_nisi_2006_1254", :making, :enrichment},
+    {"UK_nisr_1991_509", :making, :enrichment},
+    {"UK_nisr_1995_340", :making, :enrichment},
+    {"UK_nisr_1995_345", :making, :enrichment},
+    {"UK_nisr_1996_228", :making, :enrichment},
+    {"UK_nisr_1996_262", :making, :enrichment},
+    {"UK_nisr_1997_195", :making, :enrichment},
+    {"UK_nisr_2003_152", :making, :enrichment},
+    {"UK_nisr_2004_63", :making, :enrichment},
+    {"UK_nisr_2006_204", :making, :enrichment},
+    {"UK_nisr_2006_205", :making, :enrichment},
+    {"UK_nisr_2006_425", :making, :enrichment},
+    {"UK_nisr_2010_325", :making, :enrichment},
+    {"UK_nisr_2010_59", :making, :enrichment},
+    {"UK_nisr_2014_224", :making, :enrichment},
+    {"UK_nisr_2016_266", :making, :enrichment},
+    {"UK_nisr_2016_427", :making, :enrichment},
+    {"UK_nisr_2017_90", :making, :enrichment},
+    {"UK_ssi_2006_456", :making, :enrichment},
+    {"UK_ukpga_1875_17", :making, :enrichment},
+    {"UK_ukpga_1883_3", :making, :enrichment},
+    {"UK_ukpga_1969_10", :making, :enrichment},
+    {"UK_ukpga_1971_61", :making, :enrichment},
+    {"UK_ukpga_1987_12", :making, :enrichment},
+    {"UK_ukpga_1992_15", :making, :enrichment},
+    {"UK_ukpga_1998_33", :making, :enrichment},
+    {"UK_ukpga_2004_21", :making, :enrichment},
+    {"UK_ukpga_2010_11", :making, :enrichment},
+    {"UK_uksi_1989_1671", :making, :enrichment},
+    {"UK_uksi_1989_635", :making, :enrichment},
+    {"UK_uksi_1989_971", :making, :enrichment},
+    {"UK_uksi_1990_304", :making, :enrichment},
+    {"UK_uksi_1995_738", :making, :enrichment},
+    {"UK_uksi_1995_743", :making, :enrichment},
+    {"UK_uksi_1996_2535", :making, :enrichment},
+    {"UK_uksi_1996_551", :making, :enrichment},
+    {"UK_uksi_1996_913", :making, :enrichment},
+    {"UK_uksi_1998_2451", :making, :enrichment},
+    {"UK_uksi_1999_2024", :making, :enrichment},
+    {"UK_uksi_2002_2665", :making, :enrichment},
+    {"UK_uksi_2002_2776", :making, :enrichment},
+    {"UK_uksi_2003_1082", :making, :enrichment},
+    {"UK_uksi_2004_2304", :not_making, :enrichment},
+    {"UK_uksi_2005_1541", :making, :enrichment},
+    {"UK_uksi_2005_3117", :making, :enrichment},
+    {"UK_uksi_2010_471", :making, :enrichment},
+    {"UK_uksi_2014_1637", :making, :enrichment},
+    {"UK_uksi_2014_1638", :making, :enrichment},
+    {"UK_uksi_2014_1639", :making, :enrichment},
+    {"UK_uksi_2014_3248", :making, :enrichment},
+    {"UK_uksi_2015_1553", :making, :enrichment},
+    {"UK_uksi_2015_385", :making, :enrichment},
+    {"UK_uksi_2015_398", :making, :enrichment},
+    {"UK_uksi_2015_966", :making, :enrichment},
+    {"UK_uksi_2016_1107", :making, :enrichment},
+    {"UK_uksi_2016_315", :not_making, :enrichment},
+    {"UK_uksi_2016_588", :making, :enrichment},
+    {"UK_uksi_2016_721", :making, :enrichment},
+    {"UK_uksi_2018_139", :not_making, :enrichment},
+    {"UK_uksi_2022_547", :making, :enrichment},
+    {"UK_wsi_2012_1085", :making, :enrichment},
+    {"UK_wsi_2026_64", :not_making, :review},
+    # its review says making and holds (the Framework's effect, which the
+    # rule can't see; Jason 2026-11-13, Decision 2): the text alone reads none
+    {"UK_uksi_2012_1886", nil, :law_text},
+    # its enrichment said empowering; reviewed to making on its live duties,
+    # reg. 5A(1) "shall not advertise … unless" (Jason 2026-11-13, Decision 3)
+    {"UK_nisr_2009_273", :making, :review},
+    # its one "requirement" is an exemption ("a fire certificate shall not …
+    # be required"); reviewed to not making (Jason 2026-11-13, Decision 4)
+    {"UK_uksi_1989_76", :making, :law_text},
+    # a saving read through its list items; an aside of two parts: not making
+    {"UK_ssi_2006_475", :not_making, :law_text},
+    {"UK_uksi_1974_2013", :not_making, :law_text},
+    # a designation: an offshore safety zone established (Jason 2026-11-13,
+    # Decision 1)
+    {"UK_uksi_2014_1253", :making, :law_text},
+    {"UK_uksi_2007_1017", :making, :law_text}
   ]
 
   for {law, verdict, by} <- @checked do
