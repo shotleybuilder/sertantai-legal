@@ -622,7 +622,22 @@ Session files: `.claude/sessions/lat-change-pipeline/<date>-<family>-<step-name>
 
 **The check on this order** (retrospectives review, Decision 5): each QQ family's retrospective measures days per family (at most 6, the backlog fixing included), new reader bugs per family (falling from EP's 26) and open bugs (falling from 123).
 
-**Models per part** (the same retrospective, Decision 2; the step chosen by the retrospectives review, Decision 4): after the review tooling, the next family's **Label fold** (EP's costliest step, 428k agent tokens) is run as a scripted workflow, with code by Fable, the session and its pass/fail verdicts by Opus 5.5, and paperwork and report summaries by smaller models. It is measured against the last family's row for that step (tokens, time, anything missed) before any other step runs that way.
+**Models per part** (Claude Model Plan, 2026-11-13, Decisions 1–4; this replaces the Label-fold-only pilot). Opus 5.5 is the session: the plan, Jason's decisions, the pass/fail verdict and the small fixes. The other parts go to named agents in `.claude/agents/`, each with its model fixed in its file:
+
+| Part | Agent (model) | Steps |
+|---|---|---|
+| A misread's cause, its test and its fix | `fixer` (Fable) | Commencement reader, Amending-law reader, Feed reader, Extent reader, Label fold |
+| An agent check (a new-class hunt, one pass at most, costed) | Fable in those steps, else Opus | every step that has one |
+| A long run's output summarised (gate, dump, preview, step close, pre-flight) | `summariser` (Haiku) | every step |
+| Paperwork: todos, the meta row, bug entries, the index, commits by path (never a push) | `clerk` (Sonnet) | every step |
+| A plan or document reviewed | `reviewer` (Fable) | when a review is asked for |
+
+These five steps hold 66 of the pipeline's 83 open bugs (2026-11-13) and EP's riskiest fixes by reach. The other nine steps fix what they find in the session.
+
+- **Planning:** a step's plan names each part it delegates and its agent; Jason's approval of the plan is the go for those calls. Runs that write still need Jason's go.
+- **The fixer** runs only tests and read-only previews. It never writes to the database, fetches, commits or edits a held fixture.
+- **Recording:** the family's meta row records agent tokens by model.
+- **The start:** the next family uses this from step 0. Each step is measured against the last family's row: days, tokens by model, bugs closed against parked, and misses found later (by the step close, golden or the checked rows).
 
 **Size a fix by its reach** (Environmental Protection retrospective): count every change the fix's claim reaches, by an in-memory diff against the stored changes, never only the cases it is meant for. Decision 3 of EP's Switch-over was sized at 74 undated changes and reached every change commenced by territory; the Label fold's Decision 8 was sized at 157 rows and moved 1,227.
 

@@ -105,7 +105,7 @@ A session that runs one step of the LAT Change Pipeline for one family (steps an
    - a recommendation.
 
    The terminal question points to it. The decision is recorded in `docs/lat-change-pipeline/RULES.md` if it is a rule.
-6. **Agents** carry out approved plan items or run a step as a separate session. An agent check is used only to find new classes, on a small sample, and its token cost is recorded. One agent pass at most, never sample → fix → resample (2026-11-05): what it finds becomes a code check over the corpus (as the commencement catalogues' leftovers), and a plan never says "a fix is followed by a fresh sample".
+6. **Agents** carry out approved plan items or run a step as a separate session. The plan names each part it delegates and the agent that does it (`.claude/agents/`; WORKFLOW "Models per part"): `fixer` (Fable) for the misreads of the Commencement, Amending-law, Feed and Extent readers and the Label fold; `summariser` (Haiku) for long run output; `clerk` (Sonnet) for paperwork and commits; the session itself (Opus 5.5) for the plan, decisions and pass/fail. An agent check is used only to find new classes, on a small sample, and its token cost is recorded. One agent pass at most, never sample → fix → resample (2026-11-05): what it finds becomes a code check over the corpus (as the commencement catalogues' leftovers), and a plan never says "a fix is followed by a fresh sample".
 
 ## Resume a PENDING or SUSPENDED session
 
