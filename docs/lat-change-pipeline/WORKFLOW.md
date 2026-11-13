@@ -98,10 +98,9 @@ On Maritime Safety, the build took the needs from 235 to 682, and three fetch ro
 2. Gate and placement: `mix lat.feed_check --family F`; our faults must be 0.
 3. Repeatability: the same seed twice into two sample files, compared with `cmp`.
 4. Golden: `mix lat.vocabulary --golden`.
-5. An agent judges 50 sampled effects against the feed and the law text.
 6. Tell-tales (finer forms the feed names that we don't hold) are raised against the LAT parser.
 
-**Pass rule as last used.** Sources held; our faults 0; repeatable; golden all-pass; the catalogue test passes; the agent finds nothing wrong outside the known patterns.
+**Pass rule as last used.** Sources held; our faults 0; repeatable; golden all-pass; the catalogue test passes. No agent check (2026-11-13).
 
 **Environmental Protection (2026-11-09).**
 - **The check:** 11,674 effects in 122 laws; our faults 0; 6,386 placed.
@@ -109,7 +108,7 @@ On Maritime Safety, the build took the needs from 235 to 682, and three fetch ro
   - an amendment to an earlier amending law written with the law named straight after "earlier amending" (`earlier-amendment-in-either-form`, Decision 2);
   - each stage of a staged removal named its first stage's order (`each-stage-its-own-order`, Decision 4);
   - a lettered Part numbered in Arabic by the feed and in Roman by the text ("Pt. 2A", row pt.IIA: 24 effects placed).
-- **The sample:** `--sample` now writes each change's `commenced_by` and each in-force entry's `commencing` order, so the agent audits them.
+- **The sample:** `--sample` now writes each change's `commenced_by` and each in-force entry's `commencing` order.
 - **A scoped law needs its body.** The build and the readers read the body, while Sources counted a scoped law's stored fragment as its own text. So the Aggregates Tax (Scotland) Act 2024 was built with 0 changes until its body was fetched (Decision 1). Parked against Sources: 82 scoped laws hold no body.
 - **Reader fixes leave stored changes one reading behind** until the family's build, and a switched family's laws until their refresh.
 
@@ -126,9 +125,9 @@ On Maritime Safety, the build took the needs from 235 to 682, and three fetch ro
 **Check today.**
 1. Pattern catalogue: `mix lat.markup_patterns` (about 5½ min cold, about 5 s warm: #195); new patterns decided until `markup_patterns_test.exs` passes.
 2. Gate and placement: `mix lat.markup_check --family F --all`; our faults 0. It also counts the markup's keys against the feed (in the feed, not in it, legacy), for the Merge step.
-3. Repeatability, golden and an agent on 50 sampled changes, as for the feed.
+3. Repeatability and golden, as for the feed.
 
-**Pass rule as last used.** Sources held; our faults 0 for changes and for note placements (the check's PASS counts both since 2026-11-09); repeatable; golden all-pass; the agent finds nothing wrong outside the known patterns.
+**Pass rule as last used.** Sources held; our faults 0 for changes and for note placements (the check's PASS counts both since 2026-11-09); repeatable; golden all-pass. No agent check (2026-11-13).
 
 **Environmental Protection (2026-11-09).**
 - **Check:** 3,251 changes in 72 laws, our faults 0; note placements 2,676, faults 0.
@@ -157,7 +156,7 @@ On Maritime Safety, the build took the needs from 235 to 682, and three fetch ro
 1. Both catalogues: `mix lat.commencement_patterns` (own commencement sentences, about 4¼ min cold, under 2 min warm: #195) and `mix lat.order_patterns` (orders, about 30 s), until `CommencementPatternsTest` and `OrderPatternsTest` pass. Each also reports its **leftovers** (`Commencement.Leftovers`): the words of a statement that bear on a date (a date, a provision, an exception, a qualifier, a relative day) that no rule read from it uses, grouped and ranked by the rows they reach, every group reviewed in `leftovers.json` (`LeftoversReviewTest`). This replaces agent rounds as the way to find a family's new forms (2026-11-05).
 2. The readers' re-read (ask first): `mix lat.commencement`, then the rebuild.
 3. `mix lat.commencement_check --family F`: every row dated, left to an order, or undated with a reason; our faults 0. Its **leftovers gate** lists every leftover reaching the family (its laws' own clauses, the orders held for them, its held amending laws), each with its group's status; PASS needs every one `known:`.
-4. Golden. At most one agent pass, and only to label leftover groups; never sample, fix, resample (Jason 2026-11-05).
+4. Golden. No agent pass (2026-11-13).
 5. Repeatable: two `--sample` runs on one seed, identical.
 
 **Pass rule** (Decision 1 (c), Jason 2026-11-05). `lat.commencement_check --family F` prints PASS: our faults 0 and every leftover reaching the family named (`known:`); every leftover group reviewed (`LeftoversReviewTest`); the catalogue tests pass; repeatable; golden all-pass. No agent rounds. (Before: the stopping rule of 2026-10-24, on an agent sample.)
@@ -292,7 +291,6 @@ Each group is reviewed once in the sources' records and named in `test/fixtures/
 
 **Pass rule** (Decision 1, picked with Gemini):
 - the gate prints PASS;
-- **one agent pass**, of 50 changes drawn from the by-design groups only (`--stratum J --by-design --sample FILE --n 50 --seed N`, a new seed), to find a class the grouping hides; what it finds becomes a code group, and there is no resample;
 - no regression in the families through (their U, C and spread);
 - golden 27/27;
 - the join rate and a quality statement published.
@@ -334,7 +332,6 @@ Before this, OH&S used agents over U and C in full and pooled J samples to the 9
 
 **Pass rule** (Decision 1, Maritime Safety: Evidence, 2026-11-06; the shape picked for Merge):
 - the gate prints PASS;
-- **one agent pass** of 50 A changes on a new seed (`--stratum A --sample FILE --n 50 --seed N`), to find a class the grouping hides; what it finds becomes a code group, and there is no resample;
 - no regression in the families through (their V and D);
 - golden 27/27;
 - the winners, the gaps and a quality statement published.
@@ -375,13 +372,12 @@ Before this, OH&S used agents over V in full and D by pattern, and pooled A samp
 **The gate** (`--gate [--all]`, `ChangeVocabulary.Gate.Label`; Decision 1, Maritime Safety: Label fold, 2026-11-06). Every breach in the family's folded rows is grouped by rule and the row's law, `"<rule> @ <law>"`:
 - the label rules (`LabelRules`: before_amender, before_insertion, windsor_ni, no_made_period, saved_not_saved; legacy_unconfirmed listed apart);
 - the table's rules (`LabelPeriods.violations/1`);
-- the agent pass's classes as code: an empty field carrying a tier (`tier: empty field`), and a row started by a Part's or Chapter's insertion later than its own (`start: a container's insertion after its own`).
+- the classes Maritime's agent pass found, as code: an empty field carrying a tier (`tier: empty field`), and a row started by a Part's or Chapter's insertion later than its own (`start: a container's insertion after its own`).
 
 Each group is named in `test/fixtures/label/labels.json` (`known:`, `fix:` or `check:`); OH&S's file-listed rows (`KnownLimits`) stay apart. The gaps (undated starts and changes) and the S shapes are printed, a published figure. `--laws L1,L2` folds only the laws named (a pre-flight in seconds; the family fold takes 6–13 minutes).
 
 **Pass rule** (Decision 1, Maritime Safety: Label fold, 2026-11-06; the shape picked for Merge):
 - the gate prints PASS;
-- **one agent pass** of about 45 rows (`--stratum SR --per 2 --n 23 --seed N`: S by shape, the rest at random, a new seed) in 3 batches, to find a class the code doesn't catch; a fold class becomes a gate check and is fixed by reach, an upstream one is parked; there is no resample;
 - no regression in the families through (their gate and current statuses);
 - golden 27/27;
 - the shapes, the gaps, the statuses and a quality statement published.
@@ -407,7 +403,7 @@ Before this, OH&S used G, S and T by shape and R pooled to the 95% bound (2026-1
 
 **Aim.** Every figure a step publishes can be believed: one name and one meaning, computed by code, tested, and replicable.
 
-**Inputs.** The stored changes and the agent verdict files (`backend/data/reports/change-vocabulary/verdicts/<step>/<family>/`).
+**Inputs.** The stored changes and the earlier families' agent verdict files (`backend/data/reports/change-vocabulary/verdicts/<step>/<family>/`).
 
 **Outputs.** Printed figures; the register of figures in the `measures-check` skill.
 
@@ -416,10 +412,9 @@ Before this, OH&S used G, S and T by shape and R pooled to the 95% bound (2026-1
 1. **Audit:** every figure the family's step sessions publish (closing `metrics:`), against today's store. A figure is the same; or moved, with the later commit that moved it named; or a finding. Before/after history, days, commits and tokens are out of scope.
 2. **Every step's gate, re-run:** `draws.sh FAMILY SEED` (in the skill) runs each step's check with its strata, gate and sample: Making laws, Sources, the five readers, Merge, Evidence, the label fold, and `lat.measures`. A gate that passed when its step closed can fail after a later rebuild. Such a gate is raised and parked with its step, never named here.
 3. **Replicable:** two passes of `draws.sh` on one seed. Samples are byte-identical (`cmp`); printed figures are identical once log lines are filtered out. The first pass runs before any code change.
-4. **Hand check:** one agent pass, 2 batches, or none (Environmental Protection, Jason 2026-11-11). Without an agent pass, the hand sample still replicates, the measure-fault classes already found stay tested, and a few items are read by hand.
+4. **Hand check:** no agent pass (Environmental Protection, Jason 2026-11-11; every step from 2026-11-13). The hand sample replicates, the measure-fault classes already found stay tested, and a few items are read by hand.
    - The hand sample is `mix lat.measures --sample FILE --n 50 --seed S`: text changes with their classes (who states it, law-text coverage, dating, merge stratum).
    - Ten items come from the extent check's sample, one per outcome, for the territory group.
-   - Save the VERDICTS blocks as verdict files when the agents hand back.
    - A measure fault is fixed by TDD over the family, with no resample. An upstream fault is parked with its step.
 
 **Pass rule as last used** (Maritime Safety, 2026-11-06; OH&S's of 2026-10-30, fitted to one agent pass):
@@ -450,7 +445,7 @@ Before this, OH&S used G, S and T by shape and R pooled to the 95% bound (2026-1
    - then `mix lat.vocabulary --check --family F`: the build, conflict counts, golden from the store, and **every step's gate** (`mix lat.gates --family F`).
 3. `mix lat.changes_digest --built --out A.tsv`; build B (the same builds with `--build`); digest again; `cmp`.
 4. `mix lat.stale --strict --switched` exits 0: no built law stale (an input, the code or a reader's readings), and no switched-family law's labels stale (#193). A reader reason is fixed by re-reading in the mode that wrote the readings (`lat.stale` prints it), then building.
-5. Golden from inputs, and one agent hand check of the staleness sample (`mix lat.stale --sample FILE --family F --seed S`, drawn twice and compared with `cmp`).
+5. Golden from inputs, and the staleness sample (`mix lat.stale --sample FILE --family F --seed S`), drawn twice and compared with `cmp`, a few items checked by SQL.
 
 **The whole-store catalogues read only what moved** (#195, 2026-11-08). `lat.feed_patterns`, `lat.markup_patterns` and `lat.commencement_patterns` keep each law's result in `CatalogueCache` (`data/cache/catalogues/`). The key is the catalogue's code version (`FeedPatterns.Version`, `MarkupPatterns.Version`, `CommencementCatalogue.Version`, held by `VersionCoverageTest`) plus a digest of the law's inputs: its stored files and rows, or for commencement its rows and start input. A re-run reads only the laws whose inputs or catalogue code moved, and prints `cache: N hits, M read`. Laws are read several at once under `LawRunner.Guard`, then taken in law order, so the catalogue is the one a serial run gives, byte for byte. A reader or catalogue edit pays one cold run. `--no-cache` reads every law afresh, and `--workers N` overrides the guard. Each law's examples are chosen alone in its parallel read and cached with it, for all three catalogues (`LawScan`: a law alone always finds room, so the examples the whole run asks of it are among those). The serial pass only looks them up; for commencement it also merges and checks each law's examples into `laws.json` (about 30 s). Commencement's warm run takes 104 s (from 228 s), most of it gathering each law's rows and start input.
 
@@ -583,7 +578,7 @@ Changing the pass rule, golden or scope means a new plan, approved again, not an
 - **golden from inputs**: the golden set rebuilt from the sources, never only from the store;
 - **store scans**: `mix lat.store_scan --form NAME [--list FILE]` runs one named form over every stored feed effect, each counted once (about 70 seconds). A new question about the store becomes a form under `Checks.StoreScan.Forms`, with tests, not a script written fresh in a session (#192). The first form is `bracketed_container`.
 
-**3. Agents only to find new classes.** An agent check is small, on a seeded sample, used to find classes the code doesn't yet know, and its token cost is recorded in the session. It is not a repeated pass gate. One pass at most, never sample → fix → resample (2026-11-05, Maritime Safety's Commencement reader: two rounds, 274k tokens, each finding a few one-law forms). What an agent finds becomes a code check that finds the rest of its class over the corpus, as the commencement catalogues' **leftovers** do (step 4: every word of a statement that bears on a date and that no rule uses, ranked by reach). A plan never says "a fix is followed by a fresh sample".
+**3. No agent QA or testing in a step** (Jason 2026-11-13). A step passes on code alone. Whether an agent helps a family's final QA is decided at its retrospective. Before this, an agent check was allowed once per step to find new classes; Environmental Protection still ran five (about 1.0M tokens). The rule before that: one pass at most, never sample → fix → resample (2026-11-05, Maritime Safety's Commencement reader: two rounds, 274k tokens, each finding a few one-law forms). What an agent finds becomes a code check that finds the rest of its class over the corpus, as the commencement catalogues' **leftovers** do (step 4: every word of a statement that bears on a date and that no rule uses, ranked by reach). A plan never says "a fix is followed by a fresh sample".
 
 **4. Bugs are parked by owning step.** A bug in another step's code is raised with the `bug-raise` skill (with a `step:` tag naming the owning step, a class slug, the rows affected) and parked. It is never fixed in the current step unless Jason says so for that bug. Each step's backlog is worked when that step is formally reopened. Single-law wordings and legislation.gov.uk's own data errors below the plan's triage size become named known limits, not fixes.
 
@@ -602,12 +597,12 @@ Session files: `.claude/sessions/lat-change-pipeline/<date>-<family>-<step-name>
 1. **Prerequisites.** The golden set for the pass is frozen.
 2. **Making laws**: every live law decided from its text; the making laws parsed into LAT (fetch and parse with Jason's go).
 3. **Sources** until the gate passes (fetches only with Jason's go).
-4. **Feed reader**, then **Markup reader**: catalogues first, then the gates, then a small agent sample for new classes.
+4. **Feed reader**, then **Markup reader**: catalogues first, then the gates.
 5. **Commencement reader**: both catalogues, the re-read, the check.
 6. **Extent reader**: sweep and catalogue, the extents written, the check.
 7. **Amending-law reader**: the read pass current, catalogue, pre-flight, one read pass, rebuild, golden from inputs, strata, the gate.
 8. **Merge**, then **Evidence**: strata and their checks after a rebuild.
-9. **Label fold**: the gate, one agent pass over S and R, golden from inputs.
+9. **Label fold**: the gate, golden from inputs.
 10. **Measures**: every figure the family's steps publish, printed by code and replicated.
 11. **Store and build**: two builds, digests compared, staleness, the sources gate re-run.
 12. **Labels side by side**: the new timeline beside the old (`--strata`), 0 rule breaks, the side-by-side totals and gaps saved as the switch-over's baseline.
@@ -627,7 +622,6 @@ Session files: `.claude/sessions/lat-change-pipeline/<date>-<family>-<step-name>
 | Part | Agent (model) | Steps |
 |---|---|---|
 | A misread's cause, its test and its fix | `fixer` (Fable) | Commencement reader, Amending-law reader, Feed reader, Extent reader, Label fold |
-| An agent check (a new-class hunt, one pass at most, costed) | Fable in those steps, else Opus | every step that has one |
 | A long run's output summarised (gate, dump, preview, step close, pre-flight) | `summariser` (Haiku) | every step |
 | Paperwork: todos, the meta row, bug entries, the index, commits by path (never a push) | `clerk` (Sonnet) | every step |
 | A plan or document reviewed | `reviewer` (Fable) | when a review is asked for |

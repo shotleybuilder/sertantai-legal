@@ -1,6 +1,6 @@
 ---
 name: Feed Reader Check
-description: The LAT Change Pipeline's feed-reader acceptance check for one family of laws — the prerequisites gate, the placement count, repeatability, golden, and a Claude agent checking a random sample of 50 effects against the feed and the law text. Use for every new family; only defects with no known pattern go to Jason.
+description: The LAT Change Pipeline's feed-reader acceptance check for one family of laws — the prerequisites gate, the placement count, repeatability, and golden, all in code (no agent check). Use for every new family; only defects with no known pattern go to Jason.
 ---
 
 > **LAT Change Pipeline — step: Feed reader.** Where it sits, its inputs, outputs and pass rule: `docs/lat-change-pipeline/WORKFLOW.md`. Terms and former codes (CV-…): `docs/lat-change-pipeline/GLOSSARY.md`.
@@ -8,8 +8,7 @@ description: The LAT Change Pipeline's feed-reader acceptance check for one fami
 > **Process (retrospective, 2026-11-03):**
 > - Plan the step in plan mode first, with its pass rule fixed and golden frozen (`session-start`, step session).
 > - The check is code first: table rules, checked-row fixtures, pattern catalogues, golden from inputs.
-> - The agent check below is used only to find NEW classes, on a small sample, and its token cost is recorded in the session. It is not a repeated pass gate.
-> - **One agent pass at most, never sample → fix → resample** (Jason 2026-11-05, Maritime Safety: two rounds, 274k tokens, whack-a-mole). The forms it finds become a code check that finds the rest of their class over the corpus: as the commencement catalogues' leftovers (words of a statement no reading uses, ranked by reach: WORKFLOW.md step 4). Where a step has such a check, run it first and label its groups; the agent only labels what it can't.
+> - **No agent QA or testing in a step** (Jason 2026-11-13). The pass is code alone: gates, catalogues, checked rows, golden from inputs. Whether an agent helps a family's final QA is decided at its retrospective. Any agent prompt below is history only; never run it in a step.
 > - Bugs in another step's code are raised with `bug-raise` and parked, never fixed here.
 
 # Feed Reader Check (CV-S02, per family)
@@ -50,17 +49,16 @@ All steps are read-only, except that step 0 writes the catalogue fixtures. Ask J
    ```
    Then diff the two outputs: the counts must match. Use a seed not used before for this family; record it.
 4. **Golden** (where the family has golden provisions): `mix lat.vocabulary --golden` (~4½ min) must stay all-pass.
-5. **Agent check.** Launch a general-purpose agent with the prompt below, on `$S/a.json`.
-6. **Tell-tales.** The feed check prints finer forms the feed names but we don't hold, by kind:
+5. **Tell-tales.** The feed check prints finer forms the feed names but we don't hold, by kind:
    - `naming`: a faulty row name;
    - `no_ids`: the text gives items no ids;
    - `not_found`: a candidate only.
 
    A new pattern is raised against the parser as a measured pattern (memory: parser tell-tales) and fixed in a sub-session straight after the step.
 
-**Pass:** sources held; our faults 0; repeatable; golden all-pass; the agent finds no WRONG outside the known patterns. Record each result in the family's step session. Only NEW defects go to Jason, one at a time, explained with the feed's own record and the applied text.
+**Pass:** sources held; our faults 0; repeatable; golden all-pass. Record each result in the family's step session. Only NEW defects go to Jason, one at a time, explained with the feed's own record and the applied text.
 
-## Agent prompt
+## Agent prompt (history only: no agent QA in a step, 2026-11-13)
 
 Fill in FILE and the family, and add any known patterns found since.
 

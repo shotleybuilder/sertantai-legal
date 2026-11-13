@@ -8,7 +8,7 @@ description: The switch-over's acceptance check for one family, decided by code.
 > **Process (retrospective, 2026-11-03):**
 > - Plan the step in plan mode first, with its pass rule fixed and golden frozen (`session-start`, step session).
 > - The pass is decided by code: causes, the rules over every row, the checked rows, golden and the dry run.
-> - An agent pass is used only where a large cause names no evidence for its new value, at most 2 batches, with its tokens recorded. One pass at most, never sample → fix → resample.
+> - **No agent QA or testing in a step** (Jason 2026-11-13). The pass is code alone: gates, catalogues, checked rows, golden from inputs. Whether an agent helps a family's final QA is decided at its retrospective. Any agent prompt below is history only; never run it in a step.
 > - Bugs in another step's code are raised with `bug-raise` and parked, unless Jason gives leave for that bug.
 
 # Switch-over Check (per family)

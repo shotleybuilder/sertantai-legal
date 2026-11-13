@@ -1,6 +1,6 @@
 ---
 name: Label Check
-description: The LAT Change Pipeline's label-fold acceptance check for one family: the code gate (every label-rule, table-rule, tier and start breach grouped by rule and law, named in labels.json), golden from inputs (G), and one agent pass over rows drawn by shape (S) and at random (R), judged against the law's own sources. It also holds the golden-drafting prompt for growing the golden set. Use it for each new family.
+description: The LAT Change Pipeline's label-fold acceptance check for one family: the code gate (every label-rule, table-rule, tier and start breach grouped by rule and law, named in labels.json), and golden from inputs (G); no agent check. It also holds the golden-drafting prompt for growing the golden set. Use it for each new family.
 ---
 
 > **LAT Change Pipeline — step: Label fold.** Where it sits, its inputs, outputs and pass rule: `docs/lat-change-pipeline/WORKFLOW.md`. Terms and former codes (CV-…): `docs/lat-change-pipeline/GLOSSARY.md`.
@@ -8,8 +8,7 @@ description: The LAT Change Pipeline's label-fold acceptance check for one famil
 > **Process (retrospective, 2026-11-03):**
 > - Plan the step in plan mode first, with its pass rule fixed and golden frozen (`session-start`, step session).
 > - The check is code first: table rules, checked-row fixtures, pattern catalogues, golden from inputs.
-> - The agent check below is used only to find NEW classes, on a small sample, and its token cost is recorded in the session. It is not a repeated pass gate.
-> - **One agent pass at most, never sample → fix → resample** (Jason 2026-11-05, Maritime Safety: two rounds, 274k tokens, whack-a-mole). The forms it finds become a code check that finds the rest of their class over the corpus: as the commencement catalogues' leftovers (words of a statement no reading uses, ranked by reach: WORKFLOW.md step 4). Where a step has such a check, run it first and label its groups; the agent only labels what it can't.
+> - **No agent QA or testing in a step** (Jason 2026-11-13). The pass is code alone: gates, catalogues, checked rows, golden from inputs. Whether an agent helps a family's final QA is decided at its retrospective. Any agent prompt below is history only; never run it in a step.
 > - Bugs in another step's code are raised with `bug-raise` and parked, never fixed here.
 
 # Label Check (CV-S09, per family)
@@ -47,19 +46,17 @@ All steps are read-only. Each `lat.label_check` run folds the whole family: abou
    A group named by rule alone is by design (`legacy_unconfirmed`).
 2. **G, golden from inputs:** `mix lat.vocabulary --golden --workers 1` (about 5 minutes). Every provision must pass.
    Golden is fixed for a workflow pass: never grow it mid-workflow (Jason 2026-10-30). New provisions go in `golden_extended.exs` (`--golden --extended`) and gate the next pass from step 1.
-3. **One agent pass**, on a seed never used for this family: `--stratum SR --sample $S/a.json --per 2 --n 23 --seed N` (S by shape, two rows a shape, then 23 at random; about 45 rows). Split it into 3 batches of about 15 (items are large) and run the prompt below on each, in parallel. Record the tokens (Maritime Safety: 350k).
-4. **Finds into code:** a fold class becomes a gate check in `Gate.Label` (the made-period tier, the container start) and is fixed by reach (TDD); an upstream class is raised with its owning step and its group named `known:`. There is no resample.
+3. **New classes into code:** a fold class found in the gate's review or the session's reading becomes a gate check in `Gate.Label` (the made-period tier, the container start) and is fixed by reach (TDD); an upstream class is raised with its owning step and its group named `known:`. There is no resample.
 
 **Pass** (Decision 1, Maritime Safety: Label fold, 2026-11-06):
 - the gate prints PASS on the family, every group named `known:`;
-- the one agent pass done, each class it found a gate check;
 - no regression in the families through: their gate PASS and current statuses unchanged, except by a fix explained;
 - golden 27/27 from inputs;
 - the shapes, gaps, statuses and a quality statement recorded.
 
 Until Maritime Safety (OH&S, 2026-10-29): G, S and T by shape (`--per 10`) and R pooled to the 95% Clopper–Pearson bound (under 2% wrong rows, 5% wrong laws, fold faults only) over 10 rounds. That is the sample → fix → resample loop the 2026-11-05 rule forbids.
 
-## Agent prompt (the check)
+## Agent prompt (history only: no agent QA in a step, 2026-11-13)
 
 Fill in FILE, the stratum and the family. Add the known classes found since.
 

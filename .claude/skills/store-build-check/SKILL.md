@@ -1,6 +1,6 @@
 ---
 name: Store Build Check
-description: The change register's acceptance check for one family. It proves the build repeatable (two builds, digests compared), times it, shows what is stale (mix lat.stale, with an agent hand check of a seeded sample), and re-runs every step's gate after the build (mix lat.gates). Use it when a family reaches step 11, and after any change to the build or the store.
+description: The change register's acceptance check for one family. It proves the build repeatable (two builds, digests compared), times it, shows what is stale (mix lat.stale, with a seeded hand sample drawn twice and checked by SQL), and re-runs every step's gate after the build (mix lat.gates). Use it when a family reaches step 11, and after any change to the build or the store.
 ---
 
 > **LAT Change Pipeline — step: Store and build.** Where it sits, its inputs, outputs and pass rule: `docs/lat-change-pipeline/WORKFLOW.md`. Terms and former codes (CV-…): `docs/lat-change-pipeline/GLOSSARY.md`.
@@ -8,8 +8,7 @@ description: The change register's acceptance check for one family. It proves th
 > **Process (retrospective, 2026-11-03):**
 > - Plan the step in plan mode first, with its pass rule fixed and golden frozen (`session-start`, step session).
 > - The check is code first: table rules, checked-row fixtures, pattern catalogues, golden from inputs.
-> - The agent check below is used only to find NEW classes, on a small sample, and its token cost is recorded in the session. It is not a repeated pass gate.
-> - **One agent pass at most, never sample → fix → resample** (Jason 2026-11-05, Maritime Safety: two rounds, 274k tokens, whack-a-mole). The forms it finds become a code check that finds the rest of their class over the corpus: as the commencement catalogues' leftovers (words of a statement no reading uses, ranked by reach: WORKFLOW.md step 4). Where a step has such a check, run it first and label its groups; the agent only labels what it can't.
+> - **No agent QA or testing in a step** (Jason 2026-11-13). The pass is code alone: gates, catalogues, checked rows, golden from inputs. Whether an agent helps a family's final QA is decided at its retrospective. Any agent prompt below is history only; never run it in a step.
 > - Bugs in another step's code are raised with `bug-raise` and parked, never fixed here.
 
 # Store Build Check (CV-S11, per family)
@@ -31,7 +30,7 @@ Ask Jason before the builds: they write the three tables. Say how long they take
 4. **Build B:** the same builds with `--build` (no gates), then digest to `B.tsv`. `cmp A.tsv B.tsv` must be identical (`build_repeatable`).
 5. **Staleness:** `mix lat.stale` (about 2 s). It must show 0 of the built laws stale; laws holding LAT with no build are counted apart. `--list` names each stale law with its reasons.
 6. **Golden from inputs:** `mix lat.vocabulary --golden` (about 3 min): all pass.
-7. **Hand check:** `mix lat.stale --sample FILE --family "F" --built 20 --unbuilt 10 --seed S` (`Measures.StaleSample`, seed tuple `{s, 11, 11}`) draws 20 of the family's built laws and 10 unbuilt laws from every law holding LAT, each with its latest build event, current code version, inputs taken now and verdict. Draw it twice and `cmp`. Then run the agent below on that file. Save its VERDICTS block under `backend/data/reports/change-vocabulary/verdicts/s11/<family>/` and pool it with `mix lat.verdicts --dir`.
+7. **Hand check:** `mix lat.stale --sample FILE --family "F" --built 20 --unbuilt 10 --seed S` (`Measures.StaleSample`, seed tuple `{s, 11, 11}`) draws 20 of the family's built laws and 10 unbuilt laws from every law holding LAT, each with its latest build event, current code version, inputs taken now and verdict. Draw it twice and `cmp`, then check a few items by SQL (Environmental Protection: 3). No agent (2026-11-13).
 
 **Pass:** digests identical; build time accepted by Jason; 0 built laws stale after the build; the hand check finds no verdict wrong; golden all-pass; every failing gate is already parked with its owning step.
 
@@ -41,7 +40,7 @@ Ask Jason before the builds: they write the three tables. Say how long they take
 
 **Reasons** (`ChangeStaleness`): `no_build`, `code_version` (`ChangeVocabulary.Version`), or an input moved: `lat_rows`, `law_text`, `feed`, `amendment_rules`, `commencement_rules`, `extent_rules` (`Store.Inputs`). An input the build didn't record counts as moved.
 
-## Agent prompt
+## Agent prompt (history only: no agent QA in a step, 2026-11-13)
 
 Fill in FILE.
 

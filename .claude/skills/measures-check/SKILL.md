@@ -1,6 +1,6 @@
 ---
 name: Measures Check
-description: The LAT Change Pipeline's measures for one family. It prints every published figure from code (coverage, dating, who states a change, the pass bounds from agent verdict files), proves the samples and printed figures replicable (draw twice, compare), and holds the register defining each figure. Use it when a step closes, for a quality statement, and for each new family.
+description: The LAT Change Pipeline's measures for one family. It prints every published figure from code (coverage, dating, who states a change, and the earlier families' bounds from verdict files), proves the samples and printed figures replicable (draw twice, compare), and holds the register defining each figure. Use it when a step closes, for a quality statement, and for each new family.
 ---
 
 > **LAT Change Pipeline — step: Measures.** Where it sits, its inputs, outputs and pass rule: `docs/lat-change-pipeline/WORKFLOW.md`. Terms and former codes (CV-…): `docs/lat-change-pipeline/GLOSSARY.md`.
@@ -8,8 +8,7 @@ description: The LAT Change Pipeline's measures for one family. It prints every 
 > **Process (retrospective, 2026-11-03):**
 > - Plan the step in plan mode first, with its pass rule fixed and golden frozen (`session-start`, step session).
 > - The check is code first: table rules, checked-row fixtures, pattern catalogues, golden from inputs.
-> - The agent check below is used only to find NEW classes, on a small sample, and its token cost is recorded in the session. It is not a repeated pass gate.
-> - **One agent pass at most, never sample → fix → resample** (Jason 2026-11-05, Maritime Safety: two rounds, 274k tokens, whack-a-mole). The forms it finds become a code check that finds the rest of their class over the corpus: as the commencement catalogues' leftovers (words of a statement no reading uses, ranked by reach: WORKFLOW.md step 4). Where a step has such a check, run it first and label its groups; the agent only labels what it can't.
+> - **No agent QA or testing in a step** (Jason 2026-11-13). The pass is code alone: gates, catalogues, checked rows, golden from inputs. Whether an agent helps a family's final QA is decided at its retrospective. Any agent prompt below is history only; never run it in a step.
 > - Bugs in another step's code are raised with `bug-raise` and parked, never fixed here.
 
 # Measures Check (CV-S10, per family)
@@ -35,6 +34,8 @@ All steps here are read-only.
 | Golden | `mix lat.vocabulary --golden` |
 
 ## Verdict files
+
+No agent pass runs in a step now (2026-11-13); these files hold the earlier families' rounds only.
 
 Each check skill's agent prompt ends with a VERDICTS block: one JSON object per agent batch. Save each block as:
 

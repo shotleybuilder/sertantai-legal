@@ -8,8 +8,7 @@ description: The LAT Change Pipeline's amending-law reader acceptance check for 
 > **Process (retrospective, 2026-11-03):**
 > - Plan the step in plan mode first, with its pass rule fixed and golden frozen (`session-start`, step session).
 > - The check is code first: table rules, checked-row fixtures, pattern catalogues, golden from inputs.
-> - The agent check below is used only to find NEW classes, on a small sample, and its token cost is recorded in the session. It is not a repeated pass gate.
-> - **One agent pass at most, never sample → fix → resample** (Jason 2026-11-05, Maritime Safety: two rounds, 274k tokens, whack-a-mole). The forms it finds become a code check that finds the rest of their class over the corpus: as the commencement catalogues' leftovers (words of a statement no reading uses, ranked by reach: WORKFLOW.md step 4). Where a step has such a check, run it first and label its groups; the agent only labels what it can't.
+> - **No agent QA or testing in a step** (Jason 2026-11-13). The pass is code alone: gates, catalogues, checked rows, golden from inputs. Whether an agent helps a family's final QA is decided at its retrospective. Any agent prompt below is history only; never run it in a step.
 > - Bugs in another step's code are raised with `bug-raise` and parked, never fixed here.
 >
 > **Start here: the parked work.** The plan starts from this step's open bugs:
@@ -71,9 +70,9 @@ Every step is a tested task (Amending-law reader: review tooling, 2026-11-12); n
 
 No agent pass. A is not sampled, because there both sources agree. Record the strata and the agreement rate.
 
-The agent prompt below is kept for a new class hunt only (one pass at most, costed).
+The agent prompt below is history only (no agent QA in a step, 2026-11-13).
 
-## Agent prompt
+## Agent prompt (history only)
 
 Fill in FILE and the family. Add known classes found since.
 

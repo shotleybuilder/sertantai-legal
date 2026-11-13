@@ -1019,7 +1019,7 @@ Each item gives the rulings with their dates, what the code does now, the aim at
 - **Aim:** `prove-one-family`.
 - **Recommendation:**
   - The code-decided pass is the default for every step.
-  - An agent sample is used only to find new classes, costed.
+  - No agent QA or testing in a step (Jason 2026-11-13); whether an agent helps a family's final QA is decided at its retrospective.
   - The pass rule is fixed in the step's plan and never changed mid-step.
 
 ### 15. Fixing other steps' code inside a step

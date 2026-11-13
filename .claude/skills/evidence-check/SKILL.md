@@ -1,6 +1,6 @@
 ---
 name: Evidence Check
-description: The LAT Change Pipeline's evidence acceptance check for one family — strata of merged changes (value conflicts V, markup–feed disagreements D, agreeing changes A), the winning source per attribute, and Claude agents judging whether each chosen value is right by the evidence table and each disagreement is reported like for like. Use for each fix round and each new family.
+description: The LAT Change Pipeline's evidence acceptance check for one family — strata of merged changes (value conflicts V, markup–feed disagreements D, agreeing changes A), the winning source per attribute, and the code gate (every group named); no agent check. Use for each fix round and each new family.
 ---
 
 > **LAT Change Pipeline — step: Evidence.** Where it sits, its inputs, outputs and pass rule: `docs/lat-change-pipeline/WORKFLOW.md`. Terms and former codes (CV-…): `docs/lat-change-pipeline/GLOSSARY.md`.
@@ -8,8 +8,7 @@ description: The LAT Change Pipeline's evidence acceptance check for one family 
 > **Process (retrospective, 2026-11-03):**
 > - Plan the step in plan mode first, with its pass rule fixed and golden frozen (`session-start`, step session).
 > - The check is code first: table rules, checked-row fixtures, pattern catalogues, golden from inputs.
-> - The agent check below is used only to find NEW classes, on a small sample, and its token cost is recorded in the session. It is not a repeated pass gate.
-> - **One agent pass at most, never sample → fix → resample** (Jason 2026-11-05, Maritime Safety: two rounds, 274k tokens, whack-a-mole). The forms it finds become a code check that finds the rest of their class over the corpus: as the commencement catalogues' leftovers (words of a statement no reading uses, ranked by reach: WORKFLOW.md step 4). Where a step has such a check, run it first and label its groups; the agent only labels what it can't.
+> - **No agent QA or testing in a step** (Jason 2026-11-13). The pass is code alone: gates, catalogues, checked rows, golden from inputs. Whether an agent helps a family's final QA is decided at its retrospective. Any agent prompt below is history only; never run it in a step.
 > - Bugs in another step's code are raised with `bug-raise` and parked, never fixed here.
 
 # Evidence Check (CV-S08, per family)
@@ -47,12 +46,10 @@ All steps are read-only.
    - Review each group left in the sources' own records, and write `backend/data/reports/evidence/<family>-gate-review-N.md`.
    - A wrong value chosen from a misread primary claim is the reader's: name it `known:` with its parked bug (`bug-raise`).
    - The gaps print last, by cause: a published figure.
-3. **One agent pass** over A, on a seed never used for this family (record it): `--stratum A --sample FILE --n 50 --seed N`. Use the prompt below. What it finds becomes a code group in the gate; there is no resample.
-4. **Golden from inputs** after any fix: `mix lat.vocabulary --golden --workers 1` (~5 min).
+3. **Golden from inputs** after any fix: `mix lat.vocabulary --golden --workers 1` (~5 min).
 
 **Pass** (Decision 1, Maritime Safety: Evidence, 2026-11-06):
 - the gate prints PASS;
-- the one agent pass is done, its classes named in the gate, its token cost recorded;
 - the families through show no new V or D;
 - golden passes.
 
@@ -69,7 +66,7 @@ Record the strata, the winners, the gaps and a quality statement. Only NEW defec
   - a cross-heading's insertion read as words;
   - legislation.gov.uk wrapping a number on a sentence's substitution.
 
-## Agent prompt
+## Agent prompt (history only: no agent QA in a step, 2026-11-13)
 
 Fill in FILE, the stratum and the family. Add known classes found since.
 

@@ -1,6 +1,6 @@
 ---
 name: Extent Reader Check
-description: The LAT Change Pipeline's extent and application reader acceptance check for one family of laws — the extent catalogue, the extent check (our faults 0), golden, and a Claude agent checking a stratified sample of 50 amending laws and 50 text changes against the laws' own words. Use for each fix round and each new family; only misreads and silent drops are NEW.
+description: The LAT Change Pipeline's extent and application reader acceptance check for one family of laws — the extent catalogue, the extent check (our faults 0), and golden, all in code (no agent check). Use for each fix round and each new family; only misreads and silent drops are NEW.
 ---
 
 > **LAT Change Pipeline — step: Extent reader.** Where it sits, its inputs, outputs and pass rule: `docs/lat-change-pipeline/WORKFLOW.md`. Terms and former codes (CV-…): `docs/lat-change-pipeline/GLOSSARY.md`.
@@ -8,8 +8,7 @@ description: The LAT Change Pipeline's extent and application reader acceptance 
 > **Process (retrospective, 2026-11-03):**
 > - Plan the step in plan mode first, with its pass rule fixed and golden frozen (`session-start`, step session).
 > - The check is code first: table rules, checked-row fixtures, pattern catalogues, golden from inputs.
-> - The agent check below is used only to find NEW classes, on a small sample, and its token cost is recorded in the session. It is not a repeated pass gate.
-> - **One agent pass at most, never sample → fix → resample** (Jason 2026-11-05, Maritime Safety: two rounds, 274k tokens, whack-a-mole). The forms it finds become a code check that finds the rest of their class over the corpus: as the commencement catalogues' leftovers (words of a statement no reading uses, ranked by reach: WORKFLOW.md step 4). Where a step has such a check, run it first and label its groups; the agent only labels what it can't.
+> - **No agent QA or testing in a step** (Jason 2026-11-13). The pass is code alone: gates, catalogues, checked rows, golden from inputs. Whether an agent helps a family's final QA is decided at its retrospective. Any agent prompt below is history only; never run it in a step.
 > - Bugs in another step's code are raised with `bug-raise` and parked, never fixed here.
 
 # Extent Reader Check (CV-S05, per family)
@@ -23,7 +22,7 @@ Prove the extent reader (`AmendingLaw.Extent` and `Extent.*`) reads where an ame
 
 A statement the reader can't turn fully into rules is recorded unread (`Extent.Unread`): its provisions get no bound, never the default. So a counted unread statement is a known gap. Only a misread (a wrong bound placed) or a silent drop (neither read nor counted) is a defect.
 
-**When to use:** after each fix round of CV-S05 (the round's runs, then the agent), and for each family after OH&S.
+**When to use:** after each fix round of CV-S05 (the round's runs), and for each family after OH&S.
 
 ## Steps
 
@@ -31,7 +30,7 @@ Ask Jason before the runs that write; say how long each takes. Take a restore po
 
 0. **Recall sweep** (read-only; ~7 min cold, seconds warm): `mix lat.extent_sweep [--family "F"]` (CV-S05a). It finds every sentence of the laws' own words that may say where provisions extend or apply but that the catalogue doesn't class, labelled by form (`AmendingLaw.SweepForm`: `read:*` to read, `count:*`, `noise:*`).
    - The catalogue only sees wordings in its own vocabulary, so the sweep is how new wordings are found: by count, not by agent sampling.
-   - A new family: review the uncaught clusters (`data/extent_sweep/clusters.json`) by count, and add their forms to `SweepForm` (and the reader) before the agent check.
+   - A new family: review the uncaught clusters (`data/extent_sweep/clusters.json`) by count, and add their forms to `SweepForm` (and the reader).
 1. **Catalogue** (read-only; ~5 min cold, seconds warm, `Extent.ReadCache`): `mix lat.extent_patterns --accept`. Then review:
    - `git diff --stat backend/test/fixtures/extent_patterns`;
    - each example reading differently, checked in the law's text, then updated by hand in `expected.json`;
@@ -53,7 +52,7 @@ Ask Jason before the runs that write; say how long each takes. Take a restore po
    Keys are `"<cause> @ <law>"`, else the cause alone. Fix by cause, test first, widest reach first.
 5. **The powers parser** (only when `EnactedBy.EnablingProvisions` changes): parse every held introduction before and after (`EnablingCache.from_store/1`) and diff. Gains are allowed; check each other change in its text. Then re-parse the changed SIs offline (`EnablingCache.reparse/1`).
 
-**Pass** (Decision 1, Jason 2026-11-05, Maritime Safety): the gate's PASS; the catalogue test (`ExtentPatternsTest`); every form fixed with its unit test; golden all-pass. **No agent rounds.** The agent prompt below is kept for one pass at most, on a small sample, to find new classes. What it finds becomes a gate cause or a catalogue class, never a resample.
+**Pass** (Decision 1, Jason 2026-11-05, Maritime Safety): the gate's PASS; the catalogue test (`ExtentPatternsTest`); every form fixed with its unit test; golden all-pass. **No agent check** (Jason 2026-11-13).
 
 The statistical rule (2026-10-28, OH&S) is superseded. It pooled seeds and held 95% upper bounds under 2% of changes and 5% of laws.
 
@@ -61,7 +60,7 @@ Record each run in the family's step session. Decisions go to Jason, explained w
 
 If the round changed the **amendment reader** too, its one full read pass (`mix lat.amending --read`, ~6 min) comes before step 3, its report traced law by law (see `backend/lib/sertantai_legal/scraper/CLAUDE.md`).
 
-## Agent prompt
+## Agent prompt (history only: no agent QA in a step, 2026-11-13)
 
 Fill in FILE and the family. Add any known classes found since.
 

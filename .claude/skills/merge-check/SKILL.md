@@ -1,6 +1,6 @@
 ---
 name: Merge Check
-description: The LAT Change Pipeline's merge acceptance check for one family — strata of merged changes (joined J, unjoined U, candidates C), the join rate, and Claude agents judging whether each merged change is one real event and each event one change. Use for each fix round and each new family.
+description: The LAT Change Pipeline's merge acceptance check for one family — strata of merged changes (joined J, unjoined U, candidates C), the join rate, and the code gate (every group named); no agent check. Use for each fix round and each new family.
 ---
 
 > **LAT Change Pipeline — step: Merge.** Where it sits, its inputs, outputs and pass rule: `docs/lat-change-pipeline/WORKFLOW.md`. Terms and former codes (CV-…): `docs/lat-change-pipeline/GLOSSARY.md`.
@@ -8,8 +8,7 @@ description: The LAT Change Pipeline's merge acceptance check for one family —
 > **Process (retrospective, 2026-11-03):**
 > - Plan the step in plan mode first, with its pass rule fixed and golden frozen (`session-start`, step session).
 > - The check is code first: table rules, checked-row fixtures, pattern catalogues, golden from inputs.
-> - The agent check below is used only to find NEW classes, on a small sample, and its token cost is recorded in the session. It is not a repeated pass gate.
-> - **One agent pass at most, never sample → fix → resample** (Jason 2026-11-05, Maritime Safety: two rounds, 274k tokens, whack-a-mole). The forms it finds become a code check that finds the rest of their class over the corpus: as the commencement catalogues' leftovers (words of a statement no reading uses, ranked by reach: WORKFLOW.md step 4). Where a step has such a check, run it first and label its groups; the agent only labels what it can't.
+> - **No agent QA or testing in a step** (Jason 2026-11-13). The pass is code alone: gates, catalogues, checked rows, golden from inputs. Whether an agent helps a family's final QA is decided at its retrospective. Any agent prompt below is history only; never run it in a step.
 > - Bugs in another step's code are raised with `bug-raise` and parked, never fixed here.
 
 # Merge Check (per family)
@@ -50,24 +49,17 @@ All steps are read-only. Ask Jason before the runs that write or take long.
    - each spread key: legislation.gov.uk's own effect over a range, or joined across provisions.
 
    Review each group not named in the sources' records, and name it in `backend/test/fixtures/merge/merges.json` (`known:`, `fix:` or `check:`; `"<cause> @ <amending law>"`, else `"<cause>"` for by design). **PASS:** every group is `known:`. A `fix:` group is the Merge's own code, fixed test first by reach. Another step's fault is parked (`bug-raise`), and a one-law form below triage is a known limit.
-3. **One agent pass**, over the by-design groups only:
-   - `mix lat.merge_check --family "F" --stratum J --by-design --sample $S/j.json --n 50 --seed N`, on a seed never used for the family; repeat into `j2.json` and `cmp`;
-   - the prompt below;
-   - its token cost recorded.
-
-   Each class it finds becomes a gate group in code. **No resample.**
-4. **No regression:** the families through keep their U, C and spread (`--strata`). Where a fix stales their stored changes, rebuild only the laws holding the class (`--build --laws`).
-5. **Golden from inputs:** `mix lat.vocabulary --golden --workers 1` (~5 min).
+3. **No regression:** the families through keep their U, C and spread (`--strata`). Where a fix stales their stored changes, rebuild only the laws holding the class (`--build --laws`).
+4. **Golden from inputs:** `mix lat.vocabulary --golden --workers 1` (~5 min).
 
 **Pass** (Decision 1, picked with Gemini 2026-11-06):
 - the gate gives PASS;
-- the agent pass done once, its classes in the gate;
 - no regression;
 - golden passes.
 
 Record the strata, the join rate and a quality statement. Before this, OH&S passed on agents over U and C in full and pooled J samples to the 95% bound (Jason 2026-10-28; History).
 
-## Agent prompt
+## Agent prompt (history only: no agent QA in a step, 2026-11-13)
 
 Fill in FILE, the stratum and the family. Add known classes found since.
 

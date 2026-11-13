@@ -132,7 +132,7 @@ Jason (2026-11-13): "We need .claude/agents/*.md. Not every step needs Fable 5.2
 | The plan, Jason's decisions, the pass/fail verdict, the session's lead | Opus 5.5 (the session) | judgement and the rules; it holds the context |
 | Finding a misread's cause and writing its test and fix, in a Decision 1 step | Fable (`fixer` agent) | the hard code; a fresh context reads the dump, probe and reader |
 | A fix in any other step | Opus 5.5 (the session) | few and small |
-| An agent check (a new-class hunt, one pass at most, costed) | Fable in a Decision 1 step, else Opus | the same judgement as the fix |
+| ~~An agent check~~ | none: no agent QA or testing in a step (Jason, after the close, 2026-11-13) | decided at a family's retrospective |
 | Reading a long run's output into a short summary (gate groups, dump counts, preview, step close) | Haiku (`summariser` agent) | mechanical; keeps long logs out of the session |
 | Paperwork: ticking todos, meta row, bug entries (bug-raise), the index rebuild, staging and committing by path | Sonnet (`clerk` agent) | rule-bound but simple; the commit and effect-id rules need care, so Sonnet, not Haiku |
 | Reviews of a plan or document | Fable (`reviewer`, gaining `model: fable`) | as the aims review |

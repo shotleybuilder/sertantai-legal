@@ -8,7 +8,7 @@ description: The LAT Change Pipeline's commencement-reader acceptance check for 
 > **Process (retrospective 2026-11-03; Jason 2026-11-05):**
 > - Plan the step in plan mode first, its pass rule fixed and golden frozen (`session-start`, step session).
 > - The check is code over every statement, not a sample. **No agent rounds.** On Maritime Safety two agent rounds (274k tokens) were whack-a-mole: each found a few one-law forms. The leftovers check finds those forms and the rest of their class, ranked by reach.
-> - At most one agent pass, only to label a leftover group the code can't; never sample → fix → resample.
+> - **No agent QA or testing in a step** (Jason 2026-11-13). The pass is code alone: gates, catalogues, checked rows, golden from inputs. Whether an agent helps a family's final QA is decided at its retrospective.
 > - Bugs in another step's code are raised with `bug-raise` and parked.
 
 # Commencement Reader Check (per family)

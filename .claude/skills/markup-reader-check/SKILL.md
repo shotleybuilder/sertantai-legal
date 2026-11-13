@@ -1,6 +1,6 @@
 ---
 name: Markup Reader Check
-description: The LAT Change Pipeline's markup-reader acceptance check for one family of laws — the pattern catalogue, the sources gate, placement (our faults 0), keys against the feed, repeatability, golden, and a Claude agent checking a random sample of 50 changes against the law text. Use for every new family after the feed reader check; only defects with no known pattern go to Jason.
+description: The LAT Change Pipeline's markup-reader acceptance check for one family of laws — the pattern catalogue, the sources gate, placement (our faults 0), keys against the feed, repeatability, and golden, all in code (no agent check). Use for every new family after the feed reader check; only defects with no known pattern go to Jason.
 ---
 
 > **LAT Change Pipeline — step: Markup reader.** Where it sits, its inputs, outputs and pass rule: `docs/lat-change-pipeline/WORKFLOW.md`. Terms and former codes (CV-…): `docs/lat-change-pipeline/GLOSSARY.md`.
@@ -8,8 +8,7 @@ description: The LAT Change Pipeline's markup-reader acceptance check for one fa
 > **Process (retrospective, 2026-11-03):**
 > - Plan the step in plan mode first, with its pass rule fixed and golden frozen (`session-start`, step session).
 > - The check is code first: table rules, checked-row fixtures, pattern catalogues, golden from inputs.
-> - The agent check below is used only to find NEW classes, on a small sample, and its token cost is recorded in the session. It is not a repeated pass gate.
-> - **One agent pass at most, never sample → fix → resample** (Jason 2026-11-05, Maritime Safety: two rounds, 274k tokens, whack-a-mole). The forms it finds become a code check that finds the rest of their class over the corpus: as the commencement catalogues' leftovers (words of a statement no reading uses, ranked by reach: WORKFLOW.md step 4). Where a step has such a check, run it first and label its groups; the agent only labels what it can't.
+> - **No agent QA or testing in a step** (Jason 2026-11-13). The pass is code alone: gates, catalogues, checked rows, golden from inputs. Whether an agent helps a family's final QA is decided at its retrospective. Any agent prompt below is history only; never run it in a step.
 > - Bugs in another step's code are raised with `bug-raise` and parked, never fixed here.
 
 # Markup Reader Check (CV-S03, per family)
@@ -45,11 +44,10 @@ Everything is read-only except step 0, which writes the catalogue fixtures. Ask 
    - Diff the reports: they must be identical.
    - Record the seed.
 4. **Golden:** `mix lat.vocabulary --golden` (~5 min) stays all-pass.
-5. **Agent check:** a general-purpose agent with the prompt below, on `$S/a.json`.
 
-**Pass:** sources held; our faults 0; repeatable; golden all-pass; the agent finds no WRONG outside the known patterns. Record the results in the family's step session. Only NEW defects go to Jason, one at a time, with the markup and the reader's reading.
+**Pass:** sources held; our faults 0; repeatable; golden all-pass. Record the results in the family's step session. Only NEW defects go to Jason, one at a time, with the markup and the reader's reading.
 
-## Agent prompt
+## Agent prompt (history only: no agent QA in a step, 2026-11-13)
 
 Use the round-2 prompt in `.claude/sessions/change-vocabulary/2026-10-22-cv-s03-markup-reader.md` ("Agent prompt"). Fill in FILE and the family, and add any known patterns found since. It covers:
 - **Rules:** keys, the paired substitution, placement (row ids only, heading groups via `heading_of`, whole only when the change touches the provision's own number, heading or text or covers all its text, else per child; groups split, repeated ids by Pnumber), names, operation, level, retained, territory, and `cited`/`affecting` from the note's Operative `CitationSubRef`s.
