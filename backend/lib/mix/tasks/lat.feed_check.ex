@@ -16,6 +16,7 @@ defmodule Mix.Tasks.Lat.FeedCheck do
   alias SertantaiLegal.Scraper.ChangeVocabulary.Gate.Step
 
   alias SertantaiLegal.Repo
+  alias SertantaiLegal.Scraper.Amendment.PatternSource
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source, as: Scope
   alias SertantaiLegal.Scraper.LatRef
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Placement, Ref}
@@ -124,8 +125,8 @@ defmodule Mix.Tasks.Lat.FeedCheck do
 
   # family laws whose LAT isn't held (not making, discarded): out of scope
   defp report_unparsed(family, in_scope) do
-    [[all]] =
-      Repo.query!("SELECT count(*) FROM uk_lrt WHERE family LIKE '%' || $1 || '%'", [family]).rows
+    {where, params} = PatternSource.family_filter("family", family)
+    [[all]] = Repo.query!("SELECT count(*) FROM uk_lrt WHERE #{where}", params).rows
 
     Mix.shell().info(
       "#{all} family laws; #{in_scope} hold LAT rows (in scope), #{all - in_scope} don't"

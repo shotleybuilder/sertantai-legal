@@ -26,6 +26,7 @@ defmodule Mix.Tasks.Lat.ExtentSweep do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.SweepForm
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{ReadCache, Sweep}
+  alias SertantaiLegal.Scraper.Amendment.PatternSource
   alias SertantaiLegal.Scraper.LawRunner
   alias SertantaiLegal.Scraper.LawRunner.Guard
 
@@ -94,14 +95,15 @@ defmodule Mix.Tasks.Lat.ExtentSweep do
 
       opts[:family] ->
         held = MapSet.new(ReadCache.held())
+        {where, params} = PatternSource.family_filter("l.family", opts[:family])
 
         Repo.query!(
           """
           SELECT DISTINCT c.by FROM provision_changes c
           JOIN uk_lrt l ON l.name = c.law_name
-          WHERE l.family LIKE '%' || $1 || '%' AND c.by IS NOT NULL ORDER BY 1
+          WHERE #{where} AND c.by IS NOT NULL ORDER BY 1
           """,
-          [opts[:family]]
+          params
         ).rows
         |> List.flatten()
         |> Enum.filter(&MapSet.member?(held, &1))

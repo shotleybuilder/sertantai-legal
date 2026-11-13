@@ -20,7 +20,7 @@ defmodule Mix.Tasks.Lat.MakingLaws do
   alias SertantaiLegal.Legal.{LegalRegister, Making}
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.{MakingLaws, Sources}
-  alias SertantaiLegal.Scraper.Amendment.ReadLaw
+  alias SertantaiLegal.Scraper.Amendment.{PatternSource, ReadLaw}
   alias SertantaiLegal.Scraper.LegislationGovUk.{Client, ClmlStore}
 
   @shortdoc "Decide a family's making laws from their own text"
@@ -56,15 +56,17 @@ defmodule Mix.Tasks.Lat.MakingLaws do
   # ── laws and their text ────────────────────────────────────────────────
 
   defp laws(family) do
+    {where, params} = PatternSource.family_filter("r.family", family)
+
     Repo.query!(
       """
       SELECT r.id, r.name, r.title_en, r.is_making, coalesce(r.is_making_source, ''),
              EXISTS (SELECT 1 FROM legal_articles a WHERE a.law_name = r.name)
         FROM legal_register r
-       WHERE r.family LIKE '%' || $1 || '%' AND r.live NOT LIKE '❌%'
+       WHERE #{where} AND r.live NOT LIKE '❌%'
        ORDER BY r.name
       """,
-      [family]
+      params
     ).rows
     |> Enum.map(fn [id, name, title, making, source, rows?] ->
       %{id: id, law: name, title: title, is_making: making, source: source, has_rows: rows?}

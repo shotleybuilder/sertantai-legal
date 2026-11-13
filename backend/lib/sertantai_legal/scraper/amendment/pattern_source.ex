@@ -11,19 +11,39 @@ defmodule SertantaiLegal.Scraper.Amendment.PatternSource do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.Pointer
   alias SertantaiLegal.Scraper.Amendment.ReadLaw
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Rounds
   alias SertantaiLegal.Scraper.LatStagedParser
 
-  @doc "The LAT laws of a family (`uk_lrt.family` containing `family`)."
+  @doc """
+  The LAT laws of a family (`uk_lrt.family` containing `family`), or of a
+  round (`ChangeVocabulary.Rounds`: exactly its families).
+  """
   @spec family_laws(String.t()) :: [String.t()]
   def family_laws(family) do
+    {where, params} = family_filter("family", family)
+
     Repo.query!(
       """
-      SELECT name FROM uk_lrt WHERE family LIKE '%' || $1 || '%'
+      SELECT name FROM uk_lrt WHERE #{where}
         AND name IN (SELECT DISTINCT law_name FROM legal_articles) ORDER BY name
       """,
-      [family]
+      params
     ).rows
     |> List.flatten()
+  end
+
+  @doc """
+  The one family scope (Tooling: round scope): an SQL condition on
+  `column`, with its parameters as `$1`. A round's name matches exactly its
+  families, the register's display marker dropped; a plain family matches
+  as a substring, as before rounds. Pure.
+  """
+  @spec family_filter(String.t(), String.t()) :: {String.t(), [term()]}
+  def family_filter(column, family) do
+    case Rounds.families(family) do
+      nil -> {"#{column} LIKE '%' || $1 || '%'", [family]}
+      names -> {"regexp_replace(#{column}, '^[^[:alnum:]]+', '') = ANY($1)", [names]}
+    end
   end
 
   @doc "Amending law → amended law → the pointers read, for `laws`."
