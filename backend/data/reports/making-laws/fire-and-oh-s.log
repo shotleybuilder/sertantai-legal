@@ -1,0 +1,96 @@
+Compiling 1 file (.ex)
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+[info] JWKS public key fetched successfully
+80 laws not UK law: out of scope, not read
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+
+219 live laws → data/reports/making-laws/fire-and-oh-s.csv
+
+verdicts:
+  133  making
+  65  not_making: changes only
+  15  no verdict: no provisions upstream
+  4  no verdict: changes and powers
+  1  no verdict: no operative provision
+  1  no verdict: no text
+
+disagreeing with the stored is_making (47), by its source:
+  UK_apni_1929_13  stored false (legacy_is_making) → making: 18 own requirements (first section-1-1)
+  UK_eudr_2013_30  stored false (legacy_is_making) → making: 147 own requirements (first article-1-2)
+  UK_nisr_2009_273  stored false (enrichment) → making: 69 own requirements (first regulation-5A-1)
+  UK_nisr_2013_48  stored false (legacy_is_making) → making: 40 own requirements (first regulation-4-1)
+  UK_ssi_2005_342  stored false (legacy_is_making) → making: 5 own requirements (first article-3)
+  UK_ssi_2010_393  stored true (legacy_drrp) → not_making: changes only
+  UK_uksi_1974_2013  stored true (legacy_drrp) → not_making: changes only
+  UK_uksi_1989_76  stored false (legacy_is_making) → making: 1 own requirement (first article-5-1)
+  UK_uksi_1993_1823  stored true (legacy_drrp) → not_making: changes only
+  UK_uksi_1997_735  stored false (legacy_is_making) → making: 1 designation (first article-2)
+  UK_uksi_2000_2846  stored false (legacy_is_making) → making: 1 designation (first article-2)
+  UK_uksi_2001_2528  stored false (legacy_is_making) → making: 1 designation (first article-2)
+  UK_uksi_2005_1656  stored false (legacy_is_making) → making: 1 designation (first article-2)
+  UK_uksi_2005_2669  stored false (legacy_is_making) → making: 1 designation (first article-2)
+  UK_uksi_2005_3227  stored false (legacy_is_making) → making: 1 designation (first article-2)
+  UK_uksi_2006_1521  stored true (legacy_drrp) → not_making: changes only
+  UK_uksi_2007_1017  stored false (detector) → making: 1 designation (first article-2)
+  UK_uksi_2007_1549  stored false (detector) → making: 1 designation (first article-2)
+  UK_uksi_2011_2228  stored false (legacy_is_making) → making: 1 designation (first article-2)
+  UK_uksi_2012_3159  stored false (legacy_is_making) → making: 1 designation (first article-2-1)
+  UK_uksi_2012_332  stored false (detector) → making: 2 own requirements (first article-3)
+  UK_uksi_2013_1758  stored false (legacy_is_making) → making: 2 designations (first article-2-1)
+  UK_uksi_2013_3188  stored false (legacy_is_making) → making: 1 designation (first article-2)
+  UK_uksi_2014_1253  stored false (legacy_is_making) → making: 2 designations (first article-2-1)
+  UK_uksi_2014_2260  stored false (legacy_is_making) → making: 2 designations (first article-2-1)
+  UK_uksi_2014_3212  stored false (legacy_is_making) → making: 1 designation (first article-2)
+  UK_uksi_2015_1406  stored false (legacy_is_making) → making: 1 designation (first article-2-1)
+  UK_uksi_2015_1673  stored false (legacy_is_making) → making: 2 designations (first article-2-1)
+  UK_uksi_2016_309  stored false (legacy_is_making) → making: 2 designations (first article-2-1)
+  UK_uksi_2016_623  stored false (legacy_is_making) → making: 2 designations (first article-2-1)
+  UK_uksi_2016_673  stored false (legacy_is_making) → making: 1 designation (first article-2)
+  UK_uksi_2017_23  stored false (legacy_is_making) → making: 1 designation (first article-2-1)
+  UK_uksi_2017_458  stored false (legacy_is_making) → making: 2 designations (first article-2-1)
+  UK_uksi_2017_720  stored false (legacy_is_making) → making: 2 designations (first article-2-1)
+  UK_uksi_2018_1281  stored false (legacy_is_making) → making: 2 designations (first article-2-1)
+  UK_uksi_2018_807  stored false (legacy_is_making) → making: 2 designations (first article-2-1)
+  UK_uksi_2019_1166  stored false (legacy_is_making) → making: 2 designations (first article-2-1)
+  UK_uksi_2020_1185  stored false (legacy_is_making) → making: 2 designations (first article-2-1)
+  UK_uksi_2020_390  stored false (legacy_is_making) → making: 2 designations (first article-2-1)
+  UK_uksi_2022_115  stored false (legacy_is_making) → making: 1 designation (first article-2)
+  UK_uksi_2023_284  stored true (legacy_drrp) → not_making: changes only
+  UK_uksi_2023_838  stored false (legacy_is_making) → making: 1 designation (first article-2)
+  UK_uksi_2023_861  stored true (legacy_drrp) → not_making: changes only
+  UK_uksi_2024_1278  stored false (legacy_is_making) → making: 1 designation (first article-2-1)
+  UK_uksi_2024_162  stored false (legacy_is_making) → making: 1 designation (first article-2)
+  UK_uksi_2025_1291  stored false (detector) → making: 1 designation (first article-2)
+  UK_uksi_2025_257  stored false (legacy_is_making) → making: 2 designations (first article-2-1)
+
+no verdict, for Jason (21, 10% of the family):
+  UK_nisr_1975_256  no provisions upstream  Highly Flammable Liquids and Liquefied Petroleum Gases Regulations (Northern Ireland)
+  UK_nisr_1977_128  no provisions upstream  Explosives Regulations (Northern Ireland)
+  UK_nisr_1983_43  no provisions upstream  Petroleum-Spirit (Plastic Containers) Regulations (Northern Ireland)
+  UK_nisr_1991_13  no provisions upstream  Electricity At Work Regulations (Northern Ireland)
+  UK_nisr_1992_71  no provisions upstream  Dangerous Substances (Notification and Marking of Sites) Regulations (Northern Ireland)
+  UK_nisr_1993_323  no provisions upstream  Offshore Installations and Pipeline Works (First-Aid) Regulations (Northern Ireland)
+  UK_ssi_2005_383  changes and powers  Fire (Scotland) Act 2005 (Consequential Modifications and Amendments) Order
+  UK_ssi_2013_119  changes and powers  Police and Fire Reform (Scotland) Act 2012 (Consequential Modifications and Savings) Order
+  UK_ukpga_1924_5  no text  Multiple Choices
+  UK_uksi_1959_2258  no provisions upstream  Miscellaneous Mines (Explosives) Regulations
+  UK_uksi_1960_1015  no provisions upstream  Coal Mines (Firedamp Drainage) Regulations
+  UK_uksi_2004_3168  changes and powers  Fire and Rescue Services Act 2004 (Consequential Amendments) (England) Order
+  UK_uksi_2010_328  no provisions upstream  A30 Trunk Road (Launceston Exit Slip Roads, Cornwall) (Temporary Prohibition of Traffic) Order
+  UK_uksi_2012_123  no provisions upstream  A5 Trunk Road (Weedon to Kilsby, Northamptonshire) (Temporary Restriction and Prohibition of Traffic) Order
+  UK_uksi_2012_1886  no operative provision  Fire and Rescue Authorities (National Framework) (England) Order
+  UK_uksro_1924_1129  no provisions upstream  Order of Secretary of State (No. 1), dated September 20, 1924, making Byelaws as to the Conveyance of Explosives on Roads, and in certain special cases
+  UK_uksro_1929_952  no provisions upstream  Petroleum-Spirit (Motor Vehicles, &c.) Regulations
+  UK_uksro_1929_993  no provisions upstream  Petroleum (Mixtures) Order,
+  UK_uksro_1930_34  no provisions upstream  Petroleum (Compressed Gases) Order,
+  UK_uksro_1937_54  no provisions upstream  Order in Council (No 30) prohibiting the Manufacture, Importation, Keeping, Conveyance or Sale of Acetylene when an Explosive as defined by the Order
+  UK_wsi_2005_2929  changes and powers  Fire and Rescue Services Act 2004 (Consequential Amendments) (Wales) Order

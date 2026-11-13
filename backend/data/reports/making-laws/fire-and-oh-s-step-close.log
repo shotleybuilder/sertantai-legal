@@ -1,0 +1,23 @@
+
+── Checked rows (mix lat.label_checked) ──
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+744 checked rows: %{known: 47, match: 674, changed: 22, upstream: 1}
+NOT PASSED
+
+── Stale laws (mix lat.stale) ──
+parser 4cf7d6e7fbc2, labels bc2b55cef4cb: 742 stale laws (switched families: 0 of 388)
+  labels_version: 742
+  parser_version: 742
+
+change register, code b0e3891480c3: 0 of 445 built laws stale (4 built with no changes)
+  laws holding LAT with no build: 824
+
+Fire and OH&S: 0 stale laws (LAT or labels 0, change register 0)
+
+Making laws's close, Fire and OH&S:
+  FAIL  Checked rows (22 failing; parked with the step whose change moved them (traced with --list))
+  PASS  Stale laws
+
+FAIL (step close)

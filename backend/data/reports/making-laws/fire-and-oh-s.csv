@@ -1,0 +1,220 @@
+law,verdict,reason,change,requirement,power,standard,is_making,is_making_source,has_rows,title
+UK_apni_1929_13,making,18 own requirements (first section-1-1),11,18,20,40,false,legacy_is_making,false,Petroleum (Consolidation) Act (Northern Ireland)
+UK_apni_1969_6,making,8 own requirements (first section-129-1),5,8,5,161,true,enrichment,true,Mines Act (Northern Ireland)
+UK_apni_1970_10,making,7 own requirements (first section-1-1),1,7,6,28,true,enrichment,true,Explosives Act (Northern Ireland)
+UK_asc_2025_4,making,120 own requirements (first section-2-1),12,120,116,577,true,legacy_drrp,true,Disused Mine and Quarry Tips (Wales) Act
+UK_asp_2005_5,making,144 own requirements (first section-8-1),64,144,154,792,true,enrichment,true,Fire (Scotland) Act
+UK_asp_2012_8,making,164 own requirements (first section-2-3),515,164,219,1162,true,legacy_drrp,true,Police and Fire Reform (Scotland) Act
+UK_eudr_1999_92,making,20 own requirements (first article-1-2),0,20,1,5,true,enrichment,true,Directive 1999/92/EC of the European Parliament and of the Council of 16 December 1999 on minimum requirements for improving the safety and health protection of workers potentially at risk from explosive atmospheres (15th individual Directive within the meaning of Article 16(1) of Directive 89/391/EEC)
+UK_eudr_2008_68,making,19 own requirements (first article-1-3),5,19,5,7,true,enrichment,true,Directive 2008/68/EC of the European Parliament and of the Council of 24 September 2008 on the inland transport of dangerous goods (Text with EEA relevance)
+UK_eudr_2013_30,making,147 own requirements (first article-1-2),2,147,4,9,false,legacy_is_making,false,Directive 2013/30/EU of the European Parliament and of the Council of 12 June 2013 on safety of offshore oil and gas operations and amending Directive 2004/35/EC (Text with EEA relevance)
+UK_eudr_2014_28,making,138 own requirements (first article-1-3),3,138,6,13,true,legacy_drrp,true,Directive 2014/28/EU of the European Parliament and of the Council of 26 February 2014 on the harmonisation of the laws of the Member States relating to the making available on the market and supervision of explosives for civil uses (recast) (Text with EEA relevance)
+UK_eudr_2014_34,making,124 own requirements (first article-1-2),3,124,5,10,true,enrichment,true,Directive 2014/34/EU of the European Parliament and of the Council of 26 February 2014 on the harmonisation of the laws of the Member States relating to equipment and protective systems intended for use in potentially explosive atmospheres (recast) (Text with EEA relevance)
+UK_eur_2019_1148,making,55 own requirements (first article-4),8,55,5,7,true,detector,false,"Regulation (EU) 2019/1148 of the European Parliament and of the Council of 20 June 2019 on the marketing and use of explosives precursors, amending Regulation (EC) No 1907/2006 and repealing Regulation (EU) No 98/2013 (Text with EEA relevance)"
+UK_nisi_1983_150,making,10 own requirements (first article-10-2),1,10,6,51,true,enrichment,true,Quarries (Northern Ireland) Order
+UK_nisi_1992_1728,making,4 own requirements (first article-5-2-c),9,4,6,54,true,enrichment,true,"Offshore, and Pipelines, Safety (Northern Ireland) Order"
+UK_nisi_2006_1254,making,112 own requirements (first article-3-1),68,112,94,420,true,enrichment,true,Fire and Rescue Services (Northern Ireland) Order
+UK_nisr_1975_256,,no provisions upstream,0,0,0,0,false,legacy_is_making,false,Highly Flammable Liquids and Liquefied Petroleum Gases Regulations (Northern Ireland)
+UK_nisr_1977_128,,no provisions upstream,0,0,0,0,false,legacy_is_making,false,Explosives Regulations (Northern Ireland)
+UK_nisr_1983_43,,no provisions upstream,0,0,0,0,false,legacy_is_making,false,Petroleum-Spirit (Plastic Containers) Regulations (Northern Ireland)
+UK_nisr_1991_13,,no provisions upstream,0,0,0,0,false,legacy_is_making,false,Electricity At Work Regulations (Northern Ireland)
+UK_nisr_1991_446,making,23 own requirements (first regulation-2),0,23,18,46,true,legacy_drrp,true,Fire Certificates (Special Premises) Regulations (Northern Ireland)
+UK_nisr_1991_509,making,86 own requirements (first regulation-2-1),9,86,11,180,true,enrichment,true,Dangerous Substances in Harbour Areas Regulations (Northern Ireland)
+UK_nisr_1992_71,,no provisions upstream,0,0,0,0,false,legacy_is_making,false,Dangerous Substances (Notification and Marking of Sites) Regulations (Northern Ireland)
+UK_nisr_1993_323,,no provisions upstream,0,0,0,0,false,legacy_is_making,false,Offshore Installations and Pipeline Works (First-Aid) Regulations (Northern Ireland)
+UK_nisr_1995_340,making,24 own requirements (first regulation-3-4),54,24,5,88,true,enrichment,true,Offshore Installations and Pipeline Works (Management and Administration) Regulations (Northern Ireland)
+UK_nisr_1995_345,making,34 own requirements (first regulation-4-1),7,34,4,119,true,enrichment,true,"Offshore Installations (Prevention of Fire and Explosion, and Emergency Response) Regulations (Northern Ireland)"
+UK_nisr_1995_87,making,80 own requirements (first regulation-2-1),9,80,8,104,true,legacy_drrp,true,Explosives in Harbour Areas Regulations (Northern Ireland)
+UK_nisr_1996_228,making,33 own requirements (first regulation-4-1),10,33,6,86,true,enrichment,true,"Offshore Installations and Wells (Design and Construction, etc.) Regulations (Northern Ireland)"
+UK_nisr_1996_262,making,4 own requirements (first regulation-3),1,4,0,10,true,enrichment,true,Marking of Plastic Explosive for Detection Regulations (Northern Ireland)
+UK_nisr_1997_195,making,39 own requirements (first regulation-2-5-b),3,39,8,55,true,enrichment,true,Gas Safety (Management) Regulations (Northern Ireland)
+UK_nisr_2001_348,making,28 own requirements (first regulation-3-1),10,28,11,88,true,legacy_drrp,true,Fire Precautions (Workplace) Regulations (Northern Ireland)
+UK_nisr_2003_152,making,34 own requirements (first regulation-4-1),27,34,8,168,true,enrichment,true,Dangerous Substances and Explosive Atmospheres Regulations (Northern Ireland)
+UK_nisr_2004_63,making,122 own requirements (first regulation-2-2-b),4,122,2,136,true,enrichment,true,Gas Safety (Installation and Use) Regulations (Northern Ireland)
+UK_nisr_2006_204,making,15 own requirements (first regulation-4-1),3,15,1,37,true,enrichment,true,Quarries (Explosives) Regulations (Northern Ireland)
+UK_nisr_2006_205,making,78 own requirements (first regulation-2-2),12,78,9,188,true,enrichment,true,Quarries Regulations (Northern Ireland)
+UK_nisr_2006_257,not_making,changes only,1,0,0,12,false,legacy_is_making,false,Fire and Rescue Services (2006 Order) (Commencement No.1) Order (Northern Ireland)
+UK_nisr_2006_425,making,67 own requirements (first regulation-2-3),111,67,27,297,true,enrichment,true,Manufacture and Storage of Explosives Regulations (Northern Ireland)
+UK_nisr_2007_247,making,74 own requirements (first regulation-2-7),39,74,56,301,true,legacy_drrp,true,Offshore Installations (Safety Case) Regulations (Northern Ireland)
+UK_nisr_2008_491,not_making,changes only,5,0,0,1,false,legacy_is_making,false,Explosives (Amendment) Regulations (Northern Ireland)
+UK_nisr_2009_248,not_making,changes only,3,0,0,1,false,legacy_is_making,false,Manufacture and Storage of Explosives (Amendment) Regulations (Northern Ireland)
+UK_nisr_2009_273,making,69 own requirements (first regulation-5A-1),3,69,5,200,true,review,true,Explosives (Hazard Information and Packaging for Supply) Regulations (Northern Ireland)
+UK_nisr_2010_325,making,49 own requirements (first regulation-3-1),2,49,8,142,true,enrichment,true,Fire Safety Regulations (Northern Ireland)
+UK_nisr_2010_328,not_making,changes only,1,0,0,1,false,legacy_is_making,false,Fire and Rescue Services (2006 Order) (Commencement No. 2) Order (Northern Ireland)
+UK_nisr_2010_59,making,19 own requirements (first regulation-5),7,19,10,178,true,enrichment,true,Carriage of Explosives Regulations (Northern Ireland)
+UK_nisr_2012_177,not_making,changes only,20,0,0,4,false,legacy_is_making,true,Carriage of Explosives (Amendment) Regulations (Northern Ireland)
+UK_nisr_2013_48,making,40 own requirements (first regulation-4-1),3,40,5,159,false,legacy_is_making,false,Identification and Traceability of Explosives Regulations (Northern Ireland)
+UK_nisr_2014_224,making,48 own requirements (first regulation-3-1),64,48,30,473,true,enrichment,true,Control of Explosives Precursors etc. Regulations (Northern Ireland)
+UK_nisr_2014_47,not_making,changes only,2,0,0,2,false,legacy_is_making,false,Explosives (Hazard Information and Packaging for Supply) (Amendment No. 2) Regulations (Northern Ireland)
+UK_nisr_2015_236,making,10 own requirements (first regulation-4),6,10,3,117,true,detector,true,Explosives (Appointment of Authorities and Enforcement) Regulations (Northern Ireland)
+UK_nisr_2016_266,making,16 own requirements (first regulation-4-1),0,16,6,77,true,enrichment,true,Control of Electromagnetic Fields at Work Regulations (Northern Ireland)
+UK_nisr_2016_366,making,146 own requirements (first regulation-4-1),29,146,50,399,true,legacy_drrp,true,Making Available on the Market and Supervision of Transfers of Explosives Regulations (Northern Ireland)
+UK_nisr_2016_406,making,116 own requirements (first regulation-5-1),99,116,71,755,true,legacy_drrp,true,Offshore Installations (Offshore Safety Directive) (Safety Case etc.) Regulations (Northern Ireland)
+UK_nisr_2016_427,making,158 own requirements (first regulation-5-1),29,158,23,342,true,enrichment,true,Mines Regulations (Northern Ireland)
+UK_nisr_2017_90,making,243 own requirements (first regulation-2-2-b),42,243,56,495,true,enrichment,true,Equipment and Protective Systems Intended for Use in Potentially Explosive Atmospheres Regulations (Northern Ireland)
+UK_nisr_2020_340,not_making,changes only,14,0,0,1,false,legacy_is_making,false,Carriage of Explosives (Amendment) (EU Exit) Regulations (Northern Ireland)
+UK_nisr_2021_37,not_making,changes only,6,0,0,2,false,legacy_is_making,false,Explosives (Appointment of Authorities and Enforcement) (Amendment) (EU Exit) Regulations (Northern Ireland)
+UK_nisr_2022_9,not_making,changes only,6,0,0,3,false,legacy_is_making,false,Mines (Amendment) Regulations (Northern Ireland)
+UK_ssi_2005_207,not_making,changes only,1,0,0,5,false,legacy_is_making,false,Fire (Scotland) Act 2005 (Commencement No. 1) Order
+UK_ssi_2005_342,making,5 own requirements (first article-3),0,5,2,21,false,legacy_is_making,false,Fire (Additional Function) (Scotland) Order
+UK_ssi_2005_344,not_making,changes only,2,0,0,1,false,legacy_is_making,false,Fire (Scotland) Act 2005 (Consequential Modifications and Amendments) (No. 2) Order
+UK_ssi_2005_352,not_making,changes only,2,0,0,2,false,legacy_is_making,false,Fire (Scotland) Act 2005 (Relevant Premises) Regulations
+UK_ssi_2005_383,,changes and powers,56,0,1,51,false,legacy_is_making,false,Fire (Scotland) Act 2005 (Consequential Modifications and Amendments) Order
+UK_ssi_2005_392,not_making,changes only,1,0,0,12,false,legacy_is_making,false,Fire (Scotland) Act 2005 (Commencement No. 2) Order
+UK_ssi_2006_456,making,52 own requirements (first regulation-3-1),2,52,16,155,true,enrichment,true,Fire Safety (Scotland) Regulations
+UK_ssi_2006_457,not_making,changes only,12,0,0,3,false,legacy_is_making,false,Fire (Scotland) Act 2005 (Consequential Modifications and Savings) (No. 2) Order
+UK_ssi_2006_458,not_making,changes only,1,0,0,10,false,legacy_is_making,false,Fire (Scotland) Act 2005 (Commencement No. 3 and Savings) Order
+UK_ssi_2006_475,not_making,changes only,100,0,0,37,false,legacy_is_making,false,Fire (Scotland) Act 2005 (Consequential Modifications and Savings) Order
+UK_ssi_2010_393,not_making,changes only,1,0,0,1,true,legacy_drrp,true,Fire Safety (Scotland) Amendment Regulations
+UK_ssi_2012_253,not_making,changes only,5,0,0,17,false,legacy_is_making,false,"Police and Fire Reform (Scotland) Act 2012 (Commencement No. 1, Transitional, Transitory and Saving Provisions) Order"
+UK_ssi_2012_332,not_making,changes only,6,0,0,2,false,legacy_is_making,false,Fire (Scotland) Act 2005 (Relevant Premises) Regulations
+UK_ssi_2012_333,not_making,changes only,2,0,0,4,false,legacy_is_making,false,"Police and Fire Reform (Scotland) Act 2012 (Commencement No. 2, Transitory and Transitional Provisions and Appointed Day) Order"
+UK_ssi_2013_119,,changes and powers,240,0,2,79,false,legacy_is_making,false,Police and Fire Reform (Scotland) Act 2012 (Consequential Modifications and Savings) Order
+UK_ssi_2013_121,making,10 own requirements (first article-4-1),30,10,8,113,true,legacy_drrp,true,"Police and Fire Reform (Scotland) Act 2012 (Supplementary, Transitional, Transitory and Saving Provisions) Order"
+UK_ssi_2013_47,not_making,changes only,2,0,0,1,false,legacy_is_making,false,Police and Fire Reform (Scotland) Act 2012 (Commencement No. 3 and Transitory Provision) Order
+UK_ssi_2013_51,not_making,changes only,2,0,0,4,false,legacy_is_making,false,"Police and Fire Reform (Scotland) Act 2012 (Commencement No. 4, Transitory and Transitional Provisions) Order"
+UK_ukpga_1875_17,making,23 own requirements (first section-23-1),1,23,10,128,true,enrichment,true,Explosives Act
+UK_ukpga_1883_3,making,8 own requirements (first section-3-1),1,8,2,12,true,enrichment,true,Explosive Substances Act
+UK_ukpga_1924_5,,no text,0,0,0,0,false,default,false,Multiple Choices
+UK_ukpga_1954_70,making,26 own requirements (first section-22-1),11,26,15,197,true,legacy_drrp,true,Mines and Quarries Act
+UK_ukpga_1962_58,making,102 own requirements (first section-1-1),18,102,39,263,true,legacy_drrp,true,Pipe-Lines Act
+UK_ukpga_1966_4,making,33 own requirements (first section-1),4,33,11,45,true,legacy_drrp,true,Mines (Working Facilities And Support) Act
+UK_ukpga_1969_10,making,70 own requirements (first section-11-1),11,70,37,220,true,enrichment,true,Mines And Quarries (Tips) Act
+UK_ukpga_1971_61,making,7 own requirements (first section-7-3),1,7,6,35,true,enrichment,true,Mineral Workings (Offshore Installations) Act
+UK_ukpga_1987_12,making,50 own requirements (first section-1-2),166,50,31,180,true,enrichment,true,Petroleum Act
+UK_ukpga_1992_15,making,7 own requirements (first section-1-4B),17,7,6,46,true,enrichment,true,Offshore Safety Act
+UK_ukpga_1998_17,making,205 own requirements (first section-3-3),103,205,155,849,true,legacy_drrp,true,Petroleum Act
+UK_ukpga_1998_33,making,36 own requirements (first section-2-1),2,36,41,259,true,enrichment,true,Landmines Act
+UK_ukpga_2004_21,making,139 own requirements (first section-1A-3),270,139,210,1052,true,enrichment,true,Fire and Rescue Services Act
+UK_ukpga_2010_11,making,28 own requirements (first section-10-2),3,28,65,296,true,enrichment,true,Cluster Munitions (Prohibitions) Act
+UK_ukpga_2021_24,making,1 own requirement (first section-2-5),12,1,6,10,true,legacy_drrp,true,Fire Safety Act
+UK_uksi_1956_1943,making,117 own requirements (first regulation-2-1),6,117,6,94,true,legacy_drrp,true,"Stratified Ironstone, Shale and Fireclay Mines (Explosives) Regulations"
+UK_uksi_1959_2258,,no provisions upstream,0,0,0,0,false,legacy_is_making,false,Miscellaneous Mines (Explosives) Regulations
+UK_uksi_1960_1015,,no provisions upstream,0,0,0,0,false,legacy_is_making,false,Coal Mines (Firedamp Drainage) Regulations
+UK_uksi_1974_1885,not_making,changes only,39,0,0,13,false,legacy_is_making,false,Explosives Acts 1875 and 1923 etc. (Repeals and Modifications) Regulations
+UK_uksi_1974_2013,not_making,changes only,44,0,0,30,true,legacy_drrp,true,Mines and Quarries Acts 1954 to 1971 (Repeals and Modifications) Regulations
+UK_uksi_1984_510,not_making,changes only,7,0,0,13,false,legacy_is_making,false,Explosives Act 1875 etc. (Metrication and Miscellaneous Amendment) Regulations
+UK_uksi_1989_1401,making,43 own requirements (first regulation-3-2),1,43,2,42,true,legacy_drrp,true,Fire Precautions (Sub-surface Railway Stations) Regulations
+UK_uksi_1989_1671,making,5 own requirements (first regulation-4),4,5,2,24,true,enrichment,true,Offshore Installations and Pipeline Works (First-Aid) Regulations
+UK_uksi_1989_635,making,19 own requirements (first regulation-3-1),3,19,2,49,true,enrichment,true,Electricity at Work Regulations
+UK_uksi_1989_76,making,1 own requirement (first article-5-1),1,1,0,32,false,review,false,"Fire Precautions (Factories, Offices, Shops and Railway Premises) Order"
+UK_uksi_1989_79,not_making,changes only,2,0,0,0,false,legacy_is_making,false,Fire Precautions Act 1971 (Modifications) (Revocation) Regulations
+UK_uksi_1989_971,making,45 own requirements (first regulation-4),0,45,13,70,true,enrichment,true,Offshore Installations (Safety Representatives and Safety Committees) Regulations
+UK_uksi_1990_304,making,15 own requirements (first regulation-4-1),2,15,3,38,true,enrichment,true,Dangerous Substances (Notification and Marking of Sites) Regulations
+UK_uksi_1991_446,not_making,changes only,2,0,0,2,false,detector,false,Isles of Scilly (Members' Allowances) Order
+UK_uksi_1993_1823,not_making,changes only,11,0,0,20,true,legacy_drrp,false,Offshore Safety (Repeals and Modifications) Regulations
+UK_uksi_1994_232,making,10 own requirements (first regulation-3-1),2,10,4,38,true,legacy_drrp,true,Batteries and Accumulators (Containing Dangerous Substances) Regulations
+UK_uksi_1995_738,making,30 own requirements (first regulation-3-4),27,30,8,156,true,enrichment,true,Offshore Installations and Pipeline Works (Management and Administration) Regulations
+UK_uksi_1995_743,making,37 own requirements (first regulation-4-1),5,37,3,115,true,enrichment,true,"Offshore Installations (Prevention of Fire and Explosion, and Emergency Response) Regulations"
+UK_uksi_1996_2001,not_making,changes only,5,0,0,1,false,legacy_is_making,false,Mines (Substances Hazardous to Health) Regulations
+UK_uksi_1996_2535,making,9 own requirements (first regulation-4-3),1,9,9,35,true,enrichment,true,Gas Safety (Rights of Entry) Regulations
+UK_uksi_1996_2635,not_making,changes only,7,0,0,2,false,legacy_is_making,false,Dangerous Substances and Preparations (Safety) (Consolidation) (Amendment) Regulations
+UK_uksi_1996_487,not_making,changes only,1,0,0,1,false,legacy_is_making,false,Offshore Safety Act 1992 (Commencement No. 2) Order
+UK_uksi_1996_551,making,42 own requirements (first regulation-2-5-b),2,42,12,91,true,enrichment,true,Gas Safety (Management) Regulations
+UK_uksi_1996_913,making,34 own requirements (first regulation-4-1),3,34,6,78,true,enrichment,true,"Offshore Installations and Wells (Design and Construction, etc.) Regulations"
+UK_uksi_1997_1993,not_making,changes only,4,0,0,5,false,legacy_is_making,false,Offshore Electricity and Noise Regulations
+UK_uksi_1997_2703,not_making,changes only,2,0,0,2,false,legacy_is_making,false,SECTION 7 OF THE PETROLEUM (PRODUCTION) ACT 1934 AND SECTION 2(1)(a) OF THE PETROLEUM ACT 1987 (MODIFICATION) REGULATIONS
+UK_uksi_1997_735,making,1 designation (first article-2),2,0,0,0,false,legacy_is_making,false,Offshore Installations (Safety Zones) Order
+UK_uksi_1998_2451,making,126 own requirements (first regulation-2-2-b),8,126,4,153,true,enrichment,true,Gas Safety (Installation and Use) Regulations
+UK_uksi_1999_2024,making,93 own requirements (first regulation-2-2-c),11,93,11,224,true,enrichment,true,Quarries Regulations
+UK_uksi_2000_2846,making,1 designation (first article-2),1,0,0,0,false,legacy_is_making,false,Offshore Installations (Safety Zones) (No. 3) Order
+UK_uksi_2000_2897,not_making,changes only,3,0,0,3,false,legacy_is_making,false,Dangerous Substances and Preparations (Safety) (Consolidation) and Chemicals (Hazard Information and Packaging for Supply) (Amendment) Regulations
+UK_uksi_2000_3097,not_making,changes only,10,0,0,3,false,legacy_is_making,false,Batteries and Accumulators (Containing Dangerous Substances) (Amendment) Regulations
+UK_uksi_2001_2528,making,1 designation (first article-2),1,0,0,0,false,legacy_is_making,false,Offshore Installations (Safety Zones) (No. 2) Order
+UK_uksi_2001_2551,not_making,changes only,3,0,0,2,false,legacy_is_making,false,Batteries and Accumulators (Containing Dangerous Substances) (Amendment) Regulations
+UK_uksi_2002_2175,not_making,changes only,7,0,0,10,false,legacy_is_making,false,Offshore Safety (Miscellaneous Amendments) Regulations
+UK_uksi_2002_2665,making,93 own requirements (first regulation-1-2),3,93,14,125,true,enrichment,true,"Electricity Safety, Quality and Continuity Regulations"
+UK_uksi_2002_2776,making,34 own requirements (first regulation-4-1),12,34,8,142,true,enrichment,true,Dangerous Substances and Explosive Atmospheres Regulations
+UK_uksi_2003_1082,making,42 own requirements (first regulation-3-1),2,42,8,94,true,enrichment,true,Ammonium Nitrate Materials (High Nitrogen Content) Safety Regulations
+UK_uksi_2004_2304,not_making,changes only,2,0,0,8,false,enrichment,false,Fire and Rescue Services Act 2004 (Commencement) (England and Scotland) Order
+UK_uksi_2004_3168,,changes and powers,146,0,2,42,false,legacy_is_making,false,Fire and Rescue Services Act 2004 (Consequential Amendments) (England) Order
+UK_uksi_2005_1541,making,96 own requirements (first article-2),312,96,60,511,true,enrichment,true,Regulatory Reform (Fire Safety) Order
+UK_uksi_2005_1656,making,1 designation (first article-2),1,0,0,1,false,legacy_is_making,false,Offshore Installations (Safety Zones) Order
+UK_uksi_2005_2060,not_making,changes only,22,0,0,10,false,legacy_is_making,false,Fire (Scotland) Act 2005 (Consequential Provisions and Modifications) Order
+UK_uksi_2005_2669,making,1 designation (first article-2),2,0,0,2,false,legacy_is_making,false,Offshore Installations (Safety Zones) (No. 2) Order
+UK_uksi_2005_3117,making,78 own requirements (first regulation-2-7),46,78,55,312,true,enrichment,true,Offshore Installations (Safety Case) Regulations
+UK_uksi_2005_3227,making,1 designation (first article-2),0,0,0,1,false,legacy_is_making,false,Offshore Installations (Safety Zones) (No. 3) Order
+UK_uksi_2006_1521,not_making,changes only,5,0,0,13,true,legacy_drrp,true,"Electricity Safety, Quality and Continuity (Amendment) Regulations"
+UK_uksi_2006_484,not_making,changes only,1,0,0,2,false,legacy_is_making,false,Regulatory Reform (Fire Safety) Subordinate Provisions Order
+UK_uksi_2007_1017,making,1 designation (first article-2),0,0,0,1,false,detector,false,Offshore Installations (Safety Zones) (No.2) Order
+UK_uksi_2007_153,not_making,changes only,1,0,0,1,false,legacy_is_making,false,Emergency Workers (Obstruction) Act 2006 (Commencement) Order
+UK_uksi_2007_1549,making,1 designation (first article-2),0,0,0,1,false,detector,false,Offshore Installations (Safety Zones) (No.3) Order
+UK_uksi_2009_639,not_making,changes only,2,0,0,1,false,legacy_is_making,false,"Electricity Safety, Quality and Continuity (Amendment) Regulations"
+UK_uksi_2009_782,making,21 own requirements (first regulation-4-2),1,21,4,36,true,legacy_drrp,true,Fire Precautions (Sub-surface Railway Stations) (England) Regulations
+UK_uksi_2010_328,,no provisions upstream,0,0,0,0,false,detector,false,"A30 Trunk Road (Launceston Exit Slip Roads, Cornwall) (Temporary Prohibition of Traffic) Order"
+UK_uksi_2010_471,making,1 own requirement (first regulation-2),0,1,0,2,true,enrichment,true,Fire Safety (Employees’ Capabilities) (England) Regulations
+UK_uksi_2011_2228,making,1 designation (first article-2),0,0,0,1,false,legacy_is_making,false,Offshore Installations (Safety Zones) (No.3) Order
+UK_uksi_2012_123,,no provisions upstream,0,0,0,0,false,detector,false,"A5 Trunk Road (Weedon to Kilsby, Northamptonshire) (Temporary Restriction and Prohibition of Traffic) Order"
+UK_uksi_2012_1886,,no operative provision,0,0,0,3,true,review,true,Fire and Rescue Authorities (National Framework) (England) Order
+UK_uksi_2012_3159,making,1 designation (first article-2-1),2,0,0,2,false,legacy_is_making,false,Offshore Installations (Safety Zones) (No. 4) Order
+UK_uksi_2012_332,making,2 own requirements (first article-3),0,2,1,3,false,detector,false,City of Sheffield (Mayoral Referendum) Order
+UK_uksi_2013_1758,making,2 designations (first article-2-1),2,0,0,2,false,legacy_is_making,false,Offshore Installations (Safety Zones) Order
+UK_uksi_2013_3188,making,1 designation (first article-2),0,0,0,1,false,legacy_is_making,false,Offshore Installations (Safety Zones) (No. 2) Order
+UK_uksi_2013_602,making,8 own requirements (first article-3-13),472,8,48,357,true,legacy_drrp,true,Police and Fire Reform (Scotland) Act 2012 (Consequential Provisions and Modifications) Order
+UK_uksi_2014_1253,making,2 designations (first article-2-1),1,0,0,2,false,legacy_is_making,false,Offshore Installations (Safety Zones) Order
+UK_uksi_2014_1637,making,17 own requirements (first regulation-6-1),24,17,18,207,true,enrichment,true,Petroleum (Consolidation) Regulations
+UK_uksi_2014_1638,making,341 own requirements (first regulation-2-8),125,341,117,1310,true,enrichment,true,Explosives Regulations
+UK_uksi_2014_1639,making,11 own requirements (first regulation-6-1),10,11,24,124,true,enrichment,true,Acetylene Safety (England and Wales and Scotland) Regulations
+UK_uksi_2014_2260,making,2 designations (first article-2-1),1,0,0,2,false,legacy_is_making,false,Offshore Installations (Safety Zones) (No. 2) Order
+UK_uksi_2014_3212,making,1 designation (first article-2),0,0,0,1,false,legacy_is_making,false,Offshore Installations (Safety Zones) (No. 3) Order
+UK_uksi_2014_3248,making,162 own requirements (first regulation-5-1),47,162,23,353,true,enrichment,true,Mines Regulations
+UK_uksi_2015_1406,making,1 designation (first article-2-1),2,0,0,4,false,legacy_is_making,false,Offshore Installations (Safety Zones) (No. 2) Order
+UK_uksi_2015_1553,making,351 own requirements (first regulation-2-2-b),140,351,88,1364,true,enrichment,true,Pyrotechnic Articles (Safety) Regulations
+UK_uksi_2015_1673,making,2 designations (first article-2-1),5,0,0,7,false,legacy_is_making,false,Offshore Installations (Safety Zones) (No. 3) Order
+UK_uksi_2015_385,making,20 own requirements (first regulation-3-1),5,20,15,104,true,enrichment,true,Offshore Petroleum Licensing (Offshore Safety Directive) Regulations
+UK_uksi_2015_398,making,121 own requirements (first regulation-5-1),111,121,73,708,true,enrichment,true,Offshore Installations (Offshore Safety Directive) (Safety Case etc.) Regulations
+UK_uksi_2015_435,not_making,changes only,3,0,0,2,false,legacy_is_making,false,Dorset and Wiltshire Fire and Rescue Authority (Combination Scheme) Order
+UK_uksi_2015_966,making,10 own requirements (first regulation-3-2),3,10,10,56,true,enrichment,true,Control of Poisons and Explosives Precursors Regulations
+UK_uksi_2015_968,not_making,changes only,7,0,0,17,false,legacy_is_making,false,"Deregulation Act 2015 (Poisons and Explosives Precursors) (Consequential Amendments, Revocations and Transitional Provisions) Order"
+UK_uksi_2016_1107,making,300 own requirements (first regulation-2-2-b),45,300,70,692,true,enrichment,true,Equipment and Protective Systems Intended for Use in Potentially Explosive Atmospheres Regulations
+UK_uksi_2016_309,making,2 designations (first article-2-1),3,0,0,7,false,legacy_is_making,false,Offshore Installations (Safety Zones) Order
+UK_uksi_2016_315,not_making,changes only,41,0,0,18,false,enrichment,false,Explosives Regulations 2014 (Amendment) Regulations
+UK_uksi_2016_588,making,20 own requirements (first regulation-4-1),0,20,6,83,true,enrichment,true,Control of Electromagnetic Fields at Work Regulations
+UK_uksi_2016_623,making,2 designations (first article-2-1),1,0,0,4,false,legacy_is_making,false,Offshore Installations (Safety Zones) (No. 2) Order
+UK_uksi_2016_673,making,1 designation (first article-2),1,0,0,4,false,legacy_is_making,false,Offshore Installations (Safety Zones) (No. 3) Order
+UK_uksi_2016_721,making,51 own requirements (first regulation-2-2),43,51,15,178,true,enrichment,true,Dangerous Goods in Harbour Areas Regulations
+UK_uksi_2017_23,making,1 designation (first article-2-1),1,0,0,4,false,legacy_is_making,false,Offshore Installations (Safety Zones) Order
+UK_uksi_2017_458,making,2 designations (first article-2-1),3,0,0,4,false,legacy_is_making,false,Offshore Installations (Safety Zones) (No. 2) Order
+UK_uksi_2017_469,making,14 own requirements (first article-5-6),25,14,15,125,true,legacy_is_making,true,Greater Manchester Combined Authority (Fire and Rescue Functions) Order
+UK_uksi_2017_720,making,2 designations (first article-2-1),1,0,0,3,false,legacy_is_making,false,Offshore Installations (Safety Zones) (No. 3) Order
+UK_uksi_2018_1281,making,2 designations (first article-2-1),6,0,0,5,false,legacy_is_making,false,Offshore Installations (Safety Zones) (No. 2) Order
+UK_uksi_2018_139,not_making,changes only,14,0,0,3,false,enrichment,false,Gas Safety (Installation and Use) (Amendment) Regulations
+UK_uksi_2018_269,not_making,changes only,4,0,0,3,false,legacy_is_making,false,London Government (London Fire Commissioner and Policing) (Amendment) Regulations
+UK_uksi_2018_389,making,24 own requirements (first regulation-4-1),153,24,41,382,true,legacy_drrp,true,Gas Appliances (Enforcement) and Miscellaneous Amendments Regulations
+UK_uksi_2018_451,not_making,changes only,7,0,0,9,false,legacy_is_making,false,Poisons Act 1972 (Explosives Precursors) (Amendment) Regulations
+UK_uksi_2018_454,not_making,changes only,3,0,0,3,false,legacy_is_making,false,Regulatory Reform (Fire Safety) (Custodial Premises) Subordinate Provisions Order
+UK_uksi_2018_807,making,2 designations (first article-2-1),2,0,0,4,false,legacy_is_making,false,Offshore Installations (Safety Zones) Order
+UK_uksi_2019_1166,making,2 designations (first article-2-1),3,0,0,4,false,legacy_is_making,false,Offshore Installations (Safety Zones) (No. 2) Order
+UK_uksi_2019_601,not_making,changes only,127,0,0,55,false,legacy_is_making,false,Fertilisers and Ammonium Nitrate Material (Amendment) (EU Exit) Regulations
+UK_uksi_2020_1185,making,2 designations (first article-2-1),3,0,0,4,false,legacy_is_making,false,Offshore Installations (Safety Zones) (No. 2) Order
+UK_uksi_2020_390,making,2 designations (first article-2-1),5,0,0,6,false,legacy_is_making,false,Offshore Installations (Safety Zones) Order
+UK_uksi_2020_641,not_making,changes only,13,0,0,3,false,legacy_is_making,false,Greater Manchester Combined Authority (Fire and Rescue Functions) (Amendment) Order
+UK_uksi_2020_998,not_making,changes only,3,0,0,1,false,legacy_is_making,false,Fertilisers and Ammonium Nitrate Material (Amendment) (EU Exit) Regulations
+UK_uksi_2021_207,not_making,changes only,13,0,0,8,false,legacy_is_making,false,Fertilisers and Ammonium Nitrate Material (Amendment) (EU Exit) Regulations
+UK_uksi_2022_115,making,1 designation (first article-2),2,0,0,3,false,legacy_is_making,false,Offshore Installations (Safety Zones) Order
+UK_uksi_2022_1182,not_making,changes only,2,0,0,2,false,legacy_is_making,false,Ammonium Nitrate Materials (High Nitrogen Content) Safety (Amendment) (No. 2) Regulations
+UK_uksi_2022_29,not_making,changes only,5,0,0,3,false,legacy_is_making,false,Ammonium Nitrate Materials (High Nitrogen Content) Safety (Amendment) Regulations
+UK_uksi_2022_544,not_making,changes only,1,0,0,3,false,legacy_is_making,false,Fire Safety Act 2021 (Commencement) (England) Regulations
+UK_uksi_2022_547,making,30 own requirements (first regulation-4-1),0,30,1,72,true,enrichment,true,Fire Safety (England) Regulations
+UK_uksi_2023_284,not_making,changes only,80,0,0,24,true,legacy_drrp,true,Gas Safety (Management) (Amendment) Regulations
+UK_uksi_2023_320,not_making,changes only,1,0,0,2,false,legacy_is_making,false,Gas Safety (Management) (Amendment) (No. 2) Regulations
+UK_uksi_2023_63,making,15 own requirements (first regulation-2),20,15,1,43,true,legacy_drrp,true,Control of Explosives Precursors and Poisons Regulations
+UK_uksi_2023_810,not_making,changes only,1,0,0,2,false,legacy_is_making,false,Control of Explosives Precursors and Poisons (Amendment) Regulations
+UK_uksi_2023_838,making,1 designation (first article-2),8,0,0,2,false,legacy_is_making,false,Offshore Installations (Safety Zones) Order
+UK_uksi_2023_861,not_making,changes only,56,0,0,19,true,legacy_drrp,true,Equipment and Protective Systems Intended for Use in Potentially Explosive Atmospheres Regulations (Northern Ireland) 2017 (Amendment) (Northern Ireland) Regulations
+UK_uksi_2024_1278,making,1 designation (first article-2-1),11,0,0,4,false,legacy_is_making,false,Offshore Installations (Safety Zones) (No. 2) Order
+UK_uksi_2024_162,making,1 designation (first article-2),2,0,0,5,false,legacy_is_making,false,Offshore Installations (Safety Zones) Order
+UK_uksi_2025_1291,making,1 designation (first article-2),8,0,0,2,false,detector,false,Offshore Installations (Safety Zones) (No. 2) Order
+UK_uksi_2025_257,making,2 designations (first article-2-1),1,0,0,4,false,legacy_is_making,false,Offshore Installations (Safety Zones) Order
+UK_uksi_2025_762,not_making,changes only,1,0,0,2,false,detector,false,Electricity Act 1989 (Requirement of Consent for Solar Generating Stations) (England) Order
+UK_uksi_2025_797,making,15 own requirements (first regulation-5),2,15,2,82,true,legacy_drrp,true,Fire Safety (Residential Evacuation Plans) (England) Regulations
+UK_uksro_1924_1129,,no provisions upstream,0,0,0,0,false,legacy_is_making,false,"Order of Secretary of State (No. 1), dated September 20, 1924, making Byelaws as to the Conveyance of Explosives on Roads, and in certain special cases"
+UK_uksro_1929_952,,no provisions upstream,0,0,0,0,false,legacy_is_making,false,"Petroleum-Spirit (Motor Vehicles, &c.) Regulations"
+UK_uksro_1929_993,,no provisions upstream,0,0,0,0,false,legacy_is_making,false,"Petroleum (Mixtures) Order,"
+UK_uksro_1930_34,,no provisions upstream,0,0,0,0,false,legacy_is_making,false,"Petroleum (Compressed Gases) Order,"
+UK_uksro_1937_54,,no provisions upstream,0,0,0,0,false,legacy_is_making,false,"Order in Council (No 30) prohibiting the Manufacture, Importation, Keeping, Conveyance or Sale of Acetylene when an Explosive as defined by the Order"
+UK_wsi_2004_2917,not_making,changes only,1,0,0,3,false,legacy_is_making,false,Fire and Rescue Services Act 2004 (Commencement) (Wales) Order
+UK_wsi_2005_2929,,changes and powers,150,0,2,42,false,legacy_is_making,false,Fire and Rescue Services Act 2004 (Consequential Amendments) (Wales) Order
+UK_wsi_2012_1085,making,1 own requirement (first regulation-2),0,1,0,3,true,enrichment,true,Fire Safety (Employees' Capabilities) (Wales) Regulations
+UK_wsi_2021_1092,not_making,changes only,1,0,0,1,false,legacy_is_making,false,Fire Safety Act 2021 (Commencement) (Wales) Regulations
+UK_wsi_2026_64,not_making,changes only,72,0,0,33,false,review,false,Fire and Rescue Services (National Framework and Variation of Combination Schemes) (Wales) Order

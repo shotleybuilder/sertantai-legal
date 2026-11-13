@@ -15,7 +15,7 @@ This is the first QQ register round, and it takes five families together (Jason 
 ## Todo
 
 - ✅ Tooling: round scope: `--family "Fire and OH&S"` gives exactly the five families (100 laws with rows, 219 live UK); closed 2026-11-13
-- ⬜ Making laws (step 0)
+- ✅ Making laws (step 0): 133 making, 65 not making, 21 no verdict (9.6%); 40 laws parsed (34 safety-zone orders), the 100 parser-stale laws re-stamped (0 rows changed); step close Stale laws PASS, Checked rows 22 (parked in EP); closed 2026-11-13
 - ⬜ Sources
 - ⬜ Feed reader
 - ⬜ Markup reader
@@ -51,3 +51,4 @@ One row per step, filled when its session closes. Agent tokens are given by mode
 
 | Step | Session | Opened | Closed | Days | Pass rule met | Plan changes | Bugs closed / parked | Agent tokens (model) | Commits |
 |---|---|---|---|---|---|---|---|---|---|
+| Making laws | fire-and-ohs-making-laws | 2026-11-13 | 2026-11-13 | 1 | yes, all 7 (7: Stale laws PASS; Checked rows 22 parked in EP) | 1 (the round's 100 parser-stale laws re-parsed, as RULES family-re-parses-its-parser-stale-laws; Jason's go) | 3 closed / 3 parked (LAT parser: 6 not-making laws with rows, lat_reparse tables #189; Register: edges after refile) | 0 by the step; clerk (Sonnet) 24,858 for this row (its commit stopped on a format check, done in the session) | 2 |
