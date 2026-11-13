@@ -1,0 +1,18 @@
+311 family laws; 139 hold LAT rows (in scope), 172 don't
+7045 effects in 139 laws:
+  4332  placed
+  2064  schedule_not_parsed
+  272  not_in_text
+  189  placed_versions
+  130  not_a_provision
+  38  whole_law
+  15  row_missing
+  5  placed_by_markup
+
+our faults: 0
+
+finer form not held (parse tell-tales): 0
+
+sample of 50 written to /tmp/claude-1000/-var-home-jason-Desktop-sertantai-legal/b76f3af3-b9b6-4d29-990b-1ac0dab89760/scratchpad/s59-a.json
+
+PASS (placement)

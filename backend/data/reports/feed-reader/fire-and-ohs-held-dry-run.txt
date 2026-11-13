@@ -1,0 +1,215 @@
+examples 1765; held 1741; no held expectation 78; moved 154
+
+== moved, by what changed
+50  feed.stages
+    e.g. UK_asp_2000_1/433ecc818d [words omitted]
+      was: 
+      now: E/s.9(1) feed.stages=[{"commenced_by":null,"date":"2012-07-01","in_force_except":null,"in_force_for":null,"partial":false,"qualification":"in accordance with"},{"commenced_by":"UK_uksi_2015_638","date":"2015-04-01","in_force_except":null,"in_force_for":null,"partial":false,"qualification":"in accordance with"}]
+    e.g. UK_asp_2002_3/0df431a6d6 [words inserted]
+      was: 
+      now: E/sch.4.para.4(1) feed.stages=[{"commenced_by":"UK_ssi_2008_115","date":"2008-04-01","in_force_except":null,"in_force_for":null,"partial":true,"qualification":"purposes"},{"commenced_by":"UK_ssi_2009_369","date":"2009-11-23","in_force_except":null,"in_force_for":null,"partial":true,"qualification":"purposes"}]
+37  feed.affecting
+    e.g. UK_apni_1969_6/fed85f8a42 [Commencement Order]
+      was: E/? feed.affecting=["reg.2(a)"]
+      now: E/? feed.affecting=["reg.2(a)","reg.2(b)","reg.2(c)"]
+    e.g. UK_asc_2026_4/620598956a [coming into force]
+      was: E@2028-04-27/s.7(1)(c) feed.affecting=["s.46(2)(b)(4)"]
+      now: E@2028-04-27/s.7(1)(c) feed.affecting=["s.46(2)(b)(4)","s.46(2)(b)(6)(a)"]
+16  feed.operation
+    e.g. UK_asp_2000_1/f18591e7d8 [substituted for s. 26D(4)(b)]
+      was: E/s.26D(4)(ba) feed.operation="substituted"; E/s.26D(4)(bb) feed.operation="substituted"
+      now: E/s.26D(4)(ba) feed.operation="inserted"; E/s.26D(4)(bb) feed.operation="inserted"
+    e.g. UK_asp_2000_4/2e8359f600 [substituted for s. 60(3)]
+      was: E/s.60(3A) feed.operation="substituted"
+      now: E/s.60(3A) feed.operation="inserted"
+9  feed.qualification
+    e.g. UK_ukpga_1883_3/66401068ac [repealed]
+      was: 
+      now: E/s.6(3) feed.qualification="purposes"; E@2012-11-05/s.6(3) feed.qualification="purposes"; E@2013-05-28/s.6(3) feed.qualification="purposes"
+    e.g. UK_ukpga_1968_27/7a24c92a1c [repealed]
+      was: 
+      now: E/sch.6.pt.II.para.3 feed.qualification="purposes"; E@2012-11-05/sch.6.pt.II.para.3 feed.qualification="purposes"; E@2013-05-28/sch.6.pt.II.para.3 feed.qualification="purposes"
+7  feed.date_full+feed.stages
+    e.g. UK_ukpga_1936_49/73995a28f7 [words repealed]
+      was: E/s.343(1) feed.date_full="2004-10-01"
+      now: E/s.343(1) feed.stages=[{"commenced_by":"UK_uksi_2004_2304","date":"2004-09-07","in_force_except":null,"in_force_for":"E","partial":true,"qualification":"territory + purposes"},{"commenced_by":"UK_uksi_2004_2304","date":"2004-10-01","in_force_except":null,"in_force_for":"E","partial":true,"qualification":"complete + territory"},{"commenced_by":"UK_wsi_2004_2917","date":"2004-11-10","in_force_except":null,"in_force_for":"W","partial":true,"qualification":"territory"}]
+    e.g. UK_ukpga_1961_64/1c580a5b16 [words substituted]
+      was: E/s.75(8) feed.date_full="2004-10-01"
+      now: E/s.75(8) feed.stages=[{"commenced_by":"UK_uksi_2004_2304","date":"2004-09-07","in_force_except":null,"in_force_for":"E","partial":true,"qualification":"territory + purposes"},{"commenced_by":"UK_uksi_2004_2304","date":"2004-10-01","in_force_except":null,"in_force_for":"E","partial":true,"qualification":"complete + territory"},{"commenced_by":"UK_wsi_2004_2917","date":"2004-11-10","in_force_except":null,"in_force_for":"W","partial":true,"qualification":"territory"}]
+6  feed.in_force_for+feed.qualification
+    e.g. UK_ukpga_1947_41/6243277a88 [repealed]
+      was: 
+      now: E/* feed.in_force_for="E"; E/* feed.qualification="territory"; E@2004-11-10/* feed.in_force_for="W"; E@2004-11-10/* feed.qualification="territory"
+    e.g. UK_ukpga_1971_60/bb33f7394d [repealed]
+      was: 
+      now: E/s.19(6) feed.in_force_for="W"; E/s.19(6) feed.qualification="territory"; E@2011-04-01/s.19(6) feed.in_force_for="E"; E@2011-04-01/s.19(6) feed.qualification="territory"
+6  feed.partial
+    e.g. UK_ukpga_1974_40/526c32dfa6 [inserted]
+      was: E/s.46A feed.partial=false; E/s.46B feed.partial=false; E/s.46C feed.partial=false; E/s.46D feed.partial=false
+      now: E/s.46A feed.partial=true; E/s.46B feed.partial=true; E/s.46C feed.partial=true; E/s.46D feed.partial=true
+    e.g. UK_ukpga_1981_69/ffc1a86e62 [inserted]
+      was: E@2008-02-18/s.53A feed.partial=false; E@2008-02-18/s.53B feed.partial=false
+      now: E@2008-02-18/s.53A feed.partial=true; E@2008-02-18/s.53B feed.partial=true
+3  feed.level+feed.operation
+    e.g. UK_ukpga_1996_56/afd2a205e7 [words in s. 5(3A)(b) become s. 5(3A)(b)(i)]
+      was: 
+      now: E/s.5(3A)(b)(i) feed.level="words"; E/s.5(3A)(b)(i) feed.operation="renumbered"
+    e.g. UK_ukpga_1997_8/c0b7b3666e [words become closing words]
+      was: 
+      now: E/s.75A(5) feed.level="words"; E/s.75A(5) feed.operation="renumbered"
+2  feed.affecting+feed.applied+feed.by+feed.commenced_by+feed.date+feed.in_force_for+feed.level+feed.operation+feed.partial+feed.qualification+feed.savings | keys +1 -1
+    e.g. UK_ukpga_1975_71/7a579a5a3a [repealed]
+      was: E/sch.9 feed.date="2013-10-01"; E/sch.9 feed.operation="repealed"; E@2013-06-25/sch.9 feed.affecting=["sch.20.para.2"]; E@2013-06-25/sch.9 feed.applied=true
+      now: E/sch.9 feed.date="2013-06-25"; E/sch.9 feed.operation="repealed_in_part"; E/sch.9 feed.partial=true; E/sch.9 feed.qualification="purposes"
+    e.g. UK_ukpga_1998_31/3c0b96bf1a [repealed]
+      was: E/sch.13 feed.commenced_by="UK_wsi_2005_2910"; E/sch.13 feed.date="2005-10-31"; E/sch.13 feed.operation="repealed"; E/sch.9 feed.commenced_by="UK_wsi_2005_2910"
+      now: E/sch.13 feed.commenced_by="UK_uksi_2002_2439"; E/sch.13 feed.date="2002-10-01"; E/sch.13 feed.in_force_for="E"; E/sch.13 feed.operation="repealed_in_part"
+2  feed.heading
+    e.g. UK_asp_2002_3/fbb58cda3b [words substituted]
+      was: 
+      now: E/pt.1 feed.heading=true
+    e.g. UK_ukpga_1986_44/f967332e7d [words substituted]
+      was: 
+      now: E/s.27B feed.heading=true
+2  feed.heading+feed.level
+    e.g. UK_eudr_2010_63/3ae499deab [replacement]
+      was: E/art.Article 54 feed.level="provision"
+      now: E/art.Article 54 feed.heading=true; E/art.Article 54 feed.level="words"
+    e.g. UK_eudr_2012_27/bb69aeade0 [replacement]
+      was: E/art.Article 9 feed.level="provision"
+      now: E/art.Article 9 feed.heading=true; E/art.Article 9 feed.level="words"
+2  feed.operation+feed.stages
+    e.g. UK_ukpga_1972_66/437498ac55 [substituted for s. 2]
+      was: E/s.2A feed.operation="substituted"
+      now: E/s.2 feed.stages=[{"commenced_by":null,"date":"2015-03-26","in_force_except":null,"in_force_for":null,"partial":true,"qualification":"purposes"},{"commenced_by":"UK_uksi_2015_994","date":"2015-04-20","in_force_except":null,"in_force_for":null,"partial":true,"qualification":"purposes"},{"commenced_by":"UK_uksi_2015_994","date":"2015-05-26","in_force_except":null,"in_force_for":null,"partial":false,"qualification":"complete"}]; E/s.2A feed.operation="inserted"; E/s.2A feed.stages=[{"commenced_by":null,"date":"2015-03-26","in_force_except":null,"in_force_for":null,"partial":true,"qualification":"purposes"},{"commenced_by":"UK_uksi_2015_994","date":"2015-04-20","in_force_except":null,"in_force_for":null,"partial":true,"qualification":"purposes"},{"commenced_by":"UK_uksi_2015_994","date":"2015-05-26","in_force_except":null,"in_force_for":null,"partial":false,"qualification":"complete"}]
+    e.g. UK_ukpga_1989_14/3e6ce2670b [substituted for s. 5]
+      was: E/s.5A feed.operation="substituted"
+      now: E/s.5 feed.stages=[{"commenced_by":"UK_wsi_2006_768","date":"2006-03-16","in_force_except":null,"in_force_for":"W","partial":true,"qualification":"territory + purposes"},{"commenced_by":"UK_uksi_2006_795","date":"2006-04-06","in_force_except":null,"in_force_for":"E","partial":true,"qualification":"territory + purposes + provisions"},{"commenced_by":"UK_wsi_2006_2797","date":"2006-10-27","in_force_except":null,"in_force_for":"W","partial":true,"qualification":"territory + purposes + provisions"},{"commenced_by":"UK_uksi_2015_425","date":"2015-03-03","in_force_except":null,"in_force_for":"E","partial":true,"qualification":"territory + purposes"},{"commenced_by":"UK_uksi_2015_425","date":"2015-04-06","in_force_except":null,"in_force_for":null,"partial":false,"qualification":"complete"}]; E/s.5A feed.operation="inserted"; E/s.5A feed.stages=[{"commenced_by":"UK_wsi_2006_768","date":"2006-03-16","in_force_except":null,"in_force_for":"W","partial":true,"qualification":"territory + purposes"},{"commenced_by":"UK_uksi_2006_795","date":"2006-04-06","in_force_except":null,"in_force_for":"E","partial":true,"qualification":"territory + purposes + provisions"},{"commenced_by":"UK_wsi_2006_2797","date":"2006-10-27","in_force_except":null,"in_force_for":"W","partial":true,"qualification":"territory + purposes + provisions"},{"commenced_by":"UK_uksi_2015_425","date":"2015-03-03","in_force_except":null,"in_force_for":"E","partial":true,"qualification":"territory + purposes"},{"commenced_by":"UK_uksi_2015_425","date":"2015-04-06","in_force_except":null,"in_force_for":null,"partial":false,"qualification":"complete"}]
+1  feed.affecting+feed.applied+feed.by+feed.commenced_by+feed.date+feed.effect_extent+feed.in_force_except+feed.in_force_for+feed.level+feed.operation+feed.partial+feed.qualification+feed.savings | keys +1 -0
+    e.g. UK_ukpga_1995_17/d9cf303292 [repealed]
+      was: E/sch.1.para.18 feed.commenced_by="UK_uksi_2005_2925"; E/sch.1.para.18 feed.date="2006-04-01"; E/sch.1.para.18 feed.operation="repealed"; E/sch.1.para.26 feed.commenced_by="UK_uksi_2005_2925"
+      now: E/sch.1.para.18 feed.commenced_by="UK_uksi_2004_288"; E/sch.1.para.18 feed.date="2004-04-01"; E/sch.1.para.18 feed.in_force_except="W"; E/sch.1.para.18 feed.operation="repealed_in_part"
+1  feed.affecting+feed.applied+feed.by+feed.commenced_by+feed.date+feed.heading+feed.in_force_for+feed.level+feed.operation+feed.partial+feed.qualification+feed.savings | keys +1 -1
+    e.g. UK_ukpga_1986_45/5405cb2b64 [omitted]
+      was: E/? feed.commenced_by="UK_uksi_2016_1020"; E/? feed.date="2017-04-06"; E/? feed.operation="repealed"; E@2015-05-26/? feed.affecting=["sch.9.para.88"]
+      now: E/? feed.commenced_by="UK_uksi_2015_1329"; E/? feed.date="2015-05-26"; E/? feed.operation="repealed_in_part"; E/? feed.partial=true
+1  feed.affecting+feed.applied+feed.by+feed.date+feed.effect_extent+feed.partial+feed.qualification+feed.ranged+feed.savings
+    e.g. UK_ukpga_1972_70/67dbd59d15 [disapplied]
+      was: 
+      now: E/s.94 feed.ranged=true; E/s.95 feed.affecting=["reg.3(a)"]; E/s.95 feed.applied=true; E/s.95 feed.by="UK_uksi_2007_1159"
+1  feed.affecting+feed.by+feed.commenced_by+feed.date+feed.effect_extent+feed.in_force_for+feed.level+feed.operation+feed.partial+feed.qualification+feed.savings | keys +1 -0
+    e.g. UK_ukpga_1984_27/76171d02db [inserted]
+      was: E@2008-03-31/s.101A feed.in_force_for="W"; E@2008-03-31/s.101A feed.partial=false; E@2008-03-31/s.101A feed.qualification="territory"; E@2008-03-31/s.101B feed.in_force_for="W"
+      now: E@2008-03-31~2/s.101A feed.affecting=["sch.11.para.3(2)"]; E@2008-03-31~2/s.101A feed.by="UK_ukpga_2004_18"; E@2008-03-31~2/s.101A feed.commenced_by="UK_wsi_2007_3174"; E@2008-03-31~2/s.101A feed.date="2008-03-31"
+1  feed.affecting+feed.by+feed.commenced_by+feed.date+feed.effect_extent+feed.in_force_for+feed.level+feed.operation+feed.partial+feed.qualification+feed.savings | keys +3 -0
+    e.g. UK_ukpga_1984_55/9944fe00ee [inserted]
+      was: E@2024-01-01/pt.2A feed.qualification="purposes"; E@2024-04-06/pt.2A feed.in_force_for="W"; E@2024-04-06/pt.2A feed.partial=false; E@2024-04-06/pt.2A feed.qualification="provisions"
+      now: E@2024-01-01~2/pt.2A feed.affecting=["s.42"]; E@2024-01-01~2/pt.2A feed.by="UK_ukpga_2022_30"; E@2024-01-01~2/pt.2A feed.commenced_by="UK_wsi_2023_914"; E@2024-01-01~2/pt.2A feed.date="2024-01-01"
+1  feed.applied
+    e.g. UK_ukpga_1972_70/eb06f6a704 [modified in part]
+      was: E/s.100J feed.applied=false
+      now: E/s.100J feed.applied=true
+1  feed.applied+feed.commenced_by+feed.date+feed.partial+feed.prospective+feed.qualification
+    e.g. UK_anaw_2016_3/d240ad712b [amendments extended to S. and N.I.]
+      was: E/s.77 feed.applied=false; E/s.77 feed.prospective=true; E/s.78 feed.applied=false; E/s.78 feed.prospective=true
+      now: E/s.77 feed.applied=true; E/s.77 feed.commenced_by="UK_uksi_2026_1105"; E/s.77 feed.date="2026-10-20"; E/s.77 feed.partial=false
+1  feed.commenced_by
+    e.g. UK_ukpga_1991_56/9a54a0ba16 [inserted]
+      was: E@2015-09-01/pt.IV.ch.2A feed.commenced_by="UK_uksi_2015_773"
+      now: E@2015-09-01/pt.IV.ch.2A feed.commenced_by="UK_uksi_2015_1469"
+1  feed.commenced_by+feed.in_force_for+feed.qualification
+    e.g. UK_ukpga_2003_39/af53a2d1ee [repealed]
+      was: E@2009-04-06/sch.8.para.80 feed.commenced_by="UK_uksi_2009_462"
+      now: E/sch.8.para.80 feed.qualification="except + dated scope"; E@2009-04-06/sch.8.para.80 feed.commenced_by="UK_wsi_2009_631"; E@2009-04-06/sch.8.para.80 feed.in_force_for="W"; E@2009-04-06/sch.8.para.80 feed.qualification="territory"
+1  feed.date_full+feed.operation+feed.stages
+    e.g. UK_ukpga_1990_8/b7ebdc3b73 [substituted for s. 70A]
+      was: E/s.70A feed.date_full="2009-04-06"; E/s.70B feed.date_full="2009-04-06"; E/s.70B feed.operation="substituted"
+      now: E/s.70A feed.stages=[{"commenced_by":"UK_uksi_2005_2081","date":"2005-08-24","in_force_except":null,"in_force_for":"E","partial":true,"qualification":"territory + except + dated scope"},{"commenced_by":"UK_uksi_2009_384","date":"2009-04-06","in_force_except":null,"in_force_for":"E","partial":true,"qualification":"complete + territory"}]; E/s.70B feed.operation="inserted"; E/s.70B feed.stages=[{"commenced_by":"UK_uksi_2005_2081","date":"2005-08-24","in_force_except":null,"in_force_for":"E","partial":true,"qualification":"territory + except + dated scope"},{"commenced_by":"UK_uksi_2009_384","date":"2009-04-06","in_force_except":null,"in_force_for":"E","partial":true,"qualification":"complete + territory"}]
+1  feed.heading+feed.level+feed.stages
+    e.g. UK_asp_2005_13/05ac77effd [substituted]
+      was: E/s.5 feed.level="provision"
+      now: E/s.5 feed.heading=true; E/s.5 feed.level="words"; E/s.5 feed.stages=[{"commenced_by":"UK_ssi_2022_43","date":"2022-03-02","in_force_except":null,"in_force_for":null,"partial":true,"qualification":"purposes"},{"commenced_by":"UK_ssi_2022_43","date":"2022-09-05","in_force_except":null,"in_force_for":null,"partial":false,"qualification":"complete"}]
+1  feed.in_force_except+feed.in_force_for+feed.qualification
+    e.g. UK_ukpga_1971_40/c46e645729 [repealed]
+      was: 
+      now: E/s.29 feed.in_force_except="W"; E/s.29 feed.qualification="territory + except"; E@2004-11-10/s.29 feed.in_force_for="W"; E@2004-11-10/s.29 feed.qualification="territory"
+
+== no held expectation (examples of new patterns)
+  UK_apni_1929_13/51c1765fcd [repealed]
+  UK_apni_1929_13/b5c1aecb13 [excluded]
+  UK_asc_2021_1/1ecd03c9df [coming into force]
+  UK_asc_2021_1/559f4f7319 [omitted]
+  UK_asc_2021_1/71b17992a5 [coming into force]
+  UK_asc_2021_1/80787fbfb2 [omitted]
+  UK_asc_2021_1/86f9480998 [coming into force]
+  UK_asc_2021_1/899ed3b2e3 [omitted]
+  UK_asc_2021_1/aac35a2d90 [s. 49 renumbered as s. 49(1)]
+  UK_asc_2021_1/b855b18b18 [inserted]
+  UK_asc_2021_1/c642e7273d [words substituted]
+  UK_asc_2021_1/c6f8747f99 [omitted]
+  UK_asc_2021_1/c95572f0c8 [words inserted]
+  UK_asc_2021_1/ceb0b8d32d [words substituted]
+  UK_asc_2021_1/ced5a91878 [words substituted]
+  UK_asc_2021_1/cf9df3964d [inserted]
+  UK_asc_2021_1/e92e2812da [coming into force]
+  UK_asc_2021_1/edaabcaca9 [coming into force]
+  UK_asc_2021_1/faf6de8f79 [coming into force]
+  UK_asp_2002_3/c12a539b71 [substituted]
+  UK_asp_2003_2/1fc09294ce [substituted]
+  UK_asp_2003_3/0cf06b85e3 [substituted for s. 20(3)(b)-(d)]
+  UK_asp_2004_6/30b9662c1a [substituted]
+  UK_asp_2004_6/e02a83455e [inserted]
+  UK_nia_2011_25/2141431ecf [referred to by 1998 c.047 s. 20(7) (as inserted)]
+  UK_nia_2011_25/2b1e91c27e [transfer of functions]
+  UK_nia_2011_25/306b0c26ab [applied with modification(s)]
+  UK_nia_2011_25/5dc4d4f5d4 [power to amend or repeal conferred]
+  UK_nia_2011_25/633d469aab [applied in part by S.I. 2012/3038, Sch. 12 para. 3(1) (as amended)]
+  UK_nia_2011_25/7959c9343b [power to make supplementary and transitional provisions conferred]
+  UK_nia_2011_25/82d47c66b0 [amendment to earlier commencing SR 2015/49, Sch. 2]
+  UK_nia_2011_25/86ad45f689 [applied (with modifications)]
+  UK_nia_2011_25/8ce144d33d [transfer of functions]
+  UK_nia_2011_25/9962f07bba [transfer of functions]
+  UK_nia_2011_25/b3d4be826a [applied with modification(s)]
+  UK_nia_2011_25/b807cde9be [applied]
+  UK_nia_2011_25/c8d09ff401 [applied (with modifications)]
+  UK_nisi_2006_2957/5dde7b7aa0 [omitted]
+  UK_nisr_1996_119/773def5c46 [coming into force]
+  UK_nisr_1996_119/f97e9b207a [coming into force]
+  UK_nisr_1996_262/d0abe2b666 [coming into force]
+  UK_ukpga_1968_27/78318e1c47 [substituted for s. 11(4)]
+  UK_ukpga_1972_70/560b7c9f51 [applied (with modifications) by 1981 c. 69 Sch. 15 para. 10A(1)(2) (as inserted)]
+  UK_ukpga_1974_37/2842d62a91 [words substituted]
+  UK_ukpga_1975_23/e4e467f091 [inserted]
+  UK_ukpga_1975_51/3bfc49a992 [substituted for s. 25(1)]
+  UK_ukpga_1978_3/69b72f6eef [inserted]
+  UK_ukpga_1981_29/fc3040cf58 [words substituted]
+  UK_ukpga_1981_69/3b769ab5cf [inserted]
+  UK_ukpga_1982_30/c2589cc51c [substituted for s. 15(1)(b)]
+  UK_ukpga_1984_12/562d98c718 [applied]
+  UK_ukpga_1984_60/0a9ee8f90f [continuation of earlier affecting provision 2020 c. 7, Sch. 24 paras. 11-13]
+  UK_ukpga_1984_60/3d81abdd35 [applied by 1972 c. 66, s. 9A (as inserted)]
+  UK_ukpga_1984_60/4fefd165bc [words inserted]
+  UK_ukpga_1984_60/54534c8035 [omitted]
+  UK_ukpga_1984_60/5bfdf86ac8 [added]
+  UK_ukpga_1984_60/6f6472e7e3 [repealed in part]
+  UK_ukpga_1984_60/7225fe2c25 [words repealed]
+  UK_ukpga_1984_60/85529df2f9 [substituted for s. 116(2)(c) and word]
+  UK_ukpga_1984_60/91ec456770 [word substituted for s. 54A(6)(a)(b) and words]
+  UK_ukpga_1984_60/a80a89b1ae [inserted]
+  UK_ukpga_1984_60/ad419c7040 [power extended]
+  UK_ukpga_1984_60/b2c25d8f23 [amendment to earlier commencing amendment SIs S.I. 2024/1191, S.I. 2025/319 and S.I. 2025/515]
+  UK_ukpga_1984_60/b8a8f8e522 [incorporated]
+  UK_ukpga_1984_60/c666d7ee09 [substituted for s. 17(1)(c)(iiia)]
+  UK_ukpga_1984_60/c76f968005 [repealed]
+  UK_ukpga_1984_60/da9e5313a0 [inserted]
+  UK_ukpga_1984_60/e1c7596178 [repeal of affecting provision 2020 c. 7, Sch. 24]
+  UK_ukpga_1984_60/e2aa4a6e8e [power to apply (with modifications) certain provisions conferred]
+  UK_ukpga_1984_60/e448414ac7 [amendment to earlier effecting provision S.I. 2015/759, art. 5]
+  UK_ukpga_1990_43/768b81e16e [modified]
+  UK_ukpga_1990_8/f7d9dddf5e [words repealed]
+  UK_ukpga_1998_46/b3ed7e375b [inserted]
+  UK_ukpga_2002_40/496d73a054 [power exercised to specify orders]
+  UK_ukpga_2004_18/838694aee6 [coming into force]
+  UK_ukpga_2009_20/329ac1bc43 [words substituted]
+  UK_ukpga_2023_30/3cf555110b [words substituted]
+  UK_ukpga_2023_30/6c1b7cb488 [inserted]

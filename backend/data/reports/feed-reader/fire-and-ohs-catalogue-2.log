@@ -1,0 +1,99 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+1473 laws with stored feeds
+laws read 3 at once: 12.2 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.8 of 6 cores busy; max 4
+  100/1473
+  200/1473
+  300/1473
+  400/1473
+  500/1473
+  600/1473
+  700/1473
+  800/1473
+  900/1473
+  1000/1473
+  1100/1473
+  1200/1473
+  1300/1473
+  1400/1473
+cache: 0 hits, 1473 read
+
+287402 effects; excluded %{"legacy dated type" => 1856}
+unclassified: 0
+1063 patterns, 1765 examples
+  eu_finer: 67
+  level: 26
+  linkage: 18
+  qualification: 87
+  range: 3
+  ref: 372
+  staging: 48
+  verb: 442
+examples needing their law's full context: 6
+
+new patterns (no status): 19
+  linkage: pieces and siblings + bare word → ?
+  ref: part-N-section-N → s.N (range end)
+  ref: part-section-N → none
+  ref: part-section-N → none (range end)
+  ref: schedule-N-part-N-paragraph-N → sch.N.pt.N.para.1n9
+  ref: schedule-N-part-N-section-N(+1) → sch.N.pt.N
+  ref: section-N(+1)-iiib → s.N(+2)
+  ref: section-N-iiia → s.N(+1)
+  verb: :inserted | inserted and preceding word
+  verb: :inserted | substituted for
+  verb: :inserted | substituted for and word
+  verb: :renumbered | renumbered closing words
+  verb: nil | amendment to earlier commencing amendment sis and
+  verb: nil | amendment to earlier commencing sr
+  verb: nil | amendment to earlier effecting provision
+  verb: nil | applied with modification
+  verb: nil | power exercised to specify orders
+  verb: nil | power to apply certain provisions conferred
+  verb: nil | power to make supplementary and transitional provisions conferred
+patterns no longer seen: 3
+  verb: nil | become closing words
+  verb: nil | in become
+  verb: nil | insert and preceding word
+examples reading differently from expected: 154 (pending patterns: 0)
+  UK_anaw_2016_3/d240ad712b
+  UK_apni_1969_6/fed85f8a42
+  UK_asc_2026_4/620598956a
+  UK_asp_2000_1/433ecc818d
+  UK_asp_2000_1/f18591e7d8
+  UK_asp_2000_4/2e8359f600
+  UK_asp_2002_3/0df431a6d6
+  UK_asp_2002_3/354834308e
+  UK_asp_2002_3/c0650b29f1
+  UK_asp_2002_3/fbb58cda3b
+  UK_asp_2003_2/275b5c7fa1
+  UK_asp_2003_2/9499500c82
+  UK_asp_2003_2/e1a81969eb
+  UK_asp_2003_2/f03e14e16a
+  UK_asp_2003_8/e09e403fdd
+  UK_asp_2005_13/05ac77effd
+  UK_asp_2005_13/80110e18ca
+  UK_asp_2010_8/f202de8a17
+  UK_eudr_2010_63/3ae499deab
+  UK_eudr_2012_27/bb69aeade0
+  UK_eur_1991_3254/9528566f4e
+  UK_nisi_1979_1709/b07a61836a
+  UK_nisi_2003_419/14f23108c4
+  UK_nisr_2010_60/f155791e50
+  UK_ssi_2009_140/1737b03582
+  UK_ukpga_1875_17/54efbc206e
+  UK_ukpga_1883_3/66401068ac
+  UK_ukpga_1936_49/73995a28f7
+  UK_ukpga_1947_41/6243277a88
+  UK_ukpga_1957_31/2a61f64275
+  UK_ukpga_1961_64/1c580a5b16
+  UK_ukpga_1962_58/618e4af0fb
+  UK_ukpga_1962_58/6bd3cc3a52
+  UK_ukpga_1965_49/a2df74f7a9
+  UK_ukpga_1965_57/6c9e8c482c
+  UK_ukpga_1968_27/7a24c92a1c
+  UK_ukpga_1968_47/cc2b646ace
+  UK_ukpga_1968_73/8c3328f452
+  UK_ukpga_1968_73/b64b71a301
+  UK_ukpga_1968_73/d8eff9e64a

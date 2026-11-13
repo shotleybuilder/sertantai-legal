@@ -123,6 +123,22 @@ A rebuild moves no switched label until `LabelRefresh` runs. Laws whose rows don
 - **A scoped law needs its body.** The build and the readers read the body, while Sources counted a scoped law's stored fragment as its own text. So the Aggregates Tax (Scotland) Act 2024 was built with 0 changes until its body was fetched (Decision 1). Parked against Sources: 82 scoped laws hold no body.
 - **Reader fixes leave stored changes one reading behind** until the family's build, and a switched family's laws until their refresh.
 
+**Fire and OH&S, the first round (2026-11-13).**
+- **The check:** 7,045 effects in 139 laws; our faults 0; 4,332 placed; counts unchanged by the fixes. Seed 59 repeatable; golden 27/27; one rebuild (29,286 changes).
+- **Ten parked bugs, of any family, taken in the step** (fixer, one class a call, each diff reviewed):
+  - same-date stages: each its own key and order (`each-stage-its-own-order`);
+  - a staged removal's stages carry territory, and a completing stage that names a territory is partial (`commencement-for-one-territory`, Decision 3);
+  - a staged text change carries its stages (`text-change-carries-its-stages`, Decisions 2–3);
+  - an affecting range names every provision (`feed-affecting-range-names-every-provision`);
+  - the made record is the maker's (`made-record-is-the-makers`);
+  - a heading under any name is words (`feed-heading-by-any-name-is-words`);
+  - "substituted for" makes the new numbers inserted (`feed-substituted-for-new-numbers-inserted`), and Decision 1's verbs;
+  - two legislation.gov.uk feed errors and two misnested refs became known limits.
+- **Set aside:** a range over rows inserted later. The feed half fails golden alone (TCPA 1990 s.78(4BA)), so it lands with the markup half in the Markup reader (`backend/data/reports/feed-reader/range-later-rows/`).
+- **Held examples:** 154 moved and 78 new, written after a checked dry run grouped every change by fix (Decision 4).
+- **The switched families** stay one reading behind until the round's Store and build (Decision 5).
+- **New Sources needs:** after the rebuild, Sources counts 3 more needs (1,176): 3 amending laws' schedules not yet fetched (backlog), so the step close's Sources gate fails 3, parked with Sources.
+
 **Skill.** `feed-reader-check`.
 
 ## 3. Markup reader

@@ -1,0 +1,80 @@
+== Fire and OH&S
+311 family laws; 139 hold LAT rows (in scope), 172 don't
+7045 effects in 139 laws:
+  4332  placed
+  2064  schedule_not_parsed
+  272  not_in_text
+  189  placed_versions
+  130  not_a_provision
+  38  whole_law
+  15  row_missing
+  5  placed_by_markup
+
+our faults: 0
+
+finer form not held (parse tell-tales): 0
+
+PASS (placement)
+== OH&S: Occupational
+6692 effects in 149 laws:
+  3566  placed
+  2578  schedule_not_parsed
+  263  placed_versions
+  128  not_in_text
+  79  not_a_provision
+  71  whole_law
+  5  placed_by_markup
+  1  placed_ancestor
+  1  ref_ambiguous
+
+our faults: 0
+
+finer form not held (parse tell-tales): 5
+  not_found: 5  (gone from the text, or not there: a candidate only)
+    UK_eur_2006_1907 art.Article 14(2)(e)  ("Art. 14 para. 2 Point (e)")
+    UK_eur_2006_1907 art.Article 76(1)(c)  ("Art. 76 para. 1 Point (c) Text")
+    UK_eur_2006_1907 art.Article 77(3)(a)  ("Art. 77 para. 3 Point (a) Text")
+    UK_eur_2008_1272 art.Article 54(3)  ("Art. 54 para. 3")
+    UK_eur_2008_1272 art.Article 54(4)  ("Art. 54 para. 4")
+
+PASS (placement)
+== ENVIRONMENTAL PROTECTION
+11684 effects in 122 laws:
+  6393  placed
+  3877  schedule_not_parsed
+  674  placed_versions
+  327  not_in_text
+  201  not_a_provision
+  131  row_missing
+  71  whole_law
+  10  placed_by_markup
+
+our faults: 0
+
+finer form not held (parse tell-tales): 5
+  not_found: 3  (gone from the text, or not there: a candidate only)
+    UK_eudr_1986_278 art.Article 17(1)  ("Art. 17 para. 1")
+    UK_eur_2019_2088 art.Article 11(1)(d)  ("Art. 11 para. 1 Point (d)")
+    UK_eur_2019_2088 art.Article 11(1)(c)  ("Art. 11 para. 1 Point (c)")
+  no_ids: 2  (the text numbers items with no id; the parse made no row, #184)
+    UK_eudr_1986_278 art.Article 2(f)  ("Art. 2 Point (f)")
+    UK_eudr_1986_278 art.Article 2(e)  ("Art. 2 Point (e)")
+
+PASS (placement)
+== Maritime Safety
+298 family laws; 117 hold LAT rows (in scope), 181 don't
+4786 effects in 117 laws:
+  3943  placed
+  571  schedule_not_parsed
+  116  not_in_text
+  77  whole_law
+  67  not_a_provision
+  7  placed_by_markup
+  3  row_missing
+  2  placed_ancestor
+
+our faults: 0
+
+finer form not held (parse tell-tales): 0
+
+PASS (placement)
