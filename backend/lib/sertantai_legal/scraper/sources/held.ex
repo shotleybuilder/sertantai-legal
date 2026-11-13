@@ -26,8 +26,7 @@ defmodule SertantaiLegal.Scraper.Sources.Held do
 
     %{
       law: law,
-      # a scoped law whose body is held reads the body (CV-S05 F)
-      scope: LatScope.fetch_paths(slash, LatScope.get(law), body_held?(slash)),
+      scope: Sources.own_paths(slash, LatScope.get(law)),
       effects: effects(law),
       amenders: amenders,
       gaps: gaps,
@@ -126,7 +125,4 @@ defmodule SertantaiLegal.Scraper.Sources.Held do
     [_, type, year, number] = String.split(law, "_", parts: 4)
     "#{type}/#{year}/#{number}"
   end
-
-  # the body held: a fragment is never fetched beside it (CV-S05 F)
-  defp body_held?(slash), do: match?({:ok, _, _}, ClmlStore.get("/#{slash}/body/data.xml"))
 end

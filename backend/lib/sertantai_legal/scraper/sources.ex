@@ -35,7 +35,7 @@ defmodule SertantaiLegal.Scraper.Sources do
   alias SertantaiLegal.Scraper.AmendingLaw.Pointer
   alias SertantaiLegal.Scraper.ChangeVocabulary.Change
   alias SertantaiLegal.Scraper.Commencement.Order
-  alias SertantaiLegal.Scraper.{EffectKind, LatRef}
+  alias SertantaiLegal.Scraper.{EffectKind, LatRef, LatScope}
 
   @act_types ~w(ukpga asp anaw asc nia apni)
   @order ~w(own feed territory introduction enabling_parent dates backlog)a
@@ -44,6 +44,15 @@ defmodule SertantaiLegal.Scraper.Sources do
   @type need :: %{category: atom(), law: String.t(), part: atom() | String.t(), for: String.t()}
   @type status :: :held | :absent | :not_fetched | :incomplete | :stale
   @type gap :: %{by: String.t(), gap: :a | :b, provisions: [String.t()]}
+
+  @doc """
+  A law's own text: the documents the build (`Build.body/1`) and the readers
+  read. A scoped law needs its body, never its fragments: its rows are cut
+  to the scope from the body (`LatScope.cut/2`). An excluded or empty scope
+  needs nothing (scoped-law-body-not-needed, Fire and OH&S: Sources).
+  """
+  @spec own_paths(String.t(), map() | nil) :: [String.t()]
+  def own_paths(slash_path, scope), do: LatScope.fetch_paths(slash_path, scope, true)
 
   @doc """
   The documents one law needs. `law`: `%{law, scope, amenders, gaps}`

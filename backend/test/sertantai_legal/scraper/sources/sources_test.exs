@@ -93,6 +93,19 @@ defmodule SertantaiLegal.Scraper.SourcesTest do
            )
   end
 
+  describe "own text: the documents the build and the readers read (scoped-law-body-not-needed)" do
+    test "a scoped law needs its body, never its fragments: the rows are cut to the scope" do
+      scope = %{"fragments" => ["section/1", "section/12"]}
+      assert Sources.own_paths("ukpga/1971/40", scope) == ["/ukpga/1971/40/body/data.xml"]
+    end
+
+    test "a whole law needs its body; an excluded or empty scope needs nothing" do
+      assert Sources.own_paths("uksi/2010/404", nil) == ["/uksi/2010/404/body/data.xml"]
+      assert Sources.own_paths("uksi/2010/404", %{"excluded" => true}) == []
+      assert Sources.own_paths("uksi/2010/404", %{"fragments" => []}) == []
+    end
+  end
+
   describe "the report" do
     defp need(category, law, part), do: %{category: category, law: law, part: part, for: "UK_x"}
 
