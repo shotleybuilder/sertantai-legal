@@ -17,4 +17,23 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.QualificationTest do
     assert Qualification.partial?("for specified purposes")
     refute Qualification.partial?("wholly in force")
   end
+
+  test "a completing qualification that names a territory is partial: complete there only" do
+    for q <- [
+          "for W. in so far as not already in force",
+          "for E. In so far as not already in force",
+          "wholly in force for W.",
+          "in so far as not already in force, except in relation to W."
+        ] do
+      assert "complete" in Qualification.classes(q), q
+      assert "territory" in Qualification.classes(q), q
+      assert Qualification.partial?(q), q
+    end
+  end
+
+  test "a completing qualification naming no territory is not partial" do
+    refute Qualification.partial?("in so far as not already in force")
+    refute Qualification.partial?("so far as not already in force for specified purposes")
+    refute Qualification.partial?(nil)
+  end
 end

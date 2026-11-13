@@ -310,7 +310,9 @@ defmodule Mix.Tasks.Lat.FeedCheck do
     }
   end
 
-  @change_attributes ~w(operation level date_first date partial effect_extent in_force_for commenced_by savings)a
+  # (`stages`: every dated stage of a staged text change, beside the
+  # first stage's `commenced_by`)
+  @change_attributes ~w(operation level date_first date partial effect_extent in_force_for commenced_by stages savings)a
 
   # one change: its key, target and the value of each fact (nil for none)
   defp change_row(key, target, claims) do

@@ -3,8 +3,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Qualification do
   What an in-force qualification says, as the feed reader carries it
   (CV-S02b; Jason 2026-10-23, catalogue review A and E). Pure.
 
-  - `complete?/1`: it completes the provision's commencement — none,
-    "wholly in force", "(in) so far as not already in force".
+  - `complete?/1`: its words complete the provision's commencement — none,
+    "wholly in force", "(in) so far as not already in force". Where it
+    also names or excepts a territory ("for W. in so far as not already in
+    force"), it completes it there only: `partial?/1`.
   - `in_force_for/1`: the territory it names ("for E.W.S." → "E+W+S"; "in
     relation to Wales" → "W"), never one it excepts.
   - `in_force_except/1`: the territory it excepts ("except in relation to
@@ -13,9 +15,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Qualification do
     day, in accordance with, retrospective, dated scope, provisions — or
     "other".
   - `partial?/1`: it limits the commencement's scope — purposes, a
-    territory named or excepted, a dated scope, certain provisions. A time
-    of day, "with effect in accordance with", "retrospective" limit nothing:
-    not partial, carried as their class.
+    territory named or excepted, a dated scope, certain provisions. A
+    completing qualification is partial only when it names or excepts a
+    territory (Jason 2026-11-13, Fire and OH&S: Feed reader, Decision 3).
+    A time of day, "with effect in accordance with", "retrospective" limit
+    nothing: not partial, carried as their class.
   """
 
   @complete ~r/^\s*$|wholly in force|so far as not already in force/i
@@ -53,7 +57,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Qualification do
   # the classes that limit what comes into force
   @limiting ["purposes", "territory", "except", "dated scope", "provisions"]
 
-  @doc "Whether the qualification completes the provision's commencement."
+  @doc """
+  Whether the qualification's words complete the provision's commencement
+  (everywhere only when it names no territory: `partial?/1`).
+  """
   @spec complete?(String.t() | nil) :: boolean()
   def complete?(q), do: String.match?(q || "", @complete)
 
@@ -111,7 +118,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Qualification do
   @spec partial?(String.t() | nil) :: boolean()
   def partial?(q) do
     classes = classes(q)
-    "complete" not in classes and Enum.any?(classes, &(&1 in @limiting))
+
+    Enum.any?(classes, &(&1 in @limiting)) and
+      ("complete" not in classes or "territory" in classes)
   end
 
   defp code(places) do

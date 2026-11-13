@@ -18,8 +18,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.EffectVerb do
   The feed's other words for the verbs (catalogue review C, D, G):
   "words cease to have effect", "removed", "left out", "omiited", "rep in
   pt", "lapsed" are removals; "coming into operation" is coming into force;
-  "becomes" and "moved" are renumberings; "restored" and "revived" bring a
-  provision back (inserted).
+  "becomes", "become" and "moved" are renumberings; "restored" and
+  "revived" bring a provision back (inserted). The bare "insert" and
+  "substitute" are the insertion and the substitution; "words reordered"
+  changes the text, a substitution of its words (Fire and OH&S: Feed
+  reader, Decision 1).
   """
 
   alias SertantaiLegal.Scraper.EffectFacts
@@ -37,8 +40,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.EffectVerb do
     {~r/\b(?:removed|left out|lapsed)\b/i, "omitted"},
     {~r/\bceases?\s+to\s+have\s+effect\b/i, "ceased to have effect"},
     {~r/\bcoming\s+into\s+operation\b/i, "coming into force"},
-    {~r/\b(?:becomes|moved)\b/i, "renumbered"},
-    {~r/\b(?:restored|revived)\b/i, "inserted"}
+    {~r/\b(?:becomes?|moved)\b/i, "renumbered"},
+    {~r/\b(?:restored|revived)\b/i, "inserted"},
+    {~r/\binsert\b/i, "inserted"},
+    {~r/\bsubstitute\b/i, "substituted"},
+    {~r/\breordered\b/i, "substituted"}
   ]
 
   @doc """
@@ -86,6 +92,24 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.EffectVerb do
   def made_by(type) do
     case Regex.run(@made_by, type) do
       [_, kind, year, n] -> "UK_#{if kind =~ ~r/R/i, do: "nisr", else: "uksi"}_#{year}_#{n}"
+      _ -> nil
+    end
+  end
+
+  @made_at ~r/\bby\s+S\.[IR]\.\s*\d{4}\/\d+\s*,\s*(.+?)\s*\(as\s+(?:substituted|amended|inserted)\)\s*$/i
+
+  @doc """
+  The earlier amending law's own provision, as the Type writes it after
+  the law (`made_by/1`): "Sch. 2 para. 15(b)" in "words inserted by S.I.
+  2019/720, Sch. 2 para. 15(b) (as substituted)"; nil where the Type names
+  no earlier maker, or no provision of it.
+  """
+  @spec made_at(String.t() | nil) :: String.t() | nil
+  def made_at(type) do
+    with maker when is_binary(maker) <- made_by(type),
+         [_, provision] <- Regex.run(@made_at, type) do
+      provision
+    else
       _ -> nil
     end
   end

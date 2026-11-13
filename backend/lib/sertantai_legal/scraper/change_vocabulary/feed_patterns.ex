@@ -435,6 +435,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedPatterns do
   defp json(v) when is_boolean(v) or is_nil(v), do: v
   defp json(v) when is_atom(v), do: Atom.to_string(v)
   defp json(v) when is_list(v), do: Enum.map(v, &json/1)
+  # (a staged text change's `stages`: maps of each stage's facts)
+  defp json(v) when is_map(v), do: Map.new(v, fn {k, x} -> {to_string(k), json(x)} end)
   defp json(v), do: v
 
   defp stringify(map), do: Map.new(map, fn {k, v} -> {Atom.to_string(k), v} end)

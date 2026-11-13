@@ -7,11 +7,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   (`:words` for a words / heading change), `territory` (the territorial
   application), `effect_extent`, `date` (the in-force date), `applied`,
   `savings`, `by` (the affecting law). The affecting law's own territory
-  (`Effect.affecting_territory`, `LawTerritory`) is a `:law` claim.
+  (`Effect.affecting_territory`, `LawTerritory`) is a `:law` claim. An
+  effect whose Type names an earlier maker has a second record, the
+  maker's (`key#made`: `FeedMaker`).
 
   A commencement ("coming into force") is one change per dated in-force
   entry, keyed `effect id@date`, with a `partial` claim (its qualification
-  doesn't complete the provision). Targets are the effect's structured refs,
+  doesn't complete the provision). Where a date repeats (two orders
+  commencing on one day, one for E., one for W.), the later entries' keys
+  are numbered in feed order: `effect id@date~2`. A text change commenced
+  in stages (words substituted for E., then for W.) stays one change, from
+  its first stage; its `stages` claim lists every dated stage as read, in
+  feed order: maps of `date`, `commenced_by`, `in_force_for`,
+  `in_force_except`, `qualification` (its classes) and `partial`. Targets are the effect's structured refs,
   named as our rows name them (`xml_ids`: each row's `source_xml_id`, the
   parse's own naming; else `Ref.from_clml`). An effect on the whole
   instrument targets `"*"` (every provision; also a bare "Rules" ref); one
@@ -21,7 +29,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Claim, EffectVerb, Qualification}
   alias SertantaiLegal.Scraper.AmendingLaw
   alias SertantaiLegal.Scraper.ChangeVocabulary.Ref
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.{FeedAffecting, FeedGroup}
+
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.{
+    FeedAffecting,
+    FeedGroup,
+    FeedMaker,
+    FeedSubstitutedFor
+  }
+
   alias SertantaiLegal.Scraper.Commencement.{Evaluator, Order}
   alias SertantaiLegal.Scraper.EffectTarget
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
@@ -64,12 +79,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
       ) do
     flat = EffectTarget.flat(order)
     held = MapSet.new(rows || Map.values(xml_ids))
+    # the earlier makers' own effects: each is its maker's record
+    own = FeedMaker.own(effects)
 
     for %Effect{effect_id: id} = e <- effects,
         id != nil,
-        {target, ranged?} <- targets(e, law_name, flat, xml_ids),
+        {target, ranged?, fresh?} <- placed(e, law_name, flat, xml_ids),
         {target, unheld} = finer(target, e, law_name, held),
-        {key, claims} <- changes(e),
+        {key, claims} <- changes(e, own),
+        claims = inserted_beside(claims, fresh?, id),
+        # the record's own law and amending provision: the effect's, or for
+        # the record of its earlier maker (`key#made`) the maker's
+        by = FeedMaker.effect(key, e),
         do: {
           key,
           target,
@@ -81,10 +102,32 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
             Claim.new(:feed, :ranged, if(ranged?, do: true), id) ++
             Claim.new(:feed, :placed, target, id) ++
             Claim.new(:feed, :finer_unheld, unheld, id) ++
-            commenced_by(claims, e, commencement) ++
-            extent(e, extents, claims, %{law: law_name, title: title, target: target}) ++
-            affecting(e)
+            commenced_by(claims, by, commencement) ++
+            extent(by, extents, claims, %{law: law_name, title: title, target: target}) ++
+            affecting(by)
         }
+  end
+
+  # the effect's targets, each with whether a range reached it and whether
+  # it is new beside what the Type says was substituted for ("substituted
+  # for Art. 15(1)" over "Art. 15(1)(1A)": (1A), `FeedSubstitutedFor`)
+  defp placed(%Effect{type: type} = e, law, flat, xml_ids) do
+    targets = targets(e, law, flat, xml_ids)
+    fresh = FeedSubstitutedFor.inserted(type, Enum.map(targets, &elem(&1, 0)))
+
+    for {target, ranged?} <- targets, do: {target, ranged?, target in fresh}
+  end
+
+  # a provision new beside the one substituted for is inserted, where the
+  # effect substitutes whole provisions
+  defp inserted_beside(claims, false, _id), do: claims
+
+  defp inserted_beside(claims, true, id) do
+    if value(claims, :operation) == :substituted and value(claims, :level) == :provision,
+      do:
+        Enum.reject(claims, &(&1.source == :feed and &1.attribute == :operation)) ++
+          Claim.new(:feed, :operation, :inserted, id),
+      else: claims
   end
 
   @eu ~w(eur eudr eudn)
@@ -241,7 +284,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   # a commencement is one change per dated in-force entry (staged
   # commencement: each stage its own change, partial or full); any other
   # effect is one change
-  defp changes(%Effect{effect_id: id} = e) do
+  defp changes(%Effect{effect_id: id} = e, own) do
     case {operation(e), stages(e)} do
       # a commencement not yet dated (prospective): one change with no date,
       # so the provision is known to await it (catalogue review F)
@@ -254,41 +297,38 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
                Claim.new(:feed, :level, :provision, id),
                Claim.new(:feed, :prospective, true, id),
                Claim.new(:feed, :by, e.affecting, id),
-               stage_facts(e, nil)
+               stage_facts(e, nil, commencing(e, nil))
              ])}
           ],
           else: []
 
       {:commenced, stages} ->
-        commencements(e, stages)
+        e |> commencements(stages) |> distinct_keys()
 
       _ ->
-        amendments(e) |> with_maker(e)
+        e |> amendments() |> distinct_keys() |> FeedMaker.with_record(e, own)
     end
   end
 
-  # the earlier amending law the Type names as making the words (C5): a
-  # record of its own beside the effect, the same facts, its law the maker
-  defp with_maker([{key, claims} | _] = records, %Effect{} = e) do
-    case EffectVerb.made_by(e.type) do
-      maker when is_binary(maker) and maker != e.affecting ->
-        made =
-          Enum.map(claims, fn
-            %Claim{source: :feed, attribute: :by} = c -> %{c | value: maker}
-            c -> c
-          end)
+  # a key names one stage. Two entries on one date (the Fire Safety Order
+  # 2005 by the Building Safety Act 2022, 2023-10-01: SI 2023/362 except in
+  # relation to W., WSI 2023/914 for W.) are two stages: the first keeps
+  # `id@date`, each later one is numbered in feed order (`id@date~2`)
+  defp distinct_keys(records) do
+    {keyed, _seen} =
+      Enum.map_reduce(records, %{}, fn {key, claims}, seen ->
+        n = Map.get(seen, key, 0) + 1
+        {{numbered(key, n), claims}, Map.put(seen, key, n)}
+      end)
 
-        records ++ [{key <> "#made", made}]
-
-      _ ->
-        records
-    end
+    keyed
   end
 
-  defp with_maker(records, _e), do: records
+  defp numbered(key, 1), do: key
+  defp numbered(key, n), do: "#{key}~#{n}"
 
   defp commencements(%Effect{effect_id: id} = e, stages) do
-    for {date, qualification} <- stages do
+    for {date, qualification, order} <- stages do
       {"#{id}@#{date}",
        Enum.concat([
          Claim.new(:feed, :operation, :commenced, id),
@@ -296,7 +336,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
          Claim.new(:feed, :date, date, id),
          Claim.new(:feed, :partial, Qualification.partial?(qualification), id),
          Claim.new(:feed, :by, e.affecting, id),
-         stage_facts(e, qualification, date)
+         stage_facts(e, qualification, order)
        ])}
     end
   end
@@ -330,7 +370,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
       # purposes, NISR 2007/31; "repealed" for S., asp 2012/8): what it
       # says, as a staged change's first stage — a whole removal limited
       # in scope removes in part (catalogue review J)
-      {op, [{_date, q}]} when is_binary(q) and q != "" ->
+      {op, [{_date, q, _order}]} when is_binary(q) and q != "" ->
         partial? = Qualification.partial?(q)
 
         claims =
@@ -347,26 +387,43 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
     end
   end
 
-  defp text_staged(%Effect{effect_id: id} = e, [{first, q} | _] = stages) do
-    full = Enum.find_value(stages, fn {d, q} -> if not Qualification.partial?(q), do: d end)
+  defp text_staged(%Effect{effect_id: id} = e, [{first, q, _order} | _] = stages) do
+    full = Enum.find_value(stages, fn {d, q, _} -> if not Qualification.partial?(q), do: d end)
 
     [
       {id,
        claims(e) ++
          Claim.new(:feed, :date_first, first, id) ++
          Claim.new(:feed, :partial, Qualification.partial?(q), id) ++
-         Claim.new(:feed, :date_full, full, id)}
+         Claim.new(:feed, :date_full, full, id) ++
+         Claim.new(:feed, :stages, Enum.map(stages, &stage_read/1), id)}
     ]
   end
 
-  defp staged(%Effect{effect_id: id} = e, [{first, q} | later]) do
+  # one stage of a staged text change, as read: the one change carries
+  # every stage (two orders on one day are two: the Fire Safety Order 2005
+  # by the Building Safety Act 2022, SI 2023/362 except in relation to W.,
+  # WSI 2023/914 for W.), for the label fold to read; `commenced_by` and
+  # the change's other claims stay its first stage's (Decisions 2 and 3,
+  # Fire and OH&S: Feed reader)
+  defp stage_read({date, qualification, order}),
+    do: %{
+      date: date,
+      commenced_by: order,
+      in_force_for: Qualification.in_force_for(qualification),
+      in_force_except: Qualification.in_force_except(qualification),
+      qualification: qualification_class(qualification),
+      partial: Qualification.partial?(qualification)
+    }
+
+  defp staged(%Effect{effect_id: id} = e, [{first, q, _order} | later]) do
     [
       {id,
        claims(e) ++
          Claim.new(:feed, :date_first, first, id) ++
          Claim.new(:feed, :partial, Qualification.partial?(q), id) ++
          qualification_facts(q, id)}
-      | for {date, qualification} <- later do
+      | for {date, qualification, order} <- later do
           {"#{id}@#{date}",
            Enum.concat([
              Claim.new(:feed, :operation, :commenced, id),
@@ -374,7 +431,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
              Claim.new(:feed, :date, date, id),
              Claim.new(:feed, :partial, Qualification.partial?(qualification), id),
              Claim.new(:feed, :by, e.affecting, id),
-             stage_facts(e, qualification, date)
+             stage_facts(e, qualification, order)
            ])}
         end
     ]
@@ -384,9 +441,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   # it is complete; the earlier stages remove it in part
   defp staged_removal(%Effect{effect_id: id} = e, stages) do
     {full, partial} =
-      case Enum.split_with(stages, fn {_, q} -> not Qualification.partial?(q) end) do
+      case Enum.split_with(stages, fn {_, q, _} -> not Qualification.partial?(q) end) do
         {[], partial} -> {nil, partial}
-        {[{date, _} | _], partial} -> {date, partial}
+        {[stage | _], partial} -> {stage, partial}
       end
 
     removal =
@@ -400,9 +457,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
     # (C7), the text kept until the full stage (CV-S09 round 2: HSWA
     # s.47(5), ERRA 2013 "for specified purposes" then 1 Oct 2013)
     in_part =
-      for {date, _} <- partial do
+      for {date, _, _} = stage <- partial do
         {"#{id}@#{date}",
-         stage_claims(e, date, [:date, :operation]) ++
+         stage_claims(e, stage, [:date, :operation]) ++
            Claim.new(:feed, :operation, :repealed_in_part, id) ++
            Claim.new(:feed, :partial, true, id)}
       end
@@ -416,11 +473,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
 
   # the effect's claims at one stage of a staged removal: that stage's date
   # and the order commencing it (EA 1995 Sch. 8 para. 8(5): E then W), not
-  # the first stage's; `drop` the claims the stage sets itself
-  defp stage_claims(%Effect{effect_id: id} = e, date, drop) do
+  # the first stage's, nor another entry's on the same date; `drop` the
+  # claims the stage sets itself. What the stage's qualification names is
+  # carried as read, as a commencement's is ("for E." then "for W.": each
+  # stage its territory, for the label fold to read)
+  defp stage_claims(%Effect{effect_id: id} = e, {date, qualification, order}, drop) do
     Enum.reject(claims(e), &(&1.attribute in [:commenced_by | drop])) ++
       Claim.new(:feed, :date, date, id) ++
-      Claim.new(:feed, :commenced_by, commencing(e, date), id)
+      Claim.new(:feed, :commenced_by, order, id) ++
+      qualification_facts(qualification, id)
   end
 
   # what the feed says of a commencement stage beyond its date, carried as
@@ -429,10 +490,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   # the territory its qualification names ("for E.W.S.") — `in_force_for`,
   # or excepts — `in_force_except` — and what else it says
   # (`Qualification.classes/1`), for the label fold to read (CV-S09)
-  defp stage_facts(%Effect{effect_id: id} = e, qualification, date \\ nil),
+  defp stage_facts(%Effect{effect_id: id} = e, qualification, order),
     do:
       Enum.concat([
-        Claim.new(:feed, :commenced_by, commencing(e, date), id),
+        Claim.new(:feed, :commenced_by, order, id),
         Claim.new(:feed, :effect_extent, code(e.effect_extent), id),
         Claim.new(:feed, :savings, e.savings, id),
         qualification_facts(qualification, id)
@@ -468,11 +529,27 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
     end
   end
 
+  # the effect's dated in-force entries as stages `{date, qualification,
+  # commencing order}`, in feed order: the order is the entry's own
+  # (InForce CommencingURI), so two entries on one date naming two orders
+  # are two stages
   defp stages(%Effect{in_force: entries, in_force_date: date, in_force_qualification: q}) do
-    case for(%{date: %Date{} = d} = entry <- entries || [], do: {d, entry.qualification}) do
-      [] -> if date, do: [{date, q}], else: []
+    dated = for %{date: %Date{}} = entry <- entries || [], do: entry
+
+    case Enum.map(dated, &{&1.date, &1.qualification, stage_order(&1, dated)}) do
+      [] -> if date, do: [{date, q, nil}], else: []
       stages -> Enum.uniq(stages)
     end
+  end
+
+  # an entry naming no order takes the order of its twin (the feed often
+  # repeats an entry, once with its order and once without: one stage),
+  # else its date's first named order
+  defp stage_order(entry, dated) do
+    same_day = Enum.filter(dated, &(&1.date == entry.date))
+    twins = Enum.filter(same_day, &(&1.qualification == entry.qualification))
+
+    Enum.find_value([entry | twins ++ same_day], &Map.get(&1, :commencing))
   end
 
   # a removal "in part" (revoked / repealed / omitted / expires / ceases …
@@ -651,7 +728,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   end
 
   defp heading(%Effect{type: type, affected_provisions: text}),
-    do: if(Enum.any?([type, text], &((&1 || "") =~ ~r/\bheading\b/i)), do: true)
+    do:
+      if(Enum.any?([type, text], &((&1 || "") =~ ~r/\bheading\b/i)) or titled?(text || ""),
+        do: true
+      )
+
+  # the provision's heading under its other names, written after it ("reg.
+  # 10 Title": SI 2009/995 by SI 2012/630; "s. 33BC sidenote") — never the
+  # law's own title ("Long Title", "Regulations title"), nor a Title that
+  # is a container ("Title 14A")
+  @titled ~r/\b(?:title|sidenote)\s*$/i
+  @law_title ~r/^\s*(?:(?:long|short)\s+)?(?:Act|Regulations?|Order|Rules|Measure|Scheme)?\s*title\s*$/i
+
+  defp titled?(text), do: String.match?(text, @titled) and not String.match?(text, @law_title)
 
   # a change within the provision's text: its words, a sum, a figure, an
   # entry in its table, punctuation, its heading
@@ -661,21 +750,39 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   # "Art. 119(2)(g) Text", "Art. 4(1) Indent 2"): its words (CV-S08 round
   # 1) — never a cross-heading, nor a provision inserted "and cross-heading"
   # (EU: "Sentence 2", "Unnumbered Paragraph 2", ".2 L2": words of the
-  # paragraph, which has no row of its own: CV-S08 round 3)
-  @words_part ~r/(?:\btext|\bindent(?:\s+\d+)?|(?<!cross-|cross |and )\bheading|\bsentence\s+\d+|\bunnumbered\s+paragraph(?:\s+\d+)?|\bL\d+)\s*$/i
+  # paragraph, which has no row of its own: CV-S08 round 3). The heading's
+  # other names likewise: "reg. 10 Title" (SI 2009/995 by SI 2012/630 reg.
+  # 19(2)(a): the title substituted, never the regulation), "s. 10
+  # sidenote", "Sch. 15 shoulder note" — a Title that is a container
+  # ("Title 14A") has its number after it
+  @words_part ~r/(?:\btext|\bindent(?:\s+\d+)?|(?<!cross-|cross |and )\bheading|\btitle|\bsidenote|\bshoulder\s+note|\bsentence\s+\d+|\bunnumbered\s+paragraph(?:\s+\d+)?|\bL\d+)\s*$/i
+
+  # a cross-heading named after the provision it stands above, where the
+  # feed links that provision ("s. 1 cross-heading" inserted, ref
+  # `section-1`: asp 2004/6): the provision is where it sits, not what was
+  # inserted. Linked itself (`…-crossheading-…`), it is the target, whole
+  @cross_heading ~r/(?<!and )\bcross-heading\s*$/i
 
   # no level where the feed states no operation ("amended", "modified":
   # CV-S08 round 1, HSWA s.28(3)(a))
-  defp level(%Effect{type: type, affected_provisions: text} = e) do
+  defp level(%Effect{type: type} = e) do
     cond do
       # (an amendment to an earlier amending provision has no operation on
       # this provision, but its words or whole level says what it reaches:
       # CV-S09 round 8, SI 2020/1313 "words substituted in earlier amending
       # provision S.I. 2019/758, Sch. 2" on REACH Title 14A)
       operation(e) == nil and not EffectVerb.earlier_amendment?(type) -> nil
-      String.match?(text || "", @words_part) -> :words
+      part?(e) -> :words
       true -> type_level(EffectVerb.type(type))
     end
+  end
+
+  defp part?(%Effect{affected_provisions: text, affected_refs: refs}) do
+    text = text || ""
+
+    String.match?(text, @words_part) or
+      (String.match?(text, @cross_heading) and
+         not Enum.any?(List.wrap(refs), &String.contains?(&1, "crossheading")))
   end
 
   defp type_level(type) do

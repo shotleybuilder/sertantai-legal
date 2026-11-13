@@ -199,7 +199,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedFactsTest do
       c = commenced("in so far as not already in force except in relation to W.")
       refute Map.has_key?(c, :in_force_for)
       assert c.in_force_except == "W"
-      assert c.partial == false
+      # complete everywhere but W.: partial (a completing stage naming a
+      # territory, Jason 2026-11-13, Fire and OH&S: Feed reader, Decision 3)
+      assert c.partial == true
 
       c = commenced("for specified purposes except in relation to W.")
       assert c.in_force_except == "W"

@@ -415,7 +415,7 @@
       ],
       "affecting": "UK_ukpga_2023_55",
       "affecting_provisions": "s. 232(8)",
-      "applied": false,
+      "applied": true,
       "effect_extent": "E+W+S+N.I.",
       "in_force": [
         {
@@ -424,9 +424,21 @@
           "date": null,
           "prospective": true,
           "qualification": null
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2026_1105",
+          "date": "2026-10-20",
+          "prospective": false,
+          "qualification": "wholly in force"
         }
       ],
-      "prospective": true,
+      "in_force_date": "2026-10-20",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
       "requires_applied": true,
       "savings": [
         "section-247"
@@ -1738,6 +1750,76 @@
       "section-2": "s.2"
     }
   },
+  "UK_apni_1929_13/51c1765fcd": {
+    "effect": {
+      "affected_provisions": "s. 24A(1)(b)",
+      "affected_refs": [
+        "section-24A-1-b"
+      ],
+      "affecting": "UK_nisr_2015_223",
+      "affecting_provisions": "Sch. Table 3",
+      "applied": true,
+      "effect_extent": "N.I.",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2015-06-01",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2015-06-01",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "repealed"
+    },
+    "law": "UK_apni_1929_13",
+    "order": [],
+    "rows": [],
+    "xml_ids": {
+      "section-24A-1-b": "s.24A(1)(b)"
+    }
+  },
+  "UK_apni_1929_13/b5c1aecb13": {
+    "effect": {
+      "affected_provisions": "s. 4",
+      "affected_refs": [
+        "section-4"
+      ],
+      "affecting": "UK_nisr_2012_255",
+      "affecting_provisions": "reg. 3",
+      "applied": true,
+      "effect_extent": "N.I.",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2012-07-30",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2012-07-30",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "excluded"
+    },
+    "law": "UK_apni_1929_13",
+    "order": [],
+    "rows": [],
+    "xml_ids": {
+      "section-4": "s.4"
+    }
+  },
   "UK_apni_1967_36/715996d67d": {
     "effect": {
       "affected_provisions": "Sch.",
@@ -2028,6 +2110,590 @@
       "section-3": "s.3"
     }
   },
+  "UK_asc_2021_1/1ecd03c9df": {
+    "effect": {
+      "affected_extent": "E+W",
+      "affected_provisions": "Sch. 1 para. 4(1)-(3)(6)",
+      "affected_ranges": [
+        [
+          "schedule-1-paragraph-4-1",
+          "schedule-1-paragraph-4-3"
+        ]
+      ],
+      "affected_refs": [
+        "schedule-1",
+        "schedule-1-paragraph-4-6",
+        "schedule-1-paragraph-4-1",
+        "schedule-1-paragraph-4-3"
+      ],
+      "affecting": "UK_asc_2021_1",
+      "affecting_provisions": "s. 175(1)(f)(2)(k)(i)",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2021-01-21",
+          "prospective": false,
+          "qualification": "for specified purposes"
+        }
+      ],
+      "in_force_date": "2021-01-21",
+      "in_force_qualification": "for specified purposes",
+      "in_force_qualifications": [
+        "for specified purposes"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "coming into force"
+    },
+    "law": "UK_asc_2021_1",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_asc_2021_1/559f4f7319": {
+    "effect": {
+      "affected_provisions": "Sch. 12 para. 1(7)",
+      "affected_refs": [
+        "schedule-12",
+        "schedule-12-paragraph-1-7"
+      ],
+      "affecting": "UK_asc_2024_5",
+      "affecting_provisions": "Sch. 1 para. 15(10)",
+      "applied": true,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        },
+        {
+          "applied": null,
+          "commencing": "UK_wsi_2024_1337",
+          "date": "2025-04-01",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2025-04-01",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "territorial_application": "W",
+      "type": "omitted"
+    },
+    "law": "UK_asc_2021_1",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_asc_2021_1/71b17992a5": {
+    "effect": {
+      "affected_extent": "E+W",
+      "affected_provisions": "Sch. 1 para. 6(2)(b)",
+      "affected_refs": [
+        "schedule-1",
+        "schedule-1-paragraph-6-2-b"
+      ],
+      "affecting": "UK_wsi_2021_297",
+      "affecting_provisions": "art. 2(g)",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2021-04-01",
+          "prospective": false,
+          "qualification": "in force in so far as not already in force"
+        }
+      ],
+      "in_force_date": "2021-04-01",
+      "in_force_qualification": "in force in so far as not already in force",
+      "in_force_qualifications": [
+        "in force in so far as not already in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "coming into force"
+    },
+    "law": "UK_asc_2021_1",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_asc_2021_1/80787fbfb2": {
+    "effect": {
+      "affected_provisions": "s. 18",
+      "affected_refs": [
+        "section-18"
+      ],
+      "affecting": "UK_asc_2024_5",
+      "affecting_provisions": "s. 3(1)",
+      "applied": false,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": false,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        }
+      ],
+      "prospective": true,
+      "requires_applied": true,
+      "territorial_application": "W",
+      "type": "omitted"
+    },
+    "law": "UK_asc_2021_1",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_asc_2021_1/86f9480998": {
+    "effect": {
+      "affected_extent": "E+W",
+      "affected_provisions": "Sch. 1 para. 2(4)(5)",
+      "affected_refs": [
+        "schedule-1",
+        "schedule-1-paragraph-2-4",
+        "schedule-1-paragraph-2-5"
+      ],
+      "affecting": "UK_wsi_2021_297",
+      "affecting_provisions": "art. 2(g)",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2021-04-01",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2021-04-01",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "coming into force"
+    },
+    "law": "UK_asc_2021_1",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_asc_2021_1/899ed3b2e3": {
+    "effect": {
+      "affected_provisions": "s. 151(3)(b)(i)",
+      "affected_refs": [
+        "section-151-3-b-i"
+      ],
+      "affecting": "UK_asc_2024_6",
+      "affecting_provisions": "Sch. para. 16(2)",
+      "applied": false,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": false,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        }
+      ],
+      "prospective": true,
+      "requires_applied": true,
+      "territorial_application": "W",
+      "type": "omitted"
+    },
+    "law": "UK_asc_2021_1",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_asc_2021_1/aac35a2d90": {
+    "effect": {
+      "affected_extent": "E+W",
+      "affected_provisions": "s. 49(1)",
+      "affected_refs": [
+        "section-49-1"
+      ],
+      "affecting": "UK_wsi_2021_356",
+      "affecting_provisions": "reg. 5(2)",
+      "applied": true,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2021-05-01",
+          "prospective": false,
+          "qualification": "immediately after 2021 asc 1, Sch. 4 comes into force"
+        }
+      ],
+      "in_force_date": "2021-05-01",
+      "in_force_qualification": "Other",
+      "in_force_qualifications": [
+        "immediately after 2021 asc 1, Sch. 4 comes into force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "savings": [
+        "regulation-10",
+        "regulation-11"
+      ],
+      "territorial_application": "W",
+      "type": "s. 49 renumbered as s. 49(1)"
+    },
+    "law": "UK_asc_2021_1",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_asc_2021_1/b855b18b18": {
+    "effect": {
+      "affected_provisions": "Pt. 6 Ch. 1A",
+      "affected_refs": [
+        "part-6",
+        "part-6-chapter-1A"
+      ],
+      "affecting": "UK_wsi_2022_797",
+      "affecting_provisions": "reg. 4",
+      "applied": true,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2022-07-15",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2022-07-15",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "territorial_application": "W",
+      "type": "inserted"
+    },
+    "law": "UK_asc_2021_1",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_asc_2021_1/c642e7273d": {
+    "effect": {
+      "affected_provisions": "s. 68",
+      "affected_refs": [
+        "section-68"
+      ],
+      "affecting": "UK_asc_2026_7",
+      "affecting_provisions": "Sch. 3 para. 34",
+      "applied": false,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": false,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        }
+      ],
+      "prospective": true,
+      "requires_applied": true,
+      "savings": [
+        "schedule-5",
+        "schedule-5-part-1"
+      ],
+      "territorial_application": "W",
+      "type": "words substituted"
+    },
+    "law": "UK_asc_2021_1",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_asc_2021_1/c6f8747f99": {
+    "effect": {
+      "affected_provisions": "Sch. 9 para. 1-8 and cross-heading",
+      "affected_refs": [
+        "schedule-9-part-1-crossheading-planning-and-compulsory-purchase-act-2004-c-5"
+      ],
+      "affecting": "UK_asc_2026_7",
+      "affecting_provisions": "Sch. 3 para. 38(a)",
+      "applied": false,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": false,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        }
+      ],
+      "prospective": true,
+      "requires_applied": true,
+      "savings": [
+        "schedule-5",
+        "schedule-5-part-1"
+      ],
+      "territorial_application": "W",
+      "type": "omitted"
+    },
+    "law": "UK_asc_2021_1",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_asc_2021_1/c95572f0c8": {
+    "effect": {
+      "affected_provisions": "Pt. 6 title",
+      "affected_refs": [
+        "part-6"
+      ],
+      "affecting": "UK_wsi_2022_797",
+      "affecting_provisions": "reg. 6(1)",
+      "applied": true,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2022-07-15",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2022-07-15",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "territorial_application": "W",
+      "type": "words inserted"
+    },
+    "law": "UK_asc_2021_1",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_asc_2021_1/ceb0b8d32d": {
+    "effect": {
+      "affected_provisions": "Sch. 1 para. 14 cross-heading",
+      "affected_refs": [
+        "schedule-1-crossheading-orders-under-part-3-of-the-local-government-democracy-wales-act-2013-anaw-4"
+      ],
+      "affecting": "UK_asc_2024_4",
+      "affecting_provisions": "Sch. 1 para. 7(3)",
+      "applied": true,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2024-06-25",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2024-06-25",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "territorial_application": "W",
+      "type": "words substituted"
+    },
+    "law": "UK_asc_2021_1",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_asc_2021_1/ced5a91878": {
+    "effect": {
+      "affected_provisions": "s. 11 heading",
+      "affected_refs": [
+        "part-1-crossheading-voting-systems-for-elections-to-principal-councils"
+      ],
+      "affecting": "UK_asc_2024_4",
+      "affecting_provisions": "Sch. 1 para. 48(b)",
+      "applied": true,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2024-06-25",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2024-06-25",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "territorial_application": "W",
+      "type": "words substituted"
+    },
+    "law": "UK_asc_2021_1",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_asc_2021_1/cf9df3964d": {
+    "effect": {
+      "affected_provisions": "Sch. 10A",
+      "affected_refs": [
+        "schedule-10A"
+      ],
+      "affecting": "UK_wsi_2022_797",
+      "affecting_provisions": "reg. 5",
+      "applied": true,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2022-07-15",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2022-07-15",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "territorial_application": "W",
+      "type": "inserted"
+    },
+    "law": "UK_asc_2021_1",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_asc_2021_1/e92e2812da": {
+    "effect": {
+      "affected_extent": "E+W",
+      "affected_provisions": "s. 2(2)",
+      "affected_refs": [
+        "section-2-2"
+      ],
+      "affecting": "UK_asc_2021_1",
+      "affecting_provisions": "s. 175(5)",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2022-05-05",
+          "prospective": false,
+          "qualification": null
+        }
+      ],
+      "in_force_date": "2022-05-05",
+      "prospective": false,
+      "requires_applied": true,
+      "type": "coming into force"
+    },
+    "law": "UK_asc_2021_1",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_asc_2021_1/edaabcaca9": {
+    "effect": {
+      "affected_extent": "E+W",
+      "affected_provisions": "Sch. 2 para. 2(12)",
+      "affected_refs": [
+        "schedule-2",
+        "schedule-2-paragraph-2-12"
+      ],
+      "affecting": "UK_asc_2021_1",
+      "affecting_provisions": "s. 175(3)(f)(ii)",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2021-03-20",
+          "prospective": false,
+          "qualification": "(subject to s. 3)"
+        }
+      ],
+      "in_force_date": "2021-03-20",
+      "in_force_qualification": "other",
+      "in_force_qualifications": [
+        "(subject to s. 3)"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "coming into force"
+    },
+    "law": "UK_asc_2021_1",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_asc_2021_1/faf6de8f79": {
+    "effect": {
+      "affected_extent": "E+W",
+      "affected_provisions": "s. 166(2)(b)(iii)(c)(3)(b)",
+      "affected_refs": [
+        "section-166-2-b-iii-c",
+        "section-166-3-b"
+      ],
+      "affecting": "UK_asc_2021_1",
+      "affecting_provisions": "s. 175(1)(i)",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2021-01-21",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2021-01-21",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "coming into force"
+    },
+    "law": "UK_asc_2021_1",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
   "UK_asc_2023_2/c2573fd813": {
     "effect": {
       "affected_extent": "E+W",
@@ -2165,40 +2831,6 @@
       "prospective": false,
       "requires_applied": true,
       "type": "coming into force"
-    },
-    "law": "UK_asc_2023_3",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
-  "UK_asc_2023_3/5bca4c2139": {
-    "effect": {
-      "affected_provisions": "Sch. 13 para. 10(b)",
-      "affected_refs": [
-        "schedule-13",
-        "schedule-13-paragraph-10-b"
-      ],
-      "affecting": "UK_asc_2026_7",
-      "affecting_provisions": "Sch. 3 para. 68(a)",
-      "applied": false,
-      "effect_extent": "E+W",
-      "in_force": [
-        {
-          "applied": false,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        }
-      ],
-      "prospective": true,
-      "requires_applied": true,
-      "savings": [
-        "schedule-5",
-        "schedule-5-part-1"
-      ],
-      "territorial_application": "W",
-      "type": "omitted"
     },
     "law": "UK_asc_2023_3",
     "order": [],
@@ -2505,41 +3137,6 @@
     "rows": [],
     "xml_ids": {}
   },
-  "UK_asc_2023_3/e0badd8271": {
-    "effect": {
-      "affected_provisions": "s. 21(9)",
-      "affected_refs": [
-        "section-21-9"
-      ],
-      "affecting": "UK_asc_2026_7",
-      "affecting_provisions": "Sch. 3 para. 41",
-      "applied": false,
-      "effect_extent": "E+W",
-      "in_force": [
-        {
-          "applied": false,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        }
-      ],
-      "prospective": true,
-      "requires_applied": true,
-      "savings": [
-        "schedule-5",
-        "schedule-5-part-1"
-      ],
-      "territorial_application": "W",
-      "type": "words substituted"
-    },
-    "law": "UK_asc_2023_3",
-    "order": [],
-    "rows": [],
-    "xml_ids": {
-      "section-21-9": "s.21(9)"
-    }
-  },
   "UK_asc_2026_4/26f1326b71": {
     "effect": {
       "affected_extent": "E+W",
@@ -2722,47 +3319,6 @@
     "rows": [],
     "xml_ids": {}
   },
-  "UK_asp_2000_1/323707e778": {
-    "effect": {
-      "affected_provisions": "sch. 2 para. 3(a)",
-      "affected_refs": [
-        "schedule-2",
-        "schedule-2-paragraph-3-a"
-      ],
-      "affecting": "UK_asp_2010_8",
-      "affecting_provisions": "s. 118(8)(c)(i)",
-      "applied": true,
-      "effect_extent": "S",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        },
-        {
-          "applied": null,
-          "commencing": "UK_ssi_2010_321",
-          "date": "2010-10-01",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "2010-10-01",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "words substituted"
-    },
-    "law": "UK_asp_2000_1",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
   "UK_asp_2000_1/433ecc818d": {
     "effect": {
       "affected_provisions": "s. 9(1)",
@@ -2829,40 +3385,6 @@
       "prospective": false,
       "requires_applied": true,
       "type": "power to modify conferred (temp.)"
-    },
-    "law": "UK_asp_2000_1",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
-  "UK_asp_2000_1/4940520e43": {
-    "effect": {
-      "affected_provisions": "sch. 2 para. 2",
-      "affected_refs": [
-        "schedule-2",
-        "schedule-2-paragraph-2"
-      ],
-      "affecting": "UK_ssi_2010_322",
-      "affecting_provisions": "art. 5",
-      "applied": true,
-      "effect_extent": "S",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2010-10-01",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "2010-10-01",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "excluded"
     },
     "law": "UK_asp_2000_1",
     "order": [],
@@ -3563,47 +4085,6 @@
     "rows": [],
     "xml_ids": {}
   },
-  "UK_asp_2000_4/57f32d67ff": {
-    "effect": {
-      "affected_extent": "S",
-      "affected_provisions": "s. 15(3)(c)(ii)",
-      "affected_refs": [
-        "section-15-3-c-ii"
-      ],
-      "affecting": "UK_asp_2007_10",
-      "affecting_provisions": "s. 57(1)(b)(ii)",
-      "applied": true,
-      "effect_extent": "S",
-      "in_force": [
-        {
-          "applied": false,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        },
-        {
-          "applied": true,
-          "commencing": "UK_ssi_2008_49",
-          "date": "2008-04-01",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "2008-04-01",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "words substituted"
-    },
-    "law": "UK_asp_2000_4",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
   "UK_asp_2000_4/6d96d2d311": {
     "effect": {
       "affected_provisions": "s. 47(2ZA)-(2ZC)",
@@ -3638,41 +4119,6 @@
       "prospective": false,
       "requires_applied": true,
       "type": "suspension of earlier affecting provision 2020 asp 7, sch. 3 para. 11(3)(a)"
-    },
-    "law": "UK_asp_2000_4",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
-  "UK_asp_2000_4/a320d12d0f": {
-    "effect": {
-      "affected_extent": "S",
-      "affected_provisions": "Sch. 1 para. 1(d)(i)",
-      "affected_refs": [
-        "schedule-1",
-        "schedule-1-paragraph-1-d-i"
-      ],
-      "affecting": "UK_ssi_2011_211",
-      "affecting_provisions": "Sch. 1 para. 8(4)(b)",
-      "applied": true,
-      "effect_extent": "S",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2011-04-01",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "2011-04-01",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "words substituted"
     },
     "law": "UK_asp_2000_4",
     "order": [],
@@ -3809,35 +4255,6 @@
       "prospective": false,
       "requires_applied": true,
       "type": "inserted"
-    },
-    "law": "UK_asp_2000_4",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
-  "UK_asp_2000_4/f83b236b15": {
-    "effect": {
-      "affected_provisions": "sch. 5 para. 3",
-      "affected_refs": [
-        "schedule-5",
-        "schedule-5-paragraph-3"
-      ],
-      "affecting": "UK_asp_2025_3",
-      "affecting_provisions": "sch. 3 Pt. 1",
-      "applied": false,
-      "effect_extent": "S",
-      "in_force": [
-        {
-          "applied": false,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        }
-      ],
-      "prospective": true,
-      "requires_applied": true,
-      "type": "repealed"
     },
     "law": "UK_asp_2000_4",
     "order": [],
@@ -4264,6 +4681,48 @@
     "rows": [],
     "xml_ids": {}
   },
+  "UK_asp_2002_3/c12a539b71": {
+    "effect": {
+      "affected_provisions": "s. 42 title",
+      "affected_refs": [
+        "section-42"
+      ],
+      "affecting": "UK_asp_2013_5",
+      "affecting_provisions": "s. 27(3)",
+      "applied": true,
+      "effect_extent": "S",
+      "in_force": [
+        {
+          "applied": false,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        },
+        {
+          "applied": true,
+          "commencing": "UK_ssi_2013_342",
+          "date": "2013-12-21",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2013-12-21",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "substituted"
+    },
+    "law": "UK_asp_2002_3",
+    "order": [],
+    "rows": [],
+    "xml_ids": {
+      "section-42": "s.42"
+    }
+  },
   "UK_asp_2002_3/f3c72e22aa": {
     "effect": {
       "affected_provisions": "s. 57(7)(a)",
@@ -4556,6 +5015,48 @@
     "xml_ids": {
       "section-33-4-a": "s.33(4)(a)",
       "section-33-4-b": "s.33(4)(b)"
+    }
+  },
+  "UK_asp_2003_2/1fc09294ce": {
+    "effect": {
+      "affected_provisions": "s. 33 title",
+      "affected_refs": [
+        "section-33"
+      ],
+      "affecting": "UK_asp_2015_6",
+      "affecting_provisions": "s. 36(2)",
+      "applied": true,
+      "effect_extent": "S",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        },
+        {
+          "applied": null,
+          "commencing": "UK_ssi_2015_399",
+          "date": "2016-04-15",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2016-04-15",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "substituted"
+    },
+    "law": "UK_asp_2003_2",
+    "order": [],
+    "rows": [],
+    "xml_ids": {
+      "section-33": "s.33"
     }
   },
   "UK_asp_2003_2/275b5c7fa1": {
@@ -4880,40 +5381,6 @@
       "section-71-5-a-iv": "s.71(5)(a)(iv)"
     }
   },
-  "UK_asp_2003_2/a0dda96a1f": {
-    "effect": {
-      "affected_provisions": "Sch. 1 para. 12",
-      "affected_refs": [
-        "schedule-1",
-        "schedule-1-paragraph-12"
-      ],
-      "affecting": "UK_uksi_2017_1285",
-      "affecting_provisions": "Sch. 1 para. 9(2)",
-      "applied": true,
-      "effect_extent": "E+W+S+N.I.",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2017-12-28",
-          "prospective": false,
-          "qualification": "immediately after Digital Economy Act 2017 (c. 30), Sch. 3 comes into force"
-        }
-      ],
-      "in_force_date": "2017-12-28",
-      "in_force_qualification": "Other",
-      "in_force_qualifications": [
-        "immediately after Digital Economy Act 2017 (c. 30), Sch. 3 comes into force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "word substituted"
-    },
-    "law": "UK_asp_2003_2",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
   "UK_asp_2003_2/c38e857aaf": {
     "effect": {
       "affected_provisions": "s. 73(4)",
@@ -5128,6 +5595,63 @@
     "order": [],
     "rows": [],
     "xml_ids": {}
+  },
+  "UK_asp_2003_3/0cf06b85e3": {
+    "effect": {
+      "affected_extent": "S",
+      "affected_provisions": "s. 20(3)(a)-(da)",
+      "affected_ranges": [
+        [
+          "section-20-3-a",
+          "section-20-3-da"
+        ]
+      ],
+      "affected_refs": [
+        "section-20-3-a",
+        "section-20-3-da"
+      ],
+      "affecting": "UK_ssi_2005_348",
+      "affecting_provisions": "reg. 3(2)",
+      "applied": true,
+      "effect_extent": "S",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2006-04-01",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2006-04-01",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "savings": [
+        "regulation-4",
+        "regulation-50"
+      ],
+      "type": "substituted for s. 20(3)(b)-(d)"
+    },
+    "law": "UK_asp_2003_3",
+    "order": [
+      "section-20-3-a",
+      "section-20-3-b",
+      "section-20-3-c",
+      "section-20-3-d",
+      "section-20-3-da"
+    ],
+    "rows": [],
+    "xml_ids": {
+      "section-20-3-a": "s.20(3)(a)",
+      "section-20-3-b": "s.20(3)(b)",
+      "section-20-3-c": "s.20(3)(c)",
+      "section-20-3-d": "s.20(3)(d)",
+      "section-20-3-da": "s.20(3)(da)"
+    }
   },
   "UK_asp_2003_3/3bd6373a43": {
     "effect": {
@@ -5428,6 +5952,48 @@
     "rows": [],
     "xml_ids": {}
   },
+  "UK_asp_2004_6/30b9662c1a": {
+    "effect": {
+      "affected_provisions": "s. 58 title",
+      "affected_refs": [
+        "section-58"
+      ],
+      "affecting": "UK_asp_2026_6",
+      "affecting_provisions": "s. 50(3)",
+      "applied": false,
+      "effect_extent": "S",
+      "in_force": [
+        {
+          "applied": false,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        },
+        {
+          "applied": null,
+          "commencing": "UK_ssi_2026_275",
+          "date": "2026-10-26",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2026-10-26",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "substituted"
+    },
+    "law": "UK_asp_2004_6",
+    "order": [],
+    "rows": [],
+    "xml_ids": {
+      "section-58": "s.58"
+    }
+  },
   "UK_asp_2004_6/7bd123db60": {
     "effect": {
       "affected_provisions": "Pt. 2 Ch. 2",
@@ -5463,6 +6029,36 @@
     "xml_ids": {
       "part-2": "pt.2",
       "part-2-chapter-2": "pt.2.ch.2"
+    }
+  },
+  "UK_asp_2004_6/e02a83455e": {
+    "effect": {
+      "affected_provisions": "s. 1 cross-heading",
+      "affected_refs": [
+        "section-1"
+      ],
+      "affecting": "UK_asp_2026_6",
+      "affecting_provisions": "s. 1(2)",
+      "applied": false,
+      "effect_extent": "S",
+      "in_force": [
+        {
+          "applied": false,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        }
+      ],
+      "prospective": true,
+      "requires_applied": true,
+      "type": "inserted"
+    },
+    "law": "UK_asp_2004_6",
+    "order": [],
+    "rows": [],
+    "xml_ids": {
+      "section-1": "s.1"
     }
   },
   "UK_asp_2004_6/ed4d9ff4aa": {
@@ -5751,49 +6347,6 @@
       "section-7-5": "s.7(5)"
     }
   },
-  "UK_asp_2005_13/86f9cb3155": {
-    "effect": {
-      "affected_extent": "S",
-      "affected_provisions": "sch. 2 para. 2(5)(10)-(14)(20)",
-      "affected_ranges": [
-        [
-          "schedule-2-paragraph-2-10",
-          "schedule-2-paragraph-2-14"
-        ]
-      ],
-      "affected_refs": [
-        "schedule-2",
-        "schedule-2-paragraph-2-5",
-        "schedule-2-paragraph-2-20",
-        "schedule-2-paragraph-2-10",
-        "schedule-2-paragraph-2-14"
-      ],
-      "affecting": "UK_ssi_2006_121",
-      "affecting_provisions": "art. 3(b) Sch. 2",
-      "applied": true,
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2006-04-01",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "2006-04-01",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "coming into force"
-    },
-    "law": "UK_asp_2005_13",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
   "UK_asp_2005_13/a1e3550ac9": {
     "effect": {
       "affected_provisions": "Sch. 1 para. 1-3",
@@ -5931,35 +6484,6 @@
       "section-4C-5": "s.4C(5)",
       "section-4C-6": "s.4C(6)",
       "section-4D": "s.4D"
-    }
-  },
-  "UK_asp_2005_13/d636a7bacb": {
-    "effect": {
-      "affected_provisions": "Pt. 1 heading",
-      "affected_refs": [
-        "part-1"
-      ],
-      "affecting": "UK_ukpga_2026_18",
-      "affecting_provisions": "s. 150(2)",
-      "applied": false,
-      "in_force": [
-        {
-          "applied": false,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        }
-      ],
-      "prospective": true,
-      "requires_applied": true,
-      "type": "substituted"
-    },
-    "law": "UK_asp_2005_13",
-    "order": [],
-    "rows": [],
-    "xml_ids": {
-      "part-1": "pt.1"
     }
   },
   "UK_asp_2005_15/9ced977a60": {
@@ -6877,48 +7401,6 @@
       "part-5-chapter-5-crossheading-carrier-bag-charges": "h.88"
     }
   },
-  "UK_asp_2009_12/dea0d3e629": {
-    "effect": {
-      "affected_provisions": "s. 88A heading",
-      "affected_refs": [
-        "part-5-chapter-5-crossheading-carrier-bag-offences-fixed-penalty-notices"
-      ],
-      "affecting": "UK_asp_2024_13",
-      "affecting_provisions": "s. 10(7)(b)",
-      "applied": true,
-      "effect_extent": "S",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        },
-        {
-          "applied": null,
-          "commencing": "UK_ssi_2025_10",
-          "date": "2025-04-01",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "2025-04-01",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "substituted"
-    },
-    "law": "UK_asp_2009_12",
-    "order": [],
-    "rows": [],
-    "xml_ids": {
-      "part-5-chapter-5-crossheading-carrier-bag-offences-fixed-penalty-notices": "h.88A"
-    }
-  },
   "UK_asp_2009_6/cecb385f2e": {
     "effect": {
       "affected_provisions": "s. 12(1)",
@@ -6952,52 +7434,6 @@
     "rows": [],
     "xml_ids": {
       "section-12-1": "s.12(1)"
-    }
-  },
-  "UK_asp_2010_5/35064dca19": {
-    "effect": {
-      "affected_provisions": "s. 82(13)(a)",
-      "affected_refs": [
-        "section-82-13-a"
-      ],
-      "affecting": "UK_asp_2014_19",
-      "affecting_provisions": "sch. 4 para. 3(g)(i)",
-      "applied": true,
-      "effect_extent": "S",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        },
-        {
-          "applied": null,
-          "commencing": "UK_ssi_2015_196",
-          "date": "2015-10-01",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "2015-10-01",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "savings": [
-        "section-29",
-        "section-30"
-      ],
-      "type": "words renumbered as s. 82(13)(a)"
-    },
-    "law": "UK_asp_2010_5",
-    "order": [],
-    "rows": [],
-    "xml_ids": {
-      "section-82-13-a": "s.82(13)(a)"
     }
   },
   "UK_asp_2010_5/993e2026b1": {
@@ -7036,49 +7472,6 @@
     "xml_ids": {
       "section-83": "s.83"
     }
-  },
-  "UK_asp_2010_5/9b0927436a": {
-    "effect": {
-      "affected_provisions": "sch. 2 para. 4A and cross-heading",
-      "affected_refs": [
-        "schedule-2-crossheading-civil-sanctions-and-fixed-penalty-notices"
-      ],
-      "affecting": "UK_asp_2013_7",
-      "affecting_provisions": "s. 61(5)",
-      "applied": true,
-      "effect_extent": "S",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        },
-        {
-          "applied": null,
-          "commencing": "UK_ssi_2013_249",
-          "date": "2013-09-16",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "2013-09-16",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "savings": [
-        "section-65"
-      ],
-      "type": "inserted"
-    },
-    "law": "UK_asp_2010_5",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
   },
   "UK_asp_2010_5/d06d48c762": {
     "effect": {
@@ -8476,42 +8869,6 @@
     "rows": [],
     "xml_ids": {}
   },
-  "UK_asp_2012_8/998dda0399": {
-    "effect": {
-      "affected_provisions": "Ch. 9 heading",
-      "affected_refs": [
-        "chapter-9"
-      ],
-      "affecting": "UK_ssi_2025_378",
-      "affecting_provisions": "Sch. 2 para. 1(2)(c)",
-      "applied": true,
-      "effect_extent": "S",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2025-12-29",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "2025-12-29",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "savings": [
-        "schedule-1"
-      ],
-      "type": "subtituted"
-    },
-    "law": "UK_asp_2012_8",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
   "UK_asp_2012_8/ebb4103531": {
     "effect": {
       "affected_provisions": "Sch. 7 para. 13(4)",
@@ -8592,39 +8949,6 @@
       "type": "word substituted"
     },
     "law": "UK_asp_2013_5",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
-  "UK_asp_2014_3/b6ae9d77e4": {
-    "effect": {
-      "affected_provisions": "sch. 2 para. 30 and cross-heading",
-      "affected_refs": [
-        "schedule-2-part-2-crossheading-power-to-specify-eu-instruments-for-the-purposes-of-paragraph-22"
-      ],
-      "affecting": "UK_ssi_2019_436",
-      "affecting_provisions": "reg. 2(3)(c)",
-      "applied": true,
-      "effect_extent": "S",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2020-12-31",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "2020-12-31",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "repealed"
-    },
-    "law": "UK_asp_2014_3",
     "order": [],
     "rows": [],
     "xml_ids": {}
@@ -8743,47 +9067,6 @@
     "xml_ids": {
       "part-2": "pt.2"
     }
-  },
-  "UK_asp_2016_20/808df43e0d": {
-    "effect": {
-      "affected_provisions": "s. 87 heading",
-      "affected_refs": [
-        "part-3-crossheading-local-authority-functions"
-      ],
-      "affecting": "UK_ssi_2026_50",
-      "affecting_provisions": "sch. 2 para. 1(24)(e)",
-      "applied": true,
-      "effect_extent": "S",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2026-02-04",
-          "prospective": false,
-          "qualification": "for specified purposes"
-        },
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2026-03-02",
-          "prospective": false,
-          "qualification": "in force in so far as not already in force"
-        }
-      ],
-      "in_force_date": "2026-02-04",
-      "in_force_qualification": "for specified purposes",
-      "in_force_qualifications": [
-        "for specified purposes",
-        "in force in so far as not already in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "substituted"
-    },
-    "law": "UK_asp_2016_20",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
   },
   "UK_asp_2016_20/bd7f7e12ac": {
     "effect": {
@@ -19451,6 +19734,516 @@
     "rows": [],
     "xml_ids": {}
   },
+  "UK_nia_2011_25/2141431ecf": {
+    "effect": {
+      "affected_provisions": "Act",
+      "affecting": "UK_nia_2020_4",
+      "affecting_provisions": "s. 1(4)",
+      "applied": true,
+      "effect_extent": "N.I.",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2020-08-26",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2020-08-26",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "referred to by 1998 c.047 s. 20(7) (as inserted)"
+    },
+    "law": "UK_nia_2011_25",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nia_2011_25/2b1e91c27e": {
+    "effect": {
+      "affected_provisions": "Sch. 1-3",
+      "affected_ranges": [
+        [
+          "schedule-1",
+          "schedule-3"
+        ]
+      ],
+      "affected_refs": [
+        "schedule-1",
+        "schedule-3"
+      ],
+      "affecting": "UK_nisr_2016_76",
+      "affecting_provisions": "Sch. 5 Pt. 2",
+      "applied": true,
+      "effect_extent": "N.I.",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2016-05-08",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2016-05-08",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "savings": [
+        "article-9-2"
+      ],
+      "type": "transfer of functions"
+    },
+    "law": "UK_nia_2011_25",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nia_2011_25/306b0c26ab": {
+    "effect": {
+      "affected_provisions": "Pt. 4 (except ss. 80-120)",
+      "affected_ranges": [
+        [
+          "part-s-section-80",
+          "part-s-section-120"
+        ]
+      ],
+      "affected_refs": [
+        "part-4",
+        "part-s",
+        "section-80-section-80",
+        "section-120-section-120"
+      ],
+      "affecting": "UK_nisr_2015_39",
+      "affecting_provisions": "reg. 2",
+      "applied": true,
+      "effect_extent": "N.I.",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2015-04-01",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2015-04-01",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "applied with modification(s)"
+    },
+    "law": "UK_nia_2011_25",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nia_2011_25/5dc4d4f5d4": {
+    "effect": {
+      "affected_provisions": "Act",
+      "affecting": "UK_ukpga_2023_55",
+      "affecting_provisions": "s. 164(3) Sch. 14 Pt. 4",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2023-12-26",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2023-12-26",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "savings": [
+        "section-247"
+      ],
+      "type": "power to amend or repeal conferred"
+    },
+    "law": "UK_nia_2011_25",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nia_2011_25/633d469aab": {
+    "effect": {
+      "affected_provisions": "s. 204",
+      "affected_refs": [
+        "section-204"
+      ],
+      "affecting": "UK_uksi_2020_1369",
+      "affecting_provisions": "reg. 42(b)",
+      "applied": true,
+      "effect_extent": "E+W+S+N.I.",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2020-12-31",
+          "prospective": false,
+          "qualification": "immediately before IP completion day"
+        }
+      ],
+      "in_force_date": "2020-12-31",
+      "in_force_qualification": "Other",
+      "in_force_qualifications": [
+        "immediately before IP completion day"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "savings": [
+        "regulation-46"
+      ],
+      "type": "applied in part by S.I. 2012/3038, Sch. 12 para. 3(1) (as amended)"
+    },
+    "law": "UK_nia_2011_25",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nia_2011_25/7959c9343b": {
+    "effect": {
+      "affected_provisions": "Act",
+      "affecting": "UK_nia_2014_8",
+      "affecting_provisions": "s. 124(1)(c)",
+      "applied": true,
+      "effect_extent": "N.I.",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        },
+        {
+          "applied": true,
+          "commencing": "UK_nisr_2014_142",
+          "date": "2014-05-20",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2014-05-20",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "savings": [
+        "section-124-4"
+      ],
+      "type": "power to make supplementary and transitional provisions conferred"
+    },
+    "law": "UK_nia_2011_25",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nia_2011_25/82d47c66b0": {
+    "effect": {
+      "affected_provisions": "specified provision(s)",
+      "affecting": "UK_nisr_2016_159",
+      "affecting_provisions": "art. 2",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        }
+      ],
+      "prospective": true,
+      "requires_applied": true,
+      "type": "amendment to earlier commencing SR 2015/49, Sch. 2"
+    },
+    "law": "UK_nia_2011_25",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nia_2011_25/86ad45f689": {
+    "effect": {
+      "affected_provisions": "Pt. 4 Ch. 1 (except s. 92-93, 102)",
+      "affected_ranges": [
+        [
+          "part-section-92",
+          "part-section-93"
+        ]
+      ],
+      "affected_refs": [
+        "part-4",
+        "part-4-chapter-1",
+        "part",
+        "part-section-102",
+        "part-section-92",
+        "part-section-93"
+      ],
+      "affecting": "UK_nisr_2015_107",
+      "affecting_provisions": "reg. 11",
+      "applied": true,
+      "effect_extent": "N.I.",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2015-04-01",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2015-04-01",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "applied (with modifications)"
+    },
+    "law": "UK_nia_2011_25",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nia_2011_25/8ce144d33d": {
+    "effect": {
+      "affected_provisions": "s. 176-178",
+      "affected_ranges": [
+        [
+          "section-176",
+          "section-178"
+        ]
+      ],
+      "affected_refs": [
+        "section-176",
+        "section-178"
+      ],
+      "affecting": "UK_nisr_2016_76",
+      "affecting_provisions": "Sch. 5 Pt. 1",
+      "applied": true,
+      "effect_extent": "N.I.",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2016-05-08",
+          "prospective": false,
+          "qualification": "for specified purposes"
+        }
+      ],
+      "in_force_date": "2016-05-08",
+      "in_force_qualification": "for specified purposes",
+      "in_force_qualifications": [
+        "for specified purposes"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "savings": [
+        "article-9-2"
+      ],
+      "type": "transfer of functions"
+    },
+    "law": "UK_nia_2011_25",
+    "order": [
+      "section-176",
+      "section-176-1",
+      "section-176-2",
+      "section-176-3",
+      "section-176-4",
+      "section-176-5",
+      "section-176-1-a",
+      "section-176-1-b",
+      "section-176-1-c",
+      "section-176-1-d",
+      "section-176-1-e",
+      "section-176-1-f",
+      "section-176-1-g",
+      "section-176-5-a",
+      "section-176-5-b",
+      "section-177",
+      "section-177-1",
+      "section-177-2",
+      "section-177-3",
+      "section-177-1-a",
+      "section-177-1-b",
+      "section-177-1-b-i",
+      "section-177-1-b-ii",
+      "section-177-3-a",
+      "section-177-3-b",
+      "section-178"
+    ],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nia_2011_25/9962f07bba": {
+    "effect": {
+      "affected_provisions": "Pt. 1-3",
+      "affected_ranges": [
+        [
+          "part-1",
+          "part-3"
+        ]
+      ],
+      "affected_refs": [
+        "part-1",
+        "part-3"
+      ],
+      "affecting": "UK_nisr_2016_76",
+      "affecting_provisions": "Sch. 5 Pt. 2",
+      "applied": true,
+      "effect_extent": "N.I.",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2016-05-08",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2016-05-08",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "savings": [
+        "article-9-2"
+      ],
+      "type": "transfer of functions"
+    },
+    "law": "UK_nia_2011_25",
+    "order": [
+      "part-1",
+      "part-2",
+      "part-3"
+    ],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nia_2011_25/b3d4be826a": {
+    "effect": {
+      "affected_provisions": "Pt. 3",
+      "affected_refs": [
+        "part-3"
+      ],
+      "affecting": "UK_nisr_2015_39",
+      "affecting_provisions": "reg. 2",
+      "applied": true,
+      "effect_extent": "N.I.",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2015-04-01",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2015-04-01",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "applied with modification(s)"
+    },
+    "law": "UK_nia_2011_25",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nia_2011_25/b807cde9be": {
+    "effect": {
+      "affected_provisions": "s. 110 (except (2)(e)",
+      "affected_refs": [
+        "section-110",
+        "part"
+      ],
+      "affecting": "UK_nisr_2015_61",
+      "affecting_provisions": "reg. 15(3)",
+      "applied": true,
+      "effect_extent": "N.I.",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2015-04-01",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2015-04-01",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "applied"
+    },
+    "law": "UK_nia_2011_25",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nia_2011_25/c8d09ff401": {
+    "effect": {
+      "affected_provisions": "Pt. 7 (except s. 192)",
+      "affected_refs": [
+        "part-7",
+        "part",
+        "part-section-192"
+      ],
+      "affecting": "UK_nisr_2015_107",
+      "affecting_provisions": "reg. 11",
+      "applied": true,
+      "effect_extent": "N.I.",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2015-04-01",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2015-04-01",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "applied (with modifications)"
+    },
+    "law": "UK_nia_2011_25",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
   "UK_nia_2013_10/678b2db7f5": {
     "effect": {
       "affected_provisions": "s. 23",
@@ -21048,6 +21841,35 @@
     "rows": [],
     "xml_ids": {}
   },
+  "UK_nisi_2006_2957/5dde7b7aa0": {
+    "effect": {
+      "affected_provisions": "art. 1 cross-heading",
+      "affected_refs": [
+        "article-1"
+      ],
+      "affecting": "UK_ukpga_2026_18",
+      "affecting_provisions": "s. 161(2)",
+      "applied": false,
+      "in_force": [
+        {
+          "applied": false,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        }
+      ],
+      "prospective": true,
+      "requires_applied": true,
+      "type": "omitted"
+    },
+    "law": "UK_nisi_2006_2957",
+    "order": [],
+    "rows": [],
+    "xml_ids": {
+      "article-1": "reg.1"
+    }
+  },
   "UK_nisr_1991_446/1ccbfef028": {
     "effect": {
       "affected_provisions": "reg. 5(2)",
@@ -22078,6 +22900,99 @@
       "type": "inserted"
     },
     "law": "UK_nisr_1996_119",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nisr_1996_119/773def5c46": {
+    "effect": {
+      "affected_extent": "N.I.",
+      "affected_provisions": "Sch. 1 Pt. IX para. 1n9",
+      "affected_refs": [
+        "schedule-1-part-IX",
+        "schedule-1-part-IX-paragraph-1n9"
+      ],
+      "affecting": "UK_nisr_1996_119",
+      "affecting_provisions": "reg. 1",
+      "applied": false,
+      "in_force": [
+        {
+          "applied": false,
+          "commencing": null,
+          "date": "1996-05-01",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "1996-05-01",
+      "in_force_qualification": "wholly in force",
+      "prospective": false,
+      "requires_applied": true,
+      "type": "coming into force"
+    },
+    "law": "UK_nisr_1996_119",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nisr_1996_119/f97e9b207a": {
+    "effect": {
+      "affected_extent": "N.I.",
+      "affected_provisions": "Sch. 1 para. 2.1.1",
+      "affected_refs": [
+        "schedule-1",
+        "schedule-1-paragraph-2.1.1"
+      ],
+      "affecting": "UK_nisr_1996_119",
+      "affecting_provisions": "reg. 1",
+      "applied": false,
+      "in_force": [
+        {
+          "applied": false,
+          "commencing": null,
+          "date": "1996-05-01",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "1996-05-01",
+      "in_force_qualification": "wholly in force",
+      "prospective": false,
+      "requires_applied": true,
+      "type": "coming into force"
+    },
+    "law": "UK_nisr_1996_119",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_nisr_1996_262/d0abe2b666": {
+    "effect": {
+      "affected_extent": "N.I.",
+      "affected_provisions": "Sch. Pt. II",
+      "affected_refs": [
+        "schedule",
+        "schedule-part-II"
+      ],
+      "affecting": "UK_nisr_1996_262",
+      "affecting_provisions": "reg. 1",
+      "applied": false,
+      "in_force": [
+        {
+          "applied": false,
+          "commencing": null,
+          "date": "1997-07-31",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "1997-07-31",
+      "in_force_qualification": "wholly in force",
+      "prospective": false,
+      "requires_applied": true,
+      "type": "coming into force"
+    },
+    "law": "UK_nisr_1996_262",
     "order": [],
     "rows": [],
     "xml_ids": {}
@@ -23795,50 +24710,6 @@
       "regulation-2": "reg.2"
     }
   },
-  "UK_ssi_2004_406/2b4d3052a2": {
-    "effect": {
-      "affected_provisions": "sch. 1-6",
-      "affected_ranges": [
-        [
-          "schedule-1",
-          "schedule-6"
-        ]
-      ],
-      "affected_refs": [
-        "schedule-1",
-        "schedule-6"
-      ],
-      "affecting": "UK_ssi_2006_534",
-      "affecting_provisions": "reg. 2(c) sch.",
-      "applied": true,
-      "effect_extent": "S",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2007-05-01",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "2007-05-01",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "savings": [
-        "regulation-3",
-        "regulation-4"
-      ],
-      "type": "substituted"
-    },
-    "law": "UK_ssi_2004_406",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
   "UK_ssi_2004_406/3080cbc58a": {
     "effect": {
       "affected_provisions": "sch. 3 para. 23A and cross-heading",
@@ -24574,37 +25445,6 @@
     "order": [],
     "rows": [],
     "xml_ids": {}
-  },
-  "UK_ssi_2009_140/0ae062bf77": {
-    "effect": {
-      "affected_provisions": "art. 2(1)",
-      "affected_refs": [
-        "article-2-1"
-      ],
-      "affecting": "UK_ssi_2017_432",
-      "affecting_provisions": "art. 3(a)",
-      "applied": true,
-      "effect_extent": "S",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2017-12-08",
-          "prospective": false,
-          "qualification": null
-        }
-      ],
-      "in_force_date": "2017-12-08",
-      "prospective": false,
-      "requires_applied": true,
-      "type": "words inserted"
-    },
-    "law": "UK_ssi_2009_140",
-    "order": [],
-    "rows": [],
-    "xml_ids": {
-      "article-2-1": "reg.2(1)"
-    }
   },
   "UK_ssi_2009_140/1737b03582": {
     "effect": {
@@ -25544,44 +26384,6 @@
     "order": [],
     "rows": [],
     "xml_ids": {}
-  },
-  "UK_ukpga_1875_17/b9d959fc00": {
-    "effect": {
-      "affected_provisions": "s. 43",
-      "affected_refs": [
-        "section-43"
-      ],
-      "affecting": "UK_uksi_2010_976",
-      "affecting_provisions": "Sch. 12 para. 1(1)",
-      "applied": true,
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2010-04-12",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "2010-04-12",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "savings": [
-        "schedule-12",
-        "schedule-12-paragraph-4-1"
-      ],
-      "type": "transfer of functions"
-    },
-    "law": "UK_ukpga_1875_17",
-    "order": [],
-    "rows": [],
-    "xml_ids": {
-      "section-43": "s.43"
-    }
   },
   "UK_ukpga_1875_17/be2bbbe96e": {
     "effect": {
@@ -27706,63 +28508,6 @@
     "rows": [],
     "xml_ids": {}
   },
-  "UK_ukpga_1963_33/defba53d0b": {
-    "effect": {
-      "affected_provisions": "s. 1-4 (Pt. 1)",
-      "affected_ranges": [
-        [
-          "section-1",
-          "section-4"
-        ]
-      ],
-      "affected_refs": [
-        "part-I",
-        "section-1",
-        "section-4"
-      ],
-      "affecting": "UK_ukpga_1996_61",
-      "affecting_provisions": "s. 3 Sch. 3 para. 4(5)",
-      "applied": true,
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        }
-      ],
-      "prospective": true,
-      "requires_applied": true,
-      "type": "applied"
-    },
-    "law": "UK_ukpga_1963_33",
-    "order": [
-      "section-1",
-      "section-1-1",
-      "section-1-2",
-      "section-1-3",
-      "section-1-4",
-      "section-1-5",
-      "section-1-6",
-      "section-1-7",
-      "section-1-1-a",
-      "section-1-1-b",
-      "section-1-2-a",
-      "section-1-2-b",
-      "term-borough",
-      "term-county-borough",
-      "term-non-county-borough",
-      "section-2",
-      "section-2-1",
-      "section-2-2",
-      "section-2-4",
-      "section-3",
-      "section-4"
-    ],
-    "rows": [],
-    "xml_ids": {}
-  },
   "UK_ukpga_1965_49/5c0d028417": {
     "effect": {
       "affected_provisions": "s. 23(1A)",
@@ -28536,6 +29281,60 @@
       "section-52": "s.52"
     }
   },
+  "UK_ukpga_1968_27/78318e1c47": {
+    "effect": {
+      "affected_provisions": "s. 11(3A)-(4A)",
+      "affected_ranges": [
+        [
+          "section-11-3A",
+          "section-11-4A"
+        ]
+      ],
+      "affected_refs": [
+        "section-11-3A",
+        "section-11-4A"
+      ],
+      "affecting": "UK_ukpga_2023_49",
+      "affecting_provisions": "s. 1(2)",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": false,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2025_535",
+          "date": "2025-05-01",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2025-05-01",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "substituted for s. 11(4)"
+    },
+    "law": "UK_ukpga_1968_27",
+    "order": [
+      "section-11-3A",
+      "section-11-4",
+      "section-11-4A"
+    ],
+    "rows": [],
+    "xml_ids": {
+      "section-11-3A": "s.11(3A)",
+      "section-11-4": "s.11(4)",
+      "section-11-4A": "s.11(4A)"
+    }
+  },
   "UK_ukpga_1968_27/7a24c92a1c": {
     "effect": {
       "affected_provisions": "Sch. 6 Pt. 2 para. 3",
@@ -28591,60 +29390,6 @@
     "order": [],
     "rows": [],
     "xml_ids": {}
-  },
-  "UK_ukpga_1968_27/9872f7ddab": {
-    "effect": {
-      "affected_extent": "E+W+S",
-      "affected_provisions": "s. 51A",
-      "affected_refs": [
-        "section-51A"
-      ],
-      "affecting": "UK_ukpga_2006_52",
-      "affecting_provisions": "s. 227",
-      "applied": true,
-      "effect_extent": "E+W+S+N.I.",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        },
-        {
-          "applied": true,
-          "commencing": "UK_uksi_2009_812",
-          "date": "2009-03-28",
-          "prospective": false,
-          "qualification": "for specified purposes"
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2009_1167",
-          "date": "2009-10-31",
-          "prospective": false,
-          "qualification": "in force in so far as not already in force"
-        }
-      ],
-      "in_force_date": "2009-03-28",
-      "in_force_qualification": "for specified purposes",
-      "in_force_qualifications": [
-        "for specified purposes",
-        "in force in so far as not already in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "savings": [
-        "section-385"
-      ],
-      "type": "applied in part (with modifications)"
-    },
-    "law": "UK_ukpga_1968_27",
-    "order": [],
-    "rows": [],
-    "xml_ids": {
-      "section-51A": "s.51A"
-    }
   },
   "UK_ukpga_1968_27/a812e64873": {
     "effect": {
@@ -29846,30 +30591,6 @@
     "rows": [],
     "xml_ids": {}
   },
-  "UK_ukpga_1971_40/ab0e721861": {
-    "effect": {
-      "affected_provisions": "Act",
-      "affecting": "UK_uksi_1999_677",
-      "affecting_provisions": "art. 5(1)",
-      "applied": true,
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        }
-      ],
-      "prospective": true,
-      "requires_applied": true,
-      "type": "referred to (Crown status for the purposes of the Act extended )"
-    },
-    "law": "UK_ukpga_1971_40",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
   "UK_ukpga_1971_40/c46e645729": {
     "effect": {
       "affected_extent": "E+W+S",
@@ -30628,69 +31349,6 @@
     "rows": [],
     "xml_ids": {}
   },
-  "UK_ukpga_1972_70/23be1f9f6d": {
-    "effect": {
-      "affected_provisions": "s. 250(2)-(5)",
-      "affected_ranges": [
-        [
-          "section-250-2",
-          "section-250-5"
-        ]
-      ],
-      "affected_refs": [
-        "section-250-2",
-        "section-250-5"
-      ],
-      "affecting": "UK_ukpga_2000_37",
-      "affecting_provisions": "Sch. 6 para. 24",
-      "applied": true,
-      "effect_extent": "E+W",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2003_272",
-          "date": "2003-02-12",
-          "prospective": false,
-          "qualification": "for E. for specified purposes"
-        },
-        {
-          "applied": true,
-          "commencing": "UK_wsi_2005_1314",
-          "date": "2005-05-31",
-          "prospective": false,
-          "qualification": "for W."
-        },
-        {
-          "applied": true,
-          "commencing": "UK_uksi_2007_1493",
-          "date": "2007-05-21",
-          "prospective": false,
-          "qualification": "for E. for specified purposes"
-        }
-      ],
-      "in_force_date": "2003-02-12",
-      "in_force_qualification": "for E. for specified purposes",
-      "in_force_qualifications": [
-        "for E. for specified purposes",
-        "for W.",
-        "for E. for specified purposes"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "applied (with modifications) by 1980 c. 66 Sch. 12ZA para. 7 (as inserted)"
-    },
-    "law": "UK_ukpga_1972_70",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
   "UK_ukpga_1972_70/26445d4251": {
     "effect": {
       "affected_extent": "E+W",
@@ -31051,6 +31709,74 @@
     "rows": [],
     "xml_ids": {}
   },
+  "UK_ukpga_1972_70/560b7c9f51": {
+    "effect": {
+      "affected_provisions": "s. 250(2)-(5)",
+      "affected_ranges": [
+        [
+          "section-250-2",
+          "section-250-5"
+        ]
+      ],
+      "affected_refs": [
+        "section-250-2",
+        "section-250-5"
+      ],
+      "affecting": "UK_ukpga_2000_37",
+      "affecting_provisions": "Sch. 5 para. 11(8)",
+      "applied": true,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2004_292",
+          "date": "2004-02-13",
+          "prospective": false,
+          "qualification": "for E."
+        },
+        {
+          "applied": true,
+          "commencing": "UK_wsi_2005_1314",
+          "date": "2005-05-31",
+          "prospective": false,
+          "qualification": "for W."
+        },
+        {
+          "applied": null,
+          "commencing": "UK_uksi_2005_2459",
+          "date": "2005-09-27",
+          "prospective": false,
+          "qualification": "for E. in so far as not already in force"
+        }
+      ],
+      "in_force_date": "2004-02-13",
+      "in_force_qualification": "for E.",
+      "in_force_qualifications": [
+        "for E.",
+        "for W.",
+        "for E. in so far as not already in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "applied (with modifications) by 1981 c. 69 Sch. 15 para. 10A(1)(2) (as inserted)"
+    },
+    "law": "UK_ukpga_1972_70",
+    "order": [
+      "section-250-2",
+      "section-250-3",
+      "section-250-4",
+      "section-250-5"
+    ],
+    "rows": [],
+    "xml_ids": {}
+  },
   "UK_ukpga_1972_70/5e0021978f": {
     "effect": {
       "affected_provisions": "s. 101",
@@ -31182,7 +31908,13 @@
       "type": "disapplied"
     },
     "law": "UK_ukpga_1972_70",
-    "order": [],
+    "order": [
+      "section-94",
+      "section-95",
+      "section-96",
+      "section-97",
+      "section-98"
+    ],
     "rows": [],
     "xml_ids": {}
   },
@@ -31668,11 +32400,11 @@
       ],
       "affecting": "UK_uksi_2026_1011",
       "affecting_provisions": "Sch. para. 3(g)",
-      "applied": false,
+      "applied": true,
       "effect_extent": "E+W",
       "in_force": [
         {
-          "applied": false,
+          "applied": true,
           "commencing": null,
           "date": "2026-10-05",
           "prospective": false,
@@ -31681,6 +32413,9 @@
       ],
       "in_force_date": "2026-10-05",
       "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
       "prospective": false,
       "requires_applied": true,
       "savings": [
@@ -32885,6 +33620,64 @@
       "part-I": "pt.I"
     }
   },
+  "UK_ukpga_1974_37/2842d62a91": {
+    "effect": {
+      "affected_provisions": "s. 23(4)",
+      "affected_refs": [
+        "section-23-4"
+      ],
+      "affecting": "UK_ukpga_2004_21",
+      "affecting_provisions": "Sch. 1 para. 44",
+      "applied": true,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2004_2304",
+          "date": "2004-09-07",
+          "prospective": false,
+          "qualification": "for E. for specified purposes"
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2004_2304",
+          "date": "2004-10-01",
+          "prospective": false,
+          "qualification": "for E. in so far as not already in force"
+        },
+        {
+          "applied": true,
+          "commencing": "UK_wsi_2004_2917",
+          "date": "2004-11-10",
+          "prospective": false,
+          "qualification": "for W."
+        }
+      ],
+      "in_force_date": "2004-09-07",
+      "in_force_qualification": "for E. for specified purposes",
+      "in_force_qualifications": [
+        "for E. for specified purposes",
+        "for E. in so far as not already in force",
+        "for W."
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "words substituted"
+    },
+    "law": "UK_ukpga_1974_37",
+    "order": [],
+    "rows": [],
+    "xml_ids": {
+      "section-23-4": "s.23(4)"
+    }
+  },
   "UK_ukpga_1974_37/79e9031b84": {
     "effect": {
       "affected_provisions": "s. 18",
@@ -33196,45 +33989,6 @@
       "part-III": "pt.III"
     }
   },
-  "UK_ukpga_1974_40/bd6e9b8ac6": {
-    "effect": {
-      "affected_provisions": "s. 61(9)",
-      "affected_refs": [
-        "section-61-9"
-      ],
-      "affecting": "UK_uksi_2024_752",
-      "affecting_provisions": "art. 44(2)",
-      "applied": true,
-      "effect_extent": "E+W+S",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2024-10-09",
-          "prospective": false,
-          "qualification": "(as amended by S.I. 2024/1020, Sch.)"
-        }
-      ],
-      "in_force_date": "2024-10-09",
-      "in_force_qualification": "other",
-      "in_force_qualifications": [
-        "(as amended by S.I. 2024/1020, Sch.)"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "savings": [
-        "article-4",
-        "schedule-10"
-      ],
-      "type": "excluded"
-    },
-    "law": "UK_ukpga_1974_40",
-    "order": [],
-    "rows": [],
-    "xml_ids": {
-      "section-61-9": "s.61(9)"
-    }
-  },
   "UK_ukpga_1974_7/3d696527e7": {
     "effect": {
       "affected_extent": "E+W",
@@ -33294,34 +34048,6 @@
       "prospective": true,
       "requires_applied": true,
       "type": "textual"
-    },
-    "law": "UK_ukpga_1974_7",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
-  "UK_ukpga_1974_7/a8d754e397": {
-    "effect": {
-      "affected_provisions": "s. 25 in pt.",
-      "affected_refs": [
-        "section-25",
-        "part"
-      ],
-      "affecting": "UK_uksi_1999_1016",
-      "affecting_provisions": "Sch. 4 para s. 1 3",
-      "applied": true,
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        }
-      ],
-      "prospective": true,
-      "requires_applied": true,
-      "type": "modified"
     },
     "law": "UK_ukpga_1974_7",
     "order": [],
@@ -33731,6 +34457,74 @@
     "rows": [],
     "xml_ids": {}
   },
+  "UK_ukpga_1975_23/e4e467f091": {
+    "effect": {
+      "affected_provisions": "s. 2(2B)-(2E)",
+      "affected_ranges": [
+        [
+          "section-2-2B",
+          "section-2-2E"
+        ]
+      ],
+      "affected_refs": [
+        "section-2-2B",
+        "section-2-2E"
+      ],
+      "affecting": "UK_ukpga_2010_29",
+      "affecting_provisions": "Sch. 4 para. 4",
+      "applied": true,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        },
+        {
+          "applied": null,
+          "commencing": "UK_uksi_2011_2204",
+          "date": "2011-10-01",
+          "prospective": false,
+          "qualification": "for specified purposes"
+        },
+        {
+          "applied": null,
+          "commencing": "UK_uksi_2013_1590",
+          "date": "2013-07-30",
+          "prospective": false,
+          "qualification": "for E. so far as not already in force"
+        },
+        {
+          "applied": null,
+          "commencing": "UK_wsi_2016_79",
+          "date": "2016-04-01",
+          "prospective": false,
+          "qualification": "for W. in so far as not already in force"
+        }
+      ],
+      "in_force_date": "2011-10-01",
+      "in_force_qualification": "for specified purposes",
+      "in_force_qualifications": [
+        "for specified purposes",
+        "for E. so far as not already in force",
+        "for W. in so far as not already in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "savings": [
+        "section-49-1",
+        "section-49-1",
+        "section-49-6"
+      ],
+      "type": "inserted"
+    },
+    "law": "UK_ukpga_1975_23",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
   "UK_ukpga_1975_51/0a376e72a3": {
     "effect": {
       "affected_extent": "E+W",
@@ -33865,6 +34659,70 @@
       "section-20": "s.20",
       "section-21": "s.21",
       "section-22": "s.22"
+    }
+  },
+  "UK_ukpga_1975_51/3bfc49a992": {
+    "effect": {
+      "affected_extent": "E+W",
+      "affected_provisions": "s. 25(1)-(1B)",
+      "affected_ranges": [
+        [
+          "section-25-1",
+          "section-25-1B"
+        ]
+      ],
+      "affected_refs": [
+        "section-25-1",
+        "section-25-1B"
+      ],
+      "affecting": "UK_ukpga_2009_23",
+      "affecting_provisions": "s. 217(1)",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2009-11-12",
+          "prospective": false,
+          "qualification": "for specified purposes"
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2009_3345",
+          "date": "2010-01-12",
+          "prospective": false,
+          "qualification": "for specified purposes"
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2010_298",
+          "date": "2011-01-01",
+          "prospective": false,
+          "qualification": "in force in so far as not already in force"
+        }
+      ],
+      "in_force_date": "2009-11-12",
+      "in_force_qualification": "for specified purposes",
+      "in_force_qualifications": [
+        "for specified purposes",
+        "for specified purposes",
+        "in force in so far as not already in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "substituted for s. 25(1)"
+    },
+    "law": "UK_ukpga_1975_51",
+    "order": [
+      "section-25-1",
+      "section-25-1A",
+      "section-25-1B"
+    ],
+    "rows": [],
+    "xml_ids": {
+      "section-25-1": "s.25(1)",
+      "section-25-1A": "s.25(1A)",
+      "section-25-1B": "s.25(1B)"
     }
   },
   "UK_ukpga_1975_51/c192376739": {
@@ -34045,61 +34903,6 @@
     "rows": [],
     "xml_ids": {}
   },
-  "UK_ukpga_1977_45/d0431172be": {
-    "effect": {
-      "affected_provisions": "Sch. 12",
-      "affected_refs": [
-        "schedule-12"
-      ],
-      "affecting": "UK_ukpga_2003_44",
-      "affecting_provisions": "Sch. 37 Pt. 4",
-      "applied": true,
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2012_1320",
-          "date": "2012-06-18",
-          "prospective": false,
-          "qualification": "for specified purposes"
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2012_2574",
-          "date": "2012-11-05",
-          "prospective": false,
-          "qualification": "for specified purposes"
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2013_1103",
-          "date": "2013-05-28",
-          "prospective": false,
-          "qualification": "for specified purposes"
-        }
-      ],
-      "in_force_date": "2012-06-18",
-      "in_force_qualification": "for specified purposes",
-      "in_force_qualifications": [
-        "for specified purposes",
-        "for specified purposes",
-        "for specified purposes"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "entry repealed"
-    },
-    "law": "UK_ukpga_1977_45",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
   "UK_ukpga_1978_3/01cd2ff475": {
     "effect": {
       "affected_extent": "E+W+S",
@@ -34137,6 +34940,155 @@
     "rows": [],
     "xml_ids": {
       "section-6": "s.6"
+    }
+  },
+  "UK_ukpga_1978_3/69b72f6eef": {
+    "effect": {
+      "affected_provisions": "s. 2A-2C",
+      "affected_ranges": [
+        [
+          "section-2A",
+          "section-2C"
+        ]
+      ],
+      "affected_refs": [
+        "section-2A",
+        "section-2C"
+      ],
+      "affecting": "UK_ukpga_2005_16",
+      "affecting_provisions": "s. 10",
+      "applied": true,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": false,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        },
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2006-03-16",
+          "prospective": false,
+          "qualification": "for W. for specified purposes"
+        },
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2006-04-06",
+          "prospective": false,
+          "qualification": "for E."
+        },
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2007-03-15",
+          "prospective": false,
+          "qualification": "(being the date on which S.I. 2007/739 came into force) for W. in so far as not already in force"
+        },
+        {
+          "applied": true,
+          "commencing": "UK_wsi_2006_768",
+          "date": "2006-03-16",
+          "prospective": false,
+          "qualification": "for W. for specified purposes"
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2006_795",
+          "date": "2006-04-06",
+          "prospective": false,
+          "qualification": "for E."
+        },
+        {
+          "applied": true,
+          "commencing": "UK_wsi_2006_2797",
+          "date": "2007-03-15",
+          "prospective": false,
+          "qualification": "(being the date on which S.I. 2007/739 came into force) for W. in so far as not already in force"
+        }
+      ],
+      "in_force_date": "2006-03-16",
+      "in_force_qualification": "for W. for specified purposes",
+      "in_force_qualifications": [
+        "for W. for specified purposes",
+        "for E.",
+        "(being the date on which S.I. 2007/739 came into force) for W. in so far as not already in force",
+        "for W. for specified purposes",
+        "for E.",
+        "(being the date on which S.I. 2007/739 came into force) for W. in so far as not already in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "inserted"
+    },
+    "law": "UK_ukpga_1978_3",
+    "order": [
+      "section-2A",
+      "section-2A-1",
+      "section-2A-2",
+      "section-2A-3",
+      "section-2A-4",
+      "section-2A-5",
+      "section-2A-6",
+      "section-2A-7",
+      "section-2A-8",
+      "section-2A-9",
+      "section-2A-10",
+      "section-2A-11",
+      "section-2A-12",
+      "section-2A-13",
+      "section-2A-14",
+      "section-2A-2-a",
+      "section-2A-2-b",
+      "section-2A-4-a",
+      "section-2A-4-b",
+      "section-2A-4-c",
+      "section-2A-13-a",
+      "section-2A-13-b",
+      "section-2B",
+      "section-2B-1",
+      "section-2B-2",
+      "section-2B-3",
+      "section-2B-4",
+      "section-2B-2-a",
+      "section-2B-2-b",
+      "section-2C"
+    ],
+    "rows": [],
+    "xml_ids": {
+      "section-2A": "s.2A",
+      "section-2A-1": "s.2A(1)",
+      "section-2A-10": "s.2A(10)",
+      "section-2A-11": "s.2A(11)",
+      "section-2A-12": "s.2A(12)",
+      "section-2A-13": "s.2A(13)",
+      "section-2A-13-a": "s.2A(13)(a)",
+      "section-2A-13-b": "s.2A(13)(b)",
+      "section-2A-14": "s.2A(14)",
+      "section-2A-2": "s.2A(2)",
+      "section-2A-2-a": "s.2A(2)(a)",
+      "section-2A-2-b": "s.2A(2)(b)",
+      "section-2A-3": "s.2A(3)",
+      "section-2A-4": "s.2A(4)",
+      "section-2A-4-a": "s.2A(4)(a)",
+      "section-2A-4-b": "s.2A(4)(b)",
+      "section-2A-4-c": "s.2A(4)(c)",
+      "section-2A-5": "s.2A(5)",
+      "section-2A-6": "s.2A(6)",
+      "section-2A-7": "s.2A(7)",
+      "section-2A-8": "s.2A(8)",
+      "section-2A-9": "s.2A(9)",
+      "section-2B": "s.2B",
+      "section-2B-1": "s.2B(1)",
+      "section-2B-2": "s.2B(2)",
+      "section-2B-2-a": "s.2B(2)(a)",
+      "section-2B-2-b": "s.2B(2)(b)",
+      "section-2B-3": "s.2B(3)",
+      "section-2B-4": "s.2B(4)",
+      "section-2C": "s.2C"
     }
   },
   "UK_ukpga_1978_3/dfc47e0c6f": {
@@ -34234,61 +35186,6 @@
     "rows": [],
     "xml_ids": {}
   },
-  "UK_ukpga_1978_30/0a561a974a": {
-    "effect": {
-      "affected_provisions": "Sch. 1",
-      "affected_refs": [
-        "schedule-1"
-      ],
-      "affecting": "UK_ukpga_2003_44",
-      "affecting_provisions": "Sch. 3 para. 49(a) Sch. 37 Pt. 4",
-      "applied": true,
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2012_1320",
-          "date": "2012-06-18",
-          "prospective": false,
-          "qualification": "for specified purposes"
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2012_2574",
-          "date": "2012-11-05",
-          "prospective": false,
-          "qualification": "for specified purposes"
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2013_1103",
-          "date": "2013-05-28",
-          "prospective": false,
-          "qualification": "for specified purposes"
-        }
-      ],
-      "in_force_date": "2012-06-18",
-      "in_force_qualification": "for specified purposes",
-      "in_force_qualifications": [
-        "for specified purposes",
-        "for specified purposes",
-        "for specified purposes"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "words repealed"
-    },
-    "law": "UK_ukpga_1978_30",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
   "UK_ukpga_1978_30/250804eb26": {
     "effect": {
       "affected_provisions": "Act",
@@ -34307,69 +35204,6 @@
       "prospective": true,
       "requires_applied": true,
       "type": "Appointed day(s) for spec. provns. (15.10.1995 1.3.1996)"
-    },
-    "law": "UK_ukpga_1978_30",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
-  "UK_ukpga_1978_30/5d3e4ad6f0": {
-    "effect": {
-      "affected_provisions": "Sch. 1",
-      "affected_refs": [
-        "schedule-1"
-      ],
-      "affecting": "UK_ukpga_2003_44",
-      "affecting_provisions": "Sch. 3 para. 49(b)",
-      "applied": true,
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2005_1267",
-          "date": "2005-05-09",
-          "prospective": false,
-          "qualification": "for specified purposes"
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2012_1320",
-          "date": "2012-06-18",
-          "prospective": false,
-          "qualification": "for specified purposes"
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2012_2574",
-          "date": "2012-11-05",
-          "prospective": false,
-          "qualification": "for specified purposes"
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2013_1103",
-          "date": "2013-05-28",
-          "prospective": false,
-          "qualification": "for specified purposes"
-        }
-      ],
-      "in_force_date": "2005-05-09",
-      "in_force_qualification": "for specified purposes",
-      "in_force_qualifications": [
-        "for specified purposes",
-        "for specified purposes",
-        "for specified purposes",
-        "for specified purposes"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "words inserted"
     },
     "law": "UK_ukpga_1978_30",
     "order": [],
@@ -35076,173 +35910,6 @@
     "rows": [],
     "xml_ids": {}
   },
-  "UK_ukpga_1980_66/08b030a270": {
-    "effect": {
-      "affected_provisions": "s. 119B-119E",
-      "affected_ranges": [
-        [
-          "section-119B",
-          "section-119E"
-        ]
-      ],
-      "affected_refs": [
-        "section-119B",
-        "section-119E"
-      ],
-      "affecting": "UK_ukpga_2000_37",
-      "affecting_provisions": "Sch. 6 para. 12",
-      "applied": true,
-      "effect_extent": "E+W",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2003_272",
-          "date": "2003-02-12",
-          "prospective": false,
-          "qualification": "for E. for the insertion of s. 119B"
-        },
-        {
-          "applied": null,
-          "commencing": "UK_wsi_2005_1314",
-          "date": "2005-07-15",
-          "prospective": false,
-          "qualification": "for W. for the insertion of s. 119B for specified purposes"
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2007_1493",
-          "date": "2007-05-21",
-          "prospective": false,
-          "qualification": "for E. for the insertion of ss. 119D, 119E"
-        }
-      ],
-      "in_force_date": "2003-02-12",
-      "in_force_qualification": "Other",
-      "in_force_qualifications": [
-        "for E. for the insertion of s. 119B",
-        "for W. for the insertion of s. 119B for specified purposes",
-        "for E. for the insertion of ss. 119D, 119E"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "inserted"
-    },
-    "law": "UK_ukpga_1980_66",
-    "order": [
-      "section-119B",
-      "section-119B-1",
-      "section-119B-2",
-      "section-119B-3",
-      "section-119B-4",
-      "section-119B-5",
-      "section-119B-6",
-      "section-119B-7",
-      "section-119B-8",
-      "section-119B-9",
-      "section-119B-10",
-      "section-119B-11",
-      "section-119B-12",
-      "section-119B-13",
-      "section-119B-14",
-      "section-119B-15",
-      "section-119B-1-a",
-      "section-119B-1-b",
-      "section-119B-1-b-i",
-      "section-119B-1-b-ii",
-      "section-119B-1-b-iii",
-      "section-119B-1-b-iv",
-      "section-119B-2-a",
-      "section-119B-2-b",
-      "section-119B-2-c",
-      "term-relevant-highway",
-      "section-119B-3-a",
-      "section-119B-3-b",
-      "section-119B-4-a",
-      "section-119B-4-b",
-      "section-119B-4-a-i",
-      "section-119B-4-a-ii",
-      "term-special-diversion-order",
-      "section-119B-7-a",
-      "section-119B-7-b",
-      "section-119B-8-a",
-      "section-119B-8-b",
-      "section-119B-10-a",
-      "section-119B-10-b",
-      "section-119B-10-c",
-      "section-119B-11-a",
-      "section-119B-11-b",
-      "section-119B-11-c",
-      "section-119B-11-d",
-      "section-119B-12-a",
-      "section-119B-12-b",
-      "section-119B-12-c",
-      "section-119B-14-a",
-      "section-119B-14-b",
-      "section-119B-14-c",
-      "section-119C",
-      "section-119C-1",
-      "section-119C-2",
-      "section-119C-3",
-      "section-119C-4",
-      "section-119C-1-a",
-      "section-119C-1-b",
-      "section-119C-2-a",
-      "section-119C-2-b",
-      "section-119C-2-c",
-      "section-119C-2-d",
-      "section-119C-3-a",
-      "section-119C-3-b",
-      "section-119C-3-c",
-      "section-119C-4-a",
-      "section-119C-4-b",
-      "section-119D",
-      "section-119D-1",
-      "section-119D-2",
-      "section-119D-3",
-      "section-119D-4",
-      "section-119D-5",
-      "section-119D-6",
-      "section-119D-7",
-      "section-119D-8",
-      "section-119D-9",
-      "section-119D-10",
-      "section-119D-11",
-      "section-119D-12",
-      "section-119D-1-a",
-      "section-119D-1-b",
-      "section-119D-2-a",
-      "section-119D-2-b",
-      "section-119D-2-c",
-      "term-relevant-highway",
-      "section-119D-3-a",
-      "section-119D-3-b",
-      "section-119D-3-a-i",
-      "section-119D-3-a-ii",
-      "term-sssi-diversion-order",
-      "section-119D-5-a",
-      "section-119D-5-b",
-      "section-119D-6-a",
-      "section-119D-6-b",
-      "section-119D-8-a",
-      "section-119D-8-b",
-      "section-119D-8-c",
-      "section-119D-9-a",
-      "section-119D-9-b",
-      "section-119D-9-c",
-      "term-the-appropriate-conservation-body",
-      "term-site-of-special-scientific-interest",
-      "section-119E"
-    ],
-    "rows": [],
-    "xml_ids": {}
-  },
   "UK_ukpga_1980_66/15b2f5f282": {
     "effect": {
       "affected_provisions": "Act",
@@ -35524,62 +36191,6 @@
     "rows": [],
     "xml_ids": {}
   },
-  "UK_ukpga_1980_66/c9274e8339": {
-    "effect": {
-      "affected_provisions": "s. 120(1)",
-      "affected_refs": [
-        "section-120-1"
-      ],
-      "affecting": "UK_ukpga_2000_37",
-      "affecting_provisions": "Sch. 6 para. 13(2)",
-      "applied": true,
-      "effect_extent": "E+W",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2003_272",
-          "date": "2003-02-12",
-          "prospective": false,
-          "qualification": "for E. for specified purposes"
-        },
-        {
-          "applied": null,
-          "commencing": "UK_wsi_2005_1314",
-          "date": "2005-07-15",
-          "prospective": false,
-          "qualification": "for W. for specified purposes"
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2007_1493",
-          "date": "2007-05-21",
-          "prospective": false,
-          "qualification": "for E. for specified purposes"
-        }
-      ],
-      "in_force_date": "2003-02-12",
-      "in_force_qualification": "for E. for specified purposes",
-      "in_force_qualifications": [
-        "for E. for specified purposes",
-        "for W. for specified purposes",
-        "for E. for specified purposes"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "words substituted"
-    },
-    "law": "UK_ukpga_1980_66",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
   "UK_ukpga_1981_14/19054998fe": {
     "effect": {
       "affected_provisions": "s. 25",
@@ -35796,6 +36407,71 @@
       "part-IV": "pt.IV"
     }
   },
+  "UK_ukpga_1981_29/fc3040cf58": {
+    "effect": {
+      "affected_extent": "E+W+S",
+      "affected_provisions": "Sch. 4 para. 6(c)",
+      "affected_refs": [
+        "schedule-4",
+        "schedule-4-paragraph-6-c"
+      ],
+      "affecting": "UK_ukpga_2009_23",
+      "affecting_provisions": "Sch. 16 para. 18(5)(a) Sch. 22 Pt. 5(B)",
+      "applied": false,
+      "in_force": [
+        {
+          "applied": null,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        },
+        {
+          "applied": null,
+          "commencing": "UK_uksi_2009_3345",
+          "date": "2010-01-12",
+          "prospective": false,
+          "qualification": "wholly in force"
+        },
+        {
+          "applied": null,
+          "commencing": "UK_uksi_2009_3345",
+          "date": "2010-01-12",
+          "prospective": false,
+          "qualification": "for specified purposes"
+        },
+        {
+          "applied": null,
+          "commencing": "UK_uksi_2010_298",
+          "date": "2010-04-01",
+          "prospective": false,
+          "qualification": "for specified purposes"
+        },
+        {
+          "applied": null,
+          "commencing": "UK_uksi_2010_298",
+          "date": "2011-01-01",
+          "prospective": false,
+          "qualification": "in force in so far as not already in force"
+        }
+      ],
+      "in_force_date": "2010-01-12",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force",
+        "for specified purposes",
+        "for specified purposes",
+        "in force in so far as not already in force"
+      ],
+      "prospective": false,
+      "requires_applied": false,
+      "type": "words substituted"
+    },
+    "law": "UK_ukpga_1981_29",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
   "UK_ukpga_1981_69/2103dc98be": {
     "effect": {
       "affected_provisions": "s. 54A",
@@ -35825,6 +36501,87 @@
     "rows": [],
     "xml_ids": {
       "section-54A": "s.54A"
+    }
+  },
+  "UK_ukpga_1981_69/3b769ab5cf": {
+    "effect": {
+      "affected_extent": "E+W+S",
+      "affected_provisions": "s. 11A-11F",
+      "affected_ranges": [
+        [
+          "section-11A",
+          "section-11F"
+        ]
+      ],
+      "affected_refs": [
+        "section-11A",
+        "section-11F"
+      ],
+      "affecting": "UK_asp_2011_6",
+      "affecting_provisions": "s. 13(3)",
+      "applied": true,
+      "effect_extent": "S",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        },
+        {
+          "applied": true,
+          "commencing": "UK_ssi_2011_433",
+          "date": "2012-01-01",
+          "prospective": false,
+          "qualification": "for specified purposes"
+        },
+        {
+          "applied": true,
+          "commencing": "UK_ssi_2011_433",
+          "date": "2012-11-22",
+          "prospective": false,
+          "qualification": "for specified purposes"
+        },
+        {
+          "applied": true,
+          "commencing": "UK_ssi_2011_433",
+          "date": "2013-04-01",
+          "prospective": false,
+          "qualification": "in force in so far as not already in force"
+        }
+      ],
+      "in_force_date": "2012-01-01",
+      "in_force_qualification": "for specified purposes",
+      "in_force_qualifications": [
+        "for specified purposes",
+        "for specified purposes",
+        "in force in so far as not already in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "savings": [
+        "section-41-1"
+      ],
+      "type": "inserted"
+    },
+    "law": "UK_ukpga_1981_69",
+    "order": [
+      "section-11A",
+      "section-11B",
+      "section-11C",
+      "section-11D",
+      "section-11E",
+      "section-11F"
+    ],
+    "rows": [],
+    "xml_ids": {
+      "section-11A": "s.11A",
+      "section-11B": "s.11B",
+      "section-11C": "s.11C",
+      "section-11D": "s.11D",
+      "section-11E": "s.11E",
+      "section-11F": "s.11F"
     }
   },
   "UK_ukpga_1981_69/8af2ae0f6a": {
@@ -36313,6 +37070,55 @@
     "rows": [],
     "xml_ids": {}
   },
+  "UK_ukpga_1982_30/c2589cc51c": {
+    "effect": {
+      "affected_extent": "E+W",
+      "affected_provisions": "s. 15(1)(aa)(b)",
+      "affected_refs": [
+        "section-15-1-aa",
+        "section-15-1-b"
+      ],
+      "affecting": "UK_ukpga_2003_26",
+      "affecting_provisions": "s. 120(2)",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        },
+        {
+          "applied": true,
+          "commencing": "UK_wsi_2003_3034",
+          "date": "2004-04-01",
+          "prospective": false,
+          "qualification": "for W."
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2003_2938",
+          "date": "2004-04-01",
+          "prospective": false,
+          "qualification": "for E."
+        }
+      ],
+      "in_force_date": "2004-04-01",
+      "in_force_qualification": "for W.",
+      "in_force_qualifications": [
+        "for W.",
+        "for E."
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "substituted for s. 15(1)(b)"
+    },
+    "law": "UK_ukpga_1982_30",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
   "UK_ukpga_1982_45/4b432528d9": {
     "effect": {
       "affected_provisions": "Sch. 2 para. 7(2) (7) para. 7(8) para. 7(10) 8(1)-(8)",
@@ -36580,6 +37386,35 @@
       "type": "repealed & superseded"
     },
     "law": "UK_ukpga_1982_48",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_ukpga_1984_12/562d98c718": {
+    "effect": {
+      "affected_provisions": "Sch. 4 para. 1 (defns. of \"operator\" and \"telecommunications code system\")",
+      "affected_refs": [
+        "schedule-4",
+        "schedule-4-paragraph-1",
+        "section"
+      ],
+      "affecting": "UK_ukla_1996_12",
+      "affecting_provisions": "s. 1 Sch. s. 2",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        }
+      ],
+      "prospective": true,
+      "requires_applied": true,
+      "type": "applied"
+    },
+    "law": "UK_ukpga_1984_12",
     "order": [],
     "rows": [],
     "xml_ids": {}
@@ -36919,36 +37754,6 @@
       "prospective": false,
       "requires_applied": true,
       "type": "power extended"
-    },
-    "law": "UK_ukpga_1984_27",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
-  "UK_ukpga_1984_27/534d4031a1": {
-    "effect": {
-      "affected_provisions": "Act",
-      "affecting": "UK_uksi_2004_1402",
-      "affecting_provisions": "art. 6 Sch. 2",
-      "applied": true,
-      "effect_extent": "E+W+S",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2004-07-04",
-          "prospective": false,
-          "qualification": "for specified purposes"
-        }
-      ],
-      "in_force_date": "2004-07-04",
-      "in_force_qualification": "for specified purposes",
-      "in_force_qualifications": [
-        "for specified purposes"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "modified"
     },
     "law": "UK_ukpga_1984_27",
     "order": [],
@@ -37411,159 +38216,6 @@
     },
     "law": "UK_ukpga_1984_54",
     "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
-  "UK_ukpga_1984_54/cecd405ec6": {
-    "effect": {
-      "affected_provisions": "s. 20A-20G",
-      "affected_ranges": [
-        [
-          "section-20A",
-          "section-20G"
-        ]
-      ],
-      "affected_refs": [
-        "section-20A",
-        "section-20G"
-      ],
-      "affecting": "UK_ukpga_2023_55",
-      "affecting_provisions": "s. 164(3) Sch. 14 Pt. 2",
-      "applied": true,
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2023-12-26",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "2023-12-26",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "savings": [
-        "section-247"
-      ],
-      "type": "power to amend or repeal conferred"
-    },
-    "law": "UK_ukpga_1984_54",
-    "order": [
-      "section-20A",
-      "section-20A-a",
-      "section-20A-b",
-      "section-20B",
-      "section-20B-1",
-      "section-20B-2",
-      "section-20B-3",
-      "section-20B-4",
-      "section-20B-5",
-      "section-20B-6",
-      "section-20B-7",
-      "section-20B-1-a",
-      "section-20B-1-b",
-      "section-20B-1-c",
-      "section-20B-1-d",
-      "section-20B-1-e",
-      "section-20B-3-a",
-      "section-20B-3-b",
-      "section-20B-3-c",
-      "section-20B-3-d",
-      "c00002",
-      "c00003",
-      "section-20C",
-      "section-20C-1",
-      "section-20C-2",
-      "section-20C-3",
-      "section-20C-4",
-      "section-20C-5",
-      "section-20C-6",
-      "section-20C-7",
-      "section-20C-8",
-      "section-20C-9",
-      "section-20C-10",
-      "section-20C-11",
-      "section-20C-12",
-      "section-20C-13",
-      "section-20C-14",
-      "section-20C-15",
-      "section-20C-16",
-      "section-20C-2-a",
-      "section-20C-2-b",
-      "section-20C-3-a",
-      "section-20C-3-b",
-      "section-20C-3-a-i",
-      "section-20C-3-a-ii",
-      "section-20C-4-a",
-      "section-20C-4-b",
-      "section-20C-4-c",
-      "section-20C-4-d",
-      "section-20C-4-b-i",
-      "section-20C-4-b-ii",
-      "section-20C-4-d-i",
-      "section-20C-4-d-ii",
-      "section-20C-5-a",
-      "section-20C-5-b",
-      "section-20C-6-a",
-      "section-20C-6-b",
-      "section-20C-6-c",
-      "section-20C-6-d",
-      "section-20C-6-e",
-      "section-20C-6-f",
-      "section-20C-8-a",
-      "section-20C-8-b",
-      "section-20C-10-a",
-      "section-20C-10-b",
-      "section-20C-10-c",
-      "section-20C-10-d",
-      "section-20C-10-e",
-      "section-20C-10-f",
-      "section-20C-10-g",
-      "section-20C-10-h",
-      "section-20C-10-i",
-      "section-20C-10-j",
-      "section-20C-11-a",
-      "section-20C-11-b",
-      "section-20C-11-c",
-      "section-20C-12-a",
-      "section-20C-12-b",
-      "c00004",
-      "c00005",
-      "section-20D",
-      "section-20D-1",
-      "section-20D-2",
-      "section-20E",
-      "section-20E-1",
-      "section-20E-2",
-      "section-20F",
-      "section-20F-1",
-      "section-20F-2",
-      "section-20F-3",
-      "section-20F-4",
-      "section-20F-5",
-      "section-20F-6",
-      "section-20F-7",
-      "section-20F-1-a",
-      "section-20F-1-b",
-      "section-20F-2-a",
-      "section-20F-2-b",
-      "section-20F-2-c",
-      "section-20F-2-d",
-      "section-20F-4-a",
-      "section-20F-4-b",
-      "section-20F-4-c",
-      "section-20F-5-a",
-      "section-20F-5-b",
-      "section-20F-5-a-i",
-      "section-20F-5-a-ii",
-      "section-20F-6-a",
-      "section-20F-6-b",
-      "section-20G"
-    ],
     "rows": [],
     "xml_ids": {}
   },
@@ -38202,6 +38854,869 @@
     "xml_ids": {
       "section-51A": "s.51A"
     }
+  },
+  "UK_ukpga_1984_60/0a9ee8f90f": {
+    "effect": {
+      "affected_provisions": "s. 46A",
+      "affected_refs": [
+        "section-46A"
+      ],
+      "affecting": "UK_uksi_2022_362",
+      "affecting_provisions": "reg. 2",
+      "applied": true,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2022-03-24",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2022-03-24",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "continuation of earlier affecting provision 2020 c. 7, Sch. 24 paras. 11-13"
+    },
+    "law": "UK_ukpga_1984_60",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_ukpga_1984_60/3d81abdd35": {
+    "effect": {
+      "affected_provisions": "s. 8",
+      "affected_refs": [
+        "section-8"
+      ],
+      "affecting": "UK_ukpga_2015_20",
+      "affecting_provisions": "Sch. 21 para. 12",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2015-03-26",
+          "prospective": false,
+          "qualification": "for specified purposes"
+        },
+        {
+          "applied": null,
+          "commencing": "UK_uksi_2015_994",
+          "date": "2015-04-20",
+          "prospective": false,
+          "qualification": "for specified purposes"
+        },
+        {
+          "applied": null,
+          "commencing": "UK_uksi_2015_994",
+          "date": "2015-05-26",
+          "prospective": false,
+          "qualification": "in force in so far as not already in force"
+        }
+      ],
+      "in_force_date": "2015-03-26",
+      "in_force_qualification": "for specified purposes",
+      "in_force_qualifications": [
+        "for specified purposes",
+        "for specified purposes",
+        "in force in so far as not already in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "applied by 1972 c. 66, s. 9A (as inserted)"
+    },
+    "law": "UK_ukpga_1984_60",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_ukpga_1984_60/4fefd165bc": {
+    "effect": {
+      "affected_provisions": "s. 34(7)",
+      "affected_refs": [
+        "section-34-7"
+      ],
+      "affecting": "UK_ukpga_2011_9",
+      "affecting_provisions": "s. 1(2)",
+      "applied": true,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2004-01-20",
+          "prospective": false,
+          "qualification": "retrospective"
+        }
+      ],
+      "in_force_date": "2004-01-20",
+      "in_force_qualification": "retrospective",
+      "in_force_qualifications": [
+        "retrospective"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "words inserted"
+    },
+    "law": "UK_ukpga_1984_60",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_ukpga_1984_60/54534c8035": {
+    "effect": {
+      "affected_provisions": "s. 38(1)(a)(iiia)",
+      "affected_refs": [
+        "section-38-1-a",
+        "section-38-1-iiia"
+      ],
+      "affecting": "UK_ukpga_2026_20",
+      "affecting_provisions": "s. 186(3)(a)(i)",
+      "applied": false,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": false,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        }
+      ],
+      "prospective": true,
+      "requires_applied": true,
+      "type": "omitted"
+    },
+    "law": "UK_ukpga_1984_60",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_ukpga_1984_60/5bfdf86ac8": {
+    "effect": {
+      "affected_provisions": "s. 65 (defns. of \"registered dentist\" \"speculative search\" and \"sufficient and insufficient\")",
+      "affected_refs": [
+        "section-65",
+        "section",
+        "chapter"
+      ],
+      "affecting": "UK_ukpga_1994_33",
+      "affecting_provisions": "s. 58(4)",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        }
+      ],
+      "prospective": true,
+      "requires_applied": true,
+      "type": "added"
+    },
+    "law": "UK_ukpga_1984_60",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_ukpga_1984_60/6f6472e7e3": {
+    "effect": {
+      "affected_provisions": "Sch. 4 para. 11(a)(ii)(b) (iii)",
+      "affected_refs": [
+        "schedule-4",
+        "schedule-4-paragraph-11-a-ii",
+        "schedule-4-paragraph-11-a-b",
+        "schedule-4-paragraph-11-a-b-iii"
+      ],
+      "affecting": "UK_ukpga_1994_29",
+      "affecting_provisions": "s. 93 Sch. 9 Pt. 1",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        }
+      ],
+      "prospective": true,
+      "requires_applied": true,
+      "type": "repealed in part"
+    },
+    "law": "UK_ukpga_1984_60",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_ukpga_1984_60/7225fe2c25": {
+    "effect": {
+      "affected_provisions": "s. 46A(1ZA)(b)",
+      "affected_refs": [
+        "section-46A-1ZA-b"
+      ],
+      "affecting": "UK_ukpga_2009_25",
+      "affecting_provisions": "s. 107(3) Sch. 23 Pt. 3",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        },
+        {
+          "applied": null,
+          "commencing": "UK_uksi_2009_3253",
+          "date": "2009-12-14",
+          "prospective": false,
+          "qualification": "for specified purposes"
+        },
+        {
+          "applied": null,
+          "commencing": "UK_uksi_2010_816",
+          "date": "2010-04-06",
+          "prospective": false,
+          "qualification": "for specified purposes"
+        },
+        {
+          "applied": null,
+          "commencing": "UK_uksi_2011_2148",
+          "date": "2011-10-03",
+          "prospective": false,
+          "qualification": "for specified purposes"
+        },
+        {
+          "applied": null,
+          "commencing": "UK_uksi_2012_2374",
+          "date": "2012-10-08",
+          "prospective": false,
+          "qualification": "in force in so far as not already in force"
+        }
+      ],
+      "in_force_date": "2009-12-14",
+      "in_force_qualification": "for specified purposes",
+      "in_force_qualifications": [
+        "for specified purposes",
+        "for specified purposes",
+        "for specified purposes",
+        "in force in so far as not already in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "savings": [
+        "section-180"
+      ],
+      "type": "words repealed"
+    },
+    "law": "UK_ukpga_1984_60",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_ukpga_1984_60/85529df2f9": {
+    "effect": {
+      "affected_provisions": "s. 116(2)(c) (d)",
+      "affected_refs": [
+        "section-116-2-c",
+        "section-116-2-d"
+      ],
+      "affecting": "UK_ukpga_2002_29",
+      "affecting_provisions": "Sch. 11 para. 14(4)",
+      "applied": true,
+      "effect_extent": "E+W+S+N.I.",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2003_120",
+          "date": "2003-02-24",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2003-02-24",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "substituted for s. 116(2)(c) and word"
+    },
+    "law": "UK_ukpga_1984_60",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_ukpga_1984_60/91ec456770": {
+    "effect": {
+      "affected_provisions": "s. 54A(6)",
+      "affected_refs": [
+        "section-54A-6"
+      ],
+      "affecting": "UK_ukpga_2002_30",
+      "affecting_provisions": "Sch. 7 para. 9(2)",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2002_2750",
+          "date": "2002-12-02",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2002-12-02",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "word substituted for s. 54A(6)(a)(b) and words"
+    },
+    "law": "UK_ukpga_1984_60",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_ukpga_1984_60/a80a89b1ae": {
+    "effect": {
+      "affected_provisions": "s. 37A-37D",
+      "affected_ranges": [
+        [
+          "section-37A",
+          "section-37D"
+        ]
+      ],
+      "affected_refs": [
+        "section-37A",
+        "section-37D"
+      ],
+      "affecting": "UK_ukpga_2003_44",
+      "affecting_provisions": "Sch. 2 para. 3",
+      "applied": true,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2004_81",
+          "date": "2004-01-29",
+          "prospective": false,
+          "qualification": "except for the insertion of s. 37B(8)(9)(a)"
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2004_1629",
+          "date": "2004-07-03",
+          "prospective": false,
+          "qualification": "for the purpose of the insertion of s. 37B(9)(a)"
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2007_2874",
+          "date": "2007-10-01",
+          "prospective": false,
+          "qualification": "in force in so far as not already in force"
+        }
+      ],
+      "in_force_date": "2004-01-29",
+      "in_force_qualification": "Other",
+      "in_force_qualifications": [
+        "except for the insertion of s. 37B(8)(9)(a)",
+        "for the purpose of the insertion of s. 37B(9)(a)",
+        "in force in so far as not already in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "inserted"
+    },
+    "law": "UK_ukpga_1984_60",
+    "order": [
+      "section-37A",
+      "section-37A-1",
+      "section-37A-2",
+      "section-37A-3",
+      "section-37A-4",
+      "section-37A-5",
+      "section-37A-6",
+      "section-37A-1-a",
+      "section-37A-1-b",
+      "section-37A-5-a",
+      "section-37A-5-b",
+      "section-37B",
+      "section-37B-1",
+      "section-37B-2",
+      "section-37B-3",
+      "section-37B-4",
+      "section-37B-4A",
+      "section-37B-5",
+      "section-37B-5A",
+      "section-37B-6",
+      "section-37B-7",
+      "section-37B-8",
+      "section-37B-9",
+      "section-37B-3-a",
+      "section-37B-3-b",
+      "section-37B-5-a",
+      "section-37B-5-b",
+      "section-37B-8-a",
+      "section-37B-8-b",
+      "section-37C",
+      "section-37C-1",
+      "section-37C-2",
+      "section-37C-3",
+      "section-37C-4",
+      "section-37C-1-a",
+      "section-37C-1-b",
+      "section-37C-2-a",
+      "section-37C-2-b",
+      "section-37CA",
+      "section-37CA-1",
+      "section-37CA-2",
+      "section-37CA-3",
+      "section-37CA-4",
+      "section-37CA-5",
+      "section-37CA-6",
+      "section-37CA-7",
+      "section-37CA-1-a",
+      "section-37CA-1-b",
+      "section-37CA-2-a",
+      "section-37CA-2-b",
+      "section-37CA-2-c",
+      "section-37CA-2-b-i",
+      "section-37CA-2-b-ii",
+      "section-37CA-2-c-i",
+      "section-37CA-2-c-ii",
+      "section-37CA-5-a",
+      "section-37CA-5-b",
+      "section-37CA-5-b-i",
+      "section-37CA-5-b-ii",
+      "section-37D"
+    ],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_ukpga_1984_60/ad419c7040": {
+    "effect": {
+      "affected_provisions": "s. 27(4)",
+      "affected_refs": [
+        "section-27-4"
+      ],
+      "affecting": "UK_ukpga_2018_12",
+      "affecting_provisions": "s. 199(2)",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        },
+        {
+          "applied": null,
+          "commencing": "UK_uksi_2018_625",
+          "date": "2018-05-25",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2018-05-25",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "savings": [
+        "section-117",
+        "section-209",
+        "section-210"
+      ],
+      "type": "power extended"
+    },
+    "law": "UK_ukpga_1984_60",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_ukpga_1984_60/b2c25d8f23": {
+    "effect": {
+      "affected_provisions": "s. 17(1)(cza)",
+      "affected_refs": [
+        "section-17-1-cza"
+      ],
+      "affecting": "UK_uksi_2026_342",
+      "affecting_provisions": "reg. 2 3 4",
+      "applied": true,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2026-03-25",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2026-03-25",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "amendment to earlier commencing amendment SIs S.I. 2024/1191, S.I. 2025/319 and S.I. 2025/515"
+    },
+    "law": "UK_ukpga_1984_60",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_ukpga_1984_60/b8a8f8e522": {
+    "effect": {
+      "affected_provisions": "Pt. 5",
+      "affected_refs": [
+        "part-V"
+      ],
+      "affecting": "UK_uksi_2008_1261",
+      "affecting_provisions": "art. 52",
+      "applied": true,
+      "effect_extent": "E+W+S",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2008-05-16",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2008-05-16",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "savings": [
+        "article-41-1",
+        "article-45",
+        "article-54-2",
+        "article-55",
+        "article-56",
+        "article-57",
+        "article-58-6"
+      ],
+      "type": "incorporated"
+    },
+    "law": "UK_ukpga_1984_60",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_ukpga_1984_60/c666d7ee09": {
+    "effect": {
+      "affected_provisions": "s. 17(1)(c) s. 17(1)(iiia) (iiib)",
+      "affected_refs": [
+        "section-17-1-c",
+        "section-17-1-iiia",
+        "section-17-1-iiib"
+      ],
+      "affecting": "UK_ukpga_2005_15",
+      "affecting_provisions": "Sch. 7 para. 58(a)",
+      "applied": true,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2005_3495",
+          "date": "2006-01-01",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2006-01-01",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "substituted for s. 17(1)(c)(iiia)"
+    },
+    "law": "UK_ukpga_1984_60",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_ukpga_1984_60/c76f968005": {
+    "effect": {
+      "affected_provisions": "Sch. 5 Pt. 1 para. 6-8",
+      "affected_ranges": [
+        [
+          "schedule-5-part-I-paragraph-6",
+          "schedule-5-part-I-paragraph-8"
+        ]
+      ],
+      "affected_refs": [
+        "schedule-5-part-I",
+        "schedule-5-part-I-paragraph-6",
+        "schedule-5-part-I-paragraph-8"
+      ],
+      "affecting": "UK_ukpga_2003_42",
+      "affecting_provisions": "Sch. 7",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2004_874",
+          "date": "2004-05-01",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2004-05-01",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "repealed"
+    },
+    "law": "UK_ukpga_1984_60",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_ukpga_1984_60/da9e5313a0": {
+    "effect": {
+      "affected_provisions": "s. 17(1)(cza)",
+      "affected_refs": [
+        "section-17-1-cza"
+      ],
+      "affecting": "UK_ukpga_2021_17",
+      "affecting_provisions": "s. 26(9)",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2024_1191",
+          "date": "2024-11-27",
+          "prospective": false,
+          "qualification": "until the end of the specified period on 26.11.2025"
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2024_1191",
+          "date": "2024-11-27",
+          "prospective": false,
+          "qualification": "until the end of the specified period on 26.11.2025 in relation to specified areas"
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2025_261",
+          "date": "2025-03-05",
+          "prospective": false,
+          "qualification": "until the end of the specified period on 26.11.2025 in relation to the specified area"
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2025_319",
+          "date": "2025-03-11",
+          "prospective": false,
+          "qualification": "until the end of the specified period on 26.11.2025 in relation to the specified areas"
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2025_515",
+          "date": "2025-04-28",
+          "prospective": false,
+          "qualification": "until the end of the specified period on 26.11.2025 in relation to the specified areas"
+        }
+      ],
+      "in_force_date": "2024-11-27",
+      "in_force_qualification": "Other",
+      "in_force_qualifications": [
+        "until the end of the specified period on 26.11.2025",
+        "until the end of the specified period on 26.11.2025 in relation to specified areas",
+        "until the end of the specified period on 26.11.2025 in relation to the specified area",
+        "until the end of the specified period on 26.11.2025 in relation to the specified areas",
+        "until the end of the specified period on 26.11.2025 in relation to the specified areas"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "inserted"
+    },
+    "law": "UK_ukpga_1984_60",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_ukpga_1984_60/e1c7596178": {
+    "effect": {
+      "affected_provisions": "s. 46A(1ZA)(b)",
+      "affected_refs": [
+        "section-46A-1ZA-b"
+      ],
+      "affecting": "UK_ukpga_2022_32",
+      "affecting_provisions": "s. 201(1)",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2022-06-28",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2022-06-28",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "repeal of affecting provision 2020 c. 7, Sch. 24"
+    },
+    "law": "UK_ukpga_1984_60",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_ukpga_1984_60/e2aa4a6e8e": {
+    "effect": {
+      "affected_provisions": "Act",
+      "affecting": "UK_ukpga_2002_30",
+      "affecting_provisions": "Sch. 3 Pt. 3 para. 19(6)",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2002_2306",
+          "date": "2002-10-01",
+          "prospective": false,
+          "qualification": "for specified purposes"
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2004_913",
+          "date": "2004-04-01",
+          "prospective": false,
+          "qualification": "in force in so far as not already in force"
+        }
+      ],
+      "in_force_date": "2002-10-01",
+      "in_force_qualification": "for specified purposes",
+      "in_force_qualifications": [
+        "for specified purposes",
+        "in force in so far as not already in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "savings": [
+        "section-14-1"
+      ],
+      "type": "power to apply (with modifications) certain provisions conferred"
+    },
+    "law": "UK_ukpga_1984_60",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_ukpga_1984_60/e448414ac7": {
+    "effect": {
+      "affected_provisions": "s. 22",
+      "affected_refs": [
+        "section-22"
+      ],
+      "affecting": "UK_uksi_2024_1029",
+      "affecting_provisions": "art. 2(2)",
+      "applied": true,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2024-11-06",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2024-11-06",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "amendment to earlier effecting provision S.I. 2015/759, art. 5"
+    },
+    "law": "UK_ukpga_1984_60",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
   },
   "UK_ukpga_1985_48/6c8fe8f174": {
     "effect": {
@@ -41140,95 +42655,6 @@
     "rows": [],
     "xml_ids": {}
   },
-  "UK_ukpga_1985_67/c6e2bb14c1": {
-    "effect": {
-      "affected_provisions": "Pt. 4 5",
-      "affected_refs": [
-        "part-IV",
-        "part-V"
-      ],
-      "affecting": "UK_uksi_2025_118",
-      "affecting_provisions": "reg. 9",
-      "applied": true,
-      "effect_extent": "E+W",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2025-02-05",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "2025-02-05",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "territorial_application": "E",
-      "type": "functions made exercisable"
-    },
-    "law": "UK_ukpga_1985_67",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
-  "UK_ukpga_1985_9/387cd01ec1": {
-    "effect": {
-      "affected_extent": "E+W+S",
-      "affected_provisions": "Act",
-      "affecting": "UK_ukpga_2006_46",
-      "affecting_provisions": "s. 540(1) (4)",
-      "applied": true,
-      "effect_extent": "E+W+S+N.I.",
-      "in_force": [
-        {
-          "applied": false,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        },
-        {
-          "applied": true,
-          "commencing": "UK_uksi_2007_2194",
-          "date": "2007-10-01",
-          "prospective": false,
-          "qualification": "for specified purposes"
-        },
-        {
-          "applied": true,
-          "commencing": "UK_uksi_2007_3495",
-          "date": "2008-04-06",
-          "prospective": false,
-          "qualification": "for specified purposes"
-        },
-        {
-          "applied": true,
-          "commencing": "UK_uksi_2008_2860",
-          "date": "2009-10-01",
-          "prospective": false,
-          "qualification": "in force in so far as not already in force"
-        }
-      ],
-      "in_force_date": "2007-10-01",
-      "in_force_qualification": "for specified purposes",
-      "in_force_qualifications": [
-        "for specified purposes",
-        "for specified purposes",
-        "in force in so far as not already in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "modified"
-    },
-    "law": "UK_ukpga_1985_9",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
   "UK_ukpga_1985_9/4126eb8fff": {
     "effect": {
       "affected_provisions": "Sch. 2",
@@ -41428,35 +42854,6 @@
       "prospective": true,
       "requires_applied": true,
       "type": "replaced (by the words \"to the supply of gas (directly or indirectly) to a public gas transporter, gas supplier or gas shipper\") (prosp.)"
-    },
-    "law": "UK_ukpga_1986_44",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
-  "UK_ukpga_1986_44/dc2e3b862f": {
-    "effect": {
-      "affected_provisions": "Sch. 7 para. 5(5) (defn. of \"local authority\") para. (aa)",
-      "affected_refs": [
-        "schedule-7",
-        "schedule-7-paragraph-5-5",
-        "paragraph"
-      ],
-      "affecting": "UK_ukpga_1994_19",
-      "affecting_provisions": "s. 66(6) Sch. 16 para. 78",
-      "applied": true,
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        }
-      ],
-      "prospective": true,
-      "requires_applied": true,
-      "type": "added (prosp.)"
     },
     "law": "UK_ukpga_1986_44",
     "order": [],
@@ -42967,65 +44364,6 @@
     "rows": [],
     "xml_ids": {}
   },
-  "UK_ukpga_1987_53/f6990208d6": {
-    "effect": {
-      "affected_provisions": "Sch. 7 Pt. 10 paras. 2-7",
-      "affected_ranges": [
-        [
-          "schedule-7-part-X-paragraph-2",
-          "schedule-7-part-X-paragraph-7"
-        ]
-      ],
-      "affected_refs": [
-        "schedule-7-part-X",
-        "schedule-7-part-X-paragraph-2",
-        "schedule-7-part-X-paragraph-7"
-      ],
-      "affecting": "UK_ukpga_2003_21",
-      "affecting_provisions": "Sch. 17 para. 86(3)(a)",
-      "applied": true,
-      "effect_extent": "E+W+S+N.I.",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2003_1900",
-          "date": "2003-07-25",
-          "prospective": false,
-          "qualification": "for specified purposes"
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2003_3142",
-          "date": "2003-12-29",
-          "prospective": false,
-          "qualification": "in force in so far as not already in force"
-        }
-      ],
-      "in_force_date": "2003-07-25",
-      "in_force_qualification": "for specified purposes",
-      "in_force_qualifications": [
-        "for specified purposes",
-        "in force in so far as not already in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "savings": [
-        "schedule-18"
-      ],
-      "type": "words substituted"
-    },
-    "law": "UK_ukpga_1987_53",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
   "UK_ukpga_1988_45/4568d4f733": {
     "effect": {
       "affected_provisions": "Sch. para. 1(2)(a)",
@@ -43066,63 +44404,6 @@
     "rows": [],
     "xml_ids": {}
   },
-  "UK_ukpga_1988_52/55b22abea5": {
-    "effect": {
-      "affected_provisions": "s. 3A(1)(ba)",
-      "affected_refs": [
-        "section-3A-1-ba"
-      ],
-      "affecting": "UK_ukpga_2013_22",
-      "affecting_provisions": "Sch. 22 para. 2(2)",
-      "applied": true,
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2014_3268",
-          "date": "2015-03-02",
-          "prospective": false,
-          "qualification": "for E.W."
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2018_161",
-          "date": "2018-03-01",
-          "prospective": false,
-          "qualification": "for S."
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2018_162",
-          "date": "2018-03-01",
-          "prospective": false,
-          "qualification": "for N.I."
-        }
-      ],
-      "in_force_date": "2015-03-02",
-      "in_force_qualification": "for E.W.",
-      "in_force_qualifications": [
-        "for E.W.",
-        "for S.",
-        "for N.I."
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "inserted"
-    },
-    "law": "UK_ukpga_1988_52",
-    "order": [],
-    "rows": [],
-    "xml_ids": {
-      "section-3A-1-ba": "s.3A(1)(ba)"
-    }
-  },
   "UK_ukpga_1988_52/634b5a1464": {
     "effect": {
       "affected_extent": "E+W+S",
@@ -43152,67 +44433,6 @@
     "rows": [],
     "xml_ids": {
       "section-131-3-b": "s.131(3)(b)"
-    }
-  },
-  "UK_ukpga_1988_52/6e02ee6ce4": {
-    "effect": {
-      "affected_provisions": "s. 6C(1)(b)",
-      "affected_refs": [
-        "section-6C-1-b"
-      ],
-      "affecting": "UK_ukpga_2013_22",
-      "affecting_provisions": "Sch. 22 para. 3(2)",
-      "applied": true,
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2014_3268",
-          "date": "2015-03-02",
-          "prospective": false,
-          "qualification": "for E.W."
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2018_161",
-          "date": "2018-03-01",
-          "prospective": false,
-          "qualification": "for S."
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2018_162",
-          "date": "2018-03-01",
-          "prospective": false,
-          "qualification": "for N.I."
-        }
-      ],
-      "in_force_date": "2015-03-02",
-      "in_force_qualification": "for E.W.",
-      "in_force_qualifications": [
-        "for E.W.",
-        "for S.",
-        "for N.I."
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "savings": [
-        "schedule-22",
-        "schedule-22-paragraph-8"
-      ],
-      "type": "words substituted"
-    },
-    "law": "UK_ukpga_1988_52",
-    "order": [],
-    "rows": [],
-    "xml_ids": {
-      "section-6C-1-b": "s.6C(1)(b)"
     }
   },
   "UK_ukpga_1988_52/6e4dc791d0": {
@@ -44959,38 +46179,6 @@
     "rows": [],
     "xml_ids": {}
   },
-  "UK_ukpga_1990_42/4476ecccc7": {
-    "effect": {
-      "affected_provisions": "s. 204(6)",
-      "affected_refs": [
-        "section-204-6"
-      ],
-      "affecting": "UK_ukpga_2024_15",
-      "affecting_provisions": "s. 54(3)",
-      "applied": true,
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2024-05-24",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "2024-05-24",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "power extended"
-    },
-    "law": "UK_ukpga_1990_42",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
   "UK_ukpga_1990_42/492451c857": {
     "effect": {
       "affected_provisions": "Sch. 2",
@@ -45392,6 +46580,64 @@
     "rows": [],
     "xml_ids": {
       "part-II": "pt.II"
+    }
+  },
+  "UK_ukpga_1990_43/768b81e16e": {
+    "effect": {
+      "affected_provisions": "s. 160",
+      "affected_refs": [
+        "section-160"
+      ],
+      "affecting": "UK_ukpga_2003_38",
+      "affecting_provisions": "s. 49(3)",
+      "applied": true,
+      "effect_extent": "E+W",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        },
+        {
+          "applied": true,
+          "commencing": "UK_wsi_2004_999",
+          "date": "2004-03-31",
+          "prospective": false,
+          "qualification": "for W."
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2004_690",
+          "date": "2004-03-31",
+          "prospective": false,
+          "qualification": "for E. for specified purposes"
+        },
+        {
+          "applied": true,
+          "commencing": "UK_uksi_2006_393",
+          "date": "2006-04-06",
+          "prospective": false,
+          "qualification": "for E. so far as not already in force"
+        }
+      ],
+      "in_force_date": "2004-03-31",
+      "in_force_qualification": "for W.",
+      "in_force_qualifications": [
+        "for W.",
+        "for E. for specified purposes",
+        "for E. so far as not already in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "modified"
+    },
+    "law": "UK_ukpga_1990_43",
+    "order": [],
+    "rows": [],
+    "xml_ids": {
+      "section-160": "s.160"
     }
   },
   "UK_ukpga_1990_43/b9af9e18f1": {
@@ -54911,6 +56157,64 @@
       "part-vii-crossheading-conservation-areas": "h.196D"
     }
   },
+  "UK_ukpga_1990_8/f7d9dddf5e": {
+    "effect": {
+      "affected_provisions": "s. 264(5)(b)",
+      "affected_refs": [
+        "section-264-5-b"
+      ],
+      "affecting": "UK_ukpga_2011_20",
+      "affecting_provisions": "Sch. 12 para. 20(a) Sch. 25 Pt. 18",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2011-11-15",
+          "prospective": false,
+          "qualification": "for specified purposes"
+        },
+        {
+          "applied": null,
+          "commencing": "UK_uksi_2012_57",
+          "date": "2012-01-15",
+          "prospective": false,
+          "qualification": "for specified purposes"
+        },
+        {
+          "applied": null,
+          "commencing": "UK_uksi_2012_628",
+          "date": "2012-04-06",
+          "prospective": false,
+          "qualification": "wholly in force"
+        },
+        {
+          "applied": null,
+          "commencing": "UK_uksi_2013_797",
+          "date": "2013-04-06",
+          "prospective": false,
+          "qualification": "in force in so far as not already in force"
+        }
+      ],
+      "in_force_date": "2011-11-15",
+      "in_force_qualification": "for specified purposes",
+      "in_force_qualifications": [
+        "for specified purposes",
+        "for specified purposes",
+        "wholly in force",
+        "in force in so far as not already in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "words repealed"
+    },
+    "law": "UK_ukpga_1990_8",
+    "order": [],
+    "rows": [],
+    "xml_ids": {
+      "section-264-5-b": "s.264(5)(b)"
+    }
+  },
   "UK_ukpga_1990_8/fa2ae51997": {
     "effect": {
       "affected_provisions": "s. 62A-62C",
@@ -56453,76 +57757,6 @@
       "prospective": false,
       "requires_applied": true,
       "type": "2020 c. 14 Sch. 3 paras. 2-5 construed as one with this Chapter"
-    },
-    "law": "UK_ukpga_1992_12",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
-  "UK_ukpga_1992_12/dcc1a02046": {
-    "effect": {
-      "affected_extent": "E+W+S+N.I.",
-      "affected_provisions": "s. 271(1)(a)(i)(ia)",
-      "affected_refs": [
-        "section-271-1-a-i-ia"
-      ],
-      "affecting": "UK_uksi_2004_2744",
-      "affecting_provisions": "Sch. para. 3(2)(a)",
-      "applied": true,
-      "effect_extent": "E+W+S+N.I.",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2004-11-15",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "2004-11-15",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "savings": [
-        "article-3"
-      ],
-      "type": "substituted for s. 271(1)(a)(i)"
-    },
-    "law": "UK_ukpga_1992_12",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
-  "UK_ukpga_1992_12/e2cac25983": {
-    "effect": {
-      "affected_provisions": "s. 62(3)",
-      "affected_refs": [
-        "section-62-3"
-      ],
-      "affecting": "UK_ukpga_2026_11",
-      "affecting_provisions": "Sch. 3 para. 4",
-      "applied": true,
-      "effect_extent": "E+W+S+N.I.",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2025-04-06",
-          "prospective": false,
-          "qualification": "retrospective"
-        }
-      ],
-      "in_force_date": "2025-04-06",
-      "in_force_qualification": "retrospective",
-      "in_force_qualifications": [
-        "retrospective"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "words omitted"
     },
     "law": "UK_ukpga_1992_12",
     "order": [],
@@ -60835,7 +62069,6 @@
   },
   "UK_ukpga_1996_18/34980b2eb5": {
     "effect": {
-      "affected_extent": "E+W+S",
       "affected_provisions": "s. 227(1)(zzza)",
       "affected_refs": [
         "section-227-1-zzza"
@@ -60948,43 +62181,6 @@
     "order": [],
     "rows": [],
     "xml_ids": {}
-  },
-  "UK_ukpga_1996_18/79d20cf838": {
-    "effect": {
-      "affected_provisions": "s. 75C(1)(a)(b)",
-      "affected_refs": [
-        "section-75C-1-a",
-        "section-75C-1-b"
-      ],
-      "affecting": "UK_ukpga_2023_17",
-      "affecting_provisions": "s. 2(3)",
-      "applied": true,
-      "effect_extent": "E+W+S",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2023-07-24",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "2023-07-24",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "substituted for s. 75C(1)(a)(b) and words"
-    },
-    "law": "UK_ukpga_1996_18",
-    "order": [],
-    "rows": [],
-    "xml_ids": {
-      "section-75C-1-a": "s.75C(1)(a)",
-      "section-75C-1-b": "s.75C(1)(b)"
-    }
   },
   "UK_ukpga_1996_18/8fe71b2911": {
     "effect": {
@@ -67581,14 +68777,14 @@
       "applied": true,
       "in_force": [
         {
-          "applied": false,
+          "applied": true,
           "commencing": null,
           "date": null,
           "prospective": true,
           "qualification": null
         },
         {
-          "applied": true,
+          "applied": null,
           "commencing": "UK_uksi_2020_1622",
           "date": "2020-12-31",
           "prospective": false,
@@ -67657,7 +68853,8 @@
       "affected_provisions": "Sch. 5 Pt. 2 s. J4(a)(aa)",
       "affected_refs": [
         "schedule-5-part-II",
-        "schedule-5-part-II-section-J4-a-aa"
+        "schedule-5-part-II-section-J4-a",
+        "schedule-5-part-II-section-J4-aa"
       ],
       "affecting": "UK_uksi_2014_1559",
       "affecting_provisions": "art. 5(2)",
@@ -67686,47 +68883,6 @@
     "rows": [],
     "xml_ids": {}
   },
-  "UK_ukpga_1998_46/99f12bd1e5": {
-    "effect": {
-      "affected_provisions": "Sch. 5 Pt. 2 s. B3",
-      "affected_refs": [
-        "schedule-5-part-II",
-        "schedule-5-part-II-section-B3"
-      ],
-      "affecting": "UK_ukpga_2016_11",
-      "affecting_provisions": "s. 3(2)",
-      "applied": true,
-      "effect_extent": "E+W+S+N.I.",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": null,
-          "prospective": true,
-          "qualification": null
-        },
-        {
-          "applied": null,
-          "commencing": "UK_uksi_2017_608",
-          "date": "2017-05-18",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "2017-05-18",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "words inserted"
-    },
-    "law": "UK_ukpga_1998_46",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
   "UK_ukpga_1998_46/a098396724": {
     "effect": {
       "affected_provisions": "s. 53",
@@ -67748,6 +68904,50 @@
       "prospective": true,
       "requires_applied": true,
       "type": "power exercised"
+    },
+    "law": "UK_ukpga_1998_46",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_ukpga_1998_46/b3ed7e375b": {
+    "effect": {
+      "affected_provisions": "Sch. 5 Pt. 2 s. C16",
+      "affected_refs": [
+        "schedule-5-part-II",
+        "schedule-5-part-II-section-C16"
+      ],
+      "affecting": "UK_ukpga_2020_27",
+      "affecting_provisions": "s. 52(1)",
+      "applied": true,
+      "effect_extent": "E+W+S+N.I.",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": null,
+          "prospective": true,
+          "qualification": null
+        },
+        {
+          "applied": null,
+          "commencing": "UK_uksi_2020_1621",
+          "date": "2020-12-31",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2020-12-31",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "savings": [
+        "section-55-2"
+      ],
+      "type": "inserted"
     },
     "law": "UK_ukpga_1998_46",
     "order": [],
@@ -69047,40 +70247,6 @@
       "part-I-chapter-I": "pt.I.ch.I"
     }
   },
-  "UK_ukpga_2000_23/6bd71e7c4a": {
-    "effect": {
-      "affected_provisions": "Sch. 1 Pt. 2 heading",
-      "affected_refs": [
-        "schedule-1",
-        "schedule-1-part-II"
-      ],
-      "affecting": "UK_uksi_2012_2007",
-      "affecting_provisions": "Sch. para. 65",
-      "applied": true,
-      "effect_extent": "E+W+S+N.I.",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2012-08-01",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "2012-08-01",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "omitted"
-    },
-    "law": "UK_ukpga_2000_23",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
   "UK_ukpga_2000_23/d559cf209b": {
     "effect": {
       "affected_provisions": "s. 65(5)(czha)(czhb)",
@@ -69577,41 +70743,6 @@
     "rows": [],
     "xml_ids": {}
   },
-  "UK_ukpga_2001_2/f0273fa771": {
-    "effect": {
-      "affected_extent": "E+W+S+N.I.",
-      "affected_provisions": "s. 536(5)(a)(iiia)",
-      "affected_refs": [
-        "section-536-5-a",
-        "section-536-5-iiia"
-      ],
-      "affecting": "UK_ukpga_2011_11",
-      "affecting_provisions": "Sch. 14 para. 12(15)(d)",
-      "applied": true,
-      "effect_extent": "E+W+S+N.I.",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2011-07-19",
-          "prospective": false,
-          "qualification": "with effect in accordance with"
-        }
-      ],
-      "in_force_date": "2011-07-19",
-      "in_force_qualification": "with effect in accordance with",
-      "in_force_qualifications": [
-        "with effect in accordance with"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "inserted"
-    },
-    "law": "UK_ukpga_2001_2",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
   "UK_ukpga_2001_24/3d8dd1b25b": {
     "effect": {
       "affected_extent": "E+W+S+N.I.",
@@ -70102,7 +71233,7 @@
           "qualification": null
         },
         {
-          "applied": true,
+          "applied": null,
           "commencing": "UK_uksi_2003_1397",
           "date": "2003-06-20",
           "prospective": false,
@@ -70155,6 +71286,39 @@
         "article-4"
       ],
       "type": "function transferred"
+    },
+    "law": "UK_ukpga_2002_40",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_ukpga_2002_40/496d73a054": {
+    "effect": {
+      "affected_provisions": "Sch. 24 para. 17(1)",
+      "affected_refs": [
+        "schedule-24",
+        "schedule-24-paragraph-17-1"
+      ],
+      "affecting": "UK_uksi_2006_355",
+      "affecting_provisions": "art. 3(2) Sch. 2",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2006-03-10",
+          "prospective": false,
+          "qualification": "wholly in force"
+        }
+      ],
+      "in_force_date": "2006-03-10",
+      "in_force_qualification": "wholly in force",
+      "in_force_qualifications": [
+        "wholly in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "power exercised to specify orders"
     },
     "law": "UK_ukpga_2002_40",
     "order": [],
@@ -71684,41 +72848,6 @@
     "rows": [],
     "xml_ids": {}
   },
-  "UK_ukpga_2003_37/6e2487197b": {
-    "effect": {
-      "affected_extent": "E+W",
-      "affected_provisions": "Sch. 7 para. 26(2)(a)(i)(a)",
-      "affected_refs": [
-        "schedule-7",
-        "schedule-7-paragraph-26-2-a-i",
-        "schedule-7-paragraph-26-2-a"
-      ],
-      "affecting": "UK_uksi_2005_2714",
-      "affecting_provisions": "art. 2(l)(iv)(aa)",
-      "applied": true,
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2005-10-01",
-          "prospective": false,
-          "qualification": "for specified purposes"
-        }
-      ],
-      "in_force_date": "2005-10-01",
-      "in_force_qualification": "for specified purposes",
-      "in_force_qualifications": [
-        "for specified purposes"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "coming into force"
-    },
-    "law": "UK_ukpga_2003_37",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
   "UK_ukpga_2003_37/f9ffdab70b": {
     "effect": {
       "affected_provisions": "specified provision(s)",
@@ -72526,39 +73655,6 @@
     "rows": [],
     "xml_ids": {}
   },
-  "UK_ukpga_2003_44/dda9d08e76": {
-    "effect": {
-      "affected_provisions": "s. 51",
-      "affected_refs": [
-        "section-51"
-      ],
-      "affecting": "UK_uksi_2022_362",
-      "affecting_provisions": "reg. 2",
-      "applied": true,
-      "effect_extent": "E+W",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2022-03-24",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "2022-03-24",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "continuation of earlier affecting provision 2020 c. 7, Sch. 23"
-    },
-    "law": "UK_ukpga_2003_44",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
   "UK_ukpga_2003_44/deb1b7d95f": {
     "effect": {
       "affected_provisions": "s. 338(1)",
@@ -72702,6 +73798,52 @@
     "rows": [],
     "xml_ids": {
       "section-83": "s.83"
+    }
+  },
+  "UK_ukpga_2004_18/838694aee6": {
+    "effect": {
+      "affected_extent": "E+W",
+      "affected_provisions": "s. 40(3)",
+      "affected_refs": [
+        "section-40-3"
+      ],
+      "affecting": "UK_wsi_2007_3174",
+      "affecting_provisions": "art. 2 Sch.",
+      "applied": true,
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2007-11-26",
+          "prospective": false,
+          "qualification": "for W. for specified purposes"
+        },
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2008-04-01",
+          "prospective": false,
+          "qualification": "for W. in so far as not already in force"
+        }
+      ],
+      "in_force_date": "2007-11-26",
+      "in_force_qualification": "for W. for specified purposes",
+      "in_force_qualifications": [
+        "for W. for specified purposes",
+        "for W. in so far as not already in force"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "savings": [
+        "article-4"
+      ],
+      "type": "coming into force"
+    },
+    "law": "UK_ukpga_2004_18",
+    "order": [],
+    "rows": [],
+    "xml_ids": {
+      "section-40-3": "s.40(3)"
     }
   },
   "UK_ukpga_2004_20/5d33b44ba8": {
@@ -73186,46 +74328,6 @@
       "section-24-9-b": "s.24(9)(b)",
       "section-25": "s.25"
     }
-  },
-  "UK_ukpga_2005_15/418ae30b32": {
-    "effect": {
-      "affected_provisions": "s. 75A",
-      "affected_refs": [
-        "section-75A"
-      ],
-      "affecting": "UK_ukpga_2022_32",
-      "affecting_provisions": "s. 201(1)",
-      "applied": false,
-      "in_force": [
-        {
-          "applied": null,
-          "commencing": null,
-          "date": "2022-06-28",
-          "prospective": false,
-          "qualification": "wholly in force"
-        },
-        {
-          "applied": null,
-          "commencing": null,
-          "date": "2022-06-28",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "2022-06-28",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force",
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": false,
-      "type": "repeal of affecting provision 2020 c. 7, Sch. 24"
-    },
-    "law": "UK_ukpga_2005_15",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
   },
   "UK_ukpga_2005_15/cab17ad783": {
     "effect": {
@@ -74058,53 +75160,6 @@
     "rows": [],
     "xml_ids": {}
   },
-  "UK_ukpga_2006_46/8b01985c5d": {
-    "effect": {
-      "affected_extent": "E+W+S+N.I.",
-      "affected_provisions": "s. 368",
-      "affected_refs": [
-        "section-368"
-      ],
-      "affecting": "UK_uksi_2007_2194",
-      "affecting_provisions": "art. 2(2) 3(1) 5(1)",
-      "applied": true,
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2007-10-01",
-          "prospective": false,
-          "qualification": "for E.W.S."
-        },
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2007-11-01",
-          "prospective": false,
-          "qualification": "for N.I."
-        }
-      ],
-      "in_force_date": "2007-10-01",
-      "in_force_qualification": "for E.W.S.",
-      "in_force_qualifications": [
-        "for E.W.S.",
-        "for N.I."
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "savings": [
-        "article-7",
-        "article-12-2",
-        "schedule-3",
-        "schedule-3-paragraph-41"
-      ],
-      "type": "coming into force"
-    },
-    "law": "UK_ukpga_2006_46",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
   "UK_ukpga_2006_46/92b422d1f1": {
     "effect": {
       "affected_provisions": "s. 167G-167L and cross-heading",
@@ -74218,90 +75273,6 @@
     ],
     "rows": [],
     "xml_ids": {}
-  },
-  "UK_ukpga_2006_46/a299541a6b": {
-    "effect": {
-      "affected_provisions": "Pt. 1-39",
-      "affected_ranges": [
-        [
-          "part-1",
-          "part-39"
-        ]
-      ],
-      "affected_refs": [
-        "part-1",
-        "part-39"
-      ],
-      "affecting": "UK_uksi_2018_1298",
-      "affecting_provisions": "reg. 97",
-      "applied": true,
-      "effect_extent": "E+W+S+N.I.",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2020-12-31",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "2020-12-31",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "modified by Regulation (EC) No. 2157/2001, Art. AAA1(3) (as inserted)"
-    },
-    "law": "UK_ukpga_2006_46",
-    "order": [
-      "part-1",
-      "part-2",
-      "part-3",
-      "part-4",
-      "part-5",
-      "part-6",
-      "part-7",
-      "part-8",
-      "part-9",
-      "part-10",
-      "part-11",
-      "part-12",
-      "part-13",
-      "part-14",
-      "part-15",
-      "part-16",
-      "part-17",
-      "part-18",
-      "part-19",
-      "part-20",
-      "part-21",
-      "part-21A",
-      "part-22",
-      "part-23",
-      "part-24",
-      "part-25",
-      "part-26",
-      "part-26A",
-      "part-27",
-      "part-28",
-      "part-29",
-      "part-30",
-      "part-31",
-      "part-32",
-      "part-33",
-      "part-34",
-      "part-35",
-      "part-36",
-      "part-37",
-      "part-38",
-      "part-39"
-    ],
-    "rows": [],
-    "xml_ids": {
-      "part-15": "pt.15"
-    }
   },
   "UK_ukpga_2006_46/a38cd5220e": {
     "effect": {
@@ -75093,14 +76064,14 @@
     "rows": [],
     "xml_ids": {}
   },
-  "UK_ukpga_2009_20/0df933ab3b": {
+  "UK_ukpga_2009_20/329ac1bc43": {
     "effect": {
-      "affected_provisions": "s. 109A heading",
+      "affected_provisions": "s. 104(10)",
       "affected_refs": [
-        "part-6-crossheading-requirements-in-connection-with-orders-about-combined-authorities"
+        "section-104-10"
       ],
       "affecting": "UK_ukpga_2026_23",
-      "affecting_provisions": "Sch. 1 para. 15(a)",
+      "affecting_provisions": "Sch. 1 para. 2(a)(i)",
       "applied": true,
       "in_force": [
         {
@@ -75121,7 +76092,7 @@
       "savings": [
         "section-102"
       ],
-      "type": "words inserted"
+      "type": "words substituted"
     },
     "law": "UK_ukpga_2009_20",
     "order": [],
@@ -76277,44 +77248,6 @@
       "prospective": false,
       "requires_applied": true,
       "type": "savings for effects of commencing SI 2013/2200 art. 3(d)"
-    },
-    "law": "UK_ukpga_2013_22",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
-  "UK_ukpga_2013_22/c2462fb8e4": {
-    "effect": {
-      "affected_extent": "E+W+S+N.I.",
-      "affected_provisions": "Sch. 16 para. 11",
-      "affected_refs": [
-        "schedule-16",
-        "schedule-16-paragraph-11"
-      ],
-      "affecting": "UK_uksi_2017_236",
-      "affecting_provisions": "art. 2",
-      "applied": true,
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2017-03-13",
-          "prospective": false,
-          "qualification": "in relation to specified local justice areas until 12.3.2018"
-        }
-      ],
-      "in_force_date": "2017-03-13",
-      "in_force_qualification": "Other",
-      "in_force_qualifications": [
-        "in relation to specified local justice areas until 12.3.2018"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "savings": [
-        "article-3",
-        "article-4"
-      ],
-      "type": "coming into force"
     },
     "law": "UK_ukpga_2013_22",
     "order": [],
@@ -78043,6 +78976,74 @@
     "rows": [],
     "xml_ids": {}
   },
+  "UK_ukpga_2023_30/3cf555110b": {
+    "effect": {
+      "affected_provisions": "Sch. 16 Pt. 2 Ch. 1 heading",
+      "affected_refs": [
+        "schedule-16-part-2",
+        "schedule-16-part-2-chapter-1"
+      ],
+      "affecting": "UK_ukpga_2025_8",
+      "affecting_provisions": "Sch. 4 para. 6(2)",
+      "applied": true,
+      "effect_extent": "E+W+S+N.I.",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2025-03-20",
+          "prospective": false,
+          "qualification": "in relation to accounting periods commencing on or after 31.12.2024"
+        }
+      ],
+      "in_force_date": "2025-03-20",
+      "in_force_qualification": "Other",
+      "in_force_qualifications": [
+        "in relation to accounting periods commencing on or after 31.12.2024"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "words substituted"
+    },
+    "law": "UK_ukpga_2023_30",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
+  "UK_ukpga_2023_30/6c1b7cb488": {
+    "effect": {
+      "affected_provisions": "s. 276(c)(iiia)",
+      "affected_refs": [
+        "section-276-c",
+        "section-276-iiia"
+      ],
+      "affecting": "UK_ukpga_2024_3",
+      "affecting_provisions": "Sch. 12 para. 45(2)(b)",
+      "applied": true,
+      "effect_extent": "E+W+S+N.I.",
+      "in_force": [
+        {
+          "applied": true,
+          "commencing": null,
+          "date": "2024-02-22",
+          "prospective": false,
+          "qualification": "with effect for accounting periods beginning on or after 31.12.2023 in accordance with Sch. 12 para. 1(2) of the amending Act"
+        }
+      ],
+      "in_force_date": "2024-02-22",
+      "in_force_qualification": "Other",
+      "in_force_qualifications": [
+        "with effect for accounting periods beginning on or after 31.12.2023 in accordance with Sch. 12 para. 1(2) of the amending Act"
+      ],
+      "prospective": false,
+      "requires_applied": true,
+      "type": "inserted"
+    },
+    "law": "UK_ukpga_2023_30",
+    "order": [],
+    "rows": [],
+    "xml_ids": {}
+  },
   "UK_ukpga_2023_52/45c2698ed8": {
     "effect": {
       "affected_extent": "E+W+S+N.I.",
@@ -79441,44 +80442,6 @@
     "rows": [],
     "xml_ids": {}
   },
-  "UK_uksi_1989_682/311d077b0f": {
-    "effect": {
-      "affected_provisions": "Sch. Pt. 3",
-      "affected_refs": [
-        "schedule",
-        "schedule-part-III"
-      ],
-      "affecting": "UK_uksi_2007_320",
-      "affecting_provisions": "Sch. 4",
-      "applied": true,
-      "effect_extent": "E+W+S+N.I.",
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "2007-04-06",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "2007-04-06",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "savings": [
-        "regulation-3"
-      ],
-      "territorial_application": "E+W+S",
-      "type": "revoked"
-    },
-    "law": "UK_uksi_1989_682",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
   "UK_uksi_1990_2179/0301d59b56": {
     "effect": {
       "affected_provisions": "reg.16",
@@ -80505,40 +81468,6 @@
       "type": "certificate substituted"
     },
     "law": "UK_uksi_1998_1941",
-    "order": [],
-    "rows": [],
-    "xml_ids": {}
-  },
-  "UK_uksi_1998_2070/8e0211a369": {
-    "effect": {
-      "affected_extent": "E+W+S+N.I.",
-      "affected_provisions": "Sch. 7 Pt. A Ch. 1",
-      "affected_refs": [
-        "schedule-7-part-A",
-        "schedule-7-part-A-chapter-1"
-      ],
-      "affecting": "UK_uksi_1998_2070",
-      "affecting_provisions": "reg. 1(1)",
-      "applied": true,
-      "in_force": [
-        {
-          "applied": true,
-          "commencing": null,
-          "date": "1998-09-28",
-          "prospective": false,
-          "qualification": "wholly in force"
-        }
-      ],
-      "in_force_date": "1998-09-28",
-      "in_force_qualification": "wholly in force",
-      "in_force_qualifications": [
-        "wholly in force"
-      ],
-      "prospective": false,
-      "requires_applied": true,
-      "type": "coming into force"
-    },
-    "law": "UK_uksi_1998_2070",
     "order": [],
     "rows": [],
     "xml_ids": {}
