@@ -11,6 +11,7 @@ summary: >
   with their model in the file. fixer (Fable) takes the misreads of the four bug-richest readers and the
   Label fold, summariser (Haiku) long run output, clerk (Sonnet) paperwork and commits, reviewer (Fable)
   reviews; Opus 5.5 stays the session. The next family uses it from step 0, each step measured against EP's.
+  After the close Jason ruled out agent QA in any step; the workflows and step skills were cleared of it.
 
 decisions:
   - what: Fable on the Commencement, Amending-law, Feed and Extent readers and the Label fold (Decision 1, A)
@@ -25,6 +26,9 @@ decisions:
   - what: From step 0 of the next family (Decision 4, A)
     why: piloting on the Label fold (step 9) would leave steps 0-8 untried
     result: replaces the Label-fold-only pilot; measured per step against EP's row
+  - what: No agent QA or testing in any step; whether an agent helps a family's final QA is decided at its retrospective (Jason, after the close)
+    why: decided before (checks in code, 2026-11-01 and 2026-11-05) but only partly written in, so EP still ran five agent checks (about 1.0M tokens)
+    result: 55 edits in 15 files; agent steps and pass clauses gone from 8 steps' WORKFLOW and skill text, 7 skill descriptions, session-start, RULES; prompts kept as history only; the Models per part agent-check row removed
 
 metrics:
   open_pipeline_bugs: { total: 83, commencement: 30, amending: 17, feed: 11, extent: 8, fable_steps_share: 66 }
@@ -32,6 +36,9 @@ metrics:
 lessons:
   - title: A pilot placed late in the pipeline tests nothing before it
     detail: The Label fold pilot (aims review, Decision 4) was chosen by tokens alone; Jason saw it is step 9, so steps 0-8 of the next family would run on the old way. Choose by where the bugs are (the readers) and start from step 0.
+    tag: tooling
+  - title: A rule decided in one place stays undone where the step instructions still say otherwise
+    detail: The checks-in-code rule held in RULES and memory, but WORKFLOW's step checks and the skills' Steps and Pass lines still listed an agent check, and a step session follows its skill. A rule change sweeps every place that tells a step what to do (WORKFLOW, the skill's steps, pass and description, session-start).
     tag: tooling
 
 bugs: []
@@ -43,6 +50,8 @@ artifacts:
   - .claude/agents/reviewer.md
   - docs/lat-change-pipeline/WORKFLOW.md
   - .claude/commands/session-start.md
+  - .claude/skills/*-check/SKILL.md (11 step skills)
+  - docs/lat-change-pipeline/RULES.md
 
 depends_on:
   - 2026-11-10-amending-law-reader-review-tooling
@@ -191,4 +200,13 @@ Jason (2026-11-13): "We need .claude/agents/*.md. Not every step needs Fable 5.2
 - **session-start**, step section item 6: a plan names each delegated part and its agent.
 
 Which doc changed: WORKFLOW and session-start. No rule, so RULES.md does not. The agents load when a session starts, so this session cannot test them. The first QQ family's Making laws step is their first use.
+
+## After the close: no agent QA in a step (Jason, 2026-11-13)
+
+"Let's not use Agents for QA/testing in any step - we'd made that decision before but still some legacy runs in EP. We can decide during retrospective if an Agent helps final QA."
+
+- **The sweep** found agent checks still written in as current steps for the Feed, Markup, Commencement and Extent readers, Merge, Evidence, the Label fold, Measures, and Store and build. They were in WORKFLOW's step checks and pass rules, and in the skills' Steps, Pass and descriptions.
+- **Removed:** all of them, with the steps renumbered. The rule now stands in WORKFLOW principle 3, session-start item 6, RULES.md and every step skill's opening rules.
+- **Kept:** the agent prompts, marked history only, and the past results as history.
+- **This plan:** the "agent check" row of Decision 2's table is struck, so Fable is used only by `fixer` and `reviewer`. Commit 13f2dbdf.
 
