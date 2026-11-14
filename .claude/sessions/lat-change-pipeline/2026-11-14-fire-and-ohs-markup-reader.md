@@ -7,7 +7,7 @@ family: 'Fire and OH&S (round)'
 step: Markup reader
 outcome: success
 summary: >
-  The round's markup reading passes: 1,942 changes and 1,815 note placements in 139 laws, with our faults 0 (from 2). The step took the 6 parked Markup reader bugs. Three were fixed test first: the child CommentaryRef note, #188 (Decision 1 a) and the nested later Addition (Decision 2 a), which landed together with the Feed reader's held range patch. Three were named known limits. One rebuild (29,281 changes); golden 27/27; mix test 0 failures; step close Markup reader PASS, with Sources 9, Checked rows 22 and Stale laws 49 parked.
+  The round's markup reading passes: 1,942 changes and 1,815 note placements in 139 laws, with our faults 0 (from 2). The step took the 6 parked Markup reader bugs. Three were fixed test first: the child CommentaryRef note, #188 (Decision 1 a) and the nested later Addition (Decision 2 a), which landed together with the Feed reader's held range patch. Three were named known limits. One rebuild (29,281 changes); golden 27/27; mix test 0 failures; step close Markup reader PASS, with Sources 9, Checked rows 22 and Stale laws 49 parked (both with the Commencement reader).
 decisions:
   - what: Key a legacy change by its note's effect id where safe (Decision 1 a, #188)
     why: one change was two records (the note placement and the legacy change); 25 shared notes and 37 already-keyed notes would collide
@@ -150,7 +150,7 @@ This is step 3 of the round, over 139 UK laws with LAT rows. Each change element
 - ✅ The nested later Addition, test first (`NestedAdditions`: a change wrapping a later insertion in a row's number is not placed on that row or under it), landed with the held feed patch (merged by hand onto the Feed reader's later code). Narrowed by the catalogue's traps (Decision 2 a: the outer change's note cites an earlier law, and it has no words of its own; a legacy inner counts). Reader diff against HEAD over 476 candidate laws (`fire-and-ohs-reader-diff.txt`): 173 laws move; 1,080 targets gone, 202 added (#188's rekeyed changes), 212 notes filled. Golden 27/27 (`fire-and-ohs-golden.txt`)
 - ✅ Catalogues: markup twice cold (21 and 20 min; the first run found the traps Decision 2 settles), feed once (fixtures unchanged); 0 held readings moved; 9 new patterns accepted (Decision 3 a); catalogue test 1,187 pass
 - ✅ Restore point `markup-reader-fire-and-ohs-build`; one round rebuild (139 laws, 48 s; 29,286 → 29,281 changes, 6 laws move: `fire-and-ohs-build.txt`); markup and feed checks PASS, our faults 0, for the round and the three switched families
-- ✅ Pass: seed 67 twice, samples and reports identical (`fire-and-ohs-3a.txt`, `-3b.txt`); golden 27/27; `mix test` 10,939 pass, 0 failures; step close Markup reader PASS, Feed reader PASS, Sources 9 (parked), Checked rows 22 (parked in Environmental Protection), Stale laws 49 (parked: Commencement reader) (`fire-and-ohs-step-close.txt`)
+- ✅ Pass: seed 67 twice, samples and reports identical (`fire-and-ohs-3a.txt`, `-3b.txt`); golden 27/27; `mix test` 10,939 pass, 0 failures; step close Markup reader PASS, Feed reader PASS, Sources 9 (parked), Checked rows 22 (parked with the Commencement reader), Stale laws 49 (parked: Commencement reader) (`fire-and-ohs-step-close.txt`)
 - ✅ Close: RULES, WORKFLOW, the skill's history, the meta row, commits by path
 
 ## Dependencies
@@ -276,7 +276,7 @@ The second cold run took 20 min over 4,462 laws (`fire-and-ohs-catalogue-2.log`)
 | 5. Parked bugs | 6 taken: 3 fixed (the child CommentaryRef, #188, the nested Addition with the feed range) and 3 known limits (the plural citation, EU unnumbered ListItems, schedule-part wrappers); plus the 2 baseline faults fixed |
 | 6. Switched families | Markup and feed checks PASS, our faults 0. Maritime is identical and EP's counts are identical. Occupational has 1 more note placement, from the data since 11-09: no fix adds a note placement. Laws moved: Occupational 3 (Factories Act 1961, HSWA 1974, OLA 1984), EP 1 (Environment Act 1995), Maritime 0. Refreshed at the round's Store and build |
 | 7. `mix test` | 10,939 pass, 0 failures |
-| 8. Step close | Markup reader PASS; Feed reader PASS; Sources 9, Checked rows 22 and Stale laws 49 parked |
+| 8. Step close | Markup reader PASS; Feed reader PASS; Sources 9, Checked rows 22 and Stale laws 49 parked (both with the Commencement reader) |
 
 **Docs changed:**
 - RULES: `later-insertion-is-the-innermost-change`, `feed-range-is-its-ends-sequence`, `legacy-change-keyed-by-its-note`, `a-changes-note-is-any-of-its-elements`, the scope example in `read-a-law-for-our-scope`, and a Known limits row.
