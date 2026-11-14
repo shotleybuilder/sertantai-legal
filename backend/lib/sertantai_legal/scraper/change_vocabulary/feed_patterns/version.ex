@@ -57,6 +57,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedPatterns.Version do
       lib/sertantai_legal/scraper/change_vocabulary/readers/feed_affecting.ex
       lib/sertantai_legal/scraper/change_vocabulary/readers/feed_group.ex
       lib/sertantai_legal/scraper/change_vocabulary/readers/feed_maker.ex
+      lib/sertantai_legal/scraper/change_vocabulary/readers/feed_range.ex
       lib/sertantai_legal/scraper/change_vocabulary/readers/feed_substituted_for.ex
       lib/sertantai_legal/scraper/change_vocabulary/readers/markup.ex
       lib/sertantai_legal/scraper/change_vocabulary/readers/markup/*.ex

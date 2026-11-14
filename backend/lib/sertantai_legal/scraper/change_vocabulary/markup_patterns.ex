@@ -59,10 +59,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPatterns do
   def changes(doc) do
     # a substitution's new words are listed with its Repeal, as the reader
     # reads them (`Markup.substitutions/1`)
-    paired = Markup.substitutions(doc)
+    # and a legacy change is listed under its note's effect id where the
+    # reader keys it so (`Markup.note_keys/1`)
+    keys = %{paired: Markup.substitutions(doc), notes: Markup.note_keys(doc)}
 
     doc
-    |> walk([], [], paired)
+    |> walk([], [], keys)
     |> Enum.reverse()
     |> Enum.group_by(& &1.key)
     |> Map.new(fn {key, items} ->
@@ -78,7 +80,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPatterns do
     acc =
       cond do
         name in @changes and a["ChangeId"] ->
-          key = Markup.key(Map.get(paired, a["ChangeId"], a["ChangeId"]))
+          id = Map.get(paired.paired, a["ChangeId"], a["ChangeId"])
+          key = Map.get(paired.notes, id) || Markup.key(id)
           [%{key: key, change_id: a["ChangeId"], kind: name, attrs: a, stack: stack} | acc]
 
         name == :CommentaryRef and String.starts_with?(a["Ref"] || "", "key-") ->

@@ -152,6 +152,28 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupReaderTest do
       assert affecting(note(text)) == [["sch.10.para.9", "sch.para.3(3)"]]
     end
 
+    # EPA 1990 s.153(1)(ee) by SI 1996/1431: "arts. 1, 2", only "arts. 1"
+    # marked operative while the feed names art.2. The unmarked piece of
+    # such a list is usually the law's commencement provision ("ss. 57(4),
+    # 147(3)", Environment Act 2021), so the marks are read as given: a
+    # known limit (legislation.gov.uk marks the wrong piece), not a fix
+    test "only the pointers marked operative, even in a plural list" do
+      text =
+        ~s|S. 153(1)(ee) inserted by #{@cite}, <CitationSubRef CitationRef="x1" SectionRef="article-1" Operative="true">arts. 1</CitationSubRef>, | <>
+          ~s|<CitationSubRef CitationRef="x1" SectionRef="article-2">2</CitationSubRef>|
+
+      assert affecting(note(text)) == [["reg.1"]]
+    end
+
+    test "a pointer after (with …) is not operative" do
+      text =
+        ~s|Words substituted by #{@cite}, <CitationSubRef CitationRef="x1" SectionRef="regulation-4" Operative="true">regs. 4</CitationSubRef> | <>
+          ~s|(with <CitationSubRef CitationRef="x1" SectionRef="regulation-7">7</CitationSubRef>), | <>
+          ~s|<CitationSubRef CitationRef="x1" SectionRef="schedule-2">Sch. 2</CitationSubRef>|
+
+      assert affecting(note(text)) == [["reg.4"]]
+    end
+
     test "none marked operative: every pointer of the cited law" do
       text =
         ~s|Words substituted by #{@cite}, <CitationSubRef CitationRef="x1" SectionRef="regulation-1">reg. 1</CitationSubRef>, | <>
@@ -159,6 +181,35 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupReaderTest do
 
       assert affecting(note(text)) == [["reg.1", "reg.3"]]
     end
+  end
+
+  # Mines and Quarries Act 1954 s.80 (d30p2508): the note hangs on a
+  # child CommentaryRef of the change's first element, not its attribute
+  test "a note linked by a child CommentaryRef carries the cited law" do
+    xml = """
+    <Legislation><Body>
+    <P1 id="section-80"><Pnumber>80</Pnumber><P1para><Text>Some <Addition ChangeId="d30p2508"><CommentaryRef Ref="c1"/>new</Addition> and <Addition ChangeId="d30p2508">more</Addition> words.</Text></P1para></P1>
+    </Body><Commentaries><Commentary id="c1" Type="F"><Para><Text>Words inserted by <Citation id="x1" URI="http://www.legislation.gov.uk/id/uksi/2010/1">S.I. 2010/1</Citation>, <CitationSubRef CitationRef="x1" SectionRef="regulation-3" Operative="true">reg. 3</CitationSubRef></Text></Para></Commentary></Commentaries>
+    </Legislation>
+    """
+
+    [{_, "s.80", claims}] = Markup.read(xml, "UK_ukpga_1954_70")
+    got = Map.new(claims, &{&1.attribute, &1.value})
+    assert got.cited == "UK_uksi_2010_1"
+    assert got.affecting == ["reg.3"]
+    assert got.note == "c1"
+  end
+
+  test "a change's note is any of its elements', not only the first's" do
+    xml = """
+    <Legislation><Body>
+    <P1 id="section-80"><Pnumber>80</Pnumber><P1para><Text>Some <Addition ChangeId="d30p9">new</Addition> and <Addition ChangeId="d30p9" CommentaryRef="c1">more</Addition> words.</Text></P1para></P1>
+    </Body><Commentaries><Commentary id="c1" Type="F"><Para><Text>Words inserted by <Citation id="x1" URI="http://www.legislation.gov.uk/id/uksi/2010/1">S.I. 2010/1</Citation></Text></Para></Commentary></Commentaries>
+    </Legislation>
+    """
+
+    [{_, "s.80", claims}] = Markup.read(xml, "UK_ukpga_1954_70")
+    assert Enum.find(claims, &(&1.attribute == :note)).value == "c1"
   end
 
   test "H: whole subsections inserted under one id land on each, not as words on the parent" do
@@ -194,6 +245,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupReaderTest do
     """
 
     assert [{_, "reg.38(3)", %{operation: :inserted}}] = read(body)
+  end
+
+  # Fire and OH&S: Markup reader: the Explosives Act 1875 s.5's N.I.
+  # version repeats its id with the Pnumber "...", so the note "Ss. 4-22
+  # repealed (N.I.)" was placed on `s....`
+  test "a repeated id whose number has no letter or digit keeps its own id" do
+    body = """
+    <P1 id="section-5"><Pnumber><CommentaryRef Ref="KEY"/>5</Pnumber><P1para><Text>. . . .</Text></P1para></P1>
+    <P1 id="section-5"><Pnumber><CommentaryRef Ref="KEY"/>...</Pnumber><P1para><Text>. . . .</Text></P1para></P1>
+    """
+
+    targets = body |> read() |> Enum.map(&elem(&1, 1)) |> Enum.uniq()
+    assert targets == ["s.5"]
   end
 
   test "CV-S07 round 5: a change in a footnote is placed where the footnote is referenced, part of its change (Directive 92/85 Art 13a(4) by EU 2019/1243)" do

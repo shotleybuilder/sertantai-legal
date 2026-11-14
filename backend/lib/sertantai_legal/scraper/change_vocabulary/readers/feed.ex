@@ -34,6 +34,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
     FeedAffecting,
     FeedGroup,
     FeedMaker,
+    FeedRange,
     FeedSubstitutedFor
   }
 
@@ -81,10 +82,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
     held = MapSet.new(rows || Map.values(xml_ids))
     # the earlier makers' own effects: each is its maker's record
     own = FeedMaker.own(effects)
+    # who inserts each provision, for a range made around a later one
+    inserted = inserted(effects, flat)
 
     for %Effect{effect_id: id} = e <- effects,
         id != nil,
-        {target, ranged?, fresh?} <- placed(e, law_name, flat, xml_ids),
+        {target, ranged?, fresh?} <- placed(e, law_name, flat, xml_ids, inserted),
         {target, unheld} = finer(target, e, law_name, held),
         {key, claims} <- changes(e, own),
         claims = inserted_beside(claims, fresh?, id),
@@ -111,8 +114,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   # the effect's targets, each with whether a range reached it and whether
   # it is new beside what the Type says was substituted for ("substituted
   # for Art. 15(1)" over "Art. 15(1)(1A)": (1A), `FeedSubstitutedFor`)
-  defp placed(%Effect{type: type} = e, law, flat, xml_ids) do
-    targets = targets(e, law, flat, xml_ids)
+  defp placed(%Effect{type: type} = e, law, flat, xml_ids, inserted) do
+    targets = targets(e, law, flat, xml_ids, inserted)
     fresh = FeedSubstitutedFor.inserted(type, Enum.map(targets, &elem(&1, 0)))
 
     for {target, ranged?} <- targets, do: {target, ranged?, target in fresh}
@@ -573,10 +576,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   # from the first to the last in document order — the caller drops those
   # that didn't yet exist at the effect's date: V1-05)
   defp targets(
-         %Effect{affected_refs: refs, affected_ranges: ranges, affected_provisions: text},
+         %Effect{affected_refs: refs, affected_ranges: ranges, affected_provisions: text} = e,
          law,
          flat,
-         xml_ids
+         xml_ids,
+         inserted
        ) do
     ranges = ranges || []
     {bare, refs} = refs(refs, ranges, text, xml_ids)
@@ -585,7 +589,56 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
       refs == [] and ranges == [] and
         (String.match?(text || "", @whole_law) or Enum.any?(bare, &String.match?(&1, @whole_law)))
 
-    if whole?, do: [{"*", false}], else: provisions(refs, ranges, law, flat, xml_ids)
+    if whole?,
+      do: [{"*", false}],
+      else: provisions(refs, spanned(ranges, flat, later(e, inserted)), law, xml_ids)
+  end
+
+  # the effect makes the provisions it names (inserted, or substituted
+  # whole): its range is the run it made
+  defp makes?(e), do: operation(e) in [:inserted, :substituted] and level(e) == :provision
+
+  # the laws whose effects insert each provision, by the feed's own records
+  # (a range's every provision at its depth)
+  defp inserted(effects, flat) do
+    for e <- effects,
+        e.affecting != nil and operation(e) == :inserted and level(e) == :provision,
+        id <- List.wrap(e.affected_refs) ++ within(e.affected_ranges || [], flat),
+        reduce: %{} do
+      acc -> Map.update(acc, id, MapSet.new([e.affecting]), &MapSet.put(&1, e.affecting))
+    end
+  end
+
+  defp within(ranges, flat),
+    do: for({a, b} <- ranges, id <- EffectTarget.span(flat, a, b), depth(id) == depth(a), do: id)
+
+  # the provisions another law put, later, inside a range this effect
+  # made: those the feed records another law inserting. A range its effect
+  # did not make reaches every provision then between its ends
+  defp later(e, inserted) do
+    if makes?(e),
+      do: fn id -> inserted |> Map.get(id, MapSet.new()) |> other_law?(e.affecting) end,
+      else: fn _id -> false end
+  end
+
+  defp other_law?(laws, law), do: Enum.any?(laws, &(&1 != law))
+
+  # each range with the provisions it spans, at the range's own depth: a
+  # whole-provision change reaches what lies under each. A range the effect
+  # makes is not the provision outside its ends' own sequence (`FeedRange`)
+  # that another law inserts: "reg. 19A-19F inserted" is not the 19AA put
+  # between them later. The law's own deeper-lettered provisions stay (the
+  # 2023 Act's "s. 174(2A)-(2B)" of TCPA 1990 made (2AA) to (2AC))
+  defp spanned(ranges, flat, later?) do
+    for {a, b} <- ranges do
+      ids =
+        for id <- EffectTarget.span(flat, a, b),
+            depth(id) == depth(a),
+            FeedRange.member?(id, a, b) or not later?.(id),
+            do: id
+
+      {a, b, ids}
+    end
   end
 
   # the effect's refs that are targets, and its bare words apart
@@ -636,15 +689,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   end
 
   # the provisions named and spanned, as our rows name them
-  defp provisions(refs, ranges, law, flat, xml_ids) do
-    ends = Enum.flat_map(ranges, fn {a, b} -> [a, b] end)
-    # the provisions at the range's own depth: a whole-provision change
-    # reaches what lies under each
-    spanned =
-      for {a, b} <- ranges,
-          id <- EffectTarget.span(flat, a, b),
-          depth(id) == depth(a),
-          do: {id, true}
+  defp provisions(refs, ranges, law, xml_ids) do
+    ends = Enum.flat_map(ranges, fn {a, b, _} -> [a, b] end)
+    spanned = for {_, _, ids} <- ranges, id <- ids, do: {id, true}
 
     named = for id <- List.wrap(refs), id not in ends, do: {id, false}
     # a range the document can't span keeps its ends

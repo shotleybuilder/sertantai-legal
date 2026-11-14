@@ -32,6 +32,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPlacement do
   takes the first unplaced reason. Pure.
   """
 
+  alias SertantaiLegal.Scraper.Commencement.Order
   alias SertantaiLegal.Scraper.LatRef
 
   @type outcome ::
@@ -60,18 +61,50 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPlacement do
   def classify(targets, ids, held) do
     case placed(targets, ids, held) do
       {:unplaced, why} = unplaced ->
-        if fault?(why) and outside_scope?(ids, held[:scope]),
-          do: {:unplaced, :outside_lat_scope},
-          else: unplaced
+        if fault?(why), do: scoped(targets, ids, held, unplaced), else: unplaced
 
       outcome ->
         outcome
     end
   end
 
-  # no scope: the whole law; else no element sits in or under a fragment
-  defp outside_scope?(_ids, nil), do: false
+  # a fault in a scoped law: wholly beyond its fragments, outside our scope;
+  # partly, placed by its targets within (each fragment named as a ref; a
+  # held row or a missing row under a fragment is within), the rest outside
+  # (Fire and OH&S: Markup reader, the Fire Precautions Act 1971)
+  defp scoped(_targets, _ids, %{scope: nil}, unplaced), do: unplaced
+  defp scoped(_targets, _ids, held, unplaced) when not is_map_key(held, :scope), do: unplaced
 
+  defp scoped(targets, ids, held, unplaced) do
+    cond do
+      outside_scope?(ids, held.scope) -> {:unplaced, :outside_lat_scope}
+      within = within_scope(targets, held) -> placed(within, ids, held)
+      true -> unplaced
+    end
+  end
+
+  # the targets a scoped law holds or names within a fragment; nil when a
+  # fragment names no ref, when none is within, or when all are
+  defp within_scope(targets, held) do
+    refs = Enum.map(held.scope, &Order.ref/1)
+
+    within =
+      if Enum.all?(refs, & &1),
+        do:
+          Enum.filter(
+            targets,
+            &(target(&1, held) != {:unplaced, :row_missing} or under?(&1, refs))
+          )
+
+    if within not in [nil, [], targets], do: within
+  end
+
+  defp under?(target, refs) do
+    own = base(target)
+    Enum.any?(refs, &(&1 == own or &1 in LatRef.ancestors(own)))
+  end
+
+  # no element sits in or under a fragment
   defp outside_scope?(ids, scope),
     do: not Enum.any?(List.flatten(ids), fn id -> Enum.any?(scope, &in_fragment?(id, &1)) end)
 

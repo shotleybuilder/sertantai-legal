@@ -83,6 +83,39 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPlacementTest do
              {:unplaced, :row_missing}
   end
 
+  # Fire and OH&S: Markup reader: the Fire Precautions Act 1971 holds s.1,
+  # s.12, s.37 and s.40; one note covers about 60 sections, held and
+  # unheld mixed. The held ones are placed, the rest outside our scope
+  test "a scoped law: a change partly in scope is placed on its held rows" do
+    fpa = %{
+      rows: MapSet.new(["h.1", "s.1", "s.12"]),
+      schedules?: false,
+      scope: ["section-1", "section-12"]
+    }
+
+    ids = [["section-1"], ["section-2"], ["section-12"], ["section-13"]]
+
+    assert P.classify(["h.1", "s.1", "s.2", "s.12", "s.13"], ids, fpa) == :placed
+  end
+
+  test "a scoped law: a missing row inside a fragment stays our fault, whatever else the change holds" do
+    fpa = %{rows: MapSet.new(["s.1"]), schedules?: false, scope: ["section-1", "section-12"]}
+    ids = [["section-1"], ["section-12"], ["section-13"]]
+
+    assert P.classify(["s.1", "s.12", "s.13"], ids, fpa) == {:unplaced, :row_missing}
+  end
+
+  test "a scoped law with a fragment named by no ref is never split" do
+    part = %{
+      rows: MapSet.new(["s.1"]),
+      schedules?: false,
+      scope: ["section-1", "part-15-chapter-5"]
+    }
+
+    assert P.classify(["s.1", "s.90"], [["section-1"], ["part-15", "section-90"]], part) ==
+             {:unplaced, :row_missing}
+  end
+
   test "our faults" do
     assert P.fault?(:row_missing)
     assert P.fault?(:id_not_converted)

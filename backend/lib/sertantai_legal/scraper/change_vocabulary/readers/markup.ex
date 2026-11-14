@@ -28,6 +28,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     KeptChildren,
     Level,
     ListItems,
+    NestedAdditions,
     Versions
   }
 
@@ -127,6 +128,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
 
     items = ListItems.own_texts(doc, law_name)
     own = Map.merge(own_texts(doc), items)
+    cited = cited(doc)
 
     ctx = %{
       law: law_name,
@@ -135,10 +137,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
       own: own,
       items: MapSet.new(Map.keys(items)),
       kept_children: KeptChildren.read(doc),
-      substitutions: substitutions(doc)
+      wrappers: NestedAdditions.wrappers(doc, &note_year(cited, &1)),
+      substitutions: substitutions(doc),
+      note_keys: note_keys(doc)
     }
-
-    cited = cited(doc)
 
     {placed, occurrences} =
       doc |> occurrences([], [], ctx) |> Enum.split_with(&Map.has_key?(&1, :placement))
@@ -224,6 +226,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     end
   end
 
+  # the year of the law a note cites (its Citation link, else its words)
+  defp note_year(cited, note) do
+    with %{} = entry <- Map.get(cited, note),
+         law when is_binary(law) <- entry[:law] || entry[:text_law],
+         [_, year] <- Regex.run(~r/^UK_[a-z]+_(\d{4})_/, law) do
+      String.to_integer(year)
+    else
+      _ -> nil
+    end
+  end
+
   defp eu_footnote_parent(change_id), do: String.replace(change_id, @eu_footnote, "\\1")
 
   @doc """
@@ -240,16 +253,55 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
         do: {xpath(el, ~x"./@SubstitutionRef"s), xpath(el, ~x"./@ChangeId"s)}
   end
 
+  @doc """
+  The legacy changes keyed by their note's effect id (#188; Fire and OH&S:
+  Markup reader, Decision 1 a): a legacy ChangeId (`M_F_…`, `d29p…`) whose
+  CommentaryRef is an effect id that is that change's alone (no other
+  legacy change hangs on it) and no change element's own key. Each such
+  ChangeId → the effect id. The change is still read as legacy markup.
+  """
+  @spec note_keys(tuple()) :: %{String.t() => String.t()}
+  def note_keys(doc) do
+    elements =
+      for el <- xpath(doc, ~x"//*[@ChangeId]"l),
+          do: {xpath(el, ~x"./@ChangeId"s), xpath(el, ~x"./@CommentaryRef"s)}
+
+    own = MapSet.new(elements, fn {id, _} -> key(id) end)
+
+    elements
+    |> Enum.filter(fn {id, note} -> legacy?(id) and String.starts_with?(note, "key-") end)
+    |> Enum.uniq()
+    |> Enum.group_by(&elem(&1, 1), &elem(&1, 0))
+    |> Enum.flat_map(fn
+      {note, [id]} -> if MapSet.member?(own, note), do: [], else: [{id, note}]
+      _shared -> []
+    end)
+    |> Map.new()
+  end
+
   defp group_changes(occurrences, cited, ctx) do
     occurrences
     |> Enum.group_by(&Map.get(ctx.substitutions, &1.change_id, &1.change_id))
     |> Enum.flat_map(fn {change_id, occ} ->
-      key = key(change_id)
+      key = Map.get(ctx.note_keys, change_id) || key(change_id)
 
       for {ref, xml_id, group} <- placements(change_id, occ, ctx),
+          not wrapped?(change_id, xml_id, ctx),
           do: {key, ref, claims(change_id, group, xml_id, cited, ctx)}
     end)
   end
+
+  # a row whose number shows the change wrapping a later insertion
+  # (`NestedAdditions`), or a row under it: not a change to that row. The
+  # change is placed first on all its occurrences, so a provision it covers
+  # whole stays covered
+  defp wrapped?(change_id, xml_id, ctx) when is_binary(xml_id) do
+    Enum.any?(ctx.wrappers, fn {id, row} ->
+      id == change_id and (xml_id == row or String.starts_with?(xml_id, row <> "-"))
+    end)
+  end
+
+  defp wrapped?(_change_id, _xml_id, _ctx), do: false
 
   # where a change id's occurrences land: the lowest provision holding them
   # all. Where that is a group (a Part, Chapter or cross-heading), each
@@ -259,6 +311,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
   # whole-Act repeal for a territory: Forestry Act 1967), an effect id is a
   # change to each top provision it touches; outside any provision (an
   # empty path) it lands nowhere
+  defp placements(_change_id, [], _ctx), do: []
+
   defp placements(change_id, occ, ctx) do
     case occ |> Enum.map(& &1.path) |> common() do
       [] ->
@@ -403,7 +457,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
           paired: attr(attrs, :SubstitutionRef) != nil,
           substitution_ref: attr(attrs, :SubstitutionRef),
           extent: attr(attrs, :Extent),
-          note: attr(attrs, :CommentaryRef),
+          note: attr(attrs, :CommentaryRef) || child_note(el),
           heading?: :heading in flags,
           footnote: Enum.find_value(flags, &footnote_of/1),
           text: letters(el)
@@ -411,6 +465,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
       ]
     else
       []
+    end
+  end
+
+  # a note linked by a child `<CommentaryRef Ref=…/>` of the change element,
+  # not its attribute (Mines and Quarries Act 1954 s.80, d30p2508)
+  defp child_note(el) do
+    case xpath(el, ~x"./CommentaryRef/@Ref"s) do
+      "" -> nil
+      ref -> ref
     end
   end
 
@@ -446,6 +509,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
 
   defp claims(change_id, occ, target, cited, ctx) do
     first = hd(occ)
+    # the change's note: any of its elements' (one carries it, often not
+    # the first)
+    note = Enum.find_value(occ, & &1.note)
     repeal = Enum.find(occ, &(&1.kind == :Repeal))
 
     operation =
@@ -483,14 +549,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
         change_id
       ),
       Claim.new(:markup, :territory, Enum.find_value(occ, & &1.extent) |> code(), change_id),
-      Claim.new(:markup, :cited, get_in(cited, [first.note, :law]), change_id),
-      Claim.new(:markup, :cited_text, get_in(cited, [first.note, :text_law]), change_id),
-      Claim.new(:markup, :affecting, get_in(cited, [first.note, :refs]), change_id),
+      Claim.new(:markup, :cited, get_in(cited, [note, :law]), change_id),
+      Claim.new(:markup, :cited_text, get_in(cited, [note, :text_law]), change_id),
+      Claim.new(:markup, :affecting, get_in(cited, [note, :refs]), change_id),
       # pointers for identity (CV-S07 round 2): the note the change hangs on
       # (its copies in each version share it), and a change wholly in a
       # heading
-      Claim.new(:markup, :note, first.note, change_id),
-      Claim.new(:markup, :note_digest, get_in(cited, [first.note, :digest]), change_id),
+      Claim.new(:markup, :note, note, change_id),
+      Claim.new(:markup, :note_digest, get_in(cited, [note, :digest]), change_id),
       Claim.new(:markup, :heading, if(Enum.all?(occ, & &1.heading?), do: true), change_id),
       # the territorial versions whose own text carries it (CV-S09 round 8)
       Claim.new(:markup, :in_versions, in_versions(occ, ctx), change_id)
@@ -626,7 +692,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
   end
 
   # a repeated id (K3) named by the element's own number: `article-38-1`
-  # numbered 3 → `article-38-3`, as the parse names its row (finding I)
+  # numbered 3 → `article-38-3`, as the parse names its row (finding I); a
+  # number with no letter or digit ("...", a repealed version's) names
+  # nothing, so the id stands (Fire and OH&S: Markup reader)
   defp renumbered(nil, _el, _ctx), do: nil
 
   defp renumbered(id, el, ctx) do
@@ -634,6 +702,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
          pnumber when pnumber != nil <- xpath(el, ~x"./Pnumber"e),
          number when number != "" <-
            pnumber |> Doc.text() |> String.replace(~r/[\s()]/u, ""),
+         true <- number =~ ~r/[\p{L}\p{N}]/u,
          [_, stem, last] <- Regex.run(~r/^(.*-)([^-]+)$/, id),
          true <- last != number do
       stem <> number
