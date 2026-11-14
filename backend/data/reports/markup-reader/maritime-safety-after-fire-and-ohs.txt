@@ -1,0 +1,19 @@
+
+1472 changes (change elements) in 73 laws:
+  1469  placed
+  2  placed_ancestor
+  1  whole_law
+our faults: 0
+
+1923 note placements (an effect placed by its note ref only) in 77 laws:
+  1917  placed
+  4  outside_provisions
+  2  placed_ancestor
+our faults: 0
+
+markup keys against the feed (changes; a count for CV-S07):
+  1299  in_feed
+  138  legacy
+  35  not_in_feed
+
+PASS (placement)

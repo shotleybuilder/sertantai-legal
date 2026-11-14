@@ -1,0 +1,44 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] JWKS public key fetched successfully
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+1473 laws with stored feeds
+laws read 3 at once: 12.2 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.4 of 6 cores busy; max 4
+  100/1473
+  200/1473
+  300/1473
+  400/1473
+  500/1473
+  600/1473
+  700/1473
+  800/1473
+  900/1473
+  1000/1473
+  1100/1473
+  1200/1473
+  1300/1473
+  1400/1473
+cache: 0 hits, 1473 read
+
+287402 effects; excluded %{"legacy dated type" => 1856}
+unclassified: 0
+1063 patterns, 1765 examples
+  eu_finer: 67
+  level: 26
+  linkage: 18
+  qualification: 87
+  range: 3
+  ref: 372
+  staging: 48
+  verb: 442
+examples needing their law's full context: 6
+
+new patterns (no status): 0
+patterns no longer seen: 0
+examples reading differently from expected: 2 (pending patterns: 2)
+  UK_ukpga_1984_60/c666d7ee09
+  UK_ukpga_2023_30/6c1b7cb488
+
+real	3m49.336s
+user	12m26.782s
+sys	1m8.353s

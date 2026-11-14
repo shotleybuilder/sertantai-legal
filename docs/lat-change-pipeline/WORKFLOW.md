@@ -169,6 +169,20 @@ A rebuild moves no switched label until `LabelRefresh` runs. Laws whose rows don
 - **Plan the catalogue's cost:** a reader fix moves the catalogue's code version, so each fix after the catalogue costs one more cold run. Batch the step's own fixes before the first run.
 - **Agent:** seed 61, 152,593 tokens; placement 50/50, facts 49/50, one new class, fixed.
 
+**Fire and OH&S, the first round (2026-11-14).**
+- **Check:** 1,942 changes in 64 laws and 1,815 note placements, our faults 0 (from 2 at the baseline).
+  - A version's number "..." keeps its own id (the Explosives Act 1875 s.5 N.I.).
+  - A scoped law's change partly in scope is placed on its held rows (the Fire Precautions Act 1971).
+- **Parked bugs (6):**
+  - **Fixed:** a note linked by a child CommentaryRef, and a change's note taken from any of its elements; #188 (Decision 1 a, `legacy-change-keyed-by-its-note`); the nested later Addition (`later-insertion-is-the-innermost-change`, Decision 2 a), landed with the Feed reader's held range patch (`feed-range-is-its-ends-sequence`), as the two halves pass golden only together.
+  - **Known limits:** the plural citation, EU unnumbered ListItems, and schedule-part wrappers.
+- **Size every fix over the store, then read the catalogue's new patterns as traps.**
+  - An in-memory diff of HEAD's reader against the working one, over candidate laws from a text scan, showed the plural-citation rule moving 24,506 claim sets, so it was reverted before the catalogue.
+  - The catalogue's first cold run then showed the nested rule's two traps: an outer legacy change that is later (a 1982 repeal round a 1973 change), and a legacy inner Addition that was no insertion. Each cost one more cold run (about 20 min).
+- **Catalogue:** 4,462 laws, 858 patterns, 9 new accepted (Decision 3 a), 0 held readings moved. The feed catalogue is unchanged.
+- **Build:** 139 laws, 29,286 → 29,281 changes. Laws moved in the switched families: Occupational 3, Environmental Protection 1. They are refreshed at the round's Store and build.
+- **No agent check** (2026-11-13). Seed 67 is repeatable, and golden is 27/27.
+
 **Skill.** `markup-reader-check`.
 
 ## 4. Commencement reader

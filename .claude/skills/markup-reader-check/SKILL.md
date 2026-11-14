@@ -71,3 +71,8 @@ Use the round-2 prompt in `.claude/sessions/change-vocabulary/2026-10-22-cv-s03-
     - L2 (EU unnumbered list items);
     - L3 (heading and kept-children readings).
   - **Budget:** about 150k tokens.
+- Fire and OH&S, the first round (2026-11-14), `.claude/sessions/lat-change-pipeline/2026-11-14-fire-and-ohs-markup-reader.md`:
+  - **Check:** our faults 2 → 0 (a version's "..." number; a scoped law's change partly in scope).
+  - **Parked bugs:** 3 fixed (child CommentaryRef; #188 by Decision 1 a; the nested later Addition by Decision 2 a, with the Feed reader's held range patch) and 3 known limits.
+  - **Method:** an in-memory diff of HEAD's reader against the working one over candidate laws sizes each fix before the catalogue; the catalogue's new patterns are then read as traps for the fixes (two found, each one more cold run).
+  - **No agent check;** seed 67 repeatable; golden 27/27.

@@ -1,0 +1,82 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+4462 stored law texts
+laws read 3 at once: 12.3 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.9 of 6 cores busy; max 4
+  250/4462
+  500/4462
+  750/4462
+  1000/4462
+  1250/4462
+  1500/4462
+  1750/4462
+  2000/4462
+  2250/4462
+  2500/4462
+  2750/4462
+  3000/4462
+  3250/4462
+  3500/4462
+  3750/4462
+  4000/4462
+  4250/4462
+cache: 4461 hits, 1 read
+
+198753 changes in 4462 laws
+unclassified: 0
+858 patterns, 1180 examples (395 too large to hold)
+  extent: 38
+  key: 23
+  level: 6
+  operation: 18
+  placement: 738
+  pointers: 7
+  retained: 7
+  where: 21
+pointers (changes):
+  legacy: 30961; a cited law 29282 (94.6%); with the amending provisions 28203 (91.1%)
+  effect id: 79945; a cited law 79573 (99.5%); with the amending provisions 79543 (99.5%)
+examples not held, reading differently alone than in their law: 664
+  UK_asc_2023_3/74b837e9f1
+  UK_asc_2024_6/24cbf5f2fd
+  UK_asc_2026_4/ce66fc3d4d
+  UK_asp_2000_6/a81e79b5c2
+  UK_asp_2002_13/ee8d4d00c8
+  UK_asp_2003_3/28593d7a9c
+  UK_asp_2003_3/d5f1f608eb
+  UK_asp_2004_6/7bd123db60
+  UK_asp_2004_6/9ae47f8519
+  UK_asp_2005_13/eefe566193
+  UK_asp_2006_17/ca9311687f
+  UK_asp_2006_17/d0057b20eb
+  UK_asp_2009_12/8f87318f3c
+  UK_asp_2009_6/86e3aa892f
+  UK_asp_2009_6/dd377746e5
+  UK_asp_2010_5/cc5ab9de1c
+  UK_asp_2010_5/d06d48c762
+  UK_asp_2011_6/71dfb7f582
+  UK_asp_2012_8/a33628c004
+  UK_asp_2015_6/1f76c28430
+
+new patterns (no status): 9
+  extent: W. → W
+  placement: note refs only | none → split: h.N, s.N
+  placement: one element | term-N-appropriate-authority → s.N(+1)
+  placement: one element | term-N-behalf-N(+1)-secretary-N-state → s.N(+1)
+  placement: one element | term-N-issuing-company → s.N(+1)
+  placement: one element | term-wholly-owned-N(+1)-authority → s.N(+1)
+  placement: several elements | part-N → split: s.554Z1, s.554Z10, s.554Z11, s.554Z12, s.554Z13, s.554Z14, s.554Z15, s.554Z16, s.554Z17, s.554Z18, s.554Z19, s.554Z2, s.554Z20, s.554Z21, s.554Z3, s.554Z4, s.554Z5, s.554Z6, s.554Z7, s.554Z8, s.554Z9, s.N
+  placement: several elements | section-N → nowhere
+  placement: several elements | section-N → split: s.N, s.N(+1), s.N(+3)
+patterns no longer seen: 4
+  placement: note refs only | none → split: s...., s.N
+  placement: several elements | part-N → split: pt.N, reg.44ZBn1, reg.44ZCn1, reg.N
+  placement: several elements | part-N → split: s.554Z1, s.554Z10, s.554Z11, s.554Z11A, s.554Z11B, s.554Z11C, s.554Z11D, s.554Z11E, s.554Z11F, s.554Z11G, s.554Z12, s.554Z13, s.554Z14, s.554Z15, s.554Z16, s.554Z17, s.554Z18, s.554Z19, s.554Z2, s.554Z20, s.554Z21, s.554Z2A, s.554Z3, s.554Z4, s.554Z4A, s.554Z5, s.554Z6, s.554Z7, s.554Z8, s.554Z9, s.N
+  placement: several elements | section-N → split: s.N(+1), s.N(+1) (source suffix), s.N(+2)
+examples reading differently from expected: 0 (pending patterns: 0)
+
+accepted: 9 new patterns written to test/fixtures/markup_patterns/expected.json
+
+real	0m10.191s
+user	0m16.953s
+sys	0m2.224s

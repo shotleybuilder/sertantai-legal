@@ -1,0 +1,23 @@
+483 family laws; 122 hold LAT rows (in scope), 361 don't
+11684 effects in 122 laws:
+  6393  placed
+  3877  schedule_not_parsed
+  674  placed_versions
+  327  not_in_text
+  201  not_a_provision
+  131  row_missing
+  71  whole_law
+  10  placed_by_markup
+
+our faults: 0
+
+finer form not held (parse tell-tales): 5
+  not_found: 3  (gone from the text, or not there: a candidate only)
+    UK_eudr_1986_278 art.Article 17(1)  ("Art. 17 para. 1")
+    UK_eur_2019_2088 art.Article 11(1)(d)  ("Art. 11 para. 1 Point (d)")
+    UK_eur_2019_2088 art.Article 11(1)(c)  ("Art. 11 para. 1 Point (c)")
+  no_ids: 2  (the text numbers items with no id; the parse made no row, #184)
+    UK_eudr_1986_278 art.Article 2(f)  ("Art. 2 Point (f)")
+    UK_eudr_1986_278 art.Article 2(e)  ("Art. 2 Point (e)")
+
+PASS (placement)

@@ -1,0 +1,19 @@
+
+1942 changes (change elements) in 64 laws:
+  1790  placed
+  152  placed_versions
+our faults: 0
+
+1815 note placements (an effect placed by its note ref only) in 79 laws:
+  1773  placed
+  42  placed_versions
+our faults: 0
+
+markup keys against the feed (changes; a count for CV-S07):
+  1454  in_feed
+  452  legacy
+  36  not_in_feed
+
+sample of 50 written to /tmp/claude-1000/-var-home-jason-Desktop-sertantai-legal/b76f3af3-b9b6-4d29-990b-1ac0dab89760/scratchpad/s67-b.json
+
+PASS (placement)

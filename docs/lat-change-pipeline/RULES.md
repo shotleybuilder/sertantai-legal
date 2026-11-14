@@ -499,6 +499,23 @@ On its split day, a version takes its own territory before that day's changes. A
 
 ---
 
+### `later-insertion-is-the-innermost-change`
+legislation.gov.uk nests a later insertion inside the earlier changes around it. In a provision's number, the innermost Addition is the change that inserted the provision. A change wrapped round it is not a change to that provision or to anything under it, provided two things hold:
+- its note cites a law of an earlier year than the inner change's (an unknown year is never earlier);
+- it has no words of its own in the provision.
+
+A legacy inner change counts as well, because a legacy Addition round a number is read as an insertion. The change is placed on all its occurrences first, so a provision it covers whole stays covered.
+- **Examples:**
+  - HSWA 1974 s.11(4AA) was inserted by 2015 c.20 inside 2013 c.32's Addition of s.11(4A), and inside SI 2008/960's substitution of ss.11–13. Only 2015 c.20 is placed on s.11(4AA).
+  - TCPA 1990 s.78(4BA) is placed for the 2015 Welsh Act's legacy `M_F_…` insertion, not for 2008 c.29's (golden).
+  - **Not wrappers:** the Local Employment Act 1960 s.32(1)(h)(iii), where a 1982 repeal is marked round a 1973 change (the outer change is later); and the Marriage Act 1949 s.5(2), where the 1986 Act's Addition has words of its own beside a 2015 substitution marked round the number.
+- **Serves:** `binds-on-date`, `one-record-per-change` · **Code:** `Readers.Markup.NestedAdditions`; `Readers.Markup` (`wrapped?/3`, `note_year/2`) · **Test:** `markup_nested_additions_test` · **Origin:** Fire and OH&S: Markup reader (the parked `markup-nested-addition-later-row`, moved from the Feed reader); Jason 2026-11-14, Decision 2 (a): a legacy inner counts
+
+### `feed-range-is-its-ends-sequence`
+A feed range made by its effect ("reg. 19A-19F inserted", or substituted whole) covers the provisions of its ends' own sequence. A provision named by more letters than either end (19AA) is left out when the feed records another law inserting it. A range the effect did not make reaches every provision between its ends.
+- **Example:** SI 2009/1348 "reg. 19A-19F" by SI 2011/1885 no longer reaches reg.19AA, 19AB or 19BA–19CB. OLA 1984 "s. 1(6A)-(6C)" no longer reaches s.1(6AA). TCPA 1990 "s. 174(2A)-(2B)" keeps (2AA)–(2AC), which its own law made. Store: 55 effects in 35 laws, 121 targets dropped, none added.
+- **Serves:** `one-record-per-change` · **Code:** `Readers.FeedRange`; `Readers.Feed` (`spanned/3`, `later/2`) · **Test:** `feed_range_sequence_test` · **Origin:** Fire and OH&S: Feed reader (patch held), landed with `later-insertion-is-the-innermost-change` in Fire and OH&S: Markup reader, as the two halves pass golden only together
+
 ## 6. Undated changes
 
 ### `fold-uses-dated-changes`
@@ -636,7 +653,7 @@ The feed and the markup give coverage. The law's text is read for territory, dat
 
 ### `read-a-law-for-our-scope`
 A law is read from our LAT rows to the law, never from the law to our rows. A scoped law (its LAT holds fragments only) is read for the scope we hold. A change beyond its fragments is outside our LAT scope: it is accounted for, but it is no row fault.
-- **Example:** the Aggregates Tax and Devolved Taxes Administration (Scotland) Act 2024 is in the LAT only for s.64, the commencement power its two commencement Regulations are made under. Its 131 commencements of ss.1–63 are `outside_lat_scope`.
+- **Example:** the Aggregates Tax and Devolved Taxes Administration (Scotland) Act 2024 is in the LAT only for s.64, the commencement power its two commencement Regulations are made under. Its 131 commencements of ss.1–63 are `outside_lat_scope`. A change partly in scope is placed on its held rows, and the rest is outside the scope: the Fire Precautions Act 1971 holds s.1, s.12, s.37 and s.40, and one repeal note covers about 60 of its sections (Fire and OH&S: Markup reader).
 - **Serves:** `coverage-from-lgu` · **Code:** `MarkupPlacement.classify/3` (`held.scope`), `mix lat.markup_check` · **Test:** `markup_placement_test` "a scoped law: …" · **Origin:** Jason 2026-11-09, Environmental Protection: Markup reader, Decision 1 ("we are back-to-front … we should go from our LAT rows (our scope) to the law"). The Sources bug `scoped-law-body-not-needed` is the same direction at the fetch.
 
 ---
@@ -658,6 +675,16 @@ A note's id and the provision it cites decide only which records are one event. 
 When neither the law's text nor the feed names the law that made a change, the note's structured `Citation` link does. The note's free text never does.
 - **Example:** HSWA 1974 s.28(5)(b) `d29p11427`: "S.I. 2004/ 1822" in the note's words is for identity only.
 - **Serves:** `coverage-from-lgu` (in tension with `law-text-wins`) · **Code:** `Evidence` (`by: {:markup, :cited}`); `Readers.Markup` · **Test:** `note_law_test` · **Origin:** Jason 2026-10-28, `cv-s07-merge` (decision 3, "the one named exception")
+
+### `legacy-change-keyed-by-its-note`
+A legacy change (ChangeId `M_F_…`, `d29p…`) whose note is an effect id takes that id as its key, where it is safe: the note is that change's alone, and no change element's own key. The change is still read as legacy markup for its operation (`legacy-markup-fills-never-contradicts`). A note shared by several legacy changes, or one that is already an element's key, keys nothing (a known limit).
+- **Example:** SI 2014/560's change to the 1978 Act's s.21 now carries its operation, level, note and cited law under the feed's effect id, where it had been a bare note placement beside a legacy record. Store: 330 such changes under 241 notes; 62 of them are left out (25 shared notes, 37 already keys).
+- **Serves:** `one-record-per-change` · **Code:** `Readers.Markup.note_keys/1`, used by the reader and `MarkupPatterns.changes/1` · **Test:** `markup_note_key_test` · **Origin:** Jason 2026-11-14, Fire and OH&S: Markup reader, Decision 1 (a) (#188)
+
+### `a-changes-note-is-any-of-its-elements`
+A change's note is the note of any of its elements, not only the first's. An element may link its note by a child `<CommentaryRef Ref=…/>` instead of the attribute.
+- **Example:** the Mines and Quarries Act 1954 s.80, `d30p2508`: the note hangs on a child CommentaryRef of the first element, and the cited law and amending provisions are now carried. Store: 212 changes gained their note.
+- **Serves:** `coverage-from-lgu` · **Code:** `Readers.Markup` (`child_note/1`, `claims/5`) · **Test:** `markup_reader_test` "a note linked by a child CommentaryRef …", "a change's note is any of its elements' …" · **Origin:** Fire and OH&S: Markup reader (the parked `child-commentaryref`)
 
 ### `note-only-placement-claims-no-level`
 A change placed only by a note claims no level, except beside the provision the feed names.
@@ -827,6 +854,7 @@ The named missing-repeal rows and the named date gaps keep the old register's la
 | Label forms below triage (Environmental Protection), named in `labels.json`: SI 2025/1218's clause "18 months after the day on which they are made" gives 2027-05-18 while legislation.gov.uk's own record gives 2027-05-19, so the row reads prospective for the day; SSI 2025/165 reg.9's clause stage "subject to paragraph (5)" left on the general start; HSWA s.78's stored row extent E+W+S+NI where C11 gives E+W+S, so NI reads in force after the 2006 repeals (golden passes on its own extent) | 14 + 1 + 3 rows | As the fold reads them | `test/fixtures/label/labels.json`; the session | Jason 2026-11-11, Environmental Protection: Label fold |
 | One-row label forms below triage, named in the label gate (`labels.json`): an undated whole repeal beside a dated one reads repealed from the start (MSA 1970 s.42(1): 1992 c.52 dated, NISI 1995/1980 undated); an amending law's change the law's text alone states left undated while its other changes are dated (SI 1975/2220 reg.2 by SI 1998/929); one subsection's deemed day taken as an amending Act's start (1997 c.28 s.28(5): MSA 1995 s.284(4), s.85(3) dated 1996-09-15) | Maritime Safety: 4 rows | Credited from the start, or dated too early | `test/fixtures/label/labels.json` | 2026-11-06 |
 | Feed records that are legislation.gov.uk's own errors, carried as read: HSWA 1974 s.48 "revoked in part" by SI 1996/1513 reg. 13 (`feed-error-hswa-s48`: reg. 13 omits words from SI 1977/500 reg. 3(1); only reg. 11 touches s.48); REACH Art 3(A2) "omitted in earlier amending provision" without "words" (SI 2020/1577 reg. 4(6)(b) omits words); two misnested refs (`section-276-iiia` for s.276(c)(iiia), 2023 c.30; `section-17-1-iiia` for s.17(1)(c)(iiia), 1984 c.60), catalogue patterns held `pending:` | 4 effects | As the feed reads (the misnested refs on the parent) | `feed_patterns/expected.json` `pending:`; `2026-11-13-fire-and-ohs-feed-reader` | Jason 2026-11-13, Fire and OH&S: Feed reader, Decision 1 |
+| Markup forms below triage (Fire and OH&S: Markup reader), carried as read: a legacy note's plural citation marks only one piece operative, so its other piece is not an affecting pointer. It is usually the commencement provision ("ss. 57(4), 147(3)", Environment Act 2021); in "arts. 1, 2" (SI 1996/1431 on EPA s.153(1)(ee)) legislation.gov.uk marks the commencement article and leaves the amending one unmarked. EU markup in unnumbered ListItems placed on the Article (Directive 98/24 art.2(b)(i), (b)(iii)). Schedule-part wrapper ids, under schedules not parsed (SI 2008/1597 sch.2.pt.9, pt.11). 62 legacy changes whose note is shared or already a key (`legacy-change-keyed-by-its-note`). A legacy inner Addition round a number that was no insertion (the Countryside (Scotland) Act 1967 s.48A: a 2000 "ceases to have effect" inside the 1981 insertion) takes the outer, earlier insertion's claim off the row, its start unchanged (`later-insertion-is-the-innermost-change`, Decision 2 a) | 1 (EPA); 4; 0 in the round; 62; about 72 rows | As read | `2026-11-14-fire-and-ohs-markup-reader` | Jason 2026-11-14 (the plan; Decisions 1 a, 2 a) |
 | An SI's introduction with no powers clause on legislation.gov.uk (the designation or draft-approval recital only, or no preamble: SI 2011/1043, 1999/1820, 1977/445) | Maritime Safety: 3 changes | No bound from powers | `withheld.json` | 2026-11-05 |
 | An enabling Act not on legislation.gov.uk (stored as a 404: the Merchant Shipping (Registration, etc.) Act 1993, repealed 1996) | Maritime Safety: SI 1994/541, 24 changes | No bound from powers | `withheld.json` | 2026-11-05 |
 | Provisions named by power or as Schedule entries, not by number ("so much of any provision of this Act as authorises the making of any order": ICTA 1988 s.843(3), SSCBA 1992 s.289(2); Schedule entries, SI 2003/835) | 3 statements | Undated by the clause | same | 2026-11-05 |

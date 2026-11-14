@@ -1,0 +1,23 @@
+377 family laws; 149 hold LAT rows (in scope), 228 don't
+6692 effects in 149 laws:
+  3566  placed
+  2578  schedule_not_parsed
+  263  placed_versions
+  128  not_in_text
+  79  not_a_provision
+  71  whole_law
+  5  placed_by_markup
+  1  placed_ancestor
+  1  ref_ambiguous
+
+our faults: 0
+
+finer form not held (parse tell-tales): 5
+  not_found: 5  (gone from the text, or not there: a candidate only)
+    UK_eur_2006_1907 art.Article 14(2)(e)  ("Art. 14 para. 2 Point (e)")
+    UK_eur_2006_1907 art.Article 76(1)(c)  ("Art. 76 para. 1 Point (c) Text")
+    UK_eur_2006_1907 art.Article 77(3)(a)  ("Art. 77 para. 3 Point (a) Text")
+    UK_eur_2008_1272 art.Article 54(3)  ("Art. 54 para. 3")
+    UK_eur_2008_1272 art.Article 54(4)  ("Art. 54 para. 4")
+
+PASS (placement)

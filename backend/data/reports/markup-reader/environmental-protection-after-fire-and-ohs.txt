@@ -1,0 +1,20 @@
+
+3251 changes (change elements) in 72 laws:
+  2701  placed
+  547  placed_versions
+  2  whole_law
+  1  outside_lat_scope
+our faults: 0
+
+2676 note placements (an effect placed by its note ref only) in 81 laws:
+  2481  placed
+  130  outside_lat_scope
+  65  placed_versions
+our faults: 0
+
+markup keys against the feed (changes; a count for CV-S07):
+  2375  in_feed
+  825  legacy
+  51  not_in_feed
+
+PASS (placement)

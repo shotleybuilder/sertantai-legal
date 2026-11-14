@@ -1,0 +1,613 @@
+UK_asp_2000_4: targets gone 4, added 0, attrs %{}
+  - d29p1397 s.16(6)(da)
+  - d29p1397 s.16(6)(db)
+  - d29p5347 s.64(2)(da)
+UK_asp_2004_8: targets gone 1, added 0, attrs %{}
+  - d29p8300 s.93(5)(aaa)
+UK_asp_2005_16: targets gone 2, added 0, attrs %{}
+  - 33a3e0d5 s.74(2)(ca)
+  - 695e28fa s.74(5AA)
+UK_asp_2005_5: targets gone 1, added 0, attrs %{}
+  - d30p4195 s.61(9)(zaa)
+UK_asp_2007_14: targets gone 1, added 0, attrs %{}
+  - be0f4092 s.10(1)(aa)
+UK_asp_2009_12: targets gone 1, added 0, attrs %{}
+  - cca23666 s.A2A
+UK_eudr_2008_98: targets gone 0, added 0, attrs %{note: 1, cited: 1, note_digest: 1}
+  ~ 2M018000 art.Article 6(1) [cited: "UK_eudr_2018_851", note: "c000003", note_digest: "2c190a669fb6"] was []
+UK_eudr_2012_27: targets gone 0, added 0, attrs %{note: 1, cited: 1, note_digest: 1}
+  ~ 1M001000 art.Article 15(5) [cited: "UK_eudr_2019_944", note: "c000008", note_digest: "2ad40bd88ccc"] was []
+UK_nisi_2003_419: targets gone 3, added 1, attrs %{}
+  - 10606161 reg.63(6)(y)(ii)
+  - d29p6848 reg.55EA
+  - d29p6848 reg.55EB
+  + 6a6bf23b reg.63(6)(y)(ii)
+UK_nisi_2006_3336: targets gone 1, added 1, attrs %{}
+  - 10930331 reg.265(5)(u)(ii)
+  + 9981caa6 reg.265(5)(u)(ii)
+UK_ssi_2011_24: targets gone 1, added 1, attrs %{}
+  - 77324382 reg.1(3)
+  + 302fdb31 reg.1(3)
+UK_ukcm_1947_2: targets gone 11, added 0, attrs %{}
+  - d30p283 s.6(1)
+  - d30p283 s.6(1A)
+  - d30p283 s.6(1B)
+UK_ukpga_1875_17: targets gone 1, added 0, attrs %{}
+  - f8b30fc8 s....
+UK_ukpga_1944_31: targets gone 0, added 0, attrs %{affecting: 14, note: 16, cited: 14, note_digest: 14}
+  ~ 30p15426 s.114(1) [affecting: ["s.241(2)"], cited: "UK_ukpga_1993_35", note: "c958343", note_digest: "4407d0e21971"] was []
+  ~ 30p15553 s.114(1E)(b) [affecting: ["sch.19.para.24(b)"], cited: "UK_ukpga_1993_35", note: "c958354", note_digest: "e5c591f9c0f6"] was []
+UK_ukpga_1947_39: targets gone 0, added 0, attrs %{affecting: 2, note: 2, cited: 2, note_digest: 2}
+  ~ d29p334 s.9(1)(a) [affecting: ["sch.2.para.18"], cited: "UK_uksi_1999_1820", note: "c5931901", note_digest: "4f0a5df0ac85"] was []
+  ~ d29p407 s.9(5A) [affecting: ["sch.9.para.3"], cited: "UK_ukpga_1994_21", note: "c5931931", note_digest: "7d540ae3d0ad"] was []
+UK_ukpga_1949_76: targets gone 6, added 0, attrs %{}
+  - c6281751 s.31(5EA)
+  - c6281751 s.31(5EB)
+  - c6281751 s.31(5EC)
+UK_ukpga_1951_65: targets gone 0, added 0, attrs %{affecting: 1, note: 1, cited: 1, note_digest: 1}
+  ~ d29p4190 s.56(5A) [affecting: ["sch.3.para.4(3)"], cited: "UK_uksi_2001_3647", note: "c90831", note_digest: "203059391e27"] was []
+UK_ukpga_1954_70: targets gone 0, added 0, attrs %{affecting: 4, note: 4, cited: 4, note_digest: 4}
+  ~ d30p2508 s.80 [affecting: ["sch.3.pt.I"], cited: "UK_uksi_1993_1897", note: "c650798", note_digest: "11e0b4c544de"] was []
+  ~ d30p2668 s.88 [affecting: ["sch.3.pt.I"], cited: "UK_uksi_1993_1897", note: "c650814", note_digest: "57a28699efcf"] was []
+UK_ukpga_1961_34: targets gone 0, added 0, attrs %{affecting: 14, note: 14, cited: 14, note_digest: 14}
+  ~ d29p1199 s.57 [affecting: ["sch.2.pt.I"], cited: "UK_uksi_1992_3004", note: "c14251311", note_digest: "ddb4a48c6a29"] was []
+  ~ d29p1234 s.58 [affecting: ["sch.2.pt.I"], cited: "UK_uksi_1992_3004", note: "c14251331", note_digest: "d9efe4f5f7b7"] was []
+UK_ukpga_1961_64: targets gone 0, added 0, attrs %{affecting: 2, note: 2, cited: 2, note_digest: 2}
+  ~ d30p1324 s.62 [affecting: ["sch.3.pt.I"], cited: "UK_ukpga_1991_60", note: "c626909", note_digest: "7ec88a97eb31"] was []
+  ~ d30p79 s.1(3) [affecting: ["sch.3.pt.I"], cited: "UK_ukpga_1991_60", note: "c626803", note_digest: "c6f89656316c"] was []
+UK_ukpga_1962_46: targets gone 0, added 0, attrs %{affecting: 2, note: 2, cited: 2, note_digest: 2}
+  ~ d29p226 s.3(1A) [affecting: ["s.126(1)"], cited: "UK_ukpga_1993_43", note: "c4788591", note_digest: "995bd073af9d"] was []
+  ~ d29p412 s.3(5) [affecting: ["s.126(2)"], cited: "UK_ukpga_1993_43", note: "c4788651", note_digest: "3fb71869f3f7"] was []
+UK_ukpga_1962_58: targets gone 2, added 0, attrs %{}
+  - d29p408 s.9(9)
+  - d29p518 s.9A(9)
+UK_ukpga_1964_48: targets gone 0, added 0, attrs %{affecting: 6, note: 6, cited: 6, note_digest: 6}
+  ~ d29p3354 s.21 [affecting: ["s.14"], cited: "UK_ukpga_1994_29", note: "c11163251", note_digest: "31ed4eeec6db"] was []
+  ~ d29p3881 s.21A [affecting: ["s.14"], cited: "UK_ukpga_1994_29", note: "c11163261", note_digest: "b416fd7f635d"] was []
+UK_ukpga_1965_49: targets gone 4, added 0, attrs %{}
+  - 0a84a810 s.14(1B)
+  - 0a84a810 s.14(1C)
+  - 0a84a810 s.14(1D)
+UK_ukpga_1965_57: targets gone 1, added 0, attrs %{}
+  - d29p1509 s.18(4ZA)
+UK_ukpga_1967_80: targets gone 1, added 0, attrs %{}
+  - d29p606 s.22(1A)
+UK_ukpga_1967_86: targets gone 9, added 8, attrs %{}
+  - 45893909 s.35
+  - 45196617 s.30
+  - 46021333 s.37
+  + 54a0ac8b s.30
+  + 12d3d4b8 s.35
+  + 69c47946 s.37
+UK_ukpga_1968_27: targets gone 6, added 0, attrs %{}
+  - c9814441 s.54(3AA)
+  - c9814441 s.54(4)
+  - c9814441 s.54(5)
+UK_ukpga_1968_46: targets gone 2, added 2, attrs %{}
+  - d29p559 s.63(1)(a)
+  - d29p767 s.63(5B)(bbb)
+  + 4fa1b892 s.63(1)(a)
+  + 586de09b s.63(5B)(bbb)
+UK_ukpga_1968_60: targets gone 0, added 0, attrs %{affecting: 1, note: 1, cited: 1, note_digest: 1}
+  ~ d30p345 s.9(3) [affecting: ["s.26(2)"], cited: "UK_ukpga_1991_53", note: "c688799", note_digest: "c32fbdb41e9c"] was []
+UK_ukpga_1968_64: targets gone 0, added 0, attrs %{affecting: 1, note: 1, cited: 1, note_digest: 1}
+  ~ d30p370 s.13(2A) [affecting: ["s.12(1)"], cited: "UK_ukpga_1996_31", note: "c749719", note_digest: "757bfc7a9d61"] was []
+UK_ukpga_1968_67: targets gone 4, added 0, attrs %{}
+  - d30p1110 s.10(7A)
+  - d30p1110 s.10(7B)
+  - d30p1110 s.10(7C)
+UK_ukpga_1968_73: targets gone 6, added 0, attrs %{}
+  - 93551710 s.9(1)(c)(ia)
+  - 93551710 s.9(1)(c)(iaa)n1
+  - 93551710 s.9(1)(c)(ib)
+UK_ukpga_1970_9: targets gone 18, added 4, attrs %{}
+  - 01604885 s.28B(2)(b)
+  - 25640197 s.98A
+  - 12237318 s.108(4)
+  + fff37bf3 s.98A
+  + 30f72dff s.28B(2)(b)
+  + 232c6d0d s.46D
+UK_ukpga_1971_10: targets gone 0, added 0, attrs %{affecting: 18, note: 18, cited: 18, note_digest: 18}
+  ~ 29p10111 s.18B(5) [affecting: ["sch.3.pt.I"], cited: "UK_ukpga_1991_31", note: "c8885191", note_digest: "e4d56ba4abc9"] was []
+  ~ 29p10672 s.22(4) [affecting: ["sch.3"], cited: "UK_ukpga_1991_31", note: "c8885501", note_digest: "0cefe3e01fb1"] was []
+UK_ukpga_1972_70: targets gone 23, added 5, attrs %{}
+  - 71543815 s.78(1)
+  - 71652838 s.78(2)
+  - 77118289 s.68
+  + bb371a57 s.78(2)
+  + 542ba112 s.78(1)
+  + b2b32488 s.68
+UK_ukpga_1973_26: targets gone 3, added 0, attrs %{}
+  - d30p2461 s.29(4)(e)(v)
+  - d30p2461 s.29(4)(e)(vi)
+  - d30p3824 s.39(7)
+UK_ukpga_1973_38: targets gone 0, added 0, attrs %{affecting: 3, note: 3, cited: 3, note_digest: 3}
+  ~ d29p1066 s.97(4) [affecting: ["sch.5.pt.III"], cited: "UK_ukpga_1993_48", note: "c8801031", note_digest: "9d89a7166d89"] was []
+  ~ d29p159 s.51(3) [affecting: ["sch.5.pt.III"], cited: "UK_ukpga_1993_48", note: "c8798691", note_digest: "b471865baca2"] was []
+UK_ukpga_1973_50: targets gone 1, added 0, attrs %{}
+  - d30p628 s.9A
+UK_ukpga_1973_56: targets gone 0, added 0, attrs %{affecting: 7, note: 7, cited: 7, note_digest: 7}
+  ~ d30p1541 s.18A [affecting: ["sch.17.para.13(1)(2)"], cited: "UK_ukpga_1991_34", note: "c778544", note_digest: "34a5b9394405"] was []
+  ~ d30p2303 s.27A [affecting: ["sch.2.pt.II"], cited: "UK_uksi_1991_2092", note: "c778673", note_digest: "39432d496525"] was []
+UK_ukpga_1973_65: targets gone 0, added 0, attrs %{affecting: 1, note: 1, cited: 1, note_digest: 1}
+  ~ d29p9460 s.153(5) [affecting: ["sch.13.para.92(44)(d)"], cited: "UK_ukpga_1994_39", note: "c9681111", note_digest: "a60f117488e6"] was []
+UK_ukpga_1974_30: targets gone 0, added 0, attrs %{affecting: 3, note: 3, cited: 3, note_digest: 3}
+  ~ d30p1301 s.42(4) [affecting: ["s.157(2)"], cited: "UK_ukpga_1979_14", note: "c1702965", note_digest: "9e58c7e98001"] was []
+  ~ d30p1409 s.42(6)(a) [affecting: ["s.157(2)"], cited: "UK_ukpga_1979_14", note: "c1702965", note_digest: "9e58c7e98001"] was []
+UK_ukpga_1974_37: targets gone 1, added 0, attrs %{}
+  - a550dbe8 s.11(4AA)
+UK_ukpga_1974_39: targets gone 3, added 0, attrs %{}
+  - 29p11069 s.84(3C)
+  - 29p19910 s.189(1A)
+  - 29p19910 s.189(2A)
+UK_ukpga_1974_7: targets gone 4, added 0, attrs %{}
+  - d30p1332 s.25(1)(cza)
+  - d30p2164 s.31(2BA)
+  - 4eadeebe s.33(1)(ba)
+UK_ukpga_1975_30: targets gone 2, added 0, attrs %{affecting: 1, note: 1, cited: 1, note_digest: 1}
+  - 29p17282 s.23(1)(g)
+  - 29p17282 s.23(1)(i)
+  ~ 29p19593 s.31(3) [affecting: ["sch.2.para.6(3)(a)"], cited: "UK_ukpga_1993_46", note: "c10758311", note_digest: "77aaf747a34d"] was []
+UK_ukpga_1975_74: targets gone 0, added 0, attrs %{affecting: 2, note: 2, cited: 2, note_digest: 2}
+  ~ d29p1791 s.27(2A) [affecting: ["reg.5(3)"], cited: "UK_nisr_1993_384", note: "c1124013", note_digest: "f70342383287"] was []
+  ~ d29p1859 s.27(2A) [affecting: ["reg.5(3)"], cited: "UK_uksi_1993_1823", note: "c1124024", note_digest: "3b9299fa1981"] was []
+UK_ukpga_1977_45: targets gone 2, added 0, attrs %{}
+  - d29p2138 s.40
+  - d29p2260 s.40
+UK_ukpga_1978_29: targets gone 59, added 52, attrs %{affecting: 3, note: 4, cited: 3, note_digest: 3}
+  - 29p14879 s.86(1)(ba)
+  - 29p15866 s.105(3)
+  - 29p13417 s.77(1)(d)
+  + 13086362 s.84(1)
+  + e5f22bf9 s.84A(7)
+  + fef5b557 s.84A(6)(b)
+UK_ukpga_1978_44: targets gone 0, added 0, attrs %{affecting: 10, note: 10, cited: 10, note_digest: 10}
+  ~ d30p1982 s.138A [affecting: ["s.31(2)"], cited: "UK_ukpga_1993_19", note: "c1793440", note_digest: "89a7f5de2a3b"] was []
+  ~ d30p502 s.33 [affecting: ["sch.3.pt.I"], cited: "UK_ukpga_1996_18", note: "c1797077", note_digest: "49babe37257c"] was []
+UK_ukpga_1978_55: targets gone 1, added 0, attrs %{level: 1, operation: 1, affecting: 1, note: 1, cited: 1, note_digest: 1}
+  - 49522255 s.21
+  ~ 83051435 s.21 [affecting: ["sch.1.para.17"], cited: "UK_uksi_2014_560", level: :words, note: "key-…051435", note_digest: "9a4c95994163", operation: :substituted] was [placed: true]
+UK_ukpga_1979_46: targets gone 1, added 0, attrs %{}
+  - d29p2752 s.24(3AA)
+UK_ukpga_1980_43: targets gone 3, added 0, attrs %{}
+  - 29p12266 s.143(2)(i)
+  - d29p1963 s.11(5A)
+  - d29p7672 s.85(2B)
+UK_ukpga_1980_45: targets gone 1, added 0, attrs %{}
+  - d29p2390 s.31(1)(b)
+UK_ukpga_1980_58: targets gone 0, added 0, attrs %{affecting: 1, note: 1, cited: 1, note_digest: 1}
+  ~ d30p2649 s.36(1)(aa) [affecting: ["sch.9.para.14"], cited: "UK_ukpga_1985_61", note: "c809033", note_digest: "42b6cf0eadfa"] was []
+UK_ukpga_1980_65: targets gone 1, added 1, attrs %{}
+  - 23796212 s.2(1)(h)
+  + 37ab64b9 s.2(1)(h)
+UK_ukpga_1980_66: targets gone 7, added 0, attrs %{affecting: 1, note: 1, cited: 1, note_digest: 1}
+  - d29p6109 s.90CA
+  - d29p7752 s.105CA
+  ~ d29p1545 s.17(4) [affecting: ["s.20(1)"], cited: "UK_ukpga_1991_22", note: "c13418871", note_digest: "172da0a2cc82"] was []
+UK_ukpga_1981_22: targets gone 1, added 0, attrs %{}
+  - d29p4699 s.50(2)(bb)
+UK_ukpga_1981_61: targets gone 26, added 0, attrs %{}
+  - d29p4270 s.50(1A)
+  - d29p4270 s.50(1B)
+  - d29p4285 s.50(10)
+UK_ukpga_1981_64: targets gone 0, added 0, attrs %{affecting: 1, note: 1, cited: 1, note_digest: 1}
+  ~ d30p4778 s.79(1B) [affecting: ["sch.1.para.52(3)"], cited: "UK_uksi_2001_1149", note: "c253338", note_digest: "4cd5438f91fd"] was []
+UK_ukpga_1981_67: targets gone 1, added 0, attrs %{}
+  - 96d3b143 s.13BA
+UK_ukpga_1981_69: targets gone 2, added 0, attrs %{}
+  - d29p3764 s.21(4AA)
+  - d29p9771 s.51(1)(ka)
+UK_ukpga_1982_43: targets gone 0, added 0, attrs %{affecting: 2, note: 4, cited: 2, note_digest: 2}
+  ~ d30p1365 s.25(3) [note: "c794931c794932"] was []
+  ~ d30p362 s.9 [affecting: ["sch.13.para.128(2)"], cited: "UK_ukpga_1994_39", note: "c794862", note_digest: "724c0600a20e"] was []
+UK_ukpga_1982_49: targets gone 0, added 0, attrs %{affecting: 2, note: 2, cited: 2, note_digest: 2}
+  ~ d29p1788 s.21(4) [affecting: ["sch.4.para.21"], cited: "UK_ukpga_1991_40", note: "c2567521", note_digest: "8bd91ce64a23"] was []
+  ~ d29p871 s.10(3) [affecting: ["s.48"], cited: "UK_ukpga_1991_40", note: "c2566781", note_digest: "2445acf4ad84"] was []
+UK_ukpga_1983_20: targets gone 4, added 1, attrs %{}
+  - 85692709 s.119(3)
+  - 29p15570 s.143(3DA)
+  - 29p15570 s.143(3DB)
+  + 13cae302 s.119(3)
+UK_ukpga_1983_35: targets gone 0, added 0, attrs %{affecting: 1, note: 1, cited: 1, note_digest: 1}
+  ~ d29p813 s.10(2) [affecting: ["sch.9.para.12"], cited: "UK_ukpga_1994_19", note: "c756317", note_digest: "ec34aaeac818"] was []
+UK_ukpga_1983_54: targets gone 10, added 2, attrs %{}
+  - 41457708 s.35A(4)
+  - 38524281 s.15A(2)
+  - 823d7741 s.21B(1AA)
+  + 8760c75a s.15A(2)
+  + ee34e618 s.35A(4)
+UK_ukpga_1984_12: targets gone 0, added 0, attrs %{affecting: 3, note: 3, cited: 3, note_digest: 3}
+  ~ d29p4743 s.27L [affecting: ["s.10"], cited: "UK_ukpga_1992_43", note: "c13618411", note_digest: "8800bdd1ead6"] was []
+  ~ d29p7074 s.53(6) [affecting: ["s.5(2)"], cited: "UK_ukpga_1992_43", note: "c13620161", note_digest: "0971ccbee7d7"] was []
+UK_ukpga_1984_3: targets gone 1, added 0, attrs %{}
+  - 6424f25d s.1(6AA)
+UK_ukpga_1984_54: targets gone 0, added 0, attrs %{affecting: 3, note: 3, cited: 3, note_digest: 3}
+  ~ d30p7315 s.106(2A) [affecting: ["s.76(2)"], cited: "UK_ukpga_1991_34", note: "c1610823", note_digest: "32e045a2ac3d"] was []
+  ~ d30p749 s.8(4) [affecting: ["s.45"], cited: "UK_ukpga_1991_22", note: "c1610618", note_digest: "6388014eb944"] was []
+UK_ukpga_1984_55: targets gone 3, added 3, attrs %{}
+  - 20595167 s.14(7)
+  - 20993350 s.14(8)(c)
+  - 20803415 s.14(8)(b)
+  + c95b66a8 s.14(7)
+  + af7bc1e2 s.14(8)(b)
+  + ad7f9b34 s.14(8)(c)
+UK_ukpga_1984_60: targets gone 13, added 0, attrs %{affecting: 1, note: 1, cited: 1, note_digest: 1}
+  - 29p11342 s.63A(1A)
+  - 29p11342 s.63A(1B)
+  - 29p11342 s.63A(1BA)
+  ~ 29p14407 s.80A [affecting: ["s.67(1)", "sch.4.para.14", "sch.7.para.3(3)", "sch.7.para.5(2)"], cited: "UK_ukpga_1999_23", note: "c11330361", note_digest: "af3bb06e459d"] was []
+UK_ukpga_1985_67: targets gone 3, added 0, attrs %{}
+  - d29p2862 s.26(1)(bza)
+  - d29p2875 s.26(1)(baa)
+  - 08ca031d s.93(8A)
+UK_ukpga_1986_44: targets gone 6, added 0, attrs %{}
+  - d29p6760 s.28(5A)
+  - d29p6760 s.28(8A)
+  - d29p6910 s.28(8A)
+UK_ukpga_1988_1: targets gone 33, added 0, attrs %{affecting: 42, note: 42, cited: 42, note_digest: 42}
+  - 29p15708 s.468PB
+  - 29p16548 s.502GD
+  ~ d29p2764 s.88A [affecting: ["s.74"], cited: "UK_ukpga_1990_29", note: "c23416231", note_digest: "9095a291c10d"] was []
+  ~ d29p2807 s.88D [affecting: ["sch.4.para.2"], cited: "UK_ukpga_2005_7", note: "c23416261", note_digest: "238048a9e7dc"] was []
+UK_ukpga_1988_33: targets gone 2, added 0, attrs %{affecting: 2, note: 2, cited: 2, note_digest: 2}
+  - 4bc67c06 s.141(11AA)
+  ~ d29p3456 s.96(5) [affecting: ["s.21(3)(g)"], cited: "UK_ukpga_1993_36", note: "c12793851", note_digest: "03ab7ba60b70"] was []
+  ~ 29p38178 s.25(1)(a)(iv) [affecting: ["sch.9.para.31"], cited: "UK_ukpga_1994_33", note: "c12784761", note_digest: "292b3d88b7f2"] was []
+UK_ukpga_1988_39: targets gone 0, added 0, attrs %{affecting: 1, note: 1, cited: 1, note_digest: 1}
+  ~ 29p23378 s.21(2) [affecting: ["s.47(1)"], cited: "UK_ukpga_1994_9", note: "c13526631", note_digest: "f0e88f759b1d"] was []
+UK_ukpga_1988_40: targets gone 0, added 0, attrs %{affecting: 2, note: 2, cited: 2, note_digest: 2}
+  ~ 29p33448 s.3(2A) [affecting: ["reg.2(5)"], cited: "UK_uksi_1994_1814", note: "c12668861", note_digest: "66ddffde5fc7"] was []
+  ~ 29p54089 s.106(1A)(c) [affecting: ["sch.2.para.8(3)"], cited: "UK_ukpga_1994_30", note: "c12672801", note_digest: "bf75d2a9cb67"] was []
+UK_ukpga_1988_52: targets gone 7, added 1, attrs %{affecting: 3, note: 3, cited: 3, note_digest: 3}
+  - 59424399 s.144A
+  - 29p10606 s.89(1)(ea)
+  - 29p12996 s.99(7AA)
+  ~ d29p4335 h.40A [affecting: ["s.8(1)"], cited: "UK_ukpga_1991_40", note: "c13972761", note_digest: "a4a62d320ec7"] was []
+  ~ d29p8105 h.69 [affecting: ["s.12"], cited: "UK_ukpga_1991_40", note: "c13976351", note_digest: "301e0e13aa39"] was []
+UK_ukpga_1989_29: targets gone 7, added 0, attrs %{}
+  - d29p3815 s.23(1D)
+  - d29p3815 s.23(1ZA)
+  - 9762c4c0 s.36(5AA)
+UK_ukpga_1989_42: targets gone 1, added 0, attrs %{affecting: 7, note: 7, cited: 7, note_digest: 7}
+  ~ 29p15215 s.177 [affecting: ["s.112", "sch.10.para.16"], cited: "UK_asp_2001_10", note: "c15279801", note_digest: "eef4791a88f6"] was []
+  ~ 29p15241 s.178(1) [affecting: ["s.112", "sch.10.para.16"], cited: "UK_asp_2001_10", note: "c15279811", note_digest: "a7e8215dc375"] was []
+UK_ukpga_1990_8: targets gone 24, added 6, attrs %{affecting: 21, note: 21, cited: 21, note_digest: 21}
+  - 59048825 s.336(1A)
+  - 29p14610 s.195(1DA)
+  ~ 9p133379 s.12(6) [affecting: ["sch.4.pt.I"], cited: "UK_ukpga_1991_34", note: "c14016661", note_digest: "a96a5b99f71a"] was []
+  ~ 9p133422 s.12(7A) [affecting: ["sch.4.pt.I"], cited: "UK_ukpga_1991_34", note: "c14016681", note_digest: "24b2b940a444"] was []
+UK_ukpga_1990_9: targets gone 2, added 2, attrs %{}
+  - d29p5372 s.66(4)
+  - d29p5700 s.72(4)
+  + e1577265 s.66(4)
+  + 8bbe4fb1 s.72(4)
+UK_ukpga_1991_28: targets gone 0, added 0, attrs %{affecting: 1, note: 1, cited: 1, note_digest: 1}
+  ~ d29p2258 s.26A [affecting: ["sch.22.para.96(6)"], cited: "UK_ukpga_1995_25", note: "c1044431", note_digest: "c1923db39b9f"] was []
+UK_ukpga_1991_56: targets gone 27, added 0, attrs %{}
+  - 29p12570 s.51CA
+  - 29p12570 s.51CB
+  - 29p12570 s.51CC
+UK_ukpga_1992_12: targets gone 15, added 1, attrs %{}
+  - 82820313 s.228(10)
+  - 30p16328 s.175(2AA)
+  - 78c18c25 s.212(1)(ba)
+  + 47a8bbc4 s.228(10)
+UK_ukpga_1992_13: targets gone 3, added 2, attrs %{}
+  - 50601156 s.85B
+  - d29p6223 s.85A
+  - ace0ef7d s.57(5B)
+  + 38f807a0 s.85A
+  + 3710b346 s.85B
+UK_ukpga_1992_15: targets gone 0, added 0, attrs %{affecting: 2, note: 3, cited: 2, note_digest: 2}
+  ~ d30p122 s.1(3)(b) [affecting: ["sch.4.para.33(2)(a)"], cited: "UK_ukpga_1998_17", note: "c932996", note_digest: "6cebdbf5a9de"] was []
+  ~ d30p196 s.1(4A) [note: "c932999c933000"] was []
+UK_ukpga_1992_52: targets gone 4, added 0, attrs %{affecting: 4, note: 4, cited: 4, note_digest: 4}
+  - 14520581 s.230(2A)
+  - 14520581 s.230(2B)
+  ~ 29p16688 s.187(2)(b)(iii) [affecting: ["sch.7.para.23"], cited: "UK_ukpga_1993_19", note: "c14518771", note_digest: "f1ad24c04bfb"] was []
+  ~ 29p23175 s.254(5A) [affecting: ["sch.4.para.15(2)"], cited: "UK_ukpga_2016_15", note: "key-…be8a37", note_digest: "e26e80cffe34"] was []
+UK_ukpga_1993_12: targets gone 1, added 1, attrs %{}
+  - 55623546 s.46(b)(i)
+  + 0c3abdab s.46(b)(i)
+UK_ukpga_1993_28: targets gone 0, added 0, attrs %{affecting: 5, note: 5, cited: 5, note_digest: 5}
+  ~ d29p1235 s.9(2A) [affecting: ["sch.10.para.3(4)"], cited: "UK_ukpga_1996_52", note: "c17023381", note_digest: "01173e50a9bc"] was []
+  ~ d29p1530 s.11(4)(a) [affecting: ["sch.10.para.5(5)"], cited: "UK_ukpga_1996_52", note: "c17023681", note_digest: "881f73713e6d"] was []
+UK_ukpga_1993_43: targets gone 6, added 0, attrs %{}
+  - 29p11705 s.67(3ZA)
+  - 29p11705 s.67(3ZB)
+  - 29p12932 s.73(2)(ga)
+UK_ukpga_1993_9: targets gone 9, added 0, attrs %{}
+  - d29p1431 s.7(5A)
+  - d29p1431 s.7(8)
+  - d29p1431 s.7(9)
+UK_ukpga_1994_22: targets gone 1, added 0, attrs %{}
+  - d29p2705 s.22(1DA)
+UK_ukpga_1994_23: targets gone 8, added 0, attrs %{}
+  - 15292181 s.62(1B)
+  - 15292181 s.62(2)(a)
+  - 15292181 s.62(2)(b)
+UK_ukpga_1995_20: targets gone 0, added 0, attrs %{affecting: 1, note: 1, cited: 1, note_digest: 1}
+  ~ 30p11273 s.110 [affecting: ["sch.5"], cited: "UK_ukpga_1995_40", note: "c1524010", note_digest: "e09658783abc"] was []
+UK_ukpga_1995_23: targets gone 1, added 0, attrs %{}
+  - e01cdd59 s.27(3AA)
+UK_ukpga_1995_25: targets gone 4, added 0, attrs %{}
+  - caeece79 s.41(10A)
+  - caeece79 s.41(1A)
+  - caeece79 s.41(1B)
+UK_ukpga_1995_36: targets gone 2, added 0, attrs %{}
+  - d29p3109 s.29(5A)
+  - d29p3109 s.29(5B)
+UK_ukpga_1995_45: targets gone 2, added 0, attrs %{}
+  - d30p1387 s.12(1ZA)
+  - d30p1387 s.12(1ZB)
+UK_ukpga_1995_46: targets gone 25, added 0, attrs %{}
+  - 29p14721 s.61(7)
+  - 29p15352 s.65(9)(ba)
+  - 29p15612 s.66(6AA)
+UK_ukpga_1996_17: targets gone 1, added 0, attrs %{}
+  - 9008cde9 s.16(1)(da)
+UK_ukpga_1996_18: targets gone 18, added 0, attrs %{}
+  - 29p14691 s.108(3)(q)
+  - 29p14691 s.108(3)(r)
+  - 29p14722 s.108(3)(r)
+UK_ukpga_1996_25: targets gone 3, added 3, attrs %{}
+  - 76123620 s.28(1)(a)
+  - 79170474 s.39(1)(a)
+  - 09826014 s.5(3A)(b)
+  + 793b4c97 s.5(3A)(b)
+  + af546730 s.39(1)(a)
+  + 87ac4d0b s.28(1)(a)
+UK_ukpga_1996_27: targets gone 1, added 0, attrs %{}
+  - d29p6316 s.63CA
+UK_ukpga_1996_52: targets gone 3, added 0, attrs %{}
+  - 29p13622 s.167(2ZA)
+  - 29p15592 s.198(4A)
+  - 29p15592 s.198(5A)
+UK_ukpga_1996_53: targets gone 2, added 0, attrs %{}
+  - d29p340 s.3(2)(jd)
+  - d29p340 s.3(2)(k)
+UK_ukpga_1996_56: targets gone 31, added 23, attrs %{}
+  - 29p10434 s.410
+  - 29p11272 s.439(2)
+  - d29p1164 s.15A(3A)
+  + 8bec4d45 s.497B(1)
+  + 1fe34a77 s.2(2B)
+  + 5ee04216 s.497A(4)
+UK_ukpga_1996_8: targets gone 0, added 0, attrs %{affecting: 6, note: 6, cited: 6, note_digest: 6}
+  ~ 29p14477 s.129(5) [affecting: ["sch.8.pt.II"], cited: "UK_ukpga_1997_58", note: "c14612161", note_digest: "2dbd004fbdb4"] was []
+  ~ 29p14795 s.139 [affecting: ["sch.27.pt.III"], cited: "UK_ukpga_1998_36", note: "c14612321", note_digest: "5d14b4664f42"] was []
+UK_ukpga_1997_5: targets gone 0, added 0, attrs %{affecting: 1, note: 1, cited: 1, note_digest: 1}
+  ~ d30p624 s.16(4) [affecting: ["s.2(3)"], cited: "UK_ukpga_1997_64", note: "c1228048", note_digest: "a375dfb63382"] was []
+UK_ukpga_1997_50: targets gone 13, added 0, attrs %{}
+  - d29p7806 s.93(2AA)
+  - d29p7806 s.93(2AB)
+  - d29p7806 s.93(2AC)
+UK_ukpga_1997_8: targets gone 8, added 0, attrs %{}
+  - 66106e3a s.40(4A)
+  - ec2b1f62 s.36(1)(ca)
+  - 788a396a s.172(5A)
+UK_ukpga_1998_17: targets gone 3, added 0, attrs %{}
+  - 329ab68e s.7(2)(d)(ia)
+  - 2b715e53 s.9BA
+  - 2b715e53 s.9HA
+UK_ukpga_1998_31: targets gone 46, added 44, attrs %{}
+  - 87414789 s.123(3A)(a)
+  - 70061577 s.143
+  - d29p1613 s.12(1A)
+  + 2871ac80 s.123(2)
+  + 4258cbba s.143
+  + 098dd077 s.94(3)
+UK_ukpga_1998_37: targets gone 3, added 1, attrs %{}
+  - 34943048 s.51
+  - 29p14379 s.115(2)(ia)
+  - d29p7488 s.41(5)(ja)
+  + ed168b22 s.51
+UK_ukpga_1998_41: targets gone 1, added 0, attrs %{}
+  - f9a32ebf s.40ZE
+UK_ukpga_1998_46: targets gone 2, added 0, attrs %{}
+  - a53a3382 s.19(1AA)
+  - f62c2a7f s.80DA
+UK_ukpga_1998_47: targets gone 6, added 0, attrs %{}
+  - 29p10418 s.87(o)(q)
+  - 29p10418 s.87(o)(r)
+  - 29p10418 s.87(o)(s)
+UK_ukpga_1999_16: targets gone 0, added 0, attrs %{affecting: 1, note: 1, cited: 1, note_digest: 1}
+  ~ 30p10944 s.111 [affecting: ["sch.20.pt.V"], cited: "UK_ukpga_1999_16", note: "c1126337", note_digest: "8d25cc2bb082"] was []
+UK_ukpga_1999_29: targets gone 13, added 0, attrs %{}
+  - dbbd016e s.86(4DA)
+  - ffe0cf99 s.333ZA
+  - ffe0cf99 s.333ZAA
+UK_ukpga_2000_22: targets gone 8, added 1, attrs %{}
+  - 56854417 s.100
+  - 30318297 s.106(6A)
+  - 18e403d4 s.33ZA
+  + 599f1ad1 s.100
+UK_ukpga_2000_36: targets gone 2, added 0, attrs %{}
+  - 4bd8fafe s.19(2AA)
+  - 4bd8fafe s.19(2AB)
+UK_ukpga_2000_43: targets gone 3, added 1, attrs %{}
+  - 79979347 s.7(1)
+  - 116dd1f0 s.62(5)(ga)
+  - a619ce2b s.64(5)(ga)
+  + 9c969989 s.7(1)
+UK_ukpga_2002_30: targets gone 1, added 0, attrs %{}
+  - d29p1157 s.10(1)(gd)
+UK_ukpga_2002_32: targets gone 2, added 0, attrs %{}
+  - b00f6366 s.21(10)
+  - 60c72b67 s.141AA
+UK_ukpga_2002_40: targets gone 2, added 0, attrs %{}
+  - fa7aa855 s.94AA
+  - fa7aa855 s.94AB
+UK_ukpga_2003_1: targets gone 25, added 1, attrs %{}
+  - 81144384 s.343(2)(n)
+  - 6e7fb1cd s.446NA
+  - adf0b299 s.446IA
+  + a3926993 s.343(2)(n)
+UK_ukpga_2003_14: targets gone 1, added 1, attrs %{}
+  - 91907085 s.55(4)
+  + f24b5ad3 s.55(4)
+UK_ukpga_2003_21: targets gone 49, added 0, attrs %{}
+  - 18ed3b06 s.65(2BA)
+  - 49a3b13d s.368HA
+  - 49a3b13d s.368HN
+UK_ukpga_2003_26: targets gone 6, added 0, attrs %{}
+  - 80218274 s.23(8A)
+  - 80218274 s.23(8B)
+  - 80218274 s.23(8C)
+UK_ukpga_2003_39: targets gone 1, added 0, attrs %{}
+  - d29p831 s.10(6A)
+UK_ukpga_2003_44: targets gone 1, added 1, attrs %{}
+  - 29p22261 s.250(4)(b)(i)
+  + 6ed75542 s.250(4)(b)(i)
+UK_ukpga_2004_21: targets gone 3, added 0, attrs %{}
+  - d0e6bc04 s.28(A8A)
+  - d0e6bc04 s.28(A8B)
+  - d0e6bc04 s.28(A8C)
+UK_ukpga_2005_15: targets gone 1, added 0, attrs %{}
+  - 16dc1560 s.71(4)(dac)
+UK_ukpga_2005_4: targets gone 6, added 0, attrs %{}
+  - d29p6156 s.85(10)
+  - d29p6156 s.85(5)
+  - d29p6156 s.85(6)
+UK_ukpga_2006_41: targets gone 36, added 7, attrs %{}
+  - 89859425 s.129(2B)
+  - ed66435c s.13YA
+  - ed66435c s.13YB
+  + 8153d5a3 s.129(2A)
+  + 1fe77d82 s.129(2A)
+  + fe6eebef s.129(2)(c)
+UK_ukpga_2006_46: targets gone 58, added 0, attrs %{}
+  - 29p90660 s.1253DC
+  - 39f97d46 s.790LP
+  - 39f97d46 s.790LB
+UK_ukpga_2006_52: targets gone 11, added 0, attrs %{}
+  - cd186097 s.340IA
+  - cd186097 s.340IB
+  - cd186097 s.340LA
+UK_ukpga_2007_17: targets gone 1, added 1, attrs %{}
+  - 17233750 s.45(2)
+  + 462129c1 s.45(2)
+UK_ukpga_2008_17: targets gone 1, added 0, attrs %{}
+  - ffa5edd2 s.169ZA
+UK_ukpga_2008_26: targets gone 1, added 0, attrs %{}
+  - 8056418a s.91(b)
+UK_ukpga_2008_29: targets gone 1, added 0, attrs %{}
+  - fda4d025 s.9(8A)
+UK_ukpga_2008_32: targets gone 1, added 0, attrs %{}
+  - a3936ae8 s.82OA
+UK_ukpga_2009_1: targets gone 15, added 0, attrs %{}
+  - 925ffb5f s.81BA
+  - 925ffb5f s.81BB
+  - 925ffb5f s.81BC
+UK_ukpga_2009_20: targets gone 13, added 0, attrs %{}
+  - 3c3b73ff s.104(10A)
+  - 3c3b73ff s.104(11B)
+  - 1758b137 s.104(2AA)
+UK_ukpga_2009_22: targets gone 10, added 1, attrs %{}
+  - 35196544 s.A1(3)(a)
+  - 38436cbc s.A2DC
+  - 06f67af7 s.A2IA
+  + 295238d4 s.A1(3)(a)
+UK_ukpga_2009_4: targets gone 10, added 2, attrs %{}
+  - 57438346 s.1218A
+  - 57455688 s.1218B
+  - 73680a41 s.18CA
+  + f73a96c1 s.1218B
+  + 48ed9c00 s.1218A
+UK_ukpga_2010_15: targets gone 1, added 0, attrs %{}
+  - 83a6a691 s.110(5CA)
+UK_ukpga_2010_4: targets gone 82, added 0, attrs %{}
+  - 2a1daa9d s.357QF
+  - 2a1daa9d s.357UV
+  - 50d32415 s.357BLEA
+UK_ukpga_2010_8: targets gone 44, added 2, attrs %{}
+  - 0e5d69a3 s.259KE
+  - 0e5d69a3 s.259MB
+  - 03fa8e18 s.371RG
+  + 277ea5fd s.85A(4)
+  + f0222270 s.85A(1)(a)
+UK_ukpga_2011_13: targets gone 1, added 0, attrs %{}
+  - 100a3bf1 s.42(3AA)
+UK_ukpga_2011_25: targets gone 1, added 0, attrs %{}
+  - 14b7a90b s.104AA
+UK_ukpga_2011_5: targets gone 1, added 0, attrs %{}
+  - b0346dfb s.51(2)(ca)
+UK_ukpga_2015_6: targets gone 1, added 0, attrs %{}
+  - 6a4a0eef s.31(1)(ba)
+UK_ukpga_2017_3: targets gone 1, added 0, attrs %{}
+  - 3bb5f3ae s.143(4)(ii)
+UK_uksi_1986_1078: targets gone 17, added 0, attrs %{}
+  - 286ef868 reg.61(10AA)
+  - 286ef868 reg.61(10AB)
+  - 286ef868 reg.61(10AC)
+UK_uksi_1987_1968: targets gone 8, added 0, attrs %{}
+  - fd639150 reg.4(6CC)
+  - 3234d34b reg.6(8A)
+  - 3234d34b reg.6(8B)
+UK_uksi_1989_1796: targets gone 3, added 0, attrs %{}
+  - 7abb44d5 reg.11(2)(x)
+  - 7abb44d5 reg.11(2)(y)
+  - 7abb44d5 reg.11(2)(z)
+UK_uksi_1996_1527: targets gone 1, added 1, attrs %{}
+  - 05405230 *
+  + b0b731fb *
+UK_uksi_2001_3998: targets gone 2, added 0, attrs %{}
+  - b00bb3d9 reg.8(7A)
+  - 271db9fc reg.9(7A)
+UK_uksi_2004_2326: targets gone 4, added 4, attrs %{}
+  - 85969166 reg.83(3)
+  - 85748637 reg.83(1)(a)
+  - 85802192 reg.83(1)(b)
+  + ad23564f reg.3(1)
+  + 9611a32d reg.83(1)(b)
+  + f2c7cdd3 reg.83(3)
+UK_uksi_2006_3336: targets gone 1, added 1, attrs %{}
+  - 10930331 reg.265(5)(u)(ii)
+  + 9981caa6 reg.265(5)(u)(ii)
+UK_uksi_2006_599: targets gone 2, added 0, attrs %{}
+  - 20f849b1 reg.27(1)(dd)
+  - 20f849b1 reg.27(1)(de)
+UK_uksi_2007_3072: targets gone 2, added 2, attrs %{}
+  - 18847786 reg.4(8)
+  - 18847786 reg.4(9)
+  + bd4fc5fa reg.4(8)
+  + bd4fc5fa reg.4(9)
+UK_uksi_2007_605: targets gone 3, added 0, attrs %{}
+  - 993f8692 reg.3(3A)
+  - 49f0b387 reg.2(3A)
+  - 3b855ee1 reg.5A(4)(a)(vi)
+UK_uksi_2008_1911: targets gone 1, added 1, attrs %{}
+  - 57811695 reg.22(1)
+  + 27a526e4 reg.22(1)
+UK_uksi_2010_2214: targets gone 14, added 6, attrs %{}
+  - 83920560 pt.5
+  - 30596408 reg.7(2)
+  - 30596408 reg.7(3)
+  + 89aaa8ae reg.6(4)
+  + 09a98409 pt.5
+  + b421154a reg.26A
+UK_uksi_2010_231: targets gone 1, added 1, attrs %{}
+  - 12693472 reg.41(4)(ca)
+  + 93f699a7 reg.41(4)(ca)
+UK_uksi_2012_1916: targets gone 4, added 0, attrs %{}
+  - 8af4d15d reg.43(8A)
+  - 8af4d15d reg.43(8B)
+  - 129fa023 reg.217BA
+UK_uksi_2012_3118: targets gone 3, added 0, attrs %{}
+  - b4c0fd5e reg.32(7A)
+  - b4c0fd5e reg.32(7B)
+  - b4c0fd5e reg.32(7C)
+UK_uksi_2019_775: targets gone 1, added 1, attrs %{}
+  - 83361022 reg.89(5)
+  + 96357456 reg.89(5)
+UK_uksi_2020_1265: targets gone 4, added 0, attrs %{}
+  - 2c5bd4ec reg.70(2)(na)
+  - c2caaaa0 reg.72(2)(c)(iica)
+  - 2d8f9d57 reg.70(2)(gca)
+UK_uksi_2020_312: targets gone 2, added 2, attrs %{}
+  - 46547130 pt.2
+  - 46929040 reg.3
+  + 6f62c668 reg.3
+  + d035baf2 pt.2
+
+TOTAL %{added: 202, laws: 476, moved_laws: 173, gone: 1080, attrs: %{level: 1, operation: 1, affecting: 210, note: 218, cited: 212, note_digest: 212}}

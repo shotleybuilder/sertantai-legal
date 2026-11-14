@@ -1,0 +1,20 @@
+
+1942 changes (change elements) in 64 laws:
+  1790  placed
+  152  placed_versions
+our faults: 0
+
+1815 note placements (an effect placed by its note ref only) in 79 laws:
+  1771  placed
+  42  placed_versions
+  2  row_missing  (our fault)
+our faults: 2
+  row_missing  UK_ukpga_1875_17 key-…b30fc8 at ["section-4", "section-5", "section-6", "section-7", "section-8", "section-9", "section-10", "section-11", "section-12", "section-13", "section-14", "section-15", "section-16", "section-17", "section-18", "section-19", "section-20", "section-21", "section-22"] → ["s....", "s.10", "s.11", "s.12", "s.13", "s.14", "s.15", "s.16", "s.17", "s.18", "s.19", "s.20", "s.21", "s.22", "s.4", "s.5", "s.6", "s.7", "s.8", "s.9"]
+  row_missing  UK_ukpga_1971_40 key-…18c17e at ["crossheading-premises-for-which-fire-certificates-are-required", "section-1", "section-2", "section-3", "section-4", "crossheading-fire-certificates", "section-5", "section-5A", "section-5B", "section-6", "section-7", "section-8", "section-8A", "section-8B", "section-9", "section-9A", "section-9B", "section-9C", "section-9D", "section-9E", "section-9F", "crossheading-premises-involving-excessive-risk-to-persons-in-case-of-fire", "section-10", "section-10A", "section-10B", "crossheading-building-and-other-regulations-about-fire-precautions", "section-11", "section-12", "section-13", "section-14", "crossheading-consultation-between-fire-and-other-authorities", "section-15", "section-16", "section-17", "crossheading-enforcement", "section-18", "section-19", "section-20", "section-21", "crossheading-offences-penalties-and-legal-proceedings", "section-22", "section-23", "section-24", "section-25", "section-26", "section-27", "section-27A", "section-28", "section-28A", "crossheading-amendments-of-other-acts", "section-29", "section-30", "section-31", "section-32", "section-33", "crossheading-miscellaneous-and-general", "section-35", "section-36", "section-37", "section-38", "section-39", "section-40", "section-41", "section-42", "section-43", "section-44"] → ["h.1", "h.12", "h.37", "s.1", "s.10", "s.10A", "s.10B", "s.11", "s.12", "s.13", "s.14", "s.15", "s.16", "s.17", "s.18", "s.19", "s.2", "s.20", "s.21", "s.22", "s.23", "s.24", "s.25", "s.26", "s.27", "s.27A", "s.28", "s.28A", "s.29", "s.3", "s.30", "s.31", "s.32", "s.33", "s.35", "s.36", "s.37", "s.38", "s.39", "s.4", "s.40", "s.41", "s.42", "s.43", "s.44", "s.5", "s.5A", "s.5B", "s.6", "s.7", "s.8", "s.8A", "s.8B", "s.9", "s.9A", "s.9B", "s.9C", "s.9D", "s.9E", "s.9F"]
+
+markup keys against the feed (changes; a count for CV-S07):
+  1454  in_feed
+  452  legacy
+  36  not_in_feed
+
+FAIL (placement)

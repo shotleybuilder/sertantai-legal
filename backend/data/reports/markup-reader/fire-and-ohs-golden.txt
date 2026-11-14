@@ -1,0 +1,51 @@
+laws read 3 at once: 12.5 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.7 of 6 cores busy; max 4
+  UK_ukpga_1967_10: 7 s
+  UK_eur_2016_2031: 8 s
+  UK_ukpga_1974_37: 24 s
+  UK_ukpga_1974_40: 17 s
+  UK_ukpga_1989_14: 2 s
+  UK_ukpga_1993_12: 6 s
+  UK_ukpga_2006_16: 8 s
+  UK_ukpga_2018_16: 2 s
+  UK_ukpga_2020_7: 3 s
+  UK_ukpga_1988_52: 41 s
+  UK_ukpga_2021_30: 16 s
+  UK_uksi_2000_1043: 0 s
+  UK_uksi_2008_1597: 3 s
+  UK_ukpga_2022_30: 24 s
+  UK_uksi_2010_2215: 0 s
+  UK_uksi_2010_404: 0 s
+  UK_uksi_2012_3038: 5 s
+  UK_uksi_2016_1105: 5 s
+  UK_uksi_2017_544: 0 s
+  UK_uksi_2010_2214: 19 s
+  UK_ukpga_1990_8: 97 s
+PASS  UK_eur_2016_2031 art.Article 28(3)  — EU retained law omitted for GB on IP completion day; in force in NI under the Windsor Framework (C8)
+PASS  UK_ukpga_1967_10 s.1(4)(a)  — inserted 1999; words omitted 2013 (same as affected); Scottish whole-Act repeal (RetainText) + same-day word omission 2019
+PASS  UK_ukpga_1967_10 s.1(1A)  — inserted by a Welsh SI into a GB Act (single GB text); Scottish whole-Act repeal (RetainText) 2019
+PASS  UK_ukpga_1974_37 s.78  — commenced by order: SI 1974/1439 art.2(c), Sch. 3 "Section 78" on 1 April 1975 (CV-S04, Jason 2026-10-24; was UNDECIDABLE, the order not held); C11 extent E+W+S; E+W and S repeals same day 2006-10-01 → nowhere; child (7)(c) repeal ignored (undecidable)
+PASS  UK_ukpga_1974_40 s.101  — UNDECIDABLE commencement (no order held names it: SI 1988/818 does not, C10); Scottish repeal 2014 with no markup (undecidable)
+PASS  UK_ukpga_1988_52 s.4(6)  — silent-feed repeal; RetainText + SOCPA s.179 extent make it E+W only → S
+PASS  UK_ukpga_1989_14 s.3(5)  — UNDECIDABLE commencement (note only, SI 1991/1618 not held); Scottish whole-Act repeal (RetainText) 2025; S child changes 2014 ignored (undecidable)
+PASS  UK_ukpga_1990_8 s.78(4BA)  — inserted by a Welsh Act inside an older Addition; staged commencement 2015 (partial) / 2017 (full)
+PASS  UK_ukpga_1990_8 s.284(3)(a)  — territory-split words changes: E-only words repeal 2009 (RetainText), Welsh staged substitution 2015/2016
+PASS  UK_ukpga_1993_12 s.18  — E+W repeal (RetainText Extent=E+W) 2010, then S range repeal (no markup) 2018 → NI
+PASS  UK_ukpga_2006_16 s.73  — prospective, commenced 2007, repealed everywhere (text removed) 2012
+PASS  UK_ukpga_2018_16 s.6  — staged commencement (s.6(7) 2018, specified purposes 2020-01-30, fully 2020-12-31); heading substituted 2024
+PASS  UK_ukpga_2020_7 s.78  — staged territorial expiries: E 2021-12-09, W 2022-03-25 (sunset), NI lapse after last continuation 2024-03-25
+PASS  UK_ukpga_2020_7 s.8  — never commenced; expired in part 2021-07-17 (RetainText) — still prospective everywhere
+PASS  UK_ukpga_2021_30 s.8  — prospective at Royal Assent, commenced by order 2022-01-24
+PASS  UK_ukpga_2022_30 s.138(2)(a)  — never commenced: prospective since Royal Assent
+PASS  UK_uksi_2000_1043 reg.11(3)  — substituted the same day for E (marked up) and for W (feed only) — one version, two laws (C5)
+PASS  UK_uksi_2008_1597 reg.14(1)[E+W+S]  — GB territorial version created 2020-12-31; carries the shared pre-split history (C3)
+PASS  UK_uksi_2008_1597 reg.14(1)[NI]  — NI territorial version (C3 shared history); scheduled NI revocation with savings 2027-01-20
+PASS  UK_uksi_2010_2214 reg.36[E]  — England version from a 2015 substitution marked Extent=E; original E+W history before
+PASS  UK_uksi_2010_2215 reg.29  — England-only omission with no Repeal markup; later whole-law England revocation
+PASS  UK_uksi_2010_404 reg.14  — England-only omission (RetainText) by an (England) SI; Welsh heading change after
+PASS  UK_uksi_2010_404 reg.14(1)  — child of reg.14: the omission reaches it; its own Welsh word changes version it
+PASS  UK_uksi_2010_404 reg.14(3)  — child of reg.14: only the England-only omission
+PASS  UK_uksi_2012_3038 reg.1A  — inserted 2020-12-31; own application clause → NI (C6); purpose-limited revocation (RetainText) 2021 → partial (C7)
+PASS  UK_uksi_2016_1105 reg.72(2)(b)  — GB omission (RetainText Extent=E+W+S) leaves NI; same-day NI word omission on its text
+PASS  UK_uksi_2017_544 reg.1(1)  — Welsh SI (territory W, not legal extent E+W); renumbered reg.1 → reg.1(1) 2024 (C4)
+
+27 / 27 golden provisions pass

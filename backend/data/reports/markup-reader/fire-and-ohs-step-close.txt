@@ -1,0 +1,95 @@
+
+── Sources (mix lat.sources) ──
+139 laws in scope
+
+needed against held, by category:
+  own: 139 — held 139
+  feed: 135 — held 135
+  territory: 406 — held 405, not_fetched 1
+  introduction: 226 — held 225, not_fetched 1
+  enabling_parent: 36 — held 36
+  dates: 53 — absent 13, held 40
+  backlog: 183 — absent 31, held 145, not_fetched 4, stale 3
+  needed, all categories: 1178
+
+failures: 9
+  not_fetched  backlog  UK_nisr_2026_89 :schedules  (for UK_nisr_2014_224)
+  stale  backlog  UK_uksi_1974_1885 :schedules  (for UK_ukpga_1875_17)
+  not_fetched  backlog  UK_uksi_1996_2089 :schedules  (for UK_ukpga_1875_17)
+  stale  backlog  UK_uksi_1974_2013 :schedules  (for UK_ukpga_1954_70)
+  not_fetched  territory  UK_uksi_1992_1728 :body  (for UK_ukpga_1992_15)
+  not_fetched  introduction  UK_uksi_1992_1728 :introduction  (for UK_ukpga_1992_15)
+  not_fetched  backlog  UK_uksi_1992_1728 :schedules  (for UK_ukpga_1992_15)
+  stale  backlog  UK_ukpga_2017_3 :schedules  (for UK_ukpga_2004_21)
+  not_fetched  backlog  UK_uksi_1993_208 :schedules  (for UK_uksi_1956_1943)
+
+feeds differing from the register's change statistics: 0
+
+FAIL
+
+── Feed reader (mix lat.feed_check) ──
+311 family laws; 139 hold LAT rows (in scope), 172 don't
+7045 effects in 139 laws:
+  4332  placed
+  2064  schedule_not_parsed
+  272  not_in_text
+  189  placed_versions
+  130  not_a_provision
+  38  whole_law
+  15  row_missing
+  5  placed_by_markup
+
+our faults: 0
+
+finer form not held (parse tell-tales): 0
+
+PASS (placement)
+
+── Markup reader (mix lat.markup_check) ──
+
+1942 changes (change elements) in 64 laws:
+  1790  placed
+  152  placed_versions
+our faults: 0
+
+1815 note placements (an effect placed by its note ref only) in 79 laws:
+  1773  placed
+  42  placed_versions
+our faults: 0
+
+markup keys against the feed (changes; a count for CV-S07):
+  1454  in_feed
+  452  legacy
+  36  not_in_feed
+
+PASS (placement)
+
+── Checked rows (mix lat.label_checked) ──
+744 checked rows: %{known: 47, match: 674, changed: 22, upstream: 1}
+NOT PASSED
+
+── Stale laws (mix lat.stale) ──
+parser 4cf7d6e7fbc2, labels bc2b55cef4cb: 1130 stale laws (switched families: 388 of 388)
+  fold_version: 388
+  labels_version: 742
+  parser_version: 742
+
+change register, code cbd0b6ed0249: 454 of 544 built laws stale (26 built with no changes)
+  code_version: 405
+  commencement_reader: 49  (fix: mix lat.commencement (the mode that wrote them), then build)
+  laws holding LAT with no build: 725
+
+Fire and OH&S: 49 stale laws (LAT or labels 0, change register 49)
+
+Markup reader's close, Fire and OH&S:
+  FAIL  Sources (9 failing; owned by the Sources step)
+  PASS  Feed reader
+  PASS  Markup reader
+  FAIL  Checked rows (22 failing; parked with the step whose change moved them (traced with --list))
+  FAIL  Stale laws (49 failing; fix by the reasons above: re-parse (LAT parser), re-read (the reader), rebuild (Store and build))
+
+FAIL (step close)
+
+real	4m1.819s
+user	4m6.630s
+sys	0m39.183s
