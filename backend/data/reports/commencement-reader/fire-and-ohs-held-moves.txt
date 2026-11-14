@@ -1,0 +1,430 @@
+order  UK_nisr_2006_257/391ba09a0b
+  SENTENCE: The day appointed for the coming into operation of the following provisions of the Fire and Rescue Services (Northern Ireland) Order 2006 is 1st July 2006— a
+  HELD: %{ "class" => "rules+partial", "rules" => ["sch.1, sch.2 — 2006-07-01 — NI, fully — order_date", "sch.3.para.1..sch.3.para.18, sch.3.para.20..sch.3.para.23 — 2006-07-01 — NI, fully — order_date", "sch.4 — 2006-07-01 — NI, in relation to — order_date"] }
+  NOW:  %{ "class" => "rules+partial", "rules" => ["reg.3..reg.24 — 2006-07-01 — NI, fully — order_date", "reg.53..reg.63 — 2006-07-01 — NI, fully — order_date", "sch.1, sch.2 — 2006-07-01 — NI, fully — order_date", "sch.3.para.1..sch.3.para.18, sch.3.para.20..sch.3.para.23 — 2006-07-01 — NI, fully — order_date", "sch.4 — 2006-07-01 — NI, in relation to — order_date"] }
+
+order  UK_nisr_2012_13/f1eae0d184
+  SENTENCE: The day appointed for the coming into operation of the provisions of the 2011 Act specified in the first column of Schedule 1 (where applicable, to the extent specified in the second column of that Schedule) is 18th January 2012.
+  HELD: %{ "class" => "rules+partial", "rules" => ["sch.1 — 2012-01-18 — NI, in relation to — order_date"] }
+  NOW:  %{ "class" => "rules+partial", "rules" => ["sch.1 — 2012-01-18 — everywhere, in relation to — order_date"] }
+
+order  UK_ssi_2006_19/84e0519fe3
+  SENTENCE: Subject to article 3, the provisions of the Environmental Assessment (Scotland) Act 2005, so far as not then in force, shall come into force, for all purposes, on 20th February 2006.
+  HELD: %{ "class" => "rules+partial+all", "rules" => ["all — 2006-02-20 — S, fully — order_date"] }
+  NOW:  %{ "class" => "rules+all", "rules" => ["all — 2006-02-20 — everywhere, fully — order_date"] }
+
+order  UK_ssi_2006_47/52dad60486
+  SENTENCE: The day appointed for the coming into force of section 4 of the Smoking, Health and Social Care (Scotland) Act 2005, in so far as not already in force, is 7th February 2006.
+  HELD: %{ "class" => "rules+partial", "rules" => ["s.4 — 2006-02-07 — S, fully — order_date"] }
+  NOW:  %{ "class" => "rules", "rules" => ["s.4 — 2006-02-07 — everywhere, fully — order_date"] }
+
+order  UK_ssi_2012_333/cd2c868a4f
+  SENTENCE: Where a purpose is specified in column 3 of Schedule 1 in relation to any provision, that provision comes into force on 1st January 2013 for that purpose only.
+  HELD: %{ "class" => "rules+partial", "rules" => ["sch.1 — 2013-01-01 — S, in relation to — order_date"] }
+  NOW:  %{ "class" => "rules+partial", "rules" => ["sch.1 — 2013-01-01 — everywhere, in relation to — order_date"] }
+
+order  UK_ssi_2013_342/5b26325b7f
+  SENTENCE: 21st December 2013 is the day appointed for the coming into force of the following provisions of the Water Resources (Scotland) Act 2013 (in so far as they are not already in force)— a
+  HELD: %{ "class" => "rules+partial", "rules" => ["s.23..s.28 — 2013-12-21 — S, fully — order_date", "s.30, s.31 — 2013-12-21 — S, fully — order_date", "s.34..s.37 — 2013-12-21 — S, fully — order_date"] }
+  NOW:  %{ "class" => "rules", "rules" => ["s.23..s.28 — 2013-12-21 — everywhere, fully — order_date", "s.30, s.31 — 2013-12-21 — everywhere, fully — order_date", "s.34..s.37 — 2013-12-21 — everywhere, fully — order_date"] }
+
+order  UK_ssi_2017_403/5c19bf6d4e
+  SENTENCE: The following provisions of Part 1 (socio-economic inequalities) of the Equality Act 2010 come into force on 1st April 2018— a
+  HELD: %{ "class" => "rules+partial", "rules" => ["s.1, s.1(1) — 2018-04-01 — S, fully — order_date", "s.2 — 2018-04-01 — S, for making secondary legislation — order_date", "s.3 — 2018-04-01 — S, fully — order_date"] }
+  NOW:  %{ "class" => "rules+partial", "rules" => ["s.1(1)..s.1(3), s.1(6) — 2018-04-01 — S, fully — order_date", "s.2 — 2018-04-01 — S, for making secondary legislation — order_date", "s.3 — 2018-04-01 — S, fully — order_date"] }
+
+order  UK_ssi_2025_170/152bb57194
+  SENTENCE: Section 12 | Removal of unlawfully deposited waste | For the purpose of making regulations only.
+  HELD: %{ "class" => "rules+partial", "rules" => ["s.12 — 2025-08-01 — S, fully — order_schedule"] }
+  NOW:  %{ "class" => "rules", "rules" => ["s.12 — 2025-08-01 — everywhere, fully — order_schedule"] }
+
+order  UK_ssi_2025_170/e0fcd6a7b4
+  SENTENCE: Section 1 | Circular economy strategy | 
+  HELD: %{ "class" => "rules+partial", "rules" => ["s.1 — 2025-08-01 — S, fully — order_schedule", "s.12 — 2025-08-01 — S, fully — order_schedule", "s.14 — 2025-08-01 — S, fully — order_schedule", "s.15 — 2025-08-01 — S, fully — order_schedule", "s.18 — 2025-08-01 — S, fully — order_schedule", "s.19 — 2025-08-01 — S, fully — order_schedule"] }
+  NOW:  %{ "class" => "rules", "rules" => ["s.1 — 2025-08-01 — everywhere, fully — order_schedule", "s.12 — 2025-08-01 — everywhere, fully — order_schedule", "s.14 — 2025-08-01 — everywhere, fully — order_schedule", "s.15 — 2025-08-01 — everywhere, fully — order_schedule", "s.18 — 2025-08-01 — everywhere, fully — order_schedule", "s.19 — 2025-08-01 — everywhere, fully — order_schedule"] }
+
+order  UK_uksi_1972_1763/71428ad9e1
+  SENTENCE: Section 29 | Possession of firearms by persons convicted of crime in Northern Ireland.
+  HELD: %{ "class" => "rules+partial", "rules" => ["s.29 — 1973-01-01 — NI, fully — order_schedule"] }
+  NOW:  %{ "class" => "rules", "rules" => ["s.29 — 1973-01-01 — everywhere, fully — order_schedule"] }
+
+order  UK_uksi_1982_243/5b9f216d67
+  SENTENCE: Schedule 9 (except paragraph 3(3) which came into force on 17th July 1978). | Matters ancillary to section 47.
+  HELD: %{ "class" => "rules+partial", "rules" => ["sch.9, sch.9.para.3(3) — 1982-03-29 — everywhere, in relation to — order_schedule"] }
+  NOW:  %{ "class" => "rules+partial", "rules" => ["sch.9 — 1982-03-29 — everywhere, in relation to — order_schedule"] }
+
+order  UK_uksi_1989_2278/8acaf6813f
+  SENTENCE: Subsections (2)(c) and (3) to (7) of section 98 of the Water Act 1989 shall come into force on 1st April 1990.
+  HELD: %{ "class" => "rules", "rules" => ["s.98(2), s.98(c), s.98(3)..s.98(7) — 1990-04-01 — everywhere, fully — order_date"] }
+  NOW:  %{ "class" => "rules", "rules" => ["s.98(2)(c), s.98(3)..s.98(7) — 1990-04-01 — everywhere, fully — order_date"] }
+
+order  UK_uksi_1991_2905/2baa996ab7
+  SENTENCE: In section 69, in subsection (1) “made to that authority” and in subsection (3) “made to the authority”.
+  HELD: %{ "class" => "rules", "rules" => ["s.69, s.69(1), s.69(3) — 1992-01-02 — everywhere, fully — order_schedule"] }
+  NOW:  %{ "class" => "rules", "rules" => ["s.69(1), s.69(3) — 1992-01-02 — everywhere, fully — order_schedule"] }
+
+order  UK_uksi_1992_2984/35e0773f80
+  SENTENCE: Schedule 8 in so far as it relates to England and Wales and has not already been commenced | Minor and consequential amendments
+  HELD: %{ "class" => "rules+partial", "rules" => ["sch.8 — 1993-01-01 — everywhere, in relation to — order_schedule"] }
+  NOW:  %{ "class" => "rules+partial", "rules" => ["sch.8 — 1993-01-01 — E+W, fully — order_schedule"] }
+
+order  UK_uksi_2004_2593/e2921ab84a
+  SENTENCE: To the extent to which they have not already been commenced, the following provisions of the Planning and Compulsory Purchase Act 2004 shall come into force on 31 October 2004: a
+  HELD: %{ "class" => "rules+partial", "rules" => ["pt.8 — 2004-10-31 — everywhere, fully — order_date", "s.111(2) — 2004-10-31 — everywhere, fully — order_date", "sch.6.para.7 — 2004-10-31 — everywhere, fully — order_date", "sch.7.para.4, sch.7.para.5, sch.7.para.7, sch.7.para.9, sch.7.para.10(1)..sch.7.para.10(6), sch.7.para.11(4), sch.7.para.11(5), sch.7.para.12..sch.7.para.15, sch.7.para.18 — 2004-10-31 — everywhere, fully — order_date", "sch.9 — 2004-10-31 — everywhere, in relation to — order_date"] }
+  NOW:  %{ "class" => "rules+partial", "rules" => ["pt.8 — 2004-10-31 — everywhere, fully — order_date", "s.111(2) — 2004-10-31 — everywhere, fully — order_date", "sch.6.para.7 — 2004-10-31 — everywhere, fully — order_date", "sch.7.para.4, sch.7.para.5, sch.7.para.7, sch.7.para.9, sch.7.para.10(1)..sch.7.para.10(6), sch.7.para.11(4), sch.7.para.11(5), sch.7.para.12..sch.7.para.15, sch.7.para.18, sch.7.para.21 — 2004-10-31 — everywhere, fully — order_date", "sch.9 — 2004-10-31 — everywhere, in relation to — order_date"] }
+
+order  UK_uksi_2004_759/409029688c
+  SENTENCE: Subject to paragraph (3), 1st April 2004 is the appointed day for the coming into force of sections 48, 49, 50(1) and (5), 51(1) to (3), (5) and (6), 52(1) to (4), (6) and (7), 53 to 57, 60, 61, 64 to 68, 103, 106, 124, 126, 128, 130, 132, 134, 136 to 138, and 140 insofar as they are not already in force.
+  HELD: %{ "class" => "rules", "rules" => ["s.48, s.49, s.50(1), s.50(5), s.51(1)..s.51(3), s.51(5), s.51(6), s.52(1)..s.52(4), s.52(6), s.52(7), s.53..s.57, s.60, s.61, s.64..s.68, s.103, s.106, s.124, s.126, s.128, s.130, s.132, s.134, s.136..s.138 — 2004-04-01 — everywhere, fully — order_date"] }
+  NOW:  %{ "class" => "rules", "rules" => ["s.48, s.49, s.50(1), s.50(5), s.51(1)..s.51(3), s.51(5), s.51(6), s.52(1)..s.52(4), s.52(6), s.52(7), s.53..s.57, s.60, s.61, s.64..s.68, s.103, s.106, s.124, s.126, s.128, s.130, s.132, s.134, s.136..s.138, s.140 — 2004-04-01 — everywhere, fully — order_date"] }
+
+order  UK_uksi_2009_3318/6076e1092a
+  SENTENCE: The following provisions of the Act come into force on the day after this Order is made— a
+  HELD: %{ "class" => "rules+partial", "rules" => ["s.118..s.120 — 2009-12-17 — everywhere, in relation to — order_date", "s.88..s.113 — 2009-12-17 — everywhere, fully — order_date", "sch.6 — 2009-12-17 — everywhere, fully — order_date"] }
+  NOW:  %{ "class" => "rules", "rules" => ["s.118..s.120 — 2009-12-17 — everywhere, fully — order_date", "s.88..s.113 — 2009-12-17 — everywhere, fully — order_date", "sch.6 — 2009-12-17 — everywhere, fully — order_date"] }
+
+order  UK_uksi_2010_2169/9bd2ebdbaa
+  SENTENCE: Section 36 of the Act (water use: temporary bans) comes into force on 1stSeptember2010, so far as the amendments made by that section provide power for the Minister, as defined in section 76A(4) of the Water Industry Act 1991 (temporary bans: supplemental), to make an order under section 76A(2) of that Act.
+  HELD: %{"class" => "none", "rules" => []}
+  NOW:  %{ "class" => "rules", "rules" => ["s.36, s.76A(2) — 2010-09-01 — everywhere, fully — order_date"] }
+
+order  UK_uksi_2012_873/93888d6677
+  SENTENCE: The following provisions of the Act come into force the day after this Order is made— a
+  HELD: %{ "class" => "rules+partial", "rules" => ["pt.1 — 2012-03-21 — everywhere, fully — order_date", "s.108 — 2012-03-21 — everywhere, fully — order_date", "s.118 — 2012-03-21 — everywhere, fully — order_date", "s.15(1)..s.15(3), s.15(5) — 2012-03-21 — everywhere, fully — order_date", "s.16 — 2012-03-21 — everywhere, fully — order_date", "s.17..s.22 — 2012-03-21 — everywhere, fully — order_date", "s.3 — 2012-03-21 — everywhere, fully — order_date", "s.30 — 2012-03-21 — everywhere, fully — order_date", "s.31 — 2012-03-21 — everywhere, fully — order_date", "s.32 — 2012-03-21 — everywhere, fully — order_date", "s.33 — 2012-03-21 — everywhere, fully — order_date", "s.34 — 2012-03-21 — everywhere, fully — order_date", "s.35(1)..s.35(5), s.35(7) — 2012-03-21 — everywhere, fully — order_date", "s.36 — 2012-03-21 — everywhere, fully — order_date", "s.38 — 2012-03-21 — everywhere, fully — order_date", "s.39 — 2012-03-21 — everywhere, in relation to — order_date", "s.40 — 2012-03-21 — everywhere, fully — order_date", "s.41 — 2012-03-21 — everywhere, fully — order_date", "s.6 — 2012-03-21 — everywhere, fully — order_date", "s.82..s.91, sch.2 — 2012-03-21 — everywhere, fully — order_date", "s.92 — 2012-03-21 — everywhere, fully — order_date"] }
+  NOW:  %{ "class" => "rules", "rules" => ["pt.1 — 2012-03-21 — everywhere, fully — order_date", "s.108 — 2012-03-21 — everywhere, fully — order_date", "s.118 — 2012-03-21 — everywhere, fully — order_date", "s.15(1)..s.15(3), s.15(5) — 2012-03-21 — everywhere, fully — order_date", "s.16 — 2012-03-21 — everywhere, fully — order_date", "s.17..s.22 — 2012-03-21 — everywhere, fully — order_date", "s.3 — 2012-03-21 — everywhere, fully — order_date", "s.30 — 2012-03-21 — everywhere, fully — order_date", "s.31 — 2012-03-21 — everywhere, fully — order_date", "s.32 — 2012-03-21 — everywhere, fully — order_date", "s.33 — 2012-03-21 — everywhere, fully — order_date", "s.34 — 2012-03-21 — everywhere, fully — order_date", "s.35(1)..s.35(5), s.35(7) — 2012-03-21 — everywhere, fully — order_date", "s.36 — 2012-03-21 — everywhere, fully — order_date", "s.38 — 2012-03-21 — everywhere, fully — order_date", "s.39 — 2012-03-21 — everywhere, fully — order_date", "s.40 — 2012-03-21 — everywhere, fully — order_date", "s.41 — 2012-03-21 — everywhere, fully — order_date", "s.6 — 2012-03-21 — everywhere, fully — order_date", "s.82..s.91, sch.2 — 2012-03-21 — everywhere, fully — order_date", "s.92 — 2012-03-21 — everywhere, fully — order_date"] }
+
+own  UK_anaw_2012_2/50362de0f3
+  SENTENCE: The following provisions come into force on the day after the day on which this Act receives Royal Assent –
+  HELD: %{ "class" => "law:clause_unread", "rules" => ["all — unread — everywhere, fully — clause_unread"] }
+  NOW:  %{ "class" => "law:clause_unread", "rules" => ["all — unread — everywhere, fully — clause_unread", "s.21, s.22, s.23 — unread — everywhere, fully — provision_unread"] }
+
+own  UK_anaw_2013_1/1b653e5ba7
+  SENTENCE: The following provisions come into force at the end of the period of two months beginning on the day on which this Act receives Royal Assent— Chapter 3 of Part 2; section 91; sections 94 and 95; paragraphs 31, 33, 34(1) and (3), 35 and 36 of Part 3 of Schedule 5 (and section 99 in so far as relating to those paragraphs).
+  HELD: %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["pt.2.ch.3, s.91, s.94, s.95 — 2013-05-04 — everywhere, fully — provision_dated", "s.99, sch.5.pt.3 — 2013-05-04 — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["pt.2.ch.3, s.91, s.94, s.95, sch.5.pt.3 — 2013-05-04 — everywhere, fully — provision_dated", "s.99 — 2013-05-04 — everywhere, in relation to — provision_qualified"] }
+
+own  UK_anaw_2015_4/efb8cad3e4
+  SENTENCE: The following provisions come into force at the end of the period of two months beginning with the day on which this Act receives Royal Assent—
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["pt.3, pt.4, pt.5, pt.6, pt.7, pt.8 — unread — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_qualified+provision_unread", "rules" => ["pt.3, pt.4, pt.5, pt.6, pt.7, pt.8 — unread — everywhere, in relation to — provision_qualified", "s.55 — unread — everywhere, fully — provision_unread"] }
+
+own  UK_asc_2024_6/75757d8143
+  SENTENCE: The following provisions come into force at the end of the period of two months beginning with the day on this Act receives Royal Assent—
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["s.2, s.3, s.4, s.15, s.8, s.15, s.9, s.15, s.13, s.15, s.14, s.15 — unread — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_qualified+provision_unread", "rules" => ["s.15, s.15, s.15, s.15, s.15 — unread — everywhere, in relation to — provision_qualified", "s.2, s.3, s.4, s.5, s.7, s.8, s.9, s.13, s.14, s.17, s.20 — unread — everywhere, fully — provision_unread"] }
+
+own  UK_asc_2024_6/8121aa4a63
+  SENTENCE: The following provisions come into force on 1 April 2025—
+  HELD: %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["s.10, s.11, s.15 — 2025-04-01 — everywhere, in relation to — provision_qualified", "s.6 — 2025-04-01 — everywhere, fully — provision_dated"] }
+  NOW:  %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["s.10, s.11, s.6 — 2025-04-01 — everywhere, fully — provision_dated", "s.15 — 2025-04-01 — everywhere, in relation to — provision_qualified"] }
+
+own  UK_asc_2026_4/365da454e2
+  SENTENCE: The following provisions come into force at the end of the period of 2 months beginning with the day on which this Act receives Royal Assent—
+  HELD: %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["s.1, s.2, s.6, s.7, s.8, s.10, sch.1, s.30, sch.3, s.31, s.32, s.33, s.34, pt.3 except s.6(1)(c) — 2026-06-27 — everywhere, fully — provision_dated", "s.45, sch.4.para.1..sch.4.para.4 — 2026-06-27 — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["s.1, s.2, s.6, s.7, s.8, s.10, sch.1, s.30, sch.3, s.31, s.32, s.33, s.34, pt.3, sch.4.para.1..sch.4.para.4 except s.6(1)(c) — 2026-06-27 — everywhere, fully — provision_dated", "s.45 — 2026-06-27 — everywhere, in relation to — provision_qualified"] }
+
+own  UK_nisi_1994_426/cc8d101744
+  SENTENCE: The following provisions shall come into operation on such day or days as the Department may by order appoint, namely—
+  HELD: %{ "class" => "rules:provision_by_order+provision_qualified", "rules" => ["pt.IV, sch.6 — appointed (by order) — everywhere, fully — provision_by_order", "sch.9.para.2, sch.9.para.4, sch.9.para.5, sch.9.para.7, sch.9.para.8, sch.9.para.10..sch.9.para.12, sch.9.para.14 — appointed (by order) — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_by_order", "rules" => ["pt.IV, sch.6, sch.9.para.2, sch.9.para.4, sch.9.para.5, sch.9.para.7, sch.9.para.8, sch.9.para.10..sch.9.para.12, sch.9.para.14 — appointed (by order) — everywhere, fully — provision_by_order"] }
+
+own  UK_nisi_2003_419/0db119a8a9
+  SENTENCE: The following provisions come into operation on the day after the day on which this Order is made—
+  HELD: %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["pt.I, reg.59, reg.60, reg.64, reg.66, reg.67 — 2003-02-28 — everywhere, fully — provision_dated", "reg.65, sch.3.para.1(2), reg.65, sch.4 — 2003-02-28 — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["pt.I, reg.59, reg.60, reg.64, reg.66, reg.67, sch.3.para.1(2), sch.4 — 2003-02-28 — everywhere, fully — provision_dated", "reg.65, reg.65 — 2003-02-28 — everywhere, in relation to — provision_qualified"] }
+
+own  UK_nisi_2006_2957/d8dc8de73d
+  SENTENCE: The following provisions come into operation two months after the date on which this Order is made—
+  HELD: %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["reg.1, reg.2, reg.3(5), reg.4, reg.5, reg.6, reg.9(2), reg.11(3), reg.14, pt.150, reg.15, reg.16 — 2007-01-14 — everywhere, fully — provision_dated", "reg.7, reg.10(3), sch.1.para.4, sch.1.para.5, sch.1.para.8, sch.1.para.17 — 2007-01-14 — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["reg.1, reg.2, reg.3(5), reg.4, reg.5, reg.6, reg.9(2), reg.11(3), reg.14, pt.150, reg.15, reg.16, sch.1.para.4, sch.1.para.5, sch.1.para.8, sch.1.para.17 — 2007-01-14 — everywhere, fully — provision_dated", "reg.7, reg.10(3) — 2007-01-14 — everywhere, in relation to — provision_qualified"] }
+
+own  UK_ukpga_1954_70/8168951abc
+  SENTENCE: This Act, except sections one hundred and seventy-two and one hundred and ninety thereof, shall come into operation on such day as the Minister may by order appoint, and those sections shall come into operation on the passing of this Act; and for the purposes of this Act and of the application thereto of section 13 of the Interpretation Act 1978 (which relates to the exercise of statutory powers b
+  HELD: %{ "class" => "law:by_order", "rules" => ["all — appointed (by order) — everywhere, fully — by_order"] }
+  NOW:  %{ "class" => "law:by_order", "rules" => ["all except s.172, s.190 — appointed (by order) — everywhere, fully — by_order", "s.172, s.190 — 1954-11-25 — everywhere, fully — act_enactment"] }
+
+own  UK_ukpga_1962_58/9bd963ee5d
+  SENTENCE: Section forty-one of this Act shall come into operation on the passing of this Act, and the remainder of this Act shall come into operation on such day as Her Majesty may by Order in Council appoint.
+  HELD: %{ "class" => "law:clause_staged", "rules" => ["all — 1962-08-01 — everywhere, fully — clause_staged"] }
+  NOW:  %{ "class" => "law:clause_staged", "rules" => ["all — 1962-08-01 — everywhere, fully — clause_staged", "rest except s.70 — appointed (by order) — everywhere, fully — provision_by_order", "s.41 — 1962-08-01 — everywhere, fully — provision_dated"] }
+
+own  UK_ukpga_1968_64/2d97e5dd6d
+  SENTENCE: The following provisions of this Act, namely sections 13 to 19, this section (except subsection (2)) and the Schedule, shall come into force on the day this Act is passed, and the other provisions of this Act shall come into force on such day as the Lord Chancellor may by order made by statutory instrument appoint; and different days may be so appointed for different purposes of this Act or for th
+  HELD: %{ "class" => "law:clause_staged", "rules" => ["all — 1968-10-25 — everywhere, fully — clause_staged"] }
+  NOW:  %{ "class" => "law:clause_staged", "rules" => ["all — 1968-10-25 — everywhere, fully — clause_staged", "rest except s.20 — appointed (by order) — everywhere, fully — provision_by_order", "s.13, s.14, s.15, s.16, s.17, s.18, s.19, s.20, sch except s.20(2) — 1968-10-25 — everywhere, fully — provision_dated"] }
+
+own  UK_ukpga_1969_10/bc9502586b
+  SENTENCE: Part I of this Act shall come into operation on such day as the Minister of Power may by order made by statutory instrument appoint and Part II of this Act, in its application to England and Wales, shall come into operation on such day as the Minister of Housing and Local Government and the Secretary of State for Wales may by order made by statutory instrument jointly appoint, and in its applicati
+  HELD: %{ "class" => "rules:provision_by_order", "rules" => ["pt.I — appointed (by order) — everywhere, fully — provision_by_order"] }
+  NOW:  %{ "class" => "rules:provision_by_order", "rules" => ["pt.I — appointed (by order) — everywhere, fully — provision_by_order", "pt.II — appointed (by order) — E+W, fully — provision_by_order", "pt.II — appointed (by order) — S, fully — provision_by_order"] }
+
+own  UK_ukpga_1971_78/07c46b2589
+  SENTENCE: The preceding provisions of this Part of this Act (other than section 18 and except so far as they enable any matter or thing to be prescribed) and Part I of Schedule 23 to this Act shall come into operation on a day appointed by an order made by the Secretary of State.
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["pt.II except s.18, sch.23.pt.I — unread — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_qualified", "rules" => ["pt.II except s.18, sch.23.pt.I — appointed (by order) — everywhere, in relation to — provision_qualified"] }
+
+own  UK_ukpga_1975_59/819c0b07fc
+  SENTENCE: The following provisions of this Act, that is to say— shall come into force on the passing of this Act.
+  HELD: %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["s.12, s.13, sch.5, sch.6 — 1975-08-07 — everywhere, fully — provision_dated", "s.14, s.14(5), sch.6 — 1975-08-07 — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["s.12, s.13, sch.5, sch.6.pt.I, sch.6.pt.II — 1975-08-07 — everywhere, fully — provision_dated", "s.14, s.14(5), sch.6.pt.III, sch.6.pt.IV — 1975-08-07 — everywhere, in relation to — provision_qualified"] }
+
+own  UK_ukpga_1980_34/1fca3e05bd
+  SENTENCE: The following provisions of this Act, namely— shall come into force on the passing of this Act.
+  HELD: %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["s.69, sch.9.pt.II — 1980-06-30 — everywhere, in relation to — provision_qualified", "s.70 — 1980-06-30 — everywhere, fully — provision_dated"] }
+  NOW:  %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["s.69 — 1980-06-30 — everywhere, in relation to — provision_qualified", "s.70, sch.9.pt.II — 1980-06-30 — everywhere, fully — provision_dated"] }
+
+own  UK_ukpga_1981_69/d762807814
+  SENTENCE: The following provisions of this Act, namely— Part II, except sections 29 to 32, 41 and 46 to 48 and Schedule 13; sections 59 to 62 and 65 and 66; and Part IV, except section 72(4), (6) and (14) and section 73(1) so far as relating to Part II of Schedule 17, shall come into force on the expiration of the period of one month beginning with the passing of this Act.
+  HELD: %{ "class" => "law:clause_staged", "rules" => ["all — 1981-11-30 — everywhere, fully — clause_staged", "pt.II, s.59, s.60, s.61, s.62, s.65, s.66 except s.29, s.30, s.31[E+W], s.31, s.31[S], s.32[E+W], s.32, s.41, s.46, h.47, s.47, s.48, sch.13 — 1981-11-30 — everywhere, fully — provision_dated", "s.72(4), s.72(6), s.72(14), s.73(1), sch.17.pt.II, pt.IV — 1981-11-30 — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "law:clause_staged", "rules" => ["all — 1981-11-30 — everywhere, fully — clause_staged", "pt.II, s.59, s.60, s.61, s.62, s.65, s.66, pt.IV except s.29, s.30, s.31[E+W], s.31, s.31[S], s.32[E+W], s.32, s.41, s.46, h.47, s.47, s.48, sch.13, s.72(4), s.72(6), s.72(14), s.73(1) — 1981-11-30 — everywhere, fully — provision_dated", "s.73(1) — 1981-11-30 — everywhere, in relation to — provision_qualified"] }
+
+own  UK_ukpga_1982_39/d252e32603
+  SENTENCE: This section and Schedule 20 to this Act shall come into force on the expiry of the period of three months beginning with the day on which this Act is passed.
+  HELD: %{ "class" => "law:clause_unread", "rules" => ["all — unread — everywhere, fully — clause_unread"] }
+  NOW:  %{ "class" => "law:clause_unread", "rules" => ["all — unread — everywhere, fully — clause_unread", "s.151, sch.20 — unread — everywhere, fully — provision_unread"] }
+
+own  UK_ukpga_1984_12/41d4a8a459
+  SENTENCE: The following provisions of this Act, namely— Part V; Part II of Schedule 5 and Schedule 6 and section 109(4) so far as relating to that Part and that Schedule; and Part II of Schedule 7 and section 109(6) so far as relating to that Part, shall come into force on the transfer date.
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["s.109(4), sch.6, sch.5.pt.II, s.109(6), sch.7.pt.II — unread — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_by_order+provision_qualified", "rules" => ["pt.V, sch.6, sch.5.pt.II, sch.7.pt.II — appointed (by order) — everywhere, fully — provision_by_order", "s.109(4), s.109(6) — appointed (by order) — everywhere, in relation to — provision_qualified"] }
+
+own  UK_ukpga_1984_12/4dd43fa473
+  SENTENCE: The following provisions of this Act, namely— sections 2 to 4; Parts II to IV; sections 93 to 95; sections 97 to 99; sections 101 to 103; section 106; section 109(1) and Schedule 4; section 109(2), (3) and (7); Part I of Schedule 5 and section 109(4) so far as relating to that Part; and Part I of Schedule 7 and section 109(6) so far as relating to that Part, shall come into force on the appointed 
+  HELD: %{ "class" => "rules:provision_by_order+provision_qualified", "rules" => ["s.109(4), sch.5.pt.I, s.109(6), sch.7.pt.I — unread — everywhere, in relation to — provision_qualified", "s.2, s.3, s.4, pt.II, pt.III, pt.IV, s.93, s.94, s.95, s.97, s.98, s.99, s.101, s.102, s.103, s.106, s.109(1), sch.4, s.109(2), s.109(3), s.109(7) — appointed (by order) — everywhere, fully — provision_by_order"] }
+  NOW:  %{ "class" => "rules:provision_by_order+provision_qualified", "rules" => ["s.109(4), s.109(6) — appointed (by order) — everywhere, in relation to — provision_qualified", "s.2, s.3, s.4, pt.II, pt.III, pt.IV, s.93, s.94, s.95, s.97, s.98, s.99, s.101, s.102, s.103, s.106, s.109(1), sch.4, s.109(2), s.109(3), s.109(7), sch.5.pt.I, sch.7.pt.I — appointed (by order) — everywhere, fully — provision_by_order"] }
+
+own  UK_ukpga_1984_12/ee0d8ee798
+  SENTENCE: Part III of Schedule 7 and section 109(6) so far as relating to that Part shall come into force on the dissolution of British Telecommunications.
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["s.109(6), sch.7.pt.III — unread — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_qualified+provision_unread", "rules" => ["s.109(6) — unread — everywhere, in relation to — provision_qualified", "sch.7.pt.III — unread — everywhere, fully — provision_unread"] }
+
+own  UK_ukpga_1986_44/10ac673d30
+  SENTENCE: Part III of Schedule 9 and section 67(4) so far as relating to that Part shall come into force on the dissolution of the Corporation.
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["s.67(4), sch.9.pt.III — unread — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_qualified+provision_unread", "rules" => ["s.67(4) — unread — everywhere, in relation to — provision_qualified", "sch.9.pt.III — unread — everywhere, fully — provision_unread"] }
+
+own  UK_ukpga_1986_44/5046c8a401
+  SENTENCE: The following provisions of this Act, namely— Part II; Part II of Schedule 8 and section 67(3) so far as relating to that Part; and Part II of Schedule 9 and section 67(4) so far as relating to that Part, shall come into force on the transfer date.
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["s.67(3), sch.8.pt.II, s.67(4), sch.9.pt.II — unread — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_by_order+provision_qualified", "rules" => ["pt.II, sch.8.pt.II, sch.9.pt.II — appointed (by order) — everywhere, fully — provision_by_order", "s.67(3), s.67(4) — appointed (by order) — everywhere, in relation to — provision_qualified"] }
+
+own  UK_ukpga_1986_44/cab688f9fa
+  SENTENCE: The following provisions of this Act, namely— Part I except sections 1 and 2; section 66; section 67(1) and Schedule 7; section 67(2); Part I of Schedule 8 and section 67(3) so far as relating to that Part; and Part I of Schedule 9 and section 67(4) so far as relating to that Part, shall come into force on the appointed day.
+  HELD: %{ "class" => "rules:provision_by_order+provision_qualified", "rules" => ["pt.I, s.66, s.67(1), sch.7, s.67(2) except s.1, s.2 — appointed (by order) — everywhere, fully — provision_by_order", "s.67(3), sch.8.pt.I, s.67(4), sch.9.pt.I — unread — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_by_order+provision_qualified", "rules" => ["pt.I, s.66, s.67(1), sch.7, s.67(2), sch.8.pt.I, sch.9.pt.I except s.1, s.2 — appointed (by order) — everywhere, fully — provision_by_order", "s.67(3), s.67(4) — appointed (by order) — everywhere, in relation to — provision_qualified"] }
+
+own  UK_ukpga_1986_63/983287858f
+  SENTENCE: The following provisions of this Act come into force on the day this Act is passed— section 21 (effect of resolutions relating to housing action area or general improvement area); section 24(1)(j), paragraphs 10 to 13 of Schedule 5, the repeals specified in the first part of Part I of Schedule 12 and section 24(3) so far as relating to those repeals (miscellaneous corrections); section 52 (termina
+  HELD: %{ "class" => "law:clause_unread", "rules" => ["all — unread — everywhere, fully — clause_unread", "s.24(1)(j), s.24(3), sch.12.pt.I, sch.5.para.10..sch.5.para.13 — unread — S, fully — provision_qualified"] }
+  NOW:  %{ "class" => "law:clause_unread", "rules" => ["all — unread — everywhere, fully — clause_unread", "s.21, s.24(1)(j), sch.12.pt.I, sch.5.para.10..sch.5.para.13, s.52, pt.VII — unread — everywhere, fully — provision_unread", "s.24(3) — unread — S, fully — provision_qualified"] }
+
+own  UK_ukpga_1989_15/7d10821fb7
+  SENTENCE: The following provisions of this Act, except in so far as they are already in force in accordance with subsection (2) above, shall come into force on the transfer date, namely—
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["pt.III, pt.IV, pt.V, s.190, sch.26, s.190, sch.27.pt.I — unread — everywhere, in relation to — provision_qualified", "s.31, sch.5, sch.6, pt.II, s.97 — unread — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_qualified", "rules" => ["pt.III, pt.IV, pt.V, s.190, s.190 — appointed (by order) — everywhere, in relation to — provision_qualified", "s.31, sch.5, sch.6, pt.II.ch.II, pt.II.ch.III, pt.II.ch.IV, pt.II.ch.V, s.97, sch.26, sch.27.pt.I — appointed (by order) — everywhere, in relation to — provision_qualified"] }
+
+own  UK_ukpga_1994_21/e4db111995
+  SENTENCE: The following provisions of this Act shall come into force on the restructuring date, that is to say—
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["s.67 — unread — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_qualified+provision_unread", "rules" => ["s.10, s.11, s.18, s.23, s.31, s.32, s.33, s.34, s.36, s.38, s.39, s.40, s.41, s.42, s.43, s.44, s.48, s.49, s.50, s.51, s.52, s.53, s.55, sch.6, sch.7, sch.8, sch.9, sch.11.pt.II — unread — everywhere, fully — provision_unread", "s.67 — unread — everywhere, in relation to — provision_qualified"] }
+
+own  UK_ukpga_1994_29/e076014b65
+  SENTENCE: The following provisions of this Act— Part IV and Schedule 8, and Part II of Schedule 9 and section 93 so far as it relates to that Part of that Schedule, shall come into force on such day as the Lord Chancellor may by order appoint.
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["s.93, sch.8, sch.9.pt.II, pt.IV — appointed (by order) — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_by_order+provision_qualified", "rules" => ["s.93 — appointed (by order) — everywhere, in relation to — provision_qualified", "sch.8, pt.IV, sch.9.pt.II — appointed (by order) — everywhere, fully — provision_by_order"] }
+
+own  UK_ukpga_1996_53/c958a7d804
+  SENTENCE: The following provisions of this Act come into force at the end of the period of two months beginning with the date on which this Act is passed— sections 126 to 130 (financial assistance for regeneration and development), section 141 (existing housing grants: meaning of exempt disposal), section 142 (home energy efficiency schemes), sections 143 to 145 (residuary bodies), Part III of Schedule 3 (r
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["s.126, s.127, s.128, s.129, s.130, s.141, s.142, s.143, s.144, s.145, s.147, sch.3.pt.III — 1996-09-24 — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["s.126, s.127, s.128, s.129, s.130, s.141, s.142, s.143, s.144, s.145, sch.3.pt.III — 1996-09-24 — everywhere, fully — provision_dated", "s.147 — 1996-09-24 — everywhere, in relation to — provision_qualified"] }
+
+own  UK_ukpga_1996_56/0e77c432f2
+  SENTENCE: The following provisions— section 8, section 317(6), section 348, section 528, Part II of Schedule 37 and section 582(1) so far as relating thereto, and Part II of Schedule 38 and section 582(2) so far as relating thereto, shall come into force on such day as the Secretary of State may by order appoint; and different days may be appointed for different provisions and for different purposes.
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["s.8, s.317(6), s.348, s.528, s.582(1), s.582(2), sch.37.pt.II, sch.38.pt.II — appointed (by order) — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_by_order+provision_qualified", "rules" => ["s.582(1), s.582(2) — appointed (by order) — everywhere, in relation to — provision_qualified", "s.8, s.317(6), s.348, s.528, sch.37.pt.II, sch.38.pt.II — appointed (by order) — everywhere, fully — provision_by_order"] }
+
+own  UK_ukpga_1998_31/baad5d3680
+  SENTENCE: The following provisions come into force on the day on which this Act is passed— sections 1 to 4; sections 20 and 21; section 36(3); section 82; sections 84 and 85; section 130; sections 138, 139, 141 to 144 and this section; Schedule 2; Parts I and III of Schedule 11; paragraph 224 of Schedule 30 (and section 140(1) so far as relating thereto); and Schedule 32.
+  HELD: %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["s.1, s.2, s.3, s.4, s.20, s.21, s.82, s.84, s.85, s.130, s.145, s.138, s.139, s.141, s.142, s.143, s.144, sch.2, sch.11, sch.32 — 1998-07-24 — everywhere, fully — provision_dated", "s.140(1), sch.30.para.224 — 1998-07-24 — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["s.1, s.2, s.3, s.4, s.20, s.21, s.82, s.84, s.85, s.130, s.145, s.138, s.139, s.141, s.142, s.143, s.144, sch.2, sch.11.pt.I, sch.11.pt.III, sch.30.para.224, sch.32 — 1998-07-24 — everywhere, fully — provision_dated", "s.140(1) — 1998-07-24 — everywhere, in relation to — provision_qualified"] }
+
+own  UK_ukpga_1998_47/1b2fc759b3
+  SENTENCE: The following provisions shall come into force on the day on which this Act is passed—
+  HELD: %{ "class" => "law:clause_staged", "rules" => ["all — 1998-11-19 — everywhere, fully — clause_staged", "s.3, s.55, s.86, s.93, s.96, s.98, s.101 — 1998-11-19 — everywhere, fully — provision_dated", "s.99, sch.13.para.20, s.100(2) — 1998-11-19 — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "law:clause_staged", "rules" => ["all — 1998-11-19 — everywhere, fully — clause_staged", "s.3, s.55, s.86, s.93, s.96, s.98, sch.13.para.20, s.101 — 1998-11-19 — everywhere, fully — provision_dated", "s.99, s.100(2) — 1998-11-19 — everywhere, in relation to — provision_qualified"] }
+
+own  UK_ukpga_1999_22/fe6d379adb
+  SENTENCE: The following provisions shall come into force at the end of the period of two months beginning with the day on which this Act is passed—
+  HELD: %{ "class" => "rules:provision_dated", "rules" => ["s.32, s.33, s.34, pt.IV, s.74, s.75, s.76, s.81, s.82, s.84, s.86, s.87, sch.10, s.104, sch.14, s.107 except s.66, s.67(2), s.71, sch.9, sch.15 — 1999-09-27 — everywhere, fully — provision_dated"] }
+  NOW:  %{ "class" => "rules:provision_dated", "rules" => ["s.32, s.33, s.34, pt.IV, s.74, s.75, s.76, s.81, s.82, s.84, s.86, s.87, sch.10, s.104, sch.14, sch.15.pt.III, sch.15.pt.V, s.107 except s.66, s.67(2), s.71, sch.9 — 1999-09-27 — everywhere, fully — provision_dated"] }
+
+own  UK_ukpga_2000_37/2732e22c3e
+  SENTENCE: The following provisions of this Act come into force at the end of the period of two months beginning with the day on which this Act is passed— section 1 and Schedule 1, sections 3 to 11 and Schedule 3, sections 15 to 17, section 19, Chapters II and III of Part I, sections 40 to 45, section 52, sections 58 and 59, sections 64 to 67 and Schedule 7 (apart from paragraphs 6 and 7 of that Schedule), P
+  HELD: %{ "class" => "rules:provision_dated", "rules" => ["s.1, s.3, s.3A, h.4, s.4, s.5, s.6, s.7, s.8, s.9, s.9A, s.10, s.11, s.15, s.16, h.17, s.17, s.19, s.40, s.41, s.42, s.43, s.44, s.45, s.52, s.58, s.59, s.64, s.65, h.66, s.66, s.67, s.81(2), s.81(3), s.94, s.95, s.98, pt.I, pt.III — 2001-01-30 — everywhere, fully — provision_dated"] }
+  NOW:  %{ "class" => "rules:provision_dated", "rules" => ["s.1, sch.1, s.3, s.3A, h.4, s.4, s.5, s.6, s.7, s.8, s.9, s.9A, s.10, s.11, sch.3, s.15, s.16, h.17, s.17, s.19, pt.I.ch.II, pt.I.ch.III, s.40, s.41, s.42, s.43, s.44, s.45, s.52, s.58, s.59, s.64, s.65, h.66, s.66, s.67, sch.7, pt.III, sch.8, sch.9, sch.10, sch.11, sch.12, sch.16.pt.III, sch.16.pt.IV, s.94, s.95, s.98 except sch.7.para.6, sch.7.para.7, s.81(2), s.81(3) — 2001-01-30 — everywhere, fully — provision_dated"] }
+
+own  UK_ukpga_2001_10/f143f45c94
+  SENTENCE: The following provisions of this Act come into force on the day on which it is passed— but only so far as is necessary for enabling the making of any regulations for which they provide.
+  HELD: %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["s.4, s.5, s.9, s.42(2), s.42(3), s.42(4) — 2001-05-11 — everywhere, fully — provision_dated", "s.42(1), sch.8.para.6..sch.8.para.10, sch.8.para.13(1)..sch.8.para.13(4), sch.8.para.14(3) — 2001-05-11 — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["s.4, s.5, s.9, s.42(2), s.42(3), s.42(4), sch.8.para.6..sch.8.para.10, sch.8.para.13(1)..sch.8.para.13(4), sch.8.para.14(3) — 2001-05-11 — everywhere, fully — provision_dated", "s.42(1) — 2001-05-11 — everywhere, in relation to — provision_qualified"] }
+
+own  UK_ukpga_2002_21/0fa06bab85
+  SENTENCE: Apart from section 54(1) and (2), the preceding provisions of this Act come into force in accordance with orders made by the Treasury.
+  HELD: %{"class" => "unread", "rules" => []}
+  NOW:  %{ "class" => "rules:provision_by_order", "rules" => ["rest except s.61, s.62, s.63, s.64, s.65, s.66, s.67, s.68, s.69, s.70 — appointed (by order) — everywhere, fully — provision_by_order"] }
+
+own  UK_ukpga_2002_32/2de7927363
+  SENTENCE: The following provisions shall come into force on the day on which this Act is passed— section 13, section 52(7) to (10), section 147, section 186, section 190, sections 210 to 214, and this section and section 217.
+  HELD: %{ "class" => "rules:provision_dated", "rules" => ["s.216, s.13, s.52(7), s.52(8), s.52(9), s.52(10), s.147, s.186, s.190, s.210, s.211, s.212, s.213, s.214, s.217 — 2002-07-24 — everywhere, fully — provision_dated"] }
+  NOW:  %{ "class" => "rules:provision_dated", "rules" => ["s.13, s.52(7), s.52(8), s.52(9), s.52(10), s.147, s.186, s.190, s.210, s.211, s.212, s.213, s.214, s.216, s.217 — 2002-07-24 — everywhere, fully — provision_dated"] }
+
+own  UK_ukpga_2002_32/d083ff1944
+  SENTENCE: The following provisions shall come into force in accordance with provision made by the Secretary of State by order— sections 65 to 69 and Schedule 7, section 70 and Schedule 8, section 71, section 73, Part 6, sections 119 to 130 and Schedule 11, section 209, paragraphs 1 to 4 and 9 of Schedule 17, and section 189 so far as relating to those paragraphs, paragraphs 14, 17, 18, 56, 91 and 119 of Sch
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["s.65, s.66, s.67, s.68, s.69, s.70, s.71, s.73, s.119, s.120, s.121, s.122, s.122A, s.123, s.124, s.125, s.126, s.127, s.127A, s.128, s.129, s.130, s.209, s.189, s.215(1), s.215(2), sch.22.pt.1, sch.17.para.1..sch.17.para.4, sch.17.para.9, sch.21.para.14, sch.21.para.17, sch.21.para.18, sch.21.para.56, sch.21.para.91, sch.21.para.119, pt.6 — appointed (by order) — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_by_order+provision_qualified", "rules" => ["s.189, s.215(1), s.215(2) — appointed (by order) — everywhere, in relation to — provision_qualified", "s.65, s.66, s.67, s.68, s.69, sch.7, s.70, sch.8, s.71, s.73, pt.6, s.119, s.120, s.121, s.122, s.122A, s.123, s.124, s.125, s.126, s.127, s.127A, s.128, s.129, s.130, sch.11, s.209, sch.17.para.1..sch.17.para.4, sch.17.para.9, sch.21.para.14, sch.21.para.17, sch.21.para.18, sch.21.para.56, sch.21.para.91, sch.21.para.119, sch.22.pt.1 — appointed (by order) — everywhere, fully — provision_by_order"] }
+
+own  UK_ukpga_2004_33/52fcc1352a
+  SENTENCE: section 261(3) and Schedule 29 and, so far as relating to any provision which extends to Northern Ireland only, section 261(4) and Schedule 30 come into force in accordance with provision made by order by the Department of Finance and Personnel, after consulting the Secretary of State.
+  HELD: %{ "class" => "rules:provision_by_order", "rules" => ["s.261(3), sch.29 — appointed (by order) — everywhere, fully — provision_by_order"] }
+  NOW:  %{ "class" => "rules:provision_by_order+provision_qualified", "rules" => ["s.261(3), sch.29 — appointed (by order) — everywhere, fully — provision_by_order", "s.261(4), sch.30 — appointed (by order) — everywhere, in relation to — provision_qualified"] }
+
+own  UK_ukpga_2006_28/576005404a
+  SENTENCE: The following provisions come into force in relation to Wales on such day as the National Assembly for Wales may by order appoint—
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["s.76, s.77, pt.1.ch.1, s.80(1), sch.8.para.24(a) — appointed (by order) — W, fully — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_by_order+provision_qualified", "rules" => ["s.76, s.77, pt.1.ch.1, s.80(1) — appointed (by order) — W, fully — provision_qualified", "sch.8.para.24(a) — appointed (by order) — W, fully — provision_by_order"] }
+
+own  UK_ukpga_2006_49/fc0eea7030
+  SENTENCE: Sections 51, 58 and 60, and the repeals contained in Schedule 7 under the heading “Spent enactments” (and section 59 so far as relating to them), come into force on the day on which this Act is passed; but—
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["s.51, s.58, s.60, s.59 — 2006-11-08 — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["s.51, s.58, s.60 — 2006-11-08 — everywhere, fully — provision_dated", "s.59 — 2006-11-08 — everywhere, in relation to — provision_qualified"] }
+
+own  UK_ukpga_2007_28/8f1ad07e48
+  SENTENCE: The following provisions come into force at the end of two months beginning with the day on which this Act is passed— Part 2; Part 3 (to the extent that it does not come into force in accordance with subsection (1)); Chapter 1 of Part 5 (except section 116), Part 5 of Schedule 18 and section 241 so far as relating to that Part of that Schedule; sections 141, 142 and 143, the entry in Part 8 of Sch
+  HELD: %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["pt.2, s.212, s.213, s.214, s.215, s.216(3), s.216(4), s.216(5), s.217, s.218, s.235, sch.17 — 2007-12-30 — everywhere, fully — provision_dated", "s.245(1), pt.3, s.116, s.241, sch.18.pt.5, pt.5.ch.1, s.141, s.142, s.143, s.241, sch.18.pt.8 — 2007-12-30 — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["pt.2, sch.18.pt.5, pt.5.ch.1, s.141, s.142, s.143, sch.18.pt.8, s.212, s.213, s.214, s.215, s.216(3), s.216(4), s.216(5), s.217, s.218, s.235, sch.17 except s.116 — 2007-12-30 — everywhere, fully — provision_dated", "s.245(1), pt.3, s.241, s.241 — 2007-12-30 — everywhere, in relation to — provision_qualified"] }
+
+own  UK_ukpga_2008_23/792546f064
+  SENTENCE: In relation to Wales, the provisions specified in subsection (5) come into force on such day as the Welsh Ministers may by order appoint.
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["s.7, s.17, s.18, s.31, s.32, pt.1, pt.2, pt.3, pt.4, s.42, sch.4 — appointed (by order) — W, fully — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_by_order", "rules" => ["s.7, s.17, s.18, s.31, s.32, pt.1, pt.2, pt.3, pt.4, s.42, sch.4 — appointed (by order) — W, fully — provision_by_order"] }
+
+own  UK_ukpga_2008_32/6f408012d2
+  SENTENCE: The following provisions come into force on the day on which this Act is passed—
+  HELD: %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["s.102, s.110, s.106, s.111, s.112, s.113 — 2008-11-26 — everywhere, fully — provision_dated", "s.37, s.38(1), s.88, s.89, s.90, s.91, s.104, s.105, s.90(3), sch.4, s.107(1), sch.5.para.5 — 2008-11-26 — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["s.102, s.110, s.106, s.111, s.112, s.113, sch.5.para.5 — 2008-11-26 — everywhere, fully — provision_dated", "s.37, s.38(1), s.88, s.89, s.90, s.91, s.104, s.105, s.90(3), sch.4, s.107(1) — 2008-11-26 — everywhere, in relation to — provision_qualified"] }
+
+own  UK_ukpga_2009_25/d6c75fae84
+  SENTENCE: The following provisions come into force on 1 January 2010—
+  HELD: %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["pt.3.ch.2 — 2010-01-01 — everywhere, fully — provision_dated", "s.177(1), sch.21.para.69..sch.21.para.71, s.177(2), sch.22.para.16..sch.22.para.22, s.178, sch.23.pt.3 — 2010-01-01 — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["pt.3.ch.2, sch.21.para.69..sch.21.para.71, sch.22.para.16..sch.22.para.22, sch.23.pt.3 — 2010-01-01 — everywhere, fully — provision_dated", "s.177(1), s.177(2), s.178 — 2010-01-01 — everywhere, in relation to — provision_qualified"] }
+
+own  UK_ukpga_2010_29/865ff5ec7c
+  SENTENCE: This Act comes into force as follows—
+  HELD: %{ "class" => "law:clause_staged", "rules" => ["all — 2010-04-08 — everywhere, fully — clause_staged"] }
+  NOW:  %{ "class" => "law:clause_staged", "rules" => ["all except pt.1, pt.2, s.35, s.36, s.42, s.43, s.44, s.45 — 2010-04-08 — everywhere, fully — clause_staged"] }
+
+own  UK_ukpga_2010_29/d06a81d90b
+  SENTENCE: other provisions of Parts 1 and 2 come into force in relation to England in accordance with provision made by order of the Secretary of State,
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["pt.1, pt.2 — appointed (by order) — E, fully — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_by_order", "rules" => ["pt.1, pt.2 — appointed (by order) — E, fully — provision_by_order"] }
+
+own  UK_ukpga_2014_12/d710a0afb6
+  SENTENCE: The following provisions, as they apply in Wales, come into force on whatever day or days the Welsh Ministers appoint by order—
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["s.181(1), sch.11.para.2, sch.11.para.7..sch.11.para.10, sch.11.para.12..sch.11.para.14, sch.11.para.15(4), sch.11.para.16, sch.11.para.18..sch.11.para.20, sch.11.para.47(4), sch.11.para.48 — appointed (by order) — W, fully — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_by_order+provision_qualified", "rules" => ["s.181(1) — appointed (by order) — W, fully — provision_qualified", "s.94, s.95, s.96, s.97, s.98, sch.3, s.100, sch.11.para.2, sch.11.para.7..sch.11.para.10, sch.11.para.12..sch.11.para.14, sch.11.para.15(4), sch.11.para.16, sch.11.para.18..sch.11.para.20, sch.11.para.47(4), sch.11.para.48 — appointed (by order) — W, fully — provision_by_order"] }
+
+own  UK_ukpga_2014_21/789d601f53
+  SENTENCE: The following provisions of this Act come into force at the end of the period of two months beginning with the day on which it is passed—
+  HELD: %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["s.22, s.56, sch.7.para.8, s.56, sch.7.para.107 — 2014-07-14 — everywhere, in relation to — provision_qualified", "s.3, s.13, s.15, s.21, s.25(3), s.26, s.27, s.28, s.33, s.34(1), s.34(2), s.35, s.36, s.57, s.58, s.60, s.61, s.62, sch.8, s.63, s.85, s.86, s.87, s.88, s.89, sch.10 — 2014-07-14 — everywhere, fully — provision_dated"] }
+  NOW:  %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["s.22, s.56, s.56 — 2014-07-14 — everywhere, in relation to — provision_qualified", "s.3, s.13, s.15, s.21, s.25(3), s.26, s.27, s.28, s.33, s.34(1), s.34(2), s.35, s.36, s.57, s.58, s.60, s.61, s.62, sch.8, s.63, s.85, s.86, s.87, s.88, s.89, sch.10, sch.7.para.8, sch.7.para.107 — 2014-07-14 — everywhere, fully — provision_dated"] }
+
+own  UK_ukpga_2015_6/2db374541d
+  SENTENCE: The following provisions come into force on whatever day or days the Secretary of State appoints by regulations made by statutory instrument—
+  HELD: %{ "class" => "rules:provision_by_order+provision_qualified", "rules" => ["s.22(10), s.26, s.30, s.31(2), s.31(4), s.32, s.33, s.34 — appointed (by order) — everywhere, fully — provision_by_order", "s.25, sch.5.para.12..sch.5.para.14 — unread — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_by_order+provision_qualified", "rules" => ["s.22(10), sch.5.para.12..sch.5.para.14, s.26, s.30, s.31(2), s.31(4), s.32, s.33, s.34 — appointed (by order) — everywhere, fully — provision_by_order", "s.25 — appointed (by order) — everywhere, in relation to — provision_qualified"] }
+
+own  UK_ukpga_2015_9/71f8290e95
+  SENTENCE: The following provisions come into force on whatever day or days the Scottish Ministers appoint by regulations after consulting the Secretary of State—
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["s.85(1), sch.4.para.16, sch.4.para.35..sch.4.para.45 — unread — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_by_order+provision_qualified", "rules" => ["s.15, s.16, s.17, s.18, s.19, s.20, s.21, s.22, s.38(3), sch.4.para.16, sch.4.para.35..sch.4.para.45 — appointed (by order) — everywhere, fully — provision_by_order", "s.85(1) — appointed (by order) — everywhere, in relation to — provision_qualified"] }
+
+own  UK_ukpga_2017_30/8bd671ae27
+  SENTENCE: The provisions mentioned in subsection (4)(a) and (c) come into force on whatever day the Welsh Ministers appoint by regulations made by statutory instrument.
+  HELD: %{"class" => "unread", "rules" => []}
+  NOW:  %{ "class" => "rules:provision_by_order", "rules" => ["pt.5 — appointed (by order) — everywhere, fully — provision_by_order"] }
+
+own  UK_ukpga_2018_12/0d42d5b369
+  SENTENCE: The following provisions come into force at the end of the period of 2 months beginning when this Act is passed—
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["s.125, s.126, s.127, s.124 — unread — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_qualified+provision_unread", "rules" => ["s.124, s.177, s.178, sch.17, s.179 — unread — everywhere, fully — provision_unread", "s.125, s.126, s.127, s.124 — unread — everywhere, in relation to — provision_qualified"] }
+
+own  UK_ukpga_2020_17/37611177ac
+  SENTENCE: The following provisions come into force at the same time as section 61 of the Criminal Justice and Courts Services Act 2000 (abolition of sentences of detention in a young offender institution)— This is subject to subsection (4).
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["s.264, s.265, s.266, s.267, s.268, s.268A, s.268B, s.268C, s.273, s.274, s.274A — unread — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_by_order+provision_qualified", "rules" => ["s.264, s.265, s.266, s.267, s.268, s.268A, s.268B, s.268C, s.273, s.274, s.274A — appointed (with another provision) — everywhere, in relation to — provision_qualified", "s.417(4), sch.22.pt.8 — appointed (with another provision) — everywhere, fully — provision_by_order"] }
+
+own  UK_ukpga_2021_24/e8c2225a9d
+  SENTENCE: Section 3 comes into force at the same time as section 1 comes fully into force in relation to premises in England.
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["s.3 — unread — E, fully — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_by_order", "rules" => ["s.3 — appointed (with another provision) — everywhere, fully — provision_by_order"] }
+
+own  UK_ukpga_2022_30/5851944cf8
+  SENTENCE: the following provisions come into force, in relation to Wales, on such day as the Welsh Ministers may by regulations appoint—
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["s.32, s.34, s.35, s.36, s.37, s.38, s.39, s.40, s.41, s.43, sch.4, s.44, s.45, s.46, s.47, s.48, s.49, s.50, s.51, s.52, s.53, s.57 except s.32(3), s.53(1) — appointed (by order) — W, fully — provision_qualified", "s.33, sch.1.para.1D(3), s.42, s.55, sch.5, s.56, sch.6, s.156 — appointed (by order) — W, fully — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_by_order+provision_qualified", "rules" => ["s.32, s.34, s.35, s.36, s.37, s.38, s.39, s.40, s.41, s.43, sch.4, s.44, s.45, s.46, s.47, s.48, s.49, s.50, s.51, s.52, s.53, s.55, sch.5, s.56, sch.6, s.57 except s.32(3), s.53(1), s.55, s.56 — appointed (by order) — W, fully — provision_by_order", "s.33, sch.1.para.1D(3), s.42, s.55, s.56, s.156 — appointed (by order) — W, fully — provision_qualified"] }
+
+own  UK_ukpga_2025_34/f24eae16aa
+  SENTENCE: subsection (1) comes into force at the end of the period of two months beginning with the day on which this Act is passed;
+  HELD: %{"class" => "none", "rules" => []}
+  NOW:  %{ "class" => "rules:provision_dated", "rules" => ["s.118(1) — 2026-02-18 — everywhere, fully — provision_dated", "s.118(1) — 2026-02-18 — everywhere, fully — provision_dated"] }
+
+own  UK_uksi_1996_2925/1b93355949
+  SENTENCE: The following provisions shall come into force in accordance with paragraph (4) below—
+  HELD: %{ "class" => "law:clause_staged", "rules" => ["all — 1996-12-16 — everywhere, fully — clause_staged", "reg.4(2)(a), sch.1, reg.4(2)(e)(ii), reg.4(2)(f), reg.4(2)(g), sch.4.pt.II, reg.4(2)(h)(i), reg.4(2)(i), sch.5.pt.I — unread — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_qualified", "rules" => ["reg.4(2)(a), sch.1, reg.4(2)(e)(ii), reg.4(2)(f), reg.4(2)(g), sch.4.pt.II, reg.4(2)(h)(i), reg.4(2)(i), sch.5.pt.I — unread — everywhere, in relation to — provision_qualified"] }
+
+own  UK_uksi_2001_3208/aadfde6d33
+  SENTENCE: This regulation and regulations 2, 8 and 10 shall come into force on 16 October 2001 and regulations 3, 4, 5, 6, 7, 9, 11 and 12 shall come into force on 1st May 2002.
+  HELD: %{ "class" => "law:clause_staged", "rules" => ["all — 2001-10-16 — everywhere, fully — clause_staged", "reg.1, reg.2, reg.8, reg.10 — 2001-10-16 — everywhere, fully — provision_dated"] }
+  NOW:  %{ "class" => "law:clause_staged", "rules" => ["all — 2001-10-16 — everywhere, fully — clause_staged", "reg.1, reg.2, reg.8, reg.10 — 2001-10-16 — everywhere, fully — provision_dated", "reg.3, reg.4, reg.5, reg.6, reg.7, reg.9, reg.11, reg.12 — 2002-05-01 — everywhere, fully — provision_dated"] }
+
+own  UK_uksi_2006_641/5f2dc0019c
+  SENTENCE: Regulation 15 shall come into force on the date on which section 7(3) of the Water Act 2003 comes into force, and all other provisions of these Regulations shall come into force on 1st April 2006.
+  HELD: %{ "class" => "law:clause_unread", "rules" => ["all — unread — everywhere, fully — clause_unread"] }
+  NOW:  %{ "class" => "law:clause_unread", "rules" => ["all — unread — everywhere, fully — clause_unread", "reg.15 — appointed (with another provision) — everywhere, fully — provision_by_order", "rest except reg.1 — 2006-04-01 — everywhere, fully — provision_dated"] }
+
+own  UK_uksi_2010_490/5cfc41c325
+  SENTENCE: The following provisions come into force immediately after section 134 of the Marine Act (orders for protection of marine conservation zones in Wales) comes into force (so far as not already brought into force)—
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["reg.38, reg.133 — unread — W, fully — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_qualified", "rules" => ["reg.38, reg.133 — appointed (with another provision) — W, fully — provision_qualified"] }
+
+own  UK_uksi_2010_490/bf9d2d28e9
+  SENTENCE: In regulation 6 (relevant authorities in relation to marine areas and European marine sites), paragraph (i) (inshore fisheries and conservation authority) comes into force immediately after section 153 of the Marine Act (management of inshore fisheries) comes into force.
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["reg.6 — unread — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_qualified", "rules" => ["reg.6 — appointed (with another provision) — everywhere, in relation to — provision_qualified"] }
+
+own  UK_uksi_2011_2581/0ef4307d8e
+  SENTENCE: Schedules 1 and 2 (and Article 2 so far as relating to them) shall come into force on the day after the day on which this Order is made;
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["reg.2, sch.1, sch.2 — 2011-10-28 — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["reg.2 — 2011-10-28 — everywhere, in relation to — provision_qualified", "sch.1, sch.2 — 2011-10-28 — everywhere, fully — provision_dated"] }
+
+own  UK_uksi_2012_3039/494c72ebae
+  SENTENCE: The following provisions come into force for the purposes specified on the day after the day on which these Regulations are made—
+  HELD: %{ "class" => "rules:provision_qualified", "rules" => ["reg.14, reg.42 — unread — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "rules:provision_qualified+provision_unread", "rules" => ["reg.14, reg.42 — unread — everywhere, in relation to — provision_qualified", "sch.3.para.5, sch.3.para.7, sch.3.para.12, sch.3.para.14, sch.3.para.16, sch.3.para.25, sch.3.para.27 — unread — everywhere, fully — provision_unread"] }
+
+own  UK_uksi_2020_1419/e65d63521d
+  SENTENCE: The following provisions come into force on IP completion day—
+  HELD: %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["reg.2, sch.1.para.2, sch.1.para.4, reg.3, sch.2.pt.2 — 2020-12-31 — everywhere, in relation to — provision_qualified", "reg.4, sch.3 — 2020-12-31 — everywhere, fully — provision_dated"] }
+  NOW:  %{ "class" => "rules:provision_dated+provision_qualified", "rules" => ["reg.2, reg.3 — 2020-12-31 — everywhere, in relation to — provision_qualified", "sch.1.pt.2, sch.1.pt.4, sch.2.pt.2, reg.4, sch.3 — 2020-12-31 — everywhere, fully — provision_dated"] }
+
+own  UK_uksi_2021_745/07ced4769c
+  SENTENCE: The following provisions come into force on 1st July 2021—
+  HELD: %{ "class" => "law:clause_staged", "rules" => ["all — 2021-06-19 — everywhere, fully — clause_staged", "reg.3, reg.4, reg.5, reg.6, reg.7, reg.8, pt.2.ch.2, reg.9, reg.10, reg.11, reg.12, reg.13, reg.14, reg.33, reg.34, reg.35, reg.36, reg.37, reg.38, reg.45, reg.46, reg.47, reg.48, reg.49, reg.50, reg.54(3)(a), sch.1..sch.5, sch.16..sch.18, sch.22..sch.28 — 2021-07-01 — everywhere, fully — provision_dated", "reg.56, sch.29.para.1, sch.29.para.6 — 2021-07-01 — everywhere, in relation to — provision_qualified"] }
+  NOW:  %{ "class" => "law:clause_staged", "rules" => ["all — 2021-06-19 — everywhere, fully — clause_staged", "reg.3, reg.4, reg.5, reg.6, reg.7, reg.8, pt.2.ch.2, reg.9, reg.10, reg.11, reg.12, reg.13, reg.14, reg.33, reg.34, reg.35, reg.36, reg.37, reg.38, reg.45, reg.46, reg.47, reg.48, reg.49, reg.50, reg.54(3)(a), sch.1..sch.5, sch.16..sch.18, sch.22..sch.28, sch.29.para.1, sch.29.para.6 — 2021-07-01 — everywhere, fully — provision_dated", "reg.56 — 2021-07-01 — everywhere, in relation to — provision_qualified"] }
+
+own  UK_uksi_2024_105/71c76ff288
+  SENTENCE: The following provisions of these Regulations come into force on the day after that on which these Regulations are made (“the initial commencement day”)—
+  HELD: %{ "class" => "law:clause_unread", "rules" => ["all — unread — everywhere, fully — clause_unread"] }
+  NOW:  %{ "class" => "law:clause_unread", "rules" => ["all — unread — everywhere, fully — clause_unread", "pt.1, pt.2 — unread — everywhere, fully — provision_unread"] }
+

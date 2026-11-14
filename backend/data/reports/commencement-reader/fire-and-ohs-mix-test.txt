@@ -1,0 +1,1934 @@
+Getting extensions in current project...
+Running migration for AshPostgres.DataLayer...
+warning: the following files do not match any of the configured `:test_load_filters` / `:test_ignore_filters`:
+
+test/fixtures/change_vocabulary/golden.exs
+test/fixtures/change_vocabulary/golden_extended.exs
+
+This might indicate a typo in a test file name (for example, using "foo_tests.exs" instead of "foo_test.exs").
+
+See the configuration for `:test_pattern` under `mix help test` for more information.
+
+Running ExUnit with seed: 45005, max_cases: 12
+Excluding tags: [:live, :pending]
+
+...........
+=== MINISTERS COMPARISON ===
+Text: The Scottish Ministers must make regulations to prescribe the form of application.
+V1 matches: [" Ministers must"]
+V2 matches: ["make regulations to prescribe the form of application."]
+.
+=== REGULATION-16 COMPARISON ===
+
+V1 matches (3):
+  [19 chars]  the authority must
+  [207 chars]  regulator or the Scottish Environment Protection
+Agency has advised against that or has recommended...
+  [425 chars]  regulator or the Scottish Environment Protection
+Agency has advised against that or has recommended...
+
+V2 matches (1):
+  [10 chars] notify the
+.
+=== REGULATION-14 COMPARISON ===
+
+V1 matches (1):
+  [112 chars]  regulator, Scottish Natural Heritage or the Scottish
+Environment Protection Agency. The planning au...
+.
+V2 matches (1):
+  [30 chars] give notice of the application
+
+V1 average match length: 112 chars
+V2 average match length: 30 chars
+.
+=== SIMPLE TEXT COMPARISON ===
+
+V1 matches: [" the authority must"]
+V2 matches: ["consult the relevant bodies before determining the application."]
+.
+=== ACTION CAPTURE TEST ===
+Text: In this case, the authority must notify all interested parties within 14 days.
+V2 matches: ["notify all interested parties within 14 days."]
+...........................................................................................................................................................................................................................................................................................................................................................................................Terms inside Title Filter
+# PRE_FILTERED RECORDS: inc:2 exc:0
+# INCLUDED RECORDS: 0
+# EXCLUDED RECORDS: 2
+.Terms inside Title Filter
+.# PRE_FILTERED RECORDS: inc:2 exc:0
+.# INCLUDED RECORDS: 1
+.# EXCLUDED RECORDS: 1
+.PRE-TITLE FILTER RECORD COUNT: 2
+.......POST-TITLE FILTER
+# INCLUDED RECORDS: 2
+# EXCLUDED RECORDS: 0
+.PRE-TITLE FILTER RECORD COUNT: 2
+POST-TITLE FILTER
+.# INCLUDED RECORDS: 1
+.# EXCLUDED RECORDS: 1
+.Terms inside Title Filter
+.# PRE_FILTERED RECORDS: inc:1 exc:1
+.# INCLUDED RECORDS: 1
+# EXCLUDED RECORDS: 1
+.PRE-TITLE FILTER RECORD COUNT: 2
+POST-TITLE FILTER
+.# INCLUDED RECORDS: 1
+.# EXCLUDED RECORDS: 1
+...PRE-TITLE FILTER RECORD COUNT: 2
+.POST-TITLE FILTER
+.# INCLUDED RECORDS: 1
+.# EXCLUDED RECORDS: 1
+.Terms inside Title Filter
+.# PRE_FILTERED RECORDS: inc:2 exc:0
+.# INCLUDED RECORDS: 1
+.# EXCLUDED RECORDS: 1
+..Terms inside Title Filter
+....# PRE_FILTERED RECORDS: inc:2 exc:0
+.# INCLUDED RECORDS: 1
+# EXCLUDED RECORDS: 1
+..PRE-TITLE FILTER RECORD COUNT: 2
+.POST-TITLE FILTER
+.# INCLUDED RECORDS: 1
+.# EXCLUDED RECORDS: 1
+......................................................................................................................................................................................................................................................................................................................................................................................................................................................................................18:04:31.062 [error] 4192- fatal: :unexpected_end
+
+...................................................................................................................................................................................................................................................................................
+Parsing: Initial Title
+.  Fetching metadata: /uksi/2024/567/introduction/data.xml
+...............................................................  Created: UK_uksi_2024_567
+.
+Parsing: Initial Title
+  Fetching metadata: /uksi/2024/567/introduction/data.xml
+...............  Updated: UK_uksi_2024_567
+......
+Parsing: Test Regulation with SI Code
+.  Fetching metadata: /uksi/2024/1234/introduction/data.xml
+.....................  Created: UK_uksi_2024_1234
+..........
+=== PARSING GROUP1 from nonexistent-session ===
+
+.........
+Parsing: Non-existent
+  Fetching metadata: /uksi/2024/9999/introduction/data.xml
+  ...trying /made/ path
+  Fetching metadata: /uksi/2024/9999/introduction/made/data.xml
+  ...trying /contents/ path
+  Fetching metadata: /uksi/2024/9999/contents/data.xml
+.  ...trying RDF fallback: /uksi/2024/9999/data.rdf
+  Error: Not found: /uksi/2024/9999/contents/data.xml
+...
+Parsing: Test Regulation
+..  Fetching metadata: /uksi/2024/1234/introduction/data.xml
+........................
+Parsing: Test Regulation
+  Fetching metadata: /uksi/2024/1234/introduction/data.xml
+.............
+Parsing: Test Regulation
+  Fetching metadata: /uksi/2024/1234/introduction/data.xml
+.
+Parsing: Test Regulation with md_date
+  Fetching metadata: /uksi/2024/1234/introduction/data.xml
+..........................  Created: UK_uksi_2024_1234
+.......
+Parsing: Test Regulation for DB
+.  Fetching metadata: /uksi/2024/1234/introduction/data.xml
+.......  Created: UK_uksi_2024_1234
+................................................Saved 2 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/parser-test-58284/inc_w_si.json
+
+=== PARSING GROUP1 from parser-test-58284 ===
+
+.Found 2 records in group1
+
+[1/2] Law 1
+
+Parsing: Law 1
+  Fetching metadata: /uksi/2024/1234/introduction/data.xml
+..............................................  Created: UK_uksi_2024_1234
+................[2/2] Law 2
+
+Parsing: Law 2
+  Fetching metadata: /uksi/2024/567/introduction/data.xml
+.....................................................  Created: UK_uksi_2024_567
+................
+=== PARSE SUMMARY ===
+.Session: parser-test-58284
+.Group: group1
+.Parsed: 2
+.Skipped: 0
+.Errors: 0
+.=====================
+
+..........................................
+Parsing: Test Regulation
+.  Fetching metadata: /uksi/2024/1234/introduction/data.xml
+...........18:04:33.070 [warning] catalogue cache: /tmp/catalogue_cache_test_21286/cat/UK_ukpga_2001_1.bin won't decode (errors were found at the given arguments:
+
+  * 1st argument: invalid external representation of a term
+); reading again
+............................................................................................................................................................................................................................
+Fetching laws for 2024-12 days 1-1
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-01
+.Found 10 records
+
+Total records fetched: 10
+
+Fetching metadata for 10 records...
+  [1/10] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+...........................  [2/10] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+.............  [3/10] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+............................  [4/10] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+.........................  [5/10] uksi/2024/1006
+.  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+...........................................................................................  [6/10] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+.......  [7/10] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+.......  [8/10] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+.........................  [9/10] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+..................................  [10/10] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+..................
+Fetching laws for 2024-12 days 1-1
+.
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-01
+....Found 10 records
+.
+Total records fetched: 10
+.
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-01
+......Found 10 records
+.
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-01
+.....Found 10 records
+.
+Fetching laws for 2024-12 days 1-3
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-01
+....Found 10 records
+.
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-02
+.....Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-03
+.Found 10 records
+
+Total records fetched: 30
+..
+Fetching laws for 2024-12 days 1-1
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-01
+..Found 10 records
+.
+Total records fetched: 10
+.
+Fetching metadata for 10 records...
+  [1/10] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+............  [2/10] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+.............................  [3/10] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+...............  [4/10] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+...............18:04:35.262 [warning] [Amending] changes feed unparseable for /changes/affected/nisr/2003/33/data.feed?results-count=5000&page=1: not an Atom feed
+...................18:04:35.309 [warning] [Amending] changes feed unparseable for /changes/affected/nisr/2003/33/data.feed?results-count=5000&page=1: not an Atom feed
+..........  [5/10] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+.......................18:04:35.509 [warning] [Amending] changes feed unparseable for /changes/affected/uksi/2024/100/data.feed?results-count=5000&page=1: not an Atom feed
+........18:04:35.527 [warning] [Amending] changes feed unparseable for /changes/affected/nisr/2003/33/data.feed?results-count=5000&page=1: not an Atom feed
+....  [6/10] uksi/2024/1005
+.  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+.....18:04:35.563 [warning] [Amending] changes feed unparseable for /changes/affected/uksi/2005/300/data.feed?results-count=5000&page=1: not an Atom feed
+...................      warning: default values for the optional arguments in the private function terr/4 are never used
+      │
+ 1118 │     defp terr(law, rows, changes, opts \\ []) do
+      │          ~
+      │
+      └─ test/sertantai_legal/scraper/label_projection_test.exs:1118:10: SertantaiLegal.Scraper.LabelProjectionTest (module)
+
+...........................  [7/10] uksi/2024/1004
+..  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+.....................18:04:35.703 [warning] [Amending] changes feed unparseable for /changes/affected/uksi/2024/100/data.feed?results-count=5000&page=1: not an Atom feed
+.....................................................................18:04:35.874 [warning] [Amending] changes feed unparseable for /changes/affected/uksi/2024/400/data.feed?results-count=5000&page=1: not an Atom feed
+.....  [8/10] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+.........18:04:35.900 [warning] [Amending] changes feed 404: Not found: /changes/affected/uksi/2024/999/data.feed?results-count=5000&page=1
+.........................  [9/10] uksi/2024/1002
+.  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+.....................................................    warning: the default value for the last optional argument in the private function rules/3 is never used
+    │
+ 44 │   defp rules(periods, reaching \\ [], ctx \\ %{}),
+    │        ~
+    │
+    └─ test/sertantai_legal/scraper/change_vocabulary/label_rules_test.exs:44:8: SertantaiLegal.Scraper.ChangeVocabulary.LabelRulesTest (module)
+
+...................................................  [10/10] uksi/2024/1001
+.  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+.............
+Fetching laws for 2024-12 days 1-1
+.
+Fetching: https://www.legislation.gov.uk/new/uksi/2024-12-01
+Found 10 records
+
+Total records fetched: 10
+.
+Fetching laws for 2024-12 days 1-3
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-01
+..Found 10 records
+.
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-02
+..Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-03
+Found 10 records
+
+Total records fetched: 30
+.........................................................................................................................................................................  Fetching metadata: /redirect-test/2024/1/introduction/data.xml
+.  ...trying /made/ path
+.  Fetching metadata: /redirect-test/2024/1/introduction/made/data.xml
+...............................................................  Fetching metadata: /uksi/2024/567/introduction/data.xml
+.............................  Fetching metadata: /uksi/2024/1234/introduction/data.xml
+............................................  Fetching metadata: /uksi/2024/9999/introduction/data.xml
+  ...trying /made/ path
+  Fetching metadata: /uksi/2024/9999/introduction/made/data.xml
+  ...trying /contents/ path
+  Fetching metadata: /uksi/2024/9999/contents/data.xml
+  ...trying RDF fallback: /uksi/2024/9999/data.rdf
+.    📦 P1 chunking: 3 sections (121 chars total)
+    [Taxa] [CHUNKED 3] 121 chars in 7ms (actor: 2ms, duty_type: 4ms, popimar: 0ms, purpose: 0ms)
+.    [Taxa] 69 chars in 1ms (actor: 0ms, duty_type: 0ms, popimar: 0ms, purpose: 0ms)
+.    [Taxa] 33 chars in 0ms (actor: 0ms, duty_type: 0ms, popimar: 0ms, purpose: 0ms)
+.    ⚠ Large law detected: 240 chars (threshold: 50)
+18:04:38.590 [warning] [Taxa] Large law detected: test/2024/1 (240 chars > 50 threshold)
+    [Taxa] [LARGE] 240 chars in 2ms (actor: 0ms, duty_type: 1ms, popimar: 0ms, purpose: 0ms)
+.    [Taxa] 68 chars in 1ms (actor: 0ms, duty_type: 1ms, popimar: 0ms, purpose: 0ms)
+.    [Taxa] 59 chars in 0ms (actor: 0ms, duty_type: 0ms, popimar: 0ms [skipped], purpose: 0ms)
+.    [Taxa] 40 chars in 0ms (actor: 0ms, duty_type: 0ms, popimar: 0ms [skipped], purpose: 0ms)
+..    [Taxa] 76 chars in 1ms (actor: 0ms, duty_type: 0ms, popimar: 0ms [skipped], purpose: 0ms)
+...    [Taxa] 60 chars in 1ms (actor: 0ms, duty_type: 0ms, popimar: 0ms, purpose: 0ms)
+.    [Taxa] 73 chars in 2ms (actor: 0ms, duty_type: 1ms, popimar: 0ms, purpose: 0ms)
+.    [Taxa] 33 chars in 0ms (actor: 0ms, duty_type: 0ms, popimar: 0ms, purpose: 0ms)
+...    [Taxa] 71 chars in 3ms (actor: 0ms, duty_type: 0ms, popimar: 2ms, purpose: 0ms)
+.    📦 P1 chunking: 3 sections (33 chars total)
+    [Taxa] [CHUNKED 3] 33 chars in 1ms (actor: 0ms, duty_type: 1ms, popimar: 0ms, purpose: 0ms)
+.    📦 P1 chunking: 3 sections (110 chars total)
+    [Taxa] [CHUNKED 3] 110 chars in 3ms (actor: 0ms, duty_type: 3ms, popimar: 0ms, purpose: 0ms)
+..    [Taxa] 33 chars in 2ms (actor: 0ms, duty_type: 0ms, popimar: 1ms, purpose: 0ms)
+    📦 P1 chunking: 2 sections (117 chars total)
+.    [Taxa] [CHUNKED 2] 117 chars in 3ms (actor: 0ms, duty_type: 3ms, popimar: 0ms, purpose: 0ms)
+.    [Taxa] 53 chars in 3ms (actor: 0ms, duty_type: 0ms, popimar: 2ms, purpose: 0ms)
+    📦 P1 chunking: 1 sections (33 chars total)
+.    [Taxa] [CHUNKED 1] 33 chars in 3ms (actor: 0ms, duty_type: 1ms, popimar: 0ms, purpose: 0ms)
+..    [Taxa] 101 chars in 3ms (actor: 0ms, duty_type: 2ms, popimar: 0ms, purpose: 0ms)
+.    [Taxa] 67 chars in 0ms (actor: 0ms, duty_type: 0ms, popimar: 0ms, purpose: 0ms)
+.    📦 P1 chunking: 4 sections (198 chars total)
+    [Taxa] [CHUNKED 4] 198 chars in 3ms (actor: 0ms, duty_type: 1ms, popimar: 0ms, purpose: 0ms)
+......    [Taxa] 56 chars in 1ms (actor: 0ms, duty_type: 0ms, popimar: 0ms, purpose: 0ms)
+..    📦 P1 chunking: 4 sections (264 chars total)
+    [Taxa] [CHUNKED 4] 264 chars in 5ms (actor: 0ms, duty_type: 3ms, popimar: 0ms, purpose: 0ms)
+.    [Taxa] 71 chars in 1ms (actor: 0ms, duty_type: 0ms, popimar: 0ms, purpose: 0ms)
+.    [Taxa] 51 chars in 0ms (actor: 0ms, duty_type: 0ms, popimar: 0ms [skipped], purpose: 0ms)
+............................................................................................................................................................................................................................................................................................................................
+=== STAGED PARSE: uksi/2025/99999 ===
+    ⚠ Cancelled by client before metadata
+
+=== PARSE COMPLETE: CANCELLED (0ms) ===
+
+...........................
+=== STAGED PARSE: uksi/2025/99999 ===
+.    ⚠ Cancelled by client before metadata
+
+=== PARSE COMPLETE: CANCELLED (5ms) ===
+
+
+=== STAGED PARSE: uksi/2025/99999 ===
+.    ⚠ Cancelled by client before metadata
+.
+=== PARSE COMPLETE: CANCELLED (5ms) ===
+
+..............
+=== STAGED PARSE: uksi/2025/99999 ===
+.    ⚠ Cancelled by client before metadata
+
+=== PARSE COMPLETE: CANCELLED (4ms) ===
+
+.........................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................18:04:48.813 [warning] label fold cache: /tmp/fold-cache-26662/UK_x.etf won't decode (errors were found at the given arguments:
+
+  * 1st argument: invalid external representation of a term
+); folding again
+..................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................18:06:13.609 [warning] JWKS fetch failed: %Jason.DecodeError{position: 0, token: nil, data: "Service Unavailable"}, retrying in 30s
+.....18:06:14.247 [warning] JWKS fetch failed: %Jason.DecodeError{position: 0, token: nil, data: "down"}, retrying in 30s
+.18:06:14.649 [warning] JWKS fetch failed: :no_keys_in_jwks, retrying in 30s
+...18:06:15.152 [warning] [Zenoh.TaxaSubscriber] unknown current_verdict "maybe" dropped
+.............................
+=== SCRAPING SESSION: 2024-12-02-to-05 ===
+
+Fetching laws for 2024-12 days 2-5
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-02
+Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-03
+Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-04
+Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-05
+Found 10 records
+
+Total records fetched: 40
+
+Fetching metadata for 40 records...
+  [1/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [2/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [3/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [4/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [5/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [6/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [7/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [8/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [9/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [10/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+  [11/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [12/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [13/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [14/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [15/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [16/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [17/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [18/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [19/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [20/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+  [21/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [22/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [23/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [24/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [25/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [26/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [27/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [28/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [29/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [30/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+  [31/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [32/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [33/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [34/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [35/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [36/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [37/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [38/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [39/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [40/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+Saved 40 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05/raw.json
+
+=== CATEGORIZING SESSION: 2024-12-02-to-05 ===
+Total records to categorize: 40
+PRE-TITLE FILTER RECORD COUNT: 40
+POST-TITLE FILTER
+# INCLUDED RECORDS: 40
+# EXCLUDED RECORDS: 0
+Terms inside Title Filter
+# PRE_FILTERED RECORDS: inc:0 exc:0
+# INCLUDED RECORDS: 0
+# EXCLUDED RECORDS: 0
+
+=== CATEGORIZATION SUMMARY ===
+Group 1 (SI code match):    40
+Group 2 (Term match only):  0
+Group 3 (Excluded):         0
+Title excluded:             0
+================================
+Saved 40 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05/inc_w_si.json
+Saved 0 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05/inc_wo_si.json
+Saved 0 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05/exc.json
+
+=== SAVING TO DATABASE ===
+Group 1: 40 records saved to DB
+Group 2: 0 records saved to DB
+Group 3: 0 records saved to DB
+================================
+Saved 6 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05/metadata.json
+.
+=== SCRAPING SESSION: 2024-12-02-to-05 ===
+
+Fetching laws for 2024-12 days 2-5
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-02
+Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-03
+Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-04
+Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-05
+Found 10 records
+
+Total records fetched: 40
+
+Fetching metadata for 40 records...
+  [1/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [2/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [3/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [4/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [5/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [6/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [7/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [8/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [9/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [10/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+  [11/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [12/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [13/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [14/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [15/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [16/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [17/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [18/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [19/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [20/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+  [21/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [22/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [23/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [24/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [25/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [26/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [27/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [28/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [29/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [30/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+  [31/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [32/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [33/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [34/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [35/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [36/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [37/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [38/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [39/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [40/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+Saved 40 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05/raw.json
+
+=== CATEGORIZING SESSION: 2024-12-02-to-05 ===
+Total records to categorize: 40
+PRE-TITLE FILTER RECORD COUNT: 40
+POST-TITLE FILTER
+# INCLUDED RECORDS: 40
+# EXCLUDED RECORDS: 0
+Terms inside Title Filter
+# PRE_FILTERED RECORDS: inc:0 exc:0
+# INCLUDED RECORDS: 0
+# EXCLUDED RECORDS: 0
+
+=== CATEGORIZATION SUMMARY ===
+Group 1 (SI code match):    40
+Group 2 (Term match only):  0
+Group 3 (Excluded):         0
+Title excluded:             0
+================================
+Saved 40 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05/inc_w_si.json
+Saved 0 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05/inc_wo_si.json
+Saved 0 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05/exc.json
+
+=== SAVING TO DATABASE ===
+Group 1: 40 records saved to DB
+Group 2: 0 records saved to DB
+Group 3: 0 records saved to DB
+================================
+Saved 6 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05/metadata.json
+.
+=== SCRAPING SESSION: 2024-12-02-to-05 ===
+
+Fetching laws for 2024-12 days 2-5
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-02
+Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-03
+Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-04
+Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-05
+Found 10 records
+
+Total records fetched: 40
+
+Fetching metadata for 40 records...
+  [1/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [2/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [3/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [4/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [5/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [6/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [7/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [8/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [9/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [10/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+  [11/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [12/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [13/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [14/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [15/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [16/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [17/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [18/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [19/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [20/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+  [21/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [22/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [23/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [24/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [25/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [26/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [27/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [28/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [29/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [30/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+  [31/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [32/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [33/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [34/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [35/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [36/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [37/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [38/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [39/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [40/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+Saved 40 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05/raw.json
+....
+=== SCRAPING SESSION: 2024-12-02-to-05 ===
+
+Fetching laws for 2024-12 days 2-5
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-02
+Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-03
+Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-04
+Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-05
+Found 10 records
+
+Total records fetched: 40
+
+Fetching metadata for 40 records...
+  [1/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [2/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [3/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [4/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [5/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [6/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [7/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [8/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [9/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [10/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+  [11/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [12/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [13/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [14/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [15/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [16/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [17/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [18/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [19/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [20/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+  [21/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [22/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [23/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [24/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [25/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [26/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [27/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [28/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [29/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [30/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+  [31/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [32/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [33/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [34/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [35/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [36/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [37/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [38/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [39/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [40/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+Saved 40 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05/raw.json
+.
+=== SCRAPING SESSION: 2024-12-02-to-05 ===
+
+Fetching laws for 2024-12 days 2-5
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-02
+Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-03
+Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-04
+Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-05
+Found 10 records
+
+Total records fetched: 40
+
+Fetching metadata for 40 records...
+  [1/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [2/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [3/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [4/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [5/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [6/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [7/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [8/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [9/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [10/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+  [11/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [12/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [13/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [14/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [15/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [16/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [17/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [18/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [19/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [20/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+  [21/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [22/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [23/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [24/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [25/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [26/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [27/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [28/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [29/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [30/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+  [31/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [32/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [33/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [34/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [35/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [36/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [37/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [38/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [39/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [40/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+Saved 40 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05/raw.json
+
+=== CATEGORIZING SESSION: 2024-12-02-to-05 ===
+Total records to categorize: 40
+PRE-TITLE FILTER RECORD COUNT: 40
+POST-TITLE FILTER
+# INCLUDED RECORDS: 40
+# EXCLUDED RECORDS: 0
+Terms inside Title Filter
+# PRE_FILTERED RECORDS: inc:0 exc:0
+# INCLUDED RECORDS: 0
+# EXCLUDED RECORDS: 0
+
+=== CATEGORIZATION SUMMARY ===
+Group 1 (SI code match):    40
+Group 2 (Term match only):  0
+Group 3 (Excluded):         0
+Title excluded:             0
+================================
+Saved 40 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05/inc_w_si.json
+Saved 0 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05/inc_wo_si.json
+Saved 0 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05/exc.json
+
+=== SAVING TO DATABASE ===
+Group 1: 40 records saved to DB
+Group 2: 0 records saved to DB
+Group 3: 0 records saved to DB
+================================
+Saved 6 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05/metadata.json
+...
+=== SCRAPING SESSION: 2024-12-02-to-05 ===
+
+Fetching laws for 2024-12 days 2-5
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-02
+Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-03
+Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-04
+Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-05
+Found 10 records
+
+Total records fetched: 40
+
+Fetching metadata for 40 records...
+  [1/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [2/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [3/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [4/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [5/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [6/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [7/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [8/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [9/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [10/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+  [11/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [12/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [13/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [14/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [15/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [16/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [17/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [18/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [19/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [20/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+  [21/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [22/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [23/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [24/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [25/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [26/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [27/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [28/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [29/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [30/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+  [31/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [32/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [33/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [34/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [35/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [36/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [37/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [38/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [39/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [40/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+Saved 40 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05/raw.json
+.
+=== SCRAPING SESSION: 2024-12-02-to-05 ===
+
+Fetching laws for 2024-12 days 2-5
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-02
+Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-03
+Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-04
+Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-05
+Found 10 records
+
+Total records fetched: 40
+
+Fetching metadata for 40 records...
+  [1/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [2/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [3/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [4/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [5/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [6/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [7/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [8/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [9/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [10/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+  [11/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [12/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [13/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [14/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [15/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [16/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [17/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [18/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [19/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [20/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+  [21/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [22/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [23/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [24/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [25/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [26/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [27/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [28/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [29/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [30/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+  [31/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [32/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [33/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [34/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [35/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [36/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [37/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [38/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [39/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [40/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+Saved 40 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05/raw.json
+
+=== CATEGORIZING SESSION: 2024-12-02-to-05 ===
+Total records to categorize: 40
+PRE-TITLE FILTER RECORD COUNT: 40
+POST-TITLE FILTER
+# INCLUDED RECORDS: 40
+# EXCLUDED RECORDS: 0
+Terms inside Title Filter
+# PRE_FILTERED RECORDS: inc:0 exc:0
+# INCLUDED RECORDS: 0
+# EXCLUDED RECORDS: 0
+
+=== CATEGORIZATION SUMMARY ===
+Group 1 (SI code match):    40
+Group 2 (Term match only):  0
+Group 3 (Excluded):         0
+Title excluded:             0
+================================
+Saved 40 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05/inc_w_si.json
+Saved 0 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05/inc_wo_si.json
+Saved 0 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05/exc.json
+
+=== SAVING TO DATABASE ===
+Group 1: 40 records saved to DB
+Group 2: 0 records saved to DB
+Group 3: 0 records saved to DB
+================================
+Saved 6 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05/metadata.json
+
+=== SESSION SUMMARY ===
+Session ID:      2024-12-02-to-05
+Status:          categorized
+Date range:      2024-12-2 to 5
+Total fetched:   40
+Group 1 (SI):    40
+Group 2 (Term):  0
+Group 3 (Exc):   0
+Persisted:       0
+
+Files location:  /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05
+=======================
+.
+=== SCRAPING SESSION: 2024-12-02-to-05 ===
+
+Fetching laws for 2024-12 days 2-5
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-02
+Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-03
+Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-04
+Found 10 records
+
+Fetching: https://www.legislation.gov.uk/new/all/2024-12-05
+Found 10 records
+
+Total records fetched: 40
+
+Fetching metadata for 40 records...
+  [1/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [2/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [3/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [4/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [5/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [6/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [7/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [8/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [9/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [10/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+  [11/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [12/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [13/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [14/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [15/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [16/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [17/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [18/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [19/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [20/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+  [21/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [22/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [23/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [24/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [25/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [26/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [27/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [28/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [29/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [30/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+  [31/40] ukpga/2024/2
+  Fetching metadata: /ukpga/2024/2/introduction/data.xml
+  [32/40] ukpga/2024/1
+  Fetching metadata: /ukpga/2024/1/introduction/data.xml
+  [33/40] uksi/2024/1008
+  Fetching metadata: /uksi/2024/1008/introduction/data.xml
+  [34/40] uksi/2024/1007
+  Fetching metadata: /uksi/2024/1007/introduction/data.xml
+  [35/40] uksi/2024/1006
+  Fetching metadata: /uksi/2024/1006/introduction/data.xml
+  [36/40] uksi/2024/1005
+  Fetching metadata: /uksi/2024/1005/introduction/data.xml
+  [37/40] uksi/2024/1004
+  Fetching metadata: /uksi/2024/1004/introduction/data.xml
+  [38/40] uksi/2024/1003
+  Fetching metadata: /uksi/2024/1003/introduction/data.xml
+  [39/40] uksi/2024/1002
+  Fetching metadata: /uksi/2024/1002/introduction/data.xml
+  [40/40] uksi/2024/1001
+  Fetching metadata: /uksi/2024/1001/introduction/data.xml
+Saved 40 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/2024-12-02-to-05/raw.json
+...Session 2024-12-02-to-05 already exists with status: pending
+...............**...Saved 1 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-2024-12-01-to-05/raw.json
+...Saved 2 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-2024-12-01-to-05/exc.json
+.Saved 5 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-2024-12-01-to-05/affected_laws.json
+..Saved 1 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-2024-12-01-to-05/inc_w_si.json
+....Saved 2 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-2024-12-01-to-05/inc_w_si.json
+.Saved 2 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-2024-12-01-to-05/inc_w_si.json
+..
+=== PERSISTING group1 for session: test-2024-12-01-to-05 ===
+.Saved 1 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-2024-12-01-to-05/inc_w_si.json
+....Saved 1 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-2024-12-01-to-05/inc_w_si.json
+Saved 1 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-2024-12-01-to-05/inc_wo_si.json
+.....Saved 5 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-2024-12-01-to-05/affected_laws.json
+...Saved 1 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-2024-12-01-to-05/inc_w_si.json
+.
+Persisting directly: Override Test Regulations 2024
+  Created: UK_uksi_2024_777
+.Saved 5 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-2024-12-01-to-05/affected_laws.json
+.Saved 2 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-2024-12-01-to-05/inc_w_si.json
+.
+Persisting directly: Test Regulations 2024
+  Created: UK_uksi_2024_888
+.Saved 5 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-2024-12-01-to-05/affected_laws.json
+.Saved 5 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-2024-12-01-to-05/affected_laws.json
+....Saved 5 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-2024-12-01-to-05/affected_laws.json
+.Saved 1 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-2024-12-01-to-05/inc_w_si.json
+Saved 1 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-2024-12-01-to-05/exc.json
+..Saved 5 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-2024-12-01-to-05/affected_laws.json
+Saved 5 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-2024-12-01-to-05/affected_laws.json
+..Saved 5 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-2024-12-01-to-05/affected_laws.json
+...Saved 5 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-2024-12-01-to-05/affected_laws.json
+..Saved 5 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-2024-12-01-to-05/affected_laws.json
+.
+=== PARSING GROUP1 from test-2024-12-01-to-05 ===
+
+.........18:06:20.182 [error] [DefinitionsAdmin] Parse failed for UK_uksi_1999_3242: cannot find mock/stub SertantaiLegal.Scraper.LegislationGovUk.Client in process #PID<0.21945.0>
+.18:06:20.193 [error] Postgrex.Protocol (#PID<0.3056.0> ({Postgrex.Protocol, "sertantai_legal_test"})) disconnected: ** (DBConnection.ConnectionError) owner #PID<0.21955.0> exited
+
+Client #PID<0.21958.0> (Task.Supervised) is still using a connection from owner at location:
+
+    (erts 17.1) :prim_inet.recv0/3
+    (postgrex 0.22.3) lib/postgrex/protocol.ex:3296: Postgrex.Protocol.msg_recv/4
+    (postgrex 0.22.3) lib/postgrex/protocol.ex:3008: Postgrex.Protocol.recv_close/3
+    (postgrex 0.22.3) lib/postgrex/protocol.ex:1494: Postgrex.Protocol.close_parse_describe/3
+    (postgrex 0.22.3) lib/postgrex/protocol.ex:400: Postgrex.Protocol.handle_prepare/3
+    (ecto_sql 3.14.0) lib/ecto/adapters/sql/sandbox.ex:412: Ecto.Adapters.SQL.Sandbox.Connection.proxy/3
+    (db_connection 2.10.2) lib/db_connection/holder.ex:379: DBConnection.Holder.holder_apply/4
+    (db_connection 2.10.2) lib/db_connection.ex:1543: DBConnection.prepare/4
+    (db_connection 2.10.2) lib/db_connection.ex:1536: DBConnection.run_prepare/4
+    (db_connection 2.10.2) lib/db_connection.ex:1548: DBConnection.run_prepare_execute/5
+    (db_connection 2.10.2) lib/db_connection.ex:1606: DBConnection.run_with_retries/5
+    (db_connection 2.10.2) lib/db_connection.ex:810: DBConnection.parsed_prepare_execute/5
+    (db_connection 2.10.2) lib/db_connection.ex:802: DBConnection.prepare_execute/4
+    (ecto_sql 3.14.0) lib/ecto/adapters/postgres/connection.ex:108: Ecto.Adapters.Postgres.Connection.prepare_execute/5
+    (ecto_sql 3.14.0) lib/ecto/adapters/sql.ex:1027: Ecto.Adapters.SQL.execute!/5
+    (ecto_sql 3.14.0) lib/ecto/adapters/sql.ex:1019: Ecto.Adapters.SQL.execute/6
+    (ecto 3.14.1) lib/ecto/repo/queryable.ex:248: Ecto.Repo.Queryable.execute/4
+    (ecto 3.14.1) lib/ecto/repo/queryable.ex:19: Ecto.Repo.Queryable.all/3
+    (sertantai_legal 0.1.0) lib/sertantai_legal/scraper/root_resolver/indexes.ex:27: SertantaiLegal.Scraper.RootResolver.Indexes.build_title_index/0
+    (sertantai_legal 0.1.0) lib/sertantai_legal/scraper/root_resolver.ex:58: SertantaiLegal.Scraper.RootResolver.resolve_all/1
+
+The connection itself was checked out by #PID<0.21958.0> (Task.Supervised) at location:
+
+    (erts 17.1) :erlang.port_command/3
+    (erts 17.1) :prim_inet.send/4
+    (postgrex 0.22.3) lib/postgrex/protocol.ex:3383: Postgrex.Protocol.do_send/3
+    (postgrex 0.22.3) lib/postgrex/protocol.ex:1492: Postgrex.Protocol.close_parse_describe/3
+    (postgrex 0.22.3) lib/postgrex/protocol.ex:400: Postgrex.Protocol.handle_prepare/3
+    (ecto_sql 3.14.0) lib/ecto/adapters/sql/sandbox.ex:412: Ecto.Adapters.SQL.Sandbox.Connection.proxy/3
+    (db_connection 2.10.2) lib/db_connection/holder.ex:379: DBConnection.Holder.holder_apply/4
+    (db_connection 2.10.2) lib/db_connection.ex:1543: DBConnection.prepare/4
+    (db_connection 2.10.2) lib/db_connection.ex:1536: DBConnection.run_prepare/4
+    (db_connection 2.10.2) lib/db_connection.ex:1548: DBConnection.run_prepare_execute/5
+    (db_connection 2.10.2) lib/db_connection.ex:1606: DBConnection.run_with_retries/5
+    (db_connection 2.10.2) lib/db_connection.ex:810: DBConnection.parsed_prepare_execute/5
+    (db_connection 2.10.2) lib/db_connection.ex:802: DBConnection.prepare_execute/4
+    (ecto_sql 3.14.0) lib/ecto/adapters/postgres/connection.ex:108: Ecto.Adapters.Postgres.Connection.prepare_execute/5
+    (ecto_sql 3.14.0) lib/ecto/adapters/sql.ex:1027: Ecto.Adapters.SQL.execute!/5
+    (ecto_sql 3.14.0) lib/ecto/adapters/sql.ex:1019: Ecto.Adapters.SQL.execute/6
+    (ecto 3.14.1) lib/ecto/repo/queryable.ex:248: Ecto.Repo.Queryable.execute/4
+    (ecto 3.14.1) lib/ecto/repo/queryable.ex:19: Ecto.Repo.Queryable.all/3
+    (sertantai_legal 0.1.0) lib/sertantai_legal/scraper/root_resolver/indexes.ex:27: SertantaiLegal.Scraper.RootResolver.Indexes.build_title_index/0
+
+
+.......18:06:20.269 [error] Postgrex.Protocol (#PID<0.3054.0> ({Postgrex.Protocol, "sertantai_legal_test"})) disconnected: ** (DBConnection.ConnectionError) owner #PID<0.21992.0> exited
+
+Client #PID<0.21994.0> (Task.Supervised) is still using a connection from owner at location:
+
+    (erts 17.1) :prim_inet.recv0/3
+    (postgrex 0.22.3) lib/postgrex/protocol.ex:3296: Postgrex.Protocol.msg_recv/4
+    (postgrex 0.22.3) lib/postgrex/protocol.ex:3008: Postgrex.Protocol.recv_close/3
+    (postgrex 0.22.3) lib/postgrex/protocol.ex:1559: Postgrex.Protocol.close_parse_describe_flush/4
+    (postgrex 0.22.3) lib/postgrex/protocol.ex:2121: Postgrex.Protocol.handle_prepare_execute/4
+    (ecto_sql 3.14.0) lib/ecto/adapters/sql/sandbox.ex:412: Ecto.Adapters.SQL.Sandbox.Connection.proxy/3
+    (db_connection 2.10.2) lib/db_connection/holder.ex:379: DBConnection.Holder.holder_apply/4
+    (db_connection 2.10.2) lib/db_connection.ex:1558: DBConnection.run_execute/5
+    (db_connection 2.10.2) lib/db_connection.ex:1606: DBConnection.run_with_retries/5
+    (db_connection 2.10.2) lib/db_connection.ex:867: DBConnection.execute/4
+    (ecto_sql 3.14.0) lib/ecto/adapters/postgres/connection.ex:143: Ecto.Adapters.Postgres.Connection.execute/4
+    (ecto_sql 3.14.0) lib/ecto/adapters/sql.ex:1063: Ecto.Adapters.SQL.execute!/5
+    (ecto_sql 3.14.0) lib/ecto/adapters/sql.ex:1019: Ecto.Adapters.SQL.execute/6
+    (ecto 3.14.1) lib/ecto/repo/queryable.ex:248: Ecto.Repo.Queryable.execute/4
+    (ecto 3.14.1) lib/ecto/repo/queryable.ex:19: Ecto.Repo.Queryable.all/3
+    (sertantai_legal 0.1.0) lib/sertantai_legal/scraper/root_resolver/indexes.ex:27: SertantaiLegal.Scraper.RootResolver.Indexes.build_title_index/0
+    (sertantai_legal 0.1.0) lib/sertantai_legal/scraper/root_resolver.ex:58: SertantaiLegal.Scraper.RootResolver.resolve_all/1
+    (sertantai_legal 0.1.0) lib/sertantai_legal_web/controllers/definitions_admin_controller.ex:248: anonymous fn/2 in SertantaiLegalWeb.DefinitionsAdminController.resolve/2
+    (elixir 1.20.4) lib/task/supervised.ex:105: Task.Supervised.invoke_mfa/2
+
+The connection itself was checked out by #PID<0.21994.0> (Task.Supervised) at location:
+
+    (ecto_sql 3.14.0) lib/ecto/adapters/postgres/connection.ex:143: Ecto.Adapters.Postgres.Connection.execute/4
+    (ecto_sql 3.14.0) lib/ecto/adapters/sql.ex:1063: Ecto.Adapters.SQL.execute!/5
+    (ecto_sql 3.14.0) lib/ecto/adapters/sql.ex:1019: Ecto.Adapters.SQL.execute/6
+    (ecto 3.14.1) lib/ecto/repo/queryable.ex:248: Ecto.Repo.Queryable.execute/4
+    (ecto 3.14.1) lib/ecto/repo/queryable.ex:19: Ecto.Repo.Queryable.all/3
+    (sertantai_legal 0.1.0) lib/sertantai_legal/scraper/root_resolver/indexes.ex:27: SertantaiLegal.Scraper.RootResolver.Indexes.build_title_index/0
+    (sertantai_legal 0.1.0) lib/sertantai_legal/scraper/root_resolver.ex:58: SertantaiLegal.Scraper.RootResolver.resolve_all/1
+    (sertantai_legal 0.1.0) lib/sertantai_legal_web/controllers/definitions_admin_controller.ex:248: anonymous fn/2 in SertantaiLegalWeb.DefinitionsAdminController.resolve/2
+    (elixir 1.20.4) lib/task/supervised.ex:105: Task.Supervised.invoke_mfa/2
+
+
+..18:06:20.294 [error] Postgrex.Protocol (#PID<0.3052.0> ({Postgrex.Protocol, "sertantai_legal_test"})) disconnected: ** (DBConnection.ConnectionError) owner #PID<0.22008.0> exited
+
+Client #PID<0.22010.0> (Task.Supervised) is still using a connection from owner at location:
+
+    (erts 17.1) :erlang.port_command/3
+    (erts 17.1) :prim_inet.send/4
+    (postgrex 0.22.3) lib/postgrex/protocol.ex:3383: Postgrex.Protocol.do_send/3
+    (postgrex 0.22.3) lib/postgrex/protocol.ex:2217: Postgrex.Protocol.bind_execute/4
+    (ecto_sql 3.14.0) lib/ecto/adapters/sql/sandbox.ex:412: Ecto.Adapters.SQL.Sandbox.Connection.proxy/3
+    (db_connection 2.10.2) lib/db_connection/holder.ex:379: DBConnection.Holder.holder_apply/4
+    (db_connection 2.10.2) lib/db_connection.ex:1558: DBConnection.run_execute/5
+    (db_connection 2.10.2) lib/db_connection.ex:1606: DBConnection.run_with_retries/5
+    (db_connection 2.10.2) lib/db_connection.ex:867: DBConnection.execute/4
+    (ecto_sql 3.14.0) lib/ecto/adapters/postgres/connection.ex:143: Ecto.Adapters.Postgres.Connection.execute/4
+    (ecto_sql 3.14.0) lib/ecto/adapters/sql.ex:1063: Ecto.Adapters.SQL.execute!/5
+    (ecto_sql 3.14.0) lib/ecto/adapters/sql.ex:1019: Ecto.Adapters.SQL.execute/6
+    (ecto 3.14.1) lib/ecto/repo/queryable.ex:248: Ecto.Repo.Queryable.execute/4
+    (ecto 3.14.1) lib/ecto/repo/queryable.ex:19: Ecto.Repo.Queryable.all/3
+    (sertantai_legal 0.1.0) lib/sertantai_legal/scraper/root_resolver/indexes.ex:27: SertantaiLegal.Scraper.RootResolver.Indexes.build_title_index/0
+    (sertantai_legal 0.1.0) lib/sertantai_legal/scraper/root_resolver.ex:58: SertantaiLegal.Scraper.RootResolver.resolve_all/1
+    (sertantai_legal 0.1.0) lib/sertantai_legal_web/controllers/definitions_admin_controller.ex:248: anonymous fn/2 in SertantaiLegalWeb.DefinitionsAdminController.resolve/2
+    (elixir 1.20.4) lib/task/supervised.ex:105: Task.Supervised.invoke_mfa/2
+
+The connection itself was checked out by #PID<0.22010.0> (Task.Supervised) at location:
+
+    (ecto_sql 3.14.0) lib/ecto/adapters/postgres/connection.ex:143: Ecto.Adapters.Postgres.Connection.execute/4
+    (ecto_sql 3.14.0) lib/ecto/adapters/sql.ex:1063: Ecto.Adapters.SQL.execute!/5
+    (ecto_sql 3.14.0) lib/ecto/adapters/sql.ex:1019: Ecto.Adapters.SQL.execute/6
+    (ecto 3.14.1) lib/ecto/repo/queryable.ex:248: Ecto.Repo.Queryable.execute/4
+    (ecto 3.14.1) lib/ecto/repo/queryable.ex:19: Ecto.Repo.Queryable.all/3
+    (sertantai_legal 0.1.0) lib/sertantai_legal/scraper/root_resolver/indexes.ex:27: SertantaiLegal.Scraper.RootResolver.Indexes.build_title_index/0
+    (sertantai_legal 0.1.0) lib/sertantai_legal/scraper/root_resolver.ex:58: SertantaiLegal.Scraper.RootResolver.resolve_all/1
+    (sertantai_legal 0.1.0) lib/sertantai_legal_web/controllers/definitions_admin_controller.ex:248: anonymous fn/2 in SertantaiLegalWeb.DefinitionsAdminController.resolve/2
+    (elixir 1.20.4) lib/task/supervised.ex:105: Task.Supervised.invoke_mfa/2
+
+
+.18:06:20.308 [error] Postgrex.Protocol (#PID<0.3051.0> ({Postgrex.Protocol, "sertantai_legal_test"})) disconnected: ** (DBConnection.ConnectionError) owner #PID<0.22017.0> exited
+
+Client #PID<0.22010.0> (Task.Supervised) is still using a connection from owner at location:
+
+    (erts 17.1) :prim_inet.recv0/3
+    (postgrex 0.22.3) lib/postgrex/protocol.ex:3296: Postgrex.Protocol.msg_recv/4
+    (postgrex 0.22.3) lib/postgrex/protocol.ex:2986: Postgrex.Protocol.recv_transaction/4
+    (postgrex 0.22.3) lib/postgrex/protocol.ex:1558: Postgrex.Protocol.close_parse_describe_flush/4
+    (postgrex 0.22.3) lib/postgrex/protocol.ex:2121: Postgrex.Protocol.handle_prepare_execute/4
+    (ecto_sql 3.14.0) lib/ecto/adapters/sql/sandbox.ex:412: Ecto.Adapters.SQL.Sandbox.Connection.proxy/3
+    (db_connection 2.10.2) lib/db_connection/holder.ex:379: DBConnection.Holder.holder_apply/4
+    (db_connection 2.10.2) lib/db_connection.ex:1558: DBConnection.run_execute/5
+    (db_connection 2.10.2) lib/db_connection.ex:1606: DBConnection.run_with_retries/5
+    (db_connection 2.10.2) lib/db_connection.ex:867: DBConnection.execute/4
+    (ecto_sql 3.14.0) lib/ecto/adapters/postgres/connection.ex:143: Ecto.Adapters.Postgres.Connection.execute/4
+    (ecto_sql 3.14.0) lib/ecto/adapters/sql.ex:1063: Ecto.Adapters.SQL.execute!/5
+    (ecto_sql 3.14.0) lib/ecto/adapters/sql.ex:1019: Ecto.Adapters.SQL.execute/6
+    (ecto 3.14.1) lib/ecto/repo/queryable.ex:248: Ecto.Repo.Queryable.execute/4
+    (ecto 3.14.1) lib/ecto/repo/queryable.ex:19: Ecto.Repo.Queryable.all/3
+    (sertantai_legal 0.1.0) lib/sertantai_legal/scraper/root_resolver/indexes.ex:85: SertantaiLegal.Scraper.RootResolver.Indexes.build_definition_index/0
+    (sertantai_legal 0.1.0) lib/sertantai_legal/scraper/root_resolver.ex:60: SertantaiLegal.Scraper.RootResolver.resolve_all/1
+    (sertantai_legal 0.1.0) lib/sertantai_legal_web/controllers/definitions_admin_controller.ex:248: anonymous fn/2 in SertantaiLegalWeb.DefinitionsAdminController.resolve/2
+    (elixir 1.20.4) lib/task/supervised.ex:105: Task.Supervised.invoke_mfa/2
+
+The connection itself was checked out by #PID<0.22010.0> (Task.Supervised) at location:
+
+    (ecto_sql 3.14.0) lib/ecto/adapters/postgres/connection.ex:143: Ecto.Adapters.Postgres.Connection.execute/4
+    (ecto_sql 3.14.0) lib/ecto/adapters/sql.ex:1063: Ecto.Adapters.SQL.execute!/5
+    (ecto_sql 3.14.0) lib/ecto/adapters/sql.ex:1019: Ecto.Adapters.SQL.execute/6
+    (ecto 3.14.1) lib/ecto/repo/queryable.ex:248: Ecto.Repo.Queryable.execute/4
+    (ecto 3.14.1) lib/ecto/repo/queryable.ex:19: Ecto.Repo.Queryable.all/3
+    (sertantai_legal 0.1.0) lib/sertantai_legal/scraper/root_resolver/indexes.ex:85: SertantaiLegal.Scraper.RootResolver.Indexes.build_definition_index/0
+    (sertantai_legal 0.1.0) lib/sertantai_legal/scraper/root_resolver.ex:60: SertantaiLegal.Scraper.RootResolver.resolve_all/1
+    (sertantai_legal 0.1.0) lib/sertantai_legal_web/controllers/definitions_admin_controller.ex:248: anonymous fn/2 in SertantaiLegalWeb.DefinitionsAdminController.resolve/2
+    (elixir 1.20.4) lib/task/supervised.ex:105: Task.Supervised.invoke_mfa/2
+
+
+.............................................................18:06:21.596 [error] [LatPersister] Failed for UK_uksi_1991_899: ERROR 23503 (foreign_key_violation) insert or update on table "legal_articles_uk" violates foreign key constraint "legal_articles_law_id_country_fkey"
+
+    table: legal_articles_uk
+    constraint: legal_articles_law_id_country_fkey
+
+Key (law_id, country)=(f3e1dfcc-47eb-409b-8fcd-dd9145d53d53, uk) is not present in table "legal_register".
+.......18:06:21.844 [error] [LatPersister] Failed for UK_uksi_1991_899: ERROR 23503 (foreign_key_violation) insert or update on table "legal_articles_uk" violates foreign key constraint "legal_articles_law_id_country_fkey"
+
+    table: legal_articles_uk
+    constraint: legal_articles_law_id_country_fkey
+
+Key (law_id, country)=(a1d096d5-e0cb-4c77-a101-33768d7a3bcc, uk) is not present in table "legal_register".
+..18:06:21.868 [error] [LatPersister] Failed for UK_uksi_1991_899: ERROR 23503 (foreign_key_violation) insert or update on table "legal_articles_uk" violates foreign key constraint "legal_articles_law_id_country_fkey"
+
+    table: legal_articles_uk
+    constraint: legal_articles_law_id_country_fkey
+
+Key (law_id, country)=(c4a8526e-e736-42d9-a33b-73383261af0e, uk) is not present in table "legal_register".
+................................................................................................................................................................................................................................................................Saved 1 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/categorizer-test-70872/inc_w_si.json
+Saved 2 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/categorizer-test-70872/inc_wo_si.json
+Saved 2 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/categorizer-test-70872/exc.json
+
+=== SAVING TO DATABASE ===
+Group 1 DB save failed: "Failed to save 1 records: [error: \"Record missing :name field\"]"
+Group 2 DB save failed: "Failed to save 2 records: [error: \"Record missing :name field\", error: \"Record missing :name field\"]"
+Group 3 DB save failed: "Failed to save 2 records: [error: \"Record missing :name field\", error: \"Record missing :name field\"]"
+================================
+Saved 6 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/categorizer-test-70872/metadata.json
+.
+=== CATEGORIZING SESSION: nonexistent-session ===
+.Total records to categorize: 2
+PRE-TITLE FILTER RECORD COUNT: 2
+POST-TITLE FILTER
+# INCLUDED RECORDS: 0
+# EXCLUDED RECORDS: 2
+Terms inside Title Filter
+# PRE_FILTERED RECORDS: inc:0 exc:0
+# INCLUDED RECORDS: 0
+# EXCLUDED RECORDS: 0
+
+=== CATEGORIZATION SUMMARY ===
+Group 1 (SI code match):    0
+Group 2 (Term match only):  0
+Group 3 (Excluded):         0
+Title excluded:             2
+================================
+.Total records to categorize: 2
+PRE-TITLE FILTER RECORD COUNT: 2
+POST-TITLE FILTER
+# INCLUDED RECORDS: 2
+# EXCLUDED RECORDS: 0
+Terms inside Title Filter
+# PRE_FILTERED RECORDS: inc:0 exc:0
+# INCLUDED RECORDS: 0
+# EXCLUDED RECORDS: 0
+
+=== CATEGORIZATION SUMMARY ===
+Group 1 (SI code match):    2
+Group 2 (Term match only):  0
+Group 3 (Excluded):         0
+Title excluded:             0
+================================
+.Saved 0 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/categorizer-test-70872/inc_w_si.json
+Saved 0 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/categorizer-test-70872/inc_wo_si.json
+Saved 0 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/categorizer-test-70872/exc.json
+
+=== SAVING TO DATABASE ===
+Group 1: 0 records saved to DB
+Group 2: 0 records saved to DB
+Group 3: 0 records saved to DB
+================================
+Saved 6 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/categorizer-test-70872/metadata.json
+.Total records to categorize: 4
+PRE-TITLE FILTER RECORD COUNT: 4
+POST-TITLE FILTER
+# INCLUDED RECORDS: 3
+# EXCLUDED RECORDS: 1
+Terms inside Title Filter
+# PRE_FILTERED RECORDS: inc:2 exc:0
+# INCLUDED RECORDS: 1
+# EXCLUDED RECORDS: 1
+
+=== CATEGORIZATION SUMMARY ===
+Group 1 (SI code match):    1
+Group 2 (Term match only):  1
+Group 3 (Excluded):         1
+Title excluded:             1
+================================
+.Total records to categorize: 2
+PRE-TITLE FILTER RECORD COUNT: 2
+POST-TITLE FILTER
+# INCLUDED RECORDS: 2
+# EXCLUDED RECORDS: 0
+Terms inside Title Filter
+# PRE_FILTERED RECORDS: inc:2 exc:0
+# INCLUDED RECORDS: 2
+# EXCLUDED RECORDS: 0
+
+=== CATEGORIZATION SUMMARY ===
+Group 1 (SI code match):    0
+Group 2 (Term match only):  2
+Group 3 (Excluded):         0
+Title excluded:             0
+================================
+.Saved 3 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/categorizer-test-70872/raw.json
+
+=== CATEGORIZING SESSION: categorizer-test-70872 ===
+Total records to categorize: 3
+PRE-TITLE FILTER RECORD COUNT: 3
+POST-TITLE FILTER
+# INCLUDED RECORDS: 3
+# EXCLUDED RECORDS: 0
+Terms inside Title Filter
+# PRE_FILTERED RECORDS: inc:2 exc:0
+# INCLUDED RECORDS: 1
+# EXCLUDED RECORDS: 1
+
+=== CATEGORIZATION SUMMARY ===
+Group 1 (SI code match):    1
+Group 2 (Term match only):  1
+Group 3 (Excluded):         1
+Title excluded:             0
+================================
+Saved 1 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/categorizer-test-70872/inc_w_si.json
+Saved 1 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/categorizer-test-70872/inc_wo_si.json
+Saved 1 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/categorizer-test-70872/exc.json
+
+=== SAVING TO DATABASE ===
+Group 1 DB save failed: "Failed to save 1 records: [error: \"Record missing :name field\"]"
+Group 2 DB save failed: "Failed to save 1 records: [error: \"Record missing :name field\"]"
+Group 3 DB save failed: "Failed to save 1 records: [error: \"Record missing :name field\"]"
+================================
+Saved 6 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/categorizer-test-70872/metadata.json
+.Saved 0 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/categorizer-test-70872/inc_w_si.json
+Saved 0 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/categorizer-test-70872/inc_wo_si.json
+Saved 3 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/categorizer-test-70872/exc.json
+
+=== SAVING TO DATABASE ===
+Group 1: 0 records saved to DB
+Group 2: 0 records saved to DB
+Group 3 DB save failed: "Failed to save 3 records: [error: \"Record missing :name field\", error: \"Record missing :name field\", error: \"Record missing :name field\"]"
+================================
+Saved 6 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/categorizer-test-70872/metadata.json
+.Total records to categorize: 0
+PRE-TITLE FILTER RECORD COUNT: 0
+POST-TITLE FILTER
+# INCLUDED RECORDS: 0
+# EXCLUDED RECORDS: 0
+Terms inside Title Filter
+# PRE_FILTERED RECORDS: inc:0 exc:0
+# INCLUDED RECORDS: 0
+# EXCLUDED RECORDS: 0
+
+=== CATEGORIZATION SUMMARY ===
+Group 1 (SI code match):    0
+Group 2 (Term match only):  0
+Group 3 (Excluded):         0
+Title excluded:             0
+================================
+.Total records to categorize: 2
+PRE-TITLE FILTER RECORD COUNT: 2
+POST-TITLE FILTER
+# INCLUDED RECORDS: 2
+# EXCLUDED RECORDS: 0
+Terms inside Title Filter
+# PRE_FILTERED RECORDS: inc:2 exc:0
+# INCLUDED RECORDS: 0
+# EXCLUDED RECORDS: 2
+
+=== CATEGORIZATION SUMMARY ===
+Group 1 (SI code match):    0
+Group 2 (Term match only):  0
+Group 3 (Excluded):         2
+Title excluded:             0
+================================
+.........................................
+=== STAGED PARSE: uksi/2025/622 ===
+  [PARALLEL] Starting Taxa stage in background...
+  [1/7] Metadata...
+  [7/7] Taxa Classification...
+  Fetching metadata: /uksi/2025/622/introduction/data.xml
+    📦 P1 chunking: 2 sections (350 chars total)
+    [Taxa] [CHUNKED 2] 350 chars in 2ms (actor: 0ms, duty_type: 1ms, popimar: 0ms, purpose: 0ms)
+    ✓ Taxa: 2 actors, 1 duty types, 1 POPIMAR
+    ✓ Metadata: 1 SI codes, 0 subjects
+  [2/7] Extent...
+    ✗ LAT skipped: DB error: %DBConnection.OwnershipError{message: "cannot find ownership process for #PID<0.23551.0> (Task.Supervised)\n(SertantaiLegal.Repo) using mode :manual.\n(Note that a connection's mode reverts to :manual if its owner\nterminates.)\n\nWhen using ownership, you must manage connections in one\nof the four ways:\n\n* By explicitly checking out a connection\n* By explicitly allowing a spawned process\n* By running the pool in shared mode\n* By using :caller option with allowed process\n\nThe first two options require every new process to explicitly\ncheck a connection out or be allowed by calling checkout or\nallow respectively.\n\nThe third option requires a {:shared, pid} mode to be set.\nIf using shared mode in tests, make sure your tests are not\nasync.\n\nThe fourth option requires [caller: pid] to be used when\nchecking out a connection from the pool. The caller process\nshould already be allowed on a connection.\n\nIf you are reading this error, it means you have not done one\nof the steps above or that the owner process has crashed.\n"}
+    ✓ Extent: 2 item extents
+    ○ Definitions: none found in body XML
+  [3/7] Enacted By...
+  Fetching enacting data: /uksi/2025/622/made/introduction/data.xml
+    ✓ Enacted by: 1 parent law(s)
+  [4/7] Amending (this law affects others)...
+18:06:26.322 [warning] [StagedParser] Enabling extent failed for UK_uksi_2025_622: cannot find ownership process for #PID<0.23550.0> ({SertantaiLegal.Scraper.StagedParserMockTest, :"test regression tests enacted_by names use UK_type_year_number format"})
+(SertantaiLegal.Repo) using mode :manual.
+(Note that a connection's mode reverts to :manual if its owner
+terminates.)
+
+When using ownership, you must manage connections in one
+of the four ways:
+
+* By explicitly checking out a connection
+* By explicitly allowing a spawned process
+* By running the pool in shared mode
+* By using :caller option with allowed process
+
+The first two options require every new process to explicitly
+check a connection out or be allowed by calling checkout or
+allow respectively.
+
+The third option requires a {:shared, pid} mode to be set.
+If using shared mode in tests, make sure your tests are not
+async.
+
+The fourth option requires [caller: pid] to be used when
+checking out a connection from the pool. The caller process
+should already be allowed on a connection.
+
+If you are reading this error, it means you have not done one
+of the steps above or that the owner process has crashed.
+
+See Ecto.Adapters.SQL.Sandbox docs for more information.
+    ✓ Amends: 0 laws, Rescinds: 0 laws (self: 0)
+  [5/7] Amended By (this law is affected by others)...
+    ✓ Amended by: 0 laws, Rescinded by: 0 laws
+18:06:26.322 [warning] [Amending] changes feed unparseable for /changes/affected/uksi/2025/622/data.feed?results-count=5000&page=1: not an Atom feed
+  [6/6] Explanatory Note...
+    ✓ Explanatory Note: 137 chars
+  [PARALLEL] Awaiting Taxa stage completion...
+  [PARALLEL] Taxa stage completed (8ms)
+
+=== PARSE COMPLETE: SUCCESS (23ms) ===
+
+.
+=== STAGED PARSE: uksi/1991/899 ===
+  [PARALLEL] Starting Taxa stage in background...
+  [1/7] Metadata...
+  [7/7] Taxa Classification...
+  Fetching metadata: /uksi/1991/899/introduction/data.xml
+    📦 P1 chunking: 5 sections (1107 chars total)
+    [Taxa] [CHUNKED 5] 1107 chars in 6ms (actor: 1ms, duty_type: 4ms, popimar: 0ms, purpose: 0ms)
+    ✓ Taxa: 6 actors, 1 duty types, 2 POPIMAR
+    ✗ LAT skipped: DB error: %DBConnection.OwnershipError{message: "cannot find ownership process for #PID<0.23557.0> (Task.Supervised)\n(SertantaiLegal.Repo) using mode :manual.\n(Note that a connection's mode reverts to :manual if its owner\nterminates.)\n\nWhen using ownership, you must manage connections in one\nof the four ways:\n\n* By explicitly checking out a connection\n* By explicitly allowing a spawned process\n* By running the pool in shared mode\n* By using :caller option with allowed process\n\nThe first two options require every new process to explicitly\ncheck a connection out or be allowed by calling checkout or\nallow respectively.\n\nThe third option requires a {:shared, pid} mode to be set.\nIf using shared mode in tests, make sure your tests are not\nasync.\n\nThe fourth option requires [caller: pid] to be used when\nchecking out a connection from the pool. The caller process\nshould already be allowed on a connection.\n\nIf you are reading this error, it means you have not done one\nof the steps above or that the owner process has crashed.\n"}
+    ✓ Metadata: 1 SI codes, 0 subjects
+  [2/7] Extent...
+    ○ Definitions: none found in body XML
+    ✓ Extent: 3 item extents
+  [3/7] Enacted By...
+  Fetching enacting data: /uksi/1991/899/made/introduction/data.xml
+    ✓ Enacted by: 1 parent law(s)
+  [4/7] Amending (this law affects others)...
+18:06:26.348 [warning] [StagedParser] Enabling extent failed for UK_uksi_1991_899: cannot find ownership process for #PID<0.23556.0> ({SertantaiLegal.Scraper.StagedParserMockTest, :"test StagedParser.parse/1 - mocked amendments 404 does not crash subsequent stages"})
+(SertantaiLegal.Repo) using mode :manual.
+(Note that a connection's mode reverts to :manual if its owner
+terminates.)
+
+When using ownership, you must manage connections in one
+of the four ways:
+
+* By explicitly checking out a connection
+* By explicitly allowing a spawned process
+* By running the pool in shared mode
+* By using :caller option with allowed process
+
+The first two options require every new process to explicitly
+check a connection out or be allowed by calling checkout or
+allow respectively.
+
+The third option requires a {:shared, pid} mode to be set.
+If using shared mode in tests, make sure your tests are not
+async.
+
+The fourth option requires [caller: pid] to be used when
+checking out a connection from the pool. The caller process
+should already be allowed on a connection.
+
+If you are reading this error, it means you have not done one
+of the steps above or that the owner process has crashed.
+
+See Ecto.Adapters.SQL.Sandbox docs for more information.
+    ✓ Amends: 0 laws, Rescinds: 0 laws (self: 0)
+  [5/7] Amended By (this law is affected by others)...
+    ✓ Amended by: 0 laws, Rescinded by: 0 laws
+18:06:26.348 [warning] [Amending] changes feed unparseable for /changes/affected/uksi/1991/899/data.feed?results-count=5000&page=1: not an Atom feed
+  [6/6] Explanatory Note...
+    ✓ Explanatory Note: 253 chars
+  [PARALLEL] Awaiting Taxa stage completion...
+  [PARALLEL] Taxa stage completed (10ms)
+
+=== PARSE COMPLETE: SUCCESS (14ms) ===
+
+.    📦 P1 chunking: 10 sections (3211 chars total)
+    [Taxa] [CHUNKED 10] 3211 chars in 23ms (actor: 4ms, duty_type: 13ms, popimar: 0ms, purpose: 5ms)
+.    📦 P1 chunking: 5 sections (1107 chars total)
+    [Taxa] [CHUNKED 5] 1107 chars in 6ms (actor: 1ms, duty_type: 3ms, popimar: 0ms, purpose: 0ms)
+.    📦 P1 chunking: 10 sections (3211 chars total)
+    [Taxa] [CHUNKED 10] 3211 chars in 18ms (actor: 4ms, duty_type: 8ms, popimar: 0ms, purpose: 5ms)
+.    📦 P1 chunking: 5 sections (1107 chars total)
+    [Taxa] [CHUNKED 5] 1107 chars in 6ms (actor: 1ms, duty_type: 3ms, popimar: 0ms, purpose: 0ms)
+    📦 P1 chunking: 10 sections (3211 chars total)
+    [Taxa] [CHUNKED 10] 3211 chars in 18ms (actor: 4ms, duty_type: 8ms, popimar: 0ms, purpose: 5ms)
+.
+=== STAGED PARSE: uksi/2016/680 ===
+  [PARALLEL] Starting Taxa stage in background...
+  [1/7] Metadata...
+  [7/7] Taxa Classification...
+  Fetching metadata: /uksi/2016/680/introduction/data.xml
+    📦 P1 chunking: 10 sections (3211 chars total)
+    ✓ Metadata: 1 SI codes, 0 subjects
+  [2/7] Extent...
+    ✓ Extent: 2 item extents
+  [3/7] Enacted By...
+  Fetching enacting data: /uksi/2016/680/made/introduction/data.xml
+    ✓ Enacted by: 2 parent law(s)
+  [4/7] Amending (this law affects others)...
+18:06:26.453 [warning] [StagedParser] Enabling extent failed for UK_uksi_2016_680: cannot find ownership process for #PID<0.23618.0> ({SertantaiLegal.Scraper.StagedParserMockTest, :"test StagedParser.parse/1 - mocked full parse populates all taxa fields"})
+(SertantaiLegal.Repo) using mode :manual.
+(Note that a connection's mode reverts to :manual if its owner
+terminates.)
+
+When using ownership, you must manage connections in one
+of the four ways:
+
+* By explicitly checking out a connection
+* By explicitly allowing a spawned process
+* By running the pool in shared mode
+* By using :caller option with allowed process
+
+The first two options require every new process to explicitly
+check a connection out or be allowed by calling checkout or
+allow respectively.
+
+The third option requires a {:shared, pid} mode to be set.
+If using shared mode in tests, make sure your tests are not
+async.
+
+The fourth option requires [caller: pid] to be used when
+checking out a connection from the pool. The caller process
+should already be allowed on a connection.
+
+If you are reading this error, it means you have not done one
+of the steps above or that the owner process has crashed.
+
+See Ecto.Adapters.SQL.Sandbox docs for more information.
+    ✓ Amends: 0 laws, Rescinds: 0 laws (self: 0)
+  [5/7] Amended By (this law is affected by others)...
+    ✓ Amended by: 0 laws, Rescinded by: 0 laws
+18:06:26.455 [warning] [Amending] changes feed unparseable for /changes/affected/uksi/2016/680/data.feed?results-count=5000&page=1: not an Atom feed
+  [6/6] Explanatory Note...
+    ✓ Explanatory Note: 157 chars
+  [PARALLEL] Awaiting Taxa stage completion...
+    [Taxa] [CHUNKED 10] 3211 chars in 18ms (actor: 4ms, duty_type: 8ms, popimar: 0ms, purpose: 5ms)
+    ✓ Taxa: 13 actors, 3 duty types, 5 POPIMAR
+    ✗ LAT skipped: DB error: %DBConnection.OwnershipError{message: "cannot find ownership process for #PID<0.23619.0> (Task.Supervised)\n(SertantaiLegal.Repo) using mode :manual.\n(Note that a connection's mode reverts to :manual if its owner\nterminates.)\n\nWhen using ownership, you must manage connections in one\nof the four ways:\n\n* By explicitly checking out a connection\n* By explicitly allowing a spawned process\n* By running the pool in shared mode\n* By using :caller option with allowed process\n\nThe first two options require every new process to explicitly\ncheck a connection out or be allowed by calling checkout or\nallow respectively.\n\nThe third option requires a {:shared, pid} mode to be set.\nIf using shared mode in tests, make sure your tests are not\nasync.\n\nThe fourth option requires [caller: pid] to be used when\nchecking out a connection from the pool. The caller process\nshould already be allowed on a connection.\n\nIf you are reading this error, it means you have not done one\nof the steps above or that the owner process has crashed.\n"}
+    ○ Definitions: none found in body XML
+  [PARALLEL] Taxa stage completed (25ms)
+
+=== PARSE COMPLETE: SUCCESS (25ms) ===
+
+.
+=== STAGED PARSE: uksi/1991/899 ===
+  [PARALLEL] Starting Taxa stage in background...
+  [1/7] Metadata...
+  [7/7] Taxa Classification...
+  Fetching metadata: /uksi/1991/899/introduction/data.xml
+    📦 P1 chunking: 5 sections (1107 chars total)
+    ✓ Metadata: 1 SI codes, 0 subjects
+  [2/7] Extent...
+    [Taxa] [CHUNKED 5] 1107 chars in 6ms (actor: 1ms, duty_type: 3ms, popimar: 0ms, purpose: 0ms)
+    ✓ Taxa: 6 actors, 1 duty types, 2 POPIMAR
+    ✗ LAT skipped: DB error: %DBConnection.OwnershipError{message: "cannot find ownership process for #PID<0.23633.0> (Task.Supervised)\n(SertantaiLegal.Repo) using mode :manual.\n(Note that a connection's mode reverts to :manual if its owner\nterminates.)\n\nWhen using ownership, you must manage connections in one\nof the four ways:\n\n* By explicitly checking out a connection\n* By explicitly allowing a spawned process\n* By running the pool in shared mode\n* By using :caller option with allowed process\n\nThe first two options require every new process to explicitly\ncheck a connection out or be allowed by calling checkout or\nallow respectively.\n\nThe third option requires a {:shared, pid} mode to be set.\nIf using shared mode in tests, make sure your tests are not\nasync.\n\nThe fourth option requires [caller: pid] to be used when\nchecking out a connection from the pool. The caller process\nshould already be allowed on a connection.\n\nIf you are reading this error, it means you have not done one\nof the steps above or that the owner process has crashed.\n"}
+    ✓ Extent: 3 item extents
+  [3/7] Enacted By...
+  Fetching enacting data: /uksi/1991/899/made/introduction/data.xml
+    ○ Definitions: none found in body XML
+    ✓ Enacted by: 1 parent law(s)
+  [4/7] Amending (this law affects others)...
+18:06:26.476 [warning] [StagedParser] Enabling extent failed for UK_uksi_1991_899: cannot find ownership process for #PID<0.23632.0> ({SertantaiLegal.Scraper.StagedParserMockTest, :"test StagedParser.parse/1 - mocked UK_uksi_1991_899 full parse returns role with Ind: Worker"})
+(SertantaiLegal.Repo) using mode :manual.
+(Note that a connection's mode reverts to :manual if its owner
+terminates.)
+
+When using ownership, you must manage connections in one
+of the four ways:
+
+* By explicitly checking out a connection
+* By explicitly allowing a spawned process
+* By running the pool in shared mode
+* By using :caller option with allowed process
+
+The first two options require every new process to explicitly
+check a connection out or be allowed by calling checkout or
+allow respectively.
+
+The third option requires a {:shared, pid} mode to be set.
+If using shared mode in tests, make sure your tests are not
+async.
+
+The fourth option requires [caller: pid] to be used when
+checking out a connection from the pool. The caller process
+should already be allowed on a connection.
+
+If you are reading this error, it means you have not done one
+of the steps above or that the owner process has crashed.
+
+See Ecto.Adapters.SQL.Sandbox docs for more information.
+    ✓ Amends: 0 laws, Rescinds: 0 laws (self: 0)
+  [5/7] Amended By (this law is affected by others)...
+    ✓ Amended by: 0 laws, Rescinded by: 0 laws
+18:06:26.476 [warning] [Amending] changes feed unparseable for /changes/affected/uksi/1991/899/data.feed?results-count=5000&page=1: not an Atom feed
+  [6/6] Explanatory Note...
+    ✓ Explanatory Note: 253 chars
+  [PARALLEL] Awaiting Taxa stage completion...
+  [PARALLEL] Taxa stage completed (9ms)
+
+=== PARSE COMPLETE: SUCCESS (11ms) ===
+
+..Saved 2 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-session-49089/exc.json
+..Saved 2 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-session-49089/raw.json
+..Saved 0 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-session-49089/raw.json
+.Saved 0 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-session-49089/raw.json
+.....Saved 1 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-session-49089/raw.json
+...Saved 5 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-session-49089/affected_laws.json
+Saved 5 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-session-49089/affected_laws.json
+.Saved 3 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-session-49089/metadata.json
+.Saved 5 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-session-49089/affected_laws.json
+Saved 5 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-session-49089/affected_laws.json
+.Saved 5 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-session-49089/affected_laws.json
+.....Saved 5 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-session-49089/affected_laws.json
+.......Saved 5 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-session-49089/affected_laws.json
+..Saved 5 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-session-49089/affected_laws.json
+.Saved 0 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-session-49089/raw.json
+Saved 0 records to /var/home/jason/Desktop/sertantai-legal/backend/_build/test/lib/sertantai_legal/priv/scraper/test-session-49089/inc_w_si.json
+.............
+Finished in 117.5 seconds (104.5s async, 13.0s sync)
+
+Result: 11114 passed, 2 skipped, 294 excluded

@@ -1,0 +1,139 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+3103 laws (1269 with LAT)
+laws read 3 at once: 12.5 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.6 of 6 cores busy; max 4
+  250/3103
+  500/3103
+  750/3103
+  1000/3103
+  1250/3103
+  1500/3103
+  1750/3103
+  2000/3103
+  2250/3103
+  2500/3103
+  2750/3103
+  3000/3103
+cache: 0 hits, 3103 read
+merge: 45 s
+
+9096 sentences in 3103 laws
+unclassified: 0
+796 patterns, 1542 examples (1 too large to hold)
+examples not held, reading differently alone than in their law: 2
+  UK_uksi_2012_3119/cfce81f2bf
+  UK_wsi_2013_747/eba577a7ee
+
+statements by outcome (sentences):
+  1527  law:clause_date
+  632  none
+  561  rules:provision_dated
+  350  rules:provision_by_order
+  280  law:clause_staged
+  267  law:clause_made_relative
+  212  law:by_order
+  169  rules:provision_qualified
+  125  unread
+  92  law:clause_named_day
+  87  rules:provision_dated+provision_qualified
+  49  law:clause_unread
+  48  rules:provision_by_order+provision_qualified
+  16  law:tied_to_other_law
+  7  rules:provision_unread
+  3  rules:provision_qualified+provision_unread
+
+leftovers by shape (words no rule uses): 184 groups, 265 statements
+  3535 reach, 3: statement|none|following|present|period|plain|rules:provision_qualified+provision_unread | left: relative_day [no status]
+  3361 reach, 1: statement|none|following|present|made_relative|plain|rules:provision_dated | left: provision [fix: "This section and the following provisions come into force …": "this section" in no rule (2018 c.12 s.212(2))]
+  3361 reach, 1: statement|none|other|present|period|plain|none | left: relative_day [fix: "These provisions come into force at the end of the period …—" read as nothing (2005 c.16 s.108(4))]
+  3028 reach, 1: statement|except_as|other|present|by_order|plain|unread | left: provision [fix: an except-as clause listing provisions by order, unread (2008 c.29 s.241(3))]
+  1736 reach, 2: statement|none|named|present|period|plain|unread | left: relative_day [fix: list items "… come into force at the end of the period …" unread (2011 c.16 s.121(5)(a))]
+  1579 reach, 1: statement|none|other|present|none|plain|unread | left: relative_day [known: a laid-relative day ("21 days after the date on which they are laid": SI 2025/1135), as SI 2018/1221 (RULES.md known limits)]
+  1540 reach, 3: statement|none|named|present|date|plain|unread | left: date [fix: dated list items unread (2011 c.16 s.121(5)(b), SI 2022/500 reg.1(3))]
+  1512 reach, 1: statement|none|schedules|present|list|plain|unread | left: date+relative_day [fix: a Schedule list head with dated and relative items, unread (2011 c.16 s.121(5))]
+  1390 reach, 1: statement|none|this|present|by_order|plain|law:by_order | left: provision [known: a long-stop in brackets ("in the case of sections 44 to 52, being no later than 18 months after …": asp 2009/12 s.100(2)) — a latest date, not a commencement]
+  1161 reach, 1: statement|none|parts|not_until|period|plain|unread | left: provision [fix: reads nothing — provision left (class, not reviewed one by one; 1 statements, reach 1161)]
+  772 reach, 1: statement|none|following|present|named_day|plain|rules:provision_dated | left: relative_day [fix: half-read — relative_day left (class, not reviewed one by one; 1 statements, reach 772)]
+  772 reach, 3: statement|none|whole|present|list|plain|law:clause_staged | left: qualifier+relative_day [fix: half-read — qualifier+relative_day left (class, not reviewed one by one; 4 statements, reach 873)]
+  715 reach, 2: statement|none|following|present|by_order|plain|unread | left: provision [known: one-law wording — a list with no dash before its items (SI 2002/3153 reg.1(3)) (RULES.md: one-law commencement wordings)]
+  622 reach, 1: statement|none|rest|present|made_relative|plain|rules:provision_dated | left: provision [fix: half-read — provision left (class, not reviewed one by one; 1 statements, reach 622)]
+  560 reach, 1: statement|none|named|shall|none|plain|none | left: provision [fix: reads nothing — provision left (class, not reviewed one by one; 1 statements, reach 560)]
+  544 reach, 1: statement|except_as|whole|present|date|plain|law:clause_date | left: exception [fix: half-read — exception left (class, not reviewed one by one; 1 statements, reach 544)]
+  491 reach, 2: statement|none|schedules|shall|by_order|qualified|none | left: qualifier [fix: reads nothing — qualifier left (class, not reviewed one by one; 2 statements, reach 491)]
+  480 reach, 8: statement|none|named|present|made_relative|qualified|none | left: qualifier [fix: reads nothing — qualifier left (class, not reviewed one by one; 8 statements, reach 480)]
+  480 reach, 1: statement|none|other|present|made_relative|qualified|none | left: qualifier [fix: reads nothing — qualifier left (class, not reviewed one by one; 1 statements, reach 480)]
+  473 reach, 4: statement|none|named|present|none|plain|none | left: relative_day [fix: reads nothing — relative_day left (class, not reviewed one by one; 4 statements, reach 473)]
+  450 reach, 1: statement|none|rest|present|date|plain|rules:provision_dated | left: provision [fix: half-read — provision left (class, not reviewed one by one; 1 statements, reach 450)]
+  441 reach, 2: statement|none|named|present|list|plain|none | left: date [fix: reads nothing — date left (class, not reviewed one by one; 2 statements, reach 441)]
+  410 reach, 2: statement|none|named|present|period|plain|unread | left: provision [fix: reads nothing — provision left (class, not reviewed one by one; 1 statements, reach 408)]
+  387 reach, 1: statement|none|rest|present|by_order|plain|law:clause_staged | left: provision [fix: half-read — provision left (class, not reviewed one by one; 1 statements, reach 387)]
+  384 reach, 1: statement|none|named|present|date|qualified|none | left: date+provision+qualifier [fix: reads nothing — date+provision+qualifier left (class, not reviewed one by one; 4 statements, reach 426)]
+  334 reach, 5: statement|none|other|present|by_order|qualified|none | left: qualifier [fix: reads nothing — qualifier left (class, not reviewed one by one; 5 statements, reach 334)]
+  279 reach, 1: statement|none|named|present|date|plain|rules:provision_dated | left: date+exception+provision [fix: half-read — date+exception+provision left (class, not reviewed one by one; 1 statements, reach 279)]
+  277 reach, 1: statement|none|named|present|by_order|qualified|rules:provision_qualified | left: exception [fix: half-read — exception left (class, not reviewed one by one; 1 statements, reach 276)]
+  271 reach, 2: statement|none|named|not_until|date|plain|none | left: date+provision [known: a sector-only deferral of the law's amendments ("In respect of the music and entertainment sectors only, the amendments and revocations in paragraphs (1) and (2) shall not come into force until 6th April 2008": SI 2005/1643 and its NI twin NISR 2006/1) (RULES.md: one-law commencement wordings)]
+  225 reach, 6: statement|none|whole|present|list|plain|law:clause_staged | left: relative_day [fix: half-read — relative_day left (class, not reviewed one by one; 5 statements, reach 210)]
+leftover groups with no status: 15
+report: data/reports/commencement-reader/leftovers-2026-11-14.txt
+
+new patterns (no status): 32
+patterns no longer seen: 16
+  statement|apart_from|rest|present|made_relative|plain|unread
+  statement|none|following|present|by_order|plain|none
+  statement|none|following|present|none|plain|rules:provision_qualified
+  statement|none|following|present|period|plain|rules:provision_qualified
+  statement|none|following|present|tied|plain|rules:provision_qualified
+  statement|none|following|shall|by_order|plain|rules:provision_by_order+provision_qualified
+  statement|none|following|shall|none|plain|law:clause_staged
+  statement|none|following|shall|none|qualified|rules:provision_qualified
+  statement|none|other|present|by_order|qualified|rules:provision_qualified
+  statement|none|other|present|made_relative|plain|unread
+  statement|none|parts|present|tied|plain|unread
+  statement|none|rest|present|named_day|plain|unread
+  statement|none|rest|present|period|plain|none
+  statement|none|schedules|present|made_relative|plain|rules:provision_dated
+  statement|none|this|present|tied|plain|unread
+  statement|none|this|shall|none|plain|law:clause_unread
+examples reading differently from expected: 78
+  UK_anaw_2012_2/50362de0f3
+  UK_anaw_2013_1/1b653e5ba7
+  UK_anaw_2015_4/efb8cad3e4
+  UK_asc_2021_1/9e8b444220
+  UK_asc_2024_6/6a09058941
+  UK_asc_2024_6/75757d8143
+  UK_asc_2024_6/8121aa4a63
+  UK_asc_2024_6/95139d59fa
+  UK_asc_2026_4/365da454e2
+  UK_asc_2026_5/13b9c5859a
+  UK_asp_2010_5/bd6f117d95
+  UK_mwa_2009_3/ceee42e716
+  UK_nisi_1994_426/cc8d101744
+  UK_nisi_2003_419/0db119a8a9
+  UK_nisi_2006_2957/d8dc8de73d
+  UK_ukpga_1954_70/8168951abc
+  UK_ukpga_1962_58/9bd963ee5d
+  UK_ukpga_1968_64/2d97e5dd6d
+  UK_ukpga_1969_10/bc9502586b
+  UK_ukpga_1971_78/07c46b2589
+  UK_ukpga_1975_59/819c0b07fc
+  UK_ukpga_1980_34/1fca3e05bd
+  UK_ukpga_1981_69/d762807814
+  UK_ukpga_1982_39/d252e32603
+  UK_ukpga_1984_12/4dd43fa473
+  UK_ukpga_1984_12/ee0d8ee798
+  UK_ukpga_1986_44/10ac673d30
+  UK_ukpga_1986_44/cab688f9fa
+  UK_ukpga_1986_63/983287858f
+  UK_ukpga_1989_15/7d10821fb7
+  UK_ukpga_1996_53/c958a7d804
+  UK_ukpga_1998_31/baad5d3680
+  UK_ukpga_1998_47/1b2fc759b3
+  UK_ukpga_1999_22/fe6d379adb
+  UK_ukpga_2000_37/2732e22c3e
+  UK_ukpga_2001_10/f143f45c94
+  UK_ukpga_2002_21/0fa06bab85
+  UK_ukpga_2002_32/2de7927363
+  UK_ukpga_2005_15/bd47040a7b
+  UK_ukpga_2006_28/576005404a
+dry run: generated files in data/reports/commencement-reader/dry-run/commencement_patterns; the fixtures are untouched (--accept writes them)

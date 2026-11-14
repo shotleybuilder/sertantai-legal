@@ -1,0 +1,50 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+
+27114 rows in 139 laws — own commencement:
+  19961  dated (132 laws)
+  4812  by_order (12 laws)
+  1224  staged (6 laws)
+  944  eu_directive (5 laws)
+  142  eu_publication_relative (1 laws)
+  16  unread (16 laws)
+  15  by_order_partly (2 laws)
+  (left to orders, by_order + by_order_partly: 4827)
+
+against the law's own feed (a yardstick):
+  13041  own_only
+  7146  agree
+  3255  neither
+  2674  feed_only
+  622  feed_partial_only
+  376  differ
+  differ: UK_asp_2012_8 (20 rows) e.g. s.15(1) own 2012-10-01 feed {~D[2012-10-01], ~D[2013-04-01]}
+  differ: UK_ukpga_1998_17 (65 rows) e.g. s.4A own 1999-02-15 feed {~D[2016-04-06], ~D[2016-04-06]}
+  differ: UK_ukpga_2004_21 (288 rows) e.g. h.1 own 2004-11-10 feed {~D[2017-04-03], ~D[2017-04-03]}
+  differ: UK_uksi_2005_1541 (3 rows) e.g. reg.27(5) own 2006-10-01 feed {~D[2017-07-17], ~D[2017-07-17]}
+
+1328 changes no other source dates (306 text changes) — the gap-filler:
+  579  undated: no_amending_law  (text changes 10, of them not in a Schedule or annex 10)
+  258  dated via feed  (text changes 78, of them not in a Schedule or annex 76)
+  191  undated: appointed  (text changes 99, of them not in a Schedule or annex 92)
+  140  dated via note  (text changes 26, of them not in a Schedule or annex 26)
+  70  undated: no_pointer  (text changes 49, of them not in a Schedule or annex 13)
+  50  undated: rules_not_held  (text changes 7, of them not in a Schedule or annex 7)
+  26  undated: not_reached  (text changes 24, of them not in a Schedule or annex 22)
+  12  dated via law_text  (text changes 12, of them not in a Schedule or annex 12)
+  2  undated: provisions_disagree  (text changes 1, of them not in a Schedule or annex 1)
+  undated: appointed: by UK_asc_2026_5 ×27, ? ×26, UK_ukpga_1991_22 ×22, UK_uksi_1999_1756 ×19, UK_uksi_1999_1750 ×16, UK_ukpga_1982_48 ×14, UK_ukpga_1994_21 ×8, UK_asp_2017_4 ×7, UK_asc_2025_4 ×6, UK_ukpga_1989_15 ×6, UK_ukpga_1994_39 ×4, UK_ukpga_2025_28 ×4, UK_ukpga_1994_19 ×2, UK_ukpga_1975_59 ×2, UK_uksi_2026_40 ×2, UK_ukpga_1990_43 ×2, UK_ukpga_2006_49 ×2, UK_ukpga_1973_65 ×2, UK_ukpga_1996_47 ×2, UK_ukpga_2016_25 ×2, UK_ukpga_1997_50 ×2, UK_ukpga_1984_12 ×2, UK_ukpga_2022_30 ×1, UK_nisi_1998_3162 ×1, UK_ukpga_2000_43 ×1, UK_ukpga_1967_80 ×1, UK_ukpga_2014_12 ×1, UK_ukpga_1982_23 ×1, UK_ukpga_2001_24 ×1, UK_ukpga_1995_25 ×1, UK_ukpga_1979_46 ×1, UK_asc_2021_1 ×1, UK_ukpga_1984_60 ×1, UK_ukpga_1980_43 ×1
+  undated: no_amending_law: by ? ×579
+  undated: no_pointer: by UK_ukpga_1998_17 ×5, UK_ukpga_2003_22 ×5, UK_eudn_2009_240 ×3, UK_eudn_2010_187 ×3, UK_eudn_2011_26 ×3, UK_eudn_2012_188 ×3, UK_eudn_2013_218 ×3, UK_eudn_2015_217 ×3, UK_eudn_2015_974 ×3, UK_eudn_2018_936 ×3, UK_eudr_2010_61 ×3, UK_eudr_2012_45 ×3, UK_eudr_2014_103 ×3, UK_eudr_2016_2309 ×3, UK_eudr_2018_1846 ×3, UK_eur_2019_1243 ×3, UK_eudn_2016_629 ×2, UK_eudn_2017_695 ×2, UK_eudn_2019_1094 ×2, UK_eudn_2020_1241 ×2, UK_ukpga_1975_21 ×2, UK_eudr_2018_217 ×1, UK_nisr_1995_340 ×1, UK_ukpga_1983_54 ×1, UK_uksi_1979_318 ×1, UK_uksi_1991_259 ×1, UK_uksi_1995_1239 ×1, UK_uksi_1995_738 ×1, UK_uksi_2001_2551 ×1
+  undated: not_reached: by UK_asc_2026_7 ×10, UK_uksi_2020_852 ×9, ? ×5, UK_ukpga_1974_7 ×1, UK_ukpga_1980_65 ×1
+  undated: provisions_disagree: by UK_ukpga_1998_46 ×1, UK_ukpga_2000_27 ×1
+  undated: rules_not_held: by ? ×7, UK_uksi_1999_672 ×6, UK_ukpga_2000_11 ×5, UK_ukpga_1996_22 ×3, UK_ukpga_1997_7 ×2, UK_uksi_1999_160 ×2, UK_uksi_2000_2769 ×2, UK_uksi_2000_2770 ×2, UK_uksi_2000_353 ×2, UK_nisi_1977_1251 ×1, UK_ukpga_1963_38 ×1, UK_ukpga_1995_39 ×1, UK_ukpga_1997_13 ×1, UK_uksi_1974_1274 ×1, UK_uksi_1983_710 ×1, UK_uksi_1985_2023 ×1, UK_uksi_1994_1994 ×1, UK_uksi_1995_1091 ×1, UK_uksi_1995_269 ×1, UK_uksi_1995_2870 ×1, UK_uksi_1996_487 ×1, UK_uksi_1999_161 ×1, UK_uksi_1999_1877 ×1, UK_uksi_1999_360 ×1, UK_uksi_1999_448 ×1, UK_uksi_1999_677 ×1, UK_uksi_2001_3499 ×1, UK_uksi_2001_3930 ×1
+
+leftovers reaching the family (words of a commencement statement no rule uses):
+  1  fix
+  1  known
+  8 amending UK_uksi_1988_1729 UK_uksi_1988_1729:reg.1(1)(a): 1st April 1989 · reg.9 · reg.12(1)(b) [fix: half-read — date+exception left (class, not reviewed one by one; 1 statements, reach 9)]
+gate report: data/reports/commencement-reader/gate-fire-and-oh-s-2026-11-14.txt
+
+FAIL (rows: our faults 0; leftovers not named: 1)

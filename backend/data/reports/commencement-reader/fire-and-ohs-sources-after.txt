@@ -1,0 +1,17 @@
+139 laws in scope
+
+needed against held, by category:
+  own: 139 — held 139
+  feed: 135 — held 135
+  territory: 406 — held 406
+  introduction: 226 — held 226
+  enabling_parent: 36 — held 36
+  dates: 53 — absent 13, held 40
+  backlog: 183 — absent 32, held 151
+  needed, all categories: 1178
+
+failures: 0
+
+feeds differing from the register's change statistics: 0
+
+PASS

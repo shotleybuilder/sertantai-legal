@@ -1,0 +1,38 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+139 laws in scope
+
+needed against held, by category:
+  own: 139 — held 139
+  feed: 135 — held 135
+  territory: 406 — held 405, not_fetched 1
+  introduction: 226 — held 225, not_fetched 1
+  enabling_parent: 36 — held 36
+  dates: 53 — absent 13, held 40
+  backlog: 183 — absent 31, held 145, not_fetched 4, stale 3
+  needed, all categories: 1178
+
+failures: 9
+  not_fetched  backlog  UK_nisr_2026_89 :schedules  (for UK_nisr_2014_224)
+  stale  backlog  UK_uksi_1974_1885 :schedules  (for UK_ukpga_1875_17)
+  not_fetched  backlog  UK_uksi_1996_2089 :schedules  (for UK_ukpga_1875_17)
+  stale  backlog  UK_uksi_1974_2013 :schedules  (for UK_ukpga_1954_70)
+  not_fetched  territory  UK_uksi_1992_1728 :body  (for UK_ukpga_1992_15)
+  not_fetched  introduction  UK_uksi_1992_1728 :introduction  (for UK_ukpga_1992_15)
+  not_fetched  backlog  UK_uksi_1992_1728 :schedules  (for UK_ukpga_1992_15)
+  stale  backlog  UK_ukpga_2017_3 :schedules  (for UK_ukpga_2004_21)
+  not_fetched  backlog  UK_uksi_1993_208 :schedules  (for UK_uksi_1956_1943)
+
+feeds differing from the register's change statistics: 0
+
+FAIL
+
+fetching 9 documents the check failed …
+  Fetching enacting data: /uksi/1992/1728/made/introduction/data.xml
+  Fetching enacting data: /uksi/1992/1728/introduction/made/data.xml
+fetched 9, failed 0
+
+real	2m9.642s
+user	1m37.288s
+sys	0m23.505s

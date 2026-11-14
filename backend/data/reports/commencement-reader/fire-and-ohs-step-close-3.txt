@@ -1,0 +1,140 @@
+
+── Sources (mix lat.sources) ──
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+139 laws in scope
+
+needed against held, by category:
+  own: 139 — held 139
+  feed: 135 — held 135
+  territory: 406 — held 406
+  introduction: 226 — held 226
+  enabling_parent: 36 — held 36
+  dates: 53 — absent 13, held 40
+  backlog: 183 — absent 32, held 148, stale 3
+  needed, all categories: 1178
+
+failures: 3
+  stale  backlog  UK_uksi_2017_399 :body  (for UK_ukpga_2004_21)
+  stale  backlog  UK_uksi_2017_399 :schedules  (for UK_ukpga_2004_21)
+  stale  backlog  UK_uksi_2018_227 :body  (for UK_ukpga_2004_21)
+
+feeds differing from the register's change statistics: 0
+
+FAIL
+
+── Feed reader (mix lat.feed_check) ──
+311 family laws; 139 hold LAT rows (in scope), 172 don't
+7045 effects in 139 laws:
+  4332  placed
+  2064  schedule_not_parsed
+  272  not_in_text
+  189  placed_versions
+  130  not_a_provision
+  38  whole_law
+  15  row_missing
+  5  placed_by_markup
+
+our faults: 0
+
+finer form not held (parse tell-tales): 0
+
+PASS (placement)
+
+── Markup reader (mix lat.markup_check) ──
+
+1942 changes (change elements) in 64 laws:
+  1790  placed
+  152  placed_versions
+our faults: 0
+
+1815 note placements (an effect placed by its note ref only) in 79 laws:
+  1773  placed
+  42  placed_versions
+our faults: 0
+
+markup keys against the feed (changes; a count for CV-S07):
+  1454  in_feed
+  452  legacy
+  36  not_in_feed
+
+PASS (placement)
+
+── Commencement reader (mix lat.commencement_check) ──
+
+27114 rows in 139 laws — own commencement:
+  21360  dated (132 laws)
+  3416  by_order (10 laws)
+  1233  staged (7 laws)
+  944  eu_directive (5 laws)
+  142  eu_publication_relative (1 laws)
+  16  unread (16 laws)
+  3  by_order_partly (1 laws)
+  (left to orders, by_order + by_order_partly: 3419)
+
+against the law's own feed (a yardstick):
+  13310  own_only
+  8827  agree
+  2986  neither
+  1535  feed_only
+  406  differ
+  50  feed_partial_only
+  differ: UK_asp_2012_8 (50 rows) e.g. s.2(1)(b) own 2013-04-01 feed {~D[2013-01-01], ~D[2013-01-01]}
+  differ: UK_ukpga_1998_17 (65 rows) e.g. s.4A own 1999-02-15 feed {~D[2016-04-06], ~D[2016-04-06]}
+  differ: UK_ukpga_2004_21 (288 rows) e.g. h.1 own 2004-11-10 feed {~D[2017-04-03], ~D[2017-04-03]}
+  differ: UK_uksi_2005_1541 (3 rows) e.g. reg.27(5) own 2006-10-01 feed {~D[2017-07-17], ~D[2017-07-17]}
+
+985 changes no other source dates (280 text changes) — the gap-filler:
+  285  dated via feed  (text changes 70, of them not in a Schedule or annex 68)
+  262  undated: no_amending_law  (text changes 10, of them not in a Schedule or annex 10)
+  142  undated: appointed  (text changes 88, of them not in a Schedule or annex 81)
+  140  dated via note  (text changes 26, of them not in a Schedule or annex 26)
+  70  undated: no_pointer  (text changes 49, of them not in a Schedule or annex 13)
+  50  undated: rules_not_held  (text changes 7, of them not in a Schedule or annex 7)
+  26  undated: not_reached  (text changes 24, of them not in a Schedule or annex 22)
+  8  undated: unread  (text changes 5, of them not in a Schedule or annex 5)
+  2  undated: provisions_disagree  (text changes 1, of them not in a Schedule or annex 1)
+  undated: appointed: by UK_asc_2026_5 ×27, UK_ukpga_1991_22 ×22, ? ×20, UK_ukpga_1982_48 ×14, UK_asp_2017_4 ×7, UK_asc_2025_4 ×6
+  undated: no_amending_law: by ? ×262
+  undated: no_pointer: by UK_ukpga_1998_17 ×5, UK_ukpga_2003_22 ×5, UK_eudn_2009_240 ×3, UK_eudn_2010_187 ×3, UK_eudn_2011_26 ×3, UK_eudn_2012_188 ×3
+  undated: not_reached: by UK_asc_2026_7 ×10, UK_uksi_2020_852 ×9, ? ×5, UK_ukpga_1974_7 ×1, UK_ukpga_1980_65 ×1
+  undated: provisions_disagree: by UK_ukpga_1998_46 ×1, UK_ukpga_2000_27 ×1
+  undated: rules_not_held: by ? ×7, UK_uksi_1999_672 ×6, UK_ukpga_2000_11 ×5, UK_ukpga_1996_22 ×3, UK_ukpga_1997_7 ×2, UK_uksi_1999_160 ×2
+  undated: unread: by UK_ukpga_1994_21 ×8
+
+leftovers reaching the family (words of a commencement statement no rule uses):
+  2  known
+gate report: data/reports/commencement-reader/gate-fire-and-oh-s-2026-11-14.txt
+
+PASS (rows: our faults 0; leftovers not named: 0)
+
+── Checked rows (mix lat.label_checked) ──
+744 checked rows: %{known: 47, match: 693, changed: 3, upstream: 1}
+NOT PASSED
+
+── Stale laws (mix lat.stale) ──
+parser 4cf7d6e7fbc2, labels 29e266bee31f: 1269 stale laws (switched families: 388 of 388)
+  fold_version: 388
+  labels_behind_changes: 1
+  labels_version: 881
+  parser_version: 742
+
+change register, code 5befc0930d8d: 488 of 544 built laws stale (7 built with no changes)
+  code_version: 404
+  commencement_rules: 182
+  commencement_reader: 377  (fix: mix lat.commencement (the mode that wrote them), then build)
+  extent_reader: 389  (fix: mix lat.amending --extents --amending A,B, then build)
+  laws holding LAT with no build: 725
+
+Fire and OH&S: 139 stale laws (LAT or labels 139, change register 83)
+
+Commencement reader's close, Fire and OH&S:
+  FAIL  Sources (3 failing; owned by the Sources step)
+  PASS  Feed reader
+  PASS  Markup reader
+  PASS  Commencement reader
+  FAIL  Checked rows (3 failing; parked with the step whose change moved them (traced with --list))
+  FAIL  Stale laws (139 failing; fix by the reasons above: re-parse (LAT parser), re-read (the reader), rebuild (Store and build))
+
+FAIL (step close)

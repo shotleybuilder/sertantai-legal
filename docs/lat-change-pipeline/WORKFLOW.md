@@ -224,6 +224,21 @@ A rebuild moves no switched label until `LabelRefresh` runs. Laws whose rows don
   - Run a catalogue's dry run with `--out` to a scratch copy, because a run writes the generated fixture files even without `--accept`.
   - Give `--read-amending` only amending laws, never commencement orders.
 
+**Fire and OH&S, the first round (2026-11-14).**
+- **Baseline:** 599 our faults on stored rules, 31 fresh (SI 1994/232); 16 leftovers not named.
+- **Six fixer calls** took the 31 parked bugs and 16 leftover groups. The first three briefs were wide, about 430k tokens and an hour each; from call 4 the briefs were lean (one class group, the affected tests and one preview, a 150k cap) at about 120–145k tokens and 10 minutes. The session runs the full suite and the family checks once after each call.
+- **The review of the held moves found two misreadings** the fixers' own tests missed: items lost beside a "so far as relating to" item when the day is unread, and NISR 2006/257's other Order's Articles. Review each held move against its sentence before the Decision.
+- **`--accept` re-chooses the examples**, so the readings written can differ from the set reviewed: write them with a script (`data/reports/commencement-reader/held-write.exs`, a dry run, then `write`) after a second look at the ones that joined. A pattern still unread is kept `pending`, not auto-accepted.
+- **The re-read:**
+  - own clauses `--read --law <round>`;
+  - orders `--read-orders --family F` (held orders only; never a search);
+  - `--read-amending --family F --workers 1` (`HeldAmenders`, 319 laws);
+  - one rebuild (29,281 → 31,774 changes).
+- **Then the sources' stale rules** (rule `a-step-re-reads-its-sources-rules`): the round's stale laws named 129 source laws, most with LAT rows in other families, whose rules were on older reader code. Re-read them with `--read --law`, `--read-amending --law`, `--effects --law` (store only) and `--read-orders --held`, then rebuild.
+- **A change to `commencement/store.ex` changes the read version.** It stales every stored rule, so keep task options in the mix task.
+- **Checked rows:** the 20 HSWA rows were Occupational's. They needed the Railways Act 2005's orders re-read and HSWA rebuilt alone (22 → 3).
+- **Result:** our faults 0; leftovers not named 0; step close Commencement reader PASS; stale on the Commencement reader 0.
+
 **Skill.** `commencement-reader-check`. Background: [COMMENCEMENT-GUIDE.md](COMMENCEMENT-GUIDE.md).
 
 ## 5. Extent reader

@@ -123,6 +123,13 @@ Tried in this order; the first that decides wins.
 | A qualifier covering only the items after it: "regulations 2, 5, 10 and 11, and, so far as they relate to sections 12 to 14, regulations 3, 6 and 7" | plain group + qualified group | uksi 1988/819 reg.1(2); asp 2005/13 s.33 |
 | A provision's own words anywhere in the law: "This section shall come into force on the passing of this Act" | that provision, its date | Utilities Act 2000 s.68(2) |
 | Partly in on a date, the rest left to orders | J6: by order, in force as at the revised text, since unknown; the partial entry kept | EPA 1990 s.164(2)/(3) |
+| A qualifier binds only its own item; the other items come in fully, and stay named when the day is unread (`a-qualifier-binds-its-own-item`) | plain group + qualified group | 1996 c.53 s.148; 1984 c.12 s.110(4) |
+| "Chapters II and III of Part I"; a Schedule's Parts ("in Schedule 15, Part III and Part V(1) and (5)") | containers | 2000 c.37; 1998 c.31 |
+| "Apart from … the preceding provisions … by orders"; "the remainder … by Order in Council" | `:rest` by order, the named ones apart | 2002 c.21 s.61; 1962 c.58 s.70 |
+| Several dated statements in one sentence; sections in words ("one hundred and seventy-two") | one rule per statement | SI 1989/1401 reg.1(3); 1954 c.70 s.194 |
+| "on exit day" / "on IP completion day"; "the principal appointed day" (1 July 1999, for instruments made from 1998-11-19 to 1999-07-01) | named days | SI 2019/145; SI 1999/1750 |
+| "on the transfer date"; "at the same time as section N comes into force" | by order; appointed with another provision | 1989 c.15; 2021 c.24 s.4(5) |
+| A by-order clause for one country ("in relation to Wales, … by order") | `provision_by_order` for that country | 2008 c.23; CNEA 2005 s.108 |
 
 Conditions and descriptions name nothing: "If the condition in subsection (5) is met …", "a provision … to which subsection (2) applies" (Coronavirus Act 2020 s.87(4)).
 
@@ -142,9 +149,12 @@ An order commences the Act it defines as "the Act" (or names). Forms read:
 | A section through its Schedule: "section 116 in so far as it relates to paragraphs 2(1) to (3) of Schedule 21" → the paragraphs fully, the section partly | SI 1995/1983 |
 | Partial: "so far as it relates to", "to the extent that it relates to", "for specified purposes", "except", "in relation to England" | SI 2009/400 |
 | Full again: "so far as not already in force", "so far as it is not yet in force", "in so far as that sub-paragraph is not already in force", "for all remaining purposes" | SI 1992/1630, 1996/186 |
-| Territory: from the item, its statement, the order's title ("(England) Order"), or the instrument type (WSI → Wales, SSI → Scotland, NISR → NI) | SI 2000/340 |
+| Territory: from the item, its statement, the order's title ("(England) Order"), or the instrument type (WSI → Wales, SSI → Scotland, NISR → NI). A devolved legislature's order on its own legislature's Act carries none, and a heading's or a table description's place name is no territory (`devolved-order-carries-no-territory`) | SI 2000/340; SSI 2025/170; SI 1972/1763 |
+| Completing, for a place: "in so far as it relates to England and Wales and has not already been commenced"; "to the extent that it has not already come into force" (`completing-form-is-full`) | SI 1992/2984; SI 2006/266 |
+| Date first: "1st April 2013 is the day appointed for the coming into force of the Act, so far as not already in force"; "In so far as not already in operation, the day appointed … is …" | SSI 2013/51; NISR 2010/328 |
+| An Order in Council's Articles ("Article 4(3) of the … Order 1992") as `reg.` rows of the Order commenced | NISR 1996/251 |
 
-Not the Act's: another law's provisions named in an item ("the repeal of section 1 of the Control of Pollution Act 1974", "… into the 1991 Act"); "in Part II, the repeals of …" (a place, not an item); "provisions … which are specified in Schedule 3 to this Order" (a subset, never the whole Schedule).
+Not the Act's (`another-laws-entries-are-not-the-acts`): a repeals Schedule's "entries relating to …" (SI 2005/1909); another Order's Articles under "Schedule 4 in so far as it relates to —" (NISR 2006/257); an Act's title as the tail of a longer one ("Police and Fire Reform (Scotland) Act 2012" is not the Scotland Act 2012); another law's provisions named in an item ("the repeal of section 1 of the Control of Pollution Act 1974", "… into the 1991 Act"); "in Part II, the repeals of …" (a place, not an item); "provisions … which are specified in Schedule 3 to this Order" (a subset, never the whole Schedule).
 
 ### 3.4 Feed effects (`Commencement.Effects`)
 
@@ -153,6 +163,8 @@ legislation.gov.uk's "coming into force" effects on an Act (from ~2002): provisi
 ### 3.5 Amending provisions (`Commencement.Amending`)
 
 The change on our row starts when the provision that made it does: effects first; else the amending law's own clause (§3.1–3.2, read from its CLML) and the orders its notes cite (§3.3). A repeals table is dated by its own entry before the section introducing it (1994 c.19 Sch. 18, not s.66(8)). A whole Schedule whose entries came in on different dates gives no date.
+
+The amending laws read are derived (`Commencement.HeldAmenders`, rule `held-amenders-derived`): `mix lat.commencement --amenders --family F` lists them, `--read-amending --family F` reads them. A purpose-limited first stage is carried as `commencement.stages` on the claim; the Label fold reads it (parked). Feed rules for named Acts are re-read with `--effects --law A,B`, from the store only.
 
 ---
 

@@ -1,0 +1,48 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+
+20170 rows in 149 laws — own commencement:
+  16454  dated (130 laws)
+  1894  eu_publication_relative (2 laws)
+  1071  eu_directive (15 laws)
+  609  staged (6 laws)
+  133  by_order (3 laws)
+  6  by_order_partly (2 laws)
+  3  no_clause (1 laws)
+  (left to orders, by_order + by_order_partly: 139)
+
+against the law's own feed (a yardstick):
+  11806  own_only
+  5082  agree
+  3106  neither
+  166  feed_partial_only
+  9  differ
+  1  feed_only
+  differ: UK_nisr_1997_455 (1 rows) e.g. reg.15 own 1998-04-01 feed {~D[1997-12-01], ~D[1997-12-01]}
+  differ: UK_ukpga_1974_37 (5 rows) e.g. s.3(2A) own 1975-04-01 feed {~D[2015-10-01], ~D[2015-10-01]}
+  differ: UK_uksi_1992_3004 (3 rows) e.g. reg.3(5) own 1993-01-01 feed {~D[1998-07-26], ~D[1998-07-26]}
+
+1803 changes no other source dates (620 text changes) — the gap-filler:
+  659  dated via feed  (text changes 20, of them not in a Schedule or annex 17)
+  611  undated: no_pointer  (text changes 516, of them not in a Schedule or annex 174)
+  265  undated: rules_not_held  (text changes 14, of them not in a Schedule or annex 14)
+  126  undated: no_amending_law  (text changes 23, of them not in a Schedule or annex 23)
+  73  dated via note  (text changes 13, of them not in a Schedule or annex 13)
+  61  undated: appointed  (text changes 34, of them not in a Schedule or annex 33)
+  6  undated: not_reached  (text changes 0, of them not in a Schedule or annex 0)
+  1  undated: provisions_disagree  (text changes 0, of them not in a Schedule or annex 0)
+  1  undated: unread  (text changes 0, of them not in a Schedule or annex 0)
+  undated: appointed: by UK_ukpga_1975_71 ×15, UK_ukpga_2002_30 ×10, UK_ukpga_1982_48 ×5, UK_ukpga_1990_43 ×3, UK_ukpga_1994_39 ×3, UK_ukpga_1998_8 ×3
+  undated: no_amending_law: by ? ×126
+  undated: no_pointer: by UK_eur_2008_1272 ×137, UK_eur_2019_521 ×74, UK_eur_2016_918 ×71, UK_eur_2018_1881 ×57, UK_eur_2020_11 ×29, UK_eudr_2007_30 ×22
+  undated: not_reached: by UK_ukpga_2014_20 ×6
+  undated: provisions_disagree: by UK_ukpga_1994_29 ×1
+  undated: rules_not_held: by UK_ukpga_1997_10 ×58, UK_uksi_1996_772 ×31, UK_uksi_1994_3260 ×25, UK_uksi_2001_2127 ×24, UK_uksi_2002_1689 ×24, UK_uksi_1997_831 ×22
+  undated: unread: by UK_ukpga_1994_21 ×1
+
+leftovers reaching the family (words of a commencement statement no rule uses):
+  5  known
+gate report: data/reports/commencement-reader/gate-oh-s-occupational-personal-safety-2026-11-14.txt
+
+PASS (rows: our faults 0; leftovers not named: 0)

@@ -1,0 +1,103 @@
+Held catalogue examples moved by fixer call 3 (8; beyond the 74 of calls 1-2). left = now, right = held.
+
+### UK_uksi_1996_2925/1b93355949
+row: UK_uksi_1996_2925:reg.1(3)
+sentence: The following provisions shall come into force in accordance with paragraph (4) below—
+     left:  %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["reg.4(2)(a), sch.1, reg.4(2)(e)(ii), reg.4(2)(f), reg.4(2)(g), sch.4.pt.II, reg.4(2)(h)(i), reg.4(2)(i), sch.5.pt.I — unread — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "law:clause_staged",
+              "rules" => ["all — 1996-12-16 — everywhere, fully — clause_staged",
+               "reg.4(2)(a), sch.1, reg.4(2)(e)(ii), reg.4(2)(f), reg.4(2)(g), sch.4.pt.II, reg.4(2)(h)(i), reg.4(2)(i), sch.5.pt.I — unread — everywhere, in relation to — provision_qualified"]
+            }
+
+### UK_anaw_2015_4/efb8cad3e4
+row: UK_anaw_2015_4:s.58(2)
+sentence: The following provisions come into force at the end of the period of two months beginning with the day on which this Act receives Royal Assent—
+     left:  %{
+              "class" => "rules:provision_qualified+provision_unread",
+              "rules" => ["pt.3, pt.4, pt.5, pt.6, pt.7, pt.8 — unread — everywhere, in relation to — provision_qualified",
+               "s.55 — unread — everywhere, fully — provision_unread"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["pt.3, pt.4, pt.5, pt.6, pt.7, pt.8 — unread — everywhere, in relation to — provision_qualified"]
+            }
+
+### UK_ukpga_1968_64/2d97e5dd6d
+row: UK_ukpga_1968_64:s.20(4)
+sentence: The following provisions of this Act, namely sections 13 to 19, this section (except subsection (2)) and the Schedule, shall come into force on the day this Act is passed, and the other provisions of this Act shall come into force on such day as the Lord Chancellor may by order made by statutory instrument appoint; and different days may be so appointed for different purposes of this Act or for the same purposes in relation to different courts or proceedings or otherwise in relation to different circumstances.
+     left:  %{
+              "class" => "law:clause_staged",
+              "rules" => ["all — 1968-10-25 — everywhere, fully — clause_staged",
+               "rest except s.20 — appointed (by order) — everywhere, fully — provision_by_order",
+               "s.13, s.14, s.15, s.16, s.17, s.18, s.19, s.20, sch except s.20(2) — 1968-10-25 — everywhere, fully — provision_dated"]
+            }
+     right: %{
+              "class" => "law:clause_staged",
+              "rules" => ["all — 1968-10-25 — everywhere, fully — clause_staged"]
+            }
+
+### UK_ukpga_2017_30/8bd671ae27
+row: UK_ukpga_2017_30:s.118(5)
+sentence: The provisions mentioned in subsection (4)(a) and (c) come into force on whatever day the Welsh Ministers appoint by regulations made by statutory instrument.
+     left:  %{
+              "class" => "rules:provision_by_order",
+              "rules" => ["pt.5 — appointed (by order) — everywhere, fully — provision_by_order"]
+            }
+     right: %{"class" => "unread", "rules" => []}
+
+### UK_ukpga_1982_39/d252e32603
+row: UK_ukpga_1982_39:s.151(2)
+sentence: This section and Schedule 20 to this Act shall come into force on the expiry of the period of three months beginning with the day on which this Act is passed.
+     left:  %{
+              "class" => "law:clause_unread",
+              "rules" => ["all — unread — everywhere, fully — clause_unread",
+               "s.151, sch.20 — unread — everywhere, fully — provision_unread"]
+            }
+     right: %{
+              "class" => "law:clause_unread",
+              "rules" => ["all — unread — everywhere, fully — clause_unread"]
+            }
+
+### UK_ukpga_2018_12/0d42d5b369
+row: UK_ukpga_2018_12:s.212(3)
+sentence: The following provisions come into force at the end of the period of 2 months beginning when this Act is passed—
+     left:  %{
+              "class" => "rules:provision_qualified+provision_unread",
+              "rules" => ["s.124, s.177, s.178, sch.17, s.179 — unread — everywhere, fully — provision_unread",
+               "s.125, s.126, s.127, s.124 — unread — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["s.125, s.126, s.127, s.124 — unread — everywhere, in relation to — provision_qualified"]
+            }
+
+### UK_uksi_2024_105/71c76ff288
+row: UK_uksi_2024_105:reg.2(1)
+sentence: The following provisions of these Regulations come into force on the day after that on which these Regulations are made (“the initial commencement day”)—
+     left:  %{
+              "class" => "law:clause_unread",
+              "rules" => ["all — unread — everywhere, fully — clause_unread",
+               "pt.1, pt.2 — unread — everywhere, fully — provision_unread"]
+            }
+     right: %{
+              "class" => "law:clause_unread",
+              "rules" => ["all — unread — everywhere, fully — clause_unread"]
+            }
+
+### UK_anaw_2012_2/50362de0f3
+row: UK_anaw_2012_2:s.22(1)
+sentence: The following provisions come into force on the day after the day on which this Act receives Royal Assent –
+     left:  %{
+              "class" => "law:clause_unread",
+              "rules" => ["all — unread — everywhere, fully — clause_unread",
+               "s.21, s.22, s.23 — unread — everywhere, fully — provision_unread"]
+            }
+     right: %{
+              "class" => "law:clause_unread",
+              "rules" => ["all — unread — everywhere, fully — clause_unread"]
+            }
+

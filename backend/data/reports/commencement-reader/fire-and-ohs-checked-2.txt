@@ -1,0 +1,8 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+744 checked rows: %{known: 47, match: 693, changed: 3, upstream: 1}
+NOT PASSED
+changed	UK_eur_2008_1272	UK_eur_2008_1272:art.Article 53a	omitted for GB 1.11.2022 (2022/1037); stays in NI under Windsor rule; insertion undated in feed
+changed	UK_eur_2008_1272	UK_eur_2008_1272:art.Article 53b	as Article 53a
+changed	UK_ukpga_1974_37	UK_ukpga_1974_37:s.64	fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: undated law_text repeal put at 1974-07-31; Building Act 1984 s.134(2) comes into force 1 Dec 1984)

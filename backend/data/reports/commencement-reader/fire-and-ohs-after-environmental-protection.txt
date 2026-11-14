@@ -1,0 +1,15 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+
+0 rows in 0 laws — own commencement:
+  (left to orders, by_order + by_order_partly: 0)
+
+against the law's own feed (a yardstick):
+
+0 changes no other source dates (0 text changes) — the gap-filler:
+
+leftovers reaching the family (words of a commencement statement no rule uses):
+gate report: data/reports/commencement-reader/gate-environmental-protection-2026-11-14.txt
+
+PASS (rows: our faults 0; leftovers not named: 0)

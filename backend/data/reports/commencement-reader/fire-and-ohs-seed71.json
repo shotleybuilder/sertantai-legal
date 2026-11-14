@@ -1,0 +1,3282 @@
+{
+  "rows": [
+    {
+      "reader": {
+        "outcome": "by_order",
+        "full_from": null,
+        "undated": [
+          {
+            "text": "all except s.90, s.88 — appointed (by order) — everywhere, fully — by_order — UK_asp_2005_5 s.90: “This Act, other than this section and section 88, shall come into force on such day as the Scottish Ministers may by order appoint.”",
+            "words": "This Act, other than this section and section 88, shall come into force on such day as the Scottish Ministers may by order appoint.",
+            "source_ref": "s.90",
+            "source_law": "UK_asp_2005_5"
+          }
+        ],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "all except s.90, s.88 — appointed (by order) — everywhere, fully — by_order — UK_asp_2005_5 s.90: “This Act, other than this section and section 88, shall come into force on such day as the Scottish Ministers may by order appoint.”",
+              "words": "This Act, other than this section and section 88, shall come into force on such day as the Scottish Ministers may by order appoint.",
+              "source_ref": "s.90",
+              "source_law": "UK_asp_2005_5"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_asp_2005_5",
+      "yardstick": "feed_only",
+      "feed": {
+        "first": "2005-08-02",
+        "full": "2005-08-02"
+      },
+      "row": "s.47(2)(a)"
+    },
+    {
+      "reader": {
+        "outcome": "by_order",
+        "full_from": null,
+        "undated": [
+          {
+            "text": "all except s.172, s.190 — appointed (by order) — everywhere, fully — by_order — UK_ukpga_1954_70 s.194: “This Act, except sections one hundred and seventy-two and one hundred and ninety thereof, shall come into operation on such day as the Minister may by order appoint, and those sections shall come into operation on the passing of this Act; and for the purposes of this Act and of the application thereto of section 13 of the Interpretation Act 1978 (which relates to the exercise of statutory powers between the passing and the commencement of an Act references to the commencement of this Act shall, notwithstanding the provisions of section 4 of the said Act of 1978 with respect to the construction of the expression “commencement”, be construed as references to the time at which this Act, except the said sections one hundred and seventy-two and one hundred and ninety, comes into operation.”",
+            "words": "This Act, except sections one hundred and seventy-two and one hundred and ninety thereof, shall come into operation on such day as the Minister may by order appoint, and those sections shall come into operation on the passing of this Act; and for the purposes of this Act and of the application thereto of section 13 of the Interpretation Act 1978 (which relates to the exercise of statutory powers b",
+            "source_ref": "s.194",
+            "source_law": "UK_ukpga_1954_70"
+          }
+        ],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "all except s.172, s.190 — appointed (by order) — everywhere, fully — by_order — UK_ukpga_1954_70 s.194: “This Act, except sections one hundred and seventy-two and one hundred and ninety thereof, shall come into operation on such day as the Minister may by order appoint, and those sections shall come into operation on the passing of this Act; and for the purposes of this Act and of the application thereto of section 13 of the Interpretation Act 1978 (which relates to the exercise of statutory powers between the passing and the commencement of an Act references to the commencement of this Act shall, notwithstanding the provisions of section 4 of the said Act of 1978 with respect to the construction of the expression “commencement”, be construed as references to the time at which this Act, except the said sections one hundred and seventy-two and one hundred and ninety, comes into operation.”",
+              "words": "This Act, except sections one hundred and seventy-two and one hundred and ninety thereof, shall come into operation on such day as the Minister may by order appoint, and those sections shall come into operation on the passing of this Act; and for the purposes of this Act and of the application thereto of section 13 of the Interpretation Act 1978 (which relates to the exercise of statutory powers b",
+              "source_ref": "s.194",
+              "source_law": "UK_ukpga_1954_70"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_ukpga_1954_70",
+      "yardstick": "neither",
+      "feed": null,
+      "row": "s.94"
+    },
+    {
+      "reader": {
+        "outcome": "by_order_partly",
+        "full_from": null,
+        "undated": [
+          {
+            "text": "s.7(2) — appointed (by order) — everywhere, in relation to — provision_qualified — UK_ukpga_1992_15 s.7(3): “The following provisions of this Act, namely— … shall not come into force until such day as the Secretary of State may by order made by statutory instrument appoint, and different days may be appointed for different provisions or for different purposes.”",
+            "words": "The following provisions of this Act, namely— … shall not come into force until such day as the Secretary of State may by order made by statutory instrument appoint, and different days may be appointed for different provisions or for different purposes.",
+            "source_ref": "s.7(3)",
+            "source_law": "UK_ukpga_1992_15"
+          }
+        ],
+        "partial_from": "1992-03-06",
+        "entries": [
+          {
+            "date": "1992-03-06",
+            "role": "general",
+            "territory": null,
+            "rule": {
+              "text": "all — 1992-03-06 — everywhere, fully — act_enactment — UK_ukpga_1992_15 ukm:EnactmentDate",
+              "words": null,
+              "source_ref": "ukm:EnactmentDate",
+              "source_law": "UK_ukpga_1992_15"
+            },
+            "purposes": null
+          },
+          {
+            "date": "1996-03-01",
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "s.2(3)(b), s.2(3)(c), s.3(3)(b), s.7(2) — 1996-03-01 — everywhere, in relation to — order_date — UK_uksi_1996_487 reg.2: “Sections 2(3)(b) and (c) and 3(3)(b) of the Offshore Safety Act 1992 and section 7(2) of that Act so far as relating to the second repeal in the Gas Act 1986 shall come into force on 1st March 1996. … Sections 2(3)(b) and (c) and 3(3)(b) of the Offshore Safety Act 1992 and section 7(2) of that Act so far as relating to the second repeal in the Gas Act 1986”",
+              "words": "Sections 2(3)(b) and (c) and 3(3)(b) of the Offshore Safety Act 1992 and section 7(2) of that Act so far as relating to the second repeal in the Gas Act 1986 shall come into force on 1st March 1996. … Sections 2(3)(b) and (c) and 3(3)(b) of the Offshore Safety Act 1992 and section 7(2) of that Act so far as relating to the second repeal in the Gas Act 1986",
+              "source_ref": "reg.2",
+              "source_law": "UK_uksi_1996_487"
+            },
+            "purposes": "in_relation_to"
+          },
+          {
+            "date": null,
+            "role": "completes",
+            "territory": null,
+            "rule": {
+              "text": "s.7(2) — appointed (by order) — everywhere, in relation to — provision_qualified — UK_ukpga_1992_15 s.7(3): “The following provisions of this Act, namely— … shall not come into force until such day as the Secretary of State may by order made by statutory instrument appoint, and different days may be appointed for different provisions or for different purposes.”",
+              "words": "The following provisions of this Act, namely— … shall not come into force until such day as the Secretary of State may by order made by statutory instrument appoint, and different days may be appointed for different provisions or for different purposes.",
+              "source_ref": "s.7(3)",
+              "source_law": "UK_ukpga_1992_15"
+            },
+            "purposes": "in_relation_to"
+          }
+        ]
+      },
+      "law": "UK_ukpga_1992_15",
+      "yardstick": "neither",
+      "feed": null,
+      "row": "s.7(2)"
+    },
+    {
+      "reader": {
+        "outcome": "dated",
+        "full_from": "2016-07-01",
+        "undated": [],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": "2016-07-01",
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "all — 2016-07-01 — everywhere, fully — clause_date — UK_uksi_2016_588 reg.1: “These Regulations may be cited as the Control of Electromagnetic Fields at Work Regulations 2016 and come into force on 1st July 2016.”",
+              "words": "These Regulations may be cited as the Control of Electromagnetic Fields at Work Regulations 2016 and come into force on 1st July 2016.",
+              "source_ref": "reg.1",
+              "source_law": "UK_uksi_2016_588"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_uksi_2016_588",
+      "yardstick": "agree",
+      "feed": {
+        "first": "2016-07-01",
+        "full": "2016-07-01"
+      },
+      "row": "reg.7(2)"
+    },
+    {
+      "reader": {
+        "outcome": "dated",
+        "full_from": "2013-04-01",
+        "undated": [
+          {
+            "text": "rest except s.129 — appointed (by order) — everywhere, fully — provision_by_order — UK_asp_2012_8 s.129(2): “The other provisions of this Act come into force on such day as the Scottish Ministers may by order appoint.”",
+            "words": "The other provisions of this Act come into force on such day as the Scottish Ministers may by order appoint.",
+            "source_ref": "s.129(2)",
+            "source_law": "UK_asp_2012_8"
+          }
+        ],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": "2013-04-01",
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "all — 2013-04-01 — everywhere, fully — order_date — UK_ssi_2013_51 reg.2: “1st April 2013 is the day appointed for the coming into force of the Act, so far as not already in force.”",
+              "words": "1st April 2013 is the day appointed for the coming into force of the Act, so far as not already in force.",
+              "source_ref": "reg.2",
+              "source_law": "UK_ssi_2013_51"
+            },
+            "purposes": null
+          },
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "rest except s.129 — appointed (by order) — everywhere, fully — provision_by_order — UK_asp_2012_8 s.129(2): “The other provisions of this Act come into force on such day as the Scottish Ministers may by order appoint.”",
+              "words": "The other provisions of this Act come into force on such day as the Scottish Ministers may by order appoint.",
+              "source_ref": "s.129(2)",
+              "source_law": "UK_asp_2012_8"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_asp_2012_8",
+      "yardstick": "differ",
+      "feed": {
+        "first": "2023-08-17",
+        "full": "2023-08-17"
+      },
+      "row": "pt.1.ch.8A"
+    },
+    {
+      "reader": {
+        "outcome": "dated",
+        "full_from": "2006-10-01",
+        "undated": [],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": "2006-10-01",
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "rest except reg.1 — 2006-10-01 — everywhere, fully — provision_dated — UK_uksi_2005_1541 reg.1(3): “The remaining provisions of this Order shall come into force on 1st October 2006.”",
+              "words": "The remaining provisions of this Order shall come into force on 1st October 2006.",
+              "source_ref": "reg.1(3)",
+              "source_law": "UK_uksi_2005_1541"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_uksi_2005_1541",
+      "yardstick": "feed_partial_only",
+      "feed": {
+        "first": "2023-10-01",
+        "full": null
+      },
+      "row": "reg.22A(3)(ea)"
+    },
+    {
+      "reader": {
+        "outcome": "dated",
+        "full_from": "1999-02-15",
+        "undated": [
+          {
+            "text": "all — appointed (by order) — everywhere, fully — by_order — UK_ukpga_1998_17 s.52(4): “Subject to subsections (1) and (2), this Act shall come into force on such day as the Secretary of State may by order appoint.”",
+            "words": "Subject to subsections (1) and (2), this Act shall come into force on such day as the Secretary of State may by order appoint.",
+            "source_ref": "s.52(4)",
+            "source_law": "UK_ukpga_1998_17"
+          }
+        ],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": "1999-02-15",
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "all — 1999-02-15 — everywhere, fully — order_date — UK_uksi_1999_161 reg.2(1): “The Petroleum Act 1998 (hereinafter referred to as “the Act”) shall come into force in accordance with section 52(4) thereof on 15th February 1999, and, accordingly, all the provisions of the Act other than the excepted provisions mentioned in the following paragraph shall come into force on that day.”",
+              "words": "The Petroleum Act 1998 (hereinafter referred to as “the Act”) shall come into force in accordance with section 52(4) thereof on 15th February 1999, and, accordingly, all the provisions of the Act other than the excepted provisions mentioned in the following paragraph shall come into force on that day.",
+              "source_ref": "reg.2(1)",
+              "source_law": "UK_uksi_1999_161"
+            },
+            "purposes": null
+          },
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "all — appointed (by order) — everywhere, fully — by_order — UK_ukpga_1998_17 s.52(4): “Subject to subsections (1) and (2), this Act shall come into force on such day as the Secretary of State may by order appoint.”",
+              "words": "Subject to subsections (1) and (2), this Act shall come into force on such day as the Secretary of State may by order appoint.",
+              "source_ref": "s.52(4)",
+              "source_law": "UK_ukpga_1998_17"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_ukpga_1998_17",
+      "yardstick": "own_only",
+      "feed": null,
+      "row": "s.9G(1)"
+    },
+    {
+      "reader": {
+        "outcome": "eu_directive",
+        "full_from": null,
+        "undated": [],
+        "partial_from": null,
+        "entries": []
+      },
+      "law": "UK_eudr_2008_68",
+      "yardstick": "neither",
+      "feed": null,
+      "row": "art.Article 1(4)(b)"
+    },
+    {
+      "reader": {
+        "outcome": "eu_publication_relative",
+        "full_from": null,
+        "undated": [],
+        "partial_from": null,
+        "entries": []
+      },
+      "law": "UK_eur_2019_1148",
+      "yardstick": "neither",
+      "feed": null,
+      "row": "art.Article 8(2)(a)"
+    },
+    {
+      "reader": {
+        "outcome": "staged",
+        "full_from": "2004-11-10",
+        "undated": [
+          {
+            "text": "pt.1, pt.2, pt.3, pt.4, pt.5, pt.6 — appointed (by order) — everywhere, fully — provision_by_order — UK_ukpga_2004_21 s.61: “Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.”",
+            "words": "Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.",
+            "source_ref": "s.61",
+            "source_law": "UK_ukpga_2004_21"
+          }
+        ],
+        "partial_from": "2004-10-01",
+        "entries": [
+          {
+            "date": "2004-10-01",
+            "role": "normal",
+            "territory": "E+S",
+            "rule": {
+              "text": "all — 2004-10-01 — E+S, fully — order_date — UK_uksi_2004_2304 reg.2(2): “Subject to article 3 the 2004 Act shall, insofar as it is not already in force, come into force on 1st October 2004.”",
+              "words": "Subject to article 3 the 2004 Act shall, insofar as it is not already in force, come into force on 1st October 2004.",
+              "source_ref": "reg.2(2)",
+              "source_law": "UK_uksi_2004_2304"
+            },
+            "purposes": null
+          },
+          {
+            "date": "2004-11-10",
+            "role": "normal",
+            "territory": "W",
+            "rule": {
+              "text": "all — 2004-11-10 — W, fully — order_date — UK_wsi_2004_2917 reg.2: “The Act, in so far as it is not already in force, shall come into force on 10 November 2004.”",
+              "words": "The Act, in so far as it is not already in force, shall come into force on 10 November 2004.",
+              "source_ref": "reg.2",
+              "source_law": "UK_wsi_2004_2917"
+            },
+            "purposes": null
+          },
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "pt.1, pt.2, pt.3, pt.4, pt.5, pt.6 — appointed (by order) — everywhere, fully — provision_by_order — UK_ukpga_2004_21 s.61: “Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.”",
+              "words": "Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.",
+              "source_ref": "s.61",
+              "source_law": "UK_ukpga_2004_21"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_ukpga_2004_21",
+      "yardstick": "agree",
+      "feed": {
+        "first": "2004-09-07",
+        "full": "2004-11-10"
+      },
+      "row": "s.3(1)"
+    },
+    {
+      "reader": {
+        "outcome": "staged",
+        "full_from": "2004-11-10",
+        "undated": [
+          {
+            "text": "pt.1, pt.2, pt.3, pt.4, pt.5, pt.6 — appointed (by order) — everywhere, fully — provision_by_order — UK_ukpga_2004_21 s.61: “Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.”",
+            "words": "Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.",
+            "source_ref": "s.61",
+            "source_law": "UK_ukpga_2004_21"
+          }
+        ],
+        "partial_from": "2004-10-01",
+        "entries": [
+          {
+            "date": "2004-10-01",
+            "role": "normal",
+            "territory": "E+S",
+            "rule": {
+              "text": "all — 2004-10-01 — E+S, fully — order_date — UK_uksi_2004_2304 reg.2(2): “Subject to article 3 the 2004 Act shall, insofar as it is not already in force, come into force on 1st October 2004.”",
+              "words": "Subject to article 3 the 2004 Act shall, insofar as it is not already in force, come into force on 1st October 2004.",
+              "source_ref": "reg.2(2)",
+              "source_law": "UK_uksi_2004_2304"
+            },
+            "purposes": null
+          },
+          {
+            "date": "2004-11-10",
+            "role": "normal",
+            "territory": "W",
+            "rule": {
+              "text": "all — 2004-11-10 — W, fully — order_date — UK_wsi_2004_2917 reg.2: “The Act, in so far as it is not already in force, shall come into force on 10 November 2004.”",
+              "words": "The Act, in so far as it is not already in force, shall come into force on 10 November 2004.",
+              "source_ref": "reg.2",
+              "source_law": "UK_wsi_2004_2917"
+            },
+            "purposes": null
+          },
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "pt.1, pt.2, pt.3, pt.4, pt.5, pt.6 — appointed (by order) — everywhere, fully — provision_by_order — UK_ukpga_2004_21 s.61: “Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.”",
+              "words": "Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.",
+              "source_ref": "s.61",
+              "source_law": "UK_ukpga_2004_21"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_ukpga_2004_21",
+      "yardstick": "differ",
+      "feed": {
+        "first": "2012-04-01",
+        "full": "2012-04-01"
+      },
+      "row": "s.5F(1)"
+    },
+    {
+      "reader": {
+        "outcome": "staged",
+        "full_from": "1994-08-01",
+        "undated": [],
+        "partial_from": "1994-03-01",
+        "entries": [
+          {
+            "date": "1994-03-01",
+            "role": "general",
+            "territory": null,
+            "rule": {
+              "text": "rest except reg.1, reg.4 — 1994-03-01 — everywhere, fully — provision_dated — UK_uksi_1994_232 reg.1(a): “except for regulation 4 and regulation 6 to the extent that it applies to regulation 4, they shall come into force on 1st March 1994; and”",
+              "words": "except for regulation 4 and regulation 6 to the extent that it applies to regulation 4, they shall come into force on 1st March 1994; and",
+              "source_ref": "reg.1(a)",
+              "source_law": "UK_uksi_1994_232"
+            },
+            "purposes": null
+          },
+          {
+            "date": "1994-08-01",
+            "role": "completes",
+            "territory": null,
+            "rule": {
+              "text": "reg.6 — 1994-08-01 — everywhere, in relation to — provision_qualified — UK_uksi_1994_232 reg.1(b): “regulation 4 and regulation 6 to the extent that it applies to regulation 4 shall come into force on 1st August 1994.”",
+              "words": "regulation 4 and regulation 6 to the extent that it applies to regulation 4 shall come into force on 1st August 1994.",
+              "source_ref": "reg.1(b)",
+              "source_law": "UK_uksi_1994_232"
+            },
+            "purposes": "in_relation_to"
+          }
+        ]
+      },
+      "law": "UK_uksi_1994_232",
+      "yardstick": "own_only",
+      "feed": null,
+      "row": "reg.6(3)(a)(ii)"
+    },
+    {
+      "reader": {
+        "outcome": "unread",
+        "full_from": null,
+        "undated": [
+          {
+            "text": "reg.2(2) — unread — everywhere, fully — provision_unread — UK_uksi_2019_1166 reg.1(2): “This Order comes into force on 21st August 2019 except for article 2(2) which comes into force as provided in article 2(3).”",
+            "words": "This Order comes into force on 21st August 2019 except for article 2(2) which comes into force as provided in article 2(3).",
+            "source_ref": "reg.1(2)",
+            "source_law": "UK_uksi_2019_1166"
+          }
+        ],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "reg.2(2) — unread — everywhere, fully — provision_unread — UK_uksi_2019_1166 reg.1(2): “This Order comes into force on 21st August 2019 except for article 2(2) which comes into force as provided in article 2(3).”",
+              "words": "This Order comes into force on 21st August 2019 except for article 2(2) which comes into force as provided in article 2(3).",
+              "source_ref": "reg.1(2)",
+              "source_law": "UK_uksi_2019_1166"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_uksi_2019_1166",
+      "yardstick": "feed_only",
+      "feed": {
+        "first": "2019-08-21",
+        "full": "2019-08-21"
+      },
+      "row": "reg.2(2)"
+    },
+    {
+      "reader": {
+        "outcome": "unread",
+        "full_from": null,
+        "undated": [
+          {
+            "text": "reg.2(2) — unread — everywhere, fully — provision_unread — UK_uksi_2014_2260 reg.1(2): “This Order comes into force on 16th September 2014 except for article 2(2) which comes into force as provided in article 2(3).”",
+            "words": "This Order comes into force on 16th September 2014 except for article 2(2) which comes into force as provided in article 2(3).",
+            "source_ref": "reg.1(2)",
+            "source_law": "UK_uksi_2014_2260"
+          }
+        ],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "reg.2(2) — unread — everywhere, fully — provision_unread — UK_uksi_2014_2260 reg.1(2): “This Order comes into force on 16th September 2014 except for article 2(2) which comes into force as provided in article 2(3).”",
+              "words": "This Order comes into force on 16th September 2014 except for article 2(2) which comes into force as provided in article 2(3).",
+              "source_ref": "reg.1(2)",
+              "source_law": "UK_uksi_2014_2260"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_uksi_2014_2260",
+      "yardstick": "neither",
+      "feed": null,
+      "row": "reg.2(2)"
+    },
+    {
+      "reader": {
+        "outcome": "by_order",
+        "full_from": null,
+        "undated": [
+          {
+            "text": "rest except s.92 — appointed (by order) — everywhere, fully — provision_by_order — UK_asc_2025_4 s.92(3): “The other provisions of this Act come into force on a day appointed by the Welsh Ministers in an order made by statutory instrument.”",
+            "words": "The other provisions of this Act come into force on a day appointed by the Welsh Ministers in an order made by statutory instrument.",
+            "source_ref": "s.92(3)",
+            "source_law": "UK_asc_2025_4"
+          }
+        ],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "rest except s.92 — appointed (by order) — everywhere, fully — provision_by_order — UK_asc_2025_4 s.92(3): “The other provisions of this Act come into force on a day appointed by the Welsh Ministers in an order made by statutory instrument.”",
+              "words": "The other provisions of this Act come into force on a day appointed by the Welsh Ministers in an order made by statutory instrument.",
+              "source_ref": "s.92(3)",
+              "source_law": "UK_asc_2025_4"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_asc_2025_4",
+      "yardstick": "feed_only",
+      "feed": {
+        "first": "2025-09-12",
+        "full": "2025-09-12"
+      },
+      "row": "s.67(2)"
+    },
+    {
+      "reader": {
+        "outcome": "by_order",
+        "full_from": null,
+        "undated": [
+          {
+            "text": "pt.II — appointed (by order) — S, fully — provision_by_order — UK_ukpga_1969_10 s.38(3): “Part II of this Act, in its application to England and Wales, shall come into operation on such day as the Minister of Housing and Local Government and the Secretary of State for Wales may by order made by statutory instrument jointly appoint, and in its application to Scotland on such day as the Secretary of State for Scotland may by order so made appoint.”",
+            "words": "Part II of this Act, in its application to England and Wales, shall come into operation on such day as the Minister of Housing and Local Government and the Secretary of State for Wales may by order made by statutory instrument jointly appoint, and in its application to Scotland on such day as the Secretary of State for Scotland may by order so made appoint.",
+            "source_ref": "s.38(3)",
+            "source_law": "UK_ukpga_1969_10"
+          },
+          {
+            "text": "pt.II — appointed (by order) — E+W, fully — provision_by_order — UK_ukpga_1969_10 s.38(3): “Part II of this Act, in its application to England and Wales, shall come into operation on such day as the Minister of Housing and Local Government and the Secretary of State for Wales may by order made by statutory instrument jointly appoint, and in its application to Scotland on such day as the Secretary of State for Scotland may by order so made appoint.”",
+            "words": "Part II of this Act, in its application to England and Wales, shall come into operation on such day as the Minister of Housing and Local Government and the Secretary of State for Wales may by order made by statutory instrument jointly appoint, and in its application to Scotland on such day as the Secretary of State for Scotland may by order so made appoint.",
+            "source_ref": "s.38(3)",
+            "source_law": "UK_ukpga_1969_10"
+          }
+        ],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": null,
+            "role": "normal",
+            "territory": "S",
+            "rule": {
+              "text": "pt.II — appointed (by order) — S, fully — provision_by_order — UK_ukpga_1969_10 s.38(3): “Part II of this Act, in its application to England and Wales, shall come into operation on such day as the Minister of Housing and Local Government and the Secretary of State for Wales may by order made by statutory instrument jointly appoint, and in its application to Scotland on such day as the Secretary of State for Scotland may by order so made appoint.”",
+              "words": "Part II of this Act, in its application to England and Wales, shall come into operation on such day as the Minister of Housing and Local Government and the Secretary of State for Wales may by order made by statutory instrument jointly appoint, and in its application to Scotland on such day as the Secretary of State for Scotland may by order so made appoint.",
+              "source_ref": "s.38(3)",
+              "source_law": "UK_ukpga_1969_10"
+            },
+            "purposes": null
+          },
+          {
+            "date": null,
+            "role": "normal",
+            "territory": "E+W",
+            "rule": {
+              "text": "pt.II — appointed (by order) — E+W, fully — provision_by_order — UK_ukpga_1969_10 s.38(3): “Part II of this Act, in its application to England and Wales, shall come into operation on such day as the Minister of Housing and Local Government and the Secretary of State for Wales may by order made by statutory instrument jointly appoint, and in its application to Scotland on such day as the Secretary of State for Scotland may by order so made appoint.”",
+              "words": "Part II of this Act, in its application to England and Wales, shall come into operation on such day as the Minister of Housing and Local Government and the Secretary of State for Wales may by order made by statutory instrument jointly appoint, and in its application to Scotland on such day as the Secretary of State for Scotland may by order so made appoint.",
+              "source_ref": "s.38(3)",
+              "source_law": "UK_ukpga_1969_10"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_ukpga_1969_10",
+      "yardstick": "neither",
+      "feed": null,
+      "row": "s.32(1)(a)"
+    },
+    {
+      "reader": {
+        "outcome": "by_order_partly",
+        "full_from": null,
+        "undated": [
+          {
+            "text": "s.2(3)(b), s.3(1)(a), s.3(2), s.3(3)(b) — appointed (by order) — everywhere, fully — provision_by_order — UK_ukpga_1992_15 s.7(3): “The following provisions of this Act, namely— … shall not come into force until such day as the Secretary of State may by order made by statutory instrument appoint, and different days may be appointed for different provisions or for different purposes.”",
+            "words": "The following provisions of this Act, namely— … shall not come into force until such day as the Secretary of State may by order made by statutory instrument appoint, and different days may be appointed for different provisions or for different purposes.",
+            "source_ref": "s.7(3)",
+            "source_law": "UK_ukpga_1992_15"
+          }
+        ],
+        "partial_from": "1996-03-01",
+        "entries": [
+          {
+            "date": "1996-03-01",
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "s.2(3)(b), s.2(3)(c), s.3(3)(b), s.7(2) — 1996-03-01 — everywhere, in relation to — order_date — UK_uksi_1996_487 reg.2: “Sections 2(3)(b) and (c) and 3(3)(b) of the Offshore Safety Act 1992 and section 7(2) of that Act so far as relating to the second repeal in the Gas Act 1986 shall come into force on 1st March 1996. … Sections 2(3)(b) and (c) and 3(3)(b) of the Offshore Safety Act 1992 and section 7(2) of that Act so far as relating to the second repeal in the Gas Act 1986”",
+              "words": "Sections 2(3)(b) and (c) and 3(3)(b) of the Offshore Safety Act 1992 and section 7(2) of that Act so far as relating to the second repeal in the Gas Act 1986 shall come into force on 1st March 1996. … Sections 2(3)(b) and (c) and 3(3)(b) of the Offshore Safety Act 1992 and section 7(2) of that Act so far as relating to the second repeal in the Gas Act 1986",
+              "source_ref": "reg.2",
+              "source_law": "UK_uksi_1996_487"
+            },
+            "purposes": "in_relation_to"
+          },
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "s.2(3)(b), s.3(1)(a), s.3(2), s.3(3)(b) — appointed (by order) — everywhere, fully — provision_by_order — UK_ukpga_1992_15 s.7(3): “The following provisions of this Act, namely— … shall not come into force until such day as the Secretary of State may by order made by statutory instrument appoint, and different days may be appointed for different provisions or for different purposes.”",
+              "words": "The following provisions of this Act, namely— … shall not come into force until such day as the Secretary of State may by order made by statutory instrument appoint, and different days may be appointed for different provisions or for different purposes.",
+              "source_ref": "s.7(3)",
+              "source_law": "UK_ukpga_1992_15"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_ukpga_1992_15",
+      "yardstick": "neither",
+      "feed": null,
+      "row": "s.2(3)(b)"
+    },
+    {
+      "reader": {
+        "outcome": "dated",
+        "full_from": "2006-08-01",
+        "undated": [],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": "2006-08-01",
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "all — 2006-08-01 — everywhere, fully — clause_date — UK_nisr_2006_205 reg.1(1): “These Regulations may be cited as the Quarries Regulations (Northern Ireland) 2006 and, subject to paragraphs (2) and (3), shall come into operation on 1st August 2006.”",
+              "words": "These Regulations may be cited as the Quarries Regulations (Northern Ireland) 2006 and, subject to paragraphs (2) and (3), shall come into operation on 1st August 2006.",
+              "source_ref": "reg.1(1)",
+              "source_law": "UK_nisr_2006_205"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_nisr_2006_205",
+      "yardstick": "agree",
+      "feed": {
+        "first": "2006-08-01",
+        "full": "2006-08-01"
+      },
+      "row": "reg.8(1)"
+    },
+    {
+      "reader": {
+        "outcome": "dated",
+        "full_from": "2013-04-01",
+        "undated": [
+          {
+            "text": "rest except s.129 — appointed (by order) — everywhere, fully — provision_by_order — UK_asp_2012_8 s.129(2): “The other provisions of this Act come into force on such day as the Scottish Ministers may by order appoint.”",
+            "words": "The other provisions of this Act come into force on such day as the Scottish Ministers may by order appoint.",
+            "source_ref": "s.129(2)",
+            "source_law": "UK_asp_2012_8"
+          }
+        ],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": "2013-04-01",
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "all — 2013-04-01 — everywhere, fully — order_date — UK_ssi_2013_51 reg.2: “1st April 2013 is the day appointed for the coming into force of the Act, so far as not already in force.”",
+              "words": "1st April 2013 is the day appointed for the coming into force of the Act, so far as not already in force.",
+              "source_ref": "reg.2",
+              "source_law": "UK_ssi_2013_51"
+            },
+            "purposes": null
+          },
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "rest except s.129 — appointed (by order) — everywhere, fully — provision_by_order — UK_asp_2012_8 s.129(2): “The other provisions of this Act come into force on such day as the Scottish Ministers may by order appoint.”",
+              "words": "The other provisions of this Act come into force on such day as the Scottish Ministers may by order appoint.",
+              "source_ref": "s.129(2)",
+              "source_law": "UK_asp_2012_8"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_asp_2012_8",
+      "yardstick": "differ",
+      "feed": {
+        "first": "2013-01-01",
+        "full": "2013-01-01"
+      },
+      "row": "s.100(2)"
+    },
+    {
+      "reader": {
+        "outcome": "dated",
+        "full_from": "2006-10-01",
+        "undated": [],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": "2006-10-01",
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "rest except reg.1 — 2006-10-01 — everywhere, fully — provision_dated — UK_uksi_2005_1541 reg.1(3): “The remaining provisions of this Order shall come into force on 1st October 2006.”",
+              "words": "The remaining provisions of this Order shall come into force on 1st October 2006.",
+              "source_ref": "reg.1(3)",
+              "source_law": "UK_uksi_2005_1541"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_uksi_2005_1541",
+      "yardstick": "feed_partial_only",
+      "feed": {
+        "first": "2023-10-01",
+        "full": null
+      },
+      "row": "reg.21A(3)(d)"
+    },
+    {
+      "reader": {
+        "outcome": "dated",
+        "full_from": "1998-10-03",
+        "undated": [],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": "1998-10-03",
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "all — 1998-10-03 — everywhere, fully — clause_date — UK_uksi_1998_2451 reg.1: “These Regulations may be cited as the Gas Safety (Installation and Use) Regulations 1998 and shall come into force on 3rd October 1998.”",
+              "words": "These Regulations may be cited as the Gas Safety (Installation and Use) Regulations 1998 and shall come into force on 3rd October 1998.",
+              "source_ref": "reg.1",
+              "source_law": "UK_uksi_1998_2451"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_uksi_1998_2451",
+      "yardstick": "own_only",
+      "feed": null,
+      "row": "reg.34(2)"
+    },
+    {
+      "reader": {
+        "outcome": "eu_directive",
+        "full_from": null,
+        "undated": [],
+        "partial_from": null,
+        "entries": []
+      },
+      "law": "UK_eudr_2014_34",
+      "yardstick": "neither",
+      "feed": null,
+      "row": "art.Article 29(2)"
+    },
+    {
+      "reader": {
+        "outcome": "eu_publication_relative",
+        "full_from": null,
+        "undated": [],
+        "partial_from": null,
+        "entries": []
+      },
+      "law": "UK_eur_2019_1148",
+      "yardstick": "neither",
+      "feed": null,
+      "row": "art.Article 6(5)"
+    },
+    {
+      "reader": {
+        "outcome": "staged",
+        "full_from": "2004-11-10",
+        "undated": [
+          {
+            "text": "pt.1, pt.2, pt.3, pt.4, pt.5, pt.6 — appointed (by order) — everywhere, fully — provision_by_order — UK_ukpga_2004_21 s.61: “Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.”",
+            "words": "Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.",
+            "source_ref": "s.61",
+            "source_law": "UK_ukpga_2004_21"
+          }
+        ],
+        "partial_from": "2004-10-01",
+        "entries": [
+          {
+            "date": "2004-10-01",
+            "role": "normal",
+            "territory": "E+S",
+            "rule": {
+              "text": "all — 2004-10-01 — E+S, fully — order_date — UK_uksi_2004_2304 reg.2(2): “Subject to article 3 the 2004 Act shall, insofar as it is not already in force, come into force on 1st October 2004.”",
+              "words": "Subject to article 3 the 2004 Act shall, insofar as it is not already in force, come into force on 1st October 2004.",
+              "source_ref": "reg.2(2)",
+              "source_law": "UK_uksi_2004_2304"
+            },
+            "purposes": null
+          },
+          {
+            "date": "2004-11-10",
+            "role": "normal",
+            "territory": "W",
+            "rule": {
+              "text": "all — 2004-11-10 — W, fully — order_date — UK_wsi_2004_2917 reg.2: “The Act, in so far as it is not already in force, shall come into force on 10 November 2004.”",
+              "words": "The Act, in so far as it is not already in force, shall come into force on 10 November 2004.",
+              "source_ref": "reg.2",
+              "source_law": "UK_wsi_2004_2917"
+            },
+            "purposes": null
+          },
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "pt.1, pt.2, pt.3, pt.4, pt.5, pt.6 — appointed (by order) — everywhere, fully — provision_by_order — UK_ukpga_2004_21 s.61: “Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.”",
+              "words": "Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.",
+              "source_ref": "s.61",
+              "source_law": "UK_ukpga_2004_21"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_ukpga_2004_21",
+      "yardstick": "agree",
+      "feed": {
+        "first": "2004-09-07",
+        "full": "2004-11-10"
+      },
+      "row": "s.22(3)(b)"
+    },
+    {
+      "reader": {
+        "outcome": "staged",
+        "full_from": "2004-11-10",
+        "undated": [
+          {
+            "text": "pt.1, pt.2, pt.3, pt.4, pt.5, pt.6 — appointed (by order) — everywhere, fully — provision_by_order — UK_ukpga_2004_21 s.61: “Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.”",
+            "words": "Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.",
+            "source_ref": "s.61",
+            "source_law": "UK_ukpga_2004_21"
+          }
+        ],
+        "partial_from": "2004-10-01",
+        "entries": [
+          {
+            "date": "2004-10-01",
+            "role": "normal",
+            "territory": "E+S",
+            "rule": {
+              "text": "all — 2004-10-01 — E+S, fully — order_date — UK_uksi_2004_2304 reg.2(2): “Subject to article 3 the 2004 Act shall, insofar as it is not already in force, come into force on 1st October 2004.”",
+              "words": "Subject to article 3 the 2004 Act shall, insofar as it is not already in force, come into force on 1st October 2004.",
+              "source_ref": "reg.2(2)",
+              "source_law": "UK_uksi_2004_2304"
+            },
+            "purposes": null
+          },
+          {
+            "date": "2004-11-10",
+            "role": "normal",
+            "territory": "W",
+            "rule": {
+              "text": "all — 2004-11-10 — W, fully — order_date — UK_wsi_2004_2917 reg.2: “The Act, in so far as it is not already in force, shall come into force on 10 November 2004.”",
+              "words": "The Act, in so far as it is not already in force, shall come into force on 10 November 2004.",
+              "source_ref": "reg.2",
+              "source_law": "UK_wsi_2004_2917"
+            },
+            "purposes": null
+          },
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "pt.1, pt.2, pt.3, pt.4, pt.5, pt.6 — appointed (by order) — everywhere, fully — provision_by_order — UK_ukpga_2004_21 s.61: “Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.”",
+              "words": "Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.",
+              "source_ref": "s.61",
+              "source_law": "UK_ukpga_2004_21"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_ukpga_2004_21",
+      "yardstick": "differ",
+      "feed": {
+        "first": "2012-04-01",
+        "full": "2012-04-01"
+      },
+      "row": "s.5C(10)"
+    },
+    {
+      "reader": {
+        "outcome": "staged",
+        "full_from": "2004-11-10",
+        "undated": [
+          {
+            "text": "pt.1, pt.2, pt.3, pt.4, pt.5, pt.6 — appointed (by order) — everywhere, fully — provision_by_order — UK_ukpga_2004_21 s.61: “Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.”",
+            "words": "Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.",
+            "source_ref": "s.61",
+            "source_law": "UK_ukpga_2004_21"
+          }
+        ],
+        "partial_from": "2004-10-01",
+        "entries": [
+          {
+            "date": "2004-10-01",
+            "role": "normal",
+            "territory": "E+S",
+            "rule": {
+              "text": "all — 2004-10-01 — E+S, fully — order_date — UK_uksi_2004_2304 reg.2(2): “Subject to article 3 the 2004 Act shall, insofar as it is not already in force, come into force on 1st October 2004.”",
+              "words": "Subject to article 3 the 2004 Act shall, insofar as it is not already in force, come into force on 1st October 2004.",
+              "source_ref": "reg.2(2)",
+              "source_law": "UK_uksi_2004_2304"
+            },
+            "purposes": null
+          },
+          {
+            "date": "2004-11-10",
+            "role": "normal",
+            "territory": "W",
+            "rule": {
+              "text": "all — 2004-11-10 — W, fully — order_date — UK_wsi_2004_2917 reg.2: “The Act, in so far as it is not already in force, shall come into force on 10 November 2004.”",
+              "words": "The Act, in so far as it is not already in force, shall come into force on 10 November 2004.",
+              "source_ref": "reg.2",
+              "source_law": "UK_wsi_2004_2917"
+            },
+            "purposes": null
+          },
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "pt.1, pt.2, pt.3, pt.4, pt.5, pt.6 — appointed (by order) — everywhere, fully — provision_by_order — UK_ukpga_2004_21 s.61: “Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.”",
+              "words": "Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.",
+              "source_ref": "s.61",
+              "source_law": "UK_ukpga_2004_21"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_ukpga_2004_21",
+      "yardstick": "own_only",
+      "feed": null,
+      "row": "h.10"
+    },
+    {
+      "reader": {
+        "outcome": "unread",
+        "full_from": null,
+        "undated": [
+          {
+            "text": "reg.2(2) — unread — everywhere, fully — provision_unread — UK_uksi_2015_1673 reg.1(2): “This Order comes into force on 30th September 2015 except for article 2(2) which comes into force as provided in article 2(3).”",
+            "words": "This Order comes into force on 30th September 2015 except for article 2(2) which comes into force as provided in article 2(3).",
+            "source_ref": "reg.1(2)",
+            "source_law": "UK_uksi_2015_1673"
+          }
+        ],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "reg.2(2) — unread — everywhere, fully — provision_unread — UK_uksi_2015_1673 reg.1(2): “This Order comes into force on 30th September 2015 except for article 2(2) which comes into force as provided in article 2(3).”",
+              "words": "This Order comes into force on 30th September 2015 except for article 2(2) which comes into force as provided in article 2(3).",
+              "source_ref": "reg.1(2)",
+              "source_law": "UK_uksi_2015_1673"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_uksi_2015_1673",
+      "yardstick": "feed_only",
+      "feed": {
+        "first": "2015-09-30",
+        "full": "2015-09-30"
+      },
+      "row": "reg.2(2)"
+    },
+    {
+      "reader": {
+        "outcome": "unread",
+        "full_from": null,
+        "undated": [
+          {
+            "text": "reg.2(2) — unread — everywhere, fully — provision_unread — UK_uksi_2025_257 reg.1(2): “This Order comes into force 21 days after the day on which it is made (“the general coming into force date”), except for article 2(2) which comes into force as provided in article 2(3).”",
+            "words": "This Order comes into force 21 days after the day on which it is made (“the general coming into force date”), except for article 2(2) which comes into force as provided in article 2(3).",
+            "source_ref": "reg.1(2)",
+            "source_law": "UK_uksi_2025_257"
+          }
+        ],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "reg.2(2) — unread — everywhere, fully — provision_unread — UK_uksi_2025_257 reg.1(2): “This Order comes into force 21 days after the day on which it is made (“the general coming into force date”), except for article 2(2) which comes into force as provided in article 2(3).”",
+              "words": "This Order comes into force 21 days after the day on which it is made (“the general coming into force date”), except for article 2(2) which comes into force as provided in article 2(3).",
+              "source_ref": "reg.1(2)",
+              "source_law": "UK_uksi_2025_257"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_uksi_2025_257",
+      "yardstick": "neither",
+      "feed": null,
+      "row": "reg.2(2)"
+    },
+    {
+      "reader": {
+        "outcome": "by_order",
+        "full_from": null,
+        "undated": [
+          {
+            "text": "all except s.90, s.88 — appointed (by order) — everywhere, fully — by_order — UK_asp_2005_5 s.90: “This Act, other than this section and section 88, shall come into force on such day as the Scottish Ministers may by order appoint.”",
+            "words": "This Act, other than this section and section 88, shall come into force on such day as the Scottish Ministers may by order appoint.",
+            "source_ref": "s.90",
+            "source_law": "UK_asp_2005_5"
+          }
+        ],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "all except s.90, s.88 — appointed (by order) — everywhere, fully — by_order — UK_asp_2005_5 s.90: “This Act, other than this section and section 88, shall come into force on such day as the Scottish Ministers may by order appoint.”",
+              "words": "This Act, other than this section and section 88, shall come into force on such day as the Scottish Ministers may by order appoint.",
+              "source_ref": "s.90",
+              "source_law": "UK_asp_2005_5"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_asp_2005_5",
+      "yardstick": "feed_only",
+      "feed": {
+        "first": "2005-08-02",
+        "full": "2005-08-02"
+      },
+      "row": "s.9(1)(a)"
+    },
+    {
+      "reader": {
+        "outcome": "by_order",
+        "full_from": null,
+        "undated": [
+          {
+            "text": "all except s.90, s.88 — appointed (by order) — everywhere, fully — by_order — UK_asp_2005_5 s.90: “This Act, other than this section and section 88, shall come into force on such day as the Scottish Ministers may by order appoint.”",
+            "words": "This Act, other than this section and section 88, shall come into force on such day as the Scottish Ministers may by order appoint.",
+            "source_ref": "s.90",
+            "source_law": "UK_asp_2005_5"
+          }
+        ],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "all except s.90, s.88 — appointed (by order) — everywhere, fully — by_order — UK_asp_2005_5 s.90: “This Act, other than this section and section 88, shall come into force on such day as the Scottish Ministers may by order appoint.”",
+              "words": "This Act, other than this section and section 88, shall come into force on such day as the Scottish Ministers may by order appoint.",
+              "source_ref": "s.90",
+              "source_law": "UK_asp_2005_5"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_asp_2005_5",
+      "yardstick": "neither",
+      "feed": null,
+      "row": "s.43D(3)"
+    },
+    {
+      "reader": {
+        "outcome": "by_order_partly",
+        "full_from": null,
+        "undated": [
+          {
+            "text": "s.2(3)(b), s.3(1)(a), s.3(2), s.3(3)(b) — appointed (by order) — everywhere, fully — provision_by_order — UK_ukpga_1992_15 s.7(3): “The following provisions of this Act, namely— … shall not come into force until such day as the Secretary of State may by order made by statutory instrument appoint, and different days may be appointed for different provisions or for different purposes.”",
+            "words": "The following provisions of this Act, namely— … shall not come into force until such day as the Secretary of State may by order made by statutory instrument appoint, and different days may be appointed for different provisions or for different purposes.",
+            "source_ref": "s.7(3)",
+            "source_law": "UK_ukpga_1992_15"
+          }
+        ],
+        "partial_from": "1996-03-01",
+        "entries": [
+          {
+            "date": "1996-03-01",
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "s.2(3)(b), s.2(3)(c), s.3(3)(b), s.7(2) — 1996-03-01 — everywhere, in relation to — order_date — UK_uksi_1996_487 reg.2: “Sections 2(3)(b) and (c) and 3(3)(b) of the Offshore Safety Act 1992 and section 7(2) of that Act so far as relating to the second repeal in the Gas Act 1986 shall come into force on 1st March 1996. … Sections 2(3)(b) and (c) and 3(3)(b) of the Offshore Safety Act 1992 and section 7(2) of that Act so far as relating to the second repeal in the Gas Act 1986”",
+              "words": "Sections 2(3)(b) and (c) and 3(3)(b) of the Offshore Safety Act 1992 and section 7(2) of that Act so far as relating to the second repeal in the Gas Act 1986 shall come into force on 1st March 1996. … Sections 2(3)(b) and (c) and 3(3)(b) of the Offshore Safety Act 1992 and section 7(2) of that Act so far as relating to the second repeal in the Gas Act 1986",
+              "source_ref": "reg.2",
+              "source_law": "UK_uksi_1996_487"
+            },
+            "purposes": "in_relation_to"
+          },
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "s.2(3)(b), s.3(1)(a), s.3(2), s.3(3)(b) — appointed (by order) — everywhere, fully — provision_by_order — UK_ukpga_1992_15 s.7(3): “The following provisions of this Act, namely— … shall not come into force until such day as the Secretary of State may by order made by statutory instrument appoint, and different days may be appointed for different provisions or for different purposes.”",
+              "words": "The following provisions of this Act, namely— … shall not come into force until such day as the Secretary of State may by order made by statutory instrument appoint, and different days may be appointed for different provisions or for different purposes.",
+              "source_ref": "s.7(3)",
+              "source_law": "UK_ukpga_1992_15"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_ukpga_1992_15",
+      "yardstick": "neither",
+      "feed": null,
+      "row": "s.3(3)(b)"
+    },
+    {
+      "reader": {
+        "outcome": "dated",
+        "full_from": "1990-04-01",
+        "undated": [],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": "1990-04-01",
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "all — 1990-04-01 — everywhere, fully — clause_date — UK_uksi_1989_635 reg.1: “These Regulations may be cited as the Electricity at Work Regulations 1989 and shall come into force on 1st April 1990.”",
+              "words": "These Regulations may be cited as the Electricity at Work Regulations 1989 and shall come into force on 1st April 1990.",
+              "source_ref": "reg.1",
+              "source_law": "UK_uksi_1989_635"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_uksi_1989_635",
+      "yardstick": "agree",
+      "feed": {
+        "first": "1990-04-01",
+        "full": "1990-04-01"
+      },
+      "row": "reg.30(1)(b)"
+    },
+    {
+      "reader": {
+        "outcome": "dated",
+        "full_from": "1999-02-15",
+        "undated": [
+          {
+            "text": "all — appointed (by order) — everywhere, fully — by_order — UK_ukpga_1998_17 s.52(4): “Subject to subsections (1) and (2), this Act shall come into force on such day as the Secretary of State may by order appoint.”",
+            "words": "Subject to subsections (1) and (2), this Act shall come into force on such day as the Secretary of State may by order appoint.",
+            "source_ref": "s.52(4)",
+            "source_law": "UK_ukpga_1998_17"
+          }
+        ],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": "1999-02-15",
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "all — 1999-02-15 — everywhere, fully — order_date — UK_uksi_1999_161 reg.2(1): “The Petroleum Act 1998 (hereinafter referred to as “the Act”) shall come into force in accordance with section 52(4) thereof on 15th February 1999, and, accordingly, all the provisions of the Act other than the excepted provisions mentioned in the following paragraph shall come into force on that day.”",
+              "words": "The Petroleum Act 1998 (hereinafter referred to as “the Act”) shall come into force in accordance with section 52(4) thereof on 15th February 1999, and, accordingly, all the provisions of the Act other than the excepted provisions mentioned in the following paragraph shall come into force on that day.",
+              "source_ref": "reg.2(1)",
+              "source_law": "UK_uksi_1999_161"
+            },
+            "purposes": null
+          },
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "all — appointed (by order) — everywhere, fully — by_order — UK_ukpga_1998_17 s.52(4): “Subject to subsections (1) and (2), this Act shall come into force on such day as the Secretary of State may by order appoint.”",
+              "words": "Subject to subsections (1) and (2), this Act shall come into force on such day as the Secretary of State may by order appoint.",
+              "source_ref": "s.52(4)",
+              "source_law": "UK_ukpga_1998_17"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_ukpga_1998_17",
+      "yardstick": "differ",
+      "feed": {
+        "first": "2016-04-06",
+        "full": "2016-04-06"
+      },
+      "row": "s.4B(2)"
+    },
+    {
+      "reader": {
+        "outcome": "dated",
+        "full_from": "2006-10-01",
+        "undated": [],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": "2006-10-01",
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "rest except reg.1 — 2006-10-01 — everywhere, fully — provision_dated — UK_uksi_2005_1541 reg.1(3): “The remaining provisions of this Order shall come into force on 1st October 2006.”",
+              "words": "The remaining provisions of this Order shall come into force on 1st October 2006.",
+              "source_ref": "reg.1(3)",
+              "source_law": "UK_uksi_2005_1541"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_uksi_2005_1541",
+      "yardstick": "feed_partial_only",
+      "feed": {
+        "first": "2023-10-01",
+        "full": null
+      },
+      "row": "reg.21A(6)(b)"
+    },
+    {
+      "reader": {
+        "outcome": "dated",
+        "full_from": "1957-01-01",
+        "undated": [],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": "1957-01-01",
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "all — 1957-01-01 — everywhere, fully — lrt_metadata — UK_uksi_1956_1943 uk_lrt.md_coming_into_force_date",
+              "words": null,
+              "source_ref": "uk_lrt.md_coming_into_force_date",
+              "source_law": "UK_uksi_1956_1943"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_uksi_1956_1943",
+      "yardstick": "own_only",
+      "feed": null,
+      "row": "reg.41(4)(a)"
+    },
+    {
+      "reader": {
+        "outcome": "eu_directive",
+        "full_from": null,
+        "undated": [],
+        "partial_from": null,
+        "entries": []
+      },
+      "law": "UK_eudr_2013_30",
+      "yardstick": "neither",
+      "feed": null,
+      "row": "art.Article 6(1)"
+    },
+    {
+      "reader": {
+        "outcome": "eu_publication_relative",
+        "full_from": null,
+        "undated": [],
+        "partial_from": null,
+        "entries": []
+      },
+      "law": "UK_eur_2019_1148",
+      "yardstick": "neither",
+      "feed": null,
+      "row": "art.Article 8(2)(b)"
+    },
+    {
+      "reader": {
+        "outcome": "staged",
+        "full_from": "2004-11-10",
+        "undated": [
+          {
+            "text": "pt.1, pt.2, pt.3, pt.4, pt.5, pt.6 — appointed (by order) — everywhere, fully — provision_by_order — UK_ukpga_2004_21 s.61: “Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.”",
+            "words": "Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.",
+            "source_ref": "s.61",
+            "source_law": "UK_ukpga_2004_21"
+          }
+        ],
+        "partial_from": "2004-10-01",
+        "entries": [
+          {
+            "date": "2004-10-01",
+            "role": "normal",
+            "territory": "E+S",
+            "rule": {
+              "text": "all — 2004-10-01 — E+S, fully — order_date — UK_uksi_2004_2304 reg.2(2): “Subject to article 3 the 2004 Act shall, insofar as it is not already in force, come into force on 1st October 2004.”",
+              "words": "Subject to article 3 the 2004 Act shall, insofar as it is not already in force, come into force on 1st October 2004.",
+              "source_ref": "reg.2(2)",
+              "source_law": "UK_uksi_2004_2304"
+            },
+            "purposes": null
+          },
+          {
+            "date": "2004-11-10",
+            "role": "normal",
+            "territory": "W",
+            "rule": {
+              "text": "all — 2004-11-10 — W, fully — order_date — UK_wsi_2004_2917 reg.2: “The Act, in so far as it is not already in force, shall come into force on 10 November 2004.”",
+              "words": "The Act, in so far as it is not already in force, shall come into force on 10 November 2004.",
+              "source_ref": "reg.2",
+              "source_law": "UK_wsi_2004_2917"
+            },
+            "purposes": null
+          },
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "pt.1, pt.2, pt.3, pt.4, pt.5, pt.6 — appointed (by order) — everywhere, fully — provision_by_order — UK_ukpga_2004_21 s.61: “Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.”",
+              "words": "Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.",
+              "source_ref": "s.61",
+              "source_law": "UK_ukpga_2004_21"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_ukpga_2004_21",
+      "yardstick": "agree",
+      "feed": {
+        "first": "2004-09-07",
+        "full": "2004-11-10"
+      },
+      "row": "s.1(1)"
+    },
+    {
+      "reader": {
+        "outcome": "staged",
+        "full_from": "2004-11-10",
+        "undated": [
+          {
+            "text": "pt.1, pt.2, pt.3, pt.4, pt.5, pt.6 — appointed (by order) — everywhere, fully — provision_by_order — UK_ukpga_2004_21 s.61: “Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.”",
+            "words": "Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.",
+            "source_ref": "s.61",
+            "source_law": "UK_ukpga_2004_21"
+          }
+        ],
+        "partial_from": "2004-10-01",
+        "entries": [
+          {
+            "date": "2004-10-01",
+            "role": "normal",
+            "territory": "E+S",
+            "rule": {
+              "text": "all — 2004-10-01 — E+S, fully — order_date — UK_uksi_2004_2304 reg.2(2): “Subject to article 3 the 2004 Act shall, insofar as it is not already in force, come into force on 1st October 2004.”",
+              "words": "Subject to article 3 the 2004 Act shall, insofar as it is not already in force, come into force on 1st October 2004.",
+              "source_ref": "reg.2(2)",
+              "source_law": "UK_uksi_2004_2304"
+            },
+            "purposes": null
+          },
+          {
+            "date": "2004-11-10",
+            "role": "normal",
+            "territory": "W",
+            "rule": {
+              "text": "all — 2004-11-10 — W, fully — order_date — UK_wsi_2004_2917 reg.2: “The Act, in so far as it is not already in force, shall come into force on 10 November 2004.”",
+              "words": "The Act, in so far as it is not already in force, shall come into force on 10 November 2004.",
+              "source_ref": "reg.2",
+              "source_law": "UK_wsi_2004_2917"
+            },
+            "purposes": null
+          },
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "pt.1, pt.2, pt.3, pt.4, pt.5, pt.6 — appointed (by order) — everywhere, fully — provision_by_order — UK_ukpga_2004_21 s.61: “Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.”",
+              "words": "Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.",
+              "source_ref": "s.61",
+              "source_law": "UK_ukpga_2004_21"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_ukpga_2004_21",
+      "yardstick": "differ",
+      "feed": {
+        "first": "2012-04-01",
+        "full": "2012-04-01"
+      },
+      "row": "s.5D"
+    },
+    {
+      "reader": {
+        "outcome": "staged",
+        "full_from": "2004-11-10",
+        "undated": [
+          {
+            "text": "pt.1, pt.2, pt.3, pt.4, pt.5, pt.6 — appointed (by order) — everywhere, fully — provision_by_order — UK_ukpga_2004_21 s.61: “Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.”",
+            "words": "Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.",
+            "source_ref": "s.61",
+            "source_law": "UK_ukpga_2004_21"
+          }
+        ],
+        "partial_from": "2004-10-01",
+        "entries": [
+          {
+            "date": "2004-10-01",
+            "role": "normal",
+            "territory": "E+S",
+            "rule": {
+              "text": "all — 2004-10-01 — E+S, fully — order_date — UK_uksi_2004_2304 reg.2(2): “Subject to article 3 the 2004 Act shall, insofar as it is not already in force, come into force on 1st October 2004.”",
+              "words": "Subject to article 3 the 2004 Act shall, insofar as it is not already in force, come into force on 1st October 2004.",
+              "source_ref": "reg.2(2)",
+              "source_law": "UK_uksi_2004_2304"
+            },
+            "purposes": null
+          },
+          {
+            "date": "2004-11-10",
+            "role": "normal",
+            "territory": "W",
+            "rule": {
+              "text": "all — 2004-11-10 — W, fully — order_date — UK_wsi_2004_2917 reg.2: “The Act, in so far as it is not already in force, shall come into force on 10 November 2004.”",
+              "words": "The Act, in so far as it is not already in force, shall come into force on 10 November 2004.",
+              "source_ref": "reg.2",
+              "source_law": "UK_wsi_2004_2917"
+            },
+            "purposes": null
+          },
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "pt.1, pt.2, pt.3, pt.4, pt.5, pt.6 — appointed (by order) — everywhere, fully — provision_by_order — UK_ukpga_2004_21 s.61: “Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.”",
+              "words": "Parts 1 to 6 come into force in accordance with provision made by the Secretary of State by order.",
+              "source_ref": "s.61",
+              "source_law": "UK_ukpga_2004_21"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_ukpga_2004_21",
+      "yardstick": "own_only",
+      "feed": null,
+      "row": "s.4K(3)"
+    },
+    {
+      "reader": {
+        "outcome": "unread",
+        "full_from": null,
+        "undated": [
+          {
+            "text": "reg.2(2) — unread — everywhere, fully — provision_unread — UK_uksi_2016_309 reg.1(2): “This Order comes into force on 29th March 2016 except for article 2(2) which comes into force as provided in article 2(3).”",
+            "words": "This Order comes into force on 29th March 2016 except for article 2(2) which comes into force as provided in article 2(3).",
+            "source_ref": "reg.1(2)",
+            "source_law": "UK_uksi_2016_309"
+          }
+        ],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "reg.2(2) — unread — everywhere, fully — provision_unread — UK_uksi_2016_309 reg.1(2): “This Order comes into force on 29th March 2016 except for article 2(2) which comes into force as provided in article 2(3).”",
+              "words": "This Order comes into force on 29th March 2016 except for article 2(2) which comes into force as provided in article 2(3).",
+              "source_ref": "reg.1(2)",
+              "source_law": "UK_uksi_2016_309"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_uksi_2016_309",
+      "yardstick": "feed_only",
+      "feed": {
+        "first": "2016-03-29",
+        "full": "2016-03-29"
+      },
+      "row": "reg.2(2)"
+    },
+    {
+      "reader": {
+        "outcome": "unread",
+        "full_from": null,
+        "undated": [
+          {
+            "text": "reg.2(2) — unread — everywhere, fully — provision_unread — UK_uksi_2018_807 reg.1(2): “This Order comes into force on 13th July 2018 except for article 2(2) which comes into force as provided in article 2(3).”",
+            "words": "This Order comes into force on 13th July 2018 except for article 2(2) which comes into force as provided in article 2(3).",
+            "source_ref": "reg.1(2)",
+            "source_law": "UK_uksi_2018_807"
+          }
+        ],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "reg.2(2) — unread — everywhere, fully — provision_unread — UK_uksi_2018_807 reg.1(2): “This Order comes into force on 13th July 2018 except for article 2(2) which comes into force as provided in article 2(3).”",
+              "words": "This Order comes into force on 13th July 2018 except for article 2(2) which comes into force as provided in article 2(3).",
+              "source_ref": "reg.1(2)",
+              "source_law": "UK_uksi_2018_807"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_uksi_2018_807",
+      "yardstick": "neither",
+      "feed": null,
+      "row": "reg.2(2)"
+    },
+    {
+      "reader": {
+        "outcome": "by_order",
+        "full_from": null,
+        "undated": [
+          {
+            "text": "rest except s.92 — appointed (by order) — everywhere, fully — provision_by_order — UK_asc_2025_4 s.92(3): “The other provisions of this Act come into force on a day appointed by the Welsh Ministers in an order made by statutory instrument.”",
+            "words": "The other provisions of this Act come into force on a day appointed by the Welsh Ministers in an order made by statutory instrument.",
+            "source_ref": "s.92(3)",
+            "source_law": "UK_asc_2025_4"
+          }
+        ],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "rest except s.92 — appointed (by order) — everywhere, fully — provision_by_order — UK_asc_2025_4 s.92(3): “The other provisions of this Act come into force on a day appointed by the Welsh Ministers in an order made by statutory instrument.”",
+              "words": "The other provisions of this Act come into force on a day appointed by the Welsh Ministers in an order made by statutory instrument.",
+              "source_ref": "s.92(3)",
+              "source_law": "UK_asc_2025_4"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_asc_2025_4",
+      "yardstick": "feed_only",
+      "feed": {
+        "first": "2025-09-12",
+        "full": "2025-09-12"
+      },
+      "row": "s.42(4)"
+    },
+    {
+      "reader": {
+        "outcome": "by_order",
+        "full_from": null,
+        "undated": [
+          {
+            "text": "all except s.172, s.190 — appointed (by order) — everywhere, fully — by_order — UK_ukpga_1954_70 s.194: “This Act, except sections one hundred and seventy-two and one hundred and ninety thereof, shall come into operation on such day as the Minister may by order appoint, and those sections shall come into operation on the passing of this Act; and for the purposes of this Act and of the application thereto of section 13 of the Interpretation Act 1978 (which relates to the exercise of statutory powers between the passing and the commencement of an Act references to the commencement of this Act shall, notwithstanding the provisions of section 4 of the said Act of 1978 with respect to the construction of the expression “commencement”, be construed as references to the time at which this Act, except the said sections one hundred and seventy-two and one hundred and ninety, comes into operation.”",
+            "words": "This Act, except sections one hundred and seventy-two and one hundred and ninety thereof, shall come into operation on such day as the Minister may by order appoint, and those sections shall come into operation on the passing of this Act; and for the purposes of this Act and of the application thereto of section 13 of the Interpretation Act 1978 (which relates to the exercise of statutory powers b",
+            "source_ref": "s.194",
+            "source_law": "UK_ukpga_1954_70"
+          }
+        ],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "all except s.172, s.190 — appointed (by order) — everywhere, fully — by_order — UK_ukpga_1954_70 s.194: “This Act, except sections one hundred and seventy-two and one hundred and ninety thereof, shall come into operation on such day as the Minister may by order appoint, and those sections shall come into operation on the passing of this Act; and for the purposes of this Act and of the application thereto of section 13 of the Interpretation Act 1978 (which relates to the exercise of statutory powers between the passing and the commencement of an Act references to the commencement of this Act shall, notwithstanding the provisions of section 4 of the said Act of 1978 with respect to the construction of the expression “commencement”, be construed as references to the time at which this Act, except the said sections one hundred and seventy-two and one hundred and ninety, comes into operation.”",
+              "words": "This Act, except sections one hundred and seventy-two and one hundred and ninety thereof, shall come into operation on such day as the Minister may by order appoint, and those sections shall come into operation on the passing of this Act; and for the purposes of this Act and of the application thereto of section 13 of the Interpretation Act 1978 (which relates to the exercise of statutory powers b",
+              "source_ref": "s.194",
+              "source_law": "UK_ukpga_1954_70"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_ukpga_1954_70",
+      "yardstick": "neither",
+      "feed": null,
+      "row": "s.180(3)(c)"
+    },
+    {
+      "reader": {
+        "outcome": "dated",
+        "full_from": "2004-03-29",
+        "undated": [],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": "2004-03-29",
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "all — 2004-03-29 — everywhere, fully — clause_date — UK_nisr_2004_63 reg.1: “These Regulations may be cited as the Gas Safety (Installation and Use) Regulations (Northern Ireland) 2004 and shall come into operation on 29th March 2004.”",
+              "words": "These Regulations may be cited as the Gas Safety (Installation and Use) Regulations (Northern Ireland) 2004 and shall come into operation on 29th March 2004.",
+              "source_ref": "reg.1",
+              "source_law": "UK_nisr_2004_63"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_nisr_2004_63",
+      "yardstick": "agree",
+      "feed": {
+        "first": "2004-03-29",
+        "full": "2004-03-29"
+      },
+      "row": "reg.30(3)(a)"
+    },
+    {
+      "reader": {
+        "outcome": "dated",
+        "full_from": "2013-04-01",
+        "undated": [
+          {
+            "text": "rest except s.129 — appointed (by order) — everywhere, fully — provision_by_order — UK_asp_2012_8 s.129(2): “The other provisions of this Act come into force on such day as the Scottish Ministers may by order appoint.”",
+            "words": "The other provisions of this Act come into force on such day as the Scottish Ministers may by order appoint.",
+            "source_ref": "s.129(2)",
+            "source_law": "UK_asp_2012_8"
+          }
+        ],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": "2013-04-01",
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "all — 2013-04-01 — everywhere, fully — order_date — UK_ssi_2013_51 reg.2: “1st April 2013 is the day appointed for the coming into force of the Act, so far as not already in force.”",
+              "words": "1st April 2013 is the day appointed for the coming into force of the Act, so far as not already in force.",
+              "source_ref": "reg.2",
+              "source_law": "UK_ssi_2013_51"
+            },
+            "purposes": null
+          },
+          {
+            "date": null,
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "rest except s.129 — appointed (by order) — everywhere, fully — provision_by_order — UK_asp_2012_8 s.129(2): “The other provisions of this Act come into force on such day as the Scottish Ministers may by order appoint.”",
+              "words": "The other provisions of this Act come into force on such day as the Scottish Ministers may by order appoint.",
+              "source_ref": "s.129(2)",
+              "source_law": "UK_asp_2012_8"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_asp_2012_8",
+      "yardstick": "differ",
+      "feed": {
+        "first": "2013-01-01",
+        "full": "2013-01-01"
+      },
+      "row": "s.79(2)(a)(ii)"
+    },
+    {
+      "reader": {
+        "outcome": "dated",
+        "full_from": "2006-10-01",
+        "undated": [],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": "2006-10-01",
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "rest except reg.1 — 2006-10-01 — everywhere, fully — provision_dated — UK_uksi_2005_1541 reg.1(3): “The remaining provisions of this Order shall come into force on 1st October 2006.”",
+              "words": "The remaining provisions of this Order shall come into force on 1st October 2006.",
+              "source_ref": "reg.1(3)",
+              "source_law": "UK_uksi_2005_1541"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_uksi_2005_1541",
+      "yardstick": "feed_partial_only",
+      "feed": {
+        "first": "2023-10-01",
+        "full": null
+      },
+      "row": "reg.22A(9)"
+    },
+    {
+      "reader": {
+        "outcome": "dated",
+        "full_from": "2015-08-17",
+        "undated": [],
+        "partial_from": null,
+        "entries": [
+          {
+            "date": "2015-08-17",
+            "role": "normal",
+            "territory": null,
+            "rule": {
+              "text": "all — 2015-08-17 — everywhere, fully — clause_date — UK_uksi_2015_1553 reg.1: “These Regulations may be cited as the Pyrotechnic Articles (Safety) Regulations 2015 and come into force on 17th August 2015 (“the commencement date”).”",
+              "words": "These Regulations may be cited as the Pyrotechnic Articles (Safety) Regulations 2015 and come into force on 17th August 2015 (“the commencement date”).",
+              "source_ref": "reg.1",
+              "source_law": "UK_uksi_2015_1553"
+            },
+            "purposes": null
+          }
+        ]
+      },
+      "law": "UK_uksi_2015_1553",
+      "yardstick": "own_only",
+      "feed": null,
+      "row": "reg.38E(3)(b)"
+    },
+    {
+      "reader": {
+        "outcome": "eu_directive",
+        "full_from": null,
+        "undated": [],
+        "partial_from": null,
+        "entries": []
+      },
+      "law": "UK_eudr_2014_34",
+      "yardstick": "neither",
+      "feed": null,
+      "row": "art.Article 37(4)"
+    },
+    {
+      "reader": {
+        "outcome": "eu_publication_relative",
+        "full_from": null,
+        "undated": [],
+        "partial_from": null,
+        "entries": []
+      },
+      "law": "UK_eur_2019_1148",
+      "yardstick": "neither",
+      "feed": null,
+      "row": "art.Article 5(2)"
+    }
+  ],
+  "gaps": [
+    {
+      "key": "key-…ccbd67",
+      "target": "s.13",
+      "operation": "commenced",
+      "law": "UK_asc_2025_4",
+      "amending_law": "UK_asc_2025_4",
+      "at_each": [
+        {
+          "ref": "s.92(3)",
+          "rules": [
+            {
+              "text": "s.92 — 2025-09-12 — everywhere, fully — provision_dated — UK_asc_2025_4 s.92(3): “the commencement provision, with the law”",
+              "words": "the commencement provision, with the law",
+              "source_ref": "s.92(3)",
+              "source_law": "UK_asc_2025_4"
+            }
+          ],
+          "full_from": "2025-09-12"
+        }
+      ],
+      "gap_filler": "{:dated, ~D[2025-09-12], :feed}",
+      "named_provisions": [
+        "s.92(3)"
+      ]
+    },
+    {
+      "key": "d29p4002",
+      "target": "s.66(1)",
+      "operation": null,
+      "law": "UK_ukpga_1962_58",
+      "amending_law": "UK_uksi_2000_1937",
+      "at_each": [
+        {
+          "ref": "sch.1.para.9(e)",
+          "rules": [
+            {
+              "text": "all — 2000-08-10 — everywhere, fully — clause_date — UK_uksi_2000_1937 reg.1: “These Regulations may be cited as the Gas (Third Party Access and Accounts) Regulations 2000 and shall come into force on 10th August 2000.”",
+              "words": "These Regulations may be cited as the Gas (Third Party Access and Accounts) Regulations 2000 and shall come into force on 10th August 2000.",
+              "source_ref": "reg.1",
+              "source_law": "UK_uksi_2000_1937"
+            }
+          ],
+          "full_from": "2000-08-10"
+        }
+      ],
+      "gap_filler": "{:dated, ~D[2000-08-10], :note}",
+      "named_provisions": [
+        "sch.1.para.9(e)"
+      ]
+    },
+    {
+      "key": "key-…4952da",
+      "target": "sch.1.para.55",
+      "operation": "repealed",
+      "law": "UK_ukpga_2004_21",
+      "amending_law": "UK_ukpga_2006_49",
+      "at_each": [
+        {
+          "ref": "sch.7",
+          "rules": [
+            {
+              "text": "rest except s.61, s.62, s.63 — appointed (by order) — everywhere, fully — provision_by_order — UK_ukpga_2006_49 s.61(1): “The preceding provisions of this Act come into force on such day as the Secretary of State may by order made by statutory instrument appoint (but subject to subsections (7) to (10)).”",
+              "words": "The preceding provisions of this Act come into force on such day as the Secretary of State may by order made by statutory instrument appoint (but subject to subsections (7) to (10)).",
+              "source_ref": "s.61(1)",
+              "source_law": "UK_ukpga_2006_49"
+            },
+            {
+              "text": "rest except s.61, s.62, s.63 — appointed (by order) — everywhere, fully — provision_by_order — UK_ukpga_2006_49 s.61(1): “The preceding provisions of this Act come into force on such day as the Secretary of State may by order made by statutory instrument appoint (but subject to subsections (7) to (10)).”",
+              "words": "The preceding provisions of this Act come into force on such day as the Secretary of State may by order made by statutory instrument appoint (but subject to subsections (7) to (10)).",
+              "source_ref": "s.61(1)",
+              "source_law": "UK_ukpga_2006_49"
+            }
+          ],
+          "full_from": null
+        }
+      ],
+      "gap_filler": "{:undated, :appointed}",
+      "named_provisions": [
+        "sch.7"
+      ]
+    },
+    {
+      "key": "d29p98",
+      "target": "s.1(3)",
+      "operation": null,
+      "law": "UK_apni_1929_13",
+      "amending_law": null,
+      "at_each": [],
+      "gap_filler": "{:undated, :no_amending_law}",
+      "named_provisions": []
+    },
+    {
+      "key": "d30p1308",
+      "target": "s.18(6)",
+      "operation": null,
+      "law": "UK_ukpga_1969_10",
+      "amending_law": "UK_ukpga_1975_21",
+      "at_each": [],
+      "gap_filler": "{:undated, :no_pointer}",
+      "named_provisions": []
+    },
+    {
+      "key": "key-…5310d7",
+      "target": "s.66(1)",
+      "operation": "repealed",
+      "law": "UK_ukpga_1962_58",
+      "amending_law": "UK_asc_2026_7",
+      "at_each": [
+        {
+          "ref": "sch.2.para.51(a)",
+          "rules": [],
+          "full_from": null
+        }
+      ],
+      "gap_filler": "{:undated, :not_reached}",
+      "named_provisions": [
+        "sch.2.para.51(a)"
+      ]
+    },
+    {
+      "key": "key-…d1c557",
+      "target": "*",
+      "operation": null,
+      "law": "UK_ukpga_1962_58",
+      "amending_law": "UK_ukpga_1998_46",
+      "at_each": [
+        {
+          "ref": "s.30",
+          "rules": [
+            {
+              "text": "s.19, s.20, s.21, s.22, s.23, s.23A, s.24, s.25, s.26, s.27, s.28, s.29, s.30, s.30A, s.31, s.31A, s.32, s.32A, s.33, s.34, s.35, s.36, s.37, s.38, s.39, s.40, s.41, s.42, s.43, s.117, s.118, s.119, s.120, s.121, s.122, s.123, s.124, s.125, pt.II, pt.III, pt.IV, pt.V except sch.8.para.10, sch.8.para.11, sch.8.para.19, sch.8.para.23(1), sch.8.para.23(6) — appointed (by order) — everywhere, in relation to — provision_qualified — UK_ukpga_1998_46 s.130(1): “Sections 19 to 43, Parts II to V, sections 117 to 124 and section 125 (except so far as relating to paragraphs 10, 11, 19 and 23(1) and (6) of Schedule 8) shall come into force on such day as the Secretary of State may by order appoint.”",
+              "words": "Sections 19 to 43, Parts II to V, sections 117 to 124 and section 125 (except so far as relating to paragraphs 10, 11, 19 and 23(1) and (6) of Schedule 8) shall come into force on such day as the Secretary of State may by order appoint.",
+              "source_ref": "s.130(1)",
+              "source_law": "UK_ukpga_1998_46"
+            },
+            {
+              "text": "s.19, s.20, s.21, s.22, s.23, s.23A, s.24, s.25, s.26, s.27, s.28, s.29, s.30, s.30A, s.31, s.31A, s.32, s.32A, s.33, s.34, s.35, s.36, s.37, s.38, s.39, s.40, s.41, s.42, s.43, s.117, s.118, s.119, s.120, s.121, s.122, s.123, s.124, s.125, pt.II, pt.III, pt.IV, pt.V except sch.8.para.10, sch.8.para.11, sch.8.para.19, sch.8.para.23(1), sch.8.para.23(6) — appointed (by order) — everywhere, in relation to — provision_qualified — UK_ukpga_1998_46 s.130(1): “Sections 19 to 43, Parts II to V, sections 117 to 124 and section 125 (except so far as relating to paragraphs 10, 11, 19 and 23(1) and (6) of Schedule 8) shall come into force on such day as the Secretary of State may by order appoint.”",
+              "words": "Sections 19 to 43, Parts II to V, sections 117 to 124 and section 125 (except so far as relating to paragraphs 10, 11, 19 and 23(1) and (6) of Schedule 8) shall come into force on such day as the Secretary of State may by order appoint.",
+              "source_ref": "s.130(1)",
+              "source_law": "UK_ukpga_1998_46"
+            }
+          ],
+          "full_from": null
+        },
+        {
+          "ref": "sch.5.pt.2",
+          "rules": [
+            {
+              "text": "all — 1998-11-19 — everywhere, fully — act_enactment — UK_ukpga_1998_46 ukm:EnactmentDate",
+              "words": null,
+              "source_ref": "ukm:EnactmentDate",
+              "source_law": "UK_ukpga_1998_46"
+            }
+          ],
+          "full_from": "1998-11-19"
+        }
+      ],
+      "gap_filler": "{:undated, :provisions_disagree}",
+      "named_provisions": [
+        "s.30",
+        "sch.5.pt.2"
+      ]
+    },
+    {
+      "key": "key-…53a3a2",
+      "target": "sch.1",
+      "operation": null,
+      "law": "UK_ukpga_1998_17",
+      "amending_law": "UK_uksi_1999_160",
+      "at_each": [
+        {
+          "ref": "reg.3",
+          "rules": [],
+          "full_from": null
+        }
+      ],
+      "gap_filler": "{:undated, :rules_not_held}",
+      "named_provisions": [
+        "reg.3"
+      ]
+    },
+    {
+      "key": "key-…bd6642",
+      "target": "s.1",
+      "operation": "repealed",
+      "law": "UK_ukpga_1966_4",
+      "amending_law": "UK_ukpga_1994_21",
+      "at_each": [
+        {
+          "ref": "sch.9.para.10(1)(b)",
+          "rules": [
+            {
+              "text": "sch.9, s.67 — unread — everywhere, in relation to — provision_qualified — UK_ukpga_1994_21 s.68(3): “The following provisions of this Act shall come into force on the dissolution date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the dissolution date, that is to say—",
+              "source_ref": "s.68(3)",
+              "source_law": "UK_ukpga_1994_21"
+            },
+            {
+              "text": "s.10, s.11, s.18, s.23, s.31, s.32, s.33, s.34, s.36, s.38, s.39, s.40, s.41, s.42, s.43, s.44, s.48, s.49, s.50, s.51, s.52, s.53, s.55, sch.6, sch.7, sch.8, sch.9, sch.11.pt.II — unread — everywhere, fully — provision_unread — UK_ukpga_1994_21 s.68(2): “The following provisions of this Act shall come into force on the restructuring date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the restructuring date, that is to say—",
+              "source_ref": "s.68(2)",
+              "source_law": "UK_ukpga_1994_21"
+            },
+            {
+              "text": "sch.9, s.67 — unread — everywhere, in relation to — provision_qualified — UK_ukpga_1994_21 s.68(3): “The following provisions of this Act shall come into force on the dissolution date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the dissolution date, that is to say—",
+              "source_ref": "s.68(3)",
+              "source_law": "UK_ukpga_1994_21"
+            },
+            {
+              "text": "s.10, s.11, s.18, s.23, s.31, s.32, s.33, s.34, s.36, s.38, s.39, s.40, s.41, s.42, s.43, s.44, s.48, s.49, s.50, s.51, s.52, s.53, s.55, sch.6, sch.7, sch.8, sch.9, sch.11.pt.II — unread — everywhere, fully — provision_unread — UK_ukpga_1994_21 s.68(2): “The following provisions of this Act shall come into force on the restructuring date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the restructuring date, that is to say—",
+              "source_ref": "s.68(2)",
+              "source_law": "UK_ukpga_1994_21"
+            }
+          ],
+          "full_from": null
+        },
+        {
+          "ref": "sch.11.pt.2",
+          "rules": [
+            {
+              "text": "s.10, s.11, s.18, s.23, s.31, s.32, s.33, s.34, s.36, s.38, s.39, s.40, s.41, s.42, s.43, s.44, s.48, s.49, s.50, s.51, s.52, s.53, s.55, sch.6, sch.7, sch.8, sch.9, sch.11.pt.II — unread — everywhere, fully — provision_unread — UK_ukpga_1994_21 s.68(2): “The following provisions of this Act shall come into force on the restructuring date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the restructuring date, that is to say—",
+              "source_ref": "s.68(2)",
+              "source_law": "UK_ukpga_1994_21"
+            },
+            {
+              "text": "s.10, s.11, s.18, s.23, s.31, s.32, s.33, s.34, s.36, s.38, s.39, s.40, s.41, s.42, s.43, s.44, s.48, s.49, s.50, s.51, s.52, s.53, s.55, sch.6, sch.7, sch.8, sch.9, sch.11.pt.II — unread — everywhere, fully — provision_unread — UK_ukpga_1994_21 s.68(2): “The following provisions of this Act shall come into force on the restructuring date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the restructuring date, that is to say—",
+              "source_ref": "s.68(2)",
+              "source_law": "UK_ukpga_1994_21"
+            }
+          ],
+          "full_from": null
+        }
+      ],
+      "gap_filler": "{:undated, :unread}",
+      "named_provisions": [
+        "sch.9.para.10(1)(b)",
+        "sch.11.pt.2"
+      ]
+    },
+    {
+      "key": "key-…26a49d",
+      "target": "s.3(4)",
+      "operation": "repealed_in_part",
+      "law": "UK_ukpga_1971_61",
+      "amending_law": "UK_uksi_1995_738",
+      "at_each": [
+        {
+          "ref": "reg.22",
+          "rules": [
+            {
+              "text": "all except reg.23(2) — 1995-06-20 — everywhere, fully — clause_date — UK_uksi_1995_738 reg.1: “These Regulations may be cited as the Offshore Installations and Pipeline Works (Management and Administration) Regulations 1995 and shall come into force on 20th June 1995, except regulation 23(2), which shall come into force on 20th June 1997.”",
+              "words": "These Regulations may be cited as the Offshore Installations and Pipeline Works (Management and Administration) Regulations 1995 and shall come into force on 20th June 1995, except regulation 23(2), which shall come into force on 20th June 1997.",
+              "source_ref": "reg.1",
+              "source_law": "UK_uksi_1995_738"
+            }
+          ],
+          "full_from": "1995-06-20"
+        },
+        {
+          "ref": "sch.1.pt.1",
+          "rules": [
+            {
+              "text": "all except reg.23(2) — 1995-06-20 — everywhere, fully — clause_date — UK_uksi_1995_738 reg.1: “These Regulations may be cited as the Offshore Installations and Pipeline Works (Management and Administration) Regulations 1995 and shall come into force on 20th June 1995, except regulation 23(2), which shall come into force on 20th June 1997.”",
+              "words": "These Regulations may be cited as the Offshore Installations and Pipeline Works (Management and Administration) Regulations 1995 and shall come into force on 20th June 1995, except regulation 23(2), which shall come into force on 20th June 1997.",
+              "source_ref": "reg.1",
+              "source_law": "UK_uksi_1995_738"
+            }
+          ],
+          "full_from": "1995-06-20"
+        }
+      ],
+      "gap_filler": "{:dated, ~D[1995-06-20], :feed}",
+      "named_provisions": [
+        "reg.22",
+        "sch.1.pt.1"
+      ]
+    },
+    {
+      "key": "d29p3714",
+      "target": "s.115",
+      "operation": null,
+      "law": "UK_ukpga_1875_17",
+      "amending_law": "UK_ukpga_1919_50",
+      "at_each": [
+        {
+          "ref": "sch.1.para.1",
+          "rules": [
+            {
+              "text": "all — 1919-08-15 — everywhere, fully — act_enactment — UK_ukpga_1919_50 ukm:EnactmentDate",
+              "words": null,
+              "source_ref": "ukm:EnactmentDate",
+              "source_law": "UK_ukpga_1919_50"
+            }
+          ],
+          "full_from": "1919-08-15"
+        },
+        {
+          "ref": "sch.1.para.1",
+          "rules": [
+            {
+              "text": "all — 1919-08-15 — everywhere, fully — act_enactment — UK_ukpga_1919_50 ukm:EnactmentDate",
+              "words": null,
+              "source_ref": "ukm:EnactmentDate",
+              "source_law": "UK_ukpga_1919_50"
+            }
+          ],
+          "full_from": "1919-08-15"
+        },
+        {
+          "ref": "sch.1.para.1",
+          "rules": [
+            {
+              "text": "all — 1919-08-15 — everywhere, fully — act_enactment — UK_ukpga_1919_50 ukm:EnactmentDate",
+              "words": null,
+              "source_ref": "ukm:EnactmentDate",
+              "source_law": "UK_ukpga_1919_50"
+            }
+          ],
+          "full_from": "1919-08-15"
+        },
+        {
+          "ref": "sch.1.para.1",
+          "rules": [
+            {
+              "text": "all — 1919-08-15 — everywhere, fully — act_enactment — UK_ukpga_1919_50 ukm:EnactmentDate",
+              "words": null,
+              "source_ref": "ukm:EnactmentDate",
+              "source_law": "UK_ukpga_1919_50"
+            }
+          ],
+          "full_from": "1919-08-15"
+        },
+        {
+          "ref": "sch.1.para.1",
+          "rules": [
+            {
+              "text": "all — 1919-08-15 — everywhere, fully — act_enactment — UK_ukpga_1919_50 ukm:EnactmentDate",
+              "words": null,
+              "source_ref": "ukm:EnactmentDate",
+              "source_law": "UK_ukpga_1919_50"
+            }
+          ],
+          "full_from": "1919-08-15"
+        }
+      ],
+      "gap_filler": "{:dated, ~D[1919-08-15], :note}",
+      "named_provisions": [
+        "sch.1.para.1",
+        "sch.1.para.1",
+        "sch.1.para.1",
+        "sch.1.para.1",
+        "sch.1.para.1"
+      ]
+    },
+    {
+      "key": "key-…545800",
+      "target": "reg.26(4)",
+      "operation": "inserted",
+      "law": "UK_uksi_2005_1541",
+      "amending_law": "UK_asc_2026_5",
+      "at_each": [
+        {
+          "ref": "s.121(5)",
+          "rules": [
+            {
+              "text": "rest except s.138 — appointed (by order) — everywhere, fully — provision_by_order — UK_asc_2026_5 s.138(2): “The other provisions of this Act come into force on a day appointed by the Welsh Ministers in an order made by Welsh statutory instrument.”",
+              "words": "The other provisions of this Act come into force on a day appointed by the Welsh Ministers in an order made by Welsh statutory instrument.",
+              "source_ref": "s.138(2)",
+              "source_law": "UK_asc_2026_5"
+            },
+            {
+              "text": "rest except s.138 — appointed (by order) — everywhere, fully — provision_by_order — UK_asc_2026_5 s.138(2): “The other provisions of this Act come into force on a day appointed by the Welsh Ministers in an order made by Welsh statutory instrument.”",
+              "words": "The other provisions of this Act come into force on a day appointed by the Welsh Ministers in an order made by Welsh statutory instrument.",
+              "source_ref": "s.138(2)",
+              "source_law": "UK_asc_2026_5"
+            }
+          ],
+          "full_from": null
+        }
+      ],
+      "gap_filler": "{:undated, :appointed}",
+      "named_provisions": [
+        "s.121(5)"
+      ]
+    },
+    {
+      "key": "key-…f08893",
+      "target": "reg.3",
+      "operation": null,
+      "law": "UK_uksi_1989_971",
+      "amending_law": null,
+      "at_each": [],
+      "gap_filler": "{:undated, :no_amending_law}",
+      "named_provisions": []
+    },
+    {
+      "key": "key-…ade819",
+      "target": "annex.I",
+      "operation": "substituted",
+      "law": "UK_eudr_2008_68",
+      "amending_law": "UK_eudr_2016_2309",
+      "at_each": [],
+      "gap_filler": "{:undated, :no_pointer}",
+      "named_provisions": []
+    },
+    {
+      "key": "M_F_61a8fc30-f1f9-4865-a3f5-6455e705baf6-1669825614077",
+      "target": "reg.74",
+      "operation": "substituted",
+      "law": "UK_uksi_2014_1638",
+      "amending_law": "UK_uksi_2020_852",
+      "at_each": [
+        {
+          "ref": "sch.1.para.1(f)(iii)",
+          "rules": [],
+          "full_from": null
+        }
+      ],
+      "gap_filler": "{:undated, :not_reached}",
+      "named_provisions": [
+        "sch.1.para.1(f)(iii)"
+      ]
+    },
+    {
+      "key": "key-…597106",
+      "target": "s.2(3)(b)",
+      "operation": "repealed",
+      "law": "UK_ukpga_1992_15",
+      "amending_law": "UK_ukpga_2000_27",
+      "at_each": [
+        {
+          "ref": "s.108",
+          "rules": [
+            {
+              "text": "s.108 — 2000-12-20 — everywhere, in relation to — order_schedule — UK_uksi_2000_3343 sch: “Section 108 (amendments, transitional provisions and repeals) | For the purpose of the provisions of Schedules 6, 7 and 8 brought into force”",
+              "words": "Section 108 (amendments, transitional provisions and repeals) | For the purpose of the provisions of Schedules 6, 7 and 8 brought into force",
+              "source_ref": "sch",
+              "source_law": "UK_uksi_2000_3343"
+            },
+            {
+              "text": "s.108 — 2001-10-01 — everywhere, fully — order_schedule — UK_uksi_2001_3266 sch: “Section 108 (amendments, transitional provisions and repeals) | For all remaining purposes”",
+              "words": "Section 108 (amendments, transitional provisions and repeals) | For all remaining purposes",
+              "source_ref": "sch",
+              "source_law": "UK_uksi_2001_3266"
+            },
+            {
+              "text": "all except s.110, s.68 — appointed (by order) — everywhere, fully — by_order — UK_ukpga_2000_27 s.110(2): “This Act (apart from this section and section 68) shall come into force on such day as the Secretary of State may by order made by statutory instrument appoint; and different days may be appointed for different purposes.”",
+              "words": "This Act (apart from this section and section 68) shall come into force on such day as the Secretary of State may by order made by statutory instrument appoint; and different days may be appointed for different purposes.",
+              "source_ref": "s.110(2)",
+              "source_law": "UK_ukpga_2000_27"
+            },
+            {
+              "text": "all except s.110, s.68 — appointed (by order) — everywhere, fully — by_order — UK_ukpga_2000_27 s.110(2): “This Act (apart from this section and section 68) shall come into force on such day as the Secretary of State may by order made by statutory instrument appoint; and different days may be appointed for different purposes.”",
+              "words": "This Act (apart from this section and section 68) shall come into force on such day as the Secretary of State may by order made by statutory instrument appoint; and different days may be appointed for different purposes.",
+              "source_ref": "s.110(2)",
+              "source_law": "UK_ukpga_2000_27"
+            }
+          ],
+          "full_from": "2001-10-01"
+        },
+        {
+          "ref": "sch.8",
+          "rules": [
+            {
+              "text": "all except s.110, s.68 — appointed (by order) — everywhere, fully — by_order — UK_ukpga_2000_27 s.110(2): “This Act (apart from this section and section 68) shall come into force on such day as the Secretary of State may by order made by statutory instrument appoint; and different days may be appointed for different purposes.”",
+              "words": "This Act (apart from this section and section 68) shall come into force on such day as the Secretary of State may by order made by statutory instrument appoint; and different days may be appointed for different purposes.",
+              "source_ref": "s.110(2)",
+              "source_law": "UK_ukpga_2000_27"
+            },
+            {
+              "text": "all except s.110, s.68 — appointed (by order) — everywhere, fully — by_order — UK_ukpga_2000_27 s.110(2): “This Act (apart from this section and section 68) shall come into force on such day as the Secretary of State may by order made by statutory instrument appoint; and different days may be appointed for different purposes.”",
+              "words": "This Act (apart from this section and section 68) shall come into force on such day as the Secretary of State may by order made by statutory instrument appoint; and different days may be appointed for different purposes.",
+              "source_ref": "s.110(2)",
+              "source_law": "UK_ukpga_2000_27"
+            }
+          ],
+          "full_from": null
+        }
+      ],
+      "gap_filler": "{:undated, :provisions_disagree}",
+      "named_provisions": [
+        "s.108",
+        "sch.8"
+      ]
+    },
+    {
+      "key": "key-…3cccd4",
+      "target": "s.1",
+      "operation": null,
+      "law": "UK_ukpga_1971_61",
+      "amending_law": "UK_ukpga_1995_39",
+      "at_each": [
+        {
+          "ref": "s.33",
+          "rules": [],
+          "full_from": null
+        }
+      ],
+      "gap_filler": "{:undated, :rules_not_held}",
+      "named_provisions": [
+        "s.33"
+      ]
+    },
+    {
+      "key": "key-…4d594a",
+      "target": "s.9",
+      "operation": "repealed_in_part",
+      "law": "UK_ukpga_1966_4",
+      "amending_law": "UK_ukpga_1994_21",
+      "at_each": [
+        {
+          "ref": "sch.11.pt.2",
+          "rules": [
+            {
+              "text": "s.10, s.11, s.18, s.23, s.31, s.32, s.33, s.34, s.36, s.38, s.39, s.40, s.41, s.42, s.43, s.44, s.48, s.49, s.50, s.51, s.52, s.53, s.55, sch.6, sch.7, sch.8, sch.9, sch.11.pt.II — unread — everywhere, fully — provision_unread — UK_ukpga_1994_21 s.68(2): “The following provisions of this Act shall come into force on the restructuring date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the restructuring date, that is to say—",
+              "source_ref": "s.68(2)",
+              "source_law": "UK_ukpga_1994_21"
+            },
+            {
+              "text": "s.10, s.11, s.18, s.23, s.31, s.32, s.33, s.34, s.36, s.38, s.39, s.40, s.41, s.42, s.43, s.44, s.48, s.49, s.50, s.51, s.52, s.53, s.55, sch.6, sch.7, sch.8, sch.9, sch.11.pt.II — unread — everywhere, fully — provision_unread — UK_ukpga_1994_21 s.68(2): “The following provisions of this Act shall come into force on the restructuring date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the restructuring date, that is to say—",
+              "source_ref": "s.68(2)",
+              "source_law": "UK_ukpga_1994_21"
+            }
+          ],
+          "full_from": null
+        }
+      ],
+      "gap_filler": "{:undated, :unread}",
+      "named_provisions": [
+        "sch.11.pt.2"
+      ]
+    },
+    {
+      "key": "key-…db942d",
+      "target": "s.23",
+      "operation": "commenced",
+      "law": "UK_asc_2025_4",
+      "amending_law": "UK_asc_2025_4",
+      "at_each": [
+        {
+          "ref": "s.92(3)",
+          "rules": [
+            {
+              "text": "s.92 — 2025-09-12 — everywhere, fully — provision_dated — UK_asc_2025_4 s.92(3): “the commencement provision, with the law”",
+              "words": "the commencement provision, with the law",
+              "source_ref": "s.92(3)",
+              "source_law": "UK_asc_2025_4"
+            }
+          ],
+          "full_from": "2025-09-12"
+        }
+      ],
+      "gap_filler": "{:dated, ~D[2025-09-12], :feed}",
+      "named_provisions": [
+        "s.92(3)"
+      ]
+    },
+    {
+      "key": "d29p3318",
+      "target": "s.28(1)",
+      "operation": null,
+      "law": "UK_ukpga_1998_17",
+      "amending_law": "UK_uksi_2000_1937",
+      "at_each": [
+        {
+          "ref": "sch.4.para.9(e)",
+          "rules": [
+            {
+              "text": "all — 2000-08-10 — everywhere, fully — clause_date — UK_uksi_2000_1937 reg.1: “These Regulations may be cited as the Gas (Third Party Access and Accounts) Regulations 2000 and shall come into force on 10th August 2000.”",
+              "words": "These Regulations may be cited as the Gas (Third Party Access and Accounts) Regulations 2000 and shall come into force on 10th August 2000.",
+              "source_ref": "reg.1",
+              "source_law": "UK_uksi_2000_1937"
+            }
+          ],
+          "full_from": "2000-08-10"
+        }
+      ],
+      "gap_filler": "{:dated, ~D[2000-08-10], :note}",
+      "named_provisions": [
+        "sch.4.para.9(e)"
+      ]
+    },
+    {
+      "key": "key-…a7e3b6",
+      "target": "s.11(3)(b)",
+      "operation": "substituted",
+      "law": "UK_ukpga_1969_10",
+      "amending_law": "UK_ukpga_1994_39",
+      "at_each": [
+        {
+          "ref": "s.180(1)",
+          "rules": [
+            {
+              "text": "s.180 — 1995-01-04 — everywhere, in relation to — order_date — UK_uksi_1994_2850 reg.3: “4th January 1995 is the day appointed for the coming into force of … section 180 of the Act, so far as it relates to the provisions of Schedules 13 and 14 to the Act specified in paragraphs (c) and (d) below”",
+              "words": "4th January 1995 is the day appointed for the coming into force of … section 180 of the Act, so far as it relates to the provisions of Schedules 13 and 14 to the Act specified in paragraphs (c) and (d) below",
+              "source_ref": "reg.3",
+              "source_law": "UK_uksi_1994_2850"
+            },
+            {
+              "text": "s.180 — 1995-07-17 — everywhere, in relation to — order_date — UK_uksi_1995_1898 reg.2: “17th July 1995 is the day appointed for the coming into force of … section 180 of the Act, so far as it relates to the provision in Schedule 13 to the Act specified in paragraph (d) below”",
+              "words": "17th July 1995 is the day appointed for the coming into force of … section 180 of the Act, so far as it relates to the provision in Schedule 13 to the Act specified in paragraph (d) below",
+              "source_ref": "reg.2",
+              "source_law": "UK_uksi_1995_1898"
+            },
+            {
+              "text": "s.180 — 1996-02-19 — everywhere, in relation to — order_date — UK_uksi_1996_323 reg.2(1): “Subject to paragraph (2) below, 19th February 1996 is the day appointed for the coming into force of … section 180 of the Act, so far as it relates to the provisions in Schedules 13 and 14 to the Act specified in sub-paragraphs (c) and (d) below”",
+              "words": "Subject to paragraph (2) below, 19th February 1996 is the day appointed for the coming into force of … section 180 of the Act, so far as it relates to the provisions in Schedules 13 and 14 to the Act specified in sub-paragraphs (c) and (d) below",
+              "source_ref": "reg.2(1)",
+              "source_law": "UK_uksi_1996_323"
+            },
+            {
+              "text": "s.180 — 1996-03-31 — everywhere, in relation to — order_date — UK_uksi_1996_323 reg.3: “31st March 1996 is the day appointed for the coming into force of … section 180 of the Act, so far as it relates to the provision in Schedule 13 to the Act specified in paragraph (b) below, and b”",
+              "words": "31st March 1996 is the day appointed for the coming into force of … section 180 of the Act, so far as it relates to the provision in Schedule 13 to the Act specified in paragraph (b) below, and b",
+              "source_ref": "reg.3",
+              "source_law": "UK_uksi_1996_323"
+            },
+            {
+              "text": "s.180 — 1996-04-01 — everywhere, in relation to — order_date — UK_uksi_1996_323 reg.4(1): “Subject to paragraph (2) below, 1st April 1996 is the day appointed for the coming into force of … section 180 of the Act, so far as it relates to the provisions in Schedules 13 and 14 to the Act specified in sub-paragraphs (c) and (d) below”",
+              "words": "Subject to paragraph (2) below, 1st April 1996 is the day appointed for the coming into force of … section 180 of the Act, so far as it relates to the provisions in Schedules 13 and 14 to the Act specified in sub-paragraphs (c) and (d) below",
+              "source_ref": "reg.4(1)",
+              "source_law": "UK_uksi_1996_323"
+            },
+            {
+              "text": "all except s.163 — appointed (by order) — everywhere, fully — by_order — UK_ukpga_1994_39 s.184(2): “This Act, except section 163, shall come into force on such day as the Secretary of State may by order made by statutory instrument appoint, and different days may be appointed for different purposes.”",
+              "words": "This Act, except section 163, shall come into force on such day as the Secretary of State may by order made by statutory instrument appoint, and different days may be appointed for different purposes.",
+              "source_ref": "s.184(2)",
+              "source_law": "UK_ukpga_1994_39"
+            },
+            {
+              "text": "all except s.163 — appointed (by order) — everywhere, fully — by_order — UK_ukpga_1994_39 s.184(2): “This Act, except section 163, shall come into force on such day as the Secretary of State may by order made by statutory instrument appoint, and different days may be appointed for different purposes.”",
+              "words": "This Act, except section 163, shall come into force on such day as the Secretary of State may by order made by statutory instrument appoint, and different days may be appointed for different purposes.",
+              "source_ref": "s.184(2)",
+              "source_law": "UK_ukpga_1994_39"
+            }
+          ],
+          "full_from": null
+        },
+        {
+          "ref": "sch.13.para.81",
+          "rules": [
+            {
+              "text": "sch.13.para.1, sch.13.para.2, sch.13.para.4, sch.13.para.5, sch.13.para.6, sch.13.para.8..sch.13.para.26, sch.13.para.27, sch.13.para.28..sch.13.para.33, sch.13.para.35..sch.13.para.37, sch.13.para.38(1), sch.13.para.38(8), sch.13.para.39..sch.13.para.56, sch.13.para.58, sch.13.para.59, sch.13.para.60, sch.13.para.61, sch.13.para.63..sch.13.para.66, sch.13.para.67, sch.13.para.68..sch.13.para.70, sch.13.para.71, sch.13.para.72, sch.13.para.73, sch.13.para.74, sch.13.para.75, sch.13.para.76..sch.13.para.84, sch.13.para.85(1), sch.13.para.85(2), sch.13.para.85(3)(b)(ii), sch.13.para.85(3)(b)(c), sch.13.para.86..sch.13.para.91, sch.13.para.92, sch.13.para.93(1), sch.13.para.93(3), sch.13.para.94, sch.13.para.95(3), sch.13.para.95(5)..sch.13.para.95(7), sch.13.para.95(10), sch.13.para.96..sch.13.para.99, sch.13.para.100(6)..sch.13.para.100(8), sch.13.para.100(9)(a)..sch.13.para.100(9)(i), sch.13.para.101..sch.13.para.115, sch.13.para.116(1)..sch.13.para.116(5), sch.13.para.117, sch.13.para.118, sch.13.para.119, sch.13.para.120..sch.13.para.128, sch.13.para.129, sch.13.para.130..sch.13.para.148, sch.13.para.150..sch.13.para.155, sch.13.para.156, sch.13.para.157..sch.13.para.161, sch.13.para.163..sch.13.para.166, sch.13.para.167, sch.13.para.168..sch.13.para.175, sch.13.para.176, sch.13.para.178..sch.13.para.184 — 1996-04-01 — everywhere, in relation to — order_date — UK_uksi_1996_323 reg.4(1): “Subject to paragraph (2) below, 1st April 1996 is the day appointed for the coming into force of … in Schedule 13 to the Act, paragraphs 1, 2, 4 (so far as not already in force), 5, 6, 8 to 26, 27 (so far as not already in force), 28 to 33, 35 to 37, 38(1) and (8), 39 to 56, 58, 59, 60 (so far as not already in force), 61, 63 to 66, 67 (so far as not already in force), 68 to 70, 71 (so far as not already in force), 72 (so far as already not in force), 73, 74, 75 (so far as not already in force), 76 to 84, 85(1), (2) and (3)(b)(ii) and (c), 86 to 91, 92 (other than sub-paragraphs (34), (35) and (48) and so far as not already in force), 93(1) and (3), 94, 95(3), (5) to (7) and (10), 96 to 99, 100(6) to (8) and (9)(a) to (i) (so far as not already in force), 101 to 115, 116(1) to (5), 117, 118, 119 (other than sub-paragraph (54)(a)(ii) and (h)(iii) and so far as not already in force), 120 to 128, 129 (so far as not already in force), 130 to 148, 150 to 155, 156 (so far as not already in force), 157 to 161, 163 to 166, 167 (other than sub-paragraphs (2), (4), (5), (7) and (9)), 168 to 175, 176 (so far as not already in force) and 178 to 184”",
+              "words": "Subject to paragraph (2) below, 1st April 1996 is the day appointed for the coming into force of … in Schedule 13 to the Act, paragraphs 1, 2, 4 (so far as not already in force), 5, 6, 8 to 26, 27 (so far as not already in force), 28 to 33, 35 to 37, 38(1) and (8), 39 to 56, 58, 59, 60 (so far as not already in force), 61, 63 to 66, 67 (so far as not already in force), 68 to 70, 71 (so far as not ",
+              "source_ref": "reg.4(1)",
+              "source_law": "UK_uksi_1996_323"
+            },
+            {
+              "text": "all except s.163 — appointed (by order) — everywhere, fully — by_order — UK_ukpga_1994_39 s.184(2): “This Act, except section 163, shall come into force on such day as the Secretary of State may by order made by statutory instrument appoint, and different days may be appointed for different purposes.”",
+              "words": "This Act, except section 163, shall come into force on such day as the Secretary of State may by order made by statutory instrument appoint, and different days may be appointed for different purposes.",
+              "source_ref": "s.184(2)",
+              "source_law": "UK_ukpga_1994_39"
+            },
+            {
+              "text": "all except s.163 — appointed (by order) — everywhere, fully — by_order — UK_ukpga_1994_39 s.184(2): “This Act, except section 163, shall come into force on such day as the Secretary of State may by order made by statutory instrument appoint, and different days may be appointed for different purposes.”",
+              "words": "This Act, except section 163, shall come into force on such day as the Secretary of State may by order made by statutory instrument appoint, and different days may be appointed for different purposes.",
+              "source_ref": "s.184(2)",
+              "source_law": "UK_ukpga_1994_39"
+            }
+          ],
+          "full_from": null
+        }
+      ],
+      "gap_filler": "{:undated, :appointed}",
+      "named_provisions": [
+        "s.180(1)",
+        "sch.13.para.81"
+      ]
+    },
+    {
+      "key": "key-…efd6ea",
+      "target": "s.28",
+      "operation": null,
+      "law": "UK_ukpga_2004_21",
+      "amending_law": null,
+      "at_each": [],
+      "gap_filler": "{:undated, :no_amending_law}",
+      "named_provisions": []
+    },
+    {
+      "key": "key-…cbeff2",
+      "target": "annex.I",
+      "operation": "substituted",
+      "law": "UK_eudr_2008_68",
+      "amending_law": "UK_eudr_2010_61",
+      "at_each": [],
+      "gap_filler": "{:undated, :no_pointer}",
+      "named_provisions": []
+    },
+    {
+      "key": "UK_ukpga_2011_20:section-9-5",
+      "target": "s.60(1)",
+      "operation": "inserted",
+      "law": "UK_ukpga_2004_21",
+      "amending_law": null,
+      "at_each": [],
+      "gap_filler": "{:undated, :not_reached}",
+      "named_provisions": []
+    },
+    {
+      "key": "key-…23a4c7",
+      "target": "*",
+      "operation": null,
+      "law": "UK_ukpga_1998_33",
+      "amending_law": "UK_uksi_2001_3499",
+      "at_each": [
+        {
+          "ref": "reg.2(1)",
+          "rules": [],
+          "full_from": null
+        }
+      ],
+      "gap_filler": "{:undated, :rules_not_held}",
+      "named_provisions": [
+        "reg.2(1)"
+      ]
+    },
+    {
+      "key": "key-…bae1c2",
+      "target": "s.4(5)",
+      "operation": null,
+      "law": "UK_ukpga_1966_4",
+      "amending_law": "UK_ukpga_1994_21",
+      "at_each": [
+        {
+          "ref": "sch.9.para.10(3)(a)",
+          "rules": [
+            {
+              "text": "sch.9, s.67 — unread — everywhere, in relation to — provision_qualified — UK_ukpga_1994_21 s.68(3): “The following provisions of this Act shall come into force on the dissolution date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the dissolution date, that is to say—",
+              "source_ref": "s.68(3)",
+              "source_law": "UK_ukpga_1994_21"
+            },
+            {
+              "text": "s.10, s.11, s.18, s.23, s.31, s.32, s.33, s.34, s.36, s.38, s.39, s.40, s.41, s.42, s.43, s.44, s.48, s.49, s.50, s.51, s.52, s.53, s.55, sch.6, sch.7, sch.8, sch.9, sch.11.pt.II — unread — everywhere, fully — provision_unread — UK_ukpga_1994_21 s.68(2): “The following provisions of this Act shall come into force on the restructuring date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the restructuring date, that is to say—",
+              "source_ref": "s.68(2)",
+              "source_law": "UK_ukpga_1994_21"
+            },
+            {
+              "text": "sch.9, s.67 — unread — everywhere, in relation to — provision_qualified — UK_ukpga_1994_21 s.68(3): “The following provisions of this Act shall come into force on the dissolution date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the dissolution date, that is to say—",
+              "source_ref": "s.68(3)",
+              "source_law": "UK_ukpga_1994_21"
+            },
+            {
+              "text": "s.10, s.11, s.18, s.23, s.31, s.32, s.33, s.34, s.36, s.38, s.39, s.40, s.41, s.42, s.43, s.44, s.48, s.49, s.50, s.51, s.52, s.53, s.55, sch.6, sch.7, sch.8, sch.9, sch.11.pt.II — unread — everywhere, fully — provision_unread — UK_ukpga_1994_21 s.68(2): “The following provisions of this Act shall come into force on the restructuring date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the restructuring date, that is to say—",
+              "source_ref": "s.68(2)",
+              "source_law": "UK_ukpga_1994_21"
+            }
+          ],
+          "full_from": null
+        }
+      ],
+      "gap_filler": "{:undated, :unread}",
+      "named_provisions": [
+        "sch.9.para.10(3)(a)"
+      ]
+    },
+    {
+      "key": "key-…9cb9d7",
+      "target": "s.22(1)",
+      "operation": null,
+      "law": "UK_ukpga_1971_40",
+      "amending_law": "UK_uksi_1997_1840",
+      "at_each": [
+        {
+          "ref": "reg.17(1)(2)(3)(a)",
+          "rules": [
+            {
+              "text": "all — 1997-12-01 — everywhere, fully — clause_date — UK_uksi_1997_1840 reg.1(1): “These Regulations may be cited as the Fire Precautions (Workplace) Regulations 1997 and shall come into force on 1st December 1997.”",
+              "words": "These Regulations may be cited as the Fire Precautions (Workplace) Regulations 1997 and shall come into force on 1st December 1997.",
+              "source_ref": "reg.1(1)",
+              "source_law": "UK_uksi_1997_1840"
+            }
+          ],
+          "full_from": "1997-12-01"
+        },
+        {
+          "ref": "reg.17(1)(2)(3)(b)",
+          "rules": [
+            {
+              "text": "all — 1997-12-01 — everywhere, fully — clause_date — UK_uksi_1997_1840 reg.1(1): “These Regulations may be cited as the Fire Precautions (Workplace) Regulations 1997 and shall come into force on 1st December 1997.”",
+              "words": "These Regulations may be cited as the Fire Precautions (Workplace) Regulations 1997 and shall come into force on 1st December 1997.",
+              "source_ref": "reg.1(1)",
+              "source_law": "UK_uksi_1997_1840"
+            }
+          ],
+          "full_from": "1997-12-01"
+        },
+        {
+          "ref": "reg.17(1)(2)(3)(c)",
+          "rules": [
+            {
+              "text": "all — 1997-12-01 — everywhere, fully — clause_date — UK_uksi_1997_1840 reg.1(1): “These Regulations may be cited as the Fire Precautions (Workplace) Regulations 1997 and shall come into force on 1st December 1997.”",
+              "words": "These Regulations may be cited as the Fire Precautions (Workplace) Regulations 1997 and shall come into force on 1st December 1997.",
+              "source_ref": "reg.1(1)",
+              "source_law": "UK_uksi_1997_1840"
+            }
+          ],
+          "full_from": "1997-12-01"
+        },
+        {
+          "ref": "reg.17(1)(2)(3)(d)",
+          "rules": [
+            {
+              "text": "all — 1997-12-01 — everywhere, fully — clause_date — UK_uksi_1997_1840 reg.1(1): “These Regulations may be cited as the Fire Precautions (Workplace) Regulations 1997 and shall come into force on 1st December 1997.”",
+              "words": "These Regulations may be cited as the Fire Precautions (Workplace) Regulations 1997 and shall come into force on 1st December 1997.",
+              "source_ref": "reg.1(1)",
+              "source_law": "UK_uksi_1997_1840"
+            }
+          ],
+          "full_from": "1997-12-01"
+        }
+      ],
+      "gap_filler": "{:dated, ~D[1997-12-01], :feed}",
+      "named_provisions": [
+        "reg.17(1)(2)(3)(a)",
+        "reg.17(1)(2)(3)(b)",
+        "reg.17(1)(2)(3)(c)",
+        "reg.17(1)(2)(3)(d)"
+      ]
+    },
+    {
+      "key": "d30p98",
+      "target": "s.3(1)",
+      "operation": null,
+      "law": "UK_ukpga_1883_3",
+      "amending_law": "UK_ukpga_1977_45",
+      "at_each": [
+        {
+          "ref": "sch.12",
+          "rules": [
+            {
+              "text": "sch.12 — 1977-09-08 — everywhere, fully — order_schedule — UK_uksi_1977_1365 sch: “So much of Schedule 12 as is specified in Appendix A hereto. | Minor and consequential amendments.”",
+              "words": "So much of Schedule 12 as is specified in Appendix A hereto. | Minor and consequential amendments.",
+              "source_ref": "sch",
+              "source_law": "UK_uksi_1977_1365"
+            },
+            {
+              "text": "sch.12 — 1977-09-08 — everywhere, fully — order_schedule — UK_uksi_1977_1365 sch.pt.1: “Schedule list schedule-part-1 … So much of Schedule 12 as amends the following enactments:—”",
+              "words": "Schedule list schedule-part-1 … So much of Schedule 12 as amends the following enactments:—",
+              "source_ref": "sch.pt.1",
+              "source_law": "UK_uksi_1977_1365"
+            },
+            {
+              "text": "sch.12 — 1978-07-17 — everywhere, fully — order_schedule — UK_uksi_1978_712 sch: “So much of Schedule 12 as has not already come into force | Minor and consequential amendments.”",
+              "words": "So much of Schedule 12 as has not already come into force | Minor and consequential amendments.",
+              "source_ref": "sch",
+              "source_law": "UK_uksi_1978_712"
+            },
+            {
+              "text": "all — appointed (by order) — everywhere, fully — by_order — UK_ukpga_1977_45 s.65(7): “This Act shall come into force on such day as the Secretary of State may appoint by order made by statutory instrument, and different days may be so appointed for different purposes.”",
+              "words": "This Act shall come into force on such day as the Secretary of State may appoint by order made by statutory instrument, and different days may be so appointed for different purposes.",
+              "source_ref": "s.65(7)",
+              "source_law": "UK_ukpga_1977_45"
+            },
+            {
+              "text": "all — appointed (by order) — everywhere, fully — by_order — UK_ukpga_1977_45 s.65(7): “This Act shall come into force on such day as the Secretary of State may appoint by order made by statutory instrument, and different days may be so appointed for different purposes.”",
+              "words": "This Act shall come into force on such day as the Secretary of State may appoint by order made by statutory instrument, and different days may be so appointed for different purposes.",
+              "source_ref": "s.65(7)",
+              "source_law": "UK_ukpga_1977_45"
+            }
+          ],
+          "full_from": "1977-09-08"
+        }
+      ],
+      "gap_filler": "{:dated, ~D[1977-09-08], :note}",
+      "named_provisions": [
+        "sch.12"
+      ]
+    },
+    {
+      "key": "UK_asc_2021_1:section-168-3",
+      "target": "s.24(4)",
+      "operation": "substituted",
+      "law": "UK_ukpga_2004_21",
+      "amending_law": null,
+      "at_each": [],
+      "gap_filler": "{:undated, :appointed}",
+      "named_provisions": []
+    },
+    {
+      "key": "key-…27f075",
+      "target": "s.53",
+      "operation": null,
+      "law": "UK_ukpga_2004_21",
+      "amending_law": null,
+      "at_each": [],
+      "gap_filler": "{:undated, :no_amending_law}",
+      "named_provisions": []
+    },
+    {
+      "key": "key-…9dae10",
+      "target": "annex.II",
+      "operation": "substituted",
+      "law": "UK_eudr_2008_68",
+      "amending_law": "UK_eudn_2020_1241",
+      "at_each": [],
+      "gap_filler": "{:undated, :no_pointer}",
+      "named_provisions": []
+    },
+    {
+      "key": "key-…0b5ffc",
+      "target": "s.9A(6)",
+      "operation": "inserted",
+      "law": "UK_ukpga_1962_58",
+      "amending_law": "UK_asc_2026_7",
+      "at_each": [
+        {
+          "ref": "sch.2.para.49(b)",
+          "rules": [],
+          "full_from": null
+        }
+      ],
+      "gap_filler": "{:undated, :not_reached}",
+      "named_provisions": [
+        "sch.2.para.49(b)"
+      ]
+    },
+    {
+      "key": "key-…882963",
+      "target": "s.7(1)",
+      "operation": null,
+      "law": "UK_ukpga_1962_58",
+      "amending_law": "UK_uksi_1994_1994",
+      "at_each": [
+        {
+          "ref": "reg.3",
+          "rules": [],
+          "full_from": null
+        }
+      ],
+      "gap_filler": "{:undated, :rules_not_held}",
+      "named_provisions": [
+        "reg.3"
+      ]
+    },
+    {
+      "key": "key-…fc2a6e",
+      "target": "s.1",
+      "operation": "repealed",
+      "law": "UK_ukpga_1966_4",
+      "amending_law": "UK_ukpga_1994_21",
+      "at_each": [
+        {
+          "ref": "sch.9.para.10(1)(a)",
+          "rules": [
+            {
+              "text": "sch.9, s.67 — unread — everywhere, in relation to — provision_qualified — UK_ukpga_1994_21 s.68(3): “The following provisions of this Act shall come into force on the dissolution date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the dissolution date, that is to say—",
+              "source_ref": "s.68(3)",
+              "source_law": "UK_ukpga_1994_21"
+            },
+            {
+              "text": "s.10, s.11, s.18, s.23, s.31, s.32, s.33, s.34, s.36, s.38, s.39, s.40, s.41, s.42, s.43, s.44, s.48, s.49, s.50, s.51, s.52, s.53, s.55, sch.6, sch.7, sch.8, sch.9, sch.11.pt.II — unread — everywhere, fully — provision_unread — UK_ukpga_1994_21 s.68(2): “The following provisions of this Act shall come into force on the restructuring date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the restructuring date, that is to say—",
+              "source_ref": "s.68(2)",
+              "source_law": "UK_ukpga_1994_21"
+            },
+            {
+              "text": "sch.9, s.67 — unread — everywhere, in relation to — provision_qualified — UK_ukpga_1994_21 s.68(3): “The following provisions of this Act shall come into force on the dissolution date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the dissolution date, that is to say—",
+              "source_ref": "s.68(3)",
+              "source_law": "UK_ukpga_1994_21"
+            },
+            {
+              "text": "s.10, s.11, s.18, s.23, s.31, s.32, s.33, s.34, s.36, s.38, s.39, s.40, s.41, s.42, s.43, s.44, s.48, s.49, s.50, s.51, s.52, s.53, s.55, sch.6, sch.7, sch.8, sch.9, sch.11.pt.II — unread — everywhere, fully — provision_unread — UK_ukpga_1994_21 s.68(2): “The following provisions of this Act shall come into force on the restructuring date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the restructuring date, that is to say—",
+              "source_ref": "s.68(2)",
+              "source_law": "UK_ukpga_1994_21"
+            }
+          ],
+          "full_from": null
+        },
+        {
+          "ref": "sch.11.pt.2",
+          "rules": [
+            {
+              "text": "s.10, s.11, s.18, s.23, s.31, s.32, s.33, s.34, s.36, s.38, s.39, s.40, s.41, s.42, s.43, s.44, s.48, s.49, s.50, s.51, s.52, s.53, s.55, sch.6, sch.7, sch.8, sch.9, sch.11.pt.II — unread — everywhere, fully — provision_unread — UK_ukpga_1994_21 s.68(2): “The following provisions of this Act shall come into force on the restructuring date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the restructuring date, that is to say—",
+              "source_ref": "s.68(2)",
+              "source_law": "UK_ukpga_1994_21"
+            },
+            {
+              "text": "s.10, s.11, s.18, s.23, s.31, s.32, s.33, s.34, s.36, s.38, s.39, s.40, s.41, s.42, s.43, s.44, s.48, s.49, s.50, s.51, s.52, s.53, s.55, sch.6, sch.7, sch.8, sch.9, sch.11.pt.II — unread — everywhere, fully — provision_unread — UK_ukpga_1994_21 s.68(2): “The following provisions of this Act shall come into force on the restructuring date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the restructuring date, that is to say—",
+              "source_ref": "s.68(2)",
+              "source_law": "UK_ukpga_1994_21"
+            }
+          ],
+          "full_from": null
+        }
+      ],
+      "gap_filler": "{:undated, :unread}",
+      "named_provisions": [
+        "sch.9.para.10(1)(a)",
+        "sch.11.pt.2"
+      ]
+    },
+    {
+      "key": "key-…168656",
+      "target": "sch.3.para.2",
+      "operation": "commenced",
+      "law": "UK_asc_2025_4",
+      "amending_law": "UK_asc_2025_4",
+      "at_each": [
+        {
+          "ref": "s.92(3)",
+          "rules": [
+            {
+              "text": "s.92 — 2025-09-12 — everywhere, fully — provision_dated — UK_asc_2025_4 s.92(3): “the commencement provision, with the law”",
+              "words": "the commencement provision, with the law",
+              "source_ref": "s.92(3)",
+              "source_law": "UK_asc_2025_4"
+            }
+          ],
+          "full_from": "2025-09-12"
+        }
+      ],
+      "gap_filler": "{:dated, ~D[2025-09-12], :feed}",
+      "named_provisions": [
+        "s.92(3)"
+      ]
+    },
+    {
+      "key": "d30p4046",
+      "target": "s.155(1)(b)",
+      "operation": null,
+      "law": "UK_ukpga_1954_70",
+      "amending_law": "UK_ukpga_1975_21",
+      "at_each": [
+        {
+          "ref": "s.289F",
+          "rules": [
+            {
+              "text": "all — 1975-05-16 — everywhere, fully — clause_date — UK_ukpga_1975_21 s.464(2): “Subject to the following provisions of this section, this Act shall come into operation on 16th May 1975.”",
+              "words": "Subject to the following provisions of this section, this Act shall come into operation on 16th May 1975.",
+              "source_ref": "s.464(2)",
+              "source_law": "UK_ukpga_1975_21"
+            }
+          ],
+          "full_from": "1975-05-16"
+        },
+        {
+          "ref": "s.289F",
+          "rules": [
+            {
+              "text": "all — 1975-05-16 — everywhere, fully — clause_date — UK_ukpga_1975_21 s.464(2): “Subject to the following provisions of this section, this Act shall come into operation on 16th May 1975.”",
+              "words": "Subject to the following provisions of this section, this Act shall come into operation on 16th May 1975.",
+              "source_ref": "s.464(2)",
+              "source_law": "UK_ukpga_1975_21"
+            }
+          ],
+          "full_from": "1975-05-16"
+        }
+      ],
+      "gap_filler": "{:dated, ~D[1975-05-16], :note}",
+      "named_provisions": [
+        "s.289F",
+        "s.289F"
+      ]
+    },
+    {
+      "key": "d29p1680",
+      "target": "s.15(7)(b)",
+      "operation": null,
+      "law": "UK_ukpga_1962_58",
+      "amending_law": "UK_ukpga_1991_22",
+      "at_each": [
+        {
+          "ref": "sch.8.para.101(2)(a)",
+          "rules": [
+            {
+              "text": "sch.8 — 1991-10-21 — S, in relation to — order_schedule — UK_uksi_1991_2286 sch.1: “Schedule 8 in so far as it relates to the following provisions:— paragraphs 93(a), 93(c), 94(b), 96, 97 and 98 (insofar as paragraph 98 relates to Part II of the Act) | Minor and consequential amendments.”",
+              "words": "Schedule 8 in so far as it relates to the following provisions:— paragraphs 93(a), 93(c), 94(b), 96, 97 and 98 (insofar as paragraph 98 relates to Part II of the Act) | Minor and consequential amendments.",
+              "source_ref": "sch.1",
+              "source_law": "UK_uksi_1991_2286"
+            },
+            {
+              "text": "sch.8 — 1991-11-01 — S, in relation to — order_schedule — UK_uksi_1991_2286 sch.2: “Schedule 8 in so far as it relates to the following provisions:— |”",
+              "words": "Schedule 8 in so far as it relates to the following provisions:— |",
+              "source_ref": "sch.2",
+              "source_law": "UK_uksi_1991_2286"
+            },
+            {
+              "text": "sch.8 — 1993-01-01 — E+W, fully — order_schedule — UK_uksi_1992_2984 sch.2: “Schedule 8 in so far as it relates to England and Wales and has not already been commenced | Minor and consequential amendments”",
+              "words": "Schedule 8 in so far as it relates to England and Wales and has not already been commenced | Minor and consequential amendments",
+              "source_ref": "sch.2",
+              "source_law": "UK_uksi_1992_2984"
+            },
+            {
+              "text": "sch.8 — 1993-01-01 — S, fully — order_schedule — UK_uksi_1992_2990 sch.2: “Schedule 8 in so far as it relates to Scotland and has not already been commenced | Minor and consequential amendments”",
+              "words": "Schedule 8 in so far as it relates to Scotland and has not already been commenced | Minor and consequential amendments",
+              "source_ref": "sch.2",
+              "source_law": "UK_uksi_1992_2990"
+            },
+            {
+              "text": "all — appointed (by order) — everywhere, fully — by_order — UK_ukpga_1991_22 s.170(1): “The provisions of this Act come into force on such day as the Secretary of State may appoint by order made by statutory instrument; and different days may be appointed for different provisions and different purposes.”",
+              "words": "The provisions of this Act come into force on such day as the Secretary of State may appoint by order made by statutory instrument; and different days may be appointed for different provisions and different purposes.",
+              "source_ref": "s.170(1)",
+              "source_law": "UK_ukpga_1991_22"
+            },
+            {
+              "text": "all — appointed (by order) — everywhere, fully — by_order — UK_ukpga_1991_22 s.170(1): “The provisions of this Act come into force on such day as the Secretary of State may appoint by order made by statutory instrument; and different days may be appointed for different provisions and different purposes.”",
+              "words": "The provisions of this Act come into force on such day as the Secretary of State may appoint by order made by statutory instrument; and different days may be appointed for different provisions and different purposes.",
+              "source_ref": "s.170(1)",
+              "source_law": "UK_ukpga_1991_22"
+            }
+          ],
+          "full_from": null
+        },
+        {
+          "ref": "sch.8.para.101(2)(a)",
+          "rules": [
+            {
+              "text": "sch.8 — 1991-10-21 — S, in relation to — order_schedule — UK_uksi_1991_2286 sch.1: “Schedule 8 in so far as it relates to the following provisions:— paragraphs 93(a), 93(c), 94(b), 96, 97 and 98 (insofar as paragraph 98 relates to Part II of the Act) | Minor and consequential amendments.”",
+              "words": "Schedule 8 in so far as it relates to the following provisions:— paragraphs 93(a), 93(c), 94(b), 96, 97 and 98 (insofar as paragraph 98 relates to Part II of the Act) | Minor and consequential amendments.",
+              "source_ref": "sch.1",
+              "source_law": "UK_uksi_1991_2286"
+            },
+            {
+              "text": "sch.8 — 1991-11-01 — S, in relation to — order_schedule — UK_uksi_1991_2286 sch.2: “Schedule 8 in so far as it relates to the following provisions:— |”",
+              "words": "Schedule 8 in so far as it relates to the following provisions:— |",
+              "source_ref": "sch.2",
+              "source_law": "UK_uksi_1991_2286"
+            },
+            {
+              "text": "sch.8 — 1993-01-01 — E+W, fully — order_schedule — UK_uksi_1992_2984 sch.2: “Schedule 8 in so far as it relates to England and Wales and has not already been commenced | Minor and consequential amendments”",
+              "words": "Schedule 8 in so far as it relates to England and Wales and has not already been commenced | Minor and consequential amendments",
+              "source_ref": "sch.2",
+              "source_law": "UK_uksi_1992_2984"
+            },
+            {
+              "text": "sch.8 — 1993-01-01 — S, fully — order_schedule — UK_uksi_1992_2990 sch.2: “Schedule 8 in so far as it relates to Scotland and has not already been commenced | Minor and consequential amendments”",
+              "words": "Schedule 8 in so far as it relates to Scotland and has not already been commenced | Minor and consequential amendments",
+              "source_ref": "sch.2",
+              "source_law": "UK_uksi_1992_2990"
+            },
+            {
+              "text": "all — appointed (by order) — everywhere, fully — by_order — UK_ukpga_1991_22 s.170(1): “The provisions of this Act come into force on such day as the Secretary of State may appoint by order made by statutory instrument; and different days may be appointed for different provisions and different purposes.”",
+              "words": "The provisions of this Act come into force on such day as the Secretary of State may appoint by order made by statutory instrument; and different days may be appointed for different provisions and different purposes.",
+              "source_ref": "s.170(1)",
+              "source_law": "UK_ukpga_1991_22"
+            },
+            {
+              "text": "all — appointed (by order) — everywhere, fully — by_order — UK_ukpga_1991_22 s.170(1): “The provisions of this Act come into force on such day as the Secretary of State may appoint by order made by statutory instrument; and different days may be appointed for different provisions and different purposes.”",
+              "words": "The provisions of this Act come into force on such day as the Secretary of State may appoint by order made by statutory instrument; and different days may be appointed for different provisions and different purposes.",
+              "source_ref": "s.170(1)",
+              "source_law": "UK_ukpga_1991_22"
+            }
+          ],
+          "full_from": null
+        }
+      ],
+      "gap_filler": "{:undated, :appointed}",
+      "named_provisions": [
+        "sch.8.para.101(2)(a)",
+        "sch.8.para.101(2)(a)"
+      ]
+    },
+    {
+      "key": "key-…80072e",
+      "target": "s.15(1)",
+      "operation": null,
+      "law": "UK_asp_2012_8",
+      "amending_law": null,
+      "at_each": [],
+      "gap_filler": "{:undated, :no_amending_law}",
+      "named_provisions": []
+    },
+    {
+      "key": "key-…08c5f5",
+      "target": "annex.III",
+      "operation": "substituted",
+      "law": "UK_eudr_2008_68",
+      "amending_law": "UK_eudr_2018_1846",
+      "at_each": [],
+      "gap_filler": "{:undated, :no_pointer}",
+      "named_provisions": []
+    },
+    {
+      "key": "M_F_61a8fc30-f1f9-4865-a3f5-6455e705baf6-1669825614077",
+      "target": "reg.70",
+      "operation": "substituted",
+      "law": "UK_uksi_2014_1638",
+      "amending_law": "UK_uksi_2020_852",
+      "at_each": [
+        {
+          "ref": "sch.1.para.1(f)(iii)",
+          "rules": [],
+          "full_from": null
+        }
+      ],
+      "gap_filler": "{:undated, :not_reached}",
+      "named_provisions": [
+        "sch.1.para.1(f)(iii)"
+      ]
+    },
+    {
+      "key": "d29p310",
+      "target": "s.11(2)",
+      "operation": null,
+      "law": "UK_ukpga_1971_61",
+      "amending_law": "UK_nisi_1977_1251",
+      "at_each": [
+        {
+          "ref": "sch.1.para.6",
+          "rules": [],
+          "full_from": null
+        }
+      ],
+      "gap_filler": "{:undated, :rules_not_held}",
+      "named_provisions": [
+        "sch.1.para.6"
+      ]
+    },
+    {
+      "key": "key-…c376bc",
+      "target": "s.1",
+      "operation": null,
+      "law": "UK_ukpga_1966_4",
+      "amending_law": "UK_ukpga_1994_21",
+      "at_each": [
+        {
+          "ref": "sch.9.para.10(2)",
+          "rules": [
+            {
+              "text": "sch.9, s.67 — unread — everywhere, in relation to — provision_qualified — UK_ukpga_1994_21 s.68(3): “The following provisions of this Act shall come into force on the dissolution date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the dissolution date, that is to say—",
+              "source_ref": "s.68(3)",
+              "source_law": "UK_ukpga_1994_21"
+            },
+            {
+              "text": "s.10, s.11, s.18, s.23, s.31, s.32, s.33, s.34, s.36, s.38, s.39, s.40, s.41, s.42, s.43, s.44, s.48, s.49, s.50, s.51, s.52, s.53, s.55, sch.6, sch.7, sch.8, sch.9, sch.11.pt.II — unread — everywhere, fully — provision_unread — UK_ukpga_1994_21 s.68(2): “The following provisions of this Act shall come into force on the restructuring date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the restructuring date, that is to say—",
+              "source_ref": "s.68(2)",
+              "source_law": "UK_ukpga_1994_21"
+            },
+            {
+              "text": "sch.9, s.67 — unread — everywhere, in relation to — provision_qualified — UK_ukpga_1994_21 s.68(3): “The following provisions of this Act shall come into force on the dissolution date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the dissolution date, that is to say—",
+              "source_ref": "s.68(3)",
+              "source_law": "UK_ukpga_1994_21"
+            },
+            {
+              "text": "s.10, s.11, s.18, s.23, s.31, s.32, s.33, s.34, s.36, s.38, s.39, s.40, s.41, s.42, s.43, s.44, s.48, s.49, s.50, s.51, s.52, s.53, s.55, sch.6, sch.7, sch.8, sch.9, sch.11.pt.II — unread — everywhere, fully — provision_unread — UK_ukpga_1994_21 s.68(2): “The following provisions of this Act shall come into force on the restructuring date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the restructuring date, that is to say—",
+              "source_ref": "s.68(2)",
+              "source_law": "UK_ukpga_1994_21"
+            }
+          ],
+          "full_from": null
+        }
+      ],
+      "gap_filler": "{:undated, :unread}",
+      "named_provisions": [
+        "sch.9.para.10(2)"
+      ]
+    },
+    {
+      "key": "key-…6f4da5",
+      "target": "s.21",
+      "operation": null,
+      "law": "UK_ukpga_1987_12",
+      "amending_law": "UK_ukpga_1997_28",
+      "at_each": [
+        {
+          "ref": "s.13",
+          "rules": [
+            {
+              "text": "s.31, s.5, s.8, s.11, s.12, s.13, s.16, s.24, s.28, s.30, sch.6.para.16 — 1997-03-19 — everywhere, fully — provision_dated — UK_ukpga_1997_28 s.31(4): “Sections 5, 8, 11, 12, 13, 16, 24, 28 and 30, this section and Schedule 2 and paragraph 16 of Schedule 6 shall come into force on the day on which this Act is passed.”",
+              "words": "Sections 5, 8, 11, 12, 13, 16, 24, 28 and 30, this section and Schedule 2 and paragraph 16 of Schedule 6 shall come into force on the day on which this Act is passed.",
+              "source_ref": "s.31(4)",
+              "source_law": "UK_ukpga_1997_28"
+            }
+          ],
+          "full_from": "1997-03-19"
+        },
+        {
+          "ref": "sch.2.para.4(6)(b)",
+          "rules": [
+            {
+              "text": "s.31, s.5, s.8, s.11, s.12, s.13, s.16, s.24, s.28, s.30, sch.6.para.16 — 1997-03-19 — everywhere, fully — provision_dated — UK_ukpga_1997_28 s.31(4): “Sections 5, 8, 11, 12, 13, 16, 24, 28 and 30, this section and Schedule 2 and paragraph 16 of Schedule 6 shall come into force on the day on which this Act is passed.”",
+              "words": "Sections 5, 8, 11, 12, 13, 16, 24, 28 and 30, this section and Schedule 2 and paragraph 16 of Schedule 6 shall come into force on the day on which this Act is passed.",
+              "source_ref": "s.31(4)",
+              "source_law": "UK_ukpga_1997_28"
+            }
+          ],
+          "full_from": "1997-03-19"
+        }
+      ],
+      "gap_filler": "{:dated, ~D[1997-03-19], :feed}",
+      "named_provisions": [
+        "s.13",
+        "sch.2.para.4(6)(b)"
+      ]
+    },
+    {
+      "key": "d29p1636",
+      "target": "s.15(6)",
+      "operation": null,
+      "law": "UK_ukpga_1962_58",
+      "amending_law": "UK_uksi_1976_1775",
+      "at_each": [
+        {
+          "ref": "sch.1",
+          "rules": [
+            {
+              "text": "all — 1976-11-08 — everywhere, fully — clause_date — UK_uksi_1976_1775 reg.1(5): “This Order shall come into operation on 8th November 1976.”",
+              "words": "This Order shall come into operation on 8th November 1976.",
+              "source_ref": "reg.1(5)",
+              "source_law": "UK_uksi_1976_1775"
+            }
+          ],
+          "full_from": "1976-11-08"
+        }
+      ],
+      "gap_filler": "{:dated, ~D[1976-11-08], :note}",
+      "named_provisions": [
+        "sch.1"
+      ]
+    },
+    {
+      "key": "key-…eb7307",
+      "target": "s.17(2)",
+      "operation": "repealed",
+      "law": "UK_asp_2012_8",
+      "amending_law": "UK_asp_2017_4",
+      "at_each": [
+        {
+          "ref": "s.2(a)(i)",
+          "rules": [
+            {
+              "text": "rest except s.8 — appointed (by order) — everywhere, fully — provision_by_order — UK_asp_2017_4 s.8(2): “The other provisions of this Act come into force on such day as the Scottish Ministers may by regulations appoint.”",
+              "words": "The other provisions of this Act come into force on such day as the Scottish Ministers may by regulations appoint.",
+              "source_ref": "s.8(2)",
+              "source_law": "UK_asp_2017_4"
+            },
+            {
+              "text": "rest except s.8 — appointed (by order) — everywhere, fully — provision_by_order — UK_asp_2017_4 s.8(2): “The other provisions of this Act come into force on such day as the Scottish Ministers may by regulations appoint.”",
+              "words": "The other provisions of this Act come into force on such day as the Scottish Ministers may by regulations appoint.",
+              "source_ref": "s.8(2)",
+              "source_law": "UK_asp_2017_4"
+            }
+          ],
+          "full_from": null
+        }
+      ],
+      "gap_filler": "{:undated, :appointed}",
+      "named_provisions": [
+        "s.2(a)(i)"
+      ]
+    },
+    {
+      "key": "d29p724",
+      "target": "s.19(3)",
+      "operation": null,
+      "law": "UK_apni_1929_13",
+      "amending_law": null,
+      "at_each": [],
+      "gap_filler": "{:undated, :no_amending_law}",
+      "named_provisions": []
+    },
+    {
+      "key": "key-…a848d1",
+      "target": "annex.II",
+      "operation": "substituted",
+      "law": "UK_eudr_2008_68",
+      "amending_law": "UK_eudn_2015_974",
+      "at_each": [],
+      "gap_filler": "{:undated, :no_pointer}",
+      "named_provisions": []
+    },
+    {
+      "key": "M_F_61a8fc30-f1f9-4865-a3f5-6455e705baf6-1669825614077",
+      "target": "reg.73",
+      "operation": "substituted",
+      "law": "UK_uksi_2014_1638",
+      "amending_law": "UK_uksi_2020_852",
+      "at_each": [
+        {
+          "ref": "sch.1.para.1(f)(iii)",
+          "rules": [],
+          "full_from": null
+        }
+      ],
+      "gap_filler": "{:undated, :not_reached}",
+      "named_provisions": [
+        "sch.1.para.1(f)(iii)"
+      ]
+    },
+    {
+      "key": "d29p11898",
+      "target": "s.37(4)(b)",
+      "operation": null,
+      "law": "UK_ukpga_1962_58",
+      "amending_law": "UK_ukpga_1963_38",
+      "at_each": [
+        {
+          "ref": "sch.13.para.18",
+          "rules": [],
+          "full_from": null
+        },
+        {
+          "ref": "sch.13.para.18",
+          "rules": [],
+          "full_from": null
+        }
+      ],
+      "gap_filler": "{:undated, :rules_not_held}",
+      "named_provisions": [
+        "sch.13.para.18",
+        "sch.13.para.18"
+      ]
+    },
+    {
+      "key": "key-…b137cf",
+      "target": "s.4(6)",
+      "operation": "inserted",
+      "law": "UK_ukpga_1966_4",
+      "amending_law": "UK_ukpga_1994_21",
+      "at_each": [
+        {
+          "ref": "sch.9.para.10(3)(b)",
+          "rules": [
+            {
+              "text": "sch.9, s.67 — unread — everywhere, in relation to — provision_qualified — UK_ukpga_1994_21 s.68(3): “The following provisions of this Act shall come into force on the dissolution date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the dissolution date, that is to say—",
+              "source_ref": "s.68(3)",
+              "source_law": "UK_ukpga_1994_21"
+            },
+            {
+              "text": "s.10, s.11, s.18, s.23, s.31, s.32, s.33, s.34, s.36, s.38, s.39, s.40, s.41, s.42, s.43, s.44, s.48, s.49, s.50, s.51, s.52, s.53, s.55, sch.6, sch.7, sch.8, sch.9, sch.11.pt.II — unread — everywhere, fully — provision_unread — UK_ukpga_1994_21 s.68(2): “The following provisions of this Act shall come into force on the restructuring date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the restructuring date, that is to say—",
+              "source_ref": "s.68(2)",
+              "source_law": "UK_ukpga_1994_21"
+            },
+            {
+              "text": "sch.9, s.67 — unread — everywhere, in relation to — provision_qualified — UK_ukpga_1994_21 s.68(3): “The following provisions of this Act shall come into force on the dissolution date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the dissolution date, that is to say—",
+              "source_ref": "s.68(3)",
+              "source_law": "UK_ukpga_1994_21"
+            },
+            {
+              "text": "s.10, s.11, s.18, s.23, s.31, s.32, s.33, s.34, s.36, s.38, s.39, s.40, s.41, s.42, s.43, s.44, s.48, s.49, s.50, s.51, s.52, s.53, s.55, sch.6, sch.7, sch.8, sch.9, sch.11.pt.II — unread — everywhere, fully — provision_unread — UK_ukpga_1994_21 s.68(2): “The following provisions of this Act shall come into force on the restructuring date, that is to say—”",
+              "words": "The following provisions of this Act shall come into force on the restructuring date, that is to say—",
+              "source_ref": "s.68(2)",
+              "source_law": "UK_ukpga_1994_21"
+            }
+          ],
+          "full_from": null
+        }
+      ],
+      "gap_filler": "{:undated, :unread}",
+      "named_provisions": [
+        "sch.9.para.10(3)(b)"
+      ]
+    }
+  ]
+}

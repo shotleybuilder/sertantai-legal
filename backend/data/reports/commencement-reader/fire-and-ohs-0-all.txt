@@ -1,0 +1,104 @@
+
+27114 rows in 139 laws — own commencement:
+  19342  dated (92 laws)
+  4341  by_order (10 laws)
+  1158  by_order_partly (4 laws)
+  944  eu_directive (5 laws)
+  568  no_rules (37 laws)  (our fault)
+  488  staged_start_only (1 laws)
+  142  eu_publication_relative (1 laws)
+  66  staged (3 laws)
+  34  partial_only (2 laws)
+  31  not_reached (1 laws)  (our fault)
+  (left to orders, by_order + by_order_partly: 5499)
+
+against the law's own feed (a yardstick):
+  12555  own_only
+  6730  agree
+  3965  feed_only
+  3741  neither
+  73  differ
+  50  feed_partial_only
+  fault no_rules: UK_uksi_2020_390 (16 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2014_1253 (8 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2005_1656 (4 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2015_1673 (17 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2012_3159 (7 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2005_2669 (4 rows) e.g. reg.1
+  fault no_rules: UK_ssi_2005_342 (33 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2025_1291 (17 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2007_1017 (3 rows) e.g. reg.1
+  fault not_reached: UK_uksi_1994_232 (31 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2025_257 (10 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2014_2260 (8 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2024_162 (11 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2019_1166 (12 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2016_623 (10 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2013_3188 (3 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2017_458 (12 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2014_3212 (3 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2015_1406 (10 rows) e.g. reg.1
+  fault no_rules: UK_uksi_1997_735 (4 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2005_3227 (3 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2011_2228 (3 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2017_23 (9 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2013_1758 (9 rows) e.g. reg.1
+  fault no_rules: UK_apni_1929_13 (114 rows) e.g. pt.1
+  fault no_rules: UK_uksi_2018_1281 (16 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2007_1549 (3 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2016_309 (15 rows) e.g. reg.1
+  fault no_rules: UK_nisr_2013_48 (107 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2017_720 (9 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2016_673 (8 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2001_2528 (3 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2018_807 (11 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2020_1185 (13 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2000_2846 (3 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2024_1278 (24 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2022_115 (9 rows) e.g. reg.1
+  fault no_rules: UK_uksi_2023_838 (17 rows) e.g. reg.1
+  differ: UK_ukpga_1998_17 (65 rows) e.g. s.4A own 1999-02-15 feed {~D[2016-04-06], ~D[2016-04-06]}
+  differ: UK_ukpga_2004_21 (5 rows) e.g. s.62(1A) own 2004-07-22 feed {~D[2012-04-01], ~D[2012-04-01]}
+  differ: UK_uksi_2005_1541 (3 rows) e.g. reg.27(5) own 2006-10-01 feed {~D[2017-07-17], ~D[2017-07-17]}
+
+1328 changes no other source dates (306 text changes) — the gap-filler:
+  579  undated: no_amending_law  (text changes 10, of them not in a Schedule or annex 10)
+  235  dated via feed  (text changes 57, of them not in a Schedule or annex 55)
+  181  undated: appointed  (text changes 89, of them not in a Schedule or annex 85)
+  135  dated via note  (text changes 24, of them not in a Schedule or annex 24)
+  106  undated: rules_not_held  (text changes 61, of them not in a Schedule or annex 58)
+  70  undated: no_pointer  (text changes 49, of them not in a Schedule or annex 13)
+  17  undated: not_reached  (text changes 15, of them not in a Schedule or annex 13)
+  3  undated: no_text_rules  (text changes 0, of them not in a Schedule or annex 0)
+  2  undated: provisions_disagree  (text changes 1, of them not in a Schedule or annex 1)
+  undated: appointed: by UK_asc_2026_5 ×27, ? ×26, UK_ukpga_1991_22 ×22, UK_uksi_1999_1756 ×19, UK_uksi_1999_1750 ×16, UK_ukpga_1982_48 ×14, UK_ukpga_1994_21 ×8, UK_asc_2025_4 ×6, UK_ukpga_1989_15 ×6, UK_ukpga_1994_39 ×4, UK_ukpga_2025_28 ×4, UK_ukpga_1973_65 ×2, UK_ukpga_1975_59 ×2, UK_ukpga_1984_12 ×2, UK_ukpga_1990_43 ×2, UK_ukpga_1994_19 ×2, UK_ukpga_1996_47 ×2, UK_ukpga_1997_50 ×2, UK_ukpga_2006_49 ×2, UK_ukpga_2016_25 ×2, UK_asc_2021_1 ×1, UK_ukpga_1967_80 ×1, UK_ukpga_1979_46 ×1, UK_ukpga_1980_43 ×1, UK_ukpga_1982_23 ×1, UK_ukpga_1984_60 ×1, UK_ukpga_1995_25 ×1, UK_ukpga_2000_43 ×1, UK_ukpga_2001_24 ×1, UK_ukpga_2014_12 ×1, UK_ukpga_2022_30 ×1
+  undated: no_amending_law: by ? ×579
+  undated: no_pointer: by UK_ukpga_1998_17 ×5, UK_ukpga_2003_22 ×5, UK_eudn_2009_240 ×3, UK_eudn_2010_187 ×3, UK_eudn_2011_26 ×3, UK_eudn_2012_188 ×3, UK_eudn_2013_218 ×3, UK_eudn_2015_217 ×3, UK_eudn_2015_974 ×3, UK_eudn_2018_936 ×3, UK_eudr_2010_61 ×3, UK_eudr_2012_45 ×3, UK_eudr_2014_103 ×3, UK_eudr_2016_2309 ×3, UK_eudr_2018_1846 ×3, UK_eur_2019_1243 ×3, UK_eudn_2016_629 ×2, UK_eudn_2017_695 ×2, UK_eudn_2019_1094 ×2, UK_eudn_2020_1241 ×2, UK_ukpga_1975_21 ×2, UK_eudr_2018_217 ×1, UK_nisr_1995_340 ×1, UK_ukpga_1983_54 ×1, UK_uksi_1979_318 ×1, UK_uksi_1991_259 ×1, UK_uksi_1995_1239 ×1, UK_uksi_1995_738 ×1, UK_uksi_2001_2551 ×1
+  undated: no_text_rules: by UK_ukpga_1968_64 ×3
+  undated: not_reached: by UK_asc_2026_7 ×10, ? ×5, UK_ukpga_1974_7 ×1, UK_ukpga_1980_65 ×1
+  undated: provisions_disagree: by UK_ukpga_1998_46 ×1, UK_ukpga_2000_27 ×1
+  undated: rules_not_held: by ? ×19, UK_uksi_1993_208 ×12, UK_uksi_2020_852 ×9, UK_asp_2017_4 ×7, UK_uksi_2000_3097 ×6, UK_uksi_1999_672 ×6, UK_ukpga_2000_11 ×5, UK_ukpga_1996_22 ×3, UK_uksi_2000_2769 ×2, UK_uksi_2000_353 ×2, UK_uksi_2026_40 ×2, UK_uksi_1994_2184 ×2, UK_uksi_1999_160 ×2, UK_ukpga_1997_7 ×2, UK_uksi_2000_2770 ×2, UK_uksi_1996_2001 ×1, UK_nisi_1998_3162 ×1, UK_uksi_1999_360 ×1, UK_uksi_1995_269 ×1, UK_uksi_1995_2870 ×1, UK_uksi_1996_2089 ×1, UK_ukpga_1963_38 ×1, UK_uksi_1995_2005 ×1, UK_uksi_1995_1091 ×1, UK_nisi_1977_1251 ×1, UK_uksi_1992_1728 ×1, UK_uksi_1999_677 ×1, UK_uksi_1985_2023 ×1, UK_uksi_1996_487 ×1, UK_ukpga_1995_39 ×1, UK_uksi_1999_448 ×1, UK_ssi_2006_367 ×1, UK_uksi_1994_1994 ×1, UK_uksi_2001_3499 ×1, UK_uksi_1983_710 ×1, UK_uksi_2001_3930 ×1, UK_uksi_1999_161 ×1, UK_uksi_1974_1274 ×1, UK_uksi_1999_1877 ×1, UK_ukpga_1997_13 ×1
+
+leftovers reaching the family (words of a commencement statement no rule uses):
+  14  fix
+  1  known
+  2  unreviewed
+  1225 order UK_uksi_2004_2304 article-2-2: 1st October 2004 [fix: reads nothing — date left (class, not reviewed one by one; 3 statements, reach 1228)]
+  396 own UK_ukpga_1954_70 UK_ukpga_1954_70:s.194: s.4 · for the purposes of [fix: half-read — provision+qualifier left (class, not reviewed one by one; 1 statements, reach 396)]
+  286 own UK_ukpga_1969_10 UK_ukpga_1969_10:s.38(3): pt.II [fix: half-read — provision left (class, not reviewed one by one; 1 statements, reach 286)]
+  101 own UK_uksi_1989_1401 UK_uksi_1989_1401:reg.1(3): 1st January 1991 · 1st January 1996 · reg.5(4) · reg.5(5) · reg.6(4) · reg.8(3) [fix: half-read — date+provision left (class, not reviewed one by one; 3 statements, reach 162)]
+  60 own UK_uksi_1994_232 UK_uksi_1994_232:reg.1(a): 1st March 1994 · reg.4 · reg.6 · to the extent that [fix: reads nothing — date+exception+qualifier left (class, not reviewed one by one; 1 statements, reach 60)]
+  32 own UK_ukpga_2021_24 UK_ukpga_2021_24:s.4(5): s.1 [fix: half-read — provision left (class, not reviewed one by one; 1 statements, reach 32)]
+  9 own UK_uksi_2017_720 UK_uksi_2017_720:reg.1(2): reg.2(3) [no status]
+  8 amending UK_uksi_1988_1729 UK_uksi_1988_1729:reg.1(1)(a): 1st April 1989 · reg.9 · reg.12(1)(b) [fix: half-read — date+exception left (class, not reviewed one by one; 1 statements, reach 9)]
+  3 amending UK_ukpga_1968_64 UK_ukpga_1968_64:s.20(4): s.20(2) · s.13 · s.14 · s.15 · s.16 · s.17 · s.18 · s.19 · s.20 · in relation to [fix: half-read — exception+provision+qualifier left (class, not reviewed one by one; 1 statements, reach 3)]
+  2 amending UK_ukpga_1984_12 UK_ukpga_1984_12:s.110(3): pt.V [fix: a "namely—" list on a day the Act names ("the transfer date": 1986 c.44 s.68(3), 1984 c.12 s.110(3)): the plain items (Part II) unread beside the qualified ones]
+  2 amending UK_uksi_2026_40 UK_uksi_2026_40:reg.1(2): 24 July 2025 [no status]
+  1 amending UK_ukpga_2014_12 UK_ukpga_2014_12:s.185(2)(b): s.151 · s.177 · the end of the period [fix: reads nothing — provision+relative_day left (class, not reviewed one by one; 5 statements, reach 172)]
+  1 amending UK_ukpga_2014_12 UK_ukpga_2014_12:s.185(6): s.122 [fix: named provisions on an event or unread day (2023 c.52 s.334(4) the Convention's entry into force; SI 2018/195) — event days are a known limit (COMMENCEMENT-GUIDE §4), the rest unread]
+  1 amending UK_uksi_1991_259 UK_uksi_1991_259:reg.1: 1st April 1991 [fix: reads nothing — date left (class, not reviewed one by one; 13 statements, reach 151)]
+  1 amending UK_uksi_1999_2463 UK_uksi_1999_2463:reg.1: 1st December 1999 [fix: reads nothing — date left (class, not reviewed one by one; 13 statements, reach 151)]
+  1 amending UK_uksi_2002_716 UK_uksi_2002_716:reg.1(2): 1st October 2002 · reg.14 [fix: half-read — date+provision left (class, not reviewed one by one; 3 statements, reach 162)]
+gate report: data/reports/commencement-reader/gate-fire-and-oh-s-2026-11-14.txt
+
+FAIL (rows: our faults 599; leftovers not named: 16)

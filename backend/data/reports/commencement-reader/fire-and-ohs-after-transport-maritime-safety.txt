@@ -1,0 +1,45 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+
+24776 rows in 117 laws — own commencement:
+  23863  dated (111 laws)
+  423  staged (3 laws)
+  388  eu_publication_relative (4 laws)
+  81  by_order (1 laws)
+  20  unread (2 laws)
+  1  by_order_partly (1 laws)
+  (left to orders, by_order + by_order_partly: 82)
+
+against the law's own feed (a yardstick):
+  15459  own_only
+  8817  agree
+  489  neither
+  10  differ
+  1  feed_only
+  differ: UK_ukpga_1995_21 (7 rows) e.g. s.85(8) own 1996-01-01 feed {~D[2007-04-02], ~D[2007-04-02]}
+  differ: UK_uksi_2012_3152 (3 rows) e.g. reg.1 own 2012-12-31 feed {~D[2013-01-12], ~D[2013-01-12]}
+
+1133 changes no other source dates (182 text changes) — the gap-filler:
+  644  undated: rules_not_held  (text changes 0, of them not in a Schedule or annex 0)
+  327  dated via feed  (text changes 129, of them not in a Schedule or annex 112)
+  48  undated: appointed  (text changes 35, of them not in a Schedule or annex 26)
+  39  undated: no_pointer  (text changes 8, of them not in a Schedule or annex 8)
+  33  undated: no_amending_law  (text changes 4, of them not in a Schedule or annex 4)
+  31  dated via note  (text changes 4, of them not in a Schedule or annex 4)
+  8  undated: provisions_disagree  (text changes 1, of them not in a Schedule or annex 0)
+  2  undated: unread  (text changes 0, of them not in a Schedule or annex 0)
+  1  undated: not_reached  (text changes 1, of them not in a Schedule or annex 1)
+  undated: appointed: by UK_ukpga_1994_28 ×16, UK_ukpga_2026_18 ×10, UK_ukpga_1997_28 ×8, UK_ukpga_2003_44 ×5, UK_nisi_1995_1980 ×2, ? ×1
+  undated: no_amending_law: by ? ×33
+  undated: no_pointer: by UK_uksi_1979_1519 ×12, UK_eur_2019_1243 ×6, UK_uksi_1991_1365 ×5, UK_uksi_1991_1366 ×3, UK_uksi_1983_1801 ×2, UK_uksi_1985_1828 ×2
+  undated: not_reached: by UK_ukpga_2003_26 ×1
+  undated: provisions_disagree: by UK_ukpga_1998_46 ×7, UK_ukpga_1994_40 ×1
+  undated: rules_not_held: by UK_uksi_1998_1262 ×35, UK_uksi_1997_2580 ×35, UK_uksi_1997_2581 ×35, UK_uksi_1997_2589 ×35, UK_uksi_1997_2582 ×35, UK_uksi_1997_2587 ×35
+  undated: unread: by UK_uksi_1998_1258 ×2
+
+leftovers reaching the family (words of a commencement statement no rule uses):
+  6  known
+gate report: data/reports/commencement-reader/gate-transport-maritime-safety-2026-11-14.txt
+
+PASS (rows: our faults 0; leftovers not named: 0)

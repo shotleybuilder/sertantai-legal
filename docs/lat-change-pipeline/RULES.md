@@ -193,6 +193,41 @@ A row its own law's clause commences before the law's general start, once the la
 - **Example:** WSI 2026/103 brings Part 7 into force the day after it was made, though its general start is 2027-10-01 (1,720 rows in 4 laws).
 - **Serves:** `law-text-wins`, `binds-on-date` · **Code:** `Label.Start.early_own/2`; gate check `start: an own commencement before the law's start dropped` · **Test:** `label_fold_test` "its own law's clause commencing it before the law's general start" · **Origin:** the agent pass, Environmental Protection: Label fold (2026-11-11)
 
+### `a-qualifier-binds-its-own-item`
+In a commencement list, "so far as relating to …", "in relation to …" or "except …" qualifies only the item it follows. The other items of the statement come in fully, and are kept by name when the day is unread.
+- **Example:** 1996 c.53 s.148: ss.126–145 fully on 1996-09-24, s.147 in relation to; 1984 c.12 s.110(4): Sch.7 Part III stays named (unread) beside s.109(6) "so far as relating to that Part".
+- **Serves:** `law-text-wins` · **Code:** `LawStart.Provisions` (`list_groups`, `subject_groups`, `beside/2`), `Commencement.OwnClause.group_when/1` · **Test:** `own_clause_statements_test` · **Origin:** Fire and OH&S: Commencement reader (2026-11-14), fixer call 2; held moves accepted by Decision 4 a
+
+### `completing-form-is-full`
+"So far as not already in force", "to the extent that it has not already come into force" and "has not already been commenced" complete a provision's start: a full start, for the place the words name. Only a place, with no completing words, leaves it partial.
+- **Example:** SI 2006/266 brings in the Railways Act 2005 Sch.3 "to the extent that it has not already come into force" on 2006-04-01 (HSWA s.11(1), s.14, s.16); SI 1992/2984 brings in 1991 c.22 Sch.8 for England and Wales, fully.
+- **Serves:** `law-text-wins`, `binds-on-date` · **Code:** `Commencement.Order` (`@full`), `Order.Territory.completing/1` · **Test:** `order_list_reading_test`, `order_day_forms_test` · **Origin:** Fire and OH&S: Commencement reader (2026-11-14), fixer calls 4 and 6
+
+### `another-laws-entries-are-not-the-acts`
+In an order's list, entries that name another law's provisions belong to that law, never to the Act commenced: a repeals Schedule's "entries relating to …", and another Order's Articles under "Schedule 4 in so far as it relates to —".
+- **Example:** SI 2005/1909's "The entries relating to Schedule 2, Schedule 3 and Schedule 6 of the Railways Act 1993" were read as the Railways Act 2005's own Sch.3, so HSWA's changes took 2005-07-24 (20 checked rows); NISR 2006/257's "Articles 3 to 20 and 49A to 52 of … the Fire Services (Northern Ireland) Order 1984".
+- **Serves:** `law-text-wins` · **Code:** `Order.Entries`, `Order.drop_other_laws/2` (`@other_order_articles`), `Order.named?/2` (an Act's title never matched as the tail of a longer one) · **Test:** `order_list_reading_test`, `order_day_forms_test` · **Origin:** Fire and OH&S: Commencement reader (2026-11-14), fixer calls 4 and 6
+
+### `devolved-order-carries-no-territory`
+A devolved legislature's order on its own legislature's Act carries no territory of its own; the Act's extent gives it. A place named in an item's heading or a table's description is the provision's subject, never its territory.
+- **Example:** SSI 2025/170 on an asp: "everywhere, fully" (the asp's extent bounds it); SI 1972/1763's table "Possession of firearms by persons convicted of crime in Northern Ireland" gives no NI.
+- **Serves:** `law-text-wins`, `no-default-territory` · **Code:** `Order.Territory` (`of_title/1`, `of_type/2`), `Order.Asides` · **Test:** `order_list_reading_test` · **Origin:** Fire and OH&S: Commencement reader (2026-11-14), fixer call 1; held moves accepted by Decision 4 a
+
+### `held-amenders-derived`
+The amending laws whose own commencement clauses are read are derived in code: the amending laws of a family's stored changes that are held, less laws with LAT rows (read with their own law) and commencement orders. They are never listed by hand.
+- **Example:** Fire and OH&S: 319 laws to read, 112 of them with no rules before; `rules_not_held` 106 → 50.
+- **Serves:** `fix-where-owned` · **Code:** `Commencement.HeldAmenders`; `mix lat.commencement --amenders --family F`, `--read-amending --family F` · **Test:** `held_amenders_test` · **Origin:** Fire and OH&S: Commencement reader (2026-11-14), fixer call 3
+
+### `a-re-read-reads-every-stored-order`
+A re-read of a law's orders reads its cached order list and every order whose rules for it are stored. An order dropped from the list loses its rules only if its own text no longer commences the law.
+- **Example:** 1995 c.25 by SIs 1996/2560 and 1996/396; 2000 c.38 by SI 2002/2024 (36 rules in the round).
+- **Serves:** `law-text-wins` · **Code:** `Store.order_sources/1`, `mix lat.commencement --read-orders --family F` · **Test:** `store_test` "order_sources/1" · **Origin:** Fire and OH&S: Commencement reader (2026-11-14), fixer call 5
+
+### `a-step-re-reads-its-sources-rules`
+A step's re-read takes every commencement source the family's changes cite whose rules are on older reader code: own clauses (`--read`, `--read-amending --law`), feed rules (`--effects --law`, from the store only) and orders (`--read-orders --held`). Then the family is rebuilt.
+- **Example:** Fire and OH&S: 129 source laws (88 with LAT rows in other families, 40 with feed rules, 2 with orders) took the round's Commencement reader stale laws from 56 to 0.
+- **Serves:** `fix-where-owned` · **Code:** `Store.Inputs.readers/3`; `mix lat.commencement --effects --law A,B` (`effects_scope/1`, `effects_writes/2`) · **Test:** `lat_commencement_effects_scope_test` · **Origin:** Jason 2026-11-14, Fire and OH&S: Commencement reader, Decisions 5 a and 6 a
+
 ### `feed-pending-dated-applies`
 A change the feed holds prospective and not yet applied applies on its date where the feed gives one. legislation.gov.uk's text lags; the date stands. An undated one changes nothing (`Undated.pending?`).
 - **Example:** 240 such changes in three families: 186 undated (skipped), 54 dated (applied).
@@ -863,6 +898,7 @@ The named missing-repeal rows and the named date gaps keep the old register's la
 | An SI's introduction with no powers clause on legislation.gov.uk (the designation or draft-approval recital only, or no preamble: SI 2011/1043, 1999/1820, 1977/445) | Maritime Safety: 3 changes | No bound from powers | `withheld.json` | 2026-11-05 |
 | An enabling Act not on legislation.gov.uk (stored as a 404: the Merchant Shipping (Registration, etc.) Act 1993, repealed 1996) | Maritime Safety: SI 1994/541, 24 changes | No bound from powers | `withheld.json` | 2026-11-05 |
 | Provisions named by power or as Schedule entries, not by number ("so much of any provision of this Act as authorises the making of any order": ICTA 1988 s.843(3), SSCBA 1992 s.289(2); Schedule entries, SI 2003/835) | 3 statements | Undated by the clause | same | 2026-11-05 |
+| Commencement forms below triage (Fire and OH&S: Commencement reader), named in `leftovers.json` or parked: a start staged by the cases it applies to, read at its first date (SI 1988/1729 reg.1(1)(a): 1989 for most mines, 1994 for existing miscellaneous mines; 8 changes); "This section has effect from" (LGA 1985 s.84(3), not in the round); an event day (SI 2017/720 reg.2(2), "when the installation arrives"); "This Act except … on the transfer date" unread (1971 c.10 s.40(2)); a purpose-limited date read as the whole start (SI 2006/1244 reg.1(4), 93 Maritime labels, parked with Maritime's next pass) | Fire and OH&S: 8 changes; Maritime Safety: 93 | The first date, or undated | `leftovers.json`; the session | 2026-11-14 |
 
 ---
 

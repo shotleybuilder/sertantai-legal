@@ -1,0 +1,19 @@
+=== sertantai-legal NAS Backup ===
+  NAS: /mnt/nas/sertantai-data/data
+  DB:  true | Data: false | Archive: false
+  Restore point: /mnt/nas/sertantai-data/data/snapshots/restore-points/2026-11-14-commencement-reader-fire-and-ohs (commencement_rules,provision_changes,provision_change_claims,lat_events)
+
+--- Stage 1: Database Snapshot ---
+Exporting dev database...
+  Host: localhost:5436
+  Database: sertantai_legal_dev
+  Target: /mnt/nas/sertantai-data/data/snapshots/restore-points/2026-11-14-commencement-reader-fire-and-ohs
+
+  commencement_rules... 61483 rows (2.6M)
+  provision_changes... 171145 rows (7.4M)
+  provision_change_claims... 1380865 rows (40M)
+  lat_events... 71961 rows (7.3M)
+
+DB snapshot complete.
+
+=== Backup finished ===

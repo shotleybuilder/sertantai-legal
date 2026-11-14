@@ -1,0 +1,6 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+UK_ukpga_1972_71: 5 orders, 5 held and read, 48 rules
+UK_ukpga_1974_37: 6 orders, 6 held and read, 79 rules
+2 laws with orders, 11 orders read, 127 rules

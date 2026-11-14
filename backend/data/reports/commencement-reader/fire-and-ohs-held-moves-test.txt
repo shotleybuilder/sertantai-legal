@@ -1,0 +1,1627 @@
+Getting extensions in current project...
+Running migration for AshPostgres.DataLayer...
+Running ExUnit with seed: 113227, max_cases: 12
+Excluding tags: [:live, :pending]
+
+...........
+
+  1) test examples UK_ssi_2017_403/5c19bf6d4e (SertantaiLegal.Scraper.Commencement.OrderPatternsTest)
+     test/sertantai_legal/scraper/commencement/order_patterns_test.exs:70
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules+partial",
+              "rules" => ["s.1(1)..s.1(3), s.1(6) — 2018-04-01 — S, fully — order_date",
+               "s.2 — 2018-04-01 — S, for making secondary legislation — order_date",
+               "s.3 — 2018-04-01 — S, fully — order_date"]
+            }
+     right: %{
+              "class" => "rules+partial",
+              "rules" => ["s.1, s.1(1) — 2018-04-01 — S, fully — order_date",
+               "s.2 — 2018-04-01 — S, for making secondary legislation — order_date",
+               "s.3 — 2018-04-01 — S, fully — order_date"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/order_patterns_test.exs:80: (test)
+
+...
+
+  2) test examples UK_uksi_2010_2169/9bd2ebdbaa (SertantaiLegal.Scraper.Commencement.OrderPatternsTest)
+     test/sertantai_legal/scraper/commencement/order_patterns_test.exs:70
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules",
+              "rules" => ["s.36, s.76A(2) — 2010-09-01 — everywhere, fully — order_date"]
+            }
+     right: %{"class" => "none", "rules" => []}
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/order_patterns_test.exs:80: (test)
+
+......................
+
+  3) test examples UK_uksi_1989_2278/8acaf6813f (SertantaiLegal.Scraper.Commencement.OrderPatternsTest)
+     test/sertantai_legal/scraper/commencement/order_patterns_test.exs:70
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules",
+              "rules" => ["s.98(2)(c), s.98(3)..s.98(7) — 1990-04-01 — everywhere, fully — order_date"]
+            }
+     right: %{
+              "class" => "rules",
+              "rules" => ["s.98(2), s.98(c), s.98(3)..s.98(7) — 1990-04-01 — everywhere, fully — order_date"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/order_patterns_test.exs:80: (test)
+
+....
+
+  4) test examples UK_ssi_2012_333/cd2c868a4f (SertantaiLegal.Scraper.Commencement.OrderPatternsTest)
+     test/sertantai_legal/scraper/commencement/order_patterns_test.exs:70
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules+partial",
+              "rules" => ["sch.1 — 2013-01-01 — everywhere, in relation to — order_date"]
+            }
+     right: %{
+              "class" => "rules+partial",
+              "rules" => ["sch.1 — 2013-01-01 — S, in relation to — order_date"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/order_patterns_test.exs:80: (test)
+
+........................................................
+
+  5) test examples UK_uksi_1982_243/5b9f216d67 (SertantaiLegal.Scraper.Commencement.OrderPatternsTest)
+     test/sertantai_legal/scraper/commencement/order_patterns_test.exs:70
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules+partial",
+              "rules" => ["sch.9 — 1982-03-29 — everywhere, in relation to — order_schedule"]
+            }
+     right: %{
+              "class" => "rules+partial",
+              "rules" => ["sch.9, sch.9.para.3(3) — 1982-03-29 — everywhere, in relation to — order_schedule"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/order_patterns_test.exs:80: (test)
+
+..................
+
+  6) test examples UK_uksi_2004_759/409029688c (SertantaiLegal.Scraper.Commencement.OrderPatternsTest)
+     test/sertantai_legal/scraper/commencement/order_patterns_test.exs:70
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules",
+              "rules" => ["s.48, s.49, s.50(1), s.50(5), s.51(1)..s.51(3), s.51(5), s.51(6), s.52(1)..s.52(4), s.52(6), s.52(7), s.53..s.57, s.60, s.61, s.64..s.68, s.103, s.106, s.124, s.126, s.128, s.130, s.132, s.134, s.136..s.138, s.140 — 2004-04-01 — everywhere, fully — order_date"]
+            }
+     right: %{
+              "class" => "rules",
+              "rules" => ["s.48, s.49, s.50(1), s.50(5), s.51(1)..s.51(3), s.51(5), s.51(6), s.52(1)..s.52(4), s.52(6), s.52(7), s.53..s.57, s.60, s.61, s.64..s.68, s.103, s.106, s.124, s.126, s.128, s.130, s.132, s.134, s.136..s.138 — 2004-04-01 — everywhere, fully — order_date"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/order_patterns_test.exs:80: (test)
+
+........
+
+  7) test examples UK_uksi_2004_2593/e2921ab84a (SertantaiLegal.Scraper.Commencement.OrderPatternsTest)
+     test/sertantai_legal/scraper/commencement/order_patterns_test.exs:70
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules+partial",
+              "rules" => ["pt.8 — 2004-10-31 — everywhere, fully — order_date",
+               "s.111(2) — 2004-10-31 — everywhere, fully — order_date",
+               "sch.6.para.7 — 2004-10-31 — everywhere, fully — order_date",
+               "sch.7.para.4, sch.7.para.5, sch.7.para.7, sch.7.para.9, sch.7.para.10(1)..sch.7.para.10(6), sch.7.para.11(4), sch.7.para.11(5), sch.7.para.12..sch.7.para.15, sch.7.para.18, sch.7.para.21 — 2004-10-31 — everywhere, fully — order_date",
+               "sch.9 — 2004-10-31 — everywhere, in relation to — order_date"]
+            }
+     right: %{
+              "class" => "rules+partial",
+              "rules" => ["pt.8 — 2004-10-31 — everywhere, fully — order_date",
+               "s.111(2) — 2004-10-31 — everywhere, fully — order_date",
+               "sch.6.para.7 — 2004-10-31 — everywhere, fully — order_date",
+               "sch.7.para.4, sch.7.para.5, sch.7.para.7, sch.7.para.9, sch.7.para.10(1)..sch.7.para.10(6), sch.7.para.11(4), sch.7.para.11(5), sch.7.para.12..sch.7.para.15, sch.7.para.18 — 2004-10-31 — everywhere, fully — order_date",
+               "sch.9 — 2004-10-31 — everywhere, in relation to — order_date"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/order_patterns_test.exs:80: (test)
+
+.......
+
+  8) test examples UK_uksi_2012_873/93888d6677 (SertantaiLegal.Scraper.Commencement.OrderPatternsTest)
+     test/sertantai_legal/scraper/commencement/order_patterns_test.exs:70
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules",
+              "rules" => ["pt.1 — 2012-03-21 — everywhere, fully — order_date",
+               "s.108 — 2012-03-21 — everywhere, fully — order_date",
+               "s.118 — 2012-03-21 — everywhere, fully — order_date",
+               "s.15(1)..s.15(3), s.15(5) — 2012-03-21 — everywhere, fully — order_date",
+               "s.16 — 2012-03-21 — everywhere, fully — order_date",
+               "s.17..s.22 — 2012-03-21 — everywhere, fully — order_date",
+               "s.3 — 2012-03-21 — everywhere, fully — order_date",
+               "s.30 — 2012-03-21 — everywhere, fully — order_date",
+               "s.31 — 2012-03-21 — everywhere, fully — order_date",
+               "s.32 — 2012-03-21 — everywhere, fully — order_date",
+               "s.33 — 2012-03-21 — everywhere, fully — order_date",
+               "s.34 — 2012-03-21 — everywhere, fully — order_date",
+               "s.35(1)..s.35(5), s.35(7) — 2012-03-21 — everywhere, fully — order_date",
+               "s.36 — 2012-03-21 — everywhere, fully — order_date",
+               "s.38 — 2012-03-21 — everywhere, fully — order_date",
+               "s.39 — 2012-03-21 — everywhere, fully — order_date",
+               "s.40 — 2012-03-21 — everywhere, fully — order_date",
+               "s.41 — 2012-03-21 — everywhere, fully — order_date",
+               "s.6 — 2012-03-21 — everywhere, fully — order_date",
+               "s.82..s.91, sch.2 — 2012-03-21 — everywhere, fully — order_date",
+               "s.92 — 2012-03-21 — everywhere, fully — order_date"]
+            }
+     right: %{
+              "class" => "rules+partial",
+              "rules" => ["pt.1 — 2012-03-21 — everywhere, fully — order_date",
+               "s.108 — 2012-03-21 — everywhere, fully — order_date",
+               "s.118 — 2012-03-21 — everywhere, fully — order_date",
+               "s.15(1)..s.15(3), s.15(5) — 2012-03-21 — everywhere, fully — order_date",
+               "s.16 — 2012-03-21 — everywhere, fully — order_date",
+               "s.17..s.22 — 2012-03-21 — everywhere, fully — order_date",
+               "s.3 — 2012-03-21 — everywhere, fully — order_date",
+               "s.30 — 2012-03-21 — everywhere, fully — order_date",
+               "s.31 — 2012-03-21 — everywhere, fully — order_date",
+               "s.32 — 2012-03-21 — everywhere, fully — order_date",
+               "s.33 — 2012-03-21 — everywhere, fully — order_date",
+               "s.34 — 2012-03-21 — everywhere, fully — order_date",
+               "s.35(1)..s.35(5), s.35(7) — 2012-03-21 — everywhere, fully — order_date",
+               "s.36 — 2012-03-21 — everywhere, fully — order_date",
+               "s.38 — 2012-03-21 — everywhere, fully — order_date",
+               "s.39 — 2012-03-21 — everywhere, in relation to — order_date",
+               "s.40 — 2012-03-21 — everywhere, fully — order_date",
+               "s.41 — 2012-03-21 — everywhere, fully — order_date",
+               "s.6 — 2012-03-21 — everywhere, fully — order_date",
+               "s.82..s.91, sch.2 — 2012-03-21 — everywhere, fully — order_date",
+               "s.92 — 2012-03-21 — everywhere, fully — order_date"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/order_patterns_test.exs:80: (test)
+
+..
+
+  9) test examples UK_ssi_2006_19/84e0519fe3 (SertantaiLegal.Scraper.Commencement.OrderPatternsTest)
+     test/sertantai_legal/scraper/commencement/order_patterns_test.exs:70
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules+all",
+              "rules" => ["all — 2006-02-20 — everywhere, fully — order_date"]
+            }
+     right: %{
+              "class" => "rules+partial+all",
+              "rules" => ["all — 2006-02-20 — S, fully — order_date"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/order_patterns_test.exs:80: (test)
+
+...
+
+ 10) test examples UK_uksi_1972_1763/71428ad9e1 (SertantaiLegal.Scraper.Commencement.OrderPatternsTest)
+     test/sertantai_legal/scraper/commencement/order_patterns_test.exs:70
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules",
+              "rules" => ["s.29 — 1973-01-01 — everywhere, fully — order_schedule"]
+            }
+     right: %{
+              "class" => "rules+partial",
+              "rules" => ["s.29 — 1973-01-01 — NI, fully — order_schedule"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/order_patterns_test.exs:80: (test)
+
+........................................
+
+ 11) test examples UK_uksi_1992_2984/35e0773f80 (SertantaiLegal.Scraper.Commencement.OrderPatternsTest)
+     test/sertantai_legal/scraper/commencement/order_patterns_test.exs:70
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules+partial",
+              "rules" => ["sch.8 — 1993-01-01 — E+W, fully — order_schedule"]
+            }
+     right: %{
+              "class" => "rules+partial",
+              "rules" => ["sch.8 — 1993-01-01 — everywhere, in relation to — order_schedule"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/order_patterns_test.exs:80: (test)
+
+.
+
+ 12) test examples UK_ssi_2006_47/52dad60486 (SertantaiLegal.Scraper.Commencement.OrderPatternsTest)
+     test/sertantai_legal/scraper/commencement/order_patterns_test.exs:70
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules",
+              "rules" => ["s.4 — 2006-02-07 — everywhere, fully — order_date"]
+            }
+     right: %{
+              "class" => "rules+partial",
+              "rules" => ["s.4 — 2006-02-07 — S, fully — order_date"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/order_patterns_test.exs:80: (test)
+
+.....................
+
+ 13) test examples UK_uksi_2009_3318/6076e1092a (SertantaiLegal.Scraper.Commencement.OrderPatternsTest)
+     test/sertantai_legal/scraper/commencement/order_patterns_test.exs:70
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules",
+              "rules" => ["s.118..s.120 — 2009-12-17 — everywhere, fully — order_date",
+               "s.88..s.113 — 2009-12-17 — everywhere, fully — order_date",
+               "sch.6 — 2009-12-17 — everywhere, fully — order_date"]
+            }
+     right: %{
+              "class" => "rules+partial",
+              "rules" => ["s.118..s.120 — 2009-12-17 — everywhere, in relation to — order_date",
+               "s.88..s.113 — 2009-12-17 — everywhere, fully — order_date",
+               "sch.6 — 2009-12-17 — everywhere, fully — order_date"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/order_patterns_test.exs:80: (test)
+
+..........
+
+ 14) test examples UK_ssi_2025_170/152bb57194 (SertantaiLegal.Scraper.Commencement.OrderPatternsTest)
+     test/sertantai_legal/scraper/commencement/order_patterns_test.exs:70
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules",
+              "rules" => ["s.12 — 2025-08-01 — everywhere, fully — order_schedule"]
+            }
+     right: %{
+              "class" => "rules+partial",
+              "rules" => ["s.12 — 2025-08-01 — S, fully — order_schedule"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/order_patterns_test.exs:80: (test)
+
+........
+
+ 15) test examples UK_uksi_1991_2905/2baa996ab7 (SertantaiLegal.Scraper.Commencement.OrderPatternsTest)
+     test/sertantai_legal/scraper/commencement/order_patterns_test.exs:70
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules",
+              "rules" => ["s.69(1), s.69(3) — 1992-01-02 — everywhere, fully — order_schedule"]
+            }
+     right: %{
+              "class" => "rules",
+              "rules" => ["s.69, s.69(1), s.69(3) — 1992-01-02 — everywhere, fully — order_schedule"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/order_patterns_test.exs:80: (test)
+
+...........
+
+ 16) test examples UK_ssi_2025_170/e0fcd6a7b4 (SertantaiLegal.Scraper.Commencement.OrderPatternsTest)
+     test/sertantai_legal/scraper/commencement/order_patterns_test.exs:70
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules",
+              "rules" => ["s.1 — 2025-08-01 — everywhere, fully — order_schedule",
+               "s.12 — 2025-08-01 — everywhere, fully — order_schedule",
+               "s.14 — 2025-08-01 — everywhere, fully — order_schedule",
+               "s.15 — 2025-08-01 — everywhere, fully — order_schedule",
+               "s.18 — 2025-08-01 — everywhere, fully — order_schedule",
+               "s.19 — 2025-08-01 — everywhere, fully — order_schedule"]
+            }
+     right: %{
+              "class" => "rules+partial",
+              "rules" => ["s.1 — 2025-08-01 — S, fully — order_schedule",
+               "s.12 — 2025-08-01 — S, fully — order_schedule",
+               "s.14 — 2025-08-01 — S, fully — order_schedule",
+               "s.15 — 2025-08-01 — S, fully — order_schedule",
+               "s.18 — 2025-08-01 — S, fully — order_schedule",
+               "s.19 — 2025-08-01 — S, fully — order_schedule"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/order_patterns_test.exs:80: (test)
+
+..............
+
+ 17) test examples UK_nisr_2012_13/f1eae0d184 (SertantaiLegal.Scraper.Commencement.OrderPatternsTest)
+     test/sertantai_legal/scraper/commencement/order_patterns_test.exs:70
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules+partial",
+              "rules" => ["sch.1 — 2012-01-18 — everywhere, in relation to — order_date"]
+            }
+     right: %{
+              "class" => "rules+partial",
+              "rules" => ["sch.1 — 2012-01-18 — NI, in relation to — order_date"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/order_patterns_test.exs:80: (test)
+
+.....
+
+ 18) test examples UK_nisr_2006_257/391ba09a0b (SertantaiLegal.Scraper.Commencement.OrderPatternsTest)
+     test/sertantai_legal/scraper/commencement/order_patterns_test.exs:70
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules+partial",
+              "rules" => ["reg.3..reg.24 — 2006-07-01 — NI, fully — order_date",
+               "reg.53..reg.63 — 2006-07-01 — NI, fully — order_date",
+               "sch.1, sch.2 — 2006-07-01 — NI, fully — order_date",
+               "sch.3.para.1..sch.3.para.18, sch.3.para.20..sch.3.para.23 — 2006-07-01 — NI, fully — order_date",
+               "sch.4 — 2006-07-01 — NI, in relation to — order_date"]
+            }
+     right: %{
+              "class" => "rules+partial",
+              "rules" => ["sch.1, sch.2 — 2006-07-01 — NI, fully — order_date",
+               "sch.3.para.1..sch.3.para.18, sch.3.para.20..sch.3.para.23 — 2006-07-01 — NI, fully — order_date",
+               "sch.4 — 2006-07-01 — NI, in relation to — order_date"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/order_patterns_test.exs:80: (test)
+
+
+
+ 19) test examples UK_ssi_2013_342/5b26325b7f (SertantaiLegal.Scraper.Commencement.OrderPatternsTest)
+     test/sertantai_legal/scraper/commencement/order_patterns_test.exs:70
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules",
+              "rules" => ["s.23..s.28 — 2013-12-21 — everywhere, fully — order_date",
+               "s.30, s.31 — 2013-12-21 — everywhere, fully — order_date",
+               "s.34..s.37 — 2013-12-21 — everywhere, fully — order_date"]
+            }
+     right: %{
+              "class" => "rules+partial",
+              "rules" => ["s.23..s.28 — 2013-12-21 — S, fully — order_date",
+               "s.30, s.31 — 2013-12-21 — S, fully — order_date",
+               "s.34..s.37 — 2013-12-21 — S, fully — order_date"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/order_patterns_test.exs:80: (test)
+
+..................
+
+ 20) test examples UK_ukpga_2017_30/8bd671ae27 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_by_order",
+              "rules" => ["pt.5 — appointed (by order) — everywhere, fully — provision_by_order"]
+            }
+     right: %{"class" => "unread", "rules" => []}
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+....
+
+ 21) test examples UK_ukpga_1982_39/d252e32603 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "law:clause_unread",
+              "rules" => ["all — unread — everywhere, fully — clause_unread",
+               "s.151, sch.20 — unread — everywhere, fully — provision_unread"]
+            }
+     right: %{
+              "class" => "law:clause_unread",
+              "rules" => ["all — unread — everywhere, fully — clause_unread"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+...........
+
+ 22) test examples UK_ukpga_2025_34/f24eae16aa (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_dated",
+              "rules" => ["s.118(1) — 2026-02-18 — everywhere, fully — provision_dated",
+               "s.118(1) — 2026-02-18 — everywhere, fully — provision_dated"]
+            }
+     right: %{"class" => "none", "rules" => []}
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+....
+
+ 23) test examples UK_ukpga_2006_49/fc0eea7030 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["s.51, s.58, s.60 — 2006-11-08 — everywhere, fully — provision_dated",
+               "s.59 — 2006-11-08 — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["s.51, s.58, s.60, s.59 — 2006-11-08 — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+......................
+
+ 24) test examples UK_ukpga_2022_30/5851944cf8 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_by_order+provision_qualified",
+              "rules" => ["s.32, s.34, s.35, s.36, s.37, s.38, s.39, s.40, s.41, s.43, sch.4, s.44, s.45, s.46, s.47, s.48, s.49, s.50, s.51, s.52, s.53, s.55, sch.5, s.56, sch.6, s.57 except s.32(3), s.53(1), s.55, s.56 — appointed (by order) — W, fully — provision_by_order",
+               "s.33, sch.1.para.1D(3), s.42, s.55, s.56, s.156 — appointed (by order) — W, fully — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["s.32, s.34, s.35, s.36, s.37, s.38, s.39, s.40, s.41, s.43, sch.4, s.44, s.45, s.46, s.47, s.48, s.49, s.50, s.51, s.52, s.53, s.57 except s.32(3), s.53(1) — appointed (by order) — W, fully — provision_qualified",
+               "s.33, sch.1.para.1D(3), s.42, s.55, sch.5, s.56, sch.6, s.156 — appointed (by order) — W, fully — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+
+
+ 25) test examples UK_uksi_2021_745/07ced4769c (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "law:clause_staged",
+              "rules" => ["all — 2021-06-19 — everywhere, fully — clause_staged",
+               "reg.3, reg.4, reg.5, reg.6, reg.7, reg.8, pt.2.ch.2, reg.9, reg.10, reg.11, reg.12, reg.13, reg.14, reg.33, reg.34, reg.35, reg.36, reg.37, reg.38, reg.45, reg.46, reg.47, reg.48, reg.49, reg.50, reg.54(3)(a), sch.1..sch.5, sch.16..sch.18, sch.22..sch.28, sch.29.para.1, sch.29.para.6 — 2021-07-01 — everywhere, fully — provision_dated",
+               "reg.56 — 2021-07-01 — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "law:clause_staged",
+              "rules" => ["all — 2021-06-19 — everywhere, fully — clause_staged",
+               "reg.3, reg.4, reg.5, reg.6, reg.7, reg.8, pt.2.ch.2, reg.9, reg.10, reg.11, reg.12, reg.13, reg.14, reg.33, reg.34, reg.35, reg.36, reg.37, reg.38, reg.45, reg.46, reg.47, reg.48, reg.49, reg.50, reg.54(3)(a), sch.1..sch.5, sch.16..sch.18, sch.22..sch.28 — 2021-07-01 — everywhere, fully — provision_dated",
+               "reg.56, sch.29.para.1, sch.29.para.6 — 2021-07-01 — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+..........................................................
+
+ 26) test examples UK_ukpga_1962_58/9bd963ee5d (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "law:clause_staged",
+              "rules" => ["all — 1962-08-01 — everywhere, fully — clause_staged",
+               "rest except s.70 — appointed (by order) — everywhere, fully — provision_by_order",
+               "s.41 — 1962-08-01 — everywhere, fully — provision_dated"]
+            }
+     right: %{
+              "class" => "law:clause_staged",
+              "rules" => ["all — 1962-08-01 — everywhere, fully — clause_staged"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+.......
+
+ 27) test examples UK_ukpga_2002_32/d083ff1944 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_by_order+provision_qualified",
+              "rules" => ["s.189, s.215(1), s.215(2) — appointed (by order) — everywhere, in relation to — provision_qualified",
+               "s.65, s.66, s.67, s.68, s.69, sch.7, s.70, sch.8, s.71, s.73, pt.6, s.119, s.120, s.121, s.122, s.122A, s.123, s.124, s.125, s.126, s.127, s.127A, s.128, s.129, s.130, sch.11, s.209, sch.17.para.1..sch.17.para.4, sch.17.para.9, sch.21.para.14, sch.21.para.17, sch.21.para.18, sch.21.para.56, sch.21.para.91, sch.21.para.119, sch.22.pt.1 — appointed (by order) — everywhere, fully — provision_by_order"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["s.65, s.66, s.67, s.68, s.69, s.70, s.71, s.73, s.119, s.120, s.121, s.122, s.122A, s.123, s.124, s.125, s.126, s.127, s.127A, s.128, s.129, s.130, s.209, s.189, s.215(1), s.215(2), sch.22.pt.1, sch.17.para.1..sch.17.para.4, sch.17.para.9, sch.21.para.14, sch.21.para.17, sch.21.para.18, sch.21.para.56, sch.21.para.91, sch.21.para.119, pt.6 — appointed (by order) — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+...
+
+ 28) test examples UK_ukpga_1984_12/41d4a8a459 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_by_order+provision_qualified",
+              "rules" => ["pt.V, sch.6, sch.5.pt.II, sch.7.pt.II — appointed (by order) — everywhere, fully — provision_by_order",
+               "s.109(4), s.109(6) — appointed (by order) — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["s.109(4), sch.6, sch.5.pt.II, s.109(6), sch.7.pt.II — unread — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+......................
+
+ 29) test examples UK_ukpga_2008_32/6f408012d2 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["s.102, s.110, s.106, s.111, s.112, s.113, sch.5.para.5 — 2008-11-26 — everywhere, fully — provision_dated",
+               "s.37, s.38(1), s.88, s.89, s.90, s.91, s.104, s.105, s.90(3), sch.4, s.107(1) — 2008-11-26 — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["s.102, s.110, s.106, s.111, s.112, s.113 — 2008-11-26 — everywhere, fully — provision_dated",
+               "s.37, s.38(1), s.88, s.89, s.90, s.91, s.104, s.105, s.90(3), sch.4, s.107(1), sch.5.para.5 — 2008-11-26 — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+.....
+
+ 30) test examples UK_ukpga_1971_78/07c46b2589 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["pt.II except s.18, sch.23.pt.I — appointed (by order) — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["pt.II except s.18, sch.23.pt.I — unread — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+..........
+
+ 31) test examples UK_ukpga_2006_28/576005404a (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_by_order+provision_qualified",
+              "rules" => ["s.76, s.77, pt.1.ch.1, s.80(1) — appointed (by order) — W, fully — provision_qualified",
+               "sch.8.para.24(a) — appointed (by order) — W, fully — provision_by_order"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["s.76, s.77, pt.1.ch.1, s.80(1), sch.8.para.24(a) — appointed (by order) — W, fully — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+............................................
+
+ 32) test examples UK_uksi_1996_2925/1b93355949 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["reg.4(2)(a), sch.1, reg.4(2)(e)(ii), reg.4(2)(f), reg.4(2)(g), sch.4.pt.II, reg.4(2)(h)(i), reg.4(2)(i), sch.5.pt.I — unread — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "law:clause_staged",
+              "rules" => ["all — 1996-12-16 — everywhere, fully — clause_staged",
+               "reg.4(2)(a), sch.1, reg.4(2)(e)(ii), reg.4(2)(f), reg.4(2)(g), sch.4.pt.II, reg.4(2)(h)(i), reg.4(2)(i), sch.5.pt.I — unread — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+................................................................
+
+ 33) test examples UK_ukpga_1994_21/e4db111995 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_qualified+provision_unread",
+              "rules" => ["s.10, s.11, s.18, s.23, s.31, s.32, s.33, s.34, s.36, s.38, s.39, s.40, s.41, s.42, s.43, s.44, s.48, s.49, s.50, s.51, s.52, s.53, s.55, sch.6, sch.7, sch.8, sch.9, sch.11.pt.II — unread — everywhere, fully — provision_unread",
+               "s.67 — unread — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["s.67 — unread — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+.................................................................
+
+ 34) test examples UK_nisi_1994_426/cc8d101744 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_by_order",
+              "rules" => ["pt.IV, sch.6, sch.9.para.2, sch.9.para.4, sch.9.para.5, sch.9.para.7, sch.9.para.8, sch.9.para.10..sch.9.para.12, sch.9.para.14 — appointed (by order) — everywhere, fully — provision_by_order"]
+            }
+     right: %{
+              "class" => "rules:provision_by_order+provision_qualified",
+              "rules" => ["pt.IV, sch.6 — appointed (by order) — everywhere, fully — provision_by_order",
+               "sch.9.para.2, sch.9.para.4, sch.9.para.5, sch.9.para.7, sch.9.para.8, sch.9.para.10..sch.9.para.12, sch.9.para.14 — appointed (by order) — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+...
+
+ 35) test examples UK_uksi_2001_3208/aadfde6d33 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "law:clause_staged",
+              "rules" => ["all — 2001-10-16 — everywhere, fully — clause_staged",
+               "reg.1, reg.2, reg.8, reg.10 — 2001-10-16 — everywhere, fully — provision_dated",
+               "reg.3, reg.4, reg.5, reg.6, reg.7, reg.9, reg.11, reg.12 — 2002-05-01 — everywhere, fully — provision_dated"]
+            }
+     right: %{
+              "class" => "law:clause_staged",
+              "rules" => ["all — 2001-10-16 — everywhere, fully — clause_staged",
+               "reg.1, reg.2, reg.8, reg.10 — 2001-10-16 — everywhere, fully — provision_dated"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+.............
+
+ 36) test examples UK_ukpga_2021_24/e8c2225a9d (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_by_order",
+              "rules" => ["s.3 — appointed (with another provision) — everywhere, fully — provision_by_order"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["s.3 — unread — E, fully — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+.........................
+
+ 37) test examples UK_asc_2024_6/8121aa4a63 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["s.10, s.11, s.6 — 2025-04-01 — everywhere, fully — provision_dated",
+               "s.15 — 2025-04-01 — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["s.10, s.11, s.15 — 2025-04-01 — everywhere, in relation to — provision_qualified",
+               "s.6 — 2025-04-01 — everywhere, fully — provision_dated"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+....
+
+ 38) test examples UK_ukpga_1981_69/d762807814 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "law:clause_staged",
+              "rules" => ["all — 1981-11-30 — everywhere, fully — clause_staged",
+               "pt.II, s.59, s.60, s.61, s.62, s.65, s.66, pt.IV except s.29, s.30, s.31[E+W], s.31, s.31[S], s.32[E+W], s.32, s.41, s.46, h.47, s.47, s.48, sch.13, s.72(4), s.72(6), s.72(14), s.73(1) — 1981-11-30 — everywhere, fully — provision_dated",
+               "s.73(1) — 1981-11-30 — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "law:clause_staged",
+              "rules" => ["all — 1981-11-30 — everywhere, fully — clause_staged",
+               "pt.II, s.59, s.60, s.61, s.62, s.65, s.66 except s.29, s.30, s.31[E+W], s.31, s.31[S], s.32[E+W], s.32, s.41, s.46, h.47, s.47, s.48, sch.13 — 1981-11-30 — everywhere, fully — provision_dated",
+               "s.72(4), s.72(6), s.72(14), s.73(1), sch.17.pt.II, pt.IV — 1981-11-30 — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+..
+
+ 39) test examples UK_ukpga_1986_44/10ac673d30 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_qualified+provision_unread",
+              "rules" => ["s.67(4) — unread — everywhere, in relation to — provision_qualified",
+               "sch.9.pt.III — unread — everywhere, fully — provision_unread"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["s.67(4), sch.9.pt.III — unread — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+.........................
+
+ 40) test examples UK_ukpga_1968_64/2d97e5dd6d (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "law:clause_staged",
+              "rules" => ["all — 1968-10-25 — everywhere, fully — clause_staged",
+               "rest except s.20 — appointed (by order) — everywhere, fully — provision_by_order",
+               "s.13, s.14, s.15, s.16, s.17, s.18, s.19, s.20, sch except s.20(2) — 1968-10-25 — everywhere, fully — provision_dated"]
+            }
+     right: %{
+              "class" => "law:clause_staged",
+              "rules" => ["all — 1968-10-25 — everywhere, fully — clause_staged"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+...
+
+ 41) test examples UK_ukpga_2014_21/789d601f53 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["s.22, s.56, s.56 — 2014-07-14 — everywhere, in relation to — provision_qualified",
+               "s.3, s.13, s.15, s.21, s.25(3), s.26, s.27, s.28, s.33, s.34(1), s.34(2), s.35, s.36, s.57, s.58, s.60, s.61, s.62, sch.8, s.63, s.85, s.86, s.87, s.88, s.89, sch.10, sch.7.para.8, sch.7.para.107 — 2014-07-14 — everywhere, fully — provision_dated"]
+            }
+     right: %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["s.22, s.56, sch.7.para.8, s.56, sch.7.para.107 — 2014-07-14 — everywhere, in relation to — provision_qualified",
+               "s.3, s.13, s.15, s.21, s.25(3), s.26, s.27, s.28, s.33, s.34(1), s.34(2), s.35, s.36, s.57, s.58, s.60, s.61, s.62, sch.8, s.63, s.85, s.86, s.87, s.88, s.89, sch.10 — 2014-07-14 — everywhere, fully — provision_dated"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+..................................................
+
+ 42) test examples UK_ukpga_2008_23/792546f064 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_by_order",
+              "rules" => ["s.7, s.17, s.18, s.31, s.32, pt.1, pt.2, pt.3, pt.4, s.42, sch.4 — appointed (by order) — W, fully — provision_by_order"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["s.7, s.17, s.18, s.31, s.32, pt.1, pt.2, pt.3, pt.4, s.42, sch.4 — appointed (by order) — W, fully — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+......
+
+ 43) test examples UK_ukpga_1996_53/c958a7d804 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["s.126, s.127, s.128, s.129, s.130, s.141, s.142, s.143, s.144, s.145, sch.3.pt.III — 1996-09-24 — everywhere, fully — provision_dated",
+               "s.147 — 1996-09-24 — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["s.126, s.127, s.128, s.129, s.130, s.141, s.142, s.143, s.144, s.145, s.147, sch.3.pt.III — 1996-09-24 — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+....
+
+ 44) test examples UK_uksi_2020_1419/e65d63521d (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["reg.2, reg.3 — 2020-12-31 — everywhere, in relation to — provision_qualified",
+               "sch.1.pt.2, sch.1.pt.4, sch.2.pt.2, reg.4, sch.3 — 2020-12-31 — everywhere, fully — provision_dated"]
+            }
+     right: %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["reg.2, sch.1.para.2, sch.1.para.4, reg.3, sch.2.pt.2 — 2020-12-31 — everywhere, in relation to — provision_qualified",
+               "reg.4, sch.3 — 2020-12-31 — everywhere, fully — provision_dated"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+............................................
+
+ 45) test examples UK_uksi_2010_490/5cfc41c325 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["reg.38, reg.133 — appointed (with another provision) — W, fully — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["reg.38, reg.133 — unread — W, fully — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+.....
+
+ 46) test examples UK_ukpga_2014_12/d710a0afb6 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_by_order+provision_qualified",
+              "rules" => ["s.181(1) — appointed (by order) — W, fully — provision_qualified",
+               "s.94, s.95, s.96, s.97, s.98, sch.3, s.100, sch.11.para.2, sch.11.para.7..sch.11.para.10, sch.11.para.12..sch.11.para.14, sch.11.para.15(4), sch.11.para.16, sch.11.para.18..sch.11.para.20, sch.11.para.47(4), sch.11.para.48 — appointed (by order) — W, fully — provision_by_order"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["s.181(1), sch.11.para.2, sch.11.para.7..sch.11.para.10, sch.11.para.12..sch.11.para.14, sch.11.para.15(4), sch.11.para.16, sch.11.para.18..sch.11.para.20, sch.11.para.47(4), sch.11.para.48 — appointed (by order) — W, fully — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+...
+
+ 47) test examples UK_ukpga_2018_12/0d42d5b369 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_qualified+provision_unread",
+              "rules" => ["s.124, s.177, s.178, sch.17, s.179 — unread — everywhere, fully — provision_unread",
+               "s.125, s.126, s.127, s.124 — unread — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["s.125, s.126, s.127, s.124 — unread — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+..
+
+ 48) test examples UK_uksi_2010_490/bf9d2d28e9 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["reg.6 — appointed (with another provision) — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["reg.6 — unread — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+.................
+
+ 49) test examples UK_ukpga_2004_33/52fcc1352a (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_by_order+provision_qualified",
+              "rules" => ["s.261(3), sch.29 — appointed (by order) — everywhere, fully — provision_by_order",
+               "s.261(4), sch.30 — appointed (by order) — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_by_order",
+              "rules" => ["s.261(3), sch.29 — appointed (by order) — everywhere, fully — provision_by_order"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+............
+
+ 50) test examples UK_nisi_2006_2957/d8dc8de73d (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["reg.1, reg.2, reg.3(5), reg.4, reg.5, reg.6, reg.9(2), reg.11(3), reg.14, pt.150, reg.15, reg.16, sch.1.para.4, sch.1.para.5, sch.1.para.8, sch.1.para.17 — 2007-01-14 — everywhere, fully — provision_dated",
+               "reg.7, reg.10(3) — 2007-01-14 — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["reg.1, reg.2, reg.3(5), reg.4, reg.5, reg.6, reg.9(2), reg.11(3), reg.14, pt.150, reg.15, reg.16 — 2007-01-14 — everywhere, fully — provision_dated",
+               "reg.7, reg.10(3), sch.1.para.4, sch.1.para.5, sch.1.para.8, sch.1.para.17 — 2007-01-14 — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+....................................
+
+ 51) test examples UK_uksi_2006_641/5f2dc0019c (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "law:clause_unread",
+              "rules" => ["all — unread — everywhere, fully — clause_unread",
+               "reg.15 — appointed (with another provision) — everywhere, fully — provision_by_order",
+               "rest except reg.1 — 2006-04-01 — everywhere, fully — provision_dated"]
+            }
+     right: %{
+              "class" => "law:clause_unread",
+              "rules" => ["all — unread — everywhere, fully — clause_unread"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+.........
+
+ 52) test examples UK_ukpga_1986_44/5046c8a401 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_by_order+provision_qualified",
+              "rules" => ["pt.II, sch.8.pt.II, sch.9.pt.II — appointed (by order) — everywhere, fully — provision_by_order",
+               "s.67(3), s.67(4) — appointed (by order) — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["s.67(3), sch.8.pt.II, s.67(4), sch.9.pt.II — unread — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+...........................
+
+ 53) test examples UK_ukpga_2009_25/d6c75fae84 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["pt.3.ch.2, sch.21.para.69..sch.21.para.71, sch.22.para.16..sch.22.para.22, sch.23.pt.3 — 2010-01-01 — everywhere, fully — provision_dated",
+               "s.177(1), s.177(2), s.178 — 2010-01-01 — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["pt.3.ch.2 — 2010-01-01 — everywhere, fully — provision_dated",
+               "s.177(1), sch.21.para.69..sch.21.para.71, s.177(2), sch.22.para.16..sch.22.para.22, s.178, sch.23.pt.3 — 2010-01-01 — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+...
+
+ 54) test examples UK_ukpga_1984_12/ee0d8ee798 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_qualified+provision_unread",
+              "rules" => ["s.109(6) — unread — everywhere, in relation to — provision_qualified",
+               "sch.7.pt.III — unread — everywhere, fully — provision_unread"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["s.109(6), sch.7.pt.III — unread — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+.........
+
+ 55) test examples UK_anaw_2013_1/1b653e5ba7 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["pt.2.ch.3, s.91, s.94, s.95, sch.5.pt.3 — 2013-05-04 — everywhere, fully — provision_dated",
+               "s.99 — 2013-05-04 — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["pt.2.ch.3, s.91, s.94, s.95 — 2013-05-04 — everywhere, fully — provision_dated",
+               "s.99, sch.5.pt.3 — 2013-05-04 — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+...
+
+ 56) test examples UK_asc_2024_6/75757d8143 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_qualified+provision_unread",
+              "rules" => ["s.15, s.15, s.15, s.15, s.15 — unread — everywhere, in relation to — provision_qualified",
+               "s.2, s.3, s.4, s.5, s.7, s.8, s.9, s.13, s.14, s.17, s.20 — unread — everywhere, fully — provision_unread"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["s.2, s.3, s.4, s.15, s.8, s.15, s.9, s.15, s.13, s.15, s.14, s.15 — unread — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+..........................
+
+ 57) test examples UK_ukpga_2015_6/2db374541d (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_by_order+provision_qualified",
+              "rules" => ["s.22(10), sch.5.para.12..sch.5.para.14, s.26, s.30, s.31(2), s.31(4), s.32, s.33, s.34 — appointed (by order) — everywhere, fully — provision_by_order",
+               "s.25 — appointed (by order) — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_by_order+provision_qualified",
+              "rules" => ["s.22(10), s.26, s.30, s.31(2), s.31(4), s.32, s.33, s.34 — appointed (by order) — everywhere, fully — provision_by_order",
+               "s.25, sch.5.para.12..sch.5.para.14 — unread — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+................
+
+ 58) test examples UK_ukpga_2015_9/71f8290e95 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_by_order+provision_qualified",
+              "rules" => ["s.15, s.16, s.17, s.18, s.19, s.20, s.21, s.22, s.38(3), sch.4.para.16, sch.4.para.35..sch.4.para.45 — appointed (by order) — everywhere, fully — provision_by_order",
+               "s.85(1) — appointed (by order) — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["s.85(1), sch.4.para.16, sch.4.para.35..sch.4.para.45 — unread — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+..........................
+
+ 59) test examples UK_ukpga_1969_10/bc9502586b (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_by_order",
+              "rules" => ["pt.I — appointed (by order) — everywhere, fully — provision_by_order",
+               "pt.II — appointed (by order) — E+W, fully — provision_by_order",
+               "pt.II — appointed (by order) — S, fully — provision_by_order"]
+            }
+     right: %{
+              "class" => "rules:provision_by_order",
+              "rules" => ["pt.I — appointed (by order) — everywhere, fully — provision_by_order"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+......
+
+ 60) test examples UK_ukpga_1975_59/819c0b07fc (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["s.12, s.13, sch.5, sch.6.pt.I, sch.6.pt.II — 1975-08-07 — everywhere, fully — provision_dated",
+               "s.14, s.14(5), sch.6.pt.III, sch.6.pt.IV — 1975-08-07 — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["s.12, s.13, sch.5, sch.6 — 1975-08-07 — everywhere, fully — provision_dated",
+               "s.14, s.14(5), sch.6 — 1975-08-07 — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+..........
+
+ 61) test examples UK_ukpga_1998_47/1b2fc759b3 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "law:clause_staged",
+              "rules" => ["all — 1998-11-19 — everywhere, fully — clause_staged",
+               "s.3, s.55, s.86, s.93, s.96, s.98, sch.13.para.20, s.101 — 1998-11-19 — everywhere, fully — provision_dated",
+               "s.99, s.100(2) — 1998-11-19 — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "law:clause_staged",
+              "rules" => ["all — 1998-11-19 — everywhere, fully — clause_staged",
+               "s.3, s.55, s.86, s.93, s.96, s.98, s.101 — 1998-11-19 — everywhere, fully — provision_dated",
+               "s.99, sch.13.para.20, s.100(2) — 1998-11-19 — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+........................
+
+ 62) test examples UK_ukpga_1998_31/baad5d3680 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["s.1, s.2, s.3, s.4, s.20, s.21, s.82, s.84, s.85, s.130, s.145, s.138, s.139, s.141, s.142, s.143, s.144, sch.2, sch.11.pt.I, sch.11.pt.III, sch.30.para.224, sch.32 — 1998-07-24 — everywhere, fully — provision_dated",
+               "s.140(1) — 1998-07-24 — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["s.1, s.2, s.3, s.4, s.20, s.21, s.82, s.84, s.85, s.130, s.145, s.138, s.139, s.141, s.142, s.143, s.144, sch.2, sch.11, sch.32 — 1998-07-24 — everywhere, fully — provision_dated",
+               "s.140(1), sch.30.para.224 — 1998-07-24 — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+..................
+
+ 63) test examples UK_nisi_2003_419/0db119a8a9 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["pt.I, reg.59, reg.60, reg.64, reg.66, reg.67, sch.3.para.1(2), sch.4 — 2003-02-28 — everywhere, fully — provision_dated",
+               "reg.65, reg.65 — 2003-02-28 — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["pt.I, reg.59, reg.60, reg.64, reg.66, reg.67 — 2003-02-28 — everywhere, fully — provision_dated",
+               "reg.65, sch.3.para.1(2), reg.65, sch.4 — 2003-02-28 — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+..................................................................
+
+ 64) test examples UK_ukpga_2007_28/8f1ad07e48 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["pt.2, sch.18.pt.5, pt.5.ch.1, s.141, s.142, s.143, sch.18.pt.8, s.212, s.213, s.214, s.215, s.216(3), s.216(4), s.216(5), s.217, s.218, s.235, sch.17 except s.116 — 2007-12-30 — everywhere, fully — provision_dated",
+               "s.245(1), pt.3, s.241, s.241 — 2007-12-30 — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["pt.2, s.212, s.213, s.214, s.215, s.216(3), s.216(4), s.216(5), s.217, s.218, s.235, sch.17 — 2007-12-30 — everywhere, fully — provision_dated",
+               "s.245(1), pt.3, s.116, s.241, sch.18.pt.5, pt.5.ch.1, s.141, s.142, s.143, s.241, sch.18.pt.8 — 2007-12-30 — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+.................................
+
+ 65) test examples UK_ukpga_1986_44/cab688f9fa (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_by_order+provision_qualified",
+              "rules" => ["pt.I, s.66, s.67(1), sch.7, s.67(2), sch.8.pt.I, sch.9.pt.I except s.1, s.2 — appointed (by order) — everywhere, fully — provision_by_order",
+               "s.67(3), s.67(4) — appointed (by order) — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_by_order+provision_qualified",
+              "rules" => ["pt.I, s.66, s.67(1), sch.7, s.67(2) except s.1, s.2 — appointed (by order) — everywhere, fully — provision_by_order",
+               "s.67(3), sch.8.pt.I, s.67(4), sch.9.pt.I — unread — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+.........
+
+ 66) test examples UK_ukpga_2010_29/865ff5ec7c (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "law:clause_staged",
+              "rules" => ["all except pt.1, pt.2, s.35, s.36, s.42, s.43, s.44, s.45 — 2010-04-08 — everywhere, fully — clause_staged"]
+            }
+     right: %{
+              "class" => "law:clause_staged",
+              "rules" => ["all — 2010-04-08 — everywhere, fully — clause_staged"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+.................................
+
+ 67) test examples UK_uksi_2011_2581/0ef4307d8e (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["reg.2 — 2011-10-28 — everywhere, in relation to — provision_qualified",
+               "sch.1, sch.2 — 2011-10-28 — everywhere, fully — provision_dated"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["reg.2, sch.1, sch.2 — 2011-10-28 — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+...
+
+ 68) test examples UK_ukpga_1996_56/0e77c432f2 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_by_order+provision_qualified",
+              "rules" => ["s.582(1), s.582(2) — appointed (by order) — everywhere, in relation to — provision_qualified",
+               "s.8, s.317(6), s.348, s.528, sch.37.pt.II, sch.38.pt.II — appointed (by order) — everywhere, fully — provision_by_order"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["s.8, s.317(6), s.348, s.528, s.582(1), s.582(2), sch.37.pt.II, sch.38.pt.II — appointed (by order) — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+..
+
+ 69) test examples UK_ukpga_1954_70/8168951abc (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "law:by_order",
+              "rules" => ["all except s.172, s.190 — appointed (by order) — everywhere, fully — by_order",
+               "s.172, s.190 — 1954-11-25 — everywhere, fully — act_enactment"]
+            }
+     right: %{
+              "class" => "law:by_order",
+              "rules" => ["all — appointed (by order) — everywhere, fully — by_order"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+......
+
+ 70) test examples UK_ukpga_2002_32/2de7927363 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_dated",
+              "rules" => ["s.13, s.52(7), s.52(8), s.52(9), s.52(10), s.147, s.186, s.190, s.210, s.211, s.212, s.213, s.214, s.216, s.217 — 2002-07-24 — everywhere, fully — provision_dated"]
+            }
+     right: %{
+              "class" => "rules:provision_dated",
+              "rules" => ["s.216, s.13, s.52(7), s.52(8), s.52(9), s.52(10), s.147, s.186, s.190, s.210, s.211, s.212, s.213, s.214, s.217 — 2002-07-24 — everywhere, fully — provision_dated"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+
+
+ 71) test examples UK_ukpga_1984_12/4dd43fa473 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_by_order+provision_qualified",
+              "rules" => ["s.109(4), s.109(6) — appointed (by order) — everywhere, in relation to — provision_qualified",
+               "s.2, s.3, s.4, pt.II, pt.III, pt.IV, s.93, s.94, s.95, s.97, s.98, s.99, s.101, s.102, s.103, s.106, s.109(1), sch.4, s.109(2), s.109(3), s.109(7), sch.5.pt.I, sch.7.pt.I — appointed (by order) — everywhere, fully — provision_by_order"]
+            }
+     right: %{
+              "class" => "rules:provision_by_order+provision_qualified",
+              "rules" => ["s.109(4), sch.5.pt.I, s.109(6), sch.7.pt.I — unread — everywhere, in relation to — provision_qualified",
+               "s.2, s.3, s.4, pt.II, pt.III, pt.IV, s.93, s.94, s.95, s.97, s.98, s.99, s.101, s.102, s.103, s.106, s.109(1), sch.4, s.109(2), s.109(3), s.109(7) — appointed (by order) — everywhere, fully — provision_by_order"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+.....................
+
+ 72) test examples UK_anaw_2012_2/50362de0f3 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "law:clause_unread",
+              "rules" => ["all — unread — everywhere, fully — clause_unread",
+               "s.21, s.22, s.23 — unread — everywhere, fully — provision_unread"]
+            }
+     right: %{
+              "class" => "law:clause_unread",
+              "rules" => ["all — unread — everywhere, fully — clause_unread"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+...................................................................................................
+
+ 73) test examples UK_ukpga_1994_29/e076014b65 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_by_order+provision_qualified",
+              "rules" => ["s.93 — appointed (by order) — everywhere, in relation to — provision_qualified",
+               "sch.8, pt.IV, sch.9.pt.II — appointed (by order) — everywhere, fully — provision_by_order"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["s.93, sch.8, sch.9.pt.II, pt.IV — appointed (by order) — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+........................
+
+ 74) test examples UK_uksi_2024_105/71c76ff288 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "law:clause_unread",
+              "rules" => ["all — unread — everywhere, fully — clause_unread",
+               "pt.1, pt.2 — unread — everywhere, fully — provision_unread"]
+            }
+     right: %{
+              "class" => "law:clause_unread",
+              "rules" => ["all — unread — everywhere, fully — clause_unread"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+...
+
+ 75) test examples UK_ukpga_1986_63/983287858f (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "law:clause_unread",
+              "rules" => ["all — unread — everywhere, fully — clause_unread",
+               "s.21, s.24(1)(j), sch.12.pt.I, sch.5.para.10..sch.5.para.13, s.52, pt.VII — unread — everywhere, fully — provision_unread",
+               "s.24(3) — unread — S, fully — provision_qualified"]
+            }
+     right: %{
+              "class" => "law:clause_unread",
+              "rules" => ["all — unread — everywhere, fully — clause_unread",
+               "s.24(1)(j), s.24(3), sch.12.pt.I, sch.5.para.10..sch.5.para.13 — unread — S, fully — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+.......
+
+ 76) test examples UK_ukpga_1980_34/1fca3e05bd (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["s.69 — 1980-06-30 — everywhere, in relation to — provision_qualified",
+               "s.70, sch.9.pt.II — 1980-06-30 — everywhere, fully — provision_dated"]
+            }
+     right: %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["s.69, sch.9.pt.II — 1980-06-30 — everywhere, in relation to — provision_qualified",
+               "s.70 — 1980-06-30 — everywhere, fully — provision_dated"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+.....................
+
+ 77) test examples UK_uksi_2012_3039/494c72ebae (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_qualified+provision_unread",
+              "rules" => ["reg.14, reg.42 — unread — everywhere, in relation to — provision_qualified",
+               "sch.3.para.5, sch.3.para.7, sch.3.para.12, sch.3.para.14, sch.3.para.16, sch.3.para.25, sch.3.para.27 — unread — everywhere, fully — provision_unread"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["reg.14, reg.42 — unread — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+........................
+
+ 78) test examples UK_ukpga_2000_37/2732e22c3e (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_dated",
+              "rules" => ["s.1, sch.1, s.3, s.3A, h.4, s.4, s.5, s.6, s.7, s.8, s.9, s.9A, s.10, s.11, sch.3, s.15, s.16, h.17, s.17, s.19, pt.I.ch.II, pt.I.ch.III, s.40, s.41, s.42, s.43, s.44, s.45, s.52, s.58, s.59, s.64, s.65, h.66, s.66, s.67, sch.7, pt.III, sch.8, sch.9, sch.10, sch.11, sch.12, sch.16.pt.III, sch.16.pt.IV, s.94, s.95, s.98 except sch.7.para.6, sch.7.para.7, s.81(2), s.81(3) — 2001-01-30 — everywhere, fully — provision_dated"]
+            }
+     right: %{
+              "class" => "rules:provision_dated",
+              "rules" => ["s.1, s.3, s.3A, h.4, s.4, s.5, s.6, s.7, s.8, s.9, s.9A, s.10, s.11, s.15, s.16, h.17, s.17, s.19, s.40, s.41, s.42, s.43, s.44, s.45, s.52, s.58, s.59, s.64, s.65, h.66, s.66, s.67, s.81(2), s.81(3), s.94, s.95, s.98, pt.I, pt.III — 2001-01-30 — everywhere, fully — provision_dated"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+
+
+ 79) test examples UK_anaw_2015_4/efb8cad3e4 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_qualified+provision_unread",
+              "rules" => ["pt.3, pt.4, pt.5, pt.6, pt.7, pt.8 — unread — everywhere, in relation to — provision_qualified",
+               "s.55 — unread — everywhere, fully — provision_unread"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["pt.3, pt.4, pt.5, pt.6, pt.7, pt.8 — unread — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+....
+
+ 80) test examples UK_ukpga_1989_15/7d10821fb7 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["pt.III, pt.IV, pt.V, s.190, s.190 — appointed (by order) — everywhere, in relation to — provision_qualified",
+               "s.31, sch.5, sch.6, pt.II.ch.II, pt.II.ch.III, pt.II.ch.IV, pt.II.ch.V, s.97, sch.26, sch.27.pt.I — appointed (by order) — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["pt.III, pt.IV, pt.V, s.190, sch.26, s.190, sch.27.pt.I — unread — everywhere, in relation to — provision_qualified",
+               "s.31, sch.5, sch.6, pt.II, s.97 — unread — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+.......
+
+ 81) test examples UK_ukpga_1999_22/fe6d379adb (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_dated",
+              "rules" => ["s.32, s.33, s.34, pt.IV, s.74, s.75, s.76, s.81, s.82, s.84, s.86, s.87, sch.10, s.104, sch.14, sch.15.pt.III, sch.15.pt.V, s.107 except s.66, s.67(2), s.71, sch.9 — 1999-09-27 — everywhere, fully — provision_dated"]
+            }
+     right: %{
+              "class" => "rules:provision_dated",
+              "rules" => ["s.32, s.33, s.34, pt.IV, s.74, s.75, s.76, s.81, s.82, s.84, s.86, s.87, sch.10, s.104, sch.14, s.107 except s.66, s.67(2), s.71, sch.9, sch.15 — 1999-09-27 — everywhere, fully — provision_dated"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+.......................................................
+
+ 82) test examples UK_ukpga_2010_29/d06a81d90b (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_by_order",
+              "rules" => ["pt.1, pt.2 — appointed (by order) — E, fully — provision_by_order"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["pt.1, pt.2 — appointed (by order) — E, fully — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+..........................
+
+ 83) test examples UK_ukpga_2001_10/f143f45c94 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["s.4, s.5, s.9, s.42(2), s.42(3), s.42(4), sch.8.para.6..sch.8.para.10, sch.8.para.13(1)..sch.8.para.13(4), sch.8.para.14(3) — 2001-05-11 — everywhere, fully — provision_dated",
+               "s.42(1) — 2001-05-11 — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["s.4, s.5, s.9, s.42(2), s.42(3), s.42(4) — 2001-05-11 — everywhere, fully — provision_dated",
+               "s.42(1), sch.8.para.6..sch.8.para.10, sch.8.para.13(1)..sch.8.para.13(4), sch.8.para.14(3) — 2001-05-11 — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+........
+
+ 84) test examples UK_asc_2026_4/365da454e2 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["s.1, s.2, s.6, s.7, s.8, s.10, sch.1, s.30, sch.3, s.31, s.32, s.33, s.34, pt.3, sch.4.para.1..sch.4.para.4 except s.6(1)(c) — 2026-06-27 — everywhere, fully — provision_dated",
+               "s.45 — 2026-06-27 — everywhere, in relation to — provision_qualified"]
+            }
+     right: %{
+              "class" => "rules:provision_dated+provision_qualified",
+              "rules" => ["s.1, s.2, s.6, s.7, s.8, s.10, sch.1, s.30, sch.3, s.31, s.32, s.33, s.34, pt.3 except s.6(1)(c) — 2026-06-27 — everywhere, fully — provision_dated",
+               "s.45, sch.4.para.1..sch.4.para.4 — 2026-06-27 — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+...
+
+ 85) test examples UK_ukpga_2020_17/37611177ac (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_by_order+provision_qualified",
+              "rules" => ["s.264, s.265, s.266, s.267, s.268, s.268A, s.268B, s.268C, s.273, s.274, s.274A — appointed (with another provision) — everywhere, in relation to — provision_qualified",
+               "s.417(4), sch.22.pt.8 — appointed (with another provision) — everywhere, fully — provision_by_order"]
+            }
+     right: %{
+              "class" => "rules:provision_qualified",
+              "rules" => ["s.264, s.265, s.266, s.267, s.268, s.268A, s.268B, s.268C, s.273, s.274, s.274A — unread — everywhere, in relation to — provision_qualified"]
+            }
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+...
+
+ 86) test examples UK_ukpga_2002_21/0fa06bab85 (SertantaiLegal.Scraper.Commencement.CommencementPatternsTest)
+     test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:86
+     Assertion with == failed
+     code:  assert %{"class" => got.class, "rules" => got.rules} == expected
+     left:  %{
+              "class" => "rules:provision_by_order",
+              "rules" => ["rest except s.61, s.62, s.63, s.64, s.65, s.66, s.67, s.68, s.69, s.70 — appointed (by order) — everywhere, fully — provision_by_order"]
+            }
+     right: %{"class" => "unread", "rules" => []}
+     stacktrace:
+       test/sertantai_legal/scraper/commencement/commencement_patterns_test.exs:94: (test)
+
+.........................
+Finished in 24.5 seconds (24.5s async, 0.00s sync)
+
+Result: 1494/1580 passed, 308 excluded
+Failed: 86 tests

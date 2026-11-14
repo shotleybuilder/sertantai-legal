@@ -1,0 +1,111 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+749 orders held, with the Act each commences
+  250/749
+  500/749
+
+4125 statements in 749 orders
+unclassified: 0
+180 patterns, 367 examples (225 too large to hold)
+examples not held, reading differently alone than in their order: 0
+
+statements by kind and outcome:
+  1470  table → rules
+  806  table → none
+  414  table → rules+partial
+  330  following → rules+partial
+  256  inline → none
+  142  appointed_is → rules+partial
+  98  appointed_is → none
+  98  inline → rules+partial
+  96  inline → rules
+  78  following → rules
+  67  appointed_is → rules
+  62  following → none
+  57  own → none
+  30  schedule_intro → none
+  28  whole_act → rules
+  17  whole_act → rules+partial
+  15  schedule_intro → rules
+  14  items_first → rules+partial
+  9  inline → rules+all
+  8  whole_act → none
+  6  items_first → none
+  6  whole_act → rules+all
+  5  appointed_is → rules+all
+  4  schedule_intro → rules+partial
+  3  inline → rules+partial+all
+  1  appointed_is → rules+partial+all
+  1  following → rules+all
+  1  items_first → rules
+  1  items_first → rules+all
+  1  table_header → none
+  1  whole_act → rules+partial+all
+  (read into rules: 2801 of 4125)
+
+leftovers by shape (words no rule uses): 40 groups, 79 statements
+  3429 reach, 5: inline|none|qualified|-|-|none | left: provision [fix: reads nothing — provision left (class, not reviewed one by one; 3 statements, reach 62)]
+  3362 reach, 1: following|none|qualified|-|-|none | left: provision [known: one-order wording — "do not come into force in relation to a shipping matter … until regulations under section 30(1) … come into force" (SI 2010/2317 art.10(4)), a negative staging tied to regulations (RULES.md: one-law commencement wordings)]
+  3362 reach, 1: inline|made_relative|qualified|-|other_law|none | left: qualifier [fix: "To the extent that the provisions … listed in the Schedule confer … power …" read as full (SI 2010/1736)]
+  3061 reach, 1: inline|date|-|-|-|none | left: date+provision [fix: list items with their own dates read as nothing (SI 1993/2762, 1997/1535, 2005/2965)]
+  3061 reach, 1: inline|none|qualified|-|other_law|none | left: provision [fix: "in so far as they relate to the repeal of section 28(3)(b) of the Utilities Act 2000, shall come into force— (a) …" read as nothing (SI 2005/2965)]
+  2503 reach, 3: inline|date|qualified|-|-|rules | left: qualifier [fix: "except that subsections (4) and (6) … shall so come into force only for the purpose of …" read as full (SI 1993/1461, 2022/561)]
+  1757 reach, 1: inline|date|qualified|full|-|rules | left: qualifier [fix: "in relation to …" read as full (SI 2019/427)]
+  1580 reach, 1: inline|date|qualified|-|-|rules | left: provision+qualifier [fix: half-read — provision+qualifier left (class, not reviewed one by one; 1 statements, reach 1580)]
+  910 reach, 1: items_first|date|-|-|-|none | left: date [fix: reads nothing — date left (class, not reviewed one by one; 3 statements, reach 923)]
+  894 reach, 2: following|date|-|-|other_law|none | left: date [fix: reads nothing — date left (class, not reviewed one by one; 3 statements, reach 894)]
+  884 reach, 5: inline|none|qualified|full|-|none | left: provision [fix: reads nothing — provision left (class, not reviewed one by one; 2 statements, reach 56)]
+  786 reach, 1: inline|date|qualified|-|-|none | left: date+exception [fix: reads nothing — date+exception left (class, not reviewed one by one; 1 statements, reach 786)]
+  743 reach, 6: following|date|-|-|-|none | left: date [fix: a following list read as nothing (NISR 2012/187 Articles of a 1979 Order; SI 1964/1045's aside "(which relate to first aid)")]
+  699 reach, 1: following|none|qualified|-|-|rules+partial | left: provision [no status]
+  699 reach, 1: inline|made_relative|qualified|-|other_law|rules | left: qualifier [no status]
+  699 reach, 1: inline|none|qualified|-|-|rules | left: qualifier [no status]
+  546 reach, 1: inline|date|qualified|-|other_law|none | left: date+qualifier [fix: reads nothing — date+qualifier left (class, not reviewed one by one; 1 statements, reach 546)]
+  485 reach, 5: inline|date|-|-|-|none | left: date [fix: an article bringing in provisions "specified in column 1 of the Schedule" read as nothing: the order's table unread (SI 1976/731, 1977/336, 1978/712)]
+  456 reach, 1: inline|date|-|full|other_law|none | left: date [fix: reads nothing — date left (class, not reviewed one by one; 1 statements, reach 456)]
+  351 reach, 1: inline|made_relative|qualified|full|-|none | left: provision+relative_day [fix: reads nothing — provision+relative_day left (class, not reviewed one by one; 1 statements, reach 351)]
+  126 reach, 3: following|none|qualified|-|-|none | left: provision+qualifier [fix: a following list "so far as required for the exercise of the power in section 4(2)(f)" read as nothing (SI 2010/2169, 2010/2317)]
+  113 reach, 2: inline|none|-|-|-|none | left: provision [fix: reads nothing — provision left (class, not reviewed one by one; 2 statements, reach 113)]
+  102 reach, 1: inline|date|qualified|full|other_law|none | left: date [fix: reads nothing — date left (class, not reviewed one by one; 1 statements, reach 102)]
+  84 reach, 4: inline|none|qualified|-|-|none | left: provision+qualifier [fix: "so far as required for …" / "in relation to …" read as nothing (SI 2010/2169 art.3, 2010/2317)]
+  68 reach, 1: following|made_relative|qualified|full|-|none | left: relative_day [no status]
+  57 reach, 1: whole_act|date|-|-|other_law|none | left: date [fix: reads nothing — date left (class, not reviewed one by one; 1 statements, reach 57)]
+  46 reach, 1: whole_act|date|qualified|-|-|rules | left: qualifier [fix: half-read — qualifier left (class, not reviewed one by one; 2 statements, reach 956)]
+  42 reach, 1: inline|none|qualified|-|-|none | left: qualifier [fix: reads nothing — qualifier left (class, not reviewed one by one; 1 statements, reach 42)]
+  24 reach, 6: inline|date|qualified|-|-|none | left: date+provision+qualifier [fix: reads nothing — date+provision+qualifier left (class, not reviewed one by one; 4 statements, reach 20)]
+  20 reach, 2: following|none|-|-|other_law|none | left: provision [fix: reads nothing — provision left (class, not reviewed one by one; 2 statements, reach 20)]
+leftover groups with no status: 8
+report: data/reports/commencement-reader/leftovers-orders-2026-11-14.txt
+
+new patterns (no status): 13
+patterns no longer seen: 1
+examples reading differently from expected: 25
+  UK_nisr_1996_251/ddb671d4a3
+  UK_nisr_2009_114/d46e098753
+  UK_nisr_2010_328/7755d7112d
+  UK_nisr_2012_13/f1eae0d184
+  UK_nisr_2012_187/6e1f7ee06d
+  UK_nisr_2012_187/7f677675bd
+  UK_ssi_2006_19/84e0519fe3
+  UK_ssi_2006_47/52dad60486
+  UK_ssi_2012_333/cd2c868a4f
+  UK_ssi_2013_342/5b26325b7f
+  UK_ssi_2015_109/a87ba07843
+  UK_ssi_2017_403/5c19bf6d4e
+  UK_ssi_2025_170/152bb57194
+  UK_ssi_2025_170/e0fcd6a7b4
+  UK_uksi_1982_243/5b9f216d67
+  UK_uksi_1989_2278/8acaf6813f
+  UK_uksi_1991_2905/2baa996ab7
+  UK_uksi_1992_2984/35e0773f80
+  UK_uksi_2004_2304/e109bc08a3
+  UK_uksi_2004_2593/e2921ab84a
+  UK_uksi_2004_759/409029688c
+  UK_uksi_2009_3318/6076e1092a
+  UK_uksi_2010_2169/6afc4c2fdb
+  UK_uksi_2010_2169/9bd2ebdbaa
+  UK_uksi_2012_873/93888d6677
+
+accepted: 13 new patterns written to test/fixtures/order_patterns/expected.json
+generated files in test/fixtures/order_patterns
