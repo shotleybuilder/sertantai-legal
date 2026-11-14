@@ -38,6 +38,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Version do
       lib/sertantai_legal/scraper/amendment/*.ex
       lib/sertantai_legal/scraper/amendment/reader/*.ex
       lib/sertantai_legal/scraper/commencement/*.ex
+      lib/sertantai_legal/scraper/commencement/order/*.ex
       lib/sertantai_legal/scraper/application_clause.ex
       lib/sertantai_legal/scraper/law_territory.ex
       lib/sertantai_legal/scraper/territory.ex
@@ -73,11 +74,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Version do
       lib/sertantai_legal/scraper/amendment/patterns.ex
       lib/sertantai_legal/scraper/amendment/read_pass.ex
       lib/sertantai_legal/scraper/amendment/read_report.ex
+      lib/sertantai_legal/scraper/commencement/amending_read.ex
       lib/sertantai_legal/scraper/commencement/check.ex
       lib/sertantai_legal/scraper/commencement/family_leftovers.ex
+      lib/sertantai_legal/scraper/commencement/held_amenders.ex
       lib/sertantai_legal/scraper/commencement/leftovers.ex
       lib/sertantai_legal/scraper/commencement/order_patterns.ex
       lib/sertantai_legal/scraper/commencement/orders.ex
+      lib/sertantai_legal/scraper/commencement/own_read.ex
       lib/sertantai_legal/scraper/commencement/sentence_patterns.ex
     ),
     # the libraries that shape what is read (XML parsing, the stored

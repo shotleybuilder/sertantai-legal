@@ -10,7 +10,9 @@ defmodule SertantaiLegal.Scraper.Commencement.Orders do
   register's `uk_lrt.enacting` instruments titled "Commencement" or
   "Appointed Day". The list is kept per Act under
   `data/cache/commencement-orders/` (fetched once; `refresh: true` again).
-  IO: legislation.gov.uk, the DB, the cache.
+  A list says where to look; the order's own text says what it commences.
+  IO: legislation.gov.uk, the DB, the cache (`act_title/2` and
+  `candidates/2` are pure).
   """
 
   alias SertantaiLegal.Repo
@@ -18,14 +20,47 @@ defmodule SertantaiLegal.Scraper.Commencement.Orders do
 
   @dir "data/cache/commencement-orders"
 
+  @doc """
+  The title a law's orders name it by, without its year: the register's
+  title, less the law's own year where it ends with it. A year inside the
+  title stays: "Deregulation Act 2015 (Health and Safety at Work) …
+  (Consequential Amendments) Order" (SI 2015/1637) is not the Deregulation
+  Act 2015, whose orders were read as commencing it. Pure.
+  """
+  @spec act_title(String.t() | nil, String.t()) :: String.t() | nil
+  def act_title(nil, _year), do: nil
+
+  def act_title(title, year),
+    do: title |> String.trim() |> String.replace_suffix(" " <> year, "") |> String.trim()
+
+  @doc "The order list kept for `act`; nil where it was never searched for. No search."
+  @spec cached(String.t()) :: [String.t()] | nil
+  def cached(act) do
+    case File.read(Path.join(@dir, "#{act}.json")) do
+      {:ok, json} -> Jason.decode!(json)
+      _ -> nil
+    end
+  end
+
+  @doc """
+  The orders a re-read takes for a law: its list (`cached`, nil for none)
+  with the orders whose rules for it are stored (`Store.order_sources/1`).
+  The list only says where to look, and a later search can drop an order
+  from it: the order's rules are then read again from its own text, which
+  says whether it commences the law (`Order.rules/2`), never left on the
+  reading that wrote them (SI 2002/2024 for 2000 c.38). Pure.
+  """
+  @spec candidates([String.t()] | nil, [String.t()]) :: [String.t()]
+  def candidates(cached, stored), do: ((cached || []) ++ stored) |> Enum.uniq() |> Enum.sort()
+
   @doc "The commencement orders of `act` (law name, title without the year, year), as law names."
   @spec for_act(String.t(), String.t() | nil, String.t(), keyword()) :: [String.t()]
   def for_act(act, title, year, opts \\ []) do
     path = Path.join(@dir, "#{act}.json")
 
-    case {Keyword.get(opts, :refresh, false), File.read(path)} do
-      {false, {:ok, json}} ->
-        Jason.decode!(json)
+    case {Keyword.get(opts, :refresh, false), cached(act)} do
+      {false, orders} when is_list(orders) ->
+        orders
 
       _ ->
         orders = Enum.uniq(searched(title, year) ++ enacting(act)) |> Enum.sort()

@@ -19,22 +19,31 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
   (5)(a) and 48", "Part II", "paragraph (4)", with "except …" / "other than
   …" subtracted; a provision noun maps to the law's own prefix (domestic SIs
   number articles as `reg.`). Schedules aren't in LAT. Pure.
+
+  The words are read by: `LawStart.Statements` (several statements in one
+  sentence), `LawStart.ListItems` (a list's items, each with its own
+  exception and qualifier), `LawStart.Territorial` (a commencement country
+  by country) and `LawStart.NumberWords` (numbers written in words).
   """
 
   alias SertantaiLegal.Scraper.LawStart
-  alias SertantaiLegal.Scraper.LawStart.{Clause, ScheduleTable}
+
+  alias SertantaiLegal.Scraper.LawStart.{
+    Clause,
+    ListItems,
+    NumberWords,
+    ScheduleTable,
+    Statements,
+    Territorial,
+    ThatDay
+  }
 
   @cif ~r/\b(?:shall\s+(?:,[^,]{0,160},\s*)?)?(?:comes?|came)\s+into\s+(?:force|operation)\b/i
   @qualified ~r/\b(?:so far as|in so far as|insofar as|for the purposes? of|in relation to|with respect to|to the extent|for (?:all )?other purposes|into\s+(?:force|operation)\s+in\s+(?:England|Wales|Scotland|Northern Ireland|Great Britain)\b)\b/i
-  @remaining ~r/\b(?:remaining (?:provisions|regulations|articles|sections|rules)|remainder|the rest of this|other provisions|all (?:other )?(?:provisions|regulations|articles|sections|rules)|provisions of this \w+(?: \([^)]*\))?,? except|preceding (?:provisions|Parts|sections|regulations|articles)|^\s*(?:\(\w+\)\s*)?otherwise\b|^\s*(?:\(\w+\)\s*)?(?:Subject to [^,]+,\s*)?the provisions of this)/i
+  @remaining ~r/\b(?:remaining (?:provisions|regulations|articles|sections|rules)|remainder|the rest of th(?:is|ese)|other provisions|all (?:other )?(?:provisions|regulations|articles|sections|rules)|provisions of this \w+(?: \([^)]*\))?,? except|preceding (?:provisions|Parts|sections|regulations|articles)|^\s*(?:\(\w+\)\s*)?otherwise\b|^\s*(?:\(\w+\)\s*)?(?:Subject to [^,]+,\s*)?the provisions of this)/i
   # a general clause left open for its list ("… come into force as follows—",
   # "… on the following dates—", "… come into force—")
   @open_clause ~r/into\s+(?:force|operation)\s*(?:as follows|on the following dates?)?\s*[—–:-]?\s*$/iu
-  # ("This Part, apart from section 45, comes into force …": asc 2026/4
-  # s.46(1); "Part IV, apart from section 66 …": 1999 c.22 s.108(3)(b);
-  # never one in brackets, "This section (apart from subsection (2)) and
-  # sections 1, …", whose bracket ends it: 2004 c.22 s.11(2))
-  @except ~r/,?\s*(?:\b(?:except|other than|with the exception of)\b|(?<!\()\bapart from\b)/i
   # a pointer to provisions named elsewhere, never what a general clause's
   # inline exception excepts ("except as provided in paragraph (2) below":
   # SI 2000/3251); a statement's "except the provisions mentioned in
@@ -48,7 +57,8 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
   @part ~r/(?<![Ii]n\s)\bParts?\s+((?>(?:(?:\s*(?:,|and|to)\s*)?[0-9]+[A-Z]?|(?:\s*(?:,|and|to)\s*)?[IVXL]+[A-Z]?)+))\b(?!\s+(?:of|to)\s+(?:that\s+|the\s+)?Schedule)/
   @this ~r/\bthis\s+(?:section|article|regulation|rule)\b/i
   @this_part ~r/\bthis\s+Part\b/i
-  @chapter_of_part ~r/\bChapters?\s+(\w+)\s+of\s+Part\s+(\w+)\b/
+  # ("Chapters II and III of Part I": each, CROW 2000 s.103(2))
+  @chapter_of_part ~r/\bChapters?\s+((?>(?:(?:\s*(?:,|and|to)\s*)?(?:[0-9]+|[IVXL]+)[A-Z]?)+))\s+of\s+Part\s+(\w+)\b/
   # a statement elsewhere names provisions first, never something under them
   # ("… a partial restriction notice served under section 183 above by a
   # notice … which shall come into force": Building Societies Act 1986
@@ -286,23 +296,17 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
     # exception, dated ("…, except regulation 20(4) which shall come into
     # operation on 6th April 2007": CV-S04)
     for row <- held,
-        s <- sentences(row),
+        {s, written} <- row |> ThatDay.resolve(held) |> sentences() |> Enum.zip(sentences(row)),
         Regex.match?(@cif, s),
         not Clause.mention?(s),
         g <- sentence_statements(s, clause, row, rows, made, base, start),
-        do: g
+        # (an item counting from "that day" is read with the day written
+        # out, and keeps its words)
+        do: if(g.text == s, do: %{g | text: written}, else: g)
   end
 
-  # a sentence of two statements run together, each with its own "into
-  # force" ("…, other than regulations 7 and 9 to 14, come into force on
-  # 30th November 2018; regulations 7 and 9 to 14 come into force on 30th
-  # November 2019": SI 2018/1107 reg.1(2); "… on 31st December 2012 the
-  # remaining regulations come into force on …": SI 2012/3152 reg.1(2)) is
-  # read a statement at a time; the law's start is still the first's
-  # (after ";" only a statement naming numbered provisions: never a list's
-  # next item or "; but otherwise …")
-  @statement_break ~r/(?:;\s*(?:and\s+)?(?=(?:regulations?|articles?|sections?|rules?)\s+\d)|(?<=\d{4})\s+(?=(?:the\s+)?(?:remaining|rest)\b))(?=[^;]*\binto\s+(?:force|operation)\b)/i
-
+  # a sentence of statements run together is read a statement at a time
+  # (`LawStart.Statements`); the law's start is still the first's
   defp sentence_statements(s, clause, row, rows, made, base, start) do
     [first | later] = statements(s)
 
@@ -314,15 +318,10 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
     own ++ Enum.flat_map(later, &clause_sentence_groups(&1, row, rows, made, base, start))
   end
 
-  defp statements(s) do
-    case Regex.split(@statement_break, s) do
-      [_one] = whole -> whole
-      pieces -> if Enum.all?(pieces, &Regex.match?(@cif, &1)), do: pieces, else: [s]
-    end
-  end
+  defp statements(s), do: Statements.split(s)
 
   @except_which [
-    ~r/\bexcept\s+(.+?)\s+which\s+(?:shall\s+(?:come|be\s+brought)|comes)\s+into\s+(?:force|operation)\s+(.+?)\.?$/i,
+    ~r/\bexcept\s+(.+?)\s+which\s+(?:shall\s+(?:come|be\s+brought)|comes?)\s+into\s+(?:force|operation)\s+(.+?)\.?$/i,
     # "… except for this section, section 74 above and paragraphs 76(8)(a)
     # and 135 of Schedule 22 to this Act (which come into force on the
     # passing of this Act) …" (EA 1995 s.125(3))
@@ -359,7 +358,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
   defp except_which(s, row, rows, made, base) do
     case Enum.find_value(@except_which, &Regex.run(&1, s)) do
       [_, subject, tail] ->
-        for {subject, tail} <- chained(subject, tail),
+        for {subject, tail} <- chained(following(subject, row, rows), tail),
             [_ | _] = refs <- [weighted_refs(subject, rows, base)],
             {treatment, d} <- [except_date(tail, subject, made)],
             do: %{
@@ -376,6 +375,15 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
       nil ->
         []
     end
+  end
+
+  # "… except for the following provisions which come into force on 5th
+  # July 2018— (a) regulation 4; (b) regulations 6 and 7; …" (SI 2018/575
+  # reg.1(2)): the provisions are the rows under the statement
+  defp following(subject, row, rows) do
+    if subject =~ @list_subject,
+      do: row |> children(rows) |> Enum.map_join(", ", &(&1.text || "")),
+      else: subject
   end
 
   defp chained(subject, tail) do
@@ -450,9 +458,40 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
   defp clause_sentence_groups(s, row, rows, made, base, start) do
     with nil <- not_until(s, row, rows, made, base, start),
          nil <- later_for(s, row, made, start),
+         nil <- by_application(s, row, rows, made, base),
          [] <- except_which(s, row, rows, made, base) do
       clause_sentence_groups(s, row, rows, made, base)
     end
+  end
+
+  # "Part II of this Act, in its application to England and Wales, shall
+  # come into operation on such day as …, and in its application to
+  # Scotland on such day as …" (1969 c.10 s.38(3)): the subject's
+  # provisions, one group per country with its own day
+  defp by_application(s, row, rows, made, base) do
+    with {subject, countries} <- Territorial.by_application(s),
+         [_ | _] = refs <- weighted_refs(subject, rows, base) do
+      for {place, tail} <- countries,
+          do: country_group(tail_treatment(tail, made), place, refs, row, s)
+    else
+      _ -> nil
+    end
+  end
+
+  defp country_group({treatment, date}, place, refs, row, s) do
+    dated? = treatment == :provision_dated
+
+    %{
+      kind: :named,
+      refs: refs,
+      excluded: [],
+      treatment: if(dated?, do: :provision_qualified, else: treatment),
+      date: nil,
+      qualified_date: if(dated?, do: date),
+      territory: place,
+      evidence: row.section_id,
+      text: s
+    }
   end
 
   # "… shall come into force on 23rd February 2008, except that— (a) in
@@ -500,7 +539,35 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
         general_rest(s, row, made)
 
       true ->
-        groups(s, row, rows, made, base)
+        excepted_rest(s, row, rows, made, base) || groups(s, row, rows, made, base)
+    end
+  end
+
+  # "except for regulation 4 and regulation 6 to the extent that it applies
+  # to regulation 4, they shall come into force on 1st March 1994" (SI
+  # 1994/232 reg.1(a)): the rest of the law less what is excepted outright;
+  # an item excepted only to an extent comes in with the rest, partly
+  @excepted_rest ~r/^\W*(?:\(\w+\)\s*)?(?:except(?:\s+for)?|other\s+than|apart\s+from)\s+(.+?),\s*(?:they|it|these\s+(?:Regulations|Rules)|this\s+(?:Order|Act|Measure))\s+(?:shall\s+)?comes?\s+into\s+(?:force|operation)\s+(.+?)$/is
+
+  defp excepted_rest(s, row, rows, made, base) do
+    with [_, excepted, tail] <- Regex.run(@excepted_rest, String.trim(s)),
+         {treatment, date} when treatment != :provision_unread <- tail_treatment(tail, made) do
+      {plain, _qualified} = ListItems.qualified_last(excepted) || {excepted, ""}
+
+      [
+        %{
+          kind: :remaining,
+          refs: [],
+          excluded: refs(plain, rows, base),
+          treatment: treatment,
+          date: date,
+          qualified_date: nil,
+          evidence: row.section_id,
+          text: s
+        }
+      ]
+    else
+      _ -> nil
     end
   end
 
@@ -596,26 +663,85 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
   # excluded refs, treatment and date. A list ("The following provisions
   # come into force on …— (a) section 1; (b) section 105 in so far as …")
   # is read item by item: qualified items are their own (D2) group.
+  # the power to appoint different days is no qualifier of the statement
+  # ("…; and different days may be so appointed for different purposes of
+  # this Act or for the same purposes in relation to different courts":
+  # 1968 c.64 s.20(4))
+  @different_days ~r/\s*[;,]\s*and\s+different\s+(?:days|dates)\s+may\s+be\s+(?:so\s+)?appointed\b.*$/is
+
+  # (read without it; the groups keep the sentence as written)
   defp groups(sentence, row, rows, made, base) do
+    case Regex.replace(@different_days, sentence, "") do
+      ^sentence -> read_groups(sentence, row, rows, made, base)
+      plain -> for g <- read_groups(plain, row, rows, made, base), do: %{g | text: sentence}
+    end
+  end
+
+  defp read_groups(sentence, row, rows, made, base) do
     [subject, tail] = Regex.split(@cif, sentence, parts: 2)
-
-    # an inline list follows "namely—" or a dash; else the rows under this one
-    [tail, inline] =
-      case Regex.split(~r/(?:,?\s*namely\s*)?(?:[—–]|:(?=\s))\s*/u, String.trim(tail), parts: 2) do
-        [t, list] -> [t, list]
-        [t] -> [t, ""]
-      end
-
+    {tail, inline} = tail_and_list(tail)
     {treatment, date} = tail_treatment(tail, made)
 
-    list_head? =
+    cond do
+      list_head?(subject, tail, inline, row, rows) ->
+        list_head(subject, row, rows, made, base)
+
+      treatment == :provision_unread and tied?(subject, tail) ->
+        tied(sentence, subject, inline, row, rows, made, base)
+
+      true ->
+        sentence_groups(sentence, subject, tail, inline, treatment, date, row, rows, made, base)
+    end
+  end
+
+  # an inline list follows "namely—" or a dash; else the rows under this one
+  defp tail_and_list(tail) do
+    case Regex.split(~r/(?:,?\s*namely\s*)?(?:[—–]|:(?=\s))\s*/u, String.trim(tail), parts: 2) do
+      [t, list] -> {t, list}
+      [t] -> {t, ""}
+    end
+  end
+
+  defp list_head?(subject, tail, inline, row, rows),
+    do:
       tail == "" and inline == "" and not (subject =~ @list_subject) and
         children(row, rows) != []
 
-    if list_head?,
-      do: list_head(subject, row, rows, made, base),
-      else:
-        sentence_groups(sentence, subject, tail, inline, treatment, date, row, rows, made, base)
+  # "Section 3 comes into force at the same time as section 1 comes fully
+  # into force in relation to premises in England" (2021 c.24 s.4(5)): the
+  # subject's provisions wait for the other's day (an event day, undated);
+  # what qualifies the other's commencement qualifies nothing here. Never a
+  # deeming ("are to be regarded as having come into force at the same time
+  # as …": 2011 c.19 s.29(5))
+  # … nor one after the law's own other provisions, which its general
+  # clause dates ("Regulation 18(2) comes into force immediately after the
+  # coming into force of the other regulations": SI 2013/1471 reg.1(3))
+  @own_rest ~r/\bthe\s+(?:other|remaining|rest\s+of\s+the)\s+(?:regulations|provisions|articles|sections|rules)\b|\bth(?:ese|is)\s+(?:Regulations|Order|Rules|Act)\b/i
+
+  defp tied?(subject, tail) do
+    Clause.tied?(tail) and not (subject =~ ~r/\b(?:regarded|treated|deemed|taken)\s+as\b/i) and
+      not (tail =~ @own_rest)
+  end
+
+  @tied_words "with another provision"
+
+  defp tied(sentence, subject, inline, row, rows, made, base) do
+    read = "#{subject} come into force #{@tied_words}"
+
+    for g <-
+          sentence_groups(
+            read,
+            subject,
+            @tied_words,
+            inline,
+            :provision_by_order,
+            nil,
+            row,
+            rows,
+            made,
+            base
+          ),
+        do: g |> Map.put(:tied, true) |> Map.put(:text, sentence)
   end
 
   # "Section 1 comes into force— (a) on 1 January 2022 for the purpose of
@@ -638,67 +764,77 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
       treatment: treatment,
       date: date,
       qualified_date: nil,
+      # (a day an order fixes, kept for the items its qualifier leaves
+      # partly in: "on the transfer date", 1986 c.44 s.68(3))
+      appointed: treatment == :provision_by_order,
       evidence: row.section_id,
       text: sentence
     }
 
-    if subject =~ @list_subject do
-      {head, before} = head_and_items(subject)
+    if subject =~ @list_subject,
+      do: list_groups(g, subject, tail, inline, row, rows, base),
+      else: subject_groups(g, sentence, subject, tail, rows, base)
+  end
 
-      items =
-        [before, inline | Enum.map(children(row, rows), &(&1.text || ""))]
-        |> Enum.join("; ")
-        |> String.split(~r/;\s*/, trim: true)
+  # a list read item by item (`LawStart.ListItems`): the provisions its
+  # items name in full, and those their own qualifiers leave partly in
+  defp list_groups(g, subject, tail, inline, row, rows, base) do
+    {head, before} = head_and_items(subject)
 
-      {qualified, plain} = Enum.split_with(items, &Regex.match?(@qualified, &1))
+    items =
+      before
+      |> ListItems.split(inline, Enum.map(children(row, rows), &(&1.text || "")))
+      |> Enum.map(&ListItems.read/1)
 
-      # each item's own "except …" ("Part 7 …, except regulation 73")
-      {refs, excluded} =
-        Enum.reduce(plain, {[], []}, fn item, {rs, ex} ->
-          {inside, outside} = split_except(item)
-          named = weighted_refs(inside, rows, base)
+    plain? = Enum.any?(items, &(&1.plain != ""))
+    qualified? = Enum.any?(items, &(&1.qualified != ""))
 
-          {rs ++ named,
-           ex ++
-             refs(outside, rows, relative_base(named, base))}
-        end)
+    # each item's own "except …" ("Part 7 …, except regulation 73")
+    {refs, excluded} = Enum.reduce(items, {[], []}, &item_refs(&1, &2, rows, base))
+    named = %{g | refs: refs, excluded: excluded}
+    listed = partly(g, Enum.flat_map(items, &weighted_refs(&1.qualified, rows, base)))
 
-      named = %{g | refs: refs, excluded: excluded}
+    # a list whose items are all qualified is only the qualified group
+    [named |> classify(head <> " " <> tail) |> beside(listed), listed]
+    |> Enum.reject(&(&1.treatment == :provision_qualified and &1.refs == []))
+    |> Enum.reject(&(&1.kind == :unread and not plain? and qualified?))
+  end
 
-      listed = %{
-        g
-        | refs: Enum.flat_map(qualified, &weighted_refs(&1, rows, base)),
-          treatment: :provision_qualified,
-          date: nil,
-          qualified_date: date
-      }
+  defp subject_groups(g, sentence, subject, tail, rows, base) do
+    case bracket_qualified(subject) || trailing_qualified(subject) ||
+           ListItems.qualified_last(subject) do
+      {plain, qualified} ->
+        # "regulations 2, 5, 10 and 11, and, so far as they relate to …,
+        # regulations 3, 6 and 7": the qualifier is only the later items'
+        named = %{g | refs: weighted_refs(plain, rows, base)}
+        listed = partly(g, weighted_refs(qualified, rows, base))
 
-      # a list whose items are all qualified is only the qualified group
-      [classify(named, head <> " " <> tail), listed]
-      |> Enum.reject(&(&1.treatment == :provision_qualified and &1.refs == []))
-      |> Enum.reject(&(&1.kind == :unread and plain == [] and qualified != []))
-    else
-      case bracket_qualified(subject) || trailing_qualified(subject) do
-        {plain, qualified} ->
-          # "regulations 2, 5, 10 and 11, and, so far as they relate to …,
-          # regulations 3, 6 and 7": the qualifier is only the later items'
-          named = %{g | refs: weighted_refs(plain, rows, base)}
+        [named |> classify(plain <> " " <> tail, plain) |> beside(listed), listed]
+        |> Enum.reject(&(&1.refs == []))
 
-          listed = %{
-            g
-            | refs: weighted_refs(qualified, rows, base),
-              treatment: :provision_qualified,
-              date: nil,
-              qualified_date: date
-          }
-
-          [classify(named, plain <> " " <> tail, plain), listed]
-          |> Enum.reject(&(&1.refs == []))
-
-        nil ->
-          whole_subject(g, sentence, subject, rows, base)
-      end
+      nil ->
+        whole_subject(g, sentence, subject, rows, base)
     end
+  end
+
+  # the items named in full beside a qualified one stay named when the
+  # day is unread (an event: "Part III of Schedule 7 and section 109(6) so
+  # far as relating to that Part shall come into force on the dissolution
+  # of British Telecommunications", 1984 c.12 s.110(4)): an unread rule
+  # for them, as the qualified item has
+  defp beside(%{kind: :unread, refs: [_ | _]} = named, %{refs: [_ | _]}),
+    do: %{named | kind: :named}
+
+  defp beside(named, _listed), do: named
+
+  # the group of the provisions a qualifier leaves partly in, on the
+  # statement's date
+  defp partly(g, refs),
+    do: %{g | refs: refs, treatment: :provision_qualified, date: nil, qualified_date: g.date}
+
+  defp item_refs(item, {refs, excluded}, rows, base) do
+    named = weighted_refs(item.plain, rows, base)
+    {refs ++ named, excluded ++ refs(item.excepted, rows, relative_base(named, base))}
   end
 
   # an item with its own qualifier in brackets: only that item is partial —
@@ -759,13 +895,39 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
   # 8, section 317(6) …, shall come into force on such day as …" (1996 c.56
   # s.583(3), 1994 c.29 s.94(2)); the list is classed by its head alone
   defp head_and_items(subject) do
-    case Regex.split(~r/(?<=[—–])\s*/u, subject, parts: 2) do
-      [head, items] -> {head, String.trim_trailing(items, ",")}
+    # (or after "namely", no dash: "The following provisions of this Act,
+    # namely sections 13 to 19, this section (except subsection (2)) and
+    # the Schedule, shall come into force …": 1968 c.64 s.20(4))
+    case Regex.split(~r/(?<=[—–])\s*|,\s*namely\s+(?![—–])/u, subject, parts: 2) do
+      [head, items] -> {head, items |> String.trim() |> String.trim_trailing(",")}
       _ -> {subject, ""}
     end
   end
 
+  # a statement left to an order and qualified only by a country is by
+  # order for that country, never a partial commencement ("in relation to
+  # England, in accordance with provision made by order": CNEA 2005
+  # s.108(1)(a))
   defp classify(g, qualifiable, subject \\ "") do
+    case g.treatment == :provision_by_order && Territorial.only(qualifiable) do
+      place when is_binary(place) ->
+        by_order_for(g, place, Regex.match?(@remaining, subject))
+
+      _ ->
+        classify_plain(g, qualifiable, subject)
+    end
+  end
+
+  # (the provisions it names stay named: "other provisions of Parts 1 and 2
+  # come into force in relation to England in accordance with provision
+  # made by order", FWMA 2010 s.49(3))
+  defp by_order_for(%{refs: [_ | _]} = g, place, _rest?), do: Map.put(g, :territory, place)
+  defp by_order_for(g, place, true), do: Map.merge(g, %{kind: :remaining, territory: place})
+  defp by_order_for(g, _place, false), do: unread(g)
+
+  defp unread(g), do: %{g | kind: :unread, treatment: :provision_unread, date: nil}
+
+  defp classify_plain(g, qualifiable, subject) do
     cond do
       Regex.match?(@qualified, qualifiable) ->
         %{g | treatment: :provision_qualified, date: nil, qualified_date: g.date}
@@ -774,7 +936,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
         %{g | kind: :remaining}
 
       g.refs == [] or g.treatment == :provision_unread ->
-        %{g | kind: :unread, treatment: :provision_unread, date: nil}
+        unread(g)
 
       true ->
         g
@@ -805,21 +967,19 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
   end
 
   # what an "except …" is relative to: the first provision named, else the
-  # clause's own (a Part's or Chapter's id isn't a provision: "Part 7 …,
-  # except regulation 73")
+  # clause's own (a Part's, Chapter's or Schedule's id isn't a provision:
+  # "Part 7 …, except regulation 73"; "Chapter 1 of Part 5 (except section
+  # 116), Part 5 of Schedule 18": 2007 c.28 s.245(2))
   defp relative_base(named, base) do
-    case named |> Enum.map(&elem(&1, 0)) |> Enum.reject(&String.contains?(&1, ":pt.")) do
+    case named
+         |> Enum.map(&elem(&1, 0))
+         |> Enum.reject(&String.contains?(&1, [":pt.", ":sch"])) do
       [first | _] -> first
       [] -> base
     end
   end
 
-  defp split_except(subject) do
-    case Regex.split(@except, subject, parts: 2) do
-      [inside, outside] -> {inside, outside}
-      [inside] -> {inside, ""}
-    end
-  end
+  defp split_except(subject), do: ListItems.split_except(subject)
 
   @doc """
   The law's own provisions `text` names, bare ("reg.7", "pt.II"), as this
@@ -844,8 +1004,13 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
     # Environmental Protection Act 1990": 2005 c.16 s.108(4)(f))
     # (an item still naming another Act after that, "paragraph 12 of Schedule
     # 1A to that Act", stays another law's: 1986 c.50 s.88(5))
+    # (numbers in words as digits: "Section forty-one of this Act", 1962
+    # c.58 s.70(3))
     subject =
-      subject |> String.replace(@other_provisions, "") |> String.replace(@repeal_of_law, "")
+      subject
+      |> NumberWords.digits()
+      |> String.replace(@other_provisions, "")
+      |> String.replace(@repeal_of_law, "")
 
     if subject =~ @other_law or subject =~ @that_act,
       do: [],
@@ -890,7 +1055,8 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
 
     # "Chapter 1 of Part 6": that Chapter only; else a Part
     chapters =
-      for [_, c, p] <- Regex.scan(@chapter_of_part, plain),
+      for [_, list, p] <- Regex.scan(@chapter_of_part, plain),
+          c <- part_list(list),
           r <- rows,
           same_part?(Map.get(r, :part), p),
           same_part?(Map.get(r, :chapter), c),
@@ -970,7 +1136,10 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
 
     # a Schedule's provisions, as named (no LAT row holds one: CV-S04)
     schedule_refs =
-      for r <- SertantaiLegal.Scraper.Commencement.Order.own_schedule_refs(subject),
+      for r <-
+            subject
+            |> schedule_words()
+            |> SertantaiLegal.Scraper.Commencement.Order.own_schedule_refs(),
           do: {"#{law}:#{r}", String.length(r)}
 
     Enum.uniq_by(
@@ -979,6 +1148,27 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
         schedule_refs ++ Enum.map(this_part ++ chapters ++ parts ++ schedules, &{&1, 0}),
       &elem(&1, 0)
     )
+  end
+
+  @in_schedule_parts ~r/\bin\s+Schedule\s+(\d+[A-Z]*)\s*,\s*(Parts?\s+(?:[IVXL]+|\d+)[A-Z]?(?:\(\d+\))*(?:\s*(?:,|and)\s*(?:\(\d+\)|(?:Parts?\s+)?(?:[IVXL]+|\d+)[A-Z]?(?:\(\d+\))*))*)/
+  @contained_in ~r/\bthe\s+repeal\s+of\s+[^;.]*?\bcontained\s+in\s+[^,;.]*?\bSchedule\s+\d+[A-Z]*/
+
+  # a Schedule's Parts named after it, each as "Part X of Schedule N" ("in
+  # Schedule 15, Part III and Part V(1) and (5)": AJA 1999 s.108(3)(f), a
+  # Part's numbered divisions read as the Part); one repeal and where it
+  # is ("the repeal of section 67(8) of the Magistrates' Courts Act 1980 …
+  # contained in Part V(1) of Schedule 15": s.108(4)) names no Schedule
+  defp schedule_words(subject) do
+    subject = String.replace(subject, @contained_in, "")
+
+    Regex.replace(@in_schedule_parts, subject, fn _, schedule, parts ->
+      parts
+      |> String.replace(~r/\(\d+\)/, "")
+      |> then(&Regex.scan(~r/\b(?:[IVXL]+|\d+)[A-Z]?\b/, &1))
+      |> List.flatten()
+      |> Enum.uniq()
+      |> Enum.map_join(" and ", &"Part #{&1} of Schedule #{schedule}")
+    end)
   end
 
   # "45(4)(d) and (5)(a) and 48", "17 to 21", "3, 4, 17, 21 and 23"

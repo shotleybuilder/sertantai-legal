@@ -487,4 +487,16 @@ defmodule SertantaiLegal.Scraper.Commencement.LeftoversTest do
       assert left_by_unit(doc) == []
     end
   end
+
+  test "a provision's bracketed heading holds no qualifier (SI 2009/3318 art.3)" do
+    s =
+      "Sections 114 to 117 of the Act (order–making powers in relation to EPBs and combined authorities) shall come into force on 12th January 2010."
+
+    full = [rule(["s.114..s.117"], {:date, ~D[2010-01-12]}, s, treatment: :order_date)]
+    assert Leftovers.of(s, full, &Order.refs_in/1) == []
+
+    # a qualifier of the provision's own still shows
+    own = String.replace(s, " shall come", ", in relation to combined authorities, shall come")
+    assert words(Leftovers.of(own, full, &Order.refs_in/1), :qualifier) == ["in relation to"]
+  end
 end

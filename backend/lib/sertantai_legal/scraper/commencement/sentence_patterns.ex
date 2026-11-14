@@ -37,7 +37,7 @@ defmodule SertantaiLegal.Scraper.Commencement.SentencePatterns do
   """
 
   alias SertantaiLegal.Scraper.Commencement.{OwnClause, Rule}
-  alias SertantaiLegal.Scraper.LawStart.Clause
+  alias SertantaiLegal.Scraper.LawStart.{Clause, Statements}
 
   @cif ~r/\b(?:comes?|came|coming|be\s+brought|brought)\s+into\s+(?:force|operation)\b/i
   @lead [
@@ -197,7 +197,9 @@ defmodule SertantaiLegal.Scraper.Commencement.SentencePatterns do
   @spec outcome(String.t(), map()) :: %{class: String.t(), rules: [String.t()]}
   def outcome(sentence, %{law: law, rules: rules, unread: unread}) do
     s = squash(sentence)
-    from = Enum.filter(rules, &(squash(&1.source.text) == s))
+    # (a sentence of several statements: each statement's rules are its)
+    statements = [s | sentence |> Statements.split() |> Enum.map(&squash/1)]
+    from = Enum.filter(rules, &(squash(&1.source.text) in statements))
     unread? = Enum.any?(unread, &(squash(&1.text) == s))
 
     class =

@@ -6,7 +6,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingCommencement d
   the provision (`Commencement.Evaluator`) — never its feed's records nor a
   staged clause's start. Royal Assent dates only what no other rule
   reaches; a Schedule's paragraph comes in with the provision giving the
-  Schedule effect. Pure.
+  Schedule effect. A provision brought in by stages carries them
+  (`stages`), for the label fold to read. Pure.
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Claim
@@ -25,7 +26,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingCommencement d
   @spec claims([CRule.t()], String.t(), String.t()) :: [Claim.t()]
   def claims(rules, ref, key) do
     result = commencement(rules, ref)
+    dated(result, key) ++ Claim.new(:commencement, :stages, stages(result), key)
+  end
 
+  defp dated(result, key) do
     case {result && result.full_from, first_territory(result)} do
       {%Date{} = date, _} ->
         Claim.new(:commencement, :date, date, key) ++
@@ -59,6 +63,36 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingCommencement d
   end
 
   defp first_territory(_result), do: nil
+
+  # a provision brought in by stages carries each as read — its date, the
+  # law that brought it in, the territory and the purposes it was limited
+  # to — up to its full start, as the feed reader carries a text change's
+  # (RULES `text-change-carries-its-stages`): a purpose-limited first stage
+  # is never lost behind the full one (MSA 1995 Part 9A by 2011 c.8, SI
+  # 2015/133: for specified purposes from 5 February 2015, fully from 14
+  # April). Nil where it came in on one day, in full
+  defp stages(nil), do: nil
+
+  defp stages(%{entries: entries, full_from: full}) do
+    read =
+      for(
+        %{date: %Date{} = d} = e <- entries,
+        full == nil or Date.compare(d, full) != :gt,
+        do: stage(e, full)
+      )
+      |> Enum.uniq()
+
+    if Enum.any?(read, & &1.partial), do: read
+  end
+
+  defp stage(e, full),
+    do: %{
+      date: e.date,
+      commenced_by: e.rule.source.law,
+      in_force_for: e.territory,
+      qualification: e.purposes && Atom.to_string(e.purposes),
+      partial: full == nil or Date.compare(e.date, full) == :lt
+    }
 
   @doc """
   When the amending provision `ref` came fully into force by its law's own

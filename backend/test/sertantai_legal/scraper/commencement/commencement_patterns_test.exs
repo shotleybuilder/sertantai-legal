@@ -119,4 +119,19 @@ defmodule SertantaiLegal.Scraper.Commencement.CommencementPatternsTest do
                )
     end
   end
+
+  describe "outcome/2" do
+    test "a sentence of several statements takes each statement's rules (SI 1989/1401 reg.1(3))" do
+      s =
+        "Regulations 6(3) and 7(1) shall come into force on 1st January 1990 and regulation 8(3) shall come into force on 1st January 1996."
+
+      rows =
+        for {id, text} <- [{"reg.1(3)", s}, {"reg.6(3)", ""}, {"reg.7(1)", ""}, {"reg.8(3)", ""}],
+            do: %{section_id: "UK_x:" <> id, text: text, part: nil, chapter: nil}
+
+      read = OwnClause.read("UK_x", %{type_code: "uksi", rows: rows, lrt_date: ~D[1989-09-18]})
+
+      assert %{class: "rules:provision_dated", rules: [_, _]} = SentencePatterns.outcome(s, read)
+    end
+  end
 end

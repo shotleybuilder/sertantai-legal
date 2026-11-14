@@ -6,14 +6,14 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
   --read-amending`'s laws), classed by its form and by what the own-clause
   reader made of it (`Commencement.SentencePatterns`), each pattern with
   its count and up to three real sentences (from different laws) as
-  examples. Read-only over the DB and the stored law text; writes only the
-  fixture directory. Laws are read several at once (`LawRunner.Guard`),
+  examples. Read-only over the DB and the stored law text; writes the
+  fixture directory only with `--accept` (`CommencementCatalogue.Target`). Laws are read several at once (`LawRunner.Guard`),
   each law's sentences and the examples they give alone kept in
   `CatalogueCache` (`CommencementCatalogue.LawRead`, #195), and taken in
   law order (`CommencementCatalogue.LawScan`).
 
-      mix lat.commencement_patterns                  # regenerate; report against the expectations
-      mix lat.commencement_patterns --accept         # also accept new patterns as the reader reads them now
+      mix lat.commencement_patterns                  # a dry run: report against the expectations; generated files under data/reports/commencement-reader/dry-run/, never the fixtures
+      mix lat.commencement_patterns --accept         # write the fixtures, and accept new patterns as the reader reads them now
       mix lat.commencement_patterns --laws A,B --out DIR
       mix lat.commencement_patterns --no-cache       # read every law afresh
 
@@ -36,11 +36,13 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
   alias SertantaiLegal.Scraper.ChangeCollector
   alias SertantaiLegal.Scraper.{CatalogueCache, LawRunner}
   alias SertantaiLegal.Scraper.Commencement.{Leftovers, OwnClause}
-  alias SertantaiLegal.Scraper.CommencementCatalogue.{LawRead, LawScan}
+  alias SertantaiLegal.Scraper.CommencementCatalogue.{LawRead, LawScan, Target}
 
   @shortdoc "Own commencement sentences' pattern catalogue, as test fixtures (read-only)"
 
   @dir "test/fixtures/commencement_patterns"
+  # a dry run's generated files: never the fixtures (`Target`)
+  @dry_run_dir "data/reports/commencement-reader/dry-run/commencement_patterns"
 
   @impl Mix.Task
   def run(args) do
@@ -58,8 +60,8 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
     Mix.Task.run("app.start")
     Logger.configure(level: :warning)
 
-    dir = opts[:out] || @dir
-    File.mkdir_p!(dir)
+    target = Target.dirs(opts, @dir, @dry_run_dir)
+    File.mkdir_p!(target.write)
 
     laws = laws(opts[:laws])
 
@@ -89,8 +91,9 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
     Mix.shell().info(CatalogueCache.summary(sources))
     # the serial part: the examples chosen and each law's merged and checked
     Mix.shell().info("merge: #{div(merge_us, 1_000_000)} s")
-    write(dir, acc)
-    report(dir, acc, opts[:accept])
+    write(target.write, acc)
+    report(target.held, acc, opts[:accept])
+    Mix.shell().info(Target.notice(target))
   end
 
   defp law_result(law, {:ok, read}, acc) do

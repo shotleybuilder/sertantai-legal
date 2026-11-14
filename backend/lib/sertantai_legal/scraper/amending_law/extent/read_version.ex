@@ -22,6 +22,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadVersion do
       lib/sertantai_legal/scraper/amending_law/text.ex
       lib/sertantai_legal/scraper/amending_law/defined_terms.ex
       lib/sertantai_legal/scraper/commencement/order.ex
+      lib/sertantai_legal/scraper/commencement/order/*.ex
       lib/sertantai_legal/scraper/commencement/rule.ex
       lib/sertantai_legal/scraper/commencement/effects.ex
       lib/sertantai_legal/scraper/commencement/evaluator.ex

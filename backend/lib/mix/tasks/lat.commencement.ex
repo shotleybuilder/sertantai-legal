@@ -15,10 +15,16 @@ defmodule Mix.Tasks.Lat.Commencement do
       mix lat.commencement --read --law X[,Y] | --all       # write the laws' own-clause rules (CR-03)
       mix lat.commencement --compare --all --tag cr03_cmp   # the evaluator vs today's register, per row
       mix lat.commencement --effects                        # amending Acts: their feed's "coming into force" effects as rules (CR-04)
+      mix lat.commencement --effects --law A,B              # those Acts only, from the store alone; replaces only the feed rules commencing them
       mix lat.commencement --read-orders                    # amending Acts before 2002: the rules the orders their notes cite state (where no effect reaches)
-      mix lat.commencement --read-orders --law X,Y          # a labelled law's own commencement orders (CR-07: its by-order rows)
+      mix lat.commencement --read-orders --law X,Y          # a labelled law's own commencement orders (CR-07: its by-order rows); searches legislation.gov.uk for a law with no order list kept
+      mix lat.commencement --read-orders --law X,Y --held   # the same from what is held: the list kept and the orders whose rules are stored; never a search
+      mix lat.commencement --read-orders --family F         # `--held` for the family's laws and its changes' amending laws (the re-read after a reader change)
+      mix lat.commencement --read-orders … --preview        # what it would write, per order: stored → read; writes nothing
       mix lat.commencement --read-amending                  # amending laws with no LAT: their own clause from the CLML held (CR-06; one hop, no fetch)
       mix lat.commencement --read-amending --law A,B --workers 1   # these amending laws (CV-07: just fetched)
+      mix lat.commencement --read-amending --family F --workers 1  # the amending laws of a family's changes (`Commencement.HeldAmenders`: never a commencement order)
+      mix lat.commencement --amenders --family F [--out FILE]      # that list, printed (read-only)
 
   `--read` writes only `commencement_rules` (no label changes). `--compare`
   writes `data/reports/commencement-rules/<tag>.csv` — each row whose
@@ -35,13 +41,17 @@ defmodule Mix.Tasks.Lat.Commencement do
   alias SertantaiLegal.Scraper.{ChangeCollector, LabelTimeline, LawRunner}
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
 
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source, as: Scope
+
   alias SertantaiLegal.Scraper.Commencement.{
+    AmendingRead,
     Effects,
     Evaluator,
+    HeldAmenders,
     Order,
     Orders,
     OwnClause,
-    ScheduleEffect,
+    OwnRead,
     Rule,
     Store
   }
@@ -49,6 +59,9 @@ defmodule Mix.Tasks.Lat.Commencement do
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed
 
   @shortdoc "Print, read or compare a law's commencement rules"
+
+  # the first mode asked for, in this order (`--read --law X` reads)
+  @modes ~w(read compare orders effects read_orders amenders read_amending law)a
 
   @impl Mix.Task
   def run(args) do
@@ -63,6 +76,11 @@ defmodule Mix.Tasks.Lat.Commencement do
           effects: :boolean,
           read_orders: :boolean,
           read_amending: :boolean,
+          amenders: :boolean,
+          held: :boolean,
+          preview: :boolean,
+          family: :string,
+          out: :string,
           tag: :string,
           workers: :integer
         ]
@@ -71,34 +89,23 @@ defmodule Mix.Tasks.Lat.Commencement do
     Mix.Task.run("app.start")
     Logger.configure(level: :warning)
 
-    cond do
-      opts[:read] ->
-        read(laws(opts), opts)
-
-      opts[:compare] ->
-        compare(laws(opts), opts)
-
-      opts[:orders] ->
-        orders()
-
-      opts[:effects] ->
-        effects()
-
-      opts[:read_orders] ->
-        read_orders(opts)
-
-      opts[:read_amending] ->
-        read_amending(opts)
-
-      opts[:law] ->
-        opts[:law] |> Store.for_law() |> print(opts[:law])
-
-      true ->
-        Mix.raise(
-          "usage: mix lat.commencement --law X | --read (--law X | --all) | --compare --all --tag T"
-        )
-    end
+    dispatch(Enum.find(@modes, &opts[&1]), opts)
   end
+
+  defp dispatch(:read, opts), do: read(laws(opts), opts)
+  defp dispatch(:compare, opts), do: compare(laws(opts), opts)
+  defp dispatch(:orders, _opts), do: orders()
+  defp dispatch(:effects, opts), do: effects(opts)
+  defp dispatch(:read_orders, opts), do: read_orders(opts)
+  defp dispatch(:amenders, opts), do: amenders(opts)
+  defp dispatch(:read_amending, opts), do: read_amending(opts)
+  defp dispatch(:law, opts), do: opts[:law] |> Store.for_law() |> print(opts[:law])
+
+  defp dispatch(nil, _opts),
+    do:
+      Mix.raise(
+        "usage: mix lat.commencement --law X | --read (--law X | --all) | --compare --all --tag T"
+      )
 
   defp laws(opts) do
     cond do
@@ -134,14 +141,7 @@ defmodule Mix.Tasks.Lat.Commencement do
       LawRunner.run(
         laws,
         fn law ->
-          input = clause_input(law)
-
-          {:ok, n} =
-            Store.write(
-              law,
-              OwnClause.rules(law, input) ++ ScheduleEffect.rules(law, input.rows, doc(law)),
-              treatments: OwnClause.treatments()
-            )
+          {:ok, n} = Store.write(law, OwnRead.rules(law), treatments: OwnClause.treatments())
 
           n
         end,
@@ -175,9 +175,10 @@ defmodule Mix.Tasks.Lat.Commencement do
     # the laws named (CV-07: the amending laws just fetched, which no note
     # may cite yet), else those our notes cite
     laws =
-      case opts[:law] do
-        nil -> List.flatten(rows)
-        list -> String.split(list, ",", trim: true)
+      cond do
+        opts[:family] -> for {law, _} <- family_amenders(opts[:family]).read, do: law
+        opts[:law] -> String.split(opts[:law], ",", trim: true)
+        true -> List.flatten(rows)
       end
       |> Enum.filter(&held?/1)
 
@@ -187,20 +188,12 @@ defmodule Mix.Tasks.Lat.Commencement do
       LawRunner.run(
         laws,
         fn law ->
-          case doc(law) do
+          case AmendingRead.rules(law) do
             nil ->
               0
 
-            d ->
-              input = ChangeCollector.law_start_input(law, OwnClause.doc_rows(d))
-
-              {:ok, n} =
-                Store.write(
-                  law,
-                  OwnClause.rules(law, input) ++ ScheduleEffect.rules(law, input.rows, d),
-                  treatments: OwnClause.treatments()
-                )
-
+            rules ->
+              {:ok, n} = Store.write(law, rules, treatments: OwnClause.treatments())
               n
           end
         end,
@@ -218,9 +211,71 @@ defmodule Mix.Tasks.Lat.Commencement do
     for {law, e} <- Enum.take(errors, 10), do: Mix.shell().info("  #{law}: #{inspect(e)}")
   end
 
+  # the amending laws of a family's stored changes (never listed by hand:
+  # Environmental Protection's list took in 21 commencement orders)
+  defp family_amenders(family),
+    do: family |> Scope.family_laws() |> HeldAmenders.for_laws()
+
+  # ── --amenders (read-only) ──────────────────────────────────────────
+
+  defp amenders(opts) do
+    family = opts[:family] || Mix.raise("--amenders --family F")
+    picked = family_amenders(family)
+    shell = Mix.shell()
+
+    for {kind, label} <- [
+          read: "held, to read",
+          orders: "commencement orders (read as orders)",
+          lat: "with LAT rows (read by --read)",
+          not_held: "not held"
+        ] do
+      laws = Map.fetch!(picked, kind)
+
+      shell.info(
+        "#{length(laws)} #{label}; changes #{laws |> Enum.map(&elem(&1, 1)) |> Enum.sum()}"
+      )
+    end
+
+    if opts[:out] do
+      File.write!(opts[:out], Enum.map_join(picked.read, "\n", &elem(&1, 0)) <> "\n")
+      shell.info("the laws to read: #{opts[:out]}")
+    end
+  end
+
   # ── --orders / --read-orders (CR-04) ────────────────────────────────
 
   # the Acts whose amending provisions the amending-law collector reads
+  @doc """
+  Which Acts `--effects` reads, the store mode and the write's scope:
+  `--law A,B` reads those Acts from the store alone and replaces only the
+  feed rules commencing them, a law at a time (Fire and OH&S: Commencement reader, Decision
+  5 a); else every amending Act, preferring the store.
+  """
+  @spec effects_scope(keyword()) ::
+          {[String.t()] | :amending_acts, :only | :prefer, [] | :per_law}
+  def effects_scope(opts) do
+    case opts[:law] do
+      nil ->
+        {:amending_acts, :prefer, []}
+
+      list ->
+        {String.split(list, ",", trim: true), :only, :per_law}
+    end
+  end
+
+  @doc """
+  An order's feed rules as writes: all at once, or (`:per_law`) one write
+  per law they commence, each replacing only that law's rules.
+  """
+  @spec effects_writes([Rule.t()], [] | :per_law) :: [{keyword(), [Rule.t()]}]
+  def effects_writes(rules, []), do: [{[], rules}]
+
+  def effects_writes(rules, :per_law),
+    do:
+      rules
+      |> Enum.group_by(& &1.commences)
+      |> Enum.map(fn {law, rs} -> {[commences: law], rs} end)
+
   defp amending_acts do
     Repo.query!("""
     SELECT DISTINCT affecting_law FROM lat_change_log
@@ -236,7 +291,7 @@ defmodule Mix.Tasks.Lat.Commencement do
     title =
       case Repo.query!("SELECT title_en FROM uk_lrt WHERE name = $1 LIMIT 1", [law]) do
         %{rows: [[t]]} when is_binary(t) ->
-          t |> String.replace(~r/\s+\d{4}\b.*$/, "") |> String.trim()
+          Orders.act_title(t, year)
 
         _ ->
           (d = doc(law)) && Order.title(d)
@@ -263,16 +318,17 @@ defmodule Mix.Tasks.Lat.Commencement do
   # effects first (Jason 2026-10-18): an amending Act's own changes feed
   # (one per Act, through the store) states when its provisions came into
   # force; legislation.gov.uk's changes data covers changes from 2002
-  defp effects do
+  defp effects(opts) do
     # every amending Act: the feed records commencements from 2002 on, of
     # older Acts too (CROW 2000 in 2004–05; EPA 1990 in Scotland in 2015)
-    acts = amending_acts()
+    {acts, store, scope} = effects_scope(opts)
+    acts = if acts == :amending_acts, do: amending_acts(), else: acts
 
     {by_order, errors} =
       Enum.reduce(acts, {%{}, []}, fn law, {acc, errs} ->
         [_, t, y, n] = String.split(law, "_", parts: 4)
 
-        case ChangesFeed.fetch(t, y, n, store: :prefer) do
+        case ChangesFeed.fetch(t, y, n, store: store) do
           {:ok, effects} ->
             {Enum.reduce(Effects.rules(law, effects), acc, fn r, a ->
                Map.update(a, r.source.law, [r], &[r | &1])
@@ -284,7 +340,8 @@ defmodule Mix.Tasks.Lat.Commencement do
       end)
 
     for {order, rules} <- by_order,
-        do: Store.write(order, Enum.reverse(rules), treatments: [:feed_commencement])
+        {opts, rs} <- effects_writes(rules, scope),
+        do: Store.write(order, Enum.reverse(rs), [treatments: [:feed_commencement]] ++ opts)
 
     Mix.shell().info(
       "#{length(acts)} amending Acts, #{map_size(by_order)} commencing instruments, #{by_order |> Map.values() |> List.flatten() |> length()} rules, #{length(errors)} feed errors"
@@ -298,65 +355,105 @@ defmodule Mix.Tasks.Lat.Commencement do
   # a labelled law's own commencement orders (CR-07: its by-order rows),
   # every one held
   defp read_orders(opts) do
-    case opts[:law] do
-      nil -> read_cited_orders()
-      laws -> read_law_orders(String.split(laws, ",", trim: true))
+    cond do
+      opts[:family] -> read_law_orders(family_sources(opts[:family]), [held: true] ++ opts)
+      opts[:law] -> read_law_orders(String.split(opts[:law], ",", trim: true), opts)
+      true -> read_cited_orders(opts)
     end
   end
 
-  defp read_law_orders(laws) do
-    for law <- laws do
-      a = act(law)
-      orders = Orders.for_act(law, a.title, a.year)
+  # the laws whose rules a family's build reads: its own and its changes'
+  # amending laws
+  defp family_sources(family) do
+    laws = Scope.family_laws(family)
+    picked = HeldAmenders.for_laws(laws)
 
-      read =
-        for order <- orders, d = doc(order), d != nil do
-          {:ok, n} =
-            Store.write(
-              order,
-              Order.rules(d, a) |> Order.resolve_appointed_for(Store.for_law(a.law)),
-              # (only its rules for this law: an order listed for two laws
-              # keeps the other's, SI 1996/186)
-              treatments: [:order_date, :order_schedule],
-              commences: a.law
-            )
+    amenders =
+      for kind <- [:read, :orders, :lat, :not_held], {law, _} <- Map.fetch!(picked, kind), do: law
 
-          n
-        end
-
-      Mix.shell().info(
-        "#{law}: #{length(orders)} orders, #{length(read)} held and read, #{Enum.sum(read)} rules"
-      )
-    end
+    Enum.uniq(laws ++ amenders)
   end
 
-  defp read_cited_orders do
-    cited = cited_orders()
+  defp read_law_orders(laws, opts) do
+    totals =
+      for law <- laws, orders = law_orders(law, opts[:held]), orders != [] do
+        a = act(law)
+        stored = Store.for_law(a.law)
 
-    # every order read is rewritten, with no rules too: a re-read never
-    # leaves a stale one
-    by_order =
-      for law <- amending_acts(),
-          year(law) < 2002,
-          a = act(law),
-          order <- Map.get(cited, law, []),
-          d = doc(order),
-          d != nil,
-          reduce: %{} do
-        acc ->
-          Map.update(
-            acc,
-            order,
-            Order.rules(d, a) |> Order.resolve_appointed_for(Store.for_law(a.law)),
-            &((&1 ++ Order.rules(d, a)) |> Order.resolve_appointed_for(Store.for_law(a.law)))
-          )
+        read =
+          for order <- orders, d = doc(order), d != nil, do: {order, order_rules(d, a, stored)}
+
+        unless opts[:preview], do: Enum.each(read, &write_order(&1, a.law))
+        report_orders(law, orders, read, stored, opts[:preview])
+        {length(read), read |> Enum.map(&length(elem(&1, 1))) |> Enum.sum()}
       end
 
-    for {order, rules} <- by_order,
-        do: Store.write(order, rules, treatments: [:order_date, :order_schedule])
+    Mix.shell().info(
+      "#{length(totals)} laws with orders, #{totals |> Enum.map(&elem(&1, 0)) |> Enum.sum()} orders read, #{totals |> Enum.map(&elem(&1, 1)) |> Enum.sum()} rules#{if opts[:preview], do: " (preview: nothing written)"}"
+    )
+  end
+
+  # the orders to read for a law: its list (searched for when none is kept,
+  # unless `--held`) with the orders whose rules for it are stored, so an
+  # order a later list drops is read again, never left on an old reading
+  defp law_orders(law, true), do: Orders.candidates(Orders.cached(law), Store.order_sources(law))
+
+  defp law_orders(law, _search) do
+    a = act(law)
+    Orders.candidates(Orders.for_act(law, a.title, a.year), Store.order_sources(law))
+  end
+
+  defp order_rules(doc, act, stored),
+    do: doc |> Order.rules(act) |> Order.resolve_appointed_for(stored)
+
+  # only its rules for this law: an order listed for two laws keeps the
+  # other's (SI 1996/186); an order read as commencing nothing leaves none
+  defp write_order({order, rules}, law) do
+    {:ok, _} =
+      Store.write(order, rules, treatments: [:order_date, :order_schedule], commences: law)
+  end
+
+  defp report_orders(law, orders, read, stored, preview?) do
+    Mix.shell().info(
+      "#{law}: #{length(orders)} orders, #{length(read)} held and read, #{read |> Enum.map(&length(elem(&1, 1))) |> Enum.sum()} rules"
+    )
+
+    if preview? do
+      was = stored |> Enum.filter(&order_rule?/1) |> Enum.frequencies_by(& &1.source.law)
+
+      for {order, rules} <- read,
+          Map.get(was, order, 0) != length(rules),
+          do:
+            Mix.shell().info(
+              "  #{order}: stored #{Map.get(was, order, 0)} → read #{length(rules)}"
+            )
+    end
+  end
+
+  defp order_rule?(rule), do: rule.treatment in [:order_date, :order_schedule]
+
+  # each cited order read for the Act citing it, and written as its rules
+  # for that Act alone (an order two Acts cite keeps both Acts' rules; one
+  # read as commencing nothing leaves none: a re-read never leaves a stale one)
+  defp read_cited_orders(opts) do
+    cited = cited_orders()
+
+    read =
+      for law <- amending_acts(),
+          year(law) < 2002,
+          orders = Map.get(cited, law, []),
+          orders != [],
+          a = act(law),
+          stored = Store.for_law(a.law),
+          order <- orders,
+          d = doc(order),
+          d != nil,
+          do: {{order, order_rules(d, a, stored)}, a.law}
+
+    unless opts[:preview], do: for({reading, law} <- read, do: write_order(reading, law))
 
     Mix.shell().info(
-      "#{map_size(by_order)} orders read, #{by_order |> Map.values() |> List.flatten() |> length()} rules written"
+      "#{length(read)} orders read, #{read |> Enum.map(fn {{_, rules}, _} -> length(rules) end) |> Enum.sum()} rules#{if opts[:preview], do: " (preview: nothing written)", else: " written"}"
     )
   end
 
@@ -506,19 +603,6 @@ defmodule Mix.Tasks.Lat.Commencement do
     if String.contains?(s, [",", "\"", "\n"]),
       do: "\"" <> String.replace(s, "\"", "\"\"") <> "\"",
       else: s
-  end
-
-  # the input a law's own clause is read from: its LAT rows — or, for a law
-  # whose LAT holds part of it (a scope), its whole CLML held, where its
-  # commencement provision is (CV-S04: the REUL Act 2023's scoped LAT holds
-  # no s.22, so its clause read as none, Royal Assent)
-  defp clause_input(law) do
-    with scope when scope not in [nil, []] <- SertantaiLegal.Scraper.LatScope.get(law),
-         %Doc{} = d <- doc(law) do
-      ChangeCollector.law_start_input(law, OwnClause.doc_rows(d))
-    else
-      _ -> law |> input() |> elem(1)
-    end
   end
 
   # the law's rows (document order) and LawStart's input

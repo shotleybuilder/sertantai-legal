@@ -13,7 +13,7 @@ defmodule SertantaiLegal.Scraper.Commencement.FamilyLeftovers do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.ChangeCollector
-  alias SertantaiLegal.Scraper.Commencement.{Leftovers, Order, OwnClause}
+  alias SertantaiLegal.Scraper.Commencement.{HeldAmenders, Leftovers, Order, Orders, OwnClause}
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
 
   @sentences "test/fixtures/commencement_patterns/leftovers.json"
@@ -32,31 +32,10 @@ defmodule SertantaiLegal.Scraper.Commencement.FamilyLeftovers do
     Enum.flat_map(laws, &own(&1, sentences)) ++
       Enum.flat_map(laws, &orders(&1, orders)) ++
       (amenders
-       |> Enum.reject(fn {law, _} -> order?(law) end)
+       # (a commencement order is read as an order, its Schedule's table,
+       # never as an amending law's own clause: SI 1997/1082)
+       |> Enum.reject(fn {law, _} -> HeldAmenders.order?(law) end)
        |> Enum.flat_map(fn {law, n} -> amending(law, n, sentences) end))
-  end
-
-  # a commencement order is read as an order (its Schedule's table), never
-  # as an amending law's own clause (SI 1997/1082 "The provisions specified
-  # in the Schedule shall come into force …")
-  defp order?(law) do
-    %{rows: rows} =
-      Repo.query!(
-        """
-        SELECT (SELECT title_en FROM uk_lrt WHERE name = $1 LIMIT 1),
-               EXISTS (SELECT 1 FROM commencement_rules WHERE source_law = $1
-                       AND treatment IN ('order_date', 'order_schedule'))
-        """,
-        [law]
-      )
-
-    case rows do
-      [[title, stored?]] ->
-        stored? or (is_binary(title) and title =~ ~r/\((?:Commencement|Appointed Day)/i)
-
-      _ ->
-        false
-    end
   end
 
   defp own(law, reviewed) do
@@ -150,7 +129,7 @@ defmodule SertantaiLegal.Scraper.Commencement.FamilyLeftovers do
   defp title(law) do
     case Repo.query!("SELECT title_en FROM uk_lrt WHERE name = $1 LIMIT 1", [law]) do
       %{rows: [[t]]} when is_binary(t) ->
-        t |> String.replace(~r/\s+\d{4}\b.*$/, "") |> String.trim()
+        Orders.act_title(t, law |> String.split("_") |> Enum.at(2))
 
       _ ->
         nil

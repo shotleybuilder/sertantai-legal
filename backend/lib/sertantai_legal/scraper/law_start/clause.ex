@@ -14,6 +14,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
   | "on 17th April 1995" | `:clause_date` |
   | "on the day after the day on which it is made"; "on the twenty-first day after …"; "six months after the date on which they are made"; "on the expiration of two months from the day …" (+1 day); "at the end of the period of three months beginning with the day on which it is passed"; "on the first day of the month following that in which it is made" | `:clause_made_relative` |
   | "on IP completion day" (also "immediately before / after"): 2020-12-31; "on exit day": 2020-01-31, or IP completion day for an instrument made before exit day (EU(WA)A 2020 Sch. 5 para. 1(1), CR-09) | `:clause_named_day` |
+  | "on the principal appointed day" (also "immediately before") in an instrument made between the Scotland Act 1998's passing and that day: 1999-07-01 (SI 1998/3178 art.3) | `:clause_named_day` |
   | "in accordance with paragraphs (2) and (3)", "as follows", a list: the earliest date its provision's other sentences state | `:clause_staged` |
   | no clause for the whole law, only for its parts ("This Article and Article 2 …", "The remaining provisions of this Order …"): the earliest date that provision states | `:clause_staged` |
   | "on such day as … may by order appoint" | `:by_order` |
@@ -71,9 +72,13 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
       # (", which extend to Great Britain," between: SI 1996/1513)
       # (a comma for the "and": "… Regulations 1996, shall come into force on
       # 2nd May 1996 and shall extend to Scotland only": SI 1996/1076)
+      # ("may cited as": SI 1991/259; "These Regulations which may be cited
+      # as … 2007 shall come into force on …": SI 2007/765; "… and except
+      # as provided in paragraphs (2), (3) and (4) shall come into operation
+      # on …": NISR 2011/127 — Fire and OH&S)
       ~S"\b(?:this|these)\s+" <>
         @instrument <>
-        ~S"(?:\s*,[^,]{0,80},)?\s+may be cited as\b.{0,300}?(?:\band(?:\s+(?:they|it))?|,)(?:\s+subject\s+to\s+[^,]{1,160}?(?=\s+shall\b))?" <>
+        ~S"(?:\s*,[^,]{0,80},)?\s+(?:which\s+may\s+be\s+cited\s+as\b.{0,300}?\d{4}(?=\s+shall\b)|may\s+(?:be\s+)?cited\s+as\b.{0,300}?(?:\band(?:\s+(?:they|it))?|,))(?:\s+(?:subject\s+to|except\s+as\s+(?:otherwise\s+)?provided\s+(?:in|by))\s+(?:[^,]|,(?=\s*(?:\(|and\b|or\b))){1,160}?(?=\s+shall\b))?" <>
         @aside <> @cif <> ~S"\s*(.*)$",
       "is"
     ),
@@ -416,9 +421,29 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
         if day =~ ~r/^(?:IP|implementation)/i, do: @ip_completion_day, else: exit_day(tail, made)
 
       nil ->
-        nil
+        principal_appointed_day(tail, made)
     end
   end
+
+  # "on [immediately before] the principal appointed day" in an instrument
+  # made under the Scotland Act 1998 before that day: 1st July 1999, the
+  # day SI 1998/3178 art.3 names (SI 1999/1750, SI 1999/1756). Another
+  # Act's principal appointed day (Wales Act 2017 s.71) is made outside
+  # that span and is not read; nor one with no made date.
+  @scotland_act_passed ~D[1998-11-19]
+  @principal_appointed_day ~D[1999-07-01]
+
+  defp principal_appointed_day(tail, %Date{} = made) do
+    named? =
+      tail =~
+        ~r/^(?:on\s+|immediately\s+(?:before|after)\s+)?the\s+principal\s+appointed\s+day\b/i
+
+    if named? and Date.compare(made, @scotland_act_passed) != :lt and
+         Date.compare(made, @principal_appointed_day) != :gt,
+       do: @principal_appointed_day
+  end
+
+  defp principal_appointed_day(_tail, _made), do: nil
 
   # EU(WA)A 2020 Sch. 5 para. 1(1) (CR-09, Jason 2026-10-19): subordinate
   # legislation made before exit day that comes into force by reference to
@@ -442,7 +467,11 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
   """
   @spec date_at_start(String.t()) :: Date.t() | nil
   def date_at_start(text) do
-    re = ~r/^(?:the\s+)?(\d{1,2})\s*(?:st|nd|rd|th)?\s*(?:day\s+of\s+)?([A-Za-z]+),?\s+(\d{4})\b/
+    # (the year run on to the month, "6th July2017": SI 2017/720 art.1(2);
+    # a date the revised text brackets, "on [1st December 1999]": SI
+    # 1999/2463 reg.1)
+    re =
+      ~r/^(?:the\s+)?\[?\s*(\d{1,2})\s*(?:st|nd|rd|th)?\s*(?:day\s+of\s+)?([A-Za-z]+),?\s*(\d{4})\b/
 
     with [_, d, m, y] <- Regex.run(re, String.trim(text)),
          month when is_integer(month) <- Enum.find_index(@months, &(&1 == String.downcase(m))),
@@ -605,14 +634,24 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
     end
   end
 
-  @doc "A tail leaving the commencement to an order (\"on such day as … may by order appoint\")."
+  @doc """
+  A tail leaving the commencement to an order ("on such day as … may by
+  order appoint"; "in accordance with provision so made by the National
+  Assembly for Wales": CNEA 2005 s.108(1)(b); "in accordance with orders
+  made by the Treasury": Tax Credits Act 2002 s.61), or to a day the Act
+  names that an order fixes ("on the transfer date": 1986 c.44 s.68(3));
+  "on whatever day the Scottish Ministers appoint by order" (2014 c.12
+  s.185(6)).
+  """
   @spec by_order?(String.t()) :: boolean()
   def by_order?(tail),
     do:
       tail =~
-        ~r/\bsuch (?:day|date|time)s?\b|\bday appointed\b|\bappointed (?:day|by)\b|\bmay,? by (?:order|regulations)\b|\bmay appoint\b|\bappoints\b|\bprovision (?:to be )?made by (?:\w+ ){0,6}(?:by )?order\b|\bspecified by order\b/i
+        ~r/\bsuch (?:day|date|time)s?\b|\bday appointed\b|\bappointed (?:day|by)\b|\bmay,? by (?:order|regulations)\b|\bmay appoint\b|\bappoints\b|\bappoint by (?:order|regulations)\b|\bprovision (?:to be )?made by (?:\w+ ){0,6}(?:by )?order\b|\bspecified by order\b|\bprovision so made\b|\bon the (?:transfer|vesting) (?:date|day)\b|\bin accordance with (?:an? )?orders? (?:to be )?made\b/i
 
-  defp tied?(tail),
+  @doc "A tail tying the commencement to another provision's (\"at the same time as section 1 comes into force\")."
+  @spec tied?(String.t()) :: boolean()
+  def tied?(tail),
     do:
       tail =~
         ~r/\bat the same time as\b|^immediately (?:after|before)\b.*\binto (?:force|operation)|^on the (?:same )?(?:day|date) (?:on which|that)\b.*\binto (?:force|operation)/i

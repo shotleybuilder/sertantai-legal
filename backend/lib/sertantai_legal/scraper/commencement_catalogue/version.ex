@@ -17,6 +17,7 @@ defmodule SertantaiLegal.Scraper.CommencementCatalogue.Version do
       lib/sertantai_legal/scraper/amending_law/text.ex
       lib/sertantai_legal/scraper/commencement/leftovers.ex
       lib/sertantai_legal/scraper/commencement/order.ex
+      lib/sertantai_legal/scraper/commencement/order/*.ex
       lib/sertantai_legal/scraper/commencement/order_patterns.ex
       lib/sertantai_legal/scraper/commencement/own_clause.ex
       lib/sertantai_legal/scraper/commencement/rule.ex
@@ -29,6 +30,11 @@ defmodule SertantaiLegal.Scraper.CommencementCatalogue.Version do
       lib/sertantai_legal/scraper/law_start/clause.ex
       lib/sertantai_legal/scraper/law_start/eu.ex
       lib/sertantai_legal/scraper/law_start/provisions.ex
+      lib/sertantai_legal/scraper/law_start/list_items.ex
+      lib/sertantai_legal/scraper/law_start/number_words.ex
+      lib/sertantai_legal/scraper/law_start/statements.ex
+      lib/sertantai_legal/scraper/law_start/territorial.ex
+      lib/sertantai_legal/scraper/law_start/that_day.ex
       lib/sertantai_legal/scraper/law_start/schedule_table.ex
       lib/sertantai_legal/scraper/territory.ex
     )

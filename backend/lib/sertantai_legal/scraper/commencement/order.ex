@@ -39,7 +39,10 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   import SweetXml
 
   alias SertantaiLegal.Scraper.AmendingLaw.{DefinedTerms, Doc, Text}
+
+  alias __MODULE__.{Asides, Entries, ScheduleParts, SectionHeads, Territory}
   alias SertantaiLegal.Scraper.Commencement.Rule
+
   alias SertantaiLegal.Scraper.LawStart.Clause
 
   @type act :: %{law: String.t(), title: String.t() | nil, year: String.t()}
@@ -50,17 +53,9 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   # "The appointed day for the coming into force of <provisions> … is
   # <date>" (Welsh orders: WSI 2017/546)
   @appointed_is ~r/\bthe\s+(?:appointed\s+(?:day|date)|(?:day|date)\s+appointed)\s+for\s+the\s+coming\s+into\s+(?:force|operation)\s+of\b(.*)\bis\s+(.+)$/isu
-  @full ~r/\b(?:(?:in\s*)?so\s*far|insofar|in\s+as\s+far)\s+as\s+(?:it|they|th(?:at|ose|ese)\s+[\w-]+)\s+(?:has|have|is|are)\s+not\s+(?:already|previously|yet)\s+(?:been\s+)?(?:commenced|brought\s+into\s+force|in\s+force)|(?:(?:in\s*)?so\s*far|insofar)\s+as\s+not\s+(?:already|previously|yet|then)\s+in\s+force|\bto\s+the\s+extent\s+(?:that\s+)?(?:it|they)\s+(?:is|are|has|have)\s+not\s+(?:already|yet)\s+(?:been\s+)?(?:commenced|brought\s+into\s+force|in\s+force)|for\s+all\s+(?:remaining\s+|other\s+)?purposes|\(?\s*except\s+(?:in\s+)?so\s+far\s+as\s+(?:it\s+is\s+|they\s+are\s+)?already\s+in\s+(?:operation|force)\s*\)?|\(\s*except\s+as\s+aforesaid\s*\)/i
+  @full ~r/\b(?:(?:in\s*)?so\s*far|insofar|in\s+as\s+far)\s+as\s+(?:it|they|th(?:at|ose|ese)\s+[\w-]+)\s+(?:has|have|is|are)\s+not\s+(?:already|previously|yet)\s+(?:been\s+)?(?:commenced|brought\s+into\s+force|in\s+force|come\s+into\s+(?:force|operation))|(?:(?:in\s*)?so\s*far|insofar)\s+as\s+not\s+(?:already|previously|yet|then)\s+in\s+force|\bto\s+the\s+extent\s+(?:that\s+)?(?:it|they)\s+(?:is|are|has|have)\s+not\s+(?:already|yet)\s+(?:been\s+)?(?:commenced|brought\s+into\s+force|in\s+force|come\s+into\s+(?:force|operation))|for\s+all\s+(?:remaining\s+|other\s+)?purposes|\(?\s*except\s+(?:in\s+)?so\s+far\s+as\s+(?:it\s+is\s+|they\s+are\s+)?already\s+in\s+(?:operation|force)\s*\)?|\(\s*except\s+as\s+aforesaid\s*\)/i
   @relating ~r/\b(?:(?:in\s*)?so\s*far|insofar)\s+as\s+(?:(?:it|they)\s+relates?|relating)\s+to\b|\bto\s+the\s+extent\s+that\s+(?:it|they)\s+relates?\s+to\b|\bas\s+respects\b|\b(?:(?:in\s*)?so\s*far|insofar)\s+as\s+(?:it|they)\s+(?:gives?|give)\s+effect\s+to\b/i
   @partial ~r/\bthe\s+following\s+repeals\b|\b(?:(?:in\s*)?so\s*far|insofar)\s+as\b|\bto\s+the\s+extent\b|\bfor\s+the\s+purposes?\s+(?:only\s+)?of\b|\bfor\s+(?:specified|certain|limited|particular)\s+purposes\b|\bexcept\b|\bsave\b|\bin\s+relation\s+to\b/i
-  @places %{
-    "england and wales" => "E+W",
-    "great britain" => "E+W+S",
-    "england" => "E",
-    "wales" => "W",
-    "scotland" => "S",
-    "northern ireland" => "NI"
-  }
 
   @doc "The rules an order states for the law `act` it commences ([] when it doesn't commence it)."
   @spec rules(Doc.t(), act()) :: [Rule.t()]
@@ -70,11 +65,13 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     if order.law_name != act.law and commences?(order, act) do
       aliases = aliases(order, act)
 
-      type_territory = type_territory(order.law_name) || title_territory(order)
+      type_territory =
+        Territory.of_type(order.law_name, act.law) || Territory.of_title(full_title(order))
 
       (statements(order, aliases) ++
          whole_act(order, aliases) ++
          appointed_for(order, aliases) ++ tables(order, act) ++ schedule_lists(order, aliases))
+      |> Enum.flat_map(&own_articles(&1, act))
       |> Enum.map(fn r ->
         %{r | commences: act.law, territory: r.territory || head_territory(r) || type_territory}
       end)
@@ -82,6 +79,26 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
       []
     end
   end
+
+  # the law types whose provisions are Articles or regulations (an Order in
+  # Council: NISI 1992/1728); an Act's are sections
+  @instruments ~w(nisi uksi ssi wsi nisr uksro nisro ukmo ukci)
+
+  # an Article named in an order is the commenced law's only where that law
+  # is an instrument; for an Act it is the order's own ("Article 3 comes
+  # into force on 1st April 2015": SSI 2015/139), never a provision of the Act
+  defp own_articles(%Rule{scope: scope} = rule, act) when is_list(scope) do
+    if (act.law |> String.split("_") |> Enum.at(1)) in @instruments do
+      [rule]
+    else
+      case Enum.reject(scope, &String.starts_with?(&1, "reg.")) do
+        [] -> []
+        kept -> [%{rule | scope: kept}]
+      end
+    end
+  end
+
+  defp own_articles(rule, _act), do: [rule]
 
   @doc """
   The Schedule provisions `text` names, in the law it is written in: a
@@ -157,7 +174,9 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   def title(doc) do
     case full_title(doc) do
       nil -> nil
-      t -> t |> String.replace(~r/\s+\d{4}\b.*$/, "") |> String.trim()
+      # the year it ends with, never one inside it (SI 2015/1637: "The
+      # Deregulation Act 2015 (…) Order 2015" is not the Deregulation Act)
+      t -> t |> String.replace(~r/\s+\d{4}\s*$/, "") |> String.trim()
     end
   end
 
@@ -186,8 +205,21 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     end
   end
 
-  defp named?(text, %{title: title, year: year}) when is_binary(title),
-    do: String.contains?(norm(text), norm("#{title} #{year}"))
+  # the Act's title and year, never as the tail of a longer title: "the
+  # Police and Fire Reform (Scotland) Act 2012" is not the Scotland Act 2012
+  # (SSI 2013/51, listed for both)
+  @before_title ~w(the of to under by in and as with for said a an)
+
+  defp named?(text, %{title: title, year: year}) when is_binary(title) do
+    name = norm("#{title} #{year}")
+
+    ~r/(?:^|(\w+) )#{Regex.escape(name)}(?: |$)/
+    |> Regex.scan(norm(text))
+    |> Enum.any?(fn
+      [_, before] -> before in @before_title
+      [_] -> true
+    end)
+  end
 
   defp named?(_text, _act), do: false
 
@@ -327,10 +359,12 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   # ── the whole Act ───────────────────────────────────────────────────
 
   @apart ~r/^(?:apart\s+from|except(?:\s+for)?|other\s+than)\s+the\s+provisions\s+(?:mentioned|specified|listed|referred\s+to)\s+in\s+(paragraph|article)\s+\(?(\w+)\)?\s*,?\s*/i
-  @still ~r/\s*,?\s*(?:shall\s*)?,?\s*(?:(?:to\s+the\s+extent\s+that|in\s*so\s+far\s+as|insofar\s+as|so\s+far\s+as)\s+(?:(?:it\s+is|they\s+are)\s+)?not\s+(?:already|yet|then)\s+in\s+force)?\s*,?\s*$/i
+  @still ~r/\s*,?\s*(?:shall\s*)?,?\s*(?:(?:to\s+the\s+extent\s+that|in\s*so\s+far\s+as|insofar\s+as|so\s+far\s+as)\s+(?:(?:it\s+is|they\s+are)\s+)?not\s+(?:already|yet|then)\s+in\s+(?:force|operation))?\s*,?\s*$/i
   # "Subject to article 3, the provisions of the … Act, so far as not then in
   # force, shall come into force, for all purposes, on …" (SSI 2006/19 art.2)
-  @whole_lead ~r/^\W*(?:subject\s+to\s+(?:article|regulation|paragraph)\s+\(?\w+\)?\s*,\s*)?(?:the\s+)?(?:provisions\s+of\s+)?/i
+  # (the comma left out: "Subject to article 3 the 2004 Act shall, insofar
+  # as it is not already in force, come into force on …": SI 2004/2304)
+  @whole_lead ~r/^\W*(?:subject\s+to\s+(?:article|regulation|paragraph)\s+\(?\w+\)?\s*,?\s*)?(?:the\s+)?(?:provisions\s+of\s+)?/i
 
   # an article whose statement's subject is the Act itself: the whole Act
   # from its date, but for the provisions another paragraph lists
@@ -346,10 +380,10 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
             |> Doc.element(id)
             |> Doc.lines()
             |> Enum.map(&clean_line/1)
-            |> Enum.find(&Regex.match?(@cif, &1)),
+            |> Enum.find(&states?/1),
           is_binary(head),
-          Regex.match?(@cif, head),
-          [subject, tail] = Regex.split(@cif, head, parts: 2),
+          {subject, d} <- List.wrap(whole_statement(head, made)),
+          d != nil,
           {apart, subject} = apart(subject),
           subject = String.replace(subject, @whole_lead, ""),
           {subject, excepted} = rest_of(subject),
@@ -362,9 +396,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
           |> String.replace(@still, "")
           |> norm()
           |> String.replace_prefix("the ", "")
-          |> then(&(&1 in names)),
-          d = tail_date(tail, made),
-          d != nil do
+          |> then(&(&1 in names)) do
         Rule.new(
           commences: :pending,
           scope: :all,
@@ -382,6 +414,38 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     |> Enum.reverse()
   end
 
+  defp states?(line),
+    do:
+      Regex.match?(@cif, line) or Regex.match?(@appointed, line) or
+        Regex.match?(@appointed_is, line)
+
+  # {the statement's subject, its date}: "<subject> shall come into force on
+  # <date>"; "The day appointed for the coming into operation of <subject>
+  # is <date>" (NISR 2010/328); "<date> is the day appointed for the coming
+  # into force of <subject>" (SSI 2013/51)
+  defp whole_statement(head, made) do
+    cond do
+      match = Regex.run(@appointed_is, head) ->
+        [_, subject, tail] = match
+        {subject, one_date(tail)}
+
+      Regex.match?(@appointed, head) ->
+        [before, subject] = Regex.split(@appointed, head, parts: 2)
+        {String.replace(subject, ~r/\s*\.\s*$/, ""), one_date(before)}
+
+      true ->
+        [subject, tail] = Regex.split(@cif, head, parts: 2)
+        {subject, tail_date(tail, made)}
+    end
+  end
+
+  defp one_date(text) do
+    case parse_dates(text) do
+      [d] -> d
+      _ -> nil
+    end
+  end
+
   # "The rest of the Act, except sections 85 to 87, …" (SI 1996/3146
   # art.3): the Act, less the provisions excepted — {"the Act", their refs}
   @rest_of ~r/^\s*(?:the\s+)?(?:rest|remainder)\s+of\s+(.+?)(?:\s*,?\s+except\s+((?:sections?|regulations?|articles?|paragraphs?|Schedules?)\s+[^,]+?))?\s*,?\s*$/i
@@ -389,7 +453,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   defp rest_of(subject) do
     case Regex.run(@rest_of, subject) do
       [_, act] -> {act, []}
-      [_, act, except] -> {act, refs(strip_parentheticals(except), nil)}
+      [_, act, except] -> {act, refs(Asides.strip(except), nil)}
       nil -> {subject, []}
     end
   end
@@ -416,7 +480,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
         []
 
       el ->
-        el |> Doc.lines() |> Enum.flat_map(&refs(strip_parentheticals(&1), nil)) |> Enum.uniq()
+        el |> Doc.lines() |> Enum.flat_map(&refs(Asides.strip(&1), nil)) |> Enum.uniq()
     end
   end
 
@@ -461,6 +525,9 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
         line <- el |> Doc.lines() |> join_open() |> Enum.map(&clean_line/1),
         line = line |> String.replace(@points_back, "") |> String.trim(),
         line != "",
+        # (the paragraph's own number, a line of its own, is no item: "53"
+        # under a live Schedule read as its paragraph 53 — SI 2026/323)
+        line != other |> String.split("-") |> List.last(),
         do: line
   end
 
@@ -526,12 +593,28 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
          ) do
       {before, [head | rest]} ->
         case Enum.split_while(before, &(not (&1 =~ ~r/\b(?:namely|the following)\b/i))) do
-          {_, [_header | items]} -> {items, head, Enum.reject(rest, &(&1 == ""))}
-          _ -> {[], head, Enum.reject(rest, &(&1 == ""))}
+          {_, [header | items]} ->
+            {first_items(header, items), head, Enum.reject(rest, &(&1 == ""))}
+
+          _ ->
+            {[], head, Enum.reject(rest, &(&1 == ""))}
         end
 
       _ ->
         {[], nil, []}
+    end
+  end
+
+  # "The following provisions of the Act, namely in Schedule 8, the entries
+  # relating to:— (a) section 97 of the National Parks … Act 1949, …" (SI
+  # 1978/1583 art.3): the header's own words are the item — that Schedule's
+  # entries — and the lines below only describe them
+  @namely_entries ~r/\bnamely\s*,?\s*(in\s+(?:the\s+Schedule|Schedule\s+\d+[A-Z]*)\b[^;]*?\bthe\s+(?:repeals?|entr(?:y|ies))\b.*)$/isu
+
+  defp first_items(header, items) do
+    case Regex.run(@namely_entries, header) do
+      [_, entries] -> [entries]
+      nil -> items
     end
   end
 
@@ -660,9 +743,11 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   end
 
   defp item_rules(lines, aliases, date, law, id, head) do
+    # (a line under "in section 86—" is read as that section's: its words
+    # stay the line's own)
     {rules, _sch} =
-      Enum.reduce(lines, {[], nil}, fn line, {acc, sch} ->
-        {items, sch} = items(line, aliases, sch)
+      Enum.reduce(SectionHeads.read(lines), {[], nil}, fn {line, read}, {acc, sch} ->
+        {items, sch} = items(read, aliases, sch)
 
         # "section 8 (bulk supply …) as follows—" heads the items below it
         items = if heading?(line), do: [], else: items
@@ -702,7 +787,9 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   # "Paragraphs 1 to 27(3) and 28 to 43 of Schedule 7, and section 22(1) so
   # far as it relates thereto" (SI 1996/396): the paragraphs as read, the
   # section partly — "thereto" qualifies only the provision it follows
-  @thereto ~r/^(.*?),?\s+and\s+((?:sub-?)?sections?\s+\S+(?:\s+and\s+\(\w+\))?)\s+(?:in\s+)?so\s+far\s+as\s+(?:it|they)\s+relates?\s+thereto\b.*$/is
+  # (in an aside: "paragraphs 10 to 14 of Schedule 3 (and section 44(1) so
+  # far as relating thereto)": SI 1999/987)
+  @thereto ~r/^(.*?),?\s+\(?and\s+((?:sub-?)?sections?\s+\S+(?:\s+and\s+\(\w+\))?)\s+(?:in\s+)?so\s+far\s+as\s+(?:(?:it|they)\s+relates?|relating)\s+thereto\b.*$/is
 
   # a line's items: [{refs, purposes, territory}] and the Schedule context
   # its paragraphs carry to the next lines
@@ -714,7 +801,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
         if qualified == [],
           do: {items, next},
-          else: {items ++ [{qualified, :in_relation_to, territory(line)}], next}
+          else: {items ++ [{qualified, :in_relation_to, Territory.of(line)}], next}
 
       nil ->
         line_items(line, aliases, sch)
@@ -723,7 +810,23 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
   @schedule_entries ~r/^\W*In\s+(?:the\s+Schedule|Schedule\s+(\d+[A-Z]*))?\s*(?:to\s+the\s+Act\s*)?[,—–:]\s*the\s+(repeals?|entr(?:y|ies))\b(.*)$/isu
 
+  # "in Part 2 of Schedule 15 (…) the entries relating to—", "Part 1(A) (…)
+  # of Schedule 15": that Part, partly (SI 2007/709)
   defp line_items(line, aliases, sch) do
+    case ScheduleParts.partial_ref(line) || Entries.head_ref(line) do
+      nil -> entry_line_items(line, aliases, sch)
+      part -> {[{[part], :in_relation_to, Territory.of(line)}], sch}
+    end
+  end
+
+  # "The entries relating to Schedule 2, Schedule 3 and Schedule 6 of the
+  # Railways Act 1993.": an entry of the repeals Schedule its head names,
+  # never the Act's own provisions (SI 2005/1909 Sch.)
+  defp entry_line_items(line, aliases, sch) do
+    if Entries.entry?(line), do: {[], sch}, else: schedule_line_items(line, aliases, sch)
+  end
+
+  defp schedule_line_items(line, aliases, sch) do
     case Regex.run(@schedule_entries, line) do
       # "In Schedule 18, the repeals to …": those entries of that Schedule —
       # and the line's own provisions after them ("… and section 196
@@ -737,15 +840,17 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
         {items, _} =
           if kind =~ ~r/^entr/i, do: {[], sch}, else: own_line_items(rest, aliases, sch)
 
-        {[{[ref], :in_relation_to, territory(line)} | items], sch}
+        {[{[ref], :in_relation_to, Territory.of(line)} | items], sch}
 
       nil ->
         own_line_items(line, aliases, sch)
     end
   end
 
+  # (an item's bracketed heading is no territory and no purpose of its own:
+  # "section 86 (water and sewerage undertakers in England: …)", SI 2022/48)
   defp own_line_items(line, aliases, sch) do
-    line = drop_other_laws(line, aliases)
+    line = line |> drop_other_laws(aliases) |> Asides.drop_headings()
 
     case bracket_items(line) do
       nil -> plain_line_items(line, aliases, sch)
@@ -802,12 +907,12 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
           with q when is_binary(q) <- qualifier,
                [_, rel] <- Regex.run(@relating_tail, q),
                [_ | _] = rs <- rel |> refs(nil) |> Enum.filter(&String.starts_with?(&1, "sch.")) do
-            [{rs, nil, territory(line)}]
+            [{rs, nil, Territory.of(line)}]
           else
             _ -> []
           end
 
-        [{refs, purposes, territory(line)} | related]
+        [{refs, purposes, Territory.of(line)} | related]
       end
       |> List.flatten()
     else
@@ -841,92 +946,145 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   end
 
   defp plain_line_items(line, _aliases, sch) do
-    territory = territory(line)
+    # (the rest of it, for one place: "Schedule 8 in so far as it relates to
+    # England and Wales and has not already been commenced", SI 1992/2984)
+    {line, place} = Territory.completing(line)
+    territory = place || Territory.of(line)
+    {own, related} = split_related(line)
+    sch = line |> ScheduleParts.as_place() |> schedule_context(sch)
+    {own, excepted} = split_excepted(own, sch)
+    own_refs = own_refs(own, related, sch)
 
-    # "section 120(1) in so far as it relates to the following paragraphs of
-    # Schedule 22": the section partly, the paragraphs fully
-    {own, related} =
-      case Regex.split(@relating, line, parts: 2) do
-        [own, related] -> {own, related}
-        [own] -> {own, ""}
+    items =
+      with "" <- related,
+           items when is_list(items) <- bare_items(own, sch, territory) do
+        items
+      else
+        _ ->
+          purposes = own_purposes(line, related)
+
+          [
+            own_item(own, own_refs, excepted, purposes, territory)
+            | related_items(related, sch, territory)
+          ]
       end
 
-    sch = schedule_context(line, sch)
+    {items, next_context(line, sch)}
+  end
 
-    # "Part I of the 1998 Act except section 4" (SI 1998/1658): the Part,
-    # the section excepted — never both commenced (CV-06 round 2)
-    {own, excepted} =
-      case Regex.split(~r/\s+except\s+(?=(?:sections?|regulations?|articles?)\s+\d)/i, own,
-             parts: 2
-           ) do
-        [main, ex] -> {main, refs(strip_parentheticals(ex), sch)}
-        [_] -> {own, []}
-      end
-
-    # "… the following paragraphs of Schedule 22— 1, 3, 5 to 12": a bare
-    # list on the line, or a line of only numbers under such a heading
-    own_refs =
-      refs(strip_parentheticals(own), sch) ++
-        if(related == "", do: bare_paragraphs(own, sch), else: [])
-
-    related_refs =
-      refs(strip_parentheticals(related), schedule_context(related, sch)) ++
-        bare_paragraphs(related, sch)
-
-    own_purposes =
-      cond do
-        related != "" ->
-          purposes(related)
-
-        Regex.match?(@full, line) and not Regex.match?(@partial, Regex.replace(@full, line, "")) ->
-          nil
-
-        Regex.match?(@partial, Regex.replace(@full, line, "")) ->
-          purposes(line)
-
-        true ->
-          nil
-      end
-
-    related_item =
-      cond do
-        items = related != "" && bare_items(related, schedule_context(related, sch), territory) ->
-          items
-
-        related_refs != [] and Regex.match?(@entries_head, related) ->
-          [{related_refs, :in_relation_to, territory}]
-
-        related_refs != [] and paragraphs?(related_refs) ->
-          # "… paragraphs 142, 143 … of Schedule 22 in so far as the amendments
-          # made by those provisions confer any power to make regulations"
-          # (SI 1996/2909): the paragraphs carry that qualifier
-          # (never "(in so far as those provisions are not already in force)")
-          rest =
-            related
-            |> String.replace(~r/^.*?\bof\s+Schedule\s+\d+[A-Z]*/is, "")
-            |> String.replace(@full, "")
-
-          [{related_refs, if(Regex.match?(@partial, rest), do: purposes(rest)), territory}]
-
-        true ->
-          []
-      end
-
-    own_item =
-      case {excepted, except_subsections(own, own_refs)} do
-        {[_ | _], _} -> {own_refs, nil, territory, excepted}
-        {[], nil} -> {own_refs, own_purposes, territory}
-        {[], except} -> {own_refs, nil, territory, except}
-      end
-
-    case related == "" and bare_items(own, sch, territory) do
-      items when is_list(items) ->
-        {items, next_context(line, sch)}
-
-      _ ->
-        {[own_item | related_item], next_context(line, sch)}
+  # "section 120(1) in so far as it relates to the following paragraphs of
+  # Schedule 22": the section partly, the paragraphs fully
+  defp split_related(line) do
+    case Regex.split(@relating, line, parts: 2) do
+      [own, related] -> {own, related}
+      [own] -> {own, ""}
     end
   end
+
+  # "Part I of the 1998 Act except section 4" (SI 1998/1658): the Part,
+  # the section excepted — never both commenced (CV-06 round 2)
+  defp split_excepted(own, sch) do
+    case Regex.split(~r/\s+except\s+(?=(?:sections?|regulations?|articles?)\s+\d)/i, own,
+           parts: 2
+         ) do
+      [main, ex] -> {main, refs(Asides.strip(ex), sch)}
+      [_] -> {own, []}
+    end
+  end
+
+  # "… the following paragraphs of Schedule 22— 1, 3, 5 to 12": a bare
+  # list on the line, or a line of only numbers under such a heading
+  defp own_refs(own, related, sch) do
+    refs(Asides.strip(own), sch) ++
+      if(related == "", do: bare_paragraphs(own, sch), else: [])
+  end
+
+  defp own_purposes(line, ""),
+    do: if(Regex.match?(@partial, Regex.replace(@full, line, "")), do: purposes(line))
+
+  defp own_purposes(_line, related), do: purposes(related)
+
+  defp own_item(own, own_refs, excepted, purposes, territory) do
+    case {excepted, except_subsections(own, own_refs)} do
+      {[_ | _], _} -> {own_refs, nil, territory, excepted}
+      {[], nil} -> {own_refs, purposes, territory}
+      {[], except} -> {own_refs, nil, territory, except}
+    end
+  end
+
+  # what the section relates to: a bare list with its items' own
+  # qualifiers, else the refs named
+  defp related_items("", _sch, _territory), do: []
+
+  defp related_items(related, sch, territory) do
+    context = schedule_context(related, sch)
+
+    case bare_items(related, context, territory) do
+      items when is_list(items) ->
+        items
+
+      _ ->
+        refs = refs(Asides.strip(related), context) ++ bare_paragraphs(related, sch)
+        related_ref_items(related, refs, territory)
+    end
+  end
+
+  defp related_ref_items(_related, [], _territory), do: []
+
+  defp related_ref_items(related, refs, territory) do
+    cond do
+      Regex.match?(@entries_head, related) ->
+        [{refs, :in_relation_to, territory}]
+
+      # "… paragraphs 142, 143 … of Schedule 22 in so far as the amendments
+      # made by those provisions confer any power to make regulations"
+      # (SI 1996/2909): the paragraphs carry that qualifier
+      # (never "(in so far as those provisions are not already in force)")
+      paragraphs?(refs) ->
+        paragraph_items(related, refs, territory)
+
+      true ->
+        []
+    end
+  end
+
+  # the paragraphs a section relates to, each with its own aside: "paragraphs
+  # 1, 2 (except sub-paragraphs (2) and (9)(b)), 3 to 7, … 35 (insofar as it
+  # adds …), 36 … of Schedule 10" — paragraph 2 less those, 35 partly, the
+  # rest as the list's own qualifier has them (SI 1995/2950 art.2(1))
+  defp paragraph_items(related, refs, territory) do
+    rest =
+      related
+      |> String.replace(~r/^.*?\bof\s+Schedule\s+\d+[A-Z]*/is, "")
+      |> String.replace(@full, "")
+
+    asides = paragraph_asides(related, refs)
+    except = for {ref, aside} <- asides, e <- excepted(ref, aside), do: e
+    partial = for {ref, aside} <- asides, excepted(ref, aside) == [], partial?(aside), do: ref
+    purposes = if(Regex.match?(@partial, rest), do: purposes(rest))
+
+    [{refs -- partial, purposes, territory, except}] ++
+      if(partial == [], do: [], else: [{partial, :in_relation_to, territory}])
+  end
+
+  # {a paragraph the list names, its aside}: only where the list is of one
+  # Schedule's paragraphs
+  defp paragraph_asides(related, refs) do
+    case Enum.uniq(for r <- refs, do: String.replace(r, ~r/(?<=\.para\.).*$/, "")) do
+      [prefix] ->
+        for {n, aside} <- Asides.items(related),
+            (prefix <> n) in refs,
+            do: {prefix <> n, aside}
+
+      _ ->
+        []
+    end
+  end
+
+  defp excepted(ref, aside), do: except_subsections("(" <> aside <> ")", [ref]) || []
+
+  defp partial?(aside),
+    do: Regex.match?(@partial, aside) and not Regex.match?(@full, aside)
 
   # a bare list of a Schedule's paragraphs whose items carry their own
   # qualifiers ("1, 3, … 29(1) in so far as it is not already in force, 30,
@@ -938,7 +1096,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     if sch && text =~ ~r/^\s*\d/ && (Regex.match?(@partial, text) or Regex.match?(@full, text)) do
       for item <- split_items(text),
           plain = Regex.replace(@item_qualifier, item, ""),
-          refs = list_refs(strip_parentheticals(plain), "sch.#{sch}.para."),
+          refs = list_refs(Asides.strip(plain), "sch.#{sch}.para."),
           refs != [] do
         qualifier = String.trim_leading(String.replace_prefix(item, plain, ""))
 
@@ -1027,7 +1185,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   defp except_subsections(text, [ref]) do
     with [_, list] <-
            Regex.run(
-             ~r/\(\s*except\s+(?:sub-?sections?|paragraphs?)\s+((?:\([0-9A-Za-z]+\)|\s|,|and)+)\)/i,
+             ~r/\(\s*except\s+(?:sub-?)?(?:sections?|paragraphs?)\s+((?:\([0-9A-Za-z]+\)|\s|,|and)+)\)/i,
              text
            ),
          [_ | _] = chains <- Regex.scan(~r/(?:\([0-9A-Za-z]+\))+/, list) |> List.flatten() do
@@ -1055,11 +1213,11 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
            text
          ) do
       [_, s, list] ->
-        list_refs(strip_parentheticals(list), "sch.#{s}.para.")
+        list_refs(Asides.strip(list), "sch.#{s}.para.")
 
       nil ->
         if sch && text =~ ~r/^\s*\d/,
-          do: list_refs(strip_parentheticals(text), "sch.#{sch}.para."),
+          do: list_refs(Asides.strip(text), "sch.#{sch}.para."),
           else: []
     end
   end
@@ -1078,49 +1236,16 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     end
   end
 
-  defp territory(line) do
-    case Regex.run(
-           ~r/\b(?:in relation to|in|as respects)\s+(England and Wales|Great Britain|England|Wales|Scotland|Northern Ireland)\b(?!\s+(?:Act|Order|Regulations))/i,
-           line
-         ) do
-      [_, place] -> Map.get(@places, String.downcase(place))
-      nil -> nil
-    end
-  end
-
   # a statement's own place ("… come into force in relation to England on …")
-  # reaches all its items
+  # reaches all its items; a table row's is its own, never its subject
+  # column's ("Section 14 | Disposal of waste in England and Wales": SI
+  # 1988/818)
+  defp head_territory(%Rule{treatment: :order_schedule}), do: nil
+
   defp head_territory(%Rule{source: %{text: text}}) when is_binary(text),
-    do: text |> String.split(" … ", parts: 2) |> hd() |> territory()
+    do: text |> String.split(" … ", parts: 2) |> hd() |> Territory.of()
 
   defp head_territory(_rule), do: nil
-
-  # a devolved instrument commences in relation to its own territory (a
-  # Welsh order made by the Welsh Ministers: Wales)
-  defp type_territory(law_name) do
-    case law_name |> String.split("_") |> Enum.at(1) do
-      "wsi" -> "W"
-      "ssi" -> "S"
-      "nisr" -> "NI"
-      _ -> nil
-    end
-  end
-
-  # an order made for one territory says so in its title: "The Environment
-  # Act 1995 (Commencement No. 16 …) (England) Order 2000" (SI 2000/340)
-  defp title_territory(order) do
-    case Regex.run(
-           ~r/\((England and Wales|England|Wales|Scotland|Northern Ireland)\)\s+(?:Order|Regulations)\b/,
-           full_title(order) || ""
-         ) do
-      [_, place] -> Map.get(@places, String.downcase(place))
-      nil -> nil
-    end
-  end
-
-  # "(so far as not already in force)", "(which introduces Schedule 4)",
-  # "(codes of conduct)": asides, not refs
-  defp strip_parentheticals(text), do: String.replace(text, ~r/\((?:[^()]*\s[^()]*)\)/u, "")
 
   # a line naming another law's provisions keeps only the Act's
   # "… the following repeals:— The Employment Medical Advisory Service Act
@@ -1153,6 +1278,11 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   # "sections 2 and 3 of the Gas Act 1986": another law's provisions
   @other_law_provisions ~r/\b(?:sections?|paragraphs?|Schedules?|regulations?|articles?)\s+\d+[A-Z]*(?:\([0-9A-Za-z]+\))*(?:\s*(?:,|and|to)\s*(?:\d+[A-Z]*)?(?:\([0-9A-Za-z]+\))*)*(?:\s*\([^()]*\))?,?\s+(?:of|to|into)\s+(?:Schedule\s+\d+[A-Z]*\s+to\s+)?(?:the\s+)?((?:\d{4}\s+)?(?:[A-Z(][\w()',.-]*\s+){0,10}(?:(?:of|and|for|the|in|on|at|to|with|etc\.)\s+(?:[A-Z(][\w()',.-]*\s+){0,8})*(?:Act|Order|Regulations|Measure)(?:\s+\d{4})?)/u
 
+  # "Articles 3 to 20 and 49A to 52 of and Schedules 1, 2, 3 and 5 to the
+  # Fire Services (Northern Ireland) Order 1984" (NISR 2006/257 art.2(e)):
+  # another Order's Articles, what a repeals Schedule relates to
+  @other_order_articles ~r/\bArticles?\s+\d[^;]*?\s+(?:of|to)\s+the\s+((?:[A-Z(][\w()',.-]*\s+)(?:(?:[A-Z(][\w()',.-]*|of|and|for|the|in|on|at|to|with|etc\.)\s+){0,14}Order\s+\d{4})/u
+
   @quoted ~r/“[^”]*”|"[^"]*"|‘[^’]*’/u
   @ends_other_law ~r/,\s+to\s+the\s+((?:\d{4}\s+)?[A-Z(][\w()',.-]*(?:\s+(?:[A-Z(][\w()',.-]*|of|and|for|the|in|on|at|to|with|etc\.))*\s+(?:Act|Order|Regulations|Measure)(?:\s+\d{4})?)\s*[,.]?\s*$/u
 
@@ -1169,7 +1299,8 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
     keep_own = fn whole, law -> if own?.(law), do: whole, else: "" end
 
-    Enum.reduce([@other_law_tail, @titled, @other_law_provisions], line, fn re, line ->
+    [@other_order_articles, @other_law_tail, @titled, @other_law_provisions]
+    |> Enum.reduce(line, fn re, line ->
       Regex.replace(re, line, keep_own)
     end)
   end
@@ -1212,10 +1343,14 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     end
   end
 
-  # the context for the next lines: set by "the following paragraphs of Schedule N—"
+  # the context for the next lines: set by "the following paragraphs of
+  # Schedule N—", or "the provisions of Schedule 6 to the Act referred to in
+  # sub-paragraphs (b) to (s) below" (SI 2003/272 art.2(a))
+  @heads_paragraphs ~r/\bfollowing\s+paragraphs\s+of\s+Schedule\s+(\d+[A-Z]*)|\bprovisions\s+of\s+Schedule\s+(\d+[A-Z]*)\b[^;]*?\b(?:referred\s+to|specified|mentioned|listed|set\s+out)\s+in\s+(?:sub-?)?paragraphs?\b[^;]*?\bbelow\b/i
+
   defp next_context(line, sch) do
-    case Regex.run(~r/\bfollowing\s+paragraphs\s+of\s+Schedule\s+(\d+[A-Z]*)/i, line) do
-      [_, s] -> s
+    case Regex.run(@heads_paragraphs, line) do
+      [_ | found] -> Enum.find(found, &(&1 != ""))
       nil -> if line =~ ~r/^\s*(?:sections?|in\s+section)\b/i, do: nil, else: sch
     end
   end
@@ -1223,7 +1358,9 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   # not the order's own Schedule ("Schedule 1 to this Order")
   @own ~S"(?!\s+to\s+th(?:is|ese)\s)"
 
-  @list ~S"((?:(?:\s*(?:,|and|to|–|-)\s*)?(?:\d+[A-Z]*(?:\([0-9A-Za-z]+\))*|\([0-9A-Za-z]+\)(?:\([0-9A-Za-z]+\))*))+)"
+  # ("8(1), and (3), 13": a comma before "and" — SI 1995/2950 art.3(1))
+  @part ~S"(?:[IVXL]+[A-Z]?|\d+[A-Z]?)"
+  @list ~S"((?:(?:\s*(?:,\s*and\b|,|and|to|–|-)\s*)?(?:\d+[A-Z]*(?:\([0-9A-Za-z]+\))*|\([0-9A-Za-z]+\)(?:\([0-9A-Za-z]+\))*))+)"
 
   @doc "The Act's provisions an order's `text` names, as this reader names them (\"s.85..s.87\"): for checks (`Commencement.Leftovers`)."
   @spec refs_in(String.t()) :: [String.t()]
@@ -1233,103 +1370,116 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     if text =~
          ~r/\b(?:of|to|into)\s+the\s+[^,;]{0,120}?\b(?:Act|Order|Regulations|Measure)\s+\d{4}\b/,
        do: [],
-       else: text |> strip_parentheticals() |> refs(nil)
+       else: text |> Asides.strip() |> refs(nil)
   end
 
   defp refs(text, sch) do
-    {of_section, text} = subsections_of(text)
-
-    sections =
-      for [_, list] <- Regex.scan(~r/\bsections?\s+#{@list}/i, text),
-          r <- list_refs(list, "s."),
-          do: r
-
-    # "in section 61, subsection (6) and subsection (1)"
-    subsections =
-      case Regex.run(~r/\bin\s+section\s+(\d+[A-Z]*)\s*,\s*(.*)$/i, text) do
-        [_, n, rest] ->
-          for [_, b] <- Regex.scan(~r/\bsub-?sections?\s+((?:\([0-9A-Za-z]+\))+)/i, rest),
-              do: "s.#{n}#{b}"
-
-        nil ->
-          []
-      end
-
-    # a wrapped list's tail "… 28, 29 and 30 of Schedule 15" (its "paragraphs"
-    # on the line before: SI 1991/1042): those paragraphs
-    bare =
-      for [_, list, n] <-
-            Regex.scan(
-              ~r/(?<![Ss]ections\s)(?<![Ss]ection\s)((?:\d+[A-Z]*(?:\([0-9A-Za-z]+\))*\s*(?:,|and)\s*)+\d+[A-Z]*(?:\([0-9A-Za-z]+\))*)\s+of\s+Schedule\s+(\d+[A-Z]*)/,
-              text
-            ),
-          not (text =~ ~r/\b(?:paragraphs?|sections?)\b/i),
-          r <- list_refs(list, "sch.#{n}.para."),
-          do: r
-
-    # "Part III of Schedule 4": that Part (AR-12)
-    schedule_parts =
-      for [_, p, n] <-
-            Regex.scan(
-              ~r/\bPart\s+([IVXL]+[A-Z]?|\d+[A-Z]?)\s+of\s+Schedule\s+(\d+[A-Z]*)\b#{@own}/,
-              text
-            ),
-          do: {n, "sch.#{n}.pt.#{p}"}
-
-    # "in Schedule 13 to the Act, paragraphs …" is where, not what; "Schedule
-    # 1 to this Order" is the order's own (AR-12: SI 1999/2830)
-    schedules =
-      for [_, list] <-
-            Regex.scan(
-              ~r/(?<![Ii]n )\bSchedules?\s+#{@list}\b(?!\s*,?\s*paragraph)#{@own}/,
-              text
-            ),
-          not (text =~ ~r/\bparagraphs?\b[^;]*\bof\s+Schedule/i),
-          bare == [],
-          # "the following provisions of Schedule 22—", "the provisions in
-          # Schedules 13 and 14 … specified in …", "the provisions of … Schedules
-          # 15, 16 and 18 to, the 1994 Act which are specified in Schedule 3 to
-          # this Order": a subset, not the Schedule
-          not (text =~
-                 ~r/\b(?:provisions|paragraphs|entries|repeals|amendments)\s+(?:of|in|made\s+by)\s+(?:Part\s+\w+\s+of\s+)?Schedules?\b|\bSchedules?\s+[\d\s,and]+(?:to\s+the\s+Act\s+)?specified\b|\bSchedules?\s+\d+[A-Z]*\s*[—–:]|\b(?:which\s+are|as\s+are)\s+specified\s+in\b/iu),
-          r <- list_refs(list, "sch."),
-          r not in for({n, _} <- schedule_parts, do: "sch.#{n}"),
-          do: r
-
-    # "Part I", "Parts III and IV" of the Act (not "Part II of Schedule 17";
-    # "in Part II, the repeals of …" is where in a repeals Schedule; "the
-    # said Part I" is the order's own, AR-15: SI 1997/3114)
-    parts =
-      for [_, list] <-
-            Regex.scan(
-              ~r/(?<![Ii]n )(?<!said )\bParts?\s+((?>(?:[IVXL]+[A-Z]?|\d+[A-Z]?)(?:\s*(?:,|and|to)\s*(?:[IVXL]+[A-Z]?|\d+[A-Z]?))*))\b(?!\s+(?:of|to)\s+(?:the\s+)?Schedule|\s+thereof)/,
-              text
-            ),
-          not (text =~ ~r/\bof\s+Schedule\b/i and sch != nil),
-          p <- String.split(list, ~r/\s*(?:,|and|to)\s*/, trim: true),
-          do: "pt.#{p}"
-
-    paragraphs =
-      case sch do
-        nil ->
-          for [_, list, s] <-
-                Regex.scan(~r/\bparagraphs?\s+#{@list}\s+of\s+Schedule\s+(\d+[A-Z]*)/i, text),
-              r <- list_refs(list, "sch.#{s}.para."),
-              do: r
-
-        s ->
-          for [_, list] <- Regex.scan(~r/\bparagraphs?\s+#{@list}/i, text),
-              r <- list_refs(list, "sch.#{s}.para."),
-              do: r
-      end
+    {of_section, text} = text |> ScheduleParts.as_place() |> subsections_of()
+    {subsections, text} = in_section(text)
+    bare = bare_paragraph_refs(text)
+    schedule_parts = schedule_part_refs(text)
 
     Enum.uniq(
       of_section ++
-        sections ++
+        section_refs(text) ++
+        article_refs(text) ++
         subsections ++
-        schedules ++ Enum.map(schedule_parts, &elem(&1, 1)) ++ parts ++ bare ++ paragraphs
+        schedule_refs(text, bare, schedule_parts) ++
+        Enum.map(schedule_parts, &elem(&1, 1)) ++
+        part_refs(text, sch) ++ bare ++ paragraph_refs(text, sch)
     )
     |> Enum.reject(&(&1 =~ ~r/^s\.\(/))
+  end
+
+  defp section_refs(text) do
+    for [_, list] <- Regex.scan(~r/\bsections?\s+#{@list}/i, text),
+        r <- list_refs(list, "s."),
+        do: r
+  end
+
+  # an Order in Council's Articles, named as LAT names them: "Article 4(3)
+  # of the Offshore, and Pipelines, Safety (Northern Ireland) Order 1992"
+  # (NISR 1996/251) → reg.4(3); never the commencement order's own ("Subject
+  # to Article 3", "Article 2 of this Order")
+  @articles ~r/(?<!\bto\s)(?<!\bby\s)(?<!\bin\s)(?<!\bunder\s)\bArticles?\s+#{@list}(?!\s+(?:of|to)\s+th(?:is|ese)\s)/
+
+  defp article_refs(text) do
+    for [_, list] <- Regex.scan(@articles, text),
+        r <- list_refs(list, "reg."),
+        do: r
+  end
+
+  # a wrapped list's tail "… 28, 29 and 30 of Schedule 15" (its "paragraphs"
+  # on the line before: SI 1991/1042): those paragraphs
+  defp bare_paragraph_refs(text) do
+    for [_, list, n] <-
+          Regex.scan(
+            ~r/(?<![Ss]ections\s)(?<![Ss]ection\s)(?<![Pp]arts\s)((?:\d+[A-Z]*(?:\([0-9A-Za-z]+\))*\s*(?:,|and)\s*)+\d+[A-Z]*(?:\([0-9A-Za-z]+\))*)\s+of\s+Schedule\s+(\d+[A-Z]*)/,
+            text
+          ),
+        not (text =~ ~r/\b(?:paragraphs?|sections?)\b/i),
+        r <- list_refs(list, "sch.#{n}.para."),
+        do: r
+  end
+
+  # "Part III of Schedule 4": that Part (AR-12); "Parts 1 and 3 of
+  # Schedule 12": each (SI 2022/48)
+  defp schedule_part_refs(text) do
+    for [_, list, n] <-
+          Regex.scan(
+            ~r/\bParts?\s+(#{@part}(?:\s*(?:,|and)\s*#{@part})*)\s+of\s+Schedule\s+(\d+[A-Z]*)\b#{@own}/,
+            text
+          ),
+        p <- String.split(list, ~r/\s*(?:,|and)\s*/, trim: true),
+        do: {n, "sch.#{n}.pt.#{p}"}
+  end
+
+  # "in Schedule 13 to the Act, paragraphs …" is where, not what; "Schedule
+  # 1 to this Order" is the order's own (AR-12: SI 1999/2830)
+  defp schedule_refs(text, bare, schedule_parts) do
+    for [_, list] <-
+          Regex.scan(
+            ~r/(?<![Ii]n )\bSchedules?\s+#{@list}\b(?!\s*,?\s*paragraph)#{@own}/,
+            text
+          ),
+        not (text =~ ~r/\bparagraphs?\b[^;]*\bof\s+Schedule/i),
+        bare == [],
+        # "the following provisions of Schedule 22—", "the provisions in
+        # Schedules 13 and 14 … specified in …", "the provisions of … Schedules
+        # 15, 16 and 18 to, the 1994 Act which are specified in Schedule 3 to
+        # this Order": a subset, not the Schedule
+        not (text =~
+               ~r/\b(?:provisions|paragraphs|entries|repeals|amendments)\s+(?:of|in|made\s+by)\s+(?:Part\s+\w+\s+of\s+)?Schedules?\b|\bSchedules?\s+[\d\s,and]+(?:to\s+the\s+Act\s+)?specified\b|\bSchedules?\s+\d+[A-Z]*\s*[—–:]|\b(?:which\s+are|as\s+are)\s+specified\s+in\b/iu),
+        r <- list_refs(list, "sch."),
+        r not in for({n, _} <- schedule_parts, do: "sch.#{n}"),
+        do: r
+  end
+
+  # "Part I", "Parts III and IV" of the Act (not "Part II of Schedule 17";
+  # "in Part II, the repeals of …" is where in a repeals Schedule; "the
+  # said Part I" is the order's own, AR-15: SI 1997/3114)
+  defp part_refs(text, sch) do
+    for [_, list] <-
+          Regex.scan(
+            ~r/(?<![Ii]n )(?<!said )\bParts?\s+((?>(?:[IVXL]+[A-Z]?|\d+[A-Z]?)(?:\s*(?:,|and|to)\s*(?:[IVXL]+[A-Z]?|\d+[A-Z]?))*))\b(?!\s+(?:of|to)\s+(?:the\s+)?Schedule|\s+thereof)/,
+            text
+          ),
+        not (text =~ ~r/\bof\s+Schedule\b/i and sch != nil),
+        p <- String.split(list, ~r/\s*(?:,|and|to)\s*/, trim: true),
+        do: "pt.#{p}"
+  end
+
+  defp paragraph_refs(text, nil) do
+    for [_, list, s] <-
+          Regex.scan(~r/\bparagraphs?\s+#{@list}\s+of\s+Schedule\s+(\d+[A-Z]*)/i, text),
+        r <- list_refs(list, "sch.#{s}.para."),
+        do: r
+  end
+
+  defp paragraph_refs(text, s) do
+    for [_, list] <- Regex.scan(~r/\bparagraphs?\s+#{@list}/i, text),
+        r <- list_refs(list, "sch.#{s}.para."),
+        do: r
   end
 
   # "Subsections (1) to (5) of section 18", "sub-sections (2), (3) and (4)
@@ -1340,20 +1490,25 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
   defp subsections_of(text) do
     for [phrase, list, n] <- Regex.scan(@subsections_of, text), reduce: {[], text} do
-      {refs, t} -> {refs ++ bracket_refs(list, "s.#{n}"), String.replace(t, phrase, " ")}
+      {refs, t} -> {refs ++ list_refs(n <> list, "s."), String.replace(t, phrase, " ")}
     end
   end
 
-  # "(1) to (5)" → s.18(1)..s.18(5); "(2), (3) and (4)" → each
-  defp bracket_refs(list, base) do
-    Regex.scan(~r/\(([0-9A-Za-z]+)\)|\b(to)\b|(–)/, list)
-    |> Enum.reduce({[], false}, fn
-      [_, b], {[from | rest], true} -> {["#{from}..#{base}(#{b})" | rest], false}
-      [_, b], {acc, _} -> {["#{base}(#{b})" | acc], false}
-      _range, {acc, _} -> {acc, true}
-    end)
-    |> elem(0)
-    |> Enum.reverse()
+  # "in section 61, subsection (6) and subsection (1)", "In section 196 …,
+  # and subsections (5) to (7)": those subsections — the section is where
+  # they are, taken out of the text so it isn't read as an item (SI
+  # 2004/2528, SI 1992/1630)
+  @in_section ~r/\bin\s+section\s+(\d+[A-Z]*)\s*,\s*(.*)$/is
+  @subsection_list ~r/\bsub-?sections?\s+((?:\([0-9A-Za-z]+\))+(?:\s*(?:,|and|to|–)\s*(?:\([0-9A-Za-z]+\))+)*)/i
+
+  defp in_section(text) do
+    with [_, n, rest] <- Regex.run(@in_section, text),
+         [_ | _] = lists <- Regex.scan(@subsection_list, rest) do
+      refs = for [_, list] <- lists, r <- list_refs(n <> list, "s."), do: r
+      {refs, String.replace(text, ~r/\bin\s+section\s+#{n}\s*,/i, " ", global: false)}
+    else
+      _ -> {[], text}
+    end
   end
 
   # "17 to 22", "1, 3 to 6, and 10 to 14", "2(1) to (3)", "105(1)"
@@ -1433,6 +1588,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
         el = Doc.element(order, id),
         date = schedule_date(order, el),
         date != nil,
+        {place} = {schedule_territory(order, el)},
         {row, purpose, sch} <- with_schedules(table_rows(el), table_schedule(order, el)),
         text <-
           if(row =~ @schedule_entries,
@@ -1448,7 +1604,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
             scope: refs,
             except: except,
             when: {:date, date},
-            territory: territory,
+            territory: territory || column_territory(purpose) || place,
             purposes: table_purposes(purpose, purposes),
             source: %{
               law: order.law_name,
@@ -1473,8 +1629,17 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
         date = schedule_date(order, el),
         date != nil,
         head = "Schedule list #{id}",
+        {place} = {schedule_territory(order, el)},
         rule <- item_rules(list_lines(el), aliases, date, order.law_name, id, head),
-        do: %{rule | treatment: :order_schedule}
+        do: %{rule | treatment: :order_schedule, territory: rule.territory || place}
+  end
+
+  # the one place the articles bringing a Schedule in name: "The provisions
+  # … specified in the Schedule to this Order … shall come into force in
+  # England and Wales … on 6th June 1988" (SI 1988/818 art.2) reaches each
+  # row that names none; nil where they name none, or more than one
+  defp schedule_territory(order, el) do
+    Territory.only([reference_words(order, el) | intro_words(order, el)])
   end
 
   defp has_parts?(order, id),
@@ -1601,6 +1766,13 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
   @purpose_opening ~r/^\W*(?:(?:in\s+)?so\s+far|insofar|to\s+the\s+extent|for\s+(?:the\s+)?(?:purposes?|specified|certain)|except|only|in\s+relation\s+to|as\s+respects)\b/i
 
+  # a table's second column, where it is a purpose ("In relation to Wales"),
+  # never where it is the provision's subject
+  defp column_territory(purpose) when is_binary(purpose),
+    do: if(purpose =~ @purpose_opening, do: Territory.of(purpose))
+
+  defp column_territory(_purpose), do: nil
+
   defp table_purposes(purpose, from_text) do
     cond do
       purpose in [nil, ""] or purpose =~ ~r/^for all (?:remaining |other )?purposes\.?$/i ->
@@ -1678,6 +1850,14 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   # bringing it in ("The provisions … specified in column 1 of the Schedule
   # to this order … shall come into force on 14th June 1976": SI 1976/731)
   defp intro_date(order, el) do
+    case order |> intro_words(el) |> Enum.flat_map(&parse_dates/1) |> Enum.uniq() do
+      [d] -> d
+      _ -> nil
+    end
+  end
+
+  # the words of the articles that bring the Schedule (or its Part) in
+  defp intro_words(order, el) do
     id = xpath(el, ~x"./@id"s)
     names = if String.contains?(id, "-part-"), do: part_named(id), else: schedule_named(id)
 
@@ -1685,11 +1865,15 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     |> Enum.filter(&String.match?(&1, ~r/^(?:article|regulation)-\d+[A-Z]*(?:-\d+[A-Z]*)?$/))
     |> Enum.map(&Text.words_of(order, &1))
     |> Enum.filter(&(Regex.match?(@cif, &1) and Regex.match?(names, &1)))
-    |> Enum.flat_map(&parse_dates/1)
-    |> Enum.uniq()
-    |> case do
-      [d] -> d
-      _ -> nil
+  end
+
+  # the words of the article the Schedule's Reference names ("Article 2")
+  defp reference_words(order, el) do
+    with ref when ref != nil <- xpath(el, ~x"./Reference"),
+         [_, n] <- Regex.run(~r/(?:Article|Regulation) (\d+)/i, Doc.text(ref)) do
+      Text.words_of(order, "article-#{n}") <> " " <> Text.words_of(order, "regulation-#{n}")
+    else
+      _ -> ""
     end
   end
 

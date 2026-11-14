@@ -22,7 +22,9 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
   - **A provision's own words** ("This section shall come into force on the
     passing of this Act", anywhere in the law): that provision, its date
     (CR-06: the form the deleted `AmendingLaw.Commencement` read).
-  - Sentences the reader can't resolve make no rule.
+  - Sentences the reader can't resolve make no rule — but one naming
+    provisions on a relative day it can't count (from the laying, from an
+    event) keeps them apart, `unread`.
 
   `context/1` gives the evaluator a law's row structure (containers from
   `part` / `chapter`, document order). `doc_rows/1` gives a law we hold no
@@ -116,8 +118,15 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
         assent_rules(law_name, law, by_clause, excepted -- named(groups)) ++
         ((Enum.flat_map(groups, &group_rule(law_name, preceding(&1, rows))) ++
             own_words(law_name, rows, input))
-         # a provision's own words read as a sentence too: once
-         |> Enum.uniq_by(&{&1.scope, &1.except, &1.when, &1.territory, &1.purposes}))
+         # a provision's own words read as a sentence too: once — in that
+         # provision; two statements giving the same provisions the same day
+         # are each a rule (1984 c.12 s.110(2), (3): section 109(4) "so far
+         # as relating to" each Part)
+         |> Enum.uniq_by(
+           &{&1.scope, &1.except, &1.when, &1.territory, &1.purposes, &1.source.ref}
+         ))
+
+    rules = left_to_orders(rules)
 
     %{
       law: law,
@@ -125,6 +134,34 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
       unread: Enum.filter(groups, &(&1.kind == :unread))
     }
   end
+
+  # provisions the clause leaves to an order in each country it speaks of
+  # ("in relation to England, in accordance with provision made by order …;
+  # in relation to Wales, in accordance with provision so made …": CNEA
+  # 2005 s.108(1)) wait for it everywhere: the law's general rule and its
+  # "rest" say nothing of them — never partly in force on Royal Assent. A
+  # provision left to an order for one country alone keeps the general
+  # rule elsewhere (2017 c.29 s.124(3), (5))
+  defp left_to_orders(rules) do
+    left =
+      for(
+        %Rule{scope: scope, when: {:appointed, _}, territory: t, purposes: nil} <- rules,
+        is_list(scope) and is_binary(t),
+        ref <- scope,
+        do: {ref, t}
+      )
+      |> Enum.uniq()
+      |> Enum.group_by(&elem(&1, 0))
+      |> Enum.filter(fn {_ref, places} -> length(places) > 1 end)
+      |> Enum.map(&elem(&1, 0))
+
+    Enum.map(rules, &leave(&1, left))
+  end
+
+  defp leave(%Rule{scope: scope, except: except} = r, [_ | _] = left) when scope in [:all, :rest],
+    do: %{r | except: Enum.uniq(except ++ left)}
+
+  defp leave(r, _left), do: r
 
   # the commencement provision commences with the law, never with `rest`:
   # where no rule dates it — the law's rule staged, or none for the whole
@@ -233,12 +270,30 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
 
   @skip [:Pnumber, :Title, :BlockAmendment, :Footnote, :CommentaryRef]
 
+  # words of the provision's own that carry an id: a cross-reference
+  # ("regulation <InternalLink>4(2)</InternalLink>": SI 2018/1227 reg.2,
+  # held as "(except regulation and )"), a citation, a defined term
+  @inline [
+    :InternalLink,
+    :ExternalLink,
+    :Citation,
+    :CitationSubRef,
+    :CitationListRef,
+    :Term,
+    :Definition,
+    :Abbreviation,
+    :Acronym,
+    :Span,
+    :Emphasis,
+    :Strong
+  ]
+
   # the element without its numbered children, number, title or quotes
   defp own({:xmlElement, _, _, _, _, _, _, _, children, _, _, _} = el) do
     kept =
       Enum.reject(children, fn
         {:xmlElement, name, _, _, _, _, _, _, _, _, _, _} = c ->
-          name in @skip or Xml.attr_or_nil(c, :id) != nil
+          name in @skip or (name not in @inline and Xml.attr_or_nil(c, :id) != nil)
 
         _ ->
           false
@@ -403,25 +458,34 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
 
   defp preceding(g, _rows), do: g
 
+  # a statement naming provisions on a day the reader can't count — from
+  # the laying, from an event ("This Regulation and regulation 2 come into
+  # force on the 22nd day after the day on which these Regulations are
+  # laid": SI 2018/1202 reg.1(3)) — is kept, unread: its provisions are
+  # dated apart, never on the law's general date. A limit on a day an order
+  # may appoint is no statement ("may not appoint a day … which is before
+  # the end of the period …": asp 2014/14 s.104(4))
+  @relative_day ~r/\binto\s+(?:force|operation)\s+(?:on|at|with)\s+(?:the\s+(?:\w+\s+)?day\s+(?:after|following)|the\s+(?:end|expiry|expiration)\s+of\s+the\s+period)\b/i
+
+  defp group_rule(law_name, %{kind: :unread, refs: [_ | _]} = g) do
+    if Regex.match?(@relative_day, g.text),
+      do: [
+        Rule.new(
+          commences: law_name,
+          scope: Enum.map(g.refs, &bare/1),
+          except: Enum.map(g.excluded, &bare/1),
+          when: :unread,
+          source: source(law_name, g.evidence, g.text),
+          treatment: :provision_unread
+        )
+      ],
+      else: []
+  end
+
   defp group_rule(_law_name, %{kind: :unread}), do: []
 
   defp group_rule(law_name, g) do
     {territory, purposes} = qualification(g)
-
-    when_ =
-      cond do
-        d = g.date || g.qualified_date ->
-          {:date, d}
-
-        g.treatment == :provision_by_order ->
-          {:appointed, "by order"}
-
-        Regex.match?(~r/\bby order\b|\bmay appoint\b|\bsuch day\b/i, g.text) ->
-          {:appointed, "by order"}
-
-        true ->
-          :unread
-      end
 
     {scope, except} =
       case g.kind do
@@ -438,7 +502,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
           commences: law_name,
           scope: scope,
           except: except,
-          when: when_,
+          when: group_when(g),
           territory: territory,
           purposes: purposes,
           source: source(law_name, g.evidence, g.text),
@@ -448,9 +512,33 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
     end
   end
 
+  defp group_when(g) do
+    cond do
+      d = g.date || g.qualified_date -> {:date, d}
+      # (tied to another provision's day: an event, undated — 2021 c.24
+      # s.4(5))
+      Map.get(g, :tied) -> {:appointed, "with another provision"}
+      g.treatment == :provision_unread -> :unread
+      by_order?(g) -> {:appointed, "by order"}
+      true -> :unread
+    end
+  end
+
+  # left to an order: the statement's own day, kept for the items its
+  # qualifier leaves partly in (`appointed`), or its words
+  defp by_order?(g),
+    do:
+      g.treatment == :provision_by_order or Map.get(g, :appointed, false) or
+        Regex.match?(~r/\bby order\b|\bmay appoint\b|\bsuch day\b/i, g.text)
+
   # a qualified sentence's territory, else its purposes (the four)
   # a group naming its country itself (a sentence dating each country apart)
   defp qualification(%{treatment: :provision_qualified, territory: place}) when is_binary(place),
+    do: {Map.get(@territories, String.downcase(place)), nil}
+
+  # left to an order country by country (CNEA 2005 s.108(1); 1969 c.10
+  # s.38(3))
+  defp qualification(%{treatment: :provision_by_order, territory: place}) when is_binary(place),
     do: {Map.get(@territories, String.downcase(place)), nil}
 
   defp qualification(%{treatment: :provision_qualified, text: text}) do

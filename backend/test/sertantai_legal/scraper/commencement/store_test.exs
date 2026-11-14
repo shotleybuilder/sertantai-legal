@@ -91,4 +91,29 @@ defmodule SertantaiLegal.Scraper.Commencement.StoreTest do
   after
     Mix.shell(Mix.Shell.IO)
   end
+
+  test "order_sources/1: the orders whose rules for a law are stored, never the law or its feed effects" do
+    act = "UK_ukpga_2000_38"
+    own = %{rule(act, act, ["s.1"], {:date, ~D[2000-11-30]}) | treatment: :clause_date}
+
+    feed = %{
+      rule(act, "UK_uksi_2001_57", ["s.2"], {:date, ~D[2001-02-01]})
+      | treatment: :feed_commencement
+    }
+
+    {:ok, 1} = Store.write(act, [own])
+    {:ok, 1} = Store.write("UK_uksi_2001_57", [feed])
+
+    {:ok, 1} =
+      Store.write("UK_uksi_2002_2024", [
+        rule(act, "UK_uksi_2002_2024", ["s.3"], {:date, ~D[2002-08-26]})
+      ])
+
+    {:ok, 1} =
+      Store.write("UK_uksi_2002_9", [
+        rule("UK_ukpga_2000_37", "UK_uksi_2002_9", ["s.3"], {:date, ~D[2002-01-01]})
+      ])
+
+    assert Store.order_sources(act) == ["UK_uksi_2002_2024"]
+  end
 end

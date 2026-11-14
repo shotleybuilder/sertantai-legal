@@ -3,17 +3,17 @@
     "count": 6,
     "examples": [
       {
-        "law": "UK_nisr_2012_187",
-        "row": "regulation-2",
-        "words": [
-          "15th May 2012"
-        ]
-      },
-      {
         "law": "UK_uksi_1993_1686",
         "row": "article-2-3",
         "words": [
           "5th July 1993"
+        ]
+      },
+      {
+        "law": "UK_uksi_1996_3192",
+        "row": "article-5",
+        "words": [
+          "1st January 1997"
         ]
       },
       {
@@ -25,18 +25,11 @@
       }
     ],
     "laws": 4,
-    "reach": 1094
+    "reach": 743
   },
   "following|date|-|-|other_law|none | left: date": {
-    "count": 3,
+    "count": 2,
     "examples": [
-      {
-        "law": "UK_uksi_1996_2560",
-        "row": "article-2",
-        "words": [
-          "1st April 1997"
-        ]
-      },
       {
         "law": "UK_uksi_2006_1013",
         "row": "article-2-1",
@@ -52,8 +45,8 @@
         ]
       }
     ],
-    "laws": 3,
-    "reach": 900
+    "laws": 2,
+    "reach": 894
   },
   "following|date|qualified|full|-|none | left: date": {
     "count": 2,
@@ -68,6 +61,20 @@
     ],
     "laws": 1,
     "reach": 15
+  },
+  "following|made_relative|qualified|full|-|none | left: relative_day": {
+    "count": 1,
+    "examples": [
+      {
+        "law": "UK_uksi_2012_411",
+        "row": "article-2",
+        "words": [
+          "the day after"
+        ]
+      }
+    ],
+    "laws": 1,
+    "reach": 68
   },
   "following|none|-|-|other_law|none | left: provision": {
     "count": 2,
@@ -107,7 +114,7 @@
     "reach": 3362
   },
   "following|none|qualified|-|-|none | left: provision+qualifier": {
-    "count": 4,
+    "count": 3,
     "examples": [
       {
         "law": "UK_uksi_2009_803",
@@ -118,24 +125,38 @@
         ]
       },
       {
-        "law": "UK_uksi_2010_2169",
-        "row": "article-3-2",
-        "words": [
-          "s.4(2)(f)",
-          "so far as"
-        ]
-      },
-      {
         "law": "UK_uksi_2010_862",
         "row": "article-3",
         "words": [
           "s.321(1)",
           "so far as"
         ]
+      },
+      {
+        "law": "UK_uksi_2011_1002",
+        "row": "article-2-2",
+        "words": [
+          "s.321(1)",
+          "in relation to"
+        ]
       }
     ],
-    "laws": 4,
-    "reach": 825
+    "laws": 3,
+    "reach": 126
+  },
+  "following|none|qualified|-|-|rules+partial | left: provision": {
+    "count": 1,
+    "examples": [
+      {
+        "law": "UK_uksi_2010_2169",
+        "row": "article-3-2",
+        "words": [
+          "s.4(2)(f)"
+        ]
+      }
+    ],
+    "laws": 1,
+    "reach": 699
   },
   "following|none|qualified|full|-|none | left: provision": {
     "count": 1,
@@ -152,7 +173,7 @@
     "reach": 14
   },
   "inline|date|-|-|-|none | left: date": {
-    "count": 2,
+    "count": 5,
     "examples": [
       {
         "law": "UK_uksi_1988_2041",
@@ -167,10 +188,17 @@
         "words": [
           "1st January 1993"
         ]
+      },
+      {
+        "law": "UK_uksi_1996_2022",
+        "row": "article-2",
+        "words": [
+          "1st September 1996"
+        ]
       }
     ],
-    "laws": 2,
-    "reach": 475
+    "laws": 4,
+    "reach": 485
   },
   "inline|date|-|-|-|none | left: date+provision": {
     "count": 1,
@@ -187,20 +215,6 @@
     "laws": 1,
     "reach": 3061
   },
-  "inline|date|-|full|-|none | left: date": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_uksi_2004_2304",
-        "row": "article-2-2",
-        "words": [
-          "1st October 2004"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 1225
-  },
   "inline|date|-|full|other_law|none | left: date": {
     "count": 1,
     "examples": [
@@ -214,6 +228,20 @@
     ],
     "laws": 1,
     "reach": 456
+  },
+  "inline|date|qualified|-|-|none | left: date": {
+    "count": 5,
+    "examples": [
+      {
+        "law": "UK_uksi_1996_3201",
+        "row": "article-3-2",
+        "words": [
+          "12th December 1996"
+        ]
+      }
+    ],
+    "laws": 1,
+    "reach": 2
   },
   "inline|date|qualified|-|-|none | left: date+exception": {
     "count": 1,
@@ -231,7 +259,7 @@
     "reach": 786
   },
   "inline|date|qualified|-|-|none | left: date+provision+qualifier": {
-    "count": 5,
+    "count": 6,
     "examples": [
       {
         "law": "UK_uksi_1973_373",
@@ -264,8 +292,8 @@
         ]
       }
     ],
-    "laws": 3,
-    "reach": 22
+    "laws": 4,
+    "reach": 24
   },
   "inline|date|qualified|-|-|none | left: date+qualifier": {
     "count": 3,
@@ -366,6 +394,38 @@
     "laws": 1,
     "reach": 546
   },
+  "inline|date|qualified|full|-|none | left: date+provision": {
+    "count": 1,
+    "examples": [
+      {
+        "law": "UK_uksi_1996_1897",
+        "row": "article-3",
+        "words": [
+          "1st August 1996",
+          "s.55(1)..s.55(3)",
+          "s.55(7)(b)"
+        ]
+      }
+    ],
+    "laws": 1,
+    "reach": 5
+  },
+  "inline|date|qualified|full|-|none | left: date+qualifier": {
+    "count": 1,
+    "examples": [
+      {
+        "law": "UK_uksi_1996_3192",
+        "row": "article-3",
+        "words": [
+          "10th December 1996",
+          "1st January 1997",
+          "for the purpose of"
+        ]
+      }
+    ],
+    "laws": 1,
+    "reach": 5
+  },
   "inline|date|qualified|full|-|rules | left: qualifier": {
     "count": 1,
     "examples": [
@@ -394,22 +454,6 @@
     "laws": 1,
     "reach": 102
   },
-  "inline|made_relative|qualified|-|other_law|none | left: provision+qualifier": {
-    "count": 1,
-    "examples": [
-      {
-        "law": "UK_uksi_2010_2169",
-        "row": "article-3-3",
-        "words": [
-          "s.36",
-          "s.76A(2)",
-          "so far as"
-        ]
-      }
-    ],
-    "laws": 1,
-    "reach": 699
-  },
   "inline|made_relative|qualified|-|other_law|none | left: qualifier": {
     "count": 1,
     "examples": [
@@ -423,6 +467,20 @@
     ],
     "laws": 1,
     "reach": 3362
+  },
+  "inline|made_relative|qualified|-|other_law|rules | left: qualifier": {
+    "count": 1,
+    "examples": [
+      {
+        "law": "UK_uksi_2010_2169",
+        "row": "article-3-3",
+        "words": [
+          "so far as"
+        ]
+      }
+    ],
+    "laws": 1,
+    "reach": 699
   },
   "inline|made_relative|qualified|full|-|none | left: provision+relative_day": {
     "count": 1,
@@ -463,7 +521,7 @@
     "reach": 113
   },
   "inline|none|qualified|-|-|none | left: provision": {
-    "count": 4,
+    "count": 5,
     "examples": [
       {
         "law": "UK_uksi_1973_373",
@@ -480,32 +538,24 @@
         ]
       },
       {
-        "law": "UK_uksi_2008_3068",
-        "row": "article-3",
+        "law": "UK_uksi_1996_3192",
+        "row": "article-2",
         "words": [
-          "s.277"
+          "s.5"
         ]
       }
     ],
-    "laws": 4,
-    "reach": 3424
+    "laws": 5,
+    "reach": 3429
   },
   "inline|none|qualified|-|-|none | left: provision+qualifier": {
-    "count": 5,
+    "count": 4,
     "examples": [
       {
         "law": "UK_uksi_2009_803",
         "row": "article-3-1",
         "words": [
           "s.50(2)",
-          "so far as"
-        ]
-      },
-      {
-        "law": "UK_uksi_2010_2169",
-        "row": "article-3-1",
-        "words": [
-          "s.4",
           "so far as"
         ]
       },
@@ -518,8 +568,8 @@
         ]
       }
     ],
-    "laws": 3,
-    "reach": 783
+    "laws": 2,
+    "reach": 84
   },
   "inline|none|qualified|-|-|none | left: qualifier": {
     "count": 1,
@@ -534,6 +584,20 @@
     ],
     "laws": 1,
     "reach": 42
+  },
+  "inline|none|qualified|-|-|rules | left: qualifier": {
+    "count": 1,
+    "examples": [
+      {
+        "law": "UK_uksi_2010_2169",
+        "row": "article-3-1",
+        "words": [
+          "so far as"
+        ]
+      }
+    ],
+    "laws": 1,
+    "reach": 699
   },
   "inline|none|qualified|-|other_law|none | left: provision": {
     "count": 1,
@@ -578,15 +642,8 @@
     "reach": 884
   },
   "items_first|date|-|-|-|none | left: date": {
-    "count": 2,
+    "count": 1,
     "examples": [
-      {
-        "law": "UK_uksi_1978_1583",
-        "row": "article-3",
-        "words": [
-          "1st April 1979"
-        ]
-      },
       {
         "law": "UK_uksi_1978_954",
         "row": "article-3",
@@ -595,22 +652,39 @@
         ]
       }
     ],
-    "laws": 2,
-    "reach": 920
+    "laws": 1,
+    "reach": 910
   },
-  "table|date|-|-|-|rules | left: date": {
+  "table|date|-|-|-|rules | left: date+provision": {
     "count": 1,
     "examples": [
       {
         "law": "UK_uksi_1978_712",
         "row": "schedule",
         "words": [
-          "8th September 1977"
+          "8th September 1977",
+          "s.31(1)"
         ]
       }
     ],
     "laws": 1,
     "reach": 17
+  },
+  "whole_act|date|-|-|-|none | left: date+provision": {
+    "count": 1,
+    "examples": [
+      {
+        "law": "UK_uksi_1996_1325",
+        "row": "article-2",
+        "words": [
+          "15th May 1996",
+          "s.2(3)(c)",
+          "s.2(3)(d)"
+        ]
+      }
+    ],
+    "laws": 1,
+    "reach": 5
   },
   "whole_act|date|-|-|other_law|none | left: date": {
     "count": 1,

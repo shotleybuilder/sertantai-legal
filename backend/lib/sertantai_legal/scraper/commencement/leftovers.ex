@@ -29,7 +29,8 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
 
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.Commencement.{Order, OrderPatterns, Rule, SentencePatterns}
-  alias SertantaiLegal.Scraper.LawStart.{Clause, Provisions}
+  alias SertantaiLegal.Scraper.Commencement.Order.Asides
+  alias SertantaiLegal.Scraper.LawStart.{Clause, ListItems, Provisions}
 
   @type leftover :: %{
           kind: :date | :exception | :provision | :qualifier | :relative_day,
@@ -60,12 +61,31 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
   # a pointer to where something else is provided, never what is excepted
   # or named ("Except as provided by subsection (2)", "Subject to
   # subsection (2)", "in accordance with …": s.183(1) of 2017 c.3)
-  @pointer ~r/\b(?:except\s+as\s+(?:otherwise\s+)?(?:provided|mentioned|specified|set\s+out)\s+(?:for\s+)?(?:by|in|under)|subject\s+to|in\s+accordance\s+with|(?:as|to\s+the\s+extent)\s+(?:provided|mentioned|specified)\s+(?:by|in|under))\s+[^,;]*/i
+  @pointer ~r/\b(?:except\s+as\s+(?:otherwise\s+)?(?:provided|mentioned|specified|set\s+out)\s+(?:for\s+)?(?:by|in|under)|subject\s+to|in\s+accordance\s+with|(?:as|to\s+the\s+extent)\s+(?:provided|mentioned|specified)\s+(?:for\s+)?(?:by|in|under))\s+[^,;]*/i
+
+  # how "commencement" is to be construed, never a commencement: "…; and
+  # for the purposes of this Act and of the application thereto of section
+  # 13 of the Interpretation Act 1978 … references to the commencement of
+  # this Act shall … be construed as references to the time at which this
+  # Act … comes into operation" (1954 c.70 s.194)
+  @construed ~r/[;,]\s*and\s+for\s+the\s+purposes\s+of\b[^;]*?\breferences\s+to\s+the\s+commencement\s+of\b.*$/is
+
+  # the provision a statement is tied to, with what qualifies that
+  # provision's commencement, is not commenced by it: "Section 3 comes into
+  # force at the same time as section 1 comes fully into force in relation
+  # to premises in England" (2021 c.24 s.4(5))
+  @tied_to ~r/\b(?:at\s+the\s+same\s+time\s+as|immediately\s+(?:after|before)|on\s+the\s+(?:same\s+)?(?:day|date)\s+(?:on\s+which|that))\s+[^;]*?\bcomes?\s+(?:fully\s+)?into\s+(?:force|operation)\b[^;.]*/i
+  @tied "on the day of another provision's commencement"
 
   # the order's power over its own transition, never a qualifier of the
   # day: "…, and, for the purposes of the transition …, the Order
   # appointing the day may provide that …" (1971 c.19 s.6(5))
   @order_may ~r/[,;]\s*and,?\s+[^;]*?\bthe\s+(?:Order|order|instrument)\s+(?:appointing|bringing)\b[^;]*?\bmay\s+(?:provide|make|contain)\b.*$/is
+
+  # nor is the power to appoint different days: "…; and different days may
+  # be so appointed for different purposes of this Act or for the same
+  # purposes in relation to different courts" (1968 c.64 s.20(4))
+  @different_days ~r/[,;]\s*and\s+different\s+(?:days|dates)\s+may\s+be\s+(?:so\s+)?appointed\b.*$/is
 
   # (also another Act's provision an order of the family's commences: NISR
   # 2012/286 "Section 2(1)(d) of the Corporate Manslaughter … Act 2007 shall
@@ -114,6 +134,10 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
       @pointer
       |> Regex.replace(statement, ",")
       |> then(&Regex.replace(@order_may, &1, "."))
+      |> then(&Regex.replace(@different_days, &1, "."))
+      |> then(&Regex.replace(@construed, &1, "."))
+      |> tied()
+      |> partly_excepted()
       |> then(&Regex.replace(@repeal_entries, &1, ""))
       |> then(&Regex.replace(@not_applying, &1, "."))
       # quoted words are words, never provisions ("the words “section 48,”":
@@ -133,6 +157,31 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
          provisions(statement, rules, refs) ++
          qualifiers(statement, rules) ++ relative_days(statement, rules))
       |> Enum.uniq()
+    end
+  end
+
+  # an item excepted only to an extent comes in with the rest, partly, and
+  # the statement for the rest of it holds the partial rule: "except for
+  # regulation 4 and regulation 6 to the extent that it applies to
+  # regulation 4, they shall come into force on 1st March 1994" (SI
+  # 1994/232 reg.1(a)) excepts regulation 4 alone
+  @except_clause ~r/\b(?:except(?:\s+for)?|other\s+than|apart\s+from)\s+([^,;]+)/i
+
+  defp partly_excepted(s) do
+    Regex.replace(@except_clause, s, fn whole, words ->
+      case ListItems.qualified_last(words) do
+        {plain, _qualified} -> String.replace(whole, words, plain)
+        nil -> whole
+      end
+    end)
+  end
+
+  # (only after the statement's own "into force": a mention's "before
+  # section 2 comes into force" stays a mention)
+  defp tied(s) do
+    case Regex.split(~r/\binto\s+(?:force|operation)\b/i, s, parts: 2, include_captures: true) do
+      [head, cif, tail] -> head <> cif <> Regex.replace(@tied_to, tail, @tied)
+      _ -> s
     end
   end
 
@@ -167,10 +216,17 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
 
   defp no_when?(_s, _rules), do: false
 
+  # the day an agreement or convention was signed, done or adopted
+  # describes it: never a commencement date ("… the Agreement … signed on
+  # 24 July 2025 … enters into force": SI 2026/40 reg.1(2))
+  @signed ~r/\b(?:signed|done|adopted|concluded|opened\s+for\s+signature)\s+(?:at\s+[A-Z][\w-]*\s+)?on\s+(?=\d)/
+
   defp dates(s, rules) do
     held = for %Rule{when: {:date, d}} <- rules, into: MapSet.new(), do: d
+    s = String.replace(s, @signed, "signed ")
 
     for [words] <- Regex.scan(@date, s),
+        not String.contains?(s, "signed " <> words),
         d = Clause.date_at_start(words),
         d != nil,
         not MapSet.member?(held, d),
@@ -229,16 +285,25 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
       length(Regex.scan(@date, s)) <= 1 and not Regex.match?(@except, s)
   end
 
+  # how provisions apply, never how far they come in: "the provisions to
+  # which regulation 2 applies have effect in relation to financial years
+  # beginning on or after IP completion day" (SI 2019/145 reg.1(2)(b))
+  @has_effect ~r/\b(?:has|have)\s+effect\s+in\s+relation\s+to\b[^;.]*/i
+
   defp qualifiers(s, rules) do
     partial? = Enum.any?(rules, &(not Rule.full?(&1)))
 
     # (never the order power's own words: "different days may be appointed
     # … in relation to premises of different classes": 1963 c.41 s.91(2);
-    # nor a place, "in relation to England": SI 2009/2096 art.2(2))
+    # nor a place, "in relation to England": SI 2009/2096 art.2(2); nor a
+    # provision's bracketed heading, "sections 114 to 117 (order-making
+    # powers in relation to EPBs …)": SI 2009/3318 art.3)
     text =
       s
+      |> Asides.drop_headings()
       |> String.replace(@completing, "")
       |> String.replace(@place, "")
+      |> String.replace(@has_effect, "")
       |> String.replace(
         ~r/\b(?:different|a\s+later|an\s+earlier)\s+days?\s+may\s+be\s+appointed\b[^.;]*/i,
         ""
@@ -253,6 +318,8 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
   # a relative day the reader resolved: a relative rule, or a date the text
   # doesn't state (counted from the making or passing) — never where a
   # named day ("exit day") could give that date
+  @named_days [~D[2020-01-31], ~D[2020-12-31]]
+
   defp relative_days(s, rules) do
     stated =
       for [w] <- Regex.scan(@date, s),
@@ -261,12 +328,15 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
           into: MapSet.new(),
           do: d
 
+    # (beside a named day, a date that is neither of the named days': "the
+    # seventh day after … made" and "on exit day", SI 2019/145 reg.1(2))
     named_day? = s =~ ~r/\b(?:exit|IP\s+completion|implementation\s+period\s+completion)\s+day\b/i
+    named = if named_day?, do: @named_days, else: []
 
     relative? =
       Enum.any?(rules, fn
         %Rule{when: {:after, _, _}} -> true
-        %Rule{when: {:date, d}} -> not named_day? and not MapSet.member?(stated, d)
+        %Rule{when: {:date, d}} -> d not in named and not MapSet.member?(stated, d)
         _ -> false
       end)
 

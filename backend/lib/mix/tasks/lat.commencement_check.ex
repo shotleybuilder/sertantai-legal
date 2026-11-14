@@ -21,7 +21,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
       mix lat.commencement_check --family "OH&S: Occupational"
       mix lat.commencement_check --laws A,B --all
       mix lat.commencement_check --family F --sample FILE --n 50 [--seed N]
-      mix lat.commencement_check --family F --fresh   # the laws' own clauses re-read now (a dry run of `mix lat.commencement --read`)
+      mix lat.commencement_check --family F --fresh   # the laws' own clauses, and their amending laws', re-read now (a dry run of `mix lat.commencement --read` and `--read-amending`)
   """
   use Mix.Task
 
@@ -33,7 +33,18 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
   alias SertantaiLegal.Scraper.ChangeVocabulary.Store
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Draw
-  alias SertantaiLegal.Scraper.Commencement.{Check, FamilyLeftovers, Leftovers, OwnClause}
+
+  alias SertantaiLegal.Scraper.Commencement.{
+    AmendingRead,
+    Check,
+    FamilyLeftovers,
+    HeldAmenders,
+    Leftovers,
+    Orders,
+    OwnClause,
+    OwnRead
+  }
+
   alias SertantaiLegal.Scraper.Commencement.Store, as: Rules
   alias SertantaiLegal.Scraper.LawStart
 
@@ -61,7 +72,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
 
     {rows, gaps, _cache} =
       Enum.reduce(laws, {[], [], %{}}, fn law, {rows, gaps, cache} ->
-        {law_gaps, cache} = law_gaps(law, cache)
+        {law_gaps, cache} = law_gaps(law, cache, opts[:fresh])
         {rows ++ law_rows(law, opts[:fresh]), gaps ++ law_gaps, cache}
       end)
 
@@ -160,7 +171,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
             ).rows,
           do: %{section_id: sid, text: text, part: part, chapter: chapter, extent_code: extent}
 
-    rules = if fresh?, do: fresh_rules(law, rows), else: Rules.for_law(law)
+    rules = if fresh?, do: fresh_rules(law), else: Rules.for_law(law)
 
     # no rules: a law with no clause and no register date is `LawStart`'s
     # `no_clause` (a known limit), not a law never read
@@ -177,11 +188,11 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
   # law its clause leaves to orders, the orders found for it before (`mix
   # lat.commencement --read-orders`' cached list; never a search) and held,
   # read now (CR-07)
-  defp fresh_rules(law, rows) do
+  defp fresh_rules(law) do
     own = OwnClause.treatments()
 
-    clause =
-      OwnClause.rules(law, SertantaiLegal.Scraper.ChangeCollector.law_start_input(law, rows))
+    # as `--read` reads it: the clause and the Schedules' effect (SI 2020/206)
+    clause = OwnRead.rules(law)
 
     orders =
       if Enum.any?(clause, &match?({:appointed, _}, &1.when)), do: cached_orders(law), else: []
@@ -196,16 +207,14 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
           (MapSet.member?(read, r.source.law) and r.treatment in [:order_date, :order_schedule])
       end)
 
-    act = %{law: law, title: title(law), year: law |> String.split("_") |> Enum.at(2)}
+    year = law |> String.split("_") |> Enum.at(2)
+    act = %{law: law, title: title(law, year), year: year}
     kept ++ clause ++ Enum.flat_map(orders, &order_rules(&1, act))
   end
 
-  defp cached_orders(law) do
-    case File.read("data/cache/commencement-orders/#{law}.json") do
-      {:ok, json} -> Jason.decode!(json)
-      _ -> []
-    end
-  end
+  # the list kept and the orders whose rules are stored, as `--read-orders`
+  # reads them
+  defp cached_orders(law), do: Orders.candidates(Orders.cached(law), Rules.order_sources(law))
 
   defp order_rules(order, act) do
     with [_ | _] = xmls <- ClmlStore.law_docs(order) do
@@ -218,13 +227,10 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
   end
 
   # as `mix lat.commencement` names the Act an order commences
-  defp title(law) do
+  defp title(law, year) do
     case Repo.query!("SELECT title_en FROM uk_lrt WHERE name = $1 LIMIT 1", [law]) do
-      %{rows: [[t]]} when is_binary(t) ->
-        t |> String.replace(~r/\s+\d{4}\b.*$/, "") |> String.trim()
-
-      _ ->
-        nil
+      %{rows: [[t]]} when is_binary(t) -> Orders.act_title(t, year)
+      _ -> nil
     end
   end
 
@@ -279,12 +285,32 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
 
   # ── gaps ─────────────────────────────────────────────────────────────
 
-  defp law_gaps(law, cache) do
+  defp law_gaps(law, cache, fresh?) do
     changes = Store.for_law(law)
     amenders = changes |> Enum.map(&Check.amender/1) |> Enum.reject(&is_nil/1) |> Enum.uniq()
-    cache = Enum.reduce(amenders, cache, &Map.put_new_lazy(&2, &1, fn -> Rules.for_law(&1) end))
+
+    cache =
+      Enum.reduce(amenders, cache, &Map.put_new_lazy(&2, &1, fn -> amender_rules(&1, fresh?) end))
+
     {Check.gaps(law, changes, Map.take(cache, amenders)), cache}
   end
+
+  # an amending law's rules: stored, or with `--fresh` its own clause read
+  # now from the CLML held (a dry run of `mix lat.commencement
+  # --read-amending`) — never a law with LAT rows (`--read`'s) nor a
+  # commencement order (read as an order)
+  defp amender_rules(law, true) do
+    if lat?(law) or HeldAmenders.order?(law),
+      do: Rules.for_law(law),
+      else: AmendingRead.fresh(law)
+  end
+
+  defp amender_rules(law, _stored), do: Rules.for_law(law)
+
+  defp lat?(law),
+    do:
+      Repo.query!("SELECT EXISTS (SELECT 1 FROM legal_articles WHERE law_name = $1)", [law]).rows ==
+        [[true]]
 
   defp report_gaps(gaps, opts) do
     shell = Mix.shell()

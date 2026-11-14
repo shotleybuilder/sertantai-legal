@@ -1,0 +1,113 @@
+defmodule SertantaiLegal.Scraper.Commencement.Order.Territory do
+  @moduledoc """
+  Where a commencement order brings provisions into force, as a territory
+  code ("E", "E+W", "NI"): from a line's words, the order's title, or the
+  instrument's type. Pure text.
+  """
+
+  alias SertantaiLegal.Scraper.Commencement.Order.Asides
+
+  @places %{
+    "england and wales" => "E+W",
+    "great britain" => "E+W+S",
+    "england" => "E",
+    "wales" => "W",
+    "scotland" => "S",
+    "northern ireland" => "NI"
+  }
+
+  @territory ~r/\b(?:in relation to|in|as respects)\s+(England and Wales|Great Britain|England|Wales|Scotland|Northern Ireland)\b(?!\s+(?:Act|Order|Regulations))/i
+
+  @own_acts %{"wsi" => ~w(anaw asc mwa), "ssi" => ~w(asp), "nisr" => ~w(nia)}
+  @type_territories %{"wsi" => "W", "ssi" => "S", "nisr" => "NI"}
+
+  @title_place ~S"(?:England|Wales|Scotland|Northern Ireland)"
+  @title_places ~r/\((#{@title_place}(?:(?:,\s+|\s+and\s+)#{@title_place})*)\)\s+(?:Order|Regulations)\b/
+
+  @doc """
+  The first place `line` names ("in relation to Wales" → "W"); nil when it
+  names none.
+  """
+  @spec of(String.t()) :: String.t() | nil
+  def of(line) do
+    case Regex.run(@territory, line) do
+      [_, place] -> Map.get(@places, String.downcase(place))
+      nil -> nil
+    end
+  end
+
+  @completing ~r/\s*,?\s*\(?\b(?:(?:in\s*)?so\s*far|insofar)\s+as\s+(?:it|they)\s+relates?\s+to\s+(England and Wales|Great Britain|England|Wales|Scotland|Northern Ireland)\s+and\s+(?:has|have|is|are)\s+not\s+(?:already|previously|yet)\s+(?:been\s+)?(?:commenced|brought\s+into\s+(?:force|operation)|in\s+(?:force|operation)|come\s+into\s+(?:force|operation))\)?/i
+
+  @doc """
+  A line's completing start for one place: "Schedule 8 in so far as it
+  relates to England and Wales and has not already been commenced" (SI
+  1992/2984 Sch.2) is the rest of Schedule 8, there — `{"Schedule 8",
+  "E+W"}`. `{line, nil}` for any other line: relating to a place alone is a
+  purpose, never the whole.
+  """
+  @spec completing(String.t()) :: {String.t(), String.t() | nil}
+  def completing(line) do
+    case Regex.run(@completing, line) do
+      [words, place] ->
+        {String.replace(line, words, ""), Map.get(@places, String.downcase(place))}
+
+      nil ->
+        {line, nil}
+    end
+  end
+
+  @doc "Every place `text` names outside its provisions' bracketed headings, each once."
+  @spec all(String.t()) :: [String.t()]
+  def all(text) do
+    for [_, place] <- Regex.scan(@territory, Asides.drop_headings(text)),
+        uniq: true,
+        do: Map.get(@places, String.downcase(place))
+  end
+
+  @doc """
+  The one place `texts` name between them: "The provisions … specified in
+  the Schedule to this Order … shall come into force in England and Wales …
+  on 6th June 1988" (SI 1988/818 art.2); a place two of them name is one
+  place. Nil where they name none, or more than one.
+  """
+  @spec only([String.t()]) :: String.t() | nil
+  def only(texts) do
+    case texts |> Enum.flat_map(&all/1) |> Enum.uniq() do
+      [place] -> place
+      _ -> nil
+    end
+  end
+
+  @doc """
+  The territory an order's title names: "… (Commencement No. 16 …) (England)
+  Order 2000" (SI 2000/340) → "E"; "(England and Scotland) Order" (SI
+  2004/2304) → "E+S". Nil for a title naming none, or no title.
+  """
+  @spec of_title(String.t() | nil) :: String.t() | nil
+  def of_title(title) do
+    case Regex.run(@title_places, title || "") do
+      [_, places] -> codes(places)
+      nil -> nil
+    end
+  end
+
+  @doc """
+  The territory of a devolved instrument's type (a Welsh order: "W") — nil
+  for its own legislature's Act, which it commences wherever that extends
+  (WSI 2023/1149 on a Senedd Act extending to England and Wales), and for
+  any other instrument.
+  """
+  @spec of_type(String.t(), String.t()) :: String.t() | nil
+  def of_type(order, act) do
+    type = law_type(order)
+    if law_type(act) in Map.get(@own_acts, type, []), do: nil, else: @type_territories[type]
+  end
+
+  defp law_type(law_name), do: law_name |> String.split("_") |> Enum.at(1)
+
+  # "England and Scotland" → "E+S", in the codes' own order
+  defp codes(places) do
+    named = places |> String.split(~r/,\s+|\s+and\s+/) |> Enum.map(&@places[String.downcase(&1)])
+    ~w(E W S NI) |> Enum.filter(&(&1 in named)) |> Enum.join("+")
+  end
+end

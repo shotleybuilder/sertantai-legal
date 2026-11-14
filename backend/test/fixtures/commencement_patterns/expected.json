@@ -3,7 +3,8 @@
     "UK_anaw_2012_2/50362de0f3": {
       "class": "law:clause_unread",
       "rules": [
-        "all — unread — everywhere, fully — clause_unread"
+        "all — unread — everywhere, fully — clause_unread",
+        "s.18(1), s.21, s.22, s.23 — unread — everywhere, fully — provision_unread"
       ]
     },
     "UK_anaw_2013_1/10dcf5e874": {
@@ -15,8 +16,8 @@
     "UK_anaw_2013_1/1b653e5ba7": {
       "class": "rules:provision_dated+provision_qualified",
       "rules": [
-        "pt.2.ch.3, s.91, s.94, s.95 — 2013-05-04 — everywhere, fully — provision_dated",
-        "s.99, sch.5.pt.3 — 2013-05-04 — everywhere, in relation to — provision_qualified"
+        "pt.2.ch.3, s.91, s.94, s.95, sch.5.pt.3 — 2013-05-04 — everywhere, fully — provision_dated",
+        "s.99 — 2013-05-04 — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_anaw_2013_1/2a32b4346e": {
@@ -48,9 +49,10 @@
       ]
     },
     "UK_anaw_2015_4/efb8cad3e4": {
-      "class": "rules:provision_qualified",
+      "class": "rules:provision_qualified+provision_unread",
       "rules": [
-        "pt.3, pt.4, pt.5, pt.6, pt.7, pt.8 — unread — everywhere, in relation to — provision_qualified"
+        "pt.3, pt.4, pt.5, pt.6, pt.7, pt.8 — unread — everywhere, in relation to — provision_qualified",
+        "s.55 — unread — everywhere, fully — provision_unread"
       ]
     },
     "UK_anaw_2016_2/25b068aa01": {
@@ -206,6 +208,16 @@
         "sch.5.pt.1 — 2023-10-17 — everywhere, in relation to — provision_qualified"
       ]
     },
+    "UK_asc_2024_4/737e5de15b": {
+      "class": "rules:provision_unread",
+      "rules": [
+        "s.3 — unread — everywhere, fully — provision_unread"
+      ]
+    },
+    "UK_asc_2024_4/c0699d8580": {
+      "class": "unread",
+      "rules": []
+    },
     "UK_asc_2024_6/6a09058941": {
       "class": "law:clause_staged",
       "rules": [
@@ -214,16 +226,17 @@
       ]
     },
     "UK_asc_2024_6/75757d8143": {
-      "class": "rules:provision_qualified",
+      "class": "rules:provision_qualified+provision_unread",
       "rules": [
-        "s.2, s.3, s.4, s.15, s.8, s.15, s.9, s.15, s.13, s.15, s.14, s.15 — unread — everywhere, in relation to — provision_qualified"
+        "s.15, s.15, s.15, s.15, s.15 — unread — everywhere, in relation to — provision_qualified",
+        "s.2, s.3, s.4, s.5, s.7, s.8, s.9, s.13, s.14, s.17, s.20 — unread — everywhere, fully — provision_unread"
       ]
     },
     "UK_asc_2024_6/8121aa4a63": {
       "class": "rules:provision_dated+provision_qualified",
       "rules": [
-        "s.10, s.11, s.15 — 2025-04-01 — everywhere, in relation to — provision_qualified",
-        "s.6 — 2025-04-01 — everywhere, fully — provision_dated"
+        "s.10, s.11, s.6 — 2025-04-01 — everywhere, fully — provision_dated",
+        "s.15 — 2025-04-01 — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_asc_2024_6/95139d59fa": {
@@ -252,8 +265,8 @@
     "UK_asc_2026_4/365da454e2": {
       "class": "rules:provision_dated+provision_qualified",
       "rules": [
-        "s.1, s.2, s.6, s.7, s.8, s.10, sch.1, s.30, sch.3, s.31, s.32, s.33, s.34, pt.3 except s.6(1)(c) — 2026-06-27 — everywhere, fully — provision_dated",
-        "s.45, sch.4.para.1..sch.4.para.4 — 2026-06-27 — everywhere, in relation to — provision_qualified"
+        "s.1, s.2, s.6, s.7, s.8, s.10, sch.1, s.30, sch.3, s.31, s.32, s.33, s.34, pt.3, sch.4.para.1..sch.4.para.4 except s.6(1)(c) — 2026-06-27 — everywhere, fully — provision_dated",
+        "s.45 — 2026-06-27 — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_asc_2026_4/47c12dd280": {
@@ -547,13 +560,19 @@
       "class": "none",
       "rules": []
     },
+    "UK_asp_2010_5/5d831de7cf": {
+      "class": "none",
+      "rules": []
+    },
     "UK_asp_2010_5/8847517904": {
       "class": "none",
       "rules": []
     },
     "UK_asp_2010_5/bd6f117d95": {
-      "class": "none",
-      "rules": []
+      "class": "rules:provision_by_order",
+      "rules": [
+        "s.38(1) — appointed (with another provision) — everywhere, fully — provision_by_order"
+      ]
     },
     "UK_asp_2010_8/281c3f36b8": {
       "class": "law:clause_staged",
@@ -634,6 +653,10 @@
         "pt.5 except s.59 — 2015-01-14 — everywhere, fully — provision_dated"
       ]
     },
+    "UK_asp_2015_6/9c0499a4cc": {
+      "class": "none",
+      "rules": []
+    },
     "UK_asp_2016_2/bbdc2985a3": {
       "class": "law:clause_staged",
       "rules": [
@@ -703,6 +726,16 @@
       "class": "none",
       "rules": []
     },
+    "UK_asp_2022_8/2e7b1dd389": {
+      "class": "law:clause_staged",
+      "rules": [
+        "all — 2022-09-24 — everywhere, fully — clause_staged"
+      ]
+    },
+    "UK_asp_2022_8/328d59ed58": {
+      "class": "unread",
+      "rules": []
+    },
     "UK_asp_2026_6/189d85e0db": {
       "class": "none",
       "rules": []
@@ -722,6 +755,17 @@
     "UK_eudr_2018_645/3c9b31b5a3": {
       "class": "none",
       "rules": []
+    },
+    "UK_mwa_2009_2/1bfed6acbf": {
+      "class": "unread",
+      "rules": []
+    },
+    "UK_mwa_2009_2/33df0d4aef": {
+      "class": "law:clause_unread",
+      "rules": [
+        "all — unread — everywhere, fully — clause_unread",
+        "rest except s.53 — appointed (by order) — everywhere, fully — provision_by_order"
+      ]
     },
     "UK_mwa_2009_3/ceee42e716": {
       "class": "law:clause_unread",
@@ -786,7 +830,7 @@
       "class": "none",
       "rules": []
     },
-    "UK_nia_2011_25/a056b243f0": {
+    "UK_nia_2011_25/36968dec7b": {
       "class": "none",
       "rules": []
     },
@@ -925,10 +969,9 @@
       "rules": []
     },
     "UK_nisi_1994_426/cc8d101744": {
-      "class": "rules:provision_by_order+provision_qualified",
+      "class": "rules:provision_by_order",
       "rules": [
-        "pt.IV, sch.6 — appointed (by order) — everywhere, fully — provision_by_order",
-        "sch.9.para.2, sch.9.para.4, sch.9.para.5, sch.9.para.7, sch.9.para.8, sch.9.para.10..sch.9.para.12, sch.9.para.14 — appointed (by order) — everywhere, in relation to — provision_qualified"
+        "pt.IV, sch.6, sch.9.para.2, sch.9.para.4, sch.9.para.5, sch.9.para.7, sch.9.para.8, sch.9.para.10..sch.9.para.12, sch.9.para.14 — appointed (by order) — everywhere, fully — provision_by_order"
       ]
     },
     "UK_nisi_1997_1774/8a83338883": {
@@ -972,8 +1015,8 @@
     "UK_nisi_2003_419/0db119a8a9": {
       "class": "rules:provision_dated+provision_qualified",
       "rules": [
-        "pt.I, reg.59, reg.60, reg.64, reg.66, reg.67 — 2003-02-28 — everywhere, fully — provision_dated",
-        "reg.65, sch.3.para.1(2), reg.65, sch.4 — 2003-02-28 — everywhere, in relation to — provision_qualified"
+        "pt.I, reg.59, reg.60, reg.64, reg.66, reg.67, sch.3.para.1(2), sch.4 — 2003-02-28 — everywhere, fully — provision_dated",
+        "reg.65, reg.65 — 2003-02-28 — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_nisi_2003_419/6dab17569c": {
@@ -1012,8 +1055,8 @@
     "UK_nisi_2006_2957/d8dc8de73d": {
       "class": "rules:provision_dated+provision_qualified",
       "rules": [
-        "reg.1, reg.2, reg.3(5), reg.4, reg.5, reg.6, reg.9(2), reg.11(3), reg.14, pt.150, reg.15, reg.16 — 2007-01-14 — everywhere, fully — provision_dated",
-        "reg.7, reg.10(3), sch.1.para.4, sch.1.para.5, sch.1.para.8, sch.1.para.17 — 2007-01-14 — everywhere, in relation to — provision_qualified"
+        "reg.1, reg.2, reg.3(5), reg.4, reg.5, reg.6, reg.9(2), reg.11(3), reg.14, pt.150, reg.15, reg.16, sch.1.para.4, sch.1.para.5, sch.1.para.8, sch.1.para.17 — 2007-01-14 — everywhere, fully — provision_dated",
+        "reg.7, reg.10(3) — 2007-01-14 — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_nisi_2006_3336/4a85ae7b80": {
@@ -1228,15 +1271,7 @@
         "all — 2009-07-24 — everywhere, fully — clause_date"
       ]
     },
-    "UK_nisr_2009_35/bcb3fd3622": {
-      "class": "none",
-      "rules": []
-    },
     "UK_nisr_2010_160/991c89c5f3": {
-      "class": "none",
-      "rules": []
-    },
-    "UK_nisr_2010_27/7befe09078": {
       "class": "none",
       "rules": []
     },
@@ -1260,6 +1295,10 @@
       "class": "none",
       "rules": []
     },
+    "UK_nisr_2012_187/9193a05b98": {
+      "class": "none",
+      "rules": []
+    },
     "UK_nisr_2012_187/f3d37fa81a": {
       "class": "law:clause_staged",
       "rules": [
@@ -1280,6 +1319,19 @@
       "class": "law:clause_date",
       "rules": [
         "all — 2013-09-01 — everywhere, fully — clause_date"
+      ]
+    },
+    "UK_nisr_2013_48/8d7c73a1d1": {
+      "class": "law:clause_date",
+      "rules": [
+        "all — 2013-04-05 — everywhere, fully — clause_date"
+      ]
+    },
+    "UK_nisr_2013_48/d63c37ce9e": {
+      "class": "rules:provision_dated+provision_qualified",
+      "rules": [
+        "reg.4(7), reg.6 — 2015-04-05 — everywhere, fully — provision_dated",
+        "reg.8 — 2015-04-05 — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_nisr_2014_301/517806f56f": {
@@ -1326,10 +1378,6 @@
         "all — unread — everywhere, fully — clause_unread"
       ]
     },
-    "UK_nisr_2016_76/45a92d1ef7": {
-      "class": "unread",
-      "rules": []
-    },
     "UK_nisr_2017_229/a8e0308ba1": {
       "class": "none",
       "rules": []
@@ -1372,6 +1420,12 @@
         "all — 2020-12-31 — everywhere, fully — clause_named_day"
       ]
     },
+    "UK_nisr_2020_340/1d21a1045b": {
+      "class": "law:clause_named_day",
+      "rules": [
+        "all — 2020-12-31 — everywhere, fully — clause_named_day"
+      ]
+    },
     "UK_nisr_2021_98/d53a9a2080": {
       "class": "none",
       "rules": []
@@ -1406,6 +1460,12 @@
       "class": "law:clause_date",
       "rules": [
         "all — 2005-04-01 — everywhere, fully — clause_date"
+      ]
+    },
+    "UK_ssi_2005_342/20a7b9be4b": {
+      "class": "law:tied_to_other_law",
+      "rules": [
+        "all — 2005-08-02 — everywhere, fully — tied_to_other_law"
       ]
     },
     "UK_ssi_2005_344/605012d87d": {
@@ -1507,12 +1567,6 @@
         "all — 2009-12-31 — everywhere, fully — clause_date"
       ]
     },
-    "UK_ssi_2010_204/3b88ae06e6": {
-      "class": "law:clause_date",
-      "rules": [
-        "all — 2010-06-11 — everywhere, fully — clause_date"
-      ]
-    },
     "UK_ssi_2010_204/771ac12b2e": {
       "class": "none",
       "rules": []
@@ -1532,6 +1586,12 @@
     "UK_ssi_2011_24/7f060214e8": {
       "class": "none",
       "rules": []
+    },
+    "UK_ssi_2011_369/a3d75e2cf7": {
+      "class": "law:clause_unread",
+      "rules": [
+        "all — unread — everywhere, fully — clause_unread"
+      ]
     },
     "UK_ssi_2013_121/c7a9b9deb6": {
       "class": "none",
@@ -1598,6 +1658,10 @@
         "pt.3 — 2022-01-01 — everywhere, fully — provision_dated"
       ]
     },
+    "UK_ssi_2020_434/558205abbf": {
+      "class": "none",
+      "rules": []
+    },
     "UK_ssi_2022_136/3e6af5f115": {
       "class": "law:clause_date",
       "rules": [
@@ -1633,6 +1697,12 @@
       "class": "law:clause_staged",
       "rules": [
         "all — 2026-01-01 — everywhere, fully — clause_staged"
+      ]
+    },
+    "UK_ssi_2026_50/148f6d1bc2": {
+      "class": "rules:provision_qualified",
+      "rules": [
+        "reg.1, reg.2, reg.3 — 2026-02-04 — everywhere, for making secondary legislation — provision_qualified"
       ]
     },
     "UK_ukcm_1947_2/2a41ddc003": {
@@ -1688,7 +1758,8 @@
     "UK_ukpga_1954_70/8168951abc": {
       "class": "law:by_order",
       "rules": [
-        "all — appointed (by order) — everywhere, fully — by_order"
+        "all except s.172, s.190 — appointed (by order) — everywhere, fully — by_order",
+        "s.172, s.190 — 1954-11-25 — everywhere, fully — act_enactment"
       ]
     },
     "UK_ukpga_1956_52/41a0e89116": {
@@ -1726,7 +1797,9 @@
     "UK_ukpga_1962_58/9bd963ee5d": {
       "class": "law:clause_staged",
       "rules": [
-        "all — 1962-08-01 — everywhere, fully — clause_staged"
+        "all — 1962-08-01 — everywhere, fully — clause_staged",
+        "rest except s.70 — appointed (by order) — everywhere, fully — provision_by_order",
+        "s.41 — 1962-08-01 — everywhere, fully — provision_dated"
       ]
     },
     "UK_ukpga_1963_33/1fa32cad48": {
@@ -1813,7 +1886,9 @@
     "UK_ukpga_1968_64/2d97e5dd6d": {
       "class": "law:clause_staged",
       "rules": [
-        "all — 1968-10-25 — everywhere, fully — clause_staged"
+        "all — 1968-10-25 — everywhere, fully — clause_staged",
+        "rest except s.20 — appointed (by order) — everywhere, fully — provision_by_order",
+        "s.13, s.14, s.15, s.16, s.17, s.18, s.19, s.20, sch except s.20(2) — 1968-10-25 — everywhere, fully — provision_dated"
       ]
     },
     "UK_ukpga_1968_72/807ba01b43": {
@@ -1873,7 +1948,9 @@
     "UK_ukpga_1969_10/bc9502586b": {
       "class": "rules:provision_by_order",
       "rules": [
-        "pt.I — appointed (by order) — everywhere, fully — provision_by_order"
+        "pt.I — appointed (by order) — everywhere, fully — provision_by_order",
+        "pt.II — appointed (by order) — E+W, fully — provision_by_order",
+        "pt.II — appointed (by order) — S, fully — provision_by_order"
       ]
     },
     "UK_ukpga_1969_19/7807cab160": {
@@ -1909,7 +1986,7 @@
     "UK_ukpga_1971_78/07c46b2589": {
       "class": "rules:provision_qualified",
       "rules": [
-        "pt.II except s.18, sch.23.pt.I — unread — everywhere, in relation to — provision_qualified"
+        "pt.II except s.18, sch.23.pt.I — appointed (by order) — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_ukpga_1971_78/4615e1b723": {
@@ -2109,8 +2186,8 @@
     "UK_ukpga_1975_59/819c0b07fc": {
       "class": "rules:provision_dated+provision_qualified",
       "rules": [
-        "s.12, s.13, sch.5, sch.6 — 1975-08-07 — everywhere, fully — provision_dated",
-        "s.14, s.14(5), sch.6 — 1975-08-07 — everywhere, in relation to — provision_qualified"
+        "s.12, s.13, sch.5, sch.6.pt.I, sch.6.pt.II — 1975-08-07 — everywhere, fully — provision_dated",
+        "s.14, s.14(5), sch.6.pt.III, sch.6.pt.IV — 1975-08-07 — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_ukpga_1975_74/8e17861aad": {
@@ -2193,11 +2270,7 @@
       "class": "none",
       "rules": []
     },
-    "UK_ukpga_1978_30/e0150b6e0e": {
-      "class": "none",
-      "rules": []
-    },
-    "UK_ukpga_1978_55/f64e799d2e": {
+    "UK_ukpga_1978_55/833a246ea5": {
       "class": "none",
       "rules": []
     },
@@ -2210,8 +2283,8 @@
     "UK_ukpga_1980_34/1fca3e05bd": {
       "class": "rules:provision_dated+provision_qualified",
       "rules": [
-        "s.69, sch.9.pt.II — 1980-06-30 — everywhere, in relation to — provision_qualified",
-        "s.70 — 1980-06-30 — everywhere, fully — provision_dated"
+        "s.69 — 1980-06-30 — everywhere, in relation to — provision_qualified",
+        "s.70, sch.9.pt.II — 1980-06-30 — everywhere, fully — provision_dated"
       ]
     },
     "UK_ukpga_1980_45/c13c7eec8f": {
@@ -2235,15 +2308,15 @@
         "s.35 — 1981-05-01 — everywhere, in relation to — provision_qualified"
       ]
     },
-    "UK_ukpga_1980_65/1f0b24c45d": {
+    "UK_ukpga_1980_65/545a812f28": {
+      "class": "none",
+      "rules": []
+    },
+    "UK_ukpga_1980_65/8d8fcd88b5": {
       "class": "rules:provision_qualified",
       "rules": [
         "s.120 — 1975-11-12 — S, fully — provision_qualified"
       ]
-    },
-    "UK_ukpga_1980_65/545a812f28": {
-      "class": "none",
-      "rules": []
     },
     "UK_ukpga_1980_65/b4f5e5b061": {
       "class": "law:clause_staged",
@@ -2361,8 +2434,8 @@
       "class": "law:clause_staged",
       "rules": [
         "all — 1981-11-30 — everywhere, fully — clause_staged",
-        "pt.II, s.59, s.60, s.61, s.62, s.65, s.66 except s.29, s.30, s.31[E+W], s.31, s.31[S], s.32[E+W], s.32, s.41, s.46, h.47, s.47, s.48, sch.13 — 1981-11-30 — everywhere, fully — provision_dated",
-        "s.72(4), s.72(6), s.72(14), s.73(1), sch.17.pt.II, pt.IV — 1981-11-30 — everywhere, in relation to — provision_qualified"
+        "pt.II, s.59, s.60, s.61, s.62, s.65, s.66, pt.IV except s.29, s.30, s.31[E+W], s.31, s.31[S], s.32[E+W], s.32, s.41, s.46, h.47, s.47, s.48, sch.13, s.72(4), s.72(6), s.72(14), s.73(1) — 1981-11-30 — everywhere, fully — provision_dated",
+        "s.73(1) — 1981-11-30 — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_ukpga_1981_69/ebaa6a68a9": {
@@ -2452,7 +2525,8 @@
     "UK_ukpga_1982_39/d252e32603": {
       "class": "law:clause_unread",
       "rules": [
-        "all — unread — everywhere, fully — clause_unread"
+        "all — unread — everywhere, fully — clause_unread",
+        "s.151, sch.20 — unread — everywhere, fully — provision_unread"
       ]
     },
     "UK_ukpga_1982_43/affa151a4f": {
@@ -2474,10 +2548,6 @@
       "rules": []
     },
     "UK_ukpga_1982_49/73885a20b2": {
-      "class": "none",
-      "rules": []
-    },
-    "UK_ukpga_1982_53/6d507d95e6": {
       "class": "none",
       "rules": []
     },
@@ -2510,17 +2580,11 @@
         "rest except s.13 — 1983-08-13 — everywhere, fully — provision_dated"
       ]
     },
-    "UK_ukpga_1984_12/41d4a8a459": {
-      "class": "rules:provision_qualified",
-      "rules": [
-        "s.109(4), sch.6, sch.5.pt.II, s.109(6), sch.7.pt.II — unread — everywhere, in relation to — provision_qualified"
-      ]
-    },
     "UK_ukpga_1984_12/4dd43fa473": {
       "class": "rules:provision_by_order+provision_qualified",
       "rules": [
-        "s.109(4), sch.5.pt.I, s.109(6), sch.7.pt.I — unread — everywhere, in relation to — provision_qualified",
-        "s.2, s.3, s.4, pt.II, pt.III, pt.IV, s.93, s.94, s.95, s.97, s.98, s.99, s.101, s.102, s.103, s.106, s.109(1), sch.4, s.109(2), s.109(3), s.109(7) — appointed (by order) — everywhere, fully — provision_by_order"
+        "s.109(4), s.109(6) — appointed (by order) — everywhere, in relation to — provision_qualified",
+        "s.2, s.3, s.4, pt.II, pt.III, pt.IV, s.93, s.94, s.95, s.97, s.98, s.99, s.101, s.102, s.103, s.106, s.109(1), sch.4, s.109(2), s.109(3), s.109(7), sch.5.pt.I, sch.7.pt.I — appointed (by order) — everywhere, fully — provision_by_order"
       ]
     },
     "UK_ukpga_1984_12/cad12244d4": {
@@ -2528,15 +2592,10 @@
       "rules": []
     },
     "UK_ukpga_1984_12/ee0d8ee798": {
-      "class": "rules:provision_qualified",
+      "class": "rules:provision_qualified+provision_unread",
       "rules": [
-        "s.109(6), sch.7.pt.III — unread — everywhere, in relation to — provision_qualified"
-      ]
-    },
-    "UK_ukpga_1984_54/4db25c23a7": {
-      "class": "law:clause_date",
-      "rules": [
-        "all except s.157 — 1985-01-01 — everywhere, fully — clause_date"
+        "s.109(6) — unread — everywhere, in relation to — provision_qualified",
+        "sch.7.pt.III — unread — everywhere, fully — provision_unread"
       ]
     },
     "UK_ukpga_1984_54/8e1924db91": {
@@ -2552,6 +2611,12 @@
       "rules": [
         "s.156(3), sch.11, sch.10 — appointed (by order) — everywhere, in relation to — provision_qualified",
         "s.36, s.37, s.38, s.39, s.39A, s.39B, s.39BA, s.39C, s.40, s.126, sch.7 — appointed (by order) — everywhere, fully — provision_by_order"
+      ]
+    },
+    "UK_ukpga_1984_54/be76ef6cc8": {
+      "class": "law:clause_date",
+      "rules": [
+        "all except s.157 — 1985-01-01 — everywhere, fully — clause_date"
       ]
     },
     "UK_ukpga_1984_54/e7cbee3280": {
@@ -2616,15 +2681,10 @@
       "rules": []
     },
     "UK_ukpga_1986_44/10ac673d30": {
-      "class": "rules:provision_qualified",
+      "class": "rules:provision_qualified+provision_unread",
       "rules": [
-        "s.67(4), sch.9.pt.III — unread — everywhere, in relation to — provision_qualified"
-      ]
-    },
-    "UK_ukpga_1986_44/5046c8a401": {
-      "class": "rules:provision_qualified",
-      "rules": [
-        "s.67(3), sch.8.pt.II, s.67(4), sch.9.pt.II — unread — everywhere, in relation to — provision_qualified"
+        "s.67(4) — unread — everywhere, in relation to — provision_qualified",
+        "sch.9.pt.III — unread — everywhere, fully — provision_unread"
       ]
     },
     "UK_ukpga_1986_44/5fb1a9d7eb": {
@@ -2636,8 +2696,8 @@
     "UK_ukpga_1986_44/cab688f9fa": {
       "class": "rules:provision_by_order+provision_qualified",
       "rules": [
-        "pt.I, s.66, s.67(1), sch.7, s.67(2) except s.1, s.2 — appointed (by order) — everywhere, fully — provision_by_order",
-        "s.67(3), sch.8.pt.I, s.67(4), sch.9.pt.I — unread — everywhere, in relation to — provision_qualified"
+        "pt.I, s.66, s.67(1), sch.7, s.67(2), sch.8.pt.I, sch.9.pt.I except s.1, s.2 — appointed (by order) — everywhere, fully — provision_by_order",
+        "s.67(3), s.67(4) — appointed (by order) — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_ukpga_1986_45/1152726fbe": {
@@ -2677,7 +2737,8 @@
       "class": "law:clause_unread",
       "rules": [
         "all — unread — everywhere, fully — clause_unread",
-        "s.24(1)(j), s.24(3), sch.12.pt.I, sch.5.para.10..sch.5.para.13 — unread — S, fully — provision_qualified"
+        "s.21, s.24(1)(j), sch.12.pt.I, sch.5.para.10..sch.5.para.13, s.52, pt.VII — unread — everywhere, fully — provision_unread",
+        "s.24(3) — unread — S, fully — provision_qualified"
       ]
     },
     "UK_ukpga_1986_63/fcf442d5c4": {
@@ -2884,6 +2945,13 @@
         "all — unread — everywhere, fully — clause_unread"
       ]
     },
+    "UK_ukpga_1989_13/93eeac7b09": {
+      "class": "rules:provision_qualified+provision_unread",
+      "rules": [
+        "s.7(1) — unread — everywhere, in relation to — provision_qualified",
+        "sch.1.pt.II — unread — everywhere, fully — provision_unread"
+      ]
+    },
     "UK_ukpga_1989_15/21ffbe8ee8": {
       "class": "rules:provision_by_order",
       "rules": [
@@ -2893,8 +2961,8 @@
     "UK_ukpga_1989_15/7d10821fb7": {
       "class": "rules:provision_qualified",
       "rules": [
-        "pt.III, pt.IV, pt.V, s.190, sch.26, s.190, sch.27.pt.I — unread — everywhere, in relation to — provision_qualified",
-        "s.31, sch.5, sch.6, pt.II, s.97 — unread — everywhere, in relation to — provision_qualified"
+        "pt.III, pt.IV, pt.V, s.190, s.190 — appointed (by order) — everywhere, in relation to — provision_qualified",
+        "s.31, sch.5, sch.6, pt.II.ch.II, pt.II.ch.III, pt.II.ch.IV, pt.II.ch.V, s.97, sch.26, sch.27.pt.I — appointed (by order) — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_ukpga_1989_15/a024c30290": {
@@ -2916,7 +2984,7 @@
       "class": "none",
       "rules": []
     },
-    "UK_ukpga_1989_22/2e5951bcd0": {
+    "UK_ukpga_1989_22/f72e21c881": {
       "class": "none",
       "rules": []
     },
@@ -2969,6 +3037,10 @@
         "s.6 — 1990-01-16 — everywhere, fully — provision_dated",
         "s.7 — 1990-01-16 — everywhere, fully — provision_dated"
       ]
+    },
+    "UK_ukpga_1989_43/71d083503d": {
+      "class": "none",
+      "rules": []
     },
     "UK_ukpga_1990_10/c5f19e6c24": {
       "class": "none",
@@ -3267,7 +3339,7 @@
         "s.9, s.2, s.3, s.4, s.5, sch.3, sch.4, sch.5 — appointed (by order) — everywhere, fully — provision_by_order"
       ]
     },
-    "UK_ukpga_1994_20/bb8e6e3aa5": {
+    "UK_ukpga_1994_20/d6d4315b82": {
       "class": "rules:provision_by_order",
       "rules": [
         "sch.1, sch.2 — appointed (by order) — everywhere, fully — provision_by_order"
@@ -3285,8 +3357,9 @@
       "rules": []
     },
     "UK_ukpga_1994_21/e4db111995": {
-      "class": "rules:provision_qualified",
+      "class": "rules:provision_qualified+provision_unread",
       "rules": [
+        "s.10, s.11, s.18, s.23, s.31, s.32, s.33, s.34, s.36, s.38, s.39, s.40, s.41, s.42, s.43, s.44, s.48, s.49, s.50, s.51, s.52, s.53, s.55, sch.6, sch.7, sch.8, sch.9, sch.11.pt.II — unread — everywhere, fully — provision_unread",
         "s.67 — unread — everywhere, in relation to — provision_qualified"
       ]
     },
@@ -3305,12 +3378,6 @@
       "rules": [
         "s.3, sch.1C, s.13, s.50 — 1994-07-21 — everywhere, fully — provision_dated",
         "s.3, sch.2, s.26, s.60, s.63, sch.5.para.17..sch.5.para.20, s.44, sch.5.para.17..sch.5.para.20 — 1994-07-21 — everywhere, in relation to — provision_qualified"
-      ]
-    },
-    "UK_ukpga_1994_29/e076014b65": {
-      "class": "rules:provision_qualified",
-      "rules": [
-        "s.93, sch.8, sch.9.pt.II, pt.IV — appointed (by order) — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_ukpga_1994_39/303ae68ca5": {
@@ -3455,15 +3522,10 @@
       ]
     },
     "UK_ukpga_1996_53/c958a7d804": {
-      "class": "rules:provision_qualified",
+      "class": "rules:provision_dated+provision_qualified",
       "rules": [
-        "s.126, s.127, s.128, s.129, s.130, s.141, s.142, s.143, s.144, s.145, s.147, sch.3.pt.III — 1996-09-24 — everywhere, in relation to — provision_qualified"
-      ]
-    },
-    "UK_ukpga_1996_56/0e77c432f2": {
-      "class": "rules:provision_qualified",
-      "rules": [
-        "s.8, s.317(6), s.348, s.528, s.582(1), s.582(2), sch.37.pt.II, sch.38.pt.II — appointed (by order) — everywhere, in relation to — provision_qualified"
+        "s.126, s.127, s.128, s.129, s.130, s.141, s.142, s.143, s.144, s.145, sch.3.pt.III — 1996-09-24 — everywhere, fully — provision_dated",
+        "s.147 — 1996-09-24 — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_ukpga_1996_6/3fd30b192f": {
@@ -3581,8 +3643,8 @@
     "UK_ukpga_1998_31/baad5d3680": {
       "class": "rules:provision_dated+provision_qualified",
       "rules": [
-        "s.1, s.2, s.3, s.4, s.20, s.21, s.82, s.84, s.85, s.130, s.145, s.138, s.139, s.141, s.142, s.143, s.144, sch.2, sch.11, sch.32 — 1998-07-24 — everywhere, fully — provision_dated",
-        "s.140(1), sch.30.para.224 — 1998-07-24 — everywhere, in relation to — provision_qualified"
+        "s.1, s.2, s.3, s.4, s.20, s.21, s.82, s.84, s.85, s.130, s.145, s.138, s.139, s.141, s.142, s.143, s.144, sch.2, sch.11.pt.I, sch.11.pt.III, sch.30.para.224, sch.32 — 1998-07-24 — everywhere, fully — provision_dated",
+        "s.140(1) — 1998-07-24 — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_ukpga_1998_31/c62b6fd7f4": {
@@ -3622,8 +3684,8 @@
       "class": "law:clause_staged",
       "rules": [
         "all — 1998-11-19 — everywhere, fully — clause_staged",
-        "s.3, s.55, s.86, s.93, s.96, s.98, s.101 — 1998-11-19 — everywhere, fully — provision_dated",
-        "s.99, sch.13.para.20, s.100(2) — 1998-11-19 — everywhere, in relation to — provision_qualified"
+        "s.3, s.55, s.86, s.93, s.96, s.98, sch.13.para.20, s.101 — 1998-11-19 — everywhere, fully — provision_dated",
+        "s.99, s.100(2) — 1998-11-19 — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_ukpga_1998_8/c78903c54f": {
@@ -3648,7 +3710,7 @@
     "UK_ukpga_1999_22/fe6d379adb": {
       "class": "rules:provision_dated",
       "rules": [
-        "s.32, s.33, s.34, pt.IV, s.74, s.75, s.76, s.81, s.82, s.84, s.86, s.87, sch.10, s.104, sch.14, s.107 except s.66, s.67(2), s.71, sch.9, sch.15 — 1999-09-27 — everywhere, fully — provision_dated"
+        "s.32, s.33, s.34, pt.IV, s.74, s.75, s.76, s.81, s.82, s.84, s.86, s.87, sch.10, s.104, sch.14, sch.15.pt.III, sch.15.pt.V, s.107 except s.66, s.67(2), s.71, sch.9 — 1999-09-27 — everywhere, fully — provision_dated"
       ]
     },
     "UK_ukpga_1999_24/32ea3818bb": {
@@ -3676,10 +3738,6 @@
       "class": "none",
       "rules": []
     },
-    "UK_ukpga_1999_30/24aee28066": {
-      "class": "none",
-      "rules": []
-    },
     "UK_ukpga_1999_30/4ee0fe68fe": {
       "class": "rules:provision_by_order+provision_qualified",
       "rules": [
@@ -3692,6 +3750,10 @@
       "rules": [
         "all — appointed (by order) — everywhere, fully — by_order"
       ]
+    },
+    "UK_ukpga_1999_30/748f9bdf67": {
+      "class": "none",
+      "rules": []
     },
     "UK_ukpga_1999_30/bceee51730": {
       "class": "none",
@@ -3717,12 +3779,6 @@
         "all — appointed (by order) — everywhere, fully — by_order"
       ]
     },
-    "UK_ukpga_2000_21/0f2e97e2a9": {
-      "class": "rules:provision_by_order",
-      "rules": [
-        "pt.I, pt.III, s.89, s.90, s.92, s.94, s.98, s.100(1), s.101, s.104, s.105, s.106, s.107, s.108, s.109, s.114, s.115, s.116, s.117, s.118, s.119, s.120, s.121, s.122, s.132, s.133, s.134, s.135, s.136, s.146, s.147, sch.10.pt.IV — appointed (by order) — everywhere, fully — provision_by_order"
-      ]
-    },
     "UK_ukpga_2000_21/4a24c495dd": {
       "class": "none",
       "rules": []
@@ -3745,7 +3801,7 @@
     "UK_ukpga_2000_37/2732e22c3e": {
       "class": "rules:provision_dated",
       "rules": [
-        "s.1, s.3, s.3A, h.4, s.4, s.5, s.6, s.7, s.8, s.9, s.9A, s.10, s.11, s.15, s.16, h.17, s.17, s.19, s.40, s.41, s.42, s.43, s.44, s.45, s.52, s.58, s.59, s.64, s.65, h.66, s.66, s.67, s.81(2), s.81(3), s.94, s.95, s.98, pt.I, pt.III — 2001-01-30 — everywhere, fully — provision_dated"
+        "s.1, sch.1, s.3, s.3A, h.4, s.4, s.5, s.6, s.7, s.8, s.9, s.9A, s.10, s.11, sch.3, s.15, s.16, h.17, s.17, s.19, pt.I.ch.II, pt.I.ch.III, s.40, s.41, s.42, s.43, s.44, s.45, s.52, s.58, s.59, s.64, s.65, h.66, s.66, s.67, sch.7, pt.III, sch.8, sch.9, sch.10, sch.11, sch.12, sch.16.pt.III, sch.16.pt.IV, s.94, s.95, s.98 except sch.7.para.6, sch.7.para.7, s.81(2), s.81(3) — 2001-01-30 — everywhere, fully — provision_dated"
       ]
     },
     "UK_ukpga_2000_37/448989e576": {
@@ -3766,8 +3822,8 @@
     "UK_ukpga_2001_10/f143f45c94": {
       "class": "rules:provision_dated+provision_qualified",
       "rules": [
-        "s.4, s.5, s.9, s.42(2), s.42(3), s.42(4) — 2001-05-11 — everywhere, fully — provision_dated",
-        "s.42(1), sch.8.para.6..sch.8.para.10, sch.8.para.13(1)..sch.8.para.13(4), sch.8.para.14(3) — 2001-05-11 — everywhere, in relation to — provision_qualified"
+        "s.4, s.5, s.9, s.42(2), s.42(3), s.42(4), sch.8.para.6..sch.8.para.10, sch.8.para.13(1)..sch.8.para.13(4), sch.8.para.14(3) — 2001-05-11 — everywhere, fully — provision_dated",
+        "s.42(1) — 2001-05-11 — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_ukpga_2001_16/93682e5ed1": {
@@ -3792,8 +3848,10 @@
       ]
     },
     "UK_ukpga_2002_21/0fa06bab85": {
-      "class": "unread",
-      "rules": []
+      "class": "rules:provision_by_order",
+      "rules": [
+        "rest except s.61, s.54(1), s.54(2), s.62, s.63, s.64, s.65, s.66, s.67, s.68, s.69, s.70 — appointed (by order) — everywhere, fully — provision_by_order"
+      ]
     },
     "UK_ukpga_2002_23/08d8ffc537": {
       "class": "none",
@@ -3854,19 +3912,13 @@
     "UK_ukpga_2002_32/2de7927363": {
       "class": "rules:provision_dated",
       "rules": [
-        "s.216, s.13, s.52(7), s.52(8), s.52(9), s.52(10), s.147, s.186, s.190, s.210, s.211, s.212, s.213, s.214, s.217 — 2002-07-24 — everywhere, fully — provision_dated"
+        "s.13, s.52(7), s.52(8), s.52(9), s.52(10), s.147, s.186, s.190, s.210, s.211, s.212, s.213, s.214, s.216, s.217 — 2002-07-24 — everywhere, fully — provision_dated"
       ]
     },
     "UK_ukpga_2002_32/7d3da7d492": {
       "class": "law:clause_staged",
       "rules": [
         "all — 2002-07-24 — everywhere, fully — clause_staged"
-      ]
-    },
-    "UK_ukpga_2002_32/d083ff1944": {
-      "class": "rules:provision_qualified",
-      "rules": [
-        "s.65, s.66, s.67, s.68, s.69, s.70, s.71, s.73, s.119, s.120, s.121, s.122, s.122A, s.123, s.124, s.125, s.126, s.127, s.127A, s.128, s.129, s.130, s.209, s.189, s.215(1), s.215(2), sch.22.pt.1, sch.17.para.1..sch.17.para.4, sch.17.para.9, sch.21.para.14, sch.21.para.17, sch.21.para.18, sch.21.para.56, sch.21.para.91, sch.21.para.119, pt.6 — appointed (by order) — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_ukpga_2003_17/f48c520bc0": {
@@ -4121,12 +4173,6 @@
         "s.261(4), sch.30 — appointed (by order) — everywhere, in relation to — provision_qualified"
       ]
     },
-    "UK_ukpga_2004_33/52fcc1352a": {
-      "class": "rules:provision_by_order",
-      "rules": [
-        "s.261(3), sch.29 — appointed (by order) — everywhere, fully — provision_by_order"
-      ]
-    },
     "UK_ukpga_2004_33/9717a2523e": {
       "class": "rules:provision_qualified",
       "rules": [
@@ -4137,6 +4183,13 @@
       "class": "rules:provision_by_order",
       "rules": [
         "s.254(1), sch.24 — appointed (by order) — everywhere, fully — provision_by_order"
+      ]
+    },
+    "UK_ukpga_2004_33/ca4df4d56a": {
+      "class": "rules:provision_qualified+provision_unread",
+      "rules": [
+        "s.254(1) — unread — everywhere, in relation to — provision_qualified",
+        "s.263(9) — unread — everywhere, fully — provision_unread"
       ]
     },
     "UK_ukpga_2004_33/d63385ee5e": {
@@ -4216,10 +4269,6 @@
         "s.105, sch.11, sch.12 — appointed (by order) — everywhere, in relation to — provision_qualified"
       ]
     },
-    "UK_ukpga_2006_16/44ff6c0630": {
-      "class": "none",
-      "rules": []
-    },
     "UK_ukpga_2006_16/5c95fc9419": {
       "class": "rules:provision_by_order",
       "rules": [
@@ -4243,9 +4292,10 @@
       ]
     },
     "UK_ukpga_2006_28/576005404a": {
-      "class": "rules:provision_qualified",
+      "class": "rules:provision_by_order+provision_qualified",
       "rules": [
-        "s.76, s.77, pt.1.ch.1, s.80(1), sch.8.para.24(a) — appointed (by order) — W, fully — provision_qualified"
+        "s.76, s.77, pt.1.ch.1, s.80(1) — appointed (by order) — W, fully — provision_qualified",
+        "sch.8.para.24(a) — appointed (by order) — W, fully — provision_by_order"
       ]
     },
     "UK_ukpga_2006_28/904fa3034e": {
@@ -4291,6 +4341,20 @@
       "class": "none",
       "rules": []
     },
+    "UK_ukpga_2006_48/cfe7f8bb1e": {
+      "class": "rules:provision_by_order+provision_qualified",
+      "rules": [
+        "s.22 — appointed (by order) — W, fully — provision_qualified",
+        "sch.9.para.7(2) — appointed (by order) — everywhere, fully — provision_by_order"
+      ]
+    },
+    "UK_ukpga_2006_48/edcf04efbc": {
+      "class": "rules:provision_qualified",
+      "rules": [
+        "s.19, s.20, sch.8, sch.14.para.38, s.27, sch.10, sch.15.pt.3 — appointed (by order) — W, fully — provision_qualified",
+        "s.52, s.52 — appointed (by order) — W, fully — provision_qualified"
+      ]
+    },
     "UK_ukpga_2006_48/f8d102a68e": {
       "class": "none",
       "rules": []
@@ -4302,9 +4366,10 @@
       ]
     },
     "UK_ukpga_2006_49/fc0eea7030": {
-      "class": "rules:provision_qualified",
+      "class": "rules:provision_dated+provision_qualified",
       "rules": [
-        "s.51, s.58, s.60, s.59 — 2006-11-08 — everywhere, in relation to — provision_qualified"
+        "s.51, s.58, s.60 — 2006-11-08 — everywhere, fully — provision_dated",
+        "s.59 — 2006-11-08 — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_ukpga_2006_51/a3cc34e247": {
@@ -4346,8 +4411,22 @@
     "UK_ukpga_2007_28/8f1ad07e48": {
       "class": "rules:provision_dated+provision_qualified",
       "rules": [
-        "pt.2, s.212, s.213, s.214, s.215, s.216(3), s.216(4), s.216(5), s.217, s.218, s.235, sch.17 — 2007-12-30 — everywhere, fully — provision_dated",
-        "s.245(1), pt.3, s.116, s.241, sch.18.pt.5, pt.5.ch.1, s.141, s.142, s.143, s.241, sch.18.pt.8 — 2007-12-30 — everywhere, in relation to — provision_qualified"
+        "pt.2, sch.18.pt.5, pt.5.ch.1, s.141, s.142, s.143, sch.18.pt.8, s.212, s.213, s.214, s.215, s.216(3), s.216(4), s.216(5), s.217, s.218, s.235, sch.17 except s.116 — 2007-12-30 — everywhere, fully — provision_dated",
+        "s.245(1), pt.3, s.241, s.241 — 2007-12-30 — everywhere, in relation to — provision_qualified"
+      ]
+    },
+    "UK_ukpga_2007_28/c89bf8242f": {
+      "class": "rules:provision_qualified",
+      "rules": [
+        "s.137, s.140, s.210, sch.18.pt.8 — appointed (by order) — W, fully — provision_qualified",
+        "s.241 — appointed (by order) — W, fully — provision_qualified"
+      ]
+    },
+    "UK_ukpga_2007_28/fccce501cd": {
+      "class": "rules:provision_by_order+provision_qualified",
+      "rules": [
+        "s.126, sch.18.pt.6 — appointed (by order) — W, fully — provision_by_order",
+        "s.241 — appointed (by order) — W, fully — provision_qualified"
       ]
     },
     "UK_ukpga_2007_29/6c46bf3336": {
@@ -4369,9 +4448,9 @@
       ]
     },
     "UK_ukpga_2008_23/792546f064": {
-      "class": "rules:provision_qualified",
+      "class": "rules:provision_by_order",
       "rules": [
-        "s.7, s.17, s.18, s.31, s.32, pt.1, pt.2, pt.3, pt.4, s.42, sch.4 — appointed (by order) — W, fully — provision_qualified"
+        "s.7, s.17, s.18, s.31, s.32, pt.1, pt.2, pt.3, pt.4, s.42, sch.4 — appointed (by order) — W, fully — provision_by_order"
       ]
     },
     "UK_ukpga_2008_23/86845634df": {
@@ -4446,8 +4525,8 @@
     "UK_ukpga_2008_32/6f408012d2": {
       "class": "rules:provision_dated+provision_qualified",
       "rules": [
-        "s.102, s.110, s.106, s.111, s.112, s.113 — 2008-11-26 — everywhere, fully — provision_dated",
-        "s.37, s.38(1), s.88, s.89, s.90, s.91, s.104, s.105, s.90(3), sch.4, s.107(1), sch.5.para.5 — 2008-11-26 — everywhere, in relation to — provision_qualified"
+        "s.102, s.110, s.106, s.111, s.112, s.113, sch.5.para.5 — 2008-11-26 — everywhere, fully — provision_dated",
+        "s.37, s.38(1), s.88, s.89, s.90, s.91, s.104, s.105, s.90(3), sch.4, s.107(1) — 2008-11-26 — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_ukpga_2008_4/c1d1e35162": {
@@ -4497,8 +4576,11 @@
       "rules": []
     },
     "UK_ukpga_2009_23/75add78c43": {
-      "class": "none",
-      "rules": []
+      "class": "rules:provision_by_order",
+      "rules": [
+        "s.108(1) — appointed (with another provision) — everywhere, fully — provision_by_order",
+        "s.73(1) — appointed (with another provision) — everywhere, fully — provision_by_order"
+      ]
     },
     "UK_ukpga_2009_23/892747e96b": {
       "class": "none",
@@ -4525,8 +4607,8 @@
     "UK_ukpga_2009_25/d6c75fae84": {
       "class": "rules:provision_dated+provision_qualified",
       "rules": [
-        "pt.3.ch.2 — 2010-01-01 — everywhere, fully — provision_dated",
-        "s.177(1), sch.21.para.69..sch.21.para.71, s.177(2), sch.22.para.16..sch.22.para.22, s.178, sch.23.pt.3 — 2010-01-01 — everywhere, in relation to — provision_qualified"
+        "pt.3.ch.2, sch.21.para.69..sch.21.para.71, sch.22.para.16..sch.22.para.22, sch.23.pt.3 — 2010-01-01 — everywhere, fully — provision_dated",
+        "s.177(1), s.177(2), s.178 — 2010-01-01 — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_ukpga_2009_26/dad40642c6": {
@@ -4586,17 +4668,13 @@
     "UK_ukpga_2010_29/865ff5ec7c": {
       "class": "law:clause_staged",
       "rules": [
-        "all — 2010-04-08 — everywhere, fully — clause_staged"
+        "all except pt.1, pt.2, s.35, s.36, s.42, s.43, s.44, s.45 — 2010-04-08 — everywhere, fully — clause_staged"
       ]
     },
-    "UK_ukpga_2010_29/cfd00cb464": {
-      "class": "none",
-      "rules": []
-    },
     "UK_ukpga_2010_29/d06a81d90b": {
-      "class": "rules:provision_qualified",
+      "class": "rules:provision_by_order",
       "rules": [
-        "pt.1, pt.2 — appointed (by order) — E, fully — provision_qualified"
+        "pt.1, pt.2 — appointed (by order) — E, fully — provision_by_order"
       ]
     },
     "UK_ukpga_2010_33/772017ae17": {
@@ -4658,8 +4736,10 @@
       ]
     },
     "UK_ukpga_2011_19/e62249b646": {
-      "class": "unread",
-      "rules": []
+      "class": "rules:provision_unread",
+      "rules": [
+        "s.1, sch.1, s.25, s.27, s.28 — unread — everywhere, fully — provision_unread"
+      ]
     },
     "UK_ukpga_2012_10/5df22c26f8": {
       "class": "none",
@@ -4668,6 +4748,24 @@
     "UK_ukpga_2012_19/d069399d36": {
       "class": "none",
       "rules": []
+    },
+    "UK_ukpga_2012_19/f4486cade8": {
+      "class": "rules:provision_dated",
+      "rules": [
+        "sch.10.para.1, sch.10.para.7, pt.3 — 2012-12-19 — everywhere, fully — provision_dated"
+      ]
+    },
+    "UK_ukpga_2012_21/f69dcc14e8": {
+      "class": "rules:provision_unread",
+      "rules": [
+        "s.108, s.113 — unread — everywhere, fully — provision_unread"
+      ]
+    },
+    "UK_ukpga_2013_22/25c3646f7d": {
+      "class": "rules:provision_unread",
+      "rules": [
+        "s.34, s.35, s.36, s.37, s.38, s.39 — unread — everywhere, fully — provision_unread"
+      ]
     },
     "UK_ukpga_2013_22/8c3fbba58a": {
       "class": "law:by_order",
@@ -4689,14 +4787,20 @@
         "s.1, s.2, s.3, s.4, s.5, s.6 — appointed (by order) — S, fully — provision_qualified"
       ]
     },
+    "UK_ukpga_2013_32/44e4b1cc5c": {
+      "class": "rules:provision_dated",
+      "rules": [
+        "pt.1, pt.2.ch.1, pt.2.ch.2, pt.2.ch.3, pt.2.ch.4, s.55, pt.2.ch.9, s.113, s.114(1), s.115, s.116(2), s.118, s.151, s.156, pt.7 — 2013-12-18 — everywhere, fully — provision_dated"
+      ]
+    },
     "UK_ukpga_2013_32/70076985fe": {
       "class": "none",
       "rules": []
     },
-    "UK_ukpga_2014_12/d710a0afb6": {
-      "class": "rules:provision_qualified",
+    "UK_ukpga_2014_14/0c98c70fff": {
+      "class": "law:clause_date",
       "rules": [
-        "s.181(1), sch.11.para.2, sch.11.para.7..sch.11.para.10, sch.11.para.12..sch.11.para.14, sch.11.para.15(4), sch.11.para.16, sch.11.para.18..sch.11.para.20, sch.11.para.47(4), sch.11.para.48 — appointed (by order) — W, fully — provision_qualified"
+        "all — 2014-08-01 — everywhere, fully — clause_date"
       ]
     },
     "UK_ukpga_2014_2/43782edf11": {
@@ -4718,8 +4822,15 @@
     "UK_ukpga_2014_21/789d601f53": {
       "class": "rules:provision_dated+provision_qualified",
       "rules": [
-        "s.22, s.56, sch.7.para.8, s.56, sch.7.para.107 — 2014-07-14 — everywhere, in relation to — provision_qualified",
-        "s.3, s.13, s.15, s.21, s.25(3), s.26, s.27, s.28, s.33, s.34(1), s.34(2), s.35, s.36, s.57, s.58, s.60, s.61, s.62, sch.8, s.63, s.85, s.86, s.87, s.88, s.89, sch.10 — 2014-07-14 — everywhere, fully — provision_dated"
+        "s.22, s.56, s.56 — 2014-07-14 — everywhere, in relation to — provision_qualified",
+        "s.3, s.13, s.15, s.21, s.25(3), s.26, s.27, s.28, s.33, s.34(1), s.34(2), s.35, s.36, s.57, s.58, s.60, s.61, s.62, sch.8, s.63, s.85, s.86, s.87, s.88, s.89, sch.10, sch.7.para.8, sch.7.para.107 — 2014-07-14 — everywhere, fully — provision_dated"
+      ]
+    },
+    "UK_ukpga_2014_26/3f68760245": {
+      "class": "rules:provision_by_order+provision_qualified",
+      "rules": [
+        "s.196 — appointed (by order) — everywhere, in relation to — provision_qualified",
+        "sch.28.para.28..sch.28.para.30 — appointed (by order) — everywhere, fully — provision_by_order"
       ]
     },
     "UK_ukpga_2014_26/f8b47f8a7a": {
@@ -4752,6 +4863,10 @@
       "class": "none",
       "rules": []
     },
+    "UK_ukpga_2015_11/fbfb9a5654": {
+      "class": "none",
+      "rules": []
+    },
     "UK_ukpga_2015_26/273e030f13": {
       "class": "none",
       "rules": []
@@ -4763,8 +4878,8 @@
     "UK_ukpga_2015_6/2db374541d": {
       "class": "rules:provision_by_order+provision_qualified",
       "rules": [
-        "s.22(10), s.26, s.30, s.31(2), s.31(4), s.32, s.33, s.34 — appointed (by order) — everywhere, fully — provision_by_order",
-        "s.25, sch.5.para.12..sch.5.para.14 — unread — everywhere, in relation to — provision_qualified"
+        "s.22(10), sch.5.para.12..sch.5.para.14, s.26, s.30, s.31(2), s.31(4), s.32, s.33, s.34 — appointed (by order) — everywhere, fully — provision_by_order",
+        "s.25 — appointed (by order) — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_ukpga_2015_6/38d042c13c": {
@@ -4806,12 +4921,6 @@
       "class": "none",
       "rules": []
     },
-    "UK_ukpga_2015_9/71f8290e95": {
-      "class": "rules:provision_qualified",
-      "rules": [
-        "s.85(1), sch.4.para.16, sch.4.para.35..sch.4.para.45 — unread — everywhere, in relation to — provision_qualified"
-      ]
-    },
     "UK_ukpga_2016_1/a9dbe6f650": {
       "class": "none",
       "rules": []
@@ -4824,12 +4933,6 @@
       "class": "rules:provision_dated",
       "rules": [
         "pt.2 — 2016-05-23 — everywhere, fully — provision_dated"
-      ]
-    },
-    "UK_ukpga_2016_11/bd8dce814a": {
-      "class": "rules:provision_dated",
-      "rules": [
-        "rest except s.72 — 2016-05-23 — everywhere, fully — provision_dated"
       ]
     },
     "UK_ukpga_2016_11/ec2f5d08c5": {
@@ -4860,10 +4963,10 @@
         "s.144(2) — appointed (by order) — everywhere, fully — provision_by_order"
       ]
     },
-    "UK_ukpga_2017_3/7d6702c99f": {
-      "class": "rules:provision_dated",
+    "UK_ukpga_2017_29/bb85993b87": {
+      "class": "rules:provision_by_order",
       "rules": [
-        "s.164, s.165, s.167, s.179 — 2017-01-31 — everywhere, fully — provision_dated"
+        "s.89(2)(h)(ii), s.89(4) — appointed (by order) — W, fully — provision_by_order"
       ]
     },
     "UK_ukpga_2017_3/82542129ef": {
@@ -4880,10 +4983,6 @@
       "class": "unread",
       "rules": []
     },
-    "UK_ukpga_2017_30/8bd671ae27": {
-      "class": "unread",
-      "rules": []
-    },
     "UK_ukpga_2017_33/9b8ef55a82": {
       "class": "law:clause_staged",
       "rules": [
@@ -4892,15 +4991,10 @@
       ]
     },
     "UK_ukpga_2018_12/0d42d5b369": {
-      "class": "rules:provision_qualified",
+      "class": "rules:provision_qualified+provision_unread",
       "rules": [
+        "s.124, s.177, s.178, sch.17, s.179 — unread — everywhere, fully — provision_unread",
         "s.125, s.126, s.127, s.124 — unread — everywhere, in relation to — provision_qualified"
-      ]
-    },
-    "UK_ukpga_2018_12/3b32e0e8dc": {
-      "class": "rules:provision_dated",
-      "rules": [
-        "s.1, s.3, s.182, s.204, s.205, s.206, s.209, s.210, s.213(2), s.214, s.215 — 2018-05-23 — everywhere, fully — provision_dated"
       ]
     },
     "UK_ukpga_2018_12/60fe3312f4": {
@@ -4988,9 +5082,10 @@
       "rules": []
     },
     "UK_ukpga_2020_17/37611177ac": {
-      "class": "rules:provision_qualified",
+      "class": "rules:provision_by_order+provision_qualified",
       "rules": [
-        "s.264, s.265, s.266, s.267, s.268, s.268A, s.268B, s.268C, s.273, s.274, s.274A — unread — everywhere, in relation to — provision_qualified"
+        "s.264, s.265, s.266, s.267, s.268, s.268A, s.268B, s.268C, s.273, s.274, s.274A — appointed (with another provision) — everywhere, in relation to — provision_qualified",
+        "s.417(4), sch.22.pt.8 — appointed (with another provision) — everywhere, fully — provision_by_order"
       ]
     },
     "UK_ukpga_2020_17/5fafd11625": {
@@ -5058,9 +5153,9 @@
       "rules": []
     },
     "UK_ukpga_2021_24/e8c2225a9d": {
-      "class": "rules:provision_qualified",
+      "class": "rules:provision_by_order",
       "rules": [
-        "s.3 — unread — E, fully — provision_qualified"
+        "s.3 — appointed (with another provision) — everywhere, fully — provision_by_order"
       ]
     },
     "UK_ukpga_2021_26/3b8f71383c": {
@@ -5101,10 +5196,10 @@
       "rules": []
     },
     "UK_ukpga_2022_30/5851944cf8": {
-      "class": "rules:provision_qualified",
+      "class": "rules:provision_by_order+provision_qualified",
       "rules": [
-        "s.32, s.34, s.35, s.36, s.37, s.38, s.39, s.40, s.41, s.43, sch.4, s.44, s.45, s.46, s.47, s.48, s.49, s.50, s.51, s.52, s.53, s.57 except s.32(3), s.53(1) — appointed (by order) — W, fully — provision_qualified",
-        "s.33, sch.1.para.1D(3), s.42, s.55, sch.5, s.56, sch.6, s.156 — appointed (by order) — W, fully — provision_qualified"
+        "s.32, s.34, s.35, s.36, s.37, s.38, s.39, s.40, s.41, s.43, sch.4, s.44, s.45, s.46, s.47, s.48, s.49, s.50, s.51, s.52, s.53, s.55, sch.5, s.56, sch.6, s.57 except s.32(3), s.53(1), s.55, s.56 — appointed (by order) — W, fully — provision_by_order",
+        "s.33, sch.1.para.1D(3), s.42, s.55, s.56, s.156 — appointed (by order) — W, fully — provision_qualified"
       ]
     },
     "UK_ukpga_2022_30/8803d30ca7": {
@@ -5125,7 +5220,7 @@
       "class": "none",
       "rules": []
     },
-    "UK_ukpga_2022_32/d985e631d3": {
+    "UK_ukpga_2022_32/c4be4a89b0": {
       "class": "none",
       "rules": []
     },
@@ -5180,15 +5275,15 @@
         "pt.1 — 2022-03-10 — everywhere, in relation to — provision_qualified"
       ]
     },
-    "UK_ukpga_2023_30/3c15c12af8": {
-      "class": "none",
-      "rules": []
-    },
     "UK_ukpga_2023_30/a2cfb9742b": {
       "class": "rules:provision_dated",
       "rules": [
         "s.348(1) — 2023-07-11 — everywhere, fully — provision_dated"
       ]
+    },
+    "UK_ukpga_2023_30/b5bc874e85": {
+      "class": "none",
+      "rules": []
     },
     "UK_ukpga_2023_30/ed28a19ca6": {
       "class": "none",
@@ -5210,6 +5305,12 @@
       "class": "none",
       "rules": []
     },
+    "UK_ukpga_2023_52/8332497206": {
+      "class": "rules:provision_by_order",
+      "rules": [
+        "s.305, sch.22 — appointed (with another provision) — everywhere, fully — provision_by_order"
+      ]
+    },
     "UK_ukpga_2023_52/aedf270044": {
       "class": "rules:provision_qualified",
       "rules": [
@@ -5229,8 +5330,10 @@
       "rules": []
     },
     "UK_ukpga_2023_55/68daf6e812": {
-      "class": "none",
-      "rules": []
+      "class": "rules:provision_dated",
+      "rules": [
+        "rest except s.255 — 2023-12-26 — everywhere, fully — provision_dated"
+      ]
     },
     "UK_ukpga_2023_55/811916cade": {
       "class": "rules:provision_dated",
@@ -5315,6 +5418,13 @@
       "class": "none",
       "rules": []
     },
+    "UK_ukpga_2025_18/a7833df5b5": {
+      "class": "rules:provision_by_order+provision_qualified",
+      "rules": [
+        "s.122 — appointed (with another provision) — everywhere, in relation to — provision_qualified",
+        "sch.16.pt.2 — appointed (with another provision) — everywhere, fully — provision_by_order"
+      ]
+    },
     "UK_ukpga_2025_34/1ad2625fd2": {
       "class": "rules:provision_dated",
       "rules": [
@@ -5337,9 +5447,17 @@
         "s.24, sch.1 — 2026-02-18 — everywhere, fully — provision_dated"
       ]
     },
+    "UK_ukpga_2025_34/c6bfe69db4": {
+      "class": "rules:provision_by_order",
+      "rules": [
+        "s.118(2) — appointed (with another provision) — everywhere, fully — provision_by_order"
+      ]
+    },
     "UK_ukpga_2025_34/d1938f7a2c": {
-      "class": "none",
-      "rules": []
+      "class": "rules:provision_by_order",
+      "rules": [
+        "s.112 — appointed (with another provision) — everywhere, fully — provision_by_order"
+      ]
     },
     "UK_ukpga_2025_34/deb386a3a3": {
       "class": "rules:provision_qualified",
@@ -5347,15 +5465,7 @@
         "s.118(1), s.118(4), s.118(5) — 2025-12-18 — everywhere, for making secondary legislation — provision_qualified"
       ]
     },
-    "UK_ukpga_2025_34/f24eae16aa": {
-      "class": "none",
-      "rules": []
-    },
     "UK_ukpga_2025_36/4d63a2c73e": {
-      "class": "none",
-      "rules": []
-    },
-    "UK_ukpga_2025_5/f2f12b352d": {
       "class": "none",
       "rules": []
     },
@@ -5392,8 +5502,16 @@
       "rules": []
     },
     "UK_ukpga_2026_11/ba83260b61": {
-      "class": "none",
-      "rules": []
+      "class": "rules:provision_by_order",
+      "rules": [
+        "s.262 — appointed (with another provision) — everywhere, fully — provision_by_order"
+      ]
+    },
+    "UK_ukpga_2026_11/d6544a5a33": {
+      "class": "rules:provision_by_order",
+      "rules": [
+        "s.263(2) — appointed (with another provision) — everywhere, fully — provision_by_order"
+      ]
     },
     "UK_ukpga_2026_18/017acb9d6e": {
       "class": "none",
@@ -5458,6 +5576,10 @@
         "all — 2026-02-12 — everywhere, fully — clause_made_relative"
       ]
     },
+    "UK_uksi_1949_2393/44ef5f3c98": {
+      "class": "none",
+      "rules": []
+    },
     "UK_uksi_1956_1943/74de067fef": {
       "class": "none",
       "rules": []
@@ -5499,6 +5621,10 @@
       "rules": []
     },
     "UK_uksi_1986_1078/5013bcf70b": {
+      "class": "none",
+      "rules": []
+    },
+    "UK_uksi_1986_1078/8b8d997554": {
       "class": "none",
       "rules": []
     },
@@ -5657,6 +5783,10 @@
       "class": "none",
       "rules": []
     },
+    "UK_uksi_1994_1096/1cb5890046": {
+      "class": "none",
+      "rules": []
+    },
     "UK_uksi_1994_1096/4df7fee11c": {
       "class": "none",
       "rules": []
@@ -5679,18 +5809,23 @@
         "all — 1994-09-01 — everywhere, fully — clause_staged"
       ]
     },
-    "UK_uksi_1994_2063/af2036ebb9": {
-      "class": "unread",
-      "rules": []
-    },
     "UK_uksi_1994_232/243792733b": {
-      "class": "none",
-      "rules": []
+      "class": "rules:provision_dated",
+      "rules": [
+        "rest except reg.1, reg.4 — 1994-03-01 — everywhere, fully — provision_dated"
+      ]
     },
     "UK_uksi_1994_232/5113862f0d": {
       "class": "law:clause_staged",
       "rules": [
         "all — 1994-03-01 — everywhere, fully — clause_staged"
+      ]
+    },
+    "UK_uksi_1994_232/c50c7d4655": {
+      "class": "rules:provision_dated+provision_qualified",
+      "rules": [
+        "reg.4 — 1994-08-01 — everywhere, fully — provision_dated",
+        "reg.6 — 1994-08-01 — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_uksi_1994_3247/eab1f1132a": {
@@ -5750,26 +5885,15 @@
       "class": "none",
       "rules": []
     },
-    "UK_uksi_1996_2925/19b4f87e6a": {
-      "class": "unread",
-      "rules": []
-    },
     "UK_uksi_1996_2925/1b93355949": {
-      "class": "law:clause_staged",
+      "class": "rules:provision_qualified",
       "rules": [
-        "all — 1996-12-16 — everywhere, fully — clause_staged",
         "reg.4(2)(a), sch.1, reg.4(2)(e)(ii), reg.4(2)(f), reg.4(2)(g), sch.4.pt.II, reg.4(2)(h)(i), reg.4(2)(i), sch.5.pt.I — unread — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_uksi_1996_2925/69a4de9ac9": {
       "class": "none",
       "rules": []
-    },
-    "UK_uksi_1996_2925/998cd337d6": {
-      "class": "rules:provision_qualified",
-      "rules": [
-        "reg.4(2)(a), sch.1, reg.4(2)(b), sch.2.pt.I, reg.4(2)(e)(i), reg.4(2)(f), sch.4.pt.I, reg.4(2)(e)(ii), reg.4(2)(g), sch.4.pt.II, reg.4(2)(h)(i), reg.4(2)(i), sch.5.pt.I, reg.4(2)(h)(ii), reg.4(2)(i), sch.5.pt.II — unread — everywhere, in relation to — provision_qualified"
-      ]
     },
     "UK_uksi_1996_2925/f7063f43b0": {
       "class": "none",
@@ -5837,6 +5961,36 @@
       "class": "law:clause_unread",
       "rules": [
         "all — unread — everywhere, fully — clause_unread"
+      ]
+    },
+    "UK_uksi_1999_1746/eb044b9d5f": {
+      "class": "law:clause_named_day",
+      "rules": [
+        "all — 1999-07-01 — everywhere, fully — clause_named_day"
+      ]
+    },
+    "UK_uksi_1999_1747/f8492367f0": {
+      "class": "law:clause_named_day",
+      "rules": [
+        "all — 1999-07-01 — everywhere, fully — clause_named_day"
+      ]
+    },
+    "UK_uksi_1999_1750/a0060cc332": {
+      "class": "law:clause_named_day",
+      "rules": [
+        "all — 1999-07-01 — everywhere, fully — clause_named_day"
+      ]
+    },
+    "UK_uksi_1999_1820/569d615ff6": {
+      "class": "rules:provision_dated",
+      "rules": [
+        "sch.2.pt.I, sch.2.pt.I, sch.2.pt.I, sch.2.pt.I, sch.2.pt.II — 1999-07-01 — everywhere, fully — provision_dated"
+      ]
+    },
+    "UK_uksi_1999_1820/c971e41c3f": {
+      "class": "law:clause_named_day",
+      "rules": [
+        "all — 1999-07-01 — everywhere, fully — clause_named_day"
       ]
     },
     "UK_uksi_1999_2722/3b2a8809ca": {
@@ -5966,7 +6120,8 @@
       "class": "law:clause_staged",
       "rules": [
         "all — 2001-10-16 — everywhere, fully — clause_staged",
-        "reg.1, reg.2, reg.8, reg.10 — 2001-10-16 — everywhere, fully — provision_dated"
+        "reg.1, reg.2, reg.8, reg.10 — 2001-10-16 — everywhere, fully — provision_dated",
+        "reg.3, reg.4, reg.5, reg.6, reg.7, reg.9, reg.11, reg.12 — 2002-05-01 — everywhere, fully — provision_dated"
       ]
     },
     "UK_uksi_2001_3649/e291ce3c09": {
@@ -6200,6 +6355,12 @@
         "all — unread — everywhere, fully — clause_unread"
       ]
     },
+    "UK_uksi_2006_1177/788a9150db": {
+      "class": "rules:provision_qualified",
+      "rules": [
+        "reg.2, sch — unread — E, fully — provision_qualified"
+      ]
+    },
     "UK_uksi_2006_1244/758228e835": {
       "class": "rules:provision_qualified",
       "rules": [
@@ -6252,7 +6413,9 @@
     "UK_uksi_2006_641/5f2dc0019c": {
       "class": "law:clause_unread",
       "rules": [
-        "all — unread — everywhere, fully — clause_unread"
+        "all — unread — everywhere, fully — clause_unread",
+        "reg.15 — appointed (with another provision) — everywhere, fully — provision_by_order",
+        "rest except reg.1 — 2006-04-01 — everywhere, fully — provision_dated"
       ]
     },
     "UK_uksi_2006_798/973152a96b": {
@@ -6293,15 +6456,15 @@
         "reg.3(4), reg.4(6)(e), reg.4(8), reg.4(11)(a), reg.4(13), reg.4(14) — 2008-01-01 — everywhere, fully — provision_dated"
       ]
     },
-    "UK_uksi_2007_2194/23faecdccd": {
-      "class": "none",
-      "rules": []
-    },
     "UK_uksi_2007_2194/34010278fc": {
       "class": "law:clause_staged",
       "rules": [
         "all — 2007-10-01 — everywhere, fully — clause_staged"
       ]
+    },
+    "UK_uksi_2007_2194/349ac927a1": {
+      "class": "none",
+      "rules": []
     },
     "UK_uksi_2007_2194/368a2912de": {
       "class": "none",
@@ -6329,10 +6492,6 @@
         "rest except reg.1 — 2007-04-02 — W, fully — provision_qualified",
         "rest except reg.1 — 2007-07-01 — E, fully — provision_qualified"
       ]
-    },
-    "UK_uksi_2007_765/f9a5db5202": {
-      "class": "none",
-      "rules": []
     },
     "UK_uksi_2007_79/3560291797": {
       "class": "none",
@@ -6418,10 +6577,6 @@
       "class": "none",
       "rules": []
     },
-    "UK_uksi_2010_1110/7de7397996": {
-      "class": "unread",
-      "rules": []
-    },
     "UK_uksi_2010_1148/0b71a126a7": {
       "class": "law:clause_made_relative",
       "rules": [
@@ -6441,13 +6596,13 @@
     "UK_uksi_2010_490/5cfc41c325": {
       "class": "rules:provision_qualified",
       "rules": [
-        "reg.38, reg.133 — unread — W, fully — provision_qualified"
+        "reg.38, reg.133 — appointed (with another provision) — W, fully — provision_qualified"
       ]
     },
     "UK_uksi_2010_490/bf9d2d28e9": {
       "class": "rules:provision_qualified",
       "rules": [
-        "reg.6 — unread — everywhere, in relation to — provision_qualified"
+        "reg.6 — appointed (with another provision) — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_uksi_2010_501/443e5d7c27": {
@@ -6493,9 +6648,10 @@
       ]
     },
     "UK_uksi_2011_2581/0ef4307d8e": {
-      "class": "rules:provision_qualified",
+      "class": "rules:provision_dated+provision_qualified",
       "rules": [
-        "reg.2, sch.1, sch.2 — 2011-10-28 — everywhere, in relation to — provision_qualified"
+        "reg.2 — 2011-10-28 — everywhere, in relation to — provision_qualified",
+        "sch.1, sch.2 — 2011-10-28 — everywhere, fully — provision_dated"
       ]
     },
     "UK_uksi_2011_988/0fd7b41c03": {
@@ -6508,7 +6664,7 @@
       "class": "none",
       "rules": []
     },
-    "UK_uksi_2012_1439/dc69b5bf64": {
+    "UK_uksi_2012_1439/b21ad5e81d": {
       "class": "none",
       "rules": []
     },
@@ -6516,41 +6672,26 @@
       "class": "unread",
       "rules": []
     },
-    "UK_uksi_2012_1923/1585b84bee": {
+    "UK_uksi_2012_1923/d201487f42": {
       "class": "law:clause_made_relative",
       "rules": [
         "all — 2012-07-22 — everywhere, fully — clause_made_relative"
-      ]
-    },
-    "UK_uksi_2012_1923/b5e78f4db1": {
-      "class": "rules:provision_dated",
-      "rules": [
-        "sch — 2012-07-23 — everywhere, fully — provision_dated"
       ]
     },
     "UK_uksi_2012_2404/ded90aa303": {
       "class": "none",
       "rules": []
     },
-    "UK_uksi_2012_2654/d6c5495a3f": {
-      "class": "rules:provision_dated",
-      "rules": [
-        "sch — 2013-04-02 — everywhere, fully — provision_dated"
-      ]
-    },
     "UK_uksi_2012_3038/85cbd7028a": {
       "class": "none",
       "rules": []
     },
     "UK_uksi_2012_3039/494c72ebae": {
-      "class": "rules:provision_qualified",
+      "class": "rules:provision_qualified+provision_unread",
       "rules": [
-        "reg.14, reg.42 — unread — everywhere, in relation to — provision_qualified"
+        "reg.14, reg.42 — unread — everywhere, in relation to — provision_qualified",
+        "sch.3.para.5, sch.3.para.7, sch.3.para.12, sch.3.para.14, sch.3.para.16, sch.3.para.25, sch.3.para.27 — unread — everywhere, fully — provision_unread"
       ]
-    },
-    "UK_uksi_2012_3152/49f4f014b6": {
-      "class": "none",
-      "rules": []
     },
     "UK_uksi_2012_801/2b3e4cbe6f": {
       "class": "law:clause_date",
@@ -6895,18 +7036,16 @@
       ]
     },
     "UK_uksi_2018_1202/9dd0684715": {
-      "class": "unread",
-      "rules": []
+      "class": "rules:provision_unread",
+      "rules": [
+        "reg.1, reg.2 — unread — everywhere, fully — provision_unread"
+      ]
     },
     "UK_uksi_2018_1202/e7e09f8dab": {
       "class": "law:clause_named_day",
       "rules": [
         "all — 2020-12-31 — everywhere, fully — clause_named_day"
       ]
-    },
-    "UK_uksi_2018_1227/4ff8c41c43": {
-      "class": "unread",
-      "rules": []
     },
     "UK_uksi_2018_1251/1535f5c7d0": {
       "class": "none",
@@ -6916,6 +7055,18 @@
       "class": "law:clause_named_day",
       "rules": [
         "all — 2020-12-31 — everywhere, fully — clause_named_day"
+      ]
+    },
+    "UK_uksi_2018_195/4be878adc4": {
+      "class": "rules:provision_by_order",
+      "rules": [
+        "reg.46 — appointed (with another provision) — everywhere, fully — provision_by_order"
+      ]
+    },
+    "UK_uksi_2018_195/f8a37f0f10": {
+      "class": "rules:provision_by_order",
+      "rules": [
+        "reg.19 — appointed (with another provision) — everywhere, fully — provision_by_order"
       ]
     },
     "UK_uksi_2018_369/d8283a8d4b": {
@@ -6940,6 +7091,12 @@
       "class": "law:clause_date",
       "rules": [
         "all — 2018-06-27 — everywhere, fully — clause_date"
+      ]
+    },
+    "UK_uksi_2018_682/d5607aeeb6": {
+      "class": "rules:provision_by_order",
+      "rules": [
+        "sch.1.para.3 — appointed (with another provision) — everywhere, fully — provision_by_order"
       ]
     },
     "UK_uksi_2018_860/278de8679c": {
@@ -6999,8 +7156,10 @@
       ]
     },
     "UK_uksi_2019_145/55260f1ef2": {
-      "class": "unread",
-      "rules": []
+      "class": "rules:provision_dated",
+      "rules": [
+        "rest except reg.1 — 2020-12-31 — everywhere, fully — provision_dated"
+      ]
     },
     "UK_uksi_2019_146/306a9eb538": {
       "class": "rules:provision_dated",
@@ -7032,12 +7191,6 @@
         "all — 2020-12-31 — everywhere, fully — clause_named_day"
       ]
     },
-    "UK_uksi_2019_202/8c7c9d88c6": {
-      "class": "law:clause_named_day",
-      "rules": [
-        "all — 2020-12-31 — everywhere, fully — clause_named_day"
-      ]
-    },
     "UK_uksi_2019_306/afc1bf89ba": {
       "class": "law:clause_staged",
       "rules": [
@@ -7062,12 +7215,6 @@
       ]
     },
     "UK_uksi_2019_539/d03b5cbce7": {
-      "class": "rules:provision_dated",
-      "rules": [
-        "rest except reg.1 — 2020-12-31 — everywhere, fully — provision_dated"
-      ]
-    },
-    "UK_uksi_2019_544/6f90960d8e": {
       "class": "rules:provision_dated",
       "rules": [
         "rest except reg.1 — 2020-12-31 — everywhere, fully — provision_dated"
@@ -7122,10 +7269,6 @@
         "all — unread — everywhere, fully — clause_unread"
       ]
     },
-    "UK_uksi_2020_1062/fa326391b2": {
-      "class": "unread",
-      "rules": []
-    },
     "UK_uksi_2020_1091/1f3ebf4f08": {
       "class": "law:clause_named_day",
       "rules": [
@@ -7172,6 +7315,12 @@
         "all — 2020-12-31 — everywhere, fully — clause_named_day"
       ]
     },
+    "UK_uksi_2020_1371/8ffcf54d3c": {
+      "class": "law:clause_named_day",
+      "rules": [
+        "all — 2020-12-31 — everywhere, fully — clause_named_day"
+      ]
+    },
     "UK_uksi_2020_1385/2ae8463ba8": {
       "class": "rules:provision_dated",
       "rules": [
@@ -7181,8 +7330,8 @@
     "UK_uksi_2020_1419/e65d63521d": {
       "class": "rules:provision_dated+provision_qualified",
       "rules": [
-        "reg.2, sch.1.para.2, sch.1.para.4, reg.3, sch.2.pt.2 — 2020-12-31 — everywhere, in relation to — provision_qualified",
-        "reg.4, sch.3 — 2020-12-31 — everywhere, fully — provision_dated"
+        "reg.2, reg.3 — 2020-12-31 — everywhere, in relation to — provision_qualified",
+        "sch.1.pt.2, sch.1.pt.4, sch.2.pt.2, reg.4, sch.3 — 2020-12-31 — everywhere, fully — provision_dated"
       ]
     },
     "UK_uksi_2020_1460/1f1e50f3d4": {
@@ -7192,8 +7341,10 @@
       ]
     },
     "UK_uksi_2020_1460/6ad3624e5a": {
-      "class": "unread",
-      "rules": []
+      "class": "rules:provision_by_order",
+      "rules": [
+        "pt.1, pt.6 — appointed (with another provision) — everywhere, fully — provision_by_order"
+      ]
     },
     "UK_uksi_2020_1460/e8c01b0bfd": {
       "class": "rules:provision_dated",
@@ -7235,8 +7386,10 @@
       ]
     },
     "UK_uksi_2020_1540/34760d1bb2": {
-      "class": "unread",
-      "rules": []
+      "class": "rules:provision_by_order",
+      "rules": [
+        "reg.1, reg.13, reg.15 — appointed (with another provision) — everywhere, fully — provision_by_order"
+      ]
     },
     "UK_uksi_2020_1540/68ba276dca": {
       "class": "rules:provision_dated",
@@ -7307,6 +7460,12 @@
         "all — 2020-03-27 — everywhere, fully — clause_staged"
       ]
     },
+    "UK_uksi_2020_318/aff8d2af96": {
+      "class": "rules:provision_unread",
+      "rules": [
+        "reg.2, pt.1 — unread — everywhere, fully — provision_unread"
+      ]
+    },
     "UK_uksi_2020_318/be4ac51740": {
       "class": "rules:provision_dated",
       "rules": [
@@ -7319,21 +7478,23 @@
         "all — 2020-12-31 — everywhere, fully — clause_named_day"
       ]
     },
-    "UK_uksi_2020_676/aa4e098ea0": {
-      "class": "law:clause_named_day",
-      "rules": [
-        "all — 2020-12-31 — everywhere, fully — clause_named_day"
-      ]
-    },
     "UK_uksi_2020_678/07153caed3": {
       "class": "law:clause_named_day",
       "rules": [
         "all — 2020-12-31 — everywhere, fully — clause_named_day"
       ]
     },
+    "UK_uksi_2020_786/a0b3f0ec54": {
+      "class": "rules:provision_by_order",
+      "rules": [
+        "reg.8(1), reg.8(2), reg.8(3) — appointed (with another provision) — everywhere, fully — provision_by_order"
+      ]
+    },
     "UK_uksi_2020_786/c8a137662f": {
-      "class": "unread",
-      "rules": []
+      "class": "rules:provision_unread",
+      "rules": [
+        "pt.1 — unread — everywhere, fully — provision_unread"
+      ]
     },
     "UK_uksi_2021_1399/e794fa6e4b": {
       "class": "none",
@@ -7351,8 +7512,8 @@
       "class": "law:clause_staged",
       "rules": [
         "all — 2021-06-19 — everywhere, fully — clause_staged",
-        "reg.3, reg.4, reg.5, reg.6, reg.7, reg.8, pt.2.ch.2, reg.9, reg.10, reg.11, reg.12, reg.13, reg.14, reg.33, reg.34, reg.35, reg.36, reg.37, reg.38, reg.45, reg.46, reg.47, reg.48, reg.49, reg.50, reg.54(3)(a), sch.1..sch.5, sch.16..sch.18, sch.22..sch.28 — 2021-07-01 — everywhere, fully — provision_dated",
-        "reg.56, sch.29.para.1, sch.29.para.6 — 2021-07-01 — everywhere, in relation to — provision_qualified"
+        "reg.3, reg.4, reg.5, reg.6, reg.7, reg.8, pt.2.ch.2, reg.9, reg.10, reg.11, reg.12, reg.13, reg.14, reg.33, reg.34, reg.35, reg.36, reg.37, reg.38, reg.45, reg.46, reg.47, reg.48, reg.49, reg.50, reg.54(3)(a), sch.1..sch.5, sch.16..sch.18, sch.22..sch.28, sch.29.para.1, sch.29.para.6 — 2021-07-01 — everywhere, fully — provision_dated",
+        "reg.56 — 2021-07-01 — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_uksi_2021_745/166d51986c": {
@@ -7372,6 +7533,10 @@
       ]
     },
     "UK_uksi_2022_500/52e25a0f93": {
+      "class": "unread",
+      "rules": []
+    },
+    "UK_uksi_2023_1143/998af4cc8a": {
       "class": "unread",
       "rules": []
     },
@@ -7428,7 +7593,8 @@
     "UK_uksi_2024_105/71c76ff288": {
       "class": "law:clause_unread",
       "rules": [
-        "all — unread — everywhere, fully — clause_unread"
+        "all — unread — everywhere, fully — clause_unread",
+        "pt.1, pt.2 — unread — everywhere, fully — provision_unread"
       ]
     },
     "UK_uksi_2024_1290/5df1fdade6": {
@@ -7499,8 +7665,10 @@
       ]
     },
     "UK_uksi_2025_878/f966628955": {
-      "class": "unread",
-      "rules": []
+      "class": "rules:provision_by_order",
+      "rules": [
+        "reg.7(2), reg.13(1) — appointed (with another provision) — everywhere, fully — provision_by_order"
+      ]
     },
     "UK_uksi_2026_15/72efefd45f": {
       "class": "law:clause_staged",
@@ -7612,6 +7780,12 @@
       "class": "rules:provision_qualified",
       "rules": [
         "rest except reg.1 — 2018-03-15 — everywhere, in relation to — provision_qualified"
+      ]
+    },
+    "UK_wsi_2016_413/8ad2c68275": {
+      "class": "rules:provision_by_order",
+      "rules": [
+        "reg.253 — appointed (with another provision) — everywhere, fully — provision_by_order"
       ]
     },
     "UK_wsi_2017_1041/07df175011": {
@@ -7894,7 +8068,7 @@
     "mention|subject_to|whole|present|tied|plain|none": "accepted",
     "statement|apart_from|named|present|by_order|plain|law:by_order": "accepted",
     "statement|apart_from|other|present|by_order|plain|law:by_order": "accepted",
-    "statement|apart_from|rest|present|made_relative|plain|unread": "accepted",
+    "statement|apart_from|rest|present|by_order|plain|rules:provision_by_order": "accepted",
     "statement|apart_from|this|present|by_order|plain|law:by_order": "accepted",
     "statement|apart_from|whole|present|by_order|plain|law:by_order": "accepted",
     "statement|except_as|instrument|present|made_relative|plain|unread": "accepted",
@@ -7924,11 +8098,11 @@
     "statement|none|following|not_until|date|plain|law:clause_staged": "accepted",
     "statement|none|following|present|by_order|plain|law:by_order": "accepted",
     "statement|none|following|present|by_order|plain|law:clause_staged": "accepted",
-    "statement|none|following|present|by_order|plain|none": "pending: a form the reader doesn't read yet",
     "statement|none|following|present|by_order|plain|rules:provision_by_order": "accepted",
     "statement|none|following|present|by_order|plain|rules:provision_by_order+provision_qualified": "accepted",
     "statement|none|following|present|by_order|plain|rules:provision_qualified": "accepted",
     "statement|none|following|present|by_order|plain|unread": "pending: descriptive items (\"so much of any provision as …\")",
+    "statement|none|following|present|by_order|qualified|rules:provision_by_order+provision_qualified": "accepted",
     "statement|none|following|present|by_order|qualified|rules:provision_qualified": "accepted",
     "statement|none|following|present|date|plain|law:clause_staged": "accepted",
     "statement|none|following|present|date|plain|none": "accepted",
@@ -7943,26 +8117,27 @@
     "statement|none|following|present|made_relative|plain|none": "pending: a form the reader doesn't read yet",
     "statement|none|following|present|made_relative|plain|rules:provision_dated": "accepted",
     "statement|none|following|present|made_relative|plain|rules:provision_dated+provision_qualified": "accepted",
-    "statement|none|following|present|made_relative|plain|rules:provision_qualified": "accepted",
+    "statement|none|following|present|made_relative|plain|rules:provision_qualified+provision_unread": "accepted",
     "statement|none|following|present|made_relative|qualified|law:clause_unread": "accepted",
     "statement|none|following|present|made_relative|qualified|rules:provision_dated+provision_qualified": "accepted",
     "statement|none|following|present|made_relative|qualified|rules:provision_qualified": "accepted",
     "statement|none|following|present|named_day|plain|rules:provision_dated": "accepted",
     "statement|none|following|present|named_day|plain|rules:provision_dated+provision_qualified": "accepted",
-    "statement|none|following|present|none|plain|rules:provision_qualified": "accepted",
+    "statement|none|following|present|none|plain|law:clause_staged": "accepted",
     "statement|none|following|present|none|plain|unread": "pending: a defined or event day (a known limit)",
     "statement|none|following|present|period|plain|law:clause_staged": "accepted",
     "statement|none|following|present|period|plain|none": "pending: a form the reader doesn't read yet",
     "statement|none|following|present|period|plain|rules:provision_dated": "accepted",
     "statement|none|following|present|period|plain|rules:provision_dated+provision_qualified": "accepted",
-    "statement|none|following|present|period|plain|rules:provision_qualified": "accepted",
+    "statement|none|following|present|period|plain|rules:provision_qualified+provision_unread": "accepted",
+    "statement|none|following|present|period|plain|rules:provision_unread": "accepted",
     "statement|none|following|present|period|plain|unread": "pending: a form the reader doesn't read yet",
     "statement|none|following|present|period|qualified|rules:provision_dated+provision_qualified": "accepted",
     "statement|none|following|present|period|qualified|rules:provision_qualified": "accepted",
-    "statement|none|following|present|tied|plain|rules:provision_qualified": "accepted",
+    "statement|none|following|present|tied|plain|rules:provision_by_order+provision_qualified": "accepted",
     "statement|none|following|present|tied|qualified|rules:provision_qualified": "accepted",
     "statement|none|following|shall|by_order|plain|rules:provision_by_order": "accepted",
-    "statement|none|following|shall|by_order|plain|rules:provision_by_order+provision_qualified": "accepted",
+    "statement|none|following|shall|by_order|plain|rules:provision_dated": "accepted",
     "statement|none|following|shall|by_order|qualified|law:clause_staged": "accepted",
     "statement|none|following|shall|by_order|qualified|rules:provision_by_order+provision_qualified": "accepted",
     "statement|none|following|shall|by_order|qualified|rules:provision_qualified": "accepted",
@@ -7982,9 +8157,8 @@
     "statement|none|following|shall|made_relative|qualified|law:clause_staged": "accepted",
     "statement|none|following|shall|made_relative|qualified|rules:provision_dated+provision_qualified": "accepted",
     "statement|none|following|shall|made_relative|qualified|rules:provision_qualified": "accepted",
-    "statement|none|following|shall|none|plain|law:clause_staged": "accepted",
     "statement|none|following|shall|none|plain|rules:provision_qualified": "accepted",
-    "statement|none|following|shall|none|qualified|rules:provision_qualified": "accepted",
+    "statement|none|following|shall|none|plain|rules:provision_qualified+provision_unread": "accepted",
     "statement|none|following|shall|period|plain|rules:provision_dated": "accepted",
     "statement|none|following|shall|period|qualified|law:clause_staged": "accepted",
     "statement|none|following|shall|period|qualified|rules:provision_dated+provision_qualified": "accepted",
@@ -8044,9 +8218,11 @@
     "statement|none|named|present|date|plain|law:clause_staged": "accepted",
     "statement|none|named|present|date|plain|none": "pending: a form the reader doesn't read yet",
     "statement|none|named|present|date|plain|rules:provision_dated": "accepted",
+    "statement|none|named|present|date|plain|rules:provision_unread": "accepted",
     "statement|none|named|present|date|plain|unread": "pending: a form the reader doesn't read yet",
     "statement|none|named|present|date|qualified|law:clause_staged": "accepted",
     "statement|none|named|present|date|qualified|none": "pending: a form the reader doesn't read yet",
+    "statement|none|named|present|date|qualified|rules:provision_dated+provision_qualified": "accepted",
     "statement|none|named|present|date|qualified|rules:provision_qualified": "accepted",
     "statement|none|named|present|list|plain|law:clause_staged": "accepted",
     "statement|none|named|present|list|plain|none": "pending: a list whose items the reader doesn't read",
@@ -8056,11 +8232,13 @@
     "statement|none|named|present|made_relative|plain|law:clause_staged": "accepted",
     "statement|none|named|present|made_relative|plain|law:clause_unread": "accepted",
     "statement|none|named|present|made_relative|plain|none": "pending: a form the reader doesn't read yet",
+    "statement|none|named|present|made_relative|plain|rules:provision_by_order": "accepted",
     "statement|none|named|present|made_relative|plain|rules:provision_dated": "accepted",
     "statement|none|named|present|made_relative|plain|unread": "pending: a form the reader doesn't read yet",
     "statement|none|named|present|made_relative|qualified|none": "pending: a form the reader doesn't read yet",
     "statement|none|named|present|made_relative|qualified|rules:provision_dated+provision_qualified": "accepted",
     "statement|none|named|present|made_relative|qualified|rules:provision_qualified": "accepted",
+    "statement|none|named|present|made_relative|qualified|rules:provision_qualified+provision_unread": "accepted",
     "statement|none|named|present|named_day|plain|law:clause_named_day": "accepted",
     "statement|none|named|present|named_day|plain|law:clause_staged": "accepted",
     "statement|none|named|present|named_day|plain|rules:provision_dated": "accepted",
@@ -8069,11 +8247,16 @@
     "statement|none|named|present|none|plain|law:clause_unread": "accepted",
     "statement|none|named|present|none|plain|law:tied_to_other_law": "accepted",
     "statement|none|named|present|none|plain|none": "pending: no date read in the sentence",
+    "statement|none|named|present|none|plain|rules:provision_by_order": "accepted",
+    "statement|none|named|present|none|plain|rules:provision_unread": "accepted",
     "statement|none|named|present|none|plain|unread": "pending: no date read in the sentence",
     "statement|none|named|present|none|qualified|none": "pending: no date read in the sentence",
+    "statement|none|named|present|none|qualified|rules:provision_by_order": "accepted",
+    "statement|none|named|present|none|qualified|rules:provision_by_order+provision_qualified": "accepted",
     "statement|none|named|present|none|qualified|rules:provision_qualified": "accepted",
     "statement|none|named|present|period|plain|rules:provision_dated": "accepted",
     "statement|none|named|present|period|plain|rules:provision_qualified": "accepted",
+    "statement|none|named|present|period|plain|rules:provision_unread": "accepted",
     "statement|none|named|present|period|plain|unread": "pending: a form the reader doesn't read yet",
     "statement|none|named|present|period|qualified|none": "pending: a form the reader doesn't read yet",
     "statement|none|named|present|period|qualified|rules:provision_qualified": "accepted",
@@ -8082,9 +8265,11 @@
     "statement|none|named|present|tied|plain|law:clause_unread": "accepted",
     "statement|none|named|present|tied|plain|law:tied_to_other_law": "accepted",
     "statement|none|named|present|tied|plain|none": "pending: tied to another provision (a known limit)",
+    "statement|none|named|present|tied|plain|rules:provision_by_order": "accepted",
     "statement|none|named|present|tied|plain|rules:provision_dated": "accepted",
     "statement|none|named|present|tied|plain|unread": "pending: tied to another provision (a known limit)",
     "statement|none|named|present|tied|qualified|none": "accepted",
+    "statement|none|named|present|tied|qualified|rules:provision_by_order": "accepted",
     "statement|none|named|present|tied|qualified|rules:provision_qualified": "accepted",
     "statement|none|named|shall|by_order|plain|law:by_order": "accepted",
     "statement|none|named|shall|by_order|plain|none": "pending: a form the reader doesn't read yet",
@@ -8102,6 +8287,7 @@
     "statement|none|named|shall|date|plain|unread": "pending: a form the reader doesn't read yet",
     "statement|none|named|shall|date|qualified|law:clause_date": "accepted",
     "statement|none|named|shall|date|qualified|none": "pending: a form the reader doesn't read yet",
+    "statement|none|named|shall|date|qualified|rules:provision_dated": "accepted",
     "statement|none|named|shall|date|qualified|rules:provision_dated+provision_qualified": "accepted",
     "statement|none|named|shall|date|qualified|rules:provision_qualified": "accepted",
     "statement|none|named|shall|list|plain|law:clause_staged": "accepted",
@@ -8112,6 +8298,7 @@
     "statement|none|named|shall|made_relative|plain|law:clause_unread": "accepted",
     "statement|none|named|shall|made_relative|plain|rules:provision_dated": "accepted",
     "statement|none|named|shall|made_relative|plain|unread": "pending: a form the reader doesn't read yet",
+    "statement|none|named|shall|made_relative|qualified|rules:provision_dated+provision_qualified": "accepted",
     "statement|none|named|shall|made_relative|qualified|rules:provision_qualified": "accepted",
     "statement|none|named|shall|named_day|plain|law:clause_named_day": "accepted",
     "statement|none|named|shall|none|plain|law:clause_staged": "accepted",
@@ -8119,6 +8306,7 @@
     "statement|none|named|shall|none|plain|none": "pending: no date read in the sentence",
     "statement|none|named|shall|none|plain|unread": "pending: no date read in the sentence",
     "statement|none|named|shall|none|qualified|rules:provision_qualified": "accepted",
+    "statement|none|named|shall|none|qualified|rules:provision_qualified+provision_unread": "accepted",
     "statement|none|named|shall|period|plain|law:clause_staged": "accepted",
     "statement|none|named|shall|period|plain|none": "pending: a form the reader doesn't read yet",
     "statement|none|named|shall|period|plain|rules:provision_dated": "accepted",
@@ -8140,7 +8328,7 @@
     "statement|none|other|present|by_order|plain|rules:provision_by_order": "accepted",
     "statement|none|other|present|by_order|plain|rules:provision_qualified": "pending: \"for the purposes referred to in that subsection on the day after …\" unread (asc 2024/6)",
     "statement|none|other|present|by_order|qualified|none": "accepted",
-    "statement|none|other|present|by_order|qualified|rules:provision_qualified": "accepted",
+    "statement|none|other|present|by_order|qualified|rules:provision_by_order": "accepted",
     "statement|none|other|present|date|plain|law:clause_date": "accepted",
     "statement|none|other|present|date|plain|none": "accepted",
     "statement|none|other|present|date|plain|rules:provision_dated": "accepted",
@@ -8152,7 +8340,6 @@
     "statement|none|other|present|made_relative|plain|law:clause_made_relative": "accepted",
     "statement|none|other|present|made_relative|plain|none": "accepted",
     "statement|none|other|present|made_relative|plain|rules:provision_dated": "accepted",
-    "statement|none|other|present|made_relative|plain|unread": "accepted",
     "statement|none|other|present|made_relative|qualified|none": "accepted",
     "statement|none|other|present|made_relative|qualified|rules:provision_qualified": "accepted",
     "statement|none|other|present|named_day|plain|law:clause_named_day": "accepted",
@@ -8165,6 +8352,7 @@
     "statement|none|other|present|period|plain|rules:provision_dated": "accepted",
     "statement|none|other|present|period|plain|unread": "pending: a list item continuing its head unread (2016 c.1)",
     "statement|none|other|present|tied|plain|none": "accepted",
+    "statement|none|other|present|tied|plain|rules:provision_by_order": "accepted",
     "statement|none|other|present|tied|qualified|rules:provision_qualified": "accepted",
     "statement|none|other|shall_not|made_relative|plain|none": "accepted",
     "statement|none|other|shall_not|made_relative|qualified|none": "accepted",
@@ -8200,6 +8388,7 @@
     "statement|none|parts|present|named_day|plain|rules:provision_dated": "accepted",
     "statement|none|parts|present|none|plain|law:clause_staged": "accepted",
     "statement|none|parts|present|none|plain|none": "pending: descriptive items (\"so much of any provision as …\")",
+    "statement|none|parts|present|none|plain|rules:provision_unread": "accepted",
     "statement|none|parts|present|none|plain|unread": "pending: no date read in the sentence",
     "statement|none|parts|present|none|qualified|rules:provision_qualified": "pending: \"Part 1 (so far as not brought into force under subsection (1)) comes into force as follows—\" read as qualified; \"so far as not brought into force\" completes the Part (Commencement reader; not a Maritime law)",
     "statement|none|parts|present|period|plain|law:clause_staged": "accepted",
@@ -8208,8 +8397,8 @@
     "statement|none|parts|present|period|qualified|rules:provision_qualified": "accepted",
     "statement|none|parts|present|tied|plain|law:clause_staged": "accepted",
     "statement|none|parts|present|tied|plain|none": "pending: tied to another provision (a known limit)",
+    "statement|none|parts|present|tied|plain|rules:provision_by_order": "accepted",
     "statement|none|parts|present|tied|plain|rules:provision_dated": "accepted",
-    "statement|none|parts|present|tied|plain|unread": "pending: tied to another provision (a known limit)",
     "statement|none|parts|shall|by_order|plain|rules:provision_by_order": "accepted",
     "statement|none|parts|shall|date|plain|law:clause_date": "accepted",
     "statement|none|parts|shall|date|plain|law:clause_staged": "accepted",
@@ -8226,19 +8415,19 @@
     "statement|none|rest|present|by_order|plain|law:clause_staged": "accepted",
     "statement|none|rest|present|by_order|plain|law:clause_unread": "accepted",
     "statement|none|rest|present|by_order|plain|rules:provision_by_order": "accepted",
+    "statement|none|rest|present|by_order|qualified|rules:provision_by_order": "accepted",
     "statement|none|rest|present|by_order|qualified|rules:provision_qualified": "accepted",
     "statement|none|rest|present|date|plain|law:clause_staged": "accepted",
     "statement|none|rest|present|date|plain|rules:provision_dated": "accepted",
+    "statement|none|rest|present|date|plain|unread": "accepted",
     "statement|none|rest|present|made_relative|plain|law:clause_staged": "accepted",
     "statement|none|rest|present|made_relative|plain|none": "pending: a form the reader doesn't read yet",
     "statement|none|rest|present|made_relative|plain|rules:provision_dated": "accepted",
     "statement|none|rest|present|named_day|plain|rules:provision_dated": "accepted",
-    "statement|none|rest|present|named_day|plain|unread": "pending: a form the reader doesn't read yet",
     "statement|none|rest|present|none|plain|law:clause_unread": "accepted",
     "statement|none|rest|present|none|plain|unread": "pending: a defined or event day (a known limit)",
     "statement|none|rest|present|none|qualified|none": "accepted",
     "statement|none|rest|present|period|plain|law:clause_staged": "accepted",
-    "statement|none|rest|present|period|plain|none": "pending: a form the reader doesn't read yet",
     "statement|none|rest|present|period|plain|rules:provision_dated": "accepted",
     "statement|none|rest|present|tied|plain|rules:provision_dated": "accepted",
     "statement|none|rest|present|tied|plain|unread": "pending: tied to another provision (a known limit)",
@@ -8256,7 +8445,6 @@
     "statement|none|schedules|present|date|qualified|rules:provision_qualified": "pending: \"has effect in relation to acts …\" read as a qualifier (2026 c.11 Sch.22)",
     "statement|none|schedules|present|list|plain|unread": "pending: a list whose items the reader doesn't read",
     "statement|none|schedules|present|made_relative|plain|none": "pending: a form the reader doesn't read yet",
-    "statement|none|schedules|present|made_relative|plain|rules:provision_dated": "pending: an order's own article read as its Schedule (SI 2012/1923)",
     "statement|none|schedules|present|none|plain|law:clause_staged": "accepted",
     "statement|none|schedules|present|none|plain|none": "pending: no date read in the sentence",
     "statement|none|schedules|present|none|plain|unread": "pending: no date read in the sentence",
@@ -8291,6 +8479,7 @@
     "statement|none|this|present|made_relative|qualified|rules:provision_qualified": "accepted",
     "statement|none|this|present|named_day|plain|law:clause_staged": "accepted",
     "statement|none|this|present|none|plain|none": "pending: no date read in the sentence",
+    "statement|none|this|present|none|plain|rules:provision_unread": "accepted",
     "statement|none|this|present|none|plain|unread": "pending: no date read in the sentence",
     "statement|none|this|present|none|qualified|none": "pending: no date read in the sentence",
     "statement|none|this|present|period|plain|law:clause_staged": "accepted",
@@ -8298,12 +8487,13 @@
     "statement|none|this|present|tied|plain|law:clause_named_day": "pending: part of a law read as the whole on IP completion day (SI 2020/1091)",
     "statement|none|this|present|tied|plain|law:clause_staged": "accepted",
     "statement|none|this|present|tied|plain|none": "pending: a day tied to another law's commencement (a known limit)",
+    "statement|none|this|present|tied|plain|rules:provision_by_order": "accepted",
     "statement|none|this|present|tied|plain|rules:provision_dated": "accepted",
-    "statement|none|this|present|tied|plain|unread": "pending: tied to another provision (a known limit)",
     "statement|none|this|present|tied|qualified|rules:provision_qualified": "accepted",
     "statement|none|this|shall_not|none|plain|none": "pending: no date read in the sentence",
     "statement|none|this|shall|by_order|plain|law:by_order": "accepted",
     "statement|none|this|shall|by_order|plain|law:clause_staged": "accepted",
+    "statement|none|this|shall|by_order|plain|law:clause_unread": "pending: \"This Act except … on the transfer date\" is unread (1971 c.10 s.40(2)); a Commencement reader class left parked",
     "statement|none|this|shall|by_order|plain|none": "pending: a form the reader doesn't read yet",
     "statement|none|this|shall|by_order|plain|rules:provision_by_order": "accepted",
     "statement|none|this|shall|by_order|qualified|law:by_order": "accepted",
@@ -8315,7 +8505,6 @@
     "statement|none|this|shall|made_relative|qualified|law:clause_staged": "accepted",
     "statement|none|this|shall|made_relative|qualified|rules:provision_qualified": "accepted",
     "statement|none|this|shall|none|plain|law:clause_staged": "accepted",
-    "statement|none|this|shall|none|plain|law:clause_unread": "pending: a defined or event day (a known limit)",
     "statement|none|this|shall|none|plain|unread": "pending: no date read in the sentence",
     "statement|none|this|shall|period|plain|law:clause_staged": "accepted",
     "statement|none|this|shall|period|plain|law:clause_unread": "accepted",
@@ -8340,6 +8529,7 @@
     "statement|none|whole|present|date|qualified|rules:provision_qualified": "accepted",
     "statement|none|whole|present|list|plain|law:clause_staged": "accepted",
     "statement|none|whole|present|made_relative|plain|law:clause_made_relative": "accepted",
+    "statement|none|whole|present|made_relative|plain|law:clause_unread": "accepted",
     "statement|none|whole|present|made_relative|plain|none": "pending: a form the reader doesn't read yet",
     "statement|none|whole|present|made_relative|plain|unread": "pending: a form the reader doesn't read yet",
     "statement|none|whole|present|made_relative|qualified|law:clause_date": "accepted",
@@ -8351,6 +8541,7 @@
     "statement|none|whole|present|none|plain|law:clause_unread": "accepted",
     "statement|none|whole|present|none|plain|law:tied_to_other_law": "accepted",
     "statement|none|whole|present|none|plain|none": "pending: no date read in the sentence",
+    "statement|none|whole|present|none|plain|rules:provision_by_order": "accepted",
     "statement|none|whole|present|none|plain|unread": "pending: no date read in the sentence",
     "statement|none|whole|present|none|qualified|law:clause_staged": "accepted",
     "statement|none|whole|present|none|qualified|none": "pending: a defined or event day (a known limit)",
@@ -8362,6 +8553,7 @@
     "statement|none|whole|present|tied|qualified|none": "pending: tied to another provision (a known limit)",
     "statement|none|whole|shall|by_order|plain|law:by_order": "accepted",
     "statement|none|whole|shall|by_order|plain|law:clause_date": "accepted",
+    "statement|none|whole|shall|by_order|plain|law:clause_named_day": "accepted",
     "statement|none|whole|shall|by_order|plain|law:clause_staged": "accepted",
     "statement|none|whole|shall|by_order|plain|none": "pending: a form the reader doesn't read yet",
     "statement|none|whole|shall|by_order|plain|rules:provision_by_order": "accepted",
@@ -8433,6 +8625,7 @@
     "statement|subject_to|whole|present|none|plain|none": "pending: no date read in the sentence",
     "statement|subject_to|whole|present|period|plain|law:clause_made_relative": "accepted",
     "statement|subject_to|whole|shall|by_order|plain|law:by_order": "accepted",
+    "statement|subject_to|whole|shall|by_order|plain|law:clause_named_day": "accepted",
     "statement|subject_to|whole|shall|date|plain|law:clause_date": "accepted",
     "statement|subject_to|whole|shall|list|plain|law:clause_staged": "accepted",
     "statement|subject_to|whole|shall|made_relative|plain|law:clause_unread": "accepted",

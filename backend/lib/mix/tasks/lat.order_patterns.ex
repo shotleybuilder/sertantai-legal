@@ -7,11 +7,11 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
   each pattern with its count and up to three real statements (from
   different orders) as examples. The orders: those found for an Act (`mix
   lat.commencement --read-orders`' cached lists) and those any stored rule
-  was read from. Read-only over the DB and the stored law text; writes only
-  the fixture directory. One order at a time.
+  was read from. Read-only over the DB and the stored law text; writes the
+  fixture directory only with `--accept` (`CommencementCatalogue.Target`). One order at a time.
 
-      mix lat.order_patterns                  # regenerate; report against the expectations
-      mix lat.order_patterns --accept         # also accept new patterns as the reader reads them now
+      mix lat.order_patterns                  # a dry run: report against the expectations; generated files under data/reports/commencement-reader/dry-run/, never the fixtures
+      mix lat.order_patterns --accept         # write the fixtures, and accept new patterns as the reader reads them now
       mix lat.order_patterns --orders A,B --out DIR
 
   Files (`test/fixtures/order_patterns/`), as `lat.commencement_patterns`:
@@ -26,11 +26,14 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
-  alias SertantaiLegal.Scraper.Commencement.{Leftovers, Order, OrderPatterns}
+  alias SertantaiLegal.Scraper.Commencement.{Leftovers, Order, OrderPatterns, Orders}
+  alias SertantaiLegal.Scraper.CommencementCatalogue.Target
 
   @shortdoc "Commencement orders' pattern catalogue, as test fixtures (read-only)"
 
   @dir "test/fixtures/order_patterns"
+  # a dry run's generated files: never the fixtures (`Target`)
+  @dry_run_dir "data/reports/commencement-reader/dry-run/order_patterns"
   @per_pattern 3
   @whole_max 20_000
   @max 30_000
@@ -43,8 +46,8 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
     Mix.Task.run("app.start")
     Logger.configure(level: :warning)
 
-    dir = opts[:out] || @dir
-    File.mkdir_p!(dir)
+    target = Target.dirs(opts, @dir, @dry_run_dir)
+    File.mkdir_p!(target.write)
 
     pairs = pairs(opts[:orders])
     Mix.shell().info("#{length(pairs)} orders held, with the Act each commences")
@@ -62,8 +65,9 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
         end
       end)
 
-    write(dir, acc)
-    report(dir, acc, opts[:accept])
+    write(target.write, acc)
+    report(target.held, acc, opts[:accept])
+    Mix.shell().info(Target.notice(target))
   end
 
   defp new_acc,
@@ -135,7 +139,7 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
     title =
       case Repo.query!("SELECT title_en FROM uk_lrt WHERE name = $1 LIMIT 1", [law]) do
         %{rows: [[t]]} when is_binary(t) ->
-          t |> String.replace(~r/\s+\d{4}\b.*$/, "") |> String.trim()
+          Orders.act_title(t, year)
 
         _ ->
           if held?(law), do: Order.title(doc(law))

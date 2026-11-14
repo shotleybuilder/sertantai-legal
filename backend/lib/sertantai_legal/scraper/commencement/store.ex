@@ -69,6 +69,24 @@ defmodule SertantaiLegal.Scraper.Commencement.Store do
   defp filter({column, v}, {sql, args}),
     do: {sql <> " AND #{column} = $#{length(args) + 1}", args ++ [v]}
 
+  @order_treatments ~w(order_date order_schedule)
+
+  @doc """
+  The orders whose rules for `law_name` are stored (never the law itself):
+  what a re-read reads again, in or out of the law's order list.
+  """
+  @spec order_sources(String.t()) :: [String.t()]
+  def order_sources(law_name) do
+    Repo.query!(
+      """
+      SELECT DISTINCT source_law FROM commencement_rules
+      WHERE commences = $1 AND source_law <> $1 AND treatment = ANY($2) ORDER BY 1
+      """,
+      [law_name, @order_treatments]
+    ).rows
+    |> List.flatten()
+  end
+
   @doc "The rules bringing `law_name`'s provisions into force, from every source."
   @spec for_law(String.t()) :: [Rule.t()]
   def for_law(law_name) do

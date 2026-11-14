@@ -42,6 +42,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FoldVersion do
       lib/sertantai_legal/scraper/amending_law/pointer.ex
       lib/sertantai_legal/scraper/amending_law/text.ex
       lib/sertantai_legal/scraper/commencement/order.ex
+      lib/sertantai_legal/scraper/commencement/order/*.ex
       lib/sertantai_legal/scraper/commencement/rule.ex
       lib/sertantai_legal/scraper/commencement/evaluator.ex
       lib/sertantai_legal/scraper/commencement/own_clause.ex
@@ -49,6 +50,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FoldVersion do
       lib/sertantai_legal/scraper/commencement/store.ex
       lib/sertantai_legal/scraper/change_vocabulary/readers/own_commencement.ex
       lib/sertantai_legal/scraper/law_start/provisions.ex
+      lib/sertantai_legal/scraper/law_start/list_items.ex
+      lib/sertantai_legal/scraper/law_start/number_words.ex
+      lib/sertantai_legal/scraper/law_start/statements.ex
+      lib/sertantai_legal/scraper/law_start/territorial.ex
+      lib/sertantai_legal/scraper/law_start/that_day.ex
       lib/sertantai_legal/scraper/change_digest.ex
       lib/sertantai_legal/scraper/effect_index.ex
       lib/sertantai_legal/scraper/effect_target.ex
