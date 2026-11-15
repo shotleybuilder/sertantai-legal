@@ -125,6 +125,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeGateTest do
                [{"two law-text records the feed names together", "s.117"}]
     end
 
+    # the feed's compound "reg.4(2)(a)(b)" names (a) and (b) (Merge.Compound;
+    # Fire and OH&S: Merge, NISR 2007/165 on NISR 1996/228 reg.2(1))
+    test "two law-text records of one change: the feed's compound naming both" do
+      insert = fn key -> text(key, "reg.2(1)", :inserted) end
+      feed = feed("key-a", "reg.2(1)", :inserted, ["reg.4(2)(a)(b)"])
+
+      assert causes([
+               insert.("#{@by}:regulation-4-2-a"),
+               insert.("#{@by}:regulation-4-2-b"),
+               feed
+             ]) == [{"two law-text records the feed names together", "reg.2(1)"}]
+    end
+
     test "legislation.gov.uk's feed and markup unlike: the operations named" do
       assert causes([
                feed("key-a", "s.273(1)", :renumbered, []),

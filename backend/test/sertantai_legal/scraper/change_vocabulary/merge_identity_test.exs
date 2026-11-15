@@ -587,6 +587,146 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeIdentityTest do
       assert "UK_ukpga_2003_17:schedule-7" in aliases
     end
 
+    test "the feed's compound amending provision names its sibling pieces: both law-text records join (NISR 1996/228 reg.2(1) by NISR 2007/165 reg.4(2)(a)(b))" do
+      changes =
+        Merge.merge([
+          feed(effect_id("a"), "reg.2(1)", :substituted, "UK_nisr_2007_165", ["reg.4(2)(a)(b)"]),
+          text("UK_nisr_2007_165:regulation-4-2-a", "reg.2(1)", :substituted, "UK_nisr_2007_165"),
+          text("UK_nisr_2007_165:regulation-4-2-b", "reg.2(1)", :substituted, "UK_nisr_2007_165")
+        ])
+
+      assert [%{aliases: aliases}] = changes
+      assert "UK_nisr_2007_165:regulation-4-2-a" in aliases
+      assert "UK_nisr_2007_165:regulation-4-2-b" in aliases
+    end
+
+    test "a compound's second piece joins alone, where the law's text reads only it (reg.10(1)(3))" do
+      changes =
+        Merge.merge([
+          feed(effect_id("a"), "s.89", :substituted, "UK_uksi_1998_1420", ["reg.10(1)(3)"]),
+          text("UK_uksi_1998_1420:regulation-10-3", "s.89", :substituted, "UK_uksi_1998_1420")
+        ])
+
+      assert [%{aliases: aliases}] = changes
+      assert "UK_uksi_1998_1420:regulation-10-3" in aliases
+    end
+
+    test "a nesting is never a compound: the feed's (2)(a)(i) leaves the record of (2)(i) apart" do
+      changes =
+        Merge.merge([
+          feed(effect_id("a"), "reg.2(1)", :substituted, "UK_nisr_2007_165", ["reg.4(2)(a)(i)"]),
+          text("UK_nisr_2007_165:regulation-4-2-a", "reg.2(1)", :substituted, "UK_nisr_2007_165"),
+          text("UK_nisr_2007_165:regulation-4-2-i", "reg.2(1)", :substituted, "UK_nisr_2007_165")
+        ])
+
+      assert length(changes) == 2
+      refute "UK_nisr_2007_165:regulation-4-2-i" in holding(changes, effect_id("a")).aliases
+    end
+
+    test "a second legacy note joins where the feed's compound names its piece apart (EPA 1990 s.53(5), asp 2002/3 Sch.7 para 20(3)(b)(c))" do
+      note = fn id, piece ->
+        markup(id, "s.53(5)", :substituted, "UK_asp_2002_3", [
+          {:markup, :affecting, ["sch.7.para.20(3)(#{piece})"]}
+        ])
+      end
+
+      changes =
+        Merge.merge([
+          feed(effect_id("a"), "s.53(5)", :substituted, "UK_asp_2002_3", [
+            "sch.7.para.20(3)(b)(c)"
+          ]),
+          note.("d29p9005", "c"),
+          note.("d29p9001", "b")
+        ])
+
+      assert [%{aliases: aliases}] = changes
+      assert "d29p9001" in aliases
+      assert "d29p9005" in aliases
+    end
+
+    test "never a second legacy note citing a piece already joined (no snowball)" do
+      note = fn id ->
+        markup(id, "s.53(5)", :substituted, "UK_asp_2002_3", [
+          {:markup, :affecting, ["sch.7.para.20(3)(c)"]}
+        ])
+      end
+
+      changes =
+        Merge.merge([
+          feed(effect_id("a"), "s.53(5)", :substituted, "UK_asp_2002_3", [
+            "sch.7.para.20(3)(b)(c)"
+          ]),
+          note.("d29p9005"),
+          note.("d29p9007")
+        ])
+
+      assert length(changes) == 2
+    end
+
+    test "a later law-text record finds the event where the feed placed it, after the first moved it (SI 1994/232 reg.4(1), (3) by SI 2000/3097 reg.2(e)(f))" do
+      changes =
+        Merge.merge([
+          feed(effect_id("a"), "reg.4", :substituted, "UK_uksi_2000_3097", ["reg.2(e)(f)"]),
+          text("UK_uksi_2000_3097:regulation-2-e", "reg.4(1)", :substituted, "UK_uksi_2000_3097"),
+          text("UK_uksi_2000_3097:regulation-2-f", "reg.4(3)", :substituted, "UK_uksi_2000_3097")
+        ])
+
+      for {key, target} <- [{"regulation-2-e", "reg.4(1)"}, {"regulation-2-f", "reg.4(3)"}] do
+        c = holding(changes, "UK_uksi_2000_3097:" <> key)
+        assert c.key == effect_id("a")
+        assert c.target == target
+        assert Change.values(c, :feed, :by) == ["UK_uksi_2000_3097"]
+      end
+
+      assert length(changes) == 2
+    end
+
+    test "the law's text finds the event a note moved below the feed's place (1995 c.25 s.44(3), SI 1999/1820 Sch.2)" do
+      changes =
+        Merge.merge([
+          feed(effect_id("a"), "s.44", :substituted, "UK_uksi_1999_1820", [
+            "reg.4",
+            "sch.2.para.120(3)(4)"
+          ]),
+          markup("d29p4595", "s.44(1)(b)", :substituted, "UK_uksi_1999_1820", [
+            {:markup, :affecting, ["sch.2.para.120(4)"]}
+          ]),
+          text("UK_uksi_1999_1820:schedule-2", "s.44(3)", :substituted, "UK_uksi_1999_1820")
+        ])
+
+      assert "d29p4595" in holding(changes, effect_id("a")).aliases
+      c = holding(changes, "UK_uksi_1999_1820:schedule-2")
+      assert c.key == effect_id("a")
+      assert Change.values(c, :feed, :by) == ["UK_uksi_1999_1820"]
+    end
+
+    test "a moved event is never found by a record the feed's effect doesn't name" do
+      changes =
+        Merge.merge([
+          feed(effect_id("a"), "reg.4", :substituted, "UK_uksi_2000_3097", ["reg.2(e)"]),
+          text("UK_uksi_2000_3097:regulation-2-e", "reg.4(1)", :substituted, "UK_uksi_2000_3097"),
+          text("UK_uksi_2000_3097:regulation-2-f", "reg.4(3)", :substituted, "UK_uksi_2000_3097")
+        ])
+
+      assert holding(changes, "UK_uksi_2000_3097:regulation-2-f").key ==
+               "UK_uksi_2000_3097:regulation-2-f"
+    end
+
+    test "an effect naming the record's provision as written wins over one naming it in a compound (TCPA 1990 s.319A(7)(f), 2023 c.55 Sch.10 para 9(b)(c) and 9(c))" do
+      law = "UK_ukpga_2023_55"
+
+      changes =
+        Merge.merge([
+          feed(effect_id("a"), "s.319A(7)(f)", :substituted, law, ["sch.10.para.9(b)(c)"]),
+          feed(effect_id("b"), "s.319A(7)(f)", :substituted, law, ["sch.10.para.9(c)"]),
+          text(law <> ":schedule-10-paragraph-9-b", "s.319A(7)(f)", :substituted, law),
+          text(law <> ":schedule-10-paragraph-9-c", "s.319A(7)(f)", :substituted, law)
+        ])
+
+      assert holding(changes, law <> ":schedule-10-paragraph-9-b").key == effect_id("a")
+      assert holding(changes, law <> ":schedule-10-paragraph-9-c").key == effect_id("b")
+    end
+
     test "never a second law-text record the effect doesn't name (no snowball: RTA 1988 s.89)" do
       changes =
         Merge.merge([

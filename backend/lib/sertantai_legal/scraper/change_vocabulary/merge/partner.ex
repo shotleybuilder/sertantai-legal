@@ -28,7 +28,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge.Partner do
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Merge}
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Merge.Candidates
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Merge.{Candidates, Compound}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw
   alias SertantaiLegal.Scraper.Commencement.Order
   alias SertantaiLegal.Scraper.LatRef
@@ -57,6 +57,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge.Partner do
       |> Map.values()
       |> Enum.filter(&same_day?(orphan, &1))
       |> by_provision(orphan)
+      # (an effect naming the record's provision as the feed wrote it before
+      # one naming it only as a compound's piece: TCPA 1990 s.319A(7)(f),
+      # 2023 c.55 "sch.10.para.9(c)" beside "sch.10.para.9(b)(c)")
+      |> narrow(&written?(orphan, &1))
       |> Enum.filter(&family?(orphan, &1))
       # (the family waived for one amending provision, its own still first:
       # HSWA s.53(1), round 3)
@@ -193,6 +197,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge.Partner do
     end
   end
 
+  defp written?(orphan, placements) do
+    {refs, named} = {refs(orphan), written(placements)}
+    refs != [] and named != [] and related?(refs, named)
+  end
+
   defp family?(orphan, placements) do
     {a, b} = {Merge.family(operation(orphan)), Merge.family(operation(main(placements)))}
 
@@ -231,12 +240,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge.Partner do
     end
   end
 
-  # the provisions an event's records name: the feed's, or a note's
-  defp affecting(placements),
-    do:
-      Enum.flat_map(placements, fn c ->
-        List.flatten(Change.values(c, :feed, :affecting) ++ Change.values(c, :markup, :affecting))
-      end)
+  # the provisions an event's records name: the feed's (a compound as its
+  # sibling pieces: "reg.4(2)(a)(b)" names (a) and (b)), or a note's
+  defp affecting(placements) do
+    Enum.flat_map(placements, fn c ->
+      Compound.expand(List.flatten(Change.values(c, :feed, :affecting))) ++
+        List.flatten(Change.values(c, :markup, :affecting))
+    end)
+  end
+
+  # the same, as written: a compound whole
+  defp written(placements) do
+    Enum.flat_map(placements, fn c ->
+      List.flatten(Change.values(c, :feed, :affecting) ++ Change.values(c, :markup, :affecting))
+    end)
+  end
 
   # one amending provision within the other: brackets ("para. 8(a)(i)" in
   # "para. 8"), a Schedule's Part or paragraph in the Schedule

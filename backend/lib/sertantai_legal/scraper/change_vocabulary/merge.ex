@@ -30,6 +30,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Merge.{
     Candidates,
+    Compound,
     Copies,
     Partner,
     Precise,
@@ -142,75 +143,90 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
       Change.value(orphan, :law_text, :by) || Change.value(orphan, :markup, :cited) ||
         Change.value(orphan, :markup, :cited_text)
 
-    candidates =
-      for t <- LatRef.ancestors(orphan.target) ++ Map.get(below, orphan.target, []),
-          c <- Map.get(by_target, t, []),
-          c.key != orphan.key,
-          law == nil or by(c) == law,
-          other_source?(orphan, c),
-          not inside_words?(orphan, c),
-          not new_child?(orphan, c),
-          do: c
+    case Partner.choose(orphan, candidates(orphan, law, by_target, below)) do
+      nil ->
+        unjoined(orphan, law, by_target)
 
-    events =
-      case Partner.choose(orphan, candidates) do
-        nil -> []
-        placements -> [placements]
-      end
-
-    case events do
-      [placements] ->
+      placements ->
         match = Partner.placement(placements, orphan)
-
-        # the more precise target stays (the orphan's when it lies below) —
-        # unless the markup placed the change: where its text sits
-        target =
-          if marked?(match) or match.target not in LatRef.ancestors(orphan.target),
-            do: match.target,
-            else: orphan.target
-
-        # where the law's text named it, when placed elsewhere (a words
-        # change in reg.21 is a whole-provision change on reg.21(1)(a))
-        placed =
-          if target != orphan.target and Change.values(orphan, :law_text, :by) != [],
-            do: Claim.new(:law_text, :placed, orphan.target, orphan.key),
-            else: []
-
-        # where the feed named the event, when markup below moves it there:
-        # the note's other pieces find the event by it (HSWA s.16: the first
-        # piece moved the event to s.16(1), and pieces on s.16(2) … (8) lost
-        # it — round 5 J; a pointer for identity, no attribute's value)
-        named_at =
-          if target != match.target and Change.values(orphan, :law_text, :by) == [] and
-               Change.values(match, :feed, :named_at) == [],
-             do: Claim.new(:feed, :named_at, match.target, match.key),
-             else: []
-
-        # where the feed placed the event, when moved: its level speaks for
-        # that provision only (CV-S08 round 1: the feed's "words" on
-        # s.11(4)(b) is no claim on the new s.11(4)(i))
-        fed_at =
-          if target != match.target and Change.values(match, :feed, :by) != [] and
-               Change.values(match, :feed, :placed) == [],
-             do: Claim.new(:feed, :placed, match.target, match.key),
-             else: []
-
-        joined = %{
-          match
-          | target: target,
-            claims: match.claims ++ orphan.claims ++ placed ++ named_at ++ fed_at,
-            aliases: match.aliases ++ orphan.aliases
-        }
 
         by_target
         |> Map.update!(match.target, &List.delete(&1, match))
-        |> place(joined)
+        |> place(joined(match, orphan))
+    end
+  end
 
-      _ ->
-        case joined_instruction(orphan, by_target) || joined_note(orphan, by_target) do
-          nil -> Map.update(by_target, orphan.target, [orphan], &[orphan | &1])
-          event -> place(by_target, event)
-        end
+  # the events by the record's law on its provision, above it and below it
+  defp candidates(orphan, law, by_target, below) do
+    for t <- LatRef.ancestors(orphan.target) ++ Map.get(below, orphan.target, []),
+        c <- Map.get(by_target, t, []),
+        c.key != orphan.key,
+        law == nil or by(c) == law,
+        other_source?(orphan, c),
+        not inside_words?(orphan, c),
+        not new_child?(orphan, c),
+        do: c
+  end
+
+  # the event's placement with the record joined to it
+  defp joined(match, orphan) do
+    target = joined_target(match, orphan)
+
+    %{
+      match
+      | target: target,
+        claims:
+          match.claims ++
+            orphan.claims ++
+            placed(orphan, target) ++ named_at(match, orphan, target) ++ fed_at(match, target),
+        aliases: match.aliases ++ orphan.aliases
+    }
+  end
+
+  # the more precise target stays (the orphan's when it lies below) —
+  # unless the markup placed the change: where its text sits
+  defp joined_target(match, orphan) do
+    if marked?(match) or match.target not in LatRef.ancestors(orphan.target),
+      do: match.target,
+      else: orphan.target
+  end
+
+  # where the law's text named it, when placed elsewhere (a words
+  # change in reg.21 is a whole-provision change on reg.21(1)(a))
+  defp placed(orphan, target) do
+    if target != orphan.target and Change.values(orphan, :law_text, :by) != [],
+      do: Claim.new(:law_text, :placed, orphan.target, orphan.key),
+      else: []
+  end
+
+  # where the feed named the event, when markup below moves it there:
+  # the note's other pieces find the event by it (HSWA s.16: the first
+  # piece moved the event to s.16(1), and pieces on s.16(2) … (8) lost
+  # it — round 5 J; a pointer for identity, no attribute's value)
+  defp named_at(match, orphan, target) do
+    if target != match.target and Change.values(orphan, :law_text, :by) == [] and
+         Change.values(match, :feed, :named_at) == [],
+       do: Claim.new(:feed, :named_at, match.target, match.key),
+       else: []
+  end
+
+  # where the feed placed the event, when moved: its level speaks for
+  # that provision only (CV-S08 round 1: the feed's "words" on
+  # s.11(4)(b) is no claim on the new s.11(4)(i))
+  defp fed_at(match, target) do
+    if target != match.target and Change.values(match, :feed, :by) != [] and
+         Change.values(match, :feed, :placed) == [],
+       do: Claim.new(:feed, :placed, match.target, match.key),
+       else: []
+  end
+
+  # a record no event on its line of provisions takes: the placement of an
+  # event joined elsewhere, else its own change
+  defp unjoined(orphan, law, by_target) do
+    case joined_instruction(orphan, by_target) || moved_event(orphan, law, by_target) ||
+           joined_note(orphan, by_target) do
+      nil -> Map.update(by_target, orphan.target, [orphan], &[orphan | &1])
+      event -> place(by_target, event)
     end
   end
 
@@ -284,6 +300,55 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
     end
   end
 
+  # A law-text record whose event an earlier record moved off its line of
+  # provisions: the feed placed the event on a provision above the record
+  # (its `:placed` or `:named_at` claim), and the first record to join took
+  # it to its own place below. The record is the event's placement where it
+  # sits, with the event's feed facts, as `joined_instruction` lends them
+  # (SI 1994/232 reg.4(1), (3): SI 2000/3097 reg.2(e) and (f), the feed's
+  # effect on reg.4; 1995 c.25 s.44(3): a note took the event to
+  # s.44(1)(b)) — the same tests as any join, read at the feed's place
+  defp moved_event(orphan, law, by_target) do
+    with true <- Change.values(orphan, :law_text, :by) != [],
+         [_ | _] = placements <- Partner.choose(orphan, moved(orphan, law, by_target)),
+         %Change{} = event <- Enum.find(placements, &(Change.values(&1, :feed, :by) != [])) do
+      %Change{
+        key: event.key,
+        target: orphan.target,
+        claims: Enum.filter(event.claims, &(&1.source in [:feed, :law])) ++ orphan.claims,
+        aliases: Enum.uniq([event.key, orphan.key])
+      }
+    else
+      _ -> nil
+    end
+  end
+
+  # the events off the record's line that the feed placed above it, each
+  # read where the feed placed it
+  defp moved(orphan, law, by_target) do
+    [here | above] = LatRef.ancestors(orphan.target)
+
+    for {target, changes} <- by_target,
+        here not in LatRef.ancestors(target),
+        target not in above,
+        c <- changes,
+        at = fed_above(c, above),
+        at != nil,
+        by(c) == law,
+        other_source?(orphan, c),
+        fed = %{c | target: at},
+        not inside_words?(orphan, fed),
+        not new_child?(orphan, fed),
+        do: fed
+  end
+
+  defp fed_above(c, above),
+    do:
+      Enum.find(
+        Change.values(c, :feed, :placed) ++ Change.values(c, :feed, :named_at),
+        &(&1 in above)
+      )
+
   # the feed records the joined event's amending provision per place: another
   # effect by the same law names it, so each place joins its own effect or
   # stays apart (SSI 2005/658 reg.2(2): one effect per listed provision)
@@ -354,23 +419,40 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge do
         Change.values(c, :feed, :by) != [] and not marked?(c)
 
       true ->
-        Change.values(c, :feed, :by) != [] and not Enum.any?(c.aliases, &legacy?/1)
+        Change.values(c, :feed, :by) != [] and legacy_free?(orphan, c)
     end
   end
+
+  # the feed record holds no legacy markup yet, or names this note's
+  # provision apart
+  defp legacy_free?(orphan, c),
+    do: not Enum.any?(c.aliases, &legacy?/1) or cited_apart?(orphan, c)
 
   # a second law-text record of one event: the feed's effect names both
   # amending provisions, this one apart from the one joined ("Sch. 6 para.
   # 33 Sch. 7": a paragraph and its repeals Schedule; OSRPA 1963 s.90 by
-  # Licensing Act 2003 — KJ2, round 6) — never otherwise (no snowball)
+  # Licensing Act 2003 — KJ2, round 6), or names them in one compound
+  # ("reg.4(2)(a)(b)": `Compound`) — never otherwise (no snowball)
   defp named_apart?(orphan, c) do
-    named = c |> Change.values(:feed, :affecting) |> List.flatten()
-    own = Partner.refs(orphan)
-
     joined =
       for k <- c.aliases,
           String.contains?(k, ":"),
           r <- Partner.key_refs(k),
           do: r
+
+    apart?(orphan, c, joined)
+  end
+
+  # a second legacy note of one event, the same way: the feed's effect
+  # names the provision its note cites apart from those the notes joined
+  # cite (EPA 1990 s.53(5): asp 2002/3 "sch.7.para.20(3)(b)(c)", a note
+  # citing (b) and another citing (c)) — never otherwise (no snowball)
+  defp cited_apart?(orphan, c),
+    do: apart?(orphan, c, c |> Change.values(:markup, :affecting) |> List.flatten())
+
+  defp apart?(orphan, c, joined) do
+    named = c |> Change.values(:feed, :affecting) |> List.flatten() |> Compound.expand()
+    own = Partner.refs(orphan)
 
     length(named) > 1 and own != [] and Enum.all?(own, &(&1 in named)) and
       Enum.all?(own, &(&1 not in joined))

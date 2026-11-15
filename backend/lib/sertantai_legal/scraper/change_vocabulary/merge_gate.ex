@@ -41,7 +41,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeGate do
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Claim, Merge, MergeStrata}
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Merge.{Candidates, Partner}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Merge.{Candidates, Compound, Partner}
   alias SertantaiLegal.Scraper.Commencement.Leftovers
   alias SertantaiLegal.Scraper.LatRef
 
@@ -183,9 +183,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MergeGate do
 
   # the law's text stating one change twice (an operative section and the
   # repeals Schedule: 2003 c.20 s.87 and Sch.8), each named by the feed's
-  # one effect
+  # one effect (a compound "reg.4(2)(a)(b)" names each piece: Merge.Compound)
   defp law_text_records(c) do
-    named = affecting(c, :feed)
+    named = c |> affecting(:feed) |> Compound.expand()
     refs = c.aliases |> Enum.filter(&law_text_key?/1) |> Enum.flat_map(&Partner.key_refs/1)
 
     if refs != [] and Enum.all?(refs, &(&1 in named)),
