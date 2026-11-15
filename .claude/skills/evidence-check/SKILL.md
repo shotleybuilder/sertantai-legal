@@ -194,3 +194,12 @@ Environmental Protection (2026-11-10/11), on the code gate. The session is `.cla
 - Agent pass, seed 62 (155,068 tokens): 36 OK, 12 gaps, 2 wrong. The new class, a feed date "in accordance with" its law's clause on the law's made day, was fixed in the table (Decision 4: `Readers.AffectingMade`, `:not_made_day`), then one rebuild.
 - Known classes added: KX (the "as amended by" chain), KW (a Welsh SI cited by its UK S.I. number), KPRE (an amendment before the amended law's own start), and the Commencement-reader classes KORD-WHOLE, KORD-PARTIAL and KEXCEPT.
 - Build and check with the family's full name ("OH&S: Occupational / Personal Safety"): the bare "OH&S" matches four families.
+
+Fire and OH&S (round, 2026-11-15), on the code gate. The session is `.claude/sessions/lat-change-pipeline/2026-11-15-fire-and-ohs-evidence.md`.
+- **Gate:** 26 groups not named (the round 18, the switched families 8) → all four gates PASS (95, 188, 61, 57). The table's order was right throughout.
+- **New by-design class:** a substitution's new numbers, which the feed reads as inserted while the markup shows them as Substitution (RULES `feed-substituted-for-new-numbers-inserted`).
+- **Parked:**
+  - Feed reader: `substituted-for-letter-range-ranked-as-text` (11);
+  - Commencement reader: a new form of `order-in-list-read-whole` (8), and `if-later-date-unread` (3).
+- **Fixed (Decision 2 a):** `stages-go-with-the-date`. `Resolved.stages` comes from the date's own source and is worked out on read. One rebuild of 544 laws; the stored values are unchanged.
+- **For a new family:** take the rebuild list from the `changes_built` events, not from `provision_changes`.

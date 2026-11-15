@@ -1,0 +1,66 @@
+149 laws; 26286 changes; in a stratum: 3227
+
+evidence decisions by cause (test/fixtures/evidence/evidence.json): 61 groups; known 61
+     62  operation: law_text inserted against feed substituted
+     25  by: markup against feed
+     23  partial: commencement against feed
+     21  operation: law_text repealed against feed substituted
+     10  operation: law_text inserted against markup substituted
+      8  operation: markup inserted against feed substituted
+      7  operation: markup substituted against feed inserted
+      4  commenced_by: commencement against feed
+      4  level: law_text provision against feed words
+      3  date: commencement against feed
+      3  level: law_text provision against markup words
+      2  level: markup words against feed provision
+      2  operation: law_text inserted against feed repealed
+      1  level: law_text words against feed provision
+      1  level: law_text words against markup provision
+      1  operation: law_text repealed against markup inserted
+      1  operation: law_text repealed against markup substituted
+      1  operation: markup inserted against feed renumbered
+
+not named (widest reach first): 0
+
+gaps, a value no source claims (attribute, sources the change holds):
+    954  commenced_by  feed+law_text
+    915  commenced_by  feed+law_text+markup
+    396  date  feed
+    326  commenced_by  feed; amending law has no commencement rules
+    236  commenced_by  feed
+    226  commenced_by  feed+law+law_text
+    136  commenced_by  feed+law+law_text+markup
+     90  commenced_by  markup; amending law has no commencement rules
+     90  date  markup
+     88  commenced_by  feed+markup
+     40  date  feed+markup
+     35  commenced_by  feed+markup; amending law has no commencement rules
+     30  commenced_by  feed+law_text; amending law has no commencement rules
+     13  commenced_by  commencement+law_text
+     13  commenced_by  commencement+law_text+markup
+      9  by  markup
+      9  level  feed+law_text+markup
+      8  commenced_by  commencement+markup
+      8  level  feed+law+law_text+markup
+      6  commenced_by  commencement+feed+law_text+markup
+      6  commenced_by  feed+law_text+markup; amending law has no commencement rules
+      5  date  feed+law_text
+      4  date  feed+law+law_text
+      3  commenced_by  feed+law
+      2  date  feed+law+law_text+markup
+      1  commenced_by  commencement+feed+law+law_text+markup
+      1  commenced_by  feed+law+markup
+      1  commenced_by  feed+law_text+placement
+      1  commenced_by  law_text
+      1  commenced_by  law_text+markup
+      1  date  commencement+feed+law+law_text+markup
+      1  date  law_text
+      1  date  law_text+markup
+      1  level  feed+markup
+gaps by attribute (total; amending law has no commencement rules):
+   3090  commenced_by  (487)
+    540  date  (0)
+     18  level  (0)
+      9  by  (0)
+
+PASS (groups not named: 0)

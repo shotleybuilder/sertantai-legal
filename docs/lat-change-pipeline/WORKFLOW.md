@@ -453,6 +453,20 @@ Before this, OH&S used agents over V in full and D by pattern, and pooled A samp
   - All three gates PASS; golden 27/27.
 - **Build with the full family name:** `--family "OH&S"` matches four OH&S families (189 laws); the step's family is "OH&S: Occupational / Personal Safety" (149). The bare name built 40 laws of the other three families for the first time (kept, Jason 2026-11-11).
 
+**Fire and OH&S** (round, 2026-11-15). The changes were current after Merge's rebuild. The gate had 26 groups not named: 18 in the round, and 8 in the three switched families.
+- **How they were read:** each was read in the sources' own records. The table's order was right on every group.
+- **One new shape in all four gates** (8 groups, 30 changes): "markup substituted against feed inserted". It comes from the Feed reader's `feed-substituted-for-new-numbers-inserted`. A substitution's new numbers are inserted, and the markup wraps them in one Substitution. The feed's inserted is right in 7 of the 8. The same shape explains the rise in markup–feed disagreements in Occupational and Maritime.
+- **Wrong chosen values, 25, all misreads, parked (Decision 3):**
+  - **The Feed reader** ranks a letter range as text, so "(qq)" falls outside "(a)–(aaa)" (SI 2015/479 on EPA s.153(1); 11 changes).
+  - **The Commencement reader** holds an order's "Schedule 23 Part 2 – paragraph 2" as all of Sch.23 (SI 2004/2575; 8 changes).
+  - **The Commencement reader** reads "or, if later, the 1st October 2018" as the earlier day (SI 2018/797; 3 changes).
+  - **One change each:** forms named as known limits.
+- **The parked Evidence bug was fixed (Decision 2 a):** the stages go with the date (RULES `stages-go-with-the-date`). `Resolved.stages` takes the stages of the chosen date's own source, worked out on read. 136 of the round's changes carry stages. In 31 of them the law's commencement dates the change, so its stages displace the feed's. The in-memory preview showed every other resolved value unchanged. Then came a restore point and one rebuild of the 544 built laws, in 294 s.
+- **Result:**
+  - Strata are identical to the baseline: the round V 243 / D 46 / A 4,446; EP V 448 / D 149; Occupational V 126 / D 42; Maritime V 173 / D 23.
+  - All four gates PASS (95, 188, 61, 57), and golden is 27/27.
+  - The round's gaps: commenced_by 1,677 (43 with no commencement rules), date 156, level 68, by 10.
+
 **Skill.** `evidence-check`.
 
 ## 9. Label fold

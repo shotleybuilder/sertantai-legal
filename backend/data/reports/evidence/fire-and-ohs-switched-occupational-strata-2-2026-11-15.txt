@@ -1,0 +1,68 @@
+149 laws; 26286 changes; in a stratum: 3227
+
+strata:
+  V  value conflicts (primary vs legislation.gov.uk): 126
+  D  markup vs feed, no primary claim: 42
+  A  agreeing, several sources: 3059
+
+V conflicts (attribute primary/derived):
+  85  operation law_text/feed
+  23  partial commencement/feed
+  14  operation law_text/markup
+  5  level law_text/feed
+  4  commenced_by commencement/feed
+  4  level law_text/markup
+  3  date commencement/feed
+
+D patterns (attribute markup/feed, chosen operation):
+  13  by cited/affecting substituted
+  12  by cited/affecting inserted
+  8  operation inserted/substituted substituted
+  6  operation substituted/inserted inserted
+  1  level words/provision substituted
+  1  operation inserted/renumbered renumbered
+  1  operation substituted/inserted; level words/provision inserted
+
+A attributes several sources claim:
+  3009  level
+  2993  operation
+  2236  by
+  2041  date
+  779  partial
+  108  commenced_by
+  62  territory
+
+winning source per attribute, all changes:
+  26177  retained none
+  24367  saved none
+  23637  territory none
+  21356  commenced_by commencement
+  20297  date commencement
+  17702  partial commencement
+  17691  level commencement
+  17691  operation commencement
+  16993  by none
+  7182  by feed
+  4992  date feed
+  4967  partial feed
+  4819  commenced_by none
+  4144  operation feed
+  3619  level feed
+  3617  partial none
+  2413  operation none
+  2063  level none
+  1907  by law_text
+  1907  level law_text
+  1907  operation law_text
+  1868  saved feed
+  1617  territory feed
+  997  date none
+  997  level markup
+  978  territory law_text
+  195  by markup
+  122  operation markup
+  111  commenced_by feed
+  100  retained markup
+  43  territory markup
+  42  saved law_text
+  2  territory law

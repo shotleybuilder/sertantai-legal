@@ -1,0 +1,134 @@
+139 laws; 31711 changes; in a stratum: 4735
+
+evidence decisions by cause (test/fixtures/evidence/evidence.json): 95 groups; known 77, unreviewed 18
+    106  operation: law_text repealed against feed substituted
+     63  operation: law_text inserted against feed substituted
+     32  operation: law_text inserted against markup substituted
+     21  level: markup words against feed provision
+     20  operation: law_text repealed against markup substituted
+     17  commenced_by: commencement against feed
+     15  date: commencement against feed
+     13  level: law_text provision against markup words
+     11  by: markup against feed
+      7  operation: law_text repealed against feed repealed_in_part
+      6  operation: markup substituted against feed renumbered
+      4  level: law_text provision against feed words
+      4  level: law_text words against markup provision
+      4  operation: markup inserted against feed substituted
+      3  level: law_text words against feed provision
+      3  level: markup provision against feed words
+      3  operation: markup substituted against feed inserted
+      2  operation: markup inserted against feed renumbered
+      2  operation: markup repealed against feed repealed_in_part
+      1  operation: law_text inserted against feed repealed_in_part
+      1  operation: markup inserted against feed repealed
+      1  territory: law_text against markup
+
+not named (widest reach first): 18
+      7  commenced_by: commencement against feed @ UK_asp_2012_8  [no status]
+           UK_asp_2005_5 s.43A
+           UK_asp_2005_5 s.43B
+           UK_asp_2005_5 s.43C
+           UK_asp_2005_5 s.43D
+      6  commenced_by: commencement against feed @ UK_ukpga_2022_30  [no status]
+           UK_uksi_2005_1541 reg.21A
+           UK_uksi_2005_1541 reg.22(1)(za)
+           UK_uksi_2005_1541 reg.22(1)(zb)
+           UK_uksi_2005_1541 reg.22(A1)
+      6  operation: markup substituted against feed renumbered @ UK_uksi_2016_315  [no status]
+           UK_uksi_2014_1638 reg.78
+           UK_uksi_2014_1638 reg.79
+           UK_uksi_2014_1638 reg.81
+           UK_uksi_2014_1638 reg.82
+      4  date: commencement against feed @ UK_asp_2012_8  [no status]
+           UK_asp_2005_5 s.39A
+           UK_asp_2005_5 s.39B
+           UK_asp_2005_5 s.39C
+           UK_asp_2005_5 s.41M
+      4  commenced_by: commencement against feed @ UK_ukpga_2004_20  [no status]
+           UK_ukpga_1962_58 s.10B
+           UK_ukpga_1962_58 s.10C(1)
+           UK_ukpga_1998_17 s.17A
+           UK_ukpga_1998_17 s.17B
+      4  date: commencement against feed @ UK_ukpga_2004_20  [no status]
+           UK_ukpga_1962_58 s.10B
+           UK_ukpga_1962_58 s.10C(1)
+           UK_ukpga_1998_17 s.17A
+           UK_ukpga_1998_17 s.17B
+      3  by: markup against feed @ UK_asp_2012_8  [no status]
+           UK_ukpga_2004_21 s.35(6)
+           UK_ukpga_2004_21 s.35(a)
+           UK_ukpga_2004_21 s.35(b)
+      3  date: commencement against feed @ UK_uksi_2018_797  [no status]
+           UK_ukpga_1998_17 s.45A(10)
+           UK_ukpga_1998_17 s.45A(9)
+           UK_ukpga_1998_17 s.45A(9A)
+      3  operation: markup substituted against feed inserted @ UK_uksi_2023_284  [no status]
+           UK_uksi_1996_551 reg.7(1A)
+           UK_uksi_1996_551 reg.7(1B)
+           UK_uksi_1996_551 reg.7(1C)
+      1  territory: law_text against markup @ UK_asp_2012_5  [no status]
+           UK_ukpga_1998_17 s.5(9)
+      1  level: markup provision against feed words @ UK_asp_2012_8  [no status]
+           UK_asp_2005_5 pt.2.ch.8C
+      1  level: markup provision against feed words @ UK_nisr_2015_325  [no status]
+           UK_apni_1929_13 s.24A(a)
+      1  operation: markup repealed against feed repealed_in_part @ UK_ukpga_2003_44  [no status]
+           UK_ukpga_1883_3 s.6(3)
+      1  operation: markup inserted against feed repealed @ UK_uksi_1996_973  [no status]
+           UK_ukpga_1962_58 s.37(4)(b)
+      1  operation: markup repealed against feed repealed_in_part @ UK_uksi_2010_807  [no status]
+           UK_uksi_2005_1541 reg.53(1)
+      1  by: markup against feed @ UK_uksi_2020_852  [no status]
+           UK_uksi_2018_389 reg.1(2)
+      1  level: markup provision against feed words @ UK_uksi_2020_852  [no status]
+           UK_uksi_2014_1638 reg.69
+      1  date: commencement against feed @ UK_uksi_2023_320  [no status]
+           UK_uksi_2023_284 reg.1(2)
+
+gaps, a value no source claims (attribute, sources the change holds):
+    694  commenced_by  feed+law_text
+    279  commenced_by  feed+law_text+markup
+    222  commenced_by  feed+law+law_text
+    152  commenced_by  feed+law+law_text+markup
+     93  commenced_by  feed
+     88  commenced_by  feed+markup
+     61  level  feed+law+law_text+markup
+     56  date  feed+law+law_text
+     48  date  feed
+     36  commenced_by  feed+law
+     27  commenced_by  commencement+law_text
+     20  commenced_by  feed; amending law has no commencement rules
+     15  date  feed+law_text
+     12  commenced_by  commencement+markup
+     11  commenced_by  feed+law_text; amending law has no commencement rules
+     11  date  markup
+     10  by  markup
+     10  commenced_by  law_text
+     10  commenced_by  markup; amending law has no commencement rules
+     10  date  law_text
+      9  commenced_by  feed+law+markup
+      6  level  feed+law_text+markup
+      5  date  feed+law+law_text+markup
+      4  commenced_by  commencement+law_text+markup
+      3  date  feed+law
+      2  commenced_by  commencement+feed+law+law_text+markup
+      2  commenced_by  commencement+feed+law_text+markup
+      2  commenced_by  feed+law_text+markup; amending law has no commencement rules
+      2  date  commencement+feed+law+law_text+markup
+      2  date  feed+law_text+markup
+      2  date  feed+markup
+      1  commenced_by  commencement+feed+law+law_text
+      1  commenced_by  commencement+feed+law_text
+      1  commenced_by  law_text+markup
+      1  commenced_by  markup
+      1  date  commencement+feed+law_text
+      1  date  law_text+markup
+      1  level  feed+markup
+gaps by attribute (total; amending law has no commencement rules):
+   1677  commenced_by  (43)
+    156  date  (0)
+     68  level  (0)
+     10  by  (0)
+
+FAIL (groups not named: 18)

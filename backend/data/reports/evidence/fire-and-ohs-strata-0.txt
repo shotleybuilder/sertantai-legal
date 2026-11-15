@@ -1,0 +1,80 @@
+139 laws; 31711 changes; in a stratum: 4735
+
+strata:
+  V  value conflicts (primary vs legislation.gov.uk): 243
+  D  markup vs feed, no primary claim: 46
+  A  agreeing, several sources: 4446
+
+V conflicts (attribute primary/derived):
+  177  operation law_text/feed
+  52  operation law_text/markup
+  17  commenced_by commencement/feed
+  17  level law_text/markup
+  15  date commencement/feed
+  7  level law_text/feed
+  1  territory law_text/markup
+
+D patterns (attribute markup/feed, chosen operation):
+  12  level words/provision inserted
+  8  by cited/affecting inserted
+  5  operation substituted/renumbered; level words/provision renumbered
+  3  by cited/affecting substituted
+  3  operation inserted/substituted substituted
+  3  operation substituted/inserted inserted
+  2  level provision/words substituted
+  2  level words/provision repealed_in_part
+  2  operation repealed/repealed_in_part repealed_in_part
+  1  level words/provision substituted
+  1  operation inserted/renumbered renumbered
+  1  operation inserted/renumbered; level words/provision renumbered
+  1  operation inserted/repealed repealed
+  1  operation inserted/substituted; level provision/words substituted
+  1  operation substituted/renumbered renumbered
+
+A attributes several sources claim:
+  4317  level
+  4288  operation
+  3518  date
+  2981  by
+  1349  partial
+  441  commenced_by
+  115  territory
+
+winning source per attribute, all changes:
+  31647  retained none
+  29277  saved none
+  28623  territory none
+  28068  commenced_by commencement
+  27110  date commencement
+  23829  partial commencement
+  23828  level commencement
+  23828  operation commencement
+  22742  by none
+  5647  by feed
+  4133  partial feed
+  4128  date feed
+  3858  operation feed
+  3749  partial none
+  3343  level feed
+  3111  by law_text
+  3111  level law_text
+  3111  operation law_text
+  3046  commenced_by none
+  2433  saved feed
+  1623  territory feed
+  1357  territory law_text
+  861  operation none
+  759  level markup
+  670  level none
+  597  commenced_by feed
+  473  date none
+  211  by markup
+  89  territory markup
+  64  retained markup
+  53  operation markup
+  19  territory law
+  1  saved law_text
+
+real	0m4.562s
+user	0m5.469s
+sys	0m1.010s
