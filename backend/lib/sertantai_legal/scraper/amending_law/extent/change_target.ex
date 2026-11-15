@@ -11,13 +11,44 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ChangeTarget do
   default, also widens, not narrows). A statement naming a law applies
   where the change's law has that title; with no title known, any such
   statement in scope makes the bound unknown — never one it may narrow.
-  Pure.
+
+  A statement naming a Part of the amended law ("an amendment of Part 1A of
+  the Petroleum Act 1998", `Extent.AmendedExcepted`) speaks of a change
+  whose target is that Part, or is within it: the change's `within` (the
+  Parts holding its target, as the change's reader knows them). With no
+  `within` given, such a change's bound is unknown. Pure.
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Extent, RefList}
   alias SertantaiLegal.Scraper.Territory
 
   @order %{only: 1, named: 2, also: 3, not: 4}
+
+  @doc """
+  A change as the lookup takes it: its amended `law`, that law's `title`
+  and its `target`, with the Parts holding the target (`within`) where
+  `parts` (the amended law's rows: ref → its Parts, `["pt.1A"]`) knows the
+  target or the provision holding it; a Schedule's provision is in none.
+  """
+  @spec change(
+          String.t() | nil,
+          String.t() | nil,
+          String.t(),
+          %{String.t() => [String.t()]} | nil
+        ) ::
+          map()
+  def change(law, title, target, parts) do
+    change = %{law: law, title: title, target: target}
+
+    case parts && within(parts, target) do
+      within when is_list(within) -> Map.put(change, :within, within)
+      _ -> change
+    end
+  end
+
+  # (a Schedule's provision is in no Part of the body, held as a row or not)
+  defp within(_parts, "sch." <> _), do: []
+  defp within(parts, target), do: parts[target] || parts[String.replace(target, ~r/\(.*$/, "")]
 
   @doc "The bound `base` with the target statements that speak of `change` (`law`, `title`, `target`)."
   @spec bound(Extent.t(), [String.t()], map() | nil, String.t() | :same | nil) ::
@@ -27,14 +58,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ChangeTarget do
 
   def bound(%Extent{targets: targets} = e, refs, change, base) do
     speaking =
-      for t <- targets, in_scope?(t.scope, refs), covers?(t.refs, change.target) do
-        case law?(t.law, change) do
-          :unknown -> :unknown
-          true -> t
-          false -> nil
-        end
+      for t <- targets, in_scope?(t.scope, refs), s = speaks(t, change), s != false do
+        if s == :unknown, do: :unknown, else: t
       end
-      |> Enum.reject(&is_nil/1)
 
     cond do
       :unknown in speaking ->
@@ -49,6 +75,33 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ChangeTarget do
         |> Enum.reduce(base, &step(&1, &2, e))
     end
   end
+
+  # whether the statement speaks of the change: its targets hold the
+  # change's, and its law is the change's; `:unknown` where either can't be
+  # told (no title; a Part named and the Part of the change's target not
+  # given)
+  defp speaks(t, change) do
+    case {covers(t.refs, change), law?(t.law, change)} do
+      {false, _} -> false
+      {_, false} -> false
+      {true, true} -> true
+      _ -> :unknown
+    end
+  end
+
+  # a Part (or Chapter) of the amended law holds a target that is it, or
+  # that the change says is within it (`within`: the target's own Parts)
+  defp covers(refs, %{target: target} = change) do
+    cond do
+      covers?(refs, target) -> true
+      not Enum.any?(refs, &container?/1) or container?(target) -> false
+      is_list(change[:within]) -> Enum.any?(change.within, &covers?(refs, &1))
+      true -> :unknown
+    end
+  end
+
+  defp container?(ref) when is_binary(ref), do: ref =~ ~r/^(?:pt|ch)\.[^.]+$/
+  defp container?(_ref), do: false
 
   defp step(%{kind: :only, place: place}, _acc, _e), do: place
 

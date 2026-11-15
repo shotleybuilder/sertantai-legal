@@ -154,7 +154,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
          Keyword.get(opts, :extents, %{}),
          Keyword.get(opts, :xml_ids, %{}),
          Keyword.get(opts, :rows),
-         Keyword.get(opts, :act_title)
+         %{title: Keyword.get(opts, :act_title), parts: Keyword.get(opts, :parts)}
        ) ++
          Markup.read(doc, law_name, Keyword.get(opts, :xml_ids, %{})) ++
          amending ++
@@ -179,7 +179,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
                 NoteDate.claims(c, Keyword.get(opts, :commencement, %{})) ++
                 NoteDate.extent_claims(c, Keyword.get(opts, :extents, %{}), %{
                   law: law_name,
-                  title: Keyword.get(opts, :act_title)
+                  title: Keyword.get(opts, :act_title),
+                  parts: Keyword.get(opts, :parts)
                 })
         }
       end)

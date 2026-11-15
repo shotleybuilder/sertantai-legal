@@ -17,6 +17,11 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingProvisions do
   names several laws, the one whose year matches "… Act YYYY" is taken.
   Section numbers are the base numbers ("219(2)" → "219"; "(3)(a)" continues
   the previous section); "paragraphs … of Schedule 3 to" gives schedule "3".
+
+  An Act titled without its year takes it from the short name defined
+  after it ("… etc. Act f00001 (“the 1974 Act”)"). A clause naming no Act
+  at all ("the powers conferred by section 2(2):—") gives each section to
+  the Act it was named with earlier in the text, and nothing otherwise.
   """
 
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed
@@ -52,6 +57,14 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingProvisions do
   # a defined term after a title: "Act 1974 (“ the 1974 Act ”)"
   @defined_term ~r/\(\s*[“"]\s*the\s+[^”"()]*[”"]\s*\)/u
 
+  # an Act titled without its year, the year in the short name defined after
+  # it: "the Health and Safety at Work etc. Act f00001 (“the 1974 Act ”)"
+  # (SI 1995/2005)
+  @yearless ~r/\bAct((?:\s+[fc]\d{5})?\s*\(\s*[“"]\s*the\s+(\d{4})\s+Act\s*[”"]\s*\))/u
+
+  # what a clause naming no Act never holds: an instrument, a Schedule, "of"
+  @names_a_law ~r/\b(?:Acts?|Orders?|Regulations|Rules|Measure|Schedules?|articles?|regulations?|paragraphs?|of)\b|\b[fc]\d{5}\b/iu
+
   @doc """
   Enabling provisions per parent law, in clause order. `titles` (lower-case
   "title year" → law name) resolves an Act the clause names in plain words,
@@ -63,20 +76,47 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingProvisions do
   def parse(nil, _urls, _titles), do: []
 
   def parse(text, urls, titles) do
-    case powers_clause(text) do
+    case text |> with_years() |> powers_clause() do
       nil ->
         []
 
       {clause, before} ->
-        clause
-        |> short_names(before <> clause)
-        |> String.replace(@defined_term, " ")
-        |> chunks()
-        |> Enum.flat_map_reduce(before, fn {chunk, marker}, so_far ->
-          {read_chunk(chunk, marker, titles, {so_far, urls}),
-           so_far <> chunk <> " " <> (marker || "")}
-        end)
-        |> elem(0)
+        case read_clause(clause, before, urls, titles) do
+          [] -> bare_sections(clause, titles, {before, urls})
+          found -> found
+        end
+    end
+  end
+
+  defp read_clause(clause, before, urls, titles) do
+    clause
+    |> short_names(before <> clause)
+    |> String.replace(@defined_term, " ")
+    |> chunks()
+    |> Enum.flat_map_reduce(before, fn {chunk, marker}, so_far ->
+      {read_chunk(chunk, marker, titles, {so_far, urls}),
+       so_far <> chunk <> " " <> (marker || "")}
+    end)
+    |> elem(0)
+  end
+
+  defp with_years(text), do: String.replace(text, @yearless, "Act \\2\\1")
+
+  # a clause naming no Act ("in exercise of the powers conferred by section
+  # 2(2):—", SI 2006/1031): each section of the Act it was named with
+  # before ("designated for the purposes of section 2(2) of the European
+  # Communities Act 1972"); a section named with none before is not read
+  defp bare_sections(clause, titles, context) do
+    with false <- clause =~ @names_a_law,
+         [_, list] <- Regex.run(~r/\bsections?\s*(\d.*)$/su, clause) do
+      list
+      |> numbers()
+      |> Enum.map(&{said_act(&1, titles, context), &1})
+      |> Enum.reject(fn {law, _n} -> is_nil(law) end)
+      |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
+      |> Enum.map(fn {law, ns} -> %{law: law, sections: ns, schedules: []} end)
+    else
+      _ -> []
     end
   end
 
@@ -168,6 +208,8 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingProvisions do
   def titles(nil), do: []
 
   def titles(text) do
+    text = with_years(text)
+
     Regex.scan(~r/\bAct\s+\d{4}\b/u, text, return: :index)
     |> Enum.flat_map(fn [{i, l}] ->
       upto = binary_part(text, 0, i + l)
@@ -428,18 +470,20 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingProvisions do
   end
 
   # The section list: after the last "section(s)" up to " of" — base numbers
-  # of items that start with a digit ("(3)(a)" continues the previous one).
+  # of items that start with a digit ("(3)(a)" continues the previous one);
+  # "sections1 and 120 of" (no space: SI 1991/724).
   defp sections(chunk) do
-    case Regex.run(~r/\bsections?\s+(.*?)\s+of\b/isu, section_run(chunk)) do
-      [_, list] ->
-        ~r/(?:^|[\s,])(\d+[A-Z]*)(?=[\s(,]|$)/u
-        |> Regex.scan(list)
-        |> Enum.map(fn [_, n] -> n end)
-        |> Enum.uniq()
-
-      _ ->
-        []
+    case Regex.run(~r/\bsections?(?:\s+|(?=\d))(.*?)\s+of\b/isu, section_run(chunk)) do
+      [_, list] -> numbers(list)
+      _ -> []
     end
+  end
+
+  defp numbers(list) do
+    ~r/(?:^|[\s,])(\d+[A-Z]*)(?=[\s(,:]|$)/u
+    |> Regex.scan(list)
+    |> Enum.map(fn [_, n] -> n end)
+    |> Enum.uniq()
   end
 
   # "paragraphs … of Schedule 3 to"; several Schedules before one "to"
@@ -456,7 +500,9 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingProvisions do
   # 302(1) and section 306A of": SI 2018/155)
   defp section_run(chunk) do
     starts =
-      ~r/\bsections?\b/iu |> Regex.scan(chunk, return: :index) |> Enum.map(fn [{i, _}] -> i end)
+      ~r/\bsections?(?=\b|\d)/iu
+      |> Regex.scan(chunk, return: :index)
+      |> Enum.map(fn [{i, _}] -> i end)
 
     case Enum.reverse(starts) do
       [] ->

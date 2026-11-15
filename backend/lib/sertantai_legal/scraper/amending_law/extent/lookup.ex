@@ -16,8 +16,17 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lookup do
   # whatever else is read for the same provisions ("*" both: every
   # amendment the same extent, and an amendments' statement unread), then
   # the same extent, then those that set, widen, narrow
-  @typedoc "A change by its amended law, that law's title and its target ref."
-  @type change :: %{law: String.t(), title: String.t() | nil, target: String.t()}
+  @typedoc """
+  A change by its amended law, that law's title and its target ref; and,
+  where its reader knows them, the Parts of that law holding the target
+  (`within`: `["pt.1A"]`).
+  """
+  @type change :: %{
+          required(:law) => String.t(),
+          required(:title) => String.t() | nil,
+          required(:target) => String.t(),
+          optional(:within) => [String.t()]
+        }
 
   @apply_order %{unread: -1, same: 0, only: 1, named: 2, also: 3, not: 4}
 
@@ -70,7 +79,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lookup do
         do: Enum.reject(naming, &match?({k, _, _} when k in [:same, :unread], &1)),
         else: naming
 
-    naming = same_over_unread(naming, ref)
+    naming = naming |> same_over_unread(ref) |> not_over_unread(ref)
 
     # in a fixed order, whatever order they were stated or stored in: the
     # same extent, then the lists that set it, then those that widen, then
@@ -120,6 +129,19 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lookup do
 
     if same != nil and same >= (closest(naming, ref, :unread) || 0),
       do: Enum.reject(naming, &match?({:unread, _, _}, &1)),
+      else: naming
+  end
+
+  # a narrowing list naming the provision more closely than an unread one
+  # is a statement read plainly of it; the unread is of its provision cited
+  # whole ("Part 3 (with the exception of section 151(5))" not extending to
+  # Northern Ireland: s.151(2) is not there, s.151 whole is unknown —
+  # Energy Act 2004 s.198(4), `Extent.Subdivisions`)
+  defp not_over_unread(naming, ref) do
+    narrowed = closest(naming, ref, :not)
+
+    if narrowed != nil and narrowed > (closest(naming, ref, :unread) || narrowed),
+      do: Enum.reject(naming, &match?({:unread, _, items} when items != ["*"], &1)),
       else: naming
   end
 

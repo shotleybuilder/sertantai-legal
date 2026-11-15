@@ -452,4 +452,86 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingProvisionsTest do
              ]
     end
   end
+
+  describe "Fire and OH&S forms" do
+    test "a section with no Act after the powers wording: the Act it was named with before (SI 2006/1031)" do
+      text =
+        "A draft of these Regulations was laid before Parliament in accordance with paragraph 2 of Schedule 2 to the European Communities Act 1972 , and was approved by resolution of each House of Parliament; The Secretary of State, who is a Minister designated for the purposes of section 2(2) of the European Communities Act 1972 in relation to discrimination , makes the following Regulations in exercise of the powers conferred by section 2(2):—"
+
+      titles = %{"european communities act 1972" => "UK_ukpga_1972_68"}
+
+      assert EnablingProvisions.parse(text, %{}, titles) == [
+               %{law: "UK_ukpga_1972_68", sections: ["2"], schedules: []}
+             ]
+    end
+
+    test "a designation with no powers clause stays unread" do
+      text =
+        "The Secretary of State, who is a Minister designated for the purposes of section 2(2) of the European Communities Act 1972 in relation to discrimination, makes the following Regulations:—"
+
+      titles = %{"european communities act 1972" => "UK_ukpga_1972_68"}
+
+      assert EnablingProvisions.parse(text, %{}, titles) == []
+    end
+
+    test "a bare section never named with an Act before stays unread" do
+      text =
+        "The Secretary of State, who is a Minister designated for the purposes of section 2(2) of the European Communities Act 1972, makes the following Regulations in exercise of the powers conferred by section 56:—"
+
+      titles = %{"european communities act 1972" => "UK_ukpga_1972_68"}
+
+      assert EnablingProvisions.parse(text, %{}, titles) == []
+    end
+
+    test "in pursuance of, after a laying recital in pursuance of another section (SI 1970/1681)" do
+      text =
+        "At the Court at Buckingham Palace, the 11th day of November 1970 Present, The Queen's Most Excellent Majesty in Council Whereas copies of the draft of this Order have been laid before Parliament in pursuance of section 3 of the Ministers of the Crown (Transfer of Functions) Act 1946, and each House has presented an Address to Her Majesty praying that the Order be made: Now, therefore, Her Majesty, in pursuance of section 1 of the Ministers of the Crown (Transfer of Functions) Act 1946 and section 4 of the Ministers of the Crown Act 1964, is pleased, by and with the advice of Her Privy Council, to order, and it is hereby ordered, as follows:—"
+
+      titles = %{
+        "ministers of the crown (transfer of functions) act 1946" => "UK_ukpga_1946_31",
+        "ministers of the crown act 1964" => "UK_ukpga_1964_98"
+      }
+
+      assert EnablingProvisions.parse(text, %{}, titles) == [
+               %{law: "UK_ukpga_1946_31", sections: ["1"], schedules: []},
+               %{law: "UK_ukpga_1964_98", sections: ["4"], schedules: []}
+             ]
+    end
+
+    test "no space after sections; consultation and laying are no powers (SI 1991/724)" do
+      text =
+        "The Lord Chancellor, in exercise of the powers conferred upon him by sections1 and 120 of the Courts and Legal Services Act 1990 , having consulted as required by section 1(9) of that Act, hereby makes the following Order a draft of which has, in accordance with section 120(4) of that Act, been laid before and approved by resolution of each House of Parliament:—"
+
+      titles = %{"courts and legal services act 1990" => "UK_ukpga_1990_41"}
+
+      assert EnablingProvisions.parse(text, %{}, titles) == [
+               %{law: "UK_ukpga_1990_41", sections: ["1", "120"], schedules: []}
+             ]
+    end
+
+    @hswa_no_year "The Secretary of State, in exercise of the powers conferred upon him by sections 15(1), (2), (3)(a) and (b), (4)(a), and 82(3)(a) of, and paragraphs 1(1) and (2), 8, 9, 11, 12, 14, 16, 18(a) and 21(b), of Schedule 3 to, the Health and Safety at Work etc. Act f00001 (“the 1974 Act ”) and of all other powers enabling him in that behalf for the purpose of giving effect without modifications to proposals submitted to him by the Health and Safety Commission under section 11(2)(d) of the 1974 Act after the carrying out by the said Commission of consultations in accordance with section 50(3) of that Act, hereby makes the following Regulations:"
+
+    test "an Act's title without its year, the year in its defined short name: by marker (SI 1995/2005)" do
+      urls = %{
+        "f00001" => [
+          "http://www.legislation.gov.uk/id/ukpga/1974/37",
+          "http://www.legislation.gov.uk/id/ukpga/1975/71"
+        ]
+      }
+
+      assert EnablingProvisions.parse(@hswa_no_year, urls, %{}) == [
+               %{law: "UK_ukpga_1974_37", sections: ["15", "82"], schedules: ["3"]}
+             ]
+    end
+
+    test "an Act's title without its year: by register title where the marker names no law" do
+      titles = %{"health and safety at work etc. act 1974" => "UK_ukpga_1974_37"}
+
+      assert "health and safety at work etc. act 1974" in EnablingProvisions.titles(@hswa_no_year)
+
+      assert EnablingProvisions.parse(@hswa_no_year, %{}, titles) == [
+               %{law: "UK_ukpga_1974_37", sections: ["15", "82"], schedules: ["3"]}
+             ]
+    end
+  end
 end

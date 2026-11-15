@@ -184,7 +184,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Forms do
   # (ukpga 2007/28 s.244(3)); "The extent of any amendment … made by this
   # Act is the same as that of the enactment amended" (2000/6, 2002/17,
   # 2004/5; SIs 2002/3135, 2008/912): CV-S05 round 7, from the sweep
-  @extent_of_same ~r/^(?:\(\w+\)\s*)?(?:Subject\s+to\s+[^,]{1,120},\s*)?The\s+extent\s+of\s+(?:any|each|every)\s+(?<subj>(?:amendments?|repeals?|revocations?|modifications?)\b[^.]*?)\s+is\s+the\s+same\s+as\s+(?:that\s+of|the\s+extent\s+of)\s+the\s+(?:enactments?|provisions?|instruments?)\b/iu
+  # ("The extent of the amendments and repeals in Schedule 43 is the same as
+  # the provision amended or repealed": Finance Act 2008 s.129, no "that
+  # of"; Fire and OH&S, 2026-11-14)
+  @extent_of_same ~r/^(?:\(\w+\)\s*)?(?:Subject\s+to\s+[^,]{1,120},\s*)?The\s+extent\s+of\s+(?:any|each|every|the)\s+(?<subj>(?:amendments?|repeals?|revocations?|modifications?)\b[^.]*?)\s+is\s+the\s+same\s+as\s+(?:(?:that\s+of|the\s+extent\s+of)\s+)?the\s+(?:enactments?|provisions?|instruments?)\b/iu
 
   @doc "The `@extent_of_same` form (its wording in the comment where it is defined)."
   @spec extent_of_same() :: Regex.t()

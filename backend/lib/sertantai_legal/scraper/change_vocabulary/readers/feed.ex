@@ -28,6 +28,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Claim, EffectVerb, Qualification}
   alias SertantaiLegal.Scraper.AmendingLaw
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.ChangeTarget
   alias SertantaiLegal.Scraper.ChangeVocabulary.Ref
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.{
@@ -65,7 +66,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
           map(),
           %{String.t() => String.t()},
           [String.t()] | nil,
-          String.t() | nil
+          String.t() | %{title: String.t() | nil, parts: map() | nil} | nil
         ) ::
           [{String.t(), String.t(), [Claim.t()]}]
   def read(
@@ -76,8 +77,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
         extents \\ %{},
         xml_ids \\ %{},
         rows \\ nil,
-        title \\ nil
+        amended \\ nil
       ) do
+    # the amended law's title, and each row's Parts where given (a statement
+    # excepting a Part of it: Energy Act 2016 s.85(2), `Extent.ChangeTarget`)
+    {title, parts} = amended(amended)
+
     flat = EffectTarget.flat(order)
     held = MapSet.new(rows || Map.values(xml_ids))
     # the earlier makers' own effects: each is its maker's record
@@ -106,10 +111,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
             Claim.new(:feed, :placed, target, id) ++
             Claim.new(:feed, :finer_unheld, unheld, id) ++
             commenced_by(claims, by, commencement) ++
-            extent(by, extents, claims, %{law: law_name, title: title, target: target}) ++
+            extent(
+              by,
+              extents,
+              claims,
+              ChangeTarget.change(law_name, title, target, parts)
+            ) ++
             affecting(by)
         }
   end
+
+  defp amended(%{} = amended), do: {amended[:title], amended[:parts]}
+  defp amended(title), do: {title, nil}
 
   # the effect's targets, each with whether a range reached it and whether
   # it is new beside what the Type says was substituted for ("substituted

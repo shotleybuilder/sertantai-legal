@@ -30,6 +30,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, ScheduleRefs}
 
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{
+    AmendedExcepted,
     Amends,
     Application,
     Applies,
@@ -46,6 +47,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
     QualifiedItems,
     Rows,
     Same,
+    ScheduleRest,
     Targeted,
     Units
   }
@@ -132,6 +134,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
     # a provision's own application, and an "extends and applies" extent
     applies = Applies.applies(doc)
 
+    introduced_by = introductions(doc)
+
     %__MODULE__{
       default: default,
       lists:
@@ -145,24 +149,42 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
            Named.named(unit_sentences, doc) ++
            Excepting.leads(unit_sentences, doc) ++
            MakesFollowing.lists(unit_sentences, doc) ++
-           Same.amendments_same(unit_sentences, doc) ++
+           [:same] ++
            Amends.amends(unit_sentences, doc) ++
            Excepted.excepted(unit_sentences, doc) ++
            OwnParagraph.lists(doc) ++
            QualifiedItems.lists(unit_sentences, doc) ++
            extent_entries(applies))
-        |> Enum.flat_map(&excepted(&1, default)),
+        |> with_same(Same.amendments_same(unit_sentences, doc, default))
+        |> Enum.flat_map(&excepted(&1, default))
+        |> with_schedule_rest(unit_sentences, default, introduced_by, doc),
       corresponds: Regex.match?(~r/\bcorresponds\s+to\s+the\s+repeal\b/i, clause),
-      introduced_by: introductions(doc),
+      introduced_by: introduced_by,
       ref: clause_ref,
       text: if(clause != "", do: clause),
       application: Application.application(doc, Default.default(clause)),
       applies: for({k, _, _} = a <- applies, k in [:applies, :applies_not], do: a),
       # the changes' own targets' extent ("The repeal of section 4(8)
       # extends also to Scotland": `Targeted`, CV-S05f)
-      targets: Targeted.lists(doc)
+      # (and of an exception to the same extent naming the provisions
+      # amended: `AmendedExcepted`)
+      targets: Targeted.lists(doc) ++ AmendedExcepted.targets(unit_sentences, default)
     }
   end
+
+  # the same-extent lists in their place, less any another reader states
+  # too (a lettered exception's own extent: `SameExceptions`)
+  defp with_same(lists, same) do
+    Enum.flat_map(lists, fn
+      :same -> Enum.reject(same, &(&1 in lists))
+      list -> [list]
+    end)
+  end
+
+  # a Schedule's paragraphs no list names, its introducing section withheld
+  # only for those the lists do name: the default (`ScheduleRest`)
+  defp with_schedule_rest(lists, unit_sentences, default, introduced_by, doc),
+    do: lists ++ ScheduleRest.lists(unit_sentences, lists, default, introduced_by, doc)
 
   defp extent_entries(applies), do: for({k, _, _} = a <- applies, k in [:only, :named], do: a)
 
@@ -177,6 +199,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   end
 
   defp excepted({:except, _place, refs}, _default), do: [{:unread, nil, refs}]
+
+  # the excepted subdivisions of a provision a narrowing list reads by its
+  # other subdivisions (`Extent.Subdivisions`): the default, stated, so the
+  # provision's own withholding doesn't reach them; with no default, unknown
+  defp excepted({:kept, nil, refs}, default) when is_binary(default),
+    do: [{:named, default, refs}]
+
+  defp excepted({:kept, nil, refs}, _default), do: [{:unread, nil, refs}]
   defp excepted(list, _default), do: [list]
 
   defdelegate units(doc, id), to: Units

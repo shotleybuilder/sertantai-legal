@@ -62,7 +62,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
                   # to the part or parts of the United Kingdom", "extends
                   # throughout", "extends as follows": counted, CV-S05 round 4;
                   # "extends to any part of the United Kingdom …": round 6)
-                  "\\bextends?\\s+(?:also\\s+|only\\s+)?(?:to\\s+(?:the\\s+whole\\s+of\\s+)?|throughout\\s+)(?:#{@places})|\\bnot\\s+extend\\s+to\\s+(?:#{@places})|\\bsame\\s+(?:application\\s+and\\s+)?extent\\s+(?:and\\s+application\\s+)?(?:(?:with)?in\\s+the\\s+United\\s+Kingdom\\s+)?as\\b|\\bextends?\\s+to\\s+the\\s+(?:same\\s+)?part\\s+or\\s+parts\\s+of\\s+the\\s+United\\s+Kingdom\\b|\\bextends?\\s+as\\s+follows\\b|\\bextends?\\s+to\\s+any\\s+part\\s+of\\s+the\\s+United\\s+Kingdom\\b|\\bthe\\s+extent\\s+of\\s+(?:any|each|every)\\b[^.]*\\bis\\s+the\\s+same\\s+as\\b",
+                  "\\bextends?\\s+(?:also\\s+|only\\s+)?(?:to\\s+(?:the\\s+whole\\s+of\\s+)?|throughout\\s+)(?:#{@places})|\\bnot\\s+extend\\s+to\\s+(?:#{@places})|\\bsame\\s+(?:application\\s+and\\s+)?extent\\s+(?:and\\s+application\\s+)?(?:(?:with)?in\\s+the\\s+United\\s+Kingdom\\s+)?as\\b|\\bextends?\\s+to\\s+the\\s+(?:same\\s+)?part\\s+or\\s+parts\\s+of\\s+the\\s+United\\s+Kingdom\\b|\\bextends?\\s+as\\s+follows\\b|\\bextends?\\s+to\\s+any\\s+part\\s+of\\s+the\\s+United\\s+Kingdom\\b|\\bthe\\s+extent\\s+of\\s+(?:any|each|every|the)\\b[^.]*\\bis\\s+the\\s+same\\s+as\\b",
                   "iu"
                 )
   @application_words Regex.compile!(

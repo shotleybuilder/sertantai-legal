@@ -18,6 +18,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lists do
     ListItems,
     Parts,
     Places,
+    Subdivisions,
     Units
   }
 
@@ -235,14 +236,34 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Lists do
     # with their provision)
     holding = if kind(match) == :also, do: r.holding, else: []
 
+    # (a list that narrows names the provision's other subdivisions: "Part
+    # 3 (with the exception of section 151(5))" does not extend to NI,
+    # Energy Act 2004 s.198(4): `Subdivisions`)
+    {subdivisions, subdivided} = subdivided(kind(match), r.holding, excepted, doc)
+
     {refs, partly} =
       (self ++ r.refs ++ holding)
       |> Enum.reject(&(ItemExceptions.touched?(&1, excepted) == :excepted))
       |> Enum.split_with(&(&1 in holding or ItemExceptions.touched?(&1, excepted) == false))
 
+    # (the provision itself stays withheld for a cite of the whole of it,
+    # of mixed extent; its excepted subdivisions are stated to keep the
+    # default: `{:kept, nil, refs}`, `Extent.read/1`)
+    refs = refs ++ subdivisions
     unread = Enum.uniq((r.unread -- holding) ++ partly)
 
-    entries(refs, {kind(match), place(match)}, excepted, unread)
+    entries(refs, {kind(match), place(match)}, excepted, unread) ++
+      kept(subdivided, excepted)
+  end
+
+  defp subdivided(:not, holding, excepted, doc), do: Subdivisions.less(holding, excepted, doc)
+  defp subdivided(_kind, _holding, _excepted, _doc), do: {[], []}
+
+  defp kept(subdivided, excepted) do
+    case Enum.filter(excepted, fn x -> Enum.any?(subdivided, &RefList.covers?(&1, x)) end) do
+      [] -> []
+      refs -> [{:kept, nil, refs}]
+    end
   end
 
   defp entries([], _list, _excepted, unread), do: unread_entry(unread)

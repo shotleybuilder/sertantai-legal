@@ -16,6 +16,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
   Pure: the amending laws' commencement rules come in as data.
   """
 
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.ChangeTarget
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Claim}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw
   alias SertantaiLegal.Scraper.Commencement.{Order, Rule}
@@ -147,13 +148,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
   provisions it names (`AmendingLaw.Extent`), else its own extent. A
   competence alone doesn't confine an insertion (V1-04). [] where a source
   claims it already, or the law's extent isn't read. `amended` (the
-  amended law and its title) lets a statement naming the change's own
-  target speak (`Extent.Targeted`, CV-S05f).
+  amended law and its title; `parts`, each of its rows' Parts, where
+  given) lets a statement naming the change's own target speak
+  (`Extent.Targeted`, CV-S05f; `Extent.ChangeTarget`).
   """
   @spec extent_claims(
           Change.t(),
           %{String.t() => SertantaiLegal.Scraper.AmendingLaw.Extent.t()},
-          %{law: String.t(), title: String.t() | nil} | nil
+          %{
+            required(:law) => String.t(),
+            required(:title) => String.t() | nil,
+            optional(:parts) => map() | nil
+          }
+          | nil
         ) :: [Claim.t()]
   def extent_claims(%Change{} = c, extents, amended \\ nil) do
     alias SertantaiLegal.Scraper.AmendingLaw.Extent
@@ -180,12 +187,23 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
     with [] <- Change.values(c, :law_text, :extent),
          %Extent{} = e <- Map.get(extents, law),
          false <- Extent.competence_only?(e) and op == :inserted,
-         code when is_binary(code) <- of(e, refs, amended && Map.put(amended, :target, c.target)) do
+         code when is_binary(code) <- of(e, refs, target_change(amended, c.target)) do
       Claim.new(:law_text, :extent, code, c.key)
     else
       _ -> []
     end
   end
+
+  defp target_change(nil, _target), do: nil
+
+  defp target_change(amended, target),
+    do:
+      ChangeTarget.change(
+        amended.law,
+        amended.title,
+        target,
+        amended[:parts]
+      )
 
   # no provision named: the law's own extent (its clause, else its powers,
   # else the extent stated on the whole Act (Decision 3, Maritime Safety:

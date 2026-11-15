@@ -14,6 +14,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPatterns.Version do
       lib/sertantai_legal/scraper/amending_law/doc.ex
       lib/sertantai_legal/scraper/amending_law/doc/*.ex
       lib/sertantai_legal/scraper/amending_law/extent.ex
+      lib/sertantai_legal/scraper/amending_law/extent/amended_excepted.ex
       lib/sertantai_legal/scraper/amending_law/extent/amends.ex
       lib/sertantai_legal/scraper/amending_law/extent/application.ex
       lib/sertantai_legal/scraper/amending_law/extent/applies.ex
@@ -38,8 +39,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPatterns.Version do
       lib/sertantai_legal/scraper/amending_law/extent/qualified_items.ex
       lib/sertantai_legal/scraper/amending_law/extent/rows.ex
       lib/sertantai_legal/scraper/amending_law/extent/same.ex
+      lib/sertantai_legal/scraper/amending_law/extent/same_exceptions.ex
+      lib/sertantai_legal/scraper/amending_law/extent/schedule_rest.ex
       lib/sertantai_legal/scraper/amending_law/extent/schedule_words.ex
       lib/sertantai_legal/scraper/amending_law/extent/statements.ex
+      lib/sertantai_legal/scraper/amending_law/extent/subdivisions.ex
       lib/sertantai_legal/scraper/amending_law/extent/targeted.ex
       lib/sertantai_legal/scraper/amending_law/extent/units.ex
       lib/sertantai_legal/scraper/amending_law/pointer.ex

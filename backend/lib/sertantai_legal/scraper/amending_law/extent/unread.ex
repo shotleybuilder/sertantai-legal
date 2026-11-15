@@ -57,6 +57,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Unread do
   @amendments ~r/\b(?:amendments?|repeals?|revocations?|modifications?|amends?|repealed|revoked|amending|repealing)\b/iu
   @whole ~r/\b(?:this|these)\s+(?:Act|Regulations|Order|Rules|Scheme|Measure)\b|^\s*(?:it|they)\b|,\s*(?:it|they)\s+$/iu
 
+  # "Any saving or transitional provision in these Regulations has the same
+  # extent … as the provision to which it relates" (SI 2019/742 reg.2(3)):
+  # the law's savings, never its amendments or the law itself
+  @savings ~r/^\s*(?:Any|An?|Each|Every|The)\s+(?:savings?|transitional|transitory)(?:\s*(?:,|or|and)\s*(?:savings?|transitional|transitory))*\s+provisions?\s+(?:in|of|made\s+by)\s+th(?:is|ese)\s+(?:Act|Regulations|Order|Rules)\s*$/iu
+
+  @as_amended ~r/,?\s*as\s+amended\s+by\s+th(?:is|ese)\s+(?:Act|Regulations|Order|Rules)\b/iu
+
   @doc "The unread classes that withhold a bound."
   @spec classes() :: [String.t()]
   def classes, do: @classes
@@ -215,12 +222,32 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Unread do
     named = list |> in_schedule(sentence) |> named(ref, doc)
     named = if sch?(ref), do: schedule_own(named, list), else: named
 
+    if named != [], do: named, else: unnamed(list, subj, sentence, ref)
+  end
+
+  # a subject naming none of the law's provisions: the law, its
+  # amendments, the provision or its container
+  defp unnamed(list, subj, sentence, ref) do
     cond do
-      named != [] -> named
       # "(c) extend to Northern Ireland only" under "These Regulations—"
       list =~ ~r/^\s*[a-z]{1,2}\s*$/u -> ["*"]
       sch?(ref) -> if(list =~ ~r/\bthis\s+Schedule\b/iu, do: [schedule_of(ref)], else: [ref])
       (c = lead_container(sentence)) != [] -> c
+      true -> whole(list, subj)
+    end
+  end
+
+  # the law itself or its amendments ("*"); never its saving provisions,
+  # which make no change (none withheld)
+  # ("Part 1A of the Petroleum Act 1998 …, as amended by this Act, extends
+  # to Northern Ireland": another Act's Part, never this Act, Energy Act
+  # 2016 s.74)
+  defp whole(list, subj) do
+    list = String.replace(list, @as_amended, " ")
+    subj = String.replace(subj, @as_amended, " ")
+
+    cond do
+      Regex.match?(@savings, list) -> []
       Regex.match?(@whole, list) -> ["*"]
       Regex.match?(@amendments, list) and Regex.match?(@whole, subj) -> ["*"]
       true -> []

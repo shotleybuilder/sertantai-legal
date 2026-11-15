@@ -11,12 +11,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Same do
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, RefList}
 
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{
+    AmendedExcepted,
     Forms,
     ItemExceptions,
     ListItems,
     Named,
     Parts,
-    Places
+    Places,
+    SameExceptions
   }
 
   @place_list Places.place_list()
@@ -55,11 +57,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Same do
   The provisions with the same extent as the enactments they change, from
   the unit sentences (`Units.unit_sentences/1`): `{:same, nil, refs}` ("*"
   for every amendment the law makes), with any list its exceptions state.
+  `default`: the law's own extent, which an exception naming the provisions
+  amended takes (`AmendedExcepted`).
   """
-  @spec amendments_same([{String.t(), String.t()}], Doc.t()) :: [
+  @spec amendments_same([{String.t(), String.t()}], Doc.t(), String.t() | nil) :: [
           {atom(), String.t() | nil, [String.t()]}
         ]
-  def amendments_same(unit_sentences, doc) do
+  def amendments_same(unit_sentences, doc, default \\ nil) do
     for(
       {ref, s} <- unit_sentences,
       form <- [Forms.amendments_same(), Forms.extent_of_same()],
@@ -70,13 +74,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Same do
       # repeal made by Part 1, other than the amendment made by section
       # 17(7), has the same extent as …", ukpga 2015/7 s.56(2)(b), round
       # 12; never one not read)
-      {subj, excepted} = subject_except(m["subj"], ref),
+      {subj, excepted} = subject_except(m["subj"], ref, default),
       excepted != :unread,
       refs = same_refs(that_schedule(subj, ref, unit_sentences), tail, ref, doc),
       refs != :none,
       refs = apart(refs, excepted),
       refs != [],
-      list <- same_lists(refs, tail, ref),
+      list <- same_lists(refs, tail, ref, doc),
       uniq: true,
       do: list
     ) ++
@@ -147,8 +151,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Same do
   # default (SI 2014/469 art.3(5): CV-S05 round 3 E)
   @other_extent_provided ~r/^[^—–]*?(?:,?\s*except\s+where\s+contained\s+in\s+a\s+provision\s+for\s+which\s+a\s+different\s+extent\s+is\s+provided\s+by\s+this\s+(?:subsection|section)|\s*\(\s*except\s+where\s+otherwise\s+provided\s*\))\s*\.?\s*$/iu
 
-  defp same_lists(refs, tail, ref) do
+  defp same_lists(refs, tail, ref, doc) do
     cond do
+      # its exceptions lettered, each read on its own (`SameExceptions`)
+      lists = SameExceptions.lists(tail, refs, ref, doc) ->
+        lists
+
       not Regex.match?(~r/^[^—–]*?\b(?:except|save|but)\b/iu, tail) ->
         [{:same, nil, refs}]
 
@@ -227,7 +235,16 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Same do
 
   # a subject and what it excepts from itself: none, the provisions, or
   # `:unread` where the exception names none
-  defp subject_except(subj, ref) do
+  # (an exception naming the provisions amended is the change's own
+  # target's: `AmendedExcepted`, Decision 1, 2026-11-14)
+  defp subject_except(subj, ref, default) do
+    case AmendedExcepted.read(subj, default) do
+      {main, _targets} -> {main, []}
+      nil -> own_except(subj, ref)
+    end
+  end
+
+  defp own_except(subj, ref) do
     case ItemExceptions.split(subj) do
       {_, nil, _, _} ->
         if subj =~ ~r/\b(?:other\s+than|apart\s+from|except|save|excluding)\b/iu,

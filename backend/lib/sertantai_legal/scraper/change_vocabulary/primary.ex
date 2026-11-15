@@ -142,8 +142,29 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Primary do
       made: made,
       own_commencement: own,
       own_context: own_context,
-      title: title
+      title: title,
+      parts: parts(law)
     ]
+  end
+
+  @doc """
+  Each LAT row of `law` with the Part holding it as a ref (`"s.9A"` →
+  `["pt.1A"]`; a row in no Part, a Schedule's, `[]`): what an amending law's statement naming a Part of this law
+  is matched on (`Extent.ChangeTarget`).
+  """
+  @spec parts(String.t()) :: %{String.t() => [String.t()]}
+  def parts(law) do
+    %{rows: rows} =
+      Repo.query!(
+        "SELECT section_id, part FROM legal_articles WHERE law_name = $1 AND section_id IS NOT NULL",
+        [law]
+      )
+
+    for [sid, part] <- rows,
+        into: %{},
+        do:
+          {String.replace_prefix(sid, law <> ":", ""),
+           if(part in [nil, ""], do: [], else: ["pt.#{part}"])}
   end
 
   # the law's amendment rules: stored where the amending law's index is

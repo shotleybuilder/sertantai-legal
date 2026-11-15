@@ -1018,7 +1018,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
       assert Extent.of(e, "sch.2.para.10") == :same
       assert Extent.of(e, "sch.3.para.12") == "S"
       assert Extent.of(e, "sch.3.para.2") == :same
-      assert Extent.of(e, "sch.4.para.33") == nil
+      # (a qualified lettered exception withholds its own paragraphs alone,
+      # never the whole Schedule: Fire and OH&S: Extent reader, 2026-11-14;
+      # before, the whole of Schedule 4 was unknown)
+      assert Extent.of(e, "sch.4.para.33") == :same
+      assert Extent.of(e, "sch.4.para.178") == nil
       assert Extent.of(e, "art.2") == "E+W+S+NI"
 
       rows = Extent.to_rows(e, "UK_uksi_2013_602")
