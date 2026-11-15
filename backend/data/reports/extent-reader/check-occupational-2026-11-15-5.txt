@@ -1,0 +1,70 @@
+149 family laws with LAT; 5042 text changes by 452 amending laws
+laws read 3 at once: 12.5 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.7 of 6 cores busy; max 4
+
+452 amending laws — extent basis:
+    172  powers
+    105  clause
+     60  none: type_not_read
+     47  lists
+     42  competence
+     12  stated
+      8  none: no_powers
+      3  application
+      2  none: no_clause
+      1  none: not_held
+
+our faults (stored extent_rules against the reading now): 0
+
+the laws' own extent sentences left unread (catalogue classes, counted): 62 laws
+     75  unread:provision_extent
+     61  unread:not_read
+     36  unread:provision_application
+     22  unread:in_clause
+     10  unread:other_provision
+      2  unread:application
+      1  unread:another_default
+      1  unread:list
+      1  unread:list_partial
+
+extent sentences the catalogue misses (the sweep, CV-S05a): 144 in 61 laws; 0 in a form the reader is to read
+     49  noise:other
+     22  noise:outside_uk
+     21  noise:procedure
+     16  noise:instruction
+     14  noise:cases
+     12  noise:commencement
+      6  count:outside_gb
+      2  count:qualified
+      2  noise:modification
+
+5042 text changes — territory from:
+   3767  bound:law
+    554  none:law_type_not_read
+    324  none:same
+    141  none:unread_statement
+    116  none:competence_only
+     77  none:same_or_not_named
+     28  territory:law
+     20  none:law_no_powers
+      9  none:no_amending_law
+      2  none:law_no_clause
+      2  none:law_not_held
+      2  none:not_named
+
+grouped (CV-S05's table):
+   3795   75.3%  law_text
+    401    8.0%  follows_enactment
+      0    0.0%  feed_or_markup
+    554   11.0%  law_type_not_read
+     20    0.4%  no_powers
+    141    2.8%  unread_statement
+    116    2.3%  competence_only
+      9    0.2%  no_amending_law
+      2    0.0%  no_clause
+      4    0.1%  other
+
+text changes with no bound, by cause (test/fixtures/extent_patterns/withheld.json): known 177, unreviewed 1
+not named (widest reach first): 1
+      2  none:law_not_held @ UK_uksi_2006_475  [no status]
+
+FAIL (amending laws: our faults 0; sweep misses 0; no-bound causes not named: 1)

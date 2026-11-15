@@ -1,0 +1,112 @@
+149 family laws with LAT; 5042 text changes by 452 amending laws
+laws read 3 at once: 12.5 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 1.2 of 6 cores busy; max 4
+
+452 amending laws — extent basis:
+    172  powers
+    105  clause
+     60  none: type_not_read
+     47  lists
+     42  competence
+     12  stated
+      8  none: no_powers
+      3  application
+      2  none: no_clause
+      1  none: not_held
+
+our faults (stored extent_rules against the reading now): 0
+
+the laws' own extent sentences left unread (catalogue classes, counted): 62 laws
+     75  unread:provision_extent
+     61  unread:not_read
+     36  unread:provision_application
+     22  unread:in_clause
+     10  unread:other_provision
+      2  unread:application
+      1  unread:another_default
+      1  unread:list
+      1  unread:list_partial
+
+extent sentences the catalogue misses (the sweep, CV-S05a): 144 in 61 laws; 0 in a form the reader is to read
+     49  noise:other
+     22  noise:outside_uk
+     21  noise:procedure
+     16  noise:instruction
+     14  noise:cases
+     12  noise:commencement
+      6  count:outside_gb
+      2  count:qualified
+      2  noise:modification
+
+5042 text changes — territory from:
+   3767  bound:law
+    554  none:law_type_not_read
+    324  none:same
+    141  none:unread_statement
+    116  none:competence_only
+     77  none:same_or_not_named
+     28  territory:law
+     20  none:law_no_powers
+      9  none:no_amending_law
+      2  none:law_no_clause
+      2  none:law_not_held
+      2  none:not_named
+
+grouped (CV-S05's table):
+   3795   75.3%  law_text
+    401    8.0%  follows_enactment
+      0    0.0%  feed_or_markup
+    554   11.0%  law_type_not_read
+     20    0.4%  no_powers
+    141    2.8%  unread_statement
+    116    2.3%  competence_only
+      9    0.2%  no_amending_law
+      2    0.0%  no_clause
+      4    0.1%  other
+
+text changes with no bound, by cause (test/fixtures/extent_patterns/withheld.json): known 156, unreviewed 22
+not named (widest reach first): 22
+     22  none:same_or_not_named @ UK_uksi_2014_469  [no status]
+     13  none:same_or_not_named @ UK_ukpga_2013_24  [no status]
+           s.102: Part 5 extends as follows—a sections 59, 62, 67, 68 and 70 and Part 1 of Schedule 21 extend to England and Wales, Scotland and Northern Ireland,b section 69 extends only to England and Wales an
+     10  none:unread_statement @ UK_ukpga_2002_30  [no status]
+           s.108: Subject to subsection (10), this Act, so far as it amends or repeals any enactment (other than one that extends to England and Wales only), has the same extent as the enactment amended or repea
+           s.108: The amendments and repeals made by this Act—a in section 96 of the Road Traffic Regulation Act 1984 (c. 27) (traffic wardens),b in sections 103 and 183 of the Road Traffic Act 1988 (c. 52) (dri
+           sch.3.pt.3: Response to recommendation28B1 A person to whom a recommendation under paragraph 28A is made must provide to the Director General a response in writing stating—a what action the person has
+           sch.3.para.28B: Where a local policing body or a chief officer makes a response under this paragraph, the body or officer must, at the time the Director General publishes the response, also publish th
+      6  none:law_no_powers @ UK_uksi_2004_994  [no status]
+           no powers clause read in its introduction
+      5  none:unread_statement @ UK_uksi_2010_93  [no status]
+           sch.1.para.1: The following provisions of Schedule 2 to these Regulations extend to England and Wales, Scotland and Northern Ireland. (unread:not_read)
+      3  none:law_no_powers @ UK_uksi_1996_3022  [no status]
+           UK_ukpga_1994_40 s.37: placed nowhere
+      2  none:unread_statement @ UK_ukpga_1998_8  [no status]
+           s.16: Section 1(2) and Schedule 1 extend to Northern Ireland so far as they amend—a the House of Commons Disqualification Act 1975,b the Judicial Pensions Act 1981,c the Tribunals and Inquiries Act 19
+      2  none:unread_statement @ UK_ukpga_2011_13  [no status]
+      2  none:law_not_held @ UK_uksi_2006_475  [no status]
+      2  none:unread_statement @ UK_uksi_2008_2683  [no status]
+           reg.2: Except as provided by articles 3 and 4, an amendment or revocation of any enactment by any provision of Schedules 1 and 2 extends to any part of the United Kingdom to which the enactment extend
+           reg.3: For the purposes of article 4 the following amendments and revocations made by Schedules 1 and 2 do not extend to Scotland— (unread:not_read)
+      2  none:law_no_powers @ UK_uksi_2008_396  [no status]
+           no powers clause read in its introduction
+      1  none:unread_statement @ UK_ukpga_1973_50  [no status]
+           s.15: This Act.. does not extend to Northern Ireland. (unread:not_read)
+      1  none:not_named @ UK_ukpga_1978_44  [no status]
+           sch.11.pt.I: Powers of Tribunal211 For the purpose of disposing of an appeal the Appeal Tribunal may exercise any powers of the body or officer from whom the appeal was brought or may remit the case t
+      1  none:law_no_clause @ UK_ukpga_1985_9  [no status]
+      1  none:law_no_clause @ UK_ukpga_1986_48  [no status]
+      1  none:unread_statement @ UK_ukpga_1996_23  [no status]
+      1  none:unread_statement @ UK_ukpga_2001_10  [no status]
+           s.43: Amendments made by this Act to the 1996 Act have the same extent as that Act. (unread:not_read)
+           s.43: Parts 2 and 3 do not extend to Northern Ireland. (unread:other_provision)
+      1  none:law_no_powers @ UK_uksi_1995_3234  [no status]
+           UK_ukpga_1994_40 s.37: placed nowhere
+      1  none:law_no_powers @ UK_uksi_2002_3076  [no status]
+           UK_ukpga_1968_14 s.5: placed nowhere
+      1  none:law_no_powers @ UK_uksi_2010_441  [no status]
+           UK_ukpga_1968_14 s.5: placed nowhere
+      1  none:law_no_powers @ UK_uksi_2012_760  [no status]
+           no powers clause read in its introduction
+      1  none:unread_statement @ UK_uksi_2013_2042  [no status]
+           reg.1: Amendments, repeals and revocations in this Order have the same extent as the provisions amended, repealed or revoked. (unread:not_read)
+
+FAIL (amending laws: our faults 0; sweep misses 0; no-bound causes not named: 22)

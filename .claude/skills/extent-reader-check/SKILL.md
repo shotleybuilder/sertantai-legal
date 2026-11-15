@@ -293,3 +293,13 @@ Environmental Protection (third family, 2026-11-09/10). The session is `.claude/
   - Decision 3 (a partly excepted provision in a widening list).
 - **Catalogue:** two cold dry runs to a scratch copy, with Decisions 5 and 6. 3 misreads are held `pending:` as known limits.
 - **Result.** PASS: causes 231 → 0 not named (139 known), bound by the law's text 45% → 74%, no powers 662 → 115 changes. Golden 27/27, `mix test` 10,569. No agent pass.
+
+Fire and OH&S (round of five families, 2026-11-14/15). The session is `.claude/sessions/lat-change-pipeline/2026-11-14-fire-and-ohs-extent-reader.md`.
+- **Write 1 first,** over the round's 408 amending laws: our faults 144 → 0, causes 139 → 47.
+- **Three lean fixer calls:**
+  - same-extent exceptions (Decision 1: an exception naming the provisions amended, by the change's Part);
+  - lists;
+  - the powers parser (diff over 808 introductions: 4 gains, 0 losses).
+- **One cold catalogue dry run:** 2 held moves, both gains (Decision 4).
+- **Switched families rebuilt** and their causes named (Decision 5). `withheld.json` names are shared across families.
+- **Result.** PASS: bound by the law's text 63% → 76%. Golden 27/27, `mix test` 11,150. No agent pass.

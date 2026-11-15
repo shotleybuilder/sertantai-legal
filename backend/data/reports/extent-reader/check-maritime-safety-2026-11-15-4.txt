@@ -1,0 +1,67 @@
+117 family laws with LAT; 3144 text changes by 225 amending laws
+laws read 3 at once: 12.5 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 1.1 of 6 cores busy; max 4
+
+225 amending laws — extent basis:
+    119  powers
+     67  clause
+     15  lists
+     11  stated
+      5  none: no_powers
+      3  competence
+      3  none: type_not_read
+      1  application
+      1  none: no_clause
+
+our faults (stored extent_rules against the reading now): 0
+
+the laws' own extent sentences left unread (catalogue classes, counted): 40 laws
+     56  unread:provision_extent
+     39  unread:not_read
+     20  unread:provision_application
+     17  unread:in_clause
+      6  unread:other_provision
+      1  unread:list
+
+extent sentences the catalogue misses (the sweep, CV-S05a): 69 in 34 laws; 0 in a form the reader is to read
+     34  noise:other
+     15  noise:outside_uk
+      9  noise:instruction
+      6  noise:procedure
+      3  noise:commencement
+      2  noise:cases
+
+3144 text changes — territory from:
+   2899  bound:law
+     92  territory:law
+     76  none:same
+     28  none:law_no_powers
+     12  none:law_no_clause
+     11  none:unread_statement
+     10  none:law_type_not_read
+      8  none:same_or_not_named
+      4  none:no_amending_law
+      4  territory:markup
+
+grouped (CV-S05's table):
+   2991   95.1%  law_text
+     84    2.7%  follows_enactment
+      4    0.1%  feed_or_markup
+     10    0.3%  law_type_not_read
+     28    0.9%  no_powers
+     11    0.3%  unread_statement
+      0    0.0%  competence_only
+      4    0.1%  no_amending_law
+     12    0.4%  no_clause
+      0    0.0%  other
+
+text changes with no bound, by cause (test/fixtures/extent_patterns/withheld.json): known 44, unreviewed 4
+not named (widest reach first): 4
+      3  none:unread_statement @ UK_ukpga_2009_25  [no status]
+           s.132: In this section “legislation” means—a an Act of Parliament if, or to the extent that, it extends to England and Wales;b subordinate legislation made under an Act of Parliament if, or to the ext
+           sch.21.pt.4: Criminal Libel Act 1819 (60 Geo. 3 & 1 Geo. 4 c. 8)651 In section 1 of the Criminal Libel Act 1819 (power of court to make order for seizure of copies of libel)—a after “In every case” in
+      1  none:unread_statement @ UK_ukpga_1992_52  [no status]
+      1  none:unread_statement @ UK_ukpga_1996_23  [no status]
+      1  none:law_no_powers @ UK_uksi_2012_1809  [no status]
+           parent not read: UK_ukpga_2008_7
+
+FAIL (amending laws: our faults 0; sweep misses 0; no-bound causes not named: 4)

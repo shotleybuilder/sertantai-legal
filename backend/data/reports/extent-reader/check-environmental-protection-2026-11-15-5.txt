@@ -1,0 +1,68 @@
+122 family laws with LAT; 8091 text changes by 553 amending laws
+laws read 3 at once: 12.4 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.6 of 6 cores busy; max 4
+
+553 amending laws — extent basis:
+    212  powers
+    177  clause
+     60  lists
+     37  stated
+     25  application
+     20  none: type_not_read
+     10  competence
+     10  none: no_powers
+      1  none: no_clause
+      1  none: not_held
+
+our faults (stored extent_rules against the reading now): 0
+
+the laws' own extent sentences left unread (catalogue classes, counted): 91 laws
+     69  unread:not_read
+     67  unread:provision_extent
+     50  unread:provision_application
+     46  unread:in_clause
+      7  unread:other_provision
+      3  unread:list
+      1  unread:list_partial
+
+extent sentences the catalogue misses (the sweep, CV-S05a): 183 in 86 laws; 0 in a form the reader is to read
+     59  noise:other
+     30  noise:outside_uk
+     29  noise:instruction
+     27  noise:commencement
+     19  noise:procedure
+      9  noise:cases
+      7  count:qualified
+      3  count:outside_gb
+
+8091 text changes — territory from:
+   5658  bound:law
+   1567  none:same
+    316  territory:law
+    138  none:law_type_not_read
+    136  none:same_or_not_named
+    115  none:law_no_powers
+     64  territory:feed
+     54  none:unread_statement
+     22  none:competence_only
+      7  none:no_amending_law
+      7  none:not_named
+      4  territory:markup
+      2  none:law_no_clause
+      1  none:law_not_held
+
+grouped (CV-S05's table):
+   5974   73.8%  law_text
+   1703   21.0%  follows_enactment
+     68    0.8%  feed_or_markup
+    138    1.7%  law_type_not_read
+    115    1.4%  no_powers
+     54    0.7%  unread_statement
+     22    0.3%  competence_only
+      7    0.1%  no_amending_law
+      2    0.0%  no_clause
+      8    0.1%  other
+
+text changes with no bound, by cause (test/fixtures/extent_patterns/withheld.json): known 141
+not named (widest reach first): 0
+
+PASS (amending laws: our faults 0; sweep misses 0; no-bound causes not named: 0)

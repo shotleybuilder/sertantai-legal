@@ -1,0 +1,175 @@
+139 family laws with LAT; 5156 text changes by 408 amending laws
+laws read 3 at once: 12.5 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.6 of 6 cores busy; max 4
+
+408 amending laws — extent basis:
+    145  powers
+    122  clause
+     41  lists
+     33  stated
+     26  competence
+     20  none: type_not_read
+     14  none: no_powers
+      7  application
+
+our faults (stored extent_rules against the reading now): 4
+      4  stale
+    UK_ukpga_2008_9 stale
+    UK_ukpga_2016_20 stale
+    UK_uksi_2014_469 stale
+    UK_uksi_2019_742 stale
+
+the laws' own extent sentences left unread (catalogue classes, counted): 62 laws
+     76  unread:provision_extent
+     59  unread:not_read
+     37  unread:provision_application
+     24  unread:in_clause
+      8  unread:other_provision
+      4  unread:list
+      2  unread:application
+      1  unread:another_default
+      1  unread:list_partial
+
+extent sentences the catalogue misses (the sweep, CV-S05a): 153 in 63 laws; 0 in a form the reader is to read
+     58  noise:other
+     23  noise:outside_uk
+     22  noise:procedure
+     15  noise:instruction
+     12  noise:commencement
+      9  noise:cases
+      5  count:outside_gb
+      5  count:qualified
+      4  noise:modification
+
+5156 text changes — territory from:
+   3810  bound:law
+    685  none:same
+    297  none:unread_statement
+     90  none:same_or_not_named
+     81  none:competence_only
+     60  none:law_no_powers
+     56  none:law_type_not_read
+     26  territory:law
+     22  territory:markup
+     15  none:not_named
+     10  none:no_amending_law
+      4  none:provision_not_named
+
+grouped (CV-S05's table):
+   3836   74.4%  law_text
+    775   15.0%  follows_enactment
+     22    0.4%  feed_or_markup
+     56    1.1%  law_type_not_read
+     60    1.2%  no_powers
+    297    5.8%  unread_statement
+     81    1.6%  competence_only
+     10    0.2%  no_amending_law
+      0    0.0%  no_clause
+     19    0.4%  other
+
+text changes with no bound, by cause (test/fixtures/extent_patterns/withheld.json): known 98, unreviewed 46
+not named (widest reach first): 46
+     31  none:unread_statement @ UK_ukpga_2017_3  [no status]
+     21  none:unread_statement @ UK_ukpga_2004_20  [no status]
+           s.175: In determining the appeal the CMA must have regard, to the same extent as is required of GEMA, to the matters to which GEMA must have regard—a in the carrying out of its principal objectives un
+           sch.1.pt.2: Authentication of NDA’s seal111 Authentication of the application of the NDA’s seal is to be by the signature of—a the chairman or another member of the NDA; orb any other person authorise
+           sch.10.pt.5: Authentication of Police Authority’s seal151 The application of the seal of the Police Authority is to be authenticated by the signature of—a a member of the Police Authority; orb any oth
+     19  none:law_no_powers @ UK_uksi_2020_641  [no status]
+           UK_ukpga_2009_20 s.107D: placed nowhere; UK_ukpga_2009_20 s.114: placed nowhere; UK_ukpga_2009_20 s.117: placed nowhere
+     16  none:law_no_powers @ UK_uksi_2019_306  [no status]
+           UK_ukpga_1973_51 s.56: placed nowhere
+     13  none:same_or_not_named @ UK_uksi_2004_1822  [no status]
+           reg.1: The modifications specified in paragraphs 2, 3, 4, 7, 8, 11, 12, 13 and 15 of the Schedule to this Order extend to Scotland only. (unread:not_read)
+      8  none:same_or_not_named @ UK_ukpga_2023_52  [no status]
+           s.22: In determining an appeal the CMA must have regard, to the same extent as is required of the economic regulator, to the matters to which the economic regulator must have regard— a in the carrying
+           s.333: The following provisions extend to England and Wales, Scotland and Northern Ireland, subject to subsection (5)— a Part 1, except Chapter 4 of Part 1; b Part 2; c Chapter 1 of Part 4; d Chapter 
+           s.333: The following provisions extend to England and Wales and Scotland only, subject to subsection (5)— a Chapter 4 of Part 1; b Part 3; c Chapter 2 of Part 4; d section 155; e section 159; f Parts 
+           s.333: Chapter 2 of Part 8 extends to England and Wales only, subject to subsection (5). (unread:provision_extent)
+      7  none:unread_statement @ UK_ukpga_1989_15  [no status]
+           s.194: The following provisions of this Act shall extend to Scotland only (subject, in the case of paragraph (a) below, to the application of sections 21 and 22 of the Salmon and Freshwater Fisheries 
+      7  none:same_or_not_named @ UK_ukpga_2016_20  [no status]
+           s.74: Part 1A of the Petroleum Act 1998 (maximising economic recovery of UK petroleum), as amended by this Act, extends to Northern Ireland (as well as to England and Wales and Scotland). (unread:prov
+      6  none:same_or_not_named @ UK_ukpga_2011_16  [no status]
+      5  none:unread_statement @ UK_uksi_2014_469  [no status]
+      5  none:same_or_not_named @ UK_uksi_2026_185  [no status]
+      4  none:unread_statement @ UK_ukpga_1973_65  [no status]
+           s.138: In the said Act of 1949 the following amendments shall be made—a for section 1(1) (coast protection authorities), there shall be substituted the following subsection—1 The council of a region a
+           s.238: This Act, except sections 92, 146(5) and 213 and paragraph 64 of Schedule 17 and Schedule 26 . . . extends to Scotland only. (unread:provision_extent)
+      4  none:not_named @ UK_ukpga_1987_12  [no status]
+      4  none:unread_statement @ UK_ukpga_2003_39  [no status]
+           s.100: In this section—a subsection (1) shall extend only to England and Wales and Northern Ireland, andb the remainder shall extend to the whole of the United Kingdom. (unread:provision_extent)
+           s.101: In this section—a subsections (1) to (3) shall extend to the whole of the United Kingdom, andb subsections (4) and (5) shall extend only to England and Wales and Northern Ireland. (unread:provi
+           sch.5.pt.3: Paragraphs 9A and 9B: supplementary9C1 Sub-paragraphs (3) and (3A) apply for the purposes of paragraphs 9A and 9B.2 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .3 “Inform
+           sch.5.para.9Cn1: C1 Sub-paragraphs (3) and (3A) apply for the purposes of paragraphs 9A and 9B.2 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .3 “Information” means information held i
+      4  none:same_or_not_named @ UK_ukpga_2008_32  [no status]
+      4  none:unread_statement @ UK_ukpga_2022_30  [no status]
+           s.169: The Secretary of State may by regulations— a provide for the provisions mentioned in subsection (5) to extend also to Northern Ireland, and b make provision (including provision amending this A
+      4  none:law_no_powers @ UK_uksi_2006_1031  [no status]
+           no powers clause read in its introduction
+      4  none:unread_statement @ UK_uksi_2013_602  [no status]
+           reg.6: The chief constable of the British Transport Police Force, and the British Transport Police Authority, are liable in respect of unlawful conduct of a constable providing assistance in pursuance
+      3  none:provision_not_named @ UK_asp_2012_8  [no status]
+      3  none:same_or_not_named @ UK_ukpga_2008_9  [no status]
+      3  none:law_no_powers @ UK_uksi_1999_742  [no status]
+           UK_ukpga_1994_40 s.1: placed nowhere
+      2  none:unread_statement @ UK_ukpga_1963_33  [no status]
+           s.94: Except for section 4(4) . . . of this Act . . . , the provisions of this Act other than this subsection shall not extend to Scotland; and as from 1st April 1965 in paragraph 8 of Schedule 6 to t
+           s.94: 4 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . , the provisions of this Act. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . shall not extend to Northern Ireland
+      2  none:not_named @ UK_ukpga_1975_59  [no status]
+      2  none:same_or_not_named @ UK_ukpga_1985_51  [no status]
+      2  none:same_or_not_named @ UK_ukpga_1987_43  [no status]
+      2  none:same_or_not_named @ UK_ukpga_1990_43  [no status]
+           s.77: Subsection (4) above applies to Scotland and, for the purposes of that application, “existing disposal authority” means any authority constituted as a disposal authority for any area before the 
+           s.127: This Part, except in so far as it relates to importations of genetically modified organisms, applies to the territorial sea adjacent to England as it applies in England and applies to the terri
+      2  none:same_or_not_named @ UK_ukpga_2006_11  [no status]
+           s.17: Subsection (5) does not extend to Scotland except in relation to—a the doing of an act as an act of terrorism or for the purposes of terrorism; orb the possession or control of a substance for t
+      2  none:not_named @ UK_ukpga_2006_49  [no status]
+           s.46: Part 2 of the Vehicles (Crime) Act 2001 (regulation of registration plate suppliers) extends to Scotland and Northern Ireland. (unread:provision_extent)
+           s.62: Apart from the amendments made by sections 1 and 46, the amendments (and repeals and revocations) made by this Act have the same extent as the enactments and instruments amended (or repealed or 
+      2  none:unread_statement @ UK_ukpga_2011_20  [no status]
+           s.239: Section 129 extends also to Scotland, but only so far as required for the purpose mentioned in section 240(4) of the Planning Act 2008 (construction of certain cross-border pipelines). (unread:
+           s.239: Any amendment or repeal made by this Act in the Transport Act 1968, and the repeal of section 121(1) of the Local Government, Planning and Land Act 1980, extend to England and Wales only. (unre
+      2  none:same_or_not_named @ UK_ukpga_2013_22  [no status]
+           s.27: Paragraphs 9A, 9C and 10, as amended by the preceding provisions of this section, extend to Scotland and Northern Ireland (as well as to England and Wales). (unread:other_provision)
+           s.27: Accordingly, in section 111(1) of the Courts Act 2003 (subject to subsections (2) and (3), Act extends to England and Wales only) after “(3)” insert “ and to section 27(13) of the Crime and Cour
+           s.61: Subsection (15) applies to section 43 only so far as the provisions amended extend to England and Wales or apply in relation to service offences. (unread:in_clause)
+           sch.24.para.1: The relevant NCA provisions do not extend to Northern Ireland. (unread:not_read)
+      2  none:law_no_powers @ UK_uksi_2019_439  [no status]
+           UK_ukpga_1973_51 s.56: placed nowhere
+      2  none:law_no_powers @ UK_uksi_2020_208  [no status]
+           UK_ukpga_1973_51 s.56: placed nowhere
+      2  none:unread_statement @ UK_uksi_2025_418  [no status]
+           reg.1: Unless otherwise stated, each amendment made by these Regulations has the same extent as the provision amended. (unread:not_read)
+      1  none:unread_statement @ UK_ukpga_1972_70  [no status]
+           s.274: 3 . . ., this Act shall not extend to Northern Ireland. (unread:another_default)
+           sch.14.pt.II: Public Health Acts 1875 to 192523 Subject to the following provisions of this Schedule and the provisions of Schedule 26 to this Act, all the provisions of the Public Health Acts 1875 to
+           sch.14.para.23: Subject to the following provisions of this Schedule and the provisions of Schedule 26 to this Act, all the provisions of the Public Health Acts 1875 to 1925 shall extend throughout En
+      1  none:unread_statement @ UK_ukpga_1980_65  [no status]
+           s.92: 9 . . ., This Part of this Act does not extend to Scotland. (unread:not_read)
+           s.101: This section and Schedule 17 below shall not extend to Northern Ireland (except so far as they repeal any enactment so extending). (unread:provision_extent)
+           s.125: In this Part of this Act, only sections 116, 118, and 120 to 122 extend to Scotland. (unread:provision_extent)
+           s.133: This Part of this Act does not extend to Scotland (apart from this section) or to Northern Ireland. (unread:not_read)
+      1  none:not_named @ UK_ukpga_1982_53  [no status]
+           s.48: This Part of this Act shall apply to Scotland only in relation to money or securities deposited with the Accountant General in the circumstances referred to in section 40 above; and in the appli
+           s.77: Subject to subsection (5) above, where any enactment repealed or amended or instrument revoked by this Act extends to any part of the United Kingdom, the repeal, amendment or revocation extends 
+      1  none:unread_statement @ UK_ukpga_1982_53  [no status]
+           s.48: This Part of this Act shall apply to Scotland only in relation to money or securities deposited with the Accountant General in the circumstances referred to in section 40 above; and in the appli
+           s.77: Subject to subsection (5) above, where any enactment repealed or amended or instrument revoked by this Act extends to any part of the United Kingdom, the repeal, amendment or revocation extends 
+      1  none:not_named @ UK_ukpga_1991_22  [no status]
+           s.169: The following provisions of this Act extend to Northern Ireland— the provisions of Schedule 8 (minor and consequential amendments) and Schedule 9 (repeals) so far as relating to enactments whic
+      1  none:unread_statement @ UK_ukpga_1995_36  [no status]
+           s.105: Sections 18, 26(2), 33, 44, ..., 93 and 104 of this Act and this section extend to England and Wales, and those sections and this section ... also extend to Northern Ireland; but—a subsection (
+      1  none:law_no_powers @ UK_uksi_1970_1681  [no status]
+           no powers clause read in its introduction
+      1  none:law_no_powers @ UK_uksi_1974_595  [no status]
+           UK_ukpga_1963_33 s.84: placed nowhere
+      1  none:law_no_powers @ UK_uksi_1991_724  [no status]
+           no powers clause read in its introduction
+      1  none:provision_not_named @ UK_uksi_1992_1728  [no status]
+      1  none:law_no_powers @ UK_uksi_1995_2005  [no status]
+           no powers clause read in its introduction
+      1  none:law_no_powers @ UK_uksi_2017_404  [no status]
+           UK_ukpga_1973_51 s.56: placed nowhere
+      1  none:law_no_powers @ UK_uksi_2017_469  [no status]
+           UK_ukpga_2009_20 s.105A: placed nowhere; UK_ukpga_2009_20 s.107D: placed nowhere; UK_ukpga_2009_20 s.114: placed nowhere; UK_ukpga_2009_20 s.115: placed nowhere; UK_ukpga_2009_20 s.117: placed nowhere
+
+FAIL (amending laws: our faults 4; sweep misses 0; no-bound causes not named: 46)

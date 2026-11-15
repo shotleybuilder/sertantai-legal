@@ -1,0 +1,42 @@
+introductions parsed: 808
+counts: {('pre-existing (code before this call gives the same)', 'loss'): 3, ('this call', 'gain'): 4, ('pre-existing (code before this call gives the same)', 'other'): 3, ('pre-existing (code before this call gives the same)', 'gain'): 3}
+
+UK_nisr_2007_31	loss	pre-existing (code before this call gives the same)
+  before: [{"law": "UK_ukpga_1972_68", "schedules": [], "sections": ["2"]}]
+  after:  []
+UK_uksi_1991_724	gain	this call
+  before: []
+  after:  [{"law": "UK_ukpga_1990_41", "schedules": [], "sections": ["1", "120"]}]
+UK_uksi_1995_2005	gain	this call
+  before: []
+  after:  [{"law": "UK_ukpga_1974_37", "schedules": ["3"], "sections": ["15", "82"]}]
+UK_uksi_1995_2036	gain	this call
+  before: []
+  after:  [{"law": "UK_ukpga_1974_37", "schedules": ["3"], "sections": ["15", "82"]}]
+UK_uksi_2006_1031	gain	this call
+  before: []
+  after:  [{"law": "UK_ukpga_1972_68", "schedules": [], "sections": ["2"]}]
+UK_uksi_2013_2042	loss	pre-existing (code before this call gives the same)
+  before: [{"law": "UK_ukpga_2011_24", "schedules": [], "sections": ["1", "6", "35"]}, {"law": "UK_ukpga_1998_46", "schedules": [], "sections": ["88"]}, {"law": "UK_ukpga_2006_32", "schedules": [], "sections": ["63"]}]
+  after:  [{"law": "UK_ukpga_2011_24", "schedules": [], "sections": ["1", "6", "35"]}]
+UK_uksi_2015_21	other	pre-existing (code before this call gives the same)
+  before: [{"law": "UK_ukpga_1974_37", "schedules": ["2"], "sections": ["15", "80", "82"]}, {"law": "UK_ukpga_1995_21", "schedules": [], "sections": ["55", "85", "86"]}]
+  after:  [{"law": "UK_ukpga_1972_68", "schedules": ["2"], "sections": ["2"]}, {"law": "UK_ukpga_1974_37", "schedules": [], "sections": ["15", "80", "82"]}, {"law": "UK_ukpga_1995_21", "schedules": [], "sections": ["55", "85", "86"]}, {"law": "UK_ukpga_1995_21", "schedules": [], "sections": ["86"]}]
+UK_uksi_2015_398	other	pre-existing (code before this call gives the same)
+  before: [{"law": "UK_ukpga_1992_15", "schedules": ["3"], "sections": ["1"]}]
+  after:  [{"law": "UK_ukpga_1972_68", "schedules": [], "sections": ["2"]}, {"law": "UK_ukpga_1974_37", "schedules": ["3"], "sections": ["15", "82"]}, {"law": "UK_ukpga_1987_12", "schedules": [], "sections": ["23"]}, {"law": "UK_ukpga_1992_15", "schedules": [], "sections": ["1"]}]
+UK_uksi_2018_321	gain	pre-existing (code before this call gives the same)
+  before: [{"law": "UK_ukpga_1982_16", "schedules": ["13"], "sections": ["75", "102"]}]
+  after:  [{"law": "UK_ukpga_1982_16", "schedules": ["13"], "sections": ["75", "102"]}, {"law": "UK_ukpga_1972_68", "schedules": [], "sections": ["2"]}]
+UK_uksi_2020_1567	gain	pre-existing (code before this call gives the same)
+  before: [{"law": "UK_ukpga_2018_16", "schedules": ["7"], "sections": ["8", "8C"]}, {"law": "UK_ukpga_2020_1", "schedules": ["4"], "sections": ["41"]}]
+  after:  [{"law": "UK_ukpga_2018_16", "schedules": ["4", "7"], "sections": ["8", "8C"]}, {"law": "UK_ukpga_2020_1", "schedules": ["4"], "sections": ["41"]}]
+UK_uksi_2021_1370	loss	pre-existing (code before this call gives the same)
+  before: [{"law": "UK_ukpga_2018_16", "schedules": ["7"], "sections": ["8", "8B"]}, {"law": "UK_ukpga_2005_14", "schedules": ["7", "3"], "sections": []}]
+  after:  [{"law": "UK_ukpga_2018_16", "schedules": ["7"], "sections": ["8", "8B"]}]
+UK_uksi_2023_247	other	pre-existing (code before this call gives the same)
+  before: [{"law": "UK_ukpga_1974_37", "schedules": [], "sections": ["43", "82"]}, {"law": "UK_ukpga_2018_16", "schedules": ["7"], "sections": []}, {"law": "UK_ukpga_2013_32", "schedules": [], "sections": ["81"]}]
+  after:  [{"law": "UK_ukpga_1974_37", "schedules": [], "sections": ["43", "82"]}, {"law": "UK_ukpga_2018_16", "schedules": ["4", "7"], "sections": []}]
+UK_uksi_2024_322	gain	pre-existing (code before this call gives the same)
+  before: [{"law": "UK_ukpga_1974_37", "schedules": [], "sections": ["43", "82"]}, {"law": "UK_ukpga_2013_32", "schedules": [], "sections": ["101", "113"]}]
+  after:  [{"law": "UK_ukpga_1974_37", "schedules": [], "sections": ["43", "82"]}, {"law": "UK_ukpga_2013_32", "schedules": [], "sections": ["101", "113"]}, {"law": "UK_ukpga_2018_16", "schedules": ["4", "7"], "sections": []}]

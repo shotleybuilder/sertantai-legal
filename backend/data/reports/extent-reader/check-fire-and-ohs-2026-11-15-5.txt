@@ -1,0 +1,67 @@
+139 family laws with LAT; 5156 text changes by 408 amending laws
+laws read 3 at once: 12.5 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.7 of 6 cores busy; max 4
+
+408 amending laws — extent basis:
+    148  powers
+    122  clause
+     41  lists
+     33  stated
+     26  competence
+     20  none: type_not_read
+     11  none: no_powers
+      7  application
+
+our faults (stored extent_rules against the reading now): 0
+
+the laws' own extent sentences left unread (catalogue classes, counted): 62 laws
+     76  unread:provision_extent
+     59  unread:not_read
+     37  unread:provision_application
+     24  unread:in_clause
+      8  unread:other_provision
+      4  unread:list
+      2  unread:application
+      1  unread:another_default
+      1  unread:list_partial
+
+extent sentences the catalogue misses (the sweep, CV-S05a): 153 in 63 laws; 0 in a form the reader is to read
+     58  noise:other
+     23  noise:outside_uk
+     22  noise:procedure
+     15  noise:instruction
+     12  noise:commencement
+      9  noise:cases
+      5  count:outside_gb
+      5  count:qualified
+      4  noise:modification
+
+5156 text changes — territory from:
+   3897  bound:law
+    654  none:same
+    245  none:unread_statement
+     94  none:same_or_not_named
+     81  none:competence_only
+     56  none:law_type_not_read
+     54  none:law_no_powers
+     26  territory:law
+     20  territory:markup
+     15  none:not_named
+     10  none:no_amending_law
+      4  none:provision_not_named
+
+grouped (CV-S05's table):
+   3923   76.1%  law_text
+    748   14.5%  follows_enactment
+     20    0.4%  feed_or_markup
+     56    1.1%  law_type_not_read
+     54    1.0%  no_powers
+    245    4.8%  unread_statement
+     81    1.6%  competence_only
+     10    0.2%  no_amending_law
+      0    0.0%  no_clause
+     19    0.4%  other
+
+text changes with no bound, by cause (test/fixtures/extent_patterns/withheld.json): known 139
+not named (widest reach first): 0
+
+PASS (amending laws: our faults 0; sweep misses 0; no-bound causes not named: 0)

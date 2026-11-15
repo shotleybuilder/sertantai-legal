@@ -274,6 +274,15 @@ No agent rounds. Before this, the rule was statistical (2026-10-28): pooled agen
 - **Another family's check after a write:** its unnamed causes can be relabelled (no powers → provision not named) while its build is stale. Compare the causes by law against the reading before calling it worse.
 - **Result:** our faults 0, causes 231 → 0 not named (139 known), bound by the law's text 45% → 74%, no powers 662 → 115 changes.
 
+**Fire and OH&S** (round, 2026-11-14/15). 408 amending laws; 101 never stored. Write 1 covers the round's amending laws only, never every law in `extent_rules`, so another family's stored readings move only through shared amending laws. Its causes went 139 → 47.
+- **Three fixer calls by class group:**
+  - same-extent exceptions, including Decision 1: an exception naming the provisions amended, matched on the change's Part from the amended law's rows (wired into the Feed and Markup readers, Jason's in-step go);
+  - lists: a Schedule's unnamed paragraphs, and a partly excepted provision in a "not" list;
+  - the powers parser.
+- **`withheld.json` names are shared across families.** A cause named for the round also covers a switched family: CPA 1987 had 2 changes in the round and 28 in Occupational. Rebuild the switched families (Decision 5) and read their gates before naming.
+- **A new extent module** goes into `FeedPatterns.Version` and `MarkupPatterns.Version` (`version_coverage_test`).
+- **Result:** our faults 144 → 0, causes 139 → 0 not named, bound by the law's text 63% → 76%, unread statements 516 → 245 changes. The switched families: EP and Maritime PASS; Occupational has 1 cause (SI 2006/475's text not held, parked with Sources).
+
 **Skill.** `extent-reader-check`.
 
 ## 6. Amending-law reader

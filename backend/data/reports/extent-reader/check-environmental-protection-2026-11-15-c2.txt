@@ -1,0 +1,82 @@
+122 family laws with LAT; 8139 text changes by 554 amending laws
+laws read 3 at once: 12.5 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.2 of 6 cores busy; max 4
+
+554 amending laws — extent basis:
+    212  powers
+    178  clause
+     60  lists
+     37  stated
+     25  application
+     20  none: type_not_read
+     10  competence
+     10  none: no_powers
+      1  none: no_clause
+      1  none: not_held
+
+our faults (stored extent_rules against the reading now): 8
+      1  not_stored
+      7  stale
+    UK_ssi_2017_114 stale
+    UK_ukpga_2017_3 stale
+    UK_ukpga_2023_30 stale
+    UK_uksi_2008_1482 stale
+    UK_uksi_2013_235 stale
+    UK_uksi_2014_469 stale
+    UK_uksi_2017_585 stale
+    UK_uksi_2026_1171 not_stored
+
+the laws' own extent sentences left unread (catalogue classes, counted): 91 laws
+     69  unread:not_read
+     67  unread:provision_extent
+     50  unread:provision_application
+     46  unread:in_clause
+      7  unread:other_provision
+      3  unread:list
+      1  unread:list_partial
+
+extent sentences the catalogue misses (the sweep, CV-S05a): 183 in 86 laws; 0 in a form the reader is to read
+     59  noise:other
+     30  noise:outside_uk
+     29  noise:instruction
+     27  noise:commencement
+     19  noise:procedure
+      9  noise:cases
+      7  count:qualified
+      3  count:outside_gb
+
+8139 text changes — territory from:
+   5710  bound:law
+   1567  none:same
+    316  territory:law
+    137  none:law_type_not_read
+    133  none:same_or_not_named
+    115  none:law_no_powers
+     64  territory:feed
+     54  none:unread_statement
+     22  none:competence_only
+      7  none:no_amending_law
+      7  none:not_named
+      4  territory:markup
+      2  none:law_no_clause
+      1  none:law_not_held
+
+grouped (CV-S05's table):
+   6026   74.0%  law_text
+   1700   20.9%  follows_enactment
+     68    0.8%  feed_or_markup
+    137    1.7%  law_type_not_read
+    115    1.4%  no_powers
+     54    0.7%  unread_statement
+     22    0.3%  competence_only
+      7    0.1%  no_amending_law
+      2    0.0%  no_clause
+      8    0.1%  other
+
+text changes with no bound, by cause (test/fixtures/extent_patterns/withheld.json): known 139, unreviewed 2
+not named (widest reach first): 2
+      1  none:same_or_not_named @ UK_ukpga_1990_43  [no status]
+           s.77: Subsection (4) above applies to Scotland and, for the purposes of that application, “existing disposal authority” means any authority constituted as a disposal authority for any area before the 
+           s.127: This Part, except in so far as it relates to importations of genetically modified organisms, applies to the territorial sea adjacent to England as it applies in England and applies to the terri
+      1  none:same_or_not_named @ UK_ukpga_2018_12  [no status]
+
+FAIL (amending laws: our faults 8; sweep misses 0; no-bound causes not named: 2)
