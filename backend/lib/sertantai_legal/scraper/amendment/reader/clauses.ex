@@ -13,15 +13,26 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   # "the following paragraph", "a new subsection": the insertion is a provision
   @provision_named ~r/\b(?:following|new)\s+(?:sub-?)?(?:sections?|paragraphs?|regulations?|articles?|rules?|provisions?|schedules?|parts?|chapters?)\b/i
   # "in subsection (1)", "In section 7(1)(a)": where the clause is
+  # a bracketed group, brackets inside it at any depth ("(traceability of
+  # … Regulations (Northern Ireland) 2013 (ITOER (NI) 2013))": SI 2019/696
+  # Sch.31 para 9, Fire and OH&S 2026-11-15), quotes inside allowed
+  @group ~S{(?<g>\((?:[^()“”"]|[“"][^”"]*[”"]|(?&g))*\))}
+  @quote_or_group Regex.compile!("[“\"][^”\"]*[”\"]|" <> @group, "u")
   @place ~r/\bin\s+(?:sub-?)?(?:sections?|paragraphs?|sub-?paragraphs?|regulations?|articles?|rules?)\s+(?:\d+[A-Z]*\s*)?((?:\([0-9A-Za-z]+\))+)/i
+  @aside Regex.compile!(
+           "[“\"][^”\"]*[”\"]|" <> @group <> "(?!\\s*(?:Act|Regulations|Order|Rules|\\d{4})\\b)",
+           "u"
+         )
+
   @doc """
   The text without its captions, a title's own brackets kept ("Planning
   (Listed Buildings and Conservation Areas) Act 1990")
   """
   @spec asides(String.t()) :: String.t()
   def asides(s) do
-    ~r/[“"][^”"]*[”"]|\((?:[^()“”"]|[“"][^”"]*[”"])*\)(?!\s*(?:Act|Regulations|Order|Rules|\d{4})\b)/u
-    |> Regex.replace(s, fn m -> if m =~ ~r/^[“"]/u or not (m =~ ~r/\s/u), do: m, else: "" end)
+    Regex.replace(@aside, s, fn m, _ ->
+      if m =~ ~r/^[“"]/u or not (m =~ ~r/\s/u), do: m, else: ""
+    end)
   end
 
   @doc """
@@ -45,12 +56,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   """
   @spec clauses(Text.t()) :: [Text.t()]
   def clauses(%Text{instruction: i} = text) do
-    masked =
-      Regex.replace(
-        ~r/[“"][^”"]*[”"]|\((?:[^()“”"]|[“"][^”"]*[”"])*\)/u,
-        i,
-        &String.duplicate("x", byte_size(&1))
-      )
+    masked = Regex.replace(@quote_or_group, i, fn m, _ -> String.duplicate("x", byte_size(m)) end)
 
     cuts =
       for [{pos, len}] <- Regex.scan(~r/;\s*|,?\s+and\s+/, masked, return: :index),
@@ -164,15 +170,40 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
 
   @spec with_parent_verb(Text.t()) :: Text.t()
   def with_parent_verb(%Text{parents: [parent | _], instruction: i} = text) do
-    with nil <- Operation.of(text),
+    with nil <- Operation.of(captionless(text)),
          [_, noun] <- Regex.run(@parent_noun, parent) do
       %{text | instruction: @noun_verb[String.downcase(noun)] <> " " <> i}
     else
+      nil -> captioned_verb(text, parent)
       _ -> text
     end
   end
 
   def with_parent_verb(text), do: text
+
+  # an item with no verb of its own under "The following provisions are
+  # repealed—" is repealed (2011 c.20 s.47(b): "sections 71(2) and (3) and
+  # 72 to 75 of that Act (which provide for … or repealed)", whose only
+  # verb sat in its caption; Fire and OH&S 2026-11-15) — only an item
+  # starting with its own numbered provisions ("the remaining provisions
+  # of Part 5 of that Act" names none: 2011 c.20 s.109(1)(b))
+  @parent_verb ~r/\bthe\s+following\s+(?:provisions?|enactments?|sections?|regulations?)\s+((?:is|are|shall\s+be)\s+(?:hereby\s+)?(?:repealed|revoked|omitted))\s*[—–:]\s*$/iu
+  # (kept to an item whose caption held a verb, as it read before captions
+  # nested: every verb-less item under such a parent is a wider form, not
+  # measured)
+  defp captioned_verb(%Text{instruction: i} = text, parent) do
+    if Operation.of(text) == nil,
+      do: text,
+      else: %{text | instruction: parent_verb(parent, i) || i}
+  end
+
+  @numbered ~r/^\s*(?:sections?|regulations?|articles?|rules?)\s+\d/iu
+  defp parent_verb(parent, i) do
+    case i =~ @numbered && Regex.run(@parent_verb, parent, capture: :all_but_first) do
+      [verb] -> Regex.replace(~r/[\s,;.]*(?:\band\s*)?$/u, i, "", global: false) <> " " <> verb
+      _ -> nil
+    end
+  end
 
   @doc """
   The instruction without its bracketed captions ("In section 118 (… of
@@ -191,8 +222,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   """
   @spec strip_captions(String.t()) :: String.t()
   def strip_captions(s) do
-    ~r/[“"][^”"]*[”"]|\((?:[^()“”"]|[“"][^”"]*[”"])*\)/u
-    |> Regex.replace(s, fn m -> if m =~ ~r/^[“"]/u or not (m =~ ~r/\s/u), do: m, else: "" end)
+    Regex.replace(@quote_or_group, s, fn m, _ ->
+      if m =~ ~r/^[“"]/u or not (m =~ ~r/\s/u), do: m, else: ""
+    end)
   end
 
   @schedule_entry ~r/,?\s*(?:and\s+)?the\s+entr(?:y|ies)\s+in\s+Schedule\s+[0-9A-Z]+\s+relating\s+to\s+.*?(?=\s+(?:are|is|shall|be)\b|[;:]|$)/u
@@ -233,9 +265,32 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   @spec no_entry_names(String.t()) :: String.t()
   def no_entry_names(s), do: Regex.replace(@entry_named, s, "\\1")
 
-  @doc "The text without an aside saying when a provision has effect (`@effect_aside`)."
+  # a clause saying where a term's meaning is found ("… and in this
+  # paragraph the expression “railway company” has the meaning assigned to
+  # it in section 108 of that Act": SI 1996/2089 reg.34(1), read as a repeal
+  # of s.108; Fire and OH&S 2026-11-15): the provision it names is no place
+  @meaning_aside ~r/\b((?:has|have|having|bears?|bearing)\s+the\s+(?:same\s+)?meanings?)\s+(?:as\s+)?(?:(?:assigned|given)\s+(?:to\s+(?:it|them)\s+)?)?(?:in|by)\s+(?:sub-?)?(?:sections?|regulations?|articles?|rules?|paragraphs?)\s+\d+[A-Z]*(?:\s*\([0-9A-Za-z]+\))*(?:\s+of\s+(?:that|the\s+said|the\s+[A-Z][^.;,()]*?\d{4}))?(?:\s+(?:Act|Order|Regulations|Rules)\b)?/u
+
+  # an entry told by what it is about ("after the entry relating to a fire
+  # and rescue authority constituted by a scheme under section 2 of the
+  # Fire and Rescue Services Act 2004 or a scheme to which section 4 of
+  # that Act applies insert—": 2017 c.3 Sch.1 para 85, read as words in
+  # ss.2, 4): its description, up to the verb, names neither law nor place.
+  # An entry named by a provision's number is `no_entry_names/1`'s
+  @entry_described ~r/\b(the\s+entr(?:y|ies))\s+(?:relating\s+to|for)\s+(?!(?:sections?|regulations?|articles?|rules?|paragraphs?)\s+\d)[^,;—–]*?(?=\s*(?:[,;—–]|\b(?:insert|substitute|omit|add|there)\b|\band\s+(?:at|in|after|before|for)\b|$))/iu
+
+  @doc """
+  The text without its asides that tell neither the law nor the place
+  amended: when a provision has effect (`@effect_aside`), where a term's
+  meaning is found (`@meaning_aside`), what an entry is about
+  (`@entry_described`).
+  """
   @spec no_effect_asides(String.t()) :: String.t()
-  def no_effect_asides(s), do: Regex.replace(@effect_aside, s, ",")
+  def no_effect_asides(s) do
+    s = Regex.replace(@effect_aside, s, ",")
+    s = Regex.replace(@meaning_aside, s, "\\1")
+    Regex.replace(@entry_described, s, "\\1")
+  end
 
   @doc """
   The text without its captions, brackets inside them too ("… 1990
@@ -245,7 +300,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   """
   @spec no_captions(String.t()) :: String.t()
   def no_captions(s) do
-    Regex.replace(~r/\((?:[^()]|\([^()]*\))*\)/u, s, fn m ->
+    Regex.replace(~r/(?<g>\((?:[^()]|(?&g))*\))/u, s, fn m, _ ->
       if m =~ ~r/\s/u, do: "", else: m
     end)
   end
@@ -255,7 +310,19 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   # "paragraph 15(b) and (f) (in the quoted text modifying section 155 of
   # the Data Protection Act 2018)" (SI 2026/386 Sch. 3 para 6(4)(j)(iv): a
   # sibling's aside had named the law for para 6(5), CV-S05)
-  @captioned ~r/(\b(?:sections?|subsections?|regulations?|articles?|rules?|paragraphs?|sub-paragraphs?|Schedules?|Parts?|Chapters?)\s+[0-9]+[A-Z]*(?:\s*\([0-9A-Za-z]+\))*(?:\s*(?:,|and|or|to)\s*\([0-9A-Za-z]+\)(?:\s*\([0-9A-Za-z]+\))*)*)\s*\((?:[^()“”"]|[“"][^”"]*[”"]|\([^()]*\))*\)/u
+  # … the provision's law between them ("section 26 of the Fire Services
+  # Act 1947 (firefighters' pension scheme) (as continued in force by order
+  # under section 36 of the Fire and Rescue Services Act 2004)", 2017 c.3
+  # s.8(5); "section 410(3) of the Communications Act 2003 (c. 21) (which
+  # enables Orders in Council under section 11 of the Petroleum Act 1998
+  # …)", 2004 c.20 s.87(5)): every caption after it, brackets inside a
+  # caption at any depth (Fire and OH&S 2026-11-15)
+  @provision_ref ~S"\b(?:sections?|subsections?|regulations?|articles?|rules?|paragraphs?|sub-paragraphs?|Schedules?|Parts?|Chapters?)\s+[0-9]+[A-Z]*(?:\s*\([0-9A-Za-z]+\))*(?:\s*(?:,|and|or|to)\s*\([0-9A-Za-z]+\)(?:\s*\([0-9A-Za-z]+\))*)*"
+  @of_law ~S'(?:\s+(?:of|to)\s+the\s+(?:[^()“”";—–]|\([A-Z][^()]*\))*?\s\d{4})?'
+  @captioned Regex.compile!(
+               "(" <> @provision_ref <> @of_law <> ")(?:\\s*" <> @group <> ")+",
+               "u"
+             )
 
   @doc """
   The text without the captions that follow a provision reference ("In

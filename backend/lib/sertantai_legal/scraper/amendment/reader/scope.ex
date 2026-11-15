@@ -37,8 +37,11 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Scope do
   # ("The text of the Convention as set out in Part 1 of Schedule 7 is
   # amended as follows—": SI 2016/1061 art.3, Maritime Safety 2026-11-06)
   @own_schedule ~r/(?<!\bas\s)\bset\s+out\s+in\s+(?:Part\s+\w+\s+of\s+)?(?:the\s+)?Schedule(?:\s+[\dA-Z]+)?\b|\b(?:the\s+)?Schedule(?:\s+[\dA-Z]+)?\s+to\s+th(?:is|ese)\s+(?:Act|Regulations|Order|Rules|Measure)\b|\b(?:Part\s+\w+\s+of\s+)?this\s+Schedule\b/iu
-  # a place in a Schedule or Annex: "Schedule 2", "Annex 17", "the Schedule"
-  @schedule_place ~r/\b(?:Schedule|Annex)\s+(?-i:[\dIVXLC]+[A-Z]*)\b|\b(?:in|of|for|to|omit)\s+the\s+Schedule\b/iu
+  # a place in a Schedule or Annex: "Schedule 2", "Annex 17", "the Schedule",
+  # "Schedules 1 and 2" ("Omit Schedules 1 and 2." had taken its sibling's
+  # place, "Omit sections 119 to 121.": SR 2006/425 Sch.6 para.1(15), Fire
+  # and OH&S 2026-11-15)
+  @schedule_place ~r/\b(?:Schedules?|Annex(?:es)?)\s+(?-i:[\dIVXLC]+[A-Z]*)\b|\b(?:in|of|for|to|omit)\s+the\s+Schedule\b/iu
 
   # an instruction under "Schedule 1 (…) is amended as follows" (its
   # provision's first words), where neither it nor a provision holding it
@@ -71,7 +74,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Scope do
         (match?([first | _] when is_binary(first), context) and
            context |> hd() |> Clauses.no_captions() =~
              ~r/^\s*(?:(?:Part|Paragraph)\s+\w+\s+of\s+)?Schedule\s+\d+[A-Z]*\b[^.]*?\bis\s+amended\b/iu) or
-        bare_paragraph?(own, laws) or schedule_lead_in?(context)
+        bare_paragraph?(own, laws) or schedule_lead_in?(context, laws)
 
     if schedule?,
       do: Enum.filter(laws, fn law -> Enum.any?(own, &(&1 =~ @provision_number[law.kind])) end),
@@ -97,15 +100,29 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Scope do
   @lead_in ~r/(?:[—–:]\s*$|\bamended\s+(?:as\s+follows|in\s+accordance\s+with)\b)/u
   @schedule_lead ~r/^\s*(?:Amend\s+)?(?:(?:Part|Paragraph)\s+\w+\s+of\s+)?Schedule\s+\d+[A-Z]*\b|^\s*In\s+(?:Part\s+\w+\s+of\s+)?Schedule\s+\d+[A-Z]*\b/iu
   @provision_lead ~r/^\s*(?:In\s+)?(?:sections?|regulations?|articles?|rules?)\s+\d/iu
-  defp schedule_lead_in?(context) do
+  # a lead-in's paragraph by a bare number is a Schedule's too, its
+  # Schedule named paragraphs before ("Paragraph 9 is amended as follows."
+  # over "For sub-paragraph (3) substitute— (3)" had read as s.3: 2016 c.20
+  # Sch.1 para.38, under para.32's "Schedule 2 (authorisations) is amended
+  # as follows.", Fire and OH&S 2026-11-15) — never an EU law's
+  @paragraph_lead ~r/^\s*(?:In\s+)?paragraphs?\s+\d+[A-Z]*\b/iu
+  defp schedule_lead_in?(context, laws) do
+    schedule_lead = schedule_leads(laws)
+
     context
     |> Enum.reverse()
     |> Enum.map(&Clauses.no_captions/1)
-    |> Enum.find(&(&1 =~ @lead_in and (&1 =~ @schedule_lead or &1 =~ @provision_lead)))
+    |> Enum.find(&(&1 =~ @lead_in and (schedule_lead.(&1) or &1 =~ @provision_lead)))
     |> case do
       nil -> false
-      lead -> lead =~ @schedule_lead
+      lead -> schedule_lead.(lead)
     end
+  end
+
+  defp schedule_leads(laws) do
+    if Enum.all?(laws, &(&1.kind != :article)),
+      do: &(&1 =~ @schedule_lead or &1 =~ @paragraph_lead),
+      else: &(&1 =~ @schedule_lead)
   end
 
   # an instruction under a heading amending an EU law's Annexes or

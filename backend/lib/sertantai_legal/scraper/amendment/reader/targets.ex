@@ -50,10 +50,34 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
   end
 
   defp quoted_targets(text, named, numbers, p) do
+    anchor = subsection_anchor(text, numbers)
+
     for path <- text.inserted,
-        t <- quoted_paths(path, named, numbers, p),
+        t <- anchored_paths(path, anchor, named, numbers, p),
         uniq: true,
         do: t
+  end
+
+  # a quote placed at a subsection of the provision named, its numbers that
+  # subsection's or grown from it, is that provision's subsections, though
+  # they look grown from the provision's own number too ("In section 5B
+  # (boundaries of power under section 5A) after subsection (5) insert— 5A
+  # … 5B": s.5B(5A), s.5B(5B), never ss.5A, 5B — 2017 c.3 Sch.2 para 113;
+  # Fire and OH&S 2026-11-15)
+  @at_subsection ~r/\b(?:after|before|for)\s+(?:sub-?sections?|paragraphs?)\s+\((\d+[A-Z]*)\)/iu
+  defp subsection_anchor(_text, []), do: nil
+
+  defp subsection_anchor(text, _numbers) do
+    case Regex.run(@at_subsection, Clauses.captionless(text).instruction, capture: :all_but_first) do
+      [n] -> n
+      nil -> nil
+    end
+  end
+
+  defp anchored_paths([top | _] = path, anchor, named, numbers, p) do
+    if anchor != nil and (top == anchor or own_number?(top, [anchor])),
+      do: nested_paths(path, named, numbers, p),
+      else: quoted_paths(path, named, numbers, p)
   end
 
   # a substitution of one whole provision whose quote numbers none of its
@@ -85,33 +109,32 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
   @spec quoted_paths([String.t()], [String.t()], [String.t()], String.t()) :: [String.t()]
   def quoted_paths(path, named, numbers, p) do
     own? = provision_path?(path) and (numbers == [] or own_number?(hd(path), numbers))
+    if own?, do: [Brackets.ref(p, path)], else: nested_paths(path, named, numbers, p)
+  end
 
-    if own? do
-      [Brackets.ref(p, path)]
-    else
-      # a lone "i", "v" or "x" is a letter or a numeral: as a numeral, under
-      # the last bracket named ("in paragraph (c), for “…” substitute— (i)
-      # … (ii) …": s.51A(2)(c)(i), not only s.51A(2)(i) — CV-S06 seed 33)
+  # a lone "i", "v" or "x" is a letter or a numeral: as a numeral, under
+  # the last bracket named ("in paragraph (c), for “…” substitute— (i)
+  # … (ii) …": s.51A(2)(c)(i), not only s.51A(2)(i) — CV-S06 seed 33)
+  defp nested_paths(path, named, numbers, p) do
+    for(
+      n <- numbers,
+      pre <- prefixes(Brackets.above(named, [hd(path)])),
+      do: Brackets.ref(p, [n | pre ++ path])
+    ) ++
       for(
         n <- numbers,
-        pre <- prefixes(Brackets.above(named, [hd(path)])),
-        do: Brackets.ref(p, [n | pre ++ path])
+        length(named) > 1,
+        hd(path) =~ ~r/^[ivx]+[a-z]?$/,
+        do: Brackets.ref(p, [n | Enum.drop(named, -1) ++ path])
       ) ++
-        for(
-          n <- numbers,
-          length(named) > 1,
-          hd(path) =~ ~r/^[ivx]+[a-z]?$/,
-          do: Brackets.ref(p, [n | Enum.drop(named, -1) ++ path])
-        ) ++
-        for(
-          n <- numbers,
-          named != [],
-          hd(path) in ~w(i v x),
-          # (under a letter: "(c)", never a numeral already — "(i)(i)")
-          List.last(named) =~ ~r/^[a-z]{1,2}$/ and not (List.last(named) =~ ~r/^[ivx]+$/),
-          do: Brackets.ref(p, [n | named ++ path])
-        )
-    end
+      for(
+        n <- numbers,
+        named != [],
+        hd(path) in ~w(i v x),
+        # (under a letter: "(c)", never a numeral already — "(i)(i)")
+        List.last(named) =~ ~r/^[a-z]{1,2}$/ and not (List.last(named) =~ ~r/^[ivx]+$/),
+        do: Brackets.ref(p, [n | named ++ path])
+      )
   end
 
   # the brackets above a quoted path, one of each level per path ("in
@@ -197,9 +220,23 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
   end
 
   @item "(?:\\d+[A-Z]*(?:\\s+to\\s+\\d+[A-Z]*)?(?:\\([0-9A-Za-z]+\\))*|(?:\\([0-9A-Za-z]+\\))+)"
+  # a provision's word written again before a later item is the same list
+  # ("regulation 46(2)(a) … and regulation 60(b)(i)": SI 2017/879 reg.5;
+  # "section 78A(7)(b)(i), section 78C(10)(b), …": SSI 2005/658 reg.2(2);
+  # each had crossed every number with every bracket — Fire and OH&S
+  # 2026-11-15)
+  @again "(?:(?i:sections?|regulations?|articles?|rules?)\\s+(?=\\d))?"
+  # a year closing a law's title is never a list's first item ("… Regulations
+  # 2001, regulation 6(3)": SI 2009/1890 art.4(1)(a) had made reg.2001);
+  # sections do run past 999, as `numbers/2` reads them
+  @no_year "(?!(?<!(?i:ection) )(?<!(?i:ections) )\\d{4}\\b)"
   @place_list Regex.compile!(
-                "\\b((?i:(?:sub-?)?(?:sections?|regulations?|paragraphs?|articles?|rules?)))\\s+(" <>
-                  @item <> "(?:\\s*(?:,|\\band\\b|\\bor\\b|\\bto\\b)\\s*" <> @item <> ")*)",
+                "\\b((?i:(?:sub-?)?(?:sections?|regulations?|paragraphs?|articles?|rules?)))\\s+" <>
+                  @no_year <>
+                  "(" <>
+                  @item <>
+                  "(?:\\s*(?:,|\\band\\b|\\bor\\b|\\bto\\b)\\s*" <>
+                  @again <> @item <> ")*)",
                 "u"
               )
 
@@ -217,7 +254,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
   @doc """
   A written list of places whose items carry brackets of their own
   ("regulations 6(6), 8(9), 12(2) and 15(1)", "subsections (1)(e), (5) and
-  (9)(a)"), quoted words and captions aside: each item's number (nil for a
+  (9)(a)", "regulation 46(2)(a) and regulation 60(b)(i)"), quoted words
+  and captions aside: each item's number (nil for a
   bracket alone, which takes the one before's, else the clause's) and
   brackets; [] for any other place (a plain "(5) and (6)" or "7, 8"
   reads the same as before), and where numbered items are not the law's
