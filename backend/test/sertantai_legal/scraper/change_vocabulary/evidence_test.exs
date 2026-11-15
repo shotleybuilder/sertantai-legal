@@ -142,4 +142,90 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.EvidenceTest do
       assert {r.date, r.partial} == {~D[2006-04-01], false}
     end
   end
+
+  describe "the stages are the date's own source's (Fire and OH&S: Evidence, Decision 2 a)" do
+    @law_stages [
+      %{
+        date: ~D[2023-10-01],
+        partial: true,
+        commenced_by: "UK_uksi_2023_362",
+        qualification: nil,
+        in_force_for: "E"
+      }
+    ]
+    @feed_stages [%{date: ~D[2023-04-06], partial: true, commenced_by: "UK_uksi_2023_100"}]
+
+    test "the law's commencement dates the change: its stages, never the feed's" do
+      r =
+        change([
+          {:commencement, :date, ~D[2023-10-01]},
+          {:commencement, :stages, @law_stages},
+          {:feed, :date, ~D[2023-04-06]},
+          {:feed, :stages, @feed_stages}
+        ])
+        |> Evidence.resolve(nil)
+        |> Map.fetch!(:resolved)
+
+      assert r.sources.date == :commencement
+      assert r.stages == @law_stages
+    end
+
+    test "the feed dates the change: the feed's stages" do
+      r =
+        change([
+          {:feed, :date, ~D[2023-04-06]},
+          {:feed, :stages, @feed_stages},
+          {:commencement, :stages, @law_stages}
+        ])
+        |> Evidence.resolve(nil)
+        |> Map.fetch!(:resolved)
+
+      assert r.sources.date == :feed
+      assert r.stages == @feed_stages
+    end
+
+    test "the date's source claims no stages: none, never the other source's" do
+      law =
+        change([{:commencement, :date, ~D[2023-10-01]}, {:feed, :stages, @feed_stages}])
+        |> Evidence.resolve(nil)
+
+      assert law.resolved.stages == nil
+
+      text =
+        change([{:law_text, :date, ~D[2023-10-01]}, {:feed, :stages, @feed_stages}])
+        |> Evidence.resolve(nil)
+
+      assert text.resolved.stages == nil
+
+      undated = change([{:feed, :stages, @feed_stages}]) |> Evidence.resolve(nil)
+      assert undated.resolved.stages == nil
+    end
+
+    test "a stored change read back through derive/1: the same, from its sources" do
+      claims = [{:commencement, :stages, @law_stages}, {:feed, :stages, @feed_stages}]
+
+      stored = fn date_source ->
+        %Evidence.Resolved{
+          operation: :substituted,
+          level: :words,
+          territory: nil,
+          date: ~D[2023-10-01],
+          by: nil,
+          retained: false,
+          partial: false,
+          saved: false,
+          sources: %{date: date_source}
+        }
+      end
+
+      read = fn date_source ->
+        Evidence.derive(%Change{change(claims) | resolved: stored.(date_source)}).resolved.stages
+      end
+
+      assert read.(:commencement) == @law_stages
+      assert read.(:feed) == @feed_stages
+      assert read.(:law_text) == nil
+      assert read.(nil) == nil
+    end
+  end
 end

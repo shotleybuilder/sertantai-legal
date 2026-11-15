@@ -49,6 +49,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
       :saved,
       :sources,
       commenced_by: nil,
+      stages: nil,
       tiers: %{},
       conflicts: []
     ]
@@ -60,6 +61,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
             date: Date.t() | nil,
             by: String.t() | nil,
             commenced_by: String.t() | nil,
+            stages: [map()] | nil,
             retained: boolean(),
             partial: boolean(),
             saved: boolean(),
@@ -190,16 +192,25 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Evidence do
   end
 
   @doc """
-  A resolved change's tiers and conflicts, from its sources and claims —
-  never stored (CV-04): a change read back from `provision_changes` gets
-  them here.
+  A resolved change's tiers, stages and conflicts, from its sources and
+  claims — never stored (CV-04): a change read back from
+  `provision_changes` gets them here.
   """
   @spec derive(Change.t()) :: Change.t()
   def derive(%Change{resolved: %Resolved{} = r} = c) do
     tiers = Map.new(r.sources, fn {attribute, source} -> {attribute, tier(source)} end)
-    c = %Change{c | resolved: %Resolved{r | tiers: tiers}}
+    c = %Change{c | resolved: %Resolved{r | tiers: tiers, stages: stages(c, r.sources)}}
     %Change{c | resolved: %Resolved{c.resolved | conflicts: Conflicts.values(c)}}
   end
+
+  # the stages are the date's: the law's commencement dating the change,
+  # its own stages, never legislation.gov.uk's beside it; the feed dating
+  # it, the feed's (`text-change-carries-its-stages`); a date from any other
+  # source, or none, has no stages (Fire and OH&S: Evidence, Decision 2 a)
+  defp stages(c, %{date: source}) when source in [:commencement, :feed],
+    do: Change.value(c, source, :stages)
+
+  defp stages(_c, _sources), do: nil
 
   # The amending provision's extent (primary: its Act's extent clause) bounds
   # where the change applies: extent is not application (an E+W provision
