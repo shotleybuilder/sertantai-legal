@@ -8,6 +8,8 @@ defmodule SertantaiLegal.Scraper.MakingLawsCheckedTest do
   """
   use ExUnit.Case, async: true
 
+  @moduletag :clml_store
+
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
   alias SertantaiLegal.Scraper.MakingLaws

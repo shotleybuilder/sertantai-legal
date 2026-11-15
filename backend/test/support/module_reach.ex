@@ -11,7 +11,10 @@ defmodule SertantaiLegal.ModuleReach do
   def reach(files, stop \\ []) do
     {:ok, mods} = :application.get_key(:sertantai_legal, :modules)
     by_file = Map.new(mods, &{source(&1), &1})
-    walk(files, MapSet.new(), by_file, {MapSet.new(mods), stop})
+    # plain maps as sets inside the walk: a MapSet carried through the
+    # recursion trips Dialyzer's opaque-type check (call_without_opaque)
+    known = Map.new(mods, &{&1, true})
+    files |> walk(%{}, by_file, {known, stop}) |> Map.keys() |> MapSet.new()
   end
 
   @doc "A module's source file, relative to the working directory."
@@ -22,9 +25,9 @@ defmodule SertantaiLegal.ModuleReach do
   defp walk([], seen, _by_file, _ctx), do: seen
 
   defp walk([f | rest], seen, by_file, {mods, stop} = ctx) do
-    case {MapSet.member?(seen, f) or f in stop, by_file[f]} do
+    case {Map.has_key?(seen, f) or f in stop, by_file[f]} do
       {false, mod} when mod != nil ->
-        walk(refs(mod, mods) ++ rest, MapSet.put(seen, f), by_file, ctx)
+        walk(refs(mod, mods) ++ rest, Map.put(seen, f, true), by_file, ctx)
 
       _ ->
         walk(rest, seen, by_file, ctx)
@@ -36,7 +39,7 @@ defmodule SertantaiLegal.ModuleReach do
     {:ok, {_, [atoms: atoms]}} = :beam_lib.chunks(:code.which(mod), [:atoms])
 
     for {_, a} <- atoms,
-        MapSet.member?(mods, a),
+        Map.has_key?(mods, a),
         f = source(a),
         String.starts_with?(f, "lib/"),
         do: f
