@@ -173,3 +173,15 @@ Environmental Protection (2026-11-10), the code gate, with OH&S's parked gate (`
   Both are now gate causes: "a joined event lent to a provision its effect doesn't name" and "markup alone beside its joined twin".
 - **Lesson:** a default name per cause ("markup alone: the feed holds no effect") hid a split the agent then found. A cause wide enough to hold two shapes needs splitting in code before it is named by default.
 - **Strata after:** EP J 4,667 / U 33 / C 17; OH&S U 17 (the fix's one place left apart); Maritime U 6 / C 4.
+
+Fire and OH&S, the round of five families (2026-11-15, `.claude/sessions/lat-change-pipeline/2026-11-15-fire-and-ohs-merge.md`):
+
+- **Gate review:** 85 round groups and 2 switched families' groups. Each change was checked by shape in a script; every U, C and markup-alone change was read beside its neighbours. 89 names were written. No over-join.
+- **A Merge class the gate can't see:** the feed's compound amending provision ("reg.4(2)(a)(b)"), which left the second law-text record apart (39 changes, 11 laws corpus-wide).
+  - Two fixer calls: `Merge.Compound`, and the four joins the first call lost (Decisions 1 a, 4 c).
+  - A three-way in-memory preview over 162 laws: no loss.
+  - One rebuild of all 537 built laws. The gate's "the feed names together" test now reads compounds.
+- **Strata after:** J 3,222 / U 41 / C 0; join rate law text 86.9%, markup 95.8%. All four gates PASS; golden 27/27.
+- **Lessons:**
+  - A split that stands in no stratum (a law-text record beside a feed effect it should have joined) is invisible to the gate. Scan the law-text-only changes against the feed claims of their law.
+  - Compare previews on full keys: ids cut short for display hid a loss.

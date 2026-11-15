@@ -1,0 +1,34 @@
+122 laws; text changes in a stratum: 4729
+
+merge decisions by cause (test/fixtures/merge/merges.json): 718 groups; known 716, unreviewed 2
+   2908  same amending provision, same operation
+    901  same effect id
+    288  operation differs
+    127  several markup records of one effect
+    117  a joined event lent to a provision its effect doesn't name
+     83  legacy note names the feed's amending provision
+     75  markup alone
+     60  legacy markup id
+     56  same amending provision, same operation, dates differ
+     36  spread: legislation.gov.uk's own effect
+     33  legislation.gov.uk names no amending provision
+     31  unjoined
+     28  related amending provision
+     28  several markup records
+     21  candidate
+     21  two law-text records the feed names together
+     12  operations differ in legislation.gov.uk: inserted/renumbered
+      8  two law-text records
+      5  markup alone beside its joined twin
+      3  operations differ in legislation.gov.uk: renumbered/substituted
+      2  operations differ in legislation.gov.uk: repealed/repealed_in_part
+      2  operations differ in legislation.gov.uk: repealed/substituted
+      2  spread: joined across provisions
+
+not named (widest reach first): 2
+      1  two law-text records @ UK_nisr_2017_86  [no status]
+           UK_nisr_2006_518 reg.36(7)(a) (regulation-20-a-ii, regulation-20-a-i)
+      1  operation differs @ UK_ukpga_1999_28  [no status]
+           UK_ukpga_1995_25 s.42(3)(b)(ii) (schedule-6)
+
+FAIL (groups not named: 2)

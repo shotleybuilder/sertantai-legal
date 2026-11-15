@@ -1,0 +1,30 @@
+122 laws; text changes in a stratum: 4729
+
+merge decisions by cause (test/fixtures/merge/merges.json): 718 groups; known 718
+   2908  same amending provision, same operation
+    901  same effect id
+    288  operation differs
+    127  several markup records of one effect
+    117  a joined event lent to a provision its effect doesn't name
+     83  legacy note names the feed's amending provision
+     75  markup alone
+     60  legacy markup id
+     56  same amending provision, same operation, dates differ
+     36  spread: legislation.gov.uk's own effect
+     33  legislation.gov.uk names no amending provision
+     31  unjoined
+     28  related amending provision
+     28  several markup records
+     22  two law-text records the feed names together
+     21  candidate
+     12  operations differ in legislation.gov.uk: inserted/renumbered
+      7  two law-text records
+      5  markup alone beside its joined twin
+      3  operations differ in legislation.gov.uk: renumbered/substituted
+      2  operations differ in legislation.gov.uk: repealed/repealed_in_part
+      2  operations differ in legislation.gov.uk: repealed/substituted
+      2  spread: joined across provisions
+
+not named (widest reach first): 0
+
+PASS (groups not named: 0)

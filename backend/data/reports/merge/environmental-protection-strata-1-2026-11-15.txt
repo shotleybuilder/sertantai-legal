@@ -1,0 +1,27 @@
+122 laws; text changes in a stratum: 4729
+
+strata:
+  J  joined (over-join risk): 4677
+  U  unjoined (split risk): 31
+  C  candidates (split risk): 21
+
+join rate: of each source's text changes, those a feed effect states too (44591 stored changes):
+  law_text: 3504/4014 (87.3%)
+  markup: 3513/3667 (95.8%)
+
+keys under more than 3 top provisions (an over-join's shape, to read): 38
+  UK_ukpga_1990_43 key-…5c83c0: 28 (s.1, s.10, s.11, s.12, s.13…)
+  UK_ukpga_1990_43 key-…387a6d: 26 (s.78A, s.78B, s.78C, s.78D, s.78E…)
+  UK_ukpga_1995_25 key-…d9609f: 14 (s.109A, s.109B, s.109C, s.109D, s.109E…)
+  UK_ukpga_1990_43 key-…559975: 12 (s.35, s.35A, s.36, s.36A, s.37…)
+  UK_ukpga_1990_43 key-…5c8098: 12 (s.35, s.35A, s.36, s.36A, s.37…)
+  UK_ssi_1999_1 key-…88eb46: 11 (reg.29, reg.30, reg.31, reg.32, reg.33…)
+  UK_ukpga_2006_16 key-…03d3eb: 10 (pt.1.ch.2, s.17, s.18, s.19, s.20…)
+  UK_ukpga_2005_16 key-…919d3e: 10 (s.55, s.56, s.57, s.58, s.59…)
+  UK_wsi_2012_1903 key-…31e48b: 9 (reg.5A, reg.5B, reg.5C, reg.5D, reg.5F…)
+  UK_anaw_2016_3 key-…cdbfaa: 9 (h.6B, s.6B, s.6C, s.6D, s.6E…)
+  UK_ukpga_1995_25 key-…258258: 9 (s.14, s.15, s.16, s.16A, s.16B…)
+  UK_eur_2012_649 key-…0c1fac: 8 (art.Article 24, art.Article 25, art.Article 26, art.Article 27, art.Article 28…)
+  UK_ukpga_1990_43 key-…58746f: 8 (s.45A, s.45AZA, s.45AZB, s.45AZC, s.45AZD…)
+  UK_ukpga_1990_43 key-…05bd53: 7 (s.128, s.129, s.130, s.131, s.132…)
+  UK_uksi_1999_2228 key-…1587fd: 7 (reg.10, reg.11, reg.12, reg.13, reg.14…)

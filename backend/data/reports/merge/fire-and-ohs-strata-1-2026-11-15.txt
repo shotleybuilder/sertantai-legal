@@ -1,0 +1,27 @@
+139 laws; text changes in a stratum: 3263
+
+strata:
+  J  joined (over-join risk): 3222
+  U  unjoined (split risk): 41
+  C  candidates (split risk): 0
+
+join rate: of each source's text changes, those a feed effect states too (31711 stored changes):
+  law_text: 2702/3111 (86.9%)
+  markup: 1971/2058 (95.8%)
+
+keys under more than 3 top provisions (an over-join's shape, to read): 63
+  UK_ukpga_1971_40 key-…18c17e: 60 (h.1, h.12, h.37, s.1, s.10…)
+  UK_uksi_2014_1638 key-…8dfb06: 49 (h.39, h.46, h.47, h.53, h.55…)
+  UK_ukpga_1875_17 UK_uksi_1974_1885:schedule-1: 27 (s.11, s.24, s.25, s.26, s.28…)
+  UK_apni_1969_6 key-…817784: 20 (s.1, s.10, s.11, s.12, s.13…)
+  UK_ukpga_1875_17 key-…b30fc8: 19 (s.10, s.11, s.12, s.13, s.14…)
+  UK_ukpga_1875_17 key-…a6f4fc: 19 (s.10, s.11, s.12, s.13, s.14…)
+  UK_ukpga_2004_21 key-…e67dd3: 14 (h.4A, s.4A, s.4B, s.4C, s.4D…)
+  UK_ukpga_1962_58 key-…8f618c: 13 (s.20, s.21, s.22, s.23, s.24…)
+  UK_uksi_1989_635 key-…5f618d: 12 (reg.17, reg.18, reg.19, reg.20, reg.21…)
+  UK_ukpga_2004_21 key-…65ba61: 11 (s.5A, s.5B, s.5C, s.5D, s.5E…)
+  UK_asp_2005_5 key-…6f1202: 10 (h.43A, h.43G, pt.2.ch.8B, s.43A, s.43B…)
+  UK_ukpga_1998_17 key-…715e53: 10 (pt.1A, s.9A, s.9B, s.9C, s.9D…)
+  UK_uksi_2015_1553 key-…5b2754: 10 (pt.4, reg.43, reg.44, reg.45, reg.46…)
+  UK_uksi_2016_1107 key-…63ad3c: 10 (pt.4, reg.42, reg.43, reg.44, reg.45…)
+  UK_ukpga_1962_58 UK_uksi_1974_1986:schedule-1: 9 (s.24, s.34, s.46, s.47, s.58…)

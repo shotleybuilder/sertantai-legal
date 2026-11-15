@@ -1,0 +1,294 @@
+139 laws; text changes in a stratum: 3263
+
+merge decisions by cause (test/fixtures/merge/merges.json): 456 groups; known 371, unreviewed 85
+   2052  same amending provision, same operation
+    445  same effect id
+    189  a joined event lent to a provision its effect doesn't name
+    110  operation differs
+     90  two law-text records the feed names together
+     83  several markup records of one effect
+     78  related amending provision
+     73  two law-text records
+     54  markup alone
+     52  same amending provision, same operation, dates differ
+     51  spread: legislation.gov.uk's own effect
+     43  unjoined
+     13  legacy note names the feed's amending provision
+     12  spread: joined across provisions
+     11  several markup records
+      9  legislation.gov.uk names no amending provision
+      6  operations differ in legislation.gov.uk: renumbered/substituted
+      3  legacy markup id
+      2  operations differ in legislation.gov.uk: inserted/renumbered
+      2  operations differ in legislation.gov.uk: repealed/repealed_in_part
+      2  related amending provision, dates differ
+      1  law-text copy apart from its joined event
+      1  markup alone beside its joined twin
+
+not named (widest reach first): 85
+     69  a joined event lent to a provision its effect doesn't name @ UK_uksi_2016_315  [no status]
+           UK_uksi_2014_1638 reg.39 (regulation-7)
+           UK_uksi_2014_1638 reg.40 (regulation-7)
+           UK_uksi_2014_1638 reg.41 (regulation-7)
+           UK_uksi_2014_1638 reg.42 (regulation-7)
+     68  two law-text records @ UK_nisr_2006_425  [no status]
+           UK_apni_1970_10 s.5 (schedule-7, schedule-6-paragraph-8-4-b)
+           UK_ukpga_1875_17 s.10 (schedule-7, schedule-6-paragraph-1-2)
+           UK_ukpga_1875_17 s.101 (schedule-7, schedule-6-paragraph-1-10)
+           UK_ukpga_1875_17 s.102 (schedule-7, schedule-6-paragraph-1-11)
+     50  related amending provision @ UK_uksi_2014_3248  [no status]
+           UK_ukpga_1954_70 s.123 (schedule-3)
+           UK_ukpga_1954_70 s.137 (schedule-3)
+           UK_ukpga_1954_70 s.141(5) (schedule-3)
+           UK_ukpga_1954_70 s.143 (schedule-3)
+     21  a joined event lent to a provision its effect doesn't name @ UK_asp_2012_8  [no status]
+           UK_asp_2005_5 s.39A (section-113)
+           UK_asp_2005_5 s.39B (section-113)
+           UK_asp_2005_5 s.39C (section-113)
+           UK_asp_2005_5 s.41A (section-114)
+     15  a joined event lent to a provision its effect doesn't name @ UK_ukpga_2017_3  [no status]
+           UK_ukpga_2004_21 s.25A (schedule-1-paragraph-10)
+           UK_ukpga_2004_21 s.4A (schedule-1-paragraph-5)
+           UK_ukpga_2004_21 s.4B (schedule-1-paragraph-5)
+           UK_ukpga_2004_21 s.4C (schedule-1-paragraph-5)
+     11  markup alone @ UK_uksi_2020_852  [no status]
+           UK_uksi_2014_1638 h.69
+           UK_uksi_2014_1638 reg.69
+           UK_uksi_2014_1638 reg.70
+           UK_uksi_2014_1638 reg.71
+      9  a joined event lent to a provision its effect doesn't name @ UK_ukpga_2015_7  [no status]
+           UK_ukpga_1998_17 s.9A (section-41)
+           UK_ukpga_1998_17 s.9B (section-41)
+           UK_ukpga_1998_17 s.9C (section-41)
+           UK_ukpga_1998_17 s.9D (section-41)
+      8  unjoined @ UK_nisr_2007_247  [no status]
+           UK_nisr_1995_340 reg.2(1) (schedule-10-paragraph-3-a-i)
+           UK_nisr_1995_340 reg.2(1) (schedule-10-paragraph-3-a-ii)
+           UK_nisr_1995_340 reg.2(1) (schedule-10-paragraph-3-a-iii)
+           UK_nisr_1995_340 reg.2(1) (schedule-10-paragraph-3-a-iv)
+      7  related amending provision @ UK_ukpga_2004_20  [no status]
+           UK_ukpga_1962_58 s.66(1) (schedule-23)
+           UK_ukpga_1962_58 s.9(7) (schedule-23)
+           UK_ukpga_1962_58 s.9A(7) (schedule-23)
+           UK_ukpga_1998_17 s.17H(1) (schedule-23)
+      7  markup alone @ UK_uksi_1988_1729  [no status]
+           UK_ukpga_1954_70 s.22
+           UK_ukpga_1954_70 s.23
+           UK_ukpga_1954_70 s.24
+           UK_ukpga_1954_70 s.25
+      7  unjoined @ UK_uksi_1988_1729  [no status]
+           UK_ukpga_1954_70 s.22 (regulation-12-1-a)
+           UK_ukpga_1954_70 s.23 (regulation-12-1-a)
+           UK_ukpga_1954_70 s.24 (regulation-12-1-a)
+           UK_ukpga_1954_70 s.25 (regulation-12-1-a)
+      6  operations differ in legislation.gov.uk: renumbered/substituted @ UK_uksi_2016_315  [no status]
+           UK_uksi_2014_1638 reg.78
+           UK_uksi_2014_1638 reg.79
+           UK_uksi_2014_1638 reg.81
+           UK_uksi_2014_1638 reg.82
+      5  a joined event lent to a provision its effect doesn't name @ UK_asp_2016_1  [no status]
+           UK_asp_2012_8 s.55A (section-113-1)
+           UK_asp_2012_8 s.55B (section-113-1)
+           UK_asp_2012_8 s.55C (section-113-1)
+           UK_asp_2012_8 s.55D (section-113-1)
+      5  a joined event lent to a provision its effect doesn't name @ UK_asp_2025_5  [no status]
+           UK_asp_2012_8 s.36A (section-2-2)
+           UK_asp_2012_8 s.36B (section-2-2)
+           UK_asp_2012_8 s.36C (section-4-2)
+           UK_asp_2012_8 s.36D (section-4-2)
+      5  markup alone @ UK_uksi_2000_1937  [no status]
+           UK_ukpga_1962_58 s.66(2)
+           UK_ukpga_1962_58 s.66(3)
+           UK_ukpga_1962_58 s.66(4)
+           UK_ukpga_1962_58 s.9(7)
+      5  a joined event lent to a provision its effect doesn't name @ UK_uksi_2020_1460  [no status]
+           UK_uksi_2018_389 reg.21 (schedule-2-paragraph-16-2)
+           UK_uksi_2018_389 reg.22 (schedule-2-paragraph-16-2)
+           UK_uksi_2018_389 reg.23 (schedule-2-paragraph-16-2)
+           UK_uksi_2018_389 reg.24 (schedule-2-paragraph-16-2)
+      4  a joined event lent to a provision its effect doesn't name @ UK_nisr_2026_89  [no status]
+           UK_nisr_2014_224 reg.5(1B) (regulation-8-a)
+           UK_nisr_2014_224 reg.5(1C) (regulation-8-a)
+           UK_nisr_2014_224 reg.5(1D) (regulation-8-a)
+           UK_nisr_2014_224 reg.5(1E) (regulation-8-a)
+      4  legislation.gov.uk names no amending provision @ UK_ukpga_2003_22  [no status]
+           UK_ukpga_1875_17 s.30 (schedule)
+           UK_ukpga_1875_17 s.31 (schedule)
+           UK_ukpga_1875_17 s.32 (schedule)
+           UK_ukpga_1875_17 s.80 (schedule)
+      4  unjoined @ UK_ukpga_2003_39  [no status]
+           UK_ukpga_1883_3 s.6(1) (schedule-10)
+           UK_ukpga_1883_3 s.6(1) (schedule-8-paragraph-56-1-a)
+           UK_ukpga_1883_3 s.6(1) (schedule-8-paragraph-56-1-b)
+           UK_ukpga_1883_3 s.6(1) (schedule-8-paragraph-56-1-c)
+      4  several markup records @ UK_ukpga_2016_11  [no status]
+           UK_ukpga_1998_17 s.5(9) (section-48-11)
+           UK_ukpga_1998_17 s.5A(5)
+           UK_ukpga_1998_17 s.5B(1) (section-48-13)
+           UK_ukpga_1998_17 s.8(1) (section-48-15)
+      4  markup alone @ UK_uksi_1993_1897  [no status]
+           UK_ukpga_1954_70 s.80
+           UK_ukpga_1954_70 s.88
+           UK_ukpga_1954_70 s.89
+           UK_ukpga_1954_70 s.90
+      3  related amending provision @ UK_nisr_2007_165  [no status]
+           UK_nisr_1995_340 reg.2(1) (regulation-2-2-a)
+           UK_nisr_1995_340 reg.2(1) (regulation-2-2-c)
+           UK_nisr_1996_228 reg.2(1) (regulation-4-2-a)
+      3  markup alone @ UK_ukpga_1998_17  [no status]
+           UK_nisi_1992_1728 reg.3(3)(b)
+           UK_nisi_1992_1728 reg.3(4A)
+           UK_nisi_1992_1728 reg.3(5)(d)
+      3  two law-text records @ UK_ukpga_1998_17  [no status]
+           UK_ukpga_1992_15 s.1(3)(c) (schedule-5, schedule-4-paragraph-33-2-a)
+           UK_ukpga_1992_15 s.1(5)(b) (schedule-5, schedule-4-paragraph-33-2-d)
+           UK_ukpga_1992_15 s.1(5)(c) (schedule-5, schedule-4-paragraph-33-2-d)
+      3  related amending provision @ UK_ukpga_2008_32  [no status]
+           UK_ukpga_1998_17 s.38A (section-74-1)
+           UK_ukpga_1998_17 s.38B (section-74-1)
+           UK_ukpga_1998_17 s.45A (section-75-1)
+      3  several markup records @ UK_ukpga_2011_16  [no status]
+           UK_ukpga_1962_58 s.10A(2) (schedule-2-paragraph-4)
+           UK_ukpga_1962_58 s.9(8) (schedule-2-paragraph-2-a)
+           UK_ukpga_1962_58 s.9(9) (schedule-2-paragraph-2-b)
+      3  unjoined @ UK_ukpga_2017_3  [no status]
+           UK_ukpga_2004_21 s.37 (schedule-1-paragraph-12)
+           UK_uksi_2005_1541 reg.2 (section-12-2-a)
+           UK_uksi_2005_1541 reg.2 (section-12-2-b)
+      3  a joined event lent to a provision its effect doesn't name @ UK_uksi_1999_2463  [no status]
+           UK_ukpga_1954_70 s.49 (regulation-18-1)
+           UK_ukpga_1954_70 s.50 (regulation-18-1)
+           UK_ukpga_1954_70 s.53 (regulation-18-1)
+      3  markup alone @ UK_uksi_1999_742  [no status]
+           UK_ukpga_1962_58 s.12(5)
+           UK_ukpga_1962_58 s.12(5A)
+           UK_ukpga_1962_58 s.36(3)
+      3  unjoined @ UK_uksi_2005_1082  [no status]
+           UK_ukpga_1875_17 s.24 (schedule-6)
+           UK_ukpga_1875_17 s.83 (schedule-6)
+           UK_ukpga_1875_17 s.97 (schedule-6)
+      3  spread: joined across provisions @ UK_uksi_2019_696  [no status]
+           UK_nisr_2017_90 UK_uksi_2019_696:schedule-32-paragraph-27#dropped: 6 top provisions (reg.42, reg.44, reg.45, reg.47, reg.48…)
+           UK_nisr_2017_90 UK_uksi_2019_696:schedule-32-paragraph-27: 9 top provisions (reg.42, reg.43, reg.44, reg.45, reg.46…)
+           UK_uksi_2014_1638 UK_uksi_2019_696:schedule-16-paragraph-28: 9 top provisions (reg.69, reg.70, reg.71, reg.72, reg.73…)
+      2  unjoined @ UK_asp_2012_8  [no status]
+           UK_asp_2005_5 s.45 (schedule-7-paragraph-68-17)
+           UK_ukpga_2004_21 s.35(6) (schedule-7-paragraph-66-3)
+      2  unjoined @ UK_nisr_2006_425  [no status]
+           UK_ukpga_1875_17 s.83 (schedule-6-paragraph-1-7)
+           UK_ukpga_1875_17 s.83 (schedule-7)
+      2  a joined event lent to a provision its effect doesn't name @ UK_nisr_2020_340  [no status]
+           UK_nisr_2010_59 reg.12(2)(a)(i) (regulation-4-2)
+           UK_nisr_2010_59 reg.12(2)(a)(ii) (regulation-4-2)
+      2  markup alone @ UK_ukpga_1975_59  [no status]
+           UK_ukpga_1883_3 s.2
+           UK_ukpga_1883_3 s.3
+      2  related amending provision, dates differ @ UK_ukpga_2004_20  [no status]
+           UK_ukpga_1962_58 s.10B (schedule-23)
+           UK_ukpga_1962_58 s.10C(1) (schedule-23)
+      2  two law-text records @ UK_ukpga_2004_20  [no status]
+           UK_ukpga_1998_17 s.17A (schedule-23, section-151-5-b)
+           UK_ukpga_1998_17 s.17B (schedule-23, section-151-5-b)
+      2  markup alone @ UK_uksi_1987_37  [no status]
+           UK_ukpga_1875_17 s.115
+           UK_ukpga_1875_17 s.34
+      2  spread: joined across provisions @ UK_uksi_2000_1937  [no status]
+           UK_ukpga_1962_58 UK_uksi_2000_1937:schedule-1-paragraph-6: 4 top provisions (s.10C, s.10D, s.10E, s.10F…)
+           UK_ukpga_1998_17 UK_uksi_2000_1937:schedule-4-paragraph-4: 7 top provisions (s.17B, s.17C, s.17D, s.17E, s.17F…)
+      2  unjoined @ UK_uksi_2000_3097  [no status]
+           UK_uksi_1994_232 reg.2(2) (regulation-2-b-i)
+           UK_uksi_1994_232 reg.2(2) (regulation-2-b-ii)
+      2  related amending provision @ UK_uksi_2004_2043  [no status]
+           UK_ukpga_1998_17 s.28(1) (schedule-3-paragraph-3-a)
+           UK_ukpga_1998_17 s.28(1) (schedule-3-paragraph-3-b)
+      2  related amending provision @ UK_uksi_2014_1639  [no status]
+           UK_ukpga_1875_17 s.104 (schedule-3)
+           UK_ukpga_1875_17 s.43 (schedule-3)
+      1  related amending provision @ UK_nisr_2006_425  [no status]
+           UK_ukpga_1875_17 s.97(5) (schedule-7)
+      1  spread: joined across provisions @ UK_nisr_2006_425  [no status]
+           UK_ukpga_1875_17 UK_nisr_2006_425:schedule-7: 5 top provisions (s.108, s.83, s.85, s.86, s.87…)
+      1  legislation.gov.uk names no amending provision @ UK_nisr_2015_223  [no status]
+           UK_apni_1929_13 s.24A(1)(b) (schedule)
+      1  legacy markup id @ UK_nisr_2015_325  [no status]
+           UK_apni_1929_13 s.24A(a)
+      1  several markup records @ UK_nisr_2015_325  [no status]
+           UK_apni_1929_13 s.24A(1)(a)
+      1  markup alone beside its joined twin @ UK_ssi_2006_367  [no status]
+           UK_asp_2005_5 s.24A
+      1  markup alone @ UK_ukpga_1984_12  [no status]
+           UK_ukpga_1962_58 s.40(2)
+      1  unjoined @ UK_ukpga_1984_12  [no status]
+           UK_ukpga_1962_58 s.40(2) (schedule-4-paragraph-41-b)
+      1  related amending provision @ UK_ukpga_1984_60  [no status]
+           UK_ukpga_1883_3 s.4(2) (schedule-7)
+      1  markup alone @ UK_ukpga_1991_22  [no status]
+           UK_ukpga_1962_58 s.16
+      1  related amending provision @ UK_ukpga_1998_17  [no status]
+           UK_ukpga_1966_4 s.15(5) (schedule-5)
+      1  related amending provision @ UK_ukpga_1999_22  [no status]
+           UK_ukpga_1883_3 s.6(1) (schedule-15)
+      1  operations differ in legislation.gov.uk: repealed/repealed_in_part @ UK_ukpga_2003_44  [no status]
+           UK_ukpga_1883_3 s.6(3)
+      1  unjoined @ UK_ukpga_2004_20  [no status]
+           UK_ukpga_1962_58 s.10C (schedule-23)
+      1  related amending provision @ UK_ukpga_2004_21  [no status]
+           UK_ukpga_1971_40 s.43 (schedule-1-paragraph-33-3)
+      1  several markup records @ UK_ukpga_2008_29  [no status]
+           UK_ukpga_1962_58 s.1(1A)(b) (schedule-2-paragraph-6-3)
+      1  markup alone @ UK_ukpga_2008_32  [no status]
+           UK_ukpga_1998_17 s.13(1)
+      1  unjoined @ UK_ukpga_2008_32  [no status]
+           UK_ukpga_1962_58 s.66(1) (schedule-6)
+      1  related amending provision @ UK_ukpga_2009_20  [no status]
+           UK_ukpga_2004_21 s.2(9)(c) (schedule-7)
+      1  a joined event lent to a provision its effect doesn't name @ UK_ukpga_2011_16  [no status]
+           UK_ukpga_1962_58 s.12A (section-108-3)
+      1  markup alone @ UK_uksi_1974_1885  [no status]
+           UK_ukpga_1875_17 s.61
+      1  spread: joined across provisions @ UK_uksi_1974_1885  [no status]
+           UK_ukpga_1875_17 UK_uksi_1974_1885:schedule-1: 27 top provisions (s.11, s.24, s.25, s.26, s.28…)
+      1  spread: joined across provisions @ UK_uksi_1974_1986  [no status]
+           UK_ukpga_1962_58 UK_uksi_1974_1986:schedule-1: 9 top provisions (s.24, s.34, s.46, s.47, s.58…)
+      1  related amending provision @ UK_uksi_1974_2013  [no status]
+           UK_ukpga_1954_70 s.152(4)(c) (schedule-2-paragraph-12-d)
+      1  spread: joined across provisions @ UK_uksi_1975_1102  [no status]
+           UK_ukpga_1954_70 UK_uksi_1975_1102:schedule-1: 7 top provisions (s.146, s.27, s.34, s.35, s.57…)
+      1  spread: joined across provisions @ UK_uksi_1988_1729  [no status]
+           UK_ukpga_1954_70 UK_uksi_1988_1729:regulation-12-1-a: 7 top provisions (s.22, s.23, s.24, s.25, s.33…)
+      1  markup alone @ UK_uksi_1991_724  [no status]
+           UK_ukpga_1969_10 s.28
+      1  markup alone @ UK_uksi_1992_1728  [no status]
+           UK_ukpga_1992_15 s.1(4B)
+      1  related amending provision @ UK_uksi_1993_1897  [no status]
+           UK_ukpga_1954_70 s.182(3)(a) (schedule-3)
+      1  several markup records @ UK_uksi_1996_973  [no status]
+           UK_ukpga_1962_58 s.37(4)(b)
+      1  law-text copy apart from its joined event @ UK_uksi_2000_1937  [no status]
+           UK_ukpga_1962_58 s.10(1)(b) (schedule-1-paragraph-3)
+      1  unjoined @ UK_uksi_2000_1937  [no status]
+           UK_ukpga_1962_58 s.9(7) (schedule-1-paragraph-1-3)
+      1  related amending provision @ UK_uksi_2000_3097  [no status]
+           UK_uksi_1994_232 reg.2(2) (regulation-2-b-iii)
+      1  markup alone @ UK_uksi_2002_716  [no status]
+           UK_uksi_2002_2776 reg.2
+      1  spread: joined across provisions @ UK_uksi_2005_1082  [no status]
+           UK_ukpga_1875_17 UK_uksi_2005_1082:schedule-6: 4 top provisions (s.108, s.24, s.83, s.97…)
+      1  a joined event lent to a provision its effect doesn't name @ UK_uksi_2005_3117  [no status]
+           UK_uksi_1996_913 reg.2(4)(b) (schedule-9-paragraph-5-a-i-aa)
+      1  unjoined @ UK_uksi_2005_3117  [no status]
+           UK_uksi_1996_913 reg.2(1) (schedule-9-paragraph-5-a-i)
+      1  a joined event lent to a provision its effect doesn't name @ UK_uksi_2006_1521  [no status]
+           UK_uksi_2002_2665 reg.20A (regulation-4-2)
+      1  operations differ in legislation.gov.uk: repealed/repealed_in_part @ UK_uksi_2010_807  [no status]
+           UK_uksi_2005_1541 reg.53(1)
+      1  several markup records @ UK_uksi_2011_2305  [no status]
+           UK_ukpga_1962_58 s.9(6)
+      1  a joined event lent to a provision its effect doesn't name @ UK_uksi_2020_641  [no status]
+           UK_uksi_2017_469 reg.14 (article-7)
+      1  spread: joined across provisions @ UK_uksi_2020_852  [no status]
+           UK_uksi_2014_1638 M_F_61a8fc30-f1f9-4865-a3f5-6455e705baf6-1669825614077: 9 top provisions (h.69, reg.70, reg.71, reg.72, reg.73…)
+      1  unjoined @ UK_uksi_2023_861  [no status]
+           UK_nisr_2017_90 reg.44(4) (regulation-6-4)
+
+FAIL (groups not named: 85)

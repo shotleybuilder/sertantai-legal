@@ -1,0 +1,27 @@
+149 laws; text changes in a stratum: 2368
+
+strata:
+  J  joined (over-join risk): 2355
+  U  unjoined (split risk): 13
+  C  candidates (split risk): 0
+
+join rate: of each source's text changes, those a feed effect states too (26286 stored changes):
+  law_text: 1421/1907 (74.5%)
+  markup: 1690/1880 (89.9%)
+
+keys under more than 3 top provisions (an over-join's shape, to read): 62
+  UK_ukpga_1961_34 UK_uksi_1974_1941:schedule-1: 50 (s.1, s.11, s.123, s.124, s.125…)
+  UK_nisr_2007_31 key-…84dece: 40 (pt.1, pt.2, pt.3, pt.4, reg.1…)
+  UK_ukpga_1963_41 UK_uksi_1974_1943:schedule-1: 30 (s.10, s.12, s.20, s.25, s.27…)
+  UK_eur_2006_1907 key-…8975b9: 20 (art.Article 127A, art.Article 127B, art.Article 127C, art.Article 127D, art.Article 127E…)
+  UK_ukpga_1961_34 UK_uksi_1992_3004:schedule-2: 15 (s.1, s.18, s.2, s.28, s.29…)
+  UK_nisr_1997_248 key-…1000e7: 13 (reg.10, reg.11, reg.12, reg.13, reg.14…)
+  UK_ukpga_1963_41 UK_uksi_1992_3004:schedule-2: 13 (s.10, s.11, s.12, s.13, s.14…)
+  UK_nisr_2010_60 key-…e43527: 12 (reg.1, reg.10, reg.11, reg.12, reg.2…)
+  UK_eur_2006_1907 key-…cbfe3a: 12 (art.Article 100, art.Article 101, art.Article 102, art.Article 103, art.Article 104…)
+  UK_ukpga_1963_41 UK_uksi_1976_2005:schedule: 10 (s.28, s.52, s.53, s.55, s.60…)
+  UK_nisr_1997_248 key-…e88f5e: 9 (reg.21, reg.22, reg.23, reg.24, reg.25…)
+  UK_ukpga_1961_34 UK_uksi_1976_2004:schedule: 9 (s.120, s.146, s.148, s.156, s.160…)
+  UK_nisr_1993_20 key-…28a334: 8 (reg.10, reg.11, reg.4, reg.5, reg.6…)
+  UK_nisr_1993_20 key-…605726: 8 (reg.10, reg.11, reg.4, reg.5, reg.6…)
+  UK_nisr_1993_20 key-…3a630d: 8 (reg.10, reg.11, reg.4, reg.5, reg.6…)

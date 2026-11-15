@@ -392,6 +392,24 @@ Before this, OH&S used agents over U and C in full and pooled J samples to the 9
   - Maritime U 6, C 4.
   - All three gates PASS; golden 27/27.
 
+**Fire and OH&S** (the round, 2026-11-15). The gate had 85 groups not named (413 changes), plus one new group in each of Environmental Protection and Occupational. Each change was checked by shape in a script, then every U, C and markup-alone change was read with the changes beside it. No over-join was found. The review found:
+- **The feed's compound amending provision.** legislation.gov.uk writes "reg.4(2)(a)(b)" for (a) and (b), so the second law-text record stayed apart. It reaches 39 changes in 11 laws corpus-wide. The gate doesn't see it: the record stands in no stratum, so it was found by a scan.
+  - **The fix** (Decision 1): `Merge.Compound` reads a compound's last brackets of one kind as siblings, never a nesting like "(a)(i)".
+  - **Four joins the fix lost:**
+    - a second legacy note per event (EPA s.53(5));
+    - an event moved to its first joiner's provision (SI 1994/232, 1995 c.25 s.44(3));
+    - and, found by the second preview, an effect named whole beaten by a compound piece (TCPA s.319A(7)(f)).
+
+    All four were fixed too (Decision 4).
+  - **The check:** a three-way in-memory preview (HEAD, first fix, final) over 162 laws: 19 laws gain joins, none loses one.
+  - **The rebuild:** a restore point and one rebuild of all 537 built laws (173,493 changes became 173,237).
+- **Splits owned by other steps:**
+  - a note citation read short (SI 1988/1729: 7 events), the Markup reader's;
+  - a title glued to its year placing NISR 2007/247 Sch.10 para.3 on the wrong law, the Amending-law reader's;
+  - the law's commencement dates (4 laws), the Commencement reader's.
+- **Result:** the round J 3,222 / U 41 / C 0; join rate law text 86.9%, markup 95.8%. All four gates PASS (455, 718, 440, 319); U fell in three families; golden 27/27.
+- **Lesson:** a preview that shortens ids for display can hide a loss (a staged effect's `id` and `id@date` collapsed into one). Compare on full keys.
+
 **Skill.** `merge-check`. Design: [CHANGE-IDENTITY-DESIGN.md](CHANGE-IDENTITY-DESIGN.md).
 
 ## 8. Evidence

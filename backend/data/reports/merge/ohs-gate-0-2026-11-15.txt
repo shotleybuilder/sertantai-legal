@@ -1,0 +1,28 @@
+149 laws; text changes in a stratum: 2368
+
+merge decisions by cause (test/fixtures/merge/merges.json): 440 groups; known 439, unreviewed 1
+   1164  same amending provision, same operation
+    748  same effect id
+    113  markup alone
+     79  several markup records of one effect
+     73  legacy markup id
+     67  operation differs
+     57  a joined event lent to a provision its effect doesn't name
+     51  related amending provision
+     48  several markup records
+     37  spread: legislation.gov.uk's own effect
+     34  legislation.gov.uk names no amending provision
+     25  spread: joined across provisions
+     14  legacy note names the feed's amending provision
+     14  same amending provision, same operation, dates differ
+     13  unjoined
+      9  markup alone beside its joined twin
+      5  two law-text records the feed names together
+      1  operations differ in legislation.gov.uk: inserted/renumbered
+
+not named (widest reach first): 1
+      2  related amending provision @ UK_ukpga_2005_14  [no status]
+           UK_ukpga_1974_37 s.18(5) (schedule-13)
+           UK_ukpga_1974_37 s.78(7)(c) (schedule-13)
+
+FAIL (groups not named: 1)
