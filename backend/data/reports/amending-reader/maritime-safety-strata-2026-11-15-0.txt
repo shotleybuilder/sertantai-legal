@@ -1,0 +1,12 @@
+117 laws; changes the law's text states: 1614 %{"both" => 1442, "law_text_only" => 172}
+
+strata:
+  A  agreeing: 1379 (85.4%)
+  D  disagreeing: 69 (4.3%)
+  L  law text only: 166 (10.3%)
+
+agreement with legislation.gov.uk over both-sourced changes:
+  by: 1435/1435 (100.0%)
+  level: 1429/1442 (99.1%)
+  operation: 1394/1442 (96.7%)
+  target: 1411/1442 (97.9%)

@@ -208,3 +208,26 @@ Maritime Safety (second family, 2026-11-06, `.claude/sessions/lat-change-pipelin
   - The catalogue dry run went before the field-diff review ended, so a second cold run followed.
   - A compiler-warning fix after the read pass moved `ReaderVersion` and staled every amender: run `mix compile --warnings-as-errors` before the read pass.
   - The architecture tests (`test/sertantai_legal/architecture/`) failed only in the final `mix test`: a commencement pattern in the reader, then the version coverage. That cost two zero-diff re-reads. Run them with the reader suites before any write.
+
+### Fire and OH&S: Amending-law reader (round, 2026-11-15)
+
+- **Baseline:** A 2,480, D 257, L 389; gate 126 of 148 groups not named; 146 amenders stale.
+- **Write 1** (146 read, round rebuilt): 125 not named.
+- **The review** read every group, and the by-design groups by law (38 laws). It found two misread classes over the size:
+  - F1, an aside's law or provision read as the amended place (about 20 changes, 5 laws);
+  - F2, a Schedule's instruction placed on a body section (16 changes, 2 laws; the field diff then showed about 45 more wrong rules removed).
+
+  There were 3 one-law wordings (FO-K1 to FO-K3).
+- **Decision 3:** EP's parked `provision-list-cross-product` had reached Maritime too (40 changes, 2 laws), and was fixed.
+- **Three fixer calls and two follow-ups** (about 375k tokens): asides at any depth, Schedule places, and lists read item by item. Tests are in `reader/fire_and_ohs_forms_test.exs`.
+- **The catalogue** (527 laws): 1 held move, 3 rotated out, 11 new patterns (Decision 2 a).
+- **Writes 2 and 3** read all 2,627 amenders, then rebuilt the round and the three switched families.
+- **Final:**
+  - A 2,520, D 257, L 337;
+  - the gate PASS (175 groups named), and Occupational, EP and Maritime PASS;
+  - golden 27/27;
+  - step close: every reader PASS, Checked rows 3 (Label fold), Stale laws 139 (labels; change register 0).
+- **Lessons:**
+  - A "no record" proposal is read, never stamped. Two misread classes were inside the 84 "no record" groups.
+  - After the last fix, preview all amenders (`--preview --all`, 16 min), then check that the write changes the same laws. The follow-up over-reach (a title's year as a list item) showed only there.
+  - A build can print "built N laws" with every law FAILED. Count the FAILED lines before the gates.

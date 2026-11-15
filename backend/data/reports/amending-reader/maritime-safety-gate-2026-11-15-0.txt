@@ -1,0 +1,273 @@
+117 laws; changes the law's text states: 1614 %{"both" => 1442, "law_text_only" => 172}
+
+D and L changes by cause (test/fixtures/amendment_patterns/disagreements.json): 81 groups; known 80, unreviewed 1
+     81  quote-new-number
+     41  no operation from legislation.gov.uk: substituted words
+     33  law text only: substituted words
+     20  quote-dropped-number
+     12  law text only: inserted words
+      9  no operation from legislation.gov.uk: inserted words
+      6  level words/provision
+      5  law text only: substituted provision
+      5  no operation from legislation.gov.uk: substituted provision
+      5  unjoined
+      4  law text only: repealed words
+      3  law text only: repealed provision
+      3  operation inserted/substituted
+      2  level provision/words
+      2  no operation from legislation.gov.uk: repealed words
+      1  no operation from legislation.gov.uk: inserted provision
+      1  operation inserted/repealed
+      1  operation repealed/repealed_in_part
+      1  operation substituted/repealed_in_part
+
+every group (widest reach first): 81
+     24  no operation from legislation.gov.uk: substituted words @ UK_ukpga_1997_28  [known: legislation.gov.uk records the change with no operation (the feed's "amended", legacy markup); the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_ukpga_1995_21 s.125(3) (schedule-1-paragraph-3)
+           UK_ukpga_1995_21 s.128(3)(h) (schedule-6-paragraph-3-2)
+           UK_ukpga_1995_21 s.131(3)(a) (section-7-1)
+           UK_ukpga_1995_21 s.144(4)(c)(i) (section-7-3)
+     12  quote-dropped-number @ UK_uksi_1999_1704  [known: by design (RULES.md quote-dropped-numbers-are-repealed)]
+           UK_uksi_1997_529 reg.5(a) (regulation-5)
+           UK_uksi_1997_529 reg.5(a)(i) (regulation-5)
+           UK_uksi_1997_529 reg.5(a)(ii) (regulation-5)
+           UK_uksi_1997_529 reg.5(b) (regulation-5)
+     12  law text only: substituted words @ UK_uksi_2000_1335  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_uksi_1998_2241 reg.19(1)(d) (regulation-25-b)
+           UK_uksi_1998_2241 reg.2(1) (regulation-3-c-i)
+           UK_uksi_1998_2241 reg.2(1) (regulation-3-d)
+           UK_uksi_1998_2241 reg.2(1) (regulation-3-e)
+     10  no operation from legislation.gov.uk: substituted words @ UK_uksi_2000_1335  [known: legislation.gov.uk records the change with no operation (the feed's "amended", legacy markup); the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_uksi_1998_2241 reg.13(2) (regulation-21)
+           UK_uksi_1998_2241 reg.19(1) (regulation-25-a)
+           UK_uksi_1998_2241 reg.20 (regulation-27)
+           UK_uksi_1998_2241 reg.27(1) (regulation-30)
+      9  law text only: substituted words @ UK_ukpga_1992_12  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_ukpga_1991_52 s.16 (schedule-10-paragraph-24-1)
+           UK_ukpga_1991_52 s.17 (schedule-10-paragraph-24-2-a)
+           UK_ukpga_1991_52 s.17(13) (schedule-10-paragraph-24-2-d)
+           UK_ukpga_1991_52 s.17(6) (schedule-10-paragraph-24-2-b)
+      8  quote-new-number @ UK_uksi_1998_2976  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_1993_3138 reg.119(2)(a) (regulation-26-b)
+           UK_uksi_1993_3138 reg.119(2)(b) (regulation-26-b)
+           UK_uksi_1993_3138 reg.12(a)(i) (regulation-5-a)
+           UK_uksi_1993_3138 reg.12(a)(ii) (regulation-5-a)
+      8  quote-new-number @ UK_uksi_2006_1244  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_ukpga_1995_21 s.155(1) (regulation-7-3)
+           UK_ukpga_1995_21 s.155(2) (regulation-7-3)
+           UK_ukpga_1995_21 s.164(2)(a) (regulation-18-4)
+           UK_ukpga_1995_21 s.164(2)(b) (regulation-18-4)
+      8  quote-new-number @ UK_uksi_2021_81  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_1999_1869 reg.6(3)(c) (regulation-2-5-g)
+           UK_uksi_1999_1869 reg.6(3)(d) (regulation-2-5-g)
+           UK_uksi_1999_1869 reg.6(3)(e) (regulation-2-5-g)
+           UK_uksi_1999_1869 reg.6(3)(f) (regulation-2-5-g)
+      7  no operation from legislation.gov.uk: inserted words @ UK_ukpga_1997_28  [known: legislation.gov.uk records the change with no operation (the feed's "amended", legacy markup); the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_ukpga_1995_21 s.197(7) (section-19-1)
+           UK_ukpga_1995_21 s.233(1) (section-21-1)
+           UK_ukpga_1995_21 s.261(4)(a) (schedule-6-paragraph-16)
+           UK_ukpga_1995_21 s.284(3) (schedule-1-paragraph-5-5)
+      6  quote-new-number @ UK_ukpga_1997_28  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_ukpga_1995_21 s.306(2)(a) (schedule-6-paragraph-18-3)
+           UK_ukpga_1995_21 s.306(2)(b) (schedule-6-paragraph-18-3)
+           UK_ukpga_1995_21 s.80(1)(a)(i) (section-18-1)
+           UK_ukpga_1995_21 s.80(1)(a)(ii) (section-18-1)
+      6  law text only: inserted words @ UK_uksi_2000_1335  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_uksi_1998_2241 reg.2(1) (regulation-3-b)
+           UK_uksi_1998_2241 reg.2(1) (regulation-3-c-ii)
+           UK_uksi_1998_2241 reg.2(1) (regulation-3-g)
+           UK_uksi_1998_2241 reg.2(1) (regulation-3-i)
+      6  quote-new-number @ UK_uksi_2019_160  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_2010_1075 reg.12(1)(a) (regulation-12)
+           UK_uksi_2010_1075 reg.12(1)(b) (regulation-12)
+           UK_uksi_2010_1075 reg.12(1)(c) (regulation-12)
+           UK_uksi_2010_1075 reg.12(1A) (regulation-12)
+      5  quote-dropped-number @ UK_uksi_1998_929  [known: by design (RULES.md quote-dropped-numbers-are-repealed)]
+           UK_uksi_1975_2220 reg.2(a) (regulation-4)
+           UK_uksi_1975_2220 reg.2(b) (regulation-4)
+           UK_uksi_1975_2220 reg.2(i) (regulation-4)
+           UK_uksi_1975_2220 reg.2(ii) (regulation-4)
+      4  level words/provision @ UK_ukpga_1997_28  [known: definitions are words (in_definition); legislation.gov.uk's feed records the provision]
+           UK_ukpga_1995_21 s.313(1) (schedule-6-paragraph-19-2-a)
+           UK_ukpga_1995_21 s.313(1) (schedule-6-paragraph-19-2-b)
+           UK_ukpga_1995_21 s.313(1) (schedule-6-paragraph-19-2-d)
+           UK_ukpga_1995_21 s.313(1) (schedule-6-paragraph-19-2-c)
+      4  quote-new-number @ UK_uksi_2019_509  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_1993_3138 reg.42(1)(a) (regulation-14)
+           UK_uksi_1993_3138 reg.42(1)(b) (regulation-14)
+           UK_uksi_1993_3138 reg.42(1)(c) (regulation-14)
+           UK_uksi_1993_3138 reg.42(1)(d) (regulation-14)
+      4  quote-new-number @ UK_uksi_2019_808  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_2010_1075 reg.3(3)(b)(i) (regulation-2-2)
+           UK_uksi_2010_1075 reg.3(3)(b)(ii) (regulation-2-2)
+           UK_uksi_2010_1075 reg.3(3)(b)(iii) (regulation-2-2)
+           UK_uksi_2010_1075 reg.3(3)(b)(iv) (regulation-2-2)
+      3  law text only: substituted words @ UK_ukpga_1997_28  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_ukpga_1995_21 s.158(2) (schedule-6-paragraph-4-2-a)
+           UK_ukpga_1995_21 s.158(2) (schedule-6-paragraph-4-2-b)
+           UK_ukpga_1995_21 s.284(4) (schedule-1-paragraph-5-6-b)
+      3  quote-new-number @ UK_ukpga_2009_25  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_ukpga_1995_21 s.271(6)(a) (schedule-21-paragraph-34)
+           UK_ukpga_1995_21 s.271(6)(b) (schedule-21-paragraph-34)
+           UK_ukpga_1995_21 s.271(6)(c) (schedule-21-paragraph-34)
+      3  no operation from legislation.gov.uk: substituted provision @ UK_uksi_2000_1335  [known: legislation.gov.uk records the change with no operation (the feed's "amended", legacy markup); the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_uksi_1998_2241 reg.12(1) (regulation-18)
+           UK_uksi_1998_2241 reg.22(4) (regulation-28)
+           UK_uksi_1998_2241 reg.36(1)(e) (regulation-40)
+      3  quote-new-number @ UK_uksi_2000_1335  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_1998_2241 reg.10(1) (regulation-16)
+           UK_uksi_1998_2241 reg.10(2) (regulation-16)
+           UK_uksi_1998_2241 reg.10(3) (regulation-16)
+      3  quote-new-number @ UK_uksi_2004_929  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_1994_2464 reg.4(b) (regulation-5)
+           UK_uksi_1994_2464 reg.6A (regulation-5)
+           UK_uksi_1994_2464 reg.6B (regulation-5)
+      3  quote-new-number @ UK_uksi_2013_2815  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_2009_2048 reg.18(7A) (regulation-8-3)
+           UK_uksi_2009_2048 reg.18(7B) (regulation-8-3)
+           UK_uksi_2009_2048 reg.18(7C) (regulation-8-3)
+      3  law text only: substituted words @ UK_uksi_2022_1269  [known: one-law wording K2 (a table's numbers "for the first number in each row substitute")]
+           UK_uksi_1999_2723 reg.6(5) (regulation-4-4-b-i)
+           UK_uksi_1999_2723 reg.6(5) (regulation-4-4-b-ii)
+           UK_uksi_1999_2723 reg.7(4) (regulation-4-9-b-i)
+      3  quote-dropped-number @ UK_uksi_2023_1216  [known: by design (RULES.md quote-dropped-numbers-are-repealed)]
+           UK_uksi_1981_569 reg.2(a) (schedule-2-paragraph-1-3)
+           UK_uksi_1981_569 reg.2(b) (schedule-2-paragraph-1-3)
+           UK_uksi_1981_569 reg.2(c) (schedule-2-paragraph-1-3)
+      2  unjoined @ UK_ukpga_1997_28  [known: the merge left the law's text apart from legislation.gov.uk's record (Merge's); the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_ukpga_1995_21 s.258(1) (schedule-1-paragraph-4-2-b)
+           UK_ukpga_1995_21 s.258(1) (schedule-1-paragraph-4-2-a)
+      2  no operation from legislation.gov.uk: substituted words @ UK_uksi_1998_1691  [known: legislation.gov.uk records the change with no operation (the feed's "amended", legacy markup); the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_ukpga_1995_21 s.93 (regulation-2-7)
+           UK_ukpga_1995_21 s.93(3) (regulation-2-4)
+      2  quote-new-number @ UK_uksi_1999_3206  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_1993_3138 reg.79(2)(a) (regulation-14)
+           UK_uksi_1993_3138 reg.79(2)(b) (regulation-14)
+      2  quote-new-number @ UK_uksi_1999_643  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_1997_1509 reg.22(1)(a) (regulation-8-b)
+           UK_uksi_1997_1509 reg.22(1)(b) (regulation-8-b)
+      2  law text only: repealed words @ UK_uksi_2000_1335  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_uksi_1998_2241 reg.14(1) (regulation-22-b)
+           UK_uksi_1998_2241 reg.2(1) (regulation-3-m)
+      2  no operation from legislation.gov.uk: inserted words @ UK_uksi_2000_1335  [known: legislation.gov.uk records the change with no operation (the feed's "amended", legacy markup); the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_uksi_1998_2241 reg.15(1) (regulation-23)
+           UK_uksi_1998_2241 reg.8(1)(b) (regulation-8)
+      2  no operation from legislation.gov.uk: repealed words @ UK_uksi_2000_1335  [known: legislation.gov.uk records the change with no operation (the feed's "amended", legacy markup); the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_uksi_1998_2241 reg.35(2) (regulation-38)
+           UK_uksi_1998_2241 reg.9(6) (regulation-15-a)
+      2  law text only: inserted words @ UK_uksi_2006_1244  [known: cross-headings inserted, words on the provision after (no heading rows)]
+           UK_ukpga_1995_21 s.157 (regulation-10)
+           UK_ukpga_1995_21 s.162 (regulation-14)
+      2  quote-new-number @ UK_uksi_2006_2190  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_2004_1495 reg.20(2)(e)(i) (article-10-2)
+           UK_uksi_2004_1495 reg.20(2)(e)(ii) (article-10-2)
+      2  quote-new-number @ UK_uksi_2011_2616  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_2004_2110 reg.16(1)(a) (schedule-1-paragraph-16-a)
+           UK_uksi_2004_2110 reg.16(1)(b) (schedule-1-paragraph-16-a)
+      2  quote-new-number @ UK_uksi_2014_1614  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_2013_1785 reg.17(5)(c)(i) (regulation-14-6)
+           UK_uksi_2013_1785 reg.17(5)(c)(ii) (regulation-14-6)
+      2  law text only: substituted words @ UK_uksi_2017_879  [no status]
+           UK_uksi_1993_3138 reg.46(2)(b) (regulation-5)
+           UK_uksi_1993_3138 reg.60(a) (regulation-5)
+      2  quote-new-number @ UK_uksi_2018_1202  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_2010_330 reg.5(3)(a) (regulation-9-3-b)
+           UK_uksi_2010_330 reg.5(3)(b) (regulation-9-3-b)
+      2  quote-new-number @ UK_uksi_2018_242  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_2014_1613 reg.50(5)(a) (regulation-5-4-b)
+           UK_uksi_2014_1613 reg.50(5)(b) (regulation-5-4-b)
+      2  quote-new-number @ UK_uksi_2018_667  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_2014_1613 reg.27(1A) (regulation-2-4-a)
+           UK_uksi_2014_1613 reg.27(1B) (regulation-2-4-a)
+      2  quote-new-number @ UK_uksi_2020_1222  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_2000_2687 reg.4(1)(a) (regulation-2-5-a)
+           UK_uksi_2000_2687 reg.4(1)(b) (regulation-2-5-a)
+      2  law text only: substituted provision @ UK_uksi_2022_1269  [known: one-law wording K2 (a table's numbers read whole)]
+           UK_uksi_1999_2723 reg.7(5) (regulation-4-9-b-ii-aa)
+           UK_uksi_1999_2723 reg.7(5) (regulation-4-9-b-ii-bb)
+      2  level provision/words @ UK_uksi_2022_1269  [known: one-law wording K2 ("for the table substitute"; legislation.gov.uk's feed and markup split)]
+           UK_uksi_1999_2723 reg.8(2)(a) (regulation-4-11-b)
+           UK_uksi_1999_2723 reg.8(3)(a) (regulation-4-12-b)
+      2  quote-new-number @ UK_uksi_2022_1269  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_1999_2723 reg.8(1) (regulation-4-11-b)
+           UK_uksi_1999_2723 reg.8(1) (regulation-4-12-b)
+      2  quote-new-number @ UK_uksi_2023_787  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_1999_1869 reg.6(1)(b)(i) (regulation-2-5-c)
+           UK_uksi_1999_1869 reg.6(1)(b)(ii) (regulation-2-5-c)
+      2  quote-new-number @ UK_uksi_2025_1195  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_2022_1342 reg.54(2)(e)(i) (schedule-1-paragraph-21)
+           UK_uksi_2022_1342 reg.54(2)(e)(ii) (schedule-1-paragraph-21)
+      1  law text only: inserted words @ UK_ukpga_1992_12  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_ukpga_1991_52 s.40(1) (schedule-10-paragraph-24-6)
+      1  law text only: repealed provision @ UK_ukpga_1992_12  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_ukpga_1991_52 s.18(8)(a) (schedule-12)
+      1  law text only: repealed provision @ UK_ukpga_1992_52  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_ukpga_1970_36 s.42(1) (schedule-1)
+      1  operation substituted/repealed_in_part @ UK_ukpga_1994_28  [known: one-law wording K5 ("the word “” shall be omitted from the section 4A(1) …")]
+           UK_ukpga_1974_43 s.4A(1) (section-5-2-a)
+      1  no operation from legislation.gov.uk: substituted words @ UK_ukpga_1995_21  [known: legislation.gov.uk records the change with no operation (the feed's "amended", legacy markup); the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_ukpga_1985_22 s.2(b) (schedule-13-paragraph-74)
+      1  no operation from legislation.gov.uk: substituted words @ UK_ukpga_1996_18  [known: legislation.gov.uk records the change with no operation (the feed's "amended", legacy markup); the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_ukpga_1991_52 s.24(8) (schedule-1-paragraph-50)
+      1  no operation from legislation.gov.uk: substituted words @ UK_ukpga_1996_23  [known: legislation.gov.uk records the change with no operation (the feed's "amended", legacy markup); the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_ukpga_1982_37 s.7(5) (schedule-3-paragraph-38)
+      1  law text only: inserted words @ UK_ukpga_1997_28  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_ukpga_1995_21 s.306(3) (schedule-6-paragraph-18-4-b)
+      1  law text only: repealed words @ UK_ukpga_1997_28  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_ukpga_1995_21 s.85(3) (schedule-7)
+      1  no operation from legislation.gov.uk: substituted provision @ UK_ukpga_1997_28  [known: legislation.gov.uk records the change with no operation (the feed's "amended", legacy markup); the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_ukpga_1995_21 s.85(1)(b) (section-8-2)
+      1  no operation from legislation.gov.uk: substituted words @ UK_ukpga_1998_17  [known: legislation.gov.uk records the change with no operation (the feed's "amended", legacy markup); the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_ukpga_1995_21 s.293(5) (schedule-4-paragraph-39)
+      1  law text only: substituted words @ UK_ukpga_1999_22  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_ukpga_1995_21 s.68(4) (schedule-13-paragraph-174-2)
+      1  operation inserted/substituted @ UK_ukpga_2003_21  [known: legislation.gov.uk's feed (its markup agrees with the law: inserted)]
+           UK_ukpga_1995_21 s.91(7) (schedule-17-paragraph-132-a)
+      1  operation repealed/repealed_in_part @ UK_ukpga_2004_21  [known: legislation.gov.uk's "in part"; the table repeals 1997 c.28 s.4 whole]
+           UK_ukpga_1997_28 s.4 (schedule-2)
+      1  level words/provision @ UK_ukpga_2015_20  [known: one-law wording K4 ("omit paragraph (a) (<heading>), and the “or” following it" read as words)]
+           UK_ukpga_1995_21 s.269(1)(a) (section-55-a)
+      1  law text only: inserted words @ UK_uksi_1998_1691  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_ukpga_1995_21 s.93(1) (regulation-2-2-a)
+      1  law text only: substituted words @ UK_uksi_1998_1691  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_ukpga_1995_21 s.93(1) (regulation-2-2-b)
+      1  unjoined @ UK_uksi_1998_1915  [known: the merge left the law's text apart from legislation.gov.uk's record (Merge's); the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_uksi_1993_3138 reg.1(2) (regulation-3-a)
+      1  level words/provision @ UK_uksi_1998_1916  [known: a definition substituted is words; the feed records the provision]
+           UK_uksi_1997_1510 reg.2(1) (regulation-2-1)
+      1  no operation from legislation.gov.uk: substituted words @ UK_uksi_1998_1916  [known: legislation.gov.uk records the change with no operation (the feed's "amended", legacy markup); the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_uksi_1997_1510 reg.16 (regulation-2-3)
+      1  law text only: substituted provision @ UK_uksi_1998_929  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_uksi_1975_2220 reg.2 (regulation-4)
+      1  law text only: substituted provision @ UK_uksi_1999_1704  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_uksi_1997_529 reg.2(2) (regulation-4)
+      1  law text only: repealed provision @ UK_uksi_1999_3281  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_uksi_1987_408 reg.20(1)(f) (regulation-2-3-a)
+      1  law text only: repealed words @ UK_uksi_1999_3281  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_uksi_1987_408 reg.20(1)(g) (regulation-2-3-b)
+      1  no operation from legislation.gov.uk: substituted provision @ UK_uksi_1999_3281  [known: legislation.gov.uk records the change with no operation (the feed's "amended", legacy markup); the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_uksi_1987_408 reg.18(2)(b) (regulation-2-2)
+      1  law text only: substituted provision @ UK_uksi_2000_1335  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_uksi_1998_2241 reg.9(6)(a) (regulation-15-b)
+      1  operation inserted/repealed @ UK_uksi_2000_1335  [known: the feed's effect for reg.22(b) joined to reg.22(a)'s insertion (Merge's)]
+           UK_uksi_1998_2241 reg.14(1) (regulation-22-a)
+      1  operation inserted/substituted @ UK_uksi_2000_1335  [known: legislation.gov.uk's feed (a definition inserted, recorded as substituted)]
+           UK_uksi_1998_2241 reg.2(1) (regulation-3-o)
+      1  unjoined @ UK_uksi_2000_1335  [known: the merge left the law's text apart from legislation.gov.uk's record (Merge's); the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_uksi_1998_2241 reg.4(1)(e) (regulation-4)
+      1  no operation from legislation.gov.uk: inserted provision @ UK_uksi_2006_1265  [known: art.4(4)(a) inserts “— (i) in the case of contributions to the Fund,” after “determined”, making s.173(7)(a)(i), and the row is held; legislation.gov.uk records no operation (Maritime Safety's parked group, checked in Environmental Protection: Amending-law reader 2026-11-10)]
+           UK_ukpga_1995_21 s.173(7)(a)(i) (article-4-4-a)
+      1  quote-new-number @ UK_uksi_2006_1265  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_ukpga_1995_21 s.177(6) (article-7-4)
+      1  unjoined @ UK_uksi_2006_1265  [known: the merge left the law's text apart from legislation.gov.uk's record (Merge's); the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_ukpga_1995_21 s.173(3)(a) (article-4-3-a)
+      1  operation inserted/substituted @ UK_uksi_2013_1473  [known: one-law wording K8 ("delete “of” and insert"; the feed gives one substitution)]
+           UK_uksi_2010_2984 reg.4(8)(c)(ii) (regulation-2-3-b)
+      1  law text only: inserted words @ UK_uksi_2014_1616  [known: one-law wording K1 ("At the end of the Regulations insert— SCHEDULE" read as words on the last regulation); RULES.md one-law amendment wordings]
+           UK_uksi_1997_2962 reg.30 (regulation-2-23)
+      1  law text only: substituted words @ UK_uksi_2018_1109  [known: one-law wording K6 ("omit … and substitute" kept as two records)]
+           UK_uksi_1972_1701 reg.1(2) (regulation-5-2-a)
+      1  law text only: substituted words @ UK_uksi_2018_667  [known: one-law wording K3 (quoted words "(1B)" read as a place)]
+           UK_uksi_2014_1613 reg.27(1B) (regulation-2-4-d)
+
+FAIL (groups not named: 1)

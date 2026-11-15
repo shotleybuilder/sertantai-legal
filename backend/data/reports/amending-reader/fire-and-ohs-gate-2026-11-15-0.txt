@@ -1,0 +1,554 @@
+139 laws; changes the law's text states: 3126 %{"both" => 2694, "law_text_only" => 432}
+
+D and L changes by cause (test/fixtures/amendment_patterns/disagreements.json): 182 groups; known 56, unreviewed 126
+    159  quote-dropped-number
+    127  quote-new-number
+    101  law text only: repealed provision
+     38  unjoined
+     36  law text only: repealed words
+     36  law text only: substituted provision
+     34  law text only: substituted words
+     29  law text only: inserted words
+     19  operation inserted/substituted
+     13  law text only: inserted provision
+     11  no operation from legislation.gov.uk: substituted words
+      9  no operation from legislation.gov.uk: inserted words
+      7  level words/provision
+      7  operation repealed/repealed_in_part
+      6  level provision/words
+      4  law text only: applied provision
+      3  no operation from legislation.gov.uk: inserted provision
+      3  no operation from legislation.gov.uk: repealed words
+      1  no operation from legislation.gov.uk: repealed provision
+      1  no operation from legislation.gov.uk: substituted provision
+      1  operation inserted/repealed_in_part
+      1  operation repealed/substituted
+
+every group (widest reach first): 182
+     81  quote-dropped-number @ UK_uksi_2019_696  [known: by design (RULES.md quote-dropped-numbers-are-repealed)]
+           UK_nisr_2016_366 reg.4(8)(a)(i) (schedule-31-paragraph-4-6)
+           UK_nisr_2016_366 reg.4(8)(a)(ii) (schedule-31-paragraph-4-6)
+           UK_nisr_2016_366 reg.4(8)(a)(iii) (schedule-31-paragraph-4-6)
+           UK_nisr_2016_366 reg.7(3)(a) (schedule-31-paragraph-6-d)
+     51  quote-dropped-number @ UK_uksi_2016_315  [known: by design (RULES.md quote-dropped-numbers-are-repealed)]
+           UK_uksi_2014_1638 reg.50 (regulation-7, regulation-7)
+           UK_uksi_2014_1638 reg.66 (regulation-7, regulation-7)
+           UK_uksi_2014_1638 reg.66(1) (regulation-7)
+           UK_uksi_2014_1638 reg.66(2) (regulation-7)
+     37  law text only: repealed provision @ UK_uksi_1974_2013  [no status]
+           UK_ukpga_1954_70 s.104 (schedule-1)
+           UK_ukpga_1954_70 s.106 (schedule-1)
+           UK_ukpga_1954_70 s.114 (schedule-1)
+           UK_ukpga_1954_70 s.129 (schedule-1)
+     35  quote-new-number @ UK_uksi_2019_696  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_nisr_2016_366 reg.4(8)(a) (schedule-31-paragraph-4-6)
+           UK_nisr_2016_366 reg.4(8)(b) (schedule-31-paragraph-4-6)
+           UK_nisr_2016_366 reg.4(8)(c) (schedule-31-paragraph-4-6)
+           UK_nisr_2017_90 reg.13(3) (schedule-32-paragraph-9)
+     22  law text only: substituted provision @ UK_uksi_2019_696  [no status]
+           UK_nisr_2016_366 reg.4(8) (schedule-31-paragraph-4-6)
+           UK_nisr_2016_366 reg.7(3) (schedule-31-paragraph-6-d)
+           UK_nisr_2017_90 reg.22 (schedule-32-paragraph-15)
+           UK_nisr_2017_90 reg.42 (schedule-32-paragraph-27)
+     20  law text only: repealed provision @ UK_uksi_1974_1885  [no status]
+           UK_ukpga_1875_17 s.25 (schedule-1)
+           UK_ukpga_1875_17 s.37 (schedule-1)
+           UK_ukpga_1875_17 s.53 (schedule-1)
+           UK_ukpga_1875_17 s.59 (schedule-1)
+     17  quote-new-number @ UK_ukpga_2008_32  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_ukpga_1998_17 s.30(5)(a)(i) (schedule-1-paragraph-10-a)
+           UK_ukpga_1998_17 s.30(5)(a)(ii) (schedule-1-paragraph-10-a)
+           UK_ukpga_1998_17 s.30(5)(a)(iii) (schedule-1-paragraph-10-a)
+           UK_ukpga_1998_17 s.30(5)(b)(i) (section-72-4)
+     12  operation inserted/substituted @ UK_nisr_2026_89  [no status]
+           UK_nisr_2014_224 reg.13(2)(c)(i) (regulation-13-b-iii)
+           UK_nisr_2014_224 reg.13(2)(c)(ii) (regulation-13-b-iii)
+           UK_nisr_2014_224 reg.4(2)(a) (regulation-7-b)
+           UK_nisr_2014_224 reg.4(2)(b) (regulation-7-b)
+     11  quote-new-number @ UK_asp_2012_8  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_asp_2005_5 s.36(2A) (section-112-a)
+           UK_asp_2005_5 s.40(6)(a) (schedule-7-paragraph-68-15-c)
+           UK_asp_2005_5 s.40(6)(b) (schedule-7-paragraph-68-15-c)
+           UK_asp_2005_5 s.40(6)(c) (schedule-7-paragraph-68-15-c)
+     11  law text only: inserted provision @ UK_uksi_2000_1937  [no status]
+           UK_ukpga_1962_58 s.10C (schedule-1-paragraph-6)
+           UK_ukpga_1962_58 s.10D (schedule-1-paragraph-6)
+           UK_ukpga_1962_58 s.10E (schedule-1-paragraph-6)
+           UK_ukpga_1962_58 s.10F (schedule-1-paragraph-6)
+      9  law text only: repealed provision @ UK_nisr_2006_425  [no status]
+           UK_ukpga_1875_17 s.119 (schedule-6-paragraph-1-15)
+           UK_ukpga_1875_17 s.120 (schedule-6-paragraph-1-15)
+           UK_ukpga_1875_17 s.121 (schedule-6-paragraph-1-15)
+           UK_ukpga_1875_17 s.85 (schedule-6-paragraph-1-8)
+      8  unjoined @ UK_nisr_2007_247  [no status]
+           UK_nisr_1995_340 reg.2(1) (schedule-10-paragraph-3-a-i)
+           UK_nisr_1995_340 reg.2(1) (schedule-10-paragraph-3-a-ii)
+           UK_nisr_1995_340 reg.2(1) (schedule-10-paragraph-3-a-iii)
+           UK_nisr_1995_340 reg.2(1) (schedule-10-paragraph-3-a-iv)
+      8  law text only: repealed words @ UK_uksi_1974_1986  [no status]
+           UK_ukpga_1962_58 s.46(b) (schedule-1)
+           UK_ukpga_1962_58 s.47 (schedule-1)
+           UK_ukpga_1962_58 s.58(4) (schedule-1)
+           UK_ukpga_1962_58 s.59(5) (schedule-1)
+      8  law text only: inserted words @ UK_uksi_2000_1937  [no status]
+           UK_ukpga_1962_58 s.10(7) (schedule-1-paragraph-4)
+           UK_ukpga_1962_58 s.66(1) (schedule-1-paragraph-9-a)
+           UK_ukpga_1962_58 s.66(1) (schedule-1-paragraph-9-b)
+           UK_ukpga_1962_58 s.66(1) (schedule-1-paragraph-9-d)
+      7  quote-new-number @ UK_ukpga_2011_16  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_ukpga_1962_58 s.9(8)(a) (schedule-2-paragraph-2-a)
+           UK_ukpga_1962_58 s.9(8)(b) (schedule-2-paragraph-2-a)
+           UK_ukpga_1962_58 s.9A(8)(a) (schedule-2-paragraph-3-a)
+           UK_ukpga_1962_58 s.9A(8)(b) (schedule-2-paragraph-3-a)
+      7  law text only: repealed words @ UK_uksi_1974_1885  [no status]
+           UK_ukpga_1875_17 s.11 (schedule-1)
+           UK_ukpga_1875_17 s.24 (schedule-1)
+           UK_ukpga_1875_17 s.26 (schedule-1)
+           UK_ukpga_1875_17 s.28 (schedule-1)
+      7  law text only: repealed provision @ UK_uksi_1975_1102  [no status]
+           UK_ukpga_1954_70 s.146 (schedule-1)
+           UK_ukpga_1954_70 s.27 (schedule-1)
+           UK_ukpga_1954_70 s.34(2) (schedule-1)
+           UK_ukpga_1954_70 s.35(2) (schedule-1)
+      7  unjoined @ UK_uksi_1988_1729  [no status]
+           UK_ukpga_1954_70 s.22 (regulation-12-1-a)
+           UK_ukpga_1954_70 s.23 (regulation-12-1-a)
+           UK_ukpga_1954_70 s.24 (regulation-12-1-a)
+           UK_ukpga_1954_70 s.25 (regulation-12-1-a)
+      7  quote-new-number @ UK_uksi_2004_2043  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_ukpga_1998_17 s.17C(5A) (schedule-3-paragraph-1-e)
+           UK_ukpga_1998_17 s.17C(5B) (schedule-3-paragraph-1-e)
+           UK_ukpga_1998_17 s.17C(5C) (schedule-3-paragraph-1-e)
+           UK_ukpga_1998_17 s.17C(5D) (schedule-3-paragraph-1-e)
+      6  quote-new-number @ UK_nisr_2012_177  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_nisr_2010_59 reg.17(9)(i) (regulation-8)
+           UK_nisr_2010_59 reg.17(9)(ii) (regulation-8)
+           UK_nisr_2010_59 reg.17(9)(iii) (regulation-8)
+           UK_nisr_2010_59 reg.17(9)(iv) (regulation-8)
+      6  operation inserted/substituted @ UK_nisr_2020_340  [no status]
+           UK_nisr_2010_59 reg.12(2)(a)(i) (regulation-4-2)
+           UK_nisr_2010_59 reg.12(2)(a)(ii) (regulation-4-2)
+           UK_nisr_2010_59 reg.12(2)(b)(i) (regulation-4-2)
+           UK_nisr_2010_59 reg.12(2)(b)(ii) (regulation-4-2)
+      6  law text only: substituted words @ UK_ukpga_1989_15  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/ohs-gate-review-2026-11-10.md)]
+           UK_ukpga_1962_58 s.37(1)(b) (schedule-25-paragraph-30-1-a-i)
+           UK_ukpga_1962_58 s.37(1)(c) (schedule-25-paragraph-30-1-a-ii)
+           UK_ukpga_1962_58 s.37(2)(b) (schedule-25-paragraph-30-1-b-i)
+           UK_ukpga_1962_58 s.37(2)(c) (schedule-25-paragraph-30-1-b-ii)
+      6  quote-dropped-number @ UK_ukpga_2016_20  [known: by design (RULES.md quote-dropped-numbers-are-repealed)]
+           UK_ukpga_1998_17 s.3(1) (schedule-1-paragraph-38-4)
+           UK_ukpga_1998_17 s.3(2) (schedule-1-paragraph-38-4)
+           UK_ukpga_1998_17 s.3(2)(a) (schedule-1-paragraph-38-4)
+           UK_ukpga_1998_17 s.3(2)(b) (schedule-1-paragraph-38-4)
+      6  quote-new-number @ UK_ukpga_2016_20  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_ukpga_1998_17 s.25(1)(a) (schedule-1-paragraph-26)
+           UK_ukpga_1998_17 s.25(1)(b) (schedule-1-paragraph-26)
+           UK_ukpga_1998_17 s.9F(2)(a) (schedule-1-paragraph-12-3)
+           UK_ukpga_1998_17 s.9F(2)(b) (schedule-1-paragraph-12-3)
+      5  quote-new-number @ UK_ukpga_2011_20  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_ukpga_2004_21 s.60(1) (section-9-5)
+           UK_ukpga_2004_21 s.60(4)(a) (section-9-4)
+           UK_ukpga_2004_21 s.60(4)(b) (section-9-4)
+           UK_ukpga_2004_21 s.60(4)(c) (section-9-4)
+      5  law text only: repealed provision @ UK_uksi_1974_1986  [no status]
+           UK_ukpga_1962_58 s.24 (schedule-1)
+           UK_ukpga_1962_58 s.34 (schedule-1)
+           UK_ukpga_1962_58 s.47(2) (schedule-1)
+           UK_ukpga_1962_58 s.58(5) (schedule-1)
+      5  quote-dropped-number @ UK_uksi_1995_738  [known: by design (RULES.md quote-dropped-numbers-are-repealed)]
+           UK_uksi_1989_971 reg.23(a) (schedule-2-paragraph-10)
+           UK_uksi_1989_971 reg.23(b) (schedule-2-paragraph-10)
+           UK_uksi_1989_971 reg.23(c) (schedule-2-paragraph-10)
+           UK_uksi_1989_971 reg.3(a) (schedule-2-paragraph-6)
+      5  no operation from legislation.gov.uk: inserted words @ UK_uksi_2000_1937  [no status]
+           UK_ukpga_1962_58 s.66(1) (schedule-1-paragraph-9-c)
+           UK_ukpga_1998_17 s.15(6) (schedule-4-paragraph-1)
+           UK_ukpga_1998_17 s.16(1) (schedule-4-paragraph-2)
+           UK_ukpga_1998_17 s.19(1)(b) (schedule-4-paragraph-6)
+      4  law text only: substituted words @ UK_ukpga_1984_54  [no status]
+           UK_ukpga_1875_17 s.30 (schedule-9-paragraph-7-3)
+           UK_ukpga_1875_17 s.80 (schedule-9-paragraph-7-4)
+           UK_ukpga_1954_70 s.151(2)(b)(ii) (schedule-9-paragraph-44)
+           UK_ukpga_1954_70 s.151(2)(c)(ii) (schedule-9-paragraph-44)
+      4  unjoined @ UK_ukpga_2003_39  [no status]
+           UK_ukpga_1883_3 s.6(1) (schedule-10)
+           UK_ukpga_1883_3 s.6(1) (schedule-8-paragraph-56-1-a)
+           UK_ukpga_1883_3 s.6(1) (schedule-8-paragraph-56-1-b)
+           UK_ukpga_1883_3 s.6(1) (schedule-8-paragraph-56-1-c)
+      4  unjoined @ UK_ukpga_2017_3  [no status]
+           UK_ukpga_2004_21 s.37 (schedule-1-paragraph-12)
+           UK_ukpga_2004_21 s.5A (schedule-2-paragraph-113)
+           UK_uksi_2005_1541 reg.2 (section-12-2-a)
+           UK_uksi_2005_1541 reg.2 (section-12-2-b)
+      4  operation repealed/repealed_in_part @ UK_ukpga_2022_30  [no status]
+           UK_uksi_2005_1541 reg.29(5)(b) (section-156-9)
+           UK_uksi_2005_1541 reg.29(5)(c) (section-156-9)
+           UK_uksi_2005_1541 reg.45 (schedule-5-paragraph-90-2)
+           UK_uksi_2005_1541 reg.52(1)(k) (schedule-5-paragraph-90-3)
+      4  law text only: inserted words @ UK_uksi_1974_2013  [no status]
+           UK_ukpga_1954_70 s.176(1) (schedule-2-paragraph-17-a)
+           UK_ukpga_1954_70 s.176(2) (schedule-2-paragraph-17-b)
+           UK_ukpga_1954_70 s.182(1) (schedule-2-paragraph-18-a)
+           UK_ukpga_1954_70 s.182(1) (schedule-2-paragraph-18-b)
+      4  no operation from legislation.gov.uk: substituted words @ UK_uksi_2000_1937  [no status]
+           UK_ukpga_1962_58 s.10A(2) (schedule-1-paragraph-5)
+           UK_ukpga_1962_58 s.9(2) (schedule-1-paragraph-1-2)
+           UK_ukpga_1998_17 s.18(6)(b) (schedule-4-paragraph-5)
+           UK_ukpga_1998_17 s.21(1)(b) (schedule-4-paragraph-7)
+      4  quote-new-number @ UK_uksi_2014_469  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_2005_1541 reg.4(2)(b)(i) (schedule-3-paragraph-124)
+           UK_uksi_2005_1541 reg.4(2)(b)(ii) (schedule-3-paragraph-124)
+           UK_uksi_2005_1541 reg.4(2)(b)(iii) (schedule-3-paragraph-124)
+           UK_uksi_2005_1541 reg.4(2)(b)(iv) (schedule-3-paragraph-124)
+      4  quote-new-number @ UK_uksi_2026_185  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_1995_743 reg.5(3)(c)(i) (regulation-3-3)
+           UK_uksi_1995_743 reg.5(3)(c)(ii) (regulation-3-3)
+           UK_uksi_1995_743 reg.5(3)(c)(iii) (regulation-3-3)
+           UK_uksi_1995_743 reg.5(3)(c)(iv) (regulation-3-3)
+      3  no operation from legislation.gov.uk: repealed words @ UK_nisr_2006_205  [no status]
+           UK_nisi_1983_150 reg.2(2) (regulation-41-2)
+           UK_nisi_1983_150 reg.20(1) (regulation-41-4)
+           UK_nisi_1983_150 reg.20(6) (regulation-41-5)
+      3  no operation from legislation.gov.uk: substituted words @ UK_ukpga_1995_21  [known: legislation.gov.uk records the change with no operation (the feed's "amended", legacy markup); the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_ukpga_1883_3 s.8(2) (schedule-13-paragraph-6)
+           UK_ukpga_1962_58 s.39(4) (schedule-13-paragraph-32)
+           UK_ukpga_1987_12 s.23(8) (schedule-13-paragraph-78)
+      3  law text only: substituted words @ UK_ukpga_1998_17  [no status]
+           UK_ukpga_1992_15 s.3(2)(b) (schedule-4-paragraph-33-3)
+           UK_ukpga_1992_15 s.3(4) (schedule-4-paragraph-33-3)
+           UK_ukpga_1992_15 s.5(7) (schedule-4-paragraph-33-4)
+      3  quote-dropped-number @ UK_ukpga_2017_3  [known: by design (RULES.md quote-dropped-numbers-are-repealed)]
+           UK_ukpga_2004_21 s.37 (schedule-1-paragraph-12)
+           UK_ukpga_2004_21 s.37(3)(b) (schedule-1-paragraph-12)
+           UK_ukpga_2004_21 s.5A(3)(b)n1 (schedule-2-paragraph-112)
+      3  law text only: repealed provision @ UK_uksi_1999_2463  [no status]
+           UK_ukpga_1954_70 s.51 (regulation-18-1)
+           UK_ukpga_1954_70 s.52 (regulation-18-1)
+           UK_ukpga_1954_70 s.54 (regulation-18-1)
+      3  unjoined @ UK_uksi_2005_1082  [no status]
+           UK_ukpga_1875_17 s.24 (schedule-6)
+           UK_ukpga_1875_17 s.83 (schedule-6)
+           UK_ukpga_1875_17 s.97 (schedule-6)
+      3  quote-new-number @ UK_uksi_2015_398  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_1995_738 reg.3(2)(da) (schedule-13-paragraph-10-3)
+           UK_uksi_1995_743 reg.5(3)(c)(i) (schedule-13-paragraph-20)
+           UK_uksi_1995_743 reg.5(3)(c)(ii) (schedule-13-paragraph-20)
+      3  quote-new-number @ UK_uksi_2016_315  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_2014_1638 reg.3(4)(a) (regulation-5-a)
+           UK_uksi_2014_1638 reg.3(4)(b) (regulation-5-a)
+           UK_uksi_2014_1638 reg.80 (regulation-8-b)
+      3  quote-dropped-number @ UK_uksi_2026_185  [known: by design (RULES.md quote-dropped-numbers-are-repealed)]
+           UK_uksi_1995_738 reg.21F(2)(a)(i) (regulation-2-4-b)
+           UK_uksi_1995_738 reg.21F(2)(a)(ii) (regulation-2-4-b)
+           UK_uksi_1995_738 reg.21F(2)(a)(iii) (regulation-2-4-b)
+      2  law text only: substituted provision @ UK_asc_2021_1  [no status]
+           UK_ukpga_2004_21 s.24(4) (section-168-3)
+           UK_ukpga_2004_21 s.24(5) (section-168-3)
+      2  quote-dropped-number @ UK_asc_2026_5  [known: by design (RULES.md quote-dropped-numbers-are-repealed)]
+           UK_uksi_2005_1541 reg.21A(6)(a) (schedule-3-paragraph-11-b)
+           UK_uksi_2005_1541 reg.21A(6)(b) (schedule-3-paragraph-11-b)
+      2  unjoined @ UK_asp_2012_8  [no status]
+           UK_asp_2005_5 s.45 (schedule-7-paragraph-68-17)
+           UK_ukpga_2004_21 s.35(6) (schedule-7-paragraph-66-3)
+      2  unjoined @ UK_nisr_2006_425  [no status]
+           UK_ukpga_1875_17 s.83 (schedule-6-paragraph-1-7)
+           UK_ukpga_1875_17 s.83 (schedule-7)
+      2  law text only: inserted words @ UK_nisr_2007_165  [no status]
+           UK_nisr_1995_340 reg.2(1) (regulation-2-2-b)
+           UK_nisr_1996_228 reg.2(1) (regulation-4-2-b)
+      2  quote-dropped-number @ UK_nisr_2007_165  [known: by design (RULES.md quote-dropped-numbers-are-repealed)]
+           UK_nisr_1996_228 reg.3(3)(a) (regulation-4-3)
+           UK_nisr_1996_228 reg.3(3)(b) (regulation-4-3)
+      2  law text only: inserted words @ UK_nisr_2007_247  [no status]
+           UK_nisr_1995_340 reg.17 (schedule-10-paragraph-3-b)
+           UK_uksi_1989_971 reg.23(c) (schedule-10-paragraph-1-d)
+      2  no operation from legislation.gov.uk: inserted provision @ UK_nisr_2026_89  [no status]
+           UK_nisr_2014_224 reg.12(5)(a) (regulation-12-b)
+           UK_nisr_2014_224 reg.12(5)(b) (regulation-12-b)
+      2  law text only: repealed provision @ UK_ukpga_1963_33  [no status]
+           UK_ukpga_1875_17 s.67(2) (schedule-18)
+           UK_ukpga_1954_70 s.151(4) (schedule-18)
+      2  law text only: substituted provision @ UK_ukpga_1973_65  [no status]
+           UK_ukpga_1875_17 s.110 (schedule-27-paragraph-10)
+           UK_ukpga_1875_17 s.111(a) (schedule-27-paragraph-11)
+      2  law text only: repealed provision @ UK_ukpga_1976_57  [no status]
+           UK_ukpga_1969_10 s.33(b) (schedule-2)
+           UK_ukpga_1969_10 s.33(d) (schedule-2)
+      2  law text only: inserted words @ UK_ukpga_1987_12  [no status]
+           UK_ukpga_1962_58 s.58(4) (section-26-2)
+           UK_ukpga_1962_58 s.59(5) (section-26-2)
+      2  law text only: substituted words @ UK_ukpga_1987_43  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/ohs-gate-review-2026-11-10.md)]
+           UK_ukpga_1875_17 s.31 (schedule-4-paragraph-1)
+           UK_ukpga_1875_17 s.80 (schedule-4-paragraph-1)
+      2  law text only: substituted words @ UK_ukpga_1990_43  [no status]
+           UK_ukpga_1954_70 s.151(2) (schedule-15-paragraph-5-2)
+           UK_ukpga_1954_70 s.151(3) (schedule-15-paragraph-5-3)
+      2  law text only: repealed words @ UK_ukpga_1994_19  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/environmental-protection-gate-review-1.md)]
+           UK_ukpga_1962_58 s.35(6) (schedule-16-paragraph-21)
+           UK_ukpga_1969_10 s.11(3)(a) (schedule-16-paragraph-34)
+      2  law text only: inserted words @ UK_ukpga_2011_16  [no status]
+           UK_ukpga_1998_17 s.30(1) (section-107-4-a-ii)
+           UK_ukpga_1998_17 s.30(5) (section-107-4-c)
+      2  quote-new-number @ UK_ukpga_2017_3  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_ukpga_2004_21 s.1(4)(a) (schedule-1-paragraph-3)
+           UK_ukpga_2004_21 s.1(4)(b) (schedule-1-paragraph-3)
+      2  quote-new-number @ UK_ukpga_2023_55  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_ukpga_2004_21 s.1(5)(a) (schedule-4-paragraph-157)
+           UK_ukpga_2004_21 s.1(5)(b) (schedule-4-paragraph-157)
+      2  law text only: repealed words @ UK_uksi_1974_2013  [no status]
+           UK_ukpga_1954_70 s.115 (schedule-1)
+           UK_ukpga_1954_70 s.72 (schedule-1)
+      2  law text only: substituted words @ UK_uksi_1974_2013  [no status]
+           UK_ukpga_1954_70 s.152(3) (schedule-2-paragraph-12-c)
+           UK_ukpga_1954_70 s.182(1) (schedule-2-paragraph-18-c)
+      2  law text only: repealed provision @ UK_uksi_1992_2932  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/ohs-gate-review-2026-11-10.md)]
+           UK_ukpga_1954_70 s.81(1) (schedule-2)
+           UK_ukpga_1954_70 s.82 (schedule-2)
+      2  law text only: substituted provision @ UK_uksi_1995_738  [no status]
+           UK_uksi_1989_971 reg.23 (schedule-2-paragraph-10)
+           UK_uksi_1989_971 reg.3 (schedule-2-paragraph-6)
+      2  unjoined @ UK_uksi_2000_3097  [no status]
+           UK_uksi_1994_232 reg.2(2) (regulation-2-b-i)
+           UK_uksi_1994_232 reg.2(2) (regulation-2-b-ii)
+      2  level words/provision @ UK_uksi_2005_1082  [no status]
+           UK_ukpga_1875_17 s.97(3) (schedule-5-paragraph-1-11, schedule-6)
+           UK_ukpga_1875_17 s.97(4) (schedule-5-paragraph-1-11, schedule-6)
+      2  law text only: inserted words @ UK_uksi_2005_3117  [no status]
+           UK_uksi_1989_971 reg.23(c) (schedule-9-paragraph-1-d)
+           UK_uksi_1996_913 reg.2(4)(b) (schedule-9-paragraph-5-a-i-cc)
+      2  law text only: substituted words @ UK_uksi_2005_3117  [no status]
+           UK_uksi_1996_913 reg.2(4)(b) (schedule-9-paragraph-5-a-i)
+           UK_uksi_1996_913 reg.2(4)(b) (schedule-9-paragraph-5-a-i-ee)
+      2  quote-new-number @ UK_uksi_2013_602  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_ukpga_2004_21 s.34(10)(a) (schedule-1-paragraph-7-2)
+           UK_ukpga_2004_21 s.34(10)(b) (schedule-1-paragraph-7-2)
+      2  quote-dropped-number @ UK_uksi_2014_469  [known: by design (RULES.md quote-dropped-numbers-are-repealed)]
+           UK_uksi_1990_304 reg.8(a) (schedule-3-paragraph-45)
+           UK_uksi_1990_304 reg.8(b) (schedule-3-paragraph-45)
+      2  quote-new-number @ UK_uksi_2015_1553  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_ukpga_1875_17 s.31(2)(a) (regulation-75-3)
+           UK_ukpga_1875_17 s.31(2)(b) (regulation-75-3)
+      2  law text only: substituted words @ UK_uksi_2015_398  [no status]
+           UK_uksi_1989_971 reg.23(c) (schedule-13-paragraph-4)
+           UK_uksi_2005_3117 reg.2(4) (schedule-13-paragraph-34-3)
+      2  quote-dropped-number @ UK_uksi_2015_398  [known: by design (RULES.md quote-dropped-numbers-are-repealed)]
+           UK_uksi_1995_743 reg.5(3)(c)(iii) (schedule-13-paragraph-20)
+           UK_uksi_1995_743 reg.5(3)(c)(iv) (schedule-13-paragraph-20)
+      2  quote-new-number @ UK_uksi_2017_582  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_2015_385 reg.11(1)(a) (regulation-61-3)
+           UK_uksi_2015_385 reg.11(1)(b) (regulation-61-3)
+      2  level provision/words @ UK_uksi_2019_696  [no status]
+           UK_uksi_2015_1553 reg.17(3) (schedule-19-paragraph-12-b)
+           UK_uksi_2015_1553 reg.45 (schedule-19-paragraph-27)
+      2  quote-new-number @ UK_uksi_2023_284  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_1996_551 reg.2(4)(a) (regulation-3-4-c)
+           UK_uksi_1996_551 reg.2(4)(b) (regulation-3-4-c)
+      2  quote-new-number @ UK_uksi_2026_848  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_uksi_2002_2665 reg.22(1)(c)(i) (regulation-3-3)
+           UK_uksi_2002_2665 reg.22(1)(c)(ii) (regulation-3-3)
+      1  level provision/words @ UK_asc_2021_1  [no status]
+           UK_ukpga_2004_21 s.4(7)(b) (section-166-3-b)
+      1  quote-new-number @ UK_asc_2021_1  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_ukpga_2004_21 s.4(6)(b) (section-166-3-a)
+      1  law text only: substituted provision @ UK_asc_2026_5  [no status]
+           UK_uksi_2005_1541 reg.21A(6) (schedule-3-paragraph-11-b)
+      1  law text only: substituted provision @ UK_asp_2012_8  [no status]
+           UK_asp_2005_5 s.1 (schedule-7-paragraph-68-2)
+      1  law text only: substituted words @ UK_nisr_1993_384  [no status]
+           UK_ukpga_1987_12 s.23(1)(b) (regulation-4-3-a)
+      1  quote-dropped-number @ UK_nisr_2003_454  [known: by design (RULES.md quote-dropped-numbers-are-repealed)]
+           UK_nisr_2001_348 reg.9(2)(b)(i) (regulation-3-4)
+      1  quote-new-number @ UK_nisr_2003_454  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_nisr_2001_348 reg.9(2)(a) (regulation-3-4)
+      1  law text only: repealed words @ UK_nisr_2006_425  [no status]
+           UK_ukpga_1875_17 s.108 (schedule-7)
+      1  law text only: substituted provision @ UK_nisr_2007_165  [no status]
+           UK_nisr_1996_228 reg.3(3) (regulation-4-3)
+      1  law text only: substituted words @ UK_nisr_2007_165  [no status]
+           UK_nisr_1995_340 reg.2(1) (regulation-2-2-d)
+      1  law text only: substituted words @ UK_nisr_2012_177  [no status]
+           UK_nisr_2010_59 reg.3(j) (regulation-4-5)
+      1  law text only: substituted words @ UK_nisr_2016_406  [no status]
+           UK_uksi_1989_971 reg.23(c) (schedule-14-paragraph-4)
+      1  operation inserted/substituted @ UK_nisr_2016_406  [no status]
+           UK_nisr_2007_247 reg.14(3)(c) (schedule-14-paragraph-41)
+      1  law text only: repealed provision @ UK_ukpga_1973_36  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/ohs-gate-review-2026-11-10.md)]
+           UK_ukpga_1971_61 s.14(3) (schedule-6)
+      1  law text only: repealed provision @ UK_ukpga_1973_65  [no status]
+           UK_ukpga_1875_17 s.109(1) (schedule-29)
+      1  quote-new-number @ UK_ukpga_1973_65  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_ukpga_1875_17 s.110(1) (schedule-27-paragraph-10)
+      1  law text only: substituted provision @ UK_ukpga_1974_36  [no status]
+           UK_ukpga_1966_4 s.1 (section-1)
+      1  law text only: repealed words @ UK_ukpga_1974_7  [no status]
+           UK_ukpga_1969_10 s.23(1) (schedule-8)
+      1  law text only: substituted words @ UK_ukpga_1980_65  [no status]
+           UK_ukpga_1969_10 s.23(5) (schedule-6-paragraph-12)
+      1  law text only: repealed provision @ UK_ukpga_1982_23  [no status]
+           UK_ukpga_1971_61 s.10 (section-27-7)
+      1  law text only: repealed words @ UK_ukpga_1982_23  [no status]
+           UK_ukpga_1971_61 s.12(1) (schedule-3-paragraph-11-1-d)
+      1  law text only: substituted words @ UK_ukpga_1982_23  [no status]
+           UK_ukpga_1971_61 s.9(2) (schedule-3-paragraph-8)
+      1  law text only: inserted words @ UK_ukpga_1982_53  [no status]
+           UK_ukpga_1883_3 s.9(2) (section-63-2)
+      1  law text only: inserted words @ UK_ukpga_1984_54  [no status]
+           UK_ukpga_1875_17 s.108 (schedule-9-paragraph-7-5)
+      1  law text only: inserted words @ UK_ukpga_1985_51  [no status]
+           UK_ukpga_1969_10 s.11(3) (schedule-8-paragraph-27)
+      1  law text only: repealed provision @ UK_ukpga_1985_51  [no status]
+           UK_ukpga_1962_58 s.18 (schedule-17)
+      1  level words/provision @ UK_ukpga_1985_51  [no status]
+           UK_ukpga_1875_17 s.67(3) (schedule-11-paragraph-3)
+      1  law text only: repealed words @ UK_ukpga_1986_12  [no status]
+           UK_ukpga_1875_17 s.83 (schedule-1)
+      1  law text only: repealed words @ UK_ukpga_1986_44  [no status]
+           UK_ukpga_1962_58 s.66(1) (schedule-9)
+      1  law text only: repealed words @ UK_ukpga_1987_12  [no status]
+           UK_ukpga_1962_58 s.47(3) (schedule-3)
+      1  law text only: repealed provision @ UK_ukpga_1989_15  [no status]
+           UK_ukpga_1962_58 s.37(4)(c) (schedule-27)
+      1  law text only: repealed provision @ UK_ukpga_1989_29  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/ohs-gate-review-2026-11-10.md)]
+           UK_ukpga_1962_58 s.58(1)(c) (schedule-18)
+      1  law text only: repealed words @ UK_ukpga_1989_29  [no status]
+           UK_ukpga_1962_58 s.66(1) (schedule-18)
+      1  law text only: repealed provision @ UK_ukpga_1989_38  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/ohs-gate-review-2026-11-10.md)]
+           UK_ukpga_1954_70 s.124(1) (schedule-7)
+      1  law text only: inserted words @ UK_ukpga_1994_19  [no status]
+           UK_ukpga_1969_10 s.11(3)(a) (schedule-16-paragraph-34)
+      1  no operation from legislation.gov.uk: inserted words @ UK_ukpga_1994_19  [known: legislation.gov.uk records the change with no operation (the feed's "amended", legacy markup); the reading is right (review: backend/data/reports/amending-reader/environmental-protection-gate-review-1.md)]
+           UK_ukpga_1875_17 s.67(3) (schedule-16-paragraph-3)
+      1  operation inserted/repealed_in_part @ UK_ukpga_1994_19  [known: "omit “and Wales” and after “Isles of Scilly” insert": two records, legislation.gov.uk one "in part"]
+           UK_ukpga_1962_58 s.35(6) (schedule-16-paragraph-21, schedule-18)
+      1  level words/provision @ UK_ukpga_1994_39  [no status]
+           UK_ukpga_1875_17 s.111(a) (schedule-13-paragraph-4-3)
+      1  no operation from legislation.gov.uk: substituted words @ UK_ukpga_1994_39  [known: legislation.gov.uk records the change with no operation (the feed's "amended", legacy markup); the reading is right (review: backend/data/reports/amending-reader/environmental-protection-gate-review-1.md)]
+           UK_ukpga_1969_10 s.11(3)(b) (schedule-13-paragraph-81)
+      1  no operation from legislation.gov.uk: substituted words @ UK_ukpga_1995_36  [no status]
+           UK_ukpga_1954_70 s.182(1) (schedule-4-paragraph-8)
+      1  level words/provision @ UK_ukpga_1998_17  [no status]
+           UK_ukpga_1992_15 s.1(4) (schedule-4-paragraph-33-2-b)
+      1  no operation from legislation.gov.uk: substituted words @ UK_ukpga_1998_17  [known: legislation.gov.uk records the change with no operation (the feed's "amended", legacy markup); the reading is right (review: backend/data/reports/amending-reader/maritime-gate-review-1.md)]
+           UK_ukpga_1987_12 s.24(1)(b) (schedule-4-paragraph-23)
+      1  no operation from legislation.gov.uk: repealed provision @ UK_ukpga_2000_27  [no status]
+           UK_ukpga_1992_15 s.2(3)(b) (schedule-8)
+      1  law text only: inserted words @ UK_ukpga_2004_20  [no status]
+           UK_ukpga_1998_17 s.11(7) (section-87-5)
+      1  unjoined @ UK_ukpga_2004_20  [no status]
+           UK_ukpga_1962_58 s.10C (schedule-23)
+      1  law text only: substituted words @ UK_ukpga_2004_21  [no status]
+           UK_ukpga_1971_40 s.43 (schedule-1-paragraph-33-2)
+      1  operation repealed/repealed_in_part @ UK_ukpga_2004_21  [known: legislation.gov.uk's "in part"; the table repeals 1997 c.28 s.4 whole]
+           UK_ukpga_1971_40 s.29 (schedule-2)
+      1  level words/provision @ UK_ukpga_2008_29  [no status]
+           UK_ukpga_1962_58 s.1(1A)(b) (schedule-2-paragraph-6-3)
+      1  unjoined @ UK_ukpga_2008_32  [no status]
+           UK_ukpga_1962_58 s.66(1) (schedule-6)
+      1  law text only: substituted words @ UK_ukpga_2011_16  [no status]
+           UK_ukpga_1998_17 s.30(1) (section-107-4-a-i)
+      1  level words/provision @ UK_ukpga_2011_16  [no status]
+           UK_ukpga_1962_58 s.9(8) (schedule-2-paragraph-2-a)
+      1  law text only: repealed provision @ UK_ukpga_2011_20  [no status]
+           UK_ukpga_2004_21 s.60(3) (section-9-7-c)
+      1  operation repealed/repealed_in_part @ UK_ukpga_2011_20  [no status]
+           UK_ukpga_2004_21 s.5 (schedule-25)
+      1  law text only: inserted provision @ UK_ukpga_2016_11  [no status]
+           UK_ukpga_1998_17 s.4A (section-48-10)
+      1  law text only: substituted provision @ UK_ukpga_2016_20  [no status]
+           UK_ukpga_1998_17 s.3 (schedule-1-paragraph-38-4)
+      1  law text only: repealed words @ UK_uksi_1970_1681  [no status]
+           UK_ukpga_1962_58 s.66(1) (schedule-4)
+      1  law text only: inserted words @ UK_uksi_1974_1986  [no status]
+           UK_ukpga_1962_58 s.13(1) (schedule-2-paragraph-1)
+      1  law text only: repealed words @ UK_uksi_1974_595  [no status]
+           UK_ukpga_1962_58 s.35(6) (schedule-1)
+      1  law text only: repealed provision @ UK_uksi_1975_1636  [no status]
+           UK_ukpga_1962_58 s.35(6) (article-4-4)
+      1  law text only: repealed provision @ UK_uksi_1979_318  [no status]
+           UK_ukpga_1954_70 s.75 (regulation-7)
+      1  law text only: repealed provision @ UK_uksi_1988_1657  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/ohs-gate-review-2026-11-10.md)]
+           UK_ukpga_1954_70 s.112 (schedule-8)
+      1  law text only: repealed provision @ UK_uksi_1989_615  [no status]
+           UK_ukpga_1875_17 s.97(5) (regulation-19-1)
+      1  law text only: repealed provision @ UK_uksi_1991_2097  [no status]
+           UK_ukpga_1875_17 s.33 (regulation-14-2)
+      1  law text only: repealed words @ UK_uksi_1992_2793  [no status]
+           UK_ukpga_1954_70 s.93 (schedule-2)
+      1  law text only: substituted words @ UK_uksi_1992_449  [no status]
+           UK_ukpga_1962_58 s.66(1) (regulation-2-2-b-iii)
+      1  law text only: repealed words @ UK_uksi_1993_1823  [no status]
+           UK_ukpga_1987_12 s.11(2)(a) (regulation-3-3)
+      1  law text only: substituted words @ UK_uksi_1993_1823  [no status]
+           UK_ukpga_1987_12 s.23(1)(b) (regulation-4-4-a)
+      1  law text only: repealed provision @ UK_uksi_1993_1897  [no status]
+           UK_ukpga_1954_70 s.180(1) (schedule-3)
+      1  law text only: repealed words @ UK_uksi_1993_1897  [no status]
+           UK_ukpga_1954_70 s.53 (schedule-3)
+      1  no operation from legislation.gov.uk: inserted words @ UK_uksi_1993_208  [no status]
+           UK_uksi_1956_1943 reg.1 (regulation-41-2-a)
+      1  no operation from legislation.gov.uk: substituted words @ UK_uksi_1993_208  [no status]
+           UK_uksi_1956_1943 reg.51(1) (regulation-41-2-b)
+      1  law text only: repealed words @ UK_uksi_1995_743  [no status]
+           UK_uksi_1989_971 reg.23(c) (regulation-23-a)
+      1  no operation from legislation.gov.uk: inserted words @ UK_uksi_1996_2001  [no status]
+           UK_ukpga_1954_70 s.74 (regulation-4)
+      1  law text only: repealed words @ UK_uksi_1996_2089  [no status]
+           UK_ukpga_1875_17 s.108 (regulation-34-1)
+      1  no operation from legislation.gov.uk: inserted provision @ UK_uksi_2000_1937  [no status]
+           UK_ukpga_1998_17 s.17A (schedule-4-paragraph-4)
+      1  quote-new-number @ UK_uksi_2000_1937  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_ukpga_1962_58 s.10(1)(b) (schedule-1-paragraph-3)
+      1  unjoined @ UK_uksi_2000_1937  [no status]
+           UK_ukpga_1962_58 s.9(7) (schedule-1-paragraph-1-3)
+      1  law text only: substituted provision @ UK_uksi_2000_3097  [no status]
+           UK_uksi_1994_232 reg.4(3) (regulation-2-f)
+      1  no operation from legislation.gov.uk: inserted words @ UK_uksi_2000_3097  [no status]
+           UK_uksi_1994_232 reg.4(1) (regulation-2-e)
+      1  no operation from legislation.gov.uk: substituted provision @ UK_uksi_2000_3097  [no status]
+           UK_uksi_1994_232 reg.7(1) (regulation-2-g)
+      1  quote-dropped-number @ UK_uksi_2000_3097  [known: by design (RULES.md quote-dropped-numbers-are-repealed)]
+           UK_uksi_1994_232 reg.3(3) (regulation-2-d)
+      1  law text only: repealed words @ UK_uksi_2005_1082  [no status]
+           UK_ukpga_1875_17 s.108 (schedule-6)
+      1  operation repealed/repealed_in_part @ UK_uksi_2005_1082  [no status]
+           UK_ukpga_1875_17 s.40 (schedule-5-paragraph-1-3, schedule-6)
+      1  law text only: repealed words @ UK_uksi_2005_3117  [no status]
+           UK_uksi_1996_913 reg.2(4)(b) (schedule-9-paragraph-5-a-i-bb)
+      1  operation repealed/substituted @ UK_uksi_2005_3117  [no status]
+           UK_uksi_1996_913 reg.2(4)(b) (schedule-9-paragraph-5-a-i-dd)
+      1  unjoined @ UK_uksi_2005_3117  [no status]
+           UK_uksi_1996_913 reg.2(1) (schedule-9-paragraph-5-a-i)
+      1  law text only: applied provision @ UK_uksi_2010_471  [known: the law's own application statement (Readers.Application, key application:…), not an amendment; never the Amending-law reader's]
+           UK_uksi_2010_471 * (application:reg.1(2))
+      1  level provision/words @ UK_uksi_2012_2400  [no status]
+           UK_uksi_2002_2665 reg.1(5) (article-35-2)
+      1  law text only: repealed words @ UK_uksi_2014_1638  [no status]
+           UK_ukpga_1875_17 s.23(1) (schedule-14)
+      1  law text only: substituted provision @ UK_uksi_2014_469  [no status]
+           UK_uksi_1990_304 reg.8 (schedule-3-paragraph-45)
+      1  law text only: substituted provision @ UK_uksi_2015_398  [no status]
+           UK_uksi_1995_743 reg.5(3)(c) (schedule-13-paragraph-20)
+      1  level provision/words @ UK_uksi_2015_398  [no status]
+           UK_uksi_1995_738 reg.4(1) (schedule-13-paragraph-11-2)
+      1  law text only: substituted words @ UK_uksi_2016_315  [no status]
+           UK_uksi_2014_1638 reg.46(4) (regulation-9-a)
+      1  quote-new-number @ UK_uksi_2016_898  [known: by design (RULES.md quote-new-numbers-are-inserted); legislation.gov.uk records them substituted, or on the provision substituted only]
+           UK_ukpga_1998_17 s.7(2)(d)(i) (regulation-3-7)
+      1  law text only: inserted words @ UK_uksi_2018_797  [no status]
+           UK_ukpga_1998_17 s.45A(6) (regulation-3-4-a)
+      1  law text only: inserted provision @ UK_uksi_2019_696  [known: legislation.gov.uk holds no record of it; the reading is right (review: backend/data/reports/amending-reader/ohs-gate-review-2026-11-10.md)]
+           UK_uksi_2015_1553 reg.38E (schedule-19-paragraph-22)
+      1  unjoined @ UK_uksi_2019_696  [known: the merge left the law's text apart from legislation.gov.uk's record (Merge's); the reading is right (review: backend/data/reports/amending-reader/ohs-gate-review-2026-11-10.md)]
+           UK_uksi_2014_1638 reg.68(1) (schedule-16-paragraph-27-b)
+      1  law text only: applied provision @ UK_uksi_2022_547  [known: the law's own application statement (Readers.Application, key application:…), not an amendment; never the Amending-law reader's]
+           UK_uksi_2022_547 * (application:reg.1(3))
+      1  unjoined @ UK_uksi_2023_861  [no status]
+           UK_nisr_2017_90 reg.44(4) (regulation-6-4)
+      1  law text only: applied provision @ UK_uksi_2025_797  [known: the law's own application statement (Readers.Application, key application:…), not an amendment; never the Amending-law reader's]
+           UK_uksi_2025_797 * (application:reg.1(3))
+      1  level provision/words @ UK_uksi_2026_185  [no status]
+           UK_uksi_1995_738 reg.21F(2)(a) (regulation-2-4-b)
+      1  law text only: applied provision @ UK_wsi_2012_1085  [known: the law's own application statement (Readers.Application, key application:…), not an amendment; never the Amending-law reader's]
+           UK_wsi_2012_1085 * (application:reg.1(3))
+
+FAIL (groups not named: 126)

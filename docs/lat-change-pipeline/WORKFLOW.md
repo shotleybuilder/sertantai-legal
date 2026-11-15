@@ -333,6 +333,19 @@ No agent rounds. A is not sampled: there the law's text and legislation.gov.uk a
   - Maritime's parked group named (PASS);
   - OH&S 91 → 88 not named.
 
+**Fire and OH&S** (round, 2026-11-15). 146 amenders were stale (119 the round's), and write 1 left 125 of 205 groups not named.
+- **The review** read every group and every by-design group by law. Most misreads hid in "no record" and quote-dropped groups: an aside's law (SI 2019/696 on NISR 2013/48) and a Schedule paragraph read as s.3.
+- **Three classes were fixed** (Decisions 1 and 3): asides, Schedule places, and lists of provisions crossed. The last was a parked bug that had reached a second family.
+- **Each fix moves the reader version,** and every write reads all 2,627 amenders (16 min). Preview over all of them (`--preview --all`) after the last fix, and compare its changed laws with the write's.
+- **The field diff found the over-reaches before any write:** a caption's only verb, and a title's year as a list item.
+- **A build can print "built N laws" when every law failed** (Maritime, "no stored CLML body"). Read the FAILED count before the gates.
+- **Result:**
+  - the read pass current;
+  - the round's gate PASS (175 groups, all named);
+  - A 2,480 → 2,520, D 257 → 257, L 389 → 337;
+  - the switched families' gates PASS (Occupational 1, EP 6 and Maritime 1 named, EP's and Maritime's through the fix), with L in EP 457 → 420;
+  - golden 27/27.
+
 **Skill.** `amending-reader-check`. Background: [AMENDMENT-GUIDE.md](AMENDMENT-GUIDE.md).
 
 ## 7. Merge
