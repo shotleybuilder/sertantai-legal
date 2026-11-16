@@ -12,6 +12,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Input do
   """
 
   alias SertantaiLegal.Repo
+  alias SertantaiLegal.Scraper.LawStart.DateOfEnactment
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
 
   @doc """
@@ -31,16 +32,17 @@ defmodule SertantaiLegal.Scraper.LawStart.Input do
       end
 
     head = clml_head(law_name)
+    made = made || clml_made(head) || enacted(law_name)
 
     %{
       type_code: law_name |> String.split("_", parts: 3) |> Enum.at(1),
       lrt_date: lrt_date,
-      made: made || clml_made(head),
+      made: made,
       clml_head: head,
       # V1-02: a commencement table in the law's own Schedule (LAT holds no
       # Schedules), read only when the text cites one
       schedule_tables: schedule_tables(law_name, rows),
-      tied_date: tied_date(rows, made || clml_made(head)),
+      tied_date: tied_date(rows, made),
       rows:
         Enum.map(
           rows,
@@ -150,6 +152,36 @@ defmodule SertantaiLegal.Scraper.LawStart.Input do
     else
       _ -> nil
     end
+  end
+
+  # an Act's Royal Assent from its own introduction, where the register
+  # and the CLML's metadata give none (anaw 2015/4: "{6 July 2015}")
+  defp enacted(law_name) do
+    with [_, type, year, number] <- String.split(law_name, "_", parts: 4),
+         {:ok, xml, _meta} <- ClmlStore.get("/#{type}/#{year}/#{number}/introduction/data.xml") do
+      DateOfEnactment.parse(xml)
+    else
+      _ -> nil
+    end
+  end
+
+  @doc """
+  A law's made date (an Act's Royal Assent) as the register or its stored
+  CLML's metadata gives it, never its introduction: whether `Sources` must
+  hold the introduction for it (`:royal_assent`). Nil when neither does.
+  """
+  @spec stated_made(String.t()) :: Date.t() | nil
+  def stated_made(law_name) do
+    registered =
+      case Repo.query!(
+             "SELECT md_made_date FROM uk_lrt WHERE name = $1 LIMIT 1",
+             [law_name]
+           ) do
+        %{rows: [[d]]} -> date(d)
+        _ -> nil
+      end
+
+    registered || law_name |> clml_head() |> clml_made()
   end
 
   @doc "The law's LAT rows in document order, as `of/2` reads them."

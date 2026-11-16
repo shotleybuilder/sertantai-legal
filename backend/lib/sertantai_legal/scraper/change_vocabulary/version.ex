@@ -82,6 +82,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Version do
       lib/sertantai_legal/scraper/commencement/order_patterns.ex
       lib/sertantai_legal/scraper/commencement/orders.ex
       lib/sertantai_legal/scraper/commencement/own_read.ex
+      lib/sertantai_legal/scraper/commencement/part_scope.ex
       lib/sertantai_legal/scraper/commencement/sentence_patterns.ex
     ),
     # the libraries that shape what is read (XML parsing, the stored

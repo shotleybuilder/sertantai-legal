@@ -21,6 +21,11 @@ defmodule SertantaiLegal.Scraper.Sources do
      made those changes (an SI commences itself in its body, held under 3)
   5. `:backlog` — gap B, a change the feed doesn't record: the amending
      law's schedules too (the instruction itself), and for an Act, as in 4
+  6. `:royal_assent` — an Act (the law, or an amending Act) whose Royal
+     Assent neither the register nor its stored text's metadata gives: its
+     introduction, which states it (`DateOfEnactment`), so a commencement
+     counting from Royal Assent can be dated (Planning (Wales) Act 2015
+     s.58(2), Fire and OH&S: Store and build)
 
   A document needed twice is counted once, under the first.
 
@@ -38,7 +43,7 @@ defmodule SertantaiLegal.Scraper.Sources do
   alias SertantaiLegal.Scraper.{EffectKind, LatRef, LatScope}
 
   @act_types ~w(ukpga asp anaw asc nia apni)
-  @order ~w(own feed territory introduction enabling_parent dates backlog)a
+  @order ~w(own feed territory introduction enabling_parent dates backlog royal_assent)a
   @failing [:not_fetched, :incomplete, :stale]
 
   @type need :: %{category: atom(), law: String.t(), part: atom() | String.t(), for: String.t()}
@@ -85,7 +90,8 @@ defmodule SertantaiLegal.Scraper.Sources do
       dates: commencing(Enum.filter(gaps, &(&1.gap == :a)), amending),
       backlog:
         for(%{gap: :b, by: b} <- gaps, uniq: true, do: {b, :schedules}) ++
-          commencing(Enum.filter(gaps, &(&1.gap == :b)), amending)
+          commencing(Enum.filter(gaps, &(&1.gap == :b)), amending),
+      royal_assent: royal_assent(l, amenders, amending)
     ]
     |> Enum.flat_map(fn {category, docs} ->
       Enum.map(docs, fn {x, part} -> %{category: category, law: x, part: part, for: law} end)
@@ -111,6 +117,19 @@ defmodule SertantaiLegal.Scraper.Sources do
       [{act, :feed} | for(o <- orders, p <- [:body, :schedules], do: {o, p})]
     end)
     |> Enum.uniq()
+  end
+
+  # an Act whose Royal Assent is held nowhere: its introduction states it
+  defp royal_assent(l, amenders, amending) do
+    own = if Map.get(l, :dated) == false, do: [l.law], else: []
+    undated = Enum.filter(amenders, &(get_in(amending, [&1, :dated]) == false))
+
+    for law <- own ++ undated, act?(law), uniq: true, do: {law, introduction_path(law)}
+  end
+
+  defp introduction_path(law) do
+    [_, type, year, number] = String.split(law, "_", parts: 4)
+    "/#{type}/#{year}/#{number}/introduction/data.xml"
   end
 
   defp related?(as, bs),

@@ -1,0 +1,37 @@
+defmodule SertantaiLegal.Scraper.LawStart.DateOfEnactmentTest do
+  @moduledoc """
+  An Act's Royal Assent date from its own introduction's `DateOfEnactment`,
+  for an Act whose register row and CLML metadata give none (the Planning
+  (Wales) Act 2015: "{6 July 2015}").
+  """
+  use ExUnit.Case, async: true
+
+  alias SertantaiLegal.Scraper.LawStart.DateOfEnactment
+
+  defp intro(text),
+    do:
+      "<Legislation><Primary><PrimaryPrelims><Title>An Act</Title>" <>
+        "<DateOfEnactment><DateText>#{text}</DateText></DateOfEnactment>" <>
+        "</PrimaryPrelims></Primary></Legislation>"
+
+  test "braces round the date (anaw 2015/4)" do
+    assert DateOfEnactment.parse(intro("{6 July 2015}")) == ~D[2015-07-06]
+  end
+
+  test "square brackets, an ordinal day, line breaks inside" do
+    assert DateOfEnactment.parse(intro("[12th July 2011]")) == ~D[2011-07-12]
+    assert DateOfEnactment.parse(intro("\n  [8th  March\n 2012]\n")) == ~D[2012-03-08]
+  end
+
+  test "no element, an empty one, or a day that is no date: nil" do
+    assert DateOfEnactment.parse("<Legislation><Body/></Legislation>") == nil
+    assert DateOfEnactment.parse(intro("")) == nil
+    assert DateOfEnactment.parse(intro("[31st June 2011]")) == nil
+    assert DateOfEnactment.parse(nil) == nil
+  end
+
+  test "a date elsewhere in the introduction is not the enactment's" do
+    xml = "<Legislation><P>made on 6 July 2015</P></Legislation>"
+    assert DateOfEnactment.parse(xml) == nil
+  end
+end

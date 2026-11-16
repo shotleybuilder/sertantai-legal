@@ -3,14 +3,15 @@ defmodule SertantaiLegal.Scraper.Commencement.AmendingRead do
   An amending law's own commencement clause read from the CLML held (a law
   we hold no LAT rows for, one hop from our rows: CR-06): the same
   own-clause reader as a labelled law's (`OwnClause`, over `doc_rows/1`),
-  with the provisions giving its Schedules effect (`ScheduleEffect`). What
+  with the provisions giving its Schedules effect (`ScheduleEffect`) and
+  its Parts written out as their provisions (`PartScope`). What
   `mix lat.commencement --read-amending` writes, and what the check's
   `--fresh` previews (`fresh/1`). Reads the register and the CLML store;
   writes nothing. `replace/3` is pure.
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
-  alias SertantaiLegal.Scraper.Commencement.{OwnClause, Rule, ScheduleEffect, Store}
+  alias SertantaiLegal.Scraper.Commencement.{OwnClause, PartScope, Rule, ScheduleEffect, Store}
   alias SertantaiLegal.Scraper.LawStart.Input
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
 
@@ -24,7 +25,10 @@ defmodule SertantaiLegal.Scraper.Commencement.AmendingRead do
       xmls ->
         doc = Doc.new(law, xmls)
         input = Input.of(law, OwnClause.doc_rows(doc))
-        OwnClause.rules(law, input) ++ ScheduleEffect.rules(law, input.rows, doc)
+        # a Part named by the clause is written out as its provisions: the
+        # build holds no rows for an amending law (`PartScope`)
+        PartScope.expand(OwnClause.rules(law, input), input.rows) ++
+          ScheduleEffect.rules(law, input.rows, doc)
     end
   end
 

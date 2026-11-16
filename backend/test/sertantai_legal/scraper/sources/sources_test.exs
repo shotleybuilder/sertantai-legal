@@ -56,6 +56,32 @@ defmodule SertantaiLegal.Scraper.SourcesTest do
     assert b[:enabling_parent] == [{"UK_ukpga_1972_68", :body}]
   end
 
+  # Fire and OH&S: Store and build (2026-11-16): the Planning (Wales) Act
+  # 2015's s.58(2) counts from Royal Assent, which neither the register nor
+  # its body's metadata gives; its introduction states it ("{6 July 2015}")
+  test "royal assent: an amending Act with no date held needs its introduction; never an SI or a dated Act" do
+    law = %{@law | amenders: ["UK_anaw_2015_4", "UK_ukpga_1974_37", "UK_uksi_2011_1043"]}
+
+    amending =
+      @amending
+      |> Map.put("UK_anaw_2015_4", %{clause: true, commencing: [], dated: false})
+      |> put_in(["UK_ukpga_1974_37", :dated], true)
+      |> put_in(["UK_uksi_2011_1043", :dated], false)
+
+    assert by(Sources.needs(law, amending))[:royal_assent] ==
+             [{"UK_anaw_2015_4", "/anaw/2015/4/introduction/data.xml"}]
+  end
+
+  test "royal assent: the law itself, an Act with no date held, needs its introduction" do
+    law = Map.merge(@law, %{law: "UK_anaw_2015_4", amenders: [], gaps: [], dated: false})
+
+    assert by(Sources.needs(law, %{}))[:royal_assent] ==
+             [{"UK_anaw_2015_4", "/anaw/2015/4/introduction/data.xml"}]
+
+    refute by(Sources.needs(%{law | dated: true}, %{}))[:royal_assent]
+    refute by(Sources.needs(@law, @amending))[:royal_assent]
+  end
+
   test "gap A: an Act's feed and only the orders commencing the provisions that made the changes" do
     b = by(Sources.needs(@law, @amending))
 

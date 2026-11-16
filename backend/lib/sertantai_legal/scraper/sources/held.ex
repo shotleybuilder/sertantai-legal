@@ -10,6 +10,7 @@ defmodule SertantaiLegal.Scraper.Sources.Held do
   alias SertantaiLegal.Scraper.{EffectKind, LatScope, Sources}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Store
   alias SertantaiLegal.Scraper.EnactedBy.EnablingCache
+  alias SertantaiLegal.Scraper.LawStart.Input
   alias SertantaiLegal.Scraper.LegislationGovUk.{ChangesFeed, ClmlStore}
 
   @text_ops ~w(inserted substituted repealed repealed_in_part renumbered)a
@@ -30,22 +31,25 @@ defmodule SertantaiLegal.Scraper.Sources.Held do
       effects: effects(law),
       amenders: amenders,
       gaps: gaps,
-      register: register(law)
+      register: register(law),
+      dated: Input.stated_made(law) != nil
     }
   end
 
   @doc """
   One amending law: whether it states its extent (`clauses`, its extent
-  rules), an SI's enabling-power parents (the cache, never fetched), and an
+  rules), an SI's enabling-power parents (the cache, never fetched), an
   Act's commencing orders with the provisions each commences (its own feed,
-  store only).
+  store only), and whether its made or Royal Assent date is held (the
+  register or its stored metadata: `LawStart.Input.stated_made/1`).
   """
   @spec amending(String.t(), %{String.t() => map()}) :: map()
   def amending(law, clauses) do
     %{
       clause: Sources.clause?(clauses, law),
       enabling: enabling(law),
-      commencing: law |> feed() |> ok_or([]) |> Sources.commencing_orders(law)
+      commencing: law |> feed() |> ok_or([]) |> Sources.commencing_orders(law),
+      dated: Input.stated_made(law) != nil
     }
   end
 
