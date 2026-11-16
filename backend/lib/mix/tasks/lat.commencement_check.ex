@@ -42,8 +42,14 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
     Leftovers,
     Orders,
     OwnClause,
-    OwnRead
+    OwnRead,
+    PartScope,
+    Rule
   }
+
+  alias SertantaiLegal.Scraper.AmendingLaw.Doc
+  alias SertantaiLegal.Scraper.Commencement.Review.PartItems
+  alias SertantaiLegal.Scraper.LawStart.Input
 
   alias SertantaiLegal.Scraper.Commencement.Store, as: Rules
   alias SertantaiLegal.Scraper.LawStart
@@ -61,13 +67,88 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
           all: :boolean,
           sample: :string,
           n: :integer,
-          seed: :integer
+          seed: :integer,
+          part_items: :boolean,
+          lat: :boolean,
+          out: :string
         ]
       )
 
     Mix.Task.run("app.start")
     Logger.configure(level: :warning)
 
+    if opts[:part_items], do: part_items(opts), else: check(opts)
+  end
+
+  # ── the Part items review (`--part-items`; read-only) ───────────────
+
+  # every own-clause rule naming a Part or Chapter with the law's words for
+  # it, and the rules a fresh reading qualifies that the store dates in
+  # full: amending laws (no LAT rows), or with `--lat` the laws with rows
+  defp part_items(opts) do
+    {items, moved} =
+      opts[:lat]
+      |> part_item_laws()
+      |> Enum.reduce({[], []}, fn law, {items, moved} ->
+        {i, m} = if opts[:lat], do: {[], lat_moved(law)}, else: part_item_read(law)
+        {items ++ i, moved ++ m}
+      end)
+
+    limited = PartItems.full_with_limit(items)
+
+    lines =
+      Enum.map(items, &PartItems.line/1) ++
+        ["", "newly qualified (stored full, read now for some purposes):"] ++
+        Enum.map(moved, &Rule.to_text/1) ++
+        [
+          "",
+          "Part items #{length(items)}; their words limited #{Enum.count(items, & &1.limited)}; " <>
+            "dated full with a limit #{length(limited)}; newly qualified rules #{length(moved)}"
+        ] ++ Enum.map(limited, &("  full with a limit: " <> PartItems.line(&1)))
+
+    if opts[:out], do: File.write!(opts[:out], Enum.join(lines, "\n") <> "\n")
+    Enum.each(Enum.take(lines, -(length(limited) + 1)), &Mix.shell().info(&1))
+  end
+
+  # (the laws with rows: only those whose text holds a limiting relative
+  # clause, the one form the reading of an item changed on)
+  defp part_item_laws(lat?) do
+    lat = "EXISTS (SELECT 1 FROM legal_articles a WHERE a.law_name = c.commences"
+    limit = " AND a.text ~* 'provisions? of [^;]*(which|that)\\M')"
+    scope = if lat?, do: lat <> limit, else: "NOT " <> lat <> ")"
+
+    Repo.query!(
+      "SELECT DISTINCT c.commences FROM commencement_rules c " <>
+        "WHERE c.source_law = c.commences AND c.treatment <> 'feed_commencement' " <>
+        "AND #{scope} ORDER BY 1"
+    ).rows
+    |> List.flatten()
+  end
+
+  # an amending law with Parts: its clause read now, before and after its
+  # Parts are written out, beside its stored own rules
+  defp part_item_read(law) do
+    xmls = ClmlStore.law_docs(law)
+
+    if Enum.any?(xmls, &String.contains?(&1, "<Part ")) do
+      rows = law |> Doc.new(xmls) |> OwnClause.doc_rows()
+      rules = OwnClause.rules(law, Input.of(law, rows))
+
+      {PartItems.items(law, rules, rows),
+       PartItems.newly_qualified(stored_own(law), PartScope.expand(rules, rows))}
+    else
+      {[], []}
+    end
+  end
+
+  defp lat_moved(law), do: PartItems.newly_qualified(stored_own(law), OwnRead.rules(law))
+
+  defp stored_own(law) do
+    own = OwnClause.treatments()
+    law |> Rules.for_law() |> Enum.filter(&(&1.source.law == law and &1.treatment in own))
+  end
+
+  defp check(opts) do
     laws = scope(opts)
 
     {rows, gaps, _cache} =

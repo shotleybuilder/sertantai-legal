@@ -12,6 +12,8 @@ defmodule SertantaiLegal.Scraper.LawStart.ListItems do
   - An item's exception is its own, after "except" / "apart from" or in
     brackets ("Part III (apart from section 81(2) and (3))", "Schedule 7
     (apart from paragraphs 6 and 7 of that Schedule)": CROW 2000 s.103(2)).
+  - A relative clause limiting the provisions an item names ("any provision
+    of Parts 1 to 7 which— confers a power …") leaves them partly in.
   - A qualifier binds the last provision before it: "Part I of Schedule 8
     and section 67(3) so far as relating to that Part" leaves only section
     67(3) partly in (1986 c.44 s.68(2)); in an exception, the provision is
@@ -27,6 +29,12 @@ defmodule SertantaiLegal.Scraper.LawStart.ListItems do
   @type item :: %{plain: String.t(), excepted: String.t(), qualified: String.t()}
 
   @qualified ~r/\b(?:so far as|in so far as|insofar as|for the purposes? of|in relation to|with respect to|to the extent|for (?:all )?other purposes|into\s+(?:force|operation)\s+in\s+(?:England|Wales|Scotland|Northern Ireland|Great Britain)\b)\b/i
+  # a relative clause limiting the provisions an item names ("any provision
+  # of Parts 1 to 7 which— (i) confers a power to make regulations, or (ii)
+  # modifies legislation so as to confer a power …": the Agriculture Act
+  # 2020 s.57(1)(b)) leaves them partly in, as a qualifier does: its verb,
+  # or the dash its own items follow
+  @limited ~r/\bprovisions?\s+of\s+[^;]*?\b(?:which|that)\s*(?:[—–]\s*$|(?:confers?|modif(?:y|ies)|amends?|relates?|appl(?:y|ies)|makes?|inserts?|affects?|enables?)\b)/iu
   # ("This Part, apart from section 45, comes into force …": asc 2026/4
   # s.46(1); never one in brackets before more items, "This section (apart
   # from subsection (2)) and sections 1, …", whose bracket ends it: 2004
@@ -83,10 +91,12 @@ defmodule SertantaiLegal.Scraper.LawStart.ListItems do
   # … but a provision qualified in brackets does: "paragraph 1(2) of
   # Schedule 3 (and Article 65 so far as relating thereto)" (NISI 2003/419
   # art.1(3)(e))
-  defp qualified?(item),
-    do:
-      Regex.match?(@qualified, Asides.drop_headings(item)) or
-        Regex.match?(~r/\(and\s+.*?\b(?:so\s+far\s+as|to\s+the\s+extent)\b/i, item)
+  defp qualified?(item) do
+    own = Asides.drop_headings(item)
+
+    Regex.match?(@qualified, own) or Regex.match?(@limited, own) or
+      Regex.match?(~r/\(and\s+.*?\b(?:so\s+far\s+as|to\s+the\s+extent)\b/i, item)
+  end
 
   # "Part I of Schedule 8 and section 67(3) so far as relating to that
   # Part"; an item wholly qualified is wholly partly in
