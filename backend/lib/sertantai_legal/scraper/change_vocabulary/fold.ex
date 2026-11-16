@@ -11,6 +11,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Fold do
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Label, Ref, Windsor}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Label.WholeLaw
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup
   alias SertantaiLegal.Scraper.{LatRef, LawTerritory, Territory}
 
@@ -18,7 +19,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Fold do
   Label periods for each provision in `provisions` (id → `%{extent, start}`,
   ids in LAT grammar without the law prefix), from the law's CLML and its
   built `changes` (`ChangeVocabulary.changes/5`, or read back from
-  `provision_changes`). `opts`: `:title`, the law's title — its own place.
+  `provision_changes`). `opts`: `:title`, the law's title — its own place;
+  `:all_rows`, true when `provisions` is every row of the law, so a law
+  revoked provision by provision can be seen (`Label.WholeLaw`).
   """
   @spec labels(String.t(), String.t(), %{String.t() => map()}, [Change.t()], keyword()) ::
           %{String.t() => [Label.period()]}
@@ -32,6 +35,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Fold do
       |> Enum.map(&%{&1 | target: Ref.canonical(&1.target)})
       # EU law the Windsor Framework keeps in NI: the UK's changes reach GB (C8)
       |> Windsor.confine(law_name)
+      |> whole_law(provisions, Keyword.get(opts, :all_rows, false))
 
     Map.new(provisions, fn {id, provision} ->
       {base, version} = Ref.version(id)
@@ -55,6 +59,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Fold do
       Map.new(provisions, fn {id, p} -> {id, Map.get(p, :containers, []) -- [id]} end)
     )
   end
+
+  # a law revoked provision by provision is revoked whole: asked only of
+  # the law's every row, never of a few of them (golden's)
+  defp whole_law(changes, provisions, true), do: WholeLaw.state(changes, Map.keys(provisions))
+  defp whole_law(changes, _provisions, false), do: changes
 
   # a territorial version's label is its base provision's, from the
   # union of the versions on it and the provisions holding it, narrowed

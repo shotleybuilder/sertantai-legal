@@ -22,6 +22,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Fold, Label, LabelPeriods, Ref, Store}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Label.WholeLaw
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup
 
   @not_provisions ~w(signed heading table)
@@ -70,10 +71,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
            }}
         end)
 
+      # a scoped law holds only some of its rows, so "every top-level
+      # provision" can't be judged on them (`Label.WholeLaw`)
+      all_rows = not scoped?(law)
+
       labels =
-        Fold.labels(law, xml, provisions, changes, title: title(law))
+        Fold.labels(law, xml, provisions, changes, title: title(law), all_rows: all_rows)
 
       today = today(law)
+      # the changes as the fold reads them: a law revoked whole (`Label.WholeLaw`)
+      changes = if all_rows, do: WholeLaw.state(changes, Map.keys(provisions)), else: changes
 
       for {id, p} <- Enum.sort(provisions) do
         base = String.replace(id, ~r/\[[^\]]+\]$/, "")
@@ -231,6 +238,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
     case Repo.query!("SELECT title_en FROM uk_lrt WHERE name = $1 LIMIT 1", [law]) do
       %{rows: [[t]]} -> t
       _ -> nil
+    end
+  end
+
+  # a LAT held for some fragments only (`Scraper.LatScope`), never the whole body
+  defp scoped?(law) do
+    case Repo.query!(
+           "SELECT lat_scope -> 'fragments' FROM legal_register WHERE name = $1 LIMIT 1",
+           [law]
+         ) do
+      %{rows: [[[_ | _]]]} -> true
+      _ -> false
     end
   end
 

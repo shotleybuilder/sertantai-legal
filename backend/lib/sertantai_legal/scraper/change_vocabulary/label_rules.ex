@@ -31,7 +31,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelRules do
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Change
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Label.Start
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Label.{Stages, Start}
 
   @ip_completion ~D[2020-12-31]
 
@@ -73,7 +73,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelRules do
 
   defp before_insertion(periods, reaching, ctx) do
     first = hd(periods).valid_from
-    insertions = Enum.filter(reaching, &whole_insertion?/1)
+    # an insertion brought in by stages begins at its first (`Label.Stages`)
+    insertions = reaching |> Stages.unfold() |> Enum.filter(&whole_insertion?/1)
 
     # an insertion of the same provision dated on or before the first day
     # began it there: a later one is another version's (EPA s.33(10)(a)[S],

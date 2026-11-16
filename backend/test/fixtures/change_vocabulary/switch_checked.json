@@ -3128,8 +3128,16 @@
     {
       "cause": "today: status repealed→in_force (repealed [lgu])",
       "law": "UK_eur_2008_1272",
-      "note": "omitted for GB 1.11.2022 (2022/1037); stays in NI under Windsor rule; insertion undated in feed",
+      "note": "inserted by EU 2019/1243 (undated in the feed: bounded at its making 2019-06-20, never-before-its-maker; entry into force the Feed reader's known KEU-eif), UK-wide until omitted for GB 2022-11-01 by SI 2022/1037, NI after under the Windsor rule (Fire and OH&S: Label fold, Decision 4 a) (was: omitted for GB 1.11.2022 (2022/1037); stays in NI under Windsor rule; insertion undated in feed)",
       "periods": [
+        {
+          "changed_by": "UK_eur_2019_1243",
+          "in_force_from": null,
+          "status": "in_force",
+          "territory": "E+W+S+NI",
+          "valid_from": "2019-06-20",
+          "valid_to": "2022-11-01"
+        },
         {
           "changed_by": "UK_eur_2019_1243",
           "in_force_from": null,
@@ -3146,8 +3154,16 @@
     {
       "cause": "today: status repealed→in_force (repealed [lgu])",
       "law": "UK_eur_2008_1272",
-      "note": "as Article 53a",
+      "note": "inserted by EU 2019/1243 (undated in the feed: bounded at its making 2019-06-20, never-before-its-maker; entry into force the Feed reader's known KEU-eif), UK-wide until omitted for GB 2022-11-01 by SI 2022/1037, NI after under the Windsor rule (Fire and OH&S: Label fold, Decision 4 a) (was: as Article 53a)",
       "periods": [
+        {
+          "changed_by": "UK_eur_2019_1243",
+          "in_force_from": null,
+          "status": "in_force",
+          "territory": "E+W+S+NI",
+          "valid_from": "2019-06-20",
+          "valid_to": "2022-11-01"
+        },
         {
           "changed_by": "UK_eur_2019_1243",
           "in_force_from": null,
@@ -9589,7 +9605,7 @@
     {
       "cause": "today: old unknown, new repealed",
       "law": "UK_ukpga_1961_34",
-      "note": "words substituted 12.8.1983 (1983/978); repealed 1996 (1992/3004)",
+      "note": "SI 1992/3004 Sch.2 Pt I repeals it for new workplaces from 1993-01-01 (partly), wholly from 1996-01-01: the staged repeal now folded (Fire and OH&S: Label fold, Decision 6 a; Label.Stages) (was: words substituted 12.8.1983 (1983/978); repealed 1996 (1992/3004))",
       "periods": [
         {
           "changed_by": null,
@@ -9613,6 +9629,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1983-08-12",
+          "valid_to": "1993-01-01"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "in_force_partial",
+          "territory": "E+W+S",
+          "valid_from": "1993-01-01",
           "valid_to": "1996-01-01"
         },
         {
@@ -9631,7 +9655,7 @@
     {
       "cause": "today: old unknown, new repealed",
       "law": "UK_ukpga_1961_34",
-      "note": "words substituted 12.8.1983 by SI 1983/978; repealed 1.1.1996 by SI 1992/3004",
+      "note": "SI 1992/3004 Sch.2 Pt I repeals it for new workplaces from 1993-01-01 (partly), wholly from 1996-01-01: the staged repeal now folded (Fire and OH&S: Label fold, Decision 6 a; Label.Stages) (was: words substituted 12.8.1983 by SI 1983/978; repealed 1.1.1996 by SI 1992/3004)",
       "periods": [
         {
           "changed_by": null,
@@ -9655,6 +9679,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1983-08-12",
+          "valid_to": "1993-01-01"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "in_force_partial",
+          "territory": "E+W+S",
+          "valid_from": "1993-01-01",
           "valid_to": "1996-01-01"
         },
         {
@@ -9707,7 +9739,7 @@
     {
       "cause": "today: status in_force→repealed (repealed [law])",
       "law": "UK_ukpga_1961_34",
-      "note": "s.2 repealed 1.1.1996 by SI 1992/3004 Sch.2 Pt I; 1993 stage not shown",
+      "note": "SI 1992/3004 Sch.2 Pt I repeals it for new workplaces from 1993-01-01 (partly), wholly from 1996-01-01: the staged repeal now folded (Fire and OH&S: Label fold, Decision 6 a; Label.Stages) (was: s.2 repealed 1.1.1996 by SI 1992/3004 Sch.2 Pt I; 1993 stage not shown)",
       "periods": [
         {
           "changed_by": null,
@@ -9723,6 +9755,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1962-04-01",
+          "valid_to": "1993-01-01"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "in_force_partial",
+          "territory": "E+W+S",
+          "valid_from": "1993-01-01",
           "valid_to": "1996-01-01"
         },
         {
@@ -10217,7 +10257,7 @@
     {
       "cause": "today: old unknown, new repealed",
       "law": "UK_ukpga_1961_34",
-      "note": "SI 1992/3004 Sch.2 Pt I; reg.27(2) saving is OSRPA only; staged 1993 repeal for new workplaces not shown",
+      "note": "SI 1992/3004 Sch.2 Pt I repeals it for new workplaces from 1993-01-01 (partly), wholly from 1996-01-01: the staged repeal now folded (Fire and OH&S: Label fold, Decision 6 a; Label.Stages) (was: SI 1992/3004 Sch.2 Pt I; reg.27(2) saving is OSRPA only; staged 1993 repeal for new workplaces not shown)",
       "periods": [
         {
           "changed_by": null,
@@ -10233,6 +10273,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1962-04-01",
+          "valid_to": "1993-01-01"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "in_force_partial",
+          "territory": "E+W+S",
+          "valid_from": "1993-01-01",
           "valid_to": "1996-01-01"
         },
         {
@@ -10311,7 +10359,7 @@
     {
       "cause": "today: old unknown, new repealed",
       "law": "UK_ukpga_1963_41",
-      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: SI 1992/3004 reg.27(2) saving (s.90(4)) not read; should be repealed_saved)",
+      "note": "SI 1992/3004 Sch.2 Pt I repeals it for new workplaces from 1993-01-01 (partly), wholly from 1996-01-01: the staged repeal now folded (Fire and OH&S: Label fold, Decision 6 a; Label.Stages) (was: fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: SI 1992/3004 reg.27(2) saving (s.90(4)) not read; should be repealed_saved))",
       "periods": [
         {
           "changed_by": null,
@@ -10327,6 +10375,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1964-08-01",
+          "valid_to": "1993-01-01"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "in_force_partial",
+          "territory": "E+W+S",
+          "valid_from": "1993-01-01",
           "valid_to": "1996-01-01"
         },
         {
@@ -10345,7 +10401,7 @@
     {
       "cause": "today: old unknown, new repealed_saved",
       "law": "UK_ukpga_1963_41",
-      "note": "reg.27(2) saving",
+      "note": "SI 1992/3004 Sch.2 Pt I repeals it for new workplaces from 1993-01-01 (partly), wholly from 1996-01-01: the staged repeal now folded (Fire and OH&S: Label fold, Decision 6 a; Label.Stages) (was: reg.27(2) saving)",
       "periods": [
         {
           "changed_by": null,
@@ -10361,6 +10417,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1964-08-01",
+          "valid_to": "1993-01-01"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "in_force_partial",
+          "territory": "E+W+S",
+          "valid_from": "1993-01-01",
           "valid_to": "1996-01-01"
         },
         {
@@ -10379,7 +10443,7 @@
     {
       "cause": "today: old unknown, new repealed_saved",
       "law": "UK_ukpga_1963_41",
-      "note": "1992/3004 reg.27(2) saving for OSRPA via s.90(4)",
+      "note": "SI 1992/3004 Sch.2 Pt I repeals it for new workplaces from 1993-01-01 (partly), wholly from 1996-01-01: the staged repeal now folded (Fire and OH&S: Label fold, Decision 6 a; Label.Stages) (was: 1992/3004 reg.27(2) saving for OSRPA via s.90(4))",
       "periods": [
         {
           "changed_by": null,
@@ -10395,6 +10459,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1964-08-01",
+          "valid_to": "1993-01-01"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "in_force_partial",
+          "territory": "E+W+S",
+          "valid_from": "1993-01-01",
           "valid_to": "1996-01-01"
         },
         {
@@ -10413,7 +10485,7 @@
     {
       "cause": "today: old unknown, new repealed_saved",
       "law": "UK_ukpga_1963_41",
-      "note": "reg.27(2) saving",
+      "note": "SI 1992/3004 Sch.2 Pt I repeals it for new workplaces from 1993-01-01 (partly), wholly from 1996-01-01: the staged repeal now folded (Fire and OH&S: Label fold, Decision 6 a; Label.Stages) (was: reg.27(2) saving)",
       "periods": [
         {
           "changed_by": null,
@@ -10429,6 +10501,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1964-08-01",
+          "valid_to": "1993-01-01"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "in_force_partial",
+          "territory": "E+W+S",
+          "valid_from": "1993-01-01",
           "valid_to": "1996-01-01"
         },
         {
@@ -10447,7 +10527,7 @@
     {
       "cause": "today: old unknown, new repealed_saved",
       "law": "UK_ukpga_1963_41",
-      "note": "reg.27(2) saving",
+      "note": "SI 1992/3004 Sch.2 Pt I repeals it for new workplaces from 1993-01-01 (partly), wholly from 1996-01-01: the staged repeal now folded (Fire and OH&S: Label fold, Decision 6 a; Label.Stages) (was: reg.27(2) saving)",
       "periods": [
         {
           "changed_by": null,
@@ -10463,6 +10543,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1964-08-01",
+          "valid_to": "1993-01-01"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "in_force_partial",
+          "territory": "E+W+S",
+          "valid_from": "1993-01-01",
           "valid_to": "1996-01-01"
         },
         {
@@ -10481,7 +10569,7 @@
     {
       "cause": "today: status in_force→repealed_saved (repealed [law])",
       "law": "UK_ukpga_1963_41",
-      "note": "In force 1.8.1964 (SI 1964/191 Sch.1 Pt III); repealed 1.1.1996 by SI 1992/3004 Sch.2, saved by reg.27(2)",
+      "note": "SI 1992/3004 Sch.2 Pt I repeals it for new workplaces from 1993-01-01 (partly), wholly from 1996-01-01: the staged repeal now folded (Fire and OH&S: Label fold, Decision 6 a; Label.Stages) (was: In force 1.8.1964 (SI 1964/191 Sch.1 Pt III); repealed 1.1.1996 by SI 1992/3004 Sch.2, saved by reg.27(2))",
       "periods": [
         {
           "changed_by": null,
@@ -10497,6 +10585,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1964-08-01",
+          "valid_to": "1993-01-01"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "in_force_partial",
+          "territory": "E+W+S",
+          "valid_from": "1993-01-01",
           "valid_to": "1996-01-01"
         },
         {
@@ -10515,7 +10611,7 @@
     {
       "cause": "today: old unknown, new repealed_saved",
       "law": "UK_ukpga_1963_41",
-      "note": "reg.27(2) saving",
+      "note": "SI 1992/3004 Sch.2 Pt I repeals it for new workplaces from 1993-01-01 (partly), wholly from 1996-01-01: the staged repeal now folded (Fire and OH&S: Label fold, Decision 6 a; Label.Stages) (was: reg.27(2) saving)",
       "periods": [
         {
           "changed_by": null,
@@ -10531,6 +10627,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1964-08-01",
+          "valid_to": "1993-01-01"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "in_force_partial",
+          "territory": "E+W+S",
+          "valid_from": "1993-01-01",
           "valid_to": "1996-01-01"
         },
         {
@@ -10549,7 +10653,7 @@
     {
       "cause": "today: old unknown, new repealed_saved",
       "law": "UK_ukpga_1963_41",
-      "note": "reg.27(2) saving",
+      "note": "SI 1992/3004 Sch.2 Pt I repeals it for new workplaces from 1993-01-01 (partly), wholly from 1996-01-01: the staged repeal now folded (Fire and OH&S: Label fold, Decision 6 a; Label.Stages) (was: reg.27(2) saving)",
       "periods": [
         {
           "changed_by": null,
@@ -10565,6 +10669,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1964-08-01",
+          "valid_to": "1993-01-01"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "in_force_partial",
+          "territory": "E+W+S",
+          "valid_from": "1993-01-01",
           "valid_to": "1996-01-01"
         },
         {
@@ -10745,7 +10857,7 @@
     {
       "cause": "today: status in_force→repealed_saved (repealed [law])",
       "law": "UK_ukpga_1963_41",
-      "note": "As s.16: in force 1.8.1964; repealed 1.1.1996 by SI 1992/3004, saved by reg.27(2)",
+      "note": "SI 1992/3004 Sch.2 Pt I repeals it for new workplaces from 1993-01-01 (partly), wholly from 1996-01-01: the staged repeal now folded (Fire and OH&S: Label fold, Decision 6 a; Label.Stages) (was: As s.16: in force 1.8.1964; repealed 1.1.1996 by SI 1992/3004, saved by reg.27(2))",
       "periods": [
         {
           "changed_by": null,
@@ -10761,6 +10873,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1964-08-01",
+          "valid_to": "1993-01-01"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "in_force_partial",
+          "territory": "E+W+S",
+          "valid_from": "1993-01-01",
           "valid_to": "1996-01-01"
         },
         {
@@ -10779,7 +10899,7 @@
     {
       "cause": "today: old unknown, new repealed_saved",
       "law": "UK_ukpga_1963_41",
-      "note": "words substituted 1975 (1974/1943 Sch.2 para.1); reg.27(2) saving",
+      "note": "SI 1992/3004 Sch.2 Pt I repeals it for new workplaces from 1993-01-01 (partly), wholly from 1996-01-01: the staged repeal now folded (Fire and OH&S: Label fold, Decision 6 a; Label.Stages) (was: words substituted 1975 (1974/1943 Sch.2 para.1); reg.27(2) saving)",
       "periods": [
         {
           "changed_by": null,
@@ -10803,6 +10923,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1975-01-01",
+          "valid_to": "1993-01-01"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "in_force_partial",
+          "territory": "E+W+S",
+          "valid_from": "1993-01-01",
           "valid_to": "1996-01-01"
         },
         {
@@ -10881,7 +11009,7 @@
     {
       "cause": "today: old unknown, new repealed",
       "law": "UK_ukpga_1963_41",
-      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: SI 1992/3004 reg.27(2) saves OSRPA ss.4-16 as applied by s.90(4) (in force); should be repealed_saved, saving in law text not read)",
+      "note": "SI 1992/3004 Sch.2 Pt I repeals it for new workplaces from 1993-01-01 (partly), wholly from 1996-01-01: the staged repeal now folded (Fire and OH&S: Label fold, Decision 6 a; Label.Stages) (was: fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: SI 1992/3004 reg.27(2) saves OSRPA ss.4-16 as applied by s.90(4) (in force); should be repealed_saved, saving in law text not read))",
       "periods": [
         {
           "changed_by": null,
@@ -10897,6 +11025,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1964-08-01",
+          "valid_to": "1993-01-01"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "in_force_partial",
+          "territory": "E+W+S",
+          "valid_from": "1993-01-01",
           "valid_to": "1996-01-01"
         },
         {
@@ -10949,7 +11085,7 @@
     {
       "cause": "today: old unknown, new repealed_saved",
       "law": "UK_ukpga_1963_41",
-      "note": "reg.27(2) saving",
+      "note": "SI 1992/3004 Sch.2 Pt I repeals it for new workplaces from 1993-01-01 (partly), wholly from 1996-01-01: the staged repeal now folded (Fire and OH&S: Label fold, Decision 6 a; Label.Stages) (was: reg.27(2) saving)",
       "periods": [
         {
           "changed_by": null,
@@ -10965,6 +11101,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1964-08-01",
+          "valid_to": "1993-01-01"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "in_force_partial",
+          "territory": "E+W+S",
+          "valid_from": "1993-01-01",
           "valid_to": "1996-01-01"
         },
         {
@@ -10983,7 +11127,7 @@
     {
       "cause": "today: old unknown, new repealed_saved",
       "law": "UK_ukpga_1963_41",
-      "note": "reg.27(2) saving",
+      "note": "SI 1992/3004 Sch.2 Pt I repeals it for new workplaces from 1993-01-01 (partly), wholly from 1996-01-01: the staged repeal now folded (Fire and OH&S: Label fold, Decision 6 a; Label.Stages) (was: reg.27(2) saving)",
       "periods": [
         {
           "changed_by": null,
@@ -10999,6 +11143,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1964-08-01",
+          "valid_to": "1993-01-01"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "in_force_partial",
+          "territory": "E+W+S",
+          "valid_from": "1993-01-01",
           "valid_to": "1996-01-01"
         },
         {
@@ -11017,7 +11169,7 @@
     {
       "cause": "today: old unknown, new repealed_saved",
       "law": "UK_ukpga_1963_41",
-      "note": "reg.27(2) saving",
+      "note": "SI 1992/3004 Sch.2 Pt I repeals it for new workplaces from 1993-01-01 (partly), wholly from 1996-01-01: the staged repeal now folded (Fire and OH&S: Label fold, Decision 6 a; Label.Stages) (was: reg.27(2) saving)",
       "periods": [
         {
           "changed_by": null,
@@ -11033,6 +11185,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1964-08-01",
+          "valid_to": "1993-01-01"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "in_force_partial",
+          "territory": "E+W+S",
+          "valid_from": "1993-01-01",
           "valid_to": "1996-01-01"
         },
         {
@@ -11085,7 +11245,7 @@
     {
       "cause": "today: old unknown, new repealed_saved",
       "law": "UK_ukpga_1963_41",
-      "note": "reg.27(2) saving",
+      "note": "SI 1992/3004 Sch.2 Pt I repeals it for new workplaces from 1993-01-01 (partly), wholly from 1996-01-01: the staged repeal now folded (Fire and OH&S: Label fold, Decision 6 a; Label.Stages) (was: reg.27(2) saving)",
       "periods": [
         {
           "changed_by": null,
@@ -11101,6 +11261,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1964-08-01",
+          "valid_to": "1993-01-01"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "in_force_partial",
+          "territory": "E+W+S",
+          "valid_from": "1993-01-01",
           "valid_to": "1996-01-01"
         },
         {
@@ -11221,7 +11389,7 @@
     {
       "cause": "today: old unknown, new repealed_saved",
       "law": "UK_ukpga_1963_41",
-      "note": "reg.27(2) saving",
+      "note": "SI 1992/3004 Sch.2 Pt I repeals it for new workplaces from 1993-01-01 (partly), wholly from 1996-01-01: the staged repeal now folded (Fire and OH&S: Label fold, Decision 6 a; Label.Stages) (was: reg.27(2) saving)",
       "periods": [
         {
           "changed_by": null,
@@ -11237,6 +11405,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1964-08-01",
+          "valid_to": "1993-01-01"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "in_force_partial",
+          "territory": "E+W+S",
+          "valid_from": "1993-01-01",
           "valid_to": "1996-01-01"
         },
         {
@@ -11255,7 +11431,7 @@
     {
       "cause": "today: old unknown, new repealed",
       "law": "UK_ukpga_1963_41",
-      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: SI 1992/3004 reg.27(2) saving (s.90(4)) not read; should be repealed_saved)",
+      "note": "SI 1992/3004 Sch.2 Pt I repeals it for new workplaces from 1993-01-01 (partly), wholly from 1996-01-01: the staged repeal now folded (Fire and OH&S: Label fold, Decision 6 a; Label.Stages) (was: fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: SI 1992/3004 reg.27(2) saving (s.90(4)) not read; should be repealed_saved))",
       "periods": [
         {
           "changed_by": null,
@@ -11271,6 +11447,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1964-08-01",
+          "valid_to": "1993-01-01"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "in_force_partial",
+          "territory": "E+W+S",
+          "valid_from": "1993-01-01",
           "valid_to": "1996-01-01"
         },
         {
@@ -11391,7 +11575,7 @@
     {
       "cause": "today: old unknown, new repealed",
       "law": "UK_ukpga_1963_41",
-      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: SI 1992/3004 reg.27(2) saving (s.90(4)) not read; should be repealed_saved)",
+      "note": "SI 1992/3004 Sch.2 Pt I repeals it for new workplaces from 1993-01-01 (partly), wholly from 1996-01-01: the staged repeal now folded (Fire and OH&S: Label fold, Decision 6 a; Label.Stages) (was: fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: SI 1992/3004 reg.27(2) saving (s.90(4)) not read; should be repealed_saved))",
       "periods": [
         {
           "changed_by": null,
@@ -11407,6 +11591,14 @@
           "status": "in_force",
           "territory": "E+W+S",
           "valid_from": "1964-08-01",
+          "valid_to": "1993-01-01"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "in_force_partial",
+          "territory": "E+W+S",
+          "valid_from": "1993-01-01",
           "valid_to": "1996-01-01"
         },
         {
@@ -11829,7 +12021,7 @@
     {
       "cause": "history: old prospective from the law's making",
       "law": "UK_ukpga_1974_37",
-      "note": "2008 substitution then 2014-04-01 words by 2013 c.32 (2014/251); old 2006 prospective unsupported",
+      "note": "a staged text change dates from its first stage (2013 c.32 by SI 2014/251, in relation to some purposes 2014-03-10, wholly 2014-04-01): one convention, golden TCPA 1990 s.284(3)(a), RULES text-change-carries-its-stages; later stages of a words change are not shown, a known limit (Fire and OH&S: Label fold, Decision 6 a) (was: 2008 substitution then 2014-04-01 words by 2013 c.32 (2014/251); old 2006 prospective unsupported)",
       "periods": [
         {
           "changed_by": "UK_uksi_2008_960",
@@ -11837,14 +12029,14 @@
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "2008-04-01",
-          "valid_to": "2014-04-01"
+          "valid_to": "2014-03-10"
         },
         {
           "changed_by": "UK_ukpga_2013_32",
-          "in_force_from": "2014-04-01",
+          "in_force_from": "2014-03-10",
           "status": "in_force",
           "territory": "E+W+S+NI",
-          "valid_from": "2014-04-01",
+          "valid_from": "2014-03-10",
           "valid_to": null
         }
       ],
@@ -11855,8 +12047,16 @@
     {
       "cause": "history: start later",
       "law": "UK_ukpga_1974_37",
-      "note": "(i)/(ii) made by words substituted in s.11(4)(b) 1.4.2014, Energy Act 2013",
+      "note": "a staged text change dates from its first stage (2013 c.32 by SI 2014/251, in relation to some purposes 2014-03-10, wholly 2014-04-01): one convention, golden TCPA 1990 s.284(3)(a), RULES text-change-carries-its-stages; later stages of a words change are not shown, a known limit (Fire and OH&S: Label fold, Decision 6 a) (was: (i)/(ii) made by words substituted in s.11(4)(b) 1.4.2014, Energy Act 2013)",
       "periods": [
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "in_force_partial",
+          "territory": "E+W+S+NI",
+          "valid_from": "2014-03-10",
+          "valid_to": "2014-04-01"
+        },
         {
           "changed_by": "UK_ukpga_2013_32",
           "in_force_from": "2014-04-01",
@@ -12861,7 +13061,7 @@
     {
       "cause": "history: status",
       "law": "UK_ukpga_1974_37",
-      "note": "1974/1439 Sch.2 ss.18-20 1.1.1975",
+      "note": "a staged text change dates from its first stage (2013 c.32 by SI 2014/251, in relation to some purposes 2014-03-10, wholly 2014-04-01): one convention, golden TCPA 1990 s.284(3)(a), RULES text-change-carries-its-stages; later stages of a words change are not shown, a known limit (Fire and OH&S: Label fold, Decision 6 a) (was: 1974/1439 Sch.2 ss.18-20 1.1.1975)",
       "periods": [
         {
           "changed_by": null,
@@ -12885,14 +13085,14 @@
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "2008-04-01",
-          "valid_to": "2014-04-01"
+          "valid_to": "2014-03-10"
         },
         {
           "changed_by": "UK_ukpga_2013_32",
-          "in_force_from": "2014-04-01",
+          "in_force_from": "2014-03-10",
           "status": "in_force",
           "territory": "E+W+S+NI",
-          "valid_from": "2014-04-01",
+          "valid_from": "2014-03-10",
           "valid_to": null
         }
       ],
@@ -13023,7 +13223,7 @@
     {
       "cause": "history: status",
       "law": "UK_ukpga_1974_37",
-      "note": "SI 1974/1439 Sch.2: ss.27-28 on 1.1.1975",
+      "note": "a staged text change dates from its first stage (2013 c.32 by SI 2014/251, in relation to some purposes 2014-03-10, wholly 2014-04-01): one convention, golden TCPA 1990 s.284(3)(a), RULES text-change-carries-its-stages; later stages of a words change are not shown, a known limit (Fire and OH&S: Label fold, Decision 6 a) (was: SI 1974/1439 Sch.2: ss.27-28 on 1.1.1975)",
       "periods": [
         {
           "changed_by": null,
@@ -13039,14 +13239,14 @@
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "1975-01-01",
-          "valid_to": "2014-04-01"
+          "valid_to": "2014-03-10"
         },
         {
           "changed_by": "UK_ukpga_2013_32",
-          "in_force_from": "2014-04-01",
+          "in_force_from": "2014-03-10",
           "status": "in_force",
           "territory": "E+W+S+NI",
-          "valid_from": "2014-04-01",
+          "valid_from": "2014-03-10",
           "valid_to": null
         }
       ],
@@ -13093,7 +13293,7 @@
     {
       "cause": "today: in_force_from old undated, new inserted [law]",
       "law": "UK_ukpga_1974_37",
-      "note": "versions split when their section's texts first part (Jason 2026-11-01: \"when the section parts\") (was: commenced 1.1.1975 (SI 1974/1439), 1995 c.25, subst 2008/960, WSI 2013/755, 2013 c.32 on 1.4.2014; all sourced)",
+      "note": "a staged text change dates from its first stage (2013 c.32 by SI 2014/251, in relation to some purposes 2014-03-10, wholly 2014-04-01): one convention, golden TCPA 1990 s.284(3)(a), RULES text-change-carries-its-stages; later stages of a words change are not shown, a known limit (Fire and OH&S: Label fold, Decision 6 a) (was: versions split when their section's texts first part (Jason 2026-11-01: \"when the section parts\") (was: commenced 1.1.1975 (SI 1974/1439), 1995 c.25, subst 2008/960, WSI 2013/755, 2013 c.32 on 1.4.2014; all sourced))",
       "periods": [
         {
           "changed_by": null,
@@ -13141,14 +13341,14 @@
           "status": "in_force",
           "territory": "S",
           "valid_from": "2013-04-01",
-          "valid_to": "2014-04-01"
+          "valid_to": "2014-03-10"
         },
         {
           "changed_by": "UK_ukpga_2013_32",
-          "in_force_from": "2014-04-01",
+          "in_force_from": "2014-03-10",
           "status": "in_force",
           "territory": "S",
-          "valid_from": "2014-04-01",
+          "valid_from": "2014-03-10",
           "valid_to": null
         }
       ],
@@ -13601,7 +13801,7 @@
     {
       "cause": "history: status",
       "law": "UK_ukpga_1974_37",
-      "note": "1974/1439 Sch.2 s.44 1.1.1975",
+      "note": "a staged text change dates from its first stage (2013 c.32 by SI 2014/251, in relation to some purposes 2014-03-10, wholly 2014-04-01): one convention, golden TCPA 1990 s.284(3)(a), RULES text-change-carries-its-stages; later stages of a words change are not shown, a known limit (Fire and OH&S: Label fold, Decision 6 a) (was: 1974/1439 Sch.2 s.44 1.1.1975)",
       "periods": [
         {
           "changed_by": null,
@@ -13617,6 +13817,14 @@
           "status": "in_force",
           "territory": "E+W+S+NI",
           "valid_from": "1975-01-01",
+          "valid_to": "2014-03-10"
+        },
+        {
+          "changed_by": null,
+          "in_force_from": null,
+          "status": "in_force_partial",
+          "territory": "E+W+S+NI",
+          "valid_from": "2014-03-10",
           "valid_to": "2014-04-01"
         },
         {
@@ -14367,11 +14575,11 @@
     {
       "cause": "today: in_force_from new earlier (none dated)",
       "law": "UK_ukpga_1974_37",
-      "note": "fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: undated law_text repeal put at 1974-07-31; Building Act 1984 s.134(2) comes into force 1 Dec 1984)",
+      "note": "HSWA is all by order and none of its held orders (nor SI 1974/1439) names s.64, so in_force_from is unknown (left-to-an-order-date-unknown, unknown-over-guess) (Fire and OH&S: Label fold, Decision 4 a) (was: fixed as its checker's note asks (CV-06 batches 1–2: Windsor GB, existence, savings, made period, amending laws' text, first start; label reviewed against the note 2026-11-01) (was to fix: undated law_text repeal put at 1974-07-31; Building Act 1984 s.134(2) comes into force 1 Dec 1984))",
       "periods": [
         {
           "changed_by": null,
-          "in_force_from": "1974-07-31",
+          "in_force_from": null,
           "status": "in_force",
           "territory": "E+W",
           "valid_from": "1974-07-31",

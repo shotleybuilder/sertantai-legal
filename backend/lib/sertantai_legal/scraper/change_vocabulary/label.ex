@@ -29,9 +29,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
     Existence,
     Facts,
     Made,
+    Stages,
     Start,
     Undated,
-    Version
+    Version,
+    WholeLaw
   }
 
   alias SertantaiLegal.Scraper.LatRef
@@ -78,8 +80,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
         &(part_arabic(&1) == part_arabic(base_id(id)))
       )
 
+    # a change brought in by stages: at its first, each later stage a
+    # commencement (`Label.Stages`)
     changes =
       changes
+      |> Stages.unfold()
       |> within(containers)
       |> Undated.date_late_repeals(provision)
 
@@ -334,7 +339,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
   @doc """
   True when the change reaches provision `id`: its own changes, and
   provision-level changes on an ancestor or on the whole law (`"*"`) —
-  never a child's (C9). An amendment to an earlier amending provision
+  never a child's (C9). A repeal of unstated level reaches what lies
+  under it only as one of a law revoked whole (`Label.WholeLaw`). An amendment to an earlier amending provision
   reaches what lies under it unless it is in words (CV-S09 round 8).
 
   A provision holding `id` begins as `id` does, so a target that doesn't
@@ -346,7 +352,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
   def reaches?(%Change{target: target, resolved: r} = c, id) do
     target == id or
       ((target == "*" or (holds_prefix?(target, id) and target in above(id))) and
-         ((r.level == :provision and level_stated?(r)) or
+         ((r.level == :provision and (level_stated?(r) or WholeLaw.whole?(r))) or
             (Facts.earlier_amendment?(c) and r.level != :words)))
   end
 

@@ -41,13 +41,31 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelRulesTest do
   }
   def never(_date), do: false
 
-  defp rules(periods, reaching \\ [], ctx \\ %{}),
+  defp rules(periods, reaching, ctx \\ %{}),
     do: periods |> LabelRules.breaches(reaching, Map.merge(@ctx, ctx)) |> Enum.map(&elem(&1, 0))
 
   test "a period credited to a law before that law was made" do
     assert rules([p(~D[1974-10-01], :in_force, by: ["UK_ukpga_1975_71"])], [], %{
              made_of: %{"UK_ukpga_1975_71" => ~D[1975-11-12]}
            }) == [:before_amender]
+  end
+
+  test "an insertion brought in by stages begins at its first stage (`Label.Stages`)" do
+    staged = change(:inserted, ~D[2014-04-01], sources: %{date: :commencement})
+
+    staged = %{
+      staged
+      | resolved: %{
+          staged.resolved
+          | stages: [
+              %{date: ~D[2014-03-10], partial: true, commenced_by: nil},
+              %{date: ~D[2014-04-01], partial: false, commenced_by: nil}
+            ]
+        }
+    }
+
+    assert rules([p(~D[2014-03-10], :in_force_partial)], [staged]) == []
+    assert rules([p(~D[2014-03-01], :in_force_partial)], [staged]) == [:before_insertion]
   end
 
   test "a period before its own insertion, nothing showing it was there" do
