@@ -95,6 +95,7 @@ Each published figure: its name, what it counts, the command printing it and the
 |---|---|---|---|---|
 | Step 0 | making_verdicts | live laws by verdict: making, not making (changes only), no verdict by why; disagreeing with the stored `is_making` | T `lat.making_laws` | `MakingLaws` (making_laws_test) |
 | S01 | sources_needed / sources_failures | documents a family needs, by category; needed and not held, without reason | T `lat.sources` ("needed, all categories"; "failures") | `Sources.report/3` (sources_test) |
+| S01 | sources_register_differences | feeds whose stored change statistics differ from the register's (Fire and OH&S, 2026-11-16) | T `lat.sources` ("feeds differing from the register's change statistics") | `Sources.register_stats/1` (sources_test) |
 | S02 | feed_effects_placement / feed_our_faults / feed_tell_tales | feed effects by placement outcome; fault outcomes; finer forms not held | T `lat.feed_check` | `Placement.fault?` (placement_test) |
 | S03 | markup_changes_placement / markup_note_placements / markup_our_faults / markup_keys_vs_feed | markup changes by outcome; effects placed by their note ref alone, by the same outcomes (Environmental Protection, 2026-11-09); faults in either; keys in the feed, not in it, legacy | T `lat.markup_check` | `MarkupPlacement` (markup_placement_test) |
 | S03 | legacy_pointer_share | legacy markup changes whose note gives a cited law (and amending provisions) | T `lat.markup_patterns` ("pointers (changes)") | `MarkupPatterns.pointers` |
@@ -112,6 +113,8 @@ Each published figure: its name, what it counts, the command printing it and the
 | S05 | extent_bound_by_law | text changes whose territory is the amending law's extent at the amending provisions: the `bound:law` outcome alone (the law_text group adds `territory:law`) | T `lat.extent_check` ("territory from") | `Extent.Check` (extent/check_test) |
 | S08 | evidence_gaps | changes with an operation where no source claims an attribute: by (attribute, sources held), and totals by attribute with those whose amending law has no commencement rules | T `lat.evidence_check --gate` ("gaps by attribute") | `Gate.Evidence.gaps/2`, `gap_totals/1` (gate/evidence_test) |
 | S09 | label_statuses / label_gaps | rows by current status; periods and table breaks; rows with an undated start or an undated change | T `lat.label_check --strata --gate` | `LabelStrata`, `Gate.Label.gaps/1` (label_strata_test, gate/label_test) |
+| S09 | checked_rows | the switch-over's checked rows against the fold: match, known, upstream, changed; PASS when none changed (Fire and OH&S, 2026-11-16) | T `lat.label_checked` (and the step close) | `Checked.compare/2` (checked_test) |
+| all | stored_changes | the changes held for the family's laws (the header of `lat.measures`, the merge and evidence checks) | T `lat.measures` | `Store.for_law/1` (store_db_test) |
 | CV-07 | stated_by_split | text changes by `stated_by` (family or golden laws) | T `lat.measures [--golden]` | `Coverage.stated_by/1` (coverage_test) |
 | all | golden_from_inputs / golden_extended | golden provisions passing from inputs | T `lat.vocabulary --golden [--extended]` | |
 | S02–S09 | <step>_pooled (items, groups) / end_to_end | wrong items with the step's own fault and wrong groups since the last fix, with 95% upper bounds; every wrong item | V `lat.verdicts` | `Measures.Bound`, `Measures.Verdicts` (bound_test, verdicts_test) |
@@ -144,3 +147,8 @@ Each published figure: its name, what it counts, the command printing it and the
   - **The audit found four gates or verdicts that had passed and fail today** (Sources 69, of which 47 are feeds stale by age alone; Extent 2 causes; Amending 4 groups; one Making laws verdict), all moved by later writes. The same pattern as Maritime.
   - **One pass takes about 10 min:** the label fold reads from the fold cache in 16 s.
   - **The register gained** `markup_note_placements` and `<step>_catalogue` (a catalogue's run figures, held in its fixture's `totals`).
+- Fire and OH&S, the first QQ round of five families (2026-11-16), session `.claude/sessions/lat-change-pipeline/2026-11-16-fire-and-ohs-measures.md`.
+  - **No gate had moved to a failure.** It is the first family since the step-close check (`lat.step_close`) re-runs every earlier gate at each close, against Maritime's 3 and EP's 4.
+  - **Every moved figure was dated by the later steps' saved step-close logs:** Sources' needs, Extent's text changes, Amending's strata (Merge's compound amending provision). Making laws' live count moved by its own refile decision.
+  - **One pass takes 5½ min** (Sources 100 s; the label fold 8 s from the cache).
+  - **The register gained** `sources_register_differences`, `checked_rows` and `stored_changes`. No code change; 3 items read by hand, all classed right.

@@ -550,6 +550,11 @@ Before this, OH&S used G, S and T by shape and R pooled to the 95% bound (2026-1
 - Four gates and verdicts had moved since their steps closed: Sources (feeds stale by age alone, Schedules needed since), Extent, Amending, and one Making laws verdict. Each is parked with its step.
 - The parked inline reads in `lat.sources` and `lat.vocabulary` moved into `Sources.Held` and `ChangeVocabulary.Show`, with tests.
 
+**Fire and OH&S (2026-11-16):**
+- No agent pass, and no gate had moved to a failure: the step-close check had re-run every earlier gate at each step's close.
+- Every moved figure was dated from the later steps' saved step-close logs.
+- The register gained three rows (Sources' register differences, the checked rows, the stored changes). No code changed.
+
 **Skill.** `measures-check`.
 
 ## 11. Store and build
