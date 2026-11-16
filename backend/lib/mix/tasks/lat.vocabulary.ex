@@ -276,15 +276,32 @@ defmodule Mix.Tasks.Lat.Vocabulary do
     # 2026-10-25); each in its own process, its parsed documents gone when
     # it exits
     workers = SertantaiLegal.Scraper.LawRunner.Guard.workers(workers: opts[:workers])
-    {us, _} = :timer.tc(fn -> run_builds(laws, workers, change_counts()) end)
+    failed = :counters.new(1, [])
+    {us, _} = :timer.tc(fn -> run_builds(laws, workers, change_counts(), failed) end)
 
-    # build_time (CV-S11): the wall time of the whole build
-    Mix.shell().info(
-      "built #{length(laws)} laws in #{Float.round(us / 1_000_000, 1)} s (#{workers} workers)"
-    )
+    # build_time (CV-S11): the wall time of the whole build, with its failures
+    case build_summary(length(laws), us, workers, :counters.get(failed, 1)) do
+      {:ok, line} -> Mix.shell().info(line)
+      {:error, line} -> Mix.raise(line)
+    end
   end
 
-  defp run_builds(laws, workers, weights) do
+  @doc """
+  The build's closing line: laws, wall time, workers and failures. An error
+  when any law failed, so the task exits non-zero (Store and build,
+  2026-11-16: a build printed "built 117 laws in 0.1 s" with every law
+  FAILED and exited 0). Pure.
+  """
+  @spec build_summary(non_neg_integer(), non_neg_integer(), pos_integer(), non_neg_integer()) ::
+          {:ok, String.t()} | {:error, String.t()}
+  def build_summary(laws, us, workers, failed) do
+    line =
+      "built #{laws} laws in #{Float.round(us / 1_000_000, 1)} s (#{workers} workers), #{failed} failed"
+
+    if failed == 0, do: {:ok, line}, else: {:error, line <> ": see the FAILED lines above"}
+  end
+
+  defp run_builds(laws, workers, weights, failed) do
     counter = :counters.new(1, [])
 
     SertantaiLegal.Scraper.LawRunner.run(
@@ -292,6 +309,7 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       fn law -> :timer.tc(fn -> Build.law(law) end) end,
       fn law, result ->
         :counters.add(counter, 1, 1)
+        if failed?(result), do: :counters.add(failed, 1, 1)
 
         Mix.shell().info(
           "  [#{:counters.get(counter, 1)}/#{length(laws)}] #{law}: #{built_line(result)}"
@@ -302,6 +320,9 @@ defmodule Mix.Tasks.Lat.Vocabulary do
       weight: &Map.get(weights, &1, 0)
     )
   end
+
+  defp failed?({_us, line}) when is_binary(line), do: false
+  defp failed?(_other), do: true
 
   defp built_line({us, line}) when is_binary(line), do: "#{line} (#{div(us, 1_000_000)} s)"
   defp built_line(other), do: "FAILED #{inspect(other)}"

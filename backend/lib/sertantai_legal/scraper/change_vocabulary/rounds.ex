@@ -6,6 +6,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Rounds do
   `LabelSwitch.family_in?/2`). A task's `--family` takes a round's name;
   `Amendment.PatternSource` scopes it to exactly these families, never a
   substring (`"OH&S"` would take in the switched Occupational family).
+  `resolve/2` turns any `--family` name into the families it means: a
+  round's, the one family named exactly, or the one family the name is
+  part of; a name inside several families is refused (Store and build,
+  2026-11-16: `--family "OH&S"` built four families).
   Outside `ChangeVocabulary.Version`'s files: a scope, never what a build
   reads. Pure.
   """
@@ -27,6 +31,44 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Rounds do
   @doc "A round's family names, or nil when `name` is a plain family."
   @spec families(String.t()) :: [String.t()] | nil
   def families(name), do: Map.get(@rounds, name)
+
+  @doc """
+  The register families (display marker dropped) a `--family` name means,
+  given every register family name: a round's families; the family named
+  exactly; else the one family whose name contains it. An error naming the
+  matches when it is in several families or none.
+  """
+  @spec resolve(String.t(), [String.t()]) :: {:ok, [String.t()]} | {:error, String.t()}
+  def resolve(name, register_families) do
+    case families(name) do
+      nil ->
+        resolve_plain(unmarked(name), register_families |> Enum.map(&unmarked/1) |> Enum.uniq())
+
+      names ->
+        {:ok, names}
+    end
+  end
+
+  defp resolve_plain(name, fams) do
+    if name in fams, do: {:ok, [name]}, else: one_containing(name, fams)
+  end
+
+  defp one_containing(name, fams) do
+    case fams |> Enum.filter(&String.contains?(&1, name)) |> Enum.sort() do
+      [one] ->
+        {:ok, [one]}
+
+      [] ->
+        {:error, "--family #{inspect(name)}: no family has that name"}
+
+      many ->
+        {:error,
+         "--family #{inspect(name)} is in #{length(many)} families (#{Enum.join(many, "; ")}): name one exactly"}
+    end
+  end
+
+  # the register's display marker (an emoji and a space) dropped, as the SQL does
+  defp unmarked(name), do: String.replace(name, ~r/^[^[:alnum:]]+/u, "")
 
   @doc "True when `name` is a round's name."
   @spec round?(String.t()) :: boolean()

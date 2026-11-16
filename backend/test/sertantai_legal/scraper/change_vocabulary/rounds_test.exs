@@ -4,6 +4,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.RoundsTest do
   alias SertantaiLegal.Scraper.Amendment.PatternSource
   alias SertantaiLegal.Scraper.ChangeVocabulary.Rounds
 
+  @register [
+    "💙 FIRE",
+    "💙 FIRE: Dangerous and Explosive Substances",
+    "💙 OH&S: Gas & Electrical Safety",
+    "💙 OH&S: Mines & Quarries",
+    "💙 OH&S: Offshore Safety",
+    "💙 OH&S: Occupational / Personal Safety",
+    "💚 ENVIRONMENTAL PROTECTION"
+  ]
+
   test "the Fire and OH&S round is its five families, by exact name" do
     assert "Fire and OH&S" in Rounds.names()
     assert Rounds.round?("Fire and OH&S")
@@ -20,17 +30,50 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.RoundsTest do
     refute Rounds.round?("OH&S")
   end
 
-  describe "PatternSource.family_filter/2" do
+  describe "Rounds.resolve/2 (a --family name to the families it means)" do
+    test "a round is exactly its families" do
+      assert Rounds.resolve("Fire and OH&S", @register) ==
+               {:ok, Rounds.families("Fire and OH&S")}
+    end
+
+    test "an exact name, the marker dropped, is that family alone" do
+      assert Rounds.resolve("FIRE", @register) == {:ok, ["FIRE"]}
+      assert Rounds.resolve("💙 FIRE", @register) == {:ok, ["FIRE"]}
+    end
+
+    test "a name inside exactly one family is that family" do
+      assert Rounds.resolve("OH&S: Occupational", @register) ==
+               {:ok, ["OH&S: Occupational / Personal Safety"]}
+    end
+
+    test "a name inside more than one family is refused, naming them" do
+      assert {:error, msg} = Rounds.resolve("OH&S", @register)
+      assert msg =~ "4 families"
+      assert msg =~ "OH&S: Mines & Quarries"
+    end
+
+    test "a name inside no family is refused" do
+      assert {:error, msg} = Rounds.resolve("NO SUCH", @register)
+      assert msg =~ "no family"
+    end
+  end
+
+  describe "PatternSource.family_filter/3" do
     test "a round matches its families exactly, the marker dropped" do
-      {sql, [names]} = PatternSource.family_filter("r.family", "Fire and OH&S")
-      assert sql =~ "regexp_replace(r.family"
-      assert sql =~ "= ANY($1)"
+      {sql, [names]} = PatternSource.family_filter("r.family", "Fire and OH&S", @register)
+      assert sql == "regexp_replace(r.family, '^[^[:alnum:]]+', '') = ANY($1)"
       assert names == Rounds.families("Fire and OH&S")
     end
 
-    test "a plain family still matches as a substring" do
-      assert PatternSource.family_filter("family", "ENVIRONMENTAL PROTECTION") ==
-               {"family LIKE '%' || $1 || '%'", ["ENVIRONMENTAL PROTECTION"]}
+    test "a plain family matches exactly, never as a substring" do
+      assert PatternSource.family_filter("family", "FIRE", @register) ==
+               {"regexp_replace(family, '^[^[:alnum:]]+', '') = ANY($1)", [["FIRE"]]}
+    end
+
+    test "an ambiguous name raises" do
+      assert_raise ArgumentError, ~r/4 families/, fn ->
+        PatternSource.family_filter("family", "OH&S", @register)
+      end
     end
   end
 end

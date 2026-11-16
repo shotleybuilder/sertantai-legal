@@ -15,8 +15,7 @@ defmodule SertantaiLegal.Scraper.Amendment.PatternSource do
   alias SertantaiLegal.Scraper.LatStagedParser
 
   @doc """
-  The LAT laws of a family (`uk_lrt.family` containing `family`), or of a
-  round (`ChangeVocabulary.Rounds`: exactly its families).
+  The LAT laws of a family or a round, scoped by `family_filter/2`.
   """
   @spec family_laws(String.t()) :: [String.t()]
   def family_laws(family) do
@@ -34,16 +33,27 @@ defmodule SertantaiLegal.Scraper.Amendment.PatternSource do
 
   @doc """
   The one family scope (Tooling: round scope): an SQL condition on
-  `column`, with its parameters as `$1`. A round's name matches exactly its
-  families, the register's display marker dropped; a plain family matches
-  as a substring, as before rounds. Pure.
+  `column`, with its parameters as `$1`, matching exactly the register
+  families `family` means (`Rounds.resolve/2`: a round's, the one named, or
+  the one whose name contains it), the display marker dropped. Raises when
+  the name is in several families or none. Reads the register's family
+  names; `family_filter/3` is the pure form.
   """
   @spec family_filter(String.t(), String.t()) :: {String.t(), [term()]}
-  def family_filter(column, family) do
-    case Rounds.families(family) do
-      nil -> {"#{column} LIKE '%' || $1 || '%'", [family]}
-      names -> {"regexp_replace(#{column}, '^[^[:alnum:]]+', '') = ANY($1)", [names]}
+  def family_filter(column, family), do: family_filter(column, family, register_families())
+
+  @doc "`family_filter/2` over the given register family names. Pure."
+  @spec family_filter(String.t(), String.t(), [String.t()]) :: {String.t(), [term()]}
+  def family_filter(column, family, register_families) do
+    case Rounds.resolve(family, register_families) do
+      {:ok, names} -> {"regexp_replace(#{column}, '^[^[:alnum:]]+', '') = ANY($1)", [names]}
+      {:error, message} -> raise ArgumentError, message
     end
+  end
+
+  defp register_families do
+    Repo.query!("SELECT DISTINCT family FROM uk_lrt WHERE family IS NOT NULL").rows
+    |> List.flatten()
   end
 
   @doc "Amending law → amended law → the pointers read, for `laws`."
