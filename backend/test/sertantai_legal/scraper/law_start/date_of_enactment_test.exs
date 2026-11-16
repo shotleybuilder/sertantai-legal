@@ -34,4 +34,26 @@ defmodule SertantaiLegal.Scraper.LawStart.DateOfEnactmentTest do
     xml = "<Legislation><P>made on 6 July 2015</P></Legislation>"
     assert DateOfEnactment.parse(xml) == nil
   end
+
+  # Fire and OH&S: Store and build: 2019 c.16 and c.26's introductions hold
+  # an empty DateText and the date in their own metadata
+  test "an empty DateText: the introduction's own metadata EnactmentDate" do
+    xml =
+      ~s(<Legislation><ukm:Metadata><ukm:EnactmentDate Date="2019-04-08"/></ukm:Metadata>) <>
+        "<Primary><PrimaryPrelims><DateOfEnactment><DateText/></DateOfEnactment>" <>
+        "</PrimaryPrelims></Primary></Legislation>"
+
+    assert DateOfEnactment.parse(xml) == ~D[2019-04-08]
+  end
+
+  test "the text wins over the metadata where both speak" do
+    xml =
+      String.replace(
+        intro("{6 July 2015}"),
+        "<Legislation>",
+        ~s(<Legislation><ukm:EnactmentDate Date="2015-07-07"/>)
+      )
+
+    assert DateOfEnactment.parse(xml) == ~D[2015-07-06]
+  end
 end
