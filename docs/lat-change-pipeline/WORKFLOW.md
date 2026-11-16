@@ -507,6 +507,18 @@ Before this, OH&S used G, S and T by shape and R pooled to the 95% bound (2026-1
   - EP periods 68,074 → 69,135; undated starts EP +22, OH&S +12, Maritime +77 (Decision 8's gaps).
   - Credo: `Label.fold` (13 → under 9) and `Start.period` (29 → under 9) split into named functions.
 
+
+**Fire and OH&S (round, 2026-11-15/16).** The stored changes were as rebuilt at Evidence. The round's gate began with 1 group not named: asp 2012/8's made period, 9 rows, named a known limit (Decision 1). The work was the 7 parked bugs, with no agent pass (Jason 2026-11-13).
+- **Stages folded (Decision 2):** Evidence's chosen stages (`stages-go-with-the-date`) unfold into the commencements the fold reads (`Label.Stages`; RULES `stages-fold-as-commencements`, `staged-removal-in-part-then-repealed`). There are 442 changes in the four scopes. EPA Part IIA's 673 rows go from partly in force for good to in force once each territory is commenced. SI 1992/3004's 1993 stage now shows on the Factories Act and OSRPA.
+- **A whole law revoked provision by provision (Decision 3):** SI 2008/2337's 14 sub-rows are now repealed (`whole-law-revoked-provision-by-provision`; never on a scoped LAT).
+- **Checked rows:** 31 accepted with their rules (Decisions 4 and 6): HSWA s.64 has an unknown date, CLP Arts 53a and 53b show their UK-wide years, the 22 rows of the 1993 stage, and 6 HSWA words rows dated from their first stage (golden's convention).
+- **Caught by the gates and the status diff, not the tests:** a removal unfolded past a re-making (EPA s.75(2)(a)[S]), and a territorial removal leaving the remainder partly in force (Petroleum Act 1998 s.17A). Both are fixed with tests.
+- **Result:**
+  - All four gates PASS. Golden 27/27; checked rows PASSED; `mix test` 11,234.
+  - Round statuses are unchanged; periods 50,100 → 50,151.
+  - EP: partly in force 2,130 → 1,456 and repealed +2. Occupational: repealed and saved +14. Maritime: unchanged.
+  - Gaps are unchanged: round undated start 2,447, undated change 311.
+  - Upstream, parked with the Commencement reader: a stage qualified "in relation to" carried as not partial (2 rows).
 **Skill.** `label-check`.
 
 ## 10. Measures

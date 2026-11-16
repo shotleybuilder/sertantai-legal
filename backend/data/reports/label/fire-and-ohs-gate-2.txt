@@ -1,0 +1,106 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+laws read 3 at once: 12.5 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.5 of 6 cores busy; max 4
+139 laws folded; 27206 rows; not folded: []
+
+S shapes (rows):
+  19755  prospective
+  4936  text_change
+  3477  ancestor
+  2447  undated_start
+  1155  partial
+  1091  territory_narrowed
+  1027  version
+  757  repealed
+  663  in_force_for
+  311  undated_change
+  237  applied
+  198  several_laws
+  14  renumbered
+
+T differences from today (rows):
+  8225  history
+  2286  changed_by
+  1406  territory
+  1357  no_today
+  915  in_force_from
+  737  in_force_from+changed_by
+  518  status+in_force_from
+  463  in_force_from+territory
+  130  in_force_from+changed_by+territory
+  124  status+in_force_from+changed_by
+  99  status
+  77  status+in_force_from+changed_by+territory
+  67  changed_by+territory
+  61  status+in_force_from+territory
+  41  status+territory
+  37  status+changed_by+territory
+  7  status+changed_by
+
+current status (rows):
+  25605  in_force
+  738  prospective
+  391  repealed
+  362  repealed_saved
+  110  in_force_partial
+
+timeline rows: 50151 periods, 0 breaking the table's rules
+  by rule:
+
+side by side (rows): 27206 = 10656 agree + 6968 differ today + 8225 differ only in history + 1357 no stored timeline
+
+gaps, a value no source gives (rows):
+  2447  undated_start
+  311  undated_change
+
+label breaches by rule (test/fixtures/label/labels.json): 7 groups; known 6, unreviewed 1
+
+every group (widest reach first): 7
+     57  legacy_unconfirmed @ UK_ukpga_1954_70  [known: by design, listed apart (LabelRules.informational/0): a period before an insertion only legacy markup claims, which the fold doesn't trust (RULES.md legacy-markup-alone-never-moves-it)]
+           UK_ukpga_1954_70:s.22(1): inserted 1989-04-01 by UK_uksi_1988_1729, period from 1954-11-25
+           UK_ukpga_1954_70:s.22(2)(a): inserted 1989-04-01 by UK_uksi_1988_1729, period from 1954-11-25
+           UK_ukpga_1954_70:s.22(2)(b): inserted 1989-04-01 by UK_uksi_1988_1729, period from 1954-11-25
+           UK_ukpga_1954_70:s.22(2)(i): inserted 1989-04-01 by UK_uksi_1988_1729, period from 1954-11-25
+           UK_ukpga_1954_70:s.22(2)(ii): inserted 1989-04-01 by UK_uksi_1988_1729, period from 1954-11-25
+           UK_ukpga_1954_70:s.22(2): inserted 1989-04-01 by UK_uksi_1988_1729, period from 1954-11-25
+     19  legacy_unconfirmed @ UK_ukpga_1962_58  [known: by design, listed apart (LabelRules.informational/0): a period before an insertion only legacy markup claims, which the fold doesn't trust (RULES.md legacy-markup-alone-never-moves-it)]
+           UK_ukpga_1962_58:s.12(5)(a): inserted 1999-04-03 by UK_uksi_1999_742, period from 1962-08-01
+           UK_ukpga_1962_58:s.12(5)(b): inserted 1999-04-03 by UK_uksi_1999_742, period from 1962-08-01
+           UK_ukpga_1962_58:s.12(5): inserted 1999-04-03 by UK_uksi_1999_742, period from 1962-08-01
+           UK_ukpga_1962_58:s.12(5A): inserted 1999-04-03 by UK_uksi_1999_742, period from 1962-08-01
+           UK_ukpga_1962_58:s.16(1): inserted 1991-10-21 by UK_ukpga_1991_22, period from 1962-08-01
+           UK_ukpga_1962_58:s.16(2)(a): inserted 1991-10-21 by UK_ukpga_1991_22, period from 1962-08-01
+     13  legacy_unconfirmed @ UK_ukpga_1875_17  [known: by design, listed apart (LabelRules.informational/0): a period before an insertion only legacy markup claims, which the fold doesn't trust (RULES.md legacy-markup-alone-never-moves-it)]
+           UK_ukpga_1875_17:s.115: inserted 1987-06-01 by UK_uksi_1987_37, period from 1875-06-14
+           UK_ukpga_1875_17:s.34(1): inserted 1987-06-01 by UK_uksi_1987_37, period from 1875-06-14
+           UK_ukpga_1875_17:s.34(10): inserted 1987-06-01 by UK_uksi_1987_37, period from 1875-06-14
+           UK_ukpga_1875_17:s.34(11): inserted 1987-06-01 by UK_uksi_1987_37, period from 1875-06-14
+           UK_ukpga_1875_17:s.34(2): inserted 1987-06-01 by UK_uksi_1987_37, period from 1875-06-14
+           UK_ukpga_1875_17:s.34(3): inserted 1987-06-01 by UK_uksi_1987_37, period from 1875-06-14
+      9  no_made_period @ UK_asp_2012_8  [no status]
+           UK_asp_2012_8:s.101(1): made 2012-08-07, first period in_force_partial from 2012-08-08
+           UK_asp_2012_8:s.101(2): made 2012-08-07, first period in_force_partial from 2012-08-08
+           UK_asp_2012_8:s.113: made 2012-08-07, first period in_force_partial from 2012-08-08
+           UK_asp_2012_8:s.117: made 2012-08-07, first period in_force_partial from 2012-08-08
+           UK_asp_2012_8:s.122(3): made 2012-08-07, first period in_force_partial from 2012-08-08
+           UK_asp_2012_8:s.122(4)(a): made 2012-08-07, first period in_force_partial from 2012-08-08
+      6  legacy_unconfirmed @ UK_ukpga_1883_3  [known: by design, listed apart (LabelRules.informational/0): a period before an insertion only legacy markup claims, which the fold doesn't trust (RULES.md legacy-markup-alone-never-moves-it)]
+           UK_ukpga_1883_3:s.2: inserted 1975-08-07 by UK_ukpga_1975_59, period from 1883-04-10
+           UK_ukpga_1883_3:s.3(1)(a): inserted 1975-08-07 by UK_ukpga_1975_59, period from 1883-04-10
+           UK_ukpga_1883_3:s.3(1)(b): inserted 1975-08-07 by UK_ukpga_1975_59, period from 1883-04-10
+           UK_ukpga_1883_3:s.3(1): inserted 1975-08-07 by UK_ukpga_1975_59, period from 1883-04-10
+           UK_ukpga_1883_3:s.3(2): inserted 1975-08-07 by UK_ukpga_1975_59, period from 1883-04-10
+           UK_ukpga_1883_3:s.3: inserted 1975-08-07 by UK_ukpga_1975_59, period from 1883-04-10
+      3  legacy_unconfirmed @ UK_nisi_1992_1728  [known: by design, listed apart (LabelRules.informational/0): a period before an insertion only legacy markup claims, which the fold doesn't trust (RULES.md legacy-markup-alone-never-moves-it)]
+           UK_nisi_1992_1728:reg.3(3)(b): inserted 1998-06-11 by UK_ukpga_1998_17, period from 1992-07-15
+           UK_nisi_1992_1728:reg.3(4A): inserted 1998-06-11 by UK_ukpga_1998_17, period from 1992-07-15
+           UK_nisi_1992_1728:reg.3(5)(d): inserted 1998-06-11 by UK_ukpga_1998_17, period from 1992-07-15
+      1  legacy_unconfirmed @ UK_ukpga_1969_10  [known: by design, listed apart (LabelRules.informational/0): a period before an insertion only legacy markup claims, which the fold doesn't trust (RULES.md legacy-markup-alone-never-moves-it)]
+           UK_ukpga_1969_10:s.28: inserted 1991-07-01 by UK_uksi_1991_724, period from 1969-03-27
+
+gaps, a value no source gives (rows):
+    311  undated_change
+   2447  undated_start
+
+FAIL (groups not named: 1)

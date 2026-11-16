@@ -1,0 +1,85 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+laws read 3 at once: 12.5 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 1.0 of 6 cores busy; max 4
+122 laws folded; 35766 rows; not folded: []
+
+S shapes (rows):
+  27846  prospective
+  7671  text_change
+  6288  undated_change
+  6020  ancestor
+  5725  applied
+  3461  partial
+  1709  territory_narrowed
+  1709  version
+  1382  repealed
+  1287  undated_start
+  838  in_force_for
+  277  parts
+  274  several_laws
+  27  renumbered
+
+T differences from today (rows):
+  5199  changed_by
+  1361  in_force_from+territory
+  964  no_today
+  767  history
+  39  territory
+  33  status+in_force_from+changed_by+territory
+  13  in_force_from+changed_by
+  8  status+in_force_from+changed_by
+  6  status+in_force_from
+  5  in_force_from
+  3  status+in_force_from+territory
+  2  in_force_from+changed_by+territory
+  2  status
+
+current status (rows):
+  31942  in_force
+  2130  in_force_partial
+  723  repealed
+  650  repealed_saved
+  321  prospective
+
+timeline rows: 69427 periods, 0 breaking the table's rules
+  by rule:
+
+side by side (rows): 35766 = 27364 agree + 6671 differ today + 767 differ only in history + 964 no stored timeline
+
+gaps, a value no source gives (rows):
+  6288  undated_change
+  1287  undated_start
+
+label breaches by rule (test/fixtures/label/labels.json): 4 groups; known 4
+
+every group (widest reach first): 4
+     14  start: an own commencement before the law's start dropped @ UK_uksi_2025_1218  [known: one law, one day (below triage by law): reg.1(2) '18 months after the day on which they are made' (made 2025-11-18) gives 2027-05-18, as the own clause reads; legislation.gov.uk's own record of the Regulations' commencement says 2027-05-19, and that later commencement keeps the row prospective for the day (RULES.md known limits)]
+           UK_uksi_2025_1218:reg.10: own clause 2027-05-18, law start 2027-05-19
+           UK_uksi_2025_1218:reg.11: own clause 2027-05-18, law start 2027-05-19
+           UK_uksi_2025_1218:reg.12: own clause 2027-05-18, law start 2027-05-19
+           UK_uksi_2025_1218:reg.13: own clause 2027-05-18, law start 2027-05-19
+           UK_uksi_2025_1218:reg.14: own clause 2027-05-18, law start 2027-05-19
+           UK_uksi_2025_1218:reg.1: own clause 2027-05-18, law start 2027-05-19
+     11  legacy_unconfirmed @ UK_ukpga_1995_25  [known: by design, listed apart (LabelRules.informational/0): a period before an insertion only legacy markup claims, which the fold doesn't trust (RULES.md legacy-markup-alone-never-moves-it)]
+           UK_ukpga_1995_25:s.48(5A)[S]: inserted 2000-01-17 by UK_asp_2000_1, period from 1995-07-19
+           UK_ukpga_1995_25:s.48(5B)[S]: inserted 2000-01-17 by UK_asp_2000_1, period from 1995-07-19
+           UK_ukpga_1995_25:s.49(3)(a): inserted 2000-01-17 by UK_asp_2000_1, period from 1995-07-19
+           UK_ukpga_1995_25:s.49(3)(b): inserted 2000-01-17 by UK_asp_2000_1, period from 1995-07-19
+           UK_ukpga_1995_25:s.49(3): inserted 2000-01-17 by UK_asp_2000_1, period from 1995-07-19
+           UK_ukpga_1995_25:s.49(4): inserted 2000-01-17 by UK_asp_2000_1, period from 1995-07-19
+      7  legacy_unconfirmed @ UK_ukpga_1990_43  [known: by design, listed apart (LabelRules.informational/0): a period before an insertion only legacy markup claims, which the fold doesn't trust (RULES.md legacy-markup-alone-never-moves-it)]
+           UK_ukpga_1990_43:s.111(6A): inserted 1993-02-01 by UK_uksi_1992_3280, period from 1990-11-01
+           UK_ukpga_1990_43:s.153(1)(n): inserted 1991-03-01 by UK_uksi_1991_146, period from 1990-11-01
+           UK_ukpga_1990_43:s.153(1)(x): inserted 1995-02-15 by UK_uksi_1995_150, period from 1990-11-01
+           UK_ukpga_1990_43:s.44A: inserted 1996-02-01 by UK_uksi_1996_186, period from 1990-11-01
+           UK_ukpga_1990_43:s.60A: inserted 2009-01-26 by UK_ukpga_2008_27, period from 1990-11-01
+           UK_ukpga_1990_43:s.64(5): inserted 1996-04-01 by UK_ukpga_1995_25, period from 1990-11-01
+      1  start: an own commencement before the law's start dropped @ UK_ssi_2025_165  [known: one row (below triage): reg.9's own clause stage of 2025-06-01 is 'subject to paragraph (5)'; the row keeps the general 2025-11-01 start]
+           UK_ssi_2025_165:reg.9: own clause 2025-06-01, law start 2025-11-01
+
+gaps, a value no source gives (rows):
+   6288  undated_change
+   1287  undated_start
+
+PASS (groups not named: 0)

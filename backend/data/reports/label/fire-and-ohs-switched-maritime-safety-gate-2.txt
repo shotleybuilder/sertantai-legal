@@ -1,0 +1,56 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+laws read 3 at once: 12.5 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.1 of 6 cores busy; max 4
+117 laws folded; 24434 rows; not folded: []
+
+S shapes (rows):
+  21026  prospective
+  3365  text_change
+  2081  ancestor
+  569  partial
+  502  repealed
+  487  undated_start
+  214  undated_change
+  62  territory_narrowed
+  10  several_laws
+  5  in_force_for
+  5  renumbered
+
+T differences from today (rows):
+  458  in_force_from+territory
+  306  history
+  149  no_today
+  57  changed_by
+  44  in_force_from
+  2  in_force_from+changed_by
+  1  changed_by+territory
+  1  territory
+
+current status (rows):
+  23875  in_force
+  384  repealed
+  117  repealed_saved
+  57  prospective
+  1  in_force_partial
+
+timeline rows: 47648 periods, 0 breaking the table's rules
+  by rule:
+
+side by side (rows): 24434 = 23416 agree + 563 differ today + 306 differ only in history + 149 no stored timeline
+
+gaps, a value no source gives (rows):
+  487  undated_start
+  214  undated_change
+
+label breaches by rule (test/fixtures/label/labels.json): 1 groups; known 1
+
+every group (widest reach first): 1
+      1  legacy_unconfirmed @ UK_ukpga_1995_21  [known: by design, listed apart (LabelRules.informational/0): a period before an insertion only legacy markup claims, which the fold doesn't trust (RULES.md legacy-markup-alone-never-moves-it)]
+           UK_ukpga_1995_21:s.55(2)(c): inserted 2002-09-07 by UK_uksi_2002_2125, period from 1995-07-19
+
+gaps, a value no source gives (rows):
+    214  undated_change
+    487  undated_start
+
+PASS (groups not named: 0)
