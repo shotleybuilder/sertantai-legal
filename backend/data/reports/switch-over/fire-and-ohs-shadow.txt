@@ -1,0 +1,83 @@
+laws read 3 at once: 12.5 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 1.2 of 6 cores busy; max 4
+27206 rows as at 2026-11-17: agree 13446, differ today 4993, history only 8767
+  5581	history: new prospective from the law's making
+  1382	history: start later
+  929	today: territory E+W→W
+  896	history: territory
+  678	history: start earlier
+  573	today: in_force_from new earlier (commenced [law])
+  488	today: changed_by old none
+  408	today: status prospective→in_force (commenced [law])
+  368	today: in_force_from new undated (in_force)
+  280	today: old unknown, new in_force
+  243	today: in_force_from new later (substituted [law])
+  227	today: territory E+W→E
+  142	today: status repealed→in_force (no repeal held)
+  138	today: in_force_from old undated, new commenced [law]
+  105	today: status in_force→repealed (repealed [law])
+  93	history: changed_by
+  93	today: status in_force→repealed_saved (repealed [law])
+  84	history: status
+  81	today: territory old unknown, new NI
+  79	today: territory old unknown, new E
+  74	today: territory E+W+S+NI→E+W+S
+  68	today: in_force_from new later (commenced [law])
+  68	today: in_force_from new later (repealed_in_part [law])
+  57	today: in_force_from new later (inserted [law])
+  54	today: in_force_from old undated, new repealed_in_part [law]
+  50	history: in_force_from
+  48	today: status in_force→in_force_partial (commenced [lgu])
+  44	today: in_force_from new earlier (inserted [law])
+  41	today: in_force_from old undated, new repealed [law]
+  38	today: territory E+W+S+NI→NI
+  37	today: in_force_from old undated, new inserted [law]
+  34	today: status prospective→in_force (none dated)
+  32	today: status repealed→repealed_saved (repealed [law])
+  28	today: in_force_from old undated, new substituted [law]
+  27	today: status repealed→in_force (repealed [law])
+  24	today: in_force_from new later (repealed [law])
+  15	today: in_force_from new earlier (repealed [law])
+  12	today: in_force_from new earlier (substituted [law])
+  12	today: status in_force→in_force_partial (inserted [law])
+  11	today: in_force_from old undated, new other [law]
+  11	today: status repealed_saved→in_force (commenced [law])
+  11	today: territory E+W+S→E+W+S+NI
+  8	today: status repealed_saved→in_force (substituted [law])
+  6	today: status in_force→repealed (none dated)
+  6	today: status repealed→in_force (repealed_in_part [law])
+  5	today: old unknown, new repealed
+  5	today: status repealed_saved→in_force (inserted [law])
+  4	today: changed_by other law
+  4	today: in_force_from new later (none dated)
+  4	today: in_force_from old undated, new none dated
+  4	today: status prospective→repealed (repealed [law])
+  4	today: status repealed_saved→in_force (repealed [lgu])
+  3	today: in_force_from new earlier (none dated)
+  3	today: in_force_from new later (repealed [lgu])
+  3	today: status in_force→in_force_partial (substituted [law])
+  3	today: status repealed_saved→in_force (repealed [law])
+  2	history: old prospective from the law's making
+  2	today: in_force_from new later (substituted [lgu])
+  2	today: in_force_from old undated, new commenced [lgu]
+  2	today: in_force_from old undated, new substituted [lgu]
+  2	today: status in_force→in_force_partial (commenced [law])
+  2	today: status in_force→in_force_partial (inserted [lgu])
+  2	today: status in_force→repealed_saved (none dated)
+  2	today: status repealed→in_force_partial (repealed_in_part [law])
+  2	today: territory W→E+W
+  1	history: more periods
+  1	today: changed_by new none
+  1	today: in_force_from new earlier (other [lgu])
+  1	today: in_force_from new earlier (repealed [lgu])
+  1	today: in_force_from new later (inserted [lgu])
+  1	today: in_force_from new later (other [law])
+  1	today: in_force_from old undated, new inserted [lgu]
+  1	today: in_force_from old undated, new renumbered [law]
+  1	today: in_force_from old undated, new repealed [lgu]
+  1	today: status repealed→in_force (repealed [lgu])
+  1	today: status repealed→in_force (substituted [law])
+  1	today: status repealed→repealed_saved (none dated)
+  1	today: status repealed→repealed_saved (repealed [lgu])
+  1	today: territory E+W+S→E+W
+  1	today: territory E+W+S→S
+  1	today: territory W+S→W

@@ -1,0 +1,17 @@
+text gone (strict): 648 rows; in force today on the new label: 167 in 9 laws
+by old status today:
+%{"repealed" => 165, "repealed_saved" => 2}
+by text kind:
+%{dots: 67, repealed_word: 100}
+a repeal reaching the row:
+%{false: 132, true: 35}
+by law (old repealed / old not):
+{"UK_ukpga_1954_70", 88, 88}
+{"UK_ukpga_1875_17", 32, 32}
+{"UK_ukpga_1971_61", 16, 16}
+{"UK_ukpga_1962_58", 12, 12}
+{"UK_ukpga_1987_12", 8, 8}
+{"UK_uksi_2014_1638", 5, 5}
+{"UK_ukpga_1969_10", 2, 2}
+{"UK_ukpga_1998_17", 2, 2}
+{"UK_uksi_2005_3117", 2, 2}

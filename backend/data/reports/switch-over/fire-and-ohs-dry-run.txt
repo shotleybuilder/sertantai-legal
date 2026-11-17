@@ -1,0 +1,5 @@
+laws read 3 at once: 12.5 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 1.1 of 6 cores busy; max 4
+139 laws folded, 0 not; 26467 rows, 13912 differ; periods 44495 → 50103
+today (old): %{"in_force" => 24175, "in_force_partial" => 41, "prospective" => 1209, "repealed" => 486, "repealed_saved" => 272}
+today (new): %{"in_force" => 24341, "in_force_partial" => 110, "prospective" => 762, "repealed" => 556, "repealed_saved" => 364}
+per law: data/reports/switch-over/fire-and-ohs-dry-run.csv

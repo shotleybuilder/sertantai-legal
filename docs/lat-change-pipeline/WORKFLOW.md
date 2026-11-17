@@ -705,6 +705,20 @@ There is no agent check: the conversion is a fixed mapping under unit tests (`la
   - **Checked rows.** 22 OH&S checked rows changed by the 2026-11-10 commencement re-reads (SI 2005/1909 on HSWA) are parked with the Commencement reader.
   - **The apply** wrote 122 of 122, and `mix lat.label_switch --stored` (new, replacing the scratch script) shows 0 rows differing.
   - **Parser-stale laws.** 59 now counted by `lat.stale --strict --switched` were text-diffed (0 rows) and re-parsed from the store.
+- **On Fire and OH&S** (a round of five families, 2026-11-17):
+  - **The shadow's evidence.** The parked `shadow-cause-misses-container` was fixed first. The shadow now takes a change on the row's Part or Chapter as its evidence (`Label.reaching/3`, as the fold reads it), so a row repealed with its Part no longer reads "none dated".
+  - **One run for the round.** `--apply --family "Fire and OH&S"` applies the round once all five names are in the setting (`Rounds.switched?/2`, kept out of the fold version).
+  - **The hand looks.** Every large class is one rule:
+    - made period, 5,581 rows;
+    - devolved territory: asc 2025/4, 901 rows, and two "(England)" SIs;
+    - changed_by the commencing order: the Petroleum Acts, 488 rows;
+    - start undated: the Tips Act 1969 and the Pipe-lines Act 1962, 368 rows.
+  - **The scans.** These found what the samples could not size:
+    - 167 rows whose text is gone in the law ("[Repealed]" or dots) but whose repeal no source holds. 88 are MQA 1954 rows, under repeals schedules not read (SI 1974/2013, SI 1993/1897). They were named as known limits by Decision 1 (b) and keep their old label, repealed. The class is parked with the Amending-law reader and Sources.
+    - 3 rows credited before their maker, which the register holds no making date for.
+  - **Known limits.** 192 rows in all, in `fire-and-ohs-known-limits.md`.
+  - **The apply.** It wrote 139 of 139, plus a refold of the three switched families (388) for the fold-version edits. `--stored` shows 0 rows differing in all four, and `lat.stale --strict --switched` shows 0 of 527.
+  - **Lesson.** Before trusting a "no repeal held" cause, scan the rows whose text is gone. The cause counts only rows that the old path repealed.
 
 **Skill.** `switch-over-check` (rewritten 2026-11-07 to the code-decided pass).
 

@@ -1,0 +1,12 @@
+== Fire and OH&S
+139 laws written, 0 failed
+exit 0, 209 s
+== ENVIRONMENTAL PROTECTION
+122 laws written, 0 failed
+exit 0, 924 s
+== OH&S: Occupational / Personal Safety
+149 laws written, 0 failed
+exit 0, 168 s
+== TRANSPORT: Maritime Safety
+117 laws written, 0 failed
+exit 0, 200 s

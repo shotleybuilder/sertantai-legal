@@ -1,0 +1,27 @@
+== Fire and OH&S
+139 laws folded, 0 not; 26133 rows, 0 differ; periods 50103 → 50103
+today (old): %{"in_force" => 24341, "in_force_partial" => 110, "prospective" => 762, "repealed" => 556, "repealed_saved" => 364}
+today (new): %{"in_force" => 24341, "in_force_partial" => 110, "prospective" => 762, "repealed" => 556, "repealed_saved" => 364}
+per law: data/reports/switch-over/fire-and-ohs-stored-fire-and-oh-s-.csv
+== ENVIRONMENTAL PROTECTION
+122 laws folded, 0 not; 34802 rows, 0 differ; periods 70595 → 70595
+today (old): %{"in_force" => 30300, "in_force_partial" => 1424, "prospective" => 1709, "repealed" => 719, "repealed_saved" => 650}
+today (new): %{"in_force" => 30300, "in_force_partial" => 1424, "prospective" => 1709, "repealed" => 719, "repealed_saved" => 650}
+per law: data/reports/switch-over/fire-and-ohs-stored-environmental-protec.csv
+== OH&S: Occupational / Personal Safety
+149 laws folded, 0 not; 18453 rows, 0 differ; periods 38934 → 38934
+today (old): %{"in_force" => 17008, "in_force_partial" => 1, "repealed" => 519, "repealed_saved" => 925}
+today (new): %{"in_force" => 17008, "in_force_partial" => 1, "repealed" => 519, "repealed_saved" => 925}
+per law: data/reports/switch-over/fire-and-ohs-stored-oh-s--occupational--.csv
+== TRANSPORT: Maritime Safety
+117 laws folded, 0 not; 24285 rows, 0 differ; periods 47642 → 47642
+today (old): %{"in_force" => 23726, "in_force_partial" => 1, "prospective" => 57, "repealed" => 384, "repealed_saved" => 117}
+today (new): %{"in_force" => 23726, "in_force_partial" => 1, "prospective" => 57, "repealed" => 384, "repealed_saved" => 117}
+per law: data/reports/switch-over/fire-and-ohs-stored-transport--maritime-.csv
+== stale
+parser 4cf7d6e7fbc2, labels 073b51f677c2: 742 stale laws (switched families: 0 of 527)
+  labels_version: 742
+  parser_version: 742
+change register, code 27ff50ddcd37: 0 of 544 built laws stale (7 built with no changes)
+  laws holding LAT with no build: 725
+stale exit 0

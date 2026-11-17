@@ -77,3 +77,11 @@ All are read-only until the apply. Ask Jason before the long runs, which take ab
   - **The apply:** 122 of 122 written; `--stored` shows 0 differing.
   - **After it:** 59 parser-stale laws re-parsed, with 0 rows changed.
   - Session: `.claude/sessions/lat-change-pipeline/2026-11-12-environmental-protection-switch-over.md`.
+- **Fire and OH&S** (a round of five families, 2026-11-17): no agent pass.
+  - **Fixed first:** the shadow's evidence now takes the row's Part or Chapter (`Label.reaching/3`), the bug parked by Environmental Protection.
+  - **A text-gone scan.** 167 rows read in force though the law's text shows them gone ("[Repealed]" or dots): their repeals sit in schedules not read. They were named known limits (Decision 1 b). Run this scan for every family: `label_rules` doesn't catch it, and the shadow's "no repeal held" counts only rows the old path repealed.
+  - **Known limits:** 192 rows.
+  - **The apply:** 139 written, plus the switched families' refold (388); `--stored` shows 0 differing.
+  - **The round applied in one run:** `--apply --family "Fire and OH&S"`.
+  - Session: `.claude/sessions/lat-change-pipeline/2026-11-17-fire-and-ohs-switch-over.md`.
+

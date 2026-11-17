@@ -1,0 +1,4 @@
+laws read 3 at once: 12.5 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 1.8 of 6 cores busy; max 4
+27206 rows; breaching 0 (legacy_unconfirmed listed apart)
+  legacy_unconfirmed: 99 rows
+PASSED
