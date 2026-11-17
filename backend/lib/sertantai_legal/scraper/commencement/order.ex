@@ -40,7 +40,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
   alias SertantaiLegal.Scraper.AmendingLaw.{DefinedTerms, Doc, Text}
 
-  alias __MODULE__.{Asides, Entries, ScheduleParts, SectionHeads, Territory}
+  alias __MODULE__.{Asides, Entries, LastItemLimit, ScheduleParts, SectionHeads, Territory}
   alias SertantaiLegal.Scraper.Commencement.Rule
 
   alias SertantaiLegal.Scraper.LawStart.Clause
@@ -804,9 +804,38 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
           else: {items ++ [{qualified, :in_relation_to, Territory.of(line)}], next}
 
       nil ->
-        line_items(line, aliases, sch)
+        last_limit_items(line, aliases, sch)
     end
   end
+
+  # "Sections 86(2), … and 96(2) and (3) of the Act, and section 162(1) of
+  # the Act in so far as it relates to paragraphs 10(3) … of Schedule 15"
+  # (SI 1991/96 reg.2): the limit is the last item's, the items before it
+  # come in fully
+  defp last_limit_items(line, aliases, sch) do
+    whole = line_items(line, aliases, sch)
+
+    case LastItemLimit.split(line) do
+      {before, last} -> split_items(before, last, aliases, sch) |> keeping(whole)
+      nil -> whole
+    end
+  end
+
+  defp split_items(before, last, aliases, sch) do
+    {items, next} = items(before, aliases, sch)
+    {limited, next} = line_items(last, aliases, next)
+    {items ++ limited, next}
+  end
+
+  # the split reading only where it names every provision the line read
+  # whole names ("…, and section 184 and paragraph 7 of that Schedule in so
+  # far as they relate to those paragraphs": WSI 2006/345 — "that Schedule"
+  # is lost apart from its list)
+  defp keeping({items, _} = split, {whole_items, _} = whole) do
+    if item_refs(whole_items) -- item_refs(items) == [], do: split, else: whole
+  end
+
+  defp item_refs(items), do: Enum.flat_map(items, &(&1 |> parts() |> elem(0)))
 
   @schedule_entries ~r/^\W*In\s+(?:the\s+Schedule|Schedule\s+(\d+[A-Z]*))?\s*(?:to\s+the\s+Act\s*)?[,—–:]\s*the\s+(repeals?|entr(?:y|ies))\b(.*)$/isu
 

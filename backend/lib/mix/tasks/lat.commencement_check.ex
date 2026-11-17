@@ -21,6 +21,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
       mix lat.commencement_check --family "OH&S: Occupational"
       mix lat.commencement_check --laws A,B --all
       mix lat.commencement_check --family F --sample FILE --n 50 [--seed N]
+      mix lat.commencement_check --order-limits [--out FILE]   # stored order rules limiting a list, the limit after a final ", and <item>" flagged, and what a fresh reading moves (read-only)
       mix lat.commencement_check --family F --fresh   # the laws' own clauses, and their amending laws', re-read now (a dry run of `mix lat.commencement --read` and `--read-amending`)
   """
   use Mix.Task
@@ -40,6 +41,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
     FamilyLeftovers,
     HeldAmenders,
     Leftovers,
+    Order,
     Orders,
     OwnClause,
     OwnRead,
@@ -48,7 +50,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
   }
 
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
-  alias SertantaiLegal.Scraper.Commencement.Review.PartItems
+  alias SertantaiLegal.Scraper.Commencement.Review.{OrderLimits, PartItems}
   alias SertantaiLegal.Scraper.LawStart.Input
 
   alias SertantaiLegal.Scraper.Commencement.Store, as: Rules
@@ -69,6 +71,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
           n: :integer,
           seed: :integer,
           part_items: :boolean,
+          order_limits: :boolean,
           lat: :boolean,
           out: :string
         ]
@@ -77,8 +80,76 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
     Mix.Task.run("app.start")
     Logger.configure(level: :warning)
 
-    if opts[:part_items], do: part_items(opts), else: check(opts)
+    cond do
+      opts[:part_items] -> part_items(opts)
+      opts[:order_limits] -> order_limits(opts)
+      true -> check(opts)
+    end
   end
+
+  # ── the order limits review (`--order-limits`; read-only) ───────────
+
+  # every stored dated order rule for some purposes over three or more
+  # provisions, flagged where its words put the limit after a final ", and
+  # <item>"; and what a fresh reading (in memory) of each order holding
+  # that form moves
+  defp order_limits(opts) do
+    acts = order_limit_acts()
+    lists = Enum.flat_map(acts, fn {_law, rules} -> OrderLimits.limited_lists(rules) end)
+    flagged = Enum.filter(lists, &OrderLimits.last_item_form?/1)
+    moves = Enum.flat_map(acts, &order_limit_moves/1)
+
+    lines =
+      Enum.map(lists, &OrderLimits.line/1) ++
+        ["", "moved by a fresh reading (stored → read now):"] ++
+        Enum.flat_map(moves, &move_lines/1) ++
+        [
+          "",
+          "limited lists #{length(lists)} in #{lists |> Enum.uniq_by(& &1.source.law) |> length()} orders; " <>
+            "limit after a final \", and <item>\" #{length(flagged)}; " <>
+            "split by the reader #{Enum.count(flagged, &OrderLimits.splits?/1)}; " <>
+            "orders whose rules move #{length(moves)}"
+        ]
+
+    if opts[:out], do: File.write!(opts[:out], Enum.join(lines, "\n") <> "\n")
+    Enum.each(Enum.take(lines, -1), &Mix.shell().info(&1))
+  end
+
+  # {the Act, its stored rules}, for every Act an order rule commences
+  defp order_limit_acts do
+    Repo.query!(
+      "SELECT DISTINCT commences FROM commencement_rules " <>
+        "WHERE treatment IN ('order_date', 'order_schedule') ORDER BY 1"
+    ).rows
+    |> List.flatten()
+    |> Enum.map(&{&1, Rules.for_law(&1)})
+  end
+
+  # each of the Act's orders with a stored rule of the form, read now as
+  # `mix lat.commencement --read-orders` reads it: {order, Act, gone, new}
+  defp order_limit_moves({law, stored}) do
+    orders =
+      for r <- stored,
+          OrderLimits.order_rule?(r),
+          OrderLimits.last_item_form?(r),
+          uniq: true,
+          do: r.source.law
+
+    year = law |> String.split("_") |> Enum.at(2)
+    act = %{law: law, title: title(law, year), year: year}
+
+    for order <- orders,
+        was = Enum.filter(stored, &(&1.source.law == order)),
+        fresh = order |> order_rules(act) |> Order.resolve_appointed_for(stored),
+        {gone, new} = OrderLimits.moved(was, fresh),
+        gone != [] or new != [],
+        do: {order, law, gone, new}
+  end
+
+  defp move_lines({order, law, gone, new}),
+    do:
+      ["#{order} → #{law}"] ++
+        Enum.map(gone, &("  - " <> &1)) ++ Enum.map(new, &("  + " <> &1))
 
   # ── the Part items review (`--part-items`; read-only) ───────────────
 

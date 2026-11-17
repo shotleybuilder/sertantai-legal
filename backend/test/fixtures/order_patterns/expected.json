@@ -439,7 +439,8 @@
     "UK_uksi_1972_1260/e9b0a7c116": {
       "class": "rules+partial",
       "rules": [
-        "s.18, sch.6 — 1972-08-15 — everywhere, in relation to — order_date"
+        "s.18 — 1972-08-15 — everywhere, fully — order_date",
+        "sch.6 — 1972-08-15 — everywhere, in relation to — order_date"
       ]
     },
     "UK_uksi_1972_1763/15f8f6457e": {
@@ -919,7 +920,8 @@
     "UK_uksi_1991_685/0e6a20c8a5": {
       "class": "rules+partial",
       "rules": [
-        "s.128, s.130, s.132, s.162(2) — 1991-04-01 — everywhere, in relation to — order_date",
+        "s.128, s.130, s.132 — 1991-04-01 — everywhere, fully — order_date",
+        "s.162(2) — 1991-04-01 — everywhere, in relation to — order_date",
         "sch.16.pt.VI — 1991-04-01 — everywhere, fully — order_date"
       ]
     },
