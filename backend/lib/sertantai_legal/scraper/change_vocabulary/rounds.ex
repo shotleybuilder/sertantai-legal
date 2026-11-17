@@ -21,6 +21,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Rounds do
       "OH&S: Gas & Electrical Safety",
       "OH&S: Mines & Quarries",
       "OH&S: Offshore Safety"
+    ],
+    # the second QQ round: the environment families beside EP (Decision 1 b,
+    # second QQ round meta, Jason 2026-11-17)
+    "Waste, Water and Climate" => [
+      "WASTE",
+      "WATER & WASTEWATER",
+      "CLIMATE CHANGE",
+      "POLLUTION",
+      "AIR QUALITY",
+      "NOISE"
     ]
   }
 

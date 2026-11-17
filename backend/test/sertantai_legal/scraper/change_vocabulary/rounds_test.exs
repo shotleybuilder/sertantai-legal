@@ -25,6 +25,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.RoundsTest do
     refute Enum.any?(fams, &String.contains?(&1, "Occupational"))
   end
 
+  test "the Waste, Water and Climate round is its six families, not EP" do
+    fams = Rounds.families("Waste, Water and Climate")
+    assert length(fams) == 6
+    assert "WASTE" in fams and "NOISE" in fams and "WATER & WASTEWATER" in fams
+    refute "ENVIRONMENTAL PROTECTION" in fams
+    refute Rounds.switched?("Waste, Water and Climate", ["WASTE"])
+  end
+
   test "a plain family is no round" do
     assert Rounds.families("ENVIRONMENTAL PROTECTION") == nil
     refute Rounds.round?("OH&S")
