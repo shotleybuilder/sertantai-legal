@@ -261,6 +261,16 @@ A list item whose provisions are limited is partly in, never full. The limit can
 - **Example:** the Agriculture Act 2020 s.57(1): (a) "sections 17 and 18" and (d) "this Part" are full on Royal Assent. (b) and (c) are qualified, so NERC 2006 s.89A (inserted by s.34, Part 4) dates 2021-01-11, not 2020-11-11.
 - **Serves:** `law-text-wins`, `binds-on-date` · **Code:** `LawStart.ListItems` · **Test:** `commencement/own_clause_limited_items_test` · **Origin:** Fire and OH&S: Store and build, Decision 4 (b); the check over every Part item: 178 items, 34 limited, none left dated full
 
+### `an-orders-last-item-limit-binds-that-item`
+In an order's list, a limit after the final ", and <item>" binds only that item. Examples of a limit: "in so far as it relates to …", "so far as …", "for the purposes of …". The items before it are full, unless the limit covers the whole list. It does where:
+- a comma sets it off;
+- it is plural after a single provision;
+- the earlier items carry limits of their own, or are a Schedule's repeals;
+- a further limit follows;
+- it completes the item or names a place.
+- **Example:** SI 1991/96 reg.2, "Sections 86(2), … 89(4), 90(1), (2) and (7), 94(1) and (2) and 96(2) and (3) of the Act, and section 162(1) of the Act in so far as it relates to paragraphs 10(3) and 15(3) to (5) of Schedule 15 …, shall come into force on 14th January 1991". EPA ss.89(4) and 96(2), (3) are wholly in force on 1991-01-14; only s.162(1) is partly in force.
+- **Serves:** `law-text-wins`, `binds-on-date` · **Code:** `Commencement.Order.LastItemLimit` · **Test:** `commencement/order_last_item_limit_test` · **Check:** `mix lat.commencement_check --order-limits` (198 rules with purposes over 3+ refs; 21 of the form, 13 split, 8 left whole and named) · **Origin:** Fire and OH&S: Labels side by side, Decision 1 (c)
+
 ---
 
 ## 3. Territory

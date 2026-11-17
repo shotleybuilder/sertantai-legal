@@ -1,0 +1,59 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+laws read 3 at once: 12.5 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.8 of 6 cores busy; max 4
+139 laws folded; 27206 rows; not folded: []
+
+S shapes (rows):
+  19755  prospective
+  4936  text_change
+  3477  ancestor
+  2447  undated_start
+  1155  partial
+  1091  territory_narrowed
+  1027  version
+  757  repealed
+  663  in_force_for
+  311  undated_change
+  237  applied
+  198  several_laws
+  14  renumbered
+
+T differences from today (rows):
+  8225  history
+  2286  changed_by
+  1406  territory
+  1357  no_today
+  915  in_force_from
+  737  in_force_from+changed_by
+  518  status+in_force_from
+  463  in_force_from+territory
+  130  in_force_from+changed_by+territory
+  124  status+in_force_from+changed_by
+  99  status
+  77  status+in_force_from+changed_by+territory
+  67  changed_by+territory
+  61  status+in_force_from+territory
+  41  status+territory
+  37  status+changed_by+territory
+  7  status+changed_by
+
+current status (rows):
+  25605  in_force
+  738  prospective
+  391  repealed
+  362  repealed_saved
+  110  in_force_partial
+
+timeline rows: 50151 periods, 0 breaking the table's rules
+  by rule:
+
+side by side (rows): 27206 = 10656 agree + 6968 differ today + 8225 differ only in history + 1357 no stored timeline
+
+gaps, a value no source gives (rows):
+  2447  undated_start
+  311  undated_change
+
+real	0m4.916s
+user	0m6.473s
+sys	0m1.175s

@@ -634,6 +634,19 @@ There is no agent check: the conversion is a fixed mapping under unit tests (`la
 - **On OH&S** (2026-10-31): 28,307 periods, 0 breaks; 16,487 of 20,371 rows differed from today's labels.
 - **On Maritime Safety:** 46,976 periods, 0 breaks. Of 24,434 rows, 18,898 agree, 2,350 differ today, 874 differ only in history, and 2,312 have no stored timeline.
 - **On Environmental Protection** (2026-11-12, no agent pass, two runs identical): 69,136 periods, 0 breaks. Of 35,766 rows, 13,229 agree, 17,872 differ today, 2,366 differ only in history, and 2,299 have no stored timeline. Territory alone is the largest class (7,736 rows), from the family's partial extents and territorial versions. The cold run took 7 min 53 s with 1 worker while a VM ran.
+- **On Fire and OH&S, a round** (2026-11-17), two runs identical, in seconds once the step close had filled the fold cache:
+  - 50,151 periods, 0 breaks;
+  - of 27,206 rows, 10,656 agree, 6,968 differ today, 8,225 differ only in history, and 1,357 have no stored timeline. History only is the largest class.
+
+**A switched family's held refold** (Fire and OH&S, the families held one reading behind since Store and build, Decision 4 b). Its labels are written here, once every moved row is explained:
+- `mix lat.label_switch --family F --stored --rows PATH` writes each moved provision (today's status each way, the fields that differ, both periods). `--laws` narrows to named laws.
+- The rows are grouped by law, today's status and fields. Each group's first row is read with the stored changes and claims reaching it, and with the law's text where a value is in doubt.
+- Each group is named by an earlier step's fix or rule, read right, or parked with its owner. A group that would write a wrong today's status goes to Jason before the write.
+- In the round:
+  - 2,239 rows in 104 groups: 2,195 explained, 44 in 4 parked classes;
+  - one class (SI 1991/96's last-item limit read on every item, 7 wrong today's statuses) was fixed in-step by Jason's Decision 1 c, then re-read and rebuilt;
+  - the refold wrote 388 laws, and `--stored` showed 0 rows differing afterwards;
+  - `lat.stale --strict --switched` exit 0.
 
 **The single `changed_by`** (decided here on 2026-11-06, Maritime Safety, Decision 1). Where several laws made the text, it is the principal maker, never an amender of the amending law, then the latest made (RULES `changed-by-one-law-for-compliance`). `label_periods.ex` was in the build's version, so a change to it marked every built law stale. That was Store and build's parked bug. It was fixed by #194: the fold has its own version (`FoldVersion`), and a fold-only edit rebuilds no change.
 
