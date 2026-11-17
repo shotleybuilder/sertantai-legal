@@ -1,12 +1,15 @@
 ---
 session: 'LAT Change Pipeline: Fire and OH&S — Meta Session'
 type: meta
-status: active
-opened: 2026-11-13
+status: closed
+opened: '2026-11-13'
+closed: '2026-11-17'
+outcome: success
+summary: 'The first QQ round, five families together, through all 14 steps in 5 days (2026-11-13 to 11-17): 139 laws switched and 388 switched laws refolded, every pass rule met; retrospective closed (Credo hook fix next; the extended golden, baseline 41/50, gates the next round).'
 family: 'Fire and OH&S (round)'
 ---
 
-# Session: LAT Change Pipeline: Fire and OH&S — Meta Session (ACTIVE)
+# Session: LAT Change Pipeline: Fire and OH&S — Meta Session (CLOSED)
 
 ## Problem
 
@@ -29,7 +32,7 @@ This is the first QQ register round, and it takes five families together (Jason 
 - ✅ Store and build (step 11): 544 digests identical across two builds, 0 stale, golden 27/27 by design (TCPA s.78(4BA) read from anaw 2015/4's own s.58(2)(b): Royal Assent from the introduction, a Part written out as its sections, limited items partly in; three fixer calls); the two parked bugs fixed (family scope exact, a build's failures counted); the switched families' refold (2,239 rows) held to Labels side by side (Decision 4 b); step close every gate and Checked rows PASS, Stale laws 139 (old-path labels, for Switch-over, Decision 1); closed 2026-11-17
 - ✅ Labels side by side (step 12): the round's baseline: 139 laws, 27,206 rows, 50,151 periods, 0 breaks; 10,656 agree, 6,968 differ today, 8,225 history only, 1,357 no stored timeline. The switched families' held refold was explained group by group (2,239 rows, 104 groups, 2,195 explained). SI 1991/96's last-item limit was fixed in-step (Decision 1 c: `an-orders-last-item-limit-binds-that-item`, 14 orders), re-read and rebuilt; golden 27/27. The refold wrote 388 laws: `--stored` 0 differing, `--strict --switched` exit 0. Step close: every gate and Checked rows PASS, Stale laws 139 (old-path labels, for Switch-over). Closed 2026-11-17.
 - ✅ Switch-over (step 13): the five names added to `:label_families`. 139 laws were written from their merged changes, and the switched families refolded (388); `--stored` shows 0 differing in all four families, and `lat.stale --strict --switched` 0 of 527. The parked shadow bug was fixed first (`Label.reaching/3`). 167 rows whose text is gone but whose repeal isn't held are known limits (Decision 1 b, parked with the Amending-law reader and Sources), 192 known-limit rows in all. Golden 27/27; step close every gate, Checked rows and Stale laws PASS; closed 2026-11-17
-- ⬜ Retrospective and housekeeping
+- ✅ Retrospective and housekeeping (`2026-11-17-fire-and-ohs-retrospective.md`): 1 day a family; 69 bugs closed (51 existing), 52 parked, open 114 → 119; Decisions 1–3 (the Credo hook fixed next; the extended golden gates the next round, baseline 41/50, one agent check at its end; the version split as hardening's first todo); housekeeping below; closed 2026-11-17
 
 ## Dependencies
 
@@ -62,6 +65,7 @@ One row per step, filled when its session closes. Agent tokens are given by mode
 | Merge | fire-and-ohs-merge | 2026-11-15 | 2026-11-15 | 1 | yes, 6 of 7 (7: every gate to Merge PASS; Checked rows 3 parked with the Label fold; Stale laws 139 on labels for Store and build, change register 0) | 1 (the fix's lost joins fixed too, Decision 4 c, within the plan's fix todo) | 3 closed (compound fixed; maker tie a known limit; operative note piece folded) / 3 parked (Amending-law reader 1: title glued to year; Markup reader 1: bracketed note citation; Commencement reader 1: dates keeping records apart) | fixer (Fable) about 260k over 2 calls; no clerk | 2 |
 | Evidence | fire-and-ohs-evidence | 2026-11-15 | 2026-11-15 | 1 | yes, 6 of 7 (7: every gate to Evidence PASS; Checked rows 3 parked with the Label fold; Stale laws 139 on labels for Store and build, change register 0) | 0 (Decisions 1–3 within the plan) | 1 closed (stages-no-evidence-rule fixed) / 3 parked (Feed reader 1: letter range ranked as text; Commencement reader 2: order item read whole, if later) | fixer (Fable) 62k over 1 call; no clerk | 2 |
 | Label fold | fire-and-ohs-label-fold | 2026-11-15 | 2026-11-16 | 2 | yes, 6 of 7 (7: every gate to the Label fold PASS and Checked rows PASS; Stale laws 139 on labels for Store and build, change register 0) | 0 (Decisions 1–4 in the plan; Decision 6, the 28 checked rows the fix moved, within the plan's checked-rows rule) | 5 closed (stages ×2, revocation listed per provision, the 3 checked rows) / 1 parked (Commencement reader: a stage qualified "in relation to" carried as not partial); 2 left open (devolved insertion, EU directives) | fixer (Fable) about 323k over 2 calls and 3 follow-ups (228k on stages, over the 150k cap); no clerk | 2 |
+| Measures | fire-and-ohs-measures | 2026-11-16 | 2026-11-16 | 1 | yes, all 5 (every published figure the same or moved by a named later commit, no gate moved to a failure; seed 1116 replicates byte for byte; step close every gate and Checked rows PASS, Stale laws 139 on labels for Store and build) | 0 | 0 closed / 0 parked (register +3 rows, no code change) | 0; no agents (3 items read by hand) | 1 (row added at the retrospective, 2026-11-17: the close commit 4964d636 named it but did not write it) |
 | Store and build | fire-and-ohs-store-and-build | 2026-11-16 | 2026-11-17 | 2 | yes, 7 of 8 (8: digests identical, 0 stale, golden 27/27, hand check 3/3, every round gate PASS; `--strict --switched` deferred with the refold, Decision 4 b) | 2 (amended plan, right by design, Decisions 2–3; Decision 4 b, the refold held) | 3 closed (family scope, build failures, staged start already carried) / 9 parked (Commencement reader 3, Amending-law reader 2, Extent reader 1, Sources 2, Register 1) | fixer (Fable) about 458k over 3 calls; no clerk | 5 |
 | Labels side by side | fire-and-ohs-labels-side-by-side | 2026-11-17 | 2026-11-17 | 1 | yes, all 5 (5: every gate and Checked rows PASS; Stale laws 139 old-path labels for Switch-over, change register 0) | 1 (Decision 1 c: the SI 1991/96 class fixed in-step, then re-read, rebuild, refold) | 1 closed (order last-item limit) / 5 parked (Commencement reader 2, Label fold 2, Sources 1) | fixer (Fable) 116k over 1 call; no clerk | 3 |
 | Switch-over | fire-and-ohs-switch-over | 2026-11-17 | 2026-11-17 | 1 | yes, all 8 (8: every gate, Checked rows and Stale laws PASS; Fire and OH&S 0 stale) | 0 (Decision 1 b within the plan's stop rule; the switched families' refold in the plan) | 1 closed (shadow-cause-misses-container) / 5 parked (Amending-law reader 1: text gone, no repeal held; Label fold 1; Register 1; Switch-over 1; Tooling 1) | 0 by the step; no clerk | 4 |

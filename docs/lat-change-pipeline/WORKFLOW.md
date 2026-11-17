@@ -762,7 +762,7 @@ Session files: `.claude/sessions/lat-change-pipeline/<date>-<family>-<step-name>
 
 ## Running a new family
 
-1. **Prerequisites.** The golden set for the pass is frozen.
+1. **Prerequisites.** The golden set for the pass is frozen: the extended 50 from the second QQ round on (Fire and OH&S retrospective).
 2. **Making laws**: every live law decided from its text; the making laws parsed into LAT (fetch and parse with Jason's go).
 3. **Sources** until the gate passes (fetches only with Jason's go).
 4. **Feed reader**, then **Markup reader**: catalogues first, then the gates.
@@ -786,6 +786,12 @@ Session files: `.claude/sessions/lat-change-pipeline/<date>-<family>-<step-name>
 **The first QQ round** (Jason 2026-11-13) takes five families together, in place of one at a time: FIRE, FIRE: Dangerous and Explosive Substances, OH&S: Gas & Electrical Safety, OH&S: Mines & Quarries and OH&S: Offshore Safety (meta session `2026-11-13-fire-and-ohs-meta.md`). Each step runs once over the round, `--family "Fire and OH&S"`; the round's exact family names are in `ChangeVocabulary.Rounds` (rule `a-round-is-its-exact-families`). The check line is per family: at most 6 days each, 30 for the round.
 
 **The check on this order** (retrospectives review, Decision 5): each QQ family's retrospective measures days per family (at most 6, the backlog fixing included), new reader bugs per family (falling from EP's 26) and open bugs (falling from 123).
+
+**After the first QQ round** (Fire and OH&S retrospective, Jason 2026-11-17):
+- **The check line, measured.** 1 day a family, against at most 6. New reader bugs parked: 29 for the round's 5 families, against EP's 26 for one. Open bugs rose from 114 to 119: the round closed 69 (51 of them existing) and parked 52. Lists: `backend/data/reports/retrospective/fire-and-ohs-bugs.md`.
+- **The extended golden gates** (Decision 2, RULES Decision 10). From the next round's first step, every step runs the 50 (`mix lat.vocabulary --golden --extended`), not only the 27. Baseline (2026-11-17, `backend/data/reports/retrospective/fire-and-ohs-golden-extended.txt`): 41/50. The 27 all pass, and 14 of the 23 extended pass. The 9 failing are all extended cases, as at OH&S's round 9 (41/50): 1937 c.67 s.108(1)(a); 1963 c.41 s.76 and s.91; 1984 c.3 s.1A(b) and s.1(6B); SI 1981/917 reg.8(2); SI 1989/462 reg.7(2); SI 2013/1471 reg.15(5)(b); SI 2015/51 reg.33. The next round's first step names each failure's owning step. From then on the pass is no new failure. One agent check, costed then, runs at the end of the next round. Until then, no agent check runs in a step or in final QA.
+- **Batch fold-version edits before one write** (Decision 3). An edit to a fold-version file (`label.ex`, `label_source.ex`, `label_switch.ex`, `known_limits.ex`) makes every switched family's labels stale. So a step makes all such edits before its one apply, which writes the step's laws and refolds the switched families together. Splitting the versions is production hardening's first todo.
+- **A sweep that clears a parked fetch logs it fixed.** When the next step's Sources sweep clears a fetch failure, that step's session adds a `status: fixed` entry for the parked bug. Otherwise the index keeps it open (3 entries in this round).
 
 **Models per part** (Claude Model Plan, 2026-11-13, Decisions 1–4; this replaces the Label-fold-only pilot). Opus 5.5 is the session: the plan, Jason's decisions, the pass/fail verdict and the small fixes. The other parts go to named agents in `.claude/agents/`, each with its model fixed in its file:
 

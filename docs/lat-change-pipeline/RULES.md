@@ -1147,6 +1147,7 @@ Each item gives the rulings with their dates, what the code does now, the aim at
   - 2026-10-29: "golden grows to about 50 before round 1".
   - 2026-10-30: "growing golden mid-workflow was a mistake": back to 27, and the 23 new cases held for the next pass.
   - 2026-10-31: "stick with the passing 27 golden".
+  - 2026-11-17 (Fire and OH&S retrospective, Decision 2): the extended golden gates from now on. The 50 (`mix lat.vocabulary --golden --extended`) gate every step of the next round from its first step. The recommendation below had been carried by three families without being done.
 - **Code:** `golden.exs` (27), `golden_extended.exs` (23).
 - **Problem:** the 27 were also edited by rulings during the pass (D1 2026-10-21, HSWA s.78 2026-10-24, `commenced_by` 2026-10-30, TCPA/EUWA 2026-10-30).
 - **Aim:** `prove-one-family`.
