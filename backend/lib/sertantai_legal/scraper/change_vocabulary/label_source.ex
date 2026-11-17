@@ -37,6 +37,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
           start: Date.t() | nil,
           periods: [Label.period()],
           reaching: [Change.t()],
+          containers: [String.t()],
           today: [map()]
         }
 
@@ -92,6 +93,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSource do
           start: start,
           periods: Map.get(labels, id, []),
           reaching: Enum.filter(changes, &Label.reaches?(&1, base)),
+          # its Parts and Chapters, for the shadow's evidence (`Label.reaching/3`)
+          containers: p.containers,
           # the law's making and the text's date, for the rules (CV-06)
           made: made,
           valid: valid,

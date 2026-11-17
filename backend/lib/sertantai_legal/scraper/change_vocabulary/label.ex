@@ -74,11 +74,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
   def fold(id, provision, changes) do
     # a Part or Chapter row is never its own container: its heading's own
     # changes stay on it (CV-06 round 1, R5: CLP Title V, REACH Title XIII)
-    containers =
-      Enum.reject(
-        Map.get(provision, :containers, []),
-        &(part_arabic(&1) == part_arabic(base_id(id)))
-      )
+    containers = own_containers(id, Map.get(provision, :containers, []))
 
     # a change brought in by stages: at its first, each later stage a
     # commencement (`Label.Stages`)
@@ -227,6 +223,28 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Label do
   def containers(nil, _chapter), do: []
   def containers(part, nil), do: ["pt.#{part}"]
   def containers(part, chapter), do: ["pt.#{part}.ch.#{chapter}", "pt.#{part}"]
+
+  @doc """
+  The changes reaching row `id` as the fold reads them: on the row or a
+  provision holding it (`reaches?/2`), or whole on a Part or Chapter
+  holding it (`containers`, nearest first, as `containers/2` gives), each
+  as stored. The shadow's evidence (Switch-over, 2026-11-17:
+  `shadow-cause-misses-container`, SSI 1999/1 reg.47(8)(a) repealed with
+  Part II).
+  """
+  @spec reaching([Change.t()], String.t(), [String.t()]) :: [Change.t()]
+  def reaching(changes, id, containers) do
+    base = base_id(id)
+
+    changes
+    |> Enum.zip(within(changes, own_containers(id, containers)))
+    |> Enum.filter(fn {_c, read} -> reaches?(read, base) end)
+    |> Enum.map(&elem(&1, 0))
+  end
+
+  # a Part or Chapter row is never its own container
+  defp own_containers(id, containers),
+    do: Enum.reject(containers, &(part_arabic(&1) == part_arabic(base_id(id))))
 
   # a whole change on a Part or Chapter holding the row reaches it as one
   # on the whole law would — as stated, never as nearer than its own

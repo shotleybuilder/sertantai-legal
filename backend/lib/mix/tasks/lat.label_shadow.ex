@@ -23,7 +23,7 @@ defmodule Mix.Tasks.Lat.LabelShadow do
   use Mix.Task
 
   alias SertantaiLegal.Scraper.Amendment.PatternSource
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{LabelPeriods, LabelShadow}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Label, LabelPeriods, LabelShadow}
   alias SertantaiLegal.Scraper.LabelTools.FamilyFold
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Draw
   alias SertantaiLegal.Scraper.LabelProjection
@@ -63,7 +63,7 @@ defmodule Mix.Tasks.Lat.LabelShadow do
           is_list(rs),
           r <- rs do
         new = LabelPeriods.periods(law, r.sid, r.periods, r.reaching)
-        {law, r, new, LabelShadow.cause(law, r.today, new, r.reaching, today)}
+        {law, r, new, LabelShadow.cause(law, r.today, new, evidence(r), today)}
       end
 
     causes = for {_, _, _, c} <- rows, c != nil, do: c
@@ -147,7 +147,7 @@ defmodule Mix.Tasks.Lat.LabelShadow do
       old: r.today,
       new: Enum.map(new, &Map.drop(&1, [:law_name, :section_id, :change_ids])),
       changes:
-        for c <- r.reaching do
+        for c <- evidence(r) do
           %{
             key: c.key,
             target: c.target,
@@ -162,4 +162,9 @@ defmodule Mix.Tasks.Lat.LabelShadow do
         end
     }
   end
+
+  # the changes that can decide a row's new value: those reaching it, and
+  # those on a Part or Chapter holding it, as the fold reads them
+  # (Switch-over, 2026-11-17: shadow-cause-misses-container)
+  defp evidence(r), do: Label.reaching(r.changes, r.id, Map.get(r, :containers, []))
 end

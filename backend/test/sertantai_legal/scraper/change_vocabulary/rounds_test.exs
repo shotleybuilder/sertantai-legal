@@ -76,4 +76,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.RoundsTest do
       end
     end
   end
+
+  # Fire and OH&S: Switch-over (2026-11-17): a round is applied in one run
+  test "a --family name is switched when it is a switched family, or a round all of whose families are" do
+    round = Rounds.families("Fire and OH&S")
+    fams = ["ENVIRONMENTAL PROTECTION" | round]
+
+    assert Rounds.switched?("Fire and OH&S", fams)
+    assert Rounds.switched?("💙 OH&S: Offshore Safety", fams)
+    assert Rounds.switched?("ENVIRONMENTAL PROTECTION", fams)
+    refute Rounds.switched?("Fire and OH&S", ["ENVIRONMENTAL PROTECTION" | tl(round)])
+    refute Rounds.switched?("Fire and OH&S", ["ENVIRONMENTAL PROTECTION"])
+    refute Rounds.switched?("TRANSPORT: Maritime Safety", fams)
+    refute Rounds.switched?("OH&S: Offshore", fams)
+  end
 end

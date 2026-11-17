@@ -38,7 +38,7 @@ defmodule Mix.Tasks.Lat.LabelSwitch do
 
   alias SertantaiLegal.Scraper.{LabelProjection, LabelRefresh, LabelTimeline, LawRunner}
   alias SertantaiLegal.Scraper.Amendment.PatternSource
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{LabelSwitch, LabelSwitchReport}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{LabelSwitch, LabelSwitchReport, Rounds}
 
   @csv_dir "data/reports/change-vocabulary"
 
@@ -162,7 +162,7 @@ defmodule Mix.Tasks.Lat.LabelSwitch do
   end
 
   defp apply_switch(family, laws) do
-    LabelSwitch.family_in?(family, LabelSwitch.families()) ||
+    Rounds.switched?(family, LabelSwitch.families()) ||
       Mix.raise("#{family} is not in the :label_families setting: set it (config) first")
 
     failed =

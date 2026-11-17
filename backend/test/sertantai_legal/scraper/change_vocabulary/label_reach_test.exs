@@ -81,4 +81,34 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelReachTest do
     refute Label.reaches?(%{whole | target: "s.33(1)"}, "s.33(2)(a)")
     refute Label.reaches?(%{whole | target: "s.3"}, "s.33(2)")
   end
+
+  describe "reaching/3: the changes reaching a row as the fold reads them" do
+    # Switch-over, shadow-cause-misses-container: SSI 1999/1 reg.47(8)(a),
+    # repealed with Part II by SSI 2011/139
+    test "a whole change on the Part holding the row reaches it, the Part written either way" do
+      part = %{change("pt.II", :provision, []) | key: "part"}
+      arabic = %{change("pt.2", :provision, []) | key: "arabic"}
+      other = %{change("pt.III", :provision, []) | key: "other"}
+      own = %{change("reg.47(8)", :provision, []) | key: "own"}
+
+      got = Label.reaching([part, arabic, other, own], "reg.47(8)(a)", ["pt.II"])
+
+      assert Enum.map(got, & &1.key) == ["part", "arabic", "own"]
+      # as the change is stored, its target not rewritten
+      assert hd(got).target == "pt.II"
+    end
+
+    test "with no containers, the same changes as reaches?/2" do
+      cs = for t <- @targets, do: change(t, :provision, [])
+      id = "s.33(2)(a)"
+      assert Label.reaching(cs, id, []) == Enum.filter(cs, &Label.reaches?(&1, id))
+    end
+
+    test "a Part row is not its own container, and a words change on the Part reaches no row" do
+      part = change("pt.2", :provision, [])
+      words = change("pt.II", :words, [])
+      assert Label.reaching([part], "pt.2", ["pt.II"]) == [part]
+      assert Label.reaching([words], "reg.47(8)(a)", ["pt.II"]) == []
+    end
+  end
 end

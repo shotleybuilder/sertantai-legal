@@ -2,7 +2,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelShadowTest do
   @moduledoc "The switch-over's shadow comparison (CV-06): new timeline rows against the stored ones, by cause."
   use ExUnit.Case, async: true
 
-  alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Claim, Evidence, LabelShadow}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Claim, Evidence, Label, LabelShadow}
 
   @law "UK_ukpga_1937_67"
   @today ~D[2026-10-31]
@@ -114,5 +114,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelShadowTest do
     n = [new(~D[2020-12-31], "in_force", territory: "E+W+S")]
 
     assert LabelShadow.cause(law, o, n, [], @today) == "today: territory Windsor E+W+S+NI→E+W+S"
+  end
+
+  # Switch-over, shadow-cause-misses-container (SSI 1999/1 reg.47(8)(a))
+  test "a row repealed with its Part names the Part's repeal, not none dated" do
+    o = [old(~D[1999-04-01], "in_force", in_force_from: ~D[1999-04-01])]
+
+    n = [
+      new(~D[1999-04-01], "in_force", in_force_from: ~D[1999-04-01], to: ~D[2011-04-01]),
+      new(~D[2011-04-01], "repealed", in_force_from: ~D[2011-04-01])
+    ]
+
+    repeal = %{change(:repealed, ~D[2011-04-01], [:law_text]) | target: "pt.II"}
+    reaching = Label.reaching([repeal], "reg.47(8)(a)", ["pt.II"])
+
+    assert LabelShadow.cause(@law, o, n, reaching, @today) ==
+             "today: status in_force→repealed (repealed [law])"
   end
 end

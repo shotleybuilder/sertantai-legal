@@ -70,6 +70,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Rounds do
   # the register's display marker (an emoji and a space) dropped, as the SQL does
   defp unmarked(name), do: String.replace(name, ~r/^[^[:alnum:]]+/u, "")
 
+  @doc """
+  True when a `--family` name is switched in `fams` (the `:label_families`
+  setting, display markers dropped): a round every one of whose families
+  is in it, else the family named (Fire and OH&S: Switch-over,
+  2026-11-17: a round applied in one run). As `LabelSwitch.family_in?/2`,
+  kept here so the labels stage's version holds no scope.
+  """
+  @spec switched?(String.t(), [String.t()]) :: boolean()
+  def switched?(name, fams) do
+    case families(name) do
+      nil -> unmarked(name) in fams
+      round -> Enum.all?(round, &(&1 in fams))
+    end
+  end
+
   @doc "True when `name` is a round's name."
   @spec round?(String.t()) :: boolean()
   def round?(name), do: Map.has_key?(@rounds, name)
