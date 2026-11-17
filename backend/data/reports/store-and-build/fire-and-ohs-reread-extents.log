@@ -1,0 +1,14 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+8 laws to read for their extent clause
+2 parent Acts of their enabling powers, read first
+laws read 3 at once: 12.5 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.4 of 6 cores busy; max 4
+  [1/8] UK_ukpga_1995_15: E+W+S (1 rows)
+  [2/8] UK_asp_2024_14: S (stated on the whole Act) (3 rows)
+  [3/8] UK_asc_2023_2: E+W (stated on the whole Act) (3 rows)
+  [4/8] UK_ukpga_1996_37: E+W+NI (2 rows)
+  [5/8] UK_uksi_2002_1929: E+W+S+NI (by its enabling powers) (2 rows)
+  [6/8] UK_uksi_2003_465: E+W+S+NI (by its enabling powers) (2 rows)
+  [7/8] UK_wsi_2002_784: E+W+S+NI (by its enabling powers) (3 rows)
+  [8/8] UK_ukpga_1996_20: E+W (stated on the whole Act) (2 rows)

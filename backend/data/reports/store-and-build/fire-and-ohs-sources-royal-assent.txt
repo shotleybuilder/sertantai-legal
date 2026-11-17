@@ -1,0 +1,52 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] JWKS public key fetched successfully
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+544 laws in scope
+
+needed against held, by category:
+  own: 544 — held 544
+  feed: 527 — held 521, stale 6
+  territory: 1635 — absent 3, held 1505, not_fetched 120, stale 7
+  introduction: 998 — absent 2, held 831, not_fetched 165
+  enabling_parent: 90 — absent 1, held 89
+  dates: 199 — absent 26, held 137, not_fetched 34, stale 2
+  backlog: 671 — absent 141, held 435, not_fetched 91, stale 4
+  royal_assent: 20 — not_fetched 20
+  needed, all categories: 4684
+
+failures: 449
+  not_fetched  backlog  UK_eur_2019_1010 :schedules  (for UK_eudr_2010_63)
+  not_fetched  territory  UK_eur_2017_625 :body  (for UK_eur_2016_2031)
+  not_fetched  territory  UK_uksi_2021_79 :body  (for UK_eur_2016_2031)
+  not_fetched  territory  UK_uksi_2025_217 :body  (for UK_eur_2016_2031)
+  not_fetched  territory  UK_uksi_2023_959 :body  (for UK_eur_2016_2031)
+  not_fetched  territory  UK_uksi_2022_1315 :body  (for UK_eur_2016_2031)
+  not_fetched  introduction  UK_uksi_2020_1482 :introduction  (for UK_eur_2016_2031)
+  not_fetched  introduction  UK_eur_2017_625 :introduction  (for UK_eur_2016_2031)
+  not_fetched  introduction  UK_uksi_2021_79 :introduction  (for UK_eur_2016_2031)
+  not_fetched  introduction  UK_uksi_2025_217 :introduction  (for UK_eur_2016_2031)
+  not_fetched  introduction  UK_uksi_2023_959 :introduction  (for UK_eur_2016_2031)
+  not_fetched  introduction  UK_uksi_2022_1315 :introduction  (for UK_eur_2016_2031)
+  not_fetched  territory  UK_asp_2003_9 :body  (for UK_ukpga_1967_10)
+  not_fetched  territory  UK_uksi_2012_2855 :body  (for UK_ukpga_1967_10)
+  not_fetched  territory  UK_ukpga_1995_7 :body  (for UK_ukpga_1967_10)
+  not_fetched  territory  UK_ukcm_2018_8 :body  (for UK_ukpga_1967_10)
+  not_fetched  introduction  UK_uksi_1970_211 :introduction  (for UK_ukpga_1967_10)
+  not_fetched  introduction  UK_uksi_1985_1958 :introduction  (for UK_ukpga_1967_10)
+  not_fetched  introduction  UK_uksi_1999_1747 :introduction  (for UK_ukpga_1967_10)
+  not_fetched  introduction  UK_uksi_2000_746 :introduction  (for UK_ukpga_1967_10)
+
+feeds differing from the register's change statistics: 10
+  UK_ukpga_1967_10: effects 442 vs register 438; laws 67 vs 63
+  UK_ukpga_1974_40: effects 647 vs register 637; laws 324 vs 314
+  UK_ukpga_1988_52: effects 1472 vs register 901; laws 218 vs 118
+  UK_ukpga_1989_14: effects 70 vs register 60; laws 22 vs 20
+  UK_ukpga_1990_8: effects 4079 vs register 980; laws 577 vs 206
+  UK_ukpga_2020_7: effects 478 vs register 475; laws 98 vs 97
+  UK_ukpga_2022_30: effects 642 vs register 636; laws 25 vs 23
+  UK_uksi_2000_1043: effects 55 vs register 54; laws 11 vs 10
+  UK_uksi_2010_2214: effects 1086 vs register 998; laws 62 vs 55
+  UK_uksi_2010_404: effects 80 vs register 59; laws 12 vs 11
+
+FAIL

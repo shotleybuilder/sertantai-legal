@@ -1,0 +1,15 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+parser 4cf7d6e7fbc2, labels 1fd90cf7e974: 1269 stale laws (switched families: 388 of 388)
+  fold_version: 388
+  labels_behind_changes: 384
+  labels_version: 881
+  parser_version: 742
+
+change register, code 300bde4406cb: 0 of 544 built laws stale (7 built with no changes)
+  laws holding LAT with no build: 725
+
+sample: 20 built, 10 unbuilt (seed 1117) → data/reports/store-and-build/fire-and-ohs-stale-sample-b.json
+
+Fire and OH&S: 139 stale laws (LAT or labels 139, change register 0)

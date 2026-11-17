@@ -1,0 +1,1165 @@
+[
+  {
+    "built": true,
+    "current_code_version": "300bde4406cb",
+    "event": {
+      "changes": 244,
+      "changes_digest": "a5b764bdb8ed85d3",
+      "claims": 1267,
+      "code_version": "300bde4406cb",
+      "inputs": {
+        "affecting": [
+          "UK_nisr_2006_182",
+          "UK_nisr_2006_425",
+          "UK_nisr_2012_177"
+        ],
+        "amendment_rules": "2026-11-15T13:43:31.228046",
+        "commencement_rules": "2026-11-17T05:55:26.037536",
+        "commencement_sources": [
+          "UK_nisr_2006_182",
+          "UK_nisr_2006_425",
+          "UK_nisr_2012_177"
+        ],
+        "extent_rules": "2026-11-14T21:44:36.860476",
+        "extents_unread": [],
+        "feed": "ba2ec53ad47c5c24",
+        "lat_rows": "3df8729c82fd29a0bd156d71c89f315b",
+        "law_text": "e827a40c2e6ced6b"
+      },
+      "start": {
+        "date": "1995-04-17",
+        "treatment": "clause_date"
+      }
+    },
+    "event_at": "2026-11-17T06:55:43.069074",
+    "inputs_now": {
+      "affecting": [
+        "UK_nisr_2006_182",
+        "UK_nisr_2006_425",
+        "UK_nisr_2012_177"
+      ],
+      "amendment_rules": "2026-11-15T13:43:31.228046",
+      "commencement_rules": "2026-11-17T05:55:26.037536",
+      "commencement_sources": [
+        "UK_nisr_2006_182",
+        "UK_nisr_2006_425",
+        "UK_nisr_2012_177"
+      ],
+      "extent_rules": "2026-11-14T21:44:36.860476",
+      "feed": "ba2ec53ad47c5c24",
+      "lat_rows": "3df8729c82fd29a0bd156d71c89f315b",
+      "law_text": "e827a40c2e6ced6b"
+    },
+    "law": "UK_nisr_1995_87",
+    "verdict": []
+  },
+  {
+    "built": true,
+    "current_code_version": "300bde4406cb",
+    "event": {
+      "changes": 168,
+      "changes_digest": "a7108b8fd9f64a3c",
+      "claims": 1442,
+      "code_version": "300bde4406cb",
+      "inputs": {
+        "affecting": [
+          "UK_nisr_2013_48",
+          "UK_nisr_2016_366",
+          "UK_uksi_2019_696",
+          "UK_uksi_2020_1112"
+        ],
+        "amendment_rules": "2026-11-15T13:39:12.177539",
+        "commencement_rules": "2026-11-17T05:58:36.578537",
+        "commencement_sources": [
+          "UK_nisr_2013_48",
+          "UK_nisr_2016_366",
+          "UK_uksi_2019_696",
+          "UK_uksi_2020_1112"
+        ],
+        "extent_rules": "2026-10-26T23:02:50.037324",
+        "extents_unread": [
+          "UK_nisr_2013_48",
+          "UK_nisr_2016_366"
+        ],
+        "feed": "61663fc8eb29c5d3",
+        "lat_rows": "9749297a63e5fa515d42c10c01922f84",
+        "law_text": "aeff2954812932cd"
+      },
+      "start": {
+        "date": "2013-04-05",
+        "treatment": "clause_date"
+      }
+    },
+    "event_at": "2026-11-17T06:55:58.585028",
+    "inputs_now": {
+      "affecting": [
+        "UK_nisr_2013_48",
+        "UK_nisr_2016_366",
+        "UK_uksi_2019_696",
+        "UK_uksi_2020_1112"
+      ],
+      "amendment_rules": "2026-11-15T13:39:12.177539",
+      "commencement_rules": "2026-11-17T05:58:36.578537",
+      "commencement_sources": [
+        "UK_nisr_2013_48",
+        "UK_nisr_2016_366",
+        "UK_uksi_2019_696",
+        "UK_uksi_2020_1112"
+      ],
+      "extent_rules": "2026-10-26T23:02:50.037324",
+      "feed": "61663fc8eb29c5d3",
+      "lat_rows": "9749297a63e5fa515d42c10c01922f84",
+      "law_text": "aeff2954812932cd"
+    },
+    "law": "UK_nisr_2013_48",
+    "verdict": []
+  },
+  {
+    "built": true,
+    "current_code_version": "300bde4406cb",
+    "event": {
+      "changes": 15,
+      "changes_digest": "3f72d9e377039e23",
+      "claims": 75,
+      "code_version": "300bde4406cb",
+      "inputs": {
+        "affecting": [],
+        "amendment_rules": null,
+        "commencement_rules": "2026-11-17T05:54:58.082100",
+        "commencement_sources": [],
+        "extent_rules": null,
+        "extents_unread": [],
+        "feed": "9918e97d3e298ee7",
+        "lat_rows": "b326f171a508bf198a01d75d5d7dcd17",
+        "law_text": "2860cf1411c30e35"
+      },
+      "start": {
+        "date": "2020-04-17",
+        "treatment": "clause_date"
+      }
+    },
+    "event_at": "2026-11-17T06:56:17.316370",
+    "inputs_now": {
+      "affecting": [],
+      "amendment_rules": null,
+      "commencement_rules": "2026-11-17T05:54:58.082100",
+      "commencement_sources": [],
+      "extent_rules": null,
+      "feed": "9918e97d3e298ee7",
+      "lat_rows": "b326f171a508bf198a01d75d5d7dcd17",
+      "law_text": "2860cf1411c30e35"
+    },
+    "law": "UK_uksi_2020_390",
+    "verdict": []
+  },
+  {
+    "built": true,
+    "current_code_version": "300bde4406cb",
+    "event": {
+      "changes": 166,
+      "changes_digest": "9f8f793511e6bf9d",
+      "claims": 830,
+      "code_version": "300bde4406cb",
+      "inputs": {
+        "affecting": [],
+        "amendment_rules": null,
+        "commencement_rules": "2026-11-17T05:53:47.614180",
+        "commencement_sources": [],
+        "extent_rules": null,
+        "extents_unread": [],
+        "feed": "7571408320e3e84a",
+        "lat_rows": "5f4f104df42c2a76f424680c22b01eb3",
+        "law_text": "1d009812c1c3974f"
+      },
+      "start": {
+        "date": "2013-04-01",
+        "treatment": "lrt_metadata"
+      }
+    },
+    "event_at": "2026-11-17T06:55:59.001542",
+    "inputs_now": {
+      "affecting": [],
+      "amendment_rules": null,
+      "commencement_rules": "2026-11-17T05:53:47.614180",
+      "commencement_sources": [],
+      "extent_rules": null,
+      "feed": "7571408320e3e84a",
+      "lat_rows": "5f4f104df42c2a76f424680c22b01eb3",
+      "law_text": "1d009812c1c3974f"
+    },
+    "law": "UK_ssi_2013_121",
+    "verdict": []
+  },
+  {
+    "built": true,
+    "current_code_version": "300bde4406cb",
+    "event": {
+      "changes": 88,
+      "changes_digest": "e396cbade4b62d88",
+      "claims": 566,
+      "code_version": "300bde4406cb",
+      "inputs": {
+        "affecting": [
+          "UK_uksi_2023_63",
+          "UK_uksi_2023_810"
+        ],
+        "amendment_rules": "2026-11-15T11:19:26.652332",
+        "commencement_rules": "2026-11-17T05:58:41.594747",
+        "commencement_sources": [
+          "UK_uksi_2023_63",
+          "UK_uksi_2023_810"
+        ],
+        "extent_rules": "2026-11-14T21:44:37.843002",
+        "extents_unread": [],
+        "feed": "0a6633d42449a297",
+        "lat_rows": "bf364c23c99e5606805e7eb6ab93e516",
+        "law_text": "55cf95d12638b112"
+      },
+      "start": {
+        "date": "2023-10-01",
+        "treatment": "lrt_metadata"
+      }
+    },
+    "event_at": "2026-11-17T06:56:08.030410",
+    "inputs_now": {
+      "affecting": [
+        "UK_uksi_2023_63",
+        "UK_uksi_2023_810"
+      ],
+      "amendment_rules": "2026-11-15T11:19:26.652332",
+      "commencement_rules": "2026-11-17T05:58:41.594747",
+      "commencement_sources": [
+        "UK_uksi_2023_63",
+        "UK_uksi_2023_810"
+      ],
+      "extent_rules": "2026-11-14T21:44:37.843002",
+      "feed": "0a6633d42449a297",
+      "lat_rows": "bf364c23c99e5606805e7eb6ab93e516",
+      "law_text": "55cf95d12638b112"
+    },
+    "law": "UK_uksi_2023_63",
+    "verdict": []
+  },
+  {
+    "built": true,
+    "current_code_version": "300bde4406cb",
+    "event": {
+      "changes": 9,
+      "changes_digest": "3d8ed2530074900b",
+      "claims": 45,
+      "code_version": "300bde4406cb",
+      "inputs": {
+        "affecting": [],
+        "amendment_rules": null,
+        "commencement_rules": "2026-11-17T05:54:59.976164",
+        "commencement_sources": [],
+        "extent_rules": null,
+        "extents_unread": [],
+        "feed": "4ea54379713f46cc",
+        "lat_rows": "9dcdd5dba48aac6b713c999f6b65edcc",
+        "law_text": "fa3496df23fafece"
+      },
+      "start": {
+        "date": "2025-03-25",
+        "treatment": "clause_made_relative"
+      }
+    },
+    "event_at": "2026-11-17T06:56:18.084985",
+    "inputs_now": {
+      "affecting": [],
+      "amendment_rules": null,
+      "commencement_rules": "2026-11-17T05:54:59.976164",
+      "commencement_sources": [],
+      "extent_rules": null,
+      "feed": "4ea54379713f46cc",
+      "lat_rows": "9dcdd5dba48aac6b713c999f6b65edcc",
+      "law_text": "fa3496df23fafece"
+    },
+    "law": "UK_uksi_2025_257",
+    "verdict": []
+  },
+  {
+    "built": true,
+    "current_code_version": "300bde4406cb",
+    "event": {
+      "changes": 203,
+      "changes_digest": "da509f746a69e1e4",
+      "claims": 1650,
+      "code_version": "300bde4406cb",
+      "inputs": {
+        "affecting": [
+          "UK_nisr_1996_228",
+          "UK_nisr_1999_150",
+          "UK_nisr_2007_165",
+          "UK_nisr_2007_247",
+          "UK_nisr_2016_406",
+          "UK_nisr_2020_330",
+          "UK_uksi_2018_1377"
+        ],
+        "amendment_rules": "2026-11-15T13:44:01.048968",
+        "commencement_rules": "2026-11-17T05:55:26.066577",
+        "commencement_sources": [
+          "UK_nisr_1996_228",
+          "UK_nisr_1999_150",
+          "UK_nisr_2007_165",
+          "UK_nisr_2007_247",
+          "UK_nisr_2016_406",
+          "UK_nisr_2020_330",
+          "UK_uksi_2018_1377"
+        ],
+        "extent_rules": "2026-11-14T21:44:36.834161",
+        "extents_unread": [],
+        "feed": "de8fd017214072c3",
+        "lat_rows": "79830a723d7bd9491dcd6deae79c8f2b",
+        "law_text": "d0d8178457417331"
+      },
+      "start": {
+        "date": "1995-10-09",
+        "treatment": "clml_coming_into_force"
+      }
+    },
+    "event_at": "2026-11-17T06:55:50.561294",
+    "inputs_now": {
+      "affecting": [
+        "UK_nisr_1996_228",
+        "UK_nisr_1999_150",
+        "UK_nisr_2007_165",
+        "UK_nisr_2007_247",
+        "UK_nisr_2016_406",
+        "UK_nisr_2020_330",
+        "UK_uksi_2018_1377"
+      ],
+      "amendment_rules": "2026-11-15T13:44:01.048968",
+      "commencement_rules": "2026-11-17T05:55:26.066577",
+      "commencement_sources": [
+        "UK_nisr_1996_228",
+        "UK_nisr_1999_150",
+        "UK_nisr_2007_165",
+        "UK_nisr_2007_247",
+        "UK_nisr_2016_406",
+        "UK_nisr_2020_330",
+        "UK_uksi_2018_1377"
+      ],
+      "extent_rules": "2026-11-14T21:44:36.834161",
+      "feed": "de8fd017214072c3",
+      "lat_rows": "79830a723d7bd9491dcd6deae79c8f2b",
+      "law_text": "d0d8178457417331"
+    },
+    "law": "UK_nisr_1995_340",
+    "verdict": []
+  },
+  {
+    "built": true,
+    "current_code_version": "300bde4406cb",
+    "event": {
+      "changes": 385,
+      "changes_digest": "071b001175aa7cc0",
+      "claims": 1965,
+      "code_version": "300bde4406cb",
+      "inputs": {
+        "affecting": [
+          "UK_uksi_1999_2024",
+          "UK_uksi_2007_320",
+          "UK_uksi_2015_51",
+          "UK_uksi_2018_139"
+        ],
+        "amendment_rules": "2026-11-15T11:19:26.057345",
+        "commencement_rules": "2026-11-17T05:58:30.444465",
+        "commencement_sources": [
+          "UK_uksi_1999_2024",
+          "UK_uksi_2007_320",
+          "UK_uksi_2015_51",
+          "UK_uksi_2018_139"
+        ],
+        "extent_rules": "2026-11-14T21:44:37.713002",
+        "extents_unread": [],
+        "feed": "54bf430816a9e596",
+        "lat_rows": "185a1e4d6d7fbc178f65296130fa6e78",
+        "law_text": "b9bb7a943401ba92"
+      },
+      "start": {
+        "date": "1998-10-31",
+        "treatment": "lrt_metadata"
+      }
+    },
+    "event_at": "2026-11-17T06:55:20.376926",
+    "inputs_now": {
+      "affecting": [
+        "UK_uksi_1999_2024",
+        "UK_uksi_2007_320",
+        "UK_uksi_2015_51",
+        "UK_uksi_2018_139"
+      ],
+      "amendment_rules": "2026-11-15T11:19:26.057345",
+      "commencement_rules": "2026-11-17T05:58:30.444465",
+      "commencement_sources": [
+        "UK_uksi_1999_2024",
+        "UK_uksi_2007_320",
+        "UK_uksi_2015_51",
+        "UK_uksi_2018_139"
+      ],
+      "extent_rules": "2026-11-14T21:44:37.713002",
+      "feed": "54bf430816a9e596",
+      "lat_rows": "185a1e4d6d7fbc178f65296130fa6e78",
+      "law_text": "b9bb7a943401ba92"
+    },
+    "law": "UK_uksi_1998_2451",
+    "verdict": []
+  },
+  {
+    "built": true,
+    "current_code_version": "300bde4406cb",
+    "event": {
+      "changes": 54,
+      "changes_digest": "4521c61059bb54e1",
+      "claims": 370,
+      "code_version": "300bde4406cb",
+      "inputs": {
+        "affecting": [
+          "UK_eudn_2009_240",
+          "UK_eudn_2010_187",
+          "UK_eudn_2011_26",
+          "UK_eudn_2012_188",
+          "UK_eudn_2013_218",
+          "UK_eudn_2015_217",
+          "UK_eudn_2015_974",
+          "UK_eudn_2016_629",
+          "UK_eudn_2017_695",
+          "UK_eudn_2018_936",
+          "UK_eudn_2019_1094",
+          "UK_eudn_2020_1241",
+          "UK_eudr_2010_61",
+          "UK_eudr_2012_45",
+          "UK_eudr_2014_103",
+          "UK_eudr_2016_2309",
+          "UK_eudr_2018_1846",
+          "UK_eudr_2018_217",
+          "UK_eudr_2020_1833",
+          "UK_eur_2019_1243"
+        ],
+        "amendment_rules": null,
+        "commencement_rules": "2026-11-17T05:55:18.096243",
+        "commencement_sources": [
+          "UK_eudn_2009_240",
+          "UK_eudn_2010_187",
+          "UK_eudn_2011_26",
+          "UK_eudn_2012_188",
+          "UK_eudn_2013_218",
+          "UK_eudn_2015_217",
+          "UK_eudn_2015_974",
+          "UK_eudn_2016_629",
+          "UK_eudn_2017_695",
+          "UK_eudn_2018_936",
+          "UK_eudn_2019_1094",
+          "UK_eudn_2020_1241",
+          "UK_eudr_2010_61",
+          "UK_eudr_2012_45",
+          "UK_eudr_2014_103",
+          "UK_eudr_2016_2309",
+          "UK_eudr_2018_1846",
+          "UK_eudr_2018_217",
+          "UK_eudr_2020_1833",
+          "UK_eur_2019_1243"
+        ],
+        "extent_rules": null,
+        "extents_unread": [],
+        "feed": "23d688b3023c794b",
+        "lat_rows": "2cb0adb243879efc4ff40433fb620678",
+        "law_text": "2b45f69b6dac5045"
+      },
+      "start": {
+        "date": null,
+        "treatment": "eu_directive"
+      }
+    },
+    "event_at": "2026-11-17T06:56:12.925490",
+    "inputs_now": {
+      "affecting": [
+        "UK_eudn_2009_240",
+        "UK_eudn_2010_187",
+        "UK_eudn_2011_26",
+        "UK_eudn_2012_188",
+        "UK_eudn_2013_218",
+        "UK_eudn_2015_217",
+        "UK_eudn_2015_974",
+        "UK_eudn_2016_629",
+        "UK_eudn_2017_695",
+        "UK_eudn_2018_936",
+        "UK_eudn_2019_1094",
+        "UK_eudn_2020_1241",
+        "UK_eudr_2010_61",
+        "UK_eudr_2012_45",
+        "UK_eudr_2014_103",
+        "UK_eudr_2016_2309",
+        "UK_eudr_2018_1846",
+        "UK_eudr_2018_217",
+        "UK_eudr_2020_1833",
+        "UK_eur_2019_1243"
+      ],
+      "amendment_rules": null,
+      "commencement_rules": "2026-11-17T05:55:18.096243",
+      "commencement_sources": [
+        "UK_eudn_2009_240",
+        "UK_eudn_2010_187",
+        "UK_eudn_2011_26",
+        "UK_eudn_2012_188",
+        "UK_eudn_2013_218",
+        "UK_eudn_2015_217",
+        "UK_eudn_2015_974",
+        "UK_eudn_2016_629",
+        "UK_eudn_2017_695",
+        "UK_eudn_2018_936",
+        "UK_eudn_2019_1094",
+        "UK_eudn_2020_1241",
+        "UK_eudr_2010_61",
+        "UK_eudr_2012_45",
+        "UK_eudr_2014_103",
+        "UK_eudr_2016_2309",
+        "UK_eudr_2018_1846",
+        "UK_eudr_2018_217",
+        "UK_eudr_2020_1833",
+        "UK_eur_2019_1243"
+      ],
+      "extent_rules": null,
+      "feed": "23d688b3023c794b",
+      "lat_rows": "2cb0adb243879efc4ff40433fb620678",
+      "law_text": "2b45f69b6dac5045"
+    },
+    "law": "UK_eudr_2008_68",
+    "verdict": []
+  },
+  {
+    "built": true,
+    "current_code_version": "300bde4406cb",
+    "event": {
+      "changes": 474,
+      "changes_digest": "df9b2396acd4aefc",
+      "claims": 3594,
+      "code_version": "300bde4406cb",
+      "inputs": {
+        "affecting": [
+          "UK_nisr_2006_425",
+          "UK_nisr_2009_248",
+          "UK_nisr_2010_59"
+        ],
+        "amendment_rules": null,
+        "commencement_rules": "2026-11-17T05:55:26.188010",
+        "commencement_sources": [
+          "UK_nisr_2006_425",
+          "UK_nisr_2009_248",
+          "UK_nisr_2010_59"
+        ],
+        "extent_rules": "2026-11-14T21:44:36.853868",
+        "extents_unread": [],
+        "feed": "032b70e6713daebe",
+        "lat_rows": "fa2cdf262ccd3dcff88f1859daf95d4b",
+        "law_text": "009f773953a8c444"
+      },
+      "start": {
+        "date": "2006-12-01",
+        "treatment": "lrt_metadata"
+      }
+    },
+    "event_at": "2026-11-17T06:55:10.118113",
+    "inputs_now": {
+      "affecting": [
+        "UK_nisr_2006_425",
+        "UK_nisr_2009_248",
+        "UK_nisr_2010_59"
+      ],
+      "amendment_rules": null,
+      "commencement_rules": "2026-11-17T05:55:26.188010",
+      "commencement_sources": [
+        "UK_nisr_2006_425",
+        "UK_nisr_2009_248",
+        "UK_nisr_2010_59"
+      ],
+      "extent_rules": "2026-11-14T21:44:36.853868",
+      "feed": "032b70e6713daebe",
+      "lat_rows": "fa2cdf262ccd3dcff88f1859daf95d4b",
+      "law_text": "009f773953a8c444"
+    },
+    "law": "UK_nisr_2006_425",
+    "verdict": []
+  },
+  {
+    "built": true,
+    "current_code_version": "300bde4406cb",
+    "event": {
+      "changes": 11,
+      "changes_digest": "f0ef0cc83f77e181",
+      "claims": 55,
+      "code_version": "300bde4406cb",
+      "inputs": {
+        "affecting": [],
+        "amendment_rules": null,
+        "commencement_rules": "2026-11-17T05:54:59.267951",
+        "commencement_sources": [],
+        "extent_rules": null,
+        "extents_unread": [],
+        "feed": "de8ec0396a44495c",
+        "lat_rows": "30cc3b17e75da6742e680af3e05813d0",
+        "law_text": "33c3965d2c14a2e0"
+      },
+      "start": {
+        "date": "2024-03-13",
+        "treatment": "lrt_metadata"
+      }
+    },
+    "event_at": "2026-11-17T06:56:17.746954",
+    "inputs_now": {
+      "affecting": [],
+      "amendment_rules": null,
+      "commencement_rules": "2026-11-17T05:54:59.267951",
+      "commencement_sources": [],
+      "extent_rules": null,
+      "feed": "de8ec0396a44495c",
+      "lat_rows": "30cc3b17e75da6742e680af3e05813d0",
+      "law_text": "33c3965d2c14a2e0"
+    },
+    "law": "UK_uksi_2024_162",
+    "verdict": []
+  },
+  {
+    "built": true,
+    "current_code_version": "300bde4406cb",
+    "event": {
+      "changes": 72,
+      "changes_digest": "ef92c2547e2fd948",
+      "claims": 360,
+      "code_version": "300bde4406cb",
+      "inputs": {
+        "affecting": [],
+        "amendment_rules": null,
+        "commencement_rules": "2026-11-17T05:54:50.414170",
+        "commencement_sources": [],
+        "extent_rules": null,
+        "extents_unread": [],
+        "feed": "e9b98fda8ddd9544",
+        "lat_rows": "eb7eb19b24f1e6fe08173ebf06434778",
+        "law_text": "c51c91284df6a508"
+      },
+      "start": {
+        "date": "2009-10-01",
+        "treatment": "lrt_metadata"
+      }
+    },
+    "event_at": "2026-11-17T06:56:10.789888",
+    "inputs_now": {
+      "affecting": [],
+      "amendment_rules": null,
+      "commencement_rules": "2026-11-17T05:54:50.414170",
+      "commencement_sources": [],
+      "extent_rules": null,
+      "feed": "e9b98fda8ddd9544",
+      "lat_rows": "eb7eb19b24f1e6fe08173ebf06434778",
+      "law_text": "c51c91284df6a508"
+    },
+    "law": "UK_uksi_2009_782",
+    "verdict": []
+  },
+  {
+    "built": true,
+    "current_code_version": "300bde4406cb",
+    "event": {
+      "changes": 333,
+      "changes_digest": "fe6b24b9b6aca13c",
+      "claims": 2290,
+      "code_version": "300bde4406cb",
+      "inputs": {
+        "affecting": [
+          "UK_nisr_2006_205",
+          "UK_nisr_2009_227",
+          "UK_nisr_2010_160",
+          "UK_nisr_2016_427"
+        ],
+        "amendment_rules": "2026-11-07T10:43:04.399885",
+        "commencement_rules": "2026-11-17T05:55:26.178487",
+        "commencement_sources": [
+          "UK_nisr_2006_205",
+          "UK_nisr_2009_227",
+          "UK_nisr_2010_160",
+          "UK_nisr_2016_427"
+        ],
+        "extent_rules": "2026-11-05T19:21:39.146450",
+        "extents_unread": [],
+        "feed": "1ed0f8903531ebed",
+        "lat_rows": "1f1f9bda08bf64d1fda07a612d699e6f",
+        "law_text": "91bafded19902480"
+      },
+      "start": {
+        "date": "2006-08-01",
+        "treatment": "clause_date"
+      }
+    },
+    "event_at": "2026-11-17T06:55:31.729419",
+    "inputs_now": {
+      "affecting": [
+        "UK_nisr_2006_205",
+        "UK_nisr_2009_227",
+        "UK_nisr_2010_160",
+        "UK_nisr_2016_427"
+      ],
+      "amendment_rules": "2026-11-07T10:43:04.399885",
+      "commencement_rules": "2026-11-17T05:55:26.178487",
+      "commencement_sources": [
+        "UK_nisr_2006_205",
+        "UK_nisr_2009_227",
+        "UK_nisr_2010_160",
+        "UK_nisr_2016_427"
+      ],
+      "extent_rules": "2026-11-05T19:21:39.146450",
+      "feed": "1ed0f8903531ebed",
+      "lat_rows": "1f1f9bda08bf64d1fda07a612d699e6f",
+      "law_text": "91bafded19902480"
+    },
+    "law": "UK_nisr_2006_205",
+    "verdict": []
+  },
+  {
+    "built": true,
+    "current_code_version": "300bde4406cb",
+    "event": {
+      "changes": 1487,
+      "changes_digest": "37fd1b56914c4610",
+      "claims": 12137,
+      "code_version": "300bde4406cb",
+      "inputs": {
+        "affecting": [
+          "UK_ukpga_2020_29",
+          "UK_uksi_2014_3248",
+          "UK_uksi_2015_627",
+          "UK_uksi_2016_315",
+          "UK_uksi_2016_721",
+          "UK_uksi_2019_1246",
+          "UK_uksi_2019_696",
+          "UK_uksi_2020_1460",
+          "UK_uksi_2020_676",
+          "UK_uksi_2020_852",
+          "UK_uksi_2021_1273",
+          "UK_uksi_2022_1393",
+          "UK_uksi_2023_1432",
+          "UK_uksi_2024_504",
+          "UK_uksi_2024_696"
+        ],
+        "amendment_rules": "2026-11-15T13:43:18.335419",
+        "commencement_rules": "2026-11-17T05:58:41.974471",
+        "commencement_sources": [
+          "UK_ukpga_2020_29",
+          "UK_uksi_2014_3248",
+          "UK_uksi_2015_627",
+          "UK_uksi_2016_315",
+          "UK_uksi_2016_721",
+          "UK_uksi_2019_1246",
+          "UK_uksi_2019_696",
+          "UK_uksi_2020_1460",
+          "UK_uksi_2020_676",
+          "UK_uksi_2020_852",
+          "UK_uksi_2021_1273",
+          "UK_uksi_2022_1393",
+          "UK_uksi_2023_1432",
+          "UK_uksi_2024_504",
+          "UK_uksi_2024_696"
+        ],
+        "extent_rules": "2026-11-14T21:44:37.791112",
+        "extents_unread": [],
+        "feed": "c807ffaf0b83ec88",
+        "lat_rows": "bc49873bade03829a69daf4d3fa072ff",
+        "law_text": "c3e4eea083dce186"
+      },
+      "start": {
+        "date": "2014-10-01",
+        "treatment": "clause_date"
+      }
+    },
+    "event_at": "2026-11-17T06:54:02.563279",
+    "inputs_now": {
+      "affecting": [
+        "UK_ukpga_2020_29",
+        "UK_uksi_2014_3248",
+        "UK_uksi_2015_627",
+        "UK_uksi_2016_315",
+        "UK_uksi_2016_721",
+        "UK_uksi_2019_1246",
+        "UK_uksi_2019_696",
+        "UK_uksi_2020_1460",
+        "UK_uksi_2020_676",
+        "UK_uksi_2020_852",
+        "UK_uksi_2021_1273",
+        "UK_uksi_2022_1393",
+        "UK_uksi_2023_1432",
+        "UK_uksi_2024_504",
+        "UK_uksi_2024_696"
+      ],
+      "amendment_rules": "2026-11-15T13:43:18.335419",
+      "commencement_rules": "2026-11-17T05:58:41.974471",
+      "commencement_sources": [
+        "UK_ukpga_2020_29",
+        "UK_uksi_2014_3248",
+        "UK_uksi_2015_627",
+        "UK_uksi_2016_315",
+        "UK_uksi_2016_721",
+        "UK_uksi_2019_1246",
+        "UK_uksi_2019_696",
+        "UK_uksi_2020_1460",
+        "UK_uksi_2020_676",
+        "UK_uksi_2020_852",
+        "UK_uksi_2021_1273",
+        "UK_uksi_2022_1393",
+        "UK_uksi_2023_1432",
+        "UK_uksi_2024_504",
+        "UK_uksi_2024_696"
+      ],
+      "extent_rules": "2026-11-14T21:44:37.791112",
+      "feed": "c807ffaf0b83ec88",
+      "lat_rows": "bc49873bade03829a69daf4d3fa072ff",
+      "law_text": "c3e4eea083dce186"
+    },
+    "law": "UK_uksi_2014_1638",
+    "verdict": []
+  },
+  {
+    "built": true,
+    "current_code_version": "300bde4406cb",
+    "event": {
+      "changes": 152,
+      "changes_digest": "534be3c3c0b30b95",
+      "claims": 760,
+      "code_version": "300bde4406cb",
+      "inputs": {
+        "affecting": [],
+        "amendment_rules": null,
+        "commencement_rules": "2026-11-17T05:54:53.078703",
+        "commencement_sources": [],
+        "extent_rules": null,
+        "extents_unread": [],
+        "feed": "31d300d9c4a4f025",
+        "lat_rows": "23490b386f6f5a00cd90e4053317d52c",
+        "law_text": "1d69313028bfd0da"
+      },
+      "start": {
+        "date": "2014-10-01",
+        "treatment": "lrt_metadata"
+      }
+    },
+    "event_at": "2026-11-17T06:55:59.964879",
+    "inputs_now": {
+      "affecting": [],
+      "amendment_rules": null,
+      "commencement_rules": "2026-11-17T05:54:53.078703",
+      "commencement_sources": [],
+      "extent_rules": null,
+      "feed": "31d300d9c4a4f025",
+      "lat_rows": "23490b386f6f5a00cd90e4053317d52c",
+      "law_text": "1d69313028bfd0da"
+    },
+    "law": "UK_uksi_2014_1639",
+    "verdict": []
+  },
+  {
+    "built": true,
+    "current_code_version": "300bde4406cb",
+    "event": {
+      "changes": 116,
+      "changes_digest": "70d47016aaf7f8a5",
+      "claims": 765,
+      "code_version": "300bde4406cb",
+      "inputs": {
+        "affecting": [
+          "UK_uksi_2025_797"
+        ],
+        "amendment_rules": null,
+        "commencement_rules": "2026-11-17T05:55:00.190823",
+        "commencement_sources": [
+          "UK_uksi_2025_797"
+        ],
+        "extent_rules": "2026-10-26T10:10:10.308906",
+        "extents_unread": [],
+        "feed": "90f64cf543872623",
+        "lat_rows": "d7256d212348fd229d85a90316d7f313",
+        "law_text": "dd51ddfc402497ff"
+      },
+      "start": {
+        "date": "2026-04-06",
+        "treatment": "lrt_metadata"
+      }
+    },
+    "event_at": "2026-11-17T06:56:04.500866",
+    "inputs_now": {
+      "affecting": [
+        "UK_uksi_2025_797"
+      ],
+      "amendment_rules": null,
+      "commencement_rules": "2026-11-17T05:55:00.190823",
+      "commencement_sources": [
+        "UK_uksi_2025_797"
+      ],
+      "extent_rules": "2026-10-26T10:10:10.308906",
+      "feed": "90f64cf543872623",
+      "lat_rows": "d7256d212348fd229d85a90316d7f313",
+      "law_text": "dd51ddfc402497ff"
+    },
+    "law": "UK_uksi_2025_797",
+    "verdict": []
+  },
+  {
+    "built": true,
+    "current_code_version": "300bde4406cb",
+    "event": {
+      "changes": 3,
+      "changes_digest": "50ad82228d6db8b1",
+      "claims": 15,
+      "code_version": "300bde4406cb",
+      "inputs": {
+        "affecting": [],
+        "amendment_rules": null,
+        "commencement_rules": "2026-11-17T05:53:47.582198",
+        "commencement_sources": [],
+        "extent_rules": null,
+        "extents_unread": [],
+        "feed": "c1dd3cf5a2f91421",
+        "lat_rows": "bd6d5c6a32b3f81b78b6ad6c0a871641",
+        "law_text": "b2a35065c6308566"
+      },
+      "start": {
+        "date": "2011-01-21",
+        "treatment": "lrt_metadata"
+      }
+    },
+    "event_at": "2026-11-17T06:56:19.278426",
+    "inputs_now": {
+      "affecting": [],
+      "amendment_rules": null,
+      "commencement_rules": "2026-11-17T05:53:47.582198",
+      "commencement_sources": [],
+      "extent_rules": null,
+      "feed": "c1dd3cf5a2f91421",
+      "lat_rows": "bd6d5c6a32b3f81b78b6ad6c0a871641",
+      "law_text": "b2a35065c6308566"
+    },
+    "law": "UK_ssi_2010_393",
+    "verdict": []
+  },
+  {
+    "built": true,
+    "current_code_version": "300bde4406cb",
+    "event": {
+      "changes": 593,
+      "changes_digest": "847195d252592b8f",
+      "claims": 4205,
+      "code_version": "300bde4406cb",
+      "inputs": {
+        "affecting": [
+          "UK_uksi_2014_3248",
+          "UK_uksi_2020_40"
+        ],
+        "amendment_rules": "2026-10-28T12:05:38.861495",
+        "commencement_rules": "2026-11-17T05:54:58.105654",
+        "commencement_sources": [
+          "UK_uksi_2014_3248",
+          "UK_uksi_2020_40"
+        ],
+        "extent_rules": "2026-11-05T19:28:28.350902",
+        "extents_unread": [],
+        "feed": "9ba3b9207bf5edd7",
+        "lat_rows": "cfc3aec0119195cecddd03840240b0d0",
+        "law_text": "90aa2381b6754d93"
+      },
+      "start": {
+        "date": "2015-04-06",
+        "treatment": "lrt_metadata"
+      }
+    },
+    "event_at": "2026-11-17T06:55:02.227522",
+    "inputs_now": {
+      "affecting": [
+        "UK_uksi_2014_3248",
+        "UK_uksi_2020_40"
+      ],
+      "amendment_rules": "2026-10-28T12:05:38.861495",
+      "commencement_rules": "2026-11-17T05:54:58.105654",
+      "commencement_sources": [
+        "UK_uksi_2014_3248",
+        "UK_uksi_2020_40"
+      ],
+      "extent_rules": "2026-11-05T19:28:28.350902",
+      "feed": "9ba3b9207bf5edd7",
+      "lat_rows": "cfc3aec0119195cecddd03840240b0d0",
+      "law_text": "90aa2381b6754d93"
+    },
+    "law": "UK_uksi_2014_3248",
+    "verdict": []
+  },
+  {
+    "built": true,
+    "current_code_version": "300bde4406cb",
+    "event": {
+      "changes": 14,
+      "changes_digest": "6d7b26e371ec87d5",
+      "claims": 118,
+      "code_version": "300bde4406cb",
+      "inputs": {
+        "affecting": [
+          "UK_uksi_2017_720",
+          "UK_uksi_2023_838"
+        ],
+        "amendment_rules": null,
+        "commencement_rules": "2026-11-17T05:54:58.726235",
+        "commencement_sources": [
+          "UK_uksi_2017_720",
+          "UK_uksi_2023_838"
+        ],
+        "extent_rules": "2026-11-14T21:44:37.845642",
+        "extents_unread": [
+          "UK_uksi_2017_720"
+        ],
+        "feed": "04b05ccaba7b0c85",
+        "lat_rows": "f1cecb17dc04406cc122c2c5875d88a4",
+        "law_text": "8f2fe71a3c7ccb9b"
+      },
+      "start": {
+        "date": "2017-07-06",
+        "treatment": "clause_date"
+      }
+    },
+    "event_at": "2026-11-17T06:56:17.450749",
+    "inputs_now": {
+      "affecting": [
+        "UK_uksi_2017_720",
+        "UK_uksi_2023_838"
+      ],
+      "amendment_rules": null,
+      "commencement_rules": "2026-11-17T05:54:58.726235",
+      "commencement_sources": [
+        "UK_uksi_2017_720",
+        "UK_uksi_2023_838"
+      ],
+      "extent_rules": "2026-11-14T21:44:37.845642",
+      "feed": "04b05ccaba7b0c85",
+      "lat_rows": "f1cecb17dc04406cc122c2c5875d88a4",
+      "law_text": "8f2fe71a3c7ccb9b"
+    },
+    "law": "UK_uksi_2017_720",
+    "verdict": []
+  },
+  {
+    "built": true,
+    "current_code_version": "300bde4406cb",
+    "event": {
+      "changes": 443,
+      "changes_digest": "47f47f4967d2b3f2",
+      "claims": 3241,
+      "code_version": "300bde4406cb",
+      "inputs": {
+        "affecting": [
+          "UK_uksi_2019_1246",
+          "UK_uksi_2019_696"
+        ],
+        "amendment_rules": "2026-11-15T13:39:12.177539",
+        "commencement_rules": "2026-11-17T05:58:35.668572",
+        "commencement_sources": [
+          "UK_uksi_2019_1246",
+          "UK_uksi_2019_696"
+        ],
+        "extent_rules": "2026-11-05T19:28:16.251284",
+        "extents_unread": [],
+        "feed": "f3495d7719255e12",
+        "lat_rows": "7acdb14cf8bf6d35d0eb1a590cba144a",
+        "law_text": "7f6b1f3bdbfdb9ef"
+      },
+      "start": {
+        "date": "2016-10-21",
+        "treatment": "lrt_metadata"
+      }
+    },
+    "event_at": "2026-11-17T06:55:13.604279",
+    "inputs_now": {
+      "affecting": [
+        "UK_uksi_2019_1246",
+        "UK_uksi_2019_696"
+      ],
+      "amendment_rules": "2026-11-15T13:39:12.177539",
+      "commencement_rules": "2026-11-17T05:58:35.668572",
+      "commencement_sources": [
+        "UK_uksi_2019_1246",
+        "UK_uksi_2019_696"
+      ],
+      "extent_rules": "2026-11-05T19:28:16.251284",
+      "feed": "f3495d7719255e12",
+      "lat_rows": "7acdb14cf8bf6d35d0eb1a590cba144a",
+      "law_text": "7f6b1f3bdbfdb9ef"
+    },
+    "law": "UK_nisr_2016_366",
+    "verdict": []
+  },
+  {
+    "built": false,
+    "law": "UK_ukpga_1994_40",
+    "verdict": [
+      "no_build"
+    ]
+  },
+  {
+    "built": false,
+    "law": "UK_uksi_2025_747",
+    "verdict": [
+      "no_build"
+    ]
+  },
+  {
+    "built": false,
+    "law": "UK_uksi_2004_756",
+    "verdict": [
+      "no_build"
+    ]
+  },
+  {
+    "built": false,
+    "law": "UK_ssi_2025_239",
+    "verdict": [
+      "no_build"
+    ]
+  },
+  {
+    "built": false,
+    "law": "UK_ukpga_2006_49",
+    "verdict": [
+      "no_build"
+    ]
+  },
+  {
+    "built": false,
+    "law": "UK_uksi_2017_841",
+    "verdict": [
+      "no_build"
+    ]
+  },
+  {
+    "built": false,
+    "law": "UK_ukpga_1972_66",
+    "verdict": [
+      "no_build"
+    ]
+  },
+  {
+    "built": false,
+    "law": "UK_ukpga_1978_38",
+    "verdict": [
+      "no_build"
+    ]
+  },
+  {
+    "built": false,
+    "law": "UK_eudr_2014_30",
+    "verdict": [
+      "no_build"
+    ]
+  },
+  {
+    "built": false,
+    "law": "UK_ukpga_1975_23",
+    "verdict": [
+      "no_build"
+    ]
+  }
+]

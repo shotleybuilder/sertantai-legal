@@ -598,6 +598,20 @@ Before this, OH&S used G, S and T by shape and R pooled to the 95% bound (2026-1
   - six gates pass, and the three that fail (Sources, Extent, Amending) were parked in Measures.
 - **The parked bugs fixed:** in-database restore copies now go to the `restore` schema (`SertantaiLegal.Restore`, DATA-ARCHITECTURE (f)), and `--conflicts` prints its groups in a fixed order.
 
+**Fire and OH&S, a round (2026-11-16/17):**
+- **Two parked bugs fixed.** `--family` takes an exact name, or the one family the name is part of, and refuses a name in several families (`Rounds.resolve/2`). A build counts its failures and exits non-zero on any.
+- **The switched families' readings were current only for the round.** They were re-read in their modes (1,516 laws, 3½ min), then the stale builds were rebuilt.
+- **Golden fell to 26/27 (TCPA 1990 s.78(4BA)) after the re-read.** The old pass was right by accident: a wrong W territory on the Welsh orders. Jason chose "right by design", so the reader now reads the Act's own s.58(2)(b), with three rules: `royal-assent-from-the-acts-own-introduction`, `a-part-reaches-its-sections` and `limited-items-are-partly-in`.
+- **A reader change re-reads every reading.** `law_start/*.ex` and `commencement/*.ex` sit in the commencement, extent and build versions, so each fix staled all 544 builds. The store-wide re-read, by mode from the rules the built laws read (50,195 readings of 1,957 laws), takes about 21 min, the extents about 14 of them. Every built law is then rebuilt (544 in about 6 min, 3 workers).
+- **A fix's reach is read change by change, not by input.** Comparing each moved law's stored changes with the restore point's found a regression that the by-input classing had passed: the Part write-out let a misread purpose-limited item date whole Parts.
+- **The switched families' refold was held to Labels side by side** (Decision 4 b). Their 2,239 rows moving carried every step's fixes since 2026-11-13, and a dozen groups were unexplained.
+- **The results:**
+  - digests identical across builds A and B (544);
+  - 0 stale in the change register;
+  - golden 27/27;
+  - the hand sample at seed 1117 byte-identical, 3/3 checked by SQL;
+  - the round's gates PASS, Maritime's PASS, and EP's and Occupational's new failures (5 groups) parked.
+
 **Skill.** `store-build-check`.
 
 ## 12. Labels side by side

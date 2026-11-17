@@ -1,0 +1,376 @@
+
+── Sources (mix lat.sources) ──
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+122 laws in scope
+
+needed against held, by category:
+  own: 122 — held 122
+  feed: 117 — held 117
+  territory: 548 — absent 1, held 547
+  introduction: 279 — absent 1, held 278
+  enabling_parent: 62 — held 62
+  dates: 64 — absent 12, held 52
+  backlog: 173 — absent 68, held 103, not_fetched 1, stale 1
+  royal_assent: 2 — held 2
+  needed, all categories: 1367
+
+failures: 2
+  not_fetched  backlog  UK_eur_2019_1010 :schedules  (for UK_eudr_2010_63)
+  stale  backlog  UK_uksi_2018_369 :schedules  (for UK_ukpga_1995_25)
+
+feeds differing from the register's change statistics: 0
+
+FAIL
+
+── Feed reader (mix lat.feed_check) ──
+483 family laws; 122 hold LAT rows (in scope), 361 don't
+11684 effects in 122 laws:
+  6393  placed
+  3877  schedule_not_parsed
+  674  placed_versions
+  327  not_in_text
+  201  not_a_provision
+  131  row_missing
+  71  whole_law
+  10  placed_by_markup
+
+our faults: 0
+
+finer form not held (parse tell-tales): 5
+  not_found: 3  (gone from the text, or not there: a candidate only)
+    UK_eudr_1986_278 art.Article 17(1)  ("Art. 17 para. 1")
+    UK_eur_2019_2088 art.Article 11(1)(d)  ("Art. 11 para. 1 Point (d)")
+    UK_eur_2019_2088 art.Article 11(1)(c)  ("Art. 11 para. 1 Point (c)")
+  no_ids: 2  (the text numbers items with no id; the parse made no row, #184)
+    UK_eudr_1986_278 art.Article 2(f)  ("Art. 2 Point (f)")
+    UK_eudr_1986_278 art.Article 2(e)  ("Art. 2 Point (e)")
+
+PASS (placement)
+
+── Markup reader (mix lat.markup_check) ──
+
+3251 changes (change elements) in 72 laws:
+  2701  placed
+  547  placed_versions
+  2  whole_law
+  1  outside_lat_scope
+our faults: 0
+
+2676 note placements (an effect placed by its note ref only) in 81 laws:
+  2481  placed
+  130  outside_lat_scope
+  65  placed_versions
+our faults: 0
+
+markup keys against the feed (changes; a count for CV-S07):
+  2375  in_feed
+  825  legacy
+  51  not_in_feed
+
+PASS (placement)
+
+── Commencement reader (mix lat.commencement_check) ──
+
+35518 rows in 122 laws — own commencement:
+  28081  dated (111 laws)
+  3719  by_order (11 laws)
+  985  eu_directive (7 laws)
+  970  staged (11 laws)
+  698  by_order_partly (6 laws)
+  526  staged_start_only (2 laws)
+  338  eu_publication_relative (2 laws)
+  201  partial_only (1 laws)
+  (left to orders, by_order + by_order_partly: 4417)
+
+against the law's own feed (a yardstick):
+  19272  own_only
+  8501  agree
+  3761  neither
+  2706  feed_only
+  1198  differ
+  80  feed_partial_only
+  differ: UK_asc_2023_2 (150 rows) e.g. s.1 own 2023-10-30 feed {~D[2023-06-07], ~D[2023-06-07]}
+  differ: UK_asc_2026_4 (1 rows) e.g. s.7(1)(c) own 2026-06-27 feed {~D[2028-04-27], ~D[2028-04-27]}
+  differ: UK_asp_2024_13 (202 rows) e.g. s.1 own 2025-08-01 feed {~D[2024-08-09], ~D[2024-08-09]}
+  differ: UK_asp_2026_6 (234 rows) e.g. s.3 own 2026-10-26 feed {~D[2026-03-13], ~D[2026-03-13]}
+  differ: UK_nisi_2002_3153 (345 rows) e.g. reg.28 own 2003-01-18 feed {~D[2003-02-03], ~D[2003-02-03]}
+  differ: UK_ssi_2018_219 (2 rows) e.g. reg.3(2A) own 2018-09-01 feed {~D[2025-11-01], ~D[2025-11-01]}
+  differ: UK_ukpga_1990_43 (1 rows) e.g. s.71(2A) own 1991-05-31 feed {~D[2015-03-03], ~D[2015-04-06]}
+  differ: UK_ukpga_1995_25 (49 rows) e.g. s.65(6A) own 1995-09-19 feed {~D[2016-03-28], ~D[2016-03-28]}
+  differ: UK_ukpga_2006_16 (12 rows) e.g. s.11(2)(a) own 2006-05-02 feed {~D[2006-10-01], ~D[2006-10-01]}
+  differ: UK_uksi_2005_1806 (78 rows) e.g. reg.2 own 2005-07-16 feed {~D[2005-07-06], ~D[2005-07-06]}
+
+2529 changes no other source dates (577 text changes) — the gap-filler:
+  834  undated: no_amending_law  (text changes 8, of them not in a Schedule or annex 8)
+  566  dated via feed  (text changes 99, of them not in a Schedule or annex 51)
+  470  undated: not_reached  (text changes 74, of them not in a Schedule or annex 52)
+  310  undated: appointed  (text changes 250, of them not in a Schedule or annex 222)
+  150  undated: rules_not_held  (text changes 44, of them not in a Schedule or annex 36)
+  88  dated via note  (text changes 23, of them not in a Schedule or annex 23)
+  83  undated: no_pointer  (text changes 57, of them not in a Schedule or annex 20)
+  23  undated: provisions_disagree  (text changes 17, of them not in a Schedule or annex 12)
+  5  undated: no_text_rules  (text changes 5, of them not in a Schedule or annex 5)
+  undated: appointed: by UK_ukpga_1995_25 ×91, UK_ukpga_1994_39 ×42, ? ×35, UK_ukpga_2005_16 ×17, UK_ukpga_1999_28 ×16, UK_asp_2002_3 ×14
+  undated: no_amending_law: by ? ×834
+  undated: no_pointer: by UK_eur_2015_2229 ×10, UK_ssi_2009_221 ×10, UK_eur_2018_172 ×8, UK_eur_2019_1701 ×8, UK_eur_2019_330 ×8, UK_ssi_2007_484 ×6
+  undated: no_text_rules: by ? ×5
+  undated: not_reached: by UK_ukpga_2021_30 ×328, UK_anaw_2016_3 ×63, UK_asc_2026_7 ×35, ? ×27, UK_wsi_2012_65 ×7, UK_uksi_1995_2765 ×3
+  undated: provisions_disagree: by UK_ukpga_1995_25 ×11, UK_ukpga_1994_19 ×5, UK_ukpga_1997_11 ×3, UK_ukpga_2000_27 ×2, UK_ukpga_1994_40 ×1, UK_uksi_1995_1983 ×1
+  undated: rules_not_held: by UK_uksi_2019_123 ×28, UK_uksi_1997_648 ×20, ? ×15, UK_uksi_1999_416 ×9, UK_uksi_2002_800 ×8, UK_wsi_2006_2831 ×5
+
+leftovers reaching the family (words of a commencement statement no rule uses):
+  4  known
+gate report: data/reports/commencement-reader/gate-environmental-protection-2026-11-17.txt
+
+PASS (rows: our faults 0; leftovers not named: 0)
+
+── Extent reader (mix lat.extent_check) ──
+122 family laws with LAT; 8048 text changes by 553 amending laws
+laws read 3 at once: 12.4 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.2 of 6 cores busy; max 4
+
+553 amending laws — extent basis:
+    212  powers
+    177  clause
+     60  lists
+     37  stated
+     25  application
+     20  none: type_not_read
+     10  competence
+     10  none: no_powers
+      1  none: no_clause
+      1  none: not_held
+
+our faults (stored extent_rules against the reading now): 0
+
+the laws' own extent sentences left unread (catalogue classes, counted): 91 laws
+     69  unread:not_read
+     67  unread:provision_extent
+     50  unread:provision_application
+     46  unread:in_clause
+      7  unread:other_provision
+      3  unread:list
+      1  unread:list_partial
+
+extent sentences the catalogue misses (the sweep, CV-S05a): 183 in 86 laws; 0 in a form the reader is to read
+     59  noise:other
+     30  noise:outside_uk
+     29  noise:instruction
+     27  noise:commencement
+     19  noise:procedure
+      9  noise:cases
+      7  count:qualified
+      3  count:outside_gb
+
+8048 text changes — territory from:
+   5620  bound:law
+   1571  none:same
+    316  territory:law
+    138  none:law_type_not_read
+    133  none:same_or_not_named
+    114  none:law_no_powers
+     64  territory:feed
+     49  none:unread_statement
+     22  none:competence_only
+      7  none:no_amending_law
+      7  none:not_named
+      4  territory:markup
+      2  none:law_no_clause
+      1  none:law_not_held
+
+grouped (CV-S05's table):
+   5936   73.8%  law_text
+   1704   21.2%  follows_enactment
+     68    0.8%  feed_or_markup
+    138    1.7%  law_type_not_read
+    114    1.4%  no_powers
+     49    0.6%  unread_statement
+     22    0.3%  competence_only
+      7    0.1%  no_amending_law
+      2    0.0%  no_clause
+      8    0.1%  other
+
+text changes with no bound, by cause (test/fixtures/extent_patterns/withheld.json): known 141
+not named (widest reach first): 0
+
+PASS (amending laws: our faults 0; sweep misses 0; no-bound causes not named: 0)
+
+── Amending-law reader (mix lat.amending_check) ──
+122 laws; changes the law's text states: 4014 %{"both" => 3571, "law_text_only" => 443}
+
+D and L changes by cause (test/fixtures/amendment_patterns/disagreements.json): 250 groups; known 249, unreviewed 1
+    339  quote-new-number
+     60  law text only: substituted words
+     59  operation repealed/repealed_in_part
+     52  quote-dropped-number
+     48  no operation from legislation.gov.uk: inserted words
+     44  law text only: inserted words
+     31  no operation from legislation.gov.uk: substituted words
+     30  unjoined
+     25  law text only: applied provision
+     23  law text only: inserted provision
+     21  law text only: repealed words
+     18  law text only: substituted provision
+     15  level words/provision
+     11  law text only: repealed provision
+      6  level provision/words
+      5  operation inserted/substituted
+      3  no operation from legislation.gov.uk: repealed provision
+      2  no operation from legislation.gov.uk: inserted provision
+      2  no operation from legislation.gov.uk: repealed words
+      2  operation inserted/repealed_in_part
+      1  no operation from legislation.gov.uk: substituted provision
+      1  operation repealed/substituted
+
+not named (widest reach first): 1
+      1  operation repealed/repealed_in_part @ UK_ukpga_1999_28  [no status]
+           UK_ukpga_1995_25 s.42(3)(b)(ii) (schedule-6)
+
+FAIL (groups not named: 1)
+
+── Merge (mix lat.merge_check) ──
+122 laws; text changes in a stratum: 4729
+
+merge decisions by cause (test/fixtures/merge/merges.json): 716 groups; known 716
+   2929  same amending provision, same operation
+    901  same effect id
+    288  operation differs
+    127  several markup records of one effect
+    117  a joined event lent to a provision its effect doesn't name
+     83  legacy note names the feed's amending provision
+     75  markup alone
+     60  legacy markup id
+     36  spread: legislation.gov.uk's own effect
+     35  same amending provision, same operation, dates differ
+     33  legislation.gov.uk names no amending provision
+     31  unjoined
+     28  related amending provision
+     28  several markup records
+     22  two law-text records the feed names together
+     21  candidate
+     12  operations differ in legislation.gov.uk: inserted/renumbered
+      7  two law-text records
+      5  markup alone beside its joined twin
+      3  operations differ in legislation.gov.uk: renumbered/substituted
+      2  operations differ in legislation.gov.uk: repealed/repealed_in_part
+      2  operations differ in legislation.gov.uk: repealed/substituted
+      2  spread: joined across provisions
+
+not named (widest reach first): 0
+
+PASS (groups not named: 0)
+
+── Evidence (mix lat.evidence_check) ──
+122 laws; 44464 changes; in a stratum: 6396
+
+evidence decisions by cause (test/fixtures/evidence/evidence.json): 179 groups; known 179
+    166  operation: law_text inserted against feed substituted
+    108  by: markup against feed
+     89  operation: law_text inserted against markup substituted
+     59  operation: law_text repealed against feed repealed_in_part
+     27  operation: law_text repealed against feed substituted
+     24  date: commencement against feed
+     15  partial: commencement against feed
+     13  level: markup words against feed provision
+     13  operation: markup substituted against feed inserted
+     12  operation: markup inserted against feed renumbered
+     10  level: law_text words against feed provision
+     10  level: law_text words against markup provision
+      7  level: markup provision against feed words
+      7  territory: law_text against feed
+      6  commenced_by: commencement against feed
+      6  level: law_text provision against markup words
+      5  level: law_text provision against feed words
+      4  operation: law_text repealed against markup substituted
+      3  operation: law_text repealed against markup inserted
+      3  operation: markup inserted against feed substituted
+      3  operation: markup substituted against feed renumbered
+      2  operation: law_text inserted against feed repealed_in_part
+      2  operation: law_text repealed against feed inserted
+      2  operation: markup substituted against feed repealed
+      1  operation: law_text substituted against feed renumbered
+      1  territory: law_text against markup
+
+not named (widest reach first): 0
+
+gaps, a value no source claims (attribute, sources the change holds):
+    874  commenced_by  feed+law_text
+    854  commenced_by  feed+law+law_text
+    638  commenced_by  feed+law_text+markup
+    545  commenced_by  feed+law+law_text+markup
+    265  commenced_by  feed
+    181  commenced_by  feed+markup
+    168  commenced_by  feed+law+markup
+    102  date  feed
+     79  commenced_by  commencement+law_text
+     67  date  feed+law+law_text
+     60  date  feed+law_text
+     57  commenced_by  feed+law
+     54  commenced_by  feed+law_text; amending law has no commencement rules
+     42  commenced_by  commencement+feed+law_text
+     39  commenced_by  feed+law+law_text+markup; amending law has no commencement rules
+     34  commenced_by  feed+markup; amending law has no commencement rules
+     30  commenced_by  commencement+law_text+markup
+     28  date  law_text
+     24  commenced_by  feed+law+law_text; amending law has no commencement rules
+     23  commenced_by  feed; amending law has no commencement rules
+     20  commenced_by  commencement+feed+law_text+markup
+     16  date  feed+law+law_text+markup
+     14  commenced_by  law_text
+     14  commenced_by  law_text; amending law has no commencement rules
+     13  commenced_by  feed+law_text+markup; amending law has no commencement rules
+     11  date  markup
+     11  level  feed+markup
+     10  commenced_by  commencement+feed+law+law_text
+     10  commenced_by  commencement+feed+law+law_text+markup
+     10  commenced_by  markup; amending law has no commencement rules
+     10  date  commencement+feed+law+law_text
+     10  date  commencement+feed+law+law_text+markup
+      9  level  feed+law+law_text+markup
+      8  commenced_by  commencement+markup
+      7  by  markup
+      7  date  feed+law_text+markup
+      5  date  commencement+feed+law_text+markup
+      4  date  commencement+feed+law_text
+      3  date  feed+law
+      3  date  feed+markup
+      3  level  feed+law_text+markup
+      2  commenced_by  law_text+markup
+      2  date  law_text+markup
+      1  commenced_by  markup
+      1  level  feed+law+markup
+gaps by attribute (total; amending law has no commencement rules):
+   4009  commenced_by  (211)
+    328  date  (0)
+     24  level  (0)
+      7  by  (0)
+
+PASS (groups not named: 0)
+
+── Label fold (mix lat.label_check) ──
+laws read 3 at once: 12.3 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.2 of 6 cores busy; max 4
+122 laws folded; 35766 rows; not folded: []
+
+label breaches by rule (test/fixtures/label/labels.json): 4 groups; known 4
+
+not named (widest reach first): 0
+
+gaps, a value no source gives (rows):
+   6257  undated_change
+   1283  undated_start
+
+PASS (groups not named: 0)
+
+every step's gate, ENVIRONMENTAL PROTECTION:
+  FAIL  Sources (2 failing; owned by the Sources step)
+  PASS  Feed reader
+  PASS  Markup reader
+  PASS  Commencement reader
+  PASS  Extent reader
+  FAIL  Amending-law reader (1 failing; owned by the Amending-law reader step)
+  PASS  Merge
+  PASS  Evidence
+  PASS  Label fold
+
+FAIL (gates)

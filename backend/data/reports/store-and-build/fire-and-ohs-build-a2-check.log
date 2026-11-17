@@ -1,0 +1,545 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+laws read 3 at once: 12.5 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.8 of 6 cores busy; max 4
+  [1/139] UK_asp_2012_8: 1491 changes, 10955 claims (6 s)
+  [2/139] UK_ukpga_1998_17: 1771 changes, 16880 claims (7 s)
+  [3/139] UK_ukpga_2004_21: 3117 changes, 21700 claims (7 s)
+  [4/139] UK_uksi_2014_1638: 1487 changes, 12137 claims (4 s)
+  [5/139] UK_uksi_2016_1107: 1019 changes, 9333 claims (3 s)
+  [6/139] UK_uksi_2015_1553: 1262 changes, 10628 claims (3 s)
+  [7/139] UK_nisr_2016_406: 719 changes, 5432 claims (1 s)
+  [8/139] UK_uksi_2005_1541: 733 changes, 5414 claims (1 s)
+  [9/139] UK_nisr_2017_90: 859 changes, 7273 claims (2 s)
+  [10/139] UK_nisi_2006_1254: 697 changes, 4572 claims (1 s)
+  [11/139] UK_uksi_2014_3248: 593 changes, 4205 claims (0 s)
+  [12/139] UK_nisr_2014_224: 571 changes, 4050 claims (1 s)
+  [13/139] UK_uksi_2015_398: 567 changes, 3395 claims (0 s)
+  [14/139] UK_nisr_2016_427: 569 changes, 4027 claims (1 s)
+  [15/139] UK_nisr_2006_425: 474 changes, 3594 claims (1 s)
+  [16/139] UK_nisr_2016_366: 443 changes, 3241 claims (1 s)
+  [17/139] UK_ukpga_2010_11: 431 changes, 2159 claims (0 s)
+  [18/139] UK_ukpga_1875_17: 518 changes, 6117 claims (2 s)
+  [19/139] UK_uksi_1999_2024: 416 changes, 2982 claims (0 s)
+  [20/139] UK_uksi_1998_2451: 385 changes, 1965 claims (0 s)
+  [21/139] UK_uksi_2018_389: 371 changes, 2414 claims (0 s)
+  [22/139] UK_nisr_1991_509: 367 changes, 2141 claims (0 s)
+  [23/139] UK_apni_1969_6: 344 changes, 3182 claims (0 s)
+  [24/139] UK_uksi_2013_602: 337 changes, 2873 claims (0 s)
+  [25/139] UK_nisr_2007_247: 334 changes, 2772 claims (0 s)
+  [26/139] UK_nisr_2006_205: 333 changes, 2290 claims (0 s)
+  [27/139] UK_ukpga_1962_58: 387 changes, 5107 claims (5 s)
+  [28/139] UK_uksi_1956_1943: 315 changes, 1804 claims (0 s)
+  [29/139] UK_nisr_2004_63: 314 changes, 2160 claims (0 s)
+  [30/139] UK_uksi_1995_738: 308 changes, 2987 claims (0 s)
+  [31/139] UK_nisr_2010_59: 291 changes, 2479 claims (0 s)
+  [32/139] UK_uksi_2002_2665: 289 changes, 1727 claims (0 s)
+  [33/139] UK_uksi_2005_3117: 280 changes, 1902 claims (0 s)
+  [34/139] UK_ukpga_1987_12: 280 changes, 1656 claims (0 s)
+  [35/139] UK_uksi_2016_721: 277 changes, 2071 claims (0 s)
+  [36/139] UK_uksi_1996_551: 272 changes, 2667 claims (0 s)
+  [37/139] UK_ssi_2006_456: 268 changes, 1871 claims (0 s)
+  [38/139] UK_ukpga_1971_40: 249 changes, 3296 claims (0 s)
+  [39/139] UK_nisr_1995_87: 244 changes, 1267 claims (0 s)
+  [40/139] UK_uksi_1995_743: 240 changes, 2107 claims (0 s)
+  [41/139] UK_nisr_2010_325: 232 changes, 1559 claims (0 s)
+  [42/139] UK_nisr_1995_345: 231 changes, 1597 claims (0 s)
+  [43/139] UK_uksi_1989_971: 221 changes, 1943 claims (0 s)
+  [44/139] UK_uksi_2014_1637: 217 changes, 1554 claims (0 s)
+  [45/139] UK_uksi_2003_1082: 214 changes, 1748 claims (0 s)
+  [46/139] UK_nisr_2003_152: 212 changes, 1742 claims (0 s)
+  [47/139] UK_asp_2005_5: 399 changes, 6387 claims (12 s)
+  [48/139] UK_nisr_1996_228: 208 changes, 1536 claims (0 s)
+  [49/139] UK_nisr_1995_340: 203 changes, 1650 claims (0 s)
+  [50/139] UK_uksi_1996_913: 192 changes, 1529 claims (0 s)
+  [51/139] UK_uksi_2002_2776: 187 changes, 1191 claims (0 s)
+  [52/139] UK_asc_2025_4: 277 changes, 2317 claims (6 s)
+  [53/139] UK_uksi_2015_385: 177 changes, 1137 claims (0 s)
+  [54/139] UK_nisr_2001_348: 173 changes, 1209 claims (0 s)
+  [55/139] UK_nisr_2013_48: 168 changes, 1442 claims (0 s)
+  [56/139] UK_nisr_1997_195: 166 changes, 1223 claims (0 s)
+  [57/139] UK_ssi_2013_121: 166 changes, 830 claims (0 s)
+  [58/139] UK_uksi_2014_1639: 152 changes, 760 claims (0 s)
+  [59/139] UK_uksi_2017_469: 152 changes, 1267 claims (0 s)
+  [60/139] UK_apni_1929_13: 150 changes, 971 claims (0 s)
+  [61/139] UK_uksi_2016_588: 131 changes, 860 claims (0 s)
+  [62/139] UK_ukpga_1954_70: 192 changes, 2356 claims (2 s)
+  [63/139] UK_ukpga_1966_4: 135 changes, 889 claims (0 s)
+  [64/139] UK_uksi_1989_1401: 130 changes, 956 claims (0 s)
+  [65/139] UK_uksi_2022_547: 120 changes, 811 claims (0 s)
+  [66/139] UK_nisr_1991_446: 119 changes, 744 claims (0 s)
+  [67/139] UK_uksi_2025_797: 116 changes, 765 claims (0 s)
+  [68/139] UK_uksi_1989_635: 116 changes, 1193 claims (0 s)
+  [69/139] UK_uksi_2023_284: 114 changes, 853 claims (0 s)
+  [70/139] UK_nisr_2016_266: 110 changes, 550 claims (0 s)
+  [71/139] UK_nisi_1983_150: 113 changes, 842 claims (0 s)
+  [72/139] UK_nisr_2009_273: 108 changes, 1279 claims (0 s)
+  [73/139] UK_uksi_2015_966: 98 changes, 582 claims (0 s)
+  [74/139] UK_uksi_1990_304: 99 changes, 1000 claims (0 s)
+  [75/139] UK_uksi_2023_63: 88 changes, 566 claims (0 s)
+  [76/139] UK_nisi_1992_1728: 87 changes, 468 claims (0 s)
+  [77/139] UK_ukpga_1992_15: 90 changes, 698 claims (0 s)
+  [78/139] UK_uksi_1994_232: 87 changes, 499 claims (0 s)
+  [79/139] UK_uksi_2023_861: 82 changes, 410 claims (0 s)
+  [80/139] UK_nisr_2015_236: 77 changes, 746 claims (0 s)
+  [81/139] UK_uksi_2009_782: 72 changes, 360 claims (0 s)
+  [82/139] UK_ukpga_1883_3: 72 changes, 679 claims (0 s)
+  [83/139] UK_apni_1970_10: 69 changes, 629 claims (0 s)
+  [84/139] UK_nisr_2006_204: 62 changes, 449 claims (0 s)
+  [85/139] UK_uksi_1996_2535: 60 changes, 300 claims (0 s)
+  [86/139] UK_uksi_1974_2013: 61 changes, 426 claims (0 s)
+  [87/139] UK_uksi_1989_1671: 59 changes, 484 claims (0 s)
+  [88/139] UK_eudr_2008_68: 54 changes, 370 claims (0 s)
+  [89/139] UK_nisr_2012_177: 29 changes, 145 claims (0 s)
+  [90/139] UK_ssi_2005_342: 41 changes, 281 claims (1 s)
+  [91/139] UK_ukpga_1969_10: 80 changes, 1129 claims (1 s)
+  [92/139] UK_ukpga_2021_24: 28 changes, 153 claims (0 s)
+  [93/139] UK_uksi_1997_735: 28 changes, 337 claims (0 s)
+  [94/139] UK_nisr_1996_262: 24 changes, 213 claims (0 s)
+  [95/139] UK_uksi_2024_1278: 23 changes, 115 claims (0 s)
+  [96/139] UK_ukpga_1971_61: 25 changes, 275 claims (0 s)
+  [97/139] UK_uksi_2006_1521: 22 changes, 110 claims (0 s)
+  [98/139] UK_uksi_2015_1673: 22 changes, 213 claims (0 s)
+  [99/139] UK_uksi_2016_309: 22 changes, 204 claims (0 s)
+  [100/139] UK_uksi_2019_1166: 21 changes, 212 claims (0 s)
+  [101/139] UK_uksi_2023_838: 17 changes, 157 claims (0 s)
+  [102/139] UK_uksi_2025_1291: 17 changes, 85 claims (0 s)
+  [103/139] UK_uksi_2016_623: 16 changes, 136 claims (0 s)
+  [104/139] UK_uksi_2018_1281: 15 changes, 75 claims (0 s)
+  [105/139] UK_uksi_2018_807: 15 changes, 110 claims (0 s)
+  [106/139] UK_uksi_2020_390: 15 changes, 75 claims (0 s)
+  [107/139] UK_uksi_2017_720: 14 changes, 118 claims (0 s)
+  [108/139] UK_uksi_2013_1758: 12 changes, 133 claims (0 s)
+  [109/139] UK_uksi_2020_1185: 12 changes, 60 claims (0 s)
+  [110/139] UK_uksi_2017_458: 11 changes, 55 claims (0 s)
+  [111/139] UK_uksi_2024_162: 11 changes, 55 claims (0 s)
+  [112/139] UK_uksi_2015_1406: 9 changes, 45 claims (0 s)
+  [113/139] UK_uksi_2017_23: 9 changes, 46 claims (0 s)
+  [114/139] UK_uksi_2022_115: 9 changes, 45 claims (0 s)
+  [115/139] UK_uksi_2025_257: 9 changes, 45 claims (0 s)
+  [116/139] UK_uksi_2016_673: 8 changes, 40 claims (0 s)
+  [117/139] UK_uksi_2012_3159: 7 changes, 35 claims (0 s)
+  [118/139] UK_uksi_2014_1253: 7 changes, 35 claims (0 s)
+  [119/139] UK_uksi_2014_2260: 7 changes, 35 claims (0 s)
+  [120/139] UK_wsi_2012_1085: 7 changes, 35 claims (0 s)
+  [121/139] UK_uksi_2010_471: 6 changes, 30 claims (0 s)
+  [122/139] UK_uksi_2001_2528: 6 changes, 73 claims (0 s)
+  [123/139] UK_uksi_2012_1886: 5 changes, 25 claims (0 s)
+  [124/139] UK_uksi_2005_1656: 4 changes, 20 claims (0 s)
+  [125/139] UK_uksi_2005_2669: 4 changes, 20 claims (0 s)
+  [126/139] UK_ssi_2010_393: 3 changes, 15 claims (0 s)
+  [127/139] UK_uksi_2000_2846: 3 changes, 37 claims (0 s)
+  [128/139] UK_uksi_2005_3227: 3 changes, 37 claims (0 s)
+  [129/139] UK_uksi_2007_1017: 3 changes, 37 claims (0 s)
+  [130/139] UK_uksi_2007_1549: 3 changes, 37 claims (0 s)
+  [131/139] UK_uksi_2011_2228: 3 changes, 37 claims (0 s)
+  [132/139] UK_uksi_2013_3188: 3 changes, 15 claims (0 s)
+  [133/139] UK_uksi_2014_3212: 3 changes, 15 claims (0 s)
+  [134/139] UK_eudr_1999_92: 1 changes, 9 claims (0 s)
+  [135/139] UK_ukpga_1998_33: 28 changes, 331 claims (1 s)
+  [136/139] UK_eudr_2014_34: 0 changes, 0 claims (0 s)
+  [137/139] UK_eudr_2013_30: 1 changes, 9 claims (1 s)
+  [138/139] UK_eudr_2014_28: 0 changes, 0 claims (1 s)
+  [139/139] UK_eur_2019_1148: 0 changes, 0 claims (0 s)
+built 139 laws in 36.3 s (3 workers), 0 failed
+
+conflicts over 139 laws:
+  1739  {:uncovered, :primary}
+  330  {:uncovered, :derived}
+  229  {:value, :operation}
+  148  :unread
+  41  :unjoined
+  24  {:value, :level}
+  17  {:value, :commenced_by}
+  15  {:value, :date}
+  1  {:value, :territory}
+laws read 3 at once: 12.4 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.8 of 6 cores busy; max 4
+  UK_ukpga_1967_10: 2 s
+  UK_eur_2016_2031: 2 s
+  UK_ukpga_1974_37: 4 s
+  UK_ukpga_1989_14: 0 s
+  UK_ukpga_1974_40: 2 s
+  UK_ukpga_1993_12: 1 s
+  UK_ukpga_2006_16: 0 s
+  UK_ukpga_2018_16: 0 s
+  UK_ukpga_2020_7: 0 s
+  UK_ukpga_2021_30: 2 s
+  UK_ukpga_1988_52: 7 s
+  UK_uksi_2000_1043: 0 s
+  UK_uksi_2008_1597: 0 s
+  UK_ukpga_2022_30: 2 s
+  UK_uksi_2010_2215: 0 s
+  UK_uksi_2010_404: 0 s
+  UK_uksi_2012_3038: 1 s
+  UK_uksi_2010_2214: 5 s
+  UK_uksi_2017_544: 0 s
+  UK_uksi_2016_1105: 1 s
+  UK_ukpga_1990_8: 17 s
+PASS  UK_eur_2016_2031 art.Article 28(3)  — EU retained law omitted for GB on IP completion day; in force in NI under the Windsor Framework (C8)
+PASS  UK_ukpga_1967_10 s.1(4)(a)  — inserted 1999; words omitted 2013 (same as affected); Scottish whole-Act repeal (RetainText) + same-day word omission 2019
+PASS  UK_ukpga_1967_10 s.1(1A)  — inserted by a Welsh SI into a GB Act (single GB text); Scottish whole-Act repeal (RetainText) 2019
+PASS  UK_ukpga_1974_37 s.78  — commenced by order: SI 1974/1439 art.2(c), Sch. 3 "Section 78" on 1 April 1975 (CV-S04, Jason 2026-10-24; was UNDECIDABLE, the order not held); C11 extent E+W+S; E+W and S repeals same day 2006-10-01 → nowhere; child (7)(c) repeal ignored (undecidable)
+PASS  UK_ukpga_1974_40 s.101  — UNDECIDABLE commencement (no order held names it: SI 1988/818 does not, C10); Scottish repeal 2014 with no markup (undecidable)
+PASS  UK_ukpga_1988_52 s.4(6)  — silent-feed repeal; RetainText + SOCPA s.179 extent make it E+W only → S
+PASS  UK_ukpga_1989_14 s.3(5)  — UNDECIDABLE commencement (note only, SI 1991/1618 not held); Scottish whole-Act repeal (RetainText) 2025; S child changes 2014 ignored (undecidable)
+PASS  UK_ukpga_1990_8 s.78(4BA)  — inserted by a Welsh Act inside an older Addition; staged commencement 2015 (partial) / 2017 (full)
+PASS  UK_ukpga_1990_8 s.284(3)(a)  — territory-split words changes: E-only words repeal 2009 (RetainText), Welsh staged substitution 2015/2016
+PASS  UK_ukpga_1993_12 s.18  — E+W repeal (RetainText Extent=E+W) 2010, then S range repeal (no markup) 2018 → NI
+PASS  UK_ukpga_2006_16 s.73  — prospective, commenced 2007, repealed everywhere (text removed) 2012
+PASS  UK_ukpga_2018_16 s.6  — staged commencement (s.6(7) 2018, specified purposes 2020-01-30, fully 2020-12-31); heading substituted 2024
+PASS  UK_ukpga_2020_7 s.78  — staged territorial expiries: E 2021-12-09, W 2022-03-25 (sunset), NI lapse after last continuation 2024-03-25
+PASS  UK_ukpga_2020_7 s.8  — never commenced; expired in part 2021-07-17 (RetainText) — still prospective everywhere
+PASS  UK_ukpga_2021_30 s.8  — prospective at Royal Assent, commenced by order 2022-01-24
+PASS  UK_ukpga_2022_30 s.138(2)(a)  — never commenced: prospective since Royal Assent
+PASS  UK_uksi_2000_1043 reg.11(3)  — substituted the same day for E (marked up) and for W (feed only) — one version, two laws (C5)
+PASS  UK_uksi_2008_1597 reg.14(1)[E+W+S]  — GB territorial version created 2020-12-31; carries the shared pre-split history (C3)
+PASS  UK_uksi_2008_1597 reg.14(1)[NI]  — NI territorial version (C3 shared history); scheduled NI revocation with savings 2027-01-20
+PASS  UK_uksi_2010_2214 reg.36[E]  — England version from a 2015 substitution marked Extent=E; original E+W history before
+PASS  UK_uksi_2010_2215 reg.29  — England-only omission with no Repeal markup; later whole-law England revocation
+PASS  UK_uksi_2010_404 reg.14  — England-only omission (RetainText) by an (England) SI; Welsh heading change after
+PASS  UK_uksi_2010_404 reg.14(1)  — child of reg.14: the omission reaches it; its own Welsh word changes version it
+PASS  UK_uksi_2010_404 reg.14(3)  — child of reg.14: only the England-only omission
+PASS  UK_uksi_2012_3038 reg.1A  — inserted 2020-12-31; own application clause → NI (C6); purpose-limited revocation (RetainText) 2021 → partial (C7)
+PASS  UK_uksi_2016_1105 reg.72(2)(b)  — GB omission (RetainText Extent=E+W+S) leaves NI; same-day NI word omission on its text
+PASS  UK_uksi_2017_544 reg.1(1)  — Welsh SI (territory W, not legal extent E+W); renumbered reg.1 → reg.1(1) 2024 (C4)
+
+27 / 27 golden provisions pass
+
+── Sources (mix lat.sources) ──
+139 laws in scope
+
+needed against held, by category:
+  own: 139 — held 139
+  feed: 135 — held 135
+  territory: 406 — held 406
+  introduction: 212 — held 212
+  enabling_parent: 32 — held 32
+  dates: 53 — absent 13, held 40
+  backlog: 173 — absent 28, held 145
+  needed, all categories: 1150
+
+failures: 0
+
+feeds differing from the register's change statistics: 0
+
+PASS
+
+── Feed reader (mix lat.feed_check) ──
+311 family laws; 139 hold LAT rows (in scope), 172 don't
+7045 effects in 139 laws:
+  4332  placed
+  2064  schedule_not_parsed
+  272  not_in_text
+  189  placed_versions
+  130  not_a_provision
+  38  whole_law
+  15  row_missing
+  5  placed_by_markup
+
+our faults: 0
+
+finer form not held (parse tell-tales): 0
+
+PASS (placement)
+
+── Markup reader (mix lat.markup_check) ──
+
+1942 changes (change elements) in 64 laws:
+  1790  placed
+  152  placed_versions
+our faults: 0
+
+1815 note placements (an effect placed by its note ref only) in 79 laws:
+  1773  placed
+  42  placed_versions
+our faults: 0
+
+markup keys against the feed (changes; a count for CV-S07):
+  1454  in_feed
+  452  legacy
+  36  not_in_feed
+
+PASS (placement)
+
+── Commencement reader (mix lat.commencement_check) ──
+
+27114 rows in 139 laws — own commencement:
+  21360  dated (132 laws)
+  3416  by_order (10 laws)
+  1233  staged (7 laws)
+  944  eu_directive (5 laws)
+  142  eu_publication_relative (1 laws)
+  16  unread (16 laws)
+  3  by_order_partly (1 laws)
+  (left to orders, by_order + by_order_partly: 3419)
+
+against the law's own feed (a yardstick):
+  13295  own_only
+  8827  agree
+  2986  neither
+  1535  feed_only
+  421  differ
+  50  feed_partial_only
+  differ: UK_asp_2012_8 (50 rows) e.g. s.2(1)(b) own 2013-04-01 feed {~D[2013-01-01], ~D[2013-01-01]}
+  differ: UK_ukpga_1998_17 (65 rows) e.g. s.4A own 1999-02-15 feed {~D[2016-04-06], ~D[2016-04-06]}
+  differ: UK_ukpga_2004_21 (303 rows) e.g. h.1 own 2004-11-10 feed {~D[2017-04-03], ~D[2017-04-03]}
+  differ: UK_uksi_2005_1541 (3 rows) e.g. reg.27(5) own 2006-10-01 feed {~D[2017-07-17], ~D[2017-07-17]}
+
+976 changes no other source dates (279 text changes) — the gap-filler:
+  281  dated via feed  (text changes 69, of them not in a Schedule or annex 67)
+  262  undated: no_amending_law  (text changes 10, of them not in a Schedule or annex 10)
+  143  undated: appointed  (text changes 90, of them not in a Schedule or annex 83)
+  135  dated via note  (text changes 25, of them not in a Schedule or annex 25)
+  70  undated: no_pointer  (text changes 49, of them not in a Schedule or annex 13)
+  50  undated: rules_not_held  (text changes 7, of them not in a Schedule or annex 7)
+  25  undated: not_reached  (text changes 23, of them not in a Schedule or annex 21)
+  8  undated: unread  (text changes 5, of them not in a Schedule or annex 5)
+  2  undated: provisions_disagree  (text changes 1, of them not in a Schedule or annex 1)
+  undated: appointed: by UK_asc_2026_5 ×27, ? ×22, UK_ukpga_1991_22 ×22, UK_ukpga_1982_48 ×14, UK_asp_2017_4 ×7, UK_asc_2025_4 ×6
+  undated: no_amending_law: by ? ×262
+  undated: no_pointer: by UK_ukpga_1998_17 ×5, UK_ukpga_2003_22 ×5, UK_eudn_2009_240 ×3, UK_eudn_2010_187 ×3, UK_eudn_2011_26 ×3, UK_eudn_2012_188 ×3
+  undated: not_reached: by UK_asc_2026_7 ×10, UK_uksi_2020_852 ×9, ? ×4, UK_ukpga_1974_7 ×1, UK_ukpga_1980_65 ×1
+  undated: provisions_disagree: by UK_ukpga_1998_46 ×1, UK_ukpga_2000_27 ×1
+  undated: rules_not_held: by ? ×7, UK_uksi_1999_672 ×6, UK_ukpga_2000_11 ×5, UK_ukpga_1996_22 ×3, UK_ukpga_1997_7 ×2, UK_uksi_1999_160 ×2
+  undated: unread: by UK_ukpga_1994_21 ×8
+
+leftovers reaching the family (words of a commencement statement no rule uses):
+  2  known
+gate report: data/reports/commencement-reader/gate-fire-and-oh-s-2026-11-16.txt
+
+PASS (rows: our faults 0; leftovers not named: 0)
+
+── Extent reader (mix lat.extent_check) ──
+139 family laws with LAT; 5100 text changes by 408 amending laws
+laws read 3 at once: 12.3 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.1 of 6 cores busy; max 4
+
+408 amending laws — extent basis:
+    148  powers
+    122  clause
+     41  lists
+     33  stated
+     26  competence
+     20  none: type_not_read
+     11  none: no_powers
+      7  application
+
+our faults (stored extent_rules against the reading now): 0
+
+the laws' own extent sentences left unread (catalogue classes, counted): 62 laws
+     76  unread:provision_extent
+     59  unread:not_read
+     37  unread:provision_application
+     24  unread:in_clause
+      8  unread:other_provision
+      4  unread:list
+      2  unread:application
+      1  unread:another_default
+      1  unread:list_partial
+
+extent sentences the catalogue misses (the sweep, CV-S05a): 153 in 63 laws; 0 in a form the reader is to read
+     58  noise:other
+     23  noise:outside_uk
+     22  noise:procedure
+     15  noise:instruction
+     12  noise:commencement
+      9  noise:cases
+      5  count:outside_gb
+      5  count:qualified
+      4  noise:modification
+
+5100 text changes — territory from:
+   3850  bound:law
+    654  none:same
+    244  none:unread_statement
+     88  none:same_or_not_named
+     79  none:competence_only
+     56  none:law_type_not_read
+     54  none:law_no_powers
+     26  territory:law
+     20  territory:markup
+     15  none:not_named
+     10  none:no_amending_law
+      4  none:provision_not_named
+
+grouped (CV-S05's table):
+   3876   76.0%  law_text
+    742   14.5%  follows_enactment
+     20    0.4%  feed_or_markup
+     56    1.1%  law_type_not_read
+     54    1.1%  no_powers
+    244    4.8%  unread_statement
+     79    1.5%  competence_only
+     10    0.2%  no_amending_law
+      0    0.0%  no_clause
+     19    0.4%  other
+
+text changes with no bound, by cause (test/fixtures/extent_patterns/withheld.json): known 139
+not named (widest reach first): 0
+
+PASS (amending laws: our faults 0; sweep misses 0; no-bound causes not named: 0)
+
+── Amending-law reader (mix lat.amending_check) ──
+139 laws; changes the law's text states: 3111 %{"both" => 2736, "law_text_only" => 375}
+
+D and L changes by cause (test/fixtures/amendment_patterns/disagreements.json): 169 groups; known 169
+    153  quote-dropped-number
+    147  quote-new-number
+     60  law text only: repealed provision
+     36  unjoined
+     34  law text only: substituted provision
+     33  law text only: repealed words
+     31  law text only: substituted words
+     26  law text only: inserted words
+     14  no operation from legislation.gov.uk: substituted words
+     12  law text only: inserted provision
+      9  no operation from legislation.gov.uk: inserted words
+      7  level words/provision
+      7  operation repealed/repealed_in_part
+      6  level provision/words
+      4  law text only: applied provision
+      3  no operation from legislation.gov.uk: repealed words
+      2  no operation from legislation.gov.uk: substituted provision
+      1  no operation from legislation.gov.uk: inserted provision
+      1  no operation from legislation.gov.uk: repealed provision
+      1  operation inserted/repealed_in_part
+      1  operation inserted/substituted
+      1  operation repealed/substituted
+
+not named (widest reach first): 0
+
+PASS (groups not named: 0)
+
+── Merge (mix lat.merge_check) ──
+139 laws; text changes in a stratum: 3263
+
+merge decisions by cause (test/fixtures/merge/merges.json): 455 groups; known 455
+   2053  same amending provision, same operation
+    445  same effect id
+    189  a joined event lent to a provision its effect doesn't name
+    110  operation differs
+     93  two law-text records the feed names together
+     83  several markup records of one effect
+     75  related amending provision
+     73  two law-text records
+     52  markup alone
+     52  same amending provision, same operation, dates differ
+     51  spread: legislation.gov.uk's own effect
+     41  unjoined
+     13  legacy note names the feed's amending provision
+     12  several markup records
+     12  spread: joined across provisions
+      9  legislation.gov.uk names no amending provision
+      6  operations differ in legislation.gov.uk: renumbered/substituted
+      3  legacy markup id
+      2  operations differ in legislation.gov.uk: inserted/renumbered
+      2  operations differ in legislation.gov.uk: repealed/repealed_in_part
+      2  related amending provision, dates differ
+      1  law-text copy apart from its joined event
+      1  markup alone beside its joined twin
+
+not named (widest reach first): 0
+
+PASS (groups not named: 0)
+
+── Evidence (mix lat.evidence_check) ──
+139 laws; 31711 changes; in a stratum: 4735
+
+evidence decisions by cause (test/fixtures/evidence/evidence.json): 95 groups; known 95
+    106  operation: law_text repealed against feed substituted
+     63  operation: law_text inserted against feed substituted
+     32  operation: law_text inserted against markup substituted
+     21  level: markup words against feed provision
+     20  operation: law_text repealed against markup substituted
+     17  commenced_by: commencement against feed
+     15  date: commencement against feed
+     13  level: law_text provision against markup words
+     11  by: markup against feed
+      7  operation: law_text repealed against feed repealed_in_part
+      6  operation: markup substituted against feed renumbered
+      4  level: law_text provision against feed words
+      4  level: law_text words against markup provision
+      4  operation: markup inserted against feed substituted
+      3  level: law_text words against feed provision
+      3  level: markup provision against feed words
+      3  operation: markup substituted against feed inserted
+      2  operation: markup inserted against feed renumbered
+      2  operation: markup repealed against feed repealed_in_part
+      1  operation: law_text inserted against feed repealed_in_part
+      1  operation: markup inserted against feed repealed
+      1  territory: law_text against markup
+
+not named (widest reach first): 0
+
+gaps, a value no source claims (attribute, sources the change holds):
+    694  commenced_by  feed+law_text
+    274  commenced_by  feed+law_text+markup
+    222  commenced_by  feed+law+law_text
+    152  commenced_by  feed+law+law_text+markup
+     93  commenced_by  feed
+     88  commenced_by  feed+markup
+     61  level  feed+law+law_text+markup
+     56  date  feed+law+law_text
+     48  date  feed
+     36  commenced_by  feed+law
+     27  commenced_by  commencement+law_text
+     20  commenced_by  feed; amending law has no commencement rules
+     15  date  feed+law_text
+     12  commenced_by  commencement+markup
+     11  commenced_by  feed+law_text; amending law has no commencement rules
+     11  date  markup
+     10  by  markup
+     10  commenced_by  law_text
+     10  commenced_by  markup; amending law has no commencement rules
+     10  date  law_text
+      9  commenced_by  feed+law+markup
+      6  level  feed+law_text+markup
+      5  date  feed+law+law_text+markup
+      4  commenced_by  commencement+law_text+markup
+      3  date  feed+law
+      2  commenced_by  commencement+feed+law+law_text+markup
+      2  commenced_by  commencement+feed+law_text+markup
+      2  commenced_by  feed+law_text+markup; amending law has no commencement rules
+      2  date  commencement+feed+law+law_text+markup
+      2  date  feed+law_text+markup
+      2  date  feed+markup
+      1  commenced_by  commencement+feed+law+law_text
+      1  commenced_by  commencement+feed+law_text
+      1  commenced_by  law_text+markup
+      1  commenced_by  markup
+      1  date  commencement+feed+law_text
+      1  date  law_text+markup
+      1  level  feed+markup
+gaps by attribute (total; amending law has no commencement rules):
+   1672  commenced_by  (43)
+    156  date  (0)
+     68  level  (0)
+     10  by  (0)
+
+PASS (groups not named: 0)
+
+── Label fold (mix lat.label_check) ──
+laws read 3 at once: 12.3 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.2 of 6 cores busy; max 4
+139 laws folded; 27206 rows; not folded: []
+
+label breaches by rule (test/fixtures/label/labels.json): 7 groups; known 7
+
+not named (widest reach first): 0
+
+gaps, a value no source gives (rows):
+    311  undated_change
+   2447  undated_start
+
+PASS (groups not named: 0)
+
+every step's gate, Fire and OH&S:
+  PASS  Sources
+  PASS  Feed reader
+  PASS  Markup reader
+  PASS  Commencement reader
+  PASS  Extent reader
+  PASS  Amending-law reader
+  PASS  Merge
+  PASS  Evidence
+  PASS  Label fold
+
+PASS (gates)

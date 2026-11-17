@@ -93,3 +93,12 @@ Be rigorous and skeptical; WRONG needs evidence. Under 700 words.
   - Gates: 6 pass, and the 3 that fail (Sources 69, Extent 2, Amending 4) were parked in Measures.
   - Sample at seed 1211, byte-identical twice, 3 items checked by SQL. Golden 27/27. Session `.claude/sessions/lat-change-pipeline/2026-11-11-environmental-protection-store-and-build.md`.
 - OH&S (first family, 2026-10-31): 168 laws, digests identical, family build 51 s (family + golden 204 s, EPA 1990 alone 156 s; accepted, no cache), 0 stale after, hand check seed 1101 30/30. Session `.claude/sessions/change-vocabulary/2026-10-22-cv-s11-store-build.md`.
+- Fire and OH&S, a round (2026-11-16/17), with no agent pass.
+  - The two parked bugs were fixed: `--family` takes an exact name (`Rounds.resolve/2`), and a build exits non-zero on any failed law.
+  - The switched families' commencement readings were re-read in their modes. Golden then fell to 26/27: TCPA s.78(4BA)'s pass had rested on a wrong W territory.
+  - Made right by design (Jason): an Act's Royal Assent from its introduction (Sources' `:royal_assent`), a Part's rule written out as its sections, and limited list items partly in. The last was found as a regression of the second by reading the fix's reach change by change.
+  - Each reader fix stales all 544 builds. The store-wide re-read by mode took about 21 min, then about 6 min to rebuild with 3 workers.
+  - Results: 544 digests identical across two builds; 0 stale; golden 27/27; hand sample at seed 1117, 3/3 by SQL.
+  - The switched families' refold (2,239 rows) was held to Labels side by side (Decision 4 b).
+  - Gates: the round's and Maritime's PASS; EP's and Occupational's new failures (5) parked.
+  - Session `.claude/sessions/lat-change-pipeline/2026-11-16-fire-and-ohs-store-and-build.md`.

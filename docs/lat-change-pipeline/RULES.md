@@ -244,6 +244,23 @@ A law's own start is resolved by `LawStart` in the build, from the same input th
 - **Example:** on 2026-11-07 the build's start equalled the old register's for all 285 built laws. The Factories Act 1961's is 1962-04-01, from its clause, not Royal Assent.
 - **Serves:** `one-record-per-change`, `binds-on-date` · **Code:** `ChangeVocabulary.Build.start/1`, `Store.write/4`, `Store.start/1`, `LabelSource` (`start/1`) · **Test:** `law_start/input_test`; `store_db_test` "the law's start is stored with its build" · **Origin:** Jason 2026-11-02, `cv-06-switch-over` (then read from `lat_change_log`); moved to the build 2026-11-07, Maritime Safety: Switch-over (Jason: "Fix the bug as held by this step")
 
+### `royal-assent-from-the-acts-own-introduction`
+A clause counting from Royal Assent counts from the Act's own date. That is the register's made date, else the stored text's `ukm:EnactmentDate`, else the Act's own introduction: its `DateOfEnactment`, or that document's `ukm:EnactmentDate` when the text is empty. Sources holds the introduction of any Act whose date is held nowhere else (`:royal_assent`). An introduction that states no date leaves the clause unread.
+- **Example:** the Planning (Wales) Act 2015 has no date in the register or in its current body. Its introduction gives "{6 July 2015}", so s.58(2) ("at the end of the period of two months beginning with the day on which this Act receives Royal Assent") dates 2015-09-06.
+- **Serves:** `law-text-wins`, `binds-on-date` · **Code:** `LawStart.DateOfEnactment`, `LawStart.Input` (`stated_made/1`), `Sources` (`:royal_assent`) · **Test:** `law_start/date_of_enactment_test`; `sources_test` "royal assent: …" · **Origin:** Fire and OH&S: Store and build, Decision 3 (Jason 2026-11-16: "right by design")
+- **Differs:** asp 2002/5's introduction states none (a known limit). 2006 c.91 has no introduction upstream.
+
+### `a-part-reaches-its-sections`
+A commencement rule naming a Part or Chapter of an amending law we hold no rows for is written out, when its rules are read, as the provisions that Part holds, from the law's own document. A Schedule's Part already was. The build reads stored rules with no row context, so an unexpanded Part reached nothing.
+- **Example:** anaw 2015/4 s.58(2)(b) ("Parts 3 to 8, so far as is necessary for enabling the Welsh Ministers to … make regulations") reaches s.47(1), which inserts TCPA 1990 s.78(4BA). That provision is partly in force from 2015-09-06 and fully in force from 2017-05-05 by WSI 2017/546 (golden). The order's date and the stage now share one source, so `stages-go-with-the-date` keeps both.
+- **Serves:** `law-text-wins`, `binds-on-date` · **Code:** `Commencement.PartScope`, `Commencement.AmendingRead`; check `mix lat.commencement_check --part-items` (`Review.PartItems`) · **Test:** `commencement/part_scope_test` · **Origin:** Fire and OH&S: Store and build, Decision 3
+- **Differs:** Part rules written by orders are not yet written out (63 rules in 19 laws, parked: Commencement reader).
+
+### `limited-items-are-partly-in`
+A list item whose provisions are limited is partly in, never full. The limit can be a qualifier ("so far as", "for the purposes of", "to the extent") or a relative clause ("any provision of Parts 1 to 7 which— confers a power to make regulations …", "the provisions of Parts 2 to 8 that— …"). The plain items of the same list stay full. Once Parts are written out as their sections, a limited item read as full would date a whole Part.
+- **Example:** the Agriculture Act 2020 s.57(1): (a) "sections 17 and 18" and (d) "this Part" are full on Royal Assent. (b) and (c) are qualified, so NERC 2006 s.89A (inserted by s.34, Part 4) dates 2021-01-11, not 2020-11-11.
+- **Serves:** `law-text-wins`, `binds-on-date` · **Code:** `LawStart.ListItems` · **Test:** `commencement/own_clause_limited_items_test` · **Origin:** Fire and OH&S: Store and build, Decision 4 (b); the check over every Part item: 178 items, 34 limited, none left dated full
+
 ---
 
 ## 3. Territory
