@@ -6,11 +6,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.KnownLimits do
   dates (`cv-06-date-gaps.md`, Jason 2026-11-01: "Named gap"); and Maritime
   Safety's rule breaches below the triage size (`switch-over/maritime-safety-known-limits.md`,
   2026-11-07), and Environmental Protection's
-  (`switch-over/environmental-protection-known-limits.md`, 2026-11-12). The rules
+  (`switch-over/environmental-protection-known-limits.md`, 2026-11-12), and
+  Fire and OH&S's (`switch-over/fire-and-ohs-known-limits.md`, 2026-11-17:
+  its breaches, and the rows whose text is gone but whose repeal no source
+  holds, Decision 1 b). The rules
   check lists them apart; the writer keeps their old label (Jason
   2026-11-02). Each file is a markdown table, a row's section_id first.
 
-  Reads the two files; writes nothing.
+  Reads the files; writes nothing.
   """
 
   @files ~w(
@@ -18,6 +21,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.KnownLimits do
     data/reports/change-vocabulary/cv-06-date-gaps.md
     data/reports/switch-over/maritime-safety-known-limits.md
     data/reports/switch-over/environmental-protection-known-limits.md
+    data/reports/switch-over/fire-and-ohs-known-limits.md
   )
 
   @doc "The files listing them."
