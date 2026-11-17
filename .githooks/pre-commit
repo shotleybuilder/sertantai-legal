@@ -180,11 +180,17 @@ check_credo_ratchet() {
     # credo diff checks HEAD out with git; under `git commit -- <paths>` the
     # hook's GIT_INDEX_FILE is git's temporary index, and that checkout reset
     # it to HEAD, so the commit went in empty (2026-11-04, 284de4cb)
+    # credo diff clones the repo into $TMPDIR/credo-diff-<timestamp> and never
+    # removes it (credo 1.7.19, about 160 MB a run); /tmp is a tmpfs and filled
+    # three times. Give it a scratch TMPDIR of its own, removed on any exit.
+    CREDO_TMP=$(mktemp -d "${TMPDIR:-/tmp}/credo-ratchet.XXXXXX")
+    trap 'rm -rf "$CREDO_TMP"' EXIT
     cd backend
-    NEW=$(env -u GIT_INDEX_FILE mix credo diff --from-git-ref HEAD \
+    NEW=$(env -u GIT_INDEX_FILE TMPDIR="$CREDO_TMP" mix credo diff --from-git-ref HEAD \
         --only Refactor.CyclomaticComplexity,Refactor.Nesting,Refactor.FunctionArity \
         --files-included "lib/**/*.ex" 2>&1 | grep -E '^\+ ┃' || true)
     cd ..
+    rm -rf "$CREDO_TMP"
 
     if echo "$NEW" | grep -qE '\.ex:[0-9]+'; then
         print_error "New function-size issues (complexity > 9, nesting > 2, or arity > 8):"
