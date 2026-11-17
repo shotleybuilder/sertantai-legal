@@ -46,6 +46,81 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSwitchReport do
     }
   end
 
+  @type moved_row :: %{
+          law: String.t(),
+          section_id: String.t(),
+          today_old: String.t(),
+          today_new: String.t(),
+          fields: [atom()],
+          old: [map()],
+          new: [map()]
+        }
+
+  @doc """
+  The provisions whose periods differ between `old` and `new`, one each:
+  today's status each way, the fields that differ (`:periods` when the
+  periods' days differ; a field when its run of values differs, so an
+  unchanged value split across new periods isn't named), and both
+  periods, sorted (`lat.label_switch --rows`: Fire and OH&S, Labels side
+  by side).
+  """
+  @spec rows(String.t(), [map()], [map()], Date.t(), :register | :written) :: [moved_row()]
+  def rows(law, old, new, today, compared \\ :register) do
+    fields = if compared == :written, do: @written, else: @fields
+    by = fn rows -> Enum.group_by(rows, & &1.section_id, &Map.take(plain(&1), fields)) end
+    {o, n} = {by.(old), by.(new)}
+
+    (Map.keys(o) ++ Map.keys(n))
+    |> Enum.uniq()
+    |> Enum.sort()
+    |> Enum.flat_map(fn sid ->
+      {os, ns} = {sorted(o[sid]), sorted(n[sid])}
+      if os == ns, do: [], else: [moved(law, sid, os, ns, fields, today)]
+    end)
+  end
+
+  defp moved(law, sid, os, ns, fields, today) do
+    days = fn ps -> Enum.map(ps, &{&1.valid_from, &1.valid_to}) end
+    runs = fn ps, f -> ps |> Enum.map(&Map.get(&1, f)) |> Enum.dedup() end
+    differ = for f <- fields -- [:valid_from, :valid_to], runs.(os, f) != runs.(ns, f), do: f
+
+    %{
+      law: law,
+      section_id: sid,
+      today_old: today_status(os, today),
+      today_new: today_status(ns, today),
+      fields: if(days.(os) != days.(ns), do: [:periods | differ], else: differ),
+      old: os,
+      new: ns
+    }
+  end
+
+  @doc "Moved rows as tab-separated lines: law, provision, today's status old and new, fields, period counts, then each period old and new."
+  @spec tsv([moved_row()]) :: String.t()
+  def tsv(rows) do
+    Enum.map_join(rows, fn r ->
+      Enum.join(
+        [
+          r.law,
+          r.section_id,
+          r.today_old,
+          r.today_new,
+          Enum.map_join(r.fields, "+", &Atom.to_string/1),
+          length(r.old),
+          length(r.new),
+          Enum.map_join(r.old, " | ", &period_text/1),
+          Enum.map_join(r.new, " | ", &period_text/1)
+        ],
+        "\t"
+      ) <> "\n"
+    end)
+  end
+
+  defp period_text(p) do
+    "#{p.valid_from}→#{p.valid_to || "…"} #{p.status} iff=#{p[:in_force_from]} " <>
+      "ter=#{p[:territory]} by=#{p[:changed_by]} cb=#{Enum.join(p[:commenced_by] || [], ",")}"
+  end
+
   @doc "The laws' reports summed."
   @spec total([law_report()]) :: map()
   def total(reports) do
@@ -70,14 +145,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSwitchReport do
   defp today_counts(rows, today) do
     rows
     |> Enum.group_by(& &1.section_id)
-    |> Enum.map(fn {_, ps} ->
-      Enum.find_value(ps, "unknown", fn p ->
-        if Date.compare(p.valid_from, today) != :gt and
-             (p.valid_to == nil or Date.compare(today, p.valid_to) == :lt),
-           do: p.status
-      end)
-    end)
+    |> Enum.map(fn {_, ps} -> today_status(ps, today) end)
     |> Enum.frequencies()
+  end
+
+  defp today_status(ps, today) do
+    Enum.find_value(ps, "unknown", fn p ->
+      if Date.compare(p.valid_from, today) != :gt and
+           (p.valid_to == nil or Date.compare(today, p.valid_to) == :lt),
+         do: p.status
+    end)
   end
 
   defp sorted(nil), do: []

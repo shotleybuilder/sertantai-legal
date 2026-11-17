@@ -101,4 +101,39 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.LabelSwitchTest do
     # the dry run against the old register compares the old path's fields only
     assert %{differ: 0} = LabelSwitchReport.law("A", stored, new, ~D[2026-11-12])
   end
+
+  test "the moved rows, one a provision: today's status each way, the fields differing, both periods (lat.label_switch --rows)" do
+    stored = [row("A:s.1", ~D[1975-01-01], "UK_x"), row("A:s.2", ~D[1990-01-01], nil)]
+
+    new = [
+      row("A:s.1", ~D[1975-01-01], "UK_x"),
+      # a partial period before: the fields compared as runs of values, so
+      # an unchanged in_force_from or territory isn't named
+      %{
+        row("A:s.2", ~D[1985-01-01], nil)
+        | status: "in_force_partial",
+          valid_to: ~D[1990-01-01],
+          in_force_from: ~D[1990-01-01]
+      },
+      %{row("A:s.2", ~D[1990-01-01], nil) | commenced_by: ["UK_y"]}
+    ]
+
+    assert [moved] = LabelSwitchReport.rows("A", stored, new, ~D[2026-11-12], :written)
+
+    assert %{
+             law: "A",
+             section_id: "A:s.2",
+             today_old: "in_force",
+             today_new: "in_force",
+             fields: [:periods, :status, :commenced_by]
+           } = moved
+
+    assert length(moved.old) == 1 and length(moved.new) == 2
+    assert LabelSwitchReport.rows("A", stored, stored, ~D[2026-11-12], :written) == []
+
+    [line] = LabelSwitchReport.tsv([moved]) |> String.split("\n", trim: true)
+
+    assert ["A", "A:s.2", "in_force", "in_force", "periods+status+commenced_by", "1", "2" | _] =
+             String.split(line, "\t")
+  end
 end

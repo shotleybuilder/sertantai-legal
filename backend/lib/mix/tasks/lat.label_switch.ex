@@ -6,6 +6,8 @@ defmodule Mix.Tasks.Lat.LabelSwitch do
       mix lat.label_switch --family "OH&S: Occupational / Personal Safety"            # dry run: writes nothing
       mix lat.label_switch --family F --out PATH                                      # dry run, its per-law csv to PATH
       mix lat.label_switch --family F --stored                                        # after the apply: against the stored timeline
+      mix lat.label_switch --family F --stored --rows PATH                            # and each moved provision to PATH (tsv)
+      mix lat.label_switch --family F --laws L1,L2 [--apply]                          # only these of the family's laws
       mix lat.label_switch --family "OH&S: Occupational / Personal Safety" --apply    # write (restore point of lat_label_timeline first)
 
   The dry run folds each law's stored changes (`mix lat.vocabulary --build`
@@ -21,6 +23,12 @@ defmodule Mix.Tasks.Lat.LabelSwitch do
   switch writes (`changed_by_all`, `commenced_by` too): after the apply,
   each law written shows 0 differing, known limits included (they keep
   their stored rows). Its csv is `dry-run-<family>-stored.csv`.
+
+  `--rows PATH` writes each moved provision as a tab-separated line
+  (`LabelSwitchReport.rows/5`, `tsv/1`): the law, the provision, today's
+  status each way, the fields that differ, and both periods (Fire and
+  OH&S, Labels side by side: a switched family's refold explained group
+  by group). `--laws` keeps only the named laws of the family.
 
   `--apply` refreshes each law through `LabelRefresh.run/2` with the family
   switched — the one write path — and needs the family in the
@@ -38,17 +46,34 @@ defmodule Mix.Tasks.Lat.LabelSwitch do
   def run(args) do
     {opts, _, _} =
       OptionParser.parse(args,
-        strict: [family: :string, apply: :boolean, out: :string, stored: :boolean]
+        strict: [
+          family: :string,
+          apply: :boolean,
+          out: :string,
+          stored: :boolean,
+          rows: :string,
+          laws: :string
+        ]
       )
 
     family = opts[:family] || Mix.raise("usage: mix lat.label_switch --family F [--apply]")
     Mix.Task.run("app.start")
     Logger.configure(level: :warning)
-    laws = PatternSource.family_laws(family)
+    laws = family |> PatternSource.family_laws() |> only(opts[:laws])
 
     if opts[:apply],
       do: apply_switch(family, laws),
-      else: dry_run(laws, opts[:out] || csv(family, opts[:stored]), opts[:stored] == true)
+      else: dry_run(laws, opts[:out] || csv(family, opts[:stored]), opts)
+  end
+
+  # `--laws`: the named laws, each one of the family's
+  defp only(laws, nil), do: laws
+
+  defp only(laws, names) do
+    named = names |> String.split(",", trim: true) |> Enum.map(&String.trim/1)
+    missing = named -- laws
+    missing == [] || Mix.raise("not in the family: #{Enum.join(missing, ", ")}")
+    Enum.filter(laws, &(&1 in named))
   end
 
   # the family's own dry-run file: "OH&S: Occupational / Personal Safety" →
@@ -58,24 +83,9 @@ defmodule Mix.Tasks.Lat.LabelSwitch do
     Path.join(@csv_dir, "dry-run-#{slug}#{if stored?, do: "-stored"}.csv")
   end
 
-  defp dry_run(laws, csv, stored?) do
-    today = LabelProjection.uk_today()
-
-    # several laws at once (`LawRunner`'s guard), the results in the laws'
-    # order (#191); a law that raises is not folded, as `{:error, why}` is
-    by_law =
-      LawRunner.run(laws, &dry_run_law(&1, today, stored?), fn _, _ -> :ok end)
-
-    results =
-      for law <- laws do
-        case by_law[law] do
-          {:ok, _} = ok -> ok
-          {:error, ^law, _} = error -> error
-          {:error, why} -> {:error, law, why}
-        end
-      end
-
-    reports = for {:ok, r} <- results, do: r
+  defp dry_run(laws, csv, opts) do
+    results = fold_all(laws, opts[:stored] == true)
+    reports = for {:ok, {r, _moved}} <- results, do: r
     errors = for {:error, law, why} <- results, do: {law, why}
     t = LabelSwitchReport.total(reports)
 
@@ -102,14 +112,44 @@ defmodule Mix.Tasks.Lat.LabelSwitch do
     )
 
     Mix.shell().info("per law: #{csv}")
+    write_rows(opts[:rows], for({:ok, {_r, moved}} <- results, do: moved))
+  end
+
+  # several laws at once (`LawRunner`'s guard), the results in the laws'
+  # order (#191); a law that raises is not folded, as `{:error, why}` is
+  defp fold_all(laws, stored?) do
+    today = LabelProjection.uk_today()
+    by_law = LawRunner.run(laws, &dry_run_law(&1, today, stored?), fn _, _ -> :ok end)
+
+    for law <- laws do
+      case by_law[law] do
+        {:ok, _} = ok -> ok
+        {:error, ^law, _} = error -> error
+        {:error, why} -> {:error, law, why}
+      end
+    end
+  end
+
+  defp write_rows(nil, _moved), do: :ok
+
+  defp write_rows(path, moved) do
+    File.mkdir_p!(Path.dirname(path))
+    rows = List.flatten(moved)
+    File.write!(path, LabelSwitchReport.tsv(rows))
+    Mix.shell().info("#{length(rows)} moved rows: #{path}")
   end
 
   defp dry_run_law(law, today, stored?) do
     {old, compared} = against(law, today, stored?)
 
     case LabelSwitch.timeline(law, old) do
-      {:ok, new} -> {:ok, LabelSwitchReport.law(law, old, new, today, compared)}
-      {:error, why} -> {:error, law, why}
+      {:ok, new} ->
+        {:ok,
+         {LabelSwitchReport.law(law, old, new, today, compared),
+          LabelSwitchReport.rows(law, old, new, today, compared)}}
+
+      {:error, why} ->
+        {:error, law, why}
     end
   end
 
