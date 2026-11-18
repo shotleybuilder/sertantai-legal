@@ -167,6 +167,36 @@ defmodule SertantaiLegal.Scraper.MakingLawsTest do
           do: assert(MakingLaws.kind(d, id) == :standard, id)
     end
 
+    # SSI 2005/22 reg. 8(5); Water Industry Act 1999 s.14(2), s.16
+    # (Waste, Water and Climate: Making laws)
+    test "standard wording: meanings, an instrument's procedure, money provided by Parliament" do
+      d =
+        si([
+          {"regulation-8-5",
+           "In this regulation, “mines or quarries waste” and “agricultural waste” shall have the same meanings as they have in regulation 1(3) of the 1994 Regulations."},
+          {"section-14-2-a",
+           "shall not be subject to subsection (4)(a) of that section (affirmative resolution of both Houses of Parliament); but"},
+          {"section-14-2-b",
+           "shall be subject to annulment in pursuance of a resolution of either House of Parliament."},
+          {"section-16",
+           "There shall be paid out of money provided by Parliament any increase attributable to this Act in the sums so payable under any other Act."}
+        ])
+
+      for id <- ~w(regulation-8-5 section-14-2-a section-14-2-b section-16),
+          do: assert(MakingLaws.kind(d, id) == :standard, id)
+    end
+
+    test "subject to a duty, or paid by a person, is still a requirement" do
+      d =
+        si([
+          {"regulation-4", "The operator shall be subject to the duties in Schedule 2."},
+          {"regulation-5", "The fee shall be paid by the applicant within 28 days."}
+        ])
+
+      assert MakingLaws.kind(d, "regulation-4") == :requirement
+      assert MakingLaws.kind(d, "regulation-5") == :requirement
+    end
+
     # SSI 2006/475 art. 3, SI 1974/2013 reg. 6 (Fire and OH&S: Making laws)
     test "standard wording: a lead-in's items, an aside of two parts" do
       d =

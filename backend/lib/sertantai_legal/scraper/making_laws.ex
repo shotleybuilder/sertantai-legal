@@ -58,7 +58,10 @@ defmodule SertantaiLegal.Scraper.MakingLaws do
     # ("shall, unless the context otherwise requires, be construed"; "shall,
     # except where the context otherwise requires, or where the reference is
     # otherwise expressly amended, be construed": SI 1974/2013 reg. 6)
-    ~r/\b(?:shall|must)(?:, [^,]+(?:, [^,]+)?,)?(?: not| each| also)? (?:be (?:construed|read|treated|deemed|taken|cited|guilty|liable|known|conclusive|received)|affect|have (?:the same )?(?:effect|meaning)|mean|include|(?:not )?apply|cease|continue|expire|extend(?: and apply)?|remain in (?:force|effect))\b/i,
+    # an instrument's Parliamentary procedure and money provided by Parliament
+    # are no one's duty (Water Industry Act 1999 s.14(2), s.16: Waste, Water
+    # and Climate, Making laws)
+    ~r/\b(?:shall|must)(?:, [^,]+(?:, [^,]+)?,)?(?: not| each| also)? (?:be (?:construed|read|treated|deemed|taken|cited|guilty|liable|known|conclusive|received|subject to (?:annulment|(?:sub)?section)|paid (?:out of money provided by Parliament|into the Consolidated Fund))|affect|have (?:the same )?(?:effect|meanings?)|mean|include|(?:not )?apply|cease|continue|expire|extend(?: and apply)?|remain in (?:force|effect))\b/i,
     ~r/\bshall be (?:amended|inserted|substituted|omitted|revoked|repealed|added|renumbered|deleted|left out)\b/i
   ]
   @requirement ~r/\b(?:shall|must)\b/i
