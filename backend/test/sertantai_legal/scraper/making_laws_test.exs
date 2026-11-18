@@ -197,6 +197,31 @@ defmodule SertantaiLegal.Scraper.MakingLawsTest do
       assert MakingLaws.kind(d, "regulation-5") == :requirement
     end
 
+    # Waste, Water and Climate: Making laws (SI 2020/1444; Decision 2)
+    test "a law's own commencement by pronoun, and an entry-into-force article, are standard" do
+      d =
+        si([
+          {"regulation-1-2", "They come into force on 31st December 2020."},
+          {"article-2",
+           "This Regulation shall enter into force on the twentieth day following that of its publication in the Official Journal of the European Union."}
+        ])
+
+      assert MakingLaws.kind(d, "regulation-1-2") == :standard
+      assert MakingLaws.kind(d, "article-2") == :standard
+    end
+
+    test "liable to pay is a requirement; a change still commences another law" do
+      d =
+        si([
+          {"regulation-3-1",
+           "A relevant charging authority is, or relevant charging authorities are, liable to pay to the Secretary of State a fee in the circumstances set out in paragraph (2)."},
+          {"regulation-4", "Section 3 of the 2010 Act comes into force on 1st May 2021."}
+        ])
+
+      assert MakingLaws.kind(d, "regulation-3-1") == :requirement
+      assert MakingLaws.kind(d, "regulation-4") == :change
+    end
+
     # SSI 2006/475 art. 3, SI 1974/2013 reg. 6 (Fire and OH&S: Making laws)
     test "standard wording: a lead-in's items, an aside of two parts" do
       d =

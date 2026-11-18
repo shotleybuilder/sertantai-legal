@@ -46,8 +46,10 @@ defmodule SertantaiLegal.Scraper.MakingLaws do
   @appointed_day ~r/\b(?:appointed day|day appointed)\b/i
   # a commencement of the law itself names it first ("These Regulations …",
   # "This Order may be cited … and comes into force"), never "the Schedule
-  # to this Order"
-  @names_itself ~r/^(?:These|This) (?:Regulations|Order|Rules|Act|Scheme|Instrument)\b/
+  # to this Order"; or by pronoun after its citation ("They come into
+  # force on 31st December 2020": SI 2020/1444 reg. 1(2), Waste, Water and
+  # Climate, Making laws)
+  @names_itself ~r/^(?:(?:These|This) (?:Regulations|Order|Rules|Act|Scheme|Instrument)\b|They come into force\b)/
 
   # phrases using "shall", "must" or "may" that state no requirement or power
   @standard_phrases [
@@ -62,9 +64,14 @@ defmodule SertantaiLegal.Scraper.MakingLaws do
     # are no one's duty (Water Industry Act 1999 s.14(2), s.16: Waste, Water
     # and Climate, Making laws)
     ~r/\b(?:shall|must)(?:, [^,]+(?:, [^,]+)?,)?(?: not| each| also)? (?:be (?:construed|read|treated|deemed|taken|cited|guilty|liable|known|conclusive|received|subject to (?:annulment|(?:sub)?section)|paid (?:out of money provided by Parliament|into the Consolidated Fund))|affect|have (?:the same )?(?:effect|meanings?)|mean|include|(?:not )?apply|cease|continue|expire|extend(?: and apply)?|remain in (?:force|effect))\b/i,
+    # a retained EU law's entry-into-force article binds no one (Waste, Water
+    # and Climate, Making laws, Decision 2; its dates stay the Commencement
+    # reader's)
+    ~r/\b(?:shall|will) enter into force\b/i,
     ~r/\bshall be (?:amended|inserted|substituted|omitted|revoked|repealed|added|renumbered|deleted|left out)\b/i
   ]
-  @requirement ~r/\b(?:shall|must)\b/i
+  # "is liable to pay … a fee" is a duty (SI 2020/1444 reg. 3(1))
+  @requirement ~r/\b(?:shall|must)\b|\b(?:is|are),? (?:jointly and severally )?liable to pay\b/i
   # a lead-in whose verb is in its list items
   @lead_in ~r/\b(?:shall|must)\s*[–—-]\s*$/iu
   # a designation with legal effect of its own: an offshore safety zone,
