@@ -40,6 +40,10 @@ defmodule SertantaiLegal.Scraper.Commencement.SentencePatterns do
   alias SertantaiLegal.Scraper.LawStart.{Clause, Statements}
 
   @cif ~r/\b(?:comes?|came|coming|be\s+brought|brought)\s+into\s+(?:force|operation)\b/i
+  # a retained EU law's entry-into-force article: not yet read as a
+  # commencement (the parked `eu-enter-into-force`); Making laws sets it
+  # aside as no one's duty (Waste, Water and Climate, Decision 2a)
+  @entry_into_force ~r/\b(?:shall|will) enter into force\b/i
   @lead [
     except_as: ~r/^(?:\(\w+\)\s*)?(?:except|save)\s+(?:as|in\s+so\s+far\s+as|so\s+far\s+as)\b/i,
     apart_from: ~r/^(?:\(\w+\)\s*)?apart\s+from\b/i,
@@ -70,6 +74,10 @@ defmodule SertantaiLegal.Scraper.Commencement.SentencePatterns do
   @spec commencement_words?(String.t() | nil) :: boolean()
   def commencement_words?(nil), do: false
   def commencement_words?(text), do: Regex.match?(@cif, text)
+
+  @doc "Text with a retained EU law's entry-into-force words (\"shall enter into force\") set aside."
+  @spec without_entry_into_force(String.t()) :: String.t()
+  def without_entry_into_force(text), do: Regex.replace(@entry_into_force, text, " ")
 
   @doc "A sentence's form (see the moduledoc)."
   @spec form(String.t()) :: form()

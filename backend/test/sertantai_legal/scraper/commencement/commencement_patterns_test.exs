@@ -134,4 +134,16 @@ defmodule SertantaiLegal.Scraper.Commencement.CommencementPatternsTest do
       assert %{class: "rules:provision_dated", rules: [_, _]} = SentencePatterns.outcome(s, read)
     end
   end
+
+  # Waste, Water and Climate: Making laws, Decision 2a
+  describe "without_entry_into_force/1" do
+    test "sets aside an EU law's entry-into-force words, and nothing else" do
+      s = "This Regulation shall enter into force on the twentieth day following its publication."
+      refute SentencePatterns.without_entry_into_force(s) =~ ~r/\bshall\b/
+      refute SentencePatterns.commencement_words?(s)
+
+      duty = "The operator shall keep a record."
+      assert SentencePatterns.without_entry_into_force(duty) == duty
+    end
+  end
 end
