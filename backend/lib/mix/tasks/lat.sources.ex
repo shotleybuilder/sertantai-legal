@@ -27,12 +27,13 @@ defmodule Mix.Tasks.Lat.Sources do
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source, as: Scope
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.Commencement.Orders
+  alias SertantaiLegal.Scraper.Commencement.{Order, Orders}
+  alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.Sources
   alias SertantaiLegal.Scraper.Sources.Held
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.Store, as: ExtentStore
   alias SertantaiLegal.Scraper.EnactedBy.EnablingCache
-  alias SertantaiLegal.Scraper.LegislationGovUk.{ChangesFeed, Client}
+  alias SertantaiLegal.Scraper.LegislationGovUk.{ChangesFeed, ClmlStore, Client}
 
   @shortdoc "Sources a scope's labels need, against what is held (read-only)"
 
@@ -103,15 +104,14 @@ defmodule Mix.Tasks.Lat.Sources do
   # (amending-act-orders-not-held); its orders are needed at the next gate
   defp fetch_one(%{part: :orders, law: law}) do
     [_, _, year, _] = String.split(law, "_", parts: 4)
-    title = Repo.query!("SELECT title_en FROM uk_lrt WHERE name = $1 LIMIT 1", [law]).rows
 
-    case title do
-      [[t]] when is_binary(t) ->
-        Orders.for_act(law, Orders.act_title(t, year), year)
+    case act_title(law, year) do
+      nil ->
+        {:error, :no_title}
+
+      title ->
+        Orders.for_act(law, title, year)
         :ok
-
-      _ ->
-        {:error, :no_register_title}
     end
   end
 
@@ -135,6 +135,26 @@ defmodule Mix.Tasks.Lat.Sources do
       # a 404 is stored as missing: legislation.gov.uk has none
       {:error, 404, _} -> :ok
       other -> other
+    end
+  end
+
+  # the register's title, else the Act's own held text (dc:title): most
+  # amending Acts are not in the register (Control of Smoke Pollution Act 1989)
+  defp act_title(law, year) do
+    case Repo.query!("SELECT title_en FROM uk_lrt WHERE name = $1 LIMIT 1", [law]).rows do
+      [[t]] when is_binary(t) -> Orders.act_title(t, year)
+      _ -> held_title(ClmlStore.law_docs(law), law)
+    end
+  end
+
+  defp held_title([], _law), do: nil
+  # Order.title keeps a repealed Act's note ("… 1989 (repealed 27.8.1993)")
+  defp held_title(xmls, law) do
+    [_, _, year, _] = String.split(law, "_", parts: 4)
+
+    case law |> Doc.new(xmls) |> Order.title() do
+      nil -> nil
+      t -> t |> String.replace(~r/\s*\(repealed[^)]*\)\s*$/, "") |> Orders.act_title(year)
     end
   end
 
