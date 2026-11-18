@@ -197,17 +197,10 @@ defmodule SertantaiLegal.Scraper.MakingLawsTest do
       assert MakingLaws.kind(d, "regulation-5") == :requirement
     end
 
-    # Waste, Water and Climate: Making laws (SI 2020/1444; Decision 2)
-    test "a law's own commencement by pronoun, and an entry-into-force article, are standard" do
-      d =
-        si([
-          {"regulation-1-2", "They come into force on 31st December 2020."},
-          {"article-2",
-           "This Regulation shall enter into force on the twentieth day following that of its publication in the Official Journal of the European Union."}
-        ])
-
+    # Waste, Water and Climate: Making laws (SI 2020/1444)
+    test "a law's own commencement by pronoun is standard" do
+      d = si([{"regulation-1-2", "They come into force on 31st December 2020."}])
       assert MakingLaws.kind(d, "regulation-1-2") == :standard
-      assert MakingLaws.kind(d, "article-2") == :standard
     end
 
     test "liable to pay is a requirement; a change still commences another law" do

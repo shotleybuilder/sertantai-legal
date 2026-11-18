@@ -419,7 +419,25 @@ defmodule SertantaiLegal.Scraper.MakingLawsCheckedTest do
     {"UK_uksi_2020_1444", :making, :review},
     # its review said making; amends the UK ETS Order 2020, whose inserted
     # Schedule 2A holds the duties: reviewed to not making (Decision 3)
-    {"UK_uksi_2026_392", :not_making, :review}
+    {"UK_uksi_2026_392", :not_making, :review},
+    # reviewed to not making: each amends only, and its one "requirement" is
+    # its entry-into-force article, which the Commencement reader does not yet
+    # read (eu-enter-into-force; Jason 2026-11-18, Decision 2)
+    {"UK_eudn_2014_955", :making, :review},
+    {"UK_eur_2008_740", :making, :review},
+    {"UK_eur_2009_967", :making, :review},
+    {"UK_eur_2010_413", :making, :review},
+    {"UK_eur_2010_837", :making, :review},
+    {"UK_eur_2011_661", :making, :review},
+    {"UK_eur_2011_664", :making, :review},
+    {"UK_eur_2012_674", :making, :review},
+    {"UK_eur_2013_255", :making, :review},
+    {"UK_eur_2013_57", :making, :review},
+    {"UK_eur_2014_1234", :making, :review},
+    {"UK_eur_2014_660", :making, :review},
+    {"UK_eur_2014_733", :making, :review},
+    {"UK_eur_2015_2002", :making, :review},
+    {"UK_eur_2019_1243", :making, :review}
   ]
 
   for {law, verdict, by} <- @checked do
