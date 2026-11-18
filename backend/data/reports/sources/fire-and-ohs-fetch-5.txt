@@ -1,0 +1,41 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] JWKS public key fetched successfully
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+139 laws in scope
+
+needed against held, by category:
+  own: 139 — held 139
+  feed: 135 — held 135
+  territory: 406 — held 406
+  introduction: 212 — held 212
+  enabling_parent: 32 — held 32
+  dates: 216 — absent 77, held 136, stale 3
+  backlog: 379 — absent 85, held 280, stale 14
+  needed, all categories: 1519
+
+failures: 17
+  stale  backlog  UK_ukpga_1963_33 :feed  (for UK_ukpga_1875_17)
+  stale  backlog  UK_ukpga_1973_65 :feed  (for UK_ukpga_1875_17)
+  stale  backlog  UK_uksi_1973_1886 :body  (for UK_ukpga_1875_17)
+  stale  backlog  UK_uksi_1973_2181 :body  (for UK_ukpga_1875_17)
+  stale  backlog  UK_ukpga_1984_54 :feed  (for UK_ukpga_1875_17)
+  stale  backlog  UK_ukpga_1985_51 :feed  (for UK_ukpga_1875_17)
+  stale  backlog  UK_ukpga_1994_19 :feed  (for UK_ukpga_1875_17)
+  stale  backlog  UK_ukpga_1982_53 :feed  (for UK_ukpga_1883_3)
+  stale  backlog  UK_ukpga_1989_43 :feed  (for UK_ukpga_1883_3)
+  stale  backlog  UK_ukpga_1989_38 :feed  (for UK_ukpga_1954_70)
+  stale  dates  UK_ukpga_1995_45 :feed  (for UK_ukpga_1962_58)
+  stale  backlog  UK_ukpga_1974_7 :feed  (for UK_ukpga_1969_10)
+  stale  backlog  UK_ukpga_1976_57 :feed  (for UK_ukpga_1969_10)
+  stale  backlog  UK_ukpga_1980_65 :feed  (for UK_ukpga_1969_10)
+  stale  backlog  UK_ukpga_2000_27 :feed  (for UK_ukpga_1992_15)
+  stale  dates  UK_ukpga_2014_12 :feed  (for UK_uksi_2013_602)
+  stale  dates  UK_ukpga_2025_28 :feed  (for UK_uksi_2013_602)
+
+feeds differing from the register's change statistics: 0
+
+FAIL
+
+fetching 17 documents the check failed …
+fetched 17, failed 0

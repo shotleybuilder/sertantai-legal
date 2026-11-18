@@ -17,6 +17,7 @@ The next round takes the QQ legal register's families not already covered (Jason
 - ✅ Decision 1: the round's scope: (b) the environment cluster (Jason 2026-11-17)
 - ✅ Tooling: "Waste, Water and Climate" in `ChangeVocabulary.Rounds`, its six families by exact name, with a test (ee5b3c17)
 - ✅ Making laws (step 0): `2026-11-17-waste-water-and-climate-making-laws.md` (closed 2026-11-18)
+- ✅ Sources (step 1): `2026-11-18-waste-water-and-climate-sources.md` (closed 2026-11-18)
 
 ## Dependencies
 
@@ -94,3 +95,4 @@ As the first round (`2026-11-13-fire-and-ohs-meta.md`): one session a step, `<da
 | Step | Session | Opened | Closed | Days | Pass rule met | Plan changes | Bugs closed / parked | Agent tokens (model) | Commits |
 |---|---|---|---|---|---|---|---|---|---|
 | Making laws | `2026-11-17-waste-water-and-climate-making-laws.md` | 2026-11-17 | 2026-11-18 | 2 | yes, but no verdict is 15.3% (accepted, Decision 1 a) | Decision 2's form taken out (a bird's nest; Jason): 15 EU reviews instead; parser-stale re-stamp of 190 | 0 closed / 9 parked (7 golden, 2 LAT parser) + `eu-enter-into-force` re-parked with its fix | 0 (no agents) | ee5b3c17, 4e10c1f7, 7e3a8554, 1b8d75bd, 004c94b6 |
+| Sources | `2026-11-18-waste-water-and-climate-sources.md` | 2026-11-18 | 2026-11-18 | 1 | yes: gate PASS (4,523 needs, 0 failures, 0 register differences); step close Stale laws 224 parked with the readers | Decision 1 (b) narrowed the order-list fix; Decision 2 (a) fetched the switched families' 117; Decision 3 (a) re-scraped all 119; 23 laws rebuilt, 2 Maritime labels refolded | 6 closed (1 moved to the Register) / 5 parked (Register 2, Commencement reader 2, Extent reader 1) | not recorded | 556c5d6a, 515de15f, 6acaf483 |

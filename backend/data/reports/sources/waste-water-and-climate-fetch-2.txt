@@ -1,0 +1,722 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+565 laws in scope
+
+needed against held, by category:
+  own: 565 — held 565
+  feed: 546 — held 546
+  territory: 1150 — absent 1, held 862, not_fetched 227, stale 60
+  introduction: 855 — held 370, not_fetched 485
+  enabling_parent: 55 — held 49, not_fetched 6
+  dates: 322 — absent 39, held 141, not_fetched 127, stale 15
+  backlog: 765 — absent 165, held 383, not_fetched 202, stale 15
+  royal_assent: 21 — held 3, not_fetched 18
+  needed, all categories: 4279
+
+failures: 1155
+  not_fetched  introduction  UK_wsi_2018_1057 :introduction  (for UK_anaw_2017_3)
+  not_fetched  territory  UK_ssi_2026_146 :body  (for UK_asp_2002_3)
+  not_fetched  territory  UK_asp_2002_17 :body  (for UK_asp_2002_3)
+  not_fetched  territory  UK_ssi_2023_45 :body  (for UK_asp_2002_3)
+  not_fetched  territory  UK_asp_2007_3 :body  (for UK_asp_2002_3)
+  not_fetched  territory  UK_asp_2007_8 :body  (for UK_asp_2002_3)
+  not_fetched  introduction  UK_ssi_2026_146 :introduction  (for UK_asp_2002_3)
+  not_fetched  introduction  UK_ssi_2010_95 :introduction  (for UK_asp_2002_3)
+  not_fetched  introduction  UK_ssi_2023_45 :introduction  (for UK_asp_2002_3)
+  not_fetched  dates  UK_asp_2014_14 :feed  (for UK_asp_2002_3)
+  not_fetched  dates  UK_asp_2014_14 :orders  (for UK_asp_2002_3)
+  not_fetched  backlog  UK_asp_2013_5 :schedules  (for UK_asp_2002_3)
+  stale  backlog  UK_asp_2010_8 :feed  (for UK_asp_2002_3)
+  not_fetched  backlog  UK_ssi_2011_278 :schedules  (for UK_asp_2002_3)
+  not_fetched  backlog  UK_ssi_2013_342 :schedules  (for UK_asp_2002_3)
+  not_fetched  royal_assent  UK_asp_2002_17 "/asp/2002/17/introduction/data.xml"  (for UK_asp_2002_3)
+  not_fetched  royal_assent  UK_asp_2007_3 "/asp/2007/3/introduction/data.xml"  (for UK_asp_2002_3)
+  not_fetched  royal_assent  UK_asp_2007_8 "/asp/2007/8/introduction/data.xml"  (for UK_asp_2002_3)
+  not_fetched  territory  UK_ssi_2022_138 :body  (for UK_asp_2003_3)
+  not_fetched  introduction  UK_ssi_2015_270 :introduction  (for UK_asp_2003_3)
+
+feeds differing from the register's change statistics: 119
+  UK_anaw_2017_3: effects 164 vs register 301; laws 7 vs 8
+  UK_asp_2002_3: effects 131 vs register 128; laws 32 vs 31
+  UK_eudn_2001_171: effects 18 vs register 17; laws 5 vs 4
+  UK_eudn_2009_292: effects 24 vs register 23; laws 4 vs 3
+  UK_eudn_2009_337: effects 23 vs register 22; laws 4 vs 3
+  UK_eudn_2009_359: effects 12 vs register 11; laws 4 vs 3
+  UK_eudn_2009_360: effects 9 vs register 8; laws 4 vs 3
+  UK_eur_2006_1013: effects 368 vs register 359; laws 19 vs 18
+  UK_eur_2007_1418: effects 175 vs register 174; laws 11 vs 11
+  UK_eur_2010_1103: effects 13 vs register 11; laws 4 vs 3
+  UK_eur_2011_333: effects 24 vs register 22; laws 4 vs 3
+  UK_eur_2012_1179: effects 21 vs register 20; laws 4 vs 3
+  UK_eur_2012_493: effects 18 vs register 17; laws 3 vs 2
+  UK_eur_2013_715: effects 27 vs register 25; laws 4 vs 3
+  UK_mwa_2010_8: effects 35 vs register 59; laws 8 vs 9
+  UK_nisi_1997_2777: effects 23 vs register 19; laws 10 vs 9
+  UK_nisi_2006_3336: effects 729 vs register 710; laws 48 vs 47
+  UK_nisr_1996_217: effects 7 vs register 0; laws 1 vs 0
+  UK_nisr_2002_331: effects 1 vs register 0; laws 1 vs 0
+  UK_nisr_2003_259: effects 1 vs register 0; laws 1 vs 0
+
+FAIL
+
+fetching 1155 documents the check failed …
+  Fetching enacting data: /wsi/2018/1057/made/introduction/data.xml
+  Fetching enacting data: /ssi/2026/146/made/introduction/data.xml
+  Fetching enacting data: /ssi/2010/95/made/introduction/data.xml
+  Fetching enacting data: /ssi/2023/45/made/introduction/data.xml
+  Fetching enacting data: /ssi/2015/270/made/introduction/data.xml
+  Fetching enacting data: /ssi/2015/270/introduction/made/data.xml
+  20/1155
+  Fetching enacting data: /ssi/2005/348/made/introduction/data.xml
+  Fetching enacting data: /ssi/2005/348/introduction/made/data.xml
+  Fetching enacting data: /ssi/2022/138/made/introduction/data.xml
+  Fetching enacting data: /ssi/2025/281/made/introduction/data.xml
+  Fetching enacting data: /ssi/2025/283/made/introduction/data.xml
+  Fetching enacting data: /uksi/2010/1102/made/introduction/data.xml
+  Fetching enacting data: /eudn/2006/340/made/introduction/data.xml
+  Fetching enacting data: /eudn/2006/340/introduction/made/data.xml
+  Fetching enacting data: /uksi/2019/277/made/introduction/data.xml
+  40/1155
+  Fetching enacting data: /eudr/2008/32/made/introduction/data.xml
+  Fetching enacting data: /eudr/2008/32/introduction/made/data.xml
+  Fetching enacting data: /eudn/2001/2455/made/introduction/data.xml
+  Fetching enacting data: /eudn/2001/2455/introduction/made/data.xml
+  Fetching enacting data: /eudr/2008/105/made/introduction/data.xml
+  Fetching enacting data: /eudr/2008/105/introduction/made/data.xml
+  Fetching enacting data: /eudr/2009/31/made/introduction/data.xml
+  Fetching enacting data: /eudr/2009/31/introduction/made/data.xml
+  Fetching enacting data: /eudr/2018/851/made/introduction/data.xml
+  Fetching enacting data: /eudr/2018/851/introduction/made/data.xml
+  Fetching enacting data: /eur/2017/997/made/introduction/data.xml
+  Fetching enacting data: /eur/2017/997/introduction/made/data.xml
+  Fetching enacting data: /eur/2014/1357/made/introduction/data.xml
+  Fetching enacting data: /eur/2014/1357/introduction/made/data.xml
+  Fetching enacting data: /eudr/2015/1127/made/introduction/data.xml
+  Fetching enacting data: /eudr/2015/1127/introduction/made/data.xml
+  Fetching enacting data: /eudr/2013/38/made/introduction/data.xml
+  Fetching enacting data: /eudr/2013/38/introduction/made/data.xml
+  60/1155
+  Fetching enacting data: /eudr/2017/2110/made/introduction/data.xml
+  Fetching enacting data: /eudr/2017/2110/introduction/made/data.xml
+  Fetching enacting data: /eur/2013/1257/made/introduction/data.xml
+  Fetching enacting data: /eur/2013/1257/introduction/made/data.xml
+  Fetching enacting data: /eur/2015/757/made/introduction/data.xml
+  Fetching enacting data: /eur/2015/757/introduction/made/data.xml
+  Fetching enacting data: /eudr/2011/92/made/introduction/data.xml
+  Fetching enacting data: /eudr/2011/92/introduction/made/data.xml
+  Fetching enacting data: /eur/2014/660/made/introduction/data.xml
+  Fetching enacting data: /eur/2014/660/introduction/made/data.xml
+  Fetching enacting data: /eur/2013/255/made/introduction/data.xml
+  Fetching enacting data: /eur/2013/255/introduction/made/data.xml
+  Fetching enacting data: /eur/2007/1379/made/introduction/data.xml
+  Fetching enacting data: /eur/2007/1379/introduction/made/data.xml
+  Fetching enacting data: /eur/2015/2002/made/introduction/data.xml
+  Fetching enacting data: /eur/2015/2002/introduction/made/data.xml
+  Fetching enacting data: /uksi/2019/473/made/introduction/data.xml
+  Fetching enacting data: /uksi/2020/1455/made/introduction/data.xml
+  Fetching enacting data: /uksi/2024/1281/made/introduction/data.xml
+  Fetching enacting data: /eur/2009/308/made/introduction/data.xml
+  Fetching enacting data: /eur/2009/308/introduction/made/data.xml
+  Fetching enacting data: /eur/2008/669/made/introduction/data.xml
+  Fetching enacting data: /eur/2008/669/introduction/made/data.xml
+  Fetching enacting data: /uksi/2021/785/made/introduction/data.xml
+  Fetching enacting data: /eur/2011/664/made/introduction/data.xml
+  Fetching enacting data: /eur/2011/664/introduction/made/data.xml
+  Fetching enacting data: /eur/2014/1234/made/introduction/data.xml
+  Fetching enacting data: /eur/2014/1234/introduction/made/data.xml
+  80/1155
+  Fetching enacting data: /uksi/2018/1407/made/introduction/data.xml
+  Fetching enacting data: /eudr/2008/1/made/introduction/data.xml
+  Fetching enacting data: /eudr/2008/1/introduction/made/data.xml
+  Fetching enacting data: /eur/2009/596/made/introduction/data.xml
+  Fetching enacting data: /eur/2009/596/introduction/made/data.xml
+  Fetching enacting data: /eur/2009/967/made/introduction/data.xml
+  Fetching enacting data: /eur/2009/967/introduction/made/data.xml
+  Fetching enacting data: /eur/2013/1088/made/introduction/data.xml
+  Fetching enacting data: /eur/2013/1088/introduction/made/data.xml
+  Fetching enacting data: /eur/2017/605/made/introduction/data.xml
+  Fetching enacting data: /eur/2017/605/introduction/made/data.xml
+  Fetching enacting data: /eur/2013/1087/made/introduction/data.xml
+  Fetching enacting data: /eur/2013/1087/introduction/made/data.xml
+  Fetching enacting data: /eur/2010/744/made/introduction/data.xml
+  Fetching enacting data: /eur/2010/744/introduction/made/data.xml
+  Fetching enacting data: /uksi/2026/1053/made/introduction/data.xml
+  100/1155
+  Fetching enacting data: /eur/2018/258/made/introduction/data.xml
+  Fetching enacting data: /eur/2018/258/introduction/made/data.xml
+  Fetching enacting data: /uksi/2019/550/made/introduction/data.xml
+  Fetching enacting data: /uksi/2024/1130/made/introduction/data.xml
+  Fetching enacting data: /uksi/2023/1394/made/introduction/data.xml
+  Fetching enacting data: /eur/2017/1375/made/introduction/data.xml
+  Fetching enacting data: /eur/2017/1375/introduction/made/data.xml
+  Fetching enacting data: /eur/2018/259/made/introduction/data.xml
+  Fetching enacting data: /eur/2018/259/introduction/made/data.xml
+  Fetching enacting data: /uksi/2024/1183/made/introduction/data.xml
+  Fetching enacting data: /uksi/2020/1265/made/introduction/data.xml
+  Fetching enacting data: /eur/2019/888/made/introduction/data.xml
+  Fetching enacting data: /eur/2019/888/introduction/made/data.xml
+  Fetching enacting data: /uksi/2019/846/made/introduction/data.xml
+  120/1155
+  Fetching enacting data: /eur/2019/1242/made/introduction/data.xml
+  Fetching enacting data: /eur/2019/1242/introduction/made/data.xml
+  Fetching enacting data: /uksi/2023/1257/made/introduction/data.xml
+  Fetching enacting data: /uksi/2019/1340/made/introduction/data.xml
+  Fetching enacting data: /uksi/2020/1358/made/introduction/data.xml
+  Fetching enacting data: /uksi/2023/729/made/introduction/data.xml
+  Fetching enacting data: /uksi/2025/296/made/introduction/data.xml
+  Fetching enacting data: /eur/2020/784/made/introduction/data.xml
+  Fetching enacting data: /eur/2020/784/introduction/made/data.xml
+  Fetching enacting data: /uksi/2025/297/made/introduction/data.xml
+  Fetching enacting data: /uksi/2023/1217/made/introduction/data.xml
+  Fetching enacting data: /eur/2020/1204/made/introduction/data.xml
+  Fetching enacting data: /eur/2020/1204/introduction/made/data.xml
+  Fetching enacting data: /uksi/2025/605/made/introduction/data.xml
+  Fetching enacting data: /eur/2020/1203/made/introduction/data.xml
+  Fetching enacting data: /eur/2020/1203/introduction/made/data.xml
+  Fetching enacting data: /uksi/2025/367/made/introduction/data.xml
+  Fetching enacting data: /uksi/2020/1557/made/introduction/data.xml
+  Fetching enacting data: /uksi/2023/1387/made/introduction/data.xml
+  140/1155
+  Fetching enacting data: /uksi/2025/124/made/introduction/data.xml
+  Fetching enacting data: /uksi/2020/1418/made/introduction/data.xml
+  Fetching enacting data: /uksi/2021/1242/made/introduction/data.xml
+  Fetching enacting data: /eur/2020/22/made/introduction/data.xml
+  Fetching enacting data: /eur/2020/22/introduction/made/data.xml
+  Fetching enacting data: /uksi/2021/898/made/introduction/data.xml
+  Fetching enacting data: /nisr/2024/214/made/introduction/data.xml
+  Fetching enacting data: /nisr/2017/88/made/introduction/data.xml
+  160/1155
+  Fetching enacting data: /nisr/2006/34/made/introduction/data.xml
+  Fetching enacting data: /nisr/2006/34/introduction/made/data.xml
+  Fetching enacting data: /nisi/2007/611/made/introduction/data.xml
+  Fetching enacting data: /nisr/2006/280/made/introduction/data.xml
+  Fetching enacting data: /nisr/2009/178/made/introduction/data.xml
+  Fetching enacting data: /uksi/2007/611/made/introduction/data.xml
+  Fetching enacting data: /nisr/2015/238/made/introduction/data.xml
+  Fetching enacting data: /nisr/2015/238/introduction/made/data.xml
+  Fetching enacting data: /nisr/2015/14/made/introduction/data.xml
+  Fetching enacting data: /nisr/2015/288/made/introduction/data.xml
+  180/1155
+  Fetching enacting data: /nisi/2006/1946/made/introduction/data.xml
+  Fetching enacting data: /nisr/2007/192/made/introduction/data.xml
+  Fetching enacting data: /nisr/2019/209/made/introduction/data.xml
+  Fetching enacting data: /uksi/2019/582/made/introduction/data.xml
+  Fetching enacting data: /uksi/2019/1245/made/introduction/data.xml
+  Fetching enacting data: /uksi/2017/1011/made/introduction/data.xml
+  Fetching enacting data: /nisr/2015/279/made/introduction/data.xml
+  Fetching enacting data: /uksi/2008/1277/made/introduction/data.xml
+  200/1155
+  Fetching enacting data: /uksi/2020/1343/made/introduction/data.xml
+  Fetching enacting data: /nisr/2010/128/made/introduction/data.xml
+  Fetching enacting data: /nisr/2010/128/introduction/made/data.xml
+  Fetching enacting data: /nisr/2022/23/made/introduction/data.xml
+  Fetching enacting data: /nisr/2011/80/made/introduction/data.xml
+  Fetching enacting data: /uksi/2025/381/made/introduction/data.xml
+  Fetching enacting data: /uksi/2013/472/made/introduction/data.xml
+  Fetching enacting data: /nisr/2021/184/made/introduction/data.xml
+  Fetching enacting data: /nisr/2017/33/made/introduction/data.xml
+  Fetching enacting data: /nisr/2007/187/made/introduction/data.xml
+  Fetching enacting data: /nisr/2003/259/made/introduction/data.xml
+  Fetching enacting data: /nisr/2003/259/introduction/made/data.xml
+  Fetching enacting data: /nisr/1999/3/made/introduction/data.xml
+  Fetching enacting data: /nisr/1999/3/introduction/made/data.xml
+  Fetching enacting data: /nisr/1999/156/made/introduction/data.xml
+  Fetching enacting data: /nisr/1999/156/introduction/made/data.xml
+  Fetching enacting data: /nisr/2002/331/made/introduction/data.xml
+  Fetching enacting data: /nisr/2022/275/made/introduction/data.xml
+  220/1155
+  Fetching enacting data: /nisr/2005/300/made/introduction/data.xml
+  Fetching enacting data: /nisr/2013/248/made/introduction/data.xml
+  Fetching enacting data: /nisr/2003/493/made/introduction/data.xml
+  Fetching enacting data: /nisr/2015/21/made/introduction/data.xml
+  Fetching enacting data: /nisr/2011/124/made/introduction/data.xml
+  Fetching enacting data: /nisr/2011/124/introduction/made/data.xml
+  Fetching enacting data: /nisr/2026/8/made/introduction/data.xml
+  Fetching enacting data: /nisr/2019/83/made/introduction/data.xml
+  Fetching enacting data: /nisr/2016/401/made/introduction/data.xml
+  Fetching enacting data: /nisr/2025/30/made/introduction/data.xml
+  Fetching enacting data: /nisr/2023/211/made/introduction/data.xml
+  Fetching enacting data: /nisr/2022/127/made/introduction/data.xml
+  Fetching enacting data: /nisr/2010/84/made/introduction/data.xml
+  Fetching enacting data: /nisr/2017/221/made/introduction/data.xml
+  Fetching enacting data: /nisr/2012/112/made/introduction/data.xml
+  Fetching enacting data: /nisr/2020/112/made/introduction/data.xml
+  Fetching enacting data: /nisr/2013/260/made/introduction/data.xml
+  Fetching enacting data: /nisr/2015/386/made/introduction/data.xml
+  Fetching enacting data: /nisr/2021/182/made/introduction/data.xml
+  Fetching enacting data: /nisr/2018/91/made/introduction/data.xml
+  240/1155
+  Fetching enacting data: /nisr/2025/111/made/introduction/data.xml
+  Fetching enacting data: /nisr/2003/7/made/introduction/data.xml
+  Fetching enacting data: /nisr/2013/255/made/introduction/data.xml
+  Fetching enacting data: /nisr/2004/277/made/introduction/data.xml
+  Fetching enacting data: /nisr/2013/241/made/introduction/data.xml
+  Fetching enacting data: /nisr/2003/369/made/introduction/data.xml
+  Fetching enacting data: /nisr/2002/357/made/introduction/data.xml
+  Fetching enacting data: /nisr/2007/265/made/introduction/data.xml
+  Fetching enacting data: /nisr/2007/265/introduction/made/data.xml
+  Fetching enacting data: /nisr/2004/514/made/introduction/data.xml
+  Fetching enacting data: /nisr/2005/306/made/introduction/data.xml
+  Fetching enacting data: /nisr/2005/306/introduction/made/data.xml
+  Fetching enacting data: /nisr/2006/489/made/introduction/data.xml
+  Fetching enacting data: /nisr/2014/307/made/introduction/data.xml
+  Fetching enacting data: /nisr/2010/411/made/introduction/data.xml
+  Fetching enacting data: /nisr/2010/411/introduction/made/data.xml
+  260/1155
+  Fetching enacting data: /nisr/2003/496/made/introduction/data.xml
+  Fetching enacting data: /nisr/2009/76/made/introduction/data.xml
+  Fetching enacting data: /nisr/2015/301/made/introduction/data.xml
+  Fetching enacting data: /nisr/2009/159/made/introduction/data.xml
+  Fetching enacting data: /nisr/2022/288/made/introduction/data.xml
+  Fetching enacting data: /nisr/2019/81/made/introduction/data.xml
+  Fetching enacting data: /nisr/2014/137/made/introduction/data.xml
+  Fetching enacting data: /nisr/2008/18/made/introduction/data.xml
+  Fetching enacting data: /nisr/2017/202/made/introduction/data.xml
+  Fetching enacting data: /nisr/2025/18/made/introduction/data.xml
+  Fetching enacting data: /nisr/2014/253/made/introduction/data.xml
+  Fetching enacting data: /nisr/2016/96/made/introduction/data.xml
+  Fetching enacting data: /nisr/2011/403/made/introduction/data.xml
+  Fetching enacting data: /nisr/2011/232/made/introduction/data.xml
+  Fetching enacting data: /nisr/2007/258/made/introduction/data.xml
+  Fetching enacting data: /nisr/2015/229/made/introduction/data.xml
+  Fetching enacting data: /nisr/2011/78/made/introduction/data.xml
+  Fetching enacting data: /uksi/2020/620/made/introduction/data.xml
+  280/1155
+  Fetching enacting data: /nisr/2004/297/made/introduction/data.xml
+  Fetching enacting data: /nisr/2007/179/made/introduction/data.xml
+  Fetching enacting data: /nisr/2015/85/made/introduction/data.xml
+  Fetching enacting data: /nisr/2013/161/made/introduction/data.xml
+  Fetching enacting data: /nisr/2009/46/made/introduction/data.xml
+  Fetching enacting data: /nisr/2018/188/made/introduction/data.xml
+  Fetching enacting data: /uksi/2019/112/made/introduction/data.xml
+  Fetching enacting data: /uksi/2019/271/made/introduction/data.xml
+  Fetching enacting data: /nisr/2005/461/made/introduction/data.xml
+  Fetching enacting data: /nisr/2018/190/made/introduction/data.xml
+  Fetching enacting data: /nisr/2007/122/made/introduction/data.xml
+  Fetching enacting data: /nisr/2014/147/made/introduction/data.xml
+  Fetching enacting data: /nisr/2025/81/made/introduction/data.xml
+  Fetching enacting data: /nisr/2013/151/made/introduction/data.xml
+  Fetching enacting data: /nisr/2012/218/made/introduction/data.xml
+  Fetching enacting data: /nisr/2017/81/made/introduction/data.xml
+  Fetching enacting data: /nisr/2018/104/made/introduction/data.xml
+  300/1155
+  Fetching enacting data: /nisr/2016/333/made/introduction/data.xml
+  Fetching enacting data: /nisr/2014/52/made/introduction/data.xml
+  Fetching enacting data: /nisr/2021/147/made/introduction/data.xml
+  Fetching enacting data: /nisr/2016/228/made/introduction/data.xml
+  Fetching enacting data: /uksi/2013/3021/made/introduction/data.xml
+  Fetching enacting data: /nisr/2009/359/made/introduction/data.xml
+  Fetching enacting data: /nisr/2014/208/made/introduction/data.xml
+  Fetching enacting data: /nisr/2016/119/made/introduction/data.xml
+  Fetching enacting data: /nisr/2011/211/made/introduction/data.xml
+  Fetching enacting data: /nisr/2015/363/made/introduction/data.xml
+  Fetching enacting data: /nisr/2015/363/introduction/made/data.xml
+  Fetching enacting data: /nisr/2017/2/made/introduction/data.xml
+  Fetching enacting data: /nisr/2018/33/made/introduction/data.xml
+  Fetching enacting data: /nisr/2011/385/made/introduction/data.xml
+  Fetching enacting data: /nisr/2014/304/made/introduction/data.xml
+  Fetching enacting data: /nisr/2016/309/made/introduction/data.xml
+  Fetching enacting data: /uksi/2015/1973/made/introduction/data.xml
+  Fetching enacting data: /uksi/2015/1973/introduction/made/data.xml
+  320/1155
+  Fetching enacting data: /nisr/2021/338/made/introduction/data.xml
+  Fetching enacting data: /nisr/2021/338/introduction/made/data.xml
+  Fetching enacting data: /nisr/2022/33/made/introduction/data.xml
+  Fetching enacting data: /nisr/2018/206/made/introduction/data.xml
+  Fetching enacting data: /nisr/2019/183/made/introduction/data.xml
+  Fetching enacting data: /nisr/2025/161/made/introduction/data.xml
+  Fetching enacting data: /nisr/2025/33/made/introduction/data.xml
+  Fetching enacting data: /ssi/2025/42/made/introduction/data.xml
+  Fetching enacting data: /ssi/2025/42/introduction/made/data.xml
+  Fetching enacting data: /ssi/2020/434/made/introduction/data.xml
+  Fetching enacting data: /ssi/2013/323/made/introduction/data.xml
+  Fetching enacting data: /ssi/2019/436/made/introduction/data.xml
+  340/1155
+  Fetching enacting data: /ssi/2015/446/made/introduction/data.xml
+  Fetching enacting data: /ssi/2012/88/made/introduction/data.xml
+  Fetching enacting data: /ssi/2012/88/introduction/made/data.xml
+  Fetching enacting data: /ssi/2014/373/made/introduction/data.xml
+  Fetching enacting data: /ssi/2014/373/introduction/made/data.xml
+  Fetching enacting data: /ssi/2015/376/made/introduction/data.xml
+  Fetching enacting data: /ssi/2021/318/made/introduction/data.xml
+  Fetching enacting data: /ssi/2017/112/made/introduction/data.xml
+  Fetching enacting data: /ssi/2019/273/made/introduction/data.xml
+  Fetching enacting data: /ssi/2013/155/made/introduction/data.xml
+  Fetching enacting data: /ssi/2021/354/made/introduction/data.xml
+  Fetching enacting data: /ssi/2021/383/made/introduction/data.xml
+  360/1155
+  Fetching enacting data: /ssi/2024/141/made/introduction/data.xml
+  Fetching enacting data: /ssi/2024/311/made/introduction/data.xml
+  Fetching enacting data: /ssi/2022/31/made/introduction/data.xml
+  Fetching enacting data: /ssi/2021/73/made/introduction/data.xml
+  Fetching enacting data: /ssi/2021/249/made/introduction/data.xml
+  Fetching enacting data: /ssi/2015/100/made/introduction/data.xml
+  Fetching enacting data: /ssi/2026/8/made/introduction/data.xml
+  Fetching enacting data: /ssi/2026/20/made/introduction/data.xml
+  Fetching enacting data: /ssi/2020/401/made/introduction/data.xml
+  Fetching enacting data: /ssi/2026/266/made/introduction/data.xml
+  380/1155
+  Fetching enacting data: /ssi/2023/201/made/introduction/data.xml
+  Fetching enacting data: /uksi/1995/2586/made/introduction/data.xml
+  Fetching enacting data: /uksi/1995/2586/introduction/made/data.xml
+  400/1155
+  420/1155
+  440/1155
+  Fetching enacting data: /uksi/1985/1884/made/introduction/data.xml
+  Fetching enacting data: /ukla/2004/1/made/introduction/data.xml
+  Fetching enacting data: /ssi/2006/297/made/introduction/data.xml
+  460/1155
+  480/1155
+  Fetching enacting data: /uksi/2001/3649/made/introduction/data.xml
+  Fetching enacting data: /uksi/2013/1882/made/introduction/data.xml
+  Fetching enacting data: /uksi/1999/506/made/introduction/data.xml
+  Fetching enacting data: /uksi/2017/80/made/introduction/data.xml
+  Fetching enacting data: /uksi/2001/4050/made/introduction/data.xml
+  Fetching enacting data: /uksi/2003/1398/made/introduction/data.xml
+  500/1155
+  520/1155
+  Fetching enacting data: /uksi/2001/2237/made/introduction/data.xml
+  Fetching enacting data: /uksi/2006/1177/made/introduction/data.xml
+  Fetching enacting data: /wsi/2018/195/made/introduction/data.xml
+  Fetching enacting data: /uksi/2013/1582/made/introduction/data.xml
+  Fetching enacting data: /wsi/2016/413/made/introduction/data.xml
+  Fetching enacting data: /uksi/1994/73/made/introduction/data.xml
+  Fetching enacting data: /uksi/2005/268/made/introduction/data.xml
+  Fetching enacting data: /uksi/2024/205/made/introduction/data.xml
+  Fetching enacting data: /wsi/2019/772/made/introduction/data.xml
+  Fetching enacting data: /ukla/1994/15/made/introduction/data.xml
+  Fetching enacting data: /uksi/2003/1016/made/introduction/data.xml
+  Fetching enacting data: /uksi/2010/750/made/introduction/data.xml
+  Fetching enacting data: /uksi/2010/996/made/introduction/data.xml
+  Fetching enacting data: /uksi/2011/3014/made/introduction/data.xml
+  Fetching enacting data: /uksi/2003/1615/made/introduction/data.xml
+  540/1155
+  Fetching enacting data: /uksi/2010/2224/made/introduction/data.xml
+  Fetching enacting data: /uksi/1999/1148/made/introduction/data.xml
+  Fetching enacting data: /mwa/2010/1/made/introduction/data.xml
+  560/1155
+  580/1155
+  600/1155
+  620/1155
+  Fetching enacting data: /uksi/2009/3104/made/introduction/data.xml
+  Fetching enacting data: /uksi/2002/2626/made/introduction/data.xml
+  640/1155
+  660/1155
+  680/1155
+  Fetching enacting data: /uksi/1992/3079/made/introduction/data.xml
+  Fetching enacting data: /uksi/2013/1036/made/introduction/data.xml
+  Fetching enacting data: /uksi/2006/1722/made/introduction/data.xml
+  700/1155
+  Fetching enacting data: /uksi/2000/323/made/introduction/data.xml
+  Fetching enacting data: /uksi/2000/323/introduction/made/data.xml
+  Fetching enacting data: /uksi/2005/1806/made/introduction/data.xml
+  Fetching enacting data: /uksi/2013/141/made/introduction/data.xml
+  Fetching enacting data: /uksi/2011/2499/made/introduction/data.xml
+  Fetching enacting data: /uksi/2004/1936/made/introduction/data.xml
+  Fetching enacting data: /uksi/2004/1936/introduction/made/data.xml
+  720/1155
+  Fetching enacting data: /uksi/2011/740/made/introduction/data.xml
+  Fetching enacting data: /uksi/2009/1258/made/introduction/data.xml
+  Fetching enacting data: /uksi/2023/118/made/introduction/data.xml
+  Fetching enacting data: /uksi/2019/1056/made/introduction/data.xml
+  740/1155
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+  760/1155
+  Fetching enacting data: /uksi/2015/1902/made/introduction/data.xml
+  Fetching enacting data: /uksi/2014/3318/made/introduction/data.xml
+  Fetching enacting data: /uksi/2015/307/made/introduction/data.xml
+  Fetching enacting data: /uksi/2016/279/made/introduction/data.xml
+  Fetching enacting data: /uksi/1999/2034/made/introduction/data.xml
+  Fetching enacting data: /uksi/1993/1154/made/introduction/data.xml
+  Fetching enacting data: /uksi/1997/3009/made/introduction/data.xml
+  Fetching enacting data: /uksi/1987/1782/made/introduction/data.xml
+  Fetching enacting data: /uksi/2015/815/made/introduction/data.xml
+  Fetching enacting data: /uksi/1993/49/made/introduction/data.xml
+  Fetching enacting data: /uksi/2005/2035/made/introduction/data.xml
+  Fetching enacting data: /uksi/1988/1288/made/introduction/data.xml
+  780/1155
+  Fetching enacting data: /ssi/2000/62/made/introduction/data.xml
+  Fetching enacting data: /uksi/2000/656/made/introduction/data.xml
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+  Fetching enacting data: /uksi/1995/3146/made/introduction/data.xml
+  Fetching enacting data: /ssi/2003/428/made/introduction/data.xml
+  Fetching enacting data: /ssi/2003/428/introduction/made/data.xml
+  Fetching enacting data: /uksi/2007/64/made/introduction/data.xml
+  Fetching enacting data: /uksi/2007/64/introduction/made/data.xml
+  Fetching enacting data: /ssi/2001/224/made/introduction/data.xml
+  Fetching enacting data: /uksi/2003/2121/made/introduction/data.xml
+  Fetching enacting data: /uksi/2003/2121/introduction/made/data.xml
+  Fetching enacting data: /wsi/2002/3183/made/introduction/data.xml
+  Fetching enacting data: /ssi/2007/182/made/introduction/data.xml
+  Fetching enacting data: /ssi/2007/182/introduction/made/data.xml
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+  800/1155
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+  Fetching enacting data: /uksi/1993/550/made/introduction/data.xml
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+  Fetching enacting data: /uksi/1993/550/introduction/made/data.xml
+  Fetching enacting data: /uksi/1993/1415/made/introduction/data.xml
+  Fetching enacting data: /uksi/1993/1415/introduction/made/data.xml
+  Fetching enacting data: /uksi/2008/2095/made/introduction/data.xml
+  Fetching enacting data: /ssi/2019/230/made/introduction/data.xml
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+  Fetching enacting data: /ssi/2011/394/made/introduction/data.xml
+  Fetching enacting data: /ssi/2011/394/introduction/made/data.xml
+  Fetching enacting data: /ssi/2001/207/made/introduction/data.xml
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+  Fetching enacting data: /ssi/2001/207/introduction/made/data.xml
+  Fetching enacting data: /uksi/1994/1386/made/introduction/data.xml
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+  Fetching enacting data: /uksi/2004/693/made/introduction/data.xml
+  Fetching enacting data: /uksi/1991/387/made/introduction/data.xml
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+  820/1155
+  Fetching enacting data: /uksi/2004/696/made/introduction/data.xml
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+  Fetching enacting data: /uksi/2014/3302/made/introduction/data.xml
+  Fetching enacting data: /uksi/2014/3302/introduction/made/data.xml
+  Fetching enacting data: /uksi/1997/547/made/introduction/data.xml
+  Fetching enacting data: /wsi/2010/1493/made/introduction/data.xml
+  Fetching enacting data: /wsi/2010/1493/introduction/made/data.xml
+  Fetching enacting data: /ssi/2006/209/made/introduction/data.xml
+  Fetching enacting data: /ssi/2003/168/made/introduction/data.xml
+  Fetching enacting data: /nisr/1998/289/made/introduction/data.xml
+  Fetching enacting data: /nisr/1998/289/introduction/made/data.xml
+  Fetching enacting data: /uksi/1996/972/made/introduction/data.xml
+  Fetching enacting data: /uksi/2003/1788/made/introduction/data.xml
+  Fetching enacting data: /ssi/2011/202/made/introduction/data.xml
+[warning] retry: got exception, will retry in 1000ms, 3 attempts left
+[warning] ** (Req.TransportError) timeout
+  Fetching enacting data: /uksi/2001/3142/made/introduction/data.xml
+  Fetching enacting data: /uksi/2004/1468/made/introduction/data.xml
+  840/1155
+  Fetching enacting data: /uksi/2026/704/made/introduction/data.xml
+  860/1155
+  Fetching enacting data: /uksi/2009/1890/made/introduction/data.xml
+  Fetching enacting data: /uksi/1997/1431/made/introduction/data.xml
+  Fetching enacting data: /uksi/2003/2096/made/introduction/data.xml
+  Fetching enacting data: /uksi/2007/1898/made/introduction/data.xml
+  Fetching enacting data: /uksi/2015/1641/made/introduction/data.xml
+  Fetching enacting data: /ssi/2000/96/made/introduction/data.xml
+  Fetching enacting data: /ssi/2002/276/made/introduction/data.xml
+  Fetching enacting data: /uksi/1998/2927/made/introduction/data.xml
+  Fetching enacting data: /uksi/2002/425/made/introduction/data.xml
+  Fetching enacting data: /uksi/1999/1006/made/introduction/data.xml
+  880/1155
+  Fetching enacting data: /uksi/2008/2349/made/introduction/data.xml
+  Fetching enacting data: /uksi/2008/2349/introduction/made/data.xml
+  Fetching enacting data: /uksi/2009/46/made/introduction/data.xml
+  Fetching enacting data: /uksi/2006/1033/made/introduction/data.xml
+  Fetching enacting data: /uksi/2018/764/made/introduction/data.xml
+  Fetching enacting data: /uksi/1999/1506/made/introduction/data.xml
+  Fetching enacting data: /uksi/2009/2559/made/introduction/data.xml
+  Fetching enacting data: /uksi/2009/2559/introduction/made/data.xml
+  Fetching enacting data: /uksi/2011/1524/made/introduction/data.xml
+  Fetching enacting data: /uksi/2002/2102/made/introduction/data.xml
+  Fetching enacting data: /uksi/2003/2512/made/introduction/data.xml
+  Fetching enacting data: /uksi/2005/617/made/introduction/data.xml
+  Fetching enacting data: /uksi/2007/2734/made/introduction/data.xml
+  Fetching enacting data: /uksi/2007/2734/introduction/made/data.xml
+  Fetching enacting data: /uksi/2001/2885/made/introduction/data.xml
+  Fetching enacting data: /uksi/2001/2885/introduction/made/data.xml
+  900/1155
+  Fetching enacting data: /uksi/2002/2469/made/introduction/data.xml
+  Fetching enacting data: /uksi/2010/991/made/introduction/data.xml
+  Fetching enacting data: /uksi/2010/991/introduction/made/data.xml
+  Fetching enacting data: /uksi/2016/614/made/introduction/data.xml
+  Fetching enacting data: /uksi/2002/3043/made/introduction/data.xml
+  Fetching enacting data: /uksi/2015/98/made/introduction/data.xml
+  Fetching enacting data: /uksi/2001/3958/made/introduction/data.xml
+  Fetching enacting data: /uksi/2005/3525/made/introduction/data.xml
+  Fetching enacting data: /uksi/2013/65/made/introduction/data.xml
+  Fetching enacting data: /uksi/2004/1661/made/introduction/data.xml
+  Fetching enacting data: /uksi/2018/673/made/introduction/data.xml
+  Fetching enacting data: /uksi/2007/2903/made/introduction/data.xml
+  920/1155
+  Fetching enacting data: /uksi/2021/675/made/introduction/data.xml
+  Fetching enacting data: /uksi/2020/1499/made/introduction/data.xml
+  Fetching enacting data: /uksi/2005/2055/made/introduction/data.xml
+  Fetching enacting data: /uksi/2010/1513/made/introduction/data.xml
+  Fetching enacting data: /uksi/2020/855/made/introduction/data.xml
+  Fetching enacting data: /uksi/2016/139/made/introduction/data.xml
+  Fetching enacting data: /uksi/2015/1936/made/introduction/data.xml
+  Fetching enacting data: /uksi/2024/840/made/introduction/data.xml
+  Fetching enacting data: /uksi/2023/1185/made/introduction/data.xml
+  Fetching enacting data: /uksi/2024/1234/made/introduction/data.xml
+  Fetching enacting data: /uksi/2020/1470/made/introduction/data.xml
+  940/1155
+  Fetching enacting data: /uksi/2013/1675/made/introduction/data.xml
+  Fetching enacting data: /uksi/2008/1097/made/introduction/data.xml
+  Fetching enacting data: /uksi/2008/1097/introduction/made/data.xml
+  Fetching enacting data: /uksi/2010/1893/made/introduction/data.xml
+  Fetching enacting data: /uksi/2006/217/made/introduction/data.xml
+  Fetching enacting data: /uksi/2012/3038/made/introduction/data.xml
+  Fetching enacting data: /uksi/2016/336/made/introduction/data.xml
+  Fetching enacting data: /uksi/2009/507/made/introduction/data.xml
+  Fetching enacting data: /uksi/2007/3476/made/introduction/data.xml
+  Fetching enacting data: /uksi/2012/263/made/introduction/data.xml
+  Fetching enacting data: /uksi/2009/1610/made/introduction/data.xml
+  Fetching enacting data: /uksi/2018/1089/made/introduction/data.xml
+  Fetching enacting data: /uksi/2008/375/made/introduction/data.xml
+  Fetching enacting data: /uksi/2010/340/made/introduction/data.xml
+  Fetching enacting data: /uksi/2015/377/made/introduction/data.xml
+  Fetching enacting data: /uksi/2008/165/made/introduction/data.xml
+  Fetching enacting data: /wsi/2011/600/made/introduction/data.xml
+  Fetching enacting data: /wsi/2011/600/introduction/made/data.xml
+  960/1155
+  Fetching enacting data: /uksi/2008/9/made/introduction/data.xml
+  Fetching enacting data: /uksi/2010/265/made/introduction/data.xml
+  Fetching enacting data: /uksi/2010/265/introduction/made/data.xml
+  Fetching enacting data: /uksi/2024/1187/made/introduction/data.xml
+  Fetching enacting data: /uksi/2021/1115/made/introduction/data.xml
+  Fetching enacting data: /uksi/2021/1420/made/introduction/data.xml
+  Fetching enacting data: /uksi/2024/634/made/introduction/data.xml
+  Fetching enacting data: /uksi/2011/493/made/introduction/data.xml
+  Fetching enacting data: /uksi/2018/1405/made/introduction/data.xml
+  Fetching enacting data: /uksi/2008/1932/made/introduction/data.xml
+  Fetching enacting data: /uksi/2015/63/made/introduction/data.xml
+  Fetching enacting data: /uksi/2012/1139/made/introduction/data.xml
+  980/1155
+  Fetching enacting data: /uksi/2017/246/made/introduction/data.xml
+  Fetching enacting data: /uksi/2009/3146/made/introduction/data.xml
+  Fetching enacting data: /uksi/2021/189/made/introduction/data.xml
+  Fetching enacting data: /uksi/2020/115/made/introduction/data.xml
+  Fetching enacting data: /uksi/2015/775/made/introduction/data.xml
+  Fetching enacting data: /uksi/2015/1935/made/introduction/data.xml
+  Fetching enacting data: /uksi/2024/1332/made/introduction/data.xml
+  Fetching enacting data: /uksi/2013/3134/made/introduction/data.xml
+  Fetching enacting data: /uksi/2019/544/made/introduction/data.xml
+  Fetching enacting data: /uksi/2012/461/made/introduction/data.xml
+  Fetching enacting data: /uksi/2014/1290/made/introduction/data.xml
+  Fetching enacting data: /uksi/2011/2677/made/introduction/data.xml
+  Fetching enacting data: /uksi/2026/750/made/introduction/data.xml
+  Fetching enacting data: /uksi/2016/838/made/introduction/data.xml
+  Fetching enacting data: /uksi/2015/469/made/introduction/data.xml
+  Fetching enacting data: /uksi/2021/1095/made/introduction/data.xml
+  Fetching enacting data: /uksi/2017/1143/made/introduction/data.xml
+  1000/1155
+  Fetching enacting data: /uksi/2013/1232/made/introduction/data.xml
+  Fetching enacting data: /uksi/2021/1097/made/introduction/data.xml
+  Fetching enacting data: /uksi/2025/497/made/introduction/data.xml
+  Fetching enacting data: /uksi/2012/3005/made/introduction/data.xml
+  Fetching enacting data: /uksi/2010/1091/made/introduction/data.xml
+  Fetching enacting data: /uksi/2013/1001/made/introduction/data.xml
+  Fetching enacting data: /uksi/2020/1617/made/introduction/data.xml
+  Fetching enacting data: /uksi/2019/672/made/introduction/data.xml
+  Fetching enacting data: /uksi/2016/1165/made/introduction/data.xml
+  Fetching enacting data: /uksi/2013/1244/made/introduction/data.xml
+  Fetching enacting data: /uksi/2013/1119/made/introduction/data.xml
+  Fetching enacting data: /uksi/2018/841/made/introduction/data.xml
+  Fetching enacting data: /uksi/2011/234/made/introduction/data.xml
+  Fetching enacting data: /uksi/2011/234/introduction/made/data.xml
+  Fetching enacting data: /uksi/2018/255/made/introduction/data.xml
+  Fetching enacting data: /uksi/2012/2897/made/introduction/data.xml
+  1020/1155
+  Fetching enacting data: /uksi/2012/1889/made/introduction/data.xml
+  Fetching enacting data: /uksi/2019/1078/made/introduction/data.xml
+  Fetching enacting data: /uksi/2024/666/made/introduction/data.xml
+  Fetching enacting data: /uksi/2012/767/made/introduction/data.xml
+  Fetching enacting data: /uksi/2013/390/made/introduction/data.xml
+  Fetching enacting data: /uksi/2013/390/introduction/made/data.xml
+  Fetching enacting data: /uksi/2026/826/made/introduction/data.xml
+  Fetching enacting data: /uksi/2013/1881/made/introduction/data.xml
+  Fetching enacting data: /uksi/2013/139/made/introduction/data.xml
+  Fetching enacting data: /uksi/2012/3021/made/introduction/data.xml
+  Fetching enacting data: /uksi/2012/2320/made/introduction/data.xml
+  Fetching enacting data: /uksi/2023/1243/made/introduction/data.xml
+  Fetching enacting data: /uksi/2014/502/made/introduction/data.xml
+  Fetching enacting data: /uksi/2018/1336/made/introduction/data.xml
+  1040/1155
+  Fetching enacting data: /uksi/2013/1773/made/introduction/data.xml
+  Fetching enacting data: /uksi/2025/163/made/introduction/data.xml
+  Fetching enacting data: /uksi/2016/275/made/introduction/data.xml
+  Fetching enacting data: /uksi/2015/22/made/introduction/data.xml
+  Fetching enacting data: /uksi/2020/1319/made/introduction/data.xml
+  Fetching enacting data: /uksi/2019/560/made/introduction/data.xml
+  Fetching enacting data: /uksi/2019/560/introduction/made/data.xml
+  Fetching enacting data: /uksi/2015/102/made/introduction/data.xml
+  Fetching enacting data: /uksi/2015/102/introduction/made/data.xml
+  Fetching enacting data: /uksi/2025/1129/made/introduction/data.xml
+  Fetching enacting data: /wsi/2020/507/made/introduction/data.xml
+  Fetching enacting data: /uksi/2014/2363/made/introduction/data.xml
+  Fetching enacting data: /wsi/2014/1067/made/introduction/data.xml
+  Fetching enacting data: /wsi/2016/314/made/introduction/data.xml
+  Fetching enacting data: /wsi/2017/453/made/introduction/data.xml
+  1060/1155
+  Fetching enacting data: /wsi/2026/85/made/introduction/data.xml
+  Fetching enacting data: /uksi/2014/1771/made/introduction/data.xml
+  Fetching enacting data: /uksi/2015/1968/made/introduction/data.xml
+  Fetching enacting data: /uksi/2015/723/made/introduction/data.xml
+  Fetching enacting data: /uksi/2020/268/made/introduction/data.xml
+  Fetching enacting data: /uksi/2017/659/made/introduction/data.xml
+  Fetching enacting data: /uksi/2022/1242/made/introduction/data.xml
+  Fetching enacting data: /uksi/2018/1262/made/introduction/data.xml
+  Fetching enacting data: /uksi/2020/862/made/introduction/data.xml
+  Fetching enacting data: /uksi/2019/689/made/introduction/data.xml
+  Fetching enacting data: /uksi/2025/373/made/introduction/data.xml
+  Fetching enacting data: /uksi/2018/1122/made/introduction/data.xml
+  Fetching enacting data: /uksi/2016/1190/made/introduction/data.xml
+  1080/1155
+  Fetching enacting data: /uksi/2016/1254/made/introduction/data.xml
+  Fetching enacting data: /uksi/2016/465/made/introduction/data.xml
+  Fetching enacting data: /uksi/2021/598/made/introduction/data.xml
+  Fetching enacting data: /wsi/2022/907/made/introduction/data.xml
+  Fetching enacting data: /wsi/2024/998/made/introduction/data.xml
+  Fetching enacting data: /uksi/2026/325/made/introduction/data.xml
+  Fetching enacting data: /uksi/2022/576/made/introduction/data.xml
+  Fetching enacting data: /uksi/2022/71/made/introduction/data.xml
+  Fetching enacting data: /wsi/2018/647/made/introduction/data.xml
+  Fetching enacting data: /uksi/2022/1336/made/introduction/data.xml
+  Fetching enacting data: /uksi/2022/1336/introduction/made/data.xml
+  1100/1155
+  Fetching enacting data: /uksi/2023/1267/made/introduction/data.xml
+  Fetching enacting data: /uksi/2026/714/made/introduction/data.xml
+  Fetching enacting data: /uksi/2025/678/made/introduction/data.xml
+  Fetching enacting data: /uksi/2024/1384/made/introduction/data.xml
+  Fetching enacting data: /uksi/2025/1143/made/introduction/data.xml
+  Fetching enacting data: /uksi/2026/890/made/introduction/data.xml
+  Fetching enacting data: /wsi/2005/3302/made/introduction/data.xml
+  Fetching enacting data: /wsi/2005/1157/made/introduction/data.xml
+  Fetching enacting data: /wsi/2009/47/made/introduction/data.xml
+  1120/1155
+  Fetching enacting data: /uksi/2009/47/made/introduction/data.xml
+  Fetching enacting data: /wsi/2010/1433/made/introduction/data.xml
+  Fetching enacting data: /wsi/2014/2291/made/introduction/data.xml
+  Fetching enacting data: /wsi/2016/1221/made/introduction/data.xml
+  Fetching enacting data: /wsi/2019/149/made/introduction/data.xml
+  Fetching enacting data: /wsi/2020/1073/made/introduction/data.xml
+  Fetching enacting data: /wsi/2013/898/made/introduction/data.xml
+  Fetching enacting data: /wsi/2013/898/introduction/made/data.xml
+  Fetching enacting data: /uksi/2024/339/made/introduction/data.xml
+  Fetching enacting data: /wsi/2013/2843/made/introduction/data.xml
+  Fetching enacting data: /wsi/2018/319/made/introduction/data.xml
+  Fetching enacting data: /wsi/2024/339/made/introduction/data.xml
+  1140/1155
+  Fetching enacting data: /wsi/2025/805/made/introduction/data.xml
+  Fetching enacting data: /wsi/2019/1492/made/introduction/data.xml
+  Fetching enacting data: /wsi/2025/1270/made/introduction/data.xml
+  Fetching enacting data: /uksi/2022/1305/made/introduction/data.xml
+  Fetching enacting data: /wsi/2023/1266/made/introduction/data.xml
+  Fetching enacting data: /wsi/2023/1266/introduction/made/data.xml
+  Fetching enacting data: /wsi/2026/121/made/introduction/data.xml
+fetched 1154, failed 1
+  UK_ukpga_1989_17 :orders: {:error, :no_register_title}

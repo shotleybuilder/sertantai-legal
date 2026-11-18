@@ -1,0 +1,141 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] JWKS public key fetched successfully
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+565 laws in scope
+
+needed against held, by category:
+  own: 565 — held 565
+  feed: 546 — held 546
+  territory: 1144 — absent 2, held 1142
+  introduction: 855 — absent 2, held 853
+  enabling_parent: 102 — held 102
+  dates: 518 — absent 190, held 328
+  backlog: 790 — absent 270, held 520
+  royal_assent: 2 — held 2
+  needed, all categories: 4522
+
+failures: 0
+
+feeds differing from the register's change statistics: 119
+  UK_anaw_2017_3: effects 164 vs register 301; laws 7 vs 8
+  UK_asp_2002_3: effects 131 vs register 128; laws 32 vs 31
+  UK_eudn_2001_171: effects 18 vs register 17; laws 5 vs 4
+  UK_eudn_2009_292: effects 24 vs register 23; laws 4 vs 3
+  UK_eudn_2009_337: effects 23 vs register 22; laws 4 vs 3
+  UK_eudn_2009_359: effects 12 vs register 11; laws 4 vs 3
+  UK_eudn_2009_360: effects 9 vs register 8; laws 4 vs 3
+  UK_eur_2006_1013: effects 368 vs register 359; laws 19 vs 18
+  UK_eur_2007_1418: effects 175 vs register 174; laws 11 vs 11
+  UK_eur_2010_1103: effects 13 vs register 11; laws 4 vs 3
+  UK_eur_2011_333: effects 24 vs register 22; laws 4 vs 3
+  UK_eur_2012_1179: effects 21 vs register 20; laws 4 vs 3
+  UK_eur_2012_493: effects 18 vs register 17; laws 3 vs 2
+  UK_eur_2013_715: effects 27 vs register 25; laws 4 vs 3
+  UK_mwa_2010_8: effects 35 vs register 59; laws 8 vs 9
+  UK_nisi_1997_2777: effects 23 vs register 19; laws 10 vs 9
+  UK_nisi_2006_3336: effects 729 vs register 710; laws 48 vs 47
+  UK_nisr_1996_217: effects 7 vs register 0; laws 1 vs 0
+  UK_nisr_2002_331: effects 1 vs register 0; laws 1 vs 0
+  UK_nisr_2003_259: effects 1 vs register 0; laws 1 vs 0
+  UK_nisr_2003_496: effects 85 vs register 73; laws 16 vs 15
+  UK_nisr_2004_416: effects 49 vs register 45; laws 8 vs 7
+  UK_nisr_2004_419: effects 2 vs register 1; laws 2 vs 1
+  UK_nisr_2005_300: effects 116 vs register 109; laws 15 vs 12
+  UK_nisr_2007_187: effects 12 vs register 50; laws 3 vs 3
+  UK_nisr_2009_254: effects 67 vs register 84; laws 9 vs 9
+  UK_nisr_2009_255: effects 9 vs register 56; laws 2 vs 3
+  UK_nisr_2010_412: effects 2 vs register 12; laws 2 vs 3
+  UK_nisr_2011_127: effects 48 vs register 115; laws 10 vs 10
+  UK_nisr_2011_238: effects 7 vs register 14; laws 2 vs 3
+  UK_nisr_2013_160: effects 108 vs register 344; laws 13 vs 14
+  UK_nisr_2017_81: effects 41 vs register 21; laws 4 vs 3
+  UK_nisr_2017_85: effects 48 vs register 42; laws 4 vs 3
+  UK_nisr_2017_88: effects 22 vs register 44; laws 2 vs 2
+  UK_ssi_2000_95: effects 57 vs register 55; laws 7 vs 6
+  UK_ssi_2000_97: effects 11 vs register 7; laws 2 vs 2
+  UK_ssi_2001_206: effects 1 vs register 2; laws 1 vs 2
+  UK_ssi_2004_289: effects 0 vs register 1; laws 0 vs 1
+  UK_ssi_2005_157: effects 7 vs register 30; laws 4 vs 5
+  UK_ssi_2006_465: effects 14 vs register 56; laws 2 vs 3
+  UK_ssi_2014_258: effects 8 vs register 24; laws 3 vs 4
+  UK_ssi_2015_347: effects 13 vs register 11; laws 6 vs 5
+  UK_ukpga_1945_42: effects 3 vs register 0; laws 3 vs 0
+  UK_ukpga_1974_40: effects 647 vs register 637; laws 324 vs 314
+  UK_ukpga_1975_23: effects 176 vs register 173; laws 27 vs 26
+  UK_ukpga_1983_35: effects 30 vs register 31; laws 17 vs 18
+  UK_ukpga_1989_14: effects 70 vs register 60; laws 22 vs 20
+  UK_ukpga_1989_15: effects 114 vs register 111; laws 62 vs 61
+  UK_ukpga_1991_56: effects 2271 vs register 841; laws 426 vs 70
+  UK_ukpga_1991_57: effects 1120 vs register 887; laws 227 vs 152
+  UK_ukpga_1991_59: effects 406 vs register 394; laws 171 vs 163
+  UK_ukpga_2003_37: effects 477 vs register 476; laws 26 vs 25
+  UK_ukpga_2008_27: effects 74 vs register 73; laws 21 vs 20
+  UK_ukpga_2010_29: effects 430 vs register 428; laws 33 vs 32
+  UK_ukpga_2014_21: effects 390 vs register 389; laws 25 vs 24
+  UK_uksi_1989_744: effects 25 vs register 8; laws 6 vs 6
+  UK_uksi_1991_111: effects 0 vs register 2; laws 0 vs 2
+  UK_uksi_1991_324: effects 20 vs register 31; laws 1 vs 2
+  UK_uksi_1991_346: effects 5 vs register 8; laws 2 vs 3
+  UK_uksi_1992_339: effects 1 vs register 3; laws 1 vs 2
+  UK_uksi_1992_575: effects 19 vs register 21; laws 2 vs 4
+  UK_uksi_1993_1155: effects 8 vs register 13; laws 3 vs 4
+  UK_uksi_1994_2841: effects 63 vs register 59; laws 11 vs 10
+  UK_uksi_1994_2842: effects 53 vs register 70; laws 8 vs 8
+  UK_uksi_1995_288: effects 4 vs register 3; laws 3 vs 2
+  UK_uksi_1995_723: effects 7 vs register 14; laws 2 vs 2
+  UK_uksi_1996_1564: effects 29 vs register 27; laws 7 vs 7
+  UK_uksi_1996_2763: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_1998_1165: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_1998_2138: effects 0 vs register 14; laws 0 vs 1
+  UK_uksi_1998_3084: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_2000_1043: effects 55 vs register 54; laws 11 vs 10
+  UK_uksi_2000_227: effects 6 vs register 8; laws 3 vs 3
+  UK_uksi_2000_2911: effects 1 vs register 2; laws 1 vs 2
+  UK_uksi_2002_1355: effects 90 vs register 87; laws 7 vs 7
+  UK_uksi_2002_3049: effects 15 vs register 11; laws 4 vs 3
+  UK_uksi_2003_3341: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_2004_3202: effects 148 vs register 118; laws 11 vs 8
+  UK_uksi_2004_3206: effects 9 vs register 23; laws 6 vs 7
+  UK_uksi_2004_639: effects 1 vs register 2; laws 1 vs 2
+  UK_uksi_2005_1606: effects 14 vs register 10; laws 3 vs 2
+  UK_uksi_2005_2088: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_2005_2748: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_2005_3172: effects 63 vs register 53; laws 5 vs 4
+  UK_uksi_2005_477: effects 12 vs register 16; laws 4 vs 6
+  UK_uksi_2005_894: effects 184 vs register 181; laws 22 vs 20
+  UK_uksi_2006_2238: effects 42 vs register 40; laws 8 vs 7
+  UK_uksi_2007_1711: effects 116 vs register 115; laws 13 vs 12
+  UK_uksi_2007_3106: effects 29 vs register 28; laws 8 vs 7
+  UK_uksi_2007_3437: effects 4 vs register 2; laws 1 vs 1
+  UK_uksi_2008_2095: effects 6 vs register 10; laws 2 vs 3
+  UK_uksi_2008_2164: effects 38 vs register 28; laws 12 vs 10
+  UK_uksi_2009_1257: effects 21 vs register 17; laws 5 vs 5
+  UK_uksi_2009_890: effects 86 vs register 84; laws 17 vs 16
+  UK_uksi_2010_2617: effects 107 vs register 97; laws 26 vs 25
+  UK_uksi_2011_988: effects 127 vs register 125; laws 25 vs 23
+  UK_uksi_2012_1976: effects 100 vs register 99; laws 8 vs 7
+  UK_uksi_2012_2999: effects 42 vs register 27; laws 10 vs 9
+  UK_uksi_2012_811: effects 24 vs register 22; laws 10 vs 9
+  UK_uksi_2013_1582: effects 94 vs register 80; laws 9 vs 7
+  UK_uksi_2013_1677: effects 1 vs register 40; laws 1 vs 2
+  UK_uksi_2013_971: effects 116 vs register 114; laws 6 vs 5
+  UK_uksi_2015_1640: effects 51 vs register 50; laws 8 vs 7
+  UK_uksi_2015_1902: effects 4 vs register 32; laws 4 vs 3
+  UK_uksi_2015_310: effects 102 vs register 101; laws 5 vs 4
+  UK_uksi_2015_426: effects 0 vs register 27; laws 0 vs 1
+  UK_uksi_2015_962: effects 25 vs register 24; laws 6 vs 5
+  UK_uksi_2015_969: effects 15 vs register 25; laws 1 vs 2
+  UK_uksi_2017_407: effects 57 vs register 29; laws 6 vs 5
+  UK_uksi_2018_1122: effects 10 vs register 8; laws 2 vs 1
+  UK_uksi_2018_171: effects 13 vs register 32; laws 3 vs 3
+  UK_uksi_2020_1444: effects 2 vs register 0; laws 1 vs 0
+  UK_uksi_2020_208: effects 1 vs register 15; laws 1 vs 1
+  UK_uksi_2022_117: effects 1 vs register 60; laws 1 vs 2
+  UK_uksi_2024_1332: effects 106 vs register 104; laws 2 vs 1
+  UK_uksi_2024_174: effects 75 vs register 73; laws 3 vs 2
+  UK_wsi_2011_1014: effects 11 vs register 23; laws 6 vs 7
+  UK_wsi_2018_1216: effects 0 vs register 39; laws 0 vs 1
+  UK_wsi_2021_77: effects 55 vs register 126; laws 7 vs 6
+
+FAIL

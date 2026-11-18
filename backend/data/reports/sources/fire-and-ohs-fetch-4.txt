@@ -1,0 +1,44 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+139 laws in scope
+
+needed against held, by category:
+  own: 139 — held 139
+  feed: 135 — held 135
+  territory: 406 — held 406
+  introduction: 212 — held 212
+  enabling_parent: 32 — held 32
+  dates: 216 — absent 71, held 134, not_fetched 11
+  backlog: 379 — absent 82, held 275, not_fetched 22
+  needed, all categories: 1519
+
+failures: 33
+  not_fetched  backlog  UK_uksi_1975_1347 :body  (for UK_ukpga_1883_3)
+  not_fetched  backlog  UK_uksi_1975_1347 :schedules  (for UK_ukpga_1883_3)
+  not_fetched  backlog  UK_uksi_1976_813 :body  (for UK_ukpga_1883_3)
+  not_fetched  backlog  UK_uksi_1976_813 :schedules  (for UK_ukpga_1883_3)
+  not_fetched  backlog  UK_uksi_1984_2002 :body  (for UK_ukpga_1883_3)
+  not_fetched  backlog  UK_uksi_1984_2002 :schedules  (for UK_ukpga_1883_3)
+  not_fetched  backlog  UK_uksi_1985_1934 :body  (for UK_ukpga_1883_3)
+  not_fetched  backlog  UK_uksi_1985_1934 :schedules  (for UK_ukpga_1883_3)
+  not_fetched  backlog  UK_uksi_1985_623 :body  (for UK_ukpga_1883_3)
+  not_fetched  backlog  UK_uksi_1985_623 :schedules  (for UK_ukpga_1883_3)
+  not_fetched  backlog  UK_uksi_1991_2686 :body  (for UK_ukpga_1883_3)
+  not_fetched  backlog  UK_uksi_1991_2686 :schedules  (for UK_ukpga_1883_3)
+  not_fetched  backlog  UK_uksi_1992_2802 :body  (for UK_ukpga_1883_3)
+  not_fetched  backlog  UK_uksi_1992_2802 :schedules  (for UK_ukpga_1883_3)
+  not_fetched  dates  UK_uksi_1996_2974 :schedules  (for UK_ukpga_1969_10)
+  not_fetched  backlog  UK_uksi_1982_1059 :body  (for UK_ukpga_1971_61)
+  not_fetched  backlog  UK_uksi_1982_1059 :schedules  (for UK_ukpga_1971_61)
+  not_fetched  backlog  UK_uksi_1982_1431 :body  (for UK_ukpga_1971_61)
+  not_fetched  backlog  UK_uksi_1982_1431 :schedules  (for UK_ukpga_1971_61)
+  not_fetched  backlog  UK_uksi_1982_895 :body  (for UK_ukpga_1971_61)
+
+feeds differing from the register's change statistics: 0
+
+FAIL
+
+fetching 33 documents the check failed …
+  20/33
+fetched 33, failed 0

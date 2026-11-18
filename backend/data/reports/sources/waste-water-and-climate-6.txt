@@ -1,0 +1,50 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+565 laws in scope
+
+needed against held, by category:
+  own: 565 — held 565
+  feed: 546 — held 544, stale 2
+  territory: 1144 — absent 2, held 1142
+  introduction: 855 — absent 2, held 853
+  enabling_parent: 102 — held 102
+  dates: 518 — absent 190, held 328
+  backlog: 790 — absent 270, held 495, stale 25
+  royal_assent: 2 — held 2
+  needed, all categories: 4522
+
+failures: 27
+  stale  backlog  UK_uksi_1974_2039 :body  (for UK_ukpga_1945_42)
+  stale  backlog  UK_uksi_1974_2169 :body  (for UK_ukpga_1945_42)
+  stale  backlog  UK_uksi_1975_2118 :body  (for UK_ukpga_1945_42)
+  stale  backlog  UK_uksi_1976_731 :body  (for UK_ukpga_1945_42)
+  stale  backlog  UK_uksi_1976_956 :body  (for UK_ukpga_1945_42)
+  stale  backlog  UK_uksi_1977_336 :body  (for UK_ukpga_1945_42)
+  stale  backlog  UK_uksi_1977_476 :body  (for UK_ukpga_1945_42)
+  stale  backlog  UK_uksi_1978_954 :body  (for UK_ukpga_1945_42)
+  stale  backlog  UK_uksi_1981_196 :body  (for UK_ukpga_1945_42)
+  stale  backlog  UK_uksi_1984_853 :body  (for UK_ukpga_1945_42)
+  stale  backlog  UK_uksi_1985_70 :body  (for UK_ukpga_1945_42)
+  stale  backlog  UK_uksi_1988_818 :body  (for UK_ukpga_1945_42)
+  stale  backlog  UK_uksi_1991_1173 :body  (for UK_ukpga_1945_42)
+  stale  backlog  UK_ukpga_1968_62 :feed  (for UK_ukpga_1956_52)
+  stale  backlog  UK_uksi_1968_1922 :body  (for UK_ukpga_1956_52)
+  stale  backlog  UK_uksi_1969_1006 :body  (for UK_ukpga_1956_52)
+  stale  backlog  UK_uksi_1969_995 :body  (for UK_ukpga_1956_52)
+  stale  backlog  UK_ukpga_1986_6 :feed  (for UK_ukpga_1971_60)
+  stale  feed  UK_ukpga_1973_37 :feed  (for UK_ukpga_1973_37)
+  stale  backlog  UK_ukpga_1980_66 :feed  (for UK_ukpga_1974_40)
+  stale  backlog  UK_ukpga_1982_43 :feed  (for UK_ukpga_1974_40)
+  stale  backlog  UK_ukpga_1991_28 :feed  (for UK_ukpga_1974_40)
+  stale  backlog  UK_ukpga_1982_48 :feed  (for UK_ukpga_1980_45)
+  stale  backlog  UK_ukpga_1992_12 :feed  (for UK_ukpga_1989_15)
+  stale  backlog  UK_ukpga_1992_43 :feed  (for UK_ukpga_1991_56)
+  stale  backlog  UK_ukpga_2008_17 :feed  (for UK_ukpga_1991_56)
+  stale  feed  UK_ukpga_1993_40 :feed  (for UK_ukpga_1993_40)
+
+feeds differing from the register's change statistics: 2
+  UK_ukpga_1991_56: effects 2271 vs register 841; laws 426 vs 70
+  UK_ukpga_1991_57: effects 1120 vs register 887; laws 227 vs 152
+
+FAIL

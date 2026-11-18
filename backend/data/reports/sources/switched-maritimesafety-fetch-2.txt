@@ -1,0 +1,38 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+117 laws in scope
+
+needed against held, by category:
+  own: 117 — held 115, stale 2
+  feed: 115 — held 115
+  territory: 225 — held 222, stale 3
+  introduction: 131 — held 131
+  enabling_parent: 18 — absent 1, held 17
+  dates: 152 — absent 54, held 89, not_fetched 5, stale 4
+  backlog: 72 — absent 31, held 41
+  needed, all categories: 830
+
+failures: 14
+  not_fetched  dates  UK_uksi_1994_1988 :body  (for UK_ukpga_1974_43)
+  not_fetched  dates  UK_uksi_1994_1988 :schedules  (for UK_ukpga_1974_43)
+  not_fetched  dates  UK_uksi_1994_2971 :body  (for UK_ukpga_1974_43)
+  not_fetched  dates  UK_uksi_1994_2971 :schedules  (for UK_ukpga_1974_43)
+  stale  territory  UK_uksi_1998_1691 :body  (for UK_ukpga_1995_21)
+  stale  territory  UK_uksi_1998_2241 :body  (for UK_ukpga_1995_21)
+  stale  dates  UK_uksi_1997_1082 :body  (for UK_ukpga_1995_21)
+  stale  dates  UK_uksi_1997_1082 :schedules  (for UK_ukpga_1995_21)
+  stale  dates  UK_uksi_1997_1539 :body  (for UK_ukpga_1995_21)
+  stale  dates  UK_uksi_1997_1539 :schedules  (for UK_ukpga_1995_21)
+  not_fetched  dates  UK_ukpga_2026_18 :orders  (for UK_ukpga_1995_21)
+  stale  territory  UK_uksi_2026_260 :body  (for UK_uksi_1995_1802)
+  stale  own  UK_uksi_1998_1691 "/uksi/1998/1691/body/data.xml"  (for UK_uksi_1998_1691)
+  stale  own  UK_uksi_1998_2241 "/uksi/1998/2241/body/data.xml"  (for UK_uksi_1998_2241)
+
+feeds differing from the register's change statistics: 0
+
+FAIL
+
+fetching 14 documents the check failed …
+fetched 13, failed 1
+  UK_ukpga_2026_18 :orders: {:error, :no_register_title}

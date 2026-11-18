@@ -1,0 +1,69 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+565 laws in scope
+
+needed against held, by category:
+  own: 565 — held 565
+  feed: 546 — held 546
+  territory: 1144 — absent 2, held 1142
+  introduction: 855 — absent 2, held 853
+  enabling_parent: 102 — held 80, not_fetched 22
+  dates: 518 — absent 175, held 287, not_fetched 56
+  backlog: 790 — absent 255, held 506, not_fetched 28, stale 1
+  royal_assent: 2 — held 2
+  needed, all categories: 4522
+
+failures: 107
+  not_fetched  dates  UK_ssi_2018_153 :body  (for UK_asp_2002_3)
+  not_fetched  dates  UK_ssi_2018_153 :schedules  (for UK_asp_2002_3)
+  not_fetched  dates  UK_ssi_2017_330 :body  (for UK_asp_2002_3)
+  not_fetched  dates  UK_ssi_2017_330 :schedules  (for UK_asp_2002_3)
+  not_fetched  dates  UK_ssi_2014_264 :body  (for UK_asp_2002_3)
+  not_fetched  dates  UK_ssi_2014_264 :schedules  (for UK_asp_2002_3)
+  not_fetched  dates  UK_ssi_2015_272 :body  (for UK_asp_2002_3)
+  not_fetched  dates  UK_ssi_2015_272 :schedules  (for UK_asp_2002_3)
+  not_fetched  dates  UK_ssi_2015_349 :body  (for UK_asp_2002_3)
+  not_fetched  dates  UK_ssi_2015_349 :schedules  (for UK_asp_2002_3)
+  not_fetched  dates  UK_ssi_2016_412 :body  (for UK_asp_2002_3)
+  not_fetched  dates  UK_ssi_2016_412 :schedules  (for UK_asp_2002_3)
+  not_fetched  dates  UK_ssi_2015_430 :body  (for UK_asp_2002_3)
+  not_fetched  dates  UK_ssi_2015_430 :schedules  (for UK_asp_2002_3)
+  not_fetched  dates  UK_ssi_2015_122 :body  (for UK_asp_2002_3)
+  not_fetched  dates  UK_ssi_2015_122 :schedules  (for UK_asp_2002_3)
+  not_fetched  dates  UK_ssi_2015_52 :body  (for UK_asp_2003_3)
+  not_fetched  dates  UK_ssi_2015_52 :schedules  (for UK_asp_2003_3)
+  not_fetched  backlog  UK_uksi_2002_1408 :schedules  (for UK_nisi_1999_659)
+  not_fetched  enabling_parent  UK_ukpga_2004_32 :body  (for UK_nisr_2009_195)
+
+feeds differing from the register's change statistics: 119
+  UK_anaw_2017_3: effects 164 vs register 301; laws 7 vs 8
+  UK_asp_2002_3: effects 131 vs register 128; laws 32 vs 31
+  UK_eudn_2001_171: effects 18 vs register 17; laws 5 vs 4
+  UK_eudn_2009_292: effects 24 vs register 23; laws 4 vs 3
+  UK_eudn_2009_337: effects 23 vs register 22; laws 4 vs 3
+  UK_eudn_2009_359: effects 12 vs register 11; laws 4 vs 3
+  UK_eudn_2009_360: effects 9 vs register 8; laws 4 vs 3
+  UK_eur_2006_1013: effects 368 vs register 359; laws 19 vs 18
+  UK_eur_2007_1418: effects 175 vs register 174; laws 11 vs 11
+  UK_eur_2010_1103: effects 13 vs register 11; laws 4 vs 3
+  UK_eur_2011_333: effects 24 vs register 22; laws 4 vs 3
+  UK_eur_2012_1179: effects 21 vs register 20; laws 4 vs 3
+  UK_eur_2012_493: effects 18 vs register 17; laws 3 vs 2
+  UK_eur_2013_715: effects 27 vs register 25; laws 4 vs 3
+  UK_mwa_2010_8: effects 35 vs register 59; laws 8 vs 9
+  UK_nisi_1997_2777: effects 23 vs register 19; laws 10 vs 9
+  UK_nisi_2006_3336: effects 729 vs register 710; laws 48 vs 47
+  UK_nisr_1996_217: effects 7 vs register 0; laws 1 vs 0
+  UK_nisr_2002_331: effects 1 vs register 0; laws 1 vs 0
+  UK_nisr_2003_259: effects 1 vs register 0; laws 1 vs 0
+
+FAIL
+
+fetching 107 documents the check failed …
+  20/107
+  40/107
+  60/107
+  80/107
+  100/107
+fetched 107, failed 0

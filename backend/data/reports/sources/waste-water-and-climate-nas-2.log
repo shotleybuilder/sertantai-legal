@@ -1,0 +1,23 @@
+=== sertantai-legal NAS Backup ===
+  NAS: /mnt/nas/sertantai-data/data
+  DB:  false | Data: true | Archive: false
+
+--- Stage 2: Project Data Sync ---
+  rsync data/ → /mnt/nas/sertantai-data/data/project-data/data/
+    216 files, 209M
+  rsync /var/home/jason/.claude/projects/-var-home-jason-Desktop-sertantai-legal/memory → /mnt/nas/sertantai-data/data/project-data/extras/claude-memory/
+    59 files, 316K
+  rsync /var/home/jason/Desktop/sertantai-legal/.claude/memory → /mnt/nas/sertantai-data/data/project-data/extras/claude-memory-repo/
+    5 files, 20K
+  rsync /var/home/jason/Desktop/sertantai-legal/docs/qq → /mnt/nas/sertantai-data/data/project-data/extras/docs-qq/
+    8 files, 1.5M
+  rsync /var/home/jason/Desktop/sertantai-legal/backend/priv/scraper → /mnt/nas/sertantai-data/data/project-data/extras/priv-scraper/
+    17 files, 2.2M
+  rsync /var/home/jason/Desktop/sertantai-legal/backend/priv/metrics → /mnt/nas/sertantai-data/data/project-data/extras/priv-metrics/
+    61 files, 1.8M
+  rsync backend/data/ → /mnt/nas/sertantai-data/data/project-data/backend-data/
+    61281 files, 1.9G
+
+Data sync complete.
+
+=== Backup finished ===

@@ -1,0 +1,119 @@
+UK_anaw_2017_3 | stored 301/8 | feed 164/7 | fresh 164/7 | stage ok | live ✔ In force -> ✔ In force
+UK_asp_2002_3 | stored 128/31 | feed 131/32 | fresh 131/32 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_eudn_2001_171 | stored 17/4 | feed 18/5 | fresh 18/5 | stage ok | live ✔ In force -> ✔ In force
+UK_eudn_2009_292 | stored 23/3 | feed 24/4 | fresh 24/4 | stage ok | live ✔ In force -> ✔ In force
+UK_eudn_2009_337 | stored 22/3 | feed 23/4 | fresh 23/4 | stage ok | live ✔ In force -> ✔ In force
+UK_eudn_2009_359 | stored 11/3 | feed 12/4 | fresh 12/4 | stage ok | live ✔ In force -> ✔ In force
+UK_eudn_2009_360 | stored 8/3 | feed 9/4 | fresh 9/4 | stage ok | live ✔ In force -> ✔ In force
+UK_eur_2006_1013 | stored 359/18 | feed 368/19 | fresh 368/19 | stage ok | live ✔ In force -> ✔ In force
+UK_eur_2007_1418 | stored 174/11 | feed 175/11 | fresh 175/11 | stage ok | live ✔ In force -> ✔ In force
+UK_eur_2010_1103 | stored 11/3 | feed 13/4 | fresh 13/4 | stage ok | live ✔ In force -> ✔ In force
+UK_eur_2011_333 | stored 22/3 | feed 24/4 | fresh 24/4 | stage ok | live ✔ In force -> ✔ In force
+UK_eur_2012_1179 | stored 20/3 | feed 21/4 | fresh 21/4 | stage ok | live ✔ In force -> ✔ In force
+UK_eur_2012_493 | stored 17/2 | feed 18/3 | fresh 18/3 | stage ok | live ✔ In force -> ✔ In force
+UK_eur_2013_715 | stored 25/3 | feed 27/4 | fresh 27/4 | stage ok | live ✔ In force -> ✔ In force
+UK_mwa_2010_8 | stored 59/9 | feed 35/8 | fresh 35/8 | stage ok | live ✔ In force -> ✔ In force
+UK_nisi_1997_2777 | stored 19/9 | feed 23/10 | fresh 23/10 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_nisi_2006_3336 | stored 710/47 | feed 729/48 | fresh 729/48 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_nisr_1996_217 | stored 0/0 | feed 7/1 | fresh 7/1 | stage ok | live ✔ In force -> ❌ Revoked / Repealed / Abolished
+UK_nisr_2002_331 | stored 0/0 | feed 1/1 | fresh 1/1 | stage ok | live ✔ In force -> ⭕ Part Revocation / Repeal
+UK_nisr_2003_259 | stored 0/0 | feed 1/1 | fresh 1/1 | stage ok | live ✔ In force -> ❌ Revoked / Repealed / Abolished
+UK_nisr_2003_496 | stored 73/15 | feed 85/16 | fresh 85/16 | stage ok | live ⭕ Part Revocation / Repeal -> ✔ In force
+UK_nisr_2004_416 | stored 45/7 | feed 49/8 | fresh 49/8 | stage ok | live ✔ In force -> ✔ In force
+UK_nisr_2004_419 | stored 1/1 | feed 2/2 | fresh 2/2 | stage ok | live ✔ In force -> ✔ In force
+UK_nisr_2005_300 | stored 109/12 | feed 116/15 | fresh 116/15 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_nisr_2007_187 | stored 50/3 | feed 12/3 | fresh 12/3 | stage ok | live ✔ In force -> ✔ In force
+UK_nisr_2009_254 | stored 84/9 | feed 67/9 | fresh 67/9 | stage ok | live ✔ In force -> ✔ In force
+UK_nisr_2009_255 | stored 56/3 | feed 9/2 | fresh 9/2 | stage ok | live ✔ In force -> ✔ In force
+UK_nisr_2010_412 | stored 12/3 | feed 2/2 | fresh 2/2 | stage ok | live ✔ In force -> ✔ In force
+UK_nisr_2011_127 | stored 115/10 | feed 48/10 | fresh 48/10 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_nisr_2011_238 | stored 14/3 | feed 7/2 | fresh 7/2 | stage ok | live ✔ In force -> ✔ In force
+UK_nisr_2013_160 | stored 344/14 | feed 108/13 | fresh 108/13 | stage ok | live ✔ In force -> ✔ In force
+UK_nisr_2017_81 | stored 21/3 | feed 41/4 | fresh 41/4 | stage ok | live ✔ In force -> ✔ In force
+UK_nisr_2017_85 | stored 42/3 | feed 48/4 | fresh 48/4 | stage ok | live ✔ In force -> ✔ In force
+UK_nisr_2017_88 | stored 44/2 | feed 22/2 | fresh 22/2 | stage ok | live ✔ In force -> ✔ In force
+UK_ssi_2000_95 | stored 55/6 | feed 57/7 | fresh 57/7 | stage ok | live ✔ In force -> ✔ In force
+UK_ssi_2000_97 | stored 7/2 | feed 11/2 | fresh 11/2 | stage ok | live ✔ In force -> ✔ In force
+UK_ssi_2001_206 | stored 2/2 | feed 1/1 | fresh 1/1 | stage ok | live ✔ In force -> ❌ Revoked / Repealed / Abolished
+UK_ssi_2004_289 | stored 1/1 | feed 0/0 | fresh 0/0 | stage ok | live ✔ In force -> ❌ Revoked / Repealed / Abolished
+UK_ssi_2005_157 | stored 30/5 | feed 7/4 | fresh 7/4 | stage ok | live ✔ In force -> ✔ In force
+UK_ssi_2006_465 | stored 56/3 | feed 14/2 | fresh 14/2 | stage ok | live ✔ In force -> ✔ In force
+UK_ssi_2014_258 | stored 24/4 | feed 8/3 | fresh 8/3 | stage ok | live ✔ In force -> ✔ In force
+UK_ssi_2015_347 | stored 11/5 | feed 13/6 | fresh 13/6 | stage ok | live ✔ In force -> ✔ In force
+UK_ukpga_1945_42 | stored 0/0 | feed 3/3 | fresh 3/3 | stage ok | live ✔ In force -> ⭕ Part Revocation / Repeal
+UK_ukpga_1974_40 | stored 637/314 | feed 647/324 | fresh 648/325 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_ukpga_1975_23 | stored 173/26 | feed 176/27 | fresh 176/27 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_ukpga_1983_35 | stored 31/18 | feed 30/17 | fresh 30/17 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_ukpga_1989_14 | stored 60/20 | feed 70/22 | fresh 70/22 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_ukpga_1989_15 | stored 111/61 | feed 114/62 | fresh 114/62 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_ukpga_1991_56 | stored 841/70 | feed 2271/426 | fresh 841/70 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_ukpga_1991_57 | stored 887/152 | feed 1120/227 | fresh 887/152 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_ukpga_1991_59 | stored 394/163 | feed 406/171 | fresh 406/171 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_ukpga_2003_37 | stored 476/25 | feed 477/26 | fresh 477/26 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_ukpga_2008_27 | stored 73/20 | feed 74/21 | fresh 74/21 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_ukpga_2010_29 | stored 428/32 | feed 430/33 | fresh 430/33 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_ukpga_2014_21 | stored 389/24 | feed 390/25 | fresh 390/25 | stage ok | live ⭕ Part Revocation / Repeal -> ✔ In force
+UK_uksi_1989_744 | stored 8/6 | feed 25/6 | fresh 25/6 | stage ok | live ⭕ Part Revocation / Repeal -> ❌ Revoked / Repealed / Abolished
+UK_uksi_1991_111 | stored 2/2 | feed 0/0 | fresh 0/0 | stage ok | live ✔ In force -> ⭕ Part Revocation / Repeal
+UK_uksi_1991_324 | stored 31/2 | feed 20/1 | fresh 20/1 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_uksi_1991_346 | stored 8/3 | feed 5/2 | fresh 5/2 | stage ok | live ⭕ Part Revocation / Repeal -> ❌ Revoked / Repealed / Abolished
+UK_uksi_1992_339 | stored 3/2 | feed 1/1 | fresh 1/1 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_1992_575 | stored 21/4 | feed 19/2 | fresh 19/2 | stage ok | live ✔ In force -> ❌ Revoked / Repealed / Abolished
+UK_uksi_1993_1155 | stored 13/4 | feed 8/3 | fresh 8/3 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_uksi_1994_2841 | stored 59/10 | feed 63/11 | fresh 63/11 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_uksi_1994_2842 | stored 70/8 | feed 53/8 | fresh 53/8 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_uksi_1995_288 | stored 3/2 | feed 4/3 | fresh 4/3 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_uksi_1995_723 | stored 14/2 | feed 7/2 | fresh 7/2 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_1996_1564 | stored 27/7 | feed 29/7 | fresh 29/7 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_uksi_1996_2763 | stored 1/1 | feed 0/0 | fresh 0/0 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_uksi_1998_1165 | stored 1/1 | feed 0/0 | fresh 0/0 | stage ok | live ✔ In force -> ❌ Revoked / Repealed / Abolished
+UK_uksi_1998_2138 | stored 14/1 | feed 0/0 | fresh 0/0 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_uksi_1998_3084 | stored 1/1 | feed 0/0 | fresh 0/0 | stage ok | live ⭕ Part Revocation / Repeal -> ❌ Revoked / Repealed / Abolished
+UK_uksi_2000_1043 | stored 54/10 | feed 55/11 | fresh 55/11 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2000_227 | stored 8/3 | feed 6/3 | fresh 6/3 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2000_2911 | stored 2/2 | feed 1/1 | fresh 1/1 | stage ok | live ✔ In force -> ❌ Revoked / Repealed / Abolished
+UK_uksi_2002_1355 | stored 87/7 | feed 90/7 | fresh 90/7 | stage ok | live ✔ In force -> ⭕ Part Revocation / Repeal
+UK_uksi_2002_3049 | stored 11/3 | feed 15/4 | fresh 15/4 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2003_3341 | stored 1/1 | feed 0/0 | fresh 0/0 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2004_3202 | stored 118/8 | feed 148/11 | fresh 148/11 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2004_3206 | stored 23/7 | feed 9/6 | fresh 9/6 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2004_639 | stored 2/2 | feed 1/1 | fresh 1/1 | stage ok | live ✔ In force -> ❌ Revoked / Repealed / Abolished
+UK_uksi_2005_1606 | stored 10/2 | feed 14/3 | fresh 14/3 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2005_2088 | stored 1/1 | feed 0/0 | fresh 0/0 | stage ok | live ✔ In force -> ❌ Revoked / Repealed / Abolished
+UK_uksi_2005_2748 | stored 1/1 | feed 0/0 | fresh 0/0 | stage ok | live ✔ In force -> ❌ Revoked / Repealed / Abolished
+UK_uksi_2005_3172 | stored 53/4 | feed 63/5 | fresh 63/5 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_uksi_2005_477 | stored 16/6 | feed 12/4 | fresh 12/4 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2005_894 | stored 181/20 | feed 184/22 | fresh 184/22 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_uksi_2006_2238 | stored 40/7 | feed 42/8 | fresh 42/8 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2007_1711 | stored 115/12 | feed 116/13 | fresh 116/13 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_uksi_2007_3106 | stored 28/7 | feed 29/8 | fresh 29/8 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2007_3437 | stored 2/1 | feed 4/1 | fresh 4/1 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2008_2095 | stored 10/3 | feed 6/2 | fresh 6/2 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2008_2164 | stored 28/10 | feed 38/12 | fresh 38/12 | stage ok | live ✔ In force -> ❌ Revoked / Repealed / Abolished
+UK_uksi_2009_1257 | stored 17/5 | feed 21/5 | fresh 21/5 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2009_890 | stored 84/16 | feed 86/17 | fresh 86/17 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2010_2617 | stored 97/25 | feed 107/26 | fresh 107/26 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2011_988 | stored 125/23 | feed 127/25 | fresh 127/25 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_uksi_2012_1976 | stored 99/7 | feed 100/8 | fresh 100/8 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2012_2999 | stored 27/9 | feed 42/10 | fresh 42/10 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2012_811 | stored 22/9 | feed 24/10 | fresh 24/10 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2013_1582 | stored 80/7 | feed 94/9 | fresh 94/9 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2013_1677 | stored 40/2 | feed 1/1 | fresh 1/1 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2013_971 | stored 114/5 | feed 116/6 | fresh 116/6 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2015_1640 | stored 50/7 | feed 51/8 | fresh 51/8 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2015_1902 | stored 32/3 | feed 4/4 | fresh 4/4 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2015_310 | stored 101/4 | feed 102/5 | fresh 102/5 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2015_426 | stored 27/1 | feed 0/0 | fresh 0/0 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2015_962 | stored 24/5 | feed 25/6 | fresh 25/6 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2015_969 | stored 25/2 | feed 15/1 | fresh 15/1 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2017_407 | stored 29/5 | feed 57/6 | fresh 57/6 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2018_1122 | stored 8/1 | feed 10/2 | fresh 10/2 | stage ok | live ✔ In force -> ⭕ Part Revocation / Repeal
+UK_uksi_2018_171 | stored 32/3 | feed 13/3 | fresh 13/3 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2020_1444 | stored 0/0 | feed 2/1 | fresh 2/1 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2020_208 | stored 15/1 | feed 1/1 | fresh 1/1 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2022_117 | stored 60/2 | feed 1/1 | fresh 1/1 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2024_1332 | stored 104/1 | feed 106/2 | fresh 106/2 | stage ok | live ✔ In force -> ✔ In force
+UK_uksi_2024_174 | stored 73/2 | feed 75/3 | fresh 75/3 | stage ok | live ✔ In force -> ✔ In force
+UK_wsi_2011_1014 | stored 23/7 | feed 11/6 | fresh 11/6 | stage ok | live ✔ In force -> ✔ In force
+UK_wsi_2018_1216 | stored 39/1 | feed 0/0 | fresh 0/0 | stage ok | live ⭕ Part Revocation / Repeal -> ⭕ Part Revocation / Repeal
+UK_wsi_2021_77 | stored 126/6 | feed 55/7 | fresh 55/7 | stage ok | live ✔ In force -> ✔ In force

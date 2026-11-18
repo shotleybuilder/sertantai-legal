@@ -94,6 +94,26 @@ The switched families' gates had failed again, mostly on sources stale by age: O
 
 A rebuild moves no switched label until `LabelRefresh` runs. Laws whose rows don't move are still stale by stamp, and refreshing them writes identical rows. A refreshed feed can change an effect's form. SI 2008/2337's whole-law revocation became one revocation per regulation with no level, which leaves 14 sub-rows in force (parked: Label fold).
 
+**An amending Act's order list** (Waste, Water and Climate: Sources, 2026-11-18, Decision 1 b).
+- **When it applies.** An undated or unrecorded change's amending Act names no order for the provisions in its own feed, and its own clause leaves provisions to orders (the Commencement reader's stored `by_order` or `provision_by_order` rule, read by `Sources.Held.by_order/1`).
+- **What is needed.** Every order on the Act's order list, with its Schedules (`Commencement.Orders.cached/1`).
+- **Other Acts.** An Act that dates every provision itself needs none. An Act whose clause is unread needs its list only, and `--fetch` searches for it (`Orders.for_act/4`).
+- **The search title.** It comes from the register, else from the Act's own held text (`dc:title`), without a repealed Act's "(repealed …)" note. Most amending Acts are not in the register.
+- **First found.** The Water Industry (Scotland) Act 2002's orders, for EPA 1990 s.53.
+
+**Amenders are counted from text changes** (same session). `Sources.Held.law/1` needs an amender only for a change with an operation, the changes a label reads. Fire and OH&S's 39 "not held" amenders were all nil-op, so this is right by design. The Commencement reader's own list counts them all (parked there: held-amenders-counts-non-text-changes).
+
+**The register-differences dry run is a kept script.** `backend/scripts/sources/register_dry_run.exs <gate report> <out>` re-reads every differing law through `StagedParser` `:amended_by`, with no write. For each law it prints:
+- stored, feed and fresh figures;
+- live status before and after, with `LiveStatus`'s description and evidence.
+
+`--apply` writes the same through `LawParser.persist_direct`, after Jason's go and a restore point of `legal_register`. The dry run rewrites the feeds it reads, so `mix lat.stale --family F` names the laws to rebuild.
+
+**Waste, Water and Climate** (565 laws):
+- **Needs.** 1,324 at the baseline, 4,523 after one build. Held after six fetch rounds: 2,673 documents fetched, the switched families' included.
+- **Register.** 119 differences re-scraped: 21 live statuses moved and 14 laws became revoked. Two of them look wrong, a one-territory revocation read as whole when the law's regions are unknown (SI 2008/2164 for N.I. only; SI 1998/3084 for England only). They are parked with the Register (live-status-whole-from-one-territory).
+- **Stale.** The re-scrape and the fetches left 23 laws stale by feed or law text, and they were rebuilt.
+
 **Skill.** None. The `nas-data-sync` skill covers the store itself.
 
 ## 2. Feed reader

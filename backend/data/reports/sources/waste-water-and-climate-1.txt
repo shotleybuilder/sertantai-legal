@@ -1,0 +1,1066 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+565 laws in scope
+
+needed against held, by category:
+  own: 565 — held 500, not_fetched 3, stale 62
+  feed: 561 — held 14, not_fetched 371, stale 176
+  territory: 86 — held 71, not_fetched 5, stale 10
+  introduction: 38 — held 16, not_fetched 22
+  enabling_parent: 6 — held 6
+  dates: 52 — absent 8, held 31, not_fetched 11, stale 2
+  backlog: 231 — absent 22, held 85, not_fetched 89, stale 35
+  royal_assent: 1 — held 1
+  needed, all categories: 1540
+
+failures: 786
+  stale  feed  UK_anaw_2017_3 :feed  (for UK_anaw_2017_3)
+  not_fetched  feed  UK_asc_2024_2 :feed  (for UK_asc_2024_2)
+  stale  feed  UK_asp_2003_3 :feed  (for UK_asp_2003_3)
+  stale  feed  UK_asp_2005_3 :feed  (for UK_asp_2005_3)
+  stale  feed  UK_asp_2009_12 :feed  (for UK_asp_2009_12)
+  stale  feed  UK_asp_2009_6 :feed  (for UK_asp_2009_6)
+  stale  feed  UK_asp_2011_9 :feed  (for UK_asp_2011_9)
+  not_fetched  own  UK_asp_2013_5 "/asp/2013/5/body/data.xml"  (for UK_asp_2013_5)
+  stale  feed  UK_asp_2013_5 :feed  (for UK_asp_2013_5)
+  stale  feed  UK_asp_2014_2 :feed  (for UK_asp_2014_2)
+  stale  feed  UK_asp_2019_15 :feed  (for UK_asp_2019_15)
+  not_fetched  feed  UK_asp_2024_15 :feed  (for UK_asp_2024_15)
+  not_fetched  feed  UK_eudn_2001_171 :feed  (for UK_eudn_2001_171)
+  not_fetched  feed  UK_eudn_2003_33 :feed  (for UK_eudn_2003_33)
+  not_fetched  feed  UK_eudn_2009_292 :feed  (for UK_eudn_2009_292)
+  not_fetched  feed  UK_eudn_2009_335 :feed  (for UK_eudn_2009_335)
+  not_fetched  feed  UK_eudn_2009_337 :feed  (for UK_eudn_2009_337)
+  not_fetched  feed  UK_eudn_2009_359 :feed  (for UK_eudn_2009_359)
+  not_fetched  feed  UK_eudn_2009_360 :feed  (for UK_eudn_2009_360)
+  not_fetched  feed  UK_eudn_2015_2398 :feed  (for UK_eudn_2015_2398)
+  not_fetched  feed  UK_eudn_2016_2321 :feed  (for UK_eudn_2016_2321)
+  not_fetched  feed  UK_eudn_2016_2324 :feed  (for UK_eudn_2016_2324)
+  not_fetched  feed  UK_eudr_2000_60 :feed  (for UK_eudr_2000_60)
+  stale  feed  UK_eudr_2008_98 :feed  (for UK_eudr_2008_98)
+  not_fetched  feed  UK_eudr_2009_16 :feed  (for UK_eudr_2009_16)
+  not_fetched  feed  UK_eudr_2009_31 :feed  (for UK_eudr_2009_31)
+  not_fetched  feed  UK_eudr_2010_75 :feed  (for UK_eudr_2010_75)
+  not_fetched  feed  UK_eudr_2015_1127 :feed  (for UK_eudr_2015_1127)
+  not_fetched  feed  UK_eudr_2018_851 :feed  (for UK_eudr_2018_851)
+  stale  feed  UK_eur_2006_1013 :feed  (for UK_eur_2006_1013)
+  stale  feed  UK_eur_2006_166 :feed  (for UK_eur_2006_166)
+  not_fetched  feed  UK_eur_2007_1418 :feed  (for UK_eur_2007_1418)
+  stale  feed  UK_eur_2007_1497 :feed  (for UK_eur_2007_1497)
+  stale  feed  UK_eur_2007_1516 :feed  (for UK_eur_2007_1516)
+  stale  feed  UK_eur_2008_304 :feed  (for UK_eur_2008_304)
+  not_fetched  feed  UK_eur_2008_669 :feed  (for UK_eur_2008_669)
+  stale  feed  UK_eur_2009_1005 :feed  (for UK_eur_2009_1005)
+  not_fetched  feed  UK_eur_2009_308 :feed  (for UK_eur_2009_308)
+  not_fetched  feed  UK_eur_2009_596 :feed  (for UK_eur_2009_596)
+  not_fetched  feed  UK_eur_2010_1103 :feed  (for UK_eur_2010_1103)
+  not_fetched  feed  UK_eur_2011_333 :feed  (for UK_eur_2011_333)
+  not_fetched  feed  UK_eur_2011_537 :feed  (for UK_eur_2011_537)
+  not_fetched  feed  UK_eur_2011_725 :feed  (for UK_eur_2011_725)
+  not_fetched  feed  UK_eur_2012_1179 :feed  (for UK_eur_2012_1179)
+  not_fetched  feed  UK_eur_2012_493 :feed  (for UK_eur_2012_493)
+  not_fetched  feed  UK_eur_2012_530 :feed  (for UK_eur_2012_530)
+  not_fetched  feed  UK_eur_2013_1257 :feed  (for UK_eur_2013_1257)
+  not_fetched  feed  UK_eur_2013_715 :feed  (for UK_eur_2013_715)
+  not_fetched  feed  UK_eur_2014_1191 :feed  (for UK_eur_2014_1191)
+  not_fetched  feed  UK_eur_2014_427 :feed  (for UK_eur_2014_427)
+  not_fetched  feed  UK_eur_2014_517 :feed  (for UK_eur_2014_517)
+  stale  feed  UK_eur_2015_2066 :feed  (for UK_eur_2015_2066)
+  stale  feed  UK_eur_2015_2067 :feed  (for UK_eur_2015_2067)
+  not_fetched  feed  UK_eur_2015_2068 :feed  (for UK_eur_2015_2068)
+  not_fetched  feed  UK_eur_2016_879 :feed  (for UK_eur_2016_879)
+  not_fetched  feed  UK_eur_2018_2066 :feed  (for UK_eur_2018_2066)
+  not_fetched  feed  UK_eur_2018_2067 :feed  (for UK_eur_2018_2067)
+  not_fetched  feed  UK_eur_2018_956 :feed  (for UK_eur_2018_956)
+  not_fetched  feed  UK_eur_2019_1021 :feed  (for UK_eur_2019_1021)
+  not_fetched  feed  UK_eur_2019_1242 :feed  (for UK_eur_2019_1242)
+  not_fetched  feed  UK_eur_2019_1842 :feed  (for UK_eur_2019_1842)
+  not_fetched  feed  UK_eur_2019_631 :feed  (for UK_eur_2019_631)
+  not_fetched  feed  UK_eur_2019_661 :feed  (for UK_eur_2019_661)
+  not_fetched  feed  UK_eur_2020_1079 :feed  (for UK_eur_2020_1079)
+  stale  feed  UK_mwa_2010_8 :feed  (for UK_mwa_2010_8)
+  not_fetched  feed  UK_nia_2014_7 :feed  (for UK_nia_2014_7)
+  not_fetched  feed  UK_nia_2016_7 :feed  (for UK_nia_2016_7)
+  not_fetched  feed  UK_nia_2022_31 :feed  (for UK_nia_2022_31)
+  not_fetched  feed  UK_nisi_1973_69 :feed  (for UK_nisi_1973_69)
+  not_fetched  feed  UK_nisi_1978_1049 :feed  (for UK_nisi_1978_1049)
+  not_fetched  feed  UK_nisi_1981_158 :feed  (for UK_nisi_1981_158)
+  not_fetched  feed  UK_nisi_1994_1896 :feed  (for UK_nisi_1994_1896)
+  not_fetched  feed  UK_nisi_1997_2777 :feed  (for UK_nisi_1997_2777)
+  not_fetched  feed  UK_nisi_1997_2778 :feed  (for UK_nisi_1997_2778)
+  not_fetched  feed  UK_nisi_1999_659 :feed  (for UK_nisi_1999_659)
+  not_fetched  feed  UK_nisi_1999_662 :feed  (for UK_nisi_1999_662)
+  not_fetched  feed  UK_nisi_2006_3336 :feed  (for UK_nisi_2006_3336)
+  not_fetched  feed  UK_nisi_2007_611 :feed  (for UK_nisi_2007_611)
+  not_fetched  feed  UK_nisr_1995_12 :feed  (for UK_nisr_1995_12)
+  not_fetched  feed  UK_nisr_1996_217 :feed  (for UK_nisr_1996_217)
+  not_fetched  feed  UK_nisr_1996_603 :feed  (for UK_nisr_1996_603)
+  not_fetched  feed  UK_nisr_1998_329 :feed  (for UK_nisr_1998_329)
+  not_fetched  feed  UK_nisr_1998_397 :feed  (for UK_nisr_1998_397)
+  not_fetched  feed  UK_nisr_1999_362 :feed  (for UK_nisr_1999_362)
+  not_fetched  feed  UK_nisr_2000_232 :feed  (for UK_nisr_2000_232)
+  not_fetched  feed  UK_nisr_2001_283 :feed  (for UK_nisr_2001_283)
+  not_fetched  feed  UK_nisr_2001_284 :feed  (for UK_nisr_2001_284)
+  not_fetched  feed  UK_nisr_2002_271 :feed  (for UK_nisr_2002_271)
+  not_fetched  feed  UK_nisr_2002_331 :feed  (for UK_nisr_2002_331)
+  not_fetched  feed  UK_nisr_2002_357 :feed  (for UK_nisr_2002_357)
+  not_fetched  feed  UK_nisr_2002_94 :feed  (for UK_nisr_2002_94)
+  not_fetched  feed  UK_nisr_2003_240 :feed  (for UK_nisr_2003_240)
+  not_fetched  feed  UK_nisr_2003_259 :feed  (for UK_nisr_2003_259)
+  not_fetched  feed  UK_nisr_2003_319 :feed  (for UK_nisr_2003_319)
+  not_fetched  feed  UK_nisr_2003_342 :feed  (for UK_nisr_2003_342)
+  not_fetched  feed  UK_nisr_2003_493 :feed  (for UK_nisr_2003_493)
+  not_fetched  feed  UK_nisr_2003_496 :feed  (for UK_nisr_2003_496)
+  not_fetched  feed  UK_nisr_2003_7 :feed  (for UK_nisr_2003_7)
+  stale  feed  UK_nisr_2004_416 :feed  (for UK_nisr_2004_416)
+  not_fetched  feed  UK_nisr_2004_419 :feed  (for UK_nisr_2004_419)
+  not_fetched  feed  UK_nisr_2005_300 :feed  (for UK_nisr_2005_300)
+  not_fetched  feed  UK_nisr_2005_90 :feed  (for UK_nisr_2005_90)
+  not_fetched  feed  UK_nisr_2006_387 :feed  (for UK_nisr_2006_387)
+  not_fetched  feed  UK_nisr_2006_482 :feed  (for UK_nisr_2006_482)
+  not_fetched  feed  UK_nisr_2006_519 :feed  (for UK_nisr_2006_519)
+  not_fetched  feed  UK_nisr_2007_187 :feed  (for UK_nisr_2007_187)
+  not_fetched  feed  UK_nisr_2007_272 :feed  (for UK_nisr_2007_272)
+  not_fetched  feed  UK_nisr_2008_160 :feed  (for UK_nisr_2008_160)
+  not_fetched  feed  UK_nisr_2008_231 :feed  (for UK_nisr_2008_231)
+  not_fetched  feed  UK_nisr_2009_168 :feed  (for UK_nisr_2009_168)
+  not_fetched  feed  UK_nisr_2009_195 :feed  (for UK_nisr_2009_195)
+  not_fetched  feed  UK_nisr_2009_254 :feed  (for UK_nisr_2009_254)
+  not_fetched  feed  UK_nisr_2009_255 :feed  (for UK_nisr_2009_255)
+  not_fetched  feed  UK_nisr_2010_151 :feed  (for UK_nisr_2010_151)
+  not_fetched  feed  UK_nisr_2010_188 :feed  (for UK_nisr_2010_188)
+  not_fetched  feed  UK_nisr_2010_412 :feed  (for UK_nisr_2010_412)
+  not_fetched  feed  UK_nisr_2011_127 :feed  (for UK_nisr_2011_127)
+  not_fetched  feed  UK_nisr_2011_238 :feed  (for UK_nisr_2011_238)
+  not_fetched  feed  UK_nisr_2013_160 :feed  (for UK_nisr_2013_160)
+  not_fetched  feed  UK_nisr_2013_260 :feed  (for UK_nisr_2013_260)
+  not_fetched  feed  UK_nisr_2013_4 :feed  (for UK_nisr_2013_4)
+  not_fetched  feed  UK_nisr_2014_202 :feed  (for UK_nisr_2014_202)
+  not_fetched  feed  UK_nisr_2015_229 :feed  (for UK_nisr_2015_229)
+  stale  feed  UK_nisr_2015_387 :feed  (for UK_nisr_2015_387)
+  stale  feed  UK_nisr_2015_388 :feed  (for UK_nisr_2015_388)
+  not_fetched  feed  UK_nisr_2015_425 :feed  (for UK_nisr_2015_425)
+  not_fetched  feed  UK_nisr_2016_76 :feed  (for UK_nisr_2016_76)
+  not_fetched  feed  UK_nisr_2017_211 :feed  (for UK_nisr_2017_211)
+  not_fetched  feed  UK_nisr_2017_212 :feed  (for UK_nisr_2017_212)
+  not_fetched  feed  UK_nisr_2017_81 :feed  (for UK_nisr_2017_81)
+  not_fetched  feed  UK_nisr_2017_85 :feed  (for UK_nisr_2017_85)
+  not_fetched  feed  UK_nisr_2017_88 :feed  (for UK_nisr_2017_88)
+  not_fetched  feed  UK_nisr_2019_18 :feed  (for UK_nisr_2019_18)
+  not_fetched  feed  UK_nisr_2019_81 :feed  (for UK_nisr_2019_81)
+  not_fetched  feed  UK_nisr_2023_212 :feed  (for UK_nisr_2023_212)
+  not_fetched  feed  UK_nisr_2025_78 :feed  (for UK_nisr_2025_78)
+  stale  own  UK_ssi_2000_169 "/ssi/2000/169/body/data.xml"  (for UK_ssi_2000_169)
+  stale  feed  UK_ssi_2000_169 :feed  (for UK_ssi_2000_169)
+  not_fetched  feed  UK_ssi_2000_178 :feed  (for UK_ssi_2000_178)
+  stale  own  UK_ssi_2000_185 "/ssi/2000/185/body/data.xml"  (for UK_ssi_2000_185)
+  stale  feed  UK_ssi_2000_185 :feed  (for UK_ssi_2000_185)
+  not_fetched  feed  UK_ssi_2000_236 :feed  (for UK_ssi_2000_236)
+  not_fetched  feed  UK_ssi_2000_237 :feed  (for UK_ssi_2000_237)
+  not_fetched  feed  UK_ssi_2000_294 :feed  (for UK_ssi_2000_294)
+  stale  feed  UK_ssi_2000_95 :feed  (for UK_ssi_2000_95)
+  not_fetched  feed  UK_ssi_2000_97 :feed  (for UK_ssi_2000_97)
+  not_fetched  feed  UK_ssi_2001_206 :feed  (for UK_ssi_2001_206)
+  not_fetched  feed  UK_ssi_2001_267 :feed  (for UK_ssi_2001_267)
+  not_fetched  feed  UK_ssi_2001_369 :feed  (for UK_ssi_2001_369)
+  not_fetched  feed  UK_ssi_2002_165 :feed  (for UK_ssi_2002_165)
+  stale  own  UK_ssi_2002_167 "/ssi/2002/167/body/data.xml"  (for UK_ssi_2002_167)
+  stale  feed  UK_ssi_2002_167 :feed  (for UK_ssi_2002_167)
+  stale  own  UK_ssi_2003_168 "/ssi/2003/168/body/data.xml"  (for UK_ssi_2003_168)
+  stale  feed  UK_ssi_2003_168 :feed  (for UK_ssi_2003_168)
+  not_fetched  feed  UK_ssi_2003_208 :feed  (for UK_ssi_2003_208)
+  not_fetched  feed  UK_ssi_2003_273 :feed  (for UK_ssi_2003_273)
+  not_fetched  feed  UK_ssi_2004_289 :feed  (for UK_ssi_2004_289)
+  not_fetched  feed  UK_ssi_2004_358 :feed  (for UK_ssi_2004_358)
+  not_fetched  feed  UK_ssi_2004_516 :feed  (for UK_ssi_2004_516)
+  stale  feed  UK_ssi_2005_157 :feed  (for UK_ssi_2005_157)
+  not_fetched  feed  UK_ssi_2005_351 :feed  (for UK_ssi_2005_351)
+  not_fetched  feed  UK_ssi_2005_508 :feed  (for UK_ssi_2005_508)
+  not_fetched  feed  UK_ssi_2005_509 :feed  (for UK_ssi_2005_509)
+  not_fetched  feed  UK_ssi_2005_513 :feed  (for UK_ssi_2005_513)
+  not_fetched  feed  UK_ssi_2005_576 :feed  (for UK_ssi_2005_576)
+  stale  own  UK_ssi_2005_63 "/ssi/2005/63/body/data.xml"  (for UK_ssi_2005_63)
+  stale  feed  UK_ssi_2005_63 :feed  (for UK_ssi_2005_63)
+  stale  feed  UK_ssi_2006_209 :feed  (for UK_ssi_2006_209)
+  not_fetched  feed  UK_ssi_2006_360 :feed  (for UK_ssi_2006_360)
+  not_fetched  feed  UK_ssi_2006_464 :feed  (for UK_ssi_2006_464)
+  stale  feed  UK_ssi_2006_465 :feed  (for UK_ssi_2006_465)
+  not_fetched  feed  UK_ssi_2006_570 :feed  (for UK_ssi_2006_570)
+  not_fetched  feed  UK_ssi_2006_72 :feed  (for UK_ssi_2006_72)
+  stale  feed  UK_ssi_2007_251 :feed  (for UK_ssi_2007_251)
+  not_fetched  feed  UK_ssi_2007_554 :feed  (for UK_ssi_2007_554)
+  not_fetched  feed  UK_ssi_2008_170 :feed  (for UK_ssi_2008_170)
+  not_fetched  feed  UK_ssi_2008_298 :feed  (for UK_ssi_2008_298)
+  not_fetched  feed  UK_ssi_2008_429 :feed  (for UK_ssi_2008_429)
+  not_fetched  feed  UK_ssi_2009_247 :feed  (for UK_ssi_2009_247)
+  stale  feed  UK_ssi_2010_204 :feed  (for UK_ssi_2010_204)
+  stale  feed  UK_ssi_2010_216 :feed  (for UK_ssi_2010_216)
+  not_fetched  feed  UK_ssi_2010_426 :feed  (for UK_ssi_2010_426)
+  stale  own  UK_ssi_2010_435 "/ssi/2010/435/body/data.xml"  (for UK_ssi_2010_435)
+  stale  feed  UK_ssi_2010_435 :feed  (for UK_ssi_2010_435)
+  stale  feed  UK_ssi_2010_60 :feed  (for UK_ssi_2010_60)
+  stale  feed  UK_ssi_2011_24 :feed  (for UK_ssi_2011_24)
+  not_fetched  feed  UK_ssi_2012_214 :feed  (for UK_ssi_2012_214)
+  not_fetched  feed  UK_ssi_2013_148 :feed  (for UK_ssi_2013_148)
+  stale  feed  UK_ssi_2014_161 :feed  (for UK_ssi_2014_161)
+  stale  feed  UK_ssi_2014_258 :feed  (for UK_ssi_2014_258)
+  not_fetched  feed  UK_ssi_2014_3 :feed  (for UK_ssi_2014_3)
+  not_fetched  feed  UK_ssi_2014_364 :feed  (for UK_ssi_2014_364)
+  not_fetched  feed  UK_ssi_2015_151 :feed  (for UK_ssi_2015_151)
+  not_fetched  feed  UK_ssi_2015_3 :feed  (for UK_ssi_2015_3)
+  not_fetched  feed  UK_ssi_2015_347 :feed  (for UK_ssi_2015_347)
+  stale  own  UK_ssi_2015_376 "/ssi/2015/376/body/data.xml"  (for UK_ssi_2015_376)
+  stale  feed  UK_ssi_2015_376 :feed  (for UK_ssi_2015_376)
+  not_fetched  feed  UK_ssi_2015_79 :feed  (for UK_ssi_2015_79)
+  not_fetched  feed  UK_ssi_2016_19 :feed  (for UK_ssi_2016_19)
+  not_fetched  feed  UK_ssi_2016_43 :feed  (for UK_ssi_2016_43)
+  stale  own  UK_ssi_2016_93 "/ssi/2016/93/body/data.xml"  (for UK_ssi_2016_93)
+  stale  feed  UK_ssi_2016_93 :feed  (for UK_ssi_2016_93)
+  stale  own  UK_ssi_2017_282 "/ssi/2017/282/body/data.xml"  (for UK_ssi_2017_282)
+  stale  feed  UK_ssi_2017_282 :feed  (for UK_ssi_2017_282)
+  stale  feed  UK_ssi_2020_154 :feed  (for UK_ssi_2020_154)
+  not_fetched  feed  UK_ssi_2022_87 :feed  (for UK_ssi_2022_87)
+  not_fetched  feed  UK_ssi_2023_52 :feed  (for UK_ssi_2023_52)
+  not_fetched  feed  UK_ukpga_1945_42 :feed  (for UK_ukpga_1945_42)
+  not_fetched  feed  UK_ukpga_1951_64 :feed  (for UK_ukpga_1951_64)
+  stale  feed  UK_ukpga_1956_52 :feed  (for UK_ukpga_1956_52)
+  not_fetched  feed  UK_ukpga_1961_50 :feed  (for UK_ukpga_1961_50)
+  stale  feed  UK_ukpga_1968_35 :feed  (for UK_ukpga_1968_35)
+  stale  feed  UK_ukpga_1968_47 :feed  (for UK_ukpga_1968_47)
+  stale  feed  UK_ukpga_1971_60 :feed  (for UK_ukpga_1971_60)
+  not_fetched  feed  UK_ukpga_1972_21 :feed  (for UK_ukpga_1972_21)
+  stale  territory  UK_uksi_1994_1096 :body  (for UK_ukpga_1974_40)
+  stale  territory  UK_ukpga_1982_43 :body  (for UK_ukpga_1974_40)
+  stale  territory  UK_ssi_2006_181 :body  (for UK_ukpga_1974_40)
+  not_fetched  territory  UK_uksi_2006_2913 :body  (for UK_ukpga_1974_40)
+  stale  territory  UK_uksi_1996_593 :body  (for UK_ukpga_1974_40)
+  not_fetched  introduction  UK_uksi_1974_2170 :introduction  (for UK_ukpga_1974_40)
+  not_fetched  introduction  UK_uksi_1994_1096 :introduction  (for UK_ukpga_1974_40)
+  not_fetched  introduction  UK_uksi_2006_2913 :introduction  (for UK_ukpga_1974_40)
+  not_fetched  dates  UK_ukpga_1983_35 :feed  (for UK_ukpga_1974_40)
+  stale  dates  UK_ssi_2015_72 :body  (for UK_ukpga_1974_40)
+  not_fetched  dates  UK_uksi_1994_2109 :body  (for UK_ukpga_1974_40)
+  not_fetched  dates  UK_uksi_1994_2109 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  dates  UK_uksi_1994_2790 :body  (for UK_ukpga_1974_40)
+  not_fetched  dates  UK_uksi_1994_2790 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  dates  UK_uksi_1995_546 :body  (for UK_ukpga_1974_40)
+  not_fetched  dates  UK_uksi_1995_546 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  dates  UK_uksi_1995_851 :body  (for UK_ukpga_1974_40)
+  not_fetched  dates  UK_uksi_1995_851 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  dates  UK_ukpga_1994_21 :orders  (for UK_ukpga_1974_40)
+  stale  dates  UK_ssi_2004_541 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1994_1096 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_ukpga_1982_43 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_ukpga_1980_58 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_ukpga_1980_58 :feed  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1982_1137 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1982_1137 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1982_1397 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1982_1397 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1982_317 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1982_317 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1984_239 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1984_239 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1985_1953 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1985_1953 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1989_1094 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1989_1094 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1990_2622 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1990_2622 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1985_1602 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1998_1836 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_2023_992 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_wsi_2025_1367 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_wsi_2026_20 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1986_1315 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1986_1315 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1986_1809 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1986_1809 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1989_1369 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1989_1369 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1990_117 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1990_117 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_2001_3419 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_2001_3419 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1990_2226 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1990_2243 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1990_2565 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1990_2635 :schedules  (for UK_ukpga_1974_40)
+  stale  backlog  UK_uksi_1991_1042 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1991_1042 :schedules  (for UK_ukpga_1974_40)
+  stale  backlog  UK_uksi_1991_1319 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1991_1319 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1991_1577 :schedules  (for UK_ukpga_1974_40)
+  stale  backlog  UK_uksi_1991_2829 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1991_2829 :schedules  (for UK_ukpga_1974_40)
+  stale  backlog  UK_uksi_1991_685 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1991_685 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1991_96 :schedules  (for UK_ukpga_1974_40)
+  stale  backlog  UK_uksi_1992_266 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1992_266 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1992_3253 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1993_274 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1994_2487 :schedules  (for UK_ukpga_1974_40)
+  stale  backlog  UK_uksi_1994_2854 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1994_2854 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1994_3234 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1994_780 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1995_2152 :schedules  (for UK_ukpga_1974_40)
+  stale  backlog  UK_uksi_1996_3056 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1996_3056 :schedules  (for UK_ukpga_1974_40)
+  stale  backlog  UK_uksi_1991_2286 :body  (for UK_ukpga_1974_40)
+  stale  backlog  UK_uksi_1991_2288 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1991_2288 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1992_1671 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1992_1671 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1992_1686 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1992_1686 :schedules  (for UK_ukpga_1974_40)
+  stale  backlog  UK_uksi_1992_2984 :body  (for UK_ukpga_1974_40)
+  stale  backlog  UK_uksi_1992_2990 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_2002_3267 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_2002_3267 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_2004_1780 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_2004_1780 :schedules  (for UK_ukpga_1974_40)
+  stale  backlog  UK_uksi_1991_2187 :body  (for UK_ukpga_1974_40)
+  stale  backlog  UK_uksi_1991_2633 :body  (for UK_ukpga_1974_40)
+  stale  backlog  UK_uksi_1994_2850 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1994_3150 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1994_3150 :schedules  (for UK_ukpga_1974_40)
+  stale  backlog  UK_uksi_1995_1898 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1995_1898 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1995_2866 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1995_2866 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1995_3326 :body  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1995_3326 :schedules  (for UK_ukpga_1974_40)
+  stale  backlog  UK_uksi_1996_323 :body  (for UK_ukpga_1974_40)
+  stale  backlog  UK_uksi_1996_323 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_uksi_1998_2532 :schedules  (for UK_ukpga_1974_40)
+  not_fetched  backlog  UK_ukpga_1997_11 :orders  (for UK_ukpga_1974_40)
+  not_fetched  own  UK_ukpga_1975_23 "/ukpga/1975/23/body/data.xml"  (for UK_ukpga_1975_23)
+  stale  feed  UK_ukpga_1975_23 :feed  (for UK_ukpga_1975_23)
+  stale  feed  UK_ukpga_1978_3 :feed  (for UK_ukpga_1978_3)
+  stale  feed  UK_ukpga_1980_45 :feed  (for UK_ukpga_1980_45)
+  stale  feed  UK_ukpga_1989_14 :feed  (for UK_ukpga_1989_14)
+  not_fetched  dates  UK_ssi_2025_10 :schedules  (for UK_ukpga_1989_14)
+  stale  backlog  UK_ssi_2000_180 :body  (for UK_ukpga_1989_14)
+  stale  backlog  UK_uksi_1995_1983 :body  (for UK_ukpga_1989_14)
+  stale  backlog  UK_uksi_1995_2649 :body  (for UK_ukpga_1989_14)
+  not_fetched  backlog  UK_uksi_1995_2649 :schedules  (for UK_ukpga_1989_14)
+  stale  backlog  UK_uksi_1995_2765 :body  (for UK_ukpga_1989_14)
+  not_fetched  backlog  UK_uksi_1995_2765 :schedules  (for UK_ukpga_1989_14)
+  stale  backlog  UK_uksi_1995_2950 :body  (for UK_ukpga_1989_14)
+  not_fetched  backlog  UK_uksi_1995_2950 :schedules  (for UK_ukpga_1989_14)
+  stale  backlog  UK_uksi_1996_2909 :body  (for UK_ukpga_1989_14)
+  stale  backlog  UK_uksi_1997_1626 :body  (for UK_ukpga_1989_14)
+  not_fetched  backlog  UK_uksi_1997_1626 :schedules  (for UK_ukpga_1989_14)
+  stale  backlog  UK_uksi_1997_3044 :body  (for UK_ukpga_1989_14)
+  not_fetched  backlog  UK_uksi_1997_3044 :schedules  (for UK_ukpga_1989_14)
+  stale  backlog  UK_uksi_1998_3272 :body  (for UK_ukpga_1989_14)
+  not_fetched  backlog  UK_uksi_1998_3272 :schedules  (for UK_ukpga_1989_14)
+  stale  backlog  UK_uksi_1998_604 :body  (for UK_ukpga_1989_14)
+  not_fetched  backlog  UK_uksi_1998_604 :schedules  (for UK_ukpga_1989_14)
+  stale  backlog  UK_uksi_1998_781 :body  (for UK_ukpga_1989_14)
+  not_fetched  backlog  UK_uksi_1998_781 :schedules  (for UK_ukpga_1989_14)
+  stale  backlog  UK_uksi_1999_1301 :body  (for UK_ukpga_1989_14)
+  not_fetched  backlog  UK_uksi_1999_1301 :schedules  (for UK_ukpga_1989_14)
+  stale  backlog  UK_uksi_1999_803 :body  (for UK_ukpga_1989_14)
+  not_fetched  backlog  UK_uksi_1999_803 :schedules  (for UK_ukpga_1989_14)
+  stale  backlog  UK_uksi_2000_1986 :body  (for UK_ukpga_1989_14)
+  stale  backlog  UK_uksi_2000_340 :body  (for UK_ukpga_1989_14)
+  stale  backlog  UK_uksi_2001_3211 :body  (for UK_ukpga_1989_14)
+  not_fetched  backlog  UK_uksi_2001_3211 :schedules  (for UK_ukpga_1989_14)
+  stale  backlog  UK_uksi_2005_2896 :body  (for UK_ukpga_1989_14)
+  not_fetched  backlog  UK_uksi_2005_2896 :schedules  (for UK_ukpga_1989_14)
+  not_fetched  backlog  UK_uksi_2006_1361 :schedules  (for UK_ukpga_1989_14)
+  not_fetched  backlog  UK_uksi_2006_2006 :schedules  (for UK_ukpga_1989_14)
+  not_fetched  backlog  UK_uksi_2006_656 :schedules  (for UK_ukpga_1989_14)
+  stale  backlog  UK_uksi_2015_425 :body  (for UK_ukpga_1989_14)
+  stale  feed  UK_ukpga_1991_56 :feed  (for UK_ukpga_1991_56)
+  stale  feed  UK_ukpga_1991_57 :feed  (for UK_ukpga_1991_57)
+  not_fetched  feed  UK_ukpga_1991_59 :feed  (for UK_ukpga_1991_59)
+  stale  feed  UK_ukpga_1996_37 :feed  (for UK_ukpga_1996_37)
+  not_fetched  own  UK_ukpga_1996_38 "/ukpga/1996/38/body/data.xml"  (for UK_ukpga_1996_38)
+  stale  feed  UK_ukpga_1996_38 :feed  (for UK_ukpga_1996_38)
+  not_fetched  feed  UK_ukpga_2000_31 :feed  (for UK_ukpga_2000_31)
+  stale  feed  UK_ukpga_2003_33 :feed  (for UK_ukpga_2003_33)
+  not_fetched  feed  UK_ukpga_2007_23 :feed  (for UK_ukpga_2007_23)
+  stale  feed  UK_ukpga_2013_10 :feed  (for UK_ukpga_2013_10)
+  stale  own  UK_uksi_1958_498 "/uksi/1958/498/body/data.xml"  (for UK_uksi_1958_498)
+  stale  feed  UK_uksi_1958_498 :feed  (for UK_uksi_1958_498)
+  not_fetched  feed  UK_uksi_1958_878 :feed  (for UK_uksi_1958_878)
+  not_fetched  feed  UK_uksi_1969_1262 :feed  (for UK_uksi_1969_1262)
+  not_fetched  feed  UK_uksi_1969_411 :feed  (for UK_uksi_1969_411)
+  not_fetched  feed  UK_uksi_1970_1667 :feed  (for UK_uksi_1970_1667)
+  not_fetched  feed  UK_uksi_1970_615 :feed  (for UK_uksi_1970_615)
+  not_fetched  feed  UK_uksi_1971_1265 :feed  (for UK_uksi_1971_1265)
+  stale  own  UK_uksi_1971_161 "/uksi/1971/161/body/data.xml"  (for UK_uksi_1971_161)
+  stale  feed  UK_uksi_1971_161 :feed  (for UK_uksi_1971_161)
+  stale  own  UK_uksi_1971_162 "/uksi/1971/162/body/data.xml"  (for UK_uksi_1971_162)
+  stale  feed  UK_uksi_1971_162 :feed  (for UK_uksi_1971_162)
+  not_fetched  feed  UK_uksi_1972_438 :feed  (for UK_uksi_1972_438)
+  not_fetched  feed  UK_uksi_1972_955 :feed  (for UK_uksi_1972_955)
+  not_fetched  feed  UK_uksi_1973_2166 :feed  (for UK_uksi_1973_2166)
+  not_fetched  feed  UK_uksi_1974_607 :feed  (for UK_uksi_1974_607)
+  not_fetched  feed  UK_uksi_1975_1001 :feed  (for UK_uksi_1975_1001)
+  not_fetched  feed  UK_uksi_1975_1111 :feed  (for UK_uksi_1975_1111)
+  not_fetched  feed  UK_uksi_1975_2116 :feed  (for UK_uksi_1975_2116)
+  not_fetched  feed  UK_uksi_1976_958 :feed  (for UK_uksi_1976_958)
+  not_fetched  feed  UK_uksi_1978_1609 :feed  (for UK_uksi_1978_1609)
+  not_fetched  feed  UK_uksi_1979_912 :feed  (for UK_uksi_1979_912)
+  not_fetched  feed  UK_uksi_1982_1615 :feed  (for UK_uksi_1982_1615)
+  not_fetched  feed  UK_uksi_1982_1669 :feed  (for UK_uksi_1982_1669)
+  not_fetched  feed  UK_uksi_1983_1018 :feed  (for UK_uksi_1983_1018)
+  not_fetched  feed  UK_uksi_1983_1182 :feed  (for UK_uksi_1983_1182)
+  not_fetched  feed  UK_uksi_1983_277 :feed  (for UK_uksi_1983_277)
+  not_fetched  feed  UK_uksi_1983_426 :feed  (for UK_uksi_1983_426)
+  not_fetched  feed  UK_uksi_1984_1649 :feed  (for UK_uksi_1984_1649)
+  stale  own  UK_uksi_1985_1884 "/uksi/1985/1884/body/data.xml"  (for UK_uksi_1985_1884)
+  not_fetched  feed  UK_uksi_1985_1884 :feed  (for UK_uksi_1985_1884)
+  not_fetched  feed  UK_uksi_1986_1623 :feed  (for UK_uksi_1986_1623)
+  not_fetched  feed  UK_uksi_1986_1992 :feed  (for UK_uksi_1986_1992)
+  not_fetched  feed  UK_uksi_1986_638 :feed  (for UK_uksi_1986_638)
+  stale  own  UK_uksi_1988_1048 "/uksi/1988/1048/body/data.xml"  (for UK_uksi_1988_1048)
+  stale  feed  UK_uksi_1988_1048 :feed  (for UK_uksi_1988_1048)
+  not_fetched  feed  UK_uksi_1988_2282 :feed  (for UK_uksi_1988_2282)
+  stale  own  UK_uksi_1988_819 "/uksi/1988/819/body/data.xml"  (for UK_uksi_1988_819)
+  stale  feed  UK_uksi_1988_819 :feed  (for UK_uksi_1988_819)
+  stale  own  UK_uksi_1989_1156 "/uksi/1989/1156/body/data.xml"  (for UK_uksi_1989_1156)
+  stale  feed  UK_uksi_1989_1156 :feed  (for UK_uksi_1989_1156)
+  stale  feed  UK_uksi_1989_1263 :feed  (for UK_uksi_1989_1263)
+  not_fetched  feed  UK_uksi_1989_1769 :feed  (for UK_uksi_1989_1769)
+  not_fetched  feed  UK_uksi_1989_317 :feed  (for UK_uksi_1989_317)
+  not_fetched  feed  UK_uksi_1989_744 :feed  (for UK_uksi_1989_744)
+  not_fetched  feed  UK_uksi_1990_119 :feed  (for UK_uksi_1990_119)
+  not_fetched  feed  UK_uksi_1990_161 :feed  (for UK_uksi_1990_161)
+  not_fetched  feed  UK_uksi_1990_1791 :feed  (for UK_uksi_1990_1791)
+  not_fetched  feed  UK_uksi_1990_2457 :feed  (for UK_uksi_1990_2457)
+  not_fetched  feed  UK_uksi_1990_345 :feed  (for UK_uksi_1990_345)
+  not_fetched  feed  UK_uksi_1991_111 :feed  (for UK_uksi_1991_111)
+  not_fetched  feed  UK_uksi_1991_1325 :feed  (for UK_uksi_1991_1325)
+  stale  own  UK_uksi_1991_146 "/uksi/1991/146/body/data.xml"  (for UK_uksi_1991_146)
+  not_fetched  feed  UK_uksi_1991_146 :feed  (for UK_uksi_1991_146)
+  not_fetched  feed  UK_uksi_1991_2892 :feed  (for UK_uksi_1991_2892)
+  not_fetched  feed  UK_uksi_1991_324 :feed  (for UK_uksi_1991_324)
+  not_fetched  feed  UK_uksi_1991_346 :feed  (for UK_uksi_1991_346)
+  not_fetched  feed  UK_uksi_1992_2811 :feed  (for UK_uksi_1992_2811)
+  not_fetched  feed  UK_uksi_1992_339 :feed  (for UK_uksi_1992_339)
+  not_fetched  feed  UK_uksi_1992_575 :feed  (for UK_uksi_1992_575)
+  not_fetched  feed  UK_uksi_1993_1154 :feed  (for UK_uksi_1993_1154)
+  not_fetched  feed  UK_uksi_1993_1155 :feed  (for UK_uksi_1993_1155)
+  not_fetched  feed  UK_uksi_1993_1156 :feed  (for UK_uksi_1993_1156)
+  not_fetched  feed  UK_uksi_1993_1446 :feed  (for UK_uksi_1993_1446)
+  not_fetched  feed  UK_uksi_1993_2277 :feed  (for UK_uksi_1993_2277)
+  not_fetched  feed  UK_uksi_1994_1137 :feed  (for UK_uksi_1994_1137)
+  not_fetched  feed  UK_uksi_1994_1386 :feed  (for UK_uksi_1994_1386)
+  not_fetched  feed  UK_uksi_1994_1556 :feed  (for UK_uksi_1994_1556)
+  not_fetched  feed  UK_uksi_1994_2841 :feed  (for UK_uksi_1994_2841)
+  not_fetched  feed  UK_uksi_1994_2842 :feed  (for UK_uksi_1994_2842)
+  not_fetched  feed  UK_uksi_1994_3076 :feed  (for UK_uksi_1994_3076)
+  not_fetched  feed  UK_uksi_1994_3308 :feed  (for UK_uksi_1994_3308)
+  stale  own  UK_uksi_1994_440 "/uksi/1994/440/body/data.xml"  (for UK_uksi_1994_440)
+  stale  feed  UK_uksi_1994_440 :feed  (for UK_uksi_1994_440)
+  stale  feed  UK_uksi_1995_288 :feed  (for UK_uksi_1995_288)
+  not_fetched  feed  UK_uksi_1995_723 :feed  (for UK_uksi_1995_723)
+  not_fetched  feed  UK_uksi_1996_1108 :feed  (for UK_uksi_1996_1108)
+  not_fetched  feed  UK_uksi_1996_1295 :feed  (for UK_uksi_1996_1295)
+  stale  feed  UK_uksi_1996_1527 :feed  (for UK_uksi_1996_1527)
+  not_fetched  feed  UK_uksi_1996_1564 :feed  (for UK_uksi_1996_1564)
+  stale  own  UK_uksi_1996_2019 "/uksi/1996/2019/body/data.xml"  (for UK_uksi_1996_2019)
+  stale  feed  UK_uksi_1996_2019 :feed  (for UK_uksi_1996_2019)
+  not_fetched  feed  UK_uksi_1996_2763 :feed  (for UK_uksi_1996_2763)
+  stale  own  UK_uksi_1996_2971 "/uksi/1996/2971/body/data.xml"  (for UK_uksi_1996_2971)
+  stale  feed  UK_uksi_1996_2971 :feed  (for UK_uksi_1996_2971)
+  not_fetched  feed  UK_uksi_1996_428 :feed  (for UK_uksi_1996_428)
+  stale  feed  UK_uksi_1996_972 :feed  (for UK_uksi_1996_972)
+  not_fetched  feed  UK_uksi_1997_3009 :feed  (for UK_uksi_1997_3009)
+  not_fetched  feed  UK_uksi_1997_351 :feed  (for UK_uksi_1997_351)
+  not_fetched  feed  UK_uksi_1998_1165 :feed  (for UK_uksi_1998_1165)
+  not_fetched  feed  UK_uksi_1998_1572 :feed  (for UK_uksi_1998_1572)
+  not_fetched  feed  UK_uksi_1998_2138 :feed  (for UK_uksi_1998_2138)
+  not_fetched  feed  UK_uksi_1998_2533 :feed  (for UK_uksi_1998_2533)
+  not_fetched  feed  UK_uksi_1998_2927 :feed  (for UK_uksi_1998_2927)
+  stale  own  UK_uksi_1998_3084 "/uksi/1998/3084/body/data.xml"  (for UK_uksi_1998_3084)
+  stale  feed  UK_uksi_1998_3084 :feed  (for UK_uksi_1998_3084)
+  stale  own  UK_uksi_1998_892 "/uksi/1998/892/body/data.xml"  (for UK_uksi_1998_892)
+  stale  feed  UK_uksi_1998_892 :feed  (for UK_uksi_1998_892)
+  stale  own  UK_uksi_1999_1006 "/uksi/1999/1006/body/data.xml"  (for UK_uksi_1999_1006)
+  stale  feed  UK_uksi_1999_1006 :feed  (for UK_uksi_1999_1006)
+  stale  own  UK_uksi_1999_1054 "/uksi/1999/1054/body/data.xml"  (for UK_uksi_1999_1054)
+  stale  feed  UK_uksi_1999_1054 :feed  (for UK_uksi_1999_1054)
+  stale  feed  UK_uksi_1999_1148 :feed  (for UK_uksi_1999_1148)
+  not_fetched  feed  UK_uksi_1999_1515 :feed  (for UK_uksi_1999_1515)
+  stale  own  UK_uksi_1999_1676 "/uksi/1999/1676/body/data.xml"  (for UK_uksi_1999_1676)
+  stale  feed  UK_uksi_1999_1676 :feed  (for UK_uksi_1999_1676)
+  not_fetched  feed  UK_uksi_1999_2170 :feed  (for UK_uksi_1999_2170)
+  not_fetched  feed  UK_uksi_1999_221 :feed  (for UK_uksi_1999_221)
+  stale  own  UK_uksi_1999_915 "/uksi/1999/915/body/data.xml"  (for UK_uksi_1999_915)
+  stale  feed  UK_uksi_1999_915 :feed  (for UK_uksi_1999_915)
+  stale  own  UK_uksi_1999_916 "/uksi/1999/916/body/data.xml"  (for UK_uksi_1999_916)
+  stale  feed  UK_uksi_1999_916 :feed  (for UK_uksi_1999_916)
+  stale  territory  UK_uksi_2020_489 :body  (for UK_uksi_2000_1043)
+  stale  territory  UK_uksi_2010_1820 :body  (for UK_uksi_2000_1043)
+  not_fetched  introduction  UK_uksi_2000_3359 :introduction  (for UK_uksi_2000_1043)
+  not_fetched  introduction  UK_uksi_2010_1159 :introduction  (for UK_uksi_2000_1043)
+  not_fetched  feed  UK_uksi_2000_1297 :feed  (for UK_uksi_2000_1297)
+  not_fetched  feed  UK_uksi_2000_1460 :feed  (for UK_uksi_2000_1460)
+  not_fetched  feed  UK_uksi_2000_227 :feed  (for UK_uksi_2000_227)
+  not_fetched  feed  UK_uksi_2000_2911 :feed  (for UK_uksi_2000_2911)
+  stale  own  UK_uksi_2000_3184 "/uksi/2000/3184/body/data.xml"  (for UK_uksi_2000_3184)
+  stale  feed  UK_uksi_2000_3184 :feed  (for UK_uksi_2000_3184)
+  not_fetched  feed  UK_uksi_2000_928 :feed  (for UK_uksi_2000_928)
+  not_fetched  feed  UK_uksi_2001_1136 :feed  (for UK_uksi_2001_1136)
+  not_fetched  feed  UK_uksi_2001_1623 :feed  (for UK_uksi_2001_1623)
+  stale  feed  UK_uksi_2001_1701 :feed  (for UK_uksi_2001_1701)
+  stale  own  UK_uksi_2001_2315 "/uksi/2001/2315/body/data.xml"  (for UK_uksi_2001_2315)
+  stale  feed  UK_uksi_2001_2315 :feed  (for UK_uksi_2001_2315)
+  stale  feed  UK_uksi_2001_2954 :feed  (for UK_uksi_2001_2954)
+  not_fetched  feed  UK_uksi_2001_3523 :feed  (for UK_uksi_2001_3523)
+  stale  own  UK_uksi_2001_486 "/uksi/2001/486/body/data.xml"  (for UK_uksi_2001_486)
+  stale  feed  UK_uksi_2001_486 :feed  (for UK_uksi_2001_486)
+  stale  own  UK_uksi_2001_7 "/uksi/2001/7/body/data.xml"  (for UK_uksi_2001_7)
+  stale  feed  UK_uksi_2001_7 :feed  (for UK_uksi_2001_7)
+  stale  feed  UK_uksi_2001_838 :feed  (for UK_uksi_2001_838)
+  stale  feed  UK_uksi_2002_1355 :feed  (for UK_uksi_2002_1355)
+  stale  own  UK_uksi_2002_1861 "/uksi/2002/1861/body/data.xml"  (for UK_uksi_2002_1861)
+  stale  feed  UK_uksi_2002_1861 :feed  (for UK_uksi_2002_1861)
+  not_fetched  feed  UK_uksi_2002_3049 :feed  (for UK_uksi_2002_3049)
+  not_fetched  feed  UK_uksi_2003_1788 :feed  (for UK_uksi_2003_1788)
+  not_fetched  feed  UK_uksi_2003_3245 :feed  (for UK_uksi_2003_3245)
+  not_fetched  feed  UK_uksi_2003_3341 :feed  (for UK_uksi_2003_3341)
+  stale  feed  UK_uksi_2003_751 :feed  (for UK_uksi_2003_751)
+  not_fetched  feed  UK_uksi_2004_3027 :feed  (for UK_uksi_2004_3027)
+  not_fetched  feed  UK_uksi_2004_3202 :feed  (for UK_uksi_2004_3202)
+  not_fetched  feed  UK_uksi_2004_3206 :feed  (for UK_uksi_2004_3206)
+  not_fetched  feed  UK_uksi_2004_3242 :feed  (for UK_uksi_2004_3242)
+  not_fetched  feed  UK_uksi_2004_639 :feed  (for UK_uksi_2004_639)
+  stale  own  UK_uksi_2004_701 "/uksi/2004/701/body/data.xml"  (for UK_uksi_2004_701)
+  stale  feed  UK_uksi_2004_701 :feed  (for UK_uksi_2004_701)
+  not_fetched  feed  UK_uksi_2004_99 :feed  (for UK_uksi_2004_99)
+  not_fetched  feed  UK_uksi_2005_1530 :feed  (for UK_uksi_2005_1530)
+  not_fetched  feed  UK_uksi_2005_1606 :feed  (for UK_uksi_2005_1606)
+  not_fetched  feed  UK_uksi_2005_1638 :feed  (for UK_uksi_2005_1638)
+  stale  feed  UK_uksi_2005_1714 :feed  (for UK_uksi_2005_1714)
+  stale  own  UK_uksi_2005_1715 "/uksi/2005/1715/body/data.xml"  (for UK_uksi_2005_1715)
+  stale  feed  UK_uksi_2005_1715 :feed  (for UK_uksi_2005_1715)
+  stale  feed  UK_uksi_2005_1726 :feed  (for UK_uksi_2005_1726)
+  not_fetched  feed  UK_uksi_2005_187 :feed  (for UK_uksi_2005_187)
+  not_fetched  feed  UK_uksi_2005_1905 :feed  (for UK_uksi_2005_1905)
+  not_fetched  feed  UK_uksi_2005_2088 :feed  (for UK_uksi_2005_2088)
+  not_fetched  feed  UK_uksi_2005_2141 :feed  (for UK_uksi_2005_2141)
+  not_fetched  feed  UK_uksi_2005_2748 :feed  (for UK_uksi_2005_2748)
+  not_fetched  feed  UK_uksi_2005_2903 :feed  (for UK_uksi_2005_2903)
+  not_fetched  feed  UK_uksi_2005_3172 :feed  (for UK_uksi_2005_3172)
+  not_fetched  feed  UK_uksi_2005_477 :feed  (for UK_uksi_2005_477)
+  stale  feed  UK_uksi_2005_894 :feed  (for UK_uksi_2005_894)
+  stale  feed  UK_uksi_2006_1380 :feed  (for UK_uksi_2006_1380)
+  not_fetched  feed  UK_uksi_2006_2238 :feed  (for UK_uksi_2006_2238)
+  stale  own  UK_uksi_2006_641 "/uksi/2006/641/body/data.xml"  (for UK_uksi_2006_641)
+  stale  feed  UK_uksi_2006_641 :feed  (for UK_uksi_2006_641)
+  not_fetched  feed  UK_uksi_2006_743 :feed  (for UK_uksi_2006_743)
+  stale  feed  UK_uksi_2006_937 :feed  (for UK_uksi_2006_937)
+  not_fetched  feed  UK_uksi_2007_1711 :feed  (for UK_uksi_2007_1711)
+  not_fetched  feed  UK_uksi_2007_2980 :feed  (for UK_uksi_2007_2980)
+  stale  feed  UK_uksi_2007_3072 :feed  (for UK_uksi_2007_3072)
+  stale  feed  UK_uksi_2007_3106 :feed  (for UK_uksi_2007_3106)
+  not_fetched  feed  UK_uksi_2007_3437 :feed  (for UK_uksi_2007_3437)
+  not_fetched  feed  UK_uksi_2007_63 :feed  (for UK_uksi_2007_63)
+  stale  feed  UK_uksi_2007_727 :feed  (for UK_uksi_2007_727)
+  stale  feed  UK_uksi_2007_79 :feed  (for UK_uksi_2007_79)
+  not_fetched  feed  UK_uksi_2008_2038 :feed  (for UK_uksi_2008_2038)
+  not_fetched  feed  UK_uksi_2008_2095 :feed  (for UK_uksi_2008_2095)
+  stale  feed  UK_uksi_2008_2164 :feed  (for UK_uksi_2008_2164)
+  stale  own  UK_uksi_2008_2694 "/uksi/2008/2694/body/data.xml"  (for UK_uksi_2008_2694)
+  stale  feed  UK_uksi_2008_2694 :feed  (for UK_uksi_2008_2694)
+  not_fetched  feed  UK_uksi_2008_41 :feed  (for UK_uksi_2008_41)
+  not_fetched  feed  UK_uksi_2008_594 :feed  (for UK_uksi_2008_594)
+  not_fetched  feed  UK_uksi_2009_105 :feed  (for UK_uksi_2009_105)
+  stale  own  UK_uksi_2009_1257 "/uksi/2009/1257/body/data.xml"  (for UK_uksi_2009_1257)
+  stale  feed  UK_uksi_2009_1257 :feed  (for UK_uksi_2009_1257)
+  not_fetched  feed  UK_uksi_2009_271 :feed  (for UK_uksi_2009_271)
+  stale  feed  UK_uksi_2009_890 :feed  (for UK_uksi_2009_890)
+  stale  feed  UK_uksi_2010_1001 :feed  (for UK_uksi_2010_1001)
+  stale  feed  UK_uksi_2010_2221 :feed  (for UK_uksi_2010_2221)
+  stale  feed  UK_uksi_2010_2231 :feed  (for UK_uksi_2010_2231)
+  stale  feed  UK_uksi_2010_2617 :feed  (for UK_uksi_2010_2617)
+  stale  feed  UK_uksi_2010_639 :feed  (for UK_uksi_2010_639)
+  not_fetched  feed  UK_uksi_2010_740 :feed  (for UK_uksi_2010_740)
+  stale  feed  UK_uksi_2010_768 :feed  (for UK_uksi_2010_768)
+  stale  own  UK_uksi_2011_1017 "/uksi/2011/1017/body/data.xml"  (for UK_uksi_2011_1017)
+  stale  feed  UK_uksi_2011_1017 :feed  (for UK_uksi_2011_1017)
+  stale  feed  UK_uksi_2011_1483 :feed  (for UK_uksi_2011_1483)
+  stale  feed  UK_uksi_2011_1506 :feed  (for UK_uksi_2011_1506)
+  not_fetched  feed  UK_uksi_2011_1524 :feed  (for UK_uksi_2011_1524)
+  stale  feed  UK_uksi_2011_2305 :feed  (for UK_uksi_2011_2305)
+  not_fetched  feed  UK_uksi_2011_2453 :feed  (for UK_uksi_2011_2453)
+  not_fetched  feed  UK_uksi_2011_2911 :feed  (for UK_uksi_2011_2911)
+  not_fetched  feed  UK_uksi_2011_3059 :feed  (for UK_uksi_2011_3059)
+  not_fetched  feed  UK_uksi_2011_695 :feed  (for UK_uksi_2011_695)
+  not_fetched  feed  UK_uksi_2011_727 :feed  (for UK_uksi_2011_727)
+  stale  own  UK_uksi_2011_982 "/uksi/2011/982/body/data.xml"  (for UK_uksi_2011_982)
+  stale  feed  UK_uksi_2011_982 :feed  (for UK_uksi_2011_982)
+  stale  feed  UK_uksi_2011_988 :feed  (for UK_uksi_2011_988)
+  not_fetched  feed  UK_uksi_2012_1661 :feed  (for UK_uksi_2012_1661)
+  not_fetched  feed  UK_uksi_2012_1715 :feed  (for UK_uksi_2012_1715)
+  stale  feed  UK_uksi_2012_1976 :feed  (for UK_uksi_2012_1976)
+  not_fetched  feed  UK_uksi_2012_2079 :feed  (for UK_uksi_2012_2079)
+  stale  feed  UK_uksi_2012_2788 :feed  (for UK_uksi_2012_2788)
+  stale  feed  UK_uksi_2012_2999 :feed  (for UK_uksi_2012_2999)
+  stale  feed  UK_uksi_2012_3030 :feed  (for UK_uksi_2012_3030)
+  stale  feed  UK_uksi_2012_3038 :feed  (for UK_uksi_2012_3038)
+  stale  territory  UK_uksi_2015_1388 :body  (for UK_uksi_2012_3038)
+  stale  territory  UK_uksi_2020_1369 :body  (for UK_uksi_2012_3038)
+  not_fetched  territory  UK_uksi_2019_107 :body  (for UK_uksi_2012_3038)
+  not_fetched  territory  UK_uksi_2015_933 :body  (for UK_uksi_2012_3038)
+  stale  territory  UK_uksi_2014_3125 :body  (for UK_uksi_2012_3038)
+  not_fetched  territory  UK_ukpga_2019_1 :body  (for UK_uksi_2012_3038)
+  stale  territory  UK_wsi_2015_1388 :body  (for UK_uksi_2012_3038)
+  not_fetched  territory  UK_uksi_2015_912 :body  (for UK_uksi_2012_3038)
+  not_fetched  introduction  UK_uksi_2015_1388 :introduction  (for UK_uksi_2012_3038)
+  not_fetched  introduction  UK_uksi_2020_1369 :introduction  (for UK_uksi_2012_3038)
+  not_fetched  introduction  UK_uksi_2019_107 :introduction  (for UK_uksi_2012_3038)
+  not_fetched  introduction  UK_uksi_2019_1440 :introduction  (for UK_uksi_2012_3038)
+  not_fetched  introduction  UK_uksi_2015_1849 :introduction  (for UK_uksi_2012_3038)
+  not_fetched  introduction  UK_uksi_2015_933 :introduction  (for UK_uksi_2012_3038)
+  not_fetched  introduction  UK_uksi_2014_3125 :introduction  (for UK_uksi_2012_3038)
+  not_fetched  introduction  UK_uksi_2020_18 :introduction  (for UK_uksi_2012_3038)
+  not_fetched  introduction  UK_wsi_2015_1388 :introduction  (for UK_uksi_2012_3038)
+  not_fetched  introduction  UK_uksi_2018_306 :introduction  (for UK_uksi_2012_3038)
+  not_fetched  introduction  UK_uksi_2013_1037 :introduction  (for UK_uksi_2012_3038)
+  not_fetched  introduction  UK_uksi_2019_528 :introduction  (for UK_uksi_2012_3038)
+  not_fetched  introduction  UK_nisr_2016_28 :introduction  (for UK_uksi_2012_3038)
+  not_fetched  introduction  UK_uksi_2019_644 :introduction  (for UK_uksi_2012_3038)
+  not_fetched  introduction  UK_uksi_2015_912 :introduction  (for UK_uksi_2012_3038)
+  not_fetched  introduction  UK_uksi_2017_1207 :introduction  (for UK_uksi_2012_3038)
+  not_fetched  introduction  UK_uksi_2019_916 :introduction  (for UK_uksi_2012_3038)
+  not_fetched  backlog  UK_uksi_2013_3135 :schedules  (for UK_uksi_2012_3038)
+  not_fetched  backlog  UK_uksi_2015_1388 :schedules  (for UK_uksi_2012_3038)
+  not_fetched  backlog  UK_uksi_2020_1369 :schedules  (for UK_uksi_2012_3038)
+  not_fetched  backlog  UK_uksi_2015_1849 :schedules  (for UK_uksi_2012_3038)
+  stale  own  UK_uksi_2012_461 "/uksi/2012/461/body/data.xml"  (for UK_uksi_2012_461)
+  not_fetched  feed  UK_uksi_2012_461 :feed  (for UK_uksi_2012_461)
+  stale  feed  UK_uksi_2012_811 :feed  (for UK_uksi_2012_811)
+  stale  feed  UK_uksi_2013_1119 :feed  (for UK_uksi_2013_1119)
+  not_fetched  feed  UK_uksi_2013_141 :feed  (for UK_uksi_2013_141)
+  stale  feed  UK_uksi_2013_1582 :feed  (for UK_uksi_2013_1582)
+  not_fetched  feed  UK_uksi_2013_1675 :feed  (for UK_uksi_2013_1675)
+  not_fetched  feed  UK_uksi_2013_1676 :feed  (for UK_uksi_2013_1676)
+  not_fetched  feed  UK_uksi_2013_1677 :feed  (for UK_uksi_2013_1677)
+  not_fetched  feed  UK_uksi_2013_1896 :feed  (for UK_uksi_2013_1896)
+  not_fetched  feed  UK_uksi_2013_1966 :feed  (for UK_uksi_2013_1966)
+  stale  feed  UK_uksi_2013_2696 :feed  (for UK_uksi_2013_2696)
+  not_fetched  feed  UK_uksi_2013_3103 :feed  (for UK_uksi_2013_3103)
+  stale  feed  UK_uksi_2013_3113 :feed  (for UK_uksi_2013_3113)
+  stale  feed  UK_uksi_2013_971 :feed  (for UK_uksi_2013_971)
+  stale  feed  UK_uksi_2014_1975 :feed  (for UK_uksi_2014_1975)
+  not_fetched  feed  UK_uksi_2014_2384 :feed  (for UK_uksi_2014_2384)
+  stale  own  UK_uksi_2014_3125 "/uksi/2014/3125/body/data.xml"  (for UK_uksi_2014_3125)
+  stale  feed  UK_uksi_2014_3125 :feed  (for UK_uksi_2014_3125)
+  stale  feed  UK_uksi_2014_3318 :feed  (for UK_uksi_2014_3318)
+  stale  own  UK_uksi_2014_656 "/uksi/2014/656/body/data.xml"  (for UK_uksi_2014_656)
+  stale  feed  UK_uksi_2014_656 :feed  (for UK_uksi_2014_656)
+  not_fetched  feed  UK_uksi_2015_1385 :feed  (for UK_uksi_2015_1385)
+  stale  feed  UK_uksi_2015_1640 :feed  (for UK_uksi_2015_1640)
+  stale  feed  UK_uksi_2015_1849 :feed  (for UK_uksi_2015_1849)
+  not_fetched  feed  UK_uksi_2015_1902 :feed  (for UK_uksi_2015_1902)
+  stale  feed  UK_uksi_2015_22 :feed  (for UK_uksi_2015_22)
+  stale  feed  UK_uksi_2015_310 :feed  (for UK_uksi_2015_310)
+  not_fetched  feed  UK_uksi_2015_365 :feed  (for UK_uksi_2015_365)
+  not_fetched  feed  UK_uksi_2015_426 :feed  (for UK_uksi_2015_426)
+  not_fetched  feed  UK_uksi_2015_430 :feed  (for UK_uksi_2015_430)
+  not_fetched  feed  UK_uksi_2015_48 :feed  (for UK_uksi_2015_48)
+  stale  own  UK_uksi_2015_599 "/uksi/2015/599/body/data.xml"  (for UK_uksi_2015_599)
+  not_fetched  feed  UK_uksi_2015_599 :feed  (for UK_uksi_2015_599)
+  stale  feed  UK_uksi_2015_668 :feed  (for UK_uksi_2015_668)
+  not_fetched  feed  UK_uksi_2015_773 :feed  (for UK_uksi_2015_773)
+  not_fetched  feed  UK_uksi_2015_775 :feed  (for UK_uksi_2015_775)
+  stale  feed  UK_uksi_2015_776 :feed  (for UK_uksi_2015_776)
+  not_fetched  feed  UK_uksi_2015_845 :feed  (for UK_uksi_2015_845)
+  stale  feed  UK_uksi_2015_962 :feed  (for UK_uksi_2015_962)
+  not_fetched  feed  UK_uksi_2015_969 :feed  (for UK_uksi_2015_969)
+  not_fetched  feed  UK_uksi_2015_973 :feed  (for UK_uksi_2015_973)
+  not_fetched  feed  UK_uksi_2016_1189 :feed  (for UK_uksi_2016_1189)
+  stale  own  UK_uksi_2016_1245 "/uksi/2016/1245/body/data.xml"  (for UK_uksi_2016_1245)
+  stale  feed  UK_uksi_2016_1245 :feed  (for UK_uksi_2016_1245)
+  stale  feed  UK_uksi_2016_181 :feed  (for UK_uksi_2016_181)
+  stale  feed  UK_uksi_2016_359 :feed  (for UK_uksi_2016_359)
+  stale  feed  UK_uksi_2016_614 :feed  (for UK_uksi_2016_614)
+  stale  feed  UK_uksi_2016_618 :feed  (for UK_uksi_2016_618)
+  stale  own  UK_uksi_2016_744 "/uksi/2016/744/body/data.xml"  (for UK_uksi_2016_744)
+  not_fetched  feed  UK_uksi_2016_744 :feed  (for UK_uksi_2016_744)
+  stale  feed  UK_uksi_2017_1044 :feed  (for UK_uksi_2017_1044)
+  stale  feed  UK_uksi_2017_1047 :feed  (for UK_uksi_2017_1047)
+  stale  feed  UK_uksi_2017_407 :feed  (for UK_uksi_2017_407)
+  stale  own  UK_uksi_2017_462 "/uksi/2017/462/body/data.xml"  (for UK_uksi_2017_462)
+  not_fetched  feed  UK_uksi_2017_462 :feed  (for UK_uksi_2017_462)
+  not_fetched  feed  UK_uksi_2017_58 :feed  (for UK_uksi_2017_58)
+  stale  feed  UK_uksi_2017_841 :feed  (for UK_uksi_2017_841)
+  stale  feed  UK_uksi_2018_110 :feed  (for UK_uksi_2018_110)
+  not_fetched  feed  UK_uksi_2018_1122 :feed  (for UK_uksi_2018_1122)
+  not_fetched  feed  UK_uksi_2018_129 :feed  (for UK_uksi_2018_129)
+  not_fetched  feed  UK_uksi_2018_171 :feed  (for UK_uksi_2018_171)
+  stale  own  UK_uksi_2018_243 "/uksi/2018/243/body/data.xml"  (for UK_uksi_2018_243)
+  not_fetched  feed  UK_uksi_2018_243 :feed  (for UK_uksi_2018_243)
+  stale  feed  UK_uksi_2018_369 :feed  (for UK_uksi_2018_369)
+  stale  feed  UK_uksi_2018_647 :feed  (for UK_uksi_2018_647)
+  not_fetched  feed  UK_uksi_2018_707 :feed  (for UK_uksi_2018_707)
+  stale  own  UK_uksi_2018_798 "/uksi/2018/798/body/data.xml"  (for UK_uksi_2018_798)
+  stale  feed  UK_uksi_2018_798 :feed  (for UK_uksi_2018_798)
+  stale  own  UK_uksi_2019_421 "/uksi/2019/421/body/data.xml"  (for UK_uksi_2019_421)
+  stale  feed  UK_uksi_2019_421 :feed  (for UK_uksi_2019_421)
+  not_fetched  feed  UK_uksi_2019_544 :feed  (for UK_uksi_2019_544)
+  not_fetched  feed  UK_uksi_2020_1095 :feed  (for UK_uksi_2020_1095)
+  not_fetched  feed  UK_uksi_2020_115 :feed  (for UK_uksi_2020_115)
+  stale  feed  UK_uksi_2020_1265 :feed  (for UK_uksi_2020_1265)
+  stale  own  UK_uksi_2020_1369 "/uksi/2020/1369/body/data.xml"  (for UK_uksi_2020_1369)
+  stale  feed  UK_uksi_2020_1369 :feed  (for UK_uksi_2020_1369)
+  stale  own  UK_uksi_2020_1444 "/uksi/2020/1444/body/data.xml"  (for UK_uksi_2020_1444)
+  stale  feed  UK_uksi_2020_1444 :feed  (for UK_uksi_2020_1444)
+  stale  own  UK_uksi_2020_1540 "/uksi/2020/1540/body/data.xml"  (for UK_uksi_2020_1540)
+  not_fetched  feed  UK_uksi_2020_1540 :feed  (for UK_uksi_2020_1540)
+  stale  own  UK_uksi_2020_1647 "/uksi/2020/1647/body/data.xml"  (for UK_uksi_2020_1647)
+  stale  feed  UK_uksi_2020_1647 :feed  (for UK_uksi_2020_1647)
+  not_fetched  feed  UK_uksi_2020_208 :feed  (for UK_uksi_2020_208)
+  not_fetched  feed  UK_uksi_2020_268 :feed  (for UK_uksi_2020_268)
+  not_fetched  feed  UK_uksi_2021_1095 :feed  (for UK_uksi_2021_1095)
+  not_fetched  feed  UK_uksi_2021_1362 :feed  (for UK_uksi_2021_1362)
+  not_fetched  feed  UK_uksi_2021_1455 :feed  (for UK_uksi_2021_1455)
+  not_fetched  feed  UK_uksi_2021_189 :feed  (for UK_uksi_2021_189)
+  stale  feed  UK_uksi_2021_484 :feed  (for UK_uksi_2021_484)
+  stale  feed  UK_uksi_2021_511 :feed  (for UK_uksi_2021_511)
+  stale  feed  UK_uksi_2021_534 :feed  (for UK_uksi_2021_534)
+  stale  own  UK_uksi_2021_745 "/uksi/2021/745/body/data.xml"  (for UK_uksi_2021_745)
+  stale  feed  UK_uksi_2021_745 :feed  (for UK_uksi_2021_745)
+  not_fetched  feed  UK_uksi_2022_1163 :feed  (for UK_uksi_2022_1163)
+  not_fetched  feed  UK_uksi_2022_117 :feed  (for UK_uksi_2022_117)
+  not_fetched  feed  UK_uksi_2022_1242 :feed  (for UK_uksi_2022_1242)
+  stale  own  UK_uksi_2022_62 "/uksi/2022/62/body/data.xml"  (for UK_uksi_2022_62)
+  stale  feed  UK_uksi_2022_62 :feed  (for UK_uksi_2022_62)
+  not_fetched  feed  UK_uksi_2022_982 :feed  (for UK_uksi_2022_982)
+  not_fetched  feed  UK_uksi_2023_1025 :feed  (for UK_uksi_2023_1025)
+  not_fetched  feed  UK_uksi_2023_1394 :feed  (for UK_uksi_2023_1394)
+  not_fetched  feed  UK_uksi_2023_577 :feed  (for UK_uksi_2023_577)
+  not_fetched  feed  UK_uksi_2023_850 :feed  (for UK_uksi_2023_850)
+  not_fetched  feed  UK_uksi_2024_1130 :feed  (for UK_uksi_2024_1130)
+  not_fetched  feed  UK_uksi_2024_1332 :feed  (for UK_uksi_2024_1332)
+  not_fetched  feed  UK_uksi_2024_1366 :feed  (for UK_uksi_2024_1366)
+  not_fetched  feed  UK_uksi_2024_174 :feed  (for UK_uksi_2024_174)
+  not_fetched  feed  UK_uksi_2024_509 :feed  (for UK_uksi_2024_509)
+  not_fetched  feed  UK_uksi_2024_903 :feed  (for UK_uksi_2024_903)
+  not_fetched  feed  UK_uksi_2025_100 :feed  (for UK_uksi_2025_100)
+  stale  own  UK_uksi_2025_1073 "/uksi/2025/1073/body/data.xml"  (for UK_uksi_2025_1073)
+  stale  feed  UK_uksi_2025_1073 :feed  (for UK_uksi_2025_1073)
+  not_fetched  feed  UK_uksi_2025_124 :feed  (for UK_uksi_2025_124)
+  not_fetched  feed  UK_uksi_2025_1369 :feed  (for UK_uksi_2025_1369)
+  not_fetched  feed  UK_uksi_2025_287 :feed  (for UK_uksi_2025_287)
+  stale  own  UK_uksi_2025_407 "/uksi/2025/407/body/data.xml"  (for UK_uksi_2025_407)
+  not_fetched  feed  UK_uksi_2025_407 :feed  (for UK_uksi_2025_407)
+  not_fetched  feed  UK_uksi_2025_498 :feed  (for UK_uksi_2025_498)
+  not_fetched  feed  UK_uksi_2025_662 :feed  (for UK_uksi_2025_662)
+  not_fetched  feed  UK_uksi_2025_794 :feed  (for UK_uksi_2025_794)
+  stale  own  UK_uksi_2025_910 "/uksi/2025/910/body/data.xml"  (for UK_uksi_2025_910)
+  stale  feed  UK_uksi_2025_910 :feed  (for UK_uksi_2025_910)
+  not_fetched  feed  UK_uksi_2025_991 :feed  (for UK_uksi_2025_991)
+  stale  own  UK_uksi_2026_392 "/uksi/2026/392/body/data.xml"  (for UK_uksi_2026_392)
+  stale  feed  UK_uksi_2026_392 :feed  (for UK_uksi_2026_392)
+  not_fetched  feed  UK_wsi_2000_1940 :feed  (for UK_wsi_2000_1940)
+  not_fetched  feed  UK_wsi_2000_2959 :feed  (for UK_wsi_2000_2959)
+  not_fetched  feed  UK_wsi_2001_2197 :feed  (for UK_wsi_2001_2197)
+  not_fetched  feed  UK_wsi_2001_2683 :feed  (for UK_wsi_2001_2683)
+  not_fetched  feed  UK_wsi_2001_3709 :feed  (for UK_wsi_2001_3709)
+  not_fetched  feed  UK_wsi_2001_4003 :feed  (for UK_wsi_2001_4003)
+  not_fetched  feed  UK_wsi_2002_1730 :feed  (for UK_wsi_2002_1730)
+  not_fetched  feed  UK_wsi_2002_3183 :feed  (for UK_wsi_2002_3183)
+  not_fetched  feed  UK_wsi_2003_1848 :feed  (for UK_wsi_2003_1848)
+  stale  feed  UK_wsi_2004_1490 :feed  (for UK_wsi_2004_1490)
+  not_fetched  feed  UK_wsi_2004_1606 :feed  (for UK_wsi_2004_1606)
+  stale  feed  UK_wsi_2005_1806 :feed  (for UK_wsi_2005_1806)
+  not_fetched  feed  UK_wsi_2006_2629 :feed  (for UK_wsi_2006_2629)
+  not_fetched  feed  UK_wsi_2007_717 :feed  (for UK_wsi_2007_717)
+  not_fetched  feed  UK_wsi_2010_1433 :feed  (for UK_wsi_2010_1433)
+  stale  feed  UK_wsi_2010_2880 :feed  (for UK_wsi_2010_2880)
+  not_fetched  feed  UK_wsi_2011_1014 :feed  (for UK_wsi_2011_1014)
+  not_fetched  feed  UK_wsi_2011_656 :feed  (for UK_wsi_2011_656)
+  stale  own  UK_wsi_2014_3156 "/wsi/2014/3156/body/data.xml"  (for UK_wsi_2014_3156)
+  stale  feed  UK_wsi_2014_3156 :feed  (for UK_wsi_2014_3156)
+  stale  own  UK_wsi_2016_359 "/wsi/2016/359/body/data.xml"  (for UK_wsi_2016_359)
+  stale  feed  UK_wsi_2016_359 :feed  (for UK_wsi_2016_359)
+  stale  feed  UK_wsi_2017_1041 :feed  (for UK_wsi_2017_1041)
+  not_fetched  feed  UK_wsi_2018_101 :feed  (for UK_wsi_2018_101)
+  not_fetched  feed  UK_wsi_2018_1074 :feed  (for UK_wsi_2018_1074)
+  not_fetched  feed  UK_wsi_2018_1075 :feed  (for UK_wsi_2018_1075)
+  not_fetched  feed  UK_wsi_2018_1077 :feed  (for UK_wsi_2018_1077)
+  not_fetched  feed  UK_wsi_2018_1181 :feed  (for UK_wsi_2018_1181)
+  not_fetched  feed  UK_wsi_2018_1182 :feed  (for UK_wsi_2018_1182)
+  stale  feed  UK_wsi_2018_1216 :feed  (for UK_wsi_2018_1216)
+  not_fetched  feed  UK_wsi_2018_1301 :feed  (for UK_wsi_2018_1301)
+  stale  own  UK_wsi_2018_1302 "/wsi/2018/1302/body/data.xml"  (for UK_wsi_2018_1302)
+  stale  feed  UK_wsi_2018_1302 :feed  (for UK_wsi_2018_1302)
+  not_fetched  feed  UK_wsi_2018_276 :feed  (for UK_wsi_2018_276)
+  stale  feed  UK_wsi_2018_647 :feed  (for UK_wsi_2018_647)
+  stale  feed  UK_wsi_2021_77 :feed  (for UK_wsi_2021_77)
+  stale  feed  UK_wsi_2023_1289 :feed  (for UK_wsi_2023_1289)
+  stale  feed  UK_wsi_2023_1290 :feed  (for UK_wsi_2023_1290)
+
+feeds differing from the register's change statistics: 259
+  UK_anaw_2017_3: effects 164 vs register 301; laws 7 vs 8
+  UK_asc_2024_2: effects 0 vs register 31; laws 0 vs 3
+  UK_asp_2002_3: effects 131 vs register 128; laws 32 vs 31
+  UK_eudn_2001_171: effects 0 vs register 17; laws 0 vs 4
+  UK_eudn_2003_33: effects 0 vs register 53; laws 0 vs 4
+  UK_eudn_2009_292: effects 0 vs register 23; laws 0 vs 3
+  UK_eudn_2009_335: effects 0 vs register 7; laws 0 vs 3
+  UK_eudn_2009_337: effects 0 vs register 22; laws 0 vs 3
+  UK_eudn_2009_359: effects 0 vs register 11; laws 0 vs 3
+  UK_eudn_2009_360: effects 0 vs register 8; laws 0 vs 3
+  UK_eudn_2015_2398: effects 0 vs register 8; laws 0 vs 1
+  UK_eudn_2016_2321: effects 0 vs register 1; laws 0 vs 1
+  UK_eudn_2016_2324: effects 0 vs register 1; laws 0 vs 1
+  UK_eudr_2000_60: effects 0 vs register 15; laws 0 vs 6
+  UK_eudr_2009_16: effects 0 vs register 49; laws 0 vs 4
+  UK_eudr_2009_31: effects 0 vs register 5; laws 0 vs 2
+  UK_eur_2006_1013: effects 368 vs register 359; laws 19 vs 18
+  UK_eur_2007_1418: effects 0 vs register 174; laws 0 vs 11
+  UK_eur_2010_1103: effects 0 vs register 11; laws 0 vs 3
+  UK_eur_2011_333: effects 0 vs register 22; laws 0 vs 3
+  UK_eur_2011_537: effects 0 vs register 2; laws 0 vs 1
+  UK_eur_2011_725: effects 0 vs register 73; laws 0 vs 6
+  UK_eur_2012_1179: effects 0 vs register 20; laws 0 vs 3
+  UK_eur_2012_493: effects 0 vs register 17; laws 0 vs 2
+  UK_eur_2013_1257: effects 0 vs register 87; laws 0 vs 3
+  UK_eur_2013_715: effects 0 vs register 25; laws 0 vs 3
+  UK_eur_2014_1191: effects 0 vs register 15; laws 0 vs 4
+  UK_eur_2014_427: effects 0 vs register 74; laws 0 vs 6
+  UK_eur_2014_517: effects 0 vs register 165; laws 0 vs 6
+  UK_eur_2015_2068: effects 0 vs register 7; laws 0 vs 2
+  UK_eur_2016_879: effects 0 vs register 10; laws 0 vs 2
+  UK_eur_2018_2066: effects 0 vs register 17; laws 0 vs 7
+  UK_eur_2018_2067: effects 0 vs register 214; laws 0 vs 7
+  UK_eur_2018_956: effects 0 vs register 113; laws 0 vs 6
+  UK_eur_2019_1021: effects 0 vs register 202; laws 0 vs 13
+  UK_eur_2019_1242: effects 0 vs register 93; laws 0 vs 3
+  UK_eur_2019_1842: effects 0 vs register 82; laws 0 vs 9
+  UK_eur_2019_631: effects 0 vs register 341; laws 0 vs 8
+  UK_eur_2019_661: effects 0 vs register 21; laws 0 vs 1
+  UK_eur_2020_1079: effects 0 vs register 22; laws 0 vs 1
+  UK_mwa_2010_8: effects 35 vs register 59; laws 8 vs 9
+  UK_nia_2022_31: effects 0 vs register 1; laws 0 vs 1
+  UK_nisi_1973_69: effects 0 vs register 64; laws 0 vs 10
+  UK_nisi_1978_1049: effects 0 vs register 30; laws 0 vs 13
+  UK_nisi_1981_158: effects 0 vs register 8; laws 0 vs 4
+  UK_nisi_1994_1896: effects 0 vs register 30; laws 0 vs 2
+  UK_nisi_1997_2777: effects 0 vs register 19; laws 0 vs 9
+  UK_nisi_1997_2778: effects 0 vs register 283; laws 0 vs 40
+  UK_nisi_1999_662: effects 0 vs register 112; laws 0 vs 19
+  UK_nisi_2006_3336: effects 0 vs register 710; laws 0 vs 47
+  UK_nisi_2007_611: effects 0 vs register 9; laws 0 vs 4
+  UK_nisr_1998_329: effects 0 vs register 1; laws 0 vs 1
+  UK_nisr_1999_362: effects 0 vs register 65; laws 0 vs 23
+  UK_nisr_2000_232: effects 0 vs register 24; laws 0 vs 7
+  UK_nisr_2001_284: effects 0 vs register 2; laws 0 vs 1
+  UK_nisr_2002_271: effects 0 vs register 16; laws 0 vs 8
+  UK_nisr_2002_94: effects 0 vs register 18; laws 0 vs 2
+  UK_nisr_2003_240: effects 0 vs register 1; laws 0 vs 1
+  UK_nisr_2003_319: effects 0 vs register 11; laws 0 vs 3
+  UK_nisr_2003_342: effects 0 vs register 1; laws 0 vs 1
+  UK_nisr_2003_493: effects 0 vs register 369; laws 0 vs 55
+  UK_nisr_2003_496: effects 0 vs register 73; laws 0 vs 15
+  UK_nisr_2004_416: effects 49 vs register 45; laws 8 vs 7
+  UK_nisr_2004_419: effects 0 vs register 1; laws 0 vs 1
+  UK_nisr_2005_300: effects 0 vs register 109; laws 0 vs 12
+  UK_nisr_2006_387: effects 0 vs register 19; laws 0 vs 3
+  UK_nisr_2006_482: effects 0 vs register 5; laws 0 vs 1
+  UK_nisr_2007_187: effects 0 vs register 50; laws 0 vs 3
+  UK_nisr_2007_272: effects 0 vs register 14; laws 0 vs 2
+  UK_nisr_2008_231: effects 0 vs register 24; laws 0 vs 7
+  UK_nisr_2009_195: effects 0 vs register 23; laws 0 vs 5
+  UK_nisr_2009_254: effects 0 vs register 84; laws 0 vs 9
+  UK_nisr_2009_255: effects 0 vs register 56; laws 0 vs 3
+  UK_nisr_2010_151: effects 0 vs register 19; laws 0 vs 3
+  UK_nisr_2010_188: effects 0 vs register 21; laws 0 vs 6
+  UK_nisr_2010_412: effects 0 vs register 12; laws 0 vs 3
+  UK_nisr_2011_127: effects 0 vs register 115; laws 0 vs 10
+  UK_nisr_2011_238: effects 0 vs register 14; laws 0 vs 3
+  UK_nisr_2013_160: effects 0 vs register 344; laws 0 vs 14
+  UK_nisr_2013_4: effects 0 vs register 30; laws 0 vs 5
+  UK_nisr_2015_229: effects 0 vs register 9; laws 0 vs 3
+  UK_nisr_2015_425: effects 0 vs register 65; laws 0 vs 4
+  UK_nisr_2017_211: effects 0 vs register 8; laws 0 vs 2
+  UK_nisr_2017_212: effects 0 vs register 11; laws 0 vs 2
+  UK_nisr_2017_81: effects 0 vs register 21; laws 0 vs 3
+  UK_nisr_2017_85: effects 0 vs register 42; laws 0 vs 3
+  UK_nisr_2017_88: effects 0 vs register 44; laws 0 vs 2
+  UK_nisr_2019_81: effects 0 vs register 39; laws 0 vs 1
+  UK_nisr_2023_212: effects 0 vs register 4; laws 0 vs 2
+  UK_ssi_2000_178: effects 0 vs register 14; laws 0 vs 4
+  UK_ssi_2000_95: effects 57 vs register 55; laws 7 vs 6
+  UK_ssi_2000_97: effects 0 vs register 7; laws 0 vs 2
+  UK_ssi_2001_206: effects 0 vs register 2; laws 0 vs 2
+  UK_ssi_2001_267: effects 0 vs register 1; laws 0 vs 1
+  UK_ssi_2004_289: effects 0 vs register 1; laws 0 vs 1
+  UK_ssi_2004_358: effects 0 vs register 2; laws 0 vs 1
+  UK_ssi_2004_516: effects 0 vs register 17; laws 0 vs 5
+  UK_ssi_2005_157: effects 7 vs register 30; laws 4 vs 5
+  UK_ssi_2006_465: effects 14 vs register 56; laws 2 vs 3
+  UK_ssi_2006_570: effects 0 vs register 3; laws 0 vs 3
+  UK_ssi_2008_170: effects 0 vs register 18; laws 0 vs 5
+  UK_ssi_2008_298: effects 0 vs register 54; laws 0 vs 9
+  UK_ssi_2009_247: effects 0 vs register 8; laws 0 vs 6
+  UK_ssi_2010_426: effects 0 vs register 26; laws 0 vs 3
+  UK_ssi_2013_148: effects 0 vs register 24; laws 0 vs 7
+  UK_ssi_2014_258: effects 8 vs register 24; laws 3 vs 4
+  UK_ssi_2014_3: effects 0 vs register 1; laws 0 vs 1
+  UK_ssi_2014_364: effects 0 vs register 129; laws 0 vs 6
+  UK_ssi_2015_151: effects 0 vs register 1; laws 0 vs 1
+  UK_ssi_2015_3: effects 0 vs register 33; laws 0 vs 5
+  UK_ssi_2015_347: effects 0 vs register 11; laws 0 vs 5
+  UK_ukpga_1974_40: effects 647 vs register 637; laws 324 vs 314
+  UK_ukpga_1975_23: effects 176 vs register 173; laws 27 vs 26
+  UK_ukpga_1983_35: effects 0 vs register 31; laws 0 vs 18
+  UK_ukpga_1989_14: effects 70 vs register 60; laws 22 vs 20
+  UK_ukpga_1989_15: effects 114 vs register 111; laws 62 vs 61
+  UK_ukpga_1991_56: effects 2268 vs register 841; laws 423 vs 70
+  UK_ukpga_1991_57: effects 1120 vs register 887; laws 227 vs 152
+  UK_ukpga_1991_59: effects 0 vs register 394; laws 0 vs 163
+  UK_ukpga_2000_31: effects 0 vs register 11; laws 0 vs 5
+  UK_ukpga_2003_37: effects 477 vs register 476; laws 26 vs 25
+  UK_ukpga_2007_23: effects 0 vs register 4; laws 0 vs 2
+  UK_ukpga_2008_27: effects 74 vs register 73; laws 21 vs 20
+  UK_ukpga_2010_29: effects 430 vs register 428; laws 33 vs 32
+  UK_ukpga_2014_21: effects 390 vs register 389; laws 25 vs 24
+  UK_uksi_1972_438: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_1972_955: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_1973_2166: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_1975_2116: effects 0 vs register 5; laws 0 vs 2
+  UK_uksi_1979_912: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_1982_1669: effects 0 vs register 2; laws 0 vs 1
+  UK_uksi_1983_1018: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_1983_1182: effects 0 vs register 7; laws 0 vs 2
+  UK_uksi_1984_1649: effects 0 vs register 3; laws 0 vs 2
+  UK_uksi_1985_1884: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_1986_1623: effects 0 vs register 2; laws 0 vs 2
+  UK_uksi_1986_1992: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_1989_317: effects 0 vs register 17; laws 0 vs 6
+  UK_uksi_1989_744: effects 0 vs register 8; laws 0 vs 6
+  UK_uksi_1990_119: effects 0 vs register 35; laws 0 vs 4
+  UK_uksi_1990_161: effects 0 vs register 10; laws 0 vs 1
+  UK_uksi_1990_1791: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_1991_111: effects 0 vs register 2; laws 0 vs 2
+  UK_uksi_1991_1325: effects 0 vs register 7; laws 0 vs 5
+  UK_uksi_1991_2892: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_1991_324: effects 0 vs register 31; laws 0 vs 2
+  UK_uksi_1991_346: effects 0 vs register 8; laws 0 vs 3
+  UK_uksi_1992_339: effects 0 vs register 3; laws 0 vs 2
+  UK_uksi_1992_575: effects 0 vs register 21; laws 0 vs 4
+  UK_uksi_1993_1155: effects 0 vs register 13; laws 0 vs 4
+  UK_uksi_1993_1446: effects 0 vs register 11; laws 0 vs 2
+  UK_uksi_1994_1137: effects 0 vs register 7; laws 0 vs 2
+  UK_uksi_1994_2841: effects 0 vs register 59; laws 0 vs 10
+  UK_uksi_1994_2842: effects 0 vs register 70; laws 0 vs 8
+  UK_uksi_1994_3076: effects 0 vs register 18; laws 0 vs 1
+  UK_uksi_1995_288: effects 4 vs register 3; laws 3 vs 2
+  UK_uksi_1995_723: effects 0 vs register 14; laws 0 vs 2
+  UK_uksi_1996_1108: effects 0 vs register 2; laws 0 vs 2
+  UK_uksi_1996_1295: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_1996_1564: effects 0 vs register 27; laws 0 vs 7
+  UK_uksi_1996_2763: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_1996_428: effects 0 vs register 2; laws 0 vs 2
+  UK_uksi_1997_351: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_1998_1165: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_1998_2138: effects 0 vs register 14; laws 0 vs 1
+  UK_uksi_1998_2927: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_1998_3084: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_1999_1515: effects 0 vs register 2; laws 0 vs 2
+  UK_uksi_1999_2170: effects 0 vs register 2; laws 0 vs 2
+  UK_uksi_1999_221: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_2000_1043: effects 55 vs register 54; laws 11 vs 10
+  UK_uksi_2000_1297: effects 0 vs register 11; laws 0 vs 6
+  UK_uksi_2000_227: effects 0 vs register 8; laws 0 vs 3
+  UK_uksi_2000_2911: effects 0 vs register 2; laws 0 vs 2
+  UK_uksi_2000_928: effects 0 vs register 8; laws 0 vs 1
+  UK_uksi_2001_1136: effects 0 vs register 2; laws 0 vs 1
+  UK_uksi_2001_3523: effects 0 vs register 34; laws 0 vs 5
+  UK_uksi_2002_1355: effects 90 vs register 87; laws 7 vs 7
+  UK_uksi_2002_3049: effects 0 vs register 11; laws 0 vs 3
+  UK_uksi_2003_1788: effects 0 vs register 2; laws 0 vs 1
+  UK_uksi_2003_3245: effects 0 vs register 39; laws 0 vs 4
+  UK_uksi_2003_3341: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_2004_3202: effects 0 vs register 118; laws 0 vs 8
+  UK_uksi_2004_3206: effects 0 vs register 23; laws 0 vs 7
+  UK_uksi_2004_639: effects 0 vs register 2; laws 0 vs 2
+  UK_uksi_2004_99: effects 0 vs register 78; laws 0 vs 13
+  UK_uksi_2005_1530: effects 0 vs register 50; laws 0 vs 7
+  UK_uksi_2005_1606: effects 0 vs register 10; laws 0 vs 2
+  UK_uksi_2005_1905: effects 0 vs register 2; laws 0 vs 2
+  UK_uksi_2005_2088: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_2005_2748: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_2005_2903: effects 0 vs register 26; laws 0 vs 4
+  UK_uksi_2005_3172: effects 0 vs register 53; laws 0 vs 4
+  UK_uksi_2005_477: effects 0 vs register 16; laws 0 vs 6
+  UK_uksi_2005_894: effects 184 vs register 181; laws 22 vs 20
+  UK_uksi_2006_2238: effects 0 vs register 40; laws 0 vs 7
+  UK_uksi_2007_1711: effects 0 vs register 115; laws 0 vs 12
+  UK_uksi_2007_3106: effects 29 vs register 28; laws 8 vs 7
+  UK_uksi_2007_3437: effects 0 vs register 2; laws 0 vs 1
+  UK_uksi_2008_2095: effects 0 vs register 10; laws 0 vs 3
+  UK_uksi_2008_2164: effects 38 vs register 28; laws 12 vs 10
+  UK_uksi_2008_594: effects 0 vs register 81; laws 0 vs 2
+  UK_uksi_2009_105: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_2009_1257: effects 21 vs register 17; laws 5 vs 5
+  UK_uksi_2009_890: effects 86 vs register 84; laws 17 vs 16
+  UK_uksi_2010_2617: effects 107 vs register 97; laws 26 vs 25
+  UK_uksi_2010_740: effects 0 vs register 73; laws 0 vs 4
+  UK_uksi_2011_1524: effects 0 vs register 79; laws 0 vs 18
+  UK_uksi_2011_695: effects 0 vs register 14; laws 0 vs 1
+  UK_uksi_2011_988: effects 127 vs register 125; laws 25 vs 23
+  UK_uksi_2012_1715: effects 0 vs register 10; laws 0 vs 6
+  UK_uksi_2012_1976: effects 100 vs register 99; laws 8 vs 7
+  UK_uksi_2012_2079: effects 0 vs register 42; laws 0 vs 4
+  UK_uksi_2012_2999: effects 42 vs register 27; laws 10 vs 9
+  UK_uksi_2012_811: effects 24 vs register 22; laws 10 vs 9
+  UK_uksi_2013_141: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_2013_1582: effects 94 vs register 80; laws 9 vs 7
+  UK_uksi_2013_1675: effects 0 vs register 111; laws 0 vs 14
+  UK_uksi_2013_1677: effects 0 vs register 40; laws 0 vs 2
+  UK_uksi_2013_1896: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_2013_3103: effects 0 vs register 18; laws 0 vs 3
+  UK_uksi_2013_971: effects 116 vs register 114; laws 6 vs 5
+  UK_uksi_2014_2384: effects 0 vs register 74; laws 0 vs 8
+  UK_uksi_2015_1385: effects 0 vs register 3; laws 0 vs 2
+  UK_uksi_2015_1640: effects 51 vs register 50; laws 8 vs 7
+  UK_uksi_2015_1902: effects 0 vs register 32; laws 0 vs 3
+  UK_uksi_2015_310: effects 102 vs register 101; laws 5 vs 4
+  UK_uksi_2015_365: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_2015_426: effects 0 vs register 27; laws 0 vs 1
+  UK_uksi_2015_430: effects 0 vs register 14; laws 0 vs 4
+  UK_uksi_2015_962: effects 25 vs register 24; laws 6 vs 5
+  UK_uksi_2015_969: effects 0 vs register 25; laws 0 vs 2
+  UK_uksi_2017_407: effects 57 vs register 29; laws 6 vs 5
+  UK_uksi_2017_462: effects 0 vs register 4; laws 0 vs 1
+  UK_uksi_2018_1122: effects 0 vs register 8; laws 0 vs 1
+  UK_uksi_2018_129: effects 0 vs register 2; laws 0 vs 2
+  UK_uksi_2018_171: effects 0 vs register 32; laws 0 vs 3
+  UK_uksi_2019_544: effects 0 vs register 1; laws 0 vs 1
+  UK_uksi_2020_1444: effects 2 vs register 0; laws 1 vs 0
+  UK_uksi_2020_208: effects 0 vs register 15; laws 0 vs 1
+  UK_uksi_2021_1095: effects 0 vs register 3; laws 0 vs 2
+  UK_uksi_2022_117: effects 0 vs register 60; laws 0 vs 2
+  UK_uksi_2023_1394: effects 0 vs register 153; laws 0 vs 3
+  UK_uksi_2024_1130: effects 0 vs register 3; laws 0 vs 1
+  UK_uksi_2024_1332: effects 0 vs register 104; laws 0 vs 1
+  UK_uksi_2024_174: effects 0 vs register 73; laws 0 vs 2
+  UK_wsi_2000_1940: effects 0 vs register 9; laws 0 vs 1
+  UK_wsi_2000_2959: effects 0 vs register 7; laws 0 vs 2
+  UK_wsi_2002_3183: effects 0 vs register 4; laws 0 vs 1
+  UK_wsi_2004_1606: effects 0 vs register 1; laws 0 vs 1
+  UK_wsi_2006_2629: effects 0 vs register 30; laws 0 vs 4
+  UK_wsi_2010_1433: effects 0 vs register 14; laws 0 vs 4
+  UK_wsi_2011_1014: effects 0 vs register 23; laws 0 vs 7
+  UK_wsi_2011_656: effects 0 vs register 21; laws 0 vs 4
+  UK_wsi_2018_1074: effects 0 vs register 2; laws 0 vs 1
+  UK_wsi_2018_1182: effects 0 vs register 1; laws 0 vs 1
+  UK_wsi_2018_1216: effects 0 vs register 39; laws 0 vs 1
+  UK_wsi_2018_1301: effects 0 vs register 3; laws 0 vs 1
+  UK_wsi_2021_77: effects 53 vs register 126; laws 6 vs 6
+
+FAIL

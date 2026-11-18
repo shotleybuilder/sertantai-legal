@@ -1,0 +1,62 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+117 laws in scope
+
+needed against held, by category:
+  own: 117 — held 115, stale 2
+  feed: 115 — held 115
+  territory: 225 — held 222, stale 3
+  introduction: 131 — held 131
+  enabling_parent: 18 — absent 1, held 17
+  dates: 69 — absent 8, held 33, not_fetched 24, stale 4
+  backlog: 75 — absent 30, held 36, not_fetched 7, stale 2
+  needed, all categories: 750
+
+failures: 42
+  not_fetched  dates  UK_uksi_1995_1426 :body  (for UK_ukpga_1970_36)
+  not_fetched  dates  UK_uksi_1995_1426 :schedules  (for UK_ukpga_1970_36)
+  not_fetched  dates  UK_uksi_1996_1210 :body  (for UK_ukpga_1970_36)
+  not_fetched  dates  UK_uksi_1996_1210 :schedules  (for UK_ukpga_1970_36)
+  not_fetched  dates  UK_uksi_1997_3107 :body  (for UK_ukpga_1970_36)
+  not_fetched  dates  UK_uksi_1997_3107 :schedules  (for UK_ukpga_1970_36)
+  not_fetched  backlog  UK_ukpga_1992_52 :orders  (for UK_ukpga_1970_36)
+  not_fetched  dates  UK_ukpga_1994_28 :orders  (for UK_ukpga_1974_43)
+  not_fetched  dates  UK_ukpga_1995_22 :orders  (for UK_ukpga_1974_43)
+  not_fetched  dates  UK_nisr_1994_488 :body  (for UK_ukpga_1979_39)
+  not_fetched  dates  UK_nisr_1994_488 :schedules  (for UK_ukpga_1979_39)
+  not_fetched  dates  UK_uksi_1994_3037 :body  (for UK_ukpga_1979_39)
+  not_fetched  dates  UK_uksi_1994_3037 :schedules  (for UK_ukpga_1979_39)
+  not_fetched  dates  UK_uksi_1994_3188 :schedules  (for UK_ukpga_1979_39)
+  not_fetched  dates  UK_uksi_1995_1433 :body  (for UK_ukpga_1979_39)
+  not_fetched  dates  UK_uksi_1995_1433 :schedules  (for UK_ukpga_1979_39)
+  not_fetched  dates  UK_uksi_1995_2835 :body  (for UK_ukpga_1979_39)
+  not_fetched  dates  UK_uksi_1995_2835 :schedules  (for UK_ukpga_1979_39)
+  not_fetched  backlog  UK_uksi_1996_3146 :schedules  (for UK_ukpga_1982_37)
+  not_fetched  dates  UK_ukpga_1995_4 :orders  (for UK_ukpga_1991_52)
+  not_fetched  backlog  UK_uksi_1996_2514 :body  (for UK_ukpga_1991_52)
+  not_fetched  backlog  UK_uksi_1996_2514 :schedules  (for UK_ukpga_1991_52)
+  stale  territory  UK_uksi_1998_1691 :body  (for UK_ukpga_1995_21)
+  stale  territory  UK_uksi_1998_2241 :body  (for UK_ukpga_1995_21)
+  not_fetched  dates  UK_uksi_1996_2022 :schedules  (for UK_ukpga_1995_21)
+  not_fetched  dates  UK_uksi_1997_1623 :schedules  (for UK_ukpga_1995_21)
+  stale  dates  UK_uksi_1997_1082 :body  (for UK_ukpga_1995_21)
+  stale  dates  UK_uksi_1997_1082 :schedules  (for UK_ukpga_1995_21)
+  stale  dates  UK_uksi_1997_1539 :body  (for UK_ukpga_1995_21)
+  stale  dates  UK_uksi_1997_1539 :schedules  (for UK_ukpga_1995_21)
+  not_fetched  dates  UK_uksi_1999_161 :schedules  (for UK_ukpga_1995_21)
+  not_fetched  dates  UK_ukpga_1998_43 :orders  (for UK_ukpga_1995_21)
+  not_fetched  dates  UK_ukpga_2003_44 :orders  (for UK_ukpga_1995_21)
+  not_fetched  dates  UK_ukpga_2026_18 :orders  (for UK_ukpga_1995_21)
+  stale  backlog  UK_uksi_1999_2657 :body  (for UK_ukpga_1995_21)
+  not_fetched  backlog  UK_uksi_1999_2657 :schedules  (for UK_ukpga_1995_21)
+  stale  backlog  UK_uksi_2000_1920 :body  (for UK_ukpga_1995_21)
+  not_fetched  backlog  UK_uksi_2000_1920 :schedules  (for UK_ukpga_1995_21)
+  not_fetched  backlog  UK_uksi_2001_916 :schedules  (for UK_ukpga_1995_21)
+  stale  territory  UK_uksi_2026_260 :body  (for UK_uksi_1995_1802)
+  stale  own  UK_uksi_1998_1691 "/uksi/1998/1691/body/data.xml"  (for UK_uksi_1998_1691)
+  stale  own  UK_uksi_1998_2241 "/uksi/1998/2241/body/data.xml"  (for UK_uksi_1998_2241)
+
+feeds differing from the register's change statistics: 0
+
+FAIL

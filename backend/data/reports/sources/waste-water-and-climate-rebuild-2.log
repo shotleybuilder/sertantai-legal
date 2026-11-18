@@ -1,0 +1,7 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+laws read 3 at once: 12.5 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.6 of 6 cores busy; max 4
+  [1/2] UK_asc_2024_2: 298 changes, 2033 claims (1 s)
+  [2/2] UK_asp_2002_3: 299 changes, 4168 claims (13 s)
+built 2 laws in 13.7 s (3 workers), 0 failed

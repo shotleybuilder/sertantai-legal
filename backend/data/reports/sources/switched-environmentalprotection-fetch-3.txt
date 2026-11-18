@@ -1,0 +1,47 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+122 laws in scope
+
+needed against held, by category:
+  own: 122 — held 122
+  feed: 117 — held 117
+  territory: 548 — absent 1, held 547
+  introduction: 279 — absent 1, held 278
+  enabling_parent: 62 — held 62
+  dates: 495 — absent 170, held 265, not_fetched 60
+  backlog: 259 — absent 94, held 153, not_fetched 10, stale 2
+  royal_assent: 2 — held 2
+  needed, all categories: 1884
+
+failures: 72
+  not_fetched  dates  UK_uksi_1998_2048 :body  (for UK_ukpga_1990_43)
+  not_fetched  dates  UK_uksi_1998_2048 :schedules  (for UK_ukpga_1990_43)
+  not_fetched  dates  UK_uksi_1998_2212 :body  (for UK_ukpga_1990_43)
+  not_fetched  dates  UK_uksi_1998_2212 :schedules  (for UK_ukpga_1990_43)
+  not_fetched  dates  UK_uksi_1998_2459 :body  (for UK_ukpga_1990_43)
+  not_fetched  dates  UK_uksi_1998_2459 :schedules  (for UK_ukpga_1990_43)
+  not_fetched  dates  UK_uksi_1998_2791 :body  (for UK_ukpga_1990_43)
+  not_fetched  dates  UK_uksi_1998_2791 :schedules  (for UK_ukpga_1990_43)
+  not_fetched  dates  UK_uksi_1998_3198 :body  (for UK_ukpga_1990_43)
+  not_fetched  dates  UK_uksi_1998_3198 :schedules  (for UK_ukpga_1990_43)
+  not_fetched  dates  UK_uksi_1999_1016 :schedules  (for UK_ukpga_1990_43)
+  not_fetched  dates  UK_uksi_1999_120 :body  (for UK_ukpga_1990_43)
+  not_fetched  dates  UK_uksi_1999_120 :schedules  (for UK_ukpga_1990_43)
+  not_fetched  dates  UK_uksi_1999_2323 :schedules  (for UK_ukpga_1990_43)
+  not_fetched  dates  UK_uksi_1999_2484 :body  (for UK_ukpga_1990_43)
+  not_fetched  dates  UK_uksi_1999_2484 :schedules  (for UK_ukpga_1990_43)
+  not_fetched  dates  UK_uksi_2001_1195 :body  (for UK_ukpga_1990_43)
+  not_fetched  dates  UK_uksi_2001_1195 :schedules  (for UK_ukpga_1990_43)
+  not_fetched  dates  UK_uksi_2001_2663 :body  (for UK_ukpga_1990_43)
+  not_fetched  dates  UK_uksi_2001_2663 :schedules  (for UK_ukpga_1990_43)
+
+feeds differing from the register's change statistics: 0
+
+FAIL
+
+fetching 72 documents the check failed …
+  20/72
+  40/72
+  60/72
+fetched 72, failed 0

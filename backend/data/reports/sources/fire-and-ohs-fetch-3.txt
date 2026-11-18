@@ -1,0 +1,52 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+139 laws in scope
+
+needed against held, by category:
+  own: 139 — held 139
+  feed: 135 — held 135
+  territory: 406 — held 380, stale 26
+  introduction: 212 — held 212
+  enabling_parent: 32 — held 32
+  dates: 205 — absent 27, held 93, not_fetched 80, stale 5
+  backlog: 360 — absent 66, held 261, not_fetched 33
+  needed, all categories: 1489
+
+failures: 144
+  stale  territory  UK_uksi_2005_2060 :body  (for UK_asp_2005_5)
+  stale  territory  UK_ssi_2025_378 :body  (for UK_asp_2012_8)
+  not_fetched  dates  UK_asp_2017_4 :orders  (for UK_asp_2012_8)
+  stale  territory  UK_eudr_2007_30 :body  (for UK_eudr_1999_92)
+  stale  territory  UK_nisr_2009_248 :body  (for UK_nisr_2006_425)
+  stale  territory  UK_ukpga_1986_12 :body  (for UK_ukpga_1875_17)
+  stale  territory  UK_uksi_1989_615 :body  (for UK_ukpga_1875_17)
+  not_fetched  dates  UK_ssi_2001_482 :body  (for UK_ukpga_1875_17)
+  not_fetched  dates  UK_ssi_2001_482 :schedules  (for UK_ukpga_1875_17)
+  not_fetched  dates  UK_ssi_2002_124 :body  (for UK_ukpga_1875_17)
+  not_fetched  dates  UK_ssi_2002_124 :schedules  (for UK_ukpga_1875_17)
+  not_fetched  dates  UK_uksi_1997_1377 :body  (for UK_ukpga_1875_17)
+  not_fetched  dates  UK_uksi_1997_1377 :schedules  (for UK_ukpga_1875_17)
+  not_fetched  dates  UK_uksi_1997_1696 :body  (for UK_ukpga_1875_17)
+  not_fetched  dates  UK_uksi_1997_1696 :schedules  (for UK_ukpga_1875_17)
+  not_fetched  dates  UK_uksi_1997_1930 :body  (for UK_ukpga_1875_17)
+  not_fetched  dates  UK_uksi_1997_1930 :schedules  (for UK_ukpga_1875_17)
+  not_fetched  dates  UK_uksi_1997_2390 :body  (for UK_ukpga_1875_17)
+  not_fetched  dates  UK_uksi_1997_2390 :schedules  (for UK_ukpga_1875_17)
+  not_fetched  dates  UK_uksi_1998_1542 :schedules  (for UK_ukpga_1875_17)
+
+feeds differing from the register's change statistics: 0
+
+FAIL
+
+fetching 144 documents the check failed …
+  20/144
+  40/144
+  60/144
+  80/144
+  100/144
+  120/144
+  140/144
+fetched 142, failed 2
+  UK_ukpga_1975_59 :orders: {:error, :no_register_title}
+  UK_ukpga_1982_23 :orders: {:error, :no_register_title}

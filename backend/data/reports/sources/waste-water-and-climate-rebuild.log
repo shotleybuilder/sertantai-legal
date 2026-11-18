@@ -1,0 +1,26 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+laws read 3 at once: 12.5 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.7 of 6 cores busy; max 4
+  [1/21] UK_ukpga_2003_37: 1530 changes, 11160 claims (9 s)
+  [2/21] UK_ukpga_2014_21: 1250 changes, 8545 claims (11 s)
+  [3/21] UK_ukpga_2008_27: 989 changes, 5930 claims (2 s)
+  [4/21] UK_ukpga_2010_29: 963 changes, 7664 claims (7 s)
+  [5/21] UK_nisr_2011_127: 576 changes, 4412 claims (1 s)
+  [6/21] UK_ukpga_1974_40: 1761 changes, 17049 claims (24 s)
+  [7/21] UK_asp_2011_9: 426 changes, 3318 claims (12 s)
+  [8/21] UK_uksi_1998_2241: 372 changes, 2517 claims (0 s)
+  [9/21] UK_uksi_2020_1540: 338 changes, 1694 claims (0 s)
+  [10/21] UK_uksi_2000_1043: 292 changes, 2709 claims (0 s)
+  [11/21] UK_uksi_2013_1582: 291 changes, 2272 claims (2 s)
+  [12/21] UK_nia_2011_23: 196 changes, 1626 claims (6 s)
+  [13/21] UK_asp_2013_5: 120 changes, 1315 claims (0 s)
+  [14/21] UK_ukpga_1993_40: 101 changes, 624 claims (0 s)
+  [15/21] UK_asp_2019_15: 63 changes, 524 claims (0 s)
+  [16/21] UK_uksi_1985_1884: 58 changes, 302 claims (0 s)
+  [17/21] UK_uksi_1998_1691: 39 changes, 243 claims (0 s)
+  [18/21] UK_ukpga_1973_37: 25 changes, 169 claims (0 s)
+  [19/21] UK_ukpga_1968_62: 21 changes, 189 claims (0 s)
+  [20/21] UK_ukpga_1989_15: 499 changes, 3915 claims (37 s)
+  [21/21] UK_nisi_2006_3336: 1075 changes, 12038 claims (149 s)
+built 21 laws in 158.9 s (3 workers), 0 failed

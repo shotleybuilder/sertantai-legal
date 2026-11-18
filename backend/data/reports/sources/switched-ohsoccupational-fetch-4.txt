@@ -1,0 +1,33 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+149 laws in scope
+
+needed against held, by category:
+  own: 149 — held 149
+  feed: 147 — held 147
+  territory: 449 — absent 1, held 448
+  introduction: 286 — absent 1, held 285
+  enabling_parent: 30 — held 30
+  dates: 164 — absent 61, held 102, stale 1
+  backlog: 322 — absent 89, held 224, stale 9
+  needed, all categories: 1547
+
+failures: 10
+  stale  backlog  UK_uksi_1973_28 :body  (for UK_ukpga_1961_34)
+  stale  backlog  UK_uksi_1974_1439 :body  (for UK_ukpga_1972_28)
+  stale  backlog  UK_uksi_1975_1364 :body  (for UK_ukpga_1972_28)
+  stale  backlog  UK_uksi_1975_344 :body  (for UK_ukpga_1972_28)
+  stale  backlog  UK_uksi_1977_294 :body  (for UK_ukpga_1972_28)
+  stale  backlog  UK_uksi_1980_208 :body  (for UK_ukpga_1972_28)
+  stale  backlog  UK_uksi_1980_269 :body  (for UK_ukpga_1972_28)
+  stale  dates  UK_ukpga_1997_42 :feed  (for UK_ukpga_1974_37)
+  stale  backlog  UK_ukpga_1982_30 :feed  (for UK_ukpga_1974_37)
+  stale  backlog  UK_ukpga_1998_8 :feed  (for UK_uksi_1996_1513)
+
+feeds differing from the register's change statistics: 0
+
+FAIL
+
+fetching 10 documents the check failed …
+fetched 10, failed 0

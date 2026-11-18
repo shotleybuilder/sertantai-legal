@@ -1,0 +1,47 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+149 laws in scope
+
+needed against held, by category:
+  own: 149 — held 149
+  feed: 147 — held 147
+  territory: 449 — absent 1, held 429, stale 19
+  introduction: 286 — absent 1, held 285
+  enabling_parent: 30 — held 30
+  dates: 164 — absent 33, held 76, not_fetched 55
+  backlog: 302 — absent 80, held 213, not_fetched 6, stale 3
+  needed, all categories: 1527
+
+failures: 83
+  stale  territory  UK_ukpga_2001_10 :body  (for UK_apni_1957_25)
+  stale  territory  UK_eudr_2014_27 :body  (for UK_eudr_1992_85)
+  stale  territory  UK_uksi_2026_849 :body  (for UK_eur_2006_1907)
+  stale  territory  UK_uksi_2021_904 :body  (for UK_eur_2006_1907)
+  stale  territory  UK_eur_2011_286 :body  (for UK_eur_2008_1272)
+  stale  territory  UK_eur_2013_487 :body  (for UK_eur_2008_1272)
+  stale  territory  UK_eur_2016_918 :body  (for UK_eur_2008_1272)
+  stale  territory  UK_eur_2014_1297 :body  (for UK_eur_2008_1272)
+  stale  territory  UK_ukpga_1986_48 :body  (for UK_ukpga_1961_34)
+  stale  territory  UK_uksi_1974_1941 :body  (for UK_ukpga_1961_34)
+  stale  territory  UK_uksi_1976_2004 :body  (for UK_ukpga_1961_34)
+  stale  territory  UK_uksi_1983_978 :body  (for UK_ukpga_1961_34)
+  not_fetched  dates  UK_uksi_1996_3146 :schedules  (for UK_ukpga_1961_34)
+  not_fetched  backlog  UK_uksi_1973_28 :schedules  (for UK_ukpga_1961_34)
+  stale  territory  UK_uksi_1989_1903 :body  (for UK_ukpga_1963_41)
+  not_fetched  dates  UK_ssi_2001_81 :body  (for UK_ukpga_1963_41)
+  not_fetched  dates  UK_ssi_2001_81 :schedules  (for UK_ukpga_1963_41)
+  not_fetched  dates  UK_ssi_2002_172 :body  (for UK_ukpga_1963_41)
+  not_fetched  dates  UK_ssi_2002_172 :schedules  (for UK_ukpga_1963_41)
+  not_fetched  dates  UK_ssi_2002_189 :body  (for UK_ukpga_1963_41)
+
+feeds differing from the register's change statistics: 0
+
+FAIL
+
+fetching 83 documents the check failed …
+  20/83
+  40/83
+  60/83
+  80/83
+fetched 83, failed 0
