@@ -18,7 +18,12 @@ defmodule SertantaiLegal.Scraper.Sources do
      powers' `:enabling_parent` Acts (body)
   4. `:dates` — gap A, a change the feed records with no date: an amending
      Act's own feed and the orders it names commencing the provisions that
-     made those changes (an SI commences itself in its body, held under 3)
+     made those changes (an SI commences itself in its body, held under 3);
+     where its feed names none and the Act's own clause leaves provisions to
+     orders (its stored commencement rules), every order on its order list,
+     or the list itself (`:orders`) where it was never searched; an Act
+     dating every provision itself needs none
+     (amending-act-orders-not-held: the Water Industry (Scotland) Act 2002)
   5. `:backlog` — gap B, a change the feed doesn't record: the amending
      law's schedules too (the instruction itself), and for an Act, as in 4
   6. `:royal_assent` — an Act (the law, or an amending Act) whose Royal
@@ -64,9 +69,11 @@ defmodule SertantaiLegal.Scraper.Sources do
   (`scope` its document paths; `amenders` its amending laws; `gaps` the
   changes the feed leaves undated (`:a`) or doesn't record (`:b`), each with
   its amending law and the amending provisions named). `amending`: per
-  amending law, `%{clause, enabling, commencing}` — whether it states its
-  extent, an SI's enabling-power parents, and an Act's commencing orders
-  from its own feed (`%{order, provisions}`).
+  amending law, `%{clause, enabling, commencing, orders, by_order}` —
+  whether it states its extent, an SI's enabling-power parents, an Act's
+  commencing orders from its own feed (`%{order, provisions}`), its order
+  list (nil: never searched), and whether its own clause leaves provisions
+  to orders (nil: not read).
   """
   @spec needs(map(), %{String.t() => map()}) :: [need()]
   def needs(%{law: law} = l, amending) do
@@ -100,24 +107,46 @@ defmodule SertantaiLegal.Scraper.Sources do
   end
 
   # an amending Act's own feed, and the orders it names commencing the
-  # provisions that made the changes (every order, where none is named)
+  # provisions that made the changes (every order, where none is named);
+  # where its feed names none and its own clause leaves provisions to
+  # orders, every order on its order list (Decision 1 b, Waste, Water and
+  # Climate: Sources); an Act whose clause is unread needs its list only
   defp commencing(gaps, amending) do
     gaps
     |> Enum.filter(&act?(&1.by))
     |> Enum.group_by(& &1.by, & &1.provisions)
     |> Enum.flat_map(fn {act, provisions} ->
-      provisions = List.flatten(provisions)
-
-      orders =
-        for %{order: o, provisions: ps} <- get_in(amending, [act, :commencing]) || [],
-            provisions == [] or ps == [] or related?(ps, provisions),
-            uniq: true,
-            do: o
-
-      [{act, :feed} | for(o <- orders, p <- [:body, :schedules], do: {o, p})]
+      [{act, :feed} | act_orders(act, List.flatten(provisions), amending[act] || %{})]
     end)
     |> Enum.uniq()
   end
+
+  defp act_orders(act, provisions, facts) do
+    named =
+      for %{order: o, provisions: ps} <- Map.get(facts, :commencing, []),
+          provisions == [] or ps == [] or related?(ps, provisions),
+          uniq: true,
+          do: o
+
+    case {named, Map.get(facts, :by_order), Map.get(facts, :orders)} do
+      {[_ | _], _, _} -> order_docs(named)
+      {[], false, _} -> []
+      {[], _, nil} -> [{act, :orders}]
+      {[], true, listed} -> order_docs(listed)
+      {[], nil, _listed} -> []
+    end
+  end
+
+  defp order_docs(orders), do: for(o <- orders, p <- [:body, :schedules], do: {o, p})
+
+  @doc """
+  An Act's order list's status (`Commencement.Orders.cached/1`): held once
+  searched, an empty list too; never searched, not fetched (`--fetch`
+  searches it: `Orders.for_act/4`).
+  """
+  @spec order_list_status([String.t()] | nil) :: status()
+  def order_list_status(nil), do: :not_fetched
+  def order_list_status(orders) when is_list(orders), do: :held
 
   # an Act whose Royal Assent is held nowhere: its introduction states it
   defp royal_assent(l, amenders, amending) do

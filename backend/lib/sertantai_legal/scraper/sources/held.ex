@@ -9,6 +9,7 @@ defmodule SertantaiLegal.Scraper.Sources.Held do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.{EffectKind, LatScope, Sources}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Store
+  alias SertantaiLegal.Scraper.Commencement.Orders
   alias SertantaiLegal.Scraper.EnactedBy.EnablingCache
   alias SertantaiLegal.Scraper.LawStart.Input
   alias SertantaiLegal.Scraper.LegislationGovUk.{ChangesFeed, ClmlStore}
@@ -40,7 +41,9 @@ defmodule SertantaiLegal.Scraper.Sources.Held do
   One amending law: whether it states its extent (`clauses`, its extent
   rules), an SI's enabling-power parents (the cache, never fetched), an
   Act's commencing orders with the provisions each commences (its own feed,
-  store only), and whether its made or Royal Assent date is held (the
+  store only), its order list (`Orders.cached/1`, never searched here),
+  whether its own clause leaves provisions to orders (`by_order/1`), and
+  whether its made or Royal Assent date is held (the
   register or its stored metadata: `LawStart.Input.stated_made/1`).
   """
   @spec amending(String.t(), %{String.t() => map()}) :: map()
@@ -49,8 +52,30 @@ defmodule SertantaiLegal.Scraper.Sources.Held do
       clause: Sources.clause?(clauses, law),
       enabling: enabling(law),
       commencing: law |> feed() |> ok_or([]) |> Sources.commencing_orders(law),
+      orders: Orders.cached(law),
+      by_order: by_order(law),
       dated: Input.stated_made(law) != nil
     }
+  end
+
+  @doc """
+  Whether `act`'s own clause leaves provisions to orders, from the
+  Commencement reader's stored rules (`commencement_rules`, the Act as
+  source): true with a `by_order` or `provision_by_order` rule, false when
+  its clause is read and dates them all itself, nil when no own-clause rule
+  is stored (Decision 1 b, Waste, Water and Climate: Sources).
+  """
+  @spec by_order(String.t()) :: boolean() | nil
+  def by_order(act) do
+    Repo.query!(
+      """
+      SELECT bool_or(treatment IN ('by_order', 'provision_by_order'))
+      FROM commencement_rules WHERE source_law = $1 AND treatment <> 'feed_commencement'
+      """,
+      [act]
+    ).rows
+    |> List.flatten()
+    |> List.first()
   end
 
   @doc "Each law's register validity date and when its record last updated."
@@ -78,6 +103,9 @@ defmodule SertantaiLegal.Scraper.Sources.Held do
   @spec status(Sources.need(), map()) :: Sources.status()
   def status(%{part: :introduction, law: law}, _valid),
     do: Sources.introduction_status(EnablingCache.cached(law), stored_introduction(law))
+
+  def status(%{part: :orders, law: law}, _valid),
+    do: law |> Orders.cached() |> Sources.order_list_status()
 
   def status(%{part: :feed, law: law}, _valid) do
     [_, type, year, number] = String.split(law, "_", parts: 4)

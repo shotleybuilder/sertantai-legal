@@ -104,6 +104,78 @@ defmodule SertantaiLegal.Scraper.SourcesTest do
            ]
   end
 
+  # Fire and OH&S: Labels side by side (2026-11-17): the Water Industry
+  # (Scotland) Act 2002's own feed names no order commencing it, so its
+  # changes to EPA 1990 s.53 stayed undated (amending-act-orders-not-held).
+  # Its own clause leaves "the rest" to orders; an Act dating its provisions
+  # itself needs none (Decision 1 b, Waste, Water and Climate: Sources)
+  describe "gap A or B: an Act whose feed names no order for the provisions (amending-act-orders-not-held)" do
+    @asp %{law: "UK_ukpga_1990_43", scope: [], amenders: ["UK_asp_2002_3"], gaps: []}
+    @listed ["UK_ssi_2002_118", "UK_ssi_2004_530"]
+
+    # `by_order`: its own clause leaves provisions to orders (true), dates
+    # them all itself (false), or is not read yet (nil)
+    defp asp(gap, orders, by_order),
+      do:
+        {%{@asp | gaps: [%{by: "UK_asp_2002_3", gap: gap, provisions: ["sch.7.para.21"]}]},
+         %{
+           "UK_asp_2002_3" => %{clause: true, commencing: [], orders: orders, by_order: by_order}
+         }}
+
+    test "its clause leaves provisions to orders: every order on its list, with its schedules" do
+      {law, amending} = asp(:a, @listed, true)
+
+      assert Enum.sort(by(Sources.needs(law, amending))[:dates]) == [
+               {"UK_asp_2002_3", :feed},
+               {"UK_ssi_2002_118", :body},
+               {"UK_ssi_2002_118", :schedules},
+               {"UK_ssi_2004_530", :body},
+               {"UK_ssi_2004_530", :schedules}
+             ]
+    end
+
+    test "its clause leaves provisions to orders and no list is held: the list, searched at --fetch" do
+      {law, amending} = asp(:b, nil, true)
+      assert {"UK_asp_2002_3", :orders} in by(Sources.needs(law, amending))[:backlog]
+    end
+
+    test "its clause dates every provision itself: no order" do
+      {law, amending} = asp(:a, @listed, false)
+      assert by(Sources.needs(law, amending))[:dates] == [{"UK_asp_2002_3", :feed}]
+    end
+
+    test "its clause not read yet: the list only, never its orders" do
+      {law, amending} = asp(:a, nil, nil)
+
+      assert Enum.sort(by(Sources.needs(law, amending))[:dates]) ==
+               [{"UK_asp_2002_3", :feed}, {"UK_asp_2002_3", :orders}]
+
+      {law, amending} = asp(:a, @listed, nil)
+      assert by(Sources.needs(law, amending))[:dates] == [{"UK_asp_2002_3", :feed}]
+    end
+
+    test "a feed naming an order for the provisions: that order only, never the list" do
+      {law, amending} = asp(:a, @listed, true)
+
+      amending =
+        put_in(amending, ["UK_asp_2002_3", :commencing], [
+          %{order: "UK_ssi_2004_530", provisions: ["sch.7.para.21"]}
+        ])
+
+      assert Enum.sort(by(Sources.needs(law, amending))[:dates]) == [
+               {"UK_asp_2002_3", :feed},
+               {"UK_ssi_2004_530", :body},
+               {"UK_ssi_2004_530", :schedules}
+             ]
+    end
+
+    test "order_list_status/1: held once searched (an empty list too), else not fetched" do
+      assert Sources.order_list_status(["UK_ssi_2002_118"]) == :held
+      assert Sources.order_list_status([]) == :held
+      assert Sources.order_list_status(nil) == :not_fetched
+    end
+  end
+
   test "no gap, no need beyond the body: a feed-dated change's law needs no schedules or orders" do
     l = %{@law | gaps: []}
     b = by(Sources.needs(l, @amending))

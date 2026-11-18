@@ -26,6 +26,8 @@ defmodule Mix.Tasks.Lat.Sources do
   alias SertantaiLegal.Scraper.ChangeVocabulary.Gate.Step
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source, as: Scope
+  alias SertantaiLegal.Repo
+  alias SertantaiLegal.Scraper.Commencement.Orders
   alias SertantaiLegal.Scraper.Sources
   alias SertantaiLegal.Scraper.Sources.Held
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.Store, as: ExtentStore
@@ -95,6 +97,22 @@ defmodule Mix.Tasks.Lat.Sources do
   defp fetch_one(%{part: :introduction, law: law}) do
     EnablingCache.get(law, retry_empty: true)
     if EnablingCache.cached(law) != :none, do: :ok, else: :failed
+  end
+
+  # an amending Act's order list: legislation.gov.uk's title search
+  # (amending-act-orders-not-held); its orders are needed at the next gate
+  defp fetch_one(%{part: :orders, law: law}) do
+    [_, _, year, _] = String.split(law, "_", parts: 4)
+    title = Repo.query!("SELECT title_en FROM uk_lrt WHERE name = $1 LIMIT 1", [law]).rows
+
+    case title do
+      [[t]] when is_binary(t) ->
+        Orders.for_act(law, Orders.act_title(t, year), year)
+        :ok
+
+      _ ->
+        {:error, :no_register_title}
+    end
   end
 
   defp fetch_one(%{part: :feed, law: law, status: status}) do
