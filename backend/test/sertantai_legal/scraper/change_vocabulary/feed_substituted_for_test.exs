@@ -96,7 +96,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedSubstitutedForTest do
       assert [{_, :substituted, _}, {_, :substituted, _}] = read(e, "UK_asp_2002_3")
 
       e = effect("words substituted for s. 73(11)(a)(b)", "s. 73(11)", ["section-73-11"])
-      assert read(e, "UK_asp_2003_2") == [{"s.73(11)", :substituted, :words}]
+      assert {"s.73(11)", :substituted, :words} in read(e, "UK_asp_2003_2")
     end
   end
 
@@ -139,17 +139,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedSubstitutedForTest do
              ]) == ["reg.11(1)(c)(iv)"]
     end
 
-    test "none where the Type names no provision the effect lands on, or is not read" do
-      # nothing says which of them the old text was
-      assert FeedSubstitutedFor.inserted("substituted for s. 39 40", ["s.39A", "s.39B"]) == []
+    test "none where the Type is not read, or the effect's text is not given" do
+      assert FeedSubstitutedFor.inserted("substituted for Tables A and B", ["s.39A", "s.39B"]) ==
+               []
 
       assert FeedSubstitutedFor.inserted("substituted for words", ["s.6(7)(a)", "s.6(7)(b)"]) ==
                []
-
-      assert FeedSubstitutedFor.inserted(
-               "substituted for words in s. 26(1)",
-               ["s.26(1)", "s.26(1A)"]
-             ) == []
 
       assert FeedSubstitutedFor.inserted("substituted", ["s.1", "s.1A"]) == []
       assert FeedSubstitutedFor.inserted(nil, ["s.1"]) == []

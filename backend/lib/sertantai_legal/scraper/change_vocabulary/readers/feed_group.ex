@@ -3,7 +3,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.FeedGroup do
   A Part, Chapter or Title the changes feed names, as our rows name it
   when the feed spells its number otherwise than the text — Roman for
   Arabic (`part-7`, the text's `part-VII`: SI 1997/2962) or another letter
-  case (`part-10A`, the text's `part-10a`: SI 2014/1613). Pure.
+  case (`part-10A`, the text's `part-10a`: SI 2014/1613), or names by its
+  heading (`part-3-heading`, the text's `part-III`: SI 2001/838). Pure.
   """
 
   @kinds ~w(part chapter title)
@@ -36,9 +37,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.FeedGroup do
   defp pick(_none_or_shared), do: nil
 
   # "title-I-chapter-2" → [["title", "I"], ["chapter", "2"]]; nil unless
-  # every segment pairs a group kind with its number
+  # every segment pairs a group kind with its number (a group's heading,
+  # "part-3-heading", is the group's)
   defp pairs(id) do
-    pairs = id |> String.split("-") |> Enum.chunk_every(2)
+    pairs =
+      id |> String.replace_suffix("-heading", "") |> String.split("-") |> Enum.chunk_every(2)
 
     if Enum.all?(pairs, &match?([kind, _] when kind in @kinds, &1)), do: pairs
   end

@@ -69,6 +69,59 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.PlacementTest do
              {:unplaced, :refs_not_converted}
   end
 
+  test "a Chapter the text doesn't hold, linked with its Part: the Part is its path (WIA 1991 \"Pt. 3 Ch. 2B\")" do
+    held = Map.put(@held, :groups, ["part-III", "part-III-chapter-2A"])
+    e = effect("Pt. 3 Ch. 2B", ["part-III", "part-III-chapter-2B"])
+
+    assert Placement.classify(e, ["?"], held) == {:unplaced, :not_in_text}
+
+    # one the text holds, unconverted, stays our fault
+    e = effect("Pt. 3 Ch. 2A", ["part-III", "part-III-chapter-2A"])
+    assert Placement.classify(e, ["?"], held) == {:unplaced, :refs_not_converted}
+  end
+
+  test "a cross-heading no row holds: in the text, the row is missing; else not in text (1975 c.23 \"s. 12A and cross-heading\")" do
+    held =
+      Map.put(@held, :headings, ["crossheading-flooding", "part-2-crossheading-regulations-etc"])
+
+    assert Placement.classify(
+             effect("s. 12A and cross-heading", ["crossheading-flooding"]),
+             ["?"],
+             held
+           ) ==
+             {:unplaced, :row_missing}
+
+    assert Placement.classify(
+             effect("s. 21 heading", ["part-2-crossheading-regulations-etc"]),
+             ["?"],
+             held
+           ) ==
+             {:unplaced, :row_missing}
+
+    assert Placement.classify(effect("s. 9 cross-heading", ["crossheading-gone"]), ["?"], held) ==
+             {:unplaced, :not_in_text}
+
+    # without the text's cross-headings, nothing is presumed
+    assert Placement.classify(
+             effect("s. 12A and cross-heading", ["crossheading-flooding"]),
+             ["?"],
+             @held
+           ) ==
+             {:unplaced, :refs_not_converted}
+  end
+
+  test "an EU Annex or Appendix as a whole: the schedules' limit (Decision 2003/33 \"Annex s. 2.2.1\")" do
+    assert Placement.classify(
+             effect("Annex s. 2.2.1", ["annex", "annex-section-2.2.1"]),
+             ["annex"],
+             @held
+           ) ==
+             {:unplaced, :schedule_not_parsed}
+
+    assert Placement.classify(effect("Appendix B", ["appendix-B"]), ["appendix.B"], @held) ==
+             {:unplaced, :schedule_not_parsed}
+  end
+
   test "gone from the current text; in the text but no row and no held ancestor: the parse's tell-tale (#182)" do
     assert Placement.classify(effect("reg. 5A"), ["reg.5A"], @held) == {:unplaced, :not_in_text}
     assert Placement.classify(effect("reg. 4"), ["reg.4"], @held) == {:unplaced, :row_missing}

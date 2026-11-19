@@ -53,12 +53,6 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedAffectingRangeTest do
       assert FeedAffecting.refs("art. 9-4") == ["reg.9", "reg.4"]
     end
 
-    test "a kind in the plural with no range stays unread (a list, not this class)" do
-      assert FeedAffecting.refs("regs. 3 5") == []
-      assert FeedAffecting.refs("s. 50(2) Sch. 6 paras. 2(4) 7") == ["s.50(2)", "sch.6"]
-      assert FeedAffecting.refs("s. 79 Sch. 7 paras. 31 32-35") == ["s.79", "sch.7"]
-    end
-
     test "an \"(adding …)\" tail names the provisions it adds to another law, never the affecting law's" do
       assert FeedAffecting.refs("s. 57(adding1990 c 43 s 78A-78YC)") == ["s.57"]
 

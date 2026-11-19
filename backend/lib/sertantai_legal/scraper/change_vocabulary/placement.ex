@@ -17,9 +17,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
     with no id of its own (a definition in a list), or a ref the feed
     states loosely; the markup places it;
   - `{:unplaced, reason}`:
-    - `:schedule_not_parsed` — in a schedule (or an EU annex, the same
-      role); schedules are not parsed into LAT (a known limit for v0.1,
-      Jason 2026-10-22);
+    - `:schedule_not_parsed` — in a schedule (or an EU annex or appendix,
+      the same role); schedules are not parsed into LAT (a known limit for
+      v0.1, Jason 2026-10-22);
     - `:not_a_provision` — the feed names no provision ("specified amended
       provision(s)", "C/O");
     - `:ref_ambiguous` — the feed's ref names a part found under several
@@ -27,11 +27,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
       own;
     - `:not_in_text` — not in the current text (gone, or not yet applied),
       including a Part, Chapter or Title the text's group ids (`groups`,
-      when given) don't hold;
+      when given) don't hold, and a cross-heading its cross-heading ids
+      (`headings`, when given) don't;
     - `:refs_not_converted` — refs given, none converted (the reader's
       fault);
     - `:row_missing` — in the text, but no row of its own nor any held
-      ancestor: the LAT parse's tell-tale (#182; raised, not fixed).
+      ancestor: the LAT parse's tell-tale (#182; raised, not fixed); a
+      cross-heading in the text (`headings`) that no row holds likewise.
 
   Pure.
   """
@@ -73,8 +75,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
 
   # refs the reader named no provision from
   defp unconverted(effect, held) do
-    # an element id joins a kind and a number ("annex-XVII", "part-4")
-    refs = Enum.filter(List.wrap(effect.affected_refs), &(&1 =~ ~r/[-\d]/))
+    refs = named(effect.affected_refs)
 
     cond do
       refs == [] ->
@@ -83,12 +84,29 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
       Enum.all?(refs, &ambiguous?(&1, Map.get(held, :xml_ids, %{}))) ->
         {:unplaced, :ref_ambiguous}
 
-      Enum.all?(refs, &group_not_in_text?(&1, held)) ->
+      Enum.all?(refs, &gone?(&1, held)) ->
         {:unplaced, :not_in_text}
+
+      # a cross-heading in the text that no row holds (a law held in part)
+      Enum.all?(refs, &(heading_in_text?(&1, held) == true)) ->
+        {:unplaced, :row_missing}
 
       true ->
         {:unplaced, :refs_not_converted}
     end
+  end
+
+  # a group or a cross-heading the text doesn't hold
+  defp gone?(ref, held),
+    do: group_not_in_text?(ref, held) or heading_in_text?(ref, held) == false
+
+  # the refs that name an element — an id joins a kind and a number
+  # ("annex-XVII", "part-4") — less each one another extends: a path linked
+  # in pieces ("Pt. 3" part-III, "Ch. 2B" part-III-chapter-2B) names its
+  # last piece, as the reader takes it
+  defp named(refs) do
+    ids = Enum.filter(List.wrap(refs), &(&1 =~ ~r/[-\d]/))
+    Enum.reject(ids, fn r -> Enum.any?(ids, &String.starts_with?(&1, r <> "-")) end)
   end
 
   # on rows we hold, else in a schedule we don't parse, else in the text
@@ -209,9 +227,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Placement do
 
   defp group_not_in_text?(_ref, _held), do: false
 
+  # a cross-heading's id ("crossheading-flooding",
+  # "part-2-crossheading-regulations-etc"): whether the text (its
+  # cross-heading ids, when given) holds it; nil for any other ref, or
+  # when the text's aren't given
+  defp heading_in_text?(ref, %{headings: headings}),
+    do: if(ref =~ ~r/(?:^|-)crossheading-/, do: ref in headings)
+
+  defp heading_in_text?(_ref, _held), do: nil
+
   # a schedule, or an EU annex (the same role, the same limit)
   defp schedule?(target),
-    do: String.starts_with?(target, "sch.") or String.starts_with?(target, "annex.")
+    do: target == "annex" or String.starts_with?(target, ["sch.", "annex.", "appendix."])
 
   @doc """
   The effects the law's text marks as made: the effect id in a change

@@ -33,10 +33,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.{
     FeedAffecting,
+    FeedAnnex,
     FeedGroup,
     FeedMaker,
+    FeedParagraph,
+    FeedPart,
     FeedRange,
-    FeedSubstitutedFor
+    FeedSubstitutedFor,
+    FeedSubstitutedRemoved
   }
 
   alias SertantaiLegal.Scraper.Commencement.{Evaluator, Order}
@@ -92,10 +96,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
 
     for %Effect{effect_id: id} = e <- effects,
         id != nil,
-        {target, ranged?, fresh?} <- placed(e, law_name, flat, xml_ids, inserted),
+        {target, ranged?, beside} <- placed(e, law_name, flat, xml_ids, inserted),
         {target, unheld} = finer(target, e, law_name, held),
         {key, claims} <- changes(e, own),
-        claims = inserted_beside(claims, fresh?, id),
+        claims = claims |> held_table(e, target, held) |> beside(beside, key, id),
+        claims != nil,
         # the record's own law and amending provision: the effect's, or for
         # the record of its earlier maker (`key#made`) the maker's
         by = FeedMaker.effect(key, e),
@@ -124,27 +129,48 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   defp amended(%{} = amended), do: {amended[:title], amended[:parts]}
   defp amended(title), do: {title, nil}
 
-  # the effect's targets, each with whether a range reached it and whether
-  # it is new beside what the Type says was substituted for ("substituted
-  # for Art. 15(1)" over "Art. 15(1)(1A)": (1A), `FeedSubstitutedFor`)
-  defp placed(%Effect{type: type} = e, law, flat, xml_ids, inserted) do
+  # the effect's targets, each with whether a range reached it and where
+  # it stands beside what the Type says was substituted for: `:new`, under
+  # a number the Type does not name ("substituted for Art. 15(1)" over
+  # "Art. 15(1)(1A)": (1A), `FeedSubstitutedFor`); then the provisions the
+  # Type names that the effect does not land on, `:gone` ("s. 21(8)(a) (b)"
+  # "substituted for s. 21(8)(a)-(c)": (c), `FeedSubstitutedRemoved`)
+  defp placed(%Effect{type: type, affected_provisions: text} = e, law, flat, xml_ids, inserted) do
     targets = targets(e, law, flat, xml_ids, inserted)
-    fresh = FeedSubstitutedFor.inserted(type, Enum.map(targets, &elem(&1, 0)))
+    refs = Enum.map(targets, &elem(&1, 0))
+    fresh = FeedSubstitutedFor.inserted(type, refs, text)
 
-    for {target, ranged?} <- targets, do: {target, ranged?, target in fresh}
+    for({target, ranged?} <- targets, do: {target, ranged?, if(target in fresh, do: :new)}) ++
+      for(target <- gone(e, refs), do: {target, false, :gone})
+  end
+
+  defp gone(%Effect{type: type, affected_provisions: text} = e, refs) do
+    if operation(e) == :substituted,
+      do: FeedSubstitutedRemoved.removed(type, text, refs, level(e)),
+      else: []
   end
 
   # a provision new beside the one substituted for is inserted, where the
-  # effect substitutes whole provisions
-  defp inserted_beside(claims, false, _id), do: claims
+  # effect substitutes whole provisions; one the new text took the place
+  # of, and no target, is removed by the effect's own record (never its
+  # earlier maker's)
+  defp beside(claims, nil, _key, _id), do: claims
 
-  defp inserted_beside(claims, true, id) do
+  defp beside(claims, :new, _key, id) do
     if value(claims, :operation) == :substituted and value(claims, :level) == :provision,
-      do:
-        Enum.reject(claims, &(&1.source == :feed and &1.attribute == :operation)) ++
-          Claim.new(:feed, :operation, :inserted, id),
+      do: operated(claims, :inserted, id),
       else: claims
   end
+
+  defp beside(claims, :gone, key, id) do
+    if value(claims, :operation) == :substituted and not String.ends_with?(key, "#made"),
+      do: claims |> operated(:repealed, id) |> relevel(:provision, id)
+  end
+
+  defp operated(claims, operation, id),
+    do:
+      Enum.reject(claims, &(&1.source == :feed and &1.attribute == :operation)) ++
+        Claim.new(:feed, :operation, operation, id)
 
   @eu ~w(eur eudr eudn)
 
@@ -189,11 +215,28 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   end
 
   defp part_of(claims, nil, _id), do: claims
+  defp part_of(claims, _unheld, id), do: relevel(claims, :words, id)
 
-  defp part_of(claims, _unheld, id),
+  # a Table the feed names after its provision ("reg. 4 Table 1"
+  # substituted: SI 2008/2095 by SI 2023/331 reg. 16) where we hold the
+  # Table as a row under that provision: the change keeps its Type's level
+  # on the provision, so a whole one still reaches the Table's row
+  defp held_table(
+         claims,
+         %Effect{affected_provisions: text, type: type, effect_id: id},
+         target,
+         held
+       ) do
+    if value(claims, :level) == :words and FeedPart.table?(text) and
+         FeedPart.holds_table?(target, held),
+       do: relevel(claims, type_level(EffectVerb.type(type)), id),
+       else: claims
+  end
+
+  defp relevel(claims, level, id),
     do:
       Enum.reject(claims, &(&1.source == :feed and &1.attribute == :level)) ++
-        Claim.new(:feed, :level, :words, id)
+        Claim.new(:feed, :level, level, id)
 
   defp eu?(nil), do: false
   defp eu?(law), do: Enum.at(String.split(law, "_"), 1) in @eu
@@ -663,7 +706,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
       |> List.wrap()
       |> Enum.split_with(&(not Map.has_key?(xml_ids, &1) and not (&1 =~ ~r/[-\d]/)))
 
-    refs = unnumbered_schedule(refs, bare, text)
+    refs = refs |> unnumbered_schedule(bare, text) |> own_paragraphs(text, xml_ids)
 
     # one path linked in pieces ("Title 5" → title-V, "Ch. 1" →
     # title-V-chapter-1; "Sch. 1" "para. 2"): a ref another of the effect's
@@ -725,19 +768,31 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
 
   # as our rows name it (the parse's own `source_xml_id`), else the reader's
   # converter — one namer (CV-S02); a group the feed numbers otherwise than
-  # the text, by its kinds and numbers (FeedGroup)
-  defp name(id, law, xml_ids),
-    do: Map.get(xml_ids, id) || Ref.from_clml(id, law) || FeedGroup.ref(id, xml_ids)
+  # the text, by its kinds and numbers (FeedGroup); an Annex's piece or an
+  # Appendix, as a whole (FeedAnnex)
+  defp name(id, law, xml_ids) do
+    Map.get(xml_ids, id) || Ref.from_clml(id, law) || FeedGroup.ref(id, xml_ids) ||
+      FeedAnnex.ref(id)
+  end
 
   # an unnumbered Schedule's paragraph ("Sch. Pt. I. para. 1", refs
-  # "schedule" + "paragraph-1": SI 1998/2411) is the Schedule's
+  # "schedule" + "paragraph-1": SI 1998/2411; "Sch, Column (1), para 1":
+  # SI 1983/1182) is the Schedule's
   defp unnumbered_schedule(refs, bare, text) do
-    if "schedule" in bare and String.match?(text || "", ~r/^\s*Sch\.\s+(?!\d)/),
+    if "schedule" in bare and String.match?(text || "", ~r/^\s*Sch[.,]?\s+(?!\d)/),
       do:
         Enum.map(
           refs,
           &if(String.starts_with?(&1, "paragraph-"), do: "schedule-" <> &1, else: &1)
         ),
+      else: refs
+  end
+
+  # the law's own paragraph, where the feed names nothing else ("para.
+  # 2(1)", ref "paragraph-2-1": a Scheme, SI 2000/2911), by the row's id
+  defp own_paragraphs(refs, text, xml_ids) do
+    if String.match?(text || "", ~r/^\s*paras?\b/i),
+      do: Enum.map(refs, &(FeedParagraph.id(&1, xml_ids) || &1)),
       else: refs
   end
 
@@ -789,7 +844,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
 
   defp heading(%Effect{type: type, affected_provisions: text}),
     do:
-      if(Enum.any?([type, text], &((&1 || "") =~ ~r/\bheading\b/i)) or titled?(text || ""),
+      if(
+        Enum.any?([type, text], &((&1 || "") =~ ~r/\bheading\b/i)) or titled?(text || "") or
+          title_type?(type || ""),
         do: true
       )
 
@@ -797,14 +854,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   # 10 Title": SI 2009/995 by SI 2012/630; "s. 33BC sidenote") — never the
   # law's own title ("Long Title", "Regulations title"), nor a Title that
   # is a container ("Title 14A")
-  @titled ~r/\b(?:title|sidenote)\s*$/i
+  @titled ~r/\b(?:title|side\s?note)\s*$/i
+
+  # the Type naming it ("title substituted" on "s. 20": 1981 c.69 by asp
+  # 2020/14 s. 7(5))
+  @title_type ~r/^\s*title\b/i
   @law_title ~r/^\s*(?:(?:long|short)\s+)?(?:Act|Regulations?|Order|Rules|Measure|Scheme)?\s*title\s*$/i
 
+  defp title_type?(type), do: String.match?(type, @title_type)
   defp titled?(text), do: String.match?(text, @titled) and not String.match?(text, @law_title)
 
   # a change within the provision's text: its words, a sum, a figure, an
-  # entry in its table, punctuation, its heading
-  @words_level ~r/^\s*(?:words?|sums?|figures?|entry|entries|comma|semi[- ]?colon|full stop|hyphen|symbol|punctuation|formula|number|label|definitions?)\b|\bheading\b/i
+  # entry in its table, punctuation (a comma, a bracket, a dash), its heading
+  @words_level ~r/^\s*(?:words?|sums?|figures?|entry|entries|comma|bracket|dash|semi[- ]?colon|full stop|hyphen|symbol|punctuation|formula|number|label|definitions?|title)\b|\bheading\b/i
 
   # the part of a provision the feed names after it ("reg. 6 heading",
   # "Art. 119(2)(g) Text", "Art. 4(1) Indent 2"): its words (CV-S08 round
@@ -815,7 +877,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
   # 19(2)(a): the title substituted, never the regulation), "s. 10
   # sidenote", "Sch. 15 shoulder note" — a Title that is a container
   # ("Title 14A") has its number after it
-  @words_part ~r/(?:\btext|\bindent(?:\s+\d+)?|(?<!cross-|cross |and )\bheading|\btitle|\bsidenote|\bshoulder\s+note|\bsentence\s+\d+|\bunnumbered\s+paragraph(?:\s+\d+)?|\bL\d+)\s*$/i
+  @words_part ~r/(?:\btext|\bindent(?:\s+\d+)?|(?<!cross-|cross |and )\bheading|\btitle|\bside\s?note|\bshoulder\s+note|\bsentence\s+\d+|\bunnumbered\s+paragraph(?:\s+\d+)?|\bL\d+)\s*$/i
 
   # a cross-heading named after the provision it stands above, where the
   # feed links that provision ("s. 1 cross-heading" inserted, ref
@@ -837,10 +899,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
     end
   end
 
+  # so too a part that is no provision: its Table, proviso, Note, footnote,
+  # Form or Figure (`FeedPart`: "reg. 6(2) Table 1", "s. 15(2) Proviso")
   defp part?(%Effect{affected_provisions: text, affected_refs: refs}) do
     text = text || ""
 
-    String.match?(text, @words_part) or
+    String.match?(text, @words_part) or FeedPart.named?(text, refs) or
       (String.match?(text, @cross_heading) and
          not Enum.any?(List.wrap(refs), &String.contains?(&1, "crossheading")))
   end

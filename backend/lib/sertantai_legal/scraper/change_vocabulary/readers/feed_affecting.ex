@@ -6,34 +6,60 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.FeedAffecting do
   → "sch.7.para.27(2)", and an article "art. 18" → "reg.18" (an Order's
   articles are `reg.` rows; CV-S05 round 7 NEW-6: SI 2022/1174 art. 18 was
   never found in its extent list). A range ("regs 11-14") is every
-  provision from its start to its end. Pure.
+  provision from its start to its end; a list ("arts. 2 3", "art. 3-6
+  8-10") is every provision listed. Pure.
   """
+
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.FeedAffectingSiblings, as: Siblings
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.FeedAffectingSpan, as: Span
 
   # (an unnumbered Schedule's paragraph, "Sch. para. 3(1)(b)": CV-S07 round 3;
   # a range, "regs 11-14", "art. 11(1)-(3)", "Sch. 2 para. 3-5", with the
-  # kind named in the plural: Fire and OH&S, Feed reader)
+  # kind named in the plural: Fire and OH&S, Feed reader; a list, "arts. 2
+  # 3", "regs 2, 3", and a bare continuation, "art. 3-6 8-10", "s. 10(2)(a)
+  # (4)": Waste, Water and Climate, Feed reader)
   @number ~S"\d+[A-Z]*(?:\([^)]+\))*"
   @upto ~S"(?:\([^)]+\))+"
-  # a kind named in the plural is read only as a range's ("regs 11-14";
-  # a plural list, "regs. 3 5", is not read)
-  @ranged "(?=\\.?\\s*#{@number}\\s*-)"
-  @refs Regex.compile!(
-          "\\b(?:Sch(?:\\.|s#{@ranged}\\.?)\\s*(?<sch>\\d+[A-Z]*)?(?:\\s*-\\s*(?<sch_to>\\d+[A-Z]*))?" <>
-            ~S"(?:\s*Pt\.\s*(?<pt>\d+[A-Z]*|[IVXLC]+))?" <>
-            "(?:\\s*para(?:\\.|s#{@ranged}\\.?)\\s*(?<para>#{@number})" <>
-            "(?:\\s*-\\s*(?<para_to>#{@number}|#{@upto}))?)?" <>
-            "|(?<kind>(?:s|reg|art)(?=\\.)|(?:ss|regs|arts)#{@ranged})\\.?\\s*(?<n>#{@number})" <>
-            "(?:\\s*-\\s*(?<n_to>#{@number}|#{@upto}))?)",
-          "u"
-        )
+  @bare ~S"(?:\([A-Za-z0-9]+\))+"
 
-  # "(adding 1949 c. 30 s. 3A(1)-(3))", "(addingto1986 c 53 Sch. 15A)": the
-  # provisions the affecting provision adds to another law, never its own
-  # (Fire and OH&S: Feed reader); the tail runs to the end, unbalanced
-  @adding ~r/\(\s*adding.*$/su
+  # the text in its pieces, each one of: a gap, a Schedule, a Part with its
+  # number, a paragraph, a kind (in the plural or with no full stop only
+  # before a number), a number or range, a bare bracketed number or range,
+  # anything else (another law's number "1997/2965" is no provision's)
+  @pieces Regex.compile!(
+            ~S"(?<gap>[\s,]+)" <>
+              ~S"|(?<sch>\bSch(?:\.|s\.?(?=\s*\d)))" <>
+              ~S"|\bPt\.\s*(?<pt>\d+[A-Z]*|[IVXLC]+)" <>
+              ~S"|(?<para>\bparas?\.|\bparas(?=\s*\d))" <>
+              ~S"|(?<kind>\b(?:s|reg|art)(?=\.)|\b(?:ss|regs|arts)(?=\.?\s*\d)|\b(?:reg|art)(?=\s*\d))\.?" <>
+              "|(?<n>#{@number})(?![\\d/])(?:\\s*-\\s*(?<n_to>#{@number}|#{@upto}))?" <>
+              "|(?<sub>#{@bare})(?:\\s*-\\s*(?<sub_to>#{@upto}))?" <>
+              ~S"|(?<other>\w+|.)",
+            "su"
+          )
 
-  # the most a range is counted out to; a longer one gives its two ends
-  @longest 100
+  # a bracket saying what the affecting provision does to another law:
+  # "(adding 1949 c. 30 s. 3A(1)-(3))", "(addingto1986 c 53 Sch. 15A)",
+  # "(substituting 1968 c 47 s. 10)", "(subst.1995/1544 reg. 10(2))",
+  # "(amending1973 c 65 s. 92(2))", "(am.1976 c 76 s 9(1))", "(replacing
+  # 1988 c. 1 s.749 at s.749A(4)(a))", "(modifying1984 c 47 Sch. para. 2)".
+  # The provisions it names are the other law's, never the affecting law's
+  # own (Fire and OH&S, and Waste, Water and Climate: Feed reader). The
+  # words are every one the stored feeds open such a bracket with, the
+  # feed's misspellings included ("subsituting", "substutiting"); a
+  # bracketed sub-number of our own ("(4)", "(am)", "(aaa)") opens with
+  # none of them. The tail runs to the end, unbalanced
+  @tail_words ~S"adding|subst\.|subs[a-z]*ting|amending|am\.|as\s+am\.|replacing|modifying" <>
+                ~S"|inserting|insertedby|extending|reprinting|and\s+see|s\.[^()]*addedto"
+  @tail Regex.compile!(~S"\(\s*(?:" <> @tail_words <> ").*$", "isu")
+
+  # where the reading stands: the prefix the next number takes (nil: none),
+  # the level it names (a Schedule, a Part, or a provision), the Schedule it
+  # is under (nil: none; "": unnumbered), the last provision's number (a
+  # bare bracketed number continues it), and the refs a paragraph or Part
+  # that follows stands in place of (`held`: "Sch. 7 para. 3" is the
+  # paragraph, never the Schedule)
+  @start %{prefix: nil, level: :provision, sch: nil, last: nil, held: 0, into: false, refs: []}
 
   @doc ~S"""
   Every provision named: "Sch. 7 para. 27(2) Sch. 17 Pt. 2" →
@@ -44,86 +70,103 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.FeedAffecting do
   "art. 11(1)-(3)" → ["reg.11(1)", "reg.11(2)", "reg.11(3)"]. Ends that
   cannot be counted between (lettered numbers "2A-2D", roman numerals,
   ends at different depths) give the two ends.
+
+  A list names every provision listed, a bare number or range continuing
+  the kind before it: "arts. 2 3 Sch. 1" → ["reg.2", "reg.3", "sch.1"];
+  "art. 3-6 8-10" → reg.3 to reg.6 and reg.8 to reg.10; "Sch. 6 paras.
+  2(4) 7" → ["sch.6.para.2(4)", "sch.6.para.7"]. A bare bracketed number
+  stands in place of the last number's part of its own kind: "s. 10(2)(a)
+  (4)" → ["s.10(2)(a)", "s.10(4)"]; "s. 104(5)(a) (b)" → ["s.104(5)(a)",
+  "s.104(5)(b)"]. Bracketed numbers written together are siblings where
+  one follows another of its own form (`FeedAffectingSiblings`): "s.
+  52(8)(9)" → ["s.52(8)", "s.52(9)"]; "s. 1(1)(a)" is the one provision.
+
+  A closing bracket saying what the provision does to another law is not
+  read: "s. 74(4) 102(substituting 1968 c 47 s. 10)" → ["s.74(4)",
+  "s.102"].
   """
   @spec refs(String.t() | nil) :: [String.t()]
   def refs(nil), do: []
 
   def refs(text) do
-    @refs
-    |> Regex.scan(String.replace(text, @adding, ""), capture: :all_names)
-    |> Enum.flat_map(&named/1)
+    @pieces
+    |> Regex.scan(String.replace(text, @tail, ""), capture: :all_names)
+    |> Enum.reduce(@start, &piece/2)
+    |> Map.fetch!(:refs)
+    |> Enum.reverse()
   end
 
-  # the captures by name, in name order: kind, n, n_to, para, para_to, pt,
-  # sch, sch_to
-  defp named([kind, n, to, "", "", "", "", ""]) when kind != "",
-    do: span("#{prefix(kind)}.", n, to)
+  # the captures by name, in name order: gap, kind, n, n_to, other, para,
+  # pt, sch, sub, sub_to
+  defp piece([gap, "", "", "", "", "", "", "", "", ""], at) when gap != "", do: at
+  defp piece([_, kind, "", _, _, _, _, _, _, _], at) when kind != "", do: kind(at, kind)
+  defp piece([_, _, n, to, _, _, _, _, _, _], at) when n != "", do: number(at, n, to)
+  defp piece([_, _, _, _, _, para, _, _, _, _], at) when para != "", do: paragraph(at)
+  defp piece([_, _, _, _, _, _, pt, _, _, _], at) when pt != "", do: part(at, pt)
+  defp piece([_, _, _, _, _, _, _, sch, _, _], at) when sch != "", do: schedule(at)
+  defp piece([_, _, _, _, _, _, _, _, sub, to], at) when sub != "", do: bare(at, sub, to)
+  defp piece(_other, at), do: stop(at)
 
-  defp named([_, _, _, "", _, _, "", _]), do: []
-  defp named([_, _, _, para, to, _pt, "", _]), do: span("sch.para.", para, to)
-  defp named([_, _, _, "", _, "", sch, to]), do: span("sch.", sch, to)
-  defp named([_, _, _, "", _, pt, sch, _]), do: ["sch.#{sch}.pt.#{pt}"]
-  defp named([_, _, _, para, to, _pt, sch, _]), do: span("sch.#{sch}.para.", para, to)
+  defp stop(at), do: %{@start | refs: at.refs}
 
-  # "11" to "14" → 11, 12, 13, 14; "11(1)" to "(3)" → 11(1), 11(2), 11(3)
-  defp span(prefix, from, ""), do: [prefix <> from]
+  defp kind(at, kind), do: %{stop(at) | prefix: "#{prefix(kind)}."}
 
-  defp span(prefix, from, to) do
-    {stem, first} = last_part(from)
+  defp schedule(at), do: %{stop(at) | prefix: "sch.", level: :schedule, sch: ""}
 
-    case between(first, to) do
-      nil -> [prefix <> from | far_end(prefix, stem, first, to)]
-      parts -> Enum.map(parts, &(prefix <> stem <> &1))
-    end
+  # a paragraph or a Part is read only under a Schedule
+  defp paragraph(%{sch: nil} = at), do: stop(at)
+
+  defp paragraph(%{sch: sch} = at),
+    do: %{at | prefix: under(sch) <> "para.", level: :provision, last: nil, into: true}
+
+  defp part(%{sch: nil} = at, _pt), do: stop(at)
+  defp part(%{sch: ""} = at, _pt), do: %{at | prefix: nil, level: :part, last: nil}
+
+  # a Schedule's first Part stands in place of the Schedule held
+  defp part(%{sch: sch, level: level} = at, pt) do
+    prefix = under(sch) <> "pt."
+    at = if level == :schedule, do: unhold(at), else: at
+    hold(%{at | prefix: prefix, level: :part, last: nil}, [prefix <> pt])
   end
 
-  # "11(1)" → {"11", "(1)"}; "11" → {"", "11"}
-  defp last_part(from) do
-    case Regex.run(~r/^(.*)(\([^)]+\))$/u, from) do
-      [_, stem, last] -> {stem, last}
-      nil -> {"", from}
-    end
+  defp under(""), do: "sch."
+  defp under(sch), do: "sch.#{sch}."
+
+  # a number with no kind before it is no provision's ("Note 1", "Table 9")
+  defp number(%{prefix: nil} = at, _n, _to), do: at
+
+  defp number(%{level: :schedule} = at, n, to) do
+    sch = whole(n)
+    hold(%{at | sch: sch}, Span.refs("sch.", sch, whole(to)))
   end
 
-  # the end's own ref, when it stands at the start's depth
-  defp far_end(prefix, stem, first, to) do
-    if String.starts_with?(first, "(") == String.starts_with?(to, "("),
-      do: [prefix <> stem <> to],
-      else: []
+  defp number(%{level: :part, prefix: prefix} = at, n, to),
+    do: hold(at, Span.refs(prefix, whole(n), whole(to)))
+
+  defp number(at, n, to), do: several(at, Siblings.split(n), to)
+
+  # "(4)" after "s. 10(2)(a)": s.10(4)
+  defp bare(%{last: nil} = at, _sub, _to), do: at
+  defp bare(%{last: last} = at, sub, to), do: several(at, Siblings.continued(last, sub), to)
+
+  # numbers written together, each a provision ("52(8)(9)": s.52(8) and
+  # s.52(9)); a range ends the last
+  defp several(%{prefix: prefix} = at, numbers, to) do
+    {before, [last]} = Enum.split(numbers, -1)
+    add(%{at | last: last}, Enum.map(before, &(prefix <> &1)) ++ Span.refs(prefix, last, to))
   end
 
-  defp between("(" <> _ = from, "(" <> _ = to) do
-    with [_, a] <- Regex.run(~r/^\(([^()]+)\)$/u, from),
-         [_, b] <- Regex.run(~r/^\(([^()]+)\)$/u, to),
-         [_ | _] = parts <- counted(a, b) do
-      Enum.map(parts, &"(#{&1})")
-    else
-      _ -> nil
-    end
-  end
+  # the refs a paragraph or Part that follows stands in place of
+  defp hold(at, refs), do: %{at | refs: Enum.reverse(refs, at.refs), held: length(refs)}
 
-  defp between(from, to), do: numbers(from, to)
+  defp unhold(at), do: %{at | refs: Enum.drop(at.refs, at.held), held: 0}
 
-  defp counted(a, b), do: numbers(a, b) || letters(a, b)
+  # a Schedule's first paragraph stands in place of the Schedule or Part held
+  defp add(%{into: true} = at, refs), do: add(unhold(%{at | into: false}), refs)
+  defp add(at, refs), do: %{at | refs: Enum.reverse(refs, at.refs), held: 0}
 
-  defp numbers(a, b) do
-    with {x, ""} <- Integer.parse(a),
-         {y, ""} <- Integer.parse(b),
-         true <- x < y and y - x <= @longest do
-      Enum.map(x..y, &Integer.to_string/1)
-    else
-      _ -> nil
-    end
-  end
-
-  # "(c)" to "(e)"; never letters that may be roman numerals ("(i)" to "(v)")
-  defp letters(<<a>>, <<b>>) when a in ?a..?z and b in ?a..?z and a < b do
-    if roman?(a) and roman?(b), do: nil, else: Enum.map(a..b, &<<&1>>)
-  end
-
-  defp letters(_, _), do: nil
-
-  defp roman?(char), do: char in ~c"ivxlc"
+  # a Schedule's or Part's number without its brackets: "19(1)" → "19"
+  defp whole(n), do: ~r/^\d+[A-Z]*/ |> Regex.run(n) |> List.wrap() |> List.first("")
 
   @doc ~S"""
   The one provision named ("s. 47(1)" → "s.47(1)"; "Sch. 5 para. 3" →

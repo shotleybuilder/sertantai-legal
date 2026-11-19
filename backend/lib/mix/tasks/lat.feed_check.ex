@@ -181,6 +181,8 @@ defmodule Mix.Tasks.Lat.FeedCheck do
         # the Parts, Chapters and Titles in the text, for a group the feed
         # names that the text doesn't hold
         groups: Enum.filter(order, &FeedGroup.group?/1),
+        # its cross-headings, for one the feed names that no row holds
+        headings: Enum.filter(order, &String.contains?(&1, "crossheading-")),
         # the effects the text marks as made (change markup only)
         marked: Placement.marked(xml)
       }

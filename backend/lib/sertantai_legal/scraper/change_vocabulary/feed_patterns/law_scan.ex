@@ -138,7 +138,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedPatterns.LawScan do
     %{
       law: law,
       xml_ids: Ref.xml_ids(law, rows),
-      rows: if(eu?, do: refs, else: []),
+      # an EU law's rows, for the finer part of an article; any other law's
+      # Tables held as rows, for a Table the feed names (`FeedPart`)
+      rows: if(eu?, do: refs, else: Enum.filter(refs, &String.contains?(&1, ".table."))),
       order: if(Enum.any?(effects, &(&1.affected_ranges != [])), do: order.(), else: [])
     }
   end
@@ -198,10 +200,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedPatterns.LawScan do
 
     rows =
       Enum.filter(full.rows, fn r ->
-        Enum.any?(articles, &(r == &1 or String.starts_with?(r, &1 <> "(")))
+        Enum.any?(articles, &under?(r, &1))
       end)
 
     %{full | order: order, xml_ids: xml_ids, rows: rows}
+  end
+
+  # the article's own row, its sub-provisions, and a Table held on it
+  defp under?(row, article) do
+    row == article or String.starts_with?(row, article <> "(") or
+      (String.starts_with?(row, article <> ".") and String.contains?(row, ".table."))
   end
 
   # the stretch of document order from a range's first end to its last

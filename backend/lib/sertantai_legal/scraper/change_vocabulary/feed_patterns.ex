@@ -180,7 +180,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedPatterns do
 
   # ── verb, level ──────────────────────────────────────────────────────
 
-  @objects ~r/^(?:words?|sums?|figures?|entry|entries|comma|semi-?colon|full stop|hyphen|symbol|punctuation|formula|number|label|definitions?)\b\s*/
+  @objects ~r/^(?:words?|sums?|figures?|entry|entries|comma|bracket|dash|semi-?colon|full stop|hyphen|symbol|punctuation|formula|number|label|definitions?|title)\b\s*/
 
   defp verb(%Effect{type: type}, sets) do
     words = type |> words() |> String.replace(@objects, "")
