@@ -156,7 +156,7 @@ bugs:
     category: sources-stale-by-calendar
     module: "LegislationGovUk.ClmlStore (freshness) / Sources (stale status)"
     affected: "12 documents in the round; any copy held 30 days"
-    fix: "decide with Jason: keep age-based freshness and sweep it each step, or call a copy stale only when legislation.gov.uk shows a newer version (dct:valid or the feed's latest effect)"
+    fix: "Jason 2026-11-19: the monthly register pull is the trigger. For laws in the register, stamp each stored copy with the register's md_dct_valid_date at fetch and call it stale only when a pull moves that date past the stamp (no clock; unrevised laws like SI 1990/2226 have no dct:valid of their own, and an unrelated uk_lrt write on 2026-11-08 defeated the update-time test). Feeds are already checked by the register's change counts. Keep an age rule only for documents the register does not hold (most amending laws, orders), or refresh them in the monthly cycle. Sources.stale?/4, ClmlStore meta"
     step: Sources
     status: open
 artifacts:
