@@ -1,0 +1,114 @@
+
+── Sources (mix lat.sources) ──
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+565 laws in scope
+
+needed against held, by category:
+  own: 565 — held 565
+  feed: 546 — held 546
+  territory: 1145 — absent 2, held 1143
+  introduction: 856 — absent 2, held 854
+  enabling_parent: 102 — held 102
+  dates: 518 — absent 190, held 328
+  backlog: 802 — absent 280, held 510, stale 12
+  royal_assent: 2 — held 2
+  needed, all categories: 4536
+
+failures: 12
+  stale  backlog  UK_uksi_1990_2226 :body  (for UK_ukpga_1956_52)
+  stale  backlog  UK_uksi_1990_2243 :body  (for UK_ukpga_1956_52)
+  stale  backlog  UK_uksi_1990_2565 :body  (for UK_ukpga_1956_52)
+  stale  backlog  UK_uksi_1990_2635 :body  (for UK_ukpga_1956_52)
+  stale  backlog  UK_uksi_1991_1577 :body  (for UK_ukpga_1956_52)
+  stale  backlog  UK_uksi_1991_96 :body  (for UK_ukpga_1956_52)
+  stale  backlog  UK_uksi_1992_3253 :body  (for UK_ukpga_1956_52)
+  stale  backlog  UK_uksi_1993_274 :body  (for UK_ukpga_1956_52)
+  stale  backlog  UK_uksi_1994_2487 :body  (for UK_ukpga_1956_52)
+  stale  backlog  UK_uksi_1994_3234 :body  (for UK_ukpga_1956_52)
+  stale  backlog  UK_uksi_1994_780 :body  (for UK_ukpga_1956_52)
+  stale  backlog  UK_uksi_1995_2152 :body  (for UK_ukpga_1956_52)
+
+feeds differing from the register's change statistics: 0
+
+FAIL
+
+── Feed reader (mix lat.feed_check) ──
+2201 family laws; 565 hold LAT rows (in scope), 1636 don't
+31135 effects in 565 laws:
+  20264  placed
+  8185  schedule_not_parsed
+  1025  not_in_text
+  736  not_a_provision
+  397  placed_versions
+  234  whole_law
+  217  row_missing
+  68  placed_by_markup
+  9  placed_ancestor
+
+our faults: 0
+
+finer form not held (parse tell-tales): 10
+  not_found: 9  (gone from the text, or not there: a candidate only)
+    UK_eur_2006_1013 art.Article 50(4TR)  ("Art. 50 .4TR")
+    UK_eur_2006_1013 art.Article 50(4QQ)  ("Art. 50 .4QQ")
+    UK_eur_2006_1013 art.Article 50(4BI)  ("Art. 50 .4BI")
+    UK_eur_2006_1013 art.Article 50(4SX)  ("Art. 50 .4SX")
+    UK_eur_2006_1013 art.Article 50(2BI)  ("Art. 50 .2BI")
+    UK_eur_2006_1013 art.Article 50(4QT)  ("Art. 50 .4QT")
+    UK_eur_2006_1013 art.Article 60(2BI)  ("Art. 60 .2BI")
+    UK_eur_2011_725 art.Article 4(2)(iv)  ("Art. 4 para. 2 Point (iv)")
+    UK_eur_2013_1257 art.Article 21(2)  ("Art. 21 para. 2")
+  no_ids: 1  (the text numbers items with no id; the parse made no row, #184)
+    UK_eur_2006_1013 art.Article 2(35BI)  ("Art. 2 .35BI")
+
+PASS (placement)
+
+── Checked rows (mix lat.label_checked) ──
+744 checked rows: %{known: 47, match: 696, upstream: 1}
+PASSED
+
+── Stale laws (mix lat.stale) ──
+parser 4cf7d6e7fbc2, labels 073b51f677c2: 552 stale laws (switched families: 0 of 527)
+  labels_version: 552
+  parser_version: 552
+
+change register, code 2d8361623e47: 764 of 1105 built laws stale (114 built with no changes)
+  code_version: 540
+  commencement_reader: 210  (fix: mix lat.commencement (the mode that wrote them), then build)
+  extent_reader: 126  (fix: mix lat.amending --extents --amending A,B, then build)
+  laws holding LAT with no build: 539
+
+Waste, Water and Climate: 224 stale laws (LAT or labels 0, change register 224)
+
+Feed reader's close, Waste, Water and Climate:
+  FAIL  Sources (12 failing; owned by the Sources step)
+  PASS  Feed reader
+  PASS  Checked rows
+  FAIL  Stale laws (224 failing; fix by the reasons above: re-parse (LAT parser), re-read (the reader), rebuild (Store and build))
+
+lat-change-pipeline/2026-11-18-waste-water-and-climate-feed-reader.md
+Bugs by owner:
+  This step, fixed (6):
+    - affecting-plural-list
+    - trailing-part-read-whole
+    - substituted-for-left-whole
+    - substituted-for-letter-range-ranked-as-text
+    - feed reader range (found by the spread tell-tale, round 5)
+    - feed reader range / markup reader placement (round 7 J, doubtful)
+  This step, left open (3):
+    - affecting-single-ref-siblings (2,164 commencement effects store-wide, 170 in the five families; effect on commenced_by unmeasured)
+    - table-row-target (20 effects in 8 laws; 278 table rows held)
+    - trailing-part-read-whole-more (about 150 candidates, unsized; 1992 c.53 about 95 effects)
+  Passed to other steps (5):
+    - LAT parser: chapter-id-without-number (1 law)
+    - LAT parser: eu-points-no-row (10 effects in 3 laws (the round's feed-check tell-tales))
+    - Markup reader: annex-piece-not-named-shared (unknown in the markup)
+    - Markup reader: range-later-rows (3 seen; 139 range effects in 40 Fire and OH&S laws candidates)
+    - Merge: substituted-for-duplicate-removal (unknown (seen in class E's reach))
+  Inherited from other steps (2):
+    - Sources (12 failing)
+    - Stale laws (224 failing)
+
+FAIL (step close)
