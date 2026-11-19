@@ -85,7 +85,7 @@ A session that runs one step of the LAT Change Pipeline for one family (steps an
    - **Golden and fixtures:** frozen for the step.
    - **Out of scope:** above all, other steps' code.
    - **Time box.**
-   - **Todos:** at most 8.
+   - **Todos:** at most 8, each under one of the six phases: Measure, Find, Fix, Settle, Rebuild then fetch, Check and close (`docs/lat-change-pipeline/WORKFLOW.md`, "How a step is run").
 
    Jason approves it at ExitPlanMode. The todos go into the session as approved.
    The last todo before the close is the step's close check, `mix lat.step_close --family F --step S` (`session-close`, step 6b).

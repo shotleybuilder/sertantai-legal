@@ -152,6 +152,13 @@ bugs:
     step: Markup reader
     status: open
 
+  - pattern: "A held copy with no newer validity date counts as fresh only for 30 days from its fetch, so the Sources gate flips by the calendar with nothing changed upstream (Waste, Water and Climate: 12 Clean Air Act 1956 smoke-control SIs fetched 2026-10-19/20 went stale on 2026-11-19, between two runs of the same step close)"
+    category: sources-stale-by-calendar
+    module: "LegislationGovUk.ClmlStore (freshness) / Sources (stale status)"
+    affected: "12 documents in the round; any copy held 30 days"
+    fix: "decide with Jason: keep age-based freshness and sweep it each step, or call a copy stale only when legislation.gov.uk shows a newer version (dct:valid or the feed's latest effect)"
+    step: Sources
+    status: open
 artifacts:
   - backend/lib/sertantai_legal/scraper/change_vocabulary/readers/feed.ex
   - backend/lib/sertantai_legal/scraper/change_vocabulary/readers/feed_affecting.ex
@@ -532,3 +539,49 @@ Classes C, F and G change only the affecting-provision pointer. D changes only t
 - WORKFLOW Feed reader: the round's notes.
 
 **Parked bug 7** (feed-page parse slow for scans) is left open: about 1.9 ms an effect, the catalogue cached since #195. It is speed, not a misread.
+
+## Step report
+
+**Verdict: PASSED.** Every pass-rule item met. The one close failure is another step's, inherited.
+
+### Pass rule
+
+| # | Rule | Result |
+|---|---|---|
+| 1 | Feed check: our faults 0 | ✅ 62 → 0 |
+| 2 | Catalogue regenerated, every pattern settled | ✅ 156 accepted, 154 stored answers updated |
+| 3 | Same sample twice | ✅ identical |
+| 4 | Golden, no new failure | ✅ 41/50, the same 9 |
+| 5 | Parked Feed reader bugs dealt with | ✅ 4 fixed, 2 moved on, 1 left (speed only) |
+| 6 | Switched families still 0 faults; refresh decided | ✅ 0 faults; refresh later (D4) |
+| 7 | All tests pass | ✅ 11,766, 0 failures |
+| 8 | Step close | ✅ for this step; ⚠️ Stale laws 224, inherited; ⚠️ on a re-run a day later, Sources 12, stale only by the store's 30-day age rule (raised with Sources; the Markup reader's first todo fetches them) |
+
+### The phases as run
+
+| Phase | What happened |
+|---|---|
+| 1 Measure | 31,135 effects; 62 faults; 7 parked bugs |
+| 2 Find | 143 new patterns; 3 misreads |
+| 3 Fix | 7 classes, one fixer call each; golden re-run 3 times |
+| 4 Settle | 154 stored answers updated (D3) |
+| 5 Rebuild, then fetch | Round rebuilt (92,711 changes); 14 newly needed documents fetched |
+| 6 Check and close | All checks pass; step close as above |
+
+### Decisions, in plain words
+
+| # | The question | Chosen | What it means |
+|---|---|---|---|
+| D1 | Are the 143 new patterns read right? | Yes, except 3, which were fixed | No label effect |
+| D2 | Fixing one misread exposed two more next to it. Fix now? | Yes, both | About 9,000 more effects read right; one extra hour |
+| D3 | Update the test's stored answers that the fixes changed? | Yes (154) | The tests record the new readings |
+| D4 | Re-read the four already-switched families now? | No, at the round's Store and build | Their stored changes lag one reading; their labels are unchanged |
+
+### Bugs, by owner
+
+| Bucket | Bugs |
+|---|---|
+| **This step, fixed** | the 62 faults; plural lists; trailing parts; "substituted for"; letter rank; bracket tails; sibling numbers; punctuation |
+| **This step, left open (sized)** | single affecting ref (2,164); Table row target (20); more trailing tails (~150); slow feed parse (speed) |
+| **Passed to other steps** | Markup reader: rows inserted later, Annex naming. Merge: duplicate removals. LAT parser: EU points with no row, a Chapter id |
+| **Inherited, not this step's** | Stale laws 224: the Commencement and Extent readers haven't run yet (raised at Sources) |

@@ -773,6 +773,14 @@ This is the process drawn up in the retrospective after OH&S (2026-11-03). The `
 
 Changing the pass rule, golden or scope means a new plan, approved again, not an edit in the log.
 
+**The six phases.** Every step runs in the same order, and the plan names which todos fall in each, so every fetch, rebuild and decision has its place:
+1. **Measure:** the read-only baseline, and the step's parked bugs read in with their reach.
+2. **Find:** the step's check and catalogue list what is wrong, sorted into classes.
+3. **Fix:** one class a call (fixer, test first), each with its reach over the store and golden. A class the fix uncovers is sized and decided, then fixed or parked.
+4. **Settle:** the catalogue's stored answers moved by the fixes, dry run, then written on Jason's decision.
+5. **Rebuild, then fetch:** a restore point and the family's rebuild. The new readings point to a few documents not yet held, so the Sources gate is re-run and they are fetched (`sources-fetch-failures-swept-each-step`).
+6. **Check and close:** repeatability, golden, `mix test`, the step close, and the step report.
+
 **2. Checks in code first.** The pass is decided by code wherever possible:
 - **table rules**: each fault class written as a check over every row of the family;
 - **checked-row fixtures**: rows already judged, with their accepted labels;
@@ -791,6 +799,13 @@ Changing the pass rule, golden or scope means a new plan, approved again, not an
 **7. Restore point before writes.** Before any run that writes, take a restore point of the tables it writes: `./scripts/nas/nas-backup.sh --tables <tables> --tag <tag>` (seconds). Then dry run → Jason → apply.
 
 **8. Questions to Jason in plain words.** Written in the session doc first: the question, the aim it bears on, the options, a recommendation.
+
+**9. The step report** (Jason 2026-11-19, after Waste, Water and Climate: Feed reader). At the close, Jason gets this report and nothing else; the session doc is Claude's own log, summarised into the databased frontmatter and archived. Four tables, in plain words:
+
+1. **Verdict and pass rule:** PASSED / FAILED, then one row per pass-rule item with ✅ or ⚠️ and the figure.
+2. **The phases as run:** one row per phase (Measure, Find, Fix, Settle, Rebuild then fetch, Check and close), saying what happened in it.
+3. **Decisions, in plain words:** the question, what was chosen, and what it means for Jason (labels moved or not, time, what lags).
+4. **Bugs by owner:** this step fixed; this step left open (sized); passed to other steps; inherited (close checks owned by other steps). `mix lat.step_close` prints this table from the step session's frontmatter (`Gate.StepBugs`).
 
 Session files: `.claude/sessions/lat-change-pipeline/<date>-<family>-<step-name>.md`, titled "<Family>: <Step name>".
 

@@ -78,6 +78,14 @@ enables:
 
 6b. **A pipeline step's close** (LAT Change Pipeline step sessions): before the frontmatter is written, run `mix lat.step_close --family "F" --step "<Step name>"` (read-only; minutes, about 12½ min more once the Label fold's gate is in; ask Jason first, as for any run). It re-runs every gate up to the step, the checked rows and the family's stale laws, and exits non-zero on any failure. Record its lines in the session. A failure is parked with the owner it names (`bug-raise`), never fixed in the closing step; the step closes only on PASS, or with each failure parked and Jason told.
 
+6c. **The step report** (LAT Change Pipeline step sessions; Jason 2026-11-19). After the step close, give Jason the step report in the terminal, and write it into the session as `## Step report`. Four tables, plain words, no codes:
+   1. **Verdict and pass rule:** PASSED / FAILED; one row per pass-rule item, ✅ or ⚠️, with the figure.
+   2. **The phases as run:** Measure, Find, Fix, Settle, Rebuild then fetch, Check and close; what happened in each.
+   3. **Decisions, in plain words:** the question, what was chosen, and what it means for Jason.
+   4. **Bugs by owner:** this step fixed; this step left open (sized); passed to other steps; inherited. Take it from `mix lat.step_close`'s "Bugs by owner" lines, which read the session's frontmatter.
+
+   The session doc is Claude's log, not Jason's reading: never point him at it.
+
 7. **Write directly**: Do not present the draft to the user for review — write the frontmatter straight to the file. The user can review the diff in git if needed.
 
 8. **Rebuild the session index**: After writing the frontmatter, rebuild the SQLite index so the new session is queryable:
