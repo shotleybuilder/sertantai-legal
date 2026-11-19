@@ -1,0 +1,88 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+1860 laws with stored feeds
+laws read 3 at once: 12.2 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.7 of 6 cores busy; max 4
+  100/1860
+  200/1860
+  300/1860
+  400/1860
+  500/1860
+  600/1860
+  700/1860
+  800/1860
+  900/1860
+  1000/1860
+  1100/1860
+  1200/1860
+  1300/1860
+  1400/1860
+  1500/1860
+  1600/1860
+  1700/1860
+  1800/1860
+cache: 0 hits, 1860 read
+
+304076 effects; excluded %{"legacy dated type" => 1915}
+unclassified: 0
+1206 patterns, 1902 examples
+  eu_finer: 76
+  level: 28
+  linkage: 19
+  qualification: 88
+  range: 3
+  ref: 487
+  staging: 48
+  verb: 457
+examples needing their law's full context: 6
+
+new patterns (no status): 143
+  eu_finer: (x) PT x) → held
+  eu_finer: .N → article
+  eu_finer: .N(x) → held
+  eu_finer: Point N L N → article
+  eu_finer: Sentence → article
+  eu_finer: para. N L N Point (x) → held
+  eu_finer: para. N L N Text → held
+  eu_finer: para. N Point (x) PT (x) → held
+  eu_finer: para. N Point (x) PT(x) → held
+  level: words | definitions
+  level: words | semi
+  linkage: one + bare word → ?
+  qualification: other | with effect from N.N.N
+  ref: annex → piece of a path
+  ref: annex-N-part-N-section-N(+1) → annex.N
+  ref: annex-paragraph-N → none
+  ref: annex-part-N → none
+  ref: annex-section-N → none
+  ref: annex-section-N(+1) → none
+  ref: appendix-N → none
+  ref: article-N → art.Article N.N
+  ref: article-N(+1) → art.Article N.N(+1)
+  ref: article-N(+1) → art.Article N.N(+1) (range end)
+  ref: article-N(+3) → art.Article N(+3) (range end)
+  ref: part-N(+1) → none
+  ref: part-crossheading-* → h.N (our row's id)
+  ref: regulation-N(+1) → piece of a path
+  ref: regulation-N-iiia → reg.N(+1)
+  ref: schedule-N-form → sch.N
+  ref: schedule-N-paragraph-N → sch.N.para.10n1
+  ref: schedule-N-paragraph-N → sch.N.para.10n2
+  ref: schedule-N-paragraph-N → sch.N.para.11n1
+  ref: schedule-N-paragraph-N → sch.N.para.11n2
+  ref: schedule-N-paragraph-N → sch.N.para.12n1
+  ref: schedule-N-paragraph-N → sch.N.para.12n2
+  ref: schedule-N-paragraph-N → sch.N.para.13n1
+  ref: schedule-N-paragraph-N → sch.N.para.13n2
+  ref: schedule-N-paragraph-N → sch.N.para.1n1
+  ref: schedule-N-paragraph-N → sch.N.para.1n2
+  ref: schedule-N-paragraph-N → sch.N.para.2n1
+patterns no longer seen: 0
+examples reading differently from expected: 7 (pending patterns: 2)
+  UK_ukpga_1975_23/66b9965f29
+  UK_ukpga_1975_23/e4e467f091
+  UK_ukpga_1984_27/b376702501
+  UK_ukpga_1984_27/d3761f99cc
+  UK_ukpga_1984_27/ed1a0d5c0e
+  UK_ukpga_1984_60/c666d7ee09
+  UK_ukpga_2023_30/6c1b7cb488

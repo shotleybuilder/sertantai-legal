@@ -1,0 +1,126 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+1860 laws with stored feeds
+laws read 3 at once: 12.1 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.6 of 6 cores busy; max 4
+  100/1860
+  200/1860
+  300/1860
+  400/1860
+  500/1860
+  600/1860
+  700/1860
+  800/1860
+  900/1860
+  1000/1860
+  1100/1860
+  1200/1860
+  1300/1860
+  1400/1860
+  1500/1860
+  1600/1860
+  1700/1860
+  1800/1860
+cache: 0 hits, 1860 read
+
+304076 effects; excluded %{"legacy dated type" => 1915}
+unclassified: 0
+1214 patterns, 1921 examples
+  eu_finer: 76
+  level: 37
+  linkage: 18
+  qualification: 88
+  range: 3
+  ref: 487
+  staging: 48
+  verb: 457
+examples needing their law's full context: 7
+
+new patterns (no status): 156
+  eu_finer: (x) PT x) → held
+  eu_finer: .N → article
+  eu_finer: .N(x) → held
+  eu_finer: Point N L N → article
+  eu_finer: Sentence → article
+  eu_finer: para. N L N Point (x) → held
+  eu_finer: para. N L N Text → held
+  eu_finer: para. N Point (x) PT (x) → held
+  eu_finer: para. N Point (x) PT(x) → held
+  level: words | added
+  level: words | bracket
+  level: words | dash
+  level: words | definitions
+  level: words | item
+  level: words | items
+  level: words | note
+  level: words | revoked
+  level: words | semi
+  level: words | table
+  level: words | title
+  qualification: other | with effect from N.N.N
+  ref: annex → piece of a path
+  ref: annex-N-part-N-section-N(+1) → annex.N
+  ref: annex-paragraph-N → none
+  ref: annex-part-N → none
+  ref: annex-section-N → none
+  ref: annex-section-N(+1) → none
+  ref: appendix-N → none
+  ref: article-N → art.Article N.N
+  ref: article-N(+1) → art.Article N.N(+1)
+  ref: article-N(+1) → art.Article N.N(+1) (range end)
+  ref: article-N(+3) → art.Article N(+3) (range end)
+  ref: part-N(+1) → none
+  ref: part-crossheading-* → h.N (our row's id)
+  ref: regulation-N(+1) → piece of a path
+  ref: regulation-N-iiia → reg.N(+1)
+  ref: schedule-N-form → sch.N
+  ref: schedule-N-paragraph-N → sch.N.para.10n1
+  ref: schedule-N-paragraph-N → sch.N.para.10n2
+  ref: schedule-N-paragraph-N → sch.N.para.11n1
+patterns no longer seen: 5
+  verb: :inserted | dash inserted
+  verb: :substituted | substituted for full stop in
+  verb: :substituted | substituted for word in
+  verb: :substituted | substituted for words in
+  verb: :substituted | title substituted
+examples reading differently from expected: 156 (pending patterns: 2)
+  UK_anaw_2016_3/d060597e4a
+  UK_asc_2021_1/1ecd03c9df
+  UK_asc_2026_4/26f1326b71
+  UK_asc_2026_4/620598956a
+  UK_asp_2000_1/96d7a9dc74
+  UK_asp_2002_3/f3c72e22aa
+  UK_asp_2003_2/69923f21ac
+  UK_asp_2003_2/9499500c82
+  UK_asp_2003_8/e09e403fdd
+  UK_asp_2003_8/e40522acb7
+  UK_asp_2004_6/ed4d9ff4aa
+  UK_asp_2007_6/4be2ee8a98
+  UK_asp_2007_6/559dc7ffa3
+  UK_asp_2010_5/993e2026b1
+  UK_eudr_1994_33/e4f8e48ad5
+  UK_eudr_2008_98/4973f396f7
+  UK_eur_2006_1013/3fe12cfb61
+  UK_eur_2006_1907/1b2e35540f
+  UK_nia_2013_10/678b2db7f5
+  UK_nisi_1992_1728/1671006c22
+  UK_nisi_1992_1728/c4b0a2d1a2
+  UK_nisr_2010_160/354bdfa240
+  UK_ssi_1999_1/6069af4cba
+  UK_ssi_1999_1/fb119beb47
+  UK_ssi_2002_167/cf23ff656c
+  UK_ssi_2004_508/8b3743f519
+  UK_ssi_2006_209/86254447df
+  UK_ssi_2018_219/93f15f3ae9
+  UK_ssi_2025_165/b30299549e
+  UK_ukpga_1883_3/bfb41f8ddf
+  UK_ukpga_1936_49/f15579a971
+  UK_ukpga_1961_34/6fa6890c9c
+  UK_ukpga_1963_33/1bcd5a18c3
+  UK_ukpga_1965_57/0180f321c3
+  UK_ukpga_1966_4/c7c0b01c88
+  UK_ukpga_1969_57/3177acc8c8
+  UK_ukpga_1970_44/878a85d650
+  UK_ukpga_1972_70/08025bf9a3
+  UK_ukpga_1972_70/1c363451d5
+  UK_ukpga_1972_70/4ebdcf85a3

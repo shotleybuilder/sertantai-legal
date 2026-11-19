@@ -1,0 +1,95 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+2201 family laws; 565 hold LAT rows (in scope), 1636 don't
+31135 effects in 565 laws:
+  20261  placed
+  8134  schedule_not_parsed
+  1022  not_in_text
+  736  not_a_provision
+  397  placed_versions
+  234  whole_law
+  212  row_missing
+  68  placed_by_markup
+  62  refs_not_converted  (our fault)
+  9  placed_ancestor
+
+our faults: 62
+  refs_not_converted  UK_asp_2013_5 "s. 21 heading" refs ["part-2-crossheading-regulations-etc"] → ["?"]
+  refs_not_converted  UK_asp_2013_5 "s. 50 heading" refs ["part-7-crossheading-definitions-etc"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Annex s. 2.2.1" refs ["annex", "annex-section-2.2.1"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Annex s. 2.2.1" refs ["annex", "annex-section-2.2.1"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Annex s. 1.1.1" refs ["annex", "annex-section-1.1.1"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Annex s. 1.1.2(f)" refs ["annex", "annex-section-1.1.2-f"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Annex s. 1.1.2(g)" refs ["annex", "annex-section-1.1.2-g"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Annex s. 1.2" refs ["annex", "annex-section-1.2"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Annex s. 1.3" refs ["annex", "annex-section-1.3"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Annex s. 1.3" refs ["annex", "annex-section-1.3"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Annex s. 1.3" refs ["annex", "annex-section-1.3"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Annex s. 2" refs ["annex", "annex-section-2"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Annex s. 2" refs ["annex", "annex-section-2"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Annex s. 2.1.2.1" refs ["annex", "annex-section-2.1.2.1"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Annex s. 2.1.2.2" refs ["annex", "annex-section-2.1.2.2"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Annex s. 2.2" refs ["annex", "annex-section-2.2"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Annex s. 2.2.1" refs ["annex", "annex-section-2.2.1"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Annex s. 2.2.2" refs ["annex", "annex-section-2.2.2"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Annex s. 2.3.1" refs ["annex", "annex-section-2.3.1"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Annex s. 2.2.2" refs ["annex", "annex-section-2.2.2"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Annex s. 2.3.1" refs ["annex", "annex-section-2.3.1"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Annex s. 2.3.2" refs ["annex", "annex-section-2.3.2"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Annex s. 2.4.1" refs ["annex", "annex-section-2.4.1"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Annex s. 2.4.1" refs ["annex", "annex-section-2.4.1"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Annex s. 3" refs ["annex", "annex-section-3"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Annex s. 3" refs ["annex", "annex-section-3"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Appendix A s. 1.1" refs ["appendix-A", "section-1.1"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Appendix A s. 2.2" refs ["appendix-A", "section-2.2"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Appendix A s. 4.1" refs ["appendix-A", "section-4.1"] → ["?"]
+  refs_not_converted  UK_eudn_2003_33 "Appendix B" refs ["appendix-B"] → ["?"]
+  refs_not_converted  UK_eudn_2015_2398 "Annex Pt. 5 heading" refs ["annex", "annex-part-5"] → ["?"]
+  refs_not_converted  UK_eudn_2015_2398 "Annex Pt. 5" refs ["annex", "annex-part-5"] → ["?"]
+  refs_not_converted  UK_eudn_2015_2398 "Annex Pt. 5" refs ["annex", "annex-part-5"] → ["?"]
+  refs_not_converted  UK_eudn_2015_2398 "Annex Pt. 5" refs ["annex", "annex-part-5"] → ["?"]
+  refs_not_converted  UK_eudn_2015_2398 "Annex Pt. 6" refs ["annex", "annex-part-6"] → ["?"]
+  refs_not_converted  UK_eudr_2008_98 "Annex IVa" refs ["annex-IVa"] → ["?"]
+  refs_not_converted  UK_eudr_2008_98 "Annex IVb" refs ["annex-IVb"] → ["?"]
+  refs_not_converted  UK_eur_2011_537 "Annex para. 1" refs ["annex", "annex-paragraph-1"] → ["?"]
+  refs_not_converted  UK_eur_2014_1191 "Annex s. 1 Table" refs ["annex", "annex-section-1"] → ["?"]
+  refs_not_converted  UK_eur_2014_1191 "Annex s. 6 heading" refs ["annex", "annex-section-6"] → ["?"]
+  refs_not_converted  UK_eur_2014_1191 "Annex s.0008" refs ["annex", "annex-section-8"] → ["?"]
+  refs_not_converted  UK_eur_2014_1191 "Annex s. 2" refs ["annex", "annex-section-2"] → ["?"]
+  refs_not_converted  UK_eur_2014_1191 "Annex SECTION 3 L 2 Sentence" refs ["annex-SECTION"] → ["?"]
+  refs_not_converted  UK_eur_2014_1191 "Annex SECTION 1 TABL" refs ["annex-SECTION"] → ["?"]
+  refs_not_converted  UK_eur_2014_1191 "Annex SECTION 4 TABL Text" refs ["annex-SECTION"] → ["?"]
+  refs_not_converted  UK_eur_2014_1191 "Annex SECTION 12 TABL" refs ["annex-SECTION"] → ["?"]
+  refs_not_converted  UK_eur_2014_1191 "Annex SECTION 13" refs ["annex-SECTION"] → ["?"]
+  refs_not_converted  UK_eur_2014_1191 "Annex SECTION 3 TABL" refs ["annex-SECTION"] → ["?"]
+  refs_not_converted  UK_eur_2014_1191 "Annex SECTION 2 TABL" refs ["annex-SECTION"] → ["?"]
+  refs_not_converted  UK_eur_2014_1191 "Annex SECTION 2 L 2 Sentence" refs ["annex-SECTION"] → ["?"]
+  refs_not_converted  UK_nisi_2006_3336 "Pt. 5 Ch. 3" refs ["part-V", "part-V-chapter-3"] → ["?"]
+  refs_not_converted  UK_ukpga_1975_23 "s. 27A and cross-heading" refs ["crossheading-crown-application"] → ["?"]
+  refs_not_converted  UK_ukpga_1975_23 "s. 12A and cross-heading" refs ["crossheading-flooding"] → ["?"]
+  refs_not_converted  UK_ukpga_1975_23 "s. 22A heading" refs ["crossheading-supplementary"] → ["?"]
+  refs_not_converted  UK_ukpga_1991_56 "Pt. 3 Ch. 2B" refs ["part-III", "part-III-chapter-2B"] → ["?"]
+  refs_not_converted  UK_ukpga_1991_56 "Pt. 4 Ch. 5" refs ["part-IV", "part-IV-chapter-5"] → ["?"]
+  refs_not_converted  UK_uksi_1983_1182 "Sch, Column (1), para 1" refs ["schedule", "paragraph-1"] → ["?"]
+  refs_not_converted  UK_uksi_1983_1182 "Sch, Column (1), para 2" refs ["schedule", "paragraph-2"] → ["?"]
+  refs_not_converted  UK_uksi_1983_1182 "Sch, Column (2), para 3(a)(b)" refs ["schedule", "paragraph-3-a-b"] → ["?"]
+  refs_not_converted  UK_uksi_1996_1527 "Pt. 10 Ch. 2 heading" refs ["part-X", "part-X-chapter-2"] → ["?"]
+  refs_not_converted  UK_uksi_2000_2911 "para. 2(1)" refs ["paragraph-2-1"] → ["?"]
+  refs_not_converted  UK_uksi_2001_838 "Pt. 3 heading" refs ["part-3-heading"] → ["?"]
+
+finer form not held (parse tell-tales): 10
+  not_found: 9  (gone from the text, or not there: a candidate only)
+    UK_eur_2006_1013 art.Article 50(4TR)  ("Art. 50 .4TR")
+    UK_eur_2006_1013 art.Article 50(4QQ)  ("Art. 50 .4QQ")
+    UK_eur_2006_1013 art.Article 50(4BI)  ("Art. 50 .4BI")
+    UK_eur_2006_1013 art.Article 50(4SX)  ("Art. 50 .4SX")
+    UK_eur_2006_1013 art.Article 50(2BI)  ("Art. 50 .2BI")
+    UK_eur_2006_1013 art.Article 50(4QT)  ("Art. 50 .4QT")
+    UK_eur_2006_1013 art.Article 60(2BI)  ("Art. 60 .2BI")
+    UK_eur_2011_725 art.Article 4(2)(iv)  ("Art. 4 para. 2 Point (iv)")
+    UK_eur_2013_1257 art.Article 21(2)  ("Art. 21 para. 2")
+  no_ids: 1  (the text numbers items with no id; the parse made no row, #184)
+    UK_eur_2006_1013 art.Article 2(35BI)  ("Art. 2 .35BI")
+
+FAIL (placement)

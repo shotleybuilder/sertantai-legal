@@ -499,9 +499,12 @@ In a substitution, the numbers the instruction names stay substituted. Every oth
 - **Serves:** `law-text-wins` · **Code:** `Amendment.Reader.NewNumbers` · **Test:** `amendment/reader_test` · **Origin:** Jason 2026-10-30, `cv-s09-label-fold` (rounds 5–6)
 
 ### `feed-substituted-for-new-numbers-inserted`
-Where a feed effect's Type names what was substituted for ("substituted for Art. 15(1)"), a target it names stays substituted and a target beside it under a number it does not name is inserted. Nothing changes when the Type names none of the effect's targets.
-- **Example:** REACH Art 15(1A) by SI 2019/556 reg. 25 ("for paragraph 1 substitute— 1 … 1A …"): inserted, not substituted.
-- **Serves:** `one-record-per-change` · **Code:** `Readers.FeedSubstitutedFor.inserted/2`, `Readers.Feed.placed/4` · **Test:** `feed_substituted_for_test` · **Origin:** Fire and OH&S: Feed reader (Fix 8), 2026-11-13; 1,269 effects in 288 laws
+Where a feed effect's Type names what was substituted for ("substituted for Art. 15(1)"), a target it names stays substituted, and a target beside it under a number it does not name is inserted.
+- **New numbers in place of words or of others** ("reg. 3(k)(l)" "substituted for full stop"; "s. 39A-39E" "substituted for s. 39 40") are inserted.
+- **A number the Type names that is no target** gets its removal: SSI 2014/364 "(i)-(iii)" for "(i)-(iv)" removes (iv).
+- **A letter range ranks as legislation numbers:** a…z, aa…zz, aaa.
+- **Example:** REACH Art 15(1A) by SI 2019/556 reg. 25 ("for paragraph 1 substitute— 1 … 1A …") is inserted, not substituted. EPA 1990 s.153(1) "(a)-(aaa)" by SI 2015/479 art. 2 reads substituted.
+- **Serves:** `one-record-per-change` · **Code:** `Readers.FeedSubstitutedFor`, `Readers.FeedSubstitutedRemoved`, `Readers.Feed.placed/5` · **Test:** `feed_substituted_for_test`, `feed_substituted_for_forms_test`, `feed_substituted_removed_test` · **Origin:** Fire and OH&S: Feed reader (Fix 8), 2026-11-13, 1,269 effects in 288 laws; widened at Waste, Water and Climate: Feed reader (class E), 2026-11-19, 720 records in 216 laws
 
 ### `text-change-carries-its-stages`
 A text change brought in by stages is one change from its first stage, and carries every stage as read in `feed.stages`: its date, commencing order, territory (`in_force_for`, `in_force_except`), qualification and whether it is partial. A text change commenced on one day by several orders lists each order. The Label fold reads the stages.
@@ -729,14 +732,33 @@ A new provision that a joined change makes below it (an amendment substituting w
 - **Serves:** `binds-on-date`, `one-record-per-change`, `unknown-over-guess` (the date is a source fact: legislation.gov.uk's markup wraps the new paragraphs under the one effect id) · **Code:** `Merge.Copies` · **Test:** `merge_copies_test` · **Origin:** Jason with Gemini 2026-11-06, Maritime Safety: Merge (Decision 2)
 
 ### `feed-affecting-range-names-every-provision`
-A feed effect's affecting provisions given as a range ("regs 11-14") name every provision from start to end; ends that cannot be counted between (lettered, roman, different depths, over 100 apart) name the two ends. An "(adding …)" tail names provisions added to another law and is not read.
-- **Example:** SI 2000/1335 regs 11-14 on SI 1998/2241.
-- **Serves:** `one-record-per-change` · **Code:** `Readers.FeedAffecting.refs/1` · **Test:** `feed_affecting_range_test` · **Origin:** Fire and OH&S: Feed reader (Fix 4), 2026-11-13; 2,561 effects in 290 laws
+A feed effect's affecting provisions name every provision they list. The text is read piece by piece, with the kind in force:
+- **A range** ("regs 11-14") is every provision from start to end. Ends that cannot be counted between (lettered, roman, different depths, over 100 apart) name the two ends.
+- **A list or a bare continuation** ("arts. 2 3 Sch. 1", "art. 3-6 8-10", "s. 10(2)(a) (4)") names each one listed.
+- **An attached bracketed number of the same form is a sibling,** as the feed's own children name them: "s. 52(8)(9)" is s.52(8) and s.52(9). A different form nests: "(1)(a)".
+- **A bracket tail naming another law** ("(adding …)", "(substituting …)", "(amending …)", "(replacing …)", "(modifying …)" …) is not read. Its provisions are the other law's.
+- **Example:** SI 2000/1335 regs 11-14 on SI 1998/2241; SSI 2009/247 "art. 3-6 8-10"; 1976 c.57 "s. 74(4) 102(substituting 1968 c 47 s. 10)" gives s.74(4) and s.102.
+- **Serves:** `one-record-per-change` · **Code:** `Readers.FeedAffecting.refs/1`, `Readers.FeedAffectingSpan`, `Readers.FeedAffectingSiblings` · **Test:** `feed_affecting_range_test`, `feed_affecting_list_test`, `feed_affecting_tail_test`, `feed_affecting_siblings_test` · **Origin:** Fire and OH&S: Feed reader (Fix 4), 2026-11-13, 2,561 effects in 290 laws; Waste, Water and Climate: Feed reader (classes C, F, G; Decision 2 b), 2026-11-19: 6,232, 242 and 8,722 effects
 
 ### `feed-heading-by-any-name-is-words`
 A feed effect on a provision's heading under any of its names — a trailing "title", "sidenote", "shoulder note", or a "cross-heading" whose ref is the provision under it — is at words level and marks the heading; never the whole provision. A container Title ("Title 14A") and the law's own title are not.
 - **Example:** SI 2009/995 "reg. 10 Title" substituted by SI 2012/630 reg. 19(2)(a).
 - **Serves:** `binds-on-date` · **Code:** `Readers.Feed` (`level/1`, `part?/1`, `titled?/1`) · **Test:** `feed_title_locator_test` · **Origin:** Fire and OH&S: Feed reader (Fix 7), 2026-11-13; 340 effects in 104 laws
+
+### `feed-trailing-part-is-words`
+A whole verb on a part written after the linked provision (a Table, Form, proviso, Note, footnote, Figure or side note) changes part of that provision's text. It is at words level on the provision, never the provision replaced or repealed. A Form the feed links itself, and a Table held as its own row, keep the whole reading. A punctuation mark (a comma, a bracket, a dash) is words level too.
+- **Example:** SI 2023/331 reg. 9(a), "for the table entitled … substitute the table", recorded as "reg. 6(2) Table 1 substituted". WCA 1981 "Sch. 5 Note 2 omitted" is not Schedule 5 repealed.
+- **Serves:** `binds-on-date` · **Code:** `Readers.Feed` (`@words_level`, `part?/1`, `relevel/3`), `Readers.FeedPart` · **Test:** `feed_trailing_part_test`, `feed_punctuation_level_test` · **Origin:** Waste, Water and Climate: Feed reader (classes B, D), 2026-11-19; 563 effects in 99 laws, plus 4
+
+### `feed-ref-names-what-the-text-holds`
+A feed ref is named as our rows name it, and otherwise it is given its true unplaced reason, never "not converted":
+- an EU Annex's piece or an Appendix is the Annex or Appendix whole (schedule not parsed);
+- a Part's heading is the Part;
+- a Scheme's paragraph is its row;
+- a Chapter or cross-heading the text doesn't hold is not in text;
+- one the text holds with no row is row missing.
+- **Example:** EU Decision 2003/33 "Annex s. 2.2.1" is schedule not parsed; SI 2001/838 "Pt. 3 heading" is `pt.III`.
+- **Serves:** `coverage-from-lgu` · **Code:** `Readers.FeedAnnex`, `Readers.FeedParagraph`, `Readers.FeedGroup`, `Placement` · **Test:** `feed_unconverted_refs_test`, `placement_test` · **Origin:** Waste, Water and Climate: Feed reader (class A), 2026-11-19; the round's 62 faults
 
 ### `feed-is-the-coverage-baseline`
 The feed and the markup give coverage. The law's text is read for territory, dates, its own clauses and changes not yet in the feed. Fetches go one hop out, whole documents counted, with Jason's go. An amendment to an amending law is one hop.
@@ -988,6 +1010,7 @@ The named missing-repeal rows and the named date gaps keep the old register's la
 | Markup forms below triage (Fire and OH&S: Markup reader), carried as read: a legacy note's plural citation marks only one piece operative, so its other piece is not an affecting pointer. It is usually the commencement provision ("ss. 57(4), 147(3)", Environment Act 2021); in "arts. 1, 2" (SI 1996/1431 on EPA s.153(1)(ee)) legislation.gov.uk marks the commencement article and leaves the amending one unmarked. EU markup in unnumbered ListItems placed on the Article (Directive 98/24 art.2(b)(i), (b)(iii)). Schedule-part wrapper ids, under schedules not parsed (SI 2008/1597 sch.2.pt.9, pt.11). 62 legacy changes whose note is shared or already a key (`legacy-change-keyed-by-its-note`). A legacy inner Addition round a number that was no insertion (the Countryside (Scotland) Act 1967 s.48A: a 2000 "ceases to have effect" inside the 1981 insertion) takes the outer, earlier insertion's claim off the row, its start unchanged (`later-insertion-is-the-innermost-change`, Decision 2 a) | 1 (EPA); 4; 0 in the round; 62; about 72 rows | As read | `2026-11-14-fire-and-ohs-markup-reader` | Jason 2026-11-14 (the plan; Decisions 1 a, 2 a) |
 | An SI's introduction with no powers clause on legislation.gov.uk (the designation or draft-approval recital only, or no preamble: SI 2011/1043, 1999/1820, 1977/445) | Maritime Safety: 3 changes | No bound from powers | `withheld.json` | 2026-11-05 |
 | Sources needs legislation.gov.uk does not meet: asp 2002/5's introduction states no Royal Assent date (empty `DateText`, no `EnactmentDate`); SI 2006/475 has no XML (its body a stored 404, counted absent); NISR 1993/452 has no provisions upstream (`NumberOfProvisions` 0) | 1 law each; SI 2006/475 2 changes (Occupational) | Absent, not failing; no Royal Assent date, no bound from the text | the session | Waste, Water and Climate: Sources, 2026-11-18 |
+| legislation.gov.uk's feed children split a small pair straight after a number both ways ("art. 33(a)(b)": 135 as siblings, 133 nested), so no rule matches both; read as siblings | 136 effects store-wide, 41 in the five families (mostly the Highways Act 1980 and the Sewerage (Scotland) Act 1968) | The affecting pointer names both | `2026-11-18-waste-water-and-climate-feed-reader` Fix 5 | 2026-11-19 |
 | An enabling Act not on legislation.gov.uk (stored as a 404: the Merchant Shipping (Registration, etc.) Act 1993, repealed 1996) | Maritime Safety: SI 1994/541, 24 changes | No bound from powers | `withheld.json` | 2026-11-05 |
 | Provisions named by power or as Schedule entries, not by number ("so much of any provision of this Act as authorises the making of any order": ICTA 1988 s.843(3), SSCBA 1992 s.289(2); Schedule entries, SI 2003/835) | 3 statements | Undated by the clause | same | 2026-11-05 |
 | Commencement forms below triage (Fire and OH&S: Commencement reader), named in `leftovers.json` or parked: a start staged by the cases it applies to, read at its first date (SI 1988/1729 reg.1(1)(a): 1989 for most mines, 1994 for existing miscellaneous mines; 8 changes); "This section has effect from" (LGA 1985 s.84(3), not in the round); an event day (SI 2017/720 reg.2(2), "when the installation arrives"); "This Act except … on the transfer date" unread (1971 c.10 s.40(2)); a purpose-limited date read as the whole start (SI 2006/1244 reg.1(4), 93 Maritime labels, parked with Maritime's next pass) | Fire and OH&S: 8 changes; Maritime Safety: 93 | The first date, or undated | `leftovers.json`; the session | 2026-11-14 |

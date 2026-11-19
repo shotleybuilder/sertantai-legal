@@ -159,6 +159,20 @@ A rebuild moves no switched label until `LabelRefresh` runs. Laws whose rows don
 - **The switched families** stay one reading behind until the round's Store and build (Decision 5).
 - **New Sources needs:** after the rebuild, Sources counts 3 more needs (1,176): 3 amending laws' schedules not yet fetched (backlog), so the step close's Sources gate fails 3, parked with Sources.
 
+**Waste, Water and Climate, the second round (2026-11-18/19).**
+- **The check:** 31,135 effects in 565 laws.
+  - The baseline had our faults 62, refs in forms no earlier family had (EU Annex pieces, cross-headings, a Scheme's paragraphs). They are now 0, and 20,264 are placed.
+  - Seed 67 is repeatable, golden 41/50 (the same 9), and the rebuild gives 92,711 changes.
+- **Seven classes, one fixer call each, each diff reviewed with its reach over every stored feed:**
+  - refs not converted (`feed-ref-names-what-the-text-holds`);
+  - punctuation and trailing parts at words level (`feed-trailing-part-is-words`; parked bug 2);
+  - the affecting provisions read piece by piece: lists, bracket tails, attached siblings (`feed-affecting-range-names-every-provision`; parked bug 1, and Decision 2 b's two classes it uncovered);
+  - "substituted for" forms and the letter rank (`feed-substituted-for-new-numbers-inserted`; parked bugs 3–4).
+- **Parked estimates were far off.** The plural-list bug was parked at about 430 effects and reached 6,232 store-wide (674 in the five families). Measure a parked class's reach with the old and new reader over every stored text before sizing it against the stop.
+- **Held examples:** 154 moved and written after a checked dry run (Decision 3; `backend/data/reports/feed-reader/waste-water-and-climate-held-write.exs` keeps the pending examples' held outcome, which last round's script would have overwritten).
+- **The switched families** stay one reading behind until the round's Store and build (Decision 4 b, as Fire and OH&S).
+- **Sources after the rebuild:** 14 new needs, fetched in-step (`sources-fetch-failures-swept-each-step`).
+
 **Skill.** `feed-reader-check`.
 
 ## 3. Markup reader

@@ -1,0 +1,40 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+565 laws in scope
+
+needed against held, by category:
+  own: 565 — held 565
+  feed: 546 — held 546
+  territory: 1145 — absent 2, held 1142, not_fetched 1
+  introduction: 856 — absent 2, held 853, not_fetched 1
+  enabling_parent: 102 — held 102
+  dates: 518 — absent 190, held 328
+  backlog: 802 — absent 270, held 520, not_fetched 12
+  royal_assent: 2 — held 2
+  needed, all categories: 4536
+
+failures: 14
+  not_fetched  backlog  UK_uksi_2019_582 :schedules  (for UK_nisi_1999_662)
+  not_fetched  backlog  UK_nisr_2006_489 :schedules  (for UK_nisr_2003_319)
+  not_fetched  backlog  UK_ssi_2022_138 :schedules  (for UK_ssi_2006_465)
+  not_fetched  backlog  UK_uksi_1998_1856 :schedules  (for UK_uksi_1992_575)
+  not_fetched  backlog  UK_uksi_2001_3142 :schedules  (for UK_uksi_1994_3076)
+  not_fetched  territory  UK_uksi_2002_2614 :body  (for UK_uksi_2000_2911)
+  not_fetched  introduction  UK_uksi_2002_2614 :introduction  (for UK_uksi_2000_2911)
+  not_fetched  backlog  UK_uksi_2005_1716 :schedules  (for UK_uksi_2001_838)
+  not_fetched  backlog  UK_uksi_2023_1185 :schedules  (for UK_uksi_2004_3202)
+  not_fetched  backlog  UK_uksi_2024_1234 :schedules  (for UK_uksi_2004_3202)
+  not_fetched  backlog  UK_uksi_2011_493 :schedules  (for UK_uksi_2007_3072)
+  not_fetched  backlog  UK_uksi_2026_750 :schedules  (for UK_uksi_2010_2617)
+  not_fetched  backlog  UK_uksi_2025_678 :schedules  (for UK_uksi_2024_1130)
+  not_fetched  backlog  UK_wsi_2024_339 :schedules  (for UK_wsi_2011_656)
+
+feeds differing from the register's change statistics: 0
+
+FAIL
+
+fetching 14 documents the check failed …
+  Fetching enacting data: /uksi/2002/2614/made/introduction/data.xml
+  Fetching enacting data: /uksi/2002/2614/introduction/made/data.xml
+fetched 14, failed 0

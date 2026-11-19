@@ -1,0 +1,34 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+2201 family laws; 565 hold LAT rows (in scope), 1636 don't
+31135 effects in 565 laws:
+  20264  placed
+  8185  schedule_not_parsed
+  1025  not_in_text
+  736  not_a_provision
+  397  placed_versions
+  234  whole_law
+  217  row_missing
+  68  placed_by_markup
+  9  placed_ancestor
+
+our faults: 0
+
+finer form not held (parse tell-tales): 10
+  not_found: 9  (gone from the text, or not there: a candidate only)
+    UK_eur_2006_1013 art.Article 50(4TR)  ("Art. 50 .4TR")
+    UK_eur_2006_1013 art.Article 50(4QQ)  ("Art. 50 .4QQ")
+    UK_eur_2006_1013 art.Article 50(4BI)  ("Art. 50 .4BI")
+    UK_eur_2006_1013 art.Article 50(4SX)  ("Art. 50 .4SX")
+    UK_eur_2006_1013 art.Article 50(2BI)  ("Art. 50 .2BI")
+    UK_eur_2006_1013 art.Article 50(4QT)  ("Art. 50 .4QT")
+    UK_eur_2006_1013 art.Article 60(2BI)  ("Art. 60 .2BI")
+    UK_eur_2011_725 art.Article 4(2)(iv)  ("Art. 4 para. 2 Point (iv)")
+    UK_eur_2013_1257 art.Article 21(2)  ("Art. 21 para. 2")
+  no_ids: 1  (the text numbers items with no id; the parse made no row, #184)
+    UK_eur_2006_1013 art.Article 2(35BI)  ("Art. 2 .35BI")
+
+sample of 50 written to data/reports/feed-reader/waste-water-and-climate-sample-seed67-a.json
+
+PASS (placement)

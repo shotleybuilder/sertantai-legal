@@ -1,0 +1,79 @@
+
+── Sources (mix lat.sources) ──
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+565 laws in scope
+
+needed against held, by category:
+  own: 565 — held 565
+  feed: 546 — held 546
+  territory: 1145 — absent 2, held 1143
+  introduction: 856 — absent 2, held 854
+  enabling_parent: 102 — held 102
+  dates: 518 — absent 190, held 328
+  backlog: 802 — absent 280, held 522
+  royal_assent: 2 — held 2
+  needed, all categories: 4536
+
+failures: 0
+
+feeds differing from the register's change statistics: 0
+
+PASS
+
+── Feed reader (mix lat.feed_check) ──
+2201 family laws; 565 hold LAT rows (in scope), 1636 don't
+31135 effects in 565 laws:
+  20264  placed
+  8185  schedule_not_parsed
+  1025  not_in_text
+  736  not_a_provision
+  397  placed_versions
+  234  whole_law
+  217  row_missing
+  68  placed_by_markup
+  9  placed_ancestor
+
+our faults: 0
+
+finer form not held (parse tell-tales): 10
+  not_found: 9  (gone from the text, or not there: a candidate only)
+    UK_eur_2006_1013 art.Article 50(4TR)  ("Art. 50 .4TR")
+    UK_eur_2006_1013 art.Article 50(4QQ)  ("Art. 50 .4QQ")
+    UK_eur_2006_1013 art.Article 50(4BI)  ("Art. 50 .4BI")
+    UK_eur_2006_1013 art.Article 50(4SX)  ("Art. 50 .4SX")
+    UK_eur_2006_1013 art.Article 50(2BI)  ("Art. 50 .2BI")
+    UK_eur_2006_1013 art.Article 50(4QT)  ("Art. 50 .4QT")
+    UK_eur_2006_1013 art.Article 60(2BI)  ("Art. 60 .2BI")
+    UK_eur_2011_725 art.Article 4(2)(iv)  ("Art. 4 para. 2 Point (iv)")
+    UK_eur_2013_1257 art.Article 21(2)  ("Art. 21 para. 2")
+  no_ids: 1  (the text numbers items with no id; the parse made no row, #184)
+    UK_eur_2006_1013 art.Article 2(35BI)  ("Art. 2 .35BI")
+
+PASS (placement)
+
+── Checked rows (mix lat.label_checked) ──
+744 checked rows: %{known: 47, match: 696, upstream: 1}
+PASSED
+
+── Stale laws (mix lat.stale) ──
+parser 4cf7d6e7fbc2, labels 073b51f677c2: 552 stale laws (switched families: 0 of 527)
+  labels_version: 552
+  parser_version: 552
+
+change register, code 2d8361623e47: 764 of 1105 built laws stale (114 built with no changes)
+  code_version: 540
+  commencement_reader: 210  (fix: mix lat.commencement (the mode that wrote them), then build)
+  extent_reader: 126  (fix: mix lat.amending --extents --amending A,B, then build)
+  laws holding LAT with no build: 539
+
+Waste, Water and Climate: 224 stale laws (LAT or labels 0, change register 224)
+
+Feed reader's close, Waste, Water and Climate:
+  PASS  Sources
+  PASS  Feed reader
+  PASS  Checked rows
+  FAIL  Stale laws (224 failing; fix by the reasons above: re-parse (LAT parser), re-read (the reader), rebuild (Store and build))
+
+FAIL (step close)

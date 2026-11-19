@@ -1,0 +1,21 @@
+== round
+  1 affecting-plural-list: 30 effects, 19 laws; e.g. UK_ssi_2009_247 'Blanket amendment' 'words substituted' by 'art. 3-6 8-10'
+  2 trailing-part-read-whole: 22 effects, 15 laws; e.g. UK_eur_2019_631 'Annex 2 Pt. B s. 2 Table' 'substituted' by 'reg. 2(5)'
+  3 substituted-for-left-whole: 35 effects, 17 laws; e.g. UK_asp_2002_3 's. 57(7)(a)' 'substituted for words' by 'Sch. 5 para. 7(7)(a)'
+  4 letter-range-ranked-as-text: 2 effects, 2 laws; e.g. UK_ssi_2014_364 'sch. 1A Pt. C para. 3(b)(i)-(iii)' 'substituted for sch. 1A Pt. C para. 3(b)(i)-(iv)' by 'reg. 17(4)(b)(ii)'
+== ep
+  1 affecting-plural-list: 33 effects, 8 laws; e.g. UK_nisr_2009_252 'Blanket amendment' 'words substituted' by 'art. 3-6 8-10'
+  2 trailing-part-read-whole: 2 effects, 2 laws; e.g. UK_ukpga_1995_25 'Sch. Pt. 1 2 Table' 'Appointed day(s) for spec. provns. (12.10.1995)' by 'art. 2'
+  3 substituted-for-left-whole: 4 effects, 3 laws; e.g. UK_anaw_2016_3 's. 6(7)(a)(b)' 'substituted for words' by 's. 38(1)'
+  4 letter-range-ranked-as-text: 1 effects, 1 laws; e.g. UK_ukpga_1990_43 's. 153(1)(a)-(nn)' 'substituted for s. 153(1)(a)-(aaa)' by 'art. 2'
+== fireohs
+  1 affecting-plural-list: 7 effects, 7 laws; e.g. UK_nisr_1996_228 'Blanket amendment' 'words substituted' by 'art. 3-6 8-10'
+  3 substituted-for-left-whole: 3 effects, 2 laws; e.g. UK_nisr_2010_59 'reg. 3(k)(l)' 'substituted for full stop' by 'reg. 4(5)'
+== occ
+  1 affecting-plural-list: 21 effects, 8 laws; e.g. UK_nisi_1997_1774 'specified amended provision(s)' 'Commencement Order' by 'art. 2-7 Sch.'
+  2 trailing-part-read-whole: 1 effects, 1 laws; e.g. UK_uksi_1997_2505 'Sch.6, Table' 'amended' by 'reg.18(3)(b)(c)'
+  3 substituted-for-left-whole: 6 effects, 4 laws; e.g. UK_nisr_1993_20 'reg. 6(2)(c)' 'semi-colon substituted for full stop' by 'reg. 5(c)(ii)'
+== mar
+  1 affecting-plural-list: 13 effects, 4 laws; e.g. UK_ukpga_1995_21 's. 152-170' 'extended (with modifications) (Jersey)' by 'arts. 2 3 Sch. 1'
+  2 trailing-part-read-whole: 1 effects, 1 laws; e.g. UK_uksi_2007_3100 'Sch. 2 Table' 'substituted' by 'Sch.'
+  3 substituted-for-left-whole: 1 effects, 1 laws; e.g. UK_uksi_2000_2687 'reg. 4(2)(i)(j) and word' 'substituted for words' by 'Sch. 2'
