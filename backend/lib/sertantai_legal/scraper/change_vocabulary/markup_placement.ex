@@ -19,6 +19,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPlacement do
       introductory text);
     - `:group_row_missing` — in a Part, Chapter or cross-heading's own
       heading or text, and we hold no row for the group;
+    - `:eu_section_not_held` — in an EU Section's own heading: the LAT
+      parser makes no Section rows (Jason 2026-11-19, Waste, Water and
+      Climate: Markup reader, Decision 1);
     - `:id_not_converted` — under an id that names no row (the reader's
       fault);
     - `:row_missing` — on a provision in the text with no row of its own
@@ -45,8 +48,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPlacement do
   @faults [:id_not_converted, :row_missing, :group_row_missing]
 
   @group ~r/^(?:part|chapter|title|crossheading|division|subpart)-/
-  # an id still named nowhere that begins "section-" is an EU Section (a
-  # domestic section id is always named)
+  # an id still named nowhere that is a "section-N" is an EU Section (a
+  # domestic section id is always named), held by no row
+  @eu_section ~r/(?:^|-)section-[^-]+$/
 
   @doc """
   Where a change lands, from its targets, the CLML ids above each of its
@@ -151,10 +155,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPlacement do
       not held.schedules? and Enum.any?(all, &(&1 =~ ~r/^(?:schedule|annex)-/)) ->
         {:unplaced, :schedule_not_parsed}
 
-      Enum.any?(
-        ids,
-        &(List.last(&1, "") =~ @group or String.starts_with?(List.last(&1, ""), "section-"))
-      ) ->
+      Enum.any?(ids, &(List.last(&1, "") =~ @eu_section)) ->
+        {:unplaced, :eu_section_not_held}
+
+      Enum.any?(ids, &(List.last(&1, "") =~ @group)) ->
         {:unplaced, :group_row_missing}
 
       true ->

@@ -40,6 +40,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPlacementTest do
     assert P.classify([], [["section-4", "term-car"]], @held) == {:unplaced, :id_not_converted}
   end
 
+  # Waste, Water and Climate: Markup reader, Decision 1 (Jason 2026-11-19):
+  # the LAT parser makes no rows for EU Sections, so a change in an EU
+  # Section's own heading (EU 2006/1013 Title IV Chapter 2 Section 1: "non-EU,"
+  # added) is not held, with its reason, not our fault.
+  test "a change in an EU Section's heading is not held, not a fault" do
+    eu = ["title-IV", "title-IV-chapter-2", "title-IV-chapter-2-section-1"]
+    assert P.classify([], [eu], @held) == {:unplaced, :eu_section_not_held}
+    assert P.classify([], [["section-3"]], @held) == {:unplaced, :eu_section_not_held}
+    refute P.fault?(:eu_section_not_held)
+    assert P.classify([], [["title-IV-chapter-2"]], @held) == {:unplaced, :group_row_missing}
+  end
+
   # Environmental Protection: Markup reader, Decision 1 (Jason 2026-11-09):
   # a scoped law is read for its scope, from our rows to the law. The
   # Aggregates Tax and Devolved Taxes Administration (Scotland) Act 2024

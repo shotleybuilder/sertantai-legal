@@ -152,17 +152,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupReaderTest do
       assert affecting(note(text)) == [["sch.10.para.9", "sch.para.3(3)"]]
     end
 
-    # EPA 1990 s.153(1)(ee) by SI 1996/1431: "arts. 1, 2", only "arts. 1"
-    # marked operative while the feed names art.2. The unmarked piece of
-    # such a list is usually the law's commencement provision ("ss. 57(4),
-    # 147(3)", Environment Act 2021), so the marks are read as given: a
-    # known limit (legislation.gov.uk marks the wrong piece), not a fix
+    # the unmarked piece of a plural list is usually the law's commencement
+    # provision ("ss. 57(4), 147(3)", Environment Act 2021), so the marks
+    # are read as given. A mark on an instrument's first provision alone
+    # ("arts. 1, 2", EPA 1990 s.153(1)(ee) by SI 1996/1431) is the other
+    # way round: `markup_plural_list_test`
     test "only the pointers marked operative, even in a plural list" do
       text =
-        ~s|S. 153(1)(ee) inserted by #{@cite}, <CitationSubRef CitationRef="x1" SectionRef="article-1" Operative="true">arts. 1</CitationSubRef>, | <>
-          ~s|<CitationSubRef CitationRef="x1" SectionRef="article-2">2</CitationSubRef>|
+        ~s|S. 153(1)(ee) inserted by #{@cite}, <CitationSubRef CitationRef="x1" SectionRef="section-57-4" Operative="true">ss. 57(4)</CitationSubRef>, | <>
+          ~s|<CitationSubRef CitationRef="x1" SectionRef="section-147-3">147(3)</CitationSubRef>|
 
-      assert affecting(note(text)) == [["reg.1"]]
+      assert affecting(note(text)) == [["s.57(4)"]]
     end
 
     test "a pointer after (with …) is not operative" do

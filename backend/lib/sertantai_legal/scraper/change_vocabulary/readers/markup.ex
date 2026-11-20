@@ -11,7 +11,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
   with a substitution → substituted, Substitution → substituted, Addition →
   inserted), `level` (`:provision` when the change wraps the provision's
   number, else `:words`), `retained` (RetainText), `territory` (the Extent
-  attribute), `cited` — the law the change's note cites — and `affecting`
+  attribute; a substitution's new words' where they state another:
+  `SubstitutionTerritory`), `cited` — the law the change's note cites — and `affecting`
   — the amending provisions the note names after it. Both are pointers for
   identity only (`ChangeVocabulary.Merge`; Jason 2026-10-22), never facts.
 
@@ -25,10 +26,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Claim, Ref}
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup.{
+    CopiedChangeIds,
+    CopiedNotePieces,
+    FirstProvisionList,
+    JoinedSectionRef,
     KeptChildren,
     Level,
+    ListEnd,
     ListItems,
     NestedAdditions,
+    NoteCitation,
+    SubstitutionPairs,
+    SubstitutionTerritory,
+    TerritoryCitations,
     Versions
   }
 
@@ -244,14 +254,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
   SubstitutionRef names) are the same change as the old words: one
   substitution (catalogue finding D). Each new words' ChangeId → the
   Repeal's, whatever either's key (EPA 1990 h.62: `d29p10005` →
-  `d29p10003`). The reader, the check and the catalogue group by it.
+  `d29p10003`). The reader, the check and the catalogue group by it. A
+  Repeal naming another change's new words is paired with its own
+  (`SubstitutionPairs`).
   """
   @spec substitutions(tuple()) :: %{String.t() => String.t()}
-  def substitutions(doc) do
-    for el <- xpath(doc, ~x"//*[@ChangeId and @SubstitutionRef]"l),
-        into: %{},
-        do: {xpath(el, ~x"./@SubstitutionRef"s), xpath(el, ~x"./@ChangeId"s)}
-  end
+  def substitutions(doc), do: SubstitutionPairs.read(doc)
 
   @doc """
   The legacy changes keyed by their note's effect id (#188; Fire and OH&S:
@@ -259,6 +267,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
   CommentaryRef is an effect id that is that change's alone (no other
   legacy change hangs on it) and no change element's own key. Each such
   ChangeId → the effect id. The change is still read as legacy markup.
+
+  With them, the ChangeIds copied from another change with a letter added,
+  each → its own note's effect id (`CopiedChangeIds`; Waste, Water and
+  Climate: Markup reader, Decision 3).
   """
   @spec note_keys(tuple()) :: %{String.t() => String.t()}
   def note_keys(doc) do
@@ -266,6 +278,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
       for el <- xpath(doc, ~x"//*[@ChangeId]"l),
           do: {xpath(el, ~x"./@ChangeId"s), xpath(el, ~x"./@CommentaryRef"s)}
 
+    elements |> legacy_note_keys() |> Map.merge(CopiedChangeIds.keys(elements))
+  end
+
+  defp legacy_note_keys(elements) do
     own = MapSet.new(elements, fn {id, _} -> key(id) end)
 
     elements
@@ -284,6 +300,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
     |> Enum.group_by(&Map.get(ctx.substitutions, &1.change_id, &1.change_id))
     |> Enum.flat_map(fn {change_id, occ} ->
       key = Map.get(ctx.note_keys, change_id) || key(change_id)
+      sole = sole_extent(occ)
+      occ = Enum.map(occ, &Map.put(&1, :sole_extent, sole))
 
       for {ref, xml_id, group} <- placements(change_id, occ, ctx),
           not wrapped?(change_id, xml_id, ctx),
@@ -539,6 +557,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
           :inserted
       end
 
+    territory = occ |> SubstitutionTerritory.extent() |> code()
+    pointer = note_pointer(cited, note, first.sole_extent)
+
     Enum.concat([
       Claim.new(:markup, :operation, operation, change_id),
       Level.claims(occ, target, ctx, change_id),
@@ -548,10 +569,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
         if(first.kind == :Repeal or (repeal && repeal.paired), do: repeal.retain),
         change_id
       ),
-      Claim.new(:markup, :territory, Enum.find_value(occ, & &1.extent) |> code(), change_id),
-      Claim.new(:markup, :cited, get_in(cited, [note, :law]), change_id),
-      Claim.new(:markup, :cited_text, get_in(cited, [note, :text_law]), change_id),
-      Claim.new(:markup, :affecting, get_in(cited, [note, :refs]), change_id),
+      Claim.new(:markup, :territory, territory, change_id),
+      Claim.new(:markup, :cited, pointer[:law], change_id),
+      Claim.new(:markup, :cited_text, pointer[:text_law], change_id),
+      Claim.new(:markup, :affecting, pointer[:refs], change_id),
       # pointers for identity (CV-S07 round 2): the note the change hangs on
       # (its copies in each version share it), and a change wholly in a
       # heading
@@ -561,6 +582,24 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
       # the territorial versions whose own text carries it (CV-S09 round 8)
       Claim.new(:markup, :in_versions, in_versions(occ, ctx), change_id)
     ])
+  end
+
+  # the one Extent every element of the change (its ChangeId) states,
+  # wherever placed, else nil: a change with elements stating none, or
+  # another, is not one territory's alone
+  defp sole_extent(occ) do
+    case occ |> Enum.map(& &1.extent) |> Enum.uniq() do
+      [extent] -> code(extent)
+      _mixed -> nil
+    end
+  end
+
+  # the note's cited law and amending provisions: the instrument the note
+  # pairs with the change's territory where it pairs territories with
+  # instruments (`TerritoryCitations`), else its amending law's
+  defp note_pointer(cited, note, territory) do
+    entry = Map.get(cited, note) || %{}
+    get_in(entry, [:by_territory, territory]) || entry
   end
 
   defp in_versions(occ, _ctx) do
@@ -611,9 +650,25 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
   # apart; never stored as facts or labelled). The provisions are the note's
   # own structured pointers (finding G): its `CitationSubRef`s of that
   # Citation, the operative ones where it marks them ("(with reg. 3)" and
-  # another law's "(as amended by …)" are not), each `SectionRef` a ref
-  # ("schedule-2-paragraph-15-a-i-aa" → "sch.2.para.15(a)(i)(aa)"); a note
-  # with none falls back to its words (`AmendingLaw.Pointer`)
+  # another law's "(as amended by …)" are not; a mark on the instrument's
+  # first provision alone stands for the pieces listed with it:
+  # `FirstProvisionList`; with no mark at all, the pieces listed after the
+  # Citation, to the first words that open another reference: `ListEnd`),
+  # each `SectionRef` a ref
+  # ("schedule-2-paragraph-15-a-i-aa" → "sch.2.para.15(a)(i)(aa)"), one
+  # that joins sibling provisions each of them ("section-86-2-c-5-8" →
+  # s.86(2)(c), s.86(5), s.86(8): `JoinedSectionRef`); a note
+  # with none falls back to its words (`AmendingLaw.Pointer`, the list
+  # ending as a marked-up one does: `ListEnd`), an Order's
+  # article named as its SectionRef is ("art. 2" → "reg.2"). The law is the
+  # note's amending law's Citation (`NoteCitation`: the first after the
+  # note's "by", never a law cited before it or in a bracket; a note whose
+  # amending law is cited in words only gives no linked law; for a change
+  # stating a territory the note
+  # pairs with another instrument, that one: `TerritoryCitations`). A
+  # copied note, whose pieces name the Citation's id before the copy, is
+  # read as any note once its pieces are named for it; a SectionRef its
+  # words contradict gives way to the words (`CopiedNotePieces`)
   defp cited(doc) do
     for c <- xpath(doc, ~x"//Commentary"l),
         id = xpath(c, ~x"./@id"s),
@@ -626,27 +681,66 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
   # note with none: the law its words cite, for identity only (CV-S07 round
   # 2, decision 3: "S.I. 2004/ 1822" — never the change's `by`)
   defp cited_entry(c) do
-    citation = xpath(c, ~x"(.//Citation[@URI])[1]"e)
+    c = CopiedNotePieces.mend(c)
+
     # the note's words, normalised: copies of one note in each version of a
     # provision carry their own ids but the same words (HSWA s.28: E+W, S,
     # NI; CV-S07 round 3) — a pointer for identity only
     digest = NoteLaw.digest(Doc.text(c))
 
-    case citation && Regex.run(~r"/id/([a-z]+)/(\d{4})/(\d+)", xpath(citation, ~x"./@URI"s)) do
+    (linked_entry(c, NoteCitation.amending(c)) || worded_entry(c))
+    |> Map.put(:digest, digest)
+    |> Map.merge(by_territory(c))
+  end
+
+  # a Citation's law and the provisions the note names of it
+  defp linked_entry(_c, nil), do: nil
+
+  defp linked_entry(c, citation) do
+    case Regex.run(~r"/id/([a-z]+)/(\d{4})/(\d+)", xpath(citation, ~x"./@URI"s)) do
       [_, type, year, num] ->
         law = "UK_#{type}_#{year}_#{num}"
         refs = pointers(c, xpath(citation, ~x"./@id"s), law)
-        %{law: law, refs: if(refs != [], do: refs), digest: digest}
+        %{law: law, refs: if(refs != [], do: refs)}
 
       _ ->
-        case NoteLaw.law(Doc.text(c)) do
-          nil ->
-            %{digest: digest}
+        nil
+    end
+  end
 
-          law ->
-            refs = pointers(c, "", law)
-            %{text_law: law, refs: if(refs != [], do: refs), digest: digest}
-        end
+  # a note whose amending law is cited in words only, its links other
+  # laws' ("by S.I. 2019/74, reg. 5 (as substituted by <Citation>"): read
+  # from the words that name it (`NoteCitation.unlinked/1`), never past
+  # them into the linked law's pieces
+  defp worded_entry(c) do
+    words = NoteCitation.unlinked(c)
+
+    case NoteLaw.law(words || Doc.text(c)) do
+      nil ->
+        %{}
+
+      law ->
+        refs = if words, do: worded_refs(words, law), else: pointers(c, "", law)
+        %{text_law: law, refs: if(refs != [], do: refs)}
+    end
+  end
+
+  defp worded_refs(words, law) do
+    words
+    |> after_law(law)
+    |> Enum.flat_map(&Pointer.to_refs/1)
+    |> Enum.map(&String.replace_prefix(&1, "art.", "reg."))
+  end
+
+  # the instrument the note pairs with each territory, where it pairs two
+  # or more (`TerritoryCitations`): a change stating one of them cites its
+  defp by_territory(c) do
+    case TerritoryCitations.pairs(c) do
+      [] ->
+        %{}
+
+      pairs ->
+        %{by_territory: for({t, el} <- pairs, e = linked_entry(c, el), into: %{}, do: {t, e})}
     end
   end
 
@@ -658,19 +752,43 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
 
     case subrefs do
       [] ->
-        %{text: Doc.text(commentary), citation_law: law}
-        |> Pointer.parse()
-        |> Map.get(:provisions)
+        commentary
+        |> worded(citation_id, law)
         |> Enum.flat_map(&Pointer.to_refs/1)
+        |> Enum.map(&String.replace_prefix(&1, "art.", "reg."))
 
       subrefs ->
-        operative = for {ref, true} <- subrefs, do: ref
+        # a mark on the instrument's first provision alone: the pieces
+        # listed with it (`FirstProvisionList`)
+        operative =
+          FirstProvisionList.pieces(commentary, citation_id) ||
+            for({ref, true} <- subrefs, do: ref)
 
-        if(operative != [], do: operative, else: Enum.map(subrefs, &elem(&1, 0)))
-        |> Enum.map(&pointer_ref/1)
-        |> Enum.reject(&is_nil/1)
+        # no mark at all: the pieces listed after the Citation (`ListEnd`)
+        if(operative != [], do: operative, else: ListEnd.pieces(commentary, citation_id))
+        |> Enum.flat_map(&pointer_refs/1)
         |> Enum.uniq()
     end
+  end
+
+  # the pieces a note with no marked-up piece names in words: those listed
+  # after its amending Citation, to the list's end, and any the Citation's
+  # own markup takes in (`ListEnd`); a note whose law is cited in words
+  # only: those after the law's name
+  defp worded(commentary, citation_id, law) do
+    case ListEnd.words(commentary, citation_id) do
+      nil -> after_law(Doc.text(commentary), law)
+      {cited, words} -> after_law(cited, law) ++ Pointer.refs_in(words)
+    end
+  end
+
+  defp after_law(text, law),
+    do: %{text: text, citation_law: law} |> Pointer.parse() |> Map.get(:provisions)
+
+  # a piece's SectionRef as refs: each provision it names (`JoinedSectionRef`;
+  # a plain call, so the module is in this one's atoms: `ModuleReach`)
+  defp pointer_refs(section_ref) do
+    for id <- JoinedSectionRef.pieces(section_ref), ref = pointer_ref(id), ref != nil, do: ref
   end
 
   # a pointer's SectionRef as a ref, named as the feed reader names the

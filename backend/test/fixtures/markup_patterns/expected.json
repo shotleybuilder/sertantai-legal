@@ -331,6 +331,21 @@
         "target": "s.62"
       }
     ],
+    "UK_anaw_2014_4/0e06cc46da": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.1.para.24(3)"
+          ],
+          "markup.cited": "UK_anaw_2018_2",
+          "markup.level": "words",
+          "markup.operation": "substituted",
+          "markup.retained": true
+        },
+        "key": "M_F_752d4989-d6f3-41ae-92f6-e3aa7474d5a2-1646920939447",
+        "target": "s.182(1)(d)"
+      }
+    ],
     "UK_anaw_2015_4/0ed1445401": [
       {
         "claims": {
@@ -876,6 +891,81 @@
         },
         "key": "key-E",
         "target": "s.37(a)"
+      }
+    ],
+    "UK_anaw_2019_4/6e08492397": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.1.para.5(9)"
+          ],
+          "markup.cited": "UK_anaw_2020_1",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.1(3)(a)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.1.para.5(9)"
+          ],
+          "markup.cited": "UK_anaw_2020_1",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.1(3)(b)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.1.para.5(9)"
+          ],
+          "markup.cited": "UK_anaw_2020_1",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.3(1)(b)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.1.para.5(9)"
+          ],
+          "markup.cited": "UK_anaw_2020_1",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.38(3)(a)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.1.para.5(9)"
+          ],
+          "markup.cited": "UK_anaw_2020_1",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.38(3)(b)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.1.para.5(9)"
+          ],
+          "markup.cited": "UK_anaw_2020_1",
+          "markup.heading": true,
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.31"
       }
     ],
     "UK_apni_1957_25/be1b906522": [
@@ -2227,6 +2317,20 @@
         "target": "s.21(2)"
       }
     ],
+    "UK_asp_2002_17/f4a0309080": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.4.para.10"
+          ],
+          "markup.cited": "UK_asp_2007_3",
+          "markup.level": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "s.11(3n1)"
+      }
+    ],
     "UK_asp_2002_3/883a3e492e": [
       {
         "claims": {
@@ -2750,17 +2854,6 @@
         },
         "key": "key-E",
         "target": "s.69(1)"
-      }
-    ],
-    "UK_asp_2003_15/b9661e23fb": [
-      {
-        "claims": {
-          "markup.cited": "UK_asp_2003_15",
-          "markup.level": "provision",
-          "markup.operation": "inserted"
-        },
-        "key": "M_F_15537265-7ad8-4bc8-a551-3d4d39bf61e3-1442318241306",
-        "target": "s.64(3n1)"
       }
     ],
     "UK_asp_2003_2/69923f21ac": [
@@ -3769,6 +3862,71 @@
         "target": "h.7A"
       }
     ],
+    "UK_asp_2018_9/527a4eeebd": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.3(3)"
+          ],
+          "markup.cited": "UK_ssi_2025_336",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.81(11)(b)(i)(D)"
+      }
+    ],
+    "UK_asp_2018_9/9a3d6e52ce": [
+      {
+        "claims": {
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.81(11)(b)(i)(C)"
+      }
+    ],
+    "UK_asp_2018_9/a11e23db10": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.3(4)"
+          ],
+          "markup.cited": "UK_ssi_2025_336",
+          "markup.level": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "s.81(11)(b)(i)(E)"
+      }
+    ],
+    "UK_eudn_2003_33/153103a8d9": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.15.para.63(2)(a)"
+          ],
+          "markup.cited": "UK_uksi_2025_82",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "art.Article A1(6A)(b)"
+      }
+    ],
+    "UK_eudn_2009_360/d67d4df86e": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.15.para.84"
+          ],
+          "markup.cited": "UK_uksi_2025_82",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "art.Article A1(6)(b)(1A)(a)"
+      }
+    ],
     "UK_eudn_2009_491/0c59d38c9c": [
       {
         "claims": {
@@ -4459,20 +4617,6 @@
       }
     ],
     "UK_eur_2004_725/9dff6a0f16": [],
-    "UK_eur_2004_852/260ee0c1c8": [
-      {
-        "claims": {
-          "markup.affecting": [
-            "reg.3(a)"
-          ],
-          "markup.cited": "UK_uksi_2019_642",
-          "markup.level": "words",
-          "markup.operation": "substituted"
-        },
-        "key": "key-E",
-        "target": "art.Article 1(1)(g)"
-      }
-    ],
     "UK_eur_2004_852/288bb60183": [
       {
         "claims": {
@@ -5793,6 +5937,107 @@
         "target": "art.Article 2(1)(c)"
       }
     ],
+    "UK_eur_2011_725/1cd4b558a4": [
+      {
+        "claims": {
+          "markup.cited": "UK_eur_2018_258",
+          "markup.level_covering": "provision",
+          "markup.operation": "substituted"
+        },
+        "key": "O001001M006",
+        "target": "art.Article 4"
+      }
+    ],
+    "UK_eur_2011_725/2c601f1e2f": [
+      {
+        "claims": {
+          "markup.cited": "UK_eur_2018_258",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "O001001M035",
+        "target": "art.Article 3(e)(i)"
+      }
+    ],
+    "UK_eur_2011_725/3c7216ce00": [
+      {
+        "claims": {
+          "markup.cited": "UK_eur_2018_258",
+          "markup.level_covering": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "O001001M011",
+        "target": "art.Article 4(2)(f)(iv)"
+      }
+    ],
+    "UK_eur_2011_725/546c79fe9d": [
+      {
+        "claims": {
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "art.Article 4(2)(f)(ii)"
+      }
+    ],
+    "UK_eur_2011_725/5c80af5e19": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.5(3)(c)(ii)"
+          ],
+          "markup.cited": "UK_uksi_2019_550",
+          "markup.level_covering": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "art.Article 3(e)(ii)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.5(3)(c)(ii)"
+          ],
+          "markup.cited": "UK_uksi_2019_550",
+          "markup.level_covering": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "art.Article 3(e)(iii)"
+      }
+    ],
+    "UK_eur_2011_725/621c39f072": [
+      {
+        "claims": {
+          "markup.cited": "UK_eur_2018_258",
+          "markup.level_covering": "provision",
+          "markup.operation": "substituted"
+        },
+        "key": "O001001M010",
+        "target": "art.Article 4(2)(f)(i)"
+      },
+      {
+        "claims": {
+          "markup.cited": "UK_eur_2018_258",
+          "markup.level_covering": "provision",
+          "markup.operation": "substituted"
+        },
+        "key": "O001001M010",
+        "target": "art.Article 4(2)(f)(ii)"
+      }
+    ],
+    "UK_eur_2011_725/e14e57ca28": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.5(3)(c)(i)"
+          ],
+          "markup.cited": "UK_uksi_2019_550",
+          "markup.level_covering": "provision"
+        },
+        "key": "key-E",
+        "target": "art.Article 3(e)(i)"
+      }
+    ],
     "UK_eur_2012_649/de13c17415": [
       {
         "claims": {
@@ -6020,6 +6265,103 @@
         "target": "art.Article 2(2)(z4)(iv)"
       }
     ],
+    "UK_eur_2014_427/0b3e374eaa": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.32(3)(c)(ii)"
+          ],
+          "markup.cited": "UK_uksi_2019_550",
+          "markup.level_covering": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "art.Article 3(5)(b)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.32(3)(c)(ii)"
+          ],
+          "markup.cited": "UK_uksi_2019_550",
+          "markup.level_covering": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "art.Article 3(5)(c)"
+      }
+    ],
+    "UK_eur_2014_427/1cd4b558a4": [
+      {
+        "claims": {
+          "markup.cited": "UK_eur_2018_259",
+          "markup.level_covering": "provision",
+          "markup.operation": "substituted"
+        },
+        "key": "O001001M006",
+        "target": "art.Article 4"
+      }
+    ],
+    "UK_eur_2014_427/3e8a866816": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.32(3)(c)(i)"
+          ],
+          "markup.cited": "UK_uksi_2019_550",
+          "markup.level_covering": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "art.Article 3(5)(a)"
+      }
+    ],
+    "UK_eur_2014_427/621c39f072": [
+      {
+        "claims": {
+          "markup.cited": "UK_eur_2018_259",
+          "markup.level_covering": "provision",
+          "markup.operation": "substituted"
+        },
+        "key": "O001001M010",
+        "target": "art.Article 4(2)(f)(i)"
+      },
+      {
+        "claims": {
+          "markup.cited": "UK_eur_2018_259",
+          "markup.level_covering": "provision",
+          "markup.operation": "substituted"
+        },
+        "key": "O001001M010",
+        "target": "art.Article 4(2)(f)(ii)"
+      }
+    ],
+    "UK_eur_2014_517/aff0e400d4": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.38"
+          ],
+          "markup.cited": "UK_uksi_2019_583",
+          "markup.level": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "art.Article 2A"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.38"
+          ],
+          "markup.cited": "UK_uksi_2019_583",
+          "markup.level": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "art.Article 2B"
+      }
+    ],
     "UK_eur_2014_788/67f1a016d5": [
       {
         "claims": {
@@ -6184,6 +6526,70 @@
         },
         "key": "key-E",
         "target": "art.Article 83(2)(a)"
+      }
+    ],
+    "UK_eur_2018_2067/df5637ac96": [
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "art.Article 3(13)(c)"
+      }
+    ],
+    "UK_eur_2018_2067/e8632370c8": [
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "art.Article 65"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "art.Article 66"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "art.Article 67"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "art.Article 68"
+      }
+    ],
+    "UK_eur_2019_1242/ea9ce54cc7": [
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "art.Article 21"
+      }
+    ],
+    "UK_eur_2019_1842/282a73d3c9": [
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "art.Article 2(1)(6)"
       }
     ],
     "UK_mwa_2009_3/288e1bdfc8": [
@@ -6493,6 +6899,24 @@
         },
         "key": "d29p100",
         "target": "reg.2(2)"
+      }
+    ],
+    "UK_nisi_1978_1049/39e1b5471d": [
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.38"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.39"
       }
     ],
     "UK_nisi_1979_1709/048cc86740": [
@@ -7084,6 +7508,46 @@
         },
         "key": "d29p104",
         "target": "reg.2(2)"
+      }
+    ],
+    "UK_nisi_1994_1896/2e2e84629f": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "s.16(4)"
+          ],
+          "markup.cited": "UK_nia_2011_23",
+          "markup.level_covering": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "reg.6#2"
+      }
+    ],
+    "UK_nisi_1994_1896/ab6e5316de": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.3.para.3(5)"
+          ],
+          "markup.cited": "UK_nia_2011_23",
+          "markup.level": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "reg.15(1)(c)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.3.para.3(5)"
+          ],
+          "markup.cited": "UK_nia_2011_23",
+          "markup.level": "words",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "reg.15(1)(b)"
       }
     ],
     "UK_nisi_1994_426/8d156314ef": [
@@ -8317,6 +8781,234 @@
         "target": "reg.16(1)(b)"
       }
     ],
+    "UK_nisr_2002_94/fb4d10734e": [
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.1"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.10"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.11"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.12"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.2"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.3"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.4"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.5(2)"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.5(3)"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.5(4)"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.5(5)"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.5(6)"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.5(7)"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.8"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.9"
+      }
+    ],
+    "UK_nisr_2003_240/6f00470bfb": [
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.1"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.10"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.11"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.12"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.13"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.2"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.3"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.4"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.5"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.6(2)"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.6(3)"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.8"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.9"
+      }
+    ],
     "UK_nisr_2003_34/26579ceef9": [
       {
         "claims": {
@@ -9186,6 +9878,80 @@
         },
         "key": "key-E",
         "target": "reg.43B"
+      }
+    ],
+    "UK_nisr_2013_4/92a17d48e2": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "s.9(3)(b)"
+          ],
+          "markup.cited": "UK_nia_2014_7",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.2(1)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "s.9(3)(b)"
+          ],
+          "markup.cited": "UK_nia_2014_7",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.2(3)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "s.9(3)(b)"
+          ],
+          "markup.cited": "UK_nia_2014_7",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.2(3)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "s.9(3)(b)"
+          ],
+          "markup.cited": "UK_nia_2014_7",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.7"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "s.9(3)(b)"
+          ],
+          "markup.cited": "UK_nia_2014_7",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.9(3)(a)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "s.9(3)(b)"
+          ],
+          "markup.cited": "UK_nia_2014_7",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.9(3)(b)"
       }
     ],
     "UK_nisr_2014_224/a8a03a134f": [
@@ -10072,6 +10838,46 @@
         "target": "reg.33(2)(ii)"
       }
     ],
+    "UK_ssi_2015_446/0fd8ab48e5": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.4(57)"
+          ],
+          "markup.cited": "UK_ssi_2020_468",
+          "markup.level": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "reg.83A"
+      }
+    ],
+    "UK_ssi_2015_446/47f5ccf283": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.2(2)"
+          ],
+          "markup.cited": "UK_ssi_2025_392",
+          "markup.level": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "reg.3A"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.2(2)"
+          ],
+          "markup.cited": "UK_ssi_2025_392",
+          "markup.level": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "reg.3B"
+      }
+    ],
     "UK_ssi_2017_113/22c21d57d8": [
       {
         "claims": {
@@ -10281,6 +11087,7 @@
         "target": "reg.30(4)(g)(i)"
       }
     ],
+    "UK_ssi_2021_249/9846cdecc8": [],
     "UK_ssi_2022_136/6985f202d3": [],
     "UK_ukcm_1947_2/df98edda5c": [
       {
@@ -10929,7 +11736,7 @@
       {
         "claims": {
           "markup.affecting": [
-            "reg.1(1)"
+            "reg.12(1)(a)"
           ],
           "markup.cited": "UK_uksi_1988_1729",
           "markup.heading": true,
@@ -10941,7 +11748,7 @@
       {
         "claims": {
           "markup.affecting": [
-            "reg.1(1)"
+            "reg.12(1)(a)"
           ],
           "markup.cited": "UK_uksi_1988_1729",
           "markup.level": "provision",
@@ -11253,35 +12060,6 @@
         },
         "key": "d29p1923",
         "target": "s.21A(1)(c)"
-      }
-    ],
-    "UK_ukpga_1962_58/30e8c9fd2c": [
-      {
-        "claims": {
-          "markup.affecting": [
-            "sch.para.3(3)(a)"
-          ],
-          "markup.cited": "UK_uksi_2004_1822",
-          "markup.level": "words",
-          "markup.operation": "inserted",
-          "markup.territory": "S"
-        },
-        "key": "key-E",
-        "target": "s.44"
-      },
-      {
-        "claims": {
-          "markup.affecting": [
-            "sch.para.3(3)(a)"
-          ],
-          "markup.cited": "UK_uksi_2004_1822",
-          "markup.level": "words",
-          "markup.operation": "substituted",
-          "markup.retained": true,
-          "markup.territory": "S"
-        },
-        "key": "key-E",
-        "target": "s.44"
       }
     ],
     "UK_ukpga_1962_58/6bd3cc3a52": [
@@ -11749,10 +12527,9 @@
       {
         "claims": {
           "markup.affecting": [
-            "s.160",
             "sch.26"
           ],
-          "markup.cited": "UK_uksi_1999_2908",
+          "markup.cited": "UK_ukpga_1998_36",
           "markup.level": "provision",
           "markup.operation": "inserted"
         },
@@ -11921,22 +12698,12 @@
         "target": "s.69(4)(ffff)"
       }
     ],
-    "UK_ukpga_1968_73/2dd6760924": [
-      {
-        "claims": {
-          "markup.cited": "UK_uksi_2019_453",
-          "markup.level": "words",
-          "markup.operation": "inserted"
-        },
-        "key": "key-E",
-        "target": "s.96(11A)"
-      }
-    ],
     "UK_ukpga_1968_73/316faaf213": [
       {
         "claims": {
           "markup.affecting": [
-            "s.57(2)(5)"
+            "s.57(2)",
+            "s.57(5)"
           ],
           "markup.cited": "UK_ukpga_1985_67",
           "markup.in_versions": [
@@ -12080,35 +12847,6 @@
         },
         "key": "d29p46584",
         "target": "s.63(6)(a)n1"
-      }
-    ],
-    "UK_ukpga_1968_73/939aa0c0c5": [
-      {
-        "claims": {
-          "markup.affecting": [
-            "sch.para.7(4)"
-          ],
-          "markup.cited": "UK_uksi_2004_1822",
-          "markup.level": "words",
-          "markup.operation": "inserted",
-          "markup.territory": "S"
-        },
-        "key": "key-E",
-        "target": "s.113(5)"
-      },
-      {
-        "claims": {
-          "markup.affecting": [
-            "sch.25.para.38(3)"
-          ],
-          "markup.cited": "UK_ukpga_1989_15",
-          "markup.level": "words",
-          "markup.operation": "substituted",
-          "markup.retained": true,
-          "markup.territory": "S"
-        },
-        "key": "key-E",
-        "target": "s.113(5)"
       }
     ],
     "UK_ukpga_1968_73/b6d001424c": [
@@ -12345,15 +13083,15 @@
       {
         "claims": {
           "markup.affecting": [
-            "sch.51.para.4"
+            "sch.27.para.3"
           ],
-          "markup.cited": "UK_ukpga_2013_29",
-          "markup.level": "words",
+          "markup.cited": "UK_ukpga_2021_26",
+          "markup.level": "provision",
           "markup.operation": "substituted",
           "markup.retained": true
         },
         "key": "key-E",
-        "target": "s.12AAA"
+        "target": "s.12AAA(9)"
       }
     ],
     "UK_ukpga_1971_10/5f7eac7f3f": [],
@@ -12754,6 +13492,17 @@
         "target": "s.30(1)"
       }
     ],
+    "UK_ukpga_1974_7/ee48c1b82d": [
+      {
+        "claims": {
+          "markup.cited": "UK_ukpga_2006_32",
+          "markup.level": "words",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "s.27(1)(a)"
+      }
+    ],
     "UK_ukpga_1975_21/18ea2fe8a2": [
       {
         "claims": {
@@ -12783,7 +13532,8 @@
       {
         "claims": {
           "markup.affecting": [
-            "reg.5(schedule)(4)(paragraph)(2)(5)"
+            "reg.5",
+            "sch.4.para.2(5)"
           ],
           "markup.cited": "UK_uksi_1996_1974",
           "markup.level": "provision",
@@ -13641,6 +14391,34 @@
         },
         "key": "key-E",
         "target": "s.7(3)"
+      }
+    ],
+    "UK_ukpga_1984_27/091ee02589": [
+      {
+        "claims": {
+          "markup.level": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "d29p12139",
+        "target": "s.121A(1An1)"
+      }
+    ],
+    "UK_ukpga_1984_27/341e3d5853": [],
+    "UK_ukpga_1984_27/5ae6385f73": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.2.para.12(3)(c)"
+          ],
+          "markup.cited": "UK_ukpga_2016_11",
+          "markup.in_versions": [
+            "S"
+          ],
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.134(2)"
       }
     ],
     "UK_ukpga_1984_55/2aaa69f8e9": [
@@ -14592,6 +15370,63 @@
         "target": "s.124ZB"
       }
     ],
+    "UK_ukpga_1988_41/6d359db46e": [
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.99(3n1)"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.99(4)"
+      }
+    ],
+    "UK_ukpga_1988_41/869d9b9f20": [],
+    "UK_ukpga_1988_41/9fe1de06d8": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.7.para.14"
+          ],
+          "markup.cited": "UK_ukpga_2003_26",
+          "markup.level": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "s.77A"
+      }
+    ],
+    "UK_ukpga_1988_41/d6e542a70d": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.25.para.7(2)(b)"
+          ],
+          "markup.cited": "UK_ukpga_2026_23",
+          "markup.level": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "s.114(4)(b)(iiid)"
+      }
+    ],
+    "UK_ukpga_1988_50/58a629abc1": [
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.50"
+      }
+    ],
     "UK_ukpga_1988_52/7a47362119": [
       {
         "claims": {
@@ -15147,61 +15982,6 @@
         },
         "key": "key-E",
         "target": "s.142(7)"
-      }
-    ],
-    "UK_ukpga_1990_43/7fdb628554": [
-      {
-        "claims": {
-          "markup.affecting": [
-            "sch.10.para.3(b)"
-          ],
-          "markup.cited": "UK_uksi_2000_1973",
-          "markup.level": "provision",
-          "markup.operation": "inserted"
-        },
-        "key": "key-E",
-        "target": "s.6(6A)"
-      },
-      {
-        "claims": {
-          "markup.affecting": [
-            "sch.11.para.1(2)"
-          ],
-          "markup.cited": "UK_ssi_2012_360",
-          "markup.level": "words",
-          "markup.operation": "inserted",
-          "markup.territory": "S"
-        },
-        "key": "key-E",
-        "target": "s.6(6B)"
-      },
-      {
-        "claims": {
-          "markup.affecting": [
-            "sch.10.para.3(b)"
-          ],
-          "markup.cited": "UK_uksi_2000_1973",
-          "markup.level": "provision",
-          "markup.operation": "substituted",
-          "markup.retained": true,
-          "markup.territory": "S"
-        },
-        "key": "key-E",
-        "target": "s.6(6B)"
-      },
-      {
-        "claims": {
-          "markup.affecting": [
-            "sch.11.para.1(2)"
-          ],
-          "markup.cited": "UK_ssi_2012_360",
-          "markup.level_covering": "provision",
-          "markup.operation": "substituted",
-          "markup.retained": true,
-          "markup.territory": "S"
-        },
-        "key": "key-E",
-        "target": "s.6(6A)"
       }
     ],
     "UK_ukpga_1990_43/b3bc5fea14": [
@@ -16818,32 +17598,6 @@
         "target": "s.87HA(2n1)"
       }
     ],
-    "UK_ukpga_1992_12/64fa2d2442": [
-      {
-        "claims": {
-          "markup.affecting": [
-            "s.39(6)(11)"
-          ],
-          "markup.cited": "UK_ukpga_2025_8",
-          "markup.level": "provision",
-          "markup.operation": "inserted"
-        },
-        "key": "key-E",
-        "target": "s.16(4n1)"
-      },
-      {
-        "claims": {
-          "markup.affecting": [
-            "s.39(6)(11)"
-          ],
-          "markup.cited": "UK_ukpga_2025_8",
-          "markup.level": "provision",
-          "markup.operation": "inserted"
-        },
-        "key": "key-E",
-        "target": "s.16(5)"
-      }
-    ],
     "UK_ukpga_1992_12/6bc2c0404e": [
       {
         "claims": {
@@ -16977,6 +17731,117 @@
         },
         "key": "key-E",
         "target": "s.4(8)(d)"
+      }
+    ],
+    "UK_ukpga_1992_4/34cee3c7cf": [
+      {
+        "claims": {
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.171ZZ17(1)"
+      }
+    ],
+    "UK_ukpga_1992_4/3da56c625a": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.9"
+          ],
+          "markup.cited": "UK_uksi_2024_377",
+          "markup.level": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "s.11An1"
+      }
+    ],
+    "UK_ukpga_1992_4/6ab8917a5a": [
+      {
+        "claims": {
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.171ZZ18(1)"
+      }
+    ],
+    "UK_ukpga_1992_4/b270bd65c1": [
+      {
+        "claims": {
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.171ZZ19(8)"
+      }
+    ],
+    "UK_ukpga_1992_4/bde95a3a3a": [
+      {
+        "claims": {
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.171ZZ16(2)(d)"
+      }
+    ],
+    "UK_ukpga_1992_4/c3ddb98fdb": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.139"
+          ],
+          "markup.cited": "UK_wsi_2016_413",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.171ZZ4(1)"
+      }
+    ],
+    "UK_ukpga_1992_4/e385809cc9": [
+      {
+        "claims": {
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.20(1)(e)(ii)"
+      },
+      {
+        "claims": {
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.20(1)(f)(ii)"
+      }
+    ],
+    "UK_ukpga_1992_4/f97326253e": [
+      {
+        "claims": {
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.7(1)(b)"
+      },
+      {
+        "claims": {
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.7(1)(b)(ii)"
+      }
+    ],
+    "UK_ukpga_1992_5/be92847909": [],
+    "UK_ukpga_1992_5/c7ba4dff0b": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.4.para.19"
+          ],
+          "markup.cited": "UK_ukpga_1992_6",
+          "markup.level": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "d29p18354",
+        "target": "s.164(7n1)"
       }
     ],
     "UK_ukpga_1992_52/5360597dea": [
@@ -17662,35 +18527,6 @@
         "target": "s.27BV"
       }
     ],
-    "UK_ukpga_1996_18/93878ef2c2": [
-      {
-        "claims": {
-          "markup.affecting": [
-            "reg.145"
-          ],
-          "markup.cited": "UK_wsi_2016_413",
-          "markup.level": "words",
-          "markup.operation": "inserted",
-          "markup.territory": "E+W"
-        },
-        "key": "key-E",
-        "target": "s.75A(1A)(c)"
-      },
-      {
-        "claims": {
-          "markup.affecting": [
-            "s.121(1)"
-          ],
-          "markup.cited": "UK_ukpga_2014_6",
-          "markup.level": "provision",
-          "markup.operation": "substituted",
-          "markup.retained": true,
-          "markup.territory": "E+W"
-        },
-        "key": "key-E",
-        "target": "s.75A(1A)"
-      }
-    ],
     "UK_ukpga_1996_18/95ef330b6b": [
       {
         "claims": {
@@ -18057,6 +18893,20 @@
         "target": "s.94"
       }
     ],
+    "UK_ukpga_1997_16/0d1962d848": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "s.81(1)"
+          ],
+          "markup.cited": "UK_ukpga_2022_3",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.11(2)(b)"
+      }
+    ],
     "UK_ukpga_1997_50/1a1190ac3c": [
       {
         "claims": {
@@ -18418,6 +19268,32 @@
         },
         "key": "key-E",
         "target": "h.27C"
+      }
+    ],
+    "UK_ukpga_1998_14/2a3ac7c854": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.3"
+          ],
+          "markup.cited": "UK_uksi_2011_1043",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.27(7)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.3"
+          ],
+          "markup.cited": "UK_uksi_2011_1043",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.44"
       }
     ],
     "UK_ukpga_1998_31/342c000ac5": [],
@@ -18801,6 +19677,928 @@
         "target": "s.33(2)"
       }
     ],
+    "UK_ukpga_2000_8/1543902d81": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.1.para.2(1)(d)(ii)"
+          ],
+          "markup.cited": "UK_uksi_2007_3253",
+          "markup.level": "provision",
+          "markup.operation": "substituted"
+        },
+        "key": "d29p12993",
+        "target": "s.105(Case)(cn3)"
+      }
+    ],
+    "UK_ukpga_2000_8/222d685657": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.10(18)(b)"
+          ],
+          "markup.cited": "UK_uksi_2016_680",
+          "markup.level": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "s.395(13)(bbza)"
+      }
+    ],
+    "UK_ukpga_2000_8/236847a7a8": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.40(11)"
+          ],
+          "markup.cited": "UK_uksi_2018_135",
+          "markup.level": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "s.55Z3(3)"
+      }
+    ],
+    "UK_ukpga_2000_8/24c8d7a240": [
+      {
+        "claims": {
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.192C(3)(a)(i)(bb)"
+      }
+    ],
+    "UK_ukpga_2000_8/32773c8cc3": [
+      {
+        "claims": {
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.55Z4"
+      }
+    ],
+    "UK_ukpga_2000_8/3a21ba9048": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.para.44(4)(o)"
+          ],
+          "markup.cited": "UK_uksi_2023_1424",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.292(3)(a)(ii)(aa)"
+      }
+    ],
+    "UK_ukpga_2000_8/474a26c42c": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "s.36(b)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.313B(3)(b)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "s.36(b)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.313B(3A)(c)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "s.36(b)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.313BA(7)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "s.36(b)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.313BA(8)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "s.36(b)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.heading": true,
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.313A"
+      }
+    ],
+    "UK_ukpga_2000_8/4e2cd36f58": [
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.261Z4"
+      }
+    ],
+    "UK_ukpga_2000_8/64b5c7b8ae": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.8.para.8"
+          ],
+          "markup.cited": "UK_ukpga_2023_29",
+          "markup.level": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "s.395(13)(bbzc)"
+      }
+    ],
+    "UK_ukpga_2000_8/6bfb06a142": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "s.64(3)"
+          ],
+          "markup.cited": "UK_ukpga_2023_29",
+          "markup.level": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "s.261Z6"
+      }
+    ],
+    "UK_ukpga_2000_8/777df4f482": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.18.para.9(2)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.238(5)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.18.para.9(2)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.239(4)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.18.para.9(2)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.239(5)"
+      }
+    ],
+    "UK_ukpga_2000_8/7797b873c0": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "s.11(6)(b)"
+          ],
+          "markup.cited": "UK_ukpga_2023_29",
+          "markup.level": "words",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "reg.2(1n1)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "s.11(6)(b)"
+          ],
+          "markup.cited": "UK_ukpga_2023_29",
+          "markup.level": "words",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "reg.2(1n1)"
+      }
+    ],
+    "UK_ukpga_2000_8/7b1b8c46aa": [
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.105(Casen2)"
+      }
+    ],
+    "UK_ukpga_2000_8/90127621bf": [
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.55Z1"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.55Z2"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.55Z2A"
+      }
+    ],
+    "UK_ukpga_2000_8/b3a88e6772": [
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.193"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.194"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.194A"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.194B"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.194C"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.194D"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.195(1)"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.195(2)"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.195(2A)"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.195(5)"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.195(6)"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.195(7)"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.195(8)"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.195A"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.195B"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.195C"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.196"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.197"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.198"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.199"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.199A"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.200"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.201"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.202"
+      }
+    ],
+    "UK_ukpga_2000_8/b601d7a1fe": [
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.261Z5(2)"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.261Z5(3)"
+      }
+    ],
+    "UK_ukpga_2000_8/b61565f9bd": [
+      {
+        "claims": {
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.55Z3(2)"
+      }
+    ],
+    "UK_ukpga_2000_8/bff4501e3c": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "s.11(6)(a)"
+          ],
+          "markup.cited": "UK_ukpga_2023_29",
+          "markup.level": "words",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "reg.2(1n1)"
+      }
+    ],
+    "UK_ukpga_2000_8/d0f83c8d1a": [
+      {
+        "claims": {
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.55Z3"
+      }
+    ],
+    "UK_ukpga_2000_8/d14186f109": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.2.para.47"
+          ],
+          "markup.cited": "UK_uksi_2017_701",
+          "markup.level": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "s.395(13)(bbzb)"
+      }
+    ],
+    "UK_ukpga_2000_8/da52c08bb6": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.24(2)"
+          ],
+          "markup.cited": "UK_uksi_2019_325",
+          "markup.level": "words",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "s.261Z5(1)(a)"
+      }
+    ],
+    "UK_ukpga_2000_8/deb01e151a": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.para.44(4)(r)"
+          ],
+          "markup.cited": "UK_uksi_2023_1424",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.309Z8(5)"
+      }
+    ],
+    "UK_ukpga_2000_8/e2ae85c786": [
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.144H(2)"
+      }
+    ],
+    "UK_ukpga_2000_8/f8f0cd4108": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.9.para.9(2)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.124(4)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.9.para.9(2)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.124(5)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.9.para.9(2)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.124(7)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.9.para.9(2)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.124(7)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.9.para.9(2)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.124(8)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.9.para.9(2)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.124(9)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.9.para.9(2)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.125(1)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.9.para.9(2)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.125(1)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.9.para.9(2)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.125(2)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.9.para.9(2)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.125(3)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.9.para.9(2)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.125(4)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.9.para.9(2)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.125(5)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.9.para.9(2)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.125(5)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.9.para.9(2)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.125(6)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.9.para.9(2)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.128(1)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.9.para.9(2)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.128(2)(b)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.9.para.9(2)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.130(3)(a)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.9.para.9(2)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.130(3)(b)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.9.para.9(2)"
+          ],
+          "markup.cited": "UK_ukpga_2012_21",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.130(5)"
+      }
+    ],
+    "UK_ukpga_2001_2/3df908f12e": [
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.536(5)(a)(iiia)"
+      }
+    ],
+    "UK_ukpga_2001_2/88469ee562": [
+      {
+        "claims": {
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.542"
+      },
+      {
+        "claims": {
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.542(1)(a)"
+      },
+      {
+        "claims": {
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.542(1)(b)"
+      },
+      {
+        "claims": {
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.542(2)"
+      },
+      {
+        "claims": {
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.542(3)"
+      }
+    ],
+    "UK_ukpga_2001_2/e332a65a52": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.23.para.14(b)"
+          ],
+          "markup.cited": "UK_ukpga_2023_30",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.270BNA(2)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.23.para.14(b)"
+          ],
+          "markup.cited": "UK_ukpga_2023_30",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.270BNA(3)(a)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.23.para.14(b)"
+          ],
+          "markup.cited": "UK_ukpga_2023_30",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.270BNA(4)(a)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.23.para.14(b)"
+          ],
+          "markup.cited": "UK_ukpga_2023_30",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.270BNB(1)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.23.para.14(b)"
+          ],
+          "markup.cited": "UK_ukpga_2023_30",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.270BNB(2)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.23.para.14(b)"
+          ],
+          "markup.cited": "UK_ukpga_2023_30",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "s.270BNC(2)(a)"
+      }
+    ],
     "UK_ukpga_2002_30/8e77a2abc0": [
       {
         "claims": {
@@ -18993,6 +20791,59 @@
         },
         "key": "key-E",
         "target": "s.107(3)(an3n2)"
+      }
+    ],
+    "UK_ukpga_2002_41/7362d10edd": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.6(2)(g)(i)"
+          ],
+          "markup.cited": "UK_wsi_2021_861",
+          "markup.level": "words",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "s.36(7)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.6(2)(g)(i)"
+          ],
+          "markup.cited": "UK_wsi_2021_861",
+          "markup.level": "words",
+          "markup.operation": "inserted",
+          "markup.territory": "W"
+        },
+        "key": "key-E",
+        "target": "s.36(7)"
+      }
+    ],
+    "UK_ukpga_2002_41/f5ad764f3b": [
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.133(4)(a)(iv)"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.133(4)(b)(iii)"
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.133(4)(b)(iv)"
       }
     ],
     "UK_ukpga_2003_1/02d923de00": [
@@ -19817,35 +21668,6 @@
         "target": "s.37(4)(a)(i)"
       }
     ],
-    "UK_ukpga_2003_33/e550159e1b": [
-      {
-        "claims": {
-          "markup.affecting": [
-            "sch.11.para.2"
-          ],
-          "markup.cited": "UK_uksi_2005_894",
-          "markup.level": "words",
-          "markup.operation": "inserted",
-          "markup.territory": "E+W"
-        },
-        "key": "key-E",
-        "target": "s.25(2)"
-      },
-      {
-        "claims": {
-          "markup.affecting": [
-            "sch.11.para.2"
-          ],
-          "markup.cited": "UK_uksi_2005_894",
-          "markup.level": "words",
-          "markup.operation": "substituted",
-          "markup.retained": true,
-          "markup.territory": "E+W"
-        },
-        "key": "key-E",
-        "target": "s.25(2)"
-      }
-    ],
     "UK_ukpga_2003_44/d42315924d": [
       {
         "claims": {
@@ -20069,6 +21891,17 @@
         "target": "s.75"
       }
     ],
+    "UK_ukpga_2005_5/00eca2e2d9": [],
+    "UK_ukpga_2005_5/9437663d7e": [
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "s.57B"
+      }
+    ],
     "UK_ukpga_2006_16/43a8035e95": [
       {
         "claims": {
@@ -20154,6 +21987,22 @@
         },
         "key": "key-E",
         "target": "pt.1.ch.2"
+      }
+    ],
+    "UK_ukpga_2006_21/30a54e6b29": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.1.para.24(a)"
+          ],
+          "markup.cited": "UK_mwa_2010_1",
+          "markup.level": "words",
+          "markup.operation": "substituted",
+          "markup.retained": true,
+          "markup.territory": "W"
+        },
+        "key": "key-E",
+        "target": "s.101(1)(a)"
       }
     ],
     "UK_ukpga_2006_32/1650f141b8": [
@@ -22173,8 +24022,7 @@
       {
         "claims": {
           "markup.affecting": [
-            "art.1",
-            "art.6(b)"
+            "reg.6(b)"
           ],
           "markup.cited": "UK_uksi_1999_1014",
           "markup.level": "provision",
@@ -22538,6 +24386,55 @@
         },
         "key": "key-E",
         "target": "reg.8"
+      }
+    ],
+    "UK_uksi_1992_588/20dbeae7e7": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.9(2)(b)"
+          ],
+          "markup.cited": "UK_ssi_2018_391",
+          "markup.in_versions": [
+            "S"
+          ],
+          "markup.level": "provision",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.7(4n1)"
+      }
+    ],
+    "UK_uksi_1992_588/9a8c13d0f4": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.5(3)"
+          ],
+          "markup.cited": "UK_ssi_2005_22",
+          "markup.in_versions": [
+            "S"
+          ],
+          "markup.level": "provision",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.7(3)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.5(3)"
+          ],
+          "markup.cited": "UK_ssi_2005_22",
+          "markup.in_versions": [
+            "S"
+          ],
+          "markup.level": "provision",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.7(4n1)"
       }
     ],
     "UK_uksi_1993_176/057184750b": [
@@ -22971,9 +24868,9 @@
       {
         "claims": {
           "markup.affecting": [
-            "sch.11.para.27"
+            "sch.11.para.29"
           ],
-          "markup.cited": "UK_uksi_2005_894",
+          "markup.cited": "UK_uksi_2005_1806",
           "markup.level": "words",
           "markup.operation": "substituted",
           "markup.retained": true,
@@ -23523,6 +25420,20 @@
         "target": "reg.4(2)"
       }
     ],
+    "UK_uksi_2004_3202/b4ae0be7b7": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.9(d)"
+          ],
+          "markup.cited": "UK_uksi_2024_1234",
+          "markup.level": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "reg.29(a)(iiia)"
+      }
+    ],
     "UK_uksi_2005_1541/41f3bc840d": [
       {
         "claims": {
@@ -23858,6 +25769,24 @@
         "target": "reg.12"
       }
     ],
+    "UK_uksi_2005_2903/90935ab03a": [
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "pt...."
+      },
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.13"
+      }
+    ],
     "UK_uksi_2005_3117/aa5a3791d3": [
       {
         "claims": {
@@ -23866,6 +25795,166 @@
         },
         "key": "key-E",
         "target": "reg.4(1)"
+      }
+    ],
+    "UK_uksi_2005_3172/5b50c606a9": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.6.para.173(2)"
+          ],
+          "markup.cited": "UK_ukpga_2013_24",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.3(11)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.6.para.173(2)"
+          ],
+          "markup.cited": "UK_ukpga_2013_24",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.3(11)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.6.para.173(2)"
+          ],
+          "markup.cited": "UK_ukpga_2013_24",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.3(11)(a)(i)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.6.para.173(2)"
+          ],
+          "markup.cited": "UK_ukpga_2013_24",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.3(11)(a)(ii)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.6.para.173(2)"
+          ],
+          "markup.cited": "UK_ukpga_2013_24",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.3(11)(b)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.6.para.173(2)"
+          ],
+          "markup.cited": "UK_ukpga_2013_24",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.3(12)"
+      }
+    ],
+    "UK_uksi_2005_3172/81b02a5700": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.6.para.176(2)"
+          ],
+          "markup.cited": "UK_ukpga_2013_24",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.6(1)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.6.para.176(2)"
+          ],
+          "markup.cited": "UK_ukpga_2013_24",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.6(1)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.6.para.176(2)"
+          ],
+          "markup.cited": "UK_ukpga_2013_24",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.6(2)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.6.para.176(2)"
+          ],
+          "markup.cited": "UK_ukpga_2013_24",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.6(2)(b)(i)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.6.para.176(2)"
+          ],
+          "markup.cited": "UK_ukpga_2013_24",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.6(2)(b)(ii)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.6.para.176(2)"
+          ],
+          "markup.cited": "UK_ukpga_2013_24",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.6(2)(b)(iii)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.6.para.176(2)"
+          ],
+          "markup.cited": "UK_ukpga_2013_24",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.6(3)"
       }
     ],
     "UK_uksi_2005_639/398e654a71": [
@@ -24284,7 +26373,6 @@
         "target": "*"
       }
     ],
-    "UK_uksi_2007_1711/fc593afcb1": [],
     "UK_uksi_2007_3072/0299446e45": [
       {
         "claims": {
@@ -24708,6 +26796,132 @@
         },
         "key": "key-E",
         "target": "reg.18(7)(b)(ii)"
+      }
+    ],
+    "UK_uksi_2008_594/0d7d80c971": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.6(d)"
+          ],
+          "markup.cited": "UK_uksi_2017_246",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.11(1)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.6(d)"
+          ],
+          "markup.cited": "UK_uksi_2017_246",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.11(2)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.6(d)"
+          ],
+          "markup.cited": "UK_uksi_2017_246",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.12(1)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.6(d)"
+          ],
+          "markup.cited": "UK_uksi_2017_246",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.12(2)"
+      }
+    ],
+    "UK_uksi_2008_594/7d80168bb4": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.8"
+          ],
+          "markup.cited": "UK_uksi_2017_246",
+          "markup.level": "provision",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "pt.4"
+      }
+    ],
+    "UK_uksi_2008_594/c812b25f85": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.6(c)"
+          ],
+          "markup.cited": "UK_uksi_2017_246",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.10(1)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.6(c)"
+          ],
+          "markup.cited": "UK_uksi_2017_246",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.10(6)(a)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.6(c)"
+          ],
+          "markup.cited": "UK_uksi_2017_246",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.8(1)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.6(c)"
+          ],
+          "markup.cited": "UK_uksi_2017_246",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.8(3)"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.6(c)"
+          ],
+          "markup.cited": "UK_uksi_2017_246",
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.9(1)"
       }
     ],
     "UK_uksi_2009_1941/8d83ed8ef8": [
@@ -25428,6 +27642,38 @@
         "target": "reg.78A"
       }
     ],
+    "UK_uksi_2011_1524/308e7f73f4": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.3(2)"
+          ],
+          "markup.cited": "UK_uksi_2018_255",
+          "markup.in_versions": [
+            "E+W+S"
+          ],
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.2"
+      },
+      {
+        "claims": {
+          "markup.affecting": [
+            "reg.3(2)"
+          ],
+          "markup.cited": "UK_uksi_2018_255",
+          "markup.in_versions": [
+            "E+W+S"
+          ],
+          "markup.level": "words",
+          "markup.operation": "substituted"
+        },
+        "key": "key-E",
+        "target": "reg.2(2)(b)"
+      }
+    ],
     "UK_uksi_2011_1881/b8974db428": [
       {
         "claims": {
@@ -25837,9 +28083,9 @@
       {
         "claims": {
           "markup.affecting": [
-            "reg.66(a)"
+            "sch.2.para.49"
           ],
-          "markup.cited": "UK_uksi_2019_775",
+          "markup.cited": "UK_uksi_2020_1488",
           "markup.level": "words",
           "markup.operation": "inserted"
         },
@@ -25849,9 +28095,9 @@
       {
         "claims": {
           "markup.affecting": [
-            "reg.66(a)"
+            "sch.2.para.49"
           ],
-          "markup.cited": "UK_uksi_2019_775",
+          "markup.cited": "UK_uksi_2020_1488",
           "markup.level": "words",
           "markup.operation": "inserted"
         },
@@ -25861,9 +28107,9 @@
       {
         "claims": {
           "markup.affecting": [
-            "reg.66(a)"
+            "sch.2.para.49"
           ],
-          "markup.cited": "UK_uksi_2019_775",
+          "markup.cited": "UK_uksi_2020_1488",
           "markup.level": "words",
           "markup.operation": "inserted"
         },
@@ -25873,9 +28119,9 @@
       {
         "claims": {
           "markup.affecting": [
-            "reg.66(a)"
+            "sch.2.para.49"
           ],
-          "markup.cited": "UK_uksi_2019_775",
+          "markup.cited": "UK_uksi_2020_1488",
           "markup.level": "words",
           "markup.operation": "inserted"
         },
@@ -25885,9 +28131,9 @@
       {
         "claims": {
           "markup.affecting": [
-            "reg.66(a)"
+            "sch.2.para.49"
           ],
-          "markup.cited": "UK_uksi_2019_775",
+          "markup.cited": "UK_uksi_2020_1488",
           "markup.heading": true,
           "markup.level": "words",
           "markup.operation": "inserted"
@@ -26819,6 +29065,20 @@
         },
         "key": "key-E",
         "target": "reg.17(2)(a)"
+      }
+    ],
+    "UK_uksi_2013_1881/bb2fd87081": [
+      {
+        "claims": {
+          "markup.affecting": [
+            "sch.1.para.15(6)"
+          ],
+          "markup.cited": "UK_uksi_2015_910",
+          "markup.level": "words",
+          "markup.operation": "inserted"
+        },
+        "key": "key-E",
+        "target": "reg.58(5n1)"
       }
     ],
     "UK_uksi_2013_3113/763ea4677f": [
@@ -27909,6 +30169,16 @@
         "target": "reg.2(9)(c)(viiia)"
       }
     ],
+    "UK_uksi_2019_550/a8d3fb8c9f": [
+      {
+        "claims": {
+          "markup.omitted": true,
+          "markup.placed": true
+        },
+        "key": "key-E",
+        "target": "reg.29"
+      }
+    ],
     "UK_uksi_2019_556/124ada3c4b": [
       {
         "claims": {
@@ -28146,6 +30416,7 @@
         "target": "reg.25A"
       }
     ],
+    "UK_uksi_2020_1319/27502c76d5": [],
     "UK_uksi_2020_1482/4ba224d636": [
       {
         "claims": {
@@ -29026,12 +31297,12 @@
   },
   "patterns": {
     "extent:  → nil": "accepted",
+    "extent: E | W → W": "accepted",
     "extent: E | unset → E": "accepted",
     "extent: E → E": "accepted",
     "extent: E → nil": "accepted",
     "extent: E+N.I. → E+NI": "accepted",
     "extent: E+S → E+S": "accepted",
-    "extent: E+W | W → E+W": "accepted",
     "extent: E+W | unset → E+W": "accepted",
     "extent: E+W → E+W": "accepted",
     "extent: E+W → nil": "accepted",
@@ -29055,7 +31326,6 @@
     "extent: N.I. | unset → NI": "accepted",
     "extent: N.I. → NI": "accepted",
     "extent: NI → NI": "accepted",
-    "extent: S | unset → S": "accepted",
     "extent: S → S": "accepted",
     "extent: S → nil": "accepted",
     "extent: S. → S": "accepted",
@@ -29077,7 +31347,6 @@
     "key: cN": "accepted",
     "key: cN-N": "accepted",
     "key: dNpN": "accepted",
-    "key: dNpN + key-HEX-N": "accepted",
     "key: dNpN-N": "accepted",
     "key: key-HEX": "accepted",
     "key: key-HEX + key-HEX-N": "accepted",
@@ -29085,6 +31354,7 @@
     "key: key-HEX-N + key-HEX-N-N": "accepted",
     "key: key-HEX-N + key-HEX-N/N": "accepted",
     "key: key-HEX-N-N": "accepted",
+    "key: key-HEX-Nw": "accepted",
     "key: note ref only": "accepted",
     "level: nil": "accepted",
     "level: none": "accepted",
@@ -29121,6 +31391,7 @@
     "placement: note refs only | article-N → split: art.Article N, art.Article N(+1)": "accepted",
     "placement: note refs only | article-N → split: reg.N": "accepted",
     "placement: note refs only | article-N → split: reg.N(+1)": "accepted",
+    "placement: note refs only | article-N → split: reg.N(+1), reg.N(+1) (source suffix)": "accepted",
     "placement: note refs only | article-N → split: reg.N(+1), reg.N(+2)": "accepted",
     "placement: note refs only | article-N → split: reg.N(+1), reg.N(+3)": "accepted",
     "placement: note refs only | article-N → split: reg.N, reg.N(+1)": "accepted",
@@ -29172,6 +31443,7 @@
     "placement: note refs only | none → split: pt.N, s.N": "accepted",
     "placement: note refs only | none → split: pt.N, s.N, s.N(+1), s.N(+2)": "accepted",
     "placement: note refs only | none → split: reg.N": "accepted",
+    "placement: note refs only | none → split: reg.N, reg.N(+1)": "accepted",
     "placement: note refs only | none → split: s.38An1, s.N": "accepted",
     "placement: note refs only | none → split: s.N": "accepted",
     "placement: note refs only | none → split: s.N(+1)": "accepted",
@@ -29185,11 +31457,14 @@
     "placement: note refs only | part-N → pt....": "accepted",
     "placement: note refs only | part-N → pt....#N": "accepted",
     "placement: note refs only | part-N → pt.N": "accepted",
+    "placement: note refs only | part-N → s.171ZZ16": "accepted",
     "placement: note refs only | part-N → s.N": "accepted",
+    "placement: note refs only | part-N → s.N(+1)": "accepted",
     "placement: note refs only | part-N → split: h.N, pt.N": "accepted",
     "placement: note refs only | part-N → split: h.N, pt.N, pt.N.ch.N, s.N": "accepted",
     "placement: note refs only | part-N → split: h.N, pt.N, s.N": "accepted",
     "placement: note refs only | part-N → split: h.N, s.N": "accepted",
+    "placement: note refs only | part-N → split: pt...., reg.N": "accepted",
     "placement: note refs only | part-N → split: pt.N, pt.N.ch.N": "accepted",
     "placement: note refs only | part-N → split: pt.N, pt.N.ch.N, s.N": "accepted",
     "placement: note refs only | part-N → split: pt.N, reg.N": "accepted",
@@ -29197,10 +31472,13 @@
     "placement: note refs only | part-N → split: pt.N, s.N": "accepted",
     "placement: note refs only | part-N → split: reg.N": "accepted",
     "placement: note refs only | part-N → split: s.368Z1, s.368Z10, s.368Z11, s.368Z12, s.368Z13, s.368Z2, s.368Z3, s.368Z4, s.368Z5, s.368Z6, s.368Z7, s.368Z8, s.368Z9, s.N": "accepted",
+    "placement: note refs only | part-N → split: s.55Z3, s.N": "accepted",
     "placement: note refs only | part-N → split: s.N": "accepted",
     "placement: note refs only | part-N → split: s.N, s.N (source suffix)": "accepted",
+    "placement: note refs only | part-N → split: s.N, s.N(+1)": "accepted",
     "placement: note refs only | part-N-chapter-N → nowhere": "accepted",
     "placement: note refs only | part-N-chapter-N → pt.N.ch.N": "accepted",
+    "placement: note refs only | part-N-chapter-N → reg.N": "accepted",
     "placement: note refs only | part-N-chapter-N → s.N": "accepted",
     "placement: note refs only | part-N-chapter-N → s.N(+2)": "accepted",
     "placement: note refs only | part-N-chapter-N → split: pt.N.ch.N, reg.N": "accepted",
@@ -29226,7 +31504,9 @@
     "placement: note refs only | part-N-crossheading-* → s.N(+3)": "accepted",
     "placement: note refs only | part-N-crossheading-* → split: h.N, s.N": "accepted",
     "placement: note refs only | part-N-crossheading-* → split: reg.N": "accepted",
+    "placement: note refs only | part-N-crossheading-* → split: s.55Z1, s.55Z2, s.55Z2A": "accepted",
     "placement: note refs only | part-N-crossheading-* → split: s.N": "accepted",
+    "placement: note refs only | part-N-section-N(+1) → s.N(+1)": "accepted",
     "placement: note refs only | regulation-N → nowhere": "accepted",
     "placement: note refs only | regulation-N → reg.N": "accepted",
     "placement: note refs only | regulation-N → reg.N(+1)": "accepted",
@@ -29266,11 +31546,16 @@
     "placement: note refs only | schedule-part-N-paragraph-N(+2) → reg.N(+2)": "accepted",
     "placement: note refs only | section-N → nowhere": "accepted",
     "placement: note refs only | section-N → s.14Z31": "accepted",
+    "placement: note refs only | section-N → s.171ZZ16": "accepted",
+    "placement: note refs only | section-N → s.261Z4": "accepted",
+    "placement: note refs only | section-N → s.55Z3": "accepted",
+    "placement: note refs only | section-N → s.55Z4": "accepted",
     "placement: note refs only | section-N → s.A2D11": "accepted",
     "placement: note refs only | section-N → s.N": "accepted",
     "placement: note refs only | section-N → s.N (source suffix)": "accepted",
     "placement: note refs only | section-N → s.N(+1)": "accepted",
     "placement: note refs only | section-N → split: s.13Z4(+1)": "accepted",
+    "placement: note refs only | section-N → split: s.261Z5(+1)": "accepted",
     "placement: note refs only | section-N → split: s.N(+1)": "accepted",
     "placement: note refs only | section-N → split: s.N(+1) (source suffix)": "accepted",
     "placement: note refs only | section-N → split: s.N(+1), s.N(+1) (source suffix)": "accepted",
@@ -29283,8 +31568,12 @@
     "placement: note refs only | section-N → split: s.N, s.N(+1)": "accepted",
     "placement: note refs only | section-N → split: s.N, s.N(+1), s.N(+2)": "accepted",
     "placement: note refs only | section-N → split: s.N, s.N(+2)": "accepted",
+    "placement: note refs only | section-N(+1) → s.171ZZ17(+1)": "accepted",
+    "placement: note refs only | section-N(+1) → s.171ZZ18(+1)": "accepted",
+    "placement: note refs only | section-N(+1) → s.171ZZ19(+1)": "accepted",
     "placement: note refs only | section-N(+1) → s.362AZ12(+1)": "accepted",
     "placement: note refs only | section-N(+1) → s.368Z14(+1)": "accepted",
+    "placement: note refs only | section-N(+1) → s.55Z3(+1)": "accepted",
     "placement: note refs only | section-N(+1) → s.61Z2(+1)": "accepted",
     "placement: note refs only | section-N(+1) → s.65Z5(+1)": "accepted",
     "placement: note refs only | section-N(+1) → s.A2D5(+1)": "accepted",
@@ -29301,15 +31590,18 @@
     "placement: note refs only | section-N(+1) → split: s.N(+3)": "accepted",
     "placement: note refs only | section-N(+1)-zzza → s.N(+2)": "accepted",
     "placement: note refs only | section-N(+2) → s.10Z9(+2)": "accepted",
+    "placement: note refs only | section-N(+2) → s.171ZZ16(+2)": "accepted",
     "placement: note refs only | section-N(+2) → s.83Z1(+2)": "accepted",
     "placement: note refs only | section-N(+2) → s.N(+2)": "accepted",
     "placement: note refs only | section-N(+2) → s.N(+2) (source suffix)": "accepted",
     "placement: note refs only | section-N(+2) → s.N(+3)": "accepted",
     "placement: note refs only | section-N(+2) → split: s.N(+2), s.N(+3)": "accepted",
     "placement: note refs only | section-N(+2) → split: s.N(+3)": "accepted",
+    "placement: note refs only | section-N(+2)-iiia → s.N(+3)": "accepted",
     "placement: note refs only | section-N(+3) → s.N(+3)": "accepted",
     "placement: note refs only | section-N(+4) → s.N(+4)": "accepted",
     "placement: note refs only | term-N(+1)-motor-cycle → s.N(+1)": "accepted",
+    "placement: note refs only | term-hospital → s.N(+2)": "accepted",
     "placement: note refs only | term-river-basin → s.N(+1)": "accepted",
     "placement: note refs only | title-N → pt.N": "accepted",
     "placement: note refs only | title-N → split: art.Article N": "accepted",
@@ -29317,9 +31609,13 @@
     "placement: note refs only | title-N-chapter-N → split: art.Article N": "accepted",
     "placement: note refs only | title-N-chapter-N → split: art.Article N, pt.N.ch.N": "accepted",
     "placement: one element | ?-N → nowhere": "accepted",
+    "placement: one element | ?-N → pt.N": "accepted",
+    "placement: one element | ?-N → pt.N.ch.N": "accepted",
     "placement: one element | ?-N → reg.N": "accepted",
     "placement: one element | ?-N → reg.N(+1)": "accepted",
     "placement: one element | ?-N → reg.N(+2)": "accepted",
+    "placement: one element | ?-N → reg.N(+3)": "accepted",
+    "placement: one element | ?-N → s.N(+1)": "accepted",
     "placement: one element | article-N → art.Article N": "accepted",
     "placement: one element | article-N → art.Article N(+1)": "accepted",
     "placement: one element | article-N → art.Article N(+2)": "accepted",
@@ -29329,6 +31625,7 @@
     "placement: one element | article-N(+1) → art.Article N(+1)": "accepted",
     "placement: one element | article-N(+1) → art.Article N(+2)": "accepted",
     "placement: one element | article-N(+1) → reg.N(+1)": "accepted",
+    "placement: one element | article-N(+1) → reg.N(+1) (source suffix)": "accepted",
     "placement: one element | article-N(+1) → reg.N(+2)": "accepted",
     "placement: one element | article-N(+2) → art.Article N(+2)": "accepted",
     "placement: one element | article-N(+2) → art.Article N(+3)": "accepted",
@@ -29337,6 +31634,7 @@
     "placement: one element | article-N(+3) → art.Article N(+2)": "accepted",
     "placement: one element | article-N(+3) → art.Article N(+3)": "accepted",
     "placement: one element | article-N(+3) → reg.N(+3)": "accepted",
+    "placement: one element | article-N(+4) → art.Article N(+4)": "accepted",
     "placement: one element | article-N(+4) → reg.N(+4)": "accepted",
     "placement: one element | chapter-N → ch.N": "accepted",
     "placement: one element | chapter-N-crossheading-* → h.N": "accepted",
@@ -29344,11 +31642,13 @@
     "placement: one element | chapter-N-section-N → nowhere": "accepted",
     "placement: one element | crossheading-* → h.N": "accepted",
     "placement: one element | crossheading-* → nowhere": "accepted",
+    "placement: one element | none → s.N(+1)": "accepted",
     "placement: one element | none → s.N(+2)": "accepted",
     "placement: one element | none → split: reg.N": "accepted",
     "placement: one element | part-N → nowhere": "accepted",
     "placement: one element | part-N → pt.N": "accepted",
     "placement: one element | part-N → split: reg.N(+1), reg.N(+2)": "accepted",
+    "placement: one element | part-N-chapter → nowhere": "accepted",
     "placement: one element | part-N-chapter → pt.N.ch.N": "accepted",
     "placement: one element | part-N-chapter-N → nowhere": "accepted",
     "placement: one element | part-N-chapter-N → pt.N.ch.N": "accepted",
@@ -29369,9 +31669,11 @@
     "placement: one element | part-N-crossheading-* → s.N(+2)": "accepted",
     "placement: one element | part-N-crossheading-* → split: s.N": "accepted",
     "placement: one element | part-N-section-N(+1) → s.N(+1)": "accepted",
+    "placement: one element | part-N-section-N(+2) → s.N(+2)": "accepted",
     "placement: one element | regulation-N → reg.N": "accepted",
     "placement: one element | regulation-N → reg.N(+1)": "accepted",
     "placement: one element | regulation-N(+1) → reg.N(+1)": "accepted",
+    "placement: one element | regulation-N(+1) → reg.N(+1) (source suffix)": "accepted",
     "placement: one element | regulation-N(+1) → reg.N(+2)": "accepted",
     "placement: one element | regulation-N(+2) → reg.N(+2)": "accepted",
     "placement: one element | regulation-N(+2) → reg.N(+3)": "accepted",
@@ -29396,7 +31698,9 @@
     "placement: one element | section-N → s.N(+1)": "accepted",
     "placement: one element | section-N → s.N(+1) (source suffix)": "accepted",
     "placement: one element | section-N → split: s.N(+1), s.N(+2)": "accepted",
+    "placement: one element | section-N(+1) → s.171ZZ4(+1)": "accepted",
     "placement: one element | section-N(+1) → s.206Z6(+1)": "accepted",
+    "placement: one element | section-N(+1) → s.309Z8(+1)": "accepted",
     "placement: one element | section-N(+1) → s.368Z14(+1)": "accepted",
     "placement: one element | section-N(+1) → s.554Z10(+1)": "accepted",
     "placement: one element | section-N(+1) → s.554Z11(+1)": "accepted",
@@ -29418,6 +31722,7 @@
     "placement: one element | section-N(+1)-azab → s.N(+2)": "accepted",
     "placement: one element | section-N(+1)-none → s.N(+2)": "accepted",
     "placement: one element | section-N(+2) → s.10Z12(+2)": "accepted",
+    "placement: one element | section-N(+2) → s.261Z5(+2)": "accepted",
     "placement: one element | section-N(+2) → s.368Z14(+2)": "accepted",
     "placement: one element | section-N(+2) → s.554Z10(+2)": "accepted",
     "placement: one element | section-N(+2) → s.554Z6(+2)": "accepted",
@@ -29433,7 +31738,9 @@
     "placement: one element | term-N(+2) → s.N(+1)": "accepted",
     "placement: one element | term-N-appropriate-authority → s.N(+1)": "accepted",
     "placement: one element | term-N-appropriate-council → s.N(+1)": "accepted",
+    "placement: one element | term-N-appropriate-traffic-commissioner → s.N(+2)": "accepted",
     "placement: one element | term-N-behalf-N(+1)-secretary-N-state → s.N(+1)": "accepted",
+    "placement: one element | term-N-consultative-bodies → reg.N": "accepted",
     "placement: one element | term-N-easa-aircraft → reg.N": "accepted",
     "placement: one element | term-N-gdpr → s.N(+1)": "accepted",
     "placement: one element | term-N-issuing-company → s.N(+1)": "accepted",
@@ -29442,6 +31749,7 @@
     "placement: one element | term-N-relevant-N-instrument → reg.N(+1)": "accepted",
     "placement: one element | term-N-requirements-N-section-N → s.N(+1)": "accepted",
     "placement: one element | term-N-senior-courts → s.N(+2)": "accepted",
+    "placement: one element | term-N-settlors-spouse-N(+1)-partner → s.N(+1)": "accepted",
     "placement: one element | term-N-single-commissioner → s.N(+1)": "accepted",
     "placement: one element | term-N-supreme-court → s.N": "accepted",
     "placement: one element | term-N-transfer-creditor → s.N(+2)": "accepted",
@@ -29450,6 +31758,7 @@
     "placement: one element | term-decommissioned → reg.N": "accepted",
     "placement: one element | term-designated-competent-authority-N(+1)-operator-N(+1)-essential-service → reg.N(+2)": "accepted",
     "placement: one element | term-excluded-flights → reg.N(+1)": "accepted",
+    "placement: one element | term-foster-care-receipts → s.N": "accepted",
     "placement: one element | term-local-authority → s.N(+1)": "accepted",
     "placement: one element | term-main-N-legislation → s.N(+1)": "accepted",
     "placement: one element | term-music-entertainment → s.N(+1)": "accepted",
@@ -29488,11 +31797,13 @@
     "placement: several elements | article-N → split: reg.N(+1)": "accepted",
     "placement: several elements | article-N → split: reg.N(+1), reg.N(+1) (source suffix)": "accepted",
     "placement: several elements | article-N → split: reg.N(+1), reg.N(+2)": "accepted",
+    "placement: several elements | article-N → split: reg.N(+1), reg.N(+2), reg.N(+3)": "accepted",
     "placement: several elements | article-N → split: reg.N(+1), reg.N(+3)": "accepted",
     "placement: several elements | article-N → split: reg.N(+2)": "accepted",
     "placement: several elements | article-N → split: reg.N(+2), reg.N(+3)": "accepted",
     "placement: several elements | article-N → split: reg.N, reg.N(+1)": "accepted",
     "placement: several elements | article-N(+1) → art.Article N(+1)": "accepted",
+    "placement: several elements | article-N(+1) → reg.N#N": "accepted",
     "placement: several elements | article-N(+1) → reg.N(+1)": "accepted",
     "placement: several elements | article-N(+1) → reg.N(+1) (source suffix)": "accepted",
     "placement: several elements | article-N(+1) → reg.N(+2)": "accepted",
@@ -29509,6 +31820,7 @@
     "placement: several elements | article-N(+2) → art.Article N(+3)": "accepted",
     "placement: several elements | article-N(+2) → reg.N(+2)": "accepted",
     "placement: several elements | article-N(+2) → reg.N(+3)": "accepted",
+    "placement: several elements | article-N(+2) → split: art.Article N(+3)": "accepted",
     "placement: several elements | article-N(+2) → split: reg.N(+2), reg.N(+3)": "accepted",
     "placement: several elements | article-N(+2) → split: reg.N(+3)": "accepted",
     "placement: several elements | article-N(+2)-iica → reg.N(+3)": "accepted",
@@ -29542,6 +31854,7 @@
     "placement: several elements | chapter-N-crossheading-* → split: s.A2D1, s.A2D2": "accepted",
     "placement: several elements | chapter-N-crossheading-* → split: s.A2D5, s.A2D6, s.A2D7, s.A2D8, s.A2D9": "accepted",
     "placement: several elements | chapter-N-crossheading-* → split: s.N": "accepted",
+    "placement: several elements | chapter-crossheading-* → s.N": "accepted",
     "placement: several elements | crossheading-* → reg.N": "accepted",
     "placement: several elements | crossheading-* → s.N": "accepted",
     "placement: several elements | crossheading-* → s.N(+2)": "accepted",
@@ -29566,6 +31879,7 @@
     "placement: several elements | none → split: art.Article N(+1), art.Article N(+3)": "accepted",
     "placement: several elements | none → split: art.Article N(+2)": "accepted",
     "placement: several elements | none → split: art.Article N, ch.N": "accepted",
+    "placement: several elements | none → split: h.N, s.N": "accepted",
     "placement: several elements | none → split: h.N, s.N, s.N(+1)": "accepted",
     "placement: several elements | none → split: pt.N, pt.N.ch.N, reg.N": "accepted",
     "placement: several elements | none → split: pt.N, reg.N": "accepted",
@@ -29576,7 +31890,9 @@
     "placement: several elements | none → split: reg.N, reg.N(+1)": "accepted",
     "placement: several elements | none → split: reg.N, reg.N(+1), reg.N(+2)": "accepted",
     "placement: several elements | none → split: reg.N, reg.N(+1), reg.N(+2), reg.N(+3)": "accepted",
+    "placement: several elements | none → split: s.139An1, s.139Bn1, s.N": "accepted",
     "placement: several elements | none → split: s.13Z1, s.13Z1(+1), s.13Z3(+1), s.13Z3(+2), s.N, s.N(+1), s.N(+2), s.N(+3)": "accepted",
+    "placement: several elements | none → split: s.55Z3, s.55Z4, s.N": "accepted",
     "placement: several elements | none → split: s.N": "accepted",
     "placement: several elements | none → split: s.N(+1)": "accepted",
     "placement: several elements | none → split: s.N(+1), s.N(+1) (source suffix)": "accepted",
@@ -29617,17 +31933,27 @@
     "placement: several elements | part-N → split: pt.N.ch.N, s.N": "accepted",
     "placement: several elements | part-N → split: reg.44ZBn1, reg.44ZCn1, reg.N": "accepted",
     "placement: several elements | part-N → split: reg.N": "accepted",
+    "placement: several elements | part-N → split: reg.N(+1)": "accepted",
     "placement: several elements | part-N → split: reg.N(+1), reg.N(+2)": "accepted",
     "placement: several elements | part-N → split: reg.N(+1), reg.N(+2), reg.N(+3)": "accepted",
+    "placement: several elements | part-N → split: reg.N(+1), reg.N(+2), reg.N(+3), reg.N(+4)": "accepted",
     "placement: several elements | part-N → split: reg.N(+2)": "accepted",
     "placement: several elements | part-N → split: reg.N, reg.N(+1)": "accepted",
     "placement: several elements | part-N → split: reg.N, reg.N(+1), reg.N(+2), reg.N(+3)": "accepted",
     "placement: several elements | part-N → split: reg.N, reg.N(+2)": "accepted",
     "placement: several elements | part-N → split: s.10Z1, s.10Z10, s.10Z11, s.10Z12, s.10Z13, s.10Z14, s.10Z15, s.10Z16, s.10Z17, s.10Z18, s.10Z19, s.10Z2, s.10Z3, s.10Z4, s.10Z5, s.10Z6, s.10Z7, s.10Z8, s.10Z9, s.N": "accepted",
+    "placement: several elements | part-N → split: s.131Z1, s.131Z2, s.N": "accepted",
+    "placement: several elements | part-N → split: s.142Z1, s.N": "accepted",
+    "placement: several elements | part-N → split: s.171ZZ1, s.171ZZ2, s.171ZZ3, s.171ZZ4, s.171ZZ5, s.N": "accepted",
+    "placement: several elements | part-N → split: s.171ZZ10, s.171ZZ11, s.171ZZ12, s.171ZZ13, s.171ZZ14, s.171ZZ15, s.171ZZ6, s.171ZZ7, s.171ZZ8, s.171ZZ9": "accepted",
+    "placement: several elements | part-N → split: s.171ZZ16, s.171ZZ17, s.171ZZ18, s.171ZZ19, s.171ZZ20, s.171ZZ21, s.171ZZ22, s.171ZZ23, s.171ZZ24": "accepted",
+    "placement: several elements | part-N → split: s.192Z1, s.192Z2, s.192Z3, s.N": "accepted",
     "placement: several elements | part-N → split: s.206Z1, s.206Z2, s.206Z3, s.206Z4, s.206Z5, s.206Z6, s.N": "accepted",
+    "placement: several elements | part-N → split: s.360Z1, s.360Z2, s.360Z3, s.360Z4, s.N": "accepted",
     "placement: several elements | part-N → split: s.362AZ1, s.362AZ10, s.362AZ11, s.362AZ12, s.362AZ2, s.362AZ3, s.362AZ4, s.362AZ5, s.362AZ6, s.362AZ7, s.362AZ8, s.362AZ9, s.N": "accepted",
     "placement: several elements | part-N → split: s.362BZ1, s.362BZ2, s.362BZ3, s.362BZ4, s.N": "accepted",
     "placement: several elements | part-N → split: s.368Z14, s.368Z15, s.368Z16, s.368Z17, s.368Z18, s.368Z19, s.368Z20, s.368Z21": "accepted",
+    "placement: several elements | part-N → split: s.37Z1, s.37Z2, s.N": "accepted",
     "placement: several elements | part-N → split: s.554Z1, s.554Z10, s.554Z11, s.554Z12, s.554Z13, s.554Z14, s.554Z15, s.554Z16, s.554Z17, s.554Z18, s.554Z19, s.554Z2, s.554Z20, s.554Z21, s.554Z3, s.554Z4, s.554Z5, s.554Z6, s.554Z7, s.554Z8, s.554Z9, s.N": "accepted",
     "placement: several elements | part-N → split: s.N": "accepted",
     "placement: several elements | part-N → split: s.N(+1)": "accepted",
@@ -29635,10 +31961,14 @@
     "placement: several elements | part-N → split: s.N(+1), s.N(+2), s.N(+3)": "accepted",
     "placement: several elements | part-N → split: s.N(+2)": "accepted",
     "placement: several elements | part-N → split: s.N, s.N (source suffix)": "accepted",
+    "placement: several elements | part-N → split: s.N, s.N(+1)": "accepted",
     "placement: several elements | part-N → split: s.N, s.N(+1), s.N(+2)": "accepted",
+    "placement: several elements | part-N → split: s.N, s.N(+1), s.N(+2), s.N(+3)": "accepted",
     "placement: several elements | part-N-chapter → split: reg.N": "accepted",
     "placement: several elements | part-N-chapter-N → nowhere": "accepted",
     "placement: several elements | part-N-chapter-N → pt.N.ch.N": "accepted",
+    "placement: several elements | part-N-chapter-N → reg.N": "accepted",
+    "placement: several elements | part-N-chapter-N → s.261Z6": "accepted",
     "placement: several elements | part-N-chapter-N → s.N": "accepted",
     "placement: several elements | part-N-chapter-N → split: h.N, pt.N.ch.N, s.N": "accepted",
     "placement: several elements | part-N-chapter-N → split: h.N, s.N": "accepted",
@@ -29652,6 +31982,8 @@
     "placement: several elements | part-N-chapter-N → split: s.13Z1, s.13Z2, s.13Z3, s.13Z4, s.N": "accepted",
     "placement: several elements | part-N-chapter-N → split: s.14Z25, s.14Z26, s.14Z27, s.14Z28, s.14Z29, s.14Z30": "accepted",
     "placement: several elements | part-N-chapter-N → split: s.14Z32, s.14Z33, s.14Z34, s.14Z35, s.14Z36, s.14Z37, s.14Z38, s.14Z39, s.14Z40, s.14Z41, s.14Z42, s.14Z43, s.14Z44, s.14Z45, s.14Z46, s.14Z47, s.14Z48, s.14Z49, s.14Z50, s.14Z51, s.14Z52, s.14Z53, s.14Z54, s.14Z55, s.14Z56, s.14Z57, s.14Z58, s.14Z59, s.14Z60, s.14Z61, s.14Z62, s.14Z63, s.14Z64": "accepted",
+    "placement: several elements | part-N-chapter-N → split: s.261Z1, s.261Z2, s.261Z3, s.261Z4, s.261Z5, s.N": "accepted",
+    "placement: several elements | part-N-chapter-N → split: s.309Z1, s.309Z2, s.309Z3, s.309Z4, s.309Z5, s.309Z6, s.309Z7, s.309Z8, s.N": "accepted",
     "placement: several elements | part-N-chapter-N → split: s.41Z1, s.N": "accepted",
     "placement: several elements | part-N-chapter-N → split: s.508An1, s.508Bn1": "accepted",
     "placement: several elements | part-N-chapter-N → split: s.508An2, s.508Bn2": "accepted",
@@ -29660,6 +31992,7 @@
     "placement: several elements | part-N-chapter-N → split: s.86Z1, s.86Z2, s.86Z3, s.86Z4, s.86Z5, s.86Z6, s.N": "accepted",
     "placement: several elements | part-N-chapter-N → split: s.N": "accepted",
     "placement: several elements | part-N-chapter-N → split: s.N (source suffix)": "accepted",
+    "placement: several elements | part-N-chapter-N → split: s.N(+1)": "accepted",
     "placement: several elements | part-N-chapter-N → split: s.N(+1), s.N(+2)": "accepted",
     "placement: several elements | part-N-chapter-N → split: s.N(+1), s.N(+2), s.N(+3)": "accepted",
     "placement: several elements | part-N-chapter-N → split: s.N, s.N(+1)": "accepted",
@@ -29695,6 +32028,7 @@
     "placement: several elements | part-N-crossheading-* → split: s.N": "accepted",
     "placement: several elements | part-N-crossheading-* → split: s.N(+1)": "accepted",
     "placement: several elements | part-N-crossheading-* → split: s.N(+1), s.N(+2)": "accepted",
+    "placement: several elements | part-N-crossheading-* → split: s.N(+1), s.N(+2), s.N(+3)": "accepted",
     "placement: several elements | part-N-crossheading-* → split: s.N(+2)": "accepted",
     "placement: several elements | part-N-crossheading-* → split: s.N, s.N(+1)": "accepted",
     "placement: several elements | part-N-crossheading-* → split: s.N, s.N(+1), s.N(+2), s.N(+3)": "accepted",
@@ -29718,6 +32052,7 @@
     "placement: several elements | regulation-N → split: reg.N, reg.N(+1), reg.N(+2), reg.N(+3)": "accepted",
     "placement: several elements | regulation-N → split: reg.N, reg.N(+2)": "accepted",
     "placement: several elements | regulation-N(+1) → reg.N(+1)": "accepted",
+    "placement: several elements | regulation-N(+1) → reg.N(+1) (source suffix)": "accepted",
     "placement: several elements | regulation-N(+1) → reg.N(+2)": "accepted",
     "placement: several elements | regulation-N(+1) → split: reg.N(+1), reg.N(+2)": "accepted",
     "placement: several elements | regulation-N(+1) → split: reg.N(+1), reg.N(+2), reg.N(+3)": "accepted",
@@ -29726,6 +32061,7 @@
     "placement: several elements | regulation-N(+1) → split: reg.N(+2), reg.N(+3)": "accepted",
     "placement: several elements | regulation-N(+1) → split: reg.N(+2), reg.N(+4)": "accepted",
     "placement: several elements | regulation-N(+1) → split: reg.N(+3)": "accepted",
+    "placement: several elements | regulation-N(+1)-iiia → reg.N(+2)": "accepted",
     "placement: several elements | regulation-N(+2) → reg.N(+2)": "accepted",
     "placement: several elements | regulation-N(+2) → reg.N(+3)": "accepted",
     "placement: several elements | regulation-N(+2) → split: reg.N(+2), reg.N(+3)": "accepted",
@@ -29761,6 +32097,7 @@
     "placement: several elements | schedule-part-N-paragraph-N(+2) → reg.N(+2)": "accepted",
     "placement: several elements | section-N → nowhere": "accepted",
     "placement: several elements | section-N → s.105Z11": "accepted",
+    "placement: several elements | section-N → s.11An1": "accepted",
     "placement: several elements | section-N → s.32Z1": "accepted",
     "placement: several elements | section-N → s.554Z10": "accepted",
     "placement: several elements | section-N → s.554Z11A": "accepted",
@@ -29768,6 +32105,7 @@
     "placement: several elements | section-N → s.554Z4A": "accepted",
     "placement: several elements | section-N → s.554Z5": "accepted",
     "placement: several elements | section-N → s.554Z9": "accepted",
+    "placement: several elements | section-N → s.85Cn1": "accepted",
     "placement: several elements | section-N → s.97Z1": "accepted",
     "placement: several elements | section-N → s.N": "accepted",
     "placement: several elements | section-N → s.N (source suffix)": "accepted",
@@ -29791,7 +32129,6 @@
     "placement: several elements | section-N → split: s.N(+2)": "accepted",
     "placement: several elements | section-N → split: s.N(+2), s.N(+3)": "accepted",
     "placement: several elements | section-N → split: s.N, s.N(+1)": "accepted",
-    "placement: several elements | section-N → split: s.N, s.N(+1) (source suffix)": "accepted",
     "placement: several elements | section-N → split: s.N, s.N(+1), s.N(+2)": "accepted",
     "placement: several elements | section-N → split: s.N, s.N(+1), s.N(+2), s.N(+3)": "accepted",
     "placement: several elements | section-N → split: s.N, s.N(+1), s.N(+3)": "accepted",
@@ -29803,6 +32140,7 @@
     "placement: several elements | section-N(+1) → s.554Z2(+1)": "accepted",
     "placement: several elements | section-N(+1) → s.554Z5(+1)": "accepted",
     "placement: several elements | section-N(+1) → s.554Z9(+1)": "accepted",
+    "placement: several elements | section-N(+1) → s.55Z3(+1)": "accepted",
     "placement: several elements | section-N(+1) → s.A2D7(+1)": "accepted",
     "placement: several elements | section-N(+1) → s.N(+1)": "accepted",
     "placement: several elements | section-N(+1) → s.N(+1) (source suffix)": "accepted",
@@ -29821,6 +32159,9 @@
     "placement: several elements | section-N(+1) → split: s.N(+2), s.N(+3)": "accepted",
     "placement: several elements | section-N(+1) → split: s.N(+3)": "accepted",
     "placement: several elements | section-N(+1)-aaza → s.N(+2)": "accepted",
+    "placement: several elements | section-N(+1)-bbza → s.N(+2)": "accepted",
+    "placement: several elements | section-N(+1)-bbzb → s.N(+2)": "accepted",
+    "placement: several elements | section-N(+1)-bbzc → s.N(+2)": "accepted",
     "placement: several elements | section-N(+1)-cbza → s.N(+2)": "accepted",
     "placement: several elements | section-N(+1)-dbzc → s.N(+2)": "accepted",
     "placement: several elements | section-N(+1)-ffff → s.N(+2)": "accepted",
@@ -29838,10 +32179,12 @@
     "placement: several elements | section-N(+2) → split: s.N(+3)": "accepted",
     "placement: several elements | section-N(+2) → split: s.N(+3), s.N(+4)": "accepted",
     "placement: several elements | section-N(+2)-iiia → s.N(+3)": "accepted",
+    "placement: several elements | section-N(+2)-iiid → s.N(+3)": "accepted",
     "placement: several elements | section-N(+2)-viia → s.N(+3)": "accepted",
     "placement: several elements | section-N(+2)-viiia → s.N(+3)": "accepted",
     "placement: several elements | section-N(+3) → s.N(+3)": "accepted",
     "placement: several elements | section-N(+3) → split: s.N(+4)": "accepted",
+    "placement: several elements | section-N(+4) → s.N(+4)": "accepted",
     "placement: several elements | term-N-primary-care-trust-orlocal-health-board → s.N(+1)": "accepted",
     "placement: several elements | term-N-relevant-N-instrument → reg.N(+1)": "accepted",
     "placement: several elements | title-N → pt.N": "accepted",
@@ -29873,6 +32216,7 @@
     "where: heading + text": "accepted",
     "where: none": "accepted",
     "where: number": "accepted",
+    "where: number + outside provisions": "accepted",
     "where: number + outside provisions + table + text": "accepted",
     "where: number + outside provisions + text": "accepted",
     "where: number + table": "accepted",

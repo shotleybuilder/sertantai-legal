@@ -191,6 +191,14 @@ defmodule Mix.Tasks.Lat.MarkupPatterns do
 
     for id <- Enum.sort(acc.mismatch) |> Enum.take(20), do: shell.info("  #{id}")
 
+    new = against_held(acc, held, shell)
+    if accept?, do: accept(path, acc, held, new, shell)
+  end
+
+  # the run against the held statuses and readings: new and gone patterns,
+  # held readings that moved, and held examples no longer generated; the new
+  # patterns are returned for `--accept`
+  defp against_held(acc, held, shell) do
     new = for p <- Map.keys(acc.patterns), not Map.has_key?(held["patterns"], p), do: p
     gone = for p <- Map.keys(held["patterns"]), not Map.has_key?(acc.patterns, p), do: p
 
@@ -212,17 +220,27 @@ defmodule Mix.Tasks.Lat.MarkupPatterns do
     )
 
     for id <- Enum.sort(changed) |> Enum.take(40), do: shell.info("  #{id}")
+    unheld(acc, held, shell)
+    new
+  end
 
-    if accept? do
-      examples =
-        Map.new(acc.examples, fn {id, x} -> {id, Map.get(held["examples"], id, x.outcome)} end)
+  # a held example no longer generated has moved to another pattern (or
+  # gone): `--accept` drops it, so its reading is listed to be read first
+  defp unheld(acc, held, shell) do
+    unheld = for id <- Map.keys(held["examples"]), not Map.has_key?(acc.examples, id), do: id
+    shell.info("held examples no longer generated (dropped by --accept): #{length(unheld)}")
+    for id <- Enum.sort(unheld) |> Enum.take(40), do: shell.info("  #{id}")
+  end
 
-      statuses =
-        Map.new(acc.patterns, fn {p, _} -> {p, Map.get(held["patterns"], p, "accepted")} end)
+  defp accept(path, acc, held, new, shell) do
+    examples =
+      Map.new(acc.examples, fn {id, x} -> {id, Map.get(held["examples"], id, x.outcome)} end)
 
-      File.write!(path, Files.encode(%{"patterns" => statuses, "examples" => examples}))
-      shell.info("\naccepted: #{length(new)} new patterns written to #{path}")
-    end
+    statuses =
+      Map.new(acc.patterns, fn {p, _} -> {p, Map.get(held["patterns"], p, "accepted")} end)
+
+    File.write!(path, Files.encode(%{"patterns" => statuses, "examples" => examples}))
+    shell.info("\naccepted: #{length(new)} new patterns written to #{path}")
   end
 
   # CV-S03's pointer shares: of the legacy and the effect-id changes, how
