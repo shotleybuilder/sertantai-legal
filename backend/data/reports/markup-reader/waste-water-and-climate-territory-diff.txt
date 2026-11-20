@@ -1,0 +1,5 @@
+UK_ukpga_2006_21: targets gone 0, added 0, attrs %{territory: 3}
+  ~ fc290678 s.101(1)(a) [territory: "W"] was [territory: "E"]
+  ~ 1032d7c3 s.30 [territory: "W"] was [territory: "E"]
+
+TOTAL %{added: 0, attrs: %{territory: 3}, laws: 124, moved_laws: 1, gone: 0}

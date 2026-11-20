@@ -1,0 +1,17 @@
+Store scan: note pieces (CitationSubRef with a SectionRef) under Commentary, every stored body
+868239 pieces in 2342 laws
+  ALL : 14577 pieces 12014 notes 612 laws
+  ALL (note under a change) : 4263 pieces 3953 notes 370 laws
+  schedule joined : 317 pieces 307 notes 90 laws
+  schedule joined (note under a change) : 122 pieces 122 notes 48 laws
+  split : 13551 pieces 11178 notes 566 laws
+  split (note under a change) : 3944 pieces 3653 notes 333 laws
+  unsettled : 709 pieces 673 notes 173 laws
+  unsettled (note under a change) : 197 pieces 197 notes 87 laws
+Check against the amending law's own ids (section, regulation, article pieces whose amending law is held and holds the provision):
+  schedule joined: a piece is not 179
+  split: a piece is not 347
+  split: every piece is an id of the amending law 5841
+  unsettled: the joined id is an id of the amending law 151
+  unsettled: the joined id is not 282
+Note (after the coordinator's change): the 709 unsettled pieces are carried as given, the joined ref from the id; only the settled ones are split.

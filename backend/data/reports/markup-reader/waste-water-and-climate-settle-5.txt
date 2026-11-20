@@ -1,0 +1,23 @@
+# Fire and OH&S
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] JWKS public key fetched successfully
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+
+1943 changes (change elements) in 64 laws:
+  1791  placed
+  152  placed_versions
+our faults: 0
+
+1815 note placements (an effect placed by its note ref only) in 79 laws:
+  1773  placed
+  42  placed_versions
+our faults: 0
+
+markup keys against the feed (changes; a count for CV-S07):
+  1455  in_feed
+  452  legacy
+  36  not_in_feed
+
+PASS (placement)
+exit 0

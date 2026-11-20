@@ -1,0 +1,146 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+6156 stored law texts
+laws read 3 at once: 12.1 GB available under the cgroup's limit (6.0 kept), ~1.8 GB a law; 0.7 of 6 cores busy; max 4
+  250/6156
+  500/6156
+  750/6156
+  1000/6156
+  1250/6156
+  1500/6156
+  1750/6156
+  2000/6156
+  2250/6156
+  2500/6156
+  2750/6156
+  3000/6156
+  3250/6156
+  3500/6156
+  3750/6156
+  4000/6156
+  4250/6156
+  4500/6156
+  4750/6156
+  5000/6156
+  5250/6156
+  5500/6156
+  5750/6156
+  6000/6156
+cache: 0 hits, 6156 read
+
+225812 changes in 6156 laws
+unclassified: 0
+931 patterns, 1269 examples (417 too large to hold)
+  extent: 37
+  key: 23
+  level: 6
+  operation: 18
+  placement: 811
+  pointers: 7
+  retained: 7
+  where: 22
+pointers (changes):
+  legacy: 33945; a cited law 32020 (94.3%); with the amending provisions 30879 (91.0%)
+  effect id: 93233; a cited law 92771 (99.5%); with the amending provisions 92744 (99.5%)
+examples not held, reading differently alone than in their law: 732
+  UK_asc_2023_3/74b837e9f1
+  UK_asc_2024_6/24cbf5f2fd
+  UK_asc_2026_4/ce66fc3d4d
+  UK_asp_2000_6/a81e79b5c2
+  UK_asp_2002_13/ee8d4d00c8
+  UK_asp_2003_3/28593d7a9c
+  UK_asp_2003_3/d5f1f608eb
+  UK_asp_2004_6/7bd123db60
+  UK_asp_2004_6/9ae47f8519
+  UK_asp_2005_13/eefe566193
+  UK_asp_2006_17/ca9311687f
+  UK_asp_2006_17/d0057b20eb
+  UK_asp_2009_12/8f87318f3c
+  UK_asp_2009_6/86e3aa892f
+  UK_asp_2009_6/dd377746e5
+  UK_asp_2010_5/cc5ab9de1c
+  UK_asp_2010_5/d06d48c762
+  UK_asp_2011_6/71dfb7f582
+  UK_asp_2012_8/a33628c004
+  UK_asp_2014_12/82a2a2b774
+
+new patterns (no status): 77
+  extent: E | W → W
+  key: key-HEX-Nw
+  placement: note refs only | article-N → split: reg.N(+1), reg.N(+1) (source suffix)
+  placement: note refs only | none → split: reg.N, reg.N(+1)
+  placement: note refs only | part-N → s.171ZZ16
+  placement: note refs only | part-N → s.N(+1)
+  placement: note refs only | part-N → split: pt...., reg.N
+  placement: note refs only | part-N → split: s.55Z3, s.N
+  placement: note refs only | part-N → split: s.N, s.N(+1)
+  placement: note refs only | part-N-chapter-N → reg.N
+  placement: note refs only | part-N-crossheading-* → split: s.55Z1, s.55Z2, s.55Z2A
+  placement: note refs only | part-N-section-N(+1) → s.N(+1)
+  placement: note refs only | section-N → s.171ZZ16
+  placement: note refs only | section-N → s.261Z4
+  placement: note refs only | section-N → s.55Z3
+  placement: note refs only | section-N → s.55Z4
+  placement: note refs only | section-N → split: s.261Z5(+1)
+  placement: note refs only | section-N(+1) → s.171ZZ17(+1)
+  placement: note refs only | section-N(+1) → s.171ZZ18(+1)
+  placement: note refs only | section-N(+1) → s.171ZZ19(+1)
+  placement: note refs only | section-N(+1) → s.55Z3(+1)
+  placement: note refs only | section-N(+2) → s.171ZZ16(+2)
+  placement: note refs only | section-N(+2)-iiia → s.N(+3)
+  placement: note refs only | term-hospital → s.N(+2)
+  placement: one element | ?-N → pt.N
+  placement: one element | ?-N → pt.N.ch.N
+  placement: one element | ?-N → reg.N(+3)
+  placement: one element | ?-N → s.N(+1)
+  placement: one element | article-N(+1) → reg.N(+1) (source suffix)
+  placement: one element | article-N(+4) → art.Article N(+4)
+  placement: one element | none → s.N(+1)
+  placement: one element | part-N-chapter → nowhere
+  placement: one element | part-N-section-N(+2) → s.N(+2)
+  placement: one element | regulation-N(+1) → reg.N(+1) (source suffix)
+  placement: one element | section-N(+1) → s.171ZZ4(+1)
+  placement: one element | section-N(+1) → s.309Z8(+1)
+  placement: one element | section-N(+2) → s.261Z5(+2)
+  placement: one element | term-N-appropriate-traffic-commissioner → s.N(+2)
+  placement: one element | term-N-consultative-bodies → reg.N
+  placement: one element | term-N-settlors-spouse-N(+1)-partner → s.N(+1)
+  placement: one element | term-foster-care-receipts → s.N
+  placement: several elements | article-N → split: reg.N(+1), reg.N(+2), reg.N(+3)
+  placement: several elements | article-N(+1) → reg.N#N
+  placement: several elements | article-N(+2) → split: art.Article N(+3)
+  placement: several elements | chapter-crossheading-* → s.N
+  placement: several elements | none → split: h.N, s.N
+  placement: several elements | none → split: s.139An1, s.139Bn1, s.N
+  placement: several elements | none → split: s.55Z3, s.55Z4, s.N
+  placement: several elements | part-N → split: reg.N(+1)
+  placement: several elements | part-N → split: reg.N(+1), reg.N(+2), reg.N(+3), reg.N(+4)
+  placement: several elements | part-N → split: s.131Z1, s.131Z2, s.N
+  placement: several elements | part-N → split: s.142Z1, s.N
+  placement: several elements | part-N → split: s.171ZZ1, s.171ZZ2, s.171ZZ3, s.171ZZ4, s.171ZZ5, s.N
+  placement: several elements | part-N → split: s.171ZZ10, s.171ZZ11, s.171ZZ12, s.171ZZ13, s.171ZZ14, s.171ZZ15, s.171ZZ6, s.171ZZ7, s.171ZZ8, s.171ZZ9
+  placement: several elements | part-N → split: s.171ZZ16, s.171ZZ17, s.171ZZ18, s.171ZZ19, s.171ZZ20, s.171ZZ21, s.171ZZ22, s.171ZZ23, s.171ZZ24
+  placement: several elements | part-N → split: s.192Z1, s.192Z2, s.192Z3, s.N
+  placement: several elements | part-N → split: s.360Z1, s.360Z2, s.360Z3, s.360Z4, s.N
+  placement: several elements | part-N → split: s.37Z1, s.37Z2, s.N
+  placement: several elements | part-N → split: s.N, s.N(+1)
+  placement: several elements | part-N → split: s.N, s.N(+1), s.N(+2), s.N(+3)
+patterns no longer seen: 4
+  extent: E+W | W → E+W
+  extent: S | unset → S
+  key: dNpN + key-HEX-N
+  placement: several elements | section-N → split: s.N, s.N(+1) (source suffix)
+examples reading differently from expected: 11 (pending patterns: 0)
+  UK_asp_2003_15/b9661e23fb
+  UK_eur_2004_852/260ee0c1c8
+  UK_ukpga_1954_70/b90ce2c7bc
+  UK_ukpga_1968_13/3092ae0a54
+  UK_ukpga_1968_73/316faaf213
+  UK_ukpga_1970_9/b5d189a9aa
+  UK_ukpga_1976_57/f8fd6daf86
+  UK_ukpga_1992_12/64fa2d2442
+  UK_uksi_1991_724/75fe3a4405
+  UK_uksi_2000_1043/30c586576d
+  UK_uksi_2012_1916/0b0fa2c9b0
+exit 0

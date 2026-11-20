@@ -1,0 +1,30 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+
+11640 changes (change elements) in 267 laws:
+  11131  placed
+  361  placed_versions
+  128  outside_lat_scope
+  13  placed_ancestor
+  5  whole_law
+  2  eu_section_not_held
+our faults: 0
+
+7132 note placements (an effect placed by its note ref only) in 282 laws:
+  6964  placed
+  78  outside_lat_scope
+  60  placed_versions
+  25  outside_provisions
+  5  placed_ancestor
+our faults: 0
+
+markup keys against the feed (changes; a count for CV-S07):
+  8211  in_feed
+  3072  legacy
+  357  not_in_feed
+
+sample of 50 written to data/reports/markup-reader/waste-water-and-climate-sample-seed67-b.json
+
+PASS (placement)
+exit 0

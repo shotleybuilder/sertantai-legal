@@ -1,0 +1,36 @@
+UK_ukpga_1907_24: targets gone 7, added 4, attrs %{note: 1, cited: 1, affecting: 1, note_digest: 1}
+  - 2f69c8e1 s.6(3A)
+  - 2f69c8e1 s.6(3An1)
+  - 2f69c8e1 s.6(3B)
+  + 09c387c4 s.6(3A)
+  + 09c387c4 s.6(3B)
+  ~ 2f69c8e1 s.6(3D) [affecting: ["s.134(2)"], cited: "UK_ukpga_2023_56", note: "key…2f69c8e1", note_digest: "2eade4a00bfa"] was [affecting: ["reg.2(4)(c)"], cited: "UK_uksi_2017_514", note: "key…09c387c4", note_digest: "c7ae51e57250"]
+UK_ukpga_1962_58: targets gone 1, added 1, attrs %{}
+  - 9b53d7b0 s.44
+  + 2723de53 s.44
+UK_ukpga_1968_73: targets gone 0, added 1, attrs %{operation: 1, retained: 1}
+  + d29p7586 s.113(5)
+  ~ 183bffed s.113(5) [operation: :substituted, retained: true] was [operation: :inserted]
+UK_ukpga_1970_9: targets gone 2, added 4, attrs %{}
+  - 9564e72b s.12AAA
+  - a4366481 s.8B
+  + 20c9bd4f s.8B
+  + aeea1e63 s.12AAA
+  + 9564e72b s.12AAA(9)
+UK_ukpga_1988_50: targets gone 0, added 1, attrs %{}
+  + 53d47bcc s.8(4A)
+UK_ukpga_1990_43: targets gone 1, added 2, attrs %{operation: 1, retained: 1, level_covering: 1}
+  - 9c7b1a75 s.6(6A)
+  + d29p866 s.6(6A)
+  + d29p866 s.6(6B)
+UK_ukpga_1996_18: targets gone 1, added 2, attrs %{operation: 1, note: 1, cited: 1, retained: 1, affecting: 1, note_digest: 1, level_covering: 1}
+  - 6eb7e7f3 s.75A(1A)
+  + 69072ed4 s.75A(1A)
+  ~ e8ff08d9 s.235(1) [affecting: ["reg.148"], cited: "UK_wsi_2016_413", note: "key…e8ff08d9", note_digest: "4a7ade32500c"] was [affecting: ["s.128(2)(e)"], cited: "UK_ukpga_2014_6", note: "key…12c83ceb", note_digest: "3262e8475379"]
+UK_ukpga_2003_21: targets gone 0, added 1, attrs %{note: 1, cited: 1, affecting: 1, note_digest: 1, level_covering: 1}
+  + 84398019 s.402(2)(aa)
+  ~ 6b3b70bd s.402(2)(aa) [affecting: ["sch.para.3(a)"], cited: "UK_ukpga_2021_7", level_covering: :provision, note: "key…6b3b70bd", note_digest: "6b90a5a4e2a9"] was [affecting: ["sch.3.para.47(2)"], cited: "UK_ukpga_2017_30", level: :provision, note: "key…84398019", note_digest: "c11b3fd8eb82"]
+UK_ukpga_2003_33: targets gone 1, added 0, attrs %{}
+  - 045893ef s.25(2)
+
+TOTAL %{added: 16, attrs: %{operation: 3, note: 3, cited: 3, retained: 3, affecting: 3, note_digest: 3, level_covering: 3}, laws: 187, moved_laws: 9, gone: 13}

@@ -217,6 +217,14 @@ A rebuild moves no switched label until `LabelRefresh` runs. Laws whose rows don
 - **Build:** 139 laws, 29,286 → 29,281 changes. Laws moved in the switched families: Occupational 3, Environmental Protection 1. They are refreshed at the round's Store and build.
 - **No agent check** (2026-11-13). Seed 67 is repeatable, and golden is 27/27.
 
+**Waste, Water and Climate (2026-11-19/20).**
+- **Check:** 11,640 changes in 267 laws and 7,132 note placements, our faults 0 (from 2: EU Sections in a Chapter, now `eu-section-not-held`, Decision 1 a). The four switched families stay at 0.
+- **Fix, not known limits** (Jason 2026-11-19, Decision 3): 12 fixer calls, one class a call, each test first and sized by the in-memory diff. 11 landed, and one (an id and its note naming different effects) was parked with Merge, which holds the feed. Most are the note's pointers, which join the markup record to its twins and date it (`amending-citation-after-by`, `amending-pieces-are-the-listed-ones`, `joined-ref-split-where-settled`, `copied-note-pieces-are-the-copys`, `territory-pairs-its-instrument`); two re-pair a substitution (`substitution-pairs-its-own-note`); one keys a copied id by its note.
+- **Judge a pointer fix by the feed and the aims, never by the brief.** A brief of mine had "(as inserted by Y)" read X; the fixer's feed comparison (120 agreeing sets lost) showed the law is Y, and so do the date and the join. Every fix was checked against the feed's affecting law; over all notes with a feed effect, agreement rose from 55,554 to 55,744 of 56,117.
+- **A fix that drops a source's own fact is worse than leaving it:** an unsettled joined id is carried as given (151 of 433 are real ids).
+- **Catalogue:** 6,156 laws, 931 patterns, 77 new accepted; 11 held readings moved, each read against its note (Decision 6 a). The report now lists held examples no longer generated: 7 had moved to other patterns unseen and were dropped by `--accept` (all fix 5's, read by hand).
+- **Build:** 565 laws, 92,711 → 92,692 changes. Seed 67 repeatable; golden 41/50, the same 9; Sources PASS, no fetch.
+
 **Skill.** `markup-reader-check`.
 
 ## 4. Commencement reader

@@ -1,0 +1,23 @@
+# OH&S: Occupational / Personal Safety
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+
+1790 changes (change elements) in 79 laws:
+  1541  placed
+  247  placed_versions
+  2  whole_law
+our faults: 0
+
+1377 note placements (an effect placed by its note ref only) in 64 laws:
+  1334  placed
+  43  placed_versions
+our faults: 0
+
+markup keys against the feed (changes; a count for CV-S07):
+  1178  in_feed
+  576  legacy
+  36  not_in_feed
+
+PASS (placement)
+exit 0

@@ -1,0 +1,227 @@
+UK_asp_2003_2: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ d29p2933 s.34(8) [affecting: ["s.104", "s.107(2)", "sch.4.para.13(a)"]] was []
+UK_asp_2006_1: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ 7484f64a s.25(3)(b)(ii) [affecting: ["reg.1(2)", "sch.2.para.6(6)(c)(ii)"]] was [affecting: ["reg.1(2)", "sch.2.para.6(6)(c)(ii)", "sch.1"]]
+UK_asp_2016_21: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ 56750880 s.23A [affecting: ["s.237(2)", "sch.8.para.24(2)"]] was []
+UK_nisi_1992_231: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ d29p391 reg.3 [affecting: ["reg.1(2)", "reg.65", "sch.3.para.1(1)"]] was [affecting: ["reg.1(2)", "reg.65", "sch.3.para.1(1)", "sch.4"]]
+UK_ukpga_1936_49: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ d30p5366 s.343(1) [affecting: ["reg.3", "reg.5(2)"]] was [affecting: ["reg.3", "reg.5(2)", "reg.2", "reg.8(1)", "sch.1", "reg.1", "reg.2", "reg.3", "reg.5(1)", "reg.2(1)", "sch.1", "reg.2", "reg.2", "reg.2(1)", "reg.6(3)"]]
+UK_ukpga_1937_40: targets gone 0, added 0, attrs %{affecting: 3}
+  ~ d30p195 s.12(1) [affecting: ["reg.3(1)", "reg.5(2)"]] was [affecting: ["reg.3(1)", "reg.5(2)", "reg.2(1)", "reg.10(1)", "sch.1.pt.I", "reg.2(1)", "reg.6(3)"]]
+  ~ d30p233 s.12(3)(a) [affecting: ["reg.3(1)", "reg.5(2)"]] was [affecting: ["reg.3(1)", "reg.5(2)", "reg.2(1)", "reg.10(1)", "sch.1.pt.I", "reg.2(1)", "reg.6(3)"]]
+UK_ukpga_1944_31: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ d30p2331 s.27(6) [affecting: ["s.9", "s.231(7)", "s.235(6)", "sch.1.para.2(2)"]] was [affecting: ["sch.1.para.2(2)"]]
+UK_ukpga_1948_26: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ d30p1454 s.144(1) [affecting: ["reg.3", "reg.5(2)", "sch.1.pt.I"]] was [affecting: ["reg.3", "reg.1", "reg.2(i)", "reg.6(3)"]]
+UK_ukpga_1954_70: targets gone 0, added 0, attrs %{}
+  ~ d30p4996 s.182(1) [] was [affecting: ["reg.2(1)", "reg.5(6)", "reg.2(2)", "reg.7(4)"]]
+UK_ukpga_1956_52: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ d30p1581 s.16A [affecting: ["s.162(1)", "sch.15.para.6"]] was [affecting: ["sch.15.para.6", "reg.2"]]
+UK_ukpga_1964_48: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ d29p1610 s.1 [affecting: ["s.1(1)"]] was []
+UK_ukpga_1965_49: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ d30p2484 s.53(3) [affecting: ["s.289F", "s.289G"]] was []
+UK_ukpga_1967_86: targets gone 0, added 0, attrs %{affecting: 8}
+  ~ d30p3381 s.51(2) [affecting: ["s.146", "sch.13"]] was [affecting: ["sch.13"]]
+  ~ d30p5072 s.73(5) [affecting: ["s.4", "s.6(2)", "sch.2.para.15(3)"]] was []
+UK_ukpga_1968_27: targets gone 0, added 0, attrs %{affecting: 2}
+  ~ d29p288 s.4(4) [affecting: ["s.23(1)"]] was []
+  ~ d29p3143 s.35(3) [affecting: ["reg.6(c)", "sch.2.pt.II"]] was [affecting: ["reg.6(c)", "sch.2.pt.II", "reg.6(c)", "sch.2.pt.II"]]
+UK_ukpga_1968_67: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ 110178f6 s.130(5B) [affecting: ["reg.1(2)", "reg.25(1)(d)"]] was [affecting: ["reg.1(2)"]]
+UK_ukpga_1968_73: targets gone 0, added 0, attrs %{affecting: 8}
+  ~ d29p117 s.9(1) [affecting: ["s.57(1)(a)"]] was []
+  ~ d29p117 s.9(2) [affecting: ["s.57(1)(a)"]] was []
+UK_ukpga_1970_9: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ 29197934 s.98 [affecting: ["sch.29.para.9"]] was [affecting: ["sch.29.para.9", "sch.14"]]
+UK_ukpga_1972_14: targets gone 0, added 0, attrs %{affecting: 2}
+  ~ d29p257 s.2(3)(c) [affecting: ["sch.16.para.13(1)"]] was [affecting: ["sch.16.para.13(1)", "s.43", "s.46", "sch.1.para.2"]]
+  ~ d29p721 s.2(3)(c) [affecting: ["sch.16.para.13(1)"]] was [affecting: ["sch.16.para.13(1)", "s.43", "s.46", "sch.1.para.2"]]
+UK_ukpga_1972_70: targets gone 0, added 0, attrs %{affecting: 2}
+  ~ 29p16367 s.226(5) [affecting: ["s.16", "sch.8.para.22(2)(b)"]] was [affecting: ["sch.8.para.22(2)(b)"]]
+  ~ 29p18707 s.246(2)(a) [affecting: ["s.1(2)(a)(3)", "s.2"]] was []
+UK_ukpga_1973_38: targets gone 0, added 0, attrs %{}
+  ~ d29p438 s.69 [] was [affecting: ["reg.74(2)", "sch.6"]]
+UK_ukpga_1973_65: targets gone 0, added 0, attrs %{affecting: 2}
+  ~ d29p1532 s.35(1) [affecting: ["s.29(1)(a)", "s.37"]] was [affecting: ["s.29(1)(a)", "s.37", "s.31"]]
+  ~ d29p1548 s.35(4) [affecting: ["s.29(1)(b)", "s.37"]] was [affecting: ["s.29(1)(b)", "s.37", "s.31"]]
+UK_ukpga_1974_37: targets gone 0, added 0, attrs %{affecting: 2}
+  ~ 29p11306 s.28(3)(c)(ii) [affecting: ["reg.2", "sch.para.8(a)(i)"]] was [affecting: ["sch.para.8(a)(i)"]]
+  ~ 29p11431 s.28(5)(b) [affecting: ["reg.2", "sch.para.8(b)(ii)"]] was [affecting: ["sch.para.8(b)(ii)"]]
+UK_ukpga_1974_40: targets gone 0, added 0, attrs %{}
+  ~ 29p53212 s.78(2) [] was [affecting: ["s.54"]]
+UK_ukpga_1974_7: targets gone 0, added 0, attrs %{affecting: 3}
+  ~ 80194490 s.33ZA(1) [affecting: ["sch.12.para.9(2)"]] was []
+  ~ 43118895 s.33ZA(2) [affecting: ["sch.12.para.9(3)(b)"]] was []
+UK_ukpga_1975_30: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ d29p1877 s.37(1) [affecting: ["s.6", "sch.1.para.33"]] was [affecting: ["sch.1.para.33"]]
+UK_ukpga_1975_74: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ d29p3356 s.48(3) [affecting: ["s.25(2)"]] was []
+UK_ukpga_1976_57: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ d29p5381 s.75(2B) [affecting: ["s.39(1)", "s.40(2)", "sch.1.para.1"]] was [affecting: ["s.39(1)", "s.40(2)", "sch.1.para.1", "s.29"]]
+UK_ukpga_1976_72: targets gone 0, added 0, attrs %{affecting: 2}
+  ~ d30p276 s.1(10) [affecting: ["s.15", "sch.10.para.3"]] was [affecting: ["sch.10.para.3"]]
+  ~ d30p276 s.1(11) [affecting: ["s.15", "sch.10.para.3"]] was [affecting: ["sch.10.para.3"]]
+UK_ukpga_1977_49: targets gone 0, added 0, attrs %{affecting: 4}
+  ~ 29p16215 s.126(4) [affecting: ["s.67(1)", "s.70(2)", "sch.5.para.5(13)(b)"]] was [affecting: ["s.67(1)", "s.70(2)", "sch.5.para.5(13)(b)", "s.64(9)", "s.65(4)"]]
+  ~ 29p16266 s.126(4) [affecting: ["s.67(1)", "s.70(2)", "sch.5.para.5(13)(b)"]] was [affecting: ["s.67(1)", "s.70(2)", "sch.5.para.5(13)(b)", "s.64(9)", "s.65(4)"]]
+UK_ukpga_1978_23: targets gone 0, added 0, attrs %{affecting: 2}
+  ~ d29p1519 s.29(2)(c) [affecting: ["reg.185(1)", "sch.9"]] was []
+  ~ d29p2125 s.35(2)(g)(i) [affecting: ["reg.185(1)", "sch.9"]] was [affecting: ["sch.9"]]
+UK_ukpga_1978_29: targets gone 0, added 0, attrs %{affecting: 6}
+  ~ 29p12440 s.64(5)(b) [affecting: ["s.42(1)", "s.43(3)", "sch.2.para.2(16)"]] was []
+  ~ 29p16602 s.108(1A) [affecting: ["s.42(1)", "s.43(3)", "sch.2.para.2(19)(b)"]] was []
+UK_ukpga_1979_5: targets gone 0, added 0, attrs %{affecting: 2}
+  ~ d29p4251 s.27(1) [affecting: ["sch.6.para.10(a)"]] was []
+  ~ d29p4271 s.27(1) [affecting: ["sch.6.para.10(b)"]] was []
+UK_ukpga_1980_43: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ 29p10976 s.126(cc) [] was [affecting: ["s.119", "sch.8.para.45(b)"]]
+  ~ 29p10990 s.126(d) [] was [affecting: ["s.119", "sch.8.para.45(c)"]]
+UK_ukpga_1980_45: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ 9226f81f s.76HA(2)(e) [affecting: ["reg.1(1)", "sch.10.para.1(5)(b)(iii)"]] was [affecting: ["reg.1(1)", "sch.10.para.1(5)(b)(iii)", "reg.2"]]
+UK_ukpga_1980_66: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ 29p18842 s.172(1) [affecting: ["s.8", "sch.4.para.7"]] was [affecting: ["sch.4.para.7"]]
+UK_ukpga_1981_69: targets gone 0, added 0, attrs %{affecting: 4}
+  ~ d29p1252 s.9(4) [affecting: ["reg.7(4)"]] was []
+  ~ d29p4588 s.27(1) [affecting: ["reg.4(a)"]] was [affecting: ["reg.4(a)", "reg.3(1)", "sch.para.2(a)"]]
+UK_ukpga_1982_53: targets gone 0, added 0, attrs %{affecting: 2}
+  ~ d29p863 s.11(a) [affecting: ["s.79", "sch.3.para.9(c)"]] was []
+  ~ d29p863 s.11(b) [affecting: ["s.79", "sch.3.para.9(c)"]] was []
+UK_ukpga_1983_20: targets gone 0, added 0, attrs %{affecting: 6}
+  ~ 29p14579 s.134(3)(ea) [affecting: ["s.67(1)", "s.70(2)", "sch.5.para.6(2)"]] was [affecting: ["s.67(1)", "s.70(2)", "sch.5.para.6(2)", "s.64(9)", "s.65(4)"]]
+  ~ 29p14579 s.134(3)(eb) [affecting: ["s.67(1)", "s.70(2)", "sch.5.para.6(2)"]] was [affecting: ["s.67(1)", "s.70(2)", "sch.5.para.6(2)", "s.64(9)", "s.65(4)"]]
+UK_ukpga_1984_12: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ d29p4269 s.27G [affecting: ["s.6(1)", "s.56(2)"]] was [affecting: ["s.6(1)", "s.56(2)", "reg.3"]]
+UK_ukpga_1984_27: targets gone 0, added 0, attrs %{affecting: 6}
+  ~ d29p270 s.2(1) [affecting: ["s.168(1)", "sch.8.para.18(2)"]] was [affecting: ["sch.8.para.18(2)"]]
+  ~ d29p291 s.2(2) [affecting: ["s.168(1)", "sch.8.para.18(3)"]] was [affecting: ["sch.8.para.18(3)"]]
+UK_ukpga_1984_54: targets gone 0, added 0, attrs %{affecting: 9}
+  ~ d30p6011 s.83(10) [affecting: ["s.4", "sch.2"]] was [affecting: ["sch.2"]]
+  ~ d30p6565 s.93(3)(a) [affecting: ["s.180(1)", "sch.13"]] was [affecting: ["sch.13"]]
+UK_ukpga_1984_60: targets gone 0, added 0, attrs %{affecting: 10}
+  ~ 29p14221 s.80 [affecting: ["s.67(1)", "s.68(3)", "sch.4.para.13(4)"]] was [affecting: ["s.67(1)", "s.68(3)", "sch.4.para.13(4)", "sch.7.para.3(3)", "sch.7.para.5(2)"]]
+  ~ 29p14256 s.80(2) [affecting: ["s.67(1)", "s.68(3)", "sch.4.para.13(3)"]] was [affecting: ["s.67(1)", "s.68(3)", "sch.4.para.13(3)", "sch.7.para.3(3)", "sch.7.para.5(2)"]]
+UK_ukpga_1985_48: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ d30p127 s.1(2) [affecting: ["s.40(1)", "s.40(2)", "sch.5.para.6(3)"]] was [affecting: ["sch.5.para.6(3)"]]
+UK_ukpga_1985_51: targets gone 0, added 0, attrs %{}
+  ~ d29p345 s.10(4) [] was [affecting: ["s.162(1)", "sch.15.para.26"]]
+UK_ukpga_1986_31: targets gone 0, added 0, attrs %{affecting: 2}
+  ~ d29p5933 s.74(2)(a) [affecting: ["reg.71(1)", "sch.6"]] was []
+  ~ d29p6092 s.74(3)(mm) [affecting: ["reg.71(1)", "sch.6"]] was []
+UK_ukpga_1986_44: targets gone 0, added 0, attrs %{affecting: 2}
+  ~ 05737611 s.41E(6)(c) [affecting: ["reg.1", "sch.3"]] was [affecting: ["reg.1", "sch.3", "sch.2"]]
+  ~ 29p12899 s.66 [affecting: ["s.108", "sch.6.para.22(a)"]] was [affecting: ["sch.6.para.22(a)"]]
+UK_ukpga_1986_60: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ 30p30483 s.195 [affecting: ["s.212(3)", "sch.17"]] was [affecting: ["sch.17"]]
+UK_ukpga_1988_1: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ 29p27056 s.824(1)(c) [affecting: ["reg.1(1)", "reg.11"]] was [affecting: ["reg.1(1)"]]
+UK_ukpga_1988_19: targets gone 0, added 0, attrs %{}
+  ~ d30p571 s.26(1) [] was [affecting: ["s.49(2)", "sch.8.para.38(b)"]]
+UK_ukpga_1988_40: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ 29p35089 s.11(3)(b) [affecting: ["s.147(1)"]] was []
+UK_ukpga_1988_52: targets gone 0, added 0, attrs %{affecting: 2}
+  ~ 29p17264 s.127(3) [affecting: ["sch.para.5(3)"]] was []
+  ~ 29p23975 s.183(2)(a) [affecting: ["s.63", "s.66(1)", "sch.3.para.24(1)"]] was [affecting: ["sch.3.para.24(1)"]]
+UK_ukpga_1990_10: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ 44530738 s.31(3) [affecting: ["sch.3.para.8(3)"]] was [affecting: ["sch.3.para.8(3)", "s.111"]]
+UK_ukpga_1990_18: targets gone 0, added 0, attrs %{affecting: 5}
+  ~ d29p275 s.3(2)(b) [affecting: ["s.61(3)(a)(i)", "s.94"]] was [affecting: ["s.61(3)(a)(i)", "s.94", "sch.13.para.5"]]
+  ~ d29p285 s.3(2)(c) [affecting: ["s.61(3)(a)(ii)", "s.92", "s.94", "sch.14"]] was [affecting: ["s.61(3)(a)(ii)", "s.92", "s.94", "sch.14", "sch.13.para.5"]]
+UK_ukpga_1990_41: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ d29p3716 s.58A(2)(b) [affecting: ["s.139", "s.148(1)", "sch.3.para.80"]] was [affecting: ["s.139", "s.148(1)", "sch.3.para.80", "sch.4.para.22"]]
+UK_ukpga_1990_43: targets gone 0, added 0, attrs %{affecting: 7}
+  ~ 9p112156 s.79(1) [affecting: ["s.112(2)(a)", "s.128(2)"]] was []
+  ~ 9p112195 s.79(1)(ea) [affecting: ["s.111(2)", "s.128(2)"]] was []
+UK_ukpga_1990_8: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ 29p13576 s.186(1)(b) [affecting: ["s.32", "sch.7.para.29(a)"]] was [affecting: ["sch.7.para.29(a)"]]
+UK_ukpga_1990_9: targets gone 0, added 0, attrs %{affecting: 5}
+  ~ d29p1666 s.20A [] was [affecting: ["s.111"]]
+  ~ d29p7030 s.82D [affecting: ["s.84(3)", "s.121(1)"]] was [affecting: ["s.84(3)", "s.121(1)", "s.111"]]
+UK_ukpga_1991_22: targets gone 0, added 0, attrs %{affecting: 2}
+  ~ d29p2484 s.36(2)(b) [affecting: ["s.63", "s.66", "sch.3"]] was [affecting: ["sch.3"]]
+  ~ d29p6693 s.94(1A) [affecting: ["s.22(1)", "sch.7.para.32(1)"]] was [affecting: ["sch.7.para.32(1)", "sch.17.para.22(1)"]]
+UK_ukpga_1992_13: targets gone 0, added 0, attrs %{affecting: 2}
+  ~ 0f7d1d85 s.22A [affecting: ["s.355", "sch.7.para.58"]] was [affecting: ["s.355", "sch.7.para.58", "sch.8", "sch.para.43(b)"]]
+  ~ 3b41fb5c s.62(7B) [affecting: ["sch.26.para.23"]] was [affecting: ["sch.26.para.23", "reg.1(2)", "sch.1.para.5", "reg.2"]]
+UK_ukpga_1992_14: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ d29p3621 s.32(7)(a)(i) [affecting: ["sch.12"]] was [affecting: ["sch.12", "sch.17.para.22(1)", "reg.6(1)"]]
+UK_ukpga_1992_4: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ b5beef89 s.39C(1A) [affecting: ["s.30(1)(a)(3)"]] was [affecting: ["s.30(1)(a)(3)", "s.6(7)"]]
+UK_ukpga_1992_52: targets gone 0, added 0, attrs %{affecting: 4}
+  ~ 29p11052 s.108C [affecting: ["s.29", "sch.6.para.1"]] was [affecting: ["sch.6.para.1"]]
+  ~ 29p24520 s.279(1) [affecting: ["s.67(1)", "s.70(2)", "sch.5.para.9"]] was [affecting: ["s.67(1)", "s.70(2)", "sch.5.para.9", "s.64(9)", "s.65(4)"]]
+UK_ukpga_1992_53: targets gone 0, added 0, attrs %{affecting: 3}
+  ~ d29p701 s.11(2)(a) [affecting: ["s.22(a)", "s.77"]] was [affecting: ["s.22(a)", "s.77", "s.58", "s.62", "s.75"]]
+  ~ d29p718 s.11(2)(a) [affecting: ["s.22(b)", "s.77"]] was [affecting: ["s.22(b)", "s.77", "s.58", "s.62", "s.75"]]
+UK_ukpga_1994_33: targets gone 0, added 0, attrs %{affecting: 4}
+  ~ d29p2392 s.34(2A) [affecting: ["s.58(2)", "s.68(3)"]] was [affecting: ["s.58(2)", "s.68(3)", "sch.7.para.5(2)", "sch.7.para.8"]]
+  ~ d29p2663 s.36(4A) [affecting: ["s.58(3)", "s.68(3)"]] was [affecting: ["s.58(3)", "s.68(3)", "sch.7.para.5(2)", "sch.7.para.8"]]
+UK_ukpga_1995_46: targets gone 0, added 0, attrs %{affecting: 3}
+  ~ 29p13634 s.58A(1)(b) [] was [affecting: ["s.79", "sch.3.para.23(5)"]]
+  ~ 29p20535 s.90D(3)(b) [affecting: ["s.203", "s.206(1)", "sch.7.para.49"]] was []
+UK_ukpga_1996_18: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ 91745942 s.105(7N) [affecting: ["reg.1(1)", "reg.8(2)"]] was [affecting: ["reg.1(1)"]]
+UK_ukpga_1996_25: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ d29p6188 s.62 [affecting: ["s.67", "sch.6"]] was [affecting: ["s.67", "sch.6", "sch.7.para.3(3)", "sch.7.para.5(2)"]]
+UK_ukpga_1996_27: targets gone 0, added 0, attrs %{affecting: 2}
+  ~ d29p2874 s.31(10) [affecting: ["s.133", "s.136(2)", "sch.11.para.34(2)(a)"]] was [affecting: ["s.133", "s.136(2)", "sch.11.para.34(2)(a)", "s.129"]]
+  ~ d29p2884 s.31(10)(b) [affecting: ["s.133", "s.136(2)", "sch.11.para.34(2)(b)"]] was [affecting: ["s.133", "s.136(2)", "sch.11.para.34(2)(b)", "s.129"]]
+UK_ukpga_1996_56: targets gone 0, added 0, attrs %{affecting: 18}
+  ~ d29p5431 s.316 [affecting: ["s.1"]] was [affecting: ["s.1", "s.43(13)"]]
+  ~ d29p5515 s.316A [affecting: ["s.1"]] was [affecting: ["s.1", "s.43(13)"]]
+UK_ukpga_1997_50: targets gone 0, added 0, attrs %{affecting: 8}
+  ~ 34407350 s.119B(5)(ca) [affecting: ["reg.1(1)", "reg.37(l)"]] was [affecting: ["reg.1(1)"]]
+  ~ 34421156 s.119B(5)(ca) [affecting: ["reg.1(1)", "reg.37(l)"]] was [affecting: ["reg.1(1)"]]
+UK_ukpga_1998_31: targets gone 0, added 0, attrs %{affecting: 2}
+  ~ 29p14038 s.123(3A) [affecting: ["s.7(2)", "s.43(3)"]] was [affecting: ["s.7(2)", "s.43(3)", "s.43(13)"]]
+  ~ 29p14038 s.123(3B) [affecting: ["s.7(2)", "s.43(3)"]] was [affecting: ["s.7(2)", "s.43(3)", "s.43(13)"]]
+UK_ukpga_1998_38: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ d29p3238 s.144(8)(a) [affecting: ["s.73(3)(a)"]] was []
+UK_ukpga_2000_14: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ d29p574 s.4(7A) [affecting: ["s.8(3)(a)", "s.148"]] was [affecting: ["s.8(3)(a)", "s.148", "sch.4.para.1"]]
+UK_ukpga_2000_21: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ 23438028 s.33E [affecting: ["s.26", "s.49(2)"]] was []
+UK_ukpga_2000_43: targets gone 0, added 0, attrs %{affecting: 3}
+  ~ 88379835 s.62(2) [affecting: ["s.7(2)(a)", "s.95(1)"]] was [affecting: ["s.7(2)(a)"]]
+  ~ 88379835 s.62(2A) [affecting: ["s.7(2)(a)", "s.95(1)"]] was [affecting: ["s.7(2)(a)"]]
+UK_ukpga_2001_2: targets gone 0, added 0, attrs %{affecting: 2}
+  ~ 93040559 s.220(A1)(b) [affecting: ["s.1184(1)", "sch.1.para.344(2)(b)(ii)"]] was [affecting: ["s.1184(1)", "sch.1.para.344(2)(b)(ii)", "sch.2"]]
+  ~ 85ad3c43 s.220(A1)(b) [affecting: ["s.1184(1)", "sch.1.para.344(2)(b)(i)"]] was [affecting: ["s.1184(1)", "sch.1.para.344(2)(b)(i)", "sch.2"]]
+UK_ukpga_2002_40: targets gone 0, added 0, attrs %{affecting: 64}
+  ~ 41970606 s.36(3) [affecting: ["s.26(3)", "sch.5.para.26"]] was [affecting: ["s.26(3)", "sch.5.para.26", "reg.2(1)(d)"]]
+  ~ 45134203 s.38(2)(c) [affecting: ["s.26(3)", "sch.5.para.78(2)"]] was [affecting: ["s.26(3)", "sch.5.para.78(2)", "reg.2(1)(d)"]]
+UK_ukpga_2003_14: targets gone 0, added 0, attrs %{affecting: 3}
+  ~ 68824626 s.66(4) [affecting: ["s.160", "sch.10.para.64(b)"]] was [affecting: ["s.160", "sch.10.para.64(b)", "s.161(4)", "s.161(5)"]]
+  ~ 6f2a8422 s.61(3) [affecting: ["s.160", "sch.10.para.63"]] was [affecting: ["s.160", "sch.10.para.63", "s.161(4)", "s.161(5)"]]
+UK_ukpga_2006_32: targets gone 0, added 0, attrs %{affecting: 8}
+  ~ 83304394 s.16(5) [affecting: ["s.29(6)", "s.42(1)(c)"]] was []
+  ~ 83083346 s.16(1A) [affecting: ["s.29(4)", "s.42(1)(c)"]] was []
+UK_ukpga_2009_1: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ 27404d82 s.39A [affecting: ["reg.1(2)", "reg.25(3)"]] was [affecting: ["reg.1(2)"]]
+UK_ukpga_2009_4: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ 99724638 s.19(2) [affecting: ["s.76(8)(a)"]] was [affecting: ["s.76(8)(a)", "s.39(1)", "s.39(2)"]]
+UK_ukpga_2010_4: targets gone 0, added 0, attrs %{affecting: 21}
+  ~ 66eaf27c s.1119 [affecting: ["s.39(1)", "s.39(2)"]] was [affecting: ["s.39(1)", "s.39(2)", "s.76(11)"]]
+  ~ 91587e9e s.356OA [affecting: ["s.39(1)", "s.39(2)"]] was [affecting: ["s.39(1)", "s.39(2)", "s.77(1)"]]
+UK_ukpga_2012_10: targets gone 0, added 0, attrs %{affecting: 11}
+  ~ 29p11731 s.102(7)(a) [affecting: ["s.19(2)", "s.61(5)"]] was []
+  ~ 29p11741 s.102(7)(b) [affecting: ["s.19(3)", "s.61(5)"]] was []
+UK_ukpga_2023_55: targets gone 0, added 0, attrs %{affecting: 3}
+  ~ 37ab2a0e s.102(4)(b) [affecting: ["sch.13.para.198(b)(ii)"]] was []
+  ~ a96c29a9 s.102(4)(za) [affecting: ["sch.13.para.198(b)(i)"]] was []
+UK_uksi_1986_1078: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ 69745127 reg.15 [affecting: ["reg.3"]] was [affecting: ["reg.3", "reg.3(13)"]]
+UK_uksi_2010_2214: targets gone 0, added 0, attrs %{affecting: 5}
+  ~ b33bdce9 reg.16(6) [affecting: ["reg.1(2)", "reg.5(4)(c)"]] was [affecting: ["reg.1(2)"]]
+  ~ b2b8cb09 reg.16(2) [affecting: ["reg.9(a)", "sch.1"]] was [affecting: ["reg.9(a)", "sch.1", "reg.5"]]
+UK_uksi_2011_988: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ bf80dab2 reg.3(1) [affecting: ["reg.1(1)", "reg.8(2)"]] was [affecting: ["reg.1(1)", "reg.1(2)", "reg.5(2)"]]
+UK_uksi_2012_1916: targets gone 0, added 0, attrs %{affecting: 2}
+  ~ 213e3268 reg.61(13) [affecting: ["reg.68(5)"]] was [affecting: ["reg.68(5)", "reg.1", "sch.2.para.51(f)"]]
+  ~ 2048b6a5 reg.240 [affecting: ["reg.1", "sch.4.para.2(3)"]] was [affecting: ["reg.1", "sch.4.para.2(3)", "reg.1(2)"]]
+UK_uksi_2014_1638: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ 7b85ab56 reg.2(1) [affecting: ["reg.1", "reg.4(a)(aa)"]] was [affecting: ["reg.1", "reg.4(a)(aa)", "reg.2(1)", "reg.15"]]
+
+TOTAL %{added: 0, laws: 90, moved_laws: 89, gone: 0, attrs: %{affecting: 316}}

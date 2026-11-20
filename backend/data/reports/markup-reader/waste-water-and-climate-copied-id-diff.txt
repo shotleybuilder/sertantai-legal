@@ -1,0 +1,5 @@
+UK_uksi_2014_2384: targets gone 1, added 1, attrs %{}
+  - f91be602 reg.2(1)
+  + f17b8ea0 reg.2(1)
+
+TOTAL %{added: 1, attrs: %{}, laws: 41, moved_laws: 1, gone: 1}

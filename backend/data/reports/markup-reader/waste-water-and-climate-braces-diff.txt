@@ -1,0 +1,6 @@
+UK_asp_2005_5: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ d30p1400 s.24A [affecting: ["reg.8"]] was [affecting: ["reg.1(1)"]]
+UK_ukpga_1983_54: targets gone 0, added 0, attrs %{affecting: 1}
+  ~ d29p1532 s.19 [affecting: ["reg.6(2)"]] was [affecting: ["reg.1(2)"]]
+
+TOTAL %{added: 0, laws: 782, moved_laws: 2, gone: 0, attrs: %{affecting: 2}}

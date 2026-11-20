@@ -1,0 +1,326 @@
+UK_asp_2000_4: targets gone 0, added 0, attrs %{}
+  ~ d29p334 s.3(5A) [] was [affecting: ["reg.2(b)"], cited: "UK_ssi_2007_334"]
+  ~ d29p334 s.3(5B) [] was [affecting: ["reg.2(b)"], cited: "UK_ssi_2007_334"]
+UK_asp_2003_15: targets gone 0, added 0, attrs %{affecting: 2, cited_text: 2}
+  ~ 18241306 s.64(3n1) [affecting: ["s.141", "sch.17.para.4(b)"], cited_text: "UK_ukpga_1989_15"] was [affecting: ["sch.4.para.3"], cited: "UK_asp_2003_15"]
+  ~ fd62b232 s.64(1)(b) [affecting: ["s.141", "sch.17.para.4(a)"], cited_text: "UK_ukpga_1989_15"] was [affecting: ["sch.4.para.3(2)"], cited: "UK_asp_2003_15"]
+UK_eur_1991_3254: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ ce0a9181 art.Article 2 [affecting: ["reg.4(2)(a)"], cited: "UK_uksi_2020_1590"] was [affecting: ["reg.2"], cited: "UK_uksi_2019_16"]
+UK_eur_2004_852: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ 134b381c art.Article 4(5) [affecting: ["reg.11(4)"], cited: "UK_uksi_2020_1504"] was [affecting: ["reg.5(b)"], cited: "UK_uksi_2019_642"]
+  ~ 2e65cb95 art.Article 1(1)(g) [affecting: ["reg.11(2)"], cited: "UK_uksi_2020_1504"] was [affecting: ["reg.3(a)"], cited: "UK_uksi_2019_642"]
+UK_eur_2006_166: targets gone 0, added 0, attrs %{affecting: 6, cited: 6}
+  ~ abe7b38e art.Article 5(1) [affecting: ["reg.5(2)(a)"], cited: "UK_uksi_2020_1313"] was [affecting: ["reg.2(6)(b)(ii)(bb)"], cited: "UK_uksi_2018_1407"]
+  ~ 4ab9c0fa art.Article 7(2) [affecting: ["reg.5(2)(b)"], cited: "UK_uksi_2020_1313"] was [affecting: ["reg.2(8)(b)"], cited: "UK_uksi_2018_1407"]
+UK_eur_2006_1907: targets gone 0, added 0, attrs %{affecting: 8, cited: 8}
+  ~ 08486187 art.Article 139A [affecting: ["reg.6"], cited: "UK_uksi_2020_1577"] was [affecting: ["sch.2A"], cited: "UK_uksi_2019_758"]
+  ~ 08486187 art.Article 139B [affecting: ["reg.6"], cited: "UK_uksi_2020_1577"] was [affecting: ["sch.2A"], cited: "UK_uksi_2019_758"]
+UK_eur_2008_1272: targets gone 0, added 0, attrs %{affecting: 11, cited: 11}
+  ~ 9087d4d7 art.Article 4(6) [affecting: ["sch.2.para.5"], cited: "UK_uksi_2020_1567"] was [affecting: ["sch.2.para.15(c)"], cited: "UK_uksi_2019_720"]
+  ~ dea10c63 art.Article 4(3) [affecting: ["sch.2.para.5"], cited: "UK_uksi_2020_1567"] was [affecting: ["sch.2.para.15(a)(i)(bb)"], cited: "UK_uksi_2019_720"]
+UK_eur_2009_1005: targets gone 0, added 0, attrs %{affecting: 16, cited: 16}
+  ~ 25105920 art.Article 19 [affecting: ["reg.2(11)"], cited: "UK_uksi_2020_1616"] was [affecting: ["reg.18(a)(ii)"], cited: "UK_uksi_2019_583"]
+  ~ 663fd4aa art.Article 27(7) [affecting: ["reg.2(16)(c)(i)"], cited: "UK_uksi_2020_1616"] was [affecting: ["reg.27(6)(a)"], cited: "UK_uksi_2019_583"]
+UK_eur_2010_1103: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ 6a4ac73e art.Article 1 [affecting: ["reg.14(4)(a)(i)"], cited: "UK_uksi_2020_1540"] was [affecting: ["reg.8(2)(za)"], cited: "UK_uksi_2019_620"]
+  ~ 8b1bc7a3 art.Article 1(3) [affecting: ["reg.14(4)(a)(iii)"], cited: "UK_uksi_2020_1540"] was [affecting: ["reg.8(2)(c)"], cited: "UK_uksi_2019_620"]
+UK_eur_2011_725: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ 25721e57 art.Article 11(2) [affecting: ["reg.1(b)", "sch.6.para.38(2)(b)"], cited: "UK_uksi_2020_818"] was [affecting: ["reg.5(8)(b)(i)"], cited: "UK_uksi_2019_550"]
+  ~ 88b52277 art.Article 11(2) [affecting: ["reg.1(b)", "sch.6.para.38(2)(b)"], cited: "UK_uksi_2020_818"] was [affecting: ["reg.5(8)(b)(ii)"], cited: "UK_uksi_2019_550"]
+UK_eur_2012_649: targets gone 0, added 0, attrs %{affecting: 75, cited: 75}
+  ~ 8e3e711e art.Article 8(3) [affecting: ["sch.2.para.45(4)"], cited: "UK_uksi_2020_1567"] was [affecting: ["sch.2.para.152(4)(a)"], cited: "UK_uksi_2019_720"]
+  ~ 5d527968 art.Article 8(2) [affecting: ["sch.2.para.45(3)(c)(ii)"], cited: "UK_uksi_2020_1567"] was [affecting: ["sch.2.para.152(3)(d)(vi)"], cited: "UK_uksi_2019_720"]
+UK_eur_2012_965: targets gone 0, added 0, attrs %{affecting: 3, cited: 3}
+  ~ 39eeb97b art.Article 8(4) [affecting: ["reg.1(3)", "reg.8(b)"], cited: "UK_uksi_2019_1098"] was [affecting: ["reg.346(3)"], cited: "UK_uksi_2019_645"]
+  ~ 046453a5 art.Article 8(3) [affecting: ["reg.1(3)", "reg.8(a)"], cited: "UK_uksi_2019_1098"] was [affecting: ["reg.346(2)"], cited: "UK_uksi_2019_645"]
+UK_eur_2013_1257: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ 887c01bf art.Article 12(1) [affecting: ["reg.4(d)"], cited: "UK_uksi_2020_1429"] was [affecting: ["reg.6(11)(aa)(ii)"], cited: "UK_uksi_2019_277"]
+UK_eur_2014_427: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ 7a695477 art.Article 11(2) [affecting: ["sch.4.para.17"], cited: "UK_uksi_2020_818"] was [affecting: ["reg.32(8)(b)(i)"], cited: "UK_uksi_2019_550"]
+  ~ 9657bc12 art.Article 11(2) [affecting: ["sch.4.para.17"], cited: "UK_uksi_2020_818"] was [affecting: ["reg.32(8)(b)(ii)"], cited: "UK_uksi_2019_550"]
+UK_eur_2014_517: targets gone 0, added 0, attrs %{affecting: 9, cited: 9}
+  ~ 1c4272c4 art.Article 2(7A) [affecting: ["reg.2(20)(a)"], cited: "UK_uksi_2020_1616"] was [affecting: ["reg.37(2)"], cited: "UK_uksi_2019_583"]
+  ~ 1c4272c4 art.Article 2(7B) [affecting: ["reg.2(20)(a)"], cited: "UK_uksi_2020_1616"] was [affecting: ["reg.37(2)"], cited: "UK_uksi_2019_583"]
+UK_eur_2015_2068: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ f6ba19a6 art.Article 2(7) [affecting: ["reg.2(33)(b)(ii)"], cited: "UK_uksi_2020_1616"] was [affecting: ["reg.70(2)(b)(ii)"], cited: "UK_uksi_2019_583"]
+  ~ 61710586 art.Article 2(7) [affecting: ["reg.2(33)(a)"], cited: "UK_uksi_2020_1616"] was [affecting: ["reg.70(2)(a)"], cited: "UK_uksi_2019_583"]
+UK_eur_2016_425: targets gone 0, added 0, attrs %{affecting: 4, cited: 4}
+  ~ 0c273dbe art.Article 3(3) [affecting: ["reg.1(4)", "sch.3.para.24(4)"], cited: "UK_uksi_2020_1460"] was [affecting: ["sch.35.para.3(4)(a)"], cited: "UK_uksi_2019_696"]
+  ~ 1dd82a58 art.Article 17(A1) [affecting: ["sch.3.para.24(6)"], cited: "UK_uksi_2020_1460"] was [affecting: ["sch.35.para.3(16)(aa)"], cited: "UK_uksi_2019_696"]
+UK_eur_2018_956: targets gone 0, added 0, attrs %{affecting: 3, cited: 3}
+  ~ 7789b672 art.Article 5 [affecting: ["reg.1(2)", "reg.22"], cited: "UK_uksi_2020_1402"] was [affecting: ["reg.8"], cited: "UK_uksi_2019_846"]
+  ~ 3d443144 art.Article 3 [affecting: ["reg.1(2)", "reg.20"], cited: "UK_uksi_2020_1402"] was [affecting: ["reg.6"], cited: "UK_uksi_2019_846"]
+UK_nisi_1989_1341: targets gone 0, added 0, attrs %{affecting: 5, cited: 5}
+  ~ a2bf9414 reg.89(1) [affecting: ["reg.22(2)(b)"], cited: "UK_uksi_2012_2595"] was [affecting: ["s.13(2)"], cited: "UK_ukpga_2010_17"]
+  ~ d14c8f26 reg.89(2) [affecting: ["reg.22(2)(b)"], cited: "UK_uksi_2012_2595"] was [affecting: ["s.13(2)"], cited: "UK_ukpga_2010_17"]
+UK_nisi_1992_231: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ 6a5c0588 reg.46(3)(b) [affecting: ["reg.17"], cited: "UK_uksi_2020_1343"] was [affecting: ["sch.1.para.5(2)"], cited: "UK_uksi_2019_93"]
+  ~ 9ba70ffa reg.46(3)(c) [affecting: ["reg.17"], cited: "UK_uksi_2020_1343"] was [affecting: ["sch.1.para.5(3)"], cited: "UK_uksi_2019_93"]
+UK_nisi_2003_419: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ 16797907 reg.8B [affecting: ["reg.3(48)"], cited: "UK_uksi_2020_1016"] was [affecting: ["reg.134A"], cited: "UK_uksi_2019_530"]
+  ~ 65487707 reg.3B [affecting: ["reg.3(43)"], cited: "UK_uksi_2020_1016"] was [affecting: ["reg.129A"], cited: "UK_uksi_2019_530"]
+UK_ssi_2006_3: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ 7969aa61 reg.17(9) [affecting: ["reg.9(3)"], cited: "UK_ssi_2020_372"] was [affecting: ["reg.3(2)(b)"], cited: "UK_ssi_2019_285"]
+UK_ukpga_1944_31: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ d30p1979 s.22(4) [affecting: ["sch.4.para.2"], cited: "UK_ukpga_1986_61"] was [affecting: ["sch.3.para.1(4)(c)"], cited: "UK_uksi_1987_344"]
+UK_ukpga_1964_48: targets gone 0, added 0, attrs %{}
+  ~ d29p7148 s.44(1B) [] was [affecting: ["sch"], cited: "UK_uksi_1994_1646"]
+UK_ukpga_1968_27: targets gone 0, added 0, attrs %{cited_text: 1}
+  ~ d29p4393 s.52(5) [cited_text: "UK_ukpga_2006_38"] was [affecting: ["reg.2(h)(i)"], cited: "UK_uksi_2007_858"]
+UK_ukpga_1968_46: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ d29p1102 s.64(3)(a)(xx) [affecting: ["sch.13.para.17(1)"], cited: "UK_ukpga_1989_41"] was [affecting: ["sch.5.para.19"], cited: "UK_ukpga_1980_5"]
+  ~ d29p1438 s.65(3)(b)(xxi) [affecting: ["sch.14.para.1(1)"], cited: "UK_ukpga_1989_41"] was [affecting: ["sch.5.para.20"], cited: "UK_ukpga_1980_5"]
+UK_ukpga_1968_73: targets gone 0, added 0, attrs %{affecting: 3, cited: 2, cited_text: 1}
+  ~ 29p47614 s.68(4)(bb) [affecting: ["reg.8"], cited: "UK_uksi_1986_666"] was [affecting: ["reg.36(2A)"], cited: "UK_uksi_1984_176"]
+  ~ d29p8503 s.121(5) [affecting: ["s.68(1)", "sch.4.pt.I"], cited_text: "UK_ukpga_1992_42"] was [affecting: ["sch.2.pt.II"], cited: "UK_uksi_1992_2784"]
+UK_ukpga_1972_70: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ 29p10746 s.125 [affecting: ["s.43"], cited: "UK_ukpga_1986_63"] was [affecting: ["reg.3"], cited: "UK_uksi_1990_614"]
+  ~ 29p13988 s.178(2) [] was [affecting: ["reg.3(2)"], cited: "UK_uksi_1991_344"]
+UK_ukpga_1973_26: targets gone 0, added 0, attrs %{affecting: 1, cited_text: 1}
+  ~ ad63b285 s.39(9) [affecting: ["s.325(1)", "sch.8.para.17(4)(a)"], cited_text: "UK_ukpga_2008_17"] was [affecting: ["reg.2(1)(w)", "reg.2(3)"], cited: "UK_uksi_2008_3068"]
+UK_ukpga_1973_38: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ d29p438 s.69 [affecting: ["sch.6"], cited: "UK_nisi_1975_1503"] was [cited: "UK_ukpga_1927_41"]
+UK_ukpga_1973_56: targets gone 0, added 0, attrs %{affecting: 9, cited: 9}
+  ~ d30p2065 s.27(1)(iv) [affecting: ["sch.17"], cited: "UK_ukpga_1991_34"] was [affecting: ["sch.2"], cited: "UK_uksi_1991_2092"]
+  ~ d30p2303 s.27A [affecting: ["s.72"], cited: "UK_ukpga_1991_34"] was [affecting: ["sch.2.pt.II"], cited: "UK_uksi_1991_2092"]
+UK_ukpga_1973_65: targets gone 0, added 0, attrs %{affecting: 8, cited: 8}
+  ~ 29p10825 s.192(5) [affecting: ["s.54"], cited: "UK_ukpga_1982_48"] was [affecting: ["s.289F"], cited: "UK_ukpga_1975_21"]
+  ~ 29p11149 s.197(4) [affecting: ["s.54"], cited: "UK_ukpga_1982_48"] was [affecting: ["s.289F"], cited: "UK_ukpga_1975_21"]
+UK_ukpga_1974_39: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ d29p9692 s.75A [affecting: ["reg.11"], cited: "UK_uksi_2010_1969"] was [affecting: ["reg.25"], cited: "UK_uksi_2010_1010"]
+UK_ukpga_1974_40: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ d29p8947 s.74(1)(a) [affecting: ["s.54"], cited: "UK_ukpga_1982_48"] was [affecting: ["s.289E"], cited: "UK_ukpga_1975_21"]
+  ~ d29p8957 s.74(1)(b) [affecting: ["s.54"], cited: "UK_ukpga_1982_48"] was [affecting: ["s.389F"], cited: "UK_ukpga_1975_21"]
+UK_ukpga_1975_23: targets gone 0, added 0, attrs %{}
+  ~ 56f29a83 s.13(5) [] was [affecting: ["sch.2.para.468(2)(c)"], cited: "UK_wsi_2013_755"]
+  ~ 56f29a83 s.13(5)(b) [] was [affecting: ["sch.2.para.468(2)(c)"], cited: "UK_wsi_2013_755"]
+UK_ukpga_1975_30: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ d29p1039 s.9A [affecting: ["s.110(4)"], cited: "UK_ukpga_1992_14"] was [affecting: ["s.137", "sch.12.para.13"], cited: "UK_ukpga_1988_41"]
+  ~ 29p18605 s.28(6) [affecting: ["s.54"], cited: "UK_ukpga_1982_48"] was [affecting: ["s.289F"], cited: "UK_ukpga_1975_21"]
+UK_ukpga_1975_51: targets gone 0, added 0, attrs %{}
+  ~ d29p3307 s.41(1) [] was [affecting: ["reg.4"], cited: "UK_uksi_1995_1983"]
+UK_ukpga_1977_49: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ 71aacfe8 s.126 [affecting: ["sch.4", "sch.3.para.1"], cited: "UK_ukpga_2006_43"] was [cited: "UK_uksi_2006_1056"]
+  ~ 71aacfe8 s.128 [affecting: ["sch.4", "sch.3.para.1"], cited: "UK_ukpga_2006_43"] was [cited: "UK_uksi_2006_1056"]
+UK_ukpga_1978_44: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ d30p8313 s.2A [affecting: ["sch.9.para.4(1)"], cited: "UK_ukpga_1989_38"] was [affecting: ["reg.3"], cited: "UK_uksi_1990_189"]
+UK_ukpga_1980_43: targets gone 0, added 0, attrs %{affecting: 4, cited: 3}
+  ~ 29p10976 s.126(cc) [affecting: ["sch.8.para.45(b)"], cited: "UK_ukpga_1998_37"] was [cited: "UK_uksi_1998_2412"]
+  ~ 29p10990 s.126(d) [affecting: ["sch.8.para.45(c)"], cited: "UK_ukpga_1998_37"] was [cited: "UK_uksi_1998_2412"]
+UK_ukpga_1980_45: targets gone 0, added 0, attrs %{affecting: 3, cited: 3}
+  ~ d29p1459 s.21 [] was [affecting: ["sch.1"], cited: "UK_uksi_1996_323"]
+  ~ d29p3087 s.38(7) [affecting: ["sch.6"], cited: "UK_ukpga_1982_48"] was [affecting: ["sch.7D"], cited: "UK_ukpga_1975_21"]
+UK_ukpga_1980_58: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ d30p191 s.4A [affecting: ["s.5(2)", "s.5(6)"], cited: "UK_ukpga_1996_31"] was [affecting: ["sch.9.para.14"], cited: "UK_ukpga_1985_61"]
+  ~ d30p2649 s.36(1)(aa) [affecting: ["s.5(5)", "s.5(6)"], cited: "UK_ukpga_1996_31"] was [affecting: ["sch.9.para.14"], cited: "UK_ukpga_1985_61"]
+UK_ukpga_1980_65: targets gone 0, added 0, attrs %{}
+  ~ 0027c36a s.134(1C) [] was [affecting: ["reg.4(1)(d)"], cited: "UK_uksi_2025_1370"]
+UK_ukpga_1981_29: targets gone 0, added 0, attrs %{affecting: 6, cited: 6}
+  ~ 9e337794 s.30(1) [affecting: ["reg.2(2)"], cited: "UK_uksi_2020_1599"] was [affecting: ["reg.3(4)(b)"], cited: "UK_uksi_2019_746"]
+  ~ e37d4fd7 s.30(2) [affecting: ["reg.2(2)"], cited: "UK_uksi_2020_1599"] was [affecting: ["reg.3(4)(c)"], cited: "UK_uksi_2019_746"]
+UK_ukpga_1983_20: targets gone 0, added 0, attrs %{}
+  ~ fe97dd4d s.130H(7)(b) [] was [affecting: ["reg.144(2)"], cited: "UK_uksi_2016_1030"]
+UK_ukpga_1984_12: targets gone 0, added 0, attrs %{affecting: 1, cited_text: 1}
+  ~ d29p6689 s.50(6) [] was [affecting: ["reg.2(1)"], cited: "UK_uksi_2003_1900"]
+  ~ d29p7918 s.68(2) [] was [affecting: ["reg.2(1)"], cited: "UK_uksi_2003_1900"]
+UK_ukpga_1984_27: targets gone 0, added 0, attrs %{}
+  ~ d29p9950 s.100(5) [] was [affecting: ["reg.3", "sch.1"], cited: "UK_uksi_1996_396"]
+UK_ukpga_1984_54: targets gone 0, added 0, attrs %{}
+  ~ d30p6093 s.85(1)(a) [] was [affecting: ["sch.2"], cited: "UK_uksi_1992_2990"]
+UK_ukpga_1985_51: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ d29p345 s.10(4) [affecting: ["sch.15.para.26"], cited: "UK_ukpga_1990_43"] was [cited: "UK_uksi_1994_1096"]
+UK_ukpga_1985_67: targets gone 0, added 0, attrs %{}
+  ~ 29p34436 s.63(5)(a)(ii) [] was [affecting: ["sch"], cited: "UK_ssi_2001_132"]
+  ~ 29p34436 s.63(5)(aa)(i) [] was [affecting: ["sch"], cited: "UK_ssi_2001_132"]
+UK_ukpga_1986_44: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ d8cbcd61 s.36A(3)(c) [affecting: ["reg.14"], cited: "UK_uksi_2020_1343"] was [affecting: ["sch.1.para.2(3)"], cited: "UK_uksi_2019_93"]
+  ~ cfab0a5f s.36A(3)(b) [affecting: ["reg.14"], cited: "UK_uksi_2020_1343"] was [affecting: ["sch.1.para.2(2)"], cited: "UK_uksi_2019_93"]
+UK_ukpga_1986_60: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ d30p7177 s.62A [affecting: ["s.193(1)"], cited: "UK_ukpga_1989_40"] was [affecting: ["reg.3"], cited: "UK_uksi_1990_354"]
+UK_ukpga_1988_1: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ 29p21164 s.613(1) [affecting: ["sch.10.para.63"], cited: "UK_ukpga_2005_7"] was [affecting: ["sch.8.pt.1"], cited: "UK_ukpga_2003_1"]
+UK_ukpga_1988_19: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ d30p571 s.26(1) [affecting: ["sch.8.para.38(b)"], cited: "UK_ukpga_1993_19"] was [cited: "UK_ukpga_1990_35"]
+UK_ukpga_1988_40: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ 29p54828 s.110(3)(b) [affecting: ["sch.3"], cited: "UK_ukpga_1991_21"] was [cited: "UK_uksi_1991_2617"]
+UK_ukpga_1988_41: targets gone 0, added 0, attrs %{affecting: 3, cited: 3}
+  ~ d29p3048 s.66(1) [affecting: ["reg.2(a)"], cited: "UK_uksi_1993_542"] was [affecting: ["reg.3(4)"], cited: "UK_uksi_1990_162"]
+  ~ d29p4753 s.88B [affecting: ["sch.10.para.18"], cited: "UK_ukpga_1992_14"] was [affecting: ["sch.5.para.61"], cited: "UK_ukpga_1989_42"]
+UK_ukpga_1988_50: targets gone 0, added 0, attrs %{cited_text: 1}
+  ~ 29p11165 s.133(9) [cited_text: "UK_ukpga_2002_9"] was [affecting: ["reg.2(1)"], cited: "UK_uksi_2003_1725"]
+UK_ukpga_1988_52: targets gone 0, added 0, attrs %{affecting: 5, cited: 5}
+  ~ 29p23606 s.176(5)(a) [] was [affecting: ["sch"], cited: "UK_uksi_1992_1286"]
+  ~ d29p4272 s.39(4) [] was [affecting: ["reg.4(1)(b)", "reg.4(1)(c)"], cited: "UK_uksi_1996_323"]
+UK_ukpga_1989_29: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ a16f8f28 s.43(3)(c) [affecting: ["reg.15"], cited: "UK_uksi_2020_1343"] was [affecting: ["sch.1.para.3(3)"], cited: "UK_uksi_2019_93"]
+  ~ cd952be6 s.43(3)(b) [affecting: ["reg.15"], cited: "UK_uksi_2020_1343"] was [affecting: ["sch.1.para.3(2)"], cited: "UK_uksi_2019_93"]
+UK_ukpga_1989_42: targets gone 0, added 0, attrs %{affecting: 3, cited: 3}
+  ~ baea110f s.5(3)(a) [affecting: ["reg.42(3)(b)"], cited: "UK_uksi_2021_1349"] was [affecting: ["sch.5.para.9(c)"], cited: "UK_asc_2021_1"]
+  ~ 5b087ca8 s.7(2)(g) [affecting: ["sch.1.para.5"], cited: "UK_uksi_2010_2279"] was [affecting: ["sch.26.para.18(b)"], cited: "UK_ukpga_2010_15"]
+UK_ukpga_1990_43: targets gone 0, added 0, attrs %{}
+  ~ d29p6846 s.44A [] was [affecting: ["reg.3"], cited: "UK_uksi_1996_186"]
+UK_ukpga_1990_8: targets gone 0, added 0, attrs %{}
+  ~ 9p136975 s.26(2)(ff) [] was [affecting: ["reg.2"], cited: "UK_uksi_1991_2728"]
+  ~ 9p141168 s.50(7) [] was [affecting: ["reg.2"], cited: "UK_uksi_1991_2728"]
+UK_ukpga_1990_9: targets gone 0, added 0, attrs %{affecting: 8, cited: 8}
+  ~ e839dbb5 s.30(1) [affecting: ["reg.1(2)", "reg.7"], cited: "UK_uksi_2024_1061"] was [affecting: ["sch.13.para.116A(a)(ii)"], cited: "UK_asc_2023_3"]
+  ~ 2aeff048 s.90(6)(b) [affecting: ["reg.1(2)", "reg.16"], cited: "UK_uksi_2024_1061"] was [affecting: ["sch.13.para.153(b)"], cited: "UK_asc_2023_3"]
+UK_ukpga_1991_56: targets gone 0, added 0, attrs %{}
+  ~ 29p27117 s.143A [] was [affecting: ["reg.2"], cited: "UK_uksi_1999_3440"]
+UK_ukpga_1991_59: targets gone 0, added 0, attrs %{}
+  ~ 08234987 s.1(1)(a) [] was [affecting: ["reg.2"], cited: "UK_uksi_2017_714"]
+UK_ukpga_1992_13: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ 3b41fb5c s.62(7B) [affecting: ["sch.1.para.5"], cited: "UK_uksi_2010_2279"] was [affecting: ["sch.26.para.23"], cited: "UK_ukpga_2010_15"]
+UK_ukpga_1992_15: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ d30p196 s.1(4B) [affecting: ["sch.3.para.5(1)"], cited: "UK_ukpga_1998_17"] was [affecting: ["reg.3(4A)"], cited: "UK_uksi_1992_1728"]
+UK_ukpga_1992_52: targets gone 0, added 0, attrs %{}
+  ~ 29p13533 s.146(2) [] was [affecting: ["reg.3(a)"], cited: "UK_uksi_2004_2566"]
+  ~ d29p1592 s.23(3)(b) [] was [affecting: ["reg.2(2)"], cited: "UK_uksi_2005_3175"]
+UK_ukpga_1993_9: targets gone 0, added 0, attrs %{}
+  ~ d29p1164 s.5(1) [] was [affecting: ["reg.2"], cited: "UK_ssi_2003_288"]
+UK_ukpga_1994_26: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ 6f2650f7 s.3(4B)(a) [affecting: ["reg.10(a)"], cited: "UK_uksi_2020_1050"] was [affecting: ["sch.3.para.2(4)(a)"], cited: "UK_uksi_2019_269"]
+  ~ b8ba01f2 s.3(4B)(b) [affecting: ["reg.10(a)"], cited: "UK_uksi_2020_1050"] was [affecting: ["sch.3.para.2(4)(b)"], cited: "UK_uksi_2019_269"]
+UK_ukpga_1994_33: targets gone 0, added 0, attrs %{}
+  ~ 29p11690 s.113(1) [] was [affecting: ["reg.2"], cited: "UK_uksi_1998_3178"]
+  ~ 29p11708 s.113(1) [] was [affecting: ["reg.2"], cited: "UK_uksi_1998_3178"]
+UK_ukpga_1995_46: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ 29p45843 s.245A(6)(a) [] was [affecting: ["reg.2"], cited: "UK_ssi_2004_405"]
+  ~ 29p48120 s.258(4D) [affecting: ["reg.4"], cited: "UK_ssi_2007_540"] was [affecting: ["s.20(3)", "s.84"], cited: "UK_asp_2007_6"]
+UK_ukpga_1996_18: targets gone 0, added 0, attrs %{affecting: 3, cited: 3}
+  ~ 29p16099 s.126(1)(b) [affecting: ["sch.1.para.5"], cited: "UK_uksi_2010_2279"] was [affecting: ["sch.26.para.33(2)"], cited: "UK_ukpga_2010_15"]
+  ~ 29p16115 s.126(2) [affecting: ["sch.1.para.5"], cited: "UK_uksi_2010_2279"] was [affecting: ["sch.26.para.33(3)(a)"], cited: "UK_ukpga_2010_15"]
+UK_ukpga_1996_52: targets gone 0, added 0, attrs %{affecting: 2, cited: 1, cited_text: 1}
+  ~ d29p1168 s.13(1)(b) [] was [affecting: ["reg.2(2)(e)"], cited: "UK_uksi_2001_114"]
+  ~ ce61a90f s.58(1) [affecting: ["reg.1", "sch.para.45"], cited_text: "UK_uksi_2011_1396"] was [affecting: ["sch.7.para.71"], cited: "UK_ukpga_2011_25"]
+UK_ukpga_1996_56: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ 29p17355 s.518 [] was [affecting: ["reg.3(2)"], cited: "UK_uksi_1999_120"]
+  ~ 3934a1ae s.317(6A) [affecting: ["sch.1.para.5"], cited: "UK_uksi_2010_2279"] was [affecting: ["sch.26.para.36(3)"], cited: "UK_ukpga_2010_15"]
+UK_ukpga_1997_8: targets gone 0, added 0, attrs %{}
+  ~ 30p16427 s.225(6)(b) [] was [affecting: ["reg.3"], cited: "UK_uksi_1998_3178"]
+  ~ 30p16437 s.225(7) [] was [affecting: ["reg.3"], cited: "UK_uksi_1998_3178"]
+UK_ukpga_1998_47: targets gone 0, added 0, attrs %{}
+  ~ d29p6041 s.51A [] was [affecting: ["reg.2"], cited: "UK_uksi_2004_83"]
+  ~ d29p6041 s.51B [] was [affecting: ["reg.2"], cited: "UK_uksi_2004_83"]
+UK_ukpga_2000_38: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ a53e08e5 s.86(3)(b) [affecting: ["reg.21"], cited: "UK_uksi_2020_1343"] was [affecting: ["sch.1.para.9(2)(a)"], cited: "UK_uksi_2019_93"]
+  ~ 1786789f s.86(3)(c) [affecting: ["reg.21"], cited: "UK_uksi_2020_1343"] was [affecting: ["sch.1.para.9(2)(b)"], cited: "UK_uksi_2019_93"]
+UK_ukpga_2000_8: targets gone 0, added 0, attrs %{affecting: 7, cited: 7}
+  ~ baffd0e7 s.234J(2)(b) [affecting: ["reg.20"], cited: "UK_uksi_2020_1343"] was [affecting: ["sch.1.para.8(2)"], cited: "UK_uksi_2019_93"]
+  ~ ccd5c259 s.234J(2)(c) [affecting: ["reg.20"], cited: "UK_uksi_2020_1343"] was [affecting: ["sch.1.para.8(3)"], cited: "UK_uksi_2019_93"]
+UK_ukpga_2003_1: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ ee4eae1f s.395(2) [] was [affecting: ["sch.1.para.651(3)"], cited: "UK_ukpga_2005_5"]
+  ~ e17dcfcb s.393B(4)(a) [] was [affecting: ["sch.1.para.651(2)(a)"], cited: "UK_ukpga_2005_5"]
+UK_ukpga_2003_21: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ fb1fcfe3 s.371(2)(b) [affecting: ["reg.23(2)"], cited: "UK_uksi_2020_1343"] was [affecting: ["sch.1.para.11(2)(a)"], cited: "UK_uksi_2019_93"]
+  ~ da86593b s.371(2)(c) [affecting: ["reg.23(2)"], cited: "UK_uksi_2020_1343"] was [affecting: ["sch.1.para.11(2)(b)"], cited: "UK_uksi_2019_93"]
+UK_ukpga_2003_39: targets gone 0, added 0, attrs %{}
+  ~ d29p1767 s.24(1) [] was [affecting: ["reg.2(d)"], cited: "UK_uksi_2008_1653"]
+UK_ukpga_2004_23: targets gone 0, added 0, attrs %{}
+  ~ d29p4000 s.54(1)(a) [] was [affecting: ["reg.3(1)", "sch.2"], cited: "UK_uksi_2009_3272"]
+  ~ d29p4010 s.54(1)(b) [] was [affecting: ["reg.3(1)", "sch.2"], cited: "UK_uksi_2009_3272"]
+UK_ukpga_2005_5: targets gone 0, added 0, attrs %{}
+  ~ 29p20744 s.299(2) [] was [affecting: ["reg.2(h)"], cited: "UK_uksi_2005_1126"]
+  ~ 29p20780 s.300(1) [] was [affecting: ["reg.2(h)"], cited: "UK_uksi_2005_1126"]
+UK_ukpga_2006_21: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ f96518c2 s.12(8) [affecting: ["sch.1.para.6"], cited: "UK_uksi_2010_2279"] was [affecting: ["sch.26.para.89"], cited: "UK_ukpga_2010_15"]
+UK_ukpga_2006_46: targets gone 0, added 0, attrs %{affecting: 8, cited: 8, cited_text: 2}
+  ~ 6b299e18 s.479A(1)(b) [affecting: ["reg.4"], cited: "UK_uksi_2019_1392"] was [affecting: ["reg.4(a)"], cited: "UK_uksi_2019_177"]
+  ~ 83940b32 s.479C(2)(b) [affecting: ["reg.4"], cited: "UK_uksi_2019_1392"] was [affecting: ["reg.4A(a)"], cited: "UK_uksi_2019_177"]
+UK_ukpga_2008_26: targets gone 0, added 0, attrs %{affecting: 1, cited_text: 1}
+  ~ 55983292 s.89A [affecting: ["s.148(6)", "sch.6.para.127"], cited_text: "UK_ukpga_2009_20"] was [affecting: ["reg.2(c)"], cited: "UK_uksi_2009_3318"]
+UK_ukpga_2010_4: targets gone 0, added 0, attrs %{affecting: 21, cited: 21}
+  ~ 66eaf27c s.1119 [affecting: ["s.76(11)"], cited: "UK_ukpga_2016_24"] was [affecting: ["s.39(1)"], cited: "UK_ukpga_2017_32"]
+  ~ 91587e9e s.356OA [affecting: ["s.77(1)"], cited: "UK_ukpga_2016_24"] was [affecting: ["s.39(1)"], cited: "UK_ukpga_2017_32"]
+UK_ukpga_2011_25: targets gone 0, added 0, attrs %{affecting: 3, cited: 3}
+  ~ cefa4064 s.178(1) [affecting: ["reg.3(2)"], cited: "UK_uksi_2020_1289"] was [affecting: ["reg.60A(2)"], cited: "UK_uksi_2019_573"]
+  ~ 278d3bde s.178(1) [affecting: ["reg.2(2)"], cited: "UK_uksi_2020_1289"] was [affecting: ["reg.58A(2)"], cited: "UK_uksi_2019_466"]
+UK_ukpga_2015_15: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ 57b407c4 s.32(3) [affecting: ["reg.6(6)"], cited: "UK_uksi_2020_1574"] was [affecting: ["reg.4A(2)"], cited: "UK_uksi_2019_834"]
+UK_ukpga_2018_13: targets gone 0, added 0, attrs %{affecting: 3, cited: 3}
+  ~ 63da453d s.49(3) [affecting: ["reg.4(2)"], cited: "UK_uksi_2020_1289"] was [affecting: ["reg.34B(2)"], cited: "UK_uksi_2019_577"]
+  ~ e7e850df s.49(3) [affecting: ["reg.3(2)"], cited: "UK_uksi_2020_1289"] was [affecting: ["reg.60B(2)"], cited: "UK_uksi_2019_573"]
+UK_ukpga_2020_17: targets gone 0, added 0, attrs %{affecting: 19, cited: 19}
+  ~ ce2db5a6 s.317(4) [affecting: ["reg.5(11)(d)"], cited: "UK_uksi_2020_1520"] was [affecting: ["sch.22.para.93(4)(b)"], cited: "UK_ukpga_2020_17"]
+  ~ bcf27da5 s.280(3) [affecting: ["reg.5(6)"], cited: "UK_uksi_2020_1520"] was [affecting: ["sch.22.para.88A(a)"], cited: "UK_ukpga_2020_17"]
+UK_ukpga_2023_55: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ 37ab2a0e s.102(4)(b) [affecting: ["reg.21"], cited: "UK_uksi_2024_1061"] was [affecting: ["sch.13.para.198(b)(ii)"], cited: "UK_asc_2023_3"]
+  ~ 3543e747 s.102(3) [affecting: ["reg.21"], cited: "UK_uksi_2024_1061"] was [affecting: ["sch.13.para.198(a)"], cited: "UK_asc_2023_3"]
+UK_uksi_1991_762: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ d29p871 reg.8(9)(a) [affecting: ["sch.6.para.13(11)"], cited: "UK_nia_2009_1"] was [affecting: ["reg.32(1A)"], cited: "UK_nisi_1991_194"]
+  ~ d29p885 reg.8(9)(b) [affecting: ["sch.6.para.13(11)"], cited: "UK_nia_2009_1"] was [affecting: ["reg.32(1A)"], cited: "UK_nisi_1991_194"]
+UK_uksi_2001_1701: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ dd43574d reg.2(2) [affecting: ["sch.3.para.5(2)"], cited: "UK_uksi_2020_1460"] was [affecting: ["sch.8.para.2(b)(v)(aa)"], cited: "UK_uksi_2019_696"]
+  ~ 13b0273a reg.2(2) [affecting: ["sch.3.para.5(2)"], cited: "UK_uksi_2020_1460"] was [affecting: ["sch.8.para.2(b)(v)(bb)"], cited: "UK_uksi_2019_696"]
+UK_uksi_2004_1490: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ b72f05a7 reg.2(1) [affecting: ["reg.2(3)(a)"], cited: "UK_wsi_2020_1339"] was [affecting: ["reg.7(2)"], cited: "UK_uksi_2019_414"]
+  ~ 148e59be reg.7(11) [affecting: ["reg.2(3)(e)"], cited: "UK_wsi_2020_1339"] was [affecting: ["reg.7(7)"], cited: "UK_wsi_2019_414"]
+UK_uksi_2004_3202: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ 18747ba2 reg.32(aa) [affecting: ["reg.33"], cited: "UK_uksi_2020_1343"] was [affecting: ["sch.2.para.12(8A)(b)"], cited: "UK_uksi_2019_93"]
+UK_uksi_2004_3279: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ 22927570 reg.4(a) [affecting: ["reg.5(2)"], cited: "UK_ssi_2020_372"] was [affecting: ["reg.2(2)"], cited: "UK_ssi_2019_52"]
+UK_uksi_2005_263: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ 7ea851a4 reg.12(1) [affecting: ["reg.11(4)(f)"], cited: "UK_uksi_2020_1540"] was [affecting: ["reg.10(7)"], cited: "UK_uksi_2019_188"]
+UK_uksi_2006_599: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ e45661d5 reg.7(2A) [affecting: ["reg.7(2)(a)"], cited: "UK_uksi_2019_1310"] was [affecting: ["reg.3(2A)(ii)"], cited: "UK_uksi_2019_837"]
+  ~ 58c51187 reg.18A(1A) [affecting: ["reg.7(4)"], cited: "UK_uksi_2020_786"] was [affecting: ["reg.3(6)(aa)"], cited: "UK_uksi_2019_837"]
+UK_uksi_2008_1597: targets gone 0, added 0, attrs %{affecting: 9, cited: 9}
+  ~ 057b95c7 reg.21(1)(a) [affecting: ["sch.3.para.7(7)"], cited: "UK_uksi_2020_1460"] was [affecting: ["sch.12.para.21(aa)"], cited: "UK_uksi_2019_696"]
+  ~ 057b95c7 reg.21(1)(b)(i) [affecting: ["sch.3.para.7(7)"], cited: "UK_uksi_2020_1460"] was [affecting: ["sch.12.para.21(aa)"], cited: "UK_uksi_2019_696"]
+UK_uksi_2008_1911: targets gone 0, added 0, attrs %{affecting: 3, cited: 3}
+  ~ 690e0b16 reg.34A [affecting: ["reg.1(2)", "reg.7"], cited: "UK_uksi_2019_1392"] was [affecting: ["reg.50(b)(i)"], cited: "UK_uksi_2019_177"]
+  ~ a8397506 reg.34A [affecting: ["reg.1(2)", "reg.7"], cited: "UK_uksi_2019_1392"] was [affecting: ["reg.50(b)(ii)"], cited: "UK_uksi_2019_177"]
+UK_uksi_2008_2164: targets gone 0, added 0, attrs %{affecting: 3, cited: 3}
+  ~ 099c34e8 reg.2(1) [affecting: ["reg.11(7)(a)"], cited: "UK_uksi_2020_1540"] was [affecting: ["reg.13(2)(b)"], cited: "UK_uksi_2019_188"]
+  ~ 3bbca39e reg.3(3) [affecting: ["reg.11(7)(b)"], cited: "UK_uksi_2020_1540"] was [affecting: ["reg.13(3)(b)"], cited: "UK_uksi_2019_188"]
+UK_uksi_2008_2852: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ a4fc81c6 reg.1A [affecting: ["reg.10(6)"], cited: "UK_uksi_2020_1577"] was [affecting: ["sch.10.para.1A"], cited: "UK_uksi_2019_758"]
+UK_uksi_2009_41: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ 1c7f7977 reg.25 [affecting: ["reg.5(3)"], cited: "UK_uksi_2019_687"] was [affecting: ["sch.1.para.14(a)"], cited: "UK_uksi_2018_1392"]
+UK_uksi_2009_890: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ 34d76d89 reg.6(2)(a) [affecting: ["reg.11(8)(c)"], cited: "UK_uksi_2020_1540"] was [affecting: ["reg.14(3A)(a)"], cited: "UK_uksi_2019_188"]
+UK_uksi_2011_1881: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ 27848457 reg.3 [affecting: ["sch.3.para.9(2)"], cited: "UK_uksi_2020_1460"] was [affecting: ["sch.15.para.4(g)"], cited: "UK_uksi_2019_696"]
+  ~ 73520207 reg.18(3A) [affecting: ["sch.3.para.9(3)"], cited: "UK_uksi_2020_1460"] was [affecting: ["sch.15.para.17(b)"], cited: "UK_uksi_2019_696"]
+UK_uksi_2012_1916: targets gone 0, added 0, attrs %{affecting: 309, cited: 309}
+  ~ 158a475c reg.305(4)(a) [affecting: ["sch.2.para.177"], cited: "UK_uksi_2020_1488"] was [affecting: ["reg.217A(b)"], cited: "UK_uksi_2019_775"]
+  ~ c5191e64 reg.327(2)(g)(iva) [affecting: ["sch.2.para.180(b)"], cited: "UK_uksi_2020_1488"] was [affecting: ["reg.221(3)"], cited: "UK_uksi_2019_775"]
+UK_uksi_2012_811: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ a0d2eb55 reg.2 [affecting: ["reg.11(11)(a)"], cited: "UK_uksi_2020_1540"] was [affecting: ["reg.7(2)(aa)"], cited: "UK_uksi_2019_188"]
+UK_uksi_2013_1387: targets gone 0, added 0, attrs %{affecting: 5, cited: 5}
+  ~ 89cbcaa0 reg.2(1) [affecting: ["sch.2"], cited: "UK_uksi_2020_1359"] was [affecting: ["sch.2.para.3(2)(a)"], cited: "UK_uksi_2019_465"]
+  ~ fa5efa4b reg.2(2) [affecting: ["sch.2"], cited: "UK_uksi_2020_1359"] was [affecting: ["sch.2.para.3(3)"], cited: "UK_uksi_2019_465"]
+UK_uksi_2013_1506: targets gone 0, added 0, attrs %{affecting: 17, cited: 17}
+  ~ 7e98b6de reg.14(7) [affecting: ["sch.1.para.17"], cited: "UK_uksi_2020_1567"] was [affecting: ["sch.1.para.23(7)"], cited: "UK_uksi_2019_720"]
+  ~ e5f8276e reg.4(1) [affecting: ["sch.1.para.13(d)"], cited: "UK_uksi_2020_1567"] was [affecting: ["sch.1.para.18(f)"], cited: "UK_uksi_2019_720"]
+UK_uksi_2014_1638: targets gone 0, added 0, attrs %{affecting: 12, cited: 2, cited_text: 10}
+  ~ 25614077 h.69 [affecting: ["reg.1", "sch.16.para.28", "reg.1(1)", "reg.2"], cited_text: "UK_uksi_2019_696"] was [affecting: ["sch.1.para.1(f)(iii)"], cited: "UK_uksi_2020_852"]
+  ~ 25614077 reg.69 [affecting: ["reg.1", "sch.16.para.28", "reg.1(1)", "reg.2"], cited_text: "UK_uksi_2019_696"] was [affecting: ["sch.1.para.1(f)(iii)"], cited: "UK_uksi_2020_852"]
+UK_uksi_2015_1553: targets gone 0, added 0, attrs %{affecting: 3, cited: 3}
+  ~ 3a51cc1f reg.42(1) [affecting: ["sch.3.para.11(4)"], cited: "UK_uksi_2020_1460"] was [affecting: ["sch.19.para.26(c)"], cited: "UK_uksi_2019_696"]
+  ~ 18f1adba reg.42(1A) [affecting: ["sch.3.para.11(4)"], cited: "UK_uksi_2020_1460"] was [affecting: ["sch.19.para.26(d)"], cited: "UK_uksi_2019_696"]
+UK_uksi_2015_1640: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ a5c3538d reg.5(1) [affecting: ["reg.11(13)(c)"], cited: "UK_uksi_2020_1540"] was [affecting: ["reg.20(6)"], cited: "UK_uksi_2019_188"]
+  ~ 1900bd79 reg.4(1) [affecting: ["reg.11(13)(b)"], cited: "UK_uksi_2020_1540"] was [affecting: ["reg.20(5)(a)"], cited: "UK_uksi_2019_188"]
+UK_uksi_2016_1091: targets gone 0, added 0, attrs %{affecting: 6, cited: 6}
+  ~ 75487695 reg.42(2) [affecting: ["sch.3.para.12(4)"], cited: "UK_uksi_2020_1460"] was [affecting: ["sch.20.para.27(a)"], cited: "UK_uksi_2019_696"]
+  ~ 8ef81635 reg.2(1) [affecting: ["sch.3.para.12(2)"], cited: "UK_uksi_2020_1460"] was [affecting: ["sch.20.para.2(2)(l)"], cited: "UK_uksi_2019_696"]
+UK_uksi_2016_1092: targets gone 0, added 0, attrs %{affecting: 3, cited: 3}
+  ~ a1058108 reg.6(1A) [affecting: ["sch.3.para.13(4)"], cited: "UK_uksi_2020_1460"] was [affecting: ["sch.21.para.5(4A)"], cited: "UK_uksi_2019_696"]
+  ~ a1058108 reg.6(1B) [affecting: ["sch.3.para.13(4)"], cited: "UK_uksi_2020_1460"] was [affecting: ["sch.21.para.5(4A)"], cited: "UK_uksi_2019_696"]
+UK_uksi_2016_1093: targets gone 0, added 0, attrs %{affecting: 10, cited: 10}
+  ~ 166c40d1 reg.50(3) [affecting: ["sch.3.para.14(4)(b)"], cited: "UK_uksi_2020_1460"] was [affecting: ["sch.22.para.30(3B)(b)"], cited: "UK_uksi_2019_696"]
+  ~ 6bae242a reg.50(1) [affecting: ["sch.3.para.14(4)(a)"], cited: "UK_uksi_2020_1460"] was [affecting: ["sch.22.para.30(3)"], cited: "UK_uksi_2019_696"]
+UK_uksi_2017_571: targets gone 0, added 0, attrs %{affecting: 11, cited: 11}
+  ~ 1117ab1f reg.25(12) [affecting: ["reg.5"], cited: "UK_uksi_2020_1398"] was [affecting: ["reg.17(3)"], cited: "UK_uksi_2020_505"]
+  ~ 1117ab1f reg.25(13) [affecting: ["reg.5"], cited: "UK_uksi_2020_1398"] was [affecting: ["reg.17(3)"], cited: "UK_uksi_2020_505"]
+UK_uksi_2017_701: targets gone 0, added 0, attrs %{affecting: 3, cited: 3}
+  ~ d2d7571a reg.1(3)(b)(i) [affecting: ["reg.16(3)"], cited: "UK_uksi_2019_710"] was [affecting: ["reg.6(b)(i)"], cited: "UK_uksi_2018_1403"]
+  ~ d2d7571a reg.1(3)(b)(ii) [affecting: ["reg.16(3)"], cited: "UK_uksi_2019_710"] was [affecting: ["reg.6(b)(i)"], cited: "UK_uksi_2018_1403"]
+UK_uksi_2018_390: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ 07607969 reg.2(4A) [affecting: ["reg.9(b)(ii)"], cited: "UK_uksi_2019_1246"] was [affecting: ["sch.35.para.1(3)(b)"], cited: "UK_uksi_2019_696"]
+UK_wsi_2004_1490: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ b72f05a7 reg.2(1) [affecting: ["reg.2(3)(a)"], cited: "UK_wsi_2020_1339"] was [affecting: ["reg.7(2)"], cited: "UK_uksi_2019_414"]
+  ~ 148e59be reg.7(11) [affecting: ["reg.2(3)(e)"], cited: "UK_wsi_2020_1339"] was [affecting: ["reg.7(7)"], cited: "UK_wsi_2019_414"]
+
+TOTAL %{added: 0, laws: 126, moved_laws: 121, gone: 0, attrs: %{affecting: 736, cited: 718, cited_text: 21}}

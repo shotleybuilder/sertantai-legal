@@ -1,0 +1,24 @@
+UK_ukpga_1981_29: targets gone 0, added 0, attrs %{affecting: 3, cited: 3}
+  ~ bb6bbf42 s.28 [affecting: ["sch.4.para.11(2)(c)"], cited: "UK_asp_2010_5"] was [affecting: ["sch.22.pt.5"], cited: "UK_ukpga_2009_23"]
+  ~ abd2c138 s.22(3) [affecting: ["sch.4.para.11(2)(b)"], cited: "UK_asp_2010_5"] was [affecting: ["sch.22.pt.5"], cited: "UK_ukpga_2009_23"]
+UK_ukpga_1993_11: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ ac890ce9 s.21(5) [affecting: ["s.15(5)"], cited: "UK_ukpga_2015_20"] was [affecting: ["s.50(3)(a)"], cited: "UK_asp_2014_3"]
+UK_ukpga_1996_37: targets gone 0, added 0, attrs %{affecting: 5, cited: 10}
+  ~ 108b7782 s.8(1) [cited: "UK_nia_2011_23"] was [cited: "UK_ukpga_2005_16"]
+  ~ 503046ca s.3(3) [cited: "UK_nia_2011_23"] was [cited: "UK_ukpga_2005_16"]
+UK_ukpga_1997_50: targets gone 0, added 0, attrs %{affecting: 2, cited: 2}
+  ~ 3d1bc11e s.119(1B) [affecting: ["sch.5.para.8(3)"], cited: "UK_nia_2015_9"] was [affecting: ["sch.9.para.110(3)"], cited: "UK_ukpga_2012_9"]
+  ~ 9d23a756 s.116(3) [affecting: ["sch.5.para.5"], cited: "UK_nia_2015_9"] was [affecting: ["s.120", "sch.9.para.107"], cited: "UK_ukpga_2012_9"]
+UK_ukpga_1999_29: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ b4fe8653 s.378(11)(d) [affecting: ["sch.2.para.5"], cited: "UK_asp_2006_15"] was [affecting: ["sch.para.5"], cited: "UK_uksi_2007_1103"]
+UK_ukpga_2000_36: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ aa018098 s.31(1)(i) [affecting: ["sch.para.8"], cited: "UK_uksi_2016_1142"] was [affecting: ["sch.2.para.8"], cited: "UK_asp_2016_2"]
+UK_ukpga_2004_33: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ 12e470f9 s.213(3) [affecting: ["reg.17(3)(b)"], cited: "UK_uksi_2019_1514"] was [affecting: ["reg.5(3)(b)"], cited: "UK_uksi_2019_1458"]
+UK_ukpga_2004_34: targets gone 0, added 0, attrs %{level: 1, affecting: 44, cited: 44}
+  ~ f0337cec s.96(10) [affecting: ["reg.3(4)(e)(i)"], cited: "UK_wsi_2013_1788"] was [affecting: ["reg.18(4)(e)(i)"], cited: "UK_uksi_2013_630"]
+  ~ 0d3577ef s.74(6)(b)(i) [affecting: ["reg.3(3)(d)"], cited: "UK_wsi_2013_1788"] was [affecting: ["reg.18(3)(d)"], cited: "UK_uksi_2013_630"]
+UK_uksi_2000_1043: targets gone 0, added 0, attrs %{affecting: 1, cited: 1}
+  ~ 20bfa029 reg.11(3)(b) [affecting: ["sch.11.para.29"], cited: "UK_uksi_2005_1806"] was [affecting: ["sch.11.para.27"], cited: "UK_uksi_2005_894"]
+
+TOTAL %{added: 0, laws: 130, moved_laws: 9, gone: 0, attrs: %{level: 1, affecting: 59, cited: 64}}

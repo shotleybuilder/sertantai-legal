@@ -1,0 +1,30 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+[info] JWKS public key fetched successfully
+
+11639 changes (change elements) in 267 laws:
+  11130  placed
+  361  placed_versions
+  128  outside_lat_scope
+  13  placed_ancestor
+  5  whole_law
+  2  group_row_missing  (our fault)
+our faults: 2
+  group_row_missing  UK_eur_2006_1013 key-…69e297 at ["title-IV-chapter-2-section-2"] → []
+  group_row_missing  UK_eur_2006_1013 key-…199d1a at ["title-IV-chapter-2-section-1"] → []
+
+7132 note placements (an effect placed by its note ref only) in 282 laws:
+  6964  placed
+  78  outside_lat_scope
+  60  placed_versions
+  25  outside_provisions
+  5  placed_ancestor
+our faults: 0
+
+markup keys against the feed (changes; a count for CV-S07):
+  8210  in_feed
+  3072  legacy
+  357  not_in_feed
+
+FAIL (placement)
