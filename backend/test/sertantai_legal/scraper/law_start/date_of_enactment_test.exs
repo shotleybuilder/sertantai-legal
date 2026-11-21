@@ -56,4 +56,11 @@ defmodule SertantaiLegal.Scraper.LawStart.DateOfEnactmentTest do
 
     assert DateOfEnactment.parse(xml) == ~D[2015-07-06]
   end
+
+  test "a Welsh Measure: the day Her Majesty in Council approved it, from its enacting words (MWA 2010/8)" do
+    xml =
+      ~s|<PrimaryPrelims><DateOfEnactment><DateText/></DateOfEnactment><PrimaryPreamble><IntroductoryText><P><Text><Strong>This Measure, passed by the National Assembly for Wales on 2 November 2010 and approved by Her Majesty in Council on 15 December 2010, enacts the following provisions:–</Strong></Text></P></IntroductoryText></PrimaryPreamble></PrimaryPrelims>|
+
+    assert DateOfEnactment.parse(xml) == ~D[2010-12-15]
+  end
 end

@@ -177,11 +177,24 @@ defmodule SertantaiLegal.Scraper.LawStart.Input do
 
   # an Act's Royal Assent from its own introduction, where the register
   # and the CLML's metadata give none (anaw 2015/4: "{6 July 2015}")
+  # (the introduction as revised, else as made: a Measure's is held as
+  # made, MWA 2010/8)
   defp enacted(law_name) do
-    with [_, type, year, number] <- String.split(law_name, "_", parts: 4),
-         {:ok, xml, _meta} <- ClmlStore.get("/#{type}/#{year}/#{number}/introduction/data.xml") do
-      DateOfEnactment.parse(xml)
-    else
+    case String.split(law_name, "_", parts: 4) do
+      [_, type, year, number] ->
+        Enum.find_value(
+          ["introduction", "made/introduction"],
+          &introduction_date(type, year, number, &1)
+        )
+
+      _ ->
+        nil
+    end
+  end
+
+  defp introduction_date(type, year, number, part) do
+    case ClmlStore.get("/#{type}/#{year}/#{number}/#{part}/data.xml") do
+      {:ok, xml, _meta} -> DateOfEnactment.parse(xml)
       _ -> nil
     end
   end

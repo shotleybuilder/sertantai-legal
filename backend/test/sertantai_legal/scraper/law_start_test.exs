@@ -432,6 +432,18 @@ defmodule SertantaiLegal.Scraper.LawStartTest do
                {:clause_made_relative, ~D[1988-01-21]}
     end
 
+    test "a Welsh Measure counts from its approval by Her Majesty in Council (MWA 2010/8 s.21(2), MWA 2009/3)" do
+      assert Clause.tail_date(
+               "at the end of a period of two months beginning on the day on which this Measure is approved by Her Majesty in Council.",
+               ~D[2010-12-15]
+             ) == {:clause_made_relative, ~D[2011-02-15]}
+
+      assert Clause.tail_date(
+               "on the day on which this Measure is approved by Her Majesty in Council.",
+               ~D[2009-10-23]
+             ) == {:clause_made_relative, ~D[2009-10-23]}
+    end
+
     test "\"the day which is 21 days after the day on which this Order is made\" (SI 2023/1394 reg.1(b))" do
       assert Clause.tail_date(
                "on the day which is 21 days after the day on which this Order is made.",
