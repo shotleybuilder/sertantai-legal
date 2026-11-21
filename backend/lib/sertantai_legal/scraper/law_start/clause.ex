@@ -238,6 +238,41 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
   # regulations come into force on 6th April 2010": SI 2010/740 reg.1(2))
   @named_then_rest ~r/^(?:\(?\d+[A-Z]?\)?\s+)?(?:regulations?|articles?|sections?|rules?)\s+\d[^.;]{0,300}?\binto\s+(?:force|operation)\s+on\s+[^.;]{0,60}?\d{4}\s*,?\s+and\s+(?:all\s+|the\s+)?(?:other|remaining)\s+(?:provisions|regulations|articles|sections|rules)\b[^.;]{0,200}?\binto\s+(?:force|operation)\b/i
 
+  # "comes into force on the later of— (a) 1st January 2024; or (b) the day
+  # which is 21 days after the day on which this Order is made" (SI
+  # 2023/1394 reg.1): each lettered item read as a tail, the later (or the
+  # earlier) taken, with its item's treatment; nil unless every item dates
+  @either_of ~r/^on the (later|earlier) of\b/i
+
+  defp either_of(rows, row, tail, made) do
+    with [_, which] <- Regex.run(@either_of, tail),
+         [_ | _] = items <- items_of(rows, row),
+         [_ | _] = dated <- Enum.map(items, &item_date(&1, made)),
+         true <- Enum.all?(dated, &match?({_, %Date{}}, &1)) do
+      pick = if String.downcase(which) == "later", do: &Enum.max_by/3, else: &Enum.min_by/3
+      pick.(dated, &elem(&1, 1), Date)
+    else
+      _ -> nil
+    end
+  end
+
+  # the provision's lettered items: "reg.1(a)", "reg.1(b)"
+  defp items_of(rows, row) do
+    item = ~r/^#{Regex.escape(row.section_id)}\([a-z]+\)$/
+    Enum.filter(rows, &Regex.match?(item, &1.section_id))
+  end
+
+  defp item_date(%{text: text}, made) when is_binary(text) do
+    item = text |> String.trim() |> String.replace(~r/\s*(?:;\s*(?:or|and)?|\.)\s*$/i, "")
+
+    case tail_date("on " <> item, made) do
+      {treatment, %Date{} = d} -> {treatment, d}
+      _ -> nil
+    end
+  end
+
+  defp item_date(_row, _made), do: nil
+
   defp own_part?(sentence),
     do: Regex.match?(@own_part, sentence) or Regex.match?(@named_then_rest, sentence)
 
@@ -252,13 +287,31 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
         found
 
       nil ->
-        cond do
-          d = first_stage(tail, made) -> %{found | treatment: :clause_staged, date: d}
-          by_order?(tail) -> %{found | treatment: :by_order}
-          tied?(tail) -> %{found | treatment: :tied_to_other_law}
-          staged?(tail) -> staged(rows, row, found, made)
-          true -> found
-        end
+        no_tail_date(rows, row, tail, made, found)
+    end
+  end
+
+  # a tail stating no date of its own: a choice between its items, its
+  # first stage, an order, another provision's day, its stages, or unread
+  defp no_tail_date(rows, row, tail, made, found) do
+    cond do
+      pick = either_of(rows, row, tail, made) ->
+        %{found | treatment: elem(pick, 0), date: elem(pick, 1)}
+
+      d = first_stage(tail, made) ->
+        %{found | treatment: :clause_staged, date: d}
+
+      by_order?(tail) ->
+        %{found | treatment: :by_order}
+
+      tied?(tail) ->
+        %{found | treatment: :tied_to_other_law}
+
+      staged?(tail) ->
+        staged(rows, row, found, made)
+
+      true ->
+        found
     end
   end
 
@@ -651,7 +704,8 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
 
   @end_of_period ~r/^(?:on |at |with )?(?:the )?(?:expiration|expiry|end) of (?:a |the )?(?:period of )?#{@number} (days?|weeks?|months?|years?) (from|after|beginning with|beginning on|starting with) (.*)$/i
 
-  @n_after ~r/^(?:on )?#{@number} (days?|weeks?|months?) after (.*)$/i
+  # ("six months after …"; "the day which is 21 days after …": SI 2023/1394)
+  @n_after ~r/^(?:on )?(?:the (?:day|date) (?:which|that) is )?#{@number} (days?|weeks?|months?) after (.*)$/i
 
   defp counted_shift(t, from) do
     cond do

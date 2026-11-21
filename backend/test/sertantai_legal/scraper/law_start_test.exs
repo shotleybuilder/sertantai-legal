@@ -432,6 +432,41 @@ defmodule SertantaiLegal.Scraper.LawStartTest do
                {:clause_made_relative, ~D[1988-01-21]}
     end
 
+    test "\"the day which is 21 days after the day on which this Order is made\" (SI 2023/1394 reg.1(b))" do
+      assert Clause.tail_date(
+               "on the day which is 21 days after the day on which this Order is made.",
+               ~D[2023-12-13]
+             ) == {:clause_made_relative, ~D[2024-01-03]}
+    end
+
+    test "\"the later of— (a) <date>; or (b) <a day counted from the making>\": the later (SI 2023/1394 reg.1)" do
+      later =
+        Clause.read(
+          rows([
+            {"reg.1",
+             "This Order may be cited as the Vehicle Emissions Trading Schemes Order 2023 and comes into force on the later of—"},
+            {"reg.1(a)", "1st January 2024; or"},
+            {"reg.1(b)", "the day which is 21 days after the day on which this Order is made."}
+          ]),
+          ~D[2023-12-13]
+        )
+
+      assert %{treatment: :clause_made_relative, date: ~D[2024-01-03]} = later
+
+      earlier =
+        Clause.read(
+          rows([
+            {"reg.1", "These Regulations come into force on the earlier of—"},
+            {"reg.1(a)", "1st January 2024; and"},
+            {"reg.1(b)",
+             "the day which is 21 days after the day on which these Regulations are made."}
+          ]),
+          ~D[2023-12-13]
+        )
+
+      assert %{treatment: :clause_date, date: ~D[2024-01-01]} = earlier
+    end
+
     test "a numeric ordinal: \"on the 22nd day after the day on which they are made\" (SI 2022/1342)" do
       assert Clause.tail_date(
                "on the 22nd day after the day on which they are made",
