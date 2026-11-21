@@ -37,6 +37,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
   alias SertantaiLegal.Scraper.Commencement.{Order, Rule}
   alias SertantaiLegal.Scraper.Commencement.Order.Asides
   alias SertantaiLegal.Scraper.LatParser.Xml
+  alias SertantaiLegal.Scraper.LatRef
   alias SertantaiLegal.Scraper.LawStart
   alias SertantaiLegal.Scraper.LawStart.{Clause, MadeCondition, OwnDays, Provisions}
 
@@ -368,7 +369,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
   defp own_inner({:xmlElement, _, _, _, _, _, _, _, _, _, _, _} = el), do: own(el)
   defp own_inner(other), do: other
 
-  @doc "The evaluator's context for a law's rows: each provision's containers, and document order."
+  @doc "The evaluator's context for a law's rows: each provision's containers, and its document order's positions."
   @spec context([map()]) :: map()
   def context(rows) do
     containers =
@@ -385,7 +386,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
 
     %{
       ancestors: &Map.get(containers, &1, []),
-      order: rows |> Enum.map(&top(&1.section_id)) |> Enum.uniq()
+      positions: rows |> Enum.map(&top(&1.section_id)) |> Enum.uniq() |> LatRef.positions()
     }
   end
 

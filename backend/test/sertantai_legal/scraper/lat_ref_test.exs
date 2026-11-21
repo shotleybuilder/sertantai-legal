@@ -18,9 +18,22 @@ defmodule SertantaiLegal.Scraper.LatRefTest do
              ["L:reg.3(1)n1[S]", "L:reg.3(1)[S]", "L:reg.3[S]", "L:reg.3(1)", "L:reg.3"]
   end
 
+  describe "positions/1: the document order's positions, built once" do
+    test "each provision's index in the order" do
+      assert LatRef.positions(["s.1", "s.5", "s.3"]) == %{"s.1" => 0, "s.5" => 1, "s.3" => 2}
+    end
+
+    test "a range goes by the positions given, not by number" do
+      ctx = %{positions: LatRef.positions(["s.1", "s.5", "s.3"])}
+      assert LatRef.covers?("s.1..s.5", "s.1", ctx)
+      refute LatRef.covers?("s.1..s.5", "s.3", ctx)
+      assert LatRef.covers?("s.5..s.3", "s.3", ctx)
+    end
+  end
+
   describe "covers?/3: a range the document order doesn't hold (CV-S04)" do
     test "a range of subsections goes by number when the order lists whole provisions" do
-      ctx = %{order: ["s.9", "s.10", "s.11"]}
+      ctx = %{positions: LatRef.positions(["s.9", "s.10", "s.11"])}
       assert LatRef.covers?("s.10(2)..s.10(4)", "s.10(3)", ctx)
       refute LatRef.covers?("s.10(2)..s.10(4)", "s.10(5)", ctx)
       assert LatRef.covers?("s.9..s.11", "s.10", ctx)

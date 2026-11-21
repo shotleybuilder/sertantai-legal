@@ -129,7 +129,7 @@ defmodule SertantaiLegal.Scraper.Commencement.EvaluatorTest do
       assert %{full_from: ~D[2024-01-01]} = eval(paras, "sch.21.para.2(2)(a)")
       assert %{full_from: nil} = eval(paras, "sch.21.para.2(4)")
 
-      order = %{order: ["s.1", "s.5", "s.3"]}
+      order = %{positions: SertantaiLegal.Scraper.LatRef.positions(["s.1", "s.5", "s.3"])}
       assert %{full_from: nil} = eval(rules, "s.3", order)
     end
   end

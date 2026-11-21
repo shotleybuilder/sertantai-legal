@@ -81,7 +81,7 @@ defmodule SertantaiLegal.Scraper.LatRef do
   @doc """
   Does `ref` cover the chain element `el`: equal, or a range ("s.41..s.43")
   holding it — whole provisions only (or, for a range of brackets, that
-  depth): by document order (`ctx.order`), else by number.
+  depth): by document order (`ctx.positions`, from `positions/1`), else by number.
   """
   @spec covers?(String.t(), String.t(), map()) :: boolean()
   def covers?(ref, el, ctx \\ %{}) do
@@ -152,8 +152,16 @@ defmodule SertantaiLegal.Scraper.LatRef do
 
   defp top(ref), do: String.replace(ref, ~r/\(.*$/, "")
 
+  @doc """
+  A document order's positions, each provision's index in it: built once
+  for a law's rows and passed as `ctx.positions`, never per range (2003
+  c.21: 1,532 rules over 3,967 rows rebuilt it on every range, 86 s).
+  """
+  @spec positions([String.t()]) :: %{String.t() => non_neg_integer()}
+  def positions(order), do: order |> Enum.with_index() |> Map.new()
+
   defp same_depth_between?(el, from, to, ctx) do
-    case ctx[:order] && ordered_between(ctx[:order], el, from, to) do
+    case ctx[:positions] && ordered_between(ctx[:positions], el, from, to) do
       nil -> numeric_between?(el, from, to)
       between? -> between?
     end
@@ -162,9 +170,7 @@ defmodule SertantaiLegal.Scraper.LatRef do
   # by document order when the order holds all three (a law's order lists
   # whole provisions: a range of subsections, "s.10(2)..s.10(4)", goes by
   # number — CV-S04); else nil
-  defp ordered_between(order, el, from, to) do
-    pos = order |> Enum.with_index() |> Map.new()
-
+  defp ordered_between(pos, el, from, to) do
     with a when is_integer(a) <- pos[from],
          b when is_integer(b) <- pos[to],
          i when is_integer(i) <- pos[el] do

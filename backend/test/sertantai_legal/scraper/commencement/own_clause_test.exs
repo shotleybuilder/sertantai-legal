@@ -52,6 +52,17 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClauseTest do
     |> Map.fetch!(:full_from)
   end
 
+  test "the context's document order is its positions, each provision once (built once a law, not per range)" do
+    rows = [
+      %{section_id: "UK_x:s.1"},
+      %{section_id: "UK_x:s.5"},
+      %{section_id: "UK_x:s.5(1)"},
+      %{section_id: "UK_x:s.3"}
+    ]
+
+    assert OwnClause.context(rows).positions == %{"s.1" => 0, "s.5" => 1, "s.3" => 2}
+  end
+
   test "one date for the whole law" do
     {rules, _} =
       read([{"reg.1", "These Regulations come into force on 1st April 2020."}, "reg.2"])

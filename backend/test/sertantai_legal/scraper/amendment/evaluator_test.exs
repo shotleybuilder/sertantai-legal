@@ -70,7 +70,7 @@ defmodule SertantaiLegal.Scraper.Amendment.EvaluatorTest do
     assert reach(r, "s.42(1)") == {:ok, "#{@law}:s.42"}
     assert reach(r, "s.44") == :no_match
 
-    ctx = %{order: ["s.41", "s.41A", "s.42", "s.43"]}
+    ctx = %{positions: SertantaiLegal.Scraper.LatRef.positions(["s.41", "s.41A", "s.42", "s.43"])}
     assert reach(r, "s.41A", ctx) == {:ok, "#{@law}:s.41A"}
   end
 

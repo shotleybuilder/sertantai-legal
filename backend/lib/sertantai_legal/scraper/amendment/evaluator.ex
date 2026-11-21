@@ -12,7 +12,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Evaluator do
     note's row, words-level (`Amendment.Collect`, AR-04 option c). The level
     only names the change ("words inserted"). A block's quoted provisions are targets already
     (expanded at read time: LR-43).
-  - **Ranges** ("s.41..s.43") by document order (`ctx.order`), else number.
+  - **Ranges** ("s.41..s.43") by document order (`ctx.positions`), else number.
 
   `ctx`: `ancestors` (top ref → containers, nearest first), `order` (refs in
   document order). The row's own section_id is returned when a target names

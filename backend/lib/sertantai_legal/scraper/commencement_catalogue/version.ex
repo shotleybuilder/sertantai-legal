@@ -27,6 +27,7 @@ defmodule SertantaiLegal.Scraper.CommencementCatalogue.Version do
       lib/sertantai_legal/scraper/commencement_catalogue/law_scan.ex
       lib/sertantai_legal/scraper/commencement_catalogue/version.ex
       lib/sertantai_legal/scraper/lat_parser/xml.ex
+      lib/sertantai_legal/scraper/lat_ref.ex
       lib/sertantai_legal/scraper/law_start.ex
       lib/sertantai_legal/scraper/law_start/clause.ex
       lib/sertantai_legal/scraper/law_start/completing.ex
