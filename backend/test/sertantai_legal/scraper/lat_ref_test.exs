@@ -31,6 +31,37 @@ defmodule SertantaiLegal.Scraper.LatRefTest do
     end
   end
 
+  describe "covers?/3: a range covers its own kind only" do
+    # ASP 2003/3: Chapter 2's heading sits between sections 1 and 7 in
+    # document order, so "sections 1 to 7" (SSI 2003/562) covered the
+    # Chapter, and every section in it (s.8, s.9 …: 168 rows)
+    test "a range of sections never covers a Part or Chapter between its ends" do
+      ctx = %{
+        positions:
+          LatRef.positions([
+            "pt.1",
+            "pt.1.ch.1",
+            "s.1",
+            "s.2",
+            "s.3",
+            "pt.1.ch.2",
+            "s.4",
+            "s.7",
+            "s.8"
+          ])
+      }
+
+      assert LatRef.covers?("s.1..s.7", "s.4", ctx)
+      refute LatRef.covers?("s.1..s.7", "pt.1.ch.2", ctx)
+      refute LatRef.covers?("s.1..s.7", "s.8", ctx)
+    end
+
+    test "a range of Parts covers the Parts between" do
+      ctx = %{positions: LatRef.positions(["pt.1", "s.1", "pt.2", "s.5", "pt.3"])}
+      assert LatRef.covers?("pt.1..pt.3", "pt.2", ctx)
+    end
+  end
+
   describe "covers?/3: a range the document order doesn't hold (CV-S04)" do
     test "a range of subsections goes by number when the order lists whole provisions" do
       ctx = %{positions: LatRef.positions(["s.9", "s.10", "s.11"])}

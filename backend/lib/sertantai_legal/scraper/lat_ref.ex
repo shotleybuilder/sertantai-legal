@@ -161,7 +161,7 @@ defmodule SertantaiLegal.Scraper.LatRef do
   def positions(order), do: order |> Enum.with_index() |> Map.new()
 
   defp same_depth_between?(el, from, to, ctx) do
-    case ctx[:positions] && ordered_between(ctx[:positions], el, from, to) do
+    case ctx[:positions] && same_kind?(el, from) && ordered_between(ctx[:positions], el, from, to) do
       nil -> numeric_between?(el, from, to)
       between? -> between?
     end
@@ -177,6 +177,16 @@ defmodule SertantaiLegal.Scraper.LatRef do
       a <= i and i <= b
     else
       _ -> nil
+    end
+  end
+
+  # a range covers its own kind only: "s.1..s.7" never a Chapter whose
+  # heading sits between its ends (ASP 2003/3, "sections 1 to 7" by SSI
+  # 2003/562 covering Chapter 2 and every section in it)
+  defp same_kind?(el, from) do
+    case {key(el), key(from)} do
+      {{p, _}, {p, _}} -> true
+      _ -> false
     end
   end
 
