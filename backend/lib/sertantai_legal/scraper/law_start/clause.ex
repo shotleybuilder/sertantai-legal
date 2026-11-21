@@ -351,13 +351,15 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
     end)
   end
 
+  @citation_line ~r/\bmay be cited as\b|\bThe\s+title\s+of\s+(?:this|these)\s+#{@instrument}\s+is\b/i
+
   defp pronoun(rows) do
     # (or titled: "The title of these Regulations is …. They come into force
     # on 6 May 2009": WSI 2009/995)
     cited =
       for r <- rows,
           (Map.get(r, :text) || "") =~
-            ~r/\bmay be cited as\b|\bThe\s+title\s+of\s+(?:this|these)\s+#{@instrument}\s+is\b/i,
+            @citation_line,
           into: MapSet.new(),
           do: provision(r.section_id)
 
@@ -643,29 +645,37 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
   end
 
   # a count of days, weeks or months from the day
+  @nth_day_after ~r/^(?:on )?the #{@number} day (?:after|following) (.*)$/i
+
+  @first_of_month_after ~r/^(?:on )?the first day of the (?:#{@number} )?(?:calendar )?month (?:following|after) (?:that|the month) in which (.*)$/i
+
+  @end_of_period ~r/^(?:on |at |with )?(?:the )?(?:expiration|expiry|end) of (?:a |the )?(?:period of )?#{@number} (days?|weeks?|months?|years?) (from|after|beginning with|beginning on|starting with) (.*)$/i
+
+  @n_after ~r/^(?:on )?#{@number} (days?|weeks?|months?) after (.*)$/i
+
   defp counted_shift(t, from) do
     cond do
-      m = Regex.run(~r/^(?:on )?the #{@number} day (?:after|following) (.*)$/i, t) ->
+      m = Regex.run(@nth_day_after, t) ->
         [_, n, rest] = m
         with_from(rest, from, n, fn day, k -> Date.add(day, k) end)
 
       m =
           Regex.run(
-            ~r/^(?:on )?the first day of the (?:#{@number} )?(?:calendar )?month (?:following|after) (?:that|the month) in which (.*)$/i,
+            @first_of_month_after,
             t
           ) ->
         first_of_month(m, from)
 
       m =
           Regex.run(
-            ~r/^(?:on |at |with )?(?:the )?(?:expiration|expiry|end) of (?:a |the )?(?:period of )?#{@number} (days?|weeks?|months?|years?) (from|after|beginning with|beginning on|starting with) (.*)$/i,
+            @end_of_period,
             t
           ) ->
         [_, n, unit, rel, rest] = m
         extra = if String.downcase(rel) in ["from", "after"], do: 1, else: 0
         with_from(rest, from, n, fn day, k -> day |> shift(unit, k) |> Date.add(extra) end)
 
-      m = Regex.run(~r/^(?:on )?#{@number} (days?|weeks?|months?) after (.*)$/i, t) ->
+      m = Regex.run(@n_after, t) ->
         [_, n, unit, rest] = m
         with_from(rest, from, n, fn day, k -> shift(day, unit, k) end)
 

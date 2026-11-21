@@ -74,8 +74,10 @@ defmodule SertantaiLegal.Scraper.Commencement.TextRefs do
     |> Enum.reject(&(&1 =~ ~r/^s\.\(/))
   end
 
+  @section_list ~r/\bsections?\s+#{@list}/i
+
   defp section_refs(text) do
-    for [_, list] <- Regex.scan(~r/\bsections?\s+#{@list}/i, text),
+    for [_, list] <- Regex.scan(@section_list, text),
         r <- list_refs(list, "s."),
         do: r
   end
@@ -107,10 +109,12 @@ defmodule SertantaiLegal.Scraper.Commencement.TextRefs do
 
   # "Part III of Schedule 4": that Part (AR-12); "Parts 1 and 3 of
   # Schedule 12": each (SI 2022/48)
+  @parts_of_schedule ~r/\bParts?\s+(#{@part}(?:\s*(?:,|and)\s*#{@part})*)\s+of\s+Schedule\s+(\d+[A-Z]*)\b#{@own}/
+
   defp schedule_part_refs(text) do
     for [_, list, n] <-
           Regex.scan(
-            ~r/\bParts?\s+(#{@part}(?:\s*(?:,|and)\s*#{@part})*)\s+of\s+Schedule\s+(\d+[A-Z]*)\b#{@own}/,
+            @parts_of_schedule,
             text
           ),
         p <- String.split(list, ~r/\s*(?:,|and)\s*/, trim: true),
@@ -119,10 +123,12 @@ defmodule SertantaiLegal.Scraper.Commencement.TextRefs do
 
   # "in Schedule 13 to the Act, paragraphs …" is where, not what; "Schedule
   # 1 to this Order" is the order's own (AR-12: SI 1999/2830)
+  @schedule_list ~r/(?<![Ii]n )\bSchedules?\s+#{@list}\b(?!\s*,?\s*paragraph)#{@own}/
+
   defp schedule_refs(text, bare, schedule_parts) do
     for [_, list] <-
           Regex.scan(
-            ~r/(?<![Ii]n )\bSchedules?\s+#{@list}\b(?!\s*,?\s*paragraph)#{@own}/,
+            @schedule_list,
             text
           ),
         not (text =~ ~r/\bparagraphs?\b[^;]*\bof\s+Schedule/i),
@@ -152,15 +158,19 @@ defmodule SertantaiLegal.Scraper.Commencement.TextRefs do
         do: "pt.#{p}"
   end
 
+  @paragraphs_of_schedule ~r/\bparagraphs?\s+#{@list}\s+of\s+Schedule\s+(\d+[A-Z]*)/i
+
   defp paragraph_refs(text, nil) do
     for [_, list, s] <-
-          Regex.scan(~r/\bparagraphs?\s+#{@list}\s+of\s+Schedule\s+(\d+[A-Z]*)/i, text),
+          Regex.scan(@paragraphs_of_schedule, text),
         r <- list_refs(list, "sch.#{s}.para."),
         do: r
   end
 
+  @paragraph_list ~r/\bparagraphs?\s+#{@list}/i
+
   defp paragraph_refs(text, s) do
-    for [_, list] <- Regex.scan(~r/\bparagraphs?\s+#{@list}/i, text),
+    for [_, list] <- Regex.scan(@paragraph_list, text),
         r <- list_refs(list, "sch.#{s}.para."),
         do: r
   end

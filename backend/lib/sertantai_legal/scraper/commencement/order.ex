@@ -600,6 +600,8 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   @to_dash ~S"(?:\([^()]*\)|[^—–:])*"
 
   # {date, the items stated inline} | nil
+  @made_qualifier ~r/(?:(?<!\d)\d{4}|\bmade)\s*,?\s+((?:(?:in\s*)?so\s*far|insofar)\s+as\b#{@to_dash}|to\s+the\s+extent\b#{@to_dash}|for\s+the\s+purposes?\s+of\b#{@to_dash})/iu
+
   defp statement(head, made) do
     cond do
       # "The appointed day for the coming into force of X … is D—": the
@@ -643,7 +645,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
             # 2009/1261 art.4)
             after_date =
               case Regex.run(
-                     ~r/(?:(?<!\d)\d{4}|\bmade)\s*,?\s+((?:(?:in\s*)?so\s*far|insofar)\s+as\b#{@to_dash}|to\s+the\s+extent\b#{@to_dash}|for\s+the\s+purposes?\s+of\b#{@to_dash})/iu,
+                     @made_qualifier,
                      tail
                    ) do
                 [_, q] -> " " <> q
