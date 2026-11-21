@@ -422,8 +422,8 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
   defp cached_orders(law), do: Orders.candidates(Orders.cached(law), Rules.order_sources(law))
 
   # the law's own feed's coming-into-force records, by target: its first
-  # and full dates — any stored change carrying a feed claim, as Merge joins
-  # an agreeing feed record into the own-clause change (its key)
+  # and full dates, from the feed's own date claims on any stored change
+  # (Merge joins an agreeing feed record into the own-clause change)
   # the provisions another law inserted, from the stored changes (the feed
   # gate's yardstick: their feed record dates the insertion)
   defp inserted_targets(law) do
@@ -436,13 +436,22 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
   end
 
   defp feed_commenced(law) do
+    # (the feed's own date claims, never the change's stored date, which
+    # our gap-filler may have set: ANAW 2017/3's prospective records dated
+    # by s.97(2)'s own start)
     Repo.query!(
       """
-      SELECT target, min(date), min(date) FILTER (WHERE NOT partial) FROM provision_changes pc
-      WHERE law_name = $1 AND operation = 'commenced' AND date IS NOT NULL
-        AND EXISTS (SELECT 1 FROM provision_change_claims c
-                    WHERE c.change_id = pc.id AND c.source = 'feed')
-      GROUP BY target
+      SELECT pc.target,
+             min((d.value->>'v')::date),
+             min((d.value->>'v')::date) FILTER (
+               WHERE d.attribute = 'date' AND NOT coalesce((p.value->>'v')::boolean, pc.partial, false))
+      FROM provision_changes pc
+      JOIN provision_change_claims d
+        ON d.change_id = pc.id AND d.source = 'feed' AND d.attribute IN ('date', 'date_first')
+      LEFT JOIN provision_change_claims p
+        ON p.change_id = pc.id AND p.source = 'feed' AND p.attribute = 'partial'
+      WHERE pc.law_name = $1 AND pc.operation = 'commenced'
+      GROUP BY pc.target
       """,
       [law]
     ).rows
