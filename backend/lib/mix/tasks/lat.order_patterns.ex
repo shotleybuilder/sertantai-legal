@@ -32,13 +32,13 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
     ReachGroups,
     Misreads,
     Order,
-    OrderMisreads,
-    OrderPatterns,
     Orders
   }
 
-  alias SertantaiLegal.Scraper.CatalogueRun
+  alias SertantaiLegal.Scraper.{CatalogueRun, LawRunner}
   alias SertantaiLegal.Scraper.CatalogueRun.Log
+  alias SertantaiLegal.Scraper.LawRunner.Guard
+  alias SertantaiLegal.Scraper.OrderCatalogue.LawRead
   alias SertantaiLegal.Scraper.CatalogueTarget, as: Target
 
   @shortdoc "Commencement orders' pattern catalogue, as test fixtures (read-only)"
@@ -47,13 +47,19 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
   # a dry run's generated files: never the fixtures (`Target`)
   @dry_run_dir "data/reports/commencement-reader/dry-run/order_patterns"
   @per_pattern 3
-  @whole_max 20_000
-  @max 30_000
 
   @impl Mix.Task
   def run(args) do
     {opts, _, _} =
-      OptionParser.parse(args, strict: [orders: :string, out: :string, accept: :boolean])
+      OptionParser.parse(args,
+        strict: [
+          orders: :string,
+          out: :string,
+          accept: :boolean,
+          cache: :boolean,
+          workers: :integer
+        ]
+      )
 
     Mix.Task.run("app.start")
     Logger.configure(level: :warning)
@@ -61,36 +67,59 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
     target = Target.dirs(opts, @dir, @dry_run_dir)
     File.mkdir_p!(target.write)
 
-    pairs = pairs(opts[:orders])
-    Mix.shell().info("#{length(pairs)} orders held, with the Act each commences")
+    orders = orders(opts[:orders])
+    Mix.shell().info("#{length(orders)} orders held, with the Act each commences")
+    workers = Guard.workers(workers: opts[:workers])
 
-    # the run recorded (`CatalogueRun`): one order at a time, no cache, so
-    # the whole fold is serial
+    # each order read alone, several at once and cached (`OrderCatalogue.LawRead`),
+    # then taken in order: the catalogue a serial run gives; the run recorded
     {_, run} =
-      Log.record([catalogue: "order_patterns", scope: CatalogueRun.scope(opts), workers: 1], fn ->
-        {serial_us, acc} = :timer.tc(fn -> fold(pairs) end)
-        write(target.write, acc)
-        report(target.held, acc, opts[:accept])
-        {:ok, %{}, serial_us}
-      end)
+      Log.record(
+        [catalogue: "order_patterns", scope: CatalogueRun.scope(opts), workers: workers],
+        fn ->
+          catalogue(%{orders: orders, opts: opts, workers: workers, target: target})
+        end
+      )
 
     Mix.shell().info(Target.notice(target))
     Mix.shell().info(CatalogueRun.line(run))
   end
 
-  defp fold(pairs) do
-    pairs
-    |> Enum.with_index(1)
-    |> Enum.reduce(new_acc(), fn {{order, act}, i}, acc ->
-      if rem(i, 250) == 0, do: Mix.shell().info("  #{i}/#{length(pairs)}")
+  # the catalogue's work, recorded by `CatalogueRun.Log.record/2`
+  defp catalogue(%{orders: orders, opts: opts, workers: workers, target: target}) do
+    cache = Keyword.get(opts, :cache, true)
+    acts = acts(orders |> Enum.flat_map(&elem(&1, 1)) |> Enum.uniq())
 
-      try do
-        order_patterns(order, act, acc)
-      rescue
-        error -> %{acc | unclassified: [{order, Exception.message(error)} | acc.unclassified]}
-      end
-    end)
+    {acc, sources, serial_us} =
+      orders
+      |> LawRunner.ordered(
+        fn {order, listed} -> {order, read(order, Enum.map(listed, &acts[&1]), cache)} end,
+        workers: workers
+      )
+      |> Stream.with_index(1)
+      |> Enum.reduce({new_acc(), [], 0}, fn {{order, {read, source}}, i}, {acc, sources, us} ->
+        if rem(i, 250) == 0, do: Mix.shell().info("  #{i}/#{length(orders)}")
+        {t, acc} = :timer.tc(fn -> take(acc, order, read) end)
+        {acc, [source | sources], us + t}
+      end)
+
+    write(target.write, acc)
+    report(target.held, acc, opts[:accept])
+    {:ok, %{"order" => sources}, serial_us}
   end
+
+  # an order's reading, or why it raised (never cached)
+  defp read(order, acts, cache) do
+    {read, source} = LawRead.order(order, acts, cache: cache)
+    {{:ok, read}, source}
+  rescue
+    error -> {{:error, Exception.message(error)}, :read}
+  end
+
+  defp take(acc, order, {:error, why}),
+    do: %{acc | unclassified: [{order, why} | acc.unclassified]}
+
+  defp take(acc, order, {:ok, read}), do: order_patterns(order, read, acc)
 
   defp new_acc,
     do: %{
@@ -103,13 +132,13 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
       too_large: [],
       leftovers: %{},
       misreads: %{},
-      not_held: 0,
-      reach: %{},
-      ids: %{}
+      not_held: 0
     }
 
-  # {order, act}: each held order once, with the Act its list or rules name
-  defp pairs(only) do
+  # {order, [act]}: each held order once, with the Acts its lists or rules
+  # name (the first listed first: the Act it commences is chosen in its
+  # read, `OrderCatalogue.LawRead`)
+  defp orders(only) do
     listed =
       for path <- Path.wildcard("data/cache/commencement-orders/*.json"),
           act = Path.basename(path, ".json"),
@@ -127,14 +156,79 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
     |> Enum.uniq()
     |> Enum.filter(fn {order, act} -> order != act and held?(order) end)
     |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
-    |> Enum.map(fn {order, acts} -> {order, commenced(order, acts)} end)
-    |> then(fn ps ->
+    |> Enum.to_list()
+    |> then(fn os ->
       case only do
-        nil -> ps
-        list -> Enum.filter(ps, &(elem(&1, 0) in String.split(list, ",", trim: true)))
+        nil -> os
+        list -> Enum.filter(os, &(elem(&1, 0) in String.split(list, ",", trim: true)))
       end
     end)
     |> Enum.sort()
+  end
+
+  # each Act as an order's read takes it: named as `mix lat.commencement`
+  # names it (the register's title, else the Act's own CLML title), with
+  # what its leftovers reach (its LAT rows, else the changes its notes
+  # record on ours) and its rows' bare ids (nil where it holds none or only
+  # the fragments in scope, #166) — four queries for every Act
+  defp acts(laws) do
+    titles = by_law("SELECT name, title_en FROM uk_lrt WHERE name = ANY($1)", laws)
+
+    rows =
+      by_law(
+        "SELECT law_name, count(*) FROM legal_articles WHERE law_name = ANY($1) GROUP BY 1",
+        laws
+      )
+
+    notes =
+      by_law(
+        """
+        SELECT coalesce(citation_law, changed_by), count(*) FROM amendment_annotations
+        WHERE coalesce(citation_law, changed_by) = ANY($1) GROUP BY 1
+        """,
+        laws
+      )
+
+    ids = row_ids(laws)
+
+    Map.new(laws, fn law ->
+      n = Map.get(rows, law, 0)
+
+      {law,
+       %{
+         act: act(law, Map.get(titles, law)),
+         reach: if(n > 0, do: n, else: Map.get(notes, law, 0)),
+         ids: Map.get(ids, law)
+       }}
+    end)
+  end
+
+  defp by_law(sql, laws),
+    do: Repo.query!(sql, [laws]).rows |> Map.new(fn [law, v] -> {law, v} end)
+
+  defp row_ids(laws) do
+    Repo.query!(
+      """
+      SELECT law_name, section_id FROM legal_articles a WHERE law_name = ANY($1)
+        AND NOT EXISTS (SELECT 1 FROM legal_register r WHERE r.name = a.law_name AND r.lat_scope IS NOT NULL)
+      """,
+      [laws]
+    ).rows
+    |> Enum.group_by(&hd/1, &List.last/1)
+    |> Map.new(fn {law, sids} -> {law, Misreads.row_ids(sids)} end)
+  end
+
+  defp act(law, title) do
+    [_, _, year, _] = String.split(law, "_", parts: 4)
+
+    title =
+      cond do
+        is_binary(title) -> Orders.act_title(title, year)
+        held?(law) -> Order.title(Doc.new(law, ClmlStore.law_docs(law)))
+        true -> nil
+      end
+
+    %{law: law, title: title, year: year}
   end
 
   defp held?(law) do
@@ -144,58 +238,20 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
     end
   end
 
-  # each held order once, with an Act it commences (SI 1995/965 is listed
-  # for the 1995 Act but commences the 1970 Act's provisions)
-  defp commenced(_order, [act]), do: act
-
-  defp commenced(order, acts) do
-    d = doc(order)
-    Enum.find(acts, hd(acts), &Order.commences?(d, act(&1)))
-  end
-
-  defp doc(law) do
-    Doc.new(law, ClmlStore.law_docs(law))
-  end
-
-  # as `mix lat.commencement` names the Act an order commences
-  defp act(law) do
-    [_, _, year, _] = String.split(law, "_", parts: 4)
-
-    title =
-      case Repo.query!("SELECT title_en FROM uk_lrt WHERE name = $1 LIMIT 1", [law]) do
-        %{rows: [[t]]} when is_binary(t) ->
-          Orders.act_title(t, year)
-
-        _ ->
-          if held?(law), do: Order.title(doc(law))
-      end
-
-    %{law: law, title: title, year: year}
-  end
-
-  defp order_patterns(order, act_law, acc) do
-    doc = doc(order)
-    act = act(act_law)
-    rules = Order.rules(doc, act)
+  # an order's statements taken into the catalogue in order: its patterns,
+  # leftovers and misreads; each pattern's examples (up to three, from
+  # different orders) looked up from the order's own (`LawRead`)
+  defp order_patterns(order, %{reach: reach, units: units, examples: examples}, acc) do
     acc = %{acc | orders: acc.orders + 1}
-    {reach, acc} = reach(act_law, acc)
-    {ids, acc} = ids(act_law, acc)
 
-    for %{unit: unit, outcome: o, pattern: key, leftovers: left, misreads: wrong} <-
-          OrderMisreads.order_units(doc, rules, %{own: act, ids: ids}),
+    for %{id: id, unit: unit, key: key, leftovers: left, misreads: wrong} <- units,
         reduce: acc do
       acc ->
-        id = example_id(order, unit)
-
         acc = %{
           acc
           | misreads: Misreads.add(acc.misreads, key, order, unit.id, wrong, reach),
-            not_held: acc.not_held + Misreads.not_held(wrong)
-        }
-
-        acc = %{
-          acc
-          | leftovers:
+            not_held: acc.not_held + Misreads.not_held(wrong),
+            leftovers:
               ReachGroups.add(
                 acc.leftovers,
                 Leftovers.shape(key, left),
@@ -220,90 +276,17 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
           })
 
         acc = %{acc | units: acc.units + 1}
-        if take?, do: example(acc, key, id, order, act, doc, unit, o), else: acc
+        if take?, do: example(acc, key, id, Map.fetch!(examples, id)), else: acc
     end
   end
 
-  # what an order's leftovers reach: the Act's LAT rows, else the changes
-  # the Act's notes record on ours (once per Act)
-  defp reach(act, %{reach: cache} = acc) do
-    case cache do
-      %{^act => n} ->
-        {n, acc}
-
-      _ ->
-        %{rows: [[rows, notes]]} =
-          Repo.query!(
-            """
-            SELECT (SELECT count(*) FROM legal_articles WHERE law_name = $1),
-                   (SELECT count(*) FROM amendment_annotations WHERE coalesce(citation_law, changed_by) = $1)
-            """,
-            [act]
-          )
-
-        n = if rows > 0, do: rows, else: notes
-        {n, put_in(acc.reach[act], n)}
-    end
-  end
-
-  # the bare ids of the Act's LAT rows (once per Act), nil where it holds
-  # none or only the fragments in scope (#166): no measure of a missing row
-  defp ids(act, %{ids: cache} = acc) when is_map_key(cache, act), do: {cache[act], acc}
-
-  defp ids(act, acc) do
-    %{rows: rows} =
-      Repo.query!(
-        """
-        SELECT section_id FROM legal_articles WHERE law_name = $1
-          AND NOT EXISTS (SELECT 1 FROM legal_register WHERE name = $1 AND lat_scope IS NOT NULL)
-        """,
-        [act]
-      )
-
-    ids = if rows != [], do: rows |> List.flatten() |> Misreads.row_ids()
-    {ids, put_in(acc.ids[act], ids)}
-  end
-
-  # the order whole when small, else cut; held when it reads alone as the
-  # whole order does
-  defp example(acc, key, id, order, act, doc, unit, outcome) do
-    whole = OrderPatterns.example(doc, unit, :whole)
-
-    xml =
-      if byte_size(whole) <= @whole_max, do: whole, else: OrderPatterns.example(doc, unit, :cut)
-
-    cond do
-      byte_size(xml) > @max ->
-        not_held(acc, key, id, :too_large)
-
-      OrderPatterns.read(order, act, xml, unit) == outcome ->
-        put_in(acc.examples[id], %{
-          json: %{
-            "order" => order,
-            "act" => %{"law" => act.law, "title" => act.title, "year" => act.year},
-            "unit" => %{"kind" => unit.kind, "id" => unit.id, "text" => unit.text},
-            "xml" => xml
-          },
-          outcome: %{"class" => outcome.class, "rules" => outcome.rules}
-        })
-
-      true ->
-        not_held(acc, key, id, :mismatch)
-    end
-  end
+  defp example(acc, _key, id, {:held, x}), do: put_in(acc.examples[id], x)
+  defp example(acc, key, id, why), do: not_held(acc, key, id, why)
 
   defp not_held(acc, key, id, why) do
     acc = put_in(acc.patterns[key].examples, List.delete(acc.patterns[key].examples, id))
     Map.update!(acc, why, &[id | &1])
   end
-
-  defp example_id(order, unit),
-    do:
-      order <>
-        "/" <>
-        (:crypto.hash(:sha256, unit.id <> unit.text)
-         |> Base.encode16(case: :lower)
-         |> binary_part(0, 10))
 
   defp law_of(id), do: id |> String.split("/") |> hd()
 
