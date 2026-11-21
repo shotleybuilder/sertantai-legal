@@ -224,3 +224,21 @@ The full log is in `backend/data/reports/commencement-reader/wwc-commencement-re
 - **Revised recommendation: (b).** Our dating wins where the amending law's own text dates the amending provision. This is RULES `primary-first-derived-fills`: the law and its commencement are primary, the feed derived. The gate keeps the disagreement as a group, `known:` (legislation.gov.uk's prospective placeholder), parked against no reader. No sampling needed: the dates are the amending laws' real commencement days. The gap-filler is unchanged; only the gate's group and its known limit are new.
 - **Decided: (b)** (Jason 2026-11-21). The known limit goes into RULES at Close.
 
+
+## B, held orders (round 3): Flood and Water Management Act 2010
+
+- **Fixed (25cc40ae):**
+  - "so far as not already commenced" completes a provision, as "so far as not already in force" does (SI 2010/2169 Sch.; SI 2011/694 art.3, s.17 and s.22(1));
+  - the yardstick agrees where both sides are partly in force from the same day.
+- **Held move for Settle:** SI 2011/694's two order-pattern examples (s.17, s.22(1): "in relation to" → "fully"), right by the text.
+- **Found:** `AmendingLaw.Doc` drops `<Character Name="NonBreakingSpace"/>`, so SI 2010/2169's "1st October 2010" reads "1stOctober2010" and its Schedule is undated. Decision 9.
+
+## Decision 9 for Jason: the shared document reader drops legislation.gov.uk's marked-up spaces
+
+- **The question:** `AmendingLaw.Doc` (the Amending-law reader's module) is the document reader every commencement order is read through. It reads `<Character Name="NonBreakingSpace"/>` (and EmSpace, EnSpace, ThinSpace) as nothing. So "1st October 2010" becomes "1stOctober2010", and no date is found. The fix is one clause: a Character reads as a space. Is it fixed here, or parked against the Amending-law reader?
+- **The aim:** `binds-on-date`.
+- **Reach:** 607 of the 9,599 stored documents hold such a Character (2,986 NonBreakingSpace). In 212 places, across 49 laws, it splits a date. For 2010 c.29, a trial of the fix took the rows agreeing with the feed from 98 to 224 (before the round's other fixes).
+- **Options:**
+  - (a) **Fix it here, test first:** the Amending-law reader's previews (`lat.amending --read --preview --regression`) and the Extent reader's checks show its reach on those steps before the commit. It stales the amendment indexes (`ReaderVersion`), so its full read pass joins this round's Rebuild then fetch.
+  - (b) **Park it against the Amending-law reader** (`bug-raise`): 2010 c.29's 239 rows and the other dates stay undated until that step reopens.
+- **Recommendation: (a).** It is a one-clause fault at its source, and this step cannot date those orders without it. The previews show any change to the other readers before anything is written. The trial patch is held at `scratchpad/doc-nbsp.patch`.
