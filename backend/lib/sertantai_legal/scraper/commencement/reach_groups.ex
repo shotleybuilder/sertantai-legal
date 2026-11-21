@@ -8,6 +8,9 @@ defmodule SertantaiLegal.Scraper.Commencement.ReachGroups do
   (through `Leftovers`' names). Pure.
   """
 
+  @typedoc "A finding of a statement (a leftover or a misread): its words, with any other facts."
+  @type finding :: %{required(:words) => String.t(), optional(atom()) => term()}
+
   @type groups :: %{String.t() => %{count: integer(), laws: map(), examples: [map()]}}
 
   @doc """
@@ -16,7 +19,7 @@ defmodule SertantaiLegal.Scraper.Commencement.ReachGroups do
   each law with its reach (its LAT rows, or the changes it makes on ours),
   up to 3 examples from different laws.
   """
-  @spec add(groups(), String.t(), String.t(), String.t(), [%{words: String.t()}], integer()) ::
+  @spec add(groups(), String.t(), String.t(), String.t(), [finding()], integer()) ::
           groups()
   def add(groups, _shape, _law, _row, [], _reach), do: groups
 

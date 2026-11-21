@@ -7,6 +7,9 @@ defmodule SertantaiLegal.Scraper.Commencement.LeftoverGate do
   is `Leftovers`'. Pure.
   """
 
+  @typedoc "A finding of a statement (a leftover or a misread): its words, with any other facts."
+  @type finding :: %{required(:words) => String.t(), optional(atom()) => term()}
+
   @doc """
   A leftover's reviewed status (`leftovers.json`), nil when it has none: a
   statement named apart from its group (`"<shape> @ <row>"`: a laid-relative
@@ -39,7 +42,7 @@ defmodule SertantaiLegal.Scraper.Commencement.LeftoverGate do
           String.t(),
           String.t(),
           String.t(),
-          [%{words: String.t()}],
+          [finding()],
           integer(),
           String.t() | nil
         ) ::
