@@ -38,7 +38,7 @@ defmodule SertantaiLegal.Scraper.LawStart.MadeCondition do
   defp compare("on", order), do: order == :eq
 
   @doc "`rows` less every head whose condition fails for `made`, and the rows under it."
-  @spec holding([map()], Date.t() | nil) :: [map()]
+  @spec holding([map()], OwnDays.days()) :: [map()]
   def holding(rows, made) do
     case failing(rows, made) do
       [] -> rows
@@ -47,7 +47,7 @@ defmodule SertantaiLegal.Scraper.LawStart.MadeCondition do
   end
 
   @doc "The ids of the heads whose condition fails for `made`, and of the rows under them."
-  @spec failing([map()], Date.t() | nil) :: [String.t()]
+  @spec failing([map()], OwnDays.days()) :: [String.t()]
   def failing(_rows, nil), do: []
 
   def failing(rows, made) do

@@ -118,7 +118,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
   qualified sentence's date: a partial rule's, CR-03),
   `evidence`, `text`.
   """
-  @spec groups([map()], Date.t() | nil, LawStart.t()) :: [map()]
+  @spec groups([map()], SertantaiLegal.Scraper.LawStart.OwnDays.days(), LawStart.t()) :: [map()]
   def groups(written, made, %LawStart{} = law) do
     clause = if clause?(law), do: provision(law.evidence)
     # read without their completing words ("(so far as not in force by

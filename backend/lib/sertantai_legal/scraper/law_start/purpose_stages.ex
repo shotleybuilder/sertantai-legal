@@ -25,7 +25,7 @@ defmodule SertantaiLegal.Scraper.LawStart.PurposeStages do
   `{:partial, purpose, date}` then `{:full, nil, date}`; nil when it is no
   such statement, or a day is unread.
   """
-  @spec read(String.t(), Date.t() | nil) :: [stage()] | nil
+  @spec read(String.t(), SertantaiLegal.Scraper.LawStart.OwnDays.days()) :: [stage()] | nil
   def read(tail, made) do
     with [_, purpose, first, rest] <- Regex.run(@stages, tail),
          {_, %Date{} = partial} <- Clause.tail_date(first, made),
