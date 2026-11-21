@@ -152,6 +152,50 @@ defmodule SertantaiLegal.Scraper.Commencement.Check do
         do: %{law: law, change: c, why: why, amender: amender(c), commencement: commencement}
   end
 
+  # the claims that date a change: set aside to ask what its inserting law
+  # says (`NoteDate.why/2` dates only a change none of them dates)
+  @dated [{:feed, :date}, {:feed, :date_first}, {:commencement, :date}, {:law_text, :date}]
+
+  @doc """
+  Each provision another law inserted on `law`, judged by its inserting law
+  (Decision 7 C, Jason 2026-11-21: "inserted laws are dated by the law that
+  inserts them"): the insertion dated as the amending law's commencement
+  gives it (`NoteDate.why/2`, the change's own dates set aside), beside the
+  feed's record — `:agree`, `:differ`, `:feed_only` (the feed alone dates
+  it), `:ours_only` or `:neither`. `commencement`: the amending laws' rules.
+  """
+  @spec inserted(String.t(), [Change.t()], map()) :: [map()]
+  def inserted(law, changes, commencement) do
+    for c <- changes, insertion?(c) do
+      feed =
+        {Change.value(c, :feed, :date_first) || Change.value(c, :feed, :date),
+         Change.value(c, :feed, :date)}
+
+      ours = c |> undated() |> NoteDate.why(commencement)
+      %{law: law, id: c.target, feed: feed, ours: ours, yardstick: inserted_yardstick(ours, feed)}
+    end
+  end
+
+  defp insertion?(%Change{resolved: %{operation: op}}), do: op == :inserted
+
+  defp insertion?(c),
+    do: Enum.any?([:feed, :markup, :law_text], &(Change.value(c, &1, :operation) == :inserted))
+
+  defp undated(c),
+    do: %{
+      c
+      | claims:
+          Enum.reject(c.claims, &({&1.source, &1.attribute} in @dated or &1.attribute == :via))
+    }
+
+  defp inserted_yardstick({:dated, d, _}, {_first, %Date{} = full}),
+    do: if(Date.compare(d, full) == :eq, do: :agree, else: :differ)
+
+  defp inserted_yardstick({:dated, _, _}, _feed), do: :ours_only
+  defp inserted_yardstick(_ours, {%Date{}, _}), do: :feed_only
+  defp inserted_yardstick(_ours, {_, %Date{}}), do: :feed_only
+  defp inserted_yardstick(_ours, _feed), do: :neither
+
   @doc "The law that made a change: the feed's, else the markup note's."
   @spec amender(Change.t()) :: String.t() | nil
   def amender(c), do: Change.value(c, :feed, :by) || Change.value(c, :markup, :cited)

@@ -21,18 +21,52 @@ defmodule SertantaiLegal.Scraper.Commencement.FeedDifferences do
           examples: [map()]
         }
 
-  @doc "A row's shape, or nil where the readings agree or the law has no feed record for it."
+  @doc """
+  A row's shape, or nil where the readings agree, the law has no feed
+  record for it, or another law inserted it: an inserted provision is
+  judged by its inserting law's commencement (`Check.inserted/3`,
+  `inserted_groups/1`), never by the host law's own clause (Decision 7 C,
+  Jason 2026-11-21).
+  """
   @spec shape(map()) :: String.t() | nil
+  def shape(%{inserted: true}), do: nil
+
   def shape(%{yardstick: kind} = row) when kind in @kinds,
-    do: Enum.join([to_string(kind), own(row), relation(row)] ++ inserted(row), " | ")
+    do: Enum.join([to_string(kind), own(row), relation(row)], " | ")
 
   def shape(_row), do: nil
 
-  # a provision another law inserted (`:inserted`, set by the check from
-  # the stored changes): its feed record dates the insertion, the
-  # Amending-law reader's, not the law's own commencement
-  defp inserted(%{inserted: true}), do: ["inserted"]
-  defp inserted(_row), do: []
+  @doc """
+  The inserted provisions' groups (`Check.inserted/3`), the widest first:
+  each where the inserting law's commencement and the feed's record
+  disagree, or one of them is missing, by how and why (`inserted |
+  <yardstick> | ours <dated via …, or undated: why>`).
+  """
+  @spec inserted_groups([map()]) :: [{String.t(), group()}]
+  def inserted_groups(items) do
+    items
+    |> Enum.reject(&(&1.yardstick in [:agree, :neither]))
+    |> Enum.group_by(&inserted_shape/1)
+    |> Enum.map(fn {shape, is} ->
+      {shape,
+       group(
+         Enum.map(
+           is,
+           &%{law: &1.law, id: &1.id, partial_from: nil, full_from: ours(&1), feed: &1.feed}
+         )
+       )}
+    end)
+    |> Enum.sort_by(fn {shape, g} -> {-g.rows, shape} end)
+  end
+
+  defp inserted_shape(%{yardstick: y, ours: ours}),
+    do: "inserted | #{y} | ours #{ours_class(ours)}"
+
+  defp ours_class({:dated, _d, via}), do: "dated via #{via}"
+  defp ours_class({:undated, why}), do: "undated: #{why}"
+
+  defp ours(%{ours: {:dated, d, _}}), do: d
+  defp ours(_item), do: nil
 
   # our outcome and the rule that decides it (its full date's, else the
   # first undated rule's)

@@ -228,7 +228,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
     {rows, gaps, read} = read_laws(laws, opts[:fresh], lat)
 
     report_rows(rows, opts)
-    report_feed_differences(rows, opts)
+    report_feed_differences(rows, read.inserted, opts)
     report_gaps(gaps, opts)
 
     if opts[:sample], do: sample(rows, gaps, opts[:sample], opts[:n] || 50, opts[:seed])
@@ -264,7 +264,9 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
       reviewed: reviewed
     }
 
-    {rows |> Enum.reverse() |> Enum.concat(), gaps |> Enum.reverse() |> Enum.concat(), read}
+    {gaps, inserted} = gaps |> Enum.reverse() |> Enum.unzip()
+    read = Map.put(read, :inserted, Enum.concat(inserted))
+    {rows |> Enum.reverse() |> Enum.concat(), Enum.concat(gaps), read}
   end
 
   defp add_items(items, nil, _reviewed), do: items
@@ -453,8 +455,11 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
   # `feed_differences.json`; the groups written beside the gate report
   @feed_reviewed "test/fixtures/commencement_check/feed_differences.json"
 
-  defp report_feed_differences(rows, opts) do
-    groups = FeedDifferences.groups(rows)
+  defp report_feed_differences(rows, inserted, opts) do
+    # (an inserted provision's groups are its inserting law's: Decision 7 C)
+    groups =
+      (FeedDifferences.groups(rows) ++ FeedDifferences.inserted_groups(inserted))
+      |> Enum.sort_by(fn {shape, g} -> {-g.rows, shape} end)
 
     reviewed =
       case File.read(@feed_reviewed) do
@@ -531,7 +536,9 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
       )
 
     rules = amending |> Map.take(amenders) |> Map.new(fn {a, read} -> {a, read.rules} end)
-    {Check.gaps(law, changes, rules), amending}
+
+    # (an inserted provision judged by its inserting law: Decision 7 C)
+    {{Check.gaps(law, changes, rules), Check.inserted(law, changes, rules)}, amending}
   end
 
   # an amending law's rules: stored, or with `--fresh` its own clause read

@@ -54,11 +54,11 @@ defmodule SertantaiLegal.Scraper.Commencement.FeedDifferencesTest do
   # a provision another law inserted takes that law's day (the Amending-law
   # reader's): its feed record dates the insertion, never the law's own
   # commencement (NISI 1978/1049 reg.29A, inserted 2012, feed 2012-04-01)
-  test "an inserted provision says so" do
+  # (Decision 7 C, Jason 2026-11-21: judged by its inserting law instead,
+  # `Check.inserted/3`, never by the host law's own clause)
+  test "an inserted provision is left out of the own-clause gate" do
     r = row(%{inserted: true, full_from: ~D[1978-06-01], feed: {~D[2012-04-01], ~D[2012-04-01]}})
-
-    assert FeedDifferences.shape(r) ==
-             "differ | own dated by provision_dated | own earlier | inserted"
+    assert FeedDifferences.shape(r) == nil
   end
 
   test "a feed-only row's shape names what our reader left it as" do
