@@ -138,8 +138,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
           uniq: true,
           do: r.source.law
 
-    year = law |> String.split("_") |> Enum.at(2)
-    act = %{law: law, title: title(law, year), year: year}
+    act = Orders.act(law)
 
     for order <- orders,
         was = Enum.filter(stored, &(&1.source.law == order)),
@@ -225,11 +224,8 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
   defp check(opts) do
     laws = scope(opts)
 
-    {rows, gaps, _cache} =
-      Enum.reduce(laws, {[], [], %{}}, fn law, {rows, gaps, cache} ->
-        {law_gaps, cache} = law_gaps(law, cache, opts[:fresh])
-        {rows ++ law_rows(law, opts[:fresh]), gaps ++ law_gaps, cache}
-      end)
+    lat = MapSet.new(lat_laws())
+    {rows, gaps, read} = read_laws(laws, opts[:fresh], lat)
 
     report_rows(rows, opts)
     report_feed_differences(rows, opts)
@@ -237,7 +233,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
 
     if opts[:sample], do: sample(rows, gaps, opts[:sample], opts[:n] || 50, opts[:seed])
 
-    gate = leftovers_gate(laws, gaps, opts)
+    gate = leftovers_gate(laws, gaps, read, lat, opts)
     faults = length(Check.faults(rows))
     unnamed = length(gate.failing)
 
@@ -248,21 +244,49 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
     Step.new("Commencement reader", faults == 0 and gate.pass?, faults + unnamed)
   end
 
+  # each law, order and amender read once: the check's rules and the
+  # leftovers gate's items come from the same readings, the gate's taken as
+  # each law is read (no reading is held past its law); an amending law not
+  # read now is read by the gate, as the check would
+  defp read_laws(laws, fresh?, lat) do
+    reviewed = if fresh?, do: FamilyLeftovers.reviewed()
+
+    {rows, gaps, amending, items} =
+      Enum.reduce(laws, {[], [], %{}, []}, fn law, {rows, gaps, amending, items} ->
+        {law_gaps, amending} = law_gaps(law, amending, fresh?, lat)
+        {law_rows, reading} = law_rows(law, fresh?)
+        {[law_rows | rows], [law_gaps | gaps], amending, add_items(items, reading, reviewed)}
+      end)
+
+    read = %{
+      items: if(fresh?, do: Enum.reverse(items)),
+      amending: for({law, %{sentences: s}} <- amending, s != nil, into: %{}, do: {law, s}),
+      reviewed: reviewed
+    }
+
+    {rows |> Enum.reverse() |> Enum.concat(), gaps |> Enum.reverse() |> Enum.concat(), read}
+  end
+
+  defp add_items(items, nil, _reviewed), do: items
+
+  defp add_items(items, reading, reviewed),
+    do: [FamilyLeftovers.law_items(reading, reviewed) | items]
+
   # ── the leftovers gate ──────────────────────────────────────────────
 
   # the commencement leftovers reaching the family (Decision 1 (c), Jason
   # 2026-11-05): its laws' own clauses, their orders held, and the held
   # amending laws its undated changes point to; each must be named
   # (`known:` in `leftovers.json`)
-  defp leftovers_gate(laws, gaps, opts) do
+  defp leftovers_gate(laws, gaps, read, lat, opts) do
     amenders =
       gaps
       |> Enum.map(& &1.amender)
       |> Enum.reject(&(is_nil(&1) or &1 in laws))
       |> Enum.frequencies()
-      |> Map.drop(lat_laws())
+      |> Map.drop(MapSet.to_list(lat))
 
-    gate = laws |> FamilyLeftovers.for_family(amenders) |> Leftovers.gate()
+    gate = laws |> family_items(amenders, read) |> Leftovers.gate()
     shell = Mix.shell()
 
     shell.info(
@@ -318,16 +342,10 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
 
   # ── rows ─────────────────────────────────────────────────────────────
 
+  # a law's rows checked, and with `--fresh` its readings for the gate
   defp law_rows(law, fresh?) do
-    rows =
-      for [sid, text, part, chapter, extent] <-
-            Repo.query!(
-              "SELECT section_id, text, part, chapter, extent_code FROM legal_articles WHERE law_name = $1 ORDER BY position",
-              [law]
-            ).rows,
-          do: %{section_id: sid, text: text, part: part, chapter: chapter, extent_code: extent}
-
-    rules = if fresh?, do: fresh_rules(law), else: Rules.for_law(law)
+    rows = Input.rows(law)
+    {rules, reading} = if fresh?, do: fresh_rules(law, rows), else: {Rules.for_law(law), nil}
 
     # no rules: a law with no clause and no register date is `LawStart`'s
     # `no_clause` (a known limit), not a law never read
@@ -338,12 +356,26 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
 
     inserted = inserted_targets(law)
 
-    law
-    |> Check.rows(rows, rules, feed_commenced(law), no_clause?)
-    |> Enum.map(
-      &Map.put(&1, :inserted, Enum.any?(LatRef.ancestors(&1.id), fn a -> a in inserted end))
-    )
+    checked =
+      law
+      |> Check.rows(rows, rules, feed_commenced(law), no_clause?)
+      |> Enum.map(
+        &Map.put(&1, :inserted, Enum.any?(LatRef.ancestors(&1.id), fn a -> a in inserted end))
+      )
+
+    {checked, reading}
   end
+
+  # the gate's items: taken as each law was read (`--fresh`), else read now
+  defp family_items(laws, amenders, %{items: nil}),
+    do: FamilyLeftovers.for_family(laws, amenders)
+
+  defp family_items(_laws, amenders, %{items: items, amending: amending, reviewed: reviewed}),
+    do:
+      FamilyLeftovers.gather(
+        items,
+        FamilyLeftovers.amending_items(amenders, amending, reviewed)
+      )
 
   defp start_treatment(law, rows) do
     input = ChangeCollector.law_start_input(law, rows)
@@ -355,11 +387,12 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
   # law its clause leaves to orders, the orders found for it before (`mix
   # lat.commencement --read-orders`' cached list; never a search) and held,
   # read now (CR-07)
-  defp fresh_rules(law) do
+  defp fresh_rules(law, lat_rows) do
     own = OwnClause.treatments()
 
     # as `--read` reads it: the clause and the Schedules' effect (SI 2020/206)
-    clause = OwnRead.rules(law)
+    own_reading = OwnRead.reading(law, lat_rows)
+    clause = own_reading.rules
 
     orders =
       if Enum.any?(clause, &match?({:appointed, _}, &1.when)), do: cached_orders(law), else: []
@@ -374,22 +407,17 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
           (MapSet.member?(read, r.source.law) and r.treatment in [:order_date, :order_schedule])
       end)
 
-    year = law |> String.split("_") |> Enum.at(2)
-    act = %{law: law, title: title(law, year), year: year}
-    kept ++ clause ++ Enum.flat_map(orders, &OrderRead.read(&1, act, clause).rules)
+    act = Orders.act(law)
+    order_reads = Enum.map(orders, &{&1, OrderRead.read(&1, act, clause)})
+    rules = kept ++ clause ++ Enum.flat_map(order_reads, fn {_, read} -> read.rules end)
+
+    reading = %{own: own_reading, act: act, orders: Map.new(order_reads), reach: length(lat_rows)}
+    {rules, reading}
   end
 
   # the list kept and the orders whose rules are stored, as `--read-orders`
   # reads them
   defp cached_orders(law), do: Orders.candidates(Orders.cached(law), Rules.order_sources(law))
-
-  # as `mix lat.commencement` names the Act an order commences
-  defp title(law, year) do
-    case Repo.query!("SELECT title_en FROM uk_lrt WHERE name = $1 LIMIT 1", [law]) do
-      %{rows: [[t]]} when is_binary(t) -> Orders.act_title(t, year)
-      _ -> nil
-    end
-  end
 
   # the law's own feed's coming-into-force records, by target: its first
   # and full dates — any stored change carrying a feed claim, as Merge joins
@@ -489,32 +517,38 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
 
   # ── gaps ─────────────────────────────────────────────────────────────
 
-  defp law_gaps(law, cache, fresh?) do
+  # (each amending law read once a run: its rules for the gaps, its
+  # reading for the leftovers gate)
+  defp law_gaps(law, amending, fresh?, lat) do
     changes = Store.for_law(law)
     amenders = changes |> Enum.map(&Check.amender/1) |> Enum.reject(&is_nil/1) |> Enum.uniq()
 
-    cache =
-      Enum.reduce(amenders, cache, &Map.put_new_lazy(&2, &1, fn -> amender_rules(&1, fresh?) end))
+    amending =
+      Enum.reduce(
+        amenders,
+        amending,
+        &Map.put_new_lazy(&2, &1, fn -> amender_read(&1, fresh?, lat) end)
+      )
 
-    {Check.gaps(law, changes, Map.take(cache, amenders)), cache}
+    rules = amending |> Map.take(amenders) |> Map.new(fn {a, read} -> {a, read.rules} end)
+    {Check.gaps(law, changes, rules), amending}
   end
 
   # an amending law's rules: stored, or with `--fresh` its own clause read
   # now from the CLML held (a dry run of `mix lat.commencement
   # --read-amending`) — never a law with LAT rows (`--read`'s) nor a
-  # commencement order (read as an order)
-  defp amender_rules(law, true) do
-    if lat?(law) or HeldAmenders.order?(law),
-      do: Rules.for_law(law),
-      else: AmendingRead.fresh(law)
+  # commencement order (read as an order); with its reading (nil when not
+  # read now)
+  defp amender_read(law, true, lat) do
+    if MapSet.member?(lat, law) or HeldAmenders.order?(law) do
+      %{rules: Rules.for_law(law), sentences: nil}
+    else
+      reading = AmendingRead.reading(law)
+      %{rules: AmendingRead.fresh(law, reading), sentences: FamilyLeftovers.sentences(reading)}
+    end
   end
 
-  defp amender_rules(law, _stored), do: Rules.for_law(law)
-
-  defp lat?(law),
-    do:
-      Repo.query!("SELECT EXISTS (SELECT 1 FROM legal_articles WHERE law_name = $1)", [law]).rows ==
-        [[true]]
+  defp amender_read(law, _stored, _lat), do: %{rules: Rules.for_law(law), sentences: nil}
 
   defp report_gaps(gaps, opts) do
     shell = Mix.shell()

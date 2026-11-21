@@ -21,6 +21,24 @@ defmodule SertantaiLegal.Scraper.Commencement.Orders do
   @dir "data/cache/commencement-orders"
 
   @doc """
+  The Act a law's orders commence, as `Order.rules/2` takes it: the law, the
+  title its orders name it by (`act_title/2`, from the register; nil when
+  the register holds none) and its year.
+  """
+  @spec act(String.t()) :: %{law: String.t(), title: String.t() | nil, year: String.t()}
+  def act(law) do
+    year = law |> String.split("_") |> Enum.at(2)
+
+    title =
+      case Repo.query!("SELECT title_en FROM uk_lrt WHERE name = $1 LIMIT 1", [law]) do
+        %{rows: [[t]]} when is_binary(t) -> act_title(t, year)
+        _ -> nil
+      end
+
+    %{law: law, title: title, year: year}
+  end
+
+  @doc """
   The title a law's orders name it by, without its year: the register's
   title, less the law's own year where it ends with it. A year inside the
   title stays: "Deregulation Act 2015 (Health and Safety at Work) …
