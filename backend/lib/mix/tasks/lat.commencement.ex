@@ -57,6 +57,7 @@ defmodule Mix.Tasks.Lat.Commencement do
     Store
   }
 
+  alias SertantaiLegal.Scraper.LawStart.Input
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed
 
   @shortdoc "Print, read or compare a law's commencement rules"
@@ -165,23 +166,15 @@ defmodule Mix.Tasks.Lat.Commencement do
   # every law a note on our rows points to (one hop), held in the CLML
   # store, with no LAT: its own clause from its CLML
   defp read_amending(opts) do
-    %{rows: rows} =
-      Repo.query!("""
-      SELECT DISTINCT coalesce(a.citation_law, a.changed_by) FROM amendment_annotations a
-      WHERE a.code_type = 'amendment' AND coalesce(a.citation_law, a.changed_by) ~ '^UK_'
-        AND NOT EXISTS (SELECT 1 FROM legal_articles l WHERE l.law_name = coalesce(a.citation_law, a.changed_by))
-      ORDER BY 1
-      """)
-
     # the laws named (CV-07: the amending laws just fetched, which no note
-    # may cite yet), else those our notes cite
+    # may cite yet), else those our notes cite (queried only then)
     laws =
       cond do
         opts[:family] -> for {law, _} <- family_amenders(opts[:family]).read, do: law
         opts[:law] -> String.split(opts[:law], ",", trim: true)
-        true -> List.flatten(rows)
+        true -> HeldAmenders.cited_without_lat()
       end
-      |> Enum.filter(&held?/1)
+      |> Enum.filter(&HeldAmenders.text_held?/1)
 
     Mix.shell().info("#{length(laws)} amending laws held with no LAT")
 
@@ -286,19 +279,13 @@ defmodule Mix.Tasks.Lat.Commencement do
     |> List.flatten()
   end
 
+  # the Act an order commences (`Orders.act/1`); an Act the register holds
+  # no title for is named by its own CLML (`Order.title/1`)
   defp act(law) do
-    [_, _, year, _] = String.split(law, "_", parts: 4)
-
-    title =
-      case Repo.query!("SELECT title_en FROM uk_lrt WHERE name = $1 LIMIT 1", [law]) do
-        %{rows: [[t]]} when is_binary(t) ->
-          Orders.act_title(t, year)
-
-        _ ->
-          (d = doc(law)) && Order.title(d)
-      end
-
-    %{law: law, title: title, year: year}
+    case Orders.act(law) do
+      %{title: nil} = act -> %{act | title: (d = doc(law)) && Order.title(d)}
+      act -> act
+    end
   end
 
   defp orders do
@@ -480,19 +467,12 @@ defmodule Mix.Tasks.Lat.Commencement do
     end
   end
 
-  defp held?(law) do
-    case String.split(law, "_", parts: 4) do
-      [_, _, _, _] -> ClmlStore.law_files(law) != []
-      _ -> false
-    end
-  end
-
   # an order is held with its body and its schedules — the table its
   # article brings in ("specified in column 1 of the Schedule to this
   # Order": SI 1976/731) — or a stored 404 where it has none (Decision 1,
   # Jason 2026-11-05: 31 orders were held without their Schedule)
   defp order_held?(law) do
-    held?(law) and
+    HeldAmenders.text_held?(law) and
       case String.split(law, "_", parts: 4) do
         [_, t, y, n] -> ClmlStore.get("/#{t}/#{y}/#{n}/schedules/data.xml") != :none
         _ -> false
@@ -606,16 +586,7 @@ defmodule Mix.Tasks.Lat.Commencement do
 
   # the law's rows (document order) and LawStart's input
   defp input(law) do
-    %{rows: rows} =
-      Repo.query!(
-        "SELECT section_id, text, part, chapter, extent_code FROM legal_articles WHERE law_name = $1 ORDER BY position",
-        [law]
-      )
-
-    rows =
-      for [s, t, p, c, e] <- rows,
-          do: %{section_id: s, text: t, part: p, chapter: c, extent_code: e}
-
+    rows = Input.rows(law)
     {rows, ChangeCollector.law_start_input(law, rows)}
   end
 end

@@ -31,7 +31,7 @@ defmodule SertantaiLegal.Scraper.Commencement.HeldAmenders do
     select(amenders, %{
       lat: MapSet.new(lat(names)),
       orders: names |> Enum.filter(&order?/1) |> MapSet.new(),
-      held: names |> Enum.filter(&(ClmlStore.law_files(&1) != [])) |> MapSet.new()
+      held: names |> Enum.filter(&text_held?/1) |> MapSet.new()
     })
   end
 
@@ -84,6 +84,49 @@ defmodule SertantaiLegal.Scraper.Commencement.HeldAmenders do
   @doc "Whether a register title is a commencement or appointed-day order's."
   @spec order_title?(String.t() | nil) :: boolean()
   def order_title?(title), do: is_binary(title) and title =~ @order_title
+
+  @doc """
+  Whether any of `law`'s text is held in the CLML store (its body, whole
+  or in fragments, or its Schedules): what an amending law's clause is read
+  from (`AmendingRead`, `--read-amending`).
+  """
+  @spec text_held?(String.t()) :: boolean()
+  def text_held?(law) do
+    case String.split(law, "_", parts: 4) do
+      [_, _, _, _] -> ClmlStore.law_files(law) != []
+      _ -> false
+    end
+  end
+
+  @doc """
+  Whether `law`'s whole body is held in the CLML store: the commencement
+  catalogue's amending laws (`mix lat.commencement_patterns`). Not
+  `text_held?/1`: a law held only as section fragments (1959 c.24) has text
+  held but no body.
+  """
+  @spec body_held?(String.t()) :: boolean()
+  def body_held?(law) do
+    case String.split(law, "_", parts: 4) do
+      [_, t, y, n] -> File.exists?("data/cache/clml/#{t}/#{y}/#{n}/body/data.xml.gz")
+      _ -> false
+    end
+  end
+
+  @doc """
+  Every law a note on our rows cites as the law amending them, with no LAT
+  rows of its own (one hop): the amending laws `--read-amending` reads and
+  the commencement catalogue's CLML laws, in name order.
+  """
+  @spec cited_without_lat() :: [String.t()]
+  def cited_without_lat do
+    Repo.query!("""
+    SELECT DISTINCT coalesce(a.citation_law, a.changed_by) FROM amendment_annotations a
+    WHERE a.code_type = 'amendment' AND coalesce(a.citation_law, a.changed_by) ~ '^UK_'
+      AND NOT EXISTS (SELECT 1 FROM legal_articles l WHERE l.law_name = coalesce(a.citation_law, a.changed_by))
+    ORDER BY 1
+    """).rows
+    |> List.flatten()
+  end
 
   # every law a stored change on `laws` names as its maker, with its changes
   defp amenders(laws) do

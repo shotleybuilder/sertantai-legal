@@ -33,7 +33,8 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.ChangeCollector
   alias SertantaiLegal.Scraper.{CatalogueCache, LawRunner}
-  alias SertantaiLegal.Scraper.Commencement.{ClmlRows, Leftovers, Misreads}
+  alias SertantaiLegal.Scraper.Commencement.{ClmlRows, HeldAmenders, Leftovers, Misreads}
+  alias SertantaiLegal.Scraper.LawStart.Input
   alias SertantaiLegal.Scraper.CommencementCatalogue.{LawRead, LawScan, Target}
 
   @shortdoc "Own commencement sentences' pattern catalogue, as test fixtures (read-only)"
@@ -114,15 +115,7 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
       Repo.query!("SELECT DISTINCT law_name FROM legal_articles ORDER BY 1").rows
       |> List.flatten()
 
-    amending =
-      Repo.query!("""
-      SELECT DISTINCT coalesce(a.citation_law, a.changed_by) FROM amendment_annotations a
-      WHERE a.code_type = 'amendment' AND coalesce(a.citation_law, a.changed_by) ~ '^UK_'
-        AND NOT EXISTS (SELECT 1 FROM legal_articles l WHERE l.law_name = coalesce(a.citation_law, a.changed_by))
-      ORDER BY 1
-      """).rows
-      |> List.flatten()
-      |> Enum.filter(&held?/1)
+    amending = Enum.filter(HeldAmenders.cited_without_lat(), &HeldAmenders.body_held?/1)
 
     Enum.map(lat, &{&1, :lat}) ++ Enum.map(amending, &{&1, :clml})
   end
@@ -138,21 +131,7 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
         do: {law, if(MapSet.member?(held, law), do: :lat, else: :clml)}
   end
 
-  defp held?(law) do
-    case String.split(law, "_", parts: 4) do
-      [_, t, y, n] -> File.exists?("data/cache/clml/#{t}/#{y}/#{n}/body/data.xml.gz")
-      _ -> false
-    end
-  end
-
-  defp rows(law, :lat) do
-    for [s, t, p, c] <-
-          Repo.query!(
-            "SELECT section_id, text, part, chapter FROM legal_articles WHERE law_name = $1 ORDER BY position",
-            [law]
-          ).rows,
-        do: %{section_id: s, text: t, part: p, chapter: c}
-  end
+  defp rows(law, :lat), do: Input.rows(law)
 
   # (an amending law's rows from their cache, keyed on its CLML's digests:
   # `ClmlRows`)

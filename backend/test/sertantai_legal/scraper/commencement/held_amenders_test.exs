@@ -37,4 +37,13 @@ defmodule SertantaiLegal.Scraper.Commencement.HeldAmendersTest do
     refute HeldAmenders.order_title?("The Merchant Shipping (Fees) Regulations 2018")
     refute HeldAmenders.order_title?(nil)
   end
+
+  describe "held: any text, or the whole body (one place, two questions)" do
+    test "a name that is no law, and a law not held, are neither" do
+      refute HeldAmenders.text_held?("not a law")
+      refute HeldAmenders.body_held?("not a law")
+      refute HeldAmenders.text_held?("UK_uksi_1800_99999")
+      refute HeldAmenders.body_held?("UK_uksi_1800_99999")
+    end
+  end
 end
