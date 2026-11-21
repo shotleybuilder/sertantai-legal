@@ -36,7 +36,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Misreads do
   patterns (the catalogue's cache alone is keyed on it). Pure.
   """
 
-  alias SertantaiLegal.Scraper.Commencement.{Leftovers, Rule, TextRefs}
+  alias SertantaiLegal.Scraper.Commencement.{Leftovers, ReachGroups, Rule, TextRefs}
   alias SertantaiLegal.Scraper.Commencement.Order.Asides
   alias SertantaiLegal.Scraper.LawStart.Provisions
 
@@ -432,12 +432,12 @@ defmodule SertantaiLegal.Scraper.Commencement.Misreads do
 
   @doc """
   Adds one statement's misreads to `groups` under its shape
-  (`Leftovers.add/6`); the provisions simply not held are never grouped.
+  (`ReachGroups.add/6`); the provisions simply not held are never grouped.
   """
   @spec add(map(), String.t(), String.t(), String.t(), [misread()], integer()) :: map()
   def add(groups, pattern, law, row, misreads, reach) do
     wrong = without(misreads, [:not_held])
-    Leftovers.add(groups, shape(pattern, wrong), law, row, wrong, reach)
+    ReachGroups.add(groups, shape(pattern, wrong), law, row, wrong, reach)
   end
 
   @doc """

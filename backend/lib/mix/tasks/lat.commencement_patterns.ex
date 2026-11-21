@@ -33,7 +33,7 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.ChangeCollector
   alias SertantaiLegal.Scraper.{CatalogueCache, LawRunner}
-  alias SertantaiLegal.Scraper.Commencement.{ClmlRows, HeldAmenders, Leftovers, Misreads}
+  alias SertantaiLegal.Scraper.Commencement.{ClmlRows, HeldAmenders, Misreads, ReachGroups}
   alias SertantaiLegal.Scraper.LawStart.Input
   alias SertantaiLegal.Scraper.CommencementCatalogue.{LawRead, LawScan, Target}
 
@@ -210,12 +210,12 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
 
     File.write!(
       Path.join(dir, "leftover_groups.json"),
-      Files.encode(Leftovers.to_json(acc.leftovers))
+      Files.encode(ReachGroups.to_json(acc.leftovers))
     )
 
     File.write!(
       Path.join(dir, "misread_groups.json"),
-      Files.encode(Leftovers.to_json(acc.misreads))
+      Files.encode(ReachGroups.to_json(acc.misreads))
     )
   end
 
@@ -301,23 +301,23 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
   # the words no rule uses, by shape, widest reach first; reviewed in
   # `leftovers.json` (fix / known / check), the report under data/reports
   defp leftovers(groups, dir) do
-    ranked = Leftovers.ranked(groups)
-    Enum.each(Leftovers.summary(ranked, reviewed(dir)), fn line -> Mix.shell().info(line) end)
+    ranked = ReachGroups.ranked(groups)
+    Enum.each(ReachGroups.summary(ranked, reviewed(dir)), fn line -> Mix.shell().info(line) end)
 
     path = "data/reports/commencement-reader/leftovers-#{Date.utc_today()}.txt"
     File.mkdir_p!(Path.dirname(path))
-    File.write!(path, Enum.join(Leftovers.lines(ranked), "\n") <> "\n")
+    File.write!(path, Enum.join(ReachGroups.lines(ranked), "\n") <> "\n")
     Mix.shell().info("report: #{path}")
   end
 
   # the words a rule uses wrongly, by shape; reviewed in `misreads.json`
   defp misreads(groups, dir) do
-    ranked = Leftovers.ranked(groups)
+    ranked = ReachGroups.ranked(groups)
     reviewed = reviewed(dir, "misreads.json")
     Enum.each(Misreads.summary(ranked, reviewed), fn line -> Mix.shell().info(line) end)
 
     path = "data/reports/commencement-reader/misreads-#{Date.utc_today()}.txt"
-    File.write!(path, Enum.join(Leftovers.lines(ranked), "\n") <> "\n")
+    File.write!(path, Enum.join(ReachGroups.lines(ranked), "\n") <> "\n")
     Mix.shell().info("report: #{path}")
   end
 

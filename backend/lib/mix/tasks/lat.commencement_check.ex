@@ -43,7 +43,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
     FeedDifferences,
     FamilyLeftovers,
     HeldAmenders,
-    Leftovers,
+    LeftoverGate,
     OrderRead,
     Orders,
     OwnClause,
@@ -286,7 +286,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
       |> Enum.frequencies()
       |> Map.drop(MapSet.to_list(lat))
 
-    gate = laws |> family_items(amenders, read) |> Leftovers.gate()
+    gate = laws |> family_items(amenders, read) |> LeftoverGate.gate()
     shell = Mix.shell()
 
     shell.info(

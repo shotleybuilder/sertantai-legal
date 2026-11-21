@@ -3,15 +3,15 @@ defmodule SertantaiLegal.Scraper.Commencement.FamilyLeftoversTest do
   The family gate (Decision 1 (c), Jason 2026-11-05): a family's
   Commencement reader step passes only when every leftover reaching it sits
   in a group reviewed `known:` — a `fix:` or `check:` group, or a shape
-  with no status, fails it (`Leftovers.gate/1`, pure).
+  with no status, fails it (`LeftoverGate.gate/1`, pure).
   """
   use ExUnit.Case, async: true
 
-  alias SertantaiLegal.Scraper.Commencement.Leftovers
+  alias SertantaiLegal.Scraper.Commencement.LeftoverGate
 
   defp item(status, reach \\ 10),
     do:
-      Leftovers.item(
+      LeftoverGate.item(
         :own,
         "UK_x",
         "UK_x:reg.1",
@@ -22,16 +22,16 @@ defmodule SertantaiLegal.Scraper.Commencement.FamilyLeftoversTest do
       )
 
   test "no leftovers: passes" do
-    assert %{pass?: true, failing: [], counts: %{}} = Leftovers.gate([])
+    assert %{pass?: true, failing: [], counts: %{}} = LeftoverGate.gate([])
   end
 
   test "every leftover in a known group: passes" do
-    assert %{pass?: true, failing: []} = Leftovers.gate([item("known: a laid-relative day")])
+    assert %{pass?: true, failing: []} = LeftoverGate.gate([item("known: a laid-relative day")])
   end
 
   test "a fix or check group, or no status: fails, widest reach first" do
     gate =
-      Leftovers.gate([
+      LeftoverGate.gate([
         item("known: x"),
         item("fix: reads nothing", 5),
         item("check: open", 50),
@@ -49,9 +49,9 @@ defmodule SertantaiLegal.Scraper.Commencement.FamilyLeftoversTest do
       "shape @ UK_uksi_2018_1221:reg.2" => "known: laid-relative (C)"
     }
 
-    assert Leftovers.status("shape", reviewed, "UK_uksi_2018_1221:reg.2") ==
+    assert LeftoverGate.status("shape", reviewed, "UK_uksi_2018_1221:reg.2") ==
              "known: laid-relative (C)"
 
-    assert Leftovers.status("shape", reviewed, "UK_uksi_2019_145:reg.1(2)") == "fix: half-read"
+    assert LeftoverGate.status("shape", reviewed, "UK_uksi_2019_145:reg.1(2)") == "fix: half-read"
   end
 end

@@ -34,7 +34,9 @@ defmodule SertantaiLegal.Scraper.Commencement.ReadVersion do
     # the step's checks and catalogues: they read the rules, never shape them
     except: ~w(
       lib/sertantai_legal/scraper/commencement/check.ex
+      lib/sertantai_legal/scraper/commencement/leftover_gate.ex
       lib/sertantai_legal/scraper/commencement/leftovers.ex
+      lib/sertantai_legal/scraper/commencement/reach_groups.ex
       lib/sertantai_legal/scraper/commencement/order_leftovers.ex
       lib/sertantai_legal/scraper/commencement/family_leftovers.ex
       lib/sertantai_legal/scraper/commencement/held_amenders.ex

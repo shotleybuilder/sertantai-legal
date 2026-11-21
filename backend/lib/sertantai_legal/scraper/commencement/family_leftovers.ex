@@ -6,7 +6,7 @@ defmodule SertantaiLegal.Scraper.Commencement.FamilyLeftovers do
   amending laws its undated changes point to — read as the catalogues read
   them (`Leftovers.sentences/2`, `OrderLeftovers.order_units/2`) — each leftover
   with its group's reviewed status (`leftovers.json`). The gate itself is
-  `Leftovers.gate/1`. IO: the DB, the CLML store, the cached order lists
+  `LeftoverGate.gate/1`. IO: the DB, the CLML store, the cached order lists
   (never a search).
   """
 
@@ -15,6 +15,7 @@ defmodule SertantaiLegal.Scraper.Commencement.FamilyLeftovers do
   alias SertantaiLegal.Scraper.Commencement.{
     AmendingRead,
     HeldAmenders,
+    LeftoverGate,
     Leftovers,
     Order,
     OrderLeftovers,
@@ -45,14 +46,14 @@ defmodule SertantaiLegal.Scraper.Commencement.FamilyLeftovers do
   @type reviewed :: %{sentences: map(), orders: map()}
 
   @typedoc "A law's leftover items: its own clause's, and its orders'."
-  @type law_items :: {[Leftovers.item()], [Leftovers.item()]}
+  @type law_items :: {[LeftoverGate.item()], [LeftoverGate.item()]}
 
   @doc """
   The leftovers reaching `laws` (the family's LAT laws) and `amenders`
   (`%{amending law => its undated changes on the family}`), as
-  `Leftovers.item()`s, every law and amending law read here.
+  `LeftoverGate.item()`s, every law and amending law read here.
   """
-  @spec for_family([String.t()], %{String.t() => integer()}) :: [Leftovers.item()]
+  @spec for_family([String.t()], %{String.t() => integer()}) :: [LeftoverGate.item()]
   def for_family(laws, amenders) do
     reviewed = reviewed()
     pairs = Enum.map(laws, &law_items(law_reading(&1), reviewed))
@@ -76,7 +77,7 @@ defmodule SertantaiLegal.Scraper.Commencement.FamilyLeftovers do
   read already (`sentences/1`, by law), else read here.
   """
   @spec amending_items(%{String.t() => integer()}, %{String.t() => [map()]}, reviewed()) ::
-          [Leftovers.item()]
+          [LeftoverGate.item()]
   def amending_items(amenders, read, reviewed) do
     amenders
     # (a commencement order is read as an order, its Schedule's table,
@@ -96,7 +97,7 @@ defmodule SertantaiLegal.Scraper.Commencement.FamilyLeftovers do
     do: for(%{leftovers: [_ | _]} = s <- Leftovers.sentences(rows, read), do: s)
 
   @doc "The family's items in the gate's order: every law's own, then every law's orders', then the amending laws'."
-  @spec gather([law_items()], [Leftovers.item()]) :: [Leftovers.item()]
+  @spec gather([law_items()], [LeftoverGate.item()]) :: [LeftoverGate.item()]
   def gather(pairs, amending),
     do: Enum.flat_map(pairs, &elem(&1, 0)) ++ Enum.flat_map(pairs, &elem(&1, 1)) ++ amending
 
@@ -117,7 +118,15 @@ defmodule SertantaiLegal.Scraper.Commencement.FamilyLeftovers do
     for %{row: row, pattern: pattern, leftovers: [_ | _] = left} <- sentences do
       shape = Leftovers.shape(pattern, left)
 
-      Leftovers.item(source, law, row, shape, left, reach, Leftovers.status(shape, reviewed, row))
+      LeftoverGate.item(
+        source,
+        law,
+        row,
+        shape,
+        left,
+        reach,
+        LeftoverGate.status(shape, reviewed, row)
+      )
     end
   end
 
@@ -136,14 +145,14 @@ defmodule SertantaiLegal.Scraper.Commencement.FamilyLeftovers do
           OrderLeftovers.order_units(doc, rules) do
       shape = Leftovers.shape(pattern, left)
 
-      Leftovers.item(
+      LeftoverGate.item(
         :order,
         order,
         unit.id,
         shape,
         left,
         reach,
-        Leftovers.status(shape, reviewed, "#{order}:#{unit.id}")
+        LeftoverGate.status(shape, reviewed, "#{order}:#{unit.id}")
       )
     end
   end

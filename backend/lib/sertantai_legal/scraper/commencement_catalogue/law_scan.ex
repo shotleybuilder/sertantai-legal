@@ -18,7 +18,7 @@ defmodule SertantaiLegal.Scraper.CommencementCatalogue.LawScan do
   merge runs in `select/4`.
   """
 
-  alias SertantaiLegal.Scraper.Commencement.{Leftovers, Misreads, SentencePatterns}
+  alias SertantaiLegal.Scraper.Commencement.{Leftovers, Misreads, ReachGroups, SentencePatterns}
 
   @per_pattern 3
   # a law beyond this many rows holds no example needing every row's text
@@ -104,7 +104,7 @@ defmodule SertantaiLegal.Scraper.CommencementCatalogue.LawScan do
     acc = %{
       acc
       | leftovers:
-          Leftovers.add(acc.leftovers, Leftovers.shape(key, left), law, row_id, left, reach),
+          ReachGroups.add(acc.leftovers, Leftovers.shape(key, left), law, row_id, left, reach),
         misreads: Misreads.add(acc.misreads, key, law, row_id, wrong, reach),
         not_held: acc.not_held + Misreads.not_held(wrong),
         sentences: acc.sentences + 1

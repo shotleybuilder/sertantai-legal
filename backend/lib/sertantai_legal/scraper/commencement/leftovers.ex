@@ -27,7 +27,14 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
   extractor, given as `refs`, leaves them out). Pure.
   """
 
-  alias SertantaiLegal.Scraper.Commencement.{Rule, SentencePatterns, TextRefs}
+  alias SertantaiLegal.Scraper.Commencement.{
+    LeftoverGate,
+    ReachGroups,
+    Rule,
+    SentencePatterns,
+    TextRefs
+  }
+
   alias SertantaiLegal.Scraper.Commencement.Order.Asides
   alias SertantaiLegal.Scraper.LawStart.{Clause, ListItems, Provisions, Statements}
 
@@ -556,35 +563,23 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
     end
   end
 
-  # ── the review: a statement's status ────────────────────────────────
+  # ── the review's bookkeeping, held apart ────────────────────────────
+  # (each leftover's status and the family gate: `LeftoverGate`; groups
+  # ranked by reach: `ReachGroups` — these names delegate there for the
+  # other steps' checks that use them)
 
-  @doc """
-  A leftover's reviewed status (`leftovers.json`), nil when it has none: a
-  statement named apart from its group (`"<shape> @ <row>"`: a laid-relative
-  day, limit C, beside the group's real misses) first, else its group's.
-  """
+  @type item :: LeftoverGate.item()
+  @type groups :: ReachGroups.groups()
+
+  @doc "A leftover's reviewed status (`LeftoverGate.status/3`)."
   @spec status(String.t(), map(), String.t() | nil) :: String.t() | nil
-  def status(shape, reviewed, row \\ nil),
-    do: Map.get(reviewed, "#{shape} @ #{row}") || Map.get(reviewed, shape)
+  defdelegate status(shape, reviewed, row \\ nil), to: LeftoverGate
 
-  @doc "True for a status that names the leftover as a known limit (the family gate passes it)."
+  @doc "Whether a status names the leftover a known limit (`LeftoverGate.named?/1`)."
   @spec named?(String.t() | nil) :: boolean()
-  def named?("known: " <> _), do: true
-  def named?(_status), do: false
+  defdelegate named?(status), to: LeftoverGate
 
-  # ── the family gate ─────────────────────────────────────────────────
-
-  @type item :: %{
-          source: :own | :order | :amending,
-          law: String.t(),
-          ref: String.t(),
-          shape: String.t(),
-          words: [String.t()],
-          reach: integer(),
-          status: String.t() | nil
-        }
-
-  @doc "A leftover reaching a family: where it is, its group's shape, its words, reach and status."
+  @doc "A leftover reaching a family (`LeftoverGate.item/7`)."
   @spec item(
           atom(),
           String.t(),
@@ -595,42 +590,11 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
           String.t() | nil
         ) ::
           item()
-  def item(source, law, ref, shape, leftovers, reach, status),
-    do: %{
-      source: source,
-      law: law,
-      ref: ref,
-      shape: shape,
-      words: Enum.map(leftovers, & &1.words),
-      reach: reach,
-      status: status
-    }
+  defdelegate item(source, law, ref, shape, leftovers, reach, status), to: LeftoverGate
 
-  @doc """
-  The family gate over its leftovers: `pass?` when every one is named
-  (`known:`); the failing ones (`fix:`, `check:`, no status) widest reach
-  first; counts by status.
-  """
+  @doc "The family gate over its leftovers (`LeftoverGate.gate/1`)."
   @spec gate([item()]) :: %{pass?: boolean(), failing: [item()], counts: map()}
-  def gate(items) do
-    failing =
-      items |> Enum.reject(&named?(&1.status)) |> Enum.sort_by(&{-&1.reach, &1.law, &1.ref})
-
-    %{
-      pass?: failing == [],
-      failing: failing,
-      counts: Enum.frequencies_by(items, &status_kind(&1.status))
-    }
-  end
-
-  defp status_kind("known: " <> _), do: :known
-  defp status_kind("fix: " <> _), do: :fix
-  defp status_kind("check: " <> _), do: :check
-  defp status_kind(_none), do: :unreviewed
-
-  # ── groups, ranked by reach ─────────────────────────────────────────
-
-  @type groups :: %{String.t() => %{count: integer(), laws: map(), examples: [map()]}}
+  defdelegate gate(items), to: LeftoverGate
 
   @doc "A group's shape: the statement's pattern and the kinds left over."
   @spec shape(String.t(), [leftover()]) :: String.t()
@@ -644,79 +608,25 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
          |> Enum.sort()
          |> Enum.join("+"))
 
-  @doc """
-  Adds one statement's leftovers to `groups` under its shape: the count,
-  each law with its reach (its LAT rows, or the changes it makes on ours),
-  up to 3 examples from different laws.
-  """
-  @spec add(groups(), String.t(), String.t(), String.t(), [leftover()], integer()) :: groups()
-  def add(groups, _shape, _law, _row, [], _reach), do: groups
+  @doc "Adds one statement's findings to `groups` (`ReachGroups.add/6`)."
+  @spec add(groups(), String.t(), String.t(), String.t(), [map()], integer()) :: groups()
+  defdelegate add(groups, shape, law, row, found, reach), to: ReachGroups
 
-  def add(groups, shape, law, row, leftovers, reach) do
-    g = Map.get(groups, shape, %{count: 0, laws: %{}, examples: []})
-    example = %{"law" => law, "row" => row, "words" => Enum.map(leftovers, & &1.words)}
-
-    examples =
-      if length(g.examples) < 3 and law not in Enum.map(g.examples, & &1["law"]),
-        do: g.examples ++ [example],
-        else: g.examples
-
-    Map.put(groups, shape, %{
-      count: g.count + 1,
-      laws: Map.put(g.laws, law, reach),
-      examples: examples
-    })
-  end
-
-  @doc "The groups by reach (the sum of their laws'), widest first: `{shape, reach, group}`."
+  @doc "The groups by reach, widest first (`ReachGroups.ranked/1`)."
   @spec ranked(groups()) :: [{String.t(), integer(), map()}]
-  def ranked(groups) do
-    groups
-    |> Enum.map(fn {shape, g} -> {shape, g.laws |> Map.values() |> Enum.sum(), g} end)
-    |> Enum.sort_by(fn {shape, reach, _} -> {-reach, shape} end)
-  end
+  defdelegate ranked(groups), to: ReachGroups
 
-  @doc "The summary a catalogue prints: the groups, the widest `n` with their review status, those with none."
+  @doc "The summary a catalogue prints (`ReachGroups.summary/3`)."
   @spec summary([{String.t(), integer(), map()}], map(), integer()) :: [String.t()]
-  def summary(ranked, reviewed, n \\ 30) do
-    statements = ranked |> Enum.map(&elem(&1, 2).count) |> Enum.sum()
-    unreviewed = Enum.count(ranked, fn {shape, _, _} -> not Map.has_key?(reviewed, shape) end)
+  defdelegate summary(ranked, reviewed, n \\ 30), to: ReachGroups
 
-    [
-      "\nleftovers by shape (words no rule uses): #{length(ranked)} groups, #{statements} statements"
-    ] ++
-      for(
-        {shape, reach, g} <- Enum.take(ranked, n),
-        do: "  #{reach} reach, #{g.count}: #{shape} [#{Map.get(reviewed, shape, "no status")}]"
-      ) ++ ["leftover groups with no status: #{unreviewed}"]
-  end
-
-  @doc "The groups as their generated file: shape → reach, count, laws, examples."
+  @doc "The groups as their generated file (`ReachGroups.to_json/1`)."
   @spec to_json(groups()) :: map()
-  def to_json(groups) do
-    Map.new(ranked(groups), fn {shape, reach, g} ->
-      {shape,
-       %{
-         "reach" => reach,
-         "count" => g.count,
-         "laws" => map_size(g.laws),
-         "examples" => g.examples
-       }}
-    end)
-  end
+  defdelegate to_json(groups), to: ReachGroups
 
-  @doc "The ranked groups as report lines."
+  @doc "The ranked groups as report lines (`ReachGroups.lines/1`)."
   @spec lines([{String.t(), integer(), map()}]) :: [String.t()]
-  def lines(ranked) do
-    for {shape, reach, g} <- ranked,
-        line <-
-          ["#{reach} reach, #{g.count} statements, #{map_size(g.laws)} laws — #{shape}"] ++
-            for(
-              e <- g.examples,
-              do: "    #{e["law"]} #{e["row"]}: #{Enum.join(e["words"], " · ")}"
-            ),
-        do: line
-  end
+  defdelegate lines(ranked), to: ReachGroups
 
   defp bare(sid), do: sid |> String.split(":", parts: 2) |> List.last()
   defp provision(ref), do: ref |> String.split("(", parts: 2) |> hd()
