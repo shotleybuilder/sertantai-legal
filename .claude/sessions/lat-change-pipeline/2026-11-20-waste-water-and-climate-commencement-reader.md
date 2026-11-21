@@ -242,3 +242,19 @@ The full log is in `backend/data/reports/commencement-reader/wwc-commencement-re
   - (a) **Fix it here, test first:** the Amending-law reader's previews (`lat.amending --read --preview --regression`) and the Extent reader's checks show its reach on those steps before the commit. It stales the amendment indexes (`ReaderVersion`), so its full read pass joins this round's Rebuild then fetch.
   - (b) **Park it against the Amending-law reader** (`bug-raise`): 2010 c.29's 239 rows and the other dates stay undated until that step reopens.
 - **Recommendation: (a).** It is a one-clause fault at its source, and this step cannot date those orders without it. The previews show any change to the other readers before anything is written. The trial patch is held at `scratchpad/doc-nbsp.patch`.
+- **Decided: (a)** (Jason 2026-11-21).
+- **Done (test first):** `Doc.walk/2` and `Text`'s word collector each read a `<Character>` as a space (`doc_test` "a marked-up space reads as a space").
+  - **2010 c.29:** 617 rows agree with the feed (98), none dated by the feed alone (519); 9 inserted rows left, which belong to the inserting-law class.
+  - **Amending-law reader:** the regression preview, with the change and without it, differs in 2 of 386 laws, both right by the text. SSI 2011/207 reg.3 now reads "sections 1 and 2" (it was "sections1 and 2", s.2 alone). SSI 2009/319 now reads "Part 1 of schedule 3". The preview's other 41 laws change identically either way: their stored rules lag the current reader, waiting for the round's full read pass.
+  - **Held moves for Settle:** SI 2010/2169 art.3(2), whose example text was cut as "1stSeptember2010" (it needs a re-cut); SSI 2012/191 art.2(1), "paragraph (2)", none → 5 rules (s.10, s.14(6)–(8), s.15(4), s.35(6), s.75, 22 June 2012, S).
+  - **Extent reader:** the full catalogue, run cold (17 min, dry run), shows 23 new patterns and 3 examples reading differently. Its laws (19 and 3) read byte-identically with the change and without it, so none comes from this fix. Checked at Settle.
+  - **Committed:** 5d1c188d.
+
+## B, held orders (round 4): Landfill Disposals Tax (Wales) Act 2017 (a828d356)
+
+- WSI 2018/35 art.3: "Any provision of the Act to the extent that it has not been commenced before 1 April 2018, comes into force on that date". The rest of the Act, on that date.
+- Art.2(w): "Chapter 6 (special cases) of Part 5 (supplementary provision), except for sections 85 to 87". That Chapter, those sections excepted (read before as all of Part 5, partly).
+- A heading "in Chapter 1 of Part 1 (green deal)—" names where, never a provision (SI 2012/873 art.2(a), read before as all of Part 1).
+- **ANAW 2017/3:** 797 rows agree with the feed (360), 0 differ (1), none left to orders (520 dated by the feed alone).
+- **The ten held-orders laws together:** 3,831 rows agree, 177 dated by the feed alone, 121 where the feed holds only a partial stage, 38 differ.
+- **Held moves for Settle:** SI 2012/873 art.2 (its pt.1 rule goes), beside SI 2011/694 (two), SI 2010/2169 and SSI 2012/191. The three pending from before are SI 2023/1394, SI 2006/641 and SSI 2019/436.
