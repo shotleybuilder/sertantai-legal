@@ -13,7 +13,16 @@ defmodule SertantaiLegal.Scraper.Commencement.FamilyLeftovers do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.ChangeCollector
-  alias SertantaiLegal.Scraper.Commencement.{HeldAmenders, Leftovers, Order, Orders, OwnClause}
+
+  alias SertantaiLegal.Scraper.Commencement.{
+    HeldAmenders,
+    Leftovers,
+    OrderRead,
+    Orders,
+    OwnClause,
+    Store
+  }
+
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
 
   @sentences "test/fixtures/commencement_patterns/leftovers.json"
@@ -73,15 +82,14 @@ defmodule SertantaiLegal.Scraper.Commencement.FamilyLeftovers do
     # (an order legislation.gov.uk lists for the law but which commences
     # another Act is read for that one: SI 1995/965, the 1970 Act's, listed
     # for the 1995 Act)
+    # (read as `--read-orders` writes it, `OrderRead`: an order never
+    # commences itself, NISR 2012/286, nor an Act it doesn't name)
+    act_rules = Store.for_law(law)
+
     for order <- order_names(law),
-        # (a law is never its own order: NISR 2012/286)
-        order != law,
-        xmls = ClmlStore.law_docs(order),
-        xmls != [],
-        doc = Doc.new(order, xmls),
-        Order.commences?(doc, act),
+        %{doc: doc, commences?: true, rules: rules} <- [OrderRead.read(order, act, act_rules)],
         %{unit: unit, pattern: pattern, leftovers: [_ | _] = left} <-
-          Leftovers.order_units(doc, Order.rules(doc, act)) do
+          Leftovers.order_units(doc, rules) do
       shape = Leftovers.shape(pattern, left)
 
       Leftovers.item(

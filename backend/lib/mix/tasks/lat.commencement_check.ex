@@ -44,7 +44,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
     FamilyLeftovers,
     HeldAmenders,
     Leftovers,
-    Order,
+    OrderRead,
     Orders,
     OwnClause,
     OwnRead,
@@ -143,7 +143,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
 
     for order <- orders,
         was = Enum.filter(stored, &(&1.source.law == order)),
-        fresh = order |> order_rules(act) |> Order.resolve_appointed_for(stored),
+        fresh = OrderRead.read(order, act, stored).rules,
         {gone, new} = OrderLimits.moved(was, fresh),
         gone != [] or new != [],
         do: {order, law, gone, new}
@@ -376,25 +376,12 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
 
     year = law |> String.split("_") |> Enum.at(2)
     act = %{law: law, title: title(law, year), year: year}
-    kept ++ clause ++ Enum.flat_map(orders, &order_rules(&1, act))
+    kept ++ clause ++ Enum.flat_map(orders, &OrderRead.read(&1, act, clause).rules)
   end
 
   # the list kept and the orders whose rules are stored, as `--read-orders`
   # reads them
   defp cached_orders(law), do: Orders.candidates(Orders.cached(law), Rules.order_sources(law))
-
-  # (an order held as another instrument commences nothing: `Order.HeldAs`)
-  defp order_rules(order, act) do
-    with [_ | _] = xmls <- ClmlStore.law_docs(order),
-         true <-
-           Enum.all?(xmls, &SertantaiLegal.Scraper.Commencement.Order.HeldAs.itself?(order, &1)) do
-      doc = SertantaiLegal.Scraper.AmendingLaw.Doc.new(order, xmls)
-
-      SertantaiLegal.Scraper.Commencement.Order.rules(doc, act)
-    else
-      _ -> []
-    end
-  end
 
   # as `mix lat.commencement` names the Act an order commences
   defp title(law, year) do
