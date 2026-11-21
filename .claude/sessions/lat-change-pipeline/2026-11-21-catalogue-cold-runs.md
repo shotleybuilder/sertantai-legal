@@ -22,4 +22,4 @@ A step's catalogue runs after a reader fix are cold: the fix moves the catalogue
 
 ## Dependencies
 
-- ⬜ Catalogues Across the Workflow (ACTIVE): the run log, every catalogue on the dry-run `Target`, and one profiled cold run of each
+- ✅ Catalogues Across the Workflow (CLOSED): the run log, every catalogue on the dry-run `CatalogueTarget`, one profiled cold run of each (its "The runs after change 1" table)

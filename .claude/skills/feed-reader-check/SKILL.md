@@ -27,7 +27,7 @@ The reader carries what the feed says; what it means for a label is the label fo
 
 All steps are read-only, except that step 0 writes the catalogue fixtures. Ask Jason before running them, per the standing rule, and say how long each takes.
 
-0. **Pattern catalogue (CV-S02b).** `mix lat.feed_patterns` (~8 min, every stored feed; writes only `backend/test/fixtures/feed_patterns/`) prints:
+0. **Pattern catalogue (CV-S02b).** `mix lat.feed_patterns` (about 12 min cold after a reader edit, seconds warm, every stored feed; times in `backend/data/reports/catalogue-runs.jsonl`; a dry run unless `--accept`) prints:
    - the new patterns (no status yet);
    - the examples that read differently from expected;
    - `unclassified` (must be 0).

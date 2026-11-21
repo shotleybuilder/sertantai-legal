@@ -637,6 +637,21 @@ Before this, OH&S used G, S and T by shape and R pooled to the 95% bound (2026-1
 
 **The whole-store catalogues read only what moved** (#195, 2026-11-08). `lat.feed_patterns`, `lat.markup_patterns` and `lat.commencement_patterns` keep each law's result in `CatalogueCache` (`data/cache/catalogues/`). The key is the catalogue's code version (`FeedPatterns.Version`, `MarkupPatterns.Version`, `CommencementCatalogue.Version`, held by `VersionCoverageTest`) plus a digest of the law's inputs: its stored files and rows, or for commencement its rows and start input. A re-run reads only the laws whose inputs or catalogue code moved, and prints `cache: N hits, M read`. Laws are read several at once under `LawRunner.Guard`, then taken in law order, so the catalogue is the one a serial run gives, byte for byte. A reader or catalogue edit pays one cold run. `--no-cache` reads every law afresh, and `--workers N` overrides the guard. Each law's examples are chosen alone in its parallel read and cached with it, for all three catalogues (`LawScan`: a law alone always finds room, so the examples the whole run asks of it are among those). The serial pass only looks them up; for commencement it also merges and checks each law's examples into `laws.json` (about 30 s). Commencement's warm run takes 104 s (from 228 s), most of it gathering each law's rows and start input.
 
+**Every whole-store catalogue on the same machinery** (Catalogues Across the Workflow, 2026-11-21).
+- **The six catalogues** (feed, markup, commencement, orders, extent, amendment) each read their laws in parallel under `LawRunner.Guard`. Each keeps each law's result between runs: `CatalogueCache`, or for extent `Extent.ReadCache`.
+- **The orders and amendment catalogues** joined this: `OrderCatalogue.LawRead` and `Amendment.CatalogueRead`, each with its own code version.
+- **Commencement's merged-example check** is kept too (`CommencementCatalogue.MergeRead`). It was 60 of its 63 s serial part.
+- **Every catalogue writes a dry run unless `--accept` or `--out`** (`CatalogueTarget`). Its generated files go to `data/reports/catalogues/dry-run/<catalogue>`, or for commencement and orders to `data/reports/commencement-reader/dry-run/`. It reads its held review from the fixtures. Before this, feed, markup, extent and amendment overwrote their fixtures on every run.
+- **Every run is recorded** in `backend/data/reports/catalogue-runs.jsonl` (`CatalogueRun`, `CatalogueRun.Log`):
+  - catalogue, scope, commit;
+  - each cache's hits and reads, so cold, warm or mixed;
+  - wall and serial seconds, workers, sampled peak memory.
+
+  The same line is printed last, e.g. `run: warm, law: 3804 hits 0 read, merge: 870 hits 0 read, 24.1 s (serial 1.4 s), 413 MB, 3 workers`.
+- **Use the log**, not prose, for a step's catalogue times and a round's retrospective.
+- **Warm runs (2026-11-21):** feed 2.3 s, markup 7.2 s, commencement 24.1 s, orders 9.2 s, extent 2.3 s, amendment 9.6 s (527 laws).
+- **Cold runs** are the next work ("Catalogue Cold Runs"): markup 28 min, extent 30 min, feed 12 min, often on fewer workers than allowed.
+
 **Every step's gate.** A rebuild after a step closes can move that step's gate: on Maritime Safety, three gates that had passed failed unseen. So the build's check re-runs all nine. Each check task returns its result (`ChangeVocabulary.Gate.Step`), and `lat.gates` exits non-zero on any failure. A failure belongs to its step and is parked there, never fixed here. `--no-gates` skips the gates for a fix round; the label gate folds the family (about 12½ min).
 
 **The digest is of what is stored.** Values `Store.for_law` derives on read (tiers, conflicts) are not digested. A list built by iterating a map with atom keys comes out in atom-table order, which moves between runs (OTP 26+): on Maritime Safety it made 18 laws' digests differ with nothing stored moving.

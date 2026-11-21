@@ -31,7 +31,7 @@ Ask Jason before the long runs; say what each writes.
 - The session fixes. Fable only as a last resort, when the session cannot land a fix and pass the tests, and only on Jason's approval with reasons.
 
 1. **Catalogues** (read-only over the corpus; writes their fixtures and reports):
-   - `mix lat.commencement_patterns` (own-clause sentences: about 7 min cold after a reader or catalogue edit, about 1½ min warm; an order fix keeps it warm) and `mix lat.order_patterns` (about 1½ min, 1,129 orders, no cache). Measured 2026-11-21, after the reader's speed fixes.
+   - `mix lat.commencement_patterns` (own-clause sentences: about 7 min cold after a reader or catalogue edit, about 25 s warm; an order fix keeps it warm) and `mix lat.order_patterns` (about 1½ min cold, about 10 s warm). Every run's times are in `backend/data/reports/catalogue-runs.jsonl`.
    - Each prints its patterns against `expected.json` (new patterns: accept, fix or `pending:`; held expectations never move without Jason) and its **leftovers by shape**, ranked by reach. The report goes to `backend/data/reports/commencement-reader/leftovers[-orders]-<date>.txt`.
    - Review every leftover group with no status into `leftovers.json`: `fix:` (a reader miss), `known:` (a named limit, also in `RULES.md` known limits) or `check:` (the check's own error: fix it in `Commencement.Leftovers` with a test). `LeftoversReviewTest` fails on a group with no status. A statement under a decided limit in a group with real misses is named apart: `"<shape> @ <row>": "known: …"` (a laid-relative day, limit C); its group stays `fix:`.
    - **Freeze code while a catalogue runs**: it loads modules lazily, so an edit mid-run gives a mixed run.

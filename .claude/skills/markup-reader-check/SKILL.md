@@ -27,7 +27,7 @@ Whether legislation.gov.uk's markup is right is CV-S08's job; what it means for 
 
 Everything is read-only except step 0, which writes the catalogue fixtures. Ask Jason before running, and say how long each step takes.
 
-0. **Pattern catalogue.** `mix lat.markup_patterns` takes ~16 min over every stored law text and writes only `backend/test/fixtures/markup_patterns/`. It prints:
+0. **Pattern catalogue.** `mix lat.markup_patterns` (about 28 min cold after a reader edit, seconds warm; times in `backend/data/reports/catalogue-runs.jsonl`) writes a dry run under `backend/data/reports/catalogues/dry-run/`, the fixtures only with `--accept`. It prints:
    - the new patterns;
    - the examples that read differently from expected;
    - `unclassified` (must be 0).

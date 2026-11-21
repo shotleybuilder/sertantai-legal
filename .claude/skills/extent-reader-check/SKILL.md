@@ -31,7 +31,7 @@ Ask Jason before the runs that write; say how long each takes. Take a restore po
 0. **Recall sweep** (read-only; ~7 min cold, seconds warm): `mix lat.extent_sweep [--family "F"]` (CV-S05a). It finds every sentence of the laws' own words that may say where provisions extend or apply but that the catalogue doesn't class, labelled by form (`AmendingLaw.SweepForm`: `read:*` to read, `count:*`, `noise:*`).
    - The catalogue only sees wordings in its own vocabulary, so the sweep is how new wordings are found: by count, not by agent sampling.
    - A new family: review the uncaught clusters (`data/extent_sweep/clusters.json`) by count, and add their forms to `SweepForm` (and the reader).
-1. **Catalogue** (read-only; ~5 min cold, seconds warm, `Extent.ReadCache`): `mix lat.extent_patterns --accept`. Then review:
+1. **Catalogue** (read-only; about 30 min cold, seconds warm, `Extent.ReadCache`; times in `backend/data/reports/catalogue-runs.jsonl`): `mix lat.extent_patterns --accept`. Then review:
    - `git diff --stat backend/test/fixtures/extent_patterns`;
    - each example reading differently, checked in the law's text, then updated by hand in `expected.json`;
    - the pattern counts by outcome (unread → read is a gain; read → unread needs a reason).
