@@ -374,6 +374,10 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
         do: Regex.replace(@relates_to, s, ""),
         else: s
 
+    # (a Schedule's Part named after it is the Schedule's, before the
+    # statement is cut at its commas: "schedule 11, Part 2, paragraph 24")
+    s = Provisions.schedule_part_first(s)
+
     for segment <- @except |> Regex.replace(s, ",") |> segments(),
         ref <- refs.(segment),
         not schedule?(ref),

@@ -57,7 +57,9 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
   @pointer ~r/\b(?:in\s+accordance\s+with|(?:provided|specified|listed|mentioned|set\s+out|referred\s+to)\s+(?:for\s+)?(?:in|by|under))\b/i
   # (", and" one separator: "regulations 2(a), (c) to (f) and (h), and
   # 4(b)" — SI 2004/3386 reg.1, CV-S08 round 1)
-  @noun ~r/\b(sections?|regulations?|articles?|rules?)\s+((?:(?:\s*(?:,\s*and|,|and|to|–|-)\s*)?(?:\d+[A-Z]*(?:\([^)]+\))*|\([^)]+\)(?:\([^)]+\))*))+)/i
+  # (two bracketed items with only a space between are two: "20(2)
+  # 28(8)(a)(ii)", SI 2013/3113 reg.1(4)'s list missing a comma)
+  @noun ~r/\b(sections?|regulations?|articles?|rules?)\s+((?:(?:\s*(?:,\s*and|,|and|to|–|-)\s*|(?<=\))\s+(?=\d+[A-Z]*\())?(?:\d+[A-Z]*(?:\([^)]+\))*|\([^)]+\)(?:\([^)]+\))*))+)/i
   # (never a Schedule's Part: "Part III of Schedule 16 and, in Part IX of
   # that Schedule" — EPA 1990 s.164(2), CV-S04 round 4)
   # (", and" joins a list too: "Parts II, III, and V to VIII", 1963 c.33
@@ -1327,6 +1329,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
       |> String.replace(@other_provisions, "")
       |> String.replace(@other_schedules, "")
       |> String.replace(@repeal_of_law, "")
+      |> schedule_part_first()
       |> inward(rows, base)
 
     if other_law?(subject),
@@ -1537,6 +1540,27 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
       |> Enum.map(&elem(&1, 0))
 
     {named, excepted, partly}
+  end
+
+  # a Schedule's Part (and paragraph) named after the Schedule: "schedule 7,
+  # Part 1, paragraph 6(c)", "schedule 8 Part 3" (SI 2013/3113 reg.1(4)) —
+  # written Part first, "paragraph 6(c) of Part 1 of Schedule 7", so the
+  # Part is never read as the law's own ("in Schedule 15, Part III and
+  # Part V(1)" is `@in_schedule_parts`': AJA 1999 s.108(3)(f))
+  @schedule_then_part ~r/(?<![Ii]n\s)\bschedule\s+(\d+[A-Z]*)\s*,?\s+Part\s+([IVXL]+|\d+[A-Z]?)(?:\s*,\s*paragraphs?\s+(\d+[A-Z]*(?:\([^)]+\))*))?/i
+
+  @doc """
+  A Schedule's Part (and paragraph) named after the Schedule written Part
+  first: "schedule 7, Part 1, paragraph 6(c)" → "paragraph 6(c) of Part 1
+  of Schedule 7" (SI 2013/3113 reg.1(4)), so no reader takes the Part for
+  the law's own. Pure.
+  """
+  @spec schedule_part_first(String.t()) :: String.t()
+  def schedule_part_first(subject) do
+    Regex.replace(@schedule_then_part, subject, fn
+      _, n, part, "" -> "Part #{part} of Schedule #{n}"
+      _, n, part, para -> "paragraph #{para} of Part #{part} of Schedule #{n}"
+    end)
   end
 
   @in_schedule_parts ~r/\bin\s+Schedule\s+(\d+[A-Z]*)\s*,\s*(Parts?\s+(?:[IVXL]+|\d+)[A-Z]?(?:\(\d+\))*(?:\s*(?:,|and)\s*(?:\(\d+\)|(?:Parts?\s+)?(?:[IVXL]+|\d+)[A-Z]?(?:\(\d+\))*))*)/

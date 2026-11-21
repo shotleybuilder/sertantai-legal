@@ -119,4 +119,80 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClauseRoundLeftoverFormsTest do
     assert Enum.any?(got, &(&1 =~ ~r/^all except reg\.2\(3\), reg\.2\(4\) — 2025-05-22/))
     assert "reg.2(3), reg.2(4) — 2025-11-29 — everywhere, fully — provision_dated" in got
   end
+
+  describe "SI 2013/3113 reg.1(3), (4): a list run on without a comma; a Schedule's Part named after it" do
+    # (its regulations in Parts 1 to 3; the Schedules' Parts are no Part of
+    # the regulations themselves)
+    defp s3113_rows do
+      clause = [
+        {"reg.1(2)",
+         "Subject to paragraphs (3), (4) and (5) these Regulations shall come into force on 1st January 2014."},
+        {"reg.1(3)",
+         "Regulation 66(6) and Schedule 11, Part 2, paragraph 23 shall come into force on 1st January 2016."},
+        {"reg.1(4)",
+         "Regulations 6, 11(11)(a)(ii), 11(13)(b), 17(1)(d)(ii), 20(2) 28(8)(a)(ii), 28(10)(b), 36, 38, 41, 57(g)(ii), 58(3)(c)(ii), 66(7) and (8), schedule 7, Part 1, paragraph 6(c), schedule 8 Part 3 and schedule 11, Part 2, paragraph 24 shall come into force on 1st January 2019."}
+      ]
+
+      held =
+        for {id, part} <- [
+              {"reg.1", "1"},
+              {"reg.2", "1"},
+              {"reg.6", "1"},
+              {"reg.11(11)(a)(ii)", "2"},
+              {"reg.11(13)(b)", "2"},
+              {"reg.17(1)(d)(ii)", "2"},
+              {"reg.20(2)", "2"},
+              {"reg.28(8)(a)(ii)", "3"},
+              {"reg.28(10)(b)", "3"},
+              {"reg.36", "3"},
+              {"reg.38", "3"},
+              {"reg.41", "3"},
+              {"reg.57(g)(ii)", "3"},
+              {"reg.58(3)(c)(ii)", "3"},
+              {"reg.66(6)", "3"},
+              {"reg.66(7)", "3"},
+              {"reg.66(8)", "3"}
+            ],
+            do: %{section_id: "UK_x:" <> id, text: "", part: part, chapter: nil}
+
+      held ++
+        for(
+          {sid, text} <- clause,
+          do: %{section_id: "UK_x:" <> sid, text: text, part: "1", chapter: nil}
+        )
+    end
+
+    defp scope_on(date) do
+      "UK_x"
+      |> OwnClause.rules(%{
+        type_code: "uksi",
+        rows: s3113_rows(),
+        made: ~D[2013-12-10],
+        lrt_date: nil
+      })
+      |> Enum.find(&(&1.when == {:date, date}))
+      |> Map.fetch!(:scope)
+    end
+
+    test "every regulation listed after the missing comma is in the 2019 list" do
+      scope = scope_on(~D[2019-01-01])
+
+      for r <- [
+            "reg.20(2)",
+            "reg.28(8)(a)(ii)",
+            "reg.28(10)(b)",
+            "reg.36",
+            "reg.41",
+            "reg.57(g)(ii)",
+            "reg.66(7)",
+            "reg.66(8)"
+          ],
+          do: assert(r in scope, "#{r} in #{inspect(scope)}")
+    end
+
+    test "\"schedule 7, Part 1, paragraph 6(c)\" names no Part of the regulations" do
+      refute Enum.any?(scope_on(~D[2019-01-01]), &String.starts_with?(&1, "pt."))
+      refute Enum.any?(scope_on(~D[2016-01-01]), &String.starts_with?(&1, "pt."))
+    end
+  end
 end
