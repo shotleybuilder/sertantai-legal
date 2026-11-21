@@ -78,6 +78,24 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderDayFormsTest do
   end
 
   describe "the day appointed for the whole law" do
+    test "“Any provision of the Act to the extent that it has not been commenced before 1 April 2018, comes into force on that date.” (WSI 2018/35 art.3)" do
+      order =
+        doc(
+          "UK_wsi_2018_35",
+          "The Landfill Disposals Tax (Wales) Act 2017 (Commencement No. 2) Order 2018",
+          ~S"""
+          <P1 id="article-1"><P1para><P2 id="article-1-2"><P2para><Text>In this Order, “the Act” (“y Ddeddf”) means the Landfill Disposals Tax (Wales) Act 2017.</Text></P2para></P2></P1para></P1>
+          <P1 id="article-3"><Pnumber>3</Pnumber><P1para><Text>Any provision of the Act to the extent that it has not been commenced before 1 April 2018, comes into force on that date.</Text></P1para></P1>
+          """
+        )
+
+      act = %{law: "UK_anaw_2017_3", title: "Landfill Disposals Tax (Wales) Act", year: "2017"}
+
+      assert lines(Order.rules(order, act)) == [
+               "all — 2018-04-01 — everywhere, fully — order_date"
+             ]
+    end
+
     test "date first: “1st April 2013 is the day appointed for the coming into force of the Act, so far as not already in force.” (SSI 2013/51 art.2)" do
       order =
         doc(

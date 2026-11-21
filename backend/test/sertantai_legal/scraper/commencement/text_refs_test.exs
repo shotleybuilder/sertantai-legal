@@ -15,6 +15,14 @@ defmodule SertantaiLegal.Scraper.Commencement.TextRefsTest do
     assert TextRefs.refs_in("section 2 of the Health and Safety at Work etc. Act 1974") == []
   end
 
+  test "a Chapter of a Part is that Chapter; a heading \"in Chapter 1 of Part 1\" names where, never a provision" do
+    # WSI 2018/35 art.2(w); SI 2012/873 art.2(a)
+    assert TextRefs.refs("Chapter 6 (special cases) of Part 5 (supplementary provision)", nil) ==
+             ["pt.5.ch.6"]
+
+    assert TextRefs.refs("in Chapter 1 of Part 1 (green deal)—", nil) == []
+  end
+
   test "a law's own Schedule list (Petroleum Act 1998 s.52(3))" do
     text = "in Schedule 4, paragraphs 8, 10 and 11"
     assert TextRefs.own_schedule_refs(text) == ~w(sch.4.para.8 sch.4.para.10 sch.4.para.11)

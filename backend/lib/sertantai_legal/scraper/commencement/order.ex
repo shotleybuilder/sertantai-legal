@@ -398,12 +398,21 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
       Regex.match?(@cif, line) or Regex.match?(@appointed, line) or
         Regex.match?(@appointed_is, line)
 
+  # "Any provision of the Act to the extent that it has not been commenced
+  # before 1 April 2018, comes into force on that date" (WSI 2018/35 art.3):
+  # the Act's every provision not yet in force, on the date its subject names
+  @any_not_commenced ~r/^\W*any\s+provisions?\s+of\s+(.+?)\s*,?\s+(?:to\s+the\s+extent\s+that|in\s*so\s+far\s+as|so\s+far\s+as)\s+(?:it|they)\s+(?:has|have)\s+not\s+(?:already\s+)?been\s+(?:commenced|brought\s+into\s+force)\s+before\s+(.+?)\s*,?\s+comes?\s+into\s+force\s+on\s+that\s+(?:date|day)\s*\.?\s*$/i
+
   # {the statement's subject, its date}: "<subject> shall come into force on
   # <date>"; "The day appointed for the coming into operation of <subject>
   # is <date>" (NISR 2010/328); "<date> is the day appointed for the coming
   # into force of <subject>" (SSI 2013/51)
   defp whole_statement(head, made) do
     cond do
+      match = Regex.run(@any_not_commenced, head) ->
+        [_, subject, date] = match
+        {subject, one_date(date)}
+
       match = Regex.run(@appointed_is, head) ->
         [_, subject, tail] = match
         {subject, one_date(tail)}
@@ -1038,10 +1047,13 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     end
   end
 
-  # "Part I of the 1998 Act except section 4" (SI 1998/1658): the Part,
+  # "Part I of the 1998 Act except section 4" (SI 1998/1658); "Chapter 6 …
+  # of Part 5 …, except for sections 85 to 87" (WSI 2018/35): the Part,
   # the section excepted — never both commenced (CV-06 round 2)
   defp split_excepted(own, sch) do
-    case Regex.split(~r/\s+except\s+(?=(?:sections?|regulations?|articles?)\s+\d)/i, own,
+    case Regex.split(
+           ~r/\s*,?\s+except(?:\s+for)?\s+(?=(?:sections?|regulations?|articles?)\s+\d)/i,
+           own,
            parts: 2
          ) do
       [main, ex] -> {main, TextRefs.refs(Asides.strip(ex), sch)}

@@ -1220,6 +1220,25 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
                Order.rules(doc, act)
     end
 
+    test "\"Chapter 6 (special cases) of Part 5 (supplementary provision), except for sections 85 to 87\": the Chapter, less those sections (WSI 2018/35 art.2(w))" do
+      doc =
+        article_2(
+          "UK_wsi_2018_35",
+          "The appointed day for the following provisions of the Act coming into force is 25 January 2018—",
+          [
+            "section 67 (assessment of penalty under section 66);",
+            "Chapter 6 (special cases) of Part 5 (supplementary provision), except for sections 85 to 87;"
+          ]
+        )
+
+      act = %{law: "UK_anaw_2017_3", title: "Landfill Disposals Tax (Wales) Act", year: "2017"}
+
+      assert [
+               %{scope: ["s.67"]},
+               %{scope: ["pt.5.ch.6"], except: ["s.85..s.87"], purposes: nil}
+             ] = Order.rules(doc, act)
+    end
+
     test "\"The 20th of May 2005 is hereby appointed the day on which the following provisions … come into force:\" (SSI 2005/256)" do
       doc =
         article_2(

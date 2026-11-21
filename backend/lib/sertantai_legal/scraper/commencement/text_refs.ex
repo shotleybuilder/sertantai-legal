@@ -58,6 +58,7 @@ defmodule SertantaiLegal.Scraper.Commencement.TextRefs do
   @spec refs(String.t(), String.t() | nil) :: [String.t()]
   def refs(text, sch) do
     {of_section, text} = text |> ScheduleParts.as_place() |> subsections_of()
+    {chapters, text} = chapters_of_part(text)
     {subsections, text} = in_section(text)
     bare = bare_paragraph_refs(text)
     schedule_parts = schedule_part_refs(text)
@@ -69,7 +70,7 @@ defmodule SertantaiLegal.Scraper.Commencement.TextRefs do
         subsections ++
         schedule_refs(text, bare, schedule_parts) ++
         Enum.map(schedule_parts, &elem(&1, 1)) ++
-        part_refs(text, sch) ++ bare ++ paragraph_refs(text, sch)
+        chapters ++ part_refs(text, sch) ++ bare ++ paragraph_refs(text, sch)
     )
     |> Enum.reject(&(&1 =~ ~r/^s\.\(/))
   end
@@ -143,6 +144,26 @@ defmodule SertantaiLegal.Scraper.Commencement.TextRefs do
         r not in for({n, _} <- schedule_parts, do: "sch.#{n}"),
         do: r
   end
+
+  # "Chapter 6 (special cases) of Part 5": that Chapter, never the whole
+  # Part (WSI 2018/35 art.2(w)); the phrase is taken out of the text so its
+  # "Part 5" isn't read as the Part
+  @chapters_of_part ~r/(\b[Ii]n\s+)?\bChapters?\s+(#{@part}(?:\s*(?:,|and)\s*#{@part})*)\s*(?:\([^()]*\)\s*)?of\s+Part\s+(#{@part})\b(?!\s+(?:of|to)\s+(?:the\s+)?Schedule)/
+
+  defp chapters_of_part(text) do
+    for [phrase, heading, list, part] <- Regex.scan(@chapters_of_part, text),
+        reduce: {[], text} do
+      {refs, text} ->
+        {refs ++ chapter_refs(heading, list, part), String.replace(text, phrase, " ")}
+    end
+  end
+
+  # (a heading "in Chapter 1 of Part 1 (green deal)—" names where the
+  # provisions listed under it are, never a provision: SI 2012/873 art.2(a))
+  defp chapter_refs("", list, part),
+    do: for(c <- String.split(list, ~r/\s*(?:,|and)\s*/, trim: true), do: "pt.#{part}.ch.#{c}")
+
+  defp chapter_refs(_in, _list, _part), do: []
 
   # "Part I", "Parts III and IV" of the Act (not "Part II of Schedule 17";
   # "in Part II, the repeals of …" is where in a repeals Schedule; "the
