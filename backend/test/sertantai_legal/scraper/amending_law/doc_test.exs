@@ -56,4 +56,15 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.DocTest do
 
     assert Doc.lines(cell) == ["In section 37, the word “and”.", "Section 96.", "Section 97(6)."]
   end
+
+  test "a marked-up space reads as a space (SI 2010/2169: \"1st<Character Name=NonBreakingSpace/>October 2010\")" do
+    xml =
+      ~s|<Legislation><Secondary><Body><P1 id="article-4"><Pnumber>4</Pnumber><P1para><Text>The provisions of the Act specified in the Schedule come into force on 1st<Character Name="NonBreakingSpace"/>October<Character Name="EmSpace"/>2010.</Text></P1para></P1></Body></Secondary></Legislation>|
+
+    doc = Doc.new("UK_uksi_2010_2169", [xml])
+    el = Doc.element(doc, "article-4")
+
+    assert Doc.text(el) =~ "on 1st October 2010."
+    assert Text.words_of(doc, "article-4") =~ "on 1st October 2010."
+  end
 end

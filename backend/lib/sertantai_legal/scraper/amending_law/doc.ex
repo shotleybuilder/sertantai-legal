@@ -150,6 +150,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Doc do
   defp walk({:xmlElement, name, _, _, _, _, _, _, children, _, _, _}, acc) do
     case local(name) do
       "br" -> [[] | acc]
+      # a space (or padding) legislation.gov.uk marks up: "1st<Character
+      # Name="NonBreakingSpace"/>October 2010" (SI 2010/2169 Sch.)
+      "Character" -> [[" " | hd(acc)] | tl(acc)]
       # a paragraph or text block starts a new line
       l when l in ["Para", "Text"] -> Enum.reduce(children, [[] | acc], &walk/2)
       _ -> Enum.reduce(children, acc, &walk/2)

@@ -295,6 +295,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
   defp node({:xmlText, _, _, _, value, _}, {own, quoted}, true),
     do: {own, [to_string(value) | quoted]}
 
+  # a space (or padding) legislation.gov.uk marks up ("1st<Character
+  # Name="NonBreakingSpace"/>October 2010": SI 2010/2169 art.4)
+  defp node({:xmlElement, :Character, _, _, _, _, _, _, _, _, _, _}, acc, in_quote),
+    do: node({:xmlText, [], 0, [], ~c" ", :text}, acc, in_quote)
+
   defp node({:xmlElement, name, _, _, _, _, _, attrs, children, _, _, _}, acc, in_quote) do
     cond do
       name in @notes ->
