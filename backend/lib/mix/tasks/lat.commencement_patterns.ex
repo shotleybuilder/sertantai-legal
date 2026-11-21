@@ -37,7 +37,7 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
   alias SertantaiLegal.Scraper.LawRunner.Guard
   alias SertantaiLegal.Scraper.Commencement.{ClmlRows, HeldAmenders, Misreads, ReachGroups}
   alias SertantaiLegal.Scraper.LawStart.Input
-  alias SertantaiLegal.Scraper.CommencementCatalogue.{LawRead, LawScan}
+  alias SertantaiLegal.Scraper.CommencementCatalogue.{LawRead, LawScan, MergeRead}
   alias SertantaiLegal.Scraper.CatalogueTarget, as: Target
 
   @shortdoc "Own commencement sentences' pattern catalogue, as test fixtures (read-only)"
@@ -114,7 +114,7 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
          workers: workers,
          target: target
        }) do
-    {acc, sources, merge_us} =
+    {acc, {sources, merges}, merge_us} =
       laws
       |> LawRunner.ordered(
         fn {law, source} ->
@@ -123,26 +123,38 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
         workers: workers
       )
       |> Stream.with_index(1)
-      |> Enum.reduce({LawScan.new_acc(), [], 0}, fn {{law, {read, from}}, i},
-                                                    {acc, sources, us} ->
+      |> Enum.reduce({LawScan.new_acc(), {[], []}, 0}, fn {{law, {read, from}}, i},
+                                                          {acc, {sources, merges}, us} ->
         if rem(i, 250) == 0, do: Mix.shell().info("  #{i}/#{length(laws)}")
-        {t, acc} = :timer.tc(fn -> law_result(law, read, acc) end)
-        {acc, [from | sources], us + t}
+        {t, {acc, merge}} = :timer.tc(fn -> law_result(law, read, acc, cache) end)
+        {acc, {[from | sources], List.wrap(merge) ++ merges}, us + t}
       end)
 
     write(target.write, acc)
     report(target.held, acc, opts[:accept])
-    {:ok, %{"law" => sources}, merge_us}
+    {:ok, %{"law" => sources, "merge" => merges}, merge_us}
   end
 
-  defp law_result(law, {:ok, read}, acc) do
-    LawScan.select(acc, law, read, read.outcomes)
+  # the law's sentences taken in law order, its chosen examples' merge kept
+  # between runs (`MergeRead`: the serial part's most) and applied; and
+  # whether the merge came from the cache (nil: no example chosen)
+  defp law_result(law, {:ok, read}, acc, cache) do
+    taken = LawScan.take_law(acc, law, read, read.outcomes)
+
+    case LawScan.chosen(taken, law) do
+      [] ->
+        {taken, nil}
+
+      chosen ->
+        {merged, source} = MergeRead.fetch(law, read.input, chosen, cache: cache)
+        {LawScan.apply_merge(taken, law, merged), source}
+    end
   rescue
-    error -> %{acc | unclassified: [{law, Exception.message(error)} | acc.unclassified]}
+    error -> {%{acc | unclassified: [{law, Exception.message(error)} | acc.unclassified]}, nil}
   end
 
-  defp law_result(law, {:error, why}, acc),
-    do: %{acc | unclassified: [{law, why} | acc.unclassified]}
+  defp law_result(law, {:error, why}, acc, _cache),
+    do: {%{acc | unclassified: [{law, why} | acc.unclassified]}, nil}
 
   # every law holding LAT, then the amending laws held as CLML with none
   defp laws(nil) do

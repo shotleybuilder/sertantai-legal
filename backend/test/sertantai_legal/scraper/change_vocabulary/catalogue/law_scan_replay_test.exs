@@ -187,6 +187,28 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Catalogue.LawScanReplayTest do
       assert Map.keys(acc.laws_inputs) |> Enum.sort() == ~w(A C D E)
     end
 
+    # the task's path (Catalogues Across the Workflow, 2026-11-21): the
+    # sentences taken, the examples chosen, their merge kept between runs
+    # (`MergeRead`), then applied — the same catalogue as `select/5`
+    defp commencement_pieces do
+      Enum.reduce(commencement_laws(), Commencement.new_acc(), fn {law, read}, acc ->
+        outcomes = Commencement.scan(law, read, &commencement_outcome(law, &1))
+
+        law_into(acc, law, fn ->
+          acc = Commencement.take_law(acc, law, read, outcomes)
+
+          merged =
+            Commencement.merge_check(law, read.input, Commencement.chosen(acc, law), merge_opts())
+
+          Commencement.apply_merge(acc, law, merged)
+        end)
+      end)
+    end
+
+    test "the sentences taken, the examples merged and applied in turn are select/5" do
+      assert commencement_pieces() == commencement_serial()
+    end
+
     test "a law alone records every example it computes, a raise among them" do
       outcomes = Commencement.scan("B", law_read("B", ["p", "q"]), &commencement_outcome("B", &1))
       assert outcomes == %{0 => {:held, %{"i" => 0}}, 1 => {:raise, "boom"}}

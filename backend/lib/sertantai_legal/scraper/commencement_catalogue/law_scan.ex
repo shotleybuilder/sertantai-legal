@@ -82,8 +82,70 @@ defmodule SertantaiLegal.Scraper.CommencementCatalogue.LawScan do
     do: select(acc, law, read, &Map.fetch!(outcomes, &1), opts)
 
   def select(acc, law, read, example, opts) when is_function(example, 1) do
+    acc = take_law(acc, law, read, example)
+    apply_merge(acc, law, merge_check(law, read.input, chosen(acc, law), opts))
+  end
+
+  @doc """
+  The law's sentences taken into `acc` in law order, as `select/5`, before
+  its examples are merged: each example from `examples` (the law's scan by
+  place, or a function of the place). Raises where an example raised.
+  """
+  @spec take_law(map(), String.t(), read(), map() | (non_neg_integer() -> outcome())) :: map()
+  def take_law(acc, law, read, outcomes) when is_map(outcomes),
+    do: take_law(acc, law, read, &Map.fetch!(outcomes, &1))
+
+  def take_law(acc, law, read, example) when is_function(example, 1) do
     {acc, _} = take_all(%{acc | laws: acc.laws + 1}, law, read, example, true)
-    merge_law(acc, law, read.input, opts)
+    acc
+  end
+
+  @doc "The examples `acc` holds from `law`, each `{id, its input, its sentence}`: what `merge_check/4` merges."
+  @spec chosen(map(), String.t()) :: [{String.t(), map(), String.t()}]
+  def chosen(acc, law),
+    do:
+      for(
+        {id, x} <- acc.examples,
+        x.json["law"] == law,
+        x[:input],
+        do: {id, x.input, x.json["sentence"]}
+      )
+
+  @doc """
+  The law's chosen examples merged into one input (`laws.json`), and each
+  example's outcome read in it (`opts`: `:merge` and `:read`, by default
+  `SentencePatterns`'). Pure but for the reader it calls; the serial
+  catalogue's most of its time (2026-11-21: 59.8 of 63.4 s), so kept
+  between runs (`CommencementCatalogue.MergeRead`).
+  """
+  @spec merge_check(String.t(), map(), [{String.t(), map(), String.t()}], keyword()) ::
+          %{merged: map() | nil, outcomes: [{String.t(), map()}]}
+  def merge_check(_law, _input, [], _opts), do: %{merged: nil, outcomes: []}
+
+  def merge_check(law, input, chosen, opts) do
+    merge = Keyword.get(opts, :merge, &SentencePatterns.merge/2)
+    read = Keyword.get(opts, :read, &SentencePatterns.read/3)
+    merged = merge.(input, Enum.map(chosen, &elem(&1, 1)))
+
+    # (in the chosen order: the order the examples are checked and dropped)
+    outcomes =
+      Enum.map(chosen, fn {id, _, sentence} ->
+        got = read.(law, merged, sentence)
+        {id, %{"class" => got.class, "rules" => got.rules}}
+      end)
+
+    %{merged: merged, outcomes: outcomes}
+  end
+
+  @doc "The merge's result applied: the law's merged input kept, each example kept where it reads in it as in the law, else dropped."
+  @spec apply_merge(map(), String.t(), %{merged: map() | nil, outcomes: [{String.t(), map()}]}) ::
+          map()
+  def apply_merge(acc, _law, %{merged: nil}), do: acc
+
+  def apply_merge(acc, law, %{merged: merged, outcomes: outcomes}) do
+    Enum.reduce(outcomes, put_in(acc.laws_inputs[law], merged), fn {id, got}, acc ->
+      check(acc, id, got)
+    end)
   end
 
   defp take_all(acc, law, read, example, raise?) do
@@ -164,31 +226,11 @@ defmodule SertantaiLegal.Scraper.CommencementCatalogue.LawScan do
     error -> {:raise, Exception.message(error)}
   end
 
-  # the law's examples share one input (`laws.json`), each checked to read
-  # alone as in the law still
-  defp merge_law(acc, law, input, opts) do
-    merge = Keyword.get(opts, :merge, &SentencePatterns.merge/2)
-    read = Keyword.get(opts, :read, &SentencePatterns.read/3)
-    ids = for {id, x} <- acc.examples, x.json["law"] == law, x[:input], do: id
-
-    case ids do
-      [] ->
-        acc
-
-      _ ->
-        merged = merge.(input, Enum.map(ids, &acc.examples[&1].input))
-
-        Enum.reduce(ids, put_in(acc.laws_inputs[law], merged), fn id, acc ->
-          check(acc, id, read.(law, merged, acc.examples[id].json["sentence"]))
-        end)
-    end
-  end
-
   # the example kept where it reads in the merged input as in the law
   defp check(acc, id, got) do
     x = acc.examples[id]
 
-    if %{"class" => got.class, "rules" => got.rules} == x.outcome,
+    if got == x.outcome,
       do: put_in(acc.examples[id], Map.delete(x, :input)),
       else: drop(acc, id, :mismatch)
   end
