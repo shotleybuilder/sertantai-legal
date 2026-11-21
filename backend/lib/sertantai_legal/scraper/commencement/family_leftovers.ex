@@ -4,7 +4,7 @@ defmodule SertantaiLegal.Scraper.Commencement.FamilyLeftovers do
   2026-11-05: the family gate): every commencement statement of its laws'
   own clauses, of the commencement orders held for them, and of the held
   amending laws its undated changes point to — read as the catalogues read
-  them (`Leftovers.sentences/2`, `Leftovers.order_units/2`) — each leftover
+  them (`Leftovers.sentences/2`, `OrderLeftovers.order_units/2`) — each leftover
   with its group's reviewed status (`leftovers.json`). The gate itself is
   `Leftovers.gate/1`. IO: the DB, the CLML store, the cached order lists
   (never a search).
@@ -17,6 +17,7 @@ defmodule SertantaiLegal.Scraper.Commencement.FamilyLeftovers do
     HeldAmenders,
     Leftovers,
     Order,
+    OrderLeftovers,
     OrderRead,
     Orders,
     OwnRead
@@ -132,7 +133,7 @@ defmodule SertantaiLegal.Scraper.Commencement.FamilyLeftovers do
           Map.get_lazy(read, order, fn -> OrderRead.read(order, act, own.rules) end)
         ],
         %{unit: unit, pattern: pattern, leftovers: [_ | _] = left} <-
-          Leftovers.order_units(doc, rules) do
+          OrderLeftovers.order_units(doc, rules) do
       shape = Leftovers.shape(pattern, left)
 
       Leftovers.item(

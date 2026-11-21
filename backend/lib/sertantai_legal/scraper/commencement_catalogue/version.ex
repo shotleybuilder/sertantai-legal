@@ -2,7 +2,8 @@ defmodule SertantaiLegal.Scraper.CommencementCatalogue.Version do
   @moduledoc """
   The version of the code a law's commencement-catalogue reading depends
   on (`SourceVersion`, #195): the own-clause reader, the leftovers, the
-  misreads and the sentence patterns, the law reading that joins them
+  misreads, the sentence patterns and the ref reader they share
+  (`TextRefs`) — never the order reading, so an order fix keeps the cache — the law reading that joins them
   (`CommencementCatalogue.LawRead`), the examples read alone (`LawScan`) and what they reach. The reading's
   `CatalogueCache` is keyed on it, so a change to any of them reads every
   law again; `VersionCoverageTest` holds it to every module its files
@@ -19,12 +20,13 @@ defmodule SertantaiLegal.Scraper.CommencementCatalogue.Version do
       lib/sertantai_legal/scraper/commencement/doc_rows.ex
       lib/sertantai_legal/scraper/commencement/leftovers.ex
       lib/sertantai_legal/scraper/commencement/review/misreads.ex
-      lib/sertantai_legal/scraper/commencement/order.ex
-      lib/sertantai_legal/scraper/commencement/order/*.ex
-      lib/sertantai_legal/scraper/commencement/order_patterns.ex
+      lib/sertantai_legal/scraper/commencement/order/asides.ex
+      lib/sertantai_legal/scraper/commencement/order/schedule_parts.ex
+      lib/sertantai_legal/scraper/commencement/order/sibling.ex
       lib/sertantai_legal/scraper/commencement/own_clause.ex
       lib/sertantai_legal/scraper/commencement/rule.ex
       lib/sertantai_legal/scraper/commencement/sentence_patterns.ex
+      lib/sertantai_legal/scraper/commencement/text_refs.ex
       lib/sertantai_legal/scraper/commencement_catalogue/law_read.ex
       lib/sertantai_legal/scraper/commencement_catalogue/law_scan.ex
       lib/sertantai_legal/scraper/commencement_catalogue/version.ex

@@ -36,8 +36,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Misreads do
   patterns (the catalogue's cache alone is keyed on it). Pure.
   """
 
-  alias SertantaiLegal.Scraper.AmendingLaw.Doc
-  alias SertantaiLegal.Scraper.Commencement.{Leftovers, Order, OrderPatterns, Rule}
+  alias SertantaiLegal.Scraper.Commencement.{Leftovers, Rule, TextRefs}
   alias SertantaiLegal.Scraper.Commencement.Order.Asides
   alias SertantaiLegal.Scraper.LawStart.Provisions
 
@@ -109,7 +108,9 @@ defmodule SertantaiLegal.Scraper.Commencement.Misreads do
 
   # ── another law's provisions ────────────────────────────────────────
 
-  defp other_law(text, rules, ctx) do
+  @doc "Another law's provisions `text` names among `rules`' refs: the misreads of the text (`of/3`'s first kind)."
+  @spec other_law(String.t(), [Rule.t()], ctx()) :: [misread()]
+  def other_law(text, rules, ctx) do
     held = scope_refs(rules)
     own = ctx.refs.(Regex.replace(@other_law, text, "another law"))
 
@@ -154,7 +155,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Misreads do
   # the provisions as the reader names its own; an Act's by the order
   # reader's names where it names none
   defp named(words, ctx) do
-    [ctx.refs.(words), Order.refs_in(words), numbered(words)]
+    [ctx.refs.(words), TextRefs.refs_in(words), numbered(words)]
     |> Enum.find([], &(&1 != []))
     |> spread()
   end
@@ -267,7 +268,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Misreads do
   defp limited(item, rules, ctx) do
     with [before, _] <- Regex.split(@limit, item, parts: 2),
          tail = before |> String.split(~r/\band\b|;/) |> List.last(),
-         last = [List.last(Order.refs_in(tail)), List.last(ctx.refs.(tail))],
+         last = [List.last(TextRefs.refs_in(tail)), List.last(ctx.refs.(tail))],
          ref when is_binary(ref) <- Enum.find(last, &(&1 in whole_refs(rules))) do
       [%{kind: :qualifier, words: "#{ref}: its repeals or entries only"}]
     else
@@ -282,7 +283,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Misreads do
          # ("… in so far as it relates to the following provisions of Schedule
          # 22": the qualifier's, never the list's — SSI 2003/206 art.2)
          false <- binary_part(head, 0, at) =~ @qualifier,
-         [holder] <- Order.refs_in(binary_part(head, w, n)) do
+         [holder] <- TextRefs.refs_in(binary_part(head, w, n)) do
       stated = spread(ctx.refs.(head))
 
       for ref <- scope_refs(rules), outside?(ref, holder), ref not in stated do
@@ -414,55 +415,6 @@ defmodule SertantaiLegal.Scraper.Commencement.Misreads do
   end
 
   defp brackets(id), do: length(String.split(id, "(")) - 1
-
-  # ── a commencement order ────────────────────────────────────────────
-
-  @doc """
-  Each statement of a commencement order (`Leftovers.order_units/2`) with
-  its `misreads`, given the order's `rules` and `ctx`: the Act it commences
-  (`own`) and the bare ids of the Act's rows (`ids`, nil where none held).
-  """
-  @spec order_units(Doc.t(), [Rule.t()], map()) :: [map()]
-  def order_units(doc, rules, ctx) do
-    ctx = Map.put(ctx, :refs, &Order.refs_in/1)
-
-    for %{unit: unit} = statement <- Leftovers.order_units(doc, rules) do
-      Map.put(statement, :misreads, order_misreads(unit, rules, ctx))
-    end
-  end
-
-  defp order_misreads(%{kind: kind}, _rules, _ctx) when kind in ["own", "table_header"], do: []
-
-  defp order_misreads(unit, rules, ctx) do
-    text = if unit.kind == "table", do: unit.text |> String.split(" | ") |> hd(), else: unit.text
-    own = OrderPatterns.own_rules(unit, rules)
-    Enum.uniq(of(%{head: text, items: []}, own, ctx) ++ order_items(own, ctx))
-  end
-
-  @doc """
-  Another law's provisions in the rules of an order's list items: each
-  item (a rule's source words after its head, "head … item") read with the
-  rules it gave.
-  """
-  @spec order_items([Rule.t()], ctx()) :: [misread()]
-  def order_items(rules, ctx) do
-    rules
-    |> Enum.group_by(&item/1)
-    |> Enum.sort()
-    |> Enum.flat_map(fn
-      {nil, _} -> []
-      {item, of_item} -> other_law(item, of_item, ctx)
-    end)
-  end
-
-  defp item(%Rule{source: %{text: text}}) when is_binary(text) do
-    case String.split(text, " … ", parts: 2) do
-      [_head, item] -> item
-      _ -> nil
-    end
-  end
-
-  defp item(_rule), do: nil
 
   # ── groups, as the leftovers' ───────────────────────────────────────
 

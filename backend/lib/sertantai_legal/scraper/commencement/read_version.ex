@@ -35,6 +35,7 @@ defmodule SertantaiLegal.Scraper.Commencement.ReadVersion do
     except: ~w(
       lib/sertantai_legal/scraper/commencement/check.ex
       lib/sertantai_legal/scraper/commencement/leftovers.ex
+      lib/sertantai_legal/scraper/commencement/order_leftovers.ex
       lib/sertantai_legal/scraper/commencement/family_leftovers.ex
       lib/sertantai_legal/scraper/commencement/held_amenders.ex
       lib/sertantai_legal/scraper/commencement/order_patterns.ex

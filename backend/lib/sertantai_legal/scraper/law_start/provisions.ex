@@ -1452,7 +1452,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
       for r <-
             subject
             |> schedule_words()
-            |> SertantaiLegal.Scraper.Commencement.Order.own_schedule_refs(),
+            |> SertantaiLegal.Scraper.Commencement.TextRefs.own_schedule_refs(),
           do: {"#{law}:#{r}", String.length(r)}
 
     Enum.uniq_by(

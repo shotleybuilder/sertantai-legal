@@ -26,7 +26,16 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
-  alias SertantaiLegal.Scraper.Commencement.{Leftovers, Misreads, Order, OrderPatterns, Orders}
+
+  alias SertantaiLegal.Scraper.Commencement.{
+    Leftovers,
+    Misreads,
+    Order,
+    OrderMisreads,
+    OrderPatterns,
+    Orders
+  }
+
   alias SertantaiLegal.Scraper.CommencementCatalogue.Target
 
   @shortdoc "Commencement orders' pattern catalogue, as test fixtures (read-only)"
@@ -160,7 +169,7 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
     {ids, acc} = ids(act_law, acc)
 
     for %{unit: unit, outcome: o, pattern: key, leftovers: left, misreads: wrong} <-
-          Misreads.order_units(doc, rules, %{own: act, ids: ids}),
+          OrderMisreads.order_units(doc, rules, %{own: act, ids: ids}),
         reduce: acc do
       acc ->
         id = example_id(order, unit)

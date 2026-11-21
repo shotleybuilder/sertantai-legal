@@ -8,7 +8,7 @@ defmodule SertantaiLegal.Scraper.Commencement.LeftoversTest do
   """
   use ExUnit.Case, async: true
 
-  alias SertantaiLegal.Scraper.Commencement.{Leftovers, Order, Rule}
+  alias SertantaiLegal.Scraper.Commencement.{Leftovers, Order, OrderLeftovers, Rule}
   alias SertantaiLegal.Scraper.LawStart.Provisions
 
   defp rule(scope, when_, text, opts \\ []),
@@ -437,7 +437,8 @@ defmodule SertantaiLegal.Scraper.Commencement.LeftoversTest do
         year: "2005"
       }
 
-      for %{unit: u, leftovers: [_ | _] = l} <- Leftovers.order_units(doc, Order.rules(doc, act)),
+      for %{unit: u, leftovers: [_ | _] = l} <-
+            OrderLeftovers.order_units(doc, Order.rules(doc, act)),
           do: {u.id, Enum.map(l, & &1.words)}
     end
 

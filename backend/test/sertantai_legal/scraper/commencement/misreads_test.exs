@@ -6,7 +6,7 @@ defmodule SertantaiLegal.Scraper.Commencement.MisreadsTest do
   """
   use ExUnit.Case, async: true
 
-  alias SertantaiLegal.Scraper.Commencement.{Misreads, Order, Rule}
+  alias SertantaiLegal.Scraper.Commencement.{Misreads, Order, OrderMisreads, Rule}
   alias SertantaiLegal.Scraper.LawStart.Provisions
 
   @day {:date, ~D[2005-04-07]}
@@ -138,7 +138,7 @@ defmodule SertantaiLegal.Scraper.Commencement.MisreadsTest do
         from_item(rule(~w[s.30 s.3 s.3A], purposes: :in_relation_to), head, item)
       ]
 
-      assert Misreads.order_items(rules, %{refs: &Order.refs_in/1, own: @rsa}) == [
+      assert OrderMisreads.order_items(rules, %{refs: &Order.refs_in/1, own: @rsa}) == [
                %{
                  kind: :other_law,
                  words: "s.3 of the Road Traffic Act 1988: a purpose's words, not commenced"
@@ -155,7 +155,7 @@ defmodule SertantaiLegal.Scraper.Commencement.MisreadsTest do
       head = "The following provisions of the Road Safety Act 2006 shall come into force"
       rules = [from_item(rule(~w[s.30 s.3]), head, "section 30 and section 3 of that Act")]
 
-      assert Misreads.order_items(rules, %{refs: &Order.refs_in/1, own: @rsa}) == []
+      assert OrderMisreads.order_items(rules, %{refs: &Order.refs_in/1, own: @rsa}) == []
     end
 
     test "another Act's Part named as the purpose, held as the scope (SI 2021/1322 art.3)" do
