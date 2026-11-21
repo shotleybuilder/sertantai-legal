@@ -8,7 +8,9 @@ defmodule SertantaiLegal.Scraper.Commencement.Order.Entries do
   Railways Act 1993."). Pure text.
   """
 
-  @head ~r/^\W*the\s+following\s+(?:repeals|entries)\s+in\s+(?:Part\s+([IVXL]+|\d+)[A-Z]?\s+of\s+)?Schedule\s+(\d+[A-Z]*)\b(?!\s+to\s+th(?:is|ese)\s)/iu
+  # ("the entries in Part VII of Schedule 34 which relate to sections 1(3)
+  # and 32(5) of and Schedule 2 to the 1996 Act": SI 1999/3271 art.4(d))
+  @head ~r/^\W*the\s+(?:following\s+(?:repeals|entries)\s+in\s+(?:Part\s+([IVXL]+|\d+)[A-Z]?\s+of\s+)?Schedule\s+(\d+[A-Z]*)\b(?!\s+to\s+th(?:is|ese)\s)|(?:repeals|entries)\s+in\s+(?:Part\s+([IVXL]+|\d+)[A-Z]?\s+of\s+)?Schedule\s+(\d+[A-Z]*)\s+which\s+relate\s+to\b)/iu
   @entry ~r/^\W*the\s+entr(?:y|ies)\s+(?:relating\s+to|in\s+respect\s+of)\b/iu
 
   @doc """
@@ -17,10 +19,13 @@ defmodule SertantaiLegal.Scraper.Commencement.Order.Entries do
   """
   @spec head_ref(String.t()) :: String.t() | nil
   def head_ref(line) do
-    case Regex.run(@head, line) do
-      [_, "", schedule] -> "sch.#{schedule}"
-      [_, part, schedule] -> "sch.#{schedule}.pt.#{part}"
-      nil -> nil
+    case @head
+         |> Regex.run(line, capture: :all_but_first)
+         |> List.wrap()
+         |> Enum.reject(&(&1 == "")) do
+      [schedule] -> "sch.#{schedule}"
+      [part, schedule] -> "sch.#{schedule}.pt.#{part}"
+      [] -> nil
     end
   end
 

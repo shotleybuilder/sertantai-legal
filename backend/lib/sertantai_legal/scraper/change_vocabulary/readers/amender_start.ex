@@ -37,8 +37,20 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmenderStart do
   # provisions wait for orders came in by them (ERDRA 1998 s.17: its
   # changes to HSWA s.24 on 1 August 1998 by SI 1998/1658, never its
   # Royal Assent of 8 April: CV-06 round 2)
+  # … and never a day the law deems one provision to have come into force
+  # on, before the law itself: that day is that provision's alone
+  # ("Subsection (4) shall be taken to have come into force on 15th
+  # September 1996": the Merchant Shipping and Maritime Security Act 1997
+  # s.28(5), passed 19th March 1997; "is treated as having come into force
+  # on 6 June 2022": 2023 c.30 s.348(4))
   def first_start(rules) do
-    dated = for %Rule{when: {:date, %Date{} = d}} = r <- rules, do: {r.treatment, d}
+    deemed = for %Rule{when: {:date, d}} = r <- rules, Rule.deemed?(r), do: d
+
+    # (nor the feed's record of that provision on that day)
+    dated =
+      for %Rule{when: {:date, %Date{} = d}} = r <- rules,
+          not (is_list(r.scope) and d in deemed),
+          do: {r.treatment, d}
 
     case Enum.reject(dated, &(elem(&1, 0) == :act_enactment)) do
       [] -> dated

@@ -42,6 +42,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Check do
         OwnCommencement.outcome(rules, law, id, Map.put(ctx, :extent, Map.get(extents, id)))
 
       outcome = if outcome == :no_rules and no_clause?, do: :no_clause, else: outcome
+      outcome = signature(id, outcome)
 
       %{
         law: law,
@@ -55,6 +56,24 @@ defmodule SertantaiLegal.Scraper.Commencement.Check do
     end)
     |> Enum.map(&Map.put(&1, :yardstick, yardstick(&1)))
   end
+
+  # the signature block is no provision: where the clause dates the law's
+  # provisions by name and no rule reaches it, nothing is left unread (SI
+  # 2015/962 reg.1(2), (3): Parts 1 to 3 named, the signature not)
+  defp signature("signed", :not_reached), do: :not_a_provision
+  defp signature(_id, outcome), do: outcome
+
+  @doc """
+  Whether a law states no commencement of its own: `LawStart` leaves it
+  with no clause (`treatment`), and nothing read from its text is a
+  commencement — no rule at all, or only its Schedules given effect by
+  their provisions (NISI 1973/69 and NISI 1981/158, whose commencement
+  paragraphs the revised text omits; SSI 2005/351, an order commencing
+  another Act and stating no day of its own).
+  """
+  @spec no_clause?([Rule.t()], atom()) :: boolean()
+  def no_clause?(rules, treatment),
+    do: treatment == :no_clause and Enum.all?(rules, &(&1.treatment == :schedule_effect))
 
   @doc "The law's own feed's coming-into-force records by target: `[target, first, full]` rows → `%{base_id => {first, full}}`."
   @spec feed_index([[term()]]) :: map()

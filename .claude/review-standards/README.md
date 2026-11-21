@@ -10,6 +10,7 @@ Adapted from Google's Elephant-Goldfish Model (`resources/document_standards/`),
 | [design](design.md) | A design before building | Proposes one path without the rejected alternatives and why |
 | [plan](plan.md) | An implementation plan or session Todo before building | Leaves a design choice to whoever builds it |
 | [aims](aims.md) | A retrospective and the forward plan, at each family's close | A decision serves no aim, or a recurring lesson stays unclosed |
+| [code](code.md) | Code already written, with the run's focus named (architecture, speed, correctness, tests, standards) | A module holds two concepts, mixes pure logic with IO, or does work twice |
 | [naive-reader](naive-reader.md) | Guides, skills, design docs, session docs handed on | A fresh reader must guess a term, a step or a default |
 
 ## Who uses them

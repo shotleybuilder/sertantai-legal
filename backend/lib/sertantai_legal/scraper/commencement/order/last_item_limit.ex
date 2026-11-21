@@ -5,7 +5,10 @@ defmodule SertantaiLegal.Scraper.Commencement.Order.LastItemLimit do
   the Act in so far as it relates to paragraphs 10(3) and 15(3) to (5) of
   Schedule 15" (SI 1991/96 reg.2) — the limit binds the item after the
   final ", and"; the items before it come in fully (RULES
-  `a-qualifier-binds-its-own-item`). Pure.
+  `a-qualifier-binds-its-own-item`). So too the item after the Act's name:
+  "sections 118 and 119 of, and paragraphs 9 and 11 of Schedule 9 to, the
+  2003 Act and section 147 of that Act insofar as it relates to those
+  paragraphs of that Schedule" (SI 2004/759 art.8). Pure.
 
   A limit is the whole list's, and the line is left unsplit, where:
   - a comma sets it off from the last item ("…, and section 162(1) of the
@@ -24,7 +27,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order.LastItemLimit do
   @item "(?:(?:sub-?)?sections?|(?:sub-?)?paragraphs?|Schedules?|Parts?|Chapters?|articles?|regulations?)"
 
   @split Regex.compile!(
-           "^(.*\\S)\\s*,\\s+and\\s+(#{@item}\\b[^,;—–:]*?)\\s+(#{@limit}\\b.*)$",
+           "^(.*\\S)(?:\\s*,\\s+and\\s+|(?<=\\bAct)\\s+and\\s+(?=#{@item}\\s+\\S+\\s+of\\s+that\\s+Act\\b))(#{@item}\\b[^,;—–:]*?)\\s+(#{@limit}\\b.*)$",
            "isu"
          )
   # a limit of the earlier items' own, or items that are entries of a

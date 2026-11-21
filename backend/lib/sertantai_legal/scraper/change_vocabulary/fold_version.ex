@@ -51,10 +51,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FoldVersion do
       lib/sertantai_legal/scraper/change_vocabulary/readers/own_commencement.ex
       lib/sertantai_legal/scraper/law_start/provisions.ex
       lib/sertantai_legal/scraper/law_start/list_items.ex
+      lib/sertantai_legal/scraper/law_start/nested_items.ex
+      lib/sertantai_legal/scraper/law_start/pointing_back.ex
       lib/sertantai_legal/scraper/law_start/number_words.ex
       lib/sertantai_legal/scraper/law_start/statements.ex
       lib/sertantai_legal/scraper/law_start/territorial.ex
       lib/sertantai_legal/scraper/law_start/that_day.ex
+      lib/sertantai_legal/scraper/law_start/purpose_stages.ex
+      lib/sertantai_legal/scraper/law_start/that_provision.ex
+      lib/sertantai_legal/scraper/law_start/item_subject.ex
+      lib/sertantai_legal/scraper/law_start/made_condition.ex
+      lib/sertantai_legal/scraper/law_start/own_days.ex
       lib/sertantai_legal/scraper/change_digest.ex
       lib/sertantai_legal/scraper/effect_index.ex
       lib/sertantai_legal/scraper/effect_target.ex
@@ -62,6 +69,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FoldVersion do
       lib/sertantai_legal/scraper/lat_ref.ex
       lib/sertantai_legal/scraper/law_start.ex
       lib/sertantai_legal/scraper/law_start/clause.ex
+      lib/sertantai_legal/scraper/law_start/completing.ex
       lib/sertantai_legal/scraper/law_start/eu.ex
       lib/sertantai_legal/scraper/law_start/schedule_table.ex
       lib/sertantai_legal/scraper/law_territory.ex
@@ -70,6 +78,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FoldVersion do
       lib/sertantai_legal/scraper/provision_text.ex
       lib/sertantai_legal/scraper/territory.ex
     ),
+    # an order read path's own check, which no build reaches
+    # (`StageSplitTest`)
+    except: ~w(lib/sertantai_legal/scraper/commencement/order/held_as.ex),
     deps: ~w(sweet_xml jason)
 
   @doc """

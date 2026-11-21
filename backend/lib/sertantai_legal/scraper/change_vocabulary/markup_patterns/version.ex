@@ -88,7 +88,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPatterns.Version do
       lib/sertantai_legal/scraper/lat_ref.ex
       lib/sertantai_legal/scraper/law_start.ex
       lib/sertantai_legal/scraper/law_start/clause.ex
+      lib/sertantai_legal/scraper/law_start/completing.ex
+      lib/sertantai_legal/scraper/law_start/made_condition.ex
+      lib/sertantai_legal/scraper/law_start/own_days.ex
+      lib/sertantai_legal/scraper/law_start/laid_day.ex
+      lib/sertantai_legal/scraper/law_start/purpose_stages.ex
+      lib/sertantai_legal/scraper/law_start/that_provision.ex
+      lib/sertantai_legal/scraper/law_start/item_subject.ex
+      lib/sertantai_legal/scraper/law_start/pointing_back.ex
       lib/sertantai_legal/scraper/law_start/eu.ex
+      lib/sertantai_legal/scraper/law_start/eu_words.ex
       lib/sertantai_legal/scraper/law_start/schedule_table.ex
       lib/sertantai_legal/scraper/legislation_gov_uk/changes_feed.ex
       lib/sertantai_legal/scraper/note_pointer.ex

@@ -12,12 +12,13 @@ defmodule SertantaiLegal.Scraper.LawStart.Input do
   """
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.LawStart.DateOfEnactment
+  alias SertantaiLegal.Scraper.LawStart.{DateOfEnactment, LaidDay}
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
 
   @doc """
   What `LawStart` decides a law's start from (LR-33): the register's coming
-  into force and made date (`uk_lrt`), the stored CLML's metadata, and the
+  into force and made date (`uk_lrt`), the stored CLML's metadata (with the
+  day it states the law was laid: `LaidDay`), and the
   law's rows (`section_id`, `text`, `part`, `chapter`, in document order).
   """
   @spec of(String.t(), [map()]) :: SertantaiLegal.Scraper.LawStart.input()
@@ -38,6 +39,9 @@ defmodule SertantaiLegal.Scraper.LawStart.Input do
       type_code: law_name |> String.split("_", parts: 3) |> Enum.at(1),
       lrt_date: lrt_date,
       made: made,
+      # the day laid (`ukm:Laid`): what "the 22nd day after the day on
+      # which these Regulations are laid" counts from
+      laid: LaidDay.parse(head),
       clml_head: head,
       # V1-02: a commencement table in the law's own Schedule (LAT holds no
       # Schedules), read only when the text cites one
@@ -49,13 +53,21 @@ defmodule SertantaiLegal.Scraper.LawStart.Input do
           &%{
             section_id: &1.section_id,
             # a clause handing over to a Schedule reads its sentences (CV-06 R3)
-            text: schedule_clause(law_name, Map.get(&1, :text)),
+            text: law_name |> schedule_clause(Map.get(&1, :text)) |> eu_words(law_name),
             part: Map.get(&1, :part),
             chapter: Map.get(&1, :chapter)
           }
         )
     }
   end
+
+  # EU law's apply-from words in the domestic readers' form (`EuWords`) —
+  # never a directive's: it binds Member States and was never in force in
+  # the UK itself (`:eu_directive`, LR-33 P3), so its "Articles … shall apply
+  # from" dates no provision of it (Directive 2010/75)
+  defp eu_words(text, "UK_eudr_" <> _), do: text
+  defp eu_words(text, "UK_eu" <> _), do: SertantaiLegal.Scraper.LawStart.EuWords.domestic(text)
+  defp eu_words(text, _law_name), do: text
 
   defp schedule_clause(law_name, text) do
     with {_, _} <- SertantaiLegal.Scraper.LawStart.ScheduleClause.redirect(text),

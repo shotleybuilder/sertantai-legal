@@ -238,4 +238,20 @@ defmodule SertantaiLegal.Scraper.Commencement.Rule do
 
   defp unit_atom(u) when u in ["day", "days"], do: :day
   defp unit_atom(u) when u in ["month", "months"], do: :month
+
+  @deemed ~r/\b(?:taken|treated|deemed)\s+(?:as\s+having|to\s+have)\s+come\s+into\s+(?:force|operation|effect)\b/i
+
+  @doc """
+  Whether the rule's own words deem its named provisions to have come into
+  force on a day already past ("Subsection (4) shall be taken to have come
+  into force on 15th September 1996": 1997 c.28 s.28(5); "is treated as
+  having come into force on 6 June 2022": 2023 c.30 s.348(4)): that day is
+  those provisions' alone, never a day the law itself started.
+  """
+  @spec deemed?(t()) :: boolean()
+  def deemed?(%__MODULE__{scope: scope, source: %{text: text}})
+      when is_list(scope) and is_binary(text),
+      do: Regex.match?(@deemed, text)
+
+  def deemed?(%__MODULE__{}), do: false
 end

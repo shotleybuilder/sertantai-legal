@@ -293,6 +293,7 @@ defmodule SertantaiLegal.Scraper.Commencement.SentencePatterns do
       "type_code" => input.type_code,
       "lrt_date" => input.lrt_date && Date.to_iso8601(input.lrt_date),
       "made" => input.made && Date.to_iso8601(input.made),
+      "laid" => iso(input[:laid]),
       "tied_date" => input[:tied_date] && Date.to_iso8601(input.tied_date),
       "clml_head" => head(input.clml_head || ""),
       "rows" => rows
@@ -346,6 +347,7 @@ defmodule SertantaiLegal.Scraper.Commencement.SentencePatterns do
       type_code: ex["type_code"],
       lrt_date: date(ex["lrt_date"]),
       made: date(ex["made"]),
+      laid: date(ex["laid"]),
       tied_date: date(ex["tied_date"]),
       clml_head: ex["clml_head"],
       schedule_tables: %{},
@@ -375,6 +377,9 @@ defmodule SertantaiLegal.Scraper.Commencement.SentencePatterns do
     |> Enum.flat_map(&(Regex.scan(&1, head) |> List.flatten()))
     |> Enum.join("\n")
   end
+
+  defp iso(nil), do: nil
+  defp iso(%Date{} = d), do: Date.to_iso8601(d)
 
   defp date(nil), do: nil
   defp date(d), do: Date.from_iso8601!(d)

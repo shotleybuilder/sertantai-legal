@@ -26,7 +26,7 @@ defmodule SertantaiLegal.Scraper.LawStart do
   date and the law's rows.
   """
 
-  alias SertantaiLegal.Scraper.LawStart.{Clause, Eu, ScheduleTable}
+  alias SertantaiLegal.Scraper.LawStart.{Clause, Eu, OwnDays, ScheduleTable}
 
   @enforce_keys [:treatment]
   defstruct [:treatment, :date, :evidence, :text]
@@ -36,10 +36,12 @@ defmodule SertantaiLegal.Scraper.LawStart do
           | :clml_coming_into_force
           | :act_enactment
           | :eu_directive
+          | :eu_applies_from
           | :eu_entry_into_force
           | :eu_publication_relative
           | :clause_date
           | :clause_made_relative
+          | :clause_laid_relative
           | :clause_named_day
           | :clause_staged
           | :by_order
@@ -60,6 +62,7 @@ defmodule SertantaiLegal.Scraper.LawStart do
   @typedoc """
   What a law's start is decided from: `lrt_date` (`uk_lrt.md_coming_into_force_date`),
   `clml_head` (the CLML metadata), `made` (the made date; an Act's passing),
+  `laid` (the day laid, where the metadata states one),
   `rows` (`section_id`, `text`, in document order).
   """
   @type input :: %{
@@ -67,6 +70,7 @@ defmodule SertantaiLegal.Scraper.LawStart do
           optional(:lrt_date) => Date.t() | nil,
           optional(:clml_head) => String.t() | nil,
           optional(:made) => Date.t() | nil,
+          optional(:laid) => Date.t() | nil,
           optional(:rows) => [map()],
           optional(:schedule_tables) => %{String.t() => [[String.t()]]},
           optional(:tied_date) => Date.t() | nil
@@ -84,6 +88,9 @@ defmodule SertantaiLegal.Scraper.LawStart do
     {:eu_directive, false,
      "an EU directive binds Member States and was never in force in the UK itself",
      "Jason 2026-10-16 (LR-33 P3)"},
+    {:eu_applies_from, true,
+     "an EU regulation or decision whose text states the day it applies from: it binds from that day, not its entry into force",
+     "Jason 2026-11-21"},
     {:eu_entry_into_force, true,
      "an EU regulation or decision: EUR-Lex entry into force where the metadata is the original act's (CELEX 3…), else a date its text states",
      "Jason 2026-10-16 (LR-33 P3)"},
@@ -95,6 +102,9 @@ defmodule SertantaiLegal.Scraper.LawStart do
     {:clause_made_relative, true,
      "the clause counts from the made (or passed) date: the day after; N days after; the expiration of N days / weeks / months from (+1 day) or beginning with the day; the first day of the following month",
      "Jason 2026-10-16 (LR-33 P1)"},
+    {:clause_laid_relative, true,
+     "the clause counts from the day the law is laid (ukm:Laid; the later where two Houses differ), as it would from the made date: the Nth day after; N days after; the end of a period beginning with the day, or with the day after it",
+     "Jason 2026-11-21 (Commencement reader: a day relative to laying)"},
     {:clause_named_day, true,
      "IP completion day = 2020-12-31 (and immediately before / after); exit day = 2020-01-31, read as IP completion day in an instrument made before exit day (EU(WA)A 2020 Sch. 5 para. 1(1); CR-09)",
      "Jason 2026-10-16 (LR-33 P1, P2)"},
@@ -164,7 +174,7 @@ defmodule SertantaiLegal.Scraper.LawStart do
     clause =
       input
       |> Map.get(:rows, [])
-      |> Clause.read(Map.get(input, :made), type in @acts)
+      |> Clause.read(OwnDays.of(input), type in @acts)
       |> with_schedule_table(Map.get(input, :schedule_tables))
       |> with_tied(Map.get(input, :tied_date))
       |> assent_floor(head, type)
@@ -198,11 +208,12 @@ defmodule SertantaiLegal.Scraper.LawStart do
   # 2001 s.138(2); "The following provisions … shall not come into force
   # until 1st April 1965": London Government Act 1963 s.94(2)) leaves them to
   # Royal Assent (Interpretation Act 1978 s.4): the Act starts no later
-  # (CV-S05). UK Acts only: devolved Acts date their excepted provisions
+  # (CV-S05); so does a dated list of "The following provisions of this
+  # Act" (1973 c.37 s.39(1)). UK Acts only: devolved Acts date their excepted provisions
   # themselves ("this section and sections 186, 187 … on the day after
   # Royal Assent": anaw 2016/2); an "except" inside a listed item leaves no
   # provision of the Act out (Wildlife and Countryside Act 1981 s.74(2))
-  @leaves_out ~r/\b(?:this\s+Act|(?:provisions|remainder)\s+of\s+this\s+Act)\s*,?\s*\(?\s*(?:other\s+than|except)\b|\bnot\s+come\s+into\s+(?:force|operation)\s+until\b/i
+  @leaves_out ~r/\b(?:this\s+Act|(?:provisions|remainder)\s+of\s+this\s+Act)\s*,?\s*\(?\s*(?:other\s+than|except)\b|\bnot\s+come\s+into\s+(?:force|operation)\s+until\b|\b[Tt]he\s+following\s+provisions\s+of\s+this\s+Act\s+(?:shall\s+)?come\s+into\s+(?:force|operation)\s+on\s+(?:the\s+)?\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+,?\s+\d{4}\b/i
 
   defp assent_floor(
          %__MODULE__{treatment: :clause_staged, date: %Date{} = d, text: text} = clause,
@@ -259,6 +270,15 @@ defmodule SertantaiLegal.Scraper.LawStart do
   end
 
   defp enactment(_head, _type), do: nil
+
+  @doc "An Act's Royal Assent (`ukm:EnactmentDate`); nil for none held, or a law that is no Act."
+  @spec royal_assent(input()) :: Date.t() | nil
+  def royal_assent(%{type_code: type} = input) do
+    case enactment(Map.get(input, :clml_head) || "", type) do
+      %__MODULE__{date: date} -> date
+      nil -> nil
+    end
+  end
 
   defp eu(input, head, type) when type in @eu,
     do: Eu.read(type, head, Map.get(input, :rows, []))

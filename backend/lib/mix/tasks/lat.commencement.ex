@@ -381,7 +381,10 @@ defmodule Mix.Tasks.Lat.Commencement do
         stored = Store.for_law(a.law)
 
         read =
-          for order <- orders, d = doc(order), d != nil, do: {order, order_rules(d, a, stored)}
+          for order <- orders,
+              d = doc(order),
+              d != nil,
+              do: {order, order_rules(order, d, a, stored)}
 
         unless opts[:preview], do: Enum.each(read, &write_order(&1, a.law))
         report_orders(law, orders, read, stored, opts[:preview])
@@ -403,8 +406,14 @@ defmodule Mix.Tasks.Lat.Commencement do
     Orders.candidates(Orders.for_act(law, a.title, a.year), Store.order_sources(law))
   end
 
-  defp order_rules(doc, act, stored),
-    do: doc |> Order.rules(act) |> Order.resolve_appointed_for(stored)
+  # an order held as another instrument commences nothing under the name
+  # it is held by, so its old rules go (`Order.HeldAs`: the Welsh SI 2005/423
+  # held as the UK SI too)
+  defp order_rules(order, doc, act, stored) do
+    if Enum.all?(ClmlStore.law_docs(order), &Order.HeldAs.itself?(order, &1)),
+      do: doc |> Order.rules(act) |> Order.resolve_appointed_for(stored),
+      else: []
+  end
 
   # only its rules for this law: an order listed for two laws keeps the
   # other's (SI 1996/186); an order read as commencing nothing leaves none
@@ -448,7 +457,7 @@ defmodule Mix.Tasks.Lat.Commencement do
           order <- orders,
           d = doc(order),
           d != nil,
-          do: {{order, order_rules(d, a, stored)}, a.law}
+          do: {{order, order_rules(order, d, a, stored)}, a.law}
 
     unless opts[:preview], do: for({reading, law} <- read, do: write_order(reading, law))
 

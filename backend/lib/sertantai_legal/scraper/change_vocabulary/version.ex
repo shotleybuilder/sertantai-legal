@@ -79,6 +79,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Version do
       lib/sertantai_legal/scraper/commencement/family_leftovers.ex
       lib/sertantai_legal/scraper/commencement/held_amenders.ex
       lib/sertantai_legal/scraper/commencement/leftovers.ex
+      lib/sertantai_legal/scraper/commencement/order/held_as.ex
       lib/sertantai_legal/scraper/commencement/order_patterns.ex
       lib/sertantai_legal/scraper/commencement/orders.ex
       lib/sertantai_legal/scraper/commencement/own_read.ex

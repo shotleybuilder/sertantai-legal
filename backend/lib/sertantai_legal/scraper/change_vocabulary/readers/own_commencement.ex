@@ -120,10 +120,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.OwnCommencement do
   # clause's start, Schedule 4A with reg.48A)
   defp class(result, rules, law_name, text) do
     case class(result) do
+      # (an EU regulation's row no stated day reaches comes in with the
+      # regulation, its day counted from publication: "This Regulation shall
+      # enter into force on the twentieth day following that of its
+      # publication …", EUR 2016/879 art.5)
       :not_reached ->
-        if Enum.all?(text, &(&1.treatment == :schedule_effect)),
-          do: no_text(rules, law_name),
-          else: :not_reached
+        if Enum.all?(text, &(&1.treatment == :schedule_effect)) or
+             String.contains?(law_name, ["_eur_", "_eudn_"]),
+           do: no_text(rules, law_name),
+           else: :not_reached
 
       c ->
         c

@@ -29,6 +29,8 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
   alias SertantaiLegal.Scraper.ChangeVocabulary.Gate.Step
 
   alias SertantaiLegal.Repo
+  alias SertantaiLegal.Scraper.LatRef
+  alias SertantaiLegal.Scraper.ChangeCollector
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source, as: Scope
 
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
@@ -38,6 +40,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
   alias SertantaiLegal.Scraper.Commencement.{
     AmendingRead,
     Check,
+    FeedDifferences,
     FamilyLeftovers,
     HeldAmenders,
     Leftovers,
@@ -229,6 +232,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
       end)
 
     report_rows(rows, opts)
+    report_feed_differences(rows, opts)
     report_gaps(gaps, opts)
 
     if opts[:sample], do: sample(rows, gaps, opts[:sample], opts[:n] || 50, opts[:seed])
@@ -327,12 +331,23 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
 
     # no rules: a law with no clause and no register date is `LawStart`'s
     # `no_clause` (a known limit), not a law never read
+    # (nor one whose only rules give its Schedules effect: `Check.no_clause?/2`)
     no_clause? =
-      rules == [] and
-        LawStart.resolve(SertantaiLegal.Scraper.ChangeCollector.law_start_input(law, rows)).treatment ==
-          :no_clause
+      Enum.all?(rules, &(&1.treatment == :schedule_effect)) and
+        Check.no_clause?(rules, start_treatment(law, rows))
 
-    Check.rows(law, rows, rules, feed_commenced(law), no_clause?)
+    inserted = inserted_targets(law)
+
+    law
+    |> Check.rows(rows, rules, feed_commenced(law), no_clause?)
+    |> Enum.map(
+      &Map.put(&1, :inserted, Enum.any?(LatRef.ancestors(&1.id), fn a -> a in inserted end))
+    )
+  end
+
+  defp start_treatment(law, rows) do
+    input = ChangeCollector.law_start_input(law, rows)
+    LawStart.resolve(input).treatment
   end
 
   # the law's own clause re-read now, beside the stored rules of every other
@@ -368,8 +383,11 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
   # reads them
   defp cached_orders(law), do: Orders.candidates(Orders.cached(law), Rules.order_sources(law))
 
+  # (an order held as another instrument commences nothing: `Order.HeldAs`)
   defp order_rules(order, act) do
-    with [_ | _] = xmls <- ClmlStore.law_docs(order) do
+    with [_ | _] = xmls <- ClmlStore.law_docs(order),
+         true <-
+           Enum.all?(xmls, &SertantaiLegal.Scraper.Commencement.Order.HeldAs.itself?(order, &1)) do
       doc = SertantaiLegal.Scraper.AmendingLaw.Doc.new(order, xmls)
 
       SertantaiLegal.Scraper.Commencement.Order.rules(doc, act)
@@ -389,6 +407,17 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
   # the law's own feed's coming-into-force records, by target: its first
   # and full dates — any stored change carrying a feed claim, as Merge joins
   # an agreeing feed record into the own-clause change (its key)
+  # the provisions another law inserted, from the stored changes (the feed
+  # gate's yardstick: their feed record dates the insertion)
+  defp inserted_targets(law) do
+    Repo.query!(
+      "SELECT DISTINCT target FROM provision_changes WHERE law_name = $1 AND operation = 'inserted'",
+      [law]
+    ).rows
+    |> List.flatten()
+    |> MapSet.new()
+  end
+
   defp feed_commenced(law) do
     Repo.query!(
       """
@@ -401,6 +430,42 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
       [law]
     ).rows
     |> Check.feed_index()
+  end
+
+  # the two-way feed gate (Decision 5, Jason 2026-11-21): every row where
+  # our reading and the Feed reader's record of the law's feed disagree,
+  # grouped by cause, each group's review status from
+  # `feed_differences.json`; the groups written beside the gate report
+  @feed_reviewed "test/fixtures/commencement_check/feed_differences.json"
+
+  defp report_feed_differences(rows, opts) do
+    groups = FeedDifferences.groups(rows)
+
+    reviewed =
+      case File.read(@feed_reviewed) do
+        {:ok, body} -> Jason.decode!(body)
+        _ -> %{}
+      end
+
+    lines = FeedDifferences.summary(groups, reviewed)
+    path = "data/reports/commencement-reader/feed-differences-#{slug(opts)}-#{Date.utc_today()}"
+    File.write!(path <> ".txt", Enum.join(lines, "\n") <> "\n")
+
+    File.write!(
+      path <> ".json",
+      Jason.encode!(
+        Map.new(groups, fn {shape, g} -> {shape, Map.update!(g, :examples, &inspect/1)} end),
+        pretty: true
+      )
+    )
+
+    shell = Mix.shell()
+    shell.info(hd(lines))
+
+    for line <- lines |> tl() |> Enum.filter(&String.starts_with?(&1, "  ")) |> Enum.take(15),
+        do: shell.info(line)
+
+    shell.info(List.last(lines) <> " (all groups: #{path}.txt)")
   end
 
   defp report_rows(rows, opts) do

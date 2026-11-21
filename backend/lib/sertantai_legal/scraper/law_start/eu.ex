@@ -4,7 +4,9 @@ defmodule SertantaiLegal.Scraper.LawStart.Eu do
 
   - A directive (`eudr`) binds Member States: never in force in the UK
     itself, so `:eu_directive` (a known limit).
-  - A regulation or decision: the EUR-Lex entry into force, when the
+  - A regulation or decision: the day its text says it applies from
+    (`EuWords`: "It shall apply from 1 January 2010"; Jason 2026-11-21);
+    else the EUR-Lex entry into force, when the
     EUR-Lex metadata legislation.gov.uk embeds is the original act's (CELEX
     `3…`). Where it is a consolidation's (CELEX `0…-YYYYMMDD`) its date is the
     consolidation's, so the date the act's own text states ("shall enter
@@ -22,7 +24,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Eu do
   def read("eudr", _head, _rows), do: %LawStart{treatment: :eu_directive, evidence: "type eudr"}
 
   def read(type, head, rows) when type in ~w(eur eudn) do
-    original_act(head) || stated(rows) ||
+    applies_from(rows) || original_act(head) || stated(rows) ||
       %LawStart{treatment: :eu_publication_relative, evidence: celex(head)}
   end
 
@@ -50,6 +52,23 @@ defmodule SertantaiLegal.Scraper.LawStart.Eu do
       [_, c] -> c
       nil -> nil
     end
+  end
+
+  # the day the whole regulation applies from, as `EuWords` gives it ("It
+  # shall apply from 1 January 2010": EUR 2009/1005 art.31): it binds from
+  # that day, not from its entry into force (Jason 2026-11-21)
+  @applies ~r/\bThis\s+(?:Regulation|Decision)\s+shall\s+come\s+into\s+force\s+on\s+(.*)/is
+
+  defp applies_from(rows) do
+    Enum.find_value(rows, fn row ->
+      with text when is_binary(text) <- row[:text],
+           [_, tail] <- Regex.run(@applies, text),
+           %Date{} = d <- Clause.date_at_start(tail) do
+        %LawStart{treatment: :eu_applies_from, date: d, evidence: row.section_id, text: text}
+      else
+        _ -> nil
+      end
+    end)
   end
 
   # "This Regulation shall enter into force on 18 August 2005, except …"

@@ -35,9 +35,10 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
 
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.Commencement.{Order, Rule}
+  alias SertantaiLegal.Scraper.Commencement.Order.Asides
   alias SertantaiLegal.Scraper.LatParser.Xml
   alias SertantaiLegal.Scraper.LawStart
-  alias SertantaiLegal.Scraper.LawStart.{Clause, Provisions}
+  alias SertantaiLegal.Scraper.LawStart.{Clause, MadeCondition, OwnDays, Provisions}
 
   @territories %{
     "england" => "E",
@@ -59,12 +60,14 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
   @doc """
   The law's start (`LawStart.resolve/1`), the rules its clause states, and
   the provision-level sentences it couldn't resolve (`unread`: groups, no
-  rule).
+  rule), and the rows that state nothing because their head's condition on
+  the making day fails (`not_stated`: `LawStart.MadeCondition`).
   """
   @spec read(String.t(), LawStart.input()) :: %{
           law: LawStart.t(),
           rules: [Rule.t()],
-          unread: [map()]
+          unread: [map()],
+          not_stated: [String.t()]
         }
   def read(law_name, input) do
     law = LawStart.resolve(input)
@@ -76,34 +79,15 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
     # its sentences, and its own date, or an Act's whole-Act "by order",
     # is the rule (NISR 1997/455 reg.1: 1 April 1998, the register's 1
     # December 1997 being reg.1(2)'s; HSWA 1974 s.85(2))
-    clause = clause(law, rows, Map.get(input, :made), LawStart.act?(Map.get(input, :type_code)))
+    clause = clause(law, rows, OwnDays.of(input), LawStart.act?(Map.get(input, :type_code)))
     read_from = clause || law
 
     table = Provisions.table_groups(rows, read_from, Map.get(input, :schedule_tables))
-    groups = Provisions.groups(rows, Map.get(input, :made), read_from) ++ table
+    groups = Provisions.groups(rows, OwnDays.of(input), read_from) ++ table
 
     table_refs = table |> Enum.flat_map(& &1.refs) |> Enum.map(&bare/1)
 
-    by_clause =
-      cond do
-        rule_from_clause?(law, clause) ->
-          clause
-
-        # Royal Assent is an Act's own only where it says nothing of its
-        # commencement: a sentence of the Act's own the reader can't read
-        # (no group read from it) leaves it unread, never Royal Assent (Gas
-        # Act 1995 s.18(2) "This Act, except— … shall come into force on
-        # the appointed day, that is to say, such day as …": CV-S04 round 2,
-        # N4)
-        law.treatment == :act_enactment ->
-          case unread_own(rows, groups) do
-            nil -> law
-            unread -> unread
-          end
-
-        true ->
-          law
-      end
+    by_clause = by_clause(law, clause, rows, groups)
 
     # what the general clause leaves out, when it is the rule
     excepted =
@@ -111,13 +95,18 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
         do: by_clause |> Provisions.except_refs(rows) |> Enum.map(&bare/1),
         else: []
 
+    # … and those it leaves out only so far (`Provisions.except_partly/2`)
+    limited = except_partly(by_clause, rows, excepted)
+
     # a staged clause's law-level rule is LawStart's earliest date (LR-33 P1);
     # whether it should reach rows no sentence names is open (CR-03 question)
     rules =
-      List.wrap(law_rule(law_name, by_clause, table_refs ++ excepted)) ++
+      List.wrap(law_rule(law_name, by_clause, table_refs ++ excepted ++ limited)) ++
         assent_rules(law_name, law, by_clause, excepted -- named(groups)) ++
+        assent_partly(law_name, law, by_clause, limited -- named(groups)) ++
+        list_rest(law_name, read_from, groups, input) ++
         ((Enum.flat_map(groups, &group_rule(law_name, preceding(&1, rows))) ++
-            own_words(law_name, rows, input))
+            own_words(law_name, rows, input) ++ own_effect(law_name, rows, input))
          # a provision's own words read as a sentence too: once — in that
          # provision; two statements giving the same provisions the same day
          # are each a rule (1984 c.12 s.110(2), (3): section 109(4) "so far
@@ -131,8 +120,35 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
     %{
       law: law,
       rules: rules ++ clause_own(law_name, rules),
-      unread: Enum.filter(groups, &(&1.kind == :unread))
+      unread: Enum.filter(groups, &(&1.kind == :unread)),
+      not_stated: MadeCondition.failing(rows, OwnDays.of(input))
     }
+  end
+
+  # the clause or start the law's general rule is read from
+  defp by_clause(law, clause, rows, groups) do
+    cond do
+      rule_from_clause?(law, clause) ->
+        clause
+
+      first_stage_day?(law, clause, groups) ->
+        clause
+
+      # Royal Assent is an Act's own only where it says nothing of its
+      # commencement: a sentence of the Act's own the reader can't read
+      # (no group read from it) leaves it unread, never Royal Assent (Gas
+      # Act 1995 s.18(2) "This Act, except— … shall come into force on
+      # the appointed day, that is to say, such day as …": CV-S04 round 2,
+      # N4)
+      law.treatment == :act_enactment ->
+        case unread_own(rows, groups) do
+          nil -> law
+          unread -> unread
+        end
+
+      true ->
+        law
+    end
   end
 
   # provisions the clause leaves to an order in each country it speaks of
@@ -155,7 +171,28 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
       |> Enum.filter(fn {_ref, places} -> length(places) > 1 end)
       |> Enum.map(&elem(&1, 0))
 
-    Enum.map(rules, &leave(&1, left))
+    Enum.map(rules, &leave(&1, left)) ++ kept(rules, left)
+  end
+
+  # what such a list excepts from a provision it leaves to orders ("Part 7
+  # above except sections 83(2) and 85": CNEA 2005 s.108(2)(n)) is not
+  # left with it: where no other rule names it, the general rule is its own
+  defp kept(rules, left) do
+    named = for %Rule{scope: scope} <- rules, is_list(scope), ref <- scope, do: ref
+
+    excepted =
+      for %Rule{scope: scope, when: {:appointed, _}, territory: t, except: except} <- rules,
+          is_list(scope) and is_binary(t),
+          Enum.any?(scope, &(&1 in left)),
+          ref <- except,
+          ref not in named,
+          uniq: true,
+          do: ref
+
+    case {excepted, Enum.find(rules, &(&1.scope == :all))} do
+      {[_ | _], %Rule{} = general} -> [%{general | scope: excepted, except: []}]
+      _ -> []
+    end
   end
 
   defp leave(%Rule{scope: scope, except: except} = r, [_ | _] = left) when scope in [:all, :rest],
@@ -206,7 +243,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
     for row <- rows,
         s <- Clause.sentences(row.text || ""),
         [_, tail] <- [Regex.run(@this, s)],
-        when_ = own_when(tail, Map.get(input, :made)),
+        when_ = own_when(tail, OwnDays.of(input)),
         when_ != nil,
         uniq: true do
       Rule.new(
@@ -218,6 +255,32 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
       )
     end
   end
+
+  # "This section has effect in relation to a joint authority from the day
+  # on which it is established" (Local Government Act 1985 s.84(3)): the
+  # provision's own start, from a date or a day none states (unread: never
+  # the law's general date)
+  @this_effect ~r/^(?:\(\w+\)\s*)?This\s+(?:section|regulation|article|rule)\s+(?:shall\s+have|has)\s+effect\s+(?:in\s+relation\s+to\s+[^,.;]{1,120}?\s+)?(?:as\s+)?from\s+(.+?)\.?$/i
+
+  defp own_effect(law_name, rows, input) do
+    for row <- rows,
+        s <- Clause.sentences(row.text || ""),
+        [_, day] <- [Regex.run(@this_effect, s)],
+        when_ = own_when("on " <> day, OwnDays.of(input)) || :unread,
+        uniq: true do
+      Rule.new(
+        commences: law_name,
+        scope: [top(row.section_id)],
+        when: when_,
+        source: source(law_name, row.section_id, s),
+        treatment: effect_treatment(when_)
+      )
+    end
+  end
+
+  defp effect_treatment({:date, _}), do: :provision_dated
+  defp effect_treatment({:appointed, _}), do: :provision_by_order
+  defp effect_treatment(:unread), do: :provision_unread
 
   defp own_when(tail, made) do
     case Clause.tail_date(tail, made) do
@@ -358,8 +421,71 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
 
   defp assent_rules(_law_name, _law, _clause, _excepted), do: []
 
+  defp except_partly(_clause, _rows, []), do: []
+
+  defp except_partly(clause, rows, _excepted),
+    do: clause |> Provisions.except_partly(rows) |> Enum.map(&bare/1)
+
+  # a provision the clause's list leaves out only so far ("… and
+  # subsection (8) of section 67 so far as it relates to that Part of that
+  # Schedule": 1994 c.21 s.68(6)(f)) is in on Royal Assent, partly
+  defp assent_partly(
+         law_name,
+         %LawStart{treatment: :act_enactment, date: %Date{} = d},
+         clause,
+         [
+           _ | _
+         ] = limited
+       ) do
+    [
+      Rule.new(
+        commences: law_name,
+        scope: limited,
+        when: {:date, d},
+        purposes: :in_relation_to,
+        source: source(law_name, clause.evidence, clause.text),
+        treatment: :provision_qualified
+      )
+    ]
+  end
+
+  defp assent_partly(_law_name, _law, _clause, _limited), do: []
+
+  # a UK Act's clause that is a dated list of "The following provisions of
+  # this Act" says nothing of the rest: with no statement for them, they
+  # are in force on Royal Assent (Interpretation Act 1978 s.4(b); 1973 c.37
+  # s.39(1): sections 9 to 40(3) listed for 1st April 1974, the Act passed
+  # 18th July 1973). Devolved Acts date their own rest (`LawStart`)
+  @following_list ~r/\b[Tt]he\s+following\s+provisions\s+of\s+this\s+Act\s+(?:shall\s+)?come\s+into\s+(?:force|operation)\s+on\s+(?:the\s+)?\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+,?\s+\d{4}\b/i
+
+  defp list_rest(
+         law_name,
+         %LawStart{treatment: :clause_staged, text: text} = clause,
+         groups,
+         %{type_code: "ukpga"} = input
+       )
+       when is_binary(text) do
+    with true <- Regex.match?(@following_list, text),
+         false <- Enum.any?(groups, &(&1.kind == :remaining)),
+         %Date{} = assent <- LawStart.royal_assent(input) do
+      [
+        Rule.new(
+          commences: law_name,
+          scope: :rest,
+          when: {:date, assent},
+          source: source(law_name, clause.evidence, clause.text),
+          treatment: :act_enactment
+        )
+      ]
+    else
+      _ -> []
+    end
+  end
+
+  defp list_rest(_law_name, _clause, _groups, _input), do: []
+
   @metadata [:lrt_metadata, :clml_coming_into_force, :act_enactment]
-  @clause_dated [:clause_date, :clause_made_relative, :clause_named_day]
+  @clause_dated [:clause_date, :clause_made_relative, :clause_laid_relative, :clause_named_day]
 
   # the clause's own date; an Act's general clause left to orders, tied or
   # unread (not a sentence about some provisions, "The preceding provisions
@@ -375,6 +501,33 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
     do: whole_undated?(clause)
 
   defp rule_from_clause?(_law, _clause), do: false
+
+  # the register's day (or the CLML's) is a first stage's, never the whole
+  # start, where the law's general clause waits for a day no date states
+  # and another sentence brings the whole law in on that very day for a
+  # purpose only ("Subject to paragraph (4), these Regulations shall come
+  # into force on the day on which the … Convention … comes into force in
+  # respect of the United Kingdom"; "(4) These Regulations shall come into
+  # force on 15th July 2006 so far as may be necessary for the purpose of
+  # enabling certificates … to be issued": SI 2006/1244 reg.1): the
+  # general clause is the rule, undated
+  @metadata_day [:lrt_metadata, :clml_coming_into_force]
+  @eu_starts [:eu_applies_from, :eu_entry_into_force, :eu_publication_relative]
+
+  defp first_stage_day?(
+         %LawStart{treatment: t, date: %Date{} = day},
+         %LawStart{} = clause,
+         groups
+       )
+       when t in @metadata_day,
+       do: clause.treatment in @whole_undated and Enum.any?(groups, &whole_law_stage?(&1, day))
+
+  defp first_stage_day?(_law, _clause, _groups), do: false
+
+  defp whole_law_stage?(%{kind: :remaining, treatment: :provision_qualified} = g, day),
+    do: Map.get(g, :qualified_date) == day
+
+  defp whole_law_stage?(_group, _day), do: false
 
   defp whole_undated?(%LawStart{treatment: :clause_unread, text: text}) when is_binary(text),
     do: Clause.general?(text)
@@ -404,6 +557,16 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
 
   # the clause behind a start metadata decided, when the law has one
   defp clause(%LawStart{treatment: t}, rows, made, act?) when t in @metadata do
+    case Clause.read(rows, made, act?) do
+      %LawStart{evidence: e} = clause when is_binary(e) -> clause
+      _ -> nil
+    end
+  end
+
+  # … and behind an EU law's start (EUR-Lex, or its text): its article's
+  # staged articles are its provisions' ("However, Articles 1 and 2 shall
+  # apply from 1 January 2017 …": EUR 2016/879 art.5, as `EuWords` gives it)
+  defp clause(%LawStart{treatment: t}, rows, made, act?) when t in @eu_starts do
     case Clause.read(rows, made, act?) do
       %LawStart{evidence: e} = clause when is_binary(e) -> clause
       _ -> nil
@@ -458,17 +621,23 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
 
   defp preceding(g, _rows), do: g
 
+  # a list item counting from a day of the law's own that is not held
+  # (laid, made: `Clause.item_unread_reason/2`)
+  defp day_not_held?(g), do: Map.get(g, :reason) in [:laid_day_not_held, :made_day_not_held]
+
   # a statement naming provisions on a day the reader can't count — from
   # the laying, from an event ("This Regulation and regulation 2 come into
   # force on the 22nd day after the day on which these Regulations are
   # laid": SI 2018/1202 reg.1(3)) — is kept, unread: its provisions are
   # dated apart, never on the law's general date. A limit on a day an order
   # may appoint is no statement ("may not appoint a day … which is before
-  # the end of the period …": asp 2014/14 s.104(4))
-  @relative_day ~r/\binto\s+(?:force|operation)\s+(?:on|at|with)\s+(?:the\s+(?:\w+\s+)?day\s+(?:after|following)|the\s+(?:end|expiry|expiration)\s+of\s+the\s+period)\b/i
+  # the end of the period …": asp 2014/14 s.104(4)). So is the later of
+  # two days where one is not read ("on … or, if later, the day on which
+  # …"): never the first day alone
+  @relative_day ~r/\binto\s+(?:force|operation)\s+(?:on|at|with)\s+(?:the\s+(?:\w+\s+)?day\s+(?:after|following)|the\s+(?:end|expiry|expiration)\s+of\s+the\s+period)\b|\binto\s+(?:force|operation)\b[^.;]*?\bor,?\s+if\s+later\b/i
 
   defp group_rule(law_name, %{kind: :unread, refs: [_ | _]} = g) do
-    if Regex.match?(@relative_day, g.text),
+    if Regex.match?(@relative_day, g.text) or day_not_held?(g),
       do: [
         Rule.new(
           commences: law_name,
@@ -538,6 +707,12 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
 
   # left to an order country by country (CNEA 2005 s.108(1); 1969 c.10
   # s.38(3))
+  # … a provision named with a limit of its own partly so (`limited`: "in
+  # Part 4 of Schedule 5, the repeals to …", s.108(2)(h))
+  defp qualification(%{treatment: :provision_by_order, territory: place, limited: true})
+       when is_binary(place),
+       do: {Map.get(@territories, String.downcase(place)), :in_relation_to}
+
   defp qualification(%{treatment: :provision_by_order, territory: place}) when is_binary(place),
     do: {Map.get(@territories, String.downcase(place)), nil}
 
@@ -550,10 +725,13 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
 
   defp qualification(_g), do: {nil, nil}
 
+  # (a country in a provision's bracketed heading is the heading's:
+  # "section 52 (termination of grants for redevelopment in Scotland)",
+  # 1986 c.63 s.57(1))
   defp territory(text) do
     case Regex.run(
            ~r/\b(?:in relation to|in|as respects|so far as it (?:extends|applies) to)\s+(England and Wales|Great Britain|England|Wales|Scotland|Northern Ireland)\b/i,
-           text
+           Asides.drop_headings(text)
          ) do
       [_, place] -> Map.get(@territories, String.downcase(place))
       nil -> nil

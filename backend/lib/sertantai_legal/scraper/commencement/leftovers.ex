@@ -30,7 +30,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.Commencement.{Order, OrderPatterns, Rule, SentencePatterns}
   alias SertantaiLegal.Scraper.Commencement.Order.Asides
-  alias SertantaiLegal.Scraper.LawStart.{Clause, ListItems, Provisions}
+  alias SertantaiLegal.Scraper.LawStart.{Clause, ListItems, Provisions, Statements}
 
   @type leftover :: %{
           kind: :date | :exception | :provision | :qualifier | :relative_day,
@@ -97,8 +97,14 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
   # reading rule ("References in subsections (1) to (5) to provision …":
   # 2014 c.21 s.55(6)), what another enactment provides (1982 c.16 s.97(6)),
   # a limit on a scheme's day ("The day specified by a scheme … for the
-  # scheme to come into force must not fall after …": 2000 c.21 s.92(9))
-  @not_ours ~r/^\W*(?:for\s+the\s+purposes\s+of\s+this\s+(?:Act|Part),\s*)?the\s+(?!(?:provisions?|sections?|Act|Part|Schedule|regulations?|articles?)\b)[a-z][\w-]*\s+(?:shall|is\s+to)\s+be\s+(?:taken|treated|deemed)\s+to\s+have\s+come\s+into\b|\bEU\s+law\b[^.;]*\bcomes?\s+into\b|^\W*References?\s+in\s+(?:sub)?(?:sections?|paragraphs?|regulations?)\b|\b(?:enactment|Act|order|instrument)\s+provides\s+that\b[^.;]*\bcome\s+into\b|^\W*(?:Sections?|Regulations?|Articles?|Paragraphs?|Schedules?|Parts?)\s+[\w()]+(?:\s*(?:,|and|to)\s*[\w()]+)*\s+of\s+the\s+(?:[A-Z][\w(),'-]*\s+){1,14}(?:Act|Order|Regulations)(?:\s+\([^)]*\))?\s+\d{4}\b[^.;]*?\b(?:shall\s+)?comes?\s+into\b|\bhad\s+the\s+[^.;]{1,60}?\bcome\s+into\s+(?:force|operation)\b|\bfor\s+the\s+(?:scheme|order|regulations|instrument|code)\s+to\s+come\s+into\s+(?:force|operation)\b/i
+  # scheme to come into force must not fall after …": 2000 c.21 s.92(9)),
+  # an instrument made under the law ("an order made by a district council
+  # under this Article … may come into operation on, or at any time after,
+  # the date of its confirmation": NISI 1981/158 art.17(12)), the
+  # provisions of another Act an order commences ("The provisions of the
+  # 2005 Act which are specified in column 1 … come into force on the day
+  # appointed": SSI 2005/351 art.2)
+  @not_ours ~r/\ban?\s+(?:order|scheme|byelaw|notice|direction)\s+made\s+(?:by|under)\b[^.;]*?\bmay\s+come\s+into\s+(?:force|operation)\b|^\W*the\s+provisions\s+of\s+the\s+(?:\d{4}\s+|(?:[A-Z][\w(),'-]*\s+){1,14})(?:Act|Order|Regulations)\b[^.;]*?\bcome\s+into\b|^\W*(?:for\s+the\s+purposes\s+of\s+this\s+(?:Act|Part),\s*)?the\s+(?!(?:provisions?|sections?|Act|Part|Schedule|regulations?|articles?)\b)[a-z][\w-]*\s+(?:shall|is\s+to)\s+be\s+(?:taken|treated|deemed)\s+to\s+have\s+come\s+into\b|\bEU\s+law\b[^.;]*\bcomes?\s+into\b|^\W*References?\s+in\s+(?:sub)?(?:sections?|paragraphs?|regulations?)\b|\b(?:enactment|Act|order|instrument)\s+provides\s+that\b[^.;]*\bcome\s+into\b|^\W*(?:Sections?|Regulations?|Articles?|Paragraphs?|Schedules?|Parts?)\s+[\w()]+(?:\s*(?:,|and|to)\s*[\w()]+)*\s+of\s+the\s+(?:[A-Z][\w(),'-]*\s+){1,14}(?:Act|Order|Regulations)(?:\s+\([^)]*\))?\s+\d{4}\b[^.;]*?\b(?:shall\s+)?comes?\s+into\b|\bhad\s+the\s+[^.;]{1,60}?\bcome\s+into\s+(?:force|operation)\b|\bfor\s+the\s+(?:scheme|order|regulations|instrument|code)\s+to\s+come\s+into\s+(?:force|operation)\b/i
 
   # the entries a repeal names are other Acts' provisions ("Schedule 10, the
   # following repeals:— The Employment Medical Advisory Service Act 1972-
@@ -107,6 +113,11 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
   # references to “civil partner” in … regulation 2 shall not apply in
   # relation to any time before …": SI 2005/881 reg.1(1))
   @not_applying ~r/,?\s*save\s+that\b[^.;]*?\bshall\s+not\s+apply\b.*$/is
+  # the subsection the statement's provisions are taken out of is a
+  # mention, never commenced ("Subsection (1)(f) does not apply to the
+  # following provisions in Part 7 (which come into force in accordance
+  # with subsection (6) or (7) of this section)—": asc 2021/1 s.175(2))
+  @taken_out_of ~r/^(\W*(?:\(\w+\)\s*)?)(?:sub-?sections?|paragraphs?)\s+\(\w+\)(?:\(\w+\))*(?:\s+(?:above|of\s+this\s+(?:section|regulation|article|rule)))?\s+(?:does|do|shall)\s+not\s+apply\s+to\b/i
 
   @repeal_entries ~r/\bthe\s+following\s+(?:repeals|entries)\b.*$/is
 
@@ -137,9 +148,14 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
       |> then(&Regex.replace(@different_days, &1, "."))
       |> then(&Regex.replace(@construed, &1, "."))
       |> tied()
+      |> event_day()
+      |> enabling_purpose(rules)
+      |> whole_law_purpose(rules)
+      |> leading_purpose(rules)
       |> partly_excepted()
       |> then(&Regex.replace(@repeal_entries, &1, ""))
       |> then(&Regex.replace(@not_applying, &1, "."))
+      |> then(&Regex.replace(@taken_out_of, &1, "\\1It does not apply to"))
       # quoted words are words, never provisions ("the words “section 48,”":
       # SI 1996/1609)
       |> then(&Regex.replace(~r/“[^”]*”/u, &1, "“”"))
@@ -185,6 +201,72 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
     end
   end
 
+  # an event's day is described by what follows it, provisions too: "on
+  # the expiry of the period of 90 days beginning with the day on which
+  # water is first taken by the Council in terms of articles 5 and 6(2) of
+  # this Order" (SI 1994/3308 art.1(2)); the day of making or passing is
+  # the law's own
+  @event_day ~r/\bthe\s+(?:day|date)\s+on\s+which\s+(?!(?:it|they|this|these|the\s+(?:Act|Order|Regulations|Rules))\b)[^;.]*/i
+  @event "an event's day"
+
+  defp event_day(s) do
+    case Regex.split(~r/\binto\s+(?:force|operation)\b/i, s, parts: 2, include_captures: true) do
+      [head, cif, tail] -> head <> cif <> Regex.replace(@event_day, tail, @event)
+      _ -> s
+    end
+  end
+
+  # the purpose a partial rule carries is enabling something, and the
+  # provisions it names are what is enabled, never commenced or excepted:
+  # "(a) so far as is necessary for the purpose of enabling the Secretary of
+  # State to take action in relation to a breach of the requirements listed
+  # in regulation 63 … (other than the requirements in regulations
+  # 24(1)(d)(i) and (2) and 26), on 1st October 2012" (SI 2012/2079
+  # reg.1(4))
+  @enabling ~r/\bfor\s+the\s+purposes?\s+of\s+enabling\b(?:[^;()]|\((?:[^()]|\([^()]*\))*\))*?(?=,\s*on\b|;|$)/i
+
+  defp enabling_purpose(s, rules) do
+    if Enum.any?(rules, &(not Rule.full?(&1))),
+      do: Regex.replace(@enabling, s, "for the purposes of enabling it"),
+      else: s
+  end
+
+  # a whole law brought in for a purpose: the provision names the purpose,
+  # never what is commenced ("shall come into force, for the purpose of
+  # regulation 10(2), on 20th March 1991 and for all other purposes on 1st
+  # September 1991": SI 1991/346 reg.1(1); Jason 2026-11-20)
+  @purpose_provision ~r/\bfor\s+the\s+purposes?\s+(?:only\s+)?of\s+(?:regulations?|articles?|sections?|rules?|paragraphs?)\s+\d[\w()]*(?:\s*(?:,|and|to)\s*\d[\w()]*)*/i
+
+  @purpose_lead ~r/\bfor\s+the\s+purposes?\s+(?:only\s+)?of\s+(?=(?:regulations?|articles?|sections?|rules?|paragraphs?)\s+\d)/i
+
+  defp whole_law_purpose(s, rules) do
+    cond do
+      Enum.any?(rules, &(&1.scope == :rest and not Rule.full?(&1))) ->
+        Regex.replace(@purpose_provision, s, "for the purposes of it")
+
+      # the purpose names the law's own provisions: a list of them, fully
+      # in force on its day (Jason 2026-11-21, SI 2015/776), so "for the
+      # purpose of" only leads the list
+      Enum.any?(rules, &(&1.scope == :rest)) and Enum.any?(rules, &is_list(&1.scope)) ->
+        Regex.replace(@purpose_lead, s, "")
+
+      true ->
+        s
+    end
+  end
+
+  # … so too the provision a lead-in names before the statement's subject,
+  # where the rule read is partial ("In relation to an offence under
+  # regulation 3(2), regulations 6 to 8 come into force …": SI 2017/1312
+  # reg.1(4))
+  @leading_purpose ~r/^(\W*(?:\(\w+\)\s*)?(?:in\s+relation\s+to|for\s+the\s+purposes?\s+of|in\s+the\s+case\s+of|as\s+respects))\s+[^,;]+,\s*(?=(?:the\s+)?(?:sections?|regulations?|articles?|rules?|paragraphs?|Parts?|Chapters?|Schedules?)\b)/i
+
+  defp leading_purpose(s, rules) do
+    if Enum.any?(rules, &(not Rule.full?(&1))),
+      do: Regex.replace(@leading_purpose, s, "\\1 it, "),
+      else: s
+  end
+
   @relates_to ~r/\b(?:(?:in\s+)?so\s+far|insofar)\s+as\s+(?:it|they)\s+relates?\s+to\s+[^);]*/i
 
   # a bracket the text leaves open closes at its end (legislation.gov.uk's
@@ -195,7 +277,13 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
     if open > 0, do: s <> String.duplicate(")", open), else: s
   end
 
-  defp power?(s), do: Regex.match?(@power, s)
+  # a limit on the power to appoint a day, never a statement ("The
+  # Scottish Ministers may not appoint a day for section 1(1) to come into
+  # force which is before the end of the period of 2 years …": asp 2014/14
+  # s.104(4))
+  @limit ~r/\bmay\s+not\s+appoint\s+a\s+(?:day|date)\b|\bno\s+(?:day|date)\s+(?:may|shall)\s+be\s+appointed\b/i
+
+  defp power?(s), do: Regex.match?(@power, s) or Regex.match?(@limit, s)
 
   defp instrument?(s) do
     # (after a lead-in: "For the purpose of this article, a CFD transfer
@@ -221,17 +309,32 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
   # 24 July 2025 … enters into force": SI 2026/40 reg.1(2))
   @signed ~r/\b(?:signed|done|adopted|concluded|opened\s+for\s+signature)\s+(?:at\s+[A-Z][\w-]*\s+)?on\s+(?=\d)/
 
+  # the day a law ceases to have effect or expires is its end, a repeal
+  # fact: never a commencement date ("… shall come into force on 1st May
+  # 2001 and shall cease to have effect on 31st October 2001": SI 2001/1623
+  # reg.1(1); "shall cease to have effect 20th July 2001": WSI 2001/1506
+  # reg.1(2))
+  @ends ~r/\b(?:ceases?\s+to\s+have\s+effect|expires?)\s+(?:(?:on|at\s+the\s+end\s+of|at\s+midnight\s+on|after)\s+)?(?:the\s+)?(?=\d)/i
+
   defp dates(s, rules) do
     held = for %Rule{when: {:date, d}} <- rules, into: MapSet.new(), do: d
-    s = String.replace(s, @signed, "signed ")
+    s = s |> String.replace(@signed, "signed ") |> String.replace(@ends, "signed ")
 
     for [words] <- Regex.scan(@date, s),
         not String.contains?(s, "signed " <> words),
         d = Clause.date_at_start(words),
         d != nil,
         not MapSet.member?(held, d),
+        not ended?(s, words, d, held),
         do: %{kind: :date, words: words}
   end
+
+  # "at the end of 31st December 2024" is the next day's rule (SI 2024/1366
+  # art.2(2)(a))
+  defp ended?(s, words, d, held),
+    do:
+      MapSet.member?(held, Date.add(d, 1)) and
+        s =~ ~r/\bat\s+the\s+end\s+of\s+#{Regex.escape(words)}/i
 
   defp exceptions(s, rules, refs) do
     s = other_law(s)
@@ -371,16 +474,23 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
     # 4 and 14 come into force on …" — so an item row's rules are its own)
     item? = &(items != [] and String.starts_with?(&1, bare(row_id) <> "("))
 
+    # (a statement the reader gave its verb back — "and the remainder on 1st
+    # October 1988", SI 1988/1048 reg.1(2) — is the sentence's as read)
+    pieces = sentence |> Statements.split() |> Enum.map(&squash/1)
+
     own =
       for %Rule{source: %{ref: ref, text: t}} = r <- rules,
           is_binary(ref) and is_binary(t),
           provision(ref) == base,
-          item?.(ref) or String.contains?(squashed, squash(t)) or
-            String.contains?(squash(t), squash(sentence)),
+          item?.(ref) or words_of?(squash(t), squashed, squash(sentence), pieces),
           do: r
 
     {text, own}
   end
+
+  # a rule's words part of the statement, it of theirs, or one of its pieces
+  defp words_of?(rule, statement, sentence, pieces),
+    do: String.contains?(statement, rule) or String.contains?(rule, sentence) or rule in pieces
 
   @doc "Each commencement sentence of a law's `rows` with its leftovers, given the law's reading."
   @spec for_law([map()], map(), [{String.t(), String.t()}]) :: [
@@ -391,7 +501,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
       {text, own} = statement(row_id, sentence, rows, read)
       refs = &Provisions.refs_in(&1, rows, provision(row_id))
 
-      if own == [] and outside?(text, refs),
+      if own == [] and (outside?(text, refs) or Provisions.other_law_list?(sentence)),
         do: {row_id, sentence, []},
         else: {row_id, sentence, of(text, own, refs)}
     end
@@ -423,6 +533,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
   @spec sentences([map()], map()) :: [statement()]
   def sentences(rows, read) do
     found = SentencePatterns.sentences(rows)
+    not_stated = Map.get(read, :not_stated, [])
 
     for {{row_id, s}, {_, _, left}} <- Enum.zip(found, for_law(rows, read, found)) do
       f = SentencePatterns.form(s)
@@ -434,8 +545,14 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
         form: f,
         outcome: o,
         pattern: SentencePatterns.key(f, o.class),
-        # (a mention the catalogue classes so, as SI 2015/1947 reg.96(7))
-        leftovers: if(f.subject == "instrument" or f.role == "mention", do: [], else: left)
+        # (a mention the catalogue classes so, as SI 2015/1947 reg.96(7); a
+        # statement under a head whose condition on the making day fails
+        # states nothing, as SI 2024/1366 art.2(3))
+        leftovers:
+          if(f.subject == "instrument" or f.role == "mention" or row_id in not_stated,
+            do: [],
+            else: left
+          )
       }
     end
   end

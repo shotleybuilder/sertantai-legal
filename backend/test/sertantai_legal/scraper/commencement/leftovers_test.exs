@@ -402,6 +402,17 @@ defmodule SertantaiLegal.Scraper.Commencement.LeftoversTest do
              ) == []
     end
 
+    test "the subsection provisions are taken out of is a mention, never commenced (asc 2021/1 s.175(2))" do
+      s =
+        "Subsection (1)(f) does not apply to the following provisions in Part 7 (which come into force in accordance with subsection (6) or (7) of this section)—"
+
+      rows = rows(~w[s.145(7)(b) s.148 s.175(1) s.175(1)(f) s.175(2) s.175(6) s.175(7)])
+      refs = &Provisions.refs_in(&1, rows, "UK_x:s.175")
+      held = [rule(["s.145(7)(b)", "s.148"], :unread, s, treatment: :provision_unread)]
+
+      assert words(Leftovers.of(s, held, refs), :provision) == []
+    end
+
     test "the Order appointing the day \"may provide\": the order's power, not a qualifier (1971 c.19 s.6(5))" do
       s =
         "This Act shall come into force on such day as Her Majesty may by Order in Council appoint, and, for the purposes of the transition from the law in force immediately before the day appointed under this subsection to the provisions of this Act, the Order appointing the day may provide that those provisions shall have effect subject to such transitional provisions as may be contained in the Order."

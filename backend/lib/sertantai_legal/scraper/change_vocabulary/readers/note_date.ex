@@ -247,11 +247,22 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
 
   defp undated?(c), do: Enum.all?(@dated, fn {s, a} -> Change.values(c, s, a) == [] end)
 
-  # the most specific provisions named (a paragraph, not its Schedule's
-  # introducing section)
+  # the most specific provisions named: a Schedule's paragraph, never the
+  # section introducing its Schedule nor a whole Schedule named beside it,
+  # the repeals table restating the paragraph's repeal ("Sch. 22 para. 25,
+  # Sch. 24": the Environment Act 1995's repeal of COPA 1974 s.11, the
+  # paragraph in force on 1 April 1996 by SI 1996/186, Schedule 24 named
+  # whole by no order for that repeal; "s. 22(3), Sch. 9 para. 12": the
+  # Local Government (Wales) Act 1994)
   defp deepest(refs) do
+    named =
+      case Enum.filter(refs, &String.match?(&1, ~r/^sch\.[^.]+\./)) do
+        [] -> refs
+        paragraphs -> paragraphs
+      end
+
     depth = &length(LatRef.ancestors(&1))
-    max = refs |> Enum.map(depth) |> Enum.max()
-    Enum.filter(refs, &(depth.(&1) == max))
+    max = named |> Enum.map(depth) |> Enum.max()
+    Enum.filter(named, &(depth.(&1) == max))
   end
 end

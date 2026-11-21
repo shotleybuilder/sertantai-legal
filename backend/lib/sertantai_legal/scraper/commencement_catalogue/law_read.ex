@@ -3,7 +3,7 @@ defmodule SertantaiLegal.Scraper.CommencementCatalogue.LawRead do
   One law's own commencement sentences for the commencement catalogue
   (`mix lat.commencement_patterns`), read through `CatalogueCache` (#195):
   the own-clause reading (`Commencement.OwnClause.read/2`) of the law's
-  `LawStart` input, each sentence's leftovers (`Leftovers.sentences/2`),
+  `LawStart` input, each sentence's leftovers and misreads (`Misreads.sentences/2`),
   and the examples its sentences give alone (`CommencementCatalogue.LawScan.scan/2`).
   Keyed by the catalogue's code (`CommencementCatalogue.Version`) and the
   reading's whole input: the law's rows and its start input, gathered by
@@ -12,11 +12,11 @@ defmodule SertantaiLegal.Scraper.CommencementCatalogue.LawRead do
   """
 
   alias SertantaiLegal.Scraper.CatalogueCache
-  alias SertantaiLegal.Scraper.Commencement.{Leftovers, OwnClause}
+  alias SertantaiLegal.Scraper.Commencement.{Misreads, OwnClause}
   alias SertantaiLegal.Scraper.CommencementCatalogue.{LawScan, Version}
 
   @doc """
-  The law's sentences (`Leftovers.sentences/2`) with their examples alone
+  The law's sentences (`Misreads.sentences/2`) with their examples alone
   (`outcomes`), and whether they came from the cache. `opts`:
   `CatalogueCache`'s.
   """
@@ -34,7 +34,7 @@ defmodule SertantaiLegal.Scraper.CommencementCatalogue.LawRead do
   end
 
   defp read(law, rows, input) do
-    sentences = Leftovers.sentences(rows, OwnClause.read(law, input))
+    sentences = Misreads.sentences(rows, OwnClause.read(law, input))
     %{sentences: sentences, outcomes: LawScan.scan(law, %{input: input, sentences: sentences})}
   end
 end

@@ -18,7 +18,7 @@ defmodule SertantaiLegal.Scraper.CommencementCatalogue.LawScan do
   merge runs in `select/4`.
   """
 
-  alias SertantaiLegal.Scraper.Commencement.{Leftovers, SentencePatterns}
+  alias SertantaiLegal.Scraper.Commencement.{Leftovers, Misreads, SentencePatterns}
 
   @per_pattern 3
   # a law beyond this many rows holds no example needing every row's text
@@ -40,7 +40,9 @@ defmodule SertantaiLegal.Scraper.CommencementCatalogue.LawScan do
       laws_inputs: %{},
       mismatch: [],
       too_large: [],
-      leftovers: %{}
+      leftovers: %{},
+      misreads: %{},
+      not_held: 0
     }
 
   @doc """
@@ -88,18 +90,23 @@ defmodule SertantaiLegal.Scraper.CommencementCatalogue.LawScan do
     read.sentences
     |> Enum.with_index()
     |> Enum.reduce({acc, %{}}, fn {sentence, i}, {acc, outcomes} ->
-      take(acc, outcomes, law, read.reach, {sentence, i}, example, raise?)
+      take(acc, outcomes, law, read, {sentence, i}, example, raise?)
     end)
   end
 
-  defp take(acc, outcomes, law, reach, {sentence, i}, example, raise?) do
+  # (`read.skip`: the misread kinds the law is no measure of — `:no_row`
+  # where its rows are scoped or not LAT's)
+  defp take(acc, outcomes, law, %{reach: reach} = read, {sentence, i}, example, raise?) do
     %{row: row_id, sentence: s, pattern: key, leftovers: left} = sentence
     id = example_id(law, row_id, s)
+    wrong = misreads(sentence, read)
 
     acc = %{
       acc
       | leftovers:
           Leftovers.add(acc.leftovers, Leftovers.shape(key, left), law, row_id, left, reach),
+        misreads: Misreads.add(acc.misreads, key, law, row_id, wrong, reach),
+        not_held: acc.not_held + Misreads.not_held(wrong),
         sentences: acc.sentences + 1
     }
 
@@ -122,6 +129,9 @@ defmodule SertantaiLegal.Scraper.CommencementCatalogue.LawScan do
       {acc, outcomes}
     end
   end
+
+  defp misreads(sentence, read),
+    do: sentence |> Map.get(:misreads, []) |> Misreads.without(Map.get(read, :skip, []))
 
   defp held(acc, _key, id, law, sentence, {:held, ex}, _raise?) do
     put_in(acc.examples[id], %{

@@ -35,7 +35,7 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.ChangeCollector
   alias SertantaiLegal.Scraper.{CatalogueCache, LawRunner}
-  alias SertantaiLegal.Scraper.Commencement.{Leftovers, OwnClause}
+  alias SertantaiLegal.Scraper.Commencement.{Leftovers, Misreads, OwnClause}
   alias SertantaiLegal.Scraper.CommencementCatalogue.{LawRead, LawScan, Target}
 
   @shortdoc "Own commencement sentences' pattern catalogue, as test fixtures (read-only)"
@@ -64,6 +64,7 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
     File.mkdir_p!(target.write)
 
     laws = laws(opts[:laws])
+    scoped = scoped()
 
     Mix.shell().info(
       "#{length(laws)} laws (#{Enum.count(laws, &(elem(&1, 1) == :lat))} with LAT)"
@@ -77,7 +78,7 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
     {acc, sources, merge_us} =
       laws
       |> LawRunner.ordered(
-        fn {law, source} -> {law, law_read(law, source, cache)} end,
+        fn {law, source} -> {law, law_read(law, {source, law in scoped}, cache)} end,
         workers: opts[:workers]
       )
       |> Stream.with_index(1)
@@ -159,7 +160,7 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
   # a law's own reading, independent of every other law (run in parallel):
   # its rows and start input gathered, its sentences read through the
   # catalogue cache (#195)
-  defp law_read(law, source, cache) do
+  defp law_read(law, {source, scoped?}, cache) do
     rows = rows(law, source)
     input = ChangeCollector.law_start_input(law, rows)
 
@@ -167,9 +168,18 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
       LawRead.law(law, rows, input, cache: cache)
 
     read = %{input: input, sentences: sentences, outcomes: outcomes}
-    {{:ok, Map.put(read, :reach, reach(law, source, rows))}, from}
+    # (a ref with no row is a misread only where the rows are the whole law's LAT)
+    skip = if source == :clml or scoped?, do: [:no_row], else: []
+    {{:ok, Map.merge(read, %{reach: reach(law, source, rows), skip: skip})}, from}
   rescue
     error -> {{:error, Exception.message(error)}, :read}
+  end
+
+  # the laws whose LAT holds only the fragments in scope (#166)
+  defp scoped do
+    Repo.query!("SELECT name FROM legal_register WHERE lat_scope IS NOT NULL").rows
+    |> List.flatten()
+    |> MapSet.new()
   end
 
   # what a law's leftovers reach: its LAT rows, or (an amending law) the
@@ -217,6 +227,11 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
     File.write!(
       Path.join(dir, "leftover_groups.json"),
       Files.encode(Leftovers.to_json(acc.leftovers))
+    )
+
+    File.write!(
+      Path.join(dir, "misread_groups.json"),
+      Files.encode(Leftovers.to_json(acc.misreads))
     )
   end
 
@@ -269,6 +284,8 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
         do: shell.info("  #{n}  #{class}")
 
     leftovers(acc.leftovers, dir)
+    misreads(acc.misreads, dir)
+    shell.info(Misreads.not_held_line(acc.not_held))
 
     new = for p <- Map.keys(acc.patterns), not Map.has_key?(held["patterns"], p), do: p
     gone = for p <- Map.keys(held["patterns"]), not Map.has_key?(acc.patterns, p), do: p
@@ -309,8 +326,19 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
     Mix.shell().info("report: #{path}")
   end
 
-  defp reviewed(dir) do
-    case File.read(Path.join(dir, "leftovers.json")) do
+  # the words a rule uses wrongly, by shape; reviewed in `misreads.json`
+  defp misreads(groups, dir) do
+    ranked = Leftovers.ranked(groups)
+    reviewed = reviewed(dir, "misreads.json")
+    Enum.each(Misreads.summary(ranked, reviewed), fn line -> Mix.shell().info(line) end)
+
+    path = "data/reports/commencement-reader/misreads-#{Date.utc_today()}.txt"
+    File.write!(path, Enum.join(Leftovers.lines(ranked), "\n") <> "\n")
+    Mix.shell().info("report: #{path}")
+  end
+
+  defp reviewed(dir, file \\ "leftovers.json") do
+    case File.read(Path.join(dir, file)) do
       {:ok, body} -> Jason.decode!(body)
       _ -> %{}
     end

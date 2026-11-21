@@ -19,7 +19,8 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
   | no clause for the whole law, only for its parts ("This Article and Article 2 …", "The remaining provisions of this Order …"): the earliest date that provision states | `:clause_staged` |
   | "on such day as … may by order appoint" | `:by_order` |
   | "at the same time as section 83 of the 2022 Act comes into force" | `:tied_to_other_law` |
-  | anything else, or a made-relative tail without a made date | `:clause_unread` |
+  | the same counts from the day the law is laid: "on the 22nd day after the day on which these Regulations are laid"; "at the end of a period of 21 days beginning with the day after the day on which these Regulations are laid" (the day after is the period's first) | `:clause_laid_relative` |
+  | anything else, or a made- (laid-) relative tail without a made (laid) day | `:clause_unread` |
 
   Counting periods (Interpretation Act conventions): a period "from" or
   "after" a day excludes that day, so "the expiration of N months from the
@@ -28,6 +29,10 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
   """
 
   alias SertantaiLegal.Scraper.LawStart
+  alias SertantaiLegal.Scraper.LawStart.{MadeCondition, OwnDays, PurposeStages}
+
+  # a tail counting from a day of the law's own that is not held
+  @unknown [:made_unknown, :laid_unknown]
 
   @ip_completion_day ~D[2020-12-31]
   @exit_day ~D[2020-01-31]
@@ -72,13 +77,13 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
       # (", which extend to Great Britain," between: SI 1996/1513)
       # (a comma for the "and": "… Regulations 1996, shall come into force on
       # 2nd May 1996 and shall extend to Scotland only": SI 1996/1076)
-      # ("may cited as": SI 1991/259; "These Regulations which may be cited
+      # ("may cited as": SI 1991/259; "may he cited as": SI 1991/346; "These Regulations which may be cited
       # as … 2007 shall come into force on …": SI 2007/765; "… and except
       # as provided in paragraphs (2), (3) and (4) shall come into operation
       # on …": NISR 2011/127 — Fire and OH&S)
       ~S"\b(?:this|these)\s+" <>
         @instrument <>
-        ~S"(?:\s*,[^,]{0,80},)?\s+(?:which\s+may\s+be\s+cited\s+as\b.{0,300}?\d{4}(?=\s+shall\b)|may\s+(?:be\s+)?cited\s+as\b.{0,300}?(?:\band(?:\s+(?:they|it))?|,))(?:\s+(?:subject\s+to|except\s+as\s+(?:otherwise\s+)?provided\s+(?:in|by))\s+(?:[^,]|,(?=\s*(?:\(|and\b|or\b))){1,160}?(?=\s+shall\b))?" <>
+        ~S"(?:\s*,[^,]{0,80},)?\s+(?:which\s+may\s+be\s+cited\s+as\b.{0,300}?\d{4}(?=\s+shall\b)|may\s+(?:[bh]e\s+)?cited\s+as\b.{0,300}?(?:\band(?:\s+(?:they|it))?|,))(?:\s+(?:subject\s+to|except\s+as\s+(?:otherwise\s+)?provided\s+(?:in|by))\s+(?:[^,]|,(?=\s*(?:\(|and\b|or\b))){1,160}?(?=\s+shall\b))?" <>
         @aside <> @cif <> ~S"\s*(.*)$",
       "is"
     ),
@@ -178,7 +183,12 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
     "ninety" => 90
   }
 
-  @made ~S"(?:(?:the\s+(?:day|date)\s+(?:(?:on\s+which|of)\s+)?)?(?:it\s+is|they\s+are|they\s+were|(?:(?:this|these)\s+[A-Za-z ]+?|the\s+(?:Order|Regulations|Rules|Act|Scheme|Measure|Instrument))\s+(?:is|are|was|were))\s+(?:made|passed)|(?:the\s+)?(?:making|passing)\s+(?:of\s+(?:this|these)\s+[A-Za-z ]+|thereof)|its\s+(?:making|passing)|(?:the\s+day\s+(?:on\s+which\s+)?)?(?:this\s+Act\s+receives\s+)?Royal\s+Assent|receiving\s+Royal\s+Assent|the\s+(?:day|date)\s+of\s+Royal\s+Assent|the\s+Bill\s+for\s+this\s+Act\s+receives\s+Royal\s+Assent|that\s+on\s+which\s+(?:it|this\s+Act)\s+is\s+passed|the\s+(?:day|date)\s+of\s+(?:the\s+)?(?:passing|making)\s+(?:thereof|of\s+(?:this|these)\s+[A-Za-z ]+))"
+  @made ~S"(?:(?:(?:the\s+)?(?:day|date)\s+(?:(?:on\s+which|of)\s+)?)?(?:it\s+is|they\s+are|they\s+were|(?:(?:this|these)\s+[A-Za-z ]+?|the\s+(?:Order|Regulations|Rules|Act|Scheme|Measure|Instrument))\s+(?:is|are|was|were))\s+(?:made|passed)|(?:the\s+)?(?:making|passing)\s+(?:of\s+(?:this|these)\s+[A-Za-z ]+|thereof)|its\s+(?:making|passing)|(?:the\s+day\s+(?:on\s+which\s+)?)?(?:(?:this\s+Act|it)\s+receives\s+)?Royal\s+Assent|receiving\s+Royal\s+Assent|the\s+(?:day|date)\s+of\s+Royal\s+Assent|the\s+Bill\s+for\s+this\s+Act\s+receives\s+Royal\s+Assent|that\s+on\s+which\s+(?:it|this\s+Act)\s+is\s+passed|the\s+(?:day|date)\s+of\s+(?:the\s+)?(?:passing|making)\s+(?:thereof|of\s+(?:this|these)\s+[A-Za-z ]+))"
+
+  # the day the law is laid: "the day on which these Regulations are laid",
+  # "… they are laid before Parliament" (the House, the Senedd: whatever
+  # follows is where, not when)
+  @laid ~S"(?:(?:the\s+)?(?:day|date)\s+(?:on\s+which\s+)?)?(?:it\s+is|they\s+are|they\s+were|it\s+was|(?:(?:this|these)\s+[A-Za-z ]+?|the\s+(?:Order|Regulations|Rules|Scheme|Instrument))\s+(?:is|are|was|were))\s+laid\b"
   @number ~S"(\d+(?:st|nd|rd|th)?|[a-z]+(?:[- ][a-z]+)?)"
 
   @doc """
@@ -188,7 +198,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
   the rest to Royal Assent — never the Act's start (Finance Act 1981
   s.137(4), CV-S05).
   """
-  @spec read([map()], Date.t() | nil, boolean()) :: LawStart.t() | nil
+  @spec read([map()], OwnDays.days(), boolean()) :: LawStart.t() | nil
   def read(rows, made, act? \\ false) do
     case general(rows) do
       nil -> own_parts(rows, made, act?)
@@ -206,7 +216,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
            |> Map.get(:text)
            |> sentences()
            |> Enum.find(
-             &(Regex.match?(@own_part, &1) and not mention?(&1) and
+             &(own_part?(&1) and not mention?(&1) and
                  not (act? and Regex.match?(@this_section, &1)))
            ) do
         nil ->
@@ -223,6 +233,14 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
     end)
   end
 
+  # a named provision's day going on to the rest is a part commencing too
+  # ("Regulation 9 comes into force on 1st January 2015 and all other
+  # regulations come into force on 6th April 2010": SI 2010/740 reg.1(2))
+  @named_then_rest ~r/^(?:\(?\d+[A-Z]?\)?\s+)?(?:regulations?|articles?|sections?|rules?)\s+\d[^.;]{0,300}?\binto\s+(?:force|operation)\s+on\s+[^.;]{0,60}?\d{4}\s*,?\s+and\s+(?:all\s+|the\s+)?(?:other|remaining)\s+(?:provisions|regulations|articles|sections|rules)\b[^.;]{0,200}?\binto\s+(?:force|operation)\b/i
+
+  defp own_part?(sentence),
+    do: Regex.match?(@own_part, sentence) or Regex.match?(@named_then_rest, sentence)
+
   defp decide(rows, row, sentence, tail, made) do
     found = %LawStart{treatment: :clause_unread, evidence: row.section_id, text: sentence}
 
@@ -230,16 +248,27 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
       {treatment, %Date{} = d} ->
         %{found | treatment: treatment, date: d}
 
-      :made_unknown ->
+      unknown when unknown in @unknown ->
         found
 
       nil ->
         cond do
+          d = first_stage(tail, made) -> %{found | treatment: :clause_staged, date: d}
           by_order?(tail) -> %{found | treatment: :by_order}
           tied?(tail) -> %{found | treatment: :tied_to_other_law}
           staged?(tail) -> staged(rows, row, found, made)
           true -> found
         end
+    end
+  end
+
+  # the first day of a law staged by purpose in one statement: "…, for the
+  # purpose of regulation 10(2), on 20th March 1991 and for all other
+  # purposes on 1st September 1991" (SI 1991/346 reg.1(1))
+  defp first_stage(tail, made) do
+    case PurposeStages.read(tail, made) do
+      [{:partial, _purpose, d}, {:full, nil, full}] -> Enum.min([d, full], Date)
+      nil -> nil
     end
   end
 
@@ -249,9 +278,11 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
   # "If …", "… means …", "…, which came into force on …"; never a later
   # clause of a statement ("They come into force on the day after the day on
   # which they are made, save for regulation 10 which comes into force on 1st
-  # October 2009": SI 2009/1581, CV-S04)
+  # October 2009": SI 2009/1581, CV-S04); a period named by it is a mention
+  # too ("the quarter period within which these Regulations come into
+  # force": SI 2025/910 reg.28(5)(b)(i))
   @first_cif ~r/\b(comes?|came|coming|be\s+brought|brought)\s+(?:fully\s+)?into\s+(?:force|operation)\b/i
-  @mention_head ~r/\b(?:before|after|until|unless|when|whenever|once|since|if|by\s+the\s+time|on\s+or\s+after|immediately\s+before|in\s+which|(?:day|date|time)\s+(?:on|upon|at)\s+which|deemed\s+to\s+have|thereby|means)\b|\bthe\s*$|^\W*(?:\[[^\]]*:\s*)?(?:\(\w+\)\s*)?(?:where|when|if|until|unless|once)\b/i
+  @mention_head ~r/\b(?:before|after|until|unless|when|whenever|once|since|if|by\s+the\s+time|on\s+or\s+after|immediately\s+before|(?:with)?in\s+which|(?:day|date|time)\s+(?:on|upon|at)\s+which|deemed\s+to\s+have|thereby|means)\b|\bthe\s*$|^\W*(?:\[[^\]]*:\s*)?(?:\(\w+\)\s*)?(?:where|when|if|until|unless|once)\b/i
 
   @doc """
   Whether a sentence only mentions a commencement ("before this section
@@ -307,8 +338,11 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
         Enum.find_value(rows, fn item ->
           with true <- item.section_id != row.section_id,
                true <- String.starts_with?(item.section_id, row.section_id <> "("),
-               [_, tail] <- Regex.run(@item_cif, Map.get(item, :text) || "") do
-            {item, String.trim(item.text), String.trim(tail)}
+               # (a no-break space is a space: "(b) come into force on
+               # 24th\u00A0December 2010", SSI 2010/426 reg.1)
+               text = String.replace(Map.get(item, :text) || "", ~r/\s+/u, " "),
+               [_, tail] <- Regex.run(@item_cif, text) do
+            {item, String.trim(text), String.trim(tail)}
           else
             _ -> nil
           end
@@ -369,7 +403,9 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
   def sentences(text),
     do:
       text
-      |> String.replace(~r/\s+/, " ")
+      # (a no-break space is a space: "on 1st\u00A0January 2015", SI 2010/740
+      # reg.1(2))
+      |> String.replace(~r/\s+/u, " ")
       # a qualification set off by commas after "into force" is no staging:
       # "shall come into force, subject to the transitory provisions in …,
       # at the end of the period of six months …" (Road Traffic Act 1988 s.197(2))
@@ -378,13 +414,37 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
         ~r/(?<=\.)(?<!\betc\.)(?<!\bNo\.)(?<!\bNos\.)(?<!\bSch\.)(?<!\bart\.)(?<!\breg\.)(?<!\bs\.)(?<!\bc\.)(?<!\bi\.e\.)(?<!\be\.g\.)\s+(?=[A-Z(])/
       )
 
+  # "X or, if later, Y": the later day, read as its own form reads; a day
+  # not read leaves the whole unread, never the other day alone (SI
+  # 2018/797 reg.1(2)(b): the 21st day after making or, if later, 1st
+  # October 2018)
+  @if_later ~r/\s+or,?\s+if\s+later,?\s+(?:on\s+)?(?:the\s+(?=\d))?/i
+
   @doc """
   A tail's date and its treatment: `{treatment, date}`; `:made_unknown`
-  when it counts from a made date we don't have; nil when it states none.
+  (`:laid_unknown`) when it counts from a made (laid) day we don't have;
+  nil when it states none. `days`: the law's made and laid days
+  (`OwnDays`), or its made day alone.
   """
-  @spec tail_date(String.t(), Date.t() | nil) ::
-          {LawStart.treatment(), Date.t()} | :made_unknown | nil
-  def tail_date(tail, made) do
+  @spec tail_date(String.t(), OwnDays.days()) ::
+          {LawStart.treatment(), Date.t()} | :made_unknown | :laid_unknown | nil
+  def tail_date(tail, days) do
+    case Regex.split(@if_later, tail, parts: 2) do
+      [first, second] -> later(one_date(first, days), one_date(second, days))
+      [_one] -> one_date(tail, days)
+    end
+  end
+
+  defp later({_, %Date{} = a} = first, {_, %Date{} = b} = second),
+    do: if(Date.compare(b, a) == :gt, do: second, else: first)
+
+  defp later(unknown, _second) when unknown in @unknown, do: unknown
+  defp later(_first, unknown) when unknown in @unknown, do: unknown
+  defp later(_first, _second), do: nil
+
+  defp one_date(tail, days) do
+    made = OwnDays.made(days)
+
     cond do
       d = named_day(tail, made) ->
         {:clause_named_day, d}
@@ -395,8 +455,22 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
       d = by_territory(tail) ->
         {:clause_staged, d}
 
+      d = end_of_day(tail) ->
+        {:clause_date, d}
+
       true ->
-        made_relative(tail, made)
+        made_relative(tail, made) || laid_relative(tail, OwnDays.laid(days))
+    end
+  end
+
+  # "at the end of 31st December 2024" (SI 2024/1366 art.2(2)(a)): in force
+  # from the next day
+  defp end_of_day(tail) do
+    with [_, rest] <- Regex.run(~r/^at\s+the\s+end\s+of\s+(?:the\s+)?(\d.*)$/is, tail),
+         %Date{} = d <- date_at_start(rest) do
+      Date.add(d, 1)
+    else
+      _ -> nil
     end
   end
 
@@ -520,24 +594,39 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
   end
 
   defp made_relative(tail, made) do
-    case made_shift(tail) do
+    case relative_shift(tail, @made) do
       nil -> nil
       _shift when is_nil(made) -> :made_unknown
       shift -> {:clause_made_relative, shift.(made)}
     end
   end
 
-  # the tail's count from the made date, as a function of it; nil when the
-  # tail doesn't count from it
-  defp made_shift(tail) do
-    t = String.replace(tail, ~r/\s+/, " ")
+  # the same counts from the day the law is laid ("on the 22nd day after
+  # the day on which these Regulations are laid": SI 2018/1221 reg.2(a))
+  defp laid_relative(tail, laid) do
+    case relative_shift(tail, @laid) do
+      nil -> nil
+      _shift when is_nil(laid) -> :laid_unknown
+      shift -> {:clause_laid_relative, shift.(laid)}
+    end
+  end
 
+  # the tail's count from the law's own day `from` words (the made day's,
+  # the laid day's), as a function of that day; nil when the tail doesn't
+  # count from it
+  defp relative_shift(tail, from) do
+    t = String.replace(tail, ~r/\s+/, " ")
+    near_shift(t, from) || counted_shift(t, from)
+  end
+
+  # the day itself, or the day after it
+  defp near_shift(t, from) do
     cond do
       Regex.match?(
         ~r/^on (?:the (?:day|date) (?:(?:on which|of) )?|Royal Assent|the (?:passing|making) of)/i,
         t
       ) and
-          starts_made?(t, ~r/^on /i) ->
+          starts_from?(t, ~r/^on /i, from) ->
         & &1
 
       # "when they are made" (SI 2022/500, CV-S04)
@@ -545,19 +634,27 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
         & &1
 
       Regex.match?(~r/^(?:on )?the day (?:after|following) /i, t) and
-          starts_made?(t, ~r/^(?:on )?the day (?:after|following) /i) ->
+          starts_from?(t, ~r/^(?:on )?the day (?:after|following) /i, from) ->
         &Date.add(&1, 1)
 
+      true ->
+        nil
+    end
+  end
+
+  # a count of days, weeks or months from the day
+  defp counted_shift(t, from) do
+    cond do
       m = Regex.run(~r/^(?:on )?the #{@number} day (?:after|following) (.*)$/i, t) ->
         [_, n, rest] = m
-        with_made(rest, n, fn made, k -> Date.add(made, k) end)
+        with_from(rest, from, n, fn day, k -> Date.add(day, k) end)
 
       m =
           Regex.run(
             ~r/^(?:on )?the first day of the (?:#{@number} )?(?:calendar )?month (?:following|after) (?:that|the month) in which (.*)$/i,
             t
           ) ->
-        first_of_month(m)
+        first_of_month(m, from)
 
       m =
           Regex.run(
@@ -566,43 +663,51 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
           ) ->
         [_, n, unit, rel, rest] = m
         extra = if String.downcase(rel) in ["from", "after"], do: 1, else: 0
-        with_made(rest, n, fn made, k -> made |> shift(unit, k) |> Date.add(extra) end)
+        with_from(rest, from, n, fn day, k -> day |> shift(unit, k) |> Date.add(extra) end)
 
       m = Regex.run(~r/^(?:on )?#{@number} (days?|weeks?|months?) after (.*)$/i, t) ->
         [_, n, unit, rest] = m
-        with_made(rest, n, fn made, k -> shift(made, unit, k) end)
+        with_from(rest, from, n, fn day, k -> shift(day, unit, k) end)
 
       true ->
         nil
     end
   end
 
-  defp starts_made?(t, lead),
+  defp starts_from?(t, lead, from),
     do:
       Regex.match?(
-        ~r/^#{@made}/i,
+        ~r/^#{from}/i,
         t
         |> String.replace(lead, "")
         |> String.replace(~r/^the day (?:on which|of) /i, "the day on which ")
       )
 
-  defp with_made(rest, n, fun) do
-    with true <- Regex.match?(~r/^#{@made}/i, rest),
+  # a period "beginning with the day after the day on which these
+  # Regulations are laid" (SI 2025/287 reg.1(2)) counts from the next day
+  defp with_from(rest, from, n, fun) do
+    {rest, next} =
+      case Regex.run(~r/^the day (?:after|following) (.*)$/i, rest) do
+        [_, after_] -> {after_, 1}
+        nil -> {rest, 0}
+      end
+
+    with true <- Regex.match?(~r/^#{from}/i, rest),
          k when is_integer(k) <- number(n) do
-      &fun.(&1, k)
+      &fun.(Date.add(&1, next), k)
     else
       _ -> nil
     end
   end
 
-  defp first_of_month([_, n, rest]) do
+  defp first_of_month([_, n, rest], from) do
     k = if n in [nil, ""], do: 1, else: number(n)
 
-    if is_integer(k) and Regex.match?(~r/^#{@made}/i, rest),
-      do: fn made -> made |> Date.beginning_of_month() |> Date.shift(month: k) end
+    if is_integer(k) and Regex.match?(~r/^#{from}/i, rest),
+      do: fn day -> day |> Date.beginning_of_month() |> Date.shift(month: k) end
   end
 
-  defp first_of_month([_, rest]), do: first_of_month([nil, "", rest])
+  defp first_of_month([_, rest], from), do: first_of_month([nil, "", rest], from)
 
   defp shift(date, unit, k) do
     case String.downcase(unit) do
@@ -641,13 +746,14 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
   made by the Treasury": Tax Credits Act 2002 s.61), or to a day the Act
   names that an order fixes ("on the transfer date": 1986 c.44 s.68(3));
   "on whatever day the Scottish Ministers appoint by order" (2014 c.12
-  s.185(6)).
+  s.185(6)); "in accordance with regulations made by the Secretary of
+  State" (Employment Rights Act 2025 s.159(3)).
   """
   @spec by_order?(String.t()) :: boolean()
   def by_order?(tail),
     do:
       tail =~
-        ~r/\bsuch (?:day|date|time)s?\b|\bday appointed\b|\bappointed (?:day|by)\b|\bmay,? by (?:order|regulations)\b|\bmay appoint\b|\bappoints\b|\bappoint by (?:order|regulations)\b|\bprovision (?:to be )?made by (?:\w+ ){0,6}(?:by )?order\b|\bspecified by order\b|\bprovision so made\b|\bon the (?:transfer|vesting) (?:date|day)\b|\bin accordance with (?:an? )?orders? (?:to be )?made\b/i
+        ~r/\bsuch (?:day|date|time)s?\b|\bday appointed\b|\bappointed (?:day|by)\b|\bmay,? by (?:order|regulations)\b|\bmay appoint\b|\bappoints\b|\bappoint by (?:order|regulations)\b|\bprovision (?:to be )?made by (?:\w+ ){0,6}(?:by )?order\b|\bspecified by order\b|\bprovision so made\b|\bon the (?:transfer|vesting) (?:date|day)\b|\bin accordance with (?:an? )?(?:orders?|regulations) (?:to be )?made\b/i
 
   @doc "A tail tying the commencement to another provision's (\"at the same time as section 1 comes into force\")."
   @spec tied?(String.t()) :: boolean()
@@ -662,17 +768,34 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
         tail =~
           ~r/^(?:[—:;,–-]|as follows|on the following dates?|in accordance with|in stages|subject to)/i
 
+  # what follows a sentence's "into force": once — but a named provision's
+  # day going on to the rest states two ("Regulation 9 comes into force on
+  # 1st January 2015 and all other regulations come into force on 6th April
+  # 2010": SI 2010/740 reg.1(2))
+  defp tails(s) do
+    case String.split(s, ~r/\binto\s+(?:force|operation)\s+/i) do
+      [_only] ->
+        []
+
+      [_head | tails] ->
+        if Regex.match?(@named_then_rest, s), do: tails, else: [Enum.join(tails, "into force ")]
+    end
+  end
+
   # the earliest date the clause's own provision states elsewhere
   # ("(2) … on 1st June 2015", "(3) … on IP completion day")
   defp staged(rows, row, found, made) do
     base = provision(row.section_id)
 
-    in_provision = Enum.filter(rows, &(provision(&1.section_id) == base))
+    # (a head whose condition on the making day fails states nothing: SI
+    # 2024/1366 art.2(3))
+    in_provision =
+      rows |> Enum.filter(&(provision(&1.section_id) == base)) |> MadeCondition.holding(made)
 
     stated =
       for r <- in_provision,
           s <- sentences(Map.get(r, :text)),
-          [_, tail] <- [Regex.run(~r/\binto\s+(?:force|operation)\s+(.*)$/i, s)],
+          tail <- tails(s),
           {_, %Date{} = d} <- [tail_date(String.trim(tail), made)],
           do: d
 
@@ -744,17 +867,15 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
   July 2026", "Part 4, on IP completion day"; the subject is "" when the
   item opens with its date. nil when no date is found.
   """
-  @spec item_split(String.t() | nil, Date.t() | nil) :: {String.t(), String.t(), Date.t()} | nil
+  @spec item_split(String.t() | nil, OwnDays.days()) :: {String.t(), String.t(), Date.t()} | nil
   def item_split(nil, _made), do: nil
 
   def item_split(text, made) do
-    text = text |> String.replace(~r/^\(?[a-z0-9]+\)\s*/i, "") |> String.trim()
+    text = item_text(text)
 
-    ~r/\b(?=(?:on|from|at|immediately)\b)/i
-    |> Regex.scan(text, return: :index)
-    |> Enum.find_value(fn [{at, _}] ->
-      tail = text |> binary_part(at, byte_size(text) - at) |> String.trim()
-
+    text
+    |> item_tails()
+    |> Enum.find_value(fn {at, tail} ->
       date =
         case tail_date(tail, made) do
           {_, %Date{} = d} ->
@@ -769,6 +890,43 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
         subject = text |> binary_part(0, at) |> String.trim() |> String.trim_trailing(",")
         {String.trim(subject), tail, date}
       end
+    end)
+  end
+
+  @doc """
+  Why a list item `item_split/2` finds no date in is unread:
+  `:laid_day_not_held` (`:made_day_not_held`) when its day counts from the
+  day the law is laid (made) and that day is not held ("for the purposes of
+  regulations 1, 2 and 3 on the 22nd day after the day on which these
+  Regulations are laid": SI 2018/1221 reg.2(a)); `:day_unread` otherwise.
+  """
+  @spec item_unread_reason(String.t() | nil, OwnDays.days()) ::
+          :laid_day_not_held | :made_day_not_held | :day_unread
+  def item_unread_reason(nil, _days), do: :day_unread
+
+  def item_unread_reason(text, days) do
+    text
+    |> item_text()
+    |> item_tails()
+    |> Enum.find_value(:day_unread, fn {_at, tail} ->
+      case tail_date(tail, days) do
+        :laid_unknown -> :laid_day_not_held
+        :made_unknown -> :made_day_not_held
+        _ -> nil
+      end
+    end)
+  end
+
+  defp item_text(text), do: text |> String.replace(~r/^\(?[a-z0-9]+\)\s*/i, "") |> String.trim()
+
+  # where an item's day may open, and the words from there: (or at a day
+  # counted from the making: "for the purposes of article 18(1), one month
+  # after the day on which it is made", SI 2015/776 art.1(c)(i))
+  defp item_tails(text) do
+    ~r/\b(?=(?:on|from|at|immediately)\b|\w+\s+(?:days?|weeks?|months?)\s+after\b)/i
+    |> Regex.scan(text, return: :index)
+    |> Enum.map(fn [{at, _}] ->
+      {at, text |> binary_part(at, byte_size(text) - at) |> String.trim()}
     end)
   end
 

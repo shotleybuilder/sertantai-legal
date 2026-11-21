@@ -26,7 +26,7 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
-  alias SertantaiLegal.Scraper.Commencement.{Leftovers, Order, OrderPatterns, Orders}
+  alias SertantaiLegal.Scraper.Commencement.{Leftovers, Misreads, Order, OrderPatterns, Orders}
   alias SertantaiLegal.Scraper.CommencementCatalogue.Target
 
   @shortdoc "Commencement orders' pattern catalogue, as test fixtures (read-only)"
@@ -80,7 +80,10 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
       mismatch: [],
       too_large: [],
       leftovers: %{},
-      reach: %{}
+      misreads: %{},
+      not_held: 0,
+      reach: %{},
+      ids: %{}
     }
 
   # {order, act}: each held order once, with the Act its list or rules name
@@ -154,12 +157,19 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
     rules = Order.rules(doc, act)
     acc = %{acc | orders: acc.orders + 1}
     {reach, acc} = reach(act_law, acc)
+    {ids, acc} = ids(act_law, acc)
 
-    for %{unit: unit, outcome: o, pattern: key, leftovers: left} <-
-          Leftovers.order_units(doc, rules),
+    for %{unit: unit, outcome: o, pattern: key, leftovers: left, misreads: wrong} <-
+          Misreads.order_units(doc, rules, %{own: act, ids: ids}),
         reduce: acc do
       acc ->
         id = example_id(order, unit)
+
+        acc = %{
+          acc
+          | misreads: Misreads.add(acc.misreads, key, order, unit.id, wrong, reach),
+            not_held: acc.not_held + Misreads.not_held(wrong)
+        }
 
         acc = %{
           acc
@@ -212,6 +222,24 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
         n = if rows > 0, do: rows, else: notes
         {n, put_in(acc.reach[act], n)}
     end
+  end
+
+  # the bare ids of the Act's LAT rows (once per Act), nil where it holds
+  # none or only the fragments in scope (#166): no measure of a missing row
+  defp ids(act, %{ids: cache} = acc) when is_map_key(cache, act), do: {cache[act], acc}
+
+  defp ids(act, acc) do
+    %{rows: rows} =
+      Repo.query!(
+        """
+        SELECT section_id FROM legal_articles WHERE law_name = $1
+          AND NOT EXISTS (SELECT 1 FROM legal_register WHERE name = $1 AND lat_scope IS NOT NULL)
+        """,
+        [act]
+      )
+
+    ids = if rows != [], do: rows |> List.flatten() |> Misreads.row_ids()
+    {ids, put_in(acc.ids[act], ids)}
   end
 
   # the order whole when small, else cut; held when it reads alone as the
@@ -286,6 +314,11 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
       Path.join(dir, "leftover_groups.json"),
       Files.encode(Leftovers.to_json(acc.leftovers))
     )
+
+    File.write!(
+      Path.join(dir, "misread_groups.json"),
+      Files.encode(Leftovers.to_json(acc.misreads))
+    )
   end
 
   # ── report, accept ───────────────────────────────────────────────────
@@ -335,6 +368,8 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
     shell.info("  (read into rules: #{read} of #{all})")
 
     leftovers(acc.leftovers, dir)
+    misreads(acc.misreads, dir)
+    shell.info(Misreads.not_held_line(acc.not_held))
 
     new = for p <- Map.keys(acc.patterns), not Map.has_key?(held["patterns"], p), do: p
     gone = for p <- Map.keys(held["patterns"]), not Map.has_key?(acc.patterns, p), do: p
@@ -360,6 +395,23 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
       File.write!(path, Files.encode(%{"patterns" => statuses, "examples" => examples}))
       shell.info("\naccepted: #{length(new)} new patterns written to #{path}")
     end
+  end
+
+  # the words a rule uses wrongly, by shape; reviewed in `misreads.json`
+  defp misreads(groups, dir) do
+    ranked = Leftovers.ranked(groups)
+
+    reviewed =
+      case File.read(Path.join(dir, "misreads.json")) do
+        {:ok, body} -> Jason.decode!(body)
+        _ -> %{}
+      end
+
+    Enum.each(Misreads.summary(ranked, reviewed), fn line -> Mix.shell().info(line) end)
+
+    path = "data/reports/commencement-reader/misreads-orders-#{Date.utc_today()}.txt"
+    File.write!(path, Enum.join(Leftovers.lines(ranked), "\n") <> "\n")
+    Mix.shell().info("report: #{path}")
   end
 
   # the words no rule uses, by shape, widest reach first; reviewed in
