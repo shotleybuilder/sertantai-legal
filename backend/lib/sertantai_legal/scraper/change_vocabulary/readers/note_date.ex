@@ -35,7 +35,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
              | :appointed
              | :unread
              | :not_reached
-             | :provisions_disagree}
+             | :provisions_disagree
+             | :a_commencement}
 
   @doc "The date claims for `change` when it has a gap and a pointer; else []."
   @spec claims(Change.t(), %{String.t() => [Rule.t()]}) :: [Claim.t()]
@@ -72,6 +73,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
 
     cond do
       not undated?(c) -> :not_a_gap
+      # a commencement is never dated by its commencing provision's own
+      # start: "s.92(3)" bringing s.60 in "on such day as … by order" came
+      # into force itself on Royal Assent (ASC 2025/4; 623 commencements in
+      # 9 laws were so dated, the feed's own record prospective)
+      commencement?(c) -> {:undated, :a_commencement}
       law == nil -> {:undated, :no_amending_law}
       refs == [] -> {:undated, :no_pointer}
       Map.get(commencement, law, []) == [] -> {:undated, :rules_not_held}
@@ -246,6 +252,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
   defp own_ref(_key, _law), do: []
 
   defp undated?(c), do: Enum.all?(@dated, fn {s, a} -> Change.values(c, s, a) == [] end)
+
+  defp commencement?(%Change{resolved: %{operation: op}}), do: op == :commenced
+
+  defp commencement?(c),
+    do: Enum.any?([:feed, :markup, :law_text], &(Change.value(c, &1, :operation) == :commenced))
 
   # the most specific provisions named: a Schedule's paragraph, never the
   # section introducing its Schedule nor a whole Schedule named beside it,

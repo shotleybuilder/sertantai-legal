@@ -288,4 +288,21 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.NoteDateTest do
 
     assert NoteDate.why(c, %{}) == {:undated, :rules_not_held}
   end
+
+  # ASC 2025/4: the feed's record of s.60's coming into force is prospective,
+  # made by the Act's own s.92(3) ("on such day as … by order"); the
+  # commencing provision's own start is never the day it brings another in
+  # (623 such commencements in 9 laws were dated so)
+  test "a commencement is never dated by its commencing provision's own start" do
+    c =
+      change([
+        {:feed, :operation, :commenced},
+        {:feed, :by, "UK_ukpga_1989_22"},
+        {:feed, :affecting, ["s.106"]},
+        {:feed, :prospective, true}
+      ])
+
+    assert NoteDate.why(c, commencement()) == {:undated, :a_commencement}
+    assert NoteDate.claims(c, commencement()) == []
+  end
 end
