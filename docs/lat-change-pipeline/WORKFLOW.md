@@ -236,7 +236,7 @@ A rebuild moves no switched label until `LabelRefresh` runs. Laws whose rows don
 **Outputs.** `commencement_rules`; commencement claims (`date`, `partial`, `commenced_by`, and `via` when a pointer led to the date).
 
 **Check today.**
-1. Both catalogues: `mix lat.commencement_patterns` (own commencement sentences, about 4¼ min cold, under 2 min warm: #195) and `mix lat.order_patterns` (orders, about 30 s), until `CommencementPatternsTest` and `OrderPatternsTest` pass. Each also reports its **leftovers** (`Commencement.Leftovers`): the words of a statement that bear on a date (a date, a provision, an exception, a qualifier, a relative day) that no rule read from it uses, grouped and ranked by the rows they reach, every group reviewed in `leftovers.json` (`LeftoversReviewTest`). This replaces agent rounds as the way to find a family's new forms (2026-11-05).
+1. Both catalogues: `mix lat.commencement_patterns` (own commencement sentences, about 7 min cold, about 1½ min warm: #195; an order fix keeps it warm) and `mix lat.order_patterns` (orders, about 1½ min for 1,129), until `CommencementPatternsTest` and `OrderPatternsTest` pass. Each also reports its **leftovers** (`Commencement.Leftovers`): the words of a statement that bear on a date (a date, a provision, an exception, a qualifier, a relative day) that no rule read from it uses, grouped and ranked by the rows they reach, every group reviewed in `leftovers.json` (`LeftoversReviewTest`). This replaces agent rounds as the way to find a family's new forms (2026-11-05).
 2. The readers' re-read (ask first): `mix lat.commencement`, then the rebuild.
 3. `mix lat.commencement_check --family F`: every row dated, left to an order, or undated with a reason; our faults 0. Its **leftovers gate** lists every leftover reaching the family (its laws' own clauses, the orders held for them, its held amending laws), each with its group's status; PASS needs every one `known:`.
 4. Golden. No agent pass (2026-11-13).
@@ -254,7 +254,8 @@ A rebuild moves no switched label until `LabelRefresh` runs. Laws whose rows don
 2. **Decide before fixing:** every rule question the list raises goes to Jason in one Decision before any fix.
 3. **Fix by class, cheaply:**
    - the session fixes, test first;
-   - after each fix: the class's tests, the commencement tests (34 s), `lat.commencement_check --laws <the class's instances> --fresh` and `lat.commencement_patterns --laws …`.
+   - after each fix: the class's tests; the commencement, law-start, change-vocabulary and architecture tests (about 1 min: the change-vocabulary folder holds the own-commencement reader's tests, and the architecture tests the version lists); `lat.commencement_check --laws <the class's instances> --fresh` and `lat.commencement_patterns --laws …`.
+   - A `--fresh` check keeps each law's CLML rows and readings between runs (`ClmlRows`; `OwnRead` and `AmendingRead` under `Commencement.ReadVersion`): after a reader fix every law is read again, a re-run with no reader change reads none (19 laws: 317 s before the speed fixes, 140 s cold, 45 s warm).
    - No full suite, family check or full catalogue per fix.
 4. **Settle and check, once per batch:**
    - one full `mix test`, Dialyzer (the pre-push hook runs it), the family and switched checks, the feed gate and both catalogues;

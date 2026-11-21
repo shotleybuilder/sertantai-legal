@@ -1,10 +1,64 @@
 ---
 session: Commencement Reader Speed Fixes
-status: active
+status: closed
 opened: 2026-11-21
+closed: 2026-11-21
+outcome: success
+summary: >
+  Every Taken finding of the Commencement reader code review fixed, behaviour-preserving: the range position map built once, one OrderRead, one reading per law/order/amender shared by the --fresh check and the leftovers gate, CLML rows and readings cached on file digests and the readers' version, the catalogue freed of the order reading, the tasks' shared logic in one place, constant regexes compiled once, Leftovers split. A 19-law --fresh check went from 317 s to 140 s cold and 45 s warm with output identical; both catalogues match their fixtures, no new pattern.
+decisions:
+  - what: No timing baseline; the before is a 19-law behaviour snapshot
+    why: Jason, at plan approval — "the baseline is unacceptably slow - that's good enough"; the review's probes already measured it
+    result: the same 19 laws diffed after fixes 4, 5 and 8, identical each time
+  - what: Held split into text_held? and body_held?, not merged
+    why: the two checks differ on 1959 c.24 (held only as section fragments); merging would have changed the catalogue
+    result: one module, two named questions
+  - what: The evaluator's rule index by provision not built
+    why: it changes the evaluator's interface the label build shares, to save about 4 s on the one law with over 1,500 rules
+    result: 2003 c.21 Check.rows 6.2 s, against the plan's 2 s target
+  - what: The catalogue's version freed of order.ex by moving the ref reader (TextRefs) and the order units' checks (OrderLeftovers, OrderMisreads)
+    why: the plan named only Order.ref, own_schedule_refs and Asides, but Leftovers and Misreads reached Order through the order units
+    result: an order fix keeps the commencement catalogue warm
+metrics:
+  check_19_laws_s: { before: 317, after_fix4: 190, cold: 140, warm: 45 }
+  check_19_laws_memory_gb: { before: 1.8, warm: 0.5 }
+  communications_act_check_rows_s: { before: 85.9, after: 6.2 }
+  act_1991_56: { clause_read_before_s: 9.4, clause_read_after_s: 2.0, amenders_368_read_before_s: 107, amenders_rows_cached_s: 0.3 }
+  catalogues_s: { commencement_cold: 438, commencement_warm: 93, commencement_warm_merge: 70, orders: 96 }
+  tests: { reader_and_architecture: 8945, per_fix_run_s: 65 }
+lessons:
+  - title: A behaviour-preserving refactor needs a before/after diff on real laws, not only the tests
+    detail: Fix 1 dropped the context's order list; 2,414 tests passed, but OwnCommencement reads a heading's members from that list and its tests build the context by hand. The 19-law diff caught it (2010 c.29 pt.3 not reached). The per-fix test set also left out change_vocabulary/, which holds the own-commencement reader's tests.
+    tag: tooling
+  - title: Sharing readings across a run can hold them all in memory
+    detail: The first shared-reading fix kept every law's parsed documents until the gate ran (3.7 GB on 19 laws, a risk at 565). Taking each law's gate items as it is read, and dropping the reading, kept memory flat.
+    tag: tooling
+  - title: A profile after each big fix moves the target
+    detail: After the range map, the time was in the amending laws' reads (107 s for one law's 368), which the review had not named; the CLML rows and readings cache took the 19 laws from 190 s to 45 s warm.
+    tag: tooling
+  - title: A map type of one key is a closed map to Dialyzer
+    detail: "Typing findings as %{words: String.t()} made Dialyzer read every gate call as failing, and the pre-push hook refused the push. Use %{required(:words) => ..., optional(atom()) => term()}."
+    tag: tooling
+artifacts:
+  - backend/lib/sertantai_legal/scraper/commencement/order_read.ex
+  - backend/lib/sertantai_legal/scraper/commencement/clml_ref.ex
+  - backend/lib/sertantai_legal/scraper/commencement/doc_rows.ex
+  - backend/lib/sertantai_legal/scraper/commencement/clml_rows.ex
+  - backend/lib/sertantai_legal/scraper/commencement/clml_rows/version.ex
+  - backend/lib/sertantai_legal/scraper/commencement/text_refs.ex
+  - backend/lib/sertantai_legal/scraper/commencement/order_leftovers.ex
+  - backend/lib/sertantai_legal/scraper/commencement/review/order_misreads.ex
+  - backend/lib/sertantai_legal/scraper/commencement/leftover_gate.ex
+  - backend/lib/sertantai_legal/scraper/commencement/reach_groups.ex
+  - docs/lat-change-pipeline/WORKFLOW.md
+  - .claude/skills/commencement-reader-check/SKILL.md
+depends_on:
+  - 2026-11-21-commencement-reader-code-review
+enables:
+  - lat-change-pipeline/2026-11-20-waste-water-and-climate-commencement-reader
 ---
 
-# Session: Commencement Reader Speed Fixes (ACTIVE)
+# Session: Commencement Reader Speed Fixes (CLOSED)
 
 ## Problem
 
@@ -22,8 +76,8 @@ The code review (`backend/data/code-reviews/commencement-reader-code-review.md`)
 - ✅ 6 The tasks' shared logic in one place each (rows query, the Act an order commences, `held?`, the unused amending-laws query, per-law queries)
 - ✅ 7 Regexes compiled once (`order.ex`, `order/asides.ex`, `law_start/clause.ex`)
 - ✅ 8 `Leftovers` split: the reading and the review bookkeeping
-- ⬜ Proof: the `--laws` check diffed with the before (only fixes 2 and 4's intended differences), both catalogues no new pattern, full suite, Dialyzer
-- ⬜ Close: commits by path, the timings, WORKFLOW step 4 and the skill's run times
+- ✅ Proof: the `--laws` check diffed with the before (only fixes 2 and 4's intended differences), both catalogues no new pattern, full suite, Dialyzer
+- ✅ Close: commits by path, the timings, WORKFLOW step 4 and the skill's run times
 
 ## Dependencies
 
@@ -75,4 +129,12 @@ Probed after fix 4 (`speed/probe2.exs`): the time had moved to the amending laws
 ## Parking list
 
 - Extent reader, Amending-law reader, Merge, Evidence: their checks call `Leftovers.add/ranked/summary` (now delegates to `ReachGroups`); move them to `ReachGroups` when each step reopens.
+
+## Proof (2026-11-21, after all eight fixes)
+
+- **The 19-law check:** its output and all three reports identical to the before, both cold (171 s, beside the push's tests) and warm (45 s, 0.5 GB).
+- **The catalogues** without `--accept`: every generated file the same as its fixture (commencement: examples, laws, leftover and misread groups, patterns; orders: examples, leftover and misread groups, patterns); new patterns 0 in both. Commencement 438 s cold (its version changed), 93 s warm (3,804 cache hits; 70 s of it the serial merge); orders 96 s.
+- The order catalogue's documented "about 30 s" was never measured in a session. An attempt to time it at 6ea6045b in a worktree read no orders (the worktree holds none of the order data), so whether the 96 s is a change is not known. The catalogue has no cache, and none of the fixes adds work to it.
+- **The suite and Dialyzer:** the pre-push hook. The first push was refused: 5ac5df28's findings type was a closed map. Fixed in c63ebe1d; then Dialyzer, the backend suite and the frontend tests passed, and the push went (0aff4832..c63ebe1d).
+- **Which doc did this session change?** WORKFLOW step 4 (the catalogues' run times, the per-fix test set, the check's caches) and the `commencement-reader-check` skill (the run times). No rule changed, so `RULES.md` is untouched.
 
