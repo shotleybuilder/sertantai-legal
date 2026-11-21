@@ -5,7 +5,7 @@ Start/stop scripts for sertantai-legal development.
 ## Quick Start
 
 ```bash
-# One-time: bootstrap shared containers (auth, hub, electric)
+# One-time: start legal's Electric container (auth and the hub: sertantai-stack)
 sert-up
 
 # Daily: start legal dev servers (2 tabs — backend + frontend)
@@ -18,14 +18,17 @@ sert-stop
 ## Architecture
 
 ```
-Always-on containers (auto-restart on boot, managed by sert-up):
+Always-on, managed by sert-up (auto-restart on boot):
+  sertantai-legal-electric port 3002 (shared by legal + compliance)
+
+Always-on, managed in sertantai-stack (docker/docker-compose.dev.yml,
+project sertantai-dev; moved there 2026-11-21, Jason):
   sertantai-auth          port 4000  (GHCR image)
   sertantai-auth-postgres port 5438
   sertantai-hub-backend   port 4006  (GHCR image)
   sertantai-hub-frontend  port 5173  (GHCR image)
   sertantai-hub-postgres  port 5435
   sertantai-hub-electric  port 3000
-  sertantai-legal-electric port 3002 (shared by legal + compliance)
 
 Legal postgres (auto-started by sert-dev):
   sertantai-legal-postgres port 5436
@@ -39,19 +42,22 @@ Legal dev servers (terminal tabs, managed by sert-dev / sert-stop):
 
 | Script | Purpose |
 |--------|---------|
-| `sert-up` | Start/stop shared service containers |
+| `sert-up` | Start/stop legal's Electric container |
 | `sert-dev` | Start legal backend + frontend in terminal tabs |
 | `sert-stop` | Stop legal backend + frontend |
 
 ### sert-up
 
-Manages the always-on container stack (`docker-compose.services.yml`).
+Manages legal-electric (`docker-compose.services.yml`), alone: it never starts or stops another service. Auth and the hub are managed from sertantai-stack:
 
 ```bash
-sert-up              # Start or verify containers are running
-sert-up --pull       # Pull latest GHCR images + restart
-sert-up --status     # Show container status
-sert-up --stop       # Stop containers (won't auto-restart until re-run)
+sert-up              # Start or verify legal-electric is running
+sert-up --pull       # Pull the latest Electric image + restart
+sert-up --status     # Show its status (and where auth and the hub are managed)
+sert-up --stop       # Stop it (won't auto-restart until re-run)
+
+# auth and the hub, from ~/Desktop/sertantai-stack:
+docker compose -p sertantai-dev -f docker/docker-compose.dev.yml --env-file docker/.env.dev ps
 ```
 
 ### sert-dev
@@ -102,8 +108,7 @@ sudo ln -sf $(pwd)/scripts/development/sert-stop /usr/local/bin/sert-stop
 ### Service not healthy after boot
 ```bash
 sert-up --status
-docker compose -f docker-compose.services.yml logs auth
-docker compose -f docker-compose.services.yml logs hub-backend
+# auth and hub logs: from sertantai-stack (project sertantai-dev)
 docker compose -f docker-compose.services.yml logs legal-electric
 ```
 

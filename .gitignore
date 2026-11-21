@@ -2,6 +2,11 @@
 .env
 .env.local
 .env.*.local
+# a root .env variant or any .env backup (e.g. .env.bak-*); never an example
+# (frontend/.env.development and .env.production are tracked on purpose)
+/.env.*
+!/.env.example
+.env.bak*
 
 # OS files
 .DS_Store

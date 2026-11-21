@@ -1,74 +1,22 @@
 # docker-compose.services.yml
 #
-# Always-on dev containers for sertantai-auth and sertantai-hub.
-# Mirrors the production pattern from sertantai-stack — GHCR release
-# images configured via environment variables.
+# Legal's always-on dev container: the shared Electric sync service
+# (legal-electric). Auth and the hub now live in sertantai-stack's dev compose
+# (sertantai-stack/docker/docker-compose.dev.yml, project sertantai-dev;
+# Jason 2026-11-21: legal is a local data-assembly app and doesn't own the
+# shared stack). Legal's own Postgres is in docker-compose.dev.yml.
 #
 # First-time setup:  ./scripts/development/sert-up
-# After that:        containers auto-restart on boot (restart: unless-stopped)
+# After that:        the container auto-restarts on boot (restart: unless-stopped)
 #
 # Manual:
-#   docker compose -f docker-compose.services.yml up -d
-#   docker compose -f docker-compose.services.yml stop
-#   docker compose -f docker-compose.services.yml logs -f auth hub-backend
+#   docker compose -f docker-compose.services.yml up -d --no-deps legal-electric
+#   docker compose -f docker-compose.services.yml logs -f legal-electric
+#
+# Never `up --remove-orphans` on this project: the auth and hub containers
+# created from it move to project sertantai-dev at the cut-over.
 
 services:
-  # ── Auth ────────────────────────────────────────────────────────────────
-  # GHCR release image. Runs on port 4001 internally, mapped to 4000 on host.
-
-  auth-postgres:
-    image: postgres:17-alpine
-    container_name: sertantai-auth-postgres
-    environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: sertantai_auth_prod
-    ports:
-      - "5438:5432"
-    volumes:
-      - auth_postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-
-  auth:
-    image: ghcr.io/shotleybuilder/sertantai-auth:${AUTH_VERSION:-latest}
-    container_name: sertantai-auth
-    depends_on:
-      auth-postgres:
-        condition: service_healthy
-    environment:
-      - DATABASE_URL=postgresql://postgres:postgres@auth-postgres:5432/sertantai_auth_dev
-      - SERTANTAI_AUTH_DATABASE_URL=postgresql://postgres:postgres@auth-postgres:5432/sertantai_auth_dev
-      - SERTANTAI_AUTH_SECRET_KEY_BASE=dev_secret_key_base_at_least_64_chars_long_for_local_development_testing
-      - SERTANTAI_AUTH_JWT_PRIVATE_KEY=${SERTANTAI_AUTH_JWT_PRIVATE_KEY}
-      - SERTANTAI_AUTH_TOTP_ENCRYPTION_KEY=${SERTANTAI_AUTH_TOTP_ENCRYPTION_KEY}
-      - SERTANTAI_AUTH_RESEND_API_KEY=${SERTANTAI_AUTH_RESEND_API_KEY:-re_dev_placeholder}
-      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
-      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
-      - GITHUB_REDIRECT_URI=${GITHUB_REDIRECT_URI}
-      - SERTANTAI_AUTH_GITHUB_OAUTH_REDIRECT_URL=http://localhost:5173
-      - SERTANTAI_AUTH_COOKIE_SAME_SITE=Lax
-      - SERTANTAI_AUTH_PHX_HOST=localhost
-      - SERTANTAI_AUTH_PORT=4001
-      - SERTANTAI_AUTH_POOL_SIZE=10
-      - SERTANTAI_AUTH_COOKIE_DOMAIN=localhost
-      - SERTANTAI_AUTH_CONFIRMATION_URL=http://localhost:5173
-      - SERTANTAI_AUTH_MAGIC_LINK_URL=http://localhost:5173
-      - PHX_SERVER=true
-      - PORT=4001
-    ports:
-      - "4000:4001"
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4001/health"]
-      interval: 15s
-      timeout: 3s
-      start_period: 15s
-      retries: 3
-    restart: unless-stopped
-
   # ── Electric (shared) ───────────────────────────────────────────────────
   # Shared Electric sync service for legal + compliance frontends.
   # Both services request different shapes from the same instance.
@@ -86,110 +34,3 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
-
-  # ── Hub ─────────────────────────────────────────────────────────────────
-  # GHCR release images (backend + frontend). Same pattern as production.
-
-  hub-postgres:
-    image: postgres:17-alpine
-    container_name: sertantai-hub-postgres
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: sertantai_hub_dev
-    ports:
-      - "5435:5432"
-    volumes:
-      - hub_postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-    command:
-      - "postgres"
-      - "-c"
-      - "wal_level=logical"
-      - "-c"
-      - "max_replication_slots=10"
-      - "-c"
-      - "max_wal_senders=10"
-
-  hub-electric:
-    image: electricsql/electric:latest
-    container_name: sertantai-hub-electric
-    environment:
-      DATABASE_URL: postgresql://postgres:postgres@hub-postgres:5432/sertantai_hub_dev
-      HTTP_PORT: 3000
-      ELECTRIC_INSECURE: "true"
-    ports:
-      - "3000:3000"
-    depends_on:
-      hub-postgres:
-        condition: service_healthy
-    restart: unless-stopped
-
-  hub-backend:
-    image: ghcr.io/shotleybuilder/sertantai-hub-backend:${SERTANTAI_HUB_VERSION:-latest}
-    container_name: sertantai-hub-backend
-    depends_on:
-      hub-postgres:
-        condition: service_healthy
-      auth:
-        condition: service_healthy
-    environment:
-      - DATABASE_URL=postgresql://postgres:postgres@hub-postgres:5432/sertantai_hub_dev
-      - AUTH_DATABASE_URL=postgresql://postgres:postgres@auth-postgres:5432/sertantai_auth_dev
-      - SECRET_KEY_BASE=dev_hub_secret_key_base_at_least_64_chars_long_for_local_development_testing
-      - PHX_HOST=localhost
-      - PHX_SERVER=true
-      - PORT=4006
-      - POOL_SIZE=10
-      - ELECTRIC_URL=http://hub-electric:3000
-      - AUTH_SERVICE_URL=http://auth:4001
-      - AUTH_URL=http://auth:4001
-      - AUTH_PUBLIC_URL=http://localhost:4000
-      - FRONTEND_URL=http://localhost:5173
-      - LEGAL_SERVICE_URL=http://host.docker.internal:4003
-      - COMPLIANCE_SERVICE_URL=http://host.docker.internal:4004
-    ports:
-      - "4006:4006"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4006/health"]
-      interval: 15s
-      timeout: 5s
-      start_period: 20s
-      retries: 3
-    restart: unless-stopped
-
-  hub-frontend:
-    image: ghcr.io/shotleybuilder/sertantai-hub-frontend:${SERTANTAI_HUB_VERSION:-latest}
-    container_name: sertantai-hub-frontend
-    depends_on:
-      - hub-backend
-    environment:
-      # Runtime env injection — docker-entrypoint.sh writes these into env-config.js
-      - VITE_API_URL=http://localhost:4006
-      - VITE_LEGAL_URL=http://localhost:5175
-      - VITE_ENFORCEMENT_URL=http://localhost:5174
-      - VITE_COMPLIANCE_URL=http://localhost:5176
-      - VITE_CONTROLS_URL=http://localhost:5177
-    ports:
-      - "5173:3000"
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    restart: unless-stopped
-
-volumes:
-  auth_postgres_data:
-    external: true
-    name: sertantai-auth_postgres_data
-  hub_postgres_data:
-    external: true
-    name: sertantai-hub_postgres_data

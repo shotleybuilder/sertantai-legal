@@ -1,14 +1,19 @@
 #!/bin/bash
-# Start/stop always-on dev containers: auth, hub, electric.
+# Start/stop legal's always-on dev container: the shared Electric sync service
+# (legal-electric, port 3002).
 #
-# These auto-restart on boot (restart: unless-stopped).
-# First-time: pulls images, creates volumes, starts everything.
+# Auth and the hub are no longer legal's: they live in sertantai-stack's dev
+# compose (sertantai-stack/docker/docker-compose.dev.yml, project sertantai-dev;
+# Jason 2026-11-21). Manage them from there:
+#   docker compose -p sertantai-dev -f docker/docker-compose.dev.yml --env-file docker/.env.dev ps
+#
+# legal-electric auto-restarts on boot (restart: unless-stopped).
 #
 # Usage:
 #   sert-up              # Start (or verify running)
-#   sert-up --pull       # Pull latest GHCR images first
+#   sert-up --pull       # Pull the latest Electric image first
 #   sert-up --status     # Show container status only
-#   sert-up --stop       # Stop all service containers
+#   sert-up --stop       # Stop legal-electric
 #
 # Symlink:
 #   sudo ln -sf $(pwd)/scripts/development/sert-up /usr/local/bin/sert-up
@@ -18,6 +23,7 @@ set -e
 SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
 PROJECT_ROOT="$(cd "$(dirname "$SCRIPT_PATH")/../.." && pwd)"
 COMPOSE_FILE="$PROJECT_ROOT/docker-compose.services.yml"
+SERVICE=legal-electric
 
 PULL_IMAGES=false
 STATUS_ONLY=false
@@ -31,120 +37,57 @@ for arg in "$@"; do
     esac
 done
 
-if [ "$STATUS_ONLY" = true ]; then
-    echo "Service container status:"
+stack_note() {
     echo ""
-    docker compose -f "$COMPOSE_FILE" ps
-    exit 0
-fi
-
-if [ "$STOP_ALL" = true ]; then
-    echo "Stopping service containers..."
-    docker compose -f "$COMPOSE_FILE" stop
-    echo ""
-    echo "Containers stopped. They will NOT auto-restart until you run: sert-up"
-    exit 0
-fi
+    echo "Auth and the hub are managed in sertantai-stack:"
+    echo "  cd ~/Desktop/sertantai-stack && docker compose -p sertantai-dev -f docker/docker-compose.dev.yml --env-file docker/.env.dev ps"
+}
 
 if [ ! -f "$COMPOSE_FILE" ]; then
     echo "Error: $COMPOSE_FILE not found"
     exit 1
 fi
 
-# ── Check .env exists ────────────────────────────────────────────────────
-if [ ! -f "$PROJECT_ROOT/.env" ]; then
-    echo "Error: $PROJECT_ROOT/.env not found"
-    echo "  This file contains dev secrets (JWT key, TOTP key)."
-    echo "  Copy from .env.example or ask a team member."
-    exit 1
-fi
-
-# ── Ensure external volumes exist ────────────────────────────────────────
-for vol in sertantai-auth_postgres_data sertantai-hub_postgres_data; do
-    if ! docker volume inspect "$vol" >/dev/null 2>&1; then
-        echo "Creating volume: $vol"
-        docker volume create "$vol"
-    fi
-done
-
-# ── Stop conflicting containers from individual repo composes ────────────
-echo "Checking for conflicting containers..."
-changed=false
-for name in sertantai_auth_postgres_dev sertantai_auth_app_dev; do
-    if docker ps -a --format '{{.Names}}' | grep -q "^${name}$"; then
-        echo "  Removing old container: $name"
-        docker rm -f "$name" 2>/dev/null || true
-        changed=true
-    fi
-done
-if [ "$changed" = false ]; then
-    echo "  No conflicts found"
-fi
-
-# ── Pull latest images if requested ─────────────────────────────────────
-if [ "$PULL_IMAGES" = true ]; then
+if [ "$STATUS_ONLY" = true ]; then
+    echo "legal-electric status:"
     echo ""
-    echo "Pulling latest GHCR images..."
-    docker pull ghcr.io/shotleybuilder/sertantai-auth:latest
-    docker pull ghcr.io/shotleybuilder/sertantai-hub-backend:latest
-    docker pull ghcr.io/shotleybuilder/sertantai-hub-frontend:latest
+    docker compose -f "$COMPOSE_FILE" ps "$SERVICE"
+    stack_note
+    exit 0
 fi
 
-# ── Start containers ─────────────────────────────────────────────────────
-echo ""
-echo "Starting services..."
+if [ "$STOP_ALL" = true ]; then
+    echo "Stopping $SERVICE..."
+    docker compose -f "$COMPOSE_FILE" stop "$SERVICE"
+    echo ""
+    echo "Stopped. It will NOT auto-restart until you run: sert-up"
+    exit 0
+fi
+
+# ── Pull the latest image if requested ──────────────────────────────────
+if [ "$PULL_IMAGES" = true ]; then
+    echo "Pulling the latest Electric image..."
+    docker compose -f "$COMPOSE_FILE" pull "$SERVICE"
+fi
+
+# ── Start legal-electric alone (never the other services) ───────────────
+echo "Starting $SERVICE..."
 cd "$PROJECT_ROOT"
-docker compose -f "$COMPOSE_FILE" up -d
+docker compose -f "$COMPOSE_FILE" up -d --no-deps "$SERVICE"
 
 # ── Wait for health ─────────────────────────────────────────────────────
-echo ""
-
-wait_for() {
-    local label="$1" url="$2" timeout="$3" hint="$4"
-    echo -n "Waiting for $label..."
-    for i in $(seq 1 "$timeout"); do
-        if curl -s -o /dev/null -w "%{http_code}" "$url" 2>/dev/null | grep -qE "200|204"; then
-            echo " ready"; return 0
-        fi
-        [ "$i" -eq "$timeout" ] && echo " timeout (check: $hint)"
-        sleep 1; echo -n "."
-    done
-}
-
-wait_for "auth (port 4000)" "http://localhost:4000/health" 30 \
-    "docker compose -f docker-compose.services.yml logs auth"
-
-wait_for "hub backend (port 4006)" "http://localhost:4006/health" 45 \
-    "docker compose -f docker-compose.services.yml logs hub-backend"
-
-echo -n "Waiting for hub frontend (port 5173)..."
+echo -n "Waiting for electric (port 3002)..."
 for i in $(seq 1 30); do
-    if curl -s -o /dev/null http://localhost:5173 2>/dev/null; then
+    if curl -s -o /dev/null -w "%{http_code}" "http://localhost:3002/v1/health" 2>/dev/null | grep -qE "200|204"; then
         echo " ready"; break
     fi
-    [ "$i" -eq 30 ] && echo " timeout (check: docker compose -f docker-compose.services.yml logs hub-frontend)"
+    [ "$i" -eq 30 ] && echo " timeout (check: docker compose -f docker-compose.services.yml logs $SERVICE)"
     sleep 1; echo -n "."
 done
 
-wait_for "electric (port 3002)" "http://localhost:3002/v1/health" 30 \
-    "docker compose -f docker-compose.services.yml logs legal-electric"
-
-# ── Summary ──────────────────────────────────────────────────────────────
 echo ""
-echo "=========================================="
-echo " Services running"
-echo "=========================================="
-echo ""
-echo "  Auth:          http://localhost:4000"
-echo "  Hub backend:   http://localhost:4006"
-echo "  Hub frontend:  http://localhost:5173"
 echo "  Electric:      http://localhost:3002"
 echo ""
-echo "These containers auto-restart on boot."
 echo "To develop legal: sert-dev"
-echo ""
-echo "Management:"
-echo "  sert-up --status    # check status"
-echo "  sert-up --stop      # stop (won't auto-restart)"
-echo "  sert-up --pull      # pull latest images + restart"
-echo ""
+echo "Management: sert-up --status | --stop | --pull"
+stack_note
