@@ -53,6 +53,8 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   @appointed ~r/\bis\s+the\s+(?:(?:day|date)\s+appointed|appointed\s+(?:day|date))\s+for\s+the\s+coming\s+into\s+(?:force|operation)\s+of\b/i
   # "The appointed day for the coming into force of <provisions> … is
   # <date>" (Welsh orders: WSI 2017/546)
+  @date_appointed ~r/^(.*?\d{4})\s+is\s+(?:hereby\s+)?appointed\s+(?:as\s+)?the\s+(?:day|date)\s+on\s+which\s+(.+)$/isu
+
   @appointed_is ~r/\bthe\s+(?:appointed\s+(?:day|date)|(?:day|date)\s+appointed)\s+for\s+the\s+coming\s+into\s+(?:force|operation)\s+of\b(.*)\bis\s+(.+)$/isu
   @full ~r/\b(?:(?:in\s*)?so\s*far|insofar|in\s+as\s+far)\s+as\s+(?:it|they|th(?:at|ose|ese)\s+[\w-]+)\s+(?:has|have|is|are)\s+not\s+(?:already|previously|yet)\s+(?:been\s+)?(?:commenced|brought\s+into\s+force|in\s+force|come\s+into\s+(?:force|operation))|(?:(?:in\s*)?so\s*far|insofar)\s+as\s+not\s+(?:already|previously|yet|then)\s+in\s+force|\bto\s+the\s+extent\s+(?:that\s+)?(?:it|they)\s+(?:is|are|has|have)\s+not\s+(?:already|yet)\s+(?:been\s+)?(?:commenced|brought\s+into\s+force|in\s+force|come\s+into\s+(?:force|operation))|for\s+all\s+(?:remaining\s+|other\s+)?purposes|\(?\s*except\s+(?:in\s+)?so\s+far\s+as\s+(?:it\s+is\s+|they\s+are\s+)?already\s+in\s+(?:operation|force)\s*\)?|\(\s*except\s+as\s+aforesaid\s*\)/i
   @relating ~r/\b(?:(?:in\s*)?so\s*far|insofar)\s+as\s+(?:(?:it|they)\s+relates?|relating)\s+to\b|\bto\s+the\s+extent\s+that\s+(?:it|they)\s+relates?\s+to\b|\bas\s+respects\b|\b(?:(?:in\s*)?so\s*far|insofar)\s+as\s+(?:it|they)\s+(?:gives?|give)\s+effect\s+to\b/i
@@ -220,7 +222,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     # 1964 …; (b) …": SI 1964/1045)
     for id <- order.ids,
         String.match?(id, ~r/^(?:article|regulation)-\d+[A-Z]*(?:-\d+[A-Z]*|-[a-z])?$/),
-        words = Text.words_of(order, id),
+        words = order |> Text.words_of(id) |> wording(),
         Regex.match?(@cif, words) or Regex.match?(@appointed, words) or
           Regex.match?(@appointed_is, words),
         lines = order |> Doc.element(id) |> Doc.lines() |> join_open() |> Enum.map(&clean_line/1),
@@ -604,65 +606,74 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
   defp statement(head, made) do
     cond do
-      # "The appointed day for the coming into force of X … is D—": the
-      # date after "is"; the items X, or after the dash ("the following")
-      match = Regex.run(@appointed_is, head) ->
-        [_, subject, tail] = match
-        [date_part | after_dash] = Regex.split(~r/[—–:]\s*/u, tail, parts: 2)
-
-        with [d] <- parse_dates(date_part) do
-          {d,
-           if(subject =~ ~r/\bthe following\b/i, do: Enum.join(after_dash, " "), else: subject)}
-        else
-          _ -> nil
-        end
-
-      Regex.match?(@appointed, head) ->
-        [before, after_] = Regex.split(@appointed, head, parts: 2)
-        with [d] <- parse_dates(before), do: {d, after_}, else: (_ -> nil)
-
-      Regex.match?(@cif, head) ->
-        [subject, tail] = Regex.split(@cif, head, parts: 2)
-
-        # a list after the dash on the same line ("… on 21st September 1995—
-        # section 116 …") is inline too
-        after_dash =
-          case Regex.split(~r/(?:[—–]|:(?![^()]*\)))\s*/u, tail, parts: 2) do
-            [_, rest] -> rest
-            _ -> ""
-          end
-
-        case tail_date(tail, made) do
-          nil ->
-            nil
-
-          d ->
-            # a qualifier after the date is the subject's ("Section 120(1) of,
-            # and Schedule 22 to, the 1995 Act come into force on 1st April
-            # 2015 in so far as they relate to paragraph 81 of Schedule 22":
-            # SSI 2015/73, CV-S04 round 4; after a made-relative day, "… on the
-            # day after this Order is made so far as they relate to …": SI
-            # 2009/1261 art.4)
-            after_date =
-              case Regex.run(
-                     @made_qualifier,
-                     tail
-                   ) do
-                [_, q] -> " " <> q
-                nil -> ""
-              end
-
-            {d,
-             if(subject =~ ~r/\bthe following\b/i,
-               do: after_dash,
-               else: subject <> after_date <> " " <> after_dash
-             )}
-        end
-
-      true ->
-        nil
+      match = Regex.run(@appointed_is, head) -> appointed_is(match)
+      Regex.match?(@appointed, head) -> appointed(head)
+      match = Regex.run(@date_appointed, head) -> date_appointed(match)
+      Regex.match?(@cif, head) -> into_force(head, made)
+      true -> nil
     end
   end
+
+  # "The appointed day for the coming into force of X … is D—": the date
+  # after "is"; the items X, or after the dash ("the following")
+  defp appointed_is([_, subject, tail]) do
+    [date_part | after_dash] = Regex.split(~r/[—–:]\s*/u, tail, parts: 2)
+
+    with [d] <- parse_dates(date_part),
+         do: {d, following(subject, Enum.join(after_dash, " "), subject)},
+         else: (_ -> nil)
+  end
+
+  defp appointed(head) do
+    [before, after_] = Regex.split(@appointed, head, parts: 2)
+    with [d] <- parse_dates(before), do: {d, after_}, else: (_ -> nil)
+  end
+
+  # "The 20th of May 2005 is hereby appointed the day on which the following
+  # provisions of the … Act 2003 come into force:" (SSI 2005/256): the date
+  # before "is appointed"; the items after the dash
+  defp date_appointed([_, before, subject]) do
+    [subject | after_dash] = Regex.split(~r/(?:[—–]|:(?![^()]*\)))\s*/u, subject, parts: 2)
+    subject = String.replace(subject, @cif, "")
+
+    with [d] <- parse_dates(before),
+         do: {d, following(subject, Enum.join(after_dash, " "), subject)},
+         else: (_ -> nil)
+  end
+
+  # "<subject> shall come into force on <date>"
+  defp into_force(head, made) do
+    [subject, tail] = Regex.split(@cif, head, parts: 2)
+
+    # a list after the dash on the same line ("… on 21st September 1995—
+    # section 116 …") is inline too
+    after_dash =
+      case Regex.split(~r/(?:[—–]|:(?![^()]*\)))\s*/u, tail, parts: 2) do
+        [_, rest] -> rest
+        _ -> ""
+      end
+
+    case tail_date(tail, made) do
+      nil -> nil
+      d -> {d, following(subject, after_dash, subject <> after_date(tail) <> " " <> after_dash)}
+    end
+  end
+
+  # a qualifier after the date is the subject's ("Section 120(1) of, and
+  # Schedule 22 to, the 1995 Act come into force on 1st April 2015 in so far
+  # as they relate to paragraph 81 of Schedule 22": SSI 2015/73, CV-S04
+  # round 4; after a made-relative day, "… on the day after this Order is
+  # made so far as they relate to …": SI 2009/1261 art.4)
+  defp after_date(tail) do
+    case Regex.run(@made_qualifier, tail) do
+      [_, q] -> " " <> q
+      nil -> ""
+    end
+  end
+
+  # "the following" names its items after the dash; otherwise the subject
+  defp following(subject, items, otherwise),
+    do: if(subject =~ ~r/\bthe following\b/i, do: items, else: otherwise)
 
   # a statement's date: one stated, else counted from the order's making
   # ("the day after this Order is made": LR-33's reading)
@@ -709,8 +720,23 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   end
 
   # a line's leading number label and the next item's trailing label ("… of— a")
+  # an order's appointed-day words in the reader's own order: "The appointed
+  # day for the following provisions of the Act coming into force is 25
+  # January 2018—" (WSI 2018/35) as "… for the coming into force of the
+  # following provisions of the Act is …"; "the 20th of May 2005" (SSI
+  # 2005/256) as "the 20th May 2005"
+  @appointed_for_coming ~r/\b(the\s+(?:appointed\s+(?:day|date)|(?:day|date)\s+appointed)\s+for)\s+(?!the\s+coming\b)(.+?)\s+coming\s+into\s+(force|operation)\s+is\b/isu
+  @day_of_month ~r/\b(\d{1,2}(?:st|nd|rd|th)?)\s+of\s+(January|February|March|April|May|June|July|August|September|October|November|December)\b/iu
+
+  defp wording(text) do
+    text
+    |> String.replace(@appointed_for_coming, "\\1 the coming into \\3 of \\2 is")
+    |> String.replace(@day_of_month, "\\1 \\2")
+  end
+
   defp clean_line(line) do
     line
+    |> wording()
     # (never a date's day: "18 March 2011 is the appointed day …": WSI 2011/824)
     |> String.replace(
       ~r/^\(?\d+[A-Z]?\)?(?:\s+\(?\d+\)?)?\s+(?=[A-Z])(?!(?:January|February|March|April|May|June|July|August|September|October|November|December)\b)/u,

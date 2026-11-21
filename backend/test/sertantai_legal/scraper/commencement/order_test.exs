@@ -1180,4 +1180,64 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
       assert [%Rule{territory: "E", purposes: nil}] = rules
     end
   end
+
+  describe "the round's order forms (Waste, Water and Climate, Decision 7 B)" do
+    # (as WSI 2018/35 art.1(2) defines it)
+    @interpretation ~s|<P1 id="article-1"><Pnumber>1</Pnumber><P1para><Text>In this Order, “the Act” means the Landfill Disposals Tax (Wales) Act 2017.</Text></P1para></P1>|
+
+    defp article_2(law, head, items) do
+      ps =
+        items
+        |> Enum.with_index()
+        |> Enum.map_join(fn {t, i} ->
+          l = <<?a + i>>
+
+          ~s(<P3 id="article-2-#{l}"><Pnumber>#{l}</Pnumber><P3para><Text>#{t}</Text></P3para></P3>)
+        end)
+
+      Doc.new(law, [
+        ~s(<Legislation><Secondary><Body>#{@interpretation}<P1 id="article-2"><Pnumber>2</Pnumber><P1para><Text>#{head}</Text>#{ps}</P1para></P1></Body></Secondary></Legislation>)
+      ])
+    end
+
+    test "\"The appointed day for the following provisions of the Act coming into force is 25 January 2018—\" (WSI 2018/35)" do
+      doc =
+        article_2(
+          "UK_wsi_2018_35",
+          "The appointed day for the following provisions of the Act coming into force is 25 January 2018—",
+          [
+            "section 8(4) (definitions in relation to landfill site activities);",
+            "section 30 (site restoration: procedure for approval);"
+          ]
+        )
+
+      act = %{law: "UK_anaw_2017_3", title: "Landfill Disposals Tax (Wales) Act", year: "2017"}
+
+      assert [
+               %{scope: ["s.8(4)"], when: {:date, ~D[2018-01-25]}},
+               %{scope: ["s.30"], when: {:date, ~D[2018-01-25]}}
+             ] =
+               Order.rules(doc, act)
+    end
+
+    test "\"The 20th of May 2005 is hereby appointed the day on which the following provisions … come into force:\" (SSI 2005/256)" do
+      doc =
+        article_2(
+          "UK_ssi_2005_256",
+          "The 20th of May 2005 is hereby appointed the day on which the following provisions of the Water Environment and Water Services (Scotland) Act 2003 come into force:",
+          ["section 25;", "Schedule 1; and", "Schedule 2."]
+        )
+
+      act = %{
+        law: "UK_asp_2003_3",
+        title: "Water Environment and Water Services (Scotland) Act",
+        year: "2003"
+      }
+
+      rules = Order.rules(doc, act)
+
+      assert Enum.all?(rules, &(&1.when == {:date, ~D[2005-05-20]}))
+      assert Enum.flat_map(rules, & &1.scope) == ["s.25", "sch.1", "sch.2"]
+    end
+  end
 end
