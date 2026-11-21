@@ -136,58 +136,60 @@ defmodule SertantaiLegal.Scraper.Commencement.Evaluator do
   # still applies as `:general` — partly in force from it, fully once both
   # have started (CR-03: Quarries Regulations reg.26)
   defp most_specific(rules, chain, ctx) do
-    named? =
-      Enum.any?(
-        rules,
-        &(is_list(&1.scope) and refs_index(&1, chain, ctx) != nil and
-            not excepted?(&1, chain, ctx))
-      )
+    # each rule scored once for the provision (whether excepted, and the
+    # nearest chain position its refs reach), never once per pass: 2003
+    # c.21's 1,532 rules over 3,967 rows were covered three times a row
+    scored = for r <- rules, do: {r, excepted?(r, chain, ctx), refs_index(r, chain, ctx)}
 
-    ranked = ranked(rules, chain, ctx, named?)
-
-    case ranked do
-      [] ->
-        []
-
-      _ ->
-        best = ranked |> Enum.map(&elem(&1, 0)) |> Enum.min()
-        top = for {^best, r} <- ranked, do: r
-
-        below =
-          rules
-          |> ranked(chain, ctx, false)
-          |> Enum.filter(&(elem(&1, 0) > best))
-
-        if Enum.all?(top, &(not Rule.full?(&1))) and below != [] do
-          next = below |> Enum.map(&elem(&1, 0)) |> Enum.min()
-          Enum.map(top, &{&1, :completes}) ++ for({^next, r} <- below, do: {r, :general})
-        else
-          Enum.map(top, &{&1, :normal})
-        end
+    case ranked(scored, named?(scored)) do
+      [] -> []
+      ranked -> pick(ranked, scored)
     end
   end
 
-  defp ranked(rules, chain, ctx, named?) do
-    for r <- rules,
-        not excepted?(r, chain, ctx),
-        rank = rank(r, chain, ctx, named?),
+  # a rule naming the provision, not excepting it
+  defp named?(scored),
+    do:
+      Enum.any?(scored, fn {r, excepted?, i} ->
+        is_list(r.scope) and i != nil and not excepted?
+      end)
+
+  # the best-ranked rules; where none is full, with the next rank's rules
+  # they complete
+  defp pick(ranked, scored) do
+    best = ranked |> Enum.map(&elem(&1, 0)) |> Enum.min()
+    top = for {^best, r} <- ranked, do: r
+    below = scored |> ranked(false) |> Enum.filter(&(elem(&1, 0) > best))
+
+    if Enum.all?(top, &(not Rule.full?(&1))) and below != [] do
+      next = below |> Enum.map(&elem(&1, 0)) |> Enum.min()
+      Enum.map(top, &{&1, :completes}) ++ for({^next, r} <- below, do: {r, :general})
+    else
+      Enum.map(top, &{&1, :normal})
+    end
+  end
+
+  defp ranked(scored, named?) do
+    for {r, false, i} <- scored,
+        rank = rank(r, i, named?),
         rank != nil,
         do: {rank, r}
   end
 
-  defp rank(%Rule{scope: refs} = r, chain, ctx, _named?) when is_list(refs),
-    do: refs_index(r, chain, ctx)
+  defp rank(%Rule{scope: refs}, i, _named?) when is_list(refs), do: i
+  defp rank(%Rule{scope: :rest}, _i, false), do: 1_000
+  defp rank(%Rule{scope: :all}, _i, false), do: 2_000
+  defp rank(_rule, _i, true), do: nil
 
-  defp rank(%Rule{scope: :rest}, _chain, _ctx, false), do: 1_000
-  defp rank(%Rule{scope: :all}, _chain, _ctx, false), do: 2_000
-  defp rank(_rule, _chain, _ctx, true), do: nil
-
-  # the nearest chain position a ref of the rule reaches
-  defp refs_index(%Rule{scope: refs}, chain, ctx) do
+  # the nearest chain position a ref of the rule reaches (nil: none, or a
+  # rule naming no refs)
+  defp refs_index(%Rule{scope: refs}, chain, ctx) when is_list(refs) do
     chain
     |> Enum.with_index()
     |> Enum.find_value(fn {el, i} -> if Enum.any?(refs, &covers?(&1, el, ctx)), do: i end)
   end
+
+  defp refs_index(_rule, _chain, _ctx), do: nil
 
   defp excepted?(%Rule{except: except}, chain, ctx),
     do: Enum.any?(chain, fn el -> Enum.any?(except, &covers?(&1, el, ctx)) end)
