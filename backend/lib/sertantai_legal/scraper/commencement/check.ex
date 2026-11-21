@@ -81,11 +81,16 @@ defmodule SertantaiLegal.Scraper.Commencement.Check do
     do:
       Map.new(records, fn [t, first, full] -> {t |> Ref.canonical() |> base(), {first, full}} end)
 
-  @doc "How the reader's full date stands against the feed's."
+  @doc "How the reader's full date (or, partly in force on both sides, its first) stands against the feed's."
   @spec yardstick(map()) :: atom()
   def yardstick(%{feed: nil, full_from: nil}), do: :neither
   def yardstick(%{feed: nil}), do: :own_only
   def yardstick(%{feed: {_, full}, full_from: full}) when full != nil, do: :agree
+  # partly in force from the same day on both sides, fully on neither
+  # ("Section 7, in relation to England only": SI 2010/2169 Sch.)
+  def yardstick(%{feed: {first, nil}, full_from: nil, partial_from: first}) when first != nil,
+    do: :agree
+
   def yardstick(%{full_from: nil}), do: :feed_only
   def yardstick(%{feed: {_, nil}}), do: :feed_partial_only
   def yardstick(_), do: :differ

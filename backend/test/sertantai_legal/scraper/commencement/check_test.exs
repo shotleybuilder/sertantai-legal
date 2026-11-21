@@ -15,6 +15,15 @@ defmodule SertantaiLegal.Scraper.Commencement.CheckTest do
 
       assert Check.yardstick(%{feed: {nil, ~D[1976-01-01]}, full_from: ~D[1975-01-01]}) == :differ
     end
+
+    test "a partial start on the feed's own first day, neither in force fully, agrees" do
+      # SI 2010/2169 Sch.: "Section 7, in relation to England only" on
+      # 1 October 2010, the feed's record partial from that day too
+      partial = %{feed: {~D[2010-10-01], nil}, partial_from: ~D[2010-10-01], full_from: nil}
+      assert Check.yardstick(partial) == :agree
+      assert Check.yardstick(%{partial | partial_from: nil}) == :feed_only
+      assert Check.yardstick(%{partial | partial_from: ~D[2010-09-01]}) == :feed_only
+    end
   end
 
   test "feed_index/1 keys each record by its provision without a version" do
