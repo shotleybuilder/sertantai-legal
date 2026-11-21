@@ -23,6 +23,13 @@ Prove the commencement readers — the own-clause reader (`LawStart.Provisions`,
 
 Ask Jason before the long runs; say what each writes.
 
+**The loop** (Jason 2026-11-21; WORKFLOW step 4, "How the step runs"):
+- Find once, from the catalogues, the family checks and the feed gate.
+- Decide every rule question before fixing.
+- Fix by class with cheap checks only: the class's tests, the commencement tests, `--laws` checks and catalogues.
+- Run the heavy checks once per batch.
+- The session fixes. Fable only as a last resort, when the session cannot land a fix and pass the tests, and only on Jason's approval with reasons.
+
 1. **Catalogues** (read-only over the corpus; writes their fixtures and reports):
    - `mix lat.commencement_patterns` (own-clause sentences, about 10 min, one law at a time while a VM runs) and `mix lat.order_patterns` (about 30 s).
    - Each prints its patterns against `expected.json` (new patterns: accept, fix or `pending:`; held expectations never move without Jason) and its **leftovers by shape**, ranked by reach. The report goes to `backend/data/reports/commencement-reader/leftovers[-orders]-<date>.txt`.
@@ -55,3 +62,4 @@ Ask Jason before the long runs; say what each writes.
 - The leftovers check (2026-11-05): `2026-11-05-commencement-catalogue-leftovers.md`; the family gate: `2026-11-05-commencement-leftovers-family-gate.md`.
 - Environmental Protection (2026-11-09): no agent pass. Rows' faults 0 on stored rules, 23 leftovers to 0 (5 named known), golden 27/27. Two catalogue dry runs into a scratch `--out`, one at the last commit's code, found three regressions before the accept. The stored check found an order-list overlap the fresh read cannot see. `.claude/sessions/lat-change-pipeline/2026-11-09-environmental-protection-commencement-reader.md`.
 - Fire and OH&S, the first round (2026-11-14): six fixer calls (lean briefs from call 4), 31 parked bugs and 16 leftover groups; the held moves reviewed one by one (two misreadings sent back), written with `held-write.exs` after `--accept` (Decision 4 a); catalogue dry runs now write under `data/reports/commencement-reader/dry-run/`; the re-read then the sources' stale rules (Decision 6 a); our faults 0, leftovers not named 0, step close Commencement reader PASS. `.claude/sessions/lat-change-pipeline/2026-11-14-fire-and-ohs-commencement-reader.md`.
+- Waste, Water and Climate (2026-11-20/21, suspended after Settle): the misread scan and the two-way feed gate (`FeedDifferences`) added. 20 Fable calls (about 1.9M) re-ran every heavy check after each fix. The code review (`backend/data/code-reviews/commencement-reader-code-review.md`) found a range map rebuilt per check (86 s for one law), every clause read twice and CLML parsed again and again. The new loop above replaces the per-fix heavy checks. `.claude/sessions/2026-11-21-commencement-reader-code-review.md`.

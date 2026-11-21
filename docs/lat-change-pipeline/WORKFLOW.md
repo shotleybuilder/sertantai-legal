@@ -244,6 +244,24 @@ A rebuild moves no switched label until `LabelRefresh` runs. Laws whose rows don
 
 **Pass rule** (Decision 1 (c), Jason 2026-11-05). `lat.commencement_check --family F` prints PASS: our faults 0 and every leftover reaching the family named (`known:`); every leftover group reviewed (`LeftoversReviewTest`); the catalogue tests pass; repeatable; golden all-pass. No agent rounds. (Before: the stopping rule of 2026-10-24, on an agent sample.)
 
+**How the step runs** (Jason 2026-11-21, after the code review `backend/data/code-reviews/commencement-reader-code-review.md`; the flow `commencement-reader-flow.md`). Waste, Water and Climate re-ran every heavy check after each fix: about 40 family checks, 9 full suites, 8 full catalogues and 20 Fable calls (about 1.9M tokens) before Settle.
+1. **Find, once:**
+   - one `--fresh` check of the family and the switched families;
+   - both catalogues;
+   - the **feed gate** (`Commencement.FeedDifferences`: every row where our reading and the Feed reader's disagree, grouped by cause, two-way: Decision 5).
+
+   Their groups make one work list, each class with every instance.
+2. **Decide before fixing:** every rule question the list raises goes to Jason in one Decision before any fix.
+3. **Fix by class, cheaply:**
+   - the session fixes, test first;
+   - after each fix: the class's tests, the commencement tests (34 s), `lat.commencement_check --laws <the class's instances> --fresh` and `lat.commencement_patterns --laws …`.
+   - No full suite, family check or full catalogue per fix.
+4. **Settle and check, once per batch:**
+   - one full `mix test`, Dialyzer (the pre-push hook runs it), the family and switched checks, the feed gate and both catalogues;
+   - a regression goes back as one class.
+- **Fable is the fix of last resort** (Jason 2026-11-21): a fix goes to a Fable `fixer` only when the session cannot land it and pass the tests, and then only on Jason's approval, given with the reasons.
+- Credo through `scripts/maintenance/credo-diff.sh`, never the bare `mix credo diff`.
+
 **Environmental Protection (2026-11-09).**
 - **Check:** 35,518 rows in 122 laws; on stored rules after the re-read, rows' faults 0 (9,954 before: 55 laws never read); 27,880 dated, 4,595 left to orders; every leftover reaching the family named (23 not named before).
 - **Reader fixes, each with a test:**
