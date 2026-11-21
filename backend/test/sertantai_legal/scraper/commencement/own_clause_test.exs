@@ -60,7 +60,10 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClauseTest do
       %{section_id: "UK_x:s.3"}
     ]
 
-    assert OwnClause.context(rows).positions == %{"s.1" => 0, "s.5" => 1, "s.3" => 2}
+    ctx = OwnClause.context(rows)
+    # (the order itself: a heading's or Part's members, `Readers.OwnCommencement`)
+    assert ctx.order == ["s.1", "s.5", "s.3"]
+    assert ctx.positions == %{"s.1" => 0, "s.5" => 1, "s.3" => 2}
   end
 
   test "one date for the whole law" do

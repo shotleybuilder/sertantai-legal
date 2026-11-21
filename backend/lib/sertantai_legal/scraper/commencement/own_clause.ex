@@ -369,7 +369,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
   defp own_inner({:xmlElement, _, _, _, _, _, _, _, _, _, _, _} = el), do: own(el)
   defp own_inner(other), do: other
 
-  @doc "The evaluator's context for a law's rows: each provision's containers, and its document order's positions."
+  @doc "The evaluator's context for a law's rows: each provision's containers, its document order, and that order's positions."
   @spec context([map()]) :: map()
   def context(rows) do
     containers =
@@ -384,10 +384,11 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
          )}
       end)
 
-    %{
-      ancestors: &Map.get(containers, &1, []),
-      positions: rows |> Enum.map(&top(&1.section_id)) |> Enum.uniq() |> LatRef.positions()
-    }
+    order = rows |> Enum.map(&top(&1.section_id)) |> Enum.uniq()
+
+    # (the order itself for a heading's or Part's members:
+    # `Readers.OwnCommencement`; its positions for a range: `LatRef`)
+    %{ancestors: &Map.get(containers, &1, []), order: order, positions: LatRef.positions(order)}
   end
 
   # ── the law-level rule ──────────────────────────────────────────────
