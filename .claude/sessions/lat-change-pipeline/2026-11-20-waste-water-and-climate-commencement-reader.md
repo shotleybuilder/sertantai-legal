@@ -188,3 +188,14 @@ The full log is in `backend/data/reports/commencement-reader/wwc-commencement-re
 - whatever doesn't match there is a fix class in this step;
 - the host clause's reading of the rest of the law is unchanged.
 
+## Resume 3: Fix by class
+
+- **C (be673fff):** an inserted provision is judged by its inserting law (`Check.inserted/3`), and left out of the own-clause gate. Of the round's 5,306 insertions both sides date, 5,028 agree.
+  - 278 differ (14 laws): a fix class.
+  - 2,325 the feed alone dates (the inserting law's text leaves them to an order, its rules not held, no amending law found): to be `known:`, the feed's date standing.
+  - 417 we alone date: to be `known:`, ours filling the feed's gap.
+  - 760 neither dates.
+- **Also (47924a54):** the gate lists every law in each group (`by_law`).
+- **B, "the later of" (96b82406):** the clause reader reads "the later of / the earlier of" its lettered items, and "the day which is N days after". SI 2023/1394: 1,397 rows dated, 1,273 agreeing with the feed. Two held catalogue moves for Jason at Settle: SI 2023/1394 (unread → 2024-01-03) and SSI 2019/436 (unread → 2020-12-31, exit day read as IP completion day by the existing rule).
+- **Outside the step (Jason's go, 2026-11-21):** the dev stack's auth and hub moved to sertantai-stack. Legal's side is in 1aecec7b; Jason removed the auth and hub keys from `.env` by hand (gitignored, nothing committed).
+
