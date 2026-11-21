@@ -42,7 +42,8 @@ defmodule SertantaiLegal.Architecture.VersionCoverageTest do
         {SertantaiLegal.Scraper.CommencementCatalogue.Version, []},
         # a law's CLML rows, shared by the check and the catalogue
         {SertantaiLegal.Scraper.Commencement.ClmlRows.Version, []},
-        {SertantaiLegal.Scraper.OrderCatalogue.Version, []}
+        {SertantaiLegal.Scraper.OrderCatalogue.Version, []},
+        {SertantaiLegal.Scraper.Amendment.CatalogueVersion, []}
       ] do
     test "#{inspect(version)} covers every module its files reach" do
       covered = unquote(version).files() |> Enum.map(&Path.relative_to_cwd/1) |> MapSet.new()

@@ -66,6 +66,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Version do
       lib/sertantai_legal/scraper/amending_law/sweep_form.ex
       lib/sertantai_legal/scraper/amending_law/extent/check.ex
       lib/sertantai_legal/scraper/amending_law/extent/withheld.ex
+      lib/sertantai_legal/scraper/amendment/catalogue_read.ex
+      lib/sertantai_legal/scraper/amendment/catalogue_version.ex
       lib/sertantai_legal/scraper/amendment/check_sample.ex
       lib/sertantai_legal/scraper/amendment/check_strata.ex
       lib/sertantai_legal/scraper/amendment/disagreement.ex

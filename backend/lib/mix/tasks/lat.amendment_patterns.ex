@@ -28,9 +28,7 @@ defmodule Mix.Tasks.Lat.AmendmentPatterns do
   alias SertantaiLegal.Scraper.CatalogueTarget
   alias Mix.Tasks.Lat.FeedPatterns, as: Files
 
-  alias SertantaiLegal.Scraper.AmendingLaw.{DefinedTerms, Locator, Text}
-  alias SertantaiLegal.Scraper.Amendment.{PatternSource, Patterns, ReadLaw}
-  alias SertantaiLegal.Scraper.Amendment.Patterns.Example
+  alias SertantaiLegal.Scraper.Amendment.{CatalogueRead, PatternSource, ReadLaw}
   alias SertantaiLegal.Scraper.{CatalogueRun, LawRunner}
   alias SertantaiLegal.Scraper.CatalogueRun.Log
   alias SertantaiLegal.Scraper.LawRunner.Guard
@@ -51,6 +49,7 @@ defmodule Mix.Tasks.Lat.AmendmentPatterns do
           laws: :string,
           out: :string,
           accept: :boolean,
+          cache: :boolean,
           workers: :integer
         ]
       )
@@ -101,7 +100,7 @@ defmodule Mix.Tasks.Lat.AmendmentPatterns do
   defp merge_all(amending, results) do
     Enum.reduce(amending, new_acc(), fn a, acc ->
       case results[a] do
-        {:ok, result} -> merge(acc, a, result)
+        {:ok, {result, _source}} -> merge(acc, a, result)
         {:error, why} -> %{acc | unclassified: [{a, inspect(why)} | acc.unclassified]}
         other -> %{acc | unclassified: [{a, inspect(other)} | acc.unclassified]}
       end
@@ -116,10 +115,20 @@ defmodule Mix.Tasks.Lat.AmendmentPatterns do
          workers: workers,
          target: target
        }) do
+    # each amended law's ref once a run, not once an amending law
+    law_refs =
+      pointers
+      |> Map.values()
+      |> Enum.flat_map(&Map.keys/1)
+      |> Enum.uniq()
+      |> Map.new(&{&1, ReadLaw.law_ref(&1)})
+
+    cache = Keyword.get(opts, :cache, true)
+
     results =
       LawRunner.run(
         amending,
-        &amending_result(&1, pointers[&1]),
+        &amending_result(&1, pointers[&1], law_refs, cache),
         fn _a, _result ->
           :counters.add(counter, 1, 1)
           i = :counters.get(counter, 1)
@@ -132,61 +141,16 @@ defmodule Mix.Tasks.Lat.AmendmentPatterns do
 
     write(target.write, acc)
     report(target.held, acc, opts[:accept])
-    {:ok, %{}, serial_us}
+    sources = for a <- amending, {:ok, {_, source}} <- [results[a]], do: source
+    {:ok, %{"amending" => sources}, serial_us}
   end
 
-  # each provision read for each law the amending law changes, classed; the
-  # first of each pattern in this law with its example (where it reads the
-  # same alone)
-  defp amending_result(amending, by_law) do
-    case ReadLaw.doc(amending) do
-      nil ->
-        {:ok, %{held: false, units: [], examples: %{}}}
-
-      doc ->
-        terms = DefinedTerms.of(doc)
-
-        {units, examples} =
-          for {law, refs} <- Enum.sort(by_law),
-              lr = ReadLaw.law_ref(law),
-              id <- for(r <- refs, id <- Locator.ids(doc, r), uniq: true, do: id),
-              reduce: {[], %{}} do
-            {units, examples} ->
-              {key, _rules} = class = Patterns.class(doc, id, terms, lr)
-              units = [{law, id, key} | units]
-
-              if Map.has_key?(examples, key) do
-                {units, examples}
-              else
-                example =
-                  case Example.build(doc, id, terms, lr, class) do
-                    {:ok, xmls} ->
-                      %{
-                        law: law,
-                        id: id,
-                        words: words(doc, id),
-                        json: Example.to_json(xmls, terms, lr)
-                      }
-
-                    :error ->
-                      nil
-                  end
-
-                {units, Map.put(examples, key, example)}
-              end
-          end
-
-        {:ok, %{held: true, units: Enum.reverse(units), examples: examples}}
-    end
+  # an amending law's reading, kept between runs (`Amendment.CatalogueRead`),
+  # or why it raised (never cached)
+  defp amending_result(amending, by_law, law_refs, cache) do
+    {:ok, CatalogueRead.amending(amending, by_law, law_refs, cache: cache)}
   rescue
     error -> {:error, Exception.message(error)}
-  end
-
-  defp words(doc, id) do
-    case Text.of(doc, id) do
-      %Text{instruction: i} -> String.slice(i, 0, 400)
-      nil -> ""
-    end
   end
 
   defp new_acc,
