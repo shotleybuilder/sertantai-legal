@@ -29,7 +29,8 @@ defmodule Mix.Tasks.Lat.ExtentPatterns do
 
   alias SertantaiLegal.Scraper.AmendingLaw.SweepForm
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Patterns, ReadCache}
-  alias SertantaiLegal.Scraper.LawRunner
+  alias SertantaiLegal.Scraper.{CatalogueRun, LawRunner}
+  alias SertantaiLegal.Scraper.CatalogueRun.Log
   alias SertantaiLegal.Scraper.LawRunner.Guard
 
   @shortdoc "Extent and application sentences' pattern catalogue, as test fixtures (read-only)"
@@ -61,6 +62,33 @@ defmodule Mix.Tasks.Lat.ExtentPatterns do
     workers = Guard.workers(workers: opts[:workers])
     counter = :counters.new(1, [])
 
+    # the run recorded (`CatalogueRun`): `Extent.ReadCache`'s hits and reads
+    {results, run} =
+      Log.record(
+        [catalogue: "extent_patterns", scope: CatalogueRun.scope(opts), workers: workers],
+        fn ->
+          catalogue(%{laws: laws, counter: counter, opts: opts, workers: workers, target: target})
+        end
+      )
+
+    Mix.shell().info(CatalogueTarget.notice(target))
+    uncaught(results)
+    Mix.shell().info(CatalogueRun.line(run))
+  end
+
+  # the catalogue's work, recorded by `CatalogueRun.Log.record/2`: its
+  # value, each cache's `:hit | :read` per law, and its serial microseconds
+  # the results merged in law order: the catalogue a serial run gives
+  defp merge_all(laws, results) do
+    Enum.reduce(laws, new_acc(), fn law, acc ->
+      case results[law] do
+        {:ok, result} -> merge(acc, law, result)
+        {:error, why} -> %{acc | unclassified: [{law, why} | acc.unclassified]}
+      end
+    end)
+  end
+
+  defp catalogue(%{laws: laws, counter: counter, opts: opts, workers: workers, target: target}) do
     results =
       LawRunner.run(
         laws,
@@ -73,18 +101,12 @@ defmodule Mix.Tasks.Lat.ExtentPatterns do
         workers: workers
       )
 
-    acc =
-      Enum.reduce(laws, new_acc(), fn law, acc ->
-        case results[law] do
-          {:ok, result} -> merge(acc, law, result)
-          {:error, why} -> %{acc | unclassified: [{law, why} | acc.unclassified]}
-        end
-      end)
+    {serial_us, acc} = :timer.tc(fn -> merge_all(laws, results) end)
 
     write(target.write, acc)
     report(target.held, acc, opts[:accept])
-    Mix.shell().info(CatalogueTarget.notice(target))
-    uncaught(results)
+    sources = for law <- laws, {:ok, %{source: s}} <- [results[law]], do: s
+    {results, %{"read_cache" => sources}, serial_us}
   end
 
   # the extent sentences this catalogue misses (the sweep, CV-S05a:
@@ -121,13 +143,19 @@ defmodule Mix.Tasks.Lat.ExtentPatterns do
   # (the reading kept between runs: `ReadCache`, shared with the check
   # and the re-read)
   defp law_result(law) do
-    case ReadCache.law(law) do
-      nil ->
-        {:ok, %{classes: [], xml: nil, alone: MapSet.new(), uncaught: []}}
+    case ReadCache.fetch(law) do
+      {nil, source} ->
+        {:ok, %{classes: [], xml: nil, alone: MapSet.new(), uncaught: [], source: source}}
 
-      r ->
+      {r, source} ->
         {:ok,
-         %{classes: r.classes, xml: r.example, alone: MapSet.new(r.alone), uncaught: r.uncaught}}
+         %{
+           classes: r.classes,
+           xml: r.example,
+           alone: MapSet.new(r.alone),
+           uncaught: r.uncaught,
+           source: source
+         }}
     end
   rescue
     error -> {:error, Exception.message(error)}

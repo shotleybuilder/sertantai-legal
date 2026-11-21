@@ -37,6 +37,8 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
     Orders
   }
 
+  alias SertantaiLegal.Scraper.CatalogueRun
+  alias SertantaiLegal.Scraper.CatalogueRun.Log
   alias SertantaiLegal.Scraper.CatalogueTarget, as: Target
 
   @shortdoc "Commencement orders' pattern catalogue, as test fixtures (read-only)"
@@ -62,22 +64,32 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
     pairs = pairs(opts[:orders])
     Mix.shell().info("#{length(pairs)} orders held, with the Act each commences")
 
-    acc =
-      pairs
-      |> Enum.with_index(1)
-      |> Enum.reduce(new_acc(), fn {{order, act}, i}, acc ->
-        if rem(i, 250) == 0, do: Mix.shell().info("  #{i}/#{length(pairs)}")
-
-        try do
-          order_patterns(order, act, acc)
-        rescue
-          error -> %{acc | unclassified: [{order, Exception.message(error)} | acc.unclassified]}
-        end
+    # the run recorded (`CatalogueRun`): one order at a time, no cache, so
+    # the whole fold is serial
+    {_, run} =
+      Log.record([catalogue: "order_patterns", scope: CatalogueRun.scope(opts), workers: 1], fn ->
+        {serial_us, acc} = :timer.tc(fn -> fold(pairs) end)
+        write(target.write, acc)
+        report(target.held, acc, opts[:accept])
+        {:ok, %{}, serial_us}
       end)
 
-    write(target.write, acc)
-    report(target.held, acc, opts[:accept])
     Mix.shell().info(Target.notice(target))
+    Mix.shell().info(CatalogueRun.line(run))
+  end
+
+  defp fold(pairs) do
+    pairs
+    |> Enum.with_index(1)
+    |> Enum.reduce(new_acc(), fn {{order, act}, i}, acc ->
+      if rem(i, 250) == 0, do: Mix.shell().info("  #{i}/#{length(pairs)}")
+
+      try do
+        order_patterns(order, act, acc)
+      rescue
+        error -> %{acc | unclassified: [{order, Exception.message(error)} | acc.unclassified]}
+      end
+    end)
   end
 
   defp new_acc,

@@ -40,10 +40,18 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCache do
   again on a miss).
   """
   @spec law(String.t(), keyword()) :: reading() | nil
-  def law(law, opts \\ []) do
+  def law(law, opts \\ []), do: law |> fetch(opts) |> elem(0)
+
+  @doc """
+  As `law/2`, with whether the reading came from the cache (`:hit`) or was
+  computed (`:read`): what a catalogue's run record counts (`CatalogueRun`).
+  A law with no text held is `{nil, :read}`.
+  """
+  @spec fetch(String.t(), keyword()) :: {reading() | nil, :hit | :read}
+  def fetch(law, opts \\ []) do
     case ClmlStore.law_files(law, Keyword.take(opts, [:root])) do
       [] ->
-        nil
+        {nil, :read}
 
       files ->
         key = {version(), fingerprint(files)}
@@ -51,12 +59,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCache do
 
         case read_file(path) do
           {^key, reading} ->
-            reading
+            {reading, :hit}
 
           _ ->
             reading = compute(law, files, opts[:doc])
             write_file(path, {key, reading})
-            reading
+            {reading, :read}
         end
     end
   end

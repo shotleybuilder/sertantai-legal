@@ -24,6 +24,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCacheTest do
     assert ReadCache.compute("UK_ukpga_2001_1", files) == first
   end
 
+  test "fetch/2 says whether the reading came from the cache: read, then hit (the run log)", %{
+    opts: opts
+  } do
+    assert {first, :read} = ReadCache.fetch("UK_ukpga_2001_1", opts)
+    assert {^first, :hit} = ReadCache.fetch("UK_ukpga_2001_1", opts)
+    assert ReadCache.law("UK_ukpga_2001_1", opts) == first
+  end
+
   test "a changed text is read again", %{opts: opts} do
     assert ReadCache.law("UK_ukpga_2001_1", opts).read.default == "E+W"
 

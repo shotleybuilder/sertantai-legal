@@ -31,7 +31,8 @@ defmodule Mix.Tasks.Lat.AmendmentPatterns do
   alias SertantaiLegal.Scraper.AmendingLaw.{DefinedTerms, Locator, Text}
   alias SertantaiLegal.Scraper.Amendment.{PatternSource, Patterns, ReadLaw}
   alias SertantaiLegal.Scraper.Amendment.Patterns.Example
-  alias SertantaiLegal.Scraper.LawRunner
+  alias SertantaiLegal.Scraper.{CatalogueRun, LawRunner}
+  alias SertantaiLegal.Scraper.CatalogueRun.Log
   alias SertantaiLegal.Scraper.LawRunner.Guard
 
   @shortdoc "Amending provisions' pattern catalogue, as test fixtures (read-only)"
@@ -74,6 +75,47 @@ defmodule Mix.Tasks.Lat.AmendmentPatterns do
     workers = Guard.workers(workers: opts[:workers])
     counter = :counters.new(1, [])
 
+    # the run recorded (`CatalogueRun`): no cache yet, so no hits
+    {_, run} =
+      Log.record(
+        [catalogue: "amendment_patterns", scope: CatalogueRun.scope(opts), workers: workers],
+        fn ->
+          catalogue(%{
+            amending: amending,
+            pointers: pointers,
+            counter: counter,
+            opts: opts,
+            workers: workers,
+            target: target
+          })
+        end
+      )
+
+    Mix.shell().info(CatalogueTarget.notice(target))
+    Mix.shell().info(CatalogueRun.line(run))
+  end
+
+  # the catalogue's work, recorded by `CatalogueRun.Log.record/2`: its
+  # value, each cache's `:hit | :read` per law, and its serial microseconds
+  # the results merged in the amending laws' order
+  defp merge_all(amending, results) do
+    Enum.reduce(amending, new_acc(), fn a, acc ->
+      case results[a] do
+        {:ok, result} -> merge(acc, a, result)
+        {:error, why} -> %{acc | unclassified: [{a, inspect(why)} | acc.unclassified]}
+        other -> %{acc | unclassified: [{a, inspect(other)} | acc.unclassified]}
+      end
+    end)
+  end
+
+  defp catalogue(%{
+         amending: amending,
+         pointers: pointers,
+         counter: counter,
+         opts: opts,
+         workers: workers,
+         target: target
+       }) do
     results =
       LawRunner.run(
         amending,
@@ -86,18 +128,11 @@ defmodule Mix.Tasks.Lat.AmendmentPatterns do
         workers: workers
       )
 
-    acc =
-      Enum.reduce(amending, new_acc(), fn a, acc ->
-        case results[a] do
-          {:ok, result} -> merge(acc, a, result)
-          {:error, why} -> %{acc | unclassified: [{a, inspect(why)} | acc.unclassified]}
-          other -> %{acc | unclassified: [{a, inspect(other)} | acc.unclassified]}
-        end
-      end)
+    {serial_us, acc} = :timer.tc(fn -> merge_all(amending, results) end)
 
     write(target.write, acc)
     report(target.held, acc, opts[:accept])
-    Mix.shell().info(CatalogueTarget.notice(target))
+    {:ok, %{}, serial_us}
   end
 
   # each provision read for each law the amending law changes, classed; the

@@ -32,7 +32,9 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.ChangeCollector
-  alias SertantaiLegal.Scraper.{CatalogueCache, LawRunner}
+  alias SertantaiLegal.Scraper.{CatalogueRun, LawRunner}
+  alias SertantaiLegal.Scraper.CatalogueRun.Log
+  alias SertantaiLegal.Scraper.LawRunner.Guard
   alias SertantaiLegal.Scraper.Commencement.{ClmlRows, HeldAmenders, Misreads, ReachGroups}
   alias SertantaiLegal.Scraper.LawStart.Input
   alias SertantaiLegal.Scraper.CommencementCatalogue.{LawRead, LawScan}
@@ -77,13 +79,48 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
     # (what each amending law's leftovers reach, counted in one query)
     reaches = reaches()
 
+    workers = Guard.workers(workers: opts[:workers])
+
+    # the run recorded (`CatalogueRun`); its serial part: the examples
+    # chosen and each law's merged and checked
+    {_, run} =
+      Log.record(
+        [catalogue: "commencement_patterns", scope: CatalogueRun.scope(opts), workers: workers],
+        fn ->
+          catalogue(%{
+            laws: laws,
+            scoped: scoped,
+            cache: cache,
+            reaches: reaches,
+            opts: opts,
+            workers: workers,
+            target: target
+          })
+        end
+      )
+
+    Mix.shell().info(Target.notice(target))
+    Mix.shell().info(CatalogueRun.line(run))
+  end
+
+  # the catalogue's work, recorded by `CatalogueRun.Log.record/2`: its
+  # value, each cache's `:hit | :read` per law, and its serial microseconds
+  defp catalogue(%{
+         laws: laws,
+         scoped: scoped,
+         cache: cache,
+         reaches: reaches,
+         opts: opts,
+         workers: workers,
+         target: target
+       }) do
     {acc, sources, merge_us} =
       laws
       |> LawRunner.ordered(
         fn {law, source} ->
           {law, law_read(law, {source, law in scoped}, %{cache: cache, reaches: reaches})}
         end,
-        workers: opts[:workers]
+        workers: workers
       )
       |> Stream.with_index(1)
       |> Enum.reduce({LawScan.new_acc(), [], 0}, fn {{law, {read, from}}, i},
@@ -93,12 +130,9 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
         {acc, [from | sources], us + t}
       end)
 
-    Mix.shell().info(CatalogueCache.summary(sources))
-    # the serial part: the examples chosen and each law's merged and checked
-    Mix.shell().info("merge: #{div(merge_us, 1_000_000)} s")
     write(target.write, acc)
     report(target.held, acc, opts[:accept])
-    Mix.shell().info(Target.notice(target))
+    {:ok, %{"law" => sources}, merge_us}
   end
 
   defp law_result(law, {:ok, read}, acc) do

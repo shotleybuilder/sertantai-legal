@@ -33,7 +33,9 @@ defmodule Mix.Tasks.Lat.FeedPatterns do
 
   alias SertantaiLegal.Scraper.CatalogueTarget
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.{CatalogueCache, LawRunner}
+  alias SertantaiLegal.Scraper.{CatalogueRun, LawRunner}
+  alias SertantaiLegal.Scraper.CatalogueRun.Log
+  alias SertantaiLegal.Scraper.LawRunner.Guard
   alias SertantaiLegal.Scraper.ChangeVocabulary.FeedPatterns.{LawRead, LawScan}
 
   @shortdoc "The feed's pattern catalogue, as test fixtures (read-only over the store)"
@@ -65,27 +67,46 @@ defmodule Mix.Tasks.Lat.FeedPatterns do
     rows = rows(laws)
     Mix.shell().info("#{length(laws)} laws with stored feeds")
 
+    workers = Guard.workers(workers: opts[:workers])
+
     # each law scanned alone, several at once and cached (#195), then taken
-    # in law order: the catalogue a serial run gives
-    {acc, sources} =
+    # in law order: the catalogue a serial run gives; the run recorded
+    # (`CatalogueRun`)
+    {_, run} =
+      Log.record(
+        [catalogue: "feed_patterns", scope: CatalogueRun.scope(opts), workers: workers],
+        fn ->
+          catalogue(%{laws: laws, rows: rows, opts: opts, workers: workers, target: target})
+        end
+      )
+
+    Mix.shell().info(CatalogueTarget.notice(target))
+    Mix.shell().info(CatalogueRun.line(run))
+  end
+
+  # the catalogue's work, recorded by `CatalogueRun.Log.record/2`: its
+  # value, each cache's `:hit | :read` per law, and its serial microseconds
+  defp catalogue(%{laws: laws, rows: rows, opts: opts, workers: workers, target: target}) do
+    {acc, sources, serial_us} =
       laws
       |> Enum.map(&{&1, Map.get(rows, &1, [])})
       |> LawRunner.ordered(
         fn {law, rows} ->
           {law, LawRead.law(law, rows, cache: Keyword.get(opts, :cache, true))}
         end,
-        workers: opts[:workers]
+        workers: workers
       )
       |> Stream.with_index(1)
-      |> Enum.reduce({LawScan.new_acc(), []}, fn {{law, {unit, source}}, i}, {acc, sources} ->
+      |> Enum.reduce({LawScan.new_acc(), [], 0}, fn {{law, {unit, source}}, i},
+                                                    {acc, sources, us} ->
         if rem(i, 100) == 0, do: Mix.shell().info("  #{i}/#{length(laws)}")
-        {LawScan.select(acc, law, unit), [source | sources]}
+        {t, acc} = :timer.tc(fn -> LawScan.select(acc, law, unit) end)
+        {acc, [source | sources], us + t}
       end)
 
-    Mix.shell().info(CatalogueCache.summary(sources))
     write(target.write, acc)
     report(target.held, acc, opts[:accept])
-    Mix.shell().info(CatalogueTarget.notice(target))
+    {:ok, %{"law" => sources}, serial_us}
   end
 
   # every law the store holds a feed for: UK_{type}_{year}_{number}
