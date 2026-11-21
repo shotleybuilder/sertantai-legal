@@ -23,6 +23,7 @@ defmodule SertantaiLegal.Architecture.VersionCoverageTest do
     lib/sertantai_legal/scraper/enacted_by/enabling_cache.ex
     lib/sertantai_legal/scraper/source_version.ex
     lib/sertantai_legal/scraper/catalogue_cache.ex
+    lib/sertantai_legal/scraper/commencement/clml_rows.ex
   )
 
   # each version, with the stores it reads or writes past (the labels
@@ -38,7 +39,9 @@ defmodule SertantaiLegal.Architecture.VersionCoverageTest do
         # the whole-store catalogues' (#195)
         {SertantaiLegal.Scraper.ChangeVocabulary.FeedPatterns.Version, []},
         {SertantaiLegal.Scraper.ChangeVocabulary.MarkupPatterns.Version, []},
-        {SertantaiLegal.Scraper.CommencementCatalogue.Version, []}
+        {SertantaiLegal.Scraper.CommencementCatalogue.Version, []},
+        # a law's CLML rows, shared by the check and the catalogue
+        {SertantaiLegal.Scraper.Commencement.ClmlRows.Version, []}
       ] do
     test "#{inspect(version)} covers every module its files reach" do
       covered = unquote(version).files() |> Enum.map(&Path.relative_to_cwd/1) |> MapSet.new()

@@ -76,6 +76,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Version do
       lib/sertantai_legal/scraper/amendment/read_report.ex
       lib/sertantai_legal/scraper/commencement/amending_read.ex
       lib/sertantai_legal/scraper/commencement/check.ex
+      lib/sertantai_legal/scraper/commencement/clml_rows.ex
       lib/sertantai_legal/scraper/commencement/family_leftovers.ex
       lib/sertantai_legal/scraper/commencement/held_amenders.ex
       lib/sertantai_legal/scraper/commencement/leftovers.ex

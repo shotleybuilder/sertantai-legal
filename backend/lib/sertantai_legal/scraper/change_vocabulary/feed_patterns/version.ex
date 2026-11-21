@@ -74,6 +74,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedPatterns.Version do
       lib/sertantai_legal/scraper/change_vocabulary/readers/note_law.ex
       lib/sertantai_legal/scraper/change_vocabulary/ref.ex
       lib/sertantai_legal/scraper/commencement/evaluator.ex
+      lib/sertantai_legal/scraper/commencement/clml_ref.ex
       lib/sertantai_legal/scraper/commencement/order.ex
       lib/sertantai_legal/scraper/commencement/order/*.ex
       lib/sertantai_legal/scraper/commencement/rule.ex

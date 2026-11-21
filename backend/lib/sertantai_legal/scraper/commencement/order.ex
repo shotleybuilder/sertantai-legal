@@ -42,7 +42,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
   alias __MODULE__.{Asides, Entries, LastItemLimit, OtherLaw, ScheduleParts}
   alias __MODULE__.{SectionHeads, Sibling, Territory}
-  alias SertantaiLegal.Scraper.Commencement.Rule
+  alias SertantaiLegal.Scraper.Commencement.{ClmlRef, Rule}
 
   alias SertantaiLegal.Scraper.LawStart.Clause
 
@@ -124,31 +124,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
   @doc "An amending provision's CLML id as a ref: \"section-36-3\" → \"s.36(3)\", \"schedule-11-paragraph-137-a\" → \"sch.11.para.137(a)\"."
   @spec ref(String.t()) :: String.t() | nil
-  def ref(id) do
-    case String.split(id, "-") do
-      # a Schedule, its Parts (nested kept) and paragraph: "schedule-4-part-2-
-      # paragraph-3" → sch.4.pt.2.para.3 (the triple, Jason 2026-10-27:
-      # unique where numbering restarts in each Part); an unnumbered Schedule
-      # is `sch` ("schedule-paragraph-1" → sch.para.1; CV-S02a K10)
-      ["schedule" | rest] ->
-        case rest do
-          [kind | _] when kind in ["part", "paragraph"] -> schedule_ref("sch", rest)
-          [s | more] -> schedule_ref("sch.#{s}", more)
-          [] -> "sch"
-        end
-
-      [kind, n | subs] when kind in ~w(section regulation article) ->
-        "#{prefix(kind)}.#{n}" <> brackets(subs)
-
-      _ ->
-        nil
-    end
-  end
-
-  defp schedule_ref(sch, ["part", p | rest]), do: schedule_ref("#{sch}.pt.#{p}", rest)
-  defp schedule_ref(sch, ["paragraph", p | subs]), do: "#{sch}.para.#{p}" <> brackets(subs)
-  # (anything else after the Schedule or Part, "schedule-part": that)
-  defp schedule_ref(sch, _), do: sch
+  defdelegate ref(id), to: ClmlRef
 
   @doc "The evaluator's context for an amending law's refs: a Schedule paragraph sits in its Schedule."
   @spec context() :: map()
@@ -341,7 +317,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
         uniq: true do
       Rule.new(
         commences: :pending,
-        scope: ["appointed_for:#{prefix(String.downcase(noun))}.#{n}"],
+        scope: ["appointed_for:#{ClmlRef.prefix(String.downcase(noun))}.#{n}"],
         when: {:date, d},
         source: %{law: order.law_name, ref: source_ref(id), text: squash(line)},
         treatment: :order_date
@@ -2020,13 +1996,6 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   end
 
   defp source_ref(id), do: ref(id) || id
-
-  defp prefix("section"), do: "s"
-  defp prefix("regulation"), do: "reg"
-  # domestic instruments number articles as `reg.` (LAT's convention; `art.` is EU)
-  defp prefix("article"), do: "reg"
-
-  defp brackets(subs), do: Enum.map_join(subs, &"(#{&1})")
 
   defp squash(t), do: t |> String.replace(~r/\s+/u, " ") |> String.trim()
 

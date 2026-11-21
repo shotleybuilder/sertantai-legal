@@ -30,12 +30,10 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
 
   alias Mix.Tasks.Lat.FeedPatterns, as: Files
 
-  alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.ChangeCollector
   alias SertantaiLegal.Scraper.{CatalogueCache, LawRunner}
-  alias SertantaiLegal.Scraper.Commencement.{Leftovers, Misreads, OwnClause}
+  alias SertantaiLegal.Scraper.Commencement.{ClmlRows, Leftovers, Misreads}
   alias SertantaiLegal.Scraper.CommencementCatalogue.{LawRead, LawScan, Target}
 
   @shortdoc "Own commencement sentences' pattern catalogue, as test fixtures (read-only)"
@@ -74,11 +72,15 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
     # (`LawRunner.Guard`), its results taken in law order (examples are
     # chosen in that order, so the catalogue is the same however many ran)
     cache = Keyword.get(opts, :cache, true)
+    # (what each amending law's leftovers reach, counted in one query)
+    reaches = reaches()
 
     {acc, sources, merge_us} =
       laws
       |> LawRunner.ordered(
-        fn {law, source} -> {law, law_read(law, {source, law in scoped}, cache)} end,
+        fn {law, source} ->
+          {law, law_read(law, {source, law in scoped}, %{cache: cache, reaches: reaches})}
+        end,
         workers: opts[:workers]
       )
       |> Stream.with_index(1)
@@ -152,15 +154,17 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
         do: %{section_id: s, text: t, part: p, chapter: c}
   end
 
+  # (an amending law's rows from their cache, keyed on its CLML's digests:
+  # `ClmlRows`)
   defp rows(law, :clml) do
-    doc = Doc.new(law, ClmlStore.law_docs(law))
-    OwnClause.doc_rows(doc)
+    {rows, _} = ClmlRows.rows(law)
+    rows || []
   end
 
   # a law's own reading, independent of every other law (run in parallel):
   # its rows and start input gathered, its sentences read through the
   # catalogue cache (#195)
-  defp law_read(law, {source, scoped?}, cache) do
+  defp law_read(law, {source, scoped?}, %{cache: cache, reaches: reaches}) do
     rows = rows(law, source)
     input = ChangeCollector.law_start_input(law, rows)
 
@@ -170,7 +174,7 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
     read = %{input: input, sentences: sentences, outcomes: outcomes}
     # (a ref with no row is a misread only where the rows are the whole law's LAT)
     skip = if source == :clml or scoped?, do: [:no_row], else: []
-    {{:ok, Map.merge(read, %{reach: reach(law, source, rows), skip: skip})}, from}
+    {{:ok, Map.merge(read, %{reach: reach(law, source, rows, reaches), skip: skip})}, from}
   rescue
     error -> {{:error, Exception.message(error)}, :read}
   end
@@ -184,16 +188,17 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
 
   # what a law's leftovers reach: its LAT rows, or (an amending law) the
   # changes its notes record on ours
-  defp reach(_law, :lat, rows), do: length(rows)
+  defp reach(_law, :lat, rows, _reaches), do: length(rows)
+  defp reach(law, :clml, _rows, reaches), do: Map.get(reaches, law, 0)
 
-  defp reach(law, :clml, _rows) do
-    %{rows: [[n]]} =
-      Repo.query!(
-        "SELECT count(*) FROM amendment_annotations WHERE coalesce(citation_law, changed_by) = $1",
-        [law]
-      )
-
-    n
+  # each amending law's notes on our rows, counted once a run (a scan of
+  # the notes per law before: about 2,160 sequential scans)
+  defp reaches do
+    Repo.query!("""
+    SELECT coalesce(citation_law, changed_by), count(*) FROM amendment_annotations
+    WHERE coalesce(citation_law, changed_by) IS NOT NULL GROUP BY 1
+    """).rows
+    |> Map.new(fn [law, n] -> {law, n} end)
   end
 
   # ── files ────────────────────────────────────────────────────────────

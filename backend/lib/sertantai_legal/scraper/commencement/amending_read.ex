@@ -11,7 +11,18 @@ defmodule SertantaiLegal.Scraper.Commencement.AmendingRead do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
-  alias SertantaiLegal.Scraper.Commencement.{OwnClause, PartScope, Rule, ScheduleEffect, Store}
+  alias SertantaiLegal.Scraper.CatalogueCache
+
+  alias SertantaiLegal.Scraper.Commencement.{
+    ClmlRows,
+    OwnClause,
+    PartScope,
+    ReadVersion,
+    Rule,
+    ScheduleEffect,
+    Store
+  }
+
   alias SertantaiLegal.Scraper.LawStart.Input
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
 
@@ -30,16 +41,34 @@ defmodule SertantaiLegal.Scraper.Commencement.AmendingRead do
   @doc "The law's own reading (`t:reading/0`); nil when its text is not held."
   @spec reading(String.t()) :: reading() | nil
   def reading(law) do
-    case ClmlStore.law_docs(law) do
-      [] -> nil
-      xmls -> from_doc(law, Doc.new(law, xmls))
+    case ClmlRows.rows(law) do
+      {nil, _} -> nil
+      {rows, _} -> from_rows(law, rows)
     end
   end
 
-  defp from_doc(law, doc) do
-    rows = OwnClause.doc_rows(doc)
+  # (the rows from their cache; the reading kept between runs while the
+  # readers' code (`ReadVersion`) and its inputs stand — a reader fix reads
+  # every law again; the document parsed only where a Schedule's Part needs
+  # its paragraphs: `ScheduleEffect.needs_doc?/1`)
+  defp from_rows(law, rows) do
     input = Input.of(law, rows)
+
+    {reading, _} =
+      CatalogueCache.fetch(
+        "amending_read",
+        law,
+        ReadVersion.current(),
+        {law, rows, input},
+        fn -> read(law, rows, input) end
+      )
+
+    reading
+  end
+
+  defp read(law, rows, input) do
     read = OwnClause.read(law, input)
+    doc = if ScheduleEffect.needs_doc?(input.rows), do: Doc.new(law, ClmlStore.law_docs(law))
 
     # a Part named by the clause is written out as its provisions: the
     # build holds no rows for an amending law (`PartScope`)
