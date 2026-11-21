@@ -202,4 +202,20 @@ The full log is in `backend/data/reports/commencement-reader/wwc-commencement-re
 - **B, a named provision's tied day (21e85ae9):** "Regulation 15 … on the date on which section 7(3) of the Water Act 2003 comes into force, and all other provisions … on 1st April 2006". SI 2006/641: 315 rows dated, 309 agreeing with the feed; regulation 15 itself is left with the other provision (1 row, to name `known:`). Third held move: SI 2006/641's example.
 - **B, SI 2013/3113 (8d694651):** a list run on without a comma ("20(2) 28(8)(a)(ii)"), and "schedule N, Part P, paragraph Q" read as the Schedule's Part, not the regulations' own. 1,326 rows dated, 1,111 agreeing, leftovers 0. A first version caught the Access to Justice Act 1999 s.108(3)(f) form; it was fixed before the commit.
 - **Held moves for Settle so far:** SI 2023/1394, SSI 2019/436, SI 2006/641 (catalogue examples, each unread → dated).
+- **B, held orders reaching none of their rows (round 2):**
+  - **Two order forms (1e7456c6):** "The appointed day for X coming into force is D" (WSI 2018/35), and "D is hereby appointed the day on which X come into force" with "20th of May" (SSI 2005/256). `Order.statement/2` is split by form.
+  - **A range covered a Chapter between its ends (6d7f44ce):** SSI 2003/562's "sections 1 to 7" covered Chapter 2, whose heading sits between s.1 and s.7, and through it s.8, s.9 and on (168 rows of ASP 2003/3). The fault predates the speed fixes. `LatRef`'s order-based range test now requires the element's own kind; the amendment evaluator's tests pass. ASP 2003/3: 306 rows agree with the feed, none differ (172 before).
+  - **The gap-filler dated commencements by their commencing power's own start (33b71cf8):** 623 commencements in 9 laws whose feed record is prospective (ASC 2025/4, 2022 c.30, ANAW 2017/3 …). Now undated (`:a_commencement`). Their labels change at the rebuild.
+  - **The gate's yardstick read our gap-filler's date as the feed's (2bf91cd1):** it now reads the feed's own date claims. ANAW 2017/3: differences 199 → 1, agreements 161 → 360.
+- **Left in this class:** 2010 c.29's 519 rows, ANAW 2017/3's 520 rows the feed alone dates (WSI 2018/35 art.3 and later), ASP 2003/3's 91, and the 8 smaller laws.
+
+## Decision 8 for Jason: a change the feed marks prospective, which our gap-filler dates
+
+- **The question:** 3,200 text changes are marked prospective (not yet in force) by legislation.gov.uk's feed. They are insertions (213), repeals (361), substitutions (60), and changes with no operation (2,564), in 48 laws. Our gap-filler dates them by the amending law's own commencement. Which wins?
+- **The aim:** `binds-on-date`. Their labels say in force where the feed says not yet.
+- **Options:**
+  - (a) **The feed's prospective record wins:** a change the feed marks prospective is no gap. Its label stays prospective until the feed dates it. Simple; trusts the feed (Decision 5: any law's feed can be trusted).
+  - (b) **Our dating wins where the amending law's text dates it:** the feed may lag. Each such change becomes a two-way gate group, `fix:` on whichever side is shown wrong.
+  - (c) **Measure first:** sample 20 of them against the amending law's text, then decide.
+- **Recommendation: (c), then likely (a).** The commencements showed our gap-filler can misdate a change the feed calls prospective. Twenty samples, a few minutes each by script, show whether that is the rule or the exception for text changes.
 
