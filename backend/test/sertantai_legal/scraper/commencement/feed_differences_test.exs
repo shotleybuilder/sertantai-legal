@@ -91,6 +91,14 @@ defmodule SertantaiLegal.Scraper.Commencement.FeedDifferencesTest do
     assert Enum.map(g.examples, & &1.law) == ["UK_a", "UK_b"]
   end
 
+  test "a group lists every law in it with its rows (the step's work list: every instance)" do
+    rows =
+      for {law, n} <- [{"UK_a", 3}, {"UK_b", 1}], i <- 1..n, do: row(%{law: law, id: "reg.#{i}"})
+
+    [{_shape, g}] = FeedDifferences.groups(rows)
+    assert g.by_law == %{"UK_a" => 3, "UK_b" => 1}
+  end
+
   test "the summary lists each group's status and counts those with none" do
     groups = FeedDifferences.groups([row(%{})])
     [shape] = Enum.map(groups, &elem(&1, 0))

@@ -14,7 +14,12 @@ defmodule SertantaiLegal.Scraper.Commencement.FeedDifferences do
 
   @kinds [:differ, :feed_only, :feed_partial_only]
 
-  @type group :: %{rows: non_neg_integer(), laws: non_neg_integer(), examples: [map()]}
+  @type group :: %{
+          rows: non_neg_integer(),
+          laws: non_neg_integer(),
+          by_law: %{String.t() => pos_integer()},
+          examples: [map()]
+        }
 
   @doc "A row's shape, or nil where the readings agree or the law has no feed record for it."
   @spec shape(map()) :: String.t() | nil
@@ -60,8 +65,9 @@ defmodule SertantaiLegal.Scraper.Commencement.FeedDifferences do
   end
 
   @doc """
-  The rows' groups by shape, the widest first: rows, laws, and up to three
-  examples from different laws (law, row, our dates, the feed's).
+  The rows' groups by shape, the widest first: rows, laws, every law with
+  its rows (`by_law`: the step's work list holds every instance), and up to
+  three examples from different laws (law, row, our dates, the feed's).
   """
   @spec groups([map()]) :: [{String.t(), group()}]
   def groups(rows) do
@@ -82,7 +88,8 @@ defmodule SertantaiLegal.Scraper.Commencement.FeedDifferences do
         %{law: r.law, row: r.id, own: {r.partial_from, r.full_from}, feed: r.feed}
       end)
 
-    %{rows: length(rs), laws: rs |> Enum.uniq_by(& &1.law) |> length(), examples: examples}
+    by_law = Enum.frequencies_by(rs, & &1.law)
+    %{rows: length(rs), laws: map_size(by_law), by_law: by_law, examples: examples}
   end
 
   @doc "The lines a check prints: each group with its status, then the count of groups with none."
