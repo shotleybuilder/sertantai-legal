@@ -35,7 +35,8 @@ defmodule Mix.Tasks.Lat.CommencementPatterns do
   alias SertantaiLegal.Scraper.{CatalogueCache, LawRunner}
   alias SertantaiLegal.Scraper.Commencement.{ClmlRows, HeldAmenders, Misreads, ReachGroups}
   alias SertantaiLegal.Scraper.LawStart.Input
-  alias SertantaiLegal.Scraper.CommencementCatalogue.{LawRead, LawScan, Target}
+  alias SertantaiLegal.Scraper.CommencementCatalogue.{LawRead, LawScan}
+  alias SertantaiLegal.Scraper.CatalogueTarget, as: Target
 
   @shortdoc "Own commencement sentences' pattern catalogue, as test fixtures (read-only)"
 

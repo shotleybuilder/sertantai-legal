@@ -1,8 +1,8 @@
-defmodule SertantaiLegal.Scraper.CommencementCatalogue.TargetTest do
+defmodule SertantaiLegal.Scraper.CatalogueTargetTest do
   @moduledoc "A catalogue dry run never writes the fixtures."
   use ExUnit.Case, async: true
 
-  alias SertantaiLegal.Scraper.CommencementCatalogue.Target
+  alias SertantaiLegal.Scraper.CatalogueTarget, as: Target
 
   @fixtures "test/fixtures/order_patterns"
   @scratch "data/reports/commencement-reader/dry-run/order_patterns"

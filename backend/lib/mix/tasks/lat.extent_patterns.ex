@@ -24,6 +24,7 @@ defmodule Mix.Tasks.Lat.ExtentPatterns do
   """
   use Mix.Task
 
+  alias SertantaiLegal.Scraper.CatalogueTarget
   alias Mix.Tasks.Lat.FeedPatterns, as: Files
 
   alias SertantaiLegal.Scraper.AmendingLaw.SweepForm
@@ -34,6 +35,8 @@ defmodule Mix.Tasks.Lat.ExtentPatterns do
   @shortdoc "Extent and application sentences' pattern catalogue, as test fixtures (read-only)"
 
   @dir "test/fixtures/extent_patterns"
+  # (a run without `--accept` writes here, never the fixtures: `CatalogueTarget`)
+  @dry_run_dir "data/reports/catalogues/dry-run/extent_patterns"
   @per_pattern 3
 
   @impl Mix.Task
@@ -46,8 +49,8 @@ defmodule Mix.Tasks.Lat.ExtentPatterns do
     Mix.Task.run("app.start")
     Logger.configure(level: :warning)
 
-    dir = opts[:out] || @dir
-    File.mkdir_p!(dir)
+    target = CatalogueTarget.dirs(opts, @dir, @dry_run_dir)
+    File.mkdir_p!(target.write)
 
     laws = laws(opts[:laws])
     Mix.shell().info("#{length(laws)} laws")
@@ -78,8 +81,9 @@ defmodule Mix.Tasks.Lat.ExtentPatterns do
         end
       end)
 
-    write(dir, acc)
-    report(dir, acc, opts[:accept])
+    write(target.write, acc)
+    report(target.held, acc, opts[:accept])
+    Mix.shell().info(CatalogueTarget.notice(target))
     uncaught(results)
   end
 

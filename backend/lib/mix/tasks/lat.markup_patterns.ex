@@ -33,6 +33,7 @@ defmodule Mix.Tasks.Lat.MarkupPatterns do
   """
   use Mix.Task
 
+  alias SertantaiLegal.Scraper.CatalogueTarget
   alias Mix.Tasks.Lat.FeedPatterns, as: Files
   alias SertantaiLegal.Scraper.{CatalogueCache, LawRunner}
   alias SertantaiLegal.Scraper.ChangeVocabulary.MarkupPatterns.{LawRead, LawScan}
@@ -40,6 +41,8 @@ defmodule Mix.Tasks.Lat.MarkupPatterns do
   @shortdoc "The change markup's pattern catalogue, as test fixtures (read-only over the store)"
 
   @dir "test/fixtures/markup_patterns"
+  # (a run without `--accept` writes here, never the fixtures: `CatalogueTarget`)
+  @dry_run_dir "data/reports/catalogues/dry-run/markup_patterns"
 
   @impl Mix.Task
   def run(args) do
@@ -57,14 +60,14 @@ defmodule Mix.Tasks.Lat.MarkupPatterns do
     Mix.Task.run("app.start")
     Logger.configure(level: :warning)
 
-    dir = opts[:out] || @dir
-    File.mkdir_p!(dir)
+    target = CatalogueTarget.dirs(opts, @dir, @dry_run_dir)
+    File.mkdir_p!(target.write)
 
     laws = laws(opts[:laws])
     rows = rows(Enum.map(laws, &elem(&1, 0)))
     Mix.shell().info("#{length(laws)} stored law texts")
     cache = Keyword.get(opts, :cache, true)
-    held = held_examples(dir)
+    held = held_examples(target.held)
 
     # each law scanned alone, several at once and cached (#195), then taken
     # in law order: the catalogue a serial run gives
@@ -84,8 +87,9 @@ defmodule Mix.Tasks.Lat.MarkupPatterns do
       end)
 
     Mix.shell().info(CatalogueCache.summary(sources))
-    write(dir, acc)
-    report(dir, acc, opts[:accept])
+    write(target.write, acc)
+    report(target.held, acc, opts[:accept])
+    Mix.shell().info(CatalogueTarget.notice(target))
   end
 
   # each pattern's examples in the last catalogue that hold an expectation

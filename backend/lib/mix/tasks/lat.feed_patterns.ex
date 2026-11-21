@@ -31,6 +31,7 @@ defmodule Mix.Tasks.Lat.FeedPatterns do
   """
   use Mix.Task
 
+  alias SertantaiLegal.Scraper.CatalogueTarget
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.{CatalogueCache, LawRunner}
   alias SertantaiLegal.Scraper.ChangeVocabulary.FeedPatterns.{LawRead, LawScan}
@@ -38,6 +39,8 @@ defmodule Mix.Tasks.Lat.FeedPatterns do
   @shortdoc "The feed's pattern catalogue, as test fixtures (read-only over the store)"
 
   @dir "test/fixtures/feed_patterns"
+  # (a run without `--accept` writes here, never the fixtures: `CatalogueTarget`)
+  @dry_run_dir "data/reports/catalogues/dry-run/feed_patterns"
 
   @impl Mix.Task
   def run(args) do
@@ -55,8 +58,8 @@ defmodule Mix.Tasks.Lat.FeedPatterns do
     Mix.Task.run("app.start")
     Logger.configure(level: :warning)
 
-    dir = opts[:out] || @dir
-    File.mkdir_p!(dir)
+    target = CatalogueTarget.dirs(opts, @dir, @dry_run_dir)
+    File.mkdir_p!(target.write)
 
     laws = laws(opts[:laws])
     rows = rows(laws)
@@ -80,8 +83,9 @@ defmodule Mix.Tasks.Lat.FeedPatterns do
       end)
 
     Mix.shell().info(CatalogueCache.summary(sources))
-    write(dir, acc)
-    report(dir, acc, opts[:accept])
+    write(target.write, acc)
+    report(target.held, acc, opts[:accept])
+    Mix.shell().info(CatalogueTarget.notice(target))
   end
 
   # every law the store holds a feed for: UK_{type}_{year}_{number}

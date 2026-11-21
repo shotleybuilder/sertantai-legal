@@ -37,7 +37,7 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
     Orders
   }
 
-  alias SertantaiLegal.Scraper.CommencementCatalogue.Target
+  alias SertantaiLegal.Scraper.CatalogueTarget, as: Target
 
   @shortdoc "Commencement orders' pattern catalogue, as test fixtures (read-only)"
 

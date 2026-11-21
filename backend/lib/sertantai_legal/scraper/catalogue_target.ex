@@ -1,8 +1,9 @@
-defmodule SertantaiLegal.Scraper.CommencementCatalogue.Target do
+defmodule SertantaiLegal.Scraper.CatalogueTarget do
   @moduledoc """
-  Where a commencement catalogue run (`mix lat.commencement_patterns`, `mix
-  lat.order_patterns`) writes its generated files, and where it reads the
-  held review (`expected.json`, `leftovers.json`) from. A dry run never
+  Where a whole-store catalogue run (every `mix lat.*_patterns`: feed,
+  markup, commencement, orders, extent, amendment) writes its generated
+  files, and where it reads the held review (`expected.json`,
+  `leftovers.json`) from. A dry run never
   writes the fixtures: only `--accept` does, or `--out` naming them. Pure.
   """
 
