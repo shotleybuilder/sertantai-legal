@@ -70,4 +70,17 @@ defmodule SertantaiLegal.Scraper.Commencement.ScheduleEffectTest do
     # a provision of the Act outside Part 3: Royal Assent still
     assert AmendingLaw.commencement(rules, "section-150").full_from == ~D[2013-12-18]
   end
+
+  test "only a Schedule's Part needs the law's document parsed (1991 c.56 read without it)" do
+    part = %{
+      section_id: "UK_nisr_2003_152:reg.15(2)",
+      text:
+        "The statutory provisions referred to in Part II of Schedule 7 shall be amended in accordance with that Part."
+    }
+
+    whole = %{section_id: "UK_ukpga_2013_32:s.116(1)", text: "Schedule 12 has effect."}
+
+    assert ScheduleEffect.needs_doc?([whole, part])
+    refute ScheduleEffect.needs_doc?([whole, %{section_id: "UK_x:s.1", text: nil}])
+  end
 end

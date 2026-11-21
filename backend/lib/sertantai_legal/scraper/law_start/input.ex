@@ -12,7 +12,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Input do
   """
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.LawStart.{DateOfEnactment, LaidDay}
+  alias SertantaiLegal.Scraper.LawStart.{DateOfEnactment, LaidDay, ScheduleClause, ScheduleTable}
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
 
   @doc """
@@ -34,6 +34,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Input do
 
     head = clml_head(law_name)
     made = made || clml_made(head) || enacted(law_name)
+    schedules = schedules(law_name, rows)
 
     %{
       type_code: law_name |> String.split("_", parts: 3) |> Enum.at(1),
@@ -45,7 +46,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Input do
       clml_head: head,
       # V1-02: a commencement table in the law's own Schedule (LAT holds no
       # Schedules), read only when the text cites one
-      schedule_tables: schedule_tables(law_name, rows),
+      schedule_tables: schedule_tables(schedules, rows),
       tied_date: tied_date(rows, made),
       rows:
         Enum.map(
@@ -53,7 +54,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Input do
           &%{
             section_id: &1.section_id,
             # a clause handing over to a Schedule reads its sentences (CV-06 R3)
-            text: law_name |> schedule_clause(Map.get(&1, :text)) |> eu_words(law_name),
+            text: schedules |> schedule_clause(Map.get(&1, :text)) |> eu_words(law_name),
             part: Map.get(&1, :part),
             chapter: Map.get(&1, :chapter)
           }
@@ -69,28 +70,36 @@ defmodule SertantaiLegal.Scraper.LawStart.Input do
   defp eu_words(text, "UK_eu" <> _), do: SertantaiLegal.Scraper.LawStart.EuWords.domestic(text)
   defp eu_words(text, _law_name), do: text
 
-  defp schedule_clause(law_name, text) do
-    with {_, _} <- SertantaiLegal.Scraper.LawStart.ScheduleClause.redirect(text),
+  # the law's Schedules held, read once a law (never once a row) — and only
+  # when a row hands over to a Schedule or cites a commencement table in one
+  defp schedules(law_name, rows) do
+    with true <- Enum.any?(rows, &schedule_bound?(Map.get(&1, :text))),
          [_, type, year, number] <- String.split(law_name, "_", parts: 4),
          {:ok, gz} <- File.read("data/cache/clml/#{type}/#{year}/#{number}/schedules/data.xml.gz") do
-      SertantaiLegal.Scraper.LawStart.ScheduleClause.inline(text, :zlib.gunzip(gz))
+      :zlib.gunzip(gz)
     else
+      _ -> nil
+    end
+  end
+
+  defp schedule_bound?(text),
+    do: match?({_, _}, ScheduleClause.redirect(text)) or ScheduleTable.clause?(text)
+
+  defp schedule_clause(nil, text), do: text
+
+  defp schedule_clause(schedules, text) do
+    case ScheduleClause.redirect(text) do
+      {_, _} -> ScheduleClause.inline(text, schedules)
       _ -> text
     end
   end
 
-  defp schedule_tables(law_name, rows) do
-    with true <-
-           Enum.any?(
-             rows,
-             &SertantaiLegal.Scraper.LawStart.ScheduleTable.clause?(Map.get(&1, :text))
-           ),
-         [_, type, year, number] <- String.split(law_name, "_", parts: 4),
-         {:ok, gz} <- File.read("data/cache/clml/#{type}/#{year}/#{number}/schedules/data.xml.gz") do
-      gz |> :zlib.gunzip() |> SertantaiLegal.Scraper.LawStart.ScheduleTable.parse()
-    else
-      _ -> %{}
-    end
+  defp schedule_tables(nil, _rows), do: %{}
+
+  defp schedule_tables(schedules, rows) do
+    if Enum.any?(rows, &ScheduleTable.clause?(Map.get(&1, :text))),
+      do: ScheduleTable.parse(schedules),
+      else: %{}
   end
 
   # V1-02: a law tied to another law's provision ("at the same time as

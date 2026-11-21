@@ -46,6 +46,15 @@ defmodule SertantaiLegal.Scraper.Commencement.ScheduleEffect do
           )
   end
 
+  @doc """
+  Whether reading `rows`' rules needs the law's document: only a
+  Schedule's Part does (its paragraphs), so a law without one is read
+  without parsing its CLML (1991 c.56: 6 of its 9.4 s).
+  """
+  @spec needs_doc?([map()]) :: boolean()
+  def needs_doc?(rows),
+    do: Enum.any?(rows, &Regex.match?(@amended_by_part, Map.get(&1, :text) || ""))
+
   @doc "The introducing provision and its containers a `:schedule_effect` rule names."
   @spec introducer(Rule.t()) :: {String.t(), [String.t()]}
   def introducer(%Rule{when: {:with, chain}}) do
