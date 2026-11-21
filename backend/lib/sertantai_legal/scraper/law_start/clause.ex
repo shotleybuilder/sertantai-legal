@@ -236,7 +236,11 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
   # a named provision's day going on to the rest is a part commencing too
   # ("Regulation 9 comes into force on 1st January 2015 and all other
   # regulations come into force on 6th April 2010": SI 2010/740 reg.1(2))
-  @named_then_rest ~r/^(?:\(?\d+[A-Z]?\)?\s+)?(?:regulations?|articles?|sections?|rules?)\s+\d[^.;]{0,300}?\binto\s+(?:force|operation)\s+on\s+[^.;]{0,60}?\d{4}\s*,?\s+and\s+(?:all\s+|the\s+)?(?:other|remaining)\s+(?:provisions|regulations|articles|sections|rules)\b[^.;]{0,200}?\binto\s+(?:force|operation)\b/i
+  # (its day a date, or tied to another provision's: "Regulation 15 shall
+  # come into force on the date on which section 7(3) of the Water Act 2003
+  # comes into force, and all other provisions … on 1st April 2006": SI
+  # 2006/641 reg.1(2))
+  @named_then_rest ~r/^(?:\(?\d+[A-Z]?\)?\s+)?(?:regulations?|articles?|sections?|rules?)\s+\d[^.;]{0,300}?\binto\s+(?:force|operation)\s+on\s+(?:[^.;]{0,60}?\d{4}|the\s+(?:day|date)\s+on\s+which\b[^.;]{0,200}?\binto\s+(?:force|operation))\s*,?\s+and\s+(?:all\s+|the\s+)?(?:other|remaining)\s+(?:provisions|regulations|articles|sections|rules)\b[^.;]{0,200}?\binto\s+(?:force|operation)\b/i
 
   # "comes into force on the later of— (a) 1st January 2024; or (b) the day
   # which is 21 days after the day on which this Order is made" (SI

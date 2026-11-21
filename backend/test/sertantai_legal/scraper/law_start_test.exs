@@ -432,6 +432,21 @@ defmodule SertantaiLegal.Scraper.LawStartTest do
                {:clause_made_relative, ~D[1988-01-21]}
     end
 
+    test "a named regulation's tied day, then \"all other provisions … on <date>\": the law starts on the date (SI 2006/641 reg.1(2))" do
+      s =
+        Clause.read(
+          rows([
+            {"reg.1(1)",
+             "These Regulations may be cited as the Water Industry (Prescribed Conditions) Regulations 2006."},
+            {"reg.1(2)",
+             "Regulation 15 shall come into force on the date on which section 7(3) of the Water Act 2003 comes into force, and all other provisions of these Regulations shall come into force on 1st April 2006."}
+          ]),
+          ~D[2006-03-01]
+        )
+
+      assert %{treatment: :clause_staged, date: ~D[2006-04-01]} = s
+    end
+
     test "a Welsh Measure counts from its approval by Her Majesty in Council (MWA 2010/8 s.21(2), MWA 2009/3)" do
       assert Clause.tail_date(
                "at the end of a period of two months beginning on the day on which this Measure is approved by Her Majesty in Council.",
