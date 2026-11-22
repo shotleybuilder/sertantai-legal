@@ -732,3 +732,5 @@ The round's 278 (14 laws; 1991 c.56 211), measured again today with the insertin
     - 93 of the laws date from before 2002, and 49 hold a single change.
     - The two largest, 1996 c.61 (87) and SI 2019/123 (19), hold 106 of the 450.
   - **Revised recommendation:** (b), a known limit. Optionally, fetch just the two largest (2 laws).
+- **Decision 19 (2), decided (Jason 2026-11-22: "Name as known limit then continue"):** (b). RULES section 11 has a Known limits row: amending laws whose commencement no rule holds, 450 changes, left undated. No made bodies are fetched.
+- **The re-read** (`wwc-reread-*.txt`): own clauses for the 565 round laws; held orders `--family`; the eight Acts' orders `--held`; amending laws `--workers 1`.
