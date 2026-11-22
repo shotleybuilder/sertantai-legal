@@ -592,6 +592,14 @@ defmodule SertantaiLegal.Scraper.LawStartTest do
                ~D[2020-01-27]
              ) == {:clause_named_day, ~D[2020-01-31]}
     end
+
+    test "\"on the day before that on which exit day falls\" (SI 2019/544 reg.1(2))" do
+      assert Clause.tail_date("on the day before that on which exit day falls.", ~D[2019-03-12]) ==
+               {:clause_named_day, ~D[2020-12-30]}
+
+      assert Clause.tail_date("on the day before exit day", ~D[2020-01-31]) ==
+               {:clause_named_day, ~D[2020-01-30]}
+    end
   end
 
   describe "known limits (P4, P5)" do

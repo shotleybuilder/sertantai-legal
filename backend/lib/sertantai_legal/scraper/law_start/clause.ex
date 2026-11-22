@@ -549,7 +549,18 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
     end
   end
 
+  # "on the day before that on which exit day falls" (SI 2019/544
+  # reg.1(2)): the named day less one
+  @day_before ~r/^(?:on\s+)?the\s+day\s+before\s+(?:that\s+on\s+which\s+|the\s+day\s+on\s+which\s+)?((?:IP|implementation period) completion day|exit day)(?:\s+falls)?\b/i
+
   defp named_day(tail, made) do
+    case Regex.run(@day_before, tail) do
+      [_, day] -> day |> named_day(made) |> Date.add(-1)
+      nil -> named_day_on(tail, made)
+    end
+  end
+
+  defp named_day_on(tail, made) do
     case Regex.run(
            ~r/^(?:on\s+|at\s+|immediately\s+(?:before|after)\s+)?(IP completion day|implementation period completion day|exit day)\b/i,
            tail
