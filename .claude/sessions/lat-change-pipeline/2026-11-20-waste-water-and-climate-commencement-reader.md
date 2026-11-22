@@ -579,3 +579,13 @@ The round's 278 (14 laws; 1991 c.56 211), measured again today with the insertin
 - **Its consequence for Decision 15:** whichever comparison the gate makes, the group is `known:`, so (i)'s yardstick change buys nothing here. Proposed: drop (i), take (ii).
 - **The status, dry run** (`test/fixtures/commencement_check/feed_differences.json`, on Jason's go): `"inserted | differ | ours dated via feed": "known: the feed dates the insertion (it holds every effect from 2002); our reading of the inserting law is a check only, and a difference no proof in the law's words makes a feed error (Decision 16, Jason 2026-11-22)"`.
 - **Jason 2026-11-22:** the status agreed and written; Decision 15 (ii) agreed, (i) dropped; the held move SI 2004/641/b2b041555c (Sch.2's Schedule 7 row: 16 paragraph rules, not "sch.7 fully") accepted and written with `held-write.exs` (the only move). Targeted tests 6740/6740.
+
+## The never-searched orders, fetched (2026-11-22, Jason's go)
+
+- **Restore point:** `nas-backup.sh --tables commencement_rules --tag wwc-orders-fetch-2026-11-22` (61,990 rows).
+- **Searched and read:** 12 laws had never had their order list searched (Decision 7 A's "17" was its count then). 11 have orders: 43 orders, 364 rules written, all new (stored 0). SI 2006/641 has none.
+- **The check on the 12 (`--fresh`):** of 10,937 rows, the feed-only rows left to orders fell from about 6,550 to 3,230 (NISI 2006/3336 and NISI 1997/2778).
+- **Two new findings, both ours:**
+  - **A purpose in a table cell read as full:** NISR 1999/325 Sch.1 "Article 3(3)(a) and 3(6) (both paragraphs for the purposes of Article 40(5))" dates NISI 1997/2778 art.3(3)(a) fully from 19 August 1999 (the feed: 27 November 2003). 165 rows differ, in NISI 1997/2778 (105) and ASP 2005/3 (60).
+  - **"To the extent that it is not already in operation"** (NISR 2007/282 art.2(1)) is an unreviewed leftover reaching 4,222 rows of NISI 2006/3336: a completing form ("so far as not already in force") in a wording not yet read.
+- **Per-law status keys:** `"<shape> @ <law>"` (24b934bc).
