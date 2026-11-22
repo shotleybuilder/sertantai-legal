@@ -430,3 +430,32 @@ The full log is in `backend/data/reports/commencement-reader/wwc-commencement-re
   - **1999 c.24 s.6(1):** the feed has neither SI 2000/800's start (England and Wales, 21 March 2000) nor SSI 2000/322's (Scotland, 29 September 2000).
 - **Moved to class C:** 1974 c.40 s.46A–D are inserted provisions (Environment Act 1995). The gate judges them by their inserting law; my probe didn't mark them.
 - **Left in B:** the inserted groups (class C); the 3 leftovers; SI 2018/1251.
+
+## Decision 13 for Jason: the inserted provisions the feed dates differently (class C, 92 rows in the ten held-orders laws)
+
+- **The question:** Decision 7 C judges an inserted provision by its inserting law. In the ten laws, 92 inserted rows still differ from the feed. All sit in four kinds, and none is a misread in our order reader. What do we do with each?
+- **The aim:** `binds-on-date`. An inserted provision that no rule dates has no date from which it binds.
+- **The four kinds:**
+  1. **We date the insertion, and the feed gives it no date (31 rows, 3 laws):** mostly the Environment Act 1995's insertions into COPA 1974, from 1 April 1996. Nothing contradicts us; the yardstick has nothing to compare.
+  2. **The inserting Act's own orders were never read (38 rows):** the Act's clause leaves the provision to "such day as … may appoint", and no order of the Act is held as rules. The Acts:
+     - ASP 2013/7 (8 rows), ASP 2014/3 (7), ASP 2011/9 (3), ASP 2019/9 (2);
+     - ANAW 2016/3 (7, 3 of them not reached);
+     - the Environment Act 1995 (12, COPA s.46–46D);
+     - 2018 c.12 (2), ASC 2024/3 (1);
+     - one with no inserting law named.
+
+     Their orders belong to their own families, and those families' Commencement reader steps haven't run.
+  3. **WSI 2018/101 (7 rows, ANAW 2017/3):** it reads fine fresh ("on the day on which section 2 of the … Act comes into force", 1 April 2018, as the feed says), but its rules were never stored. The Rebuild's re-read stores them, with no code change.
+  4. **SSI 2005/348 (2 rows, ASP 2003/3):** revoked, so its stored text is all dots and holds no clause to read. Its made text is stored.
+- **Options:**
+  - **Kind 1:**
+    - (a) `known:` as a yardstick gap (recommended);
+    - (b) leave it as `check:`.
+  - **Kind 2:**
+    - (a) add these Acts' orders to the Rebuild's orders list, one hop from our rows (`feedback_effects_first`): read the ones already stored, and fetch the rest in the decided fetch, counted at its dry run (recommended);
+    - (b) a known limit until each Act's family reaches its Commencement reader.
+  - **Kind 3:** the Rebuild's re-read. No choice is needed; it is listed so it isn't lost.
+  - **Kind 4:**
+    - (a) read a revoked amending law's commencement clause from its made text, test first, measuring its reach across the round first (recommended if it reaches more than these 2 rows; otherwise (b));
+    - (b) a known limit.
+- **Recommendation:** 1 (a), 2 (a), 4 (a) if the measure finds it wider, else (b).
