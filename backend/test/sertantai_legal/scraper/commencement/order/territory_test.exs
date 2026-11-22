@@ -10,6 +10,12 @@ defmodule SertantaiLegal.Scraper.Commencement.Order.TerritoryTest do
     assert Territory.of("section 3 of the Scotland Act 1998") == nil
   end
 
+  test "of/1: a provision's bracketed heading names no place it comes in (WSI 2015/1786, Water Act 2014 s.41)" do
+    assert Territory.of(
+             "1 November 2015 is the appointed day for the coming into force of section 41 (disputes about the provision of public sewers: premises in Wales) of the Act"
+           ) == nil
+  end
+
   test "all/1 and only/1: every place outside bracketed headings; the one place texts name" do
     assert Territory.all("in England on 1st May, and in relation to Wales on 1st June") == [
              "E",

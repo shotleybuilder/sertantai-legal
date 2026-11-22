@@ -30,7 +30,9 @@ defmodule SertantaiLegal.Scraper.Commencement.Order.Territory do
   """
   @spec of(String.t()) :: String.t() | nil
   def of(line) do
-    case Regex.run(@territory, line) do
+    # (never a bracketed heading's place: "section 41 (disputes about …:
+    # premises in Wales)": WSI 2015/1786)
+    case Regex.run(@territory, Asides.drop_headings(line)) do
       [_, place] -> Map.get(@places, String.downcase(place))
       nil -> nil
     end

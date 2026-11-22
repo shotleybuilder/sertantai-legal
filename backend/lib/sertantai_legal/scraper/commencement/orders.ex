@@ -17,7 +17,8 @@ defmodule SertantaiLegal.Scraper.Commencement.Orders do
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.Commencement.Authority
-  alias SertantaiLegal.Scraper.LegislationGovUk.Client
+  alias SertantaiLegal.Scraper.Commencement.Authority.Tables
+  alias SertantaiLegal.Scraper.LegislationGovUk.{Client, ClmlStore}
 
   @dir "data/cache/commencement-orders"
 
@@ -46,7 +47,9 @@ defmodule SertantaiLegal.Scraper.Commencement.Orders do
   end
 
   # (only rows naming a place's authority, and the subsection lists they
-  # point to, bear on it: the Act's rows read whole, in document order)
+  # point to, bear on it: the Act's rows read whole, in document order; a
+  # table in a commencement Schedule from the Act's stored text, which the
+  # rows leave out: Decision 11)
   defp authorities(law) do
     %{rows: rows} =
       Repo.query!(
@@ -54,7 +57,8 @@ defmodule SertantaiLegal.Scraper.Commencement.Orders do
         [law]
       )
 
-    rows |> Enum.map(&List.to_tuple/1) |> Authority.read()
+    (Enum.map(rows, &List.to_tuple/1) ++ Tables.rows(ClmlStore.law_docs(law)))
+    |> Authority.read()
   end
 
   @doc """

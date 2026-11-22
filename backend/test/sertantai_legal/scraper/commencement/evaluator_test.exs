@@ -163,6 +163,28 @@ defmodule SertantaiLegal.Scraper.Commencement.EvaluatorTest do
       assert %{full_from: ~D[2020-04-01]} = eval(rules, "reg.6", %{extent: "E+W"})
     end
 
+    test "a qualified rule completing a general one for England brings it fully in for England only (Water Act 2014 s.10(1): SI 2017/462)" do
+      rules = [
+        rule("L", "O", ["s.10"], {:date, ~D[2017-10-01]}, ref: "art.4", territory: "E"),
+        rule("L", "O", ["s.10(1)"], {:date, ~D[2017-04-01]},
+          ref: "art.3",
+          purposes: :in_relation_to,
+          territory: "E"
+        )
+      ]
+
+      assert %{partial_from: ~D[2017-04-01], full_from: nil} =
+               eval(rules, "s.10(1)", %{extent: "E+W"})
+
+      assert %{full_from: ~D[2017-10-01]} = eval(rules, "s.10(1)", %{extent: "E"})
+
+      # Wales's day completes it
+      wales = rule("L", "W", ["s.10"], {:date, ~D[2019-04-01]}, territory: "W")
+
+      assert %{full_from: ~D[2019-04-01]} =
+               eval([wales | rules], "s.10(1)", %{extent: "E+W"})
+    end
+
     test "a qualified rule dated before the general one completes it only when the general starts" do
       rules = [
         rule("L", "L", :all, {:date, ~D[2020-04-01]}),

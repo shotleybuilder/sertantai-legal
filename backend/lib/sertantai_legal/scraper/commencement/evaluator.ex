@@ -219,36 +219,47 @@ defmodule SertantaiLegal.Scraper.Commencement.Evaluator do
 
   # fully in force: the first entry with no purposes and no territory, the
   # date territorial entries together first cover the extent, or the date a
-  # completing rule and the general rule it completes have both started
+  # completing rule and the general rule it completes have both started —
+  # for the general rule's place where it holds one (Water Act 2014
+  # s.10(1): England's by SI 2017/462, Wales's still to come)
   defp full_from(entries, extent) do
     dated = for %{date: %Date{}, purposes: nil, role: :normal} = e <- entries, do: e
+    stages = dated ++ completed(entries)
+    plain = for %{territory: nil, date: d} <- stages, do: d
+    territorial = covered(Enum.filter(stages, & &1.territory), extent)
 
-    plain = for %{territory: nil, date: d} <- dated, do: d
+    Enum.min(Enum.reject([territorial | plain], &is_nil/1), Date, fn -> nil end)
+  end
 
-    general = for %{role: :general, date: d} <- entries, do: d
+  defp completed(entries) do
+    general = for %{role: :general} = e <- entries, do: e
+    dates = Enum.map(general, & &1.date)
 
-    completed =
-      for %{role: :completes, date: %Date{} = d} <- entries,
-          general != [] and Enum.all?(general, &is_struct(&1, Date)),
-          do: Enum.max([d | general], Date)
+    for %{role: :completes, date: %Date{} = d} <- entries,
+        general != [] and Enum.all?(dates, &is_struct(&1, Date)),
+        do: %{date: Enum.max([d | dates], Date), territory: place(general)}
+  end
 
-    territorial =
-      case extent && codes(extent) do
-        nil ->
-          nil
+  # the general rules' place: nil (everywhere) unless each holds one
+  defp place(general) do
+    if Enum.any?(general, &is_nil(&1.territory)),
+      do: nil,
+      else: general |> Enum.map(& &1.territory) |> Enum.join("+")
+  end
 
-        need ->
-          dated
-          |> Enum.filter(& &1.territory)
-          |> Enum.sort_by(& &1.date, Date)
-          |> Enum.reduce_while(MapSet.new(), fn e, have ->
-            have = MapSet.union(have, codes(e.territory))
-            if MapSet.subset?(need, have), do: {:halt, e.date}, else: {:cont, have}
-          end)
-          |> then(&if(is_struct(&1, Date), do: &1))
-      end
+  # the date territorial stages together first cover the extent
+  defp covered(_stages, nil), do: nil
 
-    Enum.min(Enum.reject([territorial | plain ++ completed], &is_nil/1), Date, fn -> nil end)
+  defp covered(stages, extent) do
+    need = codes(extent)
+
+    stages
+    |> Enum.sort_by(& &1.date, Date)
+    |> Enum.reduce_while(MapSet.new(), fn e, have ->
+      have = MapSet.union(have, codes(e.territory))
+      if MapSet.subset?(need, have), do: {:halt, e.date}, else: {:cont, have}
+    end)
+    |> then(&if(is_struct(&1, Date), do: &1))
   end
 
   defp codes(territory), do: territory |> String.split("+", trim: true) |> MapSet.new()

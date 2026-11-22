@@ -10,6 +10,26 @@ defmodule SertantaiLegal.Scraper.Commencement.AuthorityTest do
 
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.Commencement.{Authority, Order}
+  alias SertantaiLegal.Scraper.Commencement.Authority.Tables
+
+  # Water Act 2014 Sch. 12 para.1 (in part): a two-row authority is a cell
+  # spanning two rows, its second row one cell
+  @schedule_12 ~s"""
+  <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation"><Secondary><Body/></Secondary><Schedules>
+  <Schedule id="schedule-11"><Number>SCHEDULE 11</Number><TitleBlock><Title>Transitional provision</Title></TitleBlock><ScheduleBody><Tabular><table><tbody><tr><td>Section 3</td><td>The Secretary of State.</td></tr></tbody></table></Tabular></ScheduleBody></Schedule>
+  <Schedule id="schedule-12"><Number>SCHEDULE 12</Number><TitleBlock><Title>Commencement orders: appropriate authority</Title></TitleBlock><ScheduleBody><P1 id="schedule-12-paragraph-1"><P1para><Text>In relation to the sections and Schedules listed in the first column of this table, the appropriate authority for the purposes of section 94(3) is as listed in the second column—</Text><Tabular><table><tbody>
+  <tr><th>Section or Schedule</th><th>Appropriate authority</th></tr>
+  <tr><td>Section 7</td><td>The Scottish Ministers.</td></tr>
+  <tr><td>Section 8</td><td>The Minister, as defined in subsection (7) of section 40I of the Water Industry Act 1991 (as inserted by section 8).</td></tr>
+  <tr><td rowspan="2">Sections 16 to 20</td><td>The Secretary of State, in relation to wholly or mainly English undertakers.</td></tr>
+  <tr><td>The Welsh Ministers, in relation to wholly or mainly Welsh undertakers.</td></tr>
+  <tr><td>Section 22</td><td>The Welsh Ministers, in relation to wholly or mainly Welsh undertakers (see section 94(2)(e) as regards commencement in relation to wholly or mainly English undertakers).</td></tr>
+  <tr><td rowspan="2">Section 29</td><td>The Secretary of State, in relation to supplies of water made in accordance with a retail authorisation.</td></tr>
+  <tr><td>The Welsh Ministers, in relation to supplies of water made in accordance with a restricted retail authorisation.</td></tr>
+  <tr><td>Section 41</td><td>The Welsh Ministers.</td></tr>
+  </tbody></table></Tabular></P1para></P1></ScheduleBody></Schedule>
+  </Schedules></Legislation>
+  """
 
   @water_table {"UK_ukpga_2003_37:s.105(6).table.1",
                 "Section or Schedule | Appropriate authority; Section 73 | The Secretary of State.; Section 67 | The Assembly after consulting the Secretary of State.; Sections 58, 69, 75, 77, 78, 80, 81 and 86 | The Secretary of State, in relation to England; the Assembly, in relation to Wales.; Section 101 and Schedules 7, 8 and 9 | As respects any amendment or repeal consequential on a provision referred to above in this table, the same appropriate authority as listed in respect of the provision in question; otherwise, the Secretary of State after consulting the Assembly."}
@@ -55,6 +75,25 @@ defmodule SertantaiLegal.Scraper.Commencement.AuthorityTest do
       assert Authority.territory(authorities, ["s.184"], :uk) == :none
     end
 
+    test "a Schedule's table of authorities (Water Act 2014 Sch. 12): undertakers mainly English or Welsh are England's or Wales's" do
+      rows = Tables.rows([@schedule_12])
+
+      assert [{"sch.12.table.1", _}] = rows
+
+      authorities = Authority.read(rows)
+
+      assert Authority.territory(authorities, ["s.18(1)"], :uk) == {:ok, "E"}
+      assert Authority.territory(authorities, ["s.18"], :wales) == {:ok, "W"}
+      assert Authority.territory(authorities, ["s.22"], :wales) == {:ok, "W"}
+      assert Authority.territory(authorities, ["s.7(1)"], :scotland) == {:ok, nil}
+      assert Authority.territory(authorities, ["s.41"], :wales) == {:ok, nil}
+      # split by something no place names: no authority read
+      assert Authority.territory(authorities, ["s.29"], :uk) == :none
+      assert Authority.territory(authorities, ["s.8"], :uk) == :none
+      # a table in a Schedule not about commencement is never read
+      assert Authority.territory(authorities, ["s.3"], :uk) == :none
+    end
+
     test "an Act with none" do
       assert Authority.read([{"UK_x:s.1", "This Act comes into force on 1 April 2004."}]) == []
     end
@@ -68,11 +107,11 @@ defmodule SertantaiLegal.Scraper.Commencement.AuthorityTest do
       authorities: Authority.read([@water_table])
     }
 
-    defp order(law, title, text) do
+    defp order(law, title, text, act \\ "the Water Act 2003") do
       Doc.new(law, [
         ~s"""
         <Legislation xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>#{title}</dc:title><Secondary><Body>
-        <P1 id="article-1"><Pnumber>1</Pnumber><P1para><Text>In this Order “the Act” means the Water Act 2003.</Text></P1para></P1>
+        <P1 id="article-1"><Pnumber>1</Pnumber><P1para><Text>In this Order “the Act” means #{act}.</Text></P1para></P1>
         <P1 id="article-2"><Pnumber>2</Pnumber><P1para><Text>#{text}</Text></P1para></P1>
         </Body></Secondary></Legislation>
         """
@@ -112,6 +151,24 @@ defmodule SertantaiLegal.Scraper.Commencement.AuthorityTest do
                {["s.81"], [], "E"},
                {["s.81..s.83"], ["s.81"], nil}
              ]
+    end
+
+    test "a Scottish order brings in a provision the Scottish Ministers appoint for everywhere everywhere (SSI 2016/48, Water Act 2014 s.7)" do
+      act = %{
+        law: "UK_ukpga_2014_21",
+        title: "Water Act",
+        year: "2014",
+        authorities: Authority.read(Tables.rows([@schedule_12]))
+      }
+
+      assert [%{territory: nil}] =
+               "UK_ssi_2016_48"
+               |> order(
+                 "The Water Act 2014 (Commencement No. 2) (Scotland) Order 2016",
+                 "Section 7(1) of the Act comes into force on 1st April 2016.",
+                 "the Water Act 2014"
+               )
+               |> Order.rules(act)
     end
 
     test "a Welsh order keeps Wales for any other provision" do

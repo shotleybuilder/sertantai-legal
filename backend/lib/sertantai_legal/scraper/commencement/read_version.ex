@@ -19,6 +19,7 @@ defmodule SertantaiLegal.Scraper.Commencement.ReadVersion do
     patterns: ~w(
       lib/sertantai_legal/scraper/commencement/*.ex
       lib/sertantai_legal/scraper/commencement/order/*.ex
+      lib/sertantai_legal/scraper/commencement/authority/*.ex
       lib/sertantai_legal/scraper/amending_law/doc.ex
       lib/sertantai_legal/scraper/amending_law/doc/*.ex
       lib/sertantai_legal/scraper/amending_law/text.ex

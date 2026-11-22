@@ -115,6 +115,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
   defp maker("UK_uksi_" <> _), do: :uk
   defp maker("UK_wsi_" <> _), do: :wales
+  defp maker("UK_ssi_" <> _), do: :scotland
   defp maker(_order), do: nil
 
   # "This Order applies in relation to England only." (SI 2010/975

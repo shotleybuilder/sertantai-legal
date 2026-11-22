@@ -446,7 +446,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
              min((d.value->>'v')::date) FILTER (
                WHERE d.attribute = 'date' AND NOT coalesce((p.value->>'v')::boolean, pc.partial, false)),
              json_agg(json_build_array(d.value->>'v', f.value->>'v')) FILTER (
-               WHERE d.attribute = 'date' AND q.value->>'v' = 'territory' AND f.value->>'v' IS NOT NULL)
+               WHERE d.attribute = 'date' AND q.value->>'v' IN ('territory', 'complete + territory') AND f.value->>'v' IS NOT NULL)
       FROM provision_changes pc
       JOIN provision_change_claims d
         ON d.change_id = pc.id AND d.source = 'feed' AND d.attribute IN ('date', 'date_first')

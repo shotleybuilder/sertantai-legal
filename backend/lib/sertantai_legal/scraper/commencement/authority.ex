@@ -8,15 +8,18 @@ defmodule SertantaiLegal.Scraper.Commencement.Authority do
   s.241(3)–(4) list ("the provisions listed in subsection (4) come into
   force on such day as may be appointed by order made by— (a) the Welsh
   Ministers, in relation to Wales; (b) the Secretary of State, in relation
-  to England"). An order its authority makes brings a provision in where
-  that authority may, though the order names no place. Pure: the Act's
-  rows come in.
+  to England"), and a table held in a Schedule (Water Act 2014 Sch. 12:
+  "The Secretary of State, in relation to wholly or mainly English
+  undertakers", read as England's, as legislation.gov.uk reads it; Decision
+  11). An order its authority makes brings a provision in where that
+  authority may, though the order names no place. Pure: the Act's rows
+  come in.
   """
 
   alias SertantaiLegal.Scraper.Commencement.{Order.Territory, TextRefs}
   alias SertantaiLegal.Scraper.LatRef
 
-  @type maker :: :uk | :wales
+  @type maker :: :uk | :wales | :scotland
   @type t :: [%{refs: [String.t()], by: %{optional(maker()) => String.t() | nil}}]
 
   @doc "The authorities the Act's rows (`{section_id, text}`, in document order) state."
@@ -127,18 +130,36 @@ defmodule SertantaiLegal.Scraper.Commencement.Authority do
     end
   end
 
-  # each clause's maker, the first it names, with the place it names
+  # each clause's maker, the first it names, with the place it names (a
+  # clause limited by anything but a place names no authority)
   defp makers(clauses) do
-    for clause <- clauses, maker = maker(clause), into: %{}, do: {maker, Territory.of(clause)}
+    for clause <- clauses,
+        maker = maker(clause),
+        {:ok, place} <- [place(clause)],
+        into: %{},
+        do: {maker, place}
   end
 
-  @maker ~r/\b(Secretary\s+of\s+State|(?:National\s+)?Assembly|Welsh\s+Ministers)\b/u
+  @maker ~r/\b(Secretary\s+of\s+State|(?:National\s+)?Assembly|Welsh\s+Ministers|Scottish\s+Ministers)\b/u
 
   defp maker(clause) do
     case Regex.run(@maker, clause) do
       [_, "Secretary" <> _] -> :uk
+      [_, "Scottish" <> _] -> :scotland
       [_, _] -> :wales
       nil -> nil
+    end
+  end
+
+  # "in relation to wholly or mainly English undertakers" and nothing more
+  @undertakers ~r/,?\s*in\s+relation\s+to\s+wholly\s+or\s+mainly\s+(English|Welsh)\s+undertakers\s*(?:\(.*\))?\s*\.?\s*$/u
+
+  defp place(clause) do
+    case {Regex.run(@undertakers, clause), Territory.of(clause)} do
+      {[_, "English"], _} -> {:ok, "E"}
+      {[_, "Welsh"], _} -> {:ok, "W"}
+      {nil, nil} -> if clause =~ ~r/\bin\s+relation\s+to\b/u, do: :none, else: {:ok, nil}
+      {nil, place} -> {:ok, place}
     end
   end
 
