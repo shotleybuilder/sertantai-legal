@@ -378,6 +378,27 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClausePurposeStagesAndNamedForm
     end
   end
 
+  test "an item's purpose in its middle limits only what follows it (WSI 2005/1806 reg.1(2)(i))" do
+    specs = [
+      {"reg.1(1)",
+       "The title of these Regulations is the Hazardous Waste (Wales) Regulations 2005."},
+      {"reg.1(2)", "These Regulations come into force as follows—"},
+      {"reg.1(2)(i)",
+       "Parts 1, 2, paragraph 1 of Part 1 of Schedule 12 and, for the purposes of that paragraph only, in Part 5, regulation 59(3) and Schedule 9 and regulation 74 on 6 July 2005; and"},
+      {"reg.1(2)(ii)", "the remainder, on 16 July 2005."},
+      {"reg.2", "", "1"},
+      {"reg.59", "", "5"},
+      {"reg.59(3)", "", "5"},
+      {"reg.60", "", "5"},
+      {"reg.74", "", "11"}
+    ]
+
+    made = ~D[2005-06-28]
+    assert full_from(specs, "reg.2", made) == {:dated, ~D[2005-07-06]}
+    assert full_from(specs, "reg.59(3)", made) == {:staged, ~D[2005-07-16]}
+    assert full_from(specs, "reg.60", made) == {:dated, ~D[2005-07-16]}
+  end
+
   test "\"paragraphs (4) and (5) of regulation 29\" are those paragraphs (NISR 2002/331 reg.1(4))" do
     specs = [
       {"reg.1(2)",

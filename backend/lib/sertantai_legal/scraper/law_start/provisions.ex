@@ -793,6 +793,13 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
       else: named_item(subject, tail, item, rows, made, base)
   end
 
+  # a purpose in an item's middle limits only what follows it: "Parts 1, 2,
+  # paragraph 1 of Part 1 of Schedule 12 and, for the purposes of that
+  # paragraph only, in Part 5, regulation 59(3) and Schedule 9 and
+  # regulation 74 on 6 July 2005" (WSI 2005/1806 reg.1(2)(i)): Parts 1 and 2
+  # fully, regulation 59(3) and the rest partly
+  @mid_purpose ~r/^(.+?)\s+and,\s+(for\s+(?:the\s+)?purposes?\s+of\s+[^,]+?)\s*,\s*(.+)$/is
+
   defp named_item(subject, tail, item, rows, made, base) do
     subject =
       String.replace(
@@ -801,7 +808,14 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
         "the remaining provisions \\0"
       )
 
-    groups("#{subject} come into force #{tail}", item, rows, made, base)
+    case Regex.run(@mid_purpose, subject) do
+      [_, plain, purpose, limited] ->
+        groups("#{plain} come into force #{tail}", item, rows, made, base) ++
+          groups("#{limited} come into force #{tail} #{purpose}", item, rows, made, base)
+
+      nil ->
+        groups("#{subject} come into force #{tail}", item, rows, made, base)
+    end
   end
 
   # … partly where it is qualified ("for the purpose of …", "in relation to
