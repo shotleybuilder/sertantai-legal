@@ -1642,7 +1642,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
         text <-
           if(row =~ @schedule_entries,
             do: [row],
-            else: row |> drop_other_laws(["the act"]) |> provision_segments()
+            else: row |> drop_completing() |> drop_other_laws(["the act"]) |> provision_segments()
           ),
         item <- elem(items(text, ["the act"], sch), 0),
         {refs, purposes, territory, except} = parts(item),
@@ -1662,6 +1662,19 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
             },
             treatment: :order_schedule
           )
+  end
+
+  # a completing qualifier in a row brings its items in fully, so it is no
+  # qualifier: dropped, the items after it stay the provision's ("Article
+  # 4(1)(a) and (b) and (5) and to the extent that they are not already in
+  # force (2) to (4) and (6) to (9)": NISR 2003/489 Sch. had dropped them)
+  defp drop_completing(row) do
+    row
+    |> String.replace(@full, " ")
+    |> String.replace(~r/\(\s*\)/, " ")
+    |> String.replace(~r/\s+(?=[,;)])|(?<=\()\s+/, "")
+    |> String.replace(~r/\s{2,}/, " ")
+    |> String.trim()
   end
 
   # a Schedule (or each of its Parts) listing the provisions as items, not a
@@ -1921,6 +1934,12 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
       purpose in [nil, ""] or purpose =~ ~r/^for all (?:remaining |other )?purposes\.?$/i ->
         from_text
 
+      # a completing purpose ("In so far as not already in force.": SSI
+      # 2016/42) brings the row in fully
+      Regex.match?(@full, purpose) and
+          not Regex.match?(@partial, String.replace(purpose, @full, "")) ->
+        from_text
+
       # the table's second column is mostly its subject ("Minor and
       # consequential amendments"): a purpose only when it opens with one
       # — never a subject naming purposes ("Definition of “county” for the
@@ -1940,6 +1959,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     |> xpath(~x".//*[local-name()='tbody']/*[local-name()='tr']"l)
     |> Enum.map(fn tr -> tr |> xpath(~x"./*[local-name()='td']"l) |> Enum.map(&Doc.text/1) end)
     |> Enum.map(&with_purpose(&1, column))
+    |> RepealLists.drop_table_entries()
     # a repealed Act by its chapter ("1894 c. 60.": an Appendix of repeals,
     # SI 1995/965) is no provision of the Act's
     |> Enum.reject(fn cells ->
@@ -1971,12 +1991,20 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   # a later column its header names "Purpose" ("Column 1 Provisions of the
   # Act | Column 2 Subject matter | Column 3 Purpose": SSI 2013/163 art.3(2)
   # — "Where a purpose is specified in column 3 …, only for that purpose")
+  # — counted within its own header row, under a "Column 1 | Column 2 |
+  # Column 3" row (SSI 2005/351 Sch.1)
   defp purpose_column(el) do
     el
-    |> xpath(~x".//*[local-name()='th']"l)
-    |> Enum.map(&Doc.text/1)
-    |> Enum.find_index(&(&1 =~ ~r/\bpurposes?\b/i))
-    |> then(&if(&1 != nil and &1 > 1, do: &1))
+    |> xpath(
+      ~x".//*[local-name()='thead']/*[local-name()='tr'] | .//*[local-name()='tr'][*[local-name()='th']]"l
+    )
+    |> Enum.find_value(fn tr ->
+      tr
+      |> xpath(~x"./*[local-name()='th']"l)
+      |> Enum.map(&Doc.text/1)
+      |> Enum.find_index(&(&1 =~ ~r/\bpurposes?\b/i))
+      |> then(&if(&1 != nil and &1 > 1, do: &1))
+    end)
   end
 
   # the row's purpose in place of its subject, where the purpose column holds one
