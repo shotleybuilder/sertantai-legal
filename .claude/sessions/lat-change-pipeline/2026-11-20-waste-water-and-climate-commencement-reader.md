@@ -507,3 +507,36 @@ The full log is in `backend/data/reports/commencement-reader/wwc-commencement-re
   - C, the feed alone dates an insertion (about 2,320 rows: appointed, rules not held, no amending law, not reached, no text rules, no pointer, unread): `known:`, the feed's date standing. Decision 13 kinds 2 and 4 are their Rebuild items.
   - D and the feed-error register: SSI 2020/154 (the text defers to 2027); the 24 proposals.
 - **To examine (about 1,900 rows, 20 laws):** SI 2017/462 and 2015/773 (no clause); WSI 2017/1041 and 2011/1014 (a staged start only); SI 2015/962 (partly only); SI and WSI 2016/359 (end 2018 against 2020); SI 2012/2079; SI 2020/1095; NISR 2002/331, 2008/231, 2011/127; SI 2019/544, 2021/1095, 2020/1265, 2024/1332; WSI 2005/1806; ASP 2014/2; the inserted rows that differ (278, 1991 c.56 211).
+
+## Fix round 10 (2026-11-22): the round's differences, law by law
+
+Each fix test first, the per-fix tests and a `--laws --fresh` check after each:
+- **783eb09e** "so far as they extend to Northern Ireland" (SI 1989/1557); "Except to the extent that they extend to Scotland" is no place (SI 2005/1521).
+- **eb5c0425** "The title of these Regulations is …; they apply in relation to Wales and come into force on …" (WSI 2017/1041, 2011/1014): 271 rows now agree.
+- **388e6335** a general rule subject to several qualified ones is complete when the last starts (WSI 2016/359): 220 rows now agree. Its reg.1 (the clause itself, in force from the first day) still differs from the feed's staging: 20 rows, a yardstick difference.
+- **b7692b84** "regulation 5 or 11" names both (SI 2020/1095); the five leftovers named `known:` each alone. The gate's leftovers are now 0 for the round.
+- **f1682351** "paragraphs (4) and (5) of regulation 29" (NISR 2002/331); a provision another list names only partly keeps its partial Royal Assent day (1994 c.21 s.68(6)(f)).
+- **ce6aceef** "on the day before that on which exit day falls" (SI 2019/544): agrees.
+- **b8da12a4** a purpose in a list item's middle limits only what follows it (WSI 2005/1806): 574 agree, none differ.
+- **228369fa** "regulation 12(2)(a) and (b)" is 12(2)(b) (SI 2021/1095): agrees.
+- **Held moves, new (13, all improvements):** SI 1996/3056 (E+W); WSI 2017/1041, 2011/1014, 2010/1821 (clause date, not staged); 2011 c.16 and 1994 c.21 s.68(2) (subsections, not whole sections); SI 2019/544 (30 December 2020); SI 2023/588, SSI 2005/658, SI 2019/1440, SI 2026/318, 1992 c.15, ASC 2021/1, SSI 2025/165 (a bracket's sibling found, a false ref gone).
+- **Feed errors found (the text is plain, the feed's record contradicts it):**
+  - SI 2012/2079 Part 8, 240 rows: reg.1(4)(b) "for all remaining purposes, on 28th January 2013"; the feed has it fully in on 1 October 2012;
+  - SI 2012/2079 Part 9, 22 rows: reg.1(5) "comes into force on 1st October 2012"; the feed says 1 October 2021 (a typo);
+  - SI 2020/1095, 122 rows: reg.1(2)(b) "for all other purposes, on 1st May 2021"; the feed says 8 October 2020;
+  - SSI 2020/154, about 280 rows: the current text's 1 October 2027; the feed's 2025 is stale (Decision 7 D);
+  - NISR 2002/331 reg.29(4)–(5) and reg.32, 10 rows; NISR 2008/231 reg.8 and reg.11(1)(a), 9 rows: the feed's day contradicts reg.1's list.
+- **Named known limits (one law each, rabbit-hole triage):** SI 2000/2911 (a Scheme's paragraphs); SI 2020/1265 art.25 ("…, whichever is later" after the items, 2 rows); NISR 2011/127 reg.28–31 (the commencing paragraph omitted in the current text).
+- **Rebuild then fetch:** SSI 2014/277's Schedule is not stored, so ASP 2014/2's 100 rows read nothing from it.
+- **Still to examine:** the inserted rows that differ (278, 14 laws; 1991 c.56's 211, mostly the Water Act 2003 and 2014 insertions, which we date 1 April 2004 against the feed's 1 December 2005).
+
+## Decision 14 for Jason: two rules and the feed errors' audit trail
+
+- **The aim:** `binds-on-date`.
+- **(a) An instrument with no commencement clause.** SI 2017/462 and SI 2015/773 (Water Act 2014 commencement orders, 209 rows) state no day of their own. An Act with none is in force on Royal Assent (RULES, Interpretation Act 1978 s.4). The feed dates them on their made date.
+  - Options: (i) a rule: an instrument stating no day is in force at the start of its made date (recommended: the common-law rule, and the feed's); (ii) a known limit.
+- **(b) Purposes that together cover everything.** SI 2015/962 Part 3 (258 rows): "(a) on 1st April 2017 in relation to non-domestic PR property, (b) on 1st October 2017 in relation to domestic PR property". We read it as partly in force from April 2017, never fully. The feed has it fully in force from October.
+  - Options: (i) keep it partly in force (the reader can't know that two purposes exhaust the provision); (ii) a rule: items that each name a purpose and leave no "all other purposes" complete the provision at the last; (iii) a named known limit for this law. **Recommended: (iii).** (ii) would complete provisions whose purposes don't exhaust them.
+- **(c) The feed errors' entries.** Decision 12's register holds one entry per row. These are about 680 rows in 6 laws, each group with one proof.
+  - Options: (i) one register entry per row, generated by the dry run from a proposal per group (law, rows, proof in the law's own words); (ii) a per-law group status `known: feed error` in the feed-differences fixture, with the proof. **Recommended: (i).** It keeps Decision 12's audit trail and its stale check: each row's entry fails the gate if the feed's record changes.
+- **Also, no decision needed:** the feed-differences fixture needs a status per law within a shape (`"<shape> @ <law>"`, as the leftovers already have). Several shapes mix laws left to unsearched orders (Decision 7 A, `fix: fetch`) with others. A gate change, test first.
