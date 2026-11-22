@@ -289,4 +289,13 @@ The full log is in `backend/data/reports/commencement-reader/wwc-commencement-re
   - (a) **Read it in this step, test first:** the Act's clause rules carry each authority's territory. An order made by that authority (a UK SI for the Secretary of State, a Welsh SI for the Assembly or Welsh Ministers) takes that territory where its own words name none. It replaces the Welsh-type default for the Act's provisions the Act gives the Assembly whole (s.67).
   - (b) **A known limit:** those rows date fully from the first order. Wales's later day is lost.
 - **Recommendation: (a).** The Act's own clause is primary (RULES `primary-first-derived-fills`), and the feed agrees with it. The family holds at least six such Acts, so a known limit would keep recurring. Cost: one reader class, about half a session.
+- **Decided: (a)** (Jason 2026-11-22).
+- **Done, test first (cfa9d1af):**
+  - `Commencement.Authority` reads the Act's authority table (Water Act 2003 s.105(6)) and list (Planning Act 2008 s.241(3)–(4)). An order naming no place takes its maker's place: a UK SI the Secretary of State's, a Welsh SI the Assembly's or Welsh Ministers'. A range holding such a provision leaves it out ("sections 81 to 83", s.81 England's). `Orders.act/1` carries the authorities.
+  - Found on the way: "in so far as it applies in relation to England" was read as a purpose as well as a place. With a purpose, England's and Wales's days never complete each other in the evaluator. A place alone is now the territory. Two unit-test expectations were updated (SI 1988/818 s.30(1), SI 2010/2169 s.7): each still reads partly in force wherever its place doesn't cover the row's extent.
+  - The gate's yardstick: the feed's stages for one place each are fully in force once together they cover the row's extent, as the evaluator reads ours.
+- **Water Act 2003:** 678 rows agree with the feed (639). s.77: England 1 October 2004, fully 11 November 2004. s.67: everywhere 1 April 2004. 1 is dated by the feed alone (s.58(10), to name `known:`); 3 are feed partial only (s.100(2)(b)).
+- **The ten held-orders laws:** 3,932 agree (3,894), 59 feed partial only (108), 11 differ (1).
+  - Water Act 2014's 10 rows now differ, where the old yardstick hid them. Its authority table is in Schedule 12 (Schedules unparsed) and divides by "wholly or mainly English undertakers", not by place: to name `known:`.
+- **Held moves for Settle, new:** SSI 2008/150 (Part 6 "in relation to Scotland": purpose → none).
 
