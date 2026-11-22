@@ -41,7 +41,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   alias SertantaiLegal.Scraper.AmendingLaw.{DefinedTerms, Doc, Text}
 
   alias __MODULE__.{Asides, Entries, LastItemLimit, OtherLaw, ScheduleParts}
-  alias __MODULE__.{RepealLists, SectionHeads, Sibling, Territory}
+  alias __MODULE__.{RelatedList, RepealLists, SectionHeads, Sibling, Territory}
   alias SertantaiLegal.Scraper.Commencement.{Authority, ClmlRef, Rule, TextRefs}
 
   alias SertantaiLegal.Scraper.LawStart.Clause
@@ -854,7 +854,10 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     # (a line under "in section 86—" is read as that section's: its words
     # stay the line's own)
     {rules, _sch} =
-      Enum.reduce(SectionHeads.read(lines), {[], nil}, fn {line, read}, {acc, sch} ->
+      lines
+      |> RelatedList.drop_sections()
+      |> SectionHeads.read()
+      |> Enum.reduce({[], nil}, fn {line, read}, {acc, sch} ->
         {items, sch} = items(read, aliases, sch)
 
         # "section 8 (bulk supply …) as follows—" heads the items below it
