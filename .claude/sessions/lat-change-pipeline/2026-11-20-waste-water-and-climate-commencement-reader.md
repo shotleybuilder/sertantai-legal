@@ -597,3 +597,4 @@ The round's 278 (14 laws; 1991 c.56 211), measured again today with the insertin
     - for making secondary legislation, not "in relation to": SI 1993/2050, NISR 2012/13 (two units), SI 2010/2191;
     - completing, so fully: SI 1976/530 s.110 and SI 1976/1379 Sch.16 Pt III ("so far as it is not already in operation");
     - partly ("so much of Schedule 14 as relates to— …"): SI 1992/1755 and SI 1992/2454.
+  - **Accepted (Jason 2026-11-22)** and written with `held-write.exs` (exactly the eight); targeted tests 6744/6744.
