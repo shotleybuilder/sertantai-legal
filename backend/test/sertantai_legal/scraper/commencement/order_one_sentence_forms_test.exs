@@ -85,6 +85,20 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderOneSentenceFormsTest do
     assert lines(rules) == ["s.6(1), sch.2 — 2000-03-21 — E+W, fully — order_date"]
   end
 
+  test "“Section 4, including Schedule 2, and section 13 shall, so far as they extend to Northern Ireland, come into force there on 1st September 1989” is Northern Ireland's alone (SI 1989/1557 art.3(1))" do
+    act = %{law: "UK_ukpga_1989_15", title: "Water Act", year: "1989"}
+
+    rules =
+      Doc.new("UK_uksi_1989_1557", [
+        ~s"""
+        <Legislation xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>The Water Act 1989 (Commencement No. 2 and Transitional Provisions) Order 1989</dc:title><Secondary><Body><P1 id="article-2"><Pnumber>2</Pnumber><P1para><Text>In this Order “the Act” means the Water Act 1989.</Text></P1para></P1><P1 id="article-3"><Pnumber>3</Pnumber><P1para><P2 id="article-3-1"><Pnumber>1</Pnumber><P2para><Text>Section 4, including Schedule 2, and section 13 shall, so far as they extend to Northern Ireland, come into force there on 1st September 1989.</Text></P2para></P2></P1para></P1></Body></Secondary></Legislation>
+        """
+      ])
+      |> Order.rules(act)
+
+    assert lines(rules) == ["s.4, s.13, sch.2 — 1989-09-01 — NI, fully — order_date"]
+  end
+
   test "a list closed by its date: “The following subsections of section 13 of the … Act 1974, namely— (a) subsections (5) and (6) (…), … shall come into operation on 1st August 1978.” (SI 1978/954 art.3)" do
     act = %{law: "UK_ukpga_1974_40", title: "Control of Pollution Act", year: "1974"}
 

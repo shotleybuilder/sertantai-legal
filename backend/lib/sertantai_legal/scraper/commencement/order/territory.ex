@@ -16,7 +16,11 @@ defmodule SertantaiLegal.Scraper.Commencement.Order.Territory do
     "northern ireland" => "NI"
   }
 
-  @territory ~r/\b(?:in relation to|in|as respects)\s+(England and Wales|Great Britain|England|Wales|Scotland|Northern Ireland)\b(?!\s+(?:Act|Order|Regulations))/i
+  @territory ~r/\b(?:in relation to|in|as respects|extends? to)\s+(England and Wales|Great Britain|England|Wales|Scotland|Northern Ireland)\b(?!\s+(?:Act|Order|Regulations))/i
+
+  # "Except to the extent that they extend to Scotland" names the place
+  # left out, never the place (SI 2005/1521 art.3(3))
+  @extent_excepted ~r/\bexcept\s+(?:to\s+the\s+extent\s+that|(?:in\s*)?so\s*far\s+as|insofar\s+as)\s+(?:it|they)\s+extends?\s+to\s+(?:England and Wales|Great Britain|England|Wales|Scotland|Northern Ireland)\b/i
 
   @own_acts %{"wsi" => ~w(anaw asc mwa), "ssi" => ~w(asp), "nisr" => ~w(nia)}
   @type_territories %{"wsi" => "W", "ssi" => "S", "nisr" => "NI"}
@@ -32,7 +36,9 @@ defmodule SertantaiLegal.Scraper.Commencement.Order.Territory do
   def of(line) do
     # (never a bracketed heading's place: "section 41 (disputes about …:
     # premises in Wales)": WSI 2015/1786)
-    case Regex.run(@territory, Asides.drop_headings(line)) do
+    words = line |> Asides.drop_headings() |> String.replace(@extent_excepted, "")
+
+    case Regex.run(@territory, words) do
       [_, place] -> Map.get(@places, String.downcase(place))
       nil -> nil
     end
