@@ -68,11 +68,11 @@ bugs:
     fix: "carry each excepted provision, subsection or not"
     step: Commencement reader
     status: open
-  - pattern: "A list naming this regulation, numbered provisions and a qualified one reads as the whole law partly (SI 2018/1251 reg.1(2); held pending with its correct reading)"
+  - pattern: "A list opening \"This regulation, …\" reads as the whole law: `Clause.general?` takes the case-insensitive \"Regulation\" for the instrument (SI 2018/1251 reg.1(3), held pending; SI 2025/418 reg.1(2), held with the same misreading as its expectation). Making the singular case-sensitive is not enough: the items' sub-provisions (reg.6(2), reg.13(1)) are finer than a no-LAT law's held rows, and weighted refs drop them"
     category: this-regulation-list-read-as-rest
-    module: law_start/provisions
-    affected: 1 law seen
-    fix: "read \"This regulation, regulation 6(2), (4) to (6) …\" as the provisions named"
+    module: law_start/clause, law_start/provisions
+    affected: 2 laws seen
+    fix: "the singular Regulation case-sensitive (EU only), the last item's own qualifier after it (\"and regulation 6(1) so far as it relates to those provisions\"), and keep a named sub-provision finer than the rows held; then both held readings to Jason"
     step: Commencement reader
     status: open
   - pattern: "The store holds a document legislation.gov.uk served for another path under the path asked (the Welsh SI 2005/423, 2006/1279, 2002/2024 under uksi/)"
@@ -414,6 +414,7 @@ The full log is in `backend/data/reports/commencement-reader/wwc-commencement-re
   - (b) **As today:** a group's `known:` and a RULES row. It costs nothing, but there is no row-by-row record and no check that an entry still holds.
   - (c) **Correct the feed's stored record:** rejected. Readers carry what their source says, and the error would vanish from view.
 - **Recommendation: (a).** It closes each gap row by row, proof first, and the gate keeps every entry honest. RULES' known limits would point to the file instead of listing the rows. legislation.gov.uk could be sent the list later if you want; not in this step.
+- **Decided: (a)** (Jason 2026-11-22).
 
 ## B, held orders (round 8): one-sentence orders and places (bbb1b131, eb3a2b56, 6dde97b8, 2ccb2d36)
 
@@ -459,3 +460,34 @@ The full log is in `backend/data/reports/commencement-reader/wwc-commencement-re
     - (a) read a revoked amending law's commencement clause from its made text, test first, measuring its reach across the round first (recommended if it reaches more than these 2 rows; otherwise (b));
     - (b) a known limit.
 - **Recommendation:** 1 (a), 2 (a), 4 (a) if the measure finds it wider, else (b).
+- **Decided: as recommended** (Jason 2026-11-22: "Agree 12 and 13 Finish B").
+
+## B, held orders (round 9): Decisions 12 and 13, the leftovers, SI 2018/1251 (7dd419d8, 0a04cfc0, f5037691)
+
+- **Decision 12, done test first (7dd419d8):**
+  - `Commencement.FeedErrors` (in `review/`, beside `FeedDifferences`) and the gate's register, `test/fixtures/commencement_check/feed_errors.json`, held empty.
+  - A registered row is counted apart as `feed_error`, its entry and proof printed. An entry fails the gate when its row is gone, its feed record or our reading has changed, or it is incomplete (proof, decision). Tested end to end: a stale entry gave FAIL and put its row back to `differ`.
+  - **Writing:** `--feed-errors-dry-run` fills the hand-written proposals (`data/reports/commencement-reader/feed-errors-proposed.json`: wrong, proof with the law's own words, decision) with each row's feed record, our reading and the feed's affecting laws (the row's and its ancestors'). `--feed-errors-write` writes them, on Jason's go.
+  - **The dry run:** 24 proposals filled, 0 refused (`feed-errors-dry-run-2026-11-22.json`):
+    - Water Act 2014 s.10 and s.11, 15 rows (date: WSI 2019/706 art.2 omits WSI 2017/1288 art.3(c)–(d));
+    - s.16(1)–(2) (place: Sch.12, "The Secretary of State, in relation to wholly or mainly English undertakers");
+    - s.34(1) and s.56 (no record: s.94(2)(i) and (s));
+    - ASP 2009/6 s.79(2)(h) (date: SSI 2010/401 art.4(b));
+    - Water Act 2003 s.100(2)(b), (b)(iv), (b)(v) (no record: SI 2007/1021 art.2(c));
+    - 1999 c.24 s.6(1) (no record: SI 2000/800 art.2).
+
+    These are held moves for Jason at Settle. Water Act 2003 s.58(10) is our own known limit, not a feed error, so it stays out.
+- **Decision 13:**
+  - **Kind 1 (0a04cfc0):** the shapes "inserted | ours_only | ours dated via feed / law_text / note" named `known:` as a yardstick gap.
+  - **Kind 2:** the inserting Acts' orders go to the Rebuild's orders list (ASP 2013/7, 2014/3, 2011/9, 2019/9, ANAW 2016/3, the Environment Act 1995 for COPA s.46–46D, 2018 c.12, ASC 2024/3), counted at the fetch's dry run.
+  - **Kind 3:** WSI 2018/101, the Rebuild's re-read.
+  - **Kind 4, measured:** across the family, 406 amending laws read no clause, leaving 332 undated gaps (the largest are 1996 c.61 with 87 and SI 2019/123 with 19). No made body text is stored for any of them: the store's `made/` holds only the introduction. So reading the made text means a fetch. **To ask Jason at Rebuild then fetch:** fetch the made bodies of the amending laws that read nothing (a list of about 400, by gap count), or name a known limit.
+- **The 3 leftovers (f5037691):**
+  - **SI 1978/954 art.3:** "The following subsections of section 13 of the … Act 1974, namely— (a) subsections (5) and (6) …" now reads as section 13's (COPA s.13(3)–(8) dated 1 August 1978).
+  - **SI 2010/2169 art.3(2) and (3):** purpose references, rightly not brought in, each statement named `known:` on its own (not its group).
+- **SI 2018/1251:** tried, and reverted.
+  - Making the singular "Regulation" case-sensitive gets past the whole-law reading. But the items' sub-provisions (reg.6(2), …) are finer than the rows held for a law without LAT, and are dropped.
+  - SI 2025/418 has the same misreading, held as its expected reading.
+  - Two laws, and a change to how refs are kept: left pending, with the bug entry widened.
+- **The ten held-orders laws:** agree 4,138, own only 1,379, feed only 24, differ 1. Their patterns catalogue: 0 examples reading differently.
+- **B is done.** Settle is next: the full suite, Dialyzer, the round and switched checks, both catalogues, and the held moves to Jason (now 19 examples plus the 24 feed errors).
