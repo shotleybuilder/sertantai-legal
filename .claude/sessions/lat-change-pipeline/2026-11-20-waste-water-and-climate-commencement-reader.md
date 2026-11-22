@@ -490,4 +490,4 @@ The full log is in `backend/data/reports/commencement-reader/wwc-commencement-re
   - SI 2025/418 has the same misreading, held as its expected reading.
   - Two laws, and a change to how refs are kept: left pending, with the bug entry widened.
 - **The ten held-orders laws:** agree 4,138, own only 1,379, feed only 24, differ 1. Their patterns catalogue: 0 examples reading differently.
-- **B is done.** Settle is next: the full suite, Dialyzer, the round and switched checks, both catalogues, and the held moves to Jason (now 19 examples plus the 24 feed errors).
+- **B is done.** Settle is next: the full suite, Dialyzer, the round and switched checks, both catalogues, and the held moves to Jason (18 catalogue examples plus the 24 feed errors).
