@@ -339,3 +339,48 @@ The full log is in `backend/data/reports/commencement-reader/wwc-commencement-re
     - Cost: about a third of a session.
   - (b) **A known limit:** the 80 rows date fully from the first order (undertaker split) or never (s.7).
 - **Recommendation: (a).** It is Decision 10's rule, met in a Schedule. The Act's own words are primary, and the feed agrees with the reading. Reading "mainly English undertakers" as England is an approximation (an undertaker's area can cross the border), but legislation.gov.uk makes the same one. RULES would name it.
+- **Decided: (a)** (Jason 2026-11-22).
+
+## B, held orders (round 7): Decision 11 and the Scottish orders (7bdb61fe, d7542ce9, 5362fc03, 4b8f0a2d)
+
+- **Decision 11, done test first (7bdb61fe):**
+  - `Authority.Tables` reads each table of a Schedule titled for commencement from the Act's stored text. A one-cell row is a further authority for the row above.
+  - `Authority` reads "in relation to wholly or mainly English (Welsh) undertakers" as England (Wales). A clause limited by anything else that names no place gives no authority (ss.24, 29, 39, 40(1), 54). The Scottish Ministers are an authority, made by an SSI.
+  - **Found on the way:**
+    - The evaluator read a completing rule with its general rule as fully in force whatever place they held. It now completes only the general rule's place (s.10(1): England's by SI 2017/462).
+    - A bracketed heading named a place ("section 41 (… premises in Wales)": WSI 2015/1786). `Territory.of` now drops headings.
+    - The gate counted only "territory" stages. It now counts "complete + territory" too.
+- **The gate (d7542ce9):** a row's own stages for each place combine before an ancestor's full date is taken (Water Act 2003 s.86(2)(f)).
+- **Scottish orders (5362fc03, 4b8f0a2d):**
+  - A range of lettered or roman paragraphs ("79(2)(a) to (d)") is written out as its members. `LatRef` orders ranges by number, so a lettered range covered nothing; `LatRef` is shared with the Amending-law reader, so it is left as it is.
+  - A Schedule takes its date from its article's paragraph that brings in the provisions it lists (SSI 2013/163 art.3(1)), never from one commencing the article (SI 2005/968 art.4(3)).
+  - A table's header-named Purpose column is the row's purpose (SSI 2013/163).
+  - "<date> is the appointed day on which the following provisions … come into force" (SSI 2007/530).
+- **Water Act 2014:** 490 agree (427), 0 differ (10).
+- **The ten held-orders laws:**
+
+  | | Before | After |
+  |---|---|---|
+  | agree | 3,932 | 4,115 |
+  | feed only | 165 | 46 |
+  | feed partial only | 59 | 5 |
+  | differ | 11 | 1 |
+
+  Their commencement-patterns catalogue: 0 examples reading differently. The leftovers gate fails on the same 3 statements as before.
+- **Held moves for Settle, new (5, all improvements):**
+  - SI 1991/1042 and SI 1991/96: lettered ranges written out as their members.
+  - SSI 2000/10, SSI 2017/330 and SSI 2025/170: the Purpose column now leaves those rows partly in force ("Only for the purpose of …", "For the purpose of making regulations only").
+
+  One unit expectation was updated (SI 2005/2714 art.2(k)(i): the roman range written out).
+- **To name `known:` (feed wrong):**
+  - Water Act 2014 s.10 and s.11, 18 rows: WSI 2017/1288 art.3(c)–(d) were omitted by SI 2019/706 on 26 March 2019, before their day (1 April 2019). The feed keeps the made order's Wales date.
+  - s.16(1)–(2): the feed has s.16 complete by a UK order, though Schedule 12 gives the Secretary of State English undertakers only.
+  - ASP 2009/6 s.79(2)(h): the feed adds 24 December 2010. SSI 2010/401 art.3 says "(e) to (g) and (i)", and art.4 brings in (h) on 1 June 2011.
+  - Water Act 2014 s.34(1) and s.56: the Act's own two-month date, which the feed doesn't record.
+- **Left in B:**
+  - ASP 2003/3 s.24(1) and s.23 (29 + 7 rows);
+  - 1999 c.24 and 2025 c.5 s.3 (2 rows);
+  - s.53(1)(f) and Water Act 2003 s.100(2)(b) (one row each);
+  - the inserted groups (class C, 92 rows);
+  - the 3 leftovers;
+  - SI 2018/1251.
