@@ -41,7 +41,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   alias SertantaiLegal.Scraper.AmendingLaw.{DefinedTerms, Doc, Text}
 
   alias __MODULE__.{Asides, Entries, LastItemLimit, OtherLaw, ScheduleParts}
-  alias __MODULE__.{SectionHeads, Sibling, Territory}
+  alias __MODULE__.{RepealLists, SectionHeads, Sibling, Territory}
   alias SertantaiLegal.Scraper.Commencement.{ClmlRef, Rule, TextRefs}
 
   alias SertantaiLegal.Scraper.LawStart.Clause
@@ -70,7 +70,8 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
       aliases = aliases(order, act)
 
       type_territory =
-        Territory.of_type(order.law_name, act.law) || Territory.of_title(full_title(order))
+        Territory.of_type(order.law_name, act.law) || Territory.of_title(full_title(order)) ||
+          applies_to(order)
 
       (statements(order, aliases) ++
          whole_act(order, aliases) ++
@@ -82,6 +83,16 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     else
       []
     end
+  end
+
+  # "This Order applies in relation to England only." (SI 2010/975
+  # art.1(2)): the first article's paragraph naming the one place
+  defp applies_to(order) do
+    Enum.find_value(order.ids, fn id ->
+      if id =~ ~r/^(?:article|regulation)-1(?:-\d+)?$/,
+        do:
+          order |> Doc.element(id) |> Doc.lines() |> Enum.find_value(&Territory.of_application/1)
+    end)
   end
 
   # the law types whose provisions are Articles or regulations (an Order in
@@ -226,7 +237,14 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
         words = order |> Text.words_of(id) |> wording(),
         Regex.match?(@cif, words) or Regex.match?(@appointed, words) or
           Regex.match?(@appointed_is, words),
-        lines = order |> Doc.element(id) |> Doc.lines() |> join_open() |> Enum.map(&clean_line/1),
+        lines =
+          order
+          |> Doc.element(id)
+          |> RepealLists.prune()
+          |> Doc.lines()
+          |> join_open()
+          |> Enum.map(&clean_line/1)
+          |> closing_date(),
         {pre, head, rest} = split_head(lines),
         head != nil,
         not already_in_force?(head),
@@ -245,6 +263,24 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
           Enum.map(item_rules(items, aliases, date, order.law_name, id, head), &qualified(&1, q)) ++
             elsewhere_rules(order, id, head, aliases, date),
         do: rule
+  end
+
+  # "The day appointed for the coming into force of— (a) section 67 …; (b)
+  # …; is 1 April 2004." (WSI 2004/910 art.2(1)): the day after the list is
+  # the head's — a bare date only, never "is 19th September 2004 or the end
+  # of a period of six months …" (SI 2004/2173)
+  @open_appointed ~r/\b(?:appointed\s+(?:day|date)|(?:day|date)\s+appointed)\s+for\s+the\s+coming\s+into\s+(?:force|operation)\s+of\b(?!.*\bis\b)/isu
+  @closing_day ~r/^\W*(?:is|shall\s+be)\s+((?:the\s+)?\d{1,2}(?:st|nd|rd|th)?\s+[A-Z][a-z]+\s+\d{4})\s*\.?$/u
+
+  defp closing_date(lines) do
+    with [_ | _] <- lines,
+         [_, day] <- Regex.run(@closing_day, List.last(lines)),
+         {before, [open | items]} <-
+           Enum.split_while(Enum.drop(lines, -1), &(not (&1 =~ @open_appointed))) do
+      before ++ ["#{open} the following is #{day}" | items]
+    else
+      _ -> lines
+    end
   end
 
   # "… after the amendments made by paragraphs 1(2)(a) and 8(3) of Schedule
@@ -790,12 +826,17 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
           except: except,
           when: {:date, date},
           territory: territory,
-          purposes: purposes,
+          purposes: purposes || limited_below(line),
           source: %{law: law, ref: source_ref(id), text: squash("#{head} … #{line}")},
           treatment: :order_date
         )
     end
   end
+
+  # "section 56 (licensing of water suppliers), but— (i) in its application
+  # to paragraphs 2 and 4 of Schedule 4, only in so far as …" (SI 2004/641
+  # art.3(l)): the limits follow in the line's list, so the item is partial
+  defp limited_below(line), do: if(line =~ ~r/,?\s+but\s*$/iu, do: :in_relation_to)
 
   # an item: {refs, purposes, territory}, or with the provisions it leaves out
   defp parts({refs, purposes, territory}), do: {refs, purposes, territory, []}
@@ -807,16 +848,45 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   # far as it relates thereto" (SI 1996/396): the paragraphs as read, the
   # section partly — "thereto" qualifies only the provision it follows
   # (in an aside: "paragraphs 10 to 14 of Schedule 3 (and section 44(1) so
-  # far as relating thereto)": SI 1999/987)
-  @thereto ~r/^(.*?),?\s+\(?and\s+((?:sub-?)?sections?\s+\S+(?:\s+and\s+\(\w+\))?)\s+(?:in\s+)?so\s+far\s+as\s+(?:(?:it|they)\s+relates?|relating)\s+thereto\b.*$/is
+  # far as relating thereto)": SI 1999/987; "and subsection (1) in so far as
+  # it relates to those subsections": SI 2006/984)
+  @thereto ~r/^(.*?),?\s+\(?and\s+((?:sub-?)?sections?\s+\S+(?:\s+and\s+\(\w+\))?)\s+(?:in\s+)?so\s+far\s+as\s+(?:(?:it|they)\s+relates?|relating)\s+(?:thereto|to\s+th(?:ose|ese|at|is)\s+(?:sub-?)?(?:sections?|paragraphs?|provisions?))\b.*$/is
+
+  # "in section 25 (…), subsection (1), in so far as it relates to
+  # subsection (2), and subsections (2) and (4)" (SI 2004/641 art.3(h)): the
+  # qualifier closes at its comma; the subsections after ", and" stand alone
+  @relates_then_and ~r/^(.*?,\s+(?:in\s+)?so\s+far\s+as\s+(?:it|they)\s+relates?\s+to\s+[^,;]+?),\s+and\s+((?:sub-?)?sections?\s+\(.+)$/isu
+
+  # a bare "subsection (1)" is the subsection of the section its line is
+  # "in" ("in section 8 (…), subsections (3) to (7) and subsection (1) in so
+  # far as it relates to those subsections": SI 2006/984 art.2(e))
+  defp under_section(rest, section) do
+    case {section =~ ~r/^sub-?sections?\b/i,
+          Regex.run(~r/^\W*in\s+section\s+(\d+[A-Z]*)\b/i, rest)} do
+      {true, [_, n]} -> "in section #{n}, #{section}"
+      _ -> section
+    end
+  end
 
   # a line's items: [{refs, purposes, territory}] and the Schedule context
   # its paragraphs carry to the next lines
   defp items(line, aliases, sch) do
+    case Regex.run(@relates_then_and, line) do
+      [_, qualified, rest] ->
+        {first, next} = items(qualified, aliases, sch)
+        {more, next} = items(under_section(line, rest), aliases, next)
+        {first ++ more, next}
+
+      nil ->
+        thereto_items(line, aliases, sch)
+    end
+  end
+
+  defp thereto_items(line, aliases, sch) do
     case Regex.run(@thereto, line) do
       [_, rest, section] ->
         {items, next} = items(rest, aliases, sch)
-        qualified = TextRefs.refs(section, nil)
+        qualified = TextRefs.refs(under_section(rest, section), nil)
 
         if qualified == [],
           do: {items, next},
@@ -1011,7 +1081,23 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     end
   end
 
-  defp plain_line_items(line, _aliases, sch) do
+  # "section 34 (the Authority) except in so far as subsection (2) gives
+  # effect to Schedule 1 for the purposes of …" (SI 2005/2714 art.4(a)): the
+  # section fully but that subsection, the subsection partly
+  @except_in_so_far ~r/^(.*?),?\s+except\s+(?:in\s+)?so\s+far\s+as\s+(?:sub-?)?section\s+((?:\([0-9A-Za-z]+\))+)\s+\S/iu
+
+  defp plain_line_items(line, aliases, sch) do
+    with [_, own, sub] <- Regex.run(@except_in_so_far, line),
+         [ref] <- TextRefs.refs(Asides.strip(own), sch),
+         true <- ref =~ ~r/^s\.\d+[A-Z]*$/ do
+      territory = Territory.of(line)
+      {[{[ref], nil, territory, [ref <> sub]}, {[ref <> sub], :in_relation_to, territory}], sch}
+    else
+      _ -> plain_items(line, aliases, sch)
+    end
+  end
+
+  defp plain_items(line, _aliases, sch) do
     # (the rest of it, for one place: "Schedule 8 in so far as it relates to
     # England and Wales and has not already been commenced", SI 1992/2984)
     {line, place} = Territory.completing(line)
@@ -1254,7 +1340,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   defp except_subsections(text, [ref]) do
     with [_, list] <-
            Regex.run(
-             ~r/\(\s*except\s+(?:sub-?)?(?:sections?|paragraphs?)\s+((?:\([0-9A-Za-z]+\)|\s|,|and)+)\)/i,
+             ~r/(?:\(|,)\s*except\s+(?:the\s+amendments?\s+made\s+by\s+)?(?:sub-?)?(?:sections?|paragraphs?)\s+((?:\([0-9A-Za-z]+\)|\s|,|and)+)(?:\)|[\s;.]*$)/i,
              text
            ),
          [_ | _] = chains <- Regex.scan(~r/(?:\([0-9A-Za-z]+\))+/, list) |> List.flatten() do
@@ -1320,6 +1406,8 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   # "… the following repeals:— The Employment Medical Advisory Service Act
   # 1972 – sections 1 and 6 …" (SI 1974/1439 Sch. 2): a law's title then a
   # dash heads that law's provisions, to the end of the line (CV-S04)
+  @abbreviated "(?<=\\bthe\\s)(?!(?:UK|GB|EU|EEA|EC)\\b)[A-Z]{2,6}(?![\\w(])"
+
   @titled ~r/\b(?:the\s+)?((?:[A-Z][\w()',-]*\s+)(?:(?:[A-Z][\w()',-]*|of|and|for|the|in|on|at|to|with|etc\.)\s+){0,14}(?:Act|Order|Regulations|Measure)(?:\s+\d{4})?)\s*[–—-]\s+.*$/u
 
   # "… the repeals to the Game Licences Act 1860 …", "in relation to the
@@ -1328,7 +1416,13 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   # … to the end of its item: never the Act's own "in Part VI of Schedule 16
   # to the Act" after it (SI 1991/685); "in the Town and Country Planning Act
   # 1990, sections 226 and 245" (SI 2004/2593)
-  @other_law_tail ~r/\b(?:(?:the\s+)?repeals?\s+(?:to|of|in|relating\s+to)|in\s+relation\s+to|in)\s+(?:the\s+)?((?:[A-Z][\w()',-]*\s+)(?:(?:[A-Z][\w()',-]*|of|and|for|the|in|on|at|to|with|etc\.)\s+){0,14}(?:Act|Order|Regulations|Measure)(?:\s+\d{4})?)\b.*?(?=\s+in\s+(?:Part\s+\w+\s+of\s+)?Schedule\s+\d+[A-Z]*\s+to\s+the\s+Act\b|;|$)/u
+  # … "inserting into the WIA paragraph 11 of Schedule 1A" (SI 2005/2714
+  # art.4(a)): a capital abbreviation the order never gives the Act is
+  # another law's (never a place: the UK, GB, the EU, the EEA); "into" a
+  # titled law leaves the item's purpose words ("the provisions inserted
+  # into the Town and Country Planning Act 1990 by that section … enable
+  # the Secretary of State to make regulations": SI 2013/1124)
+  @other_law_tail ~r/\b(?:(?:the\s+)?repeals?\s+(?:to|of|in|relating\s+to)|in\s+relation\s+to|into(?=\s+the\s+[A-Z]{2,6}(?![\w(]))|in)\s+(?:the\s+)?((?:[A-Z][\w()',-]*\s+)(?:(?:[A-Z][\w()',-]*|of|and|for|the|in|on|at|to|with|etc\.)\s+){0,14}(?:Act|Order|Regulations|Measure)(?:\s+\d{4})?|#{@abbreviated})\b.*?(?=\s+in\s+(?:Part\s+\w+\s+of\s+)?Schedule\s+\d+[A-Z]*\s+to\s+the\s+Act\b|;|$)/u
 
   # the words a provision is amended by, quoted, are never refs ("in section
   # 33(1) of the 1990 Act the words “… section 54 …”": SSI 2015/73); an item

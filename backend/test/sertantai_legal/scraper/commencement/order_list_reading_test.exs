@@ -194,6 +194,74 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderListReadingTest do
              ]
     end
 
+    test "\"in section 8 (…), subsections (3) to (7) and subsection (1) in so far as it relates to those subsections\": the subsections fully, subsection (1) partly (SI 2006/984 art.2(e))" do
+      rules =
+        ~S"""
+        <P3 id="article-2-e"><Pnumber>e</Pnumber><P3para><Text>in section 8 (amendments relating to section 7), subsections (3) to (7) and subsection (1) in so far as it relates to those subsections;</Text></P3para></P3>
+        """
+        |> water_order()
+        |> Order.rules(@water)
+
+      assert lines(rules) == [
+               "s.8(3)..s.8(7) — 2004-10-01 — everywhere, fully — order_date",
+               "s.8(1) — 2004-10-01 — everywhere, in relation to — order_date"
+             ]
+    end
+
+    test "\"in section 25 (…), subsection (1), in so far as it relates to subsection (2), and subsections (2) and (4)\": the subsections after the qualifier fully (SI 2004/641 art.3(h))" do
+      rules =
+        ~S"""
+        <P3 id="article-2-h"><Pnumber>h</Pnumber><P3para><Text>in section 25 (compensation for modification of licence on direction of the Secretary of State), subsection (1), in so far as it relates to subsection (2), and subsections (2) and (4);</Text></P3para></P3>
+        """
+        |> water_order()
+        |> Order.rules(@water)
+
+      assert lines(rules) == [
+               "s.25(1) — 2004-10-01 — everywhere, in relation to — order_date",
+               "s.25(2), s.25(4) — 2004-10-01 — everywhere, fully — order_date"
+             ]
+    end
+
+    test "\"section 56 (…), but— (i) in its application to paragraphs 2 and 4 of Schedule 4, only in so far as …\": the section partly (SI 2004/641 art.3(l))" do
+      rules =
+        ~S"""
+        <P3 id="article-2-l"><Pnumber>l</Pnumber><P3para><Text>section 56 (licensing of water suppliers), but—</Text>
+        <P4 id="article-2-l-i"><Pnumber>i</Pnumber><P4para><Text>in its application to paragraphs 2 and 4 of Schedule 4, only in so far as the paragraph in question has effect for the purpose of conferring powers to make regulations; and</Text></P4para></P4>
+        <P4 id="article-2-l-ii"><Pnumber>ii</Pnumber><P4para><Text>in its application to paragraph 1 of Schedule 4, only for the purpose of giving effect to paragraphs 2 and 4 of that Schedule;</Text></P4para></P4></P3para></P3>
+        <P3 id="article-2-m"><Pnumber>m</Pnumber><P3para><Text>section 87 (transfer of discharge consents);</Text></P3para></P3>
+        """
+        |> water_order()
+        |> Order.rules(@water)
+
+      assert Enum.find(rules, &(&1.scope == ["s.56"])).purposes != nil
+      assert Enum.find(rules, &(&1.scope == ["s.87"])).purposes == nil
+    end
+
+    test "\"section 16 (…), except the amendments made by subsections (4) and (5)\": the section but those subsections (SI 2004/641 art.3(e))" do
+      rules =
+        ~S"""
+        <P3 id="article-2-e"><Pnumber>e</Pnumber><P3para><Text>section 16 (protection from derogation), except the amendments made by subsections (4) and (5);</Text></P3para></P3>
+        """
+        |> water_order()
+        |> Order.rules(@water)
+
+      assert [%{scope: ["s.16"], except: ["s.16(4)", "s.16(5)"], purposes: nil}] = rules
+    end
+
+    test "\"section 34 (…) except in so far as subsection (2) gives effect to Schedule 1 …\": the section but subsection (2) fully, subsection (2) partly (SI 2005/2714 art.4(a))" do
+      rules =
+        ~S"""
+        <P3 id="article-2-a"><Pnumber>a</Pnumber><P3para><Text>section 34 (the Authority) except in so far as subsection (2) gives effect to Schedule 1 for the purposes of inserting into the WIA paragraph 11 of Schedule 1A;</Text></P3para></P3>
+        """
+        |> water_order()
+        |> Order.rules(@water)
+
+      assert lines(rules) == [
+               "s.34 except s.34(2) — 2004-10-01 — everywhere, fully — order_date",
+               "s.34(2) — 2004-10-01 — everywhere, in relation to — order_date"
+             ]
+    end
+
     test "\"in section 38 (…)– (i) subsection (1); and (ii) subsection (2) in so far as it repeals …\"; a list of subsections" do
       rules =
         ~S"""

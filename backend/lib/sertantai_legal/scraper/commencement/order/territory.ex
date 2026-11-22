@@ -91,6 +91,27 @@ defmodule SertantaiLegal.Scraper.Commencement.Order.Territory do
     end
   end
 
+  @application Regex.compile!(
+                 "^\\W*(?:\\d+\\s+)*This\\s+(?:Order|Regulations)\\s+(?:applies|apply)\\s+(?:only\\s+)?(?:in\\s+relation\\s+)?to\\s+(#{@title_place}(?:(?:,\\s+|\\s+and\\s+)#{@title_place})*)(?:\\s+only)?\\s*\\.?\\s*$",
+                 "u"
+               )
+
+  @doc """
+  The territory an order's application clause names: "This Order applies
+  in relation to England only." (SI 2010/975 art.1(2)) → "E". Nil for any
+  other sentence — one with an exception names no one place ("… England
+  only except article 2(d) which extends to Scotland only": SI 2009/359);
+  the order's extent is never where it applies ("This Order extends to
+  England and Wales": SI 2024/35).
+  """
+  @spec of_application(String.t()) :: String.t() | nil
+  def of_application(text) do
+    case Regex.run(@application, text) do
+      [_, places] -> codes(places)
+      nil -> nil
+    end
+  end
+
   @doc """
   The territory of a devolved instrument's type (a Welsh order: "W") — nil
   for its own legislature's Act, which it commences wherever that extends

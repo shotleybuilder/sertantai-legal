@@ -227,4 +227,36 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderDayFormsTest do
              ]
     end
   end
+
+  describe "the day appointed for a list, its date after the list (WSI 2004/910 art.2(1))" do
+    @water %{law: "UK_ukpga_2003_37", title: "Water Act", year: "2003"}
+
+    defp water_wales(closing) do
+      doc(
+        "UK_wsi_2004_910",
+        "The Water Act 2003 (Commencement) (Wales) Order 2004",
+        ~s"""
+        <P1 id="article-1"><P1para><Text>In this Order “the Act” means the Water Act 2003.</Text></P1para></P1>
+        <P1 id="article-2"><P1para><P2 id="article-2-1"><Pnumber>1</Pnumber><P2para><Text>The day appointed for the coming into force of—</Text>
+        <P3 id="article-2-1-a"><Pnumber>a</Pnumber><P3para><Text>section 67 of the Act (membership of regional flood defence committees in Wales);</Text></P3para></P3>
+        <P3 id="article-2-1-b"><Pnumber>b</Pnumber><P3para><Text>section 69 of the Act (grants for drainage works and flood warning systems);</Text></P3para></P3>
+        <Text>#{closing}</Text></P2para></P2></P1para></P1>
+        """
+      )
+    end
+
+    test "“The day appointed for the coming into force of— (a) section 67 …; (b) section 69 …; is 1 April 2004.”" do
+      assert water_wales("is 1 April 2004.") |> Order.rules(@water) |> lines() == [
+               "s.67 — 2004-04-01 — W, fully — order_date",
+               "s.69 — 2004-04-01 — W, fully — order_date"
+             ]
+    end
+
+    test "a closing day that is no bare date is never read as one (“is 19th September 2004 or the end of a period of six months …”: SI 2004/2173)" do
+      assert water_wales(
+               "is 19th September 2004 or the end of a period of six months beginning with the date on which the map was issued, whichever is the later."
+             )
+             |> Order.rules(@water) == []
+    end
+  end
 end
