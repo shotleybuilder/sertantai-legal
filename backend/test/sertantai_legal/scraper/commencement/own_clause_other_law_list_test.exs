@@ -4,7 +4,8 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClauseOtherLawListTest do
   order's own commencement (LAT Change Pipeline, step Commencement reader):
   "The following provisions of the 2014 Act come into force on 6th March
   2017—" (SI 2017/58 art.2) names the Water Act 2014's sections, not the
-  order's articles.
+  order's articles, which stating no day of their own are in force on the
+  order's made date (Decision 14 (a)).
   """
   use ExUnit.Case, async: true
 
@@ -18,8 +19,12 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClauseOtherLawListTest do
         do: %{section_id: "UK_x:" <> sid, text: text, part: nil, chapter: nil}
       )
 
+  # (the order's own articles, stating no day of their own, are in force
+  # on its made date: Decision 14 (a), Jason 2026-11-22)
   defp rules(specs),
-    do: OwnClause.rules("UK_x", %{type_code: "uksi", rows: rows(specs), made: ~D[2017-01-25]})
+    do:
+      OwnClause.rules("UK_x", %{type_code: "uksi", rows: rows(specs), made: ~D[2017-01-25]})
+      |> Enum.map(&{&1.scope, &1.when, &1.treatment})
 
   test "\"The following provisions of the 2014 Act come into force on\" (SI 2017/58 art.2)" do
     assert rules([
@@ -34,7 +39,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClauseOtherLawListTest do
              {"reg.3", ""},
              {"sch.7", ""},
              {"sch.7.para.64", ""}
-           ]) == []
+           ]) == [{:all, {:date, ~D[2017-01-25]}, :instrument_made}]
   end
 
   test "\"Subject to article 6, the following provisions of the 2014 Act\" (SI 2015/773 art.2(3))" do
@@ -48,7 +53,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClauseOtherLawListTest do
              {"reg.4", ""},
              {"reg.5", ""},
              {"sch.4", ""}
-           ]) == []
+           ]) == [{:all, {:date, ~D[2017-01-25]}, :instrument_made}]
   end
 
   test "the leftovers leave another law's list alone: its date is not the order's (SI 2017/58 art.2)" do
@@ -90,7 +95,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClauseOtherLawListTest do
         {"reg.4", ""}
       ]
       |> rules()
-      |> Enum.map(& &1.scope)
+      |> Enum.map(&elem(&1, 0))
 
     assert ["reg.3", "reg.4"] in lines
   end

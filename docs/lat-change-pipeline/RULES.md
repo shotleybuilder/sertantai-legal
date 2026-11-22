@@ -247,6 +247,11 @@ An Act with no commencement clause is in force on Royal Assent (Interpretation A
 - **Serves:** `law-text-wins`, `unknown-over-guess` · **Code:** `Readers.OwnCommencement`; `Readers.AmendingCommencement`; `Readers.AmenderStart.first_start/1` · **Test:** `amender_start_test` "an Act's Royal Assent only when nothing else dates it" · **Origin:** `cv-s08-evidence` (batch 1, 2026-10-29); `cv-06-switch-over` (batch 5, 2026-11-02)
 - **Differs:** an Act whose own commencement section is repealed still falls back to Royal Assent (HSWA 1974 s.79 by the 1985 c.9 repeal; 1920 c.65). See open decision 9.
 
+### `instrument-stating-no-day-on-its-made-date`
+An instrument (never an Act, a Church Measure or an EU text) that states no day for any of its own provisions is in force at the start of its made date (`ukm:Made`): the general rule for instruments, as an Act's is Royal Assent. A sentence bringing in another law's provisions ("The following provisions of the 2014 Act come into force on …") is not the instrument's own day. legislation.gov.uk's "in force at made date" annotation points to the rule (it states no date itself), and the feed confirms it.
+- **Example:** the Water Act 2014 (Commencement No. 3 …) Order 2015 (SI 2015/773) and No. 9 (SI 2017/462): their articles from 16 March 2015 and 22 March 2017, 209 rows agreeing with the feed. Reach in the own-clause catalogue: 14 of 870 laws, all commencement orders.
+- **Serves:** `binds-on-date`, `law-text-wins` · **Code:** `LawStart.resolve/1` (`:instrument_made`) · **Test:** `law_start_test` "an instrument stating no day of its own"; `own_clause_other_law_list_test` · **Origin:** Jason 2026-11-22, Waste, Water and Climate: Commencement reader, Decision 14 (a)
+
 ### `law-start-stored-with-the-build`
 A law's own start is resolved by `LawStart` in the build, from the same input the old register's collector reads (`LawStart.Input`), and stored on the build's `changes_built` event. The label fold and golden read that, never the old register.
 - **Example:** on 2026-11-07 the build's start equalled the old register's for all 285 built laws. The Factories Act 1961's is 1962-04-01, from its clause, not Royal Assent.

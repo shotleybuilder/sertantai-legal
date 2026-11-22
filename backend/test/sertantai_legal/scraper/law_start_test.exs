@@ -26,6 +26,50 @@ defmodule SertantaiLegal.Scraper.LawStartTest do
     end
   end
 
+  describe "an instrument stating no day of its own (Decision 14 (a), Jason 2026-11-22)" do
+    test "in force at the start of its made date (SI 2015/773: legislation.gov.uk's \"Art. 1 in force at made date\")" do
+      s =
+        start(
+          "uksi",
+          [
+            {"art.1(1)",
+             "This Order may be cited as the Water Act 2014 (Commencement No. 3 and Transitional Provisions) Order 2015."},
+            {"art.2",
+             "The following provisions of the 2014 Act come into force on 1st April 2015—"}
+          ],
+          made: ~D[2015-03-16]
+        )
+
+      assert %LawStart{treatment: :instrument_made, date: ~D[2015-03-16]} = s
+    end
+
+    test "never an Act, an EU text, or an instrument whose own clause states a day or leaves it to an order" do
+      assert %LawStart{treatment: :no_clause} =
+               start("ukpga", [{"s.1", "Something."}], made: ~D[2015-03-16])
+
+      assert %LawStart{treatment: :by_order} =
+               start(
+                 "uksi",
+                 [
+                   {"art.1",
+                    "This Order comes into force on such day as the Minister may by order appoint."}
+                 ],
+                 made: ~D[2015-03-16]
+               )
+
+      assert %LawStart{treatment: :no_clause} = start("uksi", [{"art.2", "Something."}])
+
+      assert %LawStart{treatment: :no_clause} =
+               start("ukcm", [{"s.1", "Something."}], made: ~D[1947-04-02])
+
+      # (a day for its own Parts: not stating none)
+      assert %LawStart{treatment: :no_clause} =
+               start("uksi", [{"reg.1(2)", "Part 1 comes into force on 1st December 2024."}],
+                 made: ~D[2024-11-05]
+               )
+    end
+  end
+
   describe "metadata treatments come first (unchanged from LR-24)" do
     test "the register's date wins" do
       s =

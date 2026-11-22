@@ -47,6 +47,7 @@ defmodule SertantaiLegal.Scraper.LawStart do
           | :by_order
           | :tied_to_other_law
           | :clause_unread
+          | :instrument_made
           | :no_clause
 
   @type provision_treatment ::
@@ -121,6 +122,9 @@ defmodule SertantaiLegal.Scraper.LawStart do
      "Jason 2026-10-16 (LR-33 P4)"},
     {:clause_unread, false, "a commencement clause none of the above reads (listed for review)",
      "Jason 2026-10-16 (LR-33 P5)"},
+    {:instrument_made, true,
+     "an instrument (never an Act or an EU text) stating no day of its own: in force at the start of its made date (ukm:Made), the general rule for instruments; legislation.gov.uk's \"in force at made date\" annotation points to it and the feed confirms it (SI 2015/773, SI 2017/462)",
+     "Jason 2026-11-22 (Waste, Water and Climate: Commencement reader, Decision 14 (a))"},
     {:no_clause, false, "nothing above", "Jason 2026-10-16 (LR-33 P5)"}
   ]
 
@@ -180,8 +184,36 @@ defmodule SertantaiLegal.Scraper.LawStart do
       |> assent_floor(head, type)
 
     lrt(input) || coming_into_force(head) || eu(input, head, type) ||
-      dated(clause) || enactment(head, type) || clause ||
+      dated(clause) || enactment(head, type) || clause || made_date(input, type) ||
       %__MODULE__{treatment: :no_clause}
+  end
+
+  # an instrument stating no day of its own is in force at the start of its
+  # made date (Decision 14 (a), Jason 2026-11-22): never an Act (Royal
+  # Assent, above) or an EU text
+  # (a Church Measure takes Royal Assent, as an Act: never an instrument)
+  defp made_date(input, type) when type not in @acts and type not in @eu and type != "ukcm" do
+    with false <- input |> Map.get(:rows, []) |> Enum.any?(&own_day?/1),
+         %Date{} = d <- input |> OwnDays.of() |> OwnDays.made() do
+      %__MODULE__{treatment: :instrument_made, date: d, evidence: "ukm:Made"}
+    else
+      _ -> nil
+    end
+  end
+
+  defp made_date(_input, _type), do: nil
+
+  # a sentence bringing in the instrument's own provisions ("Part 1 comes
+  # into force on 1st December 2024"); never one bringing in another law's
+  # ("The following provisions of the 2014 Act come into force on …": a
+  # commencement order, SI 2015/773 art.2)
+  @other_law ~r/\b(?:of|to)\s+the\s+(?:\d{4}\s+)?(?:Act|Measure)\b|\b(?:Act|Measure|Order|Regulations)\s+\d{4}\b/
+
+  defp own_day?(row) do
+    row
+    |> Map.get(:text)
+    |> Clause.sentences()
+    |> Enum.any?(&(Clause.commences?(&1) and not Regex.match?(@other_law, &1)))
   end
 
   # a clause commencing by its Schedule's table (V1-02): the table's
