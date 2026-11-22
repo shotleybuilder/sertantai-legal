@@ -62,9 +62,9 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
   @appointed_is ~r/\bthe\s+(?:appointed\s+(?:day|date)|(?:day|date)\s+appointed)\s+for\s+the\s+coming\s+into\s+(?:force|operation)\s+of\b(.*)\bis\s+(.+)$/isu
   # ("Section 1, so far as not already commenced": SI 2010/2169 Sch.)
-  @full ~r/\b(?:(?:in\s*)?so\s*far|insofar|in\s+as\s+far)\s+as\s+(?:it|they|th(?:at|ose|ese)\s+[\w-]+)\s+(?:has|have|is|are)\s+not\s+(?:already|previously|yet)\s+(?:been\s+)?(?:commenced|brought\s+into\s+force|in\s+force|come\s+into\s+(?:force|operation))|(?:(?:in\s*)?so\s*far|insofar)\s+as\s+not\s+(?:already|previously|yet|then)\s+(?:in\s+force|commenced|brought\s+into\s+force)|\bto\s+the\s+extent\s+(?:that\s+)?(?:it|they)\s+(?:is|are|has|have)\s+not\s+(?:already|yet)\s+(?:been\s+)?(?:commenced|brought\s+into\s+force|in\s+force|come\s+into\s+(?:force|operation))|for\s+all\s+(?:remaining\s+|other\s+)?purposes|\(?\s*except\s+(?:in\s+)?so\s+far\s+as\s+(?:it\s+is\s+|they\s+are\s+)?already\s+in\s+(?:operation|force)\s*\)?|\(\s*except\s+as\s+aforesaid\s*\)/i
+  @full ~r/\b(?:(?:in\s*)?so\s*far|insofar|in\s+as\s+far)\s+as\s+(?:it|they|th(?:at|ose|ese)\s+[\w-]+)\s+(?:has|have|is|are)\s+not\s+(?:already|previously|yet)\s+(?:been\s+)?(?:commenced|brought\s+into\s+force|in\s+(?:force|operation)|come\s+into\s+(?:force|operation))|(?:(?:in\s*)?so\s*far|insofar)\s+as\s+not\s+(?:already|previously|yet|then)\s+(?:in\s+(?:force|operation)|commenced|brought\s+into\s+force)|\bto\s+the\s+extent\s+(?:that\s+)?(?:it|they)\s+(?:is|are|has|have)\s+not\s+(?:already|yet)\s+(?:been\s+)?(?:commenced|brought\s+into\s+force|in\s+(?:force|operation)|come\s+into\s+(?:force|operation))|for\s+all\s+(?:remaining\s+|other\s+)?purposes|\(?\s*except\s+(?:in\s+)?so\s+far\s+as\s+(?:it\s+is\s+|they\s+are\s+)?already\s+in\s+(?:operation|force)\s*\)?|\(\s*except\s+as\s+aforesaid\s*\)/i
   @relating ~r/\b(?:(?:in\s*)?so\s*far|insofar)\s+as\s+(?:(?:it|they)\s+relates?|relating)\s+to\b|\bto\s+the\s+extent\s+that\s+(?:it|they)\s+relates?\s+to\b|\bas\s+respects\b|\b(?:(?:in\s*)?so\s*far|insofar)\s+as\s+(?:it|they)\s+(?:gives?|give)\s+effect\s+to\b/i
-  @partial ~r/\bthe\s+following\s+repeals\b|\b(?:(?:in\s*)?so\s*far|insofar)\s+as\b|\bto\s+the\s+extent\b|\bfor\s+the\s+purposes?\s+(?:only\s+)?of\b|\bfor\s+(?:specified|certain|limited|particular)\s+purposes\b|\bexcept\b|\bsave\b|\bin\s+relation\s+to\b/i
+  @partial ~r/\bthe\s+following\s+repeals\b|\bso\s+much\s+of\b|\b(?:(?:in\s*)?so\s*far|insofar)\s+as\b|\bto\s+the\s+extent\b|\bfor\s+the\s+purposes?\s+(?:only\s+)?of\b|\bfor\s+(?:specified|certain|limited|particular)\s+purposes\b|\bexcept\b|\bsave\b|\bin\s+relation\s+to\b/i
 
   @doc "The rules an order states for the law `act` it commences ([] when it doesn't commence it)."
   @spec rules(Doc.t(), act()) :: [Rule.t()]
@@ -1044,7 +1044,9 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   # reg.3, CV-S04 round 4); nil for any other line
   @relating_tail ~r/\b(?:(?:in\s*)?so\s*far|insofar)\s+as\s+(?:it|they)\s+relates?\s+to\s+(.*)$/is
 
-  @bracket_qualifier ~r/\(\s*(?:(?:in\s*)?so\s*far|insofar|to\s+the\s+extent|for\s+the\s+purposes?\s+of)\b/i
+  # (after "both paragraphs", "each Article": "Article 3(3)(a) and 3(6)
+  # (both paragraphs for the purposes of Article 40(5))", NISR 1999/325 Sch.1)
+  @bracket_qualifier ~r/\(\s*(?:(?:both|each|all)\s+(?:(?:sub-?)?paragraphs?|articles?|(?:sub-?)?sections?|regulations?|provisions?)\s+)?(?:(?:in\s*)?so\s*far|insofar|to\s+the\s+extent|for\s+the\s+purposes?\s+of)\b/i
 
   defp bracket_items(line) do
     with true <- Regex.match?(@bracket_qualifier, line),
@@ -1457,7 +1459,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   defp purposes(text) do
     cond do
       text =~
-          ~r/\bmak(?:e|ing)\s+(?:regulations|an?\s+order|orders|rules|subordinate\s+legislation)\b|\bconfers?\s+(?:a\s+)?power\b/i ->
+          ~r/\bmak(?:e|ing)\s+(?:regulations|an?\s+order|orders|rules|subordinate\s+legislation)\b|\bconfers?\s+(?:a\s+)?power\b|\b(?:regulations|orders|rules)\b[^.;]{0,90}?\bto\s+be\s+made\b/i ->
         :for_making_secondary_legislation
 
       text =~ ~r/\bspecified\s+purposes\b/i ->
@@ -1527,7 +1529,11 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   # "Articles 3 to 20 and 49A to 52 of and Schedules 1, 2, 3 and 5 to the
   # Fire Services (Northern Ireland) Order 1984" (NISR 2006/257 art.2(e)):
   # another Order's Articles, what a repeals Schedule relates to
-  @other_order_articles ~r/\bArticles?\s+\d[^;]*?\s+(?:of|to)\s+the\s+((?:[A-Z(][\w()',.-]*\s+)(?:(?:[A-Z(][\w()',.-]*|of|and|for|the|in|on|at|to|with|etc\.)\s+){0,14}Order\s+\d{4})/u
+  # (never past an "of the" or "to the" naming another law: "so much of
+  # Article 280 of the 2006 Order as is necessary to enable regulations under
+  # Article 7B(5) of the Water (Northern Ireland) Order 1999 to be made",
+  # NISR 2007/282 art.2(1), is Article 280 of the 2006 Order's)
+  @other_order_articles ~r/\bArticles?\s+\d(?:(?!\s(?:of|to)\s+the\s)[^;])*?\s+(?:of|to)\s+the\s+((?:[A-Z(][\w()',.-]*\s+)(?:(?:[A-Z(][\w()',.-]*|of|and|for|the|in|on|at|to|with|etc\.)\s+){0,14}Order\s+\d{4})/u
 
   @quoted ~r/“[^”]*”|"[^"]*"|‘[^’]*’/u
   @ends_other_law ~r/,\s+to\s+the\s+((?:\d{4}\s+)?[A-Z(][\w()',.-]*(?:\s+(?:[A-Z(][\w()',.-]*|of|and|for|the|in|on|at|to|with|etc\.))*\s+(?:Act|Order|Regulations|Measure)(?:\s+\d{4})?)\s*[,.]?\s*$/u

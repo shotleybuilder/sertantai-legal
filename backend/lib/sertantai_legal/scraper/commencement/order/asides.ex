@@ -12,7 +12,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order.Asides do
 
   # an aside that says how far or what: a qualifier, an exception, a
   # provision — any other is the provision's heading
-  @aside_says ~r/^\(\s*(?:and\s+|but\s+|only\s+)?(?:(?:in\s*)?so\s*far|insofar|in\s+as\s+far|to\s+the\s+extent|for\s+(?:the\s+)?(?:purposes?|all|certain|specified|limited|particular)\b|except|save|other\s+than|apart\s+from|with\s+the\s+exception|subject\s+to|excluding|including|not\b|only\b|in\s+relation\s+to|as\s+respects|as\s+(?:it|they)\s+appl|in\s+(?:England|Wales|Scotland|Northern\s+Ireland|Great\s+Britain)|which\b|that\b|where\b|being\b|(?:sub-?)?(?:sections?|paragraphs?)\b|Parts?\b|Schedules?\b|\d)/iu
+  @aside_says ~r/^\(\s*(?:and\s+|but\s+|only\s+|(?:both|each)\s+(?:(?:sub-?)?paragraphs?|articles?|(?:sub-?)?sections?|regulations?|provisions?)\s+)?(?:(?:in\s*)?so\s*far|insofar|in\s+as\s+far|to\s+the\s+extent|for\s+(?:the\s+)?(?:purposes?|all|certain|specified|limited|particular)\b|except|save|other\s+than|apart\s+from|with\s+the\s+exception|subject\s+to|excluding|including|not\b|only\b|in\s+relation\s+to|as\s+respects|as\s+(?:it|they)\s+appl|in\s+(?:England|Wales|Scotland|Northern\s+Ireland|Great\s+Britain)|which\b|that\b|where\b|being\b|(?:sub-?)?(?:sections?|paragraphs?)\b|Parts?\b|Schedules?\b|\d)/iu
 
   @aside_re ~r/#{@aside}/u
 
