@@ -102,10 +102,14 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
       "is"
     ),
     # "The title of this Order is … and it comes into force on 30 April
-    # 2012" (Welsh instruments: SI 2012/801, WSI 2026/18; CV-S04)
+    # 2012" (Welsh instruments: SI 2012/801, WSI 2026/18; CV-S04); "…
+    # Regulations 2017; they apply in relation to Wales and come into force
+    # on 20 November 2017" (WSI 2017/1041, WSI 2011/1014)
     Regex.compile!(
       ~S"\bThe\s+title\s+of\s+(?:this|these)\s+" <>
-        @instrument <> ~S"\s+is\b.{0,300}?\band\s+(?:it|they)\s+" <> @cif <> ~S"\s*(.*)$",
+        @instrument <>
+        ~S"\s+is\b.{0,300}?(?:\band|;)\s+(?:it|they)\s+(?:(?:apply|applies|extend|extends)\b.{0,200}?\band\s+)?" <>
+        @cif <> ~S"\s*(.*)$",
       "is"
     )
   ]

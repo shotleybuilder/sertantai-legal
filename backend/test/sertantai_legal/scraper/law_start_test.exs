@@ -408,6 +408,22 @@ defmodule SertantaiLegal.Scraper.LawStartTest do
                   "The title of these Regulations is the Environmental Damage (Prevention and Remediation) (Wales) Regulations 2009. They come into force on 6 May 2009."}
                ])
     end
+
+    test "\"The title of these Regulations is …; they apply in relation to Wales and come into force on …\" (WSI 2017/1041)" do
+      assert %{treatment: :clause_date, date: ~D[2017-11-20]} =
+               start("wsi", [
+                 {"reg.1",
+                  "The title of these Regulations is the Private Water Supplies (Wales) Regulations 2017; they apply in relation to Wales and come into force on 20 November 2017."}
+               ])
+    end
+
+    test "\"The title of these Regulations is …; they come into force on …\"" do
+      assert %{treatment: :clause_date, date: ~D[2011-03-30]} =
+               start("wsi", [
+                 {"reg.1",
+                  "The title of these Regulations is the Example (Wales) Regulations 2011; they come into force on 30 March 2011."}
+               ])
+    end
   end
 
   describe "made-relative counting" do
