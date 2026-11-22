@@ -378,6 +378,30 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClausePurposeStagesAndNamedForm
     end
   end
 
+  test "\"paragraphs (4) and (5) of regulation 29\" are those paragraphs (NISR 2002/331 reg.1(4))" do
+    specs = [
+      {"reg.1(2)",
+       "Regulation 1, 2, 25, 27, 28 and 36 shall come into operation on 28th November 2002."},
+      {"reg.1(4)",
+       "Regulations 4 and 17 to 24, paragraphs (4) and (5) of regulation 29, and paragraph (1) of regulation 38, shall come into operation on 25th December 2003."},
+      {"reg.1(5)",
+       "All other provisions of these Regulations shall come into operation on 1st January 2004."},
+      "reg.29",
+      "reg.29(1)",
+      "reg.29(4)",
+      "reg.29(4)(a)",
+      "reg.29(5)",
+      "reg.38",
+      "reg.38(1)"
+    ]
+
+    made = ~D[2002-10-01]
+    assert full_from(specs, "reg.29(1)", made) == {:dated, ~D[2004-01-01]}
+    assert full_from(specs, "reg.29(4)(a)", made) == {:dated, ~D[2003-12-25]}
+    assert full_from(specs, "reg.29(5)", made) == {:dated, ~D[2003-12-25]}
+    assert full_from(specs, "reg.38(1)", made) == {:dated, ~D[2003-12-25]}
+  end
+
   test "\"Sub-paragraph (a) of paragraph (1) of regulation 9\" is that sub-paragraph (NISR 2008/231 reg.1(6))" do
     specs = [
       "reg.1",

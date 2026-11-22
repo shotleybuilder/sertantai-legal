@@ -1357,9 +1357,22 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
   # reg.1(6)); "subsection (2) of section 5", section 5(2)
   @outward ~r/\b(?:sub-?paragraphs?\s+(\(\w{1,4}\))\s+of\s+)?(?:paragraph|subsection)\s+(\(\w{1,4}\))\s+of\s+(regulation|section|article|rule)\s+(\d+[A-Z]*)\b(?!\()/i
 
+  # several at once: "paragraphs (4) and (5) of regulation 29" is
+  # regulation 29(4) and (5) (NISR 2002/331 reg.1(4))
+  @outward_list ~r/\b(?:paragraphs|subsections)\s+(\(\w{1,4}\)(?:\s*(?:,\s*and|,|and|or|to)\s*\(\w{1,4}\))+)\s+of\s+(regulation|section|article|rule)\s+(\d+[A-Z]*)\b(?!\()/i
+
   # (where the law holds it; else the regulation stays named)
   defp inward(subject, rows, base) do
     prefix = base |> provision() |> String.split(".", parts: 2) |> hd()
+
+    subject =
+      Regex.replace(@outward_list, subject, fn whole, list, noun, n ->
+        [first | _] = Regex.run(~r/\(\w{1,4}\)/, list)
+
+        if Enum.any?(rows, &covers?("#{prefix}.#{n}#{first}", &1.section_id)),
+          do: "#{noun}s #{n}#{String.replace(list, ~r/\s+/, " ")}",
+          else: whole
+      end)
 
     Regex.replace(@outward, subject, fn whole, sub, para, noun, n ->
       id = "#{prefix}.#{n}#{para}#{sub}"

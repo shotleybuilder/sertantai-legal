@@ -103,7 +103,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
     rules =
       List.wrap(law_rule(law_name, by_clause, table_refs ++ excepted ++ limited)) ++
         assent_rules(law_name, law, by_clause, excepted -- named(groups)) ++
-        assent_partly(law_name, law, by_clause, limited -- named(groups)) ++
+        assent_partly(law_name, law, by_clause, limited -- named_fully(groups)) ++
         list_rest(law_name, read_from, groups, input) ++
         ((Enum.flat_map(groups, &group_rule(law_name, preceding(&1, rows))) ++
             own_words(law_name, rows, input) ++ own_effect(law_name, rows, input))
@@ -335,6 +335,20 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
   # by order, though s.18(2)(b) excepts it)
   defp named(groups),
     do: for(g <- groups, g.kind != :unread, r <- g.refs, do: bare(r))
+
+  # (a provision another list names only so far is still partly in on
+  # Royal Assent: "subsections (1) and (8) of section 67 so far as they
+  # relate to …" on the restructuring date beside s.68(6)(f)'s "subsection
+  # (8) of section 67 so far as it relates to that Part": 1994 c.21 s.68)
+  defp named_fully(groups),
+    do:
+      for(
+        g <- groups,
+        g.kind != :unread,
+        g.treatment != :provision_qualified,
+        r <- g.refs,
+        do: bare(r)
+      )
 
   defp assent_rules(_law_name, _law, _clause, []), do: []
 
