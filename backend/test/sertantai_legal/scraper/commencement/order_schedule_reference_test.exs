@@ -42,4 +42,24 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderScheduleReferenceTest do
     assert %{purposes: p} = Enum.find(rules, &(&1.scope == ["s.5..s.9"]))
     assert p != nil
   end
+
+  test "a Schedule of transitional provisions takes no date from its article's paragraph commencing the article (SI 2005/968 art.4(3))" do
+    rules =
+      Doc.new("UK_uksi_2005_968", [
+        ~s"""
+        <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>The Water Act 2003 (Commencement No. 4, Transitional Provisions and Savings) Order 2005</dc:title><Secondary><Body>
+        <P1 id="article-1"><Pnumber>1</Pnumber><P1para><Text>In this Order “the Act” means the Water Act 2003.</Text></P1para></P1>
+        <P1 id="article-4"><Pnumber>4</Pnumber><P1para>
+        <P2 id="article-4-1"><Pnumber>1</Pnumber><P2para><Text>The transitional provisions and savings in the Schedules to this Order shall have effect.</Text></P2para></P2>
+        <P2 id="article-4-3"><Pnumber>3</Pnumber><P2para><Text>Paragraphs (1) and (2) shall come into force on 1st April 2005.</Text></P2para></P2>
+        </P1para></P1>
+        </Body><Schedules><Schedule id="schedule-1"><Number>SCHEDULE 1</Number><TitleBlock><Title>Transitional provisions and savings</Title></TitleBlock><Reference>Article 4</Reference><ScheduleBody><Tabular><table><tbody>
+        #{row(["Section 1", "The Consumer Council for Water"])}
+        </tbody></table></Tabular></ScheduleBody></Schedule></Schedules></Secondary></Legislation>
+        """
+      ])
+      |> Order.rules(%{law: "UK_ukpga_2003_37", title: "Water Act", year: "2003"})
+
+    assert rules == []
+  end
 end

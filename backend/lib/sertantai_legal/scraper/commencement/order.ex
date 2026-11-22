@@ -1983,15 +1983,21 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     end
   end
 
-  # the one date in the article's paragraphs, where its own words hold none
-  # ("3.—(1) Subject to paragraph (2), 10th June 2013 is the day appointed
-  # …": SSI 2013/163)
+  # the one date in the article's paragraphs bringing in the provisions the
+  # Schedule lists, where its own words hold none ("3.—(1) Subject to
+  # paragraph (2), 10th June 2013 is the day appointed for the coming into
+  # force of the provisions of the Act specified in column 1 …": SSI
+  # 2013/163) — never a paragraph commencing the article ("Paragraphs (1)
+  # and (2) shall come into force on 1st April 2005": SI 2005/968 art.4(3))
+  @lists_provisions ~r/\b(?:column|provisions\s+of\s+the\s+Act)\b/i
+
   defp paragraphs_date(order, n) do
     dates =
-      for id <- ["article-#{n}", "regulation-#{n}"],
-          el = Doc.element(order, id),
-          el != nil,
-          d <- parse_dates(Doc.text(el)),
+      for id <- order.ids,
+          String.match?(id, ~r/^(?:article|regulation)-#{n}-\d+[A-Z]*$/),
+          words = Text.words_of(order, id),
+          words =~ @lists_provisions,
+          d <- parse_dates(words),
           uniq: true,
           do: d
 
