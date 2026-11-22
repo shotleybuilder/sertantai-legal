@@ -22,6 +22,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
       mix lat.commencement_check --laws A,B --all
       mix lat.commencement_check --family F --sample FILE --n 50 [--seed N]
       mix lat.commencement_check --order-limits [--out FILE]   # stored order rules limiting a list, the limit after a final ", and <item>" flagged, and what a fresh reading moves (read-only)
+      mix lat.commencement_check --laws A,B --fresh --feed-errors-dry-run   # the proposed feed errors (`data/reports/commencement-reader/feed-errors-proposed.json`) filled from the rows now, checked, written beside the report; `--feed-errors-write` adds them to the register, on Jason's go (Decision 12)
       mix lat.commencement_check --family F --fresh   # the laws' own clauses, and their amending laws', re-read now (a dry run of `mix lat.commencement --read` and `--read-amending`)
   """
   use Mix.Task
@@ -39,6 +40,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
 
   alias SertantaiLegal.Scraper.Commencement.{
     AmendingRead,
+    FeedErrors,
     Check,
     FeedDifferences,
     FamilyLeftovers,
@@ -76,7 +78,9 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
           part_items: :boolean,
           order_limits: :boolean,
           lat: :boolean,
-          out: :string
+          out: :string,
+          feed_errors_dry_run: :boolean,
+          feed_errors_write: :boolean
         ]
       )
 
@@ -226,8 +230,13 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
 
     lat = MapSet.new(lat_laws())
     {rows, gaps, read} = read_laws(laws, opts[:fresh], lat)
+    register = feed_register()
+    {rows, stale} = FeedErrors.mark(rows, register, laws)
+    stale = stale ++ FeedErrors.invalid(register)
 
     report_rows(rows, opts)
+    report_feed_errors(rows, stale)
+    if opts[:feed_errors_dry_run] || opts[:feed_errors_write], do: propose_feed_errors(rows, opts)
     report_feed_differences(rows, read.inserted, opts)
     report_gaps(gaps, opts)
 
@@ -236,12 +245,13 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
     gate = leftovers_gate(laws, gaps, read, lat, opts)
     faults = length(Check.faults(rows))
     unnamed = length(gate.failing)
+    pass? = faults == 0 and gate.pass? and stale == []
 
     Mix.shell().info(
-      "\n#{if faults == 0 and gate.pass?, do: "PASS", else: "FAIL"} (rows: our faults #{faults}; leftovers not named: #{unnamed})"
+      "\n#{if pass?, do: "PASS", else: "FAIL"} (rows: our faults #{faults}; leftovers not named: #{unnamed}; stale feed errors: #{length(stale)})"
     )
 
-    Step.new("Commencement reader", faults == 0 and gate.pass?, faults + unnamed)
+    Step.new("Commencement reader", pass?, faults + unnamed + length(stale))
   end
 
   # each law, order and amender read once: the check's rules and the
@@ -471,6 +481,98 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
   # the two-way feed gate (Decision 5, Jason 2026-11-21): every row where
   # our reading and the Feed reader's record of the law's feed disagree,
   # grouped by cause, each group's review status from
+  # ── the register of proven feed errors (Decision 12) ───────────────
+
+  @feed_errors "test/fixtures/commencement_check/feed_errors.json"
+  @feed_errors_proposed "data/reports/commencement-reader/feed-errors-proposed.json"
+
+  defp feed_register, do: read_json(@feed_errors)
+
+  defp read_json(path) do
+    case File.read(path) do
+      {:ok, body} -> Jason.decode!(body)
+      _ -> %{}
+    end
+  end
+
+  defp report_feed_errors(rows, stale) do
+    shell = Mix.shell()
+    proven = Enum.filter(rows, &(&1.yardstick == :feed_error))
+    shell.info("\nproven feed errors (#{@feed_errors}): #{length(proven)} rows")
+
+    for r <- proven,
+        do:
+          shell.info(
+            "  #{FeedErrors.key(r)} feed #{inspect(r.feed)}: #{r.feed_error["wrong"]}, proved by #{r.feed_error["proof"]["law"]} #{r.feed_error["proof"]["provision"]}"
+          )
+
+    for {k, why} <- stale, do: shell.info("  STALE #{k}: #{why}")
+  end
+
+  # each proposal (wrong, proof, decided, feed_by) filled from its row now,
+  # and checked: written beside the reports (a dry run), or with
+  # `--feed-errors-write` into the register (sorted keys)
+  defp propose_feed_errors(rows, opts) do
+    by_key = Map.new(rows, &{FeedErrors.key(&1), &1})
+
+    filled =
+      for {k, p} <- Enum.sort(read_json(@feed_errors_proposed)) do
+        case by_key[k] do
+          nil -> {k, {:error, "no row in this run"}}
+          row -> {k, p |> Map.put("feed_by", feed_by(row)) |> FeedErrors.entry(row)}
+        end
+      end
+
+    bad =
+      for {k, e} <- filled, why = problem(e), why != nil, do: {k, why}
+
+    for {k, why} <- bad, do: Mix.shell().info("  PROPOSAL #{k}: #{why}")
+    good = for {k, %{} = e} <- filled, not List.keymember?(bad, k, 0), do: {k, e}
+    write_feed_errors(good, bad, opts)
+  end
+
+  # the laws the feed's stored coming-into-force records for the row and
+  # its ancestors name (its yardstick record is taken from them: `Check`)
+  defp feed_by(%{law: law, id: id}) do
+    Repo.query!(
+      """
+      SELECT DISTINCT c.value->>'v' FROM provision_changes pc
+      JOIN provision_change_claims c ON c.change_id = pc.id AND c.source = 'feed' AND c.attribute = 'by'
+      WHERE pc.law_name = $1 AND pc.target = ANY($2) AND pc.operation = 'commenced' ORDER BY 1
+      """,
+      [law, Enum.uniq([id | LatRef.ancestors(id)])]
+    ).rows
+    |> List.flatten()
+  end
+
+  defp problem({:error, why}), do: why
+
+  defp problem(e) do
+    case FeedErrors.validate(e) do
+      :ok -> nil
+      {:error, why} -> why
+    end
+  end
+
+  defp write_feed_errors(good, bad, opts) do
+    path =
+      if opts[:feed_errors_write] == true and bad == [],
+        do: @feed_errors,
+        else: "data/reports/commencement-reader/feed-errors-dry-run-#{Date.utc_today()}.json"
+
+    merged =
+      if path == @feed_errors, do: Map.merge(feed_register(), Map.new(good)), else: Map.new(good)
+
+    File.write!(
+      path,
+      merged |> Enum.sort() |> Jason.OrderedObject.new() |> Jason.encode!(pretty: true)
+    )
+
+    Mix.shell().info(
+      "feed errors: #{length(good)} proposals filled, #{length(bad)} refused → #{path}"
+    )
+  end
+
   # `feed_differences.json`; the groups written beside the gate report
   @feed_reviewed "test/fixtures/commencement_check/feed_differences.json"
 
