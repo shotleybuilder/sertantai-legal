@@ -693,3 +693,30 @@ The round's 278 (14 laws; 1991 c.56 211), measured again today with the insertin
 - (b) `feed_differences.json`: 4 statuses (21 → 25 keys). RULES section 11's one-law row names SI 2016/359 and SI 2009/359 art.1(2) (Water Act 2003 s.58(10)).
 - (b) The feed-error register: 32 entries for SI 2024/1332, all from the one proof, reg.1(3)(b). It now holds 690 entries. reg.57(1) is left out because the feed stages it as we do. reg.2(1) is left out because its group is its insertion's.
 - Check PASS; targeted tests 6,753 green.
+
+## Settle 2 passes; Rebuild then fetch begins (2026-11-22)
+
+- **The round check** after Decision 18 (`wwc-settle-round2.txt`): PASS, feed-difference groups with no status 0. Settle 2 passes.
+- **Restore point:** `nas-backup.sh --tables commencement_rules,provision_changes,provision_change_claims,lat_events --tag wwc-commencement-rebuild-2026-11-22`. Rows: 62,355, 261,774, 2,198,732 and 83,533.
+- **The fetch list, measured** (read-only, against the store and the order lists):
+  - **No fetch needed. These are held, and the re-read reads them:**
+    - NISI 1997/2778's NISR 2008/138 and NISI 2007/611's NISR 2013/33 are both listed and stored, with their schedules. Their Settle statuses said "not held", but they are held; to examine after the re-read.
+    - ASP 2014/3's 2 orders and ANAW 2016/3's 6 are held and were never read. A held preview gives 62 and 11 rules; SSI 2015/109 gives ASP 2014/2 1 rule.
+    - ASP 2011/9's 5 orders and the Environment Act 1995's 29 are already read.
+  - **Fetches:**
+    1. The Schedules of NISR 2007/194 and SSI 2014/277 (`mix clml.fetch --laws … --whole`). A store-wide scan finds no other order on a round law that names a Schedule it doesn't hold. The 15 counted at Decision 17 were store-wide, and 14 of them commence other families' laws.
+    2. MWA 2009/3's introduction, for its approval day (`EnablingCache.get/2`, as `lat.sources` does).
+    3. The order lists of the four inserting Acts with none kept: ASP 2013/7, ASP 2019/9, 2018 c.12 and ASC 2024/3. Each is a legislation.gov.uk title search, then its orders' fetch (`--read-orders --law …`).
+  - About 4 + 1 + 4 searches, plus the orders found. That is a few minutes, one process at a time.
+
+## Decision 19 for Jason: the fetch, and the amending laws that read no clause
+
+- **The question:**
+  - (1) Fetch the list above?
+  - (2) Decision 13 kind 4: 406 of the family's amending laws read no clause, leaving 332 undated gaps. Fetch their made bodies (about 400 laws), or name a known limit?
+- **The aim:** `binds-on-date`.
+- **Options for (2):**
+  - (a) fetch all of them (about 400 laws, one at a time: roughly 30–40 min);
+  - (b) a known limit: the feed holds every effect from 2002 and its date stands (Decision 16);
+  - (c) measure first which of the 332 gaps the feed leaves undated, and fetch only those laws' bodies, counted at the dry run.
+- **Recommendation:** (1) yes. (2) (c): under Decision 16 a gap the feed dates costs nothing, so only the remainder is worth a fetch.
