@@ -146,7 +146,7 @@
     "UK_asc_2021_1/9e8b444220": {
       "class": "rules:provision_qualified+provision_unread",
       "rules": [
-        "pt.7.ch.2, s.145(7)(b), s.148, s.150(1)(a), s.150(2)(b), s.138(1)(b), s.138(3), s.139(2), s.140(2), s.141(3), sch.1.para.2(2), sch.1.para.6(2)(a), sch.1.para.12(1)(a), sch.1.para.12(2), sch.1.para.12(4)(a), sch.1.para.2(4), sch.1.para.2(5), sch.11.pt.2, sch.11.para.7(3)(c) except s.147(3) — unread — everywhere, fully — provision_unread",
+        "pt.7.ch.2, s.145(7)(b), s.148, s.150(1)(a), s.150(1)(b)(ii), s.150(1)(b)(iv), s.150(1)(b)(v), s.150(2)(b), s.150(2)(c), s.138(1)(b), s.138(3), s.139(2), s.140(2), s.141(3), sch.1.para.2(2), sch.1.para.6(2)(a), sch.1.para.12(1)(a), sch.1.para.12(2), sch.1.para.12(4)(a), sch.1.para.2(4), sch.1.para.2(5), sch.11.pt.2, sch.11.para.7(3)(c) except s.147(3) — unread — everywhere, fully — provision_unread",
         "s.139(3), s.140(1)(a), s.141(1)(a), s.141(2)(a), s.141(2)(c), s.149, s.149, sch.1, sch.1.para.1(3), sch.11.para.7(3)(a), sch.12.para.1(1), sch.12.para.7(6) — unread — everywhere, in relation to — provision_qualified"
       ]
     },
@@ -1696,7 +1696,7 @@
     "UK_ssi_2005_658/11ad200a6c": {
       "class": "rules:provision_dated",
       "rules": [
-        "reg.2(3)(d) — 2005-12-21 — everywhere, fully — provision_dated"
+        "reg.2(3)(d), reg.2(3)(e) — 2005-12-21 — everywhere, fully — provision_dated"
       ]
     },
     "UK_ssi_2005_658/3241609e18": {
@@ -1849,9 +1849,9 @@
       ]
     },
     "UK_ssi_2019_436/66573d83be": {
-      "class": "law:clause_unread",
+      "class": "law:clause_named_day",
       "rules": [
-        "all — unread — everywhere, fully — clause_unread"
+        "all — 2020-12-31 — everywhere, fully — clause_named_day"
       ]
     },
     "UK_ssi_2020_154/1c533c2512": {
@@ -1896,7 +1896,7 @@
       "class": "rules:provision_dated+provision_qualified",
       "rules": [
         "reg.4, reg.9 — 2025-06-01 — everywhere, fully — provision_dated",
-        "reg.6, reg.7, reg.6(c), reg.1(2) — 2025-06-01 — everywhere, in relation to — provision_qualified"
+        "reg.6, reg.7, reg.1(2) — 2025-06-01 — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_ssi_2025_165/cb18529c4d": {
@@ -3438,7 +3438,7 @@
     "UK_ukpga_1992_15/94ce601f98": {
       "class": "rules:provision_by_order+provision_qualified",
       "rules": [
-        "s.2(3)(b), s.3(1)(a), s.3(2), s.3(3)(b) — appointed (by order) — everywhere, fully — provision_by_order",
+        "s.2(3)(b), s.2(3)(c), s.3(1)(a), s.3(1)(e), s.3(2), s.3(3)(b) — appointed (by order) — everywhere, fully — provision_by_order",
         "s.7(2) — appointed (by order) — everywhere, in relation to — provision_qualified"
       ]
     },
@@ -3552,7 +3552,7 @@
       "class": "rules:provision_qualified+provision_unread",
       "rules": [
         "s.10, s.11, s.18, s.23, s.31, s.32, s.33, s.34, s.36, s.38, s.39, s.40, s.41, s.42, s.43, s.44, s.48, s.49, s.50, s.51, s.52, s.53, s.55, sch.6, sch.7, sch.8, sch.9, sch.11.pt.II — unread — everywhere, fully — provision_unread",
-        "s.67 — unread — everywhere, in relation to — provision_qualified"
+        "s.67(1), s.67(8) — unread — everywhere, in relation to — provision_qualified"
       ]
     },
     "UK_ukpga_1994_21/fee4abe8be": {
@@ -4868,7 +4868,7 @@
     "UK_ukpga_2011_16/062f5872ae": {
       "class": "rules:provision_dated",
       "rules": [
-        "s.37, s.81, s.104, s.121, s.119, s.120, s.122 — 2011-10-18 — everywhere, fully — provision_dated"
+        "s.37, s.81, s.104(1), s.104(2), s.121, s.119, s.120, s.122 — 2011-10-18 — everywhere, fully — provision_dated"
       ]
     },
     "UK_ukpga_2011_16/5bbc98e588": {
@@ -6644,9 +6644,9 @@
       "rules": []
     },
     "UK_uksi_2006_641/5f2dc0019c": {
-      "class": "law:clause_unread",
+      "class": "law:clause_staged",
       "rules": [
-        "all — unread — everywhere, fully — clause_unread",
+        "all — 2006-04-01 — everywhere, fully — clause_staged",
         "reg.15 — appointed (with another provision) — everywhere, fully — provision_by_order",
         "rest except reg.1 — 2006-04-01 — everywhere, fully — provision_dated"
       ]
@@ -7469,7 +7469,7 @@
     "UK_uksi_2019_1440/04c9a01a1c": {
       "class": "rules:provision_dated",
       "rules": [
-        "reg.1, reg.3(2)(g), reg.4(4), reg.4(5), reg.18(3), reg.18(4), reg.18(5), reg.20, reg.24(3), reg.25, reg.26 — 2019-11-21 — everywhere, fully — provision_dated"
+        "reg.1, reg.3(2)(g), reg.3(2)(l), reg.4(4), reg.4(5), reg.18(3), reg.18(4), reg.18(5), reg.20, reg.24(3), reg.25, reg.26 — 2019-11-21 — everywhere, fully — provision_dated"
       ]
     },
     "UK_uksi_2019_1440/54d023d971": {
@@ -7539,7 +7539,8 @@
     "UK_uksi_2019_544/d5cda579cf": {
       "class": "law:clause_staged",
       "rules": [
-        "all — 2020-12-31 — everywhere, fully — clause_staged"
+        "all — 2020-12-30 — everywhere, fully — clause_staged",
+        "reg.1, pt.3 — 2020-12-30 — everywhere, fully — provision_dated"
       ]
     },
     "UK_uksi_2019_584/b60e409dde": {
@@ -7875,9 +7876,9 @@
       ]
     },
     "UK_uksi_2023_1394/b07a178fd9": {
-      "class": "law:clause_unread",
+      "class": "law:clause_made_relative",
       "rules": [
-        "all — unread — everywhere, fully — clause_unread"
+        "all — 2024-01-03 — everywhere, fully — clause_made_relative"
       ]
     },
     "UK_uksi_2023_1394/e84736310a": {
@@ -7901,7 +7902,7 @@
       "class": "law:clause_staged",
       "rules": [
         "all — 2023-06-21 — everywhere, fully — clause_staged",
-        "reg.1, reg.2, reg.5, reg.6(1), reg.6(3)(a), reg.6(4)(a), reg.6(8)(a), reg.6(9)(j)(ii), reg.6(11)(a), reg.6(13)(a), reg.8, reg.8.figure.1, reg.8.figure.2, reg.8.figure.3, reg.9, reg.9.figure.1, reg.9.figure.2, reg.9.figure.3, reg.9.figure.4, reg.9.figure.5, reg.10, reg.10.figure.1, reg.10.figure.2, reg.10.figure.3, reg.11, reg.11.figure.1, reg.12, reg.13, reg.15(1), reg.15(2), reg.16, reg.17(1), reg.17(2)(a), reg.17(3), reg.18, reg.20, reg.21, reg.22(1), reg.22(17), reg.25, reg.26, reg.27, reg.28, reg.29(1), reg.29(5), reg.30, reg.30.figure.1, reg.30.figure.2, reg.30.figure.3, reg.31, reg.32, reg.33 — 2023-06-21 — everywhere, fully — provision_dated"
+        "reg.1, reg.2, reg.5, reg.6(1), reg.6(3)(a), reg.6(3)(c), reg.6(3)(f), reg.6(4)(a), reg.6(4)(c), reg.6(4)(d), reg.6(8)(a), reg.6(8)(c)(i), reg.6(9)(j)(ii), reg.6(11)(a), reg.6(13)(a), reg.8, reg.8.figure.1, reg.8.figure.2, reg.8.figure.3, reg.9, reg.9.figure.1, reg.9.figure.2, reg.9.figure.3, reg.9.figure.4, reg.9.figure.5, reg.10, reg.10.figure.1, reg.10.figure.2, reg.10.figure.3, reg.11, reg.11.figure.1, reg.12, reg.13, reg.15(1), reg.15(2), reg.16, reg.17(1), reg.17(2)(a), reg.17(3), reg.18, reg.20, reg.21, reg.22(1), reg.22(17), reg.25, reg.26, reg.27, reg.28, reg.29(1), reg.29(5), reg.30, reg.30.figure.1, reg.30.figure.2, reg.30.figure.3, reg.31, reg.32, reg.33 — 2023-06-21 — everywhere, fully — provision_dated"
       ]
     },
     "UK_uksi_2023_854/bd4d91399f": {
@@ -8085,7 +8086,7 @@
     "UK_uksi_2026_318/b466700bd3": {
       "class": "rules:provision_dated",
       "rules": [
-        "reg.11(1)(a), reg.11(2), reg.11(3), reg.13, reg.14, reg.16(1), reg.16(1B), reg.16(1E), reg.16(2)(a), reg.16(3), reg.16(4), reg.16(5), reg.18(4), sch.7..sch.13, sch.15..sch.17 — 2026-09-19 — everywhere, fully — provision_dated"
+        "reg.11(1)(a), reg.11(1)(b), reg.11(2), reg.11(3), reg.13, reg.14, reg.16(1), reg.16(1B), reg.16(1E), reg.16(2)(a), reg.16(2)(b), reg.16(3), reg.16(4), reg.16(5), reg.18(4), sch.7..sch.13, sch.15..sch.17 — 2026-09-19 — everywhere, fully — provision_dated"
       ]
     },
     "UK_uksi_2026_335/fe219c6a40": {
@@ -8143,9 +8144,9 @@
       ]
     },
     "UK_wsi_2010_1821/01f19a09cf": {
-      "class": "law:clause_staged",
+      "class": "law:clause_date",
       "rules": [
-        "all — 2010-07-15 — everywhere, fully — clause_staged"
+        "all — 2010-07-15 — everywhere, fully — clause_date"
       ]
     },
     "UK_wsi_2010_2880/6bcff06b16": {
@@ -8155,9 +8156,9 @@
       ]
     },
     "UK_wsi_2011_1014/c83369fc3f": {
-      "class": "law:clause_staged",
+      "class": "law:clause_date",
       "rules": [
-        "all — 2011-03-30 — everywhere, fully — clause_staged"
+        "all — 2011-03-30 — everywhere, fully — clause_date"
       ]
     },
     "UK_wsi_2012_65/558bd2ea81": {
@@ -8189,9 +8190,9 @@
       ]
     },
     "UK_wsi_2017_1041/07df175011": {
-      "class": "law:clause_staged",
+      "class": "law:clause_date",
       "rules": [
-        "all — 2017-11-20 — everywhere, fully — clause_staged"
+        "all — 2017-11-20 — everywhere, fully — clause_date"
       ]
     },
     "UK_wsi_2018_101/393eaecf95": {

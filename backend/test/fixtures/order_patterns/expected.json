@@ -212,9 +212,9 @@
       ]
     },
     "UK_ssi_2000_10/dc11bd6b9f": {
-      "class": "rules",
+      "class": "rules+partial",
       "rules": [
-        "s.5 — 2000-02-01 — everywhere, fully — order_schedule"
+        "s.5 — 2000-02-01 — everywhere, in relation to — order_schedule"
       ]
     },
     "UK_ssi_2000_180/b4ec6a5d58": {
@@ -491,13 +491,14 @@
     "UK_ssi_2007_50/940b708daf": {
       "class": "rules+partial",
       "rules": [
-        "s.24(1)..s.24(4) — 2007-03-31 — everywhere, in relation to — order_date"
+        "s.24(1)..s.24(4) — 2007-02-06 — everywhere, in relation to — order_date",
+        "s.24(1)..s.24(4) — 2007-03-31 — everywhere, fully — order_date"
       ]
     },
     "UK_ssi_2008_150/af0411d9c5": {
       "class": "rules+partial",
       "rules": [
-        "pt.6 — 2008-04-21 — S, in relation to — order_date"
+        "pt.6 — 2008-04-21 — S, fully — order_date"
       ]
     },
     "UK_ssi_2009_393/a7d640b7c5": {
@@ -538,8 +539,14 @@
       "rules": []
     },
     "UK_ssi_2012_191/04b5b04933": {
-      "class": "none",
-      "rules": []
+      "class": "rules+partial",
+      "rules": [
+        "s.10 — 2012-06-22 — S, fully — order_date",
+        "s.14(6)..s.14(8) — 2012-06-22 — S, fully — order_date",
+        "s.15(4) — 2012-06-22 — S, fully — order_date",
+        "s.35(6) — 2012-06-22 — S, fully — order_date",
+        "s.75 — 2012-06-22 — S, fully — order_date"
+      ]
     },
     "UK_ssi_2012_192/76f0264a8a": {
       "class": "none",
@@ -690,9 +697,9 @@
       ]
     },
     "UK_ssi_2017_330/0c92719204": {
-      "class": "rules",
+      "class": "rules+partial",
       "rules": [
-        "s.16(3) — 2017-12-01 — everywhere, fully — order_schedule"
+        "s.16(3) — 2017-12-01 — everywhere, in relation to — order_schedule"
       ]
     },
     "UK_ssi_2017_330/98b9571f9b": {
@@ -727,9 +734,9 @@
       "rules": []
     },
     "UK_ssi_2025_170/152bb57194": {
-      "class": "rules",
+      "class": "rules+partial",
       "rules": [
-        "s.12 — 2025-08-01 — everywhere, fully — order_schedule"
+        "s.12 — 2025-08-01 — everywhere, for making secondary legislation — order_schedule"
       ]
     },
     "UK_ssi_2026_210/22000cdfb7": {
@@ -1308,7 +1315,7 @@
       "class": "rules+partial",
       "rules": [
         "s.86(1), s.86(4), s.86(5), s.86(13) — 1991-04-01 — E+W, fully — order_date",
-        "s.87(1), s.87(2), s.87(3)(a)..s.87(3)(e), s.87(4)..s.87(6) — 1991-04-01 — E+W, fully — order_date",
+        "s.87(1), s.87(2), s.87(3)(a), s.87(3)(b), s.87(3)(c), s.87(3)(d), s.87(3)(e), s.87(4)..s.87(6) — 1991-04-01 — E+W, fully — order_date",
         "s.88(1)..s.88(4), s.88(6), s.88(8), s.88(9)(a), s.88(9)(c), s.88(9)(d), s.88(10) — 1991-04-01 — E+W, fully — order_date",
         "s.98(1), s.98(5), s.98(6) — 1991-04-01 — E+W, fully — order_date"
       ]
@@ -1348,8 +1355,8 @@
       "class": "rules+partial",
       "rules": [
         "s.86(1), s.86(4), s.86(5), s.86(9), s.86(13) — 1991-02-13 — E+W, fully — order_date",
-        "s.87(1), s.87(2), s.87(3)(a)..s.87(3)(e), s.87(4)..s.87(6) — 1991-02-13 — E+W, fully — order_date",
-        "s.88(1)..s.88(4), s.88(6), s.88(8), s.88(9)(a), s.88(9)(c)..s.88(9)(e), s.88(10) — 1991-02-13 — E+W, fully — order_date",
+        "s.87(1), s.87(2), s.87(3)(a), s.87(3)(b), s.87(3)(c), s.87(3)(d), s.87(3)(e), s.87(4)..s.87(6) — 1991-02-13 — E+W, fully — order_date",
+        "s.88(1)..s.88(4), s.88(6), s.88(8), s.88(9)(a), s.88(9)(c), s.88(9)(d), s.88(9)(e), s.88(10) — 1991-02-13 — E+W, fully — order_date",
         "s.98(1), s.98(2), s.98(5), s.98(6) — 1991-02-13 — E+W, fully — order_date"
       ]
     },
@@ -1571,8 +1578,8 @@
     "UK_uksi_1996_3056/842737de09": {
       "class": "rules+partial",
       "rules": [
-        "s.162(2) — 1996-12-16 — everywhere, in relation to — order_date",
-        "sch.16.pt.I — 1996-12-16 — everywhere, in relation to — order_date"
+        "s.162(2) — 1996-12-16 — E+W, in relation to — order_date",
+        "sch.16.pt.I — 1996-12-16 — E+W, in relation to — order_date"
       ]
     },
     "UK_uksi_1996_3146/373a9433e8": {
@@ -1835,7 +1842,7 @@
     "UK_uksi_2000_800/35f7190755": {
       "class": "rules+partial",
       "rules": [
-        "s.6(1), sch.2 — 2000-03-21 — E+W, in relation to — order_date"
+        "s.6(1), sch.2 — 2000-03-21 — E+W, fully — order_date"
       ]
     },
     "UK_uksi_2000_801/5594fcf35c": {
@@ -2205,24 +2212,25 @@
         "s.19 — 2011-12-03 — everywhere, fully — order_date",
         "s.20, s.15 — 2011-12-03 — everywhere, for making secondary legislation — order_date",
         "s.21, sch.2 — 2011-12-03 — everywhere, for making secondary legislation — order_date",
-        "s.22, sch.3.para.70 — 2011-12-03 — everywhere, in relation to — order_date",
+        "s.22 — 2011-12-03 — everywhere, in relation to — order_date",
         "s.69(8) — 2011-12-03 — everywhere, fully — order_date",
         "s.72..s.79 — 2011-12-03 — everywhere, fully — order_date",
         "s.8(2) — 2011-12-03 — everywhere, fully — order_date",
+        "sch.3.para.70 — 2011-12-03 — everywhere, fully — order_date",
         "sch.5..sch.7 — 2011-12-03 — everywhere, fully — order_date"
       ]
     },
     "UK_uksi_2011_694/7fd1690a7b": {
       "class": "rules+partial",
       "rules": [
-        "s.15 — 2011-04-06 — W, in relation to — order_date"
+        "s.15 — 2011-04-06 — W, fully — order_date"
       ]
     },
     "UK_uksi_2011_694/dd8b9827d1": {
       "class": "rules+partial",
       "rules": [
-        "s.17 — 2011-04-01 — everywhere, in relation to — order_date",
-        "s.22(1) — 2011-04-01 — everywhere, in relation to — order_date",
+        "s.17 — 2011-04-01 — everywhere, fully — order_date",
+        "s.22(1) — 2011-04-01 — everywhere, fully — order_date",
         "s.23 — 2011-04-01 — everywhere, fully — order_date",
         "s.25 — 2011-04-01 — everywhere, fully — order_date",
         "s.31 — 2011-04-01 — everywhere, in relation to — order_date",
@@ -2272,9 +2280,9 @@
       "rules": []
     },
     "UK_uksi_2012_264/5b4155099e": {
-      "class": "rules",
+      "class": "rules+partial",
       "rules": [
-        "s.86 — 2012-04-06 — everywhere, fully — order_date"
+        "s.86 — 2012-04-06 — E, fully — order_date"
       ]
     },
     "UK_uksi_2012_2913/7b2c15cea2": {
@@ -2297,7 +2305,6 @@
     "UK_uksi_2012_873/93888d6677": {
       "class": "rules",
       "rules": [
-        "pt.1 — 2012-03-21 — everywhere, fully — order_date",
         "s.108 — 2012-03-21 — everywhere, fully — order_date",
         "s.118 — 2012-03-21 — everywhere, fully — order_date",
         "s.15(1)..s.15(3), s.15(5) — 2012-03-21 — everywhere, fully — order_date",
