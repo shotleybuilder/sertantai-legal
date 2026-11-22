@@ -720,3 +720,15 @@ The round's 278 (14 laws; 1991 c.56 211), measured again today with the insertin
   - (b) a known limit: the feed holds every effect from 2002 and its date stands (Decision 16);
   - (c) measure first which of the 332 gaps the feed leaves undated, and fetch only those laws' bodies, counted at the dry run.
 - **Recommendation:** (1) yes. (2) (c): under Decision 16 a gap the feed dates costs nothing, so only the remainder is worth a fetch.
+- **Decision 19 (1), done (Jason 2026-11-22: "1 yes").**
+  - Fetched NISR 2007/194's and SSI 2014/277's Schedules, and MWA 2009/3's introduction (`made/`).
+  - The four Acts' order searches found 9 orders, and their bodies were fetched. None of them has a Schedule.
+  - A held preview reads 53 rules from them: ASP 2013/7 1, ASP 2019/9 2, 2018 c.12 28, ASC 2024/3 22. They are written at the re-read.
+- **Decision 19 (2), measured (Jason asked: how many hops, and are they needed for our making laws' commencement?):**
+  - **One hop.** Each amends one of our laws, and its own clause dates when that amendment takes effect.
+  - **They don't set our laws' own commencement.** That comes from our laws' clauses and their orders, which are read. These laws date only the amendments made to our laws, and only where nothing else does.
+  - **Today's reach** (the gap-filler, `wwc-settle-round2.txt`, "undated: rules_not_held"):
+    - 450 changes, 96 of them text changes (87 outside a Schedule), from 112 amending laws plus 36 changes with no amending law named.
+    - 93 of the laws date from before 2002, and 49 hold a single change.
+    - The two largest, 1996 c.61 (87) and SI 2019/123 (19), hold 106 of the 450.
+  - **Revised recommendation:** (b), a known limit. Optionally, fetch just the two largest (2 laws).
