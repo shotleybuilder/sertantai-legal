@@ -378,6 +378,24 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClausePurposeStagesAndNamedForm
     end
   end
 
+  test "\"regulation 12(2)(a) and (b)\" is 12(2)(a) and 12(2)(b) (SI 2021/1095 reg.1(2)–(3))" do
+    specs = [
+      {"reg.1(2)",
+       "These Regulations, except regulation 12(2)(a) and (b), come into force on 1st October 2021."},
+      {"reg.1(3)", "Regulation 12(2)(a) and (b) comes into force on 1st March 2022."},
+      "reg.12",
+      "reg.12(2)",
+      "reg.12(2)(a)",
+      "reg.12(2)(b)",
+      "reg.12(2)(c)"
+    ]
+
+    made = ~D[2021-09-01]
+    assert full_from(specs, "reg.12(2)(a)", made) == {:dated, ~D[2022-03-01]}
+    assert full_from(specs, "reg.12(2)(b)", made) == {:dated, ~D[2022-03-01]}
+    assert full_from(specs, "reg.12(2)(c)", made) == {:dated, ~D[2021-10-01]}
+  end
+
   test "an item's purpose in its middle limits only what follows it (WSI 2005/1806 reg.1(2)(i))" do
     specs = [
       {"reg.1(1)",

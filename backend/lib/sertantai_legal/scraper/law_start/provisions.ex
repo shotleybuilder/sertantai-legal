@@ -1641,7 +1641,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
           {acc ++ bracket_range(List.last(acc), "#{at}#{last}#{brackets}"), last, false}
 
         [_, "", "", "", brackets], {acc, last, range?} when is_binary(last) ->
-          {acc ++ ["#{at}#{last}#{brackets}"], last, range?}
+          {acc ++ [sibling(List.last(acc), "#{at}#{last}", brackets)], last, range?}
 
         _, state ->
           state
@@ -1649,6 +1649,32 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
 
     refs
   end
+
+  # a bracket alone after a reference is its sibling at the same kind of
+  # level, the deepest of the reference's: "12(2)(a) and (b)" is 12(2)(b)
+  # (SI 2021/1095 reg.1(2)), "45(4)(d) and (5)(a)" 45(5)(a), "11(1)(a) and
+  # (5)" 11(5) (NISR 2008/231 reg.1(4))
+  defp sibling(previous, number, brackets) when is_binary(previous) do
+    levels = Regex.scan(~r/\(([^)]+)\)/, String.replace_prefix(previous, number, ""))
+    [_, first] = Regex.run(~r/^\(([^)]+)\)/, brackets)
+
+    case levels
+         |> Enum.map(&List.last/1)
+         |> Enum.with_index()
+         |> Enum.filter(&same_kind?(elem(&1, 0), first)) do
+      [] ->
+        number <> brackets
+
+      kept ->
+        {_, i} = List.last(kept)
+        number <> Enum.map_join(Enum.take(levels, i), &"(#{List.last(&1)})") <> brackets
+    end
+  end
+
+  defp sibling(_previous, number, brackets), do: number <> brackets
+
+  defp same_kind?(a, b), do: digits?(a) == digits?(b)
+  defp digits?(level), do: level =~ ~r/^\d/
 
   # "s.5(1)" to "s.5(4)": the members after the first, one bracket deep,
   # numbers or letters (the held rows decide which exist)
