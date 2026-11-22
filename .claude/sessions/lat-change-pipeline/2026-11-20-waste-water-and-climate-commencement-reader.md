@@ -299,3 +299,43 @@ The full log is in `backend/data/reports/commencement-reader/wwc-commencement-re
   - Water Act 2014's 10 rows now differ, where the old yardstick hid them. Its authority table is in Schedule 12 (Schedules unparsed) and divides by "wholly or mainly English undertakers", not by place: to name `known:`.
 - **Held moves for Settle, new:** SSI 2008/150 (Part 6 "in relation to Scotland": purpose → none).
 
+
+## B, held orders (round 6): Water Act 2014 (114dec3a, b1998312)
+
+- **The reader (114dec3a, test first):** "section 6 (…) as follows— (i) subsection (1) so far as …; (ii) subsection (2) …" (SI 2015/1938) and "subsection (1) of section 8 (…) as follows— (i) so far as it inserts section 40E into the 1991 Act" (SI 2016/1007) now head their lines. The lines below are that provision's, in part. An open "subsection (1) so far as it— (aa) substitutes section 110A" carries to its lines, and the sections a limit names belong to the amended law, never to the Act. `Order.SectionHeads`.
+- **The gate (b1998312, test first):** the feed's record for a row is fully in force once the record itself or an ancestor's is. For example, s.6 is wholly in force by SI 2016/465, while s.6(1) has purposes only.
+- **Water Act 2014:**
+
+  | | Before | After |
+  |---|---|---|
+  | agree | 404 | 427 |
+  | feed only | 40 | 19 |
+  | feed partial only | 56 | 54 |
+  | differ | 10 | 10 |
+
+  s.1(2), s.4, s.6, s.41 and s.82 are cleared. The commencement-patterns catalogue for the law: 0 examples reading differently. Per-fix tests: only the 11 held examples fail.
+- **Left:** 80 rows are Decision 11 (below). s.34(1), s.56 and s.53(1)(f) are one row each. For s.34(1) and s.56 the Act's own two-month date (s.94(2)) is one the feed doesn't record, so ours is right; to name `known:`.
+
+## Decision 11 for Jason: Water Act 2014's commencing authorities, in its Schedule 12
+
+- **The question:** Water Act 2014 s.94(6) puts its authority table in Schedule 12. Schedules are not parsed, so Decision 10's reader never sees it. The table says:
+  - **ss.10–12, 16–20, 23 and 38:** "The Secretary of State, in relation to wholly or mainly English undertakers. The Welsh Ministers, in relation to wholly or mainly Welsh undertakers."
+  - **s.7:** "The Scottish Ministers." **s.5, s.40(2)(a) and s.41:** "The Welsh Ministers."
+  - **ss.24, 29, 39, 40(1) and 54:** split by function or licence, not by undertaker.
+
+  The feed reads the undertaker split as England and Wales. For example, s.10(1) is England from 1 October 2017 (SI 2017/462) and Wales from 1 April 2019 (WSI 2017/1288). We read s.18–20 and s.10–11 as fully in force from the UK order, and s.7 (an SSI) as Scotland's only, so never fully in force. Do we read Schedule 12?
+- **The aim:** `binds-on-date`. s.10 and s.11 read fully in force 18 months early for Welsh undertakers. s.7 never reads fully in force.
+- **Reach:** Water Act 2014, 80 rows:
+  - 62 for the undertaker split (44 for s.18–20, 11 for s.10–11, 7 for s.17, 23 and 38);
+  - 18 for s.7.
+
+  No other law found in the family puts its table in a Schedule. That's unmeasured beyond the ten held-orders laws.
+- **Options:**
+  - (a) **Read it in this step, test first:**
+    - Read the Act's authority table from its stored Schedules text, offline from the CLML store with no fetch, through the same `Commencement.Authority` table reader.
+    - Read "wholly or mainly English undertakers" as England and "Welsh" as Wales, as legislation.gov.uk does, so the two orders complete each other.
+    - Add the Scottish Ministers, so that an SSI takes the Scottish Ministers' place.
+    - A clause split by something other than undertakers or place (ss.24, 29, 39, 40(1), 54) gives no authority, and the order's own reading stands.
+    - Cost: about a third of a session.
+  - (b) **A known limit:** the 80 rows date fully from the first order (undertaker split) or never (s.7).
+- **Recommendation: (a).** It is Decision 10's rule, met in a Schedule. The Act's own words are primary, and the feed agrees with the reading. Reading "mainly English undertakers" as England is an approximation (an undertaker's area can cross the border), but legislation.gov.uk makes the same one. RULES would name it.
