@@ -734,3 +734,15 @@ The round's 278 (14 laws; 1991 c.56 211), measured again today with the insertin
   - **Revised recommendation:** (b), a known limit. Optionally, fetch just the two largest (2 laws).
 - **Decision 19 (2), decided (Jason 2026-11-22: "Name as known limit then continue"):** (b). RULES section 11 has a Known limits row: amending laws whose commencement no rule holds, 450 changes, left undated. No made bodies are fetched.
 - **The re-read** (`wwc-reread-*.txt`): own clauses for the 565 round laws; held orders `--family`; the eight Acts' orders `--held`; amending laws `--workers 1`.
+- **The re-read, done:** own clauses 565 laws (1,094 rules); held orders `--family` (124 laws, 715 orders, 7,075 rules); the eight Acts' orders `--held` (24 orders, 186 rules); amending laws (969, 2,037 rules). 0 errors.
+- **The rebuild** (`wwc-build.txt`): 565 laws in 958 s, 0 failed.
+  - The round went from 92,692 changes to 138,854. 102 laws had none stored before. Nothing outside the round moved.
+  - The largest gains are staged commencements: NISI 2006/3336 +3,802, SI 2024/1332 +1,947, SI 2023/1394 +1,279.
+- **Checks on the stored rules** (`wwc-after-*.txt`):
+  - The round, Maritime Safety, Environmental Protection and Fire and OH&S: PASS.
+  - Occupational failed on NISR 2012/286 (3 rows, `no_rules`): its own clause had never been stored, only its order rule. It was read (`--read --law`, 1 rule), and the check then PASSes. Its changes aren't rebuilt: that is Occupational's own build.
+- **Sources gate:** FAIL on 26 documents, all stale or not fetched (backlog schedules, feeds, bodies; one order list). By RULES `sources-fetch-failures-swept-each-step`, the next step (the Extent reader) fetches them as its first todo.
+- **Stale:**
+  - The round's 565 laws are stale on the label version (Store and build's).
+  - 139 and 124 are stale on the extent reader (the next step's).
+  - 124 are stale on this step's reader. The cause is the source laws' rules on older reader code: 117 with feed rules, 5 Acts' orders, 129 LAT laws' own clauses and 35 amending laws'. These are re-read as Fire and OH&S's Decision 6 (a) did (no fetch), and the round is rebuilt again (`wwc-reread2-*.txt`).
