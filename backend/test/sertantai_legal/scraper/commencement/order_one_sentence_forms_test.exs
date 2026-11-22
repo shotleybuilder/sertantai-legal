@@ -70,4 +70,18 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderOneSentenceFormsTest do
              "s.5 — 2025-06-23 — E, fully — order_date"
            ]
   end
+
+  test "“Section 6(1) of and Schedule 2 to the … Act 1999 shall come into force on 21st March 2000 in so far as they extend to England and Wales” is England and Wales's alone (SI 2000/800 art.2)" do
+    act = %{law: "UK_ukpga_1999_24", title: "Pollution Prevention and Control Act", year: "1999"}
+
+    rules =
+      Doc.new("UK_uksi_2000_800", [
+        ~s"""
+        <Legislation xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>The Pollution Prevention and Control Act 1999 (Commencement No. 1) (England and Wales) Order 2000</dc:title><Secondary><Body><P1 id="article-2"><Pnumber>2</Pnumber><P1para><Text>Section 6(1) of and Schedule 2 to the Pollution Prevention and Control Act 1999 shall come into force on 21st March 2000 in so far as they extend to England and Wales.</Text></P1para></P1></Body></Secondary></Legislation>
+        """
+      ])
+      |> Order.rules(act)
+
+    assert lines(rules) == ["s.6(1), sch.2 — 2000-03-21 — E+W, fully — order_date"]
+  end
 end

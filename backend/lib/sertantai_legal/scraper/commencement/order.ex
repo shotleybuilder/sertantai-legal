@@ -1218,9 +1218,10 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   end
 
   # (a place alone is the territory, never a purpose: "section 69 (…), in
-  # so far as it applies in relation to England" — SI 2004/641 art.2(a) —
+  # so far as it applies in relation to England" — SI 2004/641 art.2(a);
+  # "… in so far as they extend to England and Wales" — SI 2000/800 art.2 —
   # so England's and Wales's days together bring it fully in)
-  @place_only ~r/,?\s*(?:(?:in\s*)?so\s*far\s+as\s+(?:it|they)\s+(?:applies|apply|extends?)\s+)?(?:in\s+relation\s+to|as\s+respects)\s+(?:England\s+and\s+Wales|Great\s+Britain|England|Wales|Scotland|Northern\s+Ireland)(?:\s+only)?\s*(?=[;,.]|$)/iu
+  @place_only ~r/,?\s*(?:(?:in\s*)?so\s*far\s+as\s+(?:it|they)\s+(?:(?:applies|apply|extends?)\s+(?:in\s+relation\s+to|as\s+respects)|extends?\s+to)|in\s+relation\s+to|as\s+respects)\s+(?:England\s+and\s+Wales|Great\s+Britain|England|Wales|Scotland|Northern\s+Ireland)(?:\s+only)?\s*(?=[;,.]|$)/iu
 
   defp own_purposes(line, "") do
     words = line |> String.replace(@full, "") |> String.replace(@place_only, "")
