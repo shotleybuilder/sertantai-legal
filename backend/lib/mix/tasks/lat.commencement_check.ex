@@ -444,17 +444,27 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
       SELECT pc.target,
              min((d.value->>'v')::date),
              min((d.value->>'v')::date) FILTER (
-               WHERE d.attribute = 'date' AND NOT coalesce((p.value->>'v')::boolean, pc.partial, false))
+               WHERE d.attribute = 'date' AND NOT coalesce((p.value->>'v')::boolean, pc.partial, false)),
+             json_agg(json_build_array(d.value->>'v', f.value->>'v')) FILTER (
+               WHERE d.attribute = 'date' AND q.value->>'v' = 'territory' AND f.value->>'v' IS NOT NULL)
       FROM provision_changes pc
       JOIN provision_change_claims d
         ON d.change_id = pc.id AND d.source = 'feed' AND d.attribute IN ('date', 'date_first')
       LEFT JOIN provision_change_claims p
         ON p.change_id = pc.id AND p.source = 'feed' AND p.attribute = 'partial'
+      LEFT JOIN provision_change_claims q
+        ON q.change_id = pc.id AND q.source = 'feed' AND q.attribute = 'qualification'
+      LEFT JOIN provision_change_claims f
+        ON f.change_id = pc.id AND f.source = 'feed' AND f.attribute = 'in_force_for'
       WHERE pc.law_name = $1 AND pc.operation = 'commenced'
       GROUP BY pc.target
       """,
       [law]
     ).rows
+    # (a stage for one place only: its day and place, for the row's extent)
+    |> Enum.map(fn [t, first, full, stages] ->
+      [t, first, full, for([d, place] <- stages || [], do: [Date.from_iso8601!(d), place])]
+    end)
     |> Check.feed_index()
   end
 

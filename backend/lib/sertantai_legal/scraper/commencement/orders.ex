@@ -16,6 +16,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Orders do
   """
 
   alias SertantaiLegal.Repo
+  alias SertantaiLegal.Scraper.Commencement.Authority
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
 
   @dir "data/cache/commencement-orders"
@@ -23,9 +24,15 @@ defmodule SertantaiLegal.Scraper.Commencement.Orders do
   @doc """
   The Act a law's orders commence, as `Order.rules/2` takes it: the law, the
   title its orders name it by (`act_title/2`, from the register; nil when
-  the register holds none) and its year.
+  the register holds none), its year, and the commencing authority its
+  own rows give each place (`Authority.read/1`, Decision 10).
   """
-  @spec act(String.t()) :: %{law: String.t(), title: String.t() | nil, year: String.t()}
+  @spec act(String.t()) :: %{
+          law: String.t(),
+          title: String.t() | nil,
+          year: String.t(),
+          authorities: Authority.t()
+        }
   def act(law) do
     year = law |> String.split("_") |> Enum.at(2)
 
@@ -35,7 +42,19 @@ defmodule SertantaiLegal.Scraper.Commencement.Orders do
         _ -> nil
       end
 
-    %{law: law, title: title, year: year}
+    %{law: law, title: title, year: year, authorities: authorities(law)}
+  end
+
+  # (only rows naming a place's authority, and the subsection lists they
+  # point to, bear on it: the Act's rows read whole, in document order)
+  defp authorities(law) do
+    %{rows: rows} =
+      Repo.query!(
+        "SELECT section_id, text FROM legal_articles WHERE law_name = $1 ORDER BY sort_key",
+        [law]
+      )
+
+    rows |> Enum.map(&List.to_tuple/1) |> Authority.read()
   end
 
   @doc """

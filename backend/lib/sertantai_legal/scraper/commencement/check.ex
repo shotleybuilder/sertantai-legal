@@ -51,7 +51,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Check do
         result: result,
         full_from: result && result.full_from,
         partial_from: result && result.partial_from,
-        feed: feed_at(feed, id)
+        feed: feed |> feed_at(id) |> feed_in(Map.get(extents, id))
       }
     end)
     |> Enum.map(&Map.put(&1, :yardstick, yardstick(&1)))
@@ -75,11 +75,19 @@ defmodule SertantaiLegal.Scraper.Commencement.Check do
   def no_clause?(rules, treatment),
     do: treatment == :no_clause and Enum.all?(rules, &(&1.treatment == :schedule_effect))
 
-  @doc "The law's own feed's coming-into-force records by target: `[target, first, full]` rows → `%{base_id => {first, full}}`."
+  @doc """
+  The law's own feed's coming-into-force records by target: `[target,
+  first, full]` rows → `%{base_id => {first, full}}`; with a fourth, its
+  stages for one place each (`[[date, place]]`), kept for `rows/5` to see
+  when together they cover the row's extent.
+  """
   @spec feed_index([[term()]]) :: map()
-  def feed_index(records),
-    do:
-      Map.new(records, fn [t, first, full] -> {t |> Ref.canonical() |> base(), {first, full}} end)
+  def feed_index(records), do: Map.new(records, &feed_record/1)
+
+  defp feed_record([t, first, full]), do: {t |> Ref.canonical() |> base(), {first, full}}
+
+  defp feed_record([t, first, full, stages]),
+    do: {t |> Ref.canonical() |> base(), {first, full, stages || []}}
 
   @doc "How the reader's full date (or, partly in force on both sides, its first) stands against the feed's."
   @spec yardstick(map()) :: atom()
@@ -141,6 +149,27 @@ defmodule SertantaiLegal.Scraper.Commencement.Check do
 
   # the nearest record at the row or above it
   defp feed_at(feed, id), do: Enum.find_value(LatRef.ancestors(id), &Map.get(feed, &1))
+
+  # the feed's full start: its own, else the day its stages for one place
+  # each first cover the row's extent, as the evaluator reads ours (Water
+  # Act 2003 s.77: England 1 October 2004 by SI 2004/2528, Wales 11
+  # November 2004 by WSI 2004/2916)
+  defp feed_in({first, nil, stages}, extent) when is_binary(extent),
+    do: {first, covered(Enum.sort_by(stages, &hd/1, Date), extent)}
+
+  defp feed_in({first, full, _stages}, _extent), do: {first, full}
+  defp feed_in(feed, _extent), do: feed
+
+  defp covered(stages, extent) do
+    Enum.reduce_while(stages, [], fn [date, place], places ->
+      places = [place | places]
+
+      if Territory.covers?(Territory.union(places), extent),
+        do: {:halt, date},
+        else: {:cont, places}
+    end)
+    |> then(&if(is_struct(&1, Date), do: &1))
+  end
 
   # ── gaps ─────────────────────────────────────────────────────────────
 

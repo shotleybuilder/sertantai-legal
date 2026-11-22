@@ -33,13 +33,15 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderScheduleCompletingTest do
     |> Map.new(&{&1.scope, &1})
   end
 
-  test "so far as not already commenced completes the section; a place leaves it partly in force" do
+  test "so far as not already commenced completes the section; a place is its territory" do
     rules = rules()
 
     assert rules[["s.1"]].when == {:date, ~D[2010-10-01]}
     assert rules[["s.1"]].purposes == nil
     assert rules[["s.5"]].purposes == nil
-    assert rules[["s.7"]].purposes != nil
+    # (the place is its territory, no purpose: partly in force where England
+    # does not cover the row's extent — Decision 10's round, 2026-11-22)
+    assert rules[["s.7"]].purposes == nil
     assert rules[["s.7"]].territory == "E"
   end
 end

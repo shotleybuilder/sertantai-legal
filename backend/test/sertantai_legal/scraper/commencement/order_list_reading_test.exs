@@ -262,6 +262,21 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderListReadingTest do
              ]
     end
 
+    test "\"section 69 (…), in so far as it applies in relation to England\": England's, no purpose (SI 2004/641 art.2(a))" do
+      rules =
+        ~S"""
+        <P3 id="article-2-a"><Pnumber>a</Pnumber><P3para><Text>section 69 (grants for drainage works and flood warning systems), in so far as it applies in relation to England;</Text></P3para></P3>
+        <P3 id="article-2-b"><Pnumber>b</Pnumber><P3para><Text>section 70 in so far as it relates to the Agency's functions in relation to Wales;</Text></P3para></P3>
+        """
+        |> water_order()
+        |> Order.rules(@water)
+
+      assert lines(rules) == [
+               "s.69 — 2004-10-01 — E, fully — order_date",
+               "s.70 — 2004-10-01 — W, in relation to — order_date"
+             ]
+    end
+
     test "\"in section 38 (…)– (i) subsection (1); and (ii) subsection (2) in so far as it repeals …\"; a list of subsections" do
       rules =
         ~S"""
@@ -489,7 +504,10 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderListReadingTest do
       assert lines(rules) == [
                "s.12(1)..s.12(9), s.12(11) — 1988-06-06 — E+W, fully — order_schedule",
                "s.14 — 1988-06-06 — E+W, fully — order_schedule",
-               "s.30(1) — 1988-06-06 — S, in relation to — order_schedule"
+               # (a place alone is its territory, never a purpose: Decision 10's
+               # round, 2026-11-22 — partly in force still, wherever S does
+               # not cover the row's extent)
+               "s.30(1) — 1988-06-06 — S, fully — order_schedule"
              ]
     end
 

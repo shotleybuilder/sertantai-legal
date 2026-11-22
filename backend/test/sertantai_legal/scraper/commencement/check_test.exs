@@ -37,6 +37,24 @@ defmodule SertantaiLegal.Scraper.Commencement.CheckTest do
     assert index["s.3"] == {~D[1975-01-01], ~D[1976-01-01]}
   end
 
+  test "the feed's stages for each place are fully in force once they cover the row's extent (Water Act 2003 s.77: England, then Wales)" do
+    feed =
+      Check.feed_index([
+        ["s.77", ~D[2004-10-01], nil, [[~D[2004-10-01], "E"], [~D[2004-11-11], "W"]]],
+        ["s.78", ~D[2004-10-01], nil, [[~D[2004-10-01], "E"]]]
+      ])
+
+    rows =
+      for id <- ["s.77", "s.78", "s.79"],
+          do: %{section_id: "UK_x:" <> id, text: "", part: nil, chapter: nil, extent_code: "E+W"}
+
+    by_id = "UK_x" |> Check.rows(rows, [], feed, false) |> Map.new(&{&1.id, &1.feed})
+
+    assert by_id["s.77"] == {~D[2004-10-01], ~D[2004-11-11]}
+    assert by_id["s.78"] == {~D[2004-10-01], nil}
+    assert by_id["s.79"] == nil
+  end
+
   test "row_tallies/1 counts outcomes with their laws, the rows left to orders and the yardstick" do
     rows = [
       %{law: "A", outcome: :dated, yardstick: :own_only},

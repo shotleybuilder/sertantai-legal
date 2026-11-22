@@ -42,11 +42,16 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
   alias __MODULE__.{Asides, Entries, LastItemLimit, OtherLaw, ScheduleParts}
   alias __MODULE__.{RepealLists, SectionHeads, Sibling, Territory}
-  alias SertantaiLegal.Scraper.Commencement.{ClmlRef, Rule, TextRefs}
+  alias SertantaiLegal.Scraper.Commencement.{Authority, ClmlRef, Rule, TextRefs}
 
   alias SertantaiLegal.Scraper.LawStart.Clause
 
-  @type act :: %{law: String.t(), title: String.t() | nil, year: String.t()}
+  @type act :: %{
+          required(:law) => String.t(),
+          required(:title) => String.t() | nil,
+          required(:year) => String.t(),
+          optional(:authorities) => Authority.t()
+        }
 
   @cif ~r/\b(?:shall\s+)?(?:come|comes)\s+into\s+(?:force|operation)\b/i
   # … "is the day appointed", "is the appointed day" (WSI 2011/824, CV-S04)
@@ -77,13 +82,40 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
          whole_act(order, aliases) ++
          appointed_for(order, aliases) ++ tables(order, act) ++ schedule_lists(order, aliases))
       |> Enum.flat_map(&own_articles(&1, act))
-      |> Enum.map(fn r ->
-        %{r | commences: act.law, territory: r.territory || head_territory(r) || type_territory}
-      end)
+      |> Enum.flat_map(&placed(%{&1 | commences: act.law}, order, act, type_territory))
     else
       []
     end
   end
+
+  # a rule's place: its own words', else its authority's or the order's
+  defp placed(rule, order, act, type_territory) do
+    case rule.territory || head_territory(rule) do
+      nil -> by_authority(order, act, rule, type_territory)
+      place -> [%{rule | territory: place}]
+    end
+  end
+
+  # where the Act's commencing authority that made the order may bring the
+  # rule's provisions in, else the order's own type, title or application
+  # (Decision 10: Water Act 2003 s.105(6) — a UK order's s.77 is England's,
+  # a Welsh order's s.67 everywhere's; "sections 81 to 83" split at s.81)
+  defp by_authority(order, act, rule, otherwise) do
+    act
+    |> Map.get(:authorities, [])
+    |> Authority.split(rule.scope, maker(order.law_name))
+    |> Enum.map(fn
+      {scope, except, :default} ->
+        %{rule | scope: scope, except: rule.except ++ except, territory: otherwise}
+
+      {scope, [], place} ->
+        %{rule | scope: scope, territory: place}
+    end)
+  end
+
+  defp maker("UK_uksi_" <> _), do: :uk
+  defp maker("UK_wsi_" <> _), do: :wales
+  defp maker(_order), do: nil
 
   # "This Order applies in relation to England only." (SI 2010/975
   # art.1(2)): the first article's paragraph naming the one place
@@ -1154,8 +1186,15 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
       if(related == "", do: bare_paragraphs(own, sch), else: [])
   end
 
-  defp own_purposes(line, ""),
-    do: if(Regex.match?(@partial, Regex.replace(@full, line, "")), do: purposes(line))
+  # (a place alone is the territory, never a purpose: "section 69 (…), in
+  # so far as it applies in relation to England" — SI 2004/641 art.2(a) —
+  # so England's and Wales's days together bring it fully in)
+  @place_only ~r/,?\s*(?:(?:in\s*)?so\s*far\s+as\s+(?:it|they)\s+(?:applies|apply|extends?)\s+)?(?:in\s+relation\s+to|as\s+respects)\s+(?:England\s+and\s+Wales|Great\s+Britain|England|Wales|Scotland|Northern\s+Ireland)(?:\s+only)?\s*(?=[;,.]|$)/iu
+
+  defp own_purposes(line, "") do
+    words = line |> String.replace(@full, "") |> String.replace(@place_only, "")
+    if Regex.match?(@partial, words), do: purposes(words)
+  end
 
   defp own_purposes(_line, related), do: purposes(related)
 

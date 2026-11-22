@@ -30,6 +30,7 @@ defmodule SertantaiLegal.Scraper.OrderCatalogue.Version do
       lib/sertantai_legal/scraper/commencement/review/order_misreads.ex
       lib/sertantai_legal/scraper/commencement/rule.ex
       lib/sertantai_legal/scraper/commencement/sentence_patterns.ex
+      lib/sertantai_legal/scraper/commencement/authority.ex
       lib/sertantai_legal/scraper/commencement/text_refs.ex
       lib/sertantai_legal/scraper/lat_parser/xml.ex
       lib/sertantai_legal/scraper/lat_ref.ex
