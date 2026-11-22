@@ -669,10 +669,16 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   # entries — and the lines below only describe them
   @namely_entries ~r/\bnamely\s*,?\s*(in\s+(?:the\s+Schedule|Schedule\s+\d+[A-Z]*)\b[^;]*?\bthe\s+(?:repeals?|entr(?:y|ies))\b.*)$/isu
 
+  # "The following subsections of section 13 of the Control of Pollution Act
+  # 1974, namely— (a) subsections (5) and (6) (…), …" (SI 1978/954 art.3):
+  # the items are that section's
+  @of_section ~r/\bthe\s+following\s+sub-?sections\s+of\s+section\s+(\d+[A-Z]*)\b/iu
+
   defp first_items(header, items) do
-    case Regex.run(@namely_entries, header) do
-      [_, entries] -> [entries]
-      nil -> items
+    case {Regex.run(@namely_entries, header), Regex.run(@of_section, header)} do
+      {[_, entries], _} -> [entries]
+      {nil, [_, n]} -> ["in section #{n}—" | items]
+      {nil, nil} -> items
     end
   end
 

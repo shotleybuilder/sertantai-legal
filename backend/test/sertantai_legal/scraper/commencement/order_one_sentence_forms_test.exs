@@ -84,4 +84,31 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderOneSentenceFormsTest do
 
     assert lines(rules) == ["s.6(1), sch.2 — 2000-03-21 — E+W, fully — order_date"]
   end
+
+  test "a list closed by its date: “The following subsections of section 13 of the … Act 1974, namely— (a) subsections (5) and (6) (…), … shall come into operation on 1st August 1978.” (SI 1978/954 art.3)" do
+    act = %{law: "UK_ukpga_1974_40", title: "Control of Pollution Act", year: "1974"}
+
+    item = fn id, label, text ->
+      ~s|<P3 id="article-3-#{id}"><Pnumber>#{label}</Pnumber><P3para><Text>#{text}</Text></P3para></P3>|
+    end
+
+    body =
+      ~s|<P1 id="article-3"><Pnumber>3</Pnumber><P1para><Text>The following subsections of section 13 of the Control of Pollution Act 1974, namely—</Text>| <>
+        item.(
+          "a",
+          "a",
+          "subsections (5) and (6) (which empower a waste collection authority to require receptacles), "
+        ) <>
+        item.("b", "b", "subsection (7) (which provides for the making of regulations), and") <>
+        ~s|<Text>shall come into operation on 1st August 1978.</Text></P1para></P1>|
+
+    rules =
+      Doc.new("UK_uksi_1978_954", [
+        ~s|<Legislation xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>The Control of Pollution Act 1974 (Commencement No. 12) Order 1978</dc:title><Secondary><Body>#{body}</Body></Secondary></Legislation>|
+      ])
+      |> Order.rules(act)
+
+    assert Enum.sort(Enum.flat_map(rules, & &1.scope)) == ["s.13(5)", "s.13(6)", "s.13(7)"]
+    assert Enum.all?(rules, &(&1.when == {:date, ~D[1978-08-01]}))
+  end
 end
