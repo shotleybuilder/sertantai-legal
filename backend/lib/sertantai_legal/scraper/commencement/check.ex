@@ -148,7 +148,22 @@ defmodule SertantaiLegal.Scraper.Commencement.Check do
   defp base(id), do: String.replace(id, ~r/\[[^\]]+\]$/, "")
 
   # the nearest record at the row or above it
-  defp feed_at(feed, id), do: Enum.find_value(LatRef.ancestors(id), &Map.get(feed, &1))
+  # the nearest record, fully in force once it or an ancestor is (Water Act
+  # 2014 s.6(1): purposes by SI 2015/1938, s.6 wholly by SI 2016/465)
+  defp feed_at(feed, id) do
+    case for(a <- LatRef.ancestors(id), r = Map.get(feed, a), do: r) do
+      [] ->
+        nil
+
+      [nearest | _] = records ->
+        with_full(nearest, records |> Enum.map(&elem(&1, 1)) |> earliest())
+    end
+  end
+
+  defp earliest(dates), do: dates |> Enum.reject(&is_nil/1) |> Enum.min(Date, fn -> nil end)
+
+  defp with_full(record, nil), do: record
+  defp with_full(record, full), do: put_elem(record, 1, full)
 
   # the feed's full start: its own, else the day its stages for one place
   # each first cover the row's extent, as the evaluator reads ours (Water

@@ -55,6 +55,27 @@ defmodule SertantaiLegal.Scraper.Commencement.CheckTest do
     assert by_id["s.79"] == nil
   end
 
+  test "a section the feed has wholly in force brings its subsections fully in, whatever their own records say (Water Act 2014 s.6: SI 2016/465)" do
+    feed =
+      Check.feed_index([
+        ["s.6", ~D[2016-04-01], ~D[2016-04-01]],
+        ["s.6(1)", ~D[2015-12-18], nil],
+        ["s.7(1)", ~D[2015-11-20], ~D[2016-04-01]],
+        ["s.7", ~D[2017-01-01], ~D[2017-01-01]]
+      ])
+
+    rows =
+      for id <- ["s.6(1)", "s.6(2)", "s.7(1)"],
+          do: %{section_id: "UK_x:" <> id, text: "", part: nil, chapter: nil, extent_code: "E+W"}
+
+    by_id = "UK_x" |> Check.rows(rows, [], feed, false) |> Map.new(&{&1.id, &1.feed})
+
+    assert by_id["s.6(1)"] == {~D[2015-12-18], ~D[2016-04-01]}
+    assert by_id["s.6(2)"] == {~D[2016-04-01], ~D[2016-04-01]}
+    # its own earlier full stands
+    assert by_id["s.7(1)"] == {~D[2015-11-20], ~D[2016-04-01]}
+  end
+
   test "row_tallies/1 counts outcomes with their laws, the rows left to orders and the yardstick" do
     rows = [
       %{law: "A", outcome: :dated, yardstick: :own_only},
