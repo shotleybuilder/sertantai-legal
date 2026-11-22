@@ -62,6 +62,14 @@ defmodule SertantaiLegal.Scraper.LawStartTest do
       assert %LawStart{treatment: :no_clause} =
                start("ukcm", [{"s.1", "Something."}], made: ~D[1947-04-02])
 
+      # (a revoked instrument whose text is shown as dots states nothing: its
+      # silence is not held — SI 2019/107, whose feed records IP completion
+      # day, had been dated its made date)
+      assert %LawStart{treatment: :no_clause} =
+               start("uksi", [{"reg.1", ". . . . . . . ."}, {"reg.2", ". . . ."}],
+                 made: ~D[2019-01-23]
+               )
+
       # (a day for its own Parts: not stating none)
       assert %LawStart{treatment: :no_clause} =
                start("uksi", [{"reg.1(2)", "Part 1 comes into force on 1st December 2024."}],

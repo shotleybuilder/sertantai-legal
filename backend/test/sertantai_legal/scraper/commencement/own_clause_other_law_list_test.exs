@@ -28,7 +28,8 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClauseOtherLawListTest do
 
   test "\"The following provisions of the 2014 Act come into force on\" (SI 2017/58 art.2)" do
     assert rules([
-             {"reg.1", ""},
+             {"reg.1",
+              "This Order may be cited as the Water Act 2014 (Commencement No. 9) Order 2017."},
              {"reg.2",
               "The following provisions of the 2014 Act come into force on 6th March 2017—"},
              {"reg.2(a)",
@@ -44,7 +45,8 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClauseOtherLawListTest do
 
   test "\"Subject to article 6, the following provisions of the 2014 Act\" (SI 2015/773 art.2(3))" do
     assert rules([
-             {"reg.1", ""},
+             {"reg.1",
+              "This Order may be cited as the Water Act 2014 (Commencement No. 3 and Transitional Provisions) Order 2015."},
              {"reg.2", ""},
              {"reg.2(3)",
               "Subject to article 6, the following provisions of the 2014 Act come into force on 6th April 2015 and are brought into force by the Welsh Ministers only—"},

@@ -192,8 +192,13 @@ defmodule SertantaiLegal.Scraper.LawStart do
   # made date (Decision 14 (a), Jason 2026-11-22): never an Act (Royal
   # Assent, above) or an EU text
   # (a Church Measure takes Royal Assent, as an Act: never an instrument)
+  # Its words must be held: a revoked text shown as dots states nothing
+  # (SI 2019/107, IP completion day by its feed, had been dated made)
   defp made_date(input, type) when type not in @acts and type not in @eu and type != "ukcm" do
-    with false <- input |> Map.get(:rows, []) |> Enum.any?(&own_day?/1),
+    rows = Map.get(input, :rows, [])
+
+    with true <- Enum.any?(rows, &worded?/1),
+         false <- Enum.any?(rows, &own_day?/1),
          %Date{} = d <- input |> OwnDays.of() |> OwnDays.made() do
       %__MODULE__{treatment: :instrument_made, date: d, evidence: "ukm:Made"}
     else
@@ -202,6 +207,8 @@ defmodule SertantaiLegal.Scraper.LawStart do
   end
 
   defp made_date(_input, _type), do: nil
+
+  defp worded?(row), do: Regex.match?(~r/\p{L}{3,}/u, Map.get(row, :text) || "")
 
   # a sentence bringing in the instrument's own provisions ("Part 1 comes
   # into force on 1st December 2024"); never one bringing in another law's
