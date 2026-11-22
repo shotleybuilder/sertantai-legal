@@ -752,3 +752,33 @@ The round's 278 (14 laws; 1991 c.56 211), measured again today with the insertin
 - **Stale after:** the round's laws are stale on the Commencement reader: **0**. Left: the label version (565, Store and build) and the extent reader (263, the next step).
 - **Checks on the stored rules again** (`wwc-after2-*.txt`): the round and all four switched families PASS.
 - **NAS sync:** `nas-backup.sh` (`scratchpad/nas-full2.log`).
+- **NAS sync:** done (the database, and `backend/data` 2.0 GB). Rebuild then fetch is complete.
+
+## Check (2026-11-22)
+
+- **The round and the four switched families:** PASS (`wwc-after2-*.txt`).
+- **Seed 73, twice:** the samples are identical under `cmp`, and both runs PASS (`wwc-check-seed-*.txt`).
+- **Credo** (`credo-diff.sh`): no new issues.
+- **`mix test`:** 12,493 of 12,494 pass. The failure is `CatalogueRun.LogTest`, "a sampled peak at least the memory at its start" (peak 831 MB against a start of 839). It is a timing race in a memory sample. Run alone, it passes 3 times out of 3. It isn't this step's code (the Catalogues across the workflow session's); parked.
+- **Extended golden:** 41/50, the same count as the Markup reader's run of 2026-11-20, but four provisions moved:
+  - **Now passing:** 1984 c.3 s.1(6B) and s.1A(b) (inserted, commenced for England and then Wales).
+  - **Now failing:** COPA 1974 s.101 and 2022 c.30 s.138(2)(a).
+    - **COPA s.101:** SI 1975/2118's Schedule reads "Section 101 | Disposal of waste etc by Atomic Energy Authority", in force on 1 January 1976. Golden expects it to be undecidable ("no order held names it"), but the order is now held and names it. The new reading is right by the law, so the golden expectation is out of date (for Jason).
+    - **2022 c.30 s.138(2)(a):** golden expects it never commenced, which is right: no rule names s.138, the evaluator reads it prospective, and the stored change is the feed's undated commencement. Yet the fold gives "in force from 28 May 2022, commenced by SI 2022/561". That is s.132's date: SI 2022/561 reg.2, "for the purposes of making regulations".
+      - 2022 c.30's rules and its stored change are identical to the restore point. It isn't a round law, and the rebuild didn't touch it.
+      - So the move comes from code changed since 2026-11-20, in this step or in the label fold's inputs. **Cause not yet traced.**
+- **Also seen:** SI 2022/561 reg.2's stored `order_date` rule for s.132 holds no purpose. It reads "comes into force, for the purposes of making regulations, on 28th May 2022", a mid-sentence purpose that the order reader missed. This is this step's own form; reach not yet measured.
+
+## Decision 20 for Jason: the two golden provisions that moved
+
+- **The question:** golden is frozen for the step, so the pass rule needs it unchanged. Two provisions moved from PASS to FAIL.
+- **The aim:** `binds-on-date`.
+- **Options:**
+  - **COPA s.101:**
+    - (a) move the golden expectation to SI 1975/2118's date, 1 January 1976, since the order now held names it (recommended);
+    - (b) leave it failing.
+  - **2022 c.30 s.138(2)(a):**
+    - (a) trace it first: run the golden for that law at the step's earlier commits to find the commit that moved it, then fix it if it is this step's code, or park it with the Label fold if not (recommended; a few minutes per commit);
+    - (b) park it with the Label fold now.
+  - **The SI 2022/561 reg.2 purpose:** fix it here, test first, with its reach measured (this step's own form).
+- **Recommendation:** s.101 (a); s.138(2)(a) (a); and the purpose fixed here.
