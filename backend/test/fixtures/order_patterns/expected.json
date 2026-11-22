@@ -84,17 +84,17 @@
     "UK_nisr_2012_13/2b8f71c34c": {
       "class": "rules+partial",
       "rules": [
-        "s.61 — 2012-01-18 — everywhere, in relation to — order_schedule"
+        "s.61 — 2012-01-18 — everywhere, for making secondary legislation — order_schedule"
       ]
     },
     "UK_nisr_2012_13/332e271a96": {
       "class": "rules+partial",
       "rules": [
-        "s.4 — 2012-01-18 — everywhere, in relation to — order_schedule",
-        "s.40 — 2012-01-18 — everywhere, in relation to — order_schedule",
+        "s.4 — 2012-01-18 — everywhere, for making secondary legislation — order_schedule",
+        "s.40 — 2012-01-18 — everywhere, for making secondary legislation — order_schedule",
         "s.41 — 2012-01-18 — everywhere, fully — order_schedule",
-        "s.42 — 2012-01-18 — everywhere, in relation to — order_schedule",
-        "s.44 — 2012-01-18 — everywhere, in relation to — order_schedule"
+        "s.42 — 2012-01-18 — everywhere, for making secondary legislation — order_schedule",
+        "s.44 — 2012-01-18 — everywhere, for making secondary legislation — order_schedule"
       ]
     },
     "UK_nisr_2012_13/52558bcc91": {
@@ -941,7 +941,7 @@
       "class": "rules+partial",
       "rules": [
         "s.125(1) — 1976-10-01 — everywhere, in relation to — order_schedule",
-        "sch.16.pt.III — 1976-10-01 — everywhere, in relation to — order_schedule"
+        "sch.16.pt.III — 1976-10-01 — everywhere, fully — order_schedule"
       ]
     },
     "UK_uksi_1976_1379/6f711829bd": {
@@ -986,9 +986,9 @@
       ]
     },
     "UK_uksi_1976_530/4d5e4f57ae": {
-      "class": "rules+partial",
+      "class": "rules",
       "rules": [
-        "s.110 — 1976-04-20 — everywhere, in relation to — order_schedule"
+        "s.110 — 1976-04-20 — everywhere, fully — order_schedule"
       ]
     },
     "UK_uksi_1976_530/77e314b492": {
@@ -1367,20 +1367,20 @@
       ]
     },
     "UK_uksi_1992_1755/ac7c8a990d": {
-      "class": "rules",
+      "class": "rules+partial",
       "rules": [
         "sch.13.para.30(4) — 1992-08-01 — everywhere, fully — order_date",
         "sch.13.para.95..sch.13.para.98 — 1992-08-01 — everywhere, fully — order_date",
-        "sch.14 — 1992-08-01 — everywhere, fully — order_date"
+        "sch.14 — 1992-08-01 — everywhere, in relation to — order_date"
       ]
     },
     "UK_uksi_1992_2454/54e7e74789": {
-      "class": "rules",
+      "class": "rules+partial",
       "rules": [
         "s.146, sch.5.para.2..sch.5.para.18, sch.5.para.43, sch.5.para.49..sch.5.para.54, sch.5.para.55(3), sch.5.para.56, sch.5.para.58, sch.5.para.59, sch.5.para.61, sch.5.para.63..sch.5.para.65, sch.5.para.70, sch.5.para.71, sch.5.para.73, sch.5.para.74, sch.5.para.76(3), sch.5.para.77, sch.5.para.78, sch.5.para.98 — 1993-04-01 — everywhere, fully — order_date",
         "s.81 — 1993-04-01 — everywhere, fully — order_date",
         "sch.13.para.3..sch.13.para.5, sch.13.para.32, sch.13.para.34, sch.13.para.57, sch.13.para.58 — 1993-04-01 — everywhere, fully — order_date",
-        "sch.14 — 1993-04-01 — everywhere, fully — order_date"
+        "sch.14 — 1993-04-01 — everywhere, in relation to — order_date"
       ]
     },
     "UK_uksi_1992_2784/ddef0b0188": {
@@ -1452,7 +1452,7 @@
     "UK_uksi_1993_2050/09eb87afc5": {
       "class": "rules+partial",
       "rules": [
-        "s.6(3), s.7(6), s.20(3) — 1993-08-18 — everywhere, in relation to — order_schedule"
+        "s.6(3), s.7(6), s.20(3) — 1993-08-18 — everywhere, for making secondary legislation — order_schedule"
       ]
     },
     "UK_uksi_1993_2050/627d5b3585": {
@@ -2141,7 +2141,7 @@
     "UK_uksi_2010_2191/8f7378d360": {
       "class": "rules+partial",
       "rules": [
-        "s.96(9)(b) — 2010-09-03 — everywhere, in relation to — order_date"
+        "s.96(9)(b) — 2010-09-03 — everywhere, for making secondary legislation — order_date"
       ]
     },
     "UK_uksi_2010_2317/151dd544d7": {
