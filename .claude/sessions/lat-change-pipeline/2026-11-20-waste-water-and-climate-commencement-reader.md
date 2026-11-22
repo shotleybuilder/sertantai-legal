@@ -746,3 +746,9 @@ The round's 278 (14 laws; 1991 c.56 211), measured again today with the insertin
   - The round's 565 laws are stale on the label version (Store and build's).
   - 139 and 124 are stale on the extent reader (the next step's).
   - 124 are stale on this step's reader. The cause is the source laws' rules on older reader code: 117 with feed rules, 5 Acts' orders, 129 LAT laws' own clauses and 35 amending laws'. These are re-read as Fire and OH&S's Decision 6 (a) did (no fetch), and the round is rebuilt again (`wwc-reread2-*.txt`).
+- **The source laws' stale rules, re-read** (`wwc-reread2-*.txt`, no fetch): `--read` 129 laws (959 rules); `--read-amending` 35 (77); `--read-orders --held` 5 Acts (14 orders, 180 rules); `--effects --law` 117.
+  - 7 of the 117 have no feed in the store, and each keeps its feed rules unchanged (13 in all, checked against the restore point).
+  - The round rebuilt again: 565 laws in 798 s, 0 failed, 138,854 changes.
+- **Stale after:** the round's laws are stale on the Commencement reader: **0**. Left: the label version (565, Store and build) and the extent reader (263, the next step).
+- **Checks on the stored rules again** (`wwc-after2-*.txt`): the round and all four switched families PASS.
+- **NAS sync:** `nas-backup.sh` (`scratchpad/nas-full2.log`).
