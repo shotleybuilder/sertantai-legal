@@ -59,7 +59,9 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
   # 4(b)" — SI 2004/3386 reg.1, CV-S08 round 1)
   # (two bracketed items with only a space between are two: "20(2)
   # 28(8)(a)(ii)", SI 2013/3113 reg.1(4)'s list missing a comma)
-  @noun ~r/\b(sections?|regulations?|articles?|rules?)\s+((?:(?:\s*(?:,\s*and|,|and|to|–|-)\s*|(?<=\))\s+(?=\d+[A-Z]*\())?(?:\d+[A-Z]*(?:\([^)]+\))*|\([^)]+\)(?:\([^)]+\))*))+)/i
+  # ("or" names each too: "appointments under regulation 5 or 11", SI
+  # 2020/1095 reg.1(2)(a))
+  @noun ~r/\b(sections?|regulations?|articles?|rules?)\s+((?:(?:\s*(?:,\s*and|,\s*or|,|and|or|to|–|-)\s*|(?<=\))\s+(?=\d+[A-Z]*\())?(?:\d+[A-Z]*(?:\([^)]+\))*|\([^)]+\)(?:\([^)]+\))*))+)/i
   # (never a Schedule's Part: "Part III of Schedule 16 and, in Part IX of
   # that Schedule" — EPA 1990 s.164(2), CV-S04 round 4)
   # (", and" joins a list too: "Parts II, III, and V to VIII", 1963 c.33

@@ -65,6 +65,25 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClausePurposeStagesAndNamedForm
       assert full_from(specs, "reg.18(1)", made) == {:dated, ~D[2015-04-19]}
     end
 
+    test "\"for the purposes of making appointments under regulation 5 or 11 (approved bodies)\" names both (SI 2020/1095 reg.1(2))" do
+      specs = [
+        {"reg.1(2)", "These Regulations come into force—"},
+        {"reg.1(2)(a)",
+         "for the purposes of making appointments under regulation 5 or 11 (approved bodies), on the day after the day on which they are made;"},
+        {"reg.1(2)(b)", "for all other purposes, on 1st May 2021."},
+        "reg.2",
+        "reg.5",
+        "reg.11",
+        "reg.11(1)"
+      ]
+
+      made = ~D[2020-10-07]
+      assert partly(specs, made) == []
+      assert full_from(specs, "reg.2", made) == {:dated, ~D[2021-05-01]}
+      assert full_from(specs, "reg.5", made) == {:dated, ~D[2020-10-08]}
+      assert full_from(specs, "reg.11(1)", made) == {:dated, ~D[2020-10-08]}
+    end
+
     test "the purposes of several provisions, the later day a named day (SI 2018/1221 reg.2)" do
       specs = [
         {"reg.2", "These Regulations come into force—"},
