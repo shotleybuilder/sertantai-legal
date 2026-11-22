@@ -51,7 +51,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Check do
         result: result,
         full_from: result && result.full_from,
         partial_from: result && result.partial_from,
-        feed: feed |> feed_at(id) |> feed_in(Map.get(extents, id))
+        feed: feed_at(feed, id, Map.get(extents, id))
       }
     end)
     |> Enum.map(&Map.put(&1, :yardstick, yardstick(&1)))
@@ -148,10 +148,11 @@ defmodule SertantaiLegal.Scraper.Commencement.Check do
   defp base(id), do: String.replace(id, ~r/\[[^\]]+\]$/, "")
 
   # the nearest record at the row or above it
-  # the nearest record, fully in force once it or an ancestor is (Water Act
-  # 2014 s.6(1): purposes by SI 2015/1938, s.6 wholly by SI 2016/465)
-  defp feed_at(feed, id) do
-    case for(a <- LatRef.ancestors(id), r = Map.get(feed, a), do: r) do
+  # the nearest record, its places' stages combined, fully in force once it
+  # or an ancestor is (Water Act 2014 s.6(1): purposes by SI 2015/1938, s.6
+  # wholly by SI 2016/465)
+  defp feed_at(feed, id, extent) do
+    case for(a <- LatRef.ancestors(id), r = Map.get(feed, a), do: feed_in(r, extent)) do
       [] ->
         nil
 

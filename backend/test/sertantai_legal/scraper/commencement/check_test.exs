@@ -61,19 +61,23 @@ defmodule SertantaiLegal.Scraper.Commencement.CheckTest do
         ["s.6", ~D[2016-04-01], ~D[2016-04-01]],
         ["s.6(1)", ~D[2015-12-18], nil],
         ["s.7(1)", ~D[2015-11-20], ~D[2016-04-01]],
-        ["s.7", ~D[2017-01-01], ~D[2017-01-01]]
+        ["s.7", ~D[2017-01-01], ~D[2017-01-01]],
+        ["s.86", ~D[2012-04-06], ~D[2012-04-06]],
+        ["s.86(2)(f)", ~D[2004-10-01], nil, [[~D[2004-10-01], "E"], [~D[2004-11-11], "W"]]]
       ])
 
     rows =
-      for id <- ["s.6(1)", "s.6(2)", "s.7(1)"],
+      for id <- ["s.6(1)", "s.6(2)", "s.7(1)", "s.86(2)(f)"],
           do: %{section_id: "UK_x:" <> id, text: "", part: nil, chapter: nil, extent_code: "E+W"}
 
     by_id = "UK_x" |> Check.rows(rows, [], feed, false) |> Map.new(&{&1.id, &1.feed})
 
     assert by_id["s.6(1)"] == {~D[2015-12-18], ~D[2016-04-01]}
     assert by_id["s.6(2)"] == {~D[2016-04-01], ~D[2016-04-01]}
-    # its own earlier full stands
+    # its own earlier full stands, and its places' stages first combined
+    # (Water Act 2003 s.86(2)(f): England, then Wales, in 2004)
     assert by_id["s.7(1)"] == {~D[2015-11-20], ~D[2016-04-01]}
+    assert by_id["s.86(2)(f)"] == {~D[2004-10-01], ~D[2004-11-11]}
   end
 
   test "row_tallies/1 counts outcomes with their laws, the rows left to orders and the yardstick" do
