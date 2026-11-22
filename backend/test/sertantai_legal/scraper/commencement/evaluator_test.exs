@@ -185,6 +185,24 @@ defmodule SertantaiLegal.Scraper.Commencement.EvaluatorTest do
                eval([wales | rules], "s.10(1)", %{extent: "E+W"})
     end
 
+    test "a general rule subject to two qualified ones is complete when the last starts (WSI 2016/359 reg.1(3)–(5))" do
+      rules = [
+        rule("L", "L", :all, {:date, ~D[2016-03-15]}, ref: "reg.1(3)"),
+        rule("L", "L", :rest, {:date, ~D[2020-03-15]},
+          ref: "reg.1(4)",
+          purposes: :in_relation_to,
+          except: ["reg.1"]
+        ),
+        rule("L", "L", :rest, {:date, ~D[2018-03-15]},
+          ref: "reg.1(5)",
+          purposes: :in_relation_to,
+          except: ["reg.1"]
+        )
+      ]
+
+      assert %{partial_from: ~D[2016-03-15], full_from: ~D[2020-03-15]} = eval(rules, "reg.2")
+    end
+
     test "a qualified rule dated before the general one completes it only when the general starts" do
       rules = [
         rule("L", "L", :all, {:date, ~D[2020-04-01]}),

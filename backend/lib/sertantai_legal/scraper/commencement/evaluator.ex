@@ -231,13 +231,25 @@ defmodule SertantaiLegal.Scraper.Commencement.Evaluator do
     Enum.min(Enum.reject([territorial | plain], &is_nil/1), Date, fn -> nil end)
   end
 
+  # a place's completing rule completes the general one there with it; the
+  # completing rules with no place together, once the last has started ("Subject
+  # to paragraphs (4) and (5), these Regulations come into force on 15 March
+  # 2016": WSI 2016/359 reg.1(3), fully from reg.1(4)'s 15 March 2020)
   defp completed(entries) do
     general = for %{role: :general} = e <- entries, do: e
     dates = Enum.map(general, & &1.date)
+    completing = for %{role: :completes, date: %Date{}} = e <- entries, do: e
+    {placed, unplaced} = Enum.split_with(completing, & &1.territory)
 
-    for %{role: :completes, date: %Date{} = d} <- entries,
-        general != [] and Enum.all?(dates, &is_struct(&1, Date)),
-        do: %{date: Enum.max([d | dates], Date), territory: place(general)}
+    if general != [] and Enum.all?(dates, &is_struct(&1, Date)) do
+      for group <- Enum.map(placed, &[&1]) ++ Enum.reject([unplaced], &(&1 == [])),
+          do: %{
+            date: Enum.max(Enum.map(group, & &1.date) ++ dates, Date),
+            territory: place(general)
+          }
+    else
+      []
+    end
   end
 
   # the general rules' place: nil (everywhere) unless each holds one
