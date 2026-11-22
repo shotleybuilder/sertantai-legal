@@ -1632,7 +1632,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
         date = schedule_date(order, el),
         date != nil,
         {place, limit} = {schedule_territory(order, el), schedule_limit(order, el)},
-        {row, purpose, sch} <- with_schedules(table_rows(el), table_schedule(order, el)),
+        {row, purpose, sch, shown} <- table_entries(order, el),
         text <-
           if(row =~ @schedule_entries,
             do: [row],
@@ -1652,7 +1652,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
             source: %{
               law: order.law_name,
               ref: source_ref(id),
-              text: squash("#{row} | #{purpose}")
+              text: squash(shown)
             },
             treatment: :order_schedule
           )
@@ -1765,6 +1765,67 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
       _, d -> d
     end)
   end
+
+  # each row read, with the words it is shown by (the row as the table has it)
+  defp table_entries(order, el) do
+    column? = provision_column?(el)
+
+    for {text, cell, _} = entry <- with_schedules(table_rows(el), table_schedule(order, el)),
+        {row, purpose, sch} <- if(column?, do: schedule_provisions(entry), else: [entry]),
+        do: {row, purpose, sch, "#{text} | #{cell}"}
+  end
+
+  # a table headed "Schedule | Provision": the second cell lists the
+  # paragraphs of the Schedule the first names, and only those come in (SI
+  # 2004/641 Sch.2 "Schedule 8 | In paragraph 1, sub-paragraph (4), …
+  # Paragraphs 19, 23, 43, 44 and 48 …" had brought all of Schedule 8 in)
+  defp provision_column?(el) do
+    case el |> xpath(~x".//*[local-name()='th']"l) |> Enum.map(&String.trim(Doc.text(&1))) do
+      [first, second | _] -> first =~ ~r/^Schedules?$/i and second =~ ~r/^Provisions?$/i
+      _ -> false
+    end
+  end
+
+  # (each sentence of the cell its own item: a qualifier ends at its full stop)
+  defp schedule_provisions({row, cell, sch} = entry) do
+    if row =~ ~r/^\s*Schedule\s+\d+[A-Z]*\s*$/i and is_binary(cell) and cell != "",
+      do: for(sentence <- in_paragraphs(cell), do: {sentence, "", sch}),
+      else: [entry]
+  end
+
+  # "In paragraph 27, sub-paragraphs (5)(a)(ii), (iii) and (v), (5)(b)(ii)
+  # and (7)(a), and sub-paragraph (1) in so far as …": each item opening on
+  # a number is that paragraph's ("Paragraph 27(5)(a)(ii), …, paragraph
+  # 27(7)(a)"), a qualifier's words left as they are ("in so far as it
+  # relates to sub-paragraphs (3) and (4)(b)")
+  @in_paragraph ~r/^In\s+paragraph\s+(\d+[A-Z]*),\s+(.*)$/is
+  @sub_item ~r/(^|,\s+|\band\s+)(?:sub-?paragraphs?\s+)?\((\d+[A-Z]*)\)/i
+  @qualifier ~r/\b(?=(?:in\s+)?so\s+far\s+as\b|insofar\b)/i
+
+  defp in_paragraphs(cell) do
+    cell
+    |> String.split(~r/(?<=\.)\s+(?=[A-Z])/)
+    |> Enum.map(fn sentence ->
+      case Regex.run(@in_paragraph, sentence) do
+        [_, n, rest] ->
+          rest
+          |> String.split(~r/,\s+and\s+/)
+          |> Enum.map_join(", and ", &in_clause(&1, n))
+          |> capitalize_first()
+
+        nil ->
+          sentence
+      end
+    end)
+  end
+
+  defp in_clause(clause, n) do
+    [items | qualifier] = String.split(clause, @qualifier, parts: 2)
+    Regex.replace(@sub_item, items, "\\1paragraph #{n}(\\2)") <> Enum.join(qualifier)
+  end
+
+  defp capitalize_first(<<first::utf8, rest::binary>>), do: String.upcase(<<first::utf8>>) <> rest
+  defp capitalize_first(text), do: text
 
   # each row with the Schedule an earlier row names: "Schedule 6" then
   # "paragraph 5 | For all purposes" is Schedule 6's paragraph 5 (SI
