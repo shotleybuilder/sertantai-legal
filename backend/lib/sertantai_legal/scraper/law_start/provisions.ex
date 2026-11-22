@@ -950,13 +950,40 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions do
   # making regulations; (b) on 1 April 2022 for all other purposes": each
   # item dates the head's provisions (UK_ukpga_2021_24 s.4(2), CV-S04)
   defp list_head(subject, row, rows, made, base) do
-    for item <- children(row, rows),
-        text = String.replace(item.text || "", ~r/^\(?[a-z0-9]+\)\s*/i, ""),
-        text != "",
-        not Regex.match?(@cif, text),
-        g <- groups("#{subject} come into force #{text}", item, rows, made, base),
-        do: g
+    groups =
+      for item <- children(row, rows),
+          text = String.replace(item.text || "", ~r/^\(?[a-z0-9]+\)\s*/i, ""),
+          text != "",
+          not Regex.match?(@cif, text),
+          g <- groups("#{subject} come into force #{text}", item, rows, made, base),
+          do: g
+
+    last_purpose_completes(groups)
   end
+
+  # items each bringing the head's provisions in for a purpose of their own,
+  # none "for all other purposes": partly in force from the first, fully
+  # from the last ("Part 3 comes into force— (a) on 1st April 2017 in
+  # relation to non-domestic PR property, (b) on 1st October 2017 in
+  # relation to domestic PR property": SI 2015/962 reg.1(3); Decision 14
+  # (b), Jason 2026-11-22 — what each purpose means is fractalaw's to tag)
+  defp last_purpose_completes([_, _ | _] = groups) do
+    if Enum.all?(groups, &match?(%{treatment: :provision_qualified, qualified_date: %Date{}}, &1)) do
+      last = Enum.max_by(groups, & &1.qualified_date, Date)
+
+      Enum.map(groups, fn
+        ^last ->
+          %{last | treatment: :provision_dated, date: last.qualified_date, qualified_date: nil}
+
+        g ->
+          g
+      end)
+    else
+      groups
+    end
+  end
+
+  defp last_purpose_completes(groups), do: groups
 
   defp sentence_groups(sentence, subject, tail, inline, treatment, date, row, rows, _made, base) do
     g = %{

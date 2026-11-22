@@ -378,6 +378,24 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClausePurposeStagesAndNamedForm
     end
   end
 
+  test "a provision's items each for a purpose, none for all other purposes: partly from the first, fully from the last (SI 2015/962 reg.1(3); Decision 14 (b))" do
+    specs = [
+      {"reg.1(1)",
+       "These Regulations may be cited as the Energy Efficiency (Private Rented Property) (England and Wales) Regulations 2015."},
+      {"reg.1(2)", "This Part and Part 2 come into force on 1st April 2016.", "1"},
+      {"reg.1(3)", "Part 3 comes into force—", "1"},
+      {"reg.1(3)(a)", "on 1st April 2017 in relation to non-domestic PR property,", "1"},
+      {"reg.1(3)(b)", "on 1st October 2017 in relation to domestic PR property.", "1"},
+      {"pt.3", "", "3"},
+      {"reg.19", "", "3"},
+      {"reg.19(1)", "", "3"}
+    ]
+
+    made = ~D[2015-03-26]
+    assert full_from(specs, "reg.19(1)", made) == {:staged, ~D[2017-10-01]}
+    assert {[["pt.3"]], [{:date, ~D[2017-04-01]}]} = specs |> partly(made) |> Enum.unzip()
+  end
+
   test "\"regulation 12(2)(a) and (b)\" is 12(2)(a) and 12(2)(b) (SI 2021/1095 reg.1(2)–(3))" do
     specs = [
       {"reg.1(2)",
