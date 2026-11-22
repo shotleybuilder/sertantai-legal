@@ -280,6 +280,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
           |> closing_date(),
         {pre, head, rest} = split_head(lines),
         head != nil,
+        head <- two_days(head),
         not already_in_force?(head),
         {date, inline} <- List.wrap(statement(head, made)),
         # "The following provisions of the 2023 Act come into force …": the
@@ -808,8 +809,22 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   # "14th December 2007 is the appointed day on which the following
   # provisions of the … Act 2003 come into force:–" (SSI 2007/530) as "The
   # following provisions … come into force on 14th December 2007:–"
-  @day_on_which ~r/^\s*(\d{1,2}(?:st|nd|rd|th)?\s+\w+\s+\d{4})\s+is\s+the\s+(?:appointed\s+)?day\s+(?:appointed\s+)?on\s+which\s+(the\s+following\s+provisions\b.*?)\s+(comes?)\s+into\s+(force|operation)\b/isu
+  @day_on_which ~r/^\s*(\d{1,2}(?:st|nd|rd|th)?\s+\w+\s+\d{4})\s+is\s+the\s+(?:appointed\s+)?day\s+(?:appointed\s+)?on\s+which\s+(.+?)\s+(comes?)\s+into\s+(force|operation)\b/isu
+  # one provision's two days in one sentence: "The day appointed for the
+  # coming into force of X for the purpose of P is D1 and for all other
+  # purposes is D2" (SSI 2007/50 art.2), read as two statements
+  @then_all_other ~r/\b(the\s+(?:day|date)\s+appointed\s+for\s+the\s+coming\s+into\s+(?:force|operation)\s+of)\s+(.+?)\s+(for\s+the\s+purposes?\s+of\s+.+?)\s+is\s+(\d{1,2}(?:st|nd|rd|th)?\s+\w+\s+\d{4})\s+and\s+(for\s+all\s+other\s+purposes)\s+is\s+(\d{1,2}(?:st|nd|rd|th)?\s+\w+\s+\d{4})/isu
   @day_of_month ~r/\b(\d{1,2}(?:st|nd|rd|th)?)\s+of\s+(January|February|March|April|May|June|July|August|September|October|November|December)\b/iu
+
+  defp two_days(head) do
+    case Regex.run(@then_all_other, head) do
+      [_, lead, x, purpose, d1, other, d2] ->
+        ["#{lead} #{x} #{purpose} is #{d1}.", "#{lead} #{x} #{other} is #{d2}."]
+
+      nil ->
+        [head]
+    end
+  end
 
   defp wording(text) do
     text
