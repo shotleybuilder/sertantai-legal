@@ -384,3 +384,49 @@ The full log is in `backend/data/reports/commencement-reader/wwc-commencement-re
   - the inserted groups (class C, 92 rows);
   - the 3 leftovers;
   - SI 2018/1251.
+
+## Decision 12 for Jason: a register of proven feed errors, row by row, with its proof
+
+- **The question:** today, when the feed gate shows that the feed is wrong, the only record is a group's `known:` line in `feed_differences.json` and a row in RULES. A group is a shape, not a row. The proof sits in the session doc, and nothing notices when it goes stale: a row the reader later misreads would hide under the same `known:`, and a row legislation.gov.uk later corrects would stay named. Jason (2026-11-22): "we need a way to capture a known/proven feed error so that the gap is closed mindfully and with an audit trail, not just captured in docs." How do we record one?
+- **The aim:** `binds-on-date`, through `law-text-wins` and `coverage-from-lgu`. The feed is the yardstick, and we may overrule it only where the law's text proves it wrong, and only visibly.
+- **Rows now:** about 25 in Waste, Water and Climate:
+  - Water Act 2014 s.10 and s.11 (18);
+  - s.16(1)–(2);
+  - s.34(1) and s.56 (the feed says nothing);
+  - ASP 2009/6 s.79(2)(h);
+  - Water Act 2003 s.58(10).
+- **Options:**
+  - (a) **A register of feed errors in code, one entry per row:**
+    - **The file:** `test/fixtures/commencement_check/feed_errors.json`, held like the fixtures, so it changes only through the accept path: dry run, Jason, then write.
+    - **What each entry holds:**
+      - the row (law and provision);
+      - the feed's record as it is stored (its dates, and the affecting law and provision);
+      - what the feed gets wrong: a wrong date, a wrong place, or no record at all;
+      - the proof: the law and provision that show it, with their own words quoted;
+      - our date;
+      - who decided it, when, and in which session and decision.
+    - **What the gate does with them:**
+      - These rows are counted apart as `feed error (proven)`, with the entry beside each row. They are never dropped silently and never counted as agreeing.
+      - **It fails on a stale entry:** our reading no longer gives the entry's date, the feed's stored record has changed (legislation.gov.uk may have corrected it, so we review it again), or the row has gone.
+      - So a proof is checked on every run, not only when it is written.
+    - **Later steps:** Evidence and the Label fold could read the same file to show the conflict as proven. That is their work, parked to them, not this step's.
+    - **Cost:** about a quarter of a session, test first.
+  - (b) **As today:** a group's `known:` and a RULES row. It costs nothing, but there is no row-by-row record and no check that an entry still holds.
+  - (c) **Correct the feed's stored record:** rejected. Readers carry what their source says, and the error would vanish from view.
+- **Recommendation: (a).** It closes each gap row by row, proof first, and the gate keeps every entry honest. RULES' known limits would point to the file instead of listing the rows. legislation.gov.uk could be sent the list later if you want; not in this step.
+
+## B, held orders (round 8): one-sentence orders and places (bbb1b131, eb3a2b56, 6dde97b8, 2ccb2d36)
+
+- **Fixed, test first:**
+  - "<date> is the appointed day on which section 23 (…) of the Act comes into force" (SSI 2013/252): ASP 2003/3 s.23, 7 rows.
+  - "… for the purpose of P is D1 and for all other purposes is D2", read as two statements (SSI 2007/50): ASP 2003/3 s.24, 22 rows.
+  - "so far as relating to undertakers whose areas are wholly or mainly in England (Wales)" is a place alone, Decision 11's reading (SI 2025/726, WSI 2025/936): 2025 c.5 s.3 and s.5.
+  - The sections an open "so far as it relates to—" list names are never brought in (SI 2015/1469 art.2(f)(i)(bb)), and a Schedule's paragraphs under such a list still are (SI 1975/1938): Water Act 2014 s.53(1)(f). The other rows the misread reached were right by accident, as SI 2015/773 had already brought them in.
+  - "in so far as they extend to England and Wales" is a place alone (SI 2000/800).
+- **The ten held-orders laws:** agree 4,138 (was 4,115), feed only 24 (was 46), feed partial only 4 (was 5), differ 1. Their patterns catalogue: 0 examples reading differently. The leftovers gate fails on the same 3 statements as before.
+- **Held moves for Settle, new (2, both improvements):** SSI 2007/50 (two stages) and SI 2000/800 (England and Wales fully).
+- **Feed errors for the register (Decision 12), new:**
+  - **Water Act 2003 s.100(2)(b), (b)(iv), (b)(v):** SI 2007/1021 art.2(c) brings in s.100(2) "for all remaining purposes" on 1 April 2007. The feed has no completing record for them.
+  - **1999 c.24 s.6(1):** the feed has neither SI 2000/800's start (England and Wales, 21 March 2000) nor SSI 2000/322's (Scotland, 29 September 2000).
+- **Moved to class C:** 1974 c.40 s.46A–D are inserted provisions (Environment Act 1995). The gate judges them by their inserting law; my probe didn't mark them.
+- **Left in B:** the inserted groups (class C); the 3 leftovers; SI 2018/1251.
