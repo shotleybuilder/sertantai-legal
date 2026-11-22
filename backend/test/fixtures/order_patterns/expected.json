@@ -1921,9 +1921,24 @@
       "rules": []
     },
     "UK_uksi_2004_641/b2b041555c": {
-      "class": "rules",
+      "class": "rules+partial",
       "rules": [
-        "sch.7 — 2004-04-01 — everywhere, fully — order_schedule"
+        "sch.7.para.1 — 2004-04-01 — everywhere, in relation to — order_schedule",
+        "sch.7.para.23, sch.7.para.24, sch.7.para.33, sch.7.para.34, sch.7.para.35 — 2004-04-01 — everywhere, in relation to — order_schedule",
+        "sch.7.para.26(1) — 2004-04-01 — everywhere, in relation to — order_schedule",
+        "sch.7.para.26(2)(a)(i)(b), sch.7.para.26(2)(a)(i)(b)(iii) — 2004-04-01 — everywhere, fully — order_schedule",
+        "sch.7.para.27(1) — 2004-04-01 — everywhere, in relation to — order_schedule",
+        "sch.7.para.27(5)(a)(ii), sch.7.para.27(5)(a)(iii), sch.7.para.27(5)(a)(v), sch.7.para.27(5)(b)(ii) — 2004-04-01 — everywhere, fully — order_schedule",
+        "sch.7.para.27(7)(a) — 2004-04-01 — everywhere, fully — order_schedule",
+        "sch.7.para.28(1) — 2004-04-01 — everywhere, in relation to — order_schedule",
+        "sch.7.para.28(3)(a)(ii), sch.7.para.28(3)(a)(iii), sch.7.para.28(3)(a)(v) — 2004-04-01 — everywhere, fully — order_schedule",
+        "sch.7.para.28(3)(b)(iii) — 2004-04-01 — everywhere, fully — order_schedule",
+        "sch.7.para.32(1) — 2004-04-01 — everywhere, in relation to — order_schedule",
+        "sch.7.para.32(3) — 2004-04-01 — everywhere, fully — order_schedule",
+        "sch.7.para.32(4)(b) — 2004-04-01 — everywhere, in relation to — order_schedule",
+        "sch.7.para.36(1) — 2004-04-01 — everywhere, in relation to — order_schedule",
+        "sch.7.para.36(4) — 2004-04-01 — everywhere, fully — order_schedule",
+        "sch.7.para.6, sch.7.para.14, sch.7.para.31, sch.7.para.37, sch.7.para.40 — 2004-04-01 — everywhere, fully — order_schedule"
       ]
     },
     "UK_uksi_2004_759/409029688c": {

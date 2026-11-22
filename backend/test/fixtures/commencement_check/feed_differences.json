@@ -1,4 +1,5 @@
 {
+  "inserted | differ | ours dated via feed": "known: the feed dates the insertion (it holds every effect from 2002); our reading of the inserting law is a check only, and a difference no proof in the law's words makes a feed error (Decision 16, Jason 2026-11-22)",
   "inserted | ours_only | ours dated via feed": "known: the feed gives the insertion no date; the inserting law's commencement dates it (a yardstick gap, neither side wrong; Decision 13 kind 1, Jason 2026-11-22)",
   "inserted | ours_only | ours dated via law_text": "known: the feed gives the insertion no date; the inserting law's commencement dates it (a yardstick gap, neither side wrong; Decision 13 kind 1, Jason 2026-11-22)",
   "inserted | ours_only | ours dated via note": "known: the feed gives the insertion no date; the inserting law's commencement dates it (a yardstick gap, neither side wrong; Decision 13 kind 1, Jason 2026-11-22)"
