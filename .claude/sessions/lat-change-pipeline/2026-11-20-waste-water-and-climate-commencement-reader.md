@@ -571,3 +571,10 @@ The round's 278 (14 laws; 1991 c.56 211), measured again today with the insertin
 - **The aim:** `binds-on-date` (a provision partly in force binds for those purposes from the first stage).
 - **Options:** (i) compare like with like: a partial feed record against our first stage (our partial start, else our full date); (ii) leave the comparison as it is and status the groups `known:`.
 - **Recommendation: (i).** It is a fault in the yardstick, not in either reading: of 79 such rows, 43 agree on the first stage. The other 36 stay as differences to examine.
+
+## Decision 16 (Jason 2026-11-22): the inserted rows left are known limits
+
+- **Jason:** "The 1 law only wordings can be a known limit. We cannot claim feed error w/o evidence. Blast radius excludes post 2002 because we have the feed. Therefore utility for pre 2002 laws is very, very limited."
+- **The rule** (RULES `inserted-differences-known-where-the-feed-dates`): the feed holds every effect from 2002, so where it dates an insertion our reading is a check, not a date the label lacks. The 79 rows left after the two fixes are `known:`, the Royal Assent pattern (about 16 rows, five Acts) with them; none is a feed error without proof in the law's words.
+- **Its consequence for Decision 15:** whichever comparison the gate makes, the group is `known:`, so (i)'s yardstick change buys nothing here. Proposed: drop (i), take (ii).
+- **The status, dry run** (`test/fixtures/commencement_check/feed_differences.json`, on Jason's go): `"inserted | differ | ours dated via feed": "known: the feed dates the insertion (it holds every effect from 2002); our reading of the inserting law is a check only, and a difference no proof in the law's words makes a feed error (Decision 16, Jason 2026-11-22)"`.
