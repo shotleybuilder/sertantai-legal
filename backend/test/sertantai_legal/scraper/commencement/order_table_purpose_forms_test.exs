@@ -48,6 +48,20 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTablePurposeFormsTest do
     assert by_scope[["s.31"]].purposes in [nil, :fully]
   end
 
+  test "\"Section 4, apart from subsection (6)\" excepts the subsection, as \"except\" does" do
+    [rule] =
+      rules(
+        "UK_ssi_2005_351",
+        "The Water Services etc. (Scotland) Act 2005 (Commencement No. 1 and Savings) Order 2005",
+        @asp_2005_3,
+        ~s|<P1 id="article-1"><Pnumber>1</Pnumber><P1para><Text>In this Order “the 2005 Act” means the Water Services etc. (Scotland) Act 2005.</Text></P1para></P1>|,
+        ~s|<thead><tr><th>Provisions of the 2005 Act</th><th>Subject matter</th></tr></thead><tbody><tr><td>Section 4, apart from subsection (6)</td><td>Public water supply system: offences</td></tr></tbody>|
+      )
+
+    assert rule.scope == ["s.4"]
+    assert rule.except == ["s.4(6)"]
+  end
+
   test "a completing purpose, \"In so far as not already in force.\", brings its row in fully" do
     [rule] =
       rules(
@@ -60,6 +74,20 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTablePurposeFormsTest do
 
     assert rule.scope == ["s.5(1)"]
     assert rule.purposes in [nil, :fully]
+  end
+
+  test "a Welsh order applying \"in relation to Wales\" on a Welsh Measure carries no territory of its own" do
+    [rule] =
+      Doc.new("UK_wsi_2011_476", [
+        ~s"""
+        <Legislation xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>The Waste (Wales) Measure 2010 (Commencement) Order 2011</dc:title><Secondary><Body><P1 id="article-1"><Pnumber>1</Pnumber><P1para><P2 id="article-1-1"><Pnumber>1</Pnumber><P2para><Text>The title of this Order is the Waste (Wales) Measure 2010 (Commencement) Order 2011.</Text></P2para></P2><P2 id="article-1-2"><Pnumber>2</Pnumber><P2para><Text>This Order applies in relation to Wales.</Text></P2para></P2><P2 id="article-1-3"><Pnumber>3</Pnumber><P2para><Text>In this Order—</Text><UnorderedList Decoration="none" Class="Definition"><ListItem><Para><Text>“the Measure” means the Waste (Wales) Measure 2010.</Text></Para></ListItem></UnorderedList></P2para></P2></P1para></P1><P1 id="article-2"><Pnumber>2</Pnumber><P1para><Text>Section 3 of the Measure comes into force on 4 March 2011.</Text></P1para></P1></Body></Secondary></Legislation>
+        """
+      ])
+      |> Order.rules(%{law: "UK_mwa_2010_8", title: "Waste (Wales) Measure", year: "2010"})
+
+    assert rule.scope == ["s.3"]
+    assert rule.when == {:date, ~D[2011-03-04]}
+    assert rule.territory == nil
   end
 
   @nisi_1997_2778 %{

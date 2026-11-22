@@ -74,9 +74,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     if order.law_name != act.law and commences?(order, act) do
       aliases = aliases(order, act)
 
-      type_territory =
-        Territory.of_type(order.law_name, act.law) || Territory.of_title(full_title(order)) ||
-          applies_to(order)
+      type_territory = order_territory(order, act)
 
       (statements(order, aliases) ++
          whole_act(order, aliases) ++
@@ -86,6 +84,19 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     else
       []
     end
+  end
+
+  # the order's own place: none for a devolved order on its own
+  # legislature's Act, whose extent gives it — never its title's or its
+  # application's ("This Order applies in relation to Wales": WSI 2011/476
+  # on the Waste (Wales) Measure 2010); else its type's, title's or
+  # application's
+  defp order_territory(order, act) do
+    if Territory.own_legislature?(order.law_name, act.law),
+      do: nil,
+      else:
+        Territory.of_type(order.law_name, act.law) || Territory.of_title(full_title(order)) ||
+          applies_to(order)
   end
 
   # a rule's place: its own words', else its authority's or the order's
@@ -1414,12 +1425,13 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     [cur | items] |> Enum.reverse() |> Enum.map(&String.trim/1) |> Enum.reject(&(&1 == ""))
   end
 
-  # "Section 33 (except subsection (1)(a) and (b))": the section, but for
+  # "Section 33 (except subsection (1)(a) and (b))", "Section 4, apart from
+  # subsection (6)" (SSI 2005/351): the section, but for
   # those (SI 1974/1439 Sch. 2, CV-S04 round 2); nil when it says none
   defp except_subsections(text, [ref]) do
     with [_, list] <-
            Regex.run(
-             ~r/(?:\(|,)\s*except\s+(?:the\s+amendments?\s+made\s+by\s+)?(?:sub-?)?(?:sections?|paragraphs?)\s+((?:\([0-9A-Za-z]+\)|\s|,|and)+)(?:\)|[\s;.]*$)/i,
+             ~r/(?:\(|,)\s*(?:except|apart\s+from|other\s+than)\s+(?:the\s+amendments?\s+made\s+by\s+)?(?:sub-?)?(?:sections?|paragraphs?)\s+((?:\([0-9A-Za-z]+\)|\s|,|and)+)(?:\)|[\s;.]*$)/i,
              text
            ),
          [_ | _] = chains <- Regex.scan(~r/(?:\([0-9A-Za-z]+\))+/, list) |> List.flatten() do

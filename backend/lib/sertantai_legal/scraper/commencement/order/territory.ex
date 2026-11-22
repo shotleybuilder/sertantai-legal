@@ -128,9 +128,12 @@ defmodule SertantaiLegal.Scraper.Commencement.Order.Territory do
   """
   @spec of_type(String.t(), String.t()) :: String.t() | nil
   def of_type(order, act) do
-    type = law_type(order)
-    if law_type(act) in Map.get(@own_acts, type, []), do: nil, else: @type_territories[type]
+    if own_legislature?(order, act), do: nil, else: @type_territories[law_type(order)]
   end
+
+  @doc "Whether `order` is a devolved instrument on its own legislature's Act (a Welsh order on a Measure or Senedd Act)."
+  @spec own_legislature?(String.t(), String.t()) :: boolean()
+  def own_legislature?(order, act), do: law_type(act) in Map.get(@own_acts, law_type(order), [])
 
   defp law_type(law_name), do: law_name |> String.split("_") |> Enum.at(1)
 
