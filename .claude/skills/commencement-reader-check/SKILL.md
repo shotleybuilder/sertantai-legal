@@ -53,7 +53,7 @@ Ask Jason before the long runs; say what each writes.
 5. **Repeatability:** `--sample FILE --n 50 --seed N` twice; `cmp` the samples.
 6. **Golden:** `mix lat.vocabulary --golden` (`--workers 1` while a VM runs) all-pass.
 
-**Pass:** the check prints PASS (rows' faults 0, leftovers not named 0); every leftover group reviewed; catalogue tests pass; repeatable; golden all-pass; `mix test`.
+**Pass:** the check prints PASS (rows' faults 0, leftovers not named 0); every leftover group reviewed; catalogue tests pass; repeatable; golden all-pass; `mix test`. **Before any push**, the Commencement reader's tests and `mix test` pass with no held example failing: held moves are dry-run, decided by Jason and written first (Jason 2026-11-22; the pre-push hook enforces it, never bypassed).
 
 ## History
 

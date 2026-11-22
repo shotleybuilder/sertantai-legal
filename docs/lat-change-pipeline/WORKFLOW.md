@@ -244,6 +244,8 @@ A rebuild moves no switched label until `LabelRefresh` runs. Laws whose rows don
 
 **Pass rule** (Decision 1 (c), Jason 2026-11-05). `lat.commencement_check --family F` prints PASS: our faults 0 and every leftover reaching the family named (`known:`); every leftover group reviewed (`LeftoversReviewTest`); the catalogue tests pass; repeatable; golden all-pass. No agent rounds. (Before: the stopping rule of 2026-10-24, on an agent sample.)
 
+**The Commencement reader's tests pass before any push** (Jason 2026-11-22). The commencement, law-start, change-vocabulary and architecture tests, and the full `mix test`, pass with no held example failing: every held move is dry-run, decided by Jason and written first. The pre-push hook runs the full suite, so a push with held moves pending fails. The step never pushes past it with `--no-verify`.
+
 **How the step runs** (Jason 2026-11-21, after the code review `backend/data/code-reviews/commencement-reader-code-review.md`; the flow `commencement-reader-flow.md`). Waste, Water and Climate re-ran every heavy check after each fix: about 40 family checks, 9 full suites, 8 full catalogues and 20 Fable calls (about 1.9M tokens) before Settle.
 1. **Find, once:**
    - one `--fresh` check of the family and the switched families;
