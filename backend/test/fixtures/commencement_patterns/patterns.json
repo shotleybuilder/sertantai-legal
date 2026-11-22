@@ -2432,7 +2432,7 @@
         "UK_wsi_2005_2929/f59fc5774a"
       ]
     },
-    "statement|none|instrument|present|date|qualified|law:clause_staged": {
+    "statement|none|instrument|present|date|qualified|law:clause_date": {
       "count": 1,
       "examples": [
         "UK_wsi_2010_1821/01f19a09cf"
@@ -2952,6 +2952,12 @@
         "UK_uksi_2019_1285/46a6141a41"
       ]
     },
+    "statement|none|named|present|none|plain|law:clause_named_day": {
+      "count": 1,
+      "examples": [
+        "UK_ssi_2019_436/66573d83be"
+      ]
+    },
     "statement|none|named|present|none|plain|law:clause_staged": {
       "count": 6,
       "examples": [
@@ -2963,7 +2969,6 @@
     "statement|none|named|present|none|plain|law:clause_unread": {
       "count": 2,
       "examples": [
-        "UK_ssi_2019_436/66573d83be",
         "UK_uksi_2019_1354/a74b105f05"
       ]
     },
@@ -4246,7 +4251,7 @@
         "UK_uksi_2019_146/306a9eb538"
       ]
     },
-    "statement|none|rest|present|none|plain|law:clause_unread": {
+    "statement|none|rest|present|none|plain|law:clause_staged": {
       "count": 1,
       "examples": [
         "UK_mwa_2010_8/b9ba052913"
@@ -5083,6 +5088,12 @@
         "UK_uksi_2020_468/ef946080d1"
       ]
     },
+    "statement|none|whole|present|none|plain|law:clause_made_relative": {
+      "count": 1,
+      "examples": [
+        "UK_uksi_2023_1394/b07a178fd9"
+      ]
+    },
     "statement|none|whole|present|none|plain|law:clause_staged": {
       "count": 4,
       "examples": [
@@ -5095,7 +5106,6 @@
       "count": 6,
       "examples": [
         "UK_uksi_2018_42/5b218a3d45",
-        "UK_uksi_2023_1394/b07a178fd9",
         "UK_uksi_2013_1465/aac2db4e77"
       ]
     },

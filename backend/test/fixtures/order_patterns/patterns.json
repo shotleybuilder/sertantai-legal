@@ -695,6 +695,13 @@
         "UK_uksi_2025_1265/3c361f651e"
       ]
     },
+    "inline|made_relative|-|-|-|rules+partial": {
+      "count": 2,
+      "examples": [
+        "UK_ssi_2005_52/fd1431fa8b",
+        "UK_uksi_2004_3181/4c371b6387"
+      ]
+    },
     "inline|made_relative|-|-|other_law|none": {
       "count": 4,
       "examples": [
@@ -977,6 +984,12 @@
       "count": 2,
       "examples": []
     },
+    "table|date|-|-|-|rules+partial": {
+      "count": 1,
+      "examples": [
+        "UK_nisr_2007_294/01b6a343bb"
+      ]
+    },
     "table|date|-|-|other_law|none": {
       "count": 2,
       "examples": [
@@ -1090,6 +1103,12 @@
         "UK_nisr_2012_13/332e271a96",
         "UK_uksi_1992_2984/f83cac6ab5",
         "UK_uksi_1992_2990/838355ee7c"
+      ]
+    },
+    "table|made_relative|qualified|-|other_law|none": {
+      "count": 3,
+      "examples": [
+        "UK_uksi_2010_2169/d6d06cb313"
       ]
     },
     "table|made_relative|qualified|-|other_law|rules": {

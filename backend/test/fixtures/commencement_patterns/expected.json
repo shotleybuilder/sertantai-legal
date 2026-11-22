@@ -803,9 +803,10 @@
       ]
     },
     "UK_mwa_2010_8/b9ba052913": {
-      "class": "law:clause_unread",
+      "class": "law:clause_staged",
       "rules": [
-        "all — unread — everywhere, fully — clause_unread"
+        "all — 2011-02-15 — everywhere, fully — clause_staged",
+        "rest except s.21 — 2011-02-15 — everywhere, fully — provision_dated"
       ]
     },
     "UK_nia_2001_1/5f8c1e91d6": {
@@ -8569,7 +8570,7 @@
     "statement|none|instrument|present|by_order|plain|none": "accepted",
     "statement|none|instrument|present|date|plain|law:clause_date": "accepted",
     "statement|none|instrument|present|date|plain|law:clause_staged": "accepted",
-    "statement|none|instrument|present|date|qualified|law:clause_staged": "accepted",
+    "statement|none|instrument|present|date|qualified|law:clause_date": "accepted",
     "statement|none|instrument|present|list|plain|law:clause_staged": "accepted",
     "statement|none|instrument|present|list|plain|none": "accepted",
     "statement|none|instrument|present|made_relative|plain|law:clause_made_relative": "accepted",
@@ -8643,6 +8644,7 @@
     "statement|none|named|present|named_day|plain|rules:provision_dated": "accepted",
     "statement|none|named|present|named_day|qualified|none": "pending: a defined or event day (a known limit)",
     "statement|none|named|present|none|plain|law:clause_laid_relative": "accepted",
+    "statement|none|named|present|none|plain|law:clause_named_day": "accepted",
     "statement|none|named|present|none|plain|law:clause_staged": "accepted",
     "statement|none|named|present|none|plain|law:clause_unread": "accepted",
     "statement|none|named|present|none|plain|law:tied_to_other_law": "accepted",
@@ -8830,7 +8832,7 @@
     "statement|none|rest|present|made_relative|plain|none": "pending: a form the reader doesn't read yet",
     "statement|none|rest|present|made_relative|plain|rules:provision_dated": "accepted",
     "statement|none|rest|present|named_day|plain|rules:provision_dated": "accepted",
-    "statement|none|rest|present|none|plain|law:clause_unread": "accepted",
+    "statement|none|rest|present|none|plain|law:clause_staged": "accepted",
     "statement|none|rest|present|none|plain|unread": "pending: a defined or event day (a known limit)",
     "statement|none|rest|present|none|qualified|none": "accepted",
     "statement|none|rest|present|period|plain|law:clause_staged": "accepted",
@@ -8953,6 +8955,7 @@
     "statement|none|whole|present|named_day|plain|law:clause_named_day": "accepted",
     "statement|none|whole|present|named_day|plain|law:clause_unread": "accepted",
     "statement|none|whole|present|none|plain|law:clause_laid_relative": "accepted",
+    "statement|none|whole|present|none|plain|law:clause_made_relative": "accepted",
     "statement|none|whole|present|none|plain|law:clause_staged": "accepted",
     "statement|none|whole|present|none|plain|law:clause_unread": "accepted",
     "statement|none|whole|present|none|plain|law:tied_to_other_law": "accepted",

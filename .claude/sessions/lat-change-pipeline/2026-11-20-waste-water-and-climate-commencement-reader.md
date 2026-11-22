@@ -687,3 +687,9 @@ The round's 278 (14 laws; 1991 c.56 211), measured again today with the insertin
   4. `feed_only | own by_order_partly by by_order | feed full @ UK_ukpga_2003_37` (1 row, s.58(10)): `known:`, the Water Act's own wording, named earlier in the step.
   5. `differ | own staged by clause_made_relative | own later @ UK_uksi_2024_1332` (32 rows): **a feed error with proof.** reg.1(3)(b) brings reg.2(1), 3, 7(1)–(4) and 57(1) in on the day after the making "for the purposes of interpretation of the provisions listed in sub-paragraphs (c), (d) and (e)". The rest comes in on the 21st day, 1 January 2025. The feed has them fully in force from 12 December 2024. Proposed: register entries, one per row, from this one proof (Decision 14 (c)), as a dry run first.
 - **Recommendation:** (a) and (b) as above. Each write is a dry run first, then written on Jason's go.
+
+**Decision 18, decided (Jason 2026-11-22: "Do (a) and (b) as recommended", then "Clear to write").** Written after dry runs:
+- (a) 7 patterns copied into the fixtures by script, not `--accept`. 6 are accepted and SI 2010/2169's is `pending:`. MWA 2010/8's held input gained its approval date, 2010-12-15; its other two examples read the same. Two old patterns that only these examples held were dropped. No other example moved.
+- (b) `feed_differences.json`: 4 statuses (21 → 25 keys). RULES section 11's one-law row names SI 2016/359 and SI 2009/359 art.1(2) (Water Act 2003 s.58(10)).
+- (b) The feed-error register: 32 entries for SI 2024/1332, all from the one proof, reg.1(3)(b). It now holds 690 entries. reg.57(1) is left out because the feed stages it as we do. reg.2(1) is left out because its group is its insertion's.
+- Check PASS; targeted tests 6,753 green.

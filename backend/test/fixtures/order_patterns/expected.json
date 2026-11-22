@@ -56,6 +56,12 @@
       "class": "none",
       "rules": []
     },
+    "UK_nisr_2007_294/01b6a343bb": {
+      "class": "rules+partial",
+      "rules": [
+        "reg.11 — 2007-06-25 — NI, fully — order_schedule"
+      ]
+    },
     "UK_nisr_2009_114/d46e098753": {
       "class": "rules+all",
       "rules": [
@@ -415,6 +421,12 @@
     "UK_ssi_2005_492/1199567dca": {
       "class": "none",
       "rules": []
+    },
+    "UK_ssi_2005_52/fd1431fa8b": {
+      "class": "rules+partial",
+      "rules": [
+        "s.4, s.5, s.10(1) — 2005-02-03 — S, fully — order_date"
+      ]
     },
     "UK_ssi_2006_121/7eafcbfc7b": {
       "class": "none",
@@ -1916,6 +1928,12 @@
       "class": "none",
       "rules": []
     },
+    "UK_uksi_2004_3181/4c371b6387": {
+      "class": "rules+partial",
+      "rules": [
+        "s.4, s.5, s.10(1) — 2004-12-03 — E, fully — order_date"
+      ]
+    },
     "UK_uksi_2004_3338/6b1188b3d8": {
       "class": "none",
       "rules": []
@@ -2135,6 +2153,10 @@
       ]
     },
     "UK_uksi_2010_2169/c5aaf2522d": {
+      "class": "none",
+      "rules": []
+    },
+    "UK_uksi_2010_2169/d6d06cb313": {
       "class": "none",
       "rules": []
     },
@@ -2721,6 +2743,7 @@
     "inline|date|qualified|full|other_law|rules+partial": "accepted",
     "inline|made_relative|-|-|-|none": "pending: a form the order reader doesn't read yet",
     "inline|made_relative|-|-|-|rules": "accepted",
+    "inline|made_relative|-|-|-|rules+partial": "accepted",
     "inline|made_relative|-|-|other_law|none": "accepted",
     "inline|made_relative|-|-|other_law|rules": "accepted",
     "inline|made_relative|qualified|-|-|none": "pending: a form the order reader doesn't read yet",
@@ -2761,6 +2784,7 @@
     "table_header|none|-|-|-|none": "accepted",
     "table|date|-|-|-|none": "pending: a table row not read (its Schedule unnamed, or a qualifier or form not read)",
     "table|date|-|-|-|rules": "accepted",
+    "table|date|-|-|-|rules+partial": "accepted",
     "table|date|-|-|other_law|none": "accepted",
     "table|date|-|full|-|none": "accepted",
     "table|date|qualified|-|-|none": "accepted",
@@ -2778,6 +2802,7 @@
     "table|made_relative|qualified|-|-|none": "pending: a table row not read (its Schedule unnamed, or a qualifier or form not read)",
     "table|made_relative|qualified|-|-|rules": "accepted",
     "table|made_relative|qualified|-|-|rules+partial": "accepted",
+    "table|made_relative|qualified|-|other_law|none": "pending: a table row not read (its Schedule unnamed, or a qualifier or form not read)",
     "table|made_relative|qualified|-|other_law|rules": "accepted",
     "table|made_relative|qualified|-|other_law|rules+partial": "accepted",
     "table|none|-|-|-|none": "pending: a table row not read (its Schedule unnamed, or a qualifier or form not read)",
