@@ -630,3 +630,17 @@ The round's 278 (14 laws; 1991 c.56 211), measured again today with the insertin
   - (i) fix 1 to 4 now, by class and test first, with the per-fix checks; then write the statuses and examine the last two laws;
   - (ii) name them known limits.
 - **Recommendation: (i).** They are our own forms. Forms 1 and 3 can reach other orders, while (ii) would leave wrong dates on rows before 2002.
+
+- **Decision 17 decided (Jason 2026-11-22): (i), fix the four.** Done test first (56d1f36d, `order_table_purpose_forms_test`):
+  1. A Purpose column is counted within its own header row (SSI 2005/351's "Column 1 | Column 2 | Column 3" row had pushed it past the cells).
+  2. A completing purpose brings its row in fully (SSI 2016/42).
+  3. A repeals row's subject-less entries are dropped (`RepealLists.drop_table_entries/1`; NISR 2003/489).
+  4. A completing qualifier inside a row is dropped, and the items after it stay (NISR 2003/489).
+- **Results:**
+  - targeted tests 6745/6748, the 3 failing tests all held examples;
+  - Credo adds no issues;
+  - the check on the 12 laws: "own earlier" 130 → 6 rows; ASP 2011/9's 89 rows are gone;
+  - NISI 1997/2778's 70 rows read from the 1978 Order's repeals are now left to orders: the feed dates them by an order of 2008-04-03, which is not held. They move to the `fix: fetch` status for that law.
+- **Held moves, 3, for Jason** (`held-write.exs` dry run), all to the order's words:
+  - SSI 2001/81 ×2 (fa98f53c24, d4a1b0923b): its Purpose column is read, "Only for the purpose of … insofar as it relates to continuing attorneys", so fully becomes partly;
+  - NISR 2012/13 (a308dfc0df): "Section 4 | In so far as not already in operation" is completing, so "in relation to" becomes fully, as the other NISR 2012/13 units were accepted earlier today.
