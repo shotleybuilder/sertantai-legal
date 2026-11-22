@@ -110,13 +110,13 @@
       ]
     },
     "UK_nisr_2012_13/a308dfc0df": {
-      "class": "rules+partial",
+      "class": "rules",
       "rules": [
-        "s.4 — 2012-04-01 — everywhere, in relation to — order_schedule",
-        "s.40 — 2012-04-01 — everywhere, in relation to — order_schedule",
-        "s.42 — 2012-04-01 — everywhere, in relation to — order_schedule",
+        "s.4 — 2012-04-01 — everywhere, fully — order_schedule",
+        "s.40 — 2012-04-01 — everywhere, fully — order_schedule",
+        "s.42 — 2012-04-01 — everywhere, fully — order_schedule",
         "s.43 — 2012-04-01 — everywhere, fully — order_schedule",
-        "s.44 — 2012-04-01 — everywhere, in relation to — order_schedule"
+        "s.44 — 2012-04-01 — everywhere, fully — order_schedule"
       ]
     },
     "UK_nisr_2012_13/e893f527c4": {
@@ -267,15 +267,15 @@
       ]
     },
     "UK_ssi_2001_81/d4a1b0923b": {
-      "class": "rules",
+      "class": "rules+partial",
       "rules": [
-        "s.6(2)(e) — 2001-04-02 — everywhere, fully — order_schedule"
+        "s.6(2)(e) — 2001-04-02 — everywhere, in relation to — order_schedule"
       ]
     },
     "UK_ssi_2001_81/fa98f53c24": {
-      "class": "rules",
+      "class": "rules+partial",
       "rules": [
-        "sch.5.para.7 — 2001-04-02 — everywhere, fully — order_schedule"
+        "sch.5.para.7 — 2001-04-02 — everywhere, in relation to — order_schedule"
       ]
     },
     "UK_ssi_2002_118/0793c14685": {

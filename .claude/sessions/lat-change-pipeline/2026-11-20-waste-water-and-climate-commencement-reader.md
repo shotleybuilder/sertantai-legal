@@ -644,3 +644,14 @@ The round's 278 (14 laws; 1991 c.56 211), measured again today with the insertin
 - **Held moves, 3, for Jason** (`held-write.exs` dry run), all to the order's words:
   - SSI 2001/81 ×2 (fa98f53c24, d4a1b0923b): its Purpose column is read, "Only for the purpose of … insofar as it relates to continuing attorneys", so fully becomes partly;
   - NISR 2012/13 (a308dfc0df): "Section 4 | In so far as not already in operation" is completing, so "in relation to" becomes fully, as the other NISR 2012/13 units were accepted earlier today.
+- **Written (Jason's go, 2026-11-22):**
+  - **The held moves:** the three, with `held-write.exs`; a dry run after shows 0 moved.
+  - **The statuses:** 21 in `feed_differences.json`. They are:
+    - the drafted ones;
+    - NISI 1997/2778's fetch (the order of 2008-04-03);
+    - the Waste and Emissions Trading Act 2003's two one-law wordings, added to the RULES row: WSI 2004/1488's "Subject to paragraph (2)", and the feed's first stage taken from England's order.
+- **Two more fixes found while statusing (6f7b0f43, test first, no held example moves):**
+  - "Section 4, apart from subsection (6)" now excepts the subsection (ASP 2005/3, 4 rows).
+  - A devolved order on its own legislature's Act no longer takes a territory from its title or its application ("This Order applies in relation to Wales": WSI 2011/476 on MWA 2010/8, 20 rows), as RULES `devolved-order-carries-no-territory` holds. Stored rules affected: 104 (ANAW 2017/2 92, four asps 11, MWA 2010/8 1). They change at the re-read.
+- **The check on the 12 laws:** PASS. Our faults 0, leftovers not named 0, every feed-difference group statused. Targeted tests 6750/6750.
+- **Seen outside these laws, for Settle's round check:** ASP 2005/13 has 13 rows `not_reached` as our fault, and ASP 2014/2 has 100 rows "own later" (SSI 2014/277's Schedule is not stored, already on the fetch list). Both were there before today's fixes.
