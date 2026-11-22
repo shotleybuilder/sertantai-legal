@@ -589,3 +589,11 @@ The round's 278 (14 laws; 1991 c.56 211), measured again today with the insertin
   - **A purpose in a table cell read as full:** NISR 1999/325 Sch.1 "Article 3(3)(a) and 3(6) (both paragraphs for the purposes of Article 40(5))" dates NISI 1997/2778 art.3(3)(a) fully from 19 August 1999 (the feed: 27 November 2003). 165 rows differ, in NISI 1997/2778 (105) and ASP 2005/3 (60).
   - **"To the extent that it is not already in operation"** (NISR 2007/282 art.2(1)) is an unreviewed leftover reaching 4,222 rows of NISI 2006/3336: a completing form ("so far as not already in force") in a wording not yet read.
 - **Per-law status keys:** `"<shape> @ <law>"` (24b934bc).
+- **The two findings fixed (55a27e92, test first):**
+  - NISR 1999/325's "(both paragraphs for the purposes of …)" now qualifies both items (the bracket had been dropped as a heading).
+  - NISR 2007/282 art.2(1), which had been dropped, now reads: Article 280 from 4 May 2007, for making secondary legislation. Several forms were involved: "the date of this Order" as the made date; "so much of" as a purpose; regulations "to be made"; "not already in operation" as completing; and another Order's Articles now dropped only up to their own "of the" (the pattern had swallowed Article 280 of the 2006 Order with them).
+  - The check on the 12 laws: PASS (our faults 0, leftovers 0). NISI 1997/2778's rows that differ: 105 → 70.
+  - **Eight held order examples move, all to the stated reading (for Jason):**
+    - for making secondary legislation, not "in relation to": SI 1993/2050, NISR 2012/13 (two units), SI 2010/2191;
+    - completing, so fully: SI 1976/530 s.110 and SI 1976/1379 Sch.16 Pt III ("so far as it is not already in operation");
+    - partly ("so much of Schedule 14 as relates to— …"): SI 1992/1755 and SI 1992/2454.
