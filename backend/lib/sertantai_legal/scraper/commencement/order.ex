@@ -1150,11 +1150,18 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     end
   end
 
+  # (an undertaker's place is the place: "section 3 (…), so far as relating
+  # to undertakers whose areas are wholly or mainly in England" — SI
+  # 2025/726 reg.2 — England's, as Decision 11 reads "wholly or mainly
+  # English undertakers")
+  @undertakers_place ~r/,?\s*(?:(?:in\s*)?so\s*far\s+as\s+(?:it\s+relates|they\s+relate|relating)\s+to|in\s+relation\s+to)\s+undertakers\s+whose\s+areas\s+are\s+wholly\s+or\s+mainly\s+in\s+(?:England|Wales)\s*(?=[;,.]|$)/iu
+
   defp plain_items(line, _aliases, sch) do
     # (the rest of it, for one place: "Schedule 8 in so far as it relates to
     # England and Wales and has not already been commenced", SI 1992/2984)
     {line, place} = Territory.completing(line)
     territory = place || Territory.of(line)
+    line = String.replace(line, @undertakers_place, "")
     {own, related} = split_related(line)
     sch = line |> ScheduleParts.as_place() |> schedule_context(sch)
     {own, excepted} = split_excepted(own, sch)

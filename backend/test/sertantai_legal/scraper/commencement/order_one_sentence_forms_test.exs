@@ -4,7 +4,10 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderOneSentenceFormsTest do
   sentence naming its provision: "<date> is the appointed day on which
   section 23 (…) of the Act comes into force" (SSI 2013/252), and "The day
   appointed for the coming into force of X for the purpose of P is D1 and
-  for all other purposes is D2" (SSI 2007/50).
+  for all other purposes is D2" (SSI 2007/50); and an item's place in
+  undertakers' words, "so far as relating to undertakers whose areas are
+  wholly or mainly in England" (SI 2025/726), read as England's alone, as
+  Decision 11 reads an authority's.
   """
   use ExUnit.Case, async: true
 
@@ -49,5 +52,22 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderOneSentenceFormsTest do
     assert partly.purposes != nil
     assert %{scope: ["s.24(1)..s.24(4)"], when: {:date, ~D[2007-03-31]}} = fully
     assert lines([fully]) |> hd() =~ "fully"
+  end
+
+  test "“section 3 (…), so far as relating to undertakers whose areas are wholly or mainly in England” is England's alone (SI 2025/726 reg.2)" do
+    act = %{law: "UK_ukpga_2025_5", title: "Water (Special Measures) Act", year: "2025"}
+
+    rules =
+      Doc.new("UK_uksi_2025_726", [
+        ~s"""
+        <Legislation xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>The Water (Special Measures) Act 2025 (Commencement No. 1) Regulations 2025</dc:title><Secondary><Body><P1 id="regulation-2"><Pnumber>2</Pnumber><P1para><Text>The following provisions of the Water (Special Measures) Act 2025 come into force on 23rd June 2025—</Text><P3 id="regulation-2-a"><Pnumber>a</Pnumber><P3para><Text>section 3 (pollution incident reduction plans), so far as relating to undertakers whose areas are wholly or mainly in England;</Text></P3para></P3><P3 id="regulation-2-b"><Pnumber>b</Pnumber><P3para><Text>section 5 (nature-based solutions), so far as relating to undertakers whose areas are wholly or mainly in England.</Text></P3para></P3></P1para></P1></Body></Secondary></Legislation>
+        """
+      ])
+      |> Order.rules(act)
+
+    assert lines(rules) == [
+             "s.3 — 2025-06-23 — E, fully — order_date",
+             "s.5 — 2025-06-23 — E, fully — order_date"
+           ]
   end
 end
