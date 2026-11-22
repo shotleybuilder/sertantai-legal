@@ -655,3 +655,35 @@ The round's 278 (14 laws; 1991 c.56 211), measured again today with the insertin
   - A devolved order on its own legislature's Act no longer takes a territory from its title or its application ("This Order applies in relation to Wales": WSI 2011/476 on MWA 2010/8, 20 rows), as RULES `devolved-order-carries-no-territory` holds. Stored rules affected: 104 (ANAW 2017/2 92, four asps 11, MWA 2010/8 1). They change at the re-read.
 - **The check on the 12 laws:** PASS. Our faults 0, leftovers not named 0, every feed-difference group statused. Targeted tests 6750/6750.
 - **Seen outside these laws, for Settle's round check:** ASP 2005/13 has 13 rows `not_reached` as our fault, and ASP 2014/2 has 100 rows "own later" (SSI 2014/277's Schedule is not stored, already on the fetch list). Both were there before today's fixes.
+
+## Settle 2 (2026-11-22)
+
+- **Runs** (`backend/data/reports/commencement-reader/wwc-settle-*.txt`):
+  - the round: PASS (our faults 0, leftovers not named 0, stale feed errors 0), with 5 feed-difference groups still to status;
+  - the four switched families: PASS;
+  - Dialyzer: passes;
+  - the suite: 12,491 pass, none failing (`wwc-settle-suite2.txt`). The first run crashed: the BEAM segfaulted after 60 s, before any failure was reported, and the second run was clean;
+  - catalogues: own clauses 4 new patterns and orders 3, unclassified 0 in both.
+- **Examples reading differently in the catalogue run: 14.**
+  - 13 sit under `pending:` patterns. The tests and `held-write.exs` skip these by design, and they now read where they didn't (e.g. SSI 2013/163's "The purpose of making subordinate legislation" as for making secondary legislation, by this round's Purpose-column fix).
+  - 1 is accepted, MWA 2010/8/b9ba052913, now read by the Measure's approval day. It moves to a new pattern.
+
+## Decision 18 for Jason: Settle 2's new patterns and the round's last statuses
+
+- **The aim:** `binds-on-date`.
+- **(a) The 7 new catalogue patterns.** Each was read against its words.
+  - **Accept 6:**
+    - WSI 2010/1821 ("…; it applies in relation to Wales and comes into force on 15 July 2010": the clause date);
+    - SSI 2019/436 and SI 2023/1394 ("on the later of—");
+    - MWA 2010/8 ("The remaining provisions … two months beginning on the day on which this Measure is approved");
+    - SSI 2005/52 and SI 2004/3181 (each commencing ss.4, 5 and 10(1) of the Waste and Emissions Trading Act 2003 for its own territory, on the day after it was made);
+    - NISR 2007/294 (NISI 2007/611 art.11, NI, fully).
+  - **`pending:` 1:** SI 2010/2169 Sch. "Paragraph 54, so far as the amendments made by that paragraph provide power … to make regulations under section 21F of the Local Government Act 2000" reads nothing. It is the existing `pending:` table class "a table row not read"; one law, 3 statements.
+  - **How to write them:** copy the 7 patterns, their examples and their readings into the fixtures by a script, as a dry run first. `--accept` re-chooses the examples of existing patterns, which this morning's re-cut showed is unsafe.
+- **(b) The round's 5 groups with no status:**
+  1. `inserted | feed_only | ours undated: unread` (72 rows, 7 laws, EU law): `known:`, the same status as the other insertions only the feed dates.
+  2. `differ | own dated by order_date | own later @ UK_asp_2014_2` (100 rows): `fix: fetch`. SSI 2014/277's Schedule is not stored.
+  3. `differ | own dated by clause_date | own earlier @ UK_uksi_2016_359` (10 rows): `known:`. This is the English twin of WSI 2016/359 reg.1 (the same one-law wording).
+  4. `feed_only | own by_order_partly by by_order | feed full @ UK_ukpga_2003_37` (1 row, s.58(10)): `known:`, the Water Act's own wording, named earlier in the step.
+  5. `differ | own staged by clause_made_relative | own later @ UK_uksi_2024_1332` (32 rows): **a feed error with proof.** reg.1(3)(b) brings reg.2(1), 3, 7(1)–(4) and 57(1) in on the day after the making "for the purposes of interpretation of the provisions listed in sub-paragraphs (c), (d) and (e)". The rest comes in on the 21st day, 1 January 2025. The feed has them fully in force from 12 December 2024. Proposed: register entries, one per row, from this one proof (Decision 14 (c)), as a dry run first.
+- **Recommendation:** (a) and (b) as above. Each write is a dry run first, then written on Jason's go.
