@@ -258,3 +258,35 @@ The full log is in `backend/data/reports/commencement-reader/wwc-commencement-re
 - **ANAW 2017/3:** 797 rows agree with the feed (360), 0 differ (1), none left to orders (520 dated by the feed alone).
 - **The ten held-orders laws together:** 3,831 rows agree, 177 dated by the feed alone, 121 where the feed holds only a partial stage, 38 differ.
 - **Held moves for Settle:** SI 2012/873 art.2 (its pt.1 rule goes), beside SI 2011/694 (two), SI 2010/2169 and SSI 2012/191. The three pending from before are SI 2023/1394, SI 2006/641 and SSI 2019/436.
+
+## B, held orders (round 5): Water Act 2003 (ece087e6)
+
+- **Fixed, test first, each from the order's words:**
+  - an item's "in so far as it relates to the following repeals specified in Schedule 9—" sub-list lists repeals, never items (SI 2005/2714 art.2(m), art.4(g)). It read the Water Industry Act's ss.28, 30 and 194 as the Act's (s.30: 18 rows);
+  - "the WIA", an abbreviation the order never gives the Act, is another law ("inserting into the WIA paragraph 11 of Schedule 1A");
+  - "subsections (3) to (7) and subsection (1) in so far as it relates to those subsections": subsection (1) alone partly (SI 2006/984 art.2(e));
+  - "subsection (1), in so far as it relates to subsection (2), and subsections (2) and (4)": the latter fully (SI 2004/641 art.3(h));
+  - "The day appointed for the coming into force of— (a) …; (b) …; is 1 April 2004." (WSI 2004/910; 14 stored orders have the form). A bare closing date only: five access-land orders close "is 19th September 2004 or the end of a period of six months …";
+  - "section 56 (…), but— (i) …": the section partly (SI 2004/641 art.3(l));
+  - ", except the amendments made by subsections (4) and (5)" and "except in so far as subsection (2) gives effect to …" (SI 2004/641 art.3(e), SI 2005/2714 art.4(a));
+  - "This Order applies in relation to England only." is the order's territory (SI 2010/975, SI 2008/1922, SI 2012/264). The order's extent ("This Order extends to England and Wales": SI 2024/35) never is.
+- **Water Act 2003:** 638 rows agree with the feed (583), 0 differ but one (29), 1 dated by the feed alone (15).
+- **The ten held-orders laws together:** 3,894 agree (3,831), 164 dated by the feed alone (177), 108 feed partial only (121), 1 differs (38). The leftovers gate's 3 are the same as before (SI 1978/954, SI 2010/2169 art.3(2) and (3)).
+- **To name `known:`:** Water Act s.58(10). SI 2009/359 art.1(2) reads "applies in relation to England only except article 2(d) which extends to Scotland only", a one-law wording, 1 row.
+- **Held moves for Settle, new:** SI 2011/2896 art.2(h) ("paragraph 70 of Schedule 3 and section 22 so far as relating to that paragraph": the paragraph fully, the section partly); SI 2012/264 (England, by its art.1(2)).
+- **Left for Decision 10:** Water Act ss.67, 77, 78, 80, 81 and 86 (about 40 rows).
+
+## Decision 10 for Jason: an Act that gives Wales its own commencing authority
+
+- **The question:** Water Act 2003 s.105(6) makes the Secretary of State the commencing authority for ss.58, 69, 75, 77, 78, 80, 81 and 86 "in relation to England", and the Assembly "in relation to Wales". s.67 is the Assembly's alone. So:
+  - SI 2004/2528 brings s.77 in for England only on 1 October 2004, though it names no place. The feed says so too: England 1 October, Wales 11 November (WSI 2004/2916).
+  - WSI 2004/910 brings s.67 in everywhere, though it is a Welsh order. We read every Welsh order as Wales's.
+
+  Do we read the Act's authority split?
+- **The aim:** `binds-on-date`. Today s.77 reads fully in force on 1 October 2004, six weeks early for Wales.
+- **Reach:** the Water Act, about 40 rows. At least five more Acts give Wales its own commencing authority: 2006 c.28 s.83(4), 2008 c.23 s.44(3), 2010 c.29 s.49(3), 2020 c.7 s.87 and 2022 c.30 s.170(4). 2008 c.29 has the Water Act's table form. Most of their orders name their place in their title, so the reach beyond the Water Act is unmeasured.
+- **Options:**
+  - (a) **Read it in this step, test first:** the Act's clause rules carry each authority's territory. An order made by that authority (a UK SI for the Secretary of State, a Welsh SI for the Assembly or Welsh Ministers) takes that territory where its own words name none. It replaces the Welsh-type default for the Act's provisions the Act gives the Assembly whole (s.67).
+  - (b) **A known limit:** those rows date fully from the first order. Wales's later day is lost.
+- **Recommendation: (a).** The Act's own clause is primary (RULES `primary-first-derived-fills`), and the feed agrees with it. The family holds at least six such Acts, so a known limit would keep recurring. Cost: one reader class, about half a session.
+
