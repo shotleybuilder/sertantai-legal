@@ -491,3 +491,19 @@ The full log is in `backend/data/reports/commencement-reader/wwc-commencement-re
   - Two laws, and a change to how refs are kept: left pending, with the bug entry widened.
 - **The ten held-orders laws:** agree 4,138, own only 1,379, feed only 24, differ 1. Their patterns catalogue: 0 examples reading differently.
 - **B is done.** Settle is next: the full suite, Dialyzer, the round and switched checks, both catalogues, and the held moves to Jason (18 catalogue examples plus the 24 feed errors).
+
+## Settle 1 (2026-11-22): back to Fix
+
+- **Runs** (`backend/data/reports/commencement-reader/wwc-settle-*.txt`, about 21 min):
+  - suite: 12,447/12,465, the 18 failures all held examples;
+  - Dialyzer: passes;
+  - the four switched families: PASS;
+  - the round: FAIL. Our faults 0; 5 leftovers not named; 31 of 34 feed-difference groups with no status;
+  - catalogues: own clauses 3 new patterns, 14 examples reading differently; orders 1 new pattern, 14 examples reading differently.
+- **Correction:** "B is done" (round 9) was wrong. It held for the ten held-orders laws only. Decision 7's B leftovers (1968 c.47 s.60(2), SI 2020/1095 reg.1(2), SI 2000/2911 reg.1, 1987 c.26 s.340(2)) and the statuses for A, C and D across the round were not done.
+- **A regression found and fixed (783eb09e):** the SI 2000/800 fix (2ccb2d36) made "so far as they extend to Northern Ireland" a place, but the place reader had no "extend to" form, so SI 1989/1557 art.3(1) read the Water Act 1989 s.4, s.13 and Sch.2 as in force everywhere. Now Northern Ireland's. "Except to the extent that they extend to Scotland" names the place left out (SI 2005/1521). SI 1996/3056 art.2 ("the repeals extend to England and Wales") now reads England and Wales: a new held move.
+- **The rest of B, by decision:**
+  - A, `fix: fetch`: NISI 2006/3336, ASP 2009/12, NISI 1997/2778, ASP 2011/9, ASP 2005/3 and the other laws left to unsearched orders (about 6,560 rows). Statuses need a per-law key, since several shapes mix A's laws with others (the gate change, test first).
+  - C, the feed alone dates an insertion (about 2,320 rows: appointed, rules not held, no amending law, not reached, no text rules, no pointer, unread): `known:`, the feed's date standing. Decision 13 kinds 2 and 4 are their Rebuild items.
+  - D and the feed-error register: SSI 2020/154 (the text defers to 2027); the 24 proposals.
+- **To examine (about 1,900 rows, 20 laws):** SI 2017/462 and 2015/773 (no clause); WSI 2017/1041 and 2011/1014 (a staged start only); SI 2015/962 (partly only); SI and WSI 2016/359 (end 2018 against 2020); SI 2012/2079; SI 2020/1095; NISR 2002/331, 2008/231, 2011/127; SI 2019/544, 2021/1095, 2020/1265, 2024/1332; WSI 2005/1806; ASP 2014/2; the inserted rows that differ (278, 1991 c.56 211).
