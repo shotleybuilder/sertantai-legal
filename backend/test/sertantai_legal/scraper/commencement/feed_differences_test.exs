@@ -108,4 +108,28 @@ defmodule SertantaiLegal.Scraper.Commencement.FeedDifferencesTest do
     assert List.last(FeedDifferences.summary(groups, %{shape => "known: x"})) =~
              "with no status: 0"
   end
+
+  test "a status keyed by law (\"<shape> @ <law>\") is that law's, and wins over the shape's own" do
+    rows = [row(%{law: "UK_a"}), row(%{law: "UK_b", id: "reg.2"})]
+    [{shape, _}] = groups = FeedDifferences.groups(rows)
+
+    assert FeedDifferences.status(%{shape => "known: all"}, shape, "UK_a") == "known: all"
+
+    assert FeedDifferences.status(
+             %{shape => "known: all", "#{shape} @ UK_a" => "fix: a"},
+             shape,
+             "UK_a"
+           ) == "fix: a"
+
+    assert FeedDifferences.status(%{}, shape, "UK_a") == nil
+
+    # one law statused, the other not: the group still counts as unstatused
+    lines = FeedDifferences.summary(groups, %{"#{shape} @ UK_a" => "known: a"})
+    assert List.last(lines) =~ "with no status: 1"
+    assert Enum.any?(lines, &(&1 =~ "UK_a" and &1 =~ "known: a"))
+    assert Enum.any?(lines, &(&1 =~ "UK_b" and &1 =~ "no status"))
+
+    both = %{"#{shape} @ UK_a" => "known: a", "#{shape} @ UK_b" => "fix: b"}
+    assert List.last(FeedDifferences.summary(groups, both)) =~ "with no status: 0"
+  end
 end

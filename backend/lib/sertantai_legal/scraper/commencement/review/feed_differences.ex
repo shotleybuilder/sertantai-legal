@@ -126,20 +126,62 @@ defmodule SertantaiLegal.Scraper.Commencement.FeedDifferences do
     %{rows: length(rs), laws: map_size(by_law), by_law: by_law, examples: examples}
   end
 
-  @doc "The lines a check prints: each group with its status, then the count of groups with none."
+  @doc """
+  A law's status in a group: its own (`"<shape> @ <law>"`), else the
+  group's (`"<shape>"`), else nil. A status one law earns never names
+  another law's rows of the same shape.
+  """
+  @spec status(map(), String.t(), String.t()) :: String.t() | nil
+  def status(reviewed, shape, law),
+    do: Map.get(reviewed, "#{shape} @ #{law}") || Map.get(reviewed, shape)
+
+  @doc """
+  The lines a check prints: each group with its status (or each law's,
+  where a status is keyed by law), then the count of groups any law of
+  which has none.
+  """
   @spec summary([{String.t(), group()}], map()) :: [String.t()]
   def summary(groups, reviewed) do
-    unreviewed = Enum.count(groups, fn {shape, _} -> not Map.has_key?(reviewed, shape) end)
+    unreviewed = Enum.count(groups, &unstatused?(&1, reviewed))
 
     ["\ndifferences from the feed by cause (two-way gate): #{length(groups)} groups"] ++
-      Enum.flat_map(groups, fn {shape, g} ->
-        [
-          "  #{g.rows} rows, #{g.laws} laws: #{shape} [#{Map.get(reviewed, shape, "no status")}]"
-          | for(
-              e <- g.examples,
-              do: "      #{e.law} #{e.row} own #{inspect(e.own)} feed #{inspect(e.feed)}"
-            )
-        ]
-      end) ++ ["feed difference groups with no status: #{unreviewed}"]
+      Enum.flat_map(groups, &group_lines(&1, reviewed)) ++
+      ["feed difference groups with no status: #{unreviewed}"]
   end
+
+  defp unstatused?({shape, g}, reviewed),
+    do: Enum.any?(Map.keys(g.by_law), &is_nil(status(reviewed, shape, &1)))
+
+  defp group_lines({shape, g}, reviewed) do
+    head = "  #{g.rows} rows, #{g.laws} laws: #{shape} [#{group_status(shape, g, reviewed)}]"
+    [head | law_lines(shape, g, reviewed) ++ example_lines(g)]
+  end
+
+  # the group's status where every law shares it, else "by law"
+  defp group_status(shape, g, reviewed) do
+    case g.by_law |> Map.keys() |> Enum.map(&status(reviewed, shape, &1)) |> Enum.uniq() do
+      [nil] -> "no status"
+      [one] -> one
+      _ -> "by law"
+    end
+  end
+
+  defp law_lines(shape, g, reviewed) do
+    if group_status(shape, g, reviewed) == "by law",
+      do:
+        g.by_law
+        |> Enum.sort_by(fn {law, n} -> {-n, law} end)
+        |> Enum.map(&law_line(&1, shape, reviewed)),
+      else: []
+  end
+
+  defp law_line({law, n}, shape, reviewed),
+    do: "      @ #{law} #{n} rows [#{status(reviewed, shape, law) || "no status"}]"
+
+  defp example_lines(g),
+    do:
+      for(
+        e <- g.examples,
+        do: "      #{e.law} #{e.row} own #{inspect(e.own)} feed #{inspect(e.feed)}"
+      )
 end
