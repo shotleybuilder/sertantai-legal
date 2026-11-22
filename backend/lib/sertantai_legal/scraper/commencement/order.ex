@@ -805,10 +805,15 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   # following provisions of the Act is …"; "the 20th of May 2005" (SSI
   # 2005/256) as "the 20th May 2005"
   @appointed_for_coming ~r/\b(the\s+(?:appointed\s+(?:day|date)|(?:day|date)\s+appointed)\s+for)\s+(?!the\s+coming\b)(.+?)\s+coming\s+into\s+(force|operation)\s+is\b/isu
+  # "14th December 2007 is the appointed day on which the following
+  # provisions of the … Act 2003 come into force:–" (SSI 2007/530) as "The
+  # following provisions … come into force on 14th December 2007:–"
+  @day_on_which ~r/^\s*(\d{1,2}(?:st|nd|rd|th)?\s+\w+\s+\d{4})\s+is\s+the\s+(?:appointed\s+)?day\s+(?:appointed\s+)?on\s+which\s+(the\s+following\s+provisions\b.*?)\s+(comes?)\s+into\s+(force|operation)\b/isu
   @day_of_month ~r/\b(\d{1,2}(?:st|nd|rd|th)?)\s+of\s+(January|February|March|April|May|June|July|August|September|October|November|December)\b/iu
 
   defp wording(text) do
     text
+    |> String.replace(@day_on_which, "\\2 \\3 into \\4 on \\1")
     |> String.replace(@appointed_for_coming, "\\1 the coming into \\3 of \\2 is")
     |> String.replace(@day_of_month, "\\1 \\2")
   end
@@ -1830,9 +1835,12 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   end
 
   defp table_rows(el) do
+    column = purpose_column(el)
+
     el
     |> xpath(~x".//*[local-name()='tbody']/*[local-name()='tr']"l)
     |> Enum.map(fn tr -> tr |> xpath(~x"./*[local-name()='td']"l) |> Enum.map(&Doc.text/1) end)
+    |> Enum.map(&with_purpose(&1, column))
     # a repealed Act by its chapter ("1894 c. 60.": an Appendix of repeals,
     # SI 1995/965) is no provision of the Act's
     |> Enum.reject(fn cells ->
@@ -1860,6 +1868,29 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     |> then(fn {acc, parent} -> flush_last(acc, parent) end)
     |> Enum.reverse()
   end
+
+  # a later column its header names "Purpose" ("Column 1 Provisions of the
+  # Act | Column 2 Subject matter | Column 3 Purpose": SSI 2013/163 art.3(2)
+  # — "Where a purpose is specified in column 3 …, only for that purpose")
+  defp purpose_column(el) do
+    el
+    |> xpath(~x".//*[local-name()='th']"l)
+    |> Enum.map(&Doc.text/1)
+    |> Enum.find_index(&(&1 =~ ~r/\bpurposes?\b/i))
+    |> then(&if(&1 != nil and &1 > 1, do: &1))
+  end
+
+  # the row's purpose in place of its subject, where the purpose column holds one
+  defp with_purpose(cells, nil), do: cells
+
+  defp with_purpose([first, _subject | _] = cells, column) do
+    case cells |> Enum.at(column, "") |> String.trim() do
+      "" -> cells
+      purpose -> [first, String.replace(purpose, ~r/^\W*(?=the\s+purposes?\s+of\b)/i, "for ")]
+    end
+  end
+
+  defp with_purpose(cells, _column), do: cells
 
   # a row with no subject is a heading for the rows under it ("Section 44" over
   # "paragraph 3 …"); with none under it, it is an item itself (AR-15: SI
@@ -1944,9 +1975,28 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
            Text.words_of(order, "article-#{n}") <> " " <> Text.words_of(order, "regulation-#{n}") do
       case parse_dates(words) do
         [d] -> d
+        [] -> paragraphs_date(order, n)
         _ -> nil
       end
     else
+      _ -> nil
+    end
+  end
+
+  # the one date in the article's paragraphs, where its own words hold none
+  # ("3.—(1) Subject to paragraph (2), 10th June 2013 is the day appointed
+  # …": SSI 2013/163)
+  defp paragraphs_date(order, n) do
+    dates =
+      for id <- ["article-#{n}", "regulation-#{n}"],
+          el = Doc.element(order, id),
+          el != nil,
+          d <- parse_dates(Doc.text(el)),
+          uniq: true,
+          do: d
+
+    case dates do
+      [d] -> d
       _ -> nil
     end
   end

@@ -259,4 +259,31 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderDayFormsTest do
              |> Order.rules(@water) == []
     end
   end
+
+  test "“14th December 2007 is the appointed day on which the following provisions of the … Act 2003 come into force:– (a) sections 12 to 14; (b) section 16; and (c) section 19.” (SSI 2007/530 art.2)" do
+    order =
+      doc(
+        "UK_ssi_2007_530",
+        "The Water Environment and Water Services (Scotland) Act 2003 (Commencement No. 7) Order 2007",
+        ~S"""
+        <P1 id="article-2"><Pnumber>2</Pnumber><P1para><Text>14th December 2007 is the appointed day on which the following provisions of the Water Environment and Water Services (Scotland) Act 2003 come into force:–</Text>
+        <P3 id="article-2-a"><Pnumber>a</Pnumber><P3para><Text>sections 12 to 14;</Text></P3para></P3>
+        <P3 id="article-2-b"><Pnumber>b</Pnumber><P3para><Text>section 16; and</Text></P3para></P3>
+        <P3 id="article-2-c"><Pnumber>c</Pnumber><P3para><Text>section 19.</Text></P3para></P3>
+        </P1para></P1>
+        """
+      )
+
+    act = %{
+      law: "UK_asp_2003_3",
+      title: "Water Environment and Water Services (Scotland) Act",
+      year: "2003"
+    }
+
+    assert order |> Order.rules(act) |> Enum.map(&{&1.scope, &1.when}) == [
+             {["s.12..s.14"], {:date, ~D[2007-12-14]}},
+             {["s.16"], {:date, ~D[2007-12-14]}},
+             {["s.19"], {:date, ~D[2007-12-14]}}
+           ]
+  end
 end

@@ -79,8 +79,12 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderMisreadFormsTest do
 
     all = refs(rules)
 
+    # (a range of roman-numbered paragraphs is its paragraphs, each named)
     for r <- [
-          "s.100(2)(a)(iii)..s.100(2)(a)(vi)",
+          "s.100(2)(a)(iii)",
+          "s.100(2)(a)(iv)",
+          "s.100(2)(a)(v)",
+          "s.100(2)(a)(vi)",
           "s.100(2)(a)(viii)",
           "s.100(2)(a)(ix)",
           "s.100(2)(b)(vi)",

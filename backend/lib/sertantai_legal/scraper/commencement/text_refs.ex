@@ -262,6 +262,35 @@ defmodule SertantaiLegal.Scraper.Commencement.TextRefs do
           state
       end)
 
-    Enum.reverse(refs)
+    refs |> Enum.reverse() |> Enum.flat_map(&lettered/1)
+  end
+
+  # a range of lettered (or roman-numbered) paragraphs under one parent,
+  # each named: "79(2)(a) to (d)" is (a), (b), (c) and (d) — LatRef orders
+  # ranges by number, so a lettered range would cover none (SSI 2009/393)
+  @lettered ~r/^(.*\()([a-z]+)\)\.\.(.*\()([a-z]+)\)$/
+
+  defp lettered(ref) do
+    with [_, parent, a, parent, b] <- Regex.run(@lettered, ref),
+         [_ | _] = labels <- labels(a, b) do
+      Enum.map(labels, &"#{parent}#{&1})")
+    else
+      _ -> [ref]
+    end
+  end
+
+  @romans ~w(i ii iii iv v vi vii viii ix x xi xii xiii xiv xv xvi xvii xviii xix xx)
+
+  defp labels(a, b) do
+    cond do
+      a in @romans and b in @romans -> between(@romans, a, b)
+      String.length(a) == 1 and String.length(b) == 1 -> between(Enum.map(?a..?z, &<<&1>>), a, b)
+      true -> []
+    end
+  end
+
+  defp between(labels, a, b) do
+    {i, j} = {Enum.find_index(labels, &(&1 == a)), Enum.find_index(labels, &(&1 == b))}
+    if i < j, do: Enum.slice(labels, i..j), else: []
   end
 end

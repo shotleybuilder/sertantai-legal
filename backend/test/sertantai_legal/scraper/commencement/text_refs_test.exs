@@ -15,6 +15,17 @@ defmodule SertantaiLegal.Scraper.Commencement.TextRefsTest do
     assert TextRefs.refs_in("section 2 of the Health and Safety at Work etc. Act 1974") == []
   end
 
+  test "a range of lettered or numbered paragraphs is its paragraphs, each named (SSI 2009/393: section 79(2)(a) to (d))" do
+    assert TextRefs.refs_in("Section 79(1), (2)(a) to (d) and (3)") ==
+             ["s.79(1)", "s.79(2)(a)", "s.79(2)(b)", "s.79(2)(c)", "s.79(2)(d)", "s.79(3)"]
+
+    assert TextRefs.refs_in("section 10(2)(ii) to (iv)") ==
+             ["s.10(2)(ii)", "s.10(2)(iii)", "s.10(2)(iv)"]
+
+    # numbered ranges stay ranges
+    assert TextRefs.refs_in("section 2(1) to (3)") == ["s.2(1)..s.2(3)"]
+  end
+
   test "a Chapter of a Part is that Chapter; a heading \"in Chapter 1 of Part 1\" names where, never a provision" do
     # WSI 2018/35 art.2(w); SI 2012/873 art.2(a)
     assert TextRefs.refs("Chapter 6 (special cases) of Part 5 (supplementary provision)", nil) ==
