@@ -72,7 +72,7 @@ bugs:
     category: this-regulation-list-read-as-rest
     module: law_start/clause, law_start/provisions
     affected: 2 laws seen
-    fix: "the singular Regulation case-sensitive (EU only), the last item's own qualifier after it (\"and regulation 6(1) so far as it relates to those provisions\"), and keep a named sub-provision finer than the rows held; then both held readings to Jason"
+    fix: "the singular Regulation case-sensitive (EU only), the last item's own qualifier after it (\"and regulation 6(1) so far as it relates to those provisions\"), and keep a named sub-provision finer than the rows held; then both held readings to Jason. Named a known limit for now (Jason 2026-11-22): RULES section 11, Waste, Water and Climate one-law commencement wordings; the held SI 2018/1251 example stays pending"
     step: Commencement reader
     status: open
   - pattern: "The store holds a document legislation.gov.uk served for another path under the path asked (the Welsh SI 2005/423, 2006/1279, 2002/2024 under uksi/)"
@@ -124,6 +124,8 @@ The round's first commencement reading (565 laws). 210 round laws are stale for 
 - Label fold (question): the law as a whole's commencement label as a read-through of its provisions' labels on the date picked (Jason 2026-11-20) — not held anywhere today; decide whether the fold or Measures shows it.
 
 - Register: register-act-no-enactment-date — 1987 c.26 held with no Royal Assent date (frontmatter).
+
+- Commencement reader: this-regulation-list-read-as-rest — SI 2018/1251 reg.1(3) and SI 2025/418 reg.1(2) read "This regulation, …" as the whole law; a known limit (Jason 2026-11-22), the fix (case and finer sub-provisions kept) parked here. Size: 2 laws.
 
 - Commencement reader: own-expiry-not-carried — an SI's own "shall cease to have effect on …" is carried by no source where the feed holds no expiry (SI 2001/1623, 2001/1478); an end date is a new fact for the fold. Size: 2 laws seen, corpus unmeasured.
 
@@ -598,3 +600,33 @@ The round's 278 (14 laws; 1991 c.56 211), measured again today with the insertin
     - completing, so fully: SI 1976/530 s.110 and SI 1976/1379 Sch.16 Pt III ("so far as it is not already in operation");
     - partly ("so much of Schedule 14 as relates to— …"): SI 1992/1755 and SI 1992/2454.
   - **Accepted (Jason 2026-11-22)** and written with `held-write.exs` (exactly the eight); targeted tests 6744/6744.
+
+## SI 2018/1251, and the statuses drafted (2026-11-22)
+
+- **SI 2018/1251 (Jason 2026-11-22: a known limit and a bug):** RULES section 11 gains a row for this step's one-law commencement wordings. It covers SI 2018/1251 and SI 2025/418 ("This regulation, …" read as the whole law), WSI 2016/359 reg.1, SI 2020/1265 art.25, NISR 2011/127 reg.28–31, SI 2000/2911 and SI 2006/641 reg.15. The bug `this-regulation-list-read-as-rest` stays open in this step, and is on the parking list.
+- **Statuses, dry run** (not written to `feed_differences.json`). They come from the 12 laws' check (`scratchpad/fd-12laws.txt`) and a check of the six named-limit laws (6 s).
+  - **Shape-wide, known** (Settle 1 and Decision 16: the feed alone dates an insertion, and its date stands):
+    - `inserted | feed_only | ours undated: appointed` (117 rows), `…: rules_not_held` (209), `…: no_text_rules` (30), `…: not_reached` (13), `…: no_amending_law` (21) and `…: no_pointer` (1). Each: "known: the feed alone dates the insertion (it holds every effect from 2002); the inserting law's commencement is unread or unheld here, so the feed's date stands (Settle 1, Decision 16)".
+    - `feed_partial_only | own dated by order_schedule | first agrees` (18): "known: the feed holds only the first stage, and it agrees with ours".
+  - **Per law, known** (the RULES row above): `differ | own dated by clause_date | own earlier @ UK_wsi_2016_359` and `@ UK_nisr_2011_127`; `differ | own dated by clause_made_relative | own earlier @ UK_uksi_2020_1265`; `feed_only | own by_order by provision_by_order | feed full @ UK_uksi_2006_641`.
+  - **Per law, `fix: fetch`** (Rebuild then fetch):
+    - `feed_only | own by_order by by_order | feed full @ UK_nisi_2006_3336` (3,218) and `… feed partial @ UK_nisi_2006_3336` (8). NISR 2007/194's Schedule 1 is not stored; its body holds no Schedules and the store has no `schedules/` part.
+    - `feed_only | own by_order by provision_by_order | feed full @ UK_nisi_2007_611` (17). NISI 2007/611's later order is not held: NISR 2007/294 is the only one.
+
+## Decision 17 for Jason: four misreads of ours in the fetched laws' orders
+
+- **The question:** the 12 laws' check shows four misreads in the order reader. They come to about 280 rows, all in this step's own code. Do we fix them now, test first, before the statuses are written?
+- **The aim:** `binds-on-date`.
+- **The four:**
+  1. **A table's "Purpose" column is not read** (SSI 2005/351 Sch.1, ASP 2005/3: 60 rows). "Section 1(1) … Only for the purpose of bringing into force the new section 1(1)" is read as fully in force on 20 June 2005; the feed has it partly in force, then fully from 1 July.
+  2. **A completing phrase in a Purpose column is read as a purpose** (SSI 2016/42, ASP 2011/9: 89 rows). "In so far as not already in force" is read as partly, so the provision never completes.
+  3. **A repeals list under another law's heading is read as the commenced law's** (NISR 2003/489 Sch.: 70 rows of NISI 1997/2778). "In the Pollution Control … Order 1978 – Articles 3, 5 to 13, 16 and 18" dates the 1997 Order's own art.3–18 on 27 November 2003.
+  4. **A completing qualifier in the middle of a list ends the list** (NISR 2003/489: 13 rows). In "Article 4(1)(a) and (b) and (5) and to the extent that they are not already in force (2) to (4) and (6) to (9)", art.4(2)–(4) and (6)–(9) are dropped. art.3(3)(b)–(6) is dropped the same way.
+- **Also found:**
+  - **Fetch:** 15 commencement orders refer to their own Schedule, but it is not stored (NISR 2007/194, SSI 2012/333, SI 1991/2092, 1997/2164, 1997/304, 2004/288, 2004/759, 2006/3397, WSI 2006/345 and six more). The fix is to fetch their `schedules/` part at Rebuild then fetch.
+  - **A fifth misread while a Schedule is missing:** NISR 2007/194 art.2(2) reads "Article 1(3) of the 2006 Order" and the order's own "Part II of Schedule 1" as the Act's provisions. To be checked once the Schedule is fetched.
+  - **To examine:** the Waste and Emissions Trading Act 2003's orders, one per territory (26 rows), and MWA 2010/8 (20 rows).
+- **Options:**
+  - (i) fix 1 to 4 now, by class and test first, with the per-fix checks; then write the statuses and examine the last two laws;
+  - (ii) name them known limits.
+- **Recommendation: (i).** They are our own forms. Forms 1 and 3 can reach other orders, while (ii) would leave wrong dates on rows before 2002.
