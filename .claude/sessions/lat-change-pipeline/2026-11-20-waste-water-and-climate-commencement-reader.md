@@ -547,3 +547,7 @@ Each fix test first, the per-fix tests and a `--laws --fresh` check after each:
 - **The dry run** (`held-write.exs`, sheet `backend/data/reports/commencement-reader/wwc-held-moves-2026-11-22.md`): 32 moved, 16 own and 16 order examples. Each was read against its words:
   - **31 right, recommend accepting.** The 18 from earlier rounds and the 13 of fix round 10. SI 1991/96 and 1991/1042 only list a range's members one by one (the same provisions).
   - **1 not to write: SI 2010/2169 art.3(2).** Its example text was cut short ("… section 4(2)(f) of the Act— a"), so it reads nothing alone. In its law it reads ss.1, 2, 3 and 6 partly. It needs a re-cut at the next `--accept`, not "none" written.
+- **Decided (Jason, 2026-11-22): accept the 31; re-cut SI 2010/2169.** The pass condition's tests are the targeted ones (commencement, law-start, change-vocabulary, architecture, about a minute); the full suite is the pre-push hook's (Jason). Done:
+  - an order-catalogue `--accept` was tried for the re-cut and reverted: it re-chose the examples (32 left, 23 joined with unreviewed readings, some visibly wrong: SSI 2012/218, SSI 2000/10, SI 2010/2169 Sch.). Lesson: `--accept` is not a re-cut;
+  - SI 2010/2169 art.3(2) re-cut alone (`scratchpad/recut.exs`): its unit text "1stSeptember2010" predated Decision 9's marked-up spaces; fresh from the store it reads ss.1, 2, 3 and 6 partly, its held reading;
+  - `held-write.exs write`: 16 own, 15 order; a dry run after shows 0 moved; the targeted tests 6,736 pass, none failing.
