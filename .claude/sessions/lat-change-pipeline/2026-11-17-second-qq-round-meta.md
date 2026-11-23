@@ -22,8 +22,8 @@ The next round takes the QQ legal register's families not already covered (Jason
 - ✅ Markup reader (step 3): `2026-11-19-waste-water-and-climate-markup-reader.md` (closed 2026-11-20)
 - ✅ Commencement reader (step 4): `2026-11-20-waste-water-and-climate-commencement-reader.md` (closed 2026-11-23)
 - ⬜ Before the Extent reader (Jason 2026-11-23, the Commencement reader retrospective, Decision 1), in order:
-  1. `2026-11-23-commencement-reader-retrospective.md` (active)
-  2. `2026-11-23-commencement-reader-step-procedures.md`: tasks for the step's procedures, feed figures in Measures, WORKFLOW rules
+  1. ✅ `2026-11-23-commencement-reader-retrospective.md` (closed 2026-11-23)
+  2. ✅ `2026-11-23-commencement-reader-step-procedures.md`: tasks for the step's procedures, feed figures in Measures, WORKFLOW rules (closed 2026-11-23)
   3. `2026-11-23-commencement-reader-staleness.md`: staleness that follows what changed
   4. `2026-11-23-commencement-reader-old-path-decouple.md`: the new path off the old dater and register
   5. `2026-11-23-commencement-reader-order-split.md`: split the order reader (one or more sessions)
