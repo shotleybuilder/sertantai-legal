@@ -487,24 +487,33 @@
     id: "s.101",
     start: ~D[1974-07-31],
     case:
-      "UNDECIDABLE commencement (no order held names it: SI 1988/818 does not, C10); Scottish repeal 2014 with no markup",
+      "commenced by order: SI 1975/2118 Sch. \"Section 101 | Disposal of waste etc by Atomic Energy Authority\" on 1 January 1976 (Waste, Water and Climate: Commencement reader, Decision 20, Jason 2026-11-23; was UNDECIDABLE, no order held named it: SI 1988/818 does not, C10); Scottish repeal 2014 with no markup",
     law: "UK_ukpga_1974_40",
     periods: [
       %{
-        status: :in_force,
+        status: :prospective,
         valid_from: ~D[1974-07-31],
         in_force_from: nil,
         changed_by: [],
         commenced_by: [],
+        territory: "E+W+S+NI",
+        valid_to: ~D[1976-01-01]
+      },
+      %{
+        status: :in_force,
+        valid_from: ~D[1976-01-01],
+        in_force_from: ~D[1976-01-01],
+        changed_by: [],
+        commenced_by: ["UK_uksi_1975_2118"],
         territory: "E+W+S+NI",
         valid_to: ~D[2014-06-30]
       },
       %{
         status: :in_force,
         valid_from: ~D[2014-06-30],
-        in_force_from: nil,
+        in_force_from: ~D[1976-01-01],
         changed_by: [],
-        commenced_by: [],
+        commenced_by: ["UK_uksi_1975_2118"],
         territory: "E+W+NI",
         valid_to: nil
       }
