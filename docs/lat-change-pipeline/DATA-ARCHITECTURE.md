@@ -172,7 +172,7 @@ Source: `backend/data/reports/change-vocabulary/cv-05-retirement-list.md` (CV-05
 |---|---|---|---|
 | 1 | ~~**The law's start**~~ **Done 2026-11-07** | `Build.start/1` (`LawStart.resolve/1` over `LawStart.Input`) stored on the `changes_built` event (`Store.write/4`); `LabelSource.start/1` reads `Store.start/1`; golden calls `Build.start/1` | Done: equal to the old register's for all 285 built laws |
 | 2 | **The old labels for known limits**: `LabelSwitch.timeline/2` keeps their periods for `KnownLimits.sids()` | Since 2026-11-07 the stored ones (`LabelSwitch.stored/1`), no longer a rebuild of the old register | Each known limit must be fixed or given an explicit "unknown" label in the new fold |
-| 3 | **`amending_law` records**: `mix lat.commencement --orders/--read-orders` pick their Acts and orders from `lat_change_log WHERE collector='amending_law'` | `amending_acts/0`, `cited_orders/0` in `lat.commencement.ex` | Take them from `amendment_rules` / `provision_changes` |
+| 3 | ~~**`amending_law` records**: `mix lat.commencement --orders/--read-orders/--effects` picked their Acts and orders from `lat_change_log WHERE collector='amending_law'`~~ **Done 2026-11-23** | `Commencement.AmendingPicks`: the built laws' amending Acts (`HeldAmenders`) and the orders their rows' text-change notes cite (`Pointer.parse/1`); no-flag `--effects` reads the store only | Done: `OldPathFenceTest` holds that no new-path module names `lat_change_log` and that no new-path stamp holds the old collector or dater |
 | 4 | ~~`ChangeCollector.law_start_input/2`~~ **Done 2026-11-07** | Moved to `LawStart.Input.of/2`; `ChangeCollector` delegates | Done |
 | 5 | ~~The old path always runs first~~ **Done 2026-11-07** | `LabelRefresh.run/2` branches first: a switched law builds and writes from its merged changes only | Done |
 
@@ -184,7 +184,7 @@ L4 by-order rows (read as in force from the law's start), L10 and L17 pending or
 
 1. Replace borrowings 1–5 above.
 2. Teach `LabelStaleness` the change register (`:changes_version`, CV-S11 note) and count it in `mix lat.stale --strict`.
-3. Delete the RETIRE items: `ChangeCollector` and its collectors (R1, R2, R4b), `Compact` and the `lat_change_log_rows` view, `LabelProjection` (L1–L19), `LabelTimeline.build` and its helpers, `Commencement.Amending` (G1), `Amendment.Evaluator.reach` (G3), `EffectFacts.partial?` (L11), `LabelVersion`.
+3. Delete the RETIRE items: `ChangeCollector` and its collectors (R1, R2, R4b), `Compact` and the `lat_change_log_rows` view, `LabelProjection` (L1–L19), `LabelTimeline.build` and its helpers, `Commencement.Amending` (G1; fenced out of every new-path stamp since 2026-11-23, its one caller `Amendment.Collect.records/7`), `Amendment.Evaluator.reach` (G3), `EffectFacts.partial?` (L11), `LabelVersion`.
 4. Take a restore point of `lat_change_log`, then drop the table (106 MB), and remove it from `nas-backup.sh`.
 5. Remove the `:label_families` setting and `LabelSwitch` (no switch left).
 6. Retire the old-path tests (about 178 tests in 8 files: `label_projection_test`, `label_timeline_test`, `law_start*_test`, `change_collector*_test`, `effect_facts_test`); keep `law_start_test` if `LawStart` survives.
