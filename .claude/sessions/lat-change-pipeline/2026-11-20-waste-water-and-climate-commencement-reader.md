@@ -806,3 +806,21 @@ The round's 278 (14 laws; 1991 c.56 211), measured again today with the insertin
   - **(a) The reader (this step):** a Part or Chapter keeps a borrowed date only where every provision under it comes in fully. Otherwise it takes none: its row is read as partly by order, the same outcome a Part a rule leaves partly to orders already has. Cross-headings are unchanged. The 366 sound cases are unchanged. Test first, then the affected laws rebuilt (up to 30 laws, about a minute each), and their round checks and golden re-run.
   - **(b) The label fold:** mark the borrowed date as the Part row's own, and have the fold not carry it to the rows the Part holds. This is the Label fold's code, so it is parked with bug-raise, and golden stays 42/50 with s.138(2)(a) failing until that step.
 - **Recommendation:** (a). It is this step's own reading, it is small, and the date it leaves is one every provision under the Part agrees with.
+
+**Decision 21, decided (Jason 2026-11-23: "Go ahead with (a)").**
+
+## Decision 21, done (2026-11-23)
+
+- **The fix (3876fac6, hooks passed):** in `Readers.OwnCommencement`, a Part or Chapter takes no date from its first provision in force while a provision in it is left to an order or partly in. A row no rule speaks to (the signature, NISR 2008/231 Pt 7) holds nothing back. Cross-headings are unchanged. Test first (the Health and Care Act 2022 Pt 5 case; the Environment Act 2021 Pt 3 test now dates its Part only with s.50 in too). Targeted tests 6,755 pass; Credo clean.
+- **Reach** (stored rules, `scratchpad/d21-reach.exs`): 83 Parts or Chapters in 27 laws lose a borrowed date, of 2,881 stored in 380 laws. Every one is held back by a provision left to an order (by order 425, partly by order 211).
+- **Rebuild:** restore point `wwc-d21-part-rebuild-2026-11-23` (provision_changes, provision_change_claims, lat_events); `lat.vocabulary --build` of the 28 laws of the first reach list, 643 s, 0 failed (`wwc-d21-rebuild.txt`).
+- **Golden, extended** (`wwc-d21-golden.txt`): 43/50. Against Check, only s.101 and s.138(2)(a) moved, both to PASS; the 7 failing are the Label fold's CV-S09 drafts, as before.
+- **Checks** (`wwc-d21-round.txt`, `wwc-d21-switched-*.txt`): all five PASS (our faults 0, leftovers not named 0, stale feed errors 0). The switched families' no-status feed groups are the same or fewer than at Settle.
+- **SI 2022/561 reg.2's stored rule** still lacks its purpose (2022 c.30 is not a round law, so not re-read); golden does not depend on it.
+
+## NISR 2007/194: a known limit (Jason 2026-11-23)
+
+- **What:** the orders catalogue's one new pattern. NISR 2007/194 Sch.1 Pt II commences the Water and Sewerage Services (Northern Ireland) Order 2006. Its rows' long exceptions are misread: "Part II except: Article 6(5)(b) in so far as …" reads the whole Part partly; "In Part XI: Article 280 except, … in so far as it relates to a discharge from a public sewer … ; Articles 281 to 287; …" reads Article 280 alone, so Articles 281–289 read nothing.
+- **Jason:** "2007/194 known limit if this is unique pattern. This is post 2002 law and the Feed likely covers. The diff will surface in the compare with Feed." The pattern is seen once in the orders catalogue (1 example). Written to RULES section 11, the commencement forms row.
+- **Reach in the feed comparison:** 4 groups, all NISI 2006/3336, 527 rows: 384 own partly by order where the feed has them in fully; 103 own earlier; 27 own later; 13 own by order (Articles 281–289). These were the round's 3 no-status groups since the Check runs (the Schedule was fetched at Rebuild then fetch), plus the 13-row group whose `fix: fetch` status is now stale.
+- **Held write, dry run** (`scratchpad/feed_differences.dry.json`): those 4 statuses set to `known:` pointing at the RULES row in `test/fixtures/commencement_check/feed_differences.json`; the orders pattern given the same status in the catalogue fixtures. Written on Jason's go.
