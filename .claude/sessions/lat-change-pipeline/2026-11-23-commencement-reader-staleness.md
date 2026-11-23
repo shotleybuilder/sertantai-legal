@@ -19,6 +19,7 @@ One version stamp (`Commencement.ReadVersion`, 63 files) covers the whole reader
 - ⬜ The stamps hash whole folders (`commencement/*.ex`), and `read_version.ex` sits in the folder it hashes: a new tool module there, or an edit to the except list, stales every stored rule (found 2026-11-23 by the step-procedures session, which put its modules in `scraper/step_procedures/` for this reason). List the reader's modules, or keep tools out by rule with an architecture test
 - ⬜ One round re-read; prove builds untouched where rules are identical (`mix lat.reread --family F`, `--preview`)
 - ⬜ The rules stale elsewhere: 26,427 of 72,043 on 2026-11-23, among them the switched Fire and OH&S (`mix lat.reread --family "Fire and OH&S"`: 170 own-clause laws, 247 amending laws, 21 Acts' orders, 16 feed laws), staled by the Waste, Water and Climate fixes; re-read with this session's change, on Jason's go
+- ⬜ Feed-difference statuses gain an owning step (`feed_differences.json`), and `Measures.FeedYardstick` groups by it (Jason 2026-11-23: yes, in this session)
 - ⬜ Close
 
 ## Dependencies
