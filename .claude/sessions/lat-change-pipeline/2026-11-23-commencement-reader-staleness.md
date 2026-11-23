@@ -17,7 +17,7 @@ Plan approved 2026-11-23 (`~/.claude/plans/gleaming-doodling-matsumoto.md`). Pas
 - ✅ 1. Write only what changed: `Store.write/3` compares rows; identical → stamp only, `read_at` kept
 - ✅ 2. Three read stamps (clause, orders, effects), explicit lists, each = its path's reach (architecture test); per-group staleness
 - ✅ 3. Build and extent stamps drop the order reader: `ClmlRef.ref`, `RefContext`, `LawStart.Sentences`; `Extent.ReadVersion` explicit
-- 🔶 4. Feed-difference owners: `{"status","owner"}` entries, `FeedDifferences.owner/3`, yardstick by owner; owners dry-run for Jason
+- ✅ 4. Feed-difference owners: `{"status","owner"}` entries, `FeedDifferences.owner/3`, yardstick by owner; owners dry-run for Jason
 - ✅ 5. Pre-flight: targeted tests, Credo, Dialyzer; round `--preview` 0 changes; `lat.reread` dry runs for the cost
 - ⬜ 6. The one-time cycle on Jason's go: restore point; store-wide re-read; rebuild of every built law
 - ⬜ 7. Check: second re-read writes 0; stale reasons 0; round checks, yardstick, switched, golden as at close; suite
@@ -82,6 +82,12 @@ Results:
 | Sources | 4 | 87 | "fix: fetch": a document the reading needs is not held |
 
 **Recommendation:** (a). The fixture is written on your go.
+
+**Decided (Jason 2026-11-23): (a), with no legislation.gov.uk owner** ("we just consume what's given").
+
+- A feed difference is a pattern. Where the feed holds the law's commencement (the practical cut: does the feed give the data?), the feed is the date unless proven wrong. Where it doesn't, the Reader is the truth. A pattern found only where the feed speaks is a known limit; one reaching laws without feed data is the Reader's to fix. Evidence takes the feed unless a proven feed error, then the Reader.
+- Written: 24 entries owned by the Commencement reader, 4 by Sources. RULES `feed-differences-are-patterns-by-feed-coverage`.
+- The pattern-by-coverage work is the new pending session `2026-11-23-commencement-reader-feed-differences-as-patterns.md`, placed after the order split and before the Extent readiness review. That session also checks the build against RULES §7, which today says the law's text comes first.
 
 ## 5. Pre-flight
 

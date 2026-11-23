@@ -15,10 +15,11 @@ The Commencement reader retrospective found problems that probably affect the Ex
 - ⬜ The Extent reader's spec: aim, scope in and out, its boundary with the Amending-law and Commencement readers
 - ⬜ Its substeps: inputs, writes, outputs, what goes stale and why, what loops
 - ⬜ Its complexity, measured; its earlier families' step records read
+- ⬜ The feed-coverage rule asked of it (`feed-differences-are-patterns-by-feed-coverage`): where legislation.gov.uk's feed or markup gives extent, is the Reader's work limited to the laws without it?
 - ⬜ What to change before the step, decided with Jason
 - ⬜ Revise `docs/lat-change-pipeline/COMMENCEMENT-READER.md` (accepted 2026-11-23) to the reader after all the follow-on sessions: substeps, version stamps, loops, overlaps removed; and bring COMMENCEMENT-GUIDE §2 and §5, AMENDMENT-GUIDE's "effects first" and DATA-ARCHITECTURE's `commencement_rules` row up to date with it (Jason 2026-11-23)
 - ⬜ Close
 
 ## Dependencies
 
-- ⬜ The Commencement reader's four follow-on sessions closed (step procedures; staleness; decouple; order split)
+- ⬜ The Commencement reader's five follow-on sessions closed (step procedures; staleness; decouple; order split; feed differences as patterns)
