@@ -782,3 +782,27 @@ The round's 278 (14 laws; 1991 c.56 211), measured again today with the insertin
     - (b) park it with the Label fold now.
   - **The SI 2022/561 reg.2 purpose:** fix it here, test first, with its reach measured (this step's own form).
 - **Recommendation:** s.101 (a); s.138(2)(a) (a); and the purpose fixed here.
+- **Decision 20, decided (Jason 2026-11-23: "1. Move 2. Trace 3. Fix"):** COPA s.101's golden expectation moves to 1 January 1976 by SI 1975/2118; s.138(2)(a) is traced before it is fixed or parked; the SI 2022/561 reg.2 purpose is fixed here, test first, reach measured.
+
+## Decision 20, done (2026-11-23)
+
+- **COPA s.101:** the golden expectation moved (10ca777e): prospective from 31 July 1974, in force from 1 January 1976 by SI 1975/2118, E+W+NI from 2014. It now PASSes.
+- **The SI 2022/561 reg.2 purpose:** fixed test first (e4ef8c47, hooks passed). A qualifier between "comes into force" and the date ("…, for the purposes of making regulations, on 28th May 2022") is now the subject's, as one after the date already was. Its reach in the stored rules is this one statement. The Welsh "The following provisions …, to the extent necessary for the purpose of making regulations, on …" heads already read their purpose on today's code. Orders catalogue dry run: `wwc-d20-orders.txt`. Targeted tests: 6,754 pass.
+- **2022 c.30 s.138(2)(a), traced** (a bisect over a scratch worktree, golden from inputs on the stored rules):
+  - PASS at f4cb1c73 (2026-11-20). The first bad commit is 33b71cf8, "a commencement is never dated by its commencing provision's own start". It is this step's and it is right: it stopped the gap-filler dating 623 prospective commencements (208 in 2022 c.30) by s.170(5)'s own start.
+  - That uncovered an older reader form (bf5f50dc, Environmental Protection, 2026-11-09): **a Part no rule dates takes its first provision's outcome.** Part 5's first provision in is s.132 (28 May 2022), so `pt.5` is commenced fully on 28 May.
+  - The label fold (`Label.within/2`) lets a change on a Part or Chapter reach every row it holds. So s.138(2)(a), never commenced, inherits 28 May.
+  - With the purpose fixed, Part 5 comes in partly on 28 May and fully on 28 June (s.132's two stages), so s.138 would still be dated. A probe (reverted) making a borrowed Part only partly in, until every provision under it is fully in, gave s.138(2)(a) "in force partly from 28 May": the fold carries a partial Part too.
+- **Reach of the borrowed form** (stored rules, all laws):
+  - 648 Parts and cross-headings in 44 laws take a borrowed date. In 366 of them, every provision under them is fully in.
+  - Cross-headings aren't containers in the fold, so only Parts and Chapters spread their date: **112 Parts or Chapters in 30 laws, over 916 provisions with no date from the text rules.** That is an upper bound: some of those are dated by their feed records.
+  - The largest: 2006 c.16 (9), ASP 2011/9 (9), ASP 2009/12 (8), 2021 c.30 (7), EPA 1990 (7). Many are round laws.
+
+## Decision 21 for Jason: a Part dated only by its first provision
+
+- **The question:** a Part or Chapter that no rule dates takes the outcome of its first provision to come in. The fold then carries that date to every provision the Part holds, including ones never commenced (2022 c.30 s.138(2)(a), golden). Which side should change?
+- **The aim:** `binds-on-date`. A provision never brought in must read prospective, not in force from its neighbour's day.
+- **Options:**
+  - **(a) The reader (this step):** a Part or Chapter keeps a borrowed date only where every provision under it comes in fully. Otherwise it takes none: its row is read as partly by order, the same outcome a Part a rule leaves partly to orders already has. Cross-headings are unchanged. The 366 sound cases are unchanged. Test first, then the affected laws rebuilt (up to 30 laws, about a minute each), and their round checks and golden re-run.
+  - **(b) The label fold:** mark the borrowed date as the Part row's own, and have the fold not carry it to the rows the Part holds. This is the Label fold's code, so it is parked with bug-raise, and golden stays 42/50 with s.138(2)(a) failing until that step.
+- **Recommendation:** (a). It is this step's own reading, it is small, and the date it leaves is one every provision under the Part agrees with.
