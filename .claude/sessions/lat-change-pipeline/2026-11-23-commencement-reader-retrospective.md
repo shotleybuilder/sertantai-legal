@@ -14,11 +14,22 @@ The Commencement reader step for the Waste, Water and Climate round ran four day
 
 ## Todo
 
-- ⬜ Jason's points (to be added at the start)
-- ⬜ The step's record read: phases, decisions, runs, time and tokens per phase
-- ⬜ Causes found and agreed, each against AIMS and the WORKFLOW loop
-- ⬜ Changes decided: WORKFLOW, RULES, skills, memory; each written where it belongs
-- ⬜ Close
+- ⬜ 1. A design spec for the Commencement reader: its aims, what is in scope and what is out
+- ⬜ 2. A substeps document: each substep's input sources, the data it changes, its output, what goes stale and why; the architecture and the workflow rules that force the substeps to loop
+- ⬜ 3. The boundary with the Amending-law reader made explicit: which reader dates what, and why the Commencement reader is not doing the Amending-law reader's work
+- ⬜ 4. Complexity: the code is now so complex that changes are hard to track — measure it and propose solutions
+- ⬜ 5. The feed as a yardstick: standard stats driven from the comparison; the rules for taking the feed or the reader refined, in their owning step (not this one)
+- ⬜ 6. Claude's takeaways from the step's session docs and log
+- ⬜ 7. Changes decided and written where they belong (WORKFLOW, RULES, skills, memory); close
+
+## Jason's points (2026-11-23)
+
+1. "Commencement Reader needs a 'what it is doing' spec [design spec?]. Ie a clear aims - what's in scope and what's out of scope."
+2. "A document that describes the substeps with extra detail - eg what are the input data sources, what data does it change, what its output, what goes stale and why - that sort of thing - explains the architecture and big workflow rules that mean having to loop the substeps."
+3. "Related to those two - I'm not clear how Commencement Reader isn't doing part of the work of the Amending Law Reader. I want that explicit."
+4. "Complexity - it's clear the code is now so complex that changes are getting harder to track - solutions?"
+5. "Feed as a yardstick. This is working well. We need to drive standard stats from the comparison. The rules for deciding which to take Feed or Reader may need refining - and that shouldn't be in this step anyway."
+6. "Your takeaways from reviewing the session docs for Commencement Reader."
 
 ## Dependencies
 
