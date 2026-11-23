@@ -21,8 +21,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
   instrument's change reaches its own territory only.
   """
 
-  alias SertantaiLegal.Scraper.AmendingLaw.{DefinedTerms, Doc, Locator, Pointer}
-  alias SertantaiLegal.Scraper.Amendment.{Evaluator, Reader, Rule}
+  alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Locator, Pointer}
+  alias SertantaiLegal.Scraper.Amendment.{Evaluator, ProvisionRead, Reader, Rule}
   alias SertantaiLegal.Scraper.ChangeCollector.Record
   alias SertantaiLegal.Scraper.Commencement.Amending
   alias SertantaiLegal.Scraper.Commencement.Evaluator, as: When
@@ -139,11 +139,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
     }
   end
 
-  @doc "The rules an amending provision (`id` in `doc`) states for `laws` (`Reader.read/4`, its defined terms memoised) — the read pass and `doc_source/1`."
+  @doc "The rules an amending provision states (`Amendment.ProvisionRead.read/3`)."
   @spec read(Doc.t(), String.t(), [Reader.law_ref()]) :: [Rule.t()]
-  def read(doc, id, laws), do: Reader.read(doc, id, terms(doc), laws)
-
-  defp terms(doc), do: memo({:terms, doc.law_name}, fn -> DefinedTerms.of(doc) end)
+  defdelegate read(doc, id, laws), to: ProvisionRead
 
   defp memo(key, fun) do
     case Process.get({__MODULE__, key}, :none) do
@@ -156,7 +154,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
   @spec clear() :: :ok
   def clear do
     for {__MODULE__, _} = k <- Process.get_keys(), do: Process.delete(k)
-    :ok
+    ProvisionRead.clear()
   end
 
   # a repeals table's own entry before the section introducing it (CR-08)

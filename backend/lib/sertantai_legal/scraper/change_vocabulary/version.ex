@@ -55,17 +55,20 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Version do
       lib/sertantai_legal/scraper/in_force_qualifier.ex
       lib/sertantai_legal/scraper/note_pointer.ex
       lib/sertantai_legal/scraper/provision_text.ex
-      lib/sertantai_legal/scraper/change_collector/record.ex
       lib/sertantai_legal/scraper/lat_parser/xml.ex
       lib/sertantai_legal/scraper/legislation_gov_uk/changes_feed.ex
     ),
-    # what no build reaches (`StageSplitTest`): the readers' checks and
-    # catalogues, the read passes that store readings (stamped by their own
+    # what no build reaches (`StageSplitTest`): the old collector and
+    # dater (`OldPathFenceTest`), the readers' checks and catalogues, the read passes that store readings (stamped by their own
     # versions, #193) and the checks that draw samples (2026-11-05,
     # 2026-11-06, #194)
     except: ~w(
       lib/sertantai_legal/scraper/commencement/order.ex
       lib/sertantai_legal/scraper/commencement/authority.ex
+      lib/sertantai_legal/scraper/commencement/amending.ex
+      lib/sertantai_legal/scraper/commencement/amending_picks.ex
+      lib/sertantai_legal/scraper/amendment/collect.ex
+      lib/sertantai_legal/scraper/amendment/evaluator.ex
       lib/sertantai_legal/scraper/amending_law/sweep_form.ex
       lib/sertantai_legal/scraper/amending_law/extent/check.ex
       lib/sertantai_legal/scraper/amending_law/extent/withheld.ex

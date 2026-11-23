@@ -52,8 +52,8 @@ defmodule Mix.Tasks.Lat.Amending do
   alias SertantaiLegal.Scraper.AmendingLaw.Text
 
   alias SertantaiLegal.Scraper.Amendment.{
-    Collect,
     EnactedFetch,
+    ProvisionRead,
     ReadLaw,
     ReadPass,
     ReadReport,
@@ -141,7 +141,7 @@ defmodule Mix.Tasks.Lat.Amending do
     laws =
       Enum.uniq(Enum.map(stored, & &1.amends) ++ Enum.map(ReadLaw.notes(amending), & &1.law_name))
 
-    fresh = Collect.read(doc, id, Enum.map(laws, &ReadLaw.law_ref/1))
+    fresh = ProvisionRead.read(doc, id, Enum.map(laws, &ReadLaw.law_ref/1))
     for l <- Probe.lines(amending, id, Text.of(doc, id), stored, fresh), do: Mix.shell().info(l)
   end
 

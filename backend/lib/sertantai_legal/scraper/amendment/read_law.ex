@@ -20,7 +20,7 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadLaw do
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Locator, Pointer}
-  alias SertantaiLegal.Scraper.Amendment.{Collect, Reader, Rule}
+  alias SertantaiLegal.Scraper.Amendment.{ProvisionRead, Reader, Rule}
   alias SertantaiLegal.Scraper.EffectKind
 
   @text_kinds ~w(substituted inserted repealed renumbered amended)
@@ -112,6 +112,6 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadLaw do
   @spec rules(Doc.t(), [Reader.law_ref()], [Pointer.ref()]) :: {[Rule.t()], [String.t()]}
   def rules(doc, laws, refs) do
     ids = for ref <- Enum.uniq(refs), id <- Locator.ids(doc, ref), uniq: true, do: id
-    {Enum.flat_map(ids, &Collect.read(doc, &1, laws)), ids}
+    {Enum.flat_map(ids, &ProvisionRead.read(doc, &1, laws)), ids}
   end
 end

@@ -28,8 +28,9 @@ defmodule SertantaiLegal.Architecture.NoteReadTest do
     # note's citation tail (LR-08 AmendingLaw.Pointer)
     "sertantai_legal/scraper/change_collector.ex" => :pointer,
     # the same pointer: which commencing orders a note cites, so their text
-    # is read for rules (commencement-rules CR-04 --read-orders; CR-06)
-    "mix/tasks/lat.commencement.ex" => :pointer,
+    # is read for rules (commencement-rules CR-04 --read-orders; CR-06;
+    # the change register's picks since the decouple, 2026-11-23)
+    "sertantai_legal/scraper/commencement/amending_picks.ex" => :pointer,
     # the same pointer: which amending provisions a note points to, read
     # once into amendment rules (amendment-rules AR-03 read pass; the
     # vocabulary's reading of a stale amending law, run time 2026-10-25)

@@ -3,8 +3,8 @@ defmodule Mix.Tasks.Lat.CommencementEffectsScopeTest do
   Fire and OH&S: Commencement reader (Decision 5 a). `mix lat.commencement
   --effects --law A,B` reads only those Acts' feeds, from the local store
   alone (never a fetch), and replaces only the feed rules commencing them,
-  a law at a time; without `--law` it reads every amending Act, preferring
-  the store, and replaces each order's feed rules whole.
+  a law at a time; without `--law` it reads the change register's amending
+  Acts (`Commencement.AmendingPicks`) the same way.
   """
   use ExUnit.Case, async: true
 
@@ -26,8 +26,11 @@ defmodule Mix.Tasks.Lat.CommencementEffectsScopeTest do
              {["UK_ukpga_2004_21", "UK_ukpga_2005_14"], :only, :per_law}
   end
 
-  test "without --law every amending Act is read, preferring the store" do
-    assert Commencement.effects_scope([]) == {:amending_acts, :prefer, []}
+  # (Commencement reader decouple, 2026-11-23: the change register's
+  # amending Acts, from the store alone — fetching is the Sources step's —
+  # and a law at a time, so an Act left out keeps its rules)
+  test "without --law the change register's amending Acts are read, from the store only, a law at a time" do
+    assert Commencement.effects_scope([]) == {:amending_acts, :only, :per_law}
   end
 
   test "a law at a time: one write per law commenced, each scoped to it" do
@@ -43,5 +46,13 @@ defmodule Mix.Tasks.Lat.CommencementEffectsScopeTest do
   test "unscoped: the order's rules in one write" do
     assert Commencement.effects_writes([rule("UK_ukpga_2004_21")], []) ==
              [{[], [rule("UK_ukpga_2004_21")]}]
+  end
+
+  test "a preview compares a write with the stored rules it replaces: all the order's, or one law's" do
+    a = rule("UK_ukpga_2004_21")
+    b = rule("UK_ukpga_2005_14")
+
+    assert Commencement.effects_scoped([a, b], []) == [a, b]
+    assert Commencement.effects_scoped([a, b], commences: "UK_ukpga_2005_14") == [b]
   end
 end

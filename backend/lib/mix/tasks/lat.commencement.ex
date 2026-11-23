@@ -14,7 +14,8 @@ defmodule Mix.Tasks.Lat.Commencement do
 
       mix lat.commencement --read --law X[,Y] | --all       # write the laws' own-clause rules (CR-03)
       mix lat.commencement --compare --all --tag cr03_cmp   # the evaluator vs today's register, per row
-      mix lat.commencement --effects                        # amending Acts: their feed's "coming into force" effects as rules (CR-04)
+      mix lat.commencement --effects                        # the change register's amending Acts: their feed's "coming into force" effects as rules, from the store only (CR-04)
+      mix lat.commencement --effects [--law A,B] --preview  # what it would write, per order and law: stored → read; writes nothing
       mix lat.commencement --effects --law A,B              # those Acts only, from the store alone; replaces only the feed rules commencing them
       mix lat.commencement --read-orders                    # amending Acts before 2002: the rules the orders their notes cite state (where no effect reaches)
       mix lat.commencement --read-orders --law X,Y          # a labelled law's own commencement orders (CR-07: its by-order rows); searches legislation.gov.uk for a law with no order list kept
@@ -40,12 +41,13 @@ defmodule Mix.Tasks.Lat.Commencement do
   alias SertantaiLegal.Repo
 
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
-  alias SertantaiLegal.Scraper.{ChangeCollector, LabelTimeline, LawRunner}
+  alias SertantaiLegal.Scraper.{LabelTimeline, LawRunner}
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source, as: Scope
 
   alias SertantaiLegal.Scraper.Commencement.{
+    AmendingPicks,
     AmendingRead,
     Effects,
     Evaluator,
@@ -288,7 +290,7 @@ defmodule Mix.Tasks.Lat.Commencement do
   def effects_scope(opts) do
     case opts[:law] do
       nil ->
-        {:amending_acts, :prefer, []}
+        {:amending_acts, :only, :per_law}
 
       list ->
         {String.split(list, ",", trim: true), :only, :per_law}
@@ -308,14 +310,9 @@ defmodule Mix.Tasks.Lat.Commencement do
       |> Enum.group_by(& &1.commences)
       |> Enum.map(fn {law, rs} -> {[commences: law], rs} end)
 
-  defp amending_acts do
-    Repo.query!("""
-    SELECT DISTINCT affecting_law FROM lat_change_log
-    WHERE collector = 'amending_law' AND affecting_law ~ '^UK_(ukpga|asp|anaw|asc|nia|apni|mwa)_'
-    ORDER BY 1
-    """).rows
-    |> List.flatten()
-  end
+  # the change register's amending Acts (`AmendingPicks`), never the old
+  # register's (Commencement reader decouple, 2026-11-23)
+  defp amending_acts, do: AmendingPicks.acts()
 
   # the Act an order commences (`Orders.act/1`); an Act the register holds
   # no title for is named by its own CLML (`Order.title/1`)
@@ -365,15 +362,54 @@ defmodule Mix.Tasks.Lat.Commencement do
         end
       end)
 
-    for {order, rules} <- by_order,
-        {opts, rs} <- effects_writes(rules, scope),
-        do: Store.write(order, Enum.reverse(rs), [treatments: [:feed_commencement]] ++ opts)
+    written =
+      for {order, rules} <- by_order,
+          {w, rs} <- effects_writes(rules, scope),
+          do: effects_write(order, Enum.reverse(rs), w, opts[:preview])
 
     Mix.shell().info(
-      "#{length(acts)} amending Acts, #{map_size(by_order)} commencing instruments, #{by_order |> Map.values() |> List.flatten() |> length()} rules, #{length(errors)} feed errors"
+      "#{length(acts)} amending Acts, #{map_size(by_order)} commencing instruments, #{by_order |> Map.values() |> List.flatten() |> length()} rules, #{length(errors)} feed errors" <>
+        effects_summary(written, opts[:preview])
     )
 
     for {law, e} <- Enum.take(errors, 10), do: Mix.shell().info("  #{law}: #{e}")
+  end
+
+  # one write of an order's feed rules, or with `--preview` its reach
+  # against the stored rules it would replace, nothing written
+  defp effects_write(order, rules, w, true) do
+    stored = order |> RuleDiff.stored([:feed_commencement]) |> effects_scoped(w)
+    diff = RuleDiff.diff(stored, rules)
+
+    unless RuleDiff.same?(diff),
+      do:
+        Mix.shell().info(
+          "  #{order}#{w[:commences] && " → " <> w[:commences]}: +#{length(diff.added)} −#{length(diff.gone)} rules"
+        )
+
+    {:preview, length(diff.added), length(diff.gone)}
+  end
+
+  defp effects_write(order, rules, w, _preview) do
+    {:ok, n, how} = Store.write_changed(order, rules, [treatments: [:feed_commencement]] ++ w)
+    {how, n}
+  end
+
+  @doc "The stored feed rules one write (`effects_writes/2`) replaces: all, or the law it commences."
+  @spec effects_scoped([Rule.t()], keyword()) :: [Rule.t()]
+  def effects_scoped(stored, []), do: stored
+  def effects_scoped(stored, commences: law), do: Enum.filter(stored, &(&1.commences == law))
+
+  defp effects_summary(written, true) do
+    changed = for {:preview, a, g} <- written, a + g > 0, do: {a, g}
+
+    "; preview, nothing written: #{length(changed)} of #{length(written)} writes change, +#{changed |> Enum.map(&elem(&1, 0)) |> Enum.sum()} −#{changed |> Enum.map(&elem(&1, 1)) |> Enum.sum()} rules"
+  end
+
+  defp effects_summary(written, _preview) do
+    counts = Enum.frequencies_by(written, &elem(&1, 0))
+
+    "; #{Map.get(counts, :written, 0)} writes written, #{Map.get(counts, :unchanged, 0)} unchanged (stamp only)"
   end
 
   defp year(law), do: law |> String.split("_") |> Enum.at(2) |> String.to_integer()
@@ -461,10 +497,11 @@ defmodule Mix.Tasks.Lat.Commencement do
   # for that Act alone (an order two Acts cite keeps both Acts' rules; one
   # read as commencing nothing leaves none: a re-read never leaves a stale one)
   defp read_cited_orders(opts) do
-    cited = cited_orders()
+    acts = amending_acts()
+    cited = AmendingPicks.cited_orders(acts)
 
     read =
-      for law <- amending_acts(),
+      for law <- acts,
           year(law) < 2002,
           orders = Map.get(cited, law, []),
           orders != [],
@@ -479,30 +516,6 @@ defmodule Mix.Tasks.Lat.Commencement do
     Mix.shell().info(
       "#{length(read)} orders read, #{read |> Enum.map(fn {{_, rules}, _} -> length(rules) end) |> Enum.sum()} rules#{if opts[:preview], do: " (preview: nothing written)", else: " written"}"
     )
-  end
-
-  # the commencing instruments the notes cite, per amending law (the
-  # amending-law collector's records' pointers)
-  defp cited_orders do
-    %{rows: rows} =
-      Repo.query!("""
-      SELECT DISTINCT l.affecting_law, a.code, a.text, a.citation_law, a.affected_sections
-      FROM lat_change_log l
-      JOIN amendment_annotations a ON a.law_name = l.law_name AND a.code = l.pointer
-      WHERE l.collector = 'amending_law'
-      """)
-
-    for [law, code, text, cl, sids] <- rows,
-        {si, _} <-
-          SertantaiLegal.Scraper.AmendingLaw.Pointer.parse(%{
-            code: code,
-            text: text,
-            citation_law: cl,
-            affected_sections: sids || []
-          }).commencing,
-        reduce: %{} do
-      acc -> Map.update(acc, law, [si], &Enum.uniq([si | &1]))
-    end
   end
 
   # an order is held with its body and its schedules — the table its
@@ -625,6 +638,6 @@ defmodule Mix.Tasks.Lat.Commencement do
   # the law's rows (document order) and LawStart's input
   defp input(law) do
     rows = Input.rows(law)
-    {rows, ChangeCollector.law_start_input(law, rows)}
+    {rows, Input.of(law, rows)}
   end
 end
