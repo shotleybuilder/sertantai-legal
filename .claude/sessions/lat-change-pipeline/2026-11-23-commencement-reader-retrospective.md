@@ -120,3 +120,20 @@ The Commencement reader step for the Waste, Water and Climate round ran four day
   - (b) with Store and build.
   - (c) as a refactor session.
   - (d), (e) and (f) now, in this retrospective's close or a small session after it.
+
+**Decision 1, decided (Jason 2026-11-23): build all six, each managed as a session; (a)–(f) done before the Extent reader; then a retrospective of the Extent reader step's likely problems before it is launched.**
+
+The sequence, and why:
+1. **(d), (e), (f): one session after this one closes** (Jason). Its re-read task is written as a chain of substeps, so (a) can give each its own version without rewriting it.
+2. **(a) Staleness that follows what changed: dedicated, first of the three.**
+   - It makes the other two cheap: once rules are rewritten only when their content changes, a re-read after (b) or (c) that changes nothing stales no build.
+   - Its own cost is one round re-read, where identical rules write nothing.
+3. **(b) Decouple the new path from the old dater: dedicated, second.**
+   - `Commencement.Amending` cannot be deleted yet. The old label path still serves every unswitched family, and DATA-ARCHITECTURE deletes it "when every family has switched".
+   - So (b) is: the new path's picks move off `lat_change_log` (`--effects`, the no-flag `--read-orders`); the fate of `--effects` decided; the old dater fenced out of the new path's version.
+   - After (a), only the substeps it touches go stale.
+4. **(c) Split `Commencement.Order`: one or more dedicated sessions, last.**
+   - It is a pure refactor, test first, with the orders catalogue identical before and after.
+   - After (a), an identical split re-writes no rule, which also proves (a).
+   - Its plan sizes it: one session, or one per family of form.
+5. **The Extent reader readiness review:** this retrospective's questions asked of the Extent reader, before its step's plan.
