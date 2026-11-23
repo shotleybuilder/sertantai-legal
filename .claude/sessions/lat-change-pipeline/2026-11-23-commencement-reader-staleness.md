@@ -1,10 +1,101 @@
 ---
 session: 'Commencement reader: staleness that follows what changed'
-status: active
+status: closed
 opened: 2026-11-23
+closed: 2026-11-23
+outcome: success
+lane: build
+
+summary: >
+  A commencement re-read now writes only rules that changed (an identical reading moves only the
+  reader stamp and keeps read_at), and each rule carries its own read path's stamp (clause 45
+  files, orders 33, feed 4, against one 63-file stamp), each test-held to exactly its path's reach;
+  the build's, the fold's and the extent reader's versions no longer hold the order reader. The
+  one-time cycle re-read and rebuilt every built law; a second re-read of the round wrote 0 rules,
+  and the round check, feed figures, switched families and label gates match or pass.
+
+decisions:
+  - what: Identical re-reads write only the stamp (Store.write_changed/3), keeping write/3's result shape
+    why: delete and re-insert moved read_at, which stales every build reading the rules (Store.Inputs max(read_at))
+    result: the round re-read with unchanged code, 1,534 laws, 0 written, 29 s, max read_at unmoved
+  - what: Three read stamps by treatment (ReadVersion.Clause, .Orders, .Effects), explicit lists, exact reach
+    why: one folder-globbed stamp let an order fix stale the 51,549 feed rules, and a tool module beside the readers stale all
+    result: CommencementReadStampsTest; an orders-only edit moves only the orders stamp
+  - what: Shared helpers moved out of the order and clause readers (ClmlRef.ref, RefContext, LawStart.Sentences, Commencement.Text.*), delegates kept
+    why: naming Order (for 44 ref and 8 context calls) pulled the whole order reader into the build's and extent stamps
+    result: order.ex and order/* in neither ChangeVocabulary.Version, FoldVersion nor Extent.ReadVersion; Extent.ReadVersion explicit, 52 files
+  - what: Feed-difference statuses name an owning step, ours only (Jason, Decision 1)
+    why: 'Jason: "legislation.gov.uk as an owner doesn''t work because we just consume what''s given"'
+    result: 24 entries Commencement reader, 4 Sources; RULES feed-differences-are-patterns-by-feed-coverage; the patterns-by-coverage work is a pending session
+  - what: Keep the 156 builds the cycle added in small families (Jason, Decision A)
+    why: 'Jason: "doesn''t do any harm"; built because lat.reread builds the whole family'
+    result: 109 of them stale on the commencement reader until those families reach Store and build
+  - what: Relabel the 527 switched laws, gated (Jason, Decision B (a))
+    why: the file moves staled FoldVersion and LabelVersion; the preview showed 3,132 label changes in 40 laws, the Waste, Water and Climate Commencement reader step's fixes reaching labels last refreshed 2026-11-17
+    result: relabelled, 0 failed; label gate PASS for Fire and OH&S, OH&S Occupational, Environmental Protection, Maritime (groups not named 0)
+
+metrics:
+  stamps: { clause_files: 45, orders_files: 33, effects_files: 4, old_single_stamp_files: 63, extent_files: 52, build_files: 194 }
+  store: { rules: 72371, clause_rules: 9744, orders_rules: 10750, feed_rules: 51549 }
+  cycle: { reread_and_rebuild_s: 3510, built_before: 1105, rebuilt: 1105, new_builds: 156, new_build_failures: 5 }
+  second_reread: { own_laws: 565, amending_laws: 969, written: 0, seconds: 29 }
+  checks: { round_check: PASS, switched_checks: "4 PASS", golden: "27/27", golden_extended: "44/50 (was 43; 1963 c.41 s.91 by design)", label_gates: "4 PASS" }
+  relabel: { laws: 527, label_changes: 3132, laws_changed: 40, failed: 0 }
+  tests: { targeted: 11560, architecture: 34 }
+
+lessons:
+  - title: A family chain run outside its round builds the whole family
+    detail: lat.reread's build step is lat.vocabulary --build --family F, right for a family in the step but not for families that hold only incidental builds; it built 156 never-built laws (5 failed, no CLML) and left 109 stale, because the chain picks stale rules from the laws already built when it starts. Rebuild incidental builds by --laws instead.
+    tag: tooling
+  - title: A staleness refactor can surface earlier steps' unapplied work
+    detail: the cycle's re-read of long-stale rules and the relabel brought the Waste, Water and Climate step's commencement fixes into switched families' labels (3,132 changes, last relabelled 2026-11-17). "No change expected" held for this session's code (previews 0) but not for the store; preview the relabel before applying, and gate it.
+    tag: data
+  - title: Static reach, not calls, decides a version's files
+    detail: the build called only two small functions of Order, but naming the module put all of the order reader in its stamp; moving shared helpers to their own modules is what shrinks a stamp, and an exact-reach test holds it.
+    tag: tooling
+  - title: Splice by path, not by name-status, when committing moves
+    detail: git diff --name-only cannot combine with --name-status, so the moved files' old paths were missed and HEAD briefly held both copies; cf6904fe committed the deletions.
+    tag: tooling
+
+bugs:
+  - pattern: "Shared amending-law document readers (amending_law/text.ex, doc.ex) sit in 5–8 reader versions, so an amendment-only reading change stales commencement and extent rules too"
+    category: version-over-reach
+    module: Commencement.ReadVersion, AmendingLaw.Extent.ReadVersion
+    affected: every commencement and extent rule on each edit
+    fix: "each read stamp lists only its path's reach (CommencementReadStampsTest): the feed stamp holds neither file, text.ex is out of the clause and extent stamps"
+    step: Commencement reader
+    status: fixed
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/commencement/store.ex
+  - backend/lib/sertantai_legal/scraper/commencement/read_version.ex
+  - backend/lib/sertantai_legal/scraper/commencement/read_version/clause.ex
+  - backend/lib/sertantai_legal/scraper/commencement/read_version/orders.ex
+  - backend/lib/sertantai_legal/scraper/commencement/read_version/effects.ex
+  - backend/lib/sertantai_legal/scraper/commencement/ref_context.ex
+  - backend/lib/sertantai_legal/scraper/commencement/text/
+  - backend/lib/sertantai_legal/scraper/law_start/sentences.ex
+  - backend/lib/sertantai_legal/scraper/amending_law/extent/read_version.ex
+  - backend/lib/sertantai_legal/scraper/commencement/review/feed_differences.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/measures/feed_yardstick.ex
+  - backend/test/sertantai_legal/architecture/commencement_read_stamps_test.exs
+  - backend/test/fixtures/commencement_check/feed_differences.json
+  - backend/data/reports/commencement-reader/staleness-cycle/
+  - backend/data/reports/commencement-reader/feed-owners/
+  - docs/lat-change-pipeline/RULES.md
+  - docs/lat-change-pipeline/DATA-ARCHITECTURE.md
+
+depends_on:
+  - 2026-11-23-commencement-reader-step-procedures
+  - 2026-11-23-commencement-reader-retrospective
+
+enables:
+  - 2026-11-23-commencement-reader-old-path-decouple
+  - 2026-11-23-commencement-reader-order-split
+  - 2026-11-23-commencement-reader-feed-differences-as-patterns
 ---
 
-# Session: Commencement reader: staleness that follows what changed (ACTIVE)
+# Session: Commencement reader: staleness that follows what changed (CLOSED)
 
 ## Problem
 
@@ -21,7 +112,7 @@ Plan approved 2026-11-23 (`~/.claude/plans/gleaming-doodling-matsumoto.md`). Pas
 - ✅ 5. Pre-flight: targeted tests, Credo, Dialyzer; round `--preview` 0 changes; `lat.reread` dry runs for the cost
 - ✅ 6. The one-time cycle on Jason's go: restore point; store-wide re-read; rebuild of every built law
 - ✅ 7. Check: second re-read writes 0; stale reasons 0; round checks, yardstick, switched, golden as at close; suite
-- ⬜ 8. Close: DATA-ARCHITECTURE row; RULES rule; session close; commits by path
+- ✅ 8. Close: DATA-ARCHITECTURE row; RULES rule; session close; commits by path
 
 ## Dependencies
 
@@ -138,6 +229,7 @@ Every stamp moved once, so every stored rule and every build is stale on the com
   - (a) keep them. They are rebuilt when those families reach the Store and build step, and 109 stay stale meanwhile.
   - (b) remove them (their `provision_changes`, `provision_change_claims` and `changes_built` events), back to the 1,105 built before.
 - *Recommendation:* (b). They were built by my running the chain beyond the families in the round, not by any step.
+- **Decided (Jason 2026-11-23): (a), keep them** ("doesn't do any harm").
 
 **B. Relabel the switched families.**
 - The file moves changed `FoldVersion` and `LabelVersion`, so all 527 switched laws are stale on the labels (`fold_version` 527; `labels_version` 1,117 across all families, against 565 at the close).
@@ -145,3 +237,19 @@ Every stamp moved once, so every stored rule and every build is stale on the com
   - (a) relabel the switched families now, with `mix lat.relabel`, a preview then an apply;
   - (b) leave it to the Label fold step's next run.
 - *Recommendation:* (a), so the switched labels match the code. The preview first shows whether any label changes; none should, as the moved code reads the same.
+- **Decided (Jason 2026-11-23): (a), run it.** The 527 switched laws stale on the labels: preview `mix lat.wave_preview --laws … --relabel --tag staleness_relabel_dry` (rolled back), then a restore point, then `mix lat.relabel --laws …`.
+
+## Relabel (Decision B, a)
+
+- Restore point `staleness-relabel` (`lat_change_log`, `lat_label_timeline`, `lat_events`).
+- `mix lat.relabel --laws …` over the 527 switched laws: 0 failed. Switched laws stale on the labels: 0 of 527.
+- Label gate (`mix lat.label_check --gate --all`): PASS for all four families, groups not named 0 (Fire and OH&S, OH&S Occupational, Environmental Protection, Maritime).
+
+## Close
+
+- **Docs changed:**
+  - RULES: `a-re-read-writes-only-changed-rules`, `feed-differences-are-patterns-by-feed-coverage`, and the two-way gate's statuses.
+  - DATA-ARCHITECTURE: the `commencement_rules` row and the reader-version paragraph.
+  - `COMMENCEMENT-READER.md`'s revision stays the readiness review's todo.
+- **No step close (`lat.step_close`):** this is a follow-on session across the round, not a pipeline step.
+- **Bugs:** the shared-reader version bug is marked fixed. Nothing left in a parking list.

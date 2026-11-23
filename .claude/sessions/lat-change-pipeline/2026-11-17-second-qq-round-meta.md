@@ -24,7 +24,7 @@ The next round takes the QQ legal register's families not already covered (Jason
 - ⬜ Before the Extent reader (Jason 2026-11-23, the Commencement reader retrospective, Decision 1), in order:
   1. ✅ `2026-11-23-commencement-reader-retrospective.md` (closed 2026-11-23)
   2. ✅ `2026-11-23-commencement-reader-step-procedures.md`: tasks for the step's procedures, feed figures in Measures, WORKFLOW rules (closed 2026-11-23)
-  3. `2026-11-23-commencement-reader-staleness.md`: staleness that follows what changed
+  3. ✅ `2026-11-23-commencement-reader-staleness.md`: staleness that follows what changed (closed 2026-11-23)
   4. `2026-11-23-commencement-reader-old-path-decouple.md`: the new path off the old dater and register
   5. `2026-11-23-commencement-reader-order-split.md`: split the order reader (one or more sessions)
   6. `2026-11-23-commencement-reader-feed-differences-as-patterns.md`: feed differences as patterns, judged by what the feed covers (Jason 2026-11-23)
