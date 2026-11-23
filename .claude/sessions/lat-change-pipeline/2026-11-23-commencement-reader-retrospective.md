@@ -1,12 +1,58 @@
 ---
 session: 'Waste, Water and Climate: Commencement reader retrospective'
-status: active
-opened: 2026-11-23
+status: closed
+opened: '2026-11-23'
+closed: '2026-11-23'
+outcome: success
 family: Waste, Water and Climate (round)
 step: Commencement reader
----
+summary: >
+  A retrospective of the four-day Waste, Water and Climate Commencement reader step on Jason's six points. The reader's spec was written and accepted (COMMENCEMENT-READER.md: aim, scope, the boundary with the Amending-law reader, substeps, staleness and loops), the complexity measured, and Claude's eleven takeaways set down.
+  Decision 1: all six changes built as managed sessions in order (step procedures and workflow rules; staleness that follows what changed; decouple the new path from the old dater; split the order reader), then an Extent reader readiness review, all before the Extent reader.
+decisions:
+  - what: "Decision 1: build all six changes, each as a managed session, all before the Extent reader"
+    why: "Jason: properly managed within our session approach; the problems probably affect the Extent reader too"
+    result: five pending sessions sequenced in the round meta; the staleness fix first of the three code sessions because it makes the others' re-reads cheap
+  - what: The old dater (Commencement.Amending) is decoupled, not deleted
+    why: the old label path still serves every unswitched family; DATA-ARCHITECTURE deletes it only when every family has switched
+    result: the decouple session moves the new path's picks off lat_change_log and fences the dater out of its version stamps
+  - what: COMMENCEMENT-READER.md accepted as of 2026-11-23, revised after all the follow-on sessions
+    why: the substeps, stamps and loops it describes are what the sessions change
+    result: the revision is a todo in the Extent reader readiness review, with the stale parts of COMMENCEMENT-GUIDE, AMENDMENT-GUIDE and DATA-ARCHITECTURE
+metrics:
+  reader_size: { modules: 70, lines: 14382, test_files: 98, credo_issues: 20 }
+  largest: { order_lines: 2188, order_functions: 169, order_patterns: 58, order_commits: 51 }
+  step_churn: { reader_commits: 55, lines_added: 6110, lines_deleted: 1334, days: 4 }
+  version_stamps_files: { change_vocabulary: 198, extent_read: 95, commencement_read: 63, shared_with_change_vocabulary: 54, shared_with_amendment_reader: 7 }
+  commencement_rules: { rows: 72043, feed_commencement: 51549 }
+lessons:
+  - title: One version stamp over a whole reader makes every fix a round re-read
+    detail: "Commencement.ReadVersion covers 63 files and shares 54 with the build's stamp; Store.write deletes and re-inserts, so even an identical re-read stales every build that reads those rules. Two late fixes cost about an hour and 1,088 laws."
+    tag: tooling
+  - title: A pass condition added mid-step is a new phase
+    detail: "The two-way feed gate (Decision 5) was the step's best tool but drove Decisions 7-19 with no time box; plan it as a phase."
+    tag: tooling
+  - title: The reader's boundary was right in code but never written down
+    detail: "The build has one owner per question (what and who: the Amending-law reader; when: the Commencement reader; where: the Extent reader); the step felt like amending-law work because the feed gate checks inserted rows' timing. The written spec answers it."
+    tag: data
+  - title: A map of the code by one read-only agent, spot-checked, replaced reading 14k lines in-session
+    detail: "Two of its claims (read_at always moves; 51,549 feed rules) were checked by hand before they went into the spec."
+    tag: tooling
+bugs: []
+artifacts:
+  - docs/lat-change-pipeline/COMMENCEMENT-READER.md
+  - .claude/sessions/lat-change-pipeline/2026-11-23-commencement-reader-step-procedures.md
+  - .claude/sessions/lat-change-pipeline/2026-11-23-commencement-reader-staleness.md
+  - .claude/sessions/lat-change-pipeline/2026-11-23-commencement-reader-old-path-decouple.md
+  - .claude/sessions/lat-change-pipeline/2026-11-23-commencement-reader-order-split.md
+  - .claude/sessions/lat-change-pipeline/2026-11-23-extent-reader-readiness-review.md
+depends_on:
+  - 2026-11-20-waste-water-and-climate-commencement-reader
+enables:
+  - "Commencement reader: step procedures, feed figures and workflow rules"
 
-# Session: Waste, Water and Climate: Commencement reader retrospective (ACTIVE)
+
+# Session: Waste, Water and Climate: Commencement reader retrospective (CLOSED)
 
 ## Problem
 
@@ -14,13 +60,13 @@ The Commencement reader step for the Waste, Water and Climate round ran four day
 
 ## Todo
 
-- ⬜ 1. A design spec for the Commencement reader: its aims, what is in scope and what is out
-- ⬜ 2. A substeps document: each substep's input sources, the data it changes, its output, what goes stale and why; the architecture and the workflow rules that force the substeps to loop
-- ⬜ 3. The boundary with the Amending-law reader made explicit: which reader dates what, and why the Commencement reader is not doing the Amending-law reader's work
-- ⬜ 4. Complexity: the code is now so complex that changes are hard to track — measure it and propose solutions
-- ⬜ 5. The feed as a yardstick: standard stats driven from the comparison; the rules for taking the feed or the reader refined, in their owning step (not this one)
-- ⬜ 6. Claude's takeaways from the step's session docs and log
-- ⬜ 7. Changes decided and written where they belong (WORKFLOW, RULES, skills, memory); close
+- ✅ 1. A design spec for the Commencement reader: its aims, what is in scope and what is out
+- ✅ 2. A substeps document: each substep's input sources, the data it changes, its output, what goes stale and why; the architecture and the workflow rules that force the substeps to loop
+- ✅ 3. The boundary with the Amending-law reader made explicit: which reader dates what, and why the Commencement reader is not doing the Amending-law reader's work
+- ✅ 4. Complexity: the code is now so complex that changes are hard to track — measure it and propose solutions
+- ✅ 5. The feed as a yardstick: standard stats driven from the comparison; the rules for taking the feed or the reader refined, in their owning step (not this one)
+- ✅ 6. Claude's takeaways from the step's session docs and log
+- ✅ 7. Changes decided and written where they belong (WORKFLOW, RULES, skills, memory); close
 
 ## Jason's points (2026-11-23)
 
@@ -137,3 +183,9 @@ The sequence, and why:
    - After (a), an identical split re-writes no rule, which also proves (a).
    - Its plan sizes it: one session, or one per family of form.
 5. **The Extent reader readiness review:** this retrospective's questions asked of the Extent reader, before its step's plan.
+
+## Close (2026-11-23)
+
+- **Docs changed:** `COMMENCEMENT-READER.md` (new, accepted; to be revised after the follow-on sessions); the pipeline README's docs index. RULES is unchanged: no rule was decided, and the workflow rules go in with (f).
+- **Bugs:** none new. The overlaps found (the second dater, four parses of one amending law, shared stamp files) are the follow-on sessions' work.
+- **Parking:** none.

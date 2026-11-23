@@ -210,6 +210,7 @@ The row's territory stays its own extent (E+W+S+NI, from the CLML) after a words
 | [TESTING.md](TESTING.md) | How tests are written: one test per class, catalogues, frozen golden |
 | [CHANGE-IDENTITY-DESIGN.md](CHANGE-IDENTITY-DESIGN.md) | How the merge decides that records are one event |
 | [COMMENCEMENT-GUIDE.md](COMMENCEMENT-GUIDE.md) | How a law comes into force; the commencement rule and evaluator |
+| [COMMENCEMENT-READER.md](COMMENCEMENT-READER.md) | The Commencement reader step: aim, scope, its boundary with the Amending-law reader, substeps, what goes stale and why they loop (accepted 2026-11-23; revised after the follow-on sessions) |
 | [AMENDMENT-GUIDE.md](AMENDMENT-GUIDE.md) | What an amending provision does; the amendment rule and reader |
 | [LEGISLATION-GOV-UK-NOTE-TYPOLOGY.md](LEGISLATION-GOV-UK-NOTE-TYPOLOGY.md) | What legislation.gov.uk's notes are, and why they are pointers |
 

@@ -1,6 +1,6 @@
-# The Commencement reader: what it does (DRAFT for Jason, 2026-11-23)
+# The Commencement reader: what it does (accepted, Jason 2026-11-23)
 
-The step's spec: its aim, its scope, its boundary with the Amending-law reader, its substeps, and what makes them loop. The forms it reads are in `COMMENCEMENT-GUIDE.md` §3; the rules it follows are in `RULES.md`. From the Waste, Water and Climate retrospective (`.claude/sessions/lat-change-pipeline/2026-11-23-commencement-reader-retrospective.md`).
+The step's spec: its aim, its scope, its boundary with the Amending-law reader, its substeps, and what makes them loop. The forms it reads are in `COMMENCEMENT-GUIDE.md` §3; the rules it follows are in `RULES.md`. From the Waste, Water and Climate retrospective (`.claude/sessions/lat-change-pipeline/2026-11-23-commencement-reader-retrospective.md`). It describes the reader as it stood on 2026-11-23. It is revised once the retrospective's follow-on sessions are all complete (the todo is in `2026-11-23-extent-reader-readiness-review.md`); §4, §5 and §7 will change most.
 
 ## 1. Aim
 
