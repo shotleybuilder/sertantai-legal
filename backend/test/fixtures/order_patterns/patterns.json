@@ -1046,6 +1046,12 @@
         "UK_uksi_1997_2323/10fd834c9c"
       ]
     },
+    "table|date|qualified|full|-|rules+partial": {
+      "count": 1,
+      "examples": [
+        "UK_nisr_2007_194/a4d3c4972d"
+      ]
+    },
     "table|made_relative|-|-|-|none": {
       "count": 30,
       "examples": [

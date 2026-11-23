@@ -56,6 +56,12 @@
       "class": "none",
       "rules": []
     },
+    "UK_nisr_2007_194/a4d3c4972d": {
+      "class": "rules+partial",
+      "rules": [
+        "reg.280 — 2007-04-01 — NI, in relation to — order_schedule"
+      ]
+    },
     "UK_nisr_2007_294/01b6a343bb": {
       "class": "rules+partial",
       "rules": [
@@ -2793,6 +2799,7 @@
     "table|date|qualified|-|other_law|none": "accepted",
     "table|date|qualified|-|other_law|rules+partial": "accepted",
     "table|date|qualified|full|-|none": "accepted",
+    "table|date|qualified|full|-|rules+partial": "pending: a row's long exception read as the whole item partly, or swallowing the rest of its list (NISR 2007/194 Sch.1 Pt II; RULES section 11, Jason 2026-11-23)",
     "table|made_relative|-|-|-|none": "pending: a table row not read (its Schedule unnamed, or a qualifier or form not read)",
     "table|made_relative|-|-|-|rules": "accepted",
     "table|made_relative|-|-|-|rules+partial": "accepted",
