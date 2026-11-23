@@ -35,7 +35,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPlacement do
   takes the first unplaced reason. Pure.
   """
 
-  alias SertantaiLegal.Scraper.Commencement.Order
+  alias SertantaiLegal.Scraper.Commencement.ClmlRef
   alias SertantaiLegal.Scraper.LatRef
 
   @type outcome ::
@@ -90,7 +90,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.MarkupPlacement do
   # the targets a scoped law holds or names within a fragment; nil when a
   # fragment names no ref, when none is within, or when all are
   defp within_scope(targets, held) do
-    refs = Enum.map(held.scope, &Order.ref/1)
+    refs = Enum.map(held.scope, &ClmlRef.ref/1)
 
     within =
       if Enum.all?(refs, & &1),

@@ -9,8 +9,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Ref do
   as a whole, `annex-XVII` "annex.XVII". Pure.
   """
 
-  alias SertantaiLegal.Scraper.Commencement.Order
-
+  alias SertantaiLegal.Scraper.Commencement.ClmlRef
   @eu ~w(eur eudr eudn)
 
   @doc "The LAT ref for CLML id `id` in law `law_name`; nil for none."
@@ -67,7 +66,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Ref do
             ""
           )
 
-    case {Order.ref(id), eu?(law_name)} do
+    case {ClmlRef.ref(id), eu?(law_name)} do
       {nil, _} -> nil
       {"reg." <> rest, true} -> "art.Article " <> rest
       {ref, _} -> ref

@@ -9,8 +9,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Application do
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.Units
   alias SertantaiLegal.Scraper.ApplicationClause
-  alias SertantaiLegal.Scraper.Commencement.Order
-
+  alias SertantaiLegal.Scraper.Commencement.ClmlRef
   # the law's whole-instrument application clause ("These Regulations …
   # apply in relation to England only"; `ApplicationClause`), as a code:
   # where the changes it makes apply (CV-07)
@@ -27,7 +26,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Application do
   def application(doc, extent) do
     clauses =
       for id <- doc.ids,
-          ref = Order.ref(id),
+          ref = ClmlRef.ref(id),
           ref != nil,
           not String.contains?(ref, "("),
           text =

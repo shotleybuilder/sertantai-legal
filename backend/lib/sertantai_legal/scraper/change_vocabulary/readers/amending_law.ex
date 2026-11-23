@@ -26,7 +26,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
 
   alias SertantaiLegal.Scraper.Amendment.Rule
   alias SertantaiLegal.Scraper.ChangeVocabulary.Claim
-  alias SertantaiLegal.Scraper.Commencement.{Evaluator, Order}
+  alias SertantaiLegal.Scraper.Commencement.{ClmlRef, Evaluator}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingCommencement
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw.Dropped
   alias SertantaiLegal.Scraper.Commencement.Rule, as: CRule
@@ -155,7 +155,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
   defp application(extents, law, ref) do
     case Map.get(extents, law) do
       %SertantaiLegal.Scraper.AmendingLaw.Extent{} = e ->
-        SertantaiLegal.Scraper.AmendingLaw.Extent.application_at(e, List.wrap(Order.ref(ref)))
+        SertantaiLegal.Scraper.AmendingLaw.Extent.application_at(e, List.wrap(ClmlRef.ref(ref)))
 
       %{application: a} ->
         a

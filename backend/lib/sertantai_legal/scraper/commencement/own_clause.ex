@@ -35,7 +35,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
 
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.Commencement.{DocRows, Rule}
-  alias SertantaiLegal.Scraper.Commencement.Order.Asides
+  alias SertantaiLegal.Scraper.Commencement.Text.Asides
   alias SertantaiLegal.Scraper.LatRef
   alias SertantaiLegal.Scraper.LawStart
   alias SertantaiLegal.Scraper.LawStart.{Clause, MadeCondition, OwnDays, Provisions}

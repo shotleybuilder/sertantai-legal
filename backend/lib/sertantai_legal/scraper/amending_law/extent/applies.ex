@@ -30,8 +30,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Applies do
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, RefList, SubPath}
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Parts, Places, Units}
   alias SertantaiLegal.Scraper.ApplicationClause
-  alias SertantaiLegal.Scraper.Commencement.Order
-  alias SertantaiLegal.Scraper.LawStart.Clause
+  alias SertantaiLegal.Scraper.Commencement.ClmlRef
+  alias SertantaiLegal.Scraper.LawStart.Sentences
 
   @place_list Places.place_list()
   @provisions "(?:Sections?|Subsections?|Regulations?|Articles?|Paragraphs?|Sub-paragraphs?|Parts?|Chapters?|Schedules?|Rules?)"
@@ -62,13 +62,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Applies do
   @spec applies(Doc.t()) :: [entry()]
   def applies(%Doc{} = doc) do
     for id <- doc.ids,
-        ref = Order.ref(id),
+        ref = ClmlRef.ref(id),
         ref != nil,
         not String.contains?(ref, "("),
         not container?(doc, id),
         {unit_id, unit} <- Units.units_with_ids(doc, id),
-        unit_ref = Order.ref(unit_id) || ref,
-        s <- Clause.sentences(unit),
+        unit_ref = ClmlRef.ref(unit_id) || ref,
+        s <- Sentences.sentences(unit),
         part <- Units.statements(s),
         entry <- read(part, ref, doc, unit_ref),
         uniq: true,
@@ -111,12 +111,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Applies do
   def unit_ref(s, ref, %Doc{} = doc) do
     head = s |> String.trim() |> String.slice(0, 60)
 
-    with id when id != nil <- Enum.find(doc.ids, &(Order.ref(&1) == ref)),
+    with id when id != nil <- Enum.find(doc.ids, &(ClmlRef.ref(&1) == ref)),
          {unit_id, _} <-
            Enum.find(Units.units_with_ids(doc, id), fn {_, text} ->
              String.contains?(text, head)
            end),
-         unit when unit != nil <- Order.ref(unit_id) do
+         unit when unit != nil <- ClmlRef.ref(unit_id) do
       unit
     else
       _ -> ref

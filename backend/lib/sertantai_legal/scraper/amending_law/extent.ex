@@ -52,7 +52,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
     Units
   }
 
-  alias SertantaiLegal.Scraper.Commencement.Order
+  alias SertantaiLegal.Scraper.Commencement.ClmlRef
   alias SertantaiLegal.Scraper.Territory
 
   defstruct default: nil,
@@ -92,7 +92,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
     # words before it ("Schedule 10.7 The following …")
     sections =
       for id <- doc.ids,
-          ref = Order.ref(id),
+          ref = ClmlRef.ref(id),
           ref != nil,
           do:
             {ref,
@@ -224,8 +224,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent do
   # the one reader of it), as refs: "sch.7" => "s.111"
   defp introductions(doc) do
     for {sch, sec} <- ScheduleRefs.references(doc),
-        s = Order.ref(sch),
-        r = Order.ref(sec),
+        s = ClmlRef.ref(sch),
+        r = ClmlRef.ref(sec),
         s != nil and r != nil,
         into: %{},
         do: {s, r}

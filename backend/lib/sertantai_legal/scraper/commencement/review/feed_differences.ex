@@ -129,10 +129,27 @@ defmodule SertantaiLegal.Scraper.Commencement.FeedDifferences do
   @doc """
   A law's status in a group: its own (`"<shape> @ <law>"`), else the
   group's (`"<shape>"`), else nil. A status one law earns never names
-  another law's rows of the same shape.
+  another law's rows of the same shape. An entry is the status itself, or
+  `{"status", "owner"}` naming the step that owns the difference.
   """
   @spec status(map(), String.t(), String.t()) :: String.t() | nil
-  def status(reviewed, shape, law),
+  def status(reviewed, shape, law) do
+    case entry(reviewed, shape, law) do
+      %{"status" => status} -> status
+      status -> status
+    end
+  end
+
+  @doc "The step owning a law's difference in a group (`status/3`'s entry), nil when none is named."
+  @spec owner(map(), String.t(), String.t()) :: String.t() | nil
+  def owner(reviewed, shape, law) do
+    case entry(reviewed, shape, law) do
+      %{"owner" => owner} -> owner
+      _ -> nil
+    end
+  end
+
+  defp entry(reviewed, shape, law),
     do: Map.get(reviewed, "#{shape} @ #{law}") || Map.get(reviewed, shape)
 
   @doc """

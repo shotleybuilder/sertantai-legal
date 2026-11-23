@@ -16,7 +16,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.OwnCommencement do
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Claim
-  alias SertantaiLegal.Scraper.Commencement.{Evaluator, Order}
+  alias SertantaiLegal.Scraper.Commencement.{Evaluator, RefContext}
   alias SertantaiLegal.Scraper.Commencement.Rule
   alias SertantaiLegal.Scraper.LatRef
 
@@ -27,13 +27,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.OwnCommencement do
   @doc """
   Claim sets `{key, target, claims}` for each provision in `ids` (LAT
   refs). `ctx`: the law's row structure (`OwnClause.context/1`: its Parts
-  and Chapters, document order; else `Order.context/0`); `extents`: each
+  and Chapters, document order; else `RefContext.context/0`); `extents`: each
   provision's extent, so territorial commencements covering it bring it
   fully into force (CV-S04: NI Order 1997/1774 commenced "for N.I.").
   """
   @spec read([Rule.t()], String.t(), [String.t()], map(), %{String.t() => String.t() | nil}) ::
           [{String.t(), String.t(), [Claim.t()]}]
-  def read(rules, law_name, ids, ctx \\ Order.context(), extents \\ %{}) do
+  def read(rules, law_name, ids, ctx \\ RefContext.context(), extents \\ %{}) do
     text = Enum.reject(rules, &(&1.treatment in @not_text))
 
     own =
@@ -108,7 +108,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.OwnCommencement do
   """
   @spec outcome([Rule.t()], String.t(), String.t(), map()) ::
           {outcome(), Evaluator.result() | nil}
-  def outcome(rules, law_name, id, ctx \\ Order.context()) do
+  def outcome(rules, law_name, id, ctx \\ RefContext.context()) do
     case Enum.reject(rules, &(&1.treatment in @not_text)) do
       [] -> {no_text(rules, law_name), nil}
       text -> text |> evaluate(id, ctx) |> then(&{class(&1, rules, law_name, text), &1})

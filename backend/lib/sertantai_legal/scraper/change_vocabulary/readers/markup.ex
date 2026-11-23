@@ -44,8 +44,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteLaw
   alias SertantaiLegal.Scraper.EffectIndex
-  alias SertantaiLegal.Scraper.Commencement.Order
-
+  alias SertantaiLegal.Scraper.Commencement.ClmlRef
   @changes ~w(Addition Substitution Repeal)a
 
   @doc """
@@ -805,7 +804,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Markup do
         if(sch == "", do: "sch.para.", else: "sch.#{sch}.para.") <> para <> subs
 
       nil ->
-        Order.ref(section_ref)
+        ClmlRef.ref(section_ref)
     end
   end
 

@@ -13,7 +13,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order.SectionHeads do
   text.
   """
 
-  alias SertantaiLegal.Scraper.Commencement.Order.Asides
+  alias SertantaiLegal.Scraper.Commencement.Text.Asides
 
   @brackets ~S"(?:\([0-9A-Za-z]+\))+"
   @section_head ~r/^\W*in\s+section\s+(\d+[A-Z]*)\s*[—–:-]?\s*$/iu

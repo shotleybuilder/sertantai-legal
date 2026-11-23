@@ -20,6 +20,7 @@ defmodule SertantaiLegal.Scraper.LabelVersion do
       lib/sertantai_legal/scraper/law_start.ex
       lib/sertantai_legal/scraper/law_start/*.ex
       lib/sertantai_legal/scraper/commencement/*.ex
+      lib/sertantai_legal/scraper/commencement/read_version/*.ex
       lib/sertantai_legal/scraper/effect_facts.ex
       lib/sertantai_legal/scraper/effect_kind.ex
       lib/sertantai_legal/scraper/label_projection.ex

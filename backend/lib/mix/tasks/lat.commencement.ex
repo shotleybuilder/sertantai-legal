@@ -172,8 +172,8 @@ defmodule Mix.Tasks.Lat.Commencement do
 
       {:preview, length(diff.added), length(diff.gone)}
     else
-      {:ok, n} = Store.write(law, rules, treatments: OwnClause.treatments())
-      n
+      {:ok, n, how} = Store.write_changed(law, rules, treatments: OwnClause.treatments())
+      {how, n}
     end
   end
 
@@ -195,10 +195,12 @@ defmodule Mix.Tasks.Lat.Commencement do
         "#{map_size(results)} laws read (preview: nothing written): #{length(changed)} laws change, +#{changed |> Enum.map(&elem(&1, 0)) |> Enum.sum()} −#{changed |> Enum.map(&elem(&1, 1)) |> Enum.sum()} rules, #{length(errors)} errors"
       )
     else
-      rules = values |> Enum.filter(&is_integer/1) |> Enum.sum()
+      written = for {:written, n} <- values, do: n
+      unchanged = Enum.count(values, &match?({:unchanged, _}, &1))
+      none = Enum.count(values, &(&1 == 0))
 
       Mix.shell().info(
-        "#{map_size(results)} laws read, #{rules} rules written, #{length(errors)} errors"
+        "#{map_size(results)} laws read: #{length(written)} written (#{Enum.sum(written)} rules), #{unchanged} unchanged (stamp only), #{none} with no reading, #{length(errors)} errors"
       )
     end
 

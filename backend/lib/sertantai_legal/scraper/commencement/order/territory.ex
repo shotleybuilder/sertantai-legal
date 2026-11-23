@@ -5,7 +5,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order.Territory do
   instrument's type. Pure text.
   """
 
-  alias SertantaiLegal.Scraper.Commencement.Order.Asides
+  alias SertantaiLegal.Scraper.Commencement.Text.Asides
 
   @places %{
     "england and wales" => "E+W",

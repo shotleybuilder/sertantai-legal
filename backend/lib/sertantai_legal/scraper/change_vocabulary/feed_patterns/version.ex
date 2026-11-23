@@ -79,7 +79,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedPatterns.Version do
       lib/sertantai_legal/scraper/commencement/text_refs.ex
       lib/sertantai_legal/scraper/commencement/order.ex
       lib/sertantai_legal/scraper/commencement/order/*.ex
+      lib/sertantai_legal/scraper/commencement/text/*.ex
       lib/sertantai_legal/scraper/commencement/rule.ex
+      lib/sertantai_legal/scraper/commencement/ref_context.ex
       lib/sertantai_legal/scraper/effect_facts.ex
       lib/sertantai_legal/scraper/effect_index.ex
       lib/sertantai_legal/scraper/effect_kind.ex
@@ -90,6 +92,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedPatterns.Version do
       lib/sertantai_legal/scraper/lat_ref.ex
       lib/sertantai_legal/scraper/law_start.ex
       lib/sertantai_legal/scraper/law_start/clause.ex
+      lib/sertantai_legal/scraper/law_start/sentences.ex
       lib/sertantai_legal/scraper/law_start/completing.ex
       lib/sertantai_legal/scraper/law_start/made_condition.ex
       lib/sertantai_legal/scraper/law_start/own_days.ex

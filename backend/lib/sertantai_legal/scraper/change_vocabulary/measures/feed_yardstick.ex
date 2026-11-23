@@ -3,14 +3,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.FeedYardstick do
   The Commencement reader's standard figures against the feed: each
   family's last commencement check, recorded as a file, published by
   `mix lat.measures`. The counts per yardstick class, the proven feed
-  errors, and the difference groups by status and by row kind
-  (Commencement reader retrospective, Decision 1 (e)).
+  errors, and the difference groups by status, by owning step and by row
+  kind (Commencement reader retrospective, Decision 1 (e); owners, Jason
+  2026-11-23).
 
   `mix lat.commencement_check --family F` writes the record
   (`record/1`, `write/2`); the measures read it back and say when it was
   taken and whether it follows the family's last build (`lines/2`). The
   check computes the figures, so they are its own, never re-derived.
   """
+
+  alias SertantaiLegal.Scraper.Commencement.FeedDifferences
 
   @dir "data/reports/commencement-reader/yardstick"
   @classes ~w(agree differ feed_error feed_only feed_partial_only own_only neither)
@@ -24,6 +27,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.FeedYardstick do
           feed_errors_proven: non_neg_integer(),
           groups: non_neg_integer(),
           by_status: %{String.t() => %{String.t() => non_neg_integer()}},
+          by_owner: %{String.t() => %{String.t() => non_neg_integer()}},
           by_row: %{String.t() => %{String.t() => non_neg_integer()}}
         }
 
@@ -59,6 +63,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.FeedYardstick do
       feed_errors_proven: Map.get(counts, "feed_error", 0),
       groups: length(groups),
       by_status: tally(shares, & &1.status),
+      by_owner: tally(shares, & &1.owner),
       by_row: tally(shares, & &1.row)
     }
   end
@@ -78,6 +83,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.FeedYardstick do
       [
         "  proven feed errors: #{r.feed_errors_proven}",
         "  difference groups: #{r.groups}, by status: #{shares(r.by_status)}",
+        "  by owning step: #{shares(r.by_owner)}",
         "  by row: #{shares(r.by_row)}"
       ]
   end
@@ -109,6 +115,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.FeedYardstick do
       feed_errors_proven: m["feed_errors_proven"],
       groups: m["groups"],
       by_status: m["by_status"],
+      by_owner: m["by_owner"] || %{},
       by_row: m["by_row"]
     }
   end
@@ -119,12 +126,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.FeedYardstick do
       if String.starts_with?(shape, "inserted"), do: "inserted provision", else: "own provision"
 
     for {law, n} <- g.by_law do
-      %{shape: shape, rows: n, row: row, status: kind(status(reviewed, shape, law))}
+      %{
+        shape: shape,
+        rows: n,
+        row: row,
+        status: kind(FeedDifferences.status(reviewed, shape, law)),
+        owner: FeedDifferences.owner(reviewed, shape, law) || "no owner"
+      }
     end
   end
-
-  defp status(reviewed, shape, law),
-    do: Map.get(reviewed, "#{shape} @ #{law}") || Map.get(reviewed, shape)
 
   defp kind(nil), do: "no status"
 

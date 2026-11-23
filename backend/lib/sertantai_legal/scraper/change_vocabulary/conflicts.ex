@@ -35,7 +35,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Conflicts do
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Evidence}
-  alias SertantaiLegal.Scraper.Commencement.Order
+  alias SertantaiLegal.Scraper.Commencement.ClmlRef
   alias SertantaiLegal.Scraper.LatRef
 
   @type value_conflict :: {atom(), {atom(), term()}, {atom(), term()}}
@@ -199,7 +199,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Conflicts do
             parts: 2
           )
         ],
-        ref = Order.ref(id),
+        ref = ClmlRef.ref(id),
         ref != nil,
         reduce: %{} do
       acc -> Map.update(acc, law, MapSet.new([ref]), &MapSet.put(&1, ref))

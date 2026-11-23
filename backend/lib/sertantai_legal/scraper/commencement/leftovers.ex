@@ -35,7 +35,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Leftovers do
     TextRefs
   }
 
-  alias SertantaiLegal.Scraper.Commencement.Order.Asides
+  alias SertantaiLegal.Scraper.Commencement.Text.Asides
   alias SertantaiLegal.Scraper.LawStart.{Clause, ListItems, Provisions, Statements}
 
   @type leftover :: %{

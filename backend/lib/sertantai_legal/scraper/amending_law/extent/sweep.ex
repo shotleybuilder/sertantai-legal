@@ -31,8 +31,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Sweep do
 
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Excepted, Units}
-  alias SertantaiLegal.Scraper.Commencement.Order
-  alias SertantaiLegal.Scraper.LawStart.Clause
+  alias SertantaiLegal.Scraper.Commencement.ClmlRef
+  alias SertantaiLegal.Scraper.LawStart.Sentences
 
   @places "England|Wales|Scotland|Northern Ireland|Great Britain|United Kingdom"
 
@@ -81,12 +81,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Sweep do
           do: ref
 
     for id <- doc.ids,
-        ref = Order.ref(id),
+        ref = ClmlRef.ref(id),
         ref != nil,
         not String.contains?(ref, "("),
         not container?(doc, id),
         unit <- Units.units(doc, id),
-        s <- Clause.sentences(unit),
+        s <- Sentences.sentences(unit),
         net = net(s, ref, clause_refs),
         net != nil,
         # (an exception to a subsection that isn't an extent statement:

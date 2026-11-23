@@ -7,8 +7,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Parts do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
-  alias SertantaiLegal.Scraper.Commencement.Order
-
+  alias SertantaiLegal.Scraper.Commencement.ClmlRef
   @chapter_list "[\\dIVXLC]+[A-Z]*(?:\\s*(?:,|and|to)\\s*[\\dIVXLC]+[A-Z]*)*"
   @chapters Regex.compile!(
               "\\bChapters?\\s+(#{@chapter_list})\\s+of\\s+(?:Part\\s+([\\dIVXLC]+[A-Z]*)|(this)\\s+Part)\\b",
@@ -54,7 +53,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Parts do
         Map.has_key?(doc.pos, id),
         para <- part_paragraphs(doc, id),
         uniq: true,
-        do: Order.ref(para)
+        do: ClmlRef.ref(para)
   end
 
   defp owner?(before),
@@ -79,7 +78,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Parts do
     if text =~ ~r/\bthis\s+Chapter\b/iu do
       doc.ids
       |> Enum.filter(&(&1 =~ ~r/^part-[^-]+-chapter-[^-]+$/))
-      |> Enum.map(fn ch -> Enum.map(chapter_ids(doc, ch), &Order.ref/1) end)
+      |> Enum.map(fn ch -> Enum.map(chapter_ids(doc, ch), &ClmlRef.ref/1) end)
       |> Enum.find([], &(clause_ref in &1))
     else
       []
@@ -126,7 +125,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Parts do
         Map.has_key?(doc.pos, id),
         sid <- chapter_ids(doc, id),
         uniq: true,
-        do: Order.ref(sid)
+        do: ClmlRef.ref(sid)
   end
 
   defp chapter_parts("", ["this"], doc, clause_ref) when is_binary(clause_ref),
@@ -190,7 +189,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Parts do
         id <- doc.ids,
         id =~ ~r/^(?:section|regulation|article|rule)-\d+[A-Z]*$/,
         holds_id?(doc, part, id),
-        ref = Order.ref(id),
+        ref = ClmlRef.ref(id),
         uniq: true,
         do: ref
   end
@@ -257,7 +256,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Parts do
   end
 
   defp holds?(doc, part, ref) do
-    Enum.any?(doc.ids, &(Order.ref(&1) == ref and holds_id?(doc, part, &1)))
+    Enum.any?(doc.ids, &(ClmlRef.ref(&1) == ref and holds_id?(doc, part, &1)))
   end
 
   # the element `id` lies inside the Part (document order: after it, before

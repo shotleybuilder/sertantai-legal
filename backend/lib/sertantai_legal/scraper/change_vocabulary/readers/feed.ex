@@ -43,7 +43,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
     FeedSubstitutedRemoved
   }
 
-  alias SertantaiLegal.Scraper.Commencement.{Evaluator, Order}
+  alias SertantaiLegal.Scraper.Commencement.{Evaluator, RefContext}
   alias SertantaiLegal.Scraper.EffectTarget
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
 
@@ -287,7 +287,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.Feed do
          [_ | _] = rules <- Map.get(commencement, law, []),
          ref when ref != nil <- FeedAffecting.ref(e.affecting_provisions),
          text = Enum.reject(rules, &(&1.treatment in @not_text)),
-         ctx = Map.put(Order.context(), :extent, e.affecting_territory),
+         ctx = Map.put(RefContext.context(), :extent, e.affecting_territory),
          %{entries: entries} <- Evaluator.evaluate(text, ref, ctx),
          %{rule: %{source: %{law: by}}} <-
            Enum.find(entries, &(&1.date == date and not is_nil(&1.rule.source.law))) do

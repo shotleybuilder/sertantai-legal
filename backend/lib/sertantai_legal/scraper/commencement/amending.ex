@@ -10,7 +10,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Amending do
   'effects' data from leg.gov.uk why do we need to pull the laws too?". Pure.
   """
 
-  alias SertantaiLegal.Scraper.Commencement.{Effects, Evaluator, Order, Rule}
+  alias SertantaiLegal.Scraper.Commencement.{ClmlRef, Effects, Evaluator, RefContext, Rule}
 
   @doc """
   The evaluation for the amending provision `provision_id` (its CLML id,
@@ -19,8 +19,8 @@ defmodule SertantaiLegal.Scraper.Commencement.Amending do
   """
   @spec evaluate([Rule.t()], String.t(), String.t(), String.t() | nil) :: Evaluator.result()
   def evaluate(rules, provision_id, section_id, extent) do
-    ref = Order.ref(provision_id) || provision_id
-    ctx = Map.put(Order.context(), :extent, extent)
+    ref = ClmlRef.ref(provision_id) || provision_id
+    ctx = Map.put(RefContext.context(), :extent, extent)
     {effects, text} = Enum.split_with(rules, &(&1.treatment == :feed_commencement))
 
     # an Act's Royal Assent where its clause leaves the rest to orders, or a

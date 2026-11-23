@@ -19,8 +19,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ScheduleRest do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, RefList}
-  alias SertantaiLegal.Scraper.Commencement.Order
-
+  alias SertantaiLegal.Scraper.Commencement.ClmlRef
   @type list_entry :: {atom(), String.t() | nil, [String.t()]}
 
   @qualifier ~r/,?\s+(?:in\s+so\s+far|so\s+far|insofar)\s+as\b|\s+to\s+the\s+extent\b/iu
@@ -93,7 +92,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ScheduleRest do
   # the Schedule's paragraphs no list names, whole or in part
   defp rest(sch, lists, doc) do
     for id <- doc.ids,
-        ref = Order.ref(id),
+        ref = ClmlRef.ref(id),
         ref != nil and Regex.match?(~r/^#{Regex.escape(sch)}\.para\.[^.(]+$/u, ref),
         not listed?(ref, lists),
         uniq: true,

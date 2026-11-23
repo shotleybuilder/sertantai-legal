@@ -14,7 +14,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Subdivisions do
 
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.ItemExceptions
-  alias SertantaiLegal.Scraper.Commencement.Order
+  alias SertantaiLegal.Scraper.Commencement.ClmlRef
 
   @doc """
   Each of `holding` (provisions holding an excepted subdivision) as its
@@ -25,7 +25,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Subdivisions do
   def less([], _excepted, _doc), do: {[], []}
 
   def less(holding, excepted, %Doc{} = doc) do
-    refs = for id <- doc.ids, r = Order.ref(id), r != nil, do: r
+    refs = for id <- doc.ids, r = ClmlRef.ref(id), r != nil, do: r
 
     read = for h <- holding, subs = rest(h, excepted, refs), subs != nil, do: {h, subs}
 

@@ -58,7 +58,7 @@ defmodule SertantaiLegal.Scraper.Commencement.AmendingRead do
       CatalogueCache.fetch(
         "amending_read",
         law,
-        ReadVersion.current(),
+        ReadVersion.current(:clause),
         {law, rows, input},
         fn -> read(law, rows, input) end
       )

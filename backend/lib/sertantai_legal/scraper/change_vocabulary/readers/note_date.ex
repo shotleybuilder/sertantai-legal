@@ -19,7 +19,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.ChangeTarget
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Claim}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw
-  alias SertantaiLegal.Scraper.Commencement.{Order, Rule}
+  alias SertantaiLegal.Scraper.Commencement.{ClmlRef, Rule}
   alias SertantaiLegal.Scraper.LatRef
 
   @dated [{:feed, :date}, {:feed, :date_first}, {:commencement, :date}, {:law_text, :date}]
@@ -101,7 +101,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
   defp own_text_pointer(c) do
     with law when is_binary(law) <- Change.value(c, :law_text, :by),
          [^law, id] <- String.split(c.key, ":", parts: 2),
-         ref when is_binary(ref) <- Order.ref(id) do
+         ref when is_binary(ref) <- ClmlRef.ref(id) do
       {law, [ref], :law_text}
     else
       _ -> {nil, [], :note}
@@ -242,7 +242,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.NoteDate do
              ":",
              parts: 2
            ),
-         ref when is_binary(ref) <- SertantaiLegal.Scraper.Commencement.Order.ref(id) do
+         ref when is_binary(ref) <- SertantaiLegal.Scraper.Commencement.ClmlRef.ref(id) do
       [ref]
     else
       _ -> []

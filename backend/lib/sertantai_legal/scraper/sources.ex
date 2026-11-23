@@ -44,7 +44,7 @@ defmodule SertantaiLegal.Scraper.Sources do
 
   alias SertantaiLegal.Scraper.AmendingLaw.Pointer
   alias SertantaiLegal.Scraper.ChangeVocabulary.Change
-  alias SertantaiLegal.Scraper.Commencement.Order
+  alias SertantaiLegal.Scraper.Commencement.ClmlRef
   alias SertantaiLegal.Scraper.{EffectKind, LatRef, LatScope}
 
   @act_types ~w(ukpga asp anaw asc nia apni)
@@ -310,7 +310,7 @@ defmodule SertantaiLegal.Scraper.Sources do
       true ->
         for a <- c.aliases,
             [_, id] <- [String.split(a, ":", parts: 2)],
-            ref = Order.ref(id),
+            ref = ClmlRef.ref(id),
             ref != nil,
             do: ref
     end

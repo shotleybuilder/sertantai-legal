@@ -129,7 +129,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.RefList do
 
   # the law's own unnumbered Schedule ("Part I of the Schedule",
   # "paragraphs 1 and 14 of the Schedule", "the Schedule to this Act") as a
-  # Schedule numbered 0, named `sch` after (`Order.ref`; CV-S05 round 13,
+  # Schedule numbered 0, named `sch` after (`ClmlRef.ref`; CV-S05 round 13,
   # agent seed 18): only a Part or paragraph of it, never another law's
   # ("the Schedule to the X Act") nor a place in it ("the Notes at the end of
   # the Schedule")

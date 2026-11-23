@@ -40,9 +40,10 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
   alias SertantaiLegal.Scraper.AmendingLaw.{DefinedTerms, Doc, Text}
 
-  alias __MODULE__.{Asides, Entries, LastItemLimit, OtherLaw, ScheduleParts}
-  alias __MODULE__.{RelatedList, RepealLists, SectionHeads, Sibling, Territory}
-  alias SertantaiLegal.Scraper.Commencement.{Authority, ClmlRef, Rule, TextRefs}
+  alias __MODULE__.{Entries, LastItemLimit, OtherLaw}
+  alias __MODULE__.{RelatedList, RepealLists, SectionHeads, Territory}
+  alias SertantaiLegal.Scraper.Commencement.Text.{Asides, ScheduleParts, Sibling}
+  alias SertantaiLegal.Scraper.Commencement.{Authority, ClmlRef, RefContext, Rule, TextRefs}
 
   alias SertantaiLegal.Scraper.LawStart.Clause
 
@@ -167,25 +168,9 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   @spec ref(String.t()) :: String.t() | nil
   defdelegate ref(id), to: ClmlRef
 
-  @doc "The evaluator's context for an amending law's refs: a Schedule paragraph sits in its Schedule."
+  @doc "The evaluator's context for an amending law's refs (`RefContext.context/0`)."
   @spec context() :: map()
-  def context do
-    %{
-      ancestors: fn ref ->
-        # (its Parts, then its Schedule: "sch.4.pt.2.para.3" → sch.4.pt.2,
-        # sch.4; "sch.para.3": an unnumbered Schedule's, in `sch`)
-        case Regex.run(~r/^(sch(?:\.(?!pt\.|para\.)[^.]+)?)((?:\.pt\.[^.]+)*)\.para\./, ref) do
-          [_, sch, pts] ->
-            parts = for [p] <- Regex.scan(~r/\.pt\.[^.]+/, pts), do: p
-            chain = Enum.scan(parts, sch, &(&2 <> &1))
-            Enum.reverse(chain) ++ [sch]
-
-          nil ->
-            []
-        end
-      end
-    }
-  end
+  defdelegate context(), to: RefContext
 
   @doc "The law's title from its own CLML (`dc:title`), without the year: for an Act `uk_lrt` doesn't hold."
   @spec title(Doc.t()) :: String.t() | nil

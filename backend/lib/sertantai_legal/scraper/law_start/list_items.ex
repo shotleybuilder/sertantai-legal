@@ -27,7 +27,7 @@ defmodule SertantaiLegal.Scraper.LawStart.ListItems do
   Pure text: the caller reads each part's refs.
   """
 
-  alias SertantaiLegal.Scraper.Commencement.Order.Asides
+  alias SertantaiLegal.Scraper.Commencement.Text.Asides
   alias SertantaiLegal.Scraper.LawStart.PointingBack
 
   @type item :: %{plain: String.t(), excepted: String.t(), qualified: String.t()}

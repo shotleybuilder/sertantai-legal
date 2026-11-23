@@ -37,7 +37,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Misreads do
   """
 
   alias SertantaiLegal.Scraper.Commencement.{Leftovers, ReachGroups, Rule, TextRefs}
-  alias SertantaiLegal.Scraper.Commencement.Order.Asides
+  alias SertantaiLegal.Scraper.Commencement.Text.Asides
   alias SertantaiLegal.Scraper.LawStart.Provisions
 
   @type kind ::

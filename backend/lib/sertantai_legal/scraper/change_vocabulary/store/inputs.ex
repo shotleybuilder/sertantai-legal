@@ -28,7 +28,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Store.Inputs do
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.ReadVersion, as: ExtentReadVersion
-  alias SertantaiLegal.Scraper.Commencement.ReadVersion, as: CommencementReadVersion
+  alias SertantaiLegal.Scraper.Commencement.Store, as: CommencementStore
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
 
   @keys [:lat_rows, :law_text, :feed, :amendment_rules, :commencement_rules, :extent_rules]
@@ -62,7 +62,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Store.Inputs do
   @doc """
   The readers whose readings the build read are by other reader code, or
   were read before the code was recorded (`reader_version` nil):
-  `:commencement_reader` (`Commencement.ReadVersion`), `:extent_reader`
+  `:commencement_reader` (each rule's own read path's `Commencement.ReadVersion`), `:extent_reader`
   (`Extent.ReadVersion`). Taken now, never recorded. The amending laws' own
   rules need no reason: the build reads a stale one from its text
   (`Primary.primary/2`).
@@ -72,11 +72,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Store.Inputs do
         ]
   def readers(law, affecting, sources) do
     [
-      {:commencement_reader,
-       other_code?("commencement_rules WHERE commences = ANY($1)", [
-         commenced(law, sources),
-         CommencementReadVersion.current()
-       ])},
+      {:commencement_reader, commencement_stale?(commenced(law, sources))},
       {:extent_reader,
        other_code?("extent_rules WHERE source_law = ANY($1)", [
          extended(affecting, sources),
@@ -89,6 +85,16 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Store.Inputs do
 
   defp commenced(law, sources), do: Enum.uniq([law | sources])
   defp extended(affecting, sources), do: Enum.uniq(affecting ++ sources)
+
+  # each rule against its own read path's version (`CommencementStore.stale_condition/1`)
+  defp commencement_stale?(laws) do
+    {stale, params} = CommencementStore.stale_condition(2)
+
+    Repo.query!(
+      "SELECT EXISTS (SELECT 1 FROM commencement_rules WHERE commences = ANY($1) AND #{stale})",
+      [laws | params]
+    ).rows == [[true]]
+  end
 
   defp other_code?(from, params) do
     Repo.query!(

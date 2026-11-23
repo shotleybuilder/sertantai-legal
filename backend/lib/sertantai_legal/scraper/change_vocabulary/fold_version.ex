@@ -36,21 +36,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FoldVersion do
       lib/sertantai_legal/scraper/change_vocabulary/readers/markup.ex
       lib/sertantai_legal/scraper/change_vocabulary/readers/markup/*.ex
       lib/sertantai_legal/scraper/change_vocabulary/readers/note_law.ex
-      lib/sertantai_legal/scraper/amending_law/defined_terms.ex
       lib/sertantai_legal/scraper/amending_law/doc.ex
       lib/sertantai_legal/scraper/amending_law/doc/*.ex
       lib/sertantai_legal/scraper/amending_law/pointer.ex
-      lib/sertantai_legal/scraper/amending_law/text.ex
       lib/sertantai_legal/scraper/commencement/clml_ref.ex
-      lib/sertantai_legal/scraper/commencement/authority.ex
       lib/sertantai_legal/scraper/commencement/text_refs.ex
       lib/sertantai_legal/scraper/commencement/doc_rows.ex
-      lib/sertantai_legal/scraper/commencement/order.ex
-      lib/sertantai_legal/scraper/commencement/order/*.ex
+      lib/sertantai_legal/scraper/commencement/text/*.ex
       lib/sertantai_legal/scraper/commencement/rule.ex
+      lib/sertantai_legal/scraper/commencement/ref_context.ex
       lib/sertantai_legal/scraper/commencement/evaluator.ex
       lib/sertantai_legal/scraper/commencement/own_clause.ex
       lib/sertantai_legal/scraper/commencement/read_version.ex
+      lib/sertantai_legal/scraper/commencement/read_version/*.ex
       lib/sertantai_legal/scraper/commencement/store.ex
       lib/sertantai_legal/scraper/change_vocabulary/readers/own_commencement.ex
       lib/sertantai_legal/scraper/law_start/provisions.ex
@@ -73,6 +71,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FoldVersion do
       lib/sertantai_legal/scraper/lat_ref.ex
       lib/sertantai_legal/scraper/law_start.ex
       lib/sertantai_legal/scraper/law_start/clause.ex
+      lib/sertantai_legal/scraper/law_start/sentences.ex
       lib/sertantai_legal/scraper/law_start/completing.ex
       lib/sertantai_legal/scraper/law_start/eu.ex
       lib/sertantai_legal/scraper/law_start/schedule_table.ex
@@ -82,9 +81,6 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FoldVersion do
       lib/sertantai_legal/scraper/provision_text.ex
       lib/sertantai_legal/scraper/territory.ex
     ),
-    # an order read path's own check, which no build reaches
-    # (`StageSplitTest`)
-    except: ~w(lib/sertantai_legal/scraper/commencement/order/held_as.ex),
     deps: ~w(sweet_xml jason)
 
   @doc """

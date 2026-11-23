@@ -22,7 +22,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Effects do
   Pure: the effects come in (`ChangesFeed.fetch/4`).
   """
 
-  alias SertantaiLegal.Scraper.Commencement.{Order, Rule}
+  alias SertantaiLegal.Scraper.Commencement.{ClmlRef, Rule}
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
 
   @places %{"E" => "E", "W" => "W", "S" => "S", "N.I" => "NI", "NI" => "NI"}
@@ -46,12 +46,12 @@ defmodule SertantaiLegal.Scraper.Commencement.Effects do
   defp entries(_e), do: []
 
   defp scope(%Effect{affected_refs: refs, affected_ranges: ranges}) do
-    singles = refs |> Enum.map(&Order.ref/1) |> Enum.reject(&is_nil/1)
+    singles = refs |> Enum.map(&ClmlRef.ref/1) |> Enum.reject(&is_nil/1)
 
     spans =
       for {a, b} <- ranges,
-          ra = Order.ref(a),
-          rb = Order.ref(b),
+          ra = ClmlRef.ref(a),
+          rb = ClmlRef.ref(b),
           ra != nil and rb != nil,
           do: "#{ra}..#{rb}"
 

@@ -17,7 +17,7 @@ defmodule SertantaiLegal.Scraper.Commencement.ScheduleEffect do
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
-  alias SertantaiLegal.Scraper.Commencement.{Order, Rule}
+  alias SertantaiLegal.Scraper.Commencement.{ClmlRef, Rule}
   alias SertantaiLegal.Scraper.LatParser.Xml
 
   @has_effect ~r/\bSchedules?\s+(\d+[A-Z]*)\b[^.;]{0,200}?\b(?:has|have|shall\s+have)\s+effect\b/iu
@@ -86,7 +86,7 @@ defmodule SertantaiLegal.Scraper.Commencement.ScheduleEffect do
             id != nil,
             id = to_string(id),
             Regex.match?(~r/^schedule-[^-]+-(?:part-[^-]+-)?paragraph-[^-]+$/, id),
-            ref = Order.ref(id),
+            ref = ClmlRef.ref(id),
             ref != nil,
             uniq: true,
             do: ref

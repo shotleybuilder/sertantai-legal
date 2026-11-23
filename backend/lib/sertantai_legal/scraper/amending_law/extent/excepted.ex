@@ -17,7 +17,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Excepted do
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, RefList}
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.Parts
-  alias SertantaiLegal.Scraper.Commencement.Order
+  alias SertantaiLegal.Scraper.Commencement.ClmlRef
 
   @form ~r/^\s*(?:But\s+)?(?:Sub-?section|Sub-?paragraph|Paragraph)\s+\((?<n>\w+)\)\s+(?:does|do|shall)\s+not\s+apply\s+to\s*(?:the\s+following\s*)?(?:[—–:]\s*)?(?<list>.+?)\.?\s*$/iu
 
@@ -70,7 +70,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Excepted do
   # the subsection excepted from says where provisions extend or apply
   defp extent_subsection?(doc, ref, n) do
     Enum.any?(doc.ids, fn id ->
-      Order.ref(id) == ref and
+      ClmlRef.ref(id) == ref and
         case Doc.element(doc, "#{id}-#{n}") do
           nil ->
             false

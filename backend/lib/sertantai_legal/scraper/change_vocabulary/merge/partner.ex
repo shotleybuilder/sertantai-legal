@@ -30,7 +30,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge.Partner do
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Merge}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Merge.{Candidates, Compound}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw
-  alias SertantaiLegal.Scraper.Commencement.Order
+  alias SertantaiLegal.Scraper.Commencement.ClmlRef
   alias SertantaiLegal.Scraper.LatRef
 
   @doc "The placements of the one event `orphan` records, or nil."
@@ -233,7 +233,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Merge.Partner do
   @spec key_refs(String.t()) :: [String.t()]
   def key_refs(key) do
     with [_, id] <- String.split(AmendingLaw.provision_key(key), ":", parts: 2),
-         ref when ref != nil <- Order.ref(id) do
+         ref when ref != nil <- ClmlRef.ref(id) do
       [ref]
     else
       _ -> []

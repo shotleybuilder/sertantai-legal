@@ -132,4 +132,19 @@ defmodule SertantaiLegal.Scraper.Commencement.FeedDifferencesTest do
     both = %{"#{shape} @ UK_a" => "known: a", "#{shape} @ UK_b" => "fix: b"}
     assert List.last(FeedDifferences.summary(groups, both)) =~ "with no status: 0"
   end
+
+  test "a status may name its owning step: {status, owner}; a plain string is a status with no owner" do
+    shape = "differ | own dated by clause_date | own earlier"
+
+    reviewed = %{
+      shape => %{"status" => "known: a wording", "owner" => "Commencement reader"},
+      "#{shape} @ UK_b" => "fix: fetch"
+    }
+
+    assert FeedDifferences.status(reviewed, shape, "UK_a") == "known: a wording"
+    assert FeedDifferences.owner(reviewed, shape, "UK_a") == "Commencement reader"
+    assert FeedDifferences.status(reviewed, shape, "UK_b") == "fix: fetch"
+    assert FeedDifferences.owner(reviewed, shape, "UK_b") == nil
+    assert FeedDifferences.owner(%{}, shape, "UK_a") == nil
+  end
 end

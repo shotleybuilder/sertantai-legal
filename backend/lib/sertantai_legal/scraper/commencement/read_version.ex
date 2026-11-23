@@ -1,47 +1,55 @@
 defmodule SertantaiLegal.Scraper.Commencement.ReadVersion do
   @moduledoc """
-  The version of the code a stored commencement reading depends on
-  (`SourceVersion`, #193): the commencement readers (own clause, orders,
-  feed effects, schedule effects), the rule and its store, and what they
-  reach. `Commencement.Store` stamps it on each row it writes
-  (`commencement_rules.reader_version`), so a build that read rules made by
-  older reader code shows as stale (`ChangeStaleness`, `:commencement_reader`)
-  instead of looking current after a rebuild. `VersionCoverageTest` holds it
-  to every module its files reach.
-
-  Not covered: the input glue in `mix lat.commencement` (which laws and
-  which orders), a known limit; a law's own reading is covered
-  (`Commencement.OwnRead`, with the scope that picks its text), and the rows
-  themselves are the build's own `:lat_rows` input.
+  Which reader code a stored commencement rule was read by (#193): each
+  rule is stamped (`commencement_rules.reader_version`) with the version of
+  its own read path, by its treatment: the orders' (`ReadVersion.Orders`),
+  the feed's (`ReadVersion.Effects`) or the clauses' (`ReadVersion.Clause`,
+  every other treatment). So a fix to one read path stales only its own
+  rules, and the builds that read them (`ChangeStaleness`,
+  `:commencement_reader`; the Commencement reader staleness session).
+  Pure.
   """
 
-  use SertantaiLegal.Scraper.SourceVersion,
-    patterns: ~w(
-      lib/sertantai_legal/scraper/commencement/*.ex
-      lib/sertantai_legal/scraper/commencement/order/*.ex
-      lib/sertantai_legal/scraper/commencement/authority/*.ex
-      lib/sertantai_legal/scraper/amending_law/doc.ex
-      lib/sertantai_legal/scraper/amending_law/doc/*.ex
-      lib/sertantai_legal/scraper/amending_law/text.ex
-      lib/sertantai_legal/scraper/amending_law/defined_terms.ex
-      lib/sertantai_legal/scraper/lat_ref.ex
-      lib/sertantai_legal/scraper/lat_scope.ex
-      lib/sertantai_legal/scraper/law_start.ex
-      lib/sertantai_legal/scraper/law_start/*.ex
-      lib/sertantai_legal/scraper/legislation_gov_uk/changes_feed.ex
-      lib/sertantai_legal/scraper/lat_parser/xml.ex
-      lib/sertantai_legal/scraper/territory.ex
-    ),
-    # the step's checks and catalogues: they read the rules, never shape them
-    except: ~w(
-      lib/sertantai_legal/scraper/commencement/check.ex
-      lib/sertantai_legal/scraper/commencement/leftover_gate.ex
-      lib/sertantai_legal/scraper/commencement/leftovers.ex
-      lib/sertantai_legal/scraper/commencement/reach_groups.ex
-      lib/sertantai_legal/scraper/commencement/order_leftovers.ex
-      lib/sertantai_legal/scraper/commencement/family_leftovers.ex
-      lib/sertantai_legal/scraper/commencement/held_amenders.ex
-      lib/sertantai_legal/scraper/commencement/order_patterns.ex
-      lib/sertantai_legal/scraper/commencement/sentence_patterns.ex
+  alias __MODULE__.{Clause, Effects, Orders}
+
+  @type group :: :clause | :orders | :effects
+
+  @orders ~w(order_date order_schedule)
+  @effects ~w(feed_commencement)
+
+  @doc "The read path a treatment's rules come from."
+  @spec group(atom() | String.t()) :: group()
+  def group(treatment) when is_atom(treatment), do: group(Atom.to_string(treatment))
+  def group(t) when t in @orders, do: :orders
+  def group(t) when t in @effects, do: :effects
+  def group(_treatment), do: :clause
+
+  @doc "The treatments read by the orders' and the feed's paths (the clauses' are all others)."
+  @spec treatments(:orders | :effects) :: [String.t()]
+  def treatments(:orders), do: @orders
+  def treatments(:effects), do: @effects
+
+  @doc """
+  Where a read path ends, for the coverage tests: the store and the
+  stamps themselves, which shape no reading.
+  """
+  @spec boundaries() :: [String.t()]
+  def boundaries,
+    do: ~w(
+      lib/sertantai_legal/scraper/commencement/store.ex
+      lib/sertantai_legal/scraper/commencement/read_version.ex
+      lib/sertantai_legal/scraper/commencement/read_version/clause.ex
+      lib/sertantai_legal/scraper/commencement/read_version/orders.ex
+      lib/sertantai_legal/scraper/commencement/read_version/effects.ex
     )
+
+  @doc "A read path's version now."
+  @spec current(group()) :: String.t()
+  def current(:clause), do: Clause.current()
+  def current(:orders), do: Orders.current()
+  def current(:effects), do: Effects.current()
+
+  @doc "The version a rule of `treatment` is stamped with now."
+  @spec for_treatment(atom() | String.t()) :: String.t()
+  def for_treatment(treatment), do: treatment |> group() |> current()
 end

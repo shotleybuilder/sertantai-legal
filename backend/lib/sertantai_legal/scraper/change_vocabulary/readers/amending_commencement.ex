@@ -11,7 +11,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingCommencement d
   """
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Claim
-  alias SertantaiLegal.Scraper.Commencement.{Evaluator, Order, ScheduleEffect}
+  alias SertantaiLegal.Scraper.Commencement.{ClmlRef, Evaluator, RefContext, ScheduleEffect}
   alias SertantaiLegal.Scraper.Commencement.Rule, as: CRule
 
   # rules that are not the amending law's own text: the feed's records
@@ -122,9 +122,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingCommencement d
         nil
 
       text ->
-        at = Order.ref(ref) || ref
+        at = ClmlRef.ref(ref) || ref
         {effects, text} = Enum.split_with(text, &(&1.treatment == :schedule_effect))
-        own = evaluate(text, at, Order.context())
+        own = evaluate(text, at, RefContext.context())
 
         case specific?(own, at) || introduced(effects, text, at) do
           %{} = result -> result
@@ -158,7 +158,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingCommencement d
          {provision, containers} = ScheduleEffect.introducer(effect),
          ctx =
            Map.put(
-             Order.context(),
+             RefContext.context(),
              :ancestors,
              &if(&1 == top(provision), do: containers, else: [])
            ),

@@ -17,8 +17,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
     Statements
   }
 
-  alias SertantaiLegal.Scraper.Commencement.Order
-  alias SertantaiLegal.Scraper.LawStart.Clause
+  alias SertantaiLegal.Scraper.Commencement.ClmlRef
+  alias SertantaiLegal.Scraper.LawStart.Sentences
 
   @not_own_extent ~w(BlockAmendment)
 
@@ -125,12 +125,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
   @spec unit_sentences(Doc.t()) :: [{String.t(), String.t()}]
   def unit_sentences(doc) do
     for id <- doc.ids,
-        ref = Order.ref(id),
+        ref = ClmlRef.ref(id),
         ref != nil,
         not String.contains?(ref, "("),
         not String.starts_with?(ref, "sch."),
         unit <- units(doc, id),
-        s <- Clause.sentences(unit),
+        s <- Sentences.sentences(unit),
         part <- statements(s),
         uniq: true,
         do: {ref, part}

@@ -53,8 +53,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
   }
 
   alias SertantaiLegal.Scraper.ApplicationClause
-  alias SertantaiLegal.Scraper.Commencement.Order
-  alias SertantaiLegal.Scraper.LawStart.Clause
+  alias SertantaiLegal.Scraper.Commencement.ClmlRef
+  alias SertantaiLegal.Scraper.LawStart.Sentences
 
   @places "England and Wales|Great Britain|the United Kingdom|United Kingdom|England|Wales|Scotland|Northern Ireland"
   @extent_words Regex.compile!(
@@ -112,7 +112,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
   @spec provisions(Doc.t()) :: [{String.t(), String.t(), String.t()}]
   def provisions(%Doc{} = doc) do
     for id <- doc.ids,
-        ref = Order.ref(id),
+        ref = ClmlRef.ref(id),
         ref != nil,
         not String.contains?(ref, "("),
         do: {id, ref, doc |> Doc.element(id) |> Doc.lines() |> Enum.join(" ")}
@@ -134,7 +134,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
       for {id, ref, _text} <- provisions(doc),
           not container?(doc, id),
           unit <- units(doc, id),
-          s <- Clause.sentences(unit),
+          s <- Sentences.sentences(unit),
           # (an exception to an extent subsection only where it is one:
           # "Subsection (1) does not apply to …" is mostly substantive)
           words?(s) or Excepted.refs(s, ref, doc) != [],

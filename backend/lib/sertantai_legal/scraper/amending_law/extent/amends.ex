@@ -12,7 +12,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Amends do
 
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Places, Units}
-  alias SertantaiLegal.Scraper.Commencement.Order
+  alias SertantaiLegal.Scraper.Commencement.ClmlRef
 
   @form Regex.compile!(
           "\\bany\\s+provision\\s+of\\s+this\\s+(?:Act|Order)\\s+which\\s+(?:amends|repeals)(?:\\s+or\\s+(?:amends|repeals))?\\s+(?:any\\s+provision\\s+of\\s+)?(?<acts>.+?)\\s+shall\\s+(?:also\\s+)?extend\\s+to\\s+(?<places>#{Places.place_list()})",
@@ -40,7 +40,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Amends do
   # own words name one of the titles
   defp amending(doc, titles) do
     for id <- doc.ids,
-        ref = Order.ref(id),
+        ref = ClmlRef.ref(id),
         ref != nil,
         not String.contains?(ref, "("),
         not (id =~ ~r/-part-|^schedule-[^-]+$/),

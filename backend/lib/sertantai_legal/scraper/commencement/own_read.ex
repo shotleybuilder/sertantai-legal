@@ -57,7 +57,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnRead do
       CatalogueCache.fetch(
         "own_read",
         law,
-        ReadVersion.current(),
+        ReadVersion.current(:clause),
         {law, rows, input},
         fn -> read_now(law, input) end
       )

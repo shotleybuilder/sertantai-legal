@@ -29,8 +29,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Unread do
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Extent, RefList}
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Parts, Places, Units}
-  alias SertantaiLegal.Scraper.Commencement.Order
-
+  alias SertantaiLegal.Scraper.Commencement.ClmlRef
   # the classes of a statement the reader leaves unread (`Patterns`); an
   # application clause not resolved bounds nothing here (where a law
   # applies is `Extent.application`)
@@ -131,7 +130,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Unread do
   defp own?(s, ref, doc) do
     own =
       doc.ids
-      |> Enum.filter(&(Order.ref(&1) == ref))
+      |> Enum.filter(&(ClmlRef.ref(&1) == ref))
       |> Enum.flat_map(&Units.units(doc, &1))
       |> Enum.map_join(" ", &squash/1)
 
@@ -354,7 +353,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Unread do
   # the law's provisions, by ref and container ("s.14", "sch.7")
   defp known_refs(doc) do
     for id <- doc.ids,
-        r = Order.ref(id),
+        r = ClmlRef.ref(id),
         r != nil,
         p <- prefixes(r),
         into: MapSet.new(),

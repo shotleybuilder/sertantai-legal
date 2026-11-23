@@ -12,8 +12,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.OwnParagraph do
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, RefList}
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Places, Units}
-  alias SertantaiLegal.Scraper.Commencement.Order
-  alias SertantaiLegal.Scraper.LawStart.Clause
+  alias SertantaiLegal.Scraper.Commencement.ClmlRef
+  alias SertantaiLegal.Scraper.LawStart.Sentences
   alias SertantaiLegal.Scraper.Territory
 
   @place_list Places.place_list()
@@ -34,11 +34,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.OwnParagraph do
   def lists(%Doc{} = doc) do
     for id <- doc.ids,
         String.starts_with?(id, "schedule-"),
-        ref = Order.ref(id),
+        ref = ClmlRef.ref(id),
         ref != nil and ref =~ ~r/^sch\.[^.]+\.para\.[^.()]+$/,
         unit <- Units.units(doc, id),
         unit =~ ~r/\b(?:This\s+paragraph|Sub-?paragraphs?\s+\()/iu,
-        s <- Clause.sentences(unit),
+        s <- Sentences.sentences(unit),
         l = list(s, ref),
         l != nil,
         uniq: true,

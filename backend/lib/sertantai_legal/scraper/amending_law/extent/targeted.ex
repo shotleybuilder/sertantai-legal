@@ -32,8 +32,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Targeted do
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, RefList}
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Places, Units}
-  alias SertantaiLegal.Scraper.Commencement.Order
-  alias SertantaiLegal.Scraper.LawStart.Clause
+  alias SertantaiLegal.Scraper.Commencement.ClmlRef
+  alias SertantaiLegal.Scraper.LawStart.Sentences
 
   @type t :: %{
           kind: :also | :only | :not | :named,
@@ -72,11 +72,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Targeted do
   def lists(%Doc{} = doc) do
     found =
       for id <- doc.ids,
-          ref = Order.ref(id),
+          ref = ClmlRef.ref(id),
           ref != nil and not String.contains?(ref, "("),
           unit <- Units.units(doc, id),
           unit =~ ~r/\b#{@change}\b/iu,
-          s <- Clause.sentences(unit),
+          s <- Sentences.sentences(unit),
           found = statements(s, ref),
           found != nil,
           do: {s, ref, found}

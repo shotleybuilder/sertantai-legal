@@ -32,7 +32,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderPatterns do
   import SweetXml
 
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
-  alias SertantaiLegal.Scraper.Commencement.{Order, Rule}
+  alias SertantaiLegal.Scraper.Commencement.{ClmlRef, Order, Rule}
 
   @cif ~r/\b(?:shall\s+)?(?:comes?|come)\s+into\s+(?:force|operation)\b/i
   @appointed ~r/\bis\s+the\s+(?:day|date)\s+appointed\s+for\s+the\s+coming\s+into\s+(?:force|operation)\s+of\b/i
@@ -201,7 +201,7 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderPatterns do
   @doc "The rules the order reader read from `unit`: from its article (or table row), its words first."
   @spec own_rules(unit(), [Rule.t()]) :: [Rule.t()]
   def own_rules(%{kind: kind, id: id, text: text}, rules) do
-    ref = Order.ref(id) || id
+    ref = ClmlRef.ref(id) || id
     first = text |> String.split(" | ", parts: 2) |> hd()
 
     Enum.filter(rules, &from_unit?(&1, kind, ref, first, text))

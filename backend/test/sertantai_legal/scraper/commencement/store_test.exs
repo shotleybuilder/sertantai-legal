@@ -116,4 +116,72 @@ defmodule SertantaiLegal.Scraper.Commencement.StoreTest do
 
     assert Store.order_sources(act) == ["UK_uksi_2002_2024"]
   end
+
+  defp stamps(source),
+    do:
+      SertantaiLegal.Repo.query!(
+        "SELECT read_at, reader_version FROM commencement_rules WHERE source_law = $1 ORDER BY 1",
+        [source]
+      ).rows
+
+  test "an identical re-read writes nothing but the reader stamp: read_at stays, so no build goes stale" do
+    a = rule("UK_ukpga_2014_21", "UK_uksi_2017_1", ["s.11"], {:date, ~D[2017-04-01]})
+    b = rule("UK_ukpga_2014_21", "UK_uksi_2017_1", ["s.12"], {:date, ~D[2017-05-01]})
+    assert {:ok, 2, :written} = Store.write_changed("UK_uksi_2017_1", [a, b])
+
+    SertantaiLegal.Repo.query!(
+      "UPDATE commencement_rules SET reader_version = 'old', read_at = read_at - interval '1 day'"
+    )
+
+    [[read_at, "old"] | _] = stamps("UK_uksi_2017_1")
+
+    # the same rules, in another order
+    assert {:ok, 2, :unchanged} = Store.write_changed("UK_uksi_2017_1", [b, a])
+    assert [[^read_at, v], [^read_at, v]] = stamps("UK_uksi_2017_1")
+    assert v != "old"
+
+    # write/3 keeps its result shape, and is the same comparison
+    assert {:ok, 2} = Store.write("UK_uksi_2017_1", [a, b])
+    assert [[^read_at, _], [^read_at, _]] = stamps("UK_uksi_2017_1")
+  end
+
+  test "a changed reading is written: read_at moves" do
+    a = rule("UK_ukpga_2014_21", "UK_uksi_2017_1", ["s.11"], {:date, ~D[2017-04-01]})
+    {:ok, 1, :written} = Store.write_changed("UK_uksi_2017_1", [a])
+
+    SertantaiLegal.Repo.query!(
+      "UPDATE commencement_rules SET read_at = read_at - interval '1 day'"
+    )
+
+    [[before, _]] = stamps("UK_uksi_2017_1")
+    a2 = %{a | when: {:date, ~D[2017-04-02]}}
+    assert {:ok, 1, :written} = Store.write_changed("UK_uksi_2017_1", [a2])
+    [[now, _]] = stamps("UK_uksi_2017_1")
+    assert NaiveDateTime.compare(now, before) == :gt
+    assert Store.for_law("UK_ukpga_2014_21") == [a2]
+  end
+
+  test "the comparison is held to the write's scope: treatments and commences" do
+    act = rule("UK_ukpga_1995_25", "UK_uksi_1996_186", ["s.1"], {:date, ~D[1996-02-01]})
+    other = rule("UK_uksi_1996_1030", "UK_uksi_1996_186", ["reg.1"], {:date, ~D[1996-02-01]})
+    feed = %{act | treatment: :feed_commencement}
+    {:ok, 1} = Store.write("UK_uksi_1996_186", [act], commences: "UK_ukpga_1995_25")
+    {:ok, 1} = Store.write("UK_uksi_1996_186", [other], commences: "UK_uksi_1996_1030")
+    {:ok, 1} = Store.write("UK_uksi_1996_186", [feed], treatments: [:feed_commencement])
+
+    assert {:ok, 1, :unchanged} =
+             Store.write_changed("UK_uksi_1996_186", [act],
+               treatments: [:order_date],
+               commences: "UK_ukpga_1995_25"
+             )
+
+    assert {:ok, 0, :written} =
+             Store.write_changed("UK_uksi_1996_186", [],
+               treatments: [:order_date],
+               commences: "UK_ukpga_1995_25"
+             )
+
+    assert MapSet.new(Store.for_law("UK_uksi_1996_1030")) == MapSet.new([other])
+    assert Store.for_law("UK_ukpga_1995_25") == [feed]
+  end
 end

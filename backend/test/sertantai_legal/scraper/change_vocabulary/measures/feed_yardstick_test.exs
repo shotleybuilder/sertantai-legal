@@ -17,7 +17,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.FeedYardstickTest do
 
   @reviewed %{
     "inserted | feed_only | ours undated: appointed" => "known: the feed alone dates it",
-    "differ | own dated by clause_date | own earlier @ UK_c" => "fix: a misread",
+    "differ | own dated by clause_date | own earlier @ UK_c" => %{
+      "status" => "fix: a misread",
+      "owner" => "Commencement reader"
+    },
     "differ | own dated by clause_date | own earlier @ UK_d" => "known: a one-law wording"
   }
 
@@ -54,6 +57,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.FeedYardstickTest do
     assert r.by_row == %{
              "inserted provision" => %{"rows" => 617, "groups" => 1},
              "own provision" => %{"rows" => 31, "groups" => 2}
+           }
+
+    assert r.by_owner == %{
+             "Commencement reader" => %{"rows" => 6, "groups" => 1},
+             "no owner" => %{"rows" => 642, "groups" => 3}
            }
   end
 

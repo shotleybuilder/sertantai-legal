@@ -35,7 +35,12 @@ defmodule SertantaiLegal.Architecture.VersionCoverageTest do
         {SertantaiLegal.Scraper.Amendment.ReaderVersion, []},
         {SertantaiLegal.Scraper.LegislationGovUk.FeedVersion, []},
         {SertantaiLegal.Scraper.AmendingLaw.Extent.ReadVersion, []},
-        {SertantaiLegal.Scraper.Commencement.ReadVersion, []},
+        {SertantaiLegal.Scraper.Commencement.ReadVersion.Clause,
+         SertantaiLegal.Scraper.Commencement.ReadVersion.boundaries()},
+        {SertantaiLegal.Scraper.Commencement.ReadVersion.Orders,
+         SertantaiLegal.Scraper.Commencement.ReadVersion.boundaries()},
+        {SertantaiLegal.Scraper.Commencement.ReadVersion.Effects,
+         SertantaiLegal.Scraper.Commencement.ReadVersion.boundaries()},
         # the whole-store catalogues' (#195)
         {SertantaiLegal.Scraper.ChangeVocabulary.FeedPatterns.Version, []},
         {SertantaiLegal.Scraper.ChangeVocabulary.MarkupPatterns.Version, []},

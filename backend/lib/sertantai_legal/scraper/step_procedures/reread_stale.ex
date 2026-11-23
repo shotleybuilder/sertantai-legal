@@ -3,12 +3,12 @@ defmodule SertantaiLegal.Scraper.StepProcedures.RereadStale do
   The stale commencement rules a family's builds read: every rule
   commencing a built family law or one of its builds' commencement
   sources (`ChangeVocabulary.Store.builds/0`) whose `reader_version` is
-  not today's `Commencement.ReadVersion` — the rules behind the
+  not its read path's `Commencement.ReadVersion` now — the rules behind the
   `:commencement_reader` reason (`Store.Inputs.readers/3`). DB only.
   """
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.Commencement.ReadVersion
+  alias SertantaiLegal.Scraper.Commencement.Store, as: CommencementStore
   alias SertantaiLegal.Scraper.StepProcedures.Reread
   alias SertantaiLegal.Scraper.ChangeVocabulary.Store
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source
@@ -38,14 +38,16 @@ defmodule SertantaiLegal.Scraper.StepProcedures.RereadStale do
   @doc "The stale rules commencing `laws`."
   @spec for_laws([String.t()]) :: [Reread.stale_rule()]
   def for_laws(laws) do
+    {stale, params} = CommencementStore.stale_condition(2)
+
     Repo.query!(
       """
       SELECT DISTINCT r.source_law, r.commences, r.treatment,
              EXISTS (SELECT 1 FROM legal_articles a WHERE a.law_name = r.source_law)
       FROM commencement_rules r
-      WHERE r.commences = ANY($1) AND r.reader_version IS DISTINCT FROM $2
+      WHERE r.commences = ANY($1) AND #{stale}
       """,
-      [laws, ReadVersion.current()],
+      [laws | params],
       timeout: :infinity
     ).rows
     |> Enum.map(fn [s, c, t, lat?] ->

@@ -9,7 +9,7 @@ defmodule SertantaiLegal.Scraper.Commencement.TextRefs do
   Pure.
   """
 
-  alias SertantaiLegal.Scraper.Commencement.Order.{Asides, ScheduleParts, Sibling}
+  alias SertantaiLegal.Scraper.Commencement.Text.{Asides, ScheduleParts, Sibling}
 
   @doc """
   The Schedule provisions `text` names, in the law it is written in: a

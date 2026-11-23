@@ -141,7 +141,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary do
         (Keyword.get(opts, :rows) || Map.keys(provisions))
         |> Enum.map(&elem(Ref.version(&1), 0))
         |> Enum.uniq(),
-        Keyword.get(opts, :own_context, SertantaiLegal.Scraper.Commencement.Order.context()),
+        Keyword.get(opts, :own_context, SertantaiLegal.Scraper.Commencement.RefContext.context()),
         base_extents(provisions)
       )
 

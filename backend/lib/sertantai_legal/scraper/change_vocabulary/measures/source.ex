@@ -11,7 +11,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source do
   """
 
   alias SertantaiLegal.Scraper.Amendment.{Index, PatternSource}
-  alias SertantaiLegal.Scraper.Commencement.Order
+  alias SertantaiLegal.Scraper.Commencement.ClmlRef
   alias SertantaiLegal.Scraper.LatRef
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Change, Conflicts, Store}
 
@@ -69,12 +69,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source do
   @doc """
   The pointers whose provision, or one containing it, is among the text's
   element ids. An order's "art.N" pointer is matched as the element's
-  "reg.N" ref (`Order.ref/1`), and is read in both spellings: the feed
+  "reg.N" ref (`ClmlRef.ref/1`), and is read in both spellings: the feed
   names an order's articles either way.
   """
   @spec read_pointers([String.t()], [String.t()]) :: [String.t()]
   def read_pointers(pointers, elements) do
-    held = elements |> Enum.map(&Order.ref/1) |> Enum.reject(&is_nil/1) |> MapSet.new()
+    held = elements |> Enum.map(&ClmlRef.ref/1) |> Enum.reject(&is_nil/1) |> MapSet.new()
 
     pointers
     |> Enum.filter(fn p -> p |> containing() |> Enum.any?(&MapSet.member?(held, &1)) end)

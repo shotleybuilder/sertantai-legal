@@ -38,7 +38,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Version do
       lib/sertantai_legal/scraper/amendment/*.ex
       lib/sertantai_legal/scraper/amendment/reader/*.ex
       lib/sertantai_legal/scraper/commencement/*.ex
-      lib/sertantai_legal/scraper/commencement/order/*.ex
+      lib/sertantai_legal/scraper/commencement/read_version/*.ex
+      lib/sertantai_legal/scraper/commencement/text/*.ex
       lib/sertantai_legal/scraper/application_clause.ex
       lib/sertantai_legal/scraper/law_territory.ex
       lib/sertantai_legal/scraper/territory.ex
@@ -63,6 +64,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Version do
     # versions, #193) and the checks that draw samples (2026-11-05,
     # 2026-11-06, #194)
     except: ~w(
+      lib/sertantai_legal/scraper/commencement/order.ex
+      lib/sertantai_legal/scraper/commencement/authority.ex
       lib/sertantai_legal/scraper/amending_law/sweep_form.ex
       lib/sertantai_legal/scraper/amending_law/extent/check.ex
       lib/sertantai_legal/scraper/amending_law/extent/withheld.ex
