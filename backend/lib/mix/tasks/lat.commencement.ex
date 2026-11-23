@@ -21,6 +21,8 @@ defmodule Mix.Tasks.Lat.Commencement do
       mix lat.commencement --read-orders --law X,Y --held   # the same from what is held: the list kept and the orders whose rules are stored; never a search
       mix lat.commencement --read-orders --family F         # `--held` for the family's laws and its changes' amending laws (the re-read after a reader change)
       mix lat.commencement --read-orders … --preview        # what it would write, per order: stored → read; writes nothing
+      mix lat.commencement --read --law X,Y | --family F --preview   # a fix's reach: per law, the own-clause rules a fresh reading adds and drops; writes nothing
+      mix lat.commencement --read-amending --family F --preview      # the same for the amending laws' own clauses
       mix lat.commencement --read-amending                  # amending laws with no LAT: their own clause from the CLML held (CR-06; one hop, no fetch)
       mix lat.commencement --read-amending --law A,B --workers 1   # these amending laws (CV-07: just fetched)
       mix lat.commencement --read-amending --family F --workers 1  # the amending laws of a family's changes (`Commencement.HeldAmenders`: never a commencement order)
@@ -58,6 +60,7 @@ defmodule Mix.Tasks.Lat.Commencement do
   }
 
   alias SertantaiLegal.Scraper.LawStart.Input
+  alias SertantaiLegal.Scraper.StepProcedures.RuleDiff
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed
 
   @shortdoc "Print, read or compare a law's commencement rules"
@@ -117,8 +120,11 @@ defmodule Mix.Tasks.Lat.Commencement do
       opts[:all] ->
         List.flatten(Repo.query!("SELECT DISTINCT law_name FROM legal_articles ORDER BY 1").rows)
 
+      opts[:family] ->
+        Scope.family_laws(opts[:family])
+
       true ->
-        Mix.raise("--law X or --all")
+        Mix.raise("--law X, --family F or --all")
     end
   end
 
@@ -143,20 +149,58 @@ defmodule Mix.Tasks.Lat.Commencement do
       LawRunner.run(
         laws,
         fn law ->
-          {:ok, n} = Store.write(law, OwnRead.rules(law), treatments: OwnClause.treatments())
-
-          n
+          read_or_preview(law, OwnRead.rules(law), opts)
         end,
         fn _law, _n -> :ok end,
         workers: opts[:workers]
       )
 
-    errors = for {law, {:error, e}} <- results, do: {law, e}
-    rules = results |> Map.values() |> Enum.filter(&is_integer/1) |> Enum.sum()
+    read_summary(results, opts)
+  end
 
-    Mix.shell().info(
-      "#{map_size(results)} laws read, #{rules} rules written, #{length(errors)} errors"
-    )
+  # a law's own-clause rules written, or with `--preview` compared with the
+  # stored ones (a fix's reach: `StepProcedures.RuleDiff`), nothing written
+  defp read_or_preview(law, rules, opts) do
+    if opts[:preview] do
+      diff = RuleDiff.diff(RuleDiff.stored(law, OwnClause.treatments()), rules)
+
+      unless RuleDiff.same?(diff),
+        do:
+          Mix.shell().info(
+            "  #{law}: +#{length(diff.added)} −#{length(diff.gone)} rules#{refs(diff)}"
+          )
+
+      {:preview, length(diff.added), length(diff.gone)}
+    else
+      {:ok, n} = Store.write(law, rules, treatments: OwnClause.treatments())
+      n
+    end
+  end
+
+  defp refs(diff) do
+    refs =
+      (diff.added ++ diff.gone) |> Enum.map(& &1.source.ref) |> Enum.uniq() |> Enum.take(8)
+
+    if refs == [], do: "", else: " (#{Enum.join(refs, ", ")})"
+  end
+
+  defp read_summary(results, opts) do
+    errors = for {law, {:error, e}} <- results, do: {law, e}
+    values = Map.values(results)
+
+    if opts[:preview] do
+      changed = for {:preview, a, g} <- values, a + g > 0, do: {a, g}
+
+      Mix.shell().info(
+        "#{map_size(results)} laws read (preview: nothing written): #{length(changed)} laws change, +#{changed |> Enum.map(&elem(&1, 0)) |> Enum.sum()} −#{changed |> Enum.map(&elem(&1, 1)) |> Enum.sum()} rules, #{length(errors)} errors"
+      )
+    else
+      rules = values |> Enum.filter(&is_integer/1) |> Enum.sum()
+
+      Mix.shell().info(
+        "#{map_size(results)} laws read, #{rules} rules written, #{length(errors)} errors"
+      )
+    end
 
     for {law, e} <- Enum.take(errors, 10), do: Mix.shell().info("  #{law}: #{inspect(e)}")
   end
@@ -187,22 +231,14 @@ defmodule Mix.Tasks.Lat.Commencement do
               0
 
             rules ->
-              {:ok, n} = Store.write(law, rules, treatments: OwnClause.treatments())
-              n
+              read_or_preview(law, rules, opts)
           end
         end,
         fn _law, _n -> :ok end,
         workers: opts[:workers]
       )
 
-    errors = for {law, {:error, e}} <- results, do: {law, e}
-    rules = results |> Map.values() |> Enum.filter(&is_integer/1) |> Enum.sum()
-
-    Mix.shell().info(
-      "#{map_size(results)} laws read, #{rules} rules written, #{length(errors)} errors"
-    )
-
-    for {law, e} <- Enum.take(errors, 10), do: Mix.shell().info("  #{law}: #{inspect(e)}")
+    read_summary(results, opts)
   end
 
   # the amending laws of a family's stored changes (never listed by hand:

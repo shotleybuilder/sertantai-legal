@@ -18,6 +18,18 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source do
   @golden "test/fixtures/change_vocabulary/golden.exs"
   @golden_extended "test/fixtures/change_vocabulary/golden_extended.exs"
 
+  @doc "When the last of `laws` was built (`changes_built`), nil when none was."
+  @spec last_built([String.t()]) :: DateTime.t() | nil
+  def last_built(laws) do
+    %{rows: [[at]]} =
+      SertantaiLegal.Repo.query!(
+        "SELECT max(at) FROM lat_events WHERE event = 'changes_built' AND law_name = ANY($1)",
+        [laws]
+      )
+
+    at && DateTime.from_naive!(at, "Etc/UTC")
+  end
+
   @doc "A family's laws with LAT rows."
   @spec family_laws(String.t()) :: [String.t()]
   def family_laws(family), do: PatternSource.family_laws(family)

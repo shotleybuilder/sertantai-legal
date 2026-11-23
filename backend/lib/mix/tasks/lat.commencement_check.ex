@@ -24,6 +24,10 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
       mix lat.commencement_check --order-limits [--out FILE]   # stored order rules limiting a list, the limit after a final ", and <item>" flagged, and what a fresh reading moves (read-only)
       mix lat.commencement_check --laws A,B --fresh --feed-errors-dry-run   # the proposed feed errors (`data/reports/commencement-reader/feed-errors-proposed.json`) filled from the rows now, checked, written beside the report; `--feed-errors-write` adds them to the register, on Jason's go (Decision 12)
       mix lat.commencement_check --family F --fresh   # the laws' own clauses, and their amending laws', re-read now (a dry run of `mix lat.commencement --read` and `--read-amending`)
+
+  With `--family`, each run also records the family's standard figures
+  against the feed (`data/reports/commencement-reader/yardstick/<family>.json`,
+  `Measures.FeedYardstick`), which `mix lat.measures --family F` publishes.
   """
   use Mix.Task
 
@@ -37,6 +41,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
   alias SertantaiLegal.Scraper.ChangeVocabulary.Store
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Draw
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.FeedYardstick
 
   alias SertantaiLegal.Scraper.Commencement.{
     AmendingRead,
@@ -237,7 +242,8 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
     report_rows(rows, opts)
     report_feed_errors(rows, stale)
     if opts[:feed_errors_dry_run] || opts[:feed_errors_write], do: propose_feed_errors(rows, opts)
-    report_feed_differences(rows, read.inserted, opts)
+    groups = report_feed_differences(rows, read.inserted, opts)
+    record_yardstick(rows, groups, opts)
     report_gaps(gaps, opts)
 
     if opts[:sample], do: sample(rows, gaps, opts[:sample], opts[:n] || 50, opts[:seed])
@@ -607,6 +613,28 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
         do: shell.info(line)
 
     shell.info(List.last(lines) <> " (all groups: #{path}.txt)")
+    {groups, reviewed}
+  end
+
+  # the family's standard figures against the feed, for `mix lat.measures`
+  # (`Measures.FeedYardstick`; Commencement reader retrospective, Decision 1 e)
+  defp record_yardstick(rows, {groups, reviewed}, opts) do
+    if family = opts[:family] do
+      path = FeedYardstick.path(family)
+
+      %{
+        family: family,
+        at: DateTime.utc_now() |> DateTime.truncate(:second),
+        fresh: opts[:fresh] == true,
+        yardstick: Check.row_tallies(rows).yardstick,
+        groups: groups,
+        reviewed: reviewed
+      }
+      |> FeedYardstick.record()
+      |> FeedYardstick.write(path)
+
+      Mix.shell().info("the feed yardstick's figures → #{path} (`mix lat.measures --family F`)")
+    end
   end
 
   defp report_rows(rows, opts) do

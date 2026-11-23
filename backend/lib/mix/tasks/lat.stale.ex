@@ -12,6 +12,7 @@ defmodule Mix.Tasks.Lat.Stale do
       mix lat.stale --strict        # exit non-zero when any law is stale
       mix lat.stale --strict --switched   # only the switched families' laws' labels count (with the change register)
       mix lat.stale --family F      # also the family's stale laws, as a result (`mix lat.step_close`)
+      mix lat.stale --family F --reasons   # and the family's stale laws counted by reason
       mix lat.stale --sample FILE --family F --built 20 --unbuilt 10 --seed S
                                     # the change register's staleness hand sample
 
@@ -54,6 +55,7 @@ defmodule Mix.Tasks.Lat.Stale do
           switched: :boolean,
           sample: :string,
           family: :string,
+          reasons: :boolean,
           built: :integer,
           unbuilt: :integer,
           seed: :integer
@@ -102,23 +104,42 @@ defmodule Mix.Tasks.Lat.Stale do
     if opts[:strict] == true and (counted != [] or stale_changes != []),
       do: exit({:shutdown, 1})
 
-    if f = opts[:family], do: family(f, counted, stale_changes)
+    if f = opts[:family], do: family(f, counted, stale_changes, opts)
   end
 
   # one family's stale laws (Tooling: step-close check): its LAT and labels,
   # and its built laws in the change register; the step's close result
-  defp family(family, stale, stale_changes) do
+  defp family(family, stale, stale_changes, opts) do
     scope = MapSet.new(Scope.family_laws(family))
-    lat = for {law, _} <- stale, MapSet.member?(scope, law), do: law
-    changes = for {law, _} <- stale_changes, MapSet.member?(scope, law), do: law
-    laws = Enum.uniq(lat ++ changes)
+    lat = for {law, _} = e <- stale, MapSet.member?(scope, law), do: e
+    changes = for {law, _} = e <- stale_changes, MapSet.member?(scope, law), do: e
+    laws = Enum.uniq(Enum.map(lat ++ changes, &elem(&1, 0)))
 
     Mix.shell().info(
       "\n#{family}: #{length(laws)} stale laws (LAT or labels #{length(lat)}, change register #{length(changes)})"
     )
 
+    if opts[:reasons] do
+      by_reason("LAT or labels", lat)
+      by_reason("change register", changes)
+    end
+
     Step.new("Stale laws", laws == [], length(laws), owner: @owner)
   end
+
+  # the family's stale laws counted by reason (a law counts once per reason)
+  defp by_reason(what, entries) do
+    Mix.shell().info("  #{what}, laws by reason:")
+
+    entries
+    |> Enum.flat_map(fn {_, reasons} -> reasons |> Enum.map(&reason/1) |> Enum.uniq() end)
+    |> Enum.frequencies()
+    |> Enum.sort_by(&(-elem(&1, 1)))
+    |> Enum.each(fn {r, n} -> Mix.shell().info("    #{r}: #{n}") end)
+  end
+
+  defp reason(r) when is_tuple(r), do: elem(r, 0)
+  defp reason(r), do: r
 
   @fixes [
     commencement_reader: "mix lat.commencement (the mode that wrote them), then build",

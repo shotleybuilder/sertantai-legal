@@ -6,7 +6,11 @@ defmodule Mix.Tasks.Lat.Measures do
   - who states each text change (CV-07: `stated_by_law_and_derived`,
     law only, derived only);
   - the law-text coverage table (CV-S06);
-  - what dates each text change (CV-S08).
+  - what dates each text change (CV-S08);
+  - with `--family`, the Commencement reader against the feed: the family's
+    last commencement check's yardstick counts, proven feed errors and
+    difference groups by status and row kind (`Measures.FeedYardstick`),
+    with when it ran and whether that follows the family's last build.
 
   The territory table (CV-S05) is printed by `mix lat.extent_check`; the
   pass bounds by `mix lat.verdicts`. Read-only.
@@ -20,7 +24,12 @@ defmodule Mix.Tasks.Lat.Measures do
   """
   use Mix.Task
 
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.{Coverage, HandSample, Source}
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.{
+    Coverage,
+    FeedYardstick,
+    HandSample,
+    Source
+  }
 
   @shortdoc "The change vocabulary's coverage figures for a family or the golden laws (read-only)"
 
@@ -75,6 +84,12 @@ defmodule Mix.Tasks.Lat.Measures do
     what dates a text change (CV-S08):
     #{rows(dating, ~w(undated dated_no_commenced_by commenced_by_named)a, dating.total)}\
     """)
+
+    if family = opts[:family] do
+      IO.puts("")
+      record = family |> FeedYardstick.path() |> FeedYardstick.read()
+      record |> FeedYardstick.lines(Source.last_built(laws)) |> Enum.each(&IO.puts/1)
+    end
 
     if path = opts[:sample], do: sample(by_law, path, opts)
   end
