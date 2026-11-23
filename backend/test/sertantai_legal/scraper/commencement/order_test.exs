@@ -1156,6 +1156,18 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
                dated(Order.rules(d, @act), "section-321")
     end
 
+    test "a qualifier between \"comes into force\" and the date is the subject's (SI 2022/561 reg.2)" do
+      d =
+        Doc.new("UK_uksi_2022_561", [
+          ~S|<Legislation><Secondary><Body><P1 id="regulation-1"><P1para><Text>In these Regulations “<Term id="t">the 2022 Act</Term>” means the Railways Act 1993.</Text></P1para></P1><P1 id="regulation-2"><P1para><Text>Section 132 of the 2022 Act (order for information in connection with building liability order) comes into force, for the purposes of making regulations, on 28th May 2022.</Text></P1para></P1><P1 id="regulation-3"><P1para><Text>Section 133 of the 2022 Act (interpretation) comes into force on 28th June 2022.</Text></P1para></P1></Body></Secondary></Legislation>|
+        ])
+
+      rules = Order.rules(d, @act)
+
+      assert %{full_from: nil, partial_from: ~D[2022-05-28]} = dated(rules, "section-132")
+      assert %{full_from: ~D[2022-06-28]} = dated(rules, "section-133")
+    end
+
     test "\"Subject to article 3, the provisions of the … Act, so far as not then in force, shall come into force, for all purposes, on …\" (SSI 2006/19 art.2)" do
       rules =
         Order.rules(

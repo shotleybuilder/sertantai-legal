@@ -751,8 +751,29 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
       end
 
     case tail_date(tail, made) do
-      nil -> nil
-      d -> {d, following(subject, after_dash, subject <> after_date(tail) <> " " <> after_dash)}
+      nil ->
+        nil
+
+      d ->
+        {d,
+         following(
+           subject,
+           after_dash,
+           subject <> before_date(tail) <> after_date(tail) <> " " <> after_dash
+         )}
+    end
+  end
+
+  # a qualifier between "comes into force" and the date is the subject's
+  # too ("Section 132 … comes into force, for the purposes of making
+  # regulations, on 28th May 2022": SI 2022/561 reg.2); a "the following"
+  # head's reaches its items as `list_qualifier/1` reads it
+  @before_date ~r/^\s*,\s*((?:for\s+the\s+purposes?\s+of|(?:in\s*)?so\s*far\s+as|insofar\s+as|to\s+the\s+extent)\b[^,—–]*?)\s*,\s*on\b/iu
+
+  defp before_date(tail) do
+    case Regex.run(@before_date, tail) do
+      [_, q] -> " " <> q
+      nil -> ""
     end
   end
 
