@@ -264,6 +264,12 @@ A rebuild moves no switched label until `LabelRefresh` runs. Laws whose rows don
 4. **Settle and check, once per batch:**
    - one full `mix test`, Dialyzer (the pre-push hook runs it), the family and switched checks, the feed gate and both catalogues;
    - a regression goes back as one class.
+5. **The step's procedures are tasks** (the Commencement reader retrospective, 2026-11-23; no scratch scripts):
+   - a fix's reach: `mix lat.commencement --read --family F --preview` and `--read-amending --family F --preview` (per law, the rules a fresh reading adds and drops; writes nothing), and `--read-orders … --preview`;
+   - the held moves: `mix lat.held_moves` (both catalogues' held answers a fix moves, dry run), `--write` on Jason's go; `--new [--pending "PATTERN::pending: why"]` brings the dry run's new patterns in;
+   - the re-read chain: `mix lat.reread --family F` prints the substeps the stale rules need (own clause, amending laws' clause, held orders, feed effects, then the rebuild and `lat.stale`), and `--run --tag T` runs them in turn under a memory cap, on Jason's go, after a restore point;
+   - the stale laws by reason: `mix lat.stale --family F --reasons`;
+   - the feed yardstick's standard figures: each `lat.commencement_check --family F` records them, and `mix lat.measures --family F` publishes them (agree, differ, feed error, feed only, feed partly only, ours only, neither; proven feed errors; difference groups by status and by row kind), with when the check ran and whether it follows the last build.
 - **Fable is the fix of last resort** (Jason 2026-11-21): a fix goes to a Fable `fixer` only when the session cannot land it and pass the tests, and then only on Jason's approval, given with the reasons.
 - Credo through `scripts/maintenance/credo-diff.sh`, never the bare `mix credo diff`.
 
@@ -293,7 +299,7 @@ A rebuild moves no switched label until `LabelRefresh` runs. Laws whose rows don
 - **Baseline:** 599 our faults on stored rules, 31 fresh (SI 1994/232); 16 leftovers not named.
 - **Six fixer calls** took the 31 parked bugs and 16 leftover groups. The first three briefs were wide, about 430k tokens and an hour each; from call 4 the briefs were lean (one class group, the affected tests and one preview, a 150k cap) at about 120–145k tokens and 10 minutes. The session runs the full suite and the family checks once after each call.
 - **The review of the held moves found two misreadings** the fixers' own tests missed: items lost beside a "so far as relating to" item when the day is unread, and NISR 2006/257's other Order's Articles. Review each held move against its sentence before the Decision.
-- **`--accept` re-chooses the examples**, so the readings written can differ from the set reviewed: write them with a script (`data/reports/commencement-reader/held-write.exs`, a dry run, then `write`) after a second look at the ones that joined. A pattern still unread is kept `pending`, not auto-accepted.
+- **`--accept` re-chooses the examples**, so the readings written can differ from the set reviewed: write them with `mix lat.held_moves` (a dry run, then `--write`; it was a scratch script until 2026-11-23) after a second look at the ones that joined. A pattern still unread is kept `pending`, not auto-accepted.
 - **The re-read:**
   - own clauses `--read --law <round>`;
   - orders `--read-orders --family F` (held orders only; never a search);
@@ -817,14 +823,14 @@ This is the process drawn up in the retrospective after OH&S (2026-11-03). The `
 - a **time box**;
 - **at most 8 todos**.
 
-Changing the pass rule, golden or scope means a new plan, approved again, not an edit in the log.
+Changing the pass rule, golden or scope means a new plan, approved again, not an edit in the log. **A pass condition added mid-step is a new phase** (Jason 2026-11-23): it gets its own todos and time box, agreed with Jason, as the two-way feed gate should have been (Waste, Water and Climate: Commencement reader, Decision 5, which then drove Decisions 7 to 19 with no time box).
 
 **The six phases.** Every step runs in the same order, and the plan names which todos fall in each, so every fetch, rebuild and decision has its place:
 1. **Measure:** the read-only baseline, and the step's parked bugs read in with their reach.
-2. **Find:** the step's check and catalogue list what is wrong, sorted into classes.
+2. **Find:** the step's check and catalogue list what is wrong, sorted into classes. **The fetch list comes out of Find** (Jason 2026-11-23, the Commencement reader retrospective): every document a class needs that is not held (orders never searched, Schedules not stored, documents moved) is listed here, for the one fetch in phase 5, not found at Settle.
 3. **Fix:** one class a call (fixer, test first), each with its reach over the store and golden. A class the fix uncovers is sized and decided, then fixed or parked.
-4. **Settle:** the catalogue's stored answers moved by the fixes, dry run, then written on Jason's decision.
-5. **Rebuild, then fetch:** a restore point and the family's rebuild. The new readings point to a few documents not yet held, so the Sources gate is re-run and they are fetched (`sources-fetch-failures-swept-each-step`).
+4. **Settle:** the catalogue's stored answers moved by the fixes, dry run, then written on Jason's decision. **Golden runs at every Settle** (golden from inputs, `mix lat.vocabulary --golden`), not first at Check: Waste, Water and Climate met its two golden moves on the last day.
+5. **Rebuild, then fetch:** a restore point and the family's rebuild. The new readings point to a few documents not yet held, so the Sources gate is re-run and they are fetched (`sources-fetch-failures-swept-each-step`). **No reader commit after the last re-read** unless the step runs the re-read and rebuild again: a reader's version covers its code, so a late fix stales every stored reading (Waste, Water and Climate re-read three times).
 6. **Check and close:** repeatability, golden, `mix test`, the step close, and the step report.
 
 **2. Checks in code first.** The pass is decided by code wherever possible:
@@ -844,7 +850,7 @@ Changing the pass rule, golden or scope means a new plan, approved again, not an
 
 **7. Restore point before writes.** Before any run that writes, take a restore point of the tables it writes: `./scripts/nas/nas-backup.sh --tables <tables> --tag <tag>` (seconds). Then dry run → Jason → apply.
 
-**8. Questions to Jason in plain words.** Written in the session doc first: the question, the aim it bears on, the options, a recommendation.
+**8. Questions to Jason in plain words.** Written in the session doc first: the question, the aim it bears on, the options, a recommendation. **A decision is named, not numbered** (Jason 2026-11-23): "Decision: inserted provisions' dates" rather than "Decision 16", so the step report and later steps can cite it without re-explaining it.
 
 **9. The step report** (Jason 2026-11-19, after Waste, Water and Climate: Feed reader). At the close, Jason gets this report and nothing else; the session doc is Claude's own log, summarised into the databased frontmatter and archived. Four tables, in plain words:
 
