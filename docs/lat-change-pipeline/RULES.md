@@ -125,6 +125,11 @@ A parent whose children are commenced one by one is partly in force from the fir
 - **Example:** European Union (Withdrawal) Act 2018 s.6 (golden).
 - **Serves:** `binds-on-date` · **Code:** `ChangeVocabulary.Parts` (source `:parts`, derived) · **Test:** golden · **Origin:** `cv-03-readers` (2026-10-21); `cv-s09-label-fold` (round 1)
 
+### `part-takes-no-date-while-a-provision-is-left`
+A Part or Chapter no rule names takes its date from its first provision to come in only while no provision in it is left to an order or partly in. Otherwise it takes no date, so the fold cannot carry a neighbour's day to a provision never brought in. A row no rule speaks to (the signature) holds nothing back; a cross-heading still takes its first provision's day (the fold does not carry a heading's date down).
+- **Example:** Health and Care Act 2022 Pt 5: s.132 in for making regulations on 28 May 2022, s.138 left to regulations; Pt 5 takes no date, and s.138(2)(a) reads prospective (golden). 83 Parts or Chapters in 27 laws lost a borrowed date.
+- **Serves:** `binds-on-date` · **Code:** `Readers.OwnCommencement` (`borrowed/4`, `held_back?/1`) · **Test:** `own_commencement_test` "a Part with a provision left to an order takes no date from its first provision in force" · **Origin:** Jason 2026-11-23, Waste, Water and Climate: Commencement reader, Decision 21 (a)
+
 ### `whole-new-text-ends-partial`
 A whole substitution or insertion that is fully in force ends a partial status, because the partly commenced text is gone.
 - **Example:** HSWA 1974 s.10, substituted by SI 2008/960.
@@ -251,6 +256,21 @@ An Act with no commencement clause is in force on Royal Assent (Interpretation A
 A provision brought in by items that each name a purpose of their own, none "for all other purposes", is partly in force from the first item's day and fully from the last's. What each purpose means (a class of person, property or activity) is fractalaw's to tag, not the reader's.
 - **Example:** SI 2015/962 reg.1(3): "Part 3 comes into force— (a) on 1st April 2017 in relation to non-domestic PR property, (b) on 1st October 2017 in relation to domestic PR property": Part 3 partly in force from 1 April 2017, fully from 1 October 2017 (498 rows agreeing with the feed).
 - **Serves:** `binds-on-date` · **Code:** `LawStart.Provisions` (`list_head/5`, `last_purpose_completes/1`) · **Test:** `own_clause_purpose_stages_and_named_forms_test` "a provision's items each for a purpose" · **Origin:** Jason 2026-11-22, Waste, Water and Climate: Commencement reader, Decision 14 (b) ("partly in force from 1 April to 1 October and fully thereafter")
+
+### `purpose-names-own-provisions`
+Where a narrow purpose names the law's own provisions ("for the purposes of regulations 1, 2 and 3"), it is a list: those provisions are fully in force on its day, every other provision from the last day, and none is partly in force. A narrow purpose that names no provision of the law keeps the law partly in force until the last day. The law as a whole reads partly in force between the days as a read-through of its provisions' labels (the Label fold's question).
+- **Example:** SI 2018/1221 reg.2: regs 1–3 fully on the 22nd day after laying, the rest on exit day; SI 2015/776 art.18(1) and SI 1991/346 the same shape.
+- **Serves:** `binds-on-date` · **Code:** `LawStart.PurposeStages.settle/2` · **Test:** `law_start` purpose-stage tests (SI 2015/776, SI 1991/346, SI 2018/1221) · **Origin:** Jason 2026-11-21, Waste, Water and Climate: Commencement reader, Decision 2
+
+### `eu-applies-from-is-the-start`
+An EU law's "It/This Regulation shall apply from <day>" is its start, before EUR-Lex's date; "Article(s) N shall apply from <day>" dates those articles; "shall enter into force" is read as commencement words. Directives are left out (`eu-directive`).
+- **Example:** EUR 2016/879, 2018/2066, 2019/2088 (staged articles); 11 laws with a whole-law apply-from day.
+- **Serves:** `binds-on-date` · **Code:** `LawStart.EuWords`, `LawStart.Eu` (`:eu_applies_from`), `SentencePatterns` · **Test:** `own_clause_eu_applies_from_test` · **Origin:** Jason 2026-11-21, Waste, Water and Climate: Commencement reader, Decision 4 ("The commencement reader works to extract info from commencing text")
+
+### `commencement-feed-gate-is-two-way`
+The Commencement reader's check compares every row with the feed's commencement record, and every `differ`, `feed_only` and `feed_partial_only` row is grouped by cause and each group statused: ours (`fix:`), the Feed reader's (moved to it), or legislation.gov.uk's or a yardstick difference (`known:`). A difference the law's own words prove the feed wrong is a feed error, written row by row with its proof to `feed_errors.json` through the accept path; a difference with no proof in the words is not a feed error.
+- **Example:** SI 2024/1332 reg.1(3)(b): 32 rows the feed has fully in force from 12 December 2024, the words bringing them in only for interpretation; SI 2012/2079 Part 9 (a 2021 for 2012 typo in the feed).
+- **Serves:** `binds-on-date`, `law-text-wins` · **Code:** `Commencement.FeedDifferences`, `Commencement.FeedErrors`; `lat.commencement_check`; `test/fixtures/commencement_check/feed_differences.json`, `feed_errors.json` · **Test:** `feed_differences_test`, `feed_errors_test` · **Origin:** Jason 2026-11-21, Decision 5 ("it cannot be a one way Gate"); Decisions 12 and 14 (c), 2026-11-22
 
 ### `instrument-stating-no-day-on-its-made-date`
 An instrument (never an Act, a Church Measure or an EU text) that states no day for any of its own provisions is in force at the start of its made date (`ukm:Made`): the general rule for instruments, as an Act's is Royal Assent. A sentence bringing in another law's provisions ("The following provisions of the 2014 Act come into force on …") is not the instrument's own day. legislation.gov.uk's "in force at made date" annotation points to the rule (it states no date itself), and the feed confirms it.

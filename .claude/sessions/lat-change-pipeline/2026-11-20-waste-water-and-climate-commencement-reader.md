@@ -1,9 +1,92 @@
 ---
 session: 'Waste, Water and Climate: Commencement reader'
-status: active
-opened: 2026-11-20
+status: closed
+opened: '2026-11-20'
+closed: '2026-11-23'
+outcome: success
 family: Waste, Water and Climate (round)
 step: Commencement reader
+summary: >
+  The round's 565 laws read by the Commencement reader with our faults 0, every leftover named and, new this step, a two-way gate against the feed's commencement records with every difference group statused (690 proven feed errors registered row by row, each with its proof).
+  Decisions 1–21 before fixes; orders fetched for the never-searched laws; the round re-read and rebuilt three times (138,800 changes); the four switched families PASS; golden 43/50 (the 7 left are the Label fold's drafts).
+  The step close fails only on Sources (113 not fetched or stale, swept by the Extent reader) and stale laws owned by other steps (Extent reader 263, labels 565); this step's own staleness 0.
+decisions:
+  - what: "Decision 1: run to zero new patterns by a misread scan in code, then fix by class"
+    why: agent rounds had regressed earlier families; checks are code first
+    result: the misread scan built; catalogues unclassified 0 in both
+  - what: "Decision 2 (purpose-names-own-provisions): a narrow purpose naming the law's own provisions is a list, none partly in force"
+    why: "SI 2018/1221 regs 1-3 operate whole on day 22; Jason: Nothing is partly in force"
+    result: SI 2015/776, SI 1991/346, SI 2018/1221; 192 rows dated, none staged
+  - what: "Decision 3: no more Fable fixer calls this step; small fixes in-session"
+    why: 20 Fable calls (about 1.9M tokens) re-ran every heavy check after each fix
+    result: fixes after 2026-11-21 made in-session, test first
+  - what: "Decision 4 (eu-applies-from-is-the-start): EU apply-from days are the start, and stated articles dated"
+    why: "Jason: the commencement reader works to extract info from commencing text"
+    result: "LawStart.EuWords and :eu_applies_from; 11 whole-law, 3 staged EU laws"
+  - what: "Decision 5 (commencement-feed-gate-is-two-way): the feed comparison gates this step, both ways"
+    why: "Jason: it cannot be a one way Gate - it might show problems in Feed reader"
+    result: FeedDifferences built; round groups all statused at close
+  - what: "Decision 6: the 61 held readings that moved, accepted"
+    why: each read against its words
+    result: 54 own and 5 orders written; SI 2018/1251 pending
+  - what: "Decision 7: fetch unsearched orders, fix misreads by class, judge inserted rows by the inserting law"
+    why: inserted provisions are dated by the law that inserts them
+    result: 12 laws searched, 43 orders fetched; 5,306 insertions, 5,028 agree
+  - what: "Decision 8 (b): our dating wins where the amending law's text dates a change the feed marks prospective"
+    why: the law and its commencement are primary, the feed derived
+    result: 3,200 changes in 48 laws; the gate group known
+  - what: "Decision 9 (a): the shared document reader reads a marked-up space as a space"
+    why: a one-clause fault at its source; orders could not be dated without it
+    result: "2010 c.29: 617 rows agree (98 before)"
+  - what: "Decisions 10 (a) and 11 (a): an Act's commencing authority split (Water Act 2003 s.105(6); Water Act 2014 Sch.12) read"
+    why: the Act's own clause is primary and the feed agrees
+    result: ten held-orders laws 3,894 → 4,115 rows agreeing
+  - what: "Decisions 12 (a) and 14 (c): a register of proven feed errors, one entry per row with its proof"
+    why: a known status leaves no audit trail; the gate fails a stale entry
+    result: 690 entries (SI 2012/2079 Part 9 typo, SI 2024/1332 interpretation-only rows)
+  - what: "Decisions 13 and 16: inserted rows the feed dates are known; no feed error without proof"
+    why: "Jason: We cannot claim feed error w/o evidence"
+    result: inserted-differences-known-where-the-feed-dates in RULES
+  - what: "Decision 14 (a), (b): an instrument stating no day is in force on its made date; staged purposes complete at the last"
+    why: the made date is the general rule for instruments; purposes as stages, meaning fractalaw's
+    result: "SI 2015/773, 2017/462: 210 rows agree; SI 2015/962: 498 agree"
+  - what: "Decisions 15, 17, 18: partial feed records known; four order misreads fixed; 6 new patterns accepted, 1 pending"
+    why: our own forms fixed; each held move read against its words
+    result: own-earlier rows on 12 laws 130 → 6; register 690
+  - what: "Decision 19: the round's orders fetched; amending laws reading no clause a known limit"
+    why: "Jason: Name as known limit then continue; a gap the feed dates costs nothing"
+    result: 9 orders, 2 Schedules, 1 introduction fetched; 450 changes named
+  - what: "Decision 20: COPA s.101 golden moved to SI 1975/2118 (1 Jan 1976); SI 2022/561's mid-sentence purpose read"
+    why: the order was found and held; a qualifier between comes into force and the date is the subject's
+    result: s.101 PASS; one stored statement reached
+  - what: "Decision 21 (a) (part-takes-no-date-while-a-provision-is-left): a Part held back by a provision left to an order takes no borrowed date"
+    why: the label fold carries a Part's date to every row in it (Health and Care Act 2022 s.138)
+    result: 83 Parts or Chapters in 27 laws; s.138(2)(a) PASS; golden 43/50
+  - what: "NISR 2007/194 a known limit"
+    why: "Jason: unique pattern, post-2002, the Feed covers it"
+    result: 4 feed groups (527 rows, NISI 2006/3336) known; its orders pattern pending
+metrics:
+  round: { laws: 565, rows: 109705, changes: 138800, our_faults: 0, leftovers_not_named: 0, feed_groups_no_status: 0 }
+  feed_errors_registered: 690
+  re_read: { own_laws: 565, own_rules: 1094, orders: 712, order_rules: 7075, amending_laws: 969, amending_rules: 2037 }
+  golden_extended: { pass: 43, of: 50, before: 41 }
+  targeted_tests: { passed: 6755, excluded: 303 }
+  mix_test_last: { passed: 12493, of: 12494, failing: "CatalogueRun.LogTest, a timing race (parked)" }
+  step_close: { sources: "FAIL 113 (Extent reader sweeps)", feed_reader: PASS, markup_reader: PASS, commencement_reader: PASS, checked_rows: PASS, stale_laws: "FAIL 565 (Extent reader 263, labels 565; this step 0)" }
+  fixer_calls: { calls: 20, tokens: "about 1.9M (before Decision 3)" }
+lessons:
+  - title: Heavy checks per fix cost three days; find once, decide, then batch
+    detail: "Waste, Water and Climate re-ran about 40 family checks, 9 suites, 8 catalogues and 20 Fable calls before Settle. The code review's new loop (WORKFLOW How the step runs) replaced it at the resume."
+    tag: tooling
+  - title: A correct fix can unmask an older fault in golden
+    detail: "33b71cf8 stopped dating prospective commencements by their power's start; s.138(2)(a) then failed because a Part borrowed its first provision's date and the fold carried it down. Bisect named the fix; the cause was older (bf5f50dc). Trace before moving golden."
+    tag: data
+  - title: Every reader commit stales the whole round's rules
+    detail: "The reader's version hashes its code, so any fix stales 1,000+ laws' stored rules; the close needs one re-read and rebuild (about an hour) after the last fix. Batch fixes before the re-read."
+    tag: tooling
+  - title: The feed gate's groups reach further than one catalogue pattern
+    detail: "NISR 2007/194 showed once in the orders catalogue but its rows' misreads reached 527 rows in four feed groups. Size a known limit by the feed comparison, not the pattern count."
+    tag: data
 bugs:
   - pattern: "An SI's own expiry ('shall cease to have effect on …') is carried by no source where its feed holds no expiry effect (SI 2001/1623, SI 2001/1478); SI 2003/3341's is in the feed, stored as repealed"
     category: own-expiry-not-carried
@@ -82,9 +165,79 @@ bugs:
     fix: "store a redirected answer under the path it was served from"
     step: Sources
     status: open
+  - pattern: "A purpose-limited commencement date is taken as the change's whole start: SI 2006/1244 reg.1(4) brings MSA 1995's amendments in on 2006-07-15 only so far as needed for s.164(1A) certificates; their general start is reg.1(2), the Bunkers Convention's entry into force, 2008-11-21 (the feed's date). E.g. MSA 1995 s.152(2), s.165(1), s.170(1) (the hand check, items 14, 31, 37, 39)"
+    category: "purpose-limited-start-taken-whole"
+    module: "commencement/ (Commencement.Amending, the amending law's own clause)"
+    affected: "93"
+    fix: "fixed in-step (call 4, 260644cf): the purpose-limited date read as the first stage only"
+    step: Commencement reader
+    status: fixed
+  - pattern: "A change by an amending law dated by the commencement source before that law was made (MSA 1995 s.284(4), s.85(3): the 1997 Act's change dated 1996-09-15; the Act was made 1997-03-19)"
+    category: "commencement-before-made"
+    module: "Commencement (date resolution for amending-law changes)"
+    affected: "2 rows"
+    fix: "fixed in-step (260644cf): no commencement dated before its law exists"
+    step: Commencement reader
+    status: fixed
+  - pattern: "'comes into force on X or, if later, Y' read as X (SI 2018/797 reg.1(2)(b): the 21st day after made, 18 Jul 2018, where 1 Oct 2018 is later; Petroleum Act 1998 s.45A(9), (9A), (10))"
+    category: "if-later-date-unread"
+    module: "commencement/ (own clause dates)"
+    affected: "3 changes (5 rules corpus-wide hold 'if later')"
+    fix: "fixed in-step (call 1): the later of the two days"
+    step: Commencement reader
+    status: fixed
+  - pattern: "Two Royal-Assent-relative own clauses not read: 2011 c.19 s.38(1) (the day follows the qualifier: 'comes into force, for the purposes of …, on the day on which this Act is passed') and 2012 c.21 s.122(2) (the Act's own 'beginning with day on which', no 'the')"
+    category: "royal-assent-day-unread"
+    module: "commencement/own_clause.ex"
+    affected: "2 laws"
+    fix: "fixed in-step (call 1): both Royal-Assent-relative forms read"
+    step: Commencement reader
+    status: fixed
+  - pattern: "Extended golden: a commencement that brings a section in only in part reads it wholly in force (Offices, Shops and Railway Premises Act 1963 s.76 and s.91: SI 1964/191 read as full on 1964-08-01; the covered-market carve-out keeps them partial; s.76's 1991 repeal by the EPA 1990 also not held)"
+    category: "golden-commencement-carve-out-read-full"
+    module: "commencement/"
+    affected: "2 golden provisions"
+    fix: "fixed in-step (260644cf): extended golden s.76 and s.91 pass"
+    step: Commencement reader
+    status: fixed
+  - pattern: "Extended golden: a Welsh commencing SI is named as a UK SI (Road Traffic Regulation Act 1984 s.1A(b) and s.1(6B): commenced by UK_wsi_2005_423, got UK_uksi_2005_423)"
+    category: "golden-welsh-si-named-uk"
+    module: "commencement/ (the commencing law's name), or the feed's affecting URI"
+    affected: "2 golden provisions"
+    fix: "fixed in-step (Order.HeldAs, 260644cf): the Welsh SI named as itself"
+    step: Commencement reader
+    status: fixed
+  - pattern: "The round's 210 laws built at Waste, Water and Climate: Sources are stale for the Commencement reader (their commencement reads predate the build), so the step close's Stale laws fails"
+    category: "built-before-commencement-read"
+    module: "mix lat.commencement (the mode that wrote them), then build"
+    affected: "210 laws (Waste, Water and Climate)"
+    fix: "fixed in-step: the round re-read and rebuilt; stale on this reader 0 (254a3c70)"
+    step: Commencement reader
+    status: fixed
+  - pattern: "The law as a whole's commencement label, as a read-through of its provisions' labels on the date picked, is held nowhere (SI 2015/776 reads partly in force between its two days only as a read-through)"
+    category: law-commencement-read-through
+    module: "label fold or measures (undecided)"
+    affected: "every law commenced in stages"
+    fix: "decide whether the Label fold or Measures shows it (Jason 2026-11-20, a question)"
+    step: Label fold
+    status: open
+artifacts:
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/readers/own_commencement.ex
+  - backend/lib/sertantai_legal/scraper/commencement/order.ex
+  - backend/lib/sertantai_legal/scraper/commencement/review/feed_differences.ex
+  - backend/lib/sertantai_legal/scraper/commencement/review/feed_errors.ex
+  - backend/test/fixtures/commencement_check/feed_differences.json
+  - backend/test/fixtures/commencement_check/feed_errors.json
+  - backend/data/reports/commencement-reader/wwc-commencement-reader-log.md
+depends_on:
+  - 2026-11-19-waste-water-and-climate-markup-reader
+  - 2026-11-21-commencement-reader-code-review
+enables:
+  - "Waste, Water and Climate: Extent reader (first todo: the Sources sweep, 113 documents)"
+
 ---
 
-# Session: Waste, Water and Climate: Commencement reader (ACTIVE)
+# Session: Waste, Water and Climate: Commencement reader (CLOSED)
 
 ## Suspended (2026-11-21)
 
@@ -107,12 +260,12 @@ The round's first commencement reading (565 laws). 210 round laws are stale for 
 - ✅ Code review: its own sessions, closed 2026-11-21 — Commencement Reader Code Review (Decision 1 (a): the new loop), Commencement Reader Speed Fixes (all Taken findings fixed, output identical) and Catalogues Across the Workflow (the catalogues cached and recorded)
 - ✅ Resume 1, Find once (plan approved 2026-11-21, `/var/home/jason/.claude/plans/gleaming-doodling-matsumoto.md`): the round's `--fresh` check with the feed gate, the four switched families, both catalogues; the work list in `backend/data/reports/commencement-reader/wwc-resume-work-list.md`; the per-round logs moved out
 - ✅ Resume 2, Decide before fixing: Decision 7 (2026-11-21)
-- ⬜ Resume 3, Fix by class: the session fixes, test first, cheap checks per fix
-- ⬜ Resume 4, Settle once per batch: suite, Dialyzer, round and switched checks with the gate, both catalogues; held moves to Jason
-- ⬜ Rebuild then fetch: restore point; the orders fetch decided; re-read (own, held orders, amending `--workers 1`, sources' stale rules); one round rebuild; Sources gate; NAS sync
-- ⬜ Check: round and four switched families' checks; seed 73 twice; extended golden; `mix test`, architecture, Credo
-- ⬜ Step close: `mix lat.step_close --family "Waste, Water and Climate" --step "Commencement reader"`
-- ⬜ Close: RULES, WORKFLOW, skill history, meta row, session close, commits by path, step report
+- ✅ Resume 3, Fix by class: the session fixes, test first, cheap checks per fix
+- ✅ Resume 4, Settle once per batch: suite, Dialyzer, round and switched checks with the gate, both catalogues; held moves to Jason
+- ✅ Rebuild then fetch: restore point; the orders fetch decided; re-read (own, held orders, amending `--workers 1`, sources' stale rules); one round rebuild; Sources gate; NAS sync
+- ✅ Check: round and four switched families' checks; seed 73 twice; extended golden; `mix test`, architecture, Credo
+- ✅ Step close (FAIL only on other steps' lines: Sources 113, stale laws 565; this step's own 0): `mix lat.step_close --family "Waste, Water and Climate" --step "Commencement reader"`
+- ✅ Close: RULES, WORKFLOW, skill history, meta row, session close, commits by path, step report
 
 ## Dependencies
 
@@ -825,3 +978,37 @@ The round's 278 (14 laws; 1991 c.56 211), measured again today with the insertin
 - **Reach in the feed comparison:** 4 groups, all NISI 2006/3336, 527 rows: 384 own partly by order where the feed has them in fully; 103 own earlier; 27 own later; 13 own by order (Articles 281–289). These were the round's 3 no-status groups since the Check runs (the Schedule was fetched at Rebuild then fetch), plus the 13-row group whose `fix: fetch` status is now stale.
 - **Held write, dry run** (`scratchpad/feed_differences.dry.json`): those 4 statuses set to `known:` pointing at the RULES row in `test/fixtures/commencement_check/feed_differences.json`; the orders pattern given the same status in the catalogue fixtures. Written on Jason's go.
 - **Written (Jason 2026-11-23: "Go"):** the 4 `known:` statuses in `feed_differences.json`; the orders pattern `table|date|qualified|full|-|rules+partial` (UK_nisr_2007_194/a4d3c4972d) held as `pending:` with its reading (`scratchpad/d21-pattern.exs`, from Decision 18's script, orders only; the dry run moved nothing else). Targeted tests 6,755 pass. The round check after (`wwc-d21-round2.txt`): PASS, feed-difference groups with no status 0.
+
+## The step close, and the round re-read for today's reader (2026-11-23)
+
+- **First step close** (`wwc-step-close.txt`): FAIL on two lines.
+  - Sources, 113: 92 not fetched, 21 stale. Swept by the next step (RULES `sources-fetch-failures-swept-each-step`). Most of the 21 look stale by the calendar alone. Jason (2026-11-23) recalled the 30-day rule replaced, but `sources-stale-by-calendar` is still open with the Sources step (decided 2026-11-19, not built).
+  - Stale laws, 565: today's two reader commits (e4ef8c47, 3876fac6) changed the reader's version, so every stored rule counted as written by older code (1,088 laws).
+- **Jason (2026-11-23):** "Please run whatevers needed to get off it and close the session!"
+- **Restore point:** `wwc-d21-reread-2026-11-23` (commencement_rules, provision_changes, provision_change_claims, lat_events).
+- **Re-read, pass 1** (`wwc-reread3-*.txt`), 0 errors:
+  - own clauses: 565 laws, 1,094 rules;
+  - held orders `--family`: 124 laws, 712 orders, 7,075 rules;
+  - the eight Acts' orders and 2022 c.30's (SI 2022/561's purpose now stored) `--held`: 9 laws, 65 orders, 745 rules;
+  - amending laws `--workers 1`: 969 laws, 2,037 rules.
+- **Pass 2, the source laws** (`wwc-reread4-*.txt`, the lists of 22 November): `--read` 129 laws (959 rules); `--read-amending` 35 (77); `--read-orders --held` 5 (14 orders, 180 rules); `--effects` 117.
+- **Rebuild:** 565 laws in 982 s, 0 failed, 138,800 changes.
+- **Stale after:** the round's change register 263 (as on 22 November: the Extent reader's), labels 565 (Store and build's).
+- **Checks after** (`wwc-close-*.txt`): the round PASS (feed groups with no status 0); the four switched families PASS; extended golden 43/50, unchanged from Decision 21.
+- **The round's change-register staleness by reason** (`StaleStages.changes/0` over the 565): Extent reader 263, nothing else. This step's own: 0.
+
+## Step close (2026-11-23)
+
+`mix lat.step_close --family "Waste, Water and Climate" --step "Commencement reader"` (`wwc-step-close2.txt`):
+- FAIL Sources (113: 92 not fetched, 21 stale; the Sources step's; the Extent reader sweeps them first, RULES `sources-fetch-failures-swept-each-step`; the calendar part is the open `sources-stale-by-calendar`)
+- PASS Feed reader, Markup reader, Commencement reader, Checked rows
+- FAIL Stale laws (565: labels 565, Store and build's and the LAT parser's; change register 263, the Extent reader's; this reader 0)
+
+Closed with both failures owned by other steps, as at the Sources, Feed reader and Markup reader closes.
+
+## Close
+
+- **Docs changed:** RULES (`part-takes-no-date-while-a-provision-is-left`, `purpose-names-own-provisions`, `eu-applies-from-is-the-start`, `commencement-feed-gate-is-two-way`; known-limit rows for NISR 2007/194 and Decision 19); WORKFLOW (the feed gate in the pass); the commencement-reader-check skill's history; the round's meta row.
+- **Parking list:** the code review ran as its own sessions (closed 2026-11-21), so dropped; the law-level read-through question is a bug for the Label fold; the rest are frontmatter bugs.
+- **Bugs:** 7 earlier-parked Commencement reader bugs fixed in this step are marked fixed (the purpose-limited start, a change dated before its law, "or, if later", two Royal-Assent-relative clauses, OSRPA s.76/s.91, the Welsh SI named as UK, the 210 stale laws). The rest stay open, sized.
+- **NAS sync:** after the rebuild (`scratchpad/nas-full3.log`).
