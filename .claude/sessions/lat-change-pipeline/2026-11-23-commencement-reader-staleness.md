@@ -19,8 +19,8 @@ Plan approved 2026-11-23 (`~/.claude/plans/gleaming-doodling-matsumoto.md`). Pas
 - ✅ 3. Build and extent stamps drop the order reader: `ClmlRef.ref`, `RefContext`, `LawStart.Sentences`; `Extent.ReadVersion` explicit
 - ✅ 4. Feed-difference owners: `{"status","owner"}` entries, `FeedDifferences.owner/3`, yardstick by owner; owners dry-run for Jason
 - ✅ 5. Pre-flight: targeted tests, Credo, Dialyzer; round `--preview` 0 changes; `lat.reread` dry runs for the cost
-- ⬜ 6. The one-time cycle on Jason's go: restore point; store-wide re-read; rebuild of every built law
-- ⬜ 7. Check: second re-read writes 0; stale reasons 0; round checks, yardstick, switched, golden as at close; suite
+- ✅ 6. The one-time cycle on Jason's go: restore point; store-wide re-read; rebuild of every built law
+- ✅ 7. Check: second re-read writes 0; stale reasons 0; round checks, yardstick, switched, golden as at close; suite
 - ⬜ 8. Close: DATA-ARCHITECTURE row; RULES rule; session close; commits by path
 
 ## Dependencies
@@ -99,7 +99,7 @@ Results:
 
   Nothing was written: 72,043 rules, and the max `read_at` is still 06:51.
 
-## 6. The one-time cycle — needs Jason's go
+## 6. The one-time cycle (Jason's go, 2026-11-23)
 
 Every stamp moved once, so every stored rule and every build is stale on the commencement reader. The extent readings are stale too, because `Extent.ReadVersion`'s files changed.
 
@@ -107,3 +107,41 @@ Every stamp moved once, so every stored rule and every build is stale on the com
 - **Rebuild:** the builds' code version moved too (`ChangeVocabulary.Version`: files moved), so all 1,092 built laws need a rebuild. Estimate: about 32 minutes at 3 workers (the round took 982 s for 565 laws).
 - **Before it:** a restore point of `commencement_rules`, `provision_changes`, `provision_change_claims` and `lat_events`.
 - **Extent re-read:** left to the Extent reader step's first substep, as planned.
+
+**Run.**
+- Restore point `staleness-cycle` on the NAS (10 s).
+- `mix lat.reread --family F --run`, one family at a time, for the 2 rounds and 11 families with built laws: about 59 minutes in all (Waste, Water and Climate alone 1,112 s). Logs in `backend/data/reports/commencement-reader/staleness-cycle/`.
+- UK_ukpga_2018_16 has no family; its stale sources were re-read and it was rebuilt by hand.
+- **All 1,105 laws built before the cycle are rebuilt, and none is stale on the commencement reader.**
+
+**More was built than planned: 156 laws never built before.** `lat.reread`'s build step builds the whole family (`lat.vocabulary --build --family F`). That is right for a family in the step. But I also ran it for the small families that held only a few incidental builds (Building Safety, Town & Country Planning, Road Safety, Nuclear, Coronavirus, Consumer, Plant Health, Trees).
+- 5 of those builds failed with "no stored CLML body". These are laws in families never through Sources.
+- 109 of the new builds are stale on the commencement reader: their sources were never re-read, because the chain picks its rules from the laws already built when it starts.
+- No label reads them, since these families are not switched. The question for Jason is below.
+
+## 7. Check
+
+- **Pass rule, re-read.** A second re-read of the round, writing, with unchanged code: 565 own laws and 969 amending laws, 0 written, all "unchanged (stamp only)", in 29 s. The max `read_at` did not move.
+- **The round's staleness is as at the close:** 565 stale laws (`labels_version`), and 263 builds stale only on the extent reader (the Extent reader step's first substep).
+- **Orders-only trial:** a comment added to `order/entries.ex` moved only the orders stamp (clause, effects, build, fold, extent and labels unchanged). Reverted.
+- **The round's commencement check is PASS:** our faults 0, leftovers not named 0, stale feed errors 0, groups with no status 0. The feed figures equal the close on every class. By owning step: Commencement reader 2,929 rows (21 groups), Sources 87 (2).
+- **The four switched families' checks are PASS:** Fire and OH&S, OH&S Occupational, Environmental Protection, Maritime.
+- **Golden 27/27. Extended golden 44/50, one more than the close's 43:** UK_ukpga_1963_41 s.91 went from FAIL to PASS.
+  - Its order, SI 1964/191, had been stale since before the Waste, Water and Climate step. The cycle read it with the current order reader: Part I "Section 91(1), (2) and (3)" (18 February and 1 May 1964), Part III "Section 91(4) and Schedule 2" (1 August 1964).
+  - The old rule had brought the whole of s.91 in on 1 August 1964. The new reading follows the words, so the pass is right by design.
+
+## Decisions for Jason (after the cycle)
+
+**A. The 156 builds the cycle added.**
+- *Aim:* `binds-on-date`. A build no label reads gives figures without a purpose, and shows as stale.
+- *Options:*
+  - (a) keep them. They are rebuilt when those families reach the Store and build step, and 109 stay stale meanwhile.
+  - (b) remove them (their `provision_changes`, `provision_change_claims` and `changes_built` events), back to the 1,105 built before.
+- *Recommendation:* (b). They were built by my running the chain beyond the families in the round, not by any step.
+
+**B. Relabel the switched families.**
+- The file moves changed `FoldVersion` and `LabelVersion`, so all 527 switched laws are stale on the labels (`fold_version` 527; `labels_version` 1,117 across all families, against 565 at the close).
+- *Options:*
+  - (a) relabel the switched families now, with `mix lat.relabel`, a preview then an apply;
+  - (b) leave it to the Label fold step's next run.
+- *Recommendation:* (a), so the switched labels match the code. The preview first shows whether any label changes; none should, as the moved code reads the same.
