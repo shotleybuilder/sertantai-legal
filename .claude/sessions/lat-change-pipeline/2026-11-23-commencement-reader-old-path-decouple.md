@@ -1,10 +1,10 @@
 ---
 session: 'Commencement reader: decouple the new path from the old dater'
-status: pending
+status: active
 opened: 2026-11-23
 ---
 
-# Session: Commencement reader: decouple the new path from the old dater (PENDING)
+# Session: Commencement reader: decouple the new path from the old dater (ACTIVE)
 
 ## Problem
 
@@ -21,4 +21,4 @@ The old label path's dater (`Commencement.Amending`, effects first) dates the sa
 
 ## Dependencies
 
-- ⬜ Commencement reader: staleness that follows what changed closed
+- ✅ Commencement reader: staleness that follows what changed closed (2026-11-23)
