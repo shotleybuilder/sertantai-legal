@@ -153,9 +153,48 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.OwnCommencementTest do
         ~w(pt.3 h.50 s.50 s.51 pt.7 h.81 s.81)
       )
 
-    {:dated, %{full_from: ~D[2022-01-09]}} = OwnCommencement.outcome(rules, @law, "pt.3", ctx)
+    full = List.replace_at(rules, 1, rule(["s.50"], {:date, ~D[2022-01-20]}))
+    {:dated, %{full_from: ~D[2022-01-09]}} = OwnCommencement.outcome(full, @law, "pt.3", ctx)
     {:by_order, _} = OwnCommencement.outcome(rules, @law, "pt.7", ctx)
     {:by_order, _} = OwnCommencement.outcome(rules, @law, "h.81", ctx)
+  end
+
+  # Waste, Water and Climate: Commencement reader, Decision 21 (Jason
+  # 2026-11-23): Health and Care Act 2022 Part 5 — s.132 in for making
+  # regulations on 28 May 2022 and fully on 28 June, s.138 left to
+  # regulations; a Part takes a date from its provisions only when every one
+  # comes in fully, else none, or the fold dates s.138 by the Part
+  test "a Part with a provision left to an order takes no date from its first provision in force" do
+    rules = [
+      rule(["s.132"], {:date, ~D[2022-05-28]},
+        treatment: :order_date,
+        purposes: :for_making_secondary_legislation
+      ),
+      rule(["s.132", "s.133"], {:date, ~D[2022-06-28]}, treatment: :order_date),
+      rule(["s.138"], {:appointed, "by regulations"}, treatment: :provision_by_order)
+    ]
+
+    ctx =
+      Map.put(
+        SertantaiLegal.Scraper.Commencement.Order.context(),
+        :order,
+        ~w(pt.5 h.132 s.132 s.133 h.138 s.138 signed)
+      )
+
+    assert {:by_order, %{full_from: nil, partial_from: nil}} =
+             OwnCommencement.outcome(rules, @law, "pt.5", ctx)
+
+    assert [] =
+             rules
+             |> OwnCommencement.read(@law, ["pt.5"], ctx)
+             |> Enum.filter(&(elem(&1, 1) == "pt.5"))
+
+    # with s.138 in too, the Part comes in with its first provision, as before;
+    # a row no rule speaks to (the signature, NISR 2008/231 Pt 7) does not hold it back
+    all_in = rules |> Enum.take(2) |> Kernel.++([rule(["s.138"], {:date, ~D[2022-07-01]})])
+
+    assert {_, %{partial_from: ~D[2022-05-28]}} =
+             OwnCommencement.outcome(all_in, @law, "pt.5", ctx)
   end
 
   # Environmental Protection: Commencement reader (2026-11-09): SI 2020/206,

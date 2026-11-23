@@ -141,7 +141,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.OwnCommencement do
   # SI 1997/1539, the heading left "by order"); a Part, to the next Part
   # (Environment Act 2021 Pt 3, its sections named one by one); with none
   # dated, it is left as its first provision is (Environment (Wales) Act
-  # 2016 h.81, s.81 left to an order)
+  # 2016 h.81, s.81 left to an order). A Part takes that date only when no
+  # provision in it is left partly in or undated; else it takes none, as the label
+  # fold carries a Part's date to every row in it (Health and Care Act 2022
+  # Pt 5: s.138 left to regulations; Decision 21, Jason 2026-11-23)
   defp evaluate(text, id, ctx) do
     result = Evaluator.evaluate(text, id, ctx)
 
@@ -149,15 +152,35 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.OwnCommencement do
          nil <- result.full_from || result.partial_from,
          [_ | _] = members <- members(id, Map.get(ctx, :order, [])) do
       results = Enum.map(members, &Evaluator.evaluate(text, &1, ctx))
-
-      results
-      |> Enum.filter(&(&1.full_from || &1.partial_from))
-      |> Enum.sort_by(&(&1.partial_from || &1.full_from), Date)
-      |> List.first(left(result, results))
+      borrowed(id, members, results, left(result, results))
     else
       _ -> result
     end
   end
+
+  defp borrowed("pt." <> _, members, results, left) do
+    provisions = for {m, r} <- Enum.zip(members, results), not container?(m), do: r
+
+    if Enum.any?(provisions, &held_back?/1),
+      do: left,
+      else: first_in(results, left)
+  end
+
+  defp borrowed(_heading, _members, results, left), do: first_in(results, left)
+
+  # a provision a rule leaves partly in or undated; a row no rule speaks to
+  # (the signature) holds nothing back
+  defp held_back?(%{full_from: nil} = r), do: r.partial_from != nil or r.undated != []
+  defp held_back?(_r), do: false
+
+  defp first_in(results, left) do
+    results
+    |> Enum.filter(&(&1.full_from || &1.partial_from))
+    |> Enum.sort_by(&(&1.partial_from || &1.full_from), Date)
+    |> List.first(left)
+  end
+
+  defp container?(id), do: String.starts_with?(id, ["h.", "ch."])
 
   defp left(%{undated: []} = result, results), do: Enum.find(results, result, &(&1.undated != []))
   defp left(result, _results), do: result
