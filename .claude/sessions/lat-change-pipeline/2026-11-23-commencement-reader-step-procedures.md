@@ -42,6 +42,7 @@ depends_on:
   - 2026-11-23-commencement-reader-retrospective
 enables:
   - "Commencement reader: staleness that follows what changed"
+---
 
 
 # Session: Commencement reader: step procedures, feed figures and workflow rules (CLOSED)
