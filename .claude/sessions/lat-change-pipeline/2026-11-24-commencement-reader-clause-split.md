@@ -1,10 +1,69 @@
 ---
 session: "Commencement reader: split the clause reader"
-status: active
+status: closed
 opened: 2026-11-24
+closed: 2026-11-24
+outcome: success
+
+summary: >
+  LawStart.Provisions (1,823 lines) and LawStart.Clause (966) were split into 18 one-concept modules under law_start/provisions/ and law_start/clause/, with reading unchanged: both catalogues and all three re-read previews are identical before and after, and the 6 nesting issues are fixed.
+  The cycle (Jason (a)) wrote the 160 laws today's code already read differently, rebuilt, explained all 22 changed digests, and relabelled the 527 switched laws (4 laws, 176 labels, each traced to a re-read rule); every check, gate and golden passes.
+
+decisions:
+  - what: "Cycle now (a): the re-reads write the 132 laws today's code reads differently, every digest traced, label changes shown before the relabel"
+    why: "LawStart files are listed directly in 9 stamps (the build really calls LawStart), so any behaviour-preserving move stales every build; the previews' differences come from earlier reader fixes, not the split"
+    result: "1,261 laws rebuilt (0 failed); 22 digests differ, all explained; 527 relabelled, 176 label changes in 4 laws"
+  - what: "Top-up re-read of the 866 laws with clause rules outside the planned re-read (Jason: go)"
+    why: "the clause stamp moved, so every clause-path rule in the store went stale, not only the re-read laws'; lat.stale showed 430 builds stale on the commencement reader"
+    result: "28 laws wrote rules (196), 838 stamp only; 6 builds rebuilt; commencement_reader stale 109 → 4"
+  - what: "Relabel the 527 switched laws after showing the 4 laws' changes (Jason: go for the 527)"
+    why: "each change traces to a rule the re-reads wrote (CLP art. 57(2)(b) for REACH; EU 2019/2088 art. 20; made-day rules for SI 2016/457 and SI (NI) 1977/1251)"
+    result: "0 failed; switched families 0 of 527 stale"
+
+metrics:
+  modules: { provisions_lines: 198, clause_lines: 413, new_modules: 18, smallest: 47, largest: 305, nesting_issues_fixed: 6 }
+  tests: { existing_unchanged: 6863, new: 39, architecture: 42 }
+  cycle: { rebuilt: 1261, rebuild_s: 3417, own_written: 8, amending_written: 124, topup_written: 28, digests_differ: 22, digests_explained: 22 }
+  relabel: { laws: 527, failed: 0, laws_changed: 4, labels_changed: 176 }
+  checks: { commencement_pass: 5, label_gates_pass: 4, golden: "27/27", extended: "44/50" }
+
+lessons:
+  - title: "A reader's stamp move stales every rule that path ever wrote, not just the laws you re-read"
+    detail: "The plan re-read the built laws and their amending laws (1,261 + 2,161), but the clause stamp is per read path, so 866 other laws' clause rules went stale too and 430 builds showed commencement_reader stale. Before a cycle on a moved read-path stamp, list the laws holding that path's rules (Store.stale_condition) and re-read them all; most are stamp only and take seconds."
+    tag: tooling
+  - title: "Re-read write logs don't name laws; previews do"
+    detail: "Tracing digests to written laws needed the preview's per-law lines (before/*preview.txt); run the preview of exactly what you write and keep it as the write's record."
+    tag: tooling
+  - title: "Splitting a long-arity helper into tuples needs a preview re-run, not just tests"
+    detail: "The pre-commit hook failed on an arity-10 function in a new file; folding its arguments into tuples passed the tests, and the previews were re-run identical before the commit."
+    tag: tooling
+
+bugs:
+  - pattern: "Same-day commencement stages keep the store's row order, so a rebuild can swap two stages' order (e.g. UK_ukpga_1974_40 s.105(1), SI 1991/2288 on 1991-11-01); seen again in 3 digests"
+    category: stage-order-follows-store-order
+    module: change_vocabulary build
+    affected: 3 laws
+    fix: "sort same-day stages by a stable key"
+    step: Store and build
+    status: open
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/law_start/clause/
+  - backend/lib/sertantai_legal/scraper/law_start/provisions/
+  - backend/test/sertantai_legal/scraper/law_start/clause/
+  - backend/test/sertantai_legal/scraper/law_start/provisions/
+  - backend/data/reports/commencement-reader/clause-split/
+  - backend/data/reports/lat-refactor/clause_split_relabel_switched.diff.csv
+
+depends_on:
+  - 2026-11-23-commencement-reader-order-split
+
+enables:
+  - "Commencement reader: feed differences as patterns"
+  - "Extent reader readiness review"
 ---
 
-# Session: Commencement reader: split the clause reader (ACTIVE)
+# Session: Commencement reader: split the clause reader (CLOSED)
 
 ## Problem
 
@@ -21,8 +80,8 @@ They hold the clause read path's stamp (`ReadVersion.Clause`), a different conce
 - ✅ 3. Red: one test file per new module (5 under `law_start/clause/`, 13 under `law_start/provisions/`)
 - ✅ 4. Green: module by module, the existing tests unchanged; the stamps' lists name the new files (`law_start/**/*.ex` in the build's and labels' globs)
 - ✅ 5. Pre-flight: targeted tests, Credo diff, Dialyzer; both catalogues identical; the previews identical to the baseline
-- ⬜ 6. The cycle, on Jason's go (about 3 h): restore point, digests, re-reads, rebuild, digests explained, `lat.stale`, relabel preview then relabel
-- ⬜ 7. Check and close: commencement checks (round and 4 switched families), 4 label gates, golden 27/27; module sizes; close
+- ✅ 6. The cycle, on Jason's go (about 3 h): restore point, digests, re-reads, rebuild, digests explained, `lat.stale`, relabel preview then relabel
+- ✅ 7. Check and close: commencement checks (round and 4 switched families), 4 label gates, golden 27/27; module sizes; close
 
 ## Dependencies
 
@@ -113,3 +172,66 @@ These come from reader fixes made since those laws were last read. A re-read can
 - **(c) Defer the cycle** to the next session that rebuilds anyway. Until then, every build and label stays stale (the stamps have moved), and the next session's checks would start stale.
 
 **Recommendation: (a).** **Jason: (a)** (2026-11-24).
+
+## The cycle
+
+Reports are in `backend/data/reports/commencement-reader/clause-split/cycle/`.
+
+**Main chain:**
+1. Restore point `clause-split-cycle`.
+2. Re-reads, writing exactly the baseline's laws:
+   - own clauses of the 1,261 built laws: 8 written (26 rules), 1,253 stamp only;
+   - amending laws' clauses: 124 of 2,161 written (494 rules);
+   - orders: 214 Acts, 11,617 rules, unchanged.
+3. Rebuild: 1,261 laws in 3,417 s on 4 workers, 0 failed.
+4. Digests: 21 differ.
+5. Relabel preview: 1,644 laws, 0 errors.
+
+**The plan missed a step.** After the chain, `lat.stale` showed 430 builds stale on the commencement reader, up from 109. When the clause stamp moved, every clause-path rule in the store went stale, not only those of the laws re-read. That left 866 more laws: 367 with LAT but not built, and 499 amending laws outside the 2,161. Some are the amending laws of built laws.
+
+**Top-up (Jason: go):**
+1. Restore point `clause-split-topup`.
+2. Re-reads: 27 of 367 own clauses written (195 rules); 1 of 499 amending laws written (1 rule). The rest were stamp only.
+3. `lat.stale`: 6 builds stale on commencement. They were rebuilt in 211 s; 1 digest differs (UK_ukpga_2018_15).
+
+**After the top-up:**
+- No clause-path rule is stale.
+- The 4 builds left on `commencement_reader` rest on the feed's commencement rules (22 laws, `--effects`). That read path's stamp was not touched here; they are what remains of the 109 known before this session.
+- The extent reader's 768 are as known.
+
+**Digests: 22 differ in all, and every one is explained** (`digest-explained.txt`):
+- 19 trace to a law written by the re-reads: the law itself, or the amending or commencing law of its changes.
+- 3 are same-day stage swaps from the parked `stage-order-follows-store-order` bug: UK_ukpga_1883_3 and UK_ukpga_1988_52 (both also in the order split), and UK_ukpga_1974_40. In the last, s.105(1)'s two SI 1991/2288 stages of 1 Nov 1991 swapped order; its changes are identical.
+
+**Relabel preview of the 527 switched laws** (`lat-refactor/clause_split_relabel_switched.csv`, `.diff.csv`): 0 errors. 4 laws change, 176 labels in all, and each traces to a rule the re-reads wrote:
+- **UK_eur_2006_1907 (REACH), 168 labels:**
+  - 40 rows go from unknown to in force from 2010-12-01, E+W+S+NI, changed by CLP;
+  - 6 dates move to 2010-12-01;
+  - 1 row goes from repealed to in force.
+
+  The cause is CLP's new rule, art. 57(2)(b).
+- **UK_eur_2019_2088, 3 labels:** art. 11(1)–(3) move from 2021-03-10 to 2022-01-01. The cause is its own new rules, art. 20(2) and art. 20(3)(d).
+- **UK_uksi_2015_1947, 3 labels:** reg. 91(4), (4A) and (6) move from 2016-03-25 to 2016-03-24. The cause is a new made-day rule for SI 2016/457.
+- **UK_ukpga_1971_61, 2 labels:** s.11(2) gains in force from 1977-07-26, changed by SI (NI) 1977/1251. The cause is that order's new made-day rule.
+
+None comes from the split. Each is a reading that today's code already gave and that the store had not yet caught up with.
+
+**Relabel (Jason: go for the 527):**
+- the restore point `clause-split-relabel` (`lat_label_timeline`, `lat_events`);
+- the 527 switched laws relabelled, 0 failed. The 4 laws' 176 label changes above are now in the timeline.
+
+## Check and close (todo 7)
+
+Reports are in `backend/data/reports/commencement-reader/clause-split/close/`.
+
+- **`lat.stale`:**
+  - switched families: 0 of 527 stale;
+  - `commencement_reader`: 4 (it was 109 before this session; what remains is the feed's commencement rules);
+  - `extent_reader`: 768, as known;
+  - the old path's `labels_version`: 1,117, as before.
+- **Commencement checks:** PASS for the round (Waste, Water and Climate) and for the 4 switched families: our faults 0, leftovers not named 0, stale feed errors 0.
+- **Label gates:** PASS on the 4 switched families, with 0 groups not named.
+- **Golden:** 27/27; extended 44/50, as before.
+- **Module sizes:** see Green. No function is over Credo's limits.
+- **Docs:** `backend/lib/sertantai_legal/scraper/CLAUDE.md` gains the module map of the two new folders. `RULES.md` and `DATA-ARCHITECTURE.md` are unchanged, since no reading rule or table changed. The stamp rule a re-read needs is a lesson, below.
+- **Parked bug seen again:** `stage-order-follows-store-order`, in 3 laws' digests. It is already open with Store and build, so there is no new entry.
