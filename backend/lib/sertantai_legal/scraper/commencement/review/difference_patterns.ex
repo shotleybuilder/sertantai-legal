@@ -74,6 +74,31 @@ defmodule SertantaiLegal.Scraper.Commencement.Review.DifferencePatterns do
   def verdict(_name, %{none: n}) when n > 0, do: :fix
   def verdict(_name, _counts), do: :known
 
+  @rule "RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)"
+
+  @doc """
+  A judged entry's new status from its pattern's verdict and law counts,
+  keeping the old status's own words (after its last "): ").
+  """
+  @spec status(String.t(), :fix | :known | :yardstick, map(), String.t()) :: String.t()
+  def status(name, verdict, counts, old) do
+    "#{head(verdict, name, counts)}: #{detail(old)}"
+  end
+
+  defp head(:fix, name, c),
+    do:
+      "fix: the pattern #{name} is held where the feed holds no commencement (#{c.none} laws; #{c.covered} where it does), so the Reader is the source and reads it (#{@rule})"
+
+  defp head(:known, name, c),
+    do:
+      "known: the pattern #{name} is held only where the feed holds the commencement (#{c.covered} laws), so the feed is the date (#{@rule})"
+
+  defp head(:yardstick, name, c),
+    do:
+      "known: a yardstick difference, the pattern #{name} (#{c.covered + c.none} laws): the Reader reads the law's words; the feed stages it otherwise (#{@rule})"
+
+  defp detail(old), do: old |> String.split("): ") |> List.last()
+
   # ── a law's own rows ────────────────────────────────────────────────
 
   @doc "A law's own rows (`id`, `text`, ids without the law) → each pattern hit, with the row (or provision) it is on."

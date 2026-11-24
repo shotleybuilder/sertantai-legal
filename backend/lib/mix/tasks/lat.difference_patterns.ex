@@ -19,6 +19,8 @@ defmodule Mix.Tasks.Lat.DifferencePatterns do
   `data/reports/commencement-reader/feed-difference-patterns/`).
 
       mix lat.difference_patterns [--out DIR]
+      mix lat.difference_patterns --rejudge           # a dry run: each judged entry of `feed_differences.json` restatused by its pattern's verdict, the whole file written beside the report (`feed_differences.proposed.json`), never the fixture
+      mix lat.difference_patterns --rejudge --write   # write the fixture, on Jason's go
   """
   use Mix.Task
 
@@ -39,7 +41,9 @@ defmodule Mix.Tasks.Lat.DifferencePatterns do
 
   @impl Mix.Task
   def run(args) do
-    {opts, _, _} = OptionParser.parse(args, strict: [out: :string])
+    {opts, _, _} =
+      OptionParser.parse(args, strict: [out: :string, rejudge: :boolean, write: :boolean])
+
     Mix.Task.run("app.start")
     Logger.configure(level: :warning)
 
@@ -61,6 +65,49 @@ defmodule Mix.Tasks.Lat.DifferencePatterns do
     lines = summary(hits)
     File.write!(Path.join(out, "summary.txt"), Enum.join(lines, "\n") <> "\n")
     Enum.each(lines, &Mix.shell().info(&1))
+    if opts[:rejudge], do: rejudge(hits, out, opts[:write])
+  end
+
+  # ── the re-judging (dry run, or written on Jason's go) ──────────────
+
+  @reviewed "test/fixtures/commencement_check/feed_differences.json"
+
+  defp rejudge(hits, out, write?) do
+    reviewed = @reviewed |> File.read!() |> Jason.decode!()
+
+    changed =
+      for name <- DifferencePatterns.names(),
+          {verdict, counts} <- [verdict_of(name, hits)],
+          key <- DifferencePatterns.entries(name),
+          entry = Map.fetch!(reviewed, key),
+          do:
+            {key,
+             %{
+               entry
+               | "status" => DifferencePatterns.status(name, verdict, counts, entry["status"])
+             }}
+
+    new = Map.merge(reviewed, Map.new(changed))
+    body = sorted(new)
+    path = if write?, do: @reviewed, else: Path.join(out, "feed_differences.proposed.json")
+    File.write!(path, body <> "\n")
+    Enum.each(changed, fn {key, e} -> Mix.shell().info("\n#{key}\n  #{e["status"]}") end)
+    Mix.shell().info("\n#{length(changed)} entries restatused; written: #{path}")
+  end
+
+  defp verdict_of(name, hits) do
+    laws = hits |> Enum.filter(&(&1.pattern == name)) |> Enum.uniq_by(& &1.law)
+    counts = %{covered: Enum.count(laws, & &1.covered), none: Enum.count(laws, &(not &1.covered))}
+    {DifferencePatterns.verdict(name, counts), counts}
+  end
+
+  # every key sorted, every entry's fields sorted, as the fixture is held
+  defp sorted(reviewed) do
+    reviewed
+    |> Enum.sort()
+    |> Enum.map(fn {k, v} -> {k, Jason.OrderedObject.new(Enum.sort(v))} end)
+    |> Jason.OrderedObject.new()
+    |> Jason.encode!(pretty: true)
   end
 
   defp lat_laws,

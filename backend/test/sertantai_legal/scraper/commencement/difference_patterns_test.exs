@@ -226,4 +226,19 @@ defmodule SertantaiLegal.Scraper.Commencement.Review.DifferencePatternsTest do
     # the Reader reads the law right: the difference is the feed's staging
     assert P.verdict("one-order-per-territory", %{covered: 10, none: 2}) == :yardstick
   end
+
+  test "status/4: the verdict's head, with the old status's own words" do
+    old =
+      "known: a one-law commencement wording (RULES section 11, …; Jason 2026-11-22): art.25's \"…, whichever is later\" after the items"
+
+    new = P.status("alternative-days-whichever", :fix, %{covered: 1, none: 1}, old)
+
+    assert new =~
+             ~r/^fix: the pattern alternative-days-whichever is held where the feed holds no commencement \(1 laws; 1 where it does\)/
+
+    assert String.ends_with?(new, ~s{: art.25's "…, whichever is later" after the items})
+
+    assert P.status("whole-law-purpose-stages", :known, %{covered: 2, none: 0}, old) =~
+             ~r/^known: the pattern whole-law-purpose-stages is held only where the feed holds the commencement \(2 laws\)/
+  end
 end
