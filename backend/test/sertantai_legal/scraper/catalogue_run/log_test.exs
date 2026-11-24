@@ -46,10 +46,19 @@ defmodule SertantaiLegal.Scraper.CatalogueRun.LogTest do
     assert [_] = path |> File.read!() |> String.split("\n", trim: true)
   end
 
-  test "the function's result, with a sampled peak at least the memory at its start" do
+  # the peak sees what the call holds: 64 MB held through it shows well above
+  # the memory at its start (a margin, since other processes free memory too)
+  test "the function's result, with a sampled peak that sees what the call holds" do
     start = div(:erlang.memory(:total), 1_048_576)
-    {result, peak} = Log.sample_peak(fn -> Enum.sum(1..1000) end)
-    assert result == 500_500
-    assert peak >= start
+
+    {result, peak} =
+      Log.sample_peak(fn ->
+        held = :binary.copy(<<0>>, 64 * 1_048_576)
+        Process.sleep(600)
+        byte_size(held)
+      end)
+
+    assert result == 64 * 1_048_576
+    assert peak >= start + 32
   end
 end
