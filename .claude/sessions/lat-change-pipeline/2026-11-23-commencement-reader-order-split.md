@@ -1,10 +1,10 @@
 ---
 session: 'Commencement reader: split the order reader'
-status: pending
+status: active
 opened: 2026-11-23
 ---
 
-# Session: Commencement reader: split the order reader (PENDING)
+# Session: Commencement reader: split the order reader (ACTIVE)
 
 ## Problem
 
@@ -20,4 +20,4 @@ opened: 2026-11-23
 
 ## Dependencies
 
-- ⬜ Commencement reader: decouple the new path from the old dater closed
+- ✅ Commencement reader: decouple the new path from the old dater closed (2026-11-23)
