@@ -24,6 +24,19 @@ defmodule SertantaiLegal.Scraper.Commencement.FeedCoverage do
     %{covered: records > 0, records: records}
   end
 
+  @doc """
+  Whether an Act's feed holds the commencement one order made: a dated
+  coming-into-force record by it. An Act's feed can hold its later orders
+  but not those before 2002, so an order's wording is judged by its own.
+  """
+  @spec by?([Effect.t()], String.t()) :: boolean()
+  def by?(effects, order),
+    do:
+      Enum.any?(
+        effects,
+        &(&1.affecting == order and EffectVerb.kind(&1.type) == "commenced" and dated?(&1))
+      )
+
   defp dated?(%Effect{in_force_date: %Date{}}), do: true
   defp dated?(_effect), do: false
 

@@ -34,6 +34,12 @@ defmodule SertantaiLegal.Scraper.Commencement.FeedCoverageTest do
     end
   end
 
+  test "by?/2: the Act's feed holds a record by this order" do
+    effects = [effect("coming into force", ~D[2009-04-01])]
+    assert FeedCoverage.by?(effects, "UK_uksi_2009_359")
+    refute FeedCoverage.by?(effects, "UK_uksi_1996_1")
+  end
+
   test "band/1: before 2002, and 2002 on" do
     assert FeedCoverage.band(2001) == "before 2002"
     assert FeedCoverage.band(2002) == "2002 on"

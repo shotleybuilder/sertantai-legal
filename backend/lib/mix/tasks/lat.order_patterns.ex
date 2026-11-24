@@ -138,7 +138,9 @@ defmodule Mix.Tasks.Lat.OrderPatterns do
   # {order, [act]}: each held order once, with the Acts its lists or rules
   # name (the first listed first: the Act it commences is chosen in its
   # read, `OrderCatalogue.LawRead`)
-  defp orders(only) do
+  @doc "Each held commencement order once, with the Acts its cached lists or stored rules name (`--orders` narrows)."
+  @spec orders(String.t() | nil) :: [{String.t(), [String.t()]}]
+  def orders(only) do
     listed =
       for path <- Path.wildcard("data/cache/commencement-orders/*.json"),
           act = Path.basename(path, ".json"),
