@@ -5,6 +5,8 @@ defmodule SertantaiLegal.Scraper.Commencement.Order.Territory do
   instrument's type. Pure text.
   """
 
+  alias SertantaiLegal.Scraper.Commencement.Rule
+
   alias SertantaiLegal.Scraper.Commencement.Text.Asides
 
   @places %{
@@ -142,4 +144,17 @@ defmodule SertantaiLegal.Scraper.Commencement.Order.Territory do
     named = places |> String.split(~r/,\s+|\s+and\s+/) |> Enum.map(&@places[String.downcase(&1)])
     ~w(E W S NI) |> Enum.filter(&(&1 in named)) |> Enum.join("+")
   end
+
+  # a statement's own place ("… come into force in relation to England on …")
+  # reaches all its items; a table row's is its own, never its subject
+  # column's ("Section 14 | Disposal of waste in England and Wales": SI
+  # 1988/818)
+  @doc "A statement head's own place, reaching its items; nil for a table row."
+  @spec head_territory(Rule.t()) :: String.t() | nil
+  def head_territory(%Rule{treatment: :order_schedule}), do: nil
+
+  def head_territory(%Rule{source: %{text: text}}) when is_binary(text),
+    do: text |> String.split(" … ", parts: 2) |> hd() |> of()
+
+  def head_territory(_rule), do: nil
 end

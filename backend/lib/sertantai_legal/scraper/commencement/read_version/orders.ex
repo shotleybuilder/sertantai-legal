@@ -16,14 +16,26 @@ defmodule SertantaiLegal.Scraper.Commencement.ReadVersion.Orders do
       lib/sertantai_legal/scraper/commencement/authority.ex
       lib/sertantai_legal/scraper/commencement/clml_ref.ex
       lib/sertantai_legal/scraper/commencement/order.ex
+      lib/sertantai_legal/scraper/commencement/order/appointed_for.ex
+      lib/sertantai_legal/scraper/commencement/order/brackets.ex
+      lib/sertantai_legal/scraper/commencement/order/dates.ex
       lib/sertantai_legal/scraper/commencement/order/entries.ex
       lib/sertantai_legal/scraper/commencement/order/held_as.ex
+      lib/sertantai_legal/scraper/commencement/order/identity.ex
+      lib/sertantai_legal/scraper/commencement/order/items.ex
       lib/sertantai_legal/scraper/commencement/order/last_item_limit.ex
       lib/sertantai_legal/scraper/commencement/order/other_law.ex
+      lib/sertantai_legal/scraper/commencement/order/purposes.ex
       lib/sertantai_legal/scraper/commencement/order/related_list.ex
       lib/sertantai_legal/scraper/commencement/order/repeal_lists.ex
+      lib/sertantai_legal/scraper/commencement/order/schedule_date.ex
+      lib/sertantai_legal/scraper/commencement/order/schedule_lists.ex
+      lib/sertantai_legal/scraper/commencement/order/schedule_tables.ex
       lib/sertantai_legal/scraper/commencement/order/section_heads.ex
+      lib/sertantai_legal/scraper/commencement/order/statements.ex
       lib/sertantai_legal/scraper/commencement/order/territory.ex
+      lib/sertantai_legal/scraper/commencement/order/whole_act.ex
+      lib/sertantai_legal/scraper/commencement/order/words.ex
       lib/sertantai_legal/scraper/commencement/order_read.ex
       lib/sertantai_legal/scraper/commencement/ref_context.ex
       lib/sertantai_legal/scraper/commencement/rule.ex
