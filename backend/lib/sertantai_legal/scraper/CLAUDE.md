@@ -56,9 +56,11 @@ scraper/
 ├── effect_facts.ex               # Pure: a change's facts from its effects — kind, effect_fact, partial? (LR-25; was ChangeFacts)
 ├── change_collector.ex           # Change register lat_change_log: feed / markup / amending-law / commencement collectors (LR-23, LR-08, LR-33)
 ├── law_start.ex                  # Pure: when a law came into force and WHICH TREATMENT decided it — the treatment catalogue (LR-33)
-├── law_start/clause.ex           # Pure: reads the law's own commencement clause (dates, made-relative, named days, staged, limits)
+├── law_start/clause.ex           # Pure: reads the law's own commencement clause and its treatment (orchestrator)
+├── law_start/clause/            # Pure: WrittenDates, NamedDays, RelativeDays (made/laid), Tail (a tail's date), Staged (staged, by order, tied)
 ├── law_start/eu.ex               # Pure: EU law's start (directives a known limit; regulations from EUR-Lex / their text)
-├── law_start/provisions.ex       # Pure: the clause's provision-level sentences as groups (LR-34; rules via Commencement.OwnClause)
+├── law_start/provisions.ex       # Pure: the clause's provision-level sentences as groups (LR-34; rules via Commencement.OwnClause; orchestrator)
+├── law_start/provisions/        # Pure: Words, RefLists, Refs, Mentioned, Treatment, Tables, Subjects, Exceptions, Countries, Rest, OpenItems, Sentence, ClauseSentences
 ├── commencement/                 # Commencement ruleset (CR meta): Rule, Store, Evaluator, readers OwnClause / Order / Effects, Amending
 ├── amendment/                    # Amendment ruleset (AR meta): Rule, Store, Evaluator, Reader (+ ReaderVersion, Index), Collect — the change register's amending-law records (AR-04)
 ├── amending_law/                 # Amending-law document readers: Doc, Text, Operation, DefinedTerms, Locator, Pointer

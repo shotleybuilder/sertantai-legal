@@ -47,6 +47,11 @@ defmodule SertantaiLegal.Scraper.Commencement.ReadVersion.Orders do
       lib/sertantai_legal/scraper/lat_ref.ex
       lib/sertantai_legal/scraper/law_start.ex
       lib/sertantai_legal/scraper/law_start/clause.ex
+      lib/sertantai_legal/scraper/law_start/clause/named_days.ex
+      lib/sertantai_legal/scraper/law_start/clause/relative_days.ex
+      lib/sertantai_legal/scraper/law_start/clause/staged.ex
+      lib/sertantai_legal/scraper/law_start/clause/tail.ex
+      lib/sertantai_legal/scraper/law_start/clause/written_dates.ex
       lib/sertantai_legal/scraper/law_start/eu.ex
       lib/sertantai_legal/scraper/law_start/made_condition.ex
       lib/sertantai_legal/scraper/law_start/own_days.ex

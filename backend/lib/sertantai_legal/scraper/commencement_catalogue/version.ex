@@ -37,11 +37,29 @@ defmodule SertantaiLegal.Scraper.CommencementCatalogue.Version do
       lib/sertantai_legal/scraper/lat_ref.ex
       lib/sertantai_legal/scraper/law_start.ex
       lib/sertantai_legal/scraper/law_start/clause.ex
+      lib/sertantai_legal/scraper/law_start/clause/named_days.ex
+      lib/sertantai_legal/scraper/law_start/clause/relative_days.ex
+      lib/sertantai_legal/scraper/law_start/clause/staged.ex
+      lib/sertantai_legal/scraper/law_start/clause/tail.ex
+      lib/sertantai_legal/scraper/law_start/clause/written_dates.ex
       lib/sertantai_legal/scraper/law_start/sentences.ex
       lib/sertantai_legal/scraper/law_start/completing.ex
       lib/sertantai_legal/scraper/law_start/eu.ex
       lib/sertantai_legal/scraper/law_start/eu_words.ex
       lib/sertantai_legal/scraper/law_start/provisions.ex
+      lib/sertantai_legal/scraper/law_start/provisions/clause_sentences.ex
+      lib/sertantai_legal/scraper/law_start/provisions/countries.ex
+      lib/sertantai_legal/scraper/law_start/provisions/exceptions.ex
+      lib/sertantai_legal/scraper/law_start/provisions/mentioned.ex
+      lib/sertantai_legal/scraper/law_start/provisions/open_items.ex
+      lib/sertantai_legal/scraper/law_start/provisions/ref_lists.ex
+      lib/sertantai_legal/scraper/law_start/provisions/refs.ex
+      lib/sertantai_legal/scraper/law_start/provisions/rest.ex
+      lib/sertantai_legal/scraper/law_start/provisions/sentence.ex
+      lib/sertantai_legal/scraper/law_start/provisions/subjects.ex
+      lib/sertantai_legal/scraper/law_start/provisions/tables.ex
+      lib/sertantai_legal/scraper/law_start/provisions/treatment.ex
+      lib/sertantai_legal/scraper/law_start/provisions/words.ex
       lib/sertantai_legal/scraper/law_start/list_items.ex
       lib/sertantai_legal/scraper/law_start/nested_items.ex
       lib/sertantai_legal/scraper/law_start/pointing_back.ex

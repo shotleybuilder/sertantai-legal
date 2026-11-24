@@ -47,7 +47,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Version do
       lib/sertantai_legal/scraper/territory.ex
       lib/sertantai_legal/scraper/lat_ref.ex
       lib/sertantai_legal/scraper/law_start.ex
-      lib/sertantai_legal/scraper/law_start/*.ex
+      lib/sertantai_legal/scraper/law_start/**/*.ex
       lib/sertantai_legal/scraper/change_digest.ex
       lib/sertantai_legal/scraper/effect_facts.ex
       lib/sertantai_legal/scraper/effect_index.ex
