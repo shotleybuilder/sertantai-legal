@@ -1,10 +1,78 @@
 ---
 session: 'Commencement reader: split the order reader'
-status: active
+status: closed
 opened: 2026-11-23
+closed: 2026-11-24
+outcome: success
+lane: build
+
+summary: >
+  Commencement.Order (2,173 lines) was split into 12 one-concept modules under commencement/order/, with Territory and OtherLaw grown; Order (181 lines) keeps rules/2 and its delegates, and the 4 Credo nesting issues are fixed. Reading is unchanged: the orders catalogue and the orders' re-read preview are identical before and after, and the 22 order test files pass unchanged. A stamp fault found on the way (a read stamp's file list fed the build's and fold's versions) was fixed TDD, followed by one rebuild (6 digests explained) and a relabel with 0 label changes.
+
+decisions:
+  - what: "Pre-flight test is the preview identical to the baseline, not 0 changes"
+    why: "the baseline preview, on today's code before any edit, already read 20 orders differently from the store"
+    result: "the 20 differences identical before and after the split"
+  - what: "Fix the stamps (b), then rebuild and relabel once (Jason 2026-11-24)"
+    why: "ChangeVocabulary.Version and FoldVersion globbed commencement/read_version/*.ex, so adding files to ReadVersion.Orders staled all 1,261 builds and 527 switched labels with nothing computed changed; the clause split would pay it again"
+    result: "b6d7e37d: another stamp's list feeds neither stage's version (StageSplitTest); one rebuild, 6 digests explained; relabel 0 label changes"
+  - what: "Re-read all orders before the one rebuild (the 20 changed orders written)"
+    why: "the rebuild was needed anyway; the orders' changes reach it once, reviewed as the only expected digest change"
+    result: "2 changes newly dated (SI 1998/2212), 3 commencement claims gained, 3 same-day stage swaps (the parked stage-order bug)"
+
+metrics:
+  split: { order_lines_before: 2173, order_lines_after: 181, new_modules: 12, largest: "Items 503", nesting_fixed: 4, credo_added: 0 }
+  tests: { new: 26, targeted_pass: 6702, order_test_files_unchanged: 22 }
+  catalogue: { orders: 1181, identical: true }
+  reread_preview: { acts: 214, orders: 1133, rules: 11617, stored: 11441, differing_orders: 20, identical_before_after: true }
+  rebuild: { laws: 1261, seconds: 6012, workers: 1, failed: 0, digests_changed: 6 }
+  relabel: { laws: 527, label_changes: 0, failed: 0, seconds: 1131 }
+  checks: { commencement_pass: 5, label_gates_pass: 4, golden: "27/27", extended: "44/50" }
+
+lessons:
+  - title: A stamp that holds another stamp's file list stales its stage on every reader edit
+    detail: The build and fold reach the ReadVersion modules only to compare stamps, but their versions globbed read_version/*.ex, so listing the split's new files in ReadVersion.Orders staled all 1,261 builds and 527 labels. The plan's check (no order file in those stamps) missed it; lat.stale straight after the first stamp edit showed it. Reach tests now stop at every other stamp, as at SourceVersion itself.
+    tag: tooling
+  - title: A behaviour-preserving split's yardstick is the preview identical to its baseline, not zero
+    detail: The baseline preview on untouched code already differed from the store in 20 orders (code fixes since they were last written). Comparing before and after the split, not against the store, kept the pass rule honest.
+    tag: data
+  - title: Scripted moves keep bodies unchanged; check the script's own edges
+    detail: Cutting order.ex by a Python splitter moved 141 functions without retyping, but its first passes got delegate heads, attribute self-uses, captures and multi-line @doc placement wrong; each showed as a compile error. Adding @spec after pruning aliases left four specs naming unaliased modules (the compiler does not check remote types; Dialyzer caught a wrong spec).
+    tag: tooling
+  - title: Commit by path needs the modified files named, not only the staged new ones
+    detail: Passing git diff --cached names to git commit -- left the four modified files out of 206e1bf4; a second commit (37e19742) completed it. List every path, modified and new.
+    tag: tooling
+
+bugs:
+  - pattern: "A read stamp's file list (commencement/read_version/*.ex, Extent.ReadVersion, Amendment.ReaderVersion) fed ChangeVocabulary.Version and FoldVersion, so any reader's file-list edit staled every build and switched label (the order split: 1,261 builds, 527 labels)"
+    category: stamp-holds-stamp
+    module: change_vocabulary/version.ex, change_vocabulary/fold_version.ex
+    affected: "1261 builds, 527 labels"
+    fix: "leave other stamps out of both stages' versions; StageSplitTest holds it (b6d7e37d)"
+    step: Store and build
+    status: fixed
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/commencement/order.ex
+  - backend/lib/sertantai_legal/scraper/commencement/order/ (12 new modules; territory.ex, other_law.ex)
+  - backend/lib/sertantai_legal/scraper/commencement/read_version/orders.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/version.ex
+  - backend/lib/sertantai_legal/scraper/change_vocabulary/fold_version.ex
+  - backend/test/sertantai_legal/scraper/commencement/order/ (13 new test files)
+  - backend/test/sertantai_legal/architecture/stage_split_test.exs
+  - backend/test/sertantai_legal/architecture/version_coverage_test.exs
+  - backend/data/reports/commencement-reader/order-split/
+  - docs/lat-change-pipeline/DATA-ARCHITECTURE.md
+
+depends_on:
+  - 2026-11-23-commencement-reader-old-path-decouple.md
+
+enables:
+  - "Commencement reader: split the clause reader (2026-11-24-commencement-reader-clause-split.md, pending)"
+  - Commencement reader feed differences as patterns
 ---
 
-# Session: Commencement reader: split the order reader (ACTIVE)
+# Session: Commencement reader: split the order reader (CLOSED)
 
 ## Problem
 
@@ -19,8 +87,8 @@ Plan approved 2026-11-24 (`~/.claude/plans/gleaming-doodling-matsumoto.md`): `Or
 - ✅ 3. Red: one test file per new module
 - ✅ 4. Green, module by module, leaves first; the orders' stamp and the catalogue's version lists updated
 - ✅ 5. Pre-flight: tests, Credo diff, Dialyzer; the catalogue identical; the preview 0 changes
-- ⬜ 6. The orders' re-read on Jason's go (orders substeps only): 0 written
-- ⬜ 7. Check and close (checks, golden, module sizes, the pending clause-reader split session)
+- ✅ 6. The orders' re-read on Jason's go: it wrote the 20 changed orders, then the stamp fix (decision (b)), one rebuild and the relabel preview
+- ✅ 7. Check and close (checks, golden, module sizes, the pending clause-reader split session)
 
 ## Dependencies
 
@@ -149,3 +217,17 @@ The relabel itself waits for Jason to see the preview.
   - cut to the 527 switched laws (`cycle/relabel-preview-switched.diff.csv`), it shows **0 label changes**, 0 errors and 0 rows added or removed;
   - the relabel would only refresh the fold's stamp.
   - The other 1,117 laws (old-path `labels_version`, and parser staleness) were stale before this session and are not its own.
+
+## Check and close (todo 7)
+
+Reports: `backend/data/reports/commencement-reader/order-split/close/`.
+
+- **Relabel:** the restore point `order-split-relabel`, then the 527 switched laws relabelled in 1,131 s, 0 failed. The preview had shown 0 label changes.
+- **`lat.stale`:** switched families 0 of 527 stale. Commencement reader staleness is 109 and Extent reader staleness 768, both as before and neither this session's. The old path's `labels_version` (1,117) and parser staleness (552) also stand as before.
+- **Commencement checks:** PASS for the round (Waste, Water and Climate) and for the four switched families. The round's report is identical to the decouple close apart from the date in a report path.
+- **Label gates:** PASS on the four switched families.
+- **Golden:** 27/27; extended 44/50, as before.
+- **Module sizes:** in Green (todo 4). No function is over Credo's limits.
+- **Pending session written:** `2026-11-24-commencement-reader-clause-split.md`.
+- **Docs:** `DATA-ARCHITECTURE.md` gains the stamp rule (no stage's version holds another stamp). `RULES.md` is unchanged, since no reading rule was decided.
+- **Parked bug seen again:** `stage-order-follows-store-order` (3 claims, from the orders' re-write). It is already open with the Commencement reader, so no new entry.
