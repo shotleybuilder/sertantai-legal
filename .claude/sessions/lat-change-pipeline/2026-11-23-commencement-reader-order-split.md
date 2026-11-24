@@ -105,3 +105,47 @@ The cause is that the build's stamp (`ChangeVocabulary.Version`) and the fold's 
 **With it, the orders' re-read (todo 6).** The re-read refreshes the orders' stamp and also writes the 20 orders whose rules today's code reads differently (+rules, for example SI 1994/571, 47 → 48). This was true before the split. Done before the one rebuild, those rules reach the build, and their digests are reviewed as the only expected change. Done without them, the 20 orders stay stale.
 
 **Recommendation:** re-read all orders, then one rebuild. Explain each changed digest by the 20 orders, and relabel only after you have seen the label preview.
+
+**Decided (Jason, 2026-11-24): (b).**
+
+## The stamp fix (decision (b))
+
+Commit b6d7e37d, done TDD:
+- **Red:** a new test in `StageSplitTest`, "another stamp's file list feeds neither stage's version". It found 5 stamp files in the build's version (`ReadVersion.Clause`, `Orders` and `Effects`, `Extent.ReadVersion` and `Amendment.ReaderVersion`) and 3 in the fold's (the three `ReadVersion`s).
+- **Green:**
+  - `ChangeVocabulary.Version` drops its `read_version/*.ex` glob, and its `except` list gains the two other stamps;
+  - `FoldVersion` drops its `read_version/*.ex` line;
+  - the reach tests (`StageSplitTest`, `VersionCoverageTest`) stop at every other stamp, as they already did at `SourceVersion` itself.
+- **Tests:** the targeted suites pass (6,686).
+
+## The cycle (todo 6, Jason's go)
+
+The script is `cycle.sh`. Its reports go to `backend/data/reports/commencement-reader/order-split/cycle/`. The steps:
+1. the restore point `order-split-cycle` (`commencement_rules`, `provision_changes`, `provision_change_claims`, `lat_events`);
+2. the digests before;
+3. the orders' re-read over the 214 Acts (`--held`);
+4. one rebuild of the 1,261 built laws;
+5. the digests after, diffed;
+6. `lat.stale`;
+7. the relabel preview for all switched laws (`lat.wave_preview --all --relabel`).
+
+The relabel itself waits for Jason to see the preview.
+
+### Cycle results
+
+- **Restore point:** `2026-11-24-order-split-cycle`, written in 20 s.
+- **The orders' re-read:** 214 Acts, 1,133 orders, 11,617 rules, in 118 s. It wrote the 20 orders whose reading differs.
+- **Rebuild:** 1,261 laws, 0 failed, in 6,012 s. The guard allowed only 1 worker this time, not 4.
+- **Digests:** 6 of 1,261 changed. Each was diffed against the restore point's dump (`cycle/digest-explained.txt`): the same 18,907 changes before and after, and claims 112,499 → 112,502.
+  - **2 changes newly dated by a re-read order:** the 1920 c.65 s.1(2) and the 1995 c.21 s.55(1), each dated 1998-10-01 by SI 1998/2212. That order went from 0 to 140 rules.
+  - **3 commencement claims gained:** the 1984 c.55 s.4(1)(a)(ii)–(iv), with stages from SI 1998/2212 and SI 1999/120. The chosen date is unchanged (1999-09-01, from the feed).
+  - **3 claims with same-day stages swapped:** the 1883 c.3 s.6(1), the 1988 c.52 s.192(1) and the 2004 c.21 s.62(1A). This is the parked "stage order follows store order", again set off by the re-write.
+- **`lat.stale` after:**
+  - the builds are fresh on the code version;
+  - Commencement reader staleness is 109 and Extent reader staleness 768, as before (neither is this session's);
+  - all 527 switched laws are stale on the fold version, as expected; 4 of them are also behind their changes.
+- **Relabel preview** (`lat.wave_preview --all --relabel`):
+  - it covered all 1,644 stale laws;
+  - cut to the 527 switched laws (`cycle/relabel-preview-switched.diff.csv`), it shows **0 label changes**, 0 errors and 0 rows added or removed;
+  - the relabel would only refresh the fold's stamp.
+  - The other 1,117 laws (old-path `labels_version`, and parser staleness) were stale before this session and are not its own.
