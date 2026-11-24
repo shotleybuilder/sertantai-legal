@@ -23,6 +23,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
       mix lat.commencement_check --family F --sample FILE --n 50 [--seed N]
       mix lat.commencement_check --order-limits [--out FILE]   # stored order rules limiting a list, the limit after a final ", and <item>" flagged, and what a fresh reading moves (read-only)
       mix lat.commencement_check --laws A,B --fresh --feed-errors-dry-run   # the proposed feed errors (`data/reports/commencement-reader/feed-errors-proposed.json`) filled from the rows now, checked, written beside the report; `--feed-errors-write` adds them to the register, on Jason's go (Decision 12)
+      mix lat.commencement_check --coverage [--family F | --laws A,B] [--out FILE]   # which laws' feed holds a commencement record (`FeedCoverage`, Decision 1 (a)), by family and year band; every law with LAT by default; each law's coverage written to `data/reports/commencement-reader/feed-coverage.json` (or FILE)
       mix lat.commencement_check --family F --fresh   # the laws' own clauses, and their amending laws', re-read now (a dry run of `mix lat.commencement --read` and `--read-amending`)
 
   With `--family`, each run also records the family's standard figures
@@ -38,13 +39,14 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
   alias SertantaiLegal.Scraper.ChangeCollector
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source, as: Scope
 
-  alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
+  alias SertantaiLegal.Scraper.LegislationGovUk.{ClmlStore, FeedCache}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Store
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Draw
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.FeedYardstick
 
   alias SertantaiLegal.Scraper.Commencement.{
     AmendingRead,
+    FeedCoverage,
     FeedErrors,
     Check,
     FeedDifferences,
@@ -85,7 +87,8 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
           lat: :boolean,
           out: :string,
           feed_errors_dry_run: :boolean,
-          feed_errors_write: :boolean
+          feed_errors_write: :boolean,
+          coverage: :boolean
         ]
       )
 
@@ -95,8 +98,45 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
     cond do
       opts[:part_items] -> part_items(opts)
       opts[:order_limits] -> order_limits(opts)
+      opts[:coverage] -> coverage(opts)
       true -> check(opts)
     end
+  end
+
+  # ── feed coverage (`--coverage`; read-only) ─────────────────────────
+
+  @coverage_out "data/reports/commencement-reader/feed-coverage.json"
+
+  # each law with LAT in scope (every one by default): whether its stored
+  # feed holds a dated coming-into-force record, counted by family and band
+  defp coverage(opts) do
+    laws = if opts[:family] || opts[:laws], do: scope(opts), else: lat_laws()
+    meta = law_meta(laws)
+
+    covered =
+      for law <- laws, Map.has_key?(meta, law) do
+        [_, type, year, number] = String.split(law, "_", parts: 4)
+        effects = with {:ok, es} <- FeedCache.effects(type, year, number), do: es
+        Map.merge(meta[law], Map.put(FeedCoverage.of(List.wrap(effects)), :law, law))
+      end
+
+    path = opts[:out] || @coverage_out
+    File.mkdir_p!(Path.dirname(path))
+    File.write!(path, Jason.encode_to_iodata!(Map.new(covered, &{&1.law, &1}), pretty: true))
+    covered |> FeedCoverage.tally() |> FeedCoverage.lines() |> Enum.each(&info/1)
+    Mix.shell().info("written: #{path}")
+  end
+
+  defp info(line), do: Mix.shell().info(line)
+
+  defp law_meta(laws) do
+    Repo.query!(
+      "SELECT name, coalesce(nullif(family, ''), '(no family)'), year::int FROM uk_lrt WHERE name = ANY($1)",
+      [
+        laws
+      ]
+    ).rows
+    |> Map.new(fn [law, family, year] -> {law, %{family: family, year: year}} end)
   end
 
   # ── the order limits review (`--order-limits`; read-only) ───────────
