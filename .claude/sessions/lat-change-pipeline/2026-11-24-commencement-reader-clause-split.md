@@ -48,6 +48,8 @@ bugs:
     status: open
 
 artifacts:
+  - backend/lib/sertantai_legal/scraper/commencement/CLAUDE.md
+  - backend/lib/sertantai_legal/scraper/law_start/CLAUDE.md
   - backend/lib/sertantai_legal/scraper/law_start/clause/
   - backend/lib/sertantai_legal/scraper/law_start/provisions/
   - backend/test/sertantai_legal/scraper/law_start/clause/
@@ -233,5 +235,50 @@ Reports are in `backend/data/reports/commencement-reader/clause-split/close/`.
 - **Label gates:** PASS on the 4 switched families, with 0 groups not named.
 - **Golden:** 27/27; extended 44/50, as before.
 - **Module sizes:** see Green. No function is over Credo's limits.
-- **Docs:** `backend/lib/sertantai_legal/scraper/CLAUDE.md` gains the module map of the two new folders. `RULES.md` and `DATA-ARCHITECTURE.md` are unchanged, since no reading rule or table changed. The stamp rule a re-read needs is a lesson, below.
+- **Docs:** `backend/lib/sertantai_legal/scraper/CLAUDE.md` gains the module map of the two new folders. `RULES.md` and `DATA-ARCHITECTURE.md` are unchanged, since no reading rule or table changed. The stamp rule a re-read needs is a lesson, below. After the close, the reader's gotchas went into `backend/lib/sertantai_legal/scraper/commencement/CLAUDE.md`, with a pointer in `law_start/CLAUDE.md` and a link from the `commencement-reader-check` skill (4ea9bd82, Jason).
 - **Parked bug seen again:** `stage-order-follows-store-order`, in 3 laws' digests. It is already open with Store and build, so there is no new entry.
+
+## Step report
+
+This session is a refactor, not a family step, so it has no `lat.step_close`. The close checks below stand in for it.
+
+**1. Verdict: PASSED**
+
+| Pass rule | | Figure |
+|---|---|---|
+| Existing tests unchanged; each new module has its own | ✅ | 6,863 unchanged; 39 new |
+| Catalogues and re-read previews identical to the baseline | ✅ | both catalogues and all 3 previews |
+| `provisions.ex` about 250 lines or under, `clause.ex` about 200 without its moduledoc | ✅ | 198; 413, about 200 of them moduledoc |
+| 6 nesting issues gone; no new Credo issue | ✅ | 0 |
+| Every stamp covers its reach | ✅ | architecture tests 42 of 42 |
+| Every digest difference explained | ✅ | 22 of 22 |
+| The relabel makes 0 label changes | ⚠️ | 176 labels in 4 laws, each from a rule today's code already read and the store had not caught up with; you approved it |
+| Checks, gates and golden pass | ✅ | 5 checks, 4 gates; golden 27/27 |
+
+**2. The phases as run**
+
+| Phase | What happened |
+|---|---|
+| Measure | Call graphs and cut lines. Found that the split moves 9 stamps, so one cycle was needed. |
+| Find | The baseline: both catalogues and 3 previews. 132 laws were already read differently by today's code. |
+| Fix | 18 modules, by script, with the 6 nesting issues fixed. |
+| Settle | Pre-flight: everything identical to the baseline; Credo and Dialyzer clean. |
+| Rebuild then fetch | Re-reads, then a top-up re-read of 866 laws the plan missed. 1,261 rebuilt, 22 digests explained, 527 relabelled. No fetch. |
+| Check and close | All checks pass. The gotchas file was written. |
+
+**3. Decisions**
+
+| Question | Chosen | What it means |
+|---|---|---|
+| Cycle now, or later? | Now (a) | The store caught up with today's code: 160 laws re-read, and 4 laws' labels changed (REACH 168). |
+| Re-read the 866 laws the plan missed? | Go | Builds stale on the commencement reader fell from 109 to 4. |
+| Relabel the 527? | Go | The switched families are 0 stale. |
+
+**4. Bugs by owner**
+
+| Owner | Bug |
+|---|---|
+| Fixed here | none: the split changed no reading |
+| Left open here | none |
+| Passed on | none new |
+| Inherited | `stage-order-follows-store-order` (Store and build, 3 laws), seen again |
