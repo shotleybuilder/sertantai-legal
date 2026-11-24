@@ -48,7 +48,6 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FoldVersion do
       lib/sertantai_legal/scraper/commencement/evaluator.ex
       lib/sertantai_legal/scraper/commencement/own_clause.ex
       lib/sertantai_legal/scraper/commencement/read_version.ex
-      lib/sertantai_legal/scraper/commencement/read_version/*.ex
       lib/sertantai_legal/scraper/commencement/store.ex
       lib/sertantai_legal/scraper/change_vocabulary/readers/own_commencement.ex
       lib/sertantai_legal/scraper/law_start/provisions.ex

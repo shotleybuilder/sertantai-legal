@@ -7,6 +7,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Version do
   edit to the label fold (`FoldVersion`), a measure or a step's check
   leaves stored changes current. Stamped on each stored change and on each
   `changes_built` lat_event, so changes built by older code show as stale.
+  Another stamp the build reaches (a reader's `ReadVersion`) is compared,
+  never run, so it is left out: a reader's file list moves only its own
+  stamp (`StageSplitTest`).
   """
 
   use SertantaiLegal.Scraper.SourceVersion,
@@ -38,7 +41,6 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Version do
       lib/sertantai_legal/scraper/amendment/*.ex
       lib/sertantai_legal/scraper/amendment/reader/*.ex
       lib/sertantai_legal/scraper/commencement/*.ex
-      lib/sertantai_legal/scraper/commencement/read_version/*.ex
       lib/sertantai_legal/scraper/commencement/text/*.ex
       lib/sertantai_legal/scraper/application_clause.ex
       lib/sertantai_legal/scraper/law_territory.ex
@@ -63,6 +65,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Version do
     # versions, #193) and the checks that draw samples (2026-11-05,
     # 2026-11-06, #194)
     except: ~w(
+      lib/sertantai_legal/scraper/amending_law/extent/read_version.ex
+      lib/sertantai_legal/scraper/amendment/reader_version.ex
       lib/sertantai_legal/scraper/commencement/order.ex
       lib/sertantai_legal/scraper/commencement/authority.ex
       lib/sertantai_legal/scraper/commencement/amending.ex

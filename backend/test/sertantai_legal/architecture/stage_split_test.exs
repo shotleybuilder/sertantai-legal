@@ -28,6 +28,18 @@ defmodule SertantaiLegal.Architecture.StageSplitTest do
     lib/sertantai_legal/scraper/change_vocabulary/fold.ex
   )
 
+  # every other stamp (a module `use SourceVersion`): a stage reaches one only
+  # to compare with it, so its file list shapes nothing the stage computes
+  # (the Commencement reader order split, 2026-11-24: adding the split's
+  # files to `ReadVersion.Orders` moved both stages' versions)
+  defp stamps(except) do
+    {:ok, mods} = :application.get_key(:sertantai_legal, :modules)
+
+    for m <- mods, m != except, function_exported?(m, :fresh?, 0) do
+      m.module_info(:compile)[:source] |> to_string() |> Path.relative_to_cwd()
+    end
+  end
+
   defp files(version), do: version.files() |> Enum.map(&Path.relative_to_cwd/1) |> MapSet.new()
 
   defp reach(entry, stop),
@@ -36,15 +48,22 @@ defmodule SertantaiLegal.Architecture.StageSplitTest do
   defp diff(a, b), do: a |> MapSet.difference(b) |> Enum.sort()
 
   # each assertion's left side lists the files at fault
+  test "another stamp's file list feeds neither stage's version" do
+    for version <- [Version, FoldVersion] do
+      assert version |> files() |> MapSet.intersection(MapSet.new(stamps(version))) |> Enum.sort() ==
+               []
+    end
+  end
+
   test "the changes stage's version is exactly what a build reaches" do
-    build = reach(@build, @io)
+    build = reach(@build, @io ++ stamps(Version))
     assert diff(build, files(Version)) == []
     # in the version, never reached: add to its except:
     assert diff(files(Version), build) == []
   end
 
   test "the labels stage's version is exactly what the timeline path reaches" do
-    fold = reach(@fold, @io ++ FoldVersion.boundaries())
+    fold = reach(@fold, @io ++ FoldVersion.boundaries() ++ stamps(FoldVersion))
     assert diff(fold, files(FoldVersion)) == []
     assert diff(files(FoldVersion), fold) == []
   end

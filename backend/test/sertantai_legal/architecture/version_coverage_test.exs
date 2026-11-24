@@ -9,7 +9,8 @@ defmodule SertantaiLegal.Architecture.VersionCoverageTest do
   parser's effects loading, the enabling cache) are allowed, the inputs
   they serve being fingerprinted on their own (`FeedCache`, the stores).
   So is `SourceVersion` itself: a version reaches it through `fresh?/0`,
-  and it shapes no reading.
+  and it shapes no reading; and so is every other version, reached only to
+  compare stamps (`StageSplitTest`).
   """
   use ExUnit.Case, async: true
 
@@ -52,7 +53,7 @@ defmodule SertantaiLegal.Architecture.VersionCoverageTest do
       ] do
     test "#{inspect(version)} covers every module its files reach" do
       covered = unquote(version).files() |> Enum.map(&Path.relative_to_cwd/1) |> MapSet.new()
-      stop = @io ++ unquote(stop)
+      stop = @io ++ unquote(stop) ++ stamps(unquote(version))
 
       missing =
         covered
@@ -64,6 +65,14 @@ defmodule SertantaiLegal.Architecture.VersionCoverageTest do
       assert missing == [],
              "#{inspect(unquote(version))} misses (add to its patterns, or to @io if it only fetches or stores):\n  " <>
                Enum.join(missing, "\n  ")
+    end
+  end
+
+  defp stamps(except) do
+    {:ok, mods} = :application.get_key(:sertantai_legal, :modules)
+
+    for m <- mods, m != except, function_exported?(m, :fresh?, 0) do
+      m.module_info(:compile)[:source] |> to_string() |> Path.relative_to_cwd()
     end
   end
 
