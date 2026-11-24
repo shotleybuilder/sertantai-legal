@@ -10,6 +10,8 @@ description: The LAT Change Pipeline's commencement-reader acceptance check for 
 > - The check is code over every statement, not a sample. **No agent rounds.** On Maritime Safety two agent rounds (274k tokens) were whack-a-mole: each found a few one-law forms. The leftovers check finds those forms and the rest of their class, ranked by reach.
 > - **No agent QA or testing in a step** (Jason 2026-11-13). The pass is code alone: gates, catalogues, checked rows, golden from inputs. Whether an agent helps a family's final QA is decided at its retrospective.
 > - Bugs in another step's code are raised with `bug-raise` and parked.
+>
+> **Gotchas:** read `backend/lib/sertantai_legal/scraper/commencement/CLAUDE.md` before a re-read, rebuild or relabel cycle, and before changing the reader's code. It covers stamps, the yardstick and tracing digests. Add any new gotcha there, not here.
 
 # Commencement Reader Check (per family)
 
