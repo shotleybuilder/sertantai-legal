@@ -4,10 +4,18 @@ This file lists the traps met in Extent reader work: one line each, with where i
 
 ## Stamps and cycles
 
-- **Any edit in `extent/` stales every reading and every build.** `Extent.ReadVersion` and `ChangeVocabulary.Version` both glob `extent/*.ex`, catalogue and tools included. Batch fixes, then one write and rebuild. (Readiness review, 2026-11-25: all 2,601 laws on old versions, 768 builds stale.)
+- **Four stamps, each exact by reach** (`ExtentReadStampsTest`; the Extent reader stamps session, 2026-11-25):
+  - `ReadVersion.Document`, the document reading (`Extent.Reader`);
+  - `ReadVersion.Catalogue`, the catalogue's own code (`Patterns.Example`, `Sweep`);
+  - `ReadVersion`, the stored rules (Document, `Powers`, `StatedExtent` and the powers parser), stamped on `extent_rules`;
+  - `EnablingCache.ParserVersion`, recorded on each enabling cache entry.
+
+  The cache is keyed on Document + Catalogue. A new file goes into its stamp by name: no stamp globs the folder.
+- **The catalogue's classes are the reading, not the catalogue.** `extent_rules` stores `Reader.withheld/1`: the statements, then `Patterns.classes`, then `Unread.withheld`. So an edit to `Patterns` (its classes), `Credit` or `Unread` stales every reading. Only `Patterns.Example` and `Sweep` are catalogue-only. (Extent reader stamps session.)
+- **The build holds only the struct, `Lookup`, `ChangeTarget`, `Rows` and the store's reads** (`StageSplitTest`). A reader fix stales a build only through the readings it changes (`Store.Inputs`), never through the build's code version. Keep `extent.ex` free of reading code: an alias there puts the whole reader back in the build's stamp.
+- **A law not read is a stale reason, not a reading from its text.** The build reads stored rules only. An affecting law with its text held and no `extent_rules` makes its builds stale (`:extent_reader`), and the write fills it. (Extent reader stamps session: 1,287 such laws, read from text by every build until then.)
+- **A powers parser change re-parses on read.** An enabling cache entry by older parser code (or a bare list, from before 2026-11-25) is re-parsed from the introduction held on its next read, never fetched. The change also moves `ReadVersion`, so every reading goes stale; the write re-stamps the unchanged ones.
 - **Don't edit `extent/` between a catalogue dry run and `--accept`.** The accept then runs cold again: 13 min, not 1. (Environmental Protection, 2026-11-10.)
-- **A new `extent/` module** goes by name into `FeedPatterns.Version` and `MarkupPatterns.Version` (`version_coverage_test`). It was missed twice. (Fire and OH&S, 2026-11-15.)
-- **The powers parser is in no stamp.** After any change to it, diff its parse of every held introduction before and after, check each change in its text, and re-parse the changed SIs offline (`EnablingCache.reparse/1`). The lookup reads the cache, not the introduction. (Maritime Safety, Environmental Protection.)
 - **A build is stale while any affecting law's reading is old.** Writing only the round's amending laws leaves builds stale through shared amending laws. Re-read every stale law in `extent_rules`, not the round's list. (Fire and OH&S needed a third write: 85 laws left on the old stamp.)
 
 ## Running the step
@@ -21,5 +29,6 @@ This file lists the traps met in Extent reader work: one line each, with where i
 
 ## Code
 
-- **The build calls the reader's lookup** (`Extent.of_change/3`, `application_at/2` from `readers/feed.ex`), not only its stored rules. A change to `Lookup` changes builds with no write.
+- **The build calls the reader's lookup** (`Extent.of_change/3`, `application_at/2` from `readers/feed.ex`), not only its stored rules. A change to `Lookup` changes builds with no write, so `Lookup` is in the build's stamp.
+- **Tests can't reach the CLML store.** The test config disables it (`clml_store_dir: nil`). A test needing held text puts a temporary root in the app config, in a non-async module (`StoreInputsUnreadTest`, `EnablingCacheParserTest`).
 - **A devolved SI's competence doesn't confine its insertion** (`competence_only?`, V1-04).

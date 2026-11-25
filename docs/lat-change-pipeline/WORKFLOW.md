@@ -325,7 +325,7 @@ The reader's spec (aim, scope, boundary, substeps, loops) is `EXTENT-READER.md`;
 **Check.**
 1. **Recall sweep.** `mix lat.extent_sweep --family F` finds sentences the catalogue doesn't class.
 2. **Catalogue.** `mix lat.extent_patterns --accept`, then review the fixture diff.
-3. **Extents.** `mix lat.amending --extents --amending <laws> --cached` writes `extent_rules`, reading the enabling parents first. Take a restore point of `extent_rules` before it.
+3. **Extents.** `mix lat.amending --extents --amending <laws> --cached` writes `extent_rules`, reading the enabling parents first. Take a restore point of `extent_rules` before it. The laws include every affecting law that `lat.stale` names under the extent reader: on old code, or not read (text held, no `extent_rules`; the build reads stored readings only, since the Extent reader stamps session).
 4. **Rebuild.** `mix lat.vocabulary --build --family F`.
 5. **The check and gate.** `mix lat.extent_check --family F` (seconds, read-only). It lists every family text change with no bound, by cause and amending law (`Extent.Withheld`). Each cause carries its words: the law's unread statements, or why it has no powers (introduction not held, no powers clause read, a parent not read, a provision placed nowhere). Each has a status in `test/fixtures/extent_patterns/withheld.json`: `fix:`, `known:` or `check:`, keyed `"<cause> @ <law>"` or by cause. The statuses work as the commencement gate's do.
 6. **Golden:** `mix lat.vocabulary --golden`.
@@ -339,11 +339,11 @@ The reader's spec (aim, scope, boundary, substeps, loops) is `EXTENT-READER.md`;
 
 No agent rounds. Before this, the rule was statistical (2026-10-28): pooled agent seeds, with 95% upper bounds under 2% of changes and 5% of laws.
 
-**An SI's powers** (Maritime Safety, 2026-11-05). An SI that states no extent extends as far as its enabling provisions. Each provision is placed by its parent Act's extent clause; a parent stating no extent at all takes the extent legislation.gov.uk states on the provision (RULES.md `powers-of-an-act-stating-no-extent`). Whenever the powers parser (`EnactedBy.EnablingProvisions`) changes, diff its parse of every held introduction before and after, and check each change in its text.
+**An SI's powers** (Maritime Safety, 2026-11-05). An SI that states no extent extends as far as its enabling provisions. Each provision is placed by its parent Act's extent clause; a parent stating no extent at all takes the extent legislation.gov.uk states on the provision (RULES.md `powers-of-an-act-stating-no-extent`). Whenever the powers parser (`EnactedBy.EnablingProvisions`, `IntroductionXml`, `EnablingCache`) changes, its stamp (`EnablingCache.ParserVersion`) moves. Every cache entry is then re-parsed from its introduction on its next read, and every reading goes stale (`Extent.ReadVersion` holds the parser). Still diff its parse of every held introduction before and after the change, and check each change in its text: the stamp says what is stale, not whether the new parse is right.
 
 **Environmental Protection** (2026-11-09/10). 553 amending laws, 249 never written before, so write 1 comes first: the real gate is only known after it and the rebuild (231 → 96 causes). Then the readers are fixed by cause, widest first, in two rounds. Each round ends with one cold catalogue dry run to a scratch copy (with `expected.json` copied in, so its comparison is real), the held moves put to Jason, then `--accept` and a write.
-- **Don't edit `extent/` code between a dry run and `--accept`.** Any change stales `Extent.ReadVersion`, so the accept runs cold again (13 min, not 1).
-- **A powers-parser change also covers `EnablingCache`'s register title lookup.** The diff over every held introduction and the offline re-parse of the changed SIs (`EnablingCache.reparse/1`) both apply: the powers lookup reads the cache, not the introduction.
+- **Don't edit `extent/` code between a dry run and `--accept`.** Any change to the reading or the catalogue's code moves the cache's key (`ReadVersion.Document`, `.Catalogue`), so the accept runs cold again (13 min, not 1).
+- **A powers-parser change also covers `EnablingCache`'s register title lookup.** The diff over every held introduction applies; the re-parse is now on read, by the cache's parser stamp (the Extent reader stamps session).
 - **Another family's check after a write:** its unnamed causes can be relabelled (no powers → provision not named) while its build is stale. Compare the causes by law against the reading before calling it worse.
 - **Result:** our faults 0, causes 231 → 0 not named (139 known), bound by the law's text 45% → 74%, no powers 662 → 115 changes.
 
@@ -353,8 +353,15 @@ No agent rounds. Before this, the rule was statistical (2026-10-28): pooled agen
   - lists: a Schedule's unnamed paragraphs, and a partly excepted provision in a "not" list;
   - the powers parser.
 - **`withheld.json` names are shared across families.** A cause named for the round also covers a switched family: CPA 1987 had 2 changes in the round and 28 in Occupational. Rebuild the switched families (Decision 5) and read their gates before naming.
-- **A new extent module** goes into `FeedPatterns.Version` and `MarkupPatterns.Version` (`version_coverage_test`).
+- **A new extent module** went into `FeedPatterns.Version` and `MarkupPatterns.Version` by hand. Since the stamps session they hold only the struct and its lookups, and a new module goes by name into the stamp whose test reaches it (`ExtentReadStampsTest`, `VersionCoverageTest`).
 - **Result:** our faults 144 → 0, causes 139 → 0 not named, bound by the law's text 63% → 76%, unread statements 516 → 245 changes. The switched families: EP and Maritime PASS; Occupational has 1 cause (SI 2006/475's text not held, parked with Sources).
+
+**Stamps** (the Extent reader stamps session, 2026-11-25; the gotchas file `amending_law/extent/CLAUDE.md`):
+- `ReadVersion.Document`, the document reading, and `ReadVersion.Catalogue`, the catalogue's own code, key the reading cache;
+- `ReadVersion` (the reading, the powers' placement and the powers parser) is stamped on `extent_rules`;
+- the build's version holds only the struct, its lookups and the store's reads.
+
+So a catalogue or tool edit stales nothing stored, and a reader fix stales builds only through the readings it changes.
 
 **Skill.** `extent-reader-check`.
 

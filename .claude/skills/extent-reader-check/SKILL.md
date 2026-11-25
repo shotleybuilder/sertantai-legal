@@ -36,7 +36,7 @@ Ask Jason before the runs that write; say how long each takes. Take a restore po
    - each example reading differently, checked in the law's text, then updated by hand in `expected.json`;
    - the pattern counts by outcome (unread → read is a gain; read → unread needs a reason).
 
-   `--out DIR` writes elsewhere and compares against `DIR/expected.json`. For a dry run, copy the fixtures into DIR first (`cp test/fixtures/extent_patterns/*.json DIR/`), so the comparison is real and the held expectations are untouched. Held moves go to Jason, then `--accept` (it keeps held classes) and the moves are written with `Mix.Tasks.Lat.FeedPatterns.encode`. Don't edit `extent/` code between the dry run and `--accept`: it stales the read cache, and the accept runs cold.
+   `--out DIR` writes elsewhere and compares against `DIR/expected.json`. For a dry run, copy the fixtures into DIR first (`cp test/fixtures/extent_patterns/*.json DIR/`), so the comparison is real and the held expectations are untouched. Held moves go to Jason, then `--accept` (it keeps held classes) and the moves are written with `Mix.Tasks.Lat.FeedPatterns.encode`. Don't edit the reading's or the catalogue's code between the dry run and `--accept`: it moves the read cache's key (`ReadVersion.Document`, `.Catalogue`), and the accept runs cold. A tool's edit (`Check`, `Withheld`, the store) leaves it warm.
 2. **Extents** (writes `extent_rules`; ~1 min warm, ~5 cold): `mix lat.amending --extents --amending <every law in extent_rules> --cached`. It never fetches, and writes only the laws whose reading changed (`Extent.Store.write_read/3`).
 3. **Rebuild** (writes `provision_changes`, claims; minutes): `mix lat.vocabulary --build --family "F"`, then golden (`mix lat.vocabulary --golden --workers 1`), which must stay all-pass.
 4. **The check and gate** (read-only, about 80 s): `mix lat.extent_check --family "F"`. It must end PASS:
@@ -50,7 +50,7 @@ Ask Jason before the runs that write; say how long each takes. Take a restore po
    - `check: <why>` where it is not yet decided.
 
    Keys are `"<cause> @ <law>"`, else the cause alone. Fix by cause, test first, widest reach first.
-5. **The powers parser** (only when `EnactedBy.EnablingProvisions` changes): parse every held introduction before and after (`EnablingCache.from_store/1`) and diff. Gains are allowed; check each other change in its text. Then re-parse the changed SIs offline (`EnablingCache.reparse/1`).
+5. **The powers parser** (only when `EnactedBy.EnablingProvisions` changes): parse every held introduction before and after (`EnablingCache.from_store/1`) and diff. Gains are allowed; check each other change in its text. The cache re-parses every entry on its next read (its parser stamp, `EnablingCache.ParserVersion`, moved), offline; `EnablingCache.reparse/1` does one now.
 
 **Pass** (Decision 1, Jason 2026-11-05, Maritime Safety): the gate's PASS; the catalogue test (`ExtentPatternsTest`); every form fixed with its unit test; golden all-pass. **No agent check** (Jason 2026-11-13).
 

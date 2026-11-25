@@ -13,7 +13,7 @@ The Extent reader step's procedures are still written by hand each time. `lat.am
 ## Todo
 
 - ⬜ Plan mode
-- ⬜ `lat.amending --extents --preview [--diff FILE]` (rules removed and added by field) and `--stale` (every law whose reading is on an old version), with tests
+- ⬜ `lat.amending --extents --preview [--diff FILE]` (rules removed and added by field) and `--stale` (every law whose reading is on an old version, and every affecting law not read: text held, no `extent_rules`, about 1,287 laws, which the build no longer reads from text, per the stamps session), with tests
 - ⬜ An extents substep in `lat.reread`'s chain; `lat.stale` naming the laws in its extent fix line
 - ⬜ The feed yardstick in `lat.extent_check`: agree, the law wider, narrower, disjoint, the feed only, the law only, neither; no-bound causes split by feed coverage (a cause only where the feed speaks is `known:`); recorded for Measures
 - ⬜ The `extent-reader-check` skill and WORKFLOW §5 rewritten: write first at Measure; the fetch list (introductions, enabling Acts) out of Find; golden at every Settle; no reader commit after the last write
