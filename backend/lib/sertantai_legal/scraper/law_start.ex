@@ -74,7 +74,8 @@ defmodule SertantaiLegal.Scraper.LawStart do
           optional(:laid) => Date.t() | nil,
           optional(:rows) => [map()],
           optional(:schedule_tables) => %{String.t() => [[String.t()]]},
-          optional(:tied_date) => Date.t() | nil
+          optional(:tied_date) => Date.t() | nil,
+          optional(:tied_dates) => %{String.t() => Date.t()}
         }
 
   # Royal Assent is an Act's start only where its own clause states no date
