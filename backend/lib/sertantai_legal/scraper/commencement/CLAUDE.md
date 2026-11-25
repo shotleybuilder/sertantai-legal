@@ -27,3 +27,9 @@ This file lists the traps met in commencement reader work: one line each, with w
 - **A function can't be called in a guard.** A pattern a guard shares from another module is borrowed at compile time (`@unknown Tail.unknown()`), never copied.
 - **Patterns shared by several modules live in the lowest module that needs them,** exposed as `@doc false` functions (`Provisions.Words`).
 - **Refs are `{ref, weight}` tuples** (`[{"UK_x:reg.12", 11}]`), not bare strings, so write test expectations from the real outputs.
+- **A tied provision reads the other law's stored rules** (`LawStart.Input` `tied_dates`), so its catalogue example reads differently alone than in its law. That is expected: name it, don't chase it. Date it only by a rule naming the provision, never by the other law's whole-law start, because an inserted provision is no part of that start (WSI 2016/413, tied to the Education Act 1996 s.562J). (Feed differences, 2026-11-25.)
+- **A module attribute is read where it's used,** in file order. A regex defined below the function that uses it is `nil` at compile time, and fails only at run time (`Regex.match?(nil, …)`).
+
+## Feed differences
+
+- **Judge a pattern by its form, not its first law.** One pattern held two forms (a bracketed exception mid-list; a limit opening its own list), and only one was held where the feed is silent. Split it before re-judging, or a known limit gets marked as the Reader's to fix. (Feed differences, 2026-11-25.)
