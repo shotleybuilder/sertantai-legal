@@ -28,6 +28,7 @@ This file lists the traps met in commencement reader work: one line each, with w
 - **Patterns shared by several modules live in the lowest module that needs them,** exposed as `@doc false` functions (`Provisions.Words`).
 - **Refs are `{ref, weight}` tuples** (`[{"UK_x:reg.12", 11}]`), not bare strings, so write test expectations from the real outputs.
 - **A tied provision reads the other law's stored rules** (`LawStart.Input` `tied_dates`), so its catalogue example reads differently alone than in its law. That is expected: name it, don't chase it. Date it only by a rule naming the provision, never by the other law's whole-law start, because an inserted provision is no part of that start (WSI 2016/413, tied to the Education Act 1996 s.562J). (Feed differences, 2026-11-25.)
+- **A tie to a tied law needs a second pass.** One re-read in law order leaves a chain of ties one hop behind: SI 2020/1460 reg.1(3) is tied to SI 2020/852 reg.2(1), itself tied, and was dated only by the next cycle's re-read. After a tied-path fix, re-read the tied laws twice, or until nothing is written. (Feed differences, 2026-11-25.)
 - **A module attribute is read where it's used,** in file order. A regex defined below the function that uses it is `nil` at compile time, and fails only at run time (`Regex.match?(nil, …)`).
 
 ## Feed differences
