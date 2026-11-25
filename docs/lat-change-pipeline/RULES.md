@@ -432,6 +432,11 @@ For an EU instrument the Windsor Framework keeps in NI, a UK change on or after 
 
 ---
 
+### `extent-feed-first-where-it-speaks`
+The feed-coverage rule (`feed-differences-are-patterns-by-feed-coverage`) applies to extent too. Where legislation.gov.uk's feed gives a change's effect extent, the feed's extent is used, unless the amending law's own words prove it wrong (a feed error, with its proof). Where the feed gives none, the Extent reader's reading of the amending law is the only source. So a misread the changes without a feed extent hold is the Reader's to fix, and one found only where the feed speaks is a known limit. The build does not yet do this: Evidence still takes the law's bound first (§7 `primary-first-derived-fills`). That is the Evidence step's to design (issue #202), and until it is built the label takes the law's bound.
+- **Example:** of the 35,322 stored text changes where both give an extent, 89% agree. Of the 3,881 that differ, the law is wider on 3,114 (feed NI against law UK: 934), narrower on 706 and disjoint on 61. The feed alone speaks on 16,215 changes, the law alone on 6,463, and neither on 18,007 (2026-11-25).
+- **Serves:** `binds-on-date`, `fix-where-owned` · **Code:** pending (Evidence, #202; the Extent reader's check to group by coverage, the session "Extent reader: step procedures") · **Test:** pending · **Origin:** Jason 2026-11-25, Extent reader readiness review, Decision 2 (b) ("Feed first where it speaks")
+
 ## 4. Changed by and commenced by
 
 ### `changed-by-all-lists-the-makers`

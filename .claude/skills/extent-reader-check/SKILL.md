@@ -3,7 +3,7 @@ name: Extent Reader Check
 description: The LAT Change Pipeline's extent and application reader acceptance check for one family of laws — the extent catalogue, the extent check (our faults 0), and golden, all in code (no agent check). Use for each fix round and each new family; only misreads and silent drops are NEW.
 ---
 
-> **LAT Change Pipeline — step: Extent reader.** Where it sits, its inputs, outputs and pass rule: `docs/lat-change-pipeline/WORKFLOW.md`. Terms and former codes (CV-…): `docs/lat-change-pipeline/GLOSSARY.md`.
+> **LAT Change Pipeline — step: Extent reader.** Where it sits, its inputs, outputs and pass rule: `docs/lat-change-pipeline/WORKFLOW.md`. The reader's spec (aim, scope, boundary, substeps, why they loop): `docs/lat-change-pipeline/EXTENT-READER.md`. Read its gotchas first: `backend/lib/sertantai_legal/scraper/amending_law/extent/CLAUDE.md`. Terms and former codes (CV-…): `docs/lat-change-pipeline/GLOSSARY.md`.
 >
 > **Process (retrospective, 2026-11-03):**
 > - Plan the step in plan mode first, with its pass rule fixed and golden frozen (`session-start`, step session).

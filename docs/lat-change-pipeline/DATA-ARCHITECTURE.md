@@ -46,7 +46,7 @@ du -sh backend/data/*   backend/test/fixtures/*
         │   mix lat.amending --read        → Amendment.ReadPass                ▼
         │   mix lat.commencement --read …  → Commencement.Store     RULE TABLES
         │                                                           amendment_rules     47,019
-        │                                                           commencement_rules  45,030
+        │                                                           commencement_rules  84,554
         │                                                           extent_rules         8,789
         │
         ▼
@@ -98,7 +98,7 @@ Row counts and sizes from the commands above (2026-11-03). "Sole writer" is the 
 | `legal_articles` (partitioned: `legal_articles_uk` 667 MB) | LAT rows: the text of each provision, its extent, markup status | `LatPersister` (+ `LatPersister.Carry`) via `LatStagedParser`; Zenoh taxa subscribers write taxa columns | Everything: fold (`extent_code`, `position`, `section_type`), `Store.Inputs` fingerprint, Zenoh LAT pull, compliance | `law_name`, `section_id`, `extent_code`, `markup_status`, `excluded_extent` | 376,957 (1,066 laws) | 667 MB | Ash resource exists; pipeline uses raw SQL | Both |
 | `amendment_annotations` | Notes (F1, C2 …) from the CLML, with cited law and effect ids | `CommentaryPersister`, `LatPersister.Carry`, `LatArchive` | `ChangeCollector`, new build (`citation_law`, `changed_by` choose which laws' rules to load), delta sync, Zenoh | `law_name`, `code`, `citation_law`, `changed_by`, `effect_ids` | 89,679 | 89 MB | Ash resource; raw SQL in pipeline | Both |
 | `amendment_rules` | What each amending provision does: target, operation, level | `Amendment.Store` (from `Amendment.ReadPass`, `mix lat.amending --read`) | `Readers.AmendingLaw`, `Amendment.Collect` (old), `Store.Inputs`, `ChangeStaleness` | `amends`, `targets`, `operation`, `source_law`, `source_ref`, `read_at` | 47,019 | 21 MB | Ash resource (schema only); raw SQL | Both |
-| `commencement_rules` | When provisions come into force, from own clauses and orders | `Commencement.Store` (from `mix lat.commencement --read / --orders / --read-orders / --read-amending`) | `Readers.OwnCommencement`, `Readers.AmendingCommencement`, `Store.Inputs` | `commences`, `scope_kind`, `scope`, `when_kind`, `when_date`, `source_law`, `read_at`, `reader_version` (its read path's stamp) | 72,371 | 22 MB | Ash resource (schema only); raw SQL | Both |
+| `commencement_rules` | When provisions come into force, from own clauses, orders and the feed's coming-into-force effects | `Commencement.Store.write_changed/3`: only rules that changed; an identical read moves only the stamp (from `mix lat.commencement --read / --read-orders / --read-amending / --effects`) | `Readers.OwnCommencement`, `Readers.AmendingCommencement`, `Readers.AmenderStart`, `Store.Inputs`; the old path's `Commencement.Amending` | `commences`, `scope_kind`, `scope`, `when_kind`, `when_date`, `source_law`, `treatment`, `read_at`, `reader_version` (its read path's stamp: `ReadVersion.Clause`, `.Orders`, `.Effects`) | 84,554 (62,953 feed, 2026-11-25) | 42 MB | Ash resource (schema only); raw SQL | Both |
 | `extent_rules` | Where an amending law's changes extend or apply | `AmendingLaw.Extent.Store` (from `Amendment.ReadPass` and `mix lat.amending`) | `ChangeVocabulary.Primary`, `Store.Inputs`, `mix lat.extent_check` | `kind`, `place`, `items`, `source_law`, `source_ref`, `amends`, `read_at` | 8,789 | 3 MB | Ash resource (schema only); raw SQL | New |
 
 ### Change records
@@ -148,7 +148,7 @@ Risk: the verdict files that `mix lat.measures` turns into published pass bounds
 | Read the feed | `ChangeCollector.Feed` (one record per effect, latest InForce date) | `Readers.Feed` (one change per effect and stage, every claim kept) | Yes |
 | Read the markup | `ChangeCollector.Markup` (ChangeIds no effect explains) | `Readers.Markup` (every ChangeId) | Yes |
 | Read amending law text | `Amendment.Collect` over `amendment_rules` (`amending_law` collector) | `Readers.AmendingLaw` over the same `amendment_rules` | Yes (same input table) |
-| Commencement | `ChangeCollector.Commencement` (law-level record + per-row `provision_*`) | `Readers.OwnCommencement`, `Readers.AmendingCommencement` over `commencement_rules`; **law start still from `lat_change_log`** | Partly |
+| Commencement | `ChangeCollector.Commencement` (law-level record + per-row `provision_*`) | `Readers.OwnCommencement`, `Readers.AmendingCommencement` over `commencement_rules`; the law's start resolved by `LawStart` in the build and stored with it (`law-start-stored-with-the-build`) | Partly |
 | Join sources | Fidelity gate and per-row joins (`EffectIndex`) | `Merge` by identity (`Merge.Partner`, `Precise`, `Candidates`) | Yes |
 | Decide between sources | Order of precedence inside `LabelProjection` | `Evidence` table (`Evidence.resolve/3`), claims kept | Yes |
 | Change record table | `lat_change_log` | `provision_changes` + `provision_change_claims` | Yes: two tables both called "the change register" |

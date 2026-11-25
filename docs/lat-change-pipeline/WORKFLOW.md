@@ -314,6 +314,8 @@ A rebuild moves no switched label until `LabelRefresh` runs. Laws whose rows don
 
 ## 5. Extent reader
 
+The reader's spec (aim, scope, boundary, substeps, loops) is `EXTENT-READER.md`; the traps met in its code are in `backend/lib/sertantai_legal/scraper/amending_law/extent/CLAUDE.md`.
+
 **Aim.** Where each amending law's changes apply is read from its own words. A statement that can't be read fully gives no territory, never a default.
 
 **Inputs.** The amending laws' text (body and schedules), SIs' introductions (the enabling cache) and their enabling Acts.

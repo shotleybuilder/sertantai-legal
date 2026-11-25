@@ -23,6 +23,12 @@ legislation.gov.uk gives us three kinds of evidence:
 
 Effects come first. Where no effect dates a change on our row (older laws, gaps in the feed), we read the amending law: the row's note says *which* provision of it to read (one hop), and the reader says *what* that provision does. Notes are pointers, never facts.
 
+> **Two paths (revised 2026-11-25).** "Effects first" is the **old label path** (`ChangeCollector` → `lat_change_log`), which still serves every unswitched family. In the **LAT Change Pipeline** (every switched family), the amending law's text is primary. Its rules (`amendment_rules`, read by `Amendment.Reader`) are the change's operation, level and `by`, and its own commencement dates it (`Readers.AmendingCommencement`). The feed's effects and the markup are derived claims, used where the text says nothing (RULES §7 `primary-first-derived-fills`; Evidence chooses per attribute). Two exceptions are decided but not yet built:
+> - the feed's date on feed-covered laws (Merge, #200);
+> - the feed's effect extent where it gives one (Evidence, #202; RULES `extent-feed-first-where-it-speaks`).
+>
+> The steps are in WORKFLOW.
+
 We turn each amending provision into one simple, readable form — a **rule** — once, and let one piece of code say which of our rows a rule reaches.
 
 ---
@@ -72,6 +78,8 @@ UK_ukpga_1996_18 s.117(2), s.117(3) — repealed (words) — repeal_table — UK
 - **Words-level reaches the named provision only,** never its descendants (the markup and notes say which rows changed).
 
 ### 2.4 Which source wins
+
+On the old label path (the LAT Change Pipeline's order is RULES §7; see the note in §1):
 
 | Evidence | Role |
 |---|---|

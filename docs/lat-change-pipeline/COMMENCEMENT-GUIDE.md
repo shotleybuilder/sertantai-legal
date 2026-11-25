@@ -39,6 +39,7 @@ feed "coming into force" effects ─┘                                         
 - **Rules** are stored in `commencement_rules` (`Commencement.Store`) and printable one per line.
 - **The evaluator** (`Commencement.Evaluator`, pure) dates any provision from the rules — for the labelled law's own rows (`ChangeCollector.Commencement`), for an amending provision (`Commencement.Amending`), for a row left to orders (CR-07).
 - **One path:** only the readers may read commencement wording (architecture test `commencement_read_test.exs`).
+- **Two label paths (revised 2026-11-25).** The diagram above is the **old label path** (`ChangeCollector.Commencement`, `Commencement.Amending`, writing `lat_change_log`), which still serves every unswitched family. In the **LAT Change Pipeline** the build evaluates the same rules as claims: `Readers.OwnCommencement` for the law's own provisions, and `Readers.AmendingCommencement` for an amending provision. The reader's spec, substeps and stamps are in `COMMENCEMENT-READER.md`.
 
 ### 2.2 The rule (`Commencement.Rule`)
 
@@ -81,7 +82,8 @@ s.4 — 1992-07-27 — everywhere, fully — order_date — UK_uksi_1992_1630 re
 | Provision | Order of sources |
 |---|---|
 | A labelled law's row | its own clause (law-level start: `LawStart` catalogue; provision sentences: `LawStart.Provisions`); where its own feed records no commencement for the row, its commencement orders (CR-07) |
-| An amending provision (the change on our row) | **effects first** — the amending Act's feed "coming into force" entries; else its own clause (read from the CLML we hold, one hop) and the orders its notes cite (`Commencement.Amending`) |
+| An amending provision, LAT Change Pipeline | **the amending law's own clause and its orders first** (`Readers.AmendingCommencement`; never its feed's records nor a staged clause's start); else the date its note's markup points to (`NoteDate`); else the earliest day the amending law came even partly into force (`AmenderStart`, the last gap). The feed's coming-into-force records are derived claims, chosen by Evidence after the law's own (RULES §7) |
+| An amending provision, old label path | **effects first**: the amending Act's feed "coming into force" entries; else its own clause (read from the CLML we hold, one hop) and the orders its notes cite (`Commencement.Amending`) |
 | Never | note text (notes only point at which law / order to read); an Act's Royal Assent or a staged clause's earliest date as an amending provision's date |
 
 ---
@@ -160,9 +162,9 @@ Not the Act's (`another-laws-entries-are-not-the-acts`): a repeals Schedule's "e
 
 legislation.gov.uk's "coming into force" effects on an Act (from ~2002): provision refs, the commencing instrument and article, each in-force date, and a qualification — "wholly in force", "so far as not already in force" (full); "for specified purposes"; "for E." / "for W." / "for E.W." (territory); "for the insertion of s. 120A for E. and the insertion of s. 120B for specified purposes" (reaches only the named inserted sections). A prospective entry is `appointed`.
 
-### 3.5 Amending provisions (`Commencement.Amending`)
+### 3.5 Amending provisions (`Readers.AmendingCommencement`; old path `Commencement.Amending`)
 
-The change on our row starts when the provision that made it does: effects first; else the amending law's own clause (§3.1–3.2, read from its CLML) and the orders its notes cite (§3.3). A repeals table is dated by its own entry before the section introducing it (1994 c.19 Sch. 18, not s.66(8)). A whole Schedule whose entries came in on different dates gives no date.
+The change on our row starts when the provision that made it does. In the LAT Change Pipeline, the amending law's own clause and orders come first (§2.4). On the old label path: effects first; else the amending law's own clause (§3.1–3.2, read from its CLML) and the orders its notes cite (§3.3). A repeals table is dated by its own entry before the section introducing it (1994 c.19 Sch. 18, not s.66(8)). A whole Schedule whose entries came in on different dates gives no date.
 
 The amending laws read are derived (`Commencement.HeldAmenders`, rule `held-amenders-derived`): `mix lat.commencement --amenders --family F` lists them, `--read-amending --family F` reads them. A purpose-limited first stage is carried as `commencement.stages` on the claim; the Label fold reads it (parked). Feed rules for named Acts are re-read with `--effects --law A,B`, from the store only.
 
@@ -189,7 +191,10 @@ Where a reading is missing, the label says so: the row stays unknown, or in forc
 
 ---
 
-## 5. Quality and measures (2026-10-19)
+## 5. Quality and measures (2026-10-19, the old label path)
+
+These are the old path's figures from the commencement ruleset. The LAT Change Pipeline's are printed from code: the feed yardstick per family and round (`Measures.FeedYardstick`, recorded by `lat.commencement_check`, printed by `lat.measures`), and feed coverage (`lat.commencement_check --coverage`; RULES `feed-differences-are-patterns-by-feed-coverage`).
+
 
 - Amending changes dated vs the dates their notes state (a yardstick, never a source): **99.1%** (3,710 / 3,742).
 - Effects tier vs the feed: 97.0%; own-clause tier vs the feed: 99.6%; order tier vs note dates: 96.5% → improved in CR-08.
