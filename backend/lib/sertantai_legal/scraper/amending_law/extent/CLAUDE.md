@@ -16,13 +16,14 @@ This file lists the traps met in Extent reader work: one line each, with where i
 - **A law not read is a stale reason, not a reading from its text.** The build reads stored rules only. An affecting law with its text held and no `extent_rules` makes its builds stale (`:extent_reader`), and the write fills it. (Extent reader stamps session: 1,287 such laws, read from text by every build until then.)
 - **A powers parser change re-parses on read.** An enabling cache entry by older parser code (or a bare list, from before 2026-11-25) is re-parsed from the introduction held on its next read, never fetched. The change also moves `ReadVersion`, so every reading goes stale; the write re-stamps the unchanged ones.
 - **Don't edit `extent/` between a catalogue dry run and `--accept`.** The accept then runs cold again: 13 min, not 1. (Environmental Protection, 2026-11-10.)
-- **A build is stale while any affecting law's reading is old.** Writing only the round's amending laws leaves builds stale through shared amending laws. Re-read every stale law in `extent_rules`, not the round's list. (Fire and OH&S needed a third write: 85 laws left on the old stamp.)
+- **A build is stale while any affecting law's reading is old.** Writing only the round's amending laws leaves builds stale through shared amending laws. Write `--stale --family F` (the laws the family's builds read), not the round's list. (Fire and OH&S needed a third write: 85 laws left on the old stamp.)
 
 ## Running the step
 
 - **The gate is real only after the first write.** Never-stored amending laws show as faults (Environmental Protection 249, Fire and OH&S 101, the round 620). Write first, rebuild, then triage. (Environmental Protection, 2026-11-09.)
 - **Introductions are found missing in the step.** 17, 7 and 3 were fetched mid-step. Put them on Find's fetch list (`enabling-cache-empty-counts-held`, parked with Sources).
-- **A list file needs its final newline.** One without it silently dropped the last 2 laws of a write. (Fire and OH&S.)
+- **Don't type the write's list.** `--stale [--family F]` takes every stale law, and `lat.reread --family F` runs it in the chain. A list by hand goes in `--amending @FILE`, which keeps a last line with no newline. A comma list once silently dropped the last 2 laws of a write (Fire and OH&S).
+- **Preview a fix before writing.** `--preview [--diff FILE]` reads and compares, nothing written. Laws on old code can show real changes from fixes made since their write (SI 2021/318, competence → powers), not only from the fix under test.
 - **`withheld.json` names are shared across families.** A cause named for the round also covers a switched family. Rebuild the switched families and read their gates before naming. (Fire and OH&S, Decision 5.)
 - **Another family's gate can look worse while its build is stale.** Causes are relabelled (no powers → provision not named). Compare the causes by law against the reading before calling it a regression. (Environmental Protection.)
 - **The check is not seconds when the cache is cold.** On old versions `lat.extent_check` re-reads: 5 min for the round, 9 min for five families. (Readiness review, 2026-11-25.)

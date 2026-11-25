@@ -26,31 +26,40 @@ A statement the reader can't turn fully into rules is recorded unread (`Extent.U
 
 ## Steps
 
-Ask Jason before the runs that write; say how long each takes. Take a restore point before any write (`./scripts/nas/nas-backup.sh --tables … --tag …`).
+Ask Jason before the runs that write; say how long each takes. Take a restore point before any write (`./scripts/nas/nas-backup.sh --tables extent_rules,provision_changes,provision_change_claims --tag …`). The steps follow the phases (WORKFLOW "How a step is run"); the tasks are the Extent reader step procedures session's (2026-11-25).
 
-0. **Recall sweep** (read-only; ~7 min cold, seconds warm): `mix lat.extent_sweep [--family "F"]` (CV-S05a). It finds every sentence of the laws' own words that may say where provisions extend or apply but that the catalogue doesn't class, labelled by form (`AmendingLaw.SweepForm`: `read:*` to read, `count:*`, `noise:*`).
+**Measure: write first.** The gate is real only after the first write (gotchas).
+1. **The write of every stale reading** (writes `extent_rules`; ~1 min warm a hundred laws, ~5 cold): `mix lat.reread --family "F"` prints the chain (the stale commencement substeps, then `extents`: every law the family's builds read on other reader code, or not read with its text held; then the build and `lat.stale`); `--run --tag T` runs it. The write alone: `mix lat.amending --extents --stale --family "F" --cached` (`StepProcedures.ExtentStale`). `lat.stale --family F --reasons` names the counts. A list by hand goes in `--amending @FILE`, one law a line.
+2. **Rebuild and golden**: `mix lat.vocabulary --build --family "F"`, then `mix lat.vocabulary --golden --workers 1` (all-pass).
+3. **The check, the gate and the yardstick** (read-only; minutes on a cold cache): `mix lat.extent_check --family "F"`. It must end PASS:
+   - our faults 0 (stored rows match the reading);
+   - no sweep miss in a `read:` form;
+   - every no-bound cause named.
+
+   The gate section ("text changes with no bound, by cause") lists each cause and amending law, widest reach first (`Extent.Withheld`), split by feed coverage: **a cause's changes the feed gives an effect extent are `known: feed-speaks`** (RULES `extent-feed-first-where-it-speaks`), so only the changes this reader alone bounds are listed for review. Each comes with its words: the law's unread statements, or why it has no powers (`Powers.why_none/1`). Review each in `backend/test/fixtures/extent_patterns/withheld.json`:
+   - `fix: <why>` for a form to read;
+   - `known: <why>` for a by-design cause, a one-law wording, or a legislation.gov.uk error (listed in RULES.md's known limits);
+   - `check: <why>` where it is not yet decided.
+
+   Keys are `"<cause> @ <law>"`, else the cause alone. A reviewed status wins over `feed-speaks`. The run also prints and records the **feed yardstick** (`data/reports/extent-reader/yardstick/<family>.json`; `mix lat.measures --family F` publishes it): every text change by how the feed's effect extent compares with the law's bound. Only `law_narrower` and `disjoint` are misread candidates; `law_wider` is an upper bound the Label fold narrows.
+4. **Recall sweep** (read-only; ~7 min cold, seconds warm): `mix lat.extent_sweep [--family "F"]` (CV-S05a). It finds every sentence of the laws' own words that may say where provisions extend or apply but that the catalogue doesn't class, labelled by form (`AmendingLaw.SweepForm`: `read:*` to read, `count:*`, `noise:*`).
    - The catalogue only sees wordings in its own vocabulary, so the sweep is how new wordings are found: by count, not by agent sampling.
    - A new family: review the uncaught clusters (`data/extent_sweep/clusters.json`) by count, and add their forms to `SweepForm` (and the reader).
-1. **Catalogue** (read-only; about 30 min cold, seconds warm, `Extent.ReadCache`; times in `backend/data/reports/catalogue-runs.jsonl`): `mix lat.extent_patterns --accept`. Then review:
+5. **The census** (read-only; writes only DIR): `mix lat.extent_census --family "F" --out data/reports/extent-census/<tag>`. Each catalogue and sweep sentence of the family's amending laws checked against the stored reading by an independent finder: `sentences.tsv` (worst verdict), `unnamed.tsv` (stored refs no statement names), the recall bench, and **the noise-bin audit** (`noise.tsv`: each sweep `noise:*` sentence the finder reads as a statement; counts by label printed). A silent `missing` / `broader` / `place` sentence, or a noise sentence that is a statement, is a candidate misread.
+
+**Find: the fetch list.** The introductions and enabling Acts not held (the check's `none:not_held`, `law_no_powers` "no introduction held") go on one fetch list now, fetched once (ask), never mid-step.
+
+**Fix: preview, batch.** Fix by cause, test first, widest reach first. A fix's reach before any write: `mix lat.amending --extents --preview --amending A,B --cached [--diff FILE]` (the laws it concerns), and `--preview --stale --family F` (every stale law): rows gone and added per law, by field (`StepProcedures.ExtentDiff`), nothing written.
+
+6. **Catalogue** (read-only; about 30 min cold, seconds warm, `Extent.ReadCache`; times in `backend/data/reports/catalogue-runs.jsonl`): `mix lat.extent_patterns --accept`. Then review:
    - `git diff --stat backend/test/fixtures/extent_patterns`;
    - each example reading differently, checked in the law's text, then updated by hand in `expected.json`;
    - the pattern counts by outcome (unread → read is a gain; read → unread needs a reason).
 
    `--out DIR` writes elsewhere and compares against `DIR/expected.json`. For a dry run, copy the fixtures into DIR first (`cp test/fixtures/extent_patterns/*.json DIR/`), so the comparison is real and the held expectations are untouched. Held moves go to Jason, then `--accept` (it keeps held classes) and the moves are written with `Mix.Tasks.Lat.FeedPatterns.encode`. Don't edit the reading's or the catalogue's code between the dry run and `--accept`: it moves the read cache's key (`ReadVersion.Document`, `.Catalogue`), and the accept runs cold. A tool's edit (`Check`, `Withheld`, the store) leaves it warm.
-2. **Extents** (writes `extent_rules`; ~1 min warm, ~5 cold): `mix lat.amending --extents --amending <every law in extent_rules> --cached`. It never fetches, and writes only the laws whose reading changed (`Extent.Store.write_read/3`).
-3. **Rebuild** (writes `provision_changes`, claims; minutes): `mix lat.vocabulary --build --family "F"`, then golden (`mix lat.vocabulary --golden --workers 1`), which must stay all-pass.
-4. **The check and gate** (read-only, about 80 s): `mix lat.extent_check --family "F"`. It must end PASS:
-   - our faults 0 (stored rows match the reading);
-   - no sweep miss in a `read:` form;
-   - every no-bound cause named.
+7. **The powers parser** (only when `EnablingProvisions` or `IntroductionXml` changes): parse every held introduction before and after (`EnablingCache.from_store/1`) and diff. Gains are allowed; check each other change in its text. The cache re-parses every entry on its next read (its parser stamp, `EnablingCache.ParserVersion`, moved), offline; `EnablingCache.reparse/1` does one now.
 
-   The gate section ("text changes with no bound, by cause") lists each cause and amending law, widest reach first (`Extent.Withheld`). Each comes with its words: the law's unread statements, or why it has no powers (`Powers.why_none/1`). Review each in `backend/test/fixtures/extent_patterns/withheld.json`:
-   - `fix: <why>` for a form to read;
-   - `known: <why>` for a by-design cause, a one-law wording, or a legislation.gov.uk error (listed in RULES.md's known limits);
-   - `check: <why>` where it is not yet decided.
-
-   Keys are `"<cause> @ <law>"`, else the cause alone. Fix by cause, test first, widest reach first.
-5. **The powers parser** (only when `EnactedBy.EnablingProvisions` changes): parse every held introduction before and after (`EnablingCache.from_store/1`) and diff. Gains are allowed; check each other change in its text. The cache re-parses every entry on its next read (its parser stamp, `EnablingCache.ParserVersion`, moved), offline; `EnablingCache.reparse/1` does one now.
+**Settle: one write after the last reader commit.** Then `lat.reread --family F --run` (or `--extents --stale` and the build), golden (`--golden --workers 1`) at **every** Settle, and the check again. No reader commit after the last write: any edit to the reading moves `Extent.ReadVersion` and stales every reading again.
 
 **Pass** (Decision 1, Jason 2026-11-05, Maritime Safety): the gate's PASS; the catalogue test (`ExtentPatternsTest`); every form fixed with its unit test; golden all-pass. **No agent check** (Jason 2026-11-13).
 

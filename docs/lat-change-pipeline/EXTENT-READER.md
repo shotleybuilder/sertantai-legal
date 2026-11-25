@@ -50,11 +50,11 @@ For a change law B makes to law A:
 | Substep | Task | Reads | Writes | Stale when |
 |---|---|---|---|---|
 | Powers | `EnactedBy.EnablingCache` (through the write, or `reparse/1`) | an SI's made introduction; the register's titles | `data/cache/enabling/<law>.json`, with the parser that wrote it | `EnablingCache.ParserVersion` moves: the entry is re-parsed from the introduction held on its next read |
-| Write | `lat.amending --extents --amending A,B [--cached]` | B's CLML (through `Extent.ReadCache`, keyed on `ReadVersion.Document` + `.Catalogue`), the enabling cache, the parents' stored readings (read first) | `extent_rules` (`Extent.Write.write_read`: only what changed; an identical read re-stamps) | `Extent.ReadVersion` moves (the document reading, `Powers`, `StatedExtent` and the powers parser, by name); B's text is fetched again |
+| Write | `lat.amending --extents --stale [--family F] [--cached]` (or `--amending A,B` / `@FILE`; `--preview [--diff FILE]` writes nothing), or `lat.reread --family F` (its `extents` substep) | B's CLML (through `Extent.ReadCache`, keyed on `ReadVersion.Document` + `.Catalogue`), the enabling cache, the parents' stored readings (read first) | `extent_rules` (`Extent.Write.write_read`: only what changed; an identical read re-stamps) | `Extent.ReadVersion` moves (the document reading, `Powers`, `StatedExtent` and the powers parser, by name); B's text is fetched again |
 | Build | `lat.vocabulary --build` | `extent_rules` of every affecting law | `provision_changes`, claims | any affecting law's rules on an old version, or not read with its text held (`Store.Inputs`, `:extent_reader`); `ChangeVocabulary.Version`, which holds only the struct, `Lookup`, `ChangeTarget`, `Rows` and `Store` of the reader |
-| Check | `lat.extent_check --family F` | `extent_rules`, the reading now, the stored changes, `withheld.json` | reports only | it reads the last build |
+| Check | `lat.extent_check --family F` | `extent_rules`, the reading now, the stored changes and their feed claims, `withheld.json` | reports; the feed yardstick record (`data/reports/extent-reader/yardstick/`) | it reads the last build |
 | Catalogue | `lat.extent_patterns [--accept]` | every held law through `Extent.ReadCache` | dry run; the fixtures with `--accept` | `ReadVersion.Document` or `.Catalogue` (the cache's key) |
-| Sweep, shapes, census | `lat.extent_sweep`, `lat.extent_shapes`, `lat.extent_census` | the readings, the stored changes | reports | the readings |
+| Sweep, shapes, census | `lat.extent_sweep`, `lat.extent_shapes`, `lat.extent_census [--family F]` (with the noise-bin audit) | the readings, the stored changes | reports | the readings |
 
 ## 5. Why the substeps loop
 
@@ -68,9 +68,9 @@ For a change law B makes to law A:
 3. **Parents first.** An SI's powers are placed by its parent Acts' readings, so the parents are read before it (the write does this).
 4. **The gate is only real after the first write.** Laws never stored show as faults (620 in the round today), so the triage starts after write 1 and its rebuild.
 5. **The powers parser is stamped** (fixed by the stamps session): each enabling cache entry records its parser (`EnablingCache.ParserVersion`) and is re-parsed from the introduction held when behind, and `Extent.ReadVersion` holds the parser's files. Until then a parser change moved no version, and its reach was found by a diff by hand.
-6. **The write takes lists by hand.** It has no `--preview`, `--stale` or `--all`, and `lat.reread` has no extents substep. A list file with no final newline once dropped 2 laws.
+6. **The write took lists by hand** (fixed by the step procedures session, 2026-11-25). `--stale [--family F]` takes every law on old code or not read (`StepProcedures.ExtentStale`, the laws behind `lat.stale`'s `:extent_reader`), `--preview [--diff FILE]` shows a fix's reach with nothing written, `--amending @FILE` keeps a last line with no newline, and `lat.reread` runs an `extents` substep before the build. Until then a list file with no final newline dropped 2 laws.
 
-What this means for a step: write once at Measure, fix in a batch, then **one** write and rebuild after the last reader commit.
+What this means for a step: write once at Measure (`lat.reread --family F --run`), preview each fix (`--preview`), fix in a batch, then **one** write and rebuild after the last reader commit, and golden at every Settle.
 
 ## 6. The feed and markup as yardstick
 
@@ -87,6 +87,8 @@ Of the 3,881 that differ:
 The territory comes from the feed or markup on 0% to 1.6% of a family's changes today.
 
 **The rule (Jason 2026-11-25, RULES `extent-feed-first-where-it-speaks`):** where the feed gives an effect extent, it is used unless the amending law's words prove it wrong. Where it gives none, this reader is the only source. So the step fixes a misread the uncovered changes hold; one found only where the feed speaks is a known limit. The build still takes the law's bound first until Evidence builds the rule (issue #202).
+
+**In the check** (the step procedures session, 2026-11-25): `lat.extent_check --family F` records each family's yardstick (agree, the law wider, narrower, overlapping, disjoint, the feed only, the law only, neither; `Measures.ExtentYardstick`), and `lat.measures --family F` publishes it. In the gate, a no-bound cause's changes the feed gives an effect extent are `known: feed-speaks` unless reviewed. Only the law-narrower and disjoint changes are misread candidates where both speak.
 
 ## 7. Open questions
 
