@@ -60,4 +60,29 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.WithheldTest do
 
     assert (@changes |> Withheld.items(@rows, reviewed) |> Withheld.gate()).pass?
   end
+
+  describe "split by feed coverage (RULES extent-feed-first-where-it-speaks)" do
+    test "the changes the feed gives an extent are known: feed-speaks; the rest stay for review" do
+      changes = [
+        %{outcome: "none:law_no_powers", by: "UK_uksi_1977_445", feed_extent: "E+W"},
+        %{outcome: "none:law_no_powers", by: "UK_uksi_1977_445", feed_extent: "E+W"},
+        %{outcome: "none:law_no_powers", by: "UK_uksi_1977_445", feed_extent: nil}
+      ]
+
+      items = Withheld.items(changes, @rows, %{})
+
+      assert [%{reach: 2, status: "known: feed-speaks" <> _}, %{reach: 1, status: nil}] =
+               Enum.sort_by(items, &(-&1.reach))
+
+      gate = Withheld.gate(items)
+      refute gate.pass?
+      assert [%{reach: 1}] = gate.failing
+    end
+
+    test "a reviewed status wins over feed-speaks" do
+      changes = [%{outcome: "none:same", by: "UK_ukpga_2006_46", feed_extent: "S"}]
+      reviewed = %{"none:same @ UK_ukpga_2006_46" => "fix: read it"}
+      assert [%{status: "fix: read it"}] = Withheld.items(changes, @rows, reviewed)
+    end
+  end
 end

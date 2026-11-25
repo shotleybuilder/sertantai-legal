@@ -71,6 +71,23 @@ defmodule SertantaiLegal.Scraper.Checks.ExtentCensusTest do
       assert sha(r.stats) == h["stats.json"]
     end
 
+    test "the noise-bin audit: only sweep noise:* sentences, those the finder reads", %{
+      laws: laws,
+      structure: st
+    } do
+      r = ExtentCensus.run(laws, st)
+      assert r.noise_counts != %{}
+
+      for {cls, c} <- r.noise_counts do
+        assert ExtentCensus.noise?(cls)
+        assert c.read <= c.binned
+      end
+
+      [_header | lines] = r.noise |> IO.iodata_to_binary() |> String.split("\n", trim: true)
+      assert length(lines) == r.noise_counts |> Map.values() |> Enum.sum_by(& &1.read)
+      assert Enum.all?(lines, &(&1 |> String.split("\t") |> Enum.at(2) |> ExtentCensus.noise?()))
+    end
+
     test "the bench as bench.py wrote it (5/10)", %{laws: laws, structure: st, hashes: h} do
       text = laws |> Map.new(&{&1["law"], &1}) |> Bench.run(st)
       assert sha(text) == h["bench.txt"]

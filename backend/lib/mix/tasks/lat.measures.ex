@@ -10,7 +10,10 @@ defmodule Mix.Tasks.Lat.Measures do
   - with `--family`, the Commencement reader against the feed: the family's
     last commencement check's yardstick counts, proven feed errors and
     difference groups by status and row kind (`Measures.FeedYardstick`),
-    with when it ran and whether that follows the family's last build.
+    with when it ran and whether that follows the family's last build;
+    and the Extent reader against the feed: the last extent check's changes
+    by how the feed's effect extent compares with the law's bound, and its
+    no-bound changes by whether the feed speaks (`Measures.ExtentYardstick`).
 
   The territory table (CV-S05) is printed by `mix lat.extent_check`; the
   pass bounds by `mix lat.verdicts`. Read-only.
@@ -26,6 +29,7 @@ defmodule Mix.Tasks.Lat.Measures do
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.{
     Coverage,
+    ExtentYardstick,
     FeedYardstick,
     HandSample,
     Source
@@ -89,6 +93,9 @@ defmodule Mix.Tasks.Lat.Measures do
       IO.puts("")
       record = family |> FeedYardstick.path() |> FeedYardstick.read()
       record |> FeedYardstick.lines(Source.last_built(laws)) |> Enum.each(&IO.puts/1)
+      IO.puts("")
+      extent = family |> ExtentYardstick.path() |> ExtentYardstick.read()
+      extent |> ExtentYardstick.lines(Source.last_built(laws)) |> Enum.each(&IO.puts/1)
     end
 
     if path = opts[:sample], do: sample(by_law, path, opts)

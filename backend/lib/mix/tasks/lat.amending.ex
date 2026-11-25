@@ -38,6 +38,9 @@ defmodule Mix.Tasks.Lat.Amending do
       mix lat.amending --extents --law UK_ukpga_1990_8
       mix lat.amending --extents --amending UK_ukpga_2005_15
       mix lat.amending --extents --amending A,B --cached   # the enabling cache only, never a fetch
+      mix lat.amending --extents --amending @FILE          # one law a line (the last kept with no final newline)
+      mix lat.amending --extents --stale [--family F]      # every law read by other reader code, or not read (its text held)
+      mix lat.amending --extents --stale --preview [--diff FILE]   # read and compare, nothing written: rows gone and added by field
 
   One amending law at a time, each in its own process: a parsed amending
   law can take gigabytes (a 5-wide run exhausted memory, 2026-10-20).
@@ -62,6 +65,7 @@ defmodule Mix.Tasks.Lat.Amending do
   }
 
   alias SertantaiLegal.Scraper.Amendment.Review.{Probe, RuleDiff}
+  alias SertantaiLegal.Scraper.StepProcedures.{ExtentDiff, ExtentStale, LawList}
 
   @shortdoc "Print a law's amendment rules; read amending laws into rules"
 
@@ -82,7 +86,9 @@ defmodule Mix.Tasks.Lat.Amending do
           all: :boolean,
           fetch_enacted: :boolean,
           diff: :string,
-          provision: :string
+          provision: :string,
+          stale: :boolean,
+          family: :string
         ]
       )
 
@@ -164,23 +170,9 @@ defmodule Mix.Tasks.Lat.Amending do
   # ── --extents ───────────────────────────────────────────────────────
 
   # the extent clauses of the laws changing a law (its feed's affecting
-  # laws), or of the Acts named, held in the CLML store
+  # laws), the Acts named, or the stale ones, held in the CLML store
   defp extents(opts) do
-    acts =
-      case {opts[:amending], opts[:law]} do
-        {nil, nil} ->
-          Mix.raise("--extents needs --law X or --amending A,B")
-
-        {nil, law} ->
-          law
-          |> SertantaiLegal.Scraper.LatStagedParser.law_effects(store: :only)
-          |> Enum.map(& &1.affecting)
-          |> Enum.uniq()
-
-        {list, _} ->
-          String.split(list, ",", trim: true)
-      end
-      |> Enum.filter(&(Extent.Store.reads?(&1) and ReadPass.held?(&1)))
+    acts = opts |> extent_laws() |> Enum.filter(&(Extent.Store.reads?(&1) and ReadPass.held?(&1)))
 
     Mix.shell().info("#{length(acts)} laws to read for their extent clause")
 
@@ -202,6 +194,45 @@ defmodule Mix.Tasks.Lat.Amending do
 
     Mix.shell().info("#{length(parents)} parent Acts of their enabling powers, read first")
 
+    if opts[:preview],
+      do: extents_preview(acts, opts),
+      else: extents_write(parents, [first, rest], length(acts), opts)
+  end
+
+  defp extent_laws(opts) do
+    cond do
+      opts[:stale] ->
+        stale_extent_laws(opts[:family])
+
+      opts[:amending] ->
+        LawList.parse(opts[:amending])
+
+      opts[:law] ->
+        affecting_laws(opts[:law])
+
+      true ->
+        Mix.raise("--extents needs --law X, --amending A,B (or @FILE) or --stale [--family F]")
+    end
+  end
+
+  defp affecting_laws(law) do
+    law
+    |> SertantaiLegal.Scraper.LatStagedParser.law_effects(store: :only)
+    |> Enum.map(& &1.affecting)
+    |> Enum.uniq()
+  end
+
+  defp stale_extent_laws(family) do
+    stale = ExtentStale.laws(family)
+
+    Mix.shell().info(
+      "stale: #{length(stale.old_code)} read by other reader code, #{length(stale.not_read)} not read (their text held)"
+    )
+
+    ExtentStale.all(stale)
+  end
+
+  defp extents_write(parents, batches, total, opts) do
     workers = Guard.workers(workers: opts[:workers])
 
     LawRunner.run(
@@ -218,21 +249,65 @@ defmodule Mix.Tasks.Lat.Amending do
 
     # each in its own process (the parsed document goes when it exits);
     # the parents among them first
-    for batch <- [first, rest] do
+    for batch <- batches do
       LawRunner.run(
         batch,
         &extent_line(&1, opts[:cached]),
-        fn law, line ->
-          :counters.add(counter, 1, 1)
-
-          Mix.shell().info(
-            "  [#{:counters.get(counter, 1)}/#{length(acts)}] " <>
-              if(is_binary(line), do: line, else: "#{law}: #{inspect(line)}")
-          )
-        end,
+        &progress(counter, total, &1, &2),
         workers: workers
       )
     end
+  end
+
+  defp progress(counter, total, law, line) do
+    :counters.add(counter, 1, 1)
+
+    Mix.shell().info(
+      "  [#{:counters.get(counter, 1)}/#{total}] " <>
+        if(is_binary(line), do: line, else: "#{law}: #{inspect(line)}")
+    )
+  end
+
+  # read, compared with the rows stored, nothing written: each changed law's
+  # rows gone and added, by field (the parents' readings as stored: a
+  # preview never re-reads them first)
+  defp extents_preview(acts, opts) do
+    {:ok, found} = Agent.start_link(fn -> [] end)
+
+    LawRunner.run(
+      acts,
+      fn a ->
+        plan = Extent.Write.plan(a, Extent.ReadCache.law(a).read, cached: opts[:cached])
+        ExtentDiff.diff(plan.stored, plan.rows)
+      end,
+      fn law, diff -> Agent.update(found, &[{law, diff} | &1]) end,
+      workers: Guard.workers(workers: opts[:workers])
+    )
+
+    found |> Agent.get(&Enum.sort/1) |> report_extents_preview(opts[:diff])
+  end
+
+  defp report_extents_preview(results, diff_path) do
+    changed = for {law, %{} = d} <- results, not ExtentDiff.same?(d), do: {law, d}
+
+    for {law, d} <- changed do
+      Mix.shell().info(
+        "#{law}: #{length(d.gone)} rows gone, #{length(d.added)} added — " <>
+          Enum.map_join(ExtentDiff.by_field(d.changes), ", ", fn {f, n} -> "#{f} #{n}" end)
+      )
+    end
+
+    Mix.shell().info(
+      "preview: #{length(results)} laws read, #{length(changed)} would change, nothing written"
+    )
+
+    if diff_path,
+      do: File.write!(diff_path, Jason.encode!(extent_diff_json(changed), pretty: true))
+  end
+
+  defp extent_diff_json(changed) do
+    for {law, d} <- changed,
+        do: %{law: law, by_field: ExtentDiff.by_field(d.changes), changes: d.changes}
   end
 
   defp extent_line(a, cached) do
@@ -314,7 +389,7 @@ defmodule Mix.Tasks.Lat.Amending do
           ReadPass.regression_laws()
 
         opts[:amending] ->
-          String.split(opts[:amending], ",", trim: true)
+          LawList.parse(opts[:amending])
 
         opts[:all] ->
           ReadPass.amending_laws(feed)

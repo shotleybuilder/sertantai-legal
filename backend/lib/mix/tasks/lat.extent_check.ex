@@ -29,8 +29,15 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
      its words (the law's unread statements, or why it has no powers) and
      its reviewed status (`test/fixtures/extent_patterns/withheld.json`).
      PASS only with our faults 0, no sweep miss in a `read:` form, and
-     every cause named `known:`.
-  4. With `--sample FILE`, a reproducible sample of each (`--n` each,
+     every cause named `known:`. A cause's changes the feed gives an
+     effect extent are `known: feed-speaks` unless reviewed (RULES
+     `extent-feed-first-where-it-speaks`); the rest need a review.
+  4. **The feed yardstick:** every text change by how the feed's effect
+     extent compares with the law's text bound (agree, the law wider,
+     narrower, overlapping, disjoint, the feed only, the law only,
+     neither), recorded to `data/reports/extent-reader/yardstick/<family>.json`
+     (`Measures.ExtentYardstick`) and published by `mix lat.measures --family F`.
+  5. With `--sample FILE`, a reproducible sample of each (`--n` each,
      stratified so every kind is seen), with the words behind each, for
      checking.
 
@@ -47,7 +54,7 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source, as: Scope
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Check, Powers, ReadCache, Store, Withheld}
-  alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Draw
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.{Draw, ExtentYardstick}
   alias SertantaiLegal.Scraper.LawRunner
   alias SertantaiLegal.Scraper.LawRunner.Guard
 
@@ -106,6 +113,7 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
     gate = change_rows |> Withheld.items(by_law, reviewed()) |> Withheld.gate()
 
     step = report(rows, change_rows, gate)
+    yardstick(family, change_rows)
     if opts[:sample], do: sample(opts, rows, change_rows)
     step
   end
@@ -120,16 +128,21 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
                FILTER (WHERE cl.attribute IN ('territory', 'extent')), '{}'),
              coalesce((SELECT array_agg(DISTINCT e ->> 'v')
                 FROM provision_change_claims a, jsonb_array_elements(a.value -> 'v') e
-                WHERE a.change_id = c.id AND a.attribute = 'affecting'), '{}')
+                WHERE a.change_id = c.id AND a.attribute = 'affecting'), '{}'),
+             min(cl.value ->> 'v') FILTER (WHERE cl.source = 'feed' AND cl.attribute = 'effect_extent'),
+             min(cl.value ->> 'v') FILTER (WHERE cl.source = 'law_text' AND cl.attribute = 'extent')
       FROM provision_changes c
       LEFT JOIN provision_change_claims cl ON cl.change_id = c.id
       WHERE c.law_name = ANY($1) AND c.operation = ANY($2)
       GROUP BY c.id ORDER BY c.law_name, c.target, c.key
       """,
-      [laws, @text_ops]
+      [laws, @text_ops],
+      timeout: :infinity
     ).rows
-    |> Enum.map(fn [law, key, target, op, by, territory, claims, affecting] ->
+    |> Enum.map(fn [law, key, target, op, by, territory, claims, affecting, feed, bound] ->
       %{
+        feed_extent: feed,
+        law_extent: bound,
         affecting: affecting,
         law: law,
         key: key,
@@ -253,6 +266,19 @@ defmodule Mix.Tasks.Lat.ExtentCheck do
       shell.info("  #{pad(i.reach)}  #{i.shape} @ #{i.law}  [#{i.status || "no status"}]")
       for w <- Enum.take(i.words, 4), do: shell.info("           #{String.slice(w, 0, 200)}")
     end
+  end
+
+  # the feed against the law's bound, printed and recorded for the measures
+  defp yardstick(family, change_rows) do
+    r = ExtentYardstick.record(family, DateTime.utc_now(), change_rows)
+    path = ExtentYardstick.path(family)
+    :ok = ExtentYardstick.write(r, path)
+
+    r
+    |> ExtentYardstick.lines(nil)
+    |> Enum.each(fn line -> Mix.shell().info(line) end)
+
+    Mix.shell().info("  recorded: #{path}")
   end
 
   defp pad(n), do: String.pad_leading(to_string(n), 5)

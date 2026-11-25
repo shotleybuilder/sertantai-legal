@@ -31,6 +31,7 @@ defmodule Mix.Tasks.Lat.Stale do
 
   use Mix.Task
 
+  alias SertantaiLegal.Scraper.StepProcedures.ExtentStale
   alias SertantaiLegal.Scraper.{ChangeStaleness, LabelStaleness}
   alias SertantaiLegal.Scraper.ChangeVocabulary.StaleStages
   alias SertantaiLegal.Repo
@@ -122,6 +123,7 @@ defmodule Mix.Tasks.Lat.Stale do
     if opts[:reasons] do
       by_reason("LAT or labels", lat)
       by_reason("change register", changes)
+      extent_laws(family, opts)
     end
 
     Step.new("Stale laws", laws == [], length(laws), owner: @owner)
@@ -138,13 +140,32 @@ defmodule Mix.Tasks.Lat.Stale do
     |> Enum.each(fn {r, n} -> Mix.shell().info("    #{r}: #{n}") end)
   end
 
+  # the amending laws behind `:extent_reader`, store-wide or the family's
+  # builds' (`StepProcedures.ExtentStale`); each with `--list`
+  defp extent_laws(family, opts) do
+    stale = ExtentStale.laws(family)
+
+    Mix.shell().info(
+      "    the extent readings behind it: #{length(stale.old_code)} amending laws on old reader code, " <>
+        "#{length(stale.not_read)} not read (`mix lat.amending --extents --stale#{family_arg(family)}`)"
+    )
+
+    if opts[:list] do
+      for l <- stale.old_code, do: Mix.shell().info("#{l}\textent: old reader code")
+      for l <- stale.not_read, do: Mix.shell().info("#{l}\textent: not read")
+    end
+  end
+
+  defp family_arg(nil), do: ""
+  defp family_arg(family), do: ~s( --family "#{family}")
+
   defp reason(r) when is_tuple(r), do: elem(r, 0)
   defp reason(r), do: r
 
   @fixes [
     commencement_reader: "mix lat.commencement (the mode that wrote them), then build",
     extent_reader:
-      "mix lat.amending --extents --amending A,B (laws on old code, or not read: their text held, no extent_rules), then build"
+      "mix lat.reread --family F, or mix lat.amending --extents --stale (laws on old code, or not read: their text held, no extent_rules), then build"
   ]
 
   # the change register: each built law's reasons, from its inputs taken again
@@ -176,6 +197,7 @@ defmodule Mix.Tasks.Lat.Stale do
     |> Enum.each(fn {reason, n} ->
       fix = if f = @fixes[reason], do: "  (fix: #{f})", else: ""
       Mix.shell().info("  #{reason}: #{n}#{fix}")
+      if reason == :extent_reader, do: extent_laws(nil, opts)
     end)
 
     Mix.shell().info("  laws holding LAT with no build: #{unbuilt}")

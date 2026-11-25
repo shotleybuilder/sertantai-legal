@@ -23,24 +23,36 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Write do
   @spec write_read(String.t(), Extent.t(), keyword()) ::
           {:ok, non_neg_integer(), Extent.t()}
   def write_read(source_law, %Extent{} = read, opts \\ []) do
-    extent = Powers.with_powers(read, source_law, opts)
+    plan = plan(source_law, read, opts)
 
     # (the same rows as stored: not written again — a full read pass after
     # a reader change reads most laws' extent unchanged; run time 2026-10-26)
-    same? =
-      Map.get(Store.rows_for([source_law]), source_law, []) |> MapSet.new() ==
-        extent
-        |> Extent.to_rows(source_law)
-        |> Enum.map(&Map.take(&1, Store.compared()))
-        |> MapSet.new()
-
-    if same? do
+    if plan.same? do
       # read again by this code, the same: stamped, read_at kept (no rebuild)
       :ok = Store.stamp(source_law)
-      {:ok, length(Extent.to_rows(extent, source_law)), extent}
+      {:ok, length(plan.rows), plan.extent}
     else
-      {:ok, n} = Store.write(source_law, extent)
-      {:ok, n, extent}
+      {:ok, n} = Store.write(source_law, plan.extent)
+      {:ok, n, plan.extent}
     end
+  end
+
+  @type plan :: %{extent: Extent.t(), stored: [map()], rows: [map()], same?: boolean()}
+
+  @doc """
+  What `write_read/3` would do, with nothing written: the extent with its
+  powers placed, the rows stored and the reading's rows (on
+  `Store.compared/0`'s columns), and whether they are the same
+  (`mix lat.amending --extents --preview`).
+  """
+  @spec plan(String.t(), Extent.t(), keyword()) :: plan()
+  def plan(source_law, %Extent{} = read, opts \\ []) do
+    extent = Powers.with_powers(read, source_law, opts)
+    stored = Map.get(Store.rows_for([source_law]), source_law, [])
+
+    rows =
+      extent |> Extent.to_rows(source_law) |> Enum.map(&Map.take(&1, Store.compared()))
+
+    %{extent: extent, stored: stored, rows: rows, same?: MapSet.new(stored) == MapSet.new(rows)}
   end
 end

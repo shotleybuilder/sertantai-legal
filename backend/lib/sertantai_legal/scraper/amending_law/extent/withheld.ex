@@ -9,10 +9,19 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Withheld do
   (`test/fixtures/extent_patterns/withheld.json`: `"<cause> @ <law>"`,
   else `"<cause>"`). The gate passes only when every one is named
   `known:`, with the commencement gate's status semantics
-  (`Commencement.Leftovers.status/3`, `gate/1`). Pure.
+  (`Commencement.Leftovers.status/3`, `gate/1`).
+
+  A cause's changes are split by whether the feed gives them an effect
+  extent (`feed_extent`): where it does, a group not reviewed is `known:
+  feed-speaks` (RULES `extent-feed-first-where-it-speaks`: the feed is
+  used there), so only the changes this reader alone bounds need a review.
+  Pure.
   """
 
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.ExtentYardstick
   alias SertantaiLegal.Scraper.Commencement.Leftovers
+
+  @feed_speaks "known: feed-speaks (the feed gives each of these changes an effect extent: RULES extent-feed-first-where-it-speaks)"
 
   @doc """
   The no-bound causes reaching the family: `change_rows` (with `outcome` and
@@ -23,8 +32,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Withheld do
   def items(change_rows, rows_by_law, reviewed) do
     change_rows
     |> Enum.filter(&String.starts_with?(&1.outcome, "none:"))
-    |> Enum.group_by(&{&1.outcome, &1.by})
-    |> Enum.map(fn {{cause, law}, changes} ->
+    |> Enum.group_by(&{&1.outcome, &1.by, ExtentYardstick.feed_speaks?(&1)})
+    |> Enum.map(fn {{cause, law, speaks?}, changes} ->
       words = cause |> words(Map.get(rows_by_law, law, %{})) |> Enum.map(&%{words: &1})
       law = law || "-"
 
@@ -35,7 +44,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Withheld do
         cause,
         words,
         length(changes),
-        Leftovers.status(cause, reviewed, law)
+        Leftovers.status(cause, reviewed, law) || if(speaks?, do: @feed_speaks)
       )
     end)
   end

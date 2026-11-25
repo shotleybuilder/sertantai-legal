@@ -6,7 +6,9 @@ defmodule SertantaiLegal.Scraper.Checks.ExtentCensus do
   written as `census.py` wrote it: `sentences.tsv` (each sentence's worst
   verdict and flags), `scope.tsv` (apply statements of scope, not
   place), `unnamed.tsv` (stored refs no statement names) and
-  `stats.json`.
+  `stats.json`; and the noise-bin audit (`noise.tsv`): each sweep sentence
+  binned `noise:*` (no statement of the law's own territory) that the
+  finder still reads as a statement, with the counts by label.
 
   Per statement segment, each own provision it names is:
   ok, withheld (in an unread row), broader (only an ancestor stored),
@@ -21,7 +23,14 @@ defmodule SertantaiLegal.Scraper.Checks.ExtentCensus do
 
   @severe ~w(broader exc_held missing q_missing place whole_missing whole_mismatch q_read withheld scope ok)
 
-  @type out :: %{sentences: iodata(), scope: iodata(), unnamed: iodata(), stats: String.t()}
+  @type out :: %{
+          sentences: iodata(),
+          scope: iodata(),
+          unnamed: iodata(),
+          stats: String.t(),
+          noise: iodata(),
+          noise_counts: %{String.t() => %{binned: non_neg_integer(), read: non_neg_integer()}}
+        }
 
   @doc """
   The census of `laws` (dump lines, decoded, in order), each law's
@@ -56,8 +65,34 @@ defmodule SertantaiLegal.Scraper.Checks.ExtentCensus do
         | Enum.flat_map(rows, &scope_lines/1)
       ],
       unnamed: ["law\tkind\tplace\tref\n" | Enum.map(over, &unnamed_line/1)],
-      stats: stats(rows, over)
+      stats: stats(rows, over),
+      noise: [
+        "law\tref\tclass\tworst\tflags\tsentence\n" | rows |> noise() |> Enum.map(&noise_line/1)
+      ],
+      noise_counts: noise_counts(rows)
     }
+  end
+
+  @doc "Whether a sentence is binned noise by the sweep (`sweep:noise:*`)."
+  @spec noise?(String.t()) :: boolean()
+  def noise?(cls), do: String.starts_with?(cls, "sweep:noise:")
+
+  # binned noise the finder reads as a statement: it names provisions or
+  # the whole law (verdicts), or a scope
+  defp noise(rows), do: Enum.filter(rows, &(noise?(&1.class) and read?(&1)))
+
+  defp read?(f), do: f.verdicts != [] or f.scope != []
+
+  defp noise_counts(rows) do
+    rows
+    |> Enum.filter(&noise?(&1.class))
+    |> Enum.group_by(& &1.class)
+    |> Map.new(fn {cls, fs} -> {cls, %{binned: length(fs), read: Enum.count(fs, &read?/1)}} end)
+  end
+
+  defp noise_line(f) do
+    flags = for {v, r, _, _} <- f.verdicts, do: "#{v}:#{r}"
+    tsv([f.law, f.ref, f.class, f.worst, Enum.join(flags, "; "), f.s])
   end
 
   @doc "A law's structure: from the map (taken in the caller, so no task copies the map), else nil (read from the store)."

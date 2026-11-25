@@ -11,7 +11,12 @@ defmodule Mix.Tasks.Lat.ExtentCensus do
     statement names, and the counts (`Checks.ExtentCensus`);
   - `bench.txt`: the recall bench (`ExtentCensus.Bench`);
   - `reading_diff.txt` with `--diff OLD`: per law, how the reading
-    changed from an older dump (`ExtentCensus.ReadingDiff`).
+    changed from an older dump (`ExtentCensus.ReadingDiff`);
+  - `noise.tsv`: the noise-bin audit, each sweep sentence binned `noise:*`
+    the census's finder reads as a statement (counts by label printed).
+
+  `--family F` dumps only the family's amending laws: the `by` of its
+  laws' stored text changes, as `mix lat.extent_check` takes them.
 
   `--from FILE` reads a dump (`.jsonl` or `.jsonl.gz`) in place of a
   fresh one. `--laws A,B` dumps only those laws. `--structures FILE`
@@ -20,10 +25,13 @@ defmodule Mix.Tasks.Lat.ExtentCensus do
   (`ExtentCensusTest`). Read-only but for DIR.
 
       mix lat.extent_census --out data/reports/extent-census/run-08
+      mix lat.extent_census --out DIR --family "Waste, Water and Climate"
       mix lat.extent_census --out DIR --from data/experiments/cv-s05d-whole-reader-census/run-07/input.jsonl.gz
   """
   use Mix.Task
 
+  alias SertantaiLegal.Repo
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.Source, as: Scope
   alias SertantaiLegal.Scraper.Checks.ExtentCensus
   alias SertantaiLegal.Scraper.Checks.ExtentCensus.{Bench, Dump, ReadingDiff, Structure}
 
@@ -33,13 +41,20 @@ defmodule Mix.Tasks.Lat.ExtentCensus do
   def run(args) do
     {opts, _, _} =
       OptionParser.parse(args,
-        strict: [out: :string, from: :string, laws: :string, diff: :string, structures: :string]
+        strict: [
+          out: :string,
+          from: :string,
+          laws: :string,
+          family: :string,
+          diff: :string,
+          structures: :string
+        ]
       )
 
     out =
       opts[:out] ||
         Mix.raise(
-          "usage: mix lat.extent_census --out DIR [--from FILE] [--laws A,B] [--diff OLD] [--structures FILE]"
+          "usage: mix lat.extent_census --out DIR [--from FILE] [--laws A,B | --family F] [--diff OLD] [--structures FILE]"
         )
 
     Mix.Task.run("app.start")
@@ -53,7 +68,9 @@ defmodule Mix.Tasks.Lat.ExtentCensus do
     r = timed("census", fn -> ExtentCensus.run(laws, structure) end)
     for k <- [:sentences, :scope, :unnamed], do: write(out, "#{k}.tsv", r[k])
     write(out, "stats.json", r.stats)
+    write(out, "noise.tsv", r.noise)
     Mix.shell().info(r.stats)
+    noise_counts(r.noise_counts)
 
     by_law = Map.new(laws, &{&1["law"], &1})
     bench(by_law, structure, out)
@@ -63,7 +80,7 @@ defmodule Mix.Tasks.Lat.ExtentCensus do
   defp input(opts, out) do
     case opts[:from] do
       nil ->
-        laws = if l = opts[:laws], do: String.split(l, ",", trim: true)
+        laws = population(opts)
         {lines, n} = Dump.run(laws)
         write(out, "input.jsonl.gz", :zlib.gzip(Enum.map(lines, &[&1, "\n"])))
         Mix.shell().info("#{n} laws, #{length(lines)} read")
@@ -72,6 +89,36 @@ defmodule Mix.Tasks.Lat.ExtentCensus do
       path ->
         read_lines(path)
     end
+  end
+
+  defp population(opts) do
+    cond do
+      l = opts[:laws] -> String.split(l, ",", trim: true)
+      f = opts[:family] -> family_amending(f)
+      true -> nil
+    end
+  end
+
+  @text_ops ~w(inserted substituted repealed repealed_in_part renumbered)
+
+  # the amending laws of the family's stored text changes
+  defp family_amending(family) do
+    Repo.query!(
+      """
+      SELECT DISTINCT by FROM provision_changes
+      WHERE law_name = ANY($1) AND operation = ANY($2) AND by IS NOT NULL ORDER BY 1
+      """,
+      [Scope.family_laws(family), @text_ops],
+      timeout: :infinity
+    ).rows
+    |> List.flatten()
+  end
+
+  defp noise_counts(counts) do
+    Mix.shell().info("noise-bin audit (sweep noise:* the finder reads as a statement):")
+
+    for {cls, c} <- Enum.sort(counts),
+        do: Mix.shell().info("  #{cls}: #{c.read} of #{c.binned}")
   end
 
   defp read_lines(path), do: path |> read() |> String.split("\n", trim: true)
