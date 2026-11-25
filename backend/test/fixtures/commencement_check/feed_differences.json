@@ -1,19 +1,19 @@
 {
   "differ | own dated by clause_date | own earlier @ UK_nisr_2011_127": {
     "owner": "Commencement reader",
-    "status": "known: a one-law commencement wording (RULES section 11, Waste, Water and Climate: Commencement reader; Jason 2026-11-22): reg.28–31's commencing paragraph omitted in the current text"
+    "status": "known: the pattern excepted-paragraph-omitted is held only where the feed holds the commencement (1 laws), so the feed is the date (RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)): reg.28–31's commencing paragraph omitted in the current text"
   },
   "differ | own dated by clause_date | own earlier @ UK_uksi_2016_359": {
     "owner": "Commencement reader",
-    "status": "known: a one-law commencement wording (RULES section 11, Waste, Water and Climate: Commencement reader; Jason 2026-11-22): reg.1 in force on its first day, the feed staging it with the rest (the English twin of WSI 2016/359)"
+    "status": "known: the pattern whole-law-purpose-stages is held only where the feed holds the commencement (2 laws), so the feed is the date (RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)): reg.1 in force on its first day, the feed staging it with the rest (the English twin of WSI 2016/359)"
   },
   "differ | own dated by clause_date | own earlier @ UK_wsi_2016_359": {
     "owner": "Commencement reader",
-    "status": "known: a one-law commencement wording (RULES section 11, Waste, Water and Climate: Commencement reader; Jason 2026-11-22): reg.1 in force on its first day, the feed staging it with the rest"
+    "status": "known: the pattern whole-law-purpose-stages is held only where the feed holds the commencement (2 laws), so the feed is the date (RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)): reg.1 in force on its first day, the feed staging it with the rest"
   },
   "differ | own dated by clause_made_relative | own earlier @ UK_uksi_2020_1265": {
     "owner": "Commencement reader",
-    "status": "known: a one-law commencement wording (RULES section 11, Waste, Water and Climate: Commencement reader; Jason 2026-11-22): art.25's \"…, whichever is later\" after the items"
+    "status": "fix: the pattern alternative-days-whichever is held where the feed holds no commencement (1 laws; 1 where it does), so the Reader is the source and reads it (RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)): art.25's \"…, whichever is later\" after the items"
   },
   "differ | own dated by order_date | own later @ UK_asp_2014_2": {
     "owner": "Sources",
@@ -21,11 +21,11 @@
   },
   "differ | own dated by order_schedule | own earlier @ UK_nisi_2006_3336": {
     "owner": "Commencement reader",
-    "status": "known: a one-law commencement wording (RULES section 11, Waste, Water and Climate: Commencement reader; Jason 2026-11-23): NISR 2007/194 Sch.1 Pt II, its rows' long exceptions read as the whole item partly, or swallowing the rest of the list; the order is post-2002 and the feed dates them"
+    "status": "fix: the pattern table-row-long-exception is held where the feed holds no commencement (1 laws; 1 where it does), so the Reader is the source and reads it (RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)): NISR 2007/194 Sch.1 Pt II, its rows' long exceptions read as the whole item partly, or swallowing the rest of the list; the order is post-2002 and the feed dates them"
   },
   "differ | own dated by order_schedule | own later @ UK_nisi_2006_3336": {
     "owner": "Commencement reader",
-    "status": "known: a one-law commencement wording (RULES section 11, Waste, Water and Climate: Commencement reader; Jason 2026-11-23): NISR 2007/194 Sch.1 Pt II, its rows' long exceptions read as the whole item partly, or swallowing the rest of the list; the order is post-2002 and the feed dates them"
+    "status": "fix: the pattern table-row-long-exception is held where the feed holds no commencement (1 laws; 1 where it does), so the Reader is the source and reads it (RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)): NISR 2007/194 Sch.1 Pt II, its rows' long exceptions read as the whole item partly, or swallowing the rest of the list; the order is post-2002 and the feed dates them"
   },
   "feed_only | own by_order by by_order | feed full @ UK_nisi_1997_2778": {
     "owner": "Sources",
@@ -33,7 +33,7 @@
   },
   "feed_only | own by_order by by_order | feed full @ UK_nisi_2006_3336": {
     "owner": "Commencement reader",
-    "status": "known: a one-law commencement wording (RULES section 11, Waste, Water and Climate: Commencement reader; Jason 2026-11-23): NISR 2007/194 Sch.1 Pt II, its rows' long exceptions read as the whole item partly, or swallowing the rest of the list; the order is post-2002 and the feed dates them"
+    "status": "fix: the pattern table-row-long-exception is held where the feed holds no commencement (1 laws; 1 where it does), so the Reader is the source and reads it (RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)): NISR 2007/194 Sch.1 Pt II, its rows' long exceptions read as the whole item partly, or swallowing the rest of the list; the order is post-2002 and the feed dates them"
   },
   "feed_only | own by_order by by_order | feed partial @ UK_nisi_2006_3336": {
     "owner": "Sources",
@@ -45,19 +45,19 @@
   },
   "feed_only | own by_order by provision_by_order | feed full @ UK_uksi_2006_641": {
     "owner": "Commencement reader",
-    "status": "known: a one-law commencement wording (RULES section 11, Waste, Water and Climate: Commencement reader; Jason 2026-11-22): reg.15 tied to the Water Act 2003 s.7(3)'s start"
+    "status": "fix: the pattern provision-tied-to-another-law is held where the feed holds no commencement (2 laws; 1 where it does), so the Reader is the source and reads it (RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)): reg.15 tied to the Water Act 2003 s.7(3)'s start"
   },
   "feed_only | own by_order_partly by by_order | feed full @ UK_nisi_2006_3336": {
     "owner": "Commencement reader",
-    "status": "known: a one-law commencement wording (RULES section 11, Waste, Water and Climate: Commencement reader; Jason 2026-11-23): NISR 2007/194 Sch.1 Pt II, its rows' long exceptions read as the whole item partly, or swallowing the rest of the list; the order is post-2002 and the feed dates them"
+    "status": "fix: the pattern table-row-long-exception is held where the feed holds no commencement (1 laws; 1 where it does), so the Reader is the source and reads it (RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)): NISR 2007/194 Sch.1 Pt II, its rows' long exceptions read as the whole item partly, or swallowing the rest of the list; the order is post-2002 and the feed dates them"
   },
   "feed_only | own by_order_partly by by_order | feed full @ UK_ukpga_2003_37": {
     "owner": "Commencement reader",
-    "status": "known: a one-law commencement wording (RULES section 11, Waste, Water and Climate: Commencement reader; Jason 2026-11-22): s.58(10) by SI 2009/359 art.1(2), \"applies in relation to England only except article 2(d) which extends to Scotland only\""
+    "status": "known: the pattern application-with-exception is held only where the feed holds the commencement (1 laws), so the feed is the date (RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)): s.58(10) by SI 2009/359 art.1(2), \"applies in relation to England only except article 2(d) which extends to Scotland only\""
   },
   "feed_only | own by_order_partly by provision_by_order | feed full @ UK_ukpga_2003_33": {
     "owner": "Commencement reader",
-    "status": "known: a one-law commencement wording (RULES section 11, Waste, Water and Climate: Commencement reader; Jason 2026-11-22): WSI 2004/1488 art.2 \"(1) Subject to paragraph (2) sections 4, 5, 9, 10, 19 and 35(a) and (c) … (2) Sections 4, 5, 9, 10 and 35(a) … in relation to Wales\" reads s.19 and s.35(c) partly"
+    "status": "known: the pattern subject-to-territory-paragraph is held only where the feed holds the commencement (1 laws), so the feed is the date (RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)): WSI 2004/1488 art.2 \"(1) Subject to paragraph (2) sections 4, 5, 9, 10, 19 and 35(a) and (c) … (2) Sections 4, 5, 9, 10 and 35(a) … in relation to Wales\" reads s.19 and s.35(c) partly"
   },
   "feed_partial_only | own dated by order_schedule | first agrees": {
     "owner": "Commencement reader",
@@ -65,7 +65,7 @@
   },
   "feed_partial_only | own staged by order_date | first differs @ UK_ukpga_2003_33": {
     "owner": "Commencement reader",
-    "status": "known: a one-law commencement wording (RULES section 11, Waste, Water and Climate: Commencement reader; Jason 2026-11-22): one order per territory; the feed's first stage is England's order (SI 2004/3181), ours Wales's (WSI 2004/1488)"
+    "status": "known: a yardstick difference, the pattern one-order-per-territory (12 laws): the Reader reads the law's words; the feed stages it otherwise (RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)): one order per territory; the feed's first stage is England's order (SI 2004/3181), ours Wales's (WSI 2004/1488)"
   },
   "inserted | differ | ours dated via feed": {
     "owner": "Commencement reader",
