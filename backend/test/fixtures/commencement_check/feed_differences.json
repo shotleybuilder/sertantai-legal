@@ -13,7 +13,7 @@
   },
   "differ | own dated by clause_made_relative | own earlier @ UK_uksi_2020_1265": {
     "owner": "Commencement reader",
-    "status": "fix: the pattern alternative-days-whichever is held where the feed holds no commencement (1 laws; 1 where it does), so the Reader is the source and reads it (RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)): art.25's \"…, whichever is later\" after the items"
+    "status": "fix: the pattern alternative-days-whichever is held where the feed holds no commencement (1 laws; 1 where it does), so the Reader is the source and reads it (RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)): art.25's \"…, whichever is later\" after the items — fixed: art.25 read \"whichever is later\" (2020-12-31), c61cc16a; the group is gone at the close (2026-11-25)"
   },
   "differ | own dated by order_date | own later @ UK_asp_2014_2": {
     "owner": "Sources",
@@ -45,7 +45,7 @@
   },
   "feed_only | own by_order by provision_by_order | feed full @ UK_uksi_2006_641": {
     "owner": "Commencement reader",
-    "status": "fix: the pattern provision-tied-to-another-law is held where the feed holds no commencement (2 laws; 1 where it does), so the Reader is the source and reads it (RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)): reg.15 tied to the Water Act 2003 s.7(3)'s start"
+    "status": "fix: the pattern provision-tied-to-another-law is held where the feed holds no commencement (2 laws; 1 where it does), so the Reader is the source and reads it (RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)): reg.15 tied to the Water Act 2003 s.7(3)'s start — fixed: reg.15 dated by the Water Act 2003 s.7(3) rule (2018-01-01), c61cc16a and f2a0edb2; the group is gone at the close (2026-11-25)"
   },
   "feed_only | own by_order_partly by by_order | feed full @ UK_nisi_2006_3336": {
     "owner": "Commencement reader",
